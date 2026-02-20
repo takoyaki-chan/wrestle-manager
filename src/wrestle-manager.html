@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>女子プロレス団体経営シミュレータ — Prototype v0.7</title>
+<title>女子プロレス団体経営シミュレータ — Prototype v0.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -118,6 +118,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 
 /* Select dropdown */
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+
+/* Portrait images */
+.portrait{border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1);vertical-align:middle}
+.portrait-popup{border-radius:50%;width:64px;height:64px;object-fit:cover;border:2px solid rgba(255,255,255,0.15);box-shadow:0 2px 12px rgba(0,0,0,0.5)}
+.portrait-match{border-radius:50%;width:48px;height:48px;object-fit:cover;border:2px solid rgba(255,255,255,0.1)}
+.portrait-match.winner{border-color:var(--gold);box-shadow:0 0 8px rgba(212,168,67,0.4)}
+.portrait-match.loser{opacity:0.6;filter:grayscale(0.3)}
   background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
 
 /* Schedule tags */
@@ -955,6 +962,33 @@ const DRAFT_CONFIG = {
 };
 // Legacy compat (used only if draft is skipped, e.g. autosave load)
 const DEFAULT_ROSTER_IDS = [...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates.slice(0, DRAFT_CONFIG.pickCount)];
+
+// Portrait mapping: character id → filename key
+// Usage: `image/face_${PORTRAIT[id]}.png`
+const PORTRAIT = {
+  1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukamachi_m',
+  6:'soezawa_t',7:'takashina_m',8:'hayashi_m',9:'udagawa_r',10:'sato_y',
+  11:'tachibana_r',12:'ikoma_e',13:'domae_y',14:'kuroe_m',15:'kusunoki_n',
+  16:'okochi_s',17:'kawanobe_n',18:'dewa_t',19:'shijo_a',20:'kishi_y',
+  21:'kinouchi_y',22:'minoyama_m',23:'hayami_t',24:'sonobe_r',25:'ishitoya_n',
+  26:'miyamori_n',27:'yaegashi_m',28:'iwaya_m',29:'aizawa_m',30:'matsukawa_a',
+  31:'hiramatsu_k',32:'futasato_a',33:'umegaoka_m',34:'kitabatake_y',35:'uenohara_y',
+  36:'manabe_a',37:'shirogane_r',38:'shiba_a',39:'kamiya_s',40:'takanawa_m',
+  41:'negishi_a',42:'hongo_m',43:'kanazawa_f',44:'fukuura_r',45:'takatsuki_c',
+  46:'izawa_h',47:'saito_m',48:'kikuchi_r',49:'takahashi_ma',50:'aida_m',
+  51:'mitsuhashi_f',52:'nishikawa_c',53:'komori_s',54:'abe_m',55:'okubo_m',
+  56:'katagiri_a',57:'asami_r',58:'niwa_h',59:'ikebe_m',60:'banyubashi_h',
+  61:'kannonzaki_s',62:'miyagase_c',63:'isehara_f',64:'yumoto_h',65:'kurami_n',
+  66:'hasegawa_r',67:'yanagishima_m',68:'oba_a',69:'hayakawa_m',70:'hamatake_m',
+  71:'togane_s',72:'anazawa_h',73:'omagoe_y',74:'fujimigaoka_h',75:'ebina_s',
+  76:'kuribayashi_a',77:'niimi_y',78:'tsubakiyama_m',79:'kudo_r',80:'takashima_s'
+};
+function getPortraitUrl(id) { return PORTRAIT[id] ? `image/face_${PORTRAIT[id]}.png` : ''; }
+function portraitImg(id, size = 32, cls = '') {
+  const url = getPortraitUrl(id);
+  if (!url) return '';
+  return `<img src="${url}" class="portrait ${cls}" style="width:${size}px;height:${size}px" alt="" loading="lazy">`;
+}
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 2: MOVE DATA (from v3.5)                        ║
@@ -4362,9 +4396,12 @@ function showFighterPopup(fighterId, source) {
   let html = '';
 
   // Header
+  const pUrl = getPortraitUrl(c.id);
   html += `<div class="fighter-popup-header" style="background:${sm.color}0a;border-bottom:1px solid rgba(255,255,255,0.06)">
-    <div class="fighter-popup-avatar" style="background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88">
-      <span style="color:${sm.color}">${initial}</span>
+    <div style="position:relative;flex-shrink:0">
+      ${pUrl
+        ? `<img src="${pUrl}" class="portrait-popup" style="border-color:${sm.color}88" alt="${c.name}">`
+        : `<div class="fighter-popup-avatar" style="background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88"><span style="color:${sm.color}">${initial}</span></div>`}
       <span style="position:absolute;bottom:-2px;right:-2px;font-size:14px">${sm.icon}</span>
     </div>
     <div style="flex:1;min-width:0">
@@ -4606,10 +4643,12 @@ function renderMatchPreview() {
 
     html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : ''}">`;
     html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
-    html += `<div style="font-size:13px;font-weight:600">`;
+    html += `<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600">`;
+    html += `${portraitImg(charL.id, 32)}`;
     html += `<span style="color:var(--blue)">${charL.name}</span>`;
     html += `<span style="color:var(--text-dim);margin:0 8px">vs</span>`;
     html += `<span style="color:var(--red)">${charR.name}</span>${titleTag}`;
+    html += `${portraitImg(charR.id, 32)}`;
     html += `</div>`;
     html += `<div style="font-size:10px;color:var(--text-dim)">第${idx + 1}試合</div>`;
     html += `</div>`;
@@ -4670,18 +4709,22 @@ function renderShowResult(results, injuryResults) {
 
     if (isDraw) {
       html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        ${portraitImg(r.left.id, 40, 'portrait-match')}
         <span style="font-size:15px">${fLink(r.left, {source:'roster'})}</span>
         <span style="font-size:12px;padding:2px 8px;border-radius:3px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12">DRAW</span>
         <span style="font-size:15px">${fLink(r.right, {source:'roster'})}</span>
+        ${portraitImg(r.right.id, 40, 'portrait-match')}
       </div>
       <div style="margin-top:4px;font-size:12px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
       <div style="margin-top:3px">${mqStars(r.mq)} <span style="font-size:11px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+15)</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
     } else {
       const winnerF = leftIsWinner ? r.left : r.right;
       html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        ${portraitImg(r.left.id, leftIsWinner ? 48 : 36, 'portrait-match' + (leftIsWinner ? ' winner' : ' loser'))}
         <span style="font-size:${leftIsWinner?18:13}px;${leftIsWinner?'':'opacity:0.7'}">${fLink(r.left, {source:'roster', bold:leftIsWinner})}</span>
         <span style="font-size:11px;color:var(--text-dim)">vs</span>
         <span style="font-size:${rightIsWinner?18:13}px;${rightIsWinner?'':'opacity:0.7'}">${fLink(r.right, {source:'roster', bold:rightIsWinner})}</span>
+        ${portraitImg(r.right.id, rightIsWinner ? 48 : 36, 'portrait-match' + (rightIsWinner ? ' winner' : ' loser'))}
       </div>
       <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="display:inline-block;padding:3px 12px;border-radius:3px;font-size:12px;font-weight:700;
@@ -4920,7 +4963,7 @@ function refreshTopBar() {
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
-  champEl.innerHTML = champ ? `🏆 ${fLink(champ, {source:'roster', bold:false})} (${G.titles.world.defenses}防衛)` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(champ.id, 24)}🏆 ${fLink(champ, {source:'roster', bold:false})} (${G.titles.world.defenses}防衛)</span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
 }
 
 function renderWeekScreen() {
@@ -4952,6 +4995,13 @@ function renderWeekScreen() {
 
     function makeAvatar(c, size) {
       const sm = STYLE_META[c.style] || STYLE_META.Allround;
+      const pUrl = getPortraitUrl(c.id);
+      if (pUrl) {
+        return `<div style="position:relative;flex-shrink:0">
+          <img src="${pUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid ${sm.color}88" alt="${c.name}">
+          <span style="position:absolute;bottom:-2px;right:-2px;font-size:${Math.round(size*0.3)}px">${sm.icon}</span>
+        </div>`;
+      }
       const initial = c.name.charAt(0);
       return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
         <span style="font-size:${Math.round(size*0.45)}px;font-weight:900;color:${sm.color}">${initial}</span>
@@ -5500,7 +5550,7 @@ function renderRoster() {
     let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
     aceHtml += '<span style="color:var(--gold);font-weight:700">⭐ エース:</span>';
     if (ace) {
-      aceHtml += `<span>${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
+      aceHtml += `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(ace.id, 24)}${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
       aceHtml += `<button class="btn" style="font-size:10px;padding:3px 8px;margin-left:auto" onclick="revokeAce()">解除</button>`;
     } else {
       aceHtml += '<span style="color:var(--text-dim)">未認定</span>';
@@ -5535,7 +5585,7 @@ function renderRoster() {
       return `${c[key]}${gHtml}`;
     };
     html += `<tr${c.injury ? ' style="opacity:0.7"' : ''}>
-      <td>${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}${injuryBadge}</td>
+      <td><div style="display:flex;align-items:center;gap:6px">${portraitImg(c.id, 28)}${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}</div>${injuryBadge}</td>
       <td><span class="badge badge-${c.style}">${c.style}</span></td>
       <td><span class="badge badge-${roleCls}">${c.role}</span></td>
       <td class="num ov">${ov(c)}</td>
@@ -5641,6 +5691,7 @@ function renderShowPrep() {
 
     html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px">
       <div class="match-slot-num">${isMain ? '★' : i+1}</div>
+      <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 28) : ''}</div>
       <div class="match-fighter">
         <select onchange="onCardSelect(${i},'left',this.value)">
           ${makeOptions(availL, curL)}
@@ -5652,6 +5703,7 @@ function renderShowPrep() {
           ${makeOptions(availR, curR)}
         </select>
       </div>
+      <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 28) : ''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:10px">
         ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${isVacant ? '王座決定戦' : 'タイトル戦'}</label>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
@@ -5835,7 +5887,7 @@ function renderRanking() {
       <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
       <div style="font-size:11px">
         <span style="color:var(--text-dim)">主力:</span>
-        ${topFighters.map(f => `<span style="margin-left:6px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'11px'})}<span style="color:var(--text-dim)">(OVR ${Engine.util.ov(f)}, pop ${f.popularity})</span></span>`).join('')}
+        ${topFighters.map(f => `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:6px">${portraitImg(f.id, 20)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'11px'})}<span style="color:var(--text-dim)">(${Engine.util.ov(f)})</span></span>`).join('')}
       </div>
       ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
         <details style="margin-top:8px">
@@ -5845,7 +5897,7 @@ function renderRanking() {
               const fee = Engine.transfer.calcFee(f, org);
               const canAfford = G.funds >= fee;
               return `<div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:3px;font-size:10px">
-                ${fLink(f, {source:'ai:'+org.id, bold:false, size:'10px'})} (OVR ${Engine.util.ov(f)}) <span style="color:${canAfford ? '#2ecc71' : '#e17055'}">${fee}万</span>
+                ${portraitImg(f.id, 20)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'10px'})} (OVR ${Engine.util.ov(f)}) <span style="color:${canAfford ? '#2ecc71' : '#e17055'}">${fee}万</span>
                 <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:9px;padding:1px 5px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:2px" ${canAfford ? '' : 'disabled'}>獲得</button>
               </div>`;
             }).join('')}
@@ -5904,7 +5956,7 @@ function renderScout() {
   [...G.roster].sort((a,b) => ov(b) - ov(a)).forEach(c => {
     const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
     html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:4px;font-size:11px">
-      ${fLink(c, {source:'roster', size:'11px'})} <span style="color:var(--text-dim)">(${ov(c)})</span>
+      ${portraitImg(c.id, 20)}${fLink(c, {source:'roster', size:'11px'})} <span style="color:var(--text-dim)">(${ov(c)})</span>
       <button onclick="releaseFighter(${c.id})" style="font-size:10px;padding:1px 6px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:3px" ${inCard?'disabled title="カード登録中"':c.isRental?'disabled title="レンタル中"':''}>解雇</button>
     </div>`;
   });
@@ -5917,7 +5969,7 @@ function renderScout() {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const canAfford = G.funds >= signingFee;
     html += `<tr>
-      <td>${fLink(c, {source:'free'})}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px">${portraitImg(c.id, 22)}${fLink(c, {source:'free'})}</span></td>
       <td class="num" style="color:var(--text-dim)">${c.age}歳</td>
       <td><span class="badge badge-${c.style}">${c.style}</span></td>
       <td><span class="badge badge-${roleCls}">${c.role}</span></td>
