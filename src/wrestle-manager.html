@@ -285,17 +285,17 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
   <!-- Navigation -->
   <div class="nav-bar">
-    <button class="nav-btn active" onclick="showScreen('week')">📅 今週</button>
-    <button class="nav-btn" onclick="showScreen('ranking')">🏆 ランキング</button>
-    <button class="nav-btn" onclick="showScreen('roster')">👥 ロスター</button>
-    <button class="nav-btn" onclick="showScreen('scout')">🔍 スカウト</button>
-    <button class="nav-btn" onclick="showScreen('coach')">🎓 コーチ</button>
-    <button class="nav-btn" onclick="showScreen('training')">🏋️ 育成</button>
-    <button class="nav-btn" onclick="showScreen('facility')">🏢 施設</button>
-    <button class="nav-btn" onclick="showScreen('show')">🎤 興行準備</button>
-    <button class="nav-btn" onclick="showScreen('finance')">💰 収支</button>
-    <button class="nav-btn" onclick="showScreen('log')">📋 ログ</button>
-    <button class="nav-btn" onclick="showScreen('save')">💾 セーブ</button>
+    <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
+    <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
+    <button class="nav-btn" onclick="showScreen('roster',event)">👥 ロスター</button>
+    <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
+    <button class="nav-btn" onclick="showScreen('coach',event)">🎓 コーチ</button>
+    <button class="nav-btn" onclick="showScreen('training',event)">🏋️ 育成</button>
+    <button class="nav-btn" onclick="showScreen('facility',event)">🏢 施設</button>
+    <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
+    <button class="nav-btn" onclick="showScreen('finance',event)">💰 収支</button>
+    <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
+    <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
   </div>
 
   <!-- SCREEN: This Week -->
@@ -801,16 +801,7 @@ const STYLE_GROWTH = {
 };
 
 // Transfer system config (v1.0 §7 modified: quarterly windows)
-const TRANSFER_CFG = {
-  windows: [12,24,36,48],           // 四半期末
-  poachChance: 0.06,                // AI→player: 6%/fighter/quarter
-  poachMinPop: 50,                  // 人気50以上が対象
-  playerPoachLimitPerYear: 1,       // player→AI: 年1名
-  aceRetention: 1.0,                // エース引き留め100%
-  nonAceRetention: 0.80,            // 非エース引き留め80%
-  retentionCostMul: 0.5,            // 引き留め金 = 移籍金×0.5
-  poachIncomeMul: 0.7               // 放出時収入 = 移籍金×0.7
-};
+// Transfer config: see TRANSFER_CONFIG in Section 4H for active constants
 
 // org-rating star power thresholds (org-ranking-spec §1.3)
 const STAR_POWER = [
@@ -1733,9 +1724,23 @@ const Engine = {
       Object.values(ORG_ASSIGN).forEach(ids => ids.forEach(id => assigned.add(id)));
       return ALL_CHARS.filter(c => !assigned.has(c.id)).map(c => c.id);
     },
+    // Utility: get merged AI org info (config + state) by orgId
+    getOrgInfo(aiOrgs, orgId) {
+      const cfg = RIVAL_ORGS.find(o => o.id === orgId);
+      const data = aiOrgs && aiOrgs[orgId];
+      if (!cfg || !data) return null;
+      return { id: cfg.id, orgId: cfg.id, name: cfg.name, tier: cfg.tier,
+               championScore: cfg.championScore, coachMul: cfg.coachMul, facilityMul: cfg.facilityMul,
+               roster: data.roster, orgPop: data.orgPop };
+    },
+    // Utility: get all AI orgs as array with merged config+state
+    getAllOrgs(aiOrgs) {
+      return RIVAL_ORGS.map(cfg => Engine.rival.getOrgInfo(aiOrgs, cfg.id)).filter(Boolean);
+    },
+
     // Check if current week is a transfer window
     isTransferWindow(week) {
-      return TRANSFER_CFG.windows.includes(week);
+      return TRANSFER_CONFIG.windows.includes(week);
     },
     // Calculate transfer fee (rival-org §7.1)
     calcTransferFee(fighter, fromOrgTier) {
@@ -2133,6 +2138,17 @@ const Engine = {
       const rentalResult = Engine.rental.advanceRental(s);
       s = rentalResult.state;
       events.push(...rentalResult.events);
+      // Merge rental cost into weeklyFinance
+      if (s.rental || rentalResult.returned) {
+        const rentalCost = state.rental.weeklyCost;
+        const wf = s.weeklyFinance;
+        s = { ...s, weeklyFinance: {
+          ...wf,
+          expense: wf.expense + rentalCost,
+          net: wf.net - rentalCost,
+          details: [...wf.details, { label: `レンタル費（${state.rental.weeklyCost}万/週）`, val: -rentalCost, type: 'expense' }]
+        }};
+      }
     }
     return { state: s, events };
   },
@@ -2283,7 +2299,8 @@ const Engine = {
 
         // Only higher-ranked orgs can poach
         if (cfg.poachRequiresHigherRank) {
-          const higherOrgs = (s.aiOrgs || []).filter(org => {
+          const higherOrgs = RIVAL_ORGS.filter(org => {
+            if (!s.aiOrgs[org.id]) return false;
             const orgRank = rankings.findIndex(r => r.orgId === org.id) + 1;
             return orgRank > 0 && orgRank < playerRank;
           });
@@ -2326,34 +2343,36 @@ const Engine = {
           funds: s.funds + poach.fee
         };
         // Add fighter to AI org
-        const aiOrgs = s.aiOrgs.map(org => {
-          if (org.id !== poach.org.id) return org;
-          const f = { ...poach.fighter, orgId: org.id };
-          return { ...org, roster: [...org.roster, f] };
-        });
-        s = { ...s, aiOrgs };
+        const targetId = poach.org.id;
+        const targetData = s.aiOrgs[targetId];
+        if (targetData) {
+          const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+          s = { ...s, aiOrgs: newAiOrgs };
+        }
         events.push(`💸 ${poach.fighter.name}が${poach.org.name}に移籍（移籍金+${poach.fee}万）`);
       } else {
         // Defend — player pays retention cost
         const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
         // Non-ace: 80% defense success
+        const defRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, fighterIdToRelease));
         const defended = Engine.ace.isAce(s, fighterIdToRelease)
           ? true
-          : Math.random() < TRANSFER_CONFIG.nonAceRetentionRate;
+          : Engine.rng.float(defRng) < TRANSFER_CONFIG.nonAceRetentionRate;
         if (defended) {
           s = { ...s, funds: s.funds - retCost };
           events.push(`🛡️ ${poach.fighter.name}の引き留めに成功（-${retCost}万）`);
         } else {
           // Defense failed — forced transfer
+          const targetId = poach.org.id;
+          const targetData = s.aiOrgs[targetId];
           s = { ...s,
             roster: s.roster.filter(c => c.id !== fighterIdToRelease),
             funds: s.funds + poach.fee
           };
-          const aiOrgs = s.aiOrgs.map(org => {
-            if (org.id !== poach.org.id) return org;
-            return { ...org, roster: [...org.roster, { ...poach.fighter, orgId: org.id }] };
-          });
-          s = { ...s, aiOrgs };
+          if (targetData) {
+            const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+            s = { ...s, aiOrgs: newAiOrgs };
+          }
           events.push(`😭 ${poach.fighter.name}の引き留め失敗 → ${poach.org.name}に移籍（+${poach.fee}万）`);
         }
       }
@@ -2372,31 +2391,29 @@ const Engine = {
         return { state: s, events };
       }
 
-      const org = s.aiOrgs.find(o => o.id === aiOrgId);
-      if (!org) return { state: s, events };
+      const orgCfg = RIVAL_ORGS.find(o => o.id === aiOrgId);
+      const orgData = s.aiOrgs[aiOrgId];
+      if (!orgCfg || !orgData) return { state: s, events };
 
-      const fighter = org.roster.find(f => f.id === fighterId);
+      const fighter = orgData.roster.find(f => f.id === fighterId);
       if (!fighter) return { state: s, events };
 
-      const fee = Engine.transfer.calcFee(fighter, org);
+      const fee = Engine.transfer.calcFee(fighter, orgCfg);
       if (s.funds < fee) {
         events.push(`❌ 資金不足（必要: ${fee}万, 残高: ${s.funds}万）`);
         return { state: s, events };
       }
 
       // Remove from AI org, add to player roster
-      const aiOrgs = s.aiOrgs.map(o => {
-        if (o.id !== aiOrgId) return o;
-        return { ...o, roster: o.roster.filter(f => f.id !== fighterId) };
-      });
+      const newAiOrgs = { ...s.aiOrgs, [aiOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== fighterId) } };
       const newFighter = { ...fighter, orgId: 'player' };
       s = { ...s,
-        aiOrgs,
+        aiOrgs: newAiOrgs,
         roster: [...s.roster, newFighter],
         funds: s.funds - fee,
         transfersThisSeason: (s.transfersThisSeason || 0) + 1
       };
-      events.push(`🤝 ${fighter.name}を${org.name}から獲得！（移籍金-${fee}万）`);
+      events.push(`🤝 ${fighter.name}を${orgCfg.name}から獲得！（移籍金-${fee}万）`);
       return { state: s, events };
     }
   },
@@ -2406,12 +2423,15 @@ const Engine = {
     /** List all rentable fighters from AI orgs */
     getAvailableRentals(state) {
       const results = [];
-      (state.aiOrgs || []).forEach(org => {
-        const sorted = [...org.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      RIVAL_ORGS.forEach(orgCfg => {
+        const orgData = state.aiOrgs && state.aiOrgs[orgCfg.id];
+        if (!orgData) return;
+        const org = { ...orgCfg, roster: orgData.roster, orgPop: orgData.orgPop };
+        const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
         // Only rank 3+ (index >= 2) are available
         sorted.slice(2).forEach(f => {
           if (f.injury) return; // skip injured
-          const fee = Engine.rental.calcWeeklyFee(f, org);
+          const fee = Engine.rental.calcWeeklyFee(f, orgCfg);
           results.push({ fighter: f, org, weeklyFee: fee, totalFee: fee * RENTAL_CONFIG.duration });
         });
       });
@@ -2430,10 +2450,11 @@ const Engine = {
       const events = [];
       if (state.rental) return { success: false, state, events: ['⚠ 既にレンタル中の選手がいます'] };
 
-      const org = (state.aiOrgs || []).find(o => o.orgId === fromOrgId);
-      if (!org) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
+      const orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
+      const orgData = state.aiOrgs && state.aiOrgs[fromOrgId];
+      if (!orgCfg || !orgData) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
 
-      const fighter = org.roster.find(f => f.id === fighterId);
+      const fighter = orgData.roster.find(f => f.id === fighterId);
       if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
 
       // Negotiation check (rival-spec §8.5)
@@ -2449,11 +2470,11 @@ const Engine = {
       baseRate = Math.max(0.3, Math.min(0.9, baseRate));
 
       if (Engine.rng.float(rng) >= baseRate) {
-        events.push(`❌ ${org.name}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
+        events.push(`❌ ${orgCfg.name}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
         return { success: false, state, events };
       }
 
-      const weeklyFee = Engine.rental.calcWeeklyFee(fighter, org);
+      const weeklyFee = Engine.rental.calcWeeklyFee(fighter, orgCfg);
       // Add rental fighter to player roster (marked as rental)
       const rentalFighter = {
         ...fighter,
@@ -2461,8 +2482,8 @@ const Engine = {
         condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }
       };
       const rental = { fighterId: fighter.id, fromOrgId, weeksLeft: RENTAL_CONFIG.duration, weeklyCost: weeklyFee };
-      const s = { ...state, roster: [...state.roster, rentalFighter], rental, funds: state.funds - weeklyFee };
-      events.push(`🤝 ${fighter.name}を${org.name}からレンタル！（${weeklyFee}万/週×${RENTAL_CONFIG.duration}週）`);
+      const s = { ...state, roster: [...state.roster, rentalFighter], rental };
+      events.push(`🤝 ${fighter.name}を${orgCfg.name}からレンタル！（${weeklyFee}万/週×${RENTAL_CONFIG.duration}週）`);
       return { success: true, state: s, events };
     },
 
@@ -2478,13 +2499,14 @@ const Engine = {
         const rentalF = s.roster.find(c => c.id === r.fighterId);
         const returning = s.roster.filter(c => c.id !== r.fighterId);
         // Update fighter in AI org (popularity/injury may have changed)
-        const aiOrgs = (s.aiOrgs || []).map(org => {
-          if (org.orgId !== r.fromOrgId) return org;
-          return { ...org, roster: org.roster.map(f => f.id === r.fighterId
+        let aiOrgs = s.aiOrgs;
+        const fromData = aiOrgs[r.fromOrgId];
+        if (fromData) {
+          aiOrgs = { ...aiOrgs, [r.fromOrgId]: { ...fromData, roster: fromData.roster.map(f => f.id === r.fighterId
             ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
             : f
-          )};
-        });
+          )}};
+        }
         events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
         // Check challenge trigger (rental injury)
         let challengeTrigger = null;
@@ -2519,7 +2541,7 @@ const Engine = {
       if (candidates.length === 0) return null;
 
       const opponent = candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
-      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === opponent.orgId);
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponent.orgId);
       if (!aiOrg) return null;
 
       const matchCount = Engine.rng.int(rng, EVENT_CONFIG.warMatchCount.min, EVENT_CONFIG.warMatchCount.max);
@@ -2528,7 +2550,7 @@ const Engine = {
 
     /** Make war card: auto-match by OVR rank */
     makeWarCard(state, opponentOrgId) {
-      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === opponentOrgId);
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponentOrgId);
       if (!aiOrg) return [];
       const playerSorted = [...state.roster].filter(c => !c.injury && !c.isRental).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
       const aiSorted = [...aiOrg.roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -2547,7 +2569,7 @@ const Engine = {
       const pf = { ...playerFighter, condition: 80 };
       const af = { ...aiFighter, condition: 80 };
       // Use battle engine
-      const result = Engine.battle(rng, pf, af, { isTitle: false });
+      const result = Engine.battle.simulateMatch(pf, af, rng);
       result.mq = Math.min(100, result.mq + mqBonus);
       return result;
     },
@@ -2558,7 +2580,7 @@ const Engine = {
       let playerWins = 0, aiWins = 0;
       card.forEach(match => {
         const r = Engine.event.resolveEventMatch(rng, match.playerFighter, match.aiFighter, 0);
-        const pWin = r.winnerId === match.playerFighter.id;
+        const pWin = r.winner === 'left'; // player is always left in resolveEventMatch
         if (pWin) playerWins++; else aiWins++;
         results.push({ ...r, playerFighter: match.playerFighter, aiFighter: match.aiFighter, playerWon: pWin });
       });
@@ -2590,7 +2612,7 @@ const Engine = {
       else if (trigger.type === 'poachRejected') chance = 0.20;
       if (Engine.rng.float(rng) >= chance) return null;
 
-      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === trigger.fromOrgId);
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, trigger.fromOrgId);
       if (!aiOrg) return null;
 
       // Matchup: aces of both orgs
@@ -2612,7 +2634,7 @@ const Engine = {
       // Find #1 ranked AI org
       const topRank = rankings.find(r => r.orgId !== 'player');
       if (!topRank) return null;
-      const topOrg = (state.aiOrgs || []).find(o => o.orgId === topRank.orgId);
+      const topOrg = Engine.rival.getOrgInfo(state.aiOrgs, topRank.orgId);
       if (!topOrg) return null;
 
       const playerAce = Engine.event.getAce(state.roster);
@@ -3148,14 +3170,15 @@ const App = {
     const coach = ALL_COACHES.find(c => c.id === coachId);
     if (!coach) return;
     if (G.coaches.length >= MAX_COACHES) { alert(`コーチは最大${MAX_COACHES}名まで`); return; }
-    if (G.funds < coach.hireCost) { alert('資金が足りません！'); return; }
+    const fee = coach.hireFee || COACH_HIRE_FEE;
+    if (G.funds < fee) { alert('資金が足りません！'); return; }
     G = {
       ...G,
-      funds: G.funds - coach.hireCost,
+      funds: G.funds - fee,
       coaches: [...G.coaches, coachId],
       availableCoaches: G.availableCoaches.filter(id => id !== coachId),
       coachAssign: { ...G.coachAssign, [coachId]: [] },
-      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${coach.hireCost}万）`]
+      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万）`]
     };
     refreshAll();
   },
@@ -3263,6 +3286,8 @@ const App = {
     if (result.results) {
       result.results.forEach(r => {
         if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
+        if (r.winner === 'left' || r.winner === 'right') stats.wins++; // count match outcomes
+        if (r.winner === 'draw') stats.draws++;
       });
     }
     G = { ...G, ...result.state, seasonStats: stats, gameLog: [...G.gameLog, ...result.events] };
@@ -3571,7 +3596,7 @@ function executeEvent() {
 
   } else if (ev.type === 'challenge') {
     const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, ev.mqBonus);
-    const won = result.winnerId === ev.playerFighter.id;
+    const won = result.winner === 'left'; // player is left
     eventWon = won;
     const popDelta = won ? 3 : -1;
     events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (MQ${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
@@ -3580,7 +3605,7 @@ function executeEvent() {
 
   } else if (ev.type === 'summit') {
     const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, 0);
-    const won = result.winnerId === ev.playerFighter.id;
+    const won = result.winner === 'left'; // player is left
     eventWon = won;
     events.push(`🏆 頂上決戦: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！！' : '敗北…'} (MQ${result.mq})`);
     const outcome = Engine.event.applySummitOutcome(G, won);
@@ -3637,12 +3662,14 @@ function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); 
 function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
 function calcAttendance(venueIdx, mainPop, hasTitleMatch) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
-function showScreen(id) {
+function showScreen(id, evt) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const screenEl = document.getElementById(`screen-${id}`);
   if (screenEl) screenEl.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if (event && event.target && event.target.classList) event.target.classList.add('active');
+  const t = evt?.currentTarget || evt?.target || null;
+  const btn = t?.closest ? t.closest('.nav-btn') : t;
+  if (btn && btn.classList) btn.classList.add('active');
   // v0.9: Auto-render screens that need fresh data
   if (id === 'ranking') renderRanking();
 }
@@ -3942,8 +3969,8 @@ function renderWeekScreen() {
             <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isAce ? ' (確定成功)' : ' (成功率80%)'}</span>
           </div>
           <div class="btn-row" style="gap:8px">
-            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach('${f.id}',false)">🛡️ 引き留める</button>
-            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach('${f.id}',true)">💸 移籍を承認</button>
+            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">🛡️ 引き留める</button>
+            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach(${f.id},true)">💸 移籍を承認</button>
           </div>
         </div>`;
       });
@@ -4466,7 +4493,7 @@ function renderScout() {
   html += '<div class="panel-title" style="font-size:13px;margin-top:16px">🤝 他団体レンタル</div>';
   if (rentalActive) {
     const rentalF = G.roster.find(c => c.id === rentalActive.fighterId);
-    const fromOrg = (G.aiOrgs || []).find(o => o.orgId === rentalActive.fromOrgId);
+    const fromOrg = Engine.rival.getOrgInfo(G.aiOrgs, rentalActive.fromOrgId);
     html += `<div style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:6px;padding:12px;margin-bottom:12px">
       <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:4px">レンタル中</div>
       <div style="font-size:12px;color:var(--text-main)">${rentalF ? rentalF.name : '不明'} ← ${fromOrg ? fromOrg.name : '不明'}</div>
@@ -4490,7 +4517,7 @@ function renderScout() {
           <td class="num ov">${Engine.util.ov(r.fighter)}</td>
           <td class="num" style="color:var(--text-sub)">${r.weeklyFee}万</td>
           <td class="num" style="color:#f39c12">${r.totalFee}万</td>
-          <td><button onclick="requestRental(${r.fighter.id},'${r.org.orgId}')" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${canAfford?'':'disabled'}>レンタル</button></td>
+          <td><button onclick="requestRental(${r.fighter.id},'${r.org.id}')" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${canAfford?'':'disabled'}>レンタル</button></td>
         </tr>`;
       });
       html += '</table></div>';
@@ -4881,6 +4908,7 @@ function refreshAll() {
   renderTraining();
   renderFacility();
   renderSave();
+  renderRanking();
 }
 
 // ╔══════════════════════════════════════════════════════════╗
