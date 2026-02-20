@@ -318,6 +318,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="screen" id="screen-roster">
     <div class="panel">
       <div class="panel-title">ロスター一覧 (<span id="rosterCount">0</span>名)</div>
+      <div id="acePanel" style="margin-bottom:12px"></div>
       <div style="overflow-x:auto">
         <table class="data-table" id="rosterTable"></table>
       </div>
@@ -819,6 +820,105 @@ const STAR_POWER = [
 ];
 
 // ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4G: PHASE B — SEASON CYCLE CONSTANTS (v0.9)      ║
+// ╚══════════════════════════════════════════════════════════╝
+
+// Age multiplier table (training-spec §5.2)
+function ageMultiplier(age) {
+  if (age <= 18) return 1.5;  // 新人
+  if (age <= 21) return 1.2;  // 若手
+  if (age <= 25) return 1.0;  // 成長期
+  if (age <= 29) return 0.7;  // 全盛期
+  if (age <= 32) return 0.3;  // 衰退初期
+  if (age <= 34) return 0.1;  // 衰退期
+  return 0;                    // 引退適齢期
+}
+
+// Decay table (training-spec §5.4)
+// [decayChance per stat, decayAmount per stat]
+const DECAY_TABLE = {
+  // age 30-32: mild decay
+  early: {
+    chance: { pw:0.20, sp:0.25, te:0.10, st:0.15 },
+    amount: { pw:1, sp:1, te:1, st:1 }
+  },
+  // age 33-34: moderate decay
+  mid: {
+    chance: { pw:0.40, sp:0.50, te:0.20, st:0.35 },
+    amount: { pw:2, sp:2, te:2, st:2 }
+  },
+  // age 35+: guaranteed decay
+  late: {
+    chance: { pw:1.0, sp:1.0, te:1.0, st:1.0 },
+    amount: { pw:3, sp:3, te:2, st:3 },
+    mntChance: 0.05, mntAmount: 1
+  }
+};
+
+// Retirement config (scout-spec §7)
+const RETIRE_CFG = {
+  chances: { 35:0.30, 36:0.50, 37:0.75, 38:0.90 }, // 39+ = 確定
+  voluntaryThreshold: 0.60,  // OVR < Notion * 0.60
+  voluntarySeasons: 2,       // 2シーズン連続で自主引退
+  decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
+};
+
+// AI scout config (rival-spec §5)
+const AI_SCOUT_CFG = {
+  S: { budget:800, maxPicks:3, idealRoster:16, rates:{prodigy:0.90, promising:0.80, rough:0.30} },
+  A: { budget:500, maxPicks:3, idealRoster:13, rates:{prodigy:0.70, promising:0.60, rough:0.50} },
+  B: { budget:200, maxPicks:2, idealRoster:9,  rates:{prodigy:0.30, promising:0.50, rough:0.60} }
+};
+
+// AI season growth config (rival-spec §4.1)
+const AI_SEASON_CFG = {
+  trainWeeks: 30,              // 練習を行う週数概算
+  seasonVarianceMin: 0.75,     // シーズン全体ランダム幅
+  seasonVarianceMax: 1.25,
+  matchGrowthBase: 0.2,        // 試合1回あたり成長base
+  matchesPerSeason: 24,        // 年間試合数概算
+  matchVarianceMin: 0.5,
+  matchVarianceMax: 1.5,
+  popConvergeRate: 0.3,        // 人気ターゲットへの収束率
+  popRandomRange: 5,           // 人気ランダム幅 ±5
+  tierPopBonus: { S:8, A:4, B:2 }
+};
+
+// ── Phase C: Transfer & Ace Constants ──
+const TRANSFER_CONFIG = {
+  windows: [12, 24, 36, 48],           // 四半期末に移籍ウィンドウ
+  poachChancePerFighter: 0.06,          // 1選手あたり6%/四半期
+  poachMinPopularity: 50,               // 人気50以上が対象
+  poachRequiresHigherRank: true,        // 引き抜き元がプレイヤーより上位
+  playerPoachLimit: 1,                  // プレイヤー年1名引き抜き
+  aceRetentionRate: 1.0,                // エース: 100%防衛
+  nonAceRetentionRate: 0.80,            // 非エース: 80%防衛
+  retentionCostMultiplier: 0.5,         // 引き留め費用 = 移籍金 × 0.5
+};
+
+// ── Phase D: Rental & Event Constants ──
+const RENTAL_CONFIG = {
+  duration: 4,                          // 4週間固定
+  maxConcurrent: 1,                     // 同時1名
+  minOrgRosterRank: 3,                  // 対象: OVR順3位以下
+  weeklyCost: { S: 80, A: 50, B: 30 }, // 週次費用ティア別
+};
+
+const EVENT_CONFIG = {
+  // D-2: 対抗戦
+  warChancePerSeason: 0.30,             // 年1回30%
+  warMatchCount: { min: 3, max: 5 },
+  warPopReward: 5,                      // 勝利時団体人気
+  warPopPenalty: -3,                    // 敗北時
+  // D-3: 挑戦状
+  challengeMQBonus: 10,                 // MQ+10
+  // D-4: 頂上決戦
+  summitMinRank: 2,                     // ランキング2位以上で発生
+  summitPopReward: 10,
+  summitRatingReward: 15,
+};
+
+// ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 5: ENGINE CORE (v0.9)                            ║
 // ║  Pure logic layer — no DOM references                     ║
 // ╚══════════════════════════════════════════════════════════╝
@@ -1147,7 +1247,7 @@ const Engine = {
   // ── Economy (DOM-free) ─────────────────────────────────
   economy: {
     calcWeeklySalary(roster) {
-      return roster.reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
+      return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
     },
     calcFixedCosts() {
       return FIXED_COSTS.facility + FIXED_COSTS.admin;
@@ -1413,44 +1513,94 @@ const Engine = {
     }
   },
 
-  // ── Growth System (IMMUTABLE) ───────────────────────────
+  // ── Growth System v1.0 (IMMUTABLE) ─────────────────────
   growth: {
-    calcGrowth(rng, G, char, stat) {
-      const pot = char.pot[stat];
-      const current = char[stat];
-      if (current >= pot) return 0;
-      const gap = pot - current;
-      let growth = Math.max(1, Math.round(gap * GROWTH_CONFIG.baseGrowthRate + Engine.rng.float(rng) * GROWTH_CONFIG.growthRandom));
-      growth = Math.round(growth * Engine.coach.getCharGrowthMult(G, char.id, stat));
-      growth = Math.round(growth * Engine.facility.getGrowthMult(G));
-      if (G.season <= GROWTH_CONFIG.peakBonusSeason) growth = Math.round(growth * GROWTH_CONFIG.peakGrowthMult);
-      if (char.intensive) growth = Math.round(growth * GROWTH_CONFIG.intensiveMult);
-      return Math.min(growth, pot - current);
+    // Convergence factor (training-spec §2.4) — growth slows near trainCap
+    convergenceFactor(value, trainCap, notionValue) {
+      if (value >= trainCap) return 0;
+      const remaining = trainCap - value;
+      const totalRange = Math.max(1, trainCap - 30);
+      let factor = remaining / totalRange;
+      if (value >= notionValue) factor *= 0.4; // Notion超え後は40%に鈍化
+      return Engine.util.clamp(factor, 0.02, 1.2);
     },
-    // Returns { roster, report } — does NOT mutate G
+
+    // Weekly growth calculation (training-spec §2.3) — v1.0 convergence-based
+    calcGrowth(rng, G, char, stat) {
+      if (stat === 'mn') return 0; // MNT is innate, no training growth
+      const current = char[stat];
+      const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
+      const notion = char.notionValue ? char.notionValue[stat] : current;
+      if (current >= trainCap) return 0;
+
+      const styleKey = char.style || 'Allround';
+      const styleGain = (STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround)[stat] || 0.7;
+      const age = char.age || (16 + (char.careerSeasons || 0));
+      const ageMul = ageMultiplier(age);
+      if (ageMul <= 0) return 0;
+
+      const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
+      const facilityMul = Engine.facility.getGrowthMult(G);
+      const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
+
+      const baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
+      const weeklyVariance = 0.5 + Engine.rng.float(rng) * 1.0; // 0.5〜1.5
+      const rawGain = baseGain * weeklyVariance;
+
+      // Intensive training bonus
+      const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
+      return Math.min(Math.ceil(finalGain), trainCap - current);
+    },
+
+    // Apply aging decay (training-spec §5.3-5.4) — used for both player and AI
+    applyDecay(rng, fighter) {
+      const age = fighter.age || 99;
+      if (age < 30) return fighter;
+      let f = { ...fighter };
+      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
+      let phase;
+      if (age <= 32) phase = DECAY_TABLE.early;
+      else if (age <= 34) phase = DECAY_TABLE.mid;
+      else phase = DECAY_TABLE.late;
+
+      ['pw','sp','te','st'].forEach(s => {
+        if (Engine.rng.float(rng) < (phase.chance[s] || 0)) {
+          const loss = phase.amount[s] || 1;
+          const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
+          f[s] = Math.max(floor, f[s] - loss);
+        }
+      });
+      // MNT special: only 35+ with 5% chance (training-spec §5.3)
+      if (age >= 35 && phase.mntChance && Engine.rng.float(rng) < phase.mntChance) {
+        const mntFloor = Math.round((notion.mn || 30) * 0.85);
+        f.mn = Math.max(mntFloor, f.mn - (phase.mntAmount || 1));
+      }
+      return f;
+    },
+
+    // Season end: aging + decay + growth reset for player roster
     applySeasonEnd(rng, G) {
       const report = [];
       const newRoster = G.roster.map(c => {
-        const nc = { ...c, careerSeasons: c.careerSeasons + 1, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
+                   seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
+        nc = Engine.growth.applyDecay(rng, nc);
         const changes = {};
-        const stats = ['pw','sp','te','st','mn'];
-        if (nc.careerSeasons >= GROWTH_CONFIG.declineStartSeason) {
-          stats.forEach(s => {
-            if (Engine.rng.float(rng) < GROWTH_CONFIG.declineChance) {
-              const loss = Math.round(GROWTH_CONFIG.declineRate + Engine.rng.float(rng) * 1.5);
-              const actual = Math.min(loss, Math.max(0, nc[s] - 10));
-              if (actual > 0) { nc[s] -= actual; changes[s] = -actual; }
-            }
-          });
-        }
+        ['pw','sp','te','st','mn'].forEach(s => {
+          const decayDelta = nc[s] - beforeDecay[s];
+          if (decayDelta !== 0) changes[s] = decayDelta;
+        });
         const parts = [];
-        stats.forEach(s => {
+        ['pw','sp','te','st','mn'].forEach(s => {
           const net = (nc.seasonGrowth[s] || 0) + (changes[s] || 0);
           if (net > 0) parts.push(`${s.toUpperCase()}+${net}`);
           else if (net < 0) parts.push(`${s.toUpperCase()}${net}`);
         });
-        if (parts.length > 0) report.push(`${nc.name}: ${parts.join(' ')}`);
+        if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+        nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
         return nc;
       });
       return { roster: newRoster, report };
@@ -1474,7 +1624,7 @@ const Engine = {
     // Returns updated rankings array: [{orgId, name, rating, championScore, starPower, totalPop}]
     updateRankings(state) {
       const playerChampScore = state.titles.world.championId ? 30 : 0;
-      const playerRating = Engine.ranking.calcOrgRating(playerChampScore, state.roster);
+      const playerRating = Engine.ranking.calcOrgRating(playerChampScore, state.roster) + (state.summitBonus || 0);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
         rating: playerRating,
@@ -1598,6 +1748,213 @@ const Engine = {
       else                baseFee = 100;
       const tierMul = {S:1.5, A:1.2, B:1.0}[fromOrgTier] || 1.0;
       return Math.round((baseFee + popBonus) * tierMul);
+    },
+
+    // ── B-1: AI Season End Processing (8-step pipeline) ────
+    // rival-spec §4: processes all AI orgs at season end
+    processSeasonEnd(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+
+      RIVAL_ORGS.forEach(org => {
+        const aiData = state.aiOrgs[org.id];
+        if (!aiData) { newAiOrgs[org.id] = aiData; return; }
+        let roster = aiData.roster.map(f => ({ ...f }));
+        const retiredNames = [];
+
+        // Step 1: 加齢 — all fighters +1 age
+        roster.forEach(f => { f.age = (f.age || 20) + 1; });
+
+        // Step 2: 衰退判定 (training-spec §5.3-5.4)
+        roster = roster.map(f => Engine.growth.applyDecay(rng, f));
+
+        // Step 3: 成長一括 (rival-spec §4.1 — aiSeasonGrowth)
+        roster = roster.map(f => Engine.rival.aiSeasonGrowth(rng, f, org));
+
+        // Step 4: 人気変動 (rival-spec §4.2)
+        roster = roster.map(f => Engine.rival.aiSeasonPopularity(rng, f, org));
+
+        // Step 5: 引退判定 (scout-spec §7)
+        const surviving = [];
+        roster.forEach(f => {
+          if (Engine.rival.checkRetirement(rng, f)) {
+            retiredNames.push(`${f.name}(${f.age}歳)`);
+          } else {
+            surviving.push(f);
+          }
+        });
+        roster = surviving;
+
+        // Step 6: AIスカウト → handled separately in offseason week 2
+        // Step 7: AI間移籍 → handled separately
+        // Step 8: org-rating → recalculated after all processing
+
+        if (retiredNames.length > 0) {
+          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('、')} が引退`);
+        }
+        const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
+        events.push(`${org.emoji} ${org.name}: ロスター${roster.length}名 (平均OVR ${avgOvr})`);
+
+        newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop };
+      });
+
+      return { aiOrgs: newAiOrgs, events };
+    },
+
+    // AI season growth (rival-spec §4.1) — 48 weeks in one calculation
+    aiSeasonGrowth(rng, fighter, org) {
+      const f = { ...fighter };
+      const age = f.age || 20;
+      const ageMul = ageMultiplier(age);
+      if (ageMul <= 0) return f; // no growth at 35+
+
+      const styleKey = f.style || 'Allround';
+      const styleTable = STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround;
+      const coachMul = org.coachMul || 1.0;
+      const facilityMul = org.facilityMul || 1.0;
+      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
+      const trainCap = f.trainCap || f.pot || notion;
+      const cfg = AI_SEASON_CFG;
+
+      ['pw','sp','te','st'].forEach(s => {
+        if (f[s] >= trainCap[s]) return;
+        const convFactor = Engine.growth.convergenceFactor(f[s], trainCap[s], notion[s]);
+        const weeklyGain = (styleTable[s] || 0.7) * ageMul * coachMul * facilityMul * convFactor;
+        const seasonVariance = cfg.seasonVarianceMin + Engine.rng.float(rng) * (cfg.seasonVarianceMax - cfg.seasonVarianceMin);
+        const trainingGain = weeklyGain * cfg.trainWeeks * seasonVariance;
+        const matchVariance = cfg.matchVarianceMin + Engine.rng.float(rng) * (cfg.matchVarianceMax - cfg.matchVarianceMin);
+        const matchGain = cfg.matchGrowthBase * cfg.matchesPerSeason * convFactor * matchVariance;
+        f[s] = Math.min(trainCap[s], f[s] + Math.round(trainingGain + matchGain));
+      });
+      return f;
+    },
+
+    // AI season popularity (rival-spec §4.2)
+    aiSeasonPopularity(rng, fighter, org) {
+      const f = { ...fighter };
+      const overall = Engine.util.ov(f);
+      const tierBonus = AI_SEASON_CFG.tierPopBonus[org.tier] || 0;
+      const popTarget = Math.min(90, overall * 0.7 + tierBonus);
+      const diff = popTarget - (f.popularity || 10);
+      const randomDelta = -AI_SEASON_CFG.popRandomRange + Engine.rng.int(rng, 0, AI_SEASON_CFG.popRandomRange * 2);
+      f.popularity = Engine.util.clamp(Math.round(f.popularity + diff * AI_SEASON_CFG.popConvergeRate + randomDelta), 5, 95);
+      return f;
+    },
+
+    // Retirement check (scout-spec §7)
+    checkRetirement(rng, fighter) {
+      const age = fighter.age || 20;
+      if (age < 35) {
+        // Voluntary retirement: OVR < Notion * 0.60 for 2 consecutive seasons
+        const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
+        const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
+        const currentOvr = Engine.util.ov(fighter);
+        if (currentOvr < notionOvr * RETIRE_CFG.voluntaryThreshold) {
+          fighter.lowPerformanceSeasons = (fighter.lowPerformanceSeasons || 0) + 1;
+          if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
+        } else {
+          fighter.lowPerformanceSeasons = 0;
+        }
+        return false;
+      }
+      if (age >= 39) return true; // 確定引退
+      const chance = RETIRE_CFG.chances[age] || 0.90;
+      return Engine.rng.float(rng) < chance;
+    },
+
+    // ── B-3: AI Scouting (rival-spec §5) ────────────────────
+    aiScout(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+      let poolIds = [...(state.poolIds || [])];
+
+      RIVAL_ORGS.forEach(org => {
+        const aiData = state.aiOrgs[org.id];
+        if (!aiData) { newAiOrgs[org.id] = aiData; return; }
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        let roster = aiData.roster.map(f => ({ ...f }));
+        const need = Math.max(0, cfg.idealRoster - roster.length);
+        const maxPicks = Math.min(need + 1, cfg.maxPicks);
+        let budget = cfg.budget;
+        let picked = 0;
+
+        // Generate scout candidates from pool
+        const available = poolIds.filter(id => {
+          // Not already in any org
+          const inAny = Object.values(state.aiOrgs).some(a => a.roster.some(f => f.id === id));
+          const inPlayer = state.roster.some(f => f.id === id);
+          const inFree = (state.freeAgents || []).some(f => f.id === id);
+          return !inAny && !inPlayer && !inFree;
+        });
+
+        // Pick from available pool
+        const shuffled = [...available].sort(() => Engine.rng.float(rng) - 0.5);
+        for (const candId of shuffled) {
+          if (picked >= maxPicks || budget <= 0) break;
+          const template = ALL_CHARS.find(c => c.id === candId);
+          if (!template) continue;
+
+          // Estimate rank: prodigy/promising/rough based on avg potential
+          const avgPot = Math.round(((template.pot?.pw||0)+(template.pot?.sp||0)+(template.pot?.te||0)+(template.pot?.st||0)+(template.pot?.mn||0))/5);
+          let rank;
+          if (avgPot >= 160) rank = 'prodigy';
+          else if (avgPot >= 130) rank = 'promising';
+          else rank = 'rough';
+
+          const acquireRate = cfg.rates[rank] || 0.5;
+          if (Engine.rng.float(rng) >= acquireRate) continue;
+
+          // Contract cost (simplified)
+          const cost = rank === 'prodigy' ? 200 : rank === 'promising' ? 100 : 50;
+          if (budget < cost) continue;
+
+          const age = 16 + Engine.rng.int(rng, 0, 4);
+          const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
+          roster.push(newFighter);
+          poolIds = poolIds.filter(id => id !== candId);
+          budget -= cost;
+          picked++;
+          events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
+        }
+
+        newAiOrgs[org.id] = { ...aiData, roster };
+      });
+
+      return { aiOrgs: newAiOrgs, poolIds, events };
+    },
+
+    // AI inter-org transfers (rival-spec §7.3) — simplified
+    aiInterTransfer(rng, aiOrgs) {
+      const events = [];
+      const newOrgs = {};
+      RIVAL_ORGS.forEach(org => { newOrgs[org.id] = { ...aiOrgs[org.id], roster: [...(aiOrgs[org.id]?.roster || [])] }; });
+
+      // B-tier org with too few fighters can poach from others
+      RIVAL_ORGS.forEach(org => {
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const roster = newOrgs[org.id].roster;
+        if (roster.length >= cfg.idealRoster) return;
+        const need = cfg.idealRoster - roster.length;
+        if (need <= 0) return;
+
+        // Try to acquire from higher-tier orgs' bench (low OVR fighters)
+        for (const sourceOrg of RIVAL_ORGS) {
+          if (sourceOrg.id === org.id) continue;
+          const srcCfg = AI_SCOUT_CFG[sourceOrg.tier] || AI_SCOUT_CFG.B;
+          const srcRoster = newOrgs[sourceOrg.id].roster;
+          if (srcRoster.length <= srcCfg.idealRoster) continue;
+          // Transfer the weakest fighter
+          const sorted = [...srcRoster].sort((a,b) => Engine.util.ov(a) - Engine.util.ov(b));
+          const transferee = sorted[0];
+          if (!transferee || Engine.rng.float(rng) > 0.3) continue;
+          newOrgs[sourceOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
+          transferee.orgId = org.id;
+          newOrgs[org.id].roster.push(transferee);
+          events.push(`📋 ${transferee.name}が${sourceOrg.name}→${org.name}に移籍`);
+          break;
+        }
+      });
+      return { aiOrgs: newOrgs, events };
     }
   },
   season: {
@@ -1617,6 +1974,14 @@ const Engine = {
 
       roster = roster.map(c => {
         const nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+
+        // D-1: Rental fighters — injury recovery only, no growth/promo
+        if (nc.isRental) {
+          if (nc.injury) return { ...nc, condition: Math.min(100, nc.condition + 5), _weekAction: '療養（レンタル）' };
+          nc.condition = Math.min(100, nc.condition + 3);
+          nc._weekAction = 'rental';
+          return nc;
+        }
 
         if (nc.injury) {
           return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G)), _weekAction: '療養', intensive: false };
@@ -1762,7 +2127,14 @@ const Engine = {
     let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
-    return { state: s, events: [...manage.events, settle.summary] };
+    const events = [...manage.events, settle.summary];
+    // D-1: Rental weekly processing
+    if (s.rental) {
+      const rentalResult = Engine.rental.advanceRental(s);
+      s = rentalResult.state;
+      events.push(...rentalResult.events);
+    }
+    return { state: s, events };
   },
 
   // ══════════════════════════════════════════════════════════
@@ -1861,27 +2233,542 @@ const Engine = {
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
   },
 
-  // advanceWeek: Returns { state, events }
-  advanceWeek(state) {
-    let s = { ...state, week: state.week + 1 };
-    const events = [];
-    if (s.week > 48) {
-      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 999));
-      const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
-      events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
-      report.forEach(r => events.push(`  ${r}`));
-      // v0.9: Update rankings at season end
-      s = { ...s, roster, season: s.season + 1, week: 1, transfersThisSeason: 0,
-            rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
-      s.rankings = Engine.ranking.updateRankings(s);
-      const pRank = Engine.ranking.getPlayerRank(s.rankings);
-      events.push(`🏆 シーズン${s.season - 1}ランキング: ${pRank}位 / ${s.rankings.length}団体`);
-      s.rankings.forEach((r, i) => {
-        const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
-        const emoji = r.orgId === 'player' ? '🏠' : (org ? org.emoji : '');
-        events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (👑${r.championScore} ⭐${r.starPower} 👥${r.totalPop})`);
-      });
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  ENGINE: ACE & TRANSFER (Phase C)                         ║
+  // ╚══════════════════════════════════════════════════════════╝
+
+  // ── C-1: Ace Designation ──
+  ace: {
+    designate(state, fighterId) {
+      return { ...state, aceDesignation: fighterId };
+    },
+    revoke(state) {
+      return { ...state, aceDesignation: null };
+    },
+    isAce(state, fighterId) {
+      return state.aceDesignation === fighterId;
     }
+  },
+
+  // ── C-3: Transfer Fee Calculation ──
+  transfer: {
+    calcFee(fighter, fromOrg) {
+      const overall = Engine.util.ov(fighter);
+      const popBonus = fighter.popularity * 10;
+      let baseFee;
+      if (overall >= 80)      baseFee = 800;
+      else if (overall >= 60) baseFee = 400;
+      else if (overall >= 45) baseFee = 200;
+      else                    baseFee = 100;
+      const tierMul = { S: 1.5, A: 1.2, B: 1.0 }[fromOrg?.tier || 'B'];
+      return Math.round((baseFee + popBonus) * tierMul);
+    },
+    calcRetentionCost(fighter) {
+      return Math.round(Engine.transfer.calcFee(fighter, { tier: 'B' }) * TRANSFER_CONFIG.retentionCostMultiplier);
+    },
+
+    // C-2: Quarterly transfer window — AI poach from player
+    processTransferWindow(rng, state) {
+      const cfg = TRANSFER_CONFIG;
+      const events = [];
+      let s = { ...state };
+      const rankings = s.rankings || [];
+      const playerRank = Engine.ranking.getPlayerRank(rankings);
+      const poachAttempts = [];
+
+      // AI → Player poach attempts
+      s.roster.forEach(fighter => {
+        if (fighter.popularity < cfg.poachMinPopularity) return;
+        if (Engine.ace.isAce(s, fighter.id)) return; // エースは対象外
+
+        // Only higher-ranked orgs can poach
+        if (cfg.poachRequiresHigherRank) {
+          const higherOrgs = (s.aiOrgs || []).filter(org => {
+            const orgRank = rankings.findIndex(r => r.orgId === org.id) + 1;
+            return orgRank > 0 && orgRank < playerRank;
+          });
+          if (higherOrgs.length === 0) return;
+
+          // Each eligible org rolls independently
+          higherOrgs.forEach(org => {
+            if (Engine.rng.float(rng) < cfg.poachChancePerFighter) {
+              poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
+            }
+          });
+        }
+      });
+
+      if (poachAttempts.length > 0) {
+        // Store pending poach for UI resolution
+        s = { ...s, pendingPoach: poachAttempts };
+        events.push(`🔔 移籍ウィンドウ: ${poachAttempts.length}件の引き抜きオファー`);
+      } else {
+        s = { ...s, pendingPoach: [] };
+        events.push('📋 移籍ウィンドウ: 引き抜きオファーなし');
+      }
+      return { state: s, events };
+    },
+
+    // Resolve a single poach (called from UI)
+    resolvePoach(state, fighterIdToRelease, accepted) {
+      let s = { ...state };
+      const pending = [...(s.pendingPoach || [])];
+      const idx = pending.findIndex(p => p.fighter.id === fighterIdToRelease);
+      if (idx === -1) return { state: s, events: [] };
+
+      const poach = pending[idx];
+      const events = [];
+
+      if (accepted) {
+        // Fighter leaves — player gets transfer fee
+        s = { ...s,
+          roster: s.roster.filter(c => c.id !== fighterIdToRelease),
+          funds: s.funds + poach.fee
+        };
+        // Add fighter to AI org
+        const aiOrgs = s.aiOrgs.map(org => {
+          if (org.id !== poach.org.id) return org;
+          const f = { ...poach.fighter, orgId: org.id };
+          return { ...org, roster: [...org.roster, f] };
+        });
+        s = { ...s, aiOrgs };
+        events.push(`💸 ${poach.fighter.name}が${poach.org.name}に移籍（移籍金+${poach.fee}万）`);
+      } else {
+        // Defend — player pays retention cost
+        const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
+        // Non-ace: 80% defense success
+        const defended = Engine.ace.isAce(s, fighterIdToRelease)
+          ? true
+          : Math.random() < TRANSFER_CONFIG.nonAceRetentionRate;
+        if (defended) {
+          s = { ...s, funds: s.funds - retCost };
+          events.push(`🛡️ ${poach.fighter.name}の引き留めに成功（-${retCost}万）`);
+        } else {
+          // Defense failed — forced transfer
+          s = { ...s,
+            roster: s.roster.filter(c => c.id !== fighterIdToRelease),
+            funds: s.funds + poach.fee
+          };
+          const aiOrgs = s.aiOrgs.map(org => {
+            if (org.id !== poach.org.id) return org;
+            return { ...org, roster: [...org.roster, { ...poach.fighter, orgId: org.id }] };
+          });
+          s = { ...s, aiOrgs };
+          events.push(`😭 ${poach.fighter.name}の引き留め失敗 → ${poach.org.name}に移籍（+${poach.fee}万）`);
+        }
+      }
+
+      pending.splice(idx, 1);
+      s = { ...s, pendingPoach: pending };
+      return { state: s, events };
+    },
+
+    // Player poach from AI org
+    playerPoach(state, aiOrgId, fighterId) {
+      let s = { ...state };
+      const events = [];
+      if ((s.transfersThisSeason || 0) >= TRANSFER_CONFIG.playerPoachLimit) {
+        events.push('❌ 今シーズンの引き抜き枠を使い切りました');
+        return { state: s, events };
+      }
+
+      const org = s.aiOrgs.find(o => o.id === aiOrgId);
+      if (!org) return { state: s, events };
+
+      const fighter = org.roster.find(f => f.id === fighterId);
+      if (!fighter) return { state: s, events };
+
+      const fee = Engine.transfer.calcFee(fighter, org);
+      if (s.funds < fee) {
+        events.push(`❌ 資金不足（必要: ${fee}万, 残高: ${s.funds}万）`);
+        return { state: s, events };
+      }
+
+      // Remove from AI org, add to player roster
+      const aiOrgs = s.aiOrgs.map(o => {
+        if (o.id !== aiOrgId) return o;
+        return { ...o, roster: o.roster.filter(f => f.id !== fighterId) };
+      });
+      const newFighter = { ...fighter, orgId: 'player' };
+      s = { ...s,
+        aiOrgs,
+        roster: [...s.roster, newFighter],
+        funds: s.funds - fee,
+        transfersThisSeason: (s.transfersThisSeason || 0) + 1
+      };
+      events.push(`🤝 ${fighter.name}を${org.name}から獲得！（移籍金-${fee}万）`);
+      return { state: s, events };
+    }
+  },
+
+  // ── Phase D: Rental System (rival-spec §8) ────────────────
+  rental: {
+    /** List all rentable fighters from AI orgs */
+    getAvailableRentals(state) {
+      const results = [];
+      (state.aiOrgs || []).forEach(org => {
+        const sorted = [...org.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        // Only rank 3+ (index >= 2) are available
+        sorted.slice(2).forEach(f => {
+          if (f.injury) return; // skip injured
+          const fee = Engine.rental.calcWeeklyFee(f, org);
+          results.push({ fighter: f, org, weeklyFee: fee, totalFee: fee * RENTAL_CONFIG.duration });
+        });
+      });
+      return results;
+    },
+
+    calcWeeklyFee(fighter, org) {
+      const ovr = Engine.util.ov(fighter);
+      let base = ovr >= 60 ? 50 : ovr >= 45 ? 30 : 15;
+      const tierMul = { S: 1.5, A: 1.2, B: 1.0 }[org.tier] || 1.0;
+      return Math.round(base * tierMul);
+    },
+
+    /** Attempt rental negotiation. Returns { success, state, events } */
+    requestRental(rng, state, fighterId, fromOrgId) {
+      const events = [];
+      if (state.rental) return { success: false, state, events: ['⚠ 既にレンタル中の選手がいます'] };
+
+      const org = (state.aiOrgs || []).find(o => o.orgId === fromOrgId);
+      if (!org) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
+
+      const fighter = org.roster.find(f => f.id === fighterId);
+      if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
+
+      // Negotiation check (rival-spec §8.5)
+      const rankings = state.rankings || [];
+      const pRank = rankings.find(r => r.orgId === 'player');
+      const oRank = rankings.find(r => r.orgId === fromOrgId);
+      let baseRate = 0.80;
+      if (pRank && oRank) {
+        const gap = oRank.rating - pRank.rating;
+        if (gap > 150) baseRate -= 0.3;
+        else if (gap > 80) baseRate -= 0.1;
+      }
+      baseRate = Math.max(0.3, Math.min(0.9, baseRate));
+
+      if (Engine.rng.float(rng) >= baseRate) {
+        events.push(`❌ ${org.name}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
+        return { success: false, state, events };
+      }
+
+      const weeklyFee = Engine.rental.calcWeeklyFee(fighter, org);
+      // Add rental fighter to player roster (marked as rental)
+      const rentalFighter = {
+        ...fighter,
+        isRental: true, rentalFromOrg: fromOrgId, rentalWeeksLeft: RENTAL_CONFIG.duration,
+        condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }
+      };
+      const rental = { fighterId: fighter.id, fromOrgId, weeksLeft: RENTAL_CONFIG.duration, weeklyCost: weeklyFee };
+      const s = { ...state, roster: [...state.roster, rentalFighter], rental, funds: state.funds - weeklyFee };
+      events.push(`🤝 ${fighter.name}を${org.name}からレンタル！（${weeklyFee}万/週×${RENTAL_CONFIG.duration}週）`);
+      return { success: true, state: s, events };
+    },
+
+    /** Weekly rental processing: charge fee, decrement weeks, return if done */
+    advanceRental(state) {
+      if (!state.rental) return { state, events: [], returned: false };
+      const events = [];
+      let r = { ...state.rental, weeksLeft: state.rental.weeksLeft - 1 };
+      let s = { ...state, funds: state.funds - r.weeklyCost };
+
+      if (r.weeksLeft <= 0) {
+        // Return fighter
+        const rentalF = s.roster.find(c => c.id === r.fighterId);
+        const returning = s.roster.filter(c => c.id !== r.fighterId);
+        // Update fighter in AI org (popularity/injury may have changed)
+        const aiOrgs = (s.aiOrgs || []).map(org => {
+          if (org.orgId !== r.fromOrgId) return org;
+          return { ...org, roster: org.roster.map(f => f.id === r.fighterId
+            ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
+            : f
+          )};
+        });
+        events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
+        // Check challenge trigger (rental injury)
+        let challengeTrigger = null;
+        if (rentalF && rentalF.injury) {
+          challengeTrigger = { type: 'rentalInjury', fromOrgId: r.fromOrgId, fighterId: r.fighterId };
+          events.push(`⚠ ${rentalF.name}が怪我を負った状態で返却 → 因縁発生の可能性`);
+        }
+        return { state: { ...s, roster: returning, rental: null, aiOrgs, challengeTrigger }, events, returned: true };
+      }
+      return { state: { ...s, rental: r }, events, returned: false };
+    }
+  },
+
+  // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
+  event: {
+    /** D-2: Check if rivalry war should trigger (Q2/Q3 end) */
+    checkRivalryWar(rng, state) {
+      if (state.warThisSeason) return null;
+      const w = state.week;
+      // Only trigger at Q2 end (week 24) or Q3 end (week 36) non-show weeks
+      if (w !== 24 && w !== 36) return null;
+      if (Engine.rng.float(rng) >= EVENT_CONFIG.warChancePerSeason) return null;
+
+      const rankings = state.rankings || [];
+      const pIdx = rankings.findIndex(r => r.orgId === 'player');
+      if (pIdx < 0) return null;
+
+      // Pick adjacent ranked org
+      const candidates = [];
+      if (pIdx > 0) candidates.push(rankings[pIdx - 1]);
+      if (pIdx < rankings.length - 1) candidates.push(rankings[pIdx + 1]);
+      if (candidates.length === 0) return null;
+
+      const opponent = candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
+      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === opponent.orgId);
+      if (!aiOrg) return null;
+
+      const matchCount = Engine.rng.int(rng, EVENT_CONFIG.warMatchCount.min, EVENT_CONFIG.warMatchCount.max);
+      return { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount };
+    },
+
+    /** Make war card: auto-match by OVR rank */
+    makeWarCard(state, opponentOrgId) {
+      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === opponentOrgId);
+      if (!aiOrg) return [];
+      const playerSorted = [...state.roster].filter(c => !c.injury && !c.isRental).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const aiSorted = [...aiOrg.roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const count = Math.min(state.pendingEvent ? state.pendingEvent.matchCount : 3, playerSorted.length, aiSorted.length);
+      const card = [];
+      for (let i = 0; i < count; i++) {
+        card.push({ playerFighter: playerSorted[i], aiFighter: aiSorted[i] });
+      }
+      return card;
+    },
+
+    /** Resolve a single event match using battle engine (no injury, condition=80) */
+    resolveEventMatch(rng, playerFighter, aiFighter, mqBonus) {
+      mqBonus = mqBonus || 0;
+      // Prepare fighters with fixed condition for event matches
+      const pf = { ...playerFighter, condition: 80 };
+      const af = { ...aiFighter, condition: 80 };
+      // Use battle engine
+      const result = Engine.battle(rng, pf, af, { isTitle: false });
+      result.mq = Math.min(100, result.mq + mqBonus);
+      return result;
+    },
+
+    /** Resolve entire war event. Returns { state, results, playerWins, aiWins } */
+    resolveWar(rng, state, card) {
+      const results = [];
+      let playerWins = 0, aiWins = 0;
+      card.forEach(match => {
+        const r = Engine.event.resolveEventMatch(rng, match.playerFighter, match.aiFighter, 0);
+        const pWin = r.winnerId === match.playerFighter.id;
+        if (pWin) playerWins++; else aiWins++;
+        results.push({ ...r, playerFighter: match.playerFighter, aiFighter: match.aiFighter, playerWon: pWin });
+      });
+      return { results, playerWins, aiWins };
+    },
+
+    /** Apply war outcome to state */
+    applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
+      let popDelta = 0;
+      if (playerWins > aiWins) popDelta = EVENT_CONFIG.warPopReward;
+      else if (playerWins === aiWins) popDelta = 2;
+      else popDelta = EVENT_CONFIG.warPopPenalty;
+      const events = [];
+      const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '引き分け' : '負け越し…';
+      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}）`);
+      return {
+        state: { ...state, orgPop: Math.max(0, Math.min(100, state.orgPop + popDelta)), warThisSeason: true, pendingEvent: null },
+        events
+      };
+    },
+
+    /** D-3: Check challenge trigger from recent events */
+    checkChallenge(rng, state) {
+      const trigger = state.challengeTrigger;
+      if (!trigger) return null;
+      let chance = 0;
+      if (trigger.type === 'rentalInjury') chance = 0.50;
+      else if (trigger.type === 'poachSuccess') chance = 0.30;
+      else if (trigger.type === 'poachRejected') chance = 0.20;
+      if (Engine.rng.float(rng) >= chance) return null;
+
+      const aiOrg = (state.aiOrgs || []).find(o => o.orgId === trigger.fromOrgId);
+      if (!aiOrg) return null;
+
+      // Matchup: aces of both orgs
+      const playerAce = Engine.event.getAce(state.roster);
+      const aiAce = Engine.event.getAce(aiOrg.roster);
+      if (!playerAce || !aiAce) return null;
+
+      return { type: 'challenge', fromOrgId: trigger.fromOrgId, orgName: aiOrg.name,
+               playerFighter: playerAce, aiFighter: aiAce, mqBonus: EVENT_CONFIG.challengeMQBonus };
+    },
+
+    /** D-4: Check summit match conditions */
+    checkSummitMatch(state) {
+      const rankings = state.rankings || [];
+      const pRank = Engine.ranking.getPlayerRank(rankings);
+      if (pRank > EVENT_CONFIG.summitMinRank) return null;
+      if (!Engine.util.isPPV(state.week)) return null;
+
+      // Find #1 ranked AI org
+      const topRank = rankings.find(r => r.orgId !== 'player');
+      if (!topRank) return null;
+      const topOrg = (state.aiOrgs || []).find(o => o.orgId === topRank.orgId);
+      if (!topOrg) return null;
+
+      const playerAce = Engine.event.getAce(state.roster);
+      const aiAce = Engine.event.getAce(topOrg.roster);
+      if (!playerAce || !aiAce) return null;
+
+      return { type: 'summit', opponentOrgId: topOrg.orgId, orgName: topOrg.name,
+               playerFighter: playerAce, aiFighter: aiAce };
+    },
+
+    /** Apply summit outcome */
+    applySummitOutcome(state, won) {
+      const events = [];
+      if (won) {
+        events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、レーティング+${EVENT_CONFIG.summitRatingReward}`);
+        return {
+          state: { ...state,
+            orgPop: Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward),
+            summitBonus: (state.summitBonus || 0) + EVENT_CONFIG.summitRatingReward,
+            pendingEvent: null
+          }, events
+        };
+      }
+      events.push('🏆 頂上決戦敗北…しかし挑戦したこと自体が名誉');
+      return { state: { ...state, pendingEvent: null }, events };
+    },
+
+    /** Helper: get ace (highest OVR non-injured fighter) */
+    getAce(roster) {
+      return [...roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0] || null;
+    }
+  },
+
+  // advanceWeek: Returns { state, events }
+  // B-2: Offseason 4-week system
+  advanceWeek(state) {
+    let s = { ...state };
+    const events = [];
+
+    // ── OFFSEASON PROCESSING ──
+    if (s.offSeason) {
+      const offWeek = (s.offWeek || 0) + 1;
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 900 + offWeek));
+
+      if (offWeek === 1) {
+        // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
+        const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
+        s = { ...s, roster };
+        events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
+        report.forEach(r => events.push(`  ${r}`));
+
+        // Player retirement check
+        const retirees = [];
+        const surviving = [];
+        s.roster.forEach(c => {
+          if (Engine.rival.checkRetirement(rng, c)) {
+            retirees.push(c);
+          } else {
+            surviving.push(c);
+          }
+        });
+        if (retirees.length > 0) {
+          s = { ...s, roster: surviving };
+          retirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+        }
+
+        // AI season end processing (steps 1-5)
+        const aiResult = Engine.rival.processSeasonEnd(rng, s);
+        s = { ...s, aiOrgs: aiResult.aiOrgs };
+        events.push(...aiResult.events);
+        events.push('📅 オフシーズン第1週: シーズンレポート完了');
+
+      } else if (offWeek === 2) {
+        // OffWeek 2: Scouting (AI scouting behavior)
+        const scoutResult = Engine.rival.aiScout(rng, s);
+        s = { ...s, aiOrgs: scoutResult.aiOrgs, poolIds: scoutResult.poolIds };
+        if (scoutResult.events.length > 0) events.push(...scoutResult.events);
+        events.push('📅 オフシーズン第2週: スカウト活動');
+
+      } else if (offWeek === 3) {
+        // OffWeek 3: AI inter-org transfers
+        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
+        s = { ...s, aiOrgs: transferResult.aiOrgs };
+        if (transferResult.events.length > 0) events.push(...transferResult.events);
+        events.push('📅 オフシーズン第3週: 移籍ウィンドウ');
+
+      } else if (offWeek >= 4) {
+        // OffWeek 4: New season preparation — advance to next season
+        s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
+              transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
+              rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+        // Update rankings
+        s.rankings = Engine.ranking.updateRankings(s);
+        const pRank = Engine.ranking.getPlayerRank(s.rankings);
+        events.push(`🏆 シーズン${s.season - 1}最終ランキング: ${pRank}位 / ${s.rankings.length}団体`);
+        s.rankings.forEach((r, i) => {
+          const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
+          const emoji = r.orgId === 'player' ? '🏠' : (org ? org.emoji : '');
+          events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (👑${r.championScore} ⭐${r.starPower} 👥${r.totalPop})`);
+        });
+        events.push(`🎬 シーズン${s.season}開幕！`);
+        return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+      }
+
+      s = { ...s, offWeek };
+      return { state: { ...s, weekPhase: 'offseason' }, events };
+    }
+
+    // ── REGULAR WEEK ADVANCE ──
+    s = { ...s, week: s.week + 1 };
+    if (s.week > 48) {
+      // Enter offseason
+      s = { ...s, offSeason: true, offWeek: 0 };
+      events.push('📅 レギュラーシーズン終了 → オフシーズン突入');
+      return { state: { ...s, weekPhase: 'offseason' }, events };
+    }
+
+    // C-2: Quarterly transfer window check
+    if (TRANSFER_CONFIG.windows.includes(s.week)) {
+      const trng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 800 + s.week));
+      const tfResult = Engine.transfer.processTransferWindow(trng, s);
+      s = tfResult.state;
+      events.push(...tfResult.events);
+      if (s.pendingPoach && s.pendingPoach.length > 0) {
+        return { state: { ...s, weekPhase: 'transfer' }, events };
+      }
+    }
+
+    // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
+    const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
+    const warCheck = Engine.event.checkRivalryWar(eventRng, s);
+    if (warCheck) {
+      s = { ...s, pendingEvent: warCheck, warThisSeason: true };
+      events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
+      return { state: { ...s, weekPhase: 'event' }, events };
+    }
+
+    // D-3: Challenge from triggers (rental injury, transfer disputes)
+    if (s.challengeTrigger) {
+      const chalCheck = Engine.event.checkChallenge(eventRng, s);
+      s = { ...s, challengeTrigger: null }; // consume trigger
+      if (chalCheck) {
+        s = { ...s, pendingEvent: chalCheck };
+        events.push(`🔥 ${chalCheck.orgName}から挑戦状！ ${chalCheck.aiFighter.name} vs ${chalCheck.playerFighter.name}`);
+        return { state: { ...s, weekPhase: 'event' }, events };
+      }
+    }
+
+    // D-4: Summit match check (PPV weeks, rank ≤ 2)
+    const summitCheck = Engine.event.checkSummitMatch(s);
+    if (summitCheck) {
+      s = { ...s, pendingEvent: summitCheck };
+      events.push(`🏆 頂上決戦のチャンス！ ${summitCheck.orgName}のエース${summitCheck.aiFighter.name}に挑戦可能`);
+      return { state: { ...s, weekPhase: 'event' }, events };
+    }
+
     return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
   },
 
@@ -1968,6 +2855,18 @@ const Engine = {
       transferLog: [],
       transfersThisSeason: 0,
       poolIds,
+      // v0.9b: Offseason system
+      offSeason: false,
+      offWeek: 0,
+      // v0.9c: Phase C — Ace & Transfer
+      aceDesignation: null,
+      pendingPoach: [],
+      // v0.9d: Phase D — Rental & Events
+      rental: null,
+      warThisSeason: false,
+      challengeTrigger: null,
+      pendingEvent: null,
+      summitBonus: 0,
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -2028,6 +2927,13 @@ const Storage = {
       if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
       if (!G.poolIds) G = { ...G, poolIds: Engine.rival.getPoolIds() };
       if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
+
+      // v0.9b backward compat: offseason system
+      if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
+      // v0.9c backward compat: ace & transfer
+      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null, pendingPoach: [] };
+      // v0.9d backward compat: rental & events
+      if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
 
       G = { ...G, version: '0.9' };
 
@@ -2569,6 +3475,101 @@ function loadAutoSave() { Storage.loadAutoSave(); refreshAll(); }
 function getAutoSaveInfo() { return Storage.getAutoSaveInfo(); }
 function getSaveInfo(slot) { return Storage.getSaveInfo(slot); }
 
+// C-4: Transfer & Ace UI functions
+function resolvePoach(fighterId, accepted) {
+  const result = Engine.transfer.resolvePoach(G, fighterId, accepted);
+  G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+  Storage.autoSave();
+  refreshAll();
+}
+function finishTransferWindow() {
+  G = { ...G, weekPhase: 'manage', pendingPoach: [], lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+  Storage.autoSave();
+  refreshAll();
+}
+function designateAce(fighterId) {
+  G = Engine.ace.designate(G, fighterId);
+  G.gameLog = [...G.gameLog, `⭐ ${G.roster.find(c => c.id === fighterId)?.name}をエースに認定`];
+  Storage.autoSave();
+  refreshAll();
+}
+function revokeAce() {
+  const aceName = G.roster.find(c => c.id === G.aceDesignation)?.name || '不明';
+  G = Engine.ace.revoke(G);
+  G.gameLog = [...G.gameLog, `エース認定解除: ${aceName}`];
+  Storage.autoSave();
+  refreshAll();
+}
+function playerPoachFighter(aiOrgId, fighterId) {
+  const result = Engine.transfer.playerPoach(G, aiOrgId, fighterId);
+  G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+  Storage.autoSave();
+  refreshAll();
+}
+
+// ── Phase D: Event UI Functions ──
+function executeEvent() {
+  const ev = G.pendingEvent;
+  if (!ev) return;
+  const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week));
+  const events = [];
+
+  if (ev.type === 'war') {
+    const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
+    const warResult = Engine.event.resolveWar(rng, G, card);
+    // Show results
+    warResult.results.forEach((r, i) => {
+      const winner = r.playerWon ? r.playerFighter.name : r.aiFighter.name;
+      const icon = r.playerWon ? '🔵' : '🔴';
+      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${winner}勝利 (MQ${r.mq})`);
+    });
+    const outcome = Engine.event.applyWarOutcome(G, warResult.playerWins, warResult.aiWins, ev.opponentOrgId);
+    G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+
+  } else if (ev.type === 'challenge') {
+    const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, ev.mqBonus);
+    const won = result.winnerId === ev.playerFighter.id;
+    const popDelta = won ? 3 : -1;
+    events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (MQ${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
+    G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
+          gameLog: [...G.gameLog, ...events] };
+
+  } else if (ev.type === 'summit') {
+    const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, 0);
+    const won = result.winnerId === ev.playerFighter.id;
+    events.push(`🏆 頂上決戦: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！！' : '敗北…'} (MQ${result.mq})`);
+    const outcome = Engine.event.applySummitOutcome(G, won);
+    G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+  }
+
+  G = { ...G, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+  Storage.autoSave();
+  refreshAll();
+}
+
+function skipEvent() {
+  const ev = G.pendingEvent;
+  const events = [];
+  if (ev) {
+    if (ev.type === 'war') events.push(`⚔ ${ev.opponentName}との対抗戦を辞退`);
+    else if (ev.type === 'challenge') events.push(`🔥 ${ev.orgName}の挑戦状を無視`);
+    else if (ev.type === 'summit') events.push(`🏆 頂上決戦の挑戦を見送り`);
+  }
+  G = { ...G, pendingEvent: null, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] },
+        gameLog: [...G.gameLog, ...events] };
+  Storage.autoSave();
+  refreshAll();
+}
+
+// ── Phase D: Rental UI Functions ──
+function requestRental(fighterId, fromOrgId) {
+  const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 500 + G.week));
+  const result = Engine.rental.requestRental(rng, G, fighterId, fromOrgId);
+  G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+  Storage.autoSave();
+  refreshAll();
+}
+
 // Legacy aliases for Engine functions used in UI rendering
 function getCoachSalaryTotal() { return Engine.coach.getSalaryTotal(G); }
 function getFacilityScoutDiscount() { return Engine.facility.getScoutDiscount(G); }
@@ -2599,8 +3600,13 @@ function showScreen(id) {
 
 function refreshTopBar() {
   document.getElementById('dispSeason').textContent = `Y${G.season}`;
-  document.getElementById('dispWeek').textContent = G.week;
-  document.getElementById('dispQuarter').textContent = `Q${getQuarter(G.week)}`;
+  if (G.offSeason) {
+    document.getElementById('dispWeek').textContent = `OFF`;
+    document.getElementById('dispQuarter').textContent = `${G.offWeek || 0}/4`;
+  } else {
+    document.getElementById('dispWeek').textContent = G.week;
+    document.getElementById('dispQuarter').textContent = `Q${getQuarter(G.week)}`;
+  }
   const fundsEl = document.getElementById('dispFunds');
   fundsEl.textContent = `${G.funds.toLocaleString()}万`;
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
@@ -2622,14 +3628,70 @@ function refreshTopBar() {
 }
 
 function renderWeekScreen() {
+  const el = document.getElementById('weekContent');
+  let html = '';
+
+  // ── OFFSEASON DISPLAY ──
+  if (G.weekPhase === 'offseason') {
+    const offW = G.offWeek || 0;
+    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '🔍 スカウト活動', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
+    document.getElementById('weekTitle').textContent = offW === 0
+      ? `Y${G.season} オフシーズン突入`
+      : `オフシーズン第${offW}週 — ${offLabels[offW] || ''}`;
+
+    // Progress bar
+    html += `<div style="margin-bottom:16px">
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        ${[1,2,3,4].map(i => `<div style="flex:1;height:6px;border-radius:3px;background:${i <= offW ? 'var(--gold)' : 'var(--bg-card)'};transition:background 0.3s"></div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim)">
+        <span>レポート</span><span>スカウト</span><span>移籍</span><span>開幕</span>
+      </div>
+    </div>`;
+
+    // Show recent events from game log related to current offseason
+    const recentEvents = G.gameLog.filter(e => e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長'));
+    const offEvents = recentEvents.slice(-15);
+    if (offEvents.length > 0) {
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
+      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
+      offEvents.forEach(ev => {
+        const isHighlight = ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍');
+        html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
+      });
+      html += '</div>';
+    }
+
+    // Rankings summary during offseason
+    if (G.rankings && G.rankings.length > 0) {
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px">';
+      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 現在のランキング</h4>';
+      G.rankings.forEach((r, i) => {
+        const isPlayer = r.orgId === 'player';
+        html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
+          <span>${i+1}位 ${r.name}</span><span>${r.rating}pt</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    const nextLabels = ['シーズンレポートへ →', 'スカウト活動へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
+    const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
+    const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
+    html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabel}</button></div>`;
+
+    el.innerHTML = html;
+    return;
+  }
+
+  // ── REGULAR WEEK DISPLAY ──
   const isShow = isShowWeek(G.week);
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
   let typeLabel = isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = `第${G.week}週 — ${typeLabel}`;
 
-  const el = document.getElementById('weekContent');
-  let html = '';
+  html = '';
 
   if (G.weekPhase === 'manage') {
     const heat = getHeatLevel();
@@ -2698,12 +3760,136 @@ function renderWeekScreen() {
       html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="advanceWeek()">次の週へ →</button></div>';
     }
   }
+  // ── C-4: TRANSFER WINDOW UI ──
+  else if (G.weekPhase === 'transfer') {
+    document.getElementById('weekTitle').textContent = `第${G.week}週 — 🔄 移籍ウィンドウ`;
+    const pending = G.pendingPoach || [];
+    if (pending.length > 0) {
+      html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
+      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">上位団体から選手への引き抜きオファーが届いています。各選手への対応を選択してください。</p>';
+      pending.forEach(p => {
+        const f = p.fighter;
+        const retCost = Engine.transfer.calcRetentionCost(f);
+        const isAce = Engine.ace.isAce(G, f.id);
+        html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div>
+              <strong style="font-size:14px">${f.name}</strong>
+              ${isAce ? '<span style="color:var(--gold);font-size:10px;margin-left:6px">⭐エース</span>' : ''}
+              <span style="font-size:11px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${f.popularity}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-sub)">← ${p.org.name} (${p.org.tier}級)</div>
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;margin-bottom:8px">
+            <span style="color:#2ecc71">💰 移籍金: +${p.fee}万</span>
+            <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isAce ? ' (確定成功)' : ' (成功率80%)'}</span>
+          </div>
+          <div class="btn-row" style="gap:8px">
+            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach('${f.id}',false)">🛡️ 引き留める</button>
+            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach('${f.id}',true)">💸 移籍を承認</button>
+          </div>
+        </div>`;
+      });
+    } else {
+      html += '<h3 style="color:var(--gold);margin-bottom:12px">移籍ウィンドウ完了</h3>';
+      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">全ての移籍オファーに対応しました。</p>';
+      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">次へ進む →</button></div>';
+    }
+  }
+  // ── EVENT DISPLAY (Phase D) ──
+  else if (G.weekPhase === 'event') {
+    const ev = G.pendingEvent;
+    if (!ev) {
+      html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
+      html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
+    } else if (ev.type === 'war') {
+      document.getElementById('weekTitle').textContent = `第${G.week}週 — ⚔ 対抗戦`;
+      html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
+        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${G.orgName || 'プレイヤー団体'} vs ${ev.opponentName}</p>
+        <p style="font-size:12px;color:var(--text-sub)">${ev.matchCount}試合の団体対決</p>
+      </div>`;
+      // Show auto-generated card
+      const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
+      if (card.length > 0) {
+        html += '<div style="margin-bottom:16px">';
+        card.forEach((m, i) => {
+          html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;margin-bottom:4px">
+            <span style="color:var(--gold);font-size:12px;min-width:60px">第${i+1}試合</span>
+            <span style="font-size:13px"><strong>${m.playerFighter.name}</strong> <span style="color:var(--text-dim);font-size:11px">OVR${Engine.util.ov(m.playerFighter)}</span></span>
+            <span style="color:var(--text-dim);font-size:12px">vs</span>
+            <span style="font-size:13px"><strong style="color:#e74c3c">${m.aiFighter.name}</strong> <span style="color:var(--text-dim);font-size:11px">OVR${Engine.util.ov(m.aiFighter)}</span></span>
+          </div>`;
+        });
+        html += '</div>';
+      }
+      html += `<div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-gold" onclick="executeEvent()">⚔ 対抗戦開始！</button>
+        <button class="btn btn-blue" onclick="skipEvent()">辞退する</button>
+      </div>`;
+    } else if (ev.type === 'challenge') {
+      document.getElementById('weekTitle').textContent = `第${G.week}週 — 🔥 挑戦状`;
+      html += `<div style="background:linear-gradient(135deg,rgba(243,156,18,0.15),rgba(241,196,15,0.1));border:1px solid rgba(243,156,18,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
+        <h3 style="color:#f39c12;margin-bottom:8px">🔥 挑戦状</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}からの因縁の1戦</p>
+        <p style="font-size:12px;color:var(--text-sub)">MQボーナス +${ev.mqBonus}</p>
+      </div>`;
+      html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
+        <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
+        <span style="color:var(--text-dim)">vs</span>
+        <span><strong style="color:#e74c3c">${ev.aiFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.aiFighter)}</span></span>
+      </div>`;
+      html += `<div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-gold" onclick="executeEvent()">🔥 受けて立つ！</button>
+        <button class="btn btn-blue" onclick="skipEvent()">無視する</button>
+      </div>`;
+    } else if (ev.type === 'summit') {
+      document.getElementById('weekTitle').textContent = `第${G.week}週 — 🏆 頂上決戦`;
+      html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
+        <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
+        <p style="font-size:12px;color:var(--text-sub)">勝利で団体人気+${EVENT_CONFIG.summitPopReward}、レーティング+${EVENT_CONFIG.summitRatingReward}</p>
+      </div>`;
+      html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
+        <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
+        <span style="color:var(--text-dim)">VS</span>
+        <span><strong style="color:#e74c3c">${ev.aiFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.aiFighter)}</span></span>
+      </div>`;
+      html += `<div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-gold" onclick="executeEvent()">🏆 挑戦する！</button>
+        <button class="btn btn-blue" onclick="skipEvent()">見送る</button>
+      </div>`;
+    }
+  }
 
   el.innerHTML = html;
 }
 
 function renderRoster() {
   const el = document.getElementById('rosterTable');
+
+  // Ace designation panel
+  const aceEl = document.getElementById('acePanel');
+  if (aceEl) {
+    const ace = G.roster.find(c => c.id === G.aceDesignation);
+    let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
+    aceHtml += '<span style="color:var(--gold);font-weight:700">⭐ エース:</span>';
+    if (ace) {
+      aceHtml += `<span>${ace.name} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
+      aceHtml += `<button class="btn" style="font-size:10px;padding:3px 8px;margin-left:auto" onclick="revokeAce()">解除</button>`;
+    } else {
+      aceHtml += '<span style="color:var(--text-dim)">未認定</span>';
+      aceHtml += '<select id="aceSelect" style="font-size:11px;padding:3px;margin-left:auto"><option value="">選手を選択...</option>';
+      [...G.roster].sort((a,b) => ov(b) - ov(a)).forEach(c => {
+        aceHtml += `<option value="${c.id}">${c.name} (OVR ${ov(c)})</option>`;
+      });
+      aceHtml += '</select>';
+      aceHtml += `<button class="btn btn-gold" style="font-size:10px;padding:3px 8px" onclick="const s=document.getElementById('aceSelect');if(s.value)designateAce(Number(s.value))">認定</button>`;
+    }
+    aceHtml += '</div>';
+    aceEl.innerHTML = aceHtml;
+  }
+
   let html = '<tr><th>名前</th><th>Style</th><th>Role</th><th>総合</th><th>パワー</th><th>スピード</th><th>テクニック</th><th>スタミナ</th><th>マインド</th><th>潜在力</th><th>人気</th><th>状態</th><th>給与</th><th>○</th><th>×</th><th>△</th></tr>';
   const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
   sorted.forEach(c => {
@@ -2712,6 +3898,8 @@ function renderRoster() {
     const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
     const injuryBadge = c.injury ? `<div style="font-size:9px;margin-top:2px;padding:1px 4px;border-radius:2px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</div>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:10px"> 👑王者</span>' : '';
+    const aceBadge = Engine.ace.isAce(G, c.id) ? '<span style="color:#f1c40f;font-size:10px"> ⭐エース</span>' : '';
+    const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:10px"> 🤝レンタル</span>' : '';
     // v0.6: Potential percentage
     const potPct = getPotentialPct(c);
     const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
@@ -2722,7 +3910,7 @@ function renderRoster() {
       return `${c[key]}${gHtml}`;
     };
     html += `<tr${c.injury ? ' style="opacity:0.7"' : ''}>
-      <td><strong>${c.name}</strong>${champBadge}${injuryBadge}</td>
+      <td><strong>${c.name}</strong>${champBadge}${aceBadge}${rentalBadge}${injuryBadge}</td>
       <td><span class="badge badge-${c.style}">${c.style}</span></td>
       <td><span class="badge badge-${roleCls}">${c.role}</span></td>
       <td class="num ov">${ov(c)}</td>
@@ -2980,6 +4168,21 @@ function renderRanking() {
         <span style="color:var(--text-dim)">主力:</span>
         ${topFighters.map(f => `<span style="margin-left:6px">${f.name}<span style="color:var(--text-dim)">(OVR ${Engine.util.ov(f)}, pop ${f.popularity})</span></span>`).join('')}
       </div>
+      ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
+        <details style="margin-top:8px">
+          <summary style="font-size:11px;color:var(--gold);cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+            ${roster.map(f => {
+              const fee = Engine.transfer.calcFee(f, org);
+              const canAfford = G.funds >= fee;
+              return `<div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:3px;font-size:10px">
+                ${f.name} (OVR ${Engine.util.ov(f)}) <span style="color:${canAfford ? '#2ecc71' : '#e17055'}">${fee}万</span>
+                <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:9px;padding:1px 5px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:2px" ${canAfford ? '' : 'disabled'}>獲得</button>
+              </div>`;
+            }).join('')}
+          </div>
+        </details>
+      ` : ''}
     </div>`;
   });
   html += '</div>';
@@ -3013,7 +4216,7 @@ function renderScout() {
     const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
     html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:4px;font-size:11px">
       <span>${c.name}</span><span style="color:var(--text-dim)">(${ov(c)})</span>
-      <button onclick="releaseFighter(${c.id})" style="font-size:10px;padding:1px 6px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:3px" ${inCard?'disabled title="カード登録中"':''}>解雇</button>
+      <button onclick="releaseFighter(${c.id})" style="font-size:10px;padding:1px 6px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:3px" ${inCard?'disabled title="カード登録中"':c.isRental?'disabled title="レンタル中"':''}>解雇</button>
     </div>`;
   });
   html += '</div>';
@@ -3036,6 +4239,43 @@ function renderScout() {
     </tr>`;
   });
   html += '</table></div>';
+
+  // ── Phase D: Rental Section ──
+  const rentalActive = G.rental;
+  html += '<div class="panel-title" style="font-size:13px;margin-top:16px">🤝 他団体レンタル</div>';
+  if (rentalActive) {
+    const rentalF = G.roster.find(c => c.id === rentalActive.fighterId);
+    const fromOrg = (G.aiOrgs || []).find(o => o.orgId === rentalActive.fromOrgId);
+    html += `<div style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:6px;padding:12px;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:4px">レンタル中</div>
+      <div style="font-size:12px;color:var(--text-main)">${rentalF ? rentalF.name : '不明'} ← ${fromOrg ? fromOrg.name : '不明'}</div>
+      <div style="font-size:11px;color:var(--text-sub)">残り${rentalActive.weeksLeft}週 ｜ ${rentalActive.weeklyCost}万/週</div>
+    </div>`;
+  } else if (G.offSeason) {
+    html += '<div style="font-size:11px;color:var(--text-dim);padding:8px">オフシーズン中はレンタルできません</div>';
+  } else {
+    const rentals = Engine.rental.getAvailableRentals(G);
+    if (rentals.length === 0) {
+      html += '<div style="font-size:11px;color:var(--text-dim);padding:8px">レンタル可能な選手がいません</div>';
+    } else {
+      html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">4週間固定 / 同時1名まで / OVR上位2名は対象外</div>`;
+      html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>団体</th><th>Style</th><th>総合</th><th>週費用</th><th>合計</th><th>交渉</th></tr>';
+      rentals.slice(0, 15).forEach(r => {
+        const canAfford = G.funds >= r.totalFee;
+        html += `<tr>
+          <td><strong>${r.fighter.name}</strong></td>
+          <td style="font-size:11px;color:var(--text-sub)">${r.org.name}</td>
+          <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
+          <td class="num ov">${Engine.util.ov(r.fighter)}</td>
+          <td class="num" style="color:var(--text-sub)">${r.weeklyFee}万</td>
+          <td class="num" style="color:#f39c12">${r.totalFee}万</td>
+          <td><button onclick="requestRental(${r.fighter.id},'${r.org.orgId}')" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${canAfford?'':'disabled'}>レンタル</button></td>
+        </tr>`;
+      });
+      html += '</table></div>';
+    }
+  }
+
   el.innerHTML = html;
 }
 
@@ -3296,6 +4536,8 @@ function renderTraining() {
   html += '<div class="train-row train-row-header"><span>選手</span><span>総合</span><span>体調</span><span>担当コーチ</span><span>成長傾向</span><span>⚡追込</span></div>';
 
   G.roster.forEach(c => {
+    // D-1: Skip rental fighters in training (rental=試合のみ)
+    if (c.isRental) return;
     const coach = getCharCoach(c.id);
     const tendency = getGrowthTendency(c.id);
     const condPct = c.condition;
