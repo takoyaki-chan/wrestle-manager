@@ -320,7 +320,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="nav-bar">
     <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
-    <button class="nav-btn" onclick="showScreen('roster',event)">👥 ロスター</button>
+    <button class="nav-btn" onclick="showScreen('roster',event)">👥 所属選手</button>
     <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
     <button class="nav-btn" onclick="showScreen('coach',event)">🎓 コーチ</button>
     <button class="nav-btn" onclick="showScreen('training',event)">🏋️ 育成</button>
@@ -350,11 +350,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- SCREEN: Roster -->
   <div class="screen" id="screen-roster">
     <div class="panel">
-      <div class="panel-title">ロスター一覧 (<span id="rosterCount">0</span>名)</div>
+      <div class="panel-title">所属選手一覧 (<span id="rosterCount">0</span>名)</div>
       <div id="acePanel" style="margin-bottom:12px"></div>
-      <div style="overflow-x:auto">
-        <table class="data-table" id="rosterTable"></table>
-      </div>
+      <div id="rosterTable"></div>
     </div>
   </div>
 
@@ -954,6 +952,51 @@ const ALL_CHARS = [
   {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:109}},
   {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85}}
 ];
+// Character profiles (brief bios for fighter popup)
+const CHAR_PROFILES = {
+  1:'元柔道経験者。面倒見が良く人望が厚い。引退後も後進の指導に尽力した、粕田市内最強と謳われた伝説のレスラー。',
+  2:'幼少期は病弱だったが、リハビリを通じて肉体を鍛え上げ、パワーレスラーへと変貌を遂げた遅咲きの努力家。',
+  3:'バランス型のオールラウンダー。器用貧乏と言われることもあるが、安定感のある試合運びが持ち味。',
+  4:'剣道出身。負けず嫌いの性格で、格上相手にも決して引かない闘志の持ち主。メンタルの強さは随一。',
+  5:'ストイックな求道者。圧倒的なスピードで対戦相手を翻弄する、チームの二枚看板の一角。',
+  6:'高津小春の中学時代の親友であり最大のライバル。プロレスをきっかけに関係が変化した。',
+  7:'おっとりした性格だが、関節技のセンスに光るものがある。地道に実力をつけている成長株。',
+  8:'長身を活かした打撃が持ち味だが、技術面に課題を残す荒削りなファイター。',
+  9:'スピードタイプだがメンタル面に課題あり。潜在能力は未知数。',
+  10:'何の取り柄もない普通の女の子…だが、レスリングへの情熱だけは誰にも負けない。団体の看板娘的存在。',
+  11:'寡黙で思慮深い読書家。嗜虐的な一面を持ち、関節技・絞め技で相手を追い詰めるスタイルを好む。粕田市の地下リングで名を馳せたヒールコンビの一人。',
+  12:'外交官の娘でドイツ帰りの帰国子女。小柄ながら体格に似合わぬパワーと乱暴なファイトスタイルが持ち味。橘玲美と息の合ったタッグを組む。',
+  13:'スピードとパワーを兼ね備えた打撃型ファイター。テクニックに課題があるが、身体能力で補う爆発力がある。',
+  14:'テクニック重視のサブミッション使い。パワーでは劣るが、巧みな技術で相手を仕留める。',
+  15:'恵まれた体格を活かしたパワー系ブロウラー。テクニック不足が弱点だが、破壊力は抜群。',
+  16:'名家出身。摺出川女学院を支配する女帝。高いカリスマ性と冷酷さを持ち、パワーとスピードで相手をねじ伏せる。',
+  17:'頑固で芯の強い性格。スピード型だが成長の余地が大きく、大河内を破った実績を持つ名勝負製造機。',
+  18:'181cmの長身を誇るパワーグラップラー。大河内の側近として知られる。',
+  19:'大河内紗代子に心酔する忠実な部下。万能型だが突出した能力に欠ける。',
+  20:'関節技のスペシャリスト。パワーは低いが、テクニックとメンタルの高さで試合を組み立てる。',
+  22:'荒々しいブロウラーファイト。パワーは高いが、スピードとテクニックに大きな課題がある。',
+  23:'大河内紗代子の取り巻き。空手経験があるが、全体的な能力は低い。',
+  26:'バランスの取れたオールラウンダー。明るい性格でチームのムードメーカー的存在。',
+  27:'廃校寸前の元砥石川高校出身。身体能力に物を言わすスピード＆パワータイプ。',
+  29:'安定感のあるオールラウンダー。スタミナとメンタルの高さが光る堅実なファイター。',
+  33:'高い総合力を持つバランス型。どの能力も水準以上で、安定した試合運びが持ち味。',
+  34:'テクニック重視のサブミッション使い。関節技の技術は一級品で、試合巧者として知られる。',
+  36:'次期キャプテン候補。恵まれた体格と人望を兼ね備え、グラップラーとして高い素質を持つ。',
+  37:'パワー以外のすべてのステータスが高水準。完成度の高いオールラウンダー。',
+  38:'打撃の破壊力が武器のストライカー。パワー88はトップクラスの数値。',
+  45:'団地内プロレスのヒエラルキーのトップに君臨する支配者。井沢を徹底的に追い詰め、恐怖政治で団地を支配する。',
+  46:'かつて団地内の実力者として尊敬を集めていたが、高槻の策略により地位と友人を失い孤立。それでも折れない不屈の精神の持ち主。',
+  47:'若くして実力を示した早熟型。サブミッション技術に優れる。',
+  48:'前の住まいでは町内会プロレスの実力者だった。外には厳しいが、家の中では陽気で夫思い。',
+  49:'おっとりした育ちの良いお嬢様。井沢に基礎から教わり成長中の遅咲き型。井沢への信頼は厚い。',
+  50:'甘え上手で若々しい雰囲気の持ち主。かつて井沢の友人だったが、高槻グループに鞍替えした世渡り上手。',
+  51:'テクニックは高いが、スタミナとメンタルに大きな課題を抱える。打たれ弱さが弱点。',
+  53:'年の割に落ち着きがないが、夫婦仲は円満。パワーはあるがテクニックが不足している。',
+  55:'高い総合力を持つバランス型ファイター。特にメンタルの強さが光る安定した実力者。',
+  65:'人当たりが良く人気のある看護師。しかし仲の良い相手には毒舌で、気に入らない相手には絶対零度の冷酷さを見せる二面性の持ち主。',
+  66:'倉見菜々の同僚ナース。バランスの良い万能型で、安定した試合運びが持ち味。',
+  69:'RQプロレスの人気選手。直情径行な性格で、ボロボロになっても立ち上がる闘志の塊。'
+};
 // v1.0 Draft system: Fixed 2 + choose 3 from 6 candidates = 5 starters
 const DRAFT_CONFIG = {
   fixed: [10, 44],  // 佐藤ヨーコ(OVR20), 福浦理乃(OVR47) — 必ず所属
@@ -983,11 +1026,18 @@ const PORTRAIT = {
   71:'togane_s',72:'anazawa_h',73:'omagoe_y',74:'fujimigaoka_h',75:'ebina_s',
   76:'kuribayashi_a',77:'niimi_y',78:'tsubakiyama_m',79:'kudo_r',80:'takashima_s'
 };
-function getPortraitUrl(id) { return PORTRAIT[id] ? `image/face_${PORTRAIT[id]}.png` : ''; }
+function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 function portraitImg(id, size = 32, cls = '') {
   const url = getPortraitUrl(id);
-  if (!url) return '';
-  return `<img src="${url}" class="portrait ${cls}" style="width:${size}px;height:${size}px" alt="" loading="lazy">`;
+  if (url) {
+    return `<img src="${url}" class="portrait ${cls}" style="width:${size}px;height:${size}px" alt="" loading="lazy">`;
+  }
+  // Fallback: circle with initial
+  const ch = ALL_CHARS.find(c => c.id === id);
+  const initial = ch ? ch.name.charAt(0) : '?';
+  const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Speed:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+  const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
+  return `<div class="portrait ${cls}" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);border-color:${col}88;font-size:${Math.round(size*0.4)}px;font-weight:900;color:${col};flex-shrink:0">${initial}</div>`;
 }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -3445,7 +3495,7 @@ const Engine = {
         draftComplete: true,
         gameLog: [
           '🎉 新団体設立！ 初期資金5,000万でスタート。',
-          `📋 ドラフト完了！ ${roster.length}名のロスターで船出。`,
+          `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。`,
           `🏢 フリーエージェント${freeAgents.length}名がスカウト可能。`,
           `📊 業界${pRank}位からの挑戦が始まる。`,
           '🏆 v0.9: ライバル団体システム搭載！',
@@ -4511,6 +4561,26 @@ function showFighterPopup(fighterId, source) {
     </div>`;
   }
 
+  // Profile text
+  const profileText = CHAR_PROFILES[c.id];
+  if (profileText) {
+    html += `<div class="fighter-popup-section" style="font-size:11px;color:var(--text-sub);line-height:1.6;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:4px;border-left:2px solid rgba(255,255,255,0.08);margin-top:4px">
+      📝 ${profileText}
+    </div>`;
+  }
+
+  // Release button (roster only, tucked away in details)
+  if (isRoster && !c.isRental) {
+    const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
+    html += `<details style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.04);padding-top:8px">
+      <summary style="font-size:10px;color:var(--text-dim);cursor:pointer;user-select:none">⚙️ 選手管理</summary>
+      <div style="margin-top:8px;padding:8px;background:rgba(196,30,58,0.06);border:1px solid rgba(196,30,58,0.15);border-radius:4px">
+        <button onclick="closeFighterPopup();releaseFighter(${c.id})" style="font-size:10px;padding:4px 12px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:4px" ${inCard ? 'disabled title="カード登録中"' : ''}>🚪 この選手を解雇する</button>
+        ${inCard ? '<span style="font-size:9px;color:var(--text-dim);margin-left:8px">※興行カード登録中のため解雇できません</span>' : ''}
+      </div>
+    </details>`;
+  }
+
   html += `</div>`; // end body
 
   document.getElementById('fighterPopupBox').innerHTML = html;
@@ -4644,11 +4714,11 @@ function renderMatchPreview() {
     html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : ''}">`;
     html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
     html += `<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600">`;
-    html += `${portraitImg(charL.id, 32)}`;
+    html += `${portraitImg(charL.id, 40)}`;
     html += `<span style="color:var(--blue)">${charL.name}</span>`;
     html += `<span style="color:var(--text-dim);margin:0 8px">vs</span>`;
     html += `<span style="color:var(--red)">${charR.name}</span>${titleTag}`;
-    html += `${portraitImg(charR.id, 32)}`;
+    html += `${portraitImg(charR.id, 40)}`;
     html += `</div>`;
     html += `<div style="font-size:10px;color:var(--text-dim)">第${idx + 1}試合</div>`;
     html += `</div>`;
@@ -4963,7 +5033,7 @@ function refreshTopBar() {
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
-  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(champ.id, 24)}🏆 ${fLink(champ, {source:'roster', bold:false})} (${G.titles.world.defenses}防衛)</span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(champ.id, 36)}🏆 ${fLink(champ, {source:'roster', bold:false})} (${G.titles.world.defenses}防衛)</span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
 }
 
 function renderWeekScreen() {
@@ -5047,7 +5117,7 @@ function renderWeekScreen() {
     html += `<div style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(0,0,0,0));border:1px solid rgba(212,168,67,0.3);border-radius:10px">
       <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 新団体設立</p>
       <p style="color:var(--text-sub);font-size:13px;line-height:1.7">
-        あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名のロスターでシーズンを始めましょう。<br>
+        あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名の所属選手でシーズンを始めましょう。<br>
         <span style="font-size:12px;color:var(--text-dim)">能力値は入団時（16歳）の推定値です。将来性の評価はコーチ不在のため大きくブレる場合があります。</span>
       </p>
     </div>`;
@@ -5547,10 +5617,10 @@ function renderRoster() {
   const aceEl = document.getElementById('acePanel');
   if (aceEl) {
     const ace = G.roster.find(c => c.id === G.aceDesignation);
-    let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
+    let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
     aceHtml += '<span style="color:var(--gold);font-weight:700">⭐ エース:</span>';
     if (ace) {
-      aceHtml += `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(ace.id, 24)}${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
+      aceHtml += `<span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(ace.id, 36)}${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
       aceHtml += `<button class="btn" style="font-size:10px;padding:3px 8px;margin-left:auto" onclick="revokeAce()">解除</button>`;
     } else {
       aceHtml += '<span style="color:var(--text-dim)">未認定</span>';
@@ -5565,41 +5635,50 @@ function renderRoster() {
     aceEl.innerHTML = aceHtml;
   }
 
-  let html = '<tr><th>名前</th><th>Style</th><th>Role</th><th>総合</th><th>パワー</th><th>スピード</th><th>テクニック</th><th>スタミナ</th><th>マインド</th><th>潜在力</th><th>人気</th><th>状態</th><th>給与</th><th>○</th><th>×</th><th>△</th></tr>';
+  let html = '<div style="display:flex;flex-direction:column;gap:6px">';
   const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;
-    const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
-    const injuryBadge = c.injury ? `<div style="font-size:9px;margin-top:2px;padding:1px 4px;border-radius:2px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</div>` : '';
-    const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:10px"> 👑王者</span>' : '';
-    const aceBadge = Engine.ace.isAce(G, c.id) ? '<span style="color:#f1c40f;font-size:10px"> ⭐エース</span>' : '';
-    const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:10px"> 🤝レンタル</span>' : '';
-    // v0.6: Potential percentage
+    const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
+    const injuryBadge = c.injury ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥 ${c.injury.type} ${c.injury.weeksLeft}週</span>` : '';
+    const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:10px"> 👑</span>' : '';
+    const aceBadge = Engine.ace.isAce(G, c.id) ? '<span style="color:#f1c40f;font-size:10px"> ⭐</span>' : '';
+    const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:10px"> 🤝</span>' : '';
     const potPct = getPotentialPct(c);
     const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
-    // v0.6: Growth indicator per stat
-    const statWithGrowth = (key) => {
+    const statG = (key) => {
       const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
-      const gHtml = g > 0 ? ` <span class="growth-up">+${g}</span>` : '';
-      return `${c[key]}${gHtml}`;
+      return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
     };
-    html += `<tr${c.injury ? ' style="opacity:0.7"' : ''}>
-      <td><div style="display:flex;align-items:center;gap:6px">${portraitImg(c.id, 28)}${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}</div>${injuryBadge}</td>
-      <td><span class="badge badge-${c.style}">${c.style}</span></td>
-      <td><span class="badge badge-${roleCls}">${c.role}</span></td>
-      <td class="num ov">${ov(c)}</td>
-      <td class="num">${statWithGrowth('pw')}</td><td class="num">${statWithGrowth('sp')}</td><td class="num">${statWithGrowth('te')}</td>
-      <td class="num">${statWithGrowth('st')}</td><td class="num">${statWithGrowth('mn')}</td>
-      <td><div class="pot-bar"><div class="pot-fill" style="width:${potPct}%"></div></div> <span style="font-size:10px;color:${potColor}">${potPct}%</span></td>
-      <td class="num">${c.popularity}</td>
-      <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:11px">${condPct}</span></td>
-      <td class="num" style="color:var(--text-sub)">${getSalary(c)}万</td>
-      <td class="record-cell"><div class="record-symbol win">○</div><div class="record-num">${c.wins}</div></td>
-      <td class="record-cell"><div class="record-symbol lose">×</div><div class="record-num">${c.losses}</div></td>
-      <td class="record-cell"><div class="record-symbol draw">△</div><div class="record-num">${c.draws}</div></td>
-    </tr>`;
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px${c.injury ? ';opacity:0.75' : ''}" onclick="showFighterPopup(${c.id},'roster')">
+      ${portraitImg(c.id, 40)}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          ${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}
+          <span class="badge badge-${c.style}" style="font-size:9px">${c.style}</span>
+          <span class="badge badge-${roleCls}" style="font-size:9px">${c.role}</span>
+          ${injuryBadge}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-sub)">
+          <span style="font-size:14px;font-weight:900;color:var(--gold)">${ov(c)}</span>
+          <span>PW<b style="color:var(--text)">${c.pw}</b>${statG('pw')}</span>
+          <span>SP<b style="color:var(--text)">${c.sp}</b>${statG('sp')}</span>
+          <span>TE<b style="color:var(--text)">${c.te}</b>${statG('te')}</span>
+          <span>ST<b style="color:var(--text)">${c.st}</b>${statG('st')}</span>
+          <span>MN<b style="color:var(--text)">${c.mn}</b>${statG('mn')}</span>
+          <span style="color:${potColor}">潜${potPct}%</span>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;font-size:10px;color:var(--text-sub)">
+        <div>人気 <b style="color:var(--text)">${c.popularity}</b></div>
+        <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:2px"></div></div>${condPct}</div>
+        <div style="margin-top:1px"><span style="color:#2ecc71">${c.wins}○</span> <span style="color:#e74c3c">${c.losses}×</span> <span style="color:#b0b8c4">${c.draws}△</span></div>
+        <div style="color:var(--text-dim)">${getSalary(c)}万</div>
+      </div>
+    </div>`;
   });
+  html += '</div>';
   el.innerHTML = html;
 }
 
@@ -5691,7 +5770,7 @@ function renderShowPrep() {
 
     html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px">
       <div class="match-slot-num">${isMain ? '★' : i+1}</div>
-      <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 28) : ''}</div>
+      <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 36) : ''}</div>
       <div class="match-fighter">
         <select onchange="onCardSelect(${i},'left',this.value)">
           ${makeOptions(availL, curL)}
@@ -5703,7 +5782,7 @@ function renderShowPrep() {
           ${makeOptions(availR, curR)}
         </select>
       </div>
-      <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 28) : ''}</div>
+      <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 36) : ''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:10px">
         ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${isVacant ? '王座決定戦' : 'タイトル戦'}</label>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
@@ -5887,7 +5966,7 @@ function renderRanking() {
       <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
       <div style="font-size:11px">
         <span style="color:var(--text-dim)">主力:</span>
-        ${topFighters.map(f => `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:6px">${portraitImg(f.id, 20)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'11px'})}<span style="color:var(--text-dim)">(${Engine.util.ov(f)})</span></span>`).join('')}
+        ${topFighters.map(f => `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px">${portraitImg(f.id, 32)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'11px'})}<span style="color:var(--text-dim)">(${Engine.util.ov(f)})</span></span>`).join('')}
       </div>
       ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
         <details style="margin-top:8px">
@@ -5897,7 +5976,7 @@ function renderRanking() {
               const fee = Engine.transfer.calcFee(f, org);
               const canAfford = G.funds >= fee;
               return `<div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:3px;font-size:10px">
-                ${portraitImg(f.id, 20)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'10px'})} (OVR ${Engine.util.ov(f)}) <span style="color:${canAfford ? '#2ecc71' : '#e17055'}">${fee}万</span>
+                ${portraitImg(f.id, 28)}${fLink(f, {source:'ai:'+org.id, bold:false, size:'10px'})} (OVR ${Engine.util.ov(f)}) <span style="color:${canAfford ? '#2ecc71' : '#e17055'}">${fee}万</span>
                 <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:9px;padding:1px 5px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:2px" ${canAfford ? '' : 'disabled'}>獲得</button>
               </div>`;
             }).join('')}
@@ -5912,7 +5991,7 @@ function renderRanking() {
   html += `<div style="margin-top:16px;padding:12px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:6px">
     <div style="font-weight:700;color:var(--gold);margin-bottom:8px">🏠 ${G.orgName || 'プレイヤー団体'}</div>
     <div style="font-size:11px;color:var(--text-sub)">
-      ロスター: ${G.roster.length}名 ｜ 平均OVR: ${G.roster.length ? Math.round(G.roster.reduce((s,c)=>s+ov(c),0)/G.roster.length) : 0}
+      所属: ${G.roster.length}名 ｜ 平均OVR: ${G.roster.length ? Math.round(G.roster.reduce((s,c)=>s+ov(c),0)/G.roster.length) : 0}
       ｜ 団体人気: ${G.orgPop} ｜ エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}
     </div>
   </div>`;
@@ -5947,20 +6026,8 @@ function renderScout() {
 
   const signingFee = Math.max(10, 50 - getFacilityScoutDiscount()); // v0.7: Scout network discount
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    契約金: ${signingFee}万/人 ｜ ロスター: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名
+    契約金: ${signingFee}万/人 ｜ 所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名
   </div>`;
-
-  // Release button for current roster
-  html += '<div class="panel-title" style="margin-top:0;font-size:13px">所属選手（解雇可能）</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">';
-  [...G.roster].sort((a,b) => ov(b) - ov(a)).forEach(c => {
-    const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
-    html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:4px;font-size:11px">
-      ${portraitImg(c.id, 20)}${fLink(c, {source:'roster', size:'11px'})} <span style="color:var(--text-dim)">(${ov(c)})</span>
-      <button onclick="releaseFighter(${c.id})" style="font-size:10px;padding:1px 6px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:3px" ${inCard?'disabled title="カード登録中"':c.isRental?'disabled title="レンタル中"':''}>解雇</button>
-    </div>`;
-  });
-  html += '</div>';
 
   // Free agents table
   html += '<div class="panel-title" style="font-size:13px">フリーエージェント一覧</div>';
@@ -5969,7 +6036,7 @@ function renderScout() {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const canAfford = G.funds >= signingFee;
     html += `<tr>
-      <td><span style="display:inline-flex;align-items:center;gap:4px">${portraitImg(c.id, 22)}${fLink(c, {source:'free'})}</span></td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(c.id, 36)}${fLink(c, {source:'free'})}</span></td>
       <td class="num" style="color:var(--text-dim)">${c.age}歳</td>
       <td><span class="badge badge-${c.style}">${c.style}</span></td>
       <td><span class="badge badge-${roleCls}">${c.role}</span></td>
@@ -6151,7 +6218,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">スロット ${i}</div>
-          <div class="save-slot-meta">Y${info.season} 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${info.orgPop} ｜ ロスター${info.rosterSize}名</div>
+          <div class="save-slot-meta">Y${info.season} 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${info.orgPop} ｜ 所属${info.rosterSize}名</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">
