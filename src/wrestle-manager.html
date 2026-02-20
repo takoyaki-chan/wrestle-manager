@@ -252,7 +252,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .coach-card{padding:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:8px;
   display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .coach-card.hired{border-color:rgba(46,204,113,0.3);background:rgba(46,204,113,0.03)}
-.coach-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+.coach-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:20px;background:rgba(255,255,255,0.06)}
 .coach-info{flex:1;min-width:180px}
 .coach-name{font-weight:700;font-size:14px}
@@ -300,6 +300,82 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center}
 .confirm-overlay.active{display:flex}
 .confirm-box{background:var(--panel-bg);border:1px solid rgba(212,168,67,0.3);border-radius:8px;padding:24px;max-width:400px;width:90%;text-align:center}
+
+/* ── Mission System (v0.96) ── */
+.mission-panel{position:relative;margin-bottom:14px;border-radius:8px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(74,143,212,0.08) 0%,rgba(155,89,182,0.06) 100%);
+  border:1px solid rgba(74,143,212,0.25);
+  box-shadow:0 2px 12px rgba(74,143,212,0.08)}
+.mission-panel-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid rgba(74,143,212,0.12);
+  background:linear-gradient(90deg,rgba(74,143,212,0.1),transparent)}
+.mission-panel-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  color:#8bc4f0;display:flex;align-items:center;gap:8px}
+.mission-panel-title .mission-icon{font-size:16px}
+.mission-panel-toggle{font-size:10px;color:var(--text-dim);cursor:pointer;padding:3px 8px;border-radius:3px;
+  border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.2);transition:all .2s;white-space:nowrap}
+.mission-panel-toggle:hover{border-color:rgba(255,255,255,0.2);color:var(--text-sub)}
+.mission-list{padding:8px 12px}
+.mission-item{display:flex;align-items:flex-start;gap:10px;padding:7px 8px;border-radius:6px;
+  transition:background .2s;cursor:default;position:relative}
+.mission-item:hover{background:rgba(255,255,255,0.02)}
+.mission-item+.mission-item{border-top:1px solid rgba(255,255,255,0.03)}
+.mission-check{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;margin-top:1px;transition:all .3s}
+.mission-check.pending{border:2px solid rgba(255,255,255,0.15);color:transparent}
+.mission-check.done{border:2px solid #2ecc71;background:rgba(46,204,113,0.15);color:#2ecc71}
+.mission-body{flex:1;min-width:0}
+.mission-name{font-size:12px;font-weight:700;line-height:1.4}
+.mission-name.done{color:var(--text-dim);text-decoration:line-through;text-decoration-color:rgba(255,255,255,0.15)}
+.mission-desc{font-size:10px;color:var(--text-dim);line-height:1.5;margin-top:1px}
+.mission-goto{font-size:9px;padding:2px 8px;border-radius:3px;cursor:pointer;white-space:nowrap;
+  background:rgba(74,143,212,0.12);border:1px solid rgba(74,143,212,0.25);color:#8bc4f0;
+  transition:all .2s;flex-shrink:0;align-self:center}
+.mission-goto:hover{background:rgba(74,143,212,0.25);border-color:#4a8fd4}
+.mission-progress{margin:6px 12px 10px;display:flex;align-items:center;gap:8px}
+.mission-progress-bar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.mission-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#4a8fd4,#9b59b6);transition:width .4s ease}
+.mission-progress-label{font-size:10px;color:var(--text-dim);white-space:nowrap}
+.mission-category{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'Oswald',sans-serif;
+  padding:6px 12px 2px;color:var(--text-dim)}
+.mission-new{position:absolute;top:6px;right:8px;font-size:8px;padding:1px 5px;border-radius:2px;
+  background:rgba(46,204,113,0.2);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);
+  font-weight:700;letter-spacing:1px;animation:mission-new-pulse 2s ease-in-out infinite}
+@keyframes mission-new-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.mission-enable-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 10px;
+  border-radius:3px;cursor:pointer;border:1px solid rgba(74,143,212,0.25);color:#8bc4f0;
+  background:rgba(74,143,212,0.08);transition:all .2s}
+.mission-enable-btn:hover{background:rgba(74,143,212,0.18);border-color:#4a8fd4}
+
+/* ── Event Popup (v0.96) ── */
+.event-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:250;
+  align-items:center;justify-content:center;animation:fadeIn .2s}
+.event-popup-overlay.active{display:flex}
+.event-popup{background:var(--panel-bg);border-radius:12px;max-width:340px;width:90%;
+  text-align:center;padding:20px 24px 16px;position:relative;
+  border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  animation:popIn .3s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes popIn{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.event-popup.positive{border-color:rgba(46,204,113,0.3);box-shadow:0 8px 32px rgba(46,204,113,0.08)}
+.event-popup.negative{border-color:rgba(231,76,60,0.3);box-shadow:0 8px 32px rgba(231,76,60,0.08)}
+.event-popup.gold{border-color:rgba(212,168,67,0.3);box-shadow:0 8px 32px rgba(212,168,67,0.08)}
+.event-popup-face{width:72px;height:72px;border-radius:50%;margin:-52px auto 10px;
+  border:3px solid rgba(255,255,255,0.15);overflow:hidden;background:var(--bg-card);
+  box-shadow:0 4px 16px rgba(0,0,0,0.4)}
+.event-popup-face img{width:100%;height:100%;object-fit:cover}
+.event-popup-face .emoji-face{width:100%;height:100%;display:flex;align-items:center;
+  justify-content:center;font-size:36px;background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(0,0,0,0.2))}
+.event-popup-name{font-weight:700;font-size:14px;color:var(--text);margin-bottom:6px}
+.event-popup-msg{font-size:12px;line-height:1.7;color:var(--text-sub);margin-bottom:12px;
+  padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:8px;border-left:3px solid rgba(255,255,255,0.1);
+  text-align:left;font-style:italic}
+.event-popup-msg::before{content:'「';color:var(--text-dim)}
+.event-popup-msg::after{content:'」';color:var(--text-dim)}
+.event-popup-detail{font-size:10px;color:var(--text-dim);margin-bottom:10px}
+.event-popup-ok{font-size:11px;padding:6px 24px;border-radius:4px;cursor:pointer;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-sub);
+  transition:all .2s}
+.event-popup-ok:hover{background:rgba(255,255,255,0.1);color:var(--text)}
 </style>
 </head>
 <body>
@@ -451,6 +527,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <!-- Fighter Detail Popup -->
 <div class="fighter-popup-overlay" id="fighterPopupOverlay" onclick="closeFighterPopup()">
   <div class="fighter-popup-box" id="fighterPopupBox" onclick="event.stopPropagation()"></div>
+</div>
+
+<div class="event-popup-overlay" id="eventPopupOverlay" onclick="closeEventPopup()">
+  <div class="event-popup" id="eventPopupBox" onclick="event.stopPropagation()"></div>
 </div>
 
 <script>
@@ -1074,7 +1154,21 @@ const PORTRAIT = {
   76:'kuribayashi_a',77:'niimi_y',78:'tsubakiyama_m',79:'kudo_r',80:'takashima_s'
 };
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
-function portraitImg(id, size = 80, cls = '') {
+
+// Coach portrait mapping (add image files as face_coach_{key}.png)
+const COACH_PORTRAIT = {
+  1:'coach_onizuka', 2:'coach_asuka', 3:'coach_tsurumi', 4:'coach_iwata',
+  5:'coach_sawamura', 6:'coach_asahi', 7:'coach_kurebayashi', 8:'coach_shirakawa'
+};
+function getCoachPortraitUrl(id) { return COACH_PORTRAIT[id] ? `../image/face_${COACH_PORTRAIT[id]}.png` : ''; }
+function coachPortraitImg(coach, size = 48) {
+  const url = getCoachPortraitUrl(coach.id);
+  if (url) {
+    return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" alt="${coach.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));border:2px solid rgba(212,168,67,0.2)">${coach.emoji}</div>`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));border:2px solid rgba(212,168,67,0.2)">${coach.emoji}</div>`;
+}
+function portraitImg(id, size = 80, cls = '', clickable = false) {
   const url = getPortraitUrl(id);
   // Auto-detect champion/ace status for border color
   let statusCls = '';
@@ -1082,15 +1176,18 @@ function portraitImg(id, size = 80, cls = '') {
     if (G.titles?.world?.championId === id) statusCls = ' portrait-champ';
     else if (G.aceDesignation === id) statusCls = ' portrait-ace';
   }
+  const clickAttr = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'roster')" style="width:${size}px;height:${size}px;cursor:pointer"` : ` style="width:${size}px;height:${size}px"`;
   if (url) {
-    return `<img src="${url}" class="portrait${statusCls} ${cls}" style="width:${size}px;height:${size}px" alt="" loading="lazy">`;
+    return `<img src="${url}" class="portrait${statusCls} ${cls}"${clickAttr} alt="" loading="lazy">`;
   }
   // Fallback: rounded square with initial
   const ch = ALL_CHARS.find(c => c.id === id);
   const initial = ch ? ch.name.charAt(0) : '?';
   const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Speed:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
   const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
-  return `<div class="portrait${statusCls} ${cls}" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};flex-shrink:0">${initial}</div>`;
+  const clickStyle = clickable ? 'cursor:pointer;' : '';
+  const clickEv = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'roster')"` : '';
+  return `<div class="portrait${statusCls} ${cls}" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};flex-shrink:0;${clickStyle}"${clickEv}>${initial}</div>`;
 }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -3646,9 +3743,129 @@ const Engine = {
                      bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
       seasonHistory: [], // array of past season summaries
       fundsHistory: [5000], // weekly fund snapshots for sparkline
+      // v0.96: Mission system
+      missionEnabled: true,
+      missionsCompleted: [],
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
+  }
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 6b: MISSION SYSTEM (v0.96)                       ║
+// ║  Guided progression — pure functions, no DOM              ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const MISSIONS = [
+  // ── BEGINNER: 最初の一歩 ──
+  { id:'hire_coach',    phase:0, icon:'🎓', name:'コーチを雇おう',
+    desc:'コーチ画面から最初のコーチを雇用しよう。選手の成長速度が大幅にアップ！',
+    screen:'coach', check: G => G.coaches.length >= 1 },
+  { id:'set_schedule',  phase:0, icon:'📋', name:'スケジュールを変更してみよう',
+    desc:'今週タブで選手のスケジュールを「練習優先」や「プロモ優先」に変更してみよう。',
+    screen:'week', check: G => G.roster.some(c => c.schedule && c.schedule !== 'balance') },
+  { id:'first_show',    phase:0, icon:'🎤', name:'初興行を開催しよう',
+    desc:'興行週にカードを組んで興行を開催！まずは1回やってみよう。',
+    screen:'show', check: G => G.totalShows >= 1 },
+  { id:'mq40',          phase:0, icon:'⭐', name:'MQ40以上の好試合',
+    desc:'マッチクオリティ40以上を出そう。相性の良いカードを組むのがコツ！',
+    screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 40 || G.seasonHistory?.some(s => s.bestMQ >= 40) },
+  { id:'upgrade_fac',   phase:0, icon:'🏢', name:'施設を強化しよう',
+    desc:'施設画面でトレーニング施設などをLv2にアップグレード！',
+    screen:'facility', check: G => G.facilities && Object.values(G.facilities).some(v => v >= 2) },
+
+  // ── GROWTH: 成長期 ──
+  { id:'crown_champ',   phase:1, icon:'👑', name:'世界王座を認定',
+    desc:'選手が成長したら世界王座戦を組んで初代チャンピオンを決めよう。',
+    screen:'show', check: G => G.titles?.world?.championId != null },
+  { id:'pop25',         phase:1, icon:'📈', name:'団体人気25に到達',
+    desc:'興行を重ねて団体人気を25まで上げよう。会場の選択肢が広がる！',
+    screen:null, check: G => G.orgPop >= 25 },
+  { id:'coach3',        phase:1, icon:'🎓', name:'コーチ3人体制',
+    desc:'コーチを3人雇って育成を加速！多くの選手にコーチをつけられるように。',
+    screen:'coach', check: G => G.coaches.length >= 3 },
+  { id:'rank3',         phase:1, icon:'🏆', name:'ランキング3位以内',
+    desc:'団体ランキングで3位以内を目指そう。興行のMQと人気が鍵！',
+    screen:'ranking', check: G => {
+      const r = G.rankings || [];
+      const p = r.findIndex(x => x.orgId === 'player');
+      return p >= 0 && p < 3;
+    }},
+  { id:'assign_all',    phase:1, icon:'🤝', name:'全選手にコーチ配置',
+    desc:'育成画面で全選手にコーチを割り当てて、成長効率を最大化！',
+    screen:'training', check: G => {
+      if (!G.roster || G.roster.length === 0) return false;
+      const healthy = G.roster.filter(c => !c.injury);
+      if (healthy.length === 0) return true;
+      const assigned = Object.values(G.coachAssign || {}).flat();
+      return healthy.every(c => assigned.includes(c.id));
+    }},
+
+  // ── MASTERY: 頂点へ ──
+  { id:'mq70',          phase:2, icon:'🔥', name:'MQ70超えの名勝負',
+    desc:'最高のカードを組んで、MQ70以上の名勝負を実現！',
+    screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 70 || G.seasonHistory?.some(s => s.bestMQ >= 70) },
+  { id:'pop50',         phase:2, icon:'🌟', name:'団体人気50に到達',
+    desc:'人気50の壁を突破！大会場での興行が現実的に。',
+    screen:null, check: G => G.orgPop >= 50 },
+  { id:'rank1',         phase:2, icon:'💎', name:'ランキング1位',
+    desc:'業界の頂点に立て！団体ランキング1位を獲得しよう。',
+    screen:'ranking', check: G => {
+      const r = G.rankings || [];
+      return r.length > 0 && r[0].orgId === 'player';
+    }},
+  { id:'season2',       phase:2, icon:'🗓️', name:'2年目を迎えよう',
+    desc:'最初のシーズンを乗り越えて2年目に突入！',
+    screen:null, check: G => G.season >= 2 },
+];
+
+const PHASE_LABELS = ['🔰 はじめの一歩', '📈 成長期', '🏆 頂点を目指せ'];
+
+const Mission = {
+  // Get all missions with their completion status
+  evaluate(G) {
+    const completed = new Set(G.missionsCompleted || []);
+    return MISSIONS.map(m => ({
+      ...m,
+      done: completed.has(m.id) || m.check(G),
+      wasCompleted: completed.has(m.id), // was already marked done before
+    }));
+  },
+
+  // Check for newly completed missions and return updated state
+  updateCompleted(G) {
+    const old = new Set(G.missionsCompleted || []);
+    const all = MISSIONS.filter(m => m.check(G)).map(m => m.id);
+    const newlyDone = all.filter(id => !old.has(id));
+    if (newlyDone.length === 0) return { state: G, newMissions: [] };
+    const merged = [...old, ...newlyDone];
+    return {
+      state: { ...G, missionsCompleted: merged },
+      newMissions: newlyDone.map(id => MISSIONS.find(m => m.id === id)).filter(Boolean)
+    };
+  },
+
+  // Get progress stats
+  progress(G) {
+    const evaluated = Mission.evaluate(G);
+    const total = evaluated.length;
+    const done = evaluated.filter(m => m.done).length;
+    return { done, total, pct: Math.round((done / total) * 100) };
+  },
+
+  // Get visible missions (show current phase + next unlocked)
+  getVisible(G) {
+    const evaluated = Mission.evaluate(G);
+    // Always show phase 0
+    // Show phase 1 if any phase 0 is done
+    // Show phase 2 if any phase 1 is done
+    const phase0Done = evaluated.filter(m => m.phase === 0 && m.done).length;
+    const phase1Done = evaluated.filter(m => m.phase === 1 && m.done).length;
+    let maxPhase = 0;
+    if (phase0Done >= 2) maxPhase = 1;
+    if (phase1Done >= 2) maxPhase = 2;
+    return evaluated.filter(m => m.phase <= maxPhase);
   }
 };
 
@@ -3714,6 +3931,9 @@ const Storage = {
       // v0.9d backward compat: rental & events
       if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
+
+      // v0.96 backward compat: mission system
+      if (G.missionEnabled === undefined) G = { ...G, missionEnabled: true, missionsCompleted: [] };
 
       G = { ...G, version: '0.9' };
 
@@ -3816,6 +4036,7 @@ const Storage = {
 // Alias for backward compat in UI
 function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
 function loadGame(slot) { Audio.play('notify'); return Storage.load(slot); }
+function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 8: APP BRIDGE (v0.85)                            ║
@@ -3884,6 +4105,12 @@ const App = {
     Audio.play('fanfare');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
+    // Show welcome popups for drafted fighters
+    const drafted = G.roster.filter(c => picks.includes(c.id));
+    drafted.forEach((c, i) => {
+      setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'positive',
+        message: pickQuote('draftJoin'), detail:`${c.name}（${c.style}/${c.role}）が入団！ OVR ${ov(c)}` }), i * 100);
+    });
     delete G._draftPicks;
     delete G._draftFocus;
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -3924,6 +4151,8 @@ const App = {
     if (idx < 0) return;
     Audio.play('spend');
     const c = G.roster[idx];
+    const cName = c.name;
+    const cId = c.id;
     const newRoster = G.roster.filter((_, i) => i !== idx);
     const newFA = [...G.freeAgents, c];
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
@@ -3931,7 +4160,10 @@ const App = {
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
     G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    closeFighterPopup();
     refreshAll();
+    showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
+      message: pickQuote('release'), detail:`${cName}が団体を去りました` });
   },
 
   // Set training schedule
@@ -3962,7 +4194,6 @@ const App = {
     if (G.coaches.length >= MAX_COACHES) { Audio.play('error'); alert(`コーチは最大${MAX_COACHES}名まで`); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
     if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
-    Audio.play('stamp');
     G = {
       ...G,
       funds: G.funds - fee,
@@ -3972,11 +4203,12 @@ const App = {
       gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万）`]
     };
     refreshAll();
+    showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
+      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万）` });
   },
 
   // Fire coach
   fireCoach(coachId) {
-    Audio.play('spend');
     const coach = ALL_COACHES.find(c => c.id === coachId);
     const newAssign = { ...G.coachAssign };
     delete newAssign[coachId];
@@ -3988,6 +4220,8 @@ const App = {
       gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
     };
     refreshAll();
+    if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
+      message: pickQuote('coachFire'), detail:`${coach.name}がチームを去りました` });
   },
 
   // Assign character to coach
@@ -4267,6 +4501,7 @@ const App = {
 
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
     App._showPreview = null;
+    App._lastInjuries = injuryResults; // v0.96: store for popup after close
     renderShowResult(results, injuryResults);
   },
 
@@ -4274,6 +4509,25 @@ const App = {
   closeShowResult() {
     Audio.play('coin');
     document.getElementById('showResultOverlay').classList.remove('active');
+    // v0.96: Show injury popups
+    const injuries = App._lastInjuries || [];
+    injuries.forEach((ir, i) => {
+      const ch = G.roster.find(c => c.name === ir.name);
+      if (ch && ir.injury) {
+        setTimeout(() => showEventPopup({ type:'fighter', id:ch.id, name:ch.name, tone:'negative',
+          message: pickQuote('injury'), detail:`🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間` }), i * 100);
+      }
+    });
+    App._lastInjuries = [];
+    // Check title wins (only if champion is newly crowned this show)
+    const newChampId = G.titles?.world?.championId;
+    if (newChampId && G.titles.world.defenses === 0 && G.lastShowResults?.some(r => r.isTitleMatch)) {
+      const champ = G.roster.find(c => c.id === newChampId);
+      if (champ) {
+        setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
+          message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新世界チャンピオンに！` }), injuries.length * 100 + 50);
+      }
+    }
     const result = Engine.tickWeek(G);
     // v0.95: Track finances
     const stats = { ...G.seasonStats };
@@ -4285,6 +4539,7 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.checkMissionUpdate();
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -4294,6 +4549,7 @@ const App = {
   // Process a week (manage + settle) via tickWeek
   processWeek() {
     Audio.play('tick');
+    const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
     const result = Engine.tickWeek(G);
     const stats = { ...G.seasonStats };
     if (result.state.weeklyFinance) {
@@ -4303,6 +4559,13 @@ const App = {
     if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.checkMissionUpdate();
+    // v0.96: Detect new injuries and show popups
+    const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
+    newInjuries.forEach((c, i) => {
+      setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
+        message: pickQuote('injury'), detail:`🏥 ${c.injury.type} — 全治${c.injury.weeksLeft}週間` }), i * 100);
+    });
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -4314,9 +4577,27 @@ const App = {
     Audio.play('tick');
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // v0.96: Update mission completions
+    if (G.missionEnabled) {
+      const mResult = Mission.updateCompleted(G);
+      G = mResult.state;
+    }
     sessionRng = Engine.rng.create(G.rngSeed);
     Storage.autoSave();
     refreshAll();
+  },
+
+  // v0.96: Mission system
+  toggleMission(enabled) {
+    Audio.play('click');
+    G = { ...G, missionEnabled: enabled };
+    Storage.autoSave();
+    refreshAll();
+  },
+  checkMissionUpdate() {
+    if (!G.missionEnabled) return;
+    const mResult = Mission.updateCompleted(G);
+    G = mResult.state;
   }
 };
 
@@ -4373,8 +4654,8 @@ function showCoachTooltip(coachId) {
 
   // Header
   html += `<div class="coach-tooltip-header" style="background:${spec.color}0a">
-    <div class="coach-tooltip-avatar" style="background:${avBg};border:2px solid ${avBorder}">
-      ${c.emoji}
+    <div class="coach-tooltip-avatar" style="background:${avBg};border:2px solid ${avBorder};display:flex;align-items:center;justify-content:center;overflow:hidden">
+      ${coachPortraitImg(c, 52)}
     </div>
     <div style="flex:1;min-width:0">
       <div style="font-weight:700;font-size:16px;margin-bottom:2px">${c.name}</div>
@@ -4413,7 +4694,7 @@ function showCoachTooltip(coachId) {
       html += `<div style="display:flex;flex-wrap:wrap;gap:4px">`;
       assignedChars.forEach(ch => {
         const o = ov(ch);
-        html += `<span style="font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${o}</strong></span>`;
+        html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${o}</strong></span>`;
       });
       html += `</div>`;
     } else {
@@ -4439,6 +4720,103 @@ function showCoachTooltip(coachId) {
 
 function closeCoachTooltip() {
   document.getElementById('coachTooltipOverlay').classList.remove('active');
+}
+
+// ── Event Popup System (v0.96) ──
+// Shows a character face + speech bubble for important events
+const EVENT_QUOTES = {
+  coachHire: [
+    '一緒に頑張りましょう！期待してください。',
+    'お任せください。選手たちを鍛え上げてみせます！',
+    'この団体で働けて光栄です。全力でサポートします。',
+    '腕が鳴りますね…。素晴らしい選手たちだ。'
+  ],
+  coachFire: [
+    'そうですか…。今までありがとうございました。',
+    'お世話になりました。選手たちによろしくお伝えください。',
+    '残念ですが…また機会があれば。',
+  ],
+  draftJoin: [
+    'この団体を選んでくれてありがとうございます！全力で戦います！',
+    '期待に応えてみせます！最高の選手になります！',
+    '夢に一歩近づいた…！精一杯頑張ります！',
+    '信じてくれたこの恩、リングで返します！',
+    'よろしくお願いします！たくさん試合がしたいです！',
+    'この日をずっと待っていました…！'
+  ],
+  injury: [
+    'うぅ…痛い…。でも、すぐ戻ります！',
+    'すみません…しばらくお休みをいただきます…',
+    'くっ…こんなところで…！必ず復帰します！',
+    'ごめんなさい…体が言うことを聞かなくて…',
+    'あぁっ…！リハビリ、頑張ります…！'
+  ],
+  titleWin: [
+    'やった…！チャンピオンになれた…！夢みたい！',
+    'このベルト、絶対に手放しません！',
+    '最高の気分です！応援ありがとうございます！'
+  ],
+  release: [
+    'そう…ですか。ここでの思い出、忘れません。',
+    'お世話になりました…。どこかで強くなって戻ります。',
+    '悔しいです…でも、ありがとうございました。',
+  ]
+};
+
+// Event popup queue (multiple events can stack)
+let _eventPopupQueue = [];
+
+function showEventPopup(opts) {
+  // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold' }
+  _eventPopupQueue.push(opts);
+  if (_eventPopupQueue.length === 1) _renderEventPopup();
+}
+
+function _renderEventPopup() {
+  if (_eventPopupQueue.length === 0) return;
+  const o = _eventPopupQueue[0];
+  const box = document.getElementById('eventPopupBox');
+  const toneClass = o.tone || '';
+
+  // Face image
+  let faceHtml = '';
+  if (o.type === 'fighter' && o.id) {
+    const url = getPortraitUrl(o.id);
+    if (url) faceHtml = `<img src="${url}" alt="">`;
+    else {
+      const ch = ALL_CHARS.find(c => c.id === o.id);
+      faceHtml = `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
+    }
+  } else if (o.type === 'coach' && o.id) {
+    const coach = ALL_COACHES.find(c => c.id === o.id);
+    const url = getCoachPortraitUrl(o.id);
+    if (url) faceHtml = `<img src="${url}" alt="" onerror="this.outerHTML='<div class=\\'emoji-face\\'>${coach?.emoji||'👤'}</div>'">`;
+    else faceHtml = `<div class="emoji-face">${coach?.emoji || '👤'}</div>`;
+  } else {
+    faceHtml = `<div class="emoji-face">${o.emoji || '💬'}</div>`;
+  }
+
+  box.className = `event-popup ${toneClass}`;
+  box.innerHTML = `
+    <div class="event-popup-face">${faceHtml}</div>
+    <div class="event-popup-name">${o.name || ''}</div>
+    <div class="event-popup-msg">${o.message}</div>
+    ${o.detail ? `<div class="event-popup-detail">${o.detail}</div>` : ''}
+    <button class="event-popup-ok" onclick="closeEventPopup()">OK</button>
+  `;
+  document.getElementById('eventPopupOverlay').classList.add('active');
+  Audio.play(o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'fanfare' : 'notify');
+}
+
+function closeEventPopup() {
+  document.getElementById('eventPopupOverlay').classList.remove('active');
+  _eventPopupQueue.shift();
+  if (_eventPopupQueue.length > 0) setTimeout(_renderEventPopup, 200);
+}
+
+function pickQuote(category) {
+  const arr = EVENT_QUOTES[category] || ['...'];
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 // ── Fighter Detail Popup ──
@@ -5394,6 +5772,18 @@ function showScreen(id, evt) {
   if (id === 'ranking') renderRanking();
 }
 
+// v0.96: Navigate to a screen and highlight the correct nav button
+function gotoScreen(id) {
+  const navBtns = document.querySelectorAll('.nav-btn');
+  for (const b of navBtns) {
+    if (b.getAttribute('onclick')?.includes(`'${id}'`)) {
+      b.click();
+      return;
+    }
+  }
+  showScreen(id);
+}
+
 function refreshTopBar() {
   // Audio mute button sync
   const muteBtn = document.getElementById('muteBtn');
@@ -5884,6 +6274,48 @@ function renderWeekScreen() {
       html += `<div style="display:flex;gap:12px;margin-bottom:10px;font-size:10px;color:var(--text-dim);flex-wrap:wrap">${upcomingItems.map(item => `<span style="padding:2px 6px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.12);border-radius:3px">${item}</span>`).join('')}</div>`;
     }
 
+    // ── v0.96: MISSION PANEL ──
+    if (G.missionEnabled) {
+      const visMissions = Mission.getVisible(G);
+      const prog = Mission.progress(G);
+      // Group by phase
+      const byPhase = {};
+      visMissions.forEach(m => { if (!byPhase[m.phase]) byPhase[m.phase] = []; byPhase[m.phase].push(m); });
+      // Sort: incomplete first within each phase
+      Object.values(byPhase).forEach(arr => arr.sort((a,b) => (a.done?1:0) - (b.done?1:0)));
+
+      html += '<div class="mission-panel">';
+      html += `<div class="mission-panel-header">
+        <span class="mission-panel-title"><span class="mission-icon">🧭</span> ミッション <span style="font-size:10px;font-weight:400;color:var(--text-dim);font-family:'Noto Sans JP',sans-serif">${prog.done}/${prog.total}</span></span>
+        <span class="mission-panel-toggle" onclick="App.toggleMission(false)">✕ 非表示にする</span>
+      </div>`;
+      // Progress bar
+      html += `<div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${prog.pct}%"></div></div>
+        <span class="mission-progress-label">${prog.pct}%</span>
+      </div>`;
+      html += '<div class="mission-list">';
+      for (const [phase, missions] of Object.entries(byPhase)) {
+        html += `<div class="mission-category">${PHASE_LABELS[phase] || ''}</div>`;
+        for (const m of missions) {
+          const isNew = m.done && !m.wasCompleted;
+          html += `<div class="mission-item">
+            <div class="mission-check ${m.done ? 'done' : 'pending'}">${m.done ? '✓' : ''}</div>
+            <div class="mission-body">
+              <div class="mission-name ${m.done ? 'done' : ''}">${m.icon} ${m.name}</div>
+              ${!m.done ? `<div class="mission-desc">${m.desc}</div>` : ''}
+            </div>
+            ${!m.done && m.screen ? `<span class="mission-goto" onclick="gotoScreen('${m.screen}')">→ 開く</span>` : ''}
+            ${isNew ? '<span class="mission-new">NEW</span>' : ''}
+          </div>`;
+        }
+      }
+      html += '</div></div>';
+    } else {
+      // Show small re-enable button
+      html += `<div style="margin-bottom:10px;text-align:right"><span class="mission-enable-btn" onclick="App.toggleMission(true)">🧭 ミッション表示</span></div>`;
+    }
+
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
@@ -6085,7 +6517,7 @@ function renderRoster() {
     aceEl.innerHTML = aceHtml;
   }
 
-  let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:6px">';
   const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
@@ -6101,8 +6533,8 @@ function renderRoster() {
       const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
     };
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px${c.injury ? ';opacity:0.75' : ''}" onclick="showFighterPopup(${c.id},'roster')">
-      ${portraitImg(c.id, 80)}
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px${c.injury ? ';opacity:0.75' : ''};cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
+      ${portraitImg(c.id, 52, '', true)}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
           ${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}
@@ -6592,7 +7024,7 @@ function renderCoach() {
       const assigned = getCoachAssignees(c.id);
       const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
       html += `<div class="coach-card hired">
-        <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer">${c.emoji}</div>
+        <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 44)}</div>
         <div class="coach-info">
           <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px">${c.name} <span style="font-size:10px;color:var(--text-dim)">ℹ️</span></div>
           <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -6605,7 +7037,7 @@ function renderCoach() {
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">`;
         assignedChars.forEach(ch => {
-          html += `<span style="font-size:10px;padding:2px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:3px">${fLink(ch, {source:'roster', size:'10px'})} <strong style="color:var(--gold)">${ov(ch)}</strong></span>`;
+          html += `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:3px">${portraitImg(ch.id, 18, '', true)} ${fLink(ch, {source:'roster', size:'10px'})} <strong style="color:var(--gold)">${ov(ch)}</strong></span>`;
         });
         html += `</div>`;
       } else {
@@ -6625,7 +7057,7 @@ function renderCoach() {
       const fee = c.hireFee || COACH_HIRE_FEE;
       const canHire = G.coaches.length < MAX_COACHES && G.funds >= fee;
       html += `<div class="coach-card">
-        <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer">${c.emoji}</div>
+        <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 44)}</div>
         <div class="coach-info">
           <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px">${c.name} <span style="font-size:10px;color:var(--text-dim)">ℹ️</span></div>
           <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -6836,7 +7268,7 @@ function renderTraining() {
         c.specialty === 'pop' ? `人気+${c.popBonus}` :
         `${c.specialty.toUpperCase()}×${c.growthMult}`;
       html += `<div class="train-coach-row" onclick="event.stopPropagation();showCoachTooltip(${c.id})" style="cursor:pointer">
-        <span>${c.emoji} <span style="text-decoration:underline dotted;text-underline-offset:3px">${c.name}</span></span>
+        <span style="display:inline-flex;align-items:center;gap:6px">${coachPortraitImg(c, 22)} <span style="text-decoration:underline dotted;text-underline-offset:3px">${c.name}</span></span>
         <span style="font-size:10px;color:var(--gold);font-weight:700;margin-left:6px">[${effectLabel}]</span>
         <span class="coach-slots">担当 ${assigned.length}/${COACH_MAX_ASSIGN}</span>
         <span style="font-size:10px;color:var(--text-dim);margin-left:auto">ℹ️</span>
@@ -6902,7 +7334,7 @@ function renderTraining() {
 
     const rowOpacity = isInjured ? ' style="opacity:0.55"' : '';
     html += `<div class="train-row"${rowOpacity} onclick="toggleTrainDetail(${c.id})" style="cursor:pointer${isInjured?';opacity:0.55':''}">
-      <span>${fLink(c, {source:'roster', size:'12px'})}${champBadge} <span style="font-size:9px;color:var(--text-dim)">${potPct}%</span></span>
+      <span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(c.id, 28, '', true)} ${fLink(c, {source:'roster', size:'12px'})}${champBadge}</span>
       <span class="num" style="font-size:12px">${ov(c)}</span>
       <span><div class="cond-bar" style="width:45px"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:10px">${condPct}</span></span>
       <span>${coachDisplay}</span>
@@ -6914,17 +7346,22 @@ function renderTraining() {
     const stats = ['pw','sp','te','st','mn'];
     const statLabels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
     html += `<div class="detail-panel" id="train-detail-${c.id}">`;
-    // Stat bars - use trainCap (actual growth limit) instead of pot (internal base)
+    // Stat bars - use trainCap for bar width but hide exact values
     stats.forEach(s => {
       const current = c[s];
       const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
       const pct = Math.round(current / cap * 100);
       const sg = c.seasonGrowth[s] || 0;
       const atCap = current >= cap;
+      // Growth room label (vague)
+      const roomLabel = atCap ? '<span style="color:var(--gold);font-size:9px">MAX</span>'
+        : pct >= 85 ? '<span style="color:#e74c3c;font-size:9px">残僅か</span>'
+        : pct >= 60 ? '<span style="color:#f39c12;font-size:9px">成長中</span>'
+        : '<span style="color:#2ecc71;font-size:9px">伸びしろ大</span>';
       html += `<div class="stat-bar-wrap">
         <span class="stat-bar-label">${statLabels[s]}</span>
         <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
-        <span class="stat-bar-val">${current}/${cap}${atCap ? ' <span style="color:var(--gold);font-size:9px">MAX</span>' : ''}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
+        <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
       </div>`;
     });
     // Coach assign dropdown
