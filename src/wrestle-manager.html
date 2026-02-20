@@ -1561,13 +1561,14 @@ const Engine = {
       const clamp = Engine.util.clamp;
       const B = Engine.battle;
 
+      const eff = Engine.util.eff;
       const L = {
-        ...charL, hp: Math.round((charL.st * 1.2 + charL.mn * 0.8 + 150) * ENG.hpScale),
+        ...charL, hp: Math.round(eff(charL.st) * ENG.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       L.mhp = L.hp;
       const R = {
-        ...charR, hp: Math.round((charR.st * 1.2 + charR.mn * 0.8 + 150) * ENG.hpScale),
+        ...charR, hp: Math.round(eff(charR.st) * ENG.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       R.mhp = R.hp;
@@ -3967,28 +3968,31 @@ const App = {
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
-    // Send match data to iframe
+    // Send match data to iframe (avoid contentDocument — causes SecurityError on file://)
     const iframe = document.getElementById('battleIframe');
-    const sendData = () => {
-      iframe.contentWindow.postMessage({
-        type: 'START_MATCH',
-        left: { ...charL, vl: charL.voiceLines || charL.vl || ['…！'] },
-        right: { ...charR, vl: charR.voiceLines || charR.vl || ['…！'] },
-        matchInfo: {
-          header: m.isTitle ? '🏆 TITLE MATCH' : `MATCH ${idx + 1}`,
-          subHeader: `${charL.name} vs ${charR.name}`,
-          matchNum: idx + 1,
-          totalMatches: sp.validMatches.length,
-          isTitle: !!m.isTitle
-        }
-      }, '*');
+    const msg = {
+      type: 'START_MATCH',
+      left: { ...charL, vl: charL.voiceLines || charL.vl || ['…！'] },
+      right: { ...charR, vl: charR.voiceLines || charR.vl || ['…！'] },
+      matchInfo: {
+        header: m.isTitle ? '🏆 TITLE MATCH' : `MATCH ${idx + 1}`,
+        subHeader: `${charL.name} vs ${charR.name}`,
+        matchNum: idx + 1,
+        totalMatches: sp.validMatches.length,
+        isTitle: !!m.isTitle
+      }
     };
-    // iframe might already be loaded or need to wait
-    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-      setTimeout(sendData, 200);
-    } else {
-      iframe.onload = () => setTimeout(sendData, 200);
-    }
+    let sent = false;
+    const sendOnce = () => {
+      if (sent) return;
+      sent = true;
+      iframe.contentWindow.postMessage(msg, '*');
+    };
+    // Reload iframe to ensure clean state, then send on load
+    iframe.onload = () => setTimeout(sendOnce, 150);
+    iframe.src = iframe.src; // force reload
+    // Fallback: also try after a delay in case onload already fired
+    setTimeout(sendOnce, 600);
   },
 
   // Receive result from battle engine

@@ -1102,7 +1102,7 @@ function renderMatch(){
     <div class="action-bar-spacer"></div>
     <div class="action-bar"><button class="btn-next" id="nBtn" ${S.winner||S.anim?'disabled':''}>
       ${S.winner?(S.winner==='draw'?'DRAW!':`${(S.winner==='left'?L:R).name} WIN!`):'▶  NEXT TURN'}</button></div>`;
-  if(!S.winner&&!S.anim)document.getElementById('nBtn').addEventListener('click',nextTurn);
+  if(!S.winner&&!S.anim)document.getElementById('nBtn').onclick=nextTurn;
 }
 
 // ═══ v4.1 TURN LOGIC (complete rewrite) ═══
@@ -1518,7 +1518,7 @@ function showSp(side,text,cls){
 }
 function endAnim(){
   S.anim=false;
-  const btn=document.getElementById('nBtn');if(btn){btn.disabled=false;btn.addEventListener('click',nextTurn)}
+  const btn=document.getElementById('nBtn');if(btn){btn.disabled=false;btn.onclick=nextTurn}
   updLog();
 }
 function updLog(){
@@ -1635,7 +1635,7 @@ function renderMatchWithIntro(){
   setTimeout(()=>{
     if(box)box.innerHTML=`<div class="nar-empty">NEXT TURNを押して試合開始</div>`;
     const btn2=document.getElementById('nBtn');
-    if(btn2){btn2.disabled=false;btn2.addEventListener('click',nextTurn);
+    if(btn2){btn2.disabled=false;btn2.onclick=nextTurn;
       btn2.style.animation='btnPulse 1.5s ease-in-out infinite';}
   },4500);
 }
