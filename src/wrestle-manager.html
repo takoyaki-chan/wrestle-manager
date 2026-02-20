@@ -1,0 +1,3093 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>女子プロレス団体経営シミュレータ — Prototype v0.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #08080d;
+  --card-bg: #0e0e15;
+  --panel-bg: #121220;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --blue: #4a8fd4;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --text-main: #e7e9ee;
+  --text-sub: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.25);
+  color-scheme: dark;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:12px}
+
+/* Header */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
+  background:var(--panel-bg);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.top-bar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
+  background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.top-bar-info{display:flex;gap:16px;font-size:12px;flex-wrap:wrap}
+.info-item{display:flex;align-items:center;gap:4px}
+.info-label{color:var(--text-sub);font-size:10px;font-family:'Oswald',sans-serif;letter-spacing:1px;text-transform:uppercase}
+.info-val{font-weight:700;font-size:14px}
+.info-val.positive{color:var(--green)}
+.info-val.negative{color:var(--red)}
+.info-val.gold{color:var(--gold-light)}
+
+/* Navigation */
+.nav-bar{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.nav-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  padding:8px 16px;background:var(--panel-bg);border:1px solid rgba(255,255,255,0.06);border-radius:4px;
+  color:var(--text-sub);cursor:pointer;white-space:nowrap;transition:all .2s}
+.nav-btn:hover{border-color:rgba(212,168,67,0.3);color:var(--text-main)}
+.nav-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.08)}
+
+/* Panels */
+.screen{display:none}
+.screen.active{display:block}
+.panel{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:16px;margin-bottom:12px}
+.panel-title{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);padding:6px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08)}
+.data-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.data-table tr:hover{background:rgba(255,255,255,0.02)}
+.data-table .num{text-align:right;font-family:'Oswald',sans-serif;font-weight:600}
+.data-table .ov{font-family:'Bebas Neue',sans-serif;font-size:18px;
+  background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Buttons */
+.btn{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;
+  padding:8px 20px;border:none;border-radius:4px;cursor:pointer;transition:all .2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)}
+.btn-gold:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn-gold:disabled{opacity:0.3;cursor:not-allowed;transform:none;filter:none}
+.btn-blue{background:rgba(74,143,212,0.15);border:1px solid rgba(74,143,212,0.3);color:var(--blue)}
+.btn-blue:hover{background:rgba(74,143,212,0.25)}
+.btn-red{background:rgba(196,30,58,0.15);border:1px solid rgba(196,30,58,0.3);color:#f08b9e}
+.btn-red:hover{background:rgba(196,30,58,0.25)}
+.btn-sm{padding:4px 12px;font-size:11px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Match Card Builder */
+.match-slot{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.06);border-radius:4px;margin-bottom:8px}
+.match-slot-num{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);min-width:30px}
+.match-slot-vs{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text-dim);margin:0 8px}
+.match-fighter{flex:1;min-width:0}
+.match-fighter select{width:100%;padding:6px;background:var(--card-bg);border:1px solid rgba(255,255,255,0.1);
+  border-radius:3px;color:var(--text-main);font-size:12px;font-family:'Noto Sans JP',sans-serif}
+.match-slot.main-event{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.04)}
+
+/* Venue Selection */
+.venue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.venue-card{padding:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
+  border-radius:4px;cursor:pointer;transition:all .2s;text-align:center}
+.venue-card:hover{border-color:rgba(212,168,67,0.3)}
+.venue-card.selected{border-color:var(--gold);background:rgba(212,168,67,0.08)}
+.venue-card.locked{opacity:0.3;cursor:not-allowed}
+.venue-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.venue-info{font-size:11px;color:var(--text-sub)}
+
+/* Result Log */
+.match-result{padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:4px;margin-bottom:6px;
+  border-left:3px solid var(--gold)}
+.match-result .winner{font-weight:900;color:var(--gold-light)}
+.match-result .detail{font-size:11px;color:var(--text-sub);margin-top:4px}
+
+/* Roster Condition bars */
+.cond-bar{width:60px;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.cond-fill{height:100%;border-radius:3px;transition:width .3s}
+.cond-fill.high{background:#2ecc71}
+.cond-fill.mid{background:#f39c12}
+.cond-fill.low{background:#e74c3c}
+
+/* Finance */
+.finance-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.finance-row .f-label{color:var(--text-sub)}
+.finance-row .f-val{font-weight:700}
+.finance-row .f-val.income{color:var(--green)}
+.finance-row .f-val.expense{color:var(--red)}
+.finance-total{font-size:14px;font-weight:900;padding-top:8px;margin-top:4px;border-top:1px solid var(--gold)}
+
+/* Select dropdown */
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+
+/* Schedule tags */
+.sched-tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px}
+.sched-tag.practice{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.sched-tag.promo{background:rgba(241,196,15,0.15);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)}
+.sched-tag.rest{background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3)}
+.sched-tag.療養{background:rgba(214,48,49,0.15);color:#e17055;border:1px solid rgba(214,48,49,0.3)}
+.sched-tag.intensive{background:rgba(255,165,0,0.2);color:#ffa500;border:1px solid rgba(255,165,0,0.4)}
+
+/* Training screen (v0.8) */
+.train-coach-summary{padding:10px;background:rgba(46,204,113,0.05);border:1px solid rgba(46,204,113,0.15);border-radius:6px;margin-bottom:12px}
+.train-coach-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;cursor:pointer;border-radius:4px;padding:4px 6px}
+.train-coach-row:hover{background:rgba(212,168,67,0.06)}
+.train-coach-row .coach-slots{color:var(--text-dim);font-size:10px;margin-left:auto}
+.train-tendency{font-size:11px;color:var(--text-sub);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05)}
+.train-row{display:grid;grid-template-columns:1fr 45px 60px 100px 90px 55px;align-items:center;padding:6px 4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);gap:4px}
+.train-row:hover{background:rgba(212,168,67,0.04)}
+.train-row-header{font-weight:700;color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.train-growth-arrow{font-size:10px;font-weight:700;letter-spacing:-1px}
+.train-growth-arrow.up2{color:#2ecc71}
+.train-growth-arrow.up1{color:rgba(46,204,113,0.55)}
+.train-growth-arrow.eq{color:var(--text-dim)}
+.btn-intensive{background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);color:#ffa500;font-size:10px;
+  padding:3px 8px;border-radius:3px;cursor:pointer;font-weight:700;transition:all .2s}
+.btn-intensive:hover{background:rgba(255,165,0,0.2)}
+.btn-intensive.active{background:rgba(255,165,0,0.25);border-color:#ffa500;box-shadow:0 0 6px rgba(255,165,0,0.2)}
+.btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
+.detail-panel{overflow:hidden;max-height:0;transition:max-height .3s ease;padding:0 8px}
+.detail-panel.open{max-height:400px;padding:10px 8px}
+.stat-bar-wrap{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px}
+.stat-bar-label{width:24px;font-weight:700;color:var(--text-sub);text-transform:uppercase;font-size:10px}
+.stat-bar-bg{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.stat-bar-fill.pw{background:#e74c3c}.stat-bar-fill.sp{background:#2ecc71}.stat-bar-fill.te{background:#3498db}
+.stat-bar-fill.st{background:#e67e22}.stat-bar-fill.mn{background:#9b59b6}
+.stat-bar-val{width:60px;font-size:10px;color:var(--text-dim);text-align:right}
+.train-season-log{padding:10px;background:rgba(212,168,67,0.04);border:1px solid rgba(212,168,67,0.1);border-radius:6px;margin-top:12px;font-size:11px;color:var(--text-sub);max-height:150px;overflow-y:auto}
+
+/* Show result overlay */
+.show-result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:100;
+  overflow-y:auto;padding:20px}
+.show-result-overlay.active{display:flex;align-items:flex-start;justify-content:center}
+.show-result-box{background:var(--panel-bg);border:1px solid rgba(212,168,67,0.3);border-radius:8px;
+  max-width:700px;width:100%;padding:24px;margin:auto}
+.show-result-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;text-align:center;
+  background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}
+::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.3);border-radius:3px}
+
+/* Status badges */
+.badge{display:inline-block;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:1px;font-family:'Oswald',sans-serif}
+/* Role badges */
+.badge-bf{background:rgba(74,143,212,0.15);color:#8bc4f0;border:1px solid rgba(74,143,212,0.3)}
+.badge-heel{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
+.badge-neutral{background:rgba(176,184,196,0.15);color:#b0b8c4;border:1px solid rgba(176,184,196,0.3)}
+/* Style badges — each style has unique color */
+.badge-Striker{background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)}
+.badge-Grappler{background:rgba(155,89,182,0.15);color:#bb8fce;border:1px solid rgba(155,89,182,0.3)}
+.badge-Speed{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.badge-Technique{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.3)}
+.badge-Allround{background:rgba(241,196,15,0.15);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)}
+.badge-Submission{background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.3)}
+.badge-Brawler{background:rgba(192,57,43,0.15);color:#e88a82;border:1px solid rgba(192,57,43,0.3)}
+
+/* Match result styles */
+.result-winner-name{font-size:18px;font-weight:900;
+  background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.result-loser-name{font-size:14px;color:var(--text-sub)}
+.result-win-badge{display:inline-block;padding:2px 10px;border-radius:3px;font-size:11px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark);margin-left:8px}
+.result-arrow{font-size:20px;color:var(--gold);margin:0 4px}
+
+/* Record display */
+.record-cell{text-align:center;line-height:1.2}
+.record-symbol{font-size:13px;font-weight:900}
+.record-symbol.win{color:#2ecc71}
+.record-symbol.lose{color:#e74c3c}
+.record-symbol.draw{color:#f39c12}
+.record-num{font-size:11px;font-family:'Oswald',sans-serif}
+
+@media(max-width:600px){
+  .app{padding:8px}
+  .top-bar{padding:8px 10px}
+  .top-bar-title{font-size:16px}
+  .top-bar-info{gap:8px}
+  .data-table{font-size:11px}
+  .nav-btn{padding:6px 10px;font-size:10px}
+}
+
+/* v0.6: Save/Load */
+.save-slot{padding:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.save-slot.has-data{border-color:rgba(212,168,67,0.2)}
+.save-slot-info{font-size:12px;color:var(--text-sub)}
+.save-slot-title{font-weight:700;font-size:14px;color:var(--text-main)}
+.save-slot-meta{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+/* v0.6: Coach */
+.facility-card{padding:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:12px}
+.facility-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.facility-emoji{font-size:24px}
+.facility-name{font-weight:700;font-size:15px}
+.facility-level-bar{display:flex;gap:4px;margin-bottom:10px}
+.facility-lv{flex:1;padding:8px 6px;border-radius:4px;font-size:11px;text-align:center;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.2);transition:all 0.2s}
+.facility-lv.current{border-color:var(--gold);background:rgba(212,168,67,0.12);color:var(--gold)}
+.facility-lv.available{border-color:rgba(46,204,113,0.3);cursor:pointer}
+.facility-lv.available:hover{background:rgba(46,204,113,0.1)}
+.facility-lv.locked{opacity:0.35}
+.facility-lv-name{font-weight:700;margin-bottom:2px}
+.facility-lv-desc{font-size:10px;color:var(--text-sub)}
+.facility-lv-cost{font-size:10px;color:var(--gold);margin-top:3px}
+.facility-lv-maint{font-size:10px;color:var(--text-dim)}
+.facility-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.facility-tag{padding:4px 10px;border-radius:12px;font-size:11px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.2);color:var(--gold)}
+.coach-card{padding:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.coach-card.hired{border-color:rgba(46,204,113,0.3);background:rgba(46,204,113,0.03)}
+.coach-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:rgba(255,255,255,0.06)}
+.coach-info{flex:1;min-width:180px}
+.coach-name{font-weight:700;font-size:14px}
+.coach-desc{font-size:11px;color:var(--text-sub);margin-top:2px}
+.coach-effect{font-size:11px;margin-top:4px;padding:3px 8px;border-radius:3px;display:inline-block}
+.coach-effect.pw{background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.25)}
+.coach-effect.sp{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)}
+.coach-effect.te{background:rgba(52,152,219,0.12);color:#5dade2;border:1px solid rgba(52,152,219,0.25)}
+.coach-effect.st{background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.25)}
+.coach-effect.mn{background:rgba(155,89,182,0.12);color:#bb8fce;border:1px solid rgba(155,89,182,0.25)}
+.coach-effect.all{background:rgba(212,168,67,0.12);color:var(--gold);border:1px solid rgba(212,168,67,0.25)}
+.coach-effect.mq{background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.25)}
+.coach-effect.pop{background:rgba(74,143,212,0.12);color:#8bc4f0;border:1px solid rgba(74,143,212,0.25)}
+
+/* v0.6: Growth indicators */
+.growth-up{color:#2ecc71;font-size:10px;font-weight:700}
+.growth-down{color:#e74c3c;font-size:10px;font-weight:700}
+.pot-bar{width:40px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;display:inline-block;vertical-align:middle;margin-left:4px}
+.pot-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+
+/* v0.6: Confirm dialog */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center}
+.confirm-overlay.active{display:flex}
+.confirm-box{background:var(--panel-bg);border:1px solid rgba(212,168,67,0.3);border-radius:8px;padding:24px;max-width:400px;width:90%;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-title">WRESTLE MANAGER</div>
+    <div class="top-bar-info">
+      <div class="info-item"><span class="info-label">シーズン</span><span class="info-val" id="dispSeason">Y1</span></div>
+      <div class="info-item"><span class="info-label">週</span><span class="info-val gold" id="dispWeek">1</span></div>
+      <div class="info-item"><span class="info-label">四半期</span><span class="info-val" id="dispQuarter">Q1</span></div>
+      <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
+      <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span></div>
+      <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ 中立</span></div>
+      <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <button class="nav-btn active" onclick="showScreen('week')">📅 今週</button>
+    <button class="nav-btn" onclick="showScreen('roster')">👥 ロスター</button>
+    <button class="nav-btn" onclick="showScreen('scout')">🔍 スカウト</button>
+    <button class="nav-btn" onclick="showScreen('coach')">🎓 コーチ</button>
+    <button class="nav-btn" onclick="showScreen('training')">🏋️ 育成</button>
+    <button class="nav-btn" onclick="showScreen('facility')">🏢 施設</button>
+    <button class="nav-btn" onclick="showScreen('show')">🎤 興行準備</button>
+    <button class="nav-btn" onclick="showScreen('finance')">💰 収支</button>
+    <button class="nav-btn" onclick="showScreen('log')">📋 ログ</button>
+    <button class="nav-btn" onclick="showScreen('save')">💾 セーブ</button>
+  </div>
+
+  <!-- SCREEN: This Week -->
+  <div class="screen active" id="screen-week">
+    <div class="panel">
+      <div class="panel-title" id="weekTitle">Week 1 — 非興行週</div>
+      <div id="weekContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Roster -->
+  <div class="screen" id="screen-roster">
+    <div class="panel">
+      <div class="panel-title">ロスター一覧 (<span id="rosterCount">0</span>名)</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="rosterTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Scout -->
+  <div class="screen" id="screen-scout">
+    <div class="panel">
+      <div class="panel-title">スカウト / フリーエージェント (<span id="faCount">0</span>名)</div>
+      <div id="scoutContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Show Prep -->
+  <div class="screen" id="screen-show">
+    <div class="panel">
+      <div class="panel-title">興行準備</div>
+      <div id="showPrepContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Finance -->
+  <div class="screen" id="screen-finance">
+    <div class="panel">
+      <div class="panel-title">収支レポート</div>
+      <div id="financeContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Log -->
+  <div class="screen" id="screen-log">
+    <div class="panel">
+      <div class="panel-title">ゲームログ</div>
+      <div id="logContent" style="max-height:600px;overflow-y:auto"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Coach (v0.6) -->
+  <!-- SCREEN: Coach (v0.6) -->
+  <div class="screen" id="screen-coach">
+    <div class="panel">
+      <div class="panel-title">🎓 コーチ管理</div>
+      <div id="coachContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Training (v0.8) -->
+  <div class="screen" id="screen-training">
+    <div class="panel">
+      <div class="panel-title">🏋️ トレーニング</div>
+      <div id="trainingContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Facility (v0.7) -->
+  <div class="screen" id="screen-facility">
+    <div class="panel">
+      <div class="panel-title">🏢 施設管理</div>
+      <div id="facilityContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Save/Load (v0.6) -->
+  <div class="screen" id="screen-save">
+    <div class="panel">
+      <div class="panel-title">💾 セーブ / ロード</div>
+      <div id="saveContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Show Result Overlay -->
+<div class="show-result-overlay" id="showResultOverlay">
+  <div class="show-result-box" id="showResultBox"></div>
+</div>
+
+<!-- Confirm Dialog (v0.6) -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box" id="confirmBox"></div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 1: CHARACTER DATA                               ║
+// ╚══════════════════════════════════════════════════════════╝
+const ALL_CHARS = [
+  {id:1,name:'阿武隈塔子',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164}},
+  {id:2,name:'富岡加奈子',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168}},
+  {id:3,name:'澤出みずき',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154}},
+  {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:121,st:163,mn:178}},
+  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:178,te:141,st:170,mn:142}},
+  {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148}},
+  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146}},
+  {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128}},
+  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113}},
+  {id:10,name:'佐藤ヨーコ',h:148,pw:19,sp:26,te:27,st:15,mn:11,style:'Allround',role:'Babyface',pot:{pw:85,sp:94,te:95,st:80,mn:74}},
+  {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156}},
+  {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Babyface',pot:{pw:161,sp:152,te:132,st:167,mn:167}},
+  {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:116,st:143,mn:155}},
+  {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147}},
+  {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:87,st:146,mn:141}},
+  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Striker',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160}},
+  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159}},
+  {id:18,name:'出羽鷹子',h:181,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141}},
+  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141}},
+  {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:129,te:161,st:143,mn:161}},
+  {id:21,name:'木ノ内幸音',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Heel',pot:{pw:146,sp:129,te:129,st:148,mn:147}},
+  {id:22,name:'美濃山まりな',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122}},
+  {id:23,name:'早見知子',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113}},
+  {id:24,name:'園部梨花',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Striker',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116}},
+  {id:25,name:'石戸谷なつき',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109}},
+  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142}},
+  {id:27,name:'八重樫舞',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126}},
+  {id:28,name:'岩屋みら',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139}},
+  {id:29,name:'相沢未来',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156}},
+  {id:30,name:'松川杏樹',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152}},
+  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151}},
+  {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138}},
+  {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164}},
+  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Babyface',pot:{pw:148,sp:154,te:169,st:154,mn:150}},
+  {id:35,name:'上野原弥生',h:176,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135}},
+  {id:36,name:'真鍋綾乃',h:178,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138}},
+  {id:37,name:'白銀麗子',h:165,pw:74,sp:82,te:82,st:83,mn:78,style:'Allround',role:'Babyface',pot:{pw:156,sp:167,te:167,st:168,mn:161}},
+  {id:38,name:'芝彩音',h:164,pw:88,sp:64,te:67,st:78,mn:76,style:'Striker',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159}},
+  {id:39,name:'神谷沙奈絵',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Speed',role:'Neutral',pot:{pw:142,sp:159,te:143,st:144,mn:128}},
+  {id:40,name:'高輪まみ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Speed',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152}},
+  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152}},
+  {id:42,name:'本郷真理子',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Striker',role:'Neutral',pot:{pw:174,sp:147,te:124,st:146,mn:152}},
+  {id:43,name:'金沢文',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141}},
+  {id:44,name:'福浦理乃',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Babyface',pot:{pw:120,sp:129,te:124,st:117,mn:116}},
+  {id:45,name:'高槻千歳',h:163,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156}},
+  {id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160}},
+  {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Submission',role:'Neutral',pot:{pw:143,sp:148,te:159,st:150,mn:155}},
+  {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:129,st:144,mn:161}},
+  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:138,te:134,st:155,mn:163}},
+  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132}},
+  {id:51,name:'三橋ふみえ',h:168,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125}},
+  {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Brawler',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:130}},
+  {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138}},
+  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:116,sp:112,te:109,st:122,mn:125}},
+  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164}},
+  {id:56,name:'片桐ありさ',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148}},
+  {id:57,name:'浅見里緒菜',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148}},
+  {id:58,name:'丹羽穂垂',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Grappler',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134}},
+  {id:59,name:'池辺マリ',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:151,sp:126,te:112,st:141,mn:129}},
+  {id:60,name:'馬入橋ほとり',h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:167,sp:148,te:137,st:151,mn:161}},
+  {id:61,name:'観音崎せりか',h:169,pw:73,sp:73,te:67,st:63,mn:66,style:'Allround',role:'Heel',pot:{pw:155,sp:155,te:147,st:142,mn:146}},
+  {id:62,name:'宮ケ瀬千夏',h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125}},
+  {id:63,name:'伊勢原文奈',h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132}},
+  {id:64,name:'湯本ほたる',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122}},
+  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169}},
+  {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161}},
+  {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168}},
+  {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Babyface',pot:{pw:148,sp:160,te:128,st:151,mn:159}},
+  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143}},
+  {id:70,name:'浜竹美咲',h:166,pw:80,sp:57,te:63,st:68,mn:68,style:'Striker',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148}},
+  {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:151,sp:141,te:150,st:141,mn:147}},
+  {id:72,name:'穴澤ほのか',h:167,pw:74,sp:58,te:65,st:63,mn:70,style:'Striker',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151}},
+  {id:73,name:'大馬越よし子',h:169,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:133,st:147,mn:148}},
+  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151}},
+  {id:75,name:'海老名栞',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164}},
+  {id:76,name:'栗林あかり',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135}},
+  {id:77,name:'新見ゆり',h:164,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129}},
+  {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:135,sp:130,te:126,st:142,mn:138}},
+  {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:109}},
+  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85}}
+];
+// Default starting roster IDs (8 members: a balanced mix)
+const DEFAULT_ROSTER_IDS = [4, 3, 5, 11, 12, 16, 19, 20]; // 高津,澤出,深町,橘,生駒,大河内,四条,岸
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 2: MOVE DATA (from v3.5)                        ║
+// ╚══════════════════════════════════════════════════════════╝
+const commonMoves=[
+{n:'ストンピング',d:2,c:'strike'},{n:'ボディパンチ',d:3,c:'strike'},{n:'バックエルボー',d:3,c:'strike'},
+{n:'ナックルパンチ',d:3,c:'strike'},{n:'逆水平チョップ',d:4,c:'strike'},{n:'エルボー・スタンプ',d:5,c:'strike'},
+{n:'マシンガン・チョップ',d:5,c:'strike'},{n:'ニーキック',d:6,c:'strike'},{n:'ヘッドバット',d:6,c:'strike'},
+{n:'ビッグブーツ',d:7,c:'strike'},{n:'低空ドロップキック',d:7,c:'strike'},{n:'サッカーボールキック',d:7,c:'strike'},
+{n:'ドロップキック',d:8,c:'strike'},{n:'ジャンピング・エルボー',d:8,c:'strike'},{n:'ローリング・エルボー',d:9,c:'strike'},
+{n:'延髄斬り',d:9,c:'strike'},{n:'ミサイルキック',d:9,c:'strike'},{n:'ラリアット',d:10,c:'strike'},
+{n:'スーパーキック',d:10,c:'strike'},{n:'クローズライン',d:10,c:'strike'},
+{n:'ロックアップからの押し込み',d:2,c:'throw'},{n:'ショルダータックル',d:3,c:'throw'},
+{n:'ヒップトス',d:3,c:'throw'},{n:'アームドラッグ',d:3,c:'throw'},{n:'ヘッドロック・テイクダウン',d:3,c:'throw'},
+{n:'ファイヤーマンズキャリー',d:4,c:'throw'},{n:'ボディスラム',d:6,c:'throw'},{n:'スープレックス',d:7,c:'throw'},
+{n:'スナップ・スープレックス',d:7,c:'throw'},{n:'ブレーンバスター',d:8,c:'throw'},
+{n:'サイド・スープレックス',d:8,c:'throw'},{n:'ネックブリーカー',d:8,c:'throw'},
+{n:'スウィンギング・ネックブリーカー',d:8,c:'throw'},
+{n:'バックブリーカー',d:8,c:'throw'},{n:'サモアン・ドロップ',d:9,c:'throw'},
+{n:'ベリー・トゥ・ベリー',d:9,c:'throw'},{n:'タイガー・ドライバー',d:9,c:'throw'},
+{n:'スパインバスター',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
+{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:3,c:'submission'},
+{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:4,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
+{n:'スリーパー・ホールド',d:6,c:'submission'},{n:'フルネルソン',d:6,c:'submission'},
+{n:'コブラツイスト',d:7,c:'submission'},{n:'ベアハッグ',d:7,c:'submission'},
+{n:'キャメルクラッチ',d:7,c:'submission'},{n:'インディアン・デスロック',d:7,c:'submission'},
+{n:'ボストンクラブ',d:8,c:'submission'},{n:'アキレス腱固め',d:9,c:'submission'},
+{n:'フライング・クロスボディ',d:7,c:'aerial'},{n:'ダイビング・ボディ・プレス',d:8,c:'aerial'},
+{n:'セントーン',d:7,c:'aerial'},{n:'トペ・スイシーダ',d:9,c:'aerial'},
+{n:'プランチャ・スイシーダ',d:8,c:'aerial'},{n:'ダイビング・エルボー',d:8,c:'aerial'},
+{n:'ダイビング・ヘッドバット',d:7,c:'aerial'},{n:'ミサイルキック（飛）',d:9,c:'aerial'},
+{n:'エルボードロップ',d:3,c:'ground'},{n:'ニードロップ',d:4,c:'ground'},{n:'レッグドロップ',d:4,c:'ground'},
+{n:'スライディングキック',d:4,c:'ground'},{n:'ストンピング連打',d:3,c:'ground'},
+{n:'ヘアプル・スラム',d:3,c:'ground'},{n:'フェイスウォッシュ',d:4,c:'ground'},{n:'ダブルニードロップ',d:5,c:'ground'},
+{n:'スクールボーイ',d:4,c:'rollup'},{n:'首固め',d:4,c:'rollup'},
+{n:'スモール・パッケージ',d:5,c:'rollup'},{n:'ラ・マヒストラル',d:5,c:'rollup'},
+{n:'ウラカン・ラナ',d:5,c:'rollup'},{n:'回転エビ固め',d:5,c:'rollup'},
+{n:'ヨーロピアン・クラッチ',d:5,c:'rollup'}
+];
+const styleMoves={
+Grappler:[{n:'パワーボム',d:14,c:'throw'},{n:'シットアウト・パワーボム',d:15,c:'throw'},
+{n:'ジャーマン・スープレックス',d:13,c:'throw'},{n:'チョークスラム',d:13,c:'throw'},
+{n:'デスバレーボム',d:14,c:'throw'},{n:'バックドロップ',d:13,c:'throw'},
+{n:'ラストライド',d:16,c:'throw'},{n:'垂直落下式ブレーンバスター',d:14,c:'throw'},
+{n:'力強いラリアット',d:12,c:'strike'},{n:'頭突き',d:11,c:'strike'},
+{n:'カナディアン・バックブリーカー',d:10,c:'submission'},{n:'アルゼンチン・バックブリーカー',d:11,c:'submission'}],
+Speed:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネードDDT',d:13,c:'throw'},
+{n:'シャイニング・ウィザード',d:12,c:'strike'},{n:'ムーンサルト・プレス',d:15,c:'aerial'},
+{n:'シューティング・スター・プレス',d:16,c:'aerial'},{n:'450スプラッシュ',d:15,c:'aerial'},
+{n:'フロッグ・スプラッシュ',d:13,c:'aerial'},{n:'スワントン・ボム',d:14,c:'aerial'},
+{n:'トペ・コンヒーロ',d:11,c:'aerial'},
+{n:'ダイビング・セントーン',d:10,c:'aerial'},{n:'ドラゴン・スクリュー',d:10,c:'throw'},
+{n:'ハリケーンラナ',d:12,c:'throw'}],
+Technique:[{n:'アームバー',d:11,c:'submission'},{n:'フィギュア・フォー・レッグロック',d:12,c:'submission'},
+{n:'シャープシューター',d:13,c:'submission'},{n:'STF',d:12,c:'submission'},
+{n:'三角絞め',d:12,c:'submission'},{n:'クロスフェイス',d:13,c:'submission'},
+{n:'卍固め',d:14,c:'submission'},{n:'ドラゴンスリーパー',d:13,c:'submission'},
+{n:'キムラロック',d:11,c:'submission'},{n:'タイガー・スープレックス',d:14,c:'throw'},
+{n:'ドラゴン・スープレックス',d:15,c:'throw'},{n:'フィッシャーマン・スープレックス',d:13,c:'throw'}],
+Allround:[{n:'ファルコンアロー',d:13,c:'throw'},{n:'みちのくドライバーII',d:14,c:'throw'},
+{n:'エクスプローダー',d:12,c:'throw'},{n:'ノーザンライツ・スープレックス',d:12,c:'throw'},
+{n:'ダブルアーム・スープレックス',d:13,c:'throw'},{n:'リアネイキッドチョーク',d:11,c:'submission'},
+{n:'テキサス・クローバーホールド',d:12,c:'submission'},{n:'アンクル・ロック',d:11,c:'submission'},
+{n:'フェニックス・スプラッシュ',d:15,c:'aerial'},{n:'ダイビング・ボディ・プレス（大）',d:11,c:'aerial'},
+{n:'スピアー',d:12,c:'strike'},{n:'インプラントDDT',d:13,c:'throw'}],
+Striker:[{n:'シャイニング・ウィザード（打）',d:13,c:'strike'},{n:'ジャンピングニー',d:12,c:'strike'},
+{n:'ハイキック',d:11,c:'strike'},{n:'バズソーキック',d:14,c:'strike'},
+{n:'PK',d:11,c:'strike'},{n:'ランニングエルボー',d:13,c:'strike'},
+{n:'スピニングバックフィスト',d:12,c:'strike'},{n:'ケンカキック',d:15,c:'strike'},
+{n:'エルボー連打',d:10,c:'strike'},{n:'コーナーラッシュ',d:11,c:'strike'},
+{n:'パイルドライバー',d:14,c:'throw'},{n:'ツームストン・パイルドライバー',d:16,c:'throw'}],
+Submission:[{n:'ギロチンチョーク',d:13,c:'submission'},{n:'肩固め',d:12,c:'submission'},
+{n:'ヒール・ホールド',d:13,c:'submission'},{n:'ロメロ・スペシャル',d:14,c:'submission'},
+{n:'テキサス・クローバーホールド（専）',d:13,c:'submission'},{n:'リアネイキッドチョーク（専）',d:12,c:'submission'},
+{n:'アンクル・ロック（専）',d:12,c:'submission'},{n:'クロスフェイス（専）',d:14,c:'submission'},
+{n:'卍固め（専）',d:15,c:'submission'},{n:'フィギュア・フォー（専）',d:14,c:'submission'},
+{n:'バックドロップ（専）',d:13,c:'throw'},{n:'ドラゴン・スクリュー（専）',d:11,c:'throw'}],
+Brawler:[{n:'エルボースマッシュ',d:12,c:'strike'},{n:'バックハンドブロー',d:11,c:'strike'},
+{n:'ヘッドバット連打',d:11,c:'strike'},{n:'コーナーラッシュ（喧）',d:12,c:'strike'},
+{n:'パイルドライバー（喧）',d:15,c:'throw'},{n:'ツームストン・パイルドライバー（喧）',d:16,c:'throw'},
+{n:'チョークスラム（喧）',d:14,c:'throw'},{n:'サイドウォークスラム',d:12,c:'throw'},
+{n:'ランニングパワースラム',d:13,c:'throw'},{n:'ネックハンギングツリー',d:12,c:'submission'},
+{n:'フェイスウォッシュ連打',d:10,c:'ground'},{n:'ストンピング乱打',d:11,c:'ground'}]
+};
+const catW={
+Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15,rollup:5},
+Speed:{strike:20,throw:15,submission:10,aerial:35,ground:5,rollup:10},
+Technique:{strike:15,throw:20,submission:30,aerial:5,ground:10,rollup:15},
+Allround:{strike:25,throw:25,submission:15,aerial:15,ground:10,rollup:10},
+Striker:{strike:45,throw:15,submission:5,aerial:10,ground:15,rollup:5},
+Submission:{strike:10,throw:10,submission:45,aerial:5,ground:15,rollup:10},
+Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  ║
+// ╚══════════════════════════════════════════════════════════╝
+const MAX_T = 20;
+const PHASES = [
+  {name:'Opening',min:1,max:4,mult:0.9,sCh:20,counterBonus:0},
+  {name:'Mid',min:5,max:8,mult:1.05,sCh:40,counterBonus:3},
+  {name:'End',min:9,max:12,mult:1.2,sCh:55,counterBonus:5},
+  {name:'Climax',min:13,max:20,mult:1.4,sCh:70,counterBonus:8}
+];
+const ENG = {
+  hpScale: 1.85,
+  effPivot: 100, effSlopeAfterPivot: 0.60,
+  hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
+  tecHitBonus: 0.21, spdDodgeBonus: 0.075, hitMin: 42, hitMax: 98,
+  counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.03, counterMin: 2, counterMax: 22,
+  counterDmgMult: 0.6, counterMomShift: 18,
+  dmgPwrScale: 0.12, dmgTecScale: 0.10, dmgSpdScale: 0.03,
+  defStaScale: 0.08, defMntScale: 0.055, momDmgScale: 0.003,
+  dmgRandMin: 0.85, dmgRandRange: 0.30, dmgFloor: 3,
+  gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
+  pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
+  pinAttemptMomBonus: 0.15, pinAttemptMntPenalty: 0.20,
+  pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
+  finishWeights: {
+    strike:{fall:85,gu:5,tko:10}, throw:{fall:80,gu:5,tko:15}, aerial:{fall:85,gu:0,tko:15},
+    ground:{fall:70,gu:5,tko:25}, submission:{fall:5,gu:90,tko:5}, rollup:{fall:100,gu:0,tko:0}
+  },
+  kickoutMnScale: 0.50, kickoutMax: 2, kickoutClimaxMult: 0.7,
+  guEscapeMnScale: 0.45, guEscapeMax: 2,
+  tkoConsecutiveThreshold: 3, tkoHpThreshold: 0.15, tkoBaseRate: 14,
+  rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 16
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4: ECONOMY CONFIG                               ║
+// ╚══════════════════════════════════════════════════════════╝
+const SALARY_TABLE = [
+  {max:49, pay:8}, {max:64, pay:18}, {max:79, pay:35}, {max:89, pay:60},
+  {max:99, pay:100}, {max:109, pay:150}, {max:999, pay:200}
+];
+const VENUES = [
+  {name:'公民館',  cap:200,  cost:30,  ticket:0.3, popReq:0},
+  {name:'小ホール',cap:500,  cost:80,  ticket:0.4, popReq:20},
+  {name:'中ホール',cap:1500, cost:200, ticket:0.5, popReq:40},
+  {name:'アリーナ',cap:5000, cost:500, ticket:0.6, popReq:60},
+  {name:'大会場',  cap:15000,cost:1200,ticket:0.7, popReq:80},
+  {name:'ドーム',  cap:40000,cost:3000,ticket:0.8, popReq:95}
+];
+const SPONSOR_TABLE = [
+  {min:0,max:19,val:0},{min:20,max:39,val:20},{min:40,max:59,val:60},
+  {min:60,max:79,val:120},{min:80,max:94,val:250},{min:95,max:100,val:400}
+];
+const BROADCAST_TABLE = [
+  {min:70,max:84,val:100},{min:85,max:94,val:200},{min:95,max:100,val:400}
+];
+const FIXED_COSTS = {facility:30, admin:20};
+
+// Heat System
+const HEAT_LEVELS = [
+  {id:'ice_cold', label:'極寒',  emoji:'🧊', color:'#74b9ff', mult:0.6, min:-999, max:-6},
+  {id:'cold',     label:'冷',   emoji:'❄️', color:'#a29bfe', mult:0.8, min:-5, max:-2},
+  {id:'neutral',  label:'中立', emoji:'➖', color:'#dfe6e9', mult:1.0, min:-1, max:1},
+  {id:'warm',     label:'温',   emoji:'🔥', color:'#fdcb6e', mult:1.2, min:2, max:5},
+  {id:'hot',      label:'熱',   emoji:'🔥', color:'#e17055', mult:1.5, min:6, max:9},
+  {id:'on_fire',  label:'超熱', emoji:'💥', color:'#d63031', mult:2.0, min:10, max:999}
+];
+
+// Injury System
+const INJURY_TABLE = [
+  {type:'軽傷', minWeeks:1, maxWeeks:2, threshold:0.12, color:'#fdcb6e'},
+  {type:'中傷', minWeeks:3, maxWeeks:4, threshold:0.05, color:'#e17055'},
+  {type:'重傷', minWeeks:6, maxWeeks:8, threshold:0.02, color:'#d63031'}
+];
+
+// Title System
+const TITLES = [
+  {id:'world', name:'世界王座', mqBonus:15, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+];
+
+// Rivalry System
+const RIVALRY_THRESHOLDS = [
+  {matches:2, label:'因縁', mqBonus:8, color:'#fdcb6e', emoji:'⚡'},
+  {matches:4, label:'宿敵', mqBonus:15, color:'#e17055', emoji:'🔥'},
+  {matches:7, label:'永遠のライバル', mqBonus:22, color:'#d63031', emoji:'💥'}
+];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4B: COACH DATA (v0.6)                           ║
+// ╚══════════════════════════════════════════════════════════╝
+const ALL_COACHES = [
+  {id:1, name:'鬼塚道場長',      emoji:'💪', specialty:'pw', growthMult:2.0, salary:40, hireFee:150,
+   desc:'パワー育成の鬼。担当選手のパワー成長率が2倍に。'},
+  {id:2, name:'飛鳥トレーナー',  emoji:'💨', specialty:'sp', growthMult:2.0, salary:40, hireFee:150,
+   desc:'スピード強化の専門家。担当選手のスピード成長率が2倍に。'},
+  {id:3, name:'鶴見師範',        emoji:'🎯', specialty:'te', growthMult:2.0, salary:40, hireFee:150,
+   desc:'テクニックの匠。担当選手のテクニック成長率が2倍に。'},
+  {id:4, name:'岩田フィジカルコーチ', emoji:'🏃', specialty:'st', growthMult:2.0, salary:40, hireFee:150,
+   desc:'スタミナ強化のプロ。担当選手のスタミナ成長率が2倍に。'},
+  {id:5, name:'沢村メンタルコーチ', emoji:'🧠', specialty:'mn', growthMult:2.0, salary:40, hireFee:150,
+   desc:'メンタル強化の達人。担当選手のマインド成長率が2倍に。'},
+  {id:6, name:'朝日総合アドバイザー', emoji:'⭐', specialty:'all', growthMult:1.4, salary:30, hireFee:80,
+   desc:'担当選手の全ステータス練習効率を1.4倍に。万能型。'},
+  {id:7, name:'紅林セコンド',    emoji:'🎬', specialty:'mq', mqBonus:3, salary:30, hireFee:100,
+   desc:'担当選手の試合MQ基底値に+3。セコンドの的確な指示で試合の質が向上。'},
+  {id:8, name:'白川マネージャー', emoji:'📣', specialty:'pop', popBonus:1, salary:20, hireFee:60,
+   desc:'担当選手のプロモ活動時に人気上昇+1。メディア対応のプロ。'}
+];
+const MAX_COACHES = 3; // 同時雇用上限
+const COACH_HIRE_FEE = 80; // 雇用費（万）
+const COACH_MAX_ASSIGN = 4; // v0.8: 1コーチあたり最大担当選手数
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
+// ╚══════════════════════════════════════════════════════════╝
+const GROWTH_CONFIG = {
+  baseGrowthRate: 0.02,   // base fraction of gap to close per practice
+  growthRandom: 1.5,      // random bonus on growth
+  declineStartSeason: 4,  // decline begins after this many seasons
+  declineRate: 0.6,       // stat points lost per decline check
+  declineChance: 0.25,    // chance per stat per season-end
+  peakBonusSeason: 2,     // seasons 1-2 have bonus growth
+  peakGrowthMult: 1.3,    // growth multiplier during peak seasons
+  // v0.8: Coach assign weights
+  specialtyWeight: 0.40,  // weight for coach specialty stat
+  otherWeight: 0.15,      // weight for non-specialty stats (4 * 0.15 = 0.60)
+  subMult: 1.2,           // multiplier for non-specialty stats under coach
+  // v0.8: Intensive training
+  intensiveMult: 1.5,     // growth multiplier for intensive training
+  intensiveCondDrain: 2.0, // condition drain multiplier
+  intensiveInjuryChance: 0.08, // 8% chance of minor injury
+  intensiveMaxConsec: 2,   // max consecutive intensive weeks
+  intensiveMinCond: 50     // min condition to allow intensive
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4D: FACILITY DATA (v0.7)                        ║
+// ╚══════════════════════════════════════════════════════════╝
+const FACILITIES = [
+  {
+    id: 'training', name: 'トレーニング施設', emoji: '🏋️',
+    levels: [
+      {name:'基本設備', desc:'基本的なトレーニング環境', maint:0, cost:0},
+      {name:'充実設備', desc:'練習成長率+20%', maint:20, cost:500},
+      {name:'最先端設備', desc:'練習成長率+40%', maint:45, cost:1500}
+    ]
+  },
+  {
+    id: 'medical', name: '医療施設', emoji: '🏥',
+    levels: [
+      {name:'なし', desc:'怪我は自然治癒のみ', maint:0, cost:0},
+      {name:'診療室', desc:'怪我回復-1週', maint:15, cost:400},
+      {name:'スポーツ医療', desc:'怪我回復-2週、療養回復+5', maint:35, cost:1200}
+    ]
+  },
+  {
+    id: 'media', name: 'メディア施設', emoji: '📺',
+    levels: [
+      {name:'なし', desc:'プロモ効果は通常', maint:0, cost:0},
+      {name:'配信スタジオ', desc:'プロモ人気+1', maint:10, cost:300},
+      {name:'放送局設備', desc:'プロモ人気+2、放映権収入+50万', maint:25, cost:1000}
+    ]
+  },
+  {
+    id: 'dormitory', name: '選手寮', emoji: '🏠',
+    levels: [
+      {name:'なし', desc:'コンディション回復は通常', maint:0, cost:0},
+      {name:'基本寮', desc:'毎週コンディション+3', maint:15, cost:350},
+      {name:'豪華寮', desc:'毎週コンディション+6、休養効果+5', maint:35, cost:1100}
+    ]
+  },
+  {
+    id: 'scouting', name: 'スカウト網', emoji: '🔍',
+    levels: [
+      {name:'基本', desc:'契約金50万', maint:0, cost:0},
+      {name:'国内ネットワーク', desc:'契約金-15万', maint:10, cost:250},
+      {name:'海外ネットワーク', desc:'契約金-25万、発掘情報あり', maint:25, cost:800}
+    ]
+  }
+];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 5: ENGINE CORE (v0.85)                           ║
+// ║  Pure logic layer — no DOM references                     ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const Engine = {
+  // ── RNG: Seeded xorshift128+ ──────────────────────────
+  rng: {
+    create(seed) {
+      seed = seed | 0;
+      if (seed === 0) seed = 1;
+      // Splitmix64-style seed expansion for two 32-bit state words
+      let s0 = seed;
+      s0 = ((s0 >>> 16) ^ s0) * 0x45d9f3b | 0;
+      s0 = ((s0 >>> 16) ^ s0) * 0x45d9f3b | 0;
+      s0 = (s0 >>> 16) ^ s0;
+      let s1 = seed * 1812433253 + 1;
+      s1 = ((s1 >>> 16) ^ s1) * 0x45d9f3b | 0;
+      s1 = ((s1 >>> 16) ^ s1) * 0x45d9f3b | 0;
+      s1 = (s1 >>> 16) ^ s1;
+      if (s0 === 0 && s1 === 0) s0 = 1;
+      return { s0, s1 };
+    },
+    _next(state) {
+      let s1 = state.s0;
+      const s0 = state.s1;
+      state.s0 = s0;
+      s1 ^= s1 << 23;
+      s1 ^= s1 >>> 17;
+      s1 ^= s0;
+      s1 ^= s0 >>> 26;
+      state.s1 = s1;
+      return ((state.s0 + state.s1) >>> 0);
+    },
+    float(rng) {
+      // Returns [0, 1)
+      return Engine.rng._next(rng) / 4294967296;
+    },
+    int(rng, min, max) {
+      return min + Math.floor(Engine.rng.float(rng) * (max - min + 1));
+    },
+    pick(rng, arr) {
+      return arr[Math.floor(Engine.rng.float(rng) * arr.length)];
+    },
+    weighted(rng, weights) {
+      // weights: {key: weight, ...} — returns key
+      const entries = Object.entries(weights);
+      const total = entries.reduce((s, [, v]) => s + v, 0);
+      let r = Engine.rng.float(rng) * total;
+      for (const [k, v] of entries) {
+        r -= v;
+        if (r <= 0) return k;
+      }
+      return entries[entries.length - 1][0];
+    },
+    // Derive a sub-seed for a specific context
+    derive(baseSeed, ...keys) {
+      let h = baseSeed | 0;
+      for (const k of keys) {
+        h = ((h << 5) - h + (typeof k === 'number' ? k : 0)) | 0;
+        h = ((h >>> 16) ^ h) * 0x45d9f3b | 0;
+      }
+      return h || 1;
+    }
+  },
+
+  // ── Utilities ──────────────────────────────────────────
+  util: {
+    clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
+    ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
+    isShowWeek(w) { return w % 2 === 0; },
+    getQuarter(w) { return Math.ceil(w / 12); },
+    isSpecialShow(w) { return w % 12 === 0; },
+    isPPV(w) { return w === 48; },
+    eff(x) {
+      if (x <= ENG.effPivot) return x;
+      return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
+    },
+    getSalary(c) {
+      const o = Engine.util.ov(c);
+      for (const s of SALARY_TABLE) if (o <= s.max) return s.pay;
+      return 200;
+    },
+    getPotentialPct(char) {
+      const stats = ['pw','sp','te','st','mn'];
+      const current = stats.reduce((s, k) => s + char[k], 0);
+      const potential = stats.reduce((s, k) => s + (char.pot ? char.pot[k] : char[k]), 0);
+      return potential > 0 ? Math.round(current / potential * 100) : 100;
+    }
+  },
+
+  // ── Battle Engine (DOM-free) ──────────────────────────
+  battle: {
+    phase(t) {
+      return PHASES.find(p => t >= p.min && t <= p.max) || PHASES[3];
+    },
+    selMove(rng, style, turn) {
+      const ph = Engine.battle.phase(turn);
+      const use = Engine.rng.float(rng) * 100 < ph.sCh;
+      const pool = use ? styleMoves[style] : commonMoves;
+      const cat = Engine.rng.weighted(rng, catW[style]);
+      const cands = pool.filter(m => m.c === cat);
+      return cands.length ? Engine.rng.pick(rng, cands) : Engine.rng.pick(rng, pool);
+    },
+    calcHitRate(mv, atk, def) {
+      const eff = Engine.util.eff;
+      const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
+      return Engine.util.clamp(baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus), ENG.hitMin, ENG.hitMax);
+    },
+    calcCounterRate(atk, def, ph) {
+      const eff = Engine.util.eff;
+      let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
+      if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
+      return Engine.util.clamp(rate, ENG.counterMin, ENG.counterMax);
+    },
+    calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
+      const eff = Engine.util.eff;
+      const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
+        + (mv.c === 'aerial' ? eff(atk.sp) * ENG.dmgSpdScale : 0);
+      const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
+      const mAdv = atkSide === 'left' ? mom : -mom;
+      const mMod = 1 + (mAdv * ENG.momDmgScale);
+      const rF = ENG.dmgRandMin + (Engine.rng.float(rng) * ENG.dmgRandRange);
+      let raw = (base - defense) * mMod * rF * ph.mult;
+      if (def.gritTurns > 0) raw *= (1 - ENG.gritDmgReduction);
+      return Math.max(ENG.dmgFloor, Math.round(raw));
+    },
+    determineFinishType(rng, mv) {
+      return Engine.rng.weighted(rng, ENG.finishWeights[mv.c] || ENG.finishWeights.strike);
+    },
+    calcKickoutChance(def, ph) {
+      let chance = (def.mn / 100) * ENG.kickoutMnScale;
+      if (ph.name === 'Climax') chance *= ENG.kickoutClimaxMult;
+      chance = Engine.util.clamp(chance, 0.05, 0.45);
+      if (def.kickoutCount >= ENG.kickoutMax) chance = 0;
+      return chance;
+    },
+    calcGuEscapeChance(def, ph) {
+      let chance = (def.mn / 100) * ENG.guEscapeMnScale;
+      if (ph.name === 'Climax') chance *= 0.8;
+      chance = Engine.util.clamp(chance, 0.05, 0.40);
+      if (def.kickoutCount >= ENG.guEscapeMax) chance = 0;
+      return chance;
+    },
+    checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph) {
+      if (def.hp <= 0) return false;
+      if (def.hp / def.mhp > ENG.pinAttemptHpThreshold) return false;
+      if (dmg < ENG.pinAttemptMinDmg) return false;
+      if (ph.name === 'Opening') return false;
+      let attemptRate = ENG.pinAttemptBaseRate;
+      const mAdv = atkSide === 'left' ? mom : -mom;
+      attemptRate += mAdv * ENG.pinAttemptMomBonus;
+      if (ph.name === 'Climax') attemptRate += 15;
+      if (ph.name === 'End') attemptRate += 8;
+      return Engine.rng.float(rng) * 100 < Engine.util.clamp(attemptRate, 10, 60);
+    },
+    calcPinAttemptSuccess(atk, def, dmg, ph) {
+      let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
+      if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
+      if (def.gritTurns > 0) rate -= 10;
+      return Engine.util.clamp(rate, 8, 55);
+    },
+
+    // Main match simulation — pure function, no DOM
+    simulateMatch(charL, charR, rng) {
+      const clamp = Engine.util.clamp;
+      const B = Engine.battle;
+
+      const L = {
+        ...charL, hp: Math.round((charL.st * 1.2 + charL.mn * 0.8 + 150) * ENG.hpScale),
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+      };
+      L.mhp = L.hp;
+      const R = {
+        ...charR, hp: Math.round((charR.st * 1.2 + charR.mn * 0.8 + 150) * ENG.hpScale),
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+      };
+      R.mhp = R.hp;
+
+      let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null;
+      let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
+
+      while (turn <= MAX_T && !winner) {
+        const ph = B.phase(turn);
+        const leftChance = 50 + mom * 0.3;
+        const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
+        const atk = isLeftAtk ? L : R;
+        const def = isLeftAtk ? R : L;
+        const atkSide = isLeftAtk ? 'left' : 'right';
+
+        const mv = B.selMove(rng, atk.style, turn);
+        const hitRate = B.calcHitRate(mv, atk, def);
+        const roll = Engine.rng.float(rng) * 100;
+
+        if (roll > hitRate) {
+          log.push(`T${turn}: ${atk.name}の${mv.n} → MISS`);
+          mom += isLeftAtk ? -5 : 5;
+        } else {
+          const counterRate = B.calcCounterRate(atk, def, ph);
+          if (Engine.rng.float(rng) * 100 < counterRate) {
+            const cDmg = Math.max(ENG.dmgFloor, Math.round(mv.d * ENG.counterDmgMult));
+            atk.hp -= cDmg;
+            mom += isLeftAtk ? -ENG.counterMomShift : ENG.counterMomShift;
+            def.consecutiveHits = 0;
+            totalCounters++;
+            log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${cDmg}ダメージ`);
+          } else {
+            const dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+            def.hp -= dmg;
+            mom += isLeftAtk ? 8 : -8;
+            atk.consecutiveHits++;
+            def.consecutiveHits = 0;
+            if (dmg >= 10) bigMoves++;
+            const curLeader = mom > 5 ? 'left' : mom < -5 ? 'right' : null;
+            if (curLeader && curLeader !== lastLeader) { leadChanges++; lastLeader = curLeader; }
+
+            if (L.gritTurns > 0) L.gritTurns--;
+            if (R.gritTurns > 0) R.gritTurns--;
+
+            const dmgStr = dmg >= 15 ? `${dmg}の大ダメージ！` : `${dmg}ダメージ`;
+            log.push(`T${turn}: ${atk.name}の${mv.n} → ${def.name}に${dmgStr} (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+
+            if (def.hp <= 0) {
+              const fType = B.determineFinishType(rng, mv);
+              const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
+              let escaped = false;
+              if (fType === 'fall' || fType === 'tko') {
+                const koChance = B.calcKickoutChance(def, ph);
+                if (Engine.rng.float(rng) < koChance) {
+                  escaped = true;
+                  def.hp = Math.round(def.mhp * 0.05);
+                  def.kickoutCount++;
+                  def.gritTurns = ENG.gritDuration;
+                  log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
+                }
+              } else if (fType === 'gu') {
+                const escChance = B.calcGuEscapeChance(def, ph);
+                if (Engine.rng.float(rng) < escChance) {
+                  escaped = true;
+                  def.hp = Math.round(def.mhp * 0.05);
+                  def.kickoutCount++;
+                  def.gritTurns = ENG.gritDuration;
+                  log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
+                  totalKickouts++;
+                }
+              }
+              if (!escaped) {
+                winner = atkSide;
+                finType = finLabel;
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+              }
+            }
+            else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
+              const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
+              if (Engine.rng.float(rng) * 100 < successRate) {
+                winner = atkSide;
+                finType = 'ピン';
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
+              } else {
+                def.gritTurns = ENG.gritDuration;
+                log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
+                totalKickouts++;
+              }
+            }
+            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < ENG.rollupHpThreshold) {
+              const rSuccess = ENG.rollupBaseSuccess + (Engine.util.eff(atk.te) * ENG.rollupTecBonus);
+              if (Engine.rng.float(rng) * 100 < rSuccess) {
+                winner = atkSide;
+                finType = '丸め込み';
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
+              }
+            }
+            else if (!winner && atk.consecutiveHits >= ENG.tkoConsecutiveThreshold
+                     && def.hp / def.mhp < ENG.tkoHpThreshold) {
+              if (Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
+                winner = atkSide;
+                finType = 'TKO';
+                finMove = mv.n;
+                log.push(`★ レフェリーストップ！ ${atk.name}のTKO勝利！`);
+              }
+            }
+          }
+        }
+        mom = clamp(mom, -50, 50);
+        turn++;
+      }
+
+      if (!winner) {
+        if (L.hp === R.hp) {
+          winner = 'draw';
+          finType = '時間切れドロー';
+        } else {
+          winner = L.hp > R.hp ? 'left' : 'right';
+          finType = 'HP判定';
+        }
+        log.push(`⏰ 時間切れ！ ${winner === 'draw' ? 'ドロー' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
+      }
+
+      // Calculate MQ
+      const matchTurns = turn - 1;
+      const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
+      let mq = 0;
+      mq += Math.min(30, avgOV * 0.35);
+      const lengthScore = matchTurns <= 8 ? matchTurns * 1.5 : matchTurns <= 15 ? 12 + (matchTurns - 8) * 1.0 :
+        matchTurns <= 30 ? 19 + Math.min(1, (matchTurns - 15) * 0.07) : 20 - (matchTurns - 30) * 0.3;
+      mq += Math.max(0, Math.min(20, lengthScore));
+      mq += Math.min(15, totalCounters * 3);
+      mq += Math.min(20, totalKickouts * 8);
+      mq += Math.min(10, leadChanges * 2.5);
+      mq += Math.min(5, bigMoves * 0.8);
+      mq = Math.round(Engine.util.clamp(mq, 5, 100));
+
+      return {
+        left: charL, right: charR,
+        winner, finType, finMove,
+        turns: matchTurns,
+        hpLeft: { final: Math.max(0, L.hp), max: L.mhp },
+        hpRight: { final: Math.max(0, R.hp), max: R.mhp },
+        mq, log
+      };
+    }
+  },
+
+  // ── Economy (DOM-free) ─────────────────────────────────
+  economy: {
+    calcWeeklySalary(roster) {
+      return roster.reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
+    },
+    calcFixedCosts() {
+      return FIXED_COSTS.facility + FIXED_COSTS.admin;
+    },
+    getSponsorIncome(orgPop) {
+      for (const s of SPONSOR_TABLE) if (orgPop >= s.min && orgPop <= s.max) return s.val;
+      return 0;
+    },
+    getBroadcastIncome(orgPop) {
+      for (const b of BROADCAST_TABLE) if (orgPop >= b.min && orgPop <= b.max) return b.val;
+      return 0;
+    },
+    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch) {
+      const v = VENUES[venueIdx];
+      const baseAttend = G.orgPop / 100 * v.cap * 0.8;
+      const cardBonus = mainCardPop * 0.3;
+      const heatMult = Engine.heat.getMult(G);
+      const titleMult = hasTitleMatch ? 1.15 : 1.0;
+      return Math.min(v.cap, Math.round((baseAttend + cardBonus) * heatMult * titleMult));
+    },
+    calcShowRevenue(roster, venueIdx, attendance) {
+      const v = VENUES[venueIdx];
+      const ticketRev = Math.round(attendance * v.ticket);
+      const pops = roster.map(r => r.popularity).sort((a, b) => b - a).slice(0, 3);
+      const goodsRev = pops.reduce((s, p) => s + p * 2, 0);
+      return { ticketRev, goodsRev, venueCost: v.cost };
+    }
+  },
+
+  // ── Heat System (IMMUTABLE — returns new values, never mutates G) ──
+  heat: {
+    getLevel(G) {
+      return HEAT_LEVELS.find(h => G.heatScore >= h.min && G.heatScore <= h.max) || HEAT_LEVELS[2];
+    },
+    getMult(G) { return Engine.heat.getLevel(G).mult; },
+    calcUpdate(G, avgMQ) {
+      let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
+      if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
+      if (G.heatScore < 0 && delta >= 0) delta += 0.5;
+      return Engine.util.clamp(Math.round((G.heatScore + delta) * 10) / 10, -10, 10);
+    },
+    calcDecay(G) {
+      let hs = G.heatScore;
+      if (hs > 0) hs = Math.max(0, hs - 0.3);
+      else if (hs < 0) hs = Math.min(0, hs + 0.3);
+      return Math.round(hs * 10) / 10;
+    }
+  },
+
+  // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
+  injury: {
+    check(rng, fighter, matchResult, facilityReduction) {
+      if (!fighter) return null;
+      const isLeft = matchResult.left.id === fighter.id;
+      const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
+      const hpRatio = hpData.final / hpData.max;
+      const condFactor = (100 - fighter.condition) / 100;
+      let injuryChance = Math.min(0.25, 0.04 + condFactor * 0.08 + (1 - hpRatio) * 0.06 + matchResult.turns * 0.002);
+      if (Engine.rng.float(rng) > injuryChance) return null;
+      const roll = Engine.rng.float(rng);
+      const injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
+      const weeks = injury.minWeeks + Engine.rng.int(rng, 0, injury.maxWeeks - injury.minWeeks);
+      const reducedWeeks = Math.max(1, weeks - facilityReduction);
+      return {
+        newFighter: { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) },
+        injuryInfo: { injury, reducedWeeks, originalWeeks: weeks }
+      };
+    },
+    tick(roster, freeAgents) {
+      const events = [];
+      const newRoster = roster.map(c => {
+        if (!c.injury) return c;
+        const wl = c.injury.weeksLeft - 1;
+        if (wl <= 0) { events.push(`✅ ${c.name}が${c.injury.type}から復帰！`); return { ...c, injury: null }; }
+        return { ...c, injury: { ...c.injury, weeksLeft: wl } };
+      });
+      const newFA = freeAgents.map(c => {
+        if (!c.injury) return c;
+        const wl = c.injury.weeksLeft - 1;
+        return wl <= 0 ? { ...c, injury: null } : { ...c, injury: { ...c.injury, weeksLeft: wl } };
+      });
+      return { roster: newRoster, freeAgents: newFA, events };
+    }
+  },
+
+  // ── Title & Rivalry (IMMUTABLE — returns new objects, never mutates) ──
+  title: {
+    getRivalryKey(id1, id2) {
+      return id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
+    },
+    getRivalry(G, id1, id2) {
+      return G.rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
+    },
+    getRivalryLevel(G, id1, id2) {
+      const r = Engine.title.getRivalry(G, id1, id2);
+      if (!r) return null;
+      let best = null;
+      for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
+      return best;
+    },
+    // Returns { rivalries, msg }
+    recordRivalry(G, id1, id2) {
+      const key = Engine.title.getRivalryKey(id1, id2);
+      const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0 };
+      const old = Engine.title.getRivalryLevel(G, id1, id2);
+      const newEntry = { matches: oldEntry.matches + 1, lastWeek: G.week };
+      const newRivalries = { ...G.rivalries, [key]: newEntry };
+      const newLvl = Engine.title.getRivalryLevel({ ...G, rivalries: newRivalries }, id1, id2);
+      let msg = null;
+      if (newLvl && (!old || old.matches !== newLvl.matches)) {
+        const c1 = G.roster.find(c => c.id === id1) || G.freeAgents.find(c => c.id === id1);
+        const c2 = G.roster.find(c => c.id === id2) || G.freeAgents.find(c => c.id === id2);
+        msg = `${newLvl.emoji} ${c1?.name || '?'} vs ${c2?.name || '?'} — ${newLvl.label}関係に発展！（MQ+${newLvl.mqBonus}）`;
+      }
+      return { rivalries: newRivalries, msg };
+    },
+    getWorldChampion(G) {
+      if (!G.titles.world.championId) return null;
+      return G.roster.find(c => c.id === G.titles.world.championId) || null;
+    },
+    // Returns { titles, roster, msg }
+    crownChampion(G, fighterId) {
+      const prev = Engine.title.getWorldChampion(G);
+      const newTitles = { ...G.titles, world: { championId: fighterId, defenses: 0, wonWeek: G.week } };
+      const newRoster = G.roster.map(c => c.id === fighterId ? { ...c, popularity: Math.min(100, c.popularity + 5) } : c);
+      const c = G.roster.find(r => r.id === fighterId);
+      const msg = prev
+        ? `🏆 王座交代！ ${c?.name} が新チャンピオンに！（前王者: ${prev.name}）`
+        : `🏆 ${c?.name} が初代チャンピオンに戴冠！`;
+      return { titles: newTitles, roster: newRoster, msg };
+    },
+    // Returns { titles, roster, msg }
+    recordDefense(G) {
+      const newTitles = { ...G.titles, world: { ...G.titles.world, defenses: G.titles.world.defenses + 1 } };
+      const champId = G.titles.world.championId;
+      const newRoster = G.roster.map(c => c.id === champId ? { ...c, popularity: Math.min(100, c.popularity + 2) } : c);
+      const c = G.roster.find(r => r.id === champId);
+      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が王座${newTitles.world.defenses}度目の防衛成功！` };
+    },
+    // Returns { titles, msg }
+    validateChampion(G) {
+      if (G.titles.world.championId && !G.roster.find(c => c.id === G.titles.world.championId)) {
+        return { titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } }, msg: '🏆 王座剥奪: チャンピオンが団体を離脱したため王座は空位に' };
+      }
+      return { titles: G.titles, msg: null };
+    }
+  },
+
+  // ── Coach System (IMMUTABLE for state changes) ────────────────
+  coach: {
+    getHiredCoaches(G) {
+      return G.coaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+    },
+    getCoachAssignees(G, coachId) {
+      return (G.coachAssign && G.coachAssign[coachId]) || [];
+    },
+    getCharCoach(G, charId) {
+      for (const coachId of G.coaches) {
+        if (Engine.coach.getCoachAssignees(G, coachId).includes(charId)) return ALL_COACHES.find(c => c.id === coachId);
+      }
+      return null;
+    },
+    // Returns { coachAssign, success }
+    assignToCoach(G, coachId, charId) {
+      const current = G.coachAssign[coachId] || [];
+      if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: G.coachAssign, success: false };
+      return { coachAssign: { ...G.coachAssign, [coachId]: [...current, charId] }, success: true };
+    },
+    // Returns new coachAssign
+    unassignFromCoach(G, charId) {
+      const newAssign = {};
+      for (const coachId of Object.keys(G.coachAssign)) {
+        newAssign[coachId] = G.coachAssign[coachId].filter(id => id !== charId);
+      }
+      return newAssign;
+    },
+    getCharGrowthMult(G, charId, stat) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach) return 1.0;
+      if (coach.specialty === 'all') return coach.growthMult;
+      if (coach.specialty === stat) return coach.growthMult;
+      if (['pw','sp','te','st','mn'].includes(coach.specialty)) return GROWTH_CONFIG.subMult;
+      return 1.0;
+    },
+    pickGrowthStat(rng, G, charId) {
+      const stats = ['pw','sp','te','st','mn'];
+      const coach = Engine.coach.getCharCoach(G, charId);
+      let weights;
+      if (coach && ['pw','sp','te','st','mn'].includes(coach.specialty)) {
+        weights = stats.map(s => s === coach.specialty ? GROWTH_CONFIG.specialtyWeight : GROWTH_CONFIG.otherWeight);
+      } else {
+        weights = stats.map(() => 0.2);
+      }
+      const r = Engine.rng.float(rng);
+      let cumulative = 0;
+      for (let i = 0; i < stats.length; i++) {
+        cumulative += weights[i];
+        if (r < cumulative) return stats[i];
+      }
+      return stats[4];
+    },
+    getMQBonusForMatch(G, leftId, rightId) {
+      let bonus = 0;
+      Engine.coach.getHiredCoaches(G).forEach(c => {
+        if (c.specialty !== 'mq' || !c.mqBonus) return;
+        const assigned = Engine.coach.getCoachAssignees(G, c.id);
+        if (assigned.includes(leftId) || assigned.includes(rightId)) bonus += c.mqBonus;
+      });
+      return bonus;
+    },
+    getPopBonusForChar(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach || coach.specialty !== 'pop') return 0;
+      return coach.popBonus || 0;
+    },
+    getSalaryTotal(G) {
+      return Engine.coach.getHiredCoaches(G).reduce((s, c) => s + c.salary, 0);
+    }
+  },
+
+  // ── Facility System (DOM-free) ─────────────────────────
+  facility: {
+    getLevel(G, facilityId) {
+      return (G.facilities && G.facilities[facilityId]) || 1;
+    },
+    getMaintenance(G) {
+      if (!G.facilities) return 0;
+      let total = 0;
+      FACILITIES.forEach(f => {
+        const lv = Engine.facility.getLevel(G, f.id);
+        total += f.levels[lv - 1].maint;
+      });
+      return total;
+    },
+    getGrowthMult(G) {
+      const lv = Engine.facility.getLevel(G, 'training');
+      return lv === 3 ? 1.4 : lv === 2 ? 1.2 : 1.0;
+    },
+    getInjuryReduction(G) {
+      const lv = Engine.facility.getLevel(G, 'medical');
+      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
+    },
+    getMedicalRecovery(G) {
+      return Engine.facility.getLevel(G, 'medical') >= 3 ? 5 : 0;
+    },
+    getPromoBonus(G) {
+      const lv = Engine.facility.getLevel(G, 'media');
+      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
+    },
+    getBroadcastBonus(G) {
+      return Engine.facility.getLevel(G, 'media') >= 3 ? 50 : 0;
+    },
+    getConditionBonus(G) {
+      const lv = Engine.facility.getLevel(G, 'dormitory');
+      return lv === 3 ? 6 : lv === 2 ? 3 : 0;
+    },
+    getRestBonus(G) {
+      return Engine.facility.getLevel(G, 'dormitory') >= 3 ? 5 : 0;
+    },
+    getScoutDiscount(G) {
+      const lv = Engine.facility.getLevel(G, 'scouting');
+      return lv === 3 ? 25 : lv === 2 ? 15 : 0;
+    }
+  },
+
+  // ── Growth System (IMMUTABLE) ───────────────────────────
+  growth: {
+    calcGrowth(rng, G, char, stat) {
+      const pot = char.pot[stat];
+      const current = char[stat];
+      if (current >= pot) return 0;
+      const gap = pot - current;
+      let growth = Math.max(1, Math.round(gap * GROWTH_CONFIG.baseGrowthRate + Engine.rng.float(rng) * GROWTH_CONFIG.growthRandom));
+      growth = Math.round(growth * Engine.coach.getCharGrowthMult(G, char.id, stat));
+      growth = Math.round(growth * Engine.facility.getGrowthMult(G));
+      if (G.season <= GROWTH_CONFIG.peakBonusSeason) growth = Math.round(growth * GROWTH_CONFIG.peakGrowthMult);
+      if (char.intensive) growth = Math.round(growth * GROWTH_CONFIG.intensiveMult);
+      return Math.min(growth, pot - current);
+    },
+    // Returns { roster, report } — does NOT mutate G
+    applySeasonEnd(rng, G) {
+      const report = [];
+      const newRoster = G.roster.map(c => {
+        const nc = { ...c, careerSeasons: c.careerSeasons + 1, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        const changes = {};
+        const stats = ['pw','sp','te','st','mn'];
+        if (nc.careerSeasons >= GROWTH_CONFIG.declineStartSeason) {
+          stats.forEach(s => {
+            if (Engine.rng.float(rng) < GROWTH_CONFIG.declineChance) {
+              const loss = Math.round(GROWTH_CONFIG.declineRate + Engine.rng.float(rng) * 1.5);
+              const actual = Math.min(loss, Math.max(0, nc[s] - 10));
+              if (actual > 0) { nc[s] -= actual; changes[s] = -actual; }
+            }
+          });
+        }
+        const parts = [];
+        stats.forEach(s => {
+          const net = (nc.seasonGrowth[s] || 0) + (changes[s] || 0);
+          if (net > 0) parts.push(`${s.toUpperCase()}+${net}`);
+          else if (net < 0) parts.push(`${s.toUpperCase()}${net}`);
+        });
+        if (parts.length > 0) report.push(`${nc.name}: ${parts.join(' ')}`);
+        nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+        return nc;
+      });
+      return { roster: newRoster, report };
+    }
+  },
+
+  // ── Season: Weekly Processing (IMMUTABLE) ──────────────
+  season: {
+    // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
+    processManage(rng, G) {
+      const events = [];
+      const injResult = Engine.injury.tick(G.roster, G.freeAgents);
+      events.push(...injResult.events);
+      let roster = injResult.roster;
+      const freeAgents = injResult.freeAgents;
+
+      let heatScore = G.heatScore;
+      if (!Engine.util.isShowWeek(G.week)) heatScore = Engine.heat.calcDecay({ ...G, heatScore });
+
+      const dormBonus = Engine.facility.getConditionBonus(G);
+      const stateForCalc = { ...G, roster, heatScore };
+
+      roster = roster.map(c => {
+        const nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+
+        if (nc.injury) {
+          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G)), _weekAction: '療養', intensive: false };
+        }
+
+        if (nc.intensive) {
+          const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
+          if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance) {
+            const weeks = 1 + Engine.rng.int(rng, 0, 1);
+            nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+            events.push(`⚠️ ${nc.name}が強化練習中に負傷！（${weeks}週離脱）`);
+          }
+          nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
+          nc._weekAction = 'intensive';
+          nc.intensive = false;
+          return nc;
+        }
+
+        let action = nc.schedule;
+        if (action === 'balance') action = Engine.util.isShowWeek(G.week) ? 'promo' : 'practice';
+        if (nc.condition <= 30) action = 'rest';
+
+        if (action === 'practice') {
+          const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus);
+          nc.intensiveWeeks = 0;
+        } else if (action === 'promo') {
+          nc.popularity = Math.min(100, nc.popularity + Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G));
+          nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus);
+          nc.intensiveWeeks = 0;
+        } else {
+          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + Engine.facility.getRestBonus(G));
+          nc.intensiveWeeks = 0;
+        }
+        nc._weekAction = action;
+        return nc;
+      });
+
+      return { roster, freeAgents, heatScore, events };
+    },
+
+    // Returns { funds, weeklyFinance, roster, summary } — does NOT mutate G
+    processSettlement(G) {
+      const details = [];
+      let totalIncome = 0, totalExpense = 0;
+
+      const salary = Engine.economy.calcWeeklySalary(G.roster);
+      totalExpense += salary;
+      details.push({ label: '選手給与', val: -salary, type: 'expense' });
+
+      const fixed = Engine.economy.calcFixedCosts();
+      totalExpense += fixed;
+      details.push({ label: '固定費（施設+事務）', val: -fixed, type: 'expense' });
+
+      const coachSalary = Engine.coach.getSalaryTotal(G);
+      if (coachSalary > 0) {
+        totalExpense += coachSalary;
+        details.push({ label: `コーチ給与（${G.coaches.length}名）`, val: -coachSalary, type: 'expense' });
+      }
+
+      const facilityMaint = Engine.facility.getMaintenance(G);
+      if (facilityMaint > 0) {
+        totalExpense += facilityMaint;
+        details.push({ label: '施設アップグレード維持費', val: -facilityMaint, type: 'expense' });
+      }
+
+      const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
+      totalIncome += sponsor;
+      if (sponsor > 0) details.push({ label: 'スポンサー収入', val: sponsor, type: 'income' });
+
+      const broadcastBonus = Engine.facility.getBroadcastBonus(G);
+      const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+      totalIncome += broadcast;
+      if (broadcast > 0) details.push({ label: `放映権収入${broadcastBonus > 0 ? '（メディア施設+' + broadcastBonus + '万）' : ''}`, val: broadcast, type: 'income' });
+
+      let roster = G.roster.map(c => ({ ...c }));
+
+      if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
+        const mainPop = G.lastShowResults.reduce((sum, r) => {
+          const lc = roster.find(c => c.id === r.left.id);
+          const rc = roster.find(c => c.id === r.right.id);
+          return sum + (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+        }, 0) / G.lastShowResults.length;
+
+        const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
+        const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch);
+        const rev = Engine.economy.calcShowRevenue(roster, G.showVenue, attendance);
+
+        totalIncome += rev.ticketRev;
+        totalIncome += rev.goodsRev;
+        totalExpense += rev.venueCost;
+
+        details.push({ label: `チケット収入（${attendance}人×${VENUES[G.showVenue].ticket}万）`, val: rev.ticketRev, type: 'income' });
+        details.push({ label: 'グッズ収入', val: rev.goodsRev, type: 'income' });
+        details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
+
+        // Win/loss tracking (immutable)
+        G.lastShowResults.forEach(r => {
+          const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
+          if (wId) {
+            const lId = wId === r.left.id ? r.right.id : r.left.id;
+            roster = roster.map(c => c.id === wId ? { ...c, wins: c.wins + 1 } : c.id === lId ? { ...c, losses: c.losses + 1 } : c);
+          } else {
+            roster = roster.map(c => (c.id === r.left.id || c.id === r.right.id) ? { ...c, draws: c.draws + 1 } : c);
+          }
+        });
+
+        // Condition drain (immutable)
+        const usedIds = new Set();
+        G.lastShowResults.forEach(r => { usedIds.add(r.left.id); usedIds.add(r.right.id); });
+        roster = roster.map(c => {
+          if (!usedIds.has(c.id)) return c;
+          const condRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, c.id));
+          return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))) };
+        });
+      }
+
+      // Natural condition recovery
+      roster = roster.map(c => ({ ...c, condition: Math.min(100, c.condition + 3) }));
+
+      const net = totalIncome - totalExpense;
+      const newFunds = G.funds + net;
+      const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
+      const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
+
+      return { funds: newFunds, weeklyFinance, roster, summary };
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  tickWeek: Unified weekly pipeline (principle ⑤)
+  //  Input: state — NOT mutated
+  //  Output: { state, events }
+  // ══════════════════════════════════════════════════════════
+  tickWeek(state) {
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
+    const manage = Engine.season.processManage(rng, state);
+    let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
+    const settle = Engine.season.processSettlement(s);
+    s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+    return { state: s, events: [...manage.events, settle.summary] };
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  executeShow: Process all show matches (immutable)
+  //  Output: { state, results, injuryResults, events } or { error }
+  // ══════════════════════════════════════════════════════════
+  executeShow(state) {
+    const validMatches = state.showCard.filter(m => m.left > 0 && m.right > 0);
+    if (validMatches.length === 0) return { error: '少なくとも1試合を組んでください' };
+
+    let s = { ...state, totalShows: state.totalShows + 1, weekPhase: 'showExec' };
+    let roster = s.roster.map(c => ({ ...c }));
+    let rivalries = { ...s.rivalries };
+    let titles = { ...s.titles, world: { ...s.titles.world } };
+    const events = [];
+
+    const results = validMatches.map(m => {
+      const charL = roster.find(c => c.id === m.left);
+      const charR = roster.find(c => c.id === m.right);
+      if (!charL || !charR) return null;
+      const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
+      const result = Engine.battle.simulateMatch(charL, charR, matchRng);
+      const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
+      if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
+      if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
+      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+      rivalries = rivalResult.rivalries;
+      if (rivalResult.msg) events.push(rivalResult.msg);
+      const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
+      if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
+      return result;
+    }).filter(Boolean);
+
+    // Title outcomes
+    validMatches.forEach((m, i) => {
+      if (!m.isTitle || !results[i]) return;
+      const r = results[i];
+      const champId = titles.world.championId;
+      const tempState = { ...s, titles, roster };
+      if (r.winner === 'draw') {
+        if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+      } else {
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        if (!champId || winnerId !== champId) {
+          const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+        } else {
+          const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+        }
+      }
+    });
+
+    // MQ popularity (immutable)
+    results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
+    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
+    roster = popResult.roster;
+    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
+
+    // Heat (immutable)
+    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const oldHeat = Engine.heat.getLevel(s);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
+    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
+
+    // Injuries (immutable)
+    const injuryResults = [];
+    const injuryReduction = Engine.facility.getInjuryReduction(s);
+    results.forEach(r => {
+      const injRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999));
+      const lc = roster.find(c => c.id === r.left.id);
+      const li = Engine.injury.check(injRng, lc, r, injuryReduction);
+      if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      const rc = roster.find(c => c.id === r.right.id);
+      const ri = Engine.injury.check(injRng, rc, r, injuryReduction);
+      if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+    });
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
+    return { state: s, results, injuryResults, events };
+  },
+
+  // MQ/Show popularity helpers (pure functions)
+  applyMQPopularity(roster, result) {
+    return roster.map(c => {
+      const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
+      if (!isLeft && !isRight) return c;
+      let popDelta = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
+      if ((isLeft && result.winner === 'left') || (isRight && result.winner === 'right')) popDelta += 1;
+      return popDelta > 0 ? { ...c, popularity: Math.min(100, c.popularity + popDelta) } : c;
+    });
+  },
+  applyShowPopularity(roster, results, orgPop) {
+    if (results.length === 0) return { roster, orgPop, popDelta: 0 };
+    const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
+    const popDelta = avgMQ >= 70 ? 3 : avgMQ >= 55 ? 2 : avgMQ >= 40 ? 1 : avgMQ >= 25 ? 0 : -1;
+    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
+  },
+
+  // advanceWeek: Returns { state, events }
+  advanceWeek(state) {
+    let s = { ...state, week: state.week + 1 };
+    const events = [];
+    if (s.week > 48) {
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 999));
+      const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
+      events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
+      report.forEach(r => events.push(`  ${r}`));
+      s = { ...s, roster, season: s.season + 1, week: 1, rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+    }
+    return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+  },
+
+  // ── Character Factory (DOM-free) ───────────────────────
+  makeChar(template, rng) {
+    return {
+      ...template,
+      condition: 70 + Engine.rng.int(rng, 0, 19),
+      popularity: Math.max(1, Math.round(Engine.util.ov(template) / 10) + Engine.rng.int(rng, -2, 2)),
+      schedule: 'balance',
+      wins: 0, losses: 0, draws: 0,
+      injury: null,
+      seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+      careerSeasons: 0,
+      intensive: false,
+      intensiveWeeks: 0
+    };
+  },
+
+  // ── State Factory ──────────────────────────────────────
+  createInitialState(seed) {
+    seed = seed || (Date.now() ^ 0xDEADBEEF);
+    const rng = Engine.rng.create(seed);
+    const roster = DEFAULT_ROSTER_IDS.map(id => {
+      const t = ALL_CHARS.find(c => c.id === id);
+      return Engine.makeChar(t, rng);
+    });
+    const freeAgents = ALL_CHARS.filter(c => !DEFAULT_ROSTER_IDS.includes(c.id)).map(t => Engine.makeChar(t, rng));
+
+    return {
+      version: '0.85b',
+      rngSeed: seed,
+      season: 1,
+      week: 1,
+      funds: 5000,
+      orgPop: 10,
+      roster,
+      freeAgents,
+      gameLog: [],
+      weekPhase: 'manage',
+      showCard: [],
+      showVenue: 0,
+      lastShowResults: [],
+      weeklyFinance: { income: 0, expense: 0, details: [] },
+      totalShows: 0,
+      heatScore: 0,
+      matchHistory: [],
+      titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
+      rivalries: {},
+      coaches: [],
+      availableCoaches: ALL_COACHES.map(c => c.id),
+      seasonGrowth: {},
+      facilities: { training: 1, medical: 1, media: 1, dormitory: 1, scouting: 1 },
+      coachAssign: {}
+    };
+  }
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 7: STORAGE (v0.85)                               ║
+// ║  Save/Load with v0.8 backward compatibility               ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const SAVE_KEY = 'wrestle_manager_save_';
+const SAVE_SLOTS = 3;
+const AUTOSAVE_KEY = 'wrestle_manager_autosave';
+
+const Storage = {
+  serialize(G) {
+    const state = JSON.parse(JSON.stringify(G));
+    state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
+    state._saveVersion = '0.85';
+    state._saveDate = new Date().toISOString();
+    return JSON.stringify(state);
+  },
+
+  deserialize(json) {
+    try {
+      const state = JSON.parse(json);
+      // Replace G entirely with saved state, preserving any missing defaults
+      const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
+      G = { ...base, ...state };
+
+      // v0.6 backward compat: coaches
+      if (!G.coaches) G = { ...G, coaches: [] };
+      if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };
+      if (!G.seasonGrowth) G = { ...G, seasonGrowth: {} };
+
+      // v0.7 backward compat: facilities
+      if (!G.facilities) G = { ...G, facilities: {training:1, medical:1, media:1, dormitory:1, scouting:1} };
+
+      // v0.8 backward compat: coach assignments
+      if (!G.coachAssign) {
+        const ca = {};
+        G.coaches.forEach(id => { ca[id] = []; });
+        G = { ...G, coachAssign: ca };
+      }
+
+      // v0.85 backward compat
+      if (!G.rngSeed) G = { ...G, rngSeed: Date.now() ^ 0xDEADBEEF };
+      G = { ...G, version: '0.85b' };
+
+      // Fix character data (immutable)
+      const fixChar = c => {
+        const nc = { ...c };
+        if (!nc.seasonGrowth) nc.seasonGrowth = {pw:0, sp:0, te:0, st:0, mn:0};
+        if (nc.careerSeasons === undefined) nc.careerSeasons = 0;
+        if (!nc.pot) { const t = ALL_CHARS.find(t => t.id === nc.id); if (t) nc.pot = {...t.pot}; }
+        if (nc.intensive === undefined) nc.intensive = false;
+        if (nc.intensiveWeeks === undefined) nc.intensiveWeeks = 0;
+        return nc;
+      };
+      G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
+      return true;
+    } catch(e) { console.error('Load failed:', e); return false; }
+  },
+
+  save(slot) {
+    try {
+      localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G));
+      G = { ...G, gameLog: [...G.gameLog, `💾 スロット${slot}にセーブしました`] };
+      refreshAll();
+      return true;
+    } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
+  },
+
+  load(slot) {
+    const data = localStorage.getItem(SAVE_KEY + slot);
+    if (!data) { alert('セーブデータがありません'); return false; }
+    if (Storage.deserialize(data)) {
+      G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
+      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      refreshAll();
+      return true;
+    }
+    return false;
+  },
+
+  autoSave() {
+    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { /* silent */ }
+  },
+
+  loadAutoSave() {
+    const data = localStorage.getItem(AUTOSAVE_KEY);
+    if (data && Storage.deserialize(data)) {
+      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      refreshAll();
+    }
+  },
+
+  getAutoSaveInfo() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate };
+    } catch { return null; }
+  },
+
+  getSaveInfo(slot) {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY + slot);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion };
+    } catch { return null; }
+  },
+
+  deleteSave(slot) {
+    localStorage.removeItem(SAVE_KEY + slot);
+  }
+};
+
+// Alias for backward compat in UI
+function saveGame(slot) { return Storage.save(slot); }
+function loadGame(slot) { return Storage.load(slot); }
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 8: APP BRIDGE (v0.85)                            ║
+// ║  UI ↔ Engine bridge layer                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+
+// Global game state — the single source of truth
+let G = Engine.createInitialState();
+
+// Running RNG state for the current session
+let sessionRng = Engine.rng.create(G.rngSeed);
+
+// ── Legacy utility aliases (for UI code backward compat) ──
+function ov(c) { return Engine.util.ov(c); }
+function getSalary(c) { return Engine.util.getSalary(c); }
+function isShowWeek(w) { return Engine.util.isShowWeek(w); }
+function getQuarter(w) { return Engine.util.getQuarter(w); }
+function isSpecialShow(w) { return Engine.util.isSpecialShow(w); }
+function isPPV(w) { return Engine.util.isPPV(w); }
+function getHeatLevel() { return Engine.heat.getLevel(G); }
+function getWorldChampion() { return Engine.title.getWorldChampion(G); }
+function getHiredCoaches() { return Engine.coach.getHiredCoaches(G); }
+function getCharCoach(charId) { return Engine.coach.getCharCoach(G, charId); }
+function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
+function getFacilityLevel(id) { return Engine.facility.getLevel(G, id); }
+function getFacilityMaintenance() { return Engine.facility.getMaintenance(G); }
+function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
+
+// ── App Commands (G mutation ONLY via G = newState) ──
+const App = {
+  // Initialize a new game
+  newGame() {
+    G = Engine.createInitialState();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    G = { ...G, gameLog: [
+      '🎉 新団体設立！ 初期資金5,000万でスタート。',
+      `ロスター${G.roster.length}名で船出。フリーエージェント${G.freeAgents.length}名がスカウト可能。`,
+      '💡 v0.85b: Engine不変性＋tickWeek統合パイプライン搭載。',
+      '🔥 Heatシステム: 好試合が続くと集客倍率UP！',
+      '🏥 怪我システム: 試合後に負傷の可能性あり。',
+      '🏆 タイトルシステム: 世界王座をかけた試合でMQ+15＆集客+15%！',
+      '⚡ ライバルリーシステム: 同じ対戦を重ねると抗争でMQボーナス！',
+      '💾 セーブ/ロード: 週の進行で自動保存。手動3スロット。',
+      '🎓 コーチシステム: コーチを雇って育成効率UP！',
+      '📈 成長/衰退: 選手はポテンシャルに向かって成長し、ベテランは衰退も。',
+      '🏢 施設アップグレード: トレーニング・医療・メディア・寮・スカウト網を強化！',
+      '🏋️ 強化練習: コーチをアサインして育成方針を決定。リスクを取った追い込みも。'
+    ]};
+    refreshAll();
+  },
+
+  // Sign a free agent
+  signFighter(charId) {
+    const idx = G.freeAgents.findIndex(c => c.id === charId);
+    if (idx < 0) return;
+    const signCost = Math.round(getSalary(G.freeAgents[idx]) * 4);
+    const discount = Engine.facility.getScoutDiscount(G);
+    const finalCost = Math.round(signCost * (100 - discount) / 100);
+    if (G.funds < finalCost) { alert('資金が足りません！'); return; }
+    const c = G.freeAgents[idx];
+    const newFA = G.freeAgents.filter((_, i) => i !== idx);
+    const newRoster = [...G.roster, c];
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
+    if (titleMsg) log.push(titleMsg);
+    G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log };
+    refreshAll();
+  },
+
+  // Release a fighter
+  releaseFighter(charId) {
+    const idx = G.roster.findIndex(c => c.id === charId);
+    if (idx < 0) return;
+    const c = G.roster[idx];
+    const newRoster = G.roster.filter((_, i) => i !== idx);
+    const newFA = [...G.freeAgents, c];
+    const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const log = [...G.gameLog, `📤 ${c.name}を解雇`];
+    if (titleMsg) log.push(titleMsg);
+    G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    refreshAll();
+  },
+
+  // Set training schedule
+  setSchedule(charId, schedule) {
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, schedule } : c) };
+    refreshAll();
+  },
+
+  // Set intensive training
+  setIntensive(charId) {
+    const c = G.roster.find(c => c.id === charId);
+    if (!c || c.injury) return;
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: true } : c) };
+    refreshAll();
+  },
+
+  cancelIntensive(charId) {
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: false } : c) };
+    refreshAll();
+  },
+
+  // Hire coach
+  hireCoach(coachId) {
+    const coach = ALL_COACHES.find(c => c.id === coachId);
+    if (!coach) return;
+    if (G.coaches.length >= MAX_COACHES) { alert(`コーチは最大${MAX_COACHES}名まで`); return; }
+    if (G.funds < coach.hireCost) { alert('資金が足りません！'); return; }
+    G = {
+      ...G,
+      funds: G.funds - coach.hireCost,
+      coaches: [...G.coaches, coachId],
+      availableCoaches: G.availableCoaches.filter(id => id !== coachId),
+      coachAssign: { ...G.coachAssign, [coachId]: [] },
+      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${coach.hireCost}万）`]
+    };
+    refreshAll();
+  },
+
+  // Fire coach
+  fireCoach(coachId) {
+    const coach = ALL_COACHES.find(c => c.id === coachId);
+    const newAssign = { ...G.coachAssign };
+    delete newAssign[coachId];
+    G = {
+      ...G,
+      coaches: G.coaches.filter(id => id !== coachId),
+      availableCoaches: [...G.availableCoaches, coachId],
+      coachAssign: newAssign,
+      gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
+    };
+    refreshAll();
+  },
+
+  // Assign character to coach
+  assignToCoach(coachId, charId) {
+    const unassigned = Engine.coach.unassignFromCoach(G, charId);
+    const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
+    if (!success) { alert('このコーチのアサイン枠が満員です'); return; }
+    G = { ...G, coachAssign };
+    refreshAll();
+  },
+
+  // Unassign character from coach
+  unassignFromCoach(charId) {
+    G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) };
+    refreshAll();
+  },
+
+  // Upgrade facility
+  upgradeFacility(facilityId) {
+    const fac = FACILITIES.find(f => f.id === facilityId);
+    if (!fac) return;
+    const curLv = Engine.facility.getLevel(G, facilityId);
+    if (curLv >= fac.levels.length) { alert('最大レベルです'); return; }
+    const nextLvData = fac.levels[curLv];
+    if (G.funds < nextLvData.cost) { alert('資金が足りません！'); return; }
+    G = {
+      ...G,
+      funds: G.funds - nextLvData.cost,
+      facilities: { ...G.facilities, [facilityId]: curLv + 1 },
+      gameLog: [...G.gameLog, `🏢 ${fac.name}をLv${curLv + 1}にアップグレード！（費用: ${nextLvData.cost}万）`]
+    };
+    refreshAll();
+  },
+
+  // Show preparation
+  startShowPrep() {
+    G = {
+      ...G,
+      weekPhase: 'showPrep',
+      showCard: [
+        {left: 0, right: 0, isTitle: false},
+        {left: 0, right: 0, isTitle: false},
+        {left: 0, right: 0, isTitle: false}
+      ],
+      showVenue: 0
+    };
+    refreshAll();
+  },
+
+  // Set show venue
+  setShowVenue(venueIdx) {
+    G = { ...G, showVenue: venueIdx };
+    renderShowPrep();
+  },
+
+  // Set show card slot
+  setShowCardSlot(slotIndex, side, newId) {
+    newId = +newId;
+    const newCard = G.showCard.map((slot, i) => {
+      if (i !== slotIndex) return slot;
+      const updated = { ...slot, [side]: newId };
+      if (newId > 0 && updated.left === updated.right) updated[side === 'left' ? 'right' : 'left'] = 0;
+      return updated;
+    });
+    G = { ...G, showCard: newCard };
+    renderShowPrep();
+  },
+
+  // Clear show card
+  clearShowCard() {
+    G = { ...G, showCard: G.showCard.map(() => ({left: 0, right: 0, isTitle: false})) };
+    renderShowPrep();
+  },
+
+  // Toggle title match
+  toggleTitleMatch(slotIndex) {
+    G = { ...G, showCard: G.showCard.map((slot, i) => i === slotIndex ? { ...slot, isTitle: !slot.isTitle } : slot) };
+    renderShowPrep();
+  },
+
+  // Execute show (run all matches via Engine)
+  executeShow() {
+    const result = Engine.executeShow(G);
+    if (result.error) { alert(result.error); return; }
+    G = { ...G, ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    renderShowResult(result.results, result.injuryResults);
+  },
+
+  // Close show result and advance via tickWeek
+  closeShowResult() {
+    document.getElementById('showResultOverlay').classList.remove('active');
+    const result = Engine.tickWeek(G);
+    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
+  },
+
+  // Process a week (manage + settle) via tickWeek
+  processWeek() {
+    const result = Engine.tickWeek(G);
+    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
+  },
+
+  // Advance to next week via Engine
+  advanceWeek() {
+    const result = Engine.advanceWeek(G);
+    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    sessionRng = Engine.rng.create(G.rngSeed);
+    Storage.autoSave();
+    refreshAll();
+  }
+};
+
+// Alias for old UI calls
+// COACH_MAX_ASSIGN already defined in data section
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 9: UI HELPERS & SHOW PREP (v0.85)                ║
+// ╚══════════════════════════════════════════════════════════╝
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function showConfirm(msg, yesLabel, onYes) {
+  const overlay = document.getElementById('confirmOverlay');
+  const box = document.getElementById('confirmBox');
+  window._confirmYes = onYes;
+  box.innerHTML = `<div style="margin-bottom:16px;font-size:14px">${msg}</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" onclick="document.getElementById('confirmOverlay').classList.remove('active');if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
+      <button class="btn btn-blue" onclick="document.getElementById('confirmOverlay').classList.remove('active')">いいえ</button>
+    </div>`;
+  overlay.classList.add('active');
+}
+
+function autoFillCard() {
+  const maxMatches = isSpecialShow(G.week) || isPPV(G.week) ? 6 : 4;
+  const card = [];
+  while (card.length < maxMatches) card.push({left:0, right:0, isTitle:false});
+  const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
+  const used = new Set();
+  const numMatches = Math.min(maxMatches, Math.floor(sorted.length / 2));
+  const champId = G.titles.world.championId;
+  for (let i = 0; i < numMatches; i++) {
+    const left = sorted.find(c => !used.has(c.id));
+    if (!left) break;
+    used.add(left.id);
+    const right = sorted.find(c => !used.has(c.id));
+    if (!right) break;
+    used.add(right.id);
+    const hasChamp = champId && (left.id === champId || right.id === champId);
+    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp};
+  }
+  G = { ...G, showCard: card };
+}
+
+function onCardSelect(slotIndex, side, newId) {
+  App.setShowCardSlot(slotIndex, side, newId);
+}
+
+function toggleTitle(slotIndex) {
+  const m = G.showCard[slotIndex];
+  const champId = G.titles.world.championId;
+  if (!champId && !m.isTitle) {
+    if (!(m.left > 0 && m.right > 0)) { alert('両選手を選んでください'); return; }
+  } else if (champId) {
+    if (m.left !== champId && m.right !== champId) { alert('タイトルマッチはチャンピオンを含む必要があります'); return; }
+  }
+  App.toggleTitleMatch(slotIndex);
+}
+
+// MQ star rating display
+function mqStars(mq) {
+  const stars = mq >= 90 ? 5 : mq >= 75 ? 4.5 : mq >= 60 ? 4 : mq >= 50 ? 3.5 :
+    mq >= 40 ? 3 : mq >= 30 ? 2.5 : mq >= 20 ? 2 : mq >= 10 ? 1.5 : 1;
+  const full = Math.floor(stars);
+  const half = stars % 1 >= 0.5;
+  let s = '';
+  for (let i = 0; i < full; i++) s += '★';
+  if (half) s += '☆';
+  const color = stars >= 4.5 ? '#f0d078' : stars >= 3.5 ? '#2ecc71' : stars >= 2.5 ? '#e7e9ee' : '#999';
+  return `<span style="color:${color};font-size:13px;letter-spacing:1px">${s}</span>`;
+}
+
+// (applyMQPopularity / applyShowPopularity moved to Engine — no longer needed here)
+
+// Show prep entry point (routes through App for state changes)
+function startShowPrep() {
+  // Calculate best venue immutably
+  let venueIdx = 0;
+  for (let i = VENUES.length - 1; i >= 0; i--) {
+    if (G.orgPop >= VENUES[i].popReq) { venueIdx = i; break; }
+  }
+  // Set show prep state
+  G = {
+    ...G,
+    weekPhase: 'showPrep',
+    showVenue: venueIdx,
+    showCard: (G.showCard.length === 0 || G.showCard.every(m => m.left === 0 && m.right === 0))
+      ? [] : [...G.showCard]
+  };
+  if (G.showCard.length === 0) autoFillCard();
+  showScreen('show');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn')[5].classList.add('active');
+  renderShowPrep();
+}
+
+// Legacy aliases for UI onclick handlers
+function executeShow() { App.executeShow(); }
+function closeShowResult() { App.closeShowResult(); }
+function doProcessWeek() { App.processWeek(); }
+function advanceWeek() { App.advanceWeek(); }
+
+// ── Show Result Renderer ────────────────────────────────
+function renderShowResult(results, injuryResults) {
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  const special = isSpecialShow(G.week);
+  const ppv = isPPV(G.week);
+  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `定期興行 #${G.totalShows}`;
+
+  let html = `<div class="show-result-title">${showName}</div>`;
+  const avgMQ = Math.round(results.reduce((s,r) => s + r.mq, 0) / results.length);
+  const heat = getHeatLevel();
+  html += `<div style="text-align:center;margin-bottom:16px">
+    <div style="font-size:12px;color:var(--text-sub)">${VENUES[G.showVenue].name}</div>
+    <div style="margin-top:4px">${mqStars(avgMQ)} <span style="font-size:13px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>
+    <div style="margin-top:4px;font-size:11px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}</span> <span style="color:var(--text-dim)">（集客×${heat.mult}）</span></div>
+  </div>`;
+
+  results.forEach((r, i) => {
+    const isMain = i === 0;
+    const isDraw = r.winner === 'draw';
+    const leftIsWinner = r.winner === 'left';
+    const rightIsWinner = r.winner === 'right';
+
+    html += `<div class="match-result" style="${isMain ? 'border-left-color:var(--gold);background:rgba(212,168,67,0.05)' : ''}">
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">${isMain ? '★ メインイベント' : `第${i+1}試合`}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</div>`;
+
+    if (isDraw) {
+      html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:15px;font-weight:700">${r.left.name}</span>
+        <span style="font-size:12px;padding:2px 8px;border-radius:3px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12">DRAW</span>
+        <span style="font-size:15px;font-weight:700">${r.right.name}</span>
+      </div>
+      <div style="margin-top:4px;font-size:12px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
+      <div style="margin-top:3px">${mqStars(r.mq)} <span style="font-size:11px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+15)</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+    } else {
+      const winnerName = leftIsWinner ? r.left.name : r.right.name;
+      html += `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:${leftIsWinner?18:13}px;font-weight:${leftIsWinner?900:400};color:${leftIsWinner?'var(--gold-light)':'var(--text-sub)'}">${r.left.name}</span>
+        <span style="font-size:11px;color:var(--text-dim)">vs</span>
+        <span style="font-size:${rightIsWinner?18:13}px;font-weight:${rightIsWinner?900:400};color:${rightIsWinner?'var(--gold-light)':'var(--text-sub)'}">${r.right.name}</span>
+      </div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="display:inline-block;padding:3px 12px;border-radius:3px;font-size:12px;font-weight:700;
+          background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winnerName} 勝利</span>
+        <span style="font-size:12px;color:var(--text-sub)">${r.finType}${r.finMove ? `（${r.finMove}）` : ''} / ${r.turns}ターン</span>
+      </div>
+      <div style="margin-top:3px">${mqStars(r.mq)} <span style="font-size:11px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+15)</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+    }
+
+    // HP bars
+    const lPct = Math.round(r.hpLeft.final / r.hpLeft.max * 100);
+    const rPct = Math.round(r.hpRight.final / r.hpRight.max * 100);
+    html += `<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:var(--text-sub)">
+      <div style="flex:1">${r.left.name}: HP ${r.hpLeft.final}/${r.hpLeft.max}
+        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:2px;overflow:hidden">
+          <div style="width:${lPct}%;height:100%;background:${lPct>30?'#2ecc71':lPct>10?'#f39c12':'#e74c3c'};border-radius:2px"></div>
+        </div>
+      </div>
+      <div style="flex:1">${r.right.name}: HP ${r.hpRight.final}/${r.hpRight.max}
+        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:2px;overflow:hidden">
+          <div style="width:${rPct}%;height:100%;background:${rPct>30?'#2ecc71':rPct>10?'#f39c12':'#e74c3c'};border-radius:2px"></div>
+        </div>
+      </div>
+    </div>`;
+
+    html += `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">試合ログを見る</summary>
+        <div style="font-size:10px;color:var(--text-sub);margin-top:4px;max-height:200px;overflow-y:auto">
+          ${r.log.map(l => `<div style="padding:2px 0">${l}</div>`).join('')}
+        </div>
+      </details>
+    </div>`;
+  });
+
+  html += '<div class="btn-row" style="margin-top:16px;justify-content:center">';
+  if (injuryResults.length > 0) {
+    html += `<div style="width:100%;margin-bottom:12px;padding:8px 12px;background:rgba(214,48,49,0.1);border:1px solid rgba(214,48,49,0.3);border-radius:6px">
+      <div style="font-size:11px;font-weight:700;color:#e17055;margin-bottom:4px">🏥 負傷報告</div>`;
+    injuryResults.forEach(ir => {
+      html += `<div style="font-size:11px;color:var(--text-sub);padding:2px 0">
+        <span style="color:${ir.injury.color}">${ir.injury.type}</span> ${ir.name} — 全治${ir.injury.weeksLeft}週間
+      </div>`;
+    });
+    html += '</div>';
+  }
+  html += '<button class="btn btn-gold" onclick="closeShowResult()">結果を確認 →</button>';
+  html += '</div>';
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// Legacy function aliases for onclick handlers in UI
+function signFighter(id) { App.signFighter(id); }
+function releaseFighter(id) { App.releaseFighter(id); }
+function hireCoach(id) { App.hireCoach(id); }
+function fireCoach(id) { App.fireCoach(id); }
+function upgradeFacility(id) { App.upgradeFacility(id); }
+function autoSave() { Storage.autoSave(); }
+function loadAutoSave() { Storage.loadAutoSave(); refreshAll(); }
+function getAutoSaveInfo() { return Storage.getAutoSaveInfo(); }
+function getSaveInfo(slot) { return Storage.getSaveInfo(slot); }
+
+// Legacy aliases for Engine functions used in UI rendering
+function getCoachSalaryTotal() { return Engine.coach.getSalaryTotal(G); }
+function getFacilityScoutDiscount() { return Engine.facility.getScoutDiscount(G); }
+function getFacilityGrowthMult() { return Engine.facility.getGrowthMult(G); }
+function getFacilityConditionBonus() { return Engine.facility.getConditionBonus(G); }
+function getFacilityInjuryReduction() { return Engine.facility.getInjuryReduction(G); }
+function getFacilityPromoBonus() { return Engine.facility.getPromoBonus(G); }
+function getFacilityBroadcastBonus() { return Engine.facility.getBroadcastBonus(G); }
+function getFacilityRestBonus() { return Engine.facility.getRestBonus(G); }
+function unassignFromCoach(charId) { Engine.coach.unassignFromCoach(G, charId); }
+function assignToCoach(coachId, charId) { return Engine.coach.assignToCoach(G, coachId, charId); }
+function getCoachAssignees(coachId) { return Engine.coach.getCoachAssignees(G, coachId); }
+function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster); }
+function calcFixedCosts() { return Engine.economy.calcFixedCosts(); }
+function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); }
+function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
+function calcAttendance(venueIdx, mainPop, hasTitleMatch) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch); }
+function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${id}`).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (event && event.target) event.target.classList.add('active');
+}
+
+function refreshTopBar() {
+  document.getElementById('dispSeason').textContent = `Y${G.season}`;
+  document.getElementById('dispWeek').textContent = G.week;
+  document.getElementById('dispQuarter').textContent = `Q${getQuarter(G.week)}`;
+  const fundsEl = document.getElementById('dispFunds');
+  fundsEl.textContent = `${G.funds.toLocaleString()}万`;
+  fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
+  document.getElementById('dispPop').textContent = G.orgPop;
+  const heat = getHeatLevel();
+  const heatEl = document.getElementById('dispHeat');
+  heatEl.innerHTML = `<span style="color:${heat.color}">${heat.emoji} ${heat.label}</span>`;
+  const champEl = document.getElementById('dispChamp');
+  const champ = getWorldChampion();
+  champEl.innerHTML = champ ? `🏆 ${champ.name} (${G.titles.world.defenses}防衛)` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+}
+
+function renderWeekScreen() {
+  const isShow = isShowWeek(G.week);
+  const special = isSpecialShow(G.week);
+  const ppv = isPPV(G.week);
+  let typeLabel = isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  document.getElementById('weekTitle').textContent = `第${G.week}週 — ${typeLabel}`;
+
+  const el = document.getElementById('weekContent');
+  let html = '';
+
+  if (G.weekPhase === 'manage') {
+    const heat = getHeatLevel();
+    const injuredCount = G.roster.filter(c => c.injury).length;
+    html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
+      <span>Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（×${heat.mult}）</span></span>
+      ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
+      ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
+      ${getFacilityMaintenance() > 0 ? `<span style="color:var(--gold)">🏢 施設: -${getFacilityMaintenance()}万/週</span>` : ''}
+    </div>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+
+    // Roster schedule overview
+    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール</th><th>今週の行動</th></tr>';
+    G.roster.forEach(c => {
+      const condPct = c.condition;
+      const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
+      const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+      const statusHtml = c.injury
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
+        : '<span style="font-size:10px;color:#2ecc71">健康</span>';
+      const schedDisabled = c.injury ? 'disabled' : '';
+      const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:9px">👑</span>' : '';
+      html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
+        <td><strong>${c.name}</strong>${wkChampBadge}</td>
+        <td class="num">${ov(c)}</td>
+        <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
+        <td>${statusHtml}</td>
+        <td>
+          <select onchange="G.roster.find(r=>r.id===${c.id}).schedule=this.value" style="font-size:11px;padding:3px" ${schedDisabled}>
+            <option value="balance" ${c.schedule==='balance'?'selected':''}>バランス</option>
+            <option value="practice" ${c.schedule==='practice'?'selected':''}>練習優先</option>
+            <option value="promo" ${c.schedule==='promo'?'selected':''}>プロモ優先</option>
+            <option value="rest" ${c.schedule==='rest'?'selected':''}>休養重視</option>
+          </select>
+        </td>
+        <td>${c._weekAction ? `<span class="sched-tag ${c._weekAction}">${actionLabels[c._weekAction]||c._weekAction}</span>` : '-'}</td>
+      </tr>`;
+    });
+    html += '</table>';
+
+    html += '<div class="btn-row" style="margin-top:16px">';
+    if (isShow) {
+      html += '<button class="btn btn-gold" onclick="startShowPrep()">興行準備へ →</button>';
+    }
+    html += `<button class="btn btn-blue" onclick="doProcessWeek()">週を処理${isShow && G.showCard.length === 0 ? '（興行スキップ）' : ''}</button>`;
+    html += '</div>';
+  }
+  else if (G.weekPhase === 'settled') {
+    const heat = getHeatLevel();
+    html += '<h3 style="color:var(--gold);margin-bottom:12px">週末精算完了</h3>';
+    html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
+    const settleChamp = getWorldChampion();
+    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 世界王座: <span style="color:var(--gold);font-weight:700">${settleChamp.name}</span>（${G.titles.world.defenses}防衛）</div>`;
+    // Show finance summary
+    const f = G.weeklyFinance;
+    f.details.forEach(d => {
+      html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}万</span></div>`;
+    });
+    html += `<div class="finance-row finance-total"><span>差引</span><span class="f-val ${f.net >= 0 ? 'income' : 'expense'}">${f.net >= 0 ? '+' : ''}${f.net}万</span></div>`;
+    html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+
+    if (G.funds <= -1000) {
+      html += '<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">💀 GAME OVER — 倒産</strong></div>';
+    } else {
+      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="advanceWeek()">次の週へ →</button></div>';
+    }
+  }
+
+  el.innerHTML = html;
+}
+
+function renderRoster() {
+  const el = document.getElementById('rosterTable');
+  let html = '<tr><th>名前</th><th>Style</th><th>Role</th><th>総合</th><th>パワー</th><th>スピード</th><th>テクニック</th><th>スタミナ</th><th>マインド</th><th>潜在力</th><th>人気</th><th>状態</th><th>給与</th><th>○</th><th>×</th><th>△</th></tr>';
+  const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
+  sorted.forEach(c => {
+    const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
+    const condPct = c.condition;
+    const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
+    const injuryBadge = c.injury ? `<div style="font-size:9px;margin-top:2px;padding:1px 4px;border-radius:2px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</div>` : '';
+    const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:10px"> 👑王者</span>' : '';
+    // v0.6: Potential percentage
+    const potPct = getPotentialPct(c);
+    const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
+    // v0.6: Growth indicator per stat
+    const statWithGrowth = (key) => {
+      const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
+      const gHtml = g > 0 ? ` <span class="growth-up">+${g}</span>` : '';
+      return `${c[key]}${gHtml}`;
+    };
+    html += `<tr${c.injury ? ' style="opacity:0.7"' : ''}>
+      <td><strong>${c.name}</strong>${champBadge}${injuryBadge}</td>
+      <td><span class="badge badge-${c.style}">${c.style}</span></td>
+      <td><span class="badge badge-${roleCls}">${c.role}</span></td>
+      <td class="num ov">${ov(c)}</td>
+      <td class="num">${statWithGrowth('pw')}</td><td class="num">${statWithGrowth('sp')}</td><td class="num">${statWithGrowth('te')}</td>
+      <td class="num">${statWithGrowth('st')}</td><td class="num">${statWithGrowth('mn')}</td>
+      <td><div class="pot-bar"><div class="pot-fill" style="width:${potPct}%"></div></div> <span style="font-size:10px;color:${potColor}">${potPct}%</span></td>
+      <td class="num">${c.popularity}</td>
+      <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:11px">${condPct}</span></td>
+      <td class="num" style="color:var(--text-sub)">${getSalary(c)}万</td>
+      <td class="record-cell"><div class="record-symbol win">○</div><div class="record-num">${c.wins}</div></td>
+      <td class="record-cell"><div class="record-symbol lose">×</div><div class="record-num">${c.losses}</div></td>
+      <td class="record-cell"><div class="record-symbol draw">△</div><div class="record-num">${c.draws}</div></td>
+    </tr>`;
+  });
+  el.innerHTML = html;
+}
+
+function getUsedFighterIds(excludeSlot) {
+  // Returns Set of fighter IDs already assigned to other match slots
+  const used = new Set();
+  G.showCard.forEach((m, i) => {
+    if (i === excludeSlot) return;
+    if (m.left > 0) used.add(m.left);
+    if (m.right > 0) used.add(m.right);
+  });
+  return used;
+}
+
+function getAvailableForSlot(slotIndex, side) {
+  // Returns roster members not used in other slots, not in other side, and not injured
+  const used = getUsedFighterIds(slotIndex);
+  const otherSide = side === 'left' ? G.showCard[slotIndex].right : G.showCard[slotIndex].left;
+  return G.roster.filter(c => !used.has(c.id) && c.id !== otherSide && !c.injury);
+}
+
+function renderShowPrep() {
+  const el = document.getElementById('showPrepContent');
+  if (!isShowWeek(G.week)) {
+    el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
+    return;
+  }
+
+  let html = '';
+
+  // Venue selection
+  html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
+  html += '<div class="venue-grid">';
+  VENUES.forEach((v, i) => {
+    const locked = G.orgPop < v.popReq;
+    const selected = G.showVenue === i;
+    html += `<div class="venue-card ${locked ? 'locked' : ''} ${selected ? 'selected' : ''}"
+      onclick="${locked ? '' : `App.setShowVenue(${i})`}">
+      <div class="venue-name">${v.name}</div>
+      <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
+      <div class="venue-info">コスト: ${v.cost}万</div>
+      ${locked ? `<div class="venue-info" style="color:var(--red)">人気${v.popReq}必要</div>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+
+  // Match card
+  const maxMatches = isSpecialShow(G.week) || isPPV(G.week) ? 6 : 4;
+  if (G.showCard.length < maxMatches) {
+    const padded = [...G.showCard];
+    while (padded.length < maxMatches) padded.push({left:0, right:0, isTitle:false});
+    G = { ...G, showCard: padded };
+  }
+  html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+    <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
+    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">自動編成</button>
+    <button class="btn btn-sm" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text-sub)" onclick="App.clearShowCard()">クリア</button>
+  </div>`;
+
+  for (let i = 0; i < maxMatches; i++) {
+    const isMain = i === 0;
+    const availL = getAvailableForSlot(i, 'left');
+    const availR = getAvailableForSlot(i, 'right');
+    // Include currently selected fighter in their own dropdown even if "used"
+    const curL = G.showCard[i].left;
+    const curR = G.showCard[i].right;
+
+    const makeOptions = (avail, curVal) => {
+      let opts = '<option value="0">-- 選手選択 --</option>';
+      // If current value is set but not in available (shouldn't happen with correct logic), include it
+      const ids = new Set(avail.map(c => c.id));
+      if (curVal > 0 && !ids.has(curVal)) {
+        const extra = G.roster.find(c => c.id === curVal);
+        if (extra) avail = [extra, ...avail];
+      }
+      avail.forEach(c => {
+        const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})</option>`;
+      });
+      return opts;
+    };
+
+    const champId = G.titles.world.championId;
+    const hasChamp = champId && (curL === champId || curR === champId);
+    const isVacant = !champId;
+    const canTitle = hasChamp || (isVacant && curL > 0 && curR > 0);
+    const isTitle = G.showCard[i].isTitle || false;
+    const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
+
+    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px">
+      <div class="match-slot-num">${isMain ? '★' : i+1}</div>
+      <div class="match-fighter">
+        <select onchange="onCardSelect(${i},'left',this.value)">
+          ${makeOptions(availL, curL)}
+        </select>
+      </div>
+      <div class="match-slot-vs">VS</div>
+      <div class="match-fighter">
+        <select onchange="onCardSelect(${i},'right',this.value)">
+          ${makeOptions(availR, curR)}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:10px">
+        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${isVacant ? '王座決定戦' : 'タイトル戦'}</label>` : ''}
+        ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Preview
+  const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
+  const mainPop = validMatches.length > 0 ?
+    validMatches.reduce((s, m) => {
+      const l = G.roster.find(c => c.id === m.left);
+      const r = G.roster.find(c => c.id === m.right);
+      return s + (l ? l.popularity : 0) + (r ? r.popularity : 0);
+    }, 0) / validMatches.length : 0;
+  const hasTitlePreview = validMatches.some(m => m.isTitle);
+  const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview);
+  const estRev = calcShowRevenue(G.showVenue, estAttend);
+
+  const heat = getHeatLevel();
+  html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
+    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}</div>
+    <strong>予想集客:</strong> ${estAttend.toLocaleString()}人 / ${VENUES[G.showVenue].cap.toLocaleString()}人
+    &nbsp;|&nbsp; <strong>予想チケット収入:</strong> ${estRev.ticketRev}万
+    &nbsp;|&nbsp; <strong>予想グッズ:</strong> ${estRev.goodsRev}万
+    &nbsp;|&nbsp; <strong>会場費:</strong> -${estRev.venueCost}万
+  </div>`;
+
+  html += '<div class="btn-row" style="margin-top:16px">';
+  html += `<button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！ (${validMatches.length}試合)</button>`;
+  html += '<button class="btn btn-blue" onclick="G={...G,weekPhase:\'manage\'};showScreen(\'week\');refreshAll()">戻る</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+function renderFinance() {
+  const el = document.getElementById('financeContent');
+  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:16px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+
+  // Weekly costs breakdown
+  html += '<div class="panel-title">週間コスト内訳</div>';
+  html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
+  html += `<div class="finance-row"><span class="f-label">施設維持費</span><span class="f-val expense">-${FIXED_COSTS.facility}万/週</span></div>`;
+  html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+  // v0.6: Coach salaries
+  const coachTotal = getCoachSalaryTotal();
+  if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
+  // v0.7: Facility upgrade maintenance
+  const facilityMaint = getFacilityMaintenance();
+  if (facilityMaint > 0) html += `<div class="finance-row"><span class="f-label">施設アップグレード維持費</span><span class="f-val expense">-${facilityMaint}万/週</span></div>`;
+  const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal + facilityMaint;
+  html += `<div class="finance-row finance-total"><span>週間支出合計</span><span class="f-val expense">-${totalWeekly}万</span></div>`;
+
+  html += '<div class="panel-title" style="margin-top:16px">週間収入</div>';
+  html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
+  const broadcastTotal = getBroadcastIncome() + getFacilityBroadcastBonus();
+  html += `<div class="finance-row"><span class="f-label">放映権${getFacilityBroadcastBonus() > 0 ? '（メディア施設込）' : ''}</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
+
+  // Salary detail
+  html += '<div class="panel-title" style="margin-top:16px">選手別給与</div>';
+  html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
+  [...G.roster].sort((a,b) => getSalary(b) - getSalary(a)).forEach(c => {
+    html += `<tr><td>${c.name}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
+  });
+  html += '</table>';
+
+  el.innerHTML = html;
+}
+
+function renderLog() {
+  const el = document.getElementById('logContent');
+  el.innerHTML = G.gameLog.map(l => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">${l}</div>`).reverse().join('');
+}
+
+function renderScout() {
+  const el = document.getElementById('scoutContent');
+  document.getElementById('faCount').textContent = G.freeAgents.length;
+  document.getElementById('rosterCount').textContent = G.roster.length;
+
+  const signingFee = Math.max(10, 50 - getFacilityScoutDiscount()); // v0.7: Scout network discount
+  let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
+    契約金: ${signingFee}万/人 ｜ ロスター: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名
+  </div>`;
+
+  // Release button for current roster
+  html += '<div class="panel-title" style="margin-top:0;font-size:13px">所属選手（解雇可能）</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">';
+  [...G.roster].sort((a,b) => ov(b) - ov(a)).forEach(c => {
+    const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
+    html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:4px;font-size:11px">
+      <span>${c.name}</span><span style="color:var(--text-dim)">(${ov(c)})</span>
+      <button onclick="releaseFighter(${c.id})" style="font-size:10px;padding:1px 6px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:3px" ${inCard?'disabled title="カード登録中"':''}>解雇</button>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Free agents table
+  html += '<div class="panel-title" style="font-size:13px">フリーエージェント一覧</div>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>Style</th><th>Role</th><th>総合</th><th>パワー</th><th>スピード</th><th>テクニック</th><th>スタミナ</th><th>マインド</th><th>給与</th><th>契約</th></tr>';
+  [...G.freeAgents].sort((a,b) => ov(b) - ov(a)).forEach(c => {
+    const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
+    const canAfford = G.funds >= signingFee;
+    html += `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td><span class="badge badge-${c.style}">${c.style}</span></td>
+      <td><span class="badge badge-${roleCls}">${c.role}</span></td>
+      <td class="num ov">${ov(c)}</td>
+      <td class="num">${c.pw}</td><td class="num">${c.sp}</td><td class="num">${c.te}</td>
+      <td class="num">${c.st}</td><td class="num">${c.mn}</td>
+      <td class="num" style="color:var(--text-sub)">${getSalary(c)}万</td>
+      <td><button onclick="signFighter(${c.id})" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${canAfford?'':'disabled'}>獲得 (${signingFee}万)</button></td>
+    </tr>`;
+  });
+  html += '</table></div>';
+  el.innerHTML = html;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 9B: COACH & SAVE UI (v0.6)                      ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderCoach() {
+  const el = document.getElementById('coachContent');
+  if (!el) return;
+  const hired = getHiredCoaches();
+  let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
+    雇用中: ${hired.length}/${MAX_COACHES}名 ｜ コーチ給与合計: ${getCoachSalaryTotal()}万/週
+    <br><span style="font-size:10px;color:var(--text-dim)">※ 選手のアサインは「🏋️ 育成」画面で行えます</span>
+  </div>`;
+
+  // Hired coaches
+  if (hired.length > 0) {
+    html += '<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">雇用中のコーチ</div>';
+    hired.forEach(c => {
+      const assigned = getCoachAssignees(c.id);
+      const assignedNames = assigned.map(cid => { const ch = G.roster.find(r => r.id === cid); return ch ? ch.name : '?'; });
+      html += `<div class="coach-card hired">
+        <div class="coach-avatar">${c.emoji}</div>
+        <div class="coach-info">
+          <div class="coach-name">${c.name}</div>
+          <div class="coach-desc">${c.desc}</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--text-dim)">
+            給与: ${c.salary}万/週 ｜ 担当: ${assigned.length}/${COACH_MAX_ASSIGN}名
+            ${assignedNames.length > 0 ? `<br>└ ${assignedNames.join('、')}` : ''}
+          </div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="showConfirm('${c.name}を解任しますか？\\n担当選手のアサインも解除されます','解任',()=>fireCoach(${c.id}))">解任</button>
+      </div>`;
+    });
+  }
+
+  // Available coaches
+  const available = G.availableCoaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+  if (available.length > 0) {
+    html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-top:16px;margin-bottom:8px">雇用可能なコーチ</div>';
+    available.forEach(c => {
+      const fee = c.hireFee || COACH_HIRE_FEE;
+      const canHire = G.coaches.length < MAX_COACHES && G.funds >= fee;
+      html += `<div class="coach-card">
+        <div class="coach-avatar">${c.emoji}</div>
+        <div class="coach-info">
+          <div class="coach-name">${c.name}</div>
+          <div class="coach-desc">${c.desc}</div>
+          <span class="coach-effect ${c.specialty}">${
+            c.specialty === 'all' ? '全育成×' + c.growthMult :
+            c.specialty === 'mq' ? 'MQ+' + c.mqBonus :
+            c.specialty === 'pop' ? '人気+' + c.popBonus :
+            c.specialty.toUpperCase() + '育成×' + c.growthMult
+          }</span>
+          <span style="font-size:10px;color:var(--text-dim);margin-left:8px">給与: ${c.salary}万/週</span>
+        </div>
+        <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
+          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= MAX_COACHES ? '上限' : '資金不足'}</button>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function renderSave() {
+  const el = document.getElementById('saveContent');
+  if (!el) return;
+  let html = '';
+
+  // Autosave info
+  const autoInfo = getAutoSaveInfo();
+  html += '<div style="margin-bottom:16px">';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚡ オートセーブ</div>';
+  if (autoInfo) {
+    html += `<div class="save-slot has-data">
+      <div>
+        <div class="save-slot-title">オートセーブ</div>
+        <div class="save-slot-meta">Y${autoInfo.season} 第${autoInfo.week}週 ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+      </div>
+      <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
+    </div>`;
+  } else {
+    html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
+  }
+  html += '</div>';
+
+  // Manual save slots
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">💾 手動セーブスロット</div>';
+  for (let i = 1; i <= SAVE_SLOTS; i++) {
+    const info = getSaveInfo(i);
+    if (info) {
+      html += `<div class="save-slot has-data">
+        <div>
+          <div class="save-slot-title">スロット ${i}</div>
+          <div class="save-slot-meta">Y${info.season} 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${info.orgPop} ｜ ロスター${info.rosterSize}名</div>
+          <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" onclick="showConfirm('スロット${i}に上書きセーブしますか？','セーブ',()=>saveGame(${i}))">セーブ</button>
+          <button class="btn btn-blue btn-sm" onclick="showConfirm('スロット${i}からロードしますか？\\n現在の進行は失われます。','ロード',()=>loadGame(${i}))">ロード</button>
+          <button class="btn btn-red btn-sm" onclick="showConfirm('スロット${i}のデータを削除しますか？','削除',()=>deleteSave(${i}))">削除</button>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="save-slot">
+        <div>
+          <div class="save-slot-title" style="color:var(--text-dim)">スロット ${i}</div>
+          <div class="save-slot-meta">空きスロット</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">セーブ</button>
+      </div>`;
+    }
+  }
+
+  // New game button
+  html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+    <button class="btn btn-red" onclick="showConfirm('本当にニューゲームを開始しますか？\\n現在の進行は失われます。','ニューゲーム',()=>{location.reload()})">🔄 ニューゲーム</button>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderFacility() {
+  const el = document.getElementById('facilityContent');
+  if (!el) return;
+  let html = '';
+
+  // Active effects summary
+  const effects = [];
+  if (getFacilityLevel('training') > 1) effects.push(`🏋️ 成長+${Math.round((getFacilityGrowthMult()-1)*100)}%`);
+  if (getFacilityLevel('medical') > 1) effects.push(`🏥 怪我-${getFacilityInjuryReduction()}週`);
+  if (getFacilityLevel('media') > 1) effects.push(`📺 プロモ+${getFacilityPromoBonus()}`);
+  if (getFacilityLevel('dormitory') > 1) effects.push(`🏠 回復+${getFacilityConditionBonus()}`);
+  if (getFacilityLevel('scouting') > 1) effects.push(`🔍 契約金-${getFacilityScoutDiscount()}万`);
+
+  if (effects.length > 0) {
+    html += '<div class="facility-summary">';
+    effects.forEach(e => html += `<span class="facility-tag">${e}</span>`);
+    html += '</div>';
+  }
+
+  const totalMaint = getFacilityMaintenance();
+  if (totalMaint > 0) {
+    html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:16px">施設維持費合計: <span style="color:var(--red)">-${totalMaint}万/週</span></div>`;
+  }
+
+  // Facility cards
+  FACILITIES.forEach(f => {
+    const currentLv = getFacilityLevel(f.id);
+    html += `<div class="facility-card">`;
+    html += `<div class="facility-header"><span class="facility-emoji">${f.emoji}</span><span class="facility-name">${f.name}</span><span style="color:var(--gold);font-size:12px;margin-left:auto">Lv.${currentLv}/${f.levels.length}</span></div>`;
+
+    html += '<div class="facility-level-bar">';
+    f.levels.forEach((lv, i) => {
+      const lvNum = i + 1;
+      const isCurrent = lvNum === currentLv;
+      const isNext = lvNum === currentLv + 1;
+      const isPast = lvNum < currentLv;
+      const canAfford = isNext && G.funds >= lv.cost;
+      let cls = 'facility-lv';
+      if (isCurrent) cls += ' current';
+      else if (isNext && canAfford) cls += ' available';
+      else if (!isPast) cls += ' locked';
+      else cls += ' current'; // past levels also gold
+
+      html += `<div class="${cls}" ${isNext && canAfford ? `onclick="showConfirm('${f.name}をLv${lvNum}【${lv.name}】にアップグレードしますか？\\n費用: ${lv.cost}万 / 維持費: +${lv.maint}万/週','アップグレード',()=>upgradeFacility('${f.id}'))"` : ''}>`;
+      html += `<div class="facility-lv-name">${isPast || isCurrent ? '✓ ' : ''}Lv.${lvNum} ${lv.name}</div>`;
+      html += `<div class="facility-lv-desc">${lv.desc}</div>`;
+      if (lvNum > 1 && !isPast && !isCurrent) {
+        html += `<div class="facility-lv-cost">💰 ${lv.cost}万</div>`;
+        html += `<div class="facility-lv-maint">維持費 +${lv.maint}万/週</div>`;
+      }
+      if (isCurrent) html += '<div style="font-size:9px;color:var(--gold);margin-top:2px">◆ 現在</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  html += `<div style="font-size:11px;color:var(--text-dim);margin-top:12px">💡 アップグレードは即時反映されます。維持費は毎週発生します。</div>`;
+  el.innerHTML = html;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 9D: TRAINING SCREEN (v0.8)                      ║
+// ╚══════════════════════════════════════════════════════════╝
+
+function toggleIntensive(charId) {
+  const c = G.roster.find(r => r.id === charId);
+  if (!c) return;
+  c.intensive = !c.intensive;
+  renderTraining();
+}
+
+function changeCoachAssign(charId, newCoachId) {
+  unassignFromCoach(charId);
+  if (newCoachId > 0) assignToCoach(newCoachId, charId);
+  refreshAll();
+}
+
+function toggleTrainDetail(charId) {
+  const panel = document.getElementById(`train-detail-${charId}`);
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
+function getGrowthTendency(charId) {
+  const coach = getCharCoach(charId);
+  const stats = ['pw','sp','te','st','mn'];
+  const labels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
+  if (!coach) return {text: '均等', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
+  if (coach.specialty === 'all') return {text: '全体強化', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
+  if (['mq','pop'].includes(coach.specialty)) return {text: coach.specialty === 'mq' ? 'MQ強化' : 'POP強化', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
+  return {
+    text: `${coach.specialty.toUpperCase()}重視`,
+    arrows: stats.map(s => s === coach.specialty
+      ? {stat: s, label: labels[s], cls: 'up2', arrow: '↑↑'}
+      : {stat: s, label: labels[s], cls: 'up1', arrow: '↑'})
+  };
+}
+
+function renderTraining() {
+  const el = document.getElementById('trainingContent');
+  if (!el) return;
+  const hired = getHiredCoaches();
+  let html = '';
+
+  // === Coach Summary ===
+  if (hired.length > 0) {
+    html += '<div class="train-coach-summary">';
+    html += '<div style="font-size:11px;font-weight:700;color:#2ecc71;margin-bottom:6px">🎓 コーチ陣</div>';
+    hired.forEach(c => {
+      const assigned = getCoachAssignees(c.id);
+      const effectLabel = c.specialty === 'all' ? `全ステ×${c.growthMult}` :
+        c.specialty === 'mq' ? `MQ+${c.mqBonus}` :
+        c.specialty === 'pop' ? `人気+${c.popBonus}` :
+        `${c.specialty.toUpperCase()}×${c.growthMult}`;
+      html += `<div class="train-coach-row">
+        <span>${c.emoji} ${c.name}</span>
+        <span style="font-size:10px;color:var(--gold);font-weight:700;margin-left:6px">[${effectLabel}]</span>
+        <span class="coach-slots">担当 ${assigned.length}/${COACH_MAX_ASSIGN}</span>
+      </div>`;
+    });
+    // Tendency summary
+    const specCoaches = hired.filter(c => ['pw','sp','te','st','mn'].includes(c.specialty));
+    if (specCoaches.length > 0) {
+      const tendencyParts = specCoaches.map(c => `${c.specialty.toUpperCase()}重視`);
+      html += `<div class="train-tendency">→ 育成傾向: <strong>${tendencyParts.join('＋')}</strong></div>`;
+    }
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.03);border-radius:6px">🎓 コーチ未雇用 — コーチ画面から雇用してください</div>';
+  }
+
+  // === Roster Training List ===
+  const canManage = G.weekPhase === 'manage';
+  html += '<div style="margin-top:8px">';
+  html += '<div class="train-row train-row-header"><span>選手</span><span>総合</span><span>体調</span><span>担当コーチ</span><span>成長傾向</span><span>⚡追込</span></div>';
+
+  G.roster.forEach(c => {
+    const coach = getCharCoach(c.id);
+    const tendency = getGrowthTendency(c.id);
+    const condPct = c.condition;
+    const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
+    const isInjured = !!c.injury;
+    const isResting = c.condition <= 30;
+    const canIntensive = canManage && !isInjured && !isResting && c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec;
+    const champBadge = G.titles.world.championId === c.id ? ' 👑' : '';
+    const potPct = getPotentialPct(c);
+
+    // Coach name display
+    let coachDisplay = '<span style="color:var(--text-dim);font-size:10px">---</span>';
+    if (coach) {
+      coachDisplay = `<span style="font-size:10px">${coach.emoji}${coach.name.replace(/コーチ|トレーナー|道場長|師範|アドバイザー|セコンド|マネージャー/g,'').substring(0,3)}</span>`;
+    }
+
+    // Growth tendency arrows
+    let arrowHtml = '';
+    if (isInjured) {
+      arrowHtml = '<span style="font-size:10px;color:#e17055">療養中</span>';
+    } else if (isResting) {
+      arrowHtml = '<span style="font-size:10px;color:#3498db">休養中</span>';
+    } else {
+      arrowHtml = tendency.arrows.map(a =>
+        `<span class="train-growth-arrow ${a.cls}" title="${a.label}">${a.arrow}</span>`
+      ).join('');
+    }
+
+    // Intensive button
+    let intBtn = '';
+    if (isInjured || isResting) {
+      intBtn = '<span style="font-size:10px;color:var(--text-dim)">--</span>';
+    } else if (!canManage) {
+      intBtn = c.intensive ? '<span style="font-size:10px;color:#ffa500">⚡ON</span>' : '';
+    } else {
+      const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
+      intBtn = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canIntensive || c.intensive ? '' : `disabled title="${warnTitle}"`}>⚡</button>`;
+    }
+
+    const rowOpacity = isInjured ? ' style="opacity:0.55"' : '';
+    html += `<div class="train-row"${rowOpacity} onclick="toggleTrainDetail(${c.id})" style="cursor:pointer${isInjured?';opacity:0.55':''}">
+      <span><strong style="font-size:12px">${c.name}</strong>${champBadge} <span style="font-size:9px;color:var(--text-dim)">${potPct}%</span></span>
+      <span class="num" style="font-size:12px">${ov(c)}</span>
+      <span><div class="cond-bar" style="width:45px"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:10px">${condPct}</span></span>
+      <span>${coachDisplay}</span>
+      <span>${arrowHtml}</span>
+      <span onclick="event.stopPropagation()">${intBtn}</span>
+    </div>`;
+
+    // Detail panel (hidden by default)
+    const stats = ['pw','sp','te','st','mn'];
+    const statLabels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
+    html += `<div class="detail-panel" id="train-detail-${c.id}">`;
+    // Stat bars
+    stats.forEach(s => {
+      const current = c[s];
+      const pot = c.pot[s];
+      const pct = Math.round(current / pot * 100);
+      const sg = c.seasonGrowth[s] || 0;
+      html += `<div class="stat-bar-wrap">
+        <span class="stat-bar-label">${statLabels[s]}</span>
+        <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
+        <span class="stat-bar-val">${current}/${pot}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
+      </div>`;
+    });
+    // Coach assign dropdown
+    if (canManage) {
+      html += `<div style="margin-top:8px;font-size:11px">
+        <label style="color:var(--text-dim)">担当コーチ: </label>
+        <select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px"${isInjured?' disabled':''}>
+          <option value="0"${!coach?' selected':''}>--- なし ---</option>`;
+      hired.forEach(h => {
+        const aCount = getCoachAssignees(h.id).length;
+        const isCurrent = coach && coach.id === h.id;
+        const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
+        html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+      });
+      html += '</select></div>';
+    } else if (coach) {
+      html += `<div style="margin-top:6px;font-size:10px;color:var(--text-dim)">担当: ${coach.emoji} ${coach.name}</div>`;
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // === Season Growth Log ===
+  const growthEntries = G.roster.filter(c => {
+    const sg = c.seasonGrowth;
+    return sg && Object.values(sg).some(v => v > 0);
+  });
+  if (growthEntries.length > 0) {
+    html += '<div class="train-season-log">';
+    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">📈 今シーズン成長</div>';
+    growthEntries.forEach(c => {
+      const parts = [];
+      ['pw','sp','te','st','mn'].forEach(s => {
+        const v = c.seasonGrowth[s] || 0;
+        if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
+      });
+      if (parts.length > 0) html += `<div>${c.name}: ${parts.join(' ')}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Intensive training info
+  html += '<div style="font-size:10px;color:var(--text-dim);margin-top:8px">⚡ 強化練習: 成長×1.5 / 体調消耗2倍 / 8%で練習負傷 / 最大2週連続</div>';
+
+  el.innerHTML = html;
+}
+
+function refreshAll() {
+  refreshTopBar();
+  renderWeekScreen();
+  renderRoster();
+  renderScout();
+  renderShowPrep();
+  renderFinance();
+  renderLog();
+  renderCoach();
+  renderTraining();
+  renderFacility();
+  renderSave();
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 12: INIT (v0.85b)                                ║
+// ╚══════════════════════════════════════════════════════════╝
+(function() {
+  const autoInfo = Storage.getAutoSaveInfo();
+  if (autoInfo) {
+    G = { ...G, gameLog: [...G.gameLog,
+      '🎉 新団体設立！ 初期資金5,000万でスタート。',
+      `ロスター${G.roster.length}名で船出。フリーエージェント${G.freeAgents.length}名がスカウト可能。`
+    ]};
+    refreshAll();
+    setTimeout(() => {
+      showConfirm(
+        `オートセーブが見つかりました。<br>Y${autoInfo.season} 第${autoInfo.week}週 ｜ 資金${autoInfo.funds.toLocaleString()}万<br><br>続きからプレイしますか？`,
+        'ロードする',
+        () => { Storage.loadAutoSave(); refreshAll(); }
+      );
+    }, 300);
+  } else {
+    G = { ...G, gameLog: [...G.gameLog,
+      '🎉 新団体設立！ 初期資金5,000万でスタート。',
+      `ロスター${G.roster.length}名で船出。フリーエージェント${G.freeAgents.length}名がスカウト可能。`,
+      '💡 v0.85b: Engine不変性＋tickWeek統合パイプライン搭載。',
+      '🔥 Heatシステム: 好試合が続くと集客倍率UP！',
+      '🏥 怪我システム: 試合後に負傷の可能性あり。',
+      '🏆 タイトルシステム: 世界王座をかけた試合でMQ+15＆集客+15%！',
+      '⚡ ライバルリーシステム: 同じ対戦を重ねると抗争でMQボーナス！',
+      '💾 セーブ/ロード: 週の進行で自動保存。手動3スロット。',
+      '🎓 コーチシステム: コーチを雇って育成効率UP！',
+      '📈 成長/衰退: 選手はポテンシャルに向かって成長し、ベテランは衰退も。',
+      '🏢 施設アップグレード: 5種の施設を強化！',
+      '🏋️ 強化練習: コーチをアサインして育成方針を決定。⚡追い込みも。'
+    ]};
+    refreshAll();
+  }
+})();
+</script>
+</body>
+</html>
