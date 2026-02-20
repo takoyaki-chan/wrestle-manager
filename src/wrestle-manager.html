@@ -2701,8 +2701,20 @@ const Engine = {
 
       } else if (offWeek >= 4) {
         // OffWeek 4: New season preparation — advance to next season
+        // v0.95: Archive season stats before transition
+        const oldSeason = s.season;
+        const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
+        const oldRankings = Engine.ranking.updateRankings(s);
+        const pRankOld = Engine.ranking.getPlayerRank(oldRankings);
+        const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
+          orgPop: s.orgPop || 0, ...oldStats, rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })) };
+        const seasonHistory = [...(s.seasonHistory || []), archive];
+
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
+              summitBonus: 0,
+              seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
+              seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
         // Update rankings
         s.rankings = Engine.ranking.updateRankings(s);
@@ -2867,6 +2879,11 @@ const Engine = {
       challengeTrigger: null,
       pendingEvent: null,
       summitBonus: 0,
+      // v0.95: Season statistics & history
+      seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
+                     bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
+      seasonHistory: [], // array of past season summaries
+      fundsHistory: [5000], // weekly fund snapshots for sparkline
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -2934,6 +2951,7 @@ const Storage = {
       if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null, pendingPoach: [] };
       // v0.9d backward compat: rental & events
       if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
+      if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
 
       G = { ...G, version: '0.9' };
 
@@ -3239,7 +3257,15 @@ const App = {
   executeShow() {
     const result = Engine.executeShow(G);
     if (result.error) { alert(result.error); return; }
-    G = { ...G, ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // v0.95: Track season statistics from show results
+    const stats = { ...G.seasonStats };
+    stats.showCount++;
+    if (result.results) {
+      result.results.forEach(r => {
+        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
+      });
+    }
+    G = { ...G, ...result.state, seasonStats: stats, gameLog: [...G.gameLog, ...result.events] };
     renderShowResult(result.results, result.injuryResults);
   },
 
@@ -3247,7 +3273,16 @@ const App = {
   closeShowResult() {
     document.getElementById('showResultOverlay').classList.remove('active');
     const result = Engine.tickWeek(G);
-    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // v0.95: Track finances
+    const stats = { ...G.seasonStats };
+    if (result.state.weeklyFinance) {
+      stats.totalRevenue += result.state.weeklyFinance.income || 0;
+      stats.totalExpense += result.state.weeklyFinance.expense || 0;
+    }
+    if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+    if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
+    const fh = [...(G.fundsHistory || []), result.state.funds];
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -3257,7 +3292,14 @@ const App = {
   // Process a week (manage + settle) via tickWeek
   processWeek() {
     const result = Engine.tickWeek(G);
-    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    const stats = { ...G.seasonStats };
+    if (result.state.weeklyFinance) {
+      stats.totalRevenue += result.state.weeklyFinance.income || 0;
+      stats.totalExpense += result.state.weeklyFinance.expense || 0;
+    }
+    if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+    const fh = [...(G.fundsHistory || []), result.state.funds];
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -3513,22 +3555,24 @@ function executeEvent() {
   if (!ev) return;
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week));
   const events = [];
+  let eventWon = false;
 
   if (ev.type === 'war') {
     const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
     const warResult = Engine.event.resolveWar(rng, G, card);
-    // Show results
     warResult.results.forEach((r, i) => {
       const winner = r.playerWon ? r.playerFighter.name : r.aiFighter.name;
       const icon = r.playerWon ? '🔵' : '🔴';
       events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${winner}勝利 (MQ${r.mq})`);
     });
     const outcome = Engine.event.applyWarOutcome(G, warResult.playerWins, warResult.aiWins, ev.opponentOrgId);
+    eventWon = warResult.playerWins > warResult.aiWins;
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
 
   } else if (ev.type === 'challenge') {
     const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, ev.mqBonus);
     const won = result.winnerId === ev.playerFighter.id;
+    eventWon = won;
     const popDelta = won ? 3 : -1;
     events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (MQ${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
     G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
@@ -3537,12 +3581,17 @@ function executeEvent() {
   } else if (ev.type === 'summit') {
     const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, 0);
     const won = result.winnerId === ev.playerFighter.id;
+    eventWon = won;
     events.push(`🏆 頂上決戦: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！！' : '敗北…'} (MQ${result.mq})`);
     const outcome = Engine.event.applySummitOutcome(G, won);
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
   }
 
-  G = { ...G, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+  // v0.95: Track event stats
+  const evStats = { ...(G.seasonStats || {}) };
+  if (eventWon) evStats.eventsWon = (evStats.eventsWon || 0) + 1;
+  else evStats.eventsLost = (evStats.eventsLost || 0) + 1;
+  G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
   Storage.autoSave();
   refreshAll();
 }
@@ -3649,6 +3698,51 @@ function renderWeekScreen() {
       </div>
     </div>`;
 
+    // v0.95: Season Recap Card (show detailed stats from completed season)
+    const st = G.seasonStats || {};
+    const lastArchive = (G.seasonHistory || []).slice(-1)[0];
+    if (offW <= 1 && (st.showCount > 0 || lastArchive)) {
+      const src = lastArchive || st;
+      const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
+      html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
+        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${lastArchive ? lastArchive.season : G.season} レポート</h4>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
+            <div style="font-size:20px;font-weight:900;color:var(--gold)">${lastArchive ? lastArchive.rank : (G.rankings ? Engine.ranking.getPlayerRank(G.rankings) : '-')}位</div>
+            <div style="font-size:10px;color:var(--text-dim)">最終ランキング</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
+            <div style="font-size:20px;font-weight:900;color:#2ecc71">${src.showCount || 0}</div>
+            <div style="font-size:10px;color:var(--text-dim)">興行開催数</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
+            <div style="font-size:20px;font-weight:900;color:#3498db">${src.bestMQ || 0}</div>
+            <div style="font-size:10px;color:var(--text-dim)">最高MQ</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+          <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
+            <span style="color:var(--text-dim)">収支:</span>
+            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${profit.toLocaleString()}万</span>
+            <span style="color:var(--text-dim);font-size:10px">(収${(src.totalRevenue||0).toLocaleString()} / 支${(src.totalExpense||0).toLocaleString()})</span>
+          </div>
+          <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
+            <span style="color:var(--text-dim)">ピーク資金:</span>
+            <span style="color:var(--gold);font-weight:700">${(src.peakFunds||0).toLocaleString()}万</span>
+          </div>
+          ${src.bestMQMatch ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
+            <span style="color:var(--text-dim)">ベストマッチ:</span>
+            <span style="color:var(--text-main)">${src.bestMQMatch}</span>
+            <span style="color:#3498db;font-weight:700">MQ${src.bestMQ}</span>
+          </div>` : ''}
+          ${(src.eventsWon || src.eventsLost) ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
+            <span style="color:var(--text-dim)">団体抗争:</span>
+            <span style="color:#2ecc71">${src.eventsWon||0}勝</span> / <span style="color:#e74c3c">${src.eventsLost||0}敗</span>
+          </div>` : ''}
+        </div>
+      </div>`;
+    }
+
     // Show recent events from game log related to current offseason
     const recentEvents = G.gameLog.filter(e => e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長'));
     const offEvents = recentEvents.slice(-15);
@@ -3694,6 +3788,69 @@ function renderWeekScreen() {
   html = '';
 
   if (G.weekPhase === 'manage') {
+    // ── v0.95: Dashboard Panel ──
+    const qtr = G.week <= 12 ? 'Q1' : G.week <= 24 ? 'Q2' : G.week <= 36 ? 'Q3' : 'Q4';
+    const weekPct = Math.round((G.week / 48) * 100);
+    const pRank = G.rankings && G.rankings.length ? Engine.ranking.getPlayerRank(G.rankings) : '-';
+    const stats = G.seasonStats || {};
+    const fh = G.fundsHistory || [];
+    // Mini sparkline: last 12 data points
+    const spark = fh.slice(-12);
+    const sparkMin = Math.min(...spark, 0);
+    const sparkMax = Math.max(...spark, 1);
+    const sparkH = 24;
+    const sparkW = 80;
+    const sparkPoints = spark.map((v, i) => `${Math.round(i * sparkW / Math.max(spark.length - 1, 1))},${sparkH - Math.round(((v - sparkMin) / (sparkMax - sparkMin || 1)) * sparkH)}`).join(' ');
+
+    // Upcoming events
+    const upcomingItems = [];
+    const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (isShowWeek(w)) return w; return null; })();
+    if (nextShow && nextShow > G.week) upcomingItems.push(`🎤 次の興行: 第${nextShow}週`);
+    else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
+    if (TRANSFER_CONFIG && TRANSFER_CONFIG.windows) {
+      const nextTW = TRANSFER_CONFIG.windows.find(w => w > G.week);
+      if (nextTW) upcomingItems.push(`🤝 移籍W: 第${nextTW}週`);
+    }
+    if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
+    else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <!-- Season Progress -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--text-dim)">Y${G.season} ${qtr}</span>
+          <span style="font-size:11px;color:var(--gold);font-weight:700">第${G.week}/48週</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px">
+          <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,var(--gold),#f1c40f);border-radius:2px;transition:width 0.3s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim)">
+          <span style="${G.week<=12?'color:var(--gold)':''}">Q1</span>
+          <span style="${G.week>12&&G.week<=24?'color:var(--gold)':''}">Q2</span>
+          <span style="${G.week>24&&G.week<=36?'color:var(--gold)':''}">Q3</span>
+          <span style="${G.week>36?'color:var(--gold)':''}">Q4</span>
+        </div>
+      </div>
+      <!-- Mini Ranking + Finance -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:var(--gold);font-size:14px">#${pRank}</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${G.funds.toLocaleString()}万</strong></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div style="font-size:10px;color:var(--text-dim)">
+            興行${stats.showCount||0}回 ｜ MQ最高${stats.bestMQ||0}${stats.eventsWon ? ` ｜ 抗争${stats.eventsWon}勝` : ''}
+          </div>
+          <svg width="${sparkW}" height="${sparkH}" style="opacity:0.6"><polyline points="${sparkPoints}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/></svg>
+        </div>
+      </div>
+    </div>`;
+
+    // Upcoming events strip
+    if (upcomingItems.length > 0) {
+      html += `<div style="display:flex;gap:12px;margin-bottom:10px;font-size:10px;color:var(--text-dim);flex-wrap:wrap">${upcomingItems.map(item => `<span style="padding:2px 6px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.12);border-radius:3px">${item}</span>`).join('')}</div>`;
+    }
+
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
@@ -4065,7 +4222,29 @@ function renderShowPrep() {
 
 function renderFinance() {
   const el = document.getElementById('financeContent');
-  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:16px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+
+  // v0.95: Funds history chart
+  const fh = G.fundsHistory || [];
+  if (fh.length > 1) {
+    const chartW = 320, chartH = 60;
+    const fMin = Math.min(...fh, 0);
+    const fMax = Math.max(...fh, 1);
+    const range = fMax - fMin || 1;
+    const points = fh.map((v, i) => `${Math.round(i * chartW / Math.max(fh.length - 1, 1))},${chartH - Math.round(((v - fMin) / range) * chartH)}`).join(' ');
+    const zeroY = chartH - Math.round(((0 - fMin) / range) * chartH);
+    html += `<div style="margin-bottom:16px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">💹 資金推移 (${fh.length}週)</div>
+      <svg width="${chartW}" height="${chartH}" style="display:block">
+        <line x1="0" y1="${zeroY}" x2="${chartW}" y2="${zeroY}" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3"/>
+        <polyline points="${points}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/>
+        <circle cx="${chartW}" cy="${chartH - Math.round(((fh[fh.length-1] - fMin) / range) * chartH)}" r="3" fill="${G.funds>=0?'#2ecc71':'#e74c3c'}"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);margin-top:2px">
+        <span>${fMax.toLocaleString()}万</span><span>${fMin.toLocaleString()}万</span>
+      </div>
+    </div>`;
+  }
 
   // Weekly costs breakdown
   html += '<div class="panel-title">週間コスト内訳</div>';
@@ -4099,7 +4278,29 @@ function renderFinance() {
 
 function renderLog() {
   const el = document.getElementById('logContent');
-  el.innerHTML = G.gameLog.map(l => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">${l}</div>`).reverse().join('');
+  // v0.95: Enhanced log with filter
+  const categories = [
+    { key: 'all', label: '全て', icon: '📋' },
+    { key: 'show', label: '興行', icon: '🎤', match: l => l.includes('興行') || l.includes('MQ') || l.includes('勝利') || l.includes('防衛') },
+    { key: 'finance', label: '財務', icon: '💰', match: l => l.includes('収入') || l.includes('支出') || l.includes('万') || l.includes('残高') },
+    { key: 'event', label: 'イベント', icon: '⚔', match: l => l.includes('対抗') || l.includes('挑戦') || l.includes('頂上') || l.includes('移籍') || l.includes('レンタル') || l.includes('引き抜き') },
+    { key: 'season', label: 'シーズン', icon: '📅', match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
+  ];
+  const currentFilter = el.dataset.filter || 'all';
+  let html = '<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">';
+  categories.forEach(cat => {
+    const active = currentFilter === cat.key;
+    html += `<button onclick="document.getElementById('logContent').dataset.filter='${cat.key}';renderLog()" style="font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer;border:1px solid ${active ? 'var(--gold)' : 'var(--border)'};background:${active ? 'rgba(212,168,67,0.15)' : 'transparent'};color:${active ? 'var(--gold)' : 'var(--text-dim)'}">${cat.icon} ${cat.label}</button>`;
+  });
+  html += '</div>';
+
+  const filtered = currentFilter === 'all' ? G.gameLog : G.gameLog.filter(categories.find(c => c.key === currentFilter)?.match || (() => true));
+  const display = filtered.slice(-100).reverse();
+  html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
+  display.forEach(l => {
+    html += `<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;color:var(--text-sub)">${l}</div>`;
+  });
+  el.innerHTML = html;
 }
 
 // ── Ranking Screen (v0.9) ────────────────────────────────
@@ -4195,6 +4396,26 @@ function renderRanking() {
       ｜ 団体人気: ${G.orgPop} ｜ エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}
     </div>
   </div>`;
+
+  // v0.95: Season History
+  if (G.seasonHistory && G.seasonHistory.length > 0) {
+    html += '<div style="margin-top:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px">';
+    html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📈 シーズン履歴</h4>';
+    html += '<table class="data-table"><tr><th>シーズン</th><th style="text-align:right">順位</th><th style="text-align:right">興行数</th><th style="text-align:right">最高MQ</th><th style="text-align:right">収支</th><th style="text-align:right">最終資金</th><th style="text-align:right">人数</th></tr>';
+    G.seasonHistory.forEach(h => {
+      const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
+      html += `<tr>
+        <td>Y${h.season}</td>
+        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank<=2?'#c0c0c0':'var(--text-sub)'}">${h.rank}位</td>
+        <td class="num">${h.showCount || 0}</td>
+        <td class="num" style="color:#3498db">${h.bestMQ || 0}</td>
+        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${profit.toLocaleString()}万</td>
+        <td class="num">${(h.funds||0).toLocaleString()}万</td>
+        <td class="num">${h.rosterSize || '-'}</td>
+      </tr>`;
+    });
+    html += '</table></div>';
+  }
 
   el.innerHTML = html;
 }
