@@ -43,175 +43,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .site-subtitle{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:5px;
   text-transform:uppercase;color:var(--gold);opacity:0.5;margin-top:6px}
 
-/* ═══ SELECT: MATCHUP ═══ */
-.matchup-indicator{display:flex;align-items:center;justify-content:center;gap:20px;margin:20px auto 12px;max-width:700px}
-.matchup-slot{flex:1;padding:12px 16px;background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);
-  border-radius:3px;text-align:center;font-size:14px;font-weight:700;transition:all .3s;
-  min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.matchup-slot.left{border-color:rgba(74,143,212,0.2)}
-.matchup-slot.left.filled{border-color:rgba(74,143,212,0.5);box-shadow:0 0 15px rgba(74,143,212,0.15);color:#8bc4f0}
-.matchup-slot.right{border-color:rgba(196,30,58,0.2)}
-.matchup-slot.right.filled{border-color:rgba(196,30,58,0.5);box-shadow:0 0 15px rgba(196,30,58,0.15);color:#f08b9e}
-.slot-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;display:block;margin-bottom:4px}
-.matchup-slot.left .slot-label{color:rgba(74,143,212,0.6)}
-.matchup-slot.right .slot-label{color:rgba(196,30,58,0.6)}
-.slot-empty{color:var(--text-dim);font-weight:400}
-.matchup-vs{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);opacity:0.6;flex-shrink:0}
-
-/* ═══ SELECT: FIGHT BUTTON ═══ */
-.fight-btn-wrap{text-align:center;margin:0 0 20px}
-.btn-fight{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;padding:14px 0;
-  width:min(600px,80%);border:none;border-radius:3px;cursor:pointer;
-  background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark);transition:all .2s;
-  position:relative;overflow:hidden}
-.btn-fight::before{content:'';position:absolute;top:0;left:-100%;right:0;bottom:0;width:300%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left .5s}
-.btn-fight:hover:not(:disabled)::before{left:100%}
-.btn-fight:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,168,67,0.3)}
-.btn-fight:disabled{opacity:0.3;cursor:not-allowed}
-.btn-fight-sub{display:block;font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:1px;opacity:0.7;margin-top:2px}
-
-/* ═══ SELECT: ROSTER GRID ═══ */
-.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-bottom:24px}
-
-/* ═══ CHARACTER CARD ═══ */
-.char-card{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:4px;
-  overflow:hidden;position:relative;opacity:0;transform:translateY(20px);
-  animation:cardIn .5s ease forwards;transition:all .4s}
-@keyframes cardIn{to{opacity:1;transform:translateY(0)}}
-.char-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold) 50%,transparent);opacity:0;transition:opacity .3s;z-index:3}
-.char-card:hover::before{opacity:1}
-.char-card:hover{transform:translateY(-6px);border-color:rgba(212,168,67,0.3);
-  box-shadow:0 10px 35px rgba(0,0,0,0.7),0 0 40px rgba(212,168,67,0.08)}
-.char-card.selected-left{border-color:rgba(74,143,212,0.5);box-shadow:0 0 20px rgba(74,143,212,0.2)}
-.char-card.selected-left::before{background:linear-gradient(90deg,transparent,#4a8fd4 50%,transparent);opacity:1}
-.char-card.selected-right{border-color:rgba(196,30,58,0.5);box-shadow:0 0 20px rgba(196,30,58,0.2)}
-.char-card.selected-right::before{background:linear-gradient(90deg,transparent,#c41e3a 50%,transparent);opacity:1}
-.char-card.selectable{cursor:pointer}
-.char-card.selectable:active{transform:translateY(-2px) scale(0.98)}
-.card-image-area{width:100%;height:280px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1a1a22,#0e0e15)}
-.card-image-area img{width:100%;height:100%;object-fit:cover;object-position:top center;
-  transition:transform .5s,filter .3s;filter:brightness(0.85)}
-.char-card:hover .card-image-area img{transform:scale(1.06);filter:brightness(1.0)}
-.card-image-area::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 40%,rgba(14,14,21,0.95) 100%);pointer-events:none}
-.card-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#12121a,#0a0a10)}
-.card-placeholder svg{width:80px;height:80px;opacity:0.15;fill:var(--gold)}
-.card-badge-style{position:absolute;top:10px;left:10px;font-family:'Oswald',sans-serif;font-size:9px;
-  font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;
-  background:rgba(0,0,0,0.7);border-left:2px solid var(--gold);z-index:2;backdrop-filter:blur(4px)}
-.card-badge-role{position:absolute;top:10px;right:10px;font-size:9px;font-weight:600;padding:3px 8px;
-  background:rgba(0,0,0,0.7);border-radius:2px;z-index:2;backdrop-filter:blur(4px);letter-spacing:1px}
-.card-badge-role.babyface{color:#8bc4f0;border:1px solid rgba(74,143,212,0.3)}
-.card-badge-role.heel{color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
-.card-badge-role.neutral{color:#b0b8c4;border:1px solid rgba(176,184,196,0.3)}
-.corner-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-family:'Oswald',sans-serif;
-  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;
-  border-radius:2px;z-index:4;pointer-events:none}
-.corner-label.blue{background:rgba(74,143,212,0.85);color:#fff}
-.corner-label.red{background:rgba(196,30,58,0.85);color:#fff}
-.card-info{padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
-.card-text{flex:1;min-width:0}
-.card-name{font-weight:900;font-size:17px;line-height:1.2;margin-bottom:2px}
-.card-style-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;
-  text-transform:uppercase;color:var(--text-sub);margin-bottom:6px}
-.card-mini-stats{display:flex;gap:8px;font-size:10px;color:var(--text-sub);flex-wrap:wrap}
-.card-mini-stats .sv{color:var(--text-main);font-weight:700}
-.card-overall{flex-shrink:0;width:56px;text-align:center;padding-top:2px}
-.overall-num{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;
-  background:linear-gradient(180deg,#fff 10%,var(--gold-light) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative}
-.overall-num::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
-  width:24px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.overall-label{font-family:'Oswald',sans-serif;font-size:7px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--gold);opacity:0.5;margin-top:5px}
-
-/* ═══ CONFIRM MODAL ═══ */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(4px);
-  z-index:200;align-items:center;justify-content:center;overflow-y:auto;padding:10px}
-.modal-overlay.show{display:flex}
-.modal-box{background:var(--card-bg);border:1px solid rgba(212,168,67,0.3);border-radius:4px;
-  width:min(760px,95vw);max-height:min(90vh,900px);overflow-y:auto;position:relative;
-  opacity:0;transform:translateY(40px);animation:modalIn .4s ease-out forwards;margin:auto}
-@keyframes modalIn{to{opacity:1;transform:translateY(0)}}
-.modal-grid{display:grid;grid-template-columns:220px 1fr;min-height:0}
-.modal-image-section{position:relative;background:linear-gradient(135deg,#1a1a22,#0e0e15);overflow:hidden;max-height:420px}
-.modal-image-section img{width:100%;height:100%;object-fit:cover;object-position:top center}
-.modal-image-section::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 50%,rgba(14,14,21,0.3) 100%);pointer-events:none}
-.modal-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#12121a,#0a0a10)}
-.modal-image-placeholder svg{width:80px;height:80px;opacity:0.15;fill:var(--gold)}
-.modal-ov-badge{position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
-  border:1px solid rgba(212,168,67,0.3);padding:6px 12px;text-align:center;z-index:2;border-radius:3px}
-.modal-ov-num{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;
-  background:linear-gradient(180deg,#fff 10%,var(--gold-light) 100%);
+/* ═══ WAITING SCREEN ═══ */
+.waiting-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;gap:20px;text-align:center}
+.waiting-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;
+  background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.modal-ov-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:4px;
-  text-transform:uppercase;color:var(--gold);opacity:0.6;margin-top:4px}
-.modal-info-section{padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
-.modal-corner-hint{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase}
-.modal-corner-hint.blue{color:#4a8fd4}
-.modal-corner-hint.red{color:#e85d75}
-.modal-section-title{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:4px;
-  text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:8px}
-.modal-char-name{font-size:22px;font-weight:900;margin-bottom:4px}
-.modal-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
-.modal-tag{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;padding:3px 10px;
-  border-radius:2px;font-weight:600}
-.modal-tag.style-tag{background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.25);color:var(--gold-light)}
-.modal-tag.role-tag.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0;border:1px solid rgba(74,143,212,0.3)}
-.modal-tag.role-tag.heel{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
-.modal-tag.role-tag.neutral{background:rgba(176,184,196,0.15);color:#b0b8c4;border:1px solid rgba(176,184,196,0.3)}
-.modal-data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.modal-data-item .md-label{font-size:11px;color:rgba(255,255,255,0.4)}
-.modal-data-item .md-value{font-size:11px;font-weight:700}
-.modal-section-border{border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:10px}
-.modal-ab-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.modal-ab-name{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--text-sub);min-width:72px;text-transform:uppercase}
-.modal-ab-track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
-.modal-ab-fill{height:100%;border-radius:3px;width:0;transition:width .8s ease-out;
-  background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.modal-ab-val{font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;min-width:28px;text-align:right}
-.modal-profile-section{display:flex;flex-direction:column;gap:6px}
-.modal-profile-item .mp-label{font-size:9px;color:rgba(255,255,255,0.4);font-weight:400;margin-bottom:1px}
-.modal-profile-item .mp-text{font-size:11px;color:rgba(255,255,255,0.8);line-height:1.5}
-.modal-lockin-wrap{padding:14px;text-align:center}
-.btn-lockin{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;padding:0;
-  width:min(400px,80%);height:52px;border:none;border-radius:4px;cursor:pointer;
-  background:linear-gradient(135deg,#d4a843,#f0d078,#d4a843);color:#0e0e15;transition:all .2s}
-.btn-lockin:hover{filter:brightness(1.15);box-shadow:0 0 20px rgba(212,168,67,0.4)}
-.btn-lockin:active{transform:scale(0.96)}
-.modal-close{position:absolute;top:16px;right:16px;width:40px;height:40px;
-  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:3px;
-  cursor:pointer;font-size:24px;color:rgba(255,255,255,0.6);display:flex;align-items:center;
-  justify-content:center;z-index:10;transition:all .2s;line-height:1}
-.modal-close:hover{background:var(--red);border-color:var(--red);color:#fff}
-.modal-image-section.clickable{cursor:pointer}
-.modal-image-section.clickable::before{content:'TAP TO SELECT';position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:6px;
-  color:rgba(212,168,67,0);z-index:3;transition:color .3s;pointer-events:none;
-  text-shadow:0 2px 8px rgba(0,0,0,0.8)}
-.modal-image-section.clickable:hover::before{color:rgba(212,168,67,0.9)}
-.modal-image-section.clickable:hover img{filter:brightness(1.1)}
-@media(max-width:600px){
-  .modal-grid{grid-template-columns:1fr;min-height:auto}
-  .modal-image-section{max-height:200px}
-  .modal-info-section{padding:14px}
-  .modal-char-name{font-size:20px}
-  .modal-ov-badge{bottom:8px;left:8px;padding:4px 10px}
-  .modal-ov-num{font-size:28px}
-  .modal-lockin-wrap{padding:10px}
-  .btn-lockin{height:42px;font-size:17px}
-}
-@media(max-height:700px){
-  .modal-grid{min-height:auto}
-  .modal-image-section{max-height:200px}
-  .modal-info-section{padding:14px;gap:8px}
-  .modal-profile-item .mp-text{font-size:10px;line-height:1.3}
-}
+.waiting-sub{font-size:13px;color:var(--text-sub);line-height:1.6}
+.waiting-pulse{width:40px;height:40px;border-radius:50%;border:3px solid var(--gold-dim);
+  border-top-color:var(--gold);animation:waitSpin 1s linear infinite}
+@keyframes waitSpin{to{transform:rotate(360deg)}}
 
 /* ═══ MATCH SCREEN ═══ */
 .match-grid{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;gap:10px;margin-bottom:10px}
@@ -441,12 +282,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 <body>
 <div class="app">
   <header class="site-header">
-    <h1 class="site-title">CHARACTER SELECT</h1>
-    <p class="site-subtitle" id="headerSub">女子プロレス バトルエンジン — v4.1b (tuneB) Engine Prototype</p>
+    <h1 class="site-title">WRESTLE MANAGER</h1>
+    <p class="site-subtitle" id="headerSub">Battle Engine v4.1b — Live Match</p>
   </header>
   <div id="screenContainer"></div>
   <div class="result-overlay" id="resultOverlay"></div>
-  <div class="modal-overlay" id="modalOverlay"></div>
   <div class="finish-click-overlay" id="finishOverlay"></div>
   <div class="finish-click-btn" id="finishBtn"></div>
 </div>
@@ -461,75 +301,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 //   5. MN now affects: kickout, giveup resist, momentum recovery
 // ═══════════════════════════════════════════════════════════
 
-// ═══ DATA ═══
-const C = [
-  {id:1, name:'高津小春',    h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',   role:'Neutral',
-   vl:["ふふっ、まだまだ強くなれる！","剣の道も、リングの道も…負けないよ！","この勝利、次の強敵への一歩だから！"],
-   profile:{personality:'負けず嫌いの自信家。剣道で培った精神力と集中力で常に冷静に試合を支配する。',
-     background:'剣道部の元エース。打撃センスと精神力に強みがある。',
-     specialty:'延髄斬りやチョップなどの打撃が得意。剣道由来の踏み込みと間合い管理が武器',
-     weakness:'グラウンドに持ち込まれると対応力が落ちる。関節技の防御経験が浅い'}},
-  {id:2, name:'澤出みずき',  h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',  role:'Babyface',
-   vl:["やった…！ 頑張ってよかった…！","ふぅ…いい試合だったね","応援してくれた人、ありがとう…！"],
-   profile:{personality:'穏やかで癒し系の雰囲気だが、リングに上がると芯の強さを見せる実力者。',
-     background:'才能に恵まれた隠れた実力者。バランスの良いスタイルで安定した強さを見せる',
-     specialty:'状況に応じた柔軟な技選択。投げと打撃のバランスが良い',
-     weakness:'優しすぎる性格が仇となり、追い込み時に攻めきれないことがある'}},
-  {id:3, name:'富岡加奈子',  h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',  role:'Neutral',
-   vl:["この力…もう誰にも負けない","富岡の名に懸けて、勝利を掴むわ","ようやく…本当の私を見せられた"],
-   profile:{personality:'財閥令嬢としてのプライドと、虚弱さを努力で克服した強い意志を持つ。',
-     background:'富岡財閥の一人娘。長身と鍛え抜かれた体躯を活かしたパワーファイトが持ち味',
-     specialty:'パワーボム、ジャーマンスープレックスなどの大型投げ技',
-     weakness:'スピード勝負になると後手に回りがち'}},
-  {id:4, name:'副沢たまき',  h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Technique', role:'Neutral',
-   vl:["あー勝った勝った。疲れたー","ま、こんなもんでしょ","楽勝…ってわけでもなかったけどね"],
-   profile:{personality:'脱力系でマイペース。常に省エネだが、キレのある技術を見せる天才肌。',
-     background:'八百屋の娘。技術的なセンスは学園トップクラス',
-     specialty:'テクニカルな丸め込み、カウンター技。省エネファイト',
-     weakness:'スタミナ・モチベーションの波が大きい'}},
-  {id:5, name:'深町真琴',    h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',     role:'Babyface',
-   vl:["まだまだ…もっと速く、もっと強く！","この脚がある限り、走り続けるよ","勝った…！ トレーニングの成果だね"],
-   profile:{personality:'ストイックで真面目な努力家。陸上部で培った脚力と持久力をプロレスに全力投入。',
-     background:'陸上部短距離のエース。圧倒的なスピードを武器に速攻スタイルを確立',
-     specialty:'飛び技、ドロップキック、高速タックル',
-     weakness:'パワー不足が顕著。力負けする展開になると打開策が限られる'}},
-  {id:6, name:'橘玲美',      h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',
-   vl:["…もう少し、もがいてほしかったわね","その悲鳴…悪くなかったわよ？","…ふふ"],
-   profile:{personality:'寡黙で冷徹。関節技で相手が苦しむ姿に密かな愉悦を感じる嗜虐的な一面。',
-     background:'関節技の技術は市内随一。長身を活かしたリーチの長い関節技が武器',
-     specialty:'腕菱木十字固め、三角締め、各種関節技',
-     weakness:'スタンドでの打ち合いはやや苦手'}},
-  {id:7, name:'生駒エリカ',  h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Brawler',   role:'Heel',
-   vl:["アタシの勝ちだ！ 文句あんのかよ？","っへ！　楽勝ってヤツ？","ハッ！ こんなもんか？"],
-   profile:{personality:'豪快で乱暴。帰国子女で実はいいところの出だが、素行は悪い。',
-     background:'幼少期をアメリカで過ごし、ストリートファイトに明け暮れた',
-     specialty:'ラリアット、頭突き。パワーとガッツの荒削りファイト',
-     weakness:'技術的な攻防が苦手。テクニシャンの丸め込みに弱い'}},
-  {id:8, name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Technique', role:'Babyface',
-   vl:["ふう…諦めなくてよかった","良い試合でした。ありがとう","この勝利…ゆみえにも報告しなきゃ"],
-   profile:{personality:'穏やかで上品だが、芯は頑固。決して折れない精神力を兼ね備える。',
-     background:'幼少期からピアノを習い、繊細な技術と冷静な試合運びが持ち味',
-     specialty:'テクニカルな切り返し、連携技。冷静な状況判断',
-     weakness:'爆発力に欠ける。一発逆転の大技がやや少ない'}},
-  {id:9, name:'岸ゆみえ',    h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Technique', role:'Babyface',
-   vl:["はぁ…　はぁ…　か、勝てた…","舐めてると足元すくわれるってこと","菜穂子、見てたかな…？"],
-   profile:{personality:'メガネの優等生。冷めた性格だが、試合中に思わぬ底力を見せる。',
-     background:'試合前に情報を集めて戦略を立てる理論家。関節技のセンスが開花中',
-     specialty:'丸め込み技、スクールボーイ系。番狂わせの「隠れた実力者」',
-     weakness:'ステータスは全体的に低い。パワーファイターには力負けしやすい'}},
-  {id:10,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',  role:'Heel',
-   vl:["当然の結果。大河内に敵はいない","カスは地べたに這うのがお似合いね…","…退屈な試合だったわね"],
-   profile:{personality:'圧倒的なパワーと高慢な態度で対戦相手を見下す絶対女王。',
-     background:'大河内家の次期当主候補。学園最強の名をほしいままにする',
-     specialty:'パワーボム、ラリアット。圧倒的な力で相手をねじ伏せる王道スタイル',
-     weakness:'スピードタイプとの相性がやや悪い。プライドの高さが油断を生む'}},
-  {id:11,name:'四条あずさ',  h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',  role:'Heel',
-   vl:["紗代子さまに勝利を捧げます！","ふふ、私だってやれるんですから！","紗代子さまが見ていてくださったら…"],
-   profile:{personality:'大河内紗代子への盲目的な信奉者。紗代子のためなら手段を選ばない。',
-     background:'四条家は大河内家の傘下。紗代子に認められるためにプロレスを始めた',
-     specialty:'反則技スレスレのダーティファイト。ルールの隙を突く狡猾さ',
-     weakness:'正面からのガチンコ勝負には弱い。メンタルが不安定'}}
-];
+// ═══ DATA (received from parent via postMessage) ═══
+let matchData = null; // {left:{id,name,h,pw,sp,te,st,mn,style,role,vl,...}, right:{...}, matchInfo:{isTitle,matchNum,totalMatches}}
 
 // ═══ MOVES (v3.5 data preserved) ═══
 const commonMoves=[
@@ -1053,7 +826,7 @@ function resolveFallClick(p){
     if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finFall),v)}</div>`;
     p.log+=` ★ ${p.atk.name}がフォールで勝利！`;
     S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='フォール';S.winner=as;sfx.finChime();
+    S.finType='フォール';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
     setTimeout(()=>{showNBtn();showResult()},2000);
   }else{
     const recoveryHP=getKickoutRecoveryHP(p.def);
@@ -1093,7 +866,7 @@ function resolveGUClick(p){
     if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finGU),v)}</div>`;
     p.log+=` ★ ${p.atk.name}がギブアップで勝利！`;
     S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='ギブアップ';S.winner=as;sfx.finChime();
+    S.finType='ギブアップ';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
     setTimeout(()=>{showNBtn();showResult()},2000);
   }else{
     const recoveryHP=getKickoutRecoveryHP(p.def);
@@ -1134,7 +907,7 @@ function resolveRollupClick(p){
     const box=document.getElementById('narBox');
     if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.rollOK),v)}</div>`;
     p.log+=' ★ 丸め込み3カウント！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.winner=as;S.finType='丸め込み';sfx.finChime();
+    S.winner=as;S.finType='丸め込み';S.finMove=p.moveName||'';sfx.finChime();
     setTimeout(()=>{showNBtn();showResult()},2000);
   }else{
     showCountText('返したーーっ！','white');sfx.kickout();
@@ -1160,7 +933,7 @@ function resolvePinAttemptClick(p){
     if(box)box.innerHTML=`<div class="nar-line nar-finish show">押し切ったーーっ！ ${p.atk.name}、HPが残る${p.def.name}をフォールで仕留めた！</div>`;
     p.log+=` ★ ${p.atk.name}がフォール(押し切り)で勝利！`;
     S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='フォール';S.winner=as;sfx.finChime();
+    S.finType='フォール';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
     setTimeout(()=>{showNBtn();showResult()},2000);
   }else{
     showCountText('返したーーっ！','white');sfx.kickoutSE();
@@ -1187,7 +960,7 @@ function resolveTKOClick(p){
   if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finTKO),v)}</div>`;
   p.log+=` ★ TKO！ ${p.atk.name}の勝利！`;
   S.log.unshift(p.log);S.log=S.log.slice(0,15);
-  S.finType='TKO';S.winner=as;sfx.finChime();
+  S.finType='TKO';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
   setTimeout(()=>{showNBtn();showResult()},2000);
 }
 
@@ -1204,139 +977,66 @@ function showNBtn(){
 }
 
 // ═══ STATE ═══
-const S={screen:'SELECT',selL:null,selR:null,confirmId:null,turn:1,mom:0,prevMom:0,
+const S={screen:'WAITING',turn:1,mom:0,prevMom:0,
   L:null,R:null,log:[],winner:null,finType:null,anim:false,
   halfTrig:{l:false,r:false},qtrTrig:{l:false,r:false},dangerTrig:{l:false,r:false},
   awaitingFinishClick:false,pendingFinishResult:null,droneNodes:null,
   consecutiveHits:{left:0,right:0}};
 const silSVG=`<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="30" r="18"/><ellipse cx="50" cy="85" rx="30" ry="35"/></svg>`;
 
-// ═══ SELECT ═══
-function renderSelect(){
+// ═══ WAITING SCREEN ═══
+function renderWaiting(){
   const ct=document.getElementById('screenContainer');
-  const hdr=document.querySelector('.site-title');if(hdr)hdr.textContent='CHARACTER SELECT';
-  const sub=document.getElementById('headerSub');if(sub)sub.textContent='女子プロレス バトルエンジン — v4.1b (tuneB) Engine Prototype';
-  const lc=C.find(c=>c.id===S.selL),rc=C.find(c=>c.id===S.selR),ok=S.selL&&S.selR;
-  let h=`<div class="matchup-indicator">
-    <div class="matchup-slot left ${lc?'filled':''}"><span class="slot-label">Blue Corner</span>
-      ${lc?`<span>${lc.name}</span>`:'<span class="slot-empty">未選択</span>'}</div>
-    <div class="matchup-vs">VS</div>
-    <div class="matchup-slot right ${rc?'filled':''}"><span class="slot-label">Red Corner</span>
-      ${rc?`<span>${rc.name}</span>`:'<span class="slot-empty">未選択</span>'}</div>
-  </div>
-  <div class="fight-btn-wrap"><button class="btn-fight" id="fBtn" ${ok?'':'disabled'}>
-    FIGHT<span class="btn-fight-sub">試合開始</span></button></div>
-  <div class="roster-grid">`;
-  C.forEach((c,i)=>{
-    const isL=c.id===S.selL,isR=c.id===S.selR;
-    const cls=isL?' selected-left':isR?' selected-right':' selectable';
-    const rc2=c.role.toLowerCase();
-    let cl='';if(isL)cl='<div class="corner-label blue">Blue Corner</div>';
-    else if(isR)cl='<div class="corner-label red">Red Corner</div>';
-    h+=`<div class="char-card${cls}" style="animation-delay:${i*0.04}s" data-id="${c.id}">
-      <div class="card-image-area">
-        <div class="card-badge-style">${c.style}</div>
-        <div class="card-badge-role ${rc2}">${c.role}</div>${cl}
-        <img src="image/bust_${c.id}.jpg" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="card-placeholder" style="display:none">${silSVG}</div>
-      </div>
-      <div class="card-info"><div class="card-text">
-        <div class="card-name">${c.name}</div>
-        <div class="card-style-label">${c.style} / ${c.h}cm</div>
-        <div class="card-mini-stats">
-          <span>PWR <span class="sv">${c.pw}</span></span><span>SPD <span class="sv">${c.sp}</span></span>
-          <span>TEC <span class="sv">${c.te}</span></span><span>STA <span class="sv">${c.st}</span></span>
-          <span>MNT <span class="sv">${c.mn}</span></span></div>
-      </div><div class="card-overall"><div class="overall-num">${ov(c)}</div>
-        <div class="overall-label">Overall</div></div></div></div>`;
-  });
-  h+=`</div>`;ct.innerHTML=h;
-  ct.querySelectorAll('.char-card').forEach(card=>{
-    card.addEventListener('click',()=>{
-      const id=+card.dataset.id;
-      if(S.selL===id){S.selL=S.selR;S.selR=null;sfx.deselect();renderSelect();return}
-      if(S.selR===id){S.selR=null;sfx.deselect();renderSelect();return}
-      if(S.selL&&S.selR)return;
-      sfx.select();showConfirmModal(id);
-    });
-    card.addEventListener('mouseenter',sfx.hover);
-  });
-  const fb=document.getElementById('fBtn');if(fb)fb.addEventListener('click',()=>{startMatch()});
-}
-
-// ═══ CONFIRM MODAL ═══
-function showConfirmModal(charId){
-  const c=C.find(x=>x.id===charId);if(!c)return;
-  S.confirmId=charId;
-  const mo=document.getElementById('modalOverlay');
-  const isFirst=!S.selL;
-  const cornerText=isFirst?'→ BLUE CORNER':'→ RED CORNER';
-  const cornerCls=isFirst?'blue':'red';
-  mo.innerHTML=`<div class="modal-box">
-    <button class="modal-close" id="mClose">&times;</button>
-    <div class="modal-grid">
-      <div class="modal-image-section clickable" id="mImgSec">
-        <img src="image/bust_${c.id}.jpg" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="modal-image-placeholder" style="display:none">${silSVG}</div>
-        <div class="modal-ov-badge"><div class="modal-ov-num">${ov(c)}</div><div class="modal-ov-label">Overall</div></div>
-      </div>
-      <div class="modal-info-section">
-        <div class="modal-corner-hint ${cornerCls}">${cornerText}</div>
-        <div class="modal-section-border">
-          <div class="modal-section-title">Profile</div>
-          <div class="modal-char-name">${c.name}</div>
-          <div class="modal-tags">
-            <span class="modal-tag style-tag">${c.style}</span>
-            <span class="modal-tag role-tag ${c.role.toLowerCase()}">${c.role}</span>
-          </div>
-        </div>
-        <div>
-          <div class="modal-section-title">Combat Abilities</div>
-          ${['Power','Speed','Technique','Stamina','Mental'].map((lbl,i)=>{
-            const key=['pw','sp','te','st','mn'][i];
-            const cls=['power','speed','technique','stamina','mental'][i];
-            return `<div class="modal-ab-row"><span class="modal-ab-name">${lbl}</span>
-              <div class="modal-ab-track"><div class="modal-ab-fill ${cls}" data-w="${c[key]}"></div></div>
-              <span class="modal-ab-val">${c[key]}</span></div>`;
-          }).join('')}
-        </div>
-        ${c.profile?`<div class="modal-section-border">
-          <div class="modal-section-title">Character</div>
-          <div class="modal-profile-section">
-            <div class="modal-profile-item"><div class="mp-label">性格</div><div class="mp-text">${c.profile.personality}</div></div>
-            <div class="modal-profile-item"><div class="mp-label">経歴</div><div class="mp-text">${c.profile.background}</div></div>
-            <div class="modal-profile-item"><div class="mp-label">得意技</div><div class="mp-text">${c.profile.specialty}</div></div>
-            <div class="modal-profile-item"><div class="mp-label">弱点</div><div class="mp-text">${c.profile.weakness}</div></div>
-          </div>
-        </div>`:''}
-      </div>
-    </div>
-    <div class="modal-lockin-wrap"><button class="btn-lockin" id="mLock">✦ RING IN ✦</button></div>
+  ct.innerHTML=`<div class="waiting-screen">
+    <div class="waiting-pulse"></div>
+    <div class="waiting-title">STANDBY</div>
+    <div class="waiting-sub">試合データの受信を待機中…</div>
   </div>`;
-  mo.classList.add('show');
-  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
-    mo.querySelectorAll('.modal-ab-fill').forEach(b=>{b.style.width=b.dataset.w+'%'})})});
-  document.getElementById('mClose').addEventListener('click',closeModal);
-  const doLockin=()=>{sfx.lockIn();
-    if(!S.selL){S.selL=charId}else if(!S.selR){S.selR=charId}
-    closeModal();renderSelect()};
-  document.getElementById('mLock').addEventListener('click',doLockin);
-  const imgSec=document.getElementById('mImgSec');
-  if(imgSec)imgSec.addEventListener('click',doLockin);
-  S._modalKeyHandler=e=>{if(e.key==='Enter'){e.preventDefault();doLockin()}if(e.key==='Escape')closeModal()};
-  document.addEventListener('keydown',S._modalKeyHandler);
-  mo.addEventListener('click',e=>{if(e.target===mo)closeModal()});
-}
-function closeModal(){
-  const mo=document.getElementById('modalOverlay');mo.classList.remove('show');S.confirmId=null;
-  if(S._modalKeyHandler){document.removeEventListener('keydown',S._modalKeyHandler);S._modalKeyHandler=null}
 }
 
-// ═══ START MATCH ═══
-function startMatch(){
+// ═══ postMessage COMMUNICATION ═══
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'START_MATCH') return;
+  matchData = e.data;
+  startMatchFromData(e.data.left, e.data.right);
+});
+
+function sendResult() {
+  const L = S.L, R = S.R;
+  const isDraw = S.winner === 'draw';
+  const winnerId = isDraw ? null : (S.winner === 'left' ? L.id : R.id);
+  const loserId = isDraw ? null : (S.winner === 'left' ? R.id : L.id);
+  // Calculate MQ (match quality) from battle stats
+  const totalTurns = S.turn;
+  const leadChanges = S.log.filter(l => l.includes('カウンター')).length;
+  const kickouts = S.log.filter(l => l.includes('キックアウト') || l.includes('返した') || l.includes('ロープ')).length;
+  const bigMoves = S.log.filter(l => l.includes('大ダメージ')).length;
+  const baseMQ = 30 + Math.min(totalTurns * 2, 20) + leadChanges * 5 + kickouts * 8 + bigMoves * 3;
+  const mq = Math.min(100, Math.max(10, Math.round(baseMQ + (Math.random() * 10 - 5))));
+  const result = {
+    type: 'MATCH_RESULT',
+    winner: isDraw ? 'draw' : (S.winner === 'left' ? 'left' : 'right'),
+    winnerId, loserId,
+    leftId: L.id, rightId: R.id,
+    finType: S.finType || (isDraw ? 'タイムアップ' : ''),
+    finMove: S.finMove || '',
+    turns: totalTurns,
+    mq,
+    hpLeft: { current: Math.max(0, L.hp), max: L.mhp },
+    hpRight: { current: Math.max(0, R.hp), max: R.mhp },
+    log: S.log
+  };
+  window.parent.postMessage(result, '*');
+}
+
+// ═══ START MATCH (from postMessage data) ═══
+function startMatchFromData(left, right){
+  // Ensure vl (voice lines) have defaults
+  if (!left.vl || !left.vl.length) left.vl = ['…！'];
+  if (!right.vl || !right.vl.length) right.vl = ['…！'];
   const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(eff(c.st)*ENG.hpScale),mhp:Math.round(eff(c.st)*ENG.hpScale),kickoutCount:0,gritTurns:0});
-  S.L=mk(C.find(c=>c.id===S.selL));S.R=mk(C.find(c=>c.id===S.selR));
-  S.turn=1;S.mom=0;S.prevMom=0;S.log=[];S.winner=null;S.finType=null;S.anim=false;
+  S.L=mk(left);S.R=mk(right);
+  S.turn=1;S.mom=0;S.prevMom=0;S.log=[];S.winner=null;S.finType=null;S.finMove=null;S.anim=false;
   S.halfTrig={l:false,r:false};S.qtrTrig={l:false,r:false};S.dangerTrig={l:false,r:false};
   S.awaitingFinishClick=false;S.pendingFinishResult=null;stopDrone();
   S.consecutiveHits={left:0,right:0};
@@ -1346,8 +1046,8 @@ function startMatch(){
 // ═══ MATCH RENDER ═══
 function renderMatch(){
   const ct=document.getElementById('screenContainer'),L=S.L,R=S.R,ph=phase(S.turn);
-  const hdr=document.querySelector('.site-title');if(hdr)hdr.textContent='GAKUEN JOSHI PROWRES';
-  const sub=document.getElementById('headerSub');if(sub)sub.textContent='女子プロレス バトルエンジン — v4.1b (tuneB) Engine';
+  const hdr=document.querySelector('.site-title');if(hdr)hdr.textContent=matchData&&matchData.matchInfo?matchData.matchInfo.header||'LIVE MATCH':'LIVE MATCH';
+  const sub=document.getElementById('headerSub');if(sub)sub.textContent=matchData&&matchData.matchInfo?matchData.matchInfo.subHeader||'Battle Engine v4.1b':'Battle Engine v4.1b';
   const mPct=clamp(50+S.mom*0.5,5,95);
   function panelCls(f,side){
     const pct=f.hp/f.mhp*100;let cls='fighter-panel '+side;
@@ -1786,7 +1486,7 @@ function doFinish(atk,def,as,ds,mv,log,v){
 function doTimeout(){
   const L=S.L,R=S.R,lr=L.hp/L.mhp,rr=R.hp/R.mhp;
   if(lr>rr)S.winner='left';else if(rr>lr)S.winner='right';else S.winner='draw';
-  S.finType='判定';sfx.gong();
+  S.finType='判定';S.finMove='';sfx.gong();
   const w=S.winner==='draw'?'':(S.winner==='left'?L:R).name;
   const key=S.winner==='draw'?'finDraw':'finJudge';
   setTimeout(()=>{
@@ -1852,7 +1552,7 @@ function renderResult(){
         <div class="result-winner" id="rWinner">DRAW</div>
         <div class="result-type" id="rType">${wType}</div>
       </div>
-      <button class="btn-end" id="eBtn">BACK TO SELECT</button></div>`;
+      <button class="btn-end" id="eBtn">CLOSE</button></div>`;
   }else{
     el.innerHTML=`<div class="result-box" id="rBox">
       <div class="result-content">
@@ -1867,7 +1567,7 @@ function renderResult(){
           <div class="result-quote" id="rQuote"></div>
         </div>
       </div>
-      <button class="btn-end" id="eBtn">BACK TO SELECT</button></div>`;
+      <button class="btn-end" id="eBtn">CLOSE</button></div>`;
   }
   el.classList.add('show');
   sfx.finChime();
@@ -1890,16 +1590,22 @@ function renderResult(){
     },2200);
   }
   setTimeout(()=>{
-    const eBtn=document.getElementById('eBtn');if(eBtn){eBtn.classList.add('visible');eBtn.addEventListener('click',resetSelect)}
+    const eBtn=document.getElementById('eBtn');if(eBtn){eBtn.classList.add('visible');eBtn.addEventListener('click',closeAndSendResult)}
   },3500);
 }
 function hideResult(){const el=document.getElementById('resultOverlay');el.classList.remove('show','visible');el.innerHTML=''}
 
-function resetSelect(){
-  Object.assign(S,{screen:'SELECT',selL:null,selR:null,confirmId:null,turn:1,mom:0,prevMom:0,
-    L:null,R:null,log:[],winner:null,finType:null,anim:false,
+function closeAndSendResult(){
+  sendResult();
+  resetToWaiting();
+}
+
+function resetToWaiting(){
+  Object.assign(S,{screen:'WAITING',turn:1,mom:0,prevMom:0,
+    L:null,R:null,log:[],winner:null,finType:null,finMove:null,anim:false,
     halfTrig:{l:false,r:false},qtrTrig:{l:false,r:false},dangerTrig:{l:false,r:false},
     awaitingFinishClick:false,pendingFinishResult:null,consecutiveHits:{left:0,right:0}});
+  matchData=null;
   stopDrone();hideResult();render();
 }
 
@@ -1934,7 +1640,7 @@ function renderMatchWithIntro(){
   },4500);
 }
 
-function render(){if(S.screen==='SELECT'){renderSelect();hideResult()}
+function render(){if(S.screen==='WAITING'){renderWaiting();hideResult()}
   else if(S.screen==='MATCH'){renderMatch();hideResult()}}
 render();
 </script>
