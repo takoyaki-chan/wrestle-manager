@@ -347,6 +347,56 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background:rgba(74,143,212,0.08);transition:all .2s}
 .mission-enable-btn:hover{background:rgba(74,143,212,0.18);border-color:#4a8fd4}
 
+/* ── Survival Gauge (v0.97) ── */
+.survival-panel{position:relative;margin-bottom:14px;border-radius:8px;overflow:hidden;
+  border:1px solid rgba(231,76,60,0.35);
+  box-shadow:0 2px 16px rgba(231,76,60,0.12)}
+.survival-panel.phase-red{background:linear-gradient(135deg,rgba(231,76,60,0.10) 0%,rgba(192,57,43,0.06) 100%)}
+.survival-panel.phase-orange{background:linear-gradient(135deg,rgba(230,126,34,0.10) 0%,rgba(211,84,0,0.06) 100%);
+  border-color:rgba(230,126,34,0.35);box-shadow:0 2px 16px rgba(230,126,34,0.12)}
+.survival-panel.phase-yellow{background:linear-gradient(135deg,rgba(241,196,15,0.10) 0%,rgba(243,156,18,0.06) 100%);
+  border-color:rgba(241,196,15,0.35);box-shadow:0 2px 16px rgba(241,196,15,0.10)}
+.survival-panel.phase-green{background:linear-gradient(135deg,rgba(46,204,113,0.12) 0%,rgba(39,174,96,0.06) 100%);
+  border-color:rgba(46,204,113,0.35);box-shadow:0 2px 16px rgba(46,204,113,0.10)}
+.survival-panel.phase-cleared{background:linear-gradient(135deg,rgba(46,204,113,0.06) 0%,rgba(212,168,67,0.04) 100%);
+  border-color:rgba(46,204,113,0.25);box-shadow:none}
+.survival-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.survival-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px}
+.survival-phase-badge{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:0.5px;
+  font-family:'Noto Sans JP',sans-serif}
+.survival-body{padding:10px 14px}
+.survival-gauge-track{position:relative;height:20px;background:rgba(0,0,0,0.3);border-radius:10px;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);margin-bottom:10px}
+.survival-gauge-fill{height:100%;border-radius:10px;transition:width 0.6s ease;position:relative}
+.survival-gauge-fill.red{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+.survival-gauge-fill.orange{background:linear-gradient(90deg,#d35400,#e67e22)}
+.survival-gauge-fill.yellow{background:linear-gradient(90deg,#f39c12,#f1c40f)}
+.survival-gauge-fill.green{background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.survival-gauge-label{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.5);white-space:nowrap}
+.survival-gauge-markers{display:flex;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.survival-gauge-marker{font-size:8px;color:var(--text-dim);text-align:center;position:relative}
+.survival-gauge-marker.active{color:var(--gold);font-weight:700}
+.survival-gauge-marker.cleared{color:#2ecc71}
+.survival-stats{display:flex;gap:16px;flex-wrap:wrap;font-size:11px}
+.survival-stat{display:flex;flex-direction:column;align-items:center;gap:1px}
+.survival-stat-val{font-weight:900;font-size:14px}
+.survival-stat-label{font-size:9px;color:var(--text-dim)}
+.survival-milestones{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.survival-milestone{font-size:9px;padding:2px 7px;border-radius:3px;
+  border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.2);color:var(--text-dim)}
+.survival-milestone.done{border-color:rgba(46,204,113,0.3);background:rgba(46,204,113,0.1);color:#2ecc71}
+.survival-milestone.current{border-color:rgba(241,196,15,0.4);background:rgba(241,196,15,0.1);color:#f1c40f}
+@keyframes survival-pulse{0%,100%{box-shadow:0 2px 16px rgba(231,76,60,0.12)}50%{box-shadow:0 2px 24px rgba(231,76,60,0.3)}}
+.survival-panel.critical{animation:survival-pulse 1.5s ease-in-out infinite}
+.survival-cleared-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 12px;
+  border-radius:4px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);
+  color:#2ecc71;font-weight:700;margin-bottom:10px}
+@keyframes survival-clear-glow{0%{box-shadow:0 0 0 0 rgba(46,204,113,0.4)}70%{box-shadow:0 0 0 8px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+.survival-cleared-badge.fresh{animation:survival-clear-glow 1.5s ease-out 3}
+
 /* ── Event Popup (v0.96) ── */
 .event-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:250;
   align-items:center;justify-content:center;animation:fadeIn .2s}
@@ -3653,6 +3703,7 @@ const Engine = {
           `📊 業界${pRank}位からの挑戦が始まる。`,
           '🏆 v0.9: ライバル団体システム搭載！',
           `👑 EMPRESS GRAND (S級) / 💫 NOVA IMPACT (A級) / 🌙 CRESCENT RISE (B級)`,
+          '⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】',
           '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
         ]
       };
@@ -3746,6 +3797,12 @@ const Engine = {
       // v0.96: Mission system
       missionEnabled: true,
       missionsCompleted: [],
+      // v0.97: Survival gauge
+      survivalCleared: false,
+      survivalProfitStreak: 0,
+      survivalMilestones: [],
+      survivalClearWeek: null,
+      survivalClearSeason: null,
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -3821,6 +3878,133 @@ const MISSIONS = [
 ];
 
 const PHASE_LABELS = ['🔰 はじめの一歩', '📈 成長期', '🏆 頂点を目指せ'];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 6c: SURVIVAL GAUGE (v0.97)                        ║
+// ║  Startup deficit tracker — pure functions, no DOM          ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const SURVIVAL_MILESTONES = [
+  { id:'first_show_rev',  icon:'🎤', label:'初興行収入', desc:'興行でチケット・グッズ収入を得た',
+    check: G => (G.seasonStats?.totalRevenue || 0) > 0 || G.seasonHistory?.some(s => s.totalRevenue > 0) },
+  { id:'sponsor_unlock',  icon:'💰', label:'スポンサー獲得', desc:'人気20到達でスポンサー収入が発生',
+    check: G => G.orgPop >= 20 },
+  { id:'first_profit_wk', icon:'📈', label:'初の黒字週', desc:'週間収支がプラスになった',
+    check: G => (G.survivalProfitStreak || 0) >= 1 },
+  { id:'profit_streak3',  icon:'🔥', label:'3週連続黒字', desc:'安定経営が見えてきた',
+    check: G => (G.survivalProfitStreak || 0) >= 3 },
+  { id:'graduation',      icon:'🏆', label:'経営安定化', desc:'黒字経営が定着！サバイバルクリア',
+    check: G => G.survivalCleared === true },
+];
+
+const SURVIVAL_PHASES = [
+  { id:'red',    label:'赤字地獄',   color:'#e74c3c', emoji:'🔴', cssClass:'phase-red' },
+  { id:'orange', label:'赤字縮小',   color:'#e67e22', emoji:'🟠', cssClass:'phase-orange' },
+  { id:'yellow', label:'損益分岐点', color:'#f1c40f', emoji:'🟡', cssClass:'phase-yellow' },
+  { id:'green',  label:'黒字転換',   color:'#2ecc71', emoji:'🟢', cssClass:'phase-green' },
+];
+
+const Survival = {
+  // Calculate estimated weekly net income (expenses - income, without show revenue)
+  estimateWeeklyNet(G) {
+    const salary = Engine.economy.calcWeeklySalary(G.roster);
+    const fixed = Engine.economy.calcFixedCosts();
+    const coachSalary = Engine.coach.getSalaryTotal(G);
+    const facilityMaint = Engine.facility.getMaintenance(G);
+    const totalExpense = salary + fixed + coachSalary + facilityMaint;
+
+    const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
+    const broadcastBonus = Engine.facility.getBroadcastBonus(G);
+    const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+    const totalBaseIncome = sponsor + broadcast;
+
+    // Estimate average show income per week (shows happen ~every 4 weeks)
+    // Use last show's revenue if available, or estimate from orgPop
+    let avgShowIncomePerWeek = 0;
+    if (G.lastShowResults && G.lastShowResults.length > 0 && G.weeklyFinance) {
+      const showIncome = G.weeklyFinance.details
+        .filter(d => d.type === 'income' && (d.label.includes('チケット') || d.label.includes('グッズ')))
+        .reduce((s, d) => s + d.val, 0);
+      const showCost = G.weeklyFinance.details
+        .filter(d => d.type === 'expense' && d.label.includes('会場'))
+        .reduce((s, d) => s + Math.abs(d.val), 0);
+      avgShowIncomePerWeek = Math.round((showIncome - showCost) / 4); // amortized over 4 weeks
+    }
+
+    const weeklyNet = (totalBaseIncome + avgShowIncomePerWeek) - totalExpense;
+    return { weeklyNet, totalExpense, totalBaseIncome, avgShowIncomePerWeek };
+  },
+
+  // Determine current survival phase
+  getPhase(G) {
+    if (G.survivalCleared) return null; // graduated
+    const { weeklyNet } = Survival.estimateWeeklyNet(G);
+    if (weeklyNet >= 20) return SURVIVAL_PHASES[3]; // green: solid profit
+    if (weeklyNet >= -5) return SURVIVAL_PHASES[2]; // yellow: breakeven
+    if (weeklyNet >= -50) return SURVIVAL_PHASES[1]; // orange: improving
+    return SURVIVAL_PHASES[0]; // red: deep deficit
+  },
+
+  // Estimate weeks until funds reach -1000 (bankruptcy)
+  weeksUntilBankrupt(G) {
+    const { weeklyNet } = Survival.estimateWeeklyNet(G);
+    if (weeklyNet >= 0) return Infinity;
+    const runway = G.funds + 1000; // bankrupt at -1000
+    return Math.max(0, Math.ceil(runway / Math.abs(weeklyNet)));
+  },
+
+  // Calculate fuel gauge percentage (5000 start to -1000 bankrupt = 6000 range)
+  fuelPct(G) {
+    const runway = G.funds + 1000; // 0 at bankruptcy, 6000 at full
+    return Math.max(0, Math.min(100, Math.round((runway / 6000) * 100)));
+  },
+
+  // Evaluate milestones
+  getMilestones(G) {
+    const cleared = new Set(G.survivalMilestones || []);
+    return SURVIVAL_MILESTONES.map(m => ({
+      ...m,
+      done: cleared.has(m.id) || m.check(G),
+    }));
+  },
+
+  // Update survival state — called each week. Returns updated state + events.
+  updateSurvival(G) {
+    if (G.survivalCleared) return { state: G, events: [], graduated: false };
+
+    let s = { ...G };
+    const events = [];
+
+    // Update milestones
+    const oldMilestones = new Set(s.survivalMilestones || []);
+    const newMilestones = [...oldMilestones];
+    SURVIVAL_MILESTONES.forEach(m => {
+      if (!oldMilestones.has(m.id) && m.check(s)) {
+        newMilestones.push(m.id);
+      }
+    });
+    s = { ...s, survivalMilestones: newMilestones };
+
+    // Track profit streak from weekly finance
+    const wf = s.weeklyFinance;
+    if (wf && wf.net !== undefined) {
+      if (wf.net >= 0) {
+        s = { ...s, survivalProfitStreak: (s.survivalProfitStreak || 0) + 1 };
+      } else {
+        s = { ...s, survivalProfitStreak: 0 };
+      }
+    }
+
+    // Check graduation: 4+ consecutive profit weeks AND funds > 3000
+    const graduated = (s.survivalProfitStreak || 0) >= 4 && s.funds >= 3000;
+    if (graduated && !s.survivalCleared) {
+      s = { ...s, survivalCleared: true, survivalClearWeek: s.week, survivalClearSeason: s.season };
+      events.push('🎊 経営安定化達成！ サバイバルチャレンジクリア！');
+    }
+
+    return { state: s, events, graduated };
+  }
+};
 
 const Mission = {
   // Get all missions with their completion status
@@ -3934,6 +4118,9 @@ const Storage = {
 
       // v0.96 backward compat: mission system
       if (G.missionEnabled === undefined) G = { ...G, missionEnabled: true, missionsCompleted: [] };
+
+      // v0.97 backward compat: survival gauge
+      if (G.survivalCleared === undefined) G = { ...G, survivalCleared: false, survivalProfitStreak: 0, survivalMilestones: [], survivalClearWeek: null, survivalClearSeason: null };
 
       G = { ...G, version: '0.9' };
 
@@ -4540,6 +4727,7 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     App.checkMissionUpdate();
+    App.checkSurvivalUpdate();
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -4560,6 +4748,7 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     App.checkMissionUpdate();
+    App.checkSurvivalUpdate();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
@@ -4582,6 +4771,8 @@ const App = {
       const mResult = Mission.updateCompleted(G);
       G = mResult.state;
     }
+    // v0.97: Update survival gauge
+    App.checkSurvivalUpdate();
     sessionRng = Engine.rng.create(G.rngSeed);
     Storage.autoSave();
     refreshAll();
@@ -4598,6 +4789,22 @@ const App = {
     if (!G.missionEnabled) return;
     const mResult = Mission.updateCompleted(G);
     G = mResult.state;
+  },
+
+  // v0.97: Survival gauge
+  checkSurvivalUpdate() {
+    const sResult = Survival.updateSurvival(G);
+    const wasCleared = G.survivalCleared;
+    G = sResult.state;
+    if (sResult.graduated && !wasCleared) {
+      // Show graduation popup!
+      setTimeout(() => showEventPopup({
+        type: 'generic', emoji: '🎊', name: '経営安定化達成！',
+        message: '赤字地獄を乗り越え、ついに安定した黒字経営を達成しました！',
+        detail: '💪 これからは成長フェーズです。更なる高みを目指しましょう！',
+        tone: 'gold'
+      }), 200);
+    }
   }
 };
 
@@ -6274,6 +6481,108 @@ function renderWeekScreen() {
       html += `<div style="display:flex;gap:12px;margin-bottom:10px;font-size:10px;color:var(--text-dim);flex-wrap:wrap">${upcomingItems.map(item => `<span style="padding:2px 6px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.12);border-radius:3px">${item}</span>`).join('')}</div>`;
     }
 
+    // ── v0.97: SURVIVAL GAUGE PANEL ──
+    if (!G.survivalCleared) {
+      const sPhase = Survival.getPhase(G);
+      const sNet = Survival.estimateWeeklyNet(G);
+      const sWeeks = Survival.weeksUntilBankrupt(G);
+      const sFuel = Survival.fuelPct(G);
+      const sMilestones = Survival.getMilestones(G);
+      const isCritical = sFuel < 25 && sPhase && sPhase.id === 'red';
+
+      const gaugeColor = sPhase ? sPhase.id : 'red';
+      html += `<div class="survival-panel ${sPhase ? sPhase.cssClass : 'phase-red'}${isCritical ? ' critical' : ''}">`;
+      html += `<div class="survival-header">
+        <span class="survival-title" style="color:${sPhase?.color || '#e74c3c'}">
+          <span style="font-size:16px">⛽</span> 経営サバイバル
+        </span>
+        <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
+          ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字地獄'}
+        </span>
+      </div>`;
+
+      // Fuel gauge
+      html += '<div class="survival-body">';
+      html += `<div class="survival-gauge-track">
+        <div class="survival-gauge-fill ${gaugeColor}" style="width:${sFuel}%">
+          <span class="survival-gauge-label">${G.funds.toLocaleString()}万</span>
+        </div>
+      </div>`;
+
+      // Milestone markers
+      html += '<div class="survival-gauge-markers">';
+      sMilestones.forEach(m => {
+        const cls = m.done ? 'cleared' : (m === sMilestones.find(x => !x.done) ? 'active' : '');
+        html += `<span class="survival-gauge-marker ${cls}" title="${m.desc}">${m.done ? '✅' : '⬜'} ${m.label}</span>`;
+      });
+      html += '</div>';
+
+      // Key stats
+      html += '<div class="survival-stats">';
+      // Weekly burn rate
+      const netColor = sNet.weeklyNet >= 0 ? '#2ecc71' : '#e74c3c';
+      const netSign = sNet.weeklyNet >= 0 ? '+' : '';
+      html += `<div class="survival-stat">
+        <span class="survival-stat-val" style="color:${netColor}">${netSign}${sNet.weeklyNet}万</span>
+        <span class="survival-stat-label">推定週間収支</span>
+      </div>`;
+      // Weeks until bankrupt
+      if (sNet.weeklyNet < 0) {
+        const urgency = sWeeks <= 10 ? '#e74c3c' : sWeeks <= 20 ? '#e67e22' : '#f1c40f';
+        html += `<div class="survival-stat">
+          <span class="survival-stat-val" style="color:${urgency}">残り${sWeeks}週</span>
+          <span class="survival-stat-label">倒産までの猶予</span>
+        </div>`;
+      } else {
+        html += `<div class="survival-stat">
+          <span class="survival-stat-val" style="color:#2ecc71">安全</span>
+          <span class="survival-stat-label">資金状況</span>
+        </div>`;
+      }
+      // Profit streak
+      const streak = G.survivalProfitStreak || 0;
+      html += `<div class="survival-stat">
+        <span class="survival-stat-val" style="color:${streak >= 4 ? '#2ecc71' : streak > 0 ? '#f1c40f' : 'var(--text-dim)'}">${streak}/4週</span>
+        <span class="survival-stat-label">連続黒字</span>
+      </div>`;
+      // Weekly expense
+      html += `<div class="survival-stat">
+        <span class="survival-stat-val" style="color:#e74c3c">-${sNet.totalExpense}万</span>
+        <span class="survival-stat-label">週間支出</span>
+      </div>`;
+      // Weekly base income
+      html += `<div class="survival-stat">
+        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${sNet.totalBaseIncome}万</span>
+        <span class="survival-stat-label">固定収入</span>
+      </div>`;
+      html += '</div>'; // .survival-stats
+
+      // Tip text
+      if (sPhase && sPhase.id === 'red') {
+        html += `<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
+          💡 <strong style="color:#f1c40f">目標:</strong> 倒産する前に黒字経営に持っていこう！ まずは興行を開催して人気を上げ、スポンサー収入（人気20〜）を獲得するのが第一歩。
+        </div>`;
+      } else if (sPhase && sPhase.id === 'orange') {
+        html += `<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
+          💡 赤字が縮小しています！ 人気を上げてスポンサー・放映権収入を増やし、損益分岐点を超えよう。
+        </div>`;
+      } else if (sPhase && sPhase.id === 'yellow') {
+        html += `<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
+          💡 あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！
+        </div>`;
+      } else if (sPhase && sPhase.id === 'green') {
+        html += `<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
+          💡 黒字転換達成！ この調子で${4 - streak}週間黒字を維持すればクリア！（現在の資金: ${G.funds.toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
+        </div>`;
+      }
+
+      html += '</div></div>'; // .survival-body, .survival-panel
+    } else if (G.survivalCleared && G.survivalClearSeason) {
+      // Compact "CLEARED" badge
+      const fresh = G.survivalClearSeason === G.season && Math.abs((G.survivalClearWeek || 0) - G.week) <= 4;
+      html += `<div class="survival-cleared-badge${fresh ? ' fresh' : ''}">🏆 経営サバイバル CLEARED！ <span style="font-weight:400;font-size:10px;color:var(--text-dim)">（${G.survivalClearSeason}年目 第${G.survivalClearWeek}週で達成）</span></div>`;
+    }
+
     // ── v0.96: MISSION PANEL ──
     if (G.missionEnabled) {
       const visMissions = Mission.getVisible(G);
@@ -6375,6 +6684,24 @@ function renderWeekScreen() {
     });
     html += `<div class="finance-row finance-total"><span>差引</span><span class="f-val ${f.net >= 0 ? 'income' : 'expense'}">${f.net >= 0 ? '+' : ''}${f.net}万</span></div>`;
     html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+
+    // v0.97: Survival gauge mini-status in settlement
+    if (!G.survivalCleared && f.net !== undefined) {
+      const sPhase = Survival.getPhase(G);
+      const streak = G.survivalProfitStreak || 0;
+      if (f.net >= 0 && streak > 0) {
+        html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);font-size:11px;color:#2ecc71">
+          ⛽ 黒字週！ 連続${streak}週目${streak >= 3 ? ' 🔥' : ''}${streak >= 4 && G.funds >= 3000 ? ' — クリアまであと少し！' : ''}
+        </div>`;
+      } else if (f.net < 0) {
+        const sWeeks = Survival.weeksUntilBankrupt(G);
+        html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);font-size:11px;color:#e74c3c">
+          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字'} — 倒産まで推定${sWeeks === Infinity ? '∞' : sWeeks}週
+        </div>`;
+      }
+    } else if (G.survivalCleared) {
+      html += `<div style="margin-top:6px;font-size:10px;color:#2ecc71">🏆 経営安定化達成済み</div>`;
+    }
 
     if (G.funds <= -1000) {
       html += '<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">💀 GAME OVER — 倒産</strong></div>';
