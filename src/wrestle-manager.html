@@ -278,6 +278,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
       <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span></div>
       <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ 中立</span></div>
+      <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
       <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
     </div>
   </div>
@@ -285,6 +286,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- Navigation -->
   <div class="nav-bar">
     <button class="nav-btn active" onclick="showScreen('week')">📅 今週</button>
+    <button class="nav-btn" onclick="showScreen('ranking')">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('roster')">👥 ロスター</button>
     <button class="nav-btn" onclick="showScreen('scout')">🔍 スカウト</button>
     <button class="nav-btn" onclick="showScreen('coach')">🎓 コーチ</button>
@@ -301,6 +303,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="panel">
       <div class="panel-title" id="weekTitle">Week 1 — 非興行週</div>
       <div id="weekContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Ranking (v0.9) -->
+  <div class="screen" id="screen-ranking">
+    <div class="panel">
+      <div class="panel-title">🏆 団体ランキング</div>
+      <div id="rankingContent"></div>
     </div>
   </div>
 
@@ -477,7 +487,7 @@ const ALL_CHARS = [
   {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85}}
 ];
 // Default starting roster IDs (8 members: a balanced mix)
-const DEFAULT_ROSTER_IDS = [4, 3, 5, 11, 12, 16, 19, 20]; // 高津,澤出,深町,橘,生駒,大河内,四条,岸
+const DEFAULT_ROSTER_IDS = [4, 20, 15, 9, 44, 10]; // v0.9: 高津,岸,楠木,宇田川,福浦,ヨーコ (6名弱小スタート)
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 2: MOVE DATA (from v3.5)                        ║
@@ -754,7 +764,62 @@ const FACILITIES = [
 ];
 
 // ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 5: ENGINE CORE (v0.85)                           ║
+// ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
+// ╚══════════════════════════════════════════════════════════╝
+const RIVAL_ORGS = [
+  { id:'empress', name:'EMPRESS GRAND', tier:'S', championScore:60,
+    coachMul:1.30, facilityMul:1.15, scoutStyle:'immediate',
+    desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
+  { id:'nova', name:'NOVA IMPACT', tier:'A', championScore:40,
+    coachMul:1.15, facilityMul:1.10, scoutStyle:'youth',
+    desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
+  { id:'crescent', name:'CRESCENT RISE', tier:'B', championScore:20,
+    coachMul:1.00, facilityMul:1.05, scoutStyle:'conservative',
+    desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
+];
+
+// 80名の団体配分（OVR分布に基づく）
+// player(6):avgOVR≈54  empress(16):≈74  nova(13):≈72  crescent(10):≈68  free(10):≈62  pool(25)
+const ORG_ASSIGN = {
+  player:   [4,20,15,9,44,10],
+  empress:  [1,37,2,33,65,38,66,55,67,34,46,29,60,47,30,42],
+  nova:     [11,16,45,12,5,17,41,6,13,56,68,48,61],
+  crescent: [3,18,31,69,28,49,70,35,71,72],
+  free:     [7,26,39,40,36,8,14,76,73,74],
+  // pool = remaining IDs (25 chars) — unrevealed until scout events
+};
+
+// Style-based growth allocation (training-spec §3.1)
+const STYLE_GROWTH = {
+  Grappler:   {pw:1.0,sp:0.4,te:0.8,st:0.8},
+  Striker:    {pw:0.8,sp:0.8,te:0.4,st:1.0},
+  Submission: {pw:0.3,sp:0.4,te:1.0,st:0.8},
+  Speed:      {pw:0.3,sp:1.0,te:0.7,st:0.5},
+  Allround:   {pw:0.7,sp:0.7,te:0.7,st:0.7},
+  Brawler:    {pw:1.0,sp:0.5,te:0.2,st:1.0}
+};
+
+// Transfer system config (v1.0 §7 modified: quarterly windows)
+const TRANSFER_CFG = {
+  windows: [12,24,36,48],           // 四半期末
+  poachChance: 0.06,                // AI→player: 6%/fighter/quarter
+  poachMinPop: 50,                  // 人気50以上が対象
+  playerPoachLimitPerYear: 1,       // player→AI: 年1名
+  aceRetention: 1.0,                // エース引き留め100%
+  nonAceRetention: 0.80,            // 非エース引き留め80%
+  retentionCostMul: 0.5,            // 引き留め金 = 移籍金×0.5
+  poachIncomeMul: 0.7               // 放出時収入 = 移籍金×0.7
+};
+
+// org-rating star power thresholds (org-ranking-spec §1.3)
+const STAR_POWER = [
+  {minPop:70, points:15, label:'トップスター'},
+  {minPop:50, points:8,  label:'スター'},
+  {minPop:30, points:3,  label:'中堅'}
+];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 5: ENGINE CORE (v0.9)                            ║
 // ║  Pure logic layer — no DOM references                     ║
 // ╚══════════════════════════════════════════════════════════╝
 
@@ -1392,7 +1457,149 @@ const Engine = {
     }
   },
 
-  // ── Season: Weekly Processing (IMMUTABLE) ──────────────
+  // ── Ranking System (IMMUTABLE) ─────────────────────────
+  ranking: {
+    calcStarPower(roster) {
+      return roster.reduce((score, f) => {
+        for (const t of STAR_POWER) { if (f.popularity >= t.minPop) return score + t.points; }
+        return score;
+      }, 0);
+    },
+    calcTotalPop(roster) {
+      return Math.round(roster.reduce((s, f) => s + (f.popularity || 0), 0) * 0.1);
+    },
+    calcOrgRating(championScore, roster) {
+      return championScore + Engine.ranking.calcStarPower(roster) + Engine.ranking.calcTotalPop(roster);
+    },
+    // Returns updated rankings array: [{orgId, name, rating, championScore, starPower, totalPop}]
+    updateRankings(state) {
+      const playerChampScore = state.titles.world.championId ? 30 : 0;
+      const playerRating = Engine.ranking.calcOrgRating(playerChampScore, state.roster);
+      const entries = [{
+        orgId:'player', name: state.orgName || 'プレイヤー団体',
+        rating: playerRating,
+        championScore: playerChampScore,
+        starPower: Engine.ranking.calcStarPower(state.roster),
+        totalPop: Engine.ranking.calcTotalPop(state.roster),
+        rosterSize: state.roster.length
+      }];
+      RIVAL_ORGS.forEach(org => {
+        const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? state.aiOrgs[org.id].roster : [];
+        const r = Engine.ranking.calcOrgRating(org.championScore, aiRoster);
+        entries.push({
+          orgId: org.id, name: org.name,
+          rating: r,
+          championScore: org.championScore,
+          starPower: Engine.ranking.calcStarPower(aiRoster),
+          totalPop: Engine.ranking.calcTotalPop(aiRoster),
+          rosterSize: aiRoster.length
+        });
+      });
+      entries.sort((a, b) => b.rating - a.rating);
+      entries.forEach((e, i) => { e.rank = i + 1; });
+      return entries;
+    },
+    getPlayerRank(rankings) {
+      const p = rankings.find(r => r.orgId === 'player');
+      return p ? p.rank : rankings.length;
+    }
+  },
+
+  // ── Rival System (IMMUTABLE) ───────────────────────────
+  rival: {
+    // Generate trainCap for a fighter (training-spec §1.4)
+    generateTrainCap(rng, notionValue, potential) {
+      const caps = {};
+      ['pw','sp','te','st','mn'].forEach(s => {
+        const factor = 0.10 + Engine.rng.float(rng) * 0.40; // 0.10〜0.50
+        caps[s] = Math.round(notionValue[s] + factor * (potential[s] - notionValue[s]));
+      });
+      return caps;
+    },
+    // Generate entry-level current values (training-spec §1.3)
+    generateStartValues(rng, notionValue, entryAge) {
+      let baseRatio;
+      if (entryAge <= 17)      baseRatio = 0.55;
+      else if (entryAge <= 20) baseRatio = 0.65;
+      else if (entryAge <= 24) baseRatio = 0.75;
+      else if (entryAge <= 29) baseRatio = 0.85;
+      else                     baseRatio = 0.90;
+      const vals = {};
+      ['pw','sp','te','st'].forEach(s => {
+        const ratio = baseRatio + Engine.rng.float(rng) * 0.10;
+        vals[s] = Math.round(notionValue[s] * ratio);
+      });
+      vals.mn = notionValue.mn; // MNT is innate — no age reduction (training-spec §1.6)
+      return vals;
+    },
+    // Make an AI fighter object from ALL_CHARS template
+    makeAIFighter(template, rng, orgId, age) {
+      const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
+      const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
+      // AI fighters start closer to their Notion values (established pros)
+      const maturity = Math.min(1.0, 0.70 + (age - 16) * 0.04 + Engine.rng.float(rng) * 0.10);
+      const current = {};
+      ['pw','sp','te','st','mn'].forEach(s => {
+        current[s] = Math.min(trainCap[s], Math.round(notion[s] * maturity));
+      });
+      const ovr = Math.round((current.pw+current.sp+current.te+current.st+current.mn)/5);
+      return {
+        id: template.id, name: template.name, h: template.h,
+        pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
+        style: template.style, role: template.role, pot: { ...template.pot },
+        notionValue: notion, trainCap,
+        popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
+        orgId, age: age || (16 + Engine.rng.int(rng, 0, 12))
+      };
+    },
+    // Initialize all AI org rosters from ORG_ASSIGN
+    initAIOrgs(rng) {
+      const orgs = {};
+      RIVAL_ORGS.forEach(org => {
+        const ids = ORG_ASSIGN[org.id] || [];
+        const roster = ids.map(id => {
+          const t = ALL_CHARS.find(c => c.id === id);
+          if (!t) return null;
+          return Engine.rival.makeAIFighter(t, rng, org.id, 16 + Engine.rng.int(rng, 2, 10));
+        }).filter(Boolean);
+        // Sort by OVR desc and boost top fighters' popularity for realism
+        roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+        roster.forEach((f, i) => {
+          const tierBonus = {S:8,A:4,B:2}[org.tier] || 0;
+          if (i === 0) f.popularity = Math.min(90, f.popularity + 15 + tierBonus); // ace
+          else if (i < 3) f.popularity = Math.min(85, f.popularity + 8 + tierBonus);
+          else if (i < 6) f.popularity = Math.min(75, f.popularity + 3 + tierBonus);
+        });
+        orgs[org.id] = {
+          roster,
+          orgPop: {S:75,A:55,B:35}[org.tier] || 30
+        };
+      });
+      return orgs;
+    },
+    // Get pool IDs (chars not assigned to any org or free)
+    getPoolIds() {
+      const assigned = new Set();
+      Object.values(ORG_ASSIGN).forEach(ids => ids.forEach(id => assigned.add(id)));
+      return ALL_CHARS.filter(c => !assigned.has(c.id)).map(c => c.id);
+    },
+    // Check if current week is a transfer window
+    isTransferWindow(week) {
+      return TRANSFER_CFG.windows.includes(week);
+    },
+    // Calculate transfer fee (rival-org §7.1)
+    calcTransferFee(fighter, fromOrgTier) {
+      const ovr = Engine.util.ov(fighter);
+      const popBonus = (fighter.popularity || 0) * 10;
+      let baseFee;
+      if (ovr >= 80)      baseFee = 800;
+      else if (ovr >= 60) baseFee = 400;
+      else if (ovr >= 45) baseFee = 200;
+      else                baseFee = 100;
+      const tierMul = {S:1.5, A:1.2, B:1.0}[fromOrgTier] || 1.0;
+      return Math.round((baseFee + popBonus) * tierMul);
+    }
+  },
   season: {
     // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
     processManage(rng, G) {
@@ -1663,17 +1870,36 @@ const Engine = {
       const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
       events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
       report.forEach(r => events.push(`  ${r}`));
-      s = { ...s, roster, season: s.season + 1, week: 1, rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+      // v0.9: Update rankings at season end
+      s = { ...s, roster, season: s.season + 1, week: 1, transfersThisSeason: 0,
+            rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+      s.rankings = Engine.ranking.updateRankings(s);
+      const pRank = Engine.ranking.getPlayerRank(s.rankings);
+      events.push(`🏆 シーズン${s.season - 1}ランキング: ${pRank}位 / ${s.rankings.length}団体`);
+      s.rankings.forEach((r, i) => {
+        const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
+        const emoji = r.orgId === 'player' ? '🏠' : (org ? org.emoji : '');
+        events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (👑${r.championScore} ⭐${r.starPower} 👥${r.totalPop})`);
+      });
     }
     return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
   },
 
   // ── Character Factory (DOM-free) ───────────────────────
-  makeChar(template, rng) {
+  makeChar(template, rng, opts = {}) {
+    const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
+    const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
+    // Player roster starts at entry-level values (training-spec §1.3)
+    const entryAge = opts.age || 16;
+    const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, entryAge);
     return {
       ...template,
+      pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn,
+      notionValue: notion,
+      trainCap,
+      age: entryAge,
       condition: 70 + Engine.rng.int(rng, 0, 19),
-      popularity: Math.max(1, Math.round(Engine.util.ov(template) / 10) + Engine.rng.int(rng, -2, 2)),
+      popularity: Math.max(1, Math.round(Engine.util.ov({...template, ...startVals}) / 10) + Engine.rng.int(rng, -2, 2)),
       schedule: 'balance',
       wins: 0, losses: 0, draws: 0,
       injury: null,
@@ -1688,19 +1914,35 @@ const Engine = {
   createInitialState(seed) {
     seed = seed || (Date.now() ^ 0xDEADBEEF);
     const rng = Engine.rng.create(seed);
+
+    // Player roster (6 members, weak start)
     const roster = DEFAULT_ROSTER_IDS.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
-      return Engine.makeChar(t, rng);
+      return Engine.makeChar(t, rng, { age: 16 });
     });
-    const freeAgents = ALL_CHARS.filter(c => !DEFAULT_ROSTER_IDS.includes(c.id)).map(t => Engine.makeChar(t, rng));
 
-    return {
-      version: '0.85b',
+    // Free agents (from ORG_ASSIGN.free)
+    const freeIds = new Set(ORG_ASSIGN.free || []);
+    const freeAgents = ALL_CHARS.filter(c => freeIds.has(c.id)).map(t => {
+      const age = 18 + Engine.rng.int(rng, 0, 8);
+      return Engine.makeChar(t, rng, { age, useNotion: true });
+    });
+
+    // AI organizations
+    const aiOrgs = Engine.rival.initAIOrgs(rng);
+
+    // Unrevealed pool
+    const poolIds = Engine.rival.getPoolIds();
+
+    // Initial rankings
+    const initState = {
+      version: '0.9',
       rngSeed: seed,
       season: 1,
       week: 1,
       funds: 5000,
       orgPop: 10,
+      orgName: 'プレイヤー団体',
       roster,
       freeAgents,
       gameLog: [],
@@ -1718,8 +1960,17 @@ const Engine = {
       availableCoaches: ALL_COACHES.map(c => c.id),
       seasonGrowth: {},
       facilities: { training: 1, medical: 1, media: 1, dormitory: 1, scouting: 1 },
-      coachAssign: {}
+      coachAssign: {},
+      // v0.9: Rival system
+      aiOrgs,
+      aceDesignation: null,
+      rankings: [],
+      transferLog: [],
+      transfersThisSeason: 0,
+      poolIds,
     };
+    initState.rankings = Engine.ranking.updateRankings(initState);
+    return initState;
   }
 };
 
@@ -1736,7 +1987,7 @@ const Storage = {
   serialize(G) {
     const state = JSON.parse(JSON.stringify(G));
     state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
-    state._saveVersion = '0.85';
+    state._saveVersion = '0.9';
     state._saveDate = new Date().toISOString();
     return JSON.stringify(state);
   },
@@ -1765,7 +2016,20 @@ const Storage = {
 
       // v0.85 backward compat
       if (!G.rngSeed) G = { ...G, rngSeed: Date.now() ^ 0xDEADBEEF };
-      G = { ...G, version: '0.85b' };
+
+      // v0.9 backward compat: rival system
+      if (!G.aiOrgs) {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0, 909));
+        G = { ...G, aiOrgs: Engine.rival.initAIOrgs(rng) };
+      }
+      if (!G.rankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
+      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null };
+      if (!G.transferLog) G = { ...G, transferLog: [] };
+      if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
+      if (!G.poolIds) G = { ...G, poolIds: Engine.rival.getPoolIds() };
+      if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
+
+      G = { ...G, version: '0.9' };
 
       // Fix character data (immutable)
       const fixChar = c => {
@@ -1775,6 +2039,17 @@ const Storage = {
         if (!nc.pot) { const t = ALL_CHARS.find(t => t.id === nc.id); if (t) nc.pot = {...t.pot}; }
         if (nc.intensive === undefined) nc.intensive = false;
         if (nc.intensiveWeeks === undefined) nc.intensiveWeeks = 0;
+        // v0.9: add notionValue/trainCap if missing (migrating from v0.85b)
+        if (!nc.notionValue) {
+          const t = ALL_CHARS.find(t => t.id === nc.id);
+          if (t) nc.notionValue = {pw:t.pw, sp:t.sp, te:t.te, st:t.st, mn:t.mn};
+          else nc.notionValue = {pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn};
+        }
+        if (!nc.trainCap && nc.notionValue && nc.pot) {
+          const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, nc.id, 777));
+          nc.trainCap = Engine.rival.generateTrainCap(rng, nc.notionValue, nc.pot);
+        }
+        if (nc.age === undefined) nc.age = 16 + (nc.careerSeasons || 0);
         return nc;
       };
       G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
@@ -2183,7 +2458,7 @@ function startShowPrep() {
   if (G.showCard.length === 0) autoFillCard();
   showScreen('show');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.nav-btn')[5].classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => { if (b.textContent.includes('興行準備')) b.classList.add('active'); });
   renderShowPrep();
 }
 
@@ -2314,9 +2589,12 @@ function calcAttendance(venueIdx, mainPop, hasTitleMatch) { return Engine.econom
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${id}`).classList.add('active');
+  const screenEl = document.getElementById(`screen-${id}`);
+  if (screenEl) screenEl.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if (event && event.target) event.target.classList.add('active');
+  if (event && event.target && event.target.classList) event.target.classList.add('active');
+  // v0.9: Auto-render screens that need fresh data
+  if (id === 'ranking') renderRanking();
 }
 
 function refreshTopBar() {
@@ -2330,6 +2608,14 @@ function refreshTopBar() {
   const heat = getHeatLevel();
   const heatEl = document.getElementById('dispHeat');
   heatEl.innerHTML = `<span style="color:${heat.color}">${heat.emoji} ${heat.label}</span>`;
+  // v0.9: Rank display
+  const rankings = G.rankings || [];
+  const pRank = Engine.ranking.getPlayerRank(rankings);
+  const rankEl = document.getElementById('dispRank');
+  if (rankEl) {
+    const rColor = pRank === 1 ? 'var(--gold)' : pRank <= 2 ? '#2ecc71' : 'var(--text-sub)';
+    rankEl.innerHTML = `<span style="color:${rColor}">${pRank}位/${rankings.length}</span>`;
+  }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
   champEl.innerHTML = champ ? `🏆 ${champ.name} (${G.titles.world.defenses}防衛)` : '<span style="color:var(--text-dim)">🏆 空位</span>';
@@ -2626,6 +2912,88 @@ function renderFinance() {
 function renderLog() {
   const el = document.getElementById('logContent');
   el.innerHTML = G.gameLog.map(l => `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">${l}</div>`).reverse().join('');
+}
+
+// ── Ranking Screen (v0.9) ────────────────────────────────
+function renderRanking() {
+  const el = document.getElementById('rankingContent');
+  // Recalculate live rankings
+  const rankings = Engine.ranking.updateRankings(G);
+  G = { ...G, rankings };
+
+  let html = '';
+
+  // Victory condition reminder
+  const topAI = rankings.find(r => r.orgId !== 'player');
+  const playerEntry = rankings.find(r => r.orgId === 'player');
+  if (topAI && playerEntry) {
+    const gap = topAI.rating - playerEntry.rating;
+    if (gap > 0) {
+      html += `<div style="margin-bottom:16px;padding:12px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:6px;font-size:12px">
+        🎯 <strong>勝利条件</strong>: 1位団体 <strong>${topAI.name}</strong>（${topAI.rating}pt）を超えること — あと <strong style="color:var(--gold)">${gap}pt</strong>
+      </div>`;
+    } else {
+      html += `<div style="margin-bottom:16px;padding:12px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:6px;font-size:12px">
+        👑 <strong style="color:#2ecc71">業界1位！</strong> あなたの団体が頂点に立っています
+      </div>`;
+    }
+  }
+
+  // Ranking table
+  html += '<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th><th style="text-align:right">評価値</th><th style="text-align:right">👑 チャンプ</th><th style="text-align:right">⭐ スター</th><th style="text-align:right">👥 人気計</th><th style="text-align:right">人数</th></tr>';
+  rankings.forEach(r => {
+    const isPlayer = r.orgId === 'player';
+    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
+    const emoji = isPlayer ? '🏠' : (org ? org.emoji : '');
+    const bgStyle = isPlayer ? 'background:rgba(212,168,67,0.08)' : '';
+    const nameStyle = isPlayer ? 'color:var(--gold);font-weight:700' : '';
+    const tierBadge = org ? `<span style="font-size:9px;padding:1px 5px;border-radius:2px;background:${org.color}30;color:${org.color};border:1px solid ${org.color}40;margin-left:4px">${org.tier}</span>` : '';
+    html += `<tr style="${bgStyle}">
+      <td style="font-size:18px;font-weight:900;color:${r.rank===1?'var(--gold)':r.rank===2?'#c0c0c0':r.rank===3?'#cd7f32':'var(--text-sub)'}">${r.rank}</td>
+      <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
+      <td class="num" style="font-size:16px;font-weight:700">${r.rating}</td>
+      <td class="num">${r.championScore}</td>
+      <td class="num">${r.starPower}</td>
+      <td class="num">${r.totalPop}</td>
+      <td class="num">${r.rosterSize}</td>
+    </tr>`;
+  });
+  html += '</table>';
+
+  // Org detail cards
+  html += '<div style="margin-top:20px;display:grid;gap:12px">';
+  RIVAL_ORGS.forEach(org => {
+    const aiData = G.aiOrgs && G.aiOrgs[org.id];
+    if (!aiData) return;
+    const roster = aiData.roster;
+    const rEntry = rankings.find(r => r.orgId === org.id);
+    const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
+    const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 5);
+
+    html += `<div style="padding:12px;background:${org.color}08;border:1px solid ${org.color}30;border-radius:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:700;color:${org.color}">${org.emoji} ${org.name} <span style="font-size:10px;opacity:0.7">${org.tier}級</span></span>
+        <span style="font-size:12px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
+      <div style="font-size:11px">
+        <span style="color:var(--text-dim)">主力:</span>
+        ${topFighters.map(f => `<span style="margin-left:6px">${f.name}<span style="color:var(--text-dim)">(OVR ${Engine.util.ov(f)}, pop ${f.popularity})</span></span>`).join('')}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Player org summary
+  html += `<div style="margin-top:16px;padding:12px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:6px">
+    <div style="font-weight:700;color:var(--gold);margin-bottom:8px">🏠 ${G.orgName || 'プレイヤー団体'}</div>
+    <div style="font-size:11px;color:var(--text-sub)">
+      ロスター: ${G.roster.length}名 ｜ 平均OVR: ${G.roster.length ? Math.round(G.roster.reduce((s,c)=>s+ov(c),0)/G.roster.length) : 0}
+      ｜ 団体人気: ${G.orgPop} ｜ エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
 }
 
 function renderScout() {
@@ -3053,7 +3421,7 @@ function refreshAll() {
 }
 
 // ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 12: INIT (v0.85b)                                ║
+// ║  SECTION 12: INIT (v0.9)                                   ║
 // ╚══════════════════════════════════════════════════════════╝
 (function() {
   const autoInfo = Storage.getAutoSaveInfo();
@@ -3071,19 +3439,14 @@ function refreshAll() {
       );
     }, 300);
   } else {
+    const pRank = Engine.ranking.getPlayerRank(G.rankings);
     G = { ...G, gameLog: [...G.gameLog,
       '🎉 新団体設立！ 初期資金5,000万でスタート。',
-      `ロスター${G.roster.length}名で船出。フリーエージェント${G.freeAgents.length}名がスカウト可能。`,
-      '💡 v0.85b: Engine不変性＋tickWeek統合パイプライン搭載。',
-      '🔥 Heatシステム: 好試合が続くと集客倍率UP！',
-      '🏥 怪我システム: 試合後に負傷の可能性あり。',
-      '🏆 タイトルシステム: 世界王座をかけた試合でMQ+15＆集客+15%！',
-      '⚡ ライバルリーシステム: 同じ対戦を重ねると抗争でMQボーナス！',
-      '💾 セーブ/ロード: 週の進行で自動保存。手動3スロット。',
-      '🎓 コーチシステム: コーチを雇って育成効率UP！',
-      '📈 成長/衰退: 選手はポテンシャルに向かって成長し、ベテランは衰退も。',
-      '🏢 施設アップグレード: 5種の施設を強化！',
-      '🏋️ 強化練習: コーチをアサインして育成方針を決定。⚡追い込みも。'
+      `ロスター${G.roster.length}名で船出。業界${pRank}位からの挑戦が始まる。`,
+      '🏆 v0.9: ライバル団体システム搭載！',
+      `👑 EMPRESS GRAND (S級) / 💫 NOVA IMPACT (A級) / 🌙 CRESCENT RISE (B級)`,
+      '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
+      '📊 「ランキング」タブで各団体の詳細を確認。',
     ]};
     refreshAll();
   }
