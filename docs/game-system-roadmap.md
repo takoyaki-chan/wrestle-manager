@@ -1,7 +1,7 @@
 # 🎮 レスリングシミュレーター ゲームシステム設計ロードマップ
 
 > 最終更新: 2026-02-21（v0.97完了・全実装トラック更新）
-> 参照ドキュメント: game-design-v0.1.md / character-data-spec-v1.1.md / economy-system-spec-v1.0.md / condition-system-spec-v1.0.md / weekly-gameloop-spec-v1.0.md / training-system-spec-v1.0.md / mq-popularity-spec-v1.0.md / org-ranking-spec-v1.0.md / title-system-spec-v1.0.md / scout-system-spec-v1.0.md / rival-org-spec-v1.0.md
+参照ドキュメント: wrestle-manager-game-design-current.md / character-data-spec-v1.4.md / economy-system-spec-v1.0.md / condition-system-spec-v1.0.md / weekly-gameloop-spec-v1.0.md / training-system-spec-v1.0.md / mq-popularity-spec-v1.0.md / org-ranking-spec-v1.0.md / title-system-spec-v1.0.md / scout-system-spec-v1.0.md / rival-org-spec-v1.0.md
 
 ---
 
@@ -243,10 +243,10 @@
 ## ドキュメント一覧
 
 | ドキュメント | ファイル名 | フェーズ | ステータス |
-|------------|----------|:-------:|:--------:|
-| ゲーム概要 | game-design-v0.1.md | — | 🟢 |
+|---|---|---|---|
+| ゲームデザイン総覧 | wrestle-manager-game-design-current.md | — | 🟢 |
 | バトルエンジン | battle-engine-spec-v4.1b.md | — | 🟢 |
-| キャラクターデータ | character-data-spec-v1.1.md | — | 🟢 |
+| キャラクターデータ | character-data-spec-v1.4.md | — | 🟢 |
 | 経済システム | economy-system-spec-v1.0.md | P1-② | 🟢 |
 | コンディション/怪我 | condition-system-spec-v1.0.md | P1-③ | 🟢 |
 | 週間ゲームループ | weekly-gameloop-spec-v1.0.md | P1-① | 🟢 |
@@ -256,11 +256,8 @@
 | タイトル/ベルト | title-system-spec-v1.0.md | P3-⑦ | 🟢 |
 | スカウト | scout-system-spec-v1.0.md | P3-⑧ | 🟢 |
 | ライバル団体AI | rival-org-spec-v1.0.md | P3-⑨ | 🟢 |
-| ライバル実装ロードマップ | rival-implementation-roadmap.md | P3-⑨ | 🟢 完了 |
-| 特性リスト | traits-list.md | P4-⑩ | 📝 ドラフト |
-| 開発サマリー | wrestle-manager-dev-summary.md | — | 🟢 |
+| 特性リスト | traits-v2.1.md | P4-⑩ | 📝 ドラフト |
 | ロードマップ | game-system-roadmap.md | — | 🟢 |
-| コア分離記録 | roadmap-and-core-separation.md | — | 🟢 |
 
 ---
 
