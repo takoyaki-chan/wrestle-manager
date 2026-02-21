@@ -2990,8 +2990,8 @@ const Engine = {
     // Injuries (immutable)
     const injuryResults = [];
     const injuryReduction = Engine.facility.getInjuryReduction(s);
-    results.forEach(r => {
-      const injRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999));
+    results.forEach((r, idx) => {
+      const injRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id, r.right.id));
       const lc = roster.find(c => c.id === r.left.id);
       const li = Engine.injury.check(injRng, lc, r, injuryReduction);
       if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }

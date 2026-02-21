@@ -1518,6 +1518,9 @@ function showSp(side,text,cls){
 }
 function endAnim(){
   S.anim=false;
+  // Update turn label & phase pill
+  const tl=document.querySelector('.turn-label');if(tl)tl.textContent=`TURN ${S.turn}`;
+  const ph=phase(S.turn),pill=document.getElementById('pill');if(pill)pill.textContent=ph.name;
   const btn=document.getElementById('nBtn');if(btn){btn.disabled=false;btn.onclick=nextTurn}
   updLog();
 }
