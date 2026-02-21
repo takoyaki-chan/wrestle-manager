@@ -1838,7 +1838,7 @@ const TRANSFER_CONFIG = {
 const RENTAL_CONFIG = {
   duration: 4,                          // 4週間固定
   maxConcurrent: 1,                     // 同時1名
-  minOrgRosterRank: 3,                  // 対象: OVR順3位以下
+  minOrgRosterRank: 5,                  // 対象: OVR順5位以下
   weeklyCost: { S: 80, A: 50, B: 30 }, // 週次費用ティア別
 };
 
@@ -3499,8 +3499,8 @@ const Engine = {
         if (!orgData) return;
         const org = { ...orgCfg, roster: orgData.roster, orgPop: orgData.orgPop };
         const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-        // Only rank 3+ (index >= 2) are available
-        sorted.slice(2).forEach(f => {
+        // Only rank 5+ (index >= 4) are available
+        sorted.slice(4).forEach(f => {
           if (f.injury) return; // skip injured
           const fee = Engine.rental.calcWeeklyFee(f, orgCfg);
           results.push({ fighter: f, org, weeklyFee: fee, totalFee: fee * RENTAL_CONFIG.duration });
@@ -3511,9 +3511,10 @@ const Engine = {
 
     calcWeeklyFee(fighter, org) {
       const ovr = Engine.util.ov(fighter);
-      let base = ovr >= 60 ? 50 : ovr >= 45 ? 30 : 15;
-      const tierMul = { S: 1.5, A: 1.2, B: 1.0 }[org.tier] || 1.0;
-      return Math.round(base * tierMul);
+      // v0.99c: 指数カーブ — 低OVRは安く、高OVRは急激に高い
+      const baseFee = Math.pow(ovr / 50, 2.5) * 25;
+      const tierMul = { S: 1.4, A: 1.15, B: 1.0 }[org.tier] || 1.0;
+      return Math.max(5, Math.round(baseFee * tierMul));
     },
 
     /** Attempt rental negotiation. Returns { success, state, events } */
@@ -3597,7 +3598,7 @@ const Engine = {
     TIERS: [
       { id: 'superElite', label: '超逸材', minPot: 850, minCur: 350, baseMin: 500, baseMax: 800, reqPop: 70, compRate: 0.95, compMul: 2.0, bidWin: 0.30, color: '#e74c3c' },
       { id: 'elite',      label: '逸材',   minPot: 750, minCur: 300, baseMin: 300, baseMax: 500, reqPop: 50, compRate: 0.85, compMul: 1.5, bidWin: 0.50, color: '#f39c12' },
-      { id: 'promising',  label: '有望',   minPot: 650, minCur: 220, baseMin: 150, baseMax: 300, reqPop: 25, compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
+      { id: 'promising',  label: '有望',   minPot: 700, minCur: 260, baseMin: 150, baseMax: 300, reqPop: 25, compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
       { id: 'raw',        label: '原石',   minPot: 550, minCur: 180, baseMin: 80,  baseMax: 150, reqPop: 0,  compRate: 0.15, compMul: 1.15, bidWin: 0.50, color: '#2ecc71' },
       { id: 'material',   label: '素材',   minPot: 0,   minCur: 0,   baseMin: 30,  baseMax: 80,  reqPop: 0,  compRate: 0.05, compMul: 1.1, bidWin: 0.50, color: '#95a5a6' },
     ],
@@ -5860,14 +5861,17 @@ function pickQuote(category) {
 function findFighter(fighterId, source) {
   if (source === 'roster') return G.roster.find(c => c.id === fighterId);
   if (source === 'free') return G.freeAgents.find(c => c.id === fighterId);
+  if (source === 'scout') return (G.scoutCandidates || []).find(c => c.id === fighterId);
   if (source && source.startsWith('ai:')) {
     const orgId = source.slice(3);
     return G.aiOrgs?.[orgId]?.roster?.find(f => f.id === fighterId);
   }
-  // Auto-detect: search roster → free → all AI orgs
+  // Auto-detect: search roster → free → scout → all AI orgs
   let f = G.roster.find(c => c.id === fighterId);
   if (f) return f;
   f = G.freeAgents.find(c => c.id === fighterId);
+  if (f) return f;
+  f = (G.scoutCandidates || []).find(c => c.id === fighterId);
   if (f) return f;
   if (G.aiOrgs) {
     for (const orgId of Object.keys(G.aiOrgs)) {
@@ -5894,6 +5898,7 @@ function showFighterPopup(fighterId, source) {
   const sm = STYLE_META[c.style] || STYLE_META.Allround;
   const isRoster = G.roster.some(r => r.id === c.id);
   const isFree = G.freeAgents.some(r => r.id === c.id);
+  const isScoutCandidate = (G.scoutCandidates || []).some(r => r.id === c.id);
   let orgLabel = '';
   if (!isRoster && !isFree && G.aiOrgs) {
     for (const [oId, oData] of Object.entries(G.aiOrgs)) {
@@ -5960,6 +5965,9 @@ function showFighterPopup(fighterId, source) {
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
+            ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
+            ${isScoutCandidate && c._isSeed ? '<span style="color:#f1c40f">⭐ 注目候補</span>' : ''}
+            ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 他団体注目</span>' : ''}
             ${orgLabel ? `<span>${orgLabel} 所属</span>` : ''}
           </div>
         </div>
@@ -6399,6 +6407,63 @@ function showFighterPopup(fighterId, source) {
       if (c.isRental) {
         html += `<div style="font-size:11px;color:#f39c12;padding:8px;text-align:center">🤝 レンタル選手のため管理操作は制限されています</div>`;
       }
+    }
+
+    // ══════ Acquire Button (Free Agents & Scout Candidates) ══════
+    if (isFree && tabIdx === 0) {
+      const discount = getFacilityScoutDiscount();
+      const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+      const signingCost = Engine.scout.getSigningCost(c, discount);
+      const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
+      const canAfford = G.funds >= signingCost;
+      html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
+          <span style="color:var(--text-sub)">契約金</span>
+          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-dim)">
+          <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
+          <span>給与: ${getSalary(c)}万/週</span>
+          ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
+        </div>
+        ${!canNeg
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
+          : `<button onclick="closeFighterPopup();signFighter(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
+          ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+        }
+      </div>`;
+    }
+    if (isScoutCandidate && tabIdx === 0) {
+      const discount = getFacilityScoutDiscount();
+      const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+      const signingCost = Engine.scout.getSigningCost(c, discount);
+      const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
+      const canAfford = G.funds >= signingCost;
+      const picks = G.scoutPicks || [];
+      const maxPicks = G.scoutMaxPicks || 3;
+      const slotsLeft = picks.length < maxPicks;
+      html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
+          <span style="color:var(--text-sub)">契約金</span>
+          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;color:var(--text-dim)">
+          <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
+          <span>獲得枠: ${picks.length}/${maxPicks}</span>
+          ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
+        </div>
+        ${c._hasCompetition ? `<div style="font-size:11px;color:#e74c3c;margin-bottom:8px;padding:4px 8px;background:rgba(231,76,60,0.1);border-radius:4px">⚔ 他団体が注目 — 競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</div>` : ''}
+        ${!canNeg
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
+          : !slotsLeft
+          ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">獲得枠上限に達しています</div>`
+          : `<div style="display:flex;gap:8px">
+              <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ 獲得指名</button>
+              <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
+            </div>
+            ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+        }
+      </div>`;
     }
 
     html += `</div>`; // end body
@@ -8160,33 +8225,41 @@ function renderScout() {
     所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${G.orgPop || 0}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
   </div>`;
 
-  // Free agents table with per-fighter pricing
+  // Free agents — compact card list (click name/portrait to open popup with acquire button)
   html += '<div class="panel-title" style="font-size:13px">フリーエージェント一覧</div>';
-  html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>年齢</th><th>Style</th><th>Role</th><th>総合</th><th>PW</th><th>SP</th><th>TE</th><th>ST</th><th>MN</th><th>ランク</th><th>給与</th><th>契約</th></tr>';
   [...G.freeAgents].sort((a,b) => ov(b) - ov(a)).forEach(c => {
+    const STYLE_META = {
+      Grappler:{color:'#bb8fce',icon:'🤼'}, Striker:{color:'#e74c3c',icon:'👊'},
+      Submission:{color:'#e67e22',icon:'🦂'}, Speed:{color:'#2ecc71',icon:'💨'},
+      Allround:{color:'#f1c40f',icon:'⭐'}, Brawler:{color:'#e88a82',icon:'🔥'}
+    };
+    const sm = STYLE_META[c.style] || STYLE_META.Allround;
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
+    const roleIcon = c.role === 'Babyface' ? '😇' : c.role === 'Heel' ? '😈' : '🎭';
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
-    const signingCost = Engine.scout.getSigningCost(c, discount);
     const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
-    const canAfford = canNeg && G.funds >= signingCost;
-    const rowStyle = canNeg ? '' : 'opacity:0.45;';
-    html += `<tr style="${rowStyle}">
-      <td><span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(c.id, 80)}${fLink(c, {source:'free'})}</span></td>
-      <td class="num" style="color:var(--text-dim)">${c.age}歳</td>
-      <td><span class="badge badge-${c.style}">${c.style}</span></td>
-      <td><span class="badge badge-${roleCls}">${c.role}</span></td>
-      <td class="num ov">${ov(c)}</td>
-      <td class="num">${c.pw}</td><td class="num">${c.sp}</td><td class="num">${c.te}</td>
-      <td class="num">${c.st}</td><td class="num">${c.mn}</td>
-      <td><span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44">${tierCfg.label}</span></td>
-      <td class="num" style="color:var(--text-sub)">${getSalary(c)}万</td>
-      <td>${canNeg
-        ? `<button onclick="signFighter(${c.id})" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${canAfford?'':'disabled'}>獲得 (${signingCost}万)</button>`
-        : `<span style="font-size:9px;color:#e74c3c" title="団体人気${tierCfg.reqPop}以上で交渉可能">⛔ 知名度不足</span>`
-      }</td>
-    </tr>`;
+    const rowOpacity = canNeg ? '' : 'opacity:0.45;';
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;${rowOpacity}cursor:pointer" onclick="showFighterPopup(${c.id},'free')">
+      ${portraitImg(c.id, 44, '', true)}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="flink" style="font-size:15px;font-weight:700">${c.name}</span>
+          <span style="font-size:13px;color:var(--text-dim)">${c.age}歳</span>
+          <span style="font-size:22px" title="${c.style}">${sm.icon}</span>
+          <span style="font-size:22px" title="${c.role}">${roleIcon}</span>
+          <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
+          ${!canNeg ? '<span style="font-size:12px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+        </div>
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        <div style="font-size:24px;font-weight:900;color:var(--gold)">${ov(c)}</div>
+        <div style="font-size:10px;color:var(--text-dim)">OVR</div>
+      </div>
+    </div>`;
   });
-  html += '</table></div>';
+  if (G.freeAgents.length === 0) {
+    html += '<div style="text-align:center;padding:24px;color:var(--text-dim)">フリーエージェントはいません</div>';
+  }
 
   // ── Phase D: Rental Section ──
   const rentalActive = G.rental;
@@ -8261,84 +8334,30 @@ function renderScoutEvent() {
   candidates.forEach(c => {
     const sm = STYLE_META[c.style] || STYLE_META.Allround;
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
-    const signingCost = Engine.scout.getSigningCost(c, discount);
     const canNeg = Engine.scout.canNegotiate(orgPop, c);
-    const canAfford = G.funds >= signingCost;
-    const slotsLeft = picks.length < maxPicks;
-    const isEnabled = canNeg && canAfford && slotsLeft;
+    const roleIcon = c.role === 'Babyface' ? '😇' : c.role === 'Heel' ? '😈' : '🎭';
     const est = c._estimate || { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn };
-
-    // Radar chart (pentagon approximation with bars)
-    const stats = [
-      {key:'pw',label:'PW',color:'#e74c3c'}, {key:'sp',label:'SP',color:'#3498db'},
-      {key:'te',label:'TE',color:'#2ecc71'}, {key:'st',label:'ST',color:'#f39c12'},
-      {key:'mn',label:'MN',color:'#9b59b6'}
-    ];
     const estAvg = Math.round((est.pw + est.sp + est.te + est.st + est.mn) / 5);
 
-    const barHtml = stats.map(s => {
-      const val = est[s.key];
-      return `<div style="display:flex;align-items:center;gap:4px">
-        <span style="font-size:9px;color:var(--text-dim);width:16px;text-align:right">${s.label}</span>
-        <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
-          <div style="width:${Math.min(100,val)}%;height:100%;background:${s.color};border-radius:3px"></div>
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:8px;margin-bottom:6px;${!canNeg?'opacity:0.5;':''}cursor:pointer" onclick="showFighterPopup(${c.id},'scout')">
+      <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:18px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="flink" style="font-size:15px;font-weight:700">${c.name}</span>
+          <span style="font-size:13px;color:var(--text-dim)">${c.age}歳</span>
+          <span style="font-size:22px" title="${c.style}">${sm.icon}</span>
+          <span style="font-size:22px" title="${c.role}">${roleIcon}</span>
+          <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
+          ${c._isSeed ? '<span style="font-size:12px;padding:2px 8px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目</span>' : ''}
+          ${c._hasCompetition ? '<span style="font-size:12px;padding:2px 8px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 競合</span>' : ''}
+          ${!canNeg ? '<span style="font-size:12px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
         </div>
-        <span style="font-size:9px;color:var(--text-sub);width:18px;text-align:right">${val}</span>
-      </div>`;
-    }).join('');
-
-    // Growth type display (§4.3 — may be inaccurate)
-    const potTotal = c.pot ? Object.values(c.pot).reduce((a,b)=>a+b,0) : 0;
-    let growthLabel, growthColor;
-    if (potTotal >= 750)      { growthLabel = '逸材'; growthColor = '#e74c3c'; }
-    else if (potTotal >= 650) { growthLabel = '有望株'; growthColor = '#f39c12'; }
-    else if (potTotal >= 550) { growthLabel = '普通'; growthColor = 'var(--text-sub)'; }
-    else                      { growthLabel = '素材型'; growthColor = 'var(--text-dim)'; }
-
-    html += `<div style="padding:12px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:8px;margin-bottom:8px;${!canNeg?'opacity:0.5;':''}">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <!-- Avatar -->
-        <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center;position:relative">
-          <span style="font-size:20px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
-          <span style="position:absolute;bottom:-2px;right:-2px;font-size:14px">${sm.icon}</span>
-        </div>
-        <!-- Info -->
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <strong style="font-size:14px">${c.name}</strong>
-            <span style="font-size:11px;color:var(--text-dim)">${c.age}歳 / ${c.h}cm</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${sm.color}22;color:${sm.color};border:1px solid ${sm.color}44">${sm.icon} ${c.style}</span>
-            <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44">${tierCfg.label}</span>
-            ${c._isSeed ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目候補</span>' : ''}
-            ${c._hasCompetition ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 他団体注目</span>' : ''}
-          </div>
-          <div style="display:flex;gap:12px;margin-top:6px;align-items:flex-start">
-            <!-- Stat bars -->
-            <div style="flex:1;min-width:120px">${barHtml}</div>
-            <!-- Right info -->
-            <div style="min-width:100px;font-size:11px">
-              <div style="color:var(--text-dim)">推定総合: <strong style="color:var(--text-main)">${estAvg}</strong></div>
-              <div style="color:${growthColor};margin-top:2px">成長: ${growthLabel}</div>
-              <div style="color:var(--text-dim);margin-top:2px">Role: ${c.role}</div>
-              ${c.traits && c.traits.length > 0 ? `<div style="margin-top:3px">${c.traits.map(t => {
-                const td = TRAIT_DEFS[t];
-                return td ? `<span style="font-size:9px;color:${td.color}" title="${td.desc}">${td.icon}${t}</span>` : '';
-              }).join(' ')}</div>` : ''}
-            </div>
-          </div>
-          <!-- Action row -->
-          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-            <span style="font-size:12px;color:var(--gold);font-weight:700">💰 ${signingCost}万</span>
-            ${c._hasCompetition ? `<span style="font-size:10px;color:#e74c3c">競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</span>` : ''}
-            ${!canNeg
-              ? `<span style="font-size:11px;color:#e74c3c">⛔ 知名度不足 (要${tierCfg.reqPop})</span>`
-              : !slotsLeft
-              ? `<span style="font-size:11px;color:var(--text-dim)">枠上限</span>`
-              : `<button onclick="scoutPick(${c.id})" class="btn btn-sm" style="font-size:11px;padding:3px 12px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${isEnabled?'':'disabled'}>獲得指名</button>`
-            }
-            <button onclick="scoutResolve(${c.id},'skip')" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim)">見送り</button>
-          </div>
-        </div>
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        <div style="font-size:24px;font-weight:900;color:var(--gold)">${estAvg}</div>
+        <div style="font-size:10px;color:var(--text-dim)">推定OVR</div>
       </div>
     </div>`;
   });
