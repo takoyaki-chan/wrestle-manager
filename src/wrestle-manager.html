@@ -599,6 +599,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="event-popup" id="eventPopupBox" onclick="event.stopPropagation()"></div>
 </div>
 
+<script src="victory-lines.js"></script>
 <script>
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 0: AUDIO SYSTEM (SFX + BGM)                     ║
@@ -5393,8 +5394,8 @@ const App = {
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
-      left: { ...charL, vl: charL.voiceLines || charL.vl || ['…！'] },
-      right: { ...charR, vl: charR.voiceLines || charR.vl || ['…！'] },
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
       matchInfo: {
         header: m.isTitle ? '🏆 TITLE MATCH' : `MATCH ${idx + 1}`,
         subHeader: `${charL.name} vs ${charR.name}`,
