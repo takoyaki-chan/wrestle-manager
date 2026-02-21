@@ -1482,7 +1482,7 @@ const GROWTH_CONFIG = {
   // v0.8: Intensive training
   intensiveMult: 1.5,     // growth multiplier for intensive training
   intensiveCondDrain: 2.0, // condition drain multiplier
-  intensiveInjuryChance: 0.08, // 8% chance of minor injury
+  intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50     // min condition to allow intensive
 };
@@ -2068,7 +2068,7 @@ const Engine = {
       const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
       const hpRatio = hpData.final / hpData.max;
       const condFactor = (100 - fighter.condition) / 100;
-      let injuryChance = Math.min(0.25, 0.04 + condFactor * 0.08 + (1 - hpRatio) * 0.06 + matchResult.turns * 0.002);
+      let injuryChance = Math.min(0.15, 0.025 + condFactor * 0.05 + (1 - hpRatio) * 0.04 + matchResult.turns * 0.0015);
       if (Engine.rng.float(rng) > injuryChance) return null;
       const roll = Engine.rng.float(rng);
       const injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
@@ -2987,16 +2987,17 @@ const Engine = {
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
-    // Injuries (immutable)
+    // Injuries (immutable) — separate RNG per fighter to avoid correlation
     const injuryResults = [];
     const injuryReduction = Engine.facility.getInjuryReduction(s);
     results.forEach((r, idx) => {
-      const injRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id, r.right.id));
       const lc = roster.find(c => c.id === r.left.id);
-      const li = Engine.injury.check(injRng, lc, r, injuryReduction);
+      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, injuryReduction);
       if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       const rc = roster.find(c => c.id === r.right.id);
-      const ri = Engine.injury.check(injRng, rc, r, injuryReduction);
+      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction);
       if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
     });
 
@@ -3176,9 +3177,17 @@ const Engine = {
         return { state: s, events };
       }
 
-      // Remove from AI org, add to player roster
+      // Remove from AI org, add to player roster (add missing player-roster fields)
       const newAiOrgs = { ...s.aiOrgs, [aiOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== fighterId) } };
-      const newFighter = { ...fighter, orgId: 'player' };
+      const newFighter = { ...fighter, orgId: 'player',
+        condition: fighter.condition ?? 80,
+        schedule: fighter.schedule || 'balance',
+        wins: fighter.wins || 0, losses: fighter.losses || 0, draws: fighter.draws || 0,
+        injury: fighter.injury || null,
+        seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+        careerSeasons: fighter.careerSeasons || 0,
+        intensive: false, intensiveWeeks: 0
+      };
       s = { ...s,
         aiOrgs: newAiOrgs,
         roster: [...s.roster, newFighter],
@@ -4662,16 +4671,17 @@ const App = {
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
-    // Injuries
+    // Injuries — separate RNG per fighter to avoid correlation
     const injuryResults = [];
     const injuryReduction = Engine.facility.getInjuryReduction(s);
-    results.forEach(r => {
-      const injRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999));
+    results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
-      const li = Engine.injury.check(injRng, lc, r, injuryReduction);
+      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, injuryReduction);
       if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       const rc = roster.find(c => c.id === r.right.id);
-      const ri = Engine.injury.check(injRng, rc, r, injuryReduction);
+      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction);
       if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
     });
 
