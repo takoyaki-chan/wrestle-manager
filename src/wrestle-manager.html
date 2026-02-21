@@ -503,6 +503,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     </div>
   </div>
 
+  <!-- SCREEN: Scout Event -->
+  <div class="screen" id="screen-scoutEvent">
+    <div class="panel">
+      <div class="panel-title" id="scoutEventTitle">🔍 スカウトイベント</div>
+      <div id="scoutEventContent"></div>
+    </div>
+  </div>
+
   <!-- SCREEN: Show Prep -->
   <div class="screen" id="screen-show">
     <div class="panel">
@@ -1664,8 +1672,8 @@ const FACILITIES = [
     id: 'scouting', name: 'スカウト網', emoji: '🔍',
     levels: [
       {name:'基本', desc:'契約金50万', maint:0, cost:0},
-      {name:'国内ネットワーク', desc:'契約金-15万', maint:10, cost:250},
-      {name:'海外ネットワーク', desc:'契約金-25万、発掘情報あり', maint:25, cost:800}
+      {name:'国内ネットワーク', desc:'契約金-15%', maint:10, cost:250},
+      {name:'海外ネットワーク', desc:'契約金-25%、発掘情報あり', maint:25, cost:800}
     ]
   }
 ];
@@ -1684,6 +1692,17 @@ const RIVAL_ORGS = [
     coachMul:1.00, facilityMul:1.05, scoutStyle:'conservative',
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
+
+// ── Scout Event Name Generation & Config (scout-spec §3) ──────
+const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
+const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
+const SCOUT_TRAITS_POOL = ['努力家','早熟','晩成','遅咲き','適応力','破天荒','頑丈さ','不屈','鉄人','負けず嫌い','忠誠心','ファンサービス','番狂わせ体質','闘志'];
+const SCOUT_EVENT_CFG = {
+  offseason: { count: [8, 10], maxPicks: 3, seedChance: 0.30 },  // §1.1 + §5.3
+  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },  // §1.1 + §5.3
+  midseasonWeek: 29,  // Q3 5th week (non-show week)
+};
+let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
 
 // 80名の団体配分（OVR分布に基づく）
 // Draft candidates (80,44,24,9,78,8,15,20) are assigned dynamically after draft
@@ -2269,8 +2288,15 @@ const Engine = {
       // 鉄人: 復帰期間-1週（最低1）
       if (Traits.has(fighter, '鉄人')) weeks = Math.max(1, weeks - 1);
       const reducedWeeks = Math.max(1, weeks - facilityReduction);
+      // v0.99: Reassess value on severe injury (pricing-balance-spec §4.2)
+      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+      if (injury.type === '重傷' && updatedFighter.assessedValue) {
+        const injRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 888));
+        const rv = Engine.scout.reassess(updatedFighter, 'severeInjury', injRng, 0);
+        updatedFighter = { ...updatedFighter, ...rv };
+      }
       return {
-        newFighter: { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) },
+        newFighter: updatedFighter,
         injuryInfo: { injury, reducedWeeks, originalWeeks: weeks }
       };
     },
@@ -2332,7 +2358,13 @@ const Engine = {
     crownChampion(G, fighterId) {
       const prev = Engine.title.getWorldChampion(G);
       const newTitles = { ...G.titles, world: { championId: fighterId, defenses: 0, wonWeek: G.week } };
-      const newRoster = G.roster.map(c => c.id === fighterId ? { ...c, popularity: Math.min(100, c.popularity + 5) } : c);
+      // v0.99: Reassess value on title win (pricing-balance-spec §4.2)
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, fighterId));
+      const newRoster = G.roster.map(c => {
+        if (c.id !== fighterId) return c;
+        const reassessed = Engine.scout.reassess(c, 'titleWin', rng, G.season);
+        return { ...c, popularity: Math.min(100, c.popularity + 5), ...reassessed };
+      });
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
         ? `🏆 王座交代！ ${c?.name} が新チャンピオンに！（前王者: ${prev.name}）`
@@ -2341,11 +2373,22 @@ const Engine = {
     },
     // Returns { titles, roster, msg }
     recordDefense(G) {
-      const newTitles = { ...G.titles, world: { ...G.titles.world, defenses: G.titles.world.defenses + 1 } };
+      const newDefenses = G.titles.world.defenses + 1;
+      const newTitles = { ...G.titles, world: { ...G.titles.world, defenses: newDefenses } };
       const champId = G.titles.world.championId;
-      const newRoster = G.roster.map(c => c.id === champId ? { ...c, popularity: Math.min(100, c.popularity + 2) } : c);
+      // v0.99: Reassess value on 3rd defense (pricing-balance-spec §4.2)
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, champId, 333));
+      const newRoster = G.roster.map(c => {
+        if (c.id !== champId) return c;
+        let updated = { ...c, popularity: Math.min(100, c.popularity + 2) };
+        if (newDefenses === 3) {
+          const reassessed = Engine.scout.reassess(updated, 'titleDefend3', rng, G.season);
+          updated = { ...updated, ...reassessed };
+        }
+        return updated;
+      });
       const c = G.roster.find(r => r.id === champId);
-      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が王座${newTitles.world.defenses}度目の防衛成功！` };
+      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が王座${newDefenses}度目の防衛成功！` };
     },
     // Returns { titles, msg }
     validateChampion(G) {
@@ -2586,6 +2629,16 @@ const Engine = {
         if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
         nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
+        // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
+        if (nc.age === 30) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 30));
+          const rv = Engine.scout.reassess(nc, 'age30', ageRng, G.season);
+          nc = { ...nc, ...rv };
+        } else if (nc.age >= 35 && nc.age <= 36) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 35));
+          const rv = Engine.scout.reassess(nc, 'age35plus', ageRng, G.season);
+          nc = { ...nc, ...rv };
+        }
         return nc;
       });
       return { roster: newRoster, report };
@@ -2678,13 +2731,18 @@ const Engine = {
         current[s] = Math.min(trainCap[s], Math.round(notion[s] * maturity));
       });
       const ovr = Math.round((current.pw+current.sp+current.te+current.st+current.mn)/5);
+      // Calculate assessed value (pricing-balance-spec §1)
+      const charForAssess = { ...current, pot: template.pot, trainCap };
+      const av = Engine.scout.calcAssessedValue(charForAssess, rng, 1);
       return {
         id: template.id, name: template.name, h: template.h,
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
         style: template.style, role: template.role, pot: { ...template.pot },
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
-        orgId, age: age || (16 + Engine.rng.int(rng, 0, 12))
+        orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
+        assessedValue: av.assessedValue, assessedTier: av.assessedTier,
+        assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -3533,6 +3591,306 @@ const Engine = {
     }
   },
 
+  // ── Scout Pricing System (pricing-balance-spec-v0.99) ──────
+  scout: {
+    // Tier thresholds for assessedValue calculation
+    TIERS: [
+      { id: 'superElite', label: '超逸材', minPot: 850, minCur: 350, baseMin: 500, baseMax: 800, reqPop: 70, compRate: 0.95, compMul: 2.0, bidWin: 0.30, color: '#e74c3c' },
+      { id: 'elite',      label: '逸材',   minPot: 750, minCur: 300, baseMin: 300, baseMax: 500, reqPop: 50, compRate: 0.85, compMul: 1.5, bidWin: 0.50, color: '#f39c12' },
+      { id: 'promising',  label: '有望',   minPot: 650, minCur: 220, baseMin: 150, baseMax: 300, reqPop: 25, compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
+      { id: 'raw',        label: '原石',   minPot: 550, minCur: 180, baseMin: 80,  baseMax: 150, reqPop: 0,  compRate: 0.15, compMul: 1.15, bidWin: 0.50, color: '#2ecc71' },
+      { id: 'material',   label: '素材',   minPot: 0,   minCur: 0,   baseMin: 30,  baseMax: 80,  reqPop: 0,  compRate: 0.05, compMul: 1.1, bidWin: 0.50, color: '#95a5a6' },
+    ],
+    /** Determine tier from potential/current totals */
+    getTier(potTotal, curTotal) {
+      for (const t of Engine.scout.TIERS) {
+        if (potTotal >= t.minPot || curTotal >= t.minCur) return t;
+      }
+      return Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+    },
+    /** Calculate assessedValue for a fighter. Returns { assessedValue, assessedTier, assessedVariance, assessedSeason } */
+    calcAssessedValue(fighter, rng, currentSeason) {
+      const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
+      const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
+      const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
+      const tier = Engine.scout.getTier(potTotal, curTotal);
+      const baseValue = tier.baseMin + Math.round(Engine.rng.float(rng) * (tier.baseMax - tier.baseMin));
+      const variance = 0.70 + Engine.rng.float(rng) * 0.60; // 0.70〜1.30
+      return {
+        assessedValue: Math.round(baseValue * variance),
+        assessedTier: tier.id,
+        assessedVariance: variance,
+        assessedSeason: currentSeason || 1
+      };
+    },
+    /** Check if player org can negotiate with this tier */
+    canNegotiate(orgPop, tierIdOrFighter) {
+      const tierId = typeof tierIdOrFighter === 'string' ? tierIdOrFighter : (tierIdOrFighter.assessedTier || 'material');
+      const tier = Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+      return orgPop >= tier.reqPop;
+    },
+    /** Get tier config by id */
+    getTierConfig(tierId) {
+      return Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+    },
+    /** Reassess a fighter's value based on an event trigger */
+    reassess(fighter, reason, rng, currentSeason) {
+      const base = Engine.scout.calcAssessedValue(fighter, rng, currentSeason);
+      const oldVal = fighter.assessedValue || base.assessedValue;
+      switch (reason) {
+        case 'titleWin':
+          base.assessedValue = Math.max(base.assessedValue, Math.round(oldVal * 1.1));
+          break;
+        case 'titleDefend3': case 'seasonMVP':
+          base.assessedValue = Math.round(base.assessedValue * 1.1);
+          break;
+        case 'age30':
+          base.assessedValue = Math.round(base.assessedValue * 0.8);
+          break;
+        case 'age35plus':
+          base.assessedValue = Math.round(base.assessedValue * 0.6);
+          break;
+        case 'severeInjury':
+          base.assessedValue = Math.round(base.assessedValue * 0.85);
+          break;
+        case 'aftereffect':
+          base.assessedValue = Math.round(base.assessedValue * 0.7);
+          break;
+      }
+      base.assessedSeason = currentSeason;
+      return base;
+    },
+    /** 3-season periodic micro-adjust: ±10% on all fighters */
+    seasonalAdjust(fighters, rng) {
+      return fighters.map(f => {
+        if (!f.assessedValue) return f;
+        const adj = 0.90 + Engine.rng.float(rng) * 0.20; // 0.90〜1.10
+        return { ...f, assessedValue: Math.round(f.assessedValue * adj) };
+      });
+    },
+    /** Apply assessedValue to a fighter if not already set */
+    ensureAssessed(fighter, rng, currentSeason) {
+      if (fighter.assessedValue) return fighter;
+      const av = Engine.scout.calcAssessedValue(fighter, rng, currentSeason);
+      return { ...fighter, ...av };
+    },
+    /** Get signing cost after facility discount */
+    getSigningCost(fighter, facilityDiscount) {
+      const base = fighter.assessedValue || 50;
+      const discount = facilityDiscount || 0; // percentage (0, 15, 25)
+      return Math.max(10, Math.round(base * (100 - discount) / 100));
+    },
+
+    // ── Scout Event Functions (scout-spec §2-§6) ──────────────
+
+    /** Generate a single scout candidate (scout-spec §3) */
+    generateCandidate(rng, season, isSeed) {
+      // §3.1 Age distribution
+      const ageRoll = Engine.rng.float(rng);
+      let age;
+      if (ageRoll < 0.40) age = 15 + Engine.rng.int(rng, 0, 1);       // 15-16: 40%
+      else if (ageRoll < 0.65) age = 17;                                // 17: 25%
+      else if (ageRoll < 0.85) age = 18 + Engine.rng.int(rng, 0, 1);   // 18-19: 20%
+      else age = 20 + Engine.rng.int(rng, 0, 2);                        // 20-22: 15%
+
+      // §3.2 Notion values
+      let avgTarget;
+      if (isSeed) {
+        avgTarget = 75 + Engine.rng.int(rng, 0, 15); // seed = forced elite
+      } else {
+        const tierRoll = Engine.rng.float(rng);
+        if (tierRoll < 0.05)      avgTarget = 75 + Engine.rng.int(rng, 0, 15); // 逸材 5%
+        else if (tierRoll < 0.25) avgTarget = 60 + Engine.rng.int(rng, 0, 14); // 有望 20%
+        else if (tierRoll < 0.70) avgTarget = 45 + Engine.rng.int(rng, 0, 14); // 普通 45%
+        else                      avgTarget = 25 + Engine.rng.int(rng, 0, 19); // 素材 30%
+      }
+      const params = ['pw','sp','te','st','mn'];
+      const notion = {};
+      for (const p of params) {
+        notion[p] = Math.max(11, Math.min(95, avgTarget + Engine.rng.int(rng, -15, 15)));
+      }
+
+      // §3.3 Potential
+      const pot = {};
+      for (const p of params) {
+        pot[p] = Math.min(185, Math.round(notion[p] * 1.3 + 60));
+      }
+
+      // Seed boost: §3.6 — 1-2 params +10~20 to potential
+      if (isSeed) {
+        const boostCount = 1 + Engine.rng.int(rng, 0, 1);
+        const boostParams = [...params].sort(() => Engine.rng.float(rng) - 0.5).slice(0, boostCount);
+        for (const bp of boostParams) {
+          pot[bp] = Math.min(185, pot[bp] + 10 + Engine.rng.int(rng, 0, 10));
+        }
+      }
+
+      // §6.1 Start values (entry age ratio)
+      let startRatio;
+      if (age <= 17) startRatio = 0.55 + Engine.rng.float(rng) * 0.10;
+      else if (age <= 20) startRatio = 0.65 + Engine.rng.float(rng) * 0.10;
+      else startRatio = 0.75 + Engine.rng.float(rng) * 0.10;
+      const cur = {};
+      for (const p of params) {
+        cur[p] = (p === 'mn') ? notion[p] : Math.round(notion[p] * startRatio); // §6.3 MNT no age adj
+      }
+
+      // §3.4 Style
+      const weights = { Allround:25, Striker:14, Submission:14, Grappler:12, Brawler:9, Speed:6 };
+      if (notion.pw >= notion.sp + 10 && notion.pw >= notion.te + 10) { weights.Grappler += 10; weights.Brawler += 8; }
+      if (notion.sp >= notion.pw + 10 && notion.sp >= notion.te + 5)  { weights.Speed += 10; weights.Striker += 5; }
+      if (notion.te >= notion.pw + 10 && notion.te >= notion.sp + 5)  { weights.Submission += 10; }
+      const totalW = Object.values(weights).reduce((a, b) => a + b, 0);
+      let styleRoll = Engine.rng.float(rng) * totalW;
+      let style = 'Allround';
+      for (const [s, w] of Object.entries(weights)) { styleRoll -= w; if (styleRoll <= 0) { style = s; break; } }
+
+      // §3.5 Role (heel degree)
+      const roleRoll = Engine.rng.float(rng);
+      let role;
+      if (roleRoll < 0.40) role = 'Babyface';
+      else if (roleRoll < 0.80) role = 'Neutral';
+      else if (roleRoll < 0.98) role = 'Heel';
+      else role = 'Dirty';
+
+      // §3.7 Name, height
+      const surname = SCOUT_SURNAMES[Engine.rng.int(rng, 0, SCOUT_SURNAMES.length - 1)];
+      const given = SCOUT_GIVENNAMES[Engine.rng.int(rng, 0, SCOUT_GIVENNAMES.length - 1)];
+      const name = surname + given;
+      const height = 145 + Engine.rng.int(rng, 0, 36); // 145-181
+
+      // Traits: 0-2 random from pool
+      const traitCount = Engine.rng.int(rng, 0, 2);
+      const shuffledTraits = [...SCOUT_TRAITS_POOL].sort(() => Engine.rng.float(rng) - 0.5);
+      const traits = shuffledTraits.slice(0, traitCount);
+      // Exclude conflicting growth traits
+      const growthTraits = traits.filter(t => ['早熟','晩成','遅咲き'].includes(t));
+      if (growthTraits.length > 1) traits.splice(traits.indexOf(growthTraits[1]), 1);
+
+      // §6.2 trainCap
+      const trainCap = {};
+      for (const p of params) {
+        const factor = 0.10 + Engine.rng.float(rng) * 0.40;
+        trainCap[p] = Math.round(notion[p] + factor * (pot[p] - notion[p]));
+      }
+
+      const id = nextGenCharId++;
+      const fighter = {
+        id, name, h: height, age, style, role, series: 'scout',
+        pw: cur.pw, sp: cur.sp, te: cur.te, st: cur.st, mn: cur.mn,
+        pot, trainCap, traits,
+        popularity: 0, wins: 0, losses: 0, draws: 0,
+        condition: 100, fatigue: 0, injuries: [], afterEffects: [],
+        schedule: 'balanced', titleDefenses: 0, matchesThisSeason: 0,
+        _notion: notion, // internal: for scout display estimate
+        _isSeed: !!isSeed,
+      };
+
+      // AssessedValue
+      const avRng = Engine.rng.create(Engine.rng.derive(id, 777));
+      const av = Engine.scout.calcAssessedValue(fighter, avRng, season);
+      return { ...fighter, ...av };
+    },
+
+    /** Generate a scout report: list of candidates (scout-spec §2) */
+    generateScoutReport(rng, state, eventType) {
+      const cfg = eventType === 'midseason' ? SCOUT_EVENT_CFG.midseason : SCOUT_EVENT_CFG.offseason;
+      const count = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]);
+      const candidates = [];
+
+      // Pool-based candidates first (existing ALL_CHARS from poolIds)
+      const poolIds = [...(state.poolIds || [])];
+      const usedFromPool = [];
+      const poolShuffled = [...poolIds].sort(() => Engine.rng.float(rng) - 0.5);
+
+      // Use up to half candidates from pool
+      const poolMax = Math.min(Math.floor(count / 2), poolShuffled.length);
+      for (let i = 0; i < poolMax; i++) {
+        const cid = poolShuffled[i];
+        const template = ALL_CHARS.find(c => c.id === cid);
+        if (!template) continue;
+        // Create fighter from template
+        const age = 16 + Engine.rng.int(rng, 0, 4);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, age);
+        fighter.series = 'pool';
+        fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
+        fighter._isSeed = false;
+        candidates.push(fighter);
+        usedFromPool.push(cid);
+      }
+
+      // Remaining: freshly generated candidates
+      const remaining = count - candidates.length;
+      let hasSeed = false;
+      for (let i = 0; i < remaining; i++) {
+        const isSeed = !hasSeed && Engine.rng.float(rng) < cfg.seedChance;
+        if (isSeed) hasSeed = true;
+        const cand = Engine.scout.generateCandidate(rng, state.season || 1, isSeed);
+        candidates.push(cand);
+      }
+
+      // §4.2 Scout estimates (noisy display values)
+      const hasJinmyaku = (state.roster || []).some(f => Traits.has(f, '人脈'));
+      const noiseRange = hasJinmyaku ? 0.05 : 0.10;
+      for (const c of candidates) {
+        const est = {};
+        for (const p of ['pw','sp','te','st','mn']) {
+          const actual = c[p];
+          const noise = 1 - noiseRange + Engine.rng.float(rng) * noiseRange * 2;
+          est[p] = Math.round(actual * noise);
+        }
+        c._estimate = est;
+      }
+
+      // §5.2 Competition flags
+      for (const c of candidates) {
+        const tier = Engine.scout.getTierConfig(c.assessedTier);
+        c._hasCompetition = Engine.rng.float(rng) < tier.compRate;
+        c._compMultiplier = tier.compMul;
+        c._bidWinRate = tier.bidWin;
+      }
+
+      return { candidates, usedPoolIds: usedFromPool };
+    },
+
+    /** Resolve competition for a single pick (scout-spec §5.2) */
+    resolveCompetition(rng, candidate, choice) {
+      // choice: 'pay' (追加コスト払って確定) / 'gamble' (通常額で勝負) / 'skip' (諦め)
+      if (choice === 'skip') return { result: 'skipped', cost: 0 };
+
+      if (!candidate._hasCompetition) {
+        // No competition — always succeed at base cost
+        return { result: 'success', cost: candidate.assessedValue };
+      }
+
+      if (choice === 'pay') {
+        // Pay additional multiplier for guaranteed win
+        const cost = Math.round(candidate.assessedValue * candidate._compMultiplier);
+        return { result: 'success', cost };
+      }
+
+      // Gamble: bid at base cost, roll for success
+      const winRate = candidate._bidWinRate || 0.5;
+      if (Engine.rng.float(rng) < winRate) {
+        return { result: 'success', cost: candidate.assessedValue };
+      } else {
+        return { result: 'lost', cost: 0 };
+      }
+    },
+
+    /** Determine where a lost candidate goes (scout-spec §5.2 行方) */
+    resolveLostCandidate(rng, candidate, aiOrgs) {
+      // 70% → joins random AI org, 30% → freeAgent pool
+      if (Engine.rng.float(rng) < 0.70) {
+        const orgIds = Object.keys(aiOrgs);
+        const targetOrgId = orgIds[Engine.rng.int(rng, 0, orgIds.length - 1)];
+        candidate.orgId = targetOrgId;
+        return { destination: 'aiOrg', orgId: targetOrgId, fighter: candidate };
+      }
+      return { destination: 'freeAgent', fighter: candidate };
+    }
+  },
+
   // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
   event: {
     /** D-2: Check if rivalry war should trigger (Q2/Q3 end) */
@@ -3721,11 +4079,29 @@ const Engine = {
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
       } else if (offWeek === 2) {
-        // OffWeek 2: Scouting (AI scouting behavior)
+        // OffWeek 2: Scout Event (player + AI)
+        // AI scouting first
         const scoutResult = Engine.rival.aiScout(rng, s);
         s = { ...s, aiOrgs: scoutResult.aiOrgs, poolIds: scoutResult.poolIds };
         if (scoutResult.events.length > 0) events.push(...scoutResult.events);
-        events.push('📅 オフシーズン第2週: スカウト活動');
+
+        // Player scout event: generate candidates
+        const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
+        const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
+        // Remove used pool IDs
+        const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+        s = {
+          ...s,
+          poolIds: remainingPool,
+          scoutCandidates: report.candidates,
+          scoutPicks: [],
+          scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
+          scoutEventType: 'offseason',
+          scoutsThisSeason: (s.scoutsThisSeason || 0),
+        };
+        events.push('📅 オフシーズン第2週: スカウトレポート到着！');
+        events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
+        return { state: { ...s, weekPhase: 'scoutEvent' }, events };
 
       } else if (offWeek === 3) {
         // OffWeek 3: AI inter-org transfers
@@ -3744,6 +4120,24 @@ const Engine = {
         const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
           orgPop: s.orgPop || 0, ...oldStats, rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })) };
         const seasonHistory = [...(s.seasonHistory || []), archive];
+
+        // v0.99: Seasonal pricing adjust every 3 seasons (pricing-balance-spec §4.3)
+        const nextSeason = s.season + 1;
+        if (nextSeason > 1 && (nextSeason - 1) % 3 === 0) {
+          const adjRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, nextSeason, 777));
+          s = { ...s,
+            roster: Engine.scout.seasonalAdjust(s.roster, adjRng),
+            freeAgents: Engine.scout.seasonalAdjust(s.freeAgents, adjRng)
+          };
+          // Also adjust AI org rosters
+          const adjAiOrgs = {};
+          Object.keys(s.aiOrgs).forEach(orgId => {
+            const orgData = s.aiOrgs[orgId];
+            adjAiOrgs[orgId] = { ...orgData, roster: Engine.scout.seasonalAdjust(orgData.roster, adjRng) };
+          });
+          s = { ...s, aiOrgs: adjAiOrgs };
+          events.push(`📊 市場再評価: 選手の評価額が微調整されました（3シーズン周期）`);
+        }
 
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
@@ -3788,6 +4182,23 @@ const Engine = {
       }
     }
 
+    // C-3: Midseason scout event (week 29 = Q3 5th week)
+    if (s.week === SCOUT_EVENT_CFG.midseasonWeek && !(s.scoutsThisSeason >= 2)) {
+      const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C02));
+      const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
+      const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+      s = {
+        ...s,
+        poolIds: remainingPool,
+        scoutCandidates: report.candidates,
+        scoutPicks: [],
+        scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
+        scoutEventType: 'midseason',
+      };
+      events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
+      return { state: { ...s, weekPhase: 'scoutEvent' }, events };
+    }
+
     // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
     const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
     const warCheck = Engine.event.checkRivalryWar(eventRng, s);
@@ -3826,6 +4237,9 @@ const Engine = {
     // Player roster starts at entry-level values (training-spec §1.3)
     const entryAge = opts.age || 16;
     const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, entryAge);
+    // Calculate assessed value (pricing-balance-spec §1)
+    const charWithStats = { ...template, pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn };
+    const av = Engine.scout.calcAssessedValue(charWithStats, rng, opts.season || 1);
     return {
       ...template,
       pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn,
@@ -3841,7 +4255,11 @@ const Engine = {
       careerSeasons: 0,
       intensive: false,
       intensiveWeeks: 0,
-      lastMatchResult: null
+      lastMatchResult: null,
+      assessedValue: av.assessedValue,
+      assessedTier: av.assessedTier,
+      assessedVariance: av.assessedVariance,
+      assessedSeason: av.assessedSeason
     };
   },
 
@@ -4310,6 +4728,7 @@ const Storage = {
     state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
     state._saveVersion = '0.9';
     state._saveDate = new Date().toISOString();
+    state._nextGenCharId = nextGenCharId;
     return JSON.stringify(state);
   },
 
@@ -4401,6 +4820,32 @@ const Storage = {
         const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
         return { ...c, ...startVals };
       })};
+
+      // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
+      const migrateAssessed = (fighters) => fighters.map(f => {
+        if (f.assessedValue) return f;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, f.id, 999));
+        const av = Engine.scout.calcAssessedValue(f, rng, G.season || 1);
+        return { ...f, ...av };
+      });
+      G = { ...G, roster: migrateAssessed(G.roster), freeAgents: migrateAssessed(G.freeAgents) };
+      // Also migrate AI org rosters
+      if (G.aiOrgs) {
+        const migAi = {};
+        Object.keys(G.aiOrgs).forEach(orgId => {
+          const od = G.aiOrgs[orgId];
+          migAi[orgId] = { ...od, roster: migrateAssessed(od.roster) };
+        });
+        G = { ...G, aiOrgs: migAi };
+      }
+
+      // v0.99b: restore nextGenCharId for scout-generated characters
+      if (G._nextGenCharId) nextGenCharId = G._nextGenCharId;
+
+      // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
+      if (G.weekPhase !== 'scoutEvent') {
+        G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
+      }
 
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
@@ -4559,19 +5004,160 @@ const App = {
   signFighter(charId) {
     const idx = G.freeAgents.findIndex(c => c.id === charId);
     if (idx < 0) return;
-    const signCost = Math.round(getSalary(G.freeAgents[idx]) * 4);
+    const fighter = G.freeAgents[idx];
+    // Gate: check orgPop requirement (pricing-balance-spec §2)
+    if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter)) {
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+    }
     const discount = Engine.facility.getScoutDiscount(G);
-    const finalCost = Math.round(signCost * (100 - discount) / 100);
+    const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     Audio.play('stamp');
-    const c = G.freeAgents[idx];
+    const c = fighter;
+    const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
+    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
     if (titleMsg) log.push(titleMsg);
     G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log };
     refreshAll();
+  },
+
+  // ── Scout Event Methods (scout-spec §2-§5) ──────────────
+
+  /** Pick a candidate: show competition dialog or sign directly */
+  scoutEventPick(candidateId) {
+    if (!G.scoutCandidates) return;
+    const cand = G.scoutCandidates.find(c => c.id === candidateId);
+    if (!cand) return;
+    const picks = G.scoutPicks || [];
+    if (picks.length >= (G.scoutMaxPicks || 3)) {
+      Audio.play('error'); alert(`今回の獲得上限（${G.scoutMaxPicks}名）に達しています`); return;
+    }
+    if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+    }
+    const discount = Engine.facility.getScoutDiscount(G);
+    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+
+    if (cand._hasCompetition) {
+      // Show competition resolution modal
+      G = { ...G, scoutPendingPick: candidateId };
+      renderScoutCompetitionModal(cand, baseCost, discount);
+    } else {
+      // No competition: direct sign
+      this.scoutEventResolve(candidateId, 'direct');
+    }
+  },
+
+  /** Resolve a scout pick with competition choice */
+  scoutEventResolve(candidateId, choice) {
+    if (!G.scoutCandidates) return;
+    const cand = G.scoutCandidates.find(c => c.id === candidateId);
+    if (!cand) return;
+    const discount = Engine.facility.getScoutDiscount(G);
+    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, candidateId));
+
+    let result;
+    if (choice === 'direct') {
+      result = { result: 'success', cost: baseCost };
+    } else {
+      result = Engine.scout.resolveCompetition(rng, cand, choice);
+      // Apply facility discount to competition cost too
+      if (result.cost > 0) {
+        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, discount);
+      }
+    }
+
+    const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
+    const log = [...G.gameLog];
+    let candidates = [...G.scoutCandidates];
+    let picks = [...(G.scoutPicks || [])];
+    let newRoster = [...G.roster];
+    let newFunds = G.funds;
+    let aiOrgs = { ...G.aiOrgs };
+    let freeAgents = [...G.freeAgents];
+
+    if (result.result === 'success') {
+      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
+      Audio.play('stamp');
+      // Clean internal props before adding to roster
+      const signed = { ...cand };
+      delete signed._notion; delete signed._estimate; delete signed._isSeed;
+      delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
+      newRoster.push(signed);
+      newFunds -= result.cost;
+      picks.push(candidateId);
+      candidates = candidates.filter(c => c.id !== candidateId);
+      log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
+      showEventPopup({ type:'scout', tone:'positive',
+        message:`${cand.name}の獲得に成功！`, detail:`契約金: ${result.cost}万 [${tierCfg.label}]` });
+    } else if (result.result === 'lost') {
+      Audio.play('error');
+      // Lost candidate goes to AI org or freeAgent
+      const lostResult = Engine.scout.resolveLostCandidate(rng, { ...cand }, aiOrgs);
+      const cleanFighter = { ...lostResult.fighter };
+      delete cleanFighter._notion; delete cleanFighter._estimate; delete cleanFighter._isSeed;
+      delete cleanFighter._hasCompetition; delete cleanFighter._compMultiplier; delete cleanFighter._bidWinRate;
+      if (lostResult.destination === 'aiOrg') {
+        const orgData = aiOrgs[lostResult.orgId];
+        if (orgData) {
+          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, cleanFighter] } };
+        }
+        const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
+        log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
+      } else {
+        freeAgents.push(cleanFighter);
+        log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ`);
+      }
+      candidates = candidates.filter(c => c.id !== candidateId);
+      showEventPopup({ type:'scout', tone:'negative',
+        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' });
+    } else if (result.result === 'skipped') {
+      candidates = candidates.filter(c => c.id !== candidateId);
+      log.push(`🔍 スカウト見送り: ${cand.name}`);
+    }
+
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    if (titleMsg) log.push(titleMsg);
+    G = {
+      ...G, funds: newFunds, roster: newRoster, freeAgents, aiOrgs, titles,
+      scoutCandidates: candidates, scoutPicks: picks, scoutPendingPick: null, gameLog: log,
+    };
+    refreshAll();
+    showScreen('scoutEvent');
+  },
+
+  /** Finish scout event and continue game flow */
+  scoutEventFinish() {
+    Audio.play('click');
+    const picksCount = (G.scoutPicks || []).length;
+    const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
+    // Clean up any remaining candidates (add unacquired to freeAgents pool)
+    let freeAgents = [...G.freeAgents];
+    (G.scoutCandidates || []).forEach(c => {
+      const clean = { ...c };
+      delete clean._notion; delete clean._estimate; delete clean._isSeed;
+      delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
+      // 30% chance unselected candidates become freeAgents
+      if (Math.random() < 0.30) freeAgents.push(clean);
+    });
+    G = {
+      ...G, freeAgents, gameLog: log,
+      scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null,
+      scoutPendingPick: null, scoutEventType: null,
+      scoutsThisSeason: (G.scoutsThisSeason || 0) + 1,
+      weekPhase: G.offSeason ? 'offseason' : 'manage',
+    };
+    // If offseason, continue to next offWeek
+    if (G.offSeason) {
+      App.advanceTurn();
+    } else {
+      refreshAll();
+    }
   },
 
   // Release a fighter
@@ -6086,6 +6672,9 @@ function renderShowResult(results, injuryResults) {
 // Legacy function aliases for onclick handlers in UI
 function signFighter(id) { App.signFighter(id); }
 function releaseFighter(id) { App.releaseFighter(id); }
+function scoutPick(id) { App.scoutEventPick(id); }
+function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
+function scoutFinish() { App.scoutEventFinish(); }
 function hireCoach(id) { App.hireCoach(id); }
 function fireCoach(id) { App.fireCoach(id); }
 function upgradeFacility(id) { App.upgradeFacility(id); }
@@ -6239,6 +6828,7 @@ function showScreen(id, evt) {
   if (id === 'ranking') renderRanking();
   if (id === 'roster') renderRoster();
   if (id === 'coach') renderCoach();
+  if (id === 'scoutEvent') renderScoutEvent();
 }
 
 // v0.96: Navigate to a screen and highlight the correct nav button
@@ -7078,6 +7668,22 @@ function renderWeekScreen() {
     }
   }
 
+  // ── SCOUT EVENT PHASE ──
+  else if (G.weekPhase === 'scoutEvent') {
+    const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : `第${G.week}週`;
+    const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+    document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
+    html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
+      <h3 style="color:#2ecc71;margin-bottom:8px">🔍 スカウトレポート到着</h3>
+      <p style="font-size:13px;color:var(--text-sub)">候補者の詳細は「スカウトイベント」画面で確認できます</p>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="showScreen('scoutEvent')">🔍 候補者を見る</button>
+      <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
+    </div>`;
+  }
+
   el.innerHTML = html;
 }
 
@@ -7549,18 +8155,22 @@ function renderScout() {
   document.getElementById('faCount').textContent = G.freeAgents.length;
   document.getElementById('rosterCount').textContent = G.roster.length;
 
-  const signingFee = Math.max(10, 50 - getFacilityScoutDiscount()); // v0.7: Scout network discount
+  const discount = getFacilityScoutDiscount();
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    契約金: ${signingFee}万/人 ｜ 所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名
+    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${G.orgPop || 0}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
   </div>`;
 
-  // Free agents table
+  // Free agents table with per-fighter pricing
   html += '<div class="panel-title" style="font-size:13px">フリーエージェント一覧</div>';
-  html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>年齢</th><th>Style</th><th>Role</th><th>総合</th><th>PW</th><th>SP</th><th>TE</th><th>ST</th><th>MN</th><th>給与</th><th>契約</th></tr>';
+  html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>年齢</th><th>Style</th><th>Role</th><th>総合</th><th>PW</th><th>SP</th><th>TE</th><th>ST</th><th>MN</th><th>ランク</th><th>給与</th><th>契約</th></tr>';
   [...G.freeAgents].sort((a,b) => ov(b) - ov(a)).forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
-    const canAfford = G.funds >= signingFee;
-    html += `<tr>
+    const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+    const signingCost = Engine.scout.getSigningCost(c, discount);
+    const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
+    const canAfford = canNeg && G.funds >= signingCost;
+    const rowStyle = canNeg ? '' : 'opacity:0.45;';
+    html += `<tr style="${rowStyle}">
       <td><span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(c.id, 80)}${fLink(c, {source:'free'})}</span></td>
       <td class="num" style="color:var(--text-dim)">${c.age}歳</td>
       <td><span class="badge badge-${c.style}">${c.style}</span></td>
@@ -7568,8 +8178,12 @@ function renderScout() {
       <td class="num ov">${ov(c)}</td>
       <td class="num">${c.pw}</td><td class="num">${c.sp}</td><td class="num">${c.te}</td>
       <td class="num">${c.st}</td><td class="num">${c.mn}</td>
+      <td><span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44">${tierCfg.label}</span></td>
       <td class="num" style="color:var(--text-sub)">${getSalary(c)}万</td>
-      <td><button onclick="signFighter(${c.id})" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${canAfford?'':'disabled'}>獲得 (${signingFee}万)</button></td>
+      <td>${canNeg
+        ? `<button onclick="signFighter(${c.id})" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${canAfford?'':'disabled'}>獲得 (${signingCost}万)</button>`
+        : `<span style="font-size:9px;color:#e74c3c" title="団体人気${tierCfg.reqPop}以上で交渉可能">⛔ 知名度不足</span>`
+      }</td>
     </tr>`;
   });
   html += '</table></div>';
@@ -7611,6 +8225,173 @@ function renderScout() {
   }
 
   el.innerHTML = html;
+}
+
+// ── Scout Event Rendering ─────────────────────────────────
+function renderScoutEvent() {
+  const el = document.getElementById('scoutEventContent');
+  if (!el) return;
+  const candidates = G.scoutCandidates || [];
+  const picks = G.scoutPicks || [];
+  const maxPicks = G.scoutMaxPicks || 3;
+  const discount = getFacilityScoutDiscount();
+  const orgPop = G.orgPop || 0;
+  const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+
+  const titleEl = document.getElementById('scoutEventTitle');
+  if (titleEl) titleEl.textContent = `🔍 ${eventLabel} — 候補 ${candidates.length}名`;
+
+  const STYLE_META = {
+    Grappler:   {color:'#bb8fce',icon:'🤼'}, Striker:    {color:'#e74c3c',icon:'👊'},
+    Submission: {color:'#e67e22',icon:'🦂'}, Speed:      {color:'#2ecc71',icon:'💨'},
+    Allround:   {color:'#f1c40f',icon:'⭐'}, Brawler:    {color:'#e88a82',icon:'🔥'}
+  };
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
+    <span style="font-size:12px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${G.funds.toLocaleString()}万</strong></span>
+    <span style="font-size:12px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
+    <span style="font-size:12px;color:var(--text-sub)">団体人気: <strong>${orgPop}</strong></span>
+    ${discount > 0 ? `<span style="font-size:11px;color:#f39c12">🔍 割引${discount}%</span>` : ''}
+  </div>`;
+
+  if (candidates.length === 0) {
+    html += '<div style="text-align:center;padding:32px;color:var(--text-dim)">全候補の確認が完了しました</div>';
+  }
+
+  candidates.forEach(c => {
+    const sm = STYLE_META[c.style] || STYLE_META.Allround;
+    const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+    const signingCost = Engine.scout.getSigningCost(c, discount);
+    const canNeg = Engine.scout.canNegotiate(orgPop, c);
+    const canAfford = G.funds >= signingCost;
+    const slotsLeft = picks.length < maxPicks;
+    const isEnabled = canNeg && canAfford && slotsLeft;
+    const est = c._estimate || { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn };
+
+    // Radar chart (pentagon approximation with bars)
+    const stats = [
+      {key:'pw',label:'PW',color:'#e74c3c'}, {key:'sp',label:'SP',color:'#3498db'},
+      {key:'te',label:'TE',color:'#2ecc71'}, {key:'st',label:'ST',color:'#f39c12'},
+      {key:'mn',label:'MN',color:'#9b59b6'}
+    ];
+    const estAvg = Math.round((est.pw + est.sp + est.te + est.st + est.mn) / 5);
+
+    const barHtml = stats.map(s => {
+      const val = est[s.key];
+      return `<div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:9px;color:var(--text-dim);width:16px;text-align:right">${s.label}</span>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
+          <div style="width:${Math.min(100,val)}%;height:100%;background:${s.color};border-radius:3px"></div>
+        </div>
+        <span style="font-size:9px;color:var(--text-sub);width:18px;text-align:right">${val}</span>
+      </div>`;
+    }).join('');
+
+    // Growth type display (§4.3 — may be inaccurate)
+    const potTotal = c.pot ? Object.values(c.pot).reduce((a,b)=>a+b,0) : 0;
+    let growthLabel, growthColor;
+    if (potTotal >= 750)      { growthLabel = '逸材'; growthColor = '#e74c3c'; }
+    else if (potTotal >= 650) { growthLabel = '有望株'; growthColor = '#f39c12'; }
+    else if (potTotal >= 550) { growthLabel = '普通'; growthColor = 'var(--text-sub)'; }
+    else                      { growthLabel = '素材型'; growthColor = 'var(--text-dim)'; }
+
+    html += `<div style="padding:12px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:8px;margin-bottom:8px;${!canNeg?'opacity:0.5;':''}">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <!-- Avatar -->
+        <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center;position:relative">
+          <span style="font-size:20px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
+          <span style="position:absolute;bottom:-2px;right:-2px;font-size:14px">${sm.icon}</span>
+        </div>
+        <!-- Info -->
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <strong style="font-size:14px">${c.name}</strong>
+            <span style="font-size:11px;color:var(--text-dim)">${c.age}歳 / ${c.h}cm</span>
+            <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${sm.color}22;color:${sm.color};border:1px solid ${sm.color}44">${sm.icon} ${c.style}</span>
+            <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44">${tierCfg.label}</span>
+            ${c._isSeed ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目候補</span>' : ''}
+            ${c._hasCompetition ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 他団体注目</span>' : ''}
+          </div>
+          <div style="display:flex;gap:12px;margin-top:6px;align-items:flex-start">
+            <!-- Stat bars -->
+            <div style="flex:1;min-width:120px">${barHtml}</div>
+            <!-- Right info -->
+            <div style="min-width:100px;font-size:11px">
+              <div style="color:var(--text-dim)">推定総合: <strong style="color:var(--text-main)">${estAvg}</strong></div>
+              <div style="color:${growthColor};margin-top:2px">成長: ${growthLabel}</div>
+              <div style="color:var(--text-dim);margin-top:2px">Role: ${c.role}</div>
+              ${c.traits && c.traits.length > 0 ? `<div style="margin-top:3px">${c.traits.map(t => {
+                const td = TRAIT_DEFS[t];
+                return td ? `<span style="font-size:9px;color:${td.color}" title="${td.desc}">${td.icon}${t}</span>` : '';
+              }).join(' ')}</div>` : ''}
+            </div>
+          </div>
+          <!-- Action row -->
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <span style="font-size:12px;color:var(--gold);font-weight:700">💰 ${signingCost}万</span>
+            ${c._hasCompetition ? `<span style="font-size:10px;color:#e74c3c">競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</span>` : ''}
+            ${!canNeg
+              ? `<span style="font-size:11px;color:#e74c3c">⛔ 知名度不足 (要${tierCfg.reqPop})</span>`
+              : !slotsLeft
+              ? `<span style="font-size:11px;color:var(--text-dim)">枠上限</span>`
+              : `<button onclick="scoutPick(${c.id})" class="btn btn-sm" style="font-size:11px;padding:3px 12px;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71" ${isEnabled?'':'disabled'}>獲得指名</button>`
+            }
+            <button onclick="scoutResolve(${c.id},'skip')" class="btn btn-sm" style="font-size:10px;padding:2px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim)">見送り</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="btn-row" style="margin-top:16px">
+    <button class="btn btn-gold" onclick="scoutFinish()">🔍 スカウト活動終了</button>
+    <button class="btn btn-blue" onclick="showScreen('week')">← 週画面に戻る</button>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderScoutCompetitionModal(cand, baseCost, discount) {
+  const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
+  const compCost = Math.round(baseCost * (cand._compMultiplier || 1.5));
+  const winRate = Math.round((cand._bidWinRate || 0.5) * 100);
+
+  const modal = document.createElement('div');
+  modal.id = 'scoutCompModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.2s';
+  modal.innerHTML = `<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:360px;width:90%">
+    <h3 style="color:#e74c3c;margin-bottom:12px;text-align:center">⚔ 他団体との競合発生！</h3>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${cand.name}</div>
+      <div style="font-size:12px;color:var(--text-dim)">${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span>通常契約金:</span><span style="color:var(--gold)">${baseCost}万</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span>競合上乗せ (×${cand._compMultiplier}):</span><span style="color:#e74c3c;font-weight:700">${compCost}万</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span>通常額での勝率:</span><span style="color:#f39c12">${winRate}%</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'pay')" class="btn btn-gold" style="width:100%" ${G.funds >= compCost ? '' : 'disabled'}>
+        💰 上乗せ確定獲得 (${compCost}万)
+      </button>
+      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'gamble')" class="btn btn-blue" style="width:100%">
+        🎲 通常額で勝負 (${baseCost}万 / 勝率${winRate}%)
+      </button>
+      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'skip')" class="btn" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim)">
+        ❌ 諦める
+      </button>
+    </div>
+  </div>`;
+  // Remove existing modal if any
+  const existing = document.getElementById('scoutCompModal');
+  if (existing) existing.remove();
+  document.body.appendChild(modal);
 }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -7796,7 +8577,7 @@ function renderFacility() {
   if (getFacilityLevel('medical') > 1) effects.push(`🏥 怪我-${getFacilityInjuryReduction()}週`);
   if (getFacilityLevel('media') > 1) effects.push(`📺 プロモ+${getFacilityPromoBonus()}`);
   if (getFacilityLevel('dormitory') > 1) effects.push(`🏠 回復+${getFacilityConditionBonus()}`);
-  if (getFacilityLevel('scouting') > 1) effects.push(`🔍 契約金-${getFacilityScoutDiscount()}万`);
+  if (getFacilityLevel('scouting') > 1) effects.push(`🔍 契約金-${getFacilityScoutDiscount()}%`);
 
   if (effects.length > 0) {
     html += '<div class="facility-summary">';
