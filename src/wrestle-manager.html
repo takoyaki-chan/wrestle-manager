@@ -148,7 +148,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .train-coach-row:hover{background:rgba(212,168,67,0.06)}
 .train-coach-row .coach-slots{color:var(--text-dim);font-size:10px;margin-left:auto}
 .train-tendency{font-size:11px;color:var(--text-sub);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05)}
-.train-row{display:grid;grid-template-columns:1fr 45px 60px 100px 90px 55px;align-items:center;padding:6px 4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);gap:4px}
+.train-row{display:grid;grid-template-columns:1fr 45px 60px 100px 90px 55px 20px;align-items:center;padding:6px 4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);gap:4px}
 .train-row:hover{background:rgba(212,168,67,0.04)}
 .train-row-header{font-weight:700;color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,0.08)}
 .train-growth-arrow{font-size:10px;font-weight:700;letter-spacing:-1px}
@@ -279,10 +279,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .coach-tooltip-label{font-size:10px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
 .fighter-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:16px}
 .fighter-popup-overlay.active{display:flex}
-.fighter-popup-box{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.12);border-radius:10px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;padding:0}
+.fighter-popup-box{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.12);border-radius:10px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;padding:0}
 .fighter-popup-header{padding:14px 16px;display:flex;align-items:center;gap:12px}
 .fighter-popup-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;position:relative}
-.fighter-popup-body{padding:0 16px 16px}
+.fighter-popup-body{padding:0 14px 14px}
 .fighter-popup-stat-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .fighter-popup-stat-label{font-size:10px;color:var(--text-dim);width:22px;text-align:right;flex-shrink:0}
 .fighter-popup-stat-bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
@@ -5931,48 +5931,47 @@ function showFighterPopup(fighterId, source) {
     let html = '';
     const pUrl = getPortraitUrl(c.id);
 
-    // ── Large portrait header ──
-    // Determine portrait border color by status
+    // ── Clean portrait header ──
     const popBorderColor = isChamp ? '#d4a843' : isAce ? '#c0c0c0' : 'rgba(255,255,255,0.15)';
     const popShadow = isChamp ? '0 4px 20px rgba(0,0,0,0.5),0 0 16px rgba(212,168,67,0.5)' : isAce ? '0 4px 20px rgba(0,0,0,0.5),0 0 12px rgba(192,192,192,0.4)' : '0 4px 20px rgba(0,0,0,0.5)';
 
-    html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(255,255,255,0.06);padding:16px;text-align:center">
-      <div style="display:flex;align-items:flex-start;gap:16px">
+    html += `<div style="background:${sm.color}08;border-bottom:1px solid rgba(255,255,255,0.06);padding:16px;position:relative">
+      <button onclick="closeFighterPopup()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;line-height:1;z-index:1">✕</button>
+      <div style="display:flex;align-items:center;gap:14px">
         <div style="flex-shrink:0;position:relative">
           ${pUrl
-            ? `<img src="${pUrl}" style="width:120px;height:120px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
-            : `<div style="width:120px;height:120px;border-radius:14px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:3px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:44px;font-weight:900;color:${sm.color}">${initial}</span></div>`}
-          <span style="position:absolute;bottom:-2px;right:-2px;font-size:18px;background:var(--bg-card);border-radius:50%;padding:3px">${sm.icon}</span>
+            ? `<img src="${pUrl}" style="width:100px;height:100px;border-radius:12px;object-fit:cover;border:2px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
+            : `<div style="width:100px;height:100px;border-radius:12px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:40px;font-weight:900;color:${sm.color}">${initial}</span></div>`}
+          <span style="position:absolute;bottom:-2px;right:-2px;font-size:16px;background:var(--bg-card);border-radius:50%;padding:2px">${sm.icon}</span>
         </div>
-        <div style="flex:1;min-width:0;text-align:left">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span style="font-weight:700;font-size:18px">${c.name}</span>
-            <span style="font-size:28px;font-weight:900;color:var(--gold)">${ovrVal}</span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <span style="font-weight:700;font-size:17px;line-height:1.2">${c.name}</span>
+            <span style="font-size:26px;font-weight:900;color:var(--gold);line-height:1">${ovrVal}</span>
           </div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
             <span class="badge badge-${c.style}">${sm.icon} ${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}">${c.role}</span>` : ''}
-            ${isChamp ? '<span style="font-size:11px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
-            ${isAce ? '<span style="font-size:11px;color:#f1c40f;font-weight:700">⭐ エース</span>' : ''}
+            ${isChamp ? '<span style="font-size:10px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
+            ${isAce ? '<span style="font-size:10px;color:#f1c40f;font-weight:700">⭐ エース</span>' : ''}
             ${c.isRental ? '<span style="font-size:10px;color:#f39c12">🤝 レンタル</span>' : ''}
           </div>
-          ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">${c.traits.map(t => {
-            const td = TRAIT_DEFS[t]; if (!td) return '';
-            return '<span title="' + td.desc + '" style="font-size:10px;padding:1px 5px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
-          }).join('')}</div>` : ''}
-          <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-sub)">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
-            ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
+            ${isRoster ? '<span style="color:#2ecc71">🏠 所属</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
-            ${isScoutCandidate && c._isSeed ? '<span style="color:#f1c40f">⭐ 注目候補</span>' : ''}
-            ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 他団体注目</span>' : ''}
-            ${orgLabel ? `<span>${orgLabel} 所属</span>` : ''}
+            ${isScoutCandidate && c._isSeed ? '<span style="color:#f1c40f">⭐ 注目</span>' : ''}
+            ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 競合</span>' : ''}
+            ${orgLabel ? `<span>${orgLabel}</span>` : ''}
           </div>
         </div>
-        <button onclick="closeFighterPopup()" style="background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
       </div>
+      ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.04)">${c.traits.map(t => {
+        const td = TRAIT_DEFS[t]; if (!td) return '';
+        return '<span title="' + td.desc + '" style="font-size:10px;padding:1px 5px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
+      }).join('')}</div>` : ''}
     </div>`;
 
     // ── Tab bar ──
@@ -5983,7 +5982,7 @@ function showFighterPopup(fighterId, source) {
         style="flex:1;padding:8px 4px;font-size:11px;background:${i===tabIdx?'rgba(255,255,255,0.05)':'none'};border:none;border-bottom:2px solid ${i===tabIdx?'var(--gold)':'transparent'};color:${i===tabIdx?'var(--text)':'var(--text-dim)'};cursor:pointer;transition:all 0.2s">${t}</button>`).join('')}
     </div>`;
 
-    html += `<div class="fighter-popup-body" style="padding:12px 16px 16px">`;
+    html += `<div class="fighter-popup-body" style="padding:12px 14px 14px">`;
 
     // ══════ TAB 0: Stats & Profile ══════
     if (tabIdx === 0) {
@@ -6002,56 +6001,61 @@ function showFighterPopup(fighterId, source) {
       });
       html += `</div>`;
 
-      // Potential & Condition
+      // Condition & Development — compact grid
       if (isRoster || isFree) {
         const potPct = getPotentialPct(c);
         const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
         const condPct = c.condition || 0;
         const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
-        html += `<div class="fighter-popup-section" style="display:flex;gap:16px;font-size:11px;margin-bottom:12px">
-          <div style="flex:1">
-            <span style="color:var(--text-dim)">開発率</span>
-            <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">開発率</span>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
               <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
                 <div style="width:${potPct}%;height:100%;background:${potColor};border-radius:3px"></div>
               </div>
-              <span style="color:${potColor};font-weight:700">${potPct}%</span>
+              <span style="color:${potColor};font-weight:700;font-size:12px">${potPct}%</span>
             </div>
           </div>
-          <div style="flex:1">
-            <span style="color:var(--text-dim)">体調</span>
-            <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">体調</span>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
               <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
                 <div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div>
               </div>
-              <span style="font-weight:700">${condPct}</span>
+              <span style="font-weight:700;font-size:12px">${condPct}</span>
             </div>
           </div>
         </div>`;
       }
 
-      // Popularity & Salary
+      // Popularity & Salary — unified grid
       if (isRoster) {
-        html += `<div class="fighter-popup-section" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;margin-bottom:10px">
-          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
-            <span style="color:var(--text-dim)">人気</span><br>
-            <strong style="color:var(--text);font-size:16px">${c.popularity}</strong>
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">人気</span><br>
+            <strong style="color:var(--text);font-size:15px">${c.popularity}</strong>
           </div>
-          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
-            <span style="color:var(--text-dim)">給与</span><br>
-            <strong style="color:var(--text);font-size:13px">${getSalary(c)}万/週</strong>
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">給与</span><br>
+            <strong style="color:var(--text);font-size:12px">${getSalary(c)}万/週</strong>
           </div>
         </div>`;
-      }
-      if (isFree) {
-        html += `<div class="fighter-popup-section" style="font-size:11px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${c.popularity}</strong></span>
-          <span style="margin-left:12px">給与見込: <strong style="color:var(--text)">${getSalary(c)}万/週</strong></span>
+      } else if (isFree) {
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">人気</span><br>
+            <strong style="color:var(--text);font-size:15px">${c.popularity}</strong>
+          </div>
+          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px">
+            <span style="color:var(--text-dim);font-size:10px">給与見込</span><br>
+            <strong style="color:var(--text);font-size:12px">${getSalary(c)}万/週</strong>
+          </div>
         </div>`;
-      }
-      if (!isRoster && !isFree && c.popularity !== undefined) {
-        html += `<div class="fighter-popup-section" style="font-size:11px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${c.popularity}</strong></span>
+      } else if (c.popularity !== undefined) {
+        html += `<div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px;margin-bottom:10px">
+          <span style="color:var(--text-dim);font-size:10px">人気</span><br>
+          <strong style="color:var(--text);font-size:15px">${c.popularity}</strong>
         </div>`;
       }
 
@@ -6066,27 +6070,23 @@ function showFighterPopup(fighterId, source) {
       if (isRoster) {
         const coach = getCharCoach(c.id);
         if (coach) {
-          html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
-            🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
+          html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;display:flex;align-items:center;gap:6px">
+            🎓 <span style="color:var(--text-dim)">担当:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
-            <span style="color:var(--text-dim);font-size:10px;margin-left:6px">(${coach.specialty === 'mental' ? `回復+${coach.condBonus} 怪我-${Math.round((coach.injuryReduce||0.5)*100)}%` : coach.specialty === 'mq' ? `MQ+${coach.mqBonus}` : coach.specialty === 'pop' ? `人気+${coach.popBonus}` : `成長×${coach.growthMult}`})</span>
-          </div>`;
-        } else {
-          html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:4px">
-            🎓 担当コーチ: なし
+            <span style="color:var(--text-dim);font-size:10px">(${coach.specialty === 'mental' ? `回復+${coach.condBonus} 怪我-${Math.round((coach.injuryReduce||0.5)*100)}%` : coach.specialty === 'mq' ? `MQ+${coach.mqBonus}` : coach.specialty === 'pop' ? `人気+${coach.popBonus}` : `成長×${coach.growthMult}`})</span>
           </div>`;
         }
       }
 
-      // Traits section
+      // Trait details (expanded descriptions)
       if (c.traits && c.traits.length > 0) {
-        html += '<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:6px">固有特性</div>';
+        html += '<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:10px;font-weight:600;color:var(--text-dim);margin-bottom:5px">固有特性</div>';
         c.traits.forEach(t => {
           const td = TRAIT_DEFS[t];
           if (!td) return;
-          html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;background:${td.color}22;color:${td.color};border:1px solid ${td.color}44;font-weight:600;min-width:90px">${td.icon} ${t}</span>
-            <span style="color:var(--text-sub)">${td.desc}</span></div>`;
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px">
+            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:8px;background:${td.color}22;color:${td.color};border:1px solid ${td.color}44;font-weight:600;min-width:80px;font-size:10px">${td.icon} ${t}</span>
+            <span style="color:var(--text-sub);font-size:10px">${td.desc}</span></div>`;
         });
         html += '</div>';
       }
@@ -7811,7 +7811,7 @@ function renderRoster() {
     let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
     aceHtml += '<span style="color:var(--gold);font-weight:700">⭐ エース:</span>';
     if (ace) {
-      aceHtml += `<span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(ace.id, 80)}${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
+      aceHtml += `<span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(ace.id, 100)}${fLink(ace, {source:'roster', bold:false})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span>`;
       aceHtml += `<button class="btn" style="font-size:10px;padding:3px 8px;margin-left:auto" onclick="revokeAce()">解除</button>`;
     } else {
       aceHtml += '<span style="color:var(--text-dim)">未認定</span>';
@@ -7826,7 +7826,7 @@ function renderRoster() {
     aceEl.innerHTML = aceHtml;
   }
 
-  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:6px">';
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:6px">';
   const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
@@ -7843,16 +7843,16 @@ function renderRoster() {
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
     };
     html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px${c.injury ? ';opacity:0.75' : ''};cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
-      ${portraitImg(c.id, 52, '', true)}
+      ${portraitImg(c.id, 48, '', true)}
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
-          ${fLink(c, {source:'roster'})}${champBadge}${aceBadge}${rentalBadge}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+          <span style="font-weight:700;font-size:13px;white-space:nowrap">${c.name}</span>${champBadge}${aceBadge}${rentalBadge}
           <span class="badge badge-${c.style}" style="font-size:9px">${c.style}</span>
           <span class="badge badge-${roleCls}" style="font-size:9px">${c.role}</span>
           ${injuryBadge}
         </div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-sub)">
-          <span style="font-size:14px;font-weight:900;color:var(--gold)">${ov(c)}</span>
+        <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-sub)">
+          <span style="font-size:13px;font-weight:900;color:var(--gold)">${ov(c)}</span>
           <span>PW<b style="color:var(--text)">${c.pw}</b>${statG('pw')}</span>
           <span>SP<b style="color:var(--text)">${c.sp}</b>${statG('sp')}</span>
           <span>TE<b style="color:var(--text)">${c.te}</b>${statG('te')}</span>
@@ -8225,35 +8225,38 @@ function renderScout() {
     所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${G.orgPop || 0}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
   </div>`;
 
-  // Free agents — compact card list (click name/portrait to open popup with acquire button)
+  // Free agents — info-dense list for comparison
   html += '<div class="panel-title" style="font-size:13px">フリーエージェント一覧</div>';
   [...G.freeAgents].sort((a,b) => ov(b) - ov(a)).forEach(c => {
-    const STYLE_META = {
-      Grappler:{color:'#bb8fce',icon:'🤼'}, Striker:{color:'#e74c3c',icon:'👊'},
-      Submission:{color:'#e67e22',icon:'🦂'}, Speed:{color:'#2ecc71',icon:'💨'},
-      Allround:{color:'#f1c40f',icon:'⭐'}, Brawler:{color:'#e88a82',icon:'🔥'}
-    };
-    const sm = STYLE_META[c.style] || STYLE_META.Allround;
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
-    const roleIcon = c.role === 'Babyface' ? '😇' : c.role === 'Heel' ? '😈' : '🎭';
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
     const rowOpacity = canNeg ? '' : 'opacity:0.45;';
-    html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;${rowOpacity}cursor:pointer" onclick="showFighterPopup(${c.id},'free')">
+    const sigCost = Engine.scout.getSigningCost(c, discount);
+    const salary = getSalary(c);
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;${rowOpacity}cursor:pointer" onclick="showFighterPopup(${c.id},'free')">
       ${portraitImg(c.id, 44, '', true)}
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="flink" style="font-size:15px;font-weight:700">${c.name}</span>
-          <span style="font-size:13px;color:var(--text-dim)">${c.age}歳</span>
-          <span style="font-size:22px" title="${c.style}">${sm.icon}</span>
-          <span style="font-size:22px" title="${c.role}">${roleIcon}</span>
-          <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
-          ${!canNeg ? '<span style="font-size:12px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+          <span class="flink" style="font-size:14px;font-weight:700">${c.name}</span>
+          <span style="font-size:11px;color:var(--text-dim)">${c.age}歳</span>
+          <span class="badge badge-${c.style}" style="font-size:9px">${c.style}</span>
+          <span class="badge badge-${roleCls}" style="font-size:9px">${c.role}</span>
+          <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
+          ${!canNeg ? '<span style="font-size:10px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-sub)">
+          <span style="font-size:13px;font-weight:900;color:var(--gold)">${ov(c)}</span>
+          <span>PW<b style="color:var(--text)">${c.pw}</b></span>
+          <span>SP<b style="color:var(--text)">${c.sp}</b></span>
+          <span>TE<b style="color:var(--text)">${c.te}</b></span>
+          <span>ST<b style="color:var(--text)">${c.st}</b></span>
+          <span>MN<b style="color:var(--text)">${c.mn}</b></span>
         </div>
       </div>
-      <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:24px;font-weight:900;color:var(--gold)">${ov(c)}</div>
-        <div style="font-size:10px;color:var(--text-dim)">OVR</div>
+      <div style="flex-shrink:0;text-align:right;font-size:10px;color:var(--text-sub)">
+        <div style="color:var(--text-dim)">給与 <b style="color:var(--text)">${salary}万</b>/週</div>
+        <div style="color:var(--text-dim)">契約 <b style="color:var(--gold)">${sigCost.toLocaleString()}万</b></div>
       </div>
     </div>`;
   });
@@ -8335,29 +8338,39 @@ function renderScoutEvent() {
     const sm = STYLE_META[c.style] || STYLE_META.Allround;
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const canNeg = Engine.scout.canNegotiate(orgPop, c);
-    const roleIcon = c.role === 'Babyface' ? '😇' : c.role === 'Heel' ? '😈' : '🎭';
+    const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const est = c._estimate || { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn };
     const estAvg = Math.round((est.pw + est.sp + est.te + est.st + est.mn) / 5);
+    const sigCost = Engine.scout.getSigningCost(c, discount);
+    const salary = getSalary(c);
 
-    html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:8px;margin-bottom:6px;${!canNeg?'opacity:0.5;':''}cursor:pointer" onclick="showFighterPopup(${c.id},'scout')">
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:6px;margin-bottom:5px;${!canNeg?'opacity:0.5;':''}cursor:pointer" onclick="showFighterPopup(${c.id},'scout')">
       <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center">
         <span style="font-size:18px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="flink" style="font-size:15px;font-weight:700">${c.name}</span>
-          <span style="font-size:13px;color:var(--text-dim)">${c.age}歳</span>
-          <span style="font-size:22px" title="${c.style}">${sm.icon}</span>
-          <span style="font-size:22px" title="${c.role}">${roleIcon}</span>
-          <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
-          ${c._isSeed ? '<span style="font-size:12px;padding:2px 8px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目</span>' : ''}
-          ${c._hasCompetition ? '<span style="font-size:12px;padding:2px 8px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 競合</span>' : ''}
-          ${!canNeg ? '<span style="font-size:12px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+          <span class="flink" style="font-size:14px;font-weight:700">${c.name}</span>
+          <span style="font-size:11px;color:var(--text-dim)">${c.age}歳</span>
+          <span class="badge badge-${c.style}" style="font-size:9px">${sm.icon} ${c.style}</span>
+          <span class="badge badge-${roleCls}" style="font-size:9px">${c.role}</span>
+          <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
+          ${c._isSeed ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目</span>' : ''}
+          ${c._hasCompetition ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 競合</span>' : ''}
+          ${!canNeg ? '<span style="font-size:10px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-sub)">
+          <span style="font-size:13px;font-weight:900;color:var(--gold)">${estAvg}</span>
+          <span>PW<b style="color:var(--text)">${est.pw}</b></span>
+          <span>SP<b style="color:var(--text)">${est.sp}</b></span>
+          <span>TE<b style="color:var(--text)">${est.te}</b></span>
+          <span>ST<b style="color:var(--text)">${est.st}</b></span>
+          <span>MN<b style="color:var(--text)">${est.mn}</b></span>
         </div>
       </div>
-      <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:24px;font-weight:900;color:var(--gold)">${estAvg}</div>
-        <div style="font-size:10px;color:var(--text-dim)">推定OVR</div>
+      <div style="flex-shrink:0;text-align:right;font-size:10px;color:var(--text-sub)">
+        <div style="color:var(--text-dim)">給与 <b style="color:var(--text)">${salary}万</b>/週</div>
+        <div style="color:var(--text-dim)">契約 <b style="color:var(--gold)">${sigCost.toLocaleString()}万</b></div>
       </div>
     </div>`;
   });
@@ -8674,6 +8687,8 @@ function toggleTrainDetail(charId) {
   const panel = document.getElementById(`train-detail-${charId}`);
   if (!panel) return;
   panel.classList.toggle('open');
+  const arrow = document.getElementById(`train-arrow-${charId}`);
+  if (arrow) arrow.style.transform = panel.classList.contains('open') ? 'rotate(180deg)' : '';
 }
 
 function getGrowthTendency(charId) {
@@ -8729,7 +8744,7 @@ function renderTraining() {
   // === Roster Training List ===
   const canManage = G.weekPhase === 'manage';
   html += '<div style="margin-top:8px">';
-  html += '<div class="train-row train-row-header"><span>選手</span><span>総合</span><span>体調</span><span>担当コーチ</span><span>成長傾向</span><span>⚡追込</span></div>';
+  html += '<div class="train-row train-row-header"><span>選手</span><span>総合</span><span>体調</span><span>担当コーチ</span><span>成長傾向</span><span>⚡追込</span><span></span></div>';
 
   G.roster.forEach(c => {
     // D-1: Skip rental fighters in training (rental=試合のみ)
@@ -8781,6 +8796,7 @@ function renderTraining() {
       <span>${coachDisplay}</span>
       <span>${arrowHtml}</span>
       <span onclick="event.stopPropagation()">${intBtn}</span>
+      <span class="train-expand-arrow" id="train-arrow-${c.id}" style="font-size:10px;color:var(--text-dim);transition:transform 0.3s;display:inline-block">▼</span>
     </div>`;
 
     // Detail panel (hidden by default)
