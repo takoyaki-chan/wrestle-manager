@@ -1015,86 +1015,86 @@ const Audio = (() => {
 // ║  SECTION 1: CHARACTER DATA                               ║
 // ╚══════════════════════════════════════════════════════════╝
 const ALL_CHARS = [
-  {id:1,name:'阿武隈塔子',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164}},
-  {id:2,name:'富岡加奈子',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168}},
-  {id:3,name:'澤出みずき',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154}},
-  {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:121,st:163,mn:178}},
-  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:178,te:141,st:170,mn:142}},
-  {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148}},
-  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146}},
-  {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128}},
-  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113}},
-  {id:10,name:'佐藤ヨーコ',h:148,pw:19,sp:26,te:27,st:15,mn:11,style:'Allround',role:'Babyface',pot:{pw:85,sp:94,te:95,st:80,mn:74}},
-  {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156}},
-  {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Babyface',pot:{pw:161,sp:152,te:132,st:167,mn:167}},
-  {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:116,st:143,mn:155}},
-  {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147}},
-  {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:87,st:146,mn:141}},
-  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Striker',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160}},
-  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159}},
-  {id:18,name:'出羽鷹子',h:181,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141}},
-  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141}},
-  {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:129,te:161,st:143,mn:161}},
-  {id:21,name:'木ノ内幸音',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Heel',pot:{pw:146,sp:129,te:129,st:148,mn:147}},
-  {id:22,name:'美濃山まりな',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122}},
-  {id:23,name:'早見知子',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113}},
-  {id:24,name:'園部梨花',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Striker',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116}},
-  {id:25,name:'石戸谷なつき',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109}},
-  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142}},
-  {id:27,name:'八重樫舞',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126}},
-  {id:28,name:'岩屋みら',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139}},
-  {id:29,name:'相沢未来',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156}},
-  {id:30,name:'松川杏樹',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152}},
-  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151}},
-  {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138}},
-  {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164}},
-  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Babyface',pot:{pw:148,sp:154,te:169,st:154,mn:150}},
-  {id:35,name:'上野原弥生',h:176,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135}},
-  {id:36,name:'真鍋綾乃',h:178,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138}},
-  {id:37,name:'白銀麗子',h:165,pw:74,sp:82,te:82,st:83,mn:78,style:'Allround',role:'Babyface',pot:{pw:156,sp:167,te:167,st:168,mn:161}},
-  {id:38,name:'芝彩音',h:164,pw:88,sp:64,te:67,st:78,mn:76,style:'Striker',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159}},
-  {id:39,name:'神谷沙奈絵',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Speed',role:'Neutral',pot:{pw:142,sp:159,te:143,st:144,mn:128}},
-  {id:40,name:'高輪まみ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Speed',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152}},
-  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152}},
-  {id:42,name:'本郷真理子',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Striker',role:'Neutral',pot:{pw:174,sp:147,te:124,st:146,mn:152}},
-  {id:43,name:'金沢文',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141}},
-  {id:44,name:'福浦理乃',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Babyface',pot:{pw:120,sp:129,te:124,st:117,mn:116}},
-  {id:45,name:'高槻千歳',h:163,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156}},
-  {id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160}},
-  {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Submission',role:'Neutral',pot:{pw:143,sp:148,te:159,st:150,mn:155}},
-  {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:129,st:144,mn:161}},
-  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:138,te:134,st:155,mn:163}},
-  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132}},
-  {id:51,name:'三橋ふみえ',h:168,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125}},
-  {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Brawler',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:130}},
-  {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138}},
-  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:116,sp:112,te:109,st:122,mn:125}},
-  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164}},
-  {id:56,name:'片桐ありさ',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148}},
-  {id:57,name:'浅見里緒菜',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148}},
-  {id:58,name:'丹羽穂垂',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Grappler',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134}},
-  {id:59,name:'池辺マリ',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:151,sp:126,te:112,st:141,mn:129}},
-  {id:60,name:'馬入橋ほとり',h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:167,sp:148,te:137,st:151,mn:161}},
-  {id:61,name:'観音崎せりか',h:169,pw:73,sp:73,te:67,st:63,mn:66,style:'Allround',role:'Heel',pot:{pw:155,sp:155,te:147,st:142,mn:146}},
-  {id:62,name:'宮ケ瀬千夏',h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125}},
-  {id:63,name:'伊勢原文奈',h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132}},
-  {id:64,name:'湯本ほたる',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122}},
-  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169}},
-  {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161}},
-  {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168}},
-  {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Babyface',pot:{pw:148,sp:160,te:128,st:151,mn:159}},
-  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143}},
-  {id:70,name:'浜竹美咲',h:166,pw:80,sp:57,te:63,st:68,mn:68,style:'Striker',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148}},
-  {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:151,sp:141,te:150,st:141,mn:147}},
-  {id:72,name:'穴澤ほのか',h:167,pw:74,sp:58,te:65,st:63,mn:70,style:'Striker',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151}},
-  {id:73,name:'大馬越よし子',h:169,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:133,st:147,mn:148}},
-  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151}},
-  {id:75,name:'海老名栞',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164}},
-  {id:76,name:'栗林あかり',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135}},
-  {id:77,name:'新見ゆり',h:164,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129}},
-  {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:135,sp:130,te:126,st:142,mn:138}},
-  {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:109}},
-  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85}}
+  {id:1,name:'阿武隈塔子',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164},traits:['リーダー気質','人望','威圧感','引き出し上手','頑丈さ']},
+  {id:2,name:'富岡加奈子',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168},traits:['努力家','遅咲き','頑丈さ']},
+  {id:3,name:'澤出みずき',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154},traits:['引き出し上手','早熟','適応力']},
+  {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:121,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志']},
+  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:178,te:141,st:170,mn:142},traits:['努力家','華','鉄人']},
+  {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148},traits:['ムードメーカー','早熟','破天荒']},
+  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心']},
+  {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い']},
+  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス']},
+  {id:10,name:'佐藤ヨーコ',h:148,pw:19,sp:26,te:27,st:15,mn:11,style:'Allround',role:'Babyface',pot:{pw:85,sp:94,te:95,st:80,mn:74},traits:[]},
+  {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華']},
+  {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Babyface',pot:{pw:161,sp:152,te:132,st:167,mn:167},traits:['人望','負けず嫌い','鉄人','闘志']},
+  {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:116,st:143,mn:155},traits:['破天荒']},
+  {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['ヒール適性','早熟']},
+  {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:87,st:146,mn:141},traits:['威圧感']},
+  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Striker',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心']},
+  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い']},
+  {id:18,name:'出羽鷹子',h:181,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['適応力']},
+  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力']},
+  {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:129,te:161,st:143,mn:161},traits:['努力家','遅咲き']},
+  {id:21,name:'木ノ内幸音',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Heel',pot:{pw:146,sp:129,te:129,st:148,mn:147},traits:['ヒール適性','ムードメーカー','華']},
+  {id:22,name:'美濃山まりな',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122},traits:['ヒール適性']},
+  {id:23,name:'早見知子',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['忠誠心']},
+  {id:24,name:'園部梨花',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Striker',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[]},
+  {id:25,name:'石戸谷なつき',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109},traits:['早熟']},
+  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['努力家','早熟']},
+  {id:27,name:'八重樫舞',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126},traits:['鉄人']},
+  {id:28,name:'岩屋みら',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139},traits:['ガラスの身体','早熟']},
+  {id:29,name:'相沢未来',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['人望']},
+  {id:30,name:'松川杏樹',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152},traits:['ムードメーカー','破天荒']},
+  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151},traits:['晩成']},
+  {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い']},
+  {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164},traits:['リーダー気質']},
+  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Babyface',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['早熟','破天荒']},
+  {id:35,name:'上野原弥生',h:176,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135},traits:['頑丈さ']},
+  {id:36,name:'真鍋綾乃',h:178,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138},traits:['頑丈さ']},
+  {id:37,name:'白銀麗子',h:165,pw:74,sp:82,te:82,st:83,mn:78,style:'Allround',role:'Babyface',pot:{pw:156,sp:167,te:167,st:168,mn:161},traits:['不屈','華','頑丈さ']},
+  {id:38,name:'芝彩音',h:164,pw:88,sp:64,te:67,st:78,mn:76,style:'Striker',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159},traits:['華','闘志']},
+  {id:39,name:'神谷沙奈絵',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Speed',role:'Neutral',pot:{pw:142,sp:159,te:143,st:144,mn:128},traits:['忠誠心']},
+  {id:40,name:'高輪まみ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Speed',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:[]},
+  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['ヒール適性']},
+  {id:42,name:'本郷真理子',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Striker',role:'Neutral',pot:{pw:174,sp:147,te:124,st:146,mn:152},traits:['ヒール適性']},
+  {id:43,name:'金沢文',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141},traits:['頑丈さ']},
+  {id:44,name:'福浦理乃',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Babyface',pot:{pw:120,sp:129,te:124,st:117,mn:116},traits:[]},
+  {id:45,name:'高槻千歳',h:163,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156},traits:['リーダー気質','華','野心']},
+  {id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い']},
+  {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Submission',role:'Neutral',pot:{pw:143,sp:148,te:159,st:150,mn:155},traits:['早熟']},
+  {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:129,st:144,mn:161},traits:['負けず嫌い','適応力','闘志']},
+  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:138,te:134,st:155,mn:163},traits:['努力家','忠誠心','遅咲き']},
+  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力']},
+  {id:51,name:'三橋ふみえ',h:168,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['ヒール適性','ファンサービス']},
+  {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Brawler',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:130},traits:[]},
+  {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー']},
+  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:116,sp:112,te:109,st:122,mn:125},traits:[]},
+  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['不屈','鉄人','頑丈さ']},
+  {id:56,name:'片桐ありさ',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148},traits:['ヒール適性','ライバル体質','野心']},
+  {id:57,name:'浅見里緒菜',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148},traits:['リーダー気質','早熟','負けず嫌い','野心']},
+  {id:58,name:'丹羽穂垂',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Grappler',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['引き出し上手','負けず嫌い']},
+  {id:59,name:'池辺マリ',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:151,sp:126,te:112,st:141,mn:129},traits:['負けず嫌い']},
+  {id:60,name:'馬入橋ほとり',h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:167,sp:148,te:137,st:151,mn:161},traits:['早熟','鉄人','頑丈さ']},
+  {id:61,name:'観音崎せりか',h:169,pw:73,sp:73,te:67,st:63,mn:66,style:'Allround',role:'Heel',pot:{pw:155,sp:155,te:147,st:142,mn:146},traits:['ヒール適性','華','野心']},
+  {id:62,name:'宮ケ瀬千夏',h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125},traits:['ヒール適性','威圧感']},
+  {id:63,name:'伊勢原文奈',h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132},traits:['忠誠心']},
+  {id:64,name:'湯本ほたる',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122},traits:[]},
+  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169},traits:['ファンサービス','名勝負製造機']},
+  {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161},traits:['人望','引き出し上手']},
+  {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168},traits:['ファンサービス','華','野心']},
+  {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Babyface',pot:{pw:148,sp:160,te:128,st:151,mn:159},traits:['負けず嫌い']},
+  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い']},
+  {id:70,name:'浜竹美咲',h:166,pw:80,sp:57,te:63,st:68,mn:68,style:'Striker',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['引き出し上手','忠誠心']},
+  {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:151,sp:141,te:150,st:141,mn:147},traits:['ファンサービス']},
+  {id:72,name:'穴澤ほのか',h:167,pw:74,sp:58,te:65,st:63,mn:70,style:'Striker',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['ファンサービス','引き出し上手','野心']},
+  {id:73,name:'大馬越よし子',h:169,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:133,st:147,mn:148},traits:['威圧感','頑丈さ']},
+  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['ファンサービス']},
+  {id:75,name:'海老名栞',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['ファンサービス','ライバル体質','野心']},
+  {id:76,name:'栗林あかり',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135},traits:['ライバル体質','負けず嫌い']},
+  {id:77,name:'新見ゆり',h:164,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['引き出し上手']},
+  {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:135,sp:130,te:126,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い']},
+  {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:109},traits:[]},
+  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85},traits:['ファンサービス','ムードメーカー']}
 ];
 // Character profiles (brief bios for fighter popup) — v1.4 全80名
 const CHAR_PROFILES = {
@@ -1179,6 +1179,55 @@ const CHAR_PROFILES = {
   79:'ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。',
   80:'プロレスをするには不似合いな華奢でひ弱な少女。明日をも知れぬ日々に怯えながらも懸命に生きている。',
 };
+
+// ── Trait Definitions (traits-v2.1) ─────────────────────
+const TRAIT_DEFS = {
+  '華':           {cat:'pop',    icon:'🌸', color:'#e91e9c', en:'Charisma',         desc:'集客力・ポスター効果にボーナス'},
+  'ファンサービス':{cat:'pop',    icon:'🎁', color:'#f39c12', en:'Fan Service',      desc:'グッズ売上にボーナス'},
+  'ヒール適性':   {cat:'pop',    icon:'😈', color:'#9b59b6', en:'Heel Aptitude',    desc:'悪役ムーブで人気を稼げる'},
+  '名勝負製造機': {cat:'match',  icon:'⭐', color:'#f1c40f', en:'Match Maker',      desc:'試合品質にボーナス'},
+  '引き出し上手': {cat:'match',  icon:'🤝', color:'#2ecc71', en:'Best Bringer',     desc:'格下とのMQが下がりにくい'},
+  'ライバル体質': {cat:'match',  icon:'🔥', color:'#e74c3c', en:'Rivalry Prone',    desc:'ライバル因縁が生まれやすい'},
+  '早熟':         {cat:'growth', icon:'🌱', color:'#27ae60', en:'Early Bloomer',    desc:'若手期の成長が速い。全盛期短め', excl:'A'},
+  '晩成':         {cat:'growth', icon:'🌿', color:'#16a085', en:'Late Bloomer',     desc:'若手期は遅いが全盛期が長い', excl:'A'},
+  '遅咲き':       {cat:'growth', icon:'🌻', color:'#1abc9c', en:'Late Starter',     desc:'25歳以降に急成長する', excl:'A'},
+  '努力家':       {cat:'growth', icon:'💪', color:'#3498db', en:'Hard Worker',      desc:'練習での成長にボーナス'},
+  '破天荒':       {cat:'growth', icon:'🎲', color:'#e67e22', en:'Maverick',         desc:'成長にムラあり。爆発的か停滞'},
+  '適応力':       {cat:'growth', icon:'🔄', color:'#1abc9c', en:'Adaptability',     desc:'新スタイル習得が速い（将来用）'},
+  '頑丈さ':       {cat:'body',   icon:'🛡️', color:'#2980b9', en:'Durability',       desc:'怪我しにくい', excl:'B'},
+  'ガラスの身体': {cat:'body',   icon:'💔', color:'#c0392b', en:'Glass Body',       desc:'怪我しやすい（マイナス特性）', excl:'B'},
+  '鉄人':         {cat:'body',   icon:'⚙️', color:'#7f8c8d', en:'Iron Man',         desc:'コンディション全般に強い', excl:'B'},
+  '不屈':         {cat:'body',   icon:'🔥', color:'#d35400', en:'Indomitable',      desc:'怪我からの復帰が速い'},
+  'ムードメーカー':{cat:'org',   icon:'😄', color:'#f39c12', en:'Mood Maker',       desc:'団体全体の練習効率が微増'},
+  '人望':         {cat:'org',    icon:'👥', color:'#3498db', en:'Respect',           desc:'団体士気にボーナス'},
+  '負けず嫌い':   {cat:'org',    icon:'😤', color:'#e74c3c', en:'Competitive',      desc:'負けた翌週の練習成長にボーナス'},
+  'リーダー気質': {cat:'org',    icon:'👑', color:'#f1c40f', en:'Leadership',        desc:'若手の成長率にボーナス'},
+  '忠誠心':       {cat:'org',    icon:'🏠', color:'#2ecc71', en:'Loyalty',           desc:'引き抜かれにくい（将来用）'},
+  '野心':         {cat:'org',    icon:'🎯', color:'#9b59b6', en:'Ambition',          desc:'チャンピオンを狙う（将来用）'},
+  '番狂わせ体質': {cat:'special',icon:'🎰', color:'#e74c3c', en:'Upset Specialist', desc:'格上相手に丸め込み率UP'},
+  '闘志':         {cat:'special',icon:'🔥', color:'#c0392b', en:'Fighting Spirit',  desc:'HP低下時にモメンタム回復'},
+  '威圧感':       {cat:'special',icon:'👁️', color:'#8e44ad', en:'Intimidation',     desc:'対戦相手の序盤モメンタムが不利'}
+};
+
+// Trait utility functions
+const Traits = {
+  has(char, traitName) {
+    return Array.isArray(char.traits) && char.traits.includes(traitName);
+  },
+  any(char, ...traitNames) {
+    return Array.isArray(char.traits) && traitNames.some(t => char.traits.includes(t));
+  },
+  count(roster, traitName) {
+    return roster.filter(c => Traits.has(c, traitName)).length;
+  },
+  getDef(traitName) {
+    return TRAIT_DEFS[traitName] || null;
+  },
+  list(char) {
+    return Array.isArray(char.traits) ? char.traits : [];
+  }
+};
+
 // v1.1 Draft system: Fixed 2 (random weak) + choose 3 from 6 candidates = 5 starters
 // Draft pools — characters not assigned to any rival org or free pool
 const DRAFT_AVAILABLE_IDS = [4,8,9,10,15,19,20,21,22,23,24,25,27,32,43,44,50,51,52,53,54,57,58,59,62,63,64,75,77,78,79,80];
@@ -1632,14 +1681,34 @@ const STAR_POWER = [
 // ╚══════════════════════════════════════════════════════════╝
 
 // Age multiplier table (training-spec §5.2)
-function ageMultiplier(age) {
-  if (age <= 18) return 1.5;  // 新人
-  if (age <= 21) return 1.2;  // 若手
-  if (age <= 25) return 1.0;  // 成長期
-  if (age <= 29) return 0.7;  // 全盛期
-  if (age <= 32) return 0.3;  // 衰退初期
-  if (age <= 34) return 0.1;  // 衰退期
-  return 0;                    // 引退適齢期
+function ageMultiplier(age, traits) {
+  let mul;
+  if (age <= 18) mul = 1.5;
+  else if (age <= 21) mul = 1.2;
+  else if (age <= 25) mul = 1.0;
+  else if (age <= 29) mul = 0.7;
+  else if (age <= 32) mul = 0.3;
+  else if (age <= 34) mul = 0.1;
+  else mul = 0;
+
+  if (!Array.isArray(traits)) return mul;
+
+  // 早熟: ≤21で+30%、≥26で-30%
+  if (traits.includes('早熟')) {
+    if (age <= 21) mul *= 1.3;
+    else if (age >= 26) mul *= 0.7;
+  }
+  // 晩成: ≤21で-20%、26-32で+40%
+  if (traits.includes('晩成')) {
+    if (age <= 21) mul *= 0.8;
+    else if (age >= 26 && age <= 32) mul *= 1.4;
+  }
+  // 遅咲き: ≤25で-20%、26-34で爆発的成長
+  if (traits.includes('遅咲き')) {
+    if (age <= 25) mul *= 0.8;
+    else if (age <= 34) mul = Math.max(mul, 0.9);
+  }
+  return mul;
 }
 
 // Decay table (training-spec §5.4)
@@ -1833,12 +1902,17 @@ const Engine = {
     calcHitRate(mv, atk, def) {
       const eff = Engine.util.eff;
       const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
-      return Engine.util.clamp(baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus), ENG.hitMin, ENG.hitMax);
+      let rate = baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus);
+      // 威圧感: 相手の命中率を低下させる
+      if (Traits.has(def, '威圧感')) rate -= 3;
+      return Engine.util.clamp(rate, ENG.hitMin, ENG.hitMax);
     },
     calcCounterRate(atk, def, ph) {
       const eff = Engine.util.eff;
       let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
       if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
+      // 威圧感: 相手のカウンター率を低下させる
+      if (Traits.has(atk, '威圧感')) rate -= 3;
       return Engine.util.clamp(rate, ENG.counterMin, ENG.counterMax);
     },
     calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
@@ -1859,6 +1933,8 @@ const Engine = {
     calcKickoutChance(def, ph) {
       let chance = (def.mn / 100) * ENG.kickoutMnScale;
       if (ph.name === 'Climax') chance *= ENG.kickoutClimaxMult;
+      // 闘志: HP低下時のキックアウト率UP
+      if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
       chance = Engine.util.clamp(chance, 0.05, 0.45);
       if (def.kickoutCount >= ENG.kickoutMax) chance = 0;
       return chance;
@@ -1907,6 +1983,9 @@ const Engine = {
       R.mhp = R.hp;
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null;
+      // 威圧感: 序盤モメンタム優位（左+/右-）
+      if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 5;
+      if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 5;
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
 
       while (turn <= MAX_T && !winner) {
@@ -1994,7 +2073,9 @@ const Engine = {
               }
             }
             else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < ENG.rollupHpThreshold) {
-              const rSuccess = ENG.rollupBaseSuccess + (Engine.util.eff(atk.te) * ENG.rollupTecBonus);
+              let rSuccess = ENG.rollupBaseSuccess + (Engine.util.eff(atk.te) * ENG.rollupTecBonus);
+              // 番狂わせ体質: 格上相手の丸め込み成功率UP
+              if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
               if (Engine.rng.float(rng) * 100 < rSuccess) {
                 winner = atkSide;
                 finType = '丸め込み';
@@ -2040,6 +2121,11 @@ const Engine = {
       mq += Math.min(20, totalKickouts * 8);
       mq += Math.min(10, leadChanges * 2.5);
       mq += Math.min(5, bigMoves * 0.8);
+      // 名勝負製造機: MQに+5ボーナス
+      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 5;
+      // 引き出し上手: 格下とのMQが下がりにくい（OV差が大きい場合にMQ底上げ）
+      const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
+      if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(8, ovDiff * 0.3);
       mq = Math.round(Engine.util.clamp(mq, 5, 100));
 
       return {
@@ -2075,13 +2161,25 @@ const Engine = {
       const cardBonus = mainCardPop * 0.3;
       const heatMult = Engine.heat.getMult(G);
       const titleMult = hasTitleMatch ? 1.15 : 1.0;
-      return Math.min(v.cap, Math.round((baseAttend + cardBonus) * heatMult * titleMult));
+      // 華: ロスターに華持ちがいれば集客+5%
+      const charismaMult = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 1.05 : 1.0;
+      return Math.min(v.cap, Math.round((baseAttend + cardBonus) * heatMult * titleMult * charismaMult));
     },
     calcShowRevenue(roster, venueIdx, attendance) {
       const v = VENUES[venueIdx];
       const ticketRev = Math.round(attendance * v.ticket);
-      const pops = roster.map(r => r.popularity).sort((a, b) => b - a).slice(0, 3);
-      const goodsRev = pops.reduce((s, p) => s + p * 2, 0);
+      // Sort by popularity, take top 3, apply trait bonuses
+      const sorted = [...roster].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
+      const goodsRev = sorted.reduce((s, c) => {
+        let contrib = c.popularity * 2;
+        // 華: グッズ貢献×1.3
+        if (Traits.has(c, '華')) contrib *= 1.3;
+        // ファンサービス: グッズ貢献×1.2
+        if (Traits.has(c, 'ファンサービス')) contrib *= 1.2;
+        // ヒール適性 + Heel role: グッズ貢献+20%
+        if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty')) contrib *= 1.2;
+        return s + Math.round(contrib);
+      }, 0);
       return { ticketRev, goodsRev, venueCost: v.cost };
     }
   },
@@ -2116,10 +2214,18 @@ const Engine = {
       const condFactor = (100 - fighter.condition) / 100;
       let injuryChance = Math.min(0.15, 0.025 + condFactor * 0.05 + (1 - hpRatio) * 0.04 + matchResult.turns * 0.0015);
       injuryChance *= coachInjuryMult;  // mental coach reduction
+      // 頑丈さ: 怪我確率×0.7
+      if (Traits.has(fighter, '頑丈さ')) injuryChance *= 0.7;
+      // ガラスの身体: 怪我確率×1.4
+      if (Traits.has(fighter, 'ガラスの身体')) injuryChance *= 1.4;
       if (Engine.rng.float(rng) > injuryChance) return null;
       const roll = Engine.rng.float(rng);
       const injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
-      const weeks = injury.minWeeks + Engine.rng.int(rng, 0, injury.maxWeeks - injury.minWeeks);
+      let weeks = injury.minWeeks + Engine.rng.int(rng, 0, injury.maxWeeks - injury.minWeeks);
+      // 不屈: 復帰期間-1週（最低1）
+      if (Traits.has(fighter, '不屈')) weeks = Math.max(1, weeks - 1);
+      // 鉄人: 復帰期間-1週（最低1）
+      if (Traits.has(fighter, '鉄人')) weeks = Math.max(1, weeks - 1);
       const reducedWeeks = Math.max(1, weeks - facilityReduction);
       return {
         newFighter: { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) },
@@ -2163,7 +2269,9 @@ const Engine = {
       const key = Engine.title.getRivalryKey(id1, id2);
       const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0 };
       const old = Engine.title.getRivalryLevel(G, id1, id2);
-      const newEntry = { matches: oldEntry.matches + 1, lastWeek: G.week };
+      // ライバル体質: 因縁カウント+1加速（通常1→2）
+      const rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
+      const newEntry = { matches: oldEntry.matches + rivalryBonus, lastWeek: G.week };
       const newRivalries = { ...G.rivalries, [key]: newEntry };
       const newLvl = Engine.title.getRivalryLevel({ ...G, rivalries: newRivalries }, id1, id2);
       let msg = null;
@@ -2358,15 +2466,26 @@ const Engine = {
       const styleKey = char.style || 'Allround';
       const styleGain = (STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround)[stat] || 0.7;
       const age = char.age || (16 + (char.careerSeasons || 0));
-      const ageMul = ageMultiplier(age);
+      const ageMul = ageMultiplier(age, char.traits);
       if (ageMul <= 0) return 0;
 
       const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
       const facilityMul = Engine.facility.getGrowthMult(G);
       const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
 
-      const baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
-      const weeklyVariance = 0.5 + Engine.rng.float(rng) * 1.0; // 0.5〜1.5
+      let baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
+      // 努力家: 練習成長+15%
+      if (Traits.has(char, '努力家')) baseGain *= 1.15;
+      // ムードメーカー: 団体にいるだけで全体の練習効率+5%（自分含む）
+      if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) baseGain *= 1.05;
+      // リーダー気質: エースが所属していれば若手(≤21)の成長+10%
+      if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) baseGain *= 1.10;
+      // 負けず嫌い: 直近の試合で負けていれば成長+20%
+      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') baseGain *= 1.20;
+
+      let weeklyVariance = 0.5 + Engine.rng.float(rng) * 1.0; // 0.5〜1.5
+      // 破天荒: 成長の振れ幅拡大 (0.0〜2.5)
+      if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
       const rawGain = baseGain * weeklyVariance;
 
       // Intensive training bonus
@@ -2378,7 +2497,9 @@ const Engine = {
     // Apply aging decay (training-spec §5.3-5.4) — used for both player and AI
     applyDecay(rng, fighter) {
       const age = fighter.age || 99;
-      if (age < 30) return fighter;
+      // 晩成: 衰退開始を2年遅延
+      const decayStartAge = Traits.has(fighter, '晩成') ? 32 : 30;
+      if (age < decayStartAge) return fighter;
       let f = { ...fighter };
       const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
       let phase;
@@ -2641,7 +2762,7 @@ const Engine = {
     aiSeasonGrowth(rng, fighter, org) {
       const f = { ...fighter };
       const age = f.age || 20;
-      const ageMul = ageMultiplier(age);
+      const ageMul = ageMultiplier(age, (char || {}).traits);
       if (ageMul <= 0) return f; // no growth at 35+
 
       const styleKey = f.style || 'Allround';
@@ -2820,7 +2941,8 @@ const Engine = {
         }
 
         if (nc.injury) {
-          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G)), _weekAction: '療養', intensive: false };
+          const indomitableBonus = Traits.has(nc, '不屈') ? 3 : 0;
+          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G) + indomitableBonus), _weekAction: '療養', intensive: false };
         }
 
         if (nc.intensive) {
@@ -2848,14 +2970,16 @@ const Engine = {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
-          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus);
+          const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
+          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
           nc.popularity = Math.min(100, nc.popularity + Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G));
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus + mentalBonus);
           nc.intensiveWeeks = 0;
         } else {
-          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + Engine.facility.getRestBonus(G) + mentalBonus);
+          const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
+          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + Engine.facility.getRestBonus(G) + mentalBonus + restIronBonus);
           nc.intensiveWeeks = 0;
         }
         nc._weekAction = action;
@@ -3071,8 +3195,14 @@ const Engine = {
       const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
       if (!isLeft && !isRight) return c;
       let popDelta = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
-      if ((isLeft && result.winner === 'left') || (isRight && result.winner === 'right')) popDelta += 1;
-      return popDelta > 0 ? { ...c, popularity: Math.min(100, c.popularity + popDelta) } : c;
+      const isWinner = (isLeft && result.winner === 'left') || (isRight && result.winner === 'right');
+      if (isWinner) popDelta += 1;
+      // ヒール適性 + Heel: 試合後の人気上昇ボーナス
+      if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) popDelta += 1;
+      // 負けず嫌い用: 試合結果を記録
+      let lastMatchResult = isWinner ? 'win' : (result.winner === 'draw' ? 'draw' : 'loss');
+      const nc = { ...c, popularity: Math.min(100, c.popularity + Math.max(0, popDelta)), lastMatchResult };
+      return nc;
     });
   },
   applyShowPopularity(roster, results, orgPop) {
@@ -3668,7 +3798,8 @@ const Engine = {
       seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
       careerSeasons: 0,
       intensive: false,
-      intensiveWeeks: 0
+      intensiveWeeks: 0,
+      lastMatchResult: null
     };
   },
 
@@ -5192,6 +5323,10 @@ function showFighterPopup(fighterId, source) {
             ${isAce ? '<span style="font-size:11px;color:#f1c40f;font-weight:700">⭐ エース</span>' : ''}
             ${c.isRental ? '<span style="font-size:10px;color:#f39c12">🤝 レンタル</span>' : ''}
           </div>
+          ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">${c.traits.map(t => {
+            const td = TRAIT_DEFS[t]; if (!td) return '';
+            return '<span title="' + td.desc + '" style="font-size:10px;padding:1px 5px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
+          }).join('')}</div>` : ''}
           <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
@@ -5305,6 +5440,19 @@ function showFighterPopup(fighterId, source) {
             🎓 担当コーチ: なし
           </div>`;
         }
+      }
+
+      // Traits section
+      if (c.traits && c.traits.length > 0) {
+        html += '<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:6px">固有特性</div>';
+        c.traits.forEach(t => {
+          const td = TRAIT_DEFS[t];
+          if (!td) return;
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;background:${td.color}22;color:${td.color};border:1px solid ${td.color}44;font-weight:600;min-width:90px">${td.icon} ${t}</span>
+            <span style="color:var(--text-sub)">${td.desc}</span></div>`;
+        });
+        html += '</div>';
       }
 
       // Profile text
