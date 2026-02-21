@@ -81,4 +81,24 @@ const PORTRAIT = {
   78: 'tsubakiyama_m', // 椿山みさき
   79: 'kudo_r', // 久堂梨々花
   80: 'takashima_s', // 高島さや
+  // --- 新規キャラクター（v1.4 GameID 81〜99）---
+  81: 'sakamoto_r',    // 坂本莉衣奈
+  82: 'kondo_y',       // 近藤ゆりか
+  83: 'sakuma_h',      // 佐久間ひより
+  84: 'minamitani_a',  // 南谷杏
+  85: 'kamoshida_r',   // 鴨志田ルーシー
+  86: 'serizawa_a',    // 芹沢亜里紗
+  87: 'steinfeld_l',   // レオナ・O・シュタインフェルト
+  88: 'aikawa_a',      // 愛川明日香
+  89: 'akabane_a',     // 赤羽あんな
+  90: 'tamate_s',      // 玉手すみれ
+  91: 'todoroki_a',    // 等々力あかね
+  92: 'iijima_s',      // 飯島冴子
+  93: 'matsukubo_i',   // 松久保伊織
+  94: 'sudo_m',        // 須藤美月
+  95: 'konishi_y',     // 小西ゆきえ
+  96: 'matsushita_m',  // 松下真理亜
+  97: 'iwasaki_m',     // 岩崎みどり
+  98: 'yoneyama_a',    // 米山杏里
+  99: 'miura_s',       // 三浦早紀
 };
