@@ -10,7 +10,6 @@ const PORTRAIT = {
   7: 'takashina_m', // 高階まさみ
   8: 'hayashi_m', // 林真尋
   9: 'udagawa_r', // 宇田川里奈
-  10: 'sato_y', // 佐藤ヨーコ
   11: 'tachibana_r', // 橘玲美
   12: 'ikoma_e', // 生駒エリカ
   13: 'domae_y', // 堂前ユキ

@@ -1024,7 +1024,6 @@ const ALL_CHARS = [
   {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心']},
   {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い']},
   {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス']},
-  {id:10,name:'佐藤ヨーコ',h:148,pw:19,sp:26,te:27,st:15,mn:11,style:'Allround',role:'Babyface',pot:{pw:85,sp:94,te:95,st:80,mn:74},traits:[]},
   {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華']},
   {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Babyface',pot:{pw:161,sp:152,te:132,st:167,mn:167},traits:['人望','負けず嫌い','鉄人','闘志']},
   {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:116,st:143,mn:155},traits:['破天荒']},
@@ -1094,9 +1093,29 @@ const ALL_CHARS = [
   {id:77,name:'新見ゆり',h:164,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['引き出し上手']},
   {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:135,sp:130,te:126,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い']},
   {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:109},traits:[]},
-  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85},traits:['ファンサービス','ムードメーカー']}
+  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:87,sp:102,te:85,st:83,mn:85},traits:['ファンサービス','ムードメーカー']},
+  // ── 新規キャラクター（v1.4 GameID 81〜99）──
+  {id:81,name:'坂本莉衣奈',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Speed',role:'Babyface',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['ムードメーカー']},
+  {id:82,name:'近藤ゆりか',h:166,pw:84,sp:55,te:67,st:80,mn:69,style:'Grappler',role:'Neutral',pot:{pw:169,sp:132,te:147,st:164,mn:150},traits:['番狂わせ体質']},
+  {id:83,name:'佐久間ひより',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['負けず嫌い']},
+  {id:84,name:'南谷杏',h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:[]},
+  {id:85,name:'鴨志田ルーシー',h:168,pw:74,sp:58,te:43,st:69,mn:73,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:116,st:150,mn:155},traits:[]},
+  {id:86,name:'芹沢亜里紗',h:166,pw:70,sp:70,te:53,st:58,mn:61,style:'Brawler',role:'Heel',pot:{pw:151,sp:151,te:129,st:135,mn:139},traits:['ファンサービス']},
+  {id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Speed',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華']},
+  {id:88,name:'愛川明日香',h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[]},
+  {id:89,name:'赤羽あんな',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Speed',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['ファンサービス']},
+  {id:90,name:'玉手すみれ',h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['努力家']},
+  {id:91,name:'等々力あかね',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:154,te:148,st:156,mn:148},traits:['負けず嫌い']},
+  {id:92,name:'飯島冴子',h:164,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:150,st:120,mn:117},traits:['忠誠心']},
+  {id:93,name:'松久保伊織',h:163,pw:61,sp:64,te:69,st:59,mn:54,style:'Grappler',role:'Babyface',pot:{pw:139,sp:143,te:150,st:137,mn:130},traits:['忠誠心','早熟']},
+  {id:94,name:'須藤美月',h:158,pw:58,sp:58,te:65,st:48,mn:45,style:'Submission',role:'Heel',pot:{pw:135,sp:135,te:144,st:122,mn:118},traits:['ヒール適性']},
+  {id:95,name:'小西ゆきえ',h:165,pw:57,sp:63,te:77,st:61,mn:74,style:'Allround',role:'Neutral',pot:{pw:134,sp:142,te:160,st:139,mn:156},traits:['ガラスの身体','ファンサービス','早熟']},
+  {id:96,name:'松下真理亜',h:171,pw:72,sp:71,te:65,st:68,mn:58,style:'Allround',role:'Neutral',pot:{pw:154,sp:152,te:144,st:148,mn:135},traits:['ファンサービス','早熟']},
+  {id:97,name:'岩崎みどり',h:161,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:151,sp:163,te:122,st:156,mn:141},traits:['努力家','負けず嫌い','頑丈さ']},
+  {id:98,name:'米山杏里',h:169,pw:69,sp:64,te:77,st:68,mn:71,style:'Allround',role:'Babyface',pot:{pw:150,sp:143,te:160,st:148,mn:152},traits:['ガラスの身体','リーダー気質','人望','引き出し上手']},
+  {id:99,name:'三浦早紀',h:166,pw:76,sp:73,te:74,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:159,sp:155,te:156,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟']}
 ];
-// Character profiles (brief bios for fighter popup) — v1.4 全80名
+// Character profiles (brief bios for fighter popup) — v1.4 全99名
 const CHAR_PROFILES = {
   1:'抜きん出た体格とパワーで粕田市内最強と謳われた伝説のレスラー。面倒見が良く人望も厚いチームの大黒柱。',
   2:'幼少期は病弱だったが、不屈の精神でリハビリを乗り越えパワーレスラーへと変貌した遅咲きの努力家。',
@@ -1107,7 +1126,6 @@ const CHAR_PROFILES = {
   7:'富岡家の専属メイドにして忠実な護衛。関節技のセンスに光るものがあり、お嬢様を支えながら地道に力をつけている。',
   8:'バスケ部所属の長身ファイター。運動部の仲間たちとも交流がある。打撃に光るものはあるが技術面に課題を残す。',
   9:'おしゃれに目覚めた自称カワイイ系女子。練習より美容にストイックだが、調子が良い時は相手を完封することも。',
-  10:'何の取り柄もない普通の女の子。だがレスリングへの情熱だけは誰にも負けない、団体の看板娘的存在。',
   11:'寡黙で思慮深い読書家。嗜虐的な一面を持ち、関節技と絞め技で相手を追い詰めるスタイルを好む危険な実力者。',
   12:'外交官の娘でドイツ帰りの帰国子女。小柄ながら体格に似合わぬパワーと不屈の闘志で相手をねじ伏せる。',
   13:'口数は極めて少ない打撃戦の申し子。空手道場の娘で、一撃必殺を理想とする戦闘狂。',
@@ -1178,6 +1196,26 @@ const CHAR_PROFILES = {
   78:'主人公が憧れる親戚のお姉さん。田舎暮らしから抜け出したいと願う、華のある負けず嫌い。',
   79:'ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。',
   80:'プロレスをするには不似合いな華奢でひ弱な少女。明日をも知れぬ日々に怯えながらも懸命に生きている。',
+  // ── 新規キャラクター（v1.4 GameID 81〜99）──
+  81:'新卒3年目の若手OL。おじさん人気も手厚く営業成績好調で、ちょっと調子に乗っている元気印。',
+  82:'中途入社3年目の総務部員。事務職のキャリアは長く優秀だが、社内の人間関係にストレスを溜めている。',
+  83:'新卒1年目の新人OL。まだまだ仕事は覚束ないが、やる気と負けん気だけは溢れている。',
+  84:'大手不動産の事務職OL。営業職の男たちに囲まれたストレスを地下プロレスで発散している。',
+  85:'名前がちょっとキラキラな大学4年生。アパレルに就職内定済み。同じサークルの後輩に彼氏持ち。',
+  86:'某化粧品会社の企画部を率いる才女。地下プロレスでストレスを発散する連戦連勝のダーティファイター。',
+  87:'オーストリアからの留学生。体操競技の強化選手で、金髪碧眼の美少女が地下リングに舞い降りた。',
+  88:'繁華街の怪しげなプロレスクラブのキャスト。昼は普通のOL、夜はリングに上がるテクニシャン。',
+  89:'東商店街のケーキ屋の看板娘。幼馴染をめぐるライバルとの因縁を抱えるスピードファイター。',
+  90:'西商店街の和菓子屋の一人娘。憧れの男子をめぐり赤羽と険悪。スタミナとメンタルが光る努力家。',
+  91:'常川高校プロレス部のキャプテン。安定した実力を持つバランス型ファイター。',
+  92:'その色香で大勢の青少年を悩ませる美人養護教諭。サブミッション技術は確かだがスタミナに難あり。',
+  93:'名門校プロレス部の絶対的エース。容姿端麗・成績優秀・面倒見良しの完璧超人。',
+  94:'かつては期待の有望株だったが松久保との差に自信を失い道を踏み外した。闇試合で鬱屈をぶつける。',
+  95:'落ち着いた雰囲気の若手レースクイーン。若手レーサーとの秘密の恋を胸に秘めるテクニシャン。',
+  96:'ミスコン優勝のテニスサークル所属。華やかなルックスで大学生活を謳歌する早熟型オールラウンダー。',
+  97:'素朴な雰囲気だが恋にも積極的な体育会系女子大生。運動神経抜群で体格に見合わぬパワーも秘める。',
+  98:'人望を集める生徒会長。三浦からの嫉妬を買い文化祭プロレスに出場。リーダーシップと技術が光る。',
+  99:'チアリーダー部部長で校内の人気者。米山への嫉妬心からプロレスマッチを仕掛けた早熟のパワーファイター。',
 };
 
 // ── Trait Definitions (traits-v2.1) ─────────────────────
@@ -1230,7 +1268,7 @@ const Traits = {
 
 // v1.1 Draft system: Fixed 2 (random weak) + choose 3 from 6 candidates = 5 starters
 // Draft pools — characters not assigned to any rival org or free pool
-const DRAFT_AVAILABLE_IDS = [4,8,9,10,15,19,20,21,22,23,24,25,27,32,43,44,50,51,52,53,54,57,58,59,62,63,64,75,77,78,79,80];
+const DRAFT_AVAILABLE_IDS = [4,8,9,15,19,20,21,22,23,24,25,27,32,43,44,50,51,52,53,54,57,58,59,62,63,64,75,77,78,79,80];
 // Weak pool: OVR < 50 (中堅よりも弱め)
 const DRAFT_WEAK_POOL = DRAFT_AVAILABLE_IDS.filter(id => {
   const c = ALL_CHARS.find(ch => ch.id === id);
@@ -1245,7 +1283,7 @@ const DRAFT_MID_POOL = DRAFT_AVAILABLE_IDS.filter(id => {
 });
 // Mutable draft config — initialized by seed in createInitialState
 let DRAFT_CONFIG = {
-  fixed: [10, 44],  // default fallback
+  fixed: [80, 44],  // default fallback
   candidates: [24, 9, 78, 8, 15, 20],
   pickCount: 3,
 };
@@ -1276,13 +1314,13 @@ function generateDraftConfig(seed) {
   return DRAFT_CONFIG;
 }
 // Legacy compat (used only if draft is skipped, e.g. autosave load)
-const DEFAULT_ROSTER_IDS = [10, 44, 24, 9, 78]; // fallback only
+const DEFAULT_ROSTER_IDS = [80, 44, 24, 9, 78]; // fallback only
 
 // Portrait mapping: character id → filename key
 // Usage: `image/face_${PORTRAIT[id]}.png`
 const PORTRAIT = {
   1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukamachi_m',
-  6:'soezawa_t',7:'takashina_m',8:'hayashi_m',9:'udagawa_r',10:'sato_y',
+  6:'soezawa_t',7:'takashina_m',8:'hayashi_m',9:'udagawa_r',
   11:'tachibana_r',12:'ikoma_e',13:'domae_y',14:'kuroe_m',15:'kusunoki_n',
   16:'okochi_s',17:'kawanobe_n',18:'dewa_t',19:'shijo_a',20:'kishi_y',
   21:'kinouchi_y',22:'minoyama_m',23:'hayami_t',24:'sonobe_r',25:'ishitoya_n',
@@ -1296,7 +1334,11 @@ const PORTRAIT = {
   61:'kannonzaki_s',62:'miyagase_c',63:'isehara_f',64:'yumoto_h',65:'kurami_n',
   66:'hasegawa_r',67:'yanagishima_m',68:'oba_a',69:'hayakawa_m',70:'hamatake_m',
   71:'togane_s',72:'anazawa_h',73:'omagoe_y',74:'fujimigaoka_h',75:'ebina_s',
-  76:'kuribayashi_a',77:'niimi_y',78:'tsubakiyama_m',79:'kudo_r',80:'takashima_s'
+  76:'kuribayashi_a',77:'niimi_y',78:'tsubakiyama_m',79:'kudo_r',80:'takashima_s',
+  81:'sakamoto_r',82:'kondo_y',83:'sakuma_h',84:'minamitani_a',85:'kamoshida_r',
+  86:'serizawa_a',87:'steinfeld_l',88:'aikawa_a',89:'akabane_a',90:'tamate_s',
+  91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',
+  96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
 };
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 
@@ -1644,7 +1686,7 @@ const RIVAL_ORGS = [
 ];
 
 // 80名の団体配分（OVR分布に基づく）
-// Draft candidates (10,44,24,9,78,8,15,20) are assigned dynamically after draft
+// Draft candidates (80,44,24,9,78,8,15,20) are assigned dynamically after draft
 // player: determined by draft (fixed 2 + picked 3)
 // empress(16):avgOVR≈74  nova(13):≈72  crescent(10):≈68  free: dynamic  pool: dynamic
 const ORG_ASSIGN = {
