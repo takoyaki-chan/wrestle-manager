@@ -2269,7 +2269,7 @@ const Engine = {
         };
         events.push('📅 オフシーズン第2週: スカウトレポート到着！');
         events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
-        return { state: { ...s, weekPhase: 'scoutEvent' }, events };
+        return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
 
       } else if (offWeek === 3) {
         // OffWeek 3: AI inter-org transfers
