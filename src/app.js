@@ -1168,7 +1168,7 @@ const Storage = {
       const raw = localStorage.getItem(SAVE_KEY + slot);
       if (!raw) return null;
       const s = JSON.parse(raw);
-      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion };
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion, orgPop: s.orgPop || 0, rosterSize: s.roster ? s.roster.length : 0 };
     } catch { return null; }
   },
 
@@ -1236,6 +1236,15 @@ const App = {
     } else {
       contBtn.style.display = 'none';
     }
+
+    // Show LOAD GAME button: always visible, disabled if no saves
+    const loadBtn = document.getElementById('titleLoadBtn');
+    if (loadBtn) {
+      let hasAnySave = !!autoInfo;
+      if (!hasAnySave) { for (let i = 1; i <= SAVE_SLOTS; i++) { if (Storage.getSaveInfo(i)) { hasAnySave = true; break; } } }
+      loadBtn.disabled = !hasAnySave;
+      loadBtn.style.opacity = hasAnySave ? '' : '0.3';
+    }
   },
 
   // "NEW GAME" button from title
@@ -1262,6 +1271,19 @@ const App = {
     Storage.loadAutoSave();
     Audio.bgm.playForState();
     refreshAll();
+  },
+
+  // "LOAD GAME" button from title — open save/load screen
+  titleLoadGame() {
+    Audio.play('select');
+    document.getElementById('titleScreen').style.display = 'none';
+    // Initialize minimal state so save screen can render
+    G = Engine.createInitialState();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    refreshAll();
+    showScreen('save');
+    Audio.bgm.play('management');
   },
 
   // Confirm org setup and proceed to draft
@@ -1679,10 +1701,29 @@ const App = {
   // ═══ BATTLE ENGINE INTEGRATION (v0.86) ═══
   // Show match preview instead of instant execution
   executeShow() {
-    const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0);
-    if (validMatches.length === 0) { Audio.play('error'); alert('少なくとも1試合を組んでください'); return; }
-    Audio.play('bell');
-    Audio.bgm.play('battle');
+    // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
+    const rosterIdSet = new Set(G.roster.map(c => c.id));
+    let hadStaleRef = false;
+    const sanitized = G.showCard.map(m => {
+      const leftOk = m.left > 0 && rosterIdSet.has(m.left);
+      const rightOk = m.right > 0 && rosterIdSet.has(m.right);
+      if ((m.left > 0 && !leftOk) || (m.right > 0 && !rightOk)) hadStaleRef = true;
+      return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
+        isTitle: !!m.isTitle && leftOk && rightOk };
+    });
+    if (hadStaleRef) G = { ...G, showCard: sanitized };
+
+    const validMatches = (hadStaleRef ? sanitized : G.showCard).filter(m => m.left > 0 && m.right > 0);
+    if (validMatches.length === 0) {
+      Audio.play('error');
+      if (hadStaleRef) refreshAll();
+      alert(hadStaleRef
+        ? 'カードに在籍していない選手が含まれていたため自動で解除しました。カードを確認してください。'
+        : '少なくとも1試合を組んでください');
+      return;
+    }
+    try { Audio.play('bell'); } catch(e) {}
+    try { Audio.bgm.play('battle'); } catch(e) {}
     // Initialize preview state
     App._showPreview = {
       validMatches,
@@ -1703,7 +1744,7 @@ const App = {
     if (!charL || !charR) return;
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
-    Audio.play('tick');
+    try { Audio.play('tick'); } catch(e) {}
     renderMatchPreview();
     if (sp.results.every(r => r !== null)) App.finalizeShow();
   },
@@ -1777,7 +1818,7 @@ const App = {
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     sp.currentWatching = -1;
-    Audio.play('coin');
+    try { Audio.play('coin'); } catch(e) {}
     renderMatchPreview();
     if (sp.results.every(r => r !== null)) App.finalizeShow();
   },
@@ -1786,15 +1827,24 @@ const App = {
   skipAllMatches() {
     const sp = App._showPreview;
     if (!sp) return;
+    let hasMissing = false;
     sp.validMatches.forEach((m, idx) => {
-      if (sp.results[idx]) return; // already resolved
+      if (sp.results[idx]) return;
       const charL = G.roster.find(c => c.id === m.left);
       const charR = G.roster.find(c => c.id === m.right);
-      if (!charL || !charR) return;
+      if (!charL || !charR) { hasMissing = true; return; }
       const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
       sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
     });
-    Audio.play('bell');
+    if (sp.results.some(r => r === null)) {
+      renderMatchPreview();
+      if (hasMissing) {
+        Audio.play('error');
+        alert('カード内に在籍していない選手の試合があり、全試合スキップを完了できませんでした。');
+      }
+      return;
+    }
+    try { Audio.play('bell'); } catch(e) {}
     App.finalizeShow();
   },
 
@@ -1804,6 +1854,15 @@ const App = {
     if (!sp) return;
     const results = sp.results;
     const validMatches = sp.validMatches;
+
+    // Guard: ensure all results are resolved
+    if (!Array.isArray(results) || results.some(r => r === null)) {
+      console.error('finalizeShow: unresolved results', { validMatches, results });
+      Audio.play('error');
+      renderMatchPreview();
+      alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
+      return;
+    }
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
     let roster = s.roster.map(c => ({ ...c }));
     let rivalries = { ...s.rivalries };

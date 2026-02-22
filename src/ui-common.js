@@ -1357,6 +1357,19 @@ window.addEventListener('message', function(e) {
 function renderMatchPreview() {
   const sp = App._showPreview;
   if (!sp) return;
+
+  // Auto-resolve any matches with stale roster refs so they don't block progress
+  sp.validMatches.forEach((m, idx) => {
+    if (sp.results[idx]) return;
+    const charL = G.roster.find(c => c.id === m.left);
+    const charR = G.roster.find(c => c.id === m.right);
+    if (!charL || !charR) {
+      sp.results[idx] = { winner: 'draw', mq: 0, finType: '', turns: 0, log: [], _stale: true };
+    }
+  });
+  // If all resolved after cleanup, finalize immediately
+  if (sp.results.every(r => r !== null)) { App.finalizeShow(); return; }
+
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const special = isSpecialShow(G.week);

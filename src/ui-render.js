@@ -1049,6 +1049,20 @@ function renderShowPrep() {
     while (padded.length < maxMatches) padded.push({left:0, right:0, isTitle:false});
     G = { ...G, showCard: padded };
   }
+
+  // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
+  {
+    const rosterIds = new Set(G.roster.map(c => c.id));
+    let dirty = false;
+    const cleaned = G.showCard.map(m => {
+      const leftOk = m.left > 0 && rosterIds.has(m.left);
+      const rightOk = m.right > 0 && rosterIds.has(m.right);
+      if ((m.left > 0 && !leftOk) || (m.right > 0 && !rightOk)) dirty = true;
+      return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
+        isTitle: !!m.isTitle && leftOk && rightOk };
+    });
+    if (dirty) G = { ...G, showCard: cleaned };
+  }
   html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
     <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
     <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
