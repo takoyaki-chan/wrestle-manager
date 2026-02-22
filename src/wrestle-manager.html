@@ -5197,6 +5197,7 @@ const App = {
     if (G.offSeason) {
       App.advanceTurn();
     } else {
+      showScreen('week');
       refreshAll();
     }
   },
@@ -7657,8 +7658,9 @@ function renderWeekScreen() {
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
     if (isShow) {
       html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
+    } else {
+      html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
-    html += `<button class="btn ${isShow ? '' : 'btn-gold'}" onclick="doProcessWeek()" style="font-size:${isShow ? '13' : '16'}px;padding:${isShow ? '8px 16px' : '12px 28px'};font-weight:700;${isShow ? '' : 'letter-spacing:0.5px'}">⏩ 週を処理${isShow && G.showCard.length === 0 ? '（興行スキップ）' : ''}</button>`;
     html += '</div>';
 
     // Roster schedule overview
@@ -7706,7 +7708,7 @@ function renderWeekScreen() {
     const heat = getHeatLevel();
     const monthBuf = G.monthlyFinanceBuffer || [];
     const weeksInMonth = monthBuf.length;
-    html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート（${weeksInMonth}週分）</h3>`;
+    html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート</h3>`;
     html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
     const settleChamp = getWorldChampion();
     if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 世界王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
