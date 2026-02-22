@@ -260,6 +260,23 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .org-setup-input::placeholder{color:var(--text-dim);font-weight:400;font-size:16px}
 .org-setup-hint{font-size:11px;color:var(--text-dim);margin-top:8px}
 
+/* v1.0: Help / Tutorial */
+.help-content{display:flex;flex-direction:column;gap:6px}
+.help-section{border:1px solid rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;transition:border-color .2s}
+.help-section:hover{border-color:rgba(212,168,67,0.2)}
+.help-toggle{width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:rgba(0,0,0,0.3);border:none;color:var(--text-main);cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;text-align:left;transition:background .2s}
+.help-toggle:hover{background:rgba(212,168,67,0.06)}
+.help-icon{font-size:18px;flex-shrink:0}
+.help-arrow{margin-left:auto;font-size:10px;color:var(--text-dim);transition:transform .2s}
+.help-section.open .help-arrow{transform:rotate(90deg);color:var(--gold)}
+.help-body{display:none;padding:14px 16px 16px;background:rgba(0,0,0,0.15);border-top:1px solid rgba(255,255,255,0.04);
+  font-size:13px;line-height:1.8}
+.help-section.open .help-body{display:block}
+.help-body p{margin-bottom:6px}
+.help-body p:last-child{margin-bottom:0}
+
 @media(max-width:600px){
   .title-logo{font-size:42px;letter-spacing:6px}
   .title-sub{font-size:12px;letter-spacing:3px}
@@ -519,6 +536,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <button class="nav-btn" onclick="showScreen('finance',event)">💰 収支</button>
     <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
     <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
+    <button class="nav-btn" onclick="showScreen('help',event)">❓ ヘルプ</button>
   </div>
 
   <!-- SCREEN: This Week -->
@@ -625,6 +643,155 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <div id="saveContent"></div>
     </div>
   </div>
+  <!-- SCREEN: Help / Tutorial (v1.0) -->
+  <div class="screen" id="screen-help">
+    <div class="panel">
+      <div class="panel-title">❓ 遊び方ガイド</div>
+      <div class="help-content">
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🎯</span> ゲームの目的 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>あなたは新興の女子プロレス団体のオーナーです。</p>
+            <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。</p>
+            <p>ライバルの3団体（S級・A級・B級）が立ちはだかります。戦略的な経営で頂点に立ちましょう！</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📅</span> 基本の流れ <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは48週です。</p>
+            <p><strong style="color:var(--gold)">毎週やること：</strong></p>
+            <p>① <strong>育成</strong> — トレーニングメニューを選んで選手を鍛える</p>
+            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決める</p>
+            <p>③ <strong>週を進める</strong> — 「▶ 次の週へ」ボタンで結果が処理される</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ育成」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🏋️</span> 育成・トレーニング <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>「育成」画面から選手ごとにトレーニングメニューを設定できます。</p>
+            <p><strong>メニューの種類：</strong></p>
+            <p>🔴 パワー系 — ATK（攻撃力）が上がりやすい</p>
+            <p>🔵 テクニック系 — DEF（防御力）が上がりやすい</p>
+            <p>🟡 スタミナ系 — HP（体力）が上がりやすい</p>
+            <p>🟣 総合系 — バランスよく成長</p>
+            <p>🟢 プロモ — 人気が直接上がる（上限40まで）</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 体調が低い状態で練習すると怪我のリスクが上がります。体調60未満の選手は休養させましょう。</p>
+            <p><strong>コーチ：</strong>「スタッフ室」で雇用できます。コーチごとに得意分野があり、対応メニューの効果がアップします。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>4週に1回の興行週に、対戦カードと会場を決めて大会を開催します。</p>
+            <p><strong style="color:var(--gold)">カード編成のコツ：</strong></p>
+            <p>・メインイベントには人気の高い選手を配置（MQ＝試合品質が低いとペナルティ）</p>
+            <p>・実力の近い選手同士を組むとMQが高くなりやすい</p>
+            <p>・Heatやタイトルマッチはカードの注目度を上げる</p>
+            <p><strong style="color:var(--gold)">会場選び：</strong></p>
+            <p>集客力は<strong>団体人気</strong>で決まります。キャパに対する集客の割合（満員率）がボーナスに影響します。</p>
+            <p>・🔥 超満員（95%超）→ チケット収入 ×1.5 ＋ Heat上昇</p>
+            <p>・✅ 満員（80%超）→ ×1.2</p>
+            <p>・😰 ガラガラ（25%未満）→ ×0.5 ＋ Heat下落</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 大きすぎる会場を選ぶとガラガラで赤字に。身の丈に合った会場を選びましょう。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🔍</span> スカウト・FA <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>「スカウト」画面にフリーエージェント（FA）の選手が表示されます。</p>
+            <p>契約金を支払うことで即座に入団させることができます。</p>
+            <p>FA市場は<strong>4週ごとに入れ替わり</strong>（2名退場＋2名新規参入）ます。良い選手がいたら早めに確保しましょう。</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 シーズン序盤のドラフトで5名を選んだ後、FAで弱点を補強するのが基本戦略です。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📋</span> 引き抜き交渉 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>ランキング画面の「📋 全選手を見る」から、ライバル団体の選手を引き抜けます。</p>
+            <p><strong>交渉の流れ：</strong></p>
+            <p>① 選手を選んで交渉開始</p>
+            <p>② 3つのプランから1つを選択：</p>
+            <p style="padding-left:16px">🅰 堅実（費用×1.5 / ボーナスなし）— 低リスク低コスト</p>
+            <p style="padding-left:16px">🅱 勝負（費用×2.0 / 成功率+10%）— バランス型</p>
+            <p style="padding-left:16px">🅲 本気（費用×3.0 / 成功率+20%）— 高コスト高確率</p>
+            <p>③ 4週間後に結果が出る（失敗時は費用の半額を失う）</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 同時に交渉できるのは1件だけ。S級エースの引き抜きは非常に難しいです。</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 移籍した選手の人気は×0.75にリセットされます。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📊</span> 人気システム <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>選手の人気は試合やプロモで上がりますが、<strong>高くなるほど上がりにくく</strong>なります。</p>
+            <p><strong>人気の上がり方：</strong></p>
+            <p>・試合のMQ（品質）が高いほど上昇量が多い</p>
+            <p>・タイトル戴冠・防衛でボーナス</p>
+            <p>・プロモ（練習メニュー）で直接上昇（ただし上限40まで）</p>
+            <p><strong style="color:var(--red)">人気が下がるケース：</strong></p>
+            <p>・連敗（3連敗で-5、5連敗で-10、7連敗で-15）</p>
+            <p>・スキャンダル（人気40以上の選手にランダム発生）</p>
+            <p>・怪我中の忘却（-1/週）</p>
+            <p>・メインイベントの質が低い（MQ25未満で-5）</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🏆</span> 対抗戦 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>一定の条件を満たすと、ライバル団体から<strong>対抗戦の挑戦状</strong>が届きます。</p>
+            <p>5対5の団体対抗戦で、勝利すると大きなHeat（注目度）ボーナスとランキングポイントを獲得できます。</p>
+            <p>敗北するとHeatが下がり、ランキングにも影響します。</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 対抗戦はランキング上位を狙うための大きなチャンスです。エース級を温存して万全の状態で臨みましょう。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">💡</span> 序盤攻略のコツ <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p><strong style="color:var(--gold)">1. ドラフトで即戦力を確保</strong></p>
+            <p>OVR（総合力）の高い選手を優先して獲得。バランスよりも1人のエース候補が大事。</p>
+            <p><strong style="color:var(--gold)">2. 公民館から始める</strong></p>
+            <p>序盤は公民館（150人）で十分。満員ボーナスを狙って確実に黒字を出しましょう。</p>
+            <p><strong style="color:var(--gold)">3. メインイベントを大切に</strong></p>
+            <p>エース候補をメインに据え、高MQを出すことが人気上昇のカギ。低MQのメインはペナルティを受けます。</p>
+            <p><strong style="color:var(--gold)">4. 体調管理を忘れずに</strong></p>
+            <p>怪我をすると長期離脱＋人気低下のダブルパンチ。体調60未満は必ず休養を。</p>
+            <p><strong style="color:var(--gold)">5. 会場のステップアップは慎重に</strong></p>
+            <p>団体人気が上がったら徐々に大きな会場へ。ガラガラは赤字＋Heat下落で致命的です。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Title Screen Overlay (v1.0) -->

@@ -1695,3 +1695,9 @@ function gotoScreen(id) {
   showScreen(id);
 }
 
+// v1.0: Help accordion toggle
+function toggleHelp(btn) {
+  const section = btn.closest('.help-section');
+  if (!section) return;
+  section.classList.toggle('open');
+}
