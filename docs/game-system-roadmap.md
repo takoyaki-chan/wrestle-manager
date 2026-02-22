@@ -1,6 +1,6 @@
 # 🎮 レスリングシミュレーター ゲームシステム設計ロードマップ
 
-> 最終更新: 2026-02-22（v0.99c A:スカウトUI＋B:画面調整＋絵文字全廃止＋C:門前払い＋D:レンタル完了、残E）
+> 最終更新: 2026-02-22（v0.99c A〜D完了＋BGMシステム実装、残E費用体系）
 参照ドキュメント: wrestle-manager-game-design-current.md / character-data-spec-v1.4.md / economy-system-spec-v1.0.md / condition-system-spec-v1.0.md / weekly-gameloop-spec-v1.0.md / training-system-spec-v1.0.md / mq-popularity-spec-v1.0.md / org-ranking-spec-v1.0.md / title-system-spec-v1.0.md / scout-system-spec-v1.0.md / rival-org-spec-v1.0.md
 
 ---
@@ -307,3 +307,4 @@
 - 2026-02-22: v0.99c A＋D完了 — A:スカウトUI改修（テーブル→コンパクトカード、文字15px/アイコン22px、ポップアップ内に獲得ボタン移動、scout source追加）。D:レンタル費を指数カーブ化 `(OVR/50)^2.5×25×tierMul`（低OVR安く高OVR急激に高い）。残りE,B
 - 2026-02-22: v0.99c B進行 — スカウト一覧にbadgeスタイルアイコン＋能力値(PW/SP/TE/ST/MN)＋給与/契約金を追加（FA＋スカウトイベント両方）。育成画面に▼展開インジケーター（回転アニメ付）追加。詳細ポップアップのデザイン整理（ヘッダーコンパクト化・✕ボタン固定・トレイツをヘッダーに移動・情報セクション統一グリッド化）。団体画面の所属選手カードを2列化（minmax320→420px）＋名前折り返し修正＋エース画像100px化。8,924行
 - 2026-02-22: v0.99c B完了 — 絵文字アイコン全廃→テキストラベル化（STYLE_META 4箇所/ROLE_META/TRAIT_DEFS 25種/SPEC_META 2箇所/MISSIONS 14個/SURVIVAL 5+4/タイムライン12種/ログフィルタ4種、計121箇所置換）。スカウトFA一覧に給与・契約金表示追加。団体画面:所属選手カードをrepeat(2,1fr)固定2列化＋勝敗数・開発度削除＋名前16→13px＋サムネ80→56px＋全体パディング縮小。詳細ポップアップ:ポートレート228→140px。8,940行
+- 2026-02-22: BGMシステム実装 — SFC風チップチューン4トラック＋2ジングル。開幕(Dm BPM115静かな緊迫)・団体運営(F BPM100)・激闘(Am BPM138)・節目(Em→G BPM80)＋勝利ジングル(5秒3段構成)＋王座ジングル。BGMのみミュート機能（ジングル/SFXは鳴り続ける）。デフォルト音量をデモ15%相当(0.04)に設定
