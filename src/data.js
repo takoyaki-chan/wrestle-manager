@@ -499,12 +499,12 @@ const SALARY_TABLE = [
   {max:99, pay:100}, {max:109, pay:150}, {max:999, pay:200}
 ];
 const VENUES = [
-  {name:'公民館',  cap:200,  cost:30,  ticket:0.3, popReq:0},
-  {name:'小ホール',cap:500,  cost:80,  ticket:0.4, popReq:20},
-  {name:'中ホール',cap:1500, cost:200, ticket:0.5, popReq:40},
-  {name:'アリーナ',cap:5000, cost:500, ticket:0.6, popReq:60},
-  {name:'大会場',  cap:15000,cost:1200,ticket:0.7, popReq:80},
-  {name:'ドーム',  cap:40000,cost:3000,ticket:0.8, popReq:95}
+  {name:'公民館',  cap:200,  cost:30,  ticket:0.5, popReq:0},
+  {name:'小ホール',cap:500,  cost:80,  ticket:0.5, popReq:20},
+  {name:'中ホール',cap:1500, cost:200, ticket:0.6, popReq:40},
+  {name:'アリーナ',cap:5000, cost:500, ticket:0.7, popReq:60},
+  {name:'大会場',  cap:15000,cost:1200,ticket:0.8, popReq:80},
+  {name:'ドーム',  cap:40000,cost:3000,ticket:1.0, popReq:95}
 ];
 const SPONSOR_TABLE = [
   {min:0,max:19,val:0},{min:20,max:39,val:20},{min:40,max:59,val:60},

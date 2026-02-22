@@ -28,7 +28,7 @@ function refreshTopBar() {
   const pRank = Engine.ranking.getPlayerRank(rankings);
   const rankEl = document.getElementById('dispRank');
   if (rankEl) {
-    const rColor = pRank === 1 ? 'var(--gold)' : pRank <= 2 ? '#2ecc71' : 'var(--text-sub)';
+    const rColor = pRank === 1 ? 'var(--gold)' : pRank === 2 ? '#e74c3c' : pRank === 3 ? '#9b59b6' : '#2ecc71';
     rankEl.innerHTML = `<span style="color:${rColor}">${pRank}位/${rankings.length}</span>`;
   }
   const champEl = document.getElementById('dispChamp');
@@ -343,11 +343,13 @@ function renderWeekScreen() {
     if (offW <= 1 && (st.showCount > 0 || lastArchive)) {
       const src = lastArchive || st;
       const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
+      const recapRank = lastArchive ? lastArchive.rank : (G.rankings ? Engine.ranking.getPlayerRank(G.rankings) : 0);
+      const recapRankColor = recapRank===1?'var(--gold)':recapRank===2?'#e74c3c':recapRank===3?'#9b59b6':'#2ecc71';
       html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
         <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${lastArchive ? lastArchive.season : G.season} レポート</h4>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
-            <div style="font-size:20px;font-weight:900;color:var(--gold)">${lastArchive ? lastArchive.rank : (G.rankings ? Engine.ranking.getPlayerRank(G.rankings) : '-')}位</div>
+            <div style="font-size:20px;font-weight:900;color:${recapRankColor}">${recapRank || '-'}位</div>
             <div style="font-size:12px;color:var(--text-dim)">最終ランキング</div>
           </div>
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
@@ -473,7 +475,7 @@ function renderWeekScreen() {
       <!-- Mini Ranking + Finance -->
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:var(--gold);font-size:14px">#${pRank}</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
           <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${G.funds.toLocaleString()}万</strong></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
@@ -655,6 +657,7 @@ function renderWeekScreen() {
       html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
     } else {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
+      html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調60未満の選手を自動で休養させてから週を進めます">🤖 おまかせ</button>';
     }
     html += '</div>';
 
@@ -816,28 +819,15 @@ function renderWeekScreen() {
     } else if (ev.type === 'war') {
       document.getElementById('weekTitle').textContent = `第${G.week}週 — ⚔ 対抗戦`;
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${G.orgName || 'プレイヤー団体'} vs ${ev.opponentName}</p>
+        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
         <p style="font-size:12px;color:var(--text-sub)">${ev.matchCount}試合の団体対決</p>
       </div>`;
-      // Show auto-generated card
-      const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
-      if (card.length > 0) {
-        html += '<div style="margin-bottom:16px">';
-        card.forEach((m, i) => {
-          html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;margin-bottom:4px">
-            <span style="color:var(--gold);font-size:12px;min-width:60px">第${i+1}試合</span>
-            <span style="font-size:13px"><strong>${m.playerFighter.name}</strong> <span style="color:var(--text-dim);font-size:11px">OVR${Engine.util.ov(m.playerFighter)}</span></span>
-            <span style="color:var(--text-dim);font-size:12px">vs</span>
-            <span style="font-size:13px"><strong style="color:#e74c3c">${m.aiFighter.name}</strong> <span style="color:var(--text-dim);font-size:11px">OVR${Engine.util.ov(m.aiFighter)}</span></span>
-          </div>`;
-        });
-        html += '</div>';
-      }
-      html += `<div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-gold" onclick="executeEvent()">⚔ 対抗戦開始！</button>
-        <button class="btn btn-blue" onclick="skipEvent()">辞退する</button>
+      html += `<div class="btn-row" style="margin-top:16px;justify-content:center">
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="showWarChallenge()">⚔ 挑戦状を見る</button>
       </div>`;
+      // Auto-show the challenge popup on first render
+      setTimeout(() => showWarChallenge(), 300);
     } else if (ev.type === 'challenge') {
       document.getElementById('weekTitle').textContent = `第${G.week}週 — 🔥 挑戦状`;
       html += `<div style="background:linear-gradient(135deg,rgba(243,156,18,0.15),rgba(241,196,15,0.1));border:1px solid rgba(243,156,18,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
@@ -1061,8 +1051,8 @@ function renderShowPrep() {
   }
   html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
     <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
-    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">自動編成</button>
-    <button class="btn btn-sm" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text-sub)" onclick="App.clearShowCard()">クリア</button>
+    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
+    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
   </div>`;
 
   for (let i = 0; i < maxMatches; i++) {
@@ -1240,6 +1230,10 @@ function renderRanking() {
 
   let html = '';
 
+  // Rank-based color map: 1=gold, 2=red, 3=purple, 4=green
+  const RANK_COLORS = { 1: '#d4a843', 2: '#e74c3c', 3: '#9b59b6', 4: '#2ecc71' };
+  const getRankColor = (rank) => RANK_COLORS[rank] || '#888';
+
   // Victory condition reminder
   const topAI = rankings.find(r => r.orgId !== 'player');
   const playerEntry = rankings.find(r => r.orgId === 'player');
@@ -1262,11 +1256,12 @@ function renderRanking() {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
     const emoji = isPlayer ? '🏠' : (org ? org.emoji : '');
-    const bgStyle = isPlayer ? 'background:rgba(212,168,67,0.08)' : '';
-    const nameStyle = isPlayer ? 'color:var(--gold);font-weight:700' : '';
-    const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${org.color}30;color:${org.color};border:1px solid ${org.color}40;margin-left:6px">${org.tier}</span>` : '';
+    const rc = getRankColor(r.rank);
+    const bgStyle = isPlayer ? `background:${rc}10` : '';
+    const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
+    const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${rc}20;color:${rc};border:1px solid ${rc}40;margin-left:6px">${org.tier}</span>` : '';
     html += `<tr style="${bgStyle}">
-      <td style="font-size:18px;font-weight:900;color:${r.rank===1?'var(--gold)':r.rank===2?'#c0c0c0':r.rank===3?'#cd7f32':'var(--text-sub)'}">${r.rank}</td>
+      <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
       <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
       <td class="num" style="font-size:16px;font-weight:700">${r.rating}</td>
       <td class="num">${r.championScore}</td>
@@ -1287,6 +1282,7 @@ function renderRanking() {
 
     if (isPlayer) {
       // Player org card
+      const rc = getRankColor(r.rank);
       const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
       const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
       // Put ace first if designated
@@ -1297,9 +1293,9 @@ function renderRanking() {
           topFighters = [sorted[aceIdx], ...sorted.filter(c => c.id !== G.aceDesignation)].slice(0, topCount);
         }
       }
-      html += `<div style="padding:14px;background:rgba(212,168,67,0.06);border:2px solid rgba(212,168,67,0.5);border-radius:8px">
+      html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:var(--gold)">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:rgba(212,168,67,0.2);color:var(--gold);padding:2px 8px;border-radius:3px;border:1px solid rgba(212,168,67,0.4);margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${G.orgPop}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}</div>
@@ -1315,7 +1311,8 @@ function renderRanking() {
         </div>
       </div>`;
     } else if (org) {
-      // AI org card
+      // AI org card — use rank color
+      const rc = getRankColor(r.rank);
       const aiData = G.aiOrgs && G.aiOrgs[org.id];
       if (!aiData) return;
       const roster = aiData.roster;
@@ -1323,9 +1320,9 @@ function renderRanking() {
       const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
       const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, topCount);
 
-      html += `<div style="padding:14px;background:${org.color}08;border:1px solid ${org.color}30;border-radius:8px">
+      html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${org.color}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${org.color}20;color:${org.color};padding:2px 8px;border-radius:3px;border:1px solid ${org.color}40;margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
@@ -1337,7 +1334,7 @@ function renderRanking() {
         </div>
         ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
           <details style="margin-top:10px">
-            <summary style="font-size:13px;color:var(--gold);cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
+            <summary style="font-size:13px;color:${rc};cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
             <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
               ${roster.map(f => {
                 const fee = Engine.transfer.calcFee(f, org);
@@ -1367,7 +1364,7 @@ function renderRanking() {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
       html += `<tr>
         <td>${h.season}年目</td>
-        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank<=2?'#c0c0c0':'var(--text-sub)'}">${h.rank}位</td>
+        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank===2?'#e74c3c':h.rank===3?'#9b59b6':'#2ecc71'}">${h.rank}位</td>
         <td class="num">${h.showCount || 0}</td>
         <td class="num" style="color:#3498db">${h.bestMQ || 0}</td>
         <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${profit.toLocaleString()}万</td>

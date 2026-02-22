@@ -4,6 +4,376 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+// ── War Challenge Dialogue Generator ──
+function getWarChallengeDialogue(fighter, orgName) {
+  const ch = ALL_CHARS.find(c => c.id === fighter.id);
+  const role = ch ? ch.role : 'Neutral';
+  const traits = ch ? (ch.traits || []) : [];
+  const style = ch ? ch.style : 'Allround';
+  const name = fighter.name;
+
+  // Heel lines
+  const heelLines = [
+    `フン…${orgName}如きが調子に乗りすぎよ。\n格の違い、教えてあげる。`,
+    `あなたたちの団体、潰させてもらうわ。\n覚悟はいいかしら？`,
+    `弱小団体が目障りなのよ。\nこの${name}が直々に始末してあげる。`,
+    `せいぜい足掻いてみなさい。\n結果は最初から決まってるけどね。`,
+  ];
+  // Babyface lines
+  const babyfaceLines = [
+    `${orgName}の皆さん、勝負しませんか？\n全力でぶつかり合いましょう！`,
+    `うちの選手たちは負けません！\n正々堂々、受けて立ちます！`,
+    `いい試合がしたいんです。\nお互い全力で戦いましょう！`,
+    `${orgName}の強さ、この目で確かめたい。\n対抗戦、申し込みます！`,
+  ];
+  // Neutral lines
+  const neutralLines = [
+    `…対抗戦、やりましょう。\nどちらが上か、はっきりさせたい。`,
+    `あなたたちの実力、試させてもらう。\n逃げないでよね。`,
+    `団体の看板背負って戦う…\nそういうのも、悪くないわ。`,
+    `興味があるの。\n${orgName}がどこまでやれるか。`,
+  ];
+
+  // Trait-specific overrides
+  if (traits.includes('威圧感')) {
+    return `…来い。\n${name}が相手だ。逃げ場はないぞ。`;
+  }
+  if (traits.includes('破天荒')) {
+    return `やっほー！対抗戦だって！\n面白そうじゃん、やろうやろう！`;
+  }
+  if (traits.includes('リーダー気質')) {
+    return `うちの選手たちを信じてる。\n団体の誇りを懸けて、勝負よ。`;
+  }
+  if (traits.includes('負けず嫌い')) {
+    return `負けるわけにはいかない。\nこの対抗戦、絶対に勝つ！`;
+  }
+  if (traits.includes('闘志')) {
+    return `燃えてきた…！\n全力で叩き潰してやる！`;
+  }
+  if (traits.includes('ファンサービス')) {
+    return `ファンの皆さんに最高の試合を見せたい！\n対抗戦、楽しみましょう！`;
+  }
+
+  // Fall back to role-based
+  const pool = role === 'Heel' ? heelLines : role === 'Babyface' ? babyfaceLines : neutralLines;
+  const seed = (fighter.id * 7 + (G.season || 1) * 13) % pool.length;
+  return pool[seed];
+}
+
+// ── War Challenge Popup ──
+function showWarChallenge() {
+  const ev = G.pendingEvent;
+  if (!ev || ev.type !== 'war') return;
+
+  // Switch to tension BGM
+  Audio.bgm.play('tension');
+
+  const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
+  if (!aiOrg) { skipEvent(); return; }
+
+  // Find enemy ace (highest OVR, non-injured)
+  const enemyAce = Engine.event.getAce(aiOrg.roster);
+  if (!enemyAce) { skipEvent(); return; }
+
+  const orgCfg = [
+    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
+  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+
+  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
+  const portraitUrl = getPortraitUrl(enemyAce.id);
+  const ovr = Engine.util.ov(enemyAce);
+
+  const overlay = document.getElementById('confirmOverlay');
+  const box = document.getElementById('confirmBox');
+
+  // Build dramatic popup
+  let html = '';
+  // Dark gradient header
+  html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:20px 20px 16px;background:linear-gradient(180deg,${orgCfg.color}30,transparent);border-radius:12px 12px 0 0">`;
+  html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${orgCfg.color};margin-bottom:8px;text-transform:uppercase">⚔ RIVALRY WAR ⚔</div>`;
+  html += `<div style="font-size:18px;font-weight:900;color:var(--text-main)">${ev.opponentName}</div>`;
+  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${ev.matchCount}試合の団体対決</div>`;
+  html += `</div>`;
+
+  // Large enemy ace portrait
+  html += `<div style="text-align:center;margin:20px 0">`;
+  if (portraitUrl) {
+    html += `<img src="${portraitUrl}" style="width:160px;height:160px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44,0 0 60px ${orgCfg.color}22;object-fit:cover" alt="">`;
+  } else {
+    // Fallback
+    const initial = enemyAce.name.charAt(0);
+    html += `<div style="width:160px;height:160px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${orgCfg.color}33,${orgCfg.color}11);font-size:60px;font-weight:900;color:${orgCfg.color}">${initial}</div>`;
+  }
+  html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
+  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${ovr} ・ ${enemyAce.style}</div>`;
+  html += `</div>`;
+
+  // Dialogue bubble
+  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+  html += `<div style="background:var(--panel-bg);border:1px solid ${orgCfg.color}44;border-radius:12px;padding:16px 20px;margin:0 8px 20px;position:relative">`;
+  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${orgCfg.color}44"></div>`;
+  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
+  html += `</div>`;
+
+  // Accept / Decline buttons
+  html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">この挑戦を受けますか？</div>`;
+  html += `<div class="btn-row" style="justify-content:center;gap:12px">`;
+  html += `<button class="btn btn-gold" style="min-width:140px;padding:12px 24px;font-size:15px;font-weight:700" onclick="document.getElementById('confirmOverlay').classList.remove('active');acceptWarChallenge()">⚔ 受けて立つ！</button>`;
+  html += `<button class="btn" style="min-width:100px;padding:12px 20px;font-size:13px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('confirmOverlay').classList.remove('active');skipEvent()">辞退する</button>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// ── Accept War: open match preview (like show) ──
+function acceptWarChallenge() {
+  const ev = G.pendingEvent;
+  if (!ev || ev.type !== 'war') return;
+  Audio.play('war');
+
+  // Build card
+  const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
+  if (card.length === 0) { skipEvent(); return; }
+
+  // Close challenge popup, open match preview
+  document.getElementById('confirmOverlay').classList.remove('active');
+  App.initWarPreview(ev, card);
+}
+
+// ── War Match Preview Renderer ──
+function renderWarMatchPreview() {
+  const wp = App._warPreview;
+  if (!wp) return;
+  const ev = wp.ev;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+
+  const orgCfg = [
+    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
+  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+
+  const resolved = wp.results.filter(r => r !== null).length;
+  const total = wp.card.length;
+
+  let html = '';
+  html += `<div class="show-result-title" style="color:${orgCfg.color}">⚔ 対抗戦</div>`;
+  html += `<div style="text-align:center;margin-bottom:16px;color:var(--text-sub);font-size:12px">${G.orgName || 'プレイヤー団体'} vs ${ev.opponentName} — ${resolved}/${total} 完了</div>`;
+
+  wp.card.forEach((m, idx) => {
+    const pf = m.playerFighter;
+    const af = m.aiFighter;
+    const result = wp.results[idx];
+    const isResolved = result !== null;
+
+    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : ''}">`;
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">`;
+    html += portraitImg(pf.id, 56);
+    html += `<span style="color:var(--blue)">${pf.name}</span>`;
+    html += `<span style="color:var(--text-dim);margin:0 4px;font-size:12px">vs</span>`;
+    html += `<span style="color:${orgCfg.color}">${af.name}</span>`;
+    const aiUrl = getPortraitUrl(af.id);
+    if (aiUrl) {
+      html += `<img src="${aiUrl}" style="width:56px;height:56px;border-radius:50%;border:2px solid ${orgCfg.color}66;object-fit:cover" alt="">`;
+    }
+    html += `</div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim)">第${idx + 1}試合</div>`;
+    html += `</div>`;
+
+    if (isResolved) {
+      const wName = result.playerWon ? pf.name : af.name;
+      const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
+      const winIcon = result.playerWon ? '🔵' : '🔴';
+      html += `<div style="display:flex;align-items:center;gap:12px;font-size:11px">`;
+      html += `<span style="color:${result.playerWon ? 'var(--blue)' : orgCfg.color}">${winIcon} ${wName}${result.finType ? ' (' + result.finType + ')' : ''}</span>`;
+      html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
+      html += `</div>`;
+    } else {
+      html += `<div style="display:flex;gap:8px;margin-top:4px">`;
+      html += `<button class="btn btn-blue" style="flex:1;font-size:12px;padding:6px 0" onclick="App.warWatchMatch(${idx})">🎬 この試合を観る</button>`;
+      html += `<button class="btn" style="flex:1;font-size:12px;padding:6px 0;background:var(--bg-mid);color:var(--text-sub)" onclick="App.warSkipMatch(${idx})">⏭ スキップ</button>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  // Skip all button
+  const remaining = wp.results.filter(r => r === null).length;
+  if (remaining > 0) {
+    html += `<div style="margin-top:16px;text-align:center">`;
+    html += `<button class="btn btn-gold" style="width:100%;padding:12px 0;font-size:14px" onclick="App.warSkipAll()">⏩ 全試合スキップ（${remaining}試合）</button>`;
+    html += `</div>`;
+  }
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// ── Post-War Dialogue Generator ──
+function getWarPostDialogue(fighter, orgName, eventWon, playerWins, aiWins) {
+  const ch = ALL_CHARS.find(c => c.id === fighter.id);
+  const role = ch ? ch.role : 'Neutral';
+  const traits = ch ? (ch.traits || []) : [];
+  const name = fighter.name;
+
+  if (eventWon) {
+    // Player won — enemy is frustrated/defeated
+    if (traits.includes('威圧感')) return `…馬鹿な。この${name}が負けるだと…？\n覚えてなさい。次は必ず潰す。`;
+    if (traits.includes('破天荒')) return `えぇ〜！負けちゃったぁ？\nまぁいいや、次は絶対勝つから！`;
+    if (traits.includes('負けず嫌い')) return `くっ…！こんなの認めない…！\n絶対にリベンジしてやるから！`;
+    if (traits.includes('闘志')) return `…悔しい。でも、この悔しさは忘れない。\n次こそ叩き潰す…！`;
+    if (traits.includes('リーダー気質')) return `完敗ね…。でも、うちの子たちは一生懸命やった。\n次はもっと強くなって戻ってくるわ。`;
+    if (traits.includes('ファンサービス')) return `今日は負けちゃいました…。\nでも次は絶対ファンの皆に勝利を届けます！`;
+    if (traits.includes('努力家')) return `…まだまだ足りないんだ。\nもっと練習して、もっと強くならなきゃ。`;
+    // Role fallback — loss
+    if (role === 'Heel') {
+      const pool = [
+        `フン…今回は見逃してあげるわ。\n次会った時が、あなたの最後よ。`,
+        `こんな結果…認めない。\n必ずこの屈辱は返す！`,
+        `たまたまよ、たまたま…！\n調子に乗らないことね。`,
+      ];
+      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+    }
+    if (role === 'Babyface') {
+      const pool = [
+        `負けちゃった…悔しいです。\nでも、この経験を次に活かします！`,
+        `あなたたちの団体…強かった。\n認めます。でも、次こそは！`,
+        `いい試合でした…本当に。\nまたいつか、勝負してください！`,
+      ];
+      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+    }
+    // Neutral loss
+    const pool = [
+      `…やるじゃない。今日は負けを認めるわ。\nでも、次は分からないわよ？`,
+      `ふぅん…。悔しくないって言ったら嘘になるわね。\n…次は覚悟しなさい。`,
+      `この結果は受け止める。\n…でも、借りは必ず返す。`,
+    ];
+    return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+  } else {
+    // Player lost — enemy is victorious/triumphant
+    if (traits.includes('威圧感')) return `…当然の結果だ。\n身の程を知りなさい。`;
+    if (traits.includes('破天荒')) return `やったぁ！勝っちゃった〜！\nほらほら、${orgName}さんもっと頑張って！`;
+    if (traits.includes('負けず嫌い')) return `勝った…！この勝利、絶対に手放さない！\nもっともっと強くなってやる！`;
+    if (traits.includes('闘志')) return `燃え尽きた…でも、最高の気分だ。\nこの勝利は団体の誇りだ！`;
+    if (traits.includes('リーダー気質')) return `みんな、よく戦ったわ。\nこの勝利はチーム全員のものよ！`;
+    if (traits.includes('ファンサービス')) return `ファンの皆さん、勝ちましたよー！\n応援ありがとうございます！`;
+    if (traits.includes('努力家')) return `努力は報われるんだ…！\nみんなの練習の成果が出た…嬉しい！`;
+    // Role fallback — win
+    if (role === 'Heel') {
+      const pool = [
+        `ふふふ…予想通りの結果ね。\n${orgName}なんて、この程度よ。`,
+        `圧倒的だったでしょ？\nまた挑戦する勇気があるなら、いつでもどうぞ？`,
+        `弱い。弱すぎるわ。\nもう二度と歯向かわないことね。`,
+      ];
+      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+    }
+    if (role === 'Babyface') {
+      const pool = [
+        `勝てて嬉しいです！\nでも${orgName}のみなさんも、すごく強かった！`,
+        `いい対抗戦でした！\nまたいつか、全力でぶつかり合いましょう！`,
+        `この勝利を、応援してくれた皆に捧げます！\n本当にありがとう！`,
+      ];
+      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+    }
+    // Neutral win
+    const pool = [
+      `…まぁ、こんなものね。\n力の差は歴然だったわ。`,
+      `いい勝負だった…と言いたいところだけど。\nもう少し頑張ってほしかったわね。`,
+      `勝ちは勝ち。\n…次はもっと本気を出させてくれる？`,
+    ];
+    return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+  }
+}
+
+// ── War Final Result Overlay (with post-match dialogue) ──
+function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+
+  const orgCfg = [
+    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
+  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+
+  // Find enemy ace for dialogue
+  const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
+  const enemyAce = aiOrg ? Engine.event.getAce(aiOrg.roster) : (results[0] ? results[0].aiFighter : null);
+
+  let html = '';
+  html += `<div class="show-result-title" style="color:${orgCfg.color}">⚔ 対抗戦結果</div>`;
+  html += `<div style="text-align:center;margin-bottom:16px;color:var(--text-sub);font-size:13px">${G.orgName || 'プレイヤー団体'} vs ${ev.opponentName}</div>`;
+
+  // Match results
+  results.forEach((r, i) => {
+    const borderColor = r.playerWon ? 'var(--blue)' : 'var(--red)';
+    const resultLabel = r.playerWon ? '<span style="color:var(--blue);font-weight:700">WIN</span>' : '<span style="color:var(--red);font-weight:700">LOSE</span>';
+    const mqColor = r.mq >= 70 ? 'var(--gold)' : r.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
+
+    html += `<div style="background:var(--bg-card);border:1px solid ${borderColor}44;border-left:3px solid ${borderColor};border-radius:6px;padding:10px 12px;margin-bottom:6px">`;
+    html += `<div style="display:flex;align-items:center;justify-content:space-between">`;
+    html += `<div style="display:flex;align-items:center;gap:6px">`;
+    html += `<span style="color:var(--text-dim);font-size:11px;min-width:44px">第${i+1}試合</span>`;
+    html += portraitImg(r.playerFighter.id, 36);
+    html += `<span style="font-size:12px;font-weight:600;color:var(--blue)">${r.playerFighter.name}</span>`;
+    html += `<span style="color:var(--text-dim);font-size:10px">vs</span>`;
+    html += `<span style="font-size:12px;font-weight:600;color:${orgCfg.color}">${r.aiFighter.name}</span>`;
+    const aiUrl = getPortraitUrl(r.aiFighter.id);
+    if (aiUrl) html += `<img src="${aiUrl}" style="width:36px;height:36px;border-radius:50%;border:2px solid ${orgCfg.color}44;object-fit:cover" alt="">`;
+    html += `</div>`;
+    html += `<div style="text-align:right;min-width:60px">`;
+    html += `<div style="font-size:12px">${resultLabel}</div>`;
+    html += `<div style="font-size:10px;color:${mqColor}">MQ ${r.mq}</div>`;
+    html += `</div></div></div>`;
+  });
+
+  // Overall score
+  const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '引き分け' : '負け越し…';
+  const winColor = eventWon ? 'var(--gold)' : playerWins === aiWins ? 'var(--text-sub)' : 'var(--red)';
+  html += `<div style="text-align:center;margin:16px 0 8px;padding:14px;background:linear-gradient(135deg,${eventWon ? 'rgba(212,168,67,0.15)' : 'rgba(196,30,58,0.15)'},transparent);border:1px solid ${eventWon ? 'var(--gold)' : 'var(--red)'}33;border-radius:8px">`;
+  html += `<div style="font-size:28px;font-weight:900;color:${winColor}">${playerWins} - ${aiWins}</div>`;
+  html += `<div style="font-size:15px;font-weight:700;color:${winColor};margin-top:4px">${winLabel}</div>`;
+  html += `</div>`;
+
+  // Post-match dialogue from enemy ace
+  if (enemyAce) {
+    const dialogue = getWarPostDialogue(enemyAce, G.orgName || 'あんたの団体', eventWon, playerWins, aiWins);
+    const portraitUrl = getPortraitUrl(enemyAce.id);
+    const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+
+    // Portrait + dialogue (emotion visible)
+    const emotionBorder = eventWon ? 'var(--blue)' : orgCfg.color;
+    const emotionGlow = eventWon ? 'rgba(74,143,212,0.3)' : `${orgCfg.color}44`;
+    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:16px 0 12px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
+    // Portrait
+    html += `<div style="flex-shrink:0">`;
+    if (portraitUrl) {
+      html += `<img src="${portraitUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${emotionBorder};box-shadow:0 0 16px ${emotionGlow};object-fit:cover" alt="">`;
+    }
+    html += `<div style="text-align:center;font-size:11px;font-weight:700;color:${orgCfg.color};margin-top:4px">${enemyAce.name}</div>`;
+    html += `</div>`;
+    // Speech bubble
+    html += `<div style="flex:1;position:relative;background:var(--bg-card);border:1px solid ${emotionBorder}33;border-radius:10px;padding:12px 14px;margin-top:8px">`;
+    html += `<div style="position:absolute;left:-8px;top:20px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid ${emotionBorder}33"></div>`;
+    html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
+    html += `</div></div>`;
+  }
+
+  // Close button
+  html += `<div style="text-align:center;margin-top:12px">`;
+  html += `<button class="btn btn-gold" style="min-width:160px;padding:10px 24px" onclick="closeWarFinalResult(${eventWon})">閉じる</button>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+function closeWarFinalResult(eventWon) {
+  document.getElementById('showResultOverlay').classList.remove('active');
+  if (eventWon) { Audio.bgm.playJingle('victory'); }
+  else { Audio.play('defeat'); }
+  setTimeout(() => { Audio.bgm.play('management'); refreshAll(); }, eventWon ? 2000 : 500);
+}
+
 function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
   const overlay = document.getElementById('confirmOverlay');
@@ -983,15 +1353,27 @@ function renderMatchPreview() {
   let html = `<div class="show-result-title">${showName}</div>`;
   html += `<div style="text-align:center;margin-bottom:16px;color:var(--text-sub);font-size:12px">試合カード — ${resolved}/${total} 完了</div>`;
 
-  sp.validMatches.forEach((m, idx) => {
+  // Determine next match: highest unresolved index (undercard first, main last)
+  let nextIdx = -1;
+  for (let i = total - 1; i >= 0; i--) {
+    if (sp.results[i] === null) { nextIdx = i; break; }
+  }
+
+  // Display in reverse order: undercard (last) → main event (first)
+  for (let di = total - 1; di >= 0; di--) {
+    const idx = di;
+    const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
-    if (!charL || !charR) return;
+    if (!charL || !charR) continue;
     const result = sp.results[idx];
     const isResolved = result !== null;
+    const isNext = idx === nextIdx;
+    const isMain = idx === 0;
     const titleTag = m.isTitle ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">🏆 TITLE</span>' : '';
+    const matchLabel = isMain ? '★ メインイベント' : `第${total - idx}試合`;
 
-    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : ''}">`;
+    html += `<div style="background:var(--bg-card);border:1px solid ${isNext ? 'var(--blue)' : 'var(--border)'};border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : !isNext ? 'opacity:0.4' : ''}">`;
     html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
     html += `<div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">`;
     html += `${portraitImg(charL.id, 80)}`;
@@ -1000,7 +1382,7 @@ function renderMatchPreview() {
     html += `<span style="color:var(--red)">${charR.name}</span>${titleTag}`;
     html += `${portraitImg(charR.id, 80)}`;
     html += `</div>`;
-    html += `<div style="font-size:12px;color:var(--text-dim)">第${idx + 1}試合</div>`;
+    html += `<div style="font-size:12px;color:var(--text-dim)">${matchLabel}</div>`;
     html += `</div>`;
 
     if (isResolved) {
@@ -1010,14 +1392,16 @@ function renderMatchPreview() {
       html += `<span style="color:var(--green)">✔ ${wName}${result.finType ? ' (' + result.finType + ')' : ''}</span>`;
       html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
       html += `</div>`;
-    } else {
+    } else if (isNext) {
       html += `<div style="display:flex;gap:8px;margin-top:4px">`;
       html += `<button class="btn btn-blue" style="flex:1;font-size:12px;padding:6px 0" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>`;
       html += `<button class="btn" style="flex:1;font-size:12px;padding:6px 0;background:var(--bg-mid);color:var(--text-sub)" onclick="App.skipMatch(${idx})">⏭ スキップ</button>`;
       html += `</div>`;
+    } else {
+      html += `<div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:4px">前の試合を先に進めてください</div>`;
     }
     html += `</div>`;
-  });
+  }
 
   // Skip all button (only if there are unresolved matches)
   const remaining = sp.results.filter(r => r === null).length;
@@ -1179,24 +1563,19 @@ function playerPoachFighter(aiOrgId, fighterId) {
 function executeEvent() {
   const ev = G.pendingEvent;
   if (!ev) return;
-  Audio.play(ev.type === 'war' ? 'war' : 'bell');
+
+  // War type: handled by dedicated challenge system
+  if (ev.type === 'war') {
+    acceptWarChallenge();
+    return;
+  }
+
+  Audio.play('bell');
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week));
   const events = [];
   let eventWon = false;
 
-  if (ev.type === 'war') {
-    const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
-    const warResult = Engine.event.resolveWar(rng, G, card);
-    warResult.results.forEach((r, i) => {
-      const winner = r.playerWon ? r.playerFighter.name : r.aiFighter.name;
-      const icon = r.playerWon ? '🔵' : '🔴';
-      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${winner}勝利 (MQ${r.mq})`);
-    });
-    const outcome = Engine.event.applyWarOutcome(G, warResult.playerWins, warResult.aiWins, ev.opponentOrgId);
-    eventWon = warResult.playerWins > warResult.aiWins;
-    G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
-
-  } else if (ev.type === 'challenge') {
+  if (ev.type === 'challenge') {
     const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, ev.mqBonus);
     const won = result.winner === 'left'; // player is left
     eventWon = won;

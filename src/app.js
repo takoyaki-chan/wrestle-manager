@@ -543,6 +543,44 @@ const Audio = (() => {
         }
         scheduleLoop();
         BGM._interval = setInterval(() => { if (BGM._current === 'season_end') scheduleLoop(); }, bar * 8 * 1000 - 200);
+      },
+
+      // ═══ BGM 6: 緊張 (BPM 72, Dm — 不穏な対抗戦チャレンジ) ═══
+      tension() {
+        const bpm = 72, beat = 60 / bpm, bar = beat * 4;
+        const mg = 0.045, bg = 0.035, dg = 0.02;
+        function scheduleLoop() {
+          if (BGM._current !== 'tension') return;
+          const t0 = ensure().currentTime + 0.005;
+          // Low drone: sustained dissonant bass
+          bgmNote(NT.D3/2,'triangle',t0,bar*8*0.95,bg*1.2);
+          bgmNote(NT.Eb3/2,'triangle',t0+0.05,bar*8*0.95,bg*0.4); // dissonance
+          // Melody (square — sparse, threatening)
+          const mel = [
+            [0,4],[NT.D4,1],[NT.F4,.5],[NT.E4,.5],[0,2],
+            [NT.A4,1.5],[NT.G4,.5],[NT.F4,1],[NT.E4,1],
+            [0,2],[NT.D4,.5],[NT.F4,.5],[NT.A4,1],
+            [NT.Bb4,2],[NT.A4,1],[0,1],
+            [NT.G4,1],[NT.F4,.5],[NT.E4,.5],[NT.D4,2],[0,4],
+            [NT.F4,1],[NT.E4,.5],[NT.D4,.5],[0,2],
+            [NT.A3,1.5],[NT.D4,.5],[NT.E4,1],[NT.F4,1],
+            [0,2],[NT.E4,1],[NT.D4,3],
+          ];
+          let p = 0;
+          mel.forEach(([f,d]) => { if (f > 0) bgmNote(f,'square',t0+p*beat,d*beat*0.8,mg*0.7); p += d; });
+          // Heartbeat-like kick (sparse)
+          for (let b = 0; b < 8; b++) {
+            const bt = t0 + b * bar;
+            bgmKick(bt, dg * 1.2);
+            bgmKick(bt + beat * 0.35, dg * 0.6);
+            if (b % 2 === 1) bgmHH(bt + beat * 2, dg * 0.4, false);
+          }
+          // Stinger accents
+          bgmNote(NT.A4,'sawtooth',t0+bar*2,beat*0.3,mg*0.5);
+          bgmNote(NT.D5,'sawtooth',t0+bar*5,beat*0.3,mg*0.5);
+        }
+        scheduleLoop();
+        BGM._interval = setInterval(() => { if (BGM._current === 'tension') scheduleLoop(); }, bar * 8 * 1000 - 200);
       }
     },
 
@@ -595,6 +633,7 @@ const Audio = (() => {
       if (G.weekPhase === 'draft') { BGM.play('kaimaku'); return; }
       if (G.offSeason || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
+      if (G.weekPhase === 'event') { BGM.play('tension'); return; }
       BGM.play('management'); // management + showPrep both use this
     }
   };
@@ -1593,6 +1632,13 @@ const App = {
 
   // Receive result from battle engine
   receiveBattleResult(data) {
+    // War context: route to war handler
+    const wp = App._warPreview;
+    if (wp && wp.currentWatching >= 0) {
+      App._receiveWarBattleResult(data);
+      return;
+    }
+    // Show context
     const sp = App._showPreview;
     if (!sp || sp.currentWatching < 0) return;
     const idx = sp.currentWatching;
@@ -1807,6 +1853,22 @@ const App = {
   },
 
   // Process a week (manage + settle) via tickWeek
+  // E1: おまかせ育成 — auto-set schedules based on condition, then process week
+  autoManage() {
+    if (G.weekPhase !== 'manage') return;
+    Audio.play('select');
+    // Auto-assign: condition < 60 → rest, injured → skip, else keep current (default balance)
+    const roster = G.roster.map(c => {
+      if (c.injury || c.isRental) return c;
+      if (c.condition < 60) return { ...c, schedule: 'rest', intensive: false };
+      // Clear intensive if condition is marginal
+      if (c.condition < 75 && c.intensive) return { ...c, intensive: false };
+      return c;
+    });
+    G = { ...G, roster };
+    App.processWeek();
+  },
+
   processWeek() {
     Audio.play('tick');
     const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
@@ -1898,6 +1960,157 @@ const App = {
         tone: 'gold'
       }), 300);
     }
+  },
+
+  // ══════════════════════════════════════════════
+  //  WAR MATCH PREVIEW SYSTEM (v0.99d)
+  // ══════════════════════════════════════════════
+  _warPreview: null,
+
+  // Start war match preview (called from acceptWarChallenge in ui-common)
+  initWarPreview(ev, card) {
+    App._warPreview = {
+      ev,
+      card,                         // [{playerFighter, aiFighter}, ...]
+      results: card.map(() => null), // null = unresolved
+      currentWatching: -1
+    };
+    Audio.bgm.play('battle');
+    renderWarMatchPreview();
+  },
+
+  // Watch a war match in battle engine iframe
+  warWatchMatch(idx) {
+    const wp = App._warPreview;
+    if (!wp || wp.results[idx]) return;
+    wp.currentWatching = idx;
+    const m = wp.card[idx];
+    const pf = m.playerFighter;
+    const af = m.aiFighter;
+
+    // Show iframe
+    const overlay = document.getElementById('battleOverlay');
+    overlay.style.display = 'block';
+
+    const iframe = document.getElementById('battleIframe');
+    const msg = {
+      type: 'START_MATCH',
+      left: {
+        ...pf, condition: 80,
+        portraitUrl: getPortraitUrl(pf.id),
+        vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['…！']
+      },
+      right: {
+        ...af, condition: 80,
+        portraitUrl: getPortraitUrl(af.id),
+        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
+      },
+      matchInfo: {
+        header: `⚔ 対抗戦 第${idx + 1}試合`,
+        subHeader: `${pf.name} vs ${af.name}`,
+        matchNum: idx + 1,
+        totalMatches: wp.card.length,
+        isTitle: false
+      }
+    };
+    let sent = false;
+    const sendOnce = () => {
+      if (sent) return; sent = true;
+      iframe.contentWindow.postMessage(msg, '*');
+    };
+    iframe.onload = () => setTimeout(sendOnce, 150);
+    iframe.src = iframe.src;
+    setTimeout(sendOnce, 600);
+  },
+
+  // Skip a war match (auto-resolve)
+  warSkipMatch(idx) {
+    const wp = App._warPreview;
+    if (!wp || wp.results[idx]) return;
+    const m = wp.card[idx];
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx));
+    const result = Engine.event.resolveEventMatch(rng, m.playerFighter, m.aiFighter, 0);
+    wp.results[idx] = {
+      playerFighter: m.playerFighter, aiFighter: m.aiFighter,
+      winner: result.winner, mq: result.mq,
+      playerWon: result.winner === 'left',
+      finType: result.finType || '', finMove: result.finMove || '',
+      turns: result.turns || 0
+    };
+    Audio.play('tick');
+    renderWarMatchPreview();
+    if (wp.results.every(r => r !== null)) App.finalizeWar();
+  },
+
+  // Skip all remaining war matches
+  warSkipAll() {
+    const wp = App._warPreview;
+    if (!wp) return;
+    wp.card.forEach((m, idx) => {
+      if (wp.results[idx]) return;
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx));
+      const result = Engine.event.resolveEventMatch(rng, m.playerFighter, m.aiFighter, 0);
+      wp.results[idx] = {
+        playerFighter: m.playerFighter, aiFighter: m.aiFighter,
+        winner: result.winner, mq: result.mq,
+        playerWon: result.winner === 'left',
+        finType: result.finType || '', finMove: result.finMove || '',
+        turns: result.turns || 0
+      };
+    });
+    Audio.play('bell');
+    App.finalizeWar();
+  },
+
+  // Receive battle engine result for war match
+  _receiveWarBattleResult(data) {
+    const wp = App._warPreview;
+    if (!wp || wp.currentWatching < 0) return;
+    const idx = wp.currentWatching;
+    const m = wp.card[idx];
+    wp.results[idx] = {
+      playerFighter: m.playerFighter, aiFighter: m.aiFighter,
+      winner: data.winner, mq: data.mq || 50,
+      playerWon: data.winner === 'left',
+      finType: data.finType || '', finMove: data.finMove || '',
+      turns: data.turns || 0
+    };
+    // Hide iframe
+    document.getElementById('battleOverlay').style.display = 'none';
+    wp.currentWatching = -1;
+    Audio.play('coin');
+    renderWarMatchPreview();
+    if (wp.results.every(r => r !== null)) App.finalizeWar();
+  },
+
+  // Finalize war: apply outcome to game state, show result
+  finalizeWar() {
+    const wp = App._warPreview;
+    if (!wp) return;
+    const ev = wp.ev;
+    let playerWins = 0, aiWins = 0;
+    wp.results.forEach(r => { if (r.playerWon) playerWins++; else aiWins++; });
+
+    // Apply outcome to state
+    const events = [];
+    wp.results.forEach((r, i) => {
+      const icon = r.playerWon ? '🔵' : '🔴';
+      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${r.playerWon ? r.playerFighter.name : r.aiFighter.name}勝利 (MQ${r.mq})`);
+    });
+    const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
+    const eventWon = playerWins > aiWins;
+    G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+
+    const evStats = { ...(G.seasonStats || {}) };
+    if (eventWon) { evStats.eventsWon = (evStats.eventsWon || 0) + 1; }
+    else { evStats.eventsLost = (evStats.eventsLost || 0) + 1; }
+    G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+    Storage.autoSave();
+
+    // Close match preview overlay, show final result
+    document.getElementById('showResultOverlay').classList.remove('active');
+    setTimeout(() => renderWarFinalResult(ev, wp.results, playerWins, aiWins, eventWon), 300);
+    App._warPreview = null;
   }
 };
 

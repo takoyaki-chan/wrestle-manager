@@ -1378,6 +1378,38 @@ const Engine = {
         }};
       }
     }
+    // E3: FA monthly rotation — every 4 weeks, swap 2 out / 2 in
+    if (s.week % 4 === 0 && !s.offSeason) {
+      let fa = [...(s.freeAgents || [])];
+      let pool = [...(s.poolIds || [])];
+      const faRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 9999));
+      // Remove up to 2 from FA (random, back to pool)
+      const removeCount = Math.min(2, fa.length);
+      const shuffledFA = [...fa].sort(() => Engine.rng.float(faRng) - 0.5);
+      const removed = shuffledFA.slice(0, removeCount);
+      fa = fa.filter(f => !removed.some(r => r.id === f.id));
+      for (const r of removed) {
+        // Only return to pool if the char exists in ALL_CHARS (has portrait)
+        if (ALL_CHARS.find(c => c.id === r.id)) pool.push(r.id);
+      }
+      // Add up to 2 from pool to FA
+      const addCount = Math.min(2, pool.length);
+      const shuffledPool = [...pool].sort(() => Engine.rng.float(faRng) - 0.5);
+      const added = [];
+      for (let i = 0; i < addCount && i < shuffledPool.length; i++) {
+        const cid = shuffledPool[i];
+        const template = ALL_CHARS.find(c => c.id === cid);
+        if (!template) continue;
+        const fighter = Engine.rival.makeAIFighter(template, faRng, null, 18 + Engine.rng.int(faRng, 0, 6));
+        fa.push(fighter);
+        added.push(fighter);
+        pool = pool.filter(id => id !== cid);
+      }
+      if (removed.length > 0 || added.length > 0) {
+        s = { ...s, freeAgents: fa, poolIds: pool };
+        if (added.length > 0) events.push(`📋 FA市場更新: ${added.map(f => f.name).join('、')}が新規参入`);
+      }
+    }
     return { state: s, events };
   },
 
@@ -1971,13 +2003,12 @@ const Engine = {
       const count = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]);
       const candidates = [];
 
-      // Pool-based candidates first (existing ALL_CHARS from poolIds)
+      // ALL candidates from pool (existing ALL_CHARS) — no generated chars
       const poolIds = [...(state.poolIds || [])];
-      const usedFromPool = [];
       const poolShuffled = [...poolIds].sort(() => Engine.rng.float(rng) - 0.5);
 
-      // Use up to half candidates from pool
-      const poolMax = Math.min(Math.floor(count / 2), poolShuffled.length);
+      const poolMax = Math.min(count, poolShuffled.length);
+      const usedFromPool = [];
       for (let i = 0; i < poolMax; i++) {
         const cid = poolShuffled[i];
         const template = ALL_CHARS.find(c => c.id === cid);
@@ -1988,18 +2019,11 @@ const Engine = {
         fighter.series = 'pool';
         fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
         fighter._isSeed = false;
+        // Seed flag: mark top-tier as seed for UI highlight
+        const avgNotion = Math.round((template.pw + template.sp + template.te + template.st + template.mn) / 5);
+        if (avgNotion >= 75) fighter._isSeed = true;
         candidates.push(fighter);
         usedFromPool.push(cid);
-      }
-
-      // Remaining: freshly generated candidates
-      const remaining = count - candidates.length;
-      let hasSeed = false;
-      for (let i = 0; i < remaining; i++) {
-        const isSeed = !hasSeed && Engine.rng.float(rng) < cfg.seedChance;
-        if (isSeed) hasSeed = true;
-        const cand = Engine.scout.generateCandidate(rng, state.season || 1, isSeed);
-        candidates.push(cand);
       }
 
       // §4.2 Scout estimates (noisy display values)
