@@ -100,8 +100,4 @@ const PORTRAIT = {
   97: 'iwasaki_m',     // 岩崎みどり
   98: 'yoneyama_a',    // 米山杏里
   99: 'miura_s',       // 三浦早紀
-  // F3: President portraits (replace filenames when images are ready)
-  'pres_empress':  'pres_empress',   // 天城 麗華（EMPRESS GRAND 総帥）
-  'pres_nova':     'pres_nova',      // 星宮 アキラ（NOVA IMPACT 代表）
-  'pres_crescent': 'pres_crescent',  // 三日月 さやか（CRESCENT RISE オーナー）
 };

@@ -970,8 +970,11 @@ const Storage = {
       // v0.9 backward compat: rival system
       if (!G.aiOrgs) {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0, 909));
-        G = { ...G, aiOrgs: Engine.rival.initAIOrgs(rng) };
+        const aiResult = Engine.rival.initAIOrgs(rng);
+        G = { ...G, aiOrgs: aiResult.aiOrgs, rivalOrgNames: aiResult.rivalOrgNames };
       }
+      // Restore org names from saved state
+      Engine.rival.applyOrgNames(G.rivalOrgNames);
       if (!G.rankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
       if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null };
       if (!G.transferLog) G = { ...G, transferLog: [] };
@@ -2170,7 +2173,13 @@ const App = {
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
 
     const evStats = { ...(G.seasonStats || {}) };
-    if (eventWon) { evStats.eventsWon = (evStats.eventsWon || 0) + 1; }
+    if (eventWon) {
+      evStats.eventsWon = (evStats.eventsWon || 0) + 1;
+      // F2: Track war victories for negotiation bonus
+      const wv = [...(G.warVictories || [])];
+      if (!wv.includes(ev.opponentOrgId)) wv.push(ev.opponentOrgId);
+      G = { ...G, warVictories: wv };
+    }
     else { evStats.eventsLost = (evStats.eventsLost || 0) + 1; }
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
     Storage.autoSave();

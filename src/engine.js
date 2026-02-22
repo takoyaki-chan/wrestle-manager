@@ -919,6 +919,17 @@ const Engine = {
     },
     // Initialize all AI org rosters from ORG_ASSIGN
     initAIOrgs(rng) {
+      // Randomly assign org names from pool
+      const nameMap = {};
+      RIVAL_ORGS.forEach(org => {
+        const pool = RIVAL_ORG_NAME_POOL[org.tier];
+        if (pool && pool.length) {
+          const idx = Engine.rng.int(rng, 0, pool.length - 1);
+          org.name = pool[idx];
+          nameMap[org.id] = org.name;
+        }
+      });
+
       const orgs = {};
       RIVAL_ORGS.forEach(org => {
         const ids = ORG_ASSIGN[org.id] || [];
@@ -940,7 +951,15 @@ const Engine = {
           orgPop: {S:75,A:55,B:35}[org.tier] || 30
         };
       });
-      return orgs;
+      return { aiOrgs: orgs, rivalOrgNames: nameMap };
+    },
+
+    /** Restore org names from saved state */
+    applyOrgNames(nameMap) {
+      if (!nameMap) return;
+      RIVAL_ORGS.forEach(org => {
+        if (nameMap[org.id]) org.name = nameMap[org.id];
+      });
     },
     // Get pool IDs (chars not assigned to any org or free)
     getPoolIds() {
@@ -1767,10 +1786,6 @@ const Engine = {
     playerPoach(state, aiOrgId, fighterId) {
       let s = { ...state };
       const events = [];
-      if ((s.transfersThisSeason || 0) >= TRANSFER_CONFIG.playerPoachLimit) {
-        events.push('❌ 今シーズンの引き抜き枠を使い切りました');
-        return { state: s, events };
-      }
 
       const orgCfg = RIVAL_ORGS.find(o => o.id === aiOrgId);
       const orgData = s.aiOrgs[aiOrgId];
@@ -1804,6 +1819,176 @@ const Engine = {
       };
       events.push(`🤝 ${fighter.name}を${orgCfg.name}から獲得！（移籍金-${fee}万）`);
       return { state: s, events };
+    }
+  },
+
+  // ── F2: Player Negotiation System ────────────────
+  negotiate: {
+    /** Get traits-based dialogue for a fighter */
+    getDialogue(fighter, phase) {
+      const lines = NEGOTIATE_LINES[phase];
+      if (!lines) return '';
+      const ch = ALL_CHARS.find(c => c.id === fighter.id);
+      const traits = ch ? (ch.traits || []) : [];
+      const role = ch ? ch.role : 'Neutral';
+      // Check trait-specific lines first
+      for (const t of traits) {
+        if (lines[t]) return lines[t];
+      }
+      // Fall back to role
+      if (role === 'Heel' && lines._heel) return lines._heel;
+      if (role === 'Babyface' && lines._babyface) return lines._babyface;
+      return lines._neutral || '';
+    },
+
+    /** Calculate base fee for poaching a fighter */
+    calcBaseFee(fighter, orgCfg) {
+      return Engine.transfer.calcFee(fighter, orgCfg);
+    },
+
+    /** Calculate success rate */
+    calcSuccessRate(state, fighter, orgCfg, planIndex) {
+      const cfg = NEGOTIATION_CONFIG;
+      let rate = cfg.baseSuccessRates[orgCfg.tier] || 30;
+
+      // Reductions
+      const orgData = state.aiOrgs[orgCfg.id];
+      if (orgData) {
+        const sorted = [...orgData.roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+        if (sorted[0] && sorted[0].id === fighter.id) rate -= 15; // ace
+      }
+      if (Engine.util.ov(fighter) >= 80) rate -= 10;
+      // Check if player org is last in rankings
+      const rankings = state.rankings || [];
+      const playerRank = rankings.find(r => r.orgId === 'player');
+      if (playerRank && playerRank.rank === rankings.length) rate -= 10;
+
+      // Additions
+      if (Engine.util.ov(fighter) < 50) rate += 10;
+      // War victory bonus: check if player beat this org this season
+      if (state.warVictories && state.warVictories.includes(orgCfg.id)) rate += 15;
+      // Popularity comparison
+      const aiPop = orgData ? orgData.orgPop : 50;
+      if ((state.orgPop || 0) > aiPop) rate += 10;
+      // Plan bonus
+      rate += cfg.planBonusRates[planIndex] || 0;
+
+      return Math.max(cfg.clampMin, Math.min(cfg.clampMax, rate));
+    },
+
+    /** Start a negotiation (result pre-determined by rng) */
+    startNegotiation(rng, state, orgId, fighterId, planIndex) {
+      const cfg = NEGOTIATION_CONFIG;
+      const orgCfg = RIVAL_ORGS.find(o => o.id === orgId);
+      const orgData = state.aiOrgs[orgId];
+      if (!orgCfg || !orgData) return { state, events: ['❌ 団体情報が見つかりません'] };
+
+      const fighter = orgData.roster.find(f => f.id === fighterId);
+      if (!fighter) return { state, events: ['❌ 選手が見つかりません'] };
+
+      // Check concurrent limit
+      if (state.pendingNegotiation) {
+        return { state, events: ['❌ 既に交渉中の案件があります'] };
+      }
+      // Check cooldown
+      const negotiated = state.negotiatedThisSeason || [];
+      if (negotiated.includes(fighterId)) {
+        return { state, events: ['❌ この選手とは今シーズン既に交渉済みです'] };
+      }
+
+      const baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+      const costMul = cfg.baseFeeMultipliers[planIndex];
+      const totalCost = Math.round(baseFee * costMul);
+      const failCost = Math.round(totalCost * cfg.failureCostRatio);
+
+      // Check funds
+      if (state.funds < totalCost) {
+        return { state, events: [`❌ 資金不足（必要: ${totalCost}万, 残高: ${state.funds}万）`] };
+      }
+
+      // Pre-determine result
+      const successRate = Engine.negotiate.calcSuccessRate(state, fighter, orgCfg, planIndex);
+      const roll = Engine.rng.int(rng, 1, 100);
+      const success = roll <= successRate;
+
+      const negotiation = {
+        orgId,
+        fighterId,
+        fighterName: fighter.name,
+        planIndex,
+        totalCost,
+        failCost,
+        successRate,
+        success,
+        startWeek: state.week,
+        resolveWeek: state.week + cfg.durationWeeks
+      };
+
+      const events = [`📋 ${fighter.name}への引き抜き交渉を開始（${cfg.durationWeeks}週間）`];
+      return {
+        state: {
+          ...state,
+          pendingNegotiation: negotiation,
+          negotiatedThisSeason: [...negotiated, fighterId]
+        },
+        events
+      };
+    },
+
+    /** Check and resolve pending negotiation */
+    resolveNegotiation(state) {
+      const neg = state.pendingNegotiation;
+      if (!neg || state.week < neg.resolveWeek) return null;
+
+      const orgCfg = RIVAL_ORGS.find(o => o.id === neg.orgId);
+      const orgData = state.aiOrgs[neg.orgId];
+      if (!orgCfg || !orgData) {
+        return { state: { ...state, pendingNegotiation: null }, events: ['❌ 交渉先の団体情報エラー'], success: false };
+      }
+
+      const fighter = orgData.roster.find(f => f.id === neg.fighterId);
+      const events = [];
+
+      if (neg.success && fighter) {
+        // Success: move fighter, deduct full cost
+        const newAiOrgs = { ...state.aiOrgs, [neg.orgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== neg.fighterId) } };
+        const newFighter = { ...fighter, orgId: 'player',
+          condition: fighter.condition ?? 80,
+          schedule: fighter.schedule || 'balance',
+          wins: fighter.wins || 0, losses: fighter.losses || 0, draws: fighter.draws || 0,
+          injury: fighter.injury || null,
+          seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+          careerSeasons: fighter.careerSeasons || 0,
+          intensive: false, intensiveWeeks: 0
+        };
+        events.push(`🎉 ${fighter.name}の引き抜き交渉成功！（-${neg.totalCost}万）`);
+        return {
+          state: {
+            ...state,
+            aiOrgs: newAiOrgs,
+            roster: [...state.roster, newFighter],
+            funds: state.funds - neg.totalCost,
+            pendingNegotiation: null,
+            transferLog: [...(state.transferLog || []), { season: state.season, week: state.week, type: 'negotiate', fighter: fighter.name, from: orgCfg.name, cost: neg.totalCost }]
+          },
+          events,
+          success: true,
+          fighter
+        };
+      } else {
+        // Failure: deduct fail cost
+        events.push(`😞 ${neg.fighterName}の引き抜き交渉失敗…（-${neg.failCost}万）`);
+        return {
+          state: {
+            ...state,
+            funds: state.funds - neg.failCost,
+            pendingNegotiation: null
+          },
+          events,
+          success: false,
+          fighter: fighter || { id: neg.fighterId, name: neg.fighterName }
+        };
+      }
     }
   },
 
@@ -2458,7 +2643,7 @@ const Engine = {
 
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
-              summitBonus: 0,
+              summitBonus: 0, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
@@ -2482,10 +2667,28 @@ const Engine = {
     // ── REGULAR WEEK ADVANCE ──
     s = { ...s, week: s.week + 1 };
     if (s.week > 48) {
+      // F2: Force-resolve any pending negotiation before offseason
+      if (s.pendingNegotiation) {
+        const forceNeg = Engine.negotiate.resolveNegotiation({ ...s, week: s.pendingNegotiation.resolveWeek });
+        if (forceNeg) {
+          s = forceNeg.state;
+          events.push(...forceNeg.events);
+          s = { ...s, negotiationResult: { success: forceNeg.success, fighter: forceNeg.fighter } };
+        }
+      }
       // Enter offseason
       s = { ...s, offSeason: true, offWeek: 0 };
       events.push('📅 レギュラーシーズン終了 → オフシーズン突入');
       return { state: { ...s, weekPhase: 'offseason' }, events };
+    }
+
+    // F2: Check pending negotiation resolution
+    const negResult = Engine.negotiate.resolveNegotiation(s);
+    if (negResult) {
+      s = negResult.state;
+      events.push(...negResult.events);
+      // Store result for UI popup display
+      s = { ...s, negotiationResult: { success: negResult.success, fighter: negResult.fighter } };
     }
 
     // C-2: Quarterly transfer window check
@@ -2713,8 +2916,10 @@ const Engine = {
       return Engine.makeChar(t, rng, { age });
     });
 
-    // AI organizations
-    const aiOrgs = Engine.rival.initAIOrgs(rng);
+    // AI organizations (with randomized names)
+    const aiResult = Engine.rival.initAIOrgs(rng);
+    const aiOrgs = aiResult.aiOrgs;
+    const rivalOrgNames = aiResult.rivalOrgNames;
 
     // Unrevealed pool
     const poolIds = Engine.rival.getPoolIds();
@@ -2750,6 +2955,7 @@ const Engine = {
       coachAssign: {},
       // v0.9: Rival system
       aiOrgs,
+      rivalOrgNames,
       aceDesignation: null,
       rankings: [],
       transferLog: [],
@@ -2767,6 +2973,10 @@ const Engine = {
       challengeTrigger: null,
       pendingEvent: null,
       summitBonus: 0,
+      // F2: Negotiation system
+      pendingNegotiation: null,
+      negotiatedThisSeason: [],
+      warVictories: [],
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
                      bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },

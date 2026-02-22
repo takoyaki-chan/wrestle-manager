@@ -325,9 +325,7 @@ const PORTRAIT = {
   81:'sakamoto_r',82:'kondo_y',83:'sakuma_h',84:'minamitani_a',85:'kamoshida_r',
   86:'serizawa_a',87:'steinfeld_l',88:'aikawa_a',89:'akabane_a',90:'tamate_s',
   91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',
-  96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s',
-  // F3: President portraits (replace filenames when images are ready)
-  'pres_empress':'pres_empress','pres_nova':'pres_nova','pres_crescent':'pres_crescent'
+  96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
 };
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 
@@ -662,78 +660,23 @@ const FACILITIES = [
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
 // ╚══════════════════════════════════════════════════════════╝
+// RIVAL_ORGS: name is set at game start via initRivalOrgNames()
+const RIVAL_ORG_NAME_POOL = {
+  S: ['皇武館', '凰翔プロレス', 'グランエンプレス', '天頂プロレス'],
+  A: ['ノヴァインパクト', 'ブレイクスルー', 'インパルス', 'イグニッション'],
+  B: ['なでしこプロレス', 'あさひ女子プロレス', '春日野プロレス', 'ふたば女子プロレス']
+};
 const RIVAL_ORGS = [
-  { id:'empress', name:'EMPRESS GRAND', tier:'S', championScore:60,
+  { id:'org_s', name:'', tier:'S', championScore:60,
     coachMul:1.30, facilityMul:1.15, scoutStyle:'immediate',
     desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
-  { id:'nova', name:'NOVA IMPACT', tier:'A', championScore:40,
+  { id:'org_a', name:'', tier:'A', championScore:40,
     coachMul:1.15, facilityMul:1.10, scoutStyle:'youth',
     desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
-  { id:'crescent', name:'CRESCENT RISE', tier:'B', championScore:20,
+  { id:'org_b', name:'', tier:'B', championScore:20,
     coachMul:1.00, facilityMul:1.05, scoutStyle:'conservative',
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
-
-// F3: Rival org president characters — appear in war challenge & results
-const RIVAL_ORG_PRESIDENTS = {
-  empress: {
-    id: 'pres_empress', name: '天城 麗華', orgId: 'empress',
-    title: '総帥', personality: 'empress',
-    desc: '業界の頂点に君臨する女帝。圧倒的カリスマで全てを支配する。',
-    challengeLines: [
-      '…あら、まだ立っていたの？\n身の程を知りなさい。我がEMPRESS GRANDに挑む愚かさを。',
-      'あなたの団体がどうなろうと知ったことではないけれど…\n退屈しのぎに相手をしてあげるわ。',
-      'ふふ…面白い虫が湧いてきたわね。\nいいわ、叩き潰してあげる。光栄に思いなさい。',
-      '格下が調子に乗るのは見苦しいわ。\n…この天城麗華が直々に引導を渡してあげましょう。',
-    ],
-    winLines: [
-      '当然の結果よ。格が違うの。\n…まぁ、少しは楽しめたわね。',
-      'あなたたちにしては健闘したわ。\nでも結果は最初から決まっていたの。',
-    ],
-    loseLines: [
-      '…っ！ こんなことが…！\nいいわ、覚えておきなさい。次は二度とこうはいかない。',
-      '認めましょう…今日は負けた。\nでもEMPRESS GRANDの誇りは決して折れない。',
-    ],
-  },
-  nova: {
-    id: 'pres_nova', name: '星宮 アキラ', orgId: 'nova',
-    title: '代表', personality: 'ambitious',
-    desc: '若き野心家。常に上を目指し、攻めの経営で団体を急成長させた。',
-    challengeLines: [
-      'やっと来たか、この時が！\nNOVA IMPACTの勢い、その目に焼き付けろ！',
-      'ウチの選手たちは止まらない。\n全力でぶつかるぞ、受けて立て！',
-      'トップに立つのはウチだ。\n対抗戦で証明してやる…覚悟はいいな？',
-      '面白い、面白いぞ！\nこういう真剣勝負を待ってたんだ！',
-    ],
-    winLines: [
-      'どうだ、これがNOVA IMPACTの力だ！\nまだまだ上を目指すぞ！',
-      '最高の試合だった！でも勝つのはウチだ。\nこの勢いは誰にも止められない！',
-    ],
-    loseLines: [
-      'くっ…やるな…！\nだがこの悔しさ、必ず次に活かしてみせる！',
-      '負けた…か。認めるよ、あんたたちは強かった。\nだが、次は絶対に負けない！',
-    ],
-  },
-  crescent: {
-    id: 'pres_crescent', name: '三日月 さやか', orgId: 'crescent',
-    title: 'オーナー', personality: 'gentle',
-    desc: '温厚だが芯の強い経営者。小さな団体の誇りを胸に戦い続ける。',
-    challengeLines: [
-      'こんにちは。突然ですが…\n対抗戦を申し込ませてください。うちの選手たちの力を試したくて。',
-      '小さな団体ですが、気持ちだけは負けません。\n…対抗戦、受けていただけますか？',
-      '大きな団体じゃないけれど、ここにいる選手たちは本物です。\nどうか、真剣勝負をさせてください。',
-      'うちの子たちが、どうしても戦いたいって。\n…私も、見てみたいんです。うちの団体がどこまでやれるか。',
-    ],
-    winLines: [
-      'うちの選手たちが勝った…！\n…嬉しい。みんな、本当によく頑張った…！',
-      '信じてた…うちの選手たちの力を。\nありがとうございます、いい試合でした。',
-    ],
-    loseLines: [
-      '…残念だけど、いい経験になりました。\nうちの選手たち、もっと強くなれる。そう信じてます。',
-      '負けちゃいましたね…ふふ。\nでもうちの子たち、いい顔してました。次はきっと…！',
-    ],
-  },
-};
 
 // ── Scout Event Name Generation & Config (scout-spec §3) ──────
 const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
@@ -752,9 +695,9 @@ let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
 // empress(16):avgOVR≈74  nova(13):≈72  crescent(10):≈68  free: dynamic  pool: dynamic
 const ORG_ASSIGN = {
   player:   [],  // Set after draft
-  empress:  [1,37,2,33,65,38,66,55,67,34,46,29,60,47,30,42],
-  nova:     [11,16,45,12,5,17,41,6,13,56,68,48,61],
-  crescent: [3,18,31,69,28,49,70,35,71,72],
+  org_s:    [1,37,2,33,65,38,66,55,67,34,46,29,60,47,30,42],
+  org_a:    [11,16,45,12,5,17,41,6,13,56,68,48,61],
+  org_b:    [3,18,31,69,28,49,70,35,71,72],
   free:     [7,26,39,40,36,14,76,73,74],  // base free (draft rejects added later)
   // pool = remaining IDs (25 chars) — unrevealed until scout events
 };
@@ -854,7 +797,7 @@ const AI_SCOUT_CFG = {
 const AI_TIER_LIMITS = {
   S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.20, faAggressiveness: 0.60 },
   A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
-  B: { maxProdigies: 1,  maxPromising: 5,  growthBonus: 0.90, faAggressiveness: 0.20 }
+  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 0.90, faAggressiveness: 0.20 }
 };
 
 // AI season growth config (rival-spec §4.1)
@@ -873,11 +816,10 @@ const AI_SEASON_CFG = {
 
 // ── Phase C: Transfer & Ace Constants ──
 const TRANSFER_CONFIG = {
-  windows: [12, 24, 36, 48],           // 四半期末に移籍ウィンドウ
+  windows: [12, 24, 36, 48],           // AI移籍処理ウィンドウ（四半期末）
   poachChancePerFighter: 0.06,          // 1選手あたり6%/四半期
   poachMinPopularity: 50,               // 人気50以上が対象
   poachRequiresHigherRank: true,        // 引き抜き元がプレイヤーより上位
-  playerPoachLimit: 2,                  // F2: プレイヤー年2名引き抜き
   aceRetentionRate: 1.0,                // エース: 100%防衛
   nonAceRetentionRate: 0.80,            // 非エース: 80%防衛
   retentionCostMultiplier: 0.5,         // 引き留め費用 = 移籍金 × 0.5
@@ -905,3 +847,56 @@ const EVENT_CONFIG = {
   summitRatingReward: 15,
 };
 
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4I: NEGOTIATION CONFIG (F2: 引き抜き交渉)         ║
+// ╚══════════════════════════════════════════════════════════╝
+const NEGOTIATION_CONFIG = {
+  durationWeeks: 4,
+  maxConcurrent: 1,
+  failureCostRatio: 0.5,
+  cooldownSameTarget: true,
+  baseFeeMultipliers: [1.5, 2.0, 3.0],
+  planBonusRates: [0, 10, 20],
+  baseSuccessRates: { S: 15, A: 30, B: 50 },
+  clampMin: 5,
+  clampMax: 70
+};
+
+const NEGOTIATE_LINES = {
+  start: {
+    '威圧感':   'ふーん…私を引き抜こうってわけ？\n面白い度胸してるじゃない。',
+    '破天荒':   'えっ、私をスカウト！？\nわくわくするね〜、話聞かせてよ！',
+    '負けず嫌い': '…私を欲しいって？\nそれなりの覚悟、あるんでしょうね。',
+    '闘志':     '新しい戦場…か。\n…悪くない話かもしれない。',
+    'リーダー気質': 'この団体を離れるのは簡単じゃないわ。\n…でも、聞くだけなら。',
+    'ファンサービス': 'わぁ、嬉しいです！\nでも…ファンの皆のこともあるし…',
+    '努力家':   '私なんかでいいんですか…？\n…ちょっと考えさせてください。',
+    _heel:     '…ふん。で、条件は？\n私を満足させられるの？',
+    _babyface: '他の団体に…？ちょっと考えさせてください。\n…真剣に、考えます。',
+    _neutral:  '…そう。私に来いと。\n条件次第かしらね。'
+  },
+  success: {
+    '威圧感':   'いいわ…認めてあげる。\n新しい場所で、格の違いを見せてやる。',
+    '破天荒':   'やったー！新しい団体！\n楽しみすぎて眠れないかも！',
+    '負けず嫌い': '…決めた。ここでもっと強くなってみせる！\n絶対に後悔させないから。',
+    '闘志':     '新しい闘いが待っている…！\n燃えてきた…全力でいくぞ！',
+    'リーダー気質': '新しい仲間のために…全力を尽くすわ。\nよろしくお願いします。',
+    'ファンサービス': '新しいファンの皆さんにも、最高の試合を届けます！\nよろしくお願いしまーす！',
+    '努力家':   '期待に応えられるよう、頑張ります…！\n…必ず、成長してみせます。',
+    _heel:     '…ま、使えるうちは使ってあげるわ。\n後悔しないことね。',
+    _babyface: '新しい場所で頑張ります！\nよろしくお願いします！',
+    _neutral:  '…分かった、行くわ。\n実力で居場所を作ってみせる。'
+  },
+  fail: {
+    '威圧感':   '…悪いけど、ここが私の居場所よ。\n出直してきなさい。',
+    '破天荒':   'ごめんね〜、やっぱり今のとこが好きなの！\nまたね〜！',
+    '負けず嫌い': '…ここでまだやり残したことがある。\n今は動けない。',
+    '闘志':     'まだこの団体で燃え尽きてない。\n…その話はなかったことに。',
+    'リーダー気質': 'みんなを置いて行くわけにはいかないの。\n…ごめんなさい。',
+    'ファンサービス': 'ファンの皆が応援してくれてるから…\n今はここを離れられません！',
+    '努力家':   'まだここで学ぶことがあるんです…。\n…すみません。',
+    _heel:     '条件が気に入らないわ。\n…出直してきなさい。',
+    _babyface: 'ごめんなさい、今はここを離れられません。\nまたいつか…！',
+    _neutral:  '…悪いけど、今回はパス。\n縁があればまたね。'
+  }
+};

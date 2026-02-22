@@ -448,12 +448,12 @@ function renderWeekScreen() {
     const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (isShowWeek(w)) return w; return null; })();
     if (nextShow && nextShow > G.week) upcomingItems.push(`🎤 次の興行: 第${nextShow}週`);
     else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
-    if (TRANSFER_CONFIG && TRANSFER_CONFIG.windows) {
-      const nextTW = TRANSFER_CONFIG.windows.find(w => w > G.week);
-      if (nextTW) upcomingItems.push(`🤝 移籍W: 第${nextTW}週`);
-    }
     if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
     else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
+    if (G.pendingNegotiation) {
+      const remainW = G.pendingNegotiation.resolveWeek - G.week;
+      upcomingItems.push(`🤝 交渉中: ${G.pendingNegotiation.fighterName}（残${remainW}週）`);
+    }
 
     html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
       <!-- Season Progress -->
@@ -1325,38 +1325,31 @@ function renderRanking() {
           <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${RIVAL_ORG_PRESIDENTS[org.id] ? `<span style="color:${rc};font-weight:600">${RIVAL_ORG_PRESIDENTS[org.id].title}: ${RIVAL_ORG_PRESIDENTS[org.id].name}</span> — ` : ''}${org.desc}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
         <div style="font-size:13px;margin-top:10px">
           <span style="color:var(--text-dim)">主力:</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
           </div>
         </div>
-        ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
-          <details style="margin-top:10px">
-            <summary style="font-size:13px;color:${rc};cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
-            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
-              ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map(f => {
-                const fee = Engine.transfer.calcFee(f, org);
-                const canAfford = G.funds >= fee;
-                const gap = fee - G.funds;
-                const fOvr = Engine.util.ov(f);
-                const pot = f.pot || f.notionValue || {};
-                const avgPot = Math.round(((pot.pw||0)+(pot.sp||0)+(pot.te||0)+(pot.st||0)+(pot.mn||0))/5);
-                const tierLabel = avgPot >= 160 ? '🔥逸材' : avgPot >= 130 ? '⭐有望' : '💎原石';
-                const tierColor = avgPot >= 160 ? '#e74c3c' : avgPot >= 130 ? '#f39c12' : '#3498db';
-                return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;width:130px;text-align:center${canAfford ? ';border:1px solid rgba(46,204,113,0.3)' : ''}">
-                  ${portraitImg(f.id, 100)}
-                  <span>${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span>
-                  <span style="color:var(--text-dim);font-size:11px">OVR ${fOvr} <span style="color:${tierColor};font-size:10px">${tierLabel}</span></span>
-                  <span style="color:${canAfford ? '#2ecc71' : '#e17055'};font-size:12px;font-weight:700">${fee}万</span>
-                  ${!canAfford ? `<span style="font-size:10px;color:#e17055">あと${gap}万必要</span>` : ''}
-                  <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:11px;padding:4px 10px;cursor:pointer;background:${canAfford ? 'rgba(46,204,113,0.2)' : 'rgba(100,100,100,0.1)'};border:1px solid ${canAfford ? 'rgba(46,204,113,0.4)' : 'rgba(100,100,100,0.2)'};color:${canAfford ? '#2ecc71' : '#666'};border-radius:4px;width:100%" ${canAfford ? '' : 'disabled'}>獲得</button>
-                </div>`;
-              }).join('')}
-            </div>
-          </details>
-        ` : ''}
+        <details style="margin-top:10px">
+          <summary style="font-size:13px;color:${rc};cursor:pointer">📋 全選手を見る（${roster.length}名）</summary>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+            ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
+              const fOvr = Engine.util.ov(f);
+              const isAce = idx === 0;
+              const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(f.id);
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showNegotiatePopup('${org.id}',${f.id})">
+                ${portraitImg(f.id, 48)}
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isAce ? ' <span style="font-size:10px;color:#e74c3c">★エース</span>' : ''}</div>
+                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
+                </div>
+                <div style="font-size:11px;color:${canNeg ? rc : 'var(--text-dim)'};white-space:nowrap">${canNeg ? '交渉→' : G.pendingNegotiation ? (G.pendingNegotiation.fighterId === f.id ? '⏳交渉中' : '—') : (G.negotiatedThisSeason || []).includes(f.id) ? '交渉済' : '交渉→'}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </details>
       </div>`;
     }
   });
@@ -2053,5 +2046,9 @@ function refreshAll() {
   renderFacility();
   renderSave();
   renderRanking();
+  // F2: Show negotiation result popup if pending
+  if (G.negotiationResult) {
+    setTimeout(() => showNegotiationResult(), 300);
+  }
 }
 

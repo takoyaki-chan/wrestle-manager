@@ -4,35 +4,7 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// ── F3: President Dialogue Helpers ──
-function getPresidentChallengeDialogue(orgId) {
-  const pres = RIVAL_ORG_PRESIDENTS[orgId];
-  if (!pres) return '対抗戦を申し込む！';
-  const seed = ((G.season || 1) * 17 + (G.week || 1) * 7) % pres.challengeLines.length;
-  return pres.challengeLines[seed];
-}
-
-function getPresidentPostDialogue(orgId, playerWon) {
-  const pres = RIVAL_ORG_PRESIDENTS[orgId];
-  if (!pres) return playerWon ? '…やるな。' : '当然の結果だ。';
-  const pool = playerWon ? pres.loseLines : pres.winLines;
-  const seed = ((G.season || 1) * 11 + (G.week || 1) * 3) % pool.length;
-  return pool[seed];
-}
-
-function getPresidentPortraitHtml(orgId, size, borderColor) {
-  const pres = RIVAL_ORG_PRESIDENTS[orgId];
-  if (!pres) return '';
-  const url = getPortraitUrl(pres.id);
-  if (url) {
-    return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${borderColor};box-shadow:0 0 30px ${borderColor}44,0 0 60px ${borderColor}22;object-fit:cover" alt="">`;
-  }
-  // Fallback: initial letter with org-colored circle
-  const initial = pres.name.charAt(0);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${borderColor};box-shadow:0 0 30px ${borderColor}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${borderColor}33,${borderColor}11);font-size:${Math.round(size*0.38)}px;font-weight:900;color:${borderColor}">${initial}</div>`;
-}
-
-// ── War Challenge Dialogue Generator (ace fallback if no president) ──
+// ── War Challenge Dialogue Generator (traits-based) ──
 function getWarChallengeDialogue(fighter, orgName) {
   const ch = ALL_CHARS.find(c => c.id === fighter.id);
   const role = ch ? ch.role : 'Neutral';
@@ -103,12 +75,9 @@ function showWarChallenge() {
   const enemyAce = Engine.event.getAce(aiOrg.roster);
   if (!enemyAce) { skipEvent(); return; }
 
-  const orgCfg = [
-    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
-  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+  const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
 
-  const pres = RIVAL_ORG_PRESIDENTS[ev.opponentOrgId];
-  const dialogue = pres ? getPresidentChallengeDialogue(ev.opponentOrgId) : getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
+  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
   const aceOvr = Engine.util.ov(enemyAce);
 
   const overlay = document.getElementById('confirmOverlay');
@@ -123,33 +92,24 @@ function showWarChallenge() {
   html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${ev.matchCount}試合の団体対決</div>`;
   html += `</div>`;
 
-  // President portrait (large, central)
-  if (pres) {
-    html += `<div style="text-align:center;margin:20px 0 12px">`;
-    html += getPresidentPortraitHtml(ev.opponentOrgId, 140, orgCfg.color);
-    html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${pres.name}</div>`;
-    html += `<div style="font-size:11px;color:var(--text-sub)">${ev.opponentName} ${pres.title}</div>`;
-    html += `</div>`;
+  // Enemy ace portrait (large, central)
+  const aceUrl = getPortraitUrl(enemyAce.id);
+  html += `<div style="text-align:center;margin:20px 0 12px">`;
+  if (aceUrl) {
+    html += `<img src="${aceUrl}" style="width:140px;height:140px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44,0 0 60px ${orgCfg.color}22;object-fit:cover" alt="">`;
+  } else {
+    const initial = enemyAce.name.charAt(0);
+    html += `<div style="width:140px;height:140px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${orgCfg.color}33,${orgCfg.color}11);font-size:53px;font-weight:900;color:${orgCfg.color}">${initial}</div>`;
   }
+  html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
+  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${aceOvr} ・ ${enemyAce.style}</div>`;
+  html += `</div>`;
 
-  // President dialogue bubble
+  // Dialogue bubble
   const dialogueHtml = dialogue.replace(/\n/g, '<br>');
   html += `<div style="background:var(--panel-bg);border:1px solid ${orgCfg.color}44;border-radius:12px;padding:16px 20px;margin:0 8px 16px;position:relative">`;
   html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${orgCfg.color}44"></div>`;
   html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
-  html += `</div>`;
-
-  // Enemy ace info bar (compact)
-  const aceUrl = getPortraitUrl(enemyAce.id);
-  html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin:0 8px 16px;background:var(--bg-card);border:1px solid ${orgCfg.color}33;border-radius:8px">`;
-  html += `<div style="font-size:10px;color:var(--text-dim);white-space:nowrap">相手エース</div>`;
-  if (aceUrl) {
-    html += `<img src="${aceUrl}" style="width:44px;height:44px;border-radius:50%;border:2px solid ${orgCfg.color}66;object-fit:cover" alt="">`;
-  }
-  html += `<div style="flex:1;min-width:0">`;
-  html += `<div style="font-size:14px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
-  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${aceOvr} ・ ${enemyAce.style}</div>`;
-  html += `</div>`;
   html += `</div>`;
 
   // Accept / Decline buttons
@@ -186,9 +146,7 @@ function renderWarMatchPreview() {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
-  const orgCfg = [
-    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
-  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+  const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
 
   const resolved = wp.results.filter(r => r !== null).length;
   const total = wp.card.length;
@@ -328,9 +286,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
-  const orgCfg = [
-    {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
-  ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
+  const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
 
   // Find enemy ace for dialogue
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
@@ -371,29 +327,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   html += `<div style="font-size:15px;font-weight:700;color:${winColor};margin-top:4px">${winLabel}</div>`;
   html += `</div>`;
 
-  // F3: Post-match dialogue from president (primary) + ace (secondary)
-  const pres = RIVAL_ORG_PRESIDENTS[ev.opponentOrgId];
-  if (pres) {
-    const presDialogue = getPresidentPostDialogue(ev.opponentOrgId, eventWon);
-    const presDialogueHtml = presDialogue.replace(/\n/g, '<br>');
-    const emotionBorder = eventWon ? 'var(--blue)' : orgCfg.color;
-    const emotionGlow = eventWon ? 'rgba(74,143,212,0.3)' : `${orgCfg.color}44`;
-
-    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:16px 0 8px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
-    // President portrait
-    html += `<div style="flex-shrink:0">`;
-    html += getPresidentPortraitHtml(ev.opponentOrgId, 72, emotionBorder);
-    html += `<div style="text-align:center;font-size:10px;font-weight:700;color:${orgCfg.color};margin-top:4px">${pres.name}</div>`;
-    html += `<div style="text-align:center;font-size:9px;color:var(--text-dim)">${pres.title}</div>`;
-    html += `</div>`;
-    // Speech bubble
-    html += `<div style="flex:1;position:relative;background:var(--bg-card);border:1px solid ${emotionBorder}33;border-radius:10px;padding:12px 14px;margin-top:8px">`;
-    html += `<div style="position:absolute;left:-8px;top:20px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid ${emotionBorder}33"></div>`;
-    html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${presDialogueHtml}」</p>`;
-    html += `</div></div>`;
-  }
-
-  // Ace reaction (secondary, compact)
+  // Post-match dialogue from enemy ace
   if (enemyAce) {
     const dialogue = getWarPostDialogue(enemyAce, G.orgName || 'あんたの団体', eventWon, playerWins, aiWins);
     const portraitUrl = getPortraitUrl(enemyAce.id);
@@ -401,14 +335,16 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     const emotionBorder = eventWon ? 'var(--blue)' : orgCfg.color;
     const emotionGlow = eventWon ? 'rgba(74,143,212,0.3)' : `${orgCfg.color}44`;
 
-    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:8px 0 12px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
+    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:16px 0 12px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
     // Portrait
     html += `<div style="flex-shrink:0">`;
     if (portraitUrl) {
       html += `<img src="${portraitUrl}" style="width:72px;height:72px;border-radius:50%;border:3px solid ${emotionBorder};box-shadow:0 0 16px ${emotionGlow};object-fit:cover" alt="">`;
+    } else {
+      const initial = enemyAce.name.charAt(0);
+      html += `<div style="width:72px;height:72px;border-radius:50%;border:3px solid ${emotionBorder};box-shadow:0 0 16px ${emotionGlow};display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${emotionBorder}33,${emotionBorder}11);font-size:28px;font-weight:900;color:${emotionBorder}">${initial}</div>`;
     }
     html += `<div style="text-align:center;font-size:10px;font-weight:700;color:${orgCfg.color};margin-top:4px">${enemyAce.name}</div>`;
-    html += `<div style="text-align:center;font-size:9px;color:var(--text-dim)">エース</div>`;
     html += `</div>`;
     // Speech bubble
     html += `<div style="flex:1;position:relative;background:var(--bg-card);border:1px solid ${emotionBorder}33;border-radius:10px;padding:12px 14px;margin-top:8px">`;
@@ -443,6 +379,160 @@ function showConfirm(msg, yesLabel, onYes) {
       <button class="btn btn-gold" onclick="document.getElementById('confirmOverlay').classList.remove('active');if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
       <button class="btn btn-blue" onclick="document.getElementById('confirmOverlay').classList.remove('active')">いいえ</button>
     </div>`;
+  overlay.classList.add('active');
+}
+
+// ── F2: Negotiation Popup ──
+function showNegotiatePopup(orgId, fighterId) {
+  Audio.play('hover');
+  const orgCfg = RIVAL_ORGS.find(o => o.id === orgId);
+  const orgData = G.aiOrgs && G.aiOrgs[orgId];
+  if (!orgCfg || !orgData) return;
+  const fighter = orgData.roster.find(f => f.id === fighterId);
+  if (!fighter) return;
+
+  // Check constraints
+  if (G.pendingNegotiation) {
+    showConfirm('現在交渉中の案件があります。同時に交渉できるのは1件までです。', 'OK', () => {});
+    return;
+  }
+  if ((G.negotiatedThisSeason || []).includes(fighterId)) {
+    showConfirm('この選手とは今シーズン既に交渉済みです。', 'OK', () => {});
+    return;
+  }
+
+  const rc = orgCfg.color;
+  const fOvr = Engine.util.ov(fighter);
+  const baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  const dialogue = Engine.negotiate.getDialogue(fighter, 'start');
+  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+
+  let html = '';
+  // Header
+  html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${rc}20,transparent);border-radius:12px 12px 0 0">`;
+  html += `<div style="font-size:13px;letter-spacing:2px;color:${rc};font-weight:700">🤝 引き抜き交渉</div>`;
+  html += `<div style="font-size:11px;color:var(--text-sub);margin-top:4px">${orgCfg.emoji} ${orgCfg.name}（${orgCfg.tier}級）</div>`;
+  html += `</div>`;
+
+  // Fighter portrait + info
+  const fUrl = getPortraitUrl(fighter.id);
+  html += `<div style="display:flex;align-items:center;gap:12px;margin:16px 8px 12px;padding:12px;background:var(--bg-card);border:1px solid ${rc}33;border-radius:8px">`;
+  if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};object-fit:cover" alt="">`;
+  else html += `<div style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};display:flex;align-items:center;justify-content:center;background:${rc}11;font-size:30px;font-weight:900;color:${rc}">${fighter.name.charAt(0)}</div>`;
+  html += `<div style="flex:1"><div style="font-size:16px;font-weight:700;color:var(--text-main)">${fighter.name}</div>`;
+  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">OVR ${fOvr} ・ ${fighter.style || '?'}</div></div></div>`;
+
+  // Dialogue
+  html += `<div style="background:var(--panel-bg);border:1px solid ${rc}33;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
+  html += `<div style="position:absolute;top:-8px;left:40px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${rc}33"></div>`;
+  html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
+  html += `</div>`;
+
+  // 3 Plans
+  const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
+  const planDescs = ['リスク低め', 'バランス型', 'ハイリターン'];
+  const cfg = NEGOTIATION_CONFIG;
+  html += `<div style="margin:0 8px 16px">`;
+  html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">交渉プランを選択:</div>`;
+  for (let i = 0; i < 3; i++) {
+    const cost = Math.round(baseFee * cfg.baseFeeMultipliers[i]);
+    const failCost = Math.round(cost * cfg.failureCostRatio);
+    const rate = Engine.negotiate.calcSuccessRate(G, fighter, orgCfg, i);
+    const canAfford = G.funds >= cost;
+    const borderStyle = canAfford ? `border:1px solid ${rc}44` : 'border:1px solid rgba(100,100,100,0.3)';
+    const opacity = canAfford ? '1' : '0.5';
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;background:var(--bg-card);${borderStyle};border-radius:6px;opacity:${opacity}">`;
+    html += `<div><div style="font-size:13px;font-weight:700;color:${canAfford ? rc : 'var(--text-dim)'}">${planLabels[i]} <span style="font-size:11px;font-weight:400;color:var(--text-sub)">${planDescs[i]}</span></div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">費用: ${cost}万 ｜ 失敗時損失: ${failCost}万 ｜ 成功率: ${rate}%</div></div>`;
+    html += `<button class="btn" style="font-size:12px;padding:6px 14px;background:${canAfford ? rc+'20' : 'var(--bg-mid)'};color:${canAfford ? rc : '#666'};border:1px solid ${canAfford ? rc+'40' : '#444'}" ${canAfford ? `onclick="confirmNegotiation('${orgId}',${fighterId},${i})"` : 'disabled'}>選択</button>`;
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // Pending negotiation info
+  if (G.pendingNegotiation) {
+    html += `<div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:8px">⚠ 交渉中: ${G.pendingNegotiation.fighterName}（残り${G.pendingNegotiation.resolveWeek - G.week}週）</div>`;
+  }
+
+  // Close button
+  html += `<div style="text-align:center"><button class="btn" style="padding:8px 20px;font-size:12px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">戻る</button></div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+function confirmNegotiation(orgId, fighterId, planIndex) {
+  const orgCfg = RIVAL_ORGS.find(o => o.id === orgId);
+  const orgData = G.aiOrgs && G.aiOrgs[orgId];
+  if (!orgCfg || !orgData) return;
+  const fighter = orgData.roster.find(f => f.id === fighterId);
+  if (!fighter) return;
+  const baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  const cost = Math.round(baseFee * NEGOTIATION_CONFIG.baseFeeMultipliers[planIndex]);
+  const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
+
+  document.getElementById('showResultOverlay').classList.remove('active');
+  showConfirm(
+    `<div style="text-align:center"><strong>${fighter.name}</strong>への引き抜き交渉を開始します。<br><br>` +
+    `プラン: ${planLabels[planIndex]}（費用: ${cost}万）<br>` +
+    `交渉期間: 4週間（キャンセル不可）<br><br>` +
+    `よろしいですか？</div>`,
+    '交渉開始',
+    () => {
+      Audio.play('stamp');
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 700 + G.week + fighterId));
+      const result = Engine.negotiate.startNegotiation(rng, G, orgId, fighterId, planIndex);
+      G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+      Storage.autoSave();
+      refreshAll();
+    }
+  );
+}
+
+// F2: Show negotiation result popup (called from refreshAll when negotiationResult exists)
+function showNegotiationResult() {
+  const nr = G.negotiationResult;
+  if (!nr) return;
+  const fighter = nr.fighter;
+  if (!fighter) { G = { ...G, negotiationResult: null }; return; }
+
+  Audio.play(nr.success ? 'victory' : 'defeat');
+
+  const phase = nr.success ? 'success' : 'fail';
+  const dialogue = Engine.negotiate.getDialogue(fighter, phase);
+  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+  const color = nr.success ? 'var(--gold)' : 'var(--red)';
+  const title = nr.success ? '🎉 交渉成功！' : '😞 交渉失敗…';
+
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+
+  let html = '';
+  html += `<div style="text-align:center;font-size:20px;font-weight:900;color:${color};margin-bottom:16px">${title}</div>`;
+
+  // Fighter portrait
+  const fUrl = getPortraitUrl(fighter.id);
+  html += `<div style="text-align:center;margin-bottom:12px">`;
+  if (fUrl) html += `<img src="${fUrl}" style="width:100px;height:100px;border-radius:50%;border:3px solid ${color};object-fit:cover" alt="">`;
+  html += `<div style="font-size:15px;font-weight:700;margin-top:8px">${fighter.name}</div>`;
+  html += `</div>`;
+
+  // Dialogue
+  html += `<div style="background:var(--panel-bg);border:1px solid ${color}44;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
+  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${color}44"></div>`;
+  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
+  html += `</div>`;
+
+  if (nr.success) {
+    html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">${fighter.name}がロスターに加わりました！</div>`;
+  }
+
+  html += `<div style="text-align:center"><button class="btn btn-gold" style="min-width:140px;padding:10px 24px" onclick="document.getElementById('showResultOverlay').classList.remove('active');G.negotiationResult=null;Storage.autoSave();refreshAll()">OK</button></div>`;
+
+  box.innerHTML = html;
   overlay.classList.add('active');
 }
 
@@ -985,7 +1075,7 @@ function showFighterPopup(fighterId, source) {
 
       // 1) Determine original organization
       const ORIG_ORG_MAP = {};
-      ['empress','nova','crescent'].forEach(orgId => {
+      ['org_s','org_a','org_b'].forEach(orgId => {
         (ORG_ASSIGN[orgId] || []).forEach(id => { ORIG_ORG_MAP[id] = orgId; });
       });
       (ORG_ASSIGN.free || []).forEach(id => { ORIG_ORG_MAP[id] = 'free'; });
@@ -996,10 +1086,10 @@ function showFighterPopup(fighterId, source) {
 
       const origOrg = ORIG_ORG_MAP[c.id];
       const pOrgName = G.orgName || 'プレイヤー団体';
-      const orgNames = {
-        empress: '👑 エンプレスリング', nova: '⚡ NOVA', crescent: '🌙 クレセント',
-        free: '🆓 フリーエージェント', player_draft: `🏠 ${pOrgName}（ドラフト）`
-      };
+      const orgNames = {};
+      RIVAL_ORGS.forEach(o => { orgNames[o.id] = `${o.emoji} ${o.name}`; });
+      orgNames.free = '🆓 フリーエージェント';
+      orgNames.player_draft = `🏠 ${pOrgName}（ドラフト）`;
 
       // Debut entry
       const debutAge = c.age !== undefined ? Math.max(16, c.age - (G.season || 1) + 1) : 16;
@@ -1670,14 +1760,6 @@ function revokeAce() {
   Storage.autoSave();
   refreshAll();
 }
-function playerPoachFighter(aiOrgId, fighterId) {
-  Audio.play('stamp');
-  const result = Engine.transfer.playerPoach(G, aiOrgId, fighterId);
-  G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
-  Storage.autoSave();
-  refreshAll();
-}
-
 // ── Phase D: Event UI Functions ──
 function executeEvent() {
   const ev = G.pendingEvent;
