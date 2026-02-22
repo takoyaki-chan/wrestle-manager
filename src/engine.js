@@ -367,6 +367,86 @@ const Engine = {
     }
   },
 
+  // ── Popularity System (v1.0b) ─────────────────────────────
+  popularity: {
+    // §A: Diminishing returns curve (steep)
+    getDiminishingMultiplier(currentPop) {
+      if (currentPop < 20) return 1.0;
+      if (currentPop < 35) return 0.6;
+      if (currentPop < 50) return 0.35;
+      if (currentPop < 65) return 0.18;
+      if (currentPop < 80) return 0.13;
+      return 0.10; // 80-99
+    },
+    applyDiminishing(rawGain, currentPop) {
+      if (rawGain <= 0) return rawGain; // penalties are not diminished
+      const mult = Engine.popularity.getDiminishingMultiplier(currentPop);
+      return Math.max(0, Math.round(rawGain * mult));
+    },
+    // §B-1: Losing streak penalty
+    checkLosingStreak(fighter, isWinner) {
+      let streak = fighter.losingStreak || 0;
+      if (isWinner) return { losingStreak: 0, popDelta: 0, msg: null };
+      streak += 1;
+      for (let i = LOSING_STREAK_PENALTIES.length - 1; i >= 0; i--) {
+        const lsp = LOSING_STREAK_PENALTIES[i];
+        if (streak === lsp.threshold) {
+          return { losingStreak: streak, popDelta: lsp.penalty, msg: `📉 ${fighter.name}に${lsp.msg}（連敗${streak}）` };
+        }
+      }
+      return { losingStreak: streak, popDelta: 0, msg: null };
+    },
+    // §B-2: Scandal (random event)
+    checkScandal(rng, fighter, isAce) {
+      if (fighter.popularity < SCANDAL_CONFIG.minPop) return null;
+      const chance = isAce ? SCANDAL_CONFIG.aceChance : SCANDAL_CONFIG.baseChance;
+      if (Engine.rng.float(rng) >= chance) return null;
+      const penalty = -(SCANDAL_CONFIG.penaltyMin + Engine.rng.int(rng, 0, SCANDAL_CONFIG.penaltyMax - SCANDAL_CONFIG.penaltyMin));
+      const msg = SCANDAL_CONFIG.messages[Engine.rng.int(rng, 0, SCANDAL_CONFIG.messages.length - 1)];
+      return { popDelta: penalty, msg: `${msg}（${fighter.name}: 人気${penalty}）` };
+    },
+    // §B-3: Injury forgetting — record pre-injury pop and decay weekly
+    recordPreInjury(fighter) {
+      if (fighter.preInjuryPop != null) return fighter; // already recorded
+      return { ...fighter, preInjuryPop: fighter.popularity };
+    },
+    applyInjuryDecay(fighter) {
+      if (!fighter.injury) return fighter;
+      const floor = Math.round((fighter.preInjuryPop || fighter.popularity) * 0.5);
+      const newPop = Math.max(floor, Math.max(1, fighter.popularity - 1));
+      return { ...fighter, popularity: newPop };
+    },
+    clearPreInjury(fighter) {
+      return { ...fighter, preInjuryPop: null };
+    },
+    // §B-4: Main event poor match penalty
+    checkMainEventPenalty(mq) {
+      if (mq < 25) return -5;
+      if (mq < 35) return -3;
+      if (mq < 45) return -1;
+      return 0;
+    },
+    // §B-5: Transfer popularity reset (×0.75)
+    applyTransferReset(fighter) {
+      const newPop = Math.max(1, Math.round(fighter.popularity * TRANSFER_POP_MULT));
+      return { ...fighter, popularity: newPop };
+    },
+    // §D: Roster popularity score for goods revenue
+    calcRosterPopScore(roster) {
+      const sorted = [...roster].filter(c => !c.injury).sort((a, b) => b.popularity - a.popularity);
+      let totalWeight = 0, weightedPop = 0;
+      sorted.forEach((c, i) => {
+        let weight = i === 0 ? 3 : i < 3 ? 2 : 1;
+        if (Traits.has(c, '華')) weight *= 1.3;
+        if (Traits.has(c, 'ファンサービス')) weight *= 1.2;
+        if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty')) weight *= 1.2;
+        totalWeight += weight;
+        weightedPop += c.popularity * weight;
+      });
+      return totalWeight > 0 ? weightedPop / totalWeight : 0;
+    }
+  },
+
   // ── Economy (DOM-free) ─────────────────────────────────
   economy: {
     calcWeeklySalary(roster) {
@@ -385,30 +465,29 @@ const Engine = {
     },
     calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch) {
       const v = VENUES[venueIdx];
-      const baseAttend = G.orgPop / 100 * v.cap * 0.8;
-      const cardBonus = mainCardPop * 0.3;
+      // v1.0b: Capacity-independent base attendance (quadratic on orgPop)
+      const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 5000);
+      const cardBonus = Math.round(mainCardPop * 3);
       const heatMult = Engine.heat.getMult(G);
       const titleMult = hasTitleMatch ? 1.15 : 1.0;
       // 華: ロスターに華持ちがいれば集客+5%
       const charismaMult = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 1.05 : 1.0;
-      return Math.min(v.cap, Math.round((baseAttend + cardBonus) * heatMult * titleMult * charismaMult));
+      const rawAttendance = Math.round((baseAttendance + cardBonus) * heatMult * titleMult * charismaMult);
+      // Minimum guarantee: 5% of capacity (at least 10)
+      const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
+      return Engine.util.clamp(rawAttendance, minAttendance, v.cap);
     },
     calcShowRevenue(roster, venueIdx, attendance) {
       const v = VENUES[venueIdx];
-      const ticketRev = Math.round(attendance * v.ticket);
-      // Sort by popularity, take top 3, apply trait bonuses
-      const sorted = [...roster].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
-      const goodsRev = sorted.reduce((s, c) => {
-        let contrib = c.popularity * 2;
-        // 華: グッズ貢献×1.3
-        if (Traits.has(c, '華')) contrib *= 1.3;
-        // ファンサービス: グッズ貢献×1.2
-        if (Traits.has(c, 'ファンサービス')) contrib *= 1.2;
-        // ヒール適性 + Heel role: グッズ貢献+20%
-        if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty')) contrib *= 1.2;
-        return s + Math.round(contrib);
-      }, 0);
-      return { ticketRev, goodsRev, venueCost: v.cost };
+      // v1.0b: Unified ticket price + occupancy bonus
+      const rawTicketRev = Math.round(attendance * TICKET_PRICE);
+      const occupancyRate = attendance / v.cap;
+      const occBonus = OCCUPANCY_BONUS.find(b => occupancyRate >= b.min) || OCCUPANCY_BONUS[OCCUPANCY_BONUS.length - 1];
+      const ticketRev = Math.round(rawTicketRev * occBonus.ticketMult);
+      // v1.0b: Goods revenue = attendance × GOODS_PRICE × rosterPopScore / 100
+      const popScore = Engine.popularity.calcRosterPopScore(roster);
+      const goodsRev = Math.round(attendance * GOODS_PRICE * popScore / 100);
+      return { ticketRev, goodsRev, venueCost: v.cost, occupancyRate, occLabel: occBonus.label, occHeatDelta: occBonus.heatDelta };
     }
   },
 
@@ -457,6 +536,8 @@ const Engine = {
       const reducedWeeks = Math.max(1, weeks - facilityReduction);
       // v0.99: Reassess value on severe injury (pricing-balance-spec §4.2)
       let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+      // v1.0b: Record pre-injury popularity for injury forgetting
+      updatedFighter = Engine.popularity.recordPreInjury(updatedFighter);
       if (injury.type === '重傷' && updatedFighter.assessedValue) {
         const injRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 888));
         const rv = Engine.scout.reassess(updatedFighter, 'severeInjury', injRng, 0);
@@ -472,8 +553,13 @@ const Engine = {
       const newRoster = roster.map(c => {
         if (!c.injury) return c;
         const wl = c.injury.weeksLeft - 1;
-        if (wl <= 0) { events.push(`✅ ${c.name}が${c.injury.type}から復帰！`); return { ...c, injury: null }; }
-        return { ...c, injury: { ...c.injury, weeksLeft: wl } };
+        if (wl <= 0) {
+          events.push(`✅ ${c.name}が${c.injury.type}から復帰！`);
+          return Engine.popularity.clearPreInjury({ ...c, injury: null });
+        }
+        // v1.0b: Apply injury forgetting (popularity decay while injured)
+        const decayed = Engine.popularity.applyInjuryDecay(c);
+        return { ...decayed, injury: { ...c.injury, weeksLeft: wl } };
       });
       const newFA = freeAgents.map(c => {
         if (!c.injury) return c;
@@ -530,7 +616,8 @@ const Engine = {
       const newRoster = G.roster.map(c => {
         if (c.id !== fighterId) return c;
         const reassessed = Engine.scout.reassess(c, 'titleWin', rng, G.season);
-        return { ...c, popularity: Math.min(100, c.popularity + 5), ...reassessed };
+        const titlePopGain = Engine.popularity.applyDiminishing(5, c.popularity);
+        return { ...c, popularity: Math.min(100, c.popularity + titlePopGain), ...reassessed };
       });
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
@@ -547,7 +634,7 @@ const Engine = {
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, champId, 333));
       const newRoster = G.roster.map(c => {
         if (c.id !== champId) return c;
-        let updated = { ...c, popularity: Math.min(100, c.popularity + 2) };
+        let updated = { ...c, popularity: Math.min(100, c.popularity + Engine.popularity.applyDiminishing(2, c.popularity)) };
         if (newDefenses === 3) {
           const reassessed = Engine.scout.reassess(updated, 'titleDefend3', rng, G.season);
           updated = { ...updated, ...reassessed };
@@ -913,6 +1000,7 @@ const Engine = {
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
+        losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
         assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
       };
@@ -1240,6 +1328,9 @@ const Engine = {
 
           newOrgs[sourceOrg.id].roster = srcRoster.filter(f => f.id !== target.id);
           target.orgId = org.id;
+          // v1.0b: Transfer popularity reset
+          const resetTarget = Engine.popularity.applyTransferReset(target);
+          Object.assign(target, resetTarget);
           newOrgs[org.id].roster.push(target);
           events.push(`📋 ${target.name}が${sourceOrg.name}→${org.name}に引き抜き`);
           break; // Max 1 poach per org per season
@@ -1263,6 +1354,9 @@ const Engine = {
           if (!transferee || Engine.rng.float(rng) > 0.4) continue;
           newOrgs[srcOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
           transferee.orgId = org.id;
+          // v1.0b: Transfer popularity reset
+          const resetTransferee = Engine.popularity.applyTransferReset(transferee);
+          Object.assign(transferee, resetTransferee);
           newOrgs[org.id].roster.push(transferee);
           events.push(`📋 ${transferee.name}が${srcOrg.name}→${org.name}に移籍`);
           break;
@@ -1308,7 +1402,7 @@ const Engine = {
           if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
 
           // Acquire
-          const acquired = { ...fa, orgId: org.id };
+          const acquired = Engine.popularity.applyTransferReset({ ...fa, orgId: org.id });
           roster.push(acquired);
           freeAgents = freeAgents.filter(f => f.id !== fa.id);
           events.push(`${org.emoji} ${org.name}がFA ${fa.name}を獲得`);
@@ -1379,7 +1473,11 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
-          nc.popularity = Math.min(100, nc.popularity + Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G));
+          // v1.0b: Apply diminishing returns + promo pop cap
+          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G);
+          const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
+          const newPop = nc.popularity + diminishedGain;
+          nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus + mentalBonus);
           nc.intensiveWeeks = 0;
         } else {
@@ -1391,13 +1489,25 @@ const Engine = {
         return nc;
       });
 
+      // v1.0b §B-2: Scandal check (weekly, for each fighter with pop >= 40)
+      const scandalRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 777));
+      roster = roster.map(c => {
+        if (c.injury || c.isRental) return c;
+        const isAce = Engine.ace.isAce(G, c.id);
+        const scandal = Engine.popularity.checkScandal(scandalRng, c, isAce);
+        if (!scandal) return c;
+        events.push(scandal.msg);
+        return { ...c, popularity: Math.max(1, c.popularity + scandal.popDelta) };
+      });
+
       return { roster, freeAgents, heatScore, events };
     },
 
-    // Returns { funds, weeklyFinance, roster, summary } — does NOT mutate G
+    // Returns { funds, weeklyFinance, roster, summary, occHeatDelta } — does NOT mutate G
     processSettlement(G) {
       const details = [];
       let totalIncome = 0, totalExpense = 0;
+      let occHeatDelta = 0;
 
       const salary = Engine.economy.calcWeeklySalary(G.roster);
       totalExpense += salary;
@@ -1445,9 +1555,11 @@ const Engine = {
         totalIncome += rev.goodsRev;
         totalExpense += rev.venueCost;
 
-        details.push({ label: `チケット収入（${attendance}人×${VENUES[G.showVenue].ticket}万）`, val: rev.ticketRev, type: 'income' });
+        const occPct = Math.round(rev.occupancyRate * 100);
+        details.push({ label: `チケット収入（${attendance}人 / ${VENUES[G.showVenue].cap}席 ${occPct}% ${rev.occLabel}）`, val: rev.ticketRev, type: 'income' });
         details.push({ label: 'グッズ収入', val: rev.goodsRev, type: 'income' });
         details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
+        occHeatDelta = rev.occHeatDelta;
 
         // Win/loss tracking (immutable)
         G.lastShowResults.forEach(r => {
@@ -1478,7 +1590,7 @@ const Engine = {
       const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
       const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
 
-      return { funds: newFunds, weeklyFinance, roster, summary };
+      return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta };
     }
   },
 
@@ -1493,6 +1605,10 @@ const Engine = {
     let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+    // v1.0b: Apply occupancy heat delta
+    if (settle.occHeatDelta !== 0) {
+      s = { ...s, heatScore: s.heatScore + settle.occHeatDelta };
+    }
     const events = [...manage.events, settle.summary];
     // D-1: Rental weekly processing
     if (s.rental) {
@@ -1595,8 +1711,14 @@ const Engine = {
       }
     });
 
-    // MQ popularity (immutable)
-    results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
+    // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
+    const mainEventIdx = results.length - 1; // last match is main event
+    results.forEach((r, idx) => {
+      const isMainEvent = idx === mainEventIdx;
+      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent);
+      roster = mqPop.roster;
+      events.push(...mqPop.popEvents);
+    });
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
     roster = popResult.roster;
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
@@ -1627,20 +1749,43 @@ const Engine = {
   },
 
   // MQ/Show popularity helpers (pure functions)
-  applyMQPopularity(roster, result) {
-    return roster.map(c => {
+  applyMQPopularity(roster, result, isMainEvent) {
+    const popEvents = [];
+    const newRoster = roster.map(c => {
       const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
       if (!isLeft && !isRight) return c;
-      let popDelta = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
       const isWinner = (isLeft && result.winner === 'left') || (isRight && result.winner === 'right');
-      if (isWinner) popDelta += 1;
+      const isDraw = result.winner === 'draw';
+
+      // Base raw gain from MQ
+      let rawGain = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
+      if (isWinner) rawGain += 1;
       // ヒール適性 + Heel: 試合後の人気上昇ボーナス
-      if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) popDelta += 1;
+      if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) rawGain += 1;
+
+      // v1.0b: Apply diminishing returns
+      let popDelta = Engine.popularity.applyDiminishing(rawGain, c.popularity);
+
+      // v1.0b §B-4: Main event poor match penalty (both fighters)
+      if (isMainEvent) {
+        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
+        if (mainPenalty < 0) {
+          popDelta += mainPenalty; // penalties are not diminished
+          popEvents.push(`📉 メインイベントの低MQ(${result.mq})で${c.name}の人気${mainPenalty}`);
+        }
+      }
+
+      // v1.0b §B-1: Losing streak tracking
+      const streakResult = Engine.popularity.checkLosingStreak(c, isWinner || isDraw);
+      if (streakResult.msg) popEvents.push(streakResult.msg);
+      popDelta += streakResult.popDelta;
+
       // 負けず嫌い用: 試合結果を記録
-      let lastMatchResult = isWinner ? 'win' : (result.winner === 'draw' ? 'draw' : 'loss');
-      const nc = { ...c, popularity: Math.min(100, c.popularity + Math.max(0, popDelta)), lastMatchResult };
-      return nc;
+      let lastMatchResult = isWinner ? 'win' : (isDraw ? 'draw' : 'loss');
+      const newPop = Engine.util.clamp(c.popularity + popDelta, 1, 100);
+      return { ...c, popularity: newPop, lastMatchResult, losingStreak: streakResult.losingStreak };
     });
+    return { roster: newRoster, popEvents };
   },
   applyShowPopularity(roster, results, orgPop) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
@@ -1670,7 +1815,7 @@ const Engine = {
   transfer: {
     calcFee(fighter, fromOrg) {
       const overall = Engine.util.ov(fighter);
-      const popBonus = fighter.popularity * 10;
+      const popBonus = fighter.popularity * 15; // v1.0b: increased from ×10 to compensate lower avg pop
       let baseFee;
       if (overall >= 80)      baseFee = 800;
       else if (overall >= 60) baseFee = 400;
@@ -1746,7 +1891,9 @@ const Engine = {
         const targetId = poach.org.id;
         const targetData = s.aiOrgs[targetId];
         if (targetData) {
-          const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+          // v1.0b: Transfer popularity reset
+          const resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+          const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
           s = { ...s, aiOrgs: newAiOrgs };
         }
         events.push(`💸 ${poach.fighter.name}が${poach.org.name}に移籍（移籍金+${poach.fee}万）`);
@@ -1770,7 +1917,9 @@ const Engine = {
             funds: s.funds + poach.fee
           };
           if (targetData) {
-            const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+            // v1.0b: Transfer popularity reset
+            const resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+            const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
             s = { ...s, aiOrgs: newAiOrgs };
           }
           events.push(`😭 ${poach.fighter.name}の引き留め失敗 → ${poach.org.name}に移籍（+${poach.fee}万）`);
@@ -1961,12 +2110,14 @@ const Engine = {
           careerSeasons: fighter.careerSeasons || 0,
           intensive: false, intensiveWeeks: 0
         };
+        // v1.0b: Transfer popularity reset
+        const resetFighter = Engine.popularity.applyTransferReset(newFighter);
         events.push(`🎉 ${fighter.name}の引き抜き交渉成功！（-${neg.totalCost}万）`);
         return {
           state: {
             ...state,
             aiOrgs: newAiOrgs,
-            roster: [...state.roster, newFighter],
+            roster: [...state.roster, resetFighter],
             funds: state.funds - neg.totalCost,
             pendingNegotiation: null,
             transferLog: [...(state.transferLog || []), { season: state.season, week: state.week, type: 'negotiate', fighter: fighter.name, from: orgCfg.name, cost: neg.totalCost }]
@@ -2776,6 +2927,8 @@ const Engine = {
       intensive: false,
       intensiveWeeks: 0,
       lastMatchResult: null,
+      losingStreak: 0,     // v1.0b: losing streak counter
+      preInjuryPop: null,  // v1.0b: pre-injury popularity for injury forgetting
       assessedValue: av.assessedValue,
       assessedTier: av.assessedTier,
       assessedVariance: av.assessedVariance,

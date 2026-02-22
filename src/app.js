@@ -936,7 +936,7 @@ const Storage = {
   serialize(G) {
     const state = JSON.parse(JSON.stringify(G));
     state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
-    state._saveVersion = '0.9';
+    state._saveVersion = '1.0b';
     state._saveDate = new Date().toISOString();
     state._nextGenCharId = nextGenCharId;
     return JSON.stringify(state);
@@ -1065,6 +1065,52 @@ const Storage = {
 
       // v0.99b: restore nextGenCharId for scout-generated characters
       if (G._nextGenCharId) nextGenCharId = G._nextGenCharId;
+
+      // v1.0b migration: popularity/venue redesign
+      if (!G._migrated_v1_0b) {
+        // Add new fighter fields
+        const migrateV1b = (fighters) => fighters.map(c => {
+          const nc = { ...c };
+          if (nc.losingStreak === undefined) nc.losingStreak = 0;
+          if (nc.preInjuryPop === undefined) nc.preInjuryPop = nc.injury ? nc.popularity : null;
+          return nc;
+        });
+        G = { ...G, roster: migrateV1b(G.roster), freeAgents: migrateV1b(G.freeAgents) };
+        // Migrate AI org rosters
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: migrateV1b(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        // Rescale popularity (fix "everyone at 100" problem)
+        const rescalePop = (fighters) => fighters.map(c => {
+          const ovr = Engine.util.ov(c);
+          const targetPop = ovr <= 50 ? 15 : ovr <= 65 ? 30 : ovr <= 80 ? 50 : ovr <= 90 ? 65 : 80;
+          const newPop = Math.round(c.popularity * 0.5 + targetPop * 0.5);
+          return { ...c, popularity: Engine.util.clamp(newPop, 5, 90) };
+        });
+        G = { ...G, roster: rescalePop(G.roster) };
+        // Rescale AI org fighter popularity too
+        if (G.aiOrgs) {
+          const migAi2 = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi2[orgId] = { ...od, roster: rescalePop(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi2 };
+        }
+        // Migrate venue index if needed (old 6 venues → new 7 venues)
+        if (G.showVenue !== undefined) {
+          // Old: 0=公民館,1=小,2=中,3=アリーナ,4=大,5=ドーム
+          // New: 0=公民館,1=小,2=市民会館,3=中,4=アリーナ,5=大,6=ドーム
+          const venueMap = {0:0, 1:1, 2:3, 3:4, 4:5, 5:6};
+          G = { ...G, showVenue: venueMap[G.showVenue] ?? 0 };
+        }
+        G = { ...G, _migrated_v1_0b: true };
+      }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
@@ -1307,7 +1353,7 @@ const App = {
     const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     Audio.play('stamp');
-    const c = fighter;
+    const c = Engine.popularity.applyTransferReset(fighter); // v1.0b: Transfer popularity reset
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];

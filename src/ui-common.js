@@ -1070,236 +1070,60 @@ function showFighterPopup(fighterId, source) {
         </div>
       </div>`;
 
-      // ── Build comprehensive career timeline ──
-      const timeline = [];
-
-      // 1) Determine original organization
-      const ORIG_ORG_MAP = {};
-      ['org_s','org_a','org_b'].forEach(orgId => {
-        (ORG_ASSIGN[orgId] || []).forEach(id => { ORIG_ORG_MAP[id] = orgId; });
-      });
-      (ORG_ASSIGN.free || []).forEach(id => { ORIG_ORG_MAP[id] = 'free'; });
-      // Draft picks → player org
-      const draftFixed = DRAFT_CONFIG.fixedIds || [];
-      const draftPicks = DRAFT_CONFIG.candidateIds || [];
-      draftFixed.forEach(id => { if (!ORIG_ORG_MAP[id]) ORIG_ORG_MAP[id] = 'player_draft'; });
-
-      const origOrg = ORIG_ORG_MAP[c.id];
+      // ── Build career display from milestones ──
+      const milestones = Engine.milestone.get(G, c.id);
       const pOrgName = G.orgName || 'プレイヤー団体';
-      const orgNames = {};
-      RIVAL_ORGS.forEach(o => { orgNames[o.id] = `${o.emoji} ${o.name}`; });
-      orgNames.free = '🆓 フリーエージェント';
-      orgNames.player_draft = `🏠 ${pOrgName}（ドラフト）`;
+      const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
-      // Debut entry
-      const debutAge = c.age !== undefined ? Math.max(16, c.age - (G.season || 1) + 1) : 16;
-      timeline.push({
-        sort: 0, season: 1, week: 0,
-        icon: 'デ', color: '#3498db',
-        text: `デビュー（${debutAge}歳）`,
-        detail: origOrg ? `${orgNames[origOrg] || origOrg} 所属として活動開始` : 'プロレスラーとしてキャリア開始'
-      });
+      // ── Career Summary Header ──
+      html += `<div style="padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-family:'Courier New',monospace">`;
+      html += `<div style="font-size:14px;font-weight:900;color:var(--text);margin-bottom:6px">■ 通算成績: ${wins}勝${losses}敗${draws}分 (${winRateFmt}) / ベストMQ: ${c.bestMQ || 0}</div>`;
+      if (isChamp) html += `<div style="font-size:13px;color:var(--gold);font-weight:700">👑 現団体王者 — ${G.titles.world.defenses}度防衛中</div>`;
+      if (isAce) html += `<div style="font-size:13px;color:#f1c40f;font-weight:700">⭐ ${pOrgName} エース</div>`;
+      html += `</div>`;
 
-      // If originally in another org but now in player org, show initial org
-      if (origOrg && origOrg !== 'player_draft' && origOrg !== 'free' && isRoster) {
-        timeline.push({
-          sort: 0.5, season: 1, week: 0,
-          icon: '所', color: '#9b59b6',
-          text: `${orgNames[origOrg] || origOrg} 所属`,
-          detail: 'シーズン1開始時の所属団体'
+      // ── Milestone Timeline (grouped by season, reverse order) ──
+      if (milestones.length > 0) {
+        // Group by season
+        const bySeason = {};
+        milestones.forEach(m => {
+          const s = m.season || 1;
+          if (!bySeason[s]) bySeason[s] = [];
+          bySeason[s].push(m);
         });
-      }
+        const seasons = Object.keys(bySeason).map(Number).sort((a, b) => b - a);
 
-      // If drafted as initial member
-      if (origOrg === 'player_draft') {
-        timeline.push({
-          sort: 0.5, season: 1, week: 0,
-          icon: '指', color: 'var(--gold)',
-          text: `${pOrgName}にドラフト指名`,
-          detail: '新団体設立時の初期メンバーとして選出'
-        });
-      }
-
-      // 2) Transfer/event log entries
-      const events = (G.transferLog || []).filter(e => e.fighterId === c.id || e.targetId === c.id);
-      events.forEach(e => {
-        const s = e.season || 0;
-        const w = e.week || 0;
-        let icon = '●'; let color = 'var(--text-sub)';
-        let text = e.text || e.msg || '';
-        let detail = '';
-        if (e.type === '🤝' || (text && text.includes('引き抜き'))) {
-          icon = '移'; color = '#e67e22'; detail = '他団体への移籍';
-        } else if (e.type === '📥' || (text && text.includes('契約'))) {
-          icon = '契'; color = '#2ecc71'; detail = '新規契約';
-        } else if (e.type === '🚪' || (text && text.includes('解雇'))) {
-          icon = '解'; color = '#e74c3c'; detail = '契約解除';
-        } else if (e.type === '⭐') {
-          icon = '★'; color = '#f1c40f'; detail = 'エース指名';
-        }
-        timeline.push({ sort: s * 100 + w, season: s, week: w, icon, color, text: text || e.type || 'イベント', detail });
-      });
-
-      // 3) All match history
-      const charMatches = (G.matchHistory || []).filter(m => m.left === c.id || m.right === c.id);
-
-      // Title-related entries
-      const titleMatches = charMatches.filter(m => m.isTitle);
-      titleMatches.forEach(m => {
-        const isWinner = m.winner === c.id;
-        const oppId = m.left === c.id ? m.right : m.left;
-        const opp = ALL_CHARS.find(ch => ch.id === oppId);
-        const opName = opp ? opp.name : '不明';
-        const s = m.season || 0;
-        const w = m.week || 0;
-        timeline.push({
-          sort: s * 100 + w, season: s, week: w,
-          icon: isWinner ? '勝' : '敗',
-          color: isWinner ? 'var(--gold)' : '#e74c3c',
-          text: isWinner ? `タイトルマッチ勝利 vs ${opName}` : `タイトルマッチ敗北 vs ${opName}`,
-          detail: isWinner ? '王座を獲得！' : 'タイトル挑戦するも敗退',
-          isTitle: true
-        });
-      });
-
-      // Current champion status
-      if (isChamp) {
-        timeline.push({
-          sort: 99999, season: G.season, week: G.week,
-          icon: '王', color: 'var(--gold)',
-          text: `現団体王者（${G.titles.world.defenses}度防衛中）`,
-          detail: '現在進行中',
-          isTitle: true
-        });
-      }
-
-      // Ace designation
-      if (isAce) {
-        timeline.push({
-          sort: 99998, season: G.season, week: G.week,
-          icon: '★', color: '#f1c40f',
-          text: '団体エース',
-          detail: `現在${pOrgName}のエースとして活動中`
-        });
-      }
-
-      // Current affiliation
-      if (isRoster && origOrg !== 'player_draft') {
-        timeline.push({
-          sort: (c.joinedSeason || 1) * 100, season: c.joinedSeason || G.season, week: 0,
-          icon: '団', color: '#2ecc71',
-          text: `${pOrgName}に加入`,
-          detail: origOrg === 'free' ? 'フリーエージェントから契約' : origOrg ? `${orgNames[origOrg] || origOrg} から移籍` : '入団'
-        });
-      }
-      if (isFree) {
-        timeline.push({
-          sort: 99997, season: G.season, week: G.week,
-          icon: 'FA', color: '#8bc4f0',
-          text: 'フリーエージェント',
-          detail: '現在どの団体にも所属していない'
-        });
-      }
-
-      // Sort timeline chronologically
-      timeline.sort((a, b) => a.sort - b.sort);
-
-      // ── Render Timeline ──
-      html += `<div style="margin-bottom:14px">
-        <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-          <span style="background:#3498db;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">経歴</span>
-          キャリア年表
-        </h5>
-        <div style="position:relative;padding-left:28px;border-left:2px solid rgba(255,255,255,0.08);margin-left:10px">`;
-
-      timeline.forEach((t, idx) => {
-        const seasonInfo = t.season ? `${t.season}年目${t.week ? ` W${t.week}` : ''}` : '';
-        const isLast = idx === timeline.length - 1;
-        html += `<div style="position:relative;margin-bottom:${isLast ? 0 : 14}px">
-          <div style="position:absolute;left:-37px;top:2px;width:22px;height:22px;border-radius:50%;background:var(--bg-card);border:2px solid ${t.color};display:flex;align-items:center;justify-content:center;font-size:12px">${t.icon}</div>
-          <div style="padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${t.color}44">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <span style="font-size:13px;font-weight:700;color:${t.isTitle ? 'var(--gold)' : 'var(--text)'}">${t.text}</span>
-              <span style="font-size:11px;color:var(--text-dim);flex-shrink:0;margin-left:8px">${seasonInfo}</span>
-            </div>
-            ${t.detail ? `<div style="font-size:12px;color:var(--text-sub);line-height:1.5">${t.detail}</div>` : ''}
-          </div>
-        </div>`;
-      });
-
-      html += `</div></div>`;
-
-      // ── Title History Summary ──
-      if (titleMatches.length > 0 || isChamp) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#f39c12;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">タイトル</span>
-            タイトル戦績
-          </h5>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;margin-bottom:8px">
-            <div style="padding:8px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.2);border-radius:6px">
-              <div style="font-size:22px;font-weight:900;color:var(--gold)">${titleMatches.filter(m => m.winner === c.id).length}</div>
-              <div style="font-size:11px;color:var(--text-dim)">タイトル戦 勝利</div>
-            </div>
-            <div style="padding:8px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:6px">
-              <div style="font-size:22px;font-weight:900;color:#e74c3c">${titleMatches.filter(m => m.winner !== c.id).length}</div>
-              <div style="font-size:11px;color:var(--text-dim)">タイトル戦 敗北</div>
-            </div>
-          </div>
-          ${isChamp ? `<div style="padding:10px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);border-radius:6px;font-size:14px;color:var(--gold);font-weight:700;text-align:center">👑 現団体王者 — ${G.titles.world.defenses}度防衛中</div>` : ''}
-        </div>`;
-      }
-
-      // ── Full Match History (all matches, grouped by season) ──
-      if (charMatches.length > 0) {
-        // Group by season
-        const matchesBySeason = {};
-        charMatches.forEach(m => {
-          const s = m.season || 1;
-          if (!matchesBySeason[s]) matchesBySeason[s] = [];
-          matchesBySeason[s].push(m);
-        });
-
-        html += `<div style="margin-bottom:10px">
-          <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#9b59b6;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">全試合</span>
-            試合履歴（全${charMatches.length}戦）
+            <span style="background:#3498db;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">年表</span>
+            キャリア年表
           </h5>`;
 
-        // Show seasons in reverse order (latest first)
-        const seasons = Object.keys(matchesBySeason).sort((a,b) => b - a);
         seasons.forEach(s => {
-          const matches = matchesBySeason[s];
-          const sWins = matches.filter(m => m.winner === c.id).length;
-          const sLosses = matches.filter(m => m.winner !== c.id && m.winner !== 0 && m.winner !== undefined).length;
-          const sDraws = matches.length - sWins - sLosses;
+          const seasonMs = bySeason[s];
+          // Find season summary if exists
+          const summary = seasonMs.find(m => m.type === 'season_end');
+          const nonSummary = seasonMs.filter(m => m.type !== 'season_end');
+          const isCurrentSeason = s === G.season;
 
-          html += `<details ${s == G.season ? 'open' : ''} style="margin-bottom:8px">
-            <summary style="font-size:13px;color:var(--text-sub);cursor:pointer;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:4px;display:flex;align-items:center;gap:8px;user-select:none">
-              <span style="font-weight:700">${s}年目</span>
-              <span style="font-size:12px">${matches.length}試合</span>
-              <span style="font-size:12px;color:#2ecc71">${sWins}勝</span>
-              <span style="font-size:12px;color:#e74c3c">${sLosses}敗</span>
-              ${sDraws > 0 ? `<span style="font-size:12px;color:#b0b8c4">${sDraws}分</span>` : ''}
+          html += `<details ${isCurrentSeason ? 'open' : ''} style="margin-bottom:10px">
+            <summary style="font-size:13px;cursor:pointer;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;user-select:none;display:flex;align-items:center;gap:8px">
+              <span style="font-weight:900;color:var(--text);font-size:14px">[${s}年目]</span>
+              ${summary ? `<span style="font-size:12px;color:var(--text-sub)">${summary.detail}</span>` :
+                isCurrentSeason ? `<span style="font-size:12px;color:var(--blue)">シーズン進行中</span>` : ''}
             </summary>
-            <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;padding-left:4px">`;
+            <div style="padding:6px 0 2px 8px;border-left:2px solid rgba(255,255,255,0.06);margin-left:6px;margin-top:6px">`;
 
-          matches.reverse().forEach(m => {
-            const isWinner = m.winner === c.id;
-            const isDraw = m.winner === 0 || m.winner === undefined;
-            const oppId = m.left === c.id ? m.right : m.left;
-            const opp = ALL_CHARS.find(ch => ch.id === oppId);
-            const oppName = opp ? opp.name : '不明';
-            const result = isDraw ? '△' : (isWinner ? '○' : '×');
-            const resultColor = isDraw ? '#b0b8c4' : (isWinner ? '#2ecc71' : '#e74c3c');
-            const weekStr = m.week ? `W${m.week}` : '';
-            const finInfo = m.finType ? ` [${m.finType}]` : '';
-            const mqInfo = m.mq !== undefined ? ` MQ:${m.mq}` : '';
-            html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.02);border-radius:4px;font-size:13px">
-              <span style="color:${resultColor};font-weight:900;width:18px;text-align:center">${result}</span>
-              <span style="flex:1;color:var(--text-sub)">vs ${oppName}${m.isTitle ? ' 🏆' : ''}${finInfo}</span>
-              <span style="color:var(--text-dim);font-size:11px;white-space:nowrap">${weekStr}${mqInfo}</span>
+          nonSummary.forEach(m => {
+            const typeStyle = Engine.milestone._typeStyle(m.type);
+            html += `<div style="padding:5px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;line-height:1.5">
+              <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:40px;text-align:right;font-family:'Courier New',monospace">S${s}W${m.week || 0}</span>
+              <span style="color:${typeStyle.color};flex-shrink:0">${typeStyle.icon}</span>
+              <span style="color:var(--text)">${m.text}</span>
             </div>`;
+            if (m.detail) {
+              html += `<div style="padding:0 10px 4px 70px;font-size:11px;color:var(--text-dim);line-height:1.4">${m.detail}</div>`;
+            }
           });
 
           html += `</div></details>`;
@@ -1307,25 +1131,7 @@ function showFighterPopup(fighterId, source) {
 
         html += `</div>`;
       } else {
-        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだ試合記録がありません</div>`;
-      }
-
-      // ── Detailed Event Log ──
-      if (events.length > 0) {
-        html += `<div style="margin-bottom:10px">
-          <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#e67e22;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">ログ</span>
-            移籍・イベントログ（全${events.length}件）
-          </h5>
-          <div style="display:flex;flex-direction:column;gap:4px">`;
-        events.reverse().forEach(e => {
-          const seasonInfo = e.season ? `${e.season}年目${e.week ? ` W${e.week}` : ''}` : '';
-          html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.02);border-radius:4px;font-size:12px;color:var(--text-sub)">
-            <span>${e.type || '📌'} ${e.text || e.msg || JSON.stringify(e)}</span>
-            <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;margin-left:8px">${seasonInfo}</span>
-          </div>`;
-        });
-        html += `</div></div>`;
+        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
       }
     }
 
@@ -1746,9 +1552,17 @@ function finishTransferWindow() {
   refreshAll();
 }
 function designateAce(fighterId) {
+  const check = Engine.ace.canDesignate(G);
+  if (!check.ok) { Audio.play('error'); alert(check.reason); return; }
+  const result = Engine.ace.designate(G, fighterId, check.isFirst);
+  if (result.error) { Audio.play('error'); alert(result.error); return; }
   Audio.play('fanfare');
-  G = Engine.ace.designate(G, fighterId);
-  G.gameLog = [...G.gameLog, `⭐ ${G.roster.find(c => c.id === fighterId)?.name}をエースに認定`];
+  G = result;
+  // Record milestone
+  G = Engine.milestone.addAce(G, fighterId);
+  const name = G.roster.find(c => c.id === fighterId)?.name || '';
+  const costMsg = check.isFirst ? '' : `（費用${check.cost}万 / 団体人気-${Engine.ACE_CONFIG.popPenalty}）`;
+  G.gameLog = [...G.gameLog, `⭐ ${name}をエースに認定${costMsg}`];
   Storage.autoSave();
   refreshAll();
 }

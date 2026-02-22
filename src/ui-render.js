@@ -1120,11 +1120,12 @@ function renderShowPrep() {
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview);
   const estRev = calcShowRevenue(G.showVenue, estAttend);
+  const estOccPct = Math.round((estRev.occupancyRate || 0) * 100);
 
   const heat = getHeatLevel();
   html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
     <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}</div>
-    <strong>予想集客:</strong> ${estAttend.toLocaleString()}人 / ${VENUES[G.showVenue].cap.toLocaleString()}人
+    <strong>予想集客:</strong> ${estAttend.toLocaleString()}人 / ${VENUES[G.showVenue].cap.toLocaleString()}人 (${estOccPct}% ${estRev.occLabel || ''})
     &nbsp;|&nbsp; <strong>予想チケット収入:</strong> ${estRev.ticketRev}万
     &nbsp;|&nbsp; <strong>予想グッズ:</strong> ${estRev.goodsRev}万
     &nbsp;|&nbsp; <strong>会場費:</strong> -${estRev.venueCost}万

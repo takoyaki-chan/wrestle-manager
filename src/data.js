@@ -499,13 +499,40 @@ const SALARY_TABLE = [
   {max:99, pay:100}, {max:109, pay:150}, {max:999, pay:200}
 ];
 const VENUES = [
-  {name:'公民館',  cap:200,  cost:30,  ticket:0.5, popReq:0},
-  {name:'小ホール',cap:500,  cost:80,  ticket:0.5, popReq:20},
-  {name:'中ホール',cap:1500, cost:200, ticket:0.6, popReq:40},
-  {name:'アリーナ',cap:5000, cost:500, ticket:0.7, popReq:60},
-  {name:'大会場',  cap:15000,cost:1200,ticket:0.8, popReq:80},
-  {name:'ドーム',  cap:40000,cost:3000,ticket:1.0, popReq:95}
+  {name:'公民館',   cap:150,   cost:5,    popReq:0},
+  {name:'小ホール', cap:400,   cost:60,   popReq:15},
+  {name:'市民会館', cap:1000,  cost:180,  popReq:30},
+  {name:'中ホール', cap:2500,  cost:500,  popReq:45},
+  {name:'アリーナ', cap:6000,  cost:1400, popReq:60},
+  {name:'大会場',   cap:12000, cost:3200, popReq:75},
+  {name:'ドーム',   cap:30000, cost:9000, popReq:90}
 ];
+const TICKET_PRICE = 0.5; // 万円/人（統一チケット価格）
+const GOODS_PRICE = 0.08; // 万円/人（グッズ単価）
+const OCCUPANCY_BONUS = [
+  {min:0.95, ticketMult:1.5, label:'🔥 超満員！',    heatDelta:+2},
+  {min:0.80, ticketMult:1.2, label:'✨ 大入り！',    heatDelta:+1},
+  {min:0.60, ticketMult:1.0, label:'👍 盛況',        heatDelta:0},
+  {min:0.40, ticketMult:0.85,label:'➖ まずまず',    heatDelta:0},
+  {min:0.25, ticketMult:0.7, label:'😟 空席目立つ',  heatDelta:-1},
+  {min:0.0,  ticketMult:0.5, label:'😰 ガラガラ',    heatDelta:-2},
+];
+// ── Popularity System Constants (v1.0b) ──
+const SCANDAL_CONFIG = {
+  baseChance: 0.005,   // 週0.5%
+  aceChance: 0.0025,   // エースは半分
+  minPop: 40,           // 人気40以上のみ対象
+  penaltyMin: 20,
+  penaltyMax: 35,
+  messages: ['📰 週刊誌にスクープが…', '📱 SNSで炎上騒動が…', '⚠️ 素行問題が発覚…']
+};
+const LOSING_STREAK_PENALTIES = [
+  {threshold: 3, penalty: -5, msg: '陰りが見え始める…'},
+  {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
+  {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
+];
+const PROMO_POP_CAP = 40; // プロモのみで到達可能な人気上限
+const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
 const SPONSOR_TABLE = [
   {min:0,max:19,val:0},{min:20,max:39,val:20},{min:40,max:59,val:60},
   {min:60,max:79,val:120},{min:80,max:94,val:250},{min:95,max:100,val:400}
@@ -717,9 +744,9 @@ const STYLE_GROWTH = {
 
 // org-rating star power thresholds (org-ranking-spec §1.3)
 const STAR_POWER = [
-  {minPop:70, points:15, label:'トップスター'},
-  {minPop:50, points:8,  label:'スター'},
-  {minPop:30, points:3,  label:'中堅'}
+  {minPop:50, points:15, label:'トップスター'},
+  {minPop:35, points:8,  label:'スター'},
+  {minPop:20, points:3,  label:'中堅'}
 ];
 
 // ╔══════════════════════════════════════════════════════════╗
