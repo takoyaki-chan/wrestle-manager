@@ -697,6 +697,47 @@ const EVENT_QUOTES = {
     'そう…ですか。ここでの思い出、忘れません。',
     'お世話になりました…。どこかで強くなって戻ります。',
     '悔しいです…でも、ありがとうございました。',
+  ],
+  // v1.0c: FA signing lines (trait-keyed)
+  faSigning: {
+    'リーダー気質': ['ここを最強の団体にしてみせるわ。任せなさい。', 'チームを引っ張る覚悟はできてるわ。よろしくね。'],
+    '努力家': ['ありがとうございます…毎日練習して、絶対に期待に応えます！', 'コツコツ頑張るのが取り柄です。よろしくお願いします。'],
+    '負けず嫌い': ['待ってました！ここで誰にも負けない選手になってみせる！', '契約してくれたこと、後悔させないから！'],
+    '華': ['新しいステージ、ワクワクしますね♪ お客さんを沸かせますよ！', '私の輝き、この団体で見せてあげます♪'],
+    'ヒール適性': ['ふふ…拾ってくれたこと、感謝してあげるわ。', '面白い団体ね。好きにやらせてもらうわよ？'],
+    'ムードメーカー': ['やったー！よろしくお願いします！楽しくやりましょ！', '盛り上げ役なら任せてください！道場の空気変えますよ！'],
+    '威圧感': ['…いいわ。この団体で、格の違いを見せてやる。', '選んだ以上、相応の舞台を用意しなさいよ。'],
+    '闘志': ['新しい闘いの場…！燃えてきた！', '強い相手がいるなら、すぐにでも試合を組んでください！'],
+    '破天荒': ['やっほー！新天地だ！暴れまくるよ！', 'ここなら好き放題やれそう！楽しみ！'],
+    '忠誠心': ['拾ってくださって…ありがとうございます。この恩は忘れません。', 'ここが私の居場所です。ずっとこの団体で戦います。'],
+    '野心': ['てっぺんを獲るために来たの。わかってるわよね？', 'ここを踏み台にするつもりはないわ。一緒に頂点に立ちましょう。'],
+    'ファンサービス': ['ファンの皆さんに喜んでもらえるよう頑張ります！', 'お客さんとの距離が近い団体、いいですね♪ よろしくです！'],
+    _heel: ['…ふん。まあ、使えるだけ使ってちょうだい。', '条件は悪くない。やってあげるわ。'],
+    _babyface: ['ありがとうございます！精一杯、頑張りますね！', '夢に一歩近づけた…この団体で花を咲かせます！'],
+    _neutral: ['よろしくお願いします。力になれるよう頑張ります。', '新しい環境…悪くないですね。頑張ります。']
+  },
+  faSigningGeneric: [
+    'この団体で新しいスタートです。よろしくお願いします！',
+    '契約ありがとうございます！全力で戦います！',
+    '新しい仲間ができて嬉しいです。頑張ります！',
+  ],
+  // v1.0c: Rental greeting lines (trait-keyed)
+  rentalGreeting: {
+    'リーダー気質': ['短い間だけど、私がいる間はチームを引っ張るわ。', 'レンタルでも手は抜かない。チームのために全力よ。'],
+    '努力家': ['短い期間ですが、精一杯やらせていただきます！', '限られた時間でも成長したい。よろしくお願いします。'],
+    '負けず嫌い': ['レンタルだからって舐めないでよね！全試合全力よ！', '負けず嫌いは治りません。全部勝ちにいきます！'],
+    '華': ['お邪魔しまーす♪ 短い間だけど盛り上げますよ！', 'ゲストとして最高のパフォーマンスを見せますね♪'],
+    'ヒール適性': ['…よそ者が来たと思って甘く見ないことね。', 'ふん…まあ、短い間だけ付き合ってあげるわ。'],
+    '闘志': ['よその団体でも闘志は変わらない！燃えるぞ！', '新しい相手と闘える…ワクワクするな！'],
+    '破天荒': ['おじゃましまーす！短い間だけど暴れるよー！', '一時的だからこそ思い切り好き放題やるね！'],
+    _heel: ['…別に、仕事だからやるだけよ。', '短い間の付き合いよ。馴れ合うつもりはないわ。'],
+    _babyface: ['短い間ですが、よろしくお願いします！仲良くしてくださいね！', 'お世話になります！力になれるよう頑張ります！'],
+    _neutral: ['レンタルですが、手は抜きませんので。よろしく。', '短い間ですがよろしくお願いします。']
+  },
+  rentalGreetingGeneric: [
+    '短い間ですが、よろしくお願いします！',
+    'お邪魔します。力になれたら嬉しいです！',
+    'レンタルでも全力です。よろしくお願いします！',
   ]
 };
 
@@ -770,6 +811,47 @@ function getDraftQuote(char) {
   }
   // Fallback to generic draftJoin
   return pickQuote('draftJoin');
+}
+
+// v1.0c: Get FA signing quote (traits-based)
+function getSigningQuote(char) {
+  const lines = EVENT_QUOTES.faSigning || {};
+  const traits = char.traits || [];
+  for (const trait of traits) {
+    if (lines[trait]) {
+      const arr = lines[trait];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  // Role fallback
+  const role = char.role || 'Neutral';
+  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
+  if (lines[roleKey]) {
+    const arr = lines[roleKey];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  const generic = EVENT_QUOTES.faSigningGeneric || ['よろしくお願いします！'];
+  return generic[Math.floor(Math.random() * generic.length)];
+}
+
+// v1.0c: Get rental greeting quote (traits-based)
+function getRentalQuote(char) {
+  const lines = EVENT_QUOTES.rentalGreeting || {};
+  const traits = char.traits || [];
+  for (const trait of traits) {
+    if (lines[trait]) {
+      const arr = lines[trait];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  const role = char.role || 'Neutral';
+  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
+  if (lines[roleKey]) {
+    const arr = lines[roleKey];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  const generic = EVENT_QUOTES.rentalGreetingGeneric || ['よろしくお願いします！'];
+  return generic[Math.floor(Math.random() * generic.length)];
 }
 
 // v1.0: Get a draft "interest" line (when focused, before picking)
@@ -1651,6 +1733,24 @@ function requestRental(fighterId, fromOrgId) {
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 500 + G.week));
   const result = Engine.rental.requestRental(rng, G, fighterId, fromOrgId);
   G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+  // v1.0c: Show rental reaction with portrait + traits quote
+  if (result.success) {
+    const fighter = G.roster.find(c => c.id === fighterId);
+    if (fighter) {
+      const quote = getRentalQuote(fighter);
+      const orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
+      showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'positive',
+        message: quote, detail:`${orgCfg ? orgCfg.name + 'から' : ''}レンタル加入！` });
+    }
+  } else {
+    // Show rejection popup
+    const orgData = G.aiOrgs && G.aiOrgs[fromOrgId];
+    const fighter = orgData ? orgData.roster.find(f => f.id === fighterId) : null;
+    if (fighter) {
+      showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'negative',
+        message: '…今は移籍する気はないわ。', detail:'レンタル交渉は不成立でした' });
+    }
+  }
   Storage.autoSave();
   refreshAll();
 }

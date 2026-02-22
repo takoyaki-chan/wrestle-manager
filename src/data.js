@@ -517,6 +517,24 @@ const OCCUPANCY_BONUS = [
   {min:0.25, ticketMult:0.7, label:'😟 空席目立つ',  heatDelta:-1},
   {min:0.0,  ticketMult:0.5, label:'😰 ガラガラ',    heatDelta:-2},
 ];
+// ── Card Pop & Crowd MQ Constants (v1.0c) ──
+const CARD_POP_CONFIG = {
+  SUB_WEIGHT: 0.7,    // サブ試合の重み（メインの7割）
+  CARD_MULT:  1.2     // cardPop → cardBonus 変換倍率
+};
+const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0];
+//                        1試合  2試合  3試合  4試合  5試合  6試合
+const CROWD_HEAT_MQ = [
+  { min: 0.95, bonus: +5, label: '超満員の熱気' },
+  { min: 0.80, bonus: +3, label: '大入りの声援' },
+  { min: 0.60, bonus: +1, label: '盛況の雰囲気' },
+  { min: 0.40, bonus:  0, label: '' },
+  { min: 0.25, bonus: -1, label: '空席の静けさ' },
+  { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
+];
+const VENUE_SCALE_MQ = [0, 0, 1, 1, 2, 2, 3];
+// index: 公民館=0, 小ホール=0, 市民会館=+1, 中ホール=+1, アリーナ=+2, 大会場=+2, ドーム=+3
+
 // ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {
   baseChance: 0.005,   // 週0.5%

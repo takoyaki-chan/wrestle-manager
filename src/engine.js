@@ -463,11 +463,24 @@ const Engine = {
       for (const b of BROADCAST_TABLE) if (orgPop >= b.min && orgPop <= b.max) return b.val;
       return 0;
     },
+    // v1.0c: Card pop — 積み上げ方式（メイン=フル、サブ=SUB_WEIGHT、深度乗数）
+    calcCardPop(matchPops) {
+      if (matchPops.length === 0) return 0;
+      const sorted = [...matchPops].sort((a, b) => b - a);
+      let cardPop = sorted[0]; // メイン試合はフルウェイト
+      for (let i = 1; i < sorted.length; i++) {
+        cardPop += sorted[i] * CARD_POP_CONFIG.SUB_WEIGHT;
+      }
+      const depthIdx = Math.min(sorted.length, CARD_DEPTH_MULT.length) - 1;
+      cardPop *= CARD_DEPTH_MULT[depthIdx];
+      return cardPop;
+    },
     calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch) {
       const v = VENUES[venueIdx];
       // v1.0b: Capacity-independent base attendance (quadratic on orgPop)
       const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 5000);
-      const cardBonus = Math.round(mainCardPop * 3);
+      // v1.0c: CARD_MULT (was hardcoded * 3)
+      const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
       const heatMult = Engine.heat.getMult(G);
       const titleMult = hasTitleMatch ? 1.15 : 1.0;
       // 華: ロスターに華持ちがいれば集客+5%
@@ -476,6 +489,14 @@ const Engine = {
       // Minimum guarantee: 5% of capacity (at least 10)
       const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
       return Engine.util.clamp(rawAttendance, minAttendance, v.cap);
+    },
+    // v1.0c: 会場熱気MQボーナス（満員率 + 会場規模）
+    calcCrowdMQBonus(venueIdx, occupancyRate) {
+      const crowdEntry = CROWD_HEAT_MQ.find(c => occupancyRate >= c.min)
+        || CROWD_HEAT_MQ[CROWD_HEAT_MQ.length - 1];
+      const crowdBonus = crowdEntry.bonus;
+      const scaleBonus = VENUE_SCALE_MQ[venueIdx] || 0;
+      return { total: crowdBonus + scaleBonus, crowdBonus, scaleBonus, crowdLabel: crowdEntry.label };
     },
     calcShowRevenue(roster, venueIdx, attendance) {
       const v = VENUES[venueIdx];
@@ -1541,11 +1562,13 @@ const Engine = {
       let roster = G.roster.map(c => ({ ...c }));
 
       if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
-        const mainPop = G.lastShowResults.reduce((sum, r) => {
+        // v1.0c: 積み上げ方式（平均→calcCardPop）
+        const matchPops = G.lastShowResults.map(r => {
           const lc = roster.find(c => c.id === r.left.id);
           const rc = roster.find(c => c.id === r.right.id);
-          return sum + (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
-        }, 0) / G.lastShowResults.length;
+          return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+        });
+        const mainPop = Engine.economy.calcCardPop(matchPops);
 
         const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
         const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch);
@@ -1710,6 +1733,24 @@ const Engine = {
         }
       }
     });
+
+    // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
+    const showMatchPops = validMatches.map(m => {
+      const lc = roster.find(c => c.id === m.left);
+      const rc = roster.find(c => c.id === m.right);
+      return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+    });
+    const showCardPop = Engine.economy.calcCardPop(showMatchPops);
+    const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
+    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend);
+    const preOccRate = preAttendance / VENUES[s.showVenue].cap;
+    const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
+    if (crowdMQ.total !== 0) {
+      results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
+      if (crowdMQ.crowdLabel) {
+        events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
+      }
+    }
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
     const mainEventIdx = results.length - 1; // last match is main event

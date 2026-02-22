@@ -1125,16 +1125,19 @@ function renderShowPrep() {
 
   // Preview
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
+  // v1.0c: 積み上げ方式（平均→calcCardPop）
   const mainPop = validMatches.length > 0 ?
-    validMatches.reduce((s, m) => {
+    Engine.economy.calcCardPop(validMatches.map(m => {
       const l = G.roster.find(c => c.id === m.left);
       const r = G.roster.find(c => c.id === m.right);
-      return s + (l ? l.popularity : 0) + (r ? r.popularity : 0);
-    }, 0) / validMatches.length : 0;
+      return (l ? l.popularity : 0) + (r ? r.popularity : 0);
+    })) : 0;
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview);
   const estRev = calcShowRevenue(G.showVenue, estAttend);
   const estOccPct = Math.round((estRev.occupancyRate || 0) * 100);
+  // v1.0c: 会場熱気MQボーナス予想
+  const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, estRev.occupancyRate || 0);
 
   const heat = getHeatLevel();
   html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
@@ -1143,6 +1146,7 @@ function renderShowPrep() {
     &nbsp;|&nbsp; <strong>予想チケット収入:</strong> ${estRev.ticketRev}万
     &nbsp;|&nbsp; <strong>予想グッズ:</strong> ${estRev.goodsRev}万
     &nbsp;|&nbsp; <strong>会場費:</strong> -${estRev.venueCost}万
+    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
   </div>`;
 
   html += '<div class="btn-row" style="margin-top:16px">';

@@ -1900,6 +1900,24 @@ const App = {
       }
     });
 
+    // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
+    const showMatchPops = validMatches.map(m => {
+      const lc = roster.find(c => c.id === m.left);
+      const rc = roster.find(c => c.id === m.right);
+      return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+    });
+    const showCardPop = Engine.economy.calcCardPop(showMatchPops);
+    const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
+    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend);
+    const preOccRate = preAttendance / VENUES[s.showVenue].cap;
+    const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
+    if (crowdMQ.total !== 0) {
+      results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
+      if (crowdMQ.crowdLabel) {
+        events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
+      }
+    }
+
     // MQ popularity
     results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
