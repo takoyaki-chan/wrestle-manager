@@ -115,14 +115,7 @@ function renderWeekScreen() {
 
     // ── Header ──
     html += `<div style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(0,0,0,0));border:1px solid rgba(212,168,67,0.3);border-radius:10px">
-      <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 新団体設立</p>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <label style="color:var(--text-sub);font-size:13px;white-space:nowrap">団体名:</label>
-        <input id="draftOrgName" type="text" value="${G.orgName || 'プレイヤー団体'}" maxlength="20"
-          style="flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:14px;font-weight:700;letter-spacing:0.5px"
-          placeholder="団体名を入力"
-          oninput="G = {...G, orgName: this.value.trim() || 'プレイヤー団体'}">
-      </div>
+      <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 ${G.orgName || 'プレイヤー団体'} — 初期ドラフト</p>
       <p style="color:var(--text-sub);font-size:13px;line-height:1.7">
         あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名の所属選手でシーズンを始めましょう。<br>
         <span style="font-size:12px;color:var(--text-dim)">能力値は入団時（16歳）の推定値です。将来性の評価はコーチ不在のため大きくブレる場合があります。</span>
@@ -256,6 +249,13 @@ function renderWeekScreen() {
                 ${strengths.length ? '💪 <span style="color:var(--text-sub)">強み:</span> ' + strengths.join(', ') : ''}
                 ${weaknesses.length ? '<br>⚠️ <span style="color:var(--text-sub)">課題:</span> ' + weaknesses.join(', ') : ''}
               </div>
+            </div>
+          </div>
+          <!-- v1.0: Character speech bubble -->
+          <div style="margin-bottom:12px;padding:12px 16px;background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:10px;position:relative">
+            <div style="position:absolute;top:-6px;left:20px;width:12px;height:12px;background:rgba(52,152,219,0.06);border-top:1px solid rgba(52,152,219,0.2);border-left:1px solid rgba(52,152,219,0.2);transform:rotate(45deg)"></div>
+            <div style="font-size:14px;color:var(--text-main);line-height:1.6;font-style:italic">
+              「${getDraftInterestLine(c)}」
             </div>
           </div>
           <!-- Action buttons -->
@@ -1325,7 +1325,7 @@ function renderRanking() {
           <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${RIVAL_ORG_PRESIDENTS[org.id] ? `<span style="color:${rc};font-weight:600">${RIVAL_ORG_PRESIDENTS[org.id].title}: ${RIVAL_ORG_PRESIDENTS[org.id].name}</span> — ` : ''}${org.desc}</div>
         <div style="font-size:13px;margin-top:10px">
           <span style="color:var(--text-dim)">主力:</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
@@ -1336,15 +1336,22 @@ function renderRanking() {
           <details style="margin-top:10px">
             <summary style="font-size:13px;color:${rc};cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
             <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
-              ${roster.map(f => {
+              ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map(f => {
                 const fee = Engine.transfer.calcFee(f, org);
                 const canAfford = G.funds >= fee;
-                return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;width:120px;text-align:center">
+                const gap = fee - G.funds;
+                const fOvr = Engine.util.ov(f);
+                const pot = f.pot || f.notionValue || {};
+                const avgPot = Math.round(((pot.pw||0)+(pot.sp||0)+(pot.te||0)+(pot.st||0)+(pot.mn||0))/5);
+                const tierLabel = avgPot >= 160 ? '🔥逸材' : avgPot >= 130 ? '⭐有望' : '💎原石';
+                const tierColor = avgPot >= 160 ? '#e74c3c' : avgPot >= 130 ? '#f39c12' : '#3498db';
+                return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;width:130px;text-align:center${canAfford ? ';border:1px solid rgba(46,204,113,0.3)' : ''}">
                   ${portraitImg(f.id, 100)}
                   <span>${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span>
-                  <span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span>
+                  <span style="color:var(--text-dim);font-size:11px">OVR ${fOvr} <span style="color:${tierColor};font-size:10px">${tierLabel}</span></span>
                   <span style="color:${canAfford ? '#2ecc71' : '#e17055'};font-size:12px;font-weight:700">${fee}万</span>
-                  <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:11px;padding:4px 10px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:4px;width:100%" ${canAfford ? '' : 'disabled'}>獲得</button>
+                  ${!canAfford ? `<span style="font-size:10px;color:#e17055">あと${gap}万必要</span>` : ''}
+                  <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:11px;padding:4px 10px;cursor:pointer;background:${canAfford ? 'rgba(46,204,113,0.2)' : 'rgba(100,100,100,0.1)'};border:1px solid ${canAfford ? 'rgba(46,204,113,0.4)' : 'rgba(100,100,100,0.2)'};color:${canAfford ? '#2ecc71' : '#666'};border-radius:4px;width:100%" ${canAfford ? '' : 'disabled'}>獲得</button>
                 </div>`;
               }).join('')}
             </div>

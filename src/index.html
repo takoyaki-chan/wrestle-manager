@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>女子プロレス団体経営シミュレータ — Prototype v0.9</title>
+<title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -216,7 +216,55 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .record-symbol.draw{color:#f39c12}
 .record-num{font-size:11px;font-family:'Oswald',sans-serif}
 
+/* ═══ Title Screen ═══ */
+.title-screen{position:fixed;inset:0;z-index:300;background:var(--bg-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.title-bg{position:absolute;inset:0;overflow:hidden}
+.title-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(212,168,67,0.08) 0%,transparent 60%)}
+.title-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-dark) 0%,transparent 30%,transparent 70%,var(--bg-dark) 100%)}
+.title-portraits{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:0;align-items:flex-end;opacity:0.3;filter:saturate(0.4)}
+.title-portraits img{height:280px;object-fit:cover;object-position:top;mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%);-webkit-mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%)}
+.title-content{position:relative;z-index:1;text-align:center;padding:20px}
+.title-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:12px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,var(--gold-light) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none;margin-bottom:8px;
+  animation:title-glow 3s ease-in-out infinite alternate}
+@keyframes title-glow{0%{filter:drop-shadow(0 0 20px rgba(212,168,67,0.0))}100%{filter:drop-shadow(0 0 30px rgba(212,168,67,0.3))}}
+.title-sub{font-size:15px;letter-spacing:6px;color:var(--text-sub);margin-bottom:48px;font-weight:400}
+.title-ver{font-size:11px;color:var(--text-dim);letter-spacing:3px;margin-top:32px;font-family:'Oswald',sans-serif}
+.title-buttons{display:flex;flex-direction:column;gap:12px;align-items:center}
+.title-btn{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:6px;padding:14px 60px;
+  border:1px solid rgba(212,168,67,0.4);background:rgba(212,168,67,0.08);color:var(--gold-light);
+  border-radius:4px;cursor:pointer;transition:all .3s;min-width:260px}
+.title-btn:hover{background:rgba(212,168,67,0.18);border-color:var(--gold);transform:translateY(-2px);
+  box-shadow:0 4px 20px rgba(212,168,67,0.2)}
+.title-btn.primary{background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark);
+  border:none;font-size:24px}
+.title-btn.primary:hover{filter:brightness(1.15);box-shadow:0 4px 24px rgba(212,168,67,0.4)}
+.title-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ═══ Org Setup Screen ═══ */
+.org-setup{position:fixed;inset:0;z-index:300;background:var(--bg-dark);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.org-setup-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(212,168,67,0.06) 0%,transparent 50%)}
+.org-setup-content{position:relative;z-index:1;text-align:center;max-width:480px;width:90%;padding:20px}
+.org-setup-icon{font-size:64px;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(212,168,67,0.3))}
+.org-setup-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;
+  background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.org-setup-desc{font-size:14px;color:var(--text-sub);line-height:1.8;margin-bottom:32px}
+.org-setup-input-wrap{margin-bottom:32px}
+.org-setup-label{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif;text-transform:uppercase}
+.org-setup-input{width:100%;padding:14px 20px;font-size:20px;font-weight:700;text-align:center;letter-spacing:2px;
+  background:rgba(255,255,255,0.04);border:2px solid rgba(212,168,67,0.3);border-radius:8px;
+  color:var(--gold-light);font-family:'Noto Sans JP',sans-serif;outline:none;transition:all .3s}
+.org-setup-input:focus{border-color:var(--gold);background:rgba(212,168,67,0.06);box-shadow:0 0 20px rgba(212,168,67,0.15)}
+.org-setup-input::placeholder{color:var(--text-dim);font-weight:400;font-size:16px}
+.org-setup-hint{font-size:11px;color:var(--text-dim);margin-top:8px}
+
 @media(max-width:600px){
+  .title-logo{font-size:42px;letter-spacing:6px}
+  .title-sub{font-size:12px;letter-spacing:3px}
+  .title-portraits img{height:180px}
+  .org-setup-title{font-size:28px}
   .app{padding:8px}
   .top-bar{padding:8px 10px}
   .top-bar-title{font-size:16px}
@@ -579,6 +627,49 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   </div>
 </div>
 
+<!-- Title Screen Overlay (v1.0) -->
+<div class="title-screen" id="titleScreen" style="display:none">
+  <div class="title-bg">
+    <div class="title-portraits" id="titlePortraits"></div>
+  </div>
+  <div class="title-content">
+    <div class="title-logo">WRESTLE<br>MANAGER</div>
+    <div class="title-sub">女子プロレス団体経営シミュレーション</div>
+    <div class="title-buttons">
+      <button class="title-btn primary" onclick="App.titleNewGame()">NEW GAME</button>
+      <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
+    </div>
+    <div class="title-ver">VERSION 1.0</div>
+  </div>
+</div>
+
+<!-- Org Setup Overlay (v1.0) -->
+<div class="org-setup" id="orgSetupScreen" style="display:none">
+  <div class="org-setup-bg"></div>
+  <div class="org-setup-content">
+    <div class="org-setup-icon">🏟️</div>
+    <div class="org-setup-title">ESTABLISH YOUR PROMOTION</div>
+    <div class="org-setup-desc">
+      あなたはこの世界で新たな女子プロレス団体を旗揚げする。<br>
+      小さな公民館から始まるその物語の、最初の一歩を踏み出そう。
+    </div>
+    <div class="org-setup-input-wrap">
+      <div class="org-setup-label">PROMOTION NAME</div>
+      <input class="org-setup-input" id="orgSetupNameInput" type="text" maxlength="20"
+        placeholder="団体名を入力" value="" onkeydown="if(event.key==='Enter')App.confirmOrgSetup()">
+      <div class="org-setup-hint">※ あとから変更できます</div>
+    </div>
+    <button class="title-btn primary" onclick="App.confirmOrgSetup()" style="font-size:20px;padding:12px 48px">
+      旗揚げする
+    </button>
+    <div style="margin-top:16px">
+      <button class="title-btn" onclick="App.backToTitle()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(255,255,255,0.15);color:var(--text-sub)">
+        ← 戻る
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Show Result Overlay -->
 <div class="show-result-overlay" id="showResultOverlay">
   <div class="show-result-box" id="showResultBox"></div>
@@ -622,7 +713,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 <script>
 // ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 12: INIT (v0.9)                                   ║
+// ║  SECTION 12: INIT (v1.0)                                   ║
 // ╚══════════════════════════════════════════════════════════╝
 (function() {
   // Sync mute button with saved prefs (before AudioContext init)
@@ -632,23 +723,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     if (prefs.bgmMuted) document.getElementById('bgmMuteBtn').textContent = '🎵❌';
   } catch(e) {}
 
-  const autoInfo = Storage.getAutoSaveInfo();
-  if (autoInfo) {
-    // Show draft screen first, then offer autosave load
-    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
-    refreshAll();
-    setTimeout(() => {
-      showConfirm(
-        `オートセーブが見つかりました。<br>${autoInfo.season}年目 第${autoInfo.week}週 ｜ 資金${autoInfo.funds.toLocaleString()}万<br><br>続きからプレイしますか？`,
-        'ロードする',
-        () => { Storage.loadAutoSave(); Audio.bgm.playForState(); refreshAll(); }
-      );
-    }, 300);
-  } else {
-    // New game: start with draft
-    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
-    refreshAll();
-  }
+  // v1.0: Always start at title screen
+  App.showTitleScreen();
+
   // BGM: Start on first user interaction (AudioContext needs user gesture)
   document.addEventListener('click', function _bgmInit() {
     if (!Audio.muted && !Audio.bgmMuted && !Audio.bgm._playing) Audio.bgm.playForState();

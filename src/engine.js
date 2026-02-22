@@ -1030,7 +1030,7 @@ const Engine = {
       return { aiOrgs: newAiOrgs, events };
     },
 
-    // AI season growth (rival-spec §4.1) — 48 weeks in one calculation
+    // AI season growth (rival-spec §4.1 + F1 tier growth bonus) — 48 weeks in one calculation
     aiSeasonGrowth(rng, fighter, org) {
       const f = { ...fighter };
       const age = f.age || 20;
@@ -1041,6 +1041,8 @@ const Engine = {
       const styleTable = STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround;
       const coachMul = org.coachMul || 1.0;
       const facilityMul = org.facilityMul || 1.0;
+      // F1: Tier-based growth bonus — S-tier compounds advantage each season
+      const tierGrowth = (AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B).growthBonus;
       const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
       const trainCap = f.trainCap || f.pot || notion;
       const cfg = AI_SEASON_CFG;
@@ -1048,7 +1050,7 @@ const Engine = {
       ['pw','sp','te','st'].forEach(s => {
         if (f[s] >= trainCap[s]) return;
         const convFactor = Engine.growth.convergenceFactor(f[s], trainCap[s], notion[s]);
-        const weeklyGain = (styleTable[s] || 0.7) * ageMul * coachMul * facilityMul * convFactor;
+        const weeklyGain = (styleTable[s] || 0.7) * ageMul * coachMul * facilityMul * tierGrowth * convFactor;
         const seasonVariance = cfg.seasonVarianceMin + Engine.rng.float(rng) * (cfg.seasonVarianceMax - cfg.seasonVarianceMin);
         const trainingGain = weeklyGain * cfg.trainWeeks * seasonVariance;
         const matchVariance = cfg.matchVarianceMin + Engine.rng.float(rng) * (cfg.matchVarianceMax - cfg.matchVarianceMin);
@@ -1091,7 +1093,18 @@ const Engine = {
       return Engine.rng.float(rng) < chance;
     },
 
-    // ── B-3: AI Scouting (rival-spec §5) ────────────────────
+    // ── B-3: AI Scouting (rival-spec §5 + F1 tier limits) ────
+    // F1 helper: count prodigies/promising on a roster
+    countRosterRanks(roster) {
+      let prodigies = 0, promising = 0;
+      roster.forEach(f => {
+        const pot = f.pot || f.notionValue || {};
+        const avgPot = Math.round(((pot.pw||0)+(pot.sp||0)+(pot.te||0)+(pot.st||0)+(pot.mn||0))/5);
+        if (avgPot >= 160) prodigies++;
+        else if (avgPot >= 130) promising++;
+      });
+      return { prodigies, promising };
+    },
     aiScout(rng, state) {
       const events = [];
       const newAiOrgs = {};
@@ -1101,6 +1114,7 @@ const Engine = {
         const aiData = state.aiOrgs[org.id];
         if (!aiData) { newAiOrgs[org.id] = aiData; return; }
         const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
         let roster = aiData.roster.map(f => ({ ...f }));
         const need = Math.max(0, cfg.idealRoster - roster.length);
         const maxPicks = Math.min(need + 1, cfg.maxPicks);
@@ -1130,6 +1144,11 @@ const Engine = {
           else if (avgPot >= 130) rank = 'promising';
           else rank = 'rough';
 
+          // F1: Tier-based roster quality cap check
+          const counts = Engine.rival.countRosterRanks(roster);
+          if (rank === 'prodigy' && counts.prodigies >= tierLim.maxProdigies) continue;
+          if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
+
           const acquireRate = cfg.rates[rank] || 0.5;
           if (Engine.rng.float(rng) >= acquireRate) continue;
 
@@ -1152,38 +1171,133 @@ const Engine = {
       return { aiOrgs: newAiOrgs, poolIds, events };
     },
 
-    // AI inter-org transfers (rival-spec §7.3) — simplified
+    // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
+    // S-tier poaches best from lower tiers; lower tiers fill gaps from pool
     aiInterTransfer(rng, aiOrgs) {
       const events = [];
       const newOrgs = {};
       RIVAL_ORGS.forEach(org => { newOrgs[org.id] = { ...aiOrgs[org.id], roster: [...(aiOrgs[org.id]?.roster || [])] }; });
 
-      // B-tier org with too few fighters can poach from others
-      RIVAL_ORGS.forEach(org => {
+      // F1(d): Higher-tier orgs poach top talent from lower-tier orgs
+      const sortedOrgs = [...RIVAL_ORGS].sort((a,b) => {
+        const tierOrder = {S:0, A:1, B:2};
+        return tierOrder[a.tier] - tierOrder[b.tier];
+      });
+
+      for (const org of sortedOrgs) {
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
+        const roster = newOrgs[org.id].roster;
+
+        // If roster is already full, skip acquiring
+        if (roster.length >= cfg.idealRoster + 2) continue;
+
+        // Try to poach from lower-tier orgs
+        for (const sourceOrg of sortedOrgs) {
+          if (sourceOrg.id === org.id) continue;
+          // Only poach downward (S from A/B, A from B)
+          const tierRank = {S:0, A:1, B:2};
+          if (tierRank[org.tier] >= tierRank[sourceOrg.tier]) continue;
+
+          const srcRoster = newOrgs[sourceOrg.id].roster;
+          if (srcRoster.length <= 5) continue; // Don't gut a tiny roster
+
+          // S-tier: 25% chance to poach best fighter; A-tier: 15%
+          const poachChance = org.tier === 'S' ? 0.25 : 0.15;
+          if (Engine.rng.float(rng) > poachChance) continue;
+
+          // Target the best non-ace fighter from source
+          const sorted = [...srcRoster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+          const target = sorted.length > 1 ? sorted[1] : sorted[0]; // Skip ace (index 0), take 2nd best
+          if (!target) continue;
+
+          // Check tier limits before acquiring
+          const counts = Engine.rival.countRosterRanks(roster);
+          const pot = target.pot || target.notionValue || {};
+          const avgPot = Math.round(((pot.pw||0)+(pot.sp||0)+(pot.te||0)+(pot.st||0)+(pot.mn||0))/5);
+          const targetRank = avgPot >= 160 ? 'prodigy' : avgPot >= 130 ? 'promising' : 'rough';
+          if (targetRank === 'prodigy' && counts.prodigies >= tierLim.maxProdigies) continue;
+          if (targetRank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
+
+          newOrgs[sourceOrg.id].roster = srcRoster.filter(f => f.id !== target.id);
+          target.orgId = org.id;
+          newOrgs[org.id].roster.push(target);
+          events.push(`📋 ${target.name}が${sourceOrg.name}→${org.name}に引き抜き`);
+          break; // Max 1 poach per org per season
+        }
+      }
+
+      // Lower-tier orgs fill gaps if under ideal roster
+      for (const org of sortedOrgs.reverse()) {
         const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
         const roster = newOrgs[org.id].roster;
-        if (roster.length >= cfg.idealRoster) return;
-        const need = cfg.idealRoster - roster.length;
-        if (need <= 0) return;
+        if (roster.length >= cfg.idealRoster) continue;
 
-        // Try to acquire from higher-tier orgs' bench (low OVR fighters)
-        for (const sourceOrg of RIVAL_ORGS) {
-          if (sourceOrg.id === org.id) continue;
-          const srcCfg = AI_SCOUT_CFG[sourceOrg.tier] || AI_SCOUT_CFG.B;
-          const srcRoster = newOrgs[sourceOrg.id].roster;
+        // Try to acquire weakest fighter from over-stocked orgs
+        for (const srcOrg of sortedOrgs) {
+          if (srcOrg.id === org.id) continue;
+          const srcCfg = AI_SCOUT_CFG[srcOrg.tier] || AI_SCOUT_CFG.B;
+          const srcRoster = newOrgs[srcOrg.id].roster;
           if (srcRoster.length <= srcCfg.idealRoster) continue;
-          // Transfer the weakest fighter
           const sorted = [...srcRoster].sort((a,b) => Engine.util.ov(a) - Engine.util.ov(b));
           const transferee = sorted[0];
-          if (!transferee || Engine.rng.float(rng) > 0.3) continue;
-          newOrgs[sourceOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
+          if (!transferee || Engine.rng.float(rng) > 0.4) continue;
+          newOrgs[srcOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
           transferee.orgId = org.id;
           newOrgs[org.id].roster.push(transferee);
-          events.push(`📋 ${transferee.name}が${sourceOrg.name}→${org.name}に移籍`);
+          events.push(`📋 ${transferee.name}が${srcOrg.name}→${org.name}に移籍`);
           break;
         }
-      });
+      }
+
       return { aiOrgs: newOrgs, events };
+    },
+
+    // F1(d): AI FA Acquisition — higher-tier orgs grab free agents to widen gap
+    aiFAAcquire(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+      let freeAgents = [...(state.freeAgents || [])];
+      RIVAL_ORGS.forEach(org => { newAiOrgs[org.id] = { ...state.aiOrgs[org.id], roster: [...(state.aiOrgs[org.id]?.roster || [])] }; });
+
+      // Process in tier order (S first, then A, then B)
+      const sortedOrgs = [...RIVAL_ORGS].sort((a,b) => {
+        const tierOrder = {S:0, A:1, B:2};
+        return tierOrder[a.tier] - tierOrder[b.tier];
+      });
+
+      for (const org of sortedOrgs) {
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
+        const roster = newAiOrgs[org.id].roster;
+        if (roster.length >= cfg.idealRoster) continue;
+        if (freeAgents.length === 0) break;
+
+        // Sort FA by OVR desc — higher tier orgs grab best available
+        const sortedFA = [...freeAgents].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+
+        for (const fa of sortedFA) {
+          if (roster.length >= cfg.idealRoster) break;
+          if (Engine.rng.float(rng) > tierLim.faAggressiveness) continue;
+
+          // Check tier limits
+          const counts = Engine.rival.countRosterRanks(roster);
+          const pot = fa.pot || fa.notionValue || {};
+          const avgPot = Math.round(((pot.pw||0)+(pot.sp||0)+(pot.te||0)+(pot.st||0)+(pot.mn||0))/5);
+          const rank = avgPot >= 160 ? 'prodigy' : avgPot >= 130 ? 'promising' : 'rough';
+          if (rank === 'prodigy' && counts.prodigies >= tierLim.maxProdigies) continue;
+          if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
+
+          // Acquire
+          const acquired = { ...fa, orgId: org.id };
+          roster.push(acquired);
+          freeAgents = freeAgents.filter(f => f.id !== fa.id);
+          events.push(`${org.emoji} ${org.name}がFA ${fa.name}を獲得`);
+          break; // 1 FA per org per offseason
+        }
+      }
+
+      return { aiOrgs: newAiOrgs, freeAgents, events };
     }
   },
   season: {
@@ -2301,10 +2415,16 @@ const Engine = {
         return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
 
       } else if (offWeek === 3) {
-        // OffWeek 3: AI inter-org transfers
+        // OffWeek 3: AI inter-org transfers + FA acquisition
         const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
         s = { ...s, aiOrgs: transferResult.aiOrgs };
         if (transferResult.events.length > 0) events.push(...transferResult.events);
+
+        // F1: AI grabs free agents
+        const faResult = Engine.rival.aiFAAcquire(rng, s);
+        s = { ...s, aiOrgs: faResult.aiOrgs, freeAgents: faResult.freeAgents };
+        if (faResult.events.length > 0) events.push(...faResult.events);
+
         events.push('📅 オフシーズン第3週: 移籍ウィンドウ');
 
       } else if (offWeek >= 4) {

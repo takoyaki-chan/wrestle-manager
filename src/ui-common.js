@@ -4,7 +4,35 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// ── War Challenge Dialogue Generator ──
+// ── F3: President Dialogue Helpers ──
+function getPresidentChallengeDialogue(orgId) {
+  const pres = RIVAL_ORG_PRESIDENTS[orgId];
+  if (!pres) return '対抗戦を申し込む！';
+  const seed = ((G.season || 1) * 17 + (G.week || 1) * 7) % pres.challengeLines.length;
+  return pres.challengeLines[seed];
+}
+
+function getPresidentPostDialogue(orgId, playerWon) {
+  const pres = RIVAL_ORG_PRESIDENTS[orgId];
+  if (!pres) return playerWon ? '…やるな。' : '当然の結果だ。';
+  const pool = playerWon ? pres.loseLines : pres.winLines;
+  const seed = ((G.season || 1) * 11 + (G.week || 1) * 3) % pool.length;
+  return pool[seed];
+}
+
+function getPresidentPortraitHtml(orgId, size, borderColor) {
+  const pres = RIVAL_ORG_PRESIDENTS[orgId];
+  if (!pres) return '';
+  const url = getPortraitUrl(pres.id);
+  if (url) {
+    return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${borderColor};box-shadow:0 0 30px ${borderColor}44,0 0 60px ${borderColor}22;object-fit:cover" alt="">`;
+  }
+  // Fallback: initial letter with org-colored circle
+  const initial = pres.name.charAt(0);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${borderColor};box-shadow:0 0 30px ${borderColor}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${borderColor}33,${borderColor}11);font-size:${Math.round(size*0.38)}px;font-weight:900;color:${borderColor}">${initial}</div>`;
+}
+
+// ── War Challenge Dialogue Generator (ace fallback if no president) ──
 function getWarChallengeDialogue(fighter, orgName) {
   const ch = ALL_CHARS.find(c => c.id === fighter.id);
   const role = ch ? ch.role : 'Neutral';
@@ -60,7 +88,7 @@ function getWarChallengeDialogue(fighter, orgName) {
   return pool[seed];
 }
 
-// ── War Challenge Popup ──
+// ── War Challenge Popup (F3: president delivers the challenge) ──
 function showWarChallenge() {
   const ev = G.pendingEvent;
   if (!ev || ev.type !== 'war') return;
@@ -79,40 +107,49 @@ function showWarChallenge() {
     {id:'empress',color:'#d63031'},{id:'nova',color:'#6c5ce7'},{id:'crescent',color:'#00b894'}
   ].find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
 
-  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
-  const portraitUrl = getPortraitUrl(enemyAce.id);
-  const ovr = Engine.util.ov(enemyAce);
+  const pres = RIVAL_ORG_PRESIDENTS[ev.opponentOrgId];
+  const dialogue = pres ? getPresidentChallengeDialogue(ev.opponentOrgId) : getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
+  const aceOvr = Engine.util.ov(enemyAce);
 
   const overlay = document.getElementById('confirmOverlay');
   const box = document.getElementById('confirmBox');
 
   // Build dramatic popup
   let html = '';
-  // Dark gradient header
+  // Dark gradient header with "挑戦状" badge
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:20px 20px 16px;background:linear-gradient(180deg,${orgCfg.color}30,transparent);border-radius:12px 12px 0 0">`;
-  html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${orgCfg.color};margin-bottom:8px;text-transform:uppercase">⚔ RIVALRY WAR ⚔</div>`;
+  html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${orgCfg.color};margin-bottom:8px;text-transform:uppercase">📜 挑 戦 状 📜</div>`;
   html += `<div style="font-size:18px;font-weight:900;color:var(--text-main)">${ev.opponentName}</div>`;
   html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${ev.matchCount}試合の団体対決</div>`;
   html += `</div>`;
 
-  // Large enemy ace portrait
-  html += `<div style="text-align:center;margin:20px 0">`;
-  if (portraitUrl) {
-    html += `<img src="${portraitUrl}" style="width:160px;height:160px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44,0 0 60px ${orgCfg.color}22;object-fit:cover" alt="">`;
-  } else {
-    // Fallback
-    const initial = enemyAce.name.charAt(0);
-    html += `<div style="width:160px;height:160px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${orgCfg.color}33,${orgCfg.color}11);font-size:60px;font-weight:900;color:${orgCfg.color}">${initial}</div>`;
+  // President portrait (large, central)
+  if (pres) {
+    html += `<div style="text-align:center;margin:20px 0 12px">`;
+    html += getPresidentPortraitHtml(ev.opponentOrgId, 140, orgCfg.color);
+    html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${pres.name}</div>`;
+    html += `<div style="font-size:11px;color:var(--text-sub)">${ev.opponentName} ${pres.title}</div>`;
+    html += `</div>`;
   }
-  html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
-  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${ovr} ・ ${enemyAce.style}</div>`;
+
+  // President dialogue bubble
+  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+  html += `<div style="background:var(--panel-bg);border:1px solid ${orgCfg.color}44;border-radius:12px;padding:16px 20px;margin:0 8px 16px;position:relative">`;
+  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${orgCfg.color}44"></div>`;
+  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
   html += `</div>`;
 
-  // Dialogue bubble
-  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
-  html += `<div style="background:var(--panel-bg);border:1px solid ${orgCfg.color}44;border-radius:12px;padding:16px 20px;margin:0 8px 20px;position:relative">`;
-  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${orgCfg.color}44"></div>`;
-  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
+  // Enemy ace info bar (compact)
+  const aceUrl = getPortraitUrl(enemyAce.id);
+  html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin:0 8px 16px;background:var(--bg-card);border:1px solid ${orgCfg.color}33;border-radius:8px">`;
+  html += `<div style="font-size:10px;color:var(--text-dim);white-space:nowrap">相手エース</div>`;
+  if (aceUrl) {
+    html += `<img src="${aceUrl}" style="width:44px;height:44px;border-radius:50%;border:2px solid ${orgCfg.color}66;object-fit:cover" alt="">`;
+  }
+  html += `<div style="flex:1;min-width:0">`;
+  html += `<div style="font-size:14px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
+  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${aceOvr} ・ ${enemyAce.style}</div>`;
+  html += `</div>`;
   html += `</div>`;
 
   // Accept / Decline buttons
@@ -334,22 +371,44 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   html += `<div style="font-size:15px;font-weight:700;color:${winColor};margin-top:4px">${winLabel}</div>`;
   html += `</div>`;
 
-  // Post-match dialogue from enemy ace
+  // F3: Post-match dialogue from president (primary) + ace (secondary)
+  const pres = RIVAL_ORG_PRESIDENTS[ev.opponentOrgId];
+  if (pres) {
+    const presDialogue = getPresidentPostDialogue(ev.opponentOrgId, eventWon);
+    const presDialogueHtml = presDialogue.replace(/\n/g, '<br>');
+    const emotionBorder = eventWon ? 'var(--blue)' : orgCfg.color;
+    const emotionGlow = eventWon ? 'rgba(74,143,212,0.3)' : `${orgCfg.color}44`;
+
+    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:16px 0 8px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
+    // President portrait
+    html += `<div style="flex-shrink:0">`;
+    html += getPresidentPortraitHtml(ev.opponentOrgId, 72, emotionBorder);
+    html += `<div style="text-align:center;font-size:10px;font-weight:700;color:${orgCfg.color};margin-top:4px">${pres.name}</div>`;
+    html += `<div style="text-align:center;font-size:9px;color:var(--text-dim)">${pres.title}</div>`;
+    html += `</div>`;
+    // Speech bubble
+    html += `<div style="flex:1;position:relative;background:var(--bg-card);border:1px solid ${emotionBorder}33;border-radius:10px;padding:12px 14px;margin-top:8px">`;
+    html += `<div style="position:absolute;left:-8px;top:20px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid ${emotionBorder}33"></div>`;
+    html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${presDialogueHtml}」</p>`;
+    html += `</div></div>`;
+  }
+
+  // Ace reaction (secondary, compact)
   if (enemyAce) {
     const dialogue = getWarPostDialogue(enemyAce, G.orgName || 'あんたの団体', eventWon, playerWins, aiWins);
     const portraitUrl = getPortraitUrl(enemyAce.id);
     const dialogueHtml = dialogue.replace(/\n/g, '<br>');
-
-    // Portrait + dialogue (emotion visible)
     const emotionBorder = eventWon ? 'var(--blue)' : orgCfg.color;
     const emotionGlow = eventWon ? 'rgba(74,143,212,0.3)' : `${orgCfg.color}44`;
-    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:16px 0 12px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
+
+    html += `<div style="display:flex;align-items:flex-start;gap:12px;margin:8px 0 12px;padding:14px;background:var(--panel-bg);border:1px solid ${emotionBorder}44;border-radius:10px">`;
     // Portrait
     html += `<div style="flex-shrink:0">`;
     if (portraitUrl) {
-      html += `<img src="${portraitUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${emotionBorder};box-shadow:0 0 16px ${emotionGlow};object-fit:cover" alt="">`;
+      html += `<img src="${portraitUrl}" style="width:72px;height:72px;border-radius:50%;border:3px solid ${emotionBorder};box-shadow:0 0 16px ${emotionGlow};object-fit:cover" alt="">`;
     }
-    html += `<div style="text-align:center;font-size:11px;font-weight:700;color:${orgCfg.color};margin-top:4px">${enemyAce.name}</div>`;
+    html += `<div style="text-align:center;font-size:10px;font-weight:700;color:${orgCfg.color};margin-top:4px">${enemyAce.name}</div>`;
+    html += `<div style="text-align:center;font-size:9px;color:var(--text-dim)">エース</div>`;
     html += `</div>`;
     // Speech bubble
     html += `<div style="flex:1;position:relative;background:var(--bg-card);border:1px solid ${emotionBorder}33;border-radius:10px;padding:12px 14px;margin-top:8px">`;
@@ -508,6 +567,30 @@ const EVENT_QUOTES = {
     'よろしくお願いします！たくさん試合がしたいです！',
     'この日をずっと待っていました…！'
   ],
+  // v1.0: Draft candidate speech (when focused in draft)
+  draftInterest: {
+    'リーダー気質': ['私についてきてくれれば、このチームは絶対に強くなる。', '団体を背負う覚悟はできてるわ。任せなさい。'],
+    '努力家': ['地道にコツコツ…それが私のやり方です。信じてもらえますか？', '誰よりも練習します。見ていてください。'],
+    '負けず嫌い': ['私を選んでくれるなら、絶対に後悔はさせない！', '負ける気なんて、さらさらないから！'],
+    '華': ['私がリングに立てば、お客さんは絶対に盛り上がりますよ♪', 'スター性なら誰にも負けません。選んで損はさせませんよ？'],
+    'ヒール適性': ['ふふ…面白そうな団体じゃない。使ってくれるなら、暴れてあげるわよ？', '善人ばかりのチームじゃつまらないでしょ？'],
+    'ムードメーカー': ['えへへ、一緒に楽しくやりましょうよ！', '私がいれば道場の雰囲気は最高になりますよ！'],
+    '威圧感': ['…選ぶなら、覚悟を決めなさい。私は手加減しないわよ。', '私の前に立てる選手がいるか…それが問題ね。'],
+    '遅咲き': ['今はまだ未熟かもしれません…でも、必ず大きく咲いてみせます。', '時間をください。きっと期待を超えてみせますから。'],
+    '早熟': ['もう準備はできてます。今すぐ試合に出してください！', '待ちきれない…早くリングに立ちたい！'],
+    '闘志': ['闘いたい…誰でもいい、強い相手と闘わせてください！', '心の炎は消えない。どんな逆境だって乗り越えてみせる！'],
+    '破天荒': ['ルールとか常識とか、つまんないこと言わないでよね！', '退屈なプロレスはしないって約束するよ！'],
+    '忠誠心': ['選んでくださるなら…ずっと、この団体で戦い続けます。', 'この恩は一生忘れません。裏切りは絶対にしません。'],
+    '番狂わせ体質': ['格上だって関係ない。私、なぜか大一番で燃えるんです。', '数字じゃ測れない力がある…って信じてくれますか？'],
+    '野心': ['てっぺんを獲る。それ以外に興味はないわ。', 'この業界の頂点に立つ。そのために最高の環境を選ぶの。'],
+    'ファンサービス': ['お客さんの笑顔が私の原動力です！一緒に楽しい団体を作りましょう！', 'ファンあってのプロレスですから。大切にしますよ♪'],
+    '鉄人': ['怪我？そんなの関係ないです。365日戦えます。', '丈夫さだけは誰にも負けません。フル稼働でいきましょう！'],
+    '適応力': ['どんなスタイルの相手でも合わせられます。使いやすいですよ？', '環境が変わっても大丈夫。すぐ馴染んでみせます。'],
+    '名勝負製造機': ['私の試合を見れば、きっと鳥肌が立ちますよ。', '記憶に残る試合を約束します。それが私の誇りだから。'],
+    'ライバル体質': ['ライバルがいるから強くなれる。切磋琢磨しましょう？', '誰かと競い合うのが好きなの。いい環境をください。'],
+    '引き出し上手': ['相手の良さも引き出せる…そんな選手になりたいんです。', '試合の中で成長できるタイプです。たくさん組ませてください。'],
+    '人望': ['みんなで強くなりたい。一人じゃプロレスはできないから。', 'チームの絆を大切にします。団結力なら負けません。']
+  },
   injury: [
     'うぅ…痛い…。でも、すぐ戻ります！',
     'すみません…しばらくお休みをいただきます…',
@@ -581,6 +664,42 @@ function closeEventPopup() {
 function pickQuote(category) {
   const arr = EVENT_QUOTES[category] || ['...'];
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// v1.0: Get a draft-context quote for a specific character
+// Uses their traits to pick a personality-appropriate line
+function getDraftQuote(char) {
+  const traitQuotes = EVENT_QUOTES.draftInterest || {};
+  const traits = char.traits || [];
+  // Try each trait to find a matching quote pool
+  for (const trait of traits) {
+    if (traitQuotes[trait]) {
+      const arr = traitQuotes[trait];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  // Fallback to generic draftJoin
+  return pickQuote('draftJoin');
+}
+
+// v1.0: Get a draft "interest" line (when focused, before picking)
+function getDraftInterestLine(char) {
+  const traitQuotes = EVENT_QUOTES.draftInterest || {};
+  const traits = char.traits || [];
+  for (const trait of traits) {
+    if (traitQuotes[trait]) {
+      const arr = traitQuotes[trait];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  // Generic interest lines
+  const generic = [
+    '私を選んでくれるの…？嬉しい！',
+    'この団体、面白そう…気になってたんです。',
+    'よろしくお願いします…！精一杯やります！',
+    '入れてくれるなら、全力で頑張りますよ！'
+  ];
+  return generic[Math.floor(Math.random() * generic.length)];
 }
 
 // ── Fighter Detail Popup ──

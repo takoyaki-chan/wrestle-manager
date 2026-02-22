@@ -1162,6 +1162,80 @@ function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1,
 
 // ── App Commands (G mutation ONLY via G = newState) ──
 const App = {
+  // ═══ Title Screen (v1.0) ═══
+
+  // Show the title screen overlay
+  showTitleScreen() {
+    const titleEl = document.getElementById('titleScreen');
+    const orgEl = document.getElementById('orgSetupScreen');
+    titleEl.style.display = 'flex';
+    orgEl.style.display = 'none';
+
+    // Populate title portraits (pick 7 iconic characters)
+    const titleIds = [1, 16, 11, 5, 17, 12, 4];
+    const portraitsEl = document.getElementById('titlePortraits');
+    portraitsEl.innerHTML = titleIds
+      .map(id => { const url = getPortraitUrl(id); return url ? `<img src="${url}" alt="">` : ''; })
+      .join('');
+
+    // Show CONTINUE button if autosave exists
+    const autoInfo = Storage.getAutoSaveInfo();
+    const contBtn = document.getElementById('titleContinueBtn');
+    if (autoInfo) {
+      contBtn.style.display = '';
+      contBtn.textContent = `CONTINUE — ${autoInfo.season}年目 第${autoInfo.week}週`;
+    } else {
+      contBtn.style.display = 'none';
+    }
+  },
+
+  // "NEW GAME" button from title
+  titleNewGame() {
+    Audio.play('select');
+    document.getElementById('titleScreen').style.display = 'none';
+    document.getElementById('orgSetupScreen').style.display = 'flex';
+    // Focus the input
+    setTimeout(() => {
+      const input = document.getElementById('orgSetupNameInput');
+      if (input) { input.value = ''; input.focus(); }
+    }, 100);
+  },
+
+  // "CONTINUE" button from title
+  titleContinue() {
+    Audio.play('select');
+    document.getElementById('titleScreen').style.display = 'none';
+    // Load autosave
+    G = Engine.createInitialState();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    refreshAll();
+    Storage.loadAutoSave();
+    Audio.bgm.playForState();
+    refreshAll();
+  },
+
+  // Confirm org setup and proceed to draft
+  confirmOrgSetup() {
+    const input = document.getElementById('orgSetupNameInput');
+    const orgName = (input && input.value.trim()) || 'プレイヤー団体';
+    Audio.play('fanfare');
+    document.getElementById('orgSetupScreen').style.display = 'none';
+    // Initialize new game and go to draft
+    G = Engine.createInitialState();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    G = { ...G, orgName, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    Audio.bgm.play('kaimaku');
+    refreshAll();
+  },
+
+  // Back to title from org setup
+  backToTitle() {
+    Audio.play('click');
+    document.getElementById('orgSetupScreen').style.display = 'none';
+    App.showTitleScreen();
+  },
+
   // Focus/unfocus a draft candidate (expand detail panel)
   focusDraftCandidate(charId) {
     if (G.weekPhase !== 'draft') return;
@@ -1194,18 +1268,16 @@ const App = {
     if (G.weekPhase !== 'draft') return;
     const picks = G._draftPicks || [];
     if (!Engine.draft.isValidPicks(picks)) return;
-    // Capture org name from draft input
-    const nameInput = document.getElementById('draftOrgName');
-    if (nameInput) G = { ...G, orgName: nameInput.value.trim() || 'プレイヤー団体' };
     Audio.play('fanfare');
     Audio.bgm.play('management');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
-    // Show welcome popups for drafted fighters
+    // Show welcome popups for drafted fighters with character-specific quotes
     const drafted = G.roster.filter(c => picks.includes(c.id));
     drafted.forEach((c, i) => {
+      const quote = getDraftQuote(c);
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'positive',
-        message: pickQuote('draftJoin'), detail:`${c.name}（${c.style}/${c.role}）が入団！ OVR ${ov(c)}` }), i * 100);
+        message: quote, detail:`${c.name}（${c.style}/${c.role}）が入団！ OVR ${ov(c)}` }), i * 100);
     });
     delete G._draftPicks;
     delete G._draftFocus;
@@ -1214,13 +1286,9 @@ const App = {
     refreshAll();
   },
 
-  // Initialize a new game
+  // Initialize a new game (from save/load screen)
   newGame() {
-    G = Engine.createInitialState();
-    sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
-    Audio.bgm.play('kaimaku');
-    refreshAll();
+    App.showTitleScreen();
   },
 
   // Sign a free agent

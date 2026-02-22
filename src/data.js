@@ -325,7 +325,9 @@ const PORTRAIT = {
   81:'sakamoto_r',82:'kondo_y',83:'sakuma_h',84:'minamitani_a',85:'kamoshida_r',
   86:'serizawa_a',87:'steinfeld_l',88:'aikawa_a',89:'akabane_a',90:'tamate_s',
   91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',
-  96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
+  96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s',
+  // F3: President portraits (replace filenames when images are ready)
+  'pres_empress':'pres_empress','pres_nova':'pres_nova','pres_crescent':'pres_crescent'
 };
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 
@@ -672,6 +674,67 @@ const RIVAL_ORGS = [
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
 
+// F3: Rival org president characters — appear in war challenge & results
+const RIVAL_ORG_PRESIDENTS = {
+  empress: {
+    id: 'pres_empress', name: '天城 麗華', orgId: 'empress',
+    title: '総帥', personality: 'empress',
+    desc: '業界の頂点に君臨する女帝。圧倒的カリスマで全てを支配する。',
+    challengeLines: [
+      '…あら、まだ立っていたの？\n身の程を知りなさい。我がEMPRESS GRANDに挑む愚かさを。',
+      'あなたの団体がどうなろうと知ったことではないけれど…\n退屈しのぎに相手をしてあげるわ。',
+      'ふふ…面白い虫が湧いてきたわね。\nいいわ、叩き潰してあげる。光栄に思いなさい。',
+      '格下が調子に乗るのは見苦しいわ。\n…この天城麗華が直々に引導を渡してあげましょう。',
+    ],
+    winLines: [
+      '当然の結果よ。格が違うの。\n…まぁ、少しは楽しめたわね。',
+      'あなたたちにしては健闘したわ。\nでも結果は最初から決まっていたの。',
+    ],
+    loseLines: [
+      '…っ！ こんなことが…！\nいいわ、覚えておきなさい。次は二度とこうはいかない。',
+      '認めましょう…今日は負けた。\nでもEMPRESS GRANDの誇りは決して折れない。',
+    ],
+  },
+  nova: {
+    id: 'pres_nova', name: '星宮 アキラ', orgId: 'nova',
+    title: '代表', personality: 'ambitious',
+    desc: '若き野心家。常に上を目指し、攻めの経営で団体を急成長させた。',
+    challengeLines: [
+      'やっと来たか、この時が！\nNOVA IMPACTの勢い、その目に焼き付けろ！',
+      'ウチの選手たちは止まらない。\n全力でぶつかるぞ、受けて立て！',
+      'トップに立つのはウチだ。\n対抗戦で証明してやる…覚悟はいいな？',
+      '面白い、面白いぞ！\nこういう真剣勝負を待ってたんだ！',
+    ],
+    winLines: [
+      'どうだ、これがNOVA IMPACTの力だ！\nまだまだ上を目指すぞ！',
+      '最高の試合だった！でも勝つのはウチだ。\nこの勢いは誰にも止められない！',
+    ],
+    loseLines: [
+      'くっ…やるな…！\nだがこの悔しさ、必ず次に活かしてみせる！',
+      '負けた…か。認めるよ、あんたたちは強かった。\nだが、次は絶対に負けない！',
+    ],
+  },
+  crescent: {
+    id: 'pres_crescent', name: '三日月 さやか', orgId: 'crescent',
+    title: 'オーナー', personality: 'gentle',
+    desc: '温厚だが芯の強い経営者。小さな団体の誇りを胸に戦い続ける。',
+    challengeLines: [
+      'こんにちは。突然ですが…\n対抗戦を申し込ませてください。うちの選手たちの力を試したくて。',
+      '小さな団体ですが、気持ちだけは負けません。\n…対抗戦、受けていただけますか？',
+      '大きな団体じゃないけれど、ここにいる選手たちは本物です。\nどうか、真剣勝負をさせてください。',
+      'うちの子たちが、どうしても戦いたいって。\n…私も、見てみたいんです。うちの団体がどこまでやれるか。',
+    ],
+    winLines: [
+      'うちの選手たちが勝った…！\n…嬉しい。みんな、本当によく頑張った…！',
+      '信じてた…うちの選手たちの力を。\nありがとうございます、いい試合でした。',
+    ],
+    loseLines: [
+      '…残念だけど、いい経験になりました。\nうちの選手たち、もっと強くなれる。そう信じてます。',
+      '負けちゃいましたね…ふふ。\nでもうちの子たち、いい顔してました。次はきっと…！',
+    ],
+  },
+};
+
 // ── Scout Event Name Generation & Config (scout-spec §3) ──────
 const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
 const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
@@ -787,6 +850,13 @@ const AI_SCOUT_CFG = {
   B: { budget:200, maxPicks:2, idealRoster:9,  rates:{prodigy:0.30, promising:0.50, rough:0.60} }
 };
 
+// F1: AI tier differentiation — roster quality caps & growth bonus
+const AI_TIER_LIMITS = {
+  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.20, faAggressiveness: 0.60 },
+  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
+  B: { maxProdigies: 1,  maxPromising: 5,  growthBonus: 0.90, faAggressiveness: 0.20 }
+};
+
 // AI season growth config (rival-spec §4.1)
 const AI_SEASON_CFG = {
   trainWeeks: 30,              // 練習を行う週数概算
@@ -807,7 +877,7 @@ const TRANSFER_CONFIG = {
   poachChancePerFighter: 0.06,          // 1選手あたり6%/四半期
   poachMinPopularity: 50,               // 人気50以上が対象
   poachRequiresHigherRank: true,        // 引き抜き元がプレイヤーより上位
-  playerPoachLimit: 1,                  // プレイヤー年1名引き抜き
+  playerPoachLimit: 2,                  // F2: プレイヤー年2名引き抜き
   aceRetentionRate: 1.0,                // エース: 100%防衛
   nonAceRetentionRate: 0.80,            // 非エース: 80%防衛
   retentionCostMultiplier: 0.5,         // 引き留め費用 = 移籍金 × 0.5
