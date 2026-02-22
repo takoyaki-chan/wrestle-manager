@@ -2888,7 +2888,7 @@ const Engine = {
     aiSeasonGrowth(rng, fighter, org) {
       const f = { ...fighter };
       const age = f.age || 20;
-      const ageMul = ageMultiplier(age, (char || {}).traits);
+      const ageMul = ageMultiplier(age, (f || {}).traits);
       if (ageMul <= 0) return f; // no growth at 35+
 
       const styleKey = f.style || 'Allround';
@@ -3808,7 +3808,7 @@ const Engine = {
         pot, trainCap, traits,
         popularity: 0, wins: 0, losses: 0, draws: 0,
         condition: 100, fatigue: 0, injuries: [], afterEffects: [],
-        schedule: 'balanced', titleDefenses: 0, matchesThisSeason: 0,
+        schedule: 'balance', titleDefenses: 0, matchesThisSeason: 0,
         _notion: notion, // internal: for scout display estimate
         _isSeed: !!isSeed,
       };
@@ -5108,6 +5108,20 @@ const App = {
     let aiOrgs = { ...G.aiOrgs };
     let freeAgents = [...G.freeAgents];
 
+    const normalizeFighterForRoster = (fighter) => ({
+      ...fighter,
+      seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(fighter?.seasonGrowth || {}) },
+      wins: fighter?.wins ?? 0,
+      losses: fighter?.losses ?? 0,
+      draws: fighter?.draws ?? 0,
+      injury: fighter?.injury ?? null,
+      condition: typeof fighter?.condition === 'number' ? fighter.condition : 80,
+      schedule: ['balance','practice','promo','rest'].includes(fighter?.schedule) ? fighter.schedule : 'balance',
+      intensive: !!fighter?.intensive,
+      intensiveWeeks: fighter?.intensiveWeeks || 0,
+      lastMatchResult: fighter?.lastMatchResult || null,
+    });
+
     if (result.result === 'success') {
       if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       Audio.play('stamp');
@@ -5115,7 +5129,7 @@ const App = {
       const signed = { ...cand };
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
-      newRoster.push(signed);
+      newRoster.push(normalizeFighterForRoster(signed));
       newFunds -= result.cost;
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
@@ -5132,12 +5146,12 @@ const App = {
       if (lostResult.destination === 'aiOrg') {
         const orgData = aiOrgs[lostResult.orgId];
         if (orgData) {
-          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, cleanFighter] } };
+          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, normalizeFighterForRoster(cleanFighter)] } };
         }
         const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
         log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
       } else {
-        freeAgents.push(cleanFighter);
+        freeAgents.push(normalizeFighterForRoster(cleanFighter));
         log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ`);
       }
       candidates = candidates.filter(c => c.id !== candidateId);
@@ -5170,7 +5184,7 @@ const App = {
       delete clean._notion; delete clean._estimate; delete clean._isSeed;
       delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
       // 30% chance unselected candidates become freeAgents
-      if (Math.random() < 0.30) freeAgents.push(clean);
+      if (Math.random() < 0.30) freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
     });
     G = {
       ...G, freeAgents, gameLog: log,
@@ -5302,6 +5316,7 @@ const App = {
 
   // Show preparation
   startShowPrep() {
+    if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
     Audio.play('crowd');
     G = {
       ...G,
@@ -5550,8 +5565,12 @@ const App = {
 
   // Close show result and advance via tickWeek
   closeShowResult() {
+    if (App._closingShowResult) return;
+    const resultOverlay = document.getElementById('showResultOverlay');
+    if (!resultOverlay || !resultOverlay.classList.contains('active') || G.weekPhase !== 'showExec') return;
+    App._closingShowResult = true;
     Audio.play('coin');
-    document.getElementById('showResultOverlay').classList.remove('active');
+    resultOverlay.classList.remove('active');
     // v0.96: Show injury popups
     const injuries = App._lastInjuries || [];
     injuries.forEach((ir, i) => {
@@ -5588,6 +5607,7 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
+    App._closingShowResult = false;
   },
 
   // Process a week (manage + settle) via tickWeek
@@ -6570,6 +6590,7 @@ function mqStars(mq) {
 
 // Show prep entry point (routes through App for state changes)
 function startShowPrep() {
+  if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
   // Calculate best venue immutably
   let venueIdx = 0;
   for (let i = VENUES.length - 1; i >= 0; i--) {
@@ -8824,7 +8845,7 @@ function renderTraining() {
       const current = c[s];
       const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
       const pct = Math.round(current / cap * 100);
-      const sg = c.seasonGrowth[s] || 0;
+      const sg = (c.seasonGrowth && c.seasonGrowth[s]) || 0;
       const atCap = current >= cap;
       // Growth room label (vague)
       const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'
@@ -8869,7 +8890,7 @@ function renderTraining() {
 
   // === Season Growth Log ===
   const growthEntries = G.roster.filter(c => {
-    const sg = c.seasonGrowth;
+    const sg = c.seasonGrowth || {};
     return sg && Object.values(sg).some(v => v > 0);
   });
   if (growthEntries.length > 0) {
@@ -8878,7 +8899,7 @@ function renderTraining() {
     growthEntries.forEach(c => {
       const parts = [];
       ['pw','sp','te','st','mn'].forEach(s => {
-        const v = c.seasonGrowth[s] || 0;
+        const v = (c.seasonGrowth && c.seasonGrowth[s]) || 0;
         if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
       });
       if (parts.length > 0) html += `<div>${fLink(c, {source:'roster', size:'11px'})}: ${parts.join(' ')}</div>`;
