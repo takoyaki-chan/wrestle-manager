@@ -1,0 +1,2639 @@
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 5: ENGINE CORE (v0.9)                            ║
+// ║  Pure logic layer — no DOM references                     ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const Engine = {
+  // ── RNG: Seeded xorshift128+ ──────────────────────────
+  rng: {
+    create(seed) {
+      seed = seed | 0;
+      if (seed === 0) seed = 1;
+      // Splitmix64-style seed expansion for two 32-bit state words
+      let s0 = seed;
+      s0 = ((s0 >>> 16) ^ s0) * 0x45d9f3b | 0;
+      s0 = ((s0 >>> 16) ^ s0) * 0x45d9f3b | 0;
+      s0 = (s0 >>> 16) ^ s0;
+      let s1 = seed * 1812433253 + 1;
+      s1 = ((s1 >>> 16) ^ s1) * 0x45d9f3b | 0;
+      s1 = ((s1 >>> 16) ^ s1) * 0x45d9f3b | 0;
+      s1 = (s1 >>> 16) ^ s1;
+      if (s0 === 0 && s1 === 0) s0 = 1;
+      return { s0, s1 };
+    },
+    _next(state) {
+      let s1 = state.s0;
+      const s0 = state.s1;
+      state.s0 = s0;
+      s1 ^= s1 << 23;
+      s1 ^= s1 >>> 17;
+      s1 ^= s0;
+      s1 ^= s0 >>> 26;
+      state.s1 = s1;
+      return ((state.s0 + state.s1) >>> 0);
+    },
+    float(rng) {
+      // Returns [0, 1)
+      return Engine.rng._next(rng) / 4294967296;
+    },
+    int(rng, min, max) {
+      return min + Math.floor(Engine.rng.float(rng) * (max - min + 1));
+    },
+    pick(rng, arr) {
+      return arr[Math.floor(Engine.rng.float(rng) * arr.length)];
+    },
+    weighted(rng, weights) {
+      // weights: {key: weight, ...} — returns key
+      const entries = Object.entries(weights);
+      const total = entries.reduce((s, [, v]) => s + v, 0);
+      let r = Engine.rng.float(rng) * total;
+      for (const [k, v] of entries) {
+        r -= v;
+        if (r <= 0) return k;
+      }
+      return entries[entries.length - 1][0];
+    },
+    // Derive a sub-seed for a specific context
+    derive(baseSeed, ...keys) {
+      let h = baseSeed | 0;
+      for (const k of keys) {
+        h = ((h << 5) - h + (typeof k === 'number' ? k : 0)) | 0;
+        h = ((h >>> 16) ^ h) * 0x45d9f3b | 0;
+      }
+      return h || 1;
+    }
+  },
+
+  // ── Utilities ──────────────────────────────────────────
+  util: {
+    clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
+    ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
+    isShowWeek(w) { return w % 2 === 0; },
+    getQuarter(w) { return Math.ceil(w / 12); },
+    /** Pick N items from array using seeded shuffle (deterministic per season+quarter) */
+    seededPick(arr, n, seed) {
+      if (arr.length <= n) return [...arr];
+      const rng = Engine.rng.create(seed);
+      const shuffled = [...arr];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(rng, 0, i);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled.slice(0, n);
+    },
+    /** Compute visible FA IDs for this quarter (6 slots) */
+    getVisibleFAIds(state) {
+      const fa = state.freeAgents || [];
+      if (fa.length <= 6) return fa.map(c => c.id);
+      const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xFA);
+      return Engine.util.seededPick(fa.map(c => c.id), 6, seed);
+    },
+    /** Compute visible Rental IDs for this quarter (10 slots) */
+    getVisibleRentalIds(state) {
+      const rentals = Engine.rental.getAvailableRentals(state);
+      if (rentals.length <= 10) return rentals.map(r => r.fighter.id);
+      const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xBE);
+      return Engine.util.seededPick(rentals.map(r => r.fighter.id), 10, seed);
+    },
+    isSpecialShow(w) { return w % 12 === 0; },
+    isPPV(w) { return w === 48; },
+    eff(x) {
+      if (x <= ENG.effPivot) return x;
+      return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
+    },
+    getSalary(c) {
+      const o = Engine.util.ov(c);
+      for (const s of SALARY_TABLE) if (o <= s.max) return s.pay;
+      return 200;
+    },
+    getPotentialPct(char) {
+      const stats = ['pw','sp','te','st','mn'];
+      const current = stats.reduce((s, k) => s + char[k], 0);
+      const cap = stats.reduce((s, k) => s + (char.trainCap ? char.trainCap[k] : (char.pot ? char.pot[k] : char[k])), 0);
+      return cap > 0 ? Math.round(current / cap * 100) : 100;
+    }
+  },
+
+  // ── Battle Engine (DOM-free) ──────────────────────────
+  battle: {
+    phase(t) {
+      return PHASES.find(p => t >= p.min && t <= p.max) || PHASES[3];
+    },
+    selMove(rng, style, turn) {
+      const ph = Engine.battle.phase(turn);
+      const use = Engine.rng.float(rng) * 100 < ph.sCh;
+      const pool = use ? styleMoves[style] : commonMoves;
+      const cat = Engine.rng.weighted(rng, catW[style]);
+      const cands = pool.filter(m => m.c === cat);
+      return cands.length ? Engine.rng.pick(rng, cands) : Engine.rng.pick(rng, pool);
+    },
+    calcHitRate(mv, atk, def) {
+      const eff = Engine.util.eff;
+      const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
+      let rate = baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus);
+      // 威圧感: 相手の命中率を低下させる
+      if (Traits.has(def, '威圧感')) rate -= 3;
+      return Engine.util.clamp(rate, ENG.hitMin, ENG.hitMax);
+    },
+    calcCounterRate(atk, def, ph) {
+      const eff = Engine.util.eff;
+      let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
+      if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
+      // 威圧感: 相手のカウンター率を低下させる
+      if (Traits.has(atk, '威圧感')) rate -= 3;
+      return Engine.util.clamp(rate, ENG.counterMin, ENG.counterMax);
+    },
+    calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
+      const eff = Engine.util.eff;
+      const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
+        + (mv.c === 'aerial' ? eff(atk.sp) * ENG.dmgSpdScale : 0);
+      const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
+      const mAdv = atkSide === 'left' ? mom : -mom;
+      const mMod = 1 + (mAdv * ENG.momDmgScale);
+      const rF = ENG.dmgRandMin + (Engine.rng.float(rng) * ENG.dmgRandRange);
+      let raw = (base - defense) * mMod * rF * ph.mult;
+      if (def.gritTurns > 0) raw *= (1 - ENG.gritDmgReduction);
+      return Math.max(ENG.dmgFloor, Math.round(raw));
+    },
+    determineFinishType(rng, mv) {
+      return Engine.rng.weighted(rng, ENG.finishWeights[mv.c] || ENG.finishWeights.strike);
+    },
+    calcKickoutChance(def, ph) {
+      let chance = (def.mn / 100) * ENG.kickoutMnScale;
+      if (ph.name === 'Climax') chance *= ENG.kickoutClimaxMult;
+      // 闘志: HP低下時のキックアウト率UP
+      if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
+      chance = Engine.util.clamp(chance, 0.05, 0.45);
+      if (def.kickoutCount >= ENG.kickoutMax) chance = 0;
+      return chance;
+    },
+    calcGuEscapeChance(def, ph) {
+      let chance = (def.mn / 100) * ENG.guEscapeMnScale;
+      if (ph.name === 'Climax') chance *= 0.8;
+      chance = Engine.util.clamp(chance, 0.05, 0.40);
+      if (def.kickoutCount >= ENG.guEscapeMax) chance = 0;
+      return chance;
+    },
+    checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph) {
+      if (def.hp <= 0) return false;
+      if (def.hp / def.mhp > ENG.pinAttemptHpThreshold) return false;
+      if (dmg < ENG.pinAttemptMinDmg) return false;
+      if (ph.name === 'Opening') return false;
+      let attemptRate = ENG.pinAttemptBaseRate;
+      const mAdv = atkSide === 'left' ? mom : -mom;
+      attemptRate += mAdv * ENG.pinAttemptMomBonus;
+      if (ph.name === 'Climax') attemptRate += 15;
+      if (ph.name === 'End') attemptRate += 8;
+      return Engine.rng.float(rng) * 100 < Engine.util.clamp(attemptRate, 10, 60);
+    },
+    calcPinAttemptSuccess(atk, def, dmg, ph) {
+      let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
+      if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
+      if (def.gritTurns > 0) rate -= 10;
+      return Engine.util.clamp(rate, 8, 55);
+    },
+
+    // Main match simulation — pure function, no DOM
+    simulateMatch(charL, charR, rng) {
+      const clamp = Engine.util.clamp;
+      const B = Engine.battle;
+
+      const eff = Engine.util.eff;
+      const L = {
+        ...charL, hp: Math.round(eff(charL.st) * ENG.hpScale),
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+      };
+      L.mhp = L.hp;
+      const R = {
+        ...charR, hp: Math.round(eff(charR.st) * ENG.hpScale),
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+      };
+      R.mhp = R.hp;
+
+      let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null;
+      // 威圧感: 序盤モメンタム優位（左+/右-）
+      if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 5;
+      if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 5;
+      let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
+
+      while (turn <= MAX_T && !winner) {
+        const ph = B.phase(turn);
+        const leftChance = 50 + mom * 0.3;
+        const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
+        const atk = isLeftAtk ? L : R;
+        const def = isLeftAtk ? R : L;
+        const atkSide = isLeftAtk ? 'left' : 'right';
+
+        const mv = B.selMove(rng, atk.style, turn);
+        const hitRate = B.calcHitRate(mv, atk, def);
+        const roll = Engine.rng.float(rng) * 100;
+
+        if (roll > hitRate) {
+          log.push(`T${turn}: ${atk.name}の${mv.n} → MISS`);
+          mom += isLeftAtk ? -5 : 5;
+        } else {
+          const counterRate = B.calcCounterRate(atk, def, ph);
+          if (Engine.rng.float(rng) * 100 < counterRate) {
+            const cDmg = Math.max(ENG.dmgFloor, Math.round(mv.d * ENG.counterDmgMult));
+            atk.hp -= cDmg;
+            mom += isLeftAtk ? -ENG.counterMomShift : ENG.counterMomShift;
+            def.consecutiveHits = 0;
+            totalCounters++;
+            log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${cDmg}ダメージ`);
+          } else {
+            const dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+            def.hp -= dmg;
+            mom += isLeftAtk ? 8 : -8;
+            atk.consecutiveHits++;
+            def.consecutiveHits = 0;
+            if (dmg >= 10) bigMoves++;
+            const curLeader = mom > 5 ? 'left' : mom < -5 ? 'right' : null;
+            if (curLeader && curLeader !== lastLeader) { leadChanges++; lastLeader = curLeader; }
+
+            if (L.gritTurns > 0) L.gritTurns--;
+            if (R.gritTurns > 0) R.gritTurns--;
+
+            const dmgStr = dmg >= 15 ? `${dmg}の大ダメージ！` : `${dmg}ダメージ`;
+            log.push(`T${turn}: ${atk.name}の${mv.n} → ${def.name}に${dmgStr} (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+
+            if (def.hp <= 0) {
+              const fType = B.determineFinishType(rng, mv);
+              const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
+              let escaped = false;
+              if (fType === 'fall' || fType === 'tko') {
+                const koChance = B.calcKickoutChance(def, ph);
+                if (Engine.rng.float(rng) < koChance) {
+                  escaped = true;
+                  def.hp = Math.round(def.mhp * 0.05);
+                  def.kickoutCount++;
+                  def.gritTurns = ENG.gritDuration;
+                  log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
+                }
+              } else if (fType === 'gu') {
+                const escChance = B.calcGuEscapeChance(def, ph);
+                if (Engine.rng.float(rng) < escChance) {
+                  escaped = true;
+                  def.hp = Math.round(def.mhp * 0.05);
+                  def.kickoutCount++;
+                  def.gritTurns = ENG.gritDuration;
+                  log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
+                  totalKickouts++;
+                }
+              }
+              if (!escaped) {
+                winner = atkSide;
+                finType = finLabel;
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+              }
+            }
+            else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
+              const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
+              if (Engine.rng.float(rng) * 100 < successRate) {
+                winner = atkSide;
+                finType = 'ピン';
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
+              } else {
+                def.gritTurns = ENG.gritDuration;
+                log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
+                totalKickouts++;
+              }
+            }
+            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < ENG.rollupHpThreshold) {
+              let rSuccess = ENG.rollupBaseSuccess + (Engine.util.eff(atk.te) * ENG.rollupTecBonus);
+              // 番狂わせ体質: 格上相手の丸め込み成功率UP
+              if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
+              if (Engine.rng.float(rng) * 100 < rSuccess) {
+                winner = atkSide;
+                finType = '丸め込み';
+                finMove = mv.n;
+                log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
+              }
+            }
+            else if (!winner && atk.consecutiveHits >= ENG.tkoConsecutiveThreshold
+                     && def.hp / def.mhp < ENG.tkoHpThreshold) {
+              if (Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
+                winner = atkSide;
+                finType = 'TKO';
+                finMove = mv.n;
+                log.push(`★ レフェリーストップ！ ${atk.name}のTKO勝利！`);
+              }
+            }
+          }
+        }
+        mom = clamp(mom, -50, 50);
+        turn++;
+      }
+
+      if (!winner) {
+        if (L.hp === R.hp) {
+          winner = 'draw';
+          finType = '時間切れドロー';
+        } else {
+          winner = L.hp > R.hp ? 'left' : 'right';
+          finType = 'HP判定';
+        }
+        log.push(`⏰ 時間切れ！ ${winner === 'draw' ? 'ドロー' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
+      }
+
+      // Calculate MQ
+      const matchTurns = turn - 1;
+      const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
+      let mq = 0;
+      mq += Math.min(30, avgOV * 0.35);
+      const lengthScore = matchTurns <= 8 ? matchTurns * 1.5 : matchTurns <= 15 ? 12 + (matchTurns - 8) * 1.0 :
+        matchTurns <= 30 ? 19 + Math.min(1, (matchTurns - 15) * 0.07) : 20 - (matchTurns - 30) * 0.3;
+      mq += Math.max(0, Math.min(20, lengthScore));
+      mq += Math.min(15, totalCounters * 3);
+      mq += Math.min(20, totalKickouts * 8);
+      mq += Math.min(10, leadChanges * 2.5);
+      mq += Math.min(5, bigMoves * 0.8);
+      // 名勝負製造機: MQに+5ボーナス
+      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 5;
+      // 引き出し上手: 格下とのMQが下がりにくい（OV差が大きい場合にMQ底上げ）
+      const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
+      if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(8, ovDiff * 0.3);
+      mq = Math.round(Engine.util.clamp(mq, 5, 100));
+
+      return {
+        left: charL, right: charR,
+        winner, finType, finMove,
+        turns: matchTurns,
+        hpLeft: { final: Math.max(0, L.hp), max: L.mhp },
+        hpRight: { final: Math.max(0, R.hp), max: R.mhp },
+        mq, log
+      };
+    }
+  },
+
+  // ── Economy (DOM-free) ─────────────────────────────────
+  economy: {
+    calcWeeklySalary(roster) {
+      return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
+    },
+    calcFixedCosts() {
+      return FIXED_COSTS.facility + FIXED_COSTS.admin;
+    },
+    getSponsorIncome(orgPop) {
+      for (const s of SPONSOR_TABLE) if (orgPop >= s.min && orgPop <= s.max) return s.val;
+      return 0;
+    },
+    getBroadcastIncome(orgPop) {
+      for (const b of BROADCAST_TABLE) if (orgPop >= b.min && orgPop <= b.max) return b.val;
+      return 0;
+    },
+    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch) {
+      const v = VENUES[venueIdx];
+      const baseAttend = G.orgPop / 100 * v.cap * 0.8;
+      const cardBonus = mainCardPop * 0.3;
+      const heatMult = Engine.heat.getMult(G);
+      const titleMult = hasTitleMatch ? 1.15 : 1.0;
+      // 華: ロスターに華持ちがいれば集客+5%
+      const charismaMult = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 1.05 : 1.0;
+      return Math.min(v.cap, Math.round((baseAttend + cardBonus) * heatMult * titleMult * charismaMult));
+    },
+    calcShowRevenue(roster, venueIdx, attendance) {
+      const v = VENUES[venueIdx];
+      const ticketRev = Math.round(attendance * v.ticket);
+      // Sort by popularity, take top 3, apply trait bonuses
+      const sorted = [...roster].sort((a, b) => b.popularity - a.popularity).slice(0, 3);
+      const goodsRev = sorted.reduce((s, c) => {
+        let contrib = c.popularity * 2;
+        // 華: グッズ貢献×1.3
+        if (Traits.has(c, '華')) contrib *= 1.3;
+        // ファンサービス: グッズ貢献×1.2
+        if (Traits.has(c, 'ファンサービス')) contrib *= 1.2;
+        // ヒール適性 + Heel role: グッズ貢献+20%
+        if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty')) contrib *= 1.2;
+        return s + Math.round(contrib);
+      }, 0);
+      return { ticketRev, goodsRev, venueCost: v.cost };
+    }
+  },
+
+  // ── Heat System (IMMUTABLE — returns new values, never mutates G) ──
+  heat: {
+    getLevel(G) {
+      return HEAT_LEVELS.find(h => G.heatScore >= h.min && G.heatScore <= h.max) || HEAT_LEVELS[2];
+    },
+    getMult(G) { return Engine.heat.getLevel(G).mult; },
+    calcUpdate(G, avgMQ) {
+      let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
+      if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
+      if (G.heatScore < 0 && delta >= 0) delta += 0.5;
+      return Engine.util.clamp(Math.round((G.heatScore + delta) * 10) / 10, -10, 10);
+    },
+    calcDecay(G) {
+      let hs = G.heatScore;
+      if (hs > 0) hs = Math.max(0, hs - 0.3);
+      else if (hs < 0) hs = Math.min(0, hs + 0.3);
+      return Math.round(hs * 10) / 10;
+    }
+  },
+
+  // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
+  injury: {
+    check(rng, fighter, matchResult, facilityReduction, coachInjuryMult = 1.0) {
+      if (!fighter) return null;
+      const isLeft = matchResult.left.id === fighter.id;
+      const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
+      const hpRatio = hpData.final / hpData.max;
+      const condFactor = (100 - fighter.condition) / 100;
+      let injuryChance = Math.min(0.15, 0.025 + condFactor * 0.05 + (1 - hpRatio) * 0.04 + matchResult.turns * 0.0015);
+      injuryChance *= coachInjuryMult;  // mental coach reduction
+      // 頑丈さ: 怪我確率×0.7
+      if (Traits.has(fighter, '頑丈さ')) injuryChance *= 0.7;
+      // ガラスの身体: 怪我確率×1.4
+      if (Traits.has(fighter, 'ガラスの身体')) injuryChance *= 1.4;
+      if (Engine.rng.float(rng) > injuryChance) return null;
+      const roll = Engine.rng.float(rng);
+      const injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
+      let weeks = injury.minWeeks + Engine.rng.int(rng, 0, injury.maxWeeks - injury.minWeeks);
+      // 不屈: 復帰期間-1週（最低1）
+      if (Traits.has(fighter, '不屈')) weeks = Math.max(1, weeks - 1);
+      // 鉄人: 復帰期間-1週（最低1）
+      if (Traits.has(fighter, '鉄人')) weeks = Math.max(1, weeks - 1);
+      const reducedWeeks = Math.max(1, weeks - facilityReduction);
+      // v0.99: Reassess value on severe injury (pricing-balance-spec §4.2)
+      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+      if (injury.type === '重傷' && updatedFighter.assessedValue) {
+        const injRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 888));
+        const rv = Engine.scout.reassess(updatedFighter, 'severeInjury', injRng, 0);
+        updatedFighter = { ...updatedFighter, ...rv };
+      }
+      return {
+        newFighter: updatedFighter,
+        injuryInfo: { injury, reducedWeeks, originalWeeks: weeks }
+      };
+    },
+    tick(roster, freeAgents) {
+      const events = [];
+      const newRoster = roster.map(c => {
+        if (!c.injury) return c;
+        const wl = c.injury.weeksLeft - 1;
+        if (wl <= 0) { events.push(`✅ ${c.name}が${c.injury.type}から復帰！`); return { ...c, injury: null }; }
+        return { ...c, injury: { ...c.injury, weeksLeft: wl } };
+      });
+      const newFA = freeAgents.map(c => {
+        if (!c.injury) return c;
+        const wl = c.injury.weeksLeft - 1;
+        return wl <= 0 ? { ...c, injury: null } : { ...c, injury: { ...c.injury, weeksLeft: wl } };
+      });
+      return { roster: newRoster, freeAgents: newFA, events };
+    }
+  },
+
+  // ── Title & Rivalry (IMMUTABLE — returns new objects, never mutates) ──
+  title: {
+    getRivalryKey(id1, id2) {
+      return id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
+    },
+    getRivalry(G, id1, id2) {
+      return G.rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
+    },
+    getRivalryLevel(G, id1, id2) {
+      const r = Engine.title.getRivalry(G, id1, id2);
+      if (!r) return null;
+      let best = null;
+      for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
+      return best;
+    },
+    // Returns { rivalries, msg }
+    recordRivalry(G, id1, id2) {
+      const key = Engine.title.getRivalryKey(id1, id2);
+      const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0 };
+      const old = Engine.title.getRivalryLevel(G, id1, id2);
+      // ライバル体質: 因縁カウント+1加速（通常1→2）
+      const rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
+      const newEntry = { matches: oldEntry.matches + rivalryBonus, lastWeek: G.week };
+      const newRivalries = { ...G.rivalries, [key]: newEntry };
+      const newLvl = Engine.title.getRivalryLevel({ ...G, rivalries: newRivalries }, id1, id2);
+      let msg = null;
+      if (newLvl && (!old || old.matches !== newLvl.matches)) {
+        const c1 = G.roster.find(c => c.id === id1) || G.freeAgents.find(c => c.id === id1);
+        const c2 = G.roster.find(c => c.id === id2) || G.freeAgents.find(c => c.id === id2);
+        msg = `${newLvl.emoji} ${c1?.name || '?'} vs ${c2?.name || '?'} — ${newLvl.label}関係に発展！（MQ+${newLvl.mqBonus}）`;
+      }
+      return { rivalries: newRivalries, msg };
+    },
+    getWorldChampion(G) {
+      if (!G.titles.world.championId) return null;
+      return G.roster.find(c => c.id === G.titles.world.championId) || null;
+    },
+    // Returns { titles, roster, msg }
+    crownChampion(G, fighterId) {
+      const prev = Engine.title.getWorldChampion(G);
+      const newTitles = { ...G.titles, world: { championId: fighterId, defenses: 0, wonWeek: G.week } };
+      // v0.99: Reassess value on title win (pricing-balance-spec §4.2)
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, fighterId));
+      const newRoster = G.roster.map(c => {
+        if (c.id !== fighterId) return c;
+        const reassessed = Engine.scout.reassess(c, 'titleWin', rng, G.season);
+        return { ...c, popularity: Math.min(100, c.popularity + 5), ...reassessed };
+      });
+      const c = G.roster.find(r => r.id === fighterId);
+      const msg = prev
+        ? `🏆 王座交代！ ${c?.name} が新チャンピオンに！（前王者: ${prev.name}）`
+        : `🏆 ${c?.name} が初代チャンピオンに戴冠！`;
+      return { titles: newTitles, roster: newRoster, msg };
+    },
+    // Returns { titles, roster, msg }
+    recordDefense(G) {
+      const newDefenses = G.titles.world.defenses + 1;
+      const newTitles = { ...G.titles, world: { ...G.titles.world, defenses: newDefenses } };
+      const champId = G.titles.world.championId;
+      // v0.99: Reassess value on 3rd defense (pricing-balance-spec §4.2)
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, champId, 333));
+      const newRoster = G.roster.map(c => {
+        if (c.id !== champId) return c;
+        let updated = { ...c, popularity: Math.min(100, c.popularity + 2) };
+        if (newDefenses === 3) {
+          const reassessed = Engine.scout.reassess(updated, 'titleDefend3', rng, G.season);
+          updated = { ...updated, ...reassessed };
+        }
+        return updated;
+      });
+      const c = G.roster.find(r => r.id === champId);
+      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が王座${newDefenses}度目の防衛成功！` };
+    },
+    // Returns { titles, msg }
+    validateChampion(G) {
+      if (G.titles.world.championId && !G.roster.find(c => c.id === G.titles.world.championId)) {
+        return { titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } }, msg: '🏆 王座剥奪: チャンピオンが団体を離脱したため王座は空位に' };
+      }
+      return { titles: G.titles, msg: null };
+    }
+  },
+
+  // ── Coach System (IMMUTABLE for state changes) ────────────────
+  coach: {
+    getHiredCoaches(G) {
+      return G.coaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+    },
+    getCoachAssignees(G, coachId) {
+      return (G.coachAssign && G.coachAssign[coachId]) || [];
+    },
+    getCharCoach(G, charId) {
+      for (const coachId of G.coaches) {
+        if (Engine.coach.getCoachAssignees(G, coachId).includes(charId)) return ALL_COACHES.find(c => c.id === coachId);
+      }
+      return null;
+    },
+    // Returns { coachAssign, success }
+    assignToCoach(G, coachId, charId) {
+      const current = G.coachAssign[coachId] || [];
+      if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: G.coachAssign, success: false };
+      return { coachAssign: { ...G.coachAssign, [coachId]: [...current, charId] }, success: true };
+    },
+    // Returns new coachAssign
+    unassignFromCoach(G, charId) {
+      const newAssign = {};
+      for (const coachId of Object.keys(G.coachAssign)) {
+        newAssign[coachId] = G.coachAssign[coachId].filter(id => id !== charId);
+      }
+      return newAssign;
+    },
+    getCharGrowthMult(G, charId, stat) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach) return 1.0;
+      if (coach.specialty === 'all') return coach.growthMult;
+      if (coach.specialty === stat) return coach.growthMult;
+      if (['pw','sp','te','st','mn'].includes(coach.specialty)) return GROWTH_CONFIG.subMult;
+      return 1.0;
+    },
+    pickGrowthStat(rng, G, charId) {
+      const stats = ['pw','sp','te','st','mn'];
+      const coach = Engine.coach.getCharCoach(G, charId);
+      let weights;
+      if (coach && ['pw','sp','te','st','mn'].includes(coach.specialty)) {
+        weights = stats.map(s => s === coach.specialty ? GROWTH_CONFIG.specialtyWeight : GROWTH_CONFIG.otherWeight);
+      } else {
+        weights = stats.map(() => 0.2);
+      }
+      const r = Engine.rng.float(rng);
+      let cumulative = 0;
+      for (let i = 0; i < stats.length; i++) {
+        cumulative += weights[i];
+        if (r < cumulative) return stats[i];
+      }
+      return stats[4];
+    },
+    getMQBonusForMatch(G, leftId, rightId) {
+      let bonus = 0;
+      Engine.coach.getHiredCoaches(G).forEach(c => {
+        if (c.specialty !== 'mq' || !c.mqBonus) return;
+        const assigned = Engine.coach.getCoachAssignees(G, c.id);
+        if (assigned.includes(leftId) || assigned.includes(rightId)) bonus += c.mqBonus;
+      });
+      return bonus;
+    },
+    getPopBonusForChar(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach || coach.specialty !== 'pop') return 0;
+      return coach.popBonus || 0;
+    },
+    // Mental coach: condition recovery bonus per week
+    getCondBonus(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach || coach.specialty !== 'mental') return 0;
+      return coach.condBonus || 0;
+    },
+    // Mental coach: injury chance multiplier (0.5 = 50% reduction)
+    getInjuryMult(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach || coach.specialty !== 'mental') return 1.0;
+      return 1.0 - (coach.injuryReduce || 0);
+    },
+    getSalaryTotal(G) {
+      return Engine.coach.getHiredCoaches(G).reduce((s, c) => s + c.salary, 0);
+    }
+  },
+
+  // ── Facility System (DOM-free) ─────────────────────────
+  facility: {
+    getLevel(G, facilityId) {
+      return (G.facilities && G.facilities[facilityId]) || 1;
+    },
+    getMaintenance(G) {
+      if (!G.facilities) return 0;
+      let total = 0;
+      FACILITIES.forEach(f => {
+        const lv = Engine.facility.getLevel(G, f.id);
+        total += f.levels[lv - 1].maint;
+      });
+      return total;
+    },
+    getGrowthMult(G) {
+      const lv = Engine.facility.getLevel(G, 'training');
+      return lv === 3 ? 1.4 : lv === 2 ? 1.2 : 1.0;
+    },
+    getInjuryReduction(G) {
+      const lv = Engine.facility.getLevel(G, 'medical');
+      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
+    },
+    getMedicalRecovery(G) {
+      return Engine.facility.getLevel(G, 'medical') >= 3 ? 5 : 0;
+    },
+    getPromoBonus(G) {
+      const lv = Engine.facility.getLevel(G, 'media');
+      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
+    },
+    getBroadcastBonus(G) {
+      return Engine.facility.getLevel(G, 'media') >= 3 ? 50 : 0;
+    },
+    getConditionBonus(G) {
+      const lv = Engine.facility.getLevel(G, 'dormitory');
+      return lv === 3 ? 6 : lv === 2 ? 3 : 0;
+    },
+    getRestBonus(G) {
+      return Engine.facility.getLevel(G, 'dormitory') >= 3 ? 5 : 0;
+    },
+    getScoutDiscount(G) {
+      const lv = Engine.facility.getLevel(G, 'scouting');
+      return lv === 3 ? 25 : lv === 2 ? 15 : 0;
+    }
+  },
+
+  // ── Growth System v1.0 (IMMUTABLE) ─────────────────────
+  growth: {
+    // Convergence factor (training-spec §2.4) — growth slows near trainCap
+    convergenceFactor(value, trainCap, notionValue) {
+      if (value >= trainCap) return 0;
+      const remaining = trainCap - value;
+      const totalRange = Math.max(1, trainCap - 30);
+      let factor = remaining / totalRange;
+      if (value >= notionValue) factor *= 0.4; // Notion超え後は40%に鈍化
+      return Engine.util.clamp(factor, 0.02, 1.2);
+    },
+
+    // Weekly growth calculation (training-spec §2.3) — v1.0 convergence-based
+    calcGrowth(rng, G, char, stat) {
+      if (stat === 'mn') return 0; // MNT is innate, no training growth
+      const current = char[stat];
+      const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
+      const notion = char.notionValue ? char.notionValue[stat] : current;
+      if (current >= trainCap) return 0;
+
+      const styleKey = char.style || 'Allround';
+      const styleGain = (STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround)[stat] || 0.7;
+      const age = char.age || (16 + (char.careerSeasons || 0));
+      const ageMul = ageMultiplier(age, char.traits);
+      if (ageMul <= 0) return 0;
+
+      const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
+      const facilityMul = Engine.facility.getGrowthMult(G);
+      const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
+
+      let baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
+      // 努力家: 練習成長+15%
+      if (Traits.has(char, '努力家')) baseGain *= 1.15;
+      // ムードメーカー: 団体にいるだけで全体の練習効率+5%（自分含む）
+      if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) baseGain *= 1.05;
+      // リーダー気質: エースが所属していれば若手(≤21)の成長+10%
+      if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) baseGain *= 1.10;
+      // 負けず嫌い: 直近の試合で負けていれば成長+20%
+      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') baseGain *= 1.20;
+
+      let weeklyVariance = 0.5 + Engine.rng.float(rng) * 1.0; // 0.5〜1.5
+      // 破天荒: 成長の振れ幅拡大 (0.0〜2.5)
+      if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
+      const rawGain = baseGain * weeklyVariance;
+
+      // Intensive training bonus
+      const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
+      return Math.min(Math.ceil(finalGain), trainCap - current);
+    },
+
+    // Apply aging decay (training-spec §5.3-5.4) — used for both player and AI
+    applyDecay(rng, fighter) {
+      const age = fighter.age || 99;
+      // 晩成: 衰退開始を2年遅延
+      const decayStartAge = Traits.has(fighter, '晩成') ? 32 : 30;
+      if (age < decayStartAge) return fighter;
+      let f = { ...fighter };
+      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
+      let phase;
+      if (age <= 32) phase = DECAY_TABLE.early;
+      else if (age <= 34) phase = DECAY_TABLE.mid;
+      else phase = DECAY_TABLE.late;
+
+      ['pw','sp','te','st'].forEach(s => {
+        if (Engine.rng.float(rng) < (phase.chance[s] || 0)) {
+          const loss = phase.amount[s] || 1;
+          const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
+          f[s] = Math.max(floor, f[s] - loss);
+        }
+      });
+      // MNT special: only 35+ with 5% chance (training-spec §5.3)
+      if (age >= 35 && phase.mntChance && Engine.rng.float(rng) < phase.mntChance) {
+        const mntFloor = Math.round((notion.mn || 30) * 0.85);
+        f.mn = Math.max(mntFloor, f.mn - (phase.mntAmount || 1));
+      }
+      return f;
+    },
+
+    // Season end: aging + decay + growth reset for player roster
+    applySeasonEnd(rng, G) {
+      const report = [];
+      const newRoster = G.roster.map(c => {
+        let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
+                   seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
+        nc = Engine.growth.applyDecay(rng, nc);
+        const changes = {};
+        ['pw','sp','te','st','mn'].forEach(s => {
+          const decayDelta = nc[s] - beforeDecay[s];
+          if (decayDelta !== 0) changes[s] = decayDelta;
+        });
+        const parts = [];
+        ['pw','sp','te','st','mn'].forEach(s => {
+          const net = (nc.seasonGrowth[s] || 0) + (changes[s] || 0);
+          if (net > 0) parts.push(`${s.toUpperCase()}+${net}`);
+          else if (net < 0) parts.push(`${s.toUpperCase()}${net}`);
+        });
+        if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
+        nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+        nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
+        // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
+        if (nc.age === 30) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 30));
+          const rv = Engine.scout.reassess(nc, 'age30', ageRng, G.season);
+          nc = { ...nc, ...rv };
+        } else if (nc.age >= 35 && nc.age <= 36) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 35));
+          const rv = Engine.scout.reassess(nc, 'age35plus', ageRng, G.season);
+          nc = { ...nc, ...rv };
+        }
+        return nc;
+      });
+      return { roster: newRoster, report };
+    }
+  },
+
+  // ── Ranking System (IMMUTABLE) ─────────────────────────
+  ranking: {
+    calcStarPower(roster) {
+      return roster.reduce((score, f) => {
+        for (const t of STAR_POWER) { if (f.popularity >= t.minPop) return score + t.points; }
+        return score;
+      }, 0);
+    },
+    calcTotalPop(roster) {
+      return Math.round(roster.reduce((s, f) => s + (f.popularity || 0), 0) * 0.1);
+    },
+    calcOrgRating(championScore, roster) {
+      return championScore + Engine.ranking.calcStarPower(roster) + Engine.ranking.calcTotalPop(roster);
+    },
+    // Returns updated rankings array: [{orgId, name, rating, championScore, starPower, totalPop}]
+    updateRankings(state) {
+      const playerChampScore = state.titles.world.championId ? 30 : 0;
+      const playerRating = Engine.ranking.calcOrgRating(playerChampScore, state.roster) + (state.summitBonus || 0);
+      const entries = [{
+        orgId:'player', name: state.orgName || 'プレイヤー団体',
+        rating: playerRating,
+        championScore: playerChampScore,
+        starPower: Engine.ranking.calcStarPower(state.roster),
+        totalPop: Engine.ranking.calcTotalPop(state.roster),
+        rosterSize: state.roster.length
+      }];
+      RIVAL_ORGS.forEach(org => {
+        const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? state.aiOrgs[org.id].roster : [];
+        const r = Engine.ranking.calcOrgRating(org.championScore, aiRoster);
+        entries.push({
+          orgId: org.id, name: org.name,
+          rating: r,
+          championScore: org.championScore,
+          starPower: Engine.ranking.calcStarPower(aiRoster),
+          totalPop: Engine.ranking.calcTotalPop(aiRoster),
+          rosterSize: aiRoster.length
+        });
+      });
+      entries.sort((a, b) => b.rating - a.rating);
+      entries.forEach((e, i) => { e.rank = i + 1; });
+      return entries;
+    },
+    getPlayerRank(rankings) {
+      const p = rankings.find(r => r.orgId === 'player');
+      return p ? p.rank : rankings.length;
+    }
+  },
+
+  // ── Rival System (IMMUTABLE) ───────────────────────────
+  rival: {
+    // Generate trainCap for a fighter (training-spec §1.4)
+    generateTrainCap(rng, notionValue, potential) {
+      const caps = {};
+      ['pw','sp','te','st','mn'].forEach(s => {
+        const factor = 0.10 + Engine.rng.float(rng) * 0.40; // 0.10〜0.50
+        caps[s] = Math.round(notionValue[s] + factor * (potential[s] - notionValue[s]));
+      });
+      return caps;
+    },
+    // Generate entry-level current values (training-spec §1.3)
+    generateStartValues(rng, notionValue, entryAge) {
+      let baseRatio;
+      if (entryAge <= 17)      baseRatio = 0.55;
+      else if (entryAge <= 20) baseRatio = 0.65;
+      else if (entryAge <= 24) baseRatio = 0.75;
+      else if (entryAge <= 29) baseRatio = 0.85;
+      else                     baseRatio = 0.90;
+      const vals = {};
+      ['pw','sp','te','st'].forEach(s => {
+        const ratio = baseRatio + Engine.rng.float(rng) * 0.10;
+        vals[s] = Math.round(notionValue[s] * ratio);
+      });
+      vals.mn = notionValue.mn; // MNT is innate — no age reduction (training-spec §1.6)
+      return vals;
+    },
+    // Make an AI fighter object from ALL_CHARS template
+    makeAIFighter(template, rng, orgId, age) {
+      const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
+      const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
+      // AI fighters start closer to their Notion values (established pros)
+      const maturity = Math.min(1.0, 0.70 + (age - 16) * 0.04 + Engine.rng.float(rng) * 0.10);
+      const current = {};
+      ['pw','sp','te','st','mn'].forEach(s => {
+        current[s] = Math.min(trainCap[s], Math.round(notion[s] * maturity));
+      });
+      const ovr = Math.round((current.pw+current.sp+current.te+current.st+current.mn)/5);
+      // Calculate assessed value (pricing-balance-spec §1)
+      const charForAssess = { ...current, pot: template.pot, trainCap };
+      const av = Engine.scout.calcAssessedValue(charForAssess, rng, 1);
+      return {
+        id: template.id, name: template.name, h: template.h,
+        pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
+        style: template.style, role: template.role, pot: { ...template.pot },
+        notionValue: notion, trainCap,
+        popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
+        orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
+        assessedValue: av.assessedValue, assessedTier: av.assessedTier,
+        assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
+      };
+    },
+    // Initialize all AI org rosters from ORG_ASSIGN
+    initAIOrgs(rng) {
+      const orgs = {};
+      RIVAL_ORGS.forEach(org => {
+        const ids = ORG_ASSIGN[org.id] || [];
+        const roster = ids.map(id => {
+          const t = ALL_CHARS.find(c => c.id === id);
+          if (!t) return null;
+          return Engine.rival.makeAIFighter(t, rng, org.id, 16 + Engine.rng.int(rng, 2, 10));
+        }).filter(Boolean);
+        // Sort by OVR desc and boost top fighters' popularity for realism
+        roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+        roster.forEach((f, i) => {
+          const tierBonus = {S:8,A:4,B:2}[org.tier] || 0;
+          if (i === 0) f.popularity = Math.min(90, f.popularity + 15 + tierBonus); // ace
+          else if (i < 3) f.popularity = Math.min(85, f.popularity + 8 + tierBonus);
+          else if (i < 6) f.popularity = Math.min(75, f.popularity + 3 + tierBonus);
+        });
+        orgs[org.id] = {
+          roster,
+          orgPop: {S:75,A:55,B:35}[org.tier] || 30
+        };
+      });
+      return orgs;
+    },
+    // Get pool IDs (chars not assigned to any org or free)
+    getPoolIds() {
+      const assigned = new Set();
+      Object.values(ORG_ASSIGN).forEach(ids => ids.forEach(id => assigned.add(id)));
+      return ALL_CHARS.filter(c => !assigned.has(c.id)).map(c => c.id);
+    },
+    // Utility: get merged AI org info (config + state) by orgId
+    getOrgInfo(aiOrgs, orgId) {
+      const cfg = RIVAL_ORGS.find(o => o.id === orgId);
+      const data = aiOrgs && aiOrgs[orgId];
+      if (!cfg || !data) return null;
+      return { id: cfg.id, orgId: cfg.id, name: cfg.name, tier: cfg.tier,
+               championScore: cfg.championScore, coachMul: cfg.coachMul, facilityMul: cfg.facilityMul,
+               roster: data.roster, orgPop: data.orgPop };
+    },
+    // Utility: get all AI orgs as array with merged config+state
+    getAllOrgs(aiOrgs) {
+      return RIVAL_ORGS.map(cfg => Engine.rival.getOrgInfo(aiOrgs, cfg.id)).filter(Boolean);
+    },
+
+    // Check if current week is a transfer window
+    isTransferWindow(week) {
+      return TRANSFER_CONFIG.windows.includes(week);
+    },
+    // Calculate transfer fee (rival-org §7.1)
+    calcTransferFee(fighter, fromOrgTier) {
+      const ovr = Engine.util.ov(fighter);
+      const popBonus = (fighter.popularity || 0) * 10;
+      let baseFee;
+      if (ovr >= 80)      baseFee = 800;
+      else if (ovr >= 60) baseFee = 400;
+      else if (ovr >= 45) baseFee = 200;
+      else                baseFee = 100;
+      const tierMul = {S:1.5, A:1.2, B:1.0}[fromOrgTier] || 1.0;
+      return Math.round((baseFee + popBonus) * tierMul);
+    },
+
+    // ── B-1: AI Season End Processing (8-step pipeline) ────
+    // rival-spec §4: processes all AI orgs at season end
+    processSeasonEnd(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+
+      RIVAL_ORGS.forEach(org => {
+        const aiData = state.aiOrgs[org.id];
+        if (!aiData) { newAiOrgs[org.id] = aiData; return; }
+        let roster = aiData.roster.map(f => ({ ...f }));
+        const retiredNames = [];
+
+        // Step 1: 加齢 — all fighters +1 age
+        roster.forEach(f => { f.age = (f.age || 20) + 1; });
+
+        // Step 2: 衰退判定 (training-spec §5.3-5.4)
+        roster = roster.map(f => Engine.growth.applyDecay(rng, f));
+
+        // Step 3: 成長一括 (rival-spec §4.1 — aiSeasonGrowth)
+        roster = roster.map(f => Engine.rival.aiSeasonGrowth(rng, f, org));
+
+        // Step 4: 人気変動 (rival-spec §4.2)
+        roster = roster.map(f => Engine.rival.aiSeasonPopularity(rng, f, org));
+
+        // Step 5: 引退判定 (scout-spec §7)
+        const surviving = [];
+        roster.forEach(f => {
+          if (Engine.rival.checkRetirement(rng, f)) {
+            retiredNames.push(`${f.name}(${f.age}歳)`);
+          } else {
+            surviving.push(f);
+          }
+        });
+        roster = surviving;
+
+        // Step 6: AIスカウト → handled separately in offseason week 2
+        // Step 7: AI間移籍 → handled separately
+        // Step 8: org-rating → recalculated after all processing
+
+        if (retiredNames.length > 0) {
+          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('、')} が引退`);
+        }
+        const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
+        events.push(`${org.emoji} ${org.name}: ロスター${roster.length}名 (平均OVR ${avgOvr})`);
+
+        newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop };
+      });
+
+      return { aiOrgs: newAiOrgs, events };
+    },
+
+    // AI season growth (rival-spec §4.1) — 48 weeks in one calculation
+    aiSeasonGrowth(rng, fighter, org) {
+      const f = { ...fighter };
+      const age = f.age || 20;
+      const ageMul = ageMultiplier(age, (f || {}).traits);
+      if (ageMul <= 0) return f; // no growth at 35+
+
+      const styleKey = f.style || 'Allround';
+      const styleTable = STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround;
+      const coachMul = org.coachMul || 1.0;
+      const facilityMul = org.facilityMul || 1.0;
+      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
+      const trainCap = f.trainCap || f.pot || notion;
+      const cfg = AI_SEASON_CFG;
+
+      ['pw','sp','te','st'].forEach(s => {
+        if (f[s] >= trainCap[s]) return;
+        const convFactor = Engine.growth.convergenceFactor(f[s], trainCap[s], notion[s]);
+        const weeklyGain = (styleTable[s] || 0.7) * ageMul * coachMul * facilityMul * convFactor;
+        const seasonVariance = cfg.seasonVarianceMin + Engine.rng.float(rng) * (cfg.seasonVarianceMax - cfg.seasonVarianceMin);
+        const trainingGain = weeklyGain * cfg.trainWeeks * seasonVariance;
+        const matchVariance = cfg.matchVarianceMin + Engine.rng.float(rng) * (cfg.matchVarianceMax - cfg.matchVarianceMin);
+        const matchGain = cfg.matchGrowthBase * cfg.matchesPerSeason * convFactor * matchVariance;
+        f[s] = Math.min(trainCap[s], f[s] + Math.round(trainingGain + matchGain));
+      });
+      return f;
+    },
+
+    // AI season popularity (rival-spec §4.2)
+    aiSeasonPopularity(rng, fighter, org) {
+      const f = { ...fighter };
+      const overall = Engine.util.ov(f);
+      const tierBonus = AI_SEASON_CFG.tierPopBonus[org.tier] || 0;
+      const popTarget = Math.min(90, overall * 0.7 + tierBonus);
+      const diff = popTarget - (f.popularity || 10);
+      const randomDelta = -AI_SEASON_CFG.popRandomRange + Engine.rng.int(rng, 0, AI_SEASON_CFG.popRandomRange * 2);
+      f.popularity = Engine.util.clamp(Math.round(f.popularity + diff * AI_SEASON_CFG.popConvergeRate + randomDelta), 5, 95);
+      return f;
+    },
+
+    // Retirement check (scout-spec §7)
+    checkRetirement(rng, fighter) {
+      const age = fighter.age || 20;
+      if (age < 35) {
+        // Voluntary retirement: OVR < Notion * 0.60 for 2 consecutive seasons
+        const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
+        const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
+        const currentOvr = Engine.util.ov(fighter);
+        if (currentOvr < notionOvr * RETIRE_CFG.voluntaryThreshold) {
+          fighter.lowPerformanceSeasons = (fighter.lowPerformanceSeasons || 0) + 1;
+          if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
+        } else {
+          fighter.lowPerformanceSeasons = 0;
+        }
+        return false;
+      }
+      if (age >= 39) return true; // 確定引退
+      const chance = RETIRE_CFG.chances[age] || 0.90;
+      return Engine.rng.float(rng) < chance;
+    },
+
+    // ── B-3: AI Scouting (rival-spec §5) ────────────────────
+    aiScout(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+      let poolIds = [...(state.poolIds || [])];
+
+      RIVAL_ORGS.forEach(org => {
+        const aiData = state.aiOrgs[org.id];
+        if (!aiData) { newAiOrgs[org.id] = aiData; return; }
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        let roster = aiData.roster.map(f => ({ ...f }));
+        const need = Math.max(0, cfg.idealRoster - roster.length);
+        const maxPicks = Math.min(need + 1, cfg.maxPicks);
+        let budget = cfg.budget;
+        let picked = 0;
+
+        // Generate scout candidates from pool
+        const available = poolIds.filter(id => {
+          // Not already in any org
+          const inAny = Object.values(state.aiOrgs).some(a => a.roster.some(f => f.id === id));
+          const inPlayer = state.roster.some(f => f.id === id);
+          const inFree = (state.freeAgents || []).some(f => f.id === id);
+          return !inAny && !inPlayer && !inFree;
+        });
+
+        // Pick from available pool
+        const shuffled = [...available].sort(() => Engine.rng.float(rng) - 0.5);
+        for (const candId of shuffled) {
+          if (picked >= maxPicks || budget <= 0) break;
+          const template = ALL_CHARS.find(c => c.id === candId);
+          if (!template) continue;
+
+          // Estimate rank: prodigy/promising/rough based on avg potential
+          const avgPot = Math.round(((template.pot?.pw||0)+(template.pot?.sp||0)+(template.pot?.te||0)+(template.pot?.st||0)+(template.pot?.mn||0))/5);
+          let rank;
+          if (avgPot >= 160) rank = 'prodigy';
+          else if (avgPot >= 130) rank = 'promising';
+          else rank = 'rough';
+
+          const acquireRate = cfg.rates[rank] || 0.5;
+          if (Engine.rng.float(rng) >= acquireRate) continue;
+
+          // Contract cost (simplified)
+          const cost = rank === 'prodigy' ? 200 : rank === 'promising' ? 100 : 50;
+          if (budget < cost) continue;
+
+          const age = 16 + Engine.rng.int(rng, 0, 4);
+          const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
+          roster.push(newFighter);
+          poolIds = poolIds.filter(id => id !== candId);
+          budget -= cost;
+          picked++;
+          events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
+        }
+
+        newAiOrgs[org.id] = { ...aiData, roster };
+      });
+
+      return { aiOrgs: newAiOrgs, poolIds, events };
+    },
+
+    // AI inter-org transfers (rival-spec §7.3) — simplified
+    aiInterTransfer(rng, aiOrgs) {
+      const events = [];
+      const newOrgs = {};
+      RIVAL_ORGS.forEach(org => { newOrgs[org.id] = { ...aiOrgs[org.id], roster: [...(aiOrgs[org.id]?.roster || [])] }; });
+
+      // B-tier org with too few fighters can poach from others
+      RIVAL_ORGS.forEach(org => {
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const roster = newOrgs[org.id].roster;
+        if (roster.length >= cfg.idealRoster) return;
+        const need = cfg.idealRoster - roster.length;
+        if (need <= 0) return;
+
+        // Try to acquire from higher-tier orgs' bench (low OVR fighters)
+        for (const sourceOrg of RIVAL_ORGS) {
+          if (sourceOrg.id === org.id) continue;
+          const srcCfg = AI_SCOUT_CFG[sourceOrg.tier] || AI_SCOUT_CFG.B;
+          const srcRoster = newOrgs[sourceOrg.id].roster;
+          if (srcRoster.length <= srcCfg.idealRoster) continue;
+          // Transfer the weakest fighter
+          const sorted = [...srcRoster].sort((a,b) => Engine.util.ov(a) - Engine.util.ov(b));
+          const transferee = sorted[0];
+          if (!transferee || Engine.rng.float(rng) > 0.3) continue;
+          newOrgs[sourceOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
+          transferee.orgId = org.id;
+          newOrgs[org.id].roster.push(transferee);
+          events.push(`📋 ${transferee.name}が${sourceOrg.name}→${org.name}に移籍`);
+          break;
+        }
+      });
+      return { aiOrgs: newOrgs, events };
+    }
+  },
+  season: {
+    // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
+    processManage(rng, G) {
+      const events = [];
+      const injResult = Engine.injury.tick(G.roster, G.freeAgents);
+      events.push(...injResult.events);
+      let roster = injResult.roster;
+      const freeAgents = injResult.freeAgents;
+
+      let heatScore = G.heatScore;
+      if (!Engine.util.isShowWeek(G.week)) heatScore = Engine.heat.calcDecay({ ...G, heatScore });
+
+      const dormBonus = Engine.facility.getConditionBonus(G);
+      const stateForCalc = { ...G, roster, heatScore };
+
+      roster = roster.map(c => {
+        const nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+
+        // D-1: Rental fighters — injury recovery only, no growth/promo
+        if (nc.isRental) {
+          if (nc.injury) return { ...nc, condition: Math.min(100, nc.condition + 5), _weekAction: '療養（レンタル）' };
+          nc.condition = Math.min(100, nc.condition + 3);
+          nc._weekAction = 'rental';
+          return nc;
+        }
+
+        if (nc.injury) {
+          const indomitableBonus = Traits.has(nc, '不屈') ? 3 : 0;
+          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G) + indomitableBonus), _weekAction: '療養', intensive: false };
+        }
+
+        if (nc.intensive) {
+          const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
+          if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
+            const weeks = 1 + Engine.rng.int(rng, 0, 1);
+            nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+            events.push(`⚠️ ${nc.name}が強化練習中に負傷！（${weeks}週離脱）`);
+          }
+          nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
+          nc._weekAction = 'intensive';
+          nc.intensive = false;
+          return nc;
+        }
+
+        let action = nc.schedule;
+        if (action === 'balance') action = Engine.util.isShowWeek(G.week) ? 'promo' : 'practice';
+        if (nc.condition <= 30) action = 'rest';
+        const mentalBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
+
+        if (action === 'practice') {
+          const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
+          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
+          nc.intensiveWeeks = 0;
+        } else if (action === 'promo') {
+          nc.popularity = Math.min(100, nc.popularity + Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G));
+          nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus + mentalBonus);
+          nc.intensiveWeeks = 0;
+        } else {
+          const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
+          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + Engine.facility.getRestBonus(G) + mentalBonus + restIronBonus);
+          nc.intensiveWeeks = 0;
+        }
+        nc._weekAction = action;
+        return nc;
+      });
+
+      return { roster, freeAgents, heatScore, events };
+    },
+
+    // Returns { funds, weeklyFinance, roster, summary } — does NOT mutate G
+    processSettlement(G) {
+      const details = [];
+      let totalIncome = 0, totalExpense = 0;
+
+      const salary = Engine.economy.calcWeeklySalary(G.roster);
+      totalExpense += salary;
+      details.push({ label: '選手給与', val: -salary, type: 'expense' });
+
+      const fixed = Engine.economy.calcFixedCosts();
+      totalExpense += fixed;
+      details.push({ label: '固定費（施設+事務）', val: -fixed, type: 'expense' });
+
+      const coachSalary = Engine.coach.getSalaryTotal(G);
+      if (coachSalary > 0) {
+        totalExpense += coachSalary;
+        details.push({ label: `コーチ給与（${G.coaches.length}名）`, val: -coachSalary, type: 'expense' });
+      }
+
+      const facilityMaint = Engine.facility.getMaintenance(G);
+      if (facilityMaint > 0) {
+        totalExpense += facilityMaint;
+        details.push({ label: '施設アップグレード維持費', val: -facilityMaint, type: 'expense' });
+      }
+
+      const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
+      totalIncome += sponsor;
+      if (sponsor > 0) details.push({ label: 'スポンサー収入', val: sponsor, type: 'income' });
+
+      const broadcastBonus = Engine.facility.getBroadcastBonus(G);
+      const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+      totalIncome += broadcast;
+      if (broadcast > 0) details.push({ label: `放映権収入${broadcastBonus > 0 ? '（メディア施設+' + broadcastBonus + '万）' : ''}`, val: broadcast, type: 'income' });
+
+      let roster = G.roster.map(c => ({ ...c }));
+
+      if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
+        const mainPop = G.lastShowResults.reduce((sum, r) => {
+          const lc = roster.find(c => c.id === r.left.id);
+          const rc = roster.find(c => c.id === r.right.id);
+          return sum + (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+        }, 0) / G.lastShowResults.length;
+
+        const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
+        const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch);
+        const rev = Engine.economy.calcShowRevenue(roster, G.showVenue, attendance);
+
+        totalIncome += rev.ticketRev;
+        totalIncome += rev.goodsRev;
+        totalExpense += rev.venueCost;
+
+        details.push({ label: `チケット収入（${attendance}人×${VENUES[G.showVenue].ticket}万）`, val: rev.ticketRev, type: 'income' });
+        details.push({ label: 'グッズ収入', val: rev.goodsRev, type: 'income' });
+        details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
+
+        // Win/loss tracking (immutable)
+        G.lastShowResults.forEach(r => {
+          const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
+          if (wId) {
+            const lId = wId === r.left.id ? r.right.id : r.left.id;
+            roster = roster.map(c => c.id === wId ? { ...c, wins: c.wins + 1 } : c.id === lId ? { ...c, losses: c.losses + 1 } : c);
+          } else {
+            roster = roster.map(c => (c.id === r.left.id || c.id === r.right.id) ? { ...c, draws: c.draws + 1 } : c);
+          }
+        });
+
+        // Condition drain (immutable)
+        const usedIds = new Set();
+        G.lastShowResults.forEach(r => { usedIds.add(r.left.id); usedIds.add(r.right.id); });
+        roster = roster.map(c => {
+          if (!usedIds.has(c.id)) return c;
+          const condRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, c.id));
+          return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))) };
+        });
+      }
+
+      // Natural condition recovery (+ mental coach bonus)
+      roster = roster.map(c => ({ ...c, condition: Math.min(100, c.condition + 3 + Engine.coach.getCondBonus(G, c.id)) }));
+
+      const net = totalIncome - totalExpense;
+      const newFunds = G.funds + net;
+      const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
+      const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
+
+      return { funds: newFunds, weeklyFinance, roster, summary };
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  tickWeek: Unified weekly pipeline (principle ⑤)
+  //  Input: state — NOT mutated
+  //  Output: { state, events }
+  // ══════════════════════════════════════════════════════════
+  tickWeek(state) {
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
+    const manage = Engine.season.processManage(rng, state);
+    let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
+    const settle = Engine.season.processSettlement(s);
+    s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+    const events = [...manage.events, settle.summary];
+    // D-1: Rental weekly processing
+    if (s.rental) {
+      const rentalResult = Engine.rental.advanceRental(s);
+      s = rentalResult.state;
+      events.push(...rentalResult.events);
+      // Merge rental cost into weeklyFinance
+      if (s.rental || rentalResult.returned) {
+        const rentalCost = state.rental.weeklyCost;
+        const wf = s.weeklyFinance;
+        s = { ...s, weeklyFinance: {
+          ...wf,
+          expense: wf.expense + rentalCost,
+          net: wf.net - rentalCost,
+          details: [...wf.details, { label: `レンタル費（${state.rental.weeklyCost}万/週）`, val: -rentalCost, type: 'expense' }]
+        }};
+      }
+    }
+    return { state: s, events };
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  executeShow: Process all show matches (immutable)
+  //  Output: { state, results, injuryResults, events } or { error }
+  // ══════════════════════════════════════════════════════════
+  executeShow(state) {
+    const validMatches = state.showCard.filter(m => m.left > 0 && m.right > 0);
+    if (validMatches.length === 0) return { error: '少なくとも1試合を組んでください' };
+
+    let s = { ...state, totalShows: state.totalShows + 1, weekPhase: 'showExec' };
+    let roster = s.roster.map(c => ({ ...c }));
+    let rivalries = { ...s.rivalries };
+    let titles = { ...s.titles, world: { ...s.titles.world } };
+    const events = [];
+
+    const results = validMatches.map(m => {
+      const charL = roster.find(c => c.id === m.left);
+      const charR = roster.find(c => c.id === m.right);
+      if (!charL || !charR) return null;
+      const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
+      const result = Engine.battle.simulateMatch(charL, charR, matchRng);
+      const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
+      if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
+      if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
+      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+      rivalries = rivalResult.rivalries;
+      if (rivalResult.msg) events.push(rivalResult.msg);
+      const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
+      if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
+      return result;
+    }).filter(Boolean);
+
+    // Title outcomes
+    validMatches.forEach((m, i) => {
+      if (!m.isTitle || !results[i]) return;
+      const r = results[i];
+      const champId = titles.world.championId;
+      const tempState = { ...s, titles, roster };
+      if (r.winner === 'draw') {
+        if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+      } else {
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        if (!champId || winnerId !== champId) {
+          const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+        } else {
+          const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+        }
+      }
+    });
+
+    // MQ popularity (immutable)
+    results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
+    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
+    roster = popResult.roster;
+    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
+
+    // Heat (immutable)
+    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const oldHeat = Engine.heat.getLevel(s);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
+    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
+
+    // Injuries (immutable) — separate RNG per fighter to avoid correlation
+    const injuryResults = [];
+    const injuryReduction = Engine.facility.getInjuryReduction(s);
+    results.forEach((r, idx) => {
+      const lc = roster.find(c => c.id === r.left.id);
+      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
+      if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      const rc = roster.find(c => c.id === r.right.id);
+      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
+      if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+    });
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
+    return { state: s, results, injuryResults, events };
+  },
+
+  // MQ/Show popularity helpers (pure functions)
+  applyMQPopularity(roster, result) {
+    return roster.map(c => {
+      const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
+      if (!isLeft && !isRight) return c;
+      let popDelta = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
+      const isWinner = (isLeft && result.winner === 'left') || (isRight && result.winner === 'right');
+      if (isWinner) popDelta += 1;
+      // ヒール適性 + Heel: 試合後の人気上昇ボーナス
+      if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) popDelta += 1;
+      // 負けず嫌い用: 試合結果を記録
+      let lastMatchResult = isWinner ? 'win' : (result.winner === 'draw' ? 'draw' : 'loss');
+      const nc = { ...c, popularity: Math.min(100, c.popularity + Math.max(0, popDelta)), lastMatchResult };
+      return nc;
+    });
+  },
+  applyShowPopularity(roster, results, orgPop) {
+    if (results.length === 0) return { roster, orgPop, popDelta: 0 };
+    const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
+    const popDelta = avgMQ >= 70 ? 3 : avgMQ >= 55 ? 2 : avgMQ >= 40 ? 1 : avgMQ >= 25 ? 0 : -1;
+    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
+  },
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  ENGINE: ACE & TRANSFER (Phase C)                         ║
+  // ╚══════════════════════════════════════════════════════════╝
+
+  // ── C-1: Ace Designation ──
+  ace: {
+    designate(state, fighterId) {
+      return { ...state, aceDesignation: fighterId };
+    },
+    revoke(state) {
+      return { ...state, aceDesignation: null };
+    },
+    isAce(state, fighterId) {
+      return state.aceDesignation === fighterId;
+    }
+  },
+
+  // ── C-3: Transfer Fee Calculation ──
+  transfer: {
+    calcFee(fighter, fromOrg) {
+      const overall = Engine.util.ov(fighter);
+      const popBonus = fighter.popularity * 10;
+      let baseFee;
+      if (overall >= 80)      baseFee = 800;
+      else if (overall >= 60) baseFee = 400;
+      else if (overall >= 45) baseFee = 200;
+      else                    baseFee = 100;
+      const tierMul = { S: 1.5, A: 1.2, B: 1.0 }[fromOrg?.tier || 'B'];
+      return Math.round((baseFee + popBonus) * tierMul);
+    },
+    calcRetentionCost(fighter) {
+      return Math.round(Engine.transfer.calcFee(fighter, { tier: 'B' }) * TRANSFER_CONFIG.retentionCostMultiplier);
+    },
+
+    // C-2: Quarterly transfer window — AI poach from player
+    processTransferWindow(rng, state) {
+      const cfg = TRANSFER_CONFIG;
+      const events = [];
+      let s = { ...state };
+      const rankings = s.rankings || [];
+      const playerRank = Engine.ranking.getPlayerRank(rankings);
+      const poachAttempts = [];
+
+      // AI → Player poach attempts
+      s.roster.forEach(fighter => {
+        if (fighter.popularity < cfg.poachMinPopularity) return;
+        if (Engine.ace.isAce(s, fighter.id)) return; // エースは対象外
+
+        // Only higher-ranked orgs can poach
+        if (cfg.poachRequiresHigherRank) {
+          const higherOrgs = RIVAL_ORGS.filter(org => {
+            if (!s.aiOrgs[org.id]) return false;
+            const orgRank = rankings.findIndex(r => r.orgId === org.id) + 1;
+            return orgRank > 0 && orgRank < playerRank;
+          });
+          if (higherOrgs.length === 0) return;
+
+          // Each eligible org rolls independently
+          higherOrgs.forEach(org => {
+            if (Engine.rng.float(rng) < cfg.poachChancePerFighter) {
+              poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
+            }
+          });
+        }
+      });
+
+      if (poachAttempts.length > 0) {
+        // Store pending poach for UI resolution
+        s = { ...s, pendingPoach: poachAttempts };
+        events.push(`🔔 移籍ウィンドウ: ${poachAttempts.length}件の引き抜きオファー`);
+      } else {
+        s = { ...s, pendingPoach: [] };
+        events.push('📋 移籍ウィンドウ: 引き抜きオファーなし');
+      }
+      return { state: s, events };
+    },
+
+    // Resolve a single poach (called from UI)
+    resolvePoach(state, fighterIdToRelease, accepted) {
+      let s = { ...state };
+      const pending = [...(s.pendingPoach || [])];
+      const idx = pending.findIndex(p => p.fighter.id === fighterIdToRelease);
+      if (idx === -1) return { state: s, events: [] };
+
+      const poach = pending[idx];
+      const events = [];
+
+      if (accepted) {
+        // Fighter leaves — player gets transfer fee
+        s = { ...s,
+          roster: s.roster.filter(c => c.id !== fighterIdToRelease),
+          funds: s.funds + poach.fee
+        };
+        // Add fighter to AI org
+        const targetId = poach.org.id;
+        const targetData = s.aiOrgs[targetId];
+        if (targetData) {
+          const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+          s = { ...s, aiOrgs: newAiOrgs };
+        }
+        events.push(`💸 ${poach.fighter.name}が${poach.org.name}に移籍（移籍金+${poach.fee}万）`);
+      } else {
+        // Defend — player pays retention cost
+        const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
+        // Non-ace: 80% defense success
+        const defRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, fighterIdToRelease));
+        const defended = Engine.ace.isAce(s, fighterIdToRelease)
+          ? true
+          : Engine.rng.float(defRng) < TRANSFER_CONFIG.nonAceRetentionRate;
+        if (defended) {
+          s = { ...s, funds: s.funds - retCost };
+          events.push(`🛡️ ${poach.fighter.name}の引き留めに成功（-${retCost}万）`);
+        } else {
+          // Defense failed — forced transfer
+          const targetId = poach.org.id;
+          const targetData = s.aiOrgs[targetId];
+          s = { ...s,
+            roster: s.roster.filter(c => c.id !== fighterIdToRelease),
+            funds: s.funds + poach.fee
+          };
+          if (targetData) {
+            const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, { ...poach.fighter, orgId: targetId }] } };
+            s = { ...s, aiOrgs: newAiOrgs };
+          }
+          events.push(`😭 ${poach.fighter.name}の引き留め失敗 → ${poach.org.name}に移籍（+${poach.fee}万）`);
+        }
+      }
+
+      pending.splice(idx, 1);
+      s = { ...s, pendingPoach: pending };
+      return { state: s, events };
+    },
+
+    // Player poach from AI org
+    playerPoach(state, aiOrgId, fighterId) {
+      let s = { ...state };
+      const events = [];
+      if ((s.transfersThisSeason || 0) >= TRANSFER_CONFIG.playerPoachLimit) {
+        events.push('❌ 今シーズンの引き抜き枠を使い切りました');
+        return { state: s, events };
+      }
+
+      const orgCfg = RIVAL_ORGS.find(o => o.id === aiOrgId);
+      const orgData = s.aiOrgs[aiOrgId];
+      if (!orgCfg || !orgData) return { state: s, events };
+
+      const fighter = orgData.roster.find(f => f.id === fighterId);
+      if (!fighter) return { state: s, events };
+
+      const fee = Engine.transfer.calcFee(fighter, orgCfg);
+      if (s.funds < fee) {
+        events.push(`❌ 資金不足（必要: ${fee}万, 残高: ${s.funds}万）`);
+        return { state: s, events };
+      }
+
+      // Remove from AI org, add to player roster (add missing player-roster fields)
+      const newAiOrgs = { ...s.aiOrgs, [aiOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== fighterId) } };
+      const newFighter = { ...fighter, orgId: 'player',
+        condition: fighter.condition ?? 80,
+        schedule: fighter.schedule || 'balance',
+        wins: fighter.wins || 0, losses: fighter.losses || 0, draws: fighter.draws || 0,
+        injury: fighter.injury || null,
+        seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+        careerSeasons: fighter.careerSeasons || 0,
+        intensive: false, intensiveWeeks: 0
+      };
+      s = { ...s,
+        aiOrgs: newAiOrgs,
+        roster: [...s.roster, newFighter],
+        funds: s.funds - fee,
+        transfersThisSeason: (s.transfersThisSeason || 0) + 1
+      };
+      events.push(`🤝 ${fighter.name}を${orgCfg.name}から獲得！（移籍金-${fee}万）`);
+      return { state: s, events };
+    }
+  },
+
+  // ── Phase D: Rental System (rival-spec §8) ────────────────
+  rental: {
+    /** List all rentable fighters from AI orgs */
+    getAvailableRentals(state) {
+      const results = [];
+      RIVAL_ORGS.forEach(orgCfg => {
+        const orgData = state.aiOrgs && state.aiOrgs[orgCfg.id];
+        if (!orgData) return;
+        const org = { ...orgCfg, roster: orgData.roster, orgPop: orgData.orgPop };
+        const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        // Only rank 5+ (index >= 4) are available
+        sorted.slice(4).forEach(f => {
+          if (f.injury) return; // skip injured
+          const fee = Engine.rental.calcWeeklyFee(f, orgCfg);
+          results.push({ fighter: f, org, weeklyFee: fee, totalFee: fee * RENTAL_CONFIG.duration });
+        });
+      });
+      return results;
+    },
+
+    calcWeeklyFee(fighter, org) {
+      const ovr = Engine.util.ov(fighter);
+      // v0.99c: 指数カーブ — 低OVRは安く、高OVRは急激に高い
+      const baseFee = Math.pow(ovr / 50, 2.5) * 25;
+      const tierMul = { S: 1.4, A: 1.15, B: 1.0 }[org.tier] || 1.0;
+      return Math.max(5, Math.round(baseFee * tierMul));
+    },
+
+    /** Attempt rental negotiation. Returns { success, state, events } */
+    requestRental(rng, state, fighterId, fromOrgId) {
+      const events = [];
+      if (state.rental) return { success: false, state, events: ['⚠ 既にレンタル中の選手がいます'] };
+
+      const orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
+      const orgData = state.aiOrgs && state.aiOrgs[fromOrgId];
+      if (!orgCfg || !orgData) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
+
+      const fighter = orgData.roster.find(f => f.id === fighterId);
+      if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
+
+      // Negotiation check (rival-spec §8.5)
+      const rankings = state.rankings || [];
+      const pRank = rankings.find(r => r.orgId === 'player');
+      const oRank = rankings.find(r => r.orgId === fromOrgId);
+      let baseRate = 0.80;
+      if (pRank && oRank) {
+        const gap = oRank.rating - pRank.rating;
+        if (gap > 150) baseRate -= 0.3;
+        else if (gap > 80) baseRate -= 0.1;
+      }
+      baseRate = Math.max(0.3, Math.min(0.9, baseRate));
+
+      if (Engine.rng.float(rng) >= baseRate) {
+        events.push(`❌ ${orgCfg.name}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
+        return { success: false, state, events };
+      }
+
+      const weeklyFee = Engine.rental.calcWeeklyFee(fighter, orgCfg);
+      // Add rental fighter to player roster (marked as rental)
+      const rentalFighter = {
+        ...fighter,
+        isRental: true, rentalFromOrg: fromOrgId, rentalWeeksLeft: RENTAL_CONFIG.duration,
+        condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }
+      };
+      const rental = { fighterId: fighter.id, fromOrgId, weeksLeft: RENTAL_CONFIG.duration, weeklyCost: weeklyFee };
+      const s = { ...state, roster: [...state.roster, rentalFighter], rental };
+      events.push(`🤝 ${fighter.name}を${orgCfg.name}からレンタル！（${weeklyFee}万/週×${RENTAL_CONFIG.duration}週）`);
+      return { success: true, state: s, events };
+    },
+
+    /** Weekly rental processing: charge fee, decrement weeks, return if done */
+    advanceRental(state) {
+      if (!state.rental) return { state, events: [], returned: false };
+      const events = [];
+      let r = { ...state.rental, weeksLeft: state.rental.weeksLeft - 1 };
+      let s = { ...state, funds: state.funds - r.weeklyCost };
+
+      if (r.weeksLeft <= 0) {
+        // Return fighter
+        const rentalF = s.roster.find(c => c.id === r.fighterId);
+        const returning = s.roster.filter(c => c.id !== r.fighterId);
+        // Update fighter in AI org (popularity/injury may have changed)
+        let aiOrgs = s.aiOrgs;
+        const fromData = aiOrgs[r.fromOrgId];
+        if (fromData) {
+          aiOrgs = { ...aiOrgs, [r.fromOrgId]: { ...fromData, roster: fromData.roster.map(f => f.id === r.fighterId
+            ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
+            : f
+          )}};
+        }
+        events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
+        // Check challenge trigger (rental injury)
+        let challengeTrigger = null;
+        if (rentalF && rentalF.injury) {
+          challengeTrigger = { type: 'rentalInjury', fromOrgId: r.fromOrgId, fighterId: r.fighterId };
+          events.push(`⚠ ${rentalF.name}が怪我を負った状態で返却 → 因縁発生の可能性`);
+        }
+        return { state: { ...s, roster: returning, rental: null, aiOrgs, challengeTrigger }, events, returned: true };
+      }
+      return { state: { ...s, rental: r }, events, returned: false };
+    }
+  },
+
+  // ── Scout Pricing System (pricing-balance-spec-v0.99) ──────
+  scout: {
+    // Tier thresholds for assessedValue calculation
+    TIERS: [
+      { id: 'superElite', label: '超逸材', minPot: 850, minCur: 350, baseMin: 500, baseMax: 800, reqPop: 70, compRate: 0.95, compMul: 2.0, bidWin: 0.30, color: '#e74c3c' },
+      { id: 'elite',      label: '逸材',   minPot: 740, minCur: 300, baseMin: 300, baseMax: 500, reqPop: 50, compRate: 0.85, compMul: 1.5, bidWin: 0.50, color: '#f39c12' },
+      { id: 'promising',  label: '有望',   minPot: 690, minCur: 260, baseMin: 150, baseMax: 300, reqPop: 0,  compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
+      { id: 'raw',        label: '原石',   minPot: 550, minCur: 180, baseMin: 80,  baseMax: 150, reqPop: 0,  compRate: 0.15, compMul: 1.15, bidWin: 0.50, color: '#2ecc71' },
+      { id: 'material',   label: '素材',   minPot: 0,   minCur: 0,   baseMin: 30,  baseMax: 80,  reqPop: 0,  compRate: 0.05, compMul: 1.1, bidWin: 0.50, color: '#95a5a6' },
+    ],
+    /** Determine tier from potential/current totals */
+    getTier(potTotal, curTotal) {
+      for (const t of Engine.scout.TIERS) {
+        if (potTotal >= t.minPot || curTotal >= t.minCur) return t;
+      }
+      return Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+    },
+    /** Calculate assessedValue for a fighter. Returns { assessedValue, assessedTier, assessedVariance, assessedSeason } */
+    calcAssessedValue(fighter, rng, currentSeason) {
+      const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
+      const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
+      const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
+      const tier = Engine.scout.getTier(potTotal, curTotal);
+      const baseValue = tier.baseMin + Math.round(Engine.rng.float(rng) * (tier.baseMax - tier.baseMin));
+      const variance = 0.70 + Engine.rng.float(rng) * 0.60; // 0.70〜1.30
+      return {
+        assessedValue: Math.round(baseValue * variance),
+        assessedTier: tier.id,
+        assessedVariance: variance,
+        assessedSeason: currentSeason || 1
+      };
+    },
+    /** Check if player org can negotiate with this tier */
+    canNegotiate(orgPop, tierIdOrFighter) {
+      const tierId = typeof tierIdOrFighter === 'string' ? tierIdOrFighter : (tierIdOrFighter.assessedTier || 'material');
+      const tier = Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+      return orgPop >= tier.reqPop;
+    },
+    /** Get tier config by id */
+    getTierConfig(tierId) {
+      return Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+    },
+    /** Reassess a fighter's value based on an event trigger */
+    reassess(fighter, reason, rng, currentSeason) {
+      const base = Engine.scout.calcAssessedValue(fighter, rng, currentSeason);
+      const oldVal = fighter.assessedValue || base.assessedValue;
+      switch (reason) {
+        case 'titleWin':
+          base.assessedValue = Math.max(base.assessedValue, Math.round(oldVal * 1.1));
+          break;
+        case 'titleDefend3': case 'seasonMVP':
+          base.assessedValue = Math.round(base.assessedValue * 1.1);
+          break;
+        case 'age30':
+          base.assessedValue = Math.round(base.assessedValue * 0.8);
+          break;
+        case 'age35plus':
+          base.assessedValue = Math.round(base.assessedValue * 0.6);
+          break;
+        case 'severeInjury':
+          base.assessedValue = Math.round(base.assessedValue * 0.85);
+          break;
+        case 'aftereffect':
+          base.assessedValue = Math.round(base.assessedValue * 0.7);
+          break;
+      }
+      base.assessedSeason = currentSeason;
+      return base;
+    },
+    /** 3-season periodic micro-adjust: ±10% on all fighters */
+    seasonalAdjust(fighters, rng) {
+      return fighters.map(f => {
+        if (!f.assessedValue) return f;
+        const adj = 0.90 + Engine.rng.float(rng) * 0.20; // 0.90〜1.10
+        return { ...f, assessedValue: Math.round(f.assessedValue * adj) };
+      });
+    },
+    /** Apply assessedValue to a fighter if not already set */
+    ensureAssessed(fighter, rng, currentSeason) {
+      if (fighter.assessedValue) return fighter;
+      const av = Engine.scout.calcAssessedValue(fighter, rng, currentSeason);
+      return { ...fighter, ...av };
+    },
+    /** Get signing cost after facility discount */
+    getSigningCost(fighter, facilityDiscount) {
+      const base = fighter.assessedValue || 50;
+      const discount = facilityDiscount || 0; // percentage (0, 15, 25)
+      return Math.max(10, Math.round(base * (100 - discount) / 100));
+    },
+
+    // ── Scout Event Functions (scout-spec §2-§6) ──────────────
+
+    /** Generate a single scout candidate (scout-spec §3) */
+    generateCandidate(rng, season, isSeed) {
+      // §3.1 Age distribution
+      const ageRoll = Engine.rng.float(rng);
+      let age;
+      if (ageRoll < 0.40) age = 15 + Engine.rng.int(rng, 0, 1);       // 15-16: 40%
+      else if (ageRoll < 0.65) age = 17;                                // 17: 25%
+      else if (ageRoll < 0.85) age = 18 + Engine.rng.int(rng, 0, 1);   // 18-19: 20%
+      else age = 20 + Engine.rng.int(rng, 0, 2);                        // 20-22: 15%
+
+      // §3.2 Notion values
+      let avgTarget;
+      if (isSeed) {
+        avgTarget = 75 + Engine.rng.int(rng, 0, 15); // seed = forced elite
+      } else {
+        const tierRoll = Engine.rng.float(rng);
+        if (tierRoll < 0.05)      avgTarget = 75 + Engine.rng.int(rng, 0, 15); // 逸材 5%
+        else if (tierRoll < 0.25) avgTarget = 60 + Engine.rng.int(rng, 0, 14); // 有望 20%
+        else if (tierRoll < 0.70) avgTarget = 45 + Engine.rng.int(rng, 0, 14); // 普通 45%
+        else                      avgTarget = 25 + Engine.rng.int(rng, 0, 19); // 素材 30%
+      }
+      const params = ['pw','sp','te','st','mn'];
+      const notion = {};
+      for (const p of params) {
+        notion[p] = Math.max(11, Math.min(95, avgTarget + Engine.rng.int(rng, -15, 15)));
+      }
+
+      // §3.3 Potential
+      const pot = {};
+      for (const p of params) {
+        pot[p] = Math.min(185, Math.round(notion[p] * 1.3 + 60));
+      }
+
+      // Seed boost: §3.6 — 1-2 params +10~20 to potential
+      if (isSeed) {
+        const boostCount = 1 + Engine.rng.int(rng, 0, 1);
+        const boostParams = [...params].sort(() => Engine.rng.float(rng) - 0.5).slice(0, boostCount);
+        for (const bp of boostParams) {
+          pot[bp] = Math.min(185, pot[bp] + 10 + Engine.rng.int(rng, 0, 10));
+        }
+      }
+
+      // §6.1 Start values (entry age ratio)
+      let startRatio;
+      if (age <= 17) startRatio = 0.55 + Engine.rng.float(rng) * 0.10;
+      else if (age <= 20) startRatio = 0.65 + Engine.rng.float(rng) * 0.10;
+      else startRatio = 0.75 + Engine.rng.float(rng) * 0.10;
+      const cur = {};
+      for (const p of params) {
+        cur[p] = (p === 'mn') ? notion[p] : Math.round(notion[p] * startRatio); // §6.3 MNT no age adj
+      }
+
+      // §3.4 Style
+      const weights = { Allround:25, Striker:14, Submission:14, Grappler:12, Brawler:9, Speed:6 };
+      if (notion.pw >= notion.sp + 10 && notion.pw >= notion.te + 10) { weights.Grappler += 10; weights.Brawler += 8; }
+      if (notion.sp >= notion.pw + 10 && notion.sp >= notion.te + 5)  { weights.Speed += 10; weights.Striker += 5; }
+      if (notion.te >= notion.pw + 10 && notion.te >= notion.sp + 5)  { weights.Submission += 10; }
+      const totalW = Object.values(weights).reduce((a, b) => a + b, 0);
+      let styleRoll = Engine.rng.float(rng) * totalW;
+      let style = 'Allround';
+      for (const [s, w] of Object.entries(weights)) { styleRoll -= w; if (styleRoll <= 0) { style = s; break; } }
+
+      // §3.5 Role (heel degree)
+      const roleRoll = Engine.rng.float(rng);
+      let role;
+      if (roleRoll < 0.40) role = 'Babyface';
+      else if (roleRoll < 0.80) role = 'Neutral';
+      else if (roleRoll < 0.98) role = 'Heel';
+      else role = 'Dirty';
+
+      // §3.7 Name, height
+      const surname = SCOUT_SURNAMES[Engine.rng.int(rng, 0, SCOUT_SURNAMES.length - 1)];
+      const given = SCOUT_GIVENNAMES[Engine.rng.int(rng, 0, SCOUT_GIVENNAMES.length - 1)];
+      const name = surname + given;
+      const height = 145 + Engine.rng.int(rng, 0, 36); // 145-181
+
+      // Traits: 0-2 random from pool
+      const traitCount = Engine.rng.int(rng, 0, 2);
+      const shuffledTraits = [...SCOUT_TRAITS_POOL].sort(() => Engine.rng.float(rng) - 0.5);
+      const traits = shuffledTraits.slice(0, traitCount);
+      // Exclude conflicting growth traits
+      const growthTraits = traits.filter(t => ['早熟','晩成','遅咲き'].includes(t));
+      if (growthTraits.length > 1) traits.splice(traits.indexOf(growthTraits[1]), 1);
+
+      // §6.2 trainCap
+      const trainCap = {};
+      for (const p of params) {
+        const factor = 0.10 + Engine.rng.float(rng) * 0.40;
+        trainCap[p] = Math.round(notion[p] + factor * (pot[p] - notion[p]));
+      }
+
+      const id = nextGenCharId++;
+      const fighter = {
+        id, name, h: height, age, style, role, series: 'scout',
+        pw: cur.pw, sp: cur.sp, te: cur.te, st: cur.st, mn: cur.mn,
+        pot, trainCap, traits,
+        popularity: 0, wins: 0, losses: 0, draws: 0,
+        condition: 100, fatigue: 0, injuries: [], afterEffects: [],
+        schedule: 'balance', titleDefenses: 0, matchesThisSeason: 0,
+        _notion: notion, // internal: for scout display estimate
+        _isSeed: !!isSeed,
+      };
+
+      // AssessedValue
+      const avRng = Engine.rng.create(Engine.rng.derive(id, 777));
+      const av = Engine.scout.calcAssessedValue(fighter, avRng, season);
+      return { ...fighter, ...av };
+    },
+
+    /** Generate a scout report: list of candidates (scout-spec §2) */
+    generateScoutReport(rng, state, eventType) {
+      const cfg = eventType === 'midseason' ? SCOUT_EVENT_CFG.midseason : SCOUT_EVENT_CFG.offseason;
+      const count = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]);
+      const candidates = [];
+
+      // Pool-based candidates first (existing ALL_CHARS from poolIds)
+      const poolIds = [...(state.poolIds || [])];
+      const usedFromPool = [];
+      const poolShuffled = [...poolIds].sort(() => Engine.rng.float(rng) - 0.5);
+
+      // Use up to half candidates from pool
+      const poolMax = Math.min(Math.floor(count / 2), poolShuffled.length);
+      for (let i = 0; i < poolMax; i++) {
+        const cid = poolShuffled[i];
+        const template = ALL_CHARS.find(c => c.id === cid);
+        if (!template) continue;
+        // Create fighter from template
+        const age = 16 + Engine.rng.int(rng, 0, 4);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, age);
+        fighter.series = 'pool';
+        fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
+        fighter._isSeed = false;
+        candidates.push(fighter);
+        usedFromPool.push(cid);
+      }
+
+      // Remaining: freshly generated candidates
+      const remaining = count - candidates.length;
+      let hasSeed = false;
+      for (let i = 0; i < remaining; i++) {
+        const isSeed = !hasSeed && Engine.rng.float(rng) < cfg.seedChance;
+        if (isSeed) hasSeed = true;
+        const cand = Engine.scout.generateCandidate(rng, state.season || 1, isSeed);
+        candidates.push(cand);
+      }
+
+      // §4.2 Scout estimates (noisy display values)
+      const hasJinmyaku = (state.roster || []).some(f => Traits.has(f, '人脈'));
+      const noiseRange = hasJinmyaku ? 0.05 : 0.10;
+      for (const c of candidates) {
+        const est = {};
+        for (const p of ['pw','sp','te','st','mn']) {
+          const actual = c[p];
+          const noise = 1 - noiseRange + Engine.rng.float(rng) * noiseRange * 2;
+          est[p] = Math.round(actual * noise);
+        }
+        c._estimate = est;
+      }
+
+      // §5.2 Competition flags
+      for (const c of candidates) {
+        const tier = Engine.scout.getTierConfig(c.assessedTier);
+        c._hasCompetition = Engine.rng.float(rng) < tier.compRate;
+        c._compMultiplier = tier.compMul;
+        c._bidWinRate = tier.bidWin;
+      }
+
+      return { candidates, usedPoolIds: usedFromPool };
+    },
+
+    /** Resolve competition for a single pick (scout-spec §5.2) */
+    resolveCompetition(rng, candidate, choice) {
+      // choice: 'pay' (追加コスト払って確定) / 'gamble' (通常額で勝負) / 'skip' (諦め)
+      if (choice === 'skip') return { result: 'skipped', cost: 0 };
+
+      if (!candidate._hasCompetition) {
+        // No competition — always succeed at base cost
+        return { result: 'success', cost: candidate.assessedValue };
+      }
+
+      if (choice === 'pay') {
+        // Pay additional multiplier for guaranteed win
+        const cost = Math.round(candidate.assessedValue * candidate._compMultiplier);
+        return { result: 'success', cost };
+      }
+
+      // Gamble: bid at base cost, roll for success
+      const winRate = candidate._bidWinRate || 0.5;
+      if (Engine.rng.float(rng) < winRate) {
+        return { result: 'success', cost: candidate.assessedValue };
+      } else {
+        return { result: 'lost', cost: 0 };
+      }
+    },
+
+    /** Determine where a lost candidate goes (scout-spec §5.2 行方) */
+    resolveLostCandidate(rng, candidate, aiOrgs) {
+      // 70% → joins random AI org, 30% → freeAgent pool
+      if (Engine.rng.float(rng) < 0.70) {
+        const orgIds = Object.keys(aiOrgs);
+        const targetOrgId = orgIds[Engine.rng.int(rng, 0, orgIds.length - 1)];
+        candidate.orgId = targetOrgId;
+        return { destination: 'aiOrg', orgId: targetOrgId, fighter: candidate };
+      }
+      return { destination: 'freeAgent', fighter: candidate };
+    }
+  },
+
+  // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
+  event: {
+    /** D-2: Check if rivalry war should trigger (Q2/Q3 end) */
+    checkRivalryWar(rng, state) {
+      if (state.warThisSeason) return null;
+      const w = state.week;
+      // Only trigger at Q2 end (week 24) or Q3 end (week 36) non-show weeks
+      if (w !== 24 && w !== 36) return null;
+      if (Engine.rng.float(rng) >= EVENT_CONFIG.warChancePerSeason) return null;
+
+      const rankings = state.rankings || [];
+      const pIdx = rankings.findIndex(r => r.orgId === 'player');
+      if (pIdx < 0) return null;
+
+      // Pick adjacent ranked org
+      const candidates = [];
+      if (pIdx > 0) candidates.push(rankings[pIdx - 1]);
+      if (pIdx < rankings.length - 1) candidates.push(rankings[pIdx + 1]);
+      if (candidates.length === 0) return null;
+
+      const opponent = candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponent.orgId);
+      if (!aiOrg) return null;
+
+      const matchCount = Engine.rng.int(rng, EVENT_CONFIG.warMatchCount.min, EVENT_CONFIG.warMatchCount.max);
+      return { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount };
+    },
+
+    /** Make war card: auto-match by OVR rank */
+    makeWarCard(state, opponentOrgId) {
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponentOrgId);
+      if (!aiOrg) return [];
+      const playerSorted = [...state.roster].filter(c => !c.injury && !c.isRental).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const aiSorted = [...aiOrg.roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const count = Math.min(state.pendingEvent ? state.pendingEvent.matchCount : 3, playerSorted.length, aiSorted.length);
+      const card = [];
+      for (let i = 0; i < count; i++) {
+        card.push({ playerFighter: playerSorted[i], aiFighter: aiSorted[i] });
+      }
+      return card;
+    },
+
+    /** Resolve a single event match using battle engine (no injury, condition=80) */
+    resolveEventMatch(rng, playerFighter, aiFighter, mqBonus) {
+      mqBonus = mqBonus || 0;
+      // Prepare fighters with fixed condition for event matches
+      const pf = { ...playerFighter, condition: 80 };
+      const af = { ...aiFighter, condition: 80 };
+      // Use battle engine
+      const result = Engine.battle.simulateMatch(pf, af, rng);
+      result.mq = Math.min(100, result.mq + mqBonus);
+      return result;
+    },
+
+    /** Resolve entire war event. Returns { state, results, playerWins, aiWins } */
+    resolveWar(rng, state, card) {
+      const results = [];
+      let playerWins = 0, aiWins = 0;
+      card.forEach(match => {
+        const r = Engine.event.resolveEventMatch(rng, match.playerFighter, match.aiFighter, 0);
+        const pWin = r.winner === 'left'; // player is always left in resolveEventMatch
+        if (pWin) playerWins++; else aiWins++;
+        results.push({ ...r, playerFighter: match.playerFighter, aiFighter: match.aiFighter, playerWon: pWin });
+      });
+      return { results, playerWins, aiWins };
+    },
+
+    /** Apply war outcome to state */
+    applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
+      let popDelta = 0;
+      if (playerWins > aiWins) popDelta = EVENT_CONFIG.warPopReward;
+      else if (playerWins === aiWins) popDelta = 2;
+      else popDelta = EVENT_CONFIG.warPopPenalty;
+      const events = [];
+      const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '引き分け' : '負け越し…';
+      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}）`);
+      return {
+        state: { ...state, orgPop: Math.max(0, Math.min(100, state.orgPop + popDelta)), warThisSeason: true, pendingEvent: null },
+        events
+      };
+    },
+
+    /** D-3: Check challenge trigger from recent events */
+    checkChallenge(rng, state) {
+      const trigger = state.challengeTrigger;
+      if (!trigger) return null;
+      let chance = 0;
+      if (trigger.type === 'rentalInjury') chance = 0.50;
+      else if (trigger.type === 'poachSuccess') chance = 0.30;
+      else if (trigger.type === 'poachRejected') chance = 0.20;
+      if (Engine.rng.float(rng) >= chance) return null;
+
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, trigger.fromOrgId);
+      if (!aiOrg) return null;
+
+      // Matchup: aces of both orgs
+      const playerAce = Engine.event.getAce(state.roster);
+      const aiAce = Engine.event.getAce(aiOrg.roster);
+      if (!playerAce || !aiAce) return null;
+
+      return { type: 'challenge', fromOrgId: trigger.fromOrgId, orgName: aiOrg.name,
+               playerFighter: playerAce, aiFighter: aiAce, mqBonus: EVENT_CONFIG.challengeMQBonus };
+    },
+
+    /** D-4: Check summit match conditions */
+    checkSummitMatch(state) {
+      const rankings = state.rankings || [];
+      const pRank = Engine.ranking.getPlayerRank(rankings);
+      if (pRank > EVENT_CONFIG.summitMinRank) return null;
+      if (!Engine.util.isPPV(state.week)) return null;
+
+      // Find #1 ranked AI org
+      const topRank = rankings.find(r => r.orgId !== 'player');
+      if (!topRank) return null;
+      const topOrg = Engine.rival.getOrgInfo(state.aiOrgs, topRank.orgId);
+      if (!topOrg) return null;
+
+      const playerAce = Engine.event.getAce(state.roster);
+      const aiAce = Engine.event.getAce(topOrg.roster);
+      if (!playerAce || !aiAce) return null;
+
+      return { type: 'summit', opponentOrgId: topOrg.orgId, orgName: topOrg.name,
+               playerFighter: playerAce, aiFighter: aiAce };
+    },
+
+    /** Apply summit outcome */
+    applySummitOutcome(state, won) {
+      const events = [];
+      if (won) {
+        events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、レーティング+${EVENT_CONFIG.summitRatingReward}`);
+        return {
+          state: { ...state,
+            orgPop: Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward),
+            summitBonus: (state.summitBonus || 0) + EVENT_CONFIG.summitRatingReward,
+            pendingEvent: null
+          }, events
+        };
+      }
+      events.push('🏆 頂上決戦敗北…しかし挑戦したこと自体が名誉');
+      return { state: { ...state, pendingEvent: null }, events };
+    },
+
+    /** Helper: get ace (highest OVR non-injured fighter) */
+    getAce(roster) {
+      return [...roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0] || null;
+    }
+  },
+
+  // advanceWeek: Returns { state, events }
+  // B-2: Offseason 4-week system
+  advanceWeek(state) {
+    let s = { ...state };
+    const events = [];
+
+    // ── OFFSEASON PROCESSING ──
+    if (s.offSeason) {
+      const offWeek = (s.offWeek || 0) + 1;
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 900 + offWeek));
+
+      if (offWeek === 1) {
+        // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
+        const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
+        s = { ...s, roster };
+        events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
+        report.forEach(r => events.push(`  ${r}`));
+
+        // Player retirement check
+        const retirees = [];
+        const surviving = [];
+        s.roster.forEach(c => {
+          if (Engine.rival.checkRetirement(rng, c)) {
+            retirees.push(c);
+          } else {
+            surviving.push(c);
+          }
+        });
+        if (retirees.length > 0) {
+          s = { ...s, roster: surviving };
+          retirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+        }
+
+        // AI season end processing (steps 1-5)
+        const aiResult = Engine.rival.processSeasonEnd(rng, s);
+        s = { ...s, aiOrgs: aiResult.aiOrgs };
+        events.push(...aiResult.events);
+        events.push('📅 オフシーズン第1週: シーズンレポート完了');
+
+      } else if (offWeek === 2) {
+        // OffWeek 2: Scout Event (player + AI)
+        // AI scouting first
+        const scoutResult = Engine.rival.aiScout(rng, s);
+        s = { ...s, aiOrgs: scoutResult.aiOrgs, poolIds: scoutResult.poolIds };
+        if (scoutResult.events.length > 0) events.push(...scoutResult.events);
+
+        // Player scout event: generate candidates
+        const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
+        const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
+        // Remove used pool IDs
+        const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+        s = {
+          ...s,
+          poolIds: remainingPool,
+          scoutCandidates: report.candidates,
+          scoutPicks: [],
+          scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
+          scoutEventType: 'offseason',
+          scoutsThisSeason: (s.scoutsThisSeason || 0),
+        };
+        events.push('📅 オフシーズン第2週: スカウトレポート到着！');
+        events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
+        return { state: { ...s, weekPhase: 'scoutEvent' }, events };
+
+      } else if (offWeek === 3) {
+        // OffWeek 3: AI inter-org transfers
+        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
+        s = { ...s, aiOrgs: transferResult.aiOrgs };
+        if (transferResult.events.length > 0) events.push(...transferResult.events);
+        events.push('📅 オフシーズン第3週: 移籍ウィンドウ');
+
+      } else if (offWeek >= 4) {
+        // OffWeek 4: New season preparation — advance to next season
+        // v0.95: Archive season stats before transition
+        const oldSeason = s.season;
+        const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
+        const oldRankings = Engine.ranking.updateRankings(s);
+        const pRankOld = Engine.ranking.getPlayerRank(oldRankings);
+        const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
+          orgPop: s.orgPop || 0, ...oldStats, rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })) };
+        const seasonHistory = [...(s.seasonHistory || []), archive];
+
+        // v0.99: Seasonal pricing adjust every 3 seasons (pricing-balance-spec §4.3)
+        const nextSeason = s.season + 1;
+        if (nextSeason > 1 && (nextSeason - 1) % 3 === 0) {
+          const adjRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, nextSeason, 777));
+          s = { ...s,
+            roster: Engine.scout.seasonalAdjust(s.roster, adjRng),
+            freeAgents: Engine.scout.seasonalAdjust(s.freeAgents, adjRng)
+          };
+          // Also adjust AI org rosters
+          const adjAiOrgs = {};
+          Object.keys(s.aiOrgs).forEach(orgId => {
+            const orgData = s.aiOrgs[orgId];
+            adjAiOrgs[orgId] = { ...orgData, roster: Engine.scout.seasonalAdjust(orgData.roster, adjRng) };
+          });
+          s = { ...s, aiOrgs: adjAiOrgs };
+          events.push(`📊 市場再評価: 選手の評価額が微調整されました（3シーズン周期）`);
+        }
+
+        s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
+              transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
+              summitBonus: 0,
+              seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
+              seasonHistory, fundsHistory: [s.funds],
+              rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+        // Update rankings
+        s.rankings = Engine.ranking.updateRankings(s);
+        const pRank = Engine.ranking.getPlayerRank(s.rankings);
+        events.push(`🏆 シーズン${s.season - 1}最終ランキング: ${pRank}位 / ${s.rankings.length}団体`);
+        s.rankings.forEach((r, i) => {
+          const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
+          const emoji = r.orgId === 'player' ? '🏠' : (org ? org.emoji : '');
+          events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (👑${r.championScore} ⭐${r.starPower} 👥${r.totalPop})`);
+        });
+        events.push(`🎬 シーズン${s.season}開幕！`);
+        return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+      }
+
+      s = { ...s, offWeek };
+      return { state: { ...s, weekPhase: 'offseason' }, events };
+    }
+
+    // ── REGULAR WEEK ADVANCE ──
+    s = { ...s, week: s.week + 1 };
+    if (s.week > 48) {
+      // Enter offseason
+      s = { ...s, offSeason: true, offWeek: 0 };
+      events.push('📅 レギュラーシーズン終了 → オフシーズン突入');
+      return { state: { ...s, weekPhase: 'offseason' }, events };
+    }
+
+    // C-2: Quarterly transfer window check
+    if (TRANSFER_CONFIG.windows.includes(s.week)) {
+      const trng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 800 + s.week));
+      const tfResult = Engine.transfer.processTransferWindow(trng, s);
+      s = tfResult.state;
+      events.push(...tfResult.events);
+      if (s.pendingPoach && s.pendingPoach.length > 0) {
+        return { state: { ...s, weekPhase: 'transfer' }, events };
+      }
+    }
+
+    // C-3: Midseason scout event (week 29 = Q3 5th week)
+    if (s.week === SCOUT_EVENT_CFG.midseasonWeek && !(s.scoutsThisSeason >= 2)) {
+      const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C02));
+      const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
+      const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+      s = {
+        ...s,
+        poolIds: remainingPool,
+        scoutCandidates: report.candidates,
+        scoutPicks: [],
+        scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
+        scoutEventType: 'midseason',
+      };
+      events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
+      return { state: { ...s, weekPhase: 'scoutEvent' }, events };
+    }
+
+    // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
+    const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
+    const warCheck = Engine.event.checkRivalryWar(eventRng, s);
+    if (warCheck) {
+      s = { ...s, pendingEvent: warCheck, warThisSeason: true };
+      events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
+      return { state: { ...s, weekPhase: 'event' }, events };
+    }
+
+    // D-3: Challenge from triggers (rental injury, transfer disputes)
+    if (s.challengeTrigger) {
+      const chalCheck = Engine.event.checkChallenge(eventRng, s);
+      s = { ...s, challengeTrigger: null }; // consume trigger
+      if (chalCheck) {
+        s = { ...s, pendingEvent: chalCheck };
+        events.push(`🔥 ${chalCheck.orgName}から挑戦状！ ${chalCheck.aiFighter.name} vs ${chalCheck.playerFighter.name}`);
+        return { state: { ...s, weekPhase: 'event' }, events };
+      }
+    }
+
+    // D-4: Summit match check (PPV weeks, rank ≤ 2)
+    const summitCheck = Engine.event.checkSummitMatch(s);
+    if (summitCheck) {
+      s = { ...s, pendingEvent: summitCheck };
+      events.push(`🏆 頂上決戦のチャンス！ ${summitCheck.orgName}のエース${summitCheck.aiFighter.name}に挑戦可能`);
+      return { state: { ...s, weekPhase: 'event' }, events };
+    }
+
+    return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+  },
+
+  // ── Character Factory (DOM-free) ───────────────────────
+  makeChar(template, rng, opts = {}) {
+    const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
+    const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
+    // Player roster starts at entry-level values (training-spec §1.3)
+    const entryAge = opts.age || 16;
+    const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, entryAge);
+    // Calculate assessed value (pricing-balance-spec §1)
+    const charWithStats = { ...template, pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn };
+    const av = Engine.scout.calcAssessedValue(charWithStats, rng, opts.season || 1);
+    return {
+      ...template,
+      pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn,
+      notionValue: notion,
+      trainCap,
+      age: entryAge,
+      condition: 70 + Engine.rng.int(rng, 0, 19),
+      popularity: Math.max(1, Math.round(Engine.util.ov({...template, ...startVals}) / 10) + Engine.rng.int(rng, -2, 2)),
+      schedule: 'balance',
+      wins: 0, losses: 0, draws: 0,
+      injury: null,
+      seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+      careerSeasons: 0,
+      intensive: false,
+      intensiveWeeks: 0,
+      lastMatchResult: null,
+      assessedValue: av.assessedValue,
+      assessedTier: av.assessedTier,
+      assessedVariance: av.assessedVariance,
+      assessedSeason: av.assessedSeason
+    };
+  },
+
+  // ── Draft System (v1.0) ─────────────────────────────────
+  draft: {
+    // Coach evaluation tiers (potOVR distribution: 85-164, most 115-160)
+    EVAL_TIERS: [
+      { min: 155, text: '将来のエース候補', emoji: '🌟', color: '#f1c40f' },
+      { min: 145, text: '逸材の匂いがする', emoji: '✨', color: '#e6c35c' },
+      { min: 135, text: 'かなりの素質あり', emoji: '💎', color: '#3498db' },
+      { min: 125, text: '十分な伸びしろ',   emoji: '📈', color: '#2ecc71' },
+      { min: 115, text: '堅実に育つタイプ', emoji: '🌱', color: '#95a5a6' },
+      { min: 0,   text: '未知数',           emoji: '🔮', color: '#9b59b6' },
+    ],
+    // Coach-based potential evaluation with variance
+    // coachMult: best coach's growthMult (0 = no coach = max variance)
+    // variance: no coach ±20, best coach(2.0) ±8
+    getEvalComment(potOvr, charId, seed, coachMult) {
+      const rng = Engine.rng.create(Engine.rng.derive(seed || 42, charId, 999));
+      const maxVar = coachMult > 0 ? Math.round(20 - coachMult * 6) : 20; // 0→±20, 1.3→±12, 2.0→±8
+      const clampedVar = Math.max(6, maxVar); // minimum ±6 even with best coach
+      const variance = Engine.rng.int(rng, -clampedVar, clampedVar);
+      const perceived = potOvr + variance;
+      const tier = Engine.draft.EVAL_TIERS.find(t => perceived >= t.min) || Engine.draft.EVAL_TIERS[Engine.draft.EVAL_TIERS.length - 1];
+      return { ...tier, variance: clampedVar };
+    },
+    // Get candidate info with estimated entry-level OVR for display
+    // coachMult: best hired coach's growthMult (0 at draft = max variance)
+    getCandidateInfo(seed, coachMult) {
+      const ENTRY_RATIO = 0.60; // age 16 base=0.55 + avg random 0.05
+      return DRAFT_CONFIG.candidates.map(id => {
+        const t = ALL_CHARS.find(c => c.id === id);
+        const entryPw = Math.round(t.pw * ENTRY_RATIO);
+        const entrySp = Math.round(t.sp * ENTRY_RATIO);
+        const entryTe = Math.round(t.te * ENTRY_RATIO);
+        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const entryMn = t.mn; // MN is innate, no age reduction
+        const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
+        const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
+        const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
+      });
+    },
+    // Get fixed member info (also entry-level)
+    getFixedInfo(seed, coachMult) {
+      const ENTRY_RATIO = 0.60;
+      return DRAFT_CONFIG.fixed.map(id => {
+        const t = ALL_CHARS.find(c => c.id === id);
+        const entryPw = Math.round(t.pw * ENTRY_RATIO);
+        const entrySp = Math.round(t.sp * ENTRY_RATIO);
+        const entryTe = Math.round(t.te * ENTRY_RATIO);
+        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const entryMn = t.mn;
+        const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
+        const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
+        const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
+      });
+    },
+    // Validate draft picks
+    isValidPicks(picks) {
+      if (!Array.isArray(picks) || picks.length !== DRAFT_CONFIG.pickCount) return false;
+      return picks.every(id => DRAFT_CONFIG.candidates.includes(id));
+    },
+    // Complete draft: returns updated state with roster, freeAgents, and poolIds reflecting picks
+    completeDraft(state, picks, rng) {
+      if (!Engine.draft.isValidPicks(picks)) return state;
+      const rosterIds = [...DRAFT_CONFIG.fixed, ...picks];
+      const rejected = DRAFT_CONFIG.candidates.filter(id => !picks.includes(id));
+      // Build roster
+      const roster = rosterIds.map(id => {
+        const t = ALL_CHARS.find(c => c.id === id);
+        return Engine.makeChar(t, rng, { age: 16 });
+      });
+      // Rejected candidates become free agents (age-appropriate stats)
+      const allFreeIds = [...(ORG_ASSIGN.free || []), ...rejected];
+      const freeAgents = allFreeIds.map(id => {
+        const t = ALL_CHARS.find(c => c.id === id);
+        const age = 18 + Engine.rng.int(rng, 0, 8);
+        return Engine.makeChar(t, rng, { age });
+      });
+      // Update ORG_ASSIGN for ranking/pool calculations
+      ORG_ASSIGN.player = rosterIds;
+      ORG_ASSIGN.free = allFreeIds;
+      // Recalc pool IDs
+      const poolIds = Engine.rival.getPoolIds();
+      const rankings = Engine.ranking.updateRankings({ ...state, roster, freeAgents, poolIds });
+      const pRank = Engine.ranking.getPlayerRank(rankings);
+      return {
+        ...state,
+        roster,
+        freeAgents,
+        poolIds,
+        rankings,
+        weekPhase: 'manage',
+        draftComplete: true,
+        gameLog: [
+          '🎉 新団体設立！ 初期資金5,000万でスタート。',
+          `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。`,
+          `🏢 フリーエージェント${freeAgents.length}名がスカウト可能。`,
+          `📊 業界${pRank}位からの挑戦が始まる。`,
+          '🏆 v0.9: ライバル団体システム搭載！',
+          `👑 EMPRESS GRAND (S級) / 💫 NOVA IMPACT (A級) / 🌙 CRESCENT RISE (B級)`,
+          '⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】',
+          '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
+        ]
+      };
+    }
+  },
+
+  // ── State Factory ──────────────────────────────────────
+  createInitialState(seed, skipDraft) {
+    seed = seed || (Date.now() ^ 0xDEADBEEF);
+    const rng = Engine.rng.create(seed);
+
+    // Generate randomized draft config from seed
+    generateDraftConfig(seed);
+
+    // If draft not skipped, start in draft phase with minimal state
+    const isDraft = !skipDraft;
+
+    // Player roster: empty for draft, or default for legacy/load
+    const rosterIds = isDraft ? DRAFT_CONFIG.fixed : [...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates.slice(0, DRAFT_CONFIG.pickCount)];
+    ORG_ASSIGN.player = rosterIds;
+    const roster = rosterIds.map(id => {
+      const t = ALL_CHARS.find(c => c.id === id);
+      return Engine.makeChar(t, rng, { age: 16 });
+    });
+
+    // Free agents (from ORG_ASSIGN.free) — age-appropriate stats
+    const freeIds = new Set(ORG_ASSIGN.free || []);
+    const freeAgents = ALL_CHARS.filter(c => freeIds.has(c.id)).map(t => {
+      const age = 18 + Engine.rng.int(rng, 0, 8);
+      return Engine.makeChar(t, rng, { age });
+    });
+
+    // AI organizations
+    const aiOrgs = Engine.rival.initAIOrgs(rng);
+
+    // Unrevealed pool
+    const poolIds = Engine.rival.getPoolIds();
+
+    // Initial rankings
+    const initState = {
+      version: '0.9',
+      rngSeed: seed,
+      season: 1,
+      week: 1,
+      funds: 5000,
+      orgPop: 10,
+      orgName: 'プレイヤー団体',
+      roster,
+      freeAgents,
+      gameLog: [],
+      weekPhase: isDraft ? 'draft' : 'manage',
+      draftComplete: !isDraft,
+      showCard: [],
+      showVenue: 0,
+      lastShowResults: [],
+      weeklyFinance: { income: 0, expense: 0, details: [] },
+      totalShows: 0,
+      heatScore: 0,
+      matchHistory: [],
+      titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
+      rivalries: {},
+      coaches: [],
+      availableCoaches: ALL_COACHES.map(c => c.id),
+      seasonGrowth: {},
+      facilities: { training: 1, medical: 1, media: 1, dormitory: 1, scouting: 1 },
+      coachAssign: {},
+      // v0.9: Rival system
+      aiOrgs,
+      aceDesignation: null,
+      rankings: [],
+      transferLog: [],
+      transfersThisSeason: 0,
+      poolIds,
+      // v0.9b: Offseason system
+      offSeason: false,
+      offWeek: 0,
+      // v0.9c: Phase C — Ace & Transfer
+      aceDesignation: null,
+      pendingPoach: [],
+      // v0.9d: Phase D — Rental & Events
+      rental: null,
+      warThisSeason: false,
+      challengeTrigger: null,
+      pendingEvent: null,
+      summitBonus: 0,
+      // v0.95: Season statistics & history
+      seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
+                     bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
+      seasonHistory: [], // array of past season summaries
+      fundsHistory: [5000], // weekly fund snapshots for sparkline
+      // v0.96: Mission system
+      missionEnabled: true,
+      missionsCompleted: [],
+      // v0.97: Survival gauge
+      survivalCleared: false,
+      survivalProfitStreak: 0,
+      survivalMilestones: [],
+      survivalClearWeek: null,
+      survivalClearSeason: null,
+    };
+    initState.rankings = Engine.ranking.updateRankings(initState);
+    return initState;
+  }
+};
+

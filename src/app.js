@@ -1,0 +1,1647 @@
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 0: AUDIO SYSTEM (SFX + BGM)                     ║
+// ║  Web Audio API synthesized sounds — no external files     ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const Audio = (() => {
+  let ctx = null;
+  let masterGain = null;
+  let sfxGain = null;
+  let bgmGain = null;
+  let bgmNodes = null;  // active BGM oscillator nodes
+  let _muted = false;
+  let _sfxVol = 0.5;
+  let _bgmVol = 0.25;
+
+  // Lazy-init AudioContext (must be triggered by user gesture)
+  function ensure() {
+    if (ctx) return ctx;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 1.0;
+    masterGain.connect(ctx.destination);
+    sfxGain = ctx.createGain();
+    sfxGain.gain.value = _sfxVol;
+    sfxGain.connect(masterGain);
+    bgmGain = ctx.createGain();
+    bgmGain.gain.value = _bgmVol;
+    bgmGain.connect(masterGain);
+    // Load saved prefs
+    try {
+      const prefs = JSON.parse(localStorage.getItem('wm_audio') || '{}');
+      if (prefs.sfxVol !== undefined) { _sfxVol = prefs.sfxVol; sfxGain.gain.value = _sfxVol; }
+      if (prefs.bgmVol !== undefined) { _bgmVol = prefs.bgmVol; bgmGain.gain.value = _bgmVol; }
+      if (prefs.muted) { _muted = true; masterGain.gain.value = 0; }
+    } catch(e) {}
+    return ctx;
+  }
+
+  function savePrefs() {
+    try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted})); } catch(e) {}
+  }
+
+  // ── Utility: create a quick envelope oscillator ──
+  function osc(freq, type, startTime, duration, gain, dest) {
+    const c = ensure();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    o.connect(g);
+    g.connect(dest || sfxGain);
+    o.start(startTime);
+    o.stop(startTime + duration + 0.05);
+    return o;
+  }
+
+  // ── Utility: white noise burst ──
+  function noise(startTime, duration, gain, dest) {
+    const c = ensure();
+    const bufSize = c.sampleRate * duration;
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    // Bandpass for texture
+    const flt = c.createBiquadFilter();
+    flt.type = 'bandpass';
+    flt.frequency.value = 2000;
+    flt.Q.value = 1;
+    src.connect(flt);
+    flt.connect(g);
+    g.connect(dest || sfxGain);
+    src.start(startTime);
+    src.stop(startTime + duration + 0.05);
+  }
+
+  // ╔══════════════════════════════════════════════════╗
+  // ║  SOUND DEFINITIONS                               ║
+  // ╚══════════════════════════════════════════════════╝
+  const SFX = {
+    // UI: soft click for navigation
+    click() {
+      const t = ensure().currentTime;
+      osc(800, 'sine', t, 0.06, 0.15);
+      osc(600, 'sine', t + 0.01, 0.04, 0.08);
+    },
+
+    // UI: hover / focus expand
+    hover() {
+      const t = ensure().currentTime;
+      osc(400, 'sine', t, 0.08, 0.06);
+      osc(600, 'sine', t + 0.03, 0.06, 0.08);
+    },
+
+    // Draft: select candidate (positive pop)
+    select() {
+      const t = ensure().currentTime;
+      osc(523, 'sine', t, 0.08, 0.2);       // C5
+      osc(659, 'sine', t + 0.06, 0.1, 0.2);  // E5
+      osc(784, 'triangle', t + 0.12, 0.15, 0.12); // G5 shimmer
+    },
+
+    // Draft: deselect (soft descend)
+    deselect() {
+      const t = ensure().currentTime;
+      osc(600, 'sine', t, 0.06, 0.12);
+      osc(400, 'sine', t + 0.05, 0.08, 0.10);
+    },
+
+    // Draft/Season: big confirm / fanfare
+    fanfare() {
+      const t = ensure().currentTime;
+      osc(523, 'sine', t, 0.15, 0.2);        // C5
+      osc(659, 'sine', t + 0.1, 0.15, 0.2);   // E5
+      osc(784, 'sine', t + 0.2, 0.15, 0.2);   // G5
+      osc(1047, 'sine', t + 0.35, 0.4, 0.25); // C6 (hold)
+      osc(1047, 'triangle', t + 0.35, 0.5, 0.1);
+      noise(t + 0.35, 0.15, 0.04);
+    },
+
+    // Week advance: tick forward
+    tick() {
+      const t = ensure().currentTime;
+      osc(1200, 'sine', t, 0.03, 0.1);
+      osc(1400, 'sine', t + 0.03, 0.04, 0.08);
+      noise(t, 0.02, 0.03);
+    },
+
+    // Show: crowd anticipation
+    crowd() {
+      const t = ensure().currentTime;
+      noise(t, 0.6, 0.12);
+      osc(200, 'sawtooth', t, 0.3, 0.03);
+      osc(150, 'sawtooth', t + 0.1, 0.4, 0.02);
+    },
+
+    // Match: bell ring (match start/end)
+    bell() {
+      const t = ensure().currentTime;
+      osc(1200, 'sine', t, 0.5, 0.2);
+      osc(2400, 'sine', t, 0.3, 0.06);
+      osc(3600, 'sine', t, 0.15, 0.03);
+    },
+
+    // Match: big impact hit
+    impact() {
+      const t = ensure().currentTime;
+      osc(80, 'sine', t, 0.12, 0.3);
+      osc(60, 'triangle', t, 0.15, 0.15);
+      noise(t, 0.08, 0.2);
+    },
+
+    // Result: victory
+    victory() {
+      const t = ensure().currentTime;
+      [523, 659, 784, 1047].forEach((f, i) => {
+        osc(f, 'sine', t + i * 0.08, 0.2, 0.18);
+      });
+      osc(1047, 'triangle', t + 0.32, 0.6, 0.08);
+      noise(t + 0.32, 0.1, 0.03);
+    },
+
+    // Result: defeat
+    defeat() {
+      const t = ensure().currentTime;
+      osc(400, 'sine', t, 0.3, 0.15);
+      osc(350, 'sine', t + 0.15, 0.3, 0.12);
+      osc(300, 'sine', t + 0.3, 0.5, 0.1);
+    },
+
+    // Money: coin clink
+    coin() {
+      const t = ensure().currentTime;
+      osc(2000, 'sine', t, 0.06, 0.12);
+      osc(2600, 'sine', t + 0.04, 0.08, 0.1);
+      osc(3200, 'sine', t + 0.06, 0.03, 0.05);
+    },
+
+    // Money: spend / loss
+    spend() {
+      const t = ensure().currentTime;
+      osc(500, 'sine', t, 0.08, 0.1);
+      osc(400, 'sine', t + 0.06, 0.08, 0.08);
+    },
+
+    // Sign contract / stamp
+    stamp() {
+      const t = ensure().currentTime;
+      osc(300, 'sine', t, 0.04, 0.15);
+      noise(t, 0.05, 0.1);
+      osc(600, 'sine', t + 0.08, 0.1, 0.12);
+      osc(800, 'sine', t + 0.14, 0.15, 0.1);
+    },
+
+    // Facility upgrade / power up
+    powerup() {
+      const t = ensure().currentTime;
+      for (let i = 0; i < 6; i++) {
+        osc(400 + i * 120, 'sine', t + i * 0.05, 0.12, 0.12);
+      }
+      osc(1200, 'triangle', t + 0.3, 0.3, 0.08);
+    },
+
+    // Championship: grand fanfare
+    championship() {
+      const t = ensure().currentTime;
+      // Brass-like fanfare
+      [523, 659, 784].forEach((f, i) => osc(f, 'sawtooth', t + i * 0.12, 0.2, 0.05));
+      [1047, 1319, 1568].forEach((f, i) => osc(f, 'sine', t + 0.4 + i * 0.1, 0.25, 0.15));
+      osc(2093, 'sine', t + 0.7, 0.8, 0.12);
+      osc(2093, 'triangle', t + 0.7, 1.0, 0.06);
+      noise(t + 0.7, 0.3, 0.04);
+    },
+
+    // Error: can't do that
+    error() {
+      const t = ensure().currentTime;
+      osc(200, 'square', t, 0.08, 0.08);
+      osc(180, 'square', t + 0.1, 0.08, 0.06);
+    },
+
+    // Save: soft chime
+    save() {
+      const t = ensure().currentTime;
+      osc(880, 'sine', t, 0.1, 0.1);
+      osc(1100, 'sine', t + 0.08, 0.15, 0.1);
+      osc(1320, 'sine', t + 0.16, 0.2, 0.08);
+    },
+
+    // Notification / event trigger
+    notify() {
+      const t = ensure().currentTime;
+      osc(880, 'sine', t, 0.08, 0.12);
+      osc(1100, 'sine', t + 0.1, 0.08, 0.12);
+      osc(880, 'sine', t + 0.2, 0.1, 0.08);
+    },
+
+    // Season end: dramatic
+    seasonEnd() {
+      const t = ensure().currentTime;
+      osc(440, 'sine', t, 0.3, 0.15);
+      osc(523, 'sine', t + 0.2, 0.3, 0.15);
+      osc(659, 'sine', t + 0.4, 0.3, 0.15);
+      osc(880, 'sine', t + 0.7, 0.8, 0.2);
+      osc(880, 'triangle', t + 0.7, 1.0, 0.08);
+    },
+
+    // Transfer: whoosh in/out
+    transfer() {
+      const t = ensure().currentTime;
+      const c = ensure();
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(300, t);
+      o.frequency.exponentialRampToValueAtTime(1200, t + 0.15);
+      o.frequency.exponentialRampToValueAtTime(800, t + 0.3);
+      g.gain.setValueAtTime(0.1, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.connect(g);
+      g.connect(sfxGain);
+      o.start(t);
+      o.stop(t + 0.4);
+    },
+
+    // War / rivalry: tension
+    war() {
+      const t = ensure().currentTime;
+      osc(150, 'sawtooth', t, 0.15, 0.06);
+      osc(160, 'sawtooth', t + 0.02, 0.15, 0.06);
+      noise(t, 0.2, 0.08);
+      osc(200, 'square', t + 0.2, 0.1, 0.05);
+      osc(250, 'square', t + 0.3, 0.1, 0.05);
+      osc(300, 'square', t + 0.4, 0.15, 0.06);
+    }
+  };
+
+  // ╔══════════════════════════════════════════════════╗
+  // ║  BGM SYSTEM (ambient loop)                       ║
+  // ╚══════════════════════════════════════════════════╝
+  const BGM = {
+    _playing: false,
+    _interval: null,
+
+    // Management mode: calm ambient pad
+    startManage() {
+      BGM.stop();
+      const c = ensure();
+      bgmNodes = [];
+      BGM._playing = true;
+
+      function playChord(notes, startTime, dur) {
+        notes.forEach(freq => {
+          const o = c.createOscillator();
+          const g = c.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0, startTime);
+          g.gain.linearRampToValueAtTime(0.04, startTime + dur * 0.3);
+          g.gain.linearRampToValueAtTime(0.03, startTime + dur * 0.7);
+          g.gain.linearRampToValueAtTime(0, startTime + dur);
+          o.connect(g);
+          g.connect(bgmGain);
+          o.start(startTime);
+          o.stop(startTime + dur + 0.1);
+          bgmNodes.push(o);
+        });
+      }
+
+      // Chord progression: Am - F - C - G (classic)
+      const chords = [
+        [220, 261.6, 329.6],  // Am
+        [174.6, 220, 261.6],  // F
+        [261.6, 329.6, 392],  // C
+        [196, 246.9, 329.6],  // G
+      ];
+      const barDur = 4; // seconds per chord
+      const loopDur = chords.length * barDur;
+
+      function scheduleLoop() {
+        if (!BGM._playing) return;
+        const now = c.currentTime + 0.1;
+        chords.forEach((notes, i) => {
+          playChord(notes, now + i * barDur, barDur * 0.95);
+        });
+      }
+
+      scheduleLoop();
+      BGM._interval = setInterval(() => {
+        if (BGM._playing) scheduleLoop();
+      }, loopDur * 1000 - 200);
+    },
+
+    // Show mode: energetic pulse
+    startShow() {
+      BGM.stop();
+      const c = ensure();
+      bgmNodes = [];
+      BGM._playing = true;
+
+      function playPulse(startTime) {
+        const notes = [130.8, 164.8, 196, 164.8]; // C3-E3-G3-E3
+        notes.forEach((f, i) => {
+          const o = c.createOscillator();
+          const g = c.createGain();
+          o.type = 'triangle';
+          o.frequency.value = f;
+          const t0 = startTime + i * 0.4;
+          g.gain.setValueAtTime(0.06, t0);
+          g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
+          o.connect(g);
+          g.connect(bgmGain);
+          o.start(t0);
+          o.stop(t0 + 0.4);
+          bgmNodes.push(o);
+        });
+        // Kick
+        const kick = c.createOscillator();
+        const kG = c.createGain();
+        kick.type = 'sine';
+        kick.frequency.setValueAtTime(150, startTime);
+        kick.frequency.exponentialRampToValueAtTime(50, startTime + 0.1);
+        kG.gain.setValueAtTime(0.1, startTime);
+        kG.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+        kick.connect(kG);
+        kG.connect(bgmGain);
+        kick.start(startTime);
+        kick.stop(startTime + 0.2);
+        bgmNodes.push(kick);
+      }
+
+      const loopDur = 1.6;
+      function scheduleLoop() {
+        if (!BGM._playing) return;
+        playPulse(c.currentTime + 0.1);
+      }
+      scheduleLoop();
+      BGM._interval = setInterval(() => {
+        if (BGM._playing) scheduleLoop();
+      }, loopDur * 1000 - 100);
+    },
+
+    stop() {
+      BGM._playing = false;
+      if (BGM._interval) { clearInterval(BGM._interval); BGM._interval = null; }
+      if (bgmNodes) {
+        bgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+        bgmNodes = [];
+      }
+    }
+  };
+
+  // ╔══════════════════════════════════════════════════╗
+  // ║  PUBLIC API                                      ║
+  // ╚══════════════════════════════════════════════════╝
+  return {
+    play(name) { if (!_muted && SFX[name]) { try { ensure(); SFX[name](); } catch(e) {} } },
+    bgm: BGM,
+    get muted() { return _muted; },
+    toggleMute() {
+      ensure();
+      _muted = !_muted;
+      masterGain.gain.value = _muted ? 0 : 1;
+      if (_muted) BGM.stop();
+      savePrefs();
+    },
+    setSfxVol(v) { _sfxVol = v; if (sfxGain) sfxGain.gain.value = v; savePrefs(); },
+    setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; savePrefs(); },
+    get sfxVol() { return _sfxVol; },
+    get bgmVol() { return _bgmVol; },
+  };
+})();
+
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 6b: MISSION SYSTEM (v0.96)                       ║
+// ║  Guided progression — pure functions, no DOM              ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const MISSIONS = [
+  // ── BEGINNER: 最初の一歩 ──
+  { id:'hire_coach',    phase:0, icon:'育', name:'コーチを雇おう',
+    desc:'スタッフ室から最初のコーチを雇用しよう。選手の成長速度が大幅にアップ！',
+    screen:'coach', check: G => G.coaches.length >= 1 },
+  { id:'set_schedule',  phase:0, icon:'予', name:'スケジュールを変更してみよう',
+    desc:'今週タブで選手のスケジュールを「練習優先」や「プロモ優先」に変更してみよう。',
+    screen:'week', check: G => G.roster.some(c => c.schedule && c.schedule !== 'balance') },
+  { id:'first_show',    phase:0, icon:'興', name:'初興行を開催しよう',
+    desc:'興行週にカードを組んで興行を開催！まずは1回やってみよう。',
+    screen:'show', check: G => G.totalShows >= 1 },
+  { id:'mq40',          phase:0, icon:'★', name:'MQ40以上の好試合',
+    desc:'マッチクオリティ40以上を出そう。相性の良いカードを組むのがコツ！',
+    screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 40 || G.seasonHistory?.some(s => s.bestMQ >= 40) },
+  { id:'upgrade_fac',   phase:0, icon:'施', name:'施設を強化しよう',
+    desc:'施設画面でトレーニング施設などをLv2にアップグレード！',
+    screen:'facility', check: G => G.facilities && Object.values(G.facilities).some(v => v >= 2) },
+
+  // ── GROWTH: 成長期 ──
+  { id:'crown_champ',   phase:1, icon:'王', name:'世界王座を認定',
+    desc:'選手が成長したら世界王座戦を組んで初代チャンピオンを決めよう。',
+    screen:'show', check: G => G.titles?.world?.championId != null },
+  { id:'pop25',         phase:1, icon:'▲', name:'団体人気25に到達',
+    desc:'興行を重ねて団体人気を25まで上げよう。会場の選択肢が広がる！',
+    screen:null, check: G => G.orgPop >= 25 },
+  { id:'coach3',        phase:1, icon:'育', name:'コーチ3人体制',
+    desc:'コーチを3人雇って育成を加速！多くの選手にコーチをつけられるように。',
+    screen:'coach', check: G => G.coaches.length >= 3 },
+  { id:'rank3',         phase:1, icon:'杯', name:'ランキング3位以内',
+    desc:'団体ランキングで3位以内を目指そう。興行のMQと人気が鍵！',
+    screen:'ranking', check: G => {
+      const r = G.rankings || [];
+      const p = r.findIndex(x => x.orgId === 'player');
+      return p >= 0 && p < 3;
+    }},
+  { id:'assign_all',    phase:1, icon:'配', name:'全選手にコーチ配置',
+    desc:'育成画面で全選手にコーチを割り当てて、成長効率を最大化！',
+    screen:'training', check: G => {
+      if (!G.roster || G.roster.length === 0) return false;
+      const healthy = G.roster.filter(c => !c.injury);
+      if (healthy.length === 0) return true;
+      const assigned = Object.values(G.coachAssign || {}).flat();
+      return healthy.every(c => assigned.includes(c.id));
+    }},
+
+  // ── MASTERY: 頂点へ ──
+  { id:'mq70',          phase:2, icon:'◆', name:'MQ70超えの名勝負',
+    desc:'最高のカードを組んで、MQ70以上の名勝負を実現！',
+    screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 70 || G.seasonHistory?.some(s => s.bestMQ >= 70) },
+  { id:'pop50',         phase:2, icon:'▲', name:'団体人気50に到達',
+    desc:'人気50の壁を突破！大会場での興行が現実的に。',
+    screen:null, check: G => G.orgPop >= 50 },
+  { id:'rank1',         phase:2, icon:'◇', name:'ランキング1位',
+    desc:'業界の頂点に立て！団体ランキング1位を獲得しよう。',
+    screen:'ranking', check: G => {
+      const r = G.rankings || [];
+      return r.length > 0 && r[0].orgId === 'player';
+    }},
+  { id:'season2',       phase:2, icon:'季', name:'2年目を迎えよう',
+    desc:'最初のシーズンを乗り越えて2年目に突入！',
+    screen:null, check: G => G.season >= 2 },
+];
+
+const PHASE_LABELS = ['[初] はじめの一歩', '[成] 成長期', '[頂] 頂点を目指せ'];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 6c: SURVIVAL GAUGE (v0.97)                        ║
+// ║  Startup deficit tracker — pure functions, no DOM          ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const SURVIVAL_MILESTONES = [
+  { id:'first_show_rev',  icon:'興', label:'初興行収入', desc:'興行でチケット・グッズ収入を得た',
+    check: G => (G.seasonStats?.totalRevenue || 0) > 0 || G.seasonHistory?.some(s => s.totalRevenue > 0) },
+  { id:'sponsor_unlock',  icon:'金', label:'スポンサー獲得', desc:'人気20到達でスポンサー収入が発生',
+    check: G => G.orgPop >= 20 },
+  { id:'first_profit_wk', icon:'▲', label:'初の黒字週', desc:'週間収支がプラスになった',
+    check: G => (G.survivalProfitStreak || 0) >= 1 },
+  { id:'profit_streak3',  icon:'◆', label:'3週連続黒字', desc:'安定経営が見えてきた',
+    check: G => (G.survivalProfitStreak || 0) >= 3 },
+  { id:'graduation',      icon:'杯', label:'経営安定化', desc:'黒字経営が定着！サバイバルクリア',
+    check: G => G.survivalCleared === true },
+];
+
+const SURVIVAL_PHASES = [
+  { id:'red',    label:'赤字地獄',   color:'#e74c3c', emoji:'●', cssClass:'phase-red' },
+  { id:'orange', label:'赤字縮小',   color:'#e67e22', emoji:'●', cssClass:'phase-orange' },
+  { id:'yellow', label:'損益分岐点', color:'#f1c40f', emoji:'●', cssClass:'phase-yellow' },
+  { id:'green',  label:'黒字転換',   color:'#2ecc71', emoji:'●', cssClass:'phase-green' },
+];
+
+const Survival = {
+  // Calculate estimated weekly net income (expenses - income, without show revenue)
+  estimateWeeklyNet(G) {
+    const salary = Engine.economy.calcWeeklySalary(G.roster);
+    const fixed = Engine.economy.calcFixedCosts();
+    const coachSalary = Engine.coach.getSalaryTotal(G);
+    const facilityMaint = Engine.facility.getMaintenance(G);
+    const totalExpense = salary + fixed + coachSalary + facilityMaint;
+
+    const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
+    const broadcastBonus = Engine.facility.getBroadcastBonus(G);
+    const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+    const totalBaseIncome = sponsor + broadcast;
+
+    // Estimate average show income per week (shows happen ~every 4 weeks)
+    // Use last show's revenue if available, or estimate from orgPop
+    let avgShowIncomePerWeek = 0;
+    if (G.lastShowResults && G.lastShowResults.length > 0 && G.weeklyFinance) {
+      const showIncome = G.weeklyFinance.details
+        .filter(d => d.type === 'income' && (d.label.includes('チケット') || d.label.includes('グッズ')))
+        .reduce((s, d) => s + d.val, 0);
+      const showCost = G.weeklyFinance.details
+        .filter(d => d.type === 'expense' && d.label.includes('会場'))
+        .reduce((s, d) => s + Math.abs(d.val), 0);
+      avgShowIncomePerWeek = Math.round((showIncome - showCost) / 4); // amortized over 4 weeks
+    }
+
+    const weeklyNet = (totalBaseIncome + avgShowIncomePerWeek) - totalExpense;
+    return { weeklyNet, totalExpense, totalBaseIncome, avgShowIncomePerWeek };
+  },
+
+  // Determine current survival phase
+  getPhase(G) {
+    if (G.survivalCleared) return null; // graduated
+    const { weeklyNet } = Survival.estimateWeeklyNet(G);
+    if (weeklyNet >= 20) return SURVIVAL_PHASES[3]; // green: solid profit
+    if (weeklyNet >= -5) return SURVIVAL_PHASES[2]; // yellow: breakeven
+    if (weeklyNet >= -50) return SURVIVAL_PHASES[1]; // orange: improving
+    return SURVIVAL_PHASES[0]; // red: deep deficit
+  },
+
+  // Estimate weeks until funds reach -1000 (bankruptcy)
+  weeksUntilBankrupt(G) {
+    const { weeklyNet } = Survival.estimateWeeklyNet(G);
+    if (weeklyNet >= 0) return Infinity;
+    const runway = G.funds + 1000; // bankrupt at -1000
+    return Math.max(0, Math.ceil(runway / Math.abs(weeklyNet)));
+  },
+
+  // Calculate fuel gauge percentage (5000 start to -1000 bankrupt = 6000 range)
+  fuelPct(G) {
+    const runway = G.funds + 1000; // 0 at bankruptcy, 6000 at full
+    return Math.max(0, Math.min(100, Math.round((runway / 6000) * 100)));
+  },
+
+  // Evaluate milestones
+  getMilestones(G) {
+    const cleared = new Set(G.survivalMilestones || []);
+    return SURVIVAL_MILESTONES.map(m => ({
+      ...m,
+      done: cleared.has(m.id) || m.check(G),
+    }));
+  },
+
+  // Update survival state — called each week. Returns updated state + events.
+  updateSurvival(G) {
+    if (G.survivalCleared) return { state: G, events: [], graduated: false };
+
+    let s = { ...G };
+    const events = [];
+
+    // Update milestones
+    const oldMilestones = new Set(s.survivalMilestones || []);
+    const newMilestones = [...oldMilestones];
+    SURVIVAL_MILESTONES.forEach(m => {
+      if (!oldMilestones.has(m.id) && m.check(s)) {
+        newMilestones.push(m.id);
+      }
+    });
+    s = { ...s, survivalMilestones: newMilestones };
+
+    // Track profit streak from weekly finance
+    const wf = s.weeklyFinance;
+    if (wf && wf.net !== undefined) {
+      if (wf.net >= 0) {
+        s = { ...s, survivalProfitStreak: (s.survivalProfitStreak || 0) + 1 };
+      } else {
+        s = { ...s, survivalProfitStreak: 0 };
+      }
+    }
+
+    // Check graduation: 4+ consecutive profit weeks AND funds > 3000
+    const graduated = (s.survivalProfitStreak || 0) >= 4 && s.funds >= 3000;
+    if (graduated && !s.survivalCleared) {
+      s = { ...s, survivalCleared: true, survivalClearWeek: s.week, survivalClearSeason: s.season };
+      events.push('🎊 経営安定化達成！ サバイバルチャレンジクリア！');
+    }
+
+    return { state: s, events, graduated };
+  }
+};
+
+const Mission = {
+  // Get all missions with their completion status
+  evaluate(G) {
+    const completed = new Set(G.missionsCompleted || []);
+    return MISSIONS.map(m => ({
+      ...m,
+      done: completed.has(m.id) || m.check(G),
+      wasCompleted: completed.has(m.id), // was already marked done before
+    }));
+  },
+
+  // Check for newly completed missions and return updated state
+  updateCompleted(G) {
+    const old = new Set(G.missionsCompleted || []);
+    const all = MISSIONS.filter(m => m.check(G)).map(m => m.id);
+    const newlyDone = all.filter(id => !old.has(id));
+    if (newlyDone.length === 0) return { state: G, newMissions: [] };
+    const merged = [...old, ...newlyDone];
+    return {
+      state: { ...G, missionsCompleted: merged },
+      newMissions: newlyDone.map(id => MISSIONS.find(m => m.id === id)).filter(Boolean)
+    };
+  },
+
+  // Get progress stats
+  progress(G) {
+    const evaluated = Mission.evaluate(G);
+    const total = evaluated.length;
+    const done = evaluated.filter(m => m.done).length;
+    return { done, total, pct: Math.round((done / total) * 100) };
+  },
+
+  // Get visible missions (show current phase + next unlocked)
+  getVisible(G) {
+    const evaluated = Mission.evaluate(G);
+    // Always show phase 0
+    // Show phase 1 if any phase 0 is done
+    // Show phase 2 if any phase 1 is done
+    const phase0Done = evaluated.filter(m => m.phase === 0 && m.done).length;
+    const phase1Done = evaluated.filter(m => m.phase === 1 && m.done).length;
+    let maxPhase = 0;
+    if (phase0Done >= 2) maxPhase = 1;
+    if (phase1Done >= 2) maxPhase = 2;
+    return evaluated.filter(m => m.phase <= maxPhase);
+  }
+};
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 7: STORAGE (v0.85)                               ║
+// ║  Save/Load with v0.8 backward compatibility               ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const SAVE_KEY = 'wrestle_manager_save_';
+const SAVE_SLOTS = 3;
+const AUTOSAVE_KEY = 'wrestle_manager_autosave';
+
+const Storage = {
+  serialize(G) {
+    const state = JSON.parse(JSON.stringify(G));
+    state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
+    state._saveVersion = '0.9';
+    state._saveDate = new Date().toISOString();
+    state._nextGenCharId = nextGenCharId;
+    return JSON.stringify(state);
+  },
+
+  deserialize(json) {
+    try {
+      const state = JSON.parse(json);
+      // Replace G entirely with saved state, preserving any missing defaults
+      const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
+      G = { ...base, ...state };
+
+      // v0.6 backward compat: coaches
+      if (!G.coaches) G = { ...G, coaches: [] };
+      if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };
+      if (!G.seasonGrowth) G = { ...G, seasonGrowth: {} };
+
+      // v0.7 backward compat: facilities
+      if (!G.facilities) G = { ...G, facilities: {training:1, medical:1, media:1, dormitory:1, scouting:1} };
+
+      // v0.8 backward compat: coach assignments
+      if (!G.coachAssign) {
+        const ca = {};
+        G.coaches.forEach(id => { ca[id] = []; });
+        G = { ...G, coachAssign: ca };
+      }
+
+      // v0.85 backward compat
+      if (!G.rngSeed) G = { ...G, rngSeed: Date.now() ^ 0xDEADBEEF };
+
+      // v0.9 backward compat: rival system
+      if (!G.aiOrgs) {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0, 909));
+        G = { ...G, aiOrgs: Engine.rival.initAIOrgs(rng) };
+      }
+      if (!G.rankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
+      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null };
+      if (!G.transferLog) G = { ...G, transferLog: [] };
+      if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
+      if (!G.poolIds) G = { ...G, poolIds: Engine.rival.getPoolIds() };
+      if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
+
+      // v0.9b backward compat: offseason system
+      if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
+      // v0.9c backward compat: ace & transfer
+      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null, pendingPoach: [] };
+      // v0.9d backward compat: rental & events
+      if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
+      if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
+
+      // v0.96 backward compat: mission system
+      if (G.missionEnabled === undefined) G = { ...G, missionEnabled: true, missionsCompleted: [] };
+
+      // v0.97 backward compat: survival gauge
+      if (G.survivalCleared === undefined) G = { ...G, survivalCleared: false, survivalProfitStreak: 0, survivalMilestones: [], survivalClearWeek: null, survivalClearSeason: null };
+
+      G = { ...G, version: '0.9' };
+
+      // Fix character data (immutable)
+      const fixChar = c => {
+        const nc = { ...c };
+        if (!nc.seasonGrowth) nc.seasonGrowth = {pw:0, sp:0, te:0, st:0, mn:0};
+        if (nc.careerSeasons === undefined) nc.careerSeasons = 0;
+        if (!nc.pot) { const t = ALL_CHARS.find(t => t.id === nc.id); if (t) nc.pot = {...t.pot}; }
+        if (nc.intensive === undefined) nc.intensive = false;
+        if (nc.intensiveWeeks === undefined) nc.intensiveWeeks = 0;
+        // v0.9: add notionValue/trainCap if missing (migrating from v0.85b)
+        if (!nc.notionValue) {
+          const t = ALL_CHARS.find(t => t.id === nc.id);
+          if (t) nc.notionValue = {pw:t.pw, sp:t.sp, te:t.te, st:t.st, mn:t.mn};
+          else nc.notionValue = {pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn};
+        }
+        if (!nc.trainCap && nc.notionValue && nc.pot) {
+          const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, nc.id, 777));
+          nc.trainCap = Engine.rival.generateTrainCap(rng, nc.notionValue, nc.pot);
+        }
+        if (nc.age === undefined) nc.age = 16 + (nc.careerSeasons || 0);
+        return nc;
+      };
+      G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
+
+      // v1.0 migration: fix freeAgents that were created with useNotion:true bug
+      // Detect: all 4 physical stats exactly match notionValue (statistically impossible from generateStartValues)
+      G = { ...G, freeAgents: G.freeAgents.map(c => {
+        if (!c.notionValue) return c;
+        const nv = c.notionValue;
+        const isInflated = c.pw === nv.pw && c.sp === nv.sp && c.te === nv.te && c.st === nv.st;
+        if (!isInflated) return c;
+        // Recalculate with age-appropriate values
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 888));
+        const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
+        return { ...c, ...startVals };
+      })};
+
+      // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
+      const migrateAssessed = (fighters) => fighters.map(f => {
+        if (f.assessedValue) return f;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, f.id, 999));
+        const av = Engine.scout.calcAssessedValue(f, rng, G.season || 1);
+        return { ...f, ...av };
+      });
+      G = { ...G, roster: migrateAssessed(G.roster), freeAgents: migrateAssessed(G.freeAgents) };
+      // Also migrate AI org rosters
+      if (G.aiOrgs) {
+        const migAi = {};
+        Object.keys(G.aiOrgs).forEach(orgId => {
+          const od = G.aiOrgs[orgId];
+          migAi[orgId] = { ...od, roster: migrateAssessed(od.roster) };
+        });
+        G = { ...G, aiOrgs: migAi };
+      }
+
+      // v0.99b: restore nextGenCharId for scout-generated characters
+      if (G._nextGenCharId) nextGenCharId = G._nextGenCharId;
+
+      // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
+      if (G.weekPhase !== 'scoutEvent') {
+        G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
+      }
+
+      return true;
+    } catch(e) { console.error('Load failed:', e); return false; }
+  },
+
+  save(slot) {
+    try {
+      localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G));
+      G = { ...G, gameLog: [...G.gameLog, `💾 スロット${slot}にセーブしました`] };
+      refreshAll();
+      return true;
+    } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
+  },
+
+  load(slot) {
+    const data = localStorage.getItem(SAVE_KEY + slot);
+    if (!data) { alert('セーブデータがありません'); return false; }
+    if (Storage.deserialize(data)) {
+      G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
+      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      refreshAll();
+      return true;
+    }
+    return false;
+  },
+
+  autoSave() {
+    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { /* silent */ }
+  },
+
+  loadAutoSave() {
+    const data = localStorage.getItem(AUTOSAVE_KEY);
+    if (data && Storage.deserialize(data)) {
+      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      refreshAll();
+    }
+  },
+
+  getAutoSaveInfo() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate };
+    } catch { return null; }
+  },
+
+  getSaveInfo(slot) {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY + slot);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion };
+    } catch { return null; }
+  },
+
+  deleteSave(slot) {
+    localStorage.removeItem(SAVE_KEY + slot);
+  }
+};
+
+// Alias for backward compat in UI
+function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
+function loadGame(slot) { Audio.play('notify'); return Storage.load(slot); }
+function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 8: APP BRIDGE (v0.85)                            ║
+// ║  UI ↔ Engine bridge layer                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+
+// Global game state — the single source of truth
+let G = Engine.createInitialState();
+
+// Running RNG state for the current session
+let sessionRng = Engine.rng.create(G.rngSeed);
+
+// ── Legacy utility aliases (for UI code backward compat) ──
+function ov(c) { return Engine.util.ov(c); }
+function getSalary(c) { return Engine.util.getSalary(c); }
+function isShowWeek(w) { return Engine.util.isShowWeek(w); }
+function getQuarter(w) { return Engine.util.getQuarter(w); }
+function isSpecialShow(w) { return Engine.util.isSpecialShow(w); }
+function isPPV(w) { return Engine.util.isPPV(w); }
+function getHeatLevel() { return Engine.heat.getLevel(G); }
+function getWorldChampion() { return Engine.title.getWorldChampion(G); }
+function getHiredCoaches() { return Engine.coach.getHiredCoaches(G); }
+function getCharCoach(charId) { return Engine.coach.getCharCoach(G, charId); }
+function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
+function getFacilityLevel(id) { return Engine.facility.getLevel(G, id); }
+function getFacilityMaintenance() { return Engine.facility.getMaintenance(G); }
+function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
+
+// ── App Commands (G mutation ONLY via G = newState) ──
+const App = {
+  // Focus/unfocus a draft candidate (expand detail panel)
+  focusDraftCandidate(charId) {
+    if (G.weekPhase !== 'draft') return;
+    Audio.play('hover');
+    G = { ...G, _draftFocus: G._draftFocus === charId ? null : charId };
+    renderWeekScreen();
+  },
+
+  // Toggle a draft pick on/off
+  toggleDraftPick(charId) {
+    if (G.weekPhase !== 'draft') return;
+    const picks = G._draftPicks || [];
+    const idx = picks.indexOf(charId);
+    let newPicks;
+    if (idx >= 0) {
+      newPicks = picks.filter(id => id !== charId);
+      Audio.play('deselect');
+    } else if (picks.length < DRAFT_CONFIG.pickCount) {
+      newPicks = [...picks, charId];
+      Audio.play('select');
+    } else {
+      return;
+    }
+    G = { ...G, _draftPicks: newPicks };
+    renderWeekScreen();
+  },
+
+  // Confirm draft and start the game
+  completeDraft() {
+    if (G.weekPhase !== 'draft') return;
+    const picks = G._draftPicks || [];
+    if (!Engine.draft.isValidPicks(picks)) return;
+    // Capture org name from draft input
+    const nameInput = document.getElementById('draftOrgName');
+    if (nameInput) G = { ...G, orgName: nameInput.value.trim() || 'プレイヤー団体' };
+    Audio.play('fanfare');
+    const rng = Engine.rng.create(G.rngSeed);
+    G = Engine.draft.completeDraft(G, picks, rng);
+    // Show welcome popups for drafted fighters
+    const drafted = G.roster.filter(c => picks.includes(c.id));
+    drafted.forEach((c, i) => {
+      setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'positive',
+        message: pickQuote('draftJoin'), detail:`${c.name}（${c.style}/${c.role}）が入団！ OVR ${ov(c)}` }), i * 100);
+    });
+    delete G._draftPicks;
+    delete G._draftFocus;
+    sessionRng = Engine.rng.create(G.rngSeed);
+    Storage.autoSave();
+    refreshAll();
+  },
+
+  // Initialize a new game
+  newGame() {
+    G = Engine.createInitialState();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    refreshAll();
+  },
+
+  // Sign a free agent
+  signFighter(charId) {
+    const idx = G.freeAgents.findIndex(c => c.id === charId);
+    if (idx < 0) return;
+    const fighter = G.freeAgents[idx];
+    // Gate: check orgPop requirement (pricing-balance-spec §2)
+    if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter)) {
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+    }
+    const discount = Engine.facility.getScoutDiscount(G);
+    const finalCost = Engine.scout.getSigningCost(fighter, discount);
+    if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+    Audio.play('stamp');
+    const c = fighter;
+    const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+    const newFA = G.freeAgents.filter((_, i) => i !== idx);
+    const newRoster = [...G.roster, c];
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
+    if (titleMsg) log.push(titleMsg);
+    G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log };
+    refreshAll();
+  },
+
+  // ── Scout Event Methods (scout-spec §2-§5) ──────────────
+
+  /** Pick a candidate: show competition dialog or sign directly */
+  scoutEventPick(candidateId) {
+    if (!G.scoutCandidates) return;
+    const cand = G.scoutCandidates.find(c => c.id === candidateId);
+    if (!cand) return;
+    const picks = G.scoutPicks || [];
+    if (picks.length >= (G.scoutMaxPicks || 3)) {
+      Audio.play('error'); alert(`今回の獲得上限（${G.scoutMaxPicks}名）に達しています`); return;
+    }
+    if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+    }
+    const discount = Engine.facility.getScoutDiscount(G);
+    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+
+    if (cand._hasCompetition) {
+      // Show competition resolution modal
+      G = { ...G, scoutPendingPick: candidateId };
+      renderScoutCompetitionModal(cand, baseCost, discount);
+    } else {
+      // No competition: direct sign
+      this.scoutEventResolve(candidateId, 'direct');
+    }
+  },
+
+  /** Resolve a scout pick with competition choice */
+  scoutEventResolve(candidateId, choice) {
+    if (!G.scoutCandidates) return;
+    const cand = G.scoutCandidates.find(c => c.id === candidateId);
+    if (!cand) return;
+    const discount = Engine.facility.getScoutDiscount(G);
+    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, candidateId));
+
+    let result;
+    if (choice === 'direct') {
+      result = { result: 'success', cost: baseCost };
+    } else {
+      result = Engine.scout.resolveCompetition(rng, cand, choice);
+      // Apply facility discount to competition cost too
+      if (result.cost > 0) {
+        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, discount);
+      }
+    }
+
+    const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
+    const log = [...G.gameLog];
+    let candidates = [...G.scoutCandidates];
+    let picks = [...(G.scoutPicks || [])];
+    let newRoster = [...G.roster];
+    let newFunds = G.funds;
+    let aiOrgs = { ...G.aiOrgs };
+    let freeAgents = [...G.freeAgents];
+
+    const normalizeFighterForRoster = (fighter) => ({
+      ...fighter,
+      seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(fighter?.seasonGrowth || {}) },
+      wins: fighter?.wins ?? 0,
+      losses: fighter?.losses ?? 0,
+      draws: fighter?.draws ?? 0,
+      injury: fighter?.injury ?? null,
+      condition: typeof fighter?.condition === 'number' ? fighter.condition : 80,
+      schedule: ['balance','practice','promo','rest'].includes(fighter?.schedule) ? fighter.schedule : 'balance',
+      intensive: !!fighter?.intensive,
+      intensiveWeeks: fighter?.intensiveWeeks || 0,
+      lastMatchResult: fighter?.lastMatchResult || null,
+    });
+
+    if (result.result === 'success') {
+      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
+      Audio.play('stamp');
+      // Clean internal props before adding to roster
+      const signed = { ...cand };
+      delete signed._notion; delete signed._estimate; delete signed._isSeed;
+      delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
+      newRoster.push(normalizeFighterForRoster(signed));
+      newFunds -= result.cost;
+      picks.push(candidateId);
+      candidates = candidates.filter(c => c.id !== candidateId);
+      log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
+      showEventPopup({ type:'scout', tone:'positive',
+        message:`${cand.name}の獲得に成功！`, detail:`契約金: ${result.cost}万 [${tierCfg.label}]` });
+    } else if (result.result === 'lost') {
+      Audio.play('error');
+      // Lost candidate goes to AI org or freeAgent
+      const lostResult = Engine.scout.resolveLostCandidate(rng, { ...cand }, aiOrgs);
+      const cleanFighter = { ...lostResult.fighter };
+      delete cleanFighter._notion; delete cleanFighter._estimate; delete cleanFighter._isSeed;
+      delete cleanFighter._hasCompetition; delete cleanFighter._compMultiplier; delete cleanFighter._bidWinRate;
+      if (lostResult.destination === 'aiOrg') {
+        const orgData = aiOrgs[lostResult.orgId];
+        if (orgData) {
+          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, normalizeFighterForRoster(cleanFighter)] } };
+        }
+        const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
+        log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
+      } else {
+        freeAgents.push(normalizeFighterForRoster(cleanFighter));
+        log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ`);
+      }
+      candidates = candidates.filter(c => c.id !== candidateId);
+      showEventPopup({ type:'scout', tone:'negative',
+        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' });
+    } else if (result.result === 'skipped') {
+      candidates = candidates.filter(c => c.id !== candidateId);
+      log.push(`🔍 スカウト見送り: ${cand.name}`);
+    }
+
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    if (titleMsg) log.push(titleMsg);
+    G = {
+      ...G, funds: newFunds, roster: newRoster, freeAgents, aiOrgs, titles,
+      scoutCandidates: candidates, scoutPicks: picks, scoutPendingPick: null, gameLog: log,
+    };
+    refreshAll();
+    showScreen('scoutEvent');
+  },
+
+  /** Finish scout event and continue game flow */
+  scoutEventFinish() {
+    Audio.play('click');
+    const picksCount = (G.scoutPicks || []).length;
+    const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
+    // Clean up any remaining candidates (add unacquired to freeAgents pool)
+    let freeAgents = [...G.freeAgents];
+    (G.scoutCandidates || []).forEach(c => {
+      const clean = { ...c };
+      delete clean._notion; delete clean._estimate; delete clean._isSeed;
+      delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
+      // 30% chance unselected candidates become freeAgents
+      if (Math.random() < 0.30) freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
+    });
+    G = {
+      ...G, freeAgents, gameLog: log,
+      scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null,
+      scoutPendingPick: null, scoutEventType: null,
+      scoutsThisSeason: (G.scoutsThisSeason || 0) + 1,
+      weekPhase: G.offSeason ? 'offseason' : 'manage',
+    };
+    // If offseason, continue to next offWeek
+    if (G.offSeason) {
+      App.advanceWeek();
+    } else {
+      showScreen('week');
+      refreshAll();
+    }
+  },
+
+  // Release a fighter
+  releaseFighter(charId) {
+    const idx = G.roster.findIndex(c => c.id === charId);
+    if (idx < 0) return;
+    Audio.play('spend');
+    const c = G.roster[idx];
+    const cName = c.name;
+    const cId = c.id;
+    const newRoster = G.roster.filter((_, i) => i !== idx);
+    const newFA = [...G.freeAgents, c];
+    const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const log = [...G.gameLog, `📤 ${c.name}を解雇`];
+    if (titleMsg) log.push(titleMsg);
+    G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    closeFighterPopup();
+    refreshAll();
+    showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
+      message: pickQuote('release'), detail:`${cName}が団体を去りました` });
+  },
+
+  // Set training schedule
+  setSchedule(charId, schedule) {
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, schedule } : c) };
+    refreshAll();
+  },
+
+  // Set intensive training
+  setIntensive(charId) {
+    const c = G.roster.find(c => c.id === charId);
+    if (!c || c.injury) return;
+    Audio.play('select');
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: true } : c) };
+    refreshAll();
+  },
+
+  cancelIntensive(charId) {
+    Audio.play('deselect');
+    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: false } : c) };
+    refreshAll();
+  },
+
+  // Hire coach
+  hireCoach(coachId) {
+    const coach = ALL_COACHES.find(c => c.id === coachId);
+    if (!coach) return;
+    if (G.coaches.length >= MAX_COACHES) { Audio.play('error'); alert(`コーチは最大${MAX_COACHES}名まで`); return; }
+    const fee = coach.hireFee || COACH_HIRE_FEE;
+    if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
+    G = {
+      ...G,
+      funds: G.funds - fee,
+      coaches: [...G.coaches, coachId],
+      availableCoaches: G.availableCoaches.filter(id => id !== coachId),
+      coachAssign: { ...G.coachAssign, [coachId]: [] },
+      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万）`]
+    };
+    refreshAll();
+    showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
+      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万）` });
+  },
+
+  // Fire coach
+  fireCoach(coachId) {
+    const coach = ALL_COACHES.find(c => c.id === coachId);
+    const newAssign = { ...G.coachAssign };
+    delete newAssign[coachId];
+    G = {
+      ...G,
+      coaches: G.coaches.filter(id => id !== coachId),
+      availableCoaches: [...G.availableCoaches, coachId],
+      coachAssign: newAssign,
+      gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
+    };
+    refreshAll();
+    if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
+      message: pickQuote('coachFire'), detail:`${coach.name}がチームを去りました` });
+  },
+
+  // Assign character to coach
+  assignToCoach(coachId, charId) {
+    const unassigned = Engine.coach.unassignFromCoach(G, charId);
+    const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
+    if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
+    Audio.play('click');
+    G = { ...G, coachAssign };
+    refreshAll();
+  },
+
+  // Unassign character from coach
+  unassignFromCoach(charId) {
+    G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) };
+    refreshAll();
+  },
+
+  // Upgrade facility
+  upgradeFacility(facilityId) {
+    const fac = FACILITIES.find(f => f.id === facilityId);
+    if (!fac) return;
+    const curLv = Engine.facility.getLevel(G, facilityId);
+    if (curLv >= fac.levels.length) { Audio.play('error'); alert('最大レベルです'); return; }
+    const nextLvData = fac.levels[curLv];
+    if (G.funds < nextLvData.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
+    Audio.play('powerup');
+    G = {
+      ...G,
+      funds: G.funds - nextLvData.cost,
+      facilities: { ...G.facilities, [facilityId]: curLv + 1 },
+      gameLog: [...G.gameLog, `🏢 ${fac.name}をLv${curLv + 1}にアップグレード！（費用: ${nextLvData.cost}万）`]
+    };
+    refreshAll();
+  },
+
+  // Show preparation
+  startShowPrep() {
+    if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
+    Audio.play('crowd');
+    G = {
+      ...G,
+      weekPhase: 'showPrep',
+      showCard: [
+        {left: 0, right: 0, isTitle: false},
+        {left: 0, right: 0, isTitle: false},
+        {left: 0, right: 0, isTitle: false}
+      ],
+      showVenue: 0
+    };
+    refreshAll();
+  },
+
+  // Set show venue
+  setShowVenue(venueIdx) {
+    G = { ...G, showVenue: venueIdx };
+    renderShowPrep();
+  },
+
+  // Set show card slot
+  setShowCardSlot(slotIndex, side, newId) {
+    newId = +newId;
+    const newCard = G.showCard.map((slot, i) => {
+      if (i !== slotIndex) return slot;
+      const updated = { ...slot, [side]: newId };
+      if (newId > 0 && updated.left === updated.right) updated[side === 'left' ? 'right' : 'left'] = 0;
+      return updated;
+    });
+    G = { ...G, showCard: newCard };
+    renderShowPrep();
+  },
+
+  // Clear show card
+  clearShowCard() {
+    G = { ...G, showCard: G.showCard.map(() => ({left: 0, right: 0, isTitle: false})) };
+    renderShowPrep();
+  },
+
+  // Toggle title match
+  toggleTitleMatch(slotIndex) {
+    G = { ...G, showCard: G.showCard.map((slot, i) => i === slotIndex ? { ...slot, isTitle: !slot.isTitle } : slot) };
+    renderShowPrep();
+  },
+
+  // ═══ BATTLE ENGINE INTEGRATION (v0.86) ═══
+  // Show match preview instead of instant execution
+  executeShow() {
+    const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0);
+    if (validMatches.length === 0) { Audio.play('error'); alert('少なくとも1試合を組んでください'); return; }
+    Audio.play('bell');
+    // Initialize preview state
+    App._showPreview = {
+      validMatches,
+      results: new Array(validMatches.length).fill(null),
+      currentWatching: -1,
+      stateSnapshot: JSON.parse(JSON.stringify(G))
+    };
+    renderMatchPreview();
+  },
+
+  // Skip a single match (instant calculation)
+  skipMatch(idx) {
+    const sp = App._showPreview;
+    if (!sp || sp.results[idx]) return;
+    const m = sp.validMatches[idx];
+    const charL = G.roster.find(c => c.id === m.left);
+    const charR = G.roster.find(c => c.id === m.right);
+    if (!charL || !charR) return;
+    const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
+    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
+    Audio.play('tick');
+    renderMatchPreview();
+    if (sp.results.every(r => r !== null)) App.finalizeShow();
+  },
+
+  // Watch match in battle engine iframe
+  watchMatch(idx) {
+    const sp = App._showPreview;
+    if (!sp || sp.results[idx]) return;
+    sp.currentWatching = idx;
+    const m = sp.validMatches[idx];
+    const charL = G.roster.find(c => c.id === m.left);
+    const charR = G.roster.find(c => c.id === m.right);
+    if (!charL || !charR) return;
+    // Show iframe
+    const overlay = document.getElementById('battleOverlay');
+    overlay.style.display = 'block';
+    // Send match data to iframe (avoid contentDocument — causes SecurityError on file://)
+    const iframe = document.getElementById('battleIframe');
+    const msg = {
+      type: 'START_MATCH',
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
+      matchInfo: {
+        header: m.isTitle ? '🏆 TITLE MATCH' : `MATCH ${idx + 1}`,
+        subHeader: `${charL.name} vs ${charR.name}`,
+        matchNum: idx + 1,
+        totalMatches: sp.validMatches.length,
+        isTitle: !!m.isTitle
+      }
+    };
+    let sent = false;
+    const sendOnce = () => {
+      if (sent) return;
+      sent = true;
+      iframe.contentWindow.postMessage(msg, '*');
+    };
+    // Reload iframe to ensure clean state, then send on load
+    iframe.onload = () => setTimeout(sendOnce, 150);
+    iframe.src = iframe.src; // force reload
+    // Fallback: also try after a delay in case onload already fired
+    setTimeout(sendOnce, 600);
+  },
+
+  // Receive result from battle engine
+  receiveBattleResult(data) {
+    const sp = App._showPreview;
+    if (!sp || sp.currentWatching < 0) return;
+    const idx = sp.currentWatching;
+    const m = sp.validMatches[idx];
+    const charL = G.roster.find(c => c.id === m.left);
+    const charR = G.roster.find(c => c.id === m.right);
+    // Convert battle engine result to WM format
+    sp.results[idx] = {
+      left: charL, right: charR,
+      winner: data.winner,
+      finType: data.finType || '',
+      finMove: data.finMove || '',
+      turns: data.turns || 0,
+      mq: data.mq || 50,
+      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+      log: data.log || []
+    };
+    // Hide iframe
+    document.getElementById('battleOverlay').style.display = 'none';
+    sp.currentWatching = -1;
+    Audio.play('coin');
+    renderMatchPreview();
+    if (sp.results.every(r => r !== null)) App.finalizeShow();
+  },
+
+  // Skip all remaining matches
+  skipAllMatches() {
+    const sp = App._showPreview;
+    if (!sp) return;
+    sp.validMatches.forEach((m, idx) => {
+      if (sp.results[idx]) return; // already resolved
+      const charL = G.roster.find(c => c.id === m.left);
+      const charR = G.roster.find(c => c.id === m.right);
+      if (!charL || !charR) return;
+      const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
+      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
+    });
+    Audio.play('bell');
+    App.finalizeShow();
+  },
+
+  // Post-processing: apply titles, popularity, injuries (mirrors Engine.executeShow logic)
+  finalizeShow() {
+    const sp = App._showPreview;
+    if (!sp) return;
+    const results = sp.results;
+    const validMatches = sp.validMatches;
+    let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
+    let roster = s.roster.map(c => ({ ...c }));
+    let rivalries = { ...s.rivalries };
+    let titles = { ...s.titles, world: { ...s.titles.world } };
+    const events = [];
+
+    // Rivalry & coach bonuses
+    results.forEach((result, i) => {
+      const m = validMatches[i];
+      const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
+      if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
+      if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
+      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+      rivalries = rivalResult.rivalries;
+      if (rivalResult.msg) events.push(rivalResult.msg);
+      const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
+      if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
+    });
+
+    // Title outcomes
+    validMatches.forEach((m, i) => {
+      if (!m.isTitle || !results[i]) return;
+      const r = results[i];
+      const champId = titles.world.championId;
+      const tempState = { ...s, titles, roster };
+      if (r.winner === 'draw') {
+        if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+      } else {
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        if (!champId || winnerId !== champId) {
+          const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+        } else {
+          const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+        }
+      }
+    });
+
+    // MQ popularity
+    results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
+    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
+    roster = popResult.roster;
+    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
+
+    // Heat
+    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const oldHeat = Engine.heat.getLevel(s);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
+    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
+
+    // Injuries — separate RNG per fighter to avoid correlation
+    const injuryResults = [];
+    const injuryReduction = Engine.facility.getInjuryReduction(s);
+    results.forEach((r, idx) => {
+      const lc = roster.find(c => c.id === r.left.id);
+      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
+      if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      const rc = roster.find(c => c.id === r.right.id);
+      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
+      if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+    });
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
+
+    // v0.95: Season stats
+    const stats = { ...G.seasonStats };
+    stats.showCount++;
+    results.forEach(r => {
+      if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
+      if (r.winner === 'left' || r.winner === 'right') stats.wins++;
+      if (r.winner === 'draw') stats.draws++;
+    });
+
+    G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
+    App._showPreview = null;
+    App._lastInjuries = injuryResults; // v0.96: store for popup after close
+    renderShowResult(results, injuryResults);
+  },
+
+  // Close show result and advance via tickWeek
+  closeShowResult() {
+    if (App._closingShowResult) return;
+    const resultOverlay = document.getElementById('showResultOverlay');
+    if (!resultOverlay || !resultOverlay.classList.contains('active') || G.weekPhase !== 'showExec') return;
+    App._closingShowResult = true;
+    Audio.play('coin');
+    resultOverlay.classList.remove('active');
+    // v0.96: Show injury popups
+    const injuries = App._lastInjuries || [];
+    injuries.forEach((ir, i) => {
+      const ch = G.roster.find(c => c.name === ir.name);
+      if (ch && ir.injury) {
+        setTimeout(() => showEventPopup({ type:'fighter', id:ch.id, name:ch.name, tone:'negative',
+          message: pickQuote('injury'), detail:`🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間` }), i * 100);
+      }
+    });
+    App._lastInjuries = [];
+    // Check title wins (only if champion is newly crowned this show)
+    const newChampId = G.titles?.world?.championId;
+    if (newChampId && G.titles.world.defenses === 0 && G.lastShowResults?.some(r => r.isTitleMatch)) {
+      const champ = G.roster.find(c => c.id === newChampId);
+      if (champ) {
+        setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
+          message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新世界チャンピオンに！` }), injuries.length * 100 + 50);
+      }
+    }
+    const result = Engine.tickWeek(G);
+    // v0.95: Track finances
+    const stats = { ...G.seasonStats };
+    if (result.state.weeklyFinance) {
+      stats.totalRevenue += result.state.weeklyFinance.income || 0;
+      stats.totalExpense += result.state.weeklyFinance.expense || 0;
+    }
+    if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+    if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
+    const fh = [...(G.fundsHistory || []), result.state.funds];
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.checkMissionUpdate();
+    App.checkSurvivalUpdate();
+    // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
+    if (App._tryAutoAdvance()) { App._closingShowResult = false; return; }
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
+    App._closingShowResult = false;
+  },
+
+  // v1.0: Auto-advance past settled screen on non-monthly weeks
+  // Returns true if auto-advanced (caller should return early)
+  _tryAutoAdvance() {
+    const isMonthEnd = G.week % 4 === 0;
+    if (!isMonthEnd && G.funds > -1000) {
+      // Accumulate finance into monthly buffer
+      const monthBuf = [...(G.monthlyFinanceBuffer || [])];
+      monthBuf.push({ week: G.week, finance: { ...G.weeklyFinance }, funds: G.funds });
+      G = { ...G, monthlyFinanceBuffer: monthBuf };
+      // Auto-advance: skip settled screen
+      const advResult = Engine.advanceWeek(G);
+      G = { ...advResult.state, gameLog: [...G.gameLog, ...advResult.events] };
+      if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
+      App.checkSurvivalUpdate();
+      sessionRng = Engine.rng.create(G.rngSeed);
+      Storage.autoSave();
+      showScreen('week');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-btn')[0].classList.add('active');
+      refreshAll();
+      return true;
+    }
+    // Monthly report week: accumulate and stop at settled
+    const monthBuf = [...(G.monthlyFinanceBuffer || [])];
+    monthBuf.push({ week: G.week, finance: { ...G.weeklyFinance }, funds: G.funds });
+    G = { ...G, monthlyFinanceBuffer: monthBuf };
+    return false;
+  },
+
+  // Process a week (manage + settle) via tickWeek
+  processWeek() {
+    Audio.play('tick');
+    const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
+    const result = Engine.tickWeek(G);
+    const stats = { ...G.seasonStats };
+    if (result.state.weeklyFinance) {
+      stats.totalRevenue += result.state.weeklyFinance.income || 0;
+      stats.totalExpense += result.state.weeklyFinance.expense || 0;
+    }
+    if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+    const fh = [...(G.fundsHistory || []), result.state.funds];
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.checkMissionUpdate();
+    App.checkSurvivalUpdate();
+    // v0.96: Detect new injuries and show popups
+    const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
+    newInjuries.forEach((c, i) => {
+      setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
+        message: pickQuote('injury'), detail:`🏥 ${c.injury.type} — 全治${c.injury.weeksLeft}週間` }), i * 100);
+    });
+    // v1.0: Auto-advance on non-monthly weeks
+    if (App._tryAutoAdvance()) return;
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
+  },
+
+  // Advance to next week via Engine
+  advanceWeek() {
+    Audio.play('tick');
+    // v1.0: Clear monthly finance buffer after monthly report
+    G = { ...G, monthlyFinanceBuffer: [] };
+    const result = Engine.advanceWeek(G);
+    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // v0.96: Update mission completions
+    if (G.missionEnabled) {
+      const mResult = Mission.updateCompleted(G);
+      G = mResult.state;
+    }
+    // v0.97: Update survival gauge
+    App.checkSurvivalUpdate();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    Storage.autoSave();
+    refreshAll();
+  },
+
+  // v0.96: Mission system
+  toggleMission(enabled) {
+    Audio.play('click');
+    G = { ...G, missionEnabled: enabled };
+    Storage.autoSave();
+    refreshAll();
+  },
+  checkMissionUpdate() {
+    if (!G.missionEnabled) return;
+    const mResult = Mission.updateCompleted(G);
+    G = mResult.state;
+  },
+
+  // v0.97: Survival gauge
+  checkSurvivalUpdate() {
+    const sResult = Survival.updateSurvival(G);
+    const wasCleared = G.survivalCleared;
+    G = sResult.state;
+    if (sResult.graduated && !wasCleared) {
+      // Show graduation popup!
+      setTimeout(() => showEventPopup({
+        type: 'generic', emoji: '🎊', name: '経営安定化達成！',
+        message: '赤字地獄を乗り越え、ついに安定した黒字経営を達成しました！',
+        detail: '💪 これからは成長フェーズです。更なる高みを目指しましょう！',
+        tone: 'gold'
+      }), 200);
+    }
+  }
+};
+
+// Alias for old UI calls
+// COACH_MAX_ASSIGN already defined in data section
+
