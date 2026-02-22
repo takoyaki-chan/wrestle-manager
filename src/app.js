@@ -11,7 +11,8 @@ const Audio = (() => {
   let bgmNodes = null;  // active BGM oscillator nodes
   let _muted = false;
   let _sfxVol = 0.5;
-  let _bgmVol = 0.25;
+  let _bgmVol = 0.04; // ≈ demo preview 15%
+  let _bgmMuted = false; // BGM-only mute (jingles/SFX still play)
 
   // Lazy-init AudioContext (must be triggered by user gesture)
   function ensure() {
@@ -32,12 +33,13 @@ const Audio = (() => {
       if (prefs.sfxVol !== undefined) { _sfxVol = prefs.sfxVol; sfxGain.gain.value = _sfxVol; }
       if (prefs.bgmVol !== undefined) { _bgmVol = prefs.bgmVol; bgmGain.gain.value = _bgmVol; }
       if (prefs.muted) { _muted = true; masterGain.gain.value = 0; }
+      if (prefs.bgmMuted) { _bgmMuted = true; }
     } catch(e) {}
     return ctx;
   }
 
   function savePrefs() {
-    try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted})); } catch(e) {}
+    try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted, bgmMuted:_bgmMuted})); } catch(e) {}
   }
 
   // ── Utility: create a quick envelope oscillator ──
@@ -282,117 +284,318 @@ const Audio = (() => {
   };
 
   // ╔══════════════════════════════════════════════════╗
-  // ║  BGM SYSTEM (ambient loop)                       ║
+  // ║  BGM SYSTEM — SFC-style chiptune (v1.0)         ║
   // ╚══════════════════════════════════════════════════╝
+  const NT = { // Note frequencies
+    C3:130.81,D3:146.83,Eb3:155.56,E3:164.81,F3:174.61,G3:196.00,A3:220.00,Bb3:233.08,B3:246.94,
+    C4:261.63,D4:293.66,Eb4:311.13,E4:329.63,F4:349.23,G4:392.00,Ab4:415.30,A4:440.00,Bb4:466.16,B4:493.88,
+    C5:523.25,D5:587.33,Eb5:622.25,E5:659.25,F5:698.46,G5:783.99,A5:880.00,Bb5:932.33,B5:987.77,C6:1046.50,D6:1174.66
+  };
+
+  // ── Helpers: note + drum synthesis ──
+  function bgmNote(freq, type, t0, dur, gain) {
+    const c = ensure();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    const atk = Math.min(0.02, dur * 0.1);
+    const rel = Math.min(0.05, dur * 0.2);
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + atk);
+    g.gain.setValueAtTime(gain, t0 + dur - rel);
+    g.gain.linearRampToValueAtTime(0.001, t0 + dur);
+    o.connect(g); g.connect(bgmGain);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+    bgmNodes.push(o);
+  }
+  function bgmKick(t, gn) {
+    const c = ensure();
+    const o = c.createOscillator(); const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.08);
+    g.gain.setValueAtTime(gn, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t + 0.15); bgmNodes.push(o);
+  }
+  function bgmSnare(t, gn) {
+    const c = ensure();
+    const buf = c.createBuffer(1, c.sampleRate * 0.1, c.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
+    const g = c.createGain(); g.gain.setValueAtTime(gn, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    src.connect(hp); hp.connect(g); g.connect(bgmGain); src.start(t); src.stop(t + 0.1); bgmNodes.push(src);
+    const o = c.createOscillator(); const g2 = c.createGain();
+    o.type = 'sine'; o.frequency.value = 200;
+    g2.gain.setValueAtTime(gn * 0.5, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    o.connect(g2); g2.connect(bgmGain); o.start(t); o.stop(t + 0.06); bgmNodes.push(o);
+  }
+  function bgmHH(t, gn, open) {
+    const c = ensure();
+    const dur = open ? 0.08 : 0.03;
+    const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+    const g = c.createGain(); g.gain.setValueAtTime(gn, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(hp); hp.connect(g); g.connect(bgmGain); src.start(t); src.stop(t + dur + 0.01); bgmNodes.push(src);
+  }
+
   const BGM = {
     _playing: false,
     _interval: null,
+    _current: null, // track name: 'kaimaku','management','battle','season_end'
 
-    // Management mode: calm ambient pad
-    startManage() {
+    // ── Public API ──
+    play(trackName) {
+      if (_bgmMuted) return; // BGM muted — skip looping tracks
+      if (trackName === BGM._current && BGM._playing) return; // Already playing
       BGM.stop();
       const c = ensure();
+      if (c.state === 'suspended') c.resume();
       bgmNodes = [];
       BGM._playing = true;
-
-      function playChord(notes, startTime, dur) {
-        notes.forEach(freq => {
-          const o = c.createOscillator();
-          const g = c.createGain();
-          o.type = 'sine';
-          o.frequency.value = freq;
-          g.gain.setValueAtTime(0, startTime);
-          g.gain.linearRampToValueAtTime(0.04, startTime + dur * 0.3);
-          g.gain.linearRampToValueAtTime(0.03, startTime + dur * 0.7);
-          g.gain.linearRampToValueAtTime(0, startTime + dur);
-          o.connect(g);
-          g.connect(bgmGain);
-          o.start(startTime);
-          o.stop(startTime + dur + 0.1);
-          bgmNodes.push(o);
-        });
-      }
-
-      // Chord progression: Am - F - C - G (classic)
-      const chords = [
-        [220, 261.6, 329.6],  // Am
-        [174.6, 220, 261.6],  // F
-        [261.6, 329.6, 392],  // C
-        [196, 246.9, 329.6],  // G
-      ];
-      const barDur = 4; // seconds per chord
-      const loopDur = chords.length * barDur;
-
-      function scheduleLoop() {
-        if (!BGM._playing) return;
-        const now = c.currentTime + 0.1;
-        chords.forEach((notes, i) => {
-          playChord(notes, now + i * barDur, barDur * 0.95);
-        });
-      }
-
-      scheduleLoop();
-      BGM._interval = setInterval(() => {
-        if (BGM._playing) scheduleLoop();
-      }, loopDur * 1000 - 200);
+      BGM._current = trackName;
+      const fn = BGM._tracks[trackName];
+      if (fn) fn();
     },
 
-    // Show mode: energetic pulse
-    startShow() {
-      BGM.stop();
+    playJingle(name) {
+      BGM.stop(); // Stop looping BGM, then play jingle (always plays regardless of bgmMuted)
       const c = ensure();
+      if (c.state === 'suspended') c.resume();
       bgmNodes = [];
       BGM._playing = true;
-
-      function playPulse(startTime) {
-        const notes = [130.8, 164.8, 196, 164.8]; // C3-E3-G3-E3
-        notes.forEach((f, i) => {
-          const o = c.createOscillator();
-          const g = c.createGain();
-          o.type = 'triangle';
-          o.frequency.value = f;
-          const t0 = startTime + i * 0.4;
-          g.gain.setValueAtTime(0.06, t0);
-          g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
-          o.connect(g);
-          g.connect(bgmGain);
-          o.start(t0);
-          o.stop(t0 + 0.4);
-          bgmNodes.push(o);
-        });
-        // Kick
-        const kick = c.createOscillator();
-        const kG = c.createGain();
-        kick.type = 'sine';
-        kick.frequency.setValueAtTime(150, startTime);
-        kick.frequency.exponentialRampToValueAtTime(50, startTime + 0.1);
-        kG.gain.setValueAtTime(0.1, startTime);
-        kG.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
-        kick.connect(kG);
-        kG.connect(bgmGain);
-        kick.start(startTime);
-        kick.stop(startTime + 0.2);
-        bgmNodes.push(kick);
-      }
-
-      const loopDur = 1.6;
-      function scheduleLoop() {
-        if (!BGM._playing) return;
-        playPulse(c.currentTime + 0.1);
-      }
-      scheduleLoop();
-      BGM._interval = setInterval(() => {
-        if (BGM._playing) scheduleLoop();
-      }, loopDur * 1000 - 100);
+      BGM._current = 'jingle_' + name;
+      const fn = BGM._jingles[name];
+      if (fn) fn();
     },
 
     stop() {
       BGM._playing = false;
+      BGM._current = null;
       if (BGM._interval) { clearInterval(BGM._interval); BGM._interval = null; }
       if (bgmNodes) {
         bgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
         bgmNodes = [];
       }
+    },
+
+    // ── Track implementations ──
+    _tracks: {
+      // ═══ BGM 1: 開幕 (BPM 115, D minor) — 静かな緊迫感 ═══
+      kaimaku() {
+        const bpm = 115, beat = 60 / bpm, bar = beat * 4;
+        const mg = 0.06, bg = 0.04, dg = 0.025;
+        function scheduleLoop() {
+          if (BGM._current !== 'kaimaku') return;
+          const t0 = ensure().currentTime + 0.005;
+          // Riff (square) — tense, syncopated
+          const riff = [
+            [NT.D4,.5],[0,.25],[NT.F4,.25],[NT.A4,.5],[NT.G4,.5],[NT.F4,.5],[0,.5],
+            [NT.E4,.5],[NT.D4,.25],[NT.E4,.25],[NT.F4,1],[0,1],
+            [NT.G4,.5],[0,.25],[NT.Bb4,.25],[NT.A4,.5],[NT.G4,.5],[NT.F4,.5],[0,.5],
+            [NT.E4,.75],[NT.D4,.25],[NT.E4,1.5],[0,.5],
+            [NT.D4,.5],[0,.25],[NT.F4,.25],[NT.A4,.75],[NT.Bb4,.25],[NT.A4,.5],[NT.G4,.5],
+            [NT.F4,.5],[NT.E4,.5],[NT.D4,1],[0,1],
+            [NT.A4,.5],[NT.G4,.5],[NT.F4,.5],[NT.E4,.5],[NT.D4,.5],[NT.E4,.5],[NT.F4,.5],[0,.5],
+            [NT.D4,2],[0,2],
+          ];
+          let p = 0;
+          riff.forEach(([f,d]) => { if (f > 0) bgmNote(f,'square',t0+p*beat,d*beat*0.85,mg); p += d; });
+          // Low pad (sawtooth)
+          const pads = [[NT.D3,4],[NT.D3,4],[NT.G3,2],[NT.A3,2],[NT.A3,4],
+            [NT.D3,4],[NT.D3,4],[NT.Bb3,2],[NT.A3,2],[NT.D3,4]];
+          p = 0;
+          pads.forEach(([f,d]) => { bgmNote(f,'sawtooth',t0+p*beat,d*beat*0.95,bg*0.5); p += d; });
+          // Bass (triangle 8ths)
+          const roots = [NT.D3,NT.D3,NT.G3,NT.A3,NT.D3,NT.D3,NT.Bb3,NT.D3];
+          roots.forEach((root, bi) => {
+            const r = root / 2;
+            for (let i = 0; i < 8; i++) {
+              if (i % 2 === 0 || i % 3 === 0) {
+                const f = (i === 0 || i === 4) ? r : r * (i % 3 === 0 ? 1.5 : 1.25);
+                bgmNote(f,'triangle',t0+bi*bar+i*beat*0.5,beat*0.45,bg);
+              }
+            }
+          });
+          // Hi-hat 16ths + snare
+          for (let b = 0; b < 8; b++) {
+            for (let i = 0; i < 16; i++) bgmHH(t0+b*bar+i*(beat/4),dg*(i%4===0?0.8:0.4),false);
+            bgmSnare(t0+b*bar+beat,dg*0.6); bgmSnare(t0+b*bar+beat*3,dg*0.6);
+          }
+        }
+        scheduleLoop();
+        BGM._interval = setInterval(() => { if (BGM._current === 'kaimaku') scheduleLoop(); }, bar * 8 * 1000 - 200);
+      },
+
+      // ═══ BGM 2: 団体運営 (BPM 100, F major) ═══
+      management() {
+        const bpm = 100, beat = 60 / bpm, bar = beat * 4;
+        const mg = 0.055, ag = 0.03, bg = 0.04;
+        function scheduleLoop() {
+          if (BGM._current !== 'management') return;
+          const t0 = ensure().currentTime + 0.005;
+          // Melody (triangle)
+          const mel = [
+            [NT.F4,2],[NT.A4,1],[NT.G4,1], [NT.F4,1.5],[NT.E4,.5],[NT.D4,1],[0,1],
+            [NT.C4,1],[NT.D4,1],[NT.F4,1],[NT.A4,1], [NT.G4,2],[NT.F4,1],[0,1],
+            [NT.Bb4,1.5],[NT.A4,.5],[NT.G4,1],[NT.F4,1], [NT.E4,1],[NT.F4,1],[NT.G4,1],[0,1],
+            [NT.A4,1],[NT.G4,1],[NT.F4,.5],[NT.E4,.5],[NT.D4,1], [NT.C4,1],[NT.D4,.5],[NT.E4,.5],[NT.F4,2],
+          ];
+          let p = 0;
+          mel.forEach(([f,d]) => { if (f > 0) bgmNote(f,'triangle',t0+p*beat,d*beat*0.85,mg); p += d; });
+          // Arpeggio (square 16ths)
+          const ch = [[NT.F3,NT.A3,NT.C4],[NT.F3,NT.A3,NT.C4],
+            [NT.D3,NT.F3,NT.A3],[NT.C3,NT.E3,NT.G3],
+            [NT.Bb3,NT.D4,NT.F4],[NT.C4,NT.E4,NT.G4],
+            [NT.F3,NT.A3,NT.C4],[NT.F3,NT.A3,NT.C4]];
+          ch.forEach((chord, bi) => {
+            for (let i = 0; i < 16; i++) bgmNote(chord[i%chord.length],'square',t0+bi*bar+i*(beat/4),beat/4*0.7,ag);
+          });
+          // Bass (triangle, low octave)
+          const bs = [[NT.F3,4],[NT.F3,4],[NT.D3,2],[NT.A3,2],[NT.C3,2],[NT.G3,2],
+            [NT.Bb3,4],[NT.C3,4],[NT.F3,2],[NT.E3,2],[NT.F3,4]];
+          p = 0;
+          bs.forEach(([f,d]) => { bgmNote(f/2,'triangle',t0+p*beat,d*beat*0.9,bg); p += d; });
+        }
+        scheduleLoop();
+        BGM._interval = setInterval(() => { if (BGM._current === 'management') scheduleLoop(); }, bar * 8 * 1000 - 200);
+      },
+
+      // ═══ BGM 3: 激闘 (BPM 138, A minor) ═══
+      battle() {
+        const bpm = 138, beat = 60 / bpm, bar = beat * 4;
+        const mg = 0.06, hg = 0.03, bg = 0.045, dg = 0.035;
+        function scheduleLoop() {
+          if (BGM._current !== 'battle') return;
+          const t0 = ensure().currentTime + 0.005;
+          // Melody (sawtooth — brass)
+          const mel = [
+            [NT.A4,.5],[NT.C5,.5],[NT.D5,.5],[NT.E5,.5],[NT.E5,1],[NT.D5,1],
+            [NT.C5,.5],[NT.D5,.5],[NT.C5,.5],[NT.A4,.5],[NT.A4,1.5],[0,.5],
+            [NT.A4,.5],[NT.C5,.5],[NT.E5,.5],[NT.G5,.5],[NT.G5,1],[NT.F5,.5],[NT.E5,.5],
+            [NT.D5,.5],[NT.C5,.5],[NT.D5,.5],[NT.E5,.5],[NT.A4,2],
+            [NT.F5,1],[NT.E5,.5],[NT.D5,.5],[NT.C5,1],[NT.D5,1],
+            [NT.E5,1],[NT.D5,.5],[NT.C5,.5],[NT.B4,1.5],[0,.5],
+            [NT.C5,.5],[NT.D5,.5],[NT.E5,.5],[NT.F5,.5],[NT.G5,1.5],[NT.F5,.5],
+            [NT.E5,.5],[NT.D5,.5],[NT.C5,.5],[NT.B4,.5],[NT.A4,2],
+          ];
+          let p = 0;
+          mel.forEach(([f,d]) => { if (f > 0) bgmNote(f,'sawtooth',t0+p*beat,d*beat*0.88,mg); p += d; });
+          // Harmony (square)
+          const hrm = [
+            [NT.A3,2],[NT.C4,2],[NT.D4,2],[NT.E4,2],
+            [NT.A3,2],[NT.C4,2],[NT.E4,2],[NT.A3,2],
+            [NT.F4,2],[NT.E4,2],[NT.D4,2],[NT.E4,2],
+            [NT.C4,2],[NT.D4,2],[NT.E4,2],[NT.A3,2],
+          ];
+          p = 0;
+          hrm.forEach(([f,d]) => { bgmNote(f,'square',t0+p*beat,d*beat*0.85,hg); p += d; });
+          // Bass (triangle 8ths)
+          const br = [NT.A3,NT.C3,NT.D3,NT.E3,NT.F3,NT.E3,NT.D3,NT.A3];
+          br.forEach((root, bi) => {
+            const r = root / 2;
+            for (let i = 0; i < 8; i++) bgmNote(i%2===0?r:r*1.5,'triangle',t0+bi*bar+i*beat*0.5,beat*0.45,bg);
+          });
+          // Drums
+          for (let b = 0; b < 8; b++) {
+            const bt = t0 + b * bar;
+            bgmKick(bt,dg); bgmKick(bt+beat*2,dg);
+            if (b%2===1) bgmKick(bt+beat*3.5,dg*0.7);
+            bgmSnare(bt+beat,dg); bgmSnare(bt+beat*3,dg);
+            for (let i = 0; i < 8; i++) bgmHH(bt+i*beat*0.5,dg*(i%2===0?0.5:0.3),i===7);
+          }
+        }
+        scheduleLoop();
+        BGM._interval = setInterval(() => { if (BGM._current === 'battle') scheduleLoop(); }, bar * 8 * 1000 - 200);
+      },
+
+      // ═══ BGM 5: 節目 (BPM 80, Em → G) ═══
+      season_end() {
+        const bpm = 80, beat = 60 / bpm, bar = beat * 4;
+        const mg = 0.055, ag = 0.025, bg = 0.035;
+        function scheduleLoop() {
+          if (BGM._current !== 'season_end') return;
+          const t0 = ensure().currentTime + 0.005;
+          // Melody (triangle)
+          const mel = [
+            [NT.E4,2],[NT.G4,1],[NT.A4,1], [NT.B4,2],[NT.A4,1],[NT.G4,1],
+            [NT.C5,1.5],[NT.B4,.5],[NT.A4,1],[NT.G4,1], [NT.A4,1],[NT.B4,1],[NT.G4,2],
+            [NT.E4,1],[NT.G4,1],[NT.B4,1],[NT.D5,1], [NT.C5,2],[NT.B4,1],[NT.A4,1],
+            [NT.G4,1],[NT.A4,1],[NT.B4,1.5],[NT.D5,.5], [NT.G5,3],[0,1],
+          ];
+          let p = 0;
+          mel.forEach(([f,d]) => { if (f > 0) bgmNote(f,'triangle',t0+p*beat,d*beat*0.9,mg); p += d; });
+          // Arpeggio (square triplets)
+          const ch = [[NT.E3,NT.G3,NT.B3],[NT.E3,NT.G3,NT.B3],
+            [NT.C3,NT.E3,NT.G3],[NT.D3,NT.F3,NT.A3],
+            [NT.E3,NT.G3,NT.B3],[NT.A3,NT.C4,NT.E4],
+            [NT.G3,NT.B3,NT.D4],[NT.G3,NT.B3,NT.D4]];
+          ch.forEach((chord, bi) => {
+            const tb = beat / 3;
+            for (let i = 0; i < 12; i++) bgmNote(chord[i%chord.length],'square',t0+bi*bar+i*tb,tb*0.75,ag);
+          });
+          // Bass (triangle sustained)
+          const bs = [[NT.E3,8],[NT.C3,4],[NT.D3,4],[NT.E3,4],[NT.A3,4],[NT.G3,8]];
+          p = 0;
+          bs.forEach(([f,d]) => { bgmNote(f/2,'triangle',t0+p*beat,d*beat*0.95,bg); p += d; });
+        }
+        scheduleLoop();
+        BGM._interval = setInterval(() => { if (BGM._current === 'season_end') scheduleLoop(); }, bar * 8 * 1000 - 200);
+      }
+    },
+
+    // ── Jingle implementations ──
+    _jingles: {
+      victory() {
+        const t0 = ensure().currentTime + 0.005;
+        const g = 0.06;
+        // Build-up: ascending triplet run
+        [NT.G4, NT.B4, NT.D5, NT.G5].forEach((f, i) => {
+          bgmNote(f, 'square', t0 + i * 0.12, 0.15, g * 0.8);
+          bgmSnare(t0 + i * 0.12, 0.02);
+        });
+        // Main fanfare chord hit
+        const t1 = t0 + 0.55;
+        bgmNote(NT.G5,'square',t1,0.6,g); bgmNote(NT.D5,'square',t1,0.6,g*0.8);
+        bgmNote(NT.B4,'triangle',t1,0.7,g*0.6); bgmNote(NT.G3,'triangle',t1,0.8,g*0.7);
+        bgmKick(t1, 0.035);
+        // Second phrase: stepping up
+        const t2 = t1 + 0.7;
+        bgmNote(NT.A5,'square',t2,0.25,g*0.9); bgmNote(NT.B5,'square',t2+0.25,0.25,g*0.9);
+        bgmSnare(t2, 0.02); bgmSnare(t2 + 0.25, 0.02);
+        // Final sustained chord
+        const t3 = t2 + 0.55;
+        bgmNote(NT.D6,'square',t3,0.8,g); bgmNote(NT.B5,'square',t3,0.8,g*0.7);
+        bgmNote(NT.G5,'triangle',t3,1.0,g*0.6); bgmNote(NT.D5,'triangle',t3,1.0,g*0.5);
+        bgmNote(NT.G3,'triangle',t3,1.2,g*0.7);
+        bgmKick(t3, 0.04);
+        // Sparkle tail
+        bgmNote(NT.D6,'square',t3+0.9,0.4,g*0.4); bgmNote(NT.G5,'square',t3+1.0,0.5,g*0.3);
+      },
+      championship() {
+        const t0 = ensure().currentTime + 0.005;
+        const g = 0.06;
+        [[NT.C4,'sawtooth',0,0.3],[NT.E4,'sawtooth',0.25,0.3],[NT.G4,'sawtooth',0.5,0.3],
+         [NT.C5,'sawtooth',0.8,0.6],[NT.E5,'sawtooth',1.4,0.3],[NT.G5,'sawtooth',1.7,0.8],
+         [NT.C5,'square',2.5,1.0],[NT.E5,'square',2.5,1.0],[NT.G5,'square',2.5,1.0],
+         [NT.C6,'sawtooth',2.5,1.2],[NT.C3,'triangle',0.8,1.5],[NT.C3,'triangle',2.5,1.2],[NT.G3,'triangle',2.5,1.2],
+        ].forEach(([f,ty,off,dur]) => {
+          const gn = ty==='sawtooth'?g:ty==='triangle'?g*0.8:g*0.6;
+          bgmNote(f,ty,t0+off,dur,gn);
+        });
+        bgmKick(t0+0.8,0.03); bgmSnare(t0+1.4,0.025); bgmKick(t0+2.5,0.035); bgmSnare(t0+2.5,0.025);
+      }
+    },
+
+    // ── Smart BGM selector based on game state ──
+    playForState() {
+      if (!G) return;
+      if (G.weekPhase === 'draft') { BGM.play('kaimaku'); return; }
+      if (G.offSeason || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
+      if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
+      BGM.play('management'); // management + showPrep both use this
     }
   };
 
@@ -407,13 +610,20 @@ const Audio = (() => {
       ensure();
       _muted = !_muted;
       masterGain.gain.value = _muted ? 0 : 1;
-      if (_muted) BGM.stop();
+      if (_muted) BGM.stop(); else BGM.playForState();
       savePrefs();
     },
     setSfxVol(v) { _sfxVol = v; if (sfxGain) sfxGain.gain.value = v; savePrefs(); },
     setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; savePrefs(); },
     get sfxVol() { return _sfxVol; },
     get bgmVol() { return _bgmVol; },
+    // BGM-only mute (looping tracks off, jingles/SFX still play)
+    get bgmMuted() { return _bgmMuted; },
+    toggleBgmMute() {
+      _bgmMuted = !_bgmMuted;
+      if (_bgmMuted) BGM.stop(); else BGM.playForState();
+      savePrefs();
+    },
   };
 })();
 
@@ -442,8 +652,8 @@ const MISSIONS = [
     screen:'facility', check: G => G.facilities && Object.values(G.facilities).some(v => v >= 2) },
 
   // ── GROWTH: 成長期 ──
-  { id:'crown_champ',   phase:1, icon:'王', name:'世界王座を認定',
-    desc:'選手が成長したら世界王座戦を組んで初代チャンピオンを決めよう。',
+  { id:'crown_champ',   phase:1, icon:'王', name:'団体王座を認定',
+    desc:'団体王座が設立されたら王座決定戦を組んで初代チャンピオンを決めよう。',
     screen:'show', check: G => G.titles?.world?.championId != null },
   { id:'pop25',         phase:1, icon:'▲', name:'団体人気25に到達',
     desc:'興行を重ねて団体人気を25まで上げよう。会場の選択肢が広がる！',
@@ -498,11 +708,14 @@ const SURVIVAL_MILESTONES = [
     check: G => (G.seasonStats?.totalRevenue || 0) > 0 || G.seasonHistory?.some(s => s.totalRevenue > 0) },
   { id:'sponsor_unlock',  icon:'金', label:'スポンサー獲得', desc:'人気20到達でスポンサー収入が発生',
     check: G => G.orgPop >= 20 },
-  { id:'first_profit_wk', icon:'▲', label:'初の黒字週', desc:'週間収支がプラスになった',
-    check: G => (G.survivalProfitStreak || 0) >= 1 },
-  { id:'profit_streak3',  icon:'◆', label:'3週連続黒字', desc:'安定経営が見えてきた',
-    check: G => (G.survivalProfitStreak || 0) >= 3 },
-  { id:'graduation',      icon:'杯', label:'経営安定化', desc:'黒字経営が定着！サバイバルクリア',
+  { id:'first_profit_wk', icon:'▲', label:'初の月次黒字', desc:'直近4週の合計収支がプラスになった',
+    check: G => {
+      const buf = G.recentWeeklyNet || [0,0,0,0];
+      return buf.reduce((a,b) => a+b, 0) >= 0 && (G.weeklyFinance != null);
+    }},
+  { id:'profit_streak3',  icon:'◆', label:'2ヶ月連続月次黒字', desc:'安定経営が見えてきた',
+    check: G => (G.rollingNet4Count || 0) >= 2 },
+  { id:'graduation',      icon:'杯', label:'経営安定化', desc:'月次黒字定着＋資金確保！サバイバルクリア',
     check: G => G.survivalCleared === true },
 ];
 
@@ -594,18 +807,25 @@ const Survival = {
     });
     s = { ...s, survivalMilestones: newMilestones };
 
-    // Track profit streak from weekly finance
+    // Track rolling 4-week net (ring buffer)
     const wf = s.weeklyFinance;
     if (wf && wf.net !== undefined) {
-      if (wf.net >= 0) {
-        s = { ...s, survivalProfitStreak: (s.survivalProfitStreak || 0) + 1 };
-      } else {
-        s = { ...s, survivalProfitStreak: 0 };
+      const buf = [...(s.recentWeeklyNet || [0,0,0,0])];
+      buf.push(wf.net);
+      if (buf.length > 4) buf.shift();
+      s = { ...s, recentWeeklyNet: buf };
+
+      // Every 4 weeks, check if rolling sum >= 0 → count as "月次黒字"
+      if (s.week >= 4 && s.week % 4 === 0) {
+        const rollingSum = buf.reduce((a,b) => a+b, 0);
+        if (rollingSum >= 0) {
+          s = { ...s, rollingNet4Count: (s.rollingNet4Count || 0) + 1 };
+        }
       }
     }
 
-    // Check graduation: 4+ consecutive profit weeks AND funds > 3000
-    const graduated = (s.survivalProfitStreak || 0) >= 4 && s.funds >= 3000;
+    // Check graduation: monthly profit achieved 2+ times AND funds >= 3000
+    const graduated = (s.rollingNet4Count || 0) >= 2 && s.funds >= 3000;
     if (graduated && !s.survivalCleared) {
       s = { ...s, survivalCleared: true, survivalClearWeek: s.week, survivalClearSeason: s.season };
       events.push('🎊 経営安定化達成！ サバイバルチャレンジクリア！');
@@ -633,8 +853,10 @@ const Mission = {
     const newlyDone = all.filter(id => !old.has(id));
     if (newlyDone.length === 0) return { state: G, newMissions: [] };
     const merged = [...old, ...newlyDone];
+    // v1.0: Track newly cleared for celebration UI
+    const pendingClears = [...new Set([...(G.missionNewClears || []), ...newlyDone])];
     return {
-      state: { ...G, missionsCompleted: merged },
+      state: { ...G, missionsCompleted: merged, missionNewClears: pendingClears },
       newMissions: newlyDone.map(id => MISSIONS.find(m => m.id === id)).filter(Boolean)
     };
   },
@@ -731,6 +953,17 @@ const Storage = {
 
       // v0.97 backward compat: survival gauge
       if (G.survivalCleared === undefined) G = { ...G, survivalCleared: false, survivalProfitStreak: 0, survivalMilestones: [], survivalClearWeek: null, survivalClearSeason: null };
+      // v1.0 backward compat: rolling net (replaces profit streak)
+      if (!G.recentWeeklyNet) G = { ...G, recentWeeklyNet: [0,0,0,0], rollingNet4Count: 0 };
+      // Migrate old profit streak to rolling count estimate
+      if (G.survivalProfitStreak && G.survivalProfitStreak >= 4 && !G.rollingNet4Count) {
+        G = { ...G, rollingNet4Count: Math.floor(G.survivalProfitStreak / 4) };
+      }
+      // v1.0 backward compat: title establishment
+      if (G.titleEstablished === undefined) {
+        // Auto-detect: if champion exists or title conditions met, it's established
+        G = { ...G, titleEstablished: !!(G.titles?.world?.championId) || (G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5) };
+      }
 
       G = { ...G, version: '0.9' };
 
@@ -858,7 +1091,7 @@ const Storage = {
 
 // Alias for backward compat in UI
 function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
-function loadGame(slot) { Audio.play('notify'); return Storage.load(slot); }
+function loadGame(slot) { Audio.play('notify'); const r = Storage.load(slot); Audio.bgm.playForState(); return r; }
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -926,6 +1159,7 @@ const App = {
     const nameInput = document.getElementById('draftOrgName');
     if (nameInput) G = { ...G, orgName: nameInput.value.trim() || 'プレイヤー団体' };
     Audio.play('fanfare');
+    Audio.bgm.play('management');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
     // Show welcome popups for drafted fighters
@@ -946,6 +1180,7 @@ const App = {
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
     G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    Audio.bgm.play('kaimaku');
     refreshAll();
   },
 
@@ -1291,6 +1526,7 @@ const App = {
     const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0);
     if (validMatches.length === 0) { Audio.play('error'); alert('少なくとも1試合を組んでください'); return; }
     Audio.play('bell');
+    Audio.bgm.play('battle');
     // Initialize preview state
     App._showPreview = {
       validMatches,
@@ -1335,7 +1571,7 @@ const App = {
       left: { ...charL, portraitUrl: getPortraitUrl(charL.id), vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
       right: { ...charR, portraitUrl: getPortraitUrl(charR.id), vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
       matchInfo: {
-        header: m.isTitle ? '🏆 TITLE MATCH' : `MATCH ${idx + 1}`,
+        header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : `MATCH ${idx + 1}`,
         subHeader: `${charL.name} vs ${charR.name}`,
         matchNum: idx + 1,
         totalMatches: sp.validMatches.length,
@@ -1483,6 +1719,9 @@ const App = {
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
+    // BGM: Play jingle based on title outcome
+    const hadTitleChange = validMatches.some((m, i) => m.isTitle && results[i] && results[i].winner !== 'draw');
+    Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
     renderShowResult(results, injuryResults);
   },
 
@@ -1493,6 +1732,7 @@ const App = {
     if (!resultOverlay || !resultOverlay.classList.contains('active') || G.weekPhase !== 'showExec') return;
     App._closingShowResult = true;
     Audio.play('coin');
+    Audio.bgm.play('management');
     resultOverlay.classList.remove('active');
     // v0.96: Show injury popups
     const injuries = App._lastInjuries || [];
@@ -1510,7 +1750,7 @@ const App = {
       const champ = G.roster.find(c => c.id === newChampId);
       if (champ) {
         setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
-          message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新世界チャンピオンに！` }), injuries.length * 100 + 50);
+          message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新団体王者に！` }), injuries.length * 100 + 50);
       }
     }
     const result = Engine.tickWeek(G);
@@ -1526,6 +1766,7 @@ const App = {
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
+    App.checkTitleEstablishment();
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
     if (App._tryAutoAdvance()) { App._closingShowResult = false; return; }
     showScreen('week');
@@ -1549,6 +1790,7 @@ const App = {
       G = { ...advResult.state, gameLog: [...G.gameLog, ...advResult.events] };
       if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
       App.checkSurvivalUpdate();
+      App.checkTitleEstablishment();
       sessionRng = Engine.rng.create(G.rngSeed);
       Storage.autoSave();
       showScreen('week');
@@ -1579,6 +1821,7 @@ const App = {
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
+    App.checkTitleEstablishment();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
@@ -1607,8 +1850,10 @@ const App = {
     }
     // v0.97: Update survival gauge
     App.checkSurvivalUpdate();
+    App.checkTitleEstablishment();
     sessionRng = Engine.rng.create(G.rngSeed);
     Storage.autoSave();
+    Audio.bgm.playForState(); // BGM: switch on season transitions
     refreshAll();
   },
 
@@ -1638,6 +1883,20 @@ const App = {
         detail: '💪 これからは成長フェーズです。更なる高みを目指しましょう！',
         tone: 'gold'
       }), 200);
+    }
+  },
+
+  // v1.0: Title establishment check
+  checkTitleEstablishment() {
+    if (G.titleEstablished) return;
+    if (Engine.title.checkTitleEstablishment(G)) {
+      G = { ...G, titleEstablished: true };
+      setTimeout(() => showEventPopup({
+        type: 'generic', emoji: '🏆', name: '団体王座 設立！',
+        message: '団体の実績が認められ、団体王座を設立できるようになりました！',
+        detail: '🎖️ 興行で「初代王者決定戦」を組んで、初代チャンピオンを決めましょう！',
+        tone: 'gold'
+      }), 300);
     }
   }
 };

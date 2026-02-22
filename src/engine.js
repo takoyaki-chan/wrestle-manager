@@ -535,7 +535,7 @@ const Engine = {
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
         ? `🏆 王座交代！ ${c?.name} が新チャンピオンに！（前王者: ${prev.name}）`
-        : `🏆 ${c?.name} が初代チャンピオンに戴冠！`;
+        : `🏆 ${c?.name} が初代団体王者に戴冠！`;
       return { titles: newTitles, roster: newRoster, msg };
     },
     // Returns { titles, roster, msg }
@@ -555,14 +555,19 @@ const Engine = {
         return updated;
       });
       const c = G.roster.find(r => r.id === champId);
-      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が王座${newDefenses}度目の防衛成功！` };
+      return { titles: newTitles, roster: newRoster, msg: `🛡️ ${c?.name} が団体王座${newDefenses}度目の防衛成功！` };
     },
     // Returns { titles, msg }
     validateChampion(G) {
       if (G.titles.world.championId && !G.roster.find(c => c.id === G.titles.world.championId)) {
-        return { titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } }, msg: '🏆 王座剥奪: チャンピオンが団体を離脱したため王座は空位に' };
+        return { titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } }, msg: '🏆 王座返上: チャンピオンが団体を離脱したため王座は空位に' };
       }
       return { titles: G.titles, msg: null };
+    },
+    // v1.0: Check if title can be established (興行3回+ 人気15+ ロスター5人+)
+    checkTitleEstablishment(G) {
+      if (G.titleEstablished) return false; // already established
+      return G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5;
     }
   },
 
@@ -2592,6 +2597,7 @@ const Engine = {
       heatScore: 0,
       matchHistory: [],
       titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
+      titleEstablished: false, // v1.0: 団体王座は条件達成後に解禁
       rivalries: {},
       coaches: [],
       availableCoaches: ALL_COACHES.map(c => c.id),
@@ -2625,12 +2631,16 @@ const Engine = {
       // v0.96: Mission system
       missionEnabled: true,
       missionsCompleted: [],
+      missionNewClears: [], // v1.0: pending celebration items
       // v0.97: Survival gauge
       survivalCleared: false,
       survivalProfitStreak: 0,
       survivalMilestones: [],
       survivalClearWeek: null,
       survivalClearSeason: null,
+      // v1.0: Rolling 4-week net (replaces profit streak for graduation)
+      recentWeeklyNet: [0, 0, 0, 0],
+      rollingNet4Count: 0,
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;

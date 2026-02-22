@@ -2,6 +2,8 @@ function refreshTopBar() {
   // Audio mute button sync
   const muteBtn = document.getElementById('muteBtn');
   if (muteBtn) muteBtn.textContent = Audio.muted ? '🔇' : '🔊';
+  const bgmMuteBtn = document.getElementById('bgmMuteBtn');
+  if (bgmMuteBtn) bgmMuteBtn.textContent = Audio.bgmMuted ? '🎵❌' : '🎵';
   // Hide nav during draft
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (G.weekPhase === 'draft') ? 'none' : '';
@@ -546,11 +548,13 @@ function renderWeekScreen() {
           <span class="survival-stat-label">資金状況</span>
         </div>`;
       }
-      // Profit streak
-      const streak = G.survivalProfitStreak || 0;
+      // Rolling 4-week net (monthly profit indicator)
+      const buf = G.recentWeeklyNet || [0,0,0,0];
+      const rollingSum = buf.reduce((a,b) => a+b, 0);
+      const r4count = G.rollingNet4Count || 0;
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${streak >= 4 ? '#2ecc71' : streak > 0 ? '#f1c40f' : 'var(--text-dim)'}">${streak}/4週</span>
-        <span class="survival-stat-label">連続黒字</span>
+        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${rollingSum}万</span>
+        <span class="survival-stat-label">月次収支(4週)</span>
       </div>`;
       // Weekly expense
       html += `<div class="survival-stat">
@@ -615,14 +619,17 @@ function renderWeekScreen() {
         html += `<div class="mission-category">${PHASE_LABELS[phase] || ''}</div>`;
         for (const m of missions) {
           const isNew = m.done && !m.wasCompleted;
-          html += `<div class="mission-item">
+          const pendingClear = isNew || (G.missionNewClears || []).includes(m.id);
+          const itemCls = pendingClear ? 'mission-item new-clear' : 'mission-item';
+          const clickHandler = pendingClear ? `onclick="dismissMissionClear('${m.id}',this)"` : '';
+          html += `<div class="${itemCls}" ${clickHandler}>
             <div class="mission-check ${m.done ? 'done' : 'pending'}">${m.done ? '✓' : ''}</div>
             <div class="mission-body">
               <div class="mission-name ${m.done ? 'done' : ''}">${m.icon} ${m.name}</div>
               ${!m.done ? `<div class="mission-desc">${m.desc}</div>` : ''}
             </div>
-            ${!m.done && m.screen ? `<span class="mission-goto" onclick="gotoScreen('${m.screen}')">→ 開く</span>` : ''}
-            ${isNew ? '<span class="mission-new">NEW</span>' : ''}
+            ${!m.done && m.screen ? `<span class="mission-goto" onclick="event.stopPropagation();gotoScreen('${m.screen}')">→ 開く</span>` : ''}
+            ${pendingClear ? '<span class="mission-clear-hint">tap!</span>' : ''}
           </div>`;
         }
       }
@@ -699,7 +706,7 @@ function renderWeekScreen() {
     html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート</h3>`;
     html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
     const settleChamp = getWorldChampion();
-    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 世界王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
+    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 団体王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
 
     // v1.0: Aggregate monthly finance from buffer
     const monthlyDetails = {};
@@ -736,10 +743,12 @@ function renderWeekScreen() {
     const f = G.weeklyFinance;
     if (!G.survivalCleared && f.net !== undefined) {
       const sPhase = Survival.getPhase(G);
-      const streak = G.survivalProfitStreak || 0;
+      const rollingBuf = G.recentWeeklyNet || [0,0,0,0];
+      const rollingNet = rollingBuf.reduce((a,b) => a+b, 0);
+      const r4c = G.rollingNet4Count || 0;
       if (monthNet >= 0) {
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);font-size:11px;color:#2ecc71">
-          ⛽ 月間黒字！${streak > 0 ? ` 連続黒字${streak}週目` : ''}${streak >= 3 ? ' 🔥' : ''}${streak >= 4 && G.funds >= 3000 ? ' — クリアまであと少し！' : ''}
+          ⛽ 月間黒字！${rollingNet >= 0 ? ` 月次黒字${r4c}回達成` : ''}${r4c >= 1 ? ' 🔥' : ''}${r4c >= 2 && G.funds >= 3000 ? ' — クリア間近！' : ''}
         </div>`;
       } else {
         const sWeeks = Survival.weeksUntilBankrupt(G);
@@ -1082,8 +1091,9 @@ function renderShowPrep() {
     const champId = G.titles.world.championId;
     const hasChamp = champId && (curL === champId || curR === champId);
     const isVacant = !champId;
-    const canTitle = hasChamp || (isVacant && curL > 0 && curR > 0);
+    const canTitle = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
     const isTitle = G.showCard[i].isTitle || false;
+    const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
 
     html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px">
@@ -1102,7 +1112,8 @@ function renderShowPrep() {
       </div>
       <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 80) : ''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
-        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${isVacant ? '王座決定戦' : 'タイトル戦'}</label>` : ''}
+        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
+        ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
       </div>
     </div>`;
@@ -1266,58 +1277,86 @@ function renderRanking() {
   });
   html += '</table>';
 
-  // Org detail cards
+  // Org detail cards — unified by ranking order
+  const rankFighterCount = { 1: 5, 2: 4, 3: 3, 4: 2 };
   html += '<div style="margin-top:20px;display:grid;gap:12px">';
-  RIVAL_ORGS.forEach(org => {
-    const aiData = G.aiOrgs && G.aiOrgs[org.id];
-    if (!aiData) return;
-    const roster = aiData.roster;
-    const rEntry = rankings.find(r => r.orgId === org.id);
-    const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
-    const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 5);
+  rankings.forEach(r => {
+    const isPlayer = r.orgId === 'player';
+    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
+    const topCount = rankFighterCount[r.rank] || 2;
 
-    html += `<div style="padding:14px;background:${org.color}08;border:1px solid ${org.color}30;border-radius:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:16px;font-weight:700;color:${org.color}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span></span>
-        <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
-      </div>
-      <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
-      <div style="font-size:13px;margin-top:10px">
-        <span style="color:var(--text-dim)">主力:</span>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-        ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
+    if (isPlayer) {
+      // Player org card
+      const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
+      const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
+      // Put ace first if designated
+      let topFighters = sorted.slice(0, topCount);
+      if (G.aceDesignation) {
+        const aceIdx = sorted.findIndex(c => c.id === G.aceDesignation);
+        if (aceIdx > 0 && aceIdx < sorted.length) {
+          topFighters = [sorted[aceIdx], ...sorted.filter(c => c.id !== G.aceDesignation)].slice(0, topCount);
+        }
+      }
+      html += `<div style="padding:14px;background:rgba(212,168,67,0.06);border:2px solid rgba(212,168,67,0.5);border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:16px;font-weight:700;color:var(--gold)">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:rgba(212,168,67,0.2);color:var(--gold);padding:2px 8px;border-radius:3px;border:1px solid rgba(212,168,67,0.4);margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${G.orgPop}</span>
         </div>
-      </div>
-      ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
-        <details style="margin-top:10px">
-          <summary style="font-size:13px;color:var(--gold);cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
-            ${roster.map(f => {
-              const fee = Engine.transfer.calcFee(f, org);
-              const canAfford = G.funds >= fee;
-              return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;width:120px;text-align:center">
-                ${portraitImg(f.id, 100)}
-                <span>${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span>
-                <span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span>
-                <span style="color:${canAfford ? '#2ecc71' : '#e17055'};font-size:12px;font-weight:700">${fee}万</span>
-                <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:11px;padding:4px 10px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:4px;width:100%" ${canAfford ? '' : 'disabled'}>獲得</button>
-              </div>`;
-            }).join('')}
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}</div>
+        <div style="font-size:13px;margin-top:10px">
+          <span style="color:var(--text-dim)">主力:</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
+          ${topFighters.map(f => {
+            const isAce = G.aceDesignation === f.id;
+            const isChamp = G.titles?.world?.championId === f.id;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isAce ? ' ⭐エース' : ''}${isChamp ? ' 👑王者' : ''}</span></div>`;
+          }).join('')}
           </div>
-        </details>
-      ` : ''}
-    </div>`;
+        </div>
+      </div>`;
+    } else if (org) {
+      // AI org card
+      const aiData = G.aiOrgs && G.aiOrgs[org.id];
+      if (!aiData) return;
+      const roster = aiData.roster;
+      const rEntry = rankings.find(re => re.orgId === org.id);
+      const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
+      const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, topCount);
+
+      html += `<div style="padding:14px;background:${org.color}08;border:1px solid ${org.color}30;border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:16px;font-weight:700;color:${org.color}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${org.color}20;color:${org.color};padding:2px 8px;border-radius:3px;border:1px solid ${org.color}40;margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
+        <div style="font-size:13px;margin-top:10px">
+          <span style="color:var(--text-dim)">主力:</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
+          ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
+          </div>
+        </div>
+        ${TRANSFER_CONFIG.windows.includes(G.week) && (G.transfersThisSeason || 0) < TRANSFER_CONFIG.playerPoachLimit ? `
+          <details style="margin-top:10px">
+            <summary style="font-size:13px;color:var(--gold);cursor:pointer">🤝 引き抜き候補を見る（残り${TRANSFER_CONFIG.playerPoachLimit - (G.transfersThisSeason || 0)}枠）</summary>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
+              ${roster.map(f => {
+                const fee = Engine.transfer.calcFee(f, org);
+                const canAfford = G.funds >= fee;
+                return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;width:120px;text-align:center">
+                  ${portraitImg(f.id, 100)}
+                  <span>${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span>
+                  <span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span>
+                  <span style="color:${canAfford ? '#2ecc71' : '#e17055'};font-size:12px;font-weight:700">${fee}万</span>
+                  <button onclick="playerPoachFighter('${org.id}',${f.id})" style="font-size:11px;padding:4px 10px;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:4px;width:100%" ${canAfford ? '' : 'disabled'}>獲得</button>
+                </div>`;
+              }).join('')}
+            </div>
+          </details>
+        ` : ''}
+      </div>`;
+    }
   });
   html += '</div>';
-
-  // Player org summary
-  html += `<div style="margin-top:16px;padding:12px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:6px">
-    <div style="font-weight:700;color:var(--gold);margin-bottom:8px">🏠 ${G.orgName || 'プレイヤー団体'}</div>
-    <div style="font-size:11px;color:var(--text-sub)">
-      所属: ${G.roster.length}名 ｜ 平均OVR: ${G.roster.length ? Math.round(G.roster.reduce((s,c)=>s+ov(c),0)/G.roster.length) : 0}
-      ｜ 団体人気: ${G.orgPop} ｜ エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}
-    </div>
-  </div>`;
 
   // v0.95: Season History
   if (G.seasonHistory && G.seasonHistory.length > 0) {

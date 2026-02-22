@@ -588,7 +588,7 @@ function showFighterPopup(fighterId, source) {
         timeline.push({
           sort: 99999, season: G.season, week: G.week,
           icon: '王', color: 'var(--gold)',
-          text: `現世界王者（${G.titles.world.defenses}度防衛中）`,
+          text: `現団体王者（${G.titles.world.defenses}度防衛中）`,
           detail: '現在進行中',
           isTitle: true
         });
@@ -667,7 +667,7 @@ function showFighterPopup(fighterId, source) {
               <div style="font-size:11px;color:var(--text-dim)">タイトル戦 敗北</div>
             </div>
           </div>
-          ${isChamp ? `<div style="padding:10px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);border-radius:6px;font-size:14px;color:var(--gold);font-weight:700;text-align:center">👑 現世界王者 — ${G.titles.world.defenses}度防衛中</div>` : ''}
+          ${isChamp ? `<div style="padding:10px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);border-radius:6px;font-size:14px;color:var(--gold);font-weight:700;text-align:center">👑 現団体王者 — ${G.titles.world.defenses}度防衛中</div>` : ''}
         </div>`;
       }
 
@@ -864,7 +864,7 @@ function autoFillCard() {
     if (!right) break;
     used.add(right.id);
     const hasChamp = champId && (left.id === champId || right.id === champId);
-    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp};
+    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp && G.titleEstablished};
   }
   G = { ...G, showCard: card };
 }
@@ -874,6 +874,7 @@ function onCardSelect(slotIndex, side, newId) {
 }
 
 function toggleTitle(slotIndex) {
+  if (!G.titleEstablished) { alert('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）'); return; }
   const m = G.showCard[slotIndex];
   const champId = G.titles.world.championId;
   if (!champId && !m.isTitle) {
@@ -899,6 +900,18 @@ function mqStars(mq) {
 
 // (applyMQPopularity / applyShowPopularity moved to Engine — no longer needed here)
 
+// v1.0: Mission clear celebration — tap to dismiss
+function dismissMissionClear(missionId, el) {
+  Audio.play('fanfare');
+  el.classList.remove('new-clear');
+  el.classList.add('clearing');
+  // Remove from pending clears
+  const pending = (G.missionNewClears || []).filter(id => id !== missionId);
+  G = { ...G, missionNewClears: pending };
+  // After animation, refresh
+  setTimeout(() => { refreshAll(); }, 550);
+}
+
 // Show prep entry point (routes through App for state changes)
 function startShowPrep() {
   if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
@@ -916,6 +929,7 @@ function startShowPrep() {
       ? [] : [...G.showCard]
   };
   if (G.showCard.length === 0) autoFillCard();
+  Audio.bgm.play('management');
   showScreen('show');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => { if (b.textContent.includes('興行準備')) b.classList.add('active'); });
@@ -1267,6 +1281,8 @@ function showScreen(id, evt) {
   const btn = t?.closest ? t.closest('.nav-btn') : t;
   if (btn && btn.classList) btn.classList.add('active');
   // v0.9: Auto-render screens that need fresh data
+  // BGM: Restore appropriate BGM when leaving show screens
+  if (id !== 'show' && G.weekPhase !== 'showExec') Audio.bgm.playForState();
   if (id === 'ranking') renderRanking();
   if (id === 'roster') renderRoster();
   if (id === 'coach') renderCoach();

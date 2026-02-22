@@ -537,7 +537,7 @@ const INJURY_TABLE = [
 
 // Title System
 const TITLES = [
-  {id:'world', name:'世界王座', mqBonus:15, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+  {id:'world', name:'団体王座', mqBonus:15, popBonus:3, attendBonus:1.15, emoji:'🏆'}
 ];
 
 // Rivalry System
