@@ -1450,7 +1450,22 @@ function renderMatchPreview() {
     }
   });
   // If all resolved after cleanup, finalize immediately
-  if (sp.results.every(r => r !== null)) { App.finalizeShow(); return; }
+  if (sp.results.every(r => r !== null)) {
+    try { App.finalizeShow(); } catch(e) {
+      console.error('finalizeShow error:', e);
+      // Show recovery UI instead of freezing
+      const overlay = document.getElementById('showResultOverlay');
+      const box = document.getElementById('showResultBox');
+      box.innerHTML = `<div class="show-result-title">エラー</div>
+        <div style="text-align:center;color:var(--text-sub);margin-bottom:16px">興行結果の処理中にエラーが発生しました。<br><span style="font-size:11px;color:var(--text-dim)">${e.message}</span></div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-gold" onclick="try{App.finalizeShow()}catch(e){alert('再試行失敗: '+e.message)}">🔄 再試行</button>
+          <button class="btn" style="background:var(--bg-mid);color:var(--text-sub)" onclick="App.skipAllMatches()">⏩ スキップで確定</button>
+        </div>`;
+      overlay.classList.add('active');
+    }
+    return;
+  }
 
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');

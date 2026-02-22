@@ -1761,6 +1761,11 @@ const App = {
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
+    // Show escape button after 8 seconds (safety net if iframe gets stuck)
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
     // Send match data to iframe (avoid contentDocument — causes SecurityError on file://)
     const iframe = document.getElementById('battleIframe');
     const msg = {
@@ -1781,15 +1786,20 @@ const App = {
       sent = true;
       iframe.contentWindow.postMessage(msg, '*');
     };
-    // Reload iframe to ensure clean state, then send on load
-    iframe.onload = () => setTimeout(sendOnce, 150);
-    iframe.src = iframe.src; // force reload
-    // Fallback: also try after a delay in case onload already fired
-    setTimeout(sendOnce, 600);
+    // Reload iframe with cache-busting param to guarantee fresh load
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
+    iframe.src = baseSrc + '?t=' + Date.now();
+    // Fallback: retry if onload was missed
+    setTimeout(sendOnce, 800);
   },
 
   // Receive result from battle engine
   receiveBattleResult(data) {
+    // Hide escape button
+    clearTimeout(App._escBtnTimer);
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
     // War context: route to war handler
     const wp = App._warPreview;
     if (wp && wp.currentWatching >= 0) {
@@ -1800,6 +1810,8 @@ const App = {
     const sp = App._showPreview;
     if (!sp || sp.currentWatching < 0) return;
     const idx = sp.currentWatching;
+    // Guard: ignore duplicate results (e.g. double-click CLOSE)
+    if (sp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; sp.currentWatching = -1; return; }
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
@@ -1821,6 +1833,27 @@ const App = {
     try { Audio.play('coin'); } catch(e) {}
     renderMatchPreview();
     if (sp.results.every(r => r !== null)) App.finalizeShow();
+  },
+
+  // Emergency escape from battle engine (if iframe gets stuck)
+  escapeBattle() {
+    clearTimeout(App._escBtnTimer);
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    document.getElementById('battleOverlay').style.display = 'none';
+    // Auto-skip the stuck match
+    const sp = App._showPreview;
+    const wp = App._warPreview;
+    if (sp && sp.currentWatching >= 0) {
+      const idx = sp.currentWatching;
+      sp.currentWatching = -1;
+      if (!sp.results[idx]) App.skipMatch(idx);
+      else { renderMatchPreview(); if (sp.results.every(r => r !== null)) App.finalizeShow(); }
+    } else if (wp && wp.currentWatching >= 0) {
+      const idx = wp.currentWatching;
+      wp.currentWatching = -1;
+      if (!wp.results[idx]) App._skipWarMatch(idx);
+    }
   },
 
   // Skip all remaining matches
@@ -1919,7 +1952,12 @@ const App = {
     }
 
     // MQ popularity
-    results.forEach(r => { roster = Engine.applyMQPopularity(roster, r); });
+    const mainEventIdx = 0; // index 0 = main event in showCard order
+    results.forEach((r, idx) => {
+      const isMainEvent = idx === mainEventIdx;
+      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent);
+      roster = mqPop.roster;
+    });
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
     roster = popResult.roster;
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
@@ -2185,6 +2223,11 @@ const App = {
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
+    // Show escape button after delay
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
 
     const iframe = document.getElementById('battleIframe');
     const msg = {
@@ -2212,9 +2255,10 @@ const App = {
       if (sent) return; sent = true;
       iframe.contentWindow.postMessage(msg, '*');
     };
-    iframe.onload = () => setTimeout(sendOnce, 150);
-    iframe.src = iframe.src;
-    setTimeout(sendOnce, 600);
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
+    iframe.src = baseSrc + '?t=' + Date.now();
+    setTimeout(sendOnce, 800);
   },
 
   // Skip a war match (auto-resolve)
@@ -2258,9 +2302,14 @@ const App = {
 
   // Receive battle engine result for war match
   _receiveWarBattleResult(data) {
+    clearTimeout(App._escBtnTimer);
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
     const wp = App._warPreview;
     if (!wp || wp.currentWatching < 0) return;
     const idx = wp.currentWatching;
+    // Guard: ignore duplicate results
+    if (wp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; wp.currentWatching = -1; return; }
     const m = wp.card[idx];
     wp.results[idx] = {
       playerFighter: m.playerFighter, aiFighter: m.aiFighter,
