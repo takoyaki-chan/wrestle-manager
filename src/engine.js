@@ -1027,6 +1027,113 @@ const Engine = {
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
+    // ── Roster Randomization: assign ALL_CHARS to S/A/B/FA/dormant ──
+    initRandomRoster(rng) {
+      const cfg = ROSTER_CFG;
+      // Step 1: Compute potTotal for all characters
+      const chars = ALL_CHARS.map(c => {
+        const potTotal = (c.pot.pw||0) + (c.pot.sp||0) + (c.pot.te||0) + (c.pot.st||0) + (c.pot.mn||0);
+        let tierClass;
+        if (potTotal >= cfg.superEliteThreshold) tierClass = 'superElite';
+        else if (potTotal >= cfg.eliteThreshold) tierClass = 'elite';
+        else tierClass = 'other';
+        return { id: c.id, potTotal, tierClass, group: CHAR_GROUP[c.id] || 'other' };
+      });
+
+      // Step 2: Super-elite → S級確定
+      const superElites = chars.filter(c => c.tierClass === 'superElite');
+      const remaining = chars.filter(c => c.tierClass !== 'superElite');
+
+      // Step 3: Shuffle remaining with seeded RNG
+      const shuffled = seededShuffle(remaining, rng);
+
+      // Helper: weighted pick with series bonus
+      // potWeight: how strongly potTotal influences selection (0=random, 1=strongly)
+      // minPotTotal: minimum potTotal to be eligible (0=no filter)
+      function weightedPick(pool, orgMembers, count, maxElites, potWeight, minPotTotal) {
+        const result = [];
+        let eliteCount = 0;
+        const available = [...pool];
+        while (result.length < count && available.length > 0) {
+          // Calculate weights
+          const weights = available.map(c => {
+            // Elite cap check
+            if (c.tierClass === 'elite' && eliteCount >= maxElites) return 0;
+            // Minimum potTotal filter
+            if (minPotTotal && c.potTotal < minPotTotal) return 0;
+            // Base weight
+            let w = 1.0;
+            // PotTotal influence (scaled by potWeight parameter)
+            // potTotal range ~440-820, normalize to 0-1 then scale
+            w += (c.potTotal / 800) * (potWeight || 0);
+            // Series bonus: if same group already in org
+            if (c.group !== 'other' && orgMembers.some(m => m.group === c.group)) {
+              w += cfg.seriesBonus;
+            }
+            return w;
+          });
+          // Weighted random selection
+          const totalWeight = weights.reduce((s, w) => s + w, 0);
+          if (totalWeight <= 0) break;
+          let roll = Engine.rng.float(rng) * totalWeight;
+          let picked = -1;
+          for (let i = 0; i < available.length; i++) {
+            roll -= weights[i];
+            if (roll <= 0) { picked = i; break; }
+          }
+          if (picked < 0) picked = 0;
+          const chosen = available.splice(picked, 1)[0];
+          if (chosen.tierClass === 'elite') eliteCount++;
+          result.push(chosen);
+          orgMembers.push(chosen);
+        }
+        // Remove picked from pool
+        const resultIds = new Set(result.map(r => r.id));
+        for (let i = pool.length - 1; i >= 0; i--) {
+          if (resultIds.has(pool[i].id)) pool.splice(i, 1);
+        }
+        return result;
+      }
+
+      // Step 4: Fill S級 (superElites guaranteed + fill remaining slots)
+      const sMembers = [...superElites];
+      const sRemaining = cfg.org_s - superElites.length;
+      // Sort pool by potTotal desc for S-tier (strongest first)
+      shuffled.sort((a, b) => b.potTotal - a.potTotal);
+      const pool = [...shuffled];
+      const sPicked = weightedPick(pool, sMembers, sRemaining, 99, 3.0, 690); // S: strong potTotal bias, 有望以上のみ
+      const sAll = [...superElites.map(c => c.id), ...sPicked.map(c => c.id)];
+
+      // Step 5: Re-shuffle remaining pool for A/B (reset sorting)
+      const poolForAB = seededShuffle(pool, rng);
+      pool.length = 0;
+      pool.push(...poolForAB);
+
+      // Step 6: Fill A級 (max 3 elites — AI_TIER_LIMITS)
+      const aMembers = [];
+      const aPicked = weightedPick(pool, aMembers, cfg.org_a, (AI_TIER_LIMITS.A || {}).maxProdigies || 3, 1.0, 640);
+      const aAll = aPicked.map(c => c.id);
+
+      // Step 7: Fill B級 (max 1 elite — AI_TIER_LIMITS)
+      const bMembers = [];
+      const bPicked = weightedPick(pool, bMembers, cfg.org_b, (AI_TIER_LIMITS.B || {}).maxProdigies || 1, 0.3);
+      const bAll = bPicked.map(c => c.id);
+
+      // Step 8: Remaining → FA (cfg.fa slots) + dormant (rest)
+      const faShuffled = seededShuffle(pool, rng);
+      const faAll = faShuffled.slice(0, cfg.fa).map(c => c.id);
+      const dormantAll = faShuffled.slice(cfg.fa).map(c => c.id);
+
+      // Step 9: Write to ORG_ASSIGN
+      ORG_ASSIGN.org_s = sAll;
+      ORG_ASSIGN.org_a = aAll;
+      ORG_ASSIGN.org_b = bAll;
+      ORG_ASSIGN.free = faAll;
+      ORG_ASSIGN.player = [];
+
+      return { dormantPool: dormantAll };
+    },
+
     initAIOrgs(rng) {
       // Randomly assign org names from pool
       const nameMap = {};
@@ -1045,7 +1152,7 @@ const Engine = {
         const roster = ids.map(id => {
           const t = ALL_CHARS.find(c => c.id === id);
           if (!t) return null;
-          return Engine.rival.makeAIFighter(t, rng, org.id, 16 + Engine.rng.int(rng, 2, 10));
+          return Engine.rival.makeAIFighter(t, rng, org.id, 15 + Engine.rng.int(rng, 0, 18));
         }).filter(Boolean);
         // Sort by OVR desc and boost top fighters' popularity for realism
         roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -1070,8 +1177,8 @@ const Engine = {
         if (nameMap[org.id]) org.name = nameMap[org.id];
       });
     },
-    // Get pool IDs (chars not assigned to any org or free)
-    getPoolIds() {
+    // Get dormant IDs (chars not assigned to any org or free)
+    getDormantIds() {
       const assigned = new Set();
       Object.values(ORG_ASSIGN).forEach(ids => ids.forEach(id => assigned.add(id)));
       return ALL_CHARS.filter(c => !assigned.has(c.id)).map(c => c.id);
@@ -1236,7 +1343,7 @@ const Engine = {
     aiScout(rng, state) {
       const events = [];
       const newAiOrgs = {};
-      let poolIds = [...(state.poolIds || [])];
+      let poolIds = [...(state.dormantPool || [])];
 
       RIVAL_ORGS.forEach(org => {
         const aiData = state.aiOrgs[org.id];
@@ -1296,7 +1403,7 @@ const Engine = {
         newAiOrgs[org.id] = { ...aiData, roster };
       });
 
-      return { aiOrgs: newAiOrgs, poolIds, events };
+      return { aiOrgs: newAiOrgs, dormantPool: poolIds, events };
     },
 
     // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
@@ -1653,7 +1760,7 @@ const Engine = {
     // E3: FA monthly rotation — every 4 weeks, swap 2 out / 2 in
     if (s.week % 4 === 0 && !s.offSeason) {
       let fa = [...(s.freeAgents || [])];
-      let pool = [...(s.poolIds || [])];
+      let pool = [...(s.dormantPool || [])];
       const faRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 9999));
       // Remove up to 2 from FA (random, back to pool)
       const removeCount = Math.min(2, fa.length);
@@ -1678,7 +1785,7 @@ const Engine = {
         pool = pool.filter(id => id !== cid);
       }
       if (removed.length > 0 || added.length > 0) {
-        s = { ...s, freeAgents: fa, poolIds: pool };
+        s = { ...s, freeAgents: fa, dormantPool: pool };
         if (added.length > 0) events.push(`📋 FA市場更新: ${added.map(f => f.name).join('、')}が新規参入`);
       }
     }
@@ -2495,8 +2602,8 @@ const Engine = {
       const candidates = [];
 
       // ALL candidates from pool (existing ALL_CHARS) — no generated chars
-      const poolIds = [...(state.poolIds || [])];
-      const poolShuffled = [...poolIds].sort(() => Engine.rng.float(rng) - 0.5);
+      const dormantIds = [...(state.dormantPool || [])];
+      const poolShuffled = [...dormantIds].sort(() => Engine.rng.float(rng) - 0.5);
 
       const poolMax = Math.min(count, poolShuffled.length);
       const usedFromPool = [];
@@ -2770,17 +2877,17 @@ const Engine = {
         // OffWeek 2: Scout Event (player + AI)
         // AI scouting first
         const scoutResult = Engine.rival.aiScout(rng, s);
-        s = { ...s, aiOrgs: scoutResult.aiOrgs, poolIds: scoutResult.poolIds };
+        s = { ...s, aiOrgs: scoutResult.aiOrgs, dormantPool: scoutResult.dormantPool };
         if (scoutResult.events.length > 0) events.push(...scoutResult.events);
 
         // Player scout event: generate candidates
         const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
         const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
         // Remove used pool IDs
-        const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+        const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
         s = {
           ...s,
-          poolIds: remainingPool,
+          dormantPool: remainingPool,
           scoutCandidates: report.candidates,
           scoutPicks: [],
           scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
@@ -2898,10 +3005,10 @@ const Engine = {
     if (s.week === SCOUT_EVENT_CFG.midseasonWeek && !(s.scoutsThisSeason >= 2)) {
       const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C02));
       const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
-      const remainingPool = (s.poolIds || []).filter(id => !report.usedPoolIds.includes(id));
+      const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
       s = {
         ...s,
-        poolIds: remainingPool,
+        dormantPool: remainingPool,
         scoutCandidates: report.candidates,
         scoutPicks: [],
         scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
@@ -3038,7 +3145,7 @@ const Engine = {
       if (!Array.isArray(picks) || picks.length !== DRAFT_CONFIG.pickCount) return false;
       return picks.every(id => DRAFT_CONFIG.candidates.includes(id));
     },
-    // Complete draft: returns updated state with roster, freeAgents, and poolIds reflecting picks
+    // Complete draft: returns updated state with roster, freeAgents, and dormantPool
     completeDraft(state, picks, rng) {
       if (!Engine.draft.isValidPicks(picks)) return state;
       const rosterIds = [...DRAFT_CONFIG.fixed, ...picks];
@@ -3048,25 +3155,27 @@ const Engine = {
         const t = ALL_CHARS.find(c => c.id === id);
         return Engine.makeChar(t, rng, { age: 16 });
       });
-      // Rejected candidates become free agents (age-appropriate stats)
-      const allFreeIds = [...(ORG_ASSIGN.free || []), ...rejected];
+      // FA = original free pool - draft used (fixed + candidates) + rejected
+      const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
+      const remainingFreeIds = (ORG_ASSIGN.free || []).filter(id => !draftUsedIds.has(id));
+      const allFreeIds = [...remainingFreeIds, ...rejected];
       const freeAgents = allFreeIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = 18 + Engine.rng.int(rng, 0, 8);
         return Engine.makeChar(t, rng, { age });
       });
-      // Update ORG_ASSIGN for ranking/pool calculations
+      // Update ORG_ASSIGN for ranking calculations
       ORG_ASSIGN.player = rosterIds;
       ORG_ASSIGN.free = allFreeIds;
-      // Recalc pool IDs
-      const poolIds = Engine.rival.getPoolIds();
-      const rankings = Engine.ranking.updateRankings({ ...state, roster, freeAgents, poolIds });
+      // dormantPool unchanged during draft
+      const dormantPool = state.dormantPool || Engine.rival.getDormantIds();
+      const rankings = Engine.ranking.updateRankings({ ...state, roster, freeAgents, dormantPool });
       const pRank = Engine.ranking.getPlayerRank(rankings);
       return {
         ...state,
         roster,
         freeAgents,
-        poolIds,
+        dormantPool,
         rankings,
         weekPhase: 'manage',
         draftComplete: true,
@@ -3075,8 +3184,7 @@ const Engine = {
           `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。`,
           `🏢 フリーエージェント${freeAgents.length}名がスカウト可能。`,
           `📊 業界${pRank}位からの挑戦が始まる。`,
-          '🏆 v0.9: ライバル団体システム搭載！',
-          `👑 EMPRESS GRAND (S級) / 💫 NOVA IMPACT (A級) / 🌙 CRESCENT RISE (B級)`,
+          `👑 ${RIVAL_ORGS.find(o=>o.id==='org_s')?.name||'S級'} (S級) / 💫 ${RIVAL_ORGS.find(o=>o.id==='org_a')?.name||'A級'} (A級) / 🌙 ${RIVAL_ORGS.find(o=>o.id==='org_b')?.name||'B級'} (B級)`,
           '⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】',
           '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
         ]
@@ -3089,7 +3197,11 @@ const Engine = {
     seed = seed || (Date.now() ^ 0xDEADBEEF);
     const rng = Engine.rng.create(seed);
 
-    // Generate randomized draft config from seed
+    // Step 1: Randomize roster assignment (S/A/B/FA/dormant)
+    const rosterResult = Engine.rival.initRandomRoster(rng);
+    const dormantPool = rosterResult.dormantPool;
+
+    // Step 2: Generate draft config from FA pool
     generateDraftConfig(seed);
 
     // If draft not skipped, start in draft phase with minimal state
@@ -3103,20 +3215,20 @@ const Engine = {
       return Engine.makeChar(t, rng, { age: 16 });
     });
 
-    // Free agents (from ORG_ASSIGN.free) — age-appropriate stats
-    const freeIds = new Set(ORG_ASSIGN.free || []);
-    const freeAgents = ALL_CHARS.filter(c => freeIds.has(c.id)).map(t => {
+    // Free agents: FA pool minus draft candidates (they're shown separately)
+    const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
+    const freeIds = (ORG_ASSIGN.free || []).filter(id => !draftUsedIds.has(id));
+    const freeAgents = freeIds.map(id => {
+      const t = ALL_CHARS.find(c => c.id === id);
+      if (!t) return null;
       const age = 18 + Engine.rng.int(rng, 0, 8);
       return Engine.makeChar(t, rng, { age });
-    });
+    }).filter(Boolean);
 
     // AI organizations (with randomized names)
     const aiResult = Engine.rival.initAIOrgs(rng);
     const aiOrgs = aiResult.aiOrgs;
     const rivalOrgNames = aiResult.rivalOrgNames;
-
-    // Unrevealed pool
-    const poolIds = Engine.rival.getPoolIds();
 
     // Initial rankings
     const initState = {
@@ -3154,7 +3266,7 @@ const Engine = {
       rankings: [],
       transferLog: [],
       transfersThisSeason: 0,
-      poolIds,
+      dormantPool,
       // v0.9b: Offseason system
       offSeason: false,
       offWeek: 0,

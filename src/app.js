@@ -1069,7 +1069,9 @@ const Storage = {
       if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null };
       if (!G.transferLog) G = { ...G, transferLog: [] };
       if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
-      if (!G.poolIds) G = { ...G, poolIds: Engine.rival.getPoolIds() };
+      // v1.0e: poolIds → dormantPool migration
+      if (G.poolIds && !G.dormantPool) G = { ...G, dormantPool: G.poolIds };
+      if (!G.dormantPool) G = { ...G, dormantPool: Engine.rival.getDormantIds() };
       if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
 
       // v0.9b backward compat: offseason system

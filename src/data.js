@@ -253,25 +253,68 @@ const Traits = {
   }
 };
 
-// v1.1 Draft system: Fixed 2 (random weak) + choose 3 from 6 candidates = 5 starters
-// Draft pools — characters not assigned to any rival org or free pool
-const DRAFT_AVAILABLE_IDS = [4,8,9,15,19,20,21,22,23,24,25,27,32,43,44,50,51,52,53,54,57,58,59,62,63,64,75,77,78,79,80];
-// Weak pool: OVR < 50 (中堅よりも弱め)
-const DRAFT_WEAK_POOL = DRAFT_AVAILABLE_IDS.filter(id => {
-  const c = ALL_CHARS.find(ch => ch.id === id);
-  return c && Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5) < 50;
-});
-// Mid pool: OVR 50-65 (候補向け中堅層)
-const DRAFT_MID_POOL = DRAFT_AVAILABLE_IDS.filter(id => {
-  const c = ALL_CHARS.find(ch => ch.id === id);
-  if (!c) return false;
-  const ovr = Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5);
-  return ovr >= 50 && ovr <= 65;
-});
+// ── Roster Randomization Config (v1.0 roster-randomization-design) ──
+// Slot counts — dormant = ALL_CHARS.length - org_s - org_a - org_b - fa
+const ROSTER_CFG = {
+  org_s: 16,           // S級スロット
+  org_a: 13,           // A級スロット
+  org_b: 10,           // B級スロット
+  fa: 22,              // FA（ドラフト前）— ここから8名がドラフト候補
+  draftFixed: 2,       // ドラフト固定枠（弱めの選手）
+  draftCandidates: 6,  // ドラフト候補数
+  draftPicks: 3,       // プレイヤー選択数
+  superEliteThreshold: 850,  // 超逸材potTotal閾値 → S級確定
+  eliteThreshold: 740,       // 逸材potTotal閾値
+  seriesBonus: 0.3,          // 同シリーズ重み付けボーナス（0〜1、弱め）
+};
+
+// Character group tags — for series weighting (同グループが同団体に少し偏りやすい)
+// School-level for school-based series, series-level for others
+const CHAR_GROUP = {
+  // 学園女子プロレス — 粕田学園高校
+  1:'kasuda',2:'kasuda',3:'kasuda',4:'kasuda',5:'kasuda',6:'kasuda',7:'kasuda',8:'kasuda',9:'kasuda',
+  // 学園女子プロレス — 哲玖国際高校
+  11:'tekkyu',12:'tekkyu',13:'tekkyu',14:'tekkyu',15:'tekkyu',
+  // 学園女子プロレス — 摺出川女学院
+  16:'suridegawa',17:'suridegawa',18:'suridegawa',19:'suridegawa',20:'suridegawa',
+  21:'suridegawa',22:'suridegawa',23:'suridegawa',24:'suridegawa',25:'suridegawa',
+  // 学園女子プロレス — 元砥石川高校
+  26:'mototoishi',27:'mototoishi',
+  // 学園女子プロレス — その他
+  28:'gakuen_other',
+  // 女子高生プロレス — 奥山川高校
+  29:'okuyama',30:'okuyama',31:'okuyama',32:'okuyama',
+  // 女子高生プロレス — 岬浜女子高校
+  33:'misakihama',34:'misakihama',35:'misakihama',36:'misakihama',
+  // 女子高生プロレス — 姫宮女子学院
+  37:'himemiya',38:'himemiya',39:'himemiya',40:'himemiya',
+  // 女子高生プロレス — 三津浜高校
+  41:'mitsuhama',42:'mitsuhama',43:'mitsuhama',44:'mitsuhama',
+  // 団地妻プロレス
+  45:'danchi',46:'danchi',47:'danchi',48:'danchi',49:'danchi',50:'danchi',51:'danchi',52:'danchi',53:'danchi',
+  // OLプロレス
+  54:'ol',55:'ol',56:'ol',57:'ol',58:'ol',59:'ol',81:'ol',82:'ol',83:'ol',84:'ol',86:'ol',
+  // JKになった俺(ry
+  60:'jk_ore',61:'jk_ore',62:'jk_ore',63:'jk_ore',64:'jk_ore',
+  // RQプロレス
+  69:'rq',71:'rq',72:'rq',95:'rq',
+  // 女子大生プロレス
+  68:'joshidai',74:'joshidai',75:'joshidai',85:'joshidai',96:'joshidai',97:'joshidai',
+  // 商店街
+  73:'shotengai',89:'shotengai',90:'shotengai',
+  // マドンナプロレス
+  66:'madonna',67:'madonna',
+  // 常川高校（女子高生プロレス）
+  91:'tokikawa',
+  // その他（個別 — グループボーナスなし）
+  65:'other',70:'other',76:'other',77:'other',78:'other',79:'other',80:'other',
+  87:'other',88:'other',92:'other',93:'other',94:'other',98:'other',99:'other',
+};
+
 // Mutable draft config — initialized by seed in createInitialState
 let DRAFT_CONFIG = {
-  fixed: [80, 44],  // default fallback
-  candidates: [24, 9, 78, 8, 15, 20],
+  fixed: [],
+  candidates: [],
   pickCount: 3,
 };
 // Shuffle helper using seeded RNG
@@ -283,25 +326,35 @@ function seededShuffle(arr, rng) {
   }
   return a;
 }
-// Generate random draft config from seed
+// Generate draft config from FA pool (called after initRandomRoster)
 function generateDraftConfig(seed) {
   const rng = Engine.rng.create(Engine.rng.derive(seed, 0xD1AF7));
-  // Pick 2 fixed from weak pool
-  const weakShuffled = seededShuffle(DRAFT_WEAK_POOL, rng);
-  const fixed = weakShuffled.slice(0, 2);
-  // Pick 6 candidates from remaining available (weak leftovers + mid pool)
+  const faIds = ORG_ASSIGN.free || [];
+  // Compute OVR for each FA character
+  const withOvr = faIds.map(id => {
+    const c = ALL_CHARS.find(ch => ch.id === id);
+    if (!c) return null;
+    const ovr = Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5);
+    return { id, ovr };
+  }).filter(Boolean);
+  // Sort by OVR ascending (weakest first)
+  withOvr.sort((a, b) => a.ovr - b.ovr);
+  // Fixed: 2 from weakest tier (bottom 40%)
+  const weakCutoff = Math.max(2, Math.floor(withOvr.length * 0.4));
+  const weakPool = withOvr.slice(0, weakCutoff);
+  const weakShuffled = seededShuffle(weakPool.map(x => x.id), rng);
+  const fixed = weakShuffled.slice(0, ROSTER_CFG.draftFixed);
+  // Candidates: 6 from mid tier (OVR 40-70 range, excluding fixed)
   const fixedSet = new Set(fixed);
-  const candidatePool = [
-    ...DRAFT_WEAK_POOL.filter(id => !fixedSet.has(id)),
-    ...DRAFT_MID_POOL
-  ];
-  const candShuffled = seededShuffle(candidatePool, rng);
-  const candidates = candShuffled.slice(0, 6);
-  DRAFT_CONFIG = { fixed, candidates, pickCount: 3 };
+  const midPool = withOvr.filter(x => !fixedSet.has(x.id) && x.ovr >= 40 && x.ovr <= 70);
+  // If not enough mid, include some from weak leftovers
+  const candidatePool = midPool.length >= ROSTER_CFG.draftCandidates
+    ? midPool : [...midPool, ...withOvr.filter(x => !fixedSet.has(x.id) && !midPool.some(m => m.id === x.id))];
+  const candShuffled = seededShuffle(candidatePool.map(x => x.id), rng);
+  const candidates = candShuffled.slice(0, ROSTER_CFG.draftCandidates);
+  DRAFT_CONFIG = { fixed, candidates, pickCount: ROSTER_CFG.draftPicks };
   return DRAFT_CONFIG;
 }
-// Legacy compat (used only if draft is skipped, e.g. autosave load)
-const DEFAULT_ROSTER_IDS = [80, 44, 24, 9, 78]; // fallback only
 
 // Portrait mapping: character id → filename key
 // Usage: `image/face_${PORTRAIT[id]}.png`
@@ -734,17 +787,14 @@ const SCOUT_EVENT_CFG = {
 };
 let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
 
-// 80名の団体配分（OVR分布に基づく）
-// Draft candidates (80,44,24,9,78,8,15,20) are assigned dynamically after draft
-// player: determined by draft (fixed 2 + picked 3)
-// empress(16):avgOVR≈74  nova(13):≈72  crescent(10):≈68  free: dynamic  pool: dynamic
-const ORG_ASSIGN = {
+// Mutable org roster assignment — populated by initRandomRoster() at game start
+// dormant = remaining IDs not in any org or free
+let ORG_ASSIGN = {
   player:   [],  // Set after draft
-  org_s:    [1,37,2,33,65,38,66,55,67,34,46,29,60,47,30,42],
-  org_a:    [11,16,45,12,5,17,41,6,13,56,68,48,61],
-  org_b:    [3,18,31,69,28,49,70,35,71,72],
-  free:     [7,26,39,40,36,14,76,73,74],  // base free (draft rejects added later)
-  // pool = remaining IDs (25 chars) — unrevealed until scout events
+  org_s:    [],  // Populated by initRandomRoster
+  org_a:    [],  // Populated by initRandomRoster
+  org_b:    [],  // Populated by initRandomRoster
+  free:     [],  // Populated by initRandomRoster (FA pool)
 };
 
 // Style-based growth allocation (training-spec §3.1)
