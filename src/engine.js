@@ -1947,7 +1947,14 @@ const Engine = {
   // ╚══════════════════════════════════════════════════════════╝
 
   // ── C-1: Ace Designation ──
+  ACE_CONFIG: { popPenalty: 0 },
   ace: {
+    /** Check if ace designation is possible. Returns { ok, isFirst, cost, reason } */
+    canDesignate(state) {
+      const isFirst = !state.aceDesignation;
+      // Spec §6.1: 認定自体は無料
+      return { ok: true, isFirst, cost: 0 };
+    },
     designate(state, fighterId) {
       return { ...state, aceDesignation: fighterId };
     },

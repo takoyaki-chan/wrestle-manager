@@ -1467,7 +1467,25 @@ const App = {
     const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     Audio.play('stamp');
-    const c = Engine.popularity.applyTransferReset(fighter); // v1.0b: Transfer popularity reset
+    // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
+    const normalized = {
+      ...fighter,
+      orgId: 'player',
+      condition: fighter.condition ?? (70 + Math.floor(Math.random() * 19)),
+      schedule: fighter.schedule || 'balance',
+      wins: fighter.wins || 0,
+      losses: fighter.losses || 0,
+      draws: fighter.draws || 0,
+      injury: fighter.injury || null,
+      seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+      careerSeasons: fighter.careerSeasons || 0,
+      intensive: fighter.intensive ?? false,
+      intensiveWeeks: fighter.intensiveWeeks || 0,
+      lastMatchResult: fighter.lastMatchResult || null,
+      losingStreak: fighter.losingStreak || 0,
+      preInjuryPop: fighter.preInjuryPop ?? null
+    };
+    const c = Engine.popularity.applyTransferReset(normalized); // v1.0b: Transfer popularity reset
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
