@@ -128,6 +128,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .portrait-match{border-radius:10px;width:48px;height:48px;object-fit:cover;border:2.5px solid rgba(255,255,255,0.12)}
 .portrait-match.winner{border-color:var(--gold);box-shadow:0 0 10px rgba(212,168,67,0.5)}
 .portrait-match.loser{opacity:0.6;filter:grayscale(0.3)}
+/* Monitor/noise effect wrapper for portraits */
+.monitor-wrap{position:relative;display:inline-block;overflow:hidden;border-radius:10px}
+.monitor-wrap img{display:block}
+.monitor-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 5px);
+  box-shadow:inset 0 0 12px rgba(0,0,0,0.25)}
+.monitor-wrap-sm::after{background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);
+  box-shadow:inset 0 0 8px rgba(0,0,0,0.2)}
 @keyframes heat-pulse{0%,100%{text-shadow:0 0 4px currentColor}50%{text-shadow:0 0 12px currentColor,0 0 20px rgba(225,112,85,0.4)}}
 @keyframes heat-blaze{0%,100%{text-shadow:0 0 8px currentColor,0 0 20px rgba(214,48,49,0.5);transform:scale(1)}50%{text-shadow:0 0 16px currentColor,0 0 30px rgba(214,48,49,0.7);transform:scale(1.05)}}
 .heat-pulse{animation:heat-pulse 2s ease-in-out infinite}

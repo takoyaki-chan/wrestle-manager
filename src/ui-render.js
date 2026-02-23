@@ -1324,7 +1324,7 @@ function renderRanking() {
           ${topFighters.map(f => {
             const isAce = G.aceDesignation === f.id;
             const isChamp = G.titles?.world?.championId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isAce ? ' ⭐エース' : ''}${isChamp ? ' 👑王者' : ''}</span></div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isAce ? ' ⭐エース' : ''}${isChamp ? ' 👑王者' : ''}</span></div>`;
           }).join('')}
           </div>
         </div>
@@ -1348,18 +1348,18 @@ function renderRanking() {
         <div style="font-size:13px;margin-top:10px">
           <span style="color:var(--text-dim)">主力:</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 100)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
+          ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
           </div>
         </div>
         <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">📋 全選手を見る（${roster.length}名）</summary>
+          <summary style="font-size:13px;color:${rc};cursor:pointer">📋 選手を引き抜く（${roster.length}名）</summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
             ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
               const fOvr = Engine.util.ov(f);
               const isAce = idx === 0;
               const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(f.id);
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showNegotiatePopup('${org.id}',${f.id})">
-                ${portraitImg(f.id, 48)}
+                <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isAce ? ' <span style="font-size:10px;color:#e74c3c">★エース</span>' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>

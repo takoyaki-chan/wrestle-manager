@@ -1695,7 +1695,7 @@ function executeEvent() {
     return;
   }
 
-  Audio.play('bell');
+  Audio.play('bellx3');
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week));
   const events = [];
   let eventWon = false;

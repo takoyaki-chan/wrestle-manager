@@ -82,204 +82,294 @@ const Audio = (() => {
     src.stop(startTime + duration + 0.05);
   }
 
+  // ── Utility: frequency sweep oscillator ──
+  function oscSweep(f0, f1, type, startTime, duration, gain, dest) {
+    const c = ensure();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, startTime);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), startTime + duration);
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    o.connect(g);
+    g.connect(dest || sfxGain);
+    o.start(startTime);
+    o.stop(startTime + duration + 0.05);
+  }
+
+  // ── Utility: filtered noise variants ──
+  function noiseHP(startTime, duration, gain, hpFreq) {
+    const c = ensure();
+    const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = hpFreq;
+    s.connect(hp); hp.connect(g); g.connect(sfxGain);
+    s.start(startTime); s.stop(startTime + duration + 0.05);
+  }
+
+  function noiseLP(startTime, duration, gain, lpFreq) {
+    const c = ensure();
+    const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = lpFreq;
+    s.connect(lp); lp.connect(g); g.connect(sfxGain);
+    s.start(startTime); s.stop(startTime + duration + 0.05);
+  }
+
+  function noiseBP(startTime, duration, gain, freq, q) {
+    const c = ensure();
+    const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = q || 1;
+    s.connect(bp); bp.connect(g); g.connect(sfxGain);
+    s.start(startTime); s.stop(startTime + duration + 0.05);
+  }
+
+  // ── Utility: bell partial with slow decay (for metallic gong) ──
+  function bellPartial(freq, startTime, duration, gain) {
+    const c = ensure();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, startTime);
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.setTargetAtTime(0.001, startTime, duration * 0.35);
+    o.connect(g);
+    g.connect(sfxGain);
+    o.start(startTime);
+    o.stop(startTime + duration * 1.2);
+  }
+
   // ╔══════════════════════════════════════════════════╗
   // ║  SOUND DEFINITIONS                               ║
   // ╚══════════════════════════════════════════════════╝
   const SFX = {
-    // UI: soft click for navigation
+    // ── UI (NEW) ──
     click() {
       const t = ensure().currentTime;
-      osc(800, 'sine', t, 0.06, 0.15);
-      osc(600, 'sine', t + 0.01, 0.04, 0.08);
+      noiseHP(t, 0.02, 0.08, 4000);
+      osc(900, 'sine', t + 0.01, 0.04, 0.12);
+      osc(1200, 'sine', t + 0.02, 0.03, 0.06);
     },
-
-    // UI: hover / focus expand
     hover() {
       const t = ensure().currentTime;
-      osc(400, 'sine', t, 0.08, 0.06);
-      osc(600, 'sine', t + 0.03, 0.06, 0.08);
+      osc(3200, 'sine', t, 0.025, 0.04);
+      osc(4800, 'sine', t, 0.015, 0.02);
+      noiseHP(t, 0.015, 0.02, 6000);
     },
-
-    // Draft: select candidate (positive pop)
     select() {
       const t = ensure().currentTime;
-      osc(523, 'sine', t, 0.08, 0.2);       // C5
-      osc(659, 'sine', t + 0.06, 0.1, 0.2);  // E5
-      osc(784, 'triangle', t + 0.12, 0.15, 0.12); // G5 shimmer
+      osc(659, 'sine', t, 0.08, 0.15);
+      osc(784, 'sine', t + 0.05, 0.08, 0.15);
+      osc(1047, 'sine', t + 0.10, 0.12, 0.18);
+      osc(1047, 'triangle', t + 0.10, 0.2, 0.06);
+      noiseHP(t + 0.10, 0.06, 0.02, 8000);
     },
-
-    // Draft: deselect (soft descend)
     deselect() {
       const t = ensure().currentTime;
-      osc(600, 'sine', t, 0.06, 0.12);
-      osc(400, 'sine', t + 0.05, 0.08, 0.10);
+      const c = ensure();
+      const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+      o.type = 'triangle'; o.frequency.setValueAtTime(800, t);
+      o.frequency.exponentialRampToValueAtTime(300, t + 0.1);
+      f.type = 'lowpass'; f.frequency.setValueAtTime(4000, t);
+      f.frequency.exponentialRampToValueAtTime(200, t + 0.1);
+      g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      o.connect(f); f.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.15);
+    },
+    error() {
+      const t = ensure().currentTime;
+      const c = ensure();
+      [0, 0.08].forEach(d => {
+        const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+        o.type = 'square'; o.frequency.value = 160;
+        f.type = 'lowpass'; f.frequency.value = 600;
+        g.gain.setValueAtTime(0.07, t + d); g.gain.exponentialRampToValueAtTime(0.001, t + d + 0.06);
+        o.connect(f); f.connect(g); g.connect(sfxGain); o.start(t + d); o.stop(t + d + 0.07);
+      });
+    },
+    save() {
+      const t = ensure().currentTime;
+      noiseHP(t, 0.03, 0.06, 5000);
+      osc(1047, 'sine', t + 0.06, 0.1, 0.1);
+      osc(1319, 'sine', t + 0.12, 0.12, 0.1);
+      osc(1568, 'sine', t + 0.18, 0.2, 0.08);
+      osc(1568, 'triangle', t + 0.18, 0.25, 0.04);
+    },
+    notify() {
+      const t = ensure().currentTime;
+      osc(1047, 'sine', t, 0.08, 0.12);
+      osc(1047, 'triangle', t, 0.06, 0.04);
+      osc(1397, 'sine', t + 0.12, 0.1, 0.12);
+      osc(1397, 'triangle', t + 0.12, 0.08, 0.04);
+    },
+    tick() {
+      const t = ensure().currentTime;
+      noiseHP(t, 0.012, 0.06, 6000);
+      osc(2400, 'sine', t, 0.02, 0.08);
+      osc(1800, 'sine', t + 0.015, 0.025, 0.05);
     },
 
-    // Draft/Season: big confirm / fanfare
+    // ── Events (OLD: fanfare / NEW: rest) ──
     fanfare() {
       const t = ensure().currentTime;
-      osc(523, 'sine', t, 0.15, 0.2);        // C5
-      osc(659, 'sine', t + 0.1, 0.15, 0.2);   // E5
-      osc(784, 'sine', t + 0.2, 0.15, 0.2);   // G5
-      osc(1047, 'sine', t + 0.35, 0.4, 0.25); // C6 (hold)
+      osc(523, 'sine', t, 0.15, 0.2);
+      osc(659, 'sine', t + 0.1, 0.15, 0.2);
+      osc(784, 'sine', t + 0.2, 0.15, 0.2);
+      osc(1047, 'sine', t + 0.35, 0.4, 0.25);
       osc(1047, 'triangle', t + 0.35, 0.5, 0.1);
       noise(t + 0.35, 0.15, 0.04);
     },
-
-    // Week advance: tick forward
-    tick() {
-      const t = ensure().currentTime;
-      osc(1200, 'sine', t, 0.03, 0.1);
-      osc(1400, 'sine', t + 0.03, 0.04, 0.08);
-      noise(t, 0.02, 0.03);
-    },
-
-    // Show: crowd anticipation
     crowd() {
       const t = ensure().currentTime;
-      noise(t, 0.6, 0.12);
-      osc(200, 'sawtooth', t, 0.3, 0.03);
-      osc(150, 'sawtooth', t + 0.1, 0.4, 0.02);
+      noiseLP(t, 0.8, 0.08, 400);
+      noiseBP(t + 0.05, 0.7, 0.06, 1200, 0.5);
+      noiseHP(t + 0.1, 0.5, 0.03, 3000);
+      oscSweep(180, 140, 'sawtooth', t, 0.4, 0.02);
     },
-
-    // Match: bell ring (match start/end)
+    // Bell: metallic gong with rising tail (low partials short, high partials long)
     bell() {
       const t = ensure().currentTime;
-      osc(1200, 'sine', t, 0.5, 0.2);
-      osc(2400, 'sine', t, 0.3, 0.06);
-      osc(3600, 'sine', t, 0.15, 0.03);
+      const base = 420;
+      bellPartial(base * 1.0,  t, 0.3, 0.16);
+      bellPartial(base * 2.32, t, 0.5, 0.11);
+      bellPartial(base * 3.8,  t, 0.7, 0.07);
+      bellPartial(base * 5.1,  t, 0.9, 0.04);
+      bellPartial(base * 6.7,  t, 1.0, 0.025);
+      noiseHP(t, 0.025, 0.07, 5000);
     },
-
-    // Match: big impact hit
+    // Bell x3: match-end gong (カンカンカン)
+    bellx3() {
+      [0, 380, 760].forEach(d => setTimeout(() => { try { SFX.bell(); } catch(e) {} }, d));
+    },
     impact() {
       const t = ensure().currentTime;
-      osc(80, 'sine', t, 0.12, 0.3);
-      osc(60, 'triangle', t, 0.15, 0.15);
-      noise(t, 0.08, 0.2);
+      oscSweep(100, 30, 'sine', t, 0.2, 0.3);
+      oscSweep(80, 20, 'triangle', t, 0.25, 0.15);
+      noise(t, 0.06, 0.25);
+      noiseLP(t, 0.15, 0.12, 300);
+      osc(50, 'sine', t + 0.05, 0.3, 0.1);
     },
-
-    // Result: victory
     victory() {
       const t = ensure().currentTime;
       [523, 659, 784, 1047].forEach((f, i) => {
-        osc(f, 'sine', t + i * 0.08, 0.2, 0.18);
+        osc(f, 'sine', t + i * 0.07, 0.2, 0.15);
+        osc(f * 2, 'sine', t + i * 0.07, 0.15, 0.05);
       });
-      osc(1047, 'triangle', t + 0.32, 0.6, 0.08);
-      noise(t + 0.32, 0.1, 0.03);
+      osc(1047, 'triangle', t + 0.28, 0.6, 0.08);
+      osc(2094, 'sine', t + 0.28, 0.4, 0.04);
+      noiseHP(t + 0.28, 0.15, 0.03, 6000);
     },
-
-    // Result: defeat
     defeat() {
       const t = ensure().currentTime;
-      osc(400, 'sine', t, 0.3, 0.15);
-      osc(350, 'sine', t + 0.15, 0.3, 0.12);
-      osc(300, 'sine', t + 0.3, 0.5, 0.1);
+      osc(392, 'sine', t, 0.35, 0.14);
+      osc(349, 'sine', t + 0.2, 0.35, 0.12);
+      osc(311, 'sine', t + 0.4, 0.6, 0.10);
+      osc(311, 'triangle', t + 0.4, 0.8, 0.04);
+      oscSweep(200, 100, 'sine', t + 0.3, 0.7, 0.03);
     },
-
-    // Money: coin clink
-    coin() {
-      const t = ensure().currentTime;
-      osc(2000, 'sine', t, 0.06, 0.12);
-      osc(2600, 'sine', t + 0.04, 0.08, 0.1);
-      osc(3200, 'sine', t + 0.06, 0.03, 0.05);
-    },
-
-    // Money: spend / loss
-    spend() {
-      const t = ensure().currentTime;
-      osc(500, 'sine', t, 0.08, 0.1);
-      osc(400, 'sine', t + 0.06, 0.08, 0.08);
-    },
-
-    // Sign contract / stamp
-    stamp() {
-      const t = ensure().currentTime;
-      osc(300, 'sine', t, 0.04, 0.15);
-      noise(t, 0.05, 0.1);
-      osc(600, 'sine', t + 0.08, 0.1, 0.12);
-      osc(800, 'sine', t + 0.14, 0.15, 0.1);
-    },
-
-    // Facility upgrade / power up
-    powerup() {
-      const t = ensure().currentTime;
-      for (let i = 0; i < 6; i++) {
-        osc(400 + i * 120, 'sine', t + i * 0.05, 0.12, 0.12);
-      }
-      osc(1200, 'triangle', t + 0.3, 0.3, 0.08);
-    },
-
-    // Championship: grand fanfare
     championship() {
       const t = ensure().currentTime;
-      // Brass-like fanfare
-      [523, 659, 784].forEach((f, i) => osc(f, 'sawtooth', t + i * 0.12, 0.2, 0.05));
-      [1047, 1319, 1568].forEach((f, i) => osc(f, 'sine', t + 0.4 + i * 0.1, 0.25, 0.15));
-      osc(2093, 'sine', t + 0.7, 0.8, 0.12);
-      osc(2093, 'triangle', t + 0.7, 1.0, 0.06);
-      noise(t + 0.7, 0.3, 0.04);
+      [262, 330, 392].forEach((f, i) => {
+        osc(f, 'sawtooth', t + i * 0.1, 0.2, 0.04);
+        osc(f, 'sine', t + i * 0.1, 0.2, 0.12);
+      });
+      [523, 659, 784, 1047].forEach((f, i) => {
+        osc(f, 'sine', t + 0.4 + i * 0.08, 0.25, 0.15);
+        osc(f * 2, 'sine', t + 0.4 + i * 0.08, 0.15, 0.04);
+      });
+      [1047, 1319, 1568, 2093].forEach(f => osc(f, 'sine', t + 0.8, 1.0, 0.1));
+      osc(2093, 'triangle', t + 0.8, 1.2, 0.05);
+      noiseHP(t + 0.8, 0.4, 0.04, 4000);
+      osc(65, 'sine', t + 0.8, 1.0, 0.06);
     },
-
-    // Error: can't do that
-    error() {
-      const t = ensure().currentTime;
-      osc(200, 'square', t, 0.08, 0.08);
-      osc(180, 'square', t + 0.1, 0.08, 0.06);
-    },
-
-    // Save: soft chime
-    save() {
-      const t = ensure().currentTime;
-      osc(880, 'sine', t, 0.1, 0.1);
-      osc(1100, 'sine', t + 0.08, 0.15, 0.1);
-      osc(1320, 'sine', t + 0.16, 0.2, 0.08);
-    },
-
-    // Notification / event trigger
-    notify() {
-      const t = ensure().currentTime;
-      osc(880, 'sine', t, 0.08, 0.12);
-      osc(1100, 'sine', t + 0.1, 0.08, 0.12);
-      osc(880, 'sine', t + 0.2, 0.1, 0.08);
-    },
-
-    // Season end: dramatic
     seasonEnd() {
       const t = ensure().currentTime;
-      osc(440, 'sine', t, 0.3, 0.15);
-      osc(523, 'sine', t + 0.2, 0.3, 0.15);
-      osc(659, 'sine', t + 0.4, 0.3, 0.15);
-      osc(880, 'sine', t + 0.7, 0.8, 0.2);
-      osc(880, 'triangle', t + 0.7, 1.0, 0.08);
+      osc(440, 'sine', t, 0.4, 0.12);
+      osc(523, 'sine', t + 0.25, 0.4, 0.12);
+      osc(659, 'sine', t + 0.5, 0.4, 0.12);
+      osc(880, 'sine', t + 0.8, 1.2, 0.15);
+      osc(880, 'triangle', t + 0.8, 1.5, 0.06);
+      osc(440, 'sine', t + 0.8, 1.5, 0.04);
+      oscSweep(1760, 1720, 'sine', t + 1.0, 1.0, 0.03);
     },
-
-    // Transfer: whoosh in/out
+    war() {
+      const t = ensure().currentTime;
+      oscSweep(200, 60, 'sine', t, 0.08, 0.15);
+      noise(t, 0.04, 0.12);
+      osc(147, 'sawtooth', t + 0.1, 0.2, 0.05);
+      osc(150, 'sawtooth', t + 0.1, 0.2, 0.05);
+      oscSweep(200, 350, 'square', t + 0.25, 0.2, 0.04);
+      noiseHP(t + 0.35, 0.15, 0.06, 2000);
+    },
     transfer() {
       const t = ensure().currentTime;
       const c = ensure();
-      const o = c.createOscillator();
-      const g = c.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(300, t);
-      o.frequency.exponentialRampToValueAtTime(1200, t + 0.15);
-      o.frequency.exponentialRampToValueAtTime(800, t + 0.3);
-      g.gain.setValueAtTime(0.1, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-      o.connect(g);
-      g.connect(sfxGain);
-      o.start(t);
-      o.stop(t + 0.4);
+      const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(200, t);
+      o.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+      o.frequency.exponentialRampToValueAtTime(400, t + 0.3);
+      f.type = 'bandpass'; f.frequency.setValueAtTime(400, t);
+      f.frequency.exponentialRampToValueAtTime(4000, t + 0.15);
+      f.frequency.exponentialRampToValueAtTime(800, t + 0.3);
+      f.Q.value = 2;
+      g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.connect(f); f.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.4);
+      noiseHP(t + 0.05, 0.15, 0.04, 3000);
     },
 
-    // War / rivalry: tension
-    war() {
+    // ── Money (NEW) ──
+    coin() {
       const t = ensure().currentTime;
-      osc(150, 'sawtooth', t, 0.15, 0.06);
-      osc(160, 'sawtooth', t + 0.02, 0.15, 0.06);
-      noise(t, 0.2, 0.08);
-      osc(200, 'square', t + 0.2, 0.1, 0.05);
-      osc(250, 'square', t + 0.3, 0.1, 0.05);
-      osc(300, 'square', t + 0.4, 0.15, 0.06);
+      osc(1200, 'sine', t, 0.08, 0.1);
+      osc(1800, 'sine', t + 0.01, 0.06, 0.08);
+      osc(3600, 'sine', t + 0.02, 0.04, 0.06);
+      osc(5400, 'sine', t + 0.02, 0.02, 0.03);
+      noiseHP(t, 0.015, 0.04, 8000);
+    },
+    spend() {
+      const t = ensure().currentTime;
+      oscSweep(600, 200, 'triangle', t, 0.1, 0.08);
+      noiseHP(t, 0.06, 0.05, 3000);
+      osc(300, 'sine', t + 0.05, 0.08, 0.05);
+    },
+    stamp() {
+      const t = ensure().currentTime;
+      oscSweep(200, 60, 'sine', t, 0.06, 0.15);
+      noiseLP(t, 0.04, 0.12, 500);
+      noiseBP(t + 0.03, 0.08, 0.04, 2000, 2);
+      osc(800, 'sine', t + 0.12, 0.08, 0.1);
+      osc(1000, 'sine', t + 0.17, 0.1, 0.08);
+    },
+    powerup() {
+      const t = ensure().currentTime;
+      const c = ensure();
+      const o = c.createOscillator(), g = c.createGain(), fl = c.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, t);
+      o.frequency.exponentialRampToValueAtTime(1200, t + 0.3);
+      fl.type = 'lowpass'; fl.frequency.setValueAtTime(600, t);
+      fl.frequency.exponentialRampToValueAtTime(6000, t + 0.3);
+      g.gain.setValueAtTime(0.08, t); g.gain.setValueAtTime(0.08, t + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      o.connect(fl); fl.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.5);
+      osc(1200, 'sine', t + 0.3, 0.2, 0.12);
+      osc(1568, 'sine', t + 0.33, 0.2, 0.1);
+      noiseHP(t + 0.3, 0.06, 0.03, 6000);
     }
   };
 
@@ -1877,7 +1967,7 @@ const App = {
       }
       return;
     }
-    try { Audio.play('bell'); } catch(e) {}
+    try { Audio.play('bellx3'); } catch(e) {}
     App.finalizeShow();
   },
 
@@ -2296,7 +2386,7 @@ const App = {
         turns: result.turns || 0
       };
     });
-    Audio.play('bell');
+    Audio.play('bellx3');
     App.finalizeWar();
   },
 
