@@ -1124,126 +1124,6 @@ const Storage = {
       };
       G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
 
-      // v1.0c hotfix: de-duplicate same fighter IDs across roster / FA / AI / scout candidates / dormantPool
-      {
-        const seen = new Set();
-        let removedDupes = 0;
-        const dedupeFighters = (list) => (list || []).filter(f => {
-          if (!f || f.id == null) return false;
-          if (seen.has(f.id)) { removedDupes++; return false; }
-          seen.add(f.id);
-          return true;
-        });
-
-        const roster = dedupeFighters(G.roster);
-        const freeAgents = dedupeFighters(G.freeAgents);
-
-        let aiOrgs = G.aiOrgs;
-        if (aiOrgs) {
-          const nextAi = {};
-          Object.keys(aiOrgs).forEach(orgId => {
-            const od = aiOrgs[orgId] || {};
-            nextAi[orgId] = { ...od, roster: dedupeFighters(od.roster) };
-          });
-          aiOrgs = nextAi;
-        }
-
-        const scoutCandidates = dedupeFighters(G.scoutCandidates || []);
-        const dormantSeen = new Set();
-        const dormantPool = (G.dormantPool || []).filter(id => {
-          if (id == null) return false;
-          if (dormantSeen.has(id)) return false;
-          dormantSeen.add(id);
-          if (seen.has(id)) { removedDupes++; return false; }
-          return true;
-        });
-
-        if (removedDupes > 0) {
-          const log = [...(G.gameLog || []), `🧹 重複データを自動修正（${removedDupes}件）`];
-          G = { ...G, roster, freeAgents, aiOrgs, scoutCandidates, dormantPool, gameLog: log };
-        } else {
-          G = { ...G, roster, freeAgents, aiOrgs, scoutCandidates, dormantPool };
-        }
-      }
-
-      // v1.0c hotfix: repair suspicious age-uniform saves (all roster/FA age 16)
-      // Also applies entry-age stat catch-up (PW/SP/TE/ST) based on normal age start rules.
-      {
-        const rosterAll16 = (G.roster || []).length >= 5 && (G.roster || []).every(c => (c?.age ?? 16) === 16);
-        const faAll16 = (G.freeAgents || []).length >= 3 && (G.freeAgents || []).every(c => (c?.age ?? 16) === 16);
-        let changedAge = 0;
-        let changedStats = 0;
-        const seedBase = G.rngSeed || 42;
-
-        const clampStatToCap = (fighter, stat, value) => {
-          const cap = fighter?.trainCap?.[stat];
-          if (typeof cap === 'number') return Math.max(1, Math.min(cap, value));
-          return Math.max(1, value);
-        };
-
-        const applyAgeRepairWithCatchUp = (c, newAge, saltBase) => {
-          if (!c) return c;
-          const oldAge = (c.age ?? 16);
-          let out = { ...c, age: newAge };
-          if (newAge !== oldAge) changedAge++;
-
-          // Safe stat catch-up for legacy "all age 16" saves:
-          // preserve accumulated progress by adding only the delta between entry-age generated values.
-          if (c.notionValue && newAge > oldAge) {
-            try {
-              const rOld = Engine.rng.create(Engine.rng.derive(seedBase, c.id, saltBase, oldAge, 1));
-              const rNew = Engine.rng.create(Engine.rng.derive(seedBase, c.id, saltBase, newAge, 2));
-              const oldStart = Engine.rival.generateStartValues(rOld, c.notionValue, oldAge);
-              const newStart = Engine.rival.generateStartValues(rNew, c.notionValue, newAge);
-              let localChanged = false;
-              ['pw','sp','te','st'].forEach(stat => {
-                const before = typeof c[stat] === 'number' ? c[stat] : (oldStart[stat] || 1);
-                const delta = (newStart[stat] || before) - (oldStart[stat] || before);
-                if (!delta) return;
-                const after = clampStatToCap(out, stat, Math.round(before + delta));
-                if (after !== before) {
-                  out[stat] = after;
-                  localChanged = true;
-                }
-              });
-              // MN is innate (no age start-value reduction), so leave as-is.
-              if (localChanged) {
-                changedStats++;
-                if (out.assessedValue) {
-                  const avRng = Engine.rng.create(Engine.rng.derive(seedBase, out.id, 999, 116));
-                  const av = Engine.scout.calcAssessedValue(out, avRng, G.season || 1);
-                  out = { ...out, ...av };
-                }
-              }
-            } catch (e) {
-              // fail-safe: age repair should never break loading
-            }
-          }
-          return out;
-        };
-
-        if (rosterAll16) {
-          G = { ...G, roster: G.roster.map(c => {
-            const rr = Engine.rng.create(Engine.rng.derive(seedBase, c.id, 1616));
-            const age = Math.max(16, Engine.util.rollPlayerEntryAge(rr) + (c.careerSeasons || 0));
-            return applyAgeRepairWithCatchUp(c, age, 1616);
-          })};
-        }
-        if (faAll16) {
-          G = { ...G, freeAgents: G.freeAgents.map(c => {
-            const rr = Engine.rng.create(Engine.rng.derive(seedBase, c.id, 1818));
-            const age = 18 + Engine.rng.int(rr, 0, 8) + (c.careerSeasons || 0);
-            return applyAgeRepairWithCatchUp(c, age, 1818);
-          })};
-        }
-        if (changedAge > 0 || changedStats > 0) {
-          const parts = [];
-          if (changedAge > 0) parts.push(`年齢${changedAge}名`);
-          if (changedStats > 0) parts.push(`能力補正${changedStats}名`);
-          G = { ...G, gameLog: [...(G.gameLog || []), `🧹 年齢データを自動補正（${parts.join(' / ')}）`] };
-        }
-      }
-
       // v1.0 migration: fix freeAgents that were created with useNotion:true bug
       // Detect: all 4 physical stats exactly match notionValue (statistically impossible from generateStartValues)
       G = { ...G, freeAgents: G.freeAgents.map(c => {
@@ -1687,13 +1567,6 @@ const App = {
       lastMatchResult: fighter?.lastMatchResult || null,
     });
 
-    const existsAnywhere = (fighterId) => {
-      if (fighterId == null) return false;
-      if (newRoster.some(f => f.id === fighterId)) return true;
-      if (freeAgents.some(f => f.id === fighterId)) return true;
-      return Object.values(aiOrgs || {}).some(org => (org?.roster || []).some(f => f.id === fighterId));
-    };
-
     if (result.result === 'success') {
       if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       Audio.play('stamp');
@@ -1701,21 +1574,13 @@ const App = {
       const signed = { ...cand };
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
-      if (existsAnywhere(signed.id)) {
-        Audio.play('error');
-        candidates = candidates.filter(c => c.id !== candidateId);
-        log.push(`🧹 スカウト候補重複を除去: ${cand.name}`);
-        showEventPopup({ type:'scout', tone:'negative',
-          message:`${cand.name}は既に在籍/市場に存在していたため候補から除外`, detail:'重複候補を自動修正しました' });
-      } else {
-        newRoster.push(normalizeFighterForRoster(signed));
-        newFunds -= result.cost;
-        picks.push(candidateId);
-        candidates = candidates.filter(c => c.id !== candidateId);
-        log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
-        showEventPopup({ type:'scout', tone:'positive',
-          message:`${cand.name}の獲得に成功！`, detail:`契約金: ${result.cost}万 [${tierCfg.label}]` });
-      }
+      newRoster.push(normalizeFighterForRoster(signed));
+      newFunds -= result.cost;
+      picks.push(candidateId);
+      candidates = candidates.filter(c => c.id !== candidateId);
+      log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
+      showEventPopup({ type:'scout', tone:'positive',
+        message:`${cand.name}の獲得に成功！`, detail:`契約金: ${result.cost}万 [${tierCfg.label}]` });
     } else if (result.result === 'lost') {
       Audio.play('error');
       // Lost candidate goes to AI org or freeAgent
@@ -1723,9 +1588,7 @@ const App = {
       const cleanFighter = { ...lostResult.fighter };
       delete cleanFighter._notion; delete cleanFighter._estimate; delete cleanFighter._isSeed;
       delete cleanFighter._hasCompetition; delete cleanFighter._compMultiplier; delete cleanFighter._bidWinRate;
-      if (existsAnywhere(cleanFighter.id)) {
-        log.push(`🧹 競合後の重複候補を破棄: ${cand.name}`);
-      } else if (lostResult.destination === 'aiOrg') {
+      if (lostResult.destination === 'aiOrg') {
         const orgData = aiOrgs[lostResult.orgId];
         if (orgData) {
           aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, normalizeFighterForRoster(cleanFighter)] } };
@@ -1761,20 +1624,12 @@ const App = {
     const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
     // Clean up any remaining candidates (add unacquired to freeAgents pool)
     let freeAgents = [...G.freeAgents];
-    const existingIds = new Set([
-      ...(G.roster || []).map(f => f.id),
-      ...freeAgents.map(f => f.id),
-      ...Object.values(G.aiOrgs || {}).flatMap(org => (org?.roster || []).map(f => f.id))
-    ]);
     (G.scoutCandidates || []).forEach(c => {
       const clean = { ...c };
       delete clean._notion; delete clean._estimate; delete clean._isSeed;
       delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
       // 30% chance unselected candidates become freeAgents
-      if (Math.random() < 0.30 && !existingIds.has(clean.id)) {
-        freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
-        existingIds.add(clean.id);
-      }
+      if (Math.random() < 0.30) freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
     });
     G = {
       ...G, freeAgents, gameLog: log,
@@ -1801,7 +1656,7 @@ const App = {
     const cName = c.name;
     const cId = c.id;
     const newRoster = G.roster.filter((_, i) => i !== idx);
-    const newFA = G.freeAgents.some(f => f.id === c.id) ? [...G.freeAgents] : [...G.freeAgents, c];
+    const newFA = [...G.freeAgents, c];
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
