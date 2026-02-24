@@ -694,6 +694,31 @@ const Engine = {
     checkTitleEstablishment(G) {
       if (G.titleEstablished) return false; // already established
       return G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5;
+    },
+
+    // v1.2: タイトルマッチ12週クールダウン
+    // シーズンをまたいで正確に計算するため絶対週数（ゲーム開始から累計）を使う
+    getAbsWeek(state) {
+      return ((state.season || 1) - 1) * 48 + (state.week || 1);
+    },
+    // Returns { allowed: boolean, weeksLeft: number }
+    canTitleMatch(state) {
+      if (!state.titleEstablished) return { allowed: false, weeksLeft: 0 };
+      const last = state.lastTitleMatchWeek; // 絶対週数 or null
+      if (last == null) return { allowed: true, weeksLeft: 0 };
+      const elapsed = Engine.title.getAbsWeek(state) - last;
+      const weeksLeft = Math.max(0, 12 - elapsed);
+      return { allowed: weeksLeft === 0, weeksLeft };
+    },
+
+    // v1.2: 現在のベルト表示名を返す
+    // worldTitleUnlocked = true（1位達成後）かつ beltDisplayName が設定されていれば改名後の名称を返す。
+    // 改名イベント自体は v1.2 後半で実装予定。
+    getBeltName(state) {
+      if (state.worldTitleUnlocked && state.beltDisplayName) {
+        return state.beltDisplayName;
+      }
+      return '団体王座';
     }
   },
 
@@ -1825,6 +1850,15 @@ const Engine = {
     const validMatches = state.showCard.filter(m => m.left > 0 && m.right > 0);
     if (validMatches.length === 0) return { error: '少なくとも1試合を組んでください' };
 
+    // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
+    const hasTitleSlot = validMatches.some(m => m.isTitle);
+    if (hasTitleSlot) {
+      const cd = Engine.title.canTitleMatch(state);
+      if (!cd.allowed) {
+        return { error: `タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）` };
+      }
+    }
+
     let s = { ...state, totalShows: state.totalShows + 1, weekPhase: 'showExec' };
     let roster = s.roster.map(c => ({ ...c }));
     let rivalries = { ...s.rivalries };
@@ -1917,7 +1951,13 @@ const Engine = {
       if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
     });
 
-    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
+    // v1.2: タイトルマッチ実施時に絶対週数を記録
+    const executedTitleMatch = validMatches.some(m => m.isTitle);
+    const lastTitleMatchWeek = executedTitleMatch
+      ? Engine.title.getAbsWeek(s)
+      : (s.lastTitleMatchWeek ?? null);
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
     return { state: s, results, injuryResults, events };
   },
 
@@ -2959,6 +2999,11 @@ const Engine = {
         // Update rankings
         s.rankings = Engine.ranking.updateRankings(s);
         const pRank = Engine.ranking.getPlayerRank(s.rankings);
+        // v1.2: ランキング1位達成で世界王座解禁フラグを立てる（一方向フラグ）
+        if (pRank === 1 && !s.worldTitleUnlocked) {
+          s.worldTitleUnlocked = true;
+          events.push('🌟 業界1位達成！「団体王座」が世界に向けて開かれた。');
+        }
         events.push(`🏆 シーズン${s.season - 1}最終ランキング: ${pRank}位 / ${s.rankings.length}団体`);
         s.rankings.forEach((r, i) => {
           const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
@@ -3300,6 +3345,10 @@ const Engine = {
       // v1.0: Rolling 4-week net (replaces profit streak for graduation)
       recentWeeklyNet: [0, 0, 0, 0],
       rollingNet4Count: 0,
+      // v1.2: タイトルマッチクールダウン & 世界王座解禁
+      lastTitleMatchWeek: null, // 最後にタイトルマッチを実施した絶対週数（null=未実施）
+      worldTitleUnlocked: false, // ランキング1位達成後に true
+      beltDisplayName: null,    // 将来の改名イベント用（null=デフォルト名「団体王座」）
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;

@@ -1079,7 +1079,10 @@ function renderShowPrep() {
     const champId = G.titles.world.championId;
     const hasChamp = champId && (curL === champId || curR === champId);
     const isVacant = !champId;
-    const canTitle = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
+    // v1.2: 12週クールダウンチェック
+    const cdCheck = Engine.title.canTitleMatch(G); // { allowed, weeksLeft }
+    const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
+    const canTitle = titleEligible && cdCheck.allowed;
     const isTitle = G.showCard[i].isTitle || false;
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
@@ -1101,6 +1104,7 @@ function renderShowPrep() {
       <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 80) : ''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
         ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="G.showCard[${i}].isTitle=this.checked;renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
+        ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="タイトルマッチは12週に1回まで">⏳ 次のタイトルマッチまであと${cdCheck.weeksLeft}週</span>` : ''}
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
       </div>
