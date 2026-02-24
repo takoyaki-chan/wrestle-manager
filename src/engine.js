@@ -95,6 +95,24 @@ const Engine = {
       const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xBE);
       return Engine.util.seededPick(rentals.map(r => r.fighter.id), 10, seed);
     },
+    /**
+     * 全プール（自団体・AI団体・FA・スカウト候補）から占有済み characterDefId を収集する。
+     * FA/スカウト生成時の重複除外および契約確定時の最終チェックに使用。
+     */
+    collectOccupiedCharacterDefIds(state) {
+      const occupied = new Set();
+      // プレイヤーロスター
+      (state.roster || []).forEach(c => occupied.add(c.id));
+      // AI団体ロスター
+      Object.values(state.aiOrgs || {}).forEach(org => {
+        (org.roster || []).forEach(c => occupied.add(c.id));
+      });
+      // FA一覧
+      (state.freeAgents || []).forEach(c => occupied.add(c.id));
+      // スカウト候補一覧（イベント中のみ存在）
+      (state.scoutCandidates || []).forEach(c => occupied.add(c.id));
+      return occupied;
+    },
     isSpecialShow(w) { return w % 12 === 0; },
     isPPV(w) { return w === 48; },
     eff(x) {
@@ -111,15 +129,6 @@ const Engine = {
       const current = stats.reduce((s, k) => s + char[k], 0);
       const cap = stats.reduce((s, k) => s + (char.trainCap ? char.trainCap[k] : (char.pot ? char.pot[k] : char[k])), 0);
       return cap > 0 ? Math.round(current / cap * 100) : 100;
-    },
-    // Initial player roster age spread (avoid all-16 starts)
-    rollPlayerEntryAge(rng) {
-      const r = Engine.rng.float(rng);
-      if (r < 0.30) return 16;
-      if (r < 0.60) return 17;
-      if (r < 0.82) return 18 + Engine.rng.int(rng, 0, 1); // 18-19
-      if (r < 0.95) return 20 + Engine.rng.int(rng, 0, 2); // 20-22
-      return 23 + Engine.rng.int(rng, 0, 2); // 23-25 rare veteran starter
     }
   },
 
@@ -1781,8 +1790,15 @@ const Engine = {
         if (ALL_CHARS.find(c => c.id === r.id)) pool.push(r.id);
       }
       // Add up to 2 from pool to FA
-      const addCount = Math.min(2, pool.length);
-      const shuffledPool = [...pool].sort(() => Engine.rng.float(faRng) - 0.5);
+      // 占有済みID（現在のfa＋ロスター＋AI団体）を収集して重複を防ぐ
+      const faOccupied = new Set(fa.map(f => f.id));
+      (s.roster || []).forEach(c => faOccupied.add(c.id));
+      Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
+      // 直前に除外したIDも除外候補から切り離す（just-removed IDの即再入場を防止）
+      removed.forEach(r => faOccupied.add(r.id));
+      const eligiblePool = pool.filter(id => !faOccupied.has(id));
+      const addCount = Math.min(2, eligiblePool.length);
+      const shuffledPool = [...eligiblePool].sort(() => Engine.rng.float(faRng) - 0.5);
       const added = [];
       for (let i = 0; i < addCount && i < shuffledPool.length; i++) {
         const cid = shuffledPool[i];
@@ -2618,25 +2634,18 @@ const Engine = {
       const candidates = [];
 
       // ALL candidates from pool (existing ALL_CHARS) — no generated chars
-      // Hotfix: exclude IDs already present in any roster / FA / current scout list
-      const occupiedIds = new Set();
-      (state.roster || []).forEach(f => occupiedIds.add(f.id));
-      (state.freeAgents || []).forEach(f => occupiedIds.add(f.id));
-      Object.values(state.aiOrgs || {}).forEach(org => (org?.roster || []).forEach(f => occupiedIds.add(f.id)));
-      (state.scoutCandidates || []).forEach(f => occupiedIds.add(f.id));
-
-      const dormantSeen = new Set();
-      const dormantIds = [...(state.dormantPool || [])].filter(id => {
-        if (dormantSeen.has(id)) return false; // de-dupe pool itself
-        dormantSeen.add(id);
-        return !occupiedIds.has(id);
-      });
+      // occupiedIds: 全プールの占有済みID（重複除外の基準）
+      const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(state);
+      // reservedDefIds: この抽選バッチ内で仮予約済みのID
+      const reservedDefIds = new Set();
+      const dormantIds = [...(state.dormantPool || [])].filter(id => !occupiedIds.has(id));
       const poolShuffled = [...dormantIds].sort(() => Engine.rng.float(rng) - 0.5);
 
       const poolMax = Math.min(count, poolShuffled.length);
       const usedFromPool = [];
       for (let i = 0; i < poolMax; i++) {
         const cid = poolShuffled[i];
+        if (reservedDefIds.has(cid)) continue; // 同一バッチ内の仮予約済みを除外
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template) continue;
         // Create fighter from template
@@ -2650,6 +2659,7 @@ const Engine = {
         if (avgNotion >= 75) fighter._isSeed = true;
         candidates.push(fighter);
         usedFromPool.push(cid);
+        reservedDefIds.add(cid); // 同一バッチ内の仮予約
       }
 
       // §4.2 Scout estimates (noisy display values)
@@ -3123,22 +3133,6 @@ const Engine = {
       { min: 115, text: '堅実に育つタイプ', emoji: '🌱', color: '#95a5a6' },
       { min: 0,   text: '未知数',           emoji: '🔮', color: '#9b59b6' },
     ],
-    // Deterministic draft entry age (preview and actual use same value)
-    getPreviewAge(seed, charId) {
-      const rr = Engine.rng.create(Engine.rng.derive(seed || 42, charId, 0xD12A6E));
-      return Engine.util.rollPlayerEntryAge(rr);
-    },
-    // Build draft preview stats using the same age rule as actual joining
-    buildPreviewFromTemplate(t, seed, coachMult) {
-      const age = Engine.draft.getPreviewAge(seed, t.id);
-      const rr = Engine.rng.create(Engine.rng.derive(seed || 42, t.id, 0xD1257A7));
-      const notion = { pw: t.pw, sp: t.sp, te: t.te, st: t.st, mn: t.mn };
-      const vals = Engine.rival.generateStartValues(rr, notion, age);
-      const ovr = Math.round((vals.pw + vals.sp + vals.te + vals.st + vals.mn) / 5);
-      const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
-      const coachEval = Engine.draft.getEvalComment(potOvr, t.id, seed, coachMult || 0);
-      return { ...t, age, pw: vals.pw, sp: vals.sp, te: vals.te, st: vals.st, mn: vals.mn, ovr, coachEval };
-    },
     // Coach-based potential evaluation with variance
     // coachMult: best coach's growthMult (0 = no coach = max variance)
     // variance: no coach ±20, best coach(2.0) ±8
@@ -3154,16 +3148,34 @@ const Engine = {
     // Get candidate info with estimated entry-level OVR for display
     // coachMult: best hired coach's growthMult (0 at draft = max variance)
     getCandidateInfo(seed, coachMult) {
+      const ENTRY_RATIO = 0.60; // age 16 base=0.55 + avg random 0.05
       return DRAFT_CONFIG.candidates.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        return Engine.draft.buildPreviewFromTemplate(t, seed, coachMult);
+        const entryPw = Math.round(t.pw * ENTRY_RATIO);
+        const entrySp = Math.round(t.sp * ENTRY_RATIO);
+        const entryTe = Math.round(t.te * ENTRY_RATIO);
+        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const entryMn = t.mn; // MN is innate, no age reduction
+        const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
+        const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
+        const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
       });
     },
     // Get fixed member info (also entry-level)
     getFixedInfo(seed, coachMult) {
+      const ENTRY_RATIO = 0.60;
       return DRAFT_CONFIG.fixed.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        return Engine.draft.buildPreviewFromTemplate(t, seed, coachMult);
+        const entryPw = Math.round(t.pw * ENTRY_RATIO);
+        const entrySp = Math.round(t.sp * ENTRY_RATIO);
+        const entryTe = Math.round(t.te * ENTRY_RATIO);
+        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const entryMn = t.mn;
+        const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
+        const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
+        const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
       });
     },
     // Validate draft picks
@@ -3179,8 +3191,7 @@ const Engine = {
       // Build roster
       const roster = rosterIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = Engine.draft.getPreviewAge(state.rngSeed || 42, id);
-        return Engine.makeChar(t, rng, { age });
+        return Engine.makeChar(t, rng, { age: 16 });
       });
       // FA = original free pool - draft used (fixed + candidates) + rejected
       const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
@@ -3239,8 +3250,7 @@ const Engine = {
     ORG_ASSIGN.player = rosterIds;
     const roster = rosterIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
-      const age = Engine.draft.getPreviewAge(seed, id);
-      return Engine.makeChar(t, rng, { age });
+      return Engine.makeChar(t, rng, { age: 16 });
     });
 
     // Free agents: FA pool minus draft candidates (they're shown separately)
