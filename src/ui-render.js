@@ -928,6 +928,14 @@ function renderRoster() {
     const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
     const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
+    // v1.3-1: wear状態ラベル (§3)
+    const wearBadge = (() => {
+      const w = c.wear || 0;
+      if (w >= 60) return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⬇⬇ 限界</span>';
+      if (w >= 40) return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3)">⬇ 衰退期</span>';
+      if (w >= 20) return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">⚠ 衰え</span>';
+      return '';
+    })();
     const statG = (key) => {
       const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
@@ -939,7 +947,7 @@ function renderRoster() {
           ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
           <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
           <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
-          ${injuryBadge}
+          ${injuryBadge}${wearBadge}
         </div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
           <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>

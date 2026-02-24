@@ -885,6 +885,20 @@ const RETIRE_CFG = {
   decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
 };
 
+// Wear system: wear threshold effects (v1.3-1-decay-retirement-spec §3)
+const WEAR_TABLE = [
+  // wear 0-19: 全盛期 — no effect
+  { min:  0, max: 19, label: null,        decayMin: 0, decayMax: 0, retireChance: 0    },
+  // wear 20-39: 軽度衰退
+  { min: 20, max: 39, label: '⚠ 衰え',  decayMin: 1, decayMax: 2, retireChance: 0    },
+  // wear 40-59: 本格衰退
+  { min: 40, max: 59, label: '⬇ 衰退期', decayMin: 2, decayMax: 4, retireChance: 0.20 },
+  // wear 60-79: 末期
+  { min: 60, max: 79, label: '⬇⬇ 限界', decayMin: 3, decayMax: 5, retireChance: 0.50 },
+  // wear 80+: 確定引退
+  { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
+];
+
 // AI scout config (rival-spec §5)
 const AI_SCOUT_CFG = {
   S: { budget:800, maxPicks:3, idealRoster:16, rates:{prodigy:0.90, promising:0.80, rough:0.30} },

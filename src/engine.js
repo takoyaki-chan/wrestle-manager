@@ -584,9 +584,25 @@ const Engine = {
         const rv = Engine.scout.reassess(updatedFighter, 'severeInjury', injRng, 0);
         updatedFighter = { ...updatedFighter, ...rv };
       }
+      // v1.3-1: 重傷時の引退チェック §4.2/§4.3 (独立した判定)
+      let retireType = null;
+      if (injury.type === '重傷') {
+        const wear = fighter.wear || 0;
+        // §4.2: wear + 重傷ボーナス(25) > 80 → 引退確定
+        if (wear + 25 > 80) {
+          retireType = 'wearInjury';
+        }
+        // §4.3: 壊滅的怪我 — 4.2とは独立した判定、年齢・wear問わず発生
+        if (!retireType) {
+          const careerEndChance = wear >= 40 ? 0.065 : 0.025; // 5-8% or 2-3%
+          const ceRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 777));
+          if (Engine.rng.float(ceRng) < careerEndChance) retireType = 'careerEnding';
+        }
+      }
       return {
         newFighter: updatedFighter,
-        injuryInfo: { injury, reducedWeeks, originalWeeks: weeks }
+        injuryInfo: { injury, reducedWeeks, originalWeeks: weeks },
+        retireType  // null | 'wearInjury' | 'careerEnding'
       };
     },
     tick(roster, freeAgents) {
@@ -939,6 +955,13 @@ const Engine = {
         return { ...f, careerRecord: { ...f.careerRecord, peakOVR: ovr, peakOVRSeason: season } };
       }
       return f;
+    },
+    /** Generate durability: normal distribution N(0,2), clamped to -4..+4 (v1.3-1 §1.1) */
+    generateDurability(rng) {
+      // Sum of 12 uniform(0,1) − 6 ≈ N(0,1); multiply by 2 → N(0,2)
+      let s = 0;
+      for (let i = 0; i < 12; i++) s += Engine.rng.float(rng);
+      return Math.max(-4, Math.min(4, Math.round((s - 6) * 2)));
     }
   },
 
@@ -1122,31 +1145,22 @@ const Engine = {
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
 
-    // Apply aging decay (training-spec §5.3-5.4) — used for both player and AI
+    // Apply wear-based stat decay (v1.3-1 §3) — replaces age-based decay
     applyDecay(rng, fighter) {
-      const age = fighter.age || 99;
-      // 晩成: 衰退開始を2年遅延
-      const decayStartAge = Traits.has(fighter, '晩成') ? 32 : 30;
-      if (age < decayStartAge) return fighter;
+      const wear = fighter.wear || 0;
+      // wear 0-19: 全盛期（減少なし）  wear 80+: 確定引退（stat変更なし、checkRetirementで処理）
+      if (wear < 20 || wear >= 80) return fighter;
+      let decayMin, decayMax;
+      if (wear < 40)      { decayMin = 1; decayMax = 2; } // 軽度衰退
+      else if (wear < 60) { decayMin = 2; decayMax = 4; } // 本格衰退
+      else                { decayMin = 3; decayMax = 5; } // 末期
       let f = { ...fighter };
-      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
-      let phase;
-      if (age <= 32) phase = DECAY_TABLE.early;
-      else if (age <= 34) phase = DECAY_TABLE.mid;
-      else phase = DECAY_TABLE.late;
-
-      ['pw','sp','te','st'].forEach(s => {
-        if (Engine.rng.float(rng) < (phase.chance[s] || 0)) {
-          const loss = phase.amount[s] || 1;
-          const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
-          f[s] = Math.max(floor, f[s] - loss);
-        }
+      const notion = f.notionValue || { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn };
+      ['pw', 'sp', 'te', 'st', 'mn'].forEach(s => {
+        const loss = decayMin + Math.round(Engine.rng.float(rng) * (decayMax - decayMin));
+        const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
+        f[s] = Math.max(floor, f[s] - loss);
       });
-      // MNT special: only 35+ with 5% chance (training-spec §5.3)
-      if (age >= 35 && phase.mntChance && Engine.rng.float(rng) < phase.mntChance) {
-        const mntFloor = Math.round((notion.mn || 30) * 0.85);
-        f.mn = Math.max(mntFloor, f.mn - (phase.mntAmount || 1));
-      }
       return f;
     },
 
@@ -1156,6 +1170,23 @@ const Engine = {
       const newRoster = G.roster.map(c => {
         let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
                    seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
+        const decayStartAge = 28 + (nc.durability || 0);
+        if (nc.age >= decayStartAge) {
+          const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
+          let wearBonus = 0;
+          // 年間試合数補正: キャリア平均で近似
+          const avgMatches = Math.round(((nc.wins || 0) + (nc.losses || 0) + (nc.draws || 0)) / nc.careerSeasons);
+          if (avgMatches >= 40) wearBonus += 3;
+          // TODO: シーズン中の怪我回数 × 2 (要: seasonInjuries フィールド追加)
+          // intensive多用（12週以上）
+          if ((nc.intensiveWeeks || 0) >= 12) wearBonus += 2;
+          // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
+          // durability補正（耐久値が高いほどwear増加が遅い）
+          wearBonus -= (nc.durability || 0);
+          const finalWear = Math.max(1, baseWear + wearBonus);
+          nc = { ...nc, wear: (nc.wear || 0) + finalWear };
+        }
         const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
         nc = Engine.growth.applyDecay(rng, nc);
         const changes = {};
@@ -1491,10 +1522,17 @@ const Engine = {
         let roster = aiData.roster.map(f => ({ ...f }));
         const retiredNames = [];
 
-        // Step 1: 加齢 — all fighters +1 age
-        roster.forEach(f => { f.age = (f.age || 20) + 1; });
+        // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
+        roster.forEach(f => {
+          f.age = (f.age || 20) + 1;
+          const aiDecayStart = 28 + (f.durability || 0);
+          if (f.age >= aiDecayStart) {
+            const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
+            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - (f.durability || 0));
+          }
+        });
 
-        // Step 2: 衰退判定 (training-spec §5.3-5.4)
+        // Step 2: 衰退判定 (v1.3-1 §3 — wear-based)
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
         // Step 3: 成長一括 (rival-spec §4.1 — aiSeasonGrowth)
@@ -1572,25 +1610,32 @@ const Engine = {
       return f;
     },
 
-    // Retirement check (scout-spec §7)
+    // Retirement check (v1.3-1 §4 — wear-based, replaces age-based chances)
     checkRetirement(rng, fighter) {
-      const age = fighter.age || 20;
-      if (age < 35) {
-        // Voluntary retirement: OVR < Notion * 0.60 for 2 consecutive seasons
-        const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
-        const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
-        const currentOvr = Engine.util.ov(fighter);
-        if (currentOvr < notionOvr * RETIRE_CFG.voluntaryThreshold) {
-          fighter.lowPerformanceSeasons = (fighter.lowPerformanceSeasons || 0) + 1;
-          if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
-        } else {
-          fighter.lowPerformanceSeasons = 0;
-        }
-        return false;
+      const wear = fighter.wear || 0;
+
+      // wear 80+: 確定引退 (§3)
+      if (wear >= 80) return true;
+
+      // 自主引退: OVR < Notion * 0.60 が2シーズン連続 (§4.4 — 既存ルート維持)
+      const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
+      const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
+      const currentOvr = Engine.util.ov(fighter);
+      if (currentOvr < notionOvr * RETIRE_CFG.voluntaryThreshold) {
+        fighter.lowPerformanceSeasons = (fighter.lowPerformanceSeasons || 0) + 1;
+        if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
+      } else {
+        fighter.lowPerformanceSeasons = 0;
       }
-      if (age >= 39) return true; // 確定引退
-      const chance = RETIRE_CFG.chances[age] || 0.90;
-      return Engine.rng.float(rng) < chance;
+
+      // wear閾値ベースの引退確率 (§4.1)
+      let retireChance = 0;
+      if (wear >= 60)      retireChance = 0.50; // 末期
+      else if (wear >= 40) retireChance = 0.20; // 本格衰退
+      // wear < 40: 引退確率なし
+      if (retireChance > 0 && Engine.rng.float(rng) < retireChance) return true;
+
+      return false;
     },
 
     // ── B-3: AI Scouting (rival-spec §5 + F1 tier limits) ────
@@ -2181,11 +2226,37 @@ const Engine = {
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
       const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
-      if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      if (li) {
+        // v1.3-1: §4.2/§4.3 怪我引退チェック
+        if (li.retireType) {
+          const retiredMsg = li.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
+          let retiredF = Engine.career.addEvent(li.newFighter, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
+          roster = roster.filter(c => c.id !== lc.id);
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
+          events.push(`🏁 ${lc.name}(${lc.age}歳)が${retiredMsg}により引退`);
+        } else {
+          roster = roster.map(c => c.id === lc.id ? li.newFighter : c);
+          injuryResults.push({ name: lc.name, injury: li.newFighter.injury });
+        }
+      }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
       const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
-      if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+      if (ri) {
+        // v1.3-1: §4.2/§4.3 怪我引退チェック
+        if (ri.retireType) {
+          const retiredMsg = ri.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
+          let retiredF = Engine.career.addEvent(ri.newFighter, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
+          roster = roster.filter(c => c.id !== rc.id);
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
+          events.push(`🏁 ${rc.name}(${rc.age}歳)が${retiredMsg}により引退`);
+        } else {
+          roster = roster.map(c => c.id === rc.id ? ri.newFighter : c);
+          injuryResults.push({ name: rc.name, injury: ri.newFighter.injury });
+        }
+      }
     });
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
@@ -3356,7 +3427,9 @@ const Engine = {
       assessedTier: av.assessedTier,
       assessedVariance: av.assessedVariance,
       assessedSeason: av.assessedSeason,
-      careerRecord: Engine.career.createRecord()
+      careerRecord: Engine.career.createRecord(),
+      durability: Engine.career.generateDurability(rng), // v1.3-1: 個人耐久値 N(0,2) -4..+4
+      wear: 0,                                           // v1.3-1: 累積摩耗
     };
   },
 

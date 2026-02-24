@@ -979,6 +979,7 @@ function showFighterPopup(fighterId, source) {
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
+            ${(() => { const w = c.wear || 0; if (w >= 60) return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (w >= 40) return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (w >= 20) return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}

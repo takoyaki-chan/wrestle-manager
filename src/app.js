@@ -1233,6 +1233,30 @@ const Storage = {
         G = { ...G, _migrated_v1_3: true };
       }
 
+      // v1.3-1 migration: add durability and wear to all fighters
+      if (!G._migrated_v1_3_1) {
+        const migWear = (fighters) => fighters.map(c => {
+          if (c.durability !== undefined && c.wear !== undefined) return c;
+          const mRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1331));
+          const dur = c.durability !== undefined ? c.durability : Engine.career.generateDurability(mRng);
+          const decayStart = 28 + dur;
+          // 既存ベテランへの配慮: 理論値の70%でwearを後付け
+          const wearYears = Math.max(0, (c.age || 20) - decayStart);
+          const estimatedWear = c.wear !== undefined ? c.wear : Math.round(wearYears * 8 * 0.7);
+          return { ...c, durability: dur, wear: estimatedWear };
+        });
+        G = { ...G, roster: migWear(G.roster), freeAgents: migWear(G.freeAgents) };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: migWear(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_v1_3_1: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
