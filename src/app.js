@@ -1257,6 +1257,27 @@ const Storage = {
         G = { ...G, _migrated_v1_3_1: true };
       }
 
+      // v1.3-2 migration: add seasonInjuries, careerHistory, growthPenalty to all fighters
+      if (!G._migrated_v1_3_2) {
+        const migV132 = (fighters) => fighters.map(c => {
+          const updates = {};
+          if (!c.hasOwnProperty('seasonInjuries')) updates.seasonInjuries = 0;
+          if (!c.hasOwnProperty('careerHistory'))  updates.careerHistory  = [];
+          if (!c.hasOwnProperty('growthPenalty'))  updates.growthPenalty  = null;
+          return Object.keys(updates).length > 0 ? { ...c, ...updates } : c;
+        });
+        G = { ...G, roster: migV132(G.roster), freeAgents: migV132(G.freeAgents) };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: migV132(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_v1_3_2: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };

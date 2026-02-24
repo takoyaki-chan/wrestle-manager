@@ -1410,19 +1410,21 @@ function nextTurn(){
       }
     }
 
-    // v4.1: Pin attempt check (HP>0 but low)
+    // v4.1: Early finish attempt — submission技はギブアップ、それ以外はフォール (bug fix)
     if(def.hp>0&&checkPinAttempt(mv,atk,def,dmg,S.mom,as,ph)){
+      const isSubmission=mv.c==='submission';
+      const finType=isSubmission?'ギブアップ':'ピン';
       const successRate=calcPinAttemptSuccess(atk,def,dmg,ph);
       const isSuccess=Math.random()*100<successRate;
-      log+=' → フォール狙い！';
+      log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
       const box=document.getElementById('narBox');
       if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';
         extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra)}
       setTimeout(()=>{
         S.awaitingFinishClick=true;
-        S.pendingFinishResult={type:'ピン',isKickout:!isSuccess,
+        S.pendingFinishResult={type:finType,isKickout:!isSuccess,
           def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-        showFinishClickBtn('ピン',v);
+        showFinishClickBtn(finType,v);
       },1200);
       return;
     }

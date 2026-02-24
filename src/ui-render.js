@@ -936,6 +936,10 @@ function renderRoster() {
       if (w >= 20) return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">⚠ 衰え</span>';
       return '';
     })();
+    // v1.3-2: §7.2 growthPenalty中の選手に🩹アイコン表示
+    const growthPenaltyBadge = (!c.injury && c.growthPenalty)
+      ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹成長低下</span>'
+      : '';
     const statG = (key) => {
       const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
@@ -947,7 +951,7 @@ function renderRoster() {
           ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
           <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
           <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
-          ${injuryBadge}${wearBadge}
+          ${injuryBadge}${wearBadge}${growthPenaltyBadge}
         </div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
           <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>

@@ -554,7 +554,7 @@ const Engine = {
 
   // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
   injury: {
-    check(rng, fighter, matchResult, facilityReduction, coachInjuryMult = 1.0) {
+    check(rng, fighter, matchResult, facilityReduction, coachInjuryMult = 1.0, week = 0, season = 0) {
       if (!fighter) return null;
       const isLeft = matchResult.left.id === fighter.id;
       const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
@@ -599,6 +599,37 @@ const Engine = {
           if (Engine.rng.float(ceRng) < careerEndChance) retireType = 'careerEnding';
         }
       }
+      // v1.3-2: §5.2 怪我回数カウント
+      updatedFighter = { ...updatedFighter, seasonInjuries: (updatedFighter.seasonInjuries || 0) + 1 };
+
+      // v1.3-2: §3 growthPenalty 付与（overwriteルール: より重い方を優先）
+      const debuff = INJURY_DEBUFF_TABLE[injury.type];
+      if (debuff) {
+        const existing = updatedFighter.growthPenalty;
+        let applyNew = true;
+        if (existing) {
+          // 新しい怪我が軽いか同等 → 残り週数が多いほうを維持
+          if (debuff.multiplier >= existing.multiplier) {
+            applyNew = debuff.remainingWeeks > existing.remainingWeeks;
+          }
+          // 新しい怪我が重い → 上書き (applyNew=true のまま)
+        }
+        if (applyNew) {
+          updatedFighter = { ...updatedFighter, growthPenalty: { ...debuff } };
+        }
+      }
+
+      // v1.3-2: §4 moderate以上の怪我を careerHistory に記録
+      if (injury.type === '中傷' || injury.type === '重傷') {
+        const histEntry = {
+          type: 'injury',
+          week,
+          season,
+          detail: `${injury.type}（${reducedWeeks}週離脱）`,
+        };
+        updatedFighter = { ...updatedFighter, careerHistory: [...(updatedFighter.careerHistory || []), histEntry] };
+      }
+
       return {
         newFighter: updatedFighter,
         injuryInfo: { injury, reducedWeeks, originalWeeks: weeks },
@@ -1178,7 +1209,8 @@ const Engine = {
           // 年間試合数補正: キャリア平均で近似
           const avgMatches = Math.round(((nc.wins || 0) + (nc.losses || 0) + (nc.draws || 0)) / nc.careerSeasons);
           if (avgMatches >= 40) wearBonus += 3;
-          // TODO: シーズン中の怪我回数 × 2 (要: seasonInjuries フィールド追加)
+          // v1.3-2: §5.3 シーズン中の怪我回数 × 2
+          wearBonus += (nc.seasonInjuries || 0) * 2;
           // intensive多用（12週以上）
           if ((nc.intensiveWeeks || 0) >= 12) wearBonus += 2;
           // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
@@ -1202,6 +1234,7 @@ const Engine = {
         });
         if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+        nc.seasonInjuries = 0; // v1.3-2: §5.4 シーズンリセット
         nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
         // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
         if (nc.age === 30) {
@@ -1869,6 +1902,12 @@ const Engine = {
       roster = roster.map(c => {
         const nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
 
+        // v1.3-2: §3.3 growthPenaltyカウントダウン（毎週 — 怪我中も時間は経過する）
+        if (nc.growthPenalty) {
+          nc.growthPenalty = { ...nc.growthPenalty, remainingWeeks: nc.growthPenalty.remainingWeeks - 1 };
+          if (nc.growthPenalty.remainingWeeks <= 0) nc.growthPenalty = null;
+        }
+
         // D-1: Rental fighters — injury recovery only, no growth/promo
         if (nc.isRental) {
           if (nc.injury) return { ...nc, condition: Math.min(100, nc.condition + 5), _weekAction: '療養（レンタル）' };
@@ -1885,7 +1924,10 @@ const Engine = {
         if (nc.intensive) {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
-          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
+          const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          const trainGrowth = Math.round(growth * 0.4 * penMult * 10) / 10;
+          if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
@@ -1906,7 +1948,10 @@ const Engine = {
         if (action === 'practice') {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
-          if (growth > 0) { nc[growStat] += growth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + growth; }
+          // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
+          const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          const trainGrowth = Math.round(growth * 0.4 * penMult * 10) / 10;
+          if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
           nc.intensiveWeeks = 0;
@@ -2225,12 +2270,14 @@ const Engine = {
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
       if (li) {
         // v1.3-1: §4.2/§4.3 怪我引退チェック
         if (li.retireType) {
           const retiredMsg = li.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
-          let retiredF = Engine.career.addEvent(li.newFighter, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
+          // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
+          let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${li.injuryInfo.injury.type}により引退` }] };
+          retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
@@ -2242,12 +2289,14 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
       if (ri) {
         // v1.3-1: §4.2/§4.3 怪我引退チェック
         if (ri.retireType) {
           const retiredMsg = ri.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
-          let retiredF = Engine.career.addEvent(ri.newFighter, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
+          // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
+          let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${ri.injuryInfo.injury.type}により引退` }] };
+          retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
@@ -2258,6 +2307,62 @@ const Engine = {
         }
       }
     });
+
+    // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
+    const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
+    results.forEach(r => {
+      [
+        { charId: r.left.id, won: r.winner === 'left' },
+        { charId: r.right.id, won: r.winner === 'right' },
+      ].forEach(({ charId, won }) => {
+        const fighter = roster.find(c => c.id === charId);
+        if (!fighter) return; // 怪我引退でロスター離脱済み
+
+        // 対戦相手OVR取得（引退済みでも matchResult からOVRを算出）
+        const oppId = charId === r.left.id ? r.right.id : r.left.id;
+        const oppInRoster = roster.find(c => c.id === oppId);
+        const oppRaw = charId === r.left.id ? r.right : r.left;
+        const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+        const selfOvr = Engine.util.ov(fighter);
+
+        // §2.3 成長計算
+        const matchGrowthBase = 1.5;
+        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
+        const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0; // MQ65以上を接戦とみなす
+        const resultBonus = won ? 0.0 : 0.2;
+        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
+
+        // §3.3 growthPenalty適用
+        if (fighter.growthPenalty) {
+          matchGrowth *= fighter.growthPenalty.multiplier;
+        }
+
+        // §2.5 成長ステータス選択（1〜2個）
+        const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+        const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+        const pool = [...allStats];
+        const chosen = [];
+        for (let i = 0; i < numStats; i++) {
+          const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
+          chosen.push(pool.splice(idx, 1)[0]);
+        }
+        const growthPerStat = matchGrowth / numStats;
+
+        roster = roster.map(c => {
+          if (c.id !== charId) return c;
+          let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+          chosen.forEach(stat => {
+            const gain = Math.round(growthPerStat * 10) / 10;
+            if (gain > 0) {
+              nc[stat] = Math.min(100, nc[stat] + gain);
+              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+            }
+          });
+          return nc;
+        });
+      });
+    });
+    // §2.4 TODO: 調子連動（試合後の調子変動）— 調子システム実装時に有効化
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
     const executedTitleMatch = validMatches.some(m => m.isTitle);
@@ -3223,6 +3328,22 @@ const Engine = {
         const aiResult = Engine.rival.processSeasonEnd(rng, s);
         s = { ...s, aiOrgs: aiResult.aiOrgs };
         events.push(...aiResult.events);
+
+        // FA: 加齢 + 20歳超えで自動引退（プロ入りを諦めた）
+        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 18) + 1 }));
+        const agedOutFA = agedFA.filter(f => f.age > 20);
+        const youngFA   = agedFA.filter(f => f.age <= 20);
+        if (agedOutFA.length > 0) {
+          const retiredFA = agedOutFA.map(f => Engine.career.addEvent(
+            Engine.career.ensure(f),
+            { type: 'retire', reason: 'fa_aged_out', season: s.season, age: f.age }
+          ));
+          s = { ...s, freeAgents: youngFA, retiredFighters: [...(s.retiredFighters || []), ...retiredFA] };
+          agedOutFA.forEach(f => events.push(`💭 ${f.name}(${f.age}歳)がプロ入りの夢を諦めた`));
+        } else {
+          s = { ...s, freeAgents: youngFA };
+        }
+
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
       } else if (offWeek === 2) {
@@ -3430,6 +3551,9 @@ const Engine = {
       careerRecord: Engine.career.createRecord(),
       durability: Engine.career.generateDurability(rng), // v1.3-1: 個人耐久値 N(0,2) -4..+4
       wear: 0,                                           // v1.3-1: 累積摩耗
+      seasonInjuries: 0,   // v1.3-2: 今シーズンの怪我回数
+      careerHistory: [],   // v1.3-2: 経歴記録 [{type,week,season,detail}]
+      growthPenalty: null, // v1.3-2: 成長デバフ {remainingWeeks,multiplier,source} | null
     };
   },
 

@@ -980,6 +980,7 @@ function showFighterPopup(fighterId, source) {
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
             ${(() => { const w = c.wear || 0; if (w >= 60) return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (w >= 40) return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (w >= 20) return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
+            ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
@@ -1212,6 +1213,28 @@ function showFighterPopup(fighterId, source) {
         html += `</div>`;
       } else {
         html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
+      }
+
+      // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション
+      const hist = c.careerHistory || [];
+      if (hist.length > 0) {
+        html += `<div style="margin-bottom:14px">
+          <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            <span style="background:#a29bfe;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">経歴</span>
+            怪我・重大事項
+          </h5>`;
+        [...hist].reverse().forEach(h => {
+          const typeColor = h.type === 'injury_retirement' ? '#e74c3c' : '#e17055';
+          const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
+          const seasonStr = h.season ? `Season ${h.season}` : '';
+          const weekStr   = h.week   ? `, Week ${h.week}`   : '';
+          html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
+            <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
+            <span style="flex-shrink:0">${typeIcon}</span>
+            <span style="color:var(--text)">${h.detail}</span>
+          </div>`;
+        });
+        html += `</div>`;
       }
     }
 

@@ -539,8 +539,13 @@ const ENG = {
   pinAttemptMomBonus: 0.15, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   finishWeights: {
-    strike:{fall:85,gu:5,tko:10}, throw:{fall:80,gu:5,tko:15}, aerial:{fall:85,gu:0,tko:15},
-    ground:{fall:70,gu:5,tko:25}, submission:{fall:5,gu:90,tko:5}, rollup:{fall:100,gu:0,tko:0}
+    // bug fix: 非submission技のgu=0, submission技のfall=0 に統一
+    strike:    {fall:90, gu:0, tko:10},
+    throw:     {fall:85, gu:0, tko:15},
+    aerial:    {fall:85, gu:0, tko:15},
+    ground:    {fall:75, gu:0, tko:25},
+    submission:{fall:0,  gu:95, tko:5},
+    rollup:    {fall:100,gu:0,  tko:0}
   },
   kickoutMnScale: 0.50, kickoutMax: 2, kickoutClimaxMult: 0.7,
   guEscapeMnScale: 0.45, guEscapeMax: 2,
@@ -636,6 +641,13 @@ const INJURY_TABLE = [
   {type:'中傷', minWeeks:3, maxWeeks:4, threshold:0.05, color:'#e17055'},
   {type:'重傷', minWeeks:6, maxWeeks:8, threshold:0.02, color:'#d63031'}
 ];
+
+// v1.3-2: Growth penalty table by injury severity
+const INJURY_DEBUFF_TABLE = {
+  '軽傷': { remainingWeeks: 6,  multiplier: 0.7,  source: 'minor'    },
+  '中傷': { remainingWeeks: 14, multiplier: 0.4,  source: 'moderate' },
+  '重傷': { remainingWeeks: 24, multiplier: 0.15, source: 'severe'   },
+};
 
 // Title System
 const TITLES = [
