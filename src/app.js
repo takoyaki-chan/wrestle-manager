@@ -1215,6 +1215,24 @@ const Storage = {
         G = { ...G, _migrated_v1_0b: true };
       }
 
+      // v1.3 migration: add careerRecord to all fighters + retiredFighters/hallOfFame to state
+      if (!G._migrated_v1_3) {
+        const migrateCareer = roster => roster.map(c => c.careerRecord ? c : { ...c, careerRecord: Engine.career.createRecord() });
+        G = { ...G, roster: migrateCareer(G.roster), freeAgents: migrateCareer(G.freeAgents) };
+        if (!G.retiredFighters) G = { ...G, retiredFighters: [] };
+        if (!G.hallOfFame) G = { ...G, hallOfFame: [] };
+        // Migrate AI org rosters too
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: migrateCareer(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_v1_3: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -1448,6 +1466,10 @@ const App = {
     G = Engine.draft.completeDraft(G, picks, rng);
     // Show welcome popups for drafted fighters with character-specific quotes
     const drafted = G.roster.filter(c => picks.includes(c.id));
+    // v1.3: Record debut event for drafted fighters
+    G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
+      ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
+      : c) };
     drafted.forEach((c, i) => {
       const quote = getDraftQuote(c);
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'positive',
@@ -1500,7 +1522,9 @@ const App = {
       losingStreak: fighter.losingStreak || 0,
       preInjuryPop: fighter.preInjuryPop ?? null
     };
-    const c = Engine.popularity.applyTransferReset(normalized); // v1.0b: Transfer popularity reset
+    let c = Engine.popularity.applyTransferReset(normalized); // v1.0b: Transfer popularity reset
+    // v1.3: Record debut event
+    c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
@@ -1589,7 +1613,10 @@ const App = {
       const signed = { ...cand };
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
-      newRoster.push(normalizeFighterForRoster(signed));
+      // v1.3: Record debut event
+      let normalizedSigned = normalizeFighterForRoster(signed);
+      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      newRoster.push(normalizedSigned);
       newFunds -= result.cost;
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
@@ -2601,6 +2628,14 @@ const App = {
     const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
     const eventWon = playerWins > aiWins;
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+
+    // v1.3: Record war appearances for participating player fighters
+    const warFighterIds = new Set(wp.card.map(m => m.playerFighter.id));
+    G = { ...G, roster: G.roster.map(c => {
+      if (!warFighterIds.has(c.id)) return c;
+      const matchResult = wp.results.find(r => r.playerFighter.id === c.id);
+      return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: ev.opponentName, won: matchResult ? matchResult.playerWon : false });
+    }) };
 
     const evStats = { ...(G.seasonStats || {}) };
     if (eventWon) {

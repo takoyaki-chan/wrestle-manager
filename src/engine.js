@@ -654,11 +654,19 @@ const Engine = {
       const newTitles = { ...G.titles, world: { championId: fighterId, defenses: 0, wonWeek: G.week } };
       // v0.99: Reassess value on title win (pricing-balance-spec §4.2)
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, fighterId));
+      // v1.3: Capture previous reign info before overwriting
+      const prevReign = prev ? { wonWeek: G.titles.world.wonWeek, defenses: G.titles.world.defenses } : null;
       const newRoster = G.roster.map(c => {
+        // v1.3: Record titleLoss for previous champion
+        if (prev && c.id === prev.id) {
+          return Engine.career.recordTitleLoss(c, 'world', G.season, G.week, prevReign.defenses);
+        }
         if (c.id !== fighterId) return c;
         const reassessed = Engine.scout.reassess(c, 'titleWin', rng, G.season);
         const titlePopGain = Engine.popularity.applyDiminishing(5, c.popularity);
-        return { ...c, popularity: Math.min(100, c.popularity + titlePopGain), ...reassessed };
+        // v1.3: Record titleWin for new champion
+        let updated = { ...c, popularity: Math.min(100, c.popularity + titlePopGain), ...reassessed };
+        return Engine.career.recordTitleWin(updated, 'world', G.season, G.week);
       });
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
@@ -680,6 +688,9 @@ const Engine = {
           const reassessed = Engine.scout.reassess(updated, 'titleDefend3', rng, G.season);
           updated = { ...updated, ...reassessed };
         }
+        // v1.3: Record titleDefense
+        updated = Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses);
+        return updated;
         return updated;
       });
       const c = G.roster.find(r => r.id === champId);
@@ -885,6 +896,49 @@ const Engine = {
         }
       }
       return s;
+    }
+  },
+
+  // ── v1.3: Career Record System (個人実績記録) ─────────────────
+  career: {
+    /** Create a fresh careerRecord object */
+    createRecord() {
+      return { history: [], totalTitleWins: 0, totalDefenses: 0, peakOVR: 0, peakOVRSeason: 0 };
+    },
+    /** Ensure fighter has careerRecord (for migration) */
+    ensure(fighter) {
+      if (fighter.careerRecord) return fighter;
+      return { ...fighter, careerRecord: Engine.career.createRecord() };
+    },
+    /** Return new fighter with event appended to history */
+    addEvent(fighter, event) {
+      const f = Engine.career.ensure(fighter);
+      return { ...f, careerRecord: { ...f.careerRecord, history: [...f.careerRecord.history, event] } };
+    },
+    /** Record title win: push event + update cache */
+    recordTitleWin(fighter, beltId, season, week) {
+      let f = Engine.career.addEvent(fighter, { type: 'titleWin', season, week, beltId });
+      f = { ...f, careerRecord: { ...f.careerRecord, totalTitleWins: f.careerRecord.totalTitleWins + 1 } };
+      return f;
+    },
+    /** Record title loss: push event */
+    recordTitleLoss(fighter, beltId, season, week, defenses) {
+      return Engine.career.addEvent(fighter, { type: 'titleLoss', season, week, beltId, defenses });
+    },
+    /** Record title defense: push event + update cache */
+    recordTitleDefense(fighter, beltId, season, week, count) {
+      let f = Engine.career.addEvent(fighter, { type: 'titleDefense', season, week, beltId, count });
+      f = { ...f, careerRecord: { ...f.careerRecord, totalDefenses: f.careerRecord.totalDefenses + 1 } };
+      return f;
+    },
+    /** Update peakOVR if current OVR is higher */
+    updatePeakOVR(fighter, season) {
+      const f = Engine.career.ensure(fighter);
+      const ovr = Engine.util.ov(f);
+      if (ovr > f.careerRecord.peakOVR) {
+        return { ...f, careerRecord: { ...f.careerRecord, peakOVR: ovr, peakOVRSeason: season } };
+      }
+      return f;
     }
   },
 
@@ -1128,6 +1182,8 @@ const Engine = {
           const rv = Engine.scout.reassess(nc, 'age35plus', ageRng, G.season);
           nc = { ...nc, ...rv };
         }
+        // v1.3: Update peakOVR record
+        nc = Engine.career.updatePeakOVR(nc, G.season);
         return nc;
       });
       return { roster: newRoster, report };
@@ -2273,7 +2329,9 @@ const Engine = {
         const targetData = s.aiOrgs[targetId];
         if (targetData) {
           // v1.0b: Transfer popularity reset
-          const resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+          let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+          // v1.3: Record transfer event
+          resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach' });
           const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
           s = { ...s, aiOrgs: newAiOrgs };
         }
@@ -2299,7 +2357,9 @@ const Engine = {
           };
           if (targetData) {
             // v1.0b: Transfer popularity reset
-            const resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+            let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+            // v1.3: Record forced transfer
+            resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach_forced' });
             const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
             s = { ...s, aiOrgs: newAiOrgs };
           }
@@ -2332,7 +2392,7 @@ const Engine = {
 
       // Remove from AI org, add to player roster (add missing player-roster fields)
       const newAiOrgs = { ...s.aiOrgs, [aiOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== fighterId) } };
-      const newFighter = { ...fighter, orgId: 'player',
+      let newFighter = { ...fighter, orgId: 'player',
         condition: fighter.condition ?? 80,
         schedule: fighter.schedule || 'balance',
         wins: fighter.wins || 0, losses: fighter.losses || 0, draws: fighter.draws || 0,
@@ -2341,6 +2401,8 @@ const Engine = {
         careerSeasons: fighter.careerSeasons || 0,
         intensive: false, intensiveWeeks: 0
       };
+      // v1.3: Record transfer event
+      newFighter = Engine.career.addEvent(newFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'poach' });
       s = { ...s,
         aiOrgs: newAiOrgs,
         roster: [...s.roster, newFighter],
@@ -2492,7 +2554,9 @@ const Engine = {
           intensive: false, intensiveWeeks: 0
         };
         // v1.0b: Transfer popularity reset
-        const resetFighter = Engine.popularity.applyTransferReset(newFighter);
+        let resetFighter = Engine.popularity.applyTransferReset(newFighter);
+        // v1.3: Record transfer event
+        resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
         events.push(`🎉 ${fighter.name}の引き抜き交渉成功！（-${neg.totalCost}万）`);
         return {
           state: {
@@ -3074,7 +3138,13 @@ const Engine = {
           }
         });
         if (retirees.length > 0) {
-          s = { ...s, roster: surviving };
+          // v1.3: Save retirees with career records for year-end awards
+          const retiredWithRecords = retirees.map(c => {
+            let f = Engine.career.ensure(c);
+            f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
+            return f;
+          });
+          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords] };
           retirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
         }
 
@@ -3285,7 +3355,8 @@ const Engine = {
       assessedValue: av.assessedValue,
       assessedTier: av.assessedTier,
       assessedVariance: av.assessedVariance,
-      assessedSeason: av.assessedSeason
+      assessedSeason: av.assessedSeason,
+      careerRecord: Engine.career.createRecord()
     };
   },
 
@@ -3495,6 +3566,9 @@ const Engine = {
       pendingNegotiation: null,
       negotiatedThisSeason: [],
       warVictories: [],
+      // v1.3: Career record system
+      retiredFighters: [],  // temporary — cleared after year-end awards
+      hallOfFame: [],       // permanent — hall of fame inductees
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
                      bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },

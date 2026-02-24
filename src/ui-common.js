@@ -1690,6 +1690,9 @@ function executeEvent() {
     events.push(`🏆 頂上決戦: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！！' : '敗北…'} (MQ${result.mq})`);
     const outcome = Engine.event.applySummitOutcome(G, won);
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+    // v1.3: Record summit appearance
+    G = { ...G, roster: G.roster.map(c => c.id !== ev.playerFighter.id ? c :
+      Engine.career.addEvent(c, { type: 'summit', season: G.season, week: G.week, opponentOrg: ev.orgName, won })) };
   }
 
   // v0.95: Track event stats
