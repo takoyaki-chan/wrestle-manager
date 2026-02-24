@@ -931,7 +931,6 @@ function showFighterPopup(fighterId, source) {
   const initial = c.name.charAt(0);
   const ovrVal = Engine.util.ov(c);
   const isChamp = G.titles?.world?.championId === c.id;
-  const isAce = Engine.ace.isAce(G, c.id);
 
   // Stats
   const STATS = [
@@ -951,8 +950,8 @@ function showFighterPopup(fighterId, source) {
 
     // ── Large portrait header ──
     // Determine portrait border color by status
-    const popBorderColor = isChamp ? '#d4a843' : isAce ? '#c0c0c0' : 'rgba(255,255,255,0.15)';
-    const popShadow = isChamp ? '0 4px 20px rgba(0,0,0,0.5),0 0 16px rgba(212,168,67,0.5)' : isAce ? '0 4px 20px rgba(0,0,0,0.5),0 0 12px rgba(192,192,192,0.4)' : '0 4px 20px rgba(0,0,0,0.5)';
+    const popBorderColor = isChamp ? '#d4a843' : 'rgba(255,255,255,0.15)';
+    const popShadow = isChamp ? '0 4px 20px rgba(0,0,0,0.5),0 0 16px rgba(212,168,67,0.5)' : '0 4px 20px rgba(0,0,0,0.5)';
 
     html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(255,255,255,0.06);padding:20px;text-align:center">
       <div style="display:flex;align-items:flex-start;gap:20px">
@@ -971,7 +970,6 @@ function showFighterPopup(fighterId, source) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
-            ${isAce ? '<span style="font-size:14px;color:#f1c40f;font-weight:700">⭐ エース</span>' : ''}
             ${c.isRental ? '<span style="font-size:13px;color:#f39c12">🤝 レンタル</span>' : ''}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
@@ -1161,7 +1159,6 @@ function showFighterPopup(fighterId, source) {
       html += `<div style="padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-family:'Courier New',monospace">`;
       html += `<div style="font-size:14px;font-weight:900;color:var(--text);margin-bottom:6px">■ 通算成績: ${wins}勝${losses}敗${draws}分 (${winRateFmt}) / ベストMQ: ${c.bestMQ || 0}</div>`;
       if (isChamp) html += `<div style="font-size:13px;color:var(--gold);font-weight:700">👑 現団体王者 — ${G.titles.world.defenses}度防衛中</div>`;
-      if (isAce) html += `<div style="font-size:13px;color:#f1c40f;font-weight:700">⭐ ${pOrgName} エース</div>`;
       html += `</div>`;
 
       // ── Milestone Timeline (grouped by season, reverse order) ──
@@ -1661,29 +1658,6 @@ function finishTransferWindow() {
   Storage.autoSave();
   refreshAll();
 }
-function designateAce(fighterId) {
-  const check = Engine.ace.canDesignate(G);
-  if (!check.ok) { Audio.play('error'); alert(check.reason); return; }
-  const result = Engine.ace.designate(G, fighterId, check.isFirst);
-  if (result.error) { Audio.play('error'); alert(result.error); return; }
-  Audio.play('fanfare');
-  G = result;
-  // Record milestone
-  G = Engine.milestone.addAce(G, fighterId);
-  const name = G.roster.find(c => c.id === fighterId)?.name || '';
-  const costMsg = check.isFirst ? '' : `（費用${check.cost}万 / 団体人気-${Engine.ACE_CONFIG.popPenalty}）`;
-  G.gameLog = [...G.gameLog, `⭐ ${name}をエースに認定${costMsg}`];
-  Storage.autoSave();
-  refreshAll();
-}
-function revokeAce() {
-  Audio.play('deselect');
-  const aceName = G.roster.find(c => c.id === G.aceDesignation)?.name || '不明';
-  G = Engine.ace.revoke(G);
-  G.gameLog = [...G.gameLog, `エース認定解除: ${aceName}`];
-  Storage.autoSave();
-  refreshAll();
-}
 // ── Phase D: Event UI Functions ──
 function executeEvent() {
   const ev = G.pendingEvent;
@@ -1791,7 +1765,7 @@ function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster); 
 function calcFixedCosts() { return Engine.economy.calcFixedCosts(); }
 function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); }
 function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
-function calcAttendance(venueIdx, mainPop, hasTitleMatch) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch); }
+function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
 function showScreen(id, evt) {
   Audio.play('click');

@@ -118,7 +118,7 @@ function renderWeekScreen() {
       <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 ${G.orgName || 'プレイヤー団体'} — 初期ドラフト</p>
       <p style="color:var(--text-sub);font-size:13px;line-height:1.7">
         あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名の所属選手でシーズンを始めましょう。<br>
-        <span style="font-size:12px;color:var(--text-dim)">能力値は入団時（16歳）の推定値です。将来性の評価はコーチ不在のため大きくブレる場合があります。</span>
+        <span style="font-size:12px;color:var(--text-dim)">能力値は入団時の推定値です。将来性の評価はコーチ不在のため大きくブレる場合があります。</span>
       </p>
     </div>`;
 
@@ -226,7 +226,7 @@ function renderWeekScreen() {
                     <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
                   </div>
                   <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
-                    <div>📏 ${c.h}cm ｜ 📅 16歳</div>
+                    <div>📏 ${c.h}cm ｜ 📅 ${c.age || 16}歳</div>
                     <div style="color:${c.coachEval.color}">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
                   </div>
                   <div style="margin-top:6px">
@@ -779,7 +779,7 @@ function renderWeekScreen() {
       pending.forEach(p => {
         const f = p.fighter;
         const retCost = Engine.transfer.calcRetentionCost(f);
-        const isAce = Engine.ace.isAce(G, f.id);
+        const isChampion = G.titles?.world?.championId === f.id;
         html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:8px">
             ${portraitImg(f.id, 80)}
@@ -787,14 +787,14 @@ function renderWeekScreen() {
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                 <div>
                   <strong style="font-size:17px">${f.name}</strong>
-                  ${isAce ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">⭐エース</span>' : ''}
+                  ${isChampion ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">👑王者</span>' : ''}
                   <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${f.popularity}</span>
                 </div>
                 <div style="font-size:13px;color:var(--text-sub)">← ${p.org.name} (${p.org.tier}級)</div>
               </div>
           <div style="display:flex;gap:10px;font-size:13px;margin-bottom:10px">
             <span style="color:#2ecc71">💰 移籍金: +${p.fee}万</span>
-            <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isAce ? ' (確定成功)' : ' (成功率80%)'}</span>
+            <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isChampion ? ' (確定成功)' : ' (成功率80%)'}</span>
           </div>
           <div class="btn-row" style="gap:8px">
             <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">🛡️ 引き留める</button>
@@ -918,27 +918,6 @@ function renderRoster() {
   // === Roster Section ===
   const el = document.getElementById('rosterTable');
 
-  // Ace designation panel
-  const aceEl = document.getElementById('acePanel');
-  if (aceEl) {
-    const ace = G.roster.find(c => c.id === G.aceDesignation);
-    let aceHtml = '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px">';
-    aceHtml += '<span style="color:var(--gold);font-weight:700">⭐ エース:</span>';
-    if (ace) {
-      aceHtml += `<span style="display:inline-flex;align-items:center;gap:12px">${portraitImg(ace.id, 80)}<span style="font-size:15px">${fLink(ace, {source:'roster', bold:false, size:'15px'})} (OVR ${ov(ace)} / 人気 ${ace.popularity})</span></span>`;
-      aceHtml += `<button class="btn" style="font-size:12px;padding:3px 8px;margin-left:auto" onclick="revokeAce()">解除</button>`;
-    } else {
-      aceHtml += '<span style="color:var(--text-dim)">未認定</span>';
-      aceHtml += '<select id="aceSelect" style="font-size:11px;padding:3px;margin-left:auto"><option value="">選手を選択...</option>';
-      [...G.roster].sort((a,b) => ov(b) - ov(a)).forEach(c => {
-        aceHtml += `<option value="${c.id}">${c.name} (OVR ${ov(c)})</option>`;
-      });
-      aceHtml += '</select>';
-      aceHtml += `<button class="btn btn-gold" style="font-size:12px;padding:3px 8px" onclick="const s=document.getElementById('aceSelect');if(s.value)designateAce(Number(s.value))">認定</button>`;
-    }
-    aceHtml += '</div>';
-    aceEl.innerHTML = aceHtml;
-  }
 
   let html = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">';
   const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
@@ -948,7 +927,6 @@ function renderRoster() {
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
     const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
-    const aceBadge = Engine.ace.isAce(G, c.id) ? '<span style="color:#f1c40f;font-size:12px"> ⭐</span>' : '';
     const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
     const statG = (key) => {
       const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
@@ -958,7 +936,7 @@ function renderRoster() {
       ${portraitImg(c.id, 56, '', true)}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${aceBadge}${rentalBadge}
+          ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
           <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
           <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
           ${injuryBadge}
@@ -1121,7 +1099,9 @@ function renderShowPrep() {
       return (l ? l.popularity : 0) + (r ? r.popularity : 0);
     })) : 0;
   const hasTitlePreview = validMatches.some(m => m.isTitle);
-  const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview);
+  const champIdPreview = G.titles?.world?.championId;
+  const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
+  const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview, hasChampPreview);
   const estRev = calcShowRevenue(G.showVenue, estAttend);
   const estOccPct = Math.round((estRev.occupancyRate || 0) * 100);
   // v1.0c: 会場熱気MQボーナス予想
@@ -1129,7 +1109,7 @@ function renderShowPrep() {
 
   const heat = getHeatLevel();
   html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
-    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}</div>
+    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場（集客×1.10）</span>' : ''}</div>
     <strong>予想集客:</strong> ${estAttend.toLocaleString()}人 / ${VENUES[G.showVenue].cap.toLocaleString()}人 (${estOccPct}% ${estRev.occLabel || ''})
     &nbsp;|&nbsp; <strong>予想チケット収入:</strong> ${estRev.ticketRev}万
     &nbsp;|&nbsp; <strong>予想グッズ:</strong> ${estRev.goodsRev}万
@@ -1291,12 +1271,12 @@ function renderRanking() {
       const rc = getRankColor(r.rank);
       const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
       const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
-      // Put ace first if designated
+      // Put champion first if exists
       let topFighters = sorted.slice(0, topCount);
-      if (G.aceDesignation) {
-        const aceIdx = sorted.findIndex(c => c.id === G.aceDesignation);
-        if (aceIdx > 0 && aceIdx < sorted.length) {
-          topFighters = [sorted[aceIdx], ...sorted.filter(c => c.id !== G.aceDesignation)].slice(0, topCount);
+      if (G.titles?.world?.championId) {
+        const champIdx = sorted.findIndex(c => c.id === G.titles.world.championId);
+        if (champIdx > 0 && champIdx < sorted.length) {
+          topFighters = [sorted[champIdx], ...sorted.filter(c => c.id !== G.titles.world.championId)].slice(0, topCount);
         }
       }
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
@@ -1304,14 +1284,13 @@ function renderRanking() {
           <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${G.orgPop}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">エース: ${G.aceDesignation ? G.roster.find(c=>c.id===G.aceDesignation)?.name || 'なし' : '<span style="color:var(--text-dim)">未認定</span>'}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
           <span style="color:var(--text-dim)">主力:</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => {
-            const isAce = G.aceDesignation === f.id;
             const isChamp = G.titles?.world?.championId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isAce ? ' ⭐エース' : ''}${isChamp ? ' 👑王者' : ''}</span></div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
           }).join('')}
           </div>
         </div>
@@ -1343,12 +1322,12 @@ function renderRanking() {
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
             ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
               const fOvr = Engine.util.ov(f);
-              const isAce = idx === 0;
+              const isTop = idx === 0;
               const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(f.id);
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showNegotiatePopup('${org.id}',${f.id})">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isAce ? ' <span style="font-size:10px;color:#e74c3c">★エース</span>' : ''}</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
                 </div>
                 <div style="font-size:11px;color:${canNeg ? rc : 'var(--text-dim)'};white-space:nowrap">${canNeg ? '交渉→' : G.pendingNegotiation ? (G.pendingNegotiation.fighterId === f.id ? '⏳交渉中' : '—') : (G.negotiatedThisSeason || []).includes(f.id) ? '交渉済' : '交渉→'}</div>

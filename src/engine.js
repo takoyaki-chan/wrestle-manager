@@ -415,9 +415,9 @@ const Engine = {
       return { losingStreak: streak, popDelta: 0, msg: null };
     },
     // §B-2: Scandal (random event)
-    checkScandal(rng, fighter, isAce) {
+    checkScandal(rng, fighter, isChamp) {
       if (fighter.popularity < SCANDAL_CONFIG.minPop) return null;
-      const chance = isAce ? SCANDAL_CONFIG.aceChance : SCANDAL_CONFIG.baseChance;
+      const chance = isChamp ? SCANDAL_CONFIG.champChance : SCANDAL_CONFIG.baseChance;
       if (Engine.rng.float(rng) >= chance) return null;
       const penalty = -(SCANDAL_CONFIG.penaltyMin + Engine.rng.int(rng, 0, SCANDAL_CONFIG.penaltyMax - SCANDAL_CONFIG.penaltyMin));
       const msg = SCANDAL_CONFIG.messages[Engine.rng.int(rng, 0, SCANDAL_CONFIG.messages.length - 1)];
@@ -493,7 +493,7 @@ const Engine = {
       cardPop *= CARD_DEPTH_MULT[depthIdx];
       return cardPop;
     },
-    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch) {
+    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard) {
       const v = VENUES[venueIdx];
       // v1.0b: Capacity-independent base attendance (quadratic on orgPop)
       const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 5000);
@@ -501,9 +501,11 @@ const Engine = {
       const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
       const heatMult = Engine.heat.getMult(G);
       const titleMult = hasTitleMatch ? 1.15 : 1.0;
+      // v1.2: チャンピオン出場ボーナス +10%
+      const champMult = hasChampOnCard ? 1.10 : 1.0;
       // 華: ロスターに華持ちがいれば集客+5%
       const charismaMult = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 1.05 : 1.0;
-      const rawAttendance = Math.round((baseAttendance + cardBonus) * heatMult * titleMult * charismaMult);
+      const rawAttendance = Math.round((baseAttendance + cardBonus) * heatMult * titleMult * champMult * charismaMult);
       // Minimum guarantee: 5% of capacity (at least 10)
       const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
       return Engine.util.clamp(rawAttendance, minAttendance, v.cap);
@@ -719,6 +721,170 @@ const Engine = {
         return state.beltDisplayName;
       }
       return '団体王座';
+    }
+  },
+
+  // ── v1.2: Intrusion Match (乱入マッチ) ────────────────────────
+  intrusion: {
+    CHANCE: 0.20,         // 20% per eligible title match (~4 times in 5 years)
+    MIN_DEFENSES: 3,      // チャンピオン3回以上防衛が条件
+    OVR_THRESHOLD: 0.90,  // チャンピオンOVRの90%以上
+
+    /** 乱入判定。条件を満たせば乱入選手情報を返す。不発ならnull */
+    check(state, rng) {
+      const champ = state.titles?.world;
+      if (!champ?.championId || champ.defenses < this.MIN_DEFENSES) return null;
+      const hasTitle = state.showCard && state.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
+      if (!hasTitle) return null;
+
+      // 確率判定
+      if (Engine.rng.float(rng) >= this.CHANCE) return null;
+
+      // 隣接団体を特定（ランキング上下1位）
+      const rankings = state.rankings || [];
+      const pIdx = rankings.findIndex(r => r.orgId === 'player');
+      if (pIdx < 0) return null;
+      const adjacentOrgIds = [];
+      if (pIdx > 0) adjacentOrgIds.push(rankings[pIdx - 1].orgId);
+      if (pIdx < rankings.length - 1) adjacentOrgIds.push(rankings[pIdx + 1].orgId);
+      // playerのみ除外
+      const validOrgIds = adjacentOrgIds.filter(id => id !== 'player');
+      if (validOrgIds.length === 0) return null;
+
+      // チャンピオンのOVR取得
+      const champFighter = state.roster.find(c => c.id === champ.championId);
+      if (!champFighter) return null;
+      const champOvr = Engine.util.ov(champFighter);
+      const ovrMin = Math.floor(champOvr * this.OVR_THRESHOLD);
+
+      // 候補選手: 各隣接団体の上位3名からOVR条件を満たす非怪我選手
+      const candidates = [];
+      validOrgIds.forEach(orgId => {
+        const orgData = state.aiOrgs?.[orgId];
+        if (!orgData) return;
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        const top3 = [...orgData.roster]
+          .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+          .slice(0, 3)
+          .filter(f => Engine.util.ov(f) >= ovrMin && !f.injury);
+        top3.forEach(f => candidates.push({ fighter: f, orgId, orgName: org?.name || orgId }));
+      });
+
+      if (candidates.length === 0) return null;
+
+      // ランダム選出
+      const pick = candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
+      return {
+        intruder: { ...pick.fighter },
+        fromOrgId: pick.orgId,
+        fromOrgName: pick.orgName,
+        champId: champ.championId,
+        champName: champFighter.name
+      };
+    },
+
+    /** 乱入マッチ結果の追加効果を適用 */
+    applyResult(state, intruderWon, rng) {
+      if (intruderWon) {
+        // 敗北: ヒート -15〜-20 + 王座空位
+        const penalty = -(15 + Engine.rng.int(rng, 0, 5));
+        return {
+          ...state,
+          heatScore: Math.max(0, (state.heatScore || 50) + penalty),
+          titles: { ...state.titles, world: { ...state.titles.world, championId: null, defenses: 0 } }
+        };
+      } else {
+        // 勝利: 団体人気+2
+        return { ...state, orgPop: Math.min(100, (state.orgPop || 0) + 2) };
+      }
+    }
+  },
+
+  // ── v1.2-9: Flavor Events (フレーバーイベント) ─────────────────
+  flavor: {
+    CHANCE: 0.12,          // 12% per eligible fighter per week (~1 event every 8 weeks)
+    POP_THRESHOLD: 55,     // non-champion needs popularity >= 55
+
+    MAGAZINE_HEADLINES: [
+      (name) => `📰 週刊女子プロレス — 「${name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」`,
+      (name) => `📰 月刊プロレスマガジン — 「特集：${name}の素顔に迫る」`,
+      (name) => `📰 週刊女子プロレス — 「${name}、表紙＆巻頭グラビア！ファン歓喜」`,
+      (name) => `📰 スポーツ報知 — 「${name}が語る"強さの秘密"」`,
+      (name) => `📰 週刊女子プロレス — 「${name}密着ルポ。練習場から見えた執念」`,
+      (name) => `📰 月刊プロレスマガジン — 「${name}インタビュー。『ファンの声援が力になる』」`,
+    ],
+    TV_HEADLINES: [
+      (name) => `📺 スポーツニュース — 「${name}がゴールデンタイムに登場。業界への注目が高まっている」`,
+      (name) => `📺 バラエティ番組出演 — 「${name}のトーク力に共演者も驚き」`,
+      (name) => `📺 朝の情報番組 — 「話題の女子プロレスラー${name}に密着取材」`,
+      (name) => `📺 スポーツドキュメント — 「${name}、リングの外の真実」`,
+      (name) => `📺 特番出演 — 「女子プロレス最前線！ ${name}の魅力を徹底解剖」`,
+      (name) => `📺 トーク番組 — 「${name}、意外な素顔にスタジオ沸く」`,
+    ],
+
+    /**
+     * フレーバーイベント判定。最大1件/週を返す。
+     * @returns {Array<{type:'magazine'|'tv', fighterId, fighterName, popGain?, heatGain?, headline}>}
+     */
+    check(state, rng) {
+      if (state.offSeason) return [];
+      const champId = state.titles?.world?.championId;
+      const eligible = (state.roster || []).filter(c =>
+        !c.injury && !c.isRental && !c.isIntrusion &&
+        (c.id === champId || c.popularity >= this.POP_THRESHOLD)
+      );
+      if (eligible.length === 0) return [];
+
+      // Shuffle eligible list for fairness
+      const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+
+      for (const fighter of shuffled) {
+        if (Engine.rng.float(rng) >= this.CHANCE) continue;
+
+        const isChamp = fighter.id === champId;
+        const isMagazine = Engine.rng.float(rng) < 0.5;
+
+        if (isMagazine) {
+          const templates = this.MAGAZINE_HEADLINES;
+          const headline = templates[Engine.rng.int(rng, 0, templates.length - 1)](fighter.name);
+          return [{
+            type: 'magazine',
+            fighterId: fighter.id,
+            fighterName: fighter.name,
+            popGain: isChamp ? 3 : 2,
+            headline
+          }];
+        } else {
+          const templates = this.TV_HEADLINES;
+          const headline = templates[Engine.rng.int(rng, 0, templates.length - 1)](fighter.name);
+          return [{
+            type: 'tv',
+            fighterId: fighter.id,
+            fighterName: fighter.name,
+            heatGain: isChamp ? 3 : 2,
+            headline
+          }];
+        }
+      }
+      return [];
+    },
+
+    /** フレーバーイベントの効果を適用 */
+    apply(state, flavorEvents) {
+      let s = state;
+      for (const ev of flavorEvents) {
+        if (ev.type === 'magazine') {
+          const roster = s.roster.map(c =>
+            c.id === ev.fighterId
+              ? { ...c, popularity: Math.min(100, c.popularity + ev.popGain) }
+              : c
+          );
+          s = { ...s, roster };
+        } else if (ev.type === 'tv') {
+          s = { ...s, heatScore: Math.min(100, (s.heatScore || 50) + ev.heatGain) };
+        }
+      }
+      return s;
     }
   },
 
@@ -1664,8 +1830,8 @@ const Engine = {
       const scandalRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 777));
       roster = roster.map(c => {
         if (c.injury || c.isRental) return c;
-        const isAce = Engine.ace.isAce(G, c.id);
-        const scandal = Engine.popularity.checkScandal(scandalRng, c, isAce);
+        const isChamp = G.titles?.world?.championId === c.id;
+        const scandal = Engine.popularity.checkScandal(scandalRng, c, isChamp);
         if (!scandal) return c;
         events.push(scandal.msg);
         return { ...c, popularity: Math.max(1, c.popularity + scandal.popDelta) };
@@ -1721,7 +1887,9 @@ const Engine = {
         const mainPop = Engine.economy.calcCardPop(matchPops);
 
         const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
-        const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch);
+        const champId = G.titles?.world?.championId;
+        const hasChampOnCard = champId ? G.showCard.some(m => m.left === champId || m.right === champId) : false;
+        const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard);
         const rev = Engine.economy.calcShowRevenue(roster, G.showVenue, attendance);
 
         totalIncome += rev.ticketRev;
@@ -1839,6 +2007,17 @@ const Engine = {
         if (added.length > 0) events.push(`📋 FA市場更新: ${added.map(f => f.name).join('、')}が新規参入`);
       }
     }
+    // v1.2-9: Flavor events (雑誌取材・TV出演)
+    const flavorRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 5555));
+    const flavorEvents = Engine.flavor.check(s, flavorRng);
+    if (flavorEvents.length > 0) {
+      s = Engine.flavor.apply(s, flavorEvents);
+      s = { ...s, _flavorEvents: flavorEvents };
+      flavorEvents.forEach(ev => {
+        if (ev.type === 'magazine') events.push(`${ev.headline}（${ev.fighterName} 人気+${ev.popGain}）`);
+        else events.push(`${ev.headline}（ヒート+${ev.heatGain}）`);
+      });
+    }
     return { state: s, events };
   },
 
@@ -1908,7 +2087,9 @@ const Engine = {
     });
     const showCardPop = Engine.economy.calcCardPop(showMatchPops);
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
-    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend);
+    const champIdForAttend = s.titles?.world?.championId;
+    const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
+    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
@@ -2011,26 +2192,6 @@ const Engine = {
   // ║  ENGINE: ACE & TRANSFER (Phase C)                         ║
   // ╚══════════════════════════════════════════════════════════╝
 
-  // ── C-1: Ace Designation ──
-  ACE_CONFIG: { popPenalty: 0 },
-  ace: {
-    /** Check if ace designation is possible. Returns { ok, isFirst, cost, reason } */
-    canDesignate(state) {
-      const isFirst = !state.aceDesignation;
-      // Spec §6.1: 認定自体は無料
-      return { ok: true, isFirst, cost: 0 };
-    },
-    designate(state, fighterId) {
-      return { ...state, aceDesignation: fighterId };
-    },
-    revoke(state) {
-      return { ...state, aceDesignation: null };
-    },
-    isAce(state, fighterId) {
-      return state.aceDesignation === fighterId;
-    }
-  },
-
   // ── C-3: Transfer Fee Calculation ──
   transfer: {
     calcFee(fighter, fromOrg) {
@@ -2060,7 +2221,7 @@ const Engine = {
       // AI → Player poach attempts
       s.roster.forEach(fighter => {
         if (fighter.popularity < cfg.poachMinPopularity) return;
-        if (Engine.ace.isAce(s, fighter.id)) return; // エースは対象外
+        if (s.titles?.world?.championId === fighter.id) return; // チャンピオンは対象外
 
         // Only higher-ranked orgs can poach
         if (cfg.poachRequiresHigherRank) {
@@ -2120,11 +2281,11 @@ const Engine = {
       } else {
         // Defend — player pays retention cost
         const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
-        // Non-ace: 80% defense success
+        // Non-champion: 80% defense success
         const defRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, fighterIdToRelease));
-        const defended = Engine.ace.isAce(s, fighterIdToRelease)
+        const defended = s.titles?.world?.championId === fighterIdToRelease
           ? true
-          : Engine.rng.float(defRng) < TRANSFER_CONFIG.nonAceRetentionRate;
+          : Engine.rng.float(defRng) < TRANSFER_CONFIG.nonChampionRetentionRate;
         if (defended) {
           s = { ...s, funds: s.funds - retCost };
           events.push(`🛡️ ${poach.fighter.name}の引き留めに成功（-${retCost}万）`);
@@ -3151,37 +3312,44 @@ const Engine = {
       const tier = Engine.draft.EVAL_TIERS.find(t => perceived >= t.min) || Engine.draft.EVAL_TIERS[Engine.draft.EVAL_TIERS.length - 1];
       return { ...tier, variance: clampedVar };
     },
+    // v1.2: Age-based entry ratio (matches generateStartValues base + avg random)
+    _entryRatio(age) {
+      if (age <= 17) return 0.60;   // base 0.55 + ~0.05 avg
+      return 0.70;                  // base 0.65 + ~0.05 avg (age 18-20)
+    },
     // Get candidate info with estimated entry-level OVR for display
     // coachMult: best hired coach's growthMult (0 at draft = max variance)
     getCandidateInfo(seed, coachMult) {
-      const ENTRY_RATIO = 0.60; // age 16 base=0.55 + avg random 0.05
       return DRAFT_CONFIG.candidates.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const entryPw = Math.round(t.pw * ENTRY_RATIO);
-        const entrySp = Math.round(t.sp * ENTRY_RATIO);
-        const entryTe = Math.round(t.te * ENTRY_RATIO);
-        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        const ratio = Engine.draft._entryRatio(age);
+        const entryPw = Math.round(t.pw * ratio);
+        const entrySp = Math.round(t.sp * ratio);
+        const entryTe = Math.round(t.te * ratio);
+        const entrySt = Math.round(t.st * ratio);
         const entryMn = t.mn; // MN is innate, no age reduction
         const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
         const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
         const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
-        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, age, coachEval };
       });
     },
     // Get fixed member info (also entry-level)
     getFixedInfo(seed, coachMult) {
-      const ENTRY_RATIO = 0.60;
       return DRAFT_CONFIG.fixed.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const entryPw = Math.round(t.pw * ENTRY_RATIO);
-        const entrySp = Math.round(t.sp * ENTRY_RATIO);
-        const entryTe = Math.round(t.te * ENTRY_RATIO);
-        const entrySt = Math.round(t.st * ENTRY_RATIO);
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        const ratio = Engine.draft._entryRatio(age);
+        const entryPw = Math.round(t.pw * ratio);
+        const entrySp = Math.round(t.sp * ratio);
+        const entryTe = Math.round(t.te * ratio);
+        const entrySt = Math.round(t.st * ratio);
         const entryMn = t.mn;
         const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
         const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
         const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
-        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, coachEval };
+        return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, age, coachEval };
       });
     },
     // Validate draft picks
@@ -3194,10 +3362,11 @@ const Engine = {
       if (!Engine.draft.isValidPicks(picks)) return state;
       const rosterIds = [...DRAFT_CONFIG.fixed, ...picks];
       const rejected = DRAFT_CONFIG.candidates.filter(id => !picks.includes(id));
-      // Build roster
+      // Build roster (use draftAges for age variation)
       const roster = rosterIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        return Engine.makeChar(t, rng, { age: 16 });
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        return Engine.makeChar(t, rng, { age });
       });
       // FA = original free pool - draft used (fixed + candidates) + rejected
       const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
@@ -3256,7 +3425,8 @@ const Engine = {
     ORG_ASSIGN.player = rosterIds;
     const roster = rosterIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
-      return Engine.makeChar(t, rng, { age: 16 });
+      const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+      return Engine.makeChar(t, rng, { age });
     });
 
     // Free agents: FA pool minus draft candidates (they're shown separately)
@@ -3306,7 +3476,6 @@ const Engine = {
       // v0.9: Rival system
       aiOrgs,
       rivalOrgNames,
-      aceDesignation: null,
       rankings: [],
       transferLog: [],
       transfersThisSeason: 0,
@@ -3314,8 +3483,7 @@ const Engine = {
       // v0.9b: Offseason system
       offSeason: false,
       offWeek: 0,
-      // v0.9c: Phase C — Ace & Transfer
-      aceDesignation: null,
+      // v0.9c: Phase C — Transfer
       pendingPoach: [],
       // v0.9d: Phase D — Rental & Events
       rental: null,

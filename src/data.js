@@ -352,7 +352,12 @@ function generateDraftConfig(seed) {
     ? midPool : [...midPool, ...withOvr.filter(x => !fixedSet.has(x.id) && !midPool.some(m => m.id === x.id))];
   const candShuffled = seededShuffle(candidatePool.map(x => x.id), rng);
   const candidates = candShuffled.slice(0, ROSTER_CFG.draftCandidates);
-  DRAFT_CONFIG = { fixed, candidates, pickCount: ROSTER_CFG.draftPicks };
+  // v1.2: Generate age for each draft member (16-19)
+  const draftAges = {};
+  [...fixed, ...candidates].forEach(id => {
+    draftAges[id] = 16 + Engine.rng.int(rng, 0, 3);
+  });
+  DRAFT_CONFIG = { fixed, candidates, pickCount: ROSTER_CFG.draftPicks, draftAges };
   return DRAFT_CONFIG;
 }
 
@@ -397,11 +402,10 @@ function coachPortraitImg(coach, size = 48) {
 }
 function portraitImg(id, size = 80, cls = '', clickable = false) {
   const url = getPortraitUrl(id);
-  // Auto-detect champion/ace status for border color
+  // Auto-detect champion status for border color
   let statusCls = '';
   if (typeof G !== 'undefined') {
     if (G.titles?.world?.championId === id) statusCls = ' portrait-champ';
-    else if (G.aceDesignation === id) statusCls = ' portrait-ace';
   }
   const clickAttr = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'roster')" style="width:${size}px;height:${size}px;cursor:pointer"` : ` style="width:${size}px;height:${size}px"`;
   if (url) {
@@ -591,7 +595,7 @@ const VENUE_SCALE_MQ = [0, 0, 1, 1, 2, 2, 3];
 // ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {
   baseChance: 0.005,   // 週0.5%
-  aceChance: 0.0025,   // エースは半分
+  champChance: 0.0025,   // チャンピオンは半分
   minPop: 40,           // 人気40以上のみ対象
   penaltyMin: 20,
   penaltyMax: 35,
@@ -915,8 +919,8 @@ const TRANSFER_CONFIG = {
   poachChancePerFighter: 0.06,          // 1選手あたり6%/四半期
   poachMinPopularity: 50,               // 人気50以上が対象
   poachRequiresHigherRank: true,        // 引き抜き元がプレイヤーより上位
-  aceRetentionRate: 1.0,                // エース: 100%防衛
-  nonAceRetentionRate: 0.80,            // 非エース: 80%防衛
+  championRetentionRate: 1.0,            // チャンピオン: 100%防衛
+  nonChampionRetentionRate: 0.80,       // 非チャンピオン: 80%防衛
   retentionCostMultiplier: 0.5,         // 引き留め費用 = 移籍金 × 0.5
 };
 

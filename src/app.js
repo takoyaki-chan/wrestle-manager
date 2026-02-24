@@ -1066,7 +1066,8 @@ const Storage = {
       // Restore org names from saved state
       Engine.rival.applyOrgNames(G.rivalOrgNames);
       if (!G.rankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
-      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null };
+      // v1.2: Remove deprecated aceDesignation
+      if (G.aceDesignation !== undefined) { const { aceDesignation: _ace, ...rest } = G; G = rest; }
       if (!G.transferLog) G = { ...G, transferLog: [] };
       if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
       // v1.0e: poolIds → dormantPool migration
@@ -1076,8 +1077,8 @@ const Storage = {
 
       // v0.9b backward compat: offseason system
       if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
-      // v0.9c backward compat: ace & transfer
-      if (G.aceDesignation === undefined) G = { ...G, aceDesignation: null, pendingPoach: [] };
+      // v0.9c backward compat: transfer
+      if (G.pendingPoach === undefined) G = { ...G, pendingPoach: [] };
       // v0.9d backward compat: rental & events
       if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
@@ -1135,6 +1136,16 @@ const Storage = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 888));
         const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
         return { ...c, ...startVals };
+      })};
+
+      // v1.2 migration: fix freeAgents stuck at age 16 (should be 18-26)
+      G = { ...G, freeAgents: G.freeAgents.map(c => {
+        if (c.age !== 16) return c; // only fix age-16 FAs
+        const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
+        const newAge = 18 + Engine.rng.int(ageRng, 0, 8);
+        const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
+        const startVals = Engine.rival.generateStartValues(ageRng, nv, newAge);
+        return { ...c, age: newAge, ...startVals };
       })};
 
       // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
@@ -1848,6 +1859,50 @@ const App = {
         : '少なくとも1試合を組んでください');
       return;
     }
+    // v1.2: 乱入マッチ判定
+    App._intrusionData = null;
+    const intrusionRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 8888));
+    const intrusion = Engine.intrusion.check(G, intrusionRng);
+    if (intrusion) {
+      // タイトルマッチの挑戦者を差し替え
+      const titleIdx = G.showCard.findIndex(m => m.isTitle && m.left > 0 && m.right > 0);
+      if (titleIdx >= 0) {
+        const tm = G.showCard[titleIdx];
+        const challengerSide = tm.left === intrusion.champId ? 'right' : 'left';
+        const originalChallengerId = tm[challengerSide];
+        // showCard更新
+        const newCard = G.showCard.map((m, i) => {
+          if (i !== titleIdx) return m;
+          return { ...m, [challengerSide]: intrusion.intruder.id };
+        });
+        // 乱入選手を一時的にrosterに追加
+        const intruderForRoster = { ...intrusion.intruder, isIntrusion: true };
+        G = { ...G, showCard: newCard, roster: [...G.roster, intruderForRoster] };
+        // validMatchesも更新
+        validMatches.forEach((m, i) => {
+          if (m.isTitle) {
+            m[challengerSide] = intrusion.intruder.id;
+          }
+        });
+        App._intrusionData = {
+          intruder: intrusion.intruder,
+          fromOrgName: intrusion.fromOrgName,
+          champName: intrusion.champName,
+          originalChallengerId,
+          challengerSide
+        };
+        // 乱入演出ポップアップ
+        showEventPopup({
+          type: 'fighter',
+          id: intrusion.intruder.id,
+          name: intrusion.intruder.name,
+          tone: 'negative',
+          message: `⚡ ${intrusion.fromOrgName}の${intrusion.intruder.name}が乱入！`,
+          detail: `タイトルマッチの挑戦者が差し替わった！\nOVR ${Engine.util.ov(intrusion.intruder)} の強敵が王座を狙う！`
+        });
+      }
+    }
+
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
     // Initialize preview state
@@ -2059,6 +2114,28 @@ const App = {
       }
     });
 
+    // v1.2: 乱入マッチ結果処理
+    if (App._intrusionData) {
+      const id = App._intrusionData;
+      // 乱入選手がタイトルを奪取したか判定
+      const intruderId = id.intruder.id;
+      const intruderWon = titles.world.championId === intruderId;
+      if (intruderWon) {
+        // 王座空位 + ヒートダウン
+        const intRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8889));
+        const penalty = -(15 + Engine.rng.int(intRng, 0, 5));
+        titles = { ...titles, world: { ...titles.world, championId: null, defenses: 0 } };
+        s = { ...s, heatScore: Math.max(0, (s.heatScore || 50) + penalty) };
+        events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}`);
+      } else {
+        // チャンピオン勝利 → 団体人気+2
+        s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
+        events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2`);
+      }
+      // 乱入選手をrosterから除去
+      roster = roster.filter(c => !c.isIntrusion);
+    }
+
     // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
     const showMatchPops = validMatches.map(m => {
       const lc = roster.find(c => c.id === m.left);
@@ -2067,7 +2144,9 @@ const App = {
     });
     const showCardPop = Engine.economy.calcCardPop(showMatchPops);
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
-    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend);
+    const champIdForAttend = s.titles?.world?.championId;
+    const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
+    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
@@ -2100,13 +2179,17 @@ const App = {
     const injuryReduction = Engine.facility.getInjuryReduction(s);
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
-      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
-      if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
+        const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
+        const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
+        if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+      }
       const rc = roster.find(c => c.id === r.right.id);
-      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
-      if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+      if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
+        const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
+        const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
+        if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+      }
     });
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
@@ -2148,6 +2231,24 @@ const App = {
       }
     });
     App._lastInjuries = [];
+    // v1.2: 乱入マッチ結果ポップアップ
+    if (App._intrusionData) {
+      const id = App._intrusionData;
+      const intruderId = id.intruder.id;
+      // 乱入選手が王者になっていたら（＝空位化前のchampionIdだった）、王座奪取
+      const wasIntruderCrowned = !G.titles?.world?.championId; // 空位＝乱入選手に奪われた
+      const popupDelay = injuries.length * 100 + 50;
+      if (wasIntruderCrowned) {
+        setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
+          message: `${id.fromOrgName}の${id.intruder.name}に王座を奪われた…`,
+          detail: `王座は空位に。次のタイトルマッチで新王者を決定してください。` }), popupDelay);
+      } else {
+        setTimeout(() => showEventPopup({ type:'fighter', id:G.titles.world.championId, name:id.champName, tone:'gold',
+          message: `乱入者を退けた！`,
+          detail: `👑 ${id.champName}が${id.fromOrgName}の${id.intruder.name}を撃破！ 団体人気+2` }), popupDelay);
+      }
+      App._intrusionData = null;
+    }
     // Check title wins (only if champion is newly crowned this show)
     const newChampId = G.titles?.world?.championId;
     if (newChampId && G.titles.world.defenses === 0 && G.lastShowResults?.some(r => r.isTitleMatch)) {
@@ -2168,6 +2269,19 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    // v1.2-9: Flavor event popups after show settlement
+    const showFlavorEvents = G._flavorEvents || [];
+    if (showFlavorEvents.length > 0) {
+      showFlavorEvents.forEach((ev, i) => {
+        const detail = ev.type === 'magazine' ? `人気 +${ev.popGain}` : `ヒート +${ev.heatGain}`;
+        setTimeout(() => showEventPopup({
+          type: 'fighter', id: ev.fighterId, name: ev.fighterName,
+          tone: 'positive', message: ev.headline, detail
+        }), i * 100 + 50);
+      });
+      const { _flavorEvents, ...cleanG } = G;
+      G = cleanG;
+    }
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
@@ -2248,6 +2362,24 @@ const App = {
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
         message: pickQuote('injury'), detail:`🏥 ${c.injury.type} — 全治${c.injury.weeksLeft}週間` }), i * 100);
     });
+    // v1.2-9: Flavor event popups (雑誌取材・TV出演)
+    const flavorEvents = G._flavorEvents || [];
+    if (flavorEvents.length > 0) {
+      const baseDelay = newInjuries.length * 100 + 50;
+      flavorEvents.forEach((ev, i) => {
+        const tone = ev.type === 'magazine' ? 'positive' : 'positive';
+        const detail = ev.type === 'magazine'
+          ? `人気 +${ev.popGain}`
+          : `ヒート +${ev.heatGain}`;
+        setTimeout(() => showEventPopup({
+          type: 'fighter', id: ev.fighterId, name: ev.fighterName,
+          tone, message: ev.headline, detail
+        }), baseDelay + i * 100);
+      });
+      // Clean up transient field
+      const { _flavorEvents, ...cleanState } = G;
+      G = cleanState;
+    }
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;
     showScreen('week');
