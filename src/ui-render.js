@@ -828,22 +828,6 @@ function renderWeekScreen() {
       </div>`;
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
-    } else if (ev.type === 'challenge') {
-      document.getElementById('weekTitle').textContent = `第${G.week}週 — 🔥 挑戦状`;
-      html += `<div style="background:linear-gradient(135deg,rgba(243,156,18,0.15),rgba(241,196,15,0.1));border:1px solid rgba(243,156,18,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:#f39c12;margin-bottom:8px">🔥 挑戦状</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}からの因縁の1戦</p>
-        <p style="font-size:12px;color:var(--text-sub)">MQボーナス +${ev.mqBonus}</p>
-      </div>`;
-      html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
-        <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
-        <span style="color:var(--text-dim)">vs</span>
-        <span><strong style="color:#e74c3c">${ev.aiFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.aiFighter)}</span></span>
-      </div>`;
-      html += `<div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-gold" onclick="executeEvent()">🔥 受けて立つ！</button>
-        <button class="btn btn-blue" onclick="skipEvent()">無視する</button>
-      </div>`;
     } else if (ev.type === 'summit') {
       document.getElementById('weekTitle').textContent = `第${G.week}週 — 🏆 頂上決戦`;
       html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
@@ -1270,7 +1254,7 @@ function renderRanking() {
   }
 
   // Ranking table
-  html += '<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th><th style="text-align:right">評価値</th><th style="text-align:right">👑 チャンプ</th><th style="text-align:right">⭐ スター</th><th style="text-align:right">👥 人気計</th><th style="text-align:right">人数</th></tr>';
+  html += '<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th><th style="text-align:right">評価値</th><th style="text-align:right" title="人気の高い選手が何人いるかの得点。人気70以上=15pt、人気50以上=8pt、人気30以上=3pt。スターの厚みを示す。">⭐ スター</th><th style="text-align:right" title="所属選手の個人人気を全員分合計した値（合計×0.1）。団体全体の層の厚さを示す。">👥 人気計</th><th style="text-align:right">人数</th></tr>';
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
@@ -1283,7 +1267,6 @@ function renderRanking() {
       <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
       <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
       <td class="num" style="font-size:16px;font-weight:700">${r.rating}</td>
-      <td class="num">${r.championScore}</td>
       <td class="num">${r.starPower}</td>
       <td class="num">${r.totalPop}</td>
       <td class="num">${r.rosterSize}</td>

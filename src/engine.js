@@ -2414,13 +2414,7 @@ const Engine = {
           )}};
         }
         events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
-        // Check challenge trigger (rental injury)
-        let challengeTrigger = null;
-        if (rentalF && rentalF.injury) {
-          challengeTrigger = { type: 'rentalInjury', fromOrgId: r.fromOrgId, fighterId: r.fighterId };
-          events.push(`⚠ ${rentalF.name}が怪我を負った状態で返却 → 因縁発生の可能性`);
-        }
-        return { state: { ...s, roster: returning, rental: null, aiOrgs, challengeTrigger }, events, returned: true };
+        return { state: { ...s, roster: returning, rental: null, aiOrgs }, events, returned: true };
       }
       return { state: { ...s, rental: r }, events, returned: false };
     }
@@ -2806,28 +2800,6 @@ const Engine = {
       };
     },
 
-    /** D-3: Check challenge trigger from recent events */
-    checkChallenge(rng, state) {
-      const trigger = state.challengeTrigger;
-      if (!trigger) return null;
-      let chance = 0;
-      if (trigger.type === 'rentalInjury') chance = 0.50;
-      else if (trigger.type === 'poachSuccess') chance = 0.30;
-      else if (trigger.type === 'poachRejected') chance = 0.20;
-      if (Engine.rng.float(rng) >= chance) return null;
-
-      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, trigger.fromOrgId);
-      if (!aiOrg) return null;
-
-      // Matchup: aces of both orgs
-      const playerAce = Engine.event.getAce(state.roster);
-      const aiAce = Engine.event.getAce(aiOrg.roster);
-      if (!playerAce || !aiAce) return null;
-
-      return { type: 'challenge', fromOrgId: trigger.fromOrgId, orgName: aiOrg.name,
-               playerFighter: playerAce, aiFighter: aiAce, mqBonus: EVENT_CONFIG.challengeMQBonus };
-    },
-
     /** D-4: Check summit match conditions */
     checkSummitMatch(state) {
       const rankings = state.rankings || [];
@@ -3063,17 +3035,6 @@ const Engine = {
       s = { ...s, pendingEvent: warCheck, warThisSeason: true };
       events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
       return { state: { ...s, weekPhase: 'event' }, events };
-    }
-
-    // D-3: Challenge from triggers (rental injury, transfer disputes)
-    if (s.challengeTrigger) {
-      const chalCheck = Engine.event.checkChallenge(eventRng, s);
-      s = { ...s, challengeTrigger: null }; // consume trigger
-      if (chalCheck) {
-        s = { ...s, pendingEvent: chalCheck };
-        events.push(`🔥 ${chalCheck.orgName}から挑戦状！ ${chalCheck.aiFighter.name} vs ${chalCheck.playerFighter.name}`);
-        return { state: { ...s, weekPhase: 'event' }, events };
-      }
     }
 
     // D-4: Summit match check (PPV weeks, rank ≤ 2)
