@@ -1,13 +1,13 @@
 # 🎮 Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-25（セッション13回目）
+> 最終更新: 2026-02-25（セッション14回目）
 > 旧ロードマップ（v0.1〜v0.99c開発記録）はアーカイブ済み
 
 ---
 
 ## 現在の状態
 
-**v1.3-2（成長・怪我デバフ）実装完了** — v1.3-1（衰退・引退）・v1.3-2（careerRecord）・v1.3-2（試合成長・growthPenalty・careerHistory）すべて実装済み。次は v1.3-3 引退演出・PPV＋年末表彰式の実装フェーズへ。
+**v1.3-3（年末表彰式UI）実装完了** — 表彰式UI大改修（engine5関数にstyle追加、AWARD_LINES40セリフ＋BESTMATCHフレーバー追加、枠画像フレームa-g切替、各賞スライド顔写真・セリフ・スタイル表示対応、殿堂金文字演出）。次は バランステスト → v1.3-3 引退演出 → PPVの実装フェーズへ。
 
 ---
 
@@ -29,7 +29,20 @@
 
 ---
 
-## 今セッション完了済み（セッション13 — v1.3-1 / 成長・怪我デバフ 実装）
+## 今セッション完了済み（セッション14 — 年末表彰式UI大改修）
+
+### 表彰式UI大改修
+
+| 変更ファイル | 変更内容 |
+|-------------|---------|
+| `engine.js` | `selectRookie`: style返り値追加。`selectBestMatch`: fighter1/fighter2を `{id,name,ovr,style}` オブジェクト化、player団体はroster+retiredFightersで名前逆引き。`selectMVP`: style返り値追加。`getChampions`: ovr/popularity/style/rank追加、state.rankingsから上位3団体フィルタしrank順ソート。`checkHallOfFame`: style追加 |
+| `data.js` | `AWARD_LINES`: 5賞×8パターン=40セリフ追加（role寄り+汎用混合）。`BESTMATCH_FLAVOR`: MQ帯別フレーバーテキスト（high/mid/low）追加 |
+| `index.html` (CSS) | max-width 380→500px。`data-frame="a"〜"g"` で枠画像切替。殿堂入り枠fはanimation 0.9s遅延。`.awards-name.gold` 金文字+text-shadow。`.awards-quote` 「」付きセリフスタイル。`.awards-plaque` ボーダー強化（opacity 0.25） |
+| `ui-common.js` | `_renderAwardsSlide(html, frame)`: フレーム切替。ヘルパー3関数追加（`_awardLine(key)` / `_bestMatchFlavor(mq)` / `_styleJa(style)`）。`showAwardsCeremony`: 各スライドにフレーム'a'〜'g'指定、新人王は常に表示（null→「該当者なし」）。各賞ビルダー全面改修: `_buildRookieAward`（顔150px+スタイル+セリフ）、`_buildBestMatchAward`（左右対称+顔100px×2+VS+フレーバー+両者セリフ）、`_buildMVPAward`（顔170px+スタイル+セリフ）、`_buildChampionsAward`（1位160pxドカーン+2位3位75px+セリフ）、`_buildHallOfFame`（金文字✦名前✦+銘板強化+殿堂専用セリフ）、`_buildAwardsSummary`（bestMatch fighterオブジェクト対応） |
+
+---
+
+## 前セッション完了済み（セッション13 — v1.3-1 / 成長・怪我デバフ 実装）
 
 ### v1.3-1: 衰退・引退システム改修（durability + wear方式）
 
@@ -289,7 +302,7 @@
 | 5 | 引退セリフ作成（98名分） | 中 | 未着手 |
 | 6 | 殿堂入りシステム | 大 | 設計完了（PPV＋表彰式に統合） |
 | 7 | **PPV（年間最大興行・全団体合同）** | 大 | 設計完了 |
-| 8 | **年末表彰式（3賞＋チャンピオン紹介＋殿堂入り）** | 大 | 設計完了 |
+| 8 | **年末表彰式（3賞＋チャンピオン紹介＋殿堂入り）** | 大 | ✅ UI完了 |
 
 ### v1.3-2: 個人実績記録システム（careerRecord）
 
@@ -348,8 +361,8 @@
 |---|--------|:----:|--------|
 | 1 | **バランステスト・チューニング**（試合成長値・練習比率・growthPenalty期間）| 小 | specs/v1.3-2-growth-injury-spec.md §8 |
 | 2 | **v1.3-3 引退演出** | 中 | specs/v1.3-3-retirement-presentation-spec.md |
-| 3 | **PPV＋年末表彰式** | 大 | specs/ppv-awards-spec.md |
-| 4 | **殿堂入りシステム** | 大 | specs/ppv-awards-spec.md Part 2 §2.3⑤ |
+| 3 | **PPV（全団体合同大会）** | 大 | specs/ppv-awards-spec.md |
+| 4 | **殿堂入りシステム統合** | 大 | specs/ppv-awards-spec.md Part 2 §2.3⑤ |
 
 ---
 
@@ -422,4 +435,5 @@
 - 2026-02-24 セッション10: **年末表彰式・殿堂入り・乱入マッチ・フレーバーイベントの詳細設計完了**。殿堂入り条件（獲得＋防衛13回以上またはグランドスラム）確定。乱入マッチ仕様（3回防衛後・5年4回・OVR90%下限・勝利+2/敗北-15〜-20）確定。フレーバーイベント演出（業界誌風テキストカード＋顔画像）確定。次回：エース廃止・チャンピオン統合から実装開始。
 - 2026-02-24 セッション11: **v1.2-6〜9 全完了**。エース廃止→チャンピオン統合（poach/retention/scandal保護移行）。チャンピオン集客ボーナス（×1.10）。乱入マッチ（3防衛後20%、隣接団体OVR90%↑、敗北でヒート-15〜-20・勝利で人気+2）。フレーバーイベント（雑誌取材：人気+2〜3、TV出演：ヒート+2〜3、業界誌風ポップアップ演出）。
 - 2026-02-25 セッション13: **v1.3-1 衰退・引退システム実装完了**（durability+wear方式、引退4ルート、怪我引退/壊滅的怪我、マイグレーション、wear UI）。**バグ修正**（技演出不一致：checkPinAttempt + finishWeights fix、FA20歳超え自動引退）。**成長システム改訂・怪我デバフ実装完了**（試合成長 matchGrowthBase=1.5、練習×0.4、growthPenalty付与/カウントダウン、seasonInjuries/careerHistory、マイグレーション、UI）。
+- 2026-02-25 セッション14: **年末表彰式UI大改修完了**。engine.js 5関数にstyle返り値追加（selectRookie/selectBestMatch/selectMVP/getChampions/checkHallOfFame）。data.jsにAWARD_LINES 40セリフ＋BESTMATCH_FLAVORフレーバー追加。index.htmlにフレーム枠a-g切替CSS・殿堂金文字演出。ui-common.jsで全賞ビルダー改修（顔写真・セリフ・スタイル表示対応）、ヘルパー3関数追加。
 - 2026-02-25 セッション12: **v1.3-2 個人実績記録システム実装完了**。`Engine.career`モジュール新設。`fighter.careerRecord`に時系列イベントログ（`history[]`）＋殿堂判定キャッシュ（`totalTitleWins`/`totalDefenses`/`peakOVR`）。8種のイベントタイプ（debut/titleWin/titleDefense/titleLoss/war/summit/transfer/retire）を8箇所にフック。`retiredFighters`（一時保管）/`hallOfFame`（永続）をGameStateに追加。既存セーブの`_migrated_v1_3`マイグレーション対応。**v1.3-1衰退・引退システム設計完了**：durability（正規分布μ=0,σ=2、非表示）＋wear（累積摩耗、28+dur歳から蓄積）方式で旧年齢テーブルを全廃。引退ルート4種（シーズン末/怪我wear超過/壊滅的怪我2〜3%/自主引退）。壊滅的怪我は年齢・wear問わず即引退。**v1.3-3/4引退演出設計完了**：全選手共通ポップアップ（顔画像＋careerRecord経歴＋セリフ）。セリフは引退ルート×キャリア×性格で8カテゴリ分岐。ボタンラベル「送り出す」/「……」。殿堂級も同じ演出（v1.3-4はv1.3-3に統合）。**PPV＋年末表彰式設計完了**：PPVは全団体合同大会。エントリー制（Week44締切・4週間の怪我リスク）、対戦相手は当日まで不明、枠数はランク依存（S=5/A=4/B=3/4位=2→計7試合）。マッチメイクは因縁優先→盛り上がりスコア順。煽り文＋対戦相手セリフ＋PPV専用BGM。表彰式は新人王（全団体1年目OVR最高）、ベストマッチ（各団体1試合→計4試合から最高MQ）、MVP（各団体エース1名→計4名からスコア最高）、チャンピオン紹介、殿堂入り。MVP/ベストマッチは各団体1枠でS-tier数の暴力を防止。新人王トーナメントは廃止し表彰式に統合。
