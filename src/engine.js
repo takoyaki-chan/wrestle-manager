@@ -996,6 +996,116 @@ const Engine = {
     }
   },
 
+  // ── v1.3-3: Retirement Presentation ────────────────
+  retirement: {
+    /**
+     * Build career summary from careerRecord.history (max 8 items, spec §1.2)
+     * Returns array of { icon, text } objects for display.
+     */
+    buildCareerSummary(fighter) {
+      const history = (fighter.careerRecord?.history || []);
+      if (history.length === 0) return [];
+
+      // Categorize events
+      const debut = history.filter(e => e.type === 'debut');
+      const titleWins = history.filter(e => e.type === 'titleWin');
+      const titleLosses = history.filter(e => e.type === 'titleLoss');
+      const summits = history.filter(e => e.type === 'summit');
+      const wars = history.filter(e => e.type === 'war');
+      const transfers = history.filter(e => e.type === 'transfer');
+      const peakOVRs = history.filter(e => e.type === 'peakOVR');
+      const defenses = history.filter(e => e.type === 'titleDefense');
+
+      const items = [];
+
+      // 1. debut (always show)
+      debut.forEach(e => {
+        const via = e.via === 'draft' ? 'ドラフト' : e.via === 'fa' ? 'FA' : e.via === 'scout' ? 'スカウト' : '入団';
+        items.push({ icon: '🎓', text: `S${e.season||1} ${via}入団`, priority: 1 });
+      });
+
+      // 2. titleWin / titleLoss (always show)
+      titleWins.forEach(e => items.push({ icon: '🏆', text: `S${e.season} W${e.week} 団体王座 獲得`, priority: 2 }));
+      titleLosses.forEach(e => items.push({ icon: '💫', text: `S${e.season} W${e.week} 団体王座 陥落`, priority: 2 }));
+
+      // 3. summit (priority)
+      summits.forEach(e => {
+        const result = e.won ? '勝利' : '敗北';
+        items.push({ icon: '🏆', text: `S${e.season} 頂上決戦（${result}）`, priority: 3 });
+      });
+
+      // 4. war (max 2)
+      wars.slice(0, 2).forEach(e => {
+        const result = e.won ? '勝利' : '敗北';
+        items.push({ icon: '⚔', text: `S${e.season} 対抗戦（${result}）`, priority: 4 });
+      });
+
+      // 5. transfer (max 2)
+      transfers.slice(0, 2).forEach(e => {
+        items.push({ icon: '📋', text: `S${e.season} ${e.toOrg||'他団体'}に移籍`, priority: 5 });
+      });
+
+      // 6. peakOVR (best only, always show)
+      if (peakOVRs.length > 0) {
+        const best = peakOVRs.reduce((a, b) => (b.ovr || 0) > (a.ovr || 0) ? b : a, peakOVRs[0]);
+        items.push({ icon: '📈', text: `S${best.season} 全盛期 OVR ${best.ovr || fighter.careerRecord?.peakOVR || '?'}`, priority: 6 });
+      } else if (fighter.careerRecord?.peakOVR) {
+        items.push({ icon: '📈', text: `全盛期 OVR ${fighter.careerRecord.peakOVR}`, priority: 6 });
+      }
+
+      // 7. titleDefense (summarized, 1 line)
+      if (defenses.length > 0) {
+        const maxCount = Math.max(...defenses.map(e => e.count || 1));
+        items.push({ icon: '🛡️', text: `防衛 ${maxCount}回`, priority: 7 });
+      }
+
+      // Sort by priority, then trim to max 8
+      items.sort((a, b) => a.priority - b.priority);
+      return items.slice(0, 8);
+    },
+
+    /**
+     * Select retirement line based on route × career × personality (spec §3.4)
+     * @param {Object} fighter
+     * @param {string} route - 'season_end' | 'injury_wear' | 'injury_career_ending'
+     * @param {Object} state - GameState (for champion check)
+     * @param {Object} rng
+     * @returns {string} retirement line
+     */
+    selectLine(fighter, route, state, rng) {
+      let category;
+
+      if (route === 'injury_wear' || route === 'injury_career_ending') {
+        // 怪我引退
+        const isChamp = state.titles?.world?.championId === fighter.id;
+        if (isChamp) {
+          category = 'B4_champion_injury';
+        } else if (fighter.age <= 25) {
+          category = 'B1_young';
+        } else if (fighter.age <= 30) {
+          category = 'B2_prime';
+        } else {
+          category = 'B3_older';
+        }
+      } else {
+        // シーズン末引退
+        if (fighter.role === 'Heel') {
+          category = 'A3_heel';
+        } else if ((fighter.careerRecord?.totalTitleWins || 0) > 0) {
+          category = 'A1_champion';
+        } else if ((fighter.careerSeasons || 0) >= 10) {
+          category = 'A4_veteran';
+        } else {
+          category = 'A2_uncrowned';
+        }
+      }
+
+      const lines = RETIREMENT_LINES[category] || RETIREMENT_LINES.A2_uncrowned;
+      const idx = Math.floor(Engine.rng.float(rng) * lines.length);
+      return { line: lines[idx], category };
+    }
+  },
+
   // ── Coach System (IMMUTABLE for state changes) ────────────────
   coach: {
     getHiredCoaches(G) {
@@ -2371,6 +2481,25 @@ const Engine = {
       : (s.lastTitleMatchWeek ?? null);
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
+
+    // v1.3-3: Build pending injury retirement presentation data
+    const injuryRetirees = injuryResults.filter(ir => ir.retireType);
+    if (injuryRetirees.length > 0) {
+      const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
+      const pendingInjuryRetirements = injuryRetirees.map(ir => {
+        const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+        const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
+        if (!retiredF) return null;
+        const { line, category } = Engine.retirement.selectLine(retiredF, route, state, lineRng);
+        const summary = Engine.retirement.buildCareerSummary(retiredF);
+        const wasChampion = state.titles?.world?.championId === retiredF.id;
+        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion };
+      }).filter(Boolean);
+      if (pendingInjuryRetirements.length > 0) {
+        s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
+      }
+    }
+
     return { state: s, results, injuryResults, events };
   },
 
@@ -3320,7 +3449,14 @@ const Engine = {
             f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
             return f;
           });
-          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords] };
+          // v1.3-3: Build pending retirement presentation data
+          const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFADE));
+          const pendingRetirements = retiredWithRecords.map(f => {
+            const { line, category } = Engine.retirement.selectLine(f, 'season_end', s, lineRng);
+            const summary = Engine.retirement.buildCareerSummary(f);
+            return { fighter: f, route: 'season_end', line, category, summary };
+          });
+          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
           retirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
         }
 

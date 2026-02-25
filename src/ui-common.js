@@ -789,7 +789,104 @@ function _renderEventPopup() {
 function closeEventPopup() {
   document.getElementById('eventPopupOverlay').classList.remove('active');
   _eventPopupQueue.shift();
-  if (_eventPopupQueue.length > 0) setTimeout(_renderEventPopup, 200);
+  if (_eventPopupQueue.length > 0) {
+    setTimeout(_renderEventPopup, 200);
+  } else if (_onEventPopupQueueEmpty) {
+    const cb = _onEventPopupQueueEmpty;
+    _onEventPopupQueueEmpty = null;
+    setTimeout(cb, 200);
+  }
+}
+let _onEventPopupQueueEmpty = null;
+
+// ── v1.3-3: Retirement Popup ────────────────
+let _retirementPopupQueue = [];
+let _retirementPopupCallback = null;
+
+/**
+ * Show retirement popup(s) in sequence.
+ * @param {Array} retirements - Array of { fighter, route, line, summary, injuryType?, wasChampion? }
+ * @param {Function} onAllDone - Called after all popups are dismissed
+ */
+function showRetirementPopups(retirements, onAllDone) {
+  if (!retirements || retirements.length === 0) { if (onAllDone) onAllDone(); return; }
+  _retirementPopupQueue = [...retirements];
+  _retirementPopupCallback = onAllDone || null;
+  _renderRetirementPopup();
+}
+
+function _renderRetirementPopup() {
+  if (_retirementPopupQueue.length === 0) {
+    if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
+    return;
+  }
+  const r = _retirementPopupQueue[0];
+  const f = r.fighter;
+  const box = document.getElementById('retirementPopupBox');
+  const isInjury = r.route === 'injury_wear' || r.route === 'injury_career_ending';
+
+  // Face
+  let faceHtml = '';
+  const url = getPortraitUrl(f.id);
+  if (url) faceHtml = `<img src="${url}" alt="">`;
+  else {
+    const ch = ALL_CHARS.find(c => c.id === f.id);
+    faceHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,rgba(200,200,200,0.1),rgba(0,0,0,0.2))">${ch ? ch.name.charAt(0) : '?'}</div>`;
+  }
+
+  // Career years
+  const careerYears = f.careerSeasons || Math.max(1, (f.age || 20) - (f.debutAge || 18));
+  const dividerText = `━━ ${careerYears}年間の軌跡 ━━`;
+
+  // Career summary
+  const summary = r.summary || [];
+  const careerHtml = summary.length > 0
+    ? summary.map(item => `<div class="retirement-popup-career-item"><span class="retirement-popup-career-icon">${item.icon}</span><span>${item.text}</span></div>`).join('')
+    : '<div style="color:var(--text-dim);text-align:center">記録なし</div>';
+
+  // Record
+  const wins = f.wins || 0, losses = f.losses || 0, draws = f.draws || 0;
+  const recordText = `通算 ${wins}勝 ${losses}敗${draws > 0 ? ` ${draws}分` : ''}`;
+
+  // Injury note
+  let injuryNote = '';
+  if (isInjury && r.injuryType) {
+    injuryNote = `<div class="retirement-popup-injury-note">🏥 ${r.injuryType}</div>`;
+  }
+
+  // Vacancy note
+  let vacancyNote = '';
+  if (r.wasChampion) {
+    vacancyNote = `<div class="retirement-popup-vacancy">🏆 王座返上</div>`;
+  }
+
+  // Button label
+  const btnLabel = isInjury ? '……' : '送り出す';
+
+  box.className = `retirement-popup${isInjury ? ' injury' : ''}`;
+  box.innerHTML = `
+    <div class="retirement-popup-face">${faceHtml}</div>
+    <div class="retirement-popup-name">${f.name}</div>
+    <div class="retirement-popup-age">${f.age || '?'}歳</div>
+    <div class="retirement-popup-divider">${dividerText}</div>
+    <div class="retirement-popup-career">${careerHtml}</div>
+    <div class="retirement-popup-record">${recordText}</div>
+    ${injuryNote}${vacancyNote}
+    <div class="retirement-popup-line">${r.line}</div>
+    <button class="retirement-popup-btn" onclick="closeRetirementPopup()">${btnLabel}</button>
+  `;
+  document.getElementById('retirementPopupOverlay').classList.add('active');
+  Audio.play(isInjury ? 'error' : 'notify');
+}
+
+function closeRetirementPopup() {
+  document.getElementById('retirementPopupOverlay').classList.remove('active');
+  _retirementPopupQueue.shift();
+  if (_retirementPopupQueue.length > 0) {
+    setTimeout(_renderRetirementPopup, 300);
+  } else {
+    if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
+  }
 }
 
 function pickQuote(category) {

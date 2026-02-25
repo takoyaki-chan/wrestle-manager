@@ -2293,11 +2293,23 @@ const App = {
     Audio.play('coin');
     Audio.bgm.play('management');
     resultOverlay.classList.remove('active');
-    // v0.96: Show injury popups
+
+    // v1.3-3: Extract pending injury retirements before state changes
+    const pendingInjuryRetirements = G._pendingInjuryRetirements || [];
+    if (G._pendingInjuryRetirements) {
+      const { _pendingInjuryRetirements: _, ...cleanG } = G;
+      G = cleanG;
+    }
+
+    // v0.96: Show injury popups (only non-retirement injuries)
     const injuries = App._lastInjuries || [];
+    let hasEventPopups = false;
     injuries.forEach((ir, i) => {
+      // v1.3-3: Skip retirement injuries (they get their own popup)
+      if (ir.retireType) return;
       const ch = G.roster.find(c => c.name === ir.name);
       if (ch && ir.injury) {
+        hasEventPopups = true;
         setTimeout(() => showEventPopup({ type:'fighter', id:ch.id, name:ch.name, tone:'negative',
           message: pickQuote('injury'), detail:`🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間` }), i * 100);
       }
@@ -2310,6 +2322,7 @@ const App = {
       // 乱入選手が王者になっていたら（＝空位化前のchampionIdだった）、王座奪取
       const wasIntruderCrowned = !G.titles?.world?.championId; // 空位＝乱入選手に奪われた
       const popupDelay = injuries.length * 100 + 50;
+      hasEventPopups = true;
       if (wasIntruderCrowned) {
         setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
           message: `${id.fromOrgName}の${id.intruder.name}に王座を奪われた…`,
@@ -2326,6 +2339,7 @@ const App = {
     if (newChampId && G.titles.world.defenses === 0 && G.lastShowResults?.some(r => r.isTitleMatch)) {
       const champ = G.roster.find(c => c.id === newChampId);
       if (champ) {
+        hasEventPopups = true;
         setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
           message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新団体王者に！` }), injuries.length * 100 + 50);
       }
@@ -2345,6 +2359,7 @@ const App = {
     const showFlavorEvents = G._flavorEvents || [];
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
+        hasEventPopups = true;
         const detail = ev.type === 'magazine' ? `人気 +${ev.popGain}` : `ヒート +${ev.heatGain}`;
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
@@ -2357,6 +2372,19 @@ const App = {
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
+
+    // v1.3-3: Show injury retirement popups after event popups finish
+    if (pendingInjuryRetirements.length > 0) {
+      const showRetirements = () => {
+        showRetirementPopups(pendingInjuryRetirements);
+      };
+      if (hasEventPopups) {
+        _onEventPopupQueueEmpty = showRetirements;
+      } else {
+        setTimeout(showRetirements, 200);
+      }
+    }
+
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
     if (App._tryAutoAdvance()) { App._closingShowResult = false; return; }
     showScreen('week');
@@ -2476,8 +2504,24 @@ const App = {
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
     sessionRng = Engine.rng.create(G.rngSeed);
+
+    // v1.3-3: Extract pending retirements before save (transient field)
+    const pendingRetirements = G.pendingRetirements || null;
+    if (pendingRetirements) {
+      const { pendingRetirements: _, ...cleanG } = G;
+      G = cleanG;
+    }
+
     Storage.autoSave();
     Audio.bgm.playForState(); // BGM: switch on season transitions
+
+    // v1.3-3: Show retirement popups (season-end)
+    if (pendingRetirements && pendingRetirements.length > 0) {
+      refreshAll();
+      showRetirementPopups(pendingRetirements);
+      return;
+    }
+
     refreshAll();
   },
 
