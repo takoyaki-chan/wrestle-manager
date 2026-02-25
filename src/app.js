@@ -2002,6 +2002,21 @@ const App = {
         : '少なくとも1試合を組んでください');
       return;
     }
+
+    // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
+    const hasTitleSlot = validMatches.some(m => m.isTitle);
+    if (hasTitleSlot) {
+      const cd = Engine.title.canTitleMatch(G);
+      if (!cd.allowed) {
+        Audio.play('error');
+        // クールダウン中のタイトルフラグを自動で外す
+        G = { ...G, showCard: G.showCard.map(m => ({ ...m, isTitle: false })) };
+        refreshAll();
+        alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`);
+        return;
+      }
+    }
+
     // v1.2: 乱入マッチ判定
     App._intrusionData = null;
     const intrusionRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 8888));
@@ -2820,7 +2835,7 @@ const App = {
         const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'breakthrough', characterId: alert.fighter?.id,
           data: { name: alert.fighter?.name || '???', org: orgName,
-            detail: `${(alert.stat || '').toUpperCase()} +${alert.gain || 0}` } });
+            detail: `${(alert.stat || '').toUpperCase()} +${parseFloat((+(alert.gain||0)).toFixed(1))}` } });
       } else if (alert.type === 'slump') {
         const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'slump', characterId: alert.fighter?.id,

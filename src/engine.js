@@ -4648,7 +4648,7 @@ Engine.growthEvents = {
     const stats = ['pw', 'sp', 'te', 'st', 'mn'];
     const stat = stats[Engine.rng.int(rng, 0, 4)];
     const cap = fighter.trainCap ? (fighter.trainCap[stat] || 100) : 100;
-    const actualGain = Math.min(gain, cap - (fighter[stat] || 0));
+    const actualGain = Math.round(Math.min(gain, cap - (fighter[stat] || 0)) * 10) / 10;
     if (actualGain <= 0) return null;
 
     // §2.5 絶好調連鎖 15%
@@ -4848,7 +4848,7 @@ Engine.growthEvents = {
         const stat = Engine.rng.pick(rng, stats);
         const gain = Engine.rng.int(rng, 3, 6);
         const cap = nf.trainCap ? (nf.trainCap[stat] || 100) : 100;
-        const actualGain = Math.min(gain, cap - (nf[stat] || 0));
+        const actualGain = Math.round(Math.min(gain, cap - (nf[stat] || 0)) * 10) / 10;
         if (actualGain > 0) {
           nf[stat] = (nf[stat] || 0) + actualGain;
           aiGrowthEvents.push({ type: 'breakthrough', org, fighter: f, stat, gain: actualGain });

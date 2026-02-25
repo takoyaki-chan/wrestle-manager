@@ -1693,7 +1693,9 @@ function autoFillCard() {
     if (!right) break;
     used.add(right.id);
     const hasChamp = champId && (left.id === champId || right.id === champId);
-    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp && G.titleEstablished};
+    // v1.2: 12週クールダウンチェック — クールダウン中は自動編成でもタイトルマッチにしない
+    const cdOk = Engine.title.canTitleMatch(G).allowed;
+    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp && G.titleEstablished && cdOk};
   }
   G = { ...G, showCard: card };
 }
@@ -1705,6 +1707,11 @@ function onCardSelect(slotIndex, side, newId) {
 function toggleTitle(slotIndex) {
   if (!G.titleEstablished) { alert('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）'); return; }
   const m = G.showCard[slotIndex];
+  // v1.2: タイトルONにする場合のみクールダウンチェック（OFFにする場合はスキップ）
+  if (!m.isTitle) {
+    const cd = Engine.title.canTitleMatch(G);
+    if (!cd.allowed) { alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`); return; }
+  }
   const champId = G.titles.world.championId;
   if (!champId && !m.isTitle) {
     if (!(m.left > 0 && m.right > 0)) { alert('両選手を選んでください'); return; }
@@ -2218,7 +2225,7 @@ function _renderNextGrowthPopup() {
     const statNames = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
     title = '💥 ブレークスルー！';
     message = f ? Engine.rng.pick(Engine.rng.create(Date.now()), BREAKTHROUGH_LINES) : 'ブレークスルー！';
-    detail  = `${statNames[ev.stat] || ev.stat} <strong>+${ev.gain}</strong>`;
+    detail  = `${statNames[ev.stat] || ev.stat} <strong>+${parseFloat((+ev.gain).toFixed(1))}</strong>`;
     if (ev.hotStreak) detail += '　🔥 <em>絶好調突入！</em>';
     btnLabel = '素晴らしい';
     tone = 'gold';
@@ -2322,7 +2329,7 @@ function _renderNextAIAlert() {
   let message = '', detail = '';
   if (isThreat) {
     message = `${org.emoji || ''} ${org.name || ''}の${fighter.name}がブレークスルー！`;
-    detail = alert.stat ? `${statNames[alert.stat]} +${alert.gain}` : '急成長';
+    detail = alert.stat ? `${statNames[alert.stat]} +${parseFloat((+(alert.gain||0)).toFixed(1))}` : '急成長';
   } else {
     message = `${org.emoji || ''} ${org.name || ''}の${fighter.name}がモチベを喪失…`;
     detail = 'ライバル団体に隙が生まれた。攻勢のチャンス！';
