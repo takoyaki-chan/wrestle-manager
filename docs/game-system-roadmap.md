@@ -1,13 +1,13 @@
 # 🎮 Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-25（セッション18 — 成長イベントシステム実装完了）
+> 最終更新: 2026-02-25（セッション20 — 世界観演出システム v1.4w 実装完了）
 > 旧ロードマップ（v0.1〜v0.99c開発記録）はアーカイブ済み
 
 ---
 
 ## 現在の状態
 
-**セッション18: 成長イベントシステム実装完了。** ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用。全6ファイル改修済み。次はUX改善またはPPV Part 1実装。
+**セッション20: 世界観演出システム完了 (v1.4w)。** ニュースティッカー（manage画面スクロールバー）＋新聞パネル（重大イベント時ポップアップ）を実装。Engine.news名前空間追加（generateTicker/generateHeadlines/checkDefenseMilestone）。テンプレート16カテゴリ（ティッカー8種+ヘッドライン8種）。防衛記録マイルストーン（5/10/15回）検出。6ファイル改修。
 
 ---
 
@@ -15,15 +15,15 @@
 
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
-| index.html | ~1,055 | HTML+CSS+起動処理（タイトル/団体設立/ヘルプ/PPV/引退/表彰式/成長イベントオーバーレイ） |
-| data.js | ~1,240 | 全データ定数（キャラ98名・コーチ8名・ROSTER_CFG・CHAR_GROUP・技160種・引退セリフ・表彰式セリフ・PPVデータ・成長イベントセリフ） |
-| engine.js | ~4,560 | ゲームロジック全体（Engine＋milestone＋career＋retirement＋growth＋intrusion＋flavor＋awards＋ppv＋growthEvents） |
-| app.js | ~2,970 | Audio+Storage+Mission+Survival+App統合+対抗戦観戦+タイトル画面+PPV開催+マイグレーション+成長イベントフック |
-| ui-common.js | ~2,370 | ヘルパー+ポップアップ+対抗戦演出+交渉UI+引退ポップアップ+表彰式UI+PPVエントリーUI+成長イベントUI |
-| ui-render.js | ~2,066 | 全render関数+refreshAll+PPV情報表示+🔥/📉/😞バッジ |
+| index.html | ~1,110 | HTML+CSS+起動処理（タイトル/団体設立/ヘルプ/PPV/引退/表彰式/成長イベント/toast/fanfare/ティッカー/新聞パネルオーバーレイ） |
+| data.js | ~1,370 | 全データ定数（キャラ98名・コーチ8名・ROSTER_CFG・CHAR_GROUP・技160種・引退セリフ・表彰式セリフ・PPVデータ・成長イベントセリフ・ニューステンプレート） |
+| engine.js | ~4,860 | ゲームロジック全体（Engine＋milestone＋career＋retirement＋growth＋intrusion＋flavor＋awards＋ppv＋growthEvents＋news） |
+| app.js | ~3,090 | Audio+Storage+Mission+Survival+App統合+対抗戦観戦+タイトル画面+PPV開催+マイグレーション+成長イベントフック+_maybeShowSeasonFanfare+ニュースフック |
+| ui-common.js | ~2,440 | ヘルパー+ポップアップ+対抗戦演出+交渉UI+引退ポップアップ+表彰式UI+PPVエントリーUI+成長イベントUI+showToast+showSeasonFanfare+showNewspaperPanel |
+| ui-render.js | ~2,110 | 全render関数+refreshAll+PPV情報表示+🔥/📉/😞バッジ+ロスターソート+月次収支ウィジェット+ニュースティッカー |
 | victory-lines.js | 501 | 勝利台詞データ |
 | battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
-| **合計** | **~16,496** | |
+| **合計** | **~17,215** | |
 
 その他: portrait-map.js（102行・ルート）、顔画像107枚＋表彰式フレーム7枚（image/）、build-zip.sh
 
@@ -56,6 +56,9 @@
 - **育成補助金（v1.7）** — orgPop 40未満の小団体に地域振興助成金を支給（0-19:50万/週、20-29:35万/週、30-39:20万/週）。40到達で打ち切り+通知
 - **Engine.milestone（v1.7）** — careerRecord.history + careerHistoryからキャリア年表を動的構築。戦績経歴タブの表示に使用
 - **dormantPool年次加齢（v1.7）** — シーズン末にpool内{id,age}エントリも+1歳。永遠の若者バグ修正
+- **ニュースティッカー（v1.4w）** — manage画面にスクロールニュースバー。毎週3-5件生成。8カテゴリ（AI興行/連勝連敗/フレーバー/怪我/スカウト/経済/一般）。テンプレート＋{placeholder}置換方式
+- **新聞パネル（v1.4w）** — 重大イベント時にスポーツ新聞風ポップアップ。タイトル交代/防衛記録/ブレークスルー/スランプ/モチベ喪失/殿堂入り/引退/引き抜き成功の8種。複数記事ナビゲーション対応
+- **防衛記録マイルストーン（v1.4w）** — タイトルマッチ後にpre/post防衛回数比較で5/10/15回のマイルストーンを検出。新聞記事を自動生成
 
 ---
 
@@ -63,7 +66,7 @@
 
 | # | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
-| 10-2 | ZIP配布パッケージ作成 | 小 | ⚠ build-zip.sh存在するがaward-frame画像・portrait-map.js未包含 |
+| 10-2 | ZIP配布パッケージ作成 | 小 | ✅ build-zip.sh修正完了（portrait-map.js + image/*.png対応） |
 | 10-3 | チュートリアル/ヘルプ画面 | 中 | ✅ 完了（9セクション実装済み） |
 | 10-5 | READMEを配布用に書き換え | 小 | ✅ 完了（61行・GitHub Pages対応） |
 
@@ -111,7 +114,60 @@
 
 ---
 
-## 今セッション完了済み（セッション18 — 成長イベントシステム実装）
+## 今セッション完了済み（セッション20 — 世界観演出システム v1.4w）
+
+### 実装内容（6ファイル改修）
+
+| # | タスク | 変更ファイル | 概要 |
+|---|--------|-------------|------|
+| 1 | ニューステンプレート定数追加 | data.js | NEWS_TICKER_TEMPLATES（8カテゴリ×5-6パターン）+ NEWS_HEADLINE_TEMPLATES（8種×3パターン）。{name}/{org}/{count}等プレースホルダー方式 |
+| 2 | Engine.news名前空間 | engine.js | generateTicker(rng,state)→string[3-5]、generateHeadlines(rng,events)→Article[]、checkDefenseMilestone(defenses)→0/5/10/15 |
+| 3 | ニュース生成フック | app.js | _refreshTicker()/_pushNewsEvent()/_showNewsPanelIfNeeded()。closeShowResult/processWeek/advanceWeek/_checkAndShowAwards/loadGame各所にフック |
+| 4 | 新聞パネルUI | ui-common.js | showNewspaperPanel(articles,onDone)。複数記事prev/nextナビゲーション。スポーツ新聞風デザイン |
+| 5 | ティッカーDOM挿入 | ui-render.js | manage画面の月次収支下にスクロールニュースバー。G._tickerItems参照。テキスト2重化でシームレスループ |
+| 6 | CSS+DOM追加 | index.html | .news-ticker-bar（40sアニメ・金色背景）、.newspaper-overlay/.newspaper-box（クリーム紙風グラデ・z-index:268）、DOM要素追加 |
+
+### コールバックチェーン（週送り後の表示順序）
+
+```
+tickWeek → 引退ポップアップ → AI成長アラート → 新聞パネル → 年末表彰式 → シーズンファンファーレ → refreshAll
+```
+
+### バグ修正（2件）
+
+| # | 問題 | 対策 |
+|---|------|------|
+| 1 | 新聞パネル次ボタンのHTML構文エラー（`>` 欠落） | テンプレートリテラル修正 |
+| 2 | Engine.news.generateTickerで未定義フィールド`_winStreak`/`_loseStreak`参照 | 勝率ベース判定に変更（勝率75%以上で好調、敗率70%以上で不調） |
+
+---
+
+## 前セッション（セッション19 — UX改善バッチ v1.9）
+
+### 実装内容（6 UX改善 + 2 ドキュメント）
+
+| # | タスク | 変更ファイル | 概要 |
+|---|--------|-------------|------|
+| C1 | 戦績ポップアップ コンパクト化 | ui-common.js | 4グリッド大ボックス→1行インライン（勝/敗/分/勝率/ベストMQ/王者）。冗長なCareer Summaryブロック削除 |
+| C3 | ロスターソート機能 | ui-render.js | `_rosterSortKey` + `setRosterSort()` + ソートボタン行（OVR/名前/体調/人気） |
+| C4 | 週送りトースト通知 | ui-common.js + app.js + index.html | `showToast()` + `.toast` CSS + DOM + `_tryAutoAdvance`フック |
+| C5 | 新シーズン開幕ファンファーレ | ui-common.js + app.js + index.html | `showSeasonFanfare()` + `_maybeShowSeasonFanfare()` + `.season-fanfare-overlay` CSS + DOM |
+| C6 | 月次収支表示（進行中） | ui-render.js | manage画面のダッシュボード下に `monthlyFinanceBuffer` 集計バー表示 |
+| C7 | build-zip.sh修正 | build-zip.sh | `portrait-map.js`コピー追加、`image/*.png`で全画像一括コピー |
+| A | docs/master-spec.md 新規作成 | docs/master-spec.md | 現行仕様のみのマスタードキュメント（変更履歴なし）|
+| B | 特性コード照合レポート | — | 25種中21種は実装済み。未実装4種: 適応力/人望/忠誠心/野心（「将来用」） |
+
+### 特性未実装一覧（将来用）
+| # | 特性名 | spec記載効果 | 現在の状態 |
+|---|--------|------------|---------|
+| 12 | 適応力 | 新しいスタイルの技を覚えやすい | コード上の分岐・効果なし |
+| 18 | 人望 | 団体士気にボーナス | コード上の分岐・効果なし |
+| 21 | 忠誠心 | 引き抜かれにくい | コード上の分岐・効果なし |
+| 22 | 野心 | チャンピオンを狙いたがる | コード上の分岐・効果なし |
+
+---
+
+## 前セッション（セッション18 — 成長イベントシステム実装）
 
 ### 実装内容
 
@@ -215,24 +271,22 @@
 
 | # | タスク | 重さ | 参照 |
 |---|--------|:----:|--------|
-| 1 | ~~**orgPopバランス修正**（放置プレイで68週・99に到達するバグ調査・修正）~~ | ~~中~~ | ✅ 修正済み(v1.9) |
-| 2 | **UX-3: ロスターソート機能**（名前/OVR/体調/人気） | 小 | session17-analysis UX-3 |
-| 3 | **UX-1: 週送りフィードバック**（トースト通知/フラッシュアニメ） | 小 | session17-analysis UX-1 |
-| 4 | **UX-5: 新年・シーズン開幕演出** | 中 | session17-analysis UX-5 |
-| 5 | **UX-6: 月次収支表示** | 小 | session17-analysis UX-6 |
-| 6 | **build-zip.sh修正**（award-frame画像・portrait-map.js追加） | 小 | — |
+| 1 | **PPV Part 1**（Week44エントリーUI・Week48開催・怪我不戦敗ロジック） | 大 | specs/ppv-awards-spec.md §1 |
+| 2 | **trainCap旧式→新式書き換え**（factor×Potに変更） | 中 | MEMORY.md参照 |
+| 3 | **フィニッシャー（キャラ固有必殺技）** | 高 | 設計書 第3部 3.11 |
+| 4 | **ライバルストーリー自動生成** | 高 | 未設計 |
 
 ---
 
-## v1.4：世界観演出システム
+## v1.4w：世界観演出システム — 全完了
 
 | # | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
-| 1 | 業界誌・新聞フレーバーテキスト拡充（v1.2-9で基盤実装済み） | 大 | 一部完了（テンプレ12種） |
-| 2 | 週次「業界ニュース」の表示 | 中 | 未着手 |
-| 3 | 長期政権王者の「伝説」記録 | 中 | 未着手 |
-| 4 | 引き抜き成功時の業界反響演出 | 小 | 未着手 |
-| 5 | 殿堂入り選手の業界誌掲載 | 中 | 未着手 |
+| 1 | 業界誌・新聞フレーバーテキスト拡充（NEWS_TICKER_TEMPLATES 8カテゴリ + NEWS_HEADLINE_TEMPLATES 8種） | 大 | ✅ |
+| 2 | 週次「業界ニュース」ティッカー表示（manage画面スクロールバー、毎週3-5件） | 中 | ✅ |
+| 3 | 長期政権王者の「伝説」記録（防衛5/10/15回マイルストーン → 新聞記事） | 中 | ✅ |
+| 4 | 引き抜き成功時の業界反響演出（新聞パネル poachSuccess記事） | 小 | ✅ |
+| 5 | 殿堂入り選手の業界誌掲載（新聞パネル hallOfFame記事） | 中 | ✅ |
 
 ---
 
@@ -300,6 +354,7 @@
 | 引退演出 | v1.3-3-retirement-presentation-spec.md | specs/ |
 | PPV＋年末表彰式 | ppv-awards-spec.md | specs/ |
 | **成長イベントシステム** | **growth-event-spec-v1.0.md** | **specs/** |
+| **世界観演出システム** | **world-presentation-spec-v1.4.md** | **specs/** |
 | バランステスト仕様書 | balance-test-spec.md | docs/（作業用） |
 
 ---
@@ -326,6 +381,8 @@
 | 16 | 02-25 | ロードマップ全面改訂（コード監査）。バランス調整6項目（HEAT decay強化・集客加算方式化・給料引き上げ・人気自然減衰・orgPop減衰・FA若返りバグ修正）。成長イベントシステム設計完了（ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用+脅威通知） |
 | 17 | 02-25 | バグ修正2件（Engine.milestone実装・スカウト見送り修正）。経済リバランス（baseAttendance×2・SALARY再調整・グッズ単価UP・育成補助金導入）。HEAT倍率圧縮（On Fire 2.0→1.3）+興行週軽減衰。heatScoreバグ修正2件。dormantPool年次加齢。シミュレーション検証完了 |
 | 18 | 02-25 | 成長イベントシステム実装完了（ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用）。6ファイル改修。無効hexリテラルバグ修正 |
+| 19 | 02-25 | UX改善バッチ v1.9（ロスターソート・戦績コンパクト化・トースト・ファンファーレ・月次収支・build-zip.sh修正）。docs/master-spec.md新規作成。特性コード照合（未実装4種特定） |
+| 20 | 02-25 | 世界観演出システム v1.4w 実装完了（ニュースティッカー+新聞パネル+防衛記録マイルストーン）。Engine.news名前空間追加。テンプレート16カテゴリ。6ファイル改修。バグ修正2件 |
 
 ---
 
@@ -338,3 +395,4 @@
 - セッション17のバランスシミュレーション結果: test/balance-sim.jsで再現可能（node test/balance-sim.js）
 - 成長イベントシステム（セッション18）実装済み。growth-event-spec-v1.0.md準拠
 - **修正済み(v1.9)**: 放置68週でorgPop99問題 → applyShowPopularity閾値引き上げ（70/55/40→80/65/45、最大+3→最大+2）
+- 世界観演出システム（セッション20）実装済み。world-presentation-spec-v1.4.md準拠。transientフィールド（_tickerItems/_newsEvents）はsave時に除去済み

@@ -1485,41 +1485,24 @@ function showFighterPopup(fighterId, source) {
       const totalMatches = wins + losses + draws;
       const winRate = totalMatches > 0 ? Math.round(wins / totalMatches * 100) : 0;
 
-      html += `<div style="margin-bottom:14px">
-        <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-          <span style="background:var(--gold);color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">戦績</span>
-          通算成績
-        </h5>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
-          <div style="padding:10px 4px;background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:6px">
-            <div style="font-size:24px;font-weight:900;color:#2ecc71">${wins}</div>
-            <div style="font-size:11px;color:var(--text-dim)">勝利</div>
-          </div>
-          <div style="padding:10px 4px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:6px">
-            <div style="font-size:24px;font-weight:900;color:#e74c3c">${losses}</div>
-            <div style="font-size:11px;color:var(--text-dim)">敗北</div>
-          </div>
-          <div style="padding:10px 4px;background:rgba(176,184,196,0.08);border:1px solid rgba(176,184,196,0.2);border-radius:6px">
-            <div style="font-size:24px;font-weight:900;color:#b0b8c4">${draws}</div>
-            <div style="font-size:11px;color:var(--text-dim)">引分</div>
-          </div>
-          <div style="padding:10px 4px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.2);border-radius:6px">
-            <div style="font-size:24px;font-weight:900;color:var(--gold)">${winRate}%</div>
-            <div style="font-size:11px;color:var(--text-dim)">勝率</div>
-          </div>
-        </div>
-      </div>`;
-
       // ── Build career display from milestones ──
       const milestones = Engine.milestone.get(G, c.id);
       const pOrgName = G.orgName || 'プレイヤー団体';
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
-      // ── Career Summary Header ──
-      html += `<div style="padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-family:'Courier New',monospace">`;
-      html += `<div style="font-size:14px;font-weight:900;color:var(--text);margin-bottom:6px">■ 通算成績: ${wins}勝${losses}敗${draws}分 (${winRateFmt}) / ベストMQ: ${c.bestMQ || 0}</div>`;
-      if (isChamp) html += `<div style="font-size:13px;color:var(--gold);font-weight:700">👑 現団体王者 — ${G.titles.world.defenses}度防衛中</div>`;
-      html += `</div>`;
+      // ── Compact Record Row ──
+      html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
+          <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
+          <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
+          <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
+          <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
+          <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
+          ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
+          ${c.bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${c.bestMQ}</span>` : ''}
+          ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${G.titles.world.defenses}防衛）</span>` : ''}
+        </div>
+      </div>`;
 
       // ── Milestone Timeline (grouped by season, reverse order) ──
       if (milestones.length > 0) {
@@ -2362,4 +2345,96 @@ function _renderNextAIAlert() {
       const cb = _aiAlertCallback; _aiAlertCallback = null; cb();
     }) : null;
   }
+}
+
+// ══════════════════════════════════════════════════════════
+//  v1.9: トースト通知 / シーズン開幕ファンファーレ
+// ══════════════════════════════════════════════════════════
+
+// 画面下部に短時間表示されるトースト通知
+function showToast(msg, duration) {
+  const el = document.getElementById('toastEl');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), duration || 1800);
+}
+
+// 新シーズン開幕ファンファーレ演出
+function showSeasonFanfare(season, onDone) {
+  const overlay = document.getElementById('seasonFanfareOverlay');
+  const box = document.getElementById('seasonFanfareBox');
+  if (!overlay || !box) { if (onDone) onDone(); return; }
+  box.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:4px;line-height:1;
+      background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;background-clip:text">SEASON ${season}</div>
+    <div style="font-size:20px;color:var(--gold);margin-top:8px;font-family:'Oswald',sans-serif;
+      letter-spacing:4px;text-transform:uppercase">シーズン開幕</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:14px">— タップで続行 —</div>
+  `;
+  overlay.classList.add('show');
+  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('fanfare');
+  window._sfDismiss = () => {
+    overlay.classList.remove('show');
+    window._sfDismiss = null;
+    if (onDone) setTimeout(onDone, 100);
+  };
+  // 4秒後に自動クローズ
+  clearTimeout(window._sfTimer);
+  window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 4000);
+}
+
+// ══════════════════════════════════════════════
+//  v1.4w: 新聞パネル（業界ニュース）
+// ══════════════════════════════════════════════
+function showNewspaperPanel(articles, onDone) {
+  const overlay = document.getElementById('newspaperOverlay');
+  const box = document.getElementById('newspaperBox');
+  if (!overlay || !box || articles.length === 0) { if (onDone) onDone(); return; }
+
+  let idx = 0;
+
+  function renderArticle(i) {
+    const a = articles[i];
+    const pUrl = a.characterId ? getPortraitUrl(a.characterId) : null;
+    const faceHtml = pUrl
+      ? `<img src="${pUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(139,90,43,0.4);margin:10px auto" alt="">`
+      : '';
+    const navHtml = articles.length > 1
+      ? `<div style="display:flex;justify-content:center;gap:12px;margin-bottom:10px">
+          <button class="newspaper-nav" onclick="window._newsNav(-1)" ${i===0?'disabled':''} style="${i===0?'opacity:0.3':''}">&lt; 前</button>
+          <span style="font-size:11px;color:rgba(80,50,20,0.5)">${i+1} / ${articles.length}</span>
+          <button class="newspaper-nav" onclick="window._newsNav(1)" ${i===articles.length-1?'disabled':''} style="${i===articles.length-1?'opacity:0.3':''}">次 &gt;</button>
+        </div>`
+      : '';
+
+    box.innerHTML = `
+      <div class="newspaper-header">📰 業界ニュース</div>
+      ${navHtml}
+      <div class="newspaper-headline">${a.headline}</div>
+      ${faceHtml}
+      <div class="newspaper-body">${a.body}</div>
+      <button class="newspaper-close" onclick="window._newsClose()">閉じる</button>
+    `;
+  }
+
+  window._newsNav = (dir) => {
+    idx = Math.max(0, Math.min(articles.length - 1, idx + dir));
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    renderArticle(idx);
+  };
+
+  window._newsClose = () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    overlay.classList.remove('active');
+    window._newsNav = null;
+    window._newsClose = null;
+    if (onDone) setTimeout(onDone, 100);
+  };
+
+  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+  renderArticle(0);
+  overlay.classList.add('active');
 }

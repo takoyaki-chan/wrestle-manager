@@ -1138,8 +1138,8 @@ function renderMatch(){
   function fHTML(f,side){
     const pct=Math.max(0,f.hp/f.mhp*100),hc=pct>66?'high':pct>33?'mid':'low',rc=f.role.toLowerCase();
     const hpBarCls=pct<=66&&pct>33?' exhausted-glow':'';
-    const stats=[{k:'power',l:'PWR',v:f.pw},{k:'speed',l:'SPD',v:f.sp},
-      {k:'technique',l:'TEC',v:f.te},{k:'stamina',l:'STA',v:f.st},{k:'mental',l:'MNT',v:f.mn}];
+    const stats=[{k:'power',l:'PWR',v:Math.round(f.pw)},{k:'speed',l:'SPD',v:Math.round(f.sp)},
+      {k:'technique',l:'TEC',v:Math.round(f.te)},{k:'stamina',l:'STA',v:Math.round(f.st)},{k:'mental',l:'MNT',v:Math.round(f.mn)}];
     return `<div class="${panelCls(f,side)}" id="panel-${side}">
       <div class="danger-overlay" id="danger-${side}">DANGER</div>
       <div class="portrait-area" id="port-${side}">

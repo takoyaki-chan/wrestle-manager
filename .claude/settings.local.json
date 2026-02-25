@@ -4,7 +4,30 @@
       "Bash(git commit:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(wc -l /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)"
+      "Bash(wc -l /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(done)",
+      "Bash(wc -l /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js /c/Users/nkmrk/Downloads/wrestle-manager/src/*.html)",
+      "Bash(node -c src/app.js)",
+      "Bash(node -c src/ui-common.js)",
+      "Bash(node -c src/engine.js)",
+      "Bash(node -c src/ui-render.js)",
+      "Bash(grep -n \"_winStreak\\\\|_loseStreak\" \"/c/Users/nkmrk/Downloads/wrestle-manager/src/\"*.js)",
+      "Bash(node -c \"/c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js\")",
+      "Bash(node -c \"/c/Users/nkmrk/Downloads/wrestle-manager/src/ui-common.js\")",
+      "Bash(node -c \"/c/Users/nkmrk/Downloads/wrestle-manager/src/app.js\")",
+      "Bash(node -c \"/c/Users/nkmrk/Downloads/wrestle-manager/src/ui-render.js\")",
+      "Bash(node -c \"/c/Users/nkmrk/Downloads/wrestle-manager/src/data.js\")",
+      "Bash(/tmp/detailed_flow.sh:*)",
+      "Bash(bash /tmp/detailed_flow.sh)",
+      "Bash(/tmp/syntax_edge_check.sh:*)",
+      "Bash(bash /tmp/syntax_edge_check.sh)",
+      "Bash(/tmp/template_verify.sh:*)",
+      "Bash(bash /tmp/template_verify.sh)",
+      "Bash(/tmp/final_check.sh:*)",
+      "Bash(bash /tmp/final_check.sh)",
+      "Bash(ls C:/Users/nkmrk/Downloads/wrestle-manager/image/award-frame*.png)",
+      "Bash(python3 -c \":*)",
+      "Bash(python -c \":*)"
     ]
   }
 }

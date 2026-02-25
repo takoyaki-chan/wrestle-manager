@@ -1415,7 +1415,7 @@ const Storage = {
 
 // Alias for backward compat in UI
 function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
-function loadGame(slot) { Audio.play('notify'); const r = Storage.load(slot); Audio.bgm.playForState(); return r; }
+function loadGame(slot) { Audio.play('notify'); const r = Storage.load(slot); if (r && App._refreshTicker) App._refreshTicker(); Audio.bgm.playForState(); return r; }
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -1505,6 +1505,7 @@ const App = {
     G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
     refreshAll();
     Storage.loadAutoSave();
+    App._refreshTicker(); // v1.4w
     Audio.bgm.playForState();
     refreshAll();
   },
@@ -2334,7 +2335,13 @@ const App = {
       }
     });
 
-    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results };
+    // v1.2: タイトルマッチ実施時に絶対週数を記録
+    const executedTitleMatch = validMatches.some(m => m.isTitle);
+    const lastTitleMatchWeek = executedTitleMatch
+      ? Engine.title.getAbsWeek(s)
+      : (s.lastTitleMatchWeek ?? null);
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
 
     // v0.95: Season stats
     const stats = { ...G.seasonStats };
@@ -2428,8 +2435,9 @@ const App = {
   closeShowResult() {
     if (App._closingShowResult) return;
     const resultOverlay = document.getElementById('showResultOverlay');
-    if (!resultOverlay || !resultOverlay.classList.contains('active') || G.weekPhase !== 'showExec') return;
+    if (!resultOverlay || G.weekPhase !== 'showExec') return;
     App._closingShowResult = true;
+    try {
     Audio.play('coin');
     Audio.bgm.play('management');
     resultOverlay.classList.remove('active');
@@ -2484,6 +2492,10 @@ const App = {
           message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新団体王者に！` }), injuries.length * 100 + 50);
       }
     }
+    // v1.4w: 興行結果から新聞イベントを収集（tickWeek前）
+    const _preDefenses = G.titles?.world?.defenses || 0;
+    const _preChampId = G.titles?.world?.championId;
+
     const result = Engine.tickWeek(G);
     // v0.95: Track finances
     const stats = { ...G.seasonStats };
@@ -2495,6 +2507,22 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+
+    // v1.4w: 防衛マイルストーン検出
+    const _postDefenses = G.titles?.world?.defenses || 0;
+    if (_postDefenses > _preDefenses) {
+      const milestone = Engine.news.checkDefenseMilestone(_postDefenses);
+      if (milestone > 0) {
+        const champ = G.roster.find(c => c.id === G.titles?.world?.championId);
+        if (champ) {
+          App._pushNewsEvent({ type: 'defenseRecord', characterId: champ.id,
+            data: { name: champ.name, org: G.orgName || 'あなたの団体', count: _postDefenses } });
+        }
+      }
+    }
+    // v1.4w: ティッカー更新
+    App._refreshTicker();
+
     // v1.2-9: Flavor event popups after show settlement
     const showFlavorEvents = G._flavorEvents || [];
     if (showFlavorEvents.length > 0) {
@@ -2544,12 +2572,44 @@ const App = {
     }
 
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
-    if (App._tryAutoAdvance()) { App._closingShowResult = false; return; }
+    if (App._tryAutoAdvance()) return;
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    App._closingShowResult = false;
+    } catch(e) {
+      console.error('closeShowResult error:', e);
+      try { showScreen('week'); } catch(e2) {}
+      try { refreshAll(); } catch(e2) {}
+    } finally {
+      App._closingShowResult = false;
+    }
+  },
+
+  // v1.4w: ティッカーニュース再生成（manage画面表示用）
+  _refreshTicker() {
+    if (!G || G.offSeason) return;
+    const tickerRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBEEF));
+    G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G) };
+  },
+
+  // v1.4w: 新聞パネルイベントキューに追加
+  _pushNewsEvent(ev) {
+    const queue = [...(G._newsEvents || []), ev];
+    G = { ...G, _newsEvents: queue };
+  },
+
+  // v1.4w: 新聞パネル表示→完了後にcallback
+  _showNewsPanelIfNeeded(callback) {
+    const events = G._newsEvents || [];
+    if (events.length === 0) { callback(); return; }
+    // キュー消化
+    const { _newsEvents: _, ...cleanG } = G;
+    G = cleanG;
+    const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE57));
+    const articles = Engine.news.generateHeadlines(newsRng, events);
+    if (articles.length === 0) { callback(); return; }
+    showNewspaperPanel(articles, callback);
   },
 
   // v1.0: Auto-advance past settled screen on non-monthly weeks
@@ -2568,7 +2628,9 @@ const App = {
       App.checkSurvivalUpdate();
       App.checkTitleEstablishment();
       sessionRng = Engine.rng.create(G.rngSeed);
+      App._refreshTicker(); // v1.4w
       Storage.autoSave();
+      if (typeof showToast === 'function') showToast(`第${G.week}週 完了`);
       showScreen('week');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -2614,6 +2676,8 @@ const App = {
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
+    // v1.4w: ティッカー更新
+    App._refreshTicker();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
@@ -2696,11 +2760,39 @@ const App = {
     App.checkTitleEstablishment();
     sessionRng = Engine.rng.create(G.rngSeed);
 
+    // v1.4w: 交渉成功時の新聞イベント
+    if (G.negotiationResult && G.negotiationResult.success && G.negotiationResult.fighter) {
+      const nf = G.negotiationResult.fighter;
+      const fromOrg = (G.transferLog || []).slice(-1)[0];
+      App._pushNewsEvent({ type: 'poachSuccess', characterId: nf.id,
+        data: { name: nf.name, toOrg: G.orgName || 'あなたの団体',
+          fromOrg: fromOrg ? fromOrg.from : '他団体',
+          ovr: Engine.util.ov(nf) } });
+    }
+    // v1.4w: ティッカー更新
+    App._refreshTicker();
+
     // v1.3-3: Extract pending retirements before save (transient field)
     const pendingRetirements = G.pendingRetirements || null;
     if (pendingRetirements) {
       const { pendingRetirements: _, ...cleanG } = G;
       G = cleanG;
+    }
+
+    // v1.4w: AI引退選手の新聞イベント収集（名選手: OVR70以上、年齢30以上）
+    if (pendingRetirements) {
+      pendingRetirements.forEach(r => {
+        const f = r.fighter;
+        if (!f) return;
+        const ovr = Engine.util.ov(f);
+        if (ovr >= 70 || (f.age || 20) >= 30) {
+          const rec = f.careerRecord || {};
+          const seasons = f.careerSeasons || 0;
+          App._pushNewsEvent({ type: 'retirement', characterId: f.id,
+            data: { name: f.name, org: G.orgName || 'あなたの団体',
+              detail: `${seasons}シーズンの現役生活` } });
+        }
+      });
     }
 
     Storage.autoSave();
@@ -2710,7 +2802,7 @@ const App = {
     if (pendingRetirements && pendingRetirements.length > 0) {
       refreshAll();
       showRetirementPopups(pendingRetirements, () => {
-        App._checkAndShowAwards(); // v1.4: 引退演出完了後に表彰式
+        App._showNewsPanelIfNeeded(() => App._checkAndShowAwards());
       });
       return;
     }
@@ -2721,23 +2813,58 @@ const App = {
       const { _pendingAIGrowthAlerts: _, ...cleanAI } = G;
       G = cleanAI;
     }
+
+    // v1.4w: AI成長イベントの新聞イベント収集
+    aiAlerts.forEach(alert => {
+      if (alert.type === 'breakthrough') {
+        const orgName = alert.org ? alert.org.name : '他団体';
+        App._pushNewsEvent({ type: 'breakthrough', characterId: alert.fighter?.id,
+          data: { name: alert.fighter?.name || '???', org: orgName,
+            detail: `${(alert.stat || '').toUpperCase()} +${alert.gain || 0}` } });
+      } else if (alert.type === 'slump') {
+        const orgName = alert.org ? alert.org.name : '他団体';
+        App._pushNewsEvent({ type: 'slump', characterId: alert.fighter?.id,
+          data: { name: alert.fighter?.name || '???', org: orgName } });
+      } else if (alert.type === 'motivation_loss') {
+        const orgName = alert.org ? alert.org.name : '他団体';
+        App._pushNewsEvent({ type: 'motivationLoss', characterId: alert.fighter?.id,
+          data: { name: alert.fighter?.name || '???', org: orgName } });
+      }
+    });
+
     if (aiAlerts.length > 0) {
-      showAIGrowthAlerts(aiAlerts, () => App._checkAndShowAwards());
+      showAIGrowthAlerts(aiAlerts, () => App._showNewsPanelIfNeeded(() => App._checkAndShowAwards()));
     } else {
-      // v1.4: 引退者なしでも表彰式チェック
-      App._checkAndShowAwards();
+      // v1.4: 引退者なしでも新聞パネル→表彰式チェック
+      App._showNewsPanelIfNeeded(() => App._checkAndShowAwards());
+    }
+  },
+
+  // v1.9: 新シーズン開幕ファンファーレのトリガー判定
+  _maybeShowSeasonFanfare(callback) {
+    if (G.week === 1 && !G.offSeason && G.season > 1 && typeof showSeasonFanfare === 'function') {
+      showSeasonFanfare(G.season, callback);
+    } else {
+      callback();
     }
   },
 
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
     const pendingAwards = G.pendingAwards;
-    if (!pendingAwards) { refreshAll(); return; }
+    if (!pendingAwards) { App._maybeShowSeasonFanfare(() => refreshAll()); return; }
     // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
     Storage.autoSave();
     refreshAll();
+    // v1.4w: 殿堂入りの新聞イベント収集
+    if (pendingAwards.hallOfFame && pendingAwards.hallOfFame.length > 0) {
+      pendingAwards.hallOfFame.forEach(h => {
+        App._pushNewsEvent({ type: 'hallOfFame', characterId: h.id,
+          data: { name: h.name, titles: h.titleReigns || 0, defenses: h.totalDefenses || 0 } });
+      });
+    }
     // 表彰式ポップアップ開始
     showAwardsCeremony(pendingAwards, () => {
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
@@ -2748,7 +2875,7 @@ const App = {
       }
       G = { ...G, lastAwards: pendingAwards };
       Storage.autoSave();
-      refreshAll();
+      App._showNewsPanelIfNeeded(() => App._maybeShowSeasonFanfare(() => refreshAll()));
     });
   },
 

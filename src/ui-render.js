@@ -1,3 +1,7 @@
+// v1.9: Roster sort state
+let _rosterSortKey = 'ovr';
+function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
+
 function refreshTopBar() {
   // Audio mute button sync
   const muteBtn = document.getElementById('muteBtn');
@@ -487,6 +491,33 @@ function renderWeekScreen() {
       </div>
     </div>`;
 
+    // v1.9: Month-to-date finance summary (during non-month-end manage weeks)
+    const manageBuf = G.monthlyFinanceBuffer || [];
+    if (manageBuf.length > 0) {
+      let mIncome = 0, mExpense = 0;
+      manageBuf.forEach(e => { mIncome += (e.finance?.income || 0); mExpense += (e.finance?.expense || 0); });
+      const mNet = mIncome - mExpense;
+      const netColor = mNet >= 0 ? '#2ecc71' : '#e74c3c';
+      const weekInMonth = manageBuf.length + 1;
+      html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.05);border-radius:5px;font-size:12px">
+        <span style="color:var(--text-dim);flex-shrink:0">月${weekInMonth}週目:</span>
+        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${mNet}万</span>
+        <span style="color:var(--text-dim);font-size:11px">収入${mIncome}万 / 支出${mExpense}万</span>
+      </div>`;
+    }
+
+    // v1.4w: ティッカー（ニュースバー）
+    const tickerItems = G._tickerItems || [];
+    if (tickerItems.length > 0) {
+      const tickerText = tickerItems.join('　　');
+      // 2回分繰り返してシームレスにスクロール
+      html += `<div class="news-ticker-bar">
+        <div class="news-ticker-track">
+          <span class="news-ticker-text">${tickerText}　　${tickerText}</span>
+        </div>
+      </div>`;
+    }
+
     // Upcoming events strip
     if (upcomingItems.length > 0) {
       html += `<div style="display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:var(--text-dim);flex-wrap:wrap">${upcomingItems.map(item => `<span style="padding:2px 6px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.12);border-radius:3px">${item}</span>`).join('')}</div>`;
@@ -919,8 +950,22 @@ function renderRoster() {
   const el = document.getElementById('rosterTable');
 
 
-  let html = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">';
-  const sorted = [...G.roster].sort((a,b) => ov(b) - ov(a));
+  const sortBtns = [
+    {key:'ovr', label:'OVR'},
+    {key:'name', label:'名前'},
+    {key:'cond', label:'体調'},
+    {key:'pop', label:'人気'},
+  ].map(s => `<button onclick="setRosterSort('${s.key}')" style="font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid ${_rosterSortKey===s.key ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.08)'};background:${_rosterSortKey===s.key ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.03)'};color:${_rosterSortKey===s.key ? 'var(--gold)' : 'var(--text-dim)'}">${s.label}</button>`).join('');
+  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">';
+  const sorted = [...G.roster].sort((a,b) => {
+    switch(_rosterSortKey) {
+      case 'name': return a.name.localeCompare(b.name, 'ja');
+      case 'cond': return b.condition - a.condition;
+      case 'pop': return b.popularity - a.popularity;
+      default: return ov(b) - ov(a);
+    }
+  });
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;

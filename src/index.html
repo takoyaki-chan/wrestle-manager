@@ -627,6 +627,58 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);
   color:var(--text-sub);transition:all .2s}
 .growth-event-btn:hover{background:rgba(255,255,255,0.1);color:var(--text-main)}
+
+/* v1.9: Toast notification */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:rgba(14,14,21,0.96);border:1px solid rgba(255,255,255,0.12);border-radius:6px;
+  padding:7px 18px;font-size:13px;color:var(--text-main);pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;z-index:260;white-space:nowrap;
+  font-family:'Noto Sans JP',sans-serif}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* v1.9: Season Fanfare */
+.season-fanfare-overlay{position:fixed;inset:0;z-index:275;display:flex;align-items:center;
+  justify-content:center;background:rgba(0,0,0,0);opacity:0;pointer-events:none;
+  transition:opacity .4s,background .4s}
+.season-fanfare-overlay.show{opacity:1;background:rgba(0,0,0,0.82);pointer-events:all}
+.season-fanfare-box{text-align:center;animation:sfPulse .55s cubic-bezier(0.22,1,0.36,1)}
+@keyframes sfPulse{0%{transform:scale(0.82) translateY(24px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+
+/* v1.4w: ニュースティッカー */
+.news-ticker-bar{overflow:hidden;white-space:nowrap;margin-bottom:8px;padding:5px 0;
+  background:linear-gradient(90deg,rgba(212,168,67,0.06),rgba(212,168,67,0.03),rgba(212,168,67,0.06));
+  border:1px solid rgba(212,168,67,0.1);border-radius:4px;position:relative}
+.news-ticker-bar::before{content:'📰';position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  font-size:12px;z-index:1}
+.news-ticker-track{padding-left:26px;overflow:hidden}
+.news-ticker-text{display:inline-block;font-size:12px;color:var(--text-sub);letter-spacing:0.5px;
+  animation:tickerScroll 40s linear infinite;white-space:nowrap}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* v1.4w: 新聞パネル */
+.newspaper-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:268;
+  align-items:center;justify-content:center}
+.newspaper-overlay.active{display:flex}
+.newspaper-box{background:linear-gradient(180deg,#f5ecd7 0%,#ede2c6 40%,#e8d9b7 100%);
+  border-radius:8px;max-width:480px;width:92%;padding:24px 22px 20px;position:relative;
+  color:#2a1a0a;box-shadow:0 8px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3);
+  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1);
+  border:1px solid rgba(139,90,43,0.3)}
+.newspaper-header{text-align:center;font-size:11px;letter-spacing:3px;color:rgba(80,50,20,0.5);
+  font-family:'Oswald',sans-serif;text-transform:uppercase;margin-bottom:12px;
+  padding-bottom:8px;border-bottom:1px solid rgba(139,90,43,0.2)}
+.newspaper-headline{font-size:17px;font-weight:900;color:#1a0a00;text-align:center;
+  line-height:1.5;margin-bottom:12px;letter-spacing:0.5px}
+.newspaper-body{font-size:13px;color:#3a2a1a;line-height:1.8;text-align:justify;
+  margin-bottom:16px;padding:0 4px}
+.newspaper-close{display:block;margin:0 auto;font-size:12px;padding:8px 28px;border-radius:6px;
+  cursor:pointer;background:rgba(80,50,20,0.08);border:1px solid rgba(139,90,43,0.25);
+  color:#5a3a1a;transition:all .2s;letter-spacing:1px;font-family:'Noto Sans JP',sans-serif}
+.newspaper-close:hover{background:rgba(80,50,20,0.15);color:#2a1a0a}
+.newspaper-nav{font-size:11px;padding:4px 14px;border-radius:4px;cursor:pointer;
+  background:rgba(80,50,20,0.06);border:1px solid rgba(139,90,43,0.2);color:#5a3a1a;
+  font-family:'Noto Sans JP',sans-serif;transition:all .2s}
+.newspaper-nav:hover:not(:disabled){background:rgba(80,50,20,0.12)}
 </style>
 </head>
 <body>
@@ -997,6 +1049,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="retirement-popup" id="retirementPopupBox" onclick="event.stopPropagation()"></div>
 </div>
 
+<!-- v1.4w: Newspaper panel (業界ニュース) -->
+<div class="newspaper-overlay" id="newspaperOverlay">
+  <div class="newspaper-box" id="newspaperBox" onclick="event.stopPropagation()"></div>
+</div>
+
 <!-- v1.4: Awards ceremony popup -->
 <div class="awards-overlay" id="awardsOverlay">
   <div class="awards-box" id="awardsBox" onclick="event.stopPropagation()"></div>
@@ -1005,6 +1062,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <!-- v1.5: Growth Event Popup -->
 <div class="growth-event-overlay" id="growthEventOverlay">
   <div class="growth-event-box" id="growthEventBox" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- v1.9: Toast notification -->
+<div class="toast" id="toastEl"></div>
+
+<!-- v1.9: Season Fanfare -->
+<div class="season-fanfare-overlay" id="seasonFanfareOverlay" onclick="window._sfDismiss&&window._sfDismiss()">
+  <div class="season-fanfare-box" id="seasonFanfareBox"></div>
 </div>
 
 <script src="victory-lines.js"></script>

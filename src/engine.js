@@ -2186,7 +2186,7 @@ const Engine = {
       const stateForCalc = { ...G, roster, heatScore };
 
       roster = roster.map(c => {
-        const nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
 
         // v1.3-2: §3.3 growthPenaltyカウントダウン（毎週 — 怪我中も時間は経過する）
         if (nc.growthPenalty) {
@@ -4461,6 +4461,152 @@ Engine.awards = {
   applyHallOfFame(state, inductees) {
     const newHallOfFame = [...(state.hallOfFame || []), ...inductees];
     return { ...state, hallOfFame: newHallOfFame, retiredFighters: [] };
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+//  Engine.news — 世界観演出ニュースシステム (v1.4w)
+//  Pure functions only — no DOM references
+// ══════════════════════════════════════════════════════════
+Engine.news = {
+
+  /** ティッカーニュース生成（毎週 manage画面に表示） */
+  generateTicker(rng, state) {
+    const items = [];
+    const ov = Engine.util.ov;
+    const orgName = id => Engine.awards ? Engine.awards._orgName(state, id) : id;
+
+    // AI団体の興行結果（興行週なら）
+    if (Engine.util.isShowWeek(state.week)) {
+      if (state.aiOrgs) {
+        Object.keys(state.aiOrgs).forEach(orgId => {
+          const org = RIVAL_ORGS.find(o => o.id === orgId);
+          if (!org) return;
+          if (Engine.rng.float(rng) < 0.4) {
+            items.push({ cat: 'aiShow', data: { org: org.name } });
+          }
+        });
+      }
+    }
+
+    // 好成績・不振（自団体ロスターの勝敗比率から生成）
+    (state.roster || []).forEach(f => {
+      const wins = f.wins || 0; const losses = f.losses || 0;
+      const total = wins + losses;
+      if (total >= 4 && wins >= total * 0.75) {
+        items.push({ cat: 'winStreak', data: { name: f.name, count: wins } });
+      }
+      if (total >= 3 && losses >= total * 0.7) {
+        items.push({ cat: 'loseStreak', data: { name: f.name, count: losses } });
+      }
+    });
+
+    // AI団体の選手ピックアップ（連勝的フレーバー）
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        if (!org || !state.aiOrgs[orgId].roster) return;
+        const top = [...state.aiOrgs[orgId].roster].sort((a, b) => ov(b) - ov(a));
+        if (top.length > 0 && Engine.rng.float(rng) < 0.25) {
+          const f = top[0];
+          items.push({ cat: 'winStreak', data: { name: f.name, count: Engine.rng.int(rng, 4, 8) } });
+        }
+      });
+    }
+
+    // フレーバー（ランダム全団体選手）
+    const allFighters = [...(state.roster || [])];
+    if (state.aiOrgs) {
+      Object.values(state.aiOrgs).forEach(o => { if (o.roster) allFighters.push(...o.roster); });
+    }
+    if (allFighters.length >= 2 && Engine.rng.float(rng) < 0.5) {
+      const f1 = Engine.rng.pick(rng, allFighters);
+      const f2 = Engine.rng.pick(rng, allFighters.filter(f => f.id !== f1.id));
+      items.push({ cat: 'flavor', data: { name: f1.name, name2: f2 ? f2.name : '???' } });
+    }
+
+    // AI団体の負傷情報
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        if (!org) return;
+        const roster = state.aiOrgs[orgId].roster || [];
+        if (roster.length > 0 && Engine.rng.float(rng) < 0.15) {
+          const f = Engine.rng.pick(rng, roster);
+          items.push({ cat: 'injury', data: { org: org.name, name: f.name } });
+        }
+      });
+    }
+
+    // スカウト動向
+    if (Engine.rng.float(rng) < 0.12) {
+      items.push({ cat: 'scout', data: {} });
+    }
+
+    // 経済
+    if (state.aiOrgs) {
+      const orgIds = Object.keys(state.aiOrgs);
+      if (orgIds.length > 0 && Engine.rng.float(rng) < 0.15) {
+        const orgId = Engine.rng.pick(rng, orgIds);
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        if (org) items.push({ cat: 'economy', data: { org: org.name } });
+      }
+    }
+
+    // 一般
+    if (Engine.rng.float(rng) < 0.2) {
+      items.push({ cat: 'general', data: {} });
+    }
+
+    // テンプレート適用して3〜5件選出
+    const resolved = items.map(item => {
+      const templates = NEWS_TICKER_TEMPLATES[item.cat];
+      if (!templates || templates.length === 0) return null;
+      let text = Engine.rng.pick(rng, templates);
+      Object.keys(item.data).forEach(k => {
+        text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), item.data[k]);
+      });
+      return text;
+    }).filter(Boolean);
+
+    // シャッフルして3〜5件
+    const shuffled = [...resolved];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Engine.rng.int(rng, 0, i);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const count = Math.min(shuffled.length, Engine.rng.int(rng, 3, 5));
+    return shuffled.slice(0, count);
+  },
+
+  /** 新聞パネル記事生成（イベント配列から Article[] を生成） */
+  generateHeadlines(rng, events) {
+    return events.map(ev => {
+      const templates = NEWS_HEADLINE_TEMPLATES[ev.type];
+      if (!templates || templates.length === 0) return null;
+      const tmpl = Engine.rng.pick(rng, templates);
+      let headline = tmpl.headline;
+      let body = tmpl.body;
+      const data = ev.data || {};
+      Object.keys(data).forEach(k => {
+        headline = headline.replace(new RegExp(`\\{${k}\\}`, 'g'), data[k]);
+        body = body.replace(new RegExp(`\\{${k}\\}`, 'g'), data[k]);
+      });
+      return {
+        headline,
+        body,
+        characterId: ev.characterId || null,
+        type: ev.type
+      };
+    }).filter(Boolean);
+  },
+
+  /** 防衛回数マイルストーン判定 */
+  checkDefenseMilestone(defenses) {
+    if (defenses === 15) return 15;
+    if (defenses === 10) return 10;
+    if (defenses === 5) return 5;
+    return 0;
   }
 };
 

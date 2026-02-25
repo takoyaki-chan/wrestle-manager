@@ -23,10 +23,11 @@ cp src/index.html src/data.js src/engine.js src/app.js \
    src/ui-common.js src/ui-render.js src/victory-lines.js \
    src/battle-engine.html \
    "${DIST_DIR}/src/"
+cp portrait-map.js "${DIST_DIR}/"
 
 # Copy images
 echo "🖼️  画像ファイルをコピー中..."
-cp image/face_*.png "${DIST_DIR}/image/"
+cp image/*.png "${DIST_DIR}/image/"
 
 # Count files
 SRC_COUNT=$(ls -1 "${DIST_DIR}/src/" | wc -l)
