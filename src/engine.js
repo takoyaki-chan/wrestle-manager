@@ -500,12 +500,14 @@ const Engine = {
       // v1.0c: CARD_MULT (was hardcoded * 3)
       const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
       const heatMult = Engine.heat.getMult(G);
-      const titleMult = hasTitleMatch ? 1.15 : 1.0;
+      const titleBonus = hasTitleMatch ? 0.15 : 0.0;
       // v1.2: チャンピオン出場ボーナス +10%
-      const champMult = hasChampOnCard ? 1.10 : 1.0;
+      const champBonus = hasChampOnCard ? 0.10 : 0.0;
       // 華: ロスターに華持ちがいれば集客+5%
-      const charismaMult = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 1.05 : 1.0;
-      const rawAttendance = Math.round((baseAttendance + cardBonus) * heatMult * titleMult * champMult * charismaMult);
+      const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
+      // v1.5: 乗算スタックを加算方式に変更（上限2.0）— 旧: 最大2.66倍 → 新: 最大2.0倍
+      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus, 2.0);
+      const rawAttendance = Math.round((baseAttendance + cardBonus) * totalMult);
       // Minimum guarantee: 5% of capacity (at least 10)
       const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
       return Engine.util.clamp(rawAttendance, minAttendance, v.cap);
@@ -546,8 +548,8 @@ const Engine = {
     },
     calcDecay(G) {
       let hs = G.heatScore;
-      if (hs > 0) hs = Math.max(0, hs - 0.3);
-      else if (hs < 0) hs = Math.min(0, hs + 0.3);
+      if (hs > 0) hs = Math.max(0, hs - 1.0);
+      else if (hs < 0) hs = Math.min(0, hs + 1.0);
       return Math.round(hs * 10) / 10;
     }
   },
@@ -919,7 +921,7 @@ const Engine = {
             type: 'tv',
             fighterId: fighter.id,
             fighterName: fighter.name,
-            heatGain: isChamp ? 3 : 2,
+            heatGain: isChamp ? 2 : 1,
             headline
           }];
         }
@@ -2095,6 +2097,12 @@ const Engine = {
         return { ...c, popularity: Math.max(1, c.popularity + scandal.popDelta) };
       });
 
+      // v1.5: Natural popularity decay (-0.5/week) — 放っておくと人気は落ちる
+      roster = roster.map(c => {
+        if (c.injury || c.isRental || c.popularity <= 10) return c;
+        return { ...c, popularity: Math.max(10, Math.round((c.popularity - 0.5) * 10) / 10) };
+      });
+
       return { roster, freeAgents, heatScore, events };
     },
 
@@ -2238,7 +2246,8 @@ const Engine = {
       fa = fa.filter(f => !removed.some(r => r.id === f.id));
       for (const r of removed) {
         // Only return to pool if the char exists in ALL_CHARS (has portrait)
-        if (ALL_CHARS.find(c => c.id === r.id)) pool.push(r.id);
+        // v1.5: store {id, age} to preserve age and prevent eternal youth glitch
+        if (ALL_CHARS.find(c => c.id === r.id)) pool.push({ id: r.id, age: r.age || 18 });
       }
       // Add up to 2 from pool to FA
       // 占有済みID（現在のfa＋ロスター＋AI団体）を収集して重複を防ぐ
@@ -2247,18 +2256,30 @@ const Engine = {
       Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
       // 直前に除外したIDも除外候補から切り離す（just-removed IDの即再入場を防止）
       removed.forEach(r => faOccupied.add(r.id));
-      const eligiblePool = pool.filter(id => !faOccupied.has(id));
+      // v1.5: pool entries can be string IDs (legacy) or {id, age} objects
+      const eligiblePool = pool.filter(entry => {
+        const id = typeof entry === 'object' ? entry.id : entry;
+        const age = typeof entry === 'object' ? entry.age : null;
+        if (faOccupied.has(id)) return false;
+        // 年齢保持エントリは22歳超えで除外（プロ入りの機会を逃した）
+        if (age !== null && age >= 22) return false;
+        return true;
+      });
       const addCount = Math.min(2, eligiblePool.length);
       const shuffledPool = [...eligiblePool].sort(() => Engine.rng.float(faRng) - 0.5);
       const added = [];
       for (let i = 0; i < addCount && i < shuffledPool.length; i++) {
-        const cid = shuffledPool[i];
+        const entry = shuffledPool[i];
+        const cid = typeof entry === 'object' ? entry.id : entry;
+        const storedAge = typeof entry === 'object' ? entry.age : null;
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template) continue;
-        const fighter = Engine.rival.makeAIFighter(template, faRng, null, 18 + Engine.rng.int(faRng, 0, 6));
+        // v1.5: use stored age for returning FA fighters; fresh 18-24 for new entrants from initial pool
+        const age = storedAge !== null ? storedAge : (18 + Engine.rng.int(faRng, 0, 6));
+        const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
         fa.push(fighter);
         added.push(fighter);
-        pool = pool.filter(id => id !== cid);
+        pool = pool.filter(e => (typeof e === 'object' ? e.id : e) !== cid);
       }
       if (removed.length > 0 || added.length > 0) {
         s = { ...s, freeAgents: fa, dormantPool: pool };
@@ -3481,6 +3502,9 @@ const Engine = {
         } else {
           s = { ...s, freeAgents: youngFA };
         }
+
+        // v1.5: orgPop 年次自然減衰 (-3/season) — 放っておくと団体人気は落ちる
+        s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - 3) };
 
         // v1.4: 年末表彰式データ生成（純粋関数 — HOF適用はApp側コールバックで行う）
         const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));

@@ -557,8 +557,8 @@ const ENG = {
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝
 const SALARY_TABLE = [
-  {max:49, pay:8}, {max:64, pay:18}, {max:79, pay:35}, {max:89, pay:60},
-  {max:99, pay:100}, {max:109, pay:150}, {max:999, pay:200}
+  {max:49, pay:15}, {max:64, pay:40}, {max:79, pay:80}, {max:89, pay:150},
+  {max:99, pay:250}, {max:109, pay:400}, {max:999, pay:600}
 ];
 const VENUES = [
   {name:'公民館',   cap:150,   cost:5,    popReq:0},
@@ -572,8 +572,8 @@ const VENUES = [
 const TICKET_PRICE = 0.5; // 万円/人（統一チケット価格）
 const GOODS_PRICE = 0.08; // 万円/人（グッズ単価）
 const OCCUPANCY_BONUS = [
-  {min:0.95, ticketMult:1.5, label:'🔥 超満員！',    heatDelta:+2},
-  {min:0.80, ticketMult:1.2, label:'✨ 大入り！',    heatDelta:+1},
+  {min:0.95, ticketMult:1.2, label:'🔥 超満員！',    heatDelta:+1},
+  {min:0.80, ticketMult:1.1, label:'✨ 大入り！',    heatDelta:+1},
   {min:0.60, ticketMult:1.0, label:'👍 盛況',        heatDelta:0},
   {min:0.40, ticketMult:0.85,label:'➖ まずまず',    heatDelta:0},
   {min:0.25, ticketMult:0.7, label:'😟 空席目立つ',  heatDelta:-1},
@@ -614,13 +614,13 @@ const LOSING_STREAK_PENALTIES = [
 const PROMO_POP_CAP = 40; // プロモのみで到達可能な人気上限
 const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
 const SPONSOR_TABLE = [
-  {min:0,max:19,val:0},{min:20,max:39,val:20},{min:40,max:59,val:60},
-  {min:60,max:79,val:120},{min:80,max:94,val:250},{min:95,max:100,val:400}
+  {min:0,max:19,val:0},{min:20,max:39,val:10},{min:40,max:59,val:30},
+  {min:60,max:79,val:60},{min:80,max:94,val:120},{min:95,max:100,val:200}
 ];
 const BROADCAST_TABLE = [
-  {min:70,max:84,val:100},{min:85,max:94,val:200},{min:95,max:100,val:400}
+  {min:70,max:84,val:50},{min:85,max:94,val:100},{min:95,max:100,val:200}
 ];
-const FIXED_COSTS = {facility:30, admin:20};
+const FIXED_COSTS = {facility:50, admin:30};
 
 // Heat System
 const HEAT_LEVELS = [
