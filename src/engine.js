@@ -3992,19 +3992,26 @@ Engine.awards = {
     return {
       id: best.fighter.id, name: best.fighter.name, portrait: best.fighter.portrait,
       orgName: best.orgName, ovr: ov(best.fighter), age: best.fighter.age,
+      style: best.fighter.style || 'Allround',
       isPlayerOrg: best.orgId === 'player'
     };
   },
 
   /** ② ベストマッチ: プレイヤー=実データ, AI=生成MQ → 最高の1試合 */
   selectBestMatch(rng, state) {
+    const ov = Engine.util.ov;
     const candidates = [];
     const playerMQ = (state.seasonStats && state.seasonStats.bestMQ) || 0;
     if (playerMQ > 0) {
       const matchStr = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
       const parts = matchStr.split(' vs ');
+      const findF = name => (state.roster || []).find(f => f.name === name) ||
+                            (state.retiredFighters || []).find(f => f.name === name);
+      const f1 = findF(parts[0]);
+      const f2 = findF(parts[1]);
       candidates.push({
-        fighter1: parts[0] || '???', fighter2: parts[1] || '???',
+        fighter1: { id: f1 ? f1.id : null, name: parts[0] || '???', ovr: f1 ? ov(f1) : 0, style: f1 ? (f1.style || 'Allround') : 'Allround' },
+        fighter2: { id: f2 ? f2.id : null, name: parts[1] || '???', ovr: f2 ? ov(f2) : 0, style: f2 ? (f2.style || 'Allround') : 'Allround' },
         orgName: Engine.awards._orgName(state, 'player'), mq: playerMQ, isPlayerOrg: true
       });
     }
@@ -4012,15 +4019,16 @@ Engine.awards = {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const orgData = state.aiOrgs[orgId];
         if (!orgData || !orgData.roster || orgData.roster.length < 2) return;
-        const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-        const topAvg = (Engine.util.ov(sorted[0]) + Engine.util.ov(sorted[1])) / 2;
+        const sorted = [...orgData.roster].sort((a, b) => ov(b) - ov(a));
+        const topAvg = (ov(sorted[0]) + ov(sorted[1])) / 2;
         const cfg = RIVAL_ORGS.find(o => o.id === orgId);
         const tierBase = { S: 75, A: 65, B: 55 }[(cfg && cfg.tier)] || 55;
         const mq = Engine.util.clamp(
           Math.round(topAvg * 0.6 + tierBase * 0.4 + Engine.rng.int(rng, -10, 10)), 30, 98
         );
         candidates.push({
-          fighter1: sorted[0].name, fighter2: sorted[1].name,
+          fighter1: { id: sorted[0].id, name: sorted[0].name, ovr: ov(sorted[0]), style: sorted[0].style || 'Allround' },
+          fighter2: { id: sorted[1].id, name: sorted[1].name, ovr: ov(sorted[1]), style: sorted[1].style || 'Allround' },
           orgName: Engine.awards._orgName(state, orgId), mq, isPlayerOrg: false
         });
       });
@@ -4063,16 +4071,21 @@ Engine.awards = {
     return {
       id: winner.fighter.id, name: winner.fighter.name, portrait: winner.fighter.portrait,
       orgName: winner.orgName, ovr: ov(winner.fighter), popularity: winner.fighter.popularity,
-      age: winner.fighter.age, isPlayerOrg: winner.isPlayerOrg
+      age: winner.fighter.age, style: winner.fighter.style || 'Allround',
+      isPlayerOrg: winner.isPlayerOrg
     };
   },
 
-  /** ④ チャンピオン紹介: プレイヤー=実データ(防衛あり), AI=エース名のみ */
+  /** ④ チャンピオン紹介: プレイヤー=実データ(防衛あり), AI=エース名のみ → 上位3団体のみ */
   getChampions(state) {
     const ov = Engine.util.ov;
     const champions = [];
-    // Player org
-    if (state.titleEstablished) {
+    const rankings = state.rankings || [];
+    const sortedRankings = rankings.slice().sort((a, b) => (a.rank || 99) - (b.rank || 99));
+    const top3OrgIds = new Set(sortedRankings.slice(0, 3).map(r => r.orgId));
+    const getRankNum = orgId => { const r = rankings.find(x => x.orgId === orgId); return r ? (r.rank || 99) : 99; };
+    // Player org (only if in top 3)
+    if (state.titleEstablished && top3OrgIds.has('player')) {
       const champId = state.titles && state.titles.world && state.titles.world.championId;
       if (champId) {
         const champ = state.roster.find(f => f.id === champId);
@@ -4080,14 +4093,16 @@ Engine.awards = {
           champions.push({
             id: champ.id, name: champ.name, portrait: champ.portrait,
             orgName: state.orgName || 'あなたの団体',
-            defenses: state.titles.world.defenses || 0, isPlayer: true
+            ovr: ov(champ), popularity: champ.popularity || 0, style: champ.style || 'Allround',
+            defenses: state.titles.world.defenses || 0, isPlayer: true, rank: getRankNum('player')
           });
         }
       }
     }
-    // AI orgs: エースを王者として表示
+    // AI orgs: エースを王者として表示（上位3団体のみ）
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
+        if (!top3OrgIds.has(orgId)) return;
         const orgData = state.aiOrgs[orgId];
         if (!orgData || !orgData.roster || orgData.roster.length === 0) return;
         const sorted = [...orgData.roster].sort((a, b) => ov(b) - ov(a));
@@ -4095,10 +4110,12 @@ Engine.awards = {
         champions.push({
           id: ace.id, name: ace.name, portrait: ace.portrait,
           orgName: Engine.awards._orgName(state, orgId),
-          defenses: null, isPlayer: false
+          ovr: ov(ace), popularity: ace.popularity || 0, style: ace.style || 'Allround',
+          defenses: null, isPlayer: false, rank: getRankNum(orgId)
         });
       });
     }
+    champions.sort((a, b) => a.rank - b.rank);
     return champions;
   },
 
@@ -4118,6 +4135,7 @@ Engine.awards = {
         return {
           id: f.id, name: f.name, portrait: f.portrait,
           orgName: state.orgName || 'あなたの団体',
+          style: f.style || 'Allround',
           activeSeasonsStart: debut ? debut.season : 1,
           activeSeasonsEnd: retire ? retire.season : state.season,
           activeYears: `S${debut ? debut.season : 1}〜S${retire ? retire.season : state.season}`,

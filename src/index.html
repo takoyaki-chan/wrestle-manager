@@ -547,10 +547,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .awards-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:270;
   align-items:center;justify-content:center}
 .awards-overlay.active{display:flex}
-.awards-box{background:var(--panel-bg);border-radius:14px;max-width:380px;width:92%;
-  text-align:center;padding:28px 22px 20px;position:relative;
+.awards-box{background:var(--panel-bg);border-radius:14px;max-width:500px;width:92%;
+  text-align:center;padding:32px 28px 24px;position:relative;
   border:1px solid rgba(255,215,0,0.18);box-shadow:0 12px 48px rgba(0,0,0,0.7);
-  animation:retireIn .45s cubic-bezier(0.22,1,0.36,1)}
+  animation:retireIn .45s cubic-bezier(0.22,1,0.36,1);
+  background-size:100% 100%;background-repeat:no-repeat;background-position:center}
+/* 枠画像切り替え */
+.awards-box[data-frame="a"]{background-image:url('../image/award-frame-a.png.png')}
+.awards-box[data-frame="b"]{background-image:url('../image/award-frame-b.png.png')}
+.awards-box[data-frame="c"]{background-image:url('../image/award-frame-c.png.png')}
+.awards-box[data-frame="d"]{background-image:url('../image/award-frame-d.png.png')}
+.awards-box[data-frame="e"]{background-image:url('../image/award-frame-e.png.png')}
+.awards-box[data-frame="f"]{background-image:url('../image/award-frame-f.png.png');animation:retireIn .9s cubic-bezier(0.22,1,0.36,1)}
+.awards-box[data-frame="g"]{background-image:url('../image/award-frame-g.png.png')}
 .awards-box.hall-of-fame{border-color:rgba(255,215,0,0.5);
   box-shadow:0 12px 48px rgba(255,215,0,0.15),0 0 0 1px rgba(255,215,0,0.1)}
 .awards-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:2px;margin-bottom:6px}
@@ -558,19 +567,24 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .awards-face{border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.15);
   display:block;margin:0 auto 10px}
 .awards-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px}
-.awards-detail{font-size:12px;color:var(--text-sub);margin-bottom:20px;line-height:1.6}
+.awards-name.gold{color:#d4a843;text-shadow:0 0 18px rgba(212,168,67,0.5),0 2px 4px rgba(0,0,0,0.5)}
+.awards-detail{font-size:12px;color:var(--text-sub);margin-bottom:14px;line-height:1.6}
 .awards-org{font-size:11px;color:var(--text-dim);margin-bottom:8px}
 .awards-org.player{color:rgba(212,168,67,0.85)}
 .awards-btn{font-size:12px;padding:9px 28px;border-radius:7px;cursor:pointer;
   background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:var(--text-sub);
   transition:all .2s;letter-spacing:1px}
 .awards-btn:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+.awards-quote{font-size:12px;color:var(--text-sub);font-style:italic;
+  margin:8px 0 14px;line-height:1.6;text-align:center}
+.awards-quote::before{content:'「';color:var(--text-dim)}
+.awards-quote::after{content:'」';color:var(--text-dim)}
 .awards-box.hall-of-fame .awards-category{color:rgba(255,215,0,0.9)}
 .awards-box.hall-of-fame .awards-btn{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.2);color:rgba(255,215,0,0.8)}
 .awards-box.hall-of-fame .awards-btn:hover{background:rgba(255,215,0,0.13);color:rgba(255,215,0,1)}
 .awards-plaque{font-size:11px;color:var(--text-sub);line-height:2;
-  padding:8px 12px;background:rgba(255,215,0,0.04);border-radius:8px;
-  border:1px solid rgba(255,215,0,0.1);margin-bottom:16px}
+  padding:10px 14px;background:rgba(255,215,0,0.04);border-radius:8px;
+  border:1px solid rgba(255,215,0,0.25);margin-bottom:14px;text-align:left}
 .awards-summary{text-align:left;font-size:11px;padding:10px 12px;
   background:rgba(0,0,0,0.15);border-radius:8px;margin-bottom:18px;
   display:flex;flex-direction:column;gap:7px}

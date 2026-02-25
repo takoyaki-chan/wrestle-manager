@@ -902,33 +902,32 @@ function showAwardsCeremony(awards, onDone) {
   const steps = [];
 
   // 0. タイトル画面
-  steps.push(() => _renderAwardsSlide(_buildAwardsTitle(awards.season)));
+  steps.push(() => _renderAwardsSlide(_buildAwardsTitle(awards.season), 'a'));
 
-  // 1. 新人王
-  if (awards.rookieOfYear)
-    steps.push(() => _renderAwardsSlide(_buildRookieAward(awards.rookieOfYear)));
+  // 1. 新人王（該当者なしでも常に表示）
+  steps.push(() => _renderAwardsSlide(_buildRookieAward(awards.rookieOfYear), 'b'));
 
   // 2. ベストマッチ
   if (awards.bestMatch)
-    steps.push(() => _renderAwardsSlide(_buildBestMatchAward(awards.bestMatch)));
+    steps.push(() => _renderAwardsSlide(_buildBestMatchAward(awards.bestMatch), 'c'));
 
   // 3. MVP
   if (awards.mvp)
-    steps.push(() => _renderAwardsSlide(_buildMVPAward(awards.mvp)));
+    steps.push(() => _renderAwardsSlide(_buildMVPAward(awards.mvp), 'd'));
 
   // 4. チャンピオン紹介
   if (awards.champions && awards.champions.length > 0)
-    steps.push(() => _renderAwardsSlide(_buildChampionsAward(awards.champions)));
+    steps.push(() => _renderAwardsSlide(_buildChampionsAward(awards.champions), 'e'));
 
   // 5. 殿堂入り（該当者ごとに1画面）
   if (awards.hallOfFame && awards.hallOfFame.length > 0) {
     awards.hallOfFame.forEach(inductee => {
-      steps.push(() => { _renderAwardsSlide(_buildHallOfFame(inductee)); Audio.play('fanfare'); });
+      steps.push(() => { _renderAwardsSlide(_buildHallOfFame(inductee), 'f'); Audio.play('fanfare'); });
     });
   }
 
   // 6. 全受賞者一覧
-  steps.push(() => _renderAwardsSlide(_buildAwardsSummary(awards)));
+  steps.push(() => _renderAwardsSlide(_buildAwardsSummary(awards), 'g'));
 
   // キュー実行
   let idx = 0;
@@ -949,12 +948,32 @@ function showAwardsCeremony(awards, onDone) {
   Audio.play('fanfare');
 }
 
-function _renderAwardsSlide(html) {
-  document.getElementById('awardsBox').innerHTML = html;
-  // hall-of-fame クラスの付け外し
+function _renderAwardsSlide(html, frame) {
   const box = document.getElementById('awardsBox');
+  box.innerHTML = html;
+  box.dataset.frame = frame || '';
   if (html.includes('awards-plaque')) box.classList.add('hall-of-fame');
   else box.classList.remove('hall-of-fame');
+}
+
+// セリフをランダム選出（AWARD_LINES[key]から1つ）
+function _awardLine(key) {
+  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES[key]) || [];
+  if (!pool.length) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ベストマッチ用フレーバーテキスト
+function _bestMatchFlavor(mq) {
+  if (typeof BESTMATCH_FLAVOR === 'undefined') return '';
+  const pool = mq >= 80 ? BESTMATCH_FLAVOR.high : mq >= 60 ? BESTMATCH_FLAVOR.mid : BESTMATCH_FLAVOR.low;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// スタイル日本語変換
+function _styleJa(style) {
+  return { Grappler:'グラップラー', Striker:'ストライカー', Submission:'サブミッション',
+           Speed:'スピード', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style;
 }
 
 function _awardsPortrait(id, size) {
@@ -967,65 +986,134 @@ function _awardsPortrait(id, size) {
 
 function _buildAwardsTitle(season) {
   return `<div class="awards-title">━━ シーズン${season} ━━</div>
-  <div style="font-size:28px;margin:8px 0">🏆</div>
-  <div class="awards-title" style="font-size:14px;letter-spacing:3px">年末表彰式</div>
-  <div class="awards-detail" style="margin:10px 0 18px">受賞者発表</div>
+  <div style="font-size:36px;margin:12px 0">🏆</div>
+  <div class="awards-title" style="font-size:16px;letter-spacing:4px;color:var(--gold)">年末表彰式</div>
+  <div class="awards-detail" style="margin:14px 0 22px;font-size:13px">受賞者を発表します</div>
   <button class="awards-btn" onclick="window._awardsNext()">開始 ▶</button>`;
 }
 
 function _buildRookieAward(d) {
+  if (!d) {
+    return `<div class="awards-category">🌟 新人王 🌟</div>
+  <div style="font-size:48px;margin:20px 0">—</div>
+  <div class="awards-name" style="color:var(--text-sub)">今年は該当者なし</div>
+  <div class="awards-detail" style="margin-top:8px">キャリア1年目の選手が見つかりませんでした</div>
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+  }
+  const line = _awardLine('rookie');
   return `<div class="awards-category">🌟 新人王 🌟</div>
-  <div class="awards-face">${_awardsPortrait(d.id)}</div>
+  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 150)}</div>
   <div class="awards-name">${d.name}</div>
-  <div class="awards-detail">OVR ${d.ovr} / ${d.age}歳</div>
-  <div class="awards-org">${d.orgName}</div>
+  <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
+  <div class="awards-detail">OVR ${d.ovr} / ${d.age}歳 / ${_styleJa(d.style)}</div>
+  ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
 
 function _buildBestMatchAward(d) {
+  // fighter1/fighter2 は {id, name, ovr, style} オブジェクト
+  const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
+  const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
+  const flavor = _bestMatchFlavor(d.mq);
+  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES.bestMatch) || [];
+  // 2つの異なるセリフを選出
+  const i1 = Math.floor(Math.random() * pool.length);
+  let i2 = Math.floor(Math.random() * Math.max(pool.length - 1, 1));
+  if (pool.length > 1 && i2 >= i1) i2++;
+  const line1 = pool[i1] || '';
+  const line2 = pool[Math.min(i2, pool.length - 1)] || '';
   return `<div class="awards-category">🎬 ベストマッチ 🎬</div>
-  <div class="awards-name" style="font-size:14px;margin:10px 0 4px">${d.fighter1}<br><span style="font-size:11px;color:var(--text-dim)">VS</span><br>${d.fighter2}</div>
-  <div class="awards-org">${d.orgName}</div>
-  <div class="awards-detail" style="font-size:22px;font-weight:700;color:var(--accent);margin:8px 0 18px">MQ ${d.mq}</div>
+  <div style="display:flex;justify-content:center;align-items:flex-start;gap:10px;margin:6px 0 8px">
+    <div style="flex:1;text-align:center">
+      <div style="display:flex;justify-content:center">${_awardsPortrait(f1.id, 100)}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-top:5px">${f1.name}</div>
+      <div style="font-size:10px;color:var(--text-dim)">OVR ${f1.ovr} / ${_styleJa(f1.style)}</div>
+      ${line1 ? `<div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${line1}」</div>` : ''}
+    </div>
+    <div style="flex-shrink:0;text-align:center;padding-top:46px">
+      <div style="font-size:11px;color:var(--text-dim);font-weight:700">VS</div>
+    </div>
+    <div style="flex:1;text-align:center">
+      <div style="display:flex;justify-content:center">${_awardsPortrait(f2.id, 100)}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-top:5px">${f2.name}</div>
+      <div style="font-size:10px;color:var(--text-dim)">OVR ${f2.ovr} / ${_styleJa(f2.style)}</div>
+      ${line2 ? `<div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${line2}」</div>` : ''}
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${d.orgName}</div>
+  <div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:2px">MQ ${d.mq}</div>
+  ${flavor ? `<div style="font-size:11px;color:var(--text-sub);font-style:italic;margin-bottom:14px">${flavor}</div>` : '<div style="margin-bottom:14px"></div>'}
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
 
 function _buildMVPAward(d) {
+  const line = _awardLine('mvp');
   return `<div class="awards-category">👑 MVP 👑</div>
-  <div class="awards-face">${_awardsPortrait(d.id)}</div>
+  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
   <div class="awards-name">${d.name}</div>
-  <div class="awards-detail">OVR ${d.ovr} / 人気 ${d.popularity}</div>
-  <div class="awards-org">${d.orgName}</div>
+  <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
+  <div class="awards-detail">OVR ${d.ovr} / 人気 ${d.popularity} / ${_styleJa(d.style)}</div>
+  ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
 
 function _buildChampionsAward(champions) {
-  const rows = champions.map(c => {
-    const face = _awardsPortrait(c.id, 36);
-    const defText = c.isPlayer && c.defenses != null ? `（防衛${c.defenses}回）` : '';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-      <div style="flex-shrink:0">${face}</div>
-      <div style="text-align:left;min-width:0">
-        <div style="font-size:12px;font-weight:600;color:var(--text)">${c.name}${defText}</div>
-        <div style="font-size:10px;color:var(--text-dim)">${c.orgName}</div>
-      </div>
-    </div>`;
-  }).join('');
-  return `<div class="awards-category">🏆 タイトルチャンピオン 🏆</div>
-  <div style="margin:8px 0 16px;max-height:180px;overflow-y:auto">${rows}</div>
+  if (!champions || champions.length === 0) {
+    return `<div class="awards-category">🏆 チャンピオン 🏆</div>
+  <div class="awards-detail" style="margin:20px 0">チャンピオン情報なし</div>
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+  }
+  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES.champion) || [];
+  // 3つの異なるセリフを選出
+  const indices = [];
+  for (let i = 0; i < Math.min(3, pool.length); i++) {
+    let idx;
+    do { idx = Math.floor(Math.random() * pool.length); } while (indices.includes(idx));
+    indices.push(idx);
+  }
+  const lines = indices.map(i => pool[i] || '');
+  const [c1, c2, c3] = champions;
+  // 1位（大）
+  const defText1 = c1.isPlayer && c1.defenses != null ? `<br>防衛 ${c1.defenses}回` : '';
+  const first = `<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:center">${_awardsPortrait(c1.id, 160)}</div>
+    <div class="awards-name" style="margin-top:8px">${c1.name}</div>
+    <div class="awards-org ${c1.isPlayer ? 'player' : ''}">${c1.orgName}</div>
+    <div style="font-size:11px;color:var(--text-sub)">OVR ${c1.ovr} / 人気 ${c1.popularity}${defText1}</div>
+    ${lines[0] ? `<div style="font-size:12px;color:var(--text-sub);font-style:italic;margin-top:6px">「${lines[0]}」</div>` : ''}
+  </div>`;
+  // 2位3位（小）
+  const makeSmall = (c, lineIdx) => {
+    if (!c) return '<div style="flex:1"></div>';
+    const defText = c.isPlayer && c.defenses != null ? ` / 防衛${c.defenses}回` : '';
+    return `<div style="flex:1;text-align:center">
+      <div style="display:flex;justify-content:center">${_awardsPortrait(c.id, 75)}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text);margin-top:5px">${c.name}</div>
+      <div style="font-size:9px;color:var(--text-dim)">${c.orgName}</div>
+      <div style="font-size:9px;color:var(--text-sub)">OVR ${c.ovr} / 人気 ${c.popularity}${defText}</div>
+      ${lines[lineIdx] ? `<div style="font-size:9px;color:var(--text-sub);font-style:italic;margin-top:4px">「${lines[lineIdx]}」</div>` : ''}
+    </div>`;
+  };
+  const rest = (c2 || c3) ? `<div style="display:flex;gap:10px;justify-content:center;padding-top:4px">
+    ${makeSmall(c2, 1)}${makeSmall(c3, 2)}
+  </div>` : '';
+  return `<div class="awards-category">🏆 チャンピオン 🏆</div>
+  ${first}${rest}
+  <div style="margin-top:16px"><button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button></div>`;
 }
 
 function _buildHallOfFame(d) {
-  return `<div class="awards-category">🏛️ 殿堂入り 🏛️</div>
-  <div class="awards-face" style="border-color:rgba(212,168,67,0.6)">${_awardsPortrait(d.id, 80)}</div>
-  <div class="awards-name">${d.name}</div>
-  <div class="awards-org">${d.orgName}</div>
+  const line = _awardLine('hallOfFame');
+  return `<div class="awards-category" style="color:rgba(255,215,0,0.9)">🏛️ 殿堂入り 🏛️</div>
+  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 130)}</div>
+  <div class="awards-name gold">✦ ${d.name} ✦</div>
+  <div class="awards-org">${d.orgName} / ${_styleJa(d.style)}</div>
   <div class="awards-plaque">
-    現役: ${d.activeYears}<br>
-    🏆 王座 ${d.titleReigns}回獲得 &nbsp; 🛡️ 通算防衛 ${d.totalDefenses}回<br>
+    現役期間: ${d.activeYears}<br>
+    🏆 王座獲得 ${d.titleReigns}回 &nbsp;|&nbsp; 🛡️ 通算防衛 ${d.totalDefenses}回<br>
     📈 最高OVR ${d.peakOVR}（S${d.peakOVRSeason}）
   </div>
+  ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">拍手 👏</button>`;
 }
 
@@ -1036,10 +1124,17 @@ function _buildAwardsSummary(a) {
   const hofText = a.hallOfFame && a.hallOfFame.length > 0
     ? a.hallOfFame.map(h => h.name).join('、') : '該当なし';
   const playerChamp = a.champions && a.champions.find(c => c.isPlayer);
-  const champText = playerChamp ? `${playerChamp.name}（防衛${playerChamp.defenses}回）` : '（未設立）';
+  const topChamp = playerChamp || (a.champions && a.champions[0]);
+  const champText = topChamp
+    ? (topChamp.isPlayer && topChamp.defenses != null
+        ? `${topChamp.name}（防衛${topChamp.defenses}回、${topChamp.orgName}）`
+        : `${topChamp.name}（${topChamp.orgName}）`)
+    : '（未設立）';
   const mvpText  = a.mvp          ? `${a.mvp.name}（${a.mvp.orgName}）`              : null;
   const rookText = a.rookieOfYear ? `${a.rookieOfYear.name}（${a.rookieOfYear.orgName}）` : null;
-  const bmText   = a.bestMatch    ? `${a.bestMatch.fighter1} vs ${a.bestMatch.fighter2}（MQ ${a.bestMatch.mq}）` : null;
+  const bm1 = a.bestMatch ? (typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1) : null;
+  const bm2 = a.bestMatch ? (typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2) : null;
+  const bmText   = a.bestMatch    ? `${bm1} vs ${bm2}（MQ ${a.bestMatch.mq}）` : null;
   return `<div class="awards-title" style="font-size:13px;margin-bottom:14px">シーズン${a.season} 表彰式 結果</div>
   <div class="awards-summary">
     ${row('🌟','新人王', rookText)}
