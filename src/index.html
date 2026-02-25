@@ -543,6 +543,39 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-sub);
   transition:all .2s;letter-spacing:1px}
 .retirement-popup-btn:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+/* v1.4: Awards ceremony popup */
+.awards-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:270;
+  align-items:center;justify-content:center}
+.awards-overlay.active{display:flex}
+.awards-box{background:var(--panel-bg);border-radius:14px;max-width:380px;width:92%;
+  text-align:center;padding:28px 22px 20px;position:relative;
+  border:1px solid rgba(255,215,0,0.18);box-shadow:0 12px 48px rgba(0,0,0,0.7);
+  animation:retireIn .45s cubic-bezier(0.22,1,0.36,1)}
+.awards-box.hall-of-fame{border-color:rgba(255,215,0,0.5);
+  box-shadow:0 12px 48px rgba(255,215,0,0.15),0 0 0 1px rgba(255,215,0,0.1)}
+.awards-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:2px;margin-bottom:6px}
+.awards-category{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:14px}
+.awards-face{border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.15);
+  display:block;margin:0 auto 10px}
+.awards-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px}
+.awards-detail{font-size:12px;color:var(--text-sub);margin-bottom:20px;line-height:1.6}
+.awards-org{font-size:11px;color:var(--text-dim);margin-bottom:8px}
+.awards-org.player{color:rgba(212,168,67,0.85)}
+.awards-btn{font-size:12px;padding:9px 28px;border-radius:7px;cursor:pointer;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:var(--text-sub);
+  transition:all .2s;letter-spacing:1px}
+.awards-btn:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+.awards-box.hall-of-fame .awards-category{color:rgba(255,215,0,0.9)}
+.awards-box.hall-of-fame .awards-btn{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.2);color:rgba(255,215,0,0.8)}
+.awards-box.hall-of-fame .awards-btn:hover{background:rgba(255,215,0,0.13);color:rgba(255,215,0,1)}
+.awards-plaque{font-size:11px;color:var(--text-sub);line-height:2;
+  padding:8px 12px;background:rgba(255,215,0,0.04);border-radius:8px;
+  border:1px solid rgba(255,215,0,0.1);margin-bottom:16px}
+.awards-summary{text-align:left;font-size:11px;padding:10px 12px;
+  background:rgba(0,0,0,0.15);border-radius:8px;margin-bottom:18px;
+  display:flex;flex-direction:column;gap:7px}
+.awards-summary-row{display:flex;align-items:baseline;gap:6px}
+.awards-summary-label{color:var(--text-dim);flex-shrink:0;width:76px}
 </style>
 </head>
 <body>
@@ -913,6 +946,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="retirement-popup" id="retirementPopupBox" onclick="event.stopPropagation()"></div>
 </div>
 
+<!-- v1.4: Awards ceremony popup -->
+<div class="awards-overlay" id="awardsOverlay">
+  <div class="awards-box" id="awardsBox" onclick="event.stopPropagation()"></div>
+</div>
 
 <script src="victory-lines.js"></script>
 <!-- ① データ（依存なし） -->

@@ -1460,6 +1460,7 @@ const Engine = {
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
+        careerSeasons: Math.max(0, ((age || 20) - 16)), // v1.4: 新人王判定用
         losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
         assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
@@ -1668,6 +1669,7 @@ const Engine = {
         // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
         roster.forEach(f => {
           f.age = (f.age || 20) + 1;
+          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
           const aiDecayStart = 28 + (f.durability || 0);
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
@@ -3480,6 +3482,11 @@ const Engine = {
           s = { ...s, freeAgents: youngFA };
         }
 
+        // v1.4: 年末表彰式データ生成（純粋関数 — HOF適用はApp側コールバックで行う）
+        const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));
+        const pendingAwards = Engine.awards.generate(awardsRng, s);
+        s = { ...s, pendingAwards };
+
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
       } else if (offWeek === 2) {
@@ -3528,7 +3535,9 @@ const Engine = {
         const oldRankings = Engine.ranking.updateRankings(s);
         const pRankOld = Engine.ranking.getPlayerRank(oldRankings);
         const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
-          orgPop: s.orgPop || 0, ...oldStats, rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })) };
+          orgPop: s.orgPop || 0, ...oldStats,
+          rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })),
+          awards: s.lastAwards || null }; // v1.4
         const seasonHistory = [...(s.seasonHistory || []), archive];
 
         // v0.99: Seasonal pricing adjust every 3 seasons (pricing-balance-spec §4.3)
@@ -3902,6 +3911,7 @@ const Engine = {
       // v1.3: Career record system
       retiredFighters: [],  // temporary — cleared after year-end awards
       hallOfFame: [],       // permanent — hall of fame inductees
+      lastAwards: null,     // v1.4: last year-end awards result
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
                      bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
@@ -3930,3 +3940,202 @@ const Engine = {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// v1.4: Awards System (年末表彰式) — ppv-awards-spec.md Part2
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.awards = {
+  /** Get org display name from state */
+  _orgName(state, orgId) {
+    if (orgId === 'player') return state.orgName || 'あなたの団体';
+    const cfg = RIVAL_ORGS.find(o => o.id === orgId);
+    return cfg ? cfg.name : orgId;
+  },
+
+  /**
+   * 全表彰データを生成（純粋関数）
+   * @param {Object} rng
+   * @param {Object} state - offWeek 1 処理完了後の GameState
+   * @returns {Object} pendingAwards データ
+   */
+  generate(rng, state) {
+    return {
+      season: state.season,
+      rookieOfYear: Engine.awards.selectRookie(state),
+      bestMatch:    Engine.awards.selectBestMatch(rng, state),
+      mvp:          Engine.awards.selectMVP(rng, state),
+      champions:    Engine.awards.getChampions(state),
+      hallOfFame:   Engine.awards.checkHallOfFame(state)
+    };
+  },
+
+  /** ① 新人王: 全団体の careerSeasons===1 から OVR 最高 */
+  selectRookie(state) {
+    const ov = Engine.util.ov;
+    const candidates = [];
+    state.roster.forEach(f => {
+      if (f.careerSeasons === 1)
+        candidates.push({ fighter: f, orgId: 'player', orgName: Engine.awards._orgName(state, 'player') });
+    });
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const orgData = state.aiOrgs[orgId];
+        if (!orgData || !orgData.roster) return;
+        orgData.roster.forEach(f => {
+          if (f.careerSeasons === 1)
+            candidates.push({ fighter: f, orgId, orgName: Engine.awards._orgName(state, orgId) });
+        });
+      });
+    }
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => ov(b.fighter) - ov(a.fighter));
+    const best = candidates[0];
+    return {
+      id: best.fighter.id, name: best.fighter.name, portrait: best.fighter.portrait,
+      orgName: best.orgName, ovr: ov(best.fighter), age: best.fighter.age,
+      isPlayerOrg: best.orgId === 'player'
+    };
+  },
+
+  /** ② ベストマッチ: プレイヤー=実データ, AI=生成MQ → 最高の1試合 */
+  selectBestMatch(rng, state) {
+    const candidates = [];
+    const playerMQ = (state.seasonStats && state.seasonStats.bestMQ) || 0;
+    if (playerMQ > 0) {
+      const matchStr = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
+      const parts = matchStr.split(' vs ');
+      candidates.push({
+        fighter1: parts[0] || '???', fighter2: parts[1] || '???',
+        orgName: Engine.awards._orgName(state, 'player'), mq: playerMQ, isPlayerOrg: true
+      });
+    }
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const orgData = state.aiOrgs[orgId];
+        if (!orgData || !orgData.roster || orgData.roster.length < 2) return;
+        const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        const topAvg = (Engine.util.ov(sorted[0]) + Engine.util.ov(sorted[1])) / 2;
+        const cfg = RIVAL_ORGS.find(o => o.id === orgId);
+        const tierBase = { S: 75, A: 65, B: 55 }[(cfg && cfg.tier)] || 55;
+        const mq = Engine.util.clamp(
+          Math.round(topAvg * 0.6 + tierBase * 0.4 + Engine.rng.int(rng, -10, 10)), 30, 98
+        );
+        candidates.push({
+          fighter1: sorted[0].name, fighter2: sorted[1].name,
+          orgName: Engine.awards._orgName(state, orgId), mq, isPlayerOrg: false
+        });
+      });
+    }
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.mq - a.mq);
+    return candidates[0];
+  },
+
+  /** ③ MVP: 各団体エース1名 → MVPスコア比較 (±15 random) */
+  selectMVP(rng, state) {
+    const ov = Engine.util.ov;
+    const champId = state.titles && state.titles.world && state.titles.world.championId;
+    const candidates = [];
+    if (state.roster.length > 0) {
+      const sorted = [...state.roster].sort((a, b) => {
+        const sa = ov(a) + a.popularity * 0.5 + (a.id === champId ? 20 : 0);
+        const sb = ov(b) + b.popularity * 0.5 + (b.id === champId ? 20 : 0);
+        return sb - sa;
+      });
+      const ace = sorted[0];
+      const score = ov(ace) + ace.popularity * 0.5 + (ace.id === champId ? 20 : 0) + Engine.rng.int(rng, -15, 15);
+      candidates.push({ fighter: ace, orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), score, isPlayerOrg: true });
+    }
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const orgData = state.aiOrgs[orgId];
+        if (!orgData || !orgData.roster || orgData.roster.length === 0) return;
+        const sorted = [...orgData.roster].sort((a, b) =>
+          (ov(b) + b.popularity * 0.5) - (ov(a) + a.popularity * 0.5)
+        );
+        const ace = sorted[0];
+        const score = ov(ace) + ace.popularity * 0.5 + Engine.rng.int(rng, -15, 15);
+        candidates.push({ fighter: ace, orgId, orgName: Engine.awards._orgName(state, orgId), score, isPlayerOrg: false });
+      });
+    }
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.score - a.score);
+    const winner = candidates[0];
+    return {
+      id: winner.fighter.id, name: winner.fighter.name, portrait: winner.fighter.portrait,
+      orgName: winner.orgName, ovr: ov(winner.fighter), popularity: winner.fighter.popularity,
+      age: winner.fighter.age, isPlayerOrg: winner.isPlayerOrg
+    };
+  },
+
+  /** ④ チャンピオン紹介: プレイヤー=実データ(防衛あり), AI=エース名のみ */
+  getChampions(state) {
+    const ov = Engine.util.ov;
+    const champions = [];
+    // Player org
+    if (state.titleEstablished) {
+      const champId = state.titles && state.titles.world && state.titles.world.championId;
+      if (champId) {
+        const champ = state.roster.find(f => f.id === champId);
+        if (champ) {
+          champions.push({
+            id: champ.id, name: champ.name, portrait: champ.portrait,
+            orgName: state.orgName || 'あなたの団体',
+            defenses: state.titles.world.defenses || 0, isPlayer: true
+          });
+        }
+      }
+    }
+    // AI orgs: エースを王者として表示
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const orgData = state.aiOrgs[orgId];
+        if (!orgData || !orgData.roster || orgData.roster.length === 0) return;
+        const sorted = [...orgData.roster].sort((a, b) => ov(b) - ov(a));
+        const ace = sorted[0];
+        champions.push({
+          id: ace.id, name: ace.name, portrait: ace.portrait,
+          orgName: Engine.awards._orgName(state, orgId),
+          defenses: null, isPlayer: false
+        });
+      });
+    }
+    return champions;
+  },
+
+  /** ⑤ 殿堂入り判定: retiredFighters から条件合致者 */
+  checkHallOfFame(state) {
+    return (state.retiredFighters || [])
+      .filter(f => {
+        const rec = f.careerRecord;
+        if (!rec) return false;
+        return (rec.totalTitleWins || 0) + (rec.totalDefenses || 0) >= 13;
+      })
+      .map(f => {
+        const rec = f.careerRecord || {};
+        const hist = rec.history || [];
+        const debut = hist.find(e => e.type === 'debut');
+        const retire = hist.find(e => e.type === 'retire');
+        return {
+          id: f.id, name: f.name, portrait: f.portrait,
+          orgName: state.orgName || 'あなたの団体',
+          activeSeasonsStart: debut ? debut.season : 1,
+          activeSeasonsEnd: retire ? retire.season : state.season,
+          activeYears: `S${debut ? debut.season : 1}〜S${retire ? retire.season : state.season}`,
+          titleReigns: rec.totalTitleWins || 0, totalDefenses: rec.totalDefenses || 0,
+          peakOVR: rec.peakOVR || 0, peakOVRSeason: rec.peakOVRSeason || 0,
+          inductionSeason: state.season
+        };
+      });
+  },
+
+  /**
+   * 殿堂入り確定処理: retiredFighters → hallOfFame 移動
+   * @param {Object} state
+   * @param {Array} inductees - checkHallOfFame の結果
+   * @returns {Object} 新しい state
+   */
+  applyHallOfFame(state, inductees) {
+    const newHallOfFame = [...(state.hallOfFame || []), ...inductees];
+    return { ...state, hallOfFame: newHallOfFame, retiredFighters: [] };
+  }
+};

@@ -889,6 +889,169 @@ function closeRetirementPopup() {
   }
 }
 
+// ── v1.4: Awards Ceremony ────────────────────────────────────
+
+/**
+ * 年末表彰式を順番に表示
+ * @param {Object} awards - Engine.awards.generate() の結果
+ * @param {Function} onDone - 全表示完了後のコールバック
+ */
+function showAwardsCeremony(awards, onDone) {
+  if (!awards) { if (onDone) onDone(); return; }
+
+  const steps = [];
+
+  // 0. タイトル画面
+  steps.push(() => _renderAwardsSlide(_buildAwardsTitle(awards.season)));
+
+  // 1. 新人王
+  if (awards.rookieOfYear)
+    steps.push(() => _renderAwardsSlide(_buildRookieAward(awards.rookieOfYear)));
+
+  // 2. ベストマッチ
+  if (awards.bestMatch)
+    steps.push(() => _renderAwardsSlide(_buildBestMatchAward(awards.bestMatch)));
+
+  // 3. MVP
+  if (awards.mvp)
+    steps.push(() => _renderAwardsSlide(_buildMVPAward(awards.mvp)));
+
+  // 4. チャンピオン紹介
+  if (awards.champions && awards.champions.length > 0)
+    steps.push(() => _renderAwardsSlide(_buildChampionsAward(awards.champions)));
+
+  // 5. 殿堂入り（該当者ごとに1画面）
+  if (awards.hallOfFame && awards.hallOfFame.length > 0) {
+    awards.hallOfFame.forEach(inductee => {
+      steps.push(() => { _renderAwardsSlide(_buildHallOfFame(inductee)); Audio.play('fanfare'); });
+    });
+  }
+
+  // 6. 全受賞者一覧
+  steps.push(() => _renderAwardsSlide(_buildAwardsSummary(awards)));
+
+  // キュー実行
+  let idx = 0;
+  window._awardsNext = () => {
+    document.getElementById('awardsOverlay').classList.remove('active');
+    idx++;
+    if (idx < steps.length) {
+      setTimeout(() => { steps[idx](); document.getElementById('awardsOverlay').classList.add('active'); Audio.play('notify'); }, 280);
+    } else {
+      window._awardsNext = null;
+      if (onDone) onDone();
+    }
+  };
+
+  // 開始
+  steps[0]();
+  document.getElementById('awardsOverlay').classList.add('active');
+  Audio.play('fanfare');
+}
+
+function _renderAwardsSlide(html) {
+  document.getElementById('awardsBox').innerHTML = html;
+  // hall-of-fame クラスの付け外し
+  const box = document.getElementById('awardsBox');
+  if (html.includes('awards-plaque')) box.classList.add('hall-of-fame');
+  else box.classList.remove('hall-of-fame');
+}
+
+function _awardsPortrait(id, size) {
+  size = size || 80;
+  const url = getPortraitUrl(id);
+  if (url) return `<img src="${url}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:3px solid rgba(212,168,67,0.4)">`;
+  const ch = ALL_CHARS.find(c => c.id === id);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size/2)}px;border:3px solid rgba(212,168,67,0.3)">${ch ? ch.name.charAt(0) : '?'}</div>`;
+}
+
+function _buildAwardsTitle(season) {
+  return `<div class="awards-title">━━ シーズン${season} ━━</div>
+  <div style="font-size:28px;margin:8px 0">🏆</div>
+  <div class="awards-title" style="font-size:14px;letter-spacing:3px">年末表彰式</div>
+  <div class="awards-detail" style="margin:10px 0 18px">受賞者発表</div>
+  <button class="awards-btn" onclick="window._awardsNext()">開始 ▶</button>`;
+}
+
+function _buildRookieAward(d) {
+  return `<div class="awards-category">🌟 新人王 🌟</div>
+  <div class="awards-face">${_awardsPortrait(d.id)}</div>
+  <div class="awards-name">${d.name}</div>
+  <div class="awards-detail">OVR ${d.ovr} / ${d.age}歳</div>
+  <div class="awards-org">${d.orgName}</div>
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+}
+
+function _buildBestMatchAward(d) {
+  return `<div class="awards-category">🎬 ベストマッチ 🎬</div>
+  <div class="awards-name" style="font-size:14px;margin:10px 0 4px">${d.fighter1}<br><span style="font-size:11px;color:var(--text-dim)">VS</span><br>${d.fighter2}</div>
+  <div class="awards-org">${d.orgName}</div>
+  <div class="awards-detail" style="font-size:22px;font-weight:700;color:var(--accent);margin:8px 0 18px">MQ ${d.mq}</div>
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+}
+
+function _buildMVPAward(d) {
+  return `<div class="awards-category">👑 MVP 👑</div>
+  <div class="awards-face">${_awardsPortrait(d.id)}</div>
+  <div class="awards-name">${d.name}</div>
+  <div class="awards-detail">OVR ${d.ovr} / 人気 ${d.popularity}</div>
+  <div class="awards-org">${d.orgName}</div>
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+}
+
+function _buildChampionsAward(champions) {
+  const rows = champions.map(c => {
+    const face = _awardsPortrait(c.id, 36);
+    const defText = c.isPlayer && c.defenses != null ? `（防衛${c.defenses}回）` : '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+      <div style="flex-shrink:0">${face}</div>
+      <div style="text-align:left;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${c.name}${defText}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${c.orgName}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="awards-category">🏆 タイトルチャンピオン 🏆</div>
+  <div style="margin:8px 0 16px;max-height:180px;overflow-y:auto">${rows}</div>
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+}
+
+function _buildHallOfFame(d) {
+  return `<div class="awards-category">🏛️ 殿堂入り 🏛️</div>
+  <div class="awards-face" style="border-color:rgba(212,168,67,0.6)">${_awardsPortrait(d.id, 80)}</div>
+  <div class="awards-name">${d.name}</div>
+  <div class="awards-org">${d.orgName}</div>
+  <div class="awards-plaque">
+    現役: ${d.activeYears}<br>
+    🏆 王座 ${d.titleReigns}回獲得 &nbsp; 🛡️ 通算防衛 ${d.totalDefenses}回<br>
+    📈 最高OVR ${d.peakOVR}（S${d.peakOVRSeason}）
+  </div>
+  <button class="awards-btn" onclick="window._awardsNext()">拍手 👏</button>`;
+}
+
+function _buildAwardsSummary(a) {
+  const row = (icon, lbl, val) => val
+    ? `<div class="awards-summary-row"><span class="awards-summary-label">${icon} ${lbl}</span><span>${val}</span></div>`
+    : '';
+  const hofText = a.hallOfFame && a.hallOfFame.length > 0
+    ? a.hallOfFame.map(h => h.name).join('、') : '該当なし';
+  const playerChamp = a.champions && a.champions.find(c => c.isPlayer);
+  const champText = playerChamp ? `${playerChamp.name}（防衛${playerChamp.defenses}回）` : '（未設立）';
+  const mvpText  = a.mvp          ? `${a.mvp.name}（${a.mvp.orgName}）`              : null;
+  const rookText = a.rookieOfYear ? `${a.rookieOfYear.name}（${a.rookieOfYear.orgName}）` : null;
+  const bmText   = a.bestMatch    ? `${a.bestMatch.fighter1} vs ${a.bestMatch.fighter2}（MQ ${a.bestMatch.mq}）` : null;
+  return `<div class="awards-title" style="font-size:13px;margin-bottom:14px">シーズン${a.season} 表彰式 結果</div>
+  <div class="awards-summary">
+    ${row('🌟','新人王', rookText)}
+    ${row('🎬','ベストマッチ', bmText)}
+    ${row('👑','MVP', mvpText)}
+    ${row('🏆','王者', champText)}
+    ${row('🏛️','殿堂入り', hofText)}
+  </div>
+  <button class="awards-btn" onclick="window._awardsNext()">新シーズンへ ▶</button>`;
+}
+
+
 function pickQuote(category) {
   const arr = EVENT_QUOTES[category] || ['...'];
   return arr[Math.floor(Math.random() * arr.length)];

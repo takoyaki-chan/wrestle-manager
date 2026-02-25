@@ -1305,6 +1305,27 @@ const Storage = {
         G = { ...G, _migrated_v1_3_3: true };
       }
 
+      // v1.4 migration: AI fighters に careerSeasons 付与 + lastAwards/hallOfFame
+      if (!G._migrated_v1_4) {
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = {
+              ...od,
+              roster: od.roster.map(f => ({
+                ...f,
+                careerSeasons: f.careerSeasons != null ? f.careerSeasons : Math.max(0, (f.age || 20) - 16)
+              }))
+            };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        if (!G.hasOwnProperty('lastAwards')) G = { ...G, lastAwards: null };
+        if (!G.hasOwnProperty('hallOfFame')) G = { ...G, hallOfFame: [] };
+        G = { ...G, _migrated_v1_4: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2545,11 +2566,37 @@ const App = {
     // v1.3-3: Show retirement popups (season-end)
     if (pendingRetirements && pendingRetirements.length > 0) {
       refreshAll();
-      showRetirementPopups(pendingRetirements);
+      showRetirementPopups(pendingRetirements, () => {
+        App._checkAndShowAwards(); // v1.4: 引退演出完了後に表彰式
+      });
       return;
     }
 
+    // v1.4: 引退者なしでも表彰式チェック
+    App._checkAndShowAwards();
+  },
+
+  // v1.4: 年末表彰式チェック＆表示
+  _checkAndShowAwards() {
+    const pendingAwards = G.pendingAwards;
+    if (!pendingAwards) { refreshAll(); return; }
+    // pendingAwards は transient field — 保存前にクリーン
+    const { pendingAwards: _, ...cleanG } = G;
+    G = cleanG;
+    Storage.autoSave();
     refreshAll();
+    // 表彰式ポップアップ開始
+    showAwardsCeremony(pendingAwards, () => {
+      // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
+      if (pendingAwards.hallOfFame && pendingAwards.hallOfFame.length > 0) {
+        G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
+      } else {
+        G = { ...G, retiredFighters: [] };
+      }
+      G = { ...G, lastAwards: pendingAwards };
+      Storage.autoSave();
+      refreshAll();
+    });
   },
 
   // v0.96: Mission system
