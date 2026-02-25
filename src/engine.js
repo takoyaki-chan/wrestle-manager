@@ -481,6 +481,11 @@ const Engine = {
       for (const b of BROADCAST_TABLE) if (orgPop >= b.min && orgPop <= b.max) return b.val;
       return 0;
     },
+    // v1.7: 育成補助金（地域振興助成金）— orgPop 40未満の小団体を支援
+    getSubsidy(orgPop) {
+      for (const s of SUBSIDY_TABLE) if (orgPop <= s.max) return s.val;
+      return 0;
+    },
     // v1.0c: Card pop — 積み上げ方式（メイン=フル、サブ=SUB_WEIGHT、深度乗数）
     calcCardPop(matchPops) {
       if (matchPops.length === 0) return 0;
@@ -496,7 +501,7 @@ const Engine = {
     calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard) {
       const v = VENUES[venueIdx];
       // v1.0b: Capacity-independent base attendance (quadratic on orgPop)
-      const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 5000);
+      const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 10000);
       // v1.0c: CARD_MULT (was hardcoded * 3)
       const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
       const heatMult = Engine.heat.getMult(G);
@@ -850,7 +855,7 @@ const Engine = {
         const penalty = -(15 + Engine.rng.int(rng, 0, 5));
         return {
           ...state,
-          heatScore: Math.max(0, (state.heatScore || 50) + penalty),
+          heatScore: Math.max(-10, (state.heatScore ?? 0) + penalty),
           titles: { ...state.titles, world: { ...state.titles.world, championId: null, defenses: 0 } }
         };
       } else {
@@ -941,7 +946,7 @@ const Engine = {
           );
           s = { ...s, roster };
         } else if (ev.type === 'tv') {
-          s = { ...s, heatScore: Math.min(100, (s.heatScore || 50) + ev.heatGain) };
+          s = { ...s, heatScore: Math.min(10, (s.heatScore ?? 0) + ev.heatGain) };
         }
       }
       return s;
@@ -995,6 +1000,124 @@ const Engine = {
       let s = 0;
       for (let i = 0; i < 12; i++) s += Engine.rng.float(rng);
       return Math.max(-4, Math.min(4, Math.round((s - 6) * 2)));
+    }
+  },
+
+  // ── v1.7: Milestone System (キャリア年表 — careerRecord.history + careerHistory → 表示用変換) ──
+  milestone: {
+    /**
+     * Get milestones for a fighter by ID.
+     * Searches roster, retiredFighters, freeAgents.
+     * Returns array of {season, week, type, text, detail?} sorted by season→week.
+     */
+    get(G, fighterId) {
+      const fighter = (G.roster || []).find(c => c.id === fighterId)
+        || (G.retiredFighters || []).find(c => c.id === fighterId)
+        || (G.freeAgents || []).find(c => c.id === fighterId);
+      if (!fighter) return [];
+
+      const milestones = [];
+      const history = fighter.careerRecord?.history || [];
+      const careerHist = fighter.careerHistory || [];
+
+      // Convert careerRecord.history events to milestones
+      for (const ev of history) {
+        switch (ev.type) {
+          case 'debut':
+            milestones.push({ season: ev.season || 1, week: ev.week || 1, type: 'debut',
+              text: `${ev.via === 'draft' ? 'ドラフト' : ev.via === 'fa' ? 'FA' : ev.via === 'scout' ? 'スカウト' : ''}入団` });
+            break;
+          case 'titleWin':
+            milestones.push({ season: ev.season, week: ev.week, type: 'title_win',
+              text: '団体王座 獲得', detail: `${ev.beltId === 'world' ? '世界' : ''}チャンピオンに！` });
+            break;
+          case 'titleLoss':
+            milestones.push({ season: ev.season, week: ev.week, type: 'title_loss',
+              text: `団体王座 陥落`, detail: ev.defenses ? `${ev.defenses}度防衛の末に陥落` : undefined });
+            break;
+          case 'titleDefense': {
+            const cnt = ev.count || 1;
+            // Only show significant defenses (3, 5, 10, etc.)
+            if (cnt === 3 || cnt === 5 || cnt >= 10 && cnt % 5 === 0) {
+              milestones.push({ season: ev.season, week: ev.week, type: 'title_defense',
+                text: `王座${cnt}度防衛達成` });
+            }
+            break;
+          }
+          case 'transfer':
+            milestones.push({ season: ev.season, week: ev.week, type: 'transfer',
+              text: `${ev.toOrg || '他団体'}へ移籍`,
+              detail: ev.via === 'poach' ? '引き抜き' : ev.via === 'poach_forced' ? '強制引き抜き' : ev.via === 'negotiate' ? '交渉移籍' : undefined });
+            break;
+          case 'retire':
+            milestones.push({ season: ev.season, week: ev.week || 48, type: 'retire',
+              text: `引退（${ev.age || '?'}歳）`,
+              detail: ev.reason === 'injury_wear' ? '度重なる怪我により' : ev.reason === 'injury_career_ending' ? '重傷により現役続行不可' : ev.reason === 'age' ? '年齢による引退' : undefined });
+            break;
+          case 'summit':
+            milestones.push({ season: ev.season, week: ev.week, type: 'summit',
+              text: `頂上決戦 ${ev.won ? '勝利' : '敗北'}` });
+            break;
+          case 'war':
+            milestones.push({ season: ev.season, week: ev.week, type: 'war',
+              text: `対抗戦 ${ev.won ? '勝利' : '敗北'}` });
+            break;
+          case 'peakOVR':
+            milestones.push({ season: ev.season, week: ev.week || 0, type: 'peak',
+              text: `全盛期 OVR ${ev.ovr}` });
+            break;
+          default:
+            milestones.push({ season: ev.season || 1, week: ev.week || 0, type: ev.type,
+              text: ev.detail || ev.type });
+        }
+      }
+
+      // Convert careerHistory events (injuries etc.)
+      for (const ev of careerHist) {
+        milestones.push({
+          season: ev.season || 1, week: ev.week || 0,
+          type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
+          text: ev.detail || ev.type,
+          detail: ev.type === 'injury_retirement' ? '怪我による引退' : undefined
+        });
+      }
+
+      // Add season_end summary for completed seasons
+      const currentSeason = G.season || 1;
+      const record = fighter.careerRecord || {};
+      // If fighter has been here multiple seasons, add season summaries
+      const startSeason = milestones.reduce((min, m) => Math.min(min, m.season || currentSeason), currentSeason);
+      for (let s = startSeason; s < currentSeason; s++) {
+        const seasonEvents = milestones.filter(m => m.season === s);
+        if (seasonEvents.length === 0) {
+          // Add a placeholder for seasons with no notable events
+          milestones.push({ season: s, week: 48, type: 'season_end',
+            text: `${s}年目終了`, detail: '特記事項なし' });
+        }
+      }
+
+      // Sort by season (asc) then week (asc)
+      milestones.sort((a, b) => (a.season - b.season) || (a.week - b.week));
+      return milestones;
+    },
+
+    /** Return style info for milestone type */
+    _typeStyle(type) {
+      const styles = {
+        debut:         { icon: '🎓', color: '#2ecc71' },
+        title_win:     { icon: '🏆', color: '#f1c40f' },
+        title_loss:    { icon: '💫', color: '#e74c3c' },
+        title_defense: { icon: '🛡️', color: '#3498db' },
+        transfer:      { icon: '📋', color: '#9b59b6' },
+        retire:        { icon: '🌅', color: '#e67e22' },
+        summit:        { icon: '⚔️', color: '#e74c3c' },
+        war:           { icon: '🏴', color: '#2c3e50' },
+        peak:          { icon: '📈', color: '#1abc9c' },
+        injury:        { icon: '🏥', color: '#e74c3c' },
+        season_end:    { icon: '📅', color: '#95a5a6' },
+        note:          { icon: '📝', color: '#bdc3c7' },
+      };
+      return styles[type] || styles.note;
     }
   },
 
@@ -2008,7 +2131,13 @@ const Engine = {
       const freeAgents = injResult.freeAgents;
 
       let heatScore = G.heatScore;
-      if (!Engine.util.isShowWeek(G.week)) heatScore = Engine.heat.calcDecay({ ...G, heatScore });
+      if (!Engine.util.isShowWeek(G.week)) {
+        heatScore = Engine.heat.calcDecay({ ...G, heatScore });
+      } else {
+        // v1.7: mild decay even on show weeks (B fix — makes On Fire harder to maintain)
+        if (heatScore > 0) heatScore = Math.round(Math.max(0, heatScore - 0.3) * 10) / 10;
+        else if (heatScore < 0) heatScore = Math.round(Math.min(0, heatScore + 0.3) * 10) / 10;
+      }
 
       const dormBonus = Engine.facility.getConditionBonus(G);
       const stateForCalc = { ...G, roster, heatScore };
@@ -2140,6 +2269,11 @@ const Engine = {
       const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
       totalIncome += broadcast;
       if (broadcast > 0) details.push({ label: `放映権収入${broadcastBonus > 0 ? '（メディア施設+' + broadcastBonus + '万）' : ''}`, val: broadcast, type: 'income' });
+
+      // v1.7: 育成補助金（orgPop 40未満の団体に支給）
+      const subsidy = Engine.economy.getSubsidy(G.orgPop);
+      totalIncome += subsidy;
+      if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
 
       let roster = G.roster.map(c => ({ ...c }));
 
@@ -2504,6 +2638,11 @@ const Engine = {
       : (s.lastTitleMatchWeek ?? null);
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
+
+    // v1.7: 育成補助金打ち切り通知
+    if (state.orgPop < 40 && popResult.orgPop >= 40) {
+      events.push('🏛️ 団体人気が40に到達！ 地域振興助成金の支給が終了しました。自立経営の始まりです！');
+    }
 
     // v1.3-3: Build pending injury retirement presentation data
     const injuryRetirees = injuryResults.filter(ir => ir.retireType);
@@ -3505,6 +3644,15 @@ const Engine = {
 
         // v1.5: orgPop 年次自然減衰 (-3/season) — 放っておくと団体人気は落ちる
         s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - 3) };
+
+        // v1.7: dormantPool 年次加齢 — pool内でも年は取る（永遠の若者バグ修正）
+        const agedPool = (s.dormantPool || []).map(entry => {
+          if (typeof entry === 'object' && entry.age !== undefined) {
+            return { ...entry, age: entry.age + 1 };
+          }
+          return entry; // legacy string ID — age unknown, leave as-is
+        });
+        s = { ...s, dormantPool: agedPool };
 
         // v1.4: 年末表彰式データ生成（純粋関数 — HOF適用はApp側コールバックで行う）
         const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));

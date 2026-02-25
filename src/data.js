@@ -557,8 +557,8 @@ const ENG = {
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝
 const SALARY_TABLE = [
-  {max:49, pay:15}, {max:64, pay:40}, {max:79, pay:80}, {max:89, pay:150},
-  {max:99, pay:250}, {max:109, pay:400}, {max:999, pay:600}
+  {max:49, pay:10}, {max:64, pay:25}, {max:79, pay:50}, {max:89, pay:100},
+  {max:99, pay:180}, {max:109, pay:300}, {max:999, pay:450}
 ];
 const VENUES = [
   {name:'公民館',   cap:150,   cost:5,    popReq:0},
@@ -569,8 +569,8 @@ const VENUES = [
   {name:'大会場',   cap:12000, cost:3200, popReq:75},
   {name:'ドーム',   cap:30000, cost:9000, popReq:90}
 ];
-const TICKET_PRICE = 0.5; // 万円/人（統一チケット価格）
-const GOODS_PRICE = 0.08; // 万円/人（グッズ単価）
+const TICKET_PRICE = 0.5; // 万円/人（v1.7: シミュレーション後に要調整）
+const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
 const OCCUPANCY_BONUS = [
   {min:0.95, ticketMult:1.2, label:'🔥 超満員！',    heatDelta:+1},
   {min:0.80, ticketMult:1.1, label:'✨ 大入り！',    heatDelta:+1},
@@ -621,15 +621,21 @@ const BROADCAST_TABLE = [
   {min:70,max:84,val:50},{min:85,max:94,val:100},{min:95,max:100,val:200}
 ];
 const FIXED_COSTS = {facility:50, admin:30};
+// v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
+const SUBSIDY_TABLE = [
+  {max:19, val:50},  // orgPop 0-19: 50万/週
+  {max:29, val:35},  // orgPop 20-29: 35万/週
+  {max:39, val:20},  // orgPop 30-39: 20万/週
+];
 
 // Heat System
 const HEAT_LEVELS = [
-  {id:'ice_cold', label:'Ice Cold',  emoji:'🧊', color:'#74b9ff', mult:0.6, min:-999, max:-6, anim:''},
-  {id:'cold',     label:'Cold',   emoji:'❄️', color:'#a29bfe', mult:0.8, min:-5, max:-2, anim:''},
+  {id:'ice_cold', label:'Ice Cold',  emoji:'🧊', color:'#74b9ff', mult:0.7, min:-999, max:-6, anim:''},
+  {id:'cold',     label:'Cold',   emoji:'❄️', color:'#a29bfe', mult:0.85, min:-5, max:-2, anim:''},
   {id:'neutral',  label:'Neutral', emoji:'➖', color:'#dfe6e9', mult:1.0, min:-1, max:1, anim:''},
-  {id:'warm',     label:'Warm',   emoji:'🔥', color:'#fdcb6e', mult:1.2, min:2, max:5, anim:''},
-  {id:'hot',      label:'Hot',   emoji:'🔥🔥', color:'#e17055', mult:1.5, min:6, max:9, anim:'heat-pulse'},
-  {id:'on_fire',  label:'On Fire!', emoji:'🔥🔥🔥', color:'#d63031', mult:2.0, min:10, max:999, anim:'heat-blaze'}
+  {id:'warm',     label:'Warm',   emoji:'🔥', color:'#fdcb6e', mult:1.1, min:2, max:5, anim:''},
+  {id:'hot',      label:'Hot',   emoji:'🔥🔥', color:'#e17055', mult:1.2, min:6, max:9, anim:'heat-pulse'},
+  {id:'on_fire',  label:'On Fire!', emoji:'🔥🔥🔥', color:'#d63031', mult:1.3, min:10, max:999, anim:'heat-blaze'}
 ];
 
 // Quarter / Season display labels

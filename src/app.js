@@ -1745,7 +1745,7 @@ const App = {
       showEventPopup({ type:'scout', tone:'negative',
         message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' });
     } else if (result.result === 'skipped') {
-      candidates = candidates.filter(c => c.id !== candidateId);
+      // v1.7: 見送り時はリストから削除しない（再検討可能にする）
       log.push(`🔍 スカウト見送り: ${cand.name}`);
     }
 
