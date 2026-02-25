@@ -1278,6 +1278,33 @@ const Storage = {
         G = { ...G, _migrated_v1_3_2: true };
       }
 
+      // v1.3-3: Fix float stat values from match growth bug
+      if (!G._migrated_v1_3_3) {
+        const fixFloats = (fighters) => fighters.map(c => {
+          const nc = { ...c };
+          ['pw','sp','te','st','mn'].forEach(s => {
+            if (typeof nc[s] === 'number') nc[s] = Math.round(nc[s]);
+          });
+          if (nc.seasonGrowth) {
+            nc.seasonGrowth = { ...nc.seasonGrowth };
+            ['pw','sp','te','st','mn'].forEach(s => {
+              if (typeof nc.seasonGrowth[s] === 'number') nc.seasonGrowth[s] = Math.round(nc.seasonGrowth[s]);
+            });
+          }
+          return nc;
+        });
+        G = { ...G, roster: fixFloats(G.roster), freeAgents: fixFloats(G.freeAgents) };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: fixFloats(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_v1_3_3: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };

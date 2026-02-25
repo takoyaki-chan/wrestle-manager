@@ -941,7 +941,7 @@ function renderRoster() {
       ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹成長低下</span>'
       : '';
     const statG = (key) => {
-      const g = c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0;
+      const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
     };
     html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''};cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
@@ -955,11 +955,11 @@ function renderRoster() {
         </div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
           <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
-          <span>PW<b style="color:var(--text)">${c.pw}</b>${statG('pw')}</span>
-          <span>SP<b style="color:var(--text)">${c.sp}</b>${statG('sp')}</span>
-          <span>TE<b style="color:var(--text)">${c.te}</b>${statG('te')}</span>
-          <span>ST<b style="color:var(--text)">${c.st}</b>${statG('st')}</span>
-          <span>MN<b style="color:var(--text)">${c.mn}</b>${statG('mn')}</span>
+          <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b>${statG('pw')}</span>
+          <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b>${statG('sp')}</span>
+          <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b>${statG('te')}</span>
+          <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b>${statG('st')}</span>
+          <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b>${statG('mn')}</span>
         </div>
       </div>
       <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
@@ -1959,10 +1959,10 @@ function renderTraining() {
     html += `<div class="detail-panel" id="train-detail-${c.id}">`;
     // Stat bars - use trainCap for bar width but hide exact values
     stats.forEach(s => {
-      const current = c[s];
+      const current = Math.round(c[s]);
       const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
       const pct = Math.round(current / cap * 100);
-      const sg = (c.seasonGrowth && c.seasonGrowth[s]) || 0;
+      const sg = Math.round((c.seasonGrowth && c.seasonGrowth[s]) || 0);
       const atCap = current >= cap;
       // Growth room label (vague)
       const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'

@@ -2462,7 +2462,7 @@ const Engine = {
           if (c.id !== charId) return c;
           let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
           chosen.forEach(stat => {
-            const gain = Math.round(growthPerStat * 10) / 10;
+            const gain = Math.max(0, Math.round(growthPerStat));
             if (gain > 0) {
               nc[stat] = Math.min(100, nc[stat] + gain);
               nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;

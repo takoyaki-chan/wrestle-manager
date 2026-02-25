@@ -1105,8 +1105,8 @@ function showFighterPopup(fighterId, source) {
       // Stat bars
       html += `<div class="fighter-popup-section" style="margin-bottom:12px">`;
       STATS.forEach(s => {
-        const val = c[s.key] || 0;
-        const sg = c.seasonGrowth?.[s.key] || 0;
+        const val = Math.round(c[s.key] || 0);
+        const sg = Math.round(c.seasonGrowth?.[s.key] || 0);
         const w = Math.min(100, val);
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
         html += `<div class="fighter-popup-stat-row">
