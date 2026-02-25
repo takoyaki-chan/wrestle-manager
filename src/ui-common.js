@@ -1336,6 +1336,9 @@ function showFighterPopup(fighterId, source) {
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
             ${(() => { const w = c.wear || 0; if (w >= 60) return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (w >= 40) return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (w >= 20) return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
             ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
+            ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
+            ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
+            ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
@@ -2184,4 +2187,179 @@ function toggleHelp(btn) {
   const section = btn.closest('.help-section');
   if (!section) return;
   section.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════════
+//  v1.8: 成長イベントポップアップシステム
+//  ブレークスルー / スランプ / モチベ喪失 / AI脅威通知
+// ══════════════════════════════════════════════════════════
+
+let _growthPopupQueue = [];
+let _growthPopupCallback = null;
+
+/**
+ * 成長イベントポップアップをキューに追加して順次表示
+ * @param {Array} events - pendingGrowthEvents 配列
+ * @param {Function} [onDone] - 全て完了後コールバック
+ */
+function showGrowthEventPopups(events, onDone) {
+  if (!events || events.length === 0) { if (onDone) onDone(); return; }
+  _growthPopupQueue = [...events];
+  _growthPopupCallback = onDone || null;
+  _renderNextGrowthPopup();
+}
+
+function _renderNextGrowthPopup() {
+  if (_growthPopupQueue.length === 0) {
+    if (_growthPopupCallback) { _growthPopupCallback(); _growthPopupCallback = null; }
+    return;
+  }
+  const ev = _growthPopupQueue[0];
+  const overlay = document.getElementById('growthEventOverlay');
+  const box = document.getElementById('growthEventBox');
+  if (!overlay || !box) {
+    // DOM未準備（コンソールに記録して続行）
+    console.warn('[growthEvent] overlay/box not found, skipping');
+    _growthPopupQueue.shift();
+    _renderNextGrowthPopup();
+    return;
+  }
+
+  const fighter = G.roster.find(c => c.id === ev.fighterId)
+    || G.retiredFighters?.find(c => c.id === ev.fighterId);
+
+  let title = '', message = '', detail = '', btnLabel = 'OK', tone = '';
+
+  if (ev.type === 'breakthrough') {
+    const f = fighter;
+    const statNames = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
+    title = '💥 ブレークスルー！';
+    message = f ? Engine.rng.pick(Engine.rng.create(Date.now()), BREAKTHROUGH_LINES) : 'ブレークスルー！';
+    detail  = `${statNames[ev.stat] || ev.stat} <strong>+${ev.gain}</strong>`;
+    if (ev.hotStreak) detail += '　🔥 <em>絶好調突入！</em>';
+    btnLabel = '素晴らしい';
+    tone = 'gold';
+    Audio.play('fanfare');
+  } else if (ev.type === 'slump_start') {
+    const lines = SLUMP_START_LINES[ev.trigger] || SLUMP_START_LINES['defeat'];
+    title = '📉 スランプ…';
+    message = lines[Math.floor(Math.random() * lines.length)];
+    detail = 'しばらく成長が止まるかもしれない';
+    btnLabel = '見守る';
+    tone = 'negative';
+    Audio.play('error');
+  } else if (ev.type === 'slump_end') {
+    title = '💪 スランプ脱出！';
+    message = SLUMP_END_LINES[Math.floor(Math.random() * SLUMP_END_LINES.length)];
+    detail = `${ev.duration || '?'}週間のスランプを乗り越えた！`;
+    btnLabel = 'おかえり';
+    tone = 'positive';
+    Audio.play('notify');
+  } else if (ev.type === 'motivation_loss_start') {
+    title = '😞 モチベーション喪失…';
+    message = MOTIVATION_LOSS_LINES[Math.floor(Math.random() * MOTIVATION_LOSS_LINES.length)];
+    detail = '成長が止まり、能力が低下していく';
+    btnLabel = '……';
+    tone = 'negative';
+    Audio.play('error');
+  } else if (ev.type === 'motivation_loss_end') {
+    title = '🌅 再起！';
+    message = MOTIVATION_RECOVERY_LINES[Math.floor(Math.random() * MOTIVATION_RECOVERY_LINES.length)];
+    detail = `${ev.duration || '?'}週間の低迷から立ち直った！`;
+    btnLabel = '待ってた';
+    tone = 'positive';
+    Audio.play('notify');
+  }
+
+  // 顔画像
+  let faceHtml = '';
+  if (fighter) {
+    const url = getPortraitUrl(fighter.id);
+    if (url) faceHtml = `<img src="${url}" alt="">`;
+    else {
+      const ch = ALL_CHARS.find(c => c.id === fighter.id);
+      faceHtml = `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
+    }
+  }
+
+  box.className = `growth-event-box ${tone}`;
+  box.innerHTML = `
+    <div class="growth-event-face">${faceHtml}</div>
+    <div class="growth-event-name">${fighter ? fighter.name : ''}</div>
+    <div class="growth-event-title">${title}</div>
+    <div class="growth-event-msg">${message}</div>
+    ${detail ? `<div class="growth-event-detail">${detail}</div>` : ''}
+    <button class="growth-event-btn" onclick="closeGrowthEventPopup()">${btnLabel}</button>
+  `;
+  overlay.classList.add('active');
+}
+
+function closeGrowthEventPopup() {
+  const overlay = document.getElementById('growthEventOverlay');
+  if (overlay) overlay.classList.remove('active');
+  _growthPopupQueue.shift();
+  if (_growthPopupQueue.length > 0) {
+    setTimeout(_renderNextGrowthPopup, 250);
+  } else if (_growthPopupCallback) {
+    const cb = _growthPopupCallback;
+    _growthPopupCallback = null;
+    setTimeout(cb, 250);
+  }
+}
+
+// ─── AI成長イベント脅威/好機アラート ──────────────────────
+
+let _aiAlertQueue = [];
+let _aiAlertCallback = null;
+
+function showAIGrowthAlerts(alerts, onDone) {
+  if (!alerts || alerts.length === 0) { if (onDone) onDone(); return; }
+  // major な脅威のみポップアップ、それ以外はスキップ
+  const notable = alerts.filter(a =>
+    (a.type === 'threat' && a.isMajor) ||
+    (a.type === 'opportunity' && a.eventType === 'motivation_loss')
+  );
+  if (notable.length === 0) { if (onDone) onDone(); return; }
+  _aiAlertQueue = [...notable];
+  _aiAlertCallback = onDone || null;
+  _renderNextAIAlert();
+}
+
+function _renderNextAIAlert() {
+  if (_aiAlertQueue.length === 0) {
+    if (_aiAlertCallback) { _aiAlertCallback(); _aiAlertCallback = null; }
+    return;
+  }
+  const alert = _aiAlertQueue[0];
+  const isThreat = alert.type === 'threat';
+  const title = isThreat ? '⚠ 脅威：ライバルが成長した' : '📰 好機：ライバルが不調';
+  const org = alert.org;
+  const fighter = alert.fighter;
+  const statNames = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
+  let message = '', detail = '';
+  if (isThreat) {
+    message = `${org.emoji || ''} ${org.name || ''}の${fighter.name}がブレークスルー！`;
+    detail = alert.stat ? `${statNames[alert.stat]} +${alert.gain}` : '急成長';
+  } else {
+    message = `${org.emoji || ''} ${org.name || ''}の${fighter.name}がモチベを喪失…`;
+    detail = 'ライバル団体に隙が生まれた。攻勢のチャンス！';
+  }
+  // eventPopup を流用
+  showEventPopup({
+    type: 'fighter',
+    id: fighter.id,
+    name: fighter.name,
+    emoji: isThreat ? '⚠' : '📰',
+    tone: isThreat ? 'negative' : 'positive',
+    message,
+    detail
+  });
+  _aiAlertQueue.shift();
+  if (_aiAlertQueue.length > 0) {
+    _onEventPopupQueueEmpty = _renderNextAIAlert;
+  } else {
+    _onEventPopupQueueEmpty = _aiAlertCallback ? (() => {
+      const cb = _aiAlertCallback; _aiAlertCallback = null; cb();
+    }) : null;
+  }
 }

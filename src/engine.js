@@ -1805,6 +1805,19 @@ const Engine = {
         // Step 2: 衰退判定 (v1.3-1 §3 — wear-based)
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
+        // Step 2b: v1.8 AI成長イベント（ブレークスルー・スランプ・モチベ喪失）
+        const geResult = Engine.growthEvents.aiSeasonGrowthEvents(rng, roster, org);
+        roster = geResult.fighters;
+        geResult.aiGrowthEvents.forEach(ev => {
+          const tbl = { breakthrough: 'ブレークスルー', slump: 'スランプ', motivation_loss: 'モチベ喪失' };
+          events.push(`${org.emoji} ${ev.fighter.name}: ${tbl[ev.type] || ev.type}`);
+        });
+        if (geResult.aiGrowthEvents.length > 0) {
+          // aiOrgs[org.id] への aiGrowthEvents 記録（脅威通知で参照）
+          newAiOrgs[org.id] = newAiOrgs[org.id] || {};
+          newAiOrgs[org.id]._lastSeasonGrowthEvents = geResult.aiGrowthEvents;
+        }
+
         // Step 3: 成長一括 (rival-spec §4.1 — aiSeasonGrowth)
         roster = roster.map(f => Engine.rival.aiSeasonGrowth(rng, f, org));
 
@@ -1841,9 +1854,15 @@ const Engine = {
     // AI season growth (rival-spec §4.1 + F1 tier growth bonus) — 48 weeks in one calculation
     aiSeasonGrowth(rng, fighter, org) {
       const f = { ...fighter };
+      // v1.8: スランプ/モチベ喪失による成長ブロック
+      if (f._aiGrowthBlock) {
+        const { _aiGrowthBlock: _, _aiGrowthHalf: __, ...clean } = f;
+        return clean;
+      }
+      const growthMod = f._aiGrowthHalf ? 0.5 : 1.0;
       const age = f.age || 20;
       const ageMul = ageMultiplier(age, (f || {}).traits);
-      if (ageMul <= 0) return f; // no growth at 35+
+      if (ageMul <= 0) { const { _aiGrowthHalf: _, ...clean } = f; return clean; } // no growth at 35+
 
       const styleKey = f.style || 'Allround';
       const styleTable = STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround;
@@ -1863,9 +1882,12 @@ const Engine = {
         const trainingGain = weeklyGain * cfg.trainWeeks * seasonVariance;
         const matchVariance = cfg.matchVarianceMin + Engine.rng.float(rng) * (cfg.matchVarianceMax - cfg.matchVarianceMin);
         const matchGain = cfg.matchGrowthBase * cfg.matchesPerSeason * convFactor * matchVariance;
-        f[s] = Math.min(trainCap[s], f[s] + Math.round(trainingGain + matchGain));
+        // v1.8: _aiGrowthHalf = スランプ → 成長50%カット
+        f[s] = Math.min(trainCap[s], f[s] + Math.round((trainingGain + matchGain) * growthMod));
       });
-      return f;
+      // 一時フィールドを除去してクリーンな fighter を返す
+      const { _aiGrowthHalf: _h, _aiGrowthBlock: _b, ...cleanF } = f;
+      return cleanF;
     },
 
     // AI season popularity (rival-spec §4.2)
@@ -2125,10 +2147,31 @@ const Engine = {
     // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
     processManage(rng, G) {
       const events = [];
+      // v1.8: 怪我復帰スランプトリガー用に事前スナップショット取得
+      const preInjuryRoster = G.roster;
       const injResult = Engine.injury.tick(G.roster, G.freeAgents);
       events.push(...injResult.events);
       let roster = injResult.roster;
       const freeAgents = injResult.freeAgents;
+
+      // v1.8: §4.2 怪我復帰スランプ判定（復帰した選手にトリガー）
+      const geSlumpRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C1));
+      const pendingSlumpEvents = [];
+      const pendingMotivationEvents = [];
+      const pendingMotivationRetirements = [];
+      roster = roster.map(c => {
+        const prev = preInjuryRoster.find(p => p.id === c.id);
+        if (!prev || !prev.injury || c.injury) return c; // 復帰していない
+        const severity = prev.injury.type;
+        const trigger = severity === '重傷' ? 'injury_severe_recovery' : '中傷' ? 'injury_moderate_recovery' : null;
+        if (!trigger) return c;
+        if (Engine.growthEvents.checkSlump(geSlumpRng, c, trigger)) {
+          const newC = Engine.growthEvents.applySlump(c, trigger, G.season, G.week);
+          pendingSlumpEvents.push({ type: 'slump_start', fighterId: c.id, trigger });
+          return newC;
+        }
+        return c;
+      });
 
       let heatScore = G.heatScore;
       if (!Engine.util.isShowWeek(G.week)) {
@@ -2147,8 +2190,57 @@ const Engine = {
 
         // v1.3-2: §3.3 growthPenaltyカウントダウン（毎週 — 怪我中も時間は経過する）
         if (nc.growthPenalty) {
-          nc.growthPenalty = { ...nc.growthPenalty, remainingWeeks: nc.growthPenalty.remainingWeeks - 1 };
-          if (nc.growthPenalty.remainingWeeks <= 0) nc.growthPenalty = null;
+          const prevRemaining = nc.growthPenalty.remainingWeeks;
+          nc.growthPenalty = { ...nc.growthPenalty, remainingWeeks: prevRemaining - 1 };
+          if (nc.growthPenalty.remainingWeeks <= 0) {
+            nc.growthPenalty = null;
+            // v1.8: §4.2 growthPenalty解除時スランプ判定
+            if (Engine.growthEvents.checkSlump(geSlumpRng, nc, 'penalty_end')) {
+              nc = Engine.growthEvents.applySlump(nc, 'penalty_end', G.season, G.week);
+              pendingSlumpEvents.push({ type: 'slump_start', fighterId: nc.id, trigger: 'penalty_end' });
+            }
+          }
+        }
+
+        // v1.8: §3.7 絶好調カウントダウン（怪我中でも時間は経過）
+        if (nc.hotStreak) {
+          const hadSevere = nc.injury && nc.injury.type === '重傷';
+          const hsResult = Engine.growthEvents.tickHotStreak(nc, hadSevere);
+          nc = { ...nc, hotStreak: hsResult.fighter.hotStreak };
+          if (hsResult.ended) events.push(`✨ ${nc.name}の絶好調期間が終了した`);
+        }
+
+        // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
+        if (nc.slump && !nc.injury) {
+          const slumpTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C2, nc.id));
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week);
+          nc = slumpResult.fighter;
+          if (slumpResult.recovered) {
+            pendingSlumpEvents.push({ type: 'slump_end', fighterId: nc.id, duration: slumpResult.duration });
+            events.push(`💪 ${nc.name}がスランプから脱出！`);
+          } else {
+            // §5.2 モチベ喪失判定（スランプ中の毎週）
+            const motivRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C3, nc.id));
+            if (Engine.growthEvents.checkMotivationLoss(motivRng, nc, 'weekly')) {
+              nc = Engine.growthEvents.applyMotivationLoss(nc, G.season, G.week);
+              pendingMotivationEvents.push({ type: 'motivation_loss_start', fighterId: nc.id });
+              events.push(`😞 ${nc.name}のモチベーションが喪失…`);
+            }
+          }
+        }
+
+        // v1.8: §5 モチベ喪失週次処理
+        if (nc.motivationLoss && !nc.injury) {
+          const motTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C4, nc.id));
+          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week);
+          nc = motResult.fighter;
+          if (motResult.selfRetire) {
+            pendingMotivationRetirements.push({ fighterId: nc.id });
+            events.push(`💔 ${nc.name}が自主引退を申し出た…`);
+          } else if (motResult.recovered) {
+            pendingMotivationEvents.push({ type: 'motivation_loss_end', fighterId: nc.id, duration: motResult.duration });
+            events.push(`🌅 ${nc.name}が再起した！`);
+          }
         }
 
         // D-1: Rental fighters — injury recovery only, no growth/promo
@@ -2169,7 +2261,9 @@ const Engine = {
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
           const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
-          const trainGrowth = Math.round(growth * 0.4 * penMult * 10) / 10;
+          // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
+          const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
+          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
@@ -2193,7 +2287,9 @@ const Engine = {
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
           const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
-          const trainGrowth = Math.round(growth * 0.4 * penMult * 10) / 10;
+          // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
+          const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
+          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
@@ -2232,7 +2328,22 @@ const Engine = {
         return { ...c, popularity: Math.max(10, Math.round((c.popularity - 0.5) * 10) / 10) };
       });
 
-      return { roster, freeAgents, heatScore, events };
+      // v1.8: §4.3/§5.3 スランプ/モチベ喪失中の能力微減（怪我中はスキップ）
+      const decayRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C5));
+      roster = roster.map(c => {
+        if (c.injury || c.isRental) return c;
+        return Engine.growthEvents.applyWeeklyStatDecay(decayRng, c);
+      });
+
+      // v1.8: pending growth events を transient フィールドとして返す
+      const pendingGrowthEvents = [
+        ...pendingSlumpEvents.map(e => ({ ...e })),
+        ...pendingMotivationEvents.map(e => ({ ...e })),
+      ];
+      const result = { roster, freeAgents, heatScore, events };
+      if (pendingGrowthEvents.length > 0) result._pendingGrowthEvents = pendingGrowthEvents;
+      if (pendingMotivationRetirements.length > 0) result._pendingMotivationRetirements = pendingMotivationRetirements;
+      return result;
     },
 
     // Returns { funds, weeklyFinance, roster, summary, occHeatDelta } — does NOT mutate G
@@ -2344,6 +2455,9 @@ const Engine = {
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
     const manage = Engine.season.processManage(rng, state);
     let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
+    // v1.8: transient 成長イベントを state に乗せる
+    if (manage._pendingGrowthEvents) s = { ...s, _pendingGrowthEvents: manage._pendingGrowthEvents };
+    if (manage._pendingMotivationRetirements) s = { ...s, _pendingMotivationRetirements: manage._pendingMotivationRetirements };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // v1.0b: Apply occupancy heat delta
@@ -2707,7 +2821,9 @@ const Engine = {
   applyShowPopularity(roster, results, orgPop) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
-    const popDelta = avgMQ >= 70 ? 3 : avgMQ >= 55 ? 2 : avgMQ >= 40 ? 1 : avgMQ >= 25 ? 0 : -1;
+    // v1.9: 閾値引き上げ — 放置プレイで68週orgPop99になる問題を修正（旧: 70/55/40/25 → 新: 80/65/45）
+    // OVR30初期戦で典型MQ52-65 → 旧+2 → 新+0、OVR70強豪でMQ77-87 → 旧+3 → 新+1〜+2
+    const popDelta = avgMQ >= 80 ? 2 : avgMQ >= 65 ? 1 : avgMQ >= 45 ? 0 : -1;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
   },
 
@@ -3627,6 +3743,24 @@ const Engine = {
         s = { ...s, aiOrgs: aiResult.aiOrgs };
         events.push(...aiResult.events);
 
+        // v1.8: AI成長イベント通知（脅威/好機アラートを state に格納）
+        const aiGrowthAlerts = [];
+        RIVAL_ORGS.forEach(org => {
+          const ge = aiResult.aiOrgs[org.id]?._lastSeasonGrowthEvents || [];
+          ge.forEach(ev => {
+            if (ev.type === 'breakthrough') {
+              // S級 or 隣接ランク → 脅威
+              const isThreat = org.tier === 'S';
+              aiGrowthAlerts.push({ type: 'threat', org, fighter: ev.fighter, stat: ev.stat, gain: ev.gain, isMajor: isThreat });
+            } else if (ev.type === 'slump' || ev.type === 'motivation_loss') {
+              aiGrowthAlerts.push({ type: 'opportunity', org, fighter: ev.fighter, eventType: ev.type });
+            }
+          });
+        });
+        if (aiGrowthAlerts.length > 0) {
+          s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
+        }
+
         // FA: 加齢 + 20歳超えで自動引退（プロ入りを諦めた）
         const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 18) + 1 }));
         const agedOutFA = agedFA.filter(f => f.age > 20);
@@ -4327,5 +4461,256 @@ Engine.awards = {
   applyHallOfFame(state, inductees) {
     const newHallOfFame = [...(state.hallOfFame || []), ...inductees];
     return { ...state, hallOfFame: newHallOfFame, retiredFighters: [] };
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+//  Engine.growthEvents — 成長イベントシステム (v1.8)
+//  §2 ブレークスルー / §3 絶好調 / §4 スランプ / §5 モチベ喪失
+//  Pure functions only — no DOM references
+// ══════════════════════════════════════════════════════════
+Engine.growthEvents = {
+
+  // ─── §2 ブレークスルー ────────────────────────────────
+
+  /** §2.3 ブレークスルー確率計算（0〜3.5%を返す、判定は呼び出し側） */
+  calcBreakthroughProb(fighter, mq, oppOvr, isTitle, won) {
+    const selfOvr = Engine.util.ov(fighter);
+    const ovrDiff = oppOvr - selfOvr;
+    let prob = 0;
+    if (ovrDiff >= 20) prob += 1.2;
+    else if (ovrDiff >= 10) prob += 0.8;
+    const prevBest = fighter.careerBestMQ || 0;
+    if (mq > prevBest) prob += 1.0;
+    if (isTitle) prob += 0.5;
+    if (mq >= 70) prob += 0.5;
+    if (!won) prob += 0.3;
+    if ((fighter.age || 20) <= 25) prob += 0.3;
+    return Math.min(prob, 3.5) / 100;
+  },
+
+  /** §2 ブレークスルー判定・効果適用（純粋関数）
+   * @returns {{ fighter, stat, gain, hotStreak }} or null */
+  checkAndApplyBreakthrough(rng, fighter, mq, oppOvr, isTitle, won, season, week) {
+    // スランプ/モチベ喪失中はブレークスルー判定なし
+    if (fighter.slump || fighter.motivationLoss) return null;
+    const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, isTitle, won);
+    if (prob <= 0 || Engine.rng.float(rng) >= prob) return null;
+
+    // §2.4 ジャンプ量 +3〜6、5ステ均等
+    const gain = Engine.rng.int(rng, 3, 6);
+    const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+    const stat = stats[Engine.rng.int(rng, 0, 4)];
+    const cap = fighter.trainCap ? (fighter.trainCap[stat] || 100) : 100;
+    const actualGain = Math.min(gain, cap - (fighter[stat] || 0));
+    if (actualGain <= 0) return null;
+
+    // §2.5 絶好調連鎖 15%
+    let hotStreak = null;
+    if (Engine.rng.float(rng) < 0.15) {
+      hotStreak = { remainingWeeks: Engine.rng.int(rng, 8, 16), ovrBuff: 2 };
+    }
+
+    let nf = { ...fighter };
+    nf[stat] = (nf[stat] || 0) + actualGain;
+    nf.careerBestMQ = Math.max(nf.careerBestMQ || 0, mq);
+    if (hotStreak) nf.hotStreak = hotStreak;
+    nf.careerRecord = { ...(nf.careerRecord || {}),
+      history: [...((nf.careerRecord || {}).history || []),
+        { type: 'breakthrough', season, week, stat, gain: actualGain }]
+    };
+    nf.careerHistory = [...(nf.careerHistory || []),
+      { type: 'breakthrough', season, week, detail: `${stat.toUpperCase()} +${actualGain} のブレークスルー！` }
+    ];
+    return { fighter: nf, stat, gain: actualGain, hotStreak };
+  },
+
+  // ─── §3 絶好調 ────────────────────────────────────────
+
+  /** §3.7 絶好調カウントダウン（毎週）。重傷時は即終了。
+   * @returns {{ fighter, ended: bool }} */
+  tickHotStreak(fighter, hadSevereInjury) {
+    if (!fighter.hotStreak) return { fighter, ended: false };
+    if (hadSevereInjury) return { fighter: { ...fighter, hotStreak: null }, ended: true };
+    const hs = { ...fighter.hotStreak, remainingWeeks: fighter.hotStreak.remainingWeeks - 1 };
+    if (hs.remainingWeeks <= 0) return { fighter: { ...fighter, hotStreak: null }, ended: true };
+    return { fighter: { ...fighter, hotStreak: hs }, ended: false };
+  },
+
+  // ─── §4 スランプ ──────────────────────────────────────
+
+  /** §4.2 スランプ発生判定
+   * trigger: 'injury_moderate_recovery' | 'injury_severe_recovery' | 'defeat' | 'penalty_end' */
+  checkSlump(rng, fighter, trigger) {
+    if (fighter.hotStreak || fighter.slump || fighter.motivationLoss) return false;
+    const probTable = {
+      injury_moderate_recovery: 0.03,
+      injury_severe_recovery:   0.05,
+      defeat:                   0.008,
+      penalty_end:              0.02,
+    };
+    const prob = probTable[trigger] || 0;
+    return prob > 0 && Engine.rng.float(rng) < prob;
+  },
+
+  /** §4 スランプ開始 */
+  applySlump(fighter, trigger, season, week) {
+    let nf = { ...fighter, slump: { recoveryMomentum: 0, weeksSinceStart: 0, ovrDebuff: -1 } };
+    nf.careerHistory = [...(nf.careerHistory || []),
+      { type: 'slump_start', season, week, detail: `スランプ突入（${trigger}）` }
+    ];
+    return nf;
+  },
+
+  /** §4.4 スランプ毎週処理（時間経過 momentum +0.3 + 回復判定）
+   * @returns {{ fighter, recovered: bool, duration?: number }} */
+  tickSlumpPassive(fighter, rng, season, week) {
+    if (!fighter.slump) return { fighter, recovered: false };
+    let slump = { ...fighter.slump,
+      weeksSinceStart: (fighter.slump.weeksSinceStart || 0) + 1,
+      recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 0.3
+    };
+    const recoveryProb = (2 + slump.recoveryMomentum) / 100;
+    if (Engine.rng.float(rng) < recoveryProb) {
+      const duration = slump.weeksSinceStart;
+      let nf = { ...fighter, slump: null };
+      nf.careerHistory = [...(nf.careerHistory || []),
+        { type: 'slump_end', season, week, detail: `スランプ脱出（${duration}週間）` }
+      ];
+      return { fighter: nf, recovered: true, duration };
+    }
+    return { fighter: { ...fighter, slump }, recovered: false };
+  },
+
+  /** §4.4 スランプ momentum 更新（試合後） */
+  updateSlumpMomentumAfterMatch(fighter, mq, won, rng) {
+    if (!fighter.slump) return fighter;
+    let slump = { ...fighter.slump,
+      recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 0.5
+    };
+    if (mq >= 80) slump.recoveryMomentum += 2.5;
+    else if (mq >= 65) slump.recoveryMomentum += 1.5;
+    if (!won && Engine.rng.float(rng) < 0.08) slump.recoveryMomentum = 0;
+    return { ...fighter, slump };
+  },
+
+  // ─── §5 モチベ喪失 ────────────────────────────────────
+
+  /** §5.2 モチベ喪失発生判定
+   * trigger: 'weekly' | 'defeat' */
+  checkMotivationLoss(rng, fighter, trigger) {
+    if (!fighter.slump) return false;
+    const probTable = { weekly: 0.015, defeat: 0.025 };
+    const prob = probTable[trigger] || 0;
+    return prob > 0 && Engine.rng.float(rng) < prob;
+  },
+
+  /** §5 モチベ喪失開始（スランプを解除して上書き） */
+  applyMotivationLoss(fighter, season, week) {
+    let nf = { ...fighter, slump: null,
+      motivationLoss: { recoveryMomentum: 0, weeksSinceStart: 0, ovrDebuff: -2 } };
+    nf.careerHistory = [...(nf.careerHistory || []),
+      { type: 'motivation_loss_start', season, week, detail: 'モチベーション喪失' }
+    ];
+    return nf;
+  },
+
+  /** §5.4 モチベ喪失毎週処理（+0.15 momentum + 回復判定 + 自主引退判定）
+   * @returns {{ fighter, recovered: bool, selfRetire: bool, duration?: number }} */
+  tickMotivationLossPassive(fighter, rng, season, week) {
+    if (!fighter.motivationLoss) return { fighter, recovered: false, selfRetire: false };
+    let ml = { ...fighter.motivationLoss,
+      weeksSinceStart: (fighter.motivationLoss.weeksSinceStart || 0) + 1,
+      recoveryMomentum: (fighter.motivationLoss.recoveryMomentum || 0) + 0.15
+    };
+    // §5.5 自主引退判定（24週超え → 2%/週）
+    if (ml.weeksSinceStart > 24 && Engine.rng.float(rng) < 0.02) {
+      return { fighter: { ...fighter, motivationLoss: ml }, recovered: false, selfRetire: true };
+    }
+    // 回復判定（基礎1%）
+    const recoveryProb = (1 + ml.recoveryMomentum) / 100;
+    if (Engine.rng.float(rng) < recoveryProb) {
+      const duration = ml.weeksSinceStart;
+      let nf = { ...fighter, motivationLoss: null };
+      nf.careerHistory = [...(nf.careerHistory || []),
+        { type: 'motivation_loss_end', season, week, detail: `再起（${duration}週間）` }
+      ];
+      return { fighter: nf, recovered: true, selfRetire: false, duration };
+    }
+    return { fighter: { ...fighter, motivationLoss: ml }, recovered: false, selfRetire: false };
+  },
+
+  /** §5.4 モチベ喪失 momentum 更新（試合後） */
+  updateMotivationLossMomentumAfterMatch(fighter, mq, won, rng) {
+    if (!fighter.motivationLoss) return fighter;
+    let ml = { ...fighter.motivationLoss,
+      recoveryMomentum: (fighter.motivationLoss.recoveryMomentum || 0) + 0.25
+    };
+    if (mq >= 80) ml.recoveryMomentum += 1.5;
+    else if (mq >= 65) ml.recoveryMomentum += 0.8;
+    if (!won && Engine.rng.float(rng) < 0.12) ml.recoveryMomentum = 0;
+    return { ...fighter, motivationLoss: ml };
+  },
+
+  /** §4.3/§5.3 能力微減（スランプ/モチベ喪失中の選手に毎週） */
+  applyWeeklyStatDecay(rng, fighter) {
+    if (!fighter.slump && !fighter.motivationLoss) return fighter;
+    const isMot = !!fighter.motivationLoss;
+    const decayMin = isMot ? 0.3 : 0.2;
+    const decayMax = isMot ? 0.8 : 0.5;
+    const floorRatio = isMot ? 0.65 : 0.70;
+    const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+    const targetStat = Engine.rng.pick(rng, stats);
+    const decay = decayMin + Engine.rng.float(rng) * (decayMax - decayMin);
+    const notion = fighter.notionValue ||
+      { pw: fighter.pw, sp: fighter.sp, te: fighter.te, st: fighter.st, mn: fighter.mn };
+    const floor = Math.round((notion[targetStat] || 30) * floorRatio);
+    let nf = { ...fighter };
+    nf[targetStat] = Math.max(floor, Math.round((nf[targetStat] || 30) - decay));
+    return nf;
+  },
+
+  // ─── §9 AI団体成長イベント ────────────────────────────
+
+  /** §9 AI団体シーズン末一括判定
+   * @returns {{ fighters: Array, aiGrowthEvents: Array }} */
+  aiSeasonGrowthEvents(rng, fighters, org) {
+    const tier = org.tier || 'B';
+    const btProb    = tier === 'S' ? 0.08 : tier === 'A' ? 0.06 : 0.04;
+    const slumpProb = 0.05;
+    const motivProb = 0.01;
+    const aiGrowthEvents = [];
+
+    const newFighters = fighters.map(f => {
+      let nf = { ...f };
+      // スランプ / モチベ喪失（排他: モチベ優先）
+      if (Engine.rng.float(rng) < motivProb) {
+        // モチベ喪失: 成長量0 + 能力微減
+        const stats = ['pw', 'sp', 'te', 'st'];
+        const stat = Engine.rng.pick(rng, stats);
+        const decay = Engine.rng.int(rng, 2, 4);
+        nf[stat] = Math.max(1, (nf[stat] || 30) - decay);
+        nf._aiGrowthBlock = true; // 成長ゼロ
+        aiGrowthEvents.push({ type: 'motivation_loss', org, fighter: f });
+      } else if (Engine.rng.float(rng) < slumpProb) {
+        nf._aiGrowthHalf = true;  // 成長50%カット
+        aiGrowthEvents.push({ type: 'slump', org, fighter: f });
+      }
+      // ブレークスルー（モチベ喪失中は発生しない）
+      if (!nf._aiGrowthBlock && Engine.rng.float(rng) < btProb) {
+        const stats = ['pw', 'sp', 'te', 'st'];
+        const stat = Engine.rng.pick(rng, stats);
+        const gain = Engine.rng.int(rng, 3, 6);
+        const cap = nf.trainCap ? (nf.trainCap[stat] || 100) : 100;
+        const actualGain = Math.min(gain, cap - (nf[stat] || 0));
+        if (actualGain > 0) {
+          nf[stat] = (nf[stat] || 0) + actualGain;
+          aiGrowthEvents.push({ type: 'breakthrough', org, fighter: f, stat, gain: actualGain });
+        }
+      }
+      return nf;
+    });
+
+    return { fighters: newFighters, aiGrowthEvents };
   }
 };

@@ -1,13 +1,13 @@
 # 🎮 Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-25（セッション17 — バグ修正＋経済リバランス＋HEAT圧縮）
+> 最終更新: 2026-02-25（セッション18 — 成長イベントシステム実装完了）
 > 旧ロードマップ（v0.1〜v0.99c開発記録）はアーカイブ済み
 
 ---
 
 ## 現在の状態
 
-**セッション17: バグ修正2件＋経済リバランス＋HEAT圧縮完了。** シミュレーション検証済み。次はUX改善or成長イベント実装。
+**セッション18: 成長イベントシステム実装完了。** ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用。全6ファイル改修済み。次はUX改善またはPPV Part 1実装。
 
 ---
 
@@ -15,15 +15,15 @@
 
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
-| index.html | 1,002 | HTML+CSS+起動処理（タイトル/団体設立/ヘルプ/PPV/引退/表彰式オーバーレイ） |
-| data.js | 1,151 | 全データ定数（キャラ98名・コーチ8名・ROSTER_CFG・CHAR_GROUP・技160種・引退セリフ・表彰式セリフ・PPVデータ） |
-| engine.js | 4,331 | ゲームロジック全体（Engine＋milestone＋career＋retirement＋growth＋intrusion＋flavor＋awards＋ppv） |
-| app.js | 2,824 | Audio+Storage+Mission+Survival+App統合+対抗戦観戦+タイトル画面+PPV開催+マイグレーション |
-| ui-common.js | 2,187 | ヘルパー+ポップアップ+対抗戦演出+交渉UI+引退ポップアップ+表彰式UI+PPVエントリーUI |
-| ui-render.js | 2,051 | 全render関数+refreshAll+PPV情報表示 |
+| index.html | ~1,055 | HTML+CSS+起動処理（タイトル/団体設立/ヘルプ/PPV/引退/表彰式/成長イベントオーバーレイ） |
+| data.js | ~1,240 | 全データ定数（キャラ98名・コーチ8名・ROSTER_CFG・CHAR_GROUP・技160種・引退セリフ・表彰式セリフ・PPVデータ・成長イベントセリフ） |
+| engine.js | ~4,560 | ゲームロジック全体（Engine＋milestone＋career＋retirement＋growth＋intrusion＋flavor＋awards＋ppv＋growthEvents） |
+| app.js | ~2,970 | Audio+Storage+Mission+Survival+App統合+対抗戦観戦+タイトル画面+PPV開催+マイグレーション+成長イベントフック |
+| ui-common.js | ~2,370 | ヘルパー+ポップアップ+対抗戦演出+交渉UI+引退ポップアップ+表彰式UI+PPVエントリーUI+成長イベントUI |
+| ui-render.js | ~2,066 | 全render関数+refreshAll+PPV情報表示+🔥/📉/😞バッジ |
 | victory-lines.js | 501 | 勝利台詞データ |
 | battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
-| **合計** | **15,781** | |
+| **合計** | **~16,496** | |
 
 その他: portrait-map.js（102行・ルート）、顔画像107枚＋表彰式フレーム7枚（image/）、build-zip.sh
 
@@ -107,10 +107,36 @@
 | `_migrated_v1_3_2` | growthPenalty/seasonInjuries/careerHistory後付け |
 | `_migrated_v1_3_3` | float型ステータスのMath.round修正 |
 | `_migrated_v1_4` | AI fighters careerSeasons付与 + lastAwards/hallOfFame |
+| `_migrated_growth_events` | 全選手にhotStreak/slump/motivationLoss/careerBestMQ後付け |
 
 ---
 
-## 今セッション完了済み（セッション17 — バグ修正＋経済リバランス＋HEAT圧縮）
+## 今セッション完了済み（セッション18 — 成長イベントシステム実装）
+
+### 実装内容
+
+| イベント | トリガー | 効果 | 演出 |
+|----------|----------|------|------|
+| ブレークスルー | 試合後・極低確率（最大3.5%） | 1ステータス+3〜6ジャンプ | ポップアップ（金縁） |
+| 絶好調（Hot Streak） | ブレークスルー後15%で連鎖 | 成長×1.15、OVR+2、8〜16週 | 🔥バッジ |
+| スランプ | 怪我復帰/growthPenalty終了/連敗で低確率発生 | 成長ゼロ、能力微減、momentum蓄積で回復 | 📉バッジ |
+| モチベ喪失 | スランプ悪化形（16週超経過・10%判定） | 回復速度半分、24週超で2%/週自主引退 | 😞バッジ |
+| AI団体適用 | シーズン末一括判定 | S8%/A6%/B4%ブレークスルー、スランプ5%/モチベ喪失1% | 脅威/好機ポップアップ |
+
+### 改修ファイル
+
+| ファイル | 主な変更 |
+|----------|---------|
+| engine.js | `Engine.growthEvents`名前空間追加。processManage改修（怪我回復スランプトリガー・成長statusMult適用）。rival.processSeasonEnd改修（AI一括判定） |
+| data.js | BREAKTHROUGH_LINES/SLUMP_START_LINES/SLUMP_END_LINES/MOTIVATION_*_LINES/AI_*_NEWS追加 |
+| app.js | `_migrated_growth_events`追加。finalizeShow改修（ブレークスルー判定・careerBestMQ更新）。closeShowResult/processWeek/advanceWeek改修（ポップアップフック）。無効hexリテラル修正（0xBT18→0xB818, 0xMR18→0xAA18） |
+| ui-common.js | `showGrowthEventPopups()`/`closeGrowthEventPopup()`/`showAIGrowthAlerts()`追加。選手詳細ポップアップに状態表示追加 |
+| ui-render.js | ロスターカードに🔥/📉/😞バッジ追加 |
+| index.html | `.growth-event-overlay`等CSS追加。`#growthEventOverlay`DOM追加 |
+
+---
+
+## 前セッション（セッション17 — バグ修正＋経済リバランス＋HEAT圧縮）
 
 ### バグ修正（2件）
 
@@ -189,13 +215,12 @@
 
 | # | タスク | 重さ | 参照 |
 |---|--------|:----:|--------|
-| 1 | **UX-3: ロスターソート機能**（名前/OVR/体調/人気） | 小 | session17-analysis UX-3 |
-| 2 | **UX-1: 週送りフィードバック**（トースト通知/フラッシュアニメ） | 小 | session17-analysis UX-1 |
-| 3 | **UX-5: 新年・シーズン開幕演出** | 中 | session17-analysis UX-5 |
-| 4 | **UX-6: 月次収支表示** | 小 | session17-analysis UX-6 |
-| 5 | **成長イベントシステム実装**（ブレークスルー・絶好調・スランプ・モチベ喪失） | 大 | specs/growth-event-spec-v1.0.md |
-| 6 | **AI団体成長イベント＋脅威通知** | 中 | specs/growth-event-spec-v1.0.md §9 |
-| 7 | **build-zip.sh修正**（award-frame画像・portrait-map.js追加） | 小 | — |
+| 1 | ~~**orgPopバランス修正**（放置プレイで68週・99に到達するバグ調査・修正）~~ | ~~中~~ | ✅ 修正済み(v1.9) |
+| 2 | **UX-3: ロスターソート機能**（名前/OVR/体調/人気） | 小 | session17-analysis UX-3 |
+| 3 | **UX-1: 週送りフィードバック**（トースト通知/フラッシュアニメ） | 小 | session17-analysis UX-1 |
+| 4 | **UX-5: 新年・シーズン開幕演出** | 中 | session17-analysis UX-5 |
+| 5 | **UX-6: 月次収支表示** | 小 | session17-analysis UX-6 |
+| 6 | **build-zip.sh修正**（award-frame画像・portrait-map.js追加） | 小 | — |
 
 ---
 
@@ -215,7 +240,7 @@
 
 | 項目 | 優先度 | 備考 |
 |---|---|---|
-| **成長イベントシステム（ブレークスルー・スランプ等）** | **最高** | ✅ 設計完了（growth-event-spec-v1.0.md）。次セッションで実装 |
+| ~~成長イベントシステム（ブレークスルー・スランプ等）~~ | ~~最高~~ | ✅ セッション18で実装完了 |
 | フィニッシャー（キャラ固有必殺技） | 高 | 設計書 第3部 3.11 |
 | イベントシステム（覚醒・スランプ・引退試合） | 高 | 成長イベントに統合済み |
 | ライバルストーリー自動生成 | 高 | 未設計 |
@@ -300,6 +325,7 @@
 | 15+ | 02-25 | v1.3-3引退演出実装。PPV全実装。殿堂入り統合。ヘルプ画面。README。build-zip.sh |
 | 16 | 02-25 | ロードマップ全面改訂（コード監査）。バランス調整6項目（HEAT decay強化・集客加算方式化・給料引き上げ・人気自然減衰・orgPop減衰・FA若返りバグ修正）。成長イベントシステム設計完了（ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用+脅威通知） |
 | 17 | 02-25 | バグ修正2件（Engine.milestone実装・スカウト見送り修正）。経済リバランス（baseAttendance×2・SALARY再調整・グッズ単価UP・育成補助金導入）。HEAT倍率圧縮（On Fire 2.0→1.3）+興行週軽減衰。heatScoreバグ修正2件。dormantPool年次加齢。シミュレーション検証完了 |
+| 18 | 02-25 | 成長イベントシステム実装完了（ブレークスルー・絶好調・スランプ・モチベ喪失・AI団体適用）。6ファイル改修。無効hexリテラルバグ修正 |
 
 ---
 
@@ -308,5 +334,7 @@
 - build-zip.shは古い: `image/award-frame-*.png`（7枚）と `portrait-map.js` が未包含
 - README.mdの「120名以上のキャラクター」は固有キャラ98名＋スカウト生成＋コーチ8名の合算
 - 引退セリフは当初「98名キャラ固有」想定だったが、汎用8カテゴリ方式で十分なバリエーションが出るため方針転換
-- バランス調整（セッション16+17）はローカルで修正済み、push待ち。成長イベント仕様書もpush待ち
+- バランス調整（セッション16+17）はローカルで修正済み、push待ち
 - セッション17のバランスシミュレーション結果: test/balance-sim.jsで再現可能（node test/balance-sim.js）
+- 成長イベントシステム（セッション18）実装済み。growth-event-spec-v1.0.md準拠
+- **修正済み(v1.9)**: 放置68週でorgPop99問題 → applyShowPopularity閾値引き上げ（70/55/40→80/65/45、最大+3→最大+2）

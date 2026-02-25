@@ -590,6 +590,43 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   display:flex;flex-direction:column;gap:7px}
 .awards-summary-row{display:flex;align-items:baseline;gap:6px}
 .awards-summary-label{color:var(--text-dim);flex-shrink:0;width:76px}
+
+/* v1.5: Growth Event Popup */
+.growth-event-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:265;align-items:center;justify-content:center}
+.growth-event-overlay.active{display:flex}
+.growth-event-box{background:var(--panel-bg);border-radius:14px;max-width:420px;width:92%;
+  padding:28px 24px;text-align:center;border:1px solid rgba(255,255,255,0.08);
+  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+.growth-event-box.breakthrough{border-color:rgba(255,215,0,0.4);box-shadow:0 0 32px rgba(255,215,0,0.18)}
+.growth-event-box.hot-streak{border-color:rgba(255,149,0,0.4);box-shadow:0 0 30px rgba(255,149,0,0.15)}
+.growth-event-box.slump-start{border-color:rgba(127,140,141,0.4)}
+.growth-event-box.slump-end{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
+.growth-event-box.motivation-loss{border-color:rgba(149,165,166,0.35)}
+.growth-event-box.motivation-recovery{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
+.growth-event-face{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;
+  border:3px solid rgba(255,255,255,0.15);overflow:hidden;background:var(--card-bg)}
+.growth-event-face img{width:100%;height:100%;object-fit:cover}
+.growth-event-category{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--text-sub);margin-bottom:4px}
+.growth-event-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;
+  color:var(--gold-light);margin-bottom:6px}
+.growth-event-box.hot-streak .growth-event-title{color:#ff9500}
+.growth-event-box.slump-start .growth-event-title,
+.growth-event-box.motivation-loss .growth-event-title{color:#7f8c8d}
+.growth-event-box.slump-end .growth-event-title,
+.growth-event-box.motivation-recovery .growth-event-title{color:var(--green)}
+.growth-event-name{font-weight:700;font-size:14px;color:var(--text-main);margin-bottom:10px}
+.growth-event-msg{font-size:12px;line-height:1.8;color:var(--text-sub);margin-bottom:12px}
+.growth-event-msg::before{content:'「';color:var(--text-dim)}
+.growth-event-msg::after{content:'」';color:var(--text-dim)}
+.growth-event-detail{font-size:12px;color:var(--green);background:rgba(46,204,113,0.06);
+  border-radius:6px;padding:8px 14px;margin-bottom:16px;line-height:1.7}
+.growth-event-box.slump-start .growth-event-detail,
+.growth-event-box.motivation-loss .growth-event-detail{color:#7f8c8d;background:rgba(127,140,141,0.06)}
+.growth-event-btn{font-size:12px;padding:9px 28px;border-radius:7px;cursor:pointer;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);
+  color:var(--text-sub);transition:all .2s}
+.growth-event-btn:hover{background:rgba(255,255,255,0.1);color:var(--text-main)}
 </style>
 </head>
 <body>
@@ -963,6 +1000,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <!-- v1.4: Awards ceremony popup -->
 <div class="awards-overlay" id="awardsOverlay">
   <div class="awards-box" id="awardsBox" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- v1.5: Growth Event Popup -->
+<div class="growth-event-overlay" id="growthEventOverlay">
+  <div class="growth-event-box" id="growthEventBox" onclick="event.stopPropagation()"></div>
 </div>
 
 <script src="victory-lines.js"></script>

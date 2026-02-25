@@ -1326,6 +1326,28 @@ const Storage = {
         G = { ...G, _migrated_v1_4: true };
       }
 
+      // v1.8: 成長イベントシステム マイグレーション
+      if (!G._migrated_growth_events) {
+        const addGrowthFields = fighters => fighters.map(c => {
+          const updates = {};
+          if (!c.hasOwnProperty('hotStreak'))      updates.hotStreak      = null;
+          if (!c.hasOwnProperty('slump'))          updates.slump          = null;
+          if (!c.hasOwnProperty('motivationLoss')) updates.motivationLoss = null;
+          if (!c.hasOwnProperty('careerBestMQ'))   updates.careerBestMQ   = 0;
+          return Object.keys(updates).length > 0 ? { ...c, ...updates } : c;
+        });
+        G = { ...G, roster: addGrowthFields(G.roster || []) };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: addGrowthFields(od.roster || []) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_growth_events: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2323,6 +2345,76 @@ const App = {
       if (r.winner === 'draw') stats.draws++;
     });
 
+    // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
+    const pendingGrowthEvents = [];
+    const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB818));
+    results.forEach(r => {
+      [
+        { charId: r.left.id,  won: r.winner === 'left'  },
+        { charId: r.right.id, won: r.winner === 'right' },
+      ].forEach(({ charId, won }) => {
+        const fighter = roster.find(c => c.id === charId);
+        if (!fighter || fighter.isIntrusion) return;
+        const oppId = charId === r.left.id ? r.right.id : r.left.id;
+        const oppFighter = roster.find(c => c.id === oppId);
+        const oppOvr = oppFighter ? Engine.util.ov(oppFighter) : (r[charId === r.left.id ? 'right' : 'left']?.pw ?? 50);
+        const isTitle = !!r.isTitleMatch;
+
+        // careerBestMQ 更新（ブレークスルー判定に使うため先に更新）
+        const wasNewBest = r.mq > (fighter.careerBestMQ || 0);
+        if (wasNewBest) {
+          roster = roster.map(c => c.id === charId ? { ...c, careerBestMQ: r.mq } : c);
+        }
+
+        // ブレークスルー判定
+        const btFighter = roster.find(c => c.id === charId);
+        const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
+          btRng, btFighter, r.mq, oppOvr, isTitle, won, s.season, s.week
+        );
+        if (btResult) {
+          roster = roster.map(c => c.id === charId ? btResult.fighter : c);
+          pendingGrowthEvents.push({
+            type: 'breakthrough', fighterId: charId,
+            stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
+          });
+        }
+
+        // §4.2 敗北スランプ判定
+        if (!won) {
+          const slumpRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C6, charId));
+          const slumpFighter = roster.find(c => c.id === charId);
+          if (Engine.growthEvents.checkSlump(slumpRng, slumpFighter, 'defeat')) {
+            const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
+            roster = roster.map(c => c.id === charId ? newF : c);
+            pendingGrowthEvents.push({ type: 'slump_start', fighterId: charId, trigger: 'defeat' });
+          }
+        }
+
+        // §4.4/§5.4 試合後 momentum 更新（スランプ/モチベ喪失中）
+        const momRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C7, charId));
+        const momFighter = roster.find(c => c.id === charId);
+        let updatedF = Engine.growthEvents.updateSlumpMomentumAfterMatch(momFighter, r.mq, won, momRng);
+        updatedF = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(updatedF, r.mq, won, momRng);
+
+        // §5.2 モチベ喪失 敗北トリガー
+        if (!won && updatedF.slump) {
+          const mlRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C8, charId));
+          if (Engine.growthEvents.checkMotivationLoss(mlRng, updatedF, 'defeat')) {
+            updatedF = Engine.growthEvents.applyMotivationLoss(updatedF, s.season, s.week);
+            pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: charId });
+          }
+        }
+        if (updatedF !== momFighter) {
+          roster = roster.map(c => c.id === charId ? updatedF : c);
+        }
+      });
+    });
+
+    s = { ...s, roster };
+    if (pendingGrowthEvents.length > 0) {
+      G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
+    }
+
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
@@ -2421,15 +2513,33 @@ const App = {
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
 
-    // v1.3-3: Show injury retirement popups after event popups finish
-    if (pendingInjuryRetirements.length > 0) {
-      const showRetirements = () => {
-        showRetirementPopups(pendingInjuryRetirements);
-      };
+    // v1.8: ブレークスルー/スランプ発生ポップアップ（試合 → 怪我 → breakthrough の順）
+    const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
+    if (G._pendingGrowthEvents) {
+      const { _pendingGrowthEvents: _, ...cleanG } = G;
+      G = cleanG;
+    }
+    if (pendingGrowthEventsShow.length > 0) {
+      const showGrowthPopups = () => showGrowthEventPopups(pendingGrowthEventsShow, () => {
+        // v1.3-3: Show injury retirement popups after growth popups
+        if (pendingInjuryRetirements.length > 0) {
+          showRetirementPopups(pendingInjuryRetirements);
+        }
+      });
       if (hasEventPopups) {
-        _onEventPopupQueueEmpty = showRetirements;
+        _onEventPopupQueueEmpty = showGrowthPopups;
       } else {
-        setTimeout(showRetirements, 200);
+        setTimeout(showGrowthPopups, 200);
+      }
+    } else {
+      // v1.3-3: Show injury retirement popups after event popups finish
+      if (pendingInjuryRetirements.length > 0) {
+        const showRetirements = () => { showRetirementPopups(pendingInjuryRetirements); };
+        if (hasEventPopups) {
+          _onEventPopupQueueEmpty = showRetirements;
+        } else {
+          setTimeout(showRetirements, 200);
+        }
       }
     }
 
@@ -2528,6 +2638,39 @@ const App = {
       const { _flavorEvents, ...cleanState } = G;
       G = cleanState;
     }
+    // v1.8: 週次成長イベント（スランプ発生/回復・モチベ喪失）ポップアップ
+    const weekGrowthEvents = G._pendingGrowthEvents || [];
+    if (G._pendingGrowthEvents) {
+      const { _pendingGrowthEvents: _, ...cleanGe } = G;
+      G = cleanGe;
+    }
+    // 自主引退処理（モチベ喪失24週超え）
+    const motivRetirements = G._pendingMotivationRetirements || [];
+    if (G._pendingMotivationRetirements) {
+      const { _pendingMotivationRetirements: _, ...cleanMr } = G;
+      G = cleanMr;
+    }
+    if (motivRetirements.length > 0) {
+      motivRetirements.forEach(r => {
+        const f = G.roster.find(c => c.id === r.fighterId);
+        if (!f) return;
+        const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAA18, f.id));
+        const { line } = Engine.retirement.selectLine(f, 'motivation', G, lineRng);
+        const summary = Engine.retirement.buildCareerSummary(f);
+        const retiredF = Engine.career.addEvent(Engine.career.ensure(f), { type: 'retire', reason: 'motivation', season: G.season, age: f.age });
+        G = { ...G,
+          roster: G.roster.filter(c => c.id !== f.id),
+          retiredFighters: [...(G.retiredFighters || []), retiredF]
+        };
+        const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
+        setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
+      });
+    }
+    if (weekGrowthEvents.length > 0) {
+      const baseDelay = (newInjuries.length + flavorEvents.length) * 100 + 100;
+      setTimeout(() => showGrowthEventPopups(weekGrowthEvents), baseDelay);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -2572,8 +2715,18 @@ const App = {
       return;
     }
 
-    // v1.4: 引退者なしでも表彰式チェック
-    App._checkAndShowAwards();
+    // v1.8: AI成長イベント脅威/好機アラート（表彰式の前に表示）
+    const aiAlerts = G._pendingAIGrowthAlerts || [];
+    if (G._pendingAIGrowthAlerts) {
+      const { _pendingAIGrowthAlerts: _, ...cleanAI } = G;
+      G = cleanAI;
+    }
+    if (aiAlerts.length > 0) {
+      showAIGrowthAlerts(aiAlerts, () => App._checkAndShowAwards());
+    } else {
+      // v1.4: 引退者なしでも表彰式チェック
+      App._checkAndShowAwards();
+    }
   },
 
   // v1.4: 年末表彰式チェック＆表示

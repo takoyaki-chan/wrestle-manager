@@ -940,6 +940,16 @@ function renderRoster() {
     const growthPenaltyBadge = (!c.injury && c.growthPenalty)
       ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹成長低下</span>'
       : '';
+    // v1.8: 成長イベントバッジ
+    const hotStreakBadge = c.hotStreak
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥絶好調</span>`
+      : '';
+    const slumpBadge = c.slump
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉スランプ</span>`
+      : '';
+    const motivLossBadge = c.motivationLoss
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞モチベ喪失</span>`
+      : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
@@ -951,7 +961,7 @@ function renderRoster() {
           ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
           <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
           <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
-          ${injuryBadge}${wearBadge}${growthPenaltyBadge}
+          ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
         </div>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
           <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
