@@ -2074,7 +2074,7 @@ function renderTraining() {
     growthEntries.forEach(c => {
       const parts = [];
       ['pw','sp','te','st','mn'].forEach(s => {
-        const v = (c.seasonGrowth && c.seasonGrowth[s]) || 0;
+        const v = Math.round(((c.seasonGrowth && c.seasonGrowth[s]) || 0) * 10) / 10;
         if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
       });
       if (parts.length > 0) html += `<div>${fLink(c, {source:'roster', size:'11px'})}: ${parts.join(' ')}</div>`;
