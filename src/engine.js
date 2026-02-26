@@ -164,7 +164,7 @@ const Engine = {
     calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
       const eff = Engine.util.eff;
       const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
-        + (mv.c === 'aerial' ? eff(atk.sp) * ENG.dmgSpdScale : 0);
+        + (eff(atk.sp) * ENG.dmgSpdScale);
       const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
       const mAdv = atkSide === 'left' ? mom : -mom;
       const mMod = 1 + (mAdv * ENG.momDmgScale);
@@ -218,12 +218,12 @@ const Engine = {
 
       const eff = Engine.util.eff;
       const L = {
-        ...charL, hp: Math.round(eff(charL.st) * ENG.hpScale),
+        ...charL, hp: Math.round(ENG.hpBase + eff(charL.st) * ENG.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       L.mhp = L.hp;
       const R = {
-        ...charR, hp: Math.round(eff(charR.st) * ENG.hpScale),
+        ...charR, hp: Math.round(ENG.hpBase + eff(charR.st) * ENG.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       R.mhp = R.hp;

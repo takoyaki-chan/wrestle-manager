@@ -525,14 +525,14 @@ const PHASES = [
   {name:'Climax',min:13,max:20,mult:1.4,sCh:70,counterBonus:8}
 ];
 const ENG = {
-  hpScale: 1.85,
+  hpBase: 50, hpScale: 0.90,
   effPivot: 100, effSlopeAfterPivot: 0.60,
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
-  tecHitBonus: 0.21, spdDodgeBonus: 0.075, hitMin: 42, hitMax: 98,
-  counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.03, counterMin: 2, counterMax: 22,
+  tecHitBonus: 0.17, spdDodgeBonus: 0.18, hitMin: 42, hitMax: 98,
+  counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 22,
   counterDmgMult: 0.6, counterMomShift: 18,
-  dmgPwrScale: 0.12, dmgTecScale: 0.10, dmgSpdScale: 0.03,
-  defStaScale: 0.08, defMntScale: 0.055, momDmgScale: 0.003,
+  dmgPwrScale: 0.20, dmgTecScale: 0.08, dmgSpdScale: 0.08,
+  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.003,
   dmgRandMin: 0.85, dmgRandRange: 0.30, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,

@@ -509,28 +509,28 @@ const PHASES=[
 // ═══ v4.1 ENGINE CONFIG ═══
 const ENG = {
   // HP
-  hpScale: 1.85,
+  hpBase: 50, hpScale: 0.90,
   // Stat scaling (v4.1)
   effPivot: 100,
   effSlopeAfterPivot: 0.60,
   // Hit check (NEW)
   hitBase: {1:97, 2:97, 3:96, 4:94, 5:92, 6:89, 7:86, 8:84, 9:81, 10:78,
     11:76, 12:74, 13:72, 14:70, 15:68, 16:66},
-  tecHitBonus: 0.21,    // TEC helps accuracy
-  spdDodgeBonus: 0.075,  // SPD helps evasion
+  tecHitBonus: 0.17,    // TEC helps accuracy
+  spdDodgeBonus: 0.18,   // SPD helps evasion
   hitMin: 42, hitMax: 98,
   // Counter (NEW)
   counterBase: 4,
   counterTecScale: 0.055,  // defender TEC → counter rate
-  counterSpdPenalty: 0.03, // attacker SPD → harder to counter
+  counterSpdPenalty: 0.07, // attacker SPD → harder to counter
   counterMin: 2, counterMax: 22,
   counterDmgMult: 0.6,    // counter deals 60% of move's damage back
   counterMomShift: 18,
   // Damage (REBALANCED: TEC up, PWR down, MN up in defense)
-  dmgPwrScale: 0.12,   // was 0.15
-  dmgTecScale: 0.10,   // was 0.10 (kept)
-  dmgSpdScale: 0.03,   // small SPD bonus for aerials
-  defStaScale: 0.08,   // was 0.10
+  dmgPwrScale: 0.20,   // PW damage buff
+  dmgTecScale: 0.08,   // TE damage slight nerf
+  dmgSpdScale: 0.08,   // SP damage for ALL moves
+  defStaScale: 0.02,   // ST defense reduced
   defMntScale: 0.055,  // was 0.035 — MN now matters for defense
   momDmgScale: 0.003,
   dmgRandMin: 0.85, dmgRandRange: 0.30,
@@ -612,7 +612,7 @@ function calcCounterRate(atk, def, ph) {
 // ═══ v4.1: DAMAGE CALC (rebalanced) ═══
 function calcDamage(mv, atk, def, mom, atkSide, ph) {
   const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
-    + (mv.c === 'aerial' ? eff(atk.sp) * ENG.dmgSpdScale : 0);
+    + (eff(atk.sp) * ENG.dmgSpdScale);
   const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
   const mAdv = atkSide === 'left' ? mom : -mom;
   const mMod = 1 + (mAdv * ENG.momDmgScale);
@@ -1114,7 +1114,7 @@ function startMatchFromData(left, right){
   // Ensure vl (voice lines) have defaults
   if (!left.vl || !left.vl.length) left.vl = ['…！'];
   if (!right.vl || !right.vl.length) right.vl = ['…！'];
-  const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(eff(c.st)*ENG.hpScale),mhp:Math.round(eff(c.st)*ENG.hpScale),kickoutCount:0,gritTurns:0});
+  const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(ENG.hpBase+eff(c.st)*ENG.hpScale),mhp:Math.round(ENG.hpBase+eff(c.st)*ENG.hpScale),kickoutCount:0,gritTurns:0});
   S.L=mk(left);S.R=mk(right);
   S.turn=1;S.mom=0;S.prevMom=0;S.log=[];S.winner=null;S.finType=null;S.finMove=null;S.anim=false;
   S.halfTrig={l:false,r:false};S.qtrTrig={l:false,r:false};S.dangerTrig={l:false,r:false};

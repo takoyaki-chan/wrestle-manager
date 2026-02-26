@@ -1,13 +1,13 @@
 # 🎮 Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-26（セッション22 — 経済リバランス設計 v5b）
+> 最終更新: 2026-02-26（セッション23 — 能力値バランス調整＋検証テスト実施）
 > 旧ロードマップ（v0.1〜v0.99c開発記録）はアーカイブ済み
 
 ---
 
 ## 現在の状態
 
-**セッション22: 経済リバランス設計 v5b。** 中盤以降の利益爆発→資金ダブつき問題の根本解決設計。v4案（収入のみ削減→スポンサー依存ヌルゲー化）を不採用、v5b案（収入・支出両側縮小）を採用。チケット単価逓減（公民館0.50据置→ドーム0.15）、変動運営費新規導入（0.01〜0.07万/人）、会場費縮小（×0.28〜0.80）、給与テーブル縮小（×0.62〜0.80）、固定費・安定収入縮小。仕様書 specs/economy-rebalance-spec-v5b.md 作成・push済み。
+**セッション23: 能力値バランス調整。** テスト仕様書に基づきバトルエンジンの能力値貢献度を検証（tests/stat-contribution-test.js）。ST過強(64%)・SP過弱(41%)を特定し、5回のイテレーションでPW/SP/TE/STの4能力を均等化（全て49-52%に収束）。hpBase導入・SP全技ダメージ化・8定数調整。
 
 ---
 
@@ -63,7 +63,7 @@
 - **表彰式テキスト黒縁（v1.4w2）** — `.awards-box, .awards-box *`にtext-shadow一括適用。CSS変数を固定色にオーバーライド（--text:#fff/--text-sub:#ddd/--text-dim:#bbb）。インラインスタイルのテキストにも効く
 - **表彰式結果スライド背景なし（v1.4w2）** — [data-frame="g"]はbackground-image:none。テキスト主体のスライドにフレーム不要
 - **autoFillCardのタイトルマッチチェック（v1.4w2）** — autoFillCard()でisTitle設定前にEngine.title.canTitleMatch()を確認。12週クールダウン中は自動編成でもタイトルマッチを設定しない
-- **経済リバランスv5b（設計確定・実装未）** — 収入・支出両側縮小方式。チケット単価逓減（TICKET_PRICE_TABLE[venueIdx]）、変動運営費（VENUE_OP_COST[venueIdx]×attendance）新規導入、会場費・給与・固定費・安定収入を同カーブで縮小。大会場/ドームは勝負興行専用（通常では赤字）。中盤利益67%削減、終盤利益71%削減
+- **能力値バランス調整（セッション23）** — HP計算に基礎HP（hpBase:50）導入でST比率を1.5→1.26に圧縮。SP全技ダメージ化（aerial限定撤廃）。8定数調整。PW/SP/TE/STの4能力勝率を49-52%に均等化（旧:41-64%→新:49-52%、幅23.5pp→2.8pp）。攻撃型vs防御型も防御一強(61:39)から攻撃微有利(54:46)に改善
 
 ---
 
@@ -119,43 +119,53 @@
 
 ---
 
-## 今セッション完了済み（セッション22 — 経済リバランス設計 v5b）
+## 今セッション完了済み（セッション23 — 能力値バランス調整＋検証テスト実施）
 
-### 問題
-中盤以降の興行利益が爆発的に増大し資金がダブつく。根本原因：チケット単価一律0.5万、集客二乗カーブで後半爆発、支出に変動要素なし。
+### 能力値貢献度テスト実施（5フェーズ×10,000試合）
 
-### v4案（不採用）
-収入のみ大幅削減＋スポンサーで補填 → 金のダブつきが「興行利益」から「スポンサー収入」に移動しただけ。中盤全面赤字化＋スポンサー依存の別のヌルゲー。
+tests/stat-contribution-test.js を作成・実行。調整前の結果でST過強(64.1%)・SP過弱(40.6%)を特定。
 
-### v5b案（採用） — 収入・支出両側縮小
+### バトルエンジン能力値リバランス（5イテレーションで収束）
 
-| 項目 | 変更 |
-|------|------|
-| チケット単価逓減 | 公民館0.50据置→ドーム0.15（-70%）。TICKET_PRICE_TABLE導入 |
-| 変動運営費（新規） | 0.01〜0.07万/人。大会場ほど重い |
-| 会場費縮小 | 公民館据置→ドーム×0.28 |
-| 給与テーブル縮小 | OVR〜49: ×0.80 → OVR110+: ×0.62 |
-| 固定費縮小 | 施設50→35万、事務30→20万 |
-| 安定収入縮小 | スポンサー上限200→100万、放映権200→100万、補助金50→40万、グッズ0.15→0.10万 |
-| 初期資金縮小 | 5,000→3,500万 |
+| 定数 | 旧値 | 新値 | 変更理由 |
+|------|------|------|----------|
+| `hpBase` | *(新設)* | **50** | HP計算に基礎値追加（ST比率1.5→1.26に圧縮） |
+| `hpScale` | 1.85 | **0.90** | HP = hpBase + eff(ST)×hpScale に変更 |
+| `defStaScale` | 0.08 | **0.02** | ST防御の乗算効果を大幅縮小 |
+| `dmgPwrScale` | 0.12 | **0.20** | PW damage強化 |
+| `dmgTecScale` | 0.10 | **0.08** | TE damage微減（多チャンネル効果調整） |
+| `tecHitBonus` | 0.21 | **0.17** | TE命中ボーナス微減 |
+| `spdDodgeBonus` | 0.075 | **0.18** | SP回避大幅強化 |
+| `counterSpdPenalty` | 0.03 | **0.07** | SP対カウンター強化 |
+| `dmgSpdScale` | 0.03 | **0.08** | SP全技ダメージ（aerial限定→全技に拡大） |
 
-### 収支シミュレーション結果（2週間純損益）
+コード変更: engine.js calcDamage — SP damage を全技カテゴリに適用（aerial限定撤廃）。HP計算式に `hpBase` 加算。battle-engine.html にも同一変更をミラー。
 
-| ステージ | 旧 | 新 | 変化 |
-|----------|---:|---:|------|
-| 中盤WARM | +157万 | +52万 | 67%削減 |
-| 中盤HOT | +226万 | +87万 | 62%削減 |
-| 終盤アリーナ | +489万 | +143万 | 71%削減 |
-| 終盤大会場66% | +221万 | -94万 | 赤字化 |
+### 調整結果（5特化キャラ総当たり Allround N=10,000）
 
-### 設計の核心
-大会場・ドームは「勝負興行」専用。通常興行では基本赤字、最高カード×最大Heat×タイトルマッチで初めてペイ。
+| 能力値 | 調整前 | 調整後 | 変化 |
+|--------|--------|--------|------|
+| **ST** | **64.1%** | **50.8%** | -13.3pp |
+| **TE** | 53.6% | **51.0%** | -2.6pp |
+| **SP** | **40.6%** | **52.1%** | +11.5pp |
+| **PW** | 47.9% | **49.3%** | +1.4pp |
+| MN | 43.5% | 46.8% | +3.3pp |
+| **4能力の幅** | **23.5pp** | **2.8pp** | — |
 
-### 未確定事項（次セッション以降）
-- 施設アップグレード費用・維持費の縮小率
-- コーチ給与・スカウト契約金・治療費の縮小率
-- PPV/特別興行の収入モデル
-- 同一カード繰り返しの集客ペナルティ
+Phase 5（攻撃vs防御）も改善: 旧・防御一強(61%vs39%) → 新・攻撃微有利(54%vs46%)
+
+---
+
+## 前セッション（セッション22 — docs/specs整理＋能力値検証計画）
+
+### ドキュメント整理
+
+| # | 変更 | 概要 |
+|---|------|------|
+| 1 | archive/ディレクトリ新設 | 旧版・実装済み指示書・一時レポートの退避先 |
+| 2 | 13ファイルをarchive/に移動 | 旧版4件 + 実装完了5件 + 一時3件 + 不要1件 |
+| 3 | 設計書インデックス更新 | docs/4件、specs/19件、archive/13件に整理 |
+| 4 | 能力値貢献度検証テスト仕様書作成 | archive/stat-contribution-test-spec.md |
 
 ---
 
@@ -328,11 +338,10 @@
 
 | # | タスク | 重さ | 備考 |
 |---|--------|:----:|--------|
-| 1 | **経済リバランス v5b 実装** | 大 | specs/economy-rebalance-spec-v5b.md準拠。data.js定数変更＋engine.js calcShowRevenue/processSettlement改修。未確定事項（施設費・コーチ給与等の縮小率）も確定要 |
-| 2 | **弱い相手とのタイトルマッチにマイナス要素** | 中 | OVR差が大きい場合のペナルティ（MQ低下・人気低下等） |
-| 3 | **ランキング画面のカスタムツールチップ** | 小 | モバイル対応含む |
-| 4 | **特性未実装4種の実装**（適応力/人望/忠誠心/野心） | 中 | セッション19の照合で特定済み |
-| 5 | **全体的なUI/UX改善** | 中〜大 | 具体的な項目は次セッション冒頭で洗い出し |
+| 1 | **弱い相手とのタイトルマッチにマイナス要素** | 中 | OVR差が大きい場合のペナルティ（MQ低下・人気低下等） |
+| 2 | **ランキング画面のカスタムツールチップ** | 小 | モバイル対応含む |
+| 3 | **特性未実装4種の実装**（適応力/人望/忠誠心/野心） | 中 | セッション19の照合で特定済み |
+| 4 | **全体的なUI/UX改善** | 中〜大 | 具体的な項目は次セッション冒頭で洗い出し |
 
 ---
 
@@ -366,7 +375,7 @@
 
 - ~~弱い相手とのタイトルマッチにマイナス要素~~ → 次セッションに昇格
 - ~~人気バランス全体の精査（増加要因が多すぎる問題）~~ → セッション16で対策済み（自然減衰-0.5/週）
-- SP上限バランスの検証
+- ~~SP上限バランスの検証~~ → セッション23で能力値リバランス完了（SP含む4能力均等化）
 - 各団体社長・プレイヤーキャラの顔画像（フレーバー演出強化時に検討）
 - UX-2: 時間経過の可視化（ヘッダー常時表示・季節アイコン） — UX-1と連動
 - ~~UX-4: ランキング画面のカスタムツールチップ（モバイル対応）~~ → 次セッションに昇格
@@ -386,36 +395,56 @@
 
 ## 設計書インデックス
 
-| ドキュメント | ファイル | 場所 |
-|---|---|---|
-| ゲームデザイン総覧 | wrestle-manager-game-design-current.md | docs/ |
-| ファイル分割計画 | plan-split-and-features.md | docs/ |
-| ロスターランダム化（設計メモ） | roster-randomization-design.md | docs/ |
-| バトルエンジン | battle-engine-spec-v4.1b.md | specs/ |
-| キャラクターデータ（98名） | character-data-spec-v1.4.md | specs/ |
-| 経済システム | economy-system-spec-v1_0.md | specs/ |
-| コンディション/怪我 | condition-system-spec-v1.0.md | specs/ |
-| 週間ゲームループ | weekly-gameloop-spec-v1_0.md | specs/ |
-| 育成/トレーニング | training-system-spec-v1_0.md | specs/ |
-| MQスコア＋人気 | mq-popularity-spec-v1.0.md | specs/ |
-| 団体ランキング/勝利条件 | org-ranking-spec-v1_0.md | specs/ |
-| タイトル/ベルト | title-system-spec-v1.0.md | specs/ |
-| スカウト | scout-system-spec-v1.0.md | specs/ |
-| ライバル団体AI | rival-org-spec-v1.0.md | specs/ |
-| 価格バランス | pricing-balance-spec-v0.99.md | specs/ |
-| 特性リスト（25種） | traits-v2.1.md | specs/ |
-| 技テーブル（160技） | 技テーブル_全160技_v3_5.md | specs/ |
-| 興行＋観客動員改修 | card-attendance-redesign-spec-v1.0.md | specs/ |
-| 人気・会場再設計 | popularity-venue-redesign-spec-v1.0b.md | specs/ |
-| ライバルシステム旧版 | rival-system-spec-v0_9.md | specs/ |
-| 衰退・引退システム改修 | v1.3-1-decay-retirement-spec.md | specs/ |
-| 成長システム改訂・怪我デバフ | v1.3-2-growth-injury-spec.md | specs/ |
-| 引退演出 | v1.3-3-retirement-presentation-spec.md | specs/ |
-| PPV＋年末表彰式 | ppv-awards-spec.md | specs/ |
-| **成長イベントシステム** | **growth-event-spec-v1.0.md** | **specs/** |
-| **世界観演出システム** | **world-presentation-spec-v1.4.md** | **specs/** |
-| **経済リバランスv5b** | **economy-rebalance-spec-v5b.md** | **specs/** |
-| バランステスト仕様書 | balance-test-spec.md | docs/（作業用） |
+### docs/（永続ドキュメント）
+
+| ドキュメント | ファイル |
+|---|---|
+| ロードマップ | game-system-roadmap.md |
+| マスタースペック（現行仕様） | master-spec.md |
+| 世界観設定 | world-setting.md |
+| ロスターランダム化 v2（設計確定） | roster-randomization-design-v2.md |
+
+### specs/（現行仕様書）
+
+| ドキュメント | ファイル |
+|---|---|
+| バトルエンジン | battle-engine-spec-v4.1b.md |
+| キャラクターデータ（98名） | character-data-spec-v1.4.md |
+| 経済システム | economy-system-spec-v1_0.md |
+| コンディション/怪我 | condition-system-spec-v1.0.md |
+| 週間ゲームループ | weekly-gameloop-spec-v1_0.md |
+| 育成/トレーニング v1.2 | training-system-spec-v1_2.md |
+| MQスコア＋人気 | mq-popularity-spec-v1.0.md |
+| 団体ランキング/勝利条件 | org-ranking-spec-v1_0.md |
+| タイトル/ベルト | title-system-spec-v1.0.md |
+| スカウト | scout-system-spec-v1.0.md |
+| ライバル団体AI | rival-org-spec-v1.0.md |
+| 価格バランス | pricing-balance-spec-v0.99.md |
+| 特性リスト（25種） | traits-v2.1.md |
+| 技テーブル（160技） | 技テーブル_全160技_v3_5.md |
+| 興行＋観客動員改修 | card-attendance-redesign-spec-v1.0.md |
+| 人気・会場再設計 | popularity-venue-redesign-spec-v1.0b.md |
+| PPV＋年末表彰式 | ppv-awards-spec.md |
+| 成長イベントシステム | growth-event-spec-v1.0.md |
+| 世界観演出システム | world-presentation-spec-v1.4.md |
+
+### archive/（旧版・完了済み・一時ファイル）
+
+| ファイル | 移動理由 |
+|---|---|
+| wrestle-manager-game-design-current.md | master-spec.mdが後継 |
+| rival-system-spec-v0_9.md | rival-org-spec-v1.0.mdが後継 |
+| training-system-spec-v1_0.md | v1_2が後継 |
+| roster-randomization-design.md | v2が確定版 |
+| plan-split-and-features.md | 不要 |
+| v1.3-1-decay-retirement-spec.md | 実装完了 |
+| v1.3-2-growth-injury-spec.md | 実装完了 |
+| v1.3-3-retirement-presentation-spec.md | 実装完了 |
+| v1.4-awards-impl-spec.md | 実装完了 |
+| v1.4-awards-ui-revision-spec.md | 実装完了 |
+| session17-analysis.md | 一時レポート（対応済み） |
+| balance-test-spec.md | 一時テスト仕様書 |
+| stat-contribution-test-spec.md | 能力値検証テスト仕様書（Claude Code用） |
 
 ---
 
@@ -444,7 +473,8 @@
 | 19 | 02-25 | UX改善バッチ v1.9（ロスターソート・戦績コンパクト化・トースト・ファンファーレ・月次収支・build-zip.sh修正）。docs/master-spec.md新規作成。特性コード照合（未実装4種特定） |
 | 20 | 02-25 | 世界観演出システム v1.4w 実装完了（ニュースティッカー+新聞パネル+防衛記録マイルストーン）。Engine.news名前空間追加。テンプレート16カテゴリ。6ファイル改修。バグ修正2件 |
 | 21 | 02-25 | 表彰式UI改修（フレーム別パディング・テキスト黒縁text-shadow・CSS変数オーバーライド・ボタン黒背景板・結果スライド背景画像削除）。バグ修正2件（小数点表示・タイトルマッチ12週クールダウン） |
-| 22 | 02-26 | 経済リバランス設計v5b（収入・支出両側縮小方式）。チケット単価逓減+変動運営費+会場費/給与/固定費/安定収入縮小。v4案（収入のみ削減→スポンサー依存ヌルゲー）不採用。仕様書作成・push済み。実装は次セッション |
+| 22 | 02-26 | docs/specs整理（archive/新設・13ファイル移動）。能力値貢献度検証テスト仕様書作成。DLsite販売価格1,500円方針確定 |
+| 23 | 02-26 | 能力値バランス調整（hpBase導入・SP全技ダメージ化・8定数調整）。tests/stat-contribution-test.js作成・5イテレーション実行。PW/SP/TE/ST均等化（幅23.5pp→2.8pp）。攻撃vs防御も改善 |
 
 ---
 
@@ -458,4 +488,4 @@
 - 成長イベントシステム（セッション18）実装済み。growth-event-spec-v1.0.md準拠
 - **修正済み(v1.9)**: 放置68週でorgPop99問題 → applyShowPopularity閾値引き上げ（70/55/40→80/65/45、最大+3→最大+2）
 - 世界観演出システム（セッション20）実装済み。world-presentation-spec-v1.4.md準拠。transientフィールド（_tickerItems/_newsEvents）はsave時に除去済み
-- 経済リバランスv5b（セッション22）設計確定・仕様書push済み。実装未。シミュレーションスクリプト economy-sim-v5b.js あり。未確定事項：施設アップグレード費・コーチ給与・スカウト契約金・治療費の縮小率、PPV収入モデル、同一カードペナルティ
+- 能力値貢献度検証（archive/stat-contribution-test-spec.md）— セッション23で実施完了。テスト: tests/stat-contribution-test.js。レポート: docs/stat-contribution-report.md

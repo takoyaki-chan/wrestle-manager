@@ -27,7 +27,8 @@
       "Bash(bash /tmp/final_check.sh)",
       "Bash(ls C:/Users/nkmrk/Downloads/wrestle-manager/image/award-frame*.png)",
       "Bash(python3 -c \":*)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(node tests/stat-contribution-test.js)"
     ]
   }
 }
