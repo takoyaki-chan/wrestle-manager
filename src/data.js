@@ -587,14 +587,14 @@ const CARD_POP_CONFIG = {
 const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0];
 //                        1試合  2試合  3試合  4試合  5試合  6試合
 const CROWD_HEAT_MQ = [
-  { min: 0.95, bonus: +5, label: '超満員の熱気' },
-  { min: 0.80, bonus: +3, label: '大入りの声援' },
+  { min: 0.95, bonus: +3, label: '超満員の熱気' },
+  { min: 0.80, bonus: +2, label: '大入りの声援' },
   { min: 0.60, bonus: +1, label: '盛況の雰囲気' },
   { min: 0.40, bonus:  0, label: '' },
   { min: 0.25, bonus: -1, label: '空席の静けさ' },
   { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
 ];
-const VENUE_SCALE_MQ = [0, 0, 1, 1, 2, 2, 3];
+const VENUE_SCALE_MQ = [0, 0, 0, 1, 1, 1, 2];
 // index: 公民館=0, 小ホール=0, 市民会館=+1, 中ホール=+1, アリーナ=+2, 大会場=+2, ドーム=+3
 
 // ── Popularity System Constants (v1.0b) ──
@@ -657,15 +657,18 @@ const INJURY_DEBUFF_TABLE = {
 
 // Title System
 const TITLES = [
-  {id:'world', name:'団体王座', mqBonus:15, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+  {id:'world', name:'団体王座', mqBonus:5, popBonus:3, attendBonus:1.15, emoji:'🏆'}
 ];
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {matches:2, label:'因縁', mqBonus:8, color:'#fdcb6e', emoji:'⚡'},
-  {matches:4, label:'宿敵', mqBonus:15, color:'#e17055', emoji:'🔥'},
-  {matches:7, label:'永遠のライバル', mqBonus:22, color:'#d63031', emoji:'💥'}
+  {matches:2, label:'因縁', mqBonus:3, color:'#fdcb6e', emoji:'⚡'},
+  {matches:4, label:'宿敵', mqBonus:5, color:'#e17055', emoji:'🔥'},
+  {matches:7, label:'永遠のライバル', mqBonus:8, color:'#d63031', emoji:'💥'}
 ];
+
+// v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
+const MQ_EXTERNAL_CAP = 15;
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4B: COACH DATA (v0.6)                           ║
@@ -695,7 +698,7 @@ const ALL_COACHES = [
    desc:'担当選手の全ステータス練習効率を1.4倍に。万能型。',
    age:52, gender:'男', origin:'福岡',
    profile:'元プロレスラーで、現役時代は「器用貧乏」と呼ばれながらも15年のキャリアを全うした苦労人。全てのポジションを経験した豊富な知識で、若手の総合力底上げを得意とする。面倒見が良い。'},
-  {id:7, name:'紅林セコンド',    emoji:'🎬', specialty:'mq', mqBonus:3, salary:30, hireFee:100,
+  {id:7, name:'紅林セコンド',    emoji:'🎬', specialty:'mq', mqBonus:2, salary:30, hireFee:100,
    desc:'担当選手の試合MQ基底値に+3。セコンドの的確な指示で試合の質が向上。',
    age:48, gender:'男', origin:'名古屋',
    profile:'元プロレス実況アナウンサーで試合構成を熟知するセコンドマン。リング外から「次の展開」を的確に指示し、試合のドラマ性を引き上げる。話術に長け、社交的な性格。'},

@@ -1192,7 +1192,7 @@ const Storage = {
         const rescalePop = (fighters) => fighters.map(c => {
           const ovr = Engine.util.ov(c);
           const targetPop = ovr <= 50 ? 15 : ovr <= 65 ? 30 : ovr <= 80 ? 50 : ovr <= 90 ? 65 : 80;
-          const newPop = Math.round(c.popularity * 0.5 + targetPop * 0.5);
+          const newPop = c.popularity * 0.5 + targetPop * 0.5;
           return { ...c, popularity: Engine.util.clamp(newPop, 5, 90) };
         });
         G = { ...G, roster: rescalePop(G.roster) };
@@ -2334,7 +2334,7 @@ const App = {
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
-    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
+    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 10) / 10} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // Heat
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);

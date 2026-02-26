@@ -22,7 +22,7 @@ function refreshTopBar() {
   const fundsEl = document.getElementById('dispFunds');
   fundsEl.textContent = `${G.funds.toLocaleString()}万`;
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
-  document.getElementById('dispPop').textContent = G.orgPop;
+  document.getElementById('dispPop').textContent = Engine.util.dispOrgPop(G.orgPop);
   const heat = getHeatLevel();
   const heatEl = document.getElementById('dispHeat');
   const heatAnimCls = heat.anim ? ` class="${heat.anim}"` : '';
@@ -819,7 +819,7 @@ function renderWeekScreen() {
                 <div>
                   <strong style="font-size:17px">${f.name}</strong>
                   ${isChampion ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">👑王者</span>' : ''}
-                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${f.popularity}</span>
+                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${Engine.util.dispPop(f.popularity)}</span>
                 </div>
                 <div style="font-size:13px;color:var(--text-sub)">← ${p.org.name} (${p.org.tier}級)</div>
               </div>
@@ -1018,7 +1018,7 @@ function renderRoster() {
         </div>
       </div>
       <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-        <div>人気 <b style="color:var(--text)">${c.popularity}</b></div>
+        <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
         <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
         <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
       </div>
@@ -1352,7 +1352,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${G.orgPop}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
@@ -1378,7 +1378,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${aiData.orgPop}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
         <div style="font-size:13px;margin-top:10px">
@@ -1440,7 +1440,7 @@ function renderScout() {
 
   const discount = getFacilityScoutDiscount();
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${G.orgPop || 0}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
+    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
   </div>`;
 
   // Free agents — compact card list (click name/portrait to open popup with acquire button)
@@ -1551,7 +1551,7 @@ function renderScoutEvent() {
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
     <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${G.funds.toLocaleString()}万</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${orgPop}</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
     ${discount > 0 ? `<span style="font-size:11px;color:#f39c12">🔍 割引${discount}%</span>` : ''}
   </div>`;
 
@@ -1773,7 +1773,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">スロット ${i}</div>
-          <div class="save-slot-meta">${info.season}年目 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${info.orgPop} ｜ 所属${info.rosterSize}名</div>
+          <div class="save-slot-meta">${info.season}年目 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">

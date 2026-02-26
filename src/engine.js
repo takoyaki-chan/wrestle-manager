@@ -70,6 +70,9 @@ const Engine = {
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
     getQuarter(w) { return Math.ceil(w / 12); },
+    // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
+    dispPop(v) { return Math.round(v || 0); },
+    dispOrgPop(v) { return Math.round(v || 0); },
     /** Pick N items from array using seeded shuffle (deterministic per season+quarter) */
     seededPick(arr, n, seed) {
       if (arr.length <= n) return [...arr];
@@ -399,7 +402,7 @@ const Engine = {
     applyDiminishing(rawGain, currentPop) {
       if (rawGain <= 0) return rawGain; // penalties are not diminished
       const mult = Engine.popularity.getDiminishingMultiplier(currentPop);
-      return Math.max(0, Math.round(rawGain * mult));
+      return Math.max(0, rawGain * mult);
     },
     // §B-1: Losing streak penalty
     checkLosingStreak(fighter, isWinner) {
@@ -430,7 +433,7 @@ const Engine = {
     },
     applyInjuryDecay(fighter) {
       if (!fighter.injury) return fighter;
-      const floor = Math.round((fighter.preInjuryPop || fighter.popularity) * 0.5);
+      const floor = (fighter.preInjuryPop || fighter.popularity) * 0.5;
       const newPop = Math.max(floor, Math.max(1, fighter.popularity - 1));
       return { ...fighter, popularity: newPop };
     },
@@ -446,7 +449,7 @@ const Engine = {
     },
     // §B-5: Transfer popularity reset (×0.75)
     applyTransferReset(fighter) {
-      const newPop = Math.max(1, Math.round(fighter.popularity * TRANSFER_POP_MULT));
+      const newPop = Math.max(1, fighter.popularity * TRANSFER_POP_MULT);
       return { ...fighter, popularity: newPop };
     },
     // §D: Roster popularity score for goods revenue
@@ -1902,7 +1905,7 @@ const Engine = {
       const popTarget = Math.min(90, overall * 0.7 + tierBonus);
       const diff = popTarget - (f.popularity || 10);
       const randomDelta = -AI_SEASON_CFG.popRandomRange + Engine.rng.int(rng, 0, AI_SEASON_CFG.popRandomRange * 2);
-      f.popularity = Engine.util.clamp(Math.round(f.popularity + diff * AI_SEASON_CFG.popConvergeRate + randomDelta), 5, 95);
+      f.popularity = Engine.util.clamp(f.popularity + diff * AI_SEASON_CFG.popConvergeRate + randomDelta, 5, 95);
       return f;
     },
 
@@ -2333,7 +2336,7 @@ const Engine = {
       // v1.5: Natural popularity decay (-0.5/week) — 放っておくと人気は落ちる
       roster = roster.map(c => {
         if (c.injury || c.isRental || c.popularity <= 10) return c;
-        return { ...c, popularity: Math.max(10, Math.round((c.popularity - 0.5) * 10) / 10) };
+        return { ...c, popularity: Math.max(10, c.popularity - 0.5) };
       });
 
       // v1.8: §4.3/§5.3 スランプ/モチベ喪失中の能力微減（怪我中はスキップ）
@@ -2619,27 +2622,29 @@ const Engine = {
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
 
-    const results = validMatches.map(m => {
+    // v1.5s25: Pass 1 — バトル結果生成（外部MQボーナスなし・メタデータのみ記録）
+    const rawResults = validMatches.map(m => {
       const charL = roster.find(c => c.id === m.left);
       const charR = roster.find(c => c.id === m.right);
       if (!charL || !charR) return null;
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
       const result = Engine.battle.simulateMatch(charL, charR, matchRng);
+      // メタデータ記録（MQにはまだ加算しない）
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
-      if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
-      if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
+      if (rivalLvl) result.rivalryBonus = rivalLvl;
+      if (m.isTitle) result.isTitleMatch = true;
+      result.coachMQBonus = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
+      // 因縁更新（副作用）
       const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
       rivalries = rivalResult.rivalries;
       if (rivalResult.msg) events.push(rivalResult.msg);
-      const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
-      if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
       return result;
     }).filter(Boolean);
 
     // Title outcomes
     validMatches.forEach((m, i) => {
-      if (!m.isTitle || !results[i]) return;
-      const r = results[i];
+      if (!m.isTitle || !rawResults[i]) return;
+      const r = rawResults[i];
       const champId = titles.world.championId;
       const tempState = { ...s, titles, roster };
       if (r.winner === 'draw') {
@@ -2654,7 +2659,7 @@ const Engine = {
       }
     });
 
-    // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
+    // v1.0c: 会場熱気MQボーナス算出（満員率＋会場規模）
     const showMatchPops = validMatches.map(m => {
       const lc = roster.find(c => c.id === m.left);
       const rc = roster.find(c => c.id === m.right);
@@ -2667,12 +2672,24 @@ const Engine = {
     const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
-    if (crowdMQ.total !== 0) {
-      results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
-      if (crowdMQ.crowdLabel) {
-        events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
-      }
+    if (crowdMQ.crowdLabel) {
+      events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
     }
+
+    // v1.5s25: Pass 2 — 外部MQボーナスキャップ適用（正方向合計 +15 上限。ガラガラペナルティはキャップ対象外）
+    const results = rawResults.map(r => {
+      let externalMQ = 0;
+      if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
+      if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
+      if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
+      externalMQ += crowdMQ.total;
+      const positiveExternal = Math.max(0, externalMQ);
+      const negativeExternal = Math.min(0, externalMQ);
+      const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
+      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal, 5, 100);
+      r.externalMQBonus = cappedPositive + negativeExternal;
+      return r;
+    });
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
     const mainEventIdx = results.length - 1; // last match is main event
@@ -2685,7 +2702,7 @@ const Engine = {
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
-    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
+    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 10) / 10} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // Heat (immutable)
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
@@ -4341,16 +4358,11 @@ Engine.orgPop = {
     return 0.08;                    // 覇権級: ほとんど上がらない
   },
 
-  // 施策A: 逓減適用 — 正方向のみ逓減、確率的丸め
+  // 施策A: 逓減適用 — 正方向のみ逓減、小数のまま返す（v1.5s25: 確率的丸め廃止）
   applyOrgPopChange(rawDelta, orgPop, rng) {
     if (rawDelta > 0) {
       const mult = Engine.orgPop.getDiminishingMultiplier(orgPop);
-      const effective = rawDelta * mult;
-      if (effective < 1.0) {
-        // 確率的丸め: effective=0.3 → 30%の確率で+1
-        return Engine.rng.float(rng) < effective ? 1 : 0;
-      }
-      return Math.round(effective);
+      return rawDelta * mult;  // 小数のまま返す
     }
     // 下落には逓減を適用しない（高人気ほど落ちやすいまま）
     return rawDelta;

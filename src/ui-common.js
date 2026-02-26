@@ -1052,7 +1052,7 @@ function _buildMVPAward(d) {
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
   <div class="awards-name">${d.name}</div>
   <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
-  <div class="awards-detail">OVR ${d.ovr} / 人気 ${d.popularity} / ${_styleJa(d.style)}</div>
+  <div class="awards-detail">OVR ${d.ovr} / 人気 ${Engine.util.dispPop(d.popularity)} / ${_styleJa(d.style)}</div>
   ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
@@ -1079,7 +1079,7 @@ function _buildChampionsAward(champions) {
     <div style="display:flex;justify-content:center">${_awardsPortrait(c1.id, 160)}</div>
     <div class="awards-name" style="margin-top:8px">${c1.name}</div>
     <div class="awards-org ${c1.isPlayer ? 'player' : ''}">${c1.orgName}</div>
-    <div style="font-size:11px;color:var(--text-sub)">OVR ${c1.ovr} / 人気 ${c1.popularity}${defText1}</div>
+    <div style="font-size:11px;color:var(--text-sub)">OVR ${c1.ovr} / 人気 ${Engine.util.dispPop(c1.popularity)}${defText1}</div>
     ${lines[0] ? `<div style="font-size:12px;color:var(--text-sub);font-style:italic;margin-top:6px">「${lines[0]}」</div>` : ''}
   </div>`;
   // 2位3位（小）
@@ -1090,7 +1090,7 @@ function _buildChampionsAward(champions) {
       <div style="display:flex;justify-content:center">${_awardsPortrait(c.id, 75)}</div>
       <div style="font-size:11px;font-weight:700;color:var(--text);margin-top:5px">${c.name}</div>
       <div style="font-size:9px;color:var(--text-dim)">${c.orgName}</div>
-      <div style="font-size:9px;color:var(--text-sub)">OVR ${c.ovr} / 人気 ${c.popularity}${defText}</div>
+      <div style="font-size:9px;color:var(--text-sub)">OVR ${c.ovr} / 人気 ${Engine.util.dispPop(c.popularity)}${defText}</div>
       ${lines[lineIdx] ? `<div style="font-size:9px;color:var(--text-sub);font-style:italic;margin-top:4px">「${lines[lineIdx]}」</div>` : ''}
     </div>`;
   };
@@ -1411,7 +1411,7 @@ function showFighterPopup(fighterId, source) {
         html += `<div class="fighter-popup-section" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:10px">
           <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">人気</span><br>
-            <strong style="color:var(--text);font-size:16px">${c.popularity}</strong>
+            <strong style="color:var(--text);font-size:16px">${Engine.util.dispPop(c.popularity)}</strong>
           </div>
           <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">給与</span><br>
@@ -1421,13 +1421,13 @@ function showFighterPopup(fighterId, source) {
       }
       if (isFree) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${c.popularity}</strong></span>
+          <span>人気: <strong style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</strong></span>
           <span style="margin-left:12px">給与見込: <strong style="color:var(--text)">${getSalary(c)}万/週</strong></span>
         </div>`;
       }
       if (!isRoster && !isFree && c.popularity !== undefined) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${c.popularity}</strong></span>
+          <span>人気: <strong style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</strong></span>
         </div>`;
       }
 
