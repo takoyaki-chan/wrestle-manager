@@ -1945,7 +1945,10 @@ const Engine = {
     aiScout(rng, state) {
       const events = [];
       const newAiOrgs = {};
-      let poolIds = [...(state.dormantPool || [])];
+      // v1.9c: dormantPool entries can be plain IDs or {id,age} objects
+      // Keep original entries for return value (preserves age info), use normalized IDs for logic
+      let dormantEntries = [...(state.dormantPool || [])];
+      let poolIds = dormantEntries.map(e => typeof e === 'object' ? e.id : e);
 
       RIVAL_ORGS.forEach(org => {
         const aiData = state.aiOrgs[org.id];
@@ -1997,6 +2000,7 @@ const Engine = {
           const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
           roster.push(newFighter);
           poolIds = poolIds.filter(id => id !== candId);
+          dormantEntries = dormantEntries.filter(e => (typeof e === 'object' ? e.id : e) !== candId);
           budget -= cost;
           picked++;
           events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
@@ -2005,7 +2009,7 @@ const Engine = {
         newAiOrgs[org.id] = { ...aiData, roster };
       });
 
-      return { aiOrgs: newAiOrgs, dormantPool: poolIds, events };
+      return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
     },
 
     // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
@@ -3520,7 +3524,10 @@ const Engine = {
       const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(state);
       // reservedDefIds: この抽選バッチ内で仮予約済みのID
       const reservedDefIds = new Set();
-      const dormantIds = [...(state.dormantPool || [])].filter(id => !occupiedIds.has(id));
+      // v1.9c: dormantPool entries can be plain IDs or {id,age} objects — normalize to plain IDs
+      const dormantIds = [...(state.dormantPool || [])]
+        .map(e => typeof e === 'object' ? e.id : e)
+        .filter(id => !occupiedIds.has(id));
       const poolShuffled = [...dormantIds].sort(() => Engine.rng.float(rng) - 0.5);
 
       const poolMax = Math.min(count, poolShuffled.length);
