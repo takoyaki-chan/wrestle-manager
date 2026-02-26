@@ -1073,10 +1073,13 @@ function renderShowPrep() {
 
   // Match card
   const maxMatches = isSpecialShow(G.week) || isPPV(G.week) ? 6 : 4;
-  if (G.showCard.length < maxMatches) {
-    const padded = [...G.showCard];
-    while (padded.length < maxMatches) padded.push({left:0, right:0, isTitle:false});
-    G = { ...G, showCard: padded };
+  // v1.9: pad up OR trim down to match the current week's limit
+  // （6試合の特別試合後、4試合月に6枠が残るバグ対策）
+  {
+    let adjusted = [...G.showCard];
+    while (adjusted.length < maxMatches) adjusted.push({left:0, right:0, isTitle:false});
+    if (adjusted.length > maxMatches) adjusted = adjusted.slice(0, maxMatches);
+    if (adjusted.length !== G.showCard.length) G = { ...G, showCard: adjusted };
   }
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)

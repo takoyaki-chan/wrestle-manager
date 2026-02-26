@@ -3864,6 +3864,30 @@ const Engine = {
           events.push(`📊 市場再評価: 選手の評価額が微調整されました（3シーズン周期）`);
         }
 
+        // v1.9: dormantPool補充 — プールが枯渇しないよう毎シーズン末に補充
+        // （シーズン3〜4頃にフリー選手がいなくなるバグ対策）
+        {
+          const MIN_DORMANT = 8;
+          const currentPool = s.dormantPool || [];
+          if (currentPool.length < MIN_DORMANT) {
+            const occupiedIds = new Set();
+            (s.roster || []).forEach(c => occupiedIds.add(c.id));
+            Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupiedIds.add(c.id)));
+            (s.freeAgents || []).forEach(c => occupiedIds.add(c.id));
+            currentPool.forEach(e => occupiedIds.add(typeof e === 'object' ? e.id : e));
+            const available = ALL_CHARS.filter(c => !occupiedIds.has(c.id));
+            if (available.length > 0) {
+              const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
+              const needed = Math.min(available.length, MIN_DORMANT - currentPool.length + 4);
+              // seeded shuffle
+              const shuffled = [...available].sort(() => Engine.rng.float(refillRng) - 0.5);
+              const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 18 + Engine.rng.int(refillRng, 0, 2) }));
+              s = { ...s, dormantPool: [...currentPool, ...newEntries] };
+              events.push(`🌱 新世代${newEntries.length}名がプロ入りを目指してFA市場に参入`);
+            }
+          }
+        }
+
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               summitBonus: 0, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
