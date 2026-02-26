@@ -1349,13 +1349,15 @@ const Storage = {
       }
 
       // v1.5: 難易度リバランス — 既存セーブのorgPopをリスケール（×0.7）
+      // ※ orgPop < 20 は逓減カーブが×1.0帯のため補正不要（序盤セーブには適用しない）
       if (!G._migrated_v1_5_rebalance) {
         const oldOrgPop = G.orgPop || 0;
-        const newOrgPop = Math.round(oldOrgPop * 0.7);
-        G = { ...G, orgPop: newOrgPop, _migrated_v1_5_rebalance: true };
-        if (oldOrgPop > 0) {
+        if (oldOrgPop >= 20) {
+          const newOrgPop = Math.round(oldOrgPop * 0.7);
+          G = { ...G, orgPop: newOrgPop };
           G = { ...G, gameLog: [...(G.gameLog || []), `📢 バランス調整(v1.5): 団体人気を${oldOrgPop}→${newOrgPop}に再調整しました（×0.7 リスケール）`] };
         }
+        G = { ...G, _migrated_v1_5_rebalance: true };
       }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
