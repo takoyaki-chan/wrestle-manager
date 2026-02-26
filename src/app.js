@@ -2523,6 +2523,9 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
 
+    // v1.9: 興行終了後にshowCardをリセット — 次週が4試合月でも6枠が残るバグ対策
+    G = { ...G, showCard: [{left:0,right:0,isTitle:false},{left:0,right:0,isTitle:false},{left:0,right:0,isTitle:false}] };
+
     // v1.4w: 防衛マイルストーン検出
     const _postDefenses = G.titles?.world?.defenses || 0;
     if (_postDefenses > _preDefenses) {

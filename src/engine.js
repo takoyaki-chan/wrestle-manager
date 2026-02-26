@@ -2533,6 +2533,46 @@ const Engine = {
         s = { ...s, freeAgents: fa, dormantPool: pool };
         if (added.length > 0) events.push(`📋 FA市場更新: ${added.map(f => f.name).join('、')}が新規参入`);
       }
+
+      // v1.9c: 緊急補充 — FAが空で有効なpool候補もいない場合に即時補充
+      // 修正: pool.length ではなく「22歳未満の有効エントリ数」で判定
+      // 修正: dormantPool だけでなく freeAgents にも直接追加してすぐ表示されるようにする
+      {
+        const curFA = s.freeAgents || [];
+        const curPool = s.dormantPool || [];
+        // 占有済みID収集（ロスター＋AI団体＋現FA＋dormant全エントリ）
+        const emergOccupied = new Set();
+        (s.roster || []).forEach(c => emergOccupied.add(c.id));
+        Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => emergOccupied.add(c.id)));
+        curFA.forEach(c => emergOccupied.add(c.id));
+        curPool.forEach(e => emergOccupied.add(typeof e === 'object' ? e.id : e));
+        // pool内で実際に有効なエントリ数（22歳未満かつ未占有）
+        const eligibleInPool = curPool.filter(e => {
+          const age = typeof e === 'object' ? e.age : null;
+          return age === null || age < 22;
+        }).length;
+        // FAが空 かつ 有効poolが3未満 → 緊急補充
+        if (curFA.length === 0 && eligibleInPool < 3) {
+          const available = ALL_CHARS.filter(c => !emergOccupied.has(c.id));
+          if (available.length > 0) {
+            const emergRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xE911));
+            const shuffled = [...available].sort(() => Engine.rng.float(emergRng) - 0.5);
+            // FA に直接3名追加（すぐ表示される）＋ dormantPool に5名追加（次回ローテ用）
+            const directCount = Math.min(3, shuffled.length);
+            const poolCount = Math.min(5, shuffled.length - directCount);
+            const directFighters = shuffled.slice(0, directCount).map(c => {
+              const age = 18 + Engine.rng.int(emergRng, 0, 2);
+              return Engine.rival.makeAIFighter(c, emergRng, null, age);
+            });
+            const newPoolEntries = shuffled.slice(directCount, directCount + poolCount).map(c => ({ id: c.id, age: 18 + Engine.rng.int(emergRng, 0, 2) }));
+            s = { ...s,
+              freeAgents: [...curFA, ...directFighters],
+              dormantPool: [...curPool, ...newPoolEntries]
+            };
+            events.push(`🌱 FA市場に新世代${directFighters.length}名が緊急参入`);
+          }
+        }
+      }
     }
     // v1.2-9: Flavor events (雑誌取材・TV出演)
     const flavorRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 5555));
@@ -3864,12 +3904,17 @@ const Engine = {
           events.push(`📊 市場再評価: 選手の評価額が微調整されました（3シーズン周期）`);
         }
 
-        // v1.9: dormantPool補充 — プールが枯渇しないよう毎シーズン末に補充
-        // （シーズン3〜4頃にフリー選手がいなくなるバグ対策）
+        // v1.9c: dormantPool補充 — 有効エントリ数で判定して確実に補充
+        // 修正: pool.length ではなく「22歳未満の有効エントリ数」で枯渇判定
         {
-          const MIN_DORMANT = 8;
+          const MIN_ELIGIBLE = 6;
           const currentPool = s.dormantPool || [];
-          if (currentPool.length < MIN_DORMANT) {
+          // 有効エントリ = 22歳未満（またはage不明）のエントリ
+          const eligibleCount = currentPool.filter(e => {
+            const age = typeof e === 'object' ? e.age : null;
+            return age === null || age < 22;
+          }).length;
+          if (eligibleCount < MIN_ELIGIBLE) {
             const occupiedIds = new Set();
             (s.roster || []).forEach(c => occupiedIds.add(c.id));
             Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupiedIds.add(c.id)));
@@ -3878,8 +3923,7 @@ const Engine = {
             const available = ALL_CHARS.filter(c => !occupiedIds.has(c.id));
             if (available.length > 0) {
               const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
-              const needed = Math.min(available.length, MIN_DORMANT - currentPool.length + 4);
-              // seeded shuffle
+              const needed = Math.min(available.length, MIN_ELIGIBLE - eligibleCount + 4);
               const shuffled = [...available].sort(() => Engine.rng.float(refillRng) - 0.5);
               const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 18 + Engine.rng.int(refillRng, 0, 2) }));
               s = { ...s, dormantPool: [...currentPool, ...newEntries] };
