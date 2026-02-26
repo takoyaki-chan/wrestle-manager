@@ -547,14 +547,18 @@ const Engine = {
     getMult(G) { return Engine.heat.getLevel(G).mult; },
     calcUpdate(G, avgMQ) {
       let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
+      // v1.5: 施策E — Heat上限帯の減衰（HOT以上では上昇量半減）
+      if (delta > 0 && G.heatScore >= 6) delta *= 0.5;
       if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
       if (G.heatScore < 0 && delta >= 0) delta += 0.5;
       return Engine.util.clamp(Math.round((G.heatScore + delta) * 10) / 10, -10, 10);
     },
     calcDecay(G) {
       let hs = G.heatScore;
-      if (hs > 0) hs = Math.max(0, hs - 1.0);
-      else if (hs < 0) hs = Math.min(0, hs + 1.0);
+      // v1.5: 施策E — HOT以上（|heat|≥6）は冷めやすい（decayRate 1.5）
+      const decayRate = Math.abs(hs) >= 6 ? 1.5 : 1.0;
+      if (hs > 0) hs = Math.max(0, hs - decayRate);
+      else if (hs < 0) hs = Math.min(0, hs + decayRate);
       return Math.round(hs * 10) / 10;
     }
   },
@@ -2678,7 +2682,8 @@ const Engine = {
       roster = mqPop.roster;
       events.push(...mqPop.popEvents);
     });
-    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
+    const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
+    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
 
@@ -2862,12 +2867,13 @@ const Engine = {
     });
     return { roster: newRoster, popEvents };
   },
-  applyShowPopularity(roster, results, orgPop) {
+  applyShowPopularity(roster, results, orgPop, rng) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
     // v1.9: 閾値引き上げ — 放置プレイで68週orgPop99になる問題を修正（旧: 70/55/40/25 → 新: 80/65/45）
-    // OVR30初期戦で典型MQ52-65 → 旧+2 → 新+0、OVR70強豪でMQ77-87 → 旧+3 → 新+1〜+2
-    const popDelta = avgMQ >= 80 ? 2 : avgMQ >= 65 ? 1 : avgMQ >= 45 ? 0 : -1;
+    const rawDelta = avgMQ >= 80 ? 2 : avgMQ >= 65 ? 1 : avgMQ >= 45 ? 0 : -1;
+    // v1.5: 施策A — orgPop逓減カーブ適用（rng必須: 確率的丸めで高帯でもゆっくり上がる）
+    const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
   },
 
@@ -3823,8 +3829,8 @@ const Engine = {
           s = { ...s, freeAgents: youngFA };
         }
 
-        // v1.5: orgPop 年次自然減衰 (-3/season) — 放っておくと団体人気は落ちる
-        s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - 3) };
+        // v1.5: orgPop 年次自然減衰 — orgPop帯に応じた可変減衰（施策B-1）
+        s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - Engine.orgPop.calcAnnualDecay(s.orgPop || 0)) };
 
         // v1.7: dormantPool 年次加齢 — pool内でも年は取る（永遠の若者バグ修正）
         const agedPool = (s.dormantPool || []).map(entry => {
@@ -4318,6 +4324,45 @@ const Engine = {
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v1.5: orgPop Diminishing Returns & Pressure System — difficulty-rebalance-design-v1.0.md §2/§3
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.orgPop = {
+  // 施策A: 逓減カーブ — orgPopが高いほど上がりにくい
+  getDiminishingMultiplier(orgPop) {
+    if (orgPop < 20) return 1.0;   // 創設期: そのまま上がる
+    if (orgPop < 40) return 0.60;  // 地方団体: やや鈍化
+    if (orgPop < 55) return 0.35;  // 中堅の壁: 大幅鈍化
+    if (orgPop < 70) return 0.20;  // メジャーの壁
+    if (orgPop < 85) return 0.12;  // トップ級
+    return 0.08;                    // 覇権級: ほとんど上がらない
+  },
+
+  // 施策A: 逓減適用 — 正方向のみ逓減、確率的丸め
+  applyOrgPopChange(rawDelta, orgPop, rng) {
+    if (rawDelta > 0) {
+      const mult = Engine.orgPop.getDiminishingMultiplier(orgPop);
+      const effective = rawDelta * mult;
+      if (effective < 1.0) {
+        // 確率的丸め: effective=0.3 → 30%の確率で+1
+        return Engine.rng.float(rng) < effective ? 1 : 0;
+      }
+      return Math.round(effective);
+    }
+    // 下落には逓減を適用しない（高人気ほど落ちやすいまま）
+    return rawDelta;
+  },
+
+  // 施策B-1: 年次減衰（orgPop帯に応じて増える）
+  calcAnnualDecay(orgPop) {
+    if (orgPop < 30) return 2;    // 弱小はあまり落ちない
+    if (orgPop < 50) return 3;    // 中堅は従来と同じ
+    if (orgPop < 70) return 5;    // メジャー: 維持が難しくなる
+    if (orgPop < 85) return 7;    // トップ: かなり落ちる
+    return 10;                     // 覇権: 激しく落ちる
   }
 };
 

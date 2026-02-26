@@ -1348,6 +1348,16 @@ const Storage = {
         G = { ...G, _migrated_growth_events: true };
       }
 
+      // v1.5: 難易度リバランス — 既存セーブのorgPopをリスケール（×0.7）
+      if (!G._migrated_v1_5_rebalance) {
+        const oldOrgPop = G.orgPop || 0;
+        const newOrgPop = Math.round(oldOrgPop * 0.7);
+        G = { ...G, orgPop: newOrgPop, _migrated_v1_5_rebalance: true };
+        if (oldOrgPop > 0) {
+          G = { ...G, gameLog: [...(G.gameLog || []), `📢 バランス調整(v1.5): 団体人気を${oldOrgPop}→${newOrgPop}に再調整しました（×0.7 リスケール）`] };
+        }
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2321,7 +2331,8 @@ const App = {
       const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent);
       roster = mqPop.roster;
     });
-    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop);
+    const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
+    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${popResult.popDelta} (現在: ${popResult.orgPop})`);
 
