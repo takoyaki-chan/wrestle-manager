@@ -1360,6 +1360,18 @@ const Storage = {
         G = { ...G, _migrated_v1_5_rebalance: true };
       }
 
+      // v1.5s25b: マイルストーンイベントシステム マイグレーション
+      if (!G._migrated_milestone) {
+        if (!G.milestones) G = { ...G, milestones: {} };
+        if (!G.milestoneBuffs) G = { ...G, milestoneBuffs: [] };
+        // 既存セーブで条件を満たしているマイルストーンは発動済みとする
+        const ms = { ...G.milestones };
+        if ((G.totalShows || 0) > 0) ms.first_show = true;
+        if (Engine.util.dispOrgPop(G.orgPop) >= 20) ms.orgpop_20 = true;
+        if (Object.keys(G.rivalries || {}).length > 0) ms.first_rivalry = true;
+        G = { ...G, milestones: ms, _migrated_milestone: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2316,7 +2328,10 @@ const App = {
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
     const champIdForAttend = s.titles?.world?.championId;
     const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    // v1.5s25b: attendance_boost バフ（マイルストーン）
+    const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
+    if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
@@ -2571,6 +2586,10 @@ const App = {
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
+    // v1.5s25b: 興行後バフ消費 + 週次バフ消費
+    App._tickMilestoneBuffsShow();
+    App._applyWeeklyBuffEffects();
+    App._tickMilestoneBuffsWeekly();
 
     // v1.8: ブレークスルー/スランプ発生ポップアップ（試合 → 怪我 → breakthrough の順）
     const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
@@ -2707,6 +2726,9 @@ const App = {
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
+    // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
+    App._applyWeeklyBuffEffects();
+    App._tickMilestoneBuffsWeekly();
     // v1.4w: ティッカー更新
     App._refreshTicker();
     // v0.96: Detect new injuries and show popups
@@ -2883,7 +2905,7 @@ const App = {
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
     const pendingAwards = G.pendingAwards;
-    if (!pendingAwards) { App._maybeShowSeasonFanfare(() => refreshAll()); return; }
+    if (!pendingAwards) { App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())); return; }
     // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
@@ -2906,8 +2928,121 @@ const App = {
       }
       G = { ...G, lastAwards: pendingAwards };
       Storage.autoSave();
-      App._showNewsPanelIfNeeded(() => App._maybeShowSeasonFanfare(() => refreshAll()));
+      App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())));
     });
+  },
+
+  // v1.5s25b: マイルストーン検出
+  _checkMilestones() {
+    const ms = G.milestones || {};
+    for (const evt of MILESTONE_EVENTS) {
+      if (ms[evt.id]) continue;
+      let triggered = false;
+      switch (evt.trigger.type) {
+        case 'totalShows':
+          triggered = (G.totalShows || 0) >= evt.trigger.value;
+          break;
+        case 'orgPop':
+          triggered = Engine.util.dispOrgPop(G.orgPop) >= evt.trigger.value;
+          break;
+        case 'first_rivalry':
+          triggered = Object.keys(G.rivalries || {}).length > 0;
+          break;
+      }
+      if (triggered) return evt;
+    }
+    return null;
+  },
+
+  // v1.5s25b: マイルストーンチェック→UI→適用のフロー
+  _checkAndShowMilestone(onDone) {
+    const evt = App._checkMilestones();
+    if (!evt) { onDone(); return; }
+    // first_rivalry はナレーション動的生成
+    let displayEvt = evt;
+    if (evt.id === 'first_rivalry' && !evt.narration) {
+      const rivalryKeys = Object.keys(G.rivalries || {});
+      if (rivalryKeys.length > 0) {
+        const key = rivalryKeys[0];
+        const [id1, id2] = key.split('-').map(Number);
+        const c1 = G.roster.find(c => c.id === id1);
+        const c2 = G.roster.find(c => c.id === id2);
+        const n1 = c1?.name || '???';
+        const n2 = c2?.name || '???';
+        displayEvt = { ...evt,
+          narration: `${n1}と${n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——`,
+          choices: evt.choices.map((ch, i) => {
+            if (i === 1 && ch.effect.type === 'next_match_mq') {
+              return { ...ch, effect: { ...ch.effect, pair: [id1, id2] } };
+            }
+            return ch;
+          })
+        };
+      }
+    }
+    Audio.play('notify');
+    showMilestoneEvent(displayEvt, (choiceIdx) => {
+      App._applyMilestoneChoice(displayEvt, choiceIdx);
+      onDone();
+    });
+  },
+
+  // v1.5s25b: マイルストーン選択肢の効果適用
+  _applyMilestoneChoice(evt, choiceIdx) {
+    const choice = evt.choices[choiceIdx];
+    const eff = choice.effect;
+    const buff = { ...eff, source: evt.id };
+
+    // 週カウント系
+    if (eff.weeks) buff.remainingWeeks = eff.weeks;
+    // 興行カウント系
+    if (eff.shows) buff.remainingShows = eff.shows;
+
+    // 即時効果: rivalry_boost — 因縁カウントを即時+1
+    if (eff.type === 'rivalry_boost') {
+      const rivalryKeys = Object.keys(G.rivalries || {});
+      if (rivalryKeys.length > 0) {
+        const key = rivalryKeys[0];
+        const oldEntry = G.rivalries[key];
+        const newRivalries = { ...G.rivalries, [key]: { ...oldEntry, matches: oldEntry.matches + eff.amount } };
+        G = { ...G, rivalries: newRivalries };
+      }
+    }
+
+    G = {
+      ...G,
+      milestones: { ...G.milestones, [evt.id]: true },
+      milestoneBuffs: [...(G.milestoneBuffs || []), buff]
+    };
+    Storage.autoSave();
+  },
+
+  // v1.5s25b: milestoneBuffs の週カウントダウン（毎週processWeek後に呼ぶ）
+  _tickMilestoneBuffsWeekly() {
+    if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
+    const newBuffs = G.milestoneBuffs
+      .map(b => b.remainingWeeks != null ? { ...b, remainingWeeks: b.remainingWeeks - 1 } : b)
+      .filter(b => b.remainingWeeks == null || b.remainingWeeks > 0);
+    G = { ...G, milestoneBuffs: newBuffs };
+  },
+
+  // v1.5s25b: milestoneBuffs の興行カウントダウン（興行後に呼ぶ）
+  _tickMilestoneBuffsShow() {
+    if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
+    const newBuffs = G.milestoneBuffs
+      .map(b => b.remainingShows != null ? { ...b, remainingShows: b.remainingShows - 1 } : b)
+      .filter(b => b.remainingShows == null || b.remainingShows > 0);
+    G = { ...G, milestoneBuffs: newBuffs };
+  },
+
+  // v1.5s25b: weekly_funds バフの資金適用（毎週processWeek/closeShowResult後に呼ぶ）
+  _applyWeeklyBuffEffects() {
+    if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
+    const weeklyFundsBuff = G.milestoneBuffs.find(b => b.type === 'weekly_funds');
+    if (weeklyFundsBuff) {
+      const amount = weeklyFundsBuff.amount || 0;
+      G = { ...G, funds: G.funds + amount };
+    }
   },
 
   // v0.96: Mission system

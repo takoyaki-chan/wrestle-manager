@@ -1374,3 +1374,87 @@ const BESTMATCH_FLAVOR = {
     '荒削りだが熱い闘い'
   ]
 };
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 9: MILESTONE EVENTS (v1.5s25b)                  ║
+// ╚══════════════════════════════════════════════════════════╝
+const MILESTONE_EVENTS = [
+  {
+    id: 'first_show',
+    trigger: { type: 'totalShows', value: 1 },
+    title: '🎉 旗揚げ興行',
+    narration: '記念すべき第一回興行が幕を閉じた。\n観客はまばらだったが、選手たちの目は確かに輝いていた。\nこの先、団体をどう導いていくか——',
+    choices: [
+      {
+        label: '🏠 地元を地道に固めていく',
+        effect: { type: 'weekly_funds', amount: 40, weeks: 3 },
+        result: '地元の商店街が応援してくれることになった。',
+        effectLabel: '補助金+40万/週（3週間）'
+      },
+      {
+        label: '💪 選手の育成に力を入れる',
+        effect: { type: 'training_boost', multiplier: 1.5, weeks: 4 },
+        result: '選手たちの練習に、一層の熱が入り始めた。',
+        effectLabel: '練習効率×1.5（4週間）'
+      },
+      {
+        label: '📣 とにかく知名度を上げたい',
+        effect: { type: 'attendance_boost', multiplier: 1.3, shows: 2 },
+        result: 'チラシ配りにSNS、できることは全部やった。\n噂が少しずつ広がり始めている。',
+        effectLabel: '次2興行の集客×1.3'
+      }
+    ]
+  },
+  {
+    id: 'orgpop_20',
+    trigger: { type: 'orgPop', value: 20 },
+    title: '📰 地元で話題に',
+    narration: '地元のスポーツ紙に団体の名前が載った。\n「あそこの興行、最近面白いらしいよ」\n——そんな声がちらほら聞こえ始めている。',
+    choices: [
+      {
+        label: '🤝 ファンとの距離を縮める',
+        effect: { type: 'promo_boost', amount: 1, weeks: 4 },
+        result: 'ファン感謝デーを開催した。常連ファンの顔が少しずつ見えてきた。',
+        effectLabel: 'プロモ効果+1（4週間）'
+      },
+      {
+        label: '🎯 試合の質をもっと高める',
+        effect: { type: 'mq_boost', amount: 2, weeks: 4 },
+        result: '練習メニューを見直し、試合構成にもこだわり始めた。',
+        effectLabel: '全試合MQ+2（4週間）'
+      },
+      {
+        label: '🔍 新戦力の獲得を急ぐ',
+        effect: { type: 'fa_discount', percent: 30 },
+        result: '業界に顔が利く人物から、有望な選手の情報が入ってきた。',
+        effectLabel: '次のFA獲得費用-30%'
+      }
+    ]
+  },
+  {
+    id: 'first_rivalry',
+    trigger: { type: 'first_rivalry' },
+    title: '⚡ 因縁の芽生え',
+    narration: null, // 動的生成（選手名を埋め込む）
+    choices: [
+      {
+        label: '🔥 この対決をじっくり育てる',
+        effect: { type: 'rivalry_boost', amount: 1 },
+        result: 'ふたりの視線がリング上で交差するたび、会場の空気が変わる。',
+        effectLabel: '因縁カウント+1'
+      },
+      {
+        label: '⚔️ 熱いうちに大一番を組む',
+        effect: { type: 'next_match_mq', amount: 5 },
+        result: '次の対戦が、特別な一戦になる予感がする。',
+        effectLabel: '次の対戦MQ+5'
+      },
+      {
+        label: '🌐 他の組み合わせも試したい',
+        effect: { type: 'rivalry_chance_up', weeks: 3 },
+        result: 'いろんな選手をぶつけてみよう。化学反応はどこで起きるか分からない。',
+        effectLabel: '因縁成立しやすくなる（3週間）'
+      }
+    ]
+  }
+];

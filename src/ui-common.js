@@ -403,7 +403,10 @@ function showNegotiatePopup(orgId, fighterId) {
 
   const rc = orgCfg.color;
   const fOvr = Engine.util.ov(fighter);
-  const baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  let baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  // v1.5s25b: fa_discount バフ（マイルストーン）
+  const faDiscountBuff = (G.milestoneBuffs || []).find(b => b.type === 'fa_discount');
+  if (faDiscountBuff) baseFee = Math.round(baseFee * (1 - faDiscountBuff.percent / 100));
   const dialogue = Engine.negotiate.getDialogue(fighter, 'start');
   const dialogueHtml = dialogue.replace(/\n/g, '<br>');
 
@@ -470,7 +473,10 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
   if (!orgCfg || !orgData) return;
   const fighter = orgData.roster.find(f => f.id === fighterId);
   if (!fighter) return;
-  const baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  let baseFee = Engine.negotiate.calcBaseFee(fighter, orgCfg);
+  // v1.5s25b: fa_discount バフ（マイルストーン）
+  const faDiscountBuff = (G.milestoneBuffs || []).find(b => b.type === 'fa_discount');
+  if (faDiscountBuff) baseFee = Math.round(baseFee * (1 - faDiscountBuff.percent / 100));
   const cost = Math.round(baseFee * NEGOTIATION_CONFIG.baseFeeMultipliers[planIndex]);
   const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
 
@@ -483,6 +489,10 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
     '交渉開始',
     () => {
       Audio.play('stamp');
+      // v1.5s25b: fa_discount 消費（1回限り）
+      if (faDiscountBuff) {
+        G = { ...G, milestoneBuffs: (G.milestoneBuffs || []).filter(b => b.type !== 'fa_discount') };
+      }
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 700 + G.week + fighterId));
       const result = Engine.negotiate.startNegotiation(rng, G, orgId, fighterId, planIndex);
       G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
@@ -2443,5 +2453,41 @@ function showNewspaperPanel(articles, onDone) {
 
   if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
   renderArticle(0);
+  overlay.classList.add('active');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v1.5s25b: Milestone Event Popup — ナレーション形式の3択イベント
+// ─────────────────────────────────────────────────────────────────────────────
+function showMilestoneEvent(evt, onChoice) {
+  const overlay = document.getElementById('milestoneOverlay');
+  const box = document.getElementById('milestoneBox');
+  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
+
+  // Phase 1: ナレーション + 3択表示
+  let html = `<div class="milestone-title">${evt.title}</div>`;
+  html += `<div class="milestone-narration">${evt.narration || ''}</div>`;
+  evt.choices.forEach((c, i) => {
+    html += `<button class="milestone-choice" data-idx="${i}">${c.label}</button>`;
+  });
+  box.innerHTML = html;
+
+  // 選択肢クリック → Phase 2: 結果表示
+  box.querySelectorAll('.milestone-choice').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.idx);
+      const choice = evt.choices[idx];
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+      box.innerHTML = `<div class="milestone-title">${evt.title}</div>
+        <div class="milestone-result">${choice.result}</div>
+        <div class="milestone-effect">${choice.effectLabel}</div>
+        <button class="milestone-choice" style="text-align:center;border-color:var(--gold)" id="milestoneClose">閉じる</button>`;
+      document.getElementById('milestoneClose').addEventListener('click', function() {
+        overlay.classList.remove('active');
+        if (onChoice) onChoice(idx);
+      });
+    });
+  });
+
   overlay.classList.add('active');
 }

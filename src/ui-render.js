@@ -23,6 +23,13 @@ function refreshTopBar() {
   fundsEl.textContent = `${G.funds.toLocaleString()}万`;
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
   document.getElementById('dispPop').textContent = Engine.util.dispOrgPop(G.orgPop);
+  // v1.5s25b: 補助金カウントダウン
+  const subsidyEl = document.getElementById('dispSubsidy');
+  if (subsidyEl) {
+    const popInt = Engine.util.dispOrgPop(G.orgPop);
+    if (popInt < 40) { subsidyEl.textContent = `補助金あと${40 - popInt}pt`; subsidyEl.style.display = ''; }
+    else { subsidyEl.style.display = 'none'; }
+  }
   const heat = getHeatLevel();
   const heatEl = document.getElementById('dispHeat');
   const heatAnimCls = heat.anim ? ` class="${heat.anim}"` : '';

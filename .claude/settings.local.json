@@ -28,7 +28,8 @@
       "Bash(ls C:/Users/nkmrk/Downloads/wrestle-manager/image/award-frame*.png)",
       "Bash(python3 -c \":*)",
       "Bash(python -c \":*)",
-      "Bash(node tests/stat-contribution-test.js)"
+      "Bash(node tests/stat-contribution-test.js)",
+      "Bash(node -c src/data.js)"
     ]
   }
 }

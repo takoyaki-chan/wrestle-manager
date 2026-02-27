@@ -693,7 +693,10 @@ const Engine = {
       const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0 };
       const old = Engine.title.getRivalryLevel(G, id1, id2);
       // ライバル体質: 因縁カウント+1加速（通常1→2）
-      const rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
+      let rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
+      // v1.5s25b: rivalry_chance_up バフ（マイルストーン）
+      const rivalryChanceUp = (G.milestoneBuffs || []).find(b => b.type === 'rivalry_chance_up');
+      if (rivalryChanceUp) rivalryBonus += 1;
       const newEntry = { matches: oldEntry.matches + rivalryBonus, lastWeek: G.week };
       const newRivalries = { ...G.rivalries, [key]: newEntry };
       const newLvl = Engine.title.getRivalryLevel({ ...G, rivalries: newRivalries }, id1, id2);
@@ -2196,6 +2199,13 @@ const Engine = {
       const dormBonus = Engine.facility.getConditionBonus(G);
       const stateForCalc = { ...G, roster, heatScore };
 
+      // v1.5s25b: マイルストーンバフ参照用（ループ外で1回取得）
+      const mBuffs = G.milestoneBuffs || [];
+      const trainingBoostBuff = mBuffs.find(b => b.type === 'training_boost');
+      const trainingBoostMult = trainingBoostBuff ? trainingBoostBuff.multiplier : 1.0;
+      const promoBoostBuff = mBuffs.find(b => b.type === 'promo_boost');
+      const promoBoostAmount = promoBoostBuff ? promoBoostBuff.amount : 0;
+
       roster = roster.map(c => {
         let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
 
@@ -2274,7 +2284,7 @@ const Engine = {
           const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * 10) / 10;
+          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * trainingBoostMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
@@ -2300,14 +2310,14 @@ const Engine = {
           const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * 10) / 10;
+          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * trainingBoostMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
           // v1.0b: Apply diminishing returns + promo pop cap
-          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G);
+          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G) + promoBoostAmount;
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
           nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
@@ -2411,7 +2421,10 @@ const Engine = {
         const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
         const champId = G.titles?.world?.championId;
         const hasChampOnCard = champId ? G.showCard.some(m => m.left === champId || m.right === champId) : false;
-        const attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard);
+        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard);
+        // v1.5s25b: attendance_boost バフ（マイルストーン）
+        const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
+        if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
         const rev = Engine.economy.calcShowRevenue(roster, G.showVenue, attendance);
 
         totalIncome += rev.ticketRev;
@@ -2669,7 +2682,10 @@ const Engine = {
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
     const champIdForAttend = s.titles?.world?.championId;
     const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    const preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    // v1.5s25b: attendance_boost バフ（マイルストーン）
+    const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
+    if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.crowdLabel) {
@@ -2677,12 +2693,28 @@ const Engine = {
     }
 
     // v1.5s25: Pass 2 — 外部MQボーナスキャップ適用（正方向合計 +15 上限。ガラガラペナルティはキャップ対象外）
+    // v1.5s25b: mq_boost バフ（マイルストーン）
+    const mqBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'mq_boost');
+    const mqBoostAmount = mqBoostBuff ? mqBoostBuff.amount : 0;
+    // v1.5s25b: next_match_mq バフ（特定ペアの次の対戦のみ）
+    const nextMatchMqBuff = (state.milestoneBuffs || []).find(b => b.type === 'next_match_mq');
+    let nextMatchMqConsumed = false;
     const results = rawResults.map(r => {
       let externalMQ = 0;
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
       if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
       externalMQ += crowdMQ.total;
+      // v1.5s25b: mq_boost（キャップ対象）
+      externalMQ += mqBoostAmount;
+      // v1.5s25b: next_match_mq（特定ペアのみ、1回限り）
+      if (nextMatchMqBuff && !nextMatchMqConsumed && nextMatchMqBuff.pair) {
+        const [p1, p2] = nextMatchMqBuff.pair;
+        if ((r.left.id === p1 && r.right.id === p2) || (r.left.id === p2 && r.right.id === p1)) {
+          externalMQ += nextMatchMqBuff.amount;
+          nextMatchMqConsumed = true;
+        }
+      }
       const positiveExternal = Math.max(0, externalMQ);
       const negativeExternal = Math.min(0, externalMQ);
       const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
@@ -2690,6 +2722,12 @@ const Engine = {
       r.externalMQBonus = cappedPositive + negativeExternal;
       return r;
     });
+
+    // v1.5s25b: next_match_mq 消費（1回限り）
+    if (nextMatchMqConsumed) {
+      const cleanedBuffs = (s.milestoneBuffs || []).filter(b => b.type !== 'next_match_mq');
+      s = { ...s, milestoneBuffs: cleanedBuffs };
+    }
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
     const mainEventIdx = results.length - 1; // last match is main event
@@ -2887,8 +2925,13 @@ const Engine = {
   applyShowPopularity(roster, results, orgPop, rng) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
-    // v1.9: 閾値引き上げ — 放置プレイで68週orgPop99になる問題を修正（旧: 70/55/40/25 → 新: 80/65/45）
-    const rawDelta = avgMQ >= 80 ? 2 : avgMQ >= 65 ? 1 : avgMQ >= 45 ? 0 : -1;
+    // v1.5s25: 6段階小数カーブ（序盤でもゆっくり上昇、下落も緩やか）
+    const rawDelta = avgMQ >= 80 ? 1.8
+                   : avgMQ >= 65 ? 1.2
+                   : avgMQ >= 55 ? 0.7
+                   : avgMQ >= 45 ? 0.3
+                   : avgMQ >= 35 ? -0.3
+                   :               -0.5;
     // v1.5: 施策A — orgPop逓減カーブ適用（rng必須: 確率的丸めで高帯でもゆっくり上がる）
     const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
@@ -4338,6 +4381,9 @@ const Engine = {
       lastTitleMatchWeek: null, // 最後にタイトルマッチを実施した絶対週数（null=未実施）
       worldTitleUnlocked: false, // ランキング1位達成後に true
       beltDisplayName: null,    // 将来の改名イベント用（null=デフォルト名「団体王座」）
+      // v1.5s25b: マイルストーンイベント
+      milestones: {},
+      milestoneBuffs: [],
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;

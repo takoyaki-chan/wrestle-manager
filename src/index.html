@@ -692,6 +692,22 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background:rgba(80,50,20,0.06);border:1px solid rgba(139,90,43,0.2);color:#5a3a1a;
   font-family:'Noto Sans JP',sans-serif;transition:all .2s}
 .newspaper-nav:hover:not(:disabled){background:rgba(80,50,20,0.12)}
+/* v1.5s25b: 補助金カウントダウンバッジ */
+.subsidy-badge{font-size:10px;color:#f39c12;background:rgba(243,156,18,0.12);padding:1px 6px;border-radius:3px;margin-left:4px}
+/* v1.5s25b: 節目イベントオーバーレイ */
+.milestone-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:275;
+align-items:center;justify-content:center}
+.milestone-overlay.active{display:flex}
+.milestone-box{background:var(--bg-card);border:2px solid var(--gold);border-radius:12px;
+padding:28px 32px;max-width:480px;width:90%;text-align:center}
+.milestone-title{font-size:20px;font-weight:700;color:var(--gold);margin-bottom:16px}
+.milestone-narration{font-size:14px;color:var(--text);line-height:1.8;margin-bottom:20px;white-space:pre-line}
+.milestone-choice{display:block;width:100%;padding:12px 16px;margin-bottom:8px;
+background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;
+color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:background 0.2s,border-color 0.2s}
+.milestone-choice:hover{background:rgba(255,255,255,0.08);border-color:var(--gold)}
+.milestone-result{font-size:14px;color:var(--text-sub);line-height:1.6;margin:16px 0;font-style:italic}
+.milestone-effect{font-size:12px;color:var(--gold);margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -708,7 +724,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <div class="info-item"><span class="info-label">週</span><span class="info-val gold" id="dispWeek">1</span></div>
       <div class="info-item"><span class="info-label">季節</span><span class="info-val" id="dispQuarter">🌸 春</span></div>
       <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
-      <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span></div>
+      <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
       <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ Neutral</span></div>
       <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
       <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
@@ -1070,6 +1086,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <!-- v1.4: Awards ceremony popup -->
 <div class="awards-overlay" id="awardsOverlay">
   <div class="awards-box" id="awardsBox" onclick="event.stopPropagation()"></div>
+</div>
+<!-- v1.5s25b: Milestone event popup -->
+<div class="milestone-overlay" id="milestoneOverlay">
+  <div class="milestone-box" id="milestoneBox" onclick="event.stopPropagation()"></div>
 </div>
 
 <!-- v1.5: Growth Event Popup -->
