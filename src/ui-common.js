@@ -2491,3 +2491,240 @@ function showMilestoneEvent(evt, onChoice) {
 
   overlay.classList.add('active');
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0: 通知型イベント トースト表示 (event-system-spec-v2.md §3-4)
+// 選手顔アイコン＋一言テキスト。数秒で自動消去
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0: ケアアクション モーダル (event-system-spec-v2.md §2)
+// 選手/団体への資金投入UIを提供。アクション選択 → 選手選択 → フィードバック表示
+// ─────────────────────────────────────────────────────────────────────────────
+function showCareActionModal(state, onConfirm) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) return;
+
+  const actions = typeof CARE_ACTIONS !== 'undefined' ? CARE_ACTIONS : {};
+  const funds = state.funds || 0;
+  const roster = (state.roster || []).filter(f => !f.isRental);
+
+  function renderMain() {
+    const individualActions = Object.values(actions).filter(a => a.category === 'individual');
+    const teamActions = Object.values(actions).filter(a => a.category === 'team');
+
+    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
+
+    html += '<div class="care-section-label">👤 個人向け</div>';
+    individualActions.forEach(a => {
+      const canAfford = funds >= a.cost;
+      const isInjuredOnly = a.condition === 'injured';
+      const anyInjured = roster.some(f => f.injury);
+      const disabled = !canAfford || (isInjuredOnly && !anyInjured) ? 'disabled' : '';
+      html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
+        <span class="care-action-emoji">${a.emoji}</span>
+        <div class="care-action-info">
+          <div class="care-action-name">${a.label}</div>
+          <div class="care-action-desc">${a.desc}${isInjuredOnly ? ' <span style="color:#f39c12;font-size:10px">（怪我中のみ）</span>' : ''}</div>
+        </div>
+        <span class="care-action-cost">${a.cost}万</span>
+      </div>`;
+    });
+
+    html += '<div class="care-section-label" style="margin-top:16px">🏟️ 団体向け</div>';
+    teamActions.forEach(a => {
+      const canAfford = funds >= a.cost;
+      const disabled = !canAfford ? 'disabled' : '';
+      html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
+        <span class="care-action-emoji">${a.emoji}</span>
+        <div class="care-action-info">
+          <div class="care-action-name">${a.label}</div>
+          <div class="care-action-desc">${a.desc}</div>
+        </div>
+        <span class="care-action-cost">${a.cost}万</span>
+      </div>`;
+    });
+
+    html += '<button class="care-close-btn" id="careCloseBtn">閉じる</button>';
+    box.innerHTML = html;
+
+    // Bind row clicks
+    box.querySelectorAll('.care-action-row:not(.disabled)').forEach(row => {
+      row.addEventListener('click', function() {
+        const actionId = this.dataset.action;
+        const cfg = actions[actionId];
+        if (!cfg) return;
+        if (cfg.category === 'individual') {
+          renderFighterSelect(actionId, cfg);
+        } else {
+          // 団体向けは選手選択不要 → 直接実行
+          if (onConfirm) onConfirm(actionId, null);
+          overlay.classList.remove('active');
+        }
+      });
+    });
+    document.getElementById('careCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
+  }
+
+  function renderFighterSelect(actionId, cfg) {
+    const isInjuredOnly = cfg.condition === 'injured';
+    const selectableRoster = isInjuredOnly
+      ? roster.filter(f => f.injury)
+      : roster.filter(f => !f.injury);
+
+    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
+    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${cfg.desc}</div>`;
+    html += '<div class="care-section-label">対象選手を選択</div>';
+
+    if (selectableRoster.length === 0) {
+      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">対象選手がいません</div>';
+    } else {
+      html += '<select class="care-fighter-select" id="careFighterSelect">';
+      selectableRoster.forEach(f => {
+        const injuryLabel = f.injury ? ` (怪我中 ${f.injury.weeksLeft}週)` : '';
+        html += `<option value="${f.id}">${f.name}${injuryLabel}</option>`;
+      });
+      html += '</select>';
+      html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careConfirmBtn">実行（${cfg.cost}万）</button>`;
+    }
+
+    html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
+    box.innerHTML = html;
+
+    const confirmBtn = document.getElementById('careConfirmBtn');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        const sel = document.getElementById('careFighterSelect');
+        const fighterId = sel ? parseInt(sel.value) : null;
+        if (onConfirm) onConfirm(actionId, fighterId);
+        overlay.classList.remove('active');
+      });
+    }
+    document.getElementById('careBackBtn').addEventListener('click', renderMain);
+  }
+
+  renderMain();
+  overlay.classList.add('active');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0: 通知型イベント トースト表示 (event-system-spec-v2.md §3-4)
+// 選手顔アイコン＋一言テキスト。数秒で自動消去
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0: 選択型イベント モーダル (event-system-spec-v2.md §3-4)
+// 選手顔アイコン＋セリフ＋2〜3択のモーダルダイアログ
+// ─────────────────────────────────────────────────────────────────────────────
+function showChoiceEventModal(event, state, onChoice) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
+
+  // イベント種別ラベル
+  const typeLabels = {
+    S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
+    S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
+    E1: '📺 メディア出演オファー', E2: '💼 スポンサー提案',
+    E3: '🤝 合同練習の誘い',  E4: '🔍 スカウト情報',
+    E5: '💴 営業試合依頼',   E6: '🚨 他団体からの引き抜き',
+  };
+  const title = typeLabels[event.type] || event.type;
+  const isUrgent = event.type === 'S4' || event.type === 'E6';
+  const borderColor = isUrgent ? '#e74c3c' : 'rgba(232,67,147,0.3)';
+
+  let html = `<div class="care-title" style="border-bottom:1px solid ${borderColor};padding-bottom:10px;margin-bottom:12px">${title}</div>`;
+
+  // 選手の顔 + セリフ
+  if (fighter) {
+    const face = portraitImg(fighter.id, 52, 'care-reaction-portrait');
+    const dialogue = event.dialogue || '';
+    html += `<div class="care-reaction" style="border-color:${borderColor}">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:${isUrgent ? '#e74c3c' : '#e8439f'}">
+        <strong style="font-size:12px;color:var(--text-dim)">${fighter.name}</strong><br>
+        「${dialogue}」
+      </div>
+    </div>`;
+  } else if (event.type === 'E5') {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">
+      📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。
+    </div>`;
+  }
+
+  // 選択肢ボタン
+  const choices = event.choices || [{ label: '了解', hint: '', idx: 0 }];
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
+  choices.forEach(c => {
+    const disabled = c.disabled ? 'disabled style="opacity:0.4;cursor:default"' : '';
+    const hintHtml = c.hint ? `<span style="font-size:11px;color:var(--text-dim);margin-left:8px">${c.hint}</span>` : '';
+    html += `<button class="btn" data-choice="${c.idx}" ${disabled}
+      style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+      <span>${c.label}</span>${hintHtml}
+    </button>`;
+  });
+  html += '</div>';
+
+  box.innerHTML = html;
+
+  box.querySelectorAll('.btn[data-choice]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      overlay.classList.remove('active');
+      const idx = parseInt(this.dataset.choice);
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      if (onChoice) onChoice(idx);
+    });
+  });
+
+  overlay.classList.add('active');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0: ケアリアクション ポップアップ — 選手顔+セリフをトーストで表示
+// ─────────────────────────────────────────────────────────────────────────────
+function _showCareReaction(fighter, text) {
+  if (!fighter || !text) return;
+  const el = document.getElementById('notifEventToast');
+  if (!el) { showToast(text); return; }
+
+  const face = portraitImg(fighter.id, 40, 'notif-face');
+  el.className = 'notif-event-toast';
+  el.innerHTML = `
+    <div class="notif-inner">
+      ${face}
+      <span class="notif-text" style="font-style:italic">「${text}」</span>
+    </div>
+  `;
+  el.classList.add('show');
+  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+
+  clearTimeout(window._notifTimer);
+  window._notifTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function showNotifEventToast(event) {
+  if (!event) return;
+  const el = document.getElementById('notifEventToast');
+  if (!el) { showToast(event.text || ''); return; }  // fallback
+
+  const fighterId = event.fighter;
+  const face = fighterId ? portraitImg(fighterId, 36, 'notif-face') : '';
+
+  // N5は警告色で強調
+  const isWarning = event.type === 'N5';
+  el.className = 'notif-event-toast' + (isWarning ? ' notif-warning' : '');
+
+  el.innerHTML = `
+    <div class="notif-inner">
+      ${face}
+      <span class="notif-text">${event.text || ''}</span>
+    </div>
+  `;
+  el.classList.add('show');
+  Audio.play('notify');
+
+  clearTimeout(window._notifTimer);
+  const duration = isWarning ? 4000 : 2800;
+  window._notifTimer = setTimeout(() => el.classList.remove('show'), duration);
+}

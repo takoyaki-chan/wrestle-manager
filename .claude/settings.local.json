@@ -31,7 +31,17 @@
       "Bash(node tests/stat-contribution-test.js)",
       "Bash(node -c src/data.js)",
       "Bash(identify \"C:/Users/nkmrk/Downloads/wrestle-manager/image/face_abukuma_t.png\")",
-      "Bash(ls -la \"C:/Users/nkmrk/Downloads/wrestle-manager/image/\"face_*.png)"
+      "Bash(ls -la \"C:/Users/nkmrk/Downloads/wrestle-manager/image/\"face_*.png)",
+      "Bash(grep -v \"//\")",
+      "Bash(node --check /c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)",
+      "Bash(node --check /c/Users/nkmrk/Downloads/wrestle-manager/src/app.js)",
+      "Bash(node --check /c/Users/nkmrk/Downloads/wrestle-manager/src/ui-common.js)",
+      "Bash(node --check /c/Users/nkmrk/Downloads/wrestle-manager/src/data.js)",
+      "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)",
+      "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/app.js)",
+      "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/ui-common.js)",
+      "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/ui-render.js)",
+      "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/data.js)"
     ]
   }
 }

@@ -697,6 +697,8 @@ function renderWeekScreen() {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
       html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調60未満の選手を自動で休養させてから週を進めます">🤖 おまかせ</button>';
     }
+    // v2.0: ケアアクションボタン
+    html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
     html += '</div>';
 
     // Roster schedule overview
@@ -1102,6 +1104,25 @@ function renderShowPrep() {
     });
     if (dirty) G = { ...G, showCard: cleaned };
   }
+  // v2.0: ファン期待度パネル（最大3件表示）
+  const fanExpects = Engine.fanExpect.generate(G);
+  if (fanExpects.length > 0) {
+    const validCurrent = G.showCard.filter(m => m.left > 0 && m.right > 0);
+    const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
+    html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:6px">`;
+    html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🎤 ファンの声 ${matchedCount > 0 ? `<span style="color:#2ecc71;font-size:11px">（${matchedCount}件反映中 → MQ+5 / 試合）</span>` : ''}</div>`;
+    fanExpects.forEach(exp => {
+      const isOnCard = validCurrent.some(m =>
+        (m.left === exp.leftId && m.right === exp.rightId) ||
+        (m.left === exp.rightId && m.right === exp.leftId)
+      );
+      const checkMark = isOnCard ? '<span style="color:#2ecc71;font-weight:700">✓ </span>' : '• ';
+      const color = isOnCard ? 'color:#2ecc71' : 'color:var(--text-sub)';
+      html += `<div style="font-size:11px;${color};margin-top:3px">${checkMark}${exp.reason}</div>`;
+    });
+    html += '</div>';
+  }
+
   html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
     <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
     <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>

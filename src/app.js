@@ -1372,6 +1372,21 @@ const Storage = {
         G = { ...G, milestones: ms, _migrated_milestone: true };
       }
 
+      // v2.0: trust パラメータ + lockerRoomMorale マイグレーション
+      if (!G._migrated_trust) {
+        // 全選手に trust: 50 を付与（初期値）
+        const migratedRoster = (G.roster || []).map(f =>
+          f.trust != null ? f : { ...f, trust: 50 }
+        );
+        G = {
+          ...G,
+          roster: migratedRoster,
+          lockerRoomMorale: G.lockerRoomMorale != null ? G.lockerRoomMorale : 60,
+          _migrated_trust: true,
+        };
+        G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 信頼度パラメータを追加しました'] };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2788,6 +2803,33 @@ const App = {
       setTimeout(() => showGrowthEventPopups(weekGrowthEvents), baseDelay);
     }
 
+    // v2.0: 週次通知イベント表示（N1〜N5 トースト通知）
+    const pendingNotifEvent = G._pendingNotifEvent || null;
+    if (G._pendingNotifEvent) {
+      const { _pendingNotifEvent: _, ...cleanNe } = G;
+      G = cleanNe;
+    }
+    if (pendingNotifEvent) {
+      const notifDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 200;
+      setTimeout(() => showNotifEventToast(pendingNotifEvent), notifDelay);
+    }
+
+    // v2.0: 週次選択型イベント表示（S/E型 モーダル）
+    const pendingChoiceEvent = G._pendingChoiceEvent || null;
+    if (G._pendingChoiceEvent) {
+      const { _pendingChoiceEvent: _, ...cleanCe } = G;
+      G = cleanCe;
+    }
+    if (pendingChoiceEvent) {
+      // 他のポップアップが閉じた後に表示するため少し遅延
+      const choiceDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 400;
+      setTimeout(() => {
+        showChoiceEventModal(pendingChoiceEvent, G, (choiceIdx) => {
+          if (choiceIdx >= 0) App.applyChoiceEvent(pendingChoiceEvent, choiceIdx);
+        });
+      }, choiceDelay);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -3043,6 +3085,75 @@ const App = {
       const amount = weeklyFundsBuff.amount || 0;
       G = { ...G, funds: G.funds + amount };
     }
+  },
+
+  // v2.0: 選択型イベントの選択結果を適用
+  applyChoiceEvent(event, choiceIdx) {
+    const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, G);
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      gameLog: [...(G.gameLog || []), ...(result.events || [])]
+    };
+    Storage.autoSave();
+    if (result.events && result.events.length > 0) {
+      showToast(result.events[result.events.length - 1]);
+    }
+    Audio.play('notify');
+    renderManagePanel();
+  },
+
+  // v2.0: ケアアクション モーダル表示
+  openCareModal() {
+    Audio.play('click');
+    showCareActionModal(G, (actionId, fighterId) => {
+      App.executeCareAction(actionId, fighterId);
+    });
+  },
+
+  // v2.0: ケアアクション実行 (event-system-spec-v2.md §2)
+  executeCareAction(actionId, fighterId) {
+    const result = Engine.careActions.execute(actionId, fighterId, G);
+    if (!result) { showToast('アクションが見つかりません'); return; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
+    if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
+    if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
+
+    // state 更新
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      gameLog: [...(G.gameLog || []), ...(result.events || [])]
+    };
+    Storage.autoSave();
+
+    // フィードバック: 選手の顔+セリフ表示（個人向けのみ）
+    const reactionKey = result.reactionKey || actionId;
+    const reactFighterId = result.reactionFighterId;
+    if (reactFighterId != null) {
+      const fighter = G.roster.find(f => f.id === reactFighterId);
+      if (fighter) {
+        const text = Engine.careActions.getReactionText(reactionKey, fighter);
+        _showCareReaction(fighter, text);
+      }
+    } else {
+      // 団体向け: 代表の1人を選んでセリフ表示
+      const healthyRoster = G.roster.filter(f => !f.injury && !f.isRental);
+      if (healthyRoster.length > 0) {
+        const rep = healthyRoster[Math.floor(Math.random() * healthyRoster.length)];
+        const text = Engine.careActions.getReactionText(reactionKey, rep);
+        _showCareReaction(rep, text);
+      }
+    }
+
+    // 料金差引トースト
+    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
+    const label = cfg.label || actionId;
+    showToast(`${cfg.emoji || '💝'} ${label} 実行（-${cfg.cost || 0}万）`);
+    Audio.play('coin');
+    renderManagePanel();
   },
 
   // v0.96: Mission system
