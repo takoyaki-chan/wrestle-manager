@@ -2037,6 +2037,8 @@ const App = {
   // ═══ BATTLE ENGINE INTEGRATION (v0.86) ═══
   // Show match preview instead of instant execution
   executeShow() {
+    // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
+    if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
     const rosterIdSet = new Set(G.roster.map(c => c.id));
     let hadStaleRef = false;
@@ -3139,6 +3141,7 @@ const App = {
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
     if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
     if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
+    if (result.error === 'already_used_this_week') { showToast('今週はすでに使用済みです（週1回まで）'); return; }
 
     // state 更新
     G = { ...G,

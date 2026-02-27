@@ -1081,7 +1081,8 @@ function getAvailableForSlot(slotIndex, side) {
 
 function renderShowPrep() {
   const el = document.getElementById('showPrepContent');
-  if (!isShowWeek(G.week)) {
+  // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
+  if (!isShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
     el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
     return;
   }

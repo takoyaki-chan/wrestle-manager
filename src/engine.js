@@ -3008,15 +3008,16 @@ const Engine = {
   applyShowPopularity(roster, results, orgPop, rng) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
-    // v1.5s25: 6段階小数カーブ（序盤でもゆっくり上昇、下落も緩やか）
-    let rawDelta = avgMQ >= 80 ? 1.8
-                 : avgMQ >= 65 ? 1.2
-                 : avgMQ >= 55 ? 0.7
-                 : avgMQ >= 45 ? 0.3
-                 : avgMQ >= 35 ? -0.3
-                 :               -0.5;
-    // v1.5s25b: 序盤ボーナス — orgPop < 20 のとき rawDelta に +0.2（最低MQ35以上で上昇保証）
-    if (orgPop < 20) rawDelta += 0.2;
+    // v1.5s26: orgPop帯別MQ閾値シフト（旧フラット+0.2ボーナスを廃止して置き換え）
+    // 低orgPopほど閾値が下がり、同じMQでも上がりやすく・下落ペナルティも軽くなる
+    const mqAdj = Engine.orgPop.getMQAdjust(orgPop);
+    let rawDelta = avgMQ >= (80 + mqAdj.shift) ? 1.8
+                 : avgMQ >= (65 + mqAdj.shift) ? 1.2
+                 : avgMQ >= (55 + mqAdj.shift) ? 0.7
+                 : avgMQ >= (45 + mqAdj.shift) ? 0.3
+                 : avgMQ >= (35 + mqAdj.shift) ? -0.3
+                 :                               -0.5;
+    if (rawDelta < 0) rawDelta *= mqAdj.negMult;
     // v1.5: 施策A — orgPop逓減カーブ適用
     const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
@@ -4520,6 +4521,13 @@ Engine.orgPop = {
     if (orgPop < 70) return 5;    // メジャー: 維持が難しくなる
     if (orgPop < 85) return 7;    // トップ: かなり落ちる
     return 10;                     // 覇権: 激しく落ちる
+  },
+
+  // v1.5s26: orgPop帯別MQ閾値シフト — 低orgPopほどMQ閾値が下がり上がりやすく・下がりにくく
+  getMQAdjust(orgPop) {
+    if (orgPop < 20) return { shift: -10, negMult: 0.4 };  // 創設期: MQ閾値-10、ペナルティ×0.4
+    if (orgPop < 40) return { shift: -5,  negMult: 0.7 };  // 地方団体: MQ閾値-5、ペナルティ×0.7
+    return { shift: 0, negMult: 1.0 };                      // 中堅以上: 現行通り
   }
 };
 
@@ -5327,9 +5335,12 @@ Engine.careActions = {
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
         events.push(`💴 ${f.name}にボーナスを支給（信頼度+${trustGain}）`);
       } else if (actionId === 'costume') {
+        // v2.0: 週次1回制限
+        if ((f._careWeekUsed || {})[actionId] === state.week) return { error: 'already_used_this_week' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`👗 ${f.name}のコスチュームを新調（人気+${cfg.effects.popularity}、信頼度+${cfg.effects.trust}）`);
       } else if (actionId === 'trainer') {
         // 専属トレーナー: 成長バフを付与（growthPenaltyの逆パターンとして実装）
@@ -5337,11 +5348,14 @@ Engine.careActions = {
         f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
         events.push(`🏋️ ${f.name}に専属トレーナーを手配（${cfg.effects.growth_boost.weeks}週間 成長+30%）`);
       } else if (actionId === 'media') {
+        // v2.0: 週次1回制限
+        if ((f._careWeekUsed || {})[actionId] === state.week) return { error: 'already_used_this_week' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
         // 練習休み: condition を少し回復（スキップ扱い）
         f = { ...f, condition: Math.min(100, (f.condition || 70) + 5) };
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`📺 ${f.name}のメディア露出を手配（人気+${cfg.effects.popularity}）`);
       } else if (actionId === 'special_treatment') {
         if (!f.injury) return { error: 'not_injured' };
