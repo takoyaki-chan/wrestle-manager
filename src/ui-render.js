@@ -11,13 +11,13 @@ function refreshTopBar() {
   // Hide nav during draft
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (G.weekPhase === 'draft') ? 'none' : '';
-  document.getElementById('dispSeason').textContent = `${G.season}年目`;
-  if (G.offSeason) {
-    document.getElementById('dispWeek').textContent = `OFF`;
-    document.getElementById('dispQuarter').textContent = `${G.offWeek || 0}/4`;
-  } else {
-    document.getElementById('dispWeek').textContent = G.week;
-    document.getElementById('dispQuarter').textContent = QUARTER_LABELS[getQuarter(G.week)] || '🌸 春';
+  const dateEl = document.getElementById('dispDate');
+  if (dateEl) {
+    if (G.offSeason) {
+      dateEl.textContent = `${G.season}年目 オフシーズン ${G.offWeek || 0}/4`;
+    } else {
+      dateEl.textContent = Engine.util.formatDate(G.season, G.week);
+    }
   }
   const fundsEl = document.getElementById('dispFunds');
   fundsEl.textContent = `${G.funds.toLocaleString()}万`;
@@ -435,7 +435,7 @@ function renderWeekScreen() {
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
   let typeLabel = isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
-  document.getElementById('weekTitle').textContent = `第${G.week}週 — ${typeLabel}`;
+  document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4 — ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} — ${typeLabel}`;
 
   html = '';
 
@@ -470,8 +470,7 @@ function renderWeekScreen() {
       <!-- Season Progress -->
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;color:var(--text-dim)">${G.season}年目 ${qtr}</span>
-          <span style="font-size:11px;color:var(--gold);font-weight:700">第${G.week}/48週</span>
+          <span style="font-size:11px;color:var(--gold);font-weight:700">${Engine.util.formatDate(G.season, G.week)}</span>
         </div>
         <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px">
           <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,var(--gold),#f1c40f);border-radius:2px;transition:width 0.3s"></div>
@@ -631,7 +630,7 @@ function renderWeekScreen() {
     } else if (G.survivalCleared && G.survivalClearSeason) {
       // Compact "CLEARED" badge
       const fresh = G.survivalClearSeason === G.season && Math.abs((G.survivalClearWeek || 0) - G.week) <= 4;
-      html += `<div class="survival-cleared-badge${fresh ? ' fresh' : ''}">🏆 経営サバイバル CLEARED！ <span style="font-weight:400;font-size:12px;color:var(--text-dim)">（${G.survivalClearSeason}年目 第${G.survivalClearWeek}週で達成）</span></div>`;
+      html += `<div class="survival-cleared-badge${fresh ? ' fresh' : ''}">🏆 経営サバイバル CLEARED！ <span style="font-weight:400;font-size:12px;color:var(--text-dim)">（${Engine.util.formatDate(G.survivalClearSeason, G.survivalClearWeek)}で達成）</span></div>`;
     }
 
     // ── v0.96: MISSION PANEL ──
@@ -742,6 +741,28 @@ function renderWeekScreen() {
     });
     html += '</table>';
   }
+  else if (G.weekPhase === 'weekSummary') {
+    // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
+    const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
+    document.getElementById('weekTitle').textContent = `${dateStr} — 完了`;
+    const f = G.weeklyFinance || {};
+    const net = (f.income || 0) - (f.expense || 0);
+    const netColor = net >= 0 ? 'var(--green)' : 'var(--red)';
+    html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">`;
+    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:14px;font-weight:700">${dateStr} 完了</div>`;
+    if (f.income !== undefined || f.expense !== undefined) {
+      html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
+        <span>収入 <span style="color:var(--green);font-weight:600">+${(f.income||0).toLocaleString()}万</span></span>
+        <span>支出 <span style="color:var(--red);font-weight:600">-${(f.expense||0).toLocaleString()}万</span></span>
+        <span>収支 <span style="color:${netColor};font-weight:600">${net>=0?'+':''}${net.toLocaleString()}万</span></span>
+      </div>`;
+    }
+    html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+    html += `</div>`;
+    html += `<div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">次の週へ →</button>
+    </div>`;
+  }
   else if (G.weekPhase === 'settled') {
     const heat = getHeatLevel();
     const monthBuf = G.monthlyFinanceBuffer || [];
@@ -811,7 +832,7 @@ function renderWeekScreen() {
   }
   // ── C-4: TRANSFER WINDOW UI ──
   else if (G.weekPhase === 'transfer') {
-    document.getElementById('weekTitle').textContent = `第${G.week}週 — 🔄 移籍ウィンドウ`;
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🔄 移籍ウィンドウ`;
     const pending = G.pendingPoach || [];
     if (pending.length > 0) {
       html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
@@ -857,7 +878,7 @@ function renderWeekScreen() {
       html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
       html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
     } else if (ev.type === 'war') {
-      document.getElementById('weekTitle').textContent = `第${G.week}週 — ⚔ 対抗戦`;
+      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — ⚔ 対抗戦`;
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
@@ -869,7 +890,7 @@ function renderWeekScreen() {
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
     } else if (ev.type === 'summit') {
-      document.getElementById('weekTitle').textContent = `第${G.week}週 — 🏆 頂上決戦`;
+      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏆 頂上決戦`;
       html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
@@ -889,7 +910,7 @@ function renderWeekScreen() {
 
   // ── SCOUT EVENT PHASE ──
   else if (G.weekPhase === 'scoutEvent') {
-    const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : `第${G.week}週`;
+    const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
     const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
     document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
     html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
@@ -1049,10 +1070,13 @@ function getUsedFighterIds(excludeSlot) {
 }
 
 function getAvailableForSlot(slotIndex, side) {
-  // Returns roster members not used in other slots, not in other side, and not injured
+  // Returns roster members not injured + not on opposite side of same slot
+  // Fighters in other slots are included but marked with _usedInOtherSlot for swap UI
   const used = getUsedFighterIds(slotIndex);
   const otherSide = side === 'left' ? G.showCard[slotIndex].right : G.showCard[slotIndex].left;
-  return G.roster.filter(c => !used.has(c.id) && c.id !== otherSide && !c.injury);
+  return G.roster.filter(c => c.id !== otherSide && !c.injury).map(c => ({
+    ...c, _usedInOtherSlot: used.has(c.id)
+  }));
 }
 
 function renderShowPrep() {
@@ -1139,15 +1163,18 @@ function renderShowPrep() {
 
     const makeOptions = (avail, curVal) => {
       let opts = '<option value="0">-- 選手選択 --</option>';
-      // If current value is set but not in available (shouldn't happen with correct logic), include it
       const ids = new Set(avail.map(c => c.id));
       if (curVal > 0 && !ids.has(curVal)) {
         const extra = G.roster.find(c => c.id === curVal);
-        if (extra) avail = [extra, ...avail];
+        if (extra) avail = [{ ...extra, _usedInOtherSlot: false }, ...avail];
       }
+      // Sort: available first, then used-in-other-slot; within each group by OVR desc
+      avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
       avail.forEach(c => {
         const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})</option>`;
+        const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
+        const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})${usedSuffix}</option>`;
       });
       return opts;
     };
@@ -1228,25 +1255,46 @@ function renderFinance() {
   const el = document.getElementById('financeContent');
   let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
 
-  // v0.95: Funds history chart
+  // Funds history chart (improved with Y-axis labels and grid lines)
   const fh = G.fundsHistory || [];
   if (fh.length > 1) {
-    const chartW = 320, chartH = 60;
+    const leftPad = 55, chartH = 120;
+    const chartW = 380;
+    const plotW = chartW - leftPad;
     const fMin = Math.min(...fh, 0);
     const fMax = Math.max(...fh, 1);
     const range = fMax - fMin || 1;
-    const points = fh.map((v, i) => `${Math.round(i * chartW / Math.max(fh.length - 1, 1))},${chartH - Math.round(((v - fMin) / range) * chartH)}`).join(' ');
-    const zeroY = chartH - Math.round(((0 - fMin) / range) * chartH);
-    html += `<div style="margin-bottom:16px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">💹 資金推移 (${fh.length}週)</div>
-      <svg width="${chartW}" height="${chartH}" style="display:block">
-        <line x1="0" y1="${zeroY}" x2="${chartW}" y2="${zeroY}" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3"/>
-        <polyline points="${points}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/>
-        <circle cx="${chartW}" cy="${chartH - Math.round(((fh[fh.length-1] - fMin) / range) * chartH)}" r="3" fill="${G.funds>=0?'#2ecc71':'#e74c3c'}"/>
-      </svg>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:2px">
-        <span>${fMax.toLocaleString()}万</span><span>${fMin.toLocaleString()}万</span>
-      </div>
+
+    // Nice grid line calculation
+    const rawStep = range / 4;
+    const niceSteps = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+    const step = niceSteps.find(s => s >= rawStep) || Math.ceil(rawStep / 1000) * 1000;
+    const gridLines = [];
+    for (let v = Math.ceil(fMin / step) * step; v <= fMax; v += step) gridLines.push(v);
+    if (fMin <= 0 && fMax >= 0 && !gridLines.includes(0)) gridLines.push(0);
+    gridLines.sort((a, b) => a - b);
+
+    const toY = v => chartH - Math.round(((v - fMin) / range) * chartH);
+    const points = fh.map((v, i) => `${leftPad + Math.round(i * plotW / Math.max(fh.length - 1, 1))},${toY(v)}`).join(' ');
+
+    let svg = `<svg width="${chartW}" height="${chartH + 16}" style="display:block;overflow:visible">`;
+    gridLines.forEach(val => {
+      const y = toY(val);
+      const isZero = val === 0;
+      svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(255,255,255,${isZero ? 0.2 : 0.06})" stroke-width="${isZero ? 1 : 0.5}"${isZero ? ' stroke-dasharray="4"' : ''}/>`;
+      svg += `<text x="${leftPad - 6}" y="${y + 3}" text-anchor="end" fill="rgba(255,255,255,${isZero ? 0.4 : 0.2})" font-size="10">${val.toLocaleString()}</text>`;
+    });
+    const lineColor = G.funds >= 0 ? '#2ecc71' : '#e74c3c';
+    svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
+    const lastX = leftPad + plotW;
+    const lastY = toY(fh[fh.length - 1]);
+    svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
+    svg += `<text x="${lastX}" y="${lastY - 8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length - 1].toLocaleString()}万</text>`;
+    svg += '</svg>';
+
+    html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>
+      ${svg}
     </div>`;
   }
 
@@ -1795,7 +1843,7 @@ function renderSave() {
     html += `<div class="save-slot has-data">
       <div>
         <div class="save-slot-title">オートセーブ</div>
-        <div class="save-slot-meta">${autoInfo.season}年目 第${autoInfo.week}週 ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
       </div>
       <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
     </div>`;
@@ -1812,7 +1860,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">スロット ${i}</div>
-          <div class="save-slot-meta">${info.season}年目 第${info.week}週 ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
+          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">

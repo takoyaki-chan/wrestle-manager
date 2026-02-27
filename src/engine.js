@@ -70,6 +70,9 @@ const Engine = {
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
     getQuarter(w) { return Math.ceil(w / 12); },
+    getMonth(w) { return ((Math.ceil(w / 4) - 1 + 3) % 12) + 1; },
+    getWeekInMonth(w) { return ((w - 1) % 4) + 1; },
+    formatDate(s, w) { return `${s}年目 ${this.getMonth(w)}月 第${this.getWeekInMonth(w)}週`; },
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },

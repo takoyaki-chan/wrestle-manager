@@ -1,7 +1,7 @@
 # Wrestle Manager — マスタースペック（現行仕様）
 
-> 作成: セッション19 (2026-02-25)
-> 対象バージョン: v1.8実装済み（PPV・年末表彰式・成長イベント含む）
+> 最終更新: セッション29 (2026-02-27)
+> 対象バージョン: v2.0実装済み（trust/イベントシステム/ファン期待度/特性4種含む）
 > 注意: 現行実装の状態のみ記載。変更履歴・廃案・旧仕様は含めない。
 
 ---
@@ -20,12 +20,12 @@
 
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
-| src/index.html | ~1,070 | HTML+CSS+起動処理 |
-| src/data.js | ~1,240 | 全データ定数 |
-| src/engine.js | ~4,560 | ゲームロジック（純粋関数） |
-| src/app.js | ~2,990 | Audio+Storage+Mission+Survival+App統合 |
-| src/ui-common.js | ~2,390 | ヘルパー+全ポップアップ |
-| src/ui-render.js | ~2,090 | 全render関数 |
+| src/index.html | ~1,150 | HTML+CSS+起動処理 |
+| src/data.js | ~1,655 | 全データ定数 |
+| src/engine.js | ~5,845 | ゲームロジック（純粋関数） |
+| src/app.js | ~3,381 | Audio+Storage+Mission+Survival+App統合 |
+| src/ui-common.js | ~2,730 | ヘルパー+全ポップアップ |
+| src/ui-render.js | ~2,137 | 全render関数 |
 | src/victory-lines.js | 501 | 勝利台詞データ |
 | src/battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
 | portrait-map.js | 102 | ルート配置・顔画像マップ |
@@ -145,6 +145,7 @@ null/manage → [processWeek] → settled (月末のみ停止) → [advanceWeek]
 | `hotStreak` | 絶好調状態（成長×1.5）|
 | `slump` | スランプ状態（成長×0.5）|
 | `motivationLoss` | モチベ喪失（成長×0.3）|
+| `trust` | 信頼度（0〜100）。mentalCoeffの変動係数。自然減衰-1/月 |
 
 ### 5.4 耐久・衰退フィールド
 | フィールド | 説明 |
@@ -202,6 +203,21 @@ MQ = Base(10-35) + Drama(0-35) + Pacing(-10/+10) + Finish(-5/+15) + Bonus(0-30)
 ```
 - Bonus: 名勝負製造機(+5), 逆転(+5), スタイル相性など
 - 試合消耗: 20 + 被ダメ率×15 + ターン数×0.5
+
+### 7.3 MQ外部ボーナスキャップ（Pass2）
+- 外部ボーナス合計 **+15 上限**（`MQ_EXTERNAL_CAP = 15`）
+- 因縁ボーナス: +3/+5/+8（rivalLevel 1/2/3）
+- タイトルマッチ: +5
+- コーチ効果: +2
+- 超満員: +3 / 大入り: +2
+- 会場ボーナス: 0〜+2（会場規模依存）
+- ファン期待度一致: +5
+
+### 7.4 タイトルマッチ格差ペナルティ（Pass2キャップ後に別途減算）
+| OVR差（チャンプ − 挑戦者） | MQ減算 |
+|:------------------------:|:------:|
+| >10 | −3 |
+| >20 | −6 |
 
 ### 7.2 コンディション補正（MQ）
 | コンディション | MQ補正 |
@@ -347,17 +363,17 @@ Week 48: PPV当日（通常興行と同じ効果）
 | 9 | 遅咲き | 育成・成長 | 25歳以降に急成長（排他A） | ✅ 有効 |
 | 10 | 努力家 | 育成・成長 | 練習成長ボーナス | ✅ 有効 |
 | 11 | 破天荒 | 育成・成長 | 成長にムラ（爆発週 or ゼロ週） | ✅ 有効 |
-| 12 | 適応力 | 育成・成長 | （将来用・現在未実装） | ⚠️ 未実装 |
+| 12 | 適応力 | 育成・成長 | growthPenalty.multiplierを+0.2軽減 | ✅ 有効 |
 | 13 | 頑丈さ | 体質・耐久 | 怪我率×0.5（排他B） | ✅ 有効 |
 | 14 | ガラスの身体 | 体質・耐久 | 怪我率×1.5（排他B） | ✅ 有効 |
 | 15 | 鉄人 | 体質・耐久 | 試合消耗×0.8, 回復ボーナス（排他B） | ✅ 有効 |
 | 16 | 不屈 | 体質・耐久 | 怪我回復週数短縮 | ✅ 有効 |
 | 17 | ムードメーカー | 性格・運営 | 全体練習効率微増 | ✅ 有効 |
-| 18 | 人望 | 性格・運営 | （将来用・現在未実装） | ⚠️ 未実装 |
+| 18 | 人望 | 性格・運営 | lockerRoomMoraleに+3/週（在籍・無怪我時） | ✅ 有効 |
 | 19 | 負けず嫌い | 性格・運営 | 敗北翌週の練習成長ボーナス | ✅ 有効 |
 | 20 | リーダー気質 | 性格・運営 | 若手と組む時の若手成長率ボーナス | ✅ 有効 |
-| 21 | 忠誠心 | 性格・運営 | （将来用・現在未実装） | ⚠️ 未実装 |
-| 22 | 野心 | 性格・運営 | （将来用・現在未実装） | ⚠️ 未実装 |
+| 21 | 忠誠心 | 性格・運営 | 引き抜き確率×0.25（75%カット） | ✅ 有効 |
+| 22 | 野心 | 性格・運営 | 挑戦者選出時MQ+2＋ブレークスルー確率+0.5% | ✅ 有効 |
 | 23 | 番狂わせ体質 | 特殊 | 格上相手に丸め込み率UP | ✅ 有効 |
 | 24 | 闘志 | 特殊 | HP低下時のモメンタム回復 | ✅ 有効 |
 | 25 | 威圧感 | 特殊 | 対戦相手の序盤モメンタム不利 | ✅ 有効 |
@@ -466,6 +482,18 @@ orgRating = championScore + starPowerScore + totalPopScore
   // ランキング
   rankings: [{ orgId, name, tier, rating }...],
 
+  // イベントシステム
+  milestones: {},             // { eventId: true } 発火済みフラグ
+  milestoneBuffs: [],         // 現在有効なバフ配列
+  _pendingNotifEvent: null,   // transient: 通知型イベント
+  _pendingChoiceEvent: null,  // transient: 選択型イベント
+
+  // ファン期待度
+  fanExpectations: [],        // 最大3件 { type, label, fighterIds, priority }
+
+  // ロッカールームモラル
+  lockerRoomMorale: 60,       // 0〜100
+
   // ゲームログ
   gameLog: [string...],
 
@@ -482,7 +510,7 @@ orgRating = championScore + starPowerScore + totalPopScore
 
 ---
 
-## 20. UX実装一覧（v1.9時点）
+## 20. UX実装一覧（v2.0時点）
 
 | 機能 | 実装場所 | 説明 |
 |------|---------|------|
@@ -495,10 +523,104 @@ orgRating = championScore + starPowerScore + totalPopScore
 | ランキングツールチップ | ui-render.js `renderRanking()` | ⭐/👥列にHTML title属性 |
 | growthPenaltyバッジ | ui-render.js ロスター | 🩹成長低下バッジ |
 | 成長イベントバッジ | ui-render.js ロスター | 🔥絶好調/📉スランプ/😞モチベ喪失 |
+| 補助金カウントダウン | ui-render.js ヘッダー | orgPop<40 で「補助金あとXpt」表示 |
+| 通知型イベントトースト | ui-common.js `showNotifEventToast()` | N1〜N5イベントをトースト表示 |
+| 選択型イベントモーダル | ui-common.js `showChoiceEventModal()` | S1〜S6/E1〜E6の選択肢ポップアップ |
+| ケアアクションモーダル | ui-common.js `showCareActionModal()` | manage画面「💝ケア」ボタンから起動 |
+| ファン期待度パネル | ui-render.js manage画面 | 興行準備画面に「ファンの声」表示。一致カードに✓+「MQ+5」 |
 
 ---
 
-## 21. 配布パッケージ（build-zip.sh）
+## 21. 難易度リバランス（v1.5〜）
+
+### 21.1 orgPop逓減カーブ
+| orgPop | 上昇倍率 |
+|:------:|:--------:|
+| 0 | ×1.00 |
+| 20 | ×0.60 |
+| 40 | ×0.35 |
+| 55 | ×0.20 |
+| 70 | ×0.12 |
+| 85 | ×0.08 |
+
+### 21.2 orgPop年次減衰（シーズン末）
+| orgPop | 減衰量/シーズン |
+|:------:|:--------------:|
+| 0〜30 | −2 |
+| 30〜50 | −3 |
+| 50〜70 | −5 |
+| 70〜85 | −7 |
+| 85+ | −10 |
+
+### 21.3 Heat維持困難化（施策E）
+- heatScore≥6（HOT以上）: 上昇量×0.5
+- heatScore≥6 の冷め速度: decayRate×1.5
+
+### 21.4 内部小数化
+- popularity / orgPop は小数のまま保持
+- 表示: `Engine.util.dispPop(v)` / `Engine.util.dispOrgPop(v)`（Math.round返却）
+
+---
+
+## 22. v2.0 イベントシステム（Phase 1）
+
+### 22.1 trust パラメータ
+- **値域**: 0〜100（初期値 50）
+- **用途**: mentalCoeffの変動係数として機能
+- **変動**: 興行結果・ケアアクションで増減。offWeek1に−1/月の自然減衰
+- `Engine.trust.getTrustBand(trust)`: low/mid/high の3段階
+- `Engine.trust.getEventCandidates(state)`: イベント候補選手を返す
+
+### 22.2 通知型イベント（N1〜N5）
+週25%確率で発生。処理後 `showNotifEventToast()` でトースト表示。
+
+| ID | 内容 |
+|:--:|------|
+| N1 | 自主練頑張っている（trust+2〜4） |
+| N2 | 体調面の心配（コンディション注意） |
+| N3 | モチベ回復の兆し |
+| N4 | 地道な努力（練習成長+） |
+| N5 | ファンからの声援（人気+） |
+
+### 22.3 ケアアクション（7種）
+manage画面「💝ケア」ボタンから起動。資金消費でtrust・成長・体調を改善。
+
+| アクション | 費用 | 効果 |
+|-----------|:----:|------|
+| 個別練習強化 | 50万 | 3週間の練習成長×1.4 |
+| メンタルケア | 80万 | trust+20、スランプ解除 |
+| スパ遠征 | 120万 | コンディション+30 |
+| 記念グッズ製作 | 60万 | 人気+5 |
+| チームビルディング | 150万 | 全員trust+10 |
+| 特別コーチング | 100万 | 4週間MQ+8 |
+| ファンイベント | 200万 | orgPop+3、heat上昇 |
+
+### 22.4 選択型イベント（S1〜S6 / E1〜E6）
+`Engine.eventSystem.generateChoiceEvent()` で条件に応じて生成。`showChoiceEventModal()` で3択ポップアップ表示。
+
+| カテゴリ | ID | 概要 |
+|---------|:--:|------|
+| サクセス型 | S1〜S6 | 好調時の判断（e.g. 追い込み練習 vs 休養） |
+| イベント型 | E1〜E6 | アクシデント系（e.g. 雨天・スポンサー交渉） |
+
+---
+
+## 23. ファン期待度
+
+`Engine.fanExpect.generate(state)` でweek毎に最大3件生成。
+
+### 生成優先順位
+1. **priority3**: 因縁ペア（rivalLevel≥1）
+2. **priority2**: チャンピオン挑戦者
+3. **priority1**: 人気上位選手（pop降順）
+
+### 効果
+- 期待カードが実際の興行カードに含まれる場合 → Pass2でMQ+5（MQ_EXTERNAL_CAPに含まれる）
+- 興行準備画面に「ファンの声」パネル表示。一致カードに ✓ マーク + 「MQ+5」バッジ
+
+---
+
+## 24. 配布パッケージ（build-zip.sh）
 
 コピー対象:
 - `src/` 配下8ファイル（index.html, data.js, engine.js, app.js, ui-common.js, ui-render.js, victory-lines.js, battle-engine.html）

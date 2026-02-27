@@ -1507,7 +1507,7 @@ const App = {
     const contBtn = document.getElementById('titleContinueBtn');
     if (autoInfo) {
       contBtn.style.display = '';
-      contBtn.textContent = `CONTINUE — ${autoInfo.season}年目 第${autoInfo.week}週`;
+      contBtn.textContent = `CONTINUE — ${Engine.util.formatDate(autoInfo.season, autoInfo.week)}`;
     } else {
       contBtn.style.display = 'none';
     }
@@ -1995,12 +1995,29 @@ const App = {
   // Set show card slot
   setShowCardSlot(slotIndex, side, newId) {
     newId = +newId;
-    const newCard = G.showCard.map((slot, i) => {
-      if (i !== slotIndex) return slot;
-      const updated = { ...slot, [side]: newId };
-      if (newId > 0 && updated.left === updated.right) updated[side === 'left' ? 'right' : 'left'] = 0;
-      return updated;
-    });
+    const newCard = G.showCard.map(s => ({ ...s }));
+    // Swap: if newId is already used in another slot, exchange fighters
+    if (newId > 0) {
+      for (let i = 0; i < newCard.length; i++) {
+        if (i === slotIndex) continue;
+        if (newCard[i].left === newId || newCard[i].right === newId) {
+          const foundSide = newCard[i].left === newId ? 'left' : 'right';
+          newCard[i][foundSide] = newCard[slotIndex][side] || 0;
+          // Clear title if swapped-from slot became invalid
+          if (newCard[i].isTitle && (!newCard[i].left || !newCard[i].right || newCard[i].left === newCard[i].right)) {
+            newCard[i].isTitle = false;
+          }
+          break;
+        }
+      }
+    }
+    newCard[slotIndex][side] = newId;
+    if (newId > 0 && newCard[slotIndex].left === newCard[slotIndex].right) {
+      newCard[slotIndex][side === 'left' ? 'right' : 'left'] = 0;
+    }
+    if (newCard[slotIndex].isTitle && (!newCard[slotIndex].left || !newCard[slotIndex].right)) {
+      newCard[slotIndex].isTitle = false;
+    }
     G = { ...G, showCard: newCard };
     renderShowPrep();
   },
@@ -2677,36 +2694,39 @@ const App = {
     showNewspaperPanel(articles, callback);
   },
 
-  // v1.0: Auto-advance past settled screen on non-monthly weeks
-  // Returns true if auto-advanced (caller should return early)
+  // v2.0-C3: Always stop — no auto-advance. Accumulate monthly buffer and set weekSummary or settled phase.
   _tryAutoAdvance() {
-    const isMonthEnd = G.week % 4 === 0;
-    if (!isMonthEnd && G.funds > -1000) {
-      // Accumulate finance into monthly buffer
-      const monthBuf = [...(G.monthlyFinanceBuffer || [])];
-      monthBuf.push({ week: G.week, finance: { ...G.weeklyFinance }, funds: G.funds });
-      G = { ...G, monthlyFinanceBuffer: monthBuf };
-      // Auto-advance: skip settled screen
-      const advResult = Engine.advanceWeek(G);
-      G = { ...advResult.state, gameLog: [...G.gameLog, ...advResult.events] };
-      if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
-      App.checkSurvivalUpdate();
-      App.checkTitleEstablishment();
-      sessionRng = Engine.rng.create(G.rngSeed);
-      App._refreshTicker(); // v1.4w
-      Storage.autoSave();
-      if (typeof showToast === 'function') showToast(`第${G.week}週 完了`);
-      showScreen('week');
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.nav-btn')[0].classList.add('active');
-      refreshAll();
-      return true;
-    }
-    // Monthly report week: accumulate and stop at settled
     const monthBuf = [...(G.monthlyFinanceBuffer || [])];
     monthBuf.push({ week: G.week, finance: { ...G.weeklyFinance }, funds: G.funds });
+    const isMonthEnd = G.week % 4 === 0;
+    if (!isMonthEnd) {
+      // Non-month-end: show brief weekly summary instead of auto-advancing
+      G = { ...G, monthlyFinanceBuffer: monthBuf, weekPhase: 'weekSummary' };
+      Storage.autoSave();
+      showScreen('week');
+      refreshAll();
+      return true; // signal: handled (caller should return)
+    }
+    // Month-end: accumulate and stop at settled (existing behavior)
     G = { ...G, monthlyFinanceBuffer: monthBuf };
     return false;
+  },
+
+  // v2.0-C3: Manual advance from weekly summary
+  advanceFromWeekSummary() {
+    Audio.play('tick');
+    const result = Engine.advanceWeek(G);
+    G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
+    App.checkSurvivalUpdate();
+    App.checkTitleEstablishment();
+    sessionRng = Engine.rng.create(G.rngSeed);
+    App._refreshTicker();
+    Storage.autoSave();
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
   },
 
   // Process a week (manage + settle) via tickWeek

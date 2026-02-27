@@ -1885,8 +1885,8 @@ function renderMatchPreview() {
     if (sp.results[i] === null) { nextIdx = i; break; }
   }
 
-  // Display in reverse order: undercard (last) → main event (first)
-  for (let di = total - 1; di >= 0; di--) {
+  // Display: main event (idx 0) at top → opening match (idx total-1) at bottom
+  for (let di = 0; di < total; di++) {
     const idx = di;
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
@@ -1899,7 +1899,7 @@ function renderMatchPreview() {
     const titleTag = m.isTitle ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">🏆 TITLE</span>' : '';
     const matchLabel = isMain ? '★ メインイベント' : `第${total - idx}試合`;
 
-    html += `<div style="background:var(--bg-card);border:1px solid ${isNext ? 'var(--blue)' : 'var(--border)'};border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : !isNext ? 'opacity:0.4' : ''}">`;
+    html += `<div data-match-next="${isNext}" style="background:var(--bg-card);border:1px solid ${isNext ? 'var(--blue)' : 'var(--border)'};border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : !isNext ? 'opacity:0.4' : ''}">`;
     html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
     html += `<div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">`;
     html += `${portraitImg(charL.id, 80)}`;
@@ -1939,6 +1939,11 @@ function renderMatchPreview() {
 
   box.innerHTML = html;
   overlay.classList.add('active');
+  // Auto-scroll to next match (near bottom for opening matches)
+  if (nextIdx >= 0) {
+    const nextEl = box.querySelector('[data-match-next="true"]');
+    if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  }
 }
 
 // ── Show Result Renderer ────────────────────────────────
@@ -1958,7 +1963,7 @@ function renderShowResult(results, injuryResults) {
     <div style="margin-top:6px;font-size:13px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}</span> <span style="color:var(--text-dim)">（集客×${heat.mult}）</span></div>
   </div>`;
 
-  [...results].reverse().forEach((r, i) => {
+  results.forEach((r, i) => {
     const isMain = i === 0;
     const isDraw = r.winner === 'draw';
     const leftIsWinner = r.winner === 'left';
