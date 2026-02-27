@@ -1786,7 +1786,7 @@ function startShowPrep() {
   // Calculate best venue immutably
   let venueIdx = 0;
   for (let i = VENUES.length - 1; i >= 0; i--) {
-    if (G.orgPop >= VENUES[i].popReq) { venueIdx = i; break; }
+    if (Math.round(G.orgPop) >= VENUES[i].popReq) { venueIdx = i; break; }
   }
   // Set show prep state
   G = {

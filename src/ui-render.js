@@ -1068,7 +1068,7 @@ function renderShowPrep() {
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   html += '<div class="venue-grid">';
   VENUES.forEach((v, i) => {
-    const locked = G.orgPop < v.popReq;
+    const locked = Math.round(G.orgPop) < v.popReq;
     const selected = G.showVenue === i;
     html += `<div class="venue-card ${locked ? 'locked' : ''} ${selected ? 'selected' : ''}"
       onclick="${locked ? '' : `App.setShowVenue(${i})`}">
