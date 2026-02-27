@@ -29,7 +29,9 @@
       "Bash(python3 -c \":*)",
       "Bash(python -c \":*)",
       "Bash(node tests/stat-contribution-test.js)",
-      "Bash(node -c src/data.js)"
+      "Bash(node -c src/data.js)",
+      "Bash(identify \"C:/Users/nkmrk/Downloads/wrestle-manager/image/face_abukuma_t.png\")",
+      "Bash(ls -la \"C:/Users/nkmrk/Downloads/wrestle-manager/image/\"face_*.png)"
     ]
   }
 }
