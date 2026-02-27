@@ -4,6 +4,28 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+// ── Custom Tooltip (PC hover + mobile tap) ───────────────
+function showCustomTooltip(el, html) {
+  const tip = document.getElementById('customTooltip');
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+  const rect = el.getBoundingClientRect();
+  const tipW = 250;
+  let left = rect.left;
+  if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+  if (left < 8) left = 8;
+  let top = rect.bottom + 6;
+  if (top + 140 > window.innerHeight) top = rect.top - 6 - tip.offsetHeight;
+  tip.style.left = left + 'px';
+  tip.style.top = Math.max(8, top) + 'px';
+}
+function hideCustomTooltip() {
+  const tip = document.getElementById('customTooltip');
+  if (tip) tip.style.display = 'none';
+}
+// Global tap-outside hides tooltip
+document.addEventListener('click', hideCustomTooltip);
+
 // ── War Challenge Dialogue Generator (traits-based) ──
 function getWarChallengeDialogue(fighter, orgName) {
   const ch = ALL_CHARS.find(c => c.id === fighter.id);
@@ -1936,14 +1958,15 @@ function renderShowResult(results, injuryResults) {
     <div style="margin-top:6px;font-size:13px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}</span> <span style="color:var(--text-dim)">（集客×${heat.mult}）</span></div>
   </div>`;
 
-  results.forEach((r, i) => {
+  [...results].reverse().forEach((r, i) => {
     const isMain = i === 0;
     const isDraw = r.winner === 'draw';
     const leftIsWinner = r.winner === 'left';
     const rightIsWinner = r.winner === 'right';
+    const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
 
     html += `<div class="match-result" style="${isMain ? 'border-left-color:var(--gold);background:rgba(212,168,67,0.05)' : ''}">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${isMain ? '★ メインイベント' : `第${i+1}試合`}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</div>`;
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</div>`;
 
     if (isDraw) {
       html += `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1954,7 +1977,7 @@ function renderShowResult(results, injuryResults) {
         ${portraitImg(r.right.id, 80, 'portrait-match')}
       </div>
       <div style="margin-top:6px;font-size:13px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
-      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+15)</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
     } else {
       const winnerF = leftIsWinner ? r.left : r.right;
       html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1969,7 +1992,7 @@ function renderShowResult(results, injuryResults) {
           background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winnerF.name} 勝利</span>
         <span style="font-size:13px;color:var(--text-sub)">${r.finType}${r.finMove ? `（${r.finMove}）` : ''} / ${r.turns}ターン</span>
       </div>
-      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+15)</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
     }
 
     // HP bars

@@ -102,6 +102,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .match-result .winner{font-weight:900;color:var(--gold-light)}
 .match-result .detail{font-size:11px;color:var(--text-sub);margin-top:4px}
 
+/* Custom Tooltip */
+.custom-tooltip{position:fixed;z-index:9999;background:rgba(10,10,20,0.97);border:1px solid rgba(255,255,255,0.18);
+  border-radius:6px;padding:10px 14px;font-size:12px;color:#ddd;line-height:1.7;max-width:250px;
+  pointer-events:none;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
+.tt{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;
+  background:rgba(255,255,255,0.12);color:var(--text-dim);font-size:10px;cursor:pointer;
+  margin-left:4px;vertical-align:middle;user-select:none;flex-shrink:0;line-height:1}
+.tt:hover{background:rgba(255,255,255,0.22);color:var(--text-main)}
+
 /* Roster Condition bars */
 .cond-bar{width:60px;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
 .cond-fill{height:100%;border-radius:3px;transition:width .3s}
@@ -1089,6 +1098,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     </div>
   </div>
 </div>
+
+<!-- Custom Tooltip -->
+<div class="custom-tooltip" id="customTooltip"></div>
 
 <!-- Show Result Overlay -->
 <div class="show-result-overlay" id="showResultOverlay">

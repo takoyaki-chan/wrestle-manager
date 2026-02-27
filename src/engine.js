@@ -1549,12 +1549,12 @@ const Engine = {
 
   // ── Rival System (IMMUTABLE) ───────────────────────────
   rival: {
-    // Generate trainCap for a fighter (training-spec §1.4)
-    generateTrainCap(rng, notionValue, potential) {
+    // Generate trainCap for a fighter (training-spec §1.4 v1.2: factor×Pot, 0ベース)
+    generateTrainCap(rng, _notionValue, potential) {
       const caps = {};
       ['pw','sp','te','st','mn'].forEach(s => {
-        const factor = 0.10 + Engine.rng.float(rng) * 0.40; // 0.10〜0.50
-        caps[s] = Math.round(notionValue[s] + factor * (potential[s] - notionValue[s]));
+        const factor = 0.50 + Engine.rng.float(rng) * 0.30; // 0.50〜0.80
+        caps[s] = Math.round(factor * (potential[s] || 0));
       });
       return caps;
     },
@@ -2281,7 +2281,9 @@ const Engine = {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
-          const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          const rawPenMultI = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          // 適応力: growthPenaltyの影響を0.2軽減（怪我中でも順応して成長できる）
+          const penMult = (rawPenMultI < 1.0 && Traits.has(nc, '適応力')) ? Math.min(1.0, rawPenMultI + 0.2) : rawPenMultI;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
@@ -2309,7 +2311,9 @@ const Engine = {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
-          const penMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          const rawPenMultP = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          // 適応力: growthPenaltyの影響を0.2軽減
+          const penMult = (rawPenMultP < 1.0 && Traits.has(nc, '適応力')) ? Math.min(1.0, rawPenMultP + 0.2) : rawPenMultP;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
@@ -2685,7 +2689,16 @@ const Engine = {
       // メタデータ記録（MQにはまだ加算しない）
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) result.rivalryBonus = rivalLvl;
-      if (m.isTitle) result.isTitleMatch = true;
+      if (m.isTitle) {
+        result.isTitleMatch = true;
+        // v2.1: OVR差格差ペナルティ用にチャンピオンvs挑戦者のOVR差を記録
+        const champId = titles.world.championId;
+        if (champId) {
+          const champF = charL.id === champId ? charL : (charR.id === champId ? charR : null);
+          const chalF  = charL.id === champId ? charR  : (charR.id === champId ? charL  : null);
+          if (champF && chalF) result.titleOVRGap = Engine.util.ov(champF) - Engine.util.ov(chalF);
+        }
+      }
       result.coachMQBonus = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
       // 因縁更新（副作用）
       const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
@@ -2759,11 +2772,22 @@ const Engine = {
       }
       // v2.0: ファン期待カード MQボーナス（キャップ対象）
       externalMQ += Engine.fanExpect.getMQBonus(r.left.id, r.right.id, fanExpects);
+      // 野心: タイトルマッチで挑戦者側が野心持ちなら MQ+2（キャップ対象）
+      if (r.isTitleMatch) {
+        const champId = s.titles?.world?.championId;
+        const challenger = champId === r.left.id ? r.right : (champId === r.right.id ? r.left : null);
+        if (challenger && Traits.has(challenger, '野心')) externalMQ += 2;
+      }
       const positiveExternal = Math.max(0, externalMQ);
       const negativeExternal = Math.min(0, externalMQ);
       const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
-      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal, 5, 100);
-      r.externalMQBonus = cappedPositive + negativeExternal;
+      // v2.1: タイトルマッチ格差ペナルティ（キャップ後に別途減算。タイトルボーナスは享受できる）
+      let titleGapPenalty = 0;
+      if (r.isTitleMatch && r.titleOVRGap > 20) titleGapPenalty = -6;
+      else if (r.isTitleMatch && r.titleOVRGap > 10) titleGapPenalty = -3;
+      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty, 5, 100);
+      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty;
+      if (titleGapPenalty < 0) r.titleGapPenalty = titleGapPenalty;
       return r;
     });
 
@@ -2772,6 +2796,13 @@ const Engine = {
       const cleanedBuffs = (s.milestoneBuffs || []).filter(b => b.type !== 'next_match_mq');
       s = { ...s, milestoneBuffs: cleanedBuffs };
     }
+
+    // v2.1: 格差タイトルマッチのログ
+    results.forEach(r => {
+      if (r.titleGapPenalty) {
+        events.push(`⚠️ 格差タイトルマッチ: OVR差+${r.titleOVRGap} → MQ${r.titleGapPenalty}`);
+      }
+    });
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
     const mainEventIdx = results.length - 1; // last match is main event
@@ -2861,9 +2892,10 @@ const Engine = {
         const resultBonus = won ? 0.0 : 0.2;
         let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
 
-        // §3.3 growthPenalty適用
+        // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
         if (fighter.growthPenalty) {
-          matchGrowth *= fighter.growthPenalty.multiplier;
+          const rawMult = fighter.growthPenalty.multiplier;
+          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
         }
 
         // §2.5 成長ステータス選択（1〜2個）
@@ -3032,8 +3064,10 @@ const Engine = {
           if (higherOrgs.length === 0) return;
 
           // Each eligible org rolls independently
+          // 忠誠心: 引き抜き確率を×0.25に削減
+          const effectivePoachChance = Traits.has(fighter, '忠誠心') ? cfg.poachChancePerFighter * 0.25 : cfg.poachChancePerFighter;
           higherOrgs.forEach(org => {
-            if (Engine.rng.float(rng) < cfg.poachChancePerFighter) {
+            if (Engine.rng.float(rng) < effectivePoachChance) {
               poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
             }
           });
@@ -3604,12 +3638,8 @@ const Engine = {
       const growthTraits = traits.filter(t => ['早熟','晩成','遅咲き'].includes(t));
       if (growthTraits.length > 1) traits.splice(traits.indexOf(growthTraits[1]), 1);
 
-      // §6.2 trainCap
-      const trainCap = {};
-      for (const p of params) {
-        const factor = 0.10 + Engine.rng.float(rng) * 0.40;
-        trainCap[p] = Math.round(notion[p] + factor * (pot[p] - notion[p]));
-      }
+      // §6.2 trainCap (training-spec §1.4 v1.2: factor×Pot)
+      const trainCap = Engine.rival.generateTrainCap(rng, notion, pot);
 
       const id = nextGenCharId++;
       const fighter = {
@@ -4873,6 +4903,8 @@ Engine.growthEvents = {
     const prevBest = fighter.careerBestMQ || 0;
     if (mq > prevBest) prob += 1.0;
     if (isTitle) prob += 0.5;
+    // 野心: タイトルマッチでのブレークスルー確率+0.5%（チャンピオンへの野望が成長を後押し）
+    if (isTitle && Traits.has(fighter, '野心')) prob += 0.5;
     if (mq >= 70) prob += 0.5;
     if (!won) prob += 0.3;
     if ((fighter.age || 20) <= 25) prob += 0.3;
@@ -5215,6 +5247,10 @@ Engine.trust = {
     // trust < 25 の選手が多いほど空気が悪化（-2/名）
     const lowTrustCount = (trustResult.roster || []).filter(f => (f.trust || 50) < 25).length;
     delta -= lowTrustCount * 2;
+
+    // 人望: 在籍中の間だけロッカールーム士気に+3ボーナス
+    const hasNinbo = (trustResult.roster || []).some(f => Traits.has(f, '人望') && !f.injury);
+    if (hasNinbo) delta += 3;
 
     return Engine.util.clamp(Math.round(current + delta), 0, 100);
   },

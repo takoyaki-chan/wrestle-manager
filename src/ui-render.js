@@ -1181,6 +1181,7 @@ function renderShowPrep() {
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
         ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
         ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="タイトルマッチは12週に1回まで">⏳ 次のタイトルマッチまであと${cdCheck.weeksLeft}週</span>` : ''}
+        ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
       </div>
@@ -1335,8 +1336,18 @@ function renderRanking() {
     }
   }
 
-  // Ranking table
-  html += '<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th><th style="text-align:right">評価値</th><th style="text-align:right" title="人気の高い選手が何人いるかの得点。人気70以上=15pt、人気50以上=8pt、人気30以上=3pt。スターの厚みを示す。">⭐ スター</th><th style="text-align:right" title="所属選手の個人人気を全員分合計した値（合計×0.1）。団体全体の層の厚さを示す。">👥 人気計</th><th style="text-align:right">人数</th></tr>';
+  // Ranking table — tooltip texts stored in global to avoid HTML-in-attribute issues
+  window._rankTips = {
+    rating: '👑 王者ボーナス: 30pt<br>⭐ スター得点 + 👥 人気計<br>の合計がランキング評価値',
+    star:   '人気50以上 = 15pt（トップスター）<br>人気35以上 = 8pt（スター）<br>人気20以上 = 3pt（中堅）<br>スターの厚みを示す',
+    pop:    '所属選手の人気を全員合計した値（×0.1）<br>団体全体の層の厚さを示す'
+  };
+  const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
+  html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
+    `<th style="text-align:right">評価値${tt('rating')}</th>` +
+    `<th style="text-align:right">⭐ スター${tt('star')}</th>` +
+    `<th style="text-align:right">👥 人気計${tt('pop')}</th>` +
+    `<th style="text-align:right">人数</th></tr>`;
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
