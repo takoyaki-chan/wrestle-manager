@@ -2343,10 +2343,11 @@ const Engine = {
         return { ...c, popularity: Math.max(1, c.popularity + scandal.popDelta) };
       });
 
-      // v1.5: Natural popularity decay (-0.5/week) — 放っておくと人気は落ちる
+      // v1.5: Natural popularity decay — 放っておくと人気は落ちる（低人気帯は軽減）
       roster = roster.map(c => {
         if (c.injury || c.isRental || c.popularity <= 10) return c;
-        return { ...c, popularity: Math.max(10, c.popularity - 0.5) };
+        const decay = c.popularity < 25 ? 0.2 : c.popularity < 40 ? 0.3 : 0.5;
+        return { ...c, popularity: Math.max(10, c.popularity - decay) };
       });
 
       // v1.8: §4.3/§5.3 スランプ/モチベ喪失中の能力微減（怪我中はスキップ）
@@ -2926,13 +2927,15 @@ const Engine = {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
     // v1.5s25: 6段階小数カーブ（序盤でもゆっくり上昇、下落も緩やか）
-    const rawDelta = avgMQ >= 80 ? 1.8
-                   : avgMQ >= 65 ? 1.2
-                   : avgMQ >= 55 ? 0.7
-                   : avgMQ >= 45 ? 0.3
-                   : avgMQ >= 35 ? -0.3
-                   :               -0.5;
-    // v1.5: 施策A — orgPop逓減カーブ適用（rng必須: 確率的丸めで高帯でもゆっくり上がる）
+    let rawDelta = avgMQ >= 80 ? 1.8
+                 : avgMQ >= 65 ? 1.2
+                 : avgMQ >= 55 ? 0.7
+                 : avgMQ >= 45 ? 0.3
+                 : avgMQ >= 35 ? -0.3
+                 :               -0.5;
+    // v1.5s25b: 序盤ボーナス — orgPop < 20 のとき rawDelta に +0.2（最低MQ35以上で上昇保証）
+    if (orgPop < 20) rawDelta += 0.2;
+    // v1.5: 施策A — orgPop逓減カーブ適用
     const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
   },
@@ -4416,8 +4419,9 @@ Engine.orgPop = {
 
   // 施策B-1: 年次減衰（orgPop帯に応じて増える）
   calcAnnualDecay(orgPop) {
-    if (orgPop < 30) return 2;    // 弱小はあまり落ちない
-    if (orgPop < 50) return 3;    // 中堅は従来と同じ
+    if (orgPop < 15) return 0;    // 創設期: 減衰なし（序盤保護）
+    if (orgPop < 30) return 1;    // 弱小: 微減のみ
+    if (orgPop < 50) return 3;    // 中堅
     if (orgPop < 70) return 5;    // メジャー: 維持が難しくなる
     if (orgPop < 85) return 7;    // トップ: かなり落ちる
     return 10;                     // 覇権: 激しく落ちる

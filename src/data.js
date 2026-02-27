@@ -594,8 +594,8 @@ const CROWD_HEAT_MQ = [
   { min: 0.25, bonus: -1, label: '空席の静けさ' },
   { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
 ];
-const VENUE_SCALE_MQ = [0, 0, 0, 1, 1, 1, 2];
-// index: 公民館=0, 小ホール=0, 市民会館=+1, 中ホール=+1, アリーナ=+2, 大会場=+2, ドーム=+3
+const VENUE_SCALE_MQ = [0, 1, 1, 1, 2, 2, 3];
+// index: 公民館=0, 小ホール=+1, 市民会館=+1, 中ホール=+1, アリーナ=+2, 大会場=+2, ドーム=+3
 
 // ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {
@@ -611,7 +611,7 @@ const LOSING_STREAK_PENALTIES = [
   {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
   {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
 ];
-const PROMO_POP_CAP = 40; // プロモのみで到達可能な人気上限
+const PROMO_POP_CAP = 55; // プロモのみで到達可能な人気上限
 const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
 const SPONSOR_TABLE = [
   {min:0,max:19,val:0},{min:20,max:39,val:10},{min:40,max:59,val:30},
@@ -623,8 +623,8 @@ const BROADCAST_TABLE = [
 const FIXED_COSTS = {facility:50, admin:30};
 // v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
 const SUBSIDY_TABLE = [
-  {max:19, val:50},  // orgPop 0-19: 50万/週
-  {max:29, val:35},  // orgPop 20-29: 35万/週
+  {max:19, val:80},  // orgPop 0-19: 80万/週
+  {max:29, val:50},  // orgPop 20-29: 50万/週
   {max:39, val:20},  // orgPop 30-39: 20万/週
 ];
 
@@ -657,14 +657,14 @@ const INJURY_DEBUFF_TABLE = {
 
 // Title System
 const TITLES = [
-  {id:'world', name:'団体王座', mqBonus:5, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+  {id:'world', name:'団体王座', mqBonus:10, popBonus:3, attendBonus:1.15, emoji:'🏆'}
 ];
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {matches:2, label:'因縁', mqBonus:3, color:'#fdcb6e', emoji:'⚡'},
-  {matches:4, label:'宿敵', mqBonus:5, color:'#e17055', emoji:'🔥'},
-  {matches:7, label:'永遠のライバル', mqBonus:8, color:'#d63031', emoji:'💥'}
+  {matches:2, label:'因縁', mqBonus:5, color:'#fdcb6e', emoji:'⚡'},
+  {matches:4, label:'宿敵', mqBonus:8, color:'#e17055', emoji:'🔥'},
+  {matches:7, label:'永遠のライバル', mqBonus:12, color:'#d63031', emoji:'💥'}
 ];
 
 // v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
