@@ -1305,11 +1305,13 @@ function showFighterPopup(fighterId, source) {
   const isFree = G.freeAgents.some(r => r.id === c.id);
   const isScoutCandidate = (G.scoutCandidates || []).some(r => r.id === c.id);
   let orgLabel = '';
+  let negotiateOrgId = null;
   if (!isRoster && !isFree && G.aiOrgs) {
     for (const [oId, oData] of Object.entries(G.aiOrgs)) {
       if (oData.roster?.some(f => f.id === c.id)) {
         const org = RIVAL_ORGS.find(o => o.id === oId);
         orgLabel = org ? `${org.emoji} ${org.name}` : oId;
+        negotiateOrgId = oId;
         break;
       }
     }
@@ -1383,9 +1385,26 @@ function showFighterPopup(fighterId, source) {
       </div>
     </div>`;
 
-    // ── Tab bar ──
-    const tabs = ['📊 能力', '📋 戦績・経歴'];
+    // ── 引き抜きアクションバー（AI所属選手のみ）──
+    if (negotiateOrgId) {
+      const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(c.id);
+      const negLabel = G.pendingNegotiation
+        ? (G.pendingNegotiation.fighterId === c.id ? '⏳ 交渉中' : '— 他の選手と交渉中')
+        : (G.negotiatedThisSeason || []).includes(c.id) ? '✓ 今季交渉済' : null;
+      html += `<div style="padding:8px 16px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px">`;
+      if (canNeg) {
+        html += `<button onclick="closeFighterPopup();showNegotiatePopup('${negotiateOrgId}',${c.id})" style="font-size:13px;padding:6px 18px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.4);border-radius:4px;cursor:pointer;font-weight:700">🤝 選手を引き抜く</button>`;
+      } else {
+        html += `<span style="font-size:13px;color:var(--text-dim)">${negLabel}</span>`;
+      }
+      html += `</div>`;
+    }
+
+    // ── Tab bar（NPC は戦績・経歴タブを非表示）──
+    const tabs = ['📊 能力'];
+    if (orgLabel === '') tabs.push('📋 戦績・経歴');
     if (isRoster) tabs.push('⚙️ 管理');
+    if (tabIdx >= tabs.length) tabIdx = 0;
     html += `<div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15)">
       ${tabs.map((t, i) => `<button onclick="event.stopPropagation();window._fpTab=${i};showFighterPopup(${c.id},'${source||''}')"
         style="flex:1;padding:10px 6px;font-size:13px;background:${i===tabIdx?'rgba(255,255,255,0.05)':'none'};border:none;border-bottom:2px solid ${i===tabIdx?'var(--gold)':'transparent'};color:${i===tabIdx?'var(--text)':'var(--text-dim)'};cursor:pointer;transition:all 0.2s">${t}</button>`).join('')}
@@ -1486,10 +1505,11 @@ function showFighterPopup(fighterId, source) {
         }
       }
 
-      // Traits section
-      if (c.traits && c.traits.length > 0) {
+      // Traits section（セーブデータから引く。_migrated_npc_traits で付与済み）
+      const displayTraits = c.traits || [];
+      if (displayTraits.length > 0) {
         html += '<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px">固有特性</div>';
-        c.traits.forEach(t => {
+        displayTraits.forEach(t => {
           const td = TRAIT_DEFS[t];
           if (!td) return;
           html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
@@ -1522,22 +1542,26 @@ function showFighterPopup(fighterId, source) {
       const pOrgName = G.orgName || 'プレイヤー団体';
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
-      // ── Compact Record Row ──
-      html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
-          <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
-          <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
-          <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
-          <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
-          <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
-          ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
-          ${c.bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${c.bestMQ}</span>` : ''}
-          ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${G.titles.world.defenses}防衛）</span>` : ''}
-        </div>
-      </div>`;
+      // ── Compact Record Row（NPCは戦績非記録のため非表示）──
+      if (orgLabel === '') {
+        html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
+            <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
+            <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
+            <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
+            <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
+            <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
+            ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
+            ${c.bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${c.bestMQ}</span>` : ''}
+            ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${G.titles.world.defenses}防衛）</span>` : ''}
+          </div>
+        </div>`;
+      }
 
-      // ── Milestone Timeline (grouped by season, reverse order) ──
-      if (milestones.length > 0) {
+      // ── Milestone Timeline / Career History（NPCは非表示）──
+      if (orgLabel !== '') {
+        // NPC: 経歴データは記録・公開していないため何も表示しない
+      } else if (milestones.length > 0) {
         // Group by season
         const bySeason = {};
         milestones.forEach(m => {
@@ -1588,8 +1612,8 @@ function showFighterPopup(fighterId, source) {
         html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
       }
 
-      // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション
-      const hist = c.careerHistory || [];
+      // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPCは非表示）
+      const hist = (orgLabel === '') ? (c.careerHistory || []) : [];
       if (hist.length > 0) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">

@@ -1595,6 +1595,7 @@ const Engine = {
         id: template.id, name: template.name, h: template.h,
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
         style: template.style, role: template.role, pot: { ...template.pot },
+        traits: template.traits || [],
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),

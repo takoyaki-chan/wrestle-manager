@@ -1452,6 +1452,23 @@ function renderRanking() {
           }).join('')}
           </div>
         </div>
+        <details style="margin-top:10px">
+          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${G.roster.length}名）</summary>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+            ${[...G.roster].sort((a,b) => ov(b) - ov(a)).map(f => {
+              const fOvr = ov(f);
+              const isChampF = G.titles?.world?.championId === f.id;
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
+                <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' 👑' : ''}</div>
+                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
+                </div>
+                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </details>
       </div>`;
     } else if (org) {
       // AI org card — use rank color
@@ -1476,19 +1493,18 @@ function renderRanking() {
           </div>
         </div>
         <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">📋 選手を引き抜く（${roster.length}名）</summary>
+          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${roster.length}名）</summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
             ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
               const fOvr = Engine.util.ov(f);
               const isTop = idx === 0;
-              const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(f.id);
-              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showNegotiatePopup('${org.id}',${f.id})">
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
                 </div>
-                <div style="font-size:11px;color:${canNeg ? rc : 'var(--text-dim)'};white-space:nowrap">${canNeg ? '交渉→' : G.pendingNegotiation ? (G.pendingNegotiation.fighterId === f.id ? '⏳交渉中' : '—') : (G.negotiatedThisSeason || []).includes(f.id) ? '交渉済' : '交渉→'}</div>
+                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
               </div>`;
             }).join('')}
           </div>

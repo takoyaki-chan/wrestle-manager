@@ -1387,6 +1387,22 @@ const Storage = {
         G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 信頼度パラメータを追加しました'] };
       }
 
+      if (!G._migrated_npc_traits) {
+        // AI団体の全選手に traits を付与（ALL_CHARS のマスタから引く）
+        const aiOrgs = { ...(G.aiOrgs || {}) };
+        for (const orgId of Object.keys(aiOrgs)) {
+          aiOrgs[orgId] = {
+            ...aiOrgs[orgId],
+            roster: (aiOrgs[orgId].roster || []).map(f => {
+              if (f.traits != null) return f;
+              const master = ALL_CHARS.find(ch => ch.id === f.id);
+              return { ...f, traits: master ? (master.traits || []) : [] };
+            })
+          };
+        }
+        G = { ...G, aiOrgs, _migrated_npc_traits: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
