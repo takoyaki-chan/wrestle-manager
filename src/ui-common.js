@@ -2268,6 +2268,12 @@ function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { retu
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
 function showScreen(id, evt) {
   Audio.play('click');
+  // Safety: 残存オーバーレイがタブ操作をブロックしないよう強制解除
+  ['careOverlay','confirmOverlay','growthEventOverlay','milestoneOverlay',
+   'newspaperOverlay','seasonFanfareOverlay'].forEach(oid => {
+    const el = document.getElementById(oid);
+    if (el) { el.classList.remove('active'); el.classList.remove('show'); }
+  });
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const screenEl = document.getElementById(`screen-${id}`);
   if (screenEl) screenEl.classList.add('active');

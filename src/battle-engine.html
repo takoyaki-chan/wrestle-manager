@@ -202,17 +202,26 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .log-entry.system{color:rgba(42,157,143,0.9)}
 .log-entry.counter{color:#5dd9ca;font-weight:600}
 .log-entry.miss{color:rgba(255,255,255,0.3)}
-.action-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 20px;text-align:center;
+.action-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 20px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
   background:linear-gradient(180deg,transparent,rgba(8,8,13,0.95) 30%);z-index:20;
   backdrop-filter:blur(6px)}
 .action-bar-spacer{height:70px}
 .btn-next{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:4px;
-  text-transform:uppercase;padding:14px 0;width:min(700px,100%);border:1px solid var(--gold-dim);
+  text-transform:uppercase;padding:14px 0;width:min(580px,80%);border:1px solid var(--gold-dim);
   border-radius:3px;cursor:pointer;background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.05));
-  color:var(--gold-light);transition:all .2s}
+  color:var(--gold-light);transition:all .2s;flex-shrink:0}
 .btn-next:hover:not(:disabled){background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.1));
   box-shadow:0 0 20px rgba(212,168,67,0.15);transform:translateY(-1px)}
 .btn-next:disabled{opacity:0.35;cursor:not-allowed}
+.btn-auto{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;padding:14px 10px;width:min(110px,13%);border:1px solid var(--gold-dim);
+  border-radius:3px;cursor:pointer;background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(212,168,67,0.03));
+  color:rgba(212,168,67,0.5);transition:all .2s;flex-shrink:0;line-height:1.2}
+.btn-auto:hover{background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.06));
+  color:var(--gold-light)}
+.btn-auto.on{background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.12));
+  color:var(--gold-light);border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,0.18)}
 @keyframes btnPulse{0%{box-shadow:0 0 5px rgba(212,168,67,0.1)}50%{box-shadow:0 0 20px rgba(212,168,67,0.25)}100%{box-shadow:0 0 5px rgba(212,168,67,0.1)}}
 @keyframes kickoutFlash{0%{box-shadow:0 0 30px rgba(255,255,255,0.6),inset 0 0 20px rgba(255,255,255,0.3)}
   100%{box-shadow:none}}
@@ -1070,6 +1079,28 @@ function showCountText(text,cls){
 function showNBtn(){
   const nBtn=document.getElementById('nBtn');if(nBtn){nBtn.style.display='';
     const actBar=nBtn.closest('.action-bar');if(actBar)actBar.style.display='';}
+  // Auto-advance: 試合継続中であれば5秒後にNEXT TURNを自動発火
+  if(autoAdvance&&!S.winner){
+    clearTimeout(autoTimer);
+    autoTimer=setTimeout(()=>{
+      if(autoAdvance&&!S.winner&&!S.anim)nextTurn();
+    },AUTO_DELAY);
+  }
+}
+function toggleAuto(){
+  autoAdvance=!autoAdvance;
+  clearTimeout(autoTimer);
+  // ボタン表示を即時更新
+  const btn=document.getElementById('autoBtn');
+  if(btn){btn.classList.toggle('on',autoAdvance);
+    const sp=btn.querySelector('span');if(sp)sp.textContent=autoAdvance?'ON':'OFF';}
+  // ONに切り替えた時点でnBtnが操作可能なら即タイマー開始
+  if(autoAdvance&&!S.winner&&!S.anim){
+    const nBtn=document.getElementById('nBtn');
+    if(nBtn&&!nBtn.disabled){
+      autoTimer=setTimeout(()=>{if(autoAdvance&&!S.winner&&!S.anim)nextTurn();},AUTO_DELAY);
+    }
+  }
 }
 
 // ═══ STATE ═══
@@ -1078,6 +1109,10 @@ const S={screen:'WAITING',turn:1,mom:0,prevMom:0,
   halfTrig:{l:false,r:false},qtrTrig:{l:false,r:false},dangerTrig:{l:false,r:false},
   awaitingFinishClick:false,pendingFinishResult:null,droneNodes:null,
   consecutiveHits:{left:0,right:0}};
+// ─── Auto-advance state ───
+let autoAdvance=false;
+let autoTimer=null;
+const AUTO_DELAY=5000; // ms
 const silSVG=`<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="30" r="18"/><ellipse cx="50" cy="85" rx="30" ry="35"/></svg>`;
 
 // ═══ WAITING SCREEN ═══
@@ -1198,12 +1233,15 @@ function renderMatch(){
     </div>${fHTML(R,'right')}</div>
     <div class="action-bar-spacer"></div>
     <div class="action-bar"><button class="btn-next" id="nBtn" ${S.winner||S.anim?'disabled':''}>
-      ${S.winner?(S.winner==='draw'?'DRAW!':`${(S.winner==='left'?L:R).name} WIN!`):'▶  NEXT TURN'}</button></div>`;
+      ${S.winner?(S.winner==='draw'?'DRAW!':`${(S.winner==='left'?L:R).name} WIN!`):'▶  NEXT TURN'}</button>
+      ${!S.winner?`<button class="btn-auto${autoAdvance?' on':''}" id="autoBtn" onclick="toggleAuto()">AUTO<br><span style="font-size:10px;letter-spacing:1px">${autoAdvance?'ON':'OFF'}</span></button>`:''}
+    </div>`;
   if(!S.winner&&!S.anim)document.getElementById('nBtn').onclick=nextTurn;
 }
 
 // ═══ v4.1 TURN LOGIC (complete rewrite) ═══
 function nextTurn(){
+  clearTimeout(autoTimer); // 自動送りタイマーをキャンセル
   if(S.winner||S.anim)return;S.anim=true;
   const btn=document.getElementById('nBtn');if(btn){btn.disabled=true;btn.style.animation='none';}
   const L=S.L,R=S.R,ph=phase(S.turn),prevPh=S.turn>1?phase(S.turn-1).name:ph.name;
