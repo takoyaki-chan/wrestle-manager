@@ -662,17 +662,23 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   font-family:'Noto Sans JP',sans-serif}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* v2.0: 通知型イベント トースト（選手顔アイコン＋テキスト） */
+/* v2.0: 通知型イベント トースト（選手顔＋テキスト＋セリフ） */
 .notif-event-toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-8px);
-  background:rgba(14,14,21,0.96);border:1px solid rgba(255,255,255,0.14);border-radius:8px;
-  padding:10px 16px;pointer-events:none;opacity:0;transition:opacity .3s,transform .3s;
-  z-index:261;font-family:'Noto Sans JP',sans-serif;min-width:200px;max-width:340px}
+  background:rgba(14,14,21,0.96);border:1px solid rgba(255,255,255,0.14);border-radius:10px;
+  padding:14px 16px;pointer-events:auto;cursor:pointer;opacity:0;transition:opacity .3s,transform .3s;
+  z-index:261;font-family:'Noto Sans JP',sans-serif;min-width:240px;max-width:420px}
 .notif-event-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .notif-event-toast.notif-warning{border-color:rgba(231,76,60,0.5);
   background:rgba(30,12,12,0.97)}
-.notif-inner{display:flex;align-items:center;gap:10px}
-.notif-text{font-size:13px;color:var(--text-main);line-height:1.4;flex:1}
+.notif-inner{display:flex;align-items:flex-start;gap:12px}
+.notif-portraits{display:flex;gap:6px;flex-shrink:0}
+.notif-body{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.notif-text{font-size:13px;color:var(--text-main);line-height:1.4}
+.notif-detail{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.55;margin-top:2px}
+.notif-dialogue{font-size:11px;color:rgba(180,200,255,0.75);font-style:italic;
+  margin-top:5px;padding-left:8px;border-left:2px solid rgba(255,255,255,0.2);line-height:1.45}
 .notif-event-toast.notif-warning .notif-text{color:#e57373}
+.notif-event-toast.notif-warning .notif-detail{color:rgba(229,115,115,0.65)}
 .notif-face{border-radius:50%;object-fit:cover;flex-shrink:0}
 .notif-event-toast .portrait{border-radius:50%;flex-shrink:0}
 
@@ -767,6 +773,53 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .milestone-choice:hover{background:rgba(255,255,255,0.08);border-color:var(--gold)}
 .milestone-result{font-size:14px;color:var(--text-sub);line-height:1.6;margin:16px 0;font-style:italic}
 .milestone-effect{font-size:12px;color:var(--gold);margin-bottom:16px}
+
+/* v2.1: ゲームオーバー画面 */
+.gameover-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:280;align-items:center;justify-content:center}
+.gameover-overlay.active{display:flex}
+.gameover-box{background:#0a0a0f;border-radius:14px;max-width:440px;width:92%;
+  padding:36px 32px;text-align:center;border:1px solid rgba(255,50,50,0.25);
+  box-shadow:0 0 48px rgba(255,0,0,0.08);max-height:92vh;overflow-y:auto;box-sizing:border-box}
+.gameover-title{font-family:'Bebas Neue','Oswald',sans-serif;font-size:38px;letter-spacing:4px;
+  color:#cc3333;margin-bottom:10px}
+.gameover-subtitle{font-size:13px;color:var(--text-sub);margin-bottom:18px;line-height:1.6}
+.gameover-divider{font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-bottom:14px}
+.gameover-stats{text-align:left;font-size:12px;padding:12px 14px;background:rgba(255,255,255,0.03);
+  border-radius:8px;margin-bottom:20px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.06)}
+.gameover-stat-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.gameover-stat-row span:first-child{color:var(--text-dim)}
+.gameover-stat-row span:last-child{color:var(--text);font-weight:600}
+.gameover-btn{display:block;width:100%;padding:12px 0;border-radius:8px;font-size:14px;font-weight:700;
+  cursor:pointer;border:none;margin-top:8px;transition:opacity 0.2s;
+  background:rgba(255,255,255,0.08);color:var(--text);letter-spacing:1px}
+.gameover-btn:hover{opacity:0.8}
+.gameover-btn.secondary{background:rgba(255,255,255,0.04);color:var(--text-sub);font-size:13px}
+
+/* v2.1: クレジット画面 */
+.credits-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:290;align-items:center;justify-content:center}
+.credits-overlay.active{display:flex}
+.credits-box{background:var(--panel-bg);border-radius:14px;max-width:400px;width:92%;
+  padding:32px 28px;text-align:center;border:1px solid rgba(255,255,255,0.08);
+  max-height:82vh;overflow-y:auto;box-sizing:border-box}
+.credits-title{font-family:'Bebas Neue','Oswald',sans-serif;font-size:28px;letter-spacing:4px;
+  color:var(--gold);margin-bottom:20px}
+.credits-section{margin-bottom:18px;text-align:left}
+.credits-heading{font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:4px}
+.credits-music-item{font-size:12px;color:var(--text);line-height:1.8}
+.credits-music-title{font-weight:700;color:var(--gold-light)}
+.credits-music-artist{color:var(--text-sub)}
+.credits-music-link{color:#5b9bd5;text-decoration:none;font-size:11px}
+.credits-music-link:hover{text-decoration:underline}
+.credits-close{display:block;width:100%;padding:10px 0;border-radius:8px;margin-top:18px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-sub);font-size:13px;cursor:pointer;transition:opacity 0.2s}
+.credits-close:hover{opacity:0.8}
+
+/* v2.1: タイトル画面 Creditsリンク */
+.title-credits-link{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;
+  margin-top:6px;letter-spacing:1px;font-family:'Oswald',sans-serif}
+.title-credits-link:hover{color:rgba(255,255,255,0.6);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1071,6 +1124,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
     </div>
     <div class="title-ver">VERSION 1.0</div>
+    <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
   </div>
 </div>
 
@@ -1171,6 +1225,27 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <!-- v1.9: Season Fanfare -->
 <div class="season-fanfare-overlay" id="seasonFanfareOverlay" onclick="window._sfDismiss&&window._sfDismiss()">
   <div class="season-fanfare-box" id="seasonFanfareBox"></div>
+</div>
+
+<!-- v2.1: ゲームオーバー画面 -->
+<div class="gameover-overlay" id="gameoverOverlay">
+  <div class="gameover-box" id="gameoverBox" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- v2.1: クレジット画面 -->
+<div class="credits-overlay" id="creditsOverlay" onclick="App.closeCredits()">
+  <div class="credits-box" onclick="event.stopPropagation()">
+    <div class="credits-title">CREDITS</div>
+    <div class="credits-section">
+      <div class="credits-heading">ゲームデザイン・開発</div>
+      <div style="font-size:13px;color:var(--text)">たこやき</div>
+    </div>
+    <div class="credits-section">
+      <div class="credits-heading">使用楽曲</div>
+      <div id="creditsMusicList"></div>
+    </div>
+    <button class="credits-close" onclick="App.closeCredits()">閉じる</button>
+  </div>
 </div>
 
 <script src="victory-lines.js"></script>

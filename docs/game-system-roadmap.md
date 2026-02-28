@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-28（セッション33）
+> 最終更新: 2026-02-28（v2.1 BGMセッション）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**v2.1 BGMセッション完了。** エンディング/ゲームオーバー/BGMファイル再生を実装。
+
+- **クリア演出**: 年間1位でシーズン終了時に5スライドのエンディング（awardsOverlay再利用）
+- **ゲームオーバー**: funds≤0 で weekPhase:'gameover' → gameoverOverlay 表示。autoSave 上書きなし
+- **BGMファイル再生**: FileBGM（HTMLAudioElement ベース）。`Audio.fileBgm` として公開
+- **クレジット画面**: タイトルに Credits リンク追加。楽曲クレジット（序・序曲 / MOMIZizm MUSiC）表示
+- **BGM Autoplay対応**: `_endingNext()` 内 idx===0（「開始▶」クリック直後）でBGM開始
 
 **セッション33完了。** ビジュアル観戦バトルエンジン品質改善。
 
@@ -57,7 +65,7 @@
 |---|---|---|
 | フィニッシャー（キャラ固有必殺技） | 高 | 設計書 第3部 3.11 |
 | ライバルストーリー自動生成 | 高 | 未設計 |
-| エンディング/ゲームオーバー演出 | 中 | 未設計 |
+| エンディング/ゲームオーバー演出 | — | **v2.1実装済み** |
 | コーチ転身 | 中 | scout-system-spec §8.2 で予約済み |
 | タッグマッチ・タッグ王座 | 中 | — |
 | 敵AI団体専用キャラクター | 中 | 固有キャラで世界観を深める |
@@ -119,6 +127,9 @@
 - **ニュースティッカー** — manage画面スクロールバー。毎週3-5件生成。8カテゴリ
 - **新聞パネル** — 重大イベント時にスポーツ新聞風ポップアップ。8種×複数パターン
 - **autoFillCardのタイトルマッチチェック** — autoFillCard()でEngine.title.canTitleMatch()を確認
+- **エンディング条件** — offWeek4: pRank===1 && !endingCleared → endingCleared=true/endingClearedSeason=season。翌シーズン offWeek1 に演出（endingClearedSeason===season-1 で1回のみ）
+- **ゲームオーバー条件** — tickWeek settlement後に funds≤0 → weekPhase:'gameover'。autoSave上書きなし。processWeekで検知→showGameOverScreen
+- **FileBGM** — HTMLAudioElement ベース。Audio IIFE 内 FileBGM オブジェクト。Audio.fileBgm として公開。BGM再生は必ずユーザー操作直後（Autoplay Policy対応）
 
 ---
 
@@ -161,6 +172,7 @@
 | ライバル団体AI | rival-org-spec-v1.0.md |
 | 特性リスト（25種） | traits-v2.1.md |
 | 技テーブル（160技） | 技テーブル_全160技_v3_5.md |
+| エンディング/ゲームオーバー v1.0 | ending-gameover-spec-v1.0.md |
 | イベントシステム v2 | event-system-spec-v2.md |
 | 成長イベントシステム | growth-event-spec-v1.0.md |
 | 世界観演出システム | world-presentation-spec-v1.4.md |

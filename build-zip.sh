@@ -15,7 +15,7 @@ echo "================================================"
 
 # Clean
 rm -rf dist/
-mkdir -p "${DIST_DIR}/src" "${DIST_DIR}/image"
+mkdir -p "${DIST_DIR}/src" "${DIST_DIR}/image" "${DIST_DIR}/bgm"
 
 # Copy game files
 echo "📦 ゲームファイルをコピー中..."
@@ -28,6 +28,10 @@ cp portrait-map.js "${DIST_DIR}/"
 # Copy images
 echo "🖼️  画像ファイルをコピー中..."
 cp image/*.png "${DIST_DIR}/image/"
+
+# Copy BGM files
+echo "🎵 BGMファイルをコピー中..."
+cp bgm/* "${DIST_DIR}/bgm/" 2>/dev/null || true
 
 # Count files
 SRC_COUNT=$(ls -1 "${DIST_DIR}/src/" | wc -l)

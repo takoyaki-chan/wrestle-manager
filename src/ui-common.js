@@ -2775,23 +2775,227 @@ function showNotifEventToast(event) {
   const el = document.getElementById('notifEventToast');
   if (!el) { showToast(event.text || ''); return; }  // fallback
 
-  const fighterId = event.fighter;
-  const face = fighterId ? portraitImg(fighterId, 36, 'notif-face') : '';
-
-  // N5は警告色で強調
   const isWarning = event.type === 'N5';
-  el.className = 'notif-event-toast' + (isWarning ? ' notif-warning' : '');
 
+  // 顔画像: 2人(N2)は80px×2、1人は120px
+  const f1Id = event.fighter;
+  const f2Id = event.fighter2;
+  let portraitsHtml = '';
+  if (f1Id != null && f2Id != null) {
+    portraitsHtml = `<div class="notif-portraits">${portraitImg(f1Id, 80, 'notif-face')}${portraitImg(f2Id, 80, 'notif-face')}</div>`;
+  } else if (f1Id != null) {
+    portraitsHtml = `<div class="notif-portraits">${portraitImg(f1Id, 120, 'notif-face')}</div>`;
+  }
+
+  const detailHtml = event.detail ? `<div class="notif-detail">${event.detail}</div>` : '';
+  const dialogueHtml = event.dialogue ? `<div class="notif-dialogue">「${event.dialogue}」</div>` : '';
+
+  el.className = 'notif-event-toast' + (isWarning ? ' notif-warning' : '');
   el.innerHTML = `
     <div class="notif-inner">
-      ${face}
-      <span class="notif-text">${event.text || ''}</span>
+      ${portraitsHtml}
+      <div class="notif-body">
+        <div class="notif-text">${event.text || ''}</div>
+        ${detailHtml}
+        ${dialogueHtml}
+      </div>
     </div>
   `;
   el.classList.add('show');
   Audio.play('notify');
 
+  // クリックで早期クローズ
+  el.onclick = () => {
+    clearTimeout(window._notifTimer);
+    el.classList.remove('show');
+    el.onclick = null;
+  };
+
   clearTimeout(window._notifTimer);
-  const duration = isWarning ? 4000 : 2800;
-  window._notifTimer = setTimeout(() => el.classList.remove('show'), duration);
+  const duration = isWarning ? 5500 : 7000;
+  window._notifTimer = setTimeout(() => {
+    el.classList.remove('show');
+    el.onclick = null;
+  }, duration);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.1: エンディング演出 — ending-gameover-spec-v1.0.md §1.3
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** エンディング演出（5スライド）。awardsOverlay / awardsBox を再利用 */
+function showEndingCeremony(data, onDone) {
+  const steps = [];
+
+  // ランダムセリフを重複なしで取得するユーティリティ
+  function _pickLines(pool, n) {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, n);
+  }
+
+  // 選手・コーチのセリフプール
+  const fighterLines = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.fighter) || [];
+  const coachLines   = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.coach)   || [];
+
+  // ── スライド1: タイトル（業界制覇） ─────────────────────────────
+  steps.push(() => {
+    _renderAwardsSlide(
+      `<div class="awards-title">━━ シーズン${data.season} ━━</div>
+      <div style="font-size:42px;margin:12px 0">🏆</div>
+      <div class="awards-title" style="font-size:18px;letter-spacing:5px;color:var(--gold)">業 界 制 覇</div>
+      <div class="awards-detail" style="margin:14px 0 22px;font-size:13px">「${data.orgName}」が頂点に立った。</div>
+      <button class="awards-btn" onclick="window._endingNext()">開始 ▶</button>`,
+      'a'
+    );
+  });
+
+  // ── スライド2: 道のりサマリー ────────────────────────────────────
+  steps.push(() => {
+    const peakPop = Math.round(data.peakOrgPop || 0);
+    _renderAwardsSlide(
+      `<div class="awards-title">━━ 頂点への道のり ━━</div>
+      <div style="margin:16px 0 18px">
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">活動期間</span><span>${data.season} シーズン</span></div>
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">最終レーティング</span><span>${data.playerRating}</span></div>
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">最高団体人気</span><span>${peakPop}</span></div>
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">興行回数</span><span>${data.totalShows} 回</span></div>
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">ベストマッチ</span><span>MQ ${data.bestMQ}</span></div>
+        <div class="awards-summary-row"><span class="awards-summary-label" style="width:100px">殿堂入り</span><span>${data.hallOfFameCount} 名</span></div>
+      </div>
+      <button class="awards-btn" onclick="window._endingNext()">次へ ▶</button>`,
+      'b'
+    );
+  });
+
+  // ── スライド3: 選手たちの声 ──────────────────────────────────────
+  const fighters = data.top3Fighters || [];
+  if (fighters.length > 0) {
+    const fLines = _pickLines(fighterLines, fighters.length);
+    steps.push(() => {
+      let fHtml = fighters.map((f, i) => {
+        const ovrRaw = typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : NaN;
+        const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
+        return `<div style="flex:1;text-align:center;min-width:0">
+          <div style="display:flex;justify-content:center;margin-bottom:5px">${_awardsPortrait(f.id, 80)}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text)">${f.name}</div>
+          <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr}</div>
+          <div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${fLines[i] || '最高だ！'}」</div>
+        </div>`;
+      }).join('');
+      _renderAwardsSlide(
+        `<div class="awards-title">━━ 選手たちの声 ━━</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin:12px 0 16px">${fHtml}</div>
+        <button class="awards-btn" onclick="window._endingNext()">次へ ▶</button>`,
+        'e'
+      );
+    });
+  }
+
+  // ── スライド4: スタッフの声（コーチがいる場合のみ） ──────────────
+  const coaches = (data.coaches || []).slice(0, 3);
+  if (coaches.length > 0) {
+    const cLines = _pickLines(coachLines, coaches.length);
+    steps.push(() => {
+      let cHtml = coaches.map((c, i) => {
+        const ALL_C = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
+        const master = ALL_C.find(x => x.id === c.id) || c;
+        const url = typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(c.id) : '';
+        const face = url
+          ? `<img src="${url}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid rgba(212,168,67,0.4)" alt="">`
+          : `<div style="width:72px;height:72px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid rgba(212,168,67,0.3)">${master.emoji || '👤'}</div>`;
+        return `<div style="flex:1;text-align:center;min-width:0">
+          <div style="display:flex;justify-content:center;margin-bottom:5px">${face}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text)">${master.name || c.name || '—'}</div>
+          <div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${cLines[i] || 'お疲れ様でした'}」</div>
+        </div>`;
+      }).join('');
+      _renderAwardsSlide(
+        `<div class="awards-title">━━ スタッフの声 ━━</div>
+        <div style="display:flex;justify-content:center;gap:12px;margin:12px 0 16px">${cHtml}</div>
+        <button class="awards-btn" onclick="window._endingNext()">次へ ▶</button>`,
+        'd'
+      );
+    });
+  }
+
+  // ── スライド5: 締めくくり ────────────────────────────────────────
+  steps.push(() => {
+    _renderAwardsSlide(
+      `<div class="awards-plaque">🏆</div>
+      <div class="awards-title" style="letter-spacing:3px">CONGRATULATIONS</div>
+      <div class="awards-detail" style="margin:14px 0;line-height:1.8;font-size:13px">
+        「${data.orgName}」は<br>女子プロレス界の頂点に立った。<br><br>
+        しかし、戦いはまだ続く——<br>この先に待つのは、新たな伝説の始まり。
+      </div>
+      <button class="awards-btn" id="endingContinueBtn" onclick="window._endingNext()">続ける ▶</button>`,
+      'f'
+    );
+    document.getElementById('awardsBox').classList.add('hall-of-fame');
+  });
+
+  // ── キュー実行 ───────────────────────────────────────────────────
+  let idx = 0;
+  window._endingNext = () => {
+    // 最終スライドの「続ける」: BGMフェードアウト後に閉じる
+    if (idx === steps.length - 1) {
+      document.getElementById('awardsOverlay').classList.remove('active');
+      window._endingNext = null;
+      const doClose = () => { if (onDone) onDone(); };
+      if (Audio && Audio.fileBgm) Audio.fileBgm.fadeOut(2000).then(doClose);
+      else doClose();
+      return;
+    }
+    // スライド1の「開始▶」クリック時にBGM開始（ユーザー操作内で呼ぶ必要があるため）
+    if (idx === 0 && Audio && Audio.fileBgm) {
+      Audio.fileBgm.play('../bgm/ending.mp3', { loop: true });
+    }
+    document.getElementById('awardsOverlay').classList.remove('active');
+    idx++;
+    setTimeout(() => {
+      steps[idx]();
+      document.getElementById('awardsOverlay').classList.add('active');
+      Audio.play('notify');
+    }, 280);
+  };
+
+  steps[0]();
+  document.getElementById('awardsOverlay').classList.add('active');
+  Audio.play('fanfare');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.1: ゲームオーバー画面 — ending-gameover-spec-v1.0.md §2
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** ゲームオーバー画面を表示（オーバーレイ経由）*/
+function showGameOverScreen(summary) {
+  const overlay = document.getElementById('gameoverOverlay');
+  const box = document.getElementById('gameoverBox');
+  if (!overlay || !box) return;
+
+  const fmt = n => (typeof n === 'number') ? n.toLocaleString() : (n ?? '—');
+
+  box.innerHTML = `
+    <div class="gameover-title">💀 GAME OVER</div>
+    <div class="gameover-subtitle">「${summary.orgName}」は資金難により活動停止を発表した。</div>
+    <div class="gameover-divider">─── 団体の足跡 ───</div>
+    <div class="gameover-stats">
+      <div class="gameover-stat-row"><span>活動期間</span><span>${summary.season} シーズン</span></div>
+      <div class="gameover-stat-row"><span>最高ランク</span><span>${summary.bestRank} 位</span></div>
+      <div class="gameover-stat-row"><span>最高資金</span><span>${fmt(summary.peakFunds)} 万</span></div>
+      <div class="gameover-stat-row"><span>最高団体人気</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
+      <div class="gameover-stat-row"><span>興行回数</span><span>${summary.totalShows} 回</span></div>
+      <div class="gameover-stat-row"><span>ベストマッチ</span><span>${summary.bestMQMatch || '—'} (MQ ${summary.bestMQ})</span></div>
+      <div class="gameover-stat-row"><span>殿堂入り</span><span>${summary.hallOfFameCount} 名</span></div>
+    </div>
+    <button class="gameover-btn" id="gameoverBtn1" onclick="
+      document.getElementById('gameoverBtn1').style.display='none';
+      document.getElementById('gameoverBtn2').style.display='block';
+    ">成績を噛み締めた</button>
+    <button class="gameover-btn secondary" id="gameoverBtn2" style="display:none" onclick="
+      document.getElementById('gameoverOverlay').classList.remove('active');
+      App.showTitleScreen();
+    ">タイトルに戻る</button>
+  `;
+  overlay.classList.add('active');
 }

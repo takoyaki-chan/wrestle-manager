@@ -2393,8 +2393,9 @@ const Engine = {
             const textKey = rawEvent.type === 'N5'
               ? (rawEvent.band === 'low' ? 'N5_low' : 'N5_warning')
               : rawEvent.type;
-            const text = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2 });
-            pendingNotifEvent = { ...applied.event, text };
+            const textData = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2 });
+            const dialogue = Engine.eventSystem.getNotifDialogue(evtRng, applied.event, roster);
+            pendingNotifEvent = { ...applied.event, ...textData, dialogue };
           }
         }
       }
@@ -2537,6 +2538,11 @@ const Engine = {
       s = { ...s, heatScore: s.heatScore + settle.occHeatDelta };
     }
     const events = [...manage.events, settle.summary];
+    // v2.1: 破産判定
+    if (s.funds <= 0) {
+      s = { ...s, weekPhase: 'gameover' };
+      events.push('💀 資金が尽きた…団体は解散を余儀なくされた。');
+    }
     // D-1: Rental weekly processing
     if (s.rental) {
       const rentalResult = Engine.rental.advanceRental(s);
@@ -4047,6 +4053,13 @@ const Engine = {
         const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
         const oldRankings = Engine.ranking.updateRankings(s);
         const pRankOld = Engine.ranking.getPlayerRank(oldRankings);
+        // v2.1: クリア判定（年間1位かつ未クリア）
+        if (pRankOld === 1 && !s.endingCleared) {
+          s = { ...s, endingCleared: true, endingClearedSeason: s.season };
+          events.push(`🏆 「${s.orgName}」が業界1位でシーズンを締めくくった！`);
+        } else if (s.endingCleared && pRankOld === 1) {
+          events.push(`🏆 シーズン${s.season}: 業界1位でフィニッシュ！`);
+        }
         const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
           orgPop: s.orgPop || 0, ...oldStats,
           rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })),
@@ -4484,6 +4497,9 @@ const Engine = {
       milestoneBuffs: [],
       // v2.0: ロッカールームの空気
       lockerRoomMorale: 60,
+      // v2.1: エンディング / ゲームオーバー
+      endingCleared: false,
+      endingClearedSeason: null,
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -4530,6 +4546,55 @@ Engine.orgPop = {
     if (orgPop < 30) return { shift: -7,  negMult: 0.5 };   // 地方団体（強化）: MQ閾値-7、ペナルティ×0.5
     if (orgPop < 45) return { shift: -3,  negMult: 0.85 };  // 中堅への橋渡し（新設）
     return { shift: 0, negMult: 1.0 };                       // 中堅以上: 現行通り
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.1: Ending / GameOver System — ending-gameover-spec-v1.0.md
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.ending = {
+  /** クリア演出用データを集計（純粋関数） */
+  buildClearData(state) {
+    const sh = state.seasonHistory || [];
+    const allBestMQ  = [...sh.map(h => h.bestMQ  || 0), state.seasonStats?.bestMQ  || 0];
+    const allOrgPop  = [...sh.map(h => h.peakPop || h.orgPop || 0), state.orgPop || 0];
+    const allShows   = [...sh.map(h => h.showCount || 0), state.seasonStats?.showCount || 0];
+    const sortedRoster = [...(state.roster || [])].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    return {
+      season:          state.endingClearedSeason || state.season,
+      orgName:         state.orgName || '団体',
+      playerRating:    Math.round(state.rankings?.find(r => r.orgId === 'player')?.rating || 0),
+      peakOrgPop:      Math.max(...allOrgPop, 0),
+      totalShows:      allShows.reduce((a, b) => a + b, 0),
+      bestMQ:          Math.max(...allBestMQ, 0),
+      hallOfFameCount: (state.hallOfFame || []).length,
+      top3Fighters:    sortedRoster.slice(0, 3),
+      coaches:         state.coaches || [],
+    };
+  },
+
+  /** ゲームオーバー成績サマリーを集計（純粋関数） */
+  buildGameOverSummary(state) {
+    const sh = state.seasonHistory || [];
+    const allRanks  = sh.map(h => h.rank).filter(r => r != null);
+    const allFunds  = sh.map(h => h.peakFunds || h.funds || 0);
+    const allPop    = sh.map(h => h.peakPop || h.orgPop || 0);
+    const allShows  = sh.map(h => h.showCount || 0);
+    const allBestMQ = sh.map(h => h.bestMQ || 0);
+    const overallBestMQ  = Math.max(...allBestMQ, state.seasonStats?.bestMQ || 0, 0);
+    const bestMQSeason   = sh.find(h => (h.bestMQ || 0) === overallBestMQ);
+    const bestMQMatch    = bestMQSeason?.bestMQMatch || state.seasonStats?.bestMQMatch || '—';
+    return {
+      orgName:         state.orgName || '団体',
+      season:          state.season,
+      bestRank:        allRanks.length ? Math.min(...allRanks) : '—',
+      peakFunds:       allFunds.length ? Math.max(...allFunds, 0) : 0,
+      peakOrgPop:      allPop.length   ? Math.max(...allPop,   0) : 0,
+      totalShows:      allShows.reduce((a, b) => a + b, 0) + (state.seasonStats?.showCount || 0),
+      bestMQ:          overallBestMQ,
+      bestMQMatch,
+      hallOfFameCount: (state.hallOfFame || []).length,
+    };
   }
 };
 
@@ -5812,11 +5877,36 @@ Engine.eventSystem = {
   },
 
   // ── テキスト選択ヘルパー ────────────────────────────────────────────────
+  // 返り値: { text, detail } オブジェクト（旧string形式との互換性あり）
   pickText(rng, key, vars) {
     const pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
-    if (pool.length === 0) return key;
+    if (pool.length === 0) return { text: key, detail: '' };
     const tmpl = Engine.rng.pick(rng, pool);
-    return tmpl.replace(/\{name\}/g, vars.name || '').replace(/\{name2\}/g, vars.name2 || '');
+    const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name2\}/g, vars.name2 || '') : '';
+    if (typeof tmpl === 'string') return { text: sub(tmpl), detail: '' };
+    return { text: sub(tmpl.text), detail: sub(tmpl.detail || '') };
+  },
+
+  // ── 通知型イベント 特性別セリフ選択 ─────────────────────────────────────
+  // N2（2人イベント）・N5_warning（情報絞る）はnull返却
+  getNotifDialogue(rng, event, roster) {
+    if (!roster || event.fighter == null) return null;
+    if (event.type === 'N2' || (event.type === 'N5' && event.band === 'warning')) return null;
+    const f = roster.find(f => f.id === event.fighter);
+    if (!f) return null;
+    const key = event.type === 'N5' ? `N5_${event.band}` : event.type;
+    if (typeof NOTIF_DIALOGUES === 'undefined') return null;
+    const dialogues = NOTIF_DIALOGUES[key];
+    if (!dialogues) return null;
+    const traits = f.traits || [];
+    for (const trait of traits) {
+      if (dialogues[trait] && dialogues[trait].length > 0) {
+        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
+      }
+    }
+    const defPool = dialogues.default;
+    if (!defPool || defPool.length === 0) return null;
+    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
   },
 };
 

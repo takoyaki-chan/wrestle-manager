@@ -45,7 +45,11 @@
       "Bash(wc -l docs/*.md docs/archive/*.md)",
       "Bash(grep -n \"function onCardSelect\\\\|window.onCardSelect\\\\|= onCardSelect\" src/*.js)",
       "Bash(grep -n \"monthlyFinanceBuffer\" src/*.js)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(grep -n \"CoachPortrait\\\\|coachPortrait\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(grep -n \"portrait-map\\\\|portraitMap\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where python node)"
     ]
   }
 }

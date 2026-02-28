@@ -729,11 +729,57 @@ const Audio = (() => {
   };
 
   // ╔══════════════════════════════════════════════════╗
+  // ║  FileBGM: HTMLAudioElement ベースのファイルBGM   ║
+  // ╚══════════════════════════════════════════════════╝
+  const FileBGM = {
+    _audio: null,
+    _fadeTimer: null,
+    play(src, { loop = false, volume = null } = {}) {
+      if (_bgmMuted) return;
+      FileBGM.stop();
+      BGM.stop();
+      const a = new window.Audio(src);
+      a.loop = loop;
+      a.volume = volume !== null ? volume : Math.min(1.0, _bgmVol * 8);
+      a.play().catch(() => {});
+      FileBGM._audio = a;
+    },
+    stop() {
+      if (FileBGM._fadeTimer) { clearInterval(FileBGM._fadeTimer); FileBGM._fadeTimer = null; }
+      if (FileBGM._audio) { FileBGM._audio.pause(); FileBGM._audio.currentTime = 0; FileBGM._audio = null; }
+    },
+    fadeOut(durationMs = 2000) {
+      if (!FileBGM._audio) return Promise.resolve();
+      return new Promise(resolve => {
+        const a = FileBGM._audio;
+        const startVol = a.volume;
+        const steps = 20;
+        const interval = durationMs / steps;
+        let step = 0;
+        FileBGM._fadeTimer = setInterval(() => {
+          step++;
+          a.volume = Math.max(0, startVol * (1 - step / steps));
+          if (step >= steps) {
+            clearInterval(FileBGM._fadeTimer);
+            FileBGM._fadeTimer = null;
+            FileBGM.stop();
+            resolve();
+          }
+        }, interval);
+      });
+    },
+    updateVolume() {
+      if (FileBGM._audio) FileBGM._audio.volume = Math.min(1.0, _bgmVol * 8);
+    }
+  };
+
+  // ╔══════════════════════════════════════════════════╗
   // ║  PUBLIC API                                      ║
   // ╚══════════════════════════════════════════════════╝
   return {
     play(name) { if (!_muted && SFX[name]) { try { ensure(); SFX[name](); } catch(e) {} } },
     bgm: BGM,
+    fileBgm: FileBGM,
     get muted() { return _muted; },
     toggleMute() {
       ensure();
@@ -743,14 +789,14 @@ const Audio = (() => {
       savePrefs();
     },
     setSfxVol(v) { _sfxVol = v; if (sfxGain) sfxGain.gain.value = v; savePrefs(); },
-    setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; savePrefs(); },
+    setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; FileBGM.updateVolume(); savePrefs(); },
     get sfxVol() { return _sfxVol; },
     get bgmVol() { return _bgmVol; },
     // BGM-only mute (looping tracks off, jingles/SFX still play)
     get bgmMuted() { return _bgmMuted; },
     toggleBgmMute() {
       _bgmMuted = !_bgmMuted;
-      if (_bgmMuted) BGM.stop(); else BGM.playForState();
+      if (_bgmMuted) { BGM.stop(); FileBGM.stop(); } else BGM.playForState();
       savePrefs();
     },
   };
@@ -1404,6 +1450,11 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_npc_traits: true };
       }
 
+      // v2.1: endingCleared / endingClearedSeason マイグレーション
+      if (!G._migrated_ending) {
+        G = { ...G, endingCleared: G.endingCleared || false, endingClearedSeason: G.endingClearedSeason || null, _migrated_ending: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -1435,6 +1486,7 @@ const Storage = {
   },
 
   autoSave() {
+    if (G.weekPhase === 'gameover') return; // ゲームオーバー時は上書きしない
     try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { /* silent */ }
   },
 
@@ -2777,6 +2829,12 @@ const App = {
     if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    // v2.1: ゲームオーバー判定（autoSave せず専用画面へ）
+    if (G.weekPhase === 'gameover') {
+      const summary = Engine.ending.buildGameOverSummary(G);
+      showGameOverScreen(summary);
+      return;
+    }
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment();
@@ -2936,7 +2994,7 @@ const App = {
     if (pendingRetirements && pendingRetirements.length > 0) {
       refreshAll();
       showRetirementPopups(pendingRetirements, () => {
-        App._showNewsPanelIfNeeded(() => App._checkAndShowAwards());
+        App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards()));
       });
       return;
     }
@@ -2967,10 +3025,10 @@ const App = {
     });
 
     if (aiAlerts.length > 0) {
-      showAIGrowthAlerts(aiAlerts, () => App._showNewsPanelIfNeeded(() => App._checkAndShowAwards()));
+      showAIGrowthAlerts(aiAlerts, () => App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards())));
     } else {
-      // v1.4: 引退者なしでも新聞パネル→表彰式チェック
-      App._showNewsPanelIfNeeded(() => App._checkAndShowAwards());
+      // v1.4: 引退者なしでも新聞パネル→エンディングチェック→表彰式チェック
+      App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards()));
     }
   },
 
@@ -2980,6 +3038,16 @@ const App = {
       showSeasonFanfare(G.season, callback);
     } else {
       callback();
+    }
+  },
+
+  // v2.1: エンディング演出チェック（初クリア時のみ）
+  _checkAndShowEnding(onDone) {
+    if (G.endingCleared && G.endingClearedSeason === G.season - 1) {
+      const data = Engine.ending.buildClearData(G);
+      showEndingCeremony(data, onDone);
+    } else {
+      onDone();
     }
   },
 
@@ -3414,6 +3482,32 @@ const App = {
     setTimeout(() => renderWarFinalResult(ev, wp.results, playerWins, aiWins, eventWon), 300);
     App._warPreview = null;
   }
+};
+
+// v2.1: クレジット画面
+App.showCredits = function() {
+  // 楽曲クレジットを動的にレンダリング
+  const el = document.getElementById('creditsMusicList');
+  if (el && typeof CREDITS !== 'undefined' && CREDITS.music) {
+    el.innerHTML = CREDITS.music.map(m => `
+      <div class="credits-music-item">
+        <div class="credits-music-title">${m.title}</div>
+        <div class="credits-music-artist">${m.artist}</div>
+        <a class="credits-music-link" href="${m.url}" target="_blank" rel="noopener">${m.source}</a>
+        <span style="font-size:10px;color:var(--text-dim);margin-left:6px">${m.license}</span>
+      </div>
+    `).join('');
+  }
+  document.getElementById('creditsOverlay').classList.add('active');
+};
+App.closeCredits = function() { document.getElementById('creditsOverlay').classList.remove('active'); };
+
+App.previewEnding = function() {
+  App.closeCredits();
+  const data = (typeof G !== 'undefined' && G.season)
+    ? Engine.ending.buildClearData(G)
+    : { season: 1, orgName: '団体', playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
+  setTimeout(() => showEndingCeremony(data, () => {}), 300);
 };
 
 // Alias for old UI calls
