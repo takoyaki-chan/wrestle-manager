@@ -1336,18 +1336,23 @@ function showFighterPopup(fighterId, source) {
   function buildPopup(tabIdx) {
     let html = '';
     const pUrl = getPortraitUrl(c.id);
+    const uUrl = getUpperUrl(c.id);
 
-    // ── Large portrait header ──
-    // Determine portrait border color by status
+    // ── Header（左: 上半身画像、右: 情報）──
     const popBorderColor = isChamp ? '#d4a843' : 'rgba(255,255,255,0.15)';
     const popShadow = isChamp ? '0 4px 20px rgba(0,0,0,0.5),0 0 16px rgba(212,168,67,0.5)' : '0 4px 20px rgba(0,0,0,0.5)';
+
+    // 上半身画像（onerror時はface画像にフォールバック）
+    const imgHtml = uUrl
+      ? `<img src="${uUrl}" style="width:200px;height:300px;border-radius:14px;object-fit:cover;object-position:top;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}" onerror="this.onerror=null;this.src='${pUrl}';this.style.height='140px';this.style.width='140px'">`
+      : pUrl
+      ? `<img src="${pUrl}" style="width:140px;height:140px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
+      : `<div style="width:140px;height:140px;border-radius:14px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:3px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:48px;font-weight:900;color:${sm.color}">${initial}</span></div>`;
 
     html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(255,255,255,0.06);padding:20px;text-align:center">
       <div style="display:flex;align-items:flex-start;gap:20px">
         <div style="flex-shrink:0;position:relative">
-          ${pUrl
-            ? `<img src="${pUrl}" style="width:140px;height:140px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
-            : `<div style="width:140px;height:140px;border-radius:14px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:3px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:48px;font-weight:900;color:${sm.color}">${initial}</span></div>`}
+          ${imgHtml}
           <span style="position:absolute;bottom:-4px;right:-4px;font-size:11px;font-weight:700;background:${sm.color};color:#fff;border-radius:4px;padding:2px 5px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${sm.icon}</span>
         </div>
         <div style="flex:1;min-width:0;text-align:left">
@@ -1414,8 +1419,12 @@ function showFighterPopup(fighterId, source) {
 
     // ══════ TAB 0: Stats & Profile ══════
     if (tabIdx === 0) {
-      // Stat bars
-      html += `<div class="fighter-popup-section" style="margin-bottom:12px">`;
+      // ── レーダーチャート + ステータスバー 横並び ──
+      html += `<div style="display:flex;gap:14px;margin-bottom:12px;align-items:flex-start">`;
+      // Left: Radar Chart canvas
+      html += `<div style="flex-shrink:0"><canvas id="fpRadarChart" width="200" height="200"></canvas></div>`;
+      // Right: Stat bars
+      html += `<div style="flex:1;min-width:0">`;
       STATS.forEach(s => {
         const val = Math.round(c[s.key] || 0);
         const sg = Math.round(c.seasonGrowth?.[s.key] || 0);
@@ -1427,7 +1436,7 @@ function showFighterPopup(fighterId, source) {
           <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : ''}</span>
         </div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`; // end flex row
 
       // Potential & Condition
       if (isRoster || isFree) {
@@ -1503,6 +1512,49 @@ function showFighterPopup(fighterId, source) {
             🎓 担当コーチ: なし
           </div>`;
         }
+      }
+
+      // ── 試合情報セクション（因縁・ファン期待度・通算戦績）──
+      const myRivalries = Object.entries(G.rivalries || {})
+        .map(([key, entry]) => {
+          const parts = key.split('-').map(Number);
+          if (!parts.includes(c.id)) return null;
+          const otherId = parts.find(id => id !== c.id);
+          let level = null;
+          for (const t of RIVALRY_THRESHOLDS) { if (entry.matches >= t.matches) level = t; }
+          return level ? { otherId, entry, level } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.entry.matches - a.entry.matches);
+
+      const myExpects = isRoster
+        ? Engine.fanExpect.generate(G).filter(e => e.leftId === c.id || e.rightId === c.id)
+        : [];
+
+      if (myRivalries.length > 0 || myExpects.length > 0 || isRoster) {
+        html += `<div class="fighter-popup-section" style="padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">⚔ 試合情報</div>`;
+        if (myRivalries.length > 0) {
+          myRivalries.forEach(r => {
+            const other = findFighter(r.otherId);
+            const lvl = r.level;
+            html += `<div style="font-size:12px;margin-bottom:3px">${lvl.emoji} <span style="color:${lvl.color};font-weight:600">${lvl.label}</span>: ${other ? `<span class="flink" onclick="event.stopPropagation();showFighterPopup(${r.otherId},'')">${other.name}</span>` : `ID#${r.otherId}`} <span style="color:var(--text-dim)">(${r.entry.matches}試合)</span></div>`;
+          });
+        }
+        if (myExpects.length > 0) {
+          myExpects.forEach(e => {
+            const otherId = e.leftId === c.id ? e.rightId : e.leftId;
+            const other = findFighter(otherId);
+            html += `<div style="font-size:12px;color:#f1c40f;margin-bottom:3px">👥 vs ${other ? other.name : `ID#${otherId}`} が見たい！</div>`;
+          });
+        }
+        if (isRoster) {
+          const w = c.wins || 0, l = c.losses || 0, d = c.draws || 0;
+          const tot = w + l + d;
+          const rate = tot > 0 ? Math.round(w / tot * 100) : 0;
+          html += `<div style="font-size:12px;color:var(--text-sub);margin-top:${(myRivalries.length > 0 || myExpects.length > 0) ? 4 : 0}px">📊 通算: <span style="color:#2ecc71">${w}勝</span> <span style="color:#e74c3c">${l}敗</span>${d > 0 ? ` <span>${d}分</span>` : ''} <span style="color:var(--text-dim)">(勝率${rate}%)</span></div>`;
+        }
+        html += `</div>`;
       }
 
       // Traits section（セーブデータから引く。_migrated_npc_traits で付与済み）
@@ -1715,6 +1767,15 @@ function showFighterPopup(fighterId, source) {
   const popupHtml = buildPopup(window._fpTab || 0);
   document.getElementById('fighterPopupBox').innerHTML = popupHtml;
   document.getElementById('fighterPopupOverlay').classList.add('active');
+
+  // ── レーダーチャート描画（DOM挿入後に実行）
+  if ((window._fpTab || 0) === 0) {
+    const cvs = document.getElementById('fpRadarChart');
+    if (cvs) {
+      const radarData = STATS.map(s => ({ label: s.label, value: c[s.key] || 0, color: s.color }));
+      drawRadarChart(cvs, radarData, { fillColor: sm.color, fillAlpha: 0.25 });
+    }
+  }
 }
 
 function closeFighterPopup() {
@@ -2220,6 +2281,7 @@ function showScreen(id, evt) {
   if (id === 'roster') renderRoster();
   if (id === 'coach') renderCoach();
   if (id === 'scoutEvent') renderScoutEvent();
+  if (id === 'database') renderDatabase();
 }
 
 // v0.96: Navigate to a screen and highlight the correct nav button
@@ -2998,4 +3060,116 @@ function showGameOverScreen(summary) {
     ">タイトルに戻る</button>
   `;
   overlay.classList.add('active');
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  RADAR CHART  (Canvas 2D — no external libs)             ║
+// ╚══════════════════════════════════════════════════════════╝
+
+// Helper: '#rrggbb' → 'rgba(r,g,b,alpha)'
+function hexToRgba(hex, alpha) {
+  let r = 136, g = 136, b = 136;
+  if (hex && hex.length === 7) {
+    r = parseInt(hex.slice(1, 3), 16);
+    g = parseInt(hex.slice(3, 5), 16);
+    b = parseInt(hex.slice(5, 7), 16);
+  } else if (hex && hex.length === 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  }
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/**
+ * drawRadarChart(canvas, stats, options)
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {Array<{label,value,color}>} stats  5軸（value: 0-100）
+ * @param {Object} options
+ *   fillColor {string}  hex塗り色
+ *   fillAlpha {number}  不透明度（default 0.25）
+ *   radius    {number}  チャート半径（default W/2-26）
+ *   data2     {Object}  2本目 {values:number[], fillColor, fillAlpha}
+ *   labelSize {number}  ラベルフォントサイズ（default 11）
+ */
+function drawRadarChart(canvas, stats, options = {}) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const cx = W / 2;
+  const cy = H / 2;
+  const radius = options.radius !== undefined ? options.radius : (Math.min(W, H) / 2 - 26);
+  const n = stats.length;
+  const angles = stats.map((_, i) => -Math.PI / 2 + i * (2 * Math.PI / n));
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines 20/40/60/80/100
+  [20, 40, 60, 80, 100].forEach(level => {
+    const r = (level / 100) * radius;
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const x = cx + r * Math.cos(a);
+      const y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Axis lines from center
+  angles.forEach(a => {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  function drawPolygon(values, fillColor, fillAlpha) {
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const v = Math.min(100, Math.max(0, values[i] || 0));
+      const r = (v / 100) * radius;
+      i === 0 ? ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
+              : ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    });
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(fillColor, fillAlpha);
+    ctx.fill();
+    ctx.strokeStyle = fillColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    angles.forEach((a, i) => {
+      const v = Math.min(100, Math.max(0, values[i] || 0));
+      const r = (v / 100) * radius;
+      ctx.beginPath();
+      ctx.arc(cx + r * Math.cos(a), cy + r * Math.sin(a), 3, 0, Math.PI * 2);
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+    });
+  }
+
+  if (options.data2) {
+    const d2 = options.data2;
+    drawPolygon(d2.values, d2.fillColor || '#888', d2.fillAlpha !== undefined ? d2.fillAlpha : 0.15);
+  }
+  const fillColor = options.fillColor || '#888';
+  const fillAlpha = options.fillAlpha !== undefined ? options.fillAlpha : 0.25;
+  drawPolygon(stats.map(s => s.value), fillColor, fillAlpha);
+
+  // Axis labels
+  const labelR = radius + 16;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  stats.forEach((s, i) => {
+    const a = angles[i];
+    ctx.font = `bold ${options.labelSize || 11}px sans-serif`;
+    ctx.fillStyle = s.color || 'rgba(255,255,255,0.7)';
+    ctx.fillText(s.label, cx + labelR * Math.cos(a), cy + labelR * Math.sin(a));
+  });
 }

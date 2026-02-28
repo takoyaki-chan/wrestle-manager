@@ -2252,9 +2252,280 @@ function refreshAll() {
   renderFacility();
   renderSave();
   renderRanking();
+  renderDatabase();
   // F2: Show negotiation result popup if pending
   if (G.negotiationResult) {
     setTimeout(() => showNegotiationResult(), 300);
   }
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  DATABASE SCREEN  (v1.0)                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+
+let _dbSubTab = 0; // 0=全選手 1=殿堂 2=団体比較
+let _dbSortKey = 'ovr';
+let _dbSortAsc = false;
+let _dbFilterOrg = '';
+let _dbFilterStyle = '';
+let _dbFilterName = '';
+
+function renderDatabase() {
+  const el = document.getElementById('databaseContent');
+  if (!el) return;
+
+  const subTabs = [
+    { label: '👤 全選手', idx: 0 },
+    { label: '🏅 殿堂', idx: 1 },
+    { label: '⚔ 団体比較', idx: 2 },
+  ];
+
+  let html = `<div class="panel-title">📊 データベース</div>`;
+  html += `<div class="db-subtab-bar">`;
+  subTabs.forEach(t => {
+    html += `<button class="db-subtab-btn${_dbSubTab === t.idx ? ' active' : ''}" onclick="setDbSubTab(${t.idx})">${t.label}</button>`;
+  });
+  html += `</div>`;
+  html += `<div id="dbSubContent">`;
+  if (_dbSubTab === 0) html += _renderDbFighters();
+  else if (_dbSubTab === 1) html += _renderDbHallOfFame();
+  else html += _renderDbOrgCompare();
+  html += `</div>`;
+
+  el.innerHTML = html;
+
+  // 団体比較ならレーダーチャートを描画
+  if (_dbSubTab === 2) _drawOrgCompareChart();
+}
+
+function setDbSubTab(idx) {
+  _dbSubTab = idx;
+  renderDatabase();
+}
+
+// ── 全選手一覧 ─────────────────────────────────────────────
+function _renderDbFighters() {
+  const RANK_COLORS = { S: '#d63031', A: '#6c5ce7', B: '#00b894', player: '#d4a843', fa: '#8bc4f0' };
+
+  // 全選手収集
+  const all = Engine.database.getAllFighters(G);
+
+  // フィルタ
+  let filtered = all;
+  if (_dbFilterOrg) {
+    filtered = filtered.filter(f => f._orgId === _dbFilterOrg);
+  }
+  if (_dbFilterStyle) {
+    filtered = filtered.filter(f => f.style === _dbFilterStyle);
+  }
+  if (_dbFilterName) {
+    const q = _dbFilterName.toLowerCase();
+    filtered = filtered.filter(f => f.name.toLowerCase().includes(q));
+  }
+
+  // ソート
+  filtered = [...filtered].sort((a, b) => {
+    let va, vb;
+    if (_dbSortKey === 'ovr') { va = Engine.util.ov(a); vb = Engine.util.ov(b); }
+    else if (_dbSortKey === 'name') { va = a.name; vb = b.name; }
+    else if (_dbSortKey === 'org') { va = a._orgName; vb = b._orgName; }
+    else if (_dbSortKey === 'style') { va = a.style || ''; vb = b.style || ''; }
+    else if (_dbSortKey === 'age') { va = a.age || 0; vb = b.age || 0; }
+    else if (_dbSortKey === 'pop') { va = Engine.util.dispPop(a.popularity || 0); vb = Engine.util.dispPop(b.popularity || 0); }
+    else { va = Engine.util.ov(a); vb = Engine.util.ov(b); }
+    if (va < vb) return _dbSortAsc ? -1 : 1;
+    if (va > vb) return _dbSortAsc ? 1 : -1;
+    return 0;
+  });
+
+  // フィルタバー
+  const orgOptions = [
+    { id: '', label: '全て' },
+    { id: 'player', label: G.orgName || 'プレイヤー団体' },
+    ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
+    { id: 'fa', label: 'FA' },
+  ];
+  const styles = ['Grappler', 'Striker', 'Submission', 'Speed', 'Allround', 'Brawler'];
+
+  let html = `<div class="db-filter-bar">
+    <select onchange="_dbFilterOrg=this.value;renderDatabase()">
+      ${orgOptions.map(o => `<option value="${o.id}" ${_dbFilterOrg === o.id ? 'selected' : ''}>${o.label}</option>`).join('')}
+    </select>
+    <select onchange="_dbFilterStyle=this.value;renderDatabase()">
+      <option value="" ${_dbFilterStyle === '' ? 'selected' : ''}>スタイル: 全て</option>
+      ${styles.map(s => `<option value="${s}" ${_dbFilterStyle === s ? 'selected' : ''}>${s}</option>`).join('')}
+    </select>
+    <input type="text" placeholder="🔍 名前検索..." value="${_dbFilterName}"
+      oninput="_dbFilterName=this.value;renderDatabase()" style="max-width:160px">
+    <span class="db-count">全${all.length}名 / 表示中: ${filtered.length}名</span>
+  </div>`;
+
+  // ソート用ヘッダー生成
+  const th = (key, label, w) => {
+    const active = _dbSortKey === key;
+    const ind = active ? (_dbSortAsc ? ' ▲' : ' ▼') : '';
+    return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbSortKey='${key}';_dbSortAsc=${active ? !_dbSortAsc : false};renderDatabase()">${label}${ind}</th>`;
+  };
+
+  html += `<table class="db-table">
+    <thead><tr>
+      <th style="width:40px"></th>
+      ${th('name', '名前')}
+      ${th('org', '団体', '110px')}
+      ${th('style', 'スタイル', '80px')}
+      ${th('ovr', 'OVR', '50px')}
+      ${th('age', '年齢', '45px')}
+      ${th('pop', '人気', '50px')}
+    </tr></thead>
+    <tbody>`;
+
+  filtered.forEach(f => {
+    const ovr = Engine.util.ov(f);
+    const ovrCls = ovr >= 75 ? 'db-ovr-gold' : ovr >= 60 ? 'db-ovr-white' : '';
+    const rc = RANK_COLORS[f._orgTier] || '#888';
+    const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa'
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:${rc}22;color:${rc};border:1px solid ${rc}44;margin-left:4px">${f._orgTier}</span>`
+      : '';
+    const faBadge = f._orgTier === 'fa'
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(139,196,240,0.15);color:#8bc4f0;border:1px solid rgba(139,196,240,0.3)">FA</span>`
+      : '';
+    const playerBadge = f._orgTier === 'player'
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">自</span>`
+      : '';
+    const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
+    html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
+      <td>${portraitImg(f.id, 36, '', false)}</td>
+      <td style="font-weight:600">${f.name}</td>
+      <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
+      <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
+      <td class="num ${ovrCls}" style="font-weight:700;font-size:15px">${ovr}</td>
+      <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
+      <td class="num">${Engine.util.dispPop(f.popularity || 0)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+// ── 殿堂一覧 ──────────────────────────────────────────────
+function _renderDbHallOfFame() {
+  const hof = G.hallOfFame || [];
+  if (hof.length === 0) {
+    return `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
+      <div style="font-size:40px;margin-bottom:12px">🏅</div>
+      <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
+      <div style="font-size:13px;color:var(--text-dim)">獲得＋防衛の合計が13回以上の選手が引退時に殿堂入りします</div>
+    </div>`;
+  }
+
+  let html = `<div class="db-hof-grid">`;
+  hof.forEach(h => {
+    const pUrl = getPortraitUrl(h.id || 0);
+    const imgHtml = pUrl
+      ? `<img src="${pUrl}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0" alt="">`
+      : `<div style="width:60px;height:60px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏅</div>`;
+    html += `<div class="db-hof-card">
+      ${imgHtml}
+      <div class="db-hof-info">
+        <div class="db-hof-name">${h.name}</div>
+        <div class="db-hof-row">
+          <span class="badge badge-${h.style || 'Allround'}" style="font-size:11px">${h.style || '—'}</span>
+          <span style="margin-left:6px;color:var(--gold);font-weight:700">OVR ${h.ovr || '—'}</span>
+        </div>
+        <div class="db-hof-row">活動期間: S${h.debutSeason || '?'}〜S${h.retireSeason || '?'}</div>
+        ${h.totalTitleWins ? `<div class="db-hof-row">タイトル: ${h.totalTitleWins}回獲得 / ${h.totalDefenses || 0}防衛</div>` : ''}
+        ${h.peakOvr ? `<div class="db-hof-row">最高OVR: ${h.peakOvr}</div>` : ''}
+        <div class="db-hof-row" style="color:var(--gold)">殿堂入り: S${h.retireSeason || '?'}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ── 団体比較 ──────────────────────────────────────────────
+let _dbCompareTarget = 'org_s';
+
+function _renderDbOrgCompare() {
+  const AXES = ['エース力', '層の厚さ', '将来性', '団体人気', 'スター度'];
+  const playerScores = Engine.database.getOrgCompareScores(G, 'player');
+  const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
+
+  const targetOrg = RIVAL_ORGS.find(o => o.id === _dbCompareTarget);
+  const targetColor = targetOrg ? targetOrg.color : '#888';
+  const targetName = targetOrg ? (targetOrg.name || targetOrg.id) : _dbCompareTarget;
+  const playerName = G.orgName || 'プレイヤー団体';
+
+  const scoreKeys = ['ace', 'depth', 'potential', 'popularity', 'starPower'];
+
+  let html = `<div class="db-compare-wrap">
+    <div class="db-compare-select">
+      <span style="font-size:13px;color:var(--gold);font-weight:700">🏠 ${playerName}</span>
+      <span style="color:var(--text-dim)">vs</span>
+      <select onchange="_dbCompareTarget=this.value;renderDatabase()">
+        ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${o.name || o.id} (${o.tier})</option>`).join('')}
+      </select>
+    </div>`;
+
+  // 凡例
+  html += `<div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;font-size:12px">
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#d4a843;margin-right:4px;vertical-align:middle"></span>${playerName}</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:${targetColor};margin-right:4px;vertical-align:middle"></span>${targetName}</span>
+  </div>`;
+
+  // Canvas（300×300）
+  html += `<div class="db-compare-canvas-wrap"><canvas id="dbCompareChart" width="300" height="300"></canvas></div>`;
+
+  // 数値比較テーブル
+  html += `<table class="db-compare-table"><tbody>`;
+  AXES.forEach((axis, i) => {
+    const key = scoreKeys[i];
+    const pv = playerScores[key];
+    const tv = targetScores[key];
+    const diff = pv - tv;
+    const diffAbs = Math.abs(diff);
+    const diffLabel = diffAbs >= 20 ? (diff > 0 ? ' ★ 圧勝' : ' ★ 大差') : '';
+    const diffColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'var(--text-dim)';
+    html += `<tr>
+      <td>${axis}</td>
+      <td style="color:var(--gold);font-weight:700;text-align:right;width:50px">${pv}</td>
+      <td style="color:var(--text-dim);text-align:center;width:20px">vs</td>
+      <td style="color:${targetColor};font-weight:700;text-align:left;width:50px">${tv}</td>
+      <td style="color:${diffColor};font-size:12px">${diff > 0 ? '+' : ''}${diff}<span style="font-size:11px">${diffLabel}</span></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+function _drawOrgCompareChart() {
+  const cvs = document.getElementById('dbCompareChart');
+  if (!cvs) return;
+
+  const AXES = ['エース力', '層の厚さ', '将来性', '団体人気', 'スター度'];
+  const scoreKeys = ['ace', 'depth', 'potential', 'popularity', 'starPower'];
+  const playerScores = Engine.database.getOrgCompareScores(G, 'player');
+  const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
+  const targetOrg = RIVAL_ORGS.find(o => o.id === _dbCompareTarget);
+  const targetColor = targetOrg ? targetOrg.color : '#888';
+
+  const stats = AXES.map((label, i) => ({
+    label,
+    value: playerScores[scoreKeys[i]],
+    color: 'rgba(255,255,255,0.6)',
+  }));
+
+  drawRadarChart(cvs, stats, {
+    fillColor: '#d4a843',
+    fillAlpha: 0.25,
+    radius: 110,
+    labelSize: 11,
+    data2: {
+      values: scoreKeys.map(k => targetScores[k]),
+      fillColor: targetColor,
+      fillAlpha: 0.15,
+    },
+  });
 }
 

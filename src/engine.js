@@ -5988,3 +5988,87 @@ Engine.fanExpect = {
     ).length;
   },
 };
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  ENGINE.DATABASE  — データベースタブ用ヘルパー           ║
+// ╚══════════════════════════════════════════════════════════╝
+Engine.database = {
+
+  /**
+   * 全選手を収集（dormantPool除外、引退選手除外）
+   * 返り値: [...fighter, orgId, orgName, orgTier]
+   */
+  getAllFighters(state) {
+    const result = [];
+    const orgName = state.orgName || 'プレイヤー団体';
+
+    // プレイヤー団体
+    (state.roster || []).forEach(f => {
+      result.push({ ...f, _orgId: 'player', _orgName: orgName, _orgTier: 'player' });
+    });
+
+    // AI団体
+    RIVAL_ORGS.forEach(org => {
+      const aiRoster = state.aiOrgs?.[org.id]?.roster || [];
+      aiRoster.forEach(f => {
+        result.push({ ...f, _orgId: org.id, _orgName: org.name || org.id, _orgTier: org.tier });
+      });
+    });
+
+    // フリーエージェント
+    (state.freeAgents || []).forEach(f => {
+      result.push({ ...f, _orgId: 'fa', _orgName: 'FA', _orgTier: 'fa' });
+    });
+
+    return result;
+  },
+
+  /**
+   * 団体比較用スコア算出（0-100スケール）
+   * orgId: 'player' | 'org_s' | 'org_a' | 'org_b'
+   */
+  getOrgCompareScores(state, orgId) {
+    let roster, orgPop;
+    if (orgId === 'player') {
+      roster = state.roster || [];
+      orgPop = state.orgPop || 0;
+    } else {
+      const org = RIVAL_ORGS.find(o => o.id === orgId);
+      roster = state.aiOrgs?.[orgId]?.roster || [];
+      // AI orgPop: ランキング評価値から推定（org単独データがなければ代替値）
+      orgPop = state.aiOrgs?.[orgId]?.orgPop ?? (org ? (org.tier === 'S' ? 75 : org.tier === 'A' ? 50 : 30) : 30);
+    }
+
+    // エース力: TOP3平均OVR / 90 * 100
+    const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const top3 = sorted.slice(0, 3);
+    const ace = top3.length > 0
+      ? Math.min(100, Math.round(top3.reduce((s, f) => s + Engine.util.ov(f), 0) / top3.length / 90 * 100))
+      : 0;
+
+    // 層の厚さ: 全員平均OVR / 75 * 100
+    const depth = roster.length > 0
+      ? Math.min(100, Math.round(roster.reduce((s, f) => s + Engine.util.ov(f), 0) / roster.length / 75 * 100))
+      : 0;
+
+    // 将来性: 25歳以下のpotTotal平均 / 400 * 100
+    const young = roster.filter(f => (f.age || 99) <= 25);
+    const potential = young.length > 0
+      ? Math.min(100, Math.round(
+          young.reduce((s, f) => {
+            const pt = f.pot ? (f.pot.pw + f.pot.sp + f.pot.te + f.pot.st + f.pot.mn) : 0;
+            return s + pt;
+          }, 0) / young.length / 400 * 100
+        ))
+      : 0;
+
+    // 団体人気: orgPop / 100 * 100（最大100）
+    const popularity = Math.min(100, Math.round(Engine.util.dispOrgPop(orgPop)));
+
+    // スター度: 人気50以上の選手数 × 20（5人=100）
+    const starCount = roster.filter(f => Engine.util.dispPop(f.popularity || 0) >= 50).length;
+    const starPower = Math.min(100, starCount * 20);
+
+    return { ace, depth, potential, popularity, starPower };
+  },
+};

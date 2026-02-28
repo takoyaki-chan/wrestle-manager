@@ -365,7 +365,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .coach-tooltip-label{font-size:12px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
 .fighter-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:16px}
 .fighter-popup-overlay.active{display:flex}
-.fighter-popup-box{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.12);border-radius:10px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;padding:0}
+.fighter-popup-box{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.12);border-radius:10px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;padding:0}
 .fighter-popup-header{padding:14px 16px;display:flex;align-items:center;gap:12px}
 .fighter-popup-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;position:relative}
 .fighter-popup-body{padding:0 16px 16px}
@@ -378,6 +378,36 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fighter-popup-section:last-child{margin-bottom:0}
 .flink{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.3)}
 
+/* ── Database Tab (v1.0) ── */
+.db-subtab-bar{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+.db-subtab-btn{flex:1;padding:10px 6px;font-size:13px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;transition:all 0.2s}
+.db-subtab-btn.active{border-bottom-color:var(--gold);color:var(--text);background:rgba(255,255,255,0.03)}
+.db-subtab-btn:hover:not(.active){color:var(--text-sub);border-bottom-color:rgba(255,255,255,0.15)}
+.db-filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.db-filter-bar select,.db-filter-bar input{font-size:12px;padding:5px 8px;background:var(--panel-bg);border:1px solid rgba(255,255,255,0.12);border-radius:4px;color:var(--text);min-width:0}
+.db-filter-bar input{flex:1;min-width:120px}
+.db-count{font-size:12px;color:var(--text-dim);white-space:nowrap}
+.db-table{width:100%;border-collapse:collapse;font-size:13px}
+.db-table th{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
+.db-table th:hover{color:var(--text-sub)}
+.db-table th.sorted{color:var(--gold)}
+.db-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.db-table tr.clickable:hover td{background:rgba(255,255,255,0.03);cursor:pointer}
+.db-ovr-gold{color:#d4a843;font-weight:700}
+.db-ovr-white{color:var(--text);font-weight:600}
+.db-hof-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.db-hof-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;display:flex;align-items:flex-start;gap:12px}
+.db-hof-info{flex:1;min-width:0}
+.db-hof-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.db-hof-row{font-size:12px;color:var(--text-sub);line-height:1.7}
+.db-compare-wrap{max-width:640px;margin:0 auto}
+.db-compare-select{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.db-compare-select select{padding:6px 10px;font-size:13px;background:var(--panel-bg);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:var(--text)}
+.db-compare-canvas-wrap{display:flex;justify-content:center;margin-bottom:16px}
+.db-compare-table{width:100%;border-collapse:collapse;font-size:13px}
+.db-compare-table td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.db-compare-table td:first-child{color:var(--text-dim);width:100px}
+.db-compare-badge{font-size:11px;padding:2px 7px;border-radius:3px;font-weight:700;margin-left:4px}
 /* v0.6: Growth indicators */
 .growth-up{color:#2ecc71;font-size:12px;font-weight:700}
 .growth-down{color:#e74c3c;font-size:12px;font-weight:700}
@@ -845,6 +875,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   <div class="nav-bar">
     <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
+    <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
     <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
     <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
     <button class="nav-btn" onclick="showScreen('training',event)">🏋️ 育成</button>
@@ -869,6 +900,13 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <div class="panel">
       <div class="panel-title">🏆 団体ランキング</div>
       <div id="rankingContent"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Database (v1.0) -->
+  <div class="screen" id="screen-database">
+    <div class="panel" id="databasePanel">
+      <div id="databaseContent"></div>
     </div>
   </div>
 
