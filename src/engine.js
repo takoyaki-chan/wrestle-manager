@@ -4496,7 +4496,7 @@ Engine.orgPop = {
   // 施策A: 逓減カーブ — orgPopが高いほど上がりにくい
   getDiminishingMultiplier(orgPop) {
     if (orgPop < 20) return 1.0;   // 創設期: そのまま上がる
-    if (orgPop < 40) return 0.60;  // 地方団体: やや鈍化
+    if (orgPop < 40) return 0.70;  // 地方団体: やや鈍化（緩和）
     if (orgPop < 55) return 0.35;  // 中堅の壁: 大幅鈍化
     if (orgPop < 70) return 0.20;  // メジャーの壁
     if (orgPop < 85) return 0.12;  // トップ級
@@ -4525,9 +4525,10 @@ Engine.orgPop = {
 
   // v1.5s26: orgPop帯別MQ閾値シフト — 低orgPopほどMQ閾値が下がり上がりやすく・下がりにくく
   getMQAdjust(orgPop) {
-    if (orgPop < 20) return { shift: -10, negMult: 0.4 };  // 創設期: MQ閾値-10、ペナルティ×0.4
-    if (orgPop < 40) return { shift: -5,  negMult: 0.7 };  // 地方団体: MQ閾値-5、ペナルティ×0.7
-    return { shift: 0, negMult: 1.0 };                      // 中堅以上: 現行通り
+    if (orgPop < 20) return { shift: -10, negMult: 0.4 };   // 創設期: MQ閾値-10、ペナルティ×0.4
+    if (orgPop < 30) return { shift: -7,  negMult: 0.5 };   // 地方団体（強化）: MQ閾値-7、ペナルティ×0.5
+    if (orgPop < 45) return { shift: -3,  negMult: 0.85 };  // 中堅への橋渡し（新設）
+    return { shift: 0, negMult: 1.0 };                       // 中堅以上: 現行通り
   }
 };
 

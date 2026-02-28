@@ -624,7 +624,7 @@ const FIXED_COSTS = {facility:50, admin:30};
 // v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
 const SUBSIDY_TABLE = [
   {max:19, val:80},  // orgPop 0-19: 80万/週
-  {max:29, val:50},  // orgPop 20-29: 50万/週
+  {max:29, val:65},  // orgPop 20-29: 65万/週（緩和）
   {max:39, val:20},  // orgPop 30-39: 20万/週
 ];
 
