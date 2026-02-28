@@ -2303,6 +2303,13 @@ function setDbSubTab(idx) {
   renderDatabase();
 }
 
+const _STAT_COLORS = { pw: '#e74c3c', sp: '#3498db', te: '#2ecc71', st: '#f39c12', mn: '#9b59b6' };
+function _statCell(val, color) {
+  const v = Math.round(val || 0);
+  const c = v >= 75 ? (color || '#e74c3c') : v >= 60 ? 'var(--text-main)' : 'var(--text-dim)';
+  return `<td class="num" style="font-size:12px;color:${c}">${v}</td>`;
+}
+
 // ── 全選手一覧 ─────────────────────────────────────────────
 function _renderDbFighters() {
   const RANK_COLORS = { S: '#d63031', A: '#6c5ce7', B: '#00b894', player: '#d4a843', fa: '#8bc4f0' };
@@ -2332,6 +2339,11 @@ function _renderDbFighters() {
     else if (_dbSortKey === 'style') { va = a.style || ''; vb = b.style || ''; }
     else if (_dbSortKey === 'age') { va = a.age || 0; vb = b.age || 0; }
     else if (_dbSortKey === 'pop') { va = Engine.util.dispPop(a.popularity || 0); vb = Engine.util.dispPop(b.popularity || 0); }
+    else if (_dbSortKey === 'pw') { va = Math.round(a.pw || 0); vb = Math.round(b.pw || 0); }
+    else if (_dbSortKey === 'sp') { va = Math.round(a.sp || 0); vb = Math.round(b.sp || 0); }
+    else if (_dbSortKey === 'te') { va = Math.round(a.te || 0); vb = Math.round(b.te || 0); }
+    else if (_dbSortKey === 'st') { va = Math.round(a.st || 0); vb = Math.round(b.st || 0); }
+    else if (_dbSortKey === 'mn') { va = Math.round(a.mn || 0); vb = Math.round(b.mn || 0); }
     else { va = Engine.util.ov(a); vb = Engine.util.ov(b); }
     if (va < vb) return _dbSortAsc ? -1 : 1;
     if (va > vb) return _dbSortAsc ? 1 : -1;
@@ -2374,6 +2386,11 @@ function _renderDbFighters() {
       ${th('org', '団体', '110px')}
       ${th('style', 'スタイル', '80px')}
       ${th('ovr', 'OVR', '50px')}
+      ${th('pw', 'PW', '40px')}
+      ${th('sp', 'SP', '40px')}
+      ${th('te', 'TE', '40px')}
+      ${th('st', 'ST', '40px')}
+      ${th('mn', 'MN', '40px')}
       ${th('age', '年齢', '45px')}
       ${th('pop', '人気', '50px')}
     </tr></thead>
@@ -2399,6 +2416,7 @@ function _renderDbFighters() {
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
       <td class="num ${ovrCls}" style="font-weight:700;font-size:15px">${ovr}</td>
+      ${_statCell(f.pw, '#e74c3c')}${_statCell(f.sp, '#3498db')}${_statCell(f.te, '#2ecc71')}${_statCell(f.st, '#f39c12')}${_statCell(f.mn, '#9b59b6')}
       <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
       <td class="num">${Engine.util.dispPop(f.popularity || 0)}</td>
     </tr>`;

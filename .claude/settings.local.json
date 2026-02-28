@@ -49,7 +49,8 @@
       "Bash(grep -n \"CoachPortrait\\\\|coachPortrait\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
       "Bash(grep -n \"portrait-map\\\\|portraitMap\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(where python node)"
+      "Bash(where python node)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

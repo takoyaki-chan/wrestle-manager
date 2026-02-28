@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-28（v2.1 BGMセッション）
+> 最終更新: 2026-02-28（データベースタブセッション）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**データベースタブセッション完了。** データベースタブ・選手ポップアップ刷新・5能力値カラム・プロフィール拡充を実装。
+
+- **データベースタブ（3サブタブ）**: 全選手一覧（ソート・フィルター対応）/ 殿堂一覧 / 団体比較（デュアルレーダーチャート）
+- **選手ポップアップ刷新**: 上半身画像（200×300 webp + onerror fallback）+ レーダーチャート + ステータスバー並列表示。因縁・ファン期待・戦績セクション追加
+- **drawRadarChart()汎用関数**: Canvas 2D 5角形レーダー。単一/デュアルデータセット対応。ポップアップ・団体比較で共用
+- **5能力値カラム**: 全選手一覧テーブルにPW/SP/TE/ST/MNカラム追加。各カラムでソート可能。色分け表示（75以上=固有色、60以上=白、未満=薄色）
+- **CHAR_PROFILES拡充**: 主要キャラ約85名のプロフィールを1-2行→3-4行（200-280文字）に拡充。戦闘スタイル・性格・強み弱みの掘り下げ
 
 **v2.1 BGMセッション完了。** エンディング/ゲームオーバー/BGMファイル再生を実装。
 
@@ -71,7 +79,7 @@
 | 敵AI団体専用キャラクター | 中 | 固有キャラで世界観を深める |
 | マネージャー的存在（説明キャラ） | 中 | チュートリアル・イベントの語り手 |
 | マインド依存の成長イベント | 中 | mnの存在感を強化 |
-| 選手/団体の情報一覧タブ | 低 | 眺めて楽しい系。要相談 |
+| 選手/団体の情報一覧タブ | — | **データベースタブとして実装済み** |
 
 ---
 
@@ -79,15 +87,15 @@
 
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
-| index.html | ~1,110 | HTML+CSS+起動処理 |
-| data.js | ~1,370 | 全データ定数（キャラ98名・コーチ8名・技160種） |
-| engine.js | ~4,860 | ゲームロジック全体 |
-| app.js | ~3,090 | Audio+Storage+Mission+App統合 |
-| ui-common.js | ~2,440 | ヘルパー+ポップアップ+各種UI |
-| ui-render.js | ~2,110 | 全render関数 |
+| index.html | ~1,320 | HTML+CSS+起動処理 |
+| data.js | ~1,730 | 全データ定数（キャラ98名・コーチ8名・技160種） |
+| engine.js | ~6,070 | ゲームロジック全体 |
+| app.js | ~3,520 | Audio+Storage+Mission+App統合 |
+| ui-common.js | ~3,180 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
+| ui-render.js | ~2,550 | 全render関数+データベースタブ |
 | victory-lines.js | 501 | 勝利台詞データ |
 | battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
-| **合計** | **~17,215** | |
+| **合計** | **~20,605** | |
 
 その他: `portrait-map.js`（ルート）、顔画像107枚＋表彰式フレーム7枚（image/）、build-zip.sh
 
@@ -130,6 +138,10 @@
 - **エンディング条件** — offWeek4: pRank===1 && !endingCleared → endingCleared=true/endingClearedSeason=season。翌シーズン offWeek1 に演出（endingClearedSeason===season-1 で1回のみ）
 - **ゲームオーバー条件** — tickWeek settlement後に funds≤0 → weekPhase:'gameover'。autoSave上書きなし。processWeekで検知→showGameOverScreen
 - **FileBGM** — HTMLAudioElement ベース。Audio IIFE 内 FileBGM オブジェクト。Audio.fileBgm として公開。BGM再生は必ずユーザー操作直後（Autoplay Policy対応）
+- **データベースタブ** — Engine.database.getAllFighters()でdormantPool除外の全選手を収集。3サブタブ構成（全選手/殿堂/団体比較）。モジュールレベル変数（_dbSubTab/_dbSortKey等）で状態管理
+- **drawRadarChart()** — Canvas innerHTML設定後にdocument.getElementByIdで取得して描画。5角形レーダー、単一/デュアルデータセット対応。hexToRgba()ヘルパー併用
+- **選手ポップアップ上半身画像** — getUpperUrl(id)でwebpパス取得。onerrorで従来のface PNGにフォールバック
+- **5能力値カラム色分け** — PW=#e74c3c, SP=#3498db, TE=#2ecc71, ST=#f39c12, MN=#9b59b6。75以上=固有色、60以上=白、未満=薄色
 
 ---
 
@@ -176,6 +188,7 @@
 | イベントシステム v2 | event-system-spec-v2.md |
 | 成長イベントシステム | growth-event-spec-v1.0.md |
 | 世界観演出システム | world-presentation-spec-v1.4.md |
+| データベースタブ | database-tab-spec-v1.0.md |
 
 ### docs/archive/（旧版・完了済み）
 
