@@ -712,15 +712,14 @@ function renderWeekScreen() {
       const schedDisabled = c.injury ? 'disabled' : '';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
       // v1.0: Compute predicted action for initial display
-      let previewAction = c._weekAction;
-      if (!previewAction) {
-        if (c.injury) previewAction = '療養';
-        else if (c.intensive) previewAction = 'intensive';
-        else {
-          previewAction = c.schedule || 'balance';
-          if (previewAction === 'balance') previewAction = isShow ? 'promo' : 'practice';
-          if (c.condition <= 30) previewAction = 'rest';
-        }
+      // ※ _weekAction は前週の記録なので参照しない。常に現在のスケジュールから算出する
+      let previewAction;
+      if (c.injury) previewAction = '療養';
+      else if (c.intensive) previewAction = 'intensive';
+      else {
+        previewAction = c.schedule || 'balance';
+        if (previewAction === 'balance') previewAction = isShow ? 'promo' : 'practice';
+        if (c.condition <= 30) previewAction = 'rest';
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
       html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
@@ -745,18 +744,24 @@ function renderWeekScreen() {
     // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
     const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
     document.getElementById('weekTitle').textContent = `${dateStr} — 完了`;
-    const f = G.weeklyFinance || {};
-    const net = (f.income || 0) - (f.expense || 0);
-    const netColor = net >= 0 ? 'var(--green)' : 'var(--red)';
+    // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
+    const wsBuf = G.monthlyFinanceBuffer || [];
+    let wsIncome = 0, wsExpense = 0;
+    wsBuf.forEach(e => { wsIncome += e.finance?.income || 0; wsExpense += e.finance?.expense || 0; });
+    const wsNet = wsIncome - wsExpense;
+    const netColor = wsNet >= 0 ? 'var(--green)' : 'var(--red)';
+    const wsWeeks = wsBuf.map(e => e.week).filter(Boolean);
+    const wsRange = wsWeeks.length > 1
+      ? `第${Math.min(...wsWeeks)}週〜第${Math.max(...wsWeeks)}週`
+      : `第${wsWeeks[0] || G.week}週`;
     html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">`;
-    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:14px;font-weight:700">${dateStr} 完了</div>`;
-    if (f.income !== undefined || f.expense !== undefined) {
-      html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
-        <span>収入 <span style="color:var(--green);font-weight:600">+${(f.income||0).toLocaleString()}万</span></span>
-        <span>支出 <span style="color:var(--red);font-weight:600">-${(f.expense||0).toLocaleString()}万</span></span>
-        <span>収支 <span style="color:${netColor};font-weight:600">${net>=0?'+':''}${net.toLocaleString()}万</span></span>
-      </div>`;
-    }
+    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${dateStr} 完了</div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${wsRange} 累計</div>`;
+    html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
+      <span>収入 <span style="color:var(--green);font-weight:600">+${wsIncome.toLocaleString()}万</span></span>
+      <span>支出 <span style="color:var(--red);font-weight:600">-${wsExpense.toLocaleString()}万</span></span>
+      <span>収支 <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${wsNet.toLocaleString()}万</span></span>
+    </div>`;
     html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
     html += `</div>`;
     html += `<div class="btn-row" style="justify-content:center">
@@ -985,14 +990,21 @@ function renderRoster() {
     {key:'name', label:'名前'},
     {key:'cond', label:'体調'},
     {key:'pop', label:'人気'},
+    {key:'schedule', label:'育成'},
   ].map(s => `<button onclick="setRosterSort('${s.key}')" style="font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid ${_rosterSortKey===s.key ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.08)'};background:${_rosterSortKey===s.key ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.03)'};color:${_rosterSortKey===s.key ? 'var(--gold)' : 'var(--text-dim)'}">${s.label}</button>`).join('');
   let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
   html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">';
+  const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
   const sorted = [...G.roster].sort((a,b) => {
     switch(_rosterSortKey) {
       case 'name': return a.name.localeCompare(b.name, 'ja');
       case 'cond': return b.condition - a.condition;
       case 'pop': return b.popularity - a.popularity;
+      case 'schedule': {
+        const ao = _schedOrder[a.schedule] ?? 2;
+        const bo = _schedOrder[b.schedule] ?? 2;
+        return ao !== bo ? ao - bo : ov(b) - ov(a);
+      }
       default: return ov(b) - ov(a);
     }
   });

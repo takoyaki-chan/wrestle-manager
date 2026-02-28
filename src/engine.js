@@ -4332,7 +4332,7 @@ const Engine = {
       const allFreeIds = [...remainingFreeIds, ...rejected];
       const freeAgents = allFreeIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = 18 + Engine.rng.int(rng, 0, 8);
+        const age = 16 + Engine.rng.int(rng, 0, 5); // 16-20歳（21歳超引退設計に合わせて上限修正）
         return Engine.makeChar(t, rng, { age });
       });
       // Update ORG_ASSIGN for ranking calculations
@@ -4393,7 +4393,7 @@ const Engine = {
     const freeAgents = freeIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
       if (!t) return null;
-      const age = 18 + Engine.rng.int(rng, 0, 8);
+      const age = 16 + Engine.rng.int(rng, 0, 5); // 16-20歳（21歳超引退設計に合わせて上限修正）
       return Engine.makeChar(t, rng, { age });
     }).filter(Boolean);
 

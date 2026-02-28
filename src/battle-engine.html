@@ -549,11 +549,12 @@ const ENG = {
   pinAttemptSuccessBase: 23,   // base success rate of pin attempt
   pinAttemptClimax: 22,        // bonus in Climax
   // Finish type by category
+  // gu:0 for non-submission — 関節技以外でギブアップは発生しない
   finishWeights: {
-    strike:    {fall:85, gu:5, tko:10},
-    throw:     {fall:80, gu:5, tko:15},
+    strike:    {fall:90, gu:0, tko:10},
+    throw:     {fall:85, gu:0, tko:15},
     aerial:    {fall:85, gu:0, tko:15},
-    ground:    {fall:70, gu:5, tko:25},
+    ground:    {fall:75, gu:0, tko:25},
     submission:{fall:5,  gu:90, tko:5},
     rollup:    {fall:100,gu:0, tko:0}
   },
