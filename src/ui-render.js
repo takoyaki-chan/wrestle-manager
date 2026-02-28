@@ -27,8 +27,20 @@ function refreshTopBar() {
   const subsidyEl = document.getElementById('dispSubsidy');
   if (subsidyEl) {
     const popInt = Engine.util.dispOrgPop(G.orgPop);
-    if (popInt < 40) { subsidyEl.textContent = `補助金あと${40 - popInt}pt`; subsidyEl.style.display = ''; }
-    else { subsidyEl.style.display = 'none'; }
+    if (popInt < 40) {
+      const subsidyAmt = Engine.economy.getSubsidy(G.orgPop);
+      const remaining = 40 - popInt;
+      const tipHtml = `<strong style="color:var(--gold)">🏛️ 地域振興助成金</strong><br>
+現在の支給額: <strong style="color:#2ecc71">+${subsidyAmt}万/週</strong>（自動）<br>
+<span style="color:#aaa">人気があと<strong style="color:#fff">${remaining}pt</strong>上がると打ち切り</span><br><br>
+<span style="color:#aaa;font-size:11px">打ち切り後はスポンサー収入が<br>10万 → <strong style="color:#fff">30万/週</strong>に増えます</span>`;
+      subsidyEl.textContent = `補助金あと${remaining}pt`;
+      subsidyEl.style.display = '';
+      subsidyEl.style.cursor = 'pointer';
+      subsidyEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(subsidyEl, tipHtml); };
+      subsidyEl.onmouseout = () => hideCustomTooltip();
+      subsidyEl.onclick = (e) => { e.stopPropagation(); showCustomTooltip(subsidyEl, tipHtml); };
+    } else { subsidyEl.style.display = 'none'; }
   }
   const heat = getHeatLevel();
   const heatEl = document.getElementById('dispHeat');
@@ -1311,24 +1323,47 @@ function renderFinance() {
     </div>`;
   }
 
-  // Weekly costs breakdown
-  html += '<div class="panel-title">週間コスト内訳</div>';
-  html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-  html += `<div class="finance-row"><span class="f-label">施設維持費</span><span class="f-val expense">-${FIXED_COSTS.facility}万/週</span></div>`;
-  html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
-  // v0.6: Coach salaries
-  const coachTotal = getCoachSalaryTotal();
-  if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-  // v0.7: Facility upgrade maintenance
-  const facilityMaint = getFacilityMaintenance();
-  if (facilityMaint > 0) html += `<div class="finance-row"><span class="f-label">施設アップグレード維持費</span><span class="f-val expense">-${facilityMaint}万/週</span></div>`;
-  const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal + facilityMaint;
-  html += `<div class="finance-row finance-total"><span>週間支出合計</span><span class="f-val expense">-${totalWeekly}万</span></div>`;
-
-  html += '<div class="panel-title" style="margin-top:16px">週間収入</div>';
-  html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
-  const broadcastTotal = getBroadcastIncome() + getFacilityBroadcastBonus();
-  html += `<div class="finance-row"><span class="f-label">放映権${getFacilityBroadcastBonus() > 0 ? '（メディア施設込）' : ''}</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
+  // Past 4 weeks actual breakdown from monthlyFinanceBuffer
+  const monthBuf = G.monthlyFinanceBuffer || [];
+  if (monthBuf.length > 0) {
+    const pastDetails = {};
+    let pastIncome = 0, pastExpense = 0;
+    monthBuf.forEach(entry => {
+      if (!entry.finance || !entry.finance.details) return;
+      entry.finance.details.forEach(d => {
+        const key = d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+        if (!pastDetails[key]) pastDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
+        pastDetails[key].val += d.val;
+        pastDetails[key].count++;
+        pastDetails[key].label = d.label;
+      });
+      pastIncome += (entry.finance.income || 0);
+      pastExpense += (entry.finance.expense || 0);
+    });
+    const pastNet = pastIncome - pastExpense;
+    const weekNums = monthBuf.map(e => e.week).filter(Boolean);
+    const weekRange = weekNums.length > 1 ? `第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週` : `第${weekNums[0]}週`;
+    html += `<div class="panel-title">過去${monthBuf.length}週コスト内訳 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${weekRange})</span></div>`;
+    Object.values(pastDetails).forEach(d => {
+      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}万</span></div>`;
+    });
+    html += `<div class="finance-row finance-total"><span>${monthBuf.length}週間収支</span><span class="f-val ${pastNet >= 0 ? 'income' : 'expense'}">${pastNet >= 0 ? '+' : ''}${pastNet}万</span></div>`;
+  } else {
+    html += '<div class="panel-title">週間コスト内訳（推定）</div>';
+    html += `<div style="font-size:11px;color:var(--text-dim);padding:4px 0 8px">今月の実績はまだありません</div>`;
+    html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
+    html += `<div class="finance-row"><span class="f-label">施設維持費</span><span class="f-val expense">-${FIXED_COSTS.facility}万/週</span></div>`;
+    html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+    const coachTotal = getCoachSalaryTotal();
+    if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
+    const facilityMaint = getFacilityMaintenance();
+    if (facilityMaint > 0) html += `<div class="finance-row"><span class="f-label">施設アップグレード維持費</span><span class="f-val expense">-${facilityMaint}万/週</span></div>`;
+    const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal + facilityMaint;
+    html += `<div class="finance-row finance-total"><span>週間支出合計</span><span class="f-val expense">-${totalWeekly}万</span></div>`;
+    const broadcastTotal = getBroadcastIncome() + getFacilityBroadcastBonus();
+    html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
+    html += `<div class="finance-row"><span class="f-label">放映権${getFacilityBroadcastBonus() > 0 ? '（メディア施設込）' : ''}</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
+  }
 
   // Salary detail
   html += '<div class="panel-title" style="margin-top:16px">選手別給与</div>';

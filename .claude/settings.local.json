@@ -44,7 +44,8 @@
       "Bash(node --check C:/Users/nkmrk/Downloads/wrestle-manager/src/data.js)",
       "Bash(wc -l docs/*.md docs/archive/*.md)",
       "Bash(grep -n \"function onCardSelect\\\\|window.onCardSelect\\\\|= onCardSelect\" src/*.js)",
-      "Bash(grep -n \"monthlyFinanceBuffer\" src/*.js)"
+      "Bash(grep -n \"monthlyFinanceBuffer\" src/*.js)",
+      "Bash(node -e \":*)"
     ]
   }
 }
