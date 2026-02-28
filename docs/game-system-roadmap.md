@@ -1,12 +1,23 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-01（大型イベントB1〜B4実装セッション）
+> 最終更新: 2026-03-01（Phase1-7 セリフバリエーション拡充+バランス調整セッション）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**Phase1-7 セリフバリエーション拡充+バランス調整セッション完了。** セリフ73個追加+バランス微調整4点。
+
+- **セリフ拡充（data.js）**: LARGE_EVENT_TEXTS +12（B1:3→6, B2:2→5, B3:2→5, B4:2→5）、LARGE_EVENT_DIALOGUES +17（B3_challenger:8→13, B3_decline:3→7, B3_result_lose:3→7, B3_result_win:3→7）、CHOICE_EVENT_DIALOGUES +11（E1特性別4行+default2行, S4_silent:1→3, E6:+2）、NOTIF_EVENT_TEXTS +12（全タイプ4→6）、NOTIF_DIALOGUES新設 N2/N5_warning キー各6行、ENDING_LINES +9（fighter:10→15, coach:6→10）
+- **N1ウェイト増**: w:2→3（trust管理の報酬感強化）
+- **N2/N5_warningセリフ有効化**: getNotifDialogue の早期リターン条件削除
+- **S4 低コスト第4選択肢**: funds<200時「励ましの言葉をかける」（信頼度+3、無料）
+- **逆境チームスピリットバフ**: funds<300 && morale>=50 && week%4===0 でランダム1名trust+1、トースト表示
+- **トースト表示時間動的化**: 固定7秒→テキスト長に応じて9〜15秒（ui-common.js）
+- **TEAM_SPIRIT_TEXTS**: 4パターン新設（data.js）
+- 変更: data.js, engine.js, app.js, ui-common.js
 
 **大型イベントB1〜B4セッション完了。** v2.0イベントシステム Phase1-6 を実装。
 
@@ -59,7 +70,7 @@
 | # | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
 | Phase1-6 | **大型イベント（B1〜B4）** 練習中の怪我・選手間対立・他団体対抗戦・メディア密着取材 | 中 | **実装済み** |
-| Phase1-7 | **セリフバリエーション拡充 + バランス調整** プレイテストに基づく数値調整。セリフパターン追加（反復感の排除） | 中 | 未実装 |
+| Phase1-7 | **セリフバリエーション拡充 + バランス調整** セリフ73個追加、N1ウェイト増、S4低コスト選択肢、チームスピリットバフ、トースト時間動的化 | 中 | **実装済み** |
 
 ### Phase 2: プレイの方向性・動機付け
 
@@ -97,10 +108,10 @@
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
 | index.html | ~1,320 | HTML+CSS+起動処理 |
-| data.js | ~1,730 | 全データ定数（キャラ98名・コーチ8名・技160種） |
-| engine.js | ~6,070 | ゲームロジック全体 |
-| app.js | ~3,520 | Audio+Storage+Mission+App統合 |
-| ui-common.js | ~3,180 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
+| data.js | ~1,900 | 全データ定数（キャラ98名・コーチ8名・技160種） |
+| engine.js | ~6,100 | ゲームロジック全体 |
+| app.js | ~3,530 | Audio+Storage+Mission+App統合 |
+| ui-common.js | ~3,200 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
 | ui-render.js | ~2,550 | 全render関数+データベースタブ |
 | victory-lines.js | 501 | 勝利台詞データ |
 | battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
@@ -147,6 +158,9 @@
 - **エンディング条件** — offWeek4: pRank===1 && !endingCleared → endingCleared=true/endingClearedSeason=season。翌シーズン offWeek1 に演出（endingClearedSeason===season-1 で1回のみ）
 - **ゲームオーバー条件** — tickWeek settlement後に funds≤0 → weekPhase:'gameover'。autoSave上書きなし。processWeekで検知→showGameOverScreen
 - **FileBGM** — HTMLAudioElement ベース。Audio IIFE 内 FileBGM オブジェクト。Audio.fileBgm として公開。BGM再生は必ずユーザー操作直後（Autoplay Policy対応）
+- **逆境チームスピリットバフ** — funds<300 && lockerRoomMorale>=50 && week%4===0 でランダム1名にtrust+1。_pendingTeamSpirit transientフィールドでトースト表示
+- **S4低コスト第4選択肢** — funds<200時のみ表示。「励ましの言葉をかける」信頼度+3、morale+2、無料
+- **通知イベントトースト動的表示時間** — テキスト長に応じて9〜15秒（baseDuration + max(0, textLen-40)*40ms、上限15秒）
 - **大型イベントB1〜B4** — 非興行週に2.5%/週で発生。8週クールダウン。B1:怪我3択、B2:対立3段階+介入+試合、B3:他団体対抗戦3段階+試合、B4:メディア密着3興行追跡。_pendingLargeEvent transientフィールドでadvanceWeekへ連携
 - **データベースタブ** — Engine.database.getAllFighters()でdormantPool除外の全選手を収集。3サブタブ構成（全選手/殿堂/団体比較）。モジュールレベル変数（_dbSubTab/_dbSortKey等）で状態管理
 - **drawRadarChart()** — Canvas innerHTML設定後にdocument.getElementByIdで取得して描画。5角形レーダー、単一/デュアルデータセット対応。hexToRgba()ヘルパー併用

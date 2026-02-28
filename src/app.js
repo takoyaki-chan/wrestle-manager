@@ -2929,6 +2929,17 @@ const App = {
       setTimeout(() => showNotifEventToast(pendingNotifEvent), notifDelay);
     }
 
+    // v2.0 Phase1-7: 逆境チームスピリットバフ表示
+    const pendingTeamSpirit = G._pendingTeamSpirit || null;
+    if (G._pendingTeamSpirit) {
+      const { _pendingTeamSpirit: _, ...cleanTs } = G;
+      G = cleanTs;
+    }
+    if (pendingTeamSpirit) {
+      const spiritDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 350;
+      setTimeout(() => showNotifEventToast(pendingTeamSpirit), spiritDelay);
+    }
+
     // v2.0: 週次選択型イベント表示（S/E型 モーダル）
     const pendingChoiceEvent = G._pendingChoiceEvent || null;
     if (G._pendingChoiceEvent) {

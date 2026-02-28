@@ -3204,7 +3204,10 @@ function showNotifEventToast(event) {
   };
 
   clearTimeout(window._notifTimer);
-  const duration = isWarning ? 5500 : 7000;
+  // テキスト量に応じて表示時間を動的調整（最低8秒、セリフ付きは10秒〜）
+  const textLen = (event.text || '').length + (event.detail || '').length + (event.dialogue || '').length;
+  const baseDuration = isWarning ? 8000 : 9000;
+  const duration = Math.min(baseDuration + Math.max(0, textLen - 40) * 40, 15000);
   window._notifTimer = setTimeout(() => {
     el.classList.remove('show');
     el.onclick = null;

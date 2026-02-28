@@ -2410,6 +2410,20 @@ const Engine = {
         }
       }
 
+      // v2.0 Phase1-7: 逆境チームスピリットバフ
+      // 資金が厳しいがチームの士気が保たれている場合、4週に1度ランダム1名のtrustが微増
+      let pendingTeamSpirit = null;
+      if (!pendingNotifEvent && G.funds < 300 && (G.lockerRoomMorale || 60) >= 50
+          && G.week % 4 === 0 && roster.length > 0 && !G.offSeason) {
+        const spiritRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x7370));
+        const target = roster[Engine.rng.int(spiritRng, 0, roster.length - 1)];
+        roster = roster.map(f => f.id === target.id
+          ? { ...f, trust: Engine.util.clamp((f.trust != null ? f.trust : 50) + 1, 0, 100) }
+          : f);
+        const tmpl = TEAM_SPIRIT_TEXTS[Engine.rng.int(spiritRng, 0, TEAM_SPIRIT_TEXTS.length - 1)];
+        pendingTeamSpirit = { type: 'team_spirit', fighter: target.id, name: target.name, ...tmpl };
+      }
+
       // v1.8: pending growth events を transient フィールドとして返す
       const pendingGrowthEvents = [
         ...pendingSlumpEvents.map(e => ({ ...e })),
@@ -2419,6 +2433,7 @@ const Engine = {
       if (pendingGrowthEvents.length > 0) result._pendingGrowthEvents = pendingGrowthEvents;
       if (pendingMotivationRetirements.length > 0) result._pendingMotivationRetirements = pendingMotivationRetirements;
       if (pendingNotifEvent) result._pendingNotifEvent = pendingNotifEvent;
+      if (pendingTeamSpirit) result._pendingTeamSpirit = pendingTeamSpirit;
       if (pendingChoiceEvent) result._pendingChoiceEvent = pendingChoiceEvent;
       if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
       return result;
@@ -5561,7 +5576,7 @@ Engine.eventSystem = {
     // N1〜N4: 重み付き抽選
     const weighted = [];
     const n1Pool = roster.filter(f => (f.trust != null ? f.trust : 50) >= 60);
-    if (n1Pool.length > 0) weighted.push({ w: 2, t: 'N1', pool: n1Pool });
+    if (n1Pool.length > 0) weighted.push({ w: 3, t: 'N1', pool: n1Pool });
 
     if (roster.length >= 2) weighted.push({ w: 3, t: 'N2', pool: roster });
 
@@ -5725,11 +5740,15 @@ Engine.eventSystem = {
         { label: '励ます',       hint: '信頼度-2（無理強い）',                        idx: 1 },
         { label: '無視する',     hint: '信頼度-5、怪我リスク増',                      idx: 2 },
       ];
-      case 'S4': return [
-        { label: `待遇改善（-100万）`, hint: funds >= 100 ? '信頼度+8' : '資金不足', idx: 0, disabled: funds < 100 },
-        { label: '出場を約束する',     hint: '信頼度保留（約束のプレッシャー）',      idx: 1 },
-        { label: '突っぱねる',         hint: '信頼度-15、退団リスク',                idx: 2 },
-      ];
+      case 'S4': {
+        const s4Choices = [
+          { label: `待遇改善（-100万）`, hint: funds >= 100 ? '信頼度+8' : '資金不足', idx: 0, disabled: funds < 100 },
+          { label: '出場を約束する',     hint: '信頼度保留（約束のプレッシャー）',      idx: 1 },
+          { label: '突っぱねる',         hint: '信頼度-15、退団リスク',                idx: 2 },
+        ];
+        if (funds < 200) s4Choices.push({ label: '励ましの言葉をかける', hint: '信頼度+3（少ないが無料）', idx: 3 });
+        return s4Choices;
+      }
       case 'S5': return [
         { label: '許可する',       hint: '強化練習に設定、信頼度+3',                idx: 0 },
         { label: '通常練習を指示', hint: '変化なし',                               idx: 1 },
@@ -5808,6 +5827,10 @@ Engine.eventSystem = {
           events.push(`💴 ${event.name}の待遇を改善（-100万、信頼度+8）`);
         } else if (choiceIdx === 1) {
           events.push(`🤝 ${event.name}への出場約束（次の興行に出場させること）`);
+        } else if (choiceIdx === 3) {
+          applyTrust(event.fighter, 3);
+          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
+          events.push(`💬 ${event.name}を励ました（信頼度+3）`);
         } else {
           applyTrust(event.fighter, -15);
           lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 10, 0, 100);
@@ -5907,10 +5930,8 @@ Engine.eventSystem = {
   },
 
   // ── 通知型イベント 特性別セリフ選択 ─────────────────────────────────────
-  // N2（2人イベント）・N5_warning（情報絞る）はnull返却
   getNotifDialogue(rng, event, roster) {
     if (!roster || event.fighter == null) return null;
-    if (event.type === 'N2' || (event.type === 'N5' && event.band === 'warning')) return null;
     const f = roster.find(f => f.id === event.fighter);
     if (!f) return null;
     const key = event.type === 'N5' ? `N5_${event.band}` : event.type;
