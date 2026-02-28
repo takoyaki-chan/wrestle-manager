@@ -19,6 +19,10 @@
   --text-sub: rgba(255,255,255,0.5);
   --text-dim: rgba(255,255,255,0.25);
   color-scheme: dark;
+  /* A-1: 参照側との整合性確保（--bg-card/--bg-main/--border は care-box 等で使用） */
+  --bg-card: #0e0e15;
+  --bg-main: #121220;
+  --border: rgba(255,255,255,0.1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}

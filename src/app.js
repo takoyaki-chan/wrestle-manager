@@ -2732,7 +2732,7 @@ const App = {
   },
 
   // Process a week (manage + settle) via tickWeek
-  // E1: おまかせ育成 — auto-set schedules based on condition, then process week
+  // A-3: おまかせ育成 — 体調に応じてスケジュールを自動設定し、確認で止まる（週は自動で進めない）
   autoManage() {
     if (G.weekPhase !== 'manage') return;
     Audio.play('select');
@@ -2745,7 +2745,8 @@ const App = {
       return c;
     });
     G = { ...G, roster };
-    App.processWeek();
+    showToast('🤖 おまかせ完了 — 内容を確認してください');
+    refreshAll();
   },
 
   processWeek() {

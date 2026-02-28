@@ -83,7 +83,7 @@ null/manage → [processWeek] → settled (月末のみ停止) → [advanceWeek]
 | グッズ収入 | 集客数 × 0.15万 |
 | スポンサー収入 | orgPop依存（人気20〜で発生） |
 | 放映権収入 | orgPop依存 |
-| 育成補助金 | orgPop 0-19: 50万/週, 20-29: 35万/週, 30-39: 20万/週（40達成で廃止） |
+| 育成補助金 | orgPop 0-19: 80万/週, 20-29: 65万/週, 30-39: 20万/週（40達成で廃止）※B-3 |
 
 ### 4.2 支出
 | 支出源 | 計算式 / 値 |
@@ -537,7 +537,7 @@ orgRating = championScore + starPowerScore + totalPopScore
 | orgPop | 上昇倍率 |
 |:------:|:--------:|
 | 0 | ×1.00 |
-| 20 | ×0.60 |
+| 20 | ×0.70 ※B-2緩和 |
 | 40 | ×0.35 |
 | 55 | ×0.20 |
 | 70 | ×0.12 |
@@ -559,6 +559,16 @@ orgRating = championScore + starPowerScore + totalPopScore
 ### 21.4 内部小数化
 - popularity / orgPop は小数のまま保持
 - 表示: `Engine.util.dispPop(v)` / `Engine.util.dispOrgPop(v)`（Math.round返却）
+
+### 21.5 orgPop帯別MQ閾値シフト（getMQAdjust）※B-1
+低orgPopほどMQ閾値を下げ、orgPop変動のペナルティを軽減する。
+
+| orgPop | shift | negMult | 効果 |
+|:------:|:-----:|:-------:|------|
+| 0〜19  | −10   | ×0.4    | 創設期: 閾値大幅低下・ペナルティ大幅軽減 |
+| 20〜29 | −7    | ×0.5    | 弱小→地方: 保護強化（旧−5/0.7） |
+| 30〜44 | −3    | ×0.85   | 地方→中堅: 橋渡し帯域（新設） |
+| 45+    | 0     | ×1.0    | 中堅以上: 現行通り |
 
 ---
 

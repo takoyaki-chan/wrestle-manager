@@ -2585,13 +2585,28 @@ function showCareActionModal(state, onConfirm) {
         if (cfg.category === 'individual') {
           renderFighterSelect(actionId, cfg);
         } else {
-          // 団体向けは選手選択不要 → 直接実行
-          if (onConfirm) onConfirm(actionId, null);
-          overlay.classList.remove('active');
+          // A-2: 団体向けは確認画面を挟む（誤操作防止）
+          renderTeamConfirm(actionId, cfg);
         }
       });
     });
     document.getElementById('careCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
+  }
+
+  // A-2: 団体向けアクション確認画面
+  function renderTeamConfirm(actionId, cfg) {
+    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
+    html += `<div style="font-size:14px;color:#e8439f;font-weight:700;text-align:center;margin-bottom:14px">費用: ${cfg.cost}万</div>`;
+    html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careTeamConfirmBtn">実行する</button>`;
+    html += '<button class="care-close-btn" id="careTeamBackBtn">← 戻る</button>';
+    box.innerHTML = html;
+
+    document.getElementById('careTeamConfirmBtn').addEventListener('click', () => {
+      if (onConfirm) onConfirm(actionId, null);
+      overlay.classList.remove('active');
+    });
+    document.getElementById('careTeamBackBtn').addEventListener('click', renderMain);
   }
 
   function renderFighterSelect(actionId, cfg) {
