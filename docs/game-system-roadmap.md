@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-02-28（データベースタブセッション）
+> 最終更新: 2026-03-01（大型イベントB1〜B4実装セッション）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**大型イベントB1〜B4セッション完了。** v2.0イベントシステム Phase1-6 を実装。
+
+- **B1 練習中の怪我**: 単発3択モーダル（特別治療-200万/通常/無理させる）。injury+growthPenalty適用
+- **B2 選手間の深刻対立**: 3段階フロー（対立報告→秘密介入→試合結果）。trust低い2選手が対立、試合で決着
+- **B3 他団体対抗戦**: 3段階フロー（挑発オファー→代表選手選択→試合結果）。AI団体から憎たらしい態度の挑戦者
+- **B4 メディア密着取材**: 選手選択→3興行追跡→avgMQ評価。興行準備画面にスポットライトバナー表示
+- 発生率: 2.5%/週（非興行週のみ）、8週間クールダウン
+- 変更: data.js, engine.js, app.js, ui-common.js, ui-render.js, index.html
 
 **データベースタブセッション完了。** データベースタブ・選手ポップアップ刷新・5能力値カラム・プロフィール拡充を実装。
 
@@ -49,7 +58,7 @@
 
 | # | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
-| Phase1-6 | **大型イベント（B1〜B4）** 練習中の怪我・選手間対立・ファン大型リクエスト・スポンサー撤退危機。資金による解決ルート含む | 中 | 未実装 |
+| Phase1-6 | **大型イベント（B1〜B4）** 練習中の怪我・選手間対立・他団体対抗戦・メディア密着取材 | 中 | **実装済み** |
 | Phase1-7 | **セリフバリエーション拡充 + バランス調整** プレイテストに基づく数値調整。セリフパターン追加（反復感の排除） | 中 | 未実装 |
 
 ### Phase 2: プレイの方向性・動機付け
@@ -138,6 +147,7 @@
 - **エンディング条件** — offWeek4: pRank===1 && !endingCleared → endingCleared=true/endingClearedSeason=season。翌シーズン offWeek1 に演出（endingClearedSeason===season-1 で1回のみ）
 - **ゲームオーバー条件** — tickWeek settlement後に funds≤0 → weekPhase:'gameover'。autoSave上書きなし。processWeekで検知→showGameOverScreen
 - **FileBGM** — HTMLAudioElement ベース。Audio IIFE 内 FileBGM オブジェクト。Audio.fileBgm として公開。BGM再生は必ずユーザー操作直後（Autoplay Policy対応）
+- **大型イベントB1〜B4** — 非興行週に2.5%/週で発生。8週クールダウン。B1:怪我3択、B2:対立3段階+介入+試合、B3:他団体対抗戦3段階+試合、B4:メディア密着3興行追跡。_pendingLargeEvent transientフィールドでadvanceWeekへ連携
 - **データベースタブ** — Engine.database.getAllFighters()でdormantPool除外の全選手を収集。3サブタブ構成（全選手/殿堂/団体比較）。モジュールレベル変数（_dbSubTab/_dbSortKey等）で状態管理
 - **drawRadarChart()** — Canvas innerHTML設定後にdocument.getElementByIdで取得して描画。5角形レーダー、単一/デュアルデータセット対応。hexToRgba()ヘルパー併用
 - **選手ポップアップ上半身画像** — getUpperUrl(id)でwebpパス取得。onerrorで従来のface PNGにフォールバック

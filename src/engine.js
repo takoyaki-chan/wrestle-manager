@@ -2376,12 +2376,22 @@ const Engine = {
       // 通知型 (N1〜N5) と 選択型 (S1〜S6, E1〜E6) を区別して処理
       let pendingNotifEvent = null;
       let pendingChoiceEvent = null;
+      let pendingLargeEvent = null;
       if (!Engine.util.isShowWeek(G.week) && !G.offSeason) {
         const evtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xE101));
         const rawEvent = Engine.eventSystem.generateWeeklyEvent(evtRng, { ...G, roster });
         if (rawEvent) {
           const evtPrefix = rawEvent.type ? rawEvent.type[0] : '';
-          if (evtPrefix === 'S' || evtPrefix === 'E') {
+          if (evtPrefix === 'B') {
+            // 大型イベント (B1〜B4): セリフ付きで格納 — 効果はユーザーの選択後に適用
+            const dialogue = Engine.eventSystem.getLargeEventDialogue(evtRng, rawEvent, G.roster);
+            const dialogue2 = rawEvent.type === 'B2' ? Engine.eventSystem.getLargeEventDialogue2(evtRng, rawEvent, G.roster) : '';
+            const textKey = rawEvent.type;
+            const vars = { name: rawEvent.name || '', name1: rawEvent.name1 || '', name2: rawEvent.name2 || '',
+                           orgName: rawEvent.orgName || '', outletName: rawEvent.outletName || '' };
+            const textData = Engine.eventSystem.pickText(evtRng, textKey, vars);
+            pendingLargeEvent = { ...rawEvent, ...textData, dialogue, dialogue2 };
+          } else if (evtPrefix === 'S' || evtPrefix === 'E') {
             // 選択型: セリフ付きで格納 — 効果はユーザーの選択後に適用
             const dialogue = Engine.eventSystem.getChoiceDialogue(evtRng, rawEvent, G.roster);
             const choices = Engine.eventSystem.buildChoices(rawEvent, G);
@@ -2410,6 +2420,7 @@ const Engine = {
       if (pendingMotivationRetirements.length > 0) result._pendingMotivationRetirements = pendingMotivationRetirements;
       if (pendingNotifEvent) result._pendingNotifEvent = pendingNotifEvent;
       if (pendingChoiceEvent) result._pendingChoiceEvent = pendingChoiceEvent;
+      if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
       return result;
     },
 
@@ -2528,9 +2539,10 @@ const Engine = {
     // v1.8: transient 成長イベントを state に乗せる
     if (manage._pendingGrowthEvents) s = { ...s, _pendingGrowthEvents: manage._pendingGrowthEvents };
     if (manage._pendingMotivationRetirements) s = { ...s, _pendingMotivationRetirements: manage._pendingMotivationRetirements };
-    // v2.0: transient 通知型/選択型イベントを state に乗せる
+    // v2.0: transient 通知型/選択型/大型イベントを state に乗せる
     if (manage._pendingNotifEvent) s = { ...s, _pendingNotifEvent: manage._pendingNotifEvent };
     if (manage._pendingChoiceEvent) s = { ...s, _pendingChoiceEvent: manage._pendingChoiceEvent };
+    if (manage._pendingLargeEvent) s = { ...s, _pendingLargeEvent: manage._pendingLargeEvent };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // v1.0b: Apply occupancy heat delta
@@ -4497,6 +4509,9 @@ const Engine = {
       milestoneBuffs: [],
       // v2.0: ロッカールームの空気
       lockerRoomMorale: 60,
+      // v2.0 Phase1-6: 大型イベント
+      lastLargeEventWeek: 0,
+      mediaSpotlight: null,
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
       endingClearedSeason: null,
@@ -5525,8 +5540,8 @@ Engine.eventSystem = {
       // 選択型 (40%) — Step4実装まで通知型にフォールバック
       return Engine.eventSystem.generateChoiceEvent(rng, state, roster);
     }
-    // 大型 (10%) — Step6実装まではnull
-    return null;
+    // 大型 (10%) — Phase1-6: B1〜B4 大型イベント
+    return Engine.eventSystem.generateLargeEvent(rng, state, roster);
   },
 
   // ── 通知型イベント生成 + 効果適用 ────────────────────────────────────────
@@ -5879,10 +5894,14 @@ Engine.eventSystem = {
   // ── テキスト選択ヘルパー ────────────────────────────────────────────────
   // 返り値: { text, detail } オブジェクト（旧string形式との互換性あり）
   pickText(rng, key, vars) {
-    const pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
+    let pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
+    // B型イベントテキストもチェック
+    if (pool.length === 0 && typeof LARGE_EVENT_TEXTS !== 'undefined') pool = LARGE_EVENT_TEXTS[key] || [];
     if (pool.length === 0) return { text: key, detail: '' };
     const tmpl = Engine.rng.pick(rng, pool);
-    const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name2\}/g, vars.name2 || '') : '';
+    const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name1\}/g, vars.name1 || '')
+      .replace(/\{name2\}/g, vars.name2 || '').replace(/\{orgName\}/g, vars.orgName || '')
+      .replace(/\{outletName\}/g, vars.outletName || '') : '';
     if (typeof tmpl === 'string') return { text: sub(tmpl), detail: '' };
     return { text: sub(tmpl.text), detail: sub(tmpl.detail || '') };
   },
@@ -5907,6 +5926,372 @@ Engine.eventSystem = {
     const defPool = dialogues.default;
     if (!defPool || defPool.length === 0) return null;
     return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+  },
+
+  // ── Phase1-6: 大型イベント生成（B1〜B4） ─────────────────────────────────
+  // クールダウン8週。条件を満たすB型から重み付き抽選
+  generateLargeEvent(rng, state, roster) {
+    // クールダウンチェック
+    const absWeek = ((state.season - 1) * 52) + state.week;
+    const lastLarge = state.lastLargeEventWeek || 0;
+    if (absWeek - lastLarge < 8) return null;
+
+    const candidates = [];
+
+    // B1: 練習中の怪我 — condition < 50 の選手がいる
+    const b1Pool = roster.filter(f => (f.condition || 70) < 50);
+    if (b1Pool.length > 0) candidates.push({ type: 'B1', w: 3, pool: b1Pool });
+
+    // B2: 選手間の深刻対立 — trust < 40 の選手が2人以上
+    const b2Pool = roster.filter(f => (f.trust != null ? f.trust : 50) < 40);
+    if (b2Pool.length >= 2) candidates.push({ type: 'B2', w: 2, pool: b2Pool });
+
+    // B3: 他団体からの対抗戦 — orgPop > 20
+    if ((state.orgPop || 0) > 20) candidates.push({ type: 'B3', w: 2 });
+
+    // B4: メディア密着取材 — orgPop > 25、取材中でない
+    if ((state.orgPop || 0) > 25 && !state.mediaSpotlight) candidates.push({ type: 'B4', w: 3 });
+
+    if (candidates.length === 0) return null;
+
+    // 重み付き抽選
+    const total = candidates.reduce((s, c) => s + c.w, 0);
+    let roll = Engine.rng.float(rng) * total;
+    let sel = candidates[candidates.length - 1];
+    for (const c of candidates) { roll -= c.w; if (roll <= 0) { sel = c; break; } }
+
+    switch (sel.type) {
+      case 'B1': {
+        const f = Engine.rng.pick(rng, sel.pool);
+        const severity = (f.condition || 70) < 30 ? 'moderate' : 'minor';
+        return { type: 'B1', fighter: f.id, name: f.name, severity };
+      }
+      case 'B2': {
+        // trust低い順に2人選択
+        const sorted = sel.pool.slice().sort((a, b) => (a.trust != null ? a.trust : 50) - (b.trust != null ? b.trust : 50));
+        return { type: 'B2', fighter1: sorted[0].id, name1: sorted[0].name,
+                 fighter2: sorted[1].id, name2: sorted[1].name };
+      }
+      case 'B3': {
+        // プレイヤーのorgPopに近い団体を選択
+        const allOrgs = Engine.rival.getAllOrgs(state.aiOrgs);
+        if (allOrgs.length === 0) return null;
+        const pPop = state.orgPop || 10;
+        // orgPop差が小さい順にソート → 上位から選択
+        const sorted = allOrgs.slice().sort((a, b) => Math.abs(a.orgPop - pPop) - Math.abs(b.orgPop - pPop));
+        const org = sorted[0];
+        if (!org.roster || org.roster.length === 0) return null;
+        // 上位3人からランダム
+        const topFighters = org.roster.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
+        const challenger = Engine.rng.pick(rng, topFighters);
+        const dialogues = typeof LARGE_EVENT_DIALOGUES !== 'undefined' ? LARGE_EVENT_DIALOGUES.B3_challenger : [];
+        const dialogue = dialogues.length > 0 ? dialogues[Engine.rng.int(rng, 0, dialogues.length - 1)] : '';
+        return { type: 'B3', orgId: org.id, orgName: org.name || '他団体',
+                 challenger: { id: challenger.id, name: challenger.name,
+                   pw: challenger.pw, sp: challenger.sp, te: challenger.te,
+                   st: challenger.st, mn: challenger.mn,
+                   popularity: challenger.popularity || 0, traits: challenger.traits || [] },
+                 challengerDialogue: dialogue };
+      }
+      case 'B4': {
+        const outlets = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア'];
+        const outletName = outlets[Engine.rng.int(rng, 0, outlets.length - 1)];
+        return { type: 'B4', outletName };
+      }
+      default: return null;
+    }
+  },
+
+  // ── Phase1-6: 大型イベントのセリフ取得 ───────────────────────────────────
+  getLargeEventDialogue(rng, event, roster) {
+    if (typeof LARGE_EVENT_DIALOGUES === 'undefined') return '';
+    const key = event.type;
+    const dialogues = LARGE_EVENT_DIALOGUES[key];
+    if (!dialogues) return '';
+    // B3_challenger は配列なので別処理（生成時にセット済み）
+    if (key === 'B3') return '';
+    // 選手の特性からセリフ選択
+    const fId = event.fighter || event.fighter1;
+    const f = roster ? roster.find(f => f.id === fId) : null;
+    if (!f) {
+      const defPool = dialogues.default || ['…'];
+      return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    }
+    const traits = f.traits || [];
+    for (const trait of traits) {
+      if (dialogues[trait] && dialogues[trait].length > 0) {
+        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
+      }
+    }
+    const defPool = dialogues.default || ['…'];
+    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+  },
+
+  // B2用: fighter2のセリフ取得
+  getLargeEventDialogue2(rng, event, roster) {
+    if (typeof LARGE_EVENT_DIALOGUES === 'undefined') return '';
+    const dialogues = LARGE_EVENT_DIALOGUES.B2_fighter2;
+    if (!dialogues) return '';
+    const f = roster ? roster.find(f => f.id === event.fighter2) : null;
+    if (!f) {
+      const defPool = dialogues.default || ['…'];
+      return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    }
+    const traits = f.traits || [];
+    for (const trait of traits) {
+      if (dialogues[trait] && dialogues[trait].length > 0) {
+        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
+      }
+    }
+    const defPool = dialogues.default || ['…'];
+    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+  },
+
+  // ── Phase1-6: 大型イベント効果適用（純粋関数） ──────────────────────────
+  // 返り値: { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek, events, matchResult }
+  applyLargeEventEffect(event, step, choiceIdx, state, rng) {
+    let roster = state.roster.map(f => ({ ...f }));
+    let funds = state.funds || 0;
+    let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    let mediaSpotlight = state.mediaSpotlight || null;
+    const absWeek = ((state.season - 1) * 52) + state.week;
+    const events = [];
+
+    const applyTrust = (fighterId, delta) => {
+      roster = roster.map(f => {
+        if (f.id !== fighterId) return f;
+        const adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
+        return { ...f, trust: Engine.util.clamp(Math.round((f.trust != null ? f.trust : 50) + adjusted), 0, 100) };
+      });
+    };
+
+    switch (event.type) {
+      // ── B1: 練習中の怪我 ────────────────────────────────────────────────
+      case 'B1': {
+        let severity = event.severity || 'minor';
+        if (choiceIdx === 0 && funds >= 200) {
+          // 特別治療
+          funds -= 200;
+          applyTrust(event.fighter, 5);
+          const injWeeks = severity === 'moderate' ? 3 : 2;
+          const gpWeeks = severity === 'moderate' ? 7 : 3;
+          const gpMult = severity === 'moderate' ? 0.4 : 0.7;
+          roster = roster.map(f => {
+            if (f.id !== event.fighter) return f;
+            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 10),
+              growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我(特別治療)' } };
+          });
+          events.push(`🏥 ${event.name}に特別治療を施した（-200万、復帰${injWeeks}週）`);
+        } else if (choiceIdx === 2) {
+          // 無理させる
+          applyTrust(event.fighter, 3);
+          const worsen = Engine.rng.float(rng) < 0.40;
+          if (worsen) severity = 'moderate';
+          const injWeeks = severity === 'moderate' ? 6 : 3;
+          const gpWeeks = severity === 'moderate' ? 14 : 6;
+          const gpMult = severity === 'moderate' ? 0.4 : 0.7;
+          roster = roster.map(f => {
+            if (f.id !== event.fighter) return f;
+            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 15),
+              growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: worsen ? '練習中の怪我(悪化)' : '練習中の怪我' } };
+          });
+          if (worsen) events.push(`💥 ${event.name}を無理させた結果、症状が悪化！（${injWeeks}週離脱）`);
+          else events.push(`😤 ${event.name}を無理させた（${injWeeks}週離脱、信頼度+3）`);
+        } else {
+          // 通常の治療（choiceIdx === 1、または資金不足でchoice 0を選んだ場合）
+          const injWeeks = severity === 'moderate' ? 6 : 3;
+          const gpWeeks = severity === 'moderate' ? 14 : 6;
+          const gpMult = severity === 'moderate' ? 0.4 : 0.7;
+          roster = roster.map(f => {
+            if (f.id !== event.fighter) return f;
+            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 10),
+              growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我' } };
+          });
+          events.push(`🩹 ${event.name}の練習中の怪我を通常治療（${injWeeks}週離脱）`);
+        }
+        return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+      }
+
+      // ── B2: 選手間の深刻対立 ────────────────────────────────────────────
+      case 'B2': {
+        if (step === 0) {
+          // Step 1 の選択
+          if (choiceIdx === 0) {
+            // 話し合いで解決
+            applyTrust(event.fighter1, 5);
+            applyTrust(event.fighter2, 5);
+            lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 3, 0, 100);
+            events.push(`🤝 ${event.name1}と${event.name2}の対立を話し合いで解決（両者信頼度+5）`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+          } else if (choiceIdx === 1) {
+            // 試合で決着 → nextStep で Step 2 へ
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, nextStep: 1 };
+          } else {
+            // 放置
+            applyTrust(event.fighter1, -8);
+            applyTrust(event.fighter2, -8);
+            lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 10, 0, 100);
+            events.push(`😡 ${event.name1}と${event.name2}の対立を放置（両者信頼度-8、士気-10）`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+          }
+        }
+        if (step === 1) {
+          // Step 2: 介入選択 → 試合シミュレーションへ (nextStep=2)
+          // choiceIdx: 0=fighter1を激励、1=fighter2を激励、2=介入しない
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events,
+                   nextStep: 2, interventionChoice: choiceIdx };
+        }
+        if (step === 2) {
+          // Step 3: 試合結果の適用
+          // event.matchResult と event.interventionChoice は app.js から渡される
+          const winner = event.matchResult?.winner; // 'fighter1' | 'fighter2' | 'draw'
+          const intervention = event.interventionChoice; // 0=help f1, 1=help f2, 2=neutral
+
+          if (winner === 'draw') {
+            applyTrust(event.fighter1, 3);
+            applyTrust(event.fighter2, 3);
+            lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
+            events.push(`🤼 ${event.name1}と${event.name2}は引き分け。互いの実力を認め合った`);
+          } else {
+            const winnerId = winner === 'fighter1' ? event.fighter1 : event.fighter2;
+            const loserId = winner === 'fighter1' ? event.fighter2 : event.fighter1;
+            const winnerName = winner === 'fighter1' ? event.name1 : event.name2;
+            const loserName = winner === 'fighter1' ? event.name2 : event.name1;
+            // 介入ありで負けた側は追加ペナルティ
+            const helpedId = intervention === 0 ? event.fighter1 : (intervention === 1 ? event.fighter2 : null);
+            const loserPenalty = (helpedId && helpedId === loserId) ? -8 : -5;
+
+            applyTrust(winnerId, 10);
+            applyTrust(loserId, loserPenalty);
+            roster = roster.map(f => f.id === winnerId ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) } : f);
+            lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
+            events.push(`🏆 ${winnerName}が${loserName}に勝利し対立に決着（士気+2）`);
+          }
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+        }
+        return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+      }
+
+      // ── B3: 他団体からの対抗戦 ──────────────────────────────────────────
+      case 'B3': {
+        if (step === 0) {
+          if (choiceIdx === 0) {
+            // 受けて立つ → 代表選手選択へ
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, nextStep: 1 };
+          } else {
+            // 断る
+            events.push(`🚫 ${event.orgName || '他団体'}からの対抗戦オファーを断った`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+          }
+        }
+        if (step === 1) {
+          // choiceIdx = 選ばれた選手のID
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events,
+                   nextStep: 2, selectedFighterId: choiceIdx };
+        }
+        if (step === 2) {
+          // 試合結果の適用
+          const result = event.matchResult; // { winner: 'left'|'right'|'draw', mq }
+          const fighterId = event.selectedFighterId;
+          const orgName = event.orgName || '他団体';
+
+          if (result.winner === 'left') {
+            // プレイヤー勝利（left=プレイヤー選手）
+            const orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
+            applyTrust(fighterId, 5);
+            roster = roster.map(f => f.id === fighterId
+              ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 3, 1, 100) } : f);
+            events.push(`🎉 対抗戦で${orgName}を返り討ち！（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta };
+          } else if (result.winner === 'right') {
+            // 敗北
+            const orgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, rng);
+            applyTrust(fighterId, -3);
+            events.push(`😞 対抗戦で${orgName}に敗北…（人気${Math.round(orgPopDelta * 10) / 10}）`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta };
+          } else {
+            // 引き分け
+            const orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
+            applyTrust(fighterId, 2);
+            events.push(`🤼 対抗戦は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta };
+          }
+        }
+        return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+      }
+
+      // ── B4: メディア密着取材 ─────────────────────────────────────────────
+      case 'B4': {
+        // choiceIdx = 選ばれた選手のID
+        const f = roster.find(f => f.id === choiceIdx);
+        if (!f) return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+        mediaSpotlight = { fighterId: f.id, fighterName: f.name, remainingShows: 3,
+                           totalMQ: 0, matchCount: 0, outletName: event.outletName || 'メディア' };
+        events.push(`📺 ${f.name}の密着取材が開始（${mediaSpotlight.outletName}、3興行）`);
+        return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+      }
+
+      default:
+        return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+    }
+  },
+
+  // ── Phase1-6: メディアスポットライトの興行後処理（純粋関数） ─────────────
+  // 返り値: { mediaSpotlight, roster, events, orgPopDelta }
+  processMediaSpotlight(state, showResults, validMatches, rng) {
+    const spotlight = state.mediaSpotlight;
+    if (!spotlight) return null;
+
+    let roster = state.roster.map(f => ({ ...f }));
+    const events = [];
+    let orgPopDelta = 0;
+    let newSpotlight = { ...spotlight };
+
+    // スポットライト選手がカードに出場しているか
+    const fId = spotlight.fighterId;
+    let matchMQ = null;
+    if (validMatches && showResults) {
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i];
+        if ((m.left === fId || m.right === fId) && showResults[i]) {
+          matchMQ = showResults[i].mq || 0;
+          break;
+        }
+      }
+    }
+
+    if (matchMQ !== null) {
+      newSpotlight.totalMQ += matchMQ;
+      newSpotlight.matchCount++;
+    }
+    newSpotlight.remainingShows--;
+
+    // 取材終了判定
+    if (newSpotlight.remainingShows <= 0) {
+      const avgMQ = newSpotlight.matchCount > 0 ? newSpotlight.totalMQ / newSpotlight.matchCount : 0;
+      if (avgMQ >= 60) {
+        orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
+        roster = roster.map(f => {
+          if (f.id !== fId) return f;
+          const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
+          const newTrust = Engine.util.clamp((f.trust != null ? f.trust : 50) + 3, 0, 100);
+          return { ...f, popularity: newPop, trust: newTrust };
+        });
+        events.push(`📺 ${newSpotlight.fighterName}の密着取材が大成功！（人気+5、団体人気+${Math.round(orgPopDelta * 10) / 10}）`);
+      } else if (avgMQ >= 45) {
+        orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
+        roster = roster.map(f => {
+          if (f.id !== fId) return f;
+          return { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) };
+        });
+        events.push(`📺 ${newSpotlight.fighterName}の密着取材はまずまずの結果（人気+2）`);
+      } else {
+        events.push(`📺 ${newSpotlight.fighterName}の密着取材は期待外れに終わった`);
+      }
+      return { mediaSpotlight: null, roster, events, orgPopDelta };
+    }
+
+    return { mediaSpotlight: newSpotlight, roster, events, orgPopDelta: 0 };
   },
 };
 

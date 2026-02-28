@@ -2055,8 +2055,9 @@ function renderShowResult(results, injuryResults) {
     const rightIsWinner = r.winner === 'right';
     const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
 
+    const spotlightInMatch = G.mediaSpotlight && (G.mediaSpotlight.fighterId === r.left.id || G.mediaSpotlight.fighterId === r.right.id);
     html += `<div class="match-result" style="${isMain ? 'border-left-color:var(--gold);background:rgba(212,168,67,0.05)' : ''}">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</div>`;
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${spotlightInMatch ? ' <span class="media-spotlight-badge">📺 取材中</span>' : ''}</div>`;
 
     if (isDraw) {
       html += `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2807,6 +2808,335 @@ function showChoiceEventModal(event, state, onChoice) {
   });
 
   overlay.classList.add('active');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0 Phase1-6: 大型イベント モーダル（B1〜B4）
+// careOverlay/careBox を再利用。多段階対応（step パラメータ）
+// ─────────────────────────────────────────────────────────────────────────────
+function showLargeEventModal(event, state, step, onChoice) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  let html = '';
+
+  switch (event.type) {
+    case 'B1': html = _buildB1Modal(event, state, roster); break;
+    case 'B2':
+      if (step === 0) html = _buildB2Step1(event, state, roster);
+      else if (step === 1) html = _buildB2Step2(event, state, roster);
+      else html = _buildB2Step3(event, state, roster);
+      break;
+    case 'B3':
+      if (step === 0) html = _buildB3Step1(event, state);
+      else if (step === 1) html = _buildB3Step2(event, state, roster);
+      else html = _buildB3Step3(event, state, roster);
+      break;
+    case 'B4': html = _buildB4Modal(event, state, roster); break;
+    default: html = '<div class="care-title">不明なイベント</div><button class="btn" data-choice="0">閉じる</button>';
+  }
+
+  box.innerHTML = html;
+
+  // ボタンイベント（通常の選択肢）
+  box.querySelectorAll('.btn[data-choice]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (this.hasAttribute('disabled')) return;
+      overlay.classList.remove('active');
+      const idx = parseInt(this.dataset.choice);
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      if (onChoice) onChoice(idx);
+    });
+  });
+
+  // 選手選択グリッド（B3 Step2, B4）
+  box.querySelectorAll('.large-evt-fighter-pick').forEach(card => {
+    card.addEventListener('click', function() {
+      overlay.classList.remove('active');
+      const fId = parseInt(this.dataset.fighterId);
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      if (onChoice) onChoice(fId);
+    });
+  });
+
+  overlay.classList.add('active');
+}
+
+// ── B1: 練習中の怪我 ──────────────────────────────────────────────────────
+function _buildB1Modal(event, state, roster) {
+  const fighter = roster.find(f => f.id === event.fighter);
+  const face = fighter ? portraitImg(fighter.id, 52, 'care-reaction-portrait') : '';
+  const severityLabel = event.severity === 'moderate' ? '（重め）' : '（軽め）';
+  const funds = state.funds || 0;
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #e67e22;padding-bottom:10px;margin-bottom:12px">⚠️ 練習中のアクシデント${severityLabel}</div>`;
+
+  if (event.detail) {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+  }
+
+  if (fighter) {
+    html += `<div class="care-reaction" style="border-color:#e67e22">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:#e67e22">
+        <strong style="font-size:12px;color:var(--text-dim)">${fighter.name}</strong><br>
+        「${event.dialogue || '…'}」
+      </div>
+    </div>`;
+  }
+
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
+  const canAfford = funds >= 200;
+  html += `<button class="btn" data-choice="0" ${canAfford ? '' : 'disabled'}
+    style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between${canAfford ? '' : ';opacity:0.4;cursor:default'}">
+    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・信頼度+5</span>
+  </button>`;
+  html += `<button class="btn" data-choice="1"
+    style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>通常の治療</span><span style="font-size:11px;color:var(--text-dim)">標準回復</span>
+  </button>`;
+  html += `<button class="btn" data-choice="2"
+    style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">信頼度+3、40%で悪化リスク</span>
+  </button>`;
+  html += '</div>';
+  return html;
+}
+
+// ── B2 Step 1: 対立報告 ───────────────────────────────────────────────────
+function _buildB2Step1(event, state, roster) {
+  const f1 = roster.find(f => f.id === event.fighter1);
+  const f2 = roster.find(f => f.id === event.fighter2);
+  const face1 = f1 ? portraitImg(f1.id, 48, 'care-reaction-portrait') : '';
+  const face2 = f2 ? portraitImg(f2.id, 48, 'care-reaction-portrait') : '';
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">💥 選手間の深刻な対立</div>`;
+
+  if (event.detail) {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+  }
+
+  // 2人の選手のセリフを並べる
+  if (f1) {
+    html += `<div class="care-reaction" style="border-color:#e74c3c;margin-bottom:8px">
+      ${face1}
+      <div class="care-reaction-bubble" style="border-color:#e74c3c">
+        <strong style="font-size:12px;color:var(--text-dim)">${f1.name}</strong><br>
+        「${event.dialogue || '…'}」
+      </div>
+    </div>`;
+  }
+  if (f2) {
+    html += `<div class="care-reaction" style="border-color:#e74c3c">
+      ${face2}
+      <div class="care-reaction-bubble" style="border-color:#e74c3c">
+        <strong style="font-size:12px;color:var(--text-dim)">${f2.name}</strong><br>
+        「${event.dialogue2 || '…'}」
+      </div>
+    </div>`;
+  }
+
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
+  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>話し合いで解決</span><span style="font-size:11px;color:var(--text-dim)">両者信頼度+5、士気+3</span></button>`;
+  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>試合で決着させる</span><span style="font-size:11px;color:var(--text-dim)">勝者信頼度+10、敗者-5</span></button>`;
+  html += `<button class="btn" data-choice="2" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>放置する</span><span style="font-size:11px;color:var(--text-dim)">両者信頼度-8、士気-10</span></button>`;
+  html += '</div>';
+  return html;
+}
+
+// ── B2 Step 2: 介入選択 ───────────────────────────────────────────────────
+function _buildB2Step2(event, state, roster) {
+  const f1 = roster.find(f => f.id === event.fighter1);
+  const f2 = roster.find(f => f.id === event.fighter2);
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #9b59b6;padding-bottom:10px;margin-bottom:12px">🤫 試合前の介入</div>`;
+  html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">
+    試合の前に、どちらかに声をかけますか？<br>
+    <span style="font-size:11px;color:var(--text-dim)">激励された選手は試合でわずかに有利になります</span>
+  </div>`;
+
+  html += '<div style="display:flex;flex-direction:column;gap:8px">';
+  const n1 = f1 ? f1.name : event.name1;
+  const n2 = f2 ? f2.name : event.name2;
+  const ovr1 = f1 ? Engine.util.ov(f1) : '?';
+  const ovr2 = f2 ? Engine.util.ov(f2) : '?';
+  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>${n1}を激励する（OVR ${ovr1}）</span><span style="font-size:11px;color:var(--text-dim)">OVR+5バフ</span></button>`;
+  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>${n2}を激励する（OVR ${ovr2}）</span><span style="font-size:11px;color:var(--text-dim)">OVR+5バフ</span></button>`;
+  html += `<button class="btn" data-choice="2" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>介入しない</span><span style="font-size:11px;color:var(--text-dim)">純粋な実力勝負</span></button>`;
+  html += '</div>';
+  return html;
+}
+
+// ── B2 Step 3: 試合結果 ───────────────────────────────────────────────────
+function _buildB2Step3(event, state, roster) {
+  const result = event.matchResult;
+  if (!result) return '<div class="care-title">試合結果</div><button class="btn" data-choice="0">閉じる</button>';
+
+  const f1 = roster.find(f => f.id === event.fighter1);
+  const f2 = roster.find(f => f.id === event.fighter2);
+  const n1 = f1 ? f1.name : event.name1;
+  const n2 = f2 ? f2.name : event.name2;
+
+  let resultText = '';
+  let emoji = '';
+  if (result.winner === 'draw') {
+    resultText = `${n1}と${n2}は引き分け。互いの実力を認め合った。`;
+    emoji = '🤝';
+  } else {
+    const winnerName = result.winner === 'fighter1' ? n1 : n2;
+    const loserName = result.winner === 'fighter1' ? n2 : n1;
+    resultText = `${winnerName}が${loserName}に勝利！ 対立に決着がついた。`;
+    emoji = '🏆';
+  }
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #27ae60;padding-bottom:10px;margin-bottom:12px">${emoji} 決着の試合 — 結果</div>`;
+  html += `<div style="font-size:14px;text-align:center;padding:20px 10px;line-height:1.8">
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">${resultText}</div>
+    <div style="font-size:12px;color:var(--text-dim)">MQ: ${result.mq || '?'}</div>
+  </div>`;
+  html += `<button class="btn" data-choice="0" style="width:100%;padding:10px;font-size:13px;font-weight:600">了解</button>`;
+  return html;
+}
+
+// ── B3 Step 1: 対抗戦オファー ──────────────────────────────────────────────
+function _buildB3Step1(event, state) {
+  const challenger = event.challenger || {};
+  const orgName = event.orgName || '他団体';
+  const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
+  const face = portraitImg(challenger.id, 60, 'care-reaction-portrait');
+
+  let html = `<div class="care-title" style="border-bottom:2px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">⚔️ ${orgName}からの対抗戦オファー</div>`;
+
+  if (event.detail) {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+  }
+
+  // 挑戦者の挑発的なセリフ
+  html += `<div class="care-reaction" style="border-color:#e74c3c">
+    ${face}
+    <div class="care-reaction-bubble" style="border-color:#e74c3c">
+      <strong style="font-size:12px;color:var(--text-dim)">${challenger.name || '???'}（${orgName}・OVR ${cOvr}）</strong><br>
+      「${event.challengerDialogue || '…'}」
+    </div>
+  </div>`;
+
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
+  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;border-color:#e74c3c">
+    <span>受けて立つ</span><span style="font-size:11px;color:var(--text-dim)">代表選手を選んで対戦</span></button>`;
+  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+    <span>断る</span><span style="font-size:11px;color:var(--text-dim)">ペナルティなし</span></button>`;
+  html += '</div>';
+  return html;
+}
+
+// ── B3 Step 2: 代表選手選択 ────────────────────────────────────────────────
+function _buildB3Step2(event, state, roster) {
+  const available = roster.filter(f => !f.injury && !f.isRental);
+  const challenger = event.challenger || {};
+  const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">🥊 代表選手を選べ</div>`;
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">対戦相手: ${challenger.name || '???'}（OVR ${cOvr}）</div>`;
+
+  html += '<div class="large-evt-roster-grid">';
+  available.forEach(f => {
+    const ovr = Engine.util.ov(f);
+    const face = portraitImg(f.id, 40, '');
+    html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
+      ${face}
+      <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
+      <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// ── B3 Step 3: 対抗戦結果 ──────────────────────────────────────────────────
+function _buildB3Step3(event, state, roster) {
+  const result = event.matchResult;
+  if (!result) return '<div class="care-title">対抗戦結果</div><button class="btn" data-choice="0">閉じる</button>';
+
+  const challenger = event.challenger || {};
+  const orgName = event.orgName || '他団体';
+  const playerFighter = roster.find(f => f.id === event.selectedFighterId);
+  const pName = playerFighter ? playerFighter.name : '代表選手';
+
+  let resultText = '', emoji = '', challengerLine = '';
+  const dialogues = typeof LARGE_EVENT_DIALOGUES !== 'undefined' ? LARGE_EVENT_DIALOGUES : {};
+
+  if (result.winner === 'left') {
+    resultText = `${pName}が${challenger.name || '???'}に勝利！ ${orgName}を返り討ちにした！`;
+    emoji = '🎉';
+    const lines = dialogues.B3_result_lose || ['…'];
+    challengerLine = lines[Math.floor(Math.random() * lines.length)];
+  } else if (result.winner === 'right') {
+    resultText = `${pName}が${challenger.name || '???'}に敗北… ${orgName}の前に屈した。`;
+    emoji = '😞';
+    const lines = dialogues.B3_result_win || ['…'];
+    challengerLine = lines[Math.floor(Math.random() * lines.length)];
+  } else {
+    resultText = `${pName}と${challenger.name || '???'}は引き分け。互角の戦いを見せた。`;
+    emoji = '🤼';
+    challengerLine = '…次はこうはいかない';
+  }
+
+  let html = `<div class="care-title" style="border-bottom:2px solid ${result.winner === 'left' ? '#27ae60' : '#e74c3c'};padding-bottom:10px;margin-bottom:12px">${emoji} 対抗戦 — 結果</div>`;
+  html += `<div style="font-size:15px;text-align:center;padding:16px 10px;line-height:1.8;font-weight:700">${resultText}</div>`;
+  html += `<div style="font-size:12px;color:var(--text-dim);text-align:center;margin-bottom:12px">MQ: ${result.mq || '?'}</div>`;
+
+  // 挑戦者の反応セリフ
+  if (challengerLine) {
+    const face = portraitImg(challenger.id, 40, 'care-reaction-portrait');
+    html += `<div class="care-reaction" style="border-color:#e74c3c;margin-bottom:14px">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:#e74c3c">
+        <strong style="font-size:11px;color:var(--text-dim)">${challenger.name || '???'}</strong><br>
+        「${challengerLine}」
+      </div>
+    </div>`;
+  }
+
+  html += `<button class="btn" data-choice="0" style="width:100%;padding:10px;font-size:13px;font-weight:600">了解</button>`;
+  return html;
+}
+
+// ── B4: メディア密着取材 ───────────────────────────────────────────────────
+function _buildB4Modal(event, state, roster) {
+  const available = roster.filter(f => !f.injury);
+  const outletName = event.outletName || 'メディア';
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${outletName}からの密着取材オファー</div>`;
+
+  if (event.detail) {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+  }
+
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
+    推薦する選手を選んでください。取材期間中（3興行）にいい試合を見せれば、大きな注目が集まります。
+  </div>`;
+
+  html += '<div class="large-evt-roster-grid">';
+  available.forEach(f => {
+    const ovr = Engine.util.ov(f);
+    const pop = Math.round(f.popularity || 0);
+    const face = portraitImg(f.id, 40, '');
+    html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
+      ${face}
+      <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
+      <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / 人気 ${pop}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

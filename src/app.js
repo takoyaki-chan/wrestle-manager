@@ -1454,6 +1454,10 @@ const Storage = {
       if (!G._migrated_ending) {
         G = { ...G, endingCleared: G.endingCleared || false, endingClearedSeason: G.endingClearedSeason || null, _migrated_ending: true };
       }
+      // v2.0 Phase1-6: 大型イベント マイグレーション
+      if (!G._migrated_large_events) {
+        G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
+      }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
@@ -2569,6 +2573,20 @@ const App = {
     }
 
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
+
+    // v2.0 Phase1-6: メディアスポットライトの興行後処理
+    if (G.mediaSpotlight) {
+      const spotRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4B4));
+      const spotResult = Engine.eventSystem.processMediaSpotlight(G, results, validMatches, spotRng);
+      if (spotResult) {
+        G = { ...G, mediaSpotlight: spotResult.mediaSpotlight, roster: spotResult.roster,
+               gameLog: [...G.gameLog, ...spotResult.events] };
+        if (spotResult.orgPopDelta) {
+          G = { ...G, orgPop: G.orgPop + spotResult.orgPopDelta };
+        }
+      }
+    }
+
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
     // BGM: Play jingle based on title outcome
@@ -2927,6 +2945,17 @@ const App = {
       }, choiceDelay);
     }
 
+    // v2.0 Phase1-6: 大型イベント表示（B1〜B4 モーダル）
+    const pendingLargeEvent = G._pendingLargeEvent || null;
+    if (G._pendingLargeEvent) {
+      const { _pendingLargeEvent: _, ...cleanLe } = G;
+      G = cleanLe;
+    }
+    if (pendingLargeEvent) {
+      const largeDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
+      setTimeout(() => App.handleLargeEvent(pendingLargeEvent), largeDelay);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -3209,6 +3238,120 @@ const App = {
     }
     Audio.play('notify');
     renderManagePanel();
+  },
+
+  // v2.0 Phase1-6: 大型イベントUIフロー制御
+  handleLargeEvent(event) {
+    // Step 0: 初期表示
+    showLargeEventModal(event, G, 0, (choiceIdx) => {
+      if (choiceIdx < 0) return;
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B2));
+      const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, G, rng);
+      App._applyLargeEventResult(result);
+
+      if (result.nextStep === 1) {
+        // B2: 介入選択 / B3: 代表選手選択
+        setTimeout(() => {
+          showLargeEventModal(event, G, 1, (choiceIdx2) => {
+            if (choiceIdx2 < 0) return;
+            const rng2 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B3));
+            const result2 = Engine.eventSystem.applyLargeEventEffect(event, 1, choiceIdx2, G, rng2);
+            App._applyLargeEventResult(result2);
+
+            if (result2.nextStep === 2) {
+              // B2: 試合シミュレーション / B3: 試合シミュレーション
+              setTimeout(() => App._executeLargeEventMatch(event, result2), 300);
+            }
+          });
+        }, 300);
+      }
+    });
+  },
+
+  // 大型イベント: 試合シミュレーション＋結果表示
+  _executeLargeEventMatch(event, prevResult) {
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
+
+    if (event.type === 'B2') {
+      // B2: 対立の試合
+      const intervention = prevResult.interventionChoice; // 0=f1, 1=f2, 2=neutral
+      let f1 = G.roster.find(f => f.id === event.fighter1);
+      let f2 = G.roster.find(f => f.id === event.fighter2);
+      if (!f1 || !f2) return;
+
+      // 介入バフの適用（一時的コピー）
+      f1 = { ...f1 };
+      f2 = { ...f2 };
+      if (intervention === 0) {
+        f1 = { ...f1, pw: (f1.pw || 50) + 5, sp: (f1.sp || 50) + 5, te: (f1.te || 50) + 5, st: (f1.st || 50) + 5 };
+      } else if (intervention === 1) {
+        f2 = { ...f2, pw: (f2.pw || 50) + 5, sp: (f2.sp || 50) + 5, te: (f2.te || 50) + 5, st: (f2.st || 50) + 5 };
+      }
+
+      const matchResult = Engine.battle.simulateMatch(f1, f2, rng);
+      const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
+
+      // 結果をeventに添付して Step 2 を適用
+      const enrichedEvent = { ...event, matchResult: { ...matchResult, winner }, interventionChoice: intervention };
+      const rng3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B5));
+      const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
+      App._applyLargeEventResult(result3);
+
+      // 結果表示モーダル
+      setTimeout(() => {
+        showLargeEventModal(enrichedEvent, G, 2, () => {
+          Audio.play('notify');
+          renderManagePanel();
+        });
+      }, 300);
+
+    } else if (event.type === 'B3') {
+      // B3: 対抗戦
+      const fighterId = prevResult.selectedFighterId;
+      const playerFighter = G.roster.find(f => f.id === fighterId);
+      if (!playerFighter) return;
+      const challenger = event.challenger;
+      if (!challenger) return;
+
+      const matchResult = Engine.battle.simulateMatch(playerFighter, challenger, rng);
+
+      // 結果をeventに添付して Step 2 を適用
+      const enrichedEvent = { ...event, matchResult, selectedFighterId: fighterId };
+      const rng3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B6));
+      const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
+      App._applyLargeEventResult(result3);
+
+      // 新聞パネルイベント
+      const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
+      App._pushNewsEvent({ type: newsType, data: { orgName: event.orgName, fighterName: playerFighter.name, challengerName: challenger.name } });
+
+      // 結果表示モーダル
+      setTimeout(() => {
+        showLargeEventModal(enrichedEvent, G, 2, () => {
+          Audio.play('notify');
+          renderManagePanel();
+        });
+      }, 300);
+    }
+  },
+
+  // 大型イベント結果をstateに反映するヘルパー
+  _applyLargeEventResult(result) {
+    const updates = {};
+    if (result.roster) updates.roster = result.roster;
+    if (result.funds !== undefined) updates.funds = result.funds;
+    if (result.lockerRoomMorale !== undefined) updates.lockerRoomMorale = result.lockerRoomMorale;
+    if (result.mediaSpotlight !== undefined) updates.mediaSpotlight = result.mediaSpotlight;
+    if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
+    if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
+    if (result.events && result.events.length > 0) {
+      updates.gameLog = [...(G.gameLog || []), ...result.events];
+    }
+    G = { ...G, ...updates };
+    Storage.autoSave();
+    if (result.events && result.events.length > 0) {
+      showToast(result.events[result.events.length - 1]);
+    }
   },
 
   // v2.0: ケアアクション モーダル表示

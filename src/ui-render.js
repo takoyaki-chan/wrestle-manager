@@ -1113,6 +1113,17 @@ function renderShowPrep() {
 
   let html = '';
 
+  // v2.0 Phase1-6: メディア密着取材バナー
+  if (G.mediaSpotlight) {
+    const sp = G.mediaSpotlight;
+    const spFighter = G.roster.find(f => f.id === sp.fighterId);
+    const spName = spFighter ? spFighter.name : sp.fighterName;
+    html += `<div class="media-spotlight-banner">
+      📺 <strong>${spName}</strong>の密着取材中（${sp.outletName}・残り${sp.remainingShows}興行）
+      — この選手にいい試合を組んでください
+    </div>`;
+  }
+
   // Venue selection
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   html += '<div class="venue-grid">';
