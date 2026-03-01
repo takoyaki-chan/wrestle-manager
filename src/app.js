@@ -904,7 +904,7 @@ const SURVIVAL_PHASES = [
 const Survival = {
   // Calculate estimated weekly net income (expenses - income, without show revenue)
   estimateWeeklyNet(G) {
-    const salary = Engine.economy.calcWeeklySalary(G.roster);
+    const salary = Engine.economy.calcWeeklySalary(G.roster, G.titles);
     const fixed = Engine.economy.calcFixedCosts();
     const coachSalary = Engine.coach.getSalaryTotal(G);
     const totalExpense = salary + fixed + coachSalary;
@@ -1482,6 +1482,16 @@ const Storage = {
       if (!G._migrated_large_events) {
         G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
       }
+      // L1: 会場システム再設計マイグレーション
+      if (!G._migrated_venue_redesign) {
+        // 旧7段→新10段: 0=公民館→0, 1=小ホール→1, 2=市民会館→3, 3=中ホール→4, 4=アリーナ→7, 5=大会場→8, 6=ドーム→9
+        const venueMap = {0:0, 1:1, 2:3, 3:4, 4:7, 5:8, 6:9};
+        G = { ...G,
+          showVenue: venueMap[G.showVenue] ?? 0,
+          attendanceMomentum: 0,
+          _migrated_venue_redesign: true
+        };
+      }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
@@ -1567,7 +1577,7 @@ let sessionRng = Engine.rng.create(G.rngSeed);
 
 // ── Legacy utility aliases (for UI code backward compat) ──
 function ov(c) { return Engine.util.ov(c); }
-function getSalary(c) { return Engine.util.getSalary(c); }
+function getSalary(c) { return Engine.util.getSalary(c, G.titles); }
 function isShowWeek(w) { return Engine.util.isShowWeek(w); }
 function getQuarter(w) { return Engine.util.getQuarter(w); }
 function isSpecialShow(w) { return Engine.util.isSpecialShow(w); }
@@ -2385,6 +2395,17 @@ const App = {
       if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
     });
 
+    // Fan expectation MQ bonus (mirrors Engine.executeShow)
+    const fanExpects = Engine.fanExpect.generate(s);
+    validMatches.forEach((m, i) => {
+      const result = results[i]; if (!result) return;
+      const fanMQ = Engine.fanExpect.getMQBonus(result.left.id, result.right.id, fanExpects);
+      if (fanMQ > 0) {
+        result.mq = Math.min(100, result.mq + fanMQ);
+        result.fanExpectMatch = true;
+      }
+    });
+
     // Title outcomes
     validMatches.forEach((m, i) => {
       if (!m.isTitle || !results[i]) return;
@@ -2435,7 +2456,9 @@ const App = {
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
     const champIdForAttend = s.titles?.world?.championId;
     const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    // L1: 集客計算（seed 0xA77E で週次揺らぎ付き — Engine.executeShow/processSettlementと同一結果）
+    const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
+    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng);
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
@@ -2612,9 +2635,29 @@ const App = {
       G = cleanG;
     }
 
+    // R3: ファン期待カード試合後リアクション
+    const fanExpectResults = (G.lastShowResults || []).filter(r => r.fanExpectMatch);
+    let hasEventPopups = false;
+    fanExpectResults.forEach((r, i) => {
+      const isGood = r.mq >= 55;
+      const crowd = isGood ? FAN_EXPECT_REACTIONS.goodCrowd : FAN_EXPECT_REACTIONS.badCrowd;
+      const winnerLines = isGood ? FAN_EXPECT_REACTIONS.goodWinner : FAN_EXPECT_REACTIONS.badWinner;
+      const crowdText = crowd[Math.floor(Math.random() * crowd.length)];
+      const winnerId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : r.left.id;
+      const winnerName = r.winner === 'left' ? r.left.name : r.winner === 'right' ? r.right.name : r.left.name;
+      const winnerLine = winnerLines[Math.floor(Math.random() * winnerLines.length)];
+      hasEventPopups = true;
+      setTimeout(() => showEventPopup({
+        type: 'fighter', id: winnerId, name: winnerName,
+        tone: isGood ? 'gold' : 'neutral',
+        message: winnerLine,
+        detail: `📣 ${crowdText}`,
+        autoCloseMs: 2500,
+      }), i * 100);
+    });
+
     // v0.96: Show injury popups (only non-retirement injuries)
     const injuries = App._lastInjuries || [];
-    let hasEventPopups = false;
     injuries.forEach((ir, i) => {
       // v1.3-3: Skip retirement injuries (they get their own popup)
       if (ir.retireType) return;

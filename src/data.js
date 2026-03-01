@@ -564,18 +564,61 @@ const ENG = {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝
-const SALARY_TABLE = [
-  {max:49, pay:10}, {max:64, pay:25}, {max:79, pay:50}, {max:89, pay:100},
-  {max:99, pay:180}, {max:109, pay:300}, {max:999, pay:450}
-];
+// 給与連続関数パラメータ（R4: テーブル廃止→指数関数）
+const SALARY_PARAMS = {
+  baseA: 0.65,       // 指数カーブ係数A
+  baseB: 0.06,       // 指数カーブ係数B — base = A * exp(B * OVR)
+  popMax: 80,        // 人気加算の最大値（万）
+  popExp: 2,         // 人気カーブ指数 — popBonus = popMax * (pop/100)^popExp
+  titleBonus: 20,    // タイトル保持者固定加算（万）
+};
+const FAN_EXPECT_REACTIONS = {
+  goodCrowd: [
+    'これが見たかったんだよ！ 最高の試合だった！',
+    '期待通り…いや、期待以上の名勝負だった！',
+    '会場が一つになった瞬間だった…！',
+    'ファンの声が選手に届いた試合だった',
+    '歴史に残るカードを実現してくれた！',
+  ],
+  badCrowd: [
+    'もう少し噛み合ってほしかった…',
+    '期待が大きすぎたのかもしれない',
+    '次こそ本当の名勝負を見せてほしい',
+    'カードは最高だったのに…内容が追いつかなかった',
+  ],
+  goodWinner: [
+    'みんなの声が聞こえてたよ',
+    'この試合、絶対に負けられなかった',
+    '期待に応えられたなら…嬉しい',
+    '最高の相手に最高の舞台。感謝しかない',
+    'あの歓声が私の力になった',
+  ],
+  badWinner: [
+    '…まだやれたはず',
+    'この結果じゃ満足できない',
+    '次はもっといい試合にする。約束する',
+    '応援してくれたのに…悔しい',
+  ],
+};
+// L1: 会場テーブル（10段・popReq撤廃・全会場選択可能）
 const VENUES = [
-  {name:'公民館',   cap:150,   cost:5,    popReq:0},
-  {name:'小ホール', cap:400,   cost:60,   popReq:15},
-  {name:'市民会館', cap:1000,  cost:180,  popReq:30},
-  {name:'中ホール', cap:2500,  cost:500,  popReq:45},
-  {name:'アリーナ', cap:6000,  cost:1400, popReq:60},
-  {name:'大会場',   cap:12000, cost:3200, popReq:75},
-  {name:'ドーム',   cap:30000, cost:9000, popReq:90}
+  {name:'公民館',    cap:150,   cost:5},     // 0
+  {name:'小ホールA', cap:300,   cost:25},    // 1
+  {name:'小ホールB', cap:500,   cost:50},    // 2
+  {name:'市民会館',  cap:800,   cost:100},   // 3
+  {name:'中ホールA', cap:1200,  cost:200},   // 4
+  {name:'中ホールB', cap:2000,  cost:400},   // 5
+  {name:'大ホール',  cap:3500,  cost:800},   // 6
+  {name:'アリーナ',  cap:6000,  cost:1600},  // 7
+  {name:'大会場',    cap:12000, cost:3200},  // 8
+  {name:'ドーム',    cap:30000, cost:9000},  // 9
+];
+// L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
+const BASE_ATTENDANCE_CURVE = [
+  [0,20],[5,60],[10,130],[15,200],[20,300],[25,420],[30,550],
+  [35,720],[40,900],[45,1150],[50,1500],[55,1900],[60,2500],
+  [65,3200],[70,4000],[75,5200],[80,7000],[85,9500],[90,14000],
+  [95,20000],[100,30000]
 ];
 const TICKET_PRICE = 0.5; // 万円/人（v1.7: シミュレーション後に要調整）
 const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
@@ -586,6 +629,22 @@ const OCCUPANCY_BONUS = [
   {min:0.40, ticketMult:0.85,label:'➖ まずまず',    heatDelta:0},
   {min:0.25, ticketMult:0.7, label:'😟 空席目立つ',  heatDelta:-1},
   {min:0.0,  ticketMult:0.5, label:'😰 ガラガラ',    heatDelta:-2},
+];
+// L1: 勢い補正（満員/ガラガラ連鎖効果）
+const MOMENTUM_CONFIG = {
+  SELLOUT_DELTA: 0.04,        // 95%+→+4%
+  GOOD_DELTA: 0.02,           // 80%+→+2%
+  NEUTRAL_MIN: 0.60,          // 60-80%→±0
+  WEAK_DELTA: -0.03,          // 30-60%→-3%
+  EMPTY_DELTA: -0.05,         // <30%→-5%
+  CAP: 0.15,                  // 上限±15%
+  EMPTY_ORGPOP_PENALTY: -0.5, // <30%時のorgPopダメージ
+};
+const WEEKLY_FLUCTUATION = { MIN: 0.83, MAX: 1.17 }; // ±17%
+const ATTENDANCE_PREDICTION = [
+  { min: 0.85, text: '🔥 今週は盛り上がりそうだ', color: 'var(--green)' },
+  { min: 0.55, text: '🤔 まずまずの手応えだ',     color: 'var(--text-sub)' },
+  { min: 0.00, text: '😟 少し客足が心配だ',        color: 'var(--red)' },
 ];
 // ── Card Pop & Crowd MQ Constants (v1.0c) ──
 const CARD_POP_CONFIG = {
@@ -602,8 +661,8 @@ const CROWD_HEAT_MQ = [
   { min: 0.25, bonus: -1, label: '空席の静けさ' },
   { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
 ];
-const VENUE_SCALE_MQ = [0, 1, 1, 1, 2, 2, 3];
-// index: 公民館=0, 小ホール=+1, 市民会館=+1, 中ホール=+1, アリーナ=+2, 大会場=+2, ドーム=+3
+// L1: 10段対応 — 公民館=0, 小A=0, 小B=+1, 市民=+1, 中A=+1, 中B=+1, 大ホール=+2, アリーナ=+2, 大会場=+2, ドーム=+3
+const VENUE_SCALE_MQ = [0, 0, 1, 1, 1, 1, 2, 2, 2, 3];
 
 // ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {

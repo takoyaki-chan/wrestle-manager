@@ -125,10 +125,14 @@ const Engine = {
       if (x <= ENG.effPivot) return x;
       return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
     },
-    getSalary(c) {
-      const o = Engine.util.ov(c);
-      for (const s of SALARY_TABLE) if (o <= s.max) return s.pay;
-      return 200;
+    getSalary(c, titles) {
+      const ovr = Engine.util.ov(c);
+      const base = SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr);
+      const pop = c.popularity || 0;
+      const popBonus = SALARY_PARAMS.popMax * Math.pow(pop / 100, SALARY_PARAMS.popExp);
+      const isChamp = titles && titles.world && titles.world.championId === c.id;
+      const titleBonus = isChamp ? SALARY_PARAMS.titleBonus : 0;
+      return Math.round(base + popBonus + titleBonus);
     },
     getPotentialPct(char) {
       const stats = ['pw','sp','te','st','mn'];
@@ -473,8 +477,8 @@ const Engine = {
 
   // ── Economy (DOM-free) ─────────────────────────────────
   economy: {
-    calcWeeklySalary(roster) {
-      return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
+    calcWeeklySalary(roster, titles) {
+      return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c, titles), 0);
     },
     calcFixedCosts() {
       return FIXED_COSTS.admin;
@@ -504,24 +508,59 @@ const Engine = {
       cardPop *= CARD_DEPTH_MULT[depthIdx];
       return cardPop;
     },
-    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard) {
+    // L1: orgPop→基礎集客力（区間線形補間）
+    calcBaseAttendance(orgPop) {
+      const curve = BASE_ATTENDANCE_CURVE;
+      const pop = Engine.util.clamp(orgPop, 0, 100);
+      for (let i = 1; i < curve.length; i++) {
+        if (pop <= curve[i][0]) {
+          const [x0, y0] = curve[i - 1];
+          const [x1, y1] = curve[i];
+          const t = (pop - x0) / (x1 - x0);
+          return Math.round(y0 + t * (y1 - y0));
+        }
+      }
+      return curve[curve.length - 1][1];
+    },
+    // L1: 集客計算（rng=nullでプレビュー用＝揺らぎなし）
+    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, rng) {
       const v = VENUES[venueIdx];
-      // v1.0b: Capacity-independent base attendance (quadratic on orgPop)
-      const baseAttendance = Math.round((G.orgPop / 100) * (G.orgPop / 100) * 10000);
-      // v1.0c: CARD_MULT (was hardcoded * 3)
+      // Step 1: 基礎集客（orgPopカーブ、キャパ非依存）
+      const baseAttendance = Engine.economy.calcBaseAttendance(G.orgPop);
+      // Step 2: カードボーナス
       const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
+      // Step 3: 乗算ボーナス（Heat/タイトル/王者/華）
       const heatMult = Engine.heat.getMult(G);
       const titleBonus = hasTitleMatch ? 0.15 : 0.0;
-      // v1.2: チャンピオン出場ボーナス +10%
       const champBonus = hasChampOnCard ? 0.10 : 0.0;
-      // 華: ロスターに華持ちがいれば集客+5%
       const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
-      // v1.5: 乗算スタックを加算方式に変更（上限2.0）— 旧: 最大2.66倍 → 新: 最大2.0倍
       const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus, 2.0);
-      const rawAttendance = Math.round((baseAttendance + cardBonus) * totalMult);
-      // Minimum guarantee: 5% of capacity (at least 10)
+      // Step 4: 週次揺らぎ（rng=nullならプレビュー用で1.0）
+      const fluctuation = rng
+        ? WEEKLY_FLUCTUATION.MIN + Engine.rng.float(rng) * (WEEKLY_FLUCTUATION.MAX - WEEKLY_FLUCTUATION.MIN)
+        : 1.0;
+      // Step 5: 勢い補正
+      const momentumMult = 1.0 + (G.attendanceMomentum || 0);
+      // Step 6: 合算
+      const rawAttendance = Math.round((baseAttendance + cardBonus) * totalMult * fluctuation * momentumMult);
       const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
       return Engine.util.clamp(rawAttendance, minAttendance, v.cap);
+    },
+    // L1: 勢い補正の差分計算
+    calcMomentumDelta(occupancyRate) {
+      if (occupancyRate >= 0.95) return MOMENTUM_CONFIG.SELLOUT_DELTA;
+      if (occupancyRate >= 0.80) return MOMENTUM_CONFIG.GOOD_DELTA;
+      if (occupancyRate >= MOMENTUM_CONFIG.NEUTRAL_MIN) return 0;
+      if (occupancyRate >= 0.30) return MOMENTUM_CONFIG.WEAK_DELTA;
+      return MOMENTUM_CONFIG.EMPTY_DELTA;
+    },
+    // L1: ざっくり集客予測（3段階テキスト）
+    getAttendancePrediction(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard) {
+      const v = VENUES[venueIdx];
+      const estAttend = Engine.economy.calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, null);
+      const estOccRate = estAttend / v.cap;
+      const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
+      return { text: pred.text, color: pred.color, estOccRate };
     },
     // v1.0c: 会場熱気MQボーナス（満員率 + 会場規模）
     calcCrowdMQBonus(venueIdx, occupancyRate) {
@@ -2526,8 +2565,9 @@ const Engine = {
       const details = [];
       let totalIncome = 0, totalExpense = 0;
       let occHeatDelta = 0;
+      let momentumDelta = 0, orgPopPenalty = 0; // L1: 勢い補正
 
-      const salary = Engine.economy.calcWeeklySalary(G.roster);
+      const salary = Engine.economy.calcWeeklySalary(G.roster, G.titles);
       totalExpense += salary;
       details.push({ label: '選手給与', val: -salary, type: 'expense' });
 
@@ -2568,7 +2608,9 @@ const Engine = {
         const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
         const champId = G.titles?.world?.championId;
         const hasChampOnCard = champId ? G.showCard.some(m => m.left === champId || m.right === champId) : false;
-        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard);
+        // L1: 集客計算（seed 0xA77E で週次揺らぎ付き）
+        const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
+        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard, attendRng);
         // v1.5s25b: attendance_boost バフ（マイルストーン）
         const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
         if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
@@ -2583,6 +2625,9 @@ const Engine = {
         details.push({ label: 'グッズ収入', val: rev.goodsRev, type: 'income' });
         details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
         occHeatDelta = rev.occHeatDelta;
+        // L1: 勢い補正差分計算
+        momentumDelta = Engine.economy.calcMomentumDelta(rev.occupancyRate);
+        if (rev.occupancyRate < 0.30) orgPopPenalty = MOMENTUM_CONFIG.EMPTY_ORGPOP_PENALTY;
 
         // Win/loss tracking (immutable)
         G.lastShowResults.forEach(r => {
@@ -2613,7 +2658,7 @@ const Engine = {
       const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
       const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
 
-      return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta };
+      return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta, momentumDelta, orgPopPenalty };
     }
   },
 
@@ -2640,6 +2685,18 @@ const Engine = {
     // v1.0b: Apply occupancy heat delta
     if (settle.occHeatDelta !== 0) {
       s = { ...s, heatScore: s.heatScore + settle.occHeatDelta };
+    }
+    // L1: 勢い補正更新（満員/ガラガラ連鎖効果）
+    if (settle.momentumDelta !== 0 && Engine.util.isShowWeek(s.week)) {
+      const newMomentum = Engine.util.clamp(
+        (s.attendanceMomentum || 0) + settle.momentumDelta,
+        -MOMENTUM_CONFIG.CAP, MOMENTUM_CONFIG.CAP
+      );
+      s = { ...s, attendanceMomentum: newMomentum };
+    }
+    // L1: ガラガラ時のorgPopペナルティ
+    if (settle.orgPopPenalty) {
+      s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100) };
     }
     const events = [...manage.events, settle.summary];
     // v2.1: 破産判定
@@ -2849,7 +2906,9 @@ const Engine = {
     const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
     const champIdForAttend = s.titles?.world?.championId;
     const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend);
+    // L1: 集客計算（seed 0xA77E で週次揺らぎ付き — processSettlementと同一結果）
+    const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
+    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng);
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
@@ -2885,7 +2944,9 @@ const Engine = {
         }
       }
       // v2.0: ファン期待カード MQボーナス（キャップ対象）
-      externalMQ += Engine.fanExpect.getMQBonus(r.left.id, r.right.id, fanExpects);
+      const fanMQBonus = Engine.fanExpect.getMQBonus(r.left.id, r.right.id, fanExpects);
+      externalMQ += fanMQBonus;
+      if (fanMQBonus > 0) r.fanExpectMatch = true;
       // 野心: タイトルマッチで挑戦者側が野心持ちなら MQ+2（キャップ対象）
       if (r.isTitleMatch) {
         const champId = s.titles?.world?.championId;
@@ -4539,6 +4600,7 @@ const Engine = {
       draftComplete: !isDraft,
       showCard: [],
       showVenue: 0,
+      attendanceMomentum: 0, // L1: 勢い補正（-0.15〜+0.15）
       lastShowResults: [],
       weeklyFinance: { income: 0, expense: 0, details: [] },
       totalShows: 0,

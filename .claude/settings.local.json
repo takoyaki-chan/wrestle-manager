@@ -63,7 +63,26 @@
       "Bash(echo \"exit: $?\")",
       "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Write-Host ''Done''\")",
       "Bash(ls -la \"C:\\\\Users\\\\nkmrk\\\\.claude\\\\projects\\\\C--Users-nkmrk-Downloads-wrestle-manager\\\\memory\"\" 2>/dev/null || echo \"Path not found \")",
-      "Bash(grep -l \"coach\" /c/Users/nkmrk/.claude/projects/C--Users-nkmrk-Downloads-wrestle-manager/memory/*.md)"
+      "Bash(grep -l \"coach\" /c/Users/nkmrk/.claude/projects/C--Users-nkmrk-Downloads-wrestle-manager/memory/*.md)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(node -e \"require\\(''fs''\\).writeFileSync\\(require\\(''path''\\).join\\(process.env.USERPROFILE, ''Downloads'', ''wrestle-manager'', ''_fix.js''\\), '''', ''utf8''\\); console.log\\(''created''\\);\")",
+      "Bash(node /c/Users/nkmrk/Downloads/wrestle-manager/edit-script.js)",
+      "Bash(node -e \"const fs=require\\(''fs''\\);const p=require\\(''path''\\);const base=p.join\\(process.env.USERPROFILE,''Downloads'',''wrestle-manager''\\);fs.writeFileSync\\(p.join\\(base,''_writer.js''\\),''// placeholder'',''utf8''\\);console.log\\(''ok''\\)\")",
+      "Bash(node -e \"const fs=require\\(''fs''\\);const p=require\\(''path''\\);const base=p.join\\(process.env.USERPROFILE,''Downloads'',''wrestle-manager''\\);const content=fs.readFileSync\\(p.join\\(base,''src'',''ui-common.js''\\),''utf8''\\);const lines=content.split\\(String.fromCharCode\\(10\\)\\);console.log\\(lines.length\\);const target=lines.slice\\(571,664\\).join\\(String.fromCharCode\\(10\\)\\);const b=Buffer.from\\(target,''utf8''\\).toString\\(''base64''\\);fs.writeFileSync\\(p.join\\(base,''_old_tooltip.b64''\\),b,''utf8''\\);console.log\\(''old tooltip b64 saved, length:'',b.length\\)\")",
+      "Bash(node /c/Users/nkmrk/Downloads/wrestle-manager/_fix_part2.js)",
+      "Bash(node /c/Users/nkmrk/Downloads/wrestle-manager/_fix_part3.js)",
+      "Bash(node /c/Users/nkmrk/Downloads/wrestle-manager/_fix_part4.js)",
+      "Bash(node /c/Users/nkmrk/Downloads/wrestle-manager/_fix_apply.js)",
+      "Bash(grep -rn \"facilityMul\\\\|facility\\\\|施設\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(grep -A 50 \"html += \\\\`<table class=\"\"db-table\"\">\")",
+      "Bash(grep -A 50 \"html += \\\\`<table\")",
+      "Bash(grep -n \"^//\" C:UsersnkmrkDownloadswrestle-managersrcdata.js)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c \":*)",
+      "Bash(powershell -Command \"[System.IO.File]::WriteAllText\\(''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\new_coaches.txt'', ''test content'', [System.Text.Encoding]::UTF8\\)\")",
+      "Bash(node -e:*)",
+      "Bash(node C:/Users/nkmrk/Downloads/wrestle-manager/read_stdin.js:*)",
+      "Bash(ls -d /c/Users/nkmrk/Downloads/wrestle-manager/image/*/)"
     ]
   }
 }

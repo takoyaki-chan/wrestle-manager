@@ -90,14 +90,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   border-radius:3px;color:var(--text-main);font-size:12px;font-family:'Noto Sans JP',sans-serif}
 .match-slot.main-event{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.04)}
 
-/* Venue Selection */
-.venue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
-.venue-card{padding:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
+/* L1: Venue Selection (10段・リスク指標付き) */
+.venue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.venue-card{padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
   border-radius:4px;cursor:pointer;transition:all .2s;text-align:center}
 .venue-card:hover{border-color:rgba(212,168,67,0.3)}
 .venue-card.selected{border-color:var(--gold);background:rgba(212,168,67,0.08)}
-.venue-card.locked{opacity:0.3;cursor:not-allowed}
-.venue-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.venue-card.venue-safe{border-left:3px solid var(--green)}
+.venue-card.venue-risky{border-left:3px solid #f39c12}
+.venue-card.venue-danger{border-left:3px solid var(--red)}
+.venue-risk{font-size:10px;margin-top:4px;font-weight:700}
+.venue-safe .venue-risk{color:var(--green)}
+.venue-risky .venue-risk{color:#f39c12}
+.venue-danger .venue-risk{color:var(--red)}
+.venue-name{font-weight:700;font-size:13px;margin-bottom:4px}
 .venue-info{font-size:11px;color:var(--text-sub)}
 
 /* Result Log */
@@ -138,7 +144,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .portrait-champ{border-color:#d4a843 !important;box-shadow:0 2px 8px rgba(0,0,0,0.3),0 0 10px rgba(212,168,67,0.4) !important}
 .portrait-popup{border-radius:14px;width:228px;height:228px;object-fit:cover;border:3px solid rgba(255,255,255,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 .portrait-match{border-radius:10px;width:48px;height:48px;object-fit:cover;border:2.5px solid rgba(255,255,255,0.12)}
-.portrait-match.winner{border-color:var(--gold);box-shadow:0 0 10px rgba(212,168,67,0.5)}
+.portrait-match.winner{border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,0.65),0 0 30px rgba(212,168,67,0.3)}
 .portrait-match.loser{opacity:0.6;filter:grayscale(0.3)}
 /* Monitor/noise effect wrapper for portraits */
 .monitor-wrap{position:relative;display:inline-block;overflow:hidden;border-radius:10px}
@@ -537,28 +543,28 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .event-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:250;
   align-items:center;justify-content:center;animation:fadeIn .2s}
 .event-popup-overlay.active{display:flex}
-.event-popup{background:var(--panel-bg);border-radius:12px;max-width:340px;width:90%;
-  text-align:center;padding:20px 24px 16px;position:relative;
+.event-popup{background:var(--panel-bg);border-radius:12px;max-width:450px;width:90%;
+  text-align:center;padding:24px 28px 20px;position:relative;
   border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.5);
   animation:popIn .3s cubic-bezier(0.34,1.56,0.64,1)}
 @keyframes popIn{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
 .event-popup.positive{border-color:rgba(46,204,113,0.3);box-shadow:0 8px 32px rgba(46,204,113,0.08)}
 .event-popup.negative{border-color:rgba(231,76,60,0.3);box-shadow:0 8px 32px rgba(231,76,60,0.08)}
 .event-popup.gold{border-color:rgba(212,168,67,0.3);box-shadow:0 8px 32px rgba(212,168,67,0.08)}
-.event-popup-face{width:72px;height:72px;border-radius:50%;margin:-52px auto 10px;
+.event-popup-face{width:120px;height:120px;border-radius:50%;margin:-76px auto 14px;
   border:3px solid rgba(255,255,255,0.15);overflow:hidden;background:var(--bg-card);
   box-shadow:0 4px 16px rgba(0,0,0,0.4)}
 .event-popup-face img{width:100%;height:100%;object-fit:cover}
 .event-popup-face .emoji-face{width:100%;height:100%;display:flex;align-items:center;
-  justify-content:center;font-size:36px;background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(0,0,0,0.2))}
-.event-popup-name{font-weight:700;font-size:14px;color:var(--text);margin-bottom:6px}
-.event-popup-msg{font-size:12px;line-height:1.7;color:var(--text-sub);margin-bottom:12px;
-  padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:8px;border-left:3px solid rgba(255,255,255,0.1);
+  justify-content:center;font-size:56px;background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(0,0,0,0.2))}
+.event-popup-name{font-weight:700;font-size:16px;color:var(--text);margin-bottom:8px}
+.event-popup-msg{font-size:13px;line-height:1.7;color:var(--text-sub);margin-bottom:14px;
+  padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:8px;border-left:3px solid rgba(255,255,255,0.1);
   text-align:left;font-style:italic}
 .event-popup-msg::before{content:'「';color:var(--text-dim)}
 .event-popup-msg::after{content:'」';color:var(--text-dim)}
-.event-popup-detail{font-size:12px;color:var(--text-dim);margin-bottom:10px}
-.event-popup-ok{font-size:11px;padding:6px 24px;border-radius:4px;cursor:pointer;
+.event-popup-detail{font-size:13px;color:var(--text-dim);margin-bottom:12px}
+.event-popup-ok{font-size:12px;padding:8px 28px;border-radius:4px;cursor:pointer;
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-sub);
   transition:all .2s}
 .event-popup-ok:hover{background:rgba(255,255,255,0.1);color:var(--text)}
@@ -721,6 +727,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .notif-event-toast.notif-warning .notif-detail{color:rgba(229,115,115,0.65)}
 .notif-face{border-radius:50%;object-fit:cover;flex-shrink:0}
 .notif-event-toast .portrait{border-radius:50%;flex-shrink:0}
+/* ケアリアクション 大型トースト */
+.care-reaction-toast{text-align:center;min-width:280px;max-width:360px}
+.care-reaction-toast .notif-inner{flex-direction:column;align-items:center;gap:10px}
+.care-reaction-toast .care-r-name{font-size:14px;font-weight:700;color:var(--text-main);margin-top:2px}
+.care-reaction-toast .care-r-speech{font-size:13px;line-height:1.6;font-style:italic;color:var(--text-main);
+  padding:8px 14px;background:rgba(0,0,0,0.25);border-radius:8px;border-left:3px solid rgba(232,67,147,0.5);text-align:left}
 
 /* v2.0: ケアアクション モーダル */
 .care-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;

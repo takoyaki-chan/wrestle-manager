@@ -1,12 +1,30 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-02（コーチ新キャラクター27名反映+画像フォルダ分離）
+> 最終更新: 2026-03-02（L1: 会場システム全面再設計）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**L1: 会場システム全面再設計（2026-03-02）。** 会場自動昇格制を廃止し、プレイヤーが毎週自分で会場を選ぶシステムに変更。
+
+- **VENUES 10段化**: 旧7段（公民館〜ドーム, popReqロック制）→ 新10段（公民館〜ドーム, 全会場選択可能）。序盤帯を細かく刻み（小ホールA/B、中ホールA/B、大ホール追加）、段階的ステップアップの選択肢を拡充
+- **基礎集客カーブ刷新**: 旧`(orgPop/100)²×10000` → 新`BASE_ATTENDANCE_CURVE`（21点区間線形補間）。orgPop 5で60人〜orgPop 100で30,000人の滑らかなカーブ。相応の会場で70-90%埋まる設計
+- **週次揺らぎ**: ±17%ランダム係数（seed 0xA77E で再現可能）。プレビューでは揺らぎなし（rng=null）、実行時のみ適用
+- **勢い補正（momentum）**: 満員(95%+)→+4%、大入り(80%+)→+2%、空席(30-60%)→-3%、ガラガラ(<30%)→-5%+orgPop-0.5。上限±15%。連続満員で好循環、ガラガラで悪循環
+- **ざっくり予測**: 正確な集客数を非表示に。3段階テキスト（盛り上がりそう/まずまず/客足が心配）で手応えだけ表示
+- **リスク指標UI**: 会場カードにbaseAtt/cap比率で◎安全/△挑戦/✕危険を色分け表示（緑/橙/赤ボーダー）
+- **セーブマイグレーション**: 旧7段venueIdx→新10段へ自動変換（venueMap）。attendanceMomentum初期化
+- 変更: data.js, engine.js, app.js, ui-common.js, ui-render.js, index.html
+
+**バグ修正バッチ+画像拡大パス+給料連続関数化+ファン期待リアクション（2026-03-02）。**
+
+- **バグ修正バッチ(R2/B1/B3)**: AUTO_DELAY 3000→2500ms（battle-engine.html）、showFinishClickBtn AUTO自動送り対応、イベントポップアップ拡大（max-width 340→450px、顔画像 72→120px）
+- **画像拡大パス(R1)**: ケア反応トースト 40→120px（縦レイアウト化）、試合結果 勝者90→180px/敗者70→110px/ドロー80→140px、選択/大型イベント 52→88px、育成画面 80→100px。`.care-reaction-toast` CSS新設
+- **給料連続関数化(R4)**: SALARY_TABLE（7段テーブル）→ SALARY_PARAMS 連続指数関数。base = A*exp(B*OVR) + popMax*(pop/100)^popExp + titleBonus。OVR35:5万〜OVR95:194万の滑らかなカーブ
+- **ファン期待リアクション(R3)**: ファン期待カードの試合後にMQ分岐リアクションポップアップ表示。MQ≥55:好試合（gold tone + 歓声5パターン + 勝者セリフ5パターン）、MQ<55:凡戦（neutral tone + 残念4パターン + 勝者セリフ4パターン）。autoCloseMs 2500対応。FAN_EXPECT_REACTIONS定数（data.js）、fanExpectMatchフラグ（engine.js/app.js両パス）
 
 **コーチ新キャラクター27名反映+画像フォルダ分離（2026-03-02）。**
 
@@ -166,8 +184,9 @@
 - **orgPop年次減衰** — シーズン末にorgPop比例（-2/-3/-5/-7/-10）
 - **FA年齢保存方式** — dormantPool退場時に{id, age}で保存。22歳超はFA参入不可
 - **HEAT倍率圧縮** — Warm ×1.1、Hot ×1.2、On Fire ×1.3。興行週にも軽減衰-0.3
-- **baseAttendance係数** — (orgPop/100)² × 10000
-- **給料テーブル** — OVR80帯:100万/週、OVR90帯:180万/週
+- **baseAttendance係数** — ~~(orgPop/100)² × 10000~~ L1で廃止 → BASE_ATTENDANCE_CURVE（21点区間線形補間、orgPop 0:20人〜100:30000人）
+- **会場システム（L1）** — 全10段（公民館150〜ドーム30000）、popReq撤廃で全会場選択可能。週次揺らぎ±17%（seed 0xA77E）。勢い補正attendanceMomentum（±15%上限、ガラガラ<30%でorgPop-0.5）。ざっくり予測3段階テキスト。リスク指標（◎安全/△挑戦/✕危険）
+- **給料連続関数** — base=0.65*exp(0.06*OVR) + 80*(pop/100)²人気加算 + タイトル保持者+20万。SALARY_TABLE廃止→SALARY_PARAMS
 - **グッズ単価** — 0.15万/人（チケット:グッズ比率 3:1）
 - **育成補助金** — orgPop 40未満に地域振興助成金（0-19:80万/週、20-29:65万/週、30-34:45万/週、35-39:20万/週）。推定週間収支にも反映
 - **orgPop逓減カーブ** — 0→×1.0, 20→×0.70, 40→×0.35, 55→×0.20, 70→×0.12, 85→×0.08
@@ -179,7 +198,7 @@
 - **タイトルマッチ格差ペナルティ** — OVR差>10:MQ-3、>20:MQ-6（キャップ後別途減算）
 - **特性4種効果** — 適応力:growthPenalty+0.2軽減、人望:lockerRoomMorale+3/週、忠誠心:引き抜き確率×0.25、野心:挑戦者MQ+2+ブレークスルー+0.5%
 - **trustパラメータ** — レスラーに trust(0-100) 追加。mentalCoeffの変動係数。自然減衰(-1/月)
-- **ファン期待度** — 因縁ペア(priority3) → 王者挑戦者(priority2) → 人気上位(priority1)。最大3件。実現時MQ+5
+- **ファン期待度** — 因縁ペア(priority3) → 王者挑戦者(priority2) → 人気上位(priority1)。最大3件。実現時MQ+5。試合後リアクションポップアップ（MQ≥55:好試合gold/MQ<55:凡戦neutral、観客+勝者セリフ各4-5パターン、autoCloseMs 2500）
 - **ニュースティッカー** — manage画面スクロールバー。毎週3-5件生成。8カテゴリ
 - **新聞パネル** — 重大イベント時にスポーツ新聞風ポップアップ。8種×複数パターン
 - **autoFillCardのタイトルマッチチェック** — autoFillCard()でEngine.title.canTitleMatch()を確認
@@ -197,6 +216,7 @@
 - **drawRadarChart()** — Canvas innerHTML設定後にdocument.getElementByIdで取得して描画。5角形レーダー、単一/デュアルデータセット対応。hexToRgba()ヘルパー併用
 - **選手ポップアップ上半身画像** — getUpperUrl(id)でwebpパス取得。onerrorで従来のface PNGにフォールバック
 - **5能力値カラム色分け** — PW=#e74c3c, SP=#3498db, TE=#2ecc71, ST=#f39c12, MN=#9b59b6。75以上=固有色、60以上=白、未満=薄色
+- **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
 
 ---
 

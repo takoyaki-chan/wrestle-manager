@@ -796,6 +796,7 @@ const EVENT_QUOTES = {
 
 // Event popup queue (multiple events can stack)
 let _eventPopupQueue = [];
+let _autoCloseTimer = null;
 
 function showEventPopup(opts) {
   // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold' }
@@ -837,9 +838,11 @@ function _renderEventPopup() {
   `;
   document.getElementById('eventPopupOverlay').classList.add('active');
   Audio.play(o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'fanfare' : 'notify');
+  if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
 }
 
 function closeEventPopup() {
+  clearTimeout(_autoCloseTimer); _autoCloseTimer = null;
   document.getElementById('eventPopupOverlay').classList.remove('active');
   _eventPopupQueue.shift();
   if (_eventPopupQueue.length > 0) {
@@ -1889,10 +1892,13 @@ function dismissMissionClear(missionId, el) {
 // Show prep entry point (routes through App for state changes)
 function startShowPrep() {
   if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
-  // Calculate best venue immutably
-  let venueIdx = 0;
-  for (let i = VENUES.length - 1; i >= 0; i--) {
-    if (Math.round(G.orgPop) >= VENUES[i].popReq) { venueIdx = i; break; }
+  // L1: 前回の会場を維持。初回のみbaseAttendanceベースでスマート選択
+  let venueIdx = G.showVenue || 0;
+  if (G.totalShows === 0 && G.showVenue === 0) {
+    const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
+    for (let i = VENUES.length - 1; i >= 0; i--) {
+      if (baseAtt >= VENUES[i].cap * 0.6) { venueIdx = i; break; }
+    }
   }
   // Set show prep state
   G = {
@@ -2081,25 +2087,33 @@ function renderShowResult(results, injuryResults) {
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${spotlightInMatch ? ' <span class="media-spotlight-badge">📺 取材中</span>' : ''}</div>`;
 
     if (isDraw) {
-      html += `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        ${portraitImg(r.left.id, 80, 'portrait-match')}
-        <span style="font-size:17px">${fLink(r.left, {source:'roster'})}</span>
-        <span style="font-size:14px;padding:3px 10px;border-radius:4px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;font-weight:600">DRAW</span>
-        <span style="font-size:17px">${fLink(r.right, {source:'roster'})}</span>
-        ${portraitImg(r.right.id, 80, 'portrait-match')}
+      html += `<div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:4px 0 8px;flex-wrap:wrap">
+        <div style="text-align:center">
+          ${portraitImg(r.left.id, 140, 'portrait-match')}
+          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster'})}</div>
+        </div>
+        <span style="font-size:16px;font-weight:700;padding:4px 14px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;border-radius:4px;flex-shrink:0">DRAW</span>
+        <div style="text-align:center">
+          ${portraitImg(r.right.id, 140, 'portrait-match')}
+          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster'})}</div>
+        </div>
       </div>
-      <div style="margin-top:6px;font-size:13px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
+      <div style="margin-top:2px;font-size:13px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
       <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
     } else {
       const winnerF = leftIsWinner ? r.left : r.right;
-      html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        ${portraitImg(r.left.id, leftIsWinner ? 90 : 70, 'portrait-match' + (leftIsWinner ? ' winner' : ' loser'))}
-        <span style="font-size:${leftIsWinner?20:14}px;${leftIsWinner?'':'opacity:0.7'}">${fLink(r.left, {source:'roster', bold:leftIsWinner})}</span>
-        <span style="font-size:13px;color:var(--text-dim)">vs</span>
-        <span style="font-size:${rightIsWinner?20:14}px;${rightIsWinner?'':'opacity:0.7'}">${fLink(r.right, {source:'roster', bold:rightIsWinner})}</span>
-        ${portraitImg(r.right.id, rightIsWinner ? 90 : 70, 'portrait-match' + (rightIsWinner ? ' winner' : ' loser'))}
+      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:4px 0 8px;flex-wrap:wrap">
+        <div style="text-align:center;flex-shrink:0">
+          ${portraitImg(r.left.id, leftIsWinner ? 180 : 110, 'portrait-match' + (leftIsWinner ? ' winner' : ' loser'))}
+          <div style="margin-top:6px;font-size:${leftIsWinner?'15px':'12px'};${leftIsWinner?'':'opacity:0.65'}">${fLink(r.left, {source:'roster', bold:leftIsWinner})}</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-dim);padding-bottom:44px;flex-shrink:0">vs</div>
+        <div style="text-align:center;flex-shrink:0">
+          ${portraitImg(r.right.id, rightIsWinner ? 180 : 110, 'portrait-match' + (rightIsWinner ? ' winner' : ' loser'))}
+          <div style="margin-top:6px;font-size:${rightIsWinner?'15px':'12px'};${rightIsWinner?'':'opacity:0.65'}">${fLink(r.right, {source:'roster', bold:rightIsWinner})}</div>
+        </div>
       </div>
-      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px">
         <span style="display:inline-block;padding:4px 14px;border-radius:4px;font-size:14px;font-weight:700;
           background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winnerF.name} 勝利</span>
         <span style="font-size:13px;color:var(--text-sub)">${r.finType}${r.finMove ? `（${r.finMove}）` : ''} / ${r.turns}ターン</span>
@@ -2273,11 +2287,11 @@ function assignToCoach(coachId, charId) {
   return { coachAssign, success };
 }
 function getCoachAssignees(coachId) { return Engine.coach.getCoachAssignees(G, coachId); }
-function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster); }
+function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster, G.titles); }
 function calcFixedCosts() { return Engine.economy.calcFixedCosts(); }
 function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); }
 function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
-function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard); }
+function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard, null); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
 function showScreen(id, evt) {
   Audio.play('click');
@@ -2792,7 +2806,7 @@ function showChoiceEventModal(event, state, onChoice) {
 
   // 選手の顔 + セリフ
   if (fighter) {
-    const face = portraitImg(fighter.id, 52, 'care-reaction-portrait');
+    const face = portraitImg(fighter.id, 88, 'care-reaction-portrait');
     const dialogue = event.dialogue || '';
     html += `<div class="care-reaction" style="border-color:${borderColor}">
       ${face}
@@ -2891,7 +2905,7 @@ function showLargeEventModal(event, state, step, onChoice) {
 // ── B1: 練習中の怪我 ──────────────────────────────────────────────────────
 function _buildB1Modal(event, state, roster) {
   const fighter = roster.find(f => f.id === event.fighter);
-  const face = fighter ? portraitImg(fighter.id, 52, 'care-reaction-portrait') : '';
+  const face = fighter ? portraitImg(fighter.id, 88, 'care-reaction-portrait') : '';
   const severityLabel = event.severity === 'moderate' ? '（重め）' : '（軽め）';
   const funds = state.funds || 0;
 
@@ -2933,8 +2947,8 @@ function _buildB1Modal(event, state, roster) {
 function _buildB2Step1(event, state, roster) {
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
-  const face1 = f1 ? portraitImg(f1.id, 48, 'care-reaction-portrait') : '';
-  const face2 = f2 ? portraitImg(f2.id, 48, 'care-reaction-portrait') : '';
+  const face1 = f1 ? portraitImg(f1.id, 88, 'care-reaction-portrait') : '';
+  const face2 = f2 ? portraitImg(f2.id, 88, 'care-reaction-portrait') : '';
 
   let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">💥 選手間の深刻な対立</div>`;
 
@@ -3035,7 +3049,7 @@ function _buildB3Step1(event, state) {
   const challenger = event.challenger || {};
   const orgName = event.orgName || '他団体';
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
-  const face = portraitImg(challenger.id, 60, 'care-reaction-portrait');
+  const face = portraitImg(challenger.id, 88, 'care-reaction-portrait');
 
   let html = `<div class="care-title" style="border-bottom:2px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">⚔️ ${orgName}からの対抗戦オファー</div>`;
 
@@ -3171,12 +3185,13 @@ function _showCareReaction(fighter, text) {
   const el = document.getElementById('notifEventToast');
   if (!el) { showToast(text); return; }
 
-  const face = portraitImg(fighter.id, 40, 'notif-face');
-  el.className = 'notif-event-toast';
+  const face = portraitImg(fighter.id, 120, 'notif-face');
+  el.className = 'notif-event-toast care-reaction-toast';
   el.innerHTML = `
     <div class="notif-inner">
       ${face}
-      <span class="notif-text" style="font-style:italic">「${text}」</span>
+      <div class="care-r-name">${fighter.name}</div>
+      <div class="care-r-speech">「${text}」</div>
     </div>
   `;
   el.classList.add('show');

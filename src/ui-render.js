@@ -1140,18 +1140,23 @@ function renderShowPrep() {
     </div>`;
   }
 
-  // Venue selection
+  // L1: 会場選択（全会場選択可能・リスク指標付き）
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
+  const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
   html += '<div class="venue-grid">';
   VENUES.forEach((v, i) => {
-    const locked = Math.round(G.orgPop) < v.popReq;
     const selected = G.showVenue === i;
-    html += `<div class="venue-card ${locked ? 'locked' : ''} ${selected ? 'selected' : ''}"
-      onclick="${locked ? '' : `App.setShowVenue(${i})`}">
+    const fillRate = baseAtt / v.cap;
+    let riskClass = '', riskLabel = '';
+    if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '◎ 安全'; }
+    else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = '△ 挑戦'; }
+    else { riskClass = 'venue-danger'; riskLabel = '✕ 危険'; }
+    html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}"
+      onclick="App.setShowVenue(${i});renderShowPrep()">
       <div class="venue-name">${v.name}</div>
       <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
       <div class="venue-info">コスト: ${v.cost}万</div>
-      ${locked ? `<div class="venue-info" style="color:var(--red)">人気${v.popReq}必要</div>` : ''}
+      <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
   html += '</div>';
@@ -1267,9 +1272,8 @@ function renderShowPrep() {
     </div>`;
   }
 
-  // Preview
+  // L1: ざっくり集客予測（正確な数字は非表示）
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
-  // v1.0c: 積み上げ方式（平均→calcCardPop）
   const mainPop = validMatches.length > 0 ?
     Engine.economy.calcCardPop(validMatches.map(m => {
       const l = G.roster.find(c => c.id === m.left);
@@ -1279,20 +1283,18 @@ function renderShowPrep() {
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const champIdPreview = G.titles?.world?.championId;
   const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
-  const estAttend = calcAttendance(G.showVenue, mainPop, hasTitlePreview, hasChampPreview);
-  const estRev = calcShowRevenue(G.showVenue, estAttend);
-  const estOccPct = Math.round((estRev.occupancyRate || 0) * 100);
-  // v1.0c: 会場熱気MQボーナス予想
-  const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, estRev.occupancyRate || 0);
+  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, mainPop, hasTitlePreview, hasChampPreview);
+  const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
+  const v = VENUES[G.showVenue];
+  const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'
+    : (G.attendanceMomentum || 0) < -0.05 ? '📉 勢い低下' : '';
 
   const heat = getHeatLevel();
   html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
+    <div style="margin-bottom:6px;font-size:14px;font-weight:700;color:${prediction.color}">${prediction.text}</div>
     <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場（集客×1.10）</span>' : ''}</div>
-    <strong>予想集客:</strong> ${estAttend.toLocaleString()}人 / ${VENUES[G.showVenue].cap.toLocaleString()}人 (${estOccPct}% ${estRev.occLabel || ''})
-    &nbsp;|&nbsp; <strong>予想チケット収入:</strong> ${estRev.ticketRev}万
-    &nbsp;|&nbsp; <strong>予想グッズ:</strong> ${estRev.goodsRev}万
-    &nbsp;|&nbsp; <strong>会場費:</strong> -${estRev.venueCost}万
-    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
+    <div><strong>会場:</strong> ${v.name}（${v.cap.toLocaleString()}席） <strong>会場費:</strong> -${v.cost}万${momentumLabel ? ` &nbsp;| ${momentumLabel}` : ''}</div>
+    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 予想会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
   </div>`;
 
   html += '<div class="btn-row" style="margin-top:16px">';
@@ -2116,7 +2118,7 @@ function renderTraining() {
 
     const rowOpacity = isInjured ? ' style="opacity:0.55"' : '';
     html += `<div class="train-row"${rowOpacity} onclick="toggleTrainDetail(${c.id})" style="cursor:pointer${isInjured?';opacity:0.55':''}">
-      <span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(c.id, 80, '', true)} ${fLink(c, {source:'roster', size:'15px'})}${champBadge}</span>
+      <span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(c.id, 100, '', true)} ${fLink(c, {source:'roster', size:'15px'})}${champBadge}</span>
       <span class="num" style="font-size:15px;font-weight:700">${ov(c)}</span>
       <span><div class="cond-bar" style="width:50px"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:12px">${condPct}</span></span>
       <span>${coachDisplay}</span>
