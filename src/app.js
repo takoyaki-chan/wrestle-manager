@@ -2816,6 +2816,10 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
+    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！最大6試合を組もう！';
+      setTimeout(() => showToast(msg, 7000), 300);
+    }
   },
 
   // Process a week (manage + settle) via tickWeek
@@ -2973,6 +2977,10 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
+    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！最大6試合を組もう！';
+      setTimeout(() => showToast(msg, 7000), 300);
+    }
   },
 
   // Advance to next week via Engine
@@ -3386,7 +3394,8 @@ const App = {
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
     if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
     if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
-    if (result.error === 'already_used_this_week') { showToast('今週はすでに使用済みです（週1回まで）'); return; }
+    if (result.error === 'cooldown') { showToast('クールダウン中です（2週に1回まで）'); return; }
+    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return; }
 
     // state 更新
     G = { ...G,

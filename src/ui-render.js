@@ -473,6 +473,10 @@ function renderWeekScreen() {
     else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
     if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
     else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
+    if (!isPPV(G.week)) {
+      if (isSpecialShow(G.week)) upcomingItems.push('⭐ 今週は特別興行！（最大6試合）');
+      else { const spW = (() => { for (let w = G.week+1; w <= 48; w++) if (isSpecialShow(w) && !isPPV(w)) return w; return null; })(); if (spW) upcomingItems.push(`⭐ 特別興行: 第${spW}週`); }
+    }
     if (G.pendingNegotiation) {
       const remainW = G.pendingNegotiation.resolveWeek - G.week;
       upcomingItems.push(`🤝 交渉中: ${G.pendingNegotiation.fighterName}（残${remainW}週）`);
@@ -1123,6 +1127,19 @@ function renderShowPrep() {
     html += `<div class="media-spotlight-banner">
       📺 <strong>${spName}</strong>の密着取材中（${sp.outletName}・残り${sp.remainingShows}興行）
       — この選手にいい試合を組んでください
+    </div>`;
+  }
+
+  // Special show / PPV banner
+  if (isPPV(G.week)) {
+    html += `<div style="background:linear-gradient(135deg,#2d1b00,#4a2c00);border:1px solid #f39c12;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
+      <div style="font-size:16px;font-weight:700;color:#f1c40f;letter-spacing:1px">🏆 PPV GRAND FINAL</div>
+      <div style="font-size:12px;color:#e67e22;margin-top:4px">年間最大の舞台！最大6試合で開催できます</div>
+    </div>`;
+  } else if (isSpecialShow(G.week)) {
+    html += `<div style="background:linear-gradient(135deg,#1a0033,#2e0055);border:1px solid #9b59b6;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
+      <div style="font-size:15px;font-weight:700;color:#d4a8ff;letter-spacing:1px">⭐ 月末特別興行</div>
+      <div style="font-size:12px;color:#a29bfe;margin-top:4px">いつもより2試合多く組める特別な舞台！最大6試合</div>
     </div>`;
   }
 

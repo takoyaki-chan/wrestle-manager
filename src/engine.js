@@ -1405,8 +1405,7 @@ const Engine = {
       const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
 
       let baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
-      // 努力家: 練習成長+15%
-      if (Traits.has(char, '努力家')) baseGain *= 1.15;
+      // 努力家: weeklyVariance 下限引き上げに移行（baseGain乗算は廃止）
       // ムードメーカー: 団体にいるだけで全体の練習効率+5%（自分含む）
       if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) baseGain *= 1.05;
       // リーダー気質: エースが所属していれば若手(≤21)の成長+10%
@@ -1414,8 +1413,10 @@ const Engine = {
       // 負けず嫌い: 直近の試合で負けていれば成長+20%
       if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') baseGain *= 1.20;
 
-      let weeklyVariance = 0.5 + Engine.rng.float(rng) * 1.0; // 0.5〜1.5
-      // 破天荒: 成長の振れ幅拡大 (0.0〜2.5)
+      // 努力家: 下振れしにくい（0.75〜1.5）、通常: 0.5〜1.5
+      const vFloor = Traits.has(char, '努力家') ? 0.75 : 0.5;
+      let weeklyVariance = vFloor + Engine.rng.float(rng) * (1.5 - vFloor);
+      // 破天荒: 成長の振れ幅拡大 (0.0〜2.5)（後勝ちで上書き）
       if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
       const rawGain = baseGain * weeklyVariance;
 
@@ -5404,6 +5405,7 @@ Engine.careActions = {
   execute(actionId, fighterId, state) {
     const cfg = Engine.careActions.getConfig(actionId);
     if (!cfg) return null;
+    if (cfg.minOrgPop && (state.orgPop || 0) < cfg.minOrgPop) return { error: 'orgpop_locked', required: cfg.minOrgPop };
     if ((state.funds || 0) < cfg.cost) return { error: 'funds_insufficient' };
 
     let roster = [...state.roster];
@@ -5433,8 +5435,8 @@ Engine.careActions = {
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
         events.push(`💴 ${f.name}にボーナスを支給（信頼度+${trustGain}）`);
       } else if (actionId === 'costume') {
-        // v2.0: 週次1回制限
-        if ((f._careWeekUsed || {})[actionId] === state.week) return { error: 'already_used_this_week' };
+        // v2.0: 2週に1回制限
+        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
@@ -5446,8 +5448,8 @@ Engine.careActions = {
         f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
         events.push(`🏋️ ${f.name}に専属トレーナーを手配（${cfg.effects.growth_boost.weeks}週間 成長+30%）`);
       } else if (actionId === 'media') {
-        // v2.0: 週次1回制限
-        if ((f._careWeekUsed || {})[actionId] === state.week) return { error: 'already_used_this_week' };
+        // v2.0: 2週に1回制限
+        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);

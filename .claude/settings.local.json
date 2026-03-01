@@ -55,7 +55,15 @@
       "Bash(powershell.exe -Command \"Compress-Archive -Path ''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\dist\\\\wrestle-manager-v1.0_Trial'' -DestinationPath ''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\wrestle-manager-v1.0_Trial.zip'' -Force\")",
       "Bash(grep -n \"renderManagePanel\\\\|function.*ManagePanel\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
       "Bash(grep -n \"^const Traits\\\\|^Traits =\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
-      "Bash(grep -n \"^Traits = {\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)"
+      "Bash(grep -n \"^Traits = {\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(grep -n \"renderShowPrep\" src/*.js)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe 2>&1\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Write-Host ''Done''\")",
+      "Bash(ls -la \"C:\\\\Users\\\\nkmrk\\\\.claude\\\\projects\\\\C--Users-nkmrk-Downloads-wrestle-manager\\\\memory\"\" 2>/dev/null || echo \"Path not found \")",
+      "Bash(grep -l \"coach\" /c/Users/nkmrk/.claude/projects/C--Users-nkmrk-Downloads-wrestle-manager/memory/*.md)"
     ]
   }
 }

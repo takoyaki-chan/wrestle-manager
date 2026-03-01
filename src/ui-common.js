@@ -2637,16 +2637,21 @@ function showCareActionModal(state, onConfirm) {
     let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
 
     html += '<div class="care-section-label">👤 個人向け</div>';
+    const orgPop = state.orgPop || 0;
     individualActions.forEach(a => {
       const canAfford = funds >= a.cost;
       const isInjuredOnly = a.condition === 'injured';
       const anyInjured = roster.some(f => f.injury);
-      const disabled = !canAfford || (isInjuredOnly && !anyInjured) ? 'disabled' : '';
+      const orgPopLocked = a.minOrgPop && orgPop < a.minOrgPop;
+      const disabled = !canAfford || (isInjuredOnly && !anyInjured) || orgPopLocked ? 'disabled' : '';
+      let extraInfo = '';
+      if (orgPopLocked) extraInfo = ` <span style="color:#e74c3c;font-size:10px">（知名度 ${a.minOrgPop} で解放）</span>`;
+      else if (isInjuredOnly) extraInfo = ' <span style="color:#f39c12;font-size:10px">（怪我中のみ）</span>';
       html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
         <span class="care-action-emoji">${a.emoji}</span>
         <div class="care-action-info">
           <div class="care-action-name">${a.label}</div>
-          <div class="care-action-desc">${a.desc}${isInjuredOnly ? ' <span style="color:#f39c12;font-size:10px">（怪我中のみ）</span>' : ''}</div>
+          <div class="care-action-desc">${a.desc}${extraInfo}</div>
         </div>
         <span class="care-action-cost">${a.cost}万</span>
       </div>`;
