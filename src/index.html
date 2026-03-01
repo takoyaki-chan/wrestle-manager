@@ -206,6 +206,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .btn-intensive:hover{background:rgba(255,165,0,0.2)}
 .btn-intensive.active{background:rgba(255,165,0,0.25);border-color:#ffa500;box-shadow:0 0 6px rgba(255,165,0,0.2)}
 .btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
+.roster-expand-btn{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;margin-top:3px;transition:all .2s}
+.roster-expand-btn:hover{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.3);color:var(--gold)}
 .detail-panel{overflow:hidden;max-height:0;transition:max-height .3s ease;padding:0 8px}
 .detail-panel.open{max-height:400px;padding:10px 8px}
 .stat-bar-wrap{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px}
@@ -910,12 +912,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   <!-- Navigation -->
   <div class="nav-bar">
     <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
-    <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
-    <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
+    <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
     <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
     <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
-    <button class="nav-btn" onclick="showScreen('training',event)">🏋️ 育成</button>
-    <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
+    <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
+    <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
     <button class="nav-btn" onclick="showScreen('finance',event)">💰 収支</button>
     <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
     <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
@@ -947,6 +948,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
   <!-- SCREEN: Roster -->
   <div class="screen" id="screen-roster">
+    <div id="rosterDojoHeader"></div>
     <div class="panel">
       <div class="panel-title">🎓 所属スタッフ (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
         <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)">スタッフ室 →</button>
@@ -957,6 +959,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <div class="panel-title">👥 所属選手 (<span id="rosterCount">0</span>名)</div>
       <div id="rosterTable"></div>
     </div>
+    <div id="rosterGrowthLog"></div>
   </div>
 
   <!-- SCREEN: Scout -->
@@ -1009,13 +1012,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     </div>
   </div>
 
-  <!-- SCREEN: Training (v0.8) -->
-  <div class="screen" id="screen-training">
-    <div class="panel">
-      <div class="panel-title">🏋️ トレーニング</div>
-      <div id="trainingContent"></div>
-    </div>
-  </div>
 
   <!-- SCREEN: Save/Load (v0.6) -->
   <div class="screen" id="screen-save">
@@ -1048,25 +1044,22 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
           <div class="help-body">
             <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは48週です。</p>
             <p><strong style="color:var(--gold)">毎週やること：</strong></p>
-            <p>① <strong>育成</strong> — トレーニングメニューを選んで選手を鍛える</p>
+            <p>① <strong>今週タブ</strong> — スケジュールを選び、⚡強化練習を設定して選手を鍛える</p>
             <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決める</p>
             <p>③ <strong>週を進める</strong> — 「▶ 次の週へ」ボタンで結果が処理される</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ育成」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏋️</span> 育成・トレーニング <span class="help-arrow">▶</span>
+            <span class="help-icon">👥</span> 団体・育成管理 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>「育成」画面から選手ごとにトレーニングメニューを設定できます。</p>
-            <p><strong>メニューの種類：</strong></p>
-            <p>🔴 パワー系 — ATK（攻撃力）が上がりやすい</p>
-            <p>🔵 テクニック系 — DEF（防御力）が上がりやすい</p>
-            <p>🟡 スタミナ系 — HP（体力）が上がりやすい</p>
-            <p>🟣 総合系 — バランスよく成長</p>
-            <p>🟢 プロモ — 人気が直接上がる（上限40まで）</p>
+            <p>「団体」タブでは所属選手・コーチの管理と育成状況の確認ができます。</p>
+            <p><strong>スケジュール設定：</strong>「今週」タブのスケジュール列で選手ごとの行動方針を選択できます。</p>
+            <p><strong>⚡強化練習：</strong>「今週」タブの⚡ボタンで強化練習を設定（成長×1.5/体調消耗2倍/最大2週連続）</p>
+            <p><strong>コーチアサイン：</strong>「団体」タブで選手カードの▼ボタンを押すと、コーチアサインや成長状況の詳細が見られます。</p>
             <p style="color:var(--text-sub);font-size:12px">⚠️ 体調が低い状態で練習すると怪我のリスクが上がります。体調60未満の選手は休養させましょう。</p>
             <p><strong>コーチ：</strong>「スタッフ室」で雇用できます。コーチごとに得意分野があり、対応メニューの効果がアップします。</p>
           </div>

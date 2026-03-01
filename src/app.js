@@ -823,8 +823,8 @@ const MISSIONS = [
     desc:'マッチクオリティ40以上を出そう。相性の良いカードを組むのがコツ！',
     screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 40 || G.seasonHistory?.some(s => s.bestMQ >= 40) },
   { id:'assign_coach',  phase:0, icon:'🎓', name:'コーチに選手を任せよう',
-    desc:'コーチを雇ったら、育成画面で選手をアサインしましょう！',
-    screen:'training', check: G => Object.values(G.coachAssign || {}).flat().length >= 1 },
+    desc:'コーチを雇ったら、団体画面で選手をアサインしましょう！',
+    screen:'roster', check: G => Object.values(G.coachAssign || {}).flat().length >= 1 },
 
   // ── GROWTH: 成長期 ──
   { id:'crown_champ',   phase:1, icon:'王', name:'団体王座を認定',
@@ -844,8 +844,8 @@ const MISSIONS = [
       return p >= 0 && p < 3;
     }},
   { id:'assign_all',    phase:1, icon:'配', name:'全選手にコーチ配置',
-    desc:'育成画面で全選手にコーチを割り当てて、成長効率を最大化！',
-    screen:'training', check: G => {
+    desc:'団体画面で全選手にコーチを割り当てて、成長効率を最大化！',
+    screen:'roster', check: G => {
       if (!G.roster || G.roster.length === 0) return false;
       const healthy = G.roster.filter(c => !c.injury);
       if (healthy.length === 0) return true;

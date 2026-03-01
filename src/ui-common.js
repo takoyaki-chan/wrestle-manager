@@ -657,7 +657,7 @@ function showCoachTooltip(coachId) {
       });
       html += '</div>';
     } else {
-      html += '<div style="font-size:12px;color:var(--text-dim)">担当選手なし（育成画面でアサインできます）</div>';
+      html += '<div style="font-size:12px;color:var(--text-dim)">担当選手なし（団体画面でアサインできます）</div>';
     }
     html += '</div>';
   }
@@ -2294,6 +2294,7 @@ function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPo
 function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard, null); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
 function showScreen(id, evt) {
+  if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
   Audio.play('click');
   // Safety: 残存オーバーレイがタブ操作をブロックしないよう強制解除
   ['careOverlay','confirmOverlay','growthEventOverlay','milestoneOverlay',

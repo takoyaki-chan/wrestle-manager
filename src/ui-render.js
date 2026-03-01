@@ -718,7 +718,8 @@ function renderWeekScreen() {
     html += '</div>';
 
     // Roster schedule overview
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール</th><th>今週の行動</th></tr>';
+    const canManageWeek = G.weekPhase === 'manage';
+    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール</th><th>⚡</th><th>今週の行動</th></tr>';
     G.roster.forEach(c => {
       const condPct = c.condition;
       const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
@@ -728,6 +729,19 @@ function renderWeekScreen() {
         : '<span style="font-size:12px;color:#2ecc71">健康</span>';
       const schedDisabled = c.injury ? 'disabled' : '';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
+      // Intensive button for week screen
+      const isInjured = !!c.injury;
+      const isResting = c.condition <= 30;
+      const canInt = canManageWeek && !isInjured && !isResting && c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec;
+      let intBtnHtml = '';
+      if (isInjured || isResting) {
+        intBtnHtml = '<span style="font-size:12px;color:var(--text-dim)">--</span>';
+      } else if (!canManageWeek) {
+        intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
+      } else {
+        const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
+        intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? '' : `disabled title="${warnTitle}"`}>⚡</button>`;
+      }
       // v1.0: Compute predicted action for initial display
       // ※ _weekAction は前週の記録なので参照しない。常に現在のスケジュールから算出する
       let previewAction;
@@ -752,6 +766,7 @@ function renderWeekScreen() {
             <option value="rest" ${c.schedule==='rest'?'selected':''}>休養重視</option>
           </select>
         </td>
+        <td>${intBtnHtml}</td>
         <td id="action-${c.id}"><span class="sched-tag ${previewAction}">${previewLabel}</span></td>
       </tr>`;
     });
@@ -949,7 +964,120 @@ function renderWeekScreen() {
   el.innerHTML = html;
 }
 
+function _renderRosterDojoHeader() {
+  const el = document.getElementById('rosterDojoHeader');
+  if (!el) return;
+  const hired = getHiredCoaches();
+  let html = '<div class="dojo-header">';
+  html += '<img src="image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
+  const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
+  const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
+  html += `<div class="dojo-atmosphere level-${atmo.level}">
+    <span class="dojo-atmosphere-emoji">${atmo.emoji}</span>
+    <span class="dojo-atmosphere-text">「${atmo.text}」</span>
+  </div>`;
+  if (G.currentCoachReport) {
+    const r = G.currentCoachReport;
+    const cObj = ALL_COACHES.find(c => c.id === r.coachId);
+    html += `<div class="coach-report-bubble" onclick="showCoachTooltip(${r.coachId})">
+      <div class="coach-report-avatar">${cObj ? coachPortraitImg(cObj, 40) : ''}</div>
+      <div class="coach-report-body">
+        <div class="coach-report-name">💬 ${r.coachName}</div>
+        <div class="coach-report-text">「${r.reportText}」</div>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  // Coach trait summary
+  if (hired.length > 0) {
+    const traitParts = hired.map(c => c.trait);
+    html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ特性: <strong>${traitParts.join('、')}</strong></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function _renderRosterTrainingPanel(c, hired) {
+  const coach = getCharCoach(c.id);
+  const isInjured = !!c.injury;
+  const canManage = G.weekPhase === 'manage';
+  const stats = ['pw','sp','te','st','mn'];
+  const statLabels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
+  let html = `<div class="detail-panel" id="roster-detail-${c.id}">`;
+  // Stat bars
+  stats.forEach(s => {
+    const current = Math.round(c[s]);
+    const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
+    const pct = Math.round(current / cap * 100);
+    const sg = Math.round((c.seasonGrowth && c.seasonGrowth[s]) || 0);
+    const atCap = current >= cap;
+    const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'
+      : pct >= 85 ? '<span style="color:#e74c3c;font-size:11px">残僅か</span>'
+      : pct >= 60 ? '<span style="color:#f39c12;font-size:11px">成長中</span>'
+      : '<span style="color:#2ecc71;font-size:11px">伸びしろ大</span>';
+    html += `<div class="stat-bar-wrap">
+      <span class="stat-bar-label">${statLabels[s]}</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
+      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
+    </div>`;
+  });
+  // Coach assign dropdown
+  if (canManage) {
+    html += `<div style="margin-top:8px;font-size:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <label style="color:var(--text-dim)">担当コーチ: </label>
+      <select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px"${isInjured?' disabled':''}>
+        <option value="0"${!coach?' selected':''}>--- なし ---</option>`;
+    hired.forEach(h => {
+      const aCount = getCoachAssignees(h.id).length;
+      const isCurrent = coach && coach.id === h.id;
+      const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
+      const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
+      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}] (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+    });
+    html += '</select>';
+    if (coach) {
+      html += `<span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;font-size:12px;color:var(--text-dim);text-decoration:underline dotted">ℹ️ 詳細</span>`;
+    }
+    html += '</div>';
+    if (coach) {
+      const mult = COACH_RANKS[coach.teaching] || 1.0;
+      const styleName = COACH_STYLE_MAP[coach.style] || 'オールラウンド';
+      const effDesc = `成長×${mult} ${styleName} ${coach.trait}`;
+      html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
+    }
+  } else if (coach) {
+    html += `<div style="margin-top:6px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:4px">担当: <span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted;display:inline-flex;align-items:center;gap:3px">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function _renderRosterGrowthLog() {
+  const el = document.getElementById('rosterGrowthLog');
+  if (!el) return;
+  const growthEntries = G.roster.filter(c => {
+    const sg = c.seasonGrowth || {};
+    return sg && Object.values(sg).some(v => v > 0);
+  });
+  if (growthEntries.length > 0) {
+    let html = '<div class="panel" style="margin-top:12px"><div class="train-season-log">';
+    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">📈 今シーズン成長</div>';
+    growthEntries.forEach(c => {
+      const parts = [];
+      ['pw','sp','te','st','mn'].forEach(s => {
+        const v = Math.round(((c.seasonGrowth && c.seasonGrowth[s]) || 0) * 10) / 10;
+        if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
+      });
+      if (parts.length > 0) html += `<div>${fLink(c, {source:'roster', size:'11px'})}: ${parts.join(' ')}</div>`;
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
 function renderRoster() {
+  _renderRosterDojoHeader();
   // === Staff Section ===
   const staffEl = document.getElementById('rosterStaffSection');
   const staffCountEl = document.getElementById('staffCount');
@@ -1000,6 +1128,7 @@ function renderRoster() {
   const el = document.getElementById('rosterTable');
 
 
+  const hired = getHiredCoaches();
   const sortBtns = [
     {key:'ovr', label:'OVR'},
     {key:'name', label:'名前'},
@@ -1008,7 +1137,7 @@ function renderRoster() {
     {key:'schedule', label:'育成'},
   ].map(s => `<button onclick="setRosterSort('${s.key}')" style="font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid ${_rosterSortKey===s.key ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.08)'};background:${_rosterSortKey===s.key ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.03)'};color:${_rosterSortKey===s.key ? 'var(--gold)' : 'var(--text-dim)'}">${s.label}</button>`).join('');
   let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
-  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">';
+  html += '<div style="display:flex;flex-direction:column;gap:4px">';
   const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
   const sorted = [...G.roster].sort((a,b) => {
     switch(_rosterSortKey) {
@@ -1056,33 +1185,55 @@ function renderRoster() {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
       return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
     };
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''};cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
-      ${portraitImg(c.id, 56, '', true)}
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
-          <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
-          <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
-          ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
+    // Growth tendency arrows (inline in card)
+    const tendency = c.isRental ? null : getGrowthTendency(c.id);
+    const coachOfChar = c.isRental ? null : getCharCoach(c.id);
+    let tendencyHtml = '';
+    if (tendency && !c.injury) {
+      tendencyHtml = `<span style="font-size:11px;margin-left:4px;letter-spacing:-1px">${tendency.arrows.map(a =>
+        `<span class="train-growth-arrow ${a.cls}" title="${a.label}">${a.arrow}</span>`
+      ).join('')}</span>`;
+    }
+    // Coach badge in card
+    let coachBadgeHtml = '';
+    if (coachOfChar) {
+      coachBadgeHtml = `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2);display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.replace(/コーチ|トレーナー|道場長|師範|アドバイザー|セコンド|マネージャー/g,'').substring(0,3)}</span>`;
+    }
+    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
+        ${portraitImg(c.id, 56, '', true)}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
+            <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
+            <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
+            ${coachBadgeHtml}
+            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
+            <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
+            <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b>${statG('pw')}</span>
+            <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b>${statG('sp')}</span>
+            <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b>${statG('te')}</span>
+            <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b>${statG('st')}</span>
+            <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b>${statG('mn')}</span>
+            ${tendencyHtml}
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
-          <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
-          <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b>${statG('pw')}</span>
-          <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b>${statG('sp')}</span>
-          <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b>${statG('te')}</span>
-          <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b>${statG('st')}</span>
-          <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b>${statG('mn')}</span>
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
+          <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
+          <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
+          ${!c.isRental ? `<button class="roster-expand-btn" onclick="event.stopPropagation();toggleRosterDetail(${c.id})" title="育成詳細">▼</button>` : ''}
         </div>
       </div>
-      <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-        <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
-        <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-        <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
-      </div>
+      ${!c.isRental ? _renderRosterTrainingPanel(c, hired) : ''}
     </div>`;
   });
   html += '</div>';
   el.innerHTML = html;
+
+  _renderRosterGrowthLog();
 }
 
 function getUsedFighterIds(excludeSlot) {
@@ -1978,14 +2129,14 @@ function renderSave() {
 
 
 // ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 9D: TRAINING SCREEN (v0.8)                      ║
+// ║  SECTION 9D: TRAINING HELPERS (roster tab integrated)     ║
 // ╚══════════════════════════════════════════════════════════╝
 
 function toggleIntensive(charId) {
   const c = G.roster.find(r => r.id === charId);
   if (!c) return;
   c.intensive = !c.intensive;
-  renderTraining();
+  renderWeekScreen();
 }
 
 function changeCoachAssign(charId, newCoachId) {
@@ -2002,8 +2153,8 @@ function changeCoachAssign(charId, newCoachId) {
   refreshAll();
 }
 
-function toggleTrainDetail(charId) {
-  const panel = document.getElementById(`train-detail-${charId}`);
+function toggleRosterDetail(charId) {
+  const panel = document.getElementById(`roster-detail-${charId}`);
   if (!panel) return;
   panel.classList.toggle('open');
 }
@@ -2016,195 +2167,6 @@ function getGrowthTendency(charId) {
   return {text: `${coach.grade}級コーチ`, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
 }
 
-function renderTraining() {
-  const el = document.getElementById('trainingContent');
-  if (!el) return;
-  const hired = getHiredCoaches();
-  let html = '';
-
-  // === §3 道場ヘッダー + 雰囲気テキスト + §2 コーチ報告 ===
-  html += '<div class="dojo-header">';
-  html += '<img src="image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
-  const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
-  const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
-  html += `<div class="dojo-atmosphere level-${atmo.level}">
-    <span class="dojo-atmosphere-emoji">${atmo.emoji}</span>
-    <span class="dojo-atmosphere-text">「${atmo.text}」</span>
-  </div>`;
-  if (G.currentCoachReport) {
-    const r = G.currentCoachReport;
-    const cObj = ALL_COACHES.find(c => c.id === r.coachId);
-    html += `<div class="coach-report-bubble" onclick="showCoachTooltip(${r.coachId})">
-      <div class="coach-report-avatar">${cObj ? coachPortraitImg(cObj, 40) : ''}</div>
-      <div class="coach-report-body">
-        <div class="coach-report-name">💬 ${r.coachName}</div>
-        <div class="coach-report-text">「${r.reportText}」</div>
-      </div>
-    </div>`;
-  }
-  html += '</div>';
-
-  // === Coach Summary ===
-  if (hired.length > 0) {
-    html += '<div class="train-coach-summary">';
-    html += '<div style="font-size:11px;font-weight:700;color:#2ecc71;margin-bottom:6px">🎓 コーチ陣</div>';
-    hired.forEach(c => {
-      const assigned = getCoachAssignees(c.id);
-      const mult = COACH_RANKS[c.teaching] || 1.0;
-      const effectLabel = `${c.grade}級 ×${mult}`;
-      html += `<div class="train-coach-row" onclick="event.stopPropagation();showCoachTooltip(${c.id})" style="cursor:pointer">
-        <span style="display:inline-flex;align-items:center;gap:6px">${coachPortraitImg(c, 36)} <span style="text-decoration:underline dotted;text-underline-offset:3px">${c.name}</span></span>
-        <span style="font-size:12px;color:var(--gold);font-weight:700;margin-left:6px">[${effectLabel}]</span>
-        <span class="coach-slots">担当 ${assigned.length}/${COACH_MAX_ASSIGN}</span>
-        <span style="font-size:12px;color:var(--text-dim);margin-left:auto">ℹ️</span>
-      </div>`;
-    });
-    // Tendency summary
-    if (hired.length > 0) {
-      const traitParts = hired.map(c => c.trait);
-      html += `<div class="train-tendency">→ 特性: <strong>${traitParts.join('、')}</strong></div>`;
-    }
-    html += '</div>';
-  } else {
-    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.03);border-radius:6px">🎓 コーチ未雇用 — <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen(\'coach\')">スタッフ室</span>から雇用してください</div>';
-  }
-
-  // === Roster Training List ===
-  const canManage = G.weekPhase === 'manage';
-  html += '<div style="margin-top:8px">';
-  html += '<div class="train-row train-row-header"><span>選手</span><span>総合</span><span>体調</span><span>担当コーチ</span><span>成長傾向</span><span>⚡追込</span></div>';
-
-  G.roster.forEach(c => {
-    // D-1: Skip rental fighters in training (rental=試合のみ)
-    if (c.isRental) return;
-    const coach = getCharCoach(c.id);
-    const tendency = getGrowthTendency(c.id);
-    const condPct = c.condition;
-    const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
-    const isInjured = !!c.injury;
-    const isResting = c.condition <= 30;
-    const canIntensive = canManage && !isInjured && !isResting && c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec;
-    const champBadge = G.titles.world.championId === c.id ? ' 👑' : '';
-    const potPct = getPotentialPct(c);
-
-    // Coach name display
-    let coachDisplay = '<span style="color:var(--text-dim);font-size:12px">---</span>';
-    if (coach) {
-      coachDisplay = `<span style="font-size:12px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;display:inline-flex;align-items:center;gap:2px" onclick="event.stopPropagation();showCoachTooltip(${coach.id})">${coachPortraitImg(coach, 16)}${coach.name.replace(/コーチ|トレーナー|道場長|師範|アドバイザー|セコンド|マネージャー/g,'').substring(0,3)}</span>`;
-    }
-
-    // Growth tendency arrows
-    let arrowHtml = '';
-    if (isInjured) {
-      arrowHtml = '<span style="font-size:12px;color:#e17055">療養中</span>';
-    } else if (isResting) {
-      arrowHtml = '<span style="font-size:12px;color:#3498db">休養中</span>';
-    } else {
-      arrowHtml = tendency.arrows.map(a =>
-        `<span class="train-growth-arrow ${a.cls}" title="${a.label}">${a.arrow}</span>`
-      ).join('');
-    }
-
-    // Intensive button
-    let intBtn = '';
-    if (isInjured || isResting) {
-      intBtn = '<span style="font-size:12px;color:var(--text-dim)">--</span>';
-    } else if (!canManage) {
-      intBtn = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
-    } else {
-      const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
-      intBtn = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canIntensive || c.intensive ? '' : `disabled title="${warnTitle}"`}>⚡</button>`;
-    }
-
-    const rowOpacity = isInjured ? ' style="opacity:0.55"' : '';
-    html += `<div class="train-row"${rowOpacity} onclick="toggleTrainDetail(${c.id})" style="cursor:pointer${isInjured?';opacity:0.55':''}">
-      <span style="display:inline-flex;align-items:center;gap:8px">${portraitImg(c.id, 100, '', true)} ${fLink(c, {source:'roster', size:'15px'})}${champBadge}</span>
-      <span class="num" style="font-size:15px;font-weight:700">${ov(c)}</span>
-      <span><div class="cond-bar" style="width:50px"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> <span style="font-size:12px">${condPct}</span></span>
-      <span>${coachDisplay}</span>
-      <span>${arrowHtml}</span>
-      <span onclick="event.stopPropagation()">${intBtn}</span>
-    </div>`;
-
-    // Detail panel (hidden by default)
-    const stats = ['pw','sp','te','st','mn'];
-    const statLabels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
-    html += `<div class="detail-panel" id="train-detail-${c.id}">`;
-    // Stat bars - use trainCap for bar width but hide exact values
-    stats.forEach(s => {
-      const current = Math.round(c[s]);
-      const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
-      const pct = Math.round(current / cap * 100);
-      const sg = Math.round((c.seasonGrowth && c.seasonGrowth[s]) || 0);
-      const atCap = current >= cap;
-      // Growth room label (vague)
-      const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'
-        : pct >= 85 ? '<span style="color:#e74c3c;font-size:11px">残僅か</span>'
-        : pct >= 60 ? '<span style="color:#f39c12;font-size:11px">成長中</span>'
-        : '<span style="color:#2ecc71;font-size:11px">伸びしろ大</span>';
-      html += `<div class="stat-bar-wrap">
-        <span class="stat-bar-label">${statLabels[s]}</span>
-        <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
-        <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
-      </div>`;
-    });
-    // Coach assign dropdown
-    if (canManage) {
-      html += `<div style="margin-top:8px;font-size:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <label style="color:var(--text-dim)">担当コーチ: </label>
-        <select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px"${isInjured?' disabled':''}>
-          <option value="0"${!coach?' selected':''}>--- なし ---</option>`;
-      hired.forEach(h => {
-        const aCount = getCoachAssignees(h.id).length;
-        const isCurrent = coach && coach.id === h.id;
-        const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
-        const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
-        html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}] (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
-      });
-      html += '</select>';
-      if (coach) {
-        html += `<span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;font-size:12px;color:var(--text-dim);text-decoration:underline dotted">ℹ️ 詳細</span>`;
-      }
-      html += '</div>';
-      // Show current coach effect hint
-      if (coach) {
-        const mult = COACH_RANKS[coach.teaching] || 1.0;
-        const styleName = COACH_STYLE_MAP[coach.style] || 'オールラウンド';
-        const effDesc = `成長×${mult} ${styleName} ${coach.trait}`;
-        html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
-      }
-    } else if (coach) {
-      html += `<div style="margin-top:6px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:4px">担当: <span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted;display:inline-flex;align-items:center;gap:3px">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-
-  // === Season Growth Log ===
-  const growthEntries = G.roster.filter(c => {
-    const sg = c.seasonGrowth || {};
-    return sg && Object.values(sg).some(v => v > 0);
-  });
-  if (growthEntries.length > 0) {
-    html += '<div class="train-season-log">';
-    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">📈 今シーズン成長</div>';
-    growthEntries.forEach(c => {
-      const parts = [];
-      ['pw','sp','te','st','mn'].forEach(s => {
-        const v = Math.round(((c.seasonGrowth && c.seasonGrowth[s]) || 0) * 10) / 10;
-        if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
-      });
-      if (parts.length > 0) html += `<div>${fLink(c, {source:'roster', size:'11px'})}: ${parts.join(' ')}</div>`;
-    });
-    html += '</div>';
-  }
-
-  // Intensive training info
-  html += '<div style="font-size:12px;color:var(--text-dim);margin-top:8px">⚡ 強化練習: 成長×1.5 / 体調消耗2倍 / 8%で練習負傷 / 最大2週連続</div>';
-
-  el.innerHTML = html;
-}
-
 function refreshAll() {
   refreshTopBar();
   renderWeekScreen();
@@ -2214,7 +2176,6 @@ function refreshAll() {
   renderFinance();
   renderLog();
   renderCoach();
-  renderTraining();
   renderSave();
   renderRanking();
   renderDatabase();
