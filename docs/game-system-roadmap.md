@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-01（コーチ＋ロッカールーム統合リデザイン Phase A 完了）
+> 最終更新: 2026-03-02（コーチ新キャラクター27名反映+画像フォルダ分離）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -8,11 +8,23 @@
 
 ## 現在の状態
 
-**コーチ＋ロッカールーム統合リデザイン Phase A 完了。** 設計書: `docs/coach-lockerroom-redesign-v1.0.md`
+**コーチ新キャラクター27名反映+画像フォルダ分離（2026-03-02）。**
 
-- **A-1: 努力家特性変更（engine.js）** — baseGain×1.15乗算を廃止。weeklyVariance下限を0.5→0.75に引き上げ（下振れしにくい安定型）。破天荒との対極関係を明確化
-- **A-2: 表彰式フレーム画像パス修正（index.html）** — frame a: `.png.png`→`none`（ファイル不在）、frame b-f: `.png.png`→`.png.webp`（WebP差し替え済み）
-- **A-3: ケアアクション変更（data.js/engine.js/ui-common.js/app.js）** — minOrgPopフィールド追加（costume:20/media:20/special_treatment:40）、costume/mediaの制限を週1→2週間隔に変更、orgPopゲート+ロック表示UI+エラーハンドリング
+- **コーチキャラクター全面刷新**: ALL_COACHES id 9-35 の27名を新規キャラクターに差し替え。name（フルネーム形式）・emoji・desc・profile・age・gender・origin を更新。機械的パラメータ（grade/teaching/observation/style/trait/salary/hireFee/minOrgPop）は変更なし
+- **世界観整合**: 「元プロレスラー」経歴4名を別スポーツに変更（id30:BJJ黒帯、id31:バレー代表監督、id33:テコンドー五輪銀、id34:柔道五輪金）。女子プロレスが国民的スポーツの世界観に合致
+- **名前修正**: id33 葉月レナ→葉月レミ（実在人物との重複回避）
+- **画像フォルダ分離**: コーチ肖像画を `image/coach/` サブフォルダに移動。既存8枚を移動＋新規27名の仮画像を配置（全35枚）
+- **COACH_PORTRAIT拡張**: id 1-8 のみ → id 1-35 の全35名にマッピング追加。`getCoachPortraitUrl` パスを `../image/coach/` に変更
+- **肖像画プロンプト文書**: `docs/coach-portrait-prompts.md` を27名分の新キャラに全面更新（Danbooru形式プロンプト+格納フォルダ記載）
+
+**リデザイン Phase C+D 実装完了（2026-03-01）。** 観察眼システム（§2）+ ロッカールーム可視化（§3）+ バグ修正2件。
+
+- **§2 観察眼システム**: Engine.coach.generateReport — 非興行週に25%/週でコーチ報告生成。観察眼ランク別テキスト（E-D:漠然、C:選手名+ムード、B:選手名+ステータス名、A:天井接近ヒント）。COACH_OBS_INACCURACY揺らぎ（的外れ時に報告方向が反転）。_pendingCoachReport transient → currentCoachReport（1週持続、育成画面インライン表示）
+- **§3 ロッカールーム可視化**: Engine.lockerRoom.getAtmosphereText — lockerRoomMorale±10ノイズ→5段階雰囲気テキスト。render時生成（Date.now()ソルトで意図的非決定性）。育成画面冒頭に道場ヘッダー+雰囲気テキスト常時表示
+- **バグ修正**: _pendingTeamSpirit がtickWeekで未転送（チームスピリットトースト未発火）を修正。renderWeekScreen L641 の streak未定義エラーを修正
+- **UI**: .dojo-atmosphere（level-1~5色分け）、.coach-report-bubble（ゴールド枠吹き出し、クリックでコーチツールチップ連携）
+
+**リデザイン Phase A〜D 全完了。** 残りは Phase E（施設システム廃止）のみ。設計書: `docs/coach-lockerroom-redesign-v1.0.md`
 
 **Phase1-7 セリフバリエーション拡充+バランス調整セッション完了。** セリフ73個追加+バランス微調整4点。
 
@@ -76,9 +88,9 @@
 | Phase | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
 | A | **独立3タスク先行実装** 努力家変更・表彰式画像パス修正・ケアアクション制限変更 | 小 | **実装済み** |
-| B | **§1 コーチシステム** 格C/B/A・指導力/観察眼・得意スタイル・コーチ特性6種・枠(orgPop連動1-3枠)・コスト・プール30-40人 | 大 | **次回着手** |
-| C | **§2 観察眼システム** コーチ報告（4週に1回）・ランク別情報レベル・揺らぎ | 中 | 未着手（§1依存） |
-| D | **§3 ロッカールーム可視化** manage画面ヘッダー画像・雰囲気テキスト5段階+揺らぎ | 中 | 未着手 |
+| B | **§1 コーチシステム** 格C/B/A・指導力/観察眼・得意スタイル・コーチ特性6種・枠(orgPop連動1-3枠)・コスト・プール30-40人 | 大 | **実装済み** |
+| C | **§2 観察眼システム** コーチ報告（25%/週）・ランク別情報レベル(E-A)・揺らぎ(的外れ)・インライン表示 | 中 | **実装済み** |
+| D | **§3 ロッカールーム可視化** 道場ヘッダー・雰囲気テキスト5段階+ノイズ揺らぎ | 中 | **実装済み** |
 | E | **§4 施設システム廃止** 成長速度→コーチ吸収・施設UI削除 | 中 | 未着手（§1依存） |
 
 ### v2.0イベントシステム — 残タスク
@@ -94,14 +106,14 @@
 
 - **ファン期待度の拡張** — より多様な期待パターン、長期的な期待の蓄積
 - **物語的な目標イベント** — 「○○にふさわしい舞台を用意できるか？」等、大型イベント（B枠）の一種。KPI的数値目標ではなくドラマの文脈を持った目標
-- **ロッカールームの空気の可視化** — リデザインPhase Dで対応
+- **ロッカールームの空気の可視化** — ~~リデザインPhase Dで対応~~ **Phase D実装済み**（雰囲気テキスト5段階+ノイズ揺らぎ）
 
 ### Phase 3: ゲームの個性確立
 
 「女子プロレスのドラマを演出するゲーム」としての独自性確立を目標とする。
 
 - **ストーリーアーク** — 数ヶ月にわたる抗争管理。完結時に大きな収益
-- **練習システムのリデザイン** — コーチ割当はリデザインPhase Bで対応済みの見込み
+- **練習システムのリデザイン** — コーチ割当は **Phase B実装済み**（35名コーチ、格C/B/A、指導力/観察眼、得意スタイル、コーチ特性6種）
 
 ### 拡張候補
 
@@ -124,7 +136,7 @@
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
 | index.html | ~1,320 | HTML+CSS+起動処理 |
-| data.js | ~1,900 | 全データ定数（キャラ98名・コーチ8名・技160種） |
+| data.js | ~2,000 | 全データ定数（キャラ98名・コーチ35名・技160種） |
 | engine.js | ~6,100 | ゲームロジック全体 |
 | app.js | ~3,530 | Audio+Storage+Mission+App統合 |
 | ui-common.js | ~3,200 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
@@ -133,7 +145,7 @@
 | battle-engine.html | 1,734 | ビジュアル観戦モード（iframe） |
 | **合計** | **~20,605** | |
 
-その他: `portrait-map.js`（ルート）、顔画像107枚＋表彰式フレーム7枚（image/）、build-zip.sh
+その他: `portrait-map.js`（ルート）、選手顔画像107枚＋表彰式フレーム7枚（`image/`）、コーチ肖像画35枚（`image/coach/`）、build-zip.sh
 
 ---
 
@@ -179,6 +191,8 @@
 - **通知イベントトースト動的表示時間** — テキスト長に応じて9〜15秒（baseDuration + max(0, textLen-40)*40ms、上限15秒）
 - **大型イベントB1〜B4** — 非興行週に2.5%/週で発生。8週クールダウン。B1:怪我3択、B2:対立3段階+介入+試合、B3:他団体対抗戦3段階+試合、B4:メディア密着3興行追跡。_pendingLargeEvent transientフィールドでadvanceWeekへ連携
 - **努力家特性** — baseGain×1.15乗算を廃止。weeklyVariance下限を0.5→0.75に引き上げ（通常:0.5-1.5、努力家:0.75-1.5）。破天荒(0.0-2.5)との対極構造
+- **コーチ報告（観察眼システム）** — 非興行週に25%/週で発生。担当選手がいるコーチからランダム1人→担当選手からランダム1人。ランク別テキスト: E-D=vague(名前なし), C=named+mood(positive/negative/neutral), B=named+stat(growing/stagnant), A=trainCap接近ヒント(near_cap/far_from_cap)。COACH_OBS_INACCURACY揺らぎ(C:20%,B:20%,A:8%)で方向反転。_pendingCoachReport→currentCoachReport（1週持続インライン表示）
+- **雰囲気テキスト（ロッカールーム可視化）** — lockerRoomMorale±10ノイズ→displayScore→5段階(0-20/21-40/41-60/61-80/81-100)。render時にDate.now()ソルトで意図的非決定性（装飾表示のみ、ゲーム状態に影響なし）。ATMOSPHERE_TEXTS各段階3-4パターン
 - **データベースタブ** — Engine.database.getAllFighters()でdormantPool除外の全選手を収集。3サブタブ構成（全選手/殿堂/団体比較）。モジュールレベル変数（_dbSubTab/_dbSortKey等）で状態管理
 - **drawRadarChart()** — Canvas innerHTML設定後にdocument.getElementByIdで取得して描画。5角形レーダー、単一/デュアルデータセット対応。hexToRgba()ヘルパー併用
 - **選手ポップアップ上半身画像** — getUpperUrl(id)でwebpパス取得。onerrorで従来のface PNGにフォールバック
@@ -264,6 +278,6 @@
 ## メモ
 
 - build-zip.shは要確認: `image/award-frame-*.png`（7枚）と `portrait-map.js` が未包含の可能性あり
-- README.mdの「120名以上のキャラクター」は固有キャラ98名＋スカウト生成＋コーチ8名の合算
+- README.mdの「120名以上のキャラクター」は固有キャラ98名＋スカウト生成＋コーチ35名の合算
 - セッション17のバランスシミュレーション結果: `tests/balance-sim.js` で再現可能
 - 会場ロック判定は `Math.round(G.orgPop)` で比較すること（内部小数化対応）

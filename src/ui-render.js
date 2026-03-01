@@ -638,7 +638,7 @@ function renderWeekScreen() {
         </div>`;
       } else if (sPhase && sPhase.id === 'green') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 黒字転換達成！ この調子で${4 - streak}週間黒字を維持すればクリア！（現在の資金: ${G.funds.toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
+          💡 黒字転換達成！ この調子で${4 - (G.survivalProfitStreak || 0)}週間黒字を維持すればクリア！（現在の資金: ${G.funds.toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
         </div>`;
       }
 
@@ -700,7 +700,6 @@ function renderWeekScreen() {
       <span>Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（×${heat.mult}）</span></span>
       ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
       ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
-      ${getFacilityMaintenance() > 0 ? `<span style="color:var(--gold)">🏢 施設: -${getFacilityMaintenance()}万/週</span>` : ''}
     </div>`;
     html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
 
@@ -958,14 +957,12 @@ function renderRoster() {
   if (staffEl) {
     const hired = getHiredCoaches();
     if (staffCountEl) staffCountEl.textContent = hired.length;
-    if (staffMaxEl) staffMaxEl.textContent = MAX_COACHES;
+    if (staffMaxEl) staffMaxEl.textContent = Engine.coach.getMaxCoaches(G);
 
     const coachEffectShort = (c) => {
-      if (c.specialty === 'mq') return `MQ +${c.mqBonus}`;
-      if (c.specialty === 'pop') return `人気 +${c.popBonus}`;
-      if (c.specialty === 'all') return `全成長 ×${c.growthMult}`;
-      if (c.specialty === 'mental') return `回復+${c.condBonus} 怪我-${Math.round((c.injuryReduce||0.5)*100)}%`;
-      return `${c.specialty.toUpperCase()} ×${c.growthMult}`;
+      const mult = COACH_RANKS[c.teaching] || 1.0;
+      const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
+      return `${c.grade}級 ×${mult} ${styleName}`;
     };
 
     let staffHtml = '';
@@ -1382,17 +1379,14 @@ function renderFinance() {
     html += '<div class="panel-title">週間コスト内訳（推定）</div>';
     html += `<div style="font-size:11px;color:var(--text-dim);padding:4px 0 8px">今月の実績はまだありません</div>`;
     html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-    html += `<div class="finance-row"><span class="f-label">施設維持費</span><span class="f-val expense">-${FIXED_COSTS.facility}万/週</span></div>`;
     html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
     const coachTotal = getCoachSalaryTotal();
     if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-    const facilityMaint = getFacilityMaintenance();
-    if (facilityMaint > 0) html += `<div class="finance-row"><span class="f-label">施設アップグレード維持費</span><span class="f-val expense">-${facilityMaint}万/週</span></div>`;
-    const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal + facilityMaint;
+    const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal;
     html += `<div class="finance-row finance-total"><span>週間支出合計</span><span class="f-val expense">-${totalWeekly}万</span></div>`;
-    const broadcastTotal = getBroadcastIncome() + getFacilityBroadcastBonus();
+    const broadcastTotal = getBroadcastIncome();
     html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
-    html += `<div class="finance-row"><span class="f-label">放映権${getFacilityBroadcastBonus() > 0 ? '（メディア施設込）' : ''}</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
+    html += `<div class="finance-row"><span class="f-label">放映権</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
   }
 
   // Salary detail
@@ -1619,9 +1613,9 @@ function renderScout() {
   document.getElementById('faCount').textContent = G.freeAgents.length;
   document.getElementById('rosterCount').textContent = G.roster.length;
 
-  const discount = getFacilityScoutDiscount();
+  const discount = 0;
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}${discount > 0 ? ` ｜ 🔍スカウト網割引: ${discount}%` : ''}
+    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
   </div>`;
 
   // Free agents — compact card list (click name/portrait to open popup with acquire button)
@@ -1716,7 +1710,7 @@ function renderScoutEvent() {
   const candidates = G.scoutCandidates || [];
   const picks = G.scoutPicks || [];
   const maxPicks = G.scoutMaxPicks || 3;
-  const discount = getFacilityScoutDiscount();
+  const discount = 0;
   const orgPop = G.orgPop || 0;
   const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
 
@@ -1733,7 +1727,7 @@ function renderScoutEvent() {
     <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${G.funds.toLocaleString()}万</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
-    ${discount > 0 ? `<span style="font-size:11px;color:#f39c12">🔍 割引${discount}%</span>` : ''}
+    
   </div>`;
 
   if (candidates.length === 0) {
@@ -1831,38 +1825,24 @@ function renderCoach() {
   const hired = getHiredCoaches();
 
   // Effect label helper
+  const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const coachEffectHtml = (c) => {
-    const SPEC = {
-      pw:{label:'パワー育成',short:'PW',icon:'PW',color:'#e74c3c'},
-      sp:{label:'スピード育成',short:'SP',icon:'SP',color:'#2ecc71'},
-      te:{label:'テクニック育成',short:'TE',icon:'野',color:'#5dade2'},
-      st:{label:'スタミナ育成',short:'ST',icon:'ST',color:'#f1c40f'},
-      mental:{label:'心身ケア',short:'MNT',icon:'MN',color:'#bb8fce'},
-      all:{label:'総合育成',short:'ALL',icon:'ALL',color:'var(--gold)'},
-      mq:{label:'試合品質',short:'MQ',icon:'MQ',color:'#e67e22'},
-      pop:{label:'人気向上',short:'POP',icon:'POP',color:'#8bc4f0'}
-    };
-    const s = SPEC[c.specialty] || SPEC.all;
-    const val = c.specialty === 'mq' ? `MQ +${c.mqBonus}` :
-                c.specialty === 'pop' ? `人気 +${c.popBonus}` :
-                c.specialty === 'all' ? `全成長 ×${c.growthMult}` :
-                c.specialty === 'mental' ? `回復+${c.condBonus} 怪我-${Math.round((c.injuryReduce||0.5)*100)}%` :
-                `${s.short}成長 ×${c.growthMult}`;
-    return `<span class="coach-effect ${c.specialty}" style="margin:0">${s.icon} ${val}</span>`;
+    const mult = COACH_RANKS[c.teaching] || 1.0;
+    const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
+    const color = gradeColors[c.grade] || '#888';
+    return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
+      <span style="font-size:12px;color:var(--gold);font-weight:700">指導×${mult}</span>
+      <span style="font-size:11px;color:var(--text-sub)">${styleName}</span>
+      <span class="coach-trait">${c.trait}</span>`;
   };
 
   // Brief effect explanation
-  const coachBrief = (c) => {
-    if (c.specialty === 'mq') return '担当選手の試合クオリティが上昇';
-    if (c.specialty === 'pop') return '担当選手の人気上昇量が増加';
-    if (c.specialty === 'all') return '担当選手の全ステータス成長が加速';
-    if (c.specialty === 'mental') return '担当選手の回復促進＆怪我予防';
-    const names = {pw:'パワー',sp:'スピード',te:'テクニック',st:'スタミナ'};
-    return `担当選手の${names[c.specialty]}成長が大幅加速`;
-  };
+  const coachBrief = (c) => (COACH_TRAIT_DEFS[c.trait] || {}).desc || '';
 
+  const maxCoaches = Engine.coach.getMaxCoaches(G);
+  const nextSlot = (G.orgPop||0) < 25 ? '次の枠: 知名度25' : (G.orgPop||0) < 50 ? '次の枠: 知名度50' : '全枠解放';
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    雇用中: ${hired.length}/${MAX_COACHES}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週
+    雇用中: ${hired.length}/${maxCoaches}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週 ｜ ${nextSlot}
     <br><span style="font-size:12px;color:var(--text-dim)">※ 選手のアサインは「🏋️ 育成」画面で行えます ｜ コーチ名タップで詳細</span>
   </div>`;
 
@@ -1904,7 +1884,7 @@ function renderCoach() {
     html += '<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">雇用可能なコーチ</div>';
     available.forEach(c => {
       const fee = c.hireFee || COACH_HIRE_FEE;
-      const canHire = G.coaches.length < MAX_COACHES && G.funds >= fee;
+      const canHire = G.coaches.length < maxCoaches && G.funds >= fee;
       html += `<div class="coach-card">
         <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 48)}</div>
         <div class="coach-info">
@@ -1916,7 +1896,7 @@ function renderCoach() {
           <div style="margin-top:5px;font-size:12px;color:var(--text-dim)">雇用費: ${fee}万 ｜ 給与: ${c.salary}万/週</div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
-          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= MAX_COACHES ? '上限' : '資金不足'}</button>
+          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= maxCoaches ? '上限' : '資金不足'}</button>
       </div>`;
     });
   }
@@ -1994,65 +1974,6 @@ function renderSave() {
   el.innerHTML = html;
 }
 
-function renderFacility() {
-  const el = document.getElementById('facilityContent');
-  if (!el) return;
-  let html = '';
-
-  // Active effects summary
-  const effects = [];
-  if (getFacilityLevel('training') > 1) effects.push(`🏋️ 成長+${Math.round((getFacilityGrowthMult()-1)*100)}%`);
-  if (getFacilityLevel('medical') > 1) effects.push(`🏥 怪我-${getFacilityInjuryReduction()}週`);
-  if (getFacilityLevel('media') > 1) effects.push(`📺 プロモ+${getFacilityPromoBonus()}`);
-  if (getFacilityLevel('dormitory') > 1) effects.push(`🏠 回復+${getFacilityConditionBonus()}`);
-  if (getFacilityLevel('scouting') > 1) effects.push(`🔍 契約金-${getFacilityScoutDiscount()}%`);
-
-  if (effects.length > 0) {
-    html += '<div class="facility-summary">';
-    effects.forEach(e => html += `<span class="facility-tag">${e}</span>`);
-    html += '</div>';
-  }
-
-  const totalMaint = getFacilityMaintenance();
-  if (totalMaint > 0) {
-    html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:16px">施設維持費合計: <span style="color:var(--red)">-${totalMaint}万/週</span></div>`;
-  }
-
-  // Facility cards
-  FACILITIES.forEach(f => {
-    const currentLv = getFacilityLevel(f.id);
-    html += `<div class="facility-card">`;
-    html += `<div class="facility-header"><span class="facility-emoji">${f.emoji}</span><span class="facility-name">${f.name}</span><span style="color:var(--gold);font-size:12px;margin-left:auto">Lv.${currentLv}/${f.levels.length}</span></div>`;
-
-    html += '<div class="facility-level-bar">';
-    f.levels.forEach((lv, i) => {
-      const lvNum = i + 1;
-      const isCurrent = lvNum === currentLv;
-      const isNext = lvNum === currentLv + 1;
-      const isPast = lvNum < currentLv;
-      const canAfford = isNext && G.funds >= lv.cost;
-      let cls = 'facility-lv';
-      if (isCurrent) cls += ' current';
-      else if (isNext && canAfford) cls += ' available';
-      else if (!isPast) cls += ' locked';
-      else cls += ' current'; // past levels also gold
-
-      html += `<div class="${cls}" ${isNext && canAfford ? `onclick="showConfirm('${f.name}をLv${lvNum}【${lv.name}】にアップグレードしますか？\\n費用: ${lv.cost}万 / 維持費: +${lv.maint}万/週','アップグレード',()=>upgradeFacility('${f.id}'))"` : ''}>`;
-      html += `<div class="facility-lv-name">${isPast || isCurrent ? '✓ ' : ''}Lv.${lvNum} ${lv.name}</div>`;
-      html += `<div class="facility-lv-desc">${lv.desc}</div>`;
-      if (lvNum > 1 && !isPast && !isCurrent) {
-        html += `<div class="facility-lv-cost">💰 ${lv.cost}万</div>`;
-        html += `<div class="facility-lv-maint">維持費 +${lv.maint}万/週</div>`;
-      }
-      if (isCurrent) html += '<div style="font-size:11px;color:var(--gold);margin-top:2px">◆ 現在</div>';
-      html += '</div>';
-    });
-    html += '</div></div>';
-  });
-
-  html += `<div style="font-size:11px;color:var(--text-dim);margin-top:12px">💡 アップグレードは即時反映されます。維持費は毎週発生します。</div>`;
-  el.innerHTML = html;
-}
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 9D: TRAINING SCREEN (v0.8)                      ║
@@ -2090,14 +2011,7 @@ function getGrowthTendency(charId) {
   const stats = ['pw','sp','te','st','mn'];
   const labels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
   if (!coach) return {text: '均等', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
-  if (coach.specialty === 'all') return {text: '全体強化', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
-  if (['mq','pop','mental'].includes(coach.specialty)) return {text: coach.specialty === 'mq' ? 'MQ強化' : coach.specialty === 'pop' ? 'POP強化' : '心身ケア', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
-  return {
-    text: `${coach.specialty.toUpperCase()}重視`,
-    arrows: stats.map(s => s === coach.specialty
-      ? {stat: s, label: labels[s], cls: 'up2', arrow: '↑↑'}
-      : {stat: s, label: labels[s], cls: 'up1', arrow: '↑'})
-  };
+  return {text: `${coach.grade}級コーチ`, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
 }
 
 function renderTraining() {
@@ -2106,17 +2020,36 @@ function renderTraining() {
   const hired = getHiredCoaches();
   let html = '';
 
+  // === §3 道場ヘッダー + 雰囲気テキスト + §2 コーチ報告 ===
+  html += '<div class="dojo-header">';
+  html += '<img src="image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
+  const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
+  const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
+  html += `<div class="dojo-atmosphere level-${atmo.level}">
+    <span class="dojo-atmosphere-emoji">${atmo.emoji}</span>
+    <span class="dojo-atmosphere-text">「${atmo.text}」</span>
+  </div>`;
+  if (G.currentCoachReport) {
+    const r = G.currentCoachReport;
+    const cObj = ALL_COACHES.find(c => c.id === r.coachId);
+    html += `<div class="coach-report-bubble" onclick="showCoachTooltip(${r.coachId})">
+      <div class="coach-report-avatar">${cObj ? coachPortraitImg(cObj, 40) : ''}</div>
+      <div class="coach-report-body">
+        <div class="coach-report-name">💬 ${r.coachName}</div>
+        <div class="coach-report-text">「${r.reportText}」</div>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+
   // === Coach Summary ===
   if (hired.length > 0) {
     html += '<div class="train-coach-summary">';
     html += '<div style="font-size:11px;font-weight:700;color:#2ecc71;margin-bottom:6px">🎓 コーチ陣</div>';
     hired.forEach(c => {
       const assigned = getCoachAssignees(c.id);
-      const effectLabel = c.specialty === 'all' ? `全ステ×${c.growthMult}` :
-        c.specialty === 'mq' ? `MQ+${c.mqBonus}` :
-        c.specialty === 'pop' ? `人気+${c.popBonus}` :
-        c.specialty === 'mental' ? `回復+${c.condBonus} 怪我-${Math.round((c.injuryReduce||0.5)*100)}%` :
-        `${c.specialty.toUpperCase()}×${c.growthMult}`;
+      const mult = COACH_RANKS[c.teaching] || 1.0;
+      const effectLabel = `${c.grade}級 ×${mult}`;
       html += `<div class="train-coach-row" onclick="event.stopPropagation();showCoachTooltip(${c.id})" style="cursor:pointer">
         <span style="display:inline-flex;align-items:center;gap:6px">${coachPortraitImg(c, 36)} <span style="text-decoration:underline dotted;text-underline-offset:3px">${c.name}</span></span>
         <span style="font-size:12px;color:var(--gold);font-weight:700;margin-left:6px">[${effectLabel}]</span>
@@ -2125,10 +2058,9 @@ function renderTraining() {
       </div>`;
     });
     // Tendency summary
-    const specCoaches = hired.filter(c => ['pw','sp','te','st'].includes(c.specialty));
-    if (specCoaches.length > 0) {
-      const tendencyParts = specCoaches.map(c => `${c.specialty.toUpperCase()}重視`);
-      html += `<div class="train-tendency">→ 育成傾向: <strong>${tendencyParts.join('＋')}</strong></div>`;
+    if (hired.length > 0) {
+      const traitParts = hired.map(c => c.trait);
+      html += `<div class="train-tendency">→ 特性: <strong>${traitParts.join('、')}</strong></div>`;
     }
     html += '</div>';
   } else {
@@ -2224,7 +2156,7 @@ function renderTraining() {
         const aCount = getCoachAssignees(h.id).length;
         const isCurrent = coach && coach.id === h.id;
         const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
-        const effShort = h.specialty === 'all' ? `全×${h.growthMult}` : h.specialty === 'mq' ? `MQ+${h.mqBonus}` : h.specialty === 'pop' ? `人気+${h.popBonus}` : h.specialty === 'mental' ? `回復+${h.condBonus}` : `${h.specialty.toUpperCase()}×${h.growthMult}`;
+        const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
         html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}] (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
       });
       html += '</select>';
@@ -2234,7 +2166,9 @@ function renderTraining() {
       html += '</div>';
       // Show current coach effect hint
       if (coach) {
-        const effDesc = coach.specialty === 'mq' ? `試合MQ +${coach.mqBonus}` : coach.specialty === 'pop' ? `人気上昇 +${coach.popBonus}` : coach.specialty === 'all' ? `全成長 ×${coach.growthMult}` : coach.specialty === 'mental' ? `回復+${coach.condBonus} 怪我-${Math.round((coach.injuryReduce||0.5)*100)}%` : `${coach.specialty.toUpperCase()}成長 ×${coach.growthMult}`;
+        const mult = COACH_RANKS[coach.teaching] || 1.0;
+        const styleName = COACH_STYLE_MAP[coach.style] || 'オールラウンド';
+        const effDesc = `成長×${mult} ${styleName} ${coach.trait}`;
         html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
       }
     } else if (coach) {
@@ -2279,7 +2213,6 @@ function refreshAll() {
   renderLog();
   renderCoach();
   renderTraining();
-  renderFacility();
   renderSave();
   renderRanking();
   renderDatabase();
@@ -2374,7 +2307,7 @@ function _renderDbFighters() {
     else if (_dbSortKey === 'org') { va = a._orgName; vb = b._orgName; }
     else if (_dbSortKey === 'style') { va = a.style || ''; vb = b.style || ''; }
     else if (_dbSortKey === 'age') { va = a.age || 0; vb = b.age || 0; }
-    else if (_dbSortKey === 'pop') { va = Engine.util.dispPop(a.popularity || 0); vb = Engine.util.dispPop(b.popularity || 0); }
+    else if (_dbSortKey === 'pop') { va = a.popularity || 0; vb = b.popularity || 0; }
     else if (_dbSortKey === 'pw') { va = Math.round(a.pw || 0); vb = Math.round(b.pw || 0); }
     else if (_dbSortKey === 'sp') { va = Math.round(a.sp || 0); vb = Math.round(b.sp || 0); }
     else if (_dbSortKey === 'te') { va = Math.round(a.te || 0); vb = Math.round(b.te || 0); }

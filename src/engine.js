@@ -477,7 +477,7 @@ const Engine = {
       return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c), 0);
     },
     calcFixedCosts() {
-      return FIXED_COSTS.facility + FIXED_COSTS.admin;
+      return FIXED_COSTS.admin;
     },
     getSponsorIncome(orgPop) {
       for (const s of SPONSOR_TABLE) if (orgPop >= s.min && orgPop <= s.max) return s.val;
@@ -1245,7 +1245,7 @@ const Engine = {
     }
   },
 
-  // ── Coach System (IMMUTABLE for state changes) ────────────────
+  // ── Coach System (v3.0 redesign: teaching × style × trait) ────────────────
   coach: {
     getHiredCoaches(G) {
       return G.coaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
@@ -1259,13 +1259,11 @@ const Engine = {
       }
       return null;
     },
-    // Returns { coachAssign, success }
     assignToCoach(G, coachId, charId) {
       const current = G.coachAssign[coachId] || [];
       if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: G.coachAssign, success: false };
       return { coachAssign: { ...G.coachAssign, [coachId]: [...current, charId] }, success: true };
     },
-    // Returns new coachAssign
     unassignFromCoach(G, charId) {
       const newAssign = {};
       for (const coachId of Object.keys(G.coachAssign)) {
@@ -1273,104 +1271,178 @@ const Engine = {
       }
       return newAssign;
     },
+    // §1.3+§1.4+§1.5: teaching rank → base mult + style bonus + trait bonus
     getCharGrowthMult(G, charId, stat) {
       const coach = Engine.coach.getCharCoach(G, charId);
       if (!coach) return 1.0;
-      if (coach.specialty === 'all') return coach.growthMult;
-      if (coach.specialty === stat) return coach.growthMult;
-      if (['pw','sp','te','st','mn'].includes(coach.specialty)) return GROWTH_CONFIG.subMult;
-      return 1.0;
+      let mult = COACH_RANKS[coach.teaching] || 1.0;
+      // Style match bonus (+0.05)
+      const char = G.roster.find(c => c.id === charId);
+      if (char) {
+        const charStyle = COACH_STYLE_MATCH[char.style] || 'all';
+        if (coach.style === 'all' || coach.style === charStyle) mult += COACH_STYLE_BONUS;
+      }
+      // Trait: 新人育成 — OVR≤60 で追加倍率
+      const traitDef = COACH_TRAIT_DEFS[coach.trait];
+      if (traitDef && traitDef.growthMult && char && Engine.util.ov(char) <= (traitDef.ovrThreshold || 60)) {
+        mult *= traitDef.growthMult;
+      }
+      return mult;
     },
+    // Stat selection (uniform — STYLE_GROWTH handles direction)
     pickGrowthStat(rng, G, charId) {
       const stats = ['pw','sp','te','st','mn'];
-      const coach = Engine.coach.getCharCoach(G, charId);
-      let weights;
-      if (coach && ['pw','sp','te','st','mn'].includes(coach.specialty)) {
-        weights = stats.map(s => s === coach.specialty ? GROWTH_CONFIG.specialtyWeight : GROWTH_CONFIG.otherWeight);
-      } else {
-        weights = stats.map(() => 0.2);
-      }
       const r = Engine.rng.float(rng);
       let cumulative = 0;
       for (let i = 0; i < stats.length; i++) {
-        cumulative += weights[i];
+        cumulative += 0.2;
         if (r < cumulative) return stats[i];
       }
       return stats[4];
     },
+    // §1.5 引き出し上手: MQ bonus
     getMQBonusForMatch(G, leftId, rightId) {
       let bonus = 0;
       Engine.coach.getHiredCoaches(G).forEach(c => {
-        if (c.specialty !== 'mq' || !c.mqBonus) return;
+        const td = COACH_TRAIT_DEFS[c.trait];
+        if (!td || !td.mqBonus) return;
         const assigned = Engine.coach.getCoachAssignees(G, c.id);
-        if (assigned.includes(leftId) || assigned.includes(rightId)) bonus += c.mqBonus;
+        if (assigned.includes(leftId) || assigned.includes(rightId)) bonus += td.mqBonus;
       });
       return bonus;
     },
-    getPopBonusForChar(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach || coach.specialty !== 'pop') return 0;
-      return coach.popBonus || 0;
-    },
-    // Mental coach: condition recovery bonus per week
+    // Legacy stub (no pop specialty in new system)
+    getPopBonusForChar(G, charId) { return 0; },
+    // §1.5 コンディショニング: condition recovery bonus
     getCondBonus(G, charId) {
       const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach || coach.specialty !== 'mental') return 0;
-      return coach.condBonus || 0;
+      if (!coach) return 0;
+      const td = COACH_TRAIT_DEFS[coach.trait];
+      return (td && td.condDrain) ? Math.abs(td.condDrain) : 0;
     },
-    // Mental coach: injury chance multiplier (0.5 = 50% reduction)
+    // §1.5 コンディショニング: injury chance multiplier
     getInjuryMult(G, charId) {
       const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach || coach.specialty !== 'mental') return 1.0;
-      return 1.0 - (coach.injuryReduce || 0);
+      if (!coach) return 1.0;
+      const td = COACH_TRAIT_DEFS[coach.trait];
+      return (td && td.injuryMult) ? td.injuryMult : 1.0;
+    },
+    // §1.5 実戦主義: match growth bonus
+    getMatchGrowthBonus(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach) return 0;
+      const td = COACH_TRAIT_DEFS[coach.trait];
+      return (td && td.matchGrowthBonus) || 0;
+    },
+    // §1.5 ベテラン調整: decay reduction for OVR≥80
+    getDecayReduction(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach) return 0;
+      const td = COACH_TRAIT_DEFS[coach.trait];
+      if (!td || !td.decayReduction) return 0;
+      const char = G.roster.find(c => c.id === charId);
+      if (!char || Engine.util.ov(char) < (td.ovrThreshold || 80)) return 0;
+      return td.decayReduction;
+    },
+    // §1.5 人脈持ち: scout candidate bonus
+    getScoutBonus(G) {
+      let bonus = 0;
+      Engine.coach.getHiredCoaches(G).forEach(c => {
+        const td = COACH_TRAIT_DEFS[c.trait];
+        if (td && td.scoutBonus) bonus += td.scoutBonus;
+      });
+      return bonus;
+    },
+    // §1.6 orgPop-linked coach slots
+    getMaxCoaches(G) {
+      const orgPop = G.orgPop || 0;
+      for (let i = COACH_SLOT_THRESHOLDS.length - 1; i >= 0; i--) {
+        if (orgPop >= COACH_SLOT_THRESHOLDS[i].minOrgPop) return COACH_SLOT_THRESHOLDS[i].slots;
+      }
+      return 1;
+    },
+    // §1.8 Seasonal pool generation (5-8 candidates)
+    generateSeasonalPool(rng, G) {
+      const hired = new Set(G.coaches || []);
+      const orgPop = G.orgPop || 0;
+      const eligible = ALL_COACHES.filter(c => !hired.has(c.id) && orgPop >= (c.minOrgPop || 0));
+      const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+      const count = COACH_POOL_CFG.candidatesMin + Engine.rng.int(rng, 0, COACH_POOL_CFG.candidatesMax - COACH_POOL_CFG.candidatesMin);
+      return shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
+    },
+    // §2 観察眼: コーチ報告生成（25%/週、非興行週）
+    generateReport(rng, G) {
+      if (Engine.util.isShowWeek(G.week) || G.offSeason) return null;
+      if (Engine.rng.float(rng) > 0.25) return null;
+      const hired = Engine.coach.getHiredCoaches(G);
+      const withAssignees = hired.filter(c => (Engine.coach.getCoachAssignees(G, c.id)).length > 0);
+      if (withAssignees.length === 0) return null;
+      const coach = withAssignees[Engine.rng.int(rng, 0, withAssignees.length - 1)];
+      const assignees = Engine.coach.getCoachAssignees(G, coach.id);
+      const fighterId = assignees[Engine.rng.int(rng, 0, assignees.length - 1)];
+      const fighter = G.roster.find(c => c.id === fighterId);
+      if (!fighter) return null;
+      const obsRank = coach.observation || 'D';
+      const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
+      const isInaccurate = inaccuracy > 0 && Engine.rng.float(rng) < inaccuracy;
+      const reportText = Engine.coach._buildReportText(rng, obsRank, fighter, isInaccurate);
+      return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji,
+               hasPortrait: !!coach.hasPortrait, observation: obsRank,
+               fighterId: fighter.id, fighterName: fighter.name, reportText, isInaccurate };
+    },
+    _buildReportText(rng, obsRank, fighter, isInaccurate) {
+      const name = fighter.name;
+      const stats = ['pw', 'sp', 'te', 'st'];
+      const randomStat = stats[Engine.rng.int(rng, 0, stats.length - 1)];
+      const statLabel = STAT_LABELS_JP[randomStat] || randomStat;
+      // E-D: 漠然（名前なし）
+      if (obsRank === 'E' || obsRank === 'D') {
+        const pool = COACH_REPORT_TEXTS.vague;
+        return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+      }
+      // C: 名前+ムード
+      if (obsRank === 'C') {
+        const sg = fighter.seasonGrowth || {};
+        const growing = Object.values(sg).some(v => v > 1);
+        let mood;
+        if (isInaccurate) { mood = growing ? 'named_negative' : 'named_positive'; }
+        else { mood = growing ? 'named_positive' : (fighter.condition < 40 || fighter.slump) ? 'named_negative' : 'named_neutral'; }
+        const pool = COACH_REPORT_TEXTS[mood];
+        return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name);
+      }
+      // B: 名前+具体ステータス
+      if (obsRank === 'B') {
+        const sg = (fighter.seasonGrowth && fighter.seasonGrowth[randomStat]) || 0;
+        let poolKey;
+        if (isInaccurate) { poolKey = sg > 0.5 ? 'stat_stagnant' : 'stat_growing'; }
+        else { poolKey = sg > 0.5 ? 'stat_growing' : 'stat_stagnant'; }
+        const pool = COACH_REPORT_TEXTS[poolKey];
+        return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
+      }
+      // A: 天井接近ヒント
+      const current = fighter[randomStat] || 0;
+      const cap = (fighter.trainCap && fighter.trainCap[randomStat]) || (fighter.pot && fighter.pot[randomStat]) || current;
+      const pct = cap > 0 ? current / cap : 1;
+      let poolKey;
+      if (isInaccurate) { poolKey = pct >= 0.85 ? 'far_from_cap' : 'near_cap'; }
+      else { poolKey = pct >= 0.85 ? 'near_cap' : 'far_from_cap'; }
+      const pool = COACH_REPORT_TEXTS[poolKey];
+      return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
     },
     getSalaryTotal(G) {
       return Engine.coach.getHiredCoaches(G).reduce((s, c) => s + c.salary, 0);
     }
   },
 
-  // ── Facility System (DOM-free) ─────────────────────────
-  facility: {
-    getLevel(G, facilityId) {
-      return (G.facilities && G.facilities[facilityId]) || 1;
-    },
-    getMaintenance(G) {
-      if (!G.facilities) return 0;
-      let total = 0;
-      FACILITIES.forEach(f => {
-        const lv = Engine.facility.getLevel(G, f.id);
-        total += f.levels[lv - 1].maint;
-      });
-      return total;
-    },
-    getGrowthMult(G) {
-      const lv = Engine.facility.getLevel(G, 'training');
-      return lv === 3 ? 1.4 : lv === 2 ? 1.2 : 1.0;
-    },
-    getInjuryReduction(G) {
-      const lv = Engine.facility.getLevel(G, 'medical');
-      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
-    },
-    getMedicalRecovery(G) {
-      return Engine.facility.getLevel(G, 'medical') >= 3 ? 5 : 0;
-    },
-    getPromoBonus(G) {
-      const lv = Engine.facility.getLevel(G, 'media');
-      return lv === 3 ? 2 : lv === 2 ? 1 : 0;
-    },
-    getBroadcastBonus(G) {
-      return Engine.facility.getLevel(G, 'media') >= 3 ? 50 : 0;
-    },
-    getConditionBonus(G) {
-      const lv = Engine.facility.getLevel(G, 'dormitory');
-      return lv === 3 ? 6 : lv === 2 ? 3 : 0;
-    },
-    getRestBonus(G) {
-      return Engine.facility.getLevel(G, 'dormitory') >= 3 ? 5 : 0;
-    },
-    getScoutDiscount(G) {
-      const lv = Engine.facility.getLevel(G, 'scouting');
-      return lv === 3 ? 25 : lv === 2 ? 15 : 0;
+  // ── §3 Locker Room Visualization ──────────────────────
+  lockerRoom: {
+    /** §3.3: 雰囲気テキスト取得（render時呼び出し、ノイズ付き） */
+    getAtmosphereText(rng, morale) {
+      const noise = Engine.rng.int(rng, -10, 10);
+      const ds = Engine.util.clamp(morale + noise, 0, 100);
+      const level = ds <= 20 ? 0 : ds <= 40 ? 1 : ds <= 60 ? 2 : ds <= 80 ? 3 : 4;
+      const pool = ATMOSPHERE_TEXTS[level];
+      return { ...pool[Engine.rng.int(rng, 0, pool.length - 1)], level: level + 1 };
     }
   },
 
@@ -1401,10 +1473,9 @@ const Engine = {
       if (ageMul <= 0) return 0;
 
       const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
-      const facilityMul = Engine.facility.getGrowthMult(G);
       const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
 
-      let baseGain = styleGain * ageMul * coachMul * facilityMul * convFactor;
+      let baseGain = styleGain * ageMul * coachMul * convFactor;
       // 努力家: weeklyVariance 下限引き上げに移行（baseGain乗算は廃止）
       // ムードメーカー: 団体にいるだけで全体の練習効率+5%（自分含む）
       if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) baseGain *= 1.05;
@@ -1426,8 +1497,8 @@ const Engine = {
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
 
-    // Apply wear-based stat decay (v1.3-1 §3) — replaces age-based decay
-    applyDecay(rng, fighter) {
+    // Apply wear-based stat decay (v1.3-1 §3) + §1.5 ベテラン調整トレイト
+    applyDecay(rng, fighter, decayReduction = 0) {
       const wear = fighter.wear || 0;
       // wear 0-19: 全盛期（減少なし）  wear 80+: 確定引退（stat変更なし、checkRetirementで処理）
       if (wear < 20 || wear >= 80) return fighter;
@@ -1438,7 +1509,8 @@ const Engine = {
       let f = { ...fighter };
       const notion = f.notionValue || { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn };
       ['pw', 'sp', 'te', 'st', 'mn'].forEach(s => {
-        const loss = decayMin + Math.round(Engine.rng.float(rng) * (decayMax - decayMin));
+        const rawLoss = decayMin + Math.round(Engine.rng.float(rng) * (decayMax - decayMin));
+        const loss = Math.max(0, rawLoss - decayReduction);
         const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
         f[s] = Math.max(floor, f[s] - loss);
       });
@@ -1470,7 +1542,7 @@ const Engine = {
           nc = { ...nc, wear: (nc.wear || 0) + finalWear };
         }
         const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
-        nc = Engine.growth.applyDecay(rng, nc);
+        nc = Engine.growth.applyDecay(rng, nc, Engine.coach.getDecayReduction(G, nc.id));
         const changes = {};
         ['pw','sp','te','st','mn'].forEach(s => {
           const decayDelta = nc[s] - beforeDecay[s];
@@ -2202,7 +2274,7 @@ const Engine = {
         else if (heatScore < 0) heatScore = Math.round(Math.min(0, heatScore + 0.3) * 10) / 10;
       }
 
-      const dormBonus = Engine.facility.getConditionBonus(G);
+      const dormBonus = 0; // 施設廃止: コンディションボーナスはコーチ特性(コンディショニング)で個別付与
       const stateForCalc = { ...G, roster, heatScore };
 
       // v1.5s25b: マイルストーンバフ参照用（ループ外で1回取得）
@@ -2280,7 +2352,7 @@ const Engine = {
 
         if (nc.injury) {
           const indomitableBonus = Traits.has(nc, '不屈') ? 3 : 0;
-          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + Engine.facility.getMedicalRecovery(G) + indomitableBonus), _weekAction: '療養', intensive: false };
+          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false };
         }
 
         if (nc.intensive) {
@@ -2331,7 +2403,7 @@ const Engine = {
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
           // v1.0b: Apply diminishing returns + promo pop cap
-          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + Engine.coach.getPopBonusForChar(stateForCalc, nc.id) + Engine.facility.getPromoBonus(G) + promoBoostAmount;
+          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + promoBoostAmount;
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
           nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
@@ -2339,7 +2411,7 @@ const Engine = {
           nc.intensiveWeeks = 0;
         } else {
           const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
-          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + Engine.facility.getRestBonus(G) + mentalBonus + restIronBonus);
+          nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + mentalBonus + restIronBonus);
           nc.intensiveWeeks = 0;
         }
         nc._weekAction = action;
@@ -2426,6 +2498,13 @@ const Engine = {
         pendingTeamSpirit = { type: 'team_spirit', fighter: target.id, name: target.name, ...tmpl };
       }
 
+      // §2 観察眼: コーチ報告生成（非興行週、25%/週）
+      let pendingCoachReport = null;
+      if (!Engine.util.isShowWeek(G.week) && !G.offSeason && (G.coaches || []).length > 0) {
+        const reportRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0AC));
+        pendingCoachReport = Engine.coach.generateReport(reportRng, { ...G, roster });
+      }
+
       // v1.8: pending growth events を transient フィールドとして返す
       const pendingGrowthEvents = [
         ...pendingSlumpEvents.map(e => ({ ...e })),
@@ -2438,6 +2517,7 @@ const Engine = {
       if (pendingTeamSpirit) result._pendingTeamSpirit = pendingTeamSpirit;
       if (pendingChoiceEvent) result._pendingChoiceEvent = pendingChoiceEvent;
       if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
+      if (pendingCoachReport) result._pendingCoachReport = pendingCoachReport;
       return result;
     },
 
@@ -2461,20 +2541,13 @@ const Engine = {
         details.push({ label: `コーチ給与（${G.coaches.length}名）`, val: -coachSalary, type: 'expense' });
       }
 
-      const facilityMaint = Engine.facility.getMaintenance(G);
-      if (facilityMaint > 0) {
-        totalExpense += facilityMaint;
-        details.push({ label: '施設アップグレード維持費', val: -facilityMaint, type: 'expense' });
-      }
-
       const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
       totalIncome += sponsor;
       if (sponsor > 0) details.push({ label: 'スポンサー収入', val: sponsor, type: 'income' });
 
-      const broadcastBonus = Engine.facility.getBroadcastBonus(G);
-      const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+      const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
       totalIncome += broadcast;
-      if (broadcast > 0) details.push({ label: `放映権収入${broadcastBonus > 0 ? '（メディア施設+' + broadcastBonus + '万）' : ''}`, val: broadcast, type: 'income' });
+      if (broadcast > 0) details.push({ label: '放映権収入', val: broadcast, type: 'income' });
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給）
       const subsidy = Engine.economy.getSubsidy(G.orgPop);
@@ -2560,6 +2633,8 @@ const Engine = {
     if (manage._pendingNotifEvent) s = { ...s, _pendingNotifEvent: manage._pendingNotifEvent };
     if (manage._pendingChoiceEvent) s = { ...s, _pendingChoiceEvent: manage._pendingChoiceEvent };
     if (manage._pendingLargeEvent) s = { ...s, _pendingLargeEvent: manage._pendingLargeEvent };
+    if (manage._pendingTeamSpirit) s = { ...s, _pendingTeamSpirit: manage._pendingTeamSpirit };
+    if (manage._pendingCoachReport) s = { ...s, _pendingCoachReport: manage._pendingCoachReport };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // v1.0b: Apply occupancy heat delta
@@ -2865,11 +2940,10 @@ const Engine = {
 
     // Injuries (immutable) — separate RNG per fighter to avoid correlation
     const injuryResults = [];
-    const injuryReduction = Engine.facility.getInjuryReduction(s);
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
+      const li = Engine.injury.check(injRngL, lc, r, 0, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
       if (li) {
         // v1.3-1: §4.2/§4.3 怪我引退チェック
         if (li.retireType) {
@@ -2888,7 +2962,7 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
+      const ri = Engine.injury.check(injRngR, rc, r, 0, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
       if (ri) {
         // v1.3-1: §4.2/§4.3 怪我引退チェック
         if (ri.retireType) {
@@ -2929,7 +3003,8 @@ const Engine = {
         const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
         const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0; // MQ65以上を接戦とみなす
         const resultBonus = won ? 0.0 : 0.2;
-        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
+        const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
 
         // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
         if (fighter.growthPenalty) {
@@ -3702,7 +3777,8 @@ const Engine = {
     /** Generate a scout report: list of candidates (scout-spec §2) */
     generateScoutReport(rng, state, eventType) {
       const cfg = eventType === 'midseason' ? SCOUT_EVENT_CFG.midseason : SCOUT_EVENT_CFG.offseason;
-      const count = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]);
+      const coachScoutBonus = Engine.coach.getScoutBonus(state);
+      const count = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]) + coachScoutBonus;
       const candidates = [];
 
       // ALL candidates from pool (existing ALL_CHARS) — no generated chars
@@ -4150,6 +4226,9 @@ const Engine = {
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+        // v3.0: コーチプールのシーズンローテーション
+        const coachPoolRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0AC));
+        s = { ...s, availableCoaches: Engine.coach.generateSeasonalPool(coachPoolRng, s) };
         // Update rankings
         s.rankings = Engine.ranking.updateRankings(s);
         const pRank = Engine.ranking.getPlayerRank(s.rankings);
@@ -4469,9 +4548,8 @@ const Engine = {
       titleEstablished: false, // v1.0: 団体王座は条件達成後に解禁
       rivalries: {},
       coaches: [],
-      availableCoaches: ALL_COACHES.map(c => c.id),
+      availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [] }),
       seasonGrowth: {},
-      facilities: { training: 1, medical: 1, media: 1, dormitory: 1, scouting: 1 },
       coachAssign: {},
       // v0.9: Rival system
       aiOrgs,
@@ -6425,7 +6503,7 @@ Engine.database = {
     RIVAL_ORGS.forEach(org => {
       const aiRoster = state.aiOrgs?.[org.id]?.roster || [];
       aiRoster.forEach(f => {
-        result.push({ ...f, _orgId: org.id, _orgName: org.name || org.id, _orgTier: org.tier });
+        result.push({ ...f, _orgId: org.id, _orgName: state.rivalOrgNames?.[org.id] || org.name || org.id, _orgTier: org.tier });
       });
     });
 

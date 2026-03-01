@@ -822,9 +822,9 @@ const MISSIONS = [
   { id:'mq40',          phase:0, icon:'★', name:'MQ40以上の好試合',
     desc:'マッチクオリティ40以上を出そう。相性の良いカードを組むのがコツ！',
     screen:'show', check: G => (G.seasonStats?.bestMQ || 0) >= 40 || G.seasonHistory?.some(s => s.bestMQ >= 40) },
-  { id:'upgrade_fac',   phase:0, icon:'施', name:'施設を強化しよう',
-    desc:'施設画面でトレーニング施設などをLv2にアップグレード！',
-    screen:'facility', check: G => G.facilities && Object.values(G.facilities).some(v => v >= 2) },
+  { id:'assign_coach',  phase:0, icon:'🎓', name:'コーチに選手を任せよう',
+    desc:'コーチを雇ったら、育成画面で選手をアサインしましょう！',
+    screen:'training', check: G => Object.values(G.coachAssign || {}).flat().length >= 1 },
 
   // ── GROWTH: 成長期 ──
   { id:'crown_champ',   phase:1, icon:'王', name:'団体王座を認定',
@@ -907,12 +907,10 @@ const Survival = {
     const salary = Engine.economy.calcWeeklySalary(G.roster);
     const fixed = Engine.economy.calcFixedCosts();
     const coachSalary = Engine.coach.getSalaryTotal(G);
-    const facilityMaint = Engine.facility.getMaintenance(G);
-    const totalExpense = salary + fixed + coachSalary + facilityMaint;
+    const totalExpense = salary + fixed + coachSalary;
 
     const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
-    const broadcastBonus = Engine.facility.getBroadcastBonus(G);
-    const broadcast = Engine.economy.getBroadcastIncome(G.orgPop) + broadcastBonus;
+    const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
     const subsidy = Engine.economy.getSubsidy(G.orgPop);
     const totalBaseIncome = sponsor + broadcast + subsidy;
 
@@ -1091,8 +1089,11 @@ const Storage = {
       if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };
       if (!G.seasonGrowth) G = { ...G, seasonGrowth: {} };
 
-      // v0.7 backward compat: facilities
-      if (!G.facilities) G = { ...G, facilities: {training:1, medical:1, media:1, dormitory:1, scouting:1} };
+      // v3.0: 旧セーブの全ID列挙 availableCoaches → シーズンプールに変換
+      if (G.availableCoaches && G.availableCoaches.length > COACH_POOL_CFG.candidatesMax + 5) {
+        const poolRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, 0xC0AC));
+        G = { ...G, availableCoaches: Engine.coach.generateSeasonalPool(poolRng, G) };
+      }
 
       // v0.8 backward compat: coach assignments
       if (!G.coachAssign) {
@@ -1109,6 +1110,29 @@ const Storage = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0, 909));
         const aiResult = Engine.rival.initAIOrgs(rng);
         G = { ...G, aiOrgs: aiResult.aiOrgs, rivalOrgNames: aiResult.rivalOrgNames };
+      }
+      // データ整合性: AI団体選手がfreeAgentsに混入している場合は正しい団体ロスターへ移動
+      if (G.aiOrgs && G.freeAgents) {
+        const aiOrgIds = new Set(RIVAL_ORGS.map(o => o.id));
+        const misplaced = G.freeAgents.filter(f => f.orgId && aiOrgIds.has(f.orgId));
+        if (misplaced.length > 0) {
+          let newFreeAgents = G.freeAgents.filter(f => !f.orgId || !aiOrgIds.has(f.orgId));
+          const newAiOrgs = {};
+          Object.keys(G.aiOrgs).forEach(orgId => { newAiOrgs[orgId] = { ...G.aiOrgs[orgId], roster: [...G.aiOrgs[orgId].roster] }; });
+          misplaced.forEach(f => {
+            const org = newAiOrgs[f.orgId];
+            if (org && !org.roster.find(r => r.id === f.id)) org.roster.push(f);
+          });
+          G = { ...G, freeAgents: newFreeAgents, aiOrgs: newAiOrgs };
+        }
+      }
+      // データ整合性: プレイヤーロスター選手がfreeAgentsに重複している場合は除去
+      if (G.roster && G.freeAgents) {
+        const rosterIds = new Set(G.roster.map(c => c.id));
+        const dupFA = G.freeAgents.filter(f => rosterIds.has(f.id));
+        if (dupFA.length > 0) {
+          G = { ...G, freeAgents: G.freeAgents.filter(f => !rosterIds.has(f.id)) };
+        }
       }
       // Restore org names from saved state
       Engine.rival.applyOrgNames(G.rivalOrgNames);
@@ -1553,8 +1577,6 @@ function getWorldChampion() { return Engine.title.getWorldChampion(G); }
 function getHiredCoaches() { return Engine.coach.getHiredCoaches(G); }
 function getCharCoach(charId) { return Engine.coach.getCharCoach(G, charId); }
 function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
-function getFacilityLevel(id) { return Engine.facility.getLevel(G, id); }
-function getFacilityMaintenance() { return Engine.facility.getMaintenance(G); }
 function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
 
 // ── App Commands (G mutation ONLY via G = newState) ──
@@ -1728,8 +1750,7 @@ const App = {
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
-    const discount = Engine.facility.getScoutDiscount(G);
-    const finalCost = Engine.scout.getSigningCost(fighter, discount);
+    const finalCost = Engine.scout.getSigningCost(fighter, 0);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     Audio.play('stamp');
     // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
@@ -1777,14 +1798,13 @@ const App = {
     if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
-    const discount = Engine.facility.getScoutDiscount(G);
-    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    const baseCost = Engine.scout.getSigningCost(cand, 0);
     if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
 
     if (cand._hasCompetition) {
       // Show competition resolution modal
       G = { ...G, scoutPendingPick: candidateId };
-      renderScoutCompetitionModal(cand, baseCost, discount);
+      renderScoutCompetitionModal(cand, baseCost, 0);
     } else {
       // No competition: direct sign
       this.scoutEventResolve(candidateId, 'direct');
@@ -1796,8 +1816,7 @@ const App = {
     if (!G.scoutCandidates) return;
     const cand = G.scoutCandidates.find(c => c.id === candidateId);
     if (!cand) return;
-    const discount = Engine.facility.getScoutDiscount(G);
-    const baseCost = Engine.scout.getSigningCost(cand, discount);
+    const baseCost = Engine.scout.getSigningCost(cand, 0);
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, candidateId));
 
     let result;
@@ -1805,9 +1824,8 @@ const App = {
       result = { result: 'success', cost: baseCost };
     } else {
       result = Engine.scout.resolveCompetition(rng, cand, choice);
-      // Apply facility discount to competition cost too
       if (result.cost > 0) {
-        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, discount);
+        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, 0);
       }
     }
 
@@ -1975,7 +1993,8 @@ const App = {
   hireCoach(coachId) {
     const coach = ALL_COACHES.find(c => c.id === coachId);
     if (!coach) return;
-    if (G.coaches.length >= MAX_COACHES) { Audio.play('error'); alert(`コーチは最大${MAX_COACHES}名まで`); return; }
+    const maxCoaches = Engine.coach.getMaxCoaches(G);
+    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（知名度上昇で枠増加）`); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
     if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
     G = {
@@ -1999,7 +2018,6 @@ const App = {
     G = {
       ...G,
       coaches: G.coaches.filter(id => id !== coachId),
-      availableCoaches: [...G.availableCoaches, coachId],
       coachAssign: newAssign,
       gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
     };
@@ -2021,24 +2039,6 @@ const App = {
   // Unassign character from coach
   unassignFromCoach(charId) {
     G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) };
-    refreshAll();
-  },
-
-  // Upgrade facility
-  upgradeFacility(facilityId) {
-    const fac = FACILITIES.find(f => f.id === facilityId);
-    if (!fac) return;
-    const curLv = Engine.facility.getLevel(G, facilityId);
-    if (curLv >= fac.levels.length) { Audio.play('error'); alert('最大レベルです'); return; }
-    const nextLvData = fac.levels[curLv];
-    if (G.funds < nextLvData.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
-    Audio.play('powerup');
-    G = {
-      ...G,
-      funds: G.funds - nextLvData.cost,
-      facilities: { ...G.facilities, [facilityId]: curLv + 1 },
-      gameLog: [...G.gameLog, `🏢 ${fac.name}をLv${curLv + 1}にアップグレード！（費用: ${nextLvData.cost}万）`]
-    };
     refreshAll();
   },
 
@@ -2469,18 +2469,17 @@ const App = {
 
     // Injuries — separate RNG per fighter to avoid correlation
     const injuryResults = [];
-    const injuryReduction = Engine.facility.getInjuryReduction(s);
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-        const li = Engine.injury.check(injRngL, lc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.left.id));
+        const li = Engine.injury.check(injRngL, lc, r, 0, Engine.coach.getInjuryMult(s, r.left.id));
         if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-        const ri = Engine.injury.check(injRngR, rc, r, injuryReduction, Engine.coach.getInjuryMult(s, r.right.id));
+        const ri = Engine.injury.check(injRngR, rc, r, 0, Engine.coach.getInjuryMult(s, r.right.id));
         if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
       }
     });
@@ -2942,6 +2941,20 @@ const App = {
     if (pendingTeamSpirit) {
       const spiritDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 350;
       setTimeout(() => showNotifEventToast(pendingTeamSpirit), spiritDelay);
+    }
+
+    // §2 観察眼: コーチ報告（育成画面にインライン表示用に保持）
+    if (G.currentCoachReport) {
+      const { currentCoachReport: _, ...cleanPrev } = G;
+      G = cleanPrev;
+    }
+    const pendingCoachReport = G._pendingCoachReport || null;
+    if (G._pendingCoachReport) {
+      const { _pendingCoachReport: _, ...cleanCr } = G;
+      G = cleanCr;
+    }
+    if (pendingCoachReport) {
+      G = { ...G, currentCoachReport: pendingCoachReport };
     }
 
     // v2.0: 週次選択型イベント表示（S/E型 モーダル）

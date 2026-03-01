@@ -391,9 +391,16 @@ function getUpperUrl(id) { return PORTRAIT[id] ? `../image/upper/upper_${PORTRAI
 // Coach portrait mapping (add image files as face_coach_{key}.png)
 const COACH_PORTRAIT = {
   1:'coach_onizuka', 2:'coach_asuka', 3:'coach_tsurumi', 4:'coach_iwata',
-  5:'coach_sawamura', 6:'coach_asahi', 7:'coach_kurebayashi', 8:'coach_shirakawa'
+  5:'coach_sawamura', 6:'coach_asahi', 7:'coach_kurebayashi', 8:'coach_shirakawa',
+  9:'coach_omori', 10:'coach_miyamoto', 11:'coach_makabe', 12:'coach_hasegawa',
+  13:'coach_kuroda', 14:'coach_tsuchiya', 15:'coach_hayashi', 16:'coach_morita',
+  17:'coach_shinohara', 18:'coach_akagi', 19:'coach_nishioka', 20:'coach_fujiwara',
+  21:'coach_kumagai', 22:'coach_ando', 23:'coach_horiuchi', 24:'coach_nakamura',
+  25:'coach_miyazawa', 26:'coach_carlos', 27:'coach_okawara', 28:'coach_hata',
+  29:'coach_chin', 30:'coach_saejima',
+  31:'coach_kanzaki', 32:'coach_ganryu', 33:'coach_hazuki', 34:'coach_midou', 35:'coach_kisaragi'
 };
-function getCoachPortraitUrl(id) { return COACH_PORTRAIT[id] ? `../image/face_${COACH_PORTRAIT[id]}.png` : ''; }
+function getCoachPortraitUrl(id) { return COACH_PORTRAIT[id] ? `../image/coach/face_${COACH_PORTRAIT[id]}.png` : ''; }
 function coachPortraitImg(coach, size = 48) {
   const url = getCoachPortraitUrl(coach.id);
   if (url) {
@@ -621,7 +628,7 @@ const SPONSOR_TABLE = [
 const BROADCAST_TABLE = [
   {min:70,max:84,val:50},{min:85,max:94,val:100},{min:95,max:100,val:200}
 ];
-const FIXED_COSTS = {facility:50, admin:30};
+const FIXED_COSTS = {admin:30};
 // v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
 const SUBSIDY_TABLE = [
   {max:19, val:80},  // orgPop 0-19: 80万/週
@@ -681,6 +688,20 @@ const COACH_RANKS = { E:1.05, D:1.08, C:1.12, B:1.18, A:1.25 };
 
 // 得意スタイル表示名
 const COACH_STYLE_MAP = { pw:'パワー型', sp:'スピード型', te:'テクニック型', all:'オールラウンド' };
+
+// キャラスタイル→コーチスタイル変換（スタイルマッチ判定用）
+const COACH_STYLE_MATCH = { Grappler:'pw', Striker:'pw', Submission:'te', Speed:'sp', Allround:'all', Brawler:'pw' };
+const COACH_STYLE_BONUS = 0.05; // スタイル一致時の指導力ボーナス
+
+// コーチ枠（orgPop連動）
+const COACH_SLOT_THRESHOLDS = [
+  { slots:1, minOrgPop:0 },
+  { slots:2, minOrgPop:25 },
+  { slots:3, minOrgPop:50 }
+];
+
+// シーズンプール設定
+const COACH_POOL_CFG = { candidatesMin:5, candidatesMax:8 };
 
 // コーチ特性定義 🔧
 const COACH_TRAIT_DEFS = {
@@ -746,147 +767,173 @@ const ALL_COACHES = [
    profile:'元芸能事務所マネージャーで、SNSマーケティングとメディア露出戦略のプロ。選手の魅力を引き出すブランディングが得意。行動力があり、常に新しいプロモーション企画を提案する。'},
 
   // ── 新規Cグレード（12人）────────────────────────────────────────────────
-  {id:9, name:'三上ジム長',          emoji:'🥊', hasPortrait:false,
+  {id:9, name:'大森 健吾',        emoji:'🥊', hasPortrait:false,
    grade:'C', teaching:'D', observation:'E', style:'pw', trait:'コンディショニング',
    salary:6, hireFee:35, minOrgPop:0,
-   desc:'下町のベテラントレーナー。荒削りだが選手のタフさを引き出す。',
-   profile:'元アマチュアボクサー。パワー主体の荒削りな指導で根性論を振りかざすが、意外と弟子想い。体力の底上げには定評がある。'},
-  {id:10, name:'村田ルーキーコーチ', emoji:'🌱', hasPortrait:false,
+   age:32, gender:'男', origin:'埼玉',
+   desc:'元ボディビルダーのトレーナー。地道にフィジカルの土台を作る。',
+   profile:'元アマチュアボディビル入賞者。筋肉づくりの知識は確かだが、プロレス指導の経験はまだ浅い。地道なフィジカルトレーニングで選手の土台をコツコツ作り上げる。口下手だが、黙々と付き合ってくれる信頼感がある。'},
+  {id:10, name:'宮本 花菜',   emoji:'🌱', hasPortrait:false,
    grade:'C', teaching:'E', observation:'D', style:'sp', trait:'新人育成',
    salary:5, hireFee:30, minOrgPop:0,
-   desc:'新人発掘の若手コーチ。未来の逸材を地道に育てる。',
-   profile:'元女子アマレスの有望株で怪我で引退。若手の可能性を見抜く目を持つ。指導力はまだ発展途上だが、熱意で補っている。'},
-  {id:11, name:'東山テクニシャン',   emoji:'🤼', hasPortrait:false,
+   age:26, gender:'女', origin:'神奈川',
+   desc:'元体操選手の若手コーチ。新人の素質を見抜く直感が鋭い。',
+   profile:'体操競技で培った身体能力と空間認識力を持つ若きコーチ。新人の素質を見抜く直感に優れ、荒削りな原石を見つけ出すのが得意。指導経験はまだ浅いが、選手と同じ目線で成長を後押しする姿勢が持ち味。'},
+  {id:11, name:'真壁 龍太',     emoji:'🤼', hasPortrait:false,
    grade:'C', teaching:'C', observation:'D', style:'te', trait:'実戦主義',
    salary:9, hireFee:55, minOrgPop:0,
-   desc:'テクニックを実戦レベルに落とし込む指導者。',
-   profile:'高校体育教師出身。丁寧な動作指導を得意とするが、試合での即興性を重視した実戦的なカリキュラムが特徴。'},
-  {id:12, name:'春日部コンディショナー', emoji:'🩺', hasPortrait:false,
+   age:37, gender:'男', origin:'沖縄',
+   desc:'元MMA選手。実戦で使えるテクニックだけを叩き込む。',
+   profile:'MMAの実戦経験から関節技やグラウンドテクニックに精通。「試合で使えない技術は教えない」がモットーの実戦派。感情を表に出さないクールな指導スタイルだが、試合前のアドバイスは的確で頼りになる。'},
+  {id:12, name:'長谷川 美咲', emoji:'🩺', hasPortrait:false,
    grade:'C', teaching:'D', observation:'C', style:'all', trait:'コンディショニング',
    salary:7, hireFee:45, minOrgPop:0,
-   desc:'リカバリーの専門家。選手のコンディション維持に特化。',
-   profile:'理学療法士の資格を持つ。怪我予防と体調管理に特化した独自プログラムで選手の長期稼働を支える。'},
-  {id:13, name:'松本スカウター',     emoji:'🔭', hasPortrait:false,
+   age:33, gender:'女', origin:'静岡',
+   desc:'理学療法士。選手の故障予防とリカバリーに特化。',
+   profile:'スポーツリハビリの専門家として、選手の故障予防と回復を支える。派手さはないが、コンディション管理において堅実な仕事をする。「壊れてからでは遅い」が口癖で、日々の体調チェックを欠かさない。'},
+  {id:13, name:'黒田 修平',       emoji:'🔭', hasPortrait:false,
    grade:'C', teaching:'E', observation:'C', style:'all', trait:'人脈持ち',
    salary:7, hireFee:40, minOrgPop:0,
-   desc:'全国ネットワークを持つ情報収集のプロ。',
-   profile:'元レスリング系メディアライター。全国のジムや練習場に広い人脈を持ち、逸材発掘の情報をもたらす。'},
-  {id:14, name:'内田ベテランコーチ', emoji:'👴', hasPortrait:false,
+   age:44, gender:'男', origin:'広島',
+   desc:'元スポーツ紙記者。業界全体に張り巡らされた情報網を持つ。',
+   profile:'長年の取材活動で築いた人脈は業界随一。あらゆる団体の内情や有望選手の情報が集まってくる。コーチとしての指導力はまだまだだが、スカウト情報の質と速さでは右に出る者がいない。おしゃべり好きで団体のムードメーカー。'},
+  {id:14, name:'土屋 弘美',   emoji:'🏋️', hasPortrait:false,
    grade:'C', teaching:'C', observation:'D', style:'pw', trait:'ベテラン調整',
    salary:9, hireFee:58, minOrgPop:0,
-   desc:'中堅・ベテラン選手の守り人。長年の経験で衰えを遅らせる。',
-   profile:'元プロレスラー引退後20年の指導歴。ベテラン選手のピーク延長と技術維持に強みを持つ。'},
-  {id:15, name:'橋本スピードアシスタント', emoji:'🦅', hasPortrait:false,
+   age:50, gender:'女', origin:'新潟',
+   desc:'元ウエイトリフティング選手。ベテランのパワー維持に長けた姉御肌。',
+   profile:'パワー系トレーニングの知識と中高年の体作りの経験を併せ持つベテランコーチ。年齢を重ねた選手の身体を理解し、無理のない方法でパワーを維持させることに長けている。「あんたはまだまだやれる」と選手を鼓舞する頼れる姉御。'},
+  {id:15, name:'林 拓海',     emoji:'🦅', hasPortrait:false,
    grade:'C', teaching:'D', observation:'D', style:'sp', trait:'実戦主義',
    salary:6, hireFee:38, minOrgPop:0,
-   desc:'スピードトレーニング補助。試合で活かせる俊敏性を育てる。',
-   profile:'元サッカー選手。俊敏性トレーニングのプログラムを流用した独自スピード指導が特徴。'},
-  {id:16, name:'井上コンディショニングアシスタント', emoji:'💊', hasPortrait:false,
+   age:30, gender:'男', origin:'兵庫',
+   desc:'元キックボクサー。実戦形式でスピードと反射神経を鍛える。',
+   profile:'キックボクシングで磨いたフットワークと反射神経を武器にするスピード系コーチ。「考える前に動け」がモットーで、実戦形式の練習を好む。やや性急なところはあるが、選手と一緒に汗を流す情熱的な指導で慕われている。'},
+  {id:16, name:'森田 悠子', emoji:'💊', hasPortrait:false,
    grade:'C', teaching:'E', observation:'E', style:'all', trait:'コンディショニング',
    salary:5, hireFee:30, minOrgPop:0,
-   desc:'地味だが堅実なコンディション管理担当。',
-   profile:'専門はないが選手の体調管理を丁寧にこなす。地味ながら確実な仕事ぶりで信頼されている。'},
-  {id:17, name:'川辺セコンドコーチ', emoji:'🔎', hasPortrait:false,
+   age:38, gender:'女', origin:'岩手',
+   desc:'ヨガと栄養学による地味だが堅実なコンディション管理。',
+   profile:'ヨガと栄養学の知識を組み合わせた独自のコンディショニング指導が持ち味。目立つ成果はすぐには出ないが、長期的に選手の体質を改善する堅実な手腕がある。物静かで存在感は薄いが、選手の小さな変化も見逃さない。'},
+  {id:17, name:'篠原 隆',   emoji:'🔎', hasPortrait:false,
    grade:'C', teaching:'D', observation:'C', style:'te', trait:'引き出し上手',
    salary:8, hireFee:50, minOrgPop:0,
-   desc:'試合眼のある元セコンド。選手の試合力を引き上げる。',
-   profile:'元プロレスラーのセコンドとして10年以上の経験。試合の流れを読む眼を持ち、担当選手の潜在能力を引き出す。'},
-  {id:18, name:'南波タフネスコーチ', emoji:'🪖', hasPortrait:false,
+   age:55, gender:'男', origin:'熊本',
+   desc:'元レフェリー歴30年。リングの中から培った試合眼の持ち主。',
+   profile:'レフェリーとして数千試合をリングの中から見てきた試合眼の持ち主。選手の長所を見抜き、それを活かす試合運びを提案するのが得意。自らリングに上がることはないが、技術アドバイスの正確さは折り紙付き。控えめだが、言葉に重みがある。'},
+  {id:18, name:'赤城 凛',     emoji:'🪖', hasPortrait:false,
    grade:'C', teaching:'C', observation:'E', style:'pw', trait:'実戦主義',
    salary:8, hireFee:48, minOrgPop:0,
-   desc:'スパルタ式パワー強化。肉体的タフさを徹底的に鍛える。',
-   profile:'元自衛隊体育教官。タフな肉体を作るスパルタ式トレーニングで選手を鍛える。観察は細かくないが実践での効果は出る。'},
-  {id:19, name:'千田テクニカルエキスパート', emoji:'📊', hasPortrait:false,
+   age:36, gender:'女', origin:'群馬',
+   desc:'元女子レスリング選手。スパルタ式でフィジカルを鍛え上げる。',
+   profile:'レスリングで鍛えた実戦感覚と圧倒的なフィジカルを持つスパルタコーチ。練習は厳しいが、選手が壁を乗り越えた瞬間に見せる笑顔は本物。「甘やかして強くなった人間はいない」が信条。不器用だが、選手の成長を誰よりも喜ぶ。'},
+  {id:19, name:'西岡 学', emoji:'📊', hasPortrait:false,
    grade:'C', teaching:'C', observation:'C', style:'te', trait:'引き出し上手',
    salary:10, hireFee:65, minOrgPop:0,
-   desc:'技術分析のマニア。映像研究から選手の個性を引き出す。',
-   profile:'高校時代から技術研究が趣味。資料と映像による技術分析に秀でており、選手の隠れた才能を発掘することが得意。'},
-  {id:20, name:'吉田スポーツ心理士', emoji:'🧘', hasPortrait:false,
+   age:40, gender:'男', origin:'奈良',
+   desc:'バイオメカニクス研究者。科学的分析で選手の技術を最適化する。',
+   profile:'身体の動きを科学的に分析するスペシャリスト。映像分析やデータを駆使して選手の技術を最適化する。プロレスの現場経験は少ないが、理論に基づいた的確な改善提案で信頼を得つつある。話し始めると止まらないマニアックな一面も。'},
+  {id:20, name:'藤原 千春',   emoji:'🧘', hasPortrait:false,
    grade:'C', teaching:'D', observation:'C', style:'all', trait:'ベテラン調整',
    salary:7, hireFee:45, minOrgPop:0,
-   desc:'若手スポーツ心理士。ベテラン選手のメンタル維持を支える。',
-   profile:'若手スポーツ心理士。ベテラン向けのメンタルケアと長期モチベーション維持に精通している。'},
+   age:47, gender:'女', origin:'石川',
+   desc:'元メンタルトレーナー。ベテラン選手の心を支え闘志を再点火する。',
+   profile:'数多くのプロアスリートのメンタルケアを手掛けてきたベテラン。長年戦い続けた選手の心の疲労を読み取り、再び闘志を灯す手助けをする。「身体が動かないのは、心が止まっているから」が持論。穏やかな語り口で選手に寄り添う。'},
 
   // ── 新規Bグレード（10人）────────────────────────────────────────────────
-  {id:21, name:'龍ヶ崎クロストレーナー', emoji:'🐉', hasPortrait:false,
+  {id:21, name:'熊谷 鉄也', emoji:'🐉', hasPortrait:false,
    grade:'B', teaching:'B', observation:'C', style:'pw', trait:'コンディショニング',
    salary:28, hireFee:220, minOrgPop:30,
-   desc:'パワーとスタミナを兼ねた総合強化コーチ。コンディション管理も万全。',
-   profile:'元プロ格闘家。パワーと持久力を兼ねた独自のクロストレーニングメソッドを持ち、担当選手の体づくりから試合準備まで一貫して支援する。'},
-  {id:22, name:'相馬スピード道場',   emoji:'⚡', hasPortrait:false,
+   age:46, gender:'男', origin:'宮城',
+   desc:'元ラグビー日本代表フィジカルコーチ。パワーと体調管理を高次元で両立。',
+   profile:'ラグビー日本代表のフィジカルを支えた実績を持つ一流のストレングス＆コンディショニングコーチ。パワートレーニングと体調管理の両立を高い次元で実現する。豪快な見た目に反して緻密なプログラムを組む。「強い身体は、正しい管理から生まれる」が信条。'},
+  {id:22, name:'安藤 美波',   emoji:'⚡', hasPortrait:false,
    grade:'B', teaching:'B', observation:'D', style:'sp', trait:'実戦主義',
    salary:24, hireFee:190, minOrgPop:30,
-   desc:'スピード特化の本格指導者。試合で使えるスピードを徹底強化。',
-   profile:'元スプリント選手でスポーツ科学博士号取得。スピード育成に関して業界トップクラスの知識を持ち、実戦で通用するスピードを叩き込む。'},
-  {id:23, name:'月島テクニカルアドバイザー', emoji:'🌙', hasPortrait:false,
+   age:31, gender:'女', origin:'愛知',
+   desc:'元女子MMA王者「閃光」。スピードを活かした実戦指導の達人。',
+   profile:'MMAで「閃光」の異名を取ったスピードファイター。現役時代の実戦経験を基に、スピードを活かした攻防の極意を叩き込む。妥協を許さないストイックな指導だが、選手からの信頼は厚い。「速さは才能じゃない、執念だ」と説く。'},
+  {id:23, name:'堀内 義孝',     emoji:'🌙', hasPortrait:false,
    grade:'B', teaching:'C', observation:'B', style:'te', trait:'引き出し上手',
    salary:20, hireFee:165, minOrgPop:30,
-   desc:'テクニック分析の達人。選手の隠れた才能を見抜いて引き出す。',
-   profile:'元プロレスラーで、現役時代はテクニカルスタイルで知られた。細かい技術の観察眼が高く、選手一人ひとりの個性に合った指導を行う。'},
-  {id:24, name:'久留米ゼネラルコーチ', emoji:'🏆', hasPortrait:false,
+   age:53, gender:'男', origin:'山梨',
+   desc:'元レスリングナショナルコーチ。選手の隠れた才能を見逃さない名伯楽。',
+   profile:'レスリング指導の世界で長年培った観察眼は、選手の隠れた才能を見逃さない。派手な指導はしないが、一人ひとりの特性に合わせた技術指導で着実に選手を伸ばす。「答えは選手の中にある。それを引き出すのが俺の仕事だ」と語る。'},
+  {id:24, name:'中村 紗弓',   emoji:'🏆', hasPortrait:false,
    grade:'B', teaching:'B', observation:'C', style:'all', trait:'新人育成',
    salary:30, hireFee:250, minOrgPop:30,
-   desc:'元チャンピオンの万能指導者。若手を王者候補に育て上げる。',
-   profile:'元日本女子プロレス王者。引退後は指導者として多くの若手を育成した実績を持つ。見込みのある選手を王者候補に仕上げる万能型の指導スタイル。'},
-  {id:25, name:'荻野シニアコーチ',   emoji:'🛡️', hasPortrait:false,
+   age:35, gender:'女', origin:'千葉',
+   desc:'元新体操日本代表。基礎の美しさから強い選手を育てる万能型。',
+   profile:'新体操の美しさと厳しさの中で培われた万能型の指導力を持つ。新人の基礎作りからメンタル面まで幅広くカバーし、バランスの取れた選手を育成する。「基礎が美しい選手は、必ず強くなる」を信じて疑わない情熱的な指導者。'},
+  {id:25, name:'宮沢 康弘',     emoji:'🛡️', hasPortrait:false,
    grade:'B', teaching:'C', observation:'B', style:'all', trait:'ベテラン調整',
    salary:22, hireFee:180, minOrgPop:30,
-   desc:'ベテラン専門のエキスパート。経験ある選手の衰えを遅らせる。',
-   profile:'引退後の選手のセカンドキャリア支援も手がける経験豊富な指導者。ベテランの経験と技術を最大限に活かした指導が得意。'},
-  {id:26, name:'藤田ネットワーカー', emoji:'🌐', hasPortrait:false,
+   age:57, gender:'男', origin:'山形',
+   desc:'元スポーツ整形外科医。医学的知見でベテラン選手の寿命を延ばす。',
+   profile:'医師としての深い身体知識を持つ異色のコーチ。ベテラン選手特有の身体の悩みを医学的見地から理解し、適切な調整法を提案する。「選手の寿命を一年でも延ばす」ことに情熱を注ぐ。慎重な性格で、無理は絶対にさせない。'},
+  {id:26, name:'カルロス 真理', emoji:'🌐', hasPortrait:false,
    grade:'B', teaching:'D', observation:'B', style:'all', trait:'人脈持ち',
    salary:18, hireFee:150, minOrgPop:30,
-   desc:'プロレス界全体に太いパイプを持つ人脈の申し子。',
-   profile:'元プロモーター。プロレス界の全国ネットワークを持ち、スカウト候補の発掘とリクルートに随一の能力を発揮する。'},
-  {id:27, name:'黒崎パワーエリート', emoji:'🦁', hasPortrait:false,
+   age:42, gender:'女', origin:'ブラジル',
+   desc:'日系ブラジル人の元エージェント。国内外の格闘技界に太いパイプを持つ。',
+   profile:'日本とブラジルの格闘技コミュニティに太いパイプを持つ国際派コーチ。海外の有望選手の情報にも精通し、他団体との交渉でも力を発揮する。指導力は発展途上だが、人脈と情報収集力はB格随一。「人を繋ぐことが、私の一番の技術」と語る。'},
+  {id:27, name:'大河原 剛士',   emoji:'🦁', hasPortrait:false,
    grade:'B', teaching:'B', observation:'B', style:'pw', trait:'新人育成',
    salary:32, hireFee:270, minOrgPop:30,
-   desc:'パワー系の精鋭コーチ。若い力を徹底的に鍛え上げる。',
-   profile:'元世界ウエイトリフティング代表。パワー選手の育成に特化した高度な指導力を持ち、若手のパワー開発では業界屈指の実績を誇る。'},
-  {id:28, name:'五十嵐バランスコーチ', emoji:'⚖️', hasPortrait:false,
+   age:43, gender:'男', origin:'北海道',
+   desc:'元グレコローマン全日本王者。若手のパワーを短期間で開花させる。',
+   profile:'グレコローマンで鍛え上げた圧倒的なパワーと、若手を一人前に育てる手腕を兼ね備えた実力派コーチ。基礎体力の徹底と実戦練習を組み合わせた指導で、新人のパワーを短期間で開花させる。「強くなりたいなら、まず自分に負けるな」が口癖。'},
+  {id:28, name:'羽田 小百合',   emoji:'⚖️', hasPortrait:false,
    grade:'B', teaching:'B', observation:'C', style:'sp', trait:'ベテラン調整',
    salary:26, hireFee:210, minOrgPop:30,
-   desc:'スピードとバランス感覚の専門家。ベテランのキレを維持させる。',
-   profile:'元体操選手。スピードと身体バランスのトレーニングが専門で、ベテラン選手のキレを長く保つ独自の維持プログラムを持つ。'},
-  {id:29, name:'坂東メンタルスペシャリスト', emoji:'💆', hasPortrait:false,
+   age:44, gender:'女', origin:'東京',
+   desc:'元プロダンサー。ベテランの動きのキレとしなやかさを維持させる。',
+   profile:'ダンスで培った身体操作と表現力の知見をプロレスに応用する異色のコーチ。ベテラン選手の動きのキレを維持し、年齢を感じさせないしなやかさを引き出す。「身体は楽器。手入れを怠れば音は鈍る」という哲学でスピードを守り続ける。'},
+  {id:29, name:'陳 偉明', emoji:'💆', hasPortrait:false,
    grade:'B', teaching:'C', observation:'B', style:'all', trait:'コンディショニング',
    salary:21, hireFee:170, minOrgPop:30,
-   desc:'メンタルとフィジカルを総合的に管理するコーチ。',
-   profile:'スポーツ心理学と理学療法の両方に精通。担当選手のメンタルとコンディションを一体管理する独自アプローチで安定した稼働を実現する。'},
-  {id:30, name:'真田テクニカルドリルマスター', emoji:'🔩', hasPortrait:false,
+   age:49, gender:'男', origin:'台湾',
+   desc:'東洋医学の専門家。心身を総合的に診て最適なコンディションに導く。',
+   profile:'東洋医学の叡智とスポーツ科学を融合させたコンディショニングの達人。選手の心身の状態を総合的に診て、最適な調整を施す。「気の流れが整えば、身体は自ずと応える」という哲学に基づく独自のアプローチは、多くの選手から絶大な信頼を得ている。'},
+  {id:30, name:'冴島 楓',   emoji:'🔩', hasPortrait:false,
    grade:'B', teaching:'B', observation:'D', style:'te', trait:'実戦主義',
    salary:25, hireFee:200, minOrgPop:30,
-   desc:'テクニックの反復ドリルで実戦力を高める専門家。',
-   profile:'元プロレスラー。徹底した反復練習で技術を体に叩き込む指導が得意。試合での技術再現性を高めることに特化したドリルプログラムが評判。'},
+   age:39, gender:'女', origin:'大阪',
+   desc:'元ブラジリアン柔術黒帯。反復ドリルで関節技と寝技の技術を叩き込む。',
+   profile:'ブラジリアン柔術の国際大会で優勝経験を持つ技巧派。一つの技を何百回と反復させるドリル式指導で、選手のテクニックを確実に底上げする。口数は少ないが、マット上での手本は雄弁。「身体が覚えるまで、何度でも」が指導哲学。'},
 
   // ── 新規Aグレード（5人）────────────────────────────────────────────────
-  {id:31, name:'神崎総監督',         emoji:'👑', hasPortrait:false,
+  {id:31, name:'神崎 鋼子',           emoji:'👑', hasPortrait:false,
    grade:'A', teaching:'A', observation:'B', style:'all', trait:'新人育成',
    salary:80, hireFee:700, minOrgPop:55,
-   desc:'伝説的指導者。何人もの王者を輩出した最高峰のゼネラルコーチ。',
-   profile:'元プロレス界の伝説的チャンピオン。引退後は指導者として何人もの王者を輩出した実績を持つ。「素質を見つけて育てること」を哲学とし、若手の才能を最大限に引き出す。'},
-  {id:32, name:'虎乃内道場長',       emoji:'🐯', hasPortrait:false,
+   age:60, gender:'女', origin:'東京',
+   desc:'「鉄の母」と呼ばれる伝説的指導者。何人もの日本代表選手を輩出した最高峰。',
+   profile:'女子バレーボール日本代表監督として五輪に4度帯同し、「鉄の母」と呼ばれた伝説的指導者。彼女の元から巣立った日本代表選手は両手では数えきれない。新人の原石を見抜く眼力と、才能を最大限に引き出す指導力は他の追随を許さない。厳しさの奥に深い愛情を秘めた、スポーツ指導界の生きる伝説。'},
+  {id:32, name:'巌流 正道',           emoji:'🐯', hasPortrait:false,
    grade:'A', teaching:'A', observation:'C', style:'pw', trait:'実戦主義',
    salary:70, hireFee:600, minOrgPop:55,
-   desc:'パワー系最高峰。どんな選手でも戦える体を作り上げる。',
-   profile:'元格闘技チャンピオン。「強さとは試合で証明するもの」という哲学を持ち、実戦で通用するパワーを最短で身につけさせる指導法で知られる。'},
-  {id:33, name:'如月スピードマスター', emoji:'🌸', hasPortrait:false,
+   age:56, gender:'男', origin:'鹿児島',
+   desc:'元大相撲力士のパワー系最高峰。実戦で通用する力を最短で身につけさせる。',
+   profile:'角界で鍛え上げた圧倒的なパワー理論と、格闘技指導で磨いた実戦メソッドを持つ最高峰のパワー系コーチ。その指導を受けた選手は例外なくパワーで試合を支配するようになると言われる。威圧的な風貌だが、弟子思いの人情家。「力とは、覚悟の結晶だ」と説く。'},
+  {id:33, name:'葉月 レミ', emoji:'🌸', hasPortrait:false,
    grade:'A', teaching:'A', observation:'B', style:'sp', trait:'引き出し上手',
    salary:65, hireFee:550, minOrgPop:55,
-   desc:'スピード系最高峰。担当選手の潜在スピードを完全に覚醒させる。',
-   profile:'元オリンピック短距離代表。スピード指導において他の追随を許さない独自技術を持ち、担当選手のスピードを次元の違うレベルに引き上げるとされる。'},
-  {id:34, name:'桐島テクニックグランドマスター', emoji:'🎭', hasPortrait:false,
+   age:45, gender:'女', origin:'福岡',
+   desc:'元テコンドー五輪銀メダリスト「光速の蹴姫」。スピードの潜在能力を覚醒させる。',
+   profile:'テコンドーでオリンピック銀メダルを獲得し「光速の蹴姫」と謳われた伝説のスピードスター。国際舞台で頂点を極めた経験と、選手の潜在能力を引き出す天性の眼力を持つ。彼女の指導を受けた選手は、自分でも気づかなかったスピードの才能を開花させると評判。「速さの本質は、恐れを捨てること」と語るカリスマ。'},
+  {id:34, name:'御堂 清四郎', emoji:'🎭', hasPortrait:false,
    grade:'A', teaching:'B', observation:'A', style:'te', trait:'引き出し上手',
    salary:60, hireFee:500, minOrgPop:55,
-   desc:'テクニック系最高峰。試合で選手の真の実力を見抜く業界随一の観察眼。',
-   profile:'伝説的な武道家。試合を通じて選手の技術の「核心」を見抜く観察眼は業界随一とされ、担当選手の隠れた可能性を目覚めさせる。'},
-  {id:35, name:'霧島コンディショニング師', emoji:'🌿', hasPortrait:false,
+   age:65, gender:'男', origin:'東京',
+   desc:'柔道五輪金メダリスト「技の神」。業界随一の観察眼を持つ生ける伝説。',
+   profile:'柔道でオリンピック金メダルを獲得し「技の神」と称される生ける伝説。世界柔道殿堂入りを果たし、引退後は国際柔道連盟テクニカルアドバイザーとして世界各国の選手を指導。選手の動きを一目見ただけでその強みと弱点を見抜く観察眼は、業界で最も畏怖される能力。多くを語らないが、そのひと言が選手の人生を変えると言われる。'},
+  {id:35, name:'如月 薫',         emoji:'🌿', hasPortrait:false,
    grade:'A', teaching:'B', observation:'A', style:'all', trait:'コンディショニング',
    salary:55, hireFee:450, minOrgPop:55,
-   desc:'コンディション管理の鬼才。選手を常に最良の状態に保つ。',
-   profile:'東洋医学と最新スポーツ科学を融合した独自のメソッドで知られる。担当選手を常に最良の状態に保ち、長期にわたって高いパフォーマンスを発揮させる。'}
+   age:52, gender:'女', origin:'京都',
+   desc:'JOC帯同のスポーツ医学博士。コンディション管理の最高権威。',
+   profile:'オリンピックの舞台で日本のトップアスリートを支え続けてきたスポーツ医学の最高権威。身体のコンディショニングに関して、この人の右に出る者は日本にいないと言われる。科学的根拠に基づく緻密なプログラムで選手の潜在能力を限界まで引き出す。冷静な外見の奥に、選手への深い情熱を秘めている。'}
 ];
-const MAX_COACHES = 3;     // 同時雇用上限（変更なし）
 const COACH_HIRE_FEE = 80; // 後方互換フォールバック（各コーチ個別hireFeeで上書き）
 const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（4→3）
 
@@ -901,10 +948,6 @@ const GROWTH_CONFIG = {
   declineChance: 0.25,    // chance per stat per season-end
   peakBonusSeason: 2,     // seasons 1-2 have bonus growth
   peakGrowthMult: 1.3,    // growth multiplier during peak seasons
-  // v0.8: Coach assign weights
-  specialtyWeight: 0.40,  // weight for coach specialty stat
-  otherWeight: 0.15,      // weight for non-specialty stats (4 * 0.15 = 0.60)
-  subMult: 1.2,           // multiplier for non-specialty stats under coach
   // v0.8: Intensive training
   intensiveMult: 1.5,     // growth multiplier for intensive training
   intensiveCondDrain: 2.0, // condition drain multiplier
@@ -912,52 +955,6 @@ const GROWTH_CONFIG = {
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50     // min condition to allow intensive
 };
-
-// ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 4D: FACILITY DATA (v0.7)                        ║
-// ╚══════════════════════════════════════════════════════════╝
-const FACILITIES = [
-  {
-    id: 'training', name: 'トレーニング施設', emoji: '🏋️',
-    levels: [
-      {name:'基本設備', desc:'基本的なトレーニング環境', maint:0, cost:0},
-      {name:'充実設備', desc:'練習成長率+20%', maint:20, cost:500},
-      {name:'最先端設備', desc:'練習成長率+40%', maint:45, cost:1500}
-    ]
-  },
-  {
-    id: 'medical', name: '医療施設', emoji: '🏥',
-    levels: [
-      {name:'なし', desc:'怪我は自然治癒のみ', maint:0, cost:0},
-      {name:'診療室', desc:'怪我回復-1週', maint:15, cost:400},
-      {name:'スポーツ医療', desc:'怪我回復-2週、療養回復+5', maint:35, cost:1200}
-    ]
-  },
-  {
-    id: 'media', name: 'メディア施設', emoji: '📺',
-    levels: [
-      {name:'なし', desc:'プロモ効果は通常', maint:0, cost:0},
-      {name:'配信スタジオ', desc:'プロモ人気+1', maint:10, cost:300},
-      {name:'放送局設備', desc:'プロモ人気+2、放映権収入+50万', maint:25, cost:1000}
-    ]
-  },
-  {
-    id: 'dormitory', name: '選手寮', emoji: '🏠',
-    levels: [
-      {name:'なし', desc:'コンディション回復は通常', maint:0, cost:0},
-      {name:'基本寮', desc:'毎週コンディション+3', maint:15, cost:350},
-      {name:'豪華寮', desc:'毎週コンディション+6、休養効果+5', maint:35, cost:1100}
-    ]
-  },
-  {
-    id: 'scouting', name: 'スカウト網', emoji: '🔍',
-    levels: [
-      {name:'基本', desc:'契約金50万', maint:0, cost:0},
-      {name:'国内ネットワーク', desc:'契約金-15%', maint:10, cost:250},
-      {name:'海外ネットワーク', desc:'契約金-25%、発掘情報あり', maint:25, cost:800}
-    ]
-  }
-];
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
@@ -2072,6 +2069,77 @@ const TEAM_SPIRIT_TEXTS = [
   { text: '🤝 厳しい時期だからこそ仲間の大切さを実感', detail: '決して恵まれた環境ではない。それでも、誰一人として文句を言わずに練習に打ち込む姿がある。' },
   { text: '✊ チーム全員が同じ方向を向いている', detail: '苦しい状況を全員で分かち合っている。この経験が、いつかチームの財産になるはずだ。' },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §3 ロッカールーム可視化: 雰囲気テキスト（5段階×3-4パターン）
+// ─────────────────────────────────────────────────────────────────────────────
+const ATMOSPHERE_TEXTS = [
+  // Level 1 (displayScore 0-20)
+  [{ emoji:'😶', text:'練習場が静まり返っている' }, { emoji:'😶', text:'誰も目を合わせようとしない' }, { emoji:'😶', text:'重い空気が漂っている' }],
+  // Level 2 (21-40)
+  [{ emoji:'🌥', text:'どこかよそよそしい空気がある' }, { emoji:'🌥', text:'最低限のメニューだけこなしている' }, { emoji:'🌥', text:'会話が少ない' }],
+  // Level 3 (41-60)
+  [{ emoji:'☁', text:'淡々とメニューをこなしている' }, { emoji:'☁', text:'いつも通りの練習風景' }, { emoji:'☁', text:'特に変わった様子はない' }, { emoji:'☁', text:'黙々と汗を流している' }],
+  // Level 4 (61-80)
+  [{ emoji:'🌤', text:'声が飛び交っている' }, { emoji:'🌤', text:'練習に熱が入っている' }, { emoji:'🌤', text:'選手同士でアドバイスし合っている' }, { emoji:'🌤', text:'活気のある練習場' }],
+  // Level 5 (81-100)
+  [{ emoji:'🔥', text:'自主練する選手が増えている' }, { emoji:'🔥', text:'練習場に笑い声が響いている' }, { emoji:'🔥', text:'全員の目つきが違う' }, { emoji:'🔥', text:'チーム全体に勢いがある' }],
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §2 観察眼システム: コーチ報告テキスト（ランク別）
+// ─────────────────────────────────────────────────────────────────────────────
+const COACH_REPORT_TEXTS = {
+  // E-D rank: 名前なし・漠然とした雰囲気
+  vague: [
+    '最近、練習に身が入っている選手がいるようです',
+    'ちょっと元気のない選手がいますね',
+    '練習場の雰囲気は悪くないですよ',
+    '全体的にまずまずの仕上がりですね',
+    '最近、動きが良くなってきた選手がいます',
+    'ちょっと伸び悩んでいる選手がいるかもしれません',
+  ],
+  // C rank: 選手名+ムード
+  named_positive: [
+    '{name}選手、調子が良さそうですね',
+    '{name}選手、最近いい感じに仕上がってきています',
+    '{name}選手の動きに勢いを感じます',
+  ],
+  named_negative: [
+    '{name}選手、少し調子が落ちているかもしれません',
+    '{name}選手、ちょっと練習に集中できていない様子です',
+    '{name}選手、最近少し元気がないですね',
+  ],
+  named_neutral: [
+    '{name}選手は安定していますよ',
+    '{name}選手、特に問題はないようです',
+    '{name}選手はマイペースにやっています',
+  ],
+  // B rank: 選手名+具体的ステータス
+  stat_growing: [
+    '{name}選手の{stat}が伸びてきています',
+    '{name}選手、{stat}の成長が見られますね',
+    '{name}選手の{stat}に手応えを感じます',
+  ],
+  stat_stagnant: [
+    '{name}選手の{stat}、最近伸びが止まっている気がします',
+    '{name}選手、{stat}はちょっと頭打ち気味ですかね',
+    '{name}選手の{stat}、ここから先は時間がかかるかもしれません',
+  ],
+  // A rank: 天井接近ヒント（trainCap）
+  near_cap: [
+    '{name}選手の{stat}、そろそろ頭打ちかもしれません',
+    '{name}選手の{stat}はもう伸びしろが少ないと思います',
+    '{name}選手の{stat}、限界に近づいている気がします',
+  ],
+  far_from_cap: [
+    '{name}選手の{stat}、まだまだ伸びますよ',
+    '{name}選手の{stat}にはまだ余力がありますね',
+    '{name}選手の{stat}の成長余地は十分です',
+  ],
+};
+const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
+const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 🔧 的外れ確率
 
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4

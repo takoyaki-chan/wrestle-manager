@@ -574,38 +574,27 @@ function showCoachTooltip(coachId) {
   if (!c) return;
   Audio.play('hover');
 
-  const SPEC_META = {
-    pw: {color:'#e74c3c', label:'パワー育成', icon:'PW', detail:`担当選手のパワー成長率が${c.growthMult}倍になります。パワーが高い選手は打撃・投げ技のダメージが増加します。`},
-    sp: {color:'#2ecc71', label:'スピード育成', icon:'SP', detail:`担当選手のスピード成長率が${c.growthMult}倍になります。スピードが高い選手は先手を取りやすく、回避率も上がります。`},
-    te: {color:'#5dade2', label:'テクニック育成', icon:'野', detail:`担当選手のテクニック成長率が${c.growthMult}倍になります。テクニックが高い選手は技の成功率と関節技のダメージが上がります。`},
-    st: {color:'#f1c40f', label:'スタミナ育成', icon:'ST', detail:`担当選手のスタミナ成長率が${c.growthMult}倍になります。スタミナが高い選手はHPが多く、長期戦に強くなります。`},
-    mental:{color:'#bb8fce', label:'心身ケア', icon:'MN', detail:`担当選手のコンディション回復が毎週+${c.condBonus||3}され、怪我の発生確率が${Math.round((c.injuryReduce||0.5)*100)}%カットされます。エースや主力の安定稼働に。`},
-    all:{color:'var(--gold)', label:'総合育成', icon:'ALL', detail:`担当選手の全ステータスの成長率が${c.growthMult}倍になります。突出した強化はできませんが、バランスよく育てられます。`},
-    mq: {color:'#e67e22', label:'試合品質向上', icon:'MQ', detail:`担当選手が出場する試合のMQ（試合クオリティ）基底値に+${c.mqBonus}のボーナス。試合のドラマ性が向上し、観客満足度に直結します。`},
-    pop:{color:'#8bc4f0', label:'人気向上', icon:'POP', detail:`担当選手のプロモ活動時に人気上昇量が+${c.popBonus}されます。メディア露出とファン獲得の効率が高まります。`}
-  };
-  const spec = SPEC_META[c.specialty] || SPEC_META.all;
-
-  // Avatar background color based on specialty
-  const avBg = `linear-gradient(135deg, ${spec.color}33, ${spec.color}11)`;
-  const avBorder = `${spec.color}88`;
-
-  // Assigned fighters
+  const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
+  const color = gradeColors[c.grade] || '#888';
+  const teachingMult = COACH_RANKS[c.teaching] || 1.0;
+  const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
+  const traitDef = COACH_TRAIT_DEFS[c.trait] || {};
+  const isHired = G.coaches.includes(c.id);
   const assigned = getCoachAssignees(c.id);
   const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
-  const isHired = G.coaches.includes(c.id);
 
   let html = '';
 
   // Header
-  html += `<div class="coach-tooltip-header" style="background:${spec.color}0a">
-    <div class="coach-tooltip-avatar" style="background:${avBg};border:2px solid ${avBorder};display:flex;align-items:center;justify-content:center;overflow:hidden">
+  html += `<div class="coach-tooltip-header" style="background:${color}0a">
+    <div class="coach-tooltip-avatar" style="background:linear-gradient(135deg, ${color}33, ${color}11);border:2px solid ${color}88;display:flex;align-items:center;justify-content:center;overflow:hidden">
       ${coachPortraitImg(c, 84)}
     </div>
     <div style="flex:1;min-width:0">
       <div style="font-weight:700;font-size:18px;margin-bottom:4px">${c.name}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <span class="coach-effect ${c.specialty}" style="margin:0">${spec.icon} ${spec.label}</span>
+        <span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
+        <span class="coach-trait">${c.trait}</span>
         ${isHired ? '<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">雇用中</span>' : ''}
       </div>
     </div>
@@ -613,15 +602,41 @@ function showCoachTooltip(coachId) {
   </div>`;
 
   // Body
-  html += `<div class="coach-tooltip-body">`;
+  html += '<div class="coach-tooltip-body">';
 
-  // Effect detail
+  // Teaching power
   html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">効果</div>
-    <div style="font-size:13px;color:var(--text);line-height:1.6">${spec.detail}</div>
+    <div class="coach-tooltip-label">指導力</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6">
+      ランク <strong style="color:${color}">${c.teaching}</strong>（成長倍率 <strong style="color:var(--gold)">×${teachingMult}</strong>）<br>
+      <span style="font-size:11px;color:var(--text-sub)">担当選手の練習効率を高めます。スタイルが一致するとさらに+0.05ボーナス。</span>
+    </div>
   </div>`;
 
-  // Cost info
+  // Observation
+  html += `<div class="coach-tooltip-section">
+    <div class="coach-tooltip-label">観察眼</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6">
+      ランク <strong style="color:${color}">${c.observation}</strong>
+      <span style="font-size:11px;color:var(--text-dim)">（将来のコーチ報告の精度に影響）</span>
+    </div>
+  </div>`;
+
+  // Style
+  html += `<div class="coach-tooltip-section">
+    <div class="coach-tooltip-label">得意スタイル</div>
+    <div style="font-size:13px;color:var(--text)">${styleName}
+      <span style="font-size:11px;color:var(--text-sub)">— 選手のスタイルと一致時、指導力+0.05</span>
+    </div>
+  </div>`;
+
+  // Trait
+  html += `<div class="coach-tooltip-section">
+    <div class="coach-tooltip-label">特性: ${c.trait}</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6">${traitDef.desc || ''}</div>
+  </div>`;
+
+  // Cost
   html += `<div class="coach-tooltip-section">
     <div class="coach-tooltip-label">コスト</div>
     <div style="display:flex;gap:16px;font-size:12px">
@@ -631,33 +646,39 @@ function showCoachTooltip(coachId) {
     </div>
   </div>`;
 
-  // Assigned fighters (if hired)
+  // Assigned fighters
   if (isHired) {
     html += `<div class="coach-tooltip-section">
       <div class="coach-tooltip-label">担当選手 (${assigned.length}/${COACH_MAX_ASSIGN})</div>`;
     if (assignedChars.length > 0) {
-      html += `<div style="display:flex;flex-wrap:wrap;gap:4px">`;
+      html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
       assignedChars.forEach(ch => {
-        const o = ov(ch);
-        html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${o}</strong></span>`;
+        html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${ov(ch)}</strong></span>`;
       });
-      html += `</div>`;
+      html += '</div>';
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim)">担当選手なし（育成画面でアサインできます）</div>`;
+      html += '<div style="font-size:12px;color:var(--text-dim)">担当選手なし（育成画面でアサインできます）</div>';
     }
-    html += `</div>`;
+    html += '</div>';
   }
 
   // Profile
-  html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
-    <div class="coach-tooltip-label">プロフィール</div>
-    <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">
-      ${c.age}歳 ｜ ${c.gender}性 ｜ ${c.origin}出身
-    </div>
-    <div style="font-size:12px;color:var(--text);line-height:1.7">${c.profile}</div>
-  </div>`;
+  if (c.profile) {
+    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
+      <div class="coach-tooltip-label">プロフィール</div>
+      <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">
+        ${c.age ? c.age + '歳' : ''} ${c.gender ? '｜ ' + c.gender + '性' : ''} ${c.origin ? '｜ ' + c.origin + '出身' : ''}
+      </div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7">${c.profile}</div>
+    </div>`;
+  } else if (c.desc) {
+    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
+      <div class="coach-tooltip-label">紹介</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7">${c.desc}</div>
+    </div>`;
+  }
 
-  html += `</div>`; // end body
+  html += '</div>'; // end body
 
   document.getElementById('coachTooltipBox').innerHTML = html;
   document.getElementById('coachTooltipOverlay').classList.add('active');
@@ -1505,7 +1526,7 @@ function showFighterPopup(fighterId, source) {
           html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
             🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
-            <span style="color:var(--text-dim);font-size:12px;margin-left:6px">(${coach.specialty === 'mental' ? `回復+${coach.condBonus} 怪我-${Math.round((coach.injuryReduce||0.5)*100)}%` : coach.specialty === 'mq' ? `MQ+${coach.mqBonus}` : coach.specialty === 'pop' ? `人気+${coach.popBonus}` : `成長×${coach.growthMult}`})</span>
+            <span style="color:var(--text-dim);font-size:12px;margin-left:6px">(${COACH_STYLE_MAP[coach.style] || 'オールラウンド'} / 指導力${coach.teaching} / ${coach.trait})</span>
           </div>`;
         } else {
           html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:4px">
@@ -1705,7 +1726,7 @@ function showFighterPopup(fighterId, source) {
 
     // ══════ Acquire Button (Free Agents & Scout Candidates) ══════
     if (isFree && tabIdx === 0) {
-      const discount = getFacilityScoutDiscount();
+      const discount = 0;
       const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
       const signingCost = Engine.scout.getSigningCost(c, discount);
       const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
@@ -1728,7 +1749,7 @@ function showFighterPopup(fighterId, source) {
       </div>`;
     }
     if (isScoutCandidate && tabIdx === 0) {
-      const discount = getFacilityScoutDiscount();
+      const discount = 0;
       const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
       const signingCost = Engine.scout.getSigningCost(c, discount);
       const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
@@ -2135,7 +2156,6 @@ function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
 function scoutFinish() { App.scoutEventFinish(); }
 function hireCoach(id) { App.hireCoach(id); }
 function fireCoach(id) { App.fireCoach(id); }
-function upgradeFacility(id) { App.upgradeFacility(id); }
 function autoSave() { Storage.autoSave(); }
 function loadAutoSave() { Storage.loadAutoSave(); refreshAll(); }
 function getAutoSaveInfo() { return Storage.getAutoSaveInfo(); }
@@ -2245,13 +2265,6 @@ function requestRental(fighterId, fromOrgId) {
 
 // Legacy aliases for Engine functions used in UI rendering
 function getCoachSalaryTotal() { return Engine.coach.getSalaryTotal(G); }
-function getFacilityScoutDiscount() { return Engine.facility.getScoutDiscount(G); }
-function getFacilityGrowthMult() { return Engine.facility.getGrowthMult(G); }
-function getFacilityConditionBonus() { return Engine.facility.getConditionBonus(G); }
-function getFacilityInjuryReduction() { return Engine.facility.getInjuryReduction(G); }
-function getFacilityPromoBonus() { return Engine.facility.getPromoBonus(G); }
-function getFacilityBroadcastBonus() { return Engine.facility.getBroadcastBonus(G); }
-function getFacilityRestBonus() { return Engine.facility.getRestBonus(G); }
 function unassignFromCoach(charId) { G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) }; }
 function assignToCoach(coachId, charId) {
   const unassigned = Engine.coach.unassignFromCoach(G, charId);
