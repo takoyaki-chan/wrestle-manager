@@ -50,7 +50,12 @@
       "Bash(grep -n \"portrait-map\\\\|portraitMap\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
       "mcp__Claude_Preview__preview_start",
       "Bash(where python node)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(bash build-zip.sh --trial)",
+      "Bash(powershell.exe -Command \"Compress-Archive -Path ''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\dist\\\\wrestle-manager-v1.0_Trial'' -DestinationPath ''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\wrestle-manager-v1.0_Trial.zip'' -Force\")",
+      "Bash(grep -n \"renderManagePanel\\\\|function.*ManagePanel\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(grep -n \"^const Traits\\\\|^Traits =\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(grep -n \"^Traits = {\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)"
     ]
   }
 }

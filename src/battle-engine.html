@@ -1112,7 +1112,7 @@ const S={screen:'WAITING',turn:1,mom:0,prevMom:0,
 // ─── Auto-advance state ───
 let autoAdvance=false;
 let autoTimer=null;
-const AUTO_DELAY=5000; // ms
+const AUTO_DELAY=3000; // ms
 const silSVG=`<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="30" r="18"/><ellipse cx="50" cy="85" rx="30" ry="35"/></svg>`;
 
 // ═══ WAITING SCREEN ═══
@@ -1660,6 +1660,13 @@ function endAnim(){
   const ph=phase(S.turn),pill=document.getElementById('pill');if(pill)pill.textContent=ph.name;
   const btn=document.getElementById('nBtn');if(btn){btn.disabled=false;btn.onclick=nextTurn}
   updLog();
+  // Auto-advance: ターン終了後にタイマー開始
+  if(autoAdvance&&!S.winner){
+    clearTimeout(autoTimer);
+    autoTimer=setTimeout(()=>{
+      if(autoAdvance&&!S.winner&&!S.anim)nextTurn();
+    },AUTO_DELAY);
+  }
 }
 function updLog(){
   const lb=document.getElementById('logBox');if(!lb)return;

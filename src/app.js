@@ -3083,6 +3083,7 @@ const App = {
 
   // v2.1: エンディング演出チェック（初クリア時のみ）
   _checkAndShowEnding(onDone) {
+    if (window.IS_TRIAL) { onDone(); return; } // 体験版: エンディングをスキップ
     if (G.endingCleared && G.endingClearedSeason === G.season - 1) {
       const data = Engine.ending.buildClearData(G);
       showEndingCeremony(data, onDone);
@@ -3093,6 +3094,10 @@ const App = {
 
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
+    if (window.IS_TRIAL) { // 体験版: 表彰式・殿堂入りをスキップ
+      App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll()));
+      return;
+    }
     const pendingAwards = G.pendingAwards;
     if (!pendingAwards) { App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())); return; }
     // pendingAwards は transient field — 保存前にクリーン
@@ -3367,6 +3372,7 @@ const App = {
 
   // v2.0: ケアアクション モーダル表示
   openCareModal() {
+    if (showTrialLimitMessage('ケアアクション')) return; // 体験版
     Audio.play('click');
     showCareActionModal(G, (actionId, fighterId) => {
       App.executeCareAction(actionId, fighterId);
@@ -3449,6 +3455,7 @@ const App = {
 
   // v1.0: Title establishment check
   checkTitleEstablishment() {
+    if (window.IS_TRIAL) return; // 体験版: タイトル自動設立を抑制
     if (G.titleEstablished) return;
     if (Engine.title.checkTitleEstablishment(G)) {
       G = { ...G, titleEstablished: true };

@@ -783,6 +783,7 @@ const Engine = {
     },
     // Returns { allowed: boolean, weeksLeft: number }
     canTitleMatch(state) {
+      if (window.IS_TRIAL) return { allowed: false, weeksLeft: 0 }; // 体験版
       if (!state.titleEstablished) return { allowed: false, weeksLeft: 0 };
       const last = state.lastTitleMatchWeek; // 絶対週数 or null
       if (last == null) return { allowed: true, weeksLeft: 0 };
@@ -6090,6 +6091,11 @@ Engine.eventSystem = {
       // ── B1: 練習中の怪我 ────────────────────────────────────────────────
       case 'B1': {
         let severity = event.severity || 'minor';
+        const mkInjury = (sev, weeks) => ({
+          type: sev === 'moderate' ? '中傷' : '軽傷',
+          weeksLeft: weeks,
+          color: sev === 'moderate' ? '#e17055' : '#fdcb6e'
+        });
         if (choiceIdx === 0 && funds >= 200) {
           // 特別治療
           funds -= 200;
@@ -6099,7 +6105,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 10),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 10),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我(特別治療)' } };
           });
           events.push(`🏥 ${event.name}に特別治療を施した（-200万、復帰${injWeeks}週）`);
@@ -6113,7 +6119,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 15),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 15),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: worsen ? '練習中の怪我(悪化)' : '練習中の怪我' } };
           });
           if (worsen) events.push(`💥 ${event.name}を無理させた結果、症状が悪化！（${injWeeks}週離脱）`);
@@ -6125,7 +6131,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: injWeeks, condition: Math.max(20, (f.condition || 70) - 10),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 10),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我' } };
           });
           events.push(`🩹 ${event.name}の練習中の怪我を通常治療（${injWeeks}週離脱）`);

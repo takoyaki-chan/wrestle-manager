@@ -1,17 +1,36 @@
 #!/bin/bash
 # WRESTLE MANAGER — ZIP配布パッケージ作成スクリプト
-# 使い方: bash build-zip.sh
-# 出力: wrestle-manager-v1.0.zip
+# 使い方:
+#   bash build-zip.sh              # 製品版ビルド（IS_TRIAL=false）
+#   bash build-zip.sh --trial      # 体験版ビルド（IS_TRIAL=true）
+#   bash build-zip.sh --release    # 製品版ビルド（明示）
 
 set -e
 
 VERSION="v1.0"
-DIST_NAME="wrestle-manager-${VERSION}"
+
+# ── フラグ解析 ──────────────────────────────────────────────────────────────
+IS_TRIAL_MODE=false
+ZIP_SUFFIX=""
+
+for arg in "$@"; do
+  case $arg in
+    --trial)   IS_TRIAL_MODE=true;  ZIP_SUFFIX="_Trial" ;;
+    --release) IS_TRIAL_MODE=false; ZIP_SUFFIX="" ;;
+  esac
+done
+
+DIST_NAME="wrestle-manager-${VERSION}${ZIP_SUFFIX}"
 DIST_DIR="dist/${DIST_NAME}"
 ZIP_NAME="${DIST_NAME}.zip"
 
 echo "🏟️  WRESTLE MANAGER — ZIP配布パッケージ作成"
 echo "================================================"
+if [ "$IS_TRIAL_MODE" = "true" ]; then
+  echo "📋 モード: 体験版（IS_TRIAL=true）"
+else
+  echo "📋 モード: 製品版（IS_TRIAL=false）"
+fi
 
 # Clean
 rm -rf dist/
@@ -25,6 +44,12 @@ cp src/index.html src/data.js src/engine.js src/app.js \
    "${DIST_DIR}/src/"
 cp portrait-map.js "${DIST_DIR}/"
 
+# ── IS_TRIAL フラグの書き換え（コピー後のファイルのみ。元ファイルは変更しない） ──
+if [ "$IS_TRIAL_MODE" = "true" ]; then
+  echo "🔒 体験版フラグを設定中（IS_TRIAL=true）..."
+  sed -i 's/window\.IS_TRIAL = false/window.IS_TRIAL = true/' "${DIST_DIR}/src/index.html"
+fi
+
 # Copy images
 echo "🖼️  画像ファイルをコピー中..."
 cp image/*.png "${DIST_DIR}/image/"
@@ -37,11 +62,13 @@ cp bgm/* "${DIST_DIR}/bgm/" 2>/dev/null || true
 SRC_COUNT=$(ls -1 "${DIST_DIR}/src/" | wc -l)
 IMG_COUNT=$(ls -1 "${DIST_DIR}/image/" | wc -l)
 
-# Create ZIP
+# Create ZIP（Windows: PowerShell / Linux: zip）
 echo "📦 ZIP作成中..."
-cd dist/
-zip -r "../${ZIP_NAME}" "${DIST_NAME}/" -q
-cd ..
+if command -v zip &>/dev/null; then
+  cd dist/ && zip -r "../${ZIP_NAME}" "${DIST_NAME}/" -q && cd ..
+else
+  powershell.exe -Command "Compress-Archive -Path 'dist/${DIST_NAME}' -DestinationPath '${ZIP_NAME}' -Force"
+fi
 
 ZIP_SIZE=$(du -h "${ZIP_NAME}" | cut -f1)
 

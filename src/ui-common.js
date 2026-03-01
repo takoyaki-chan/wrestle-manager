@@ -3512,3 +3512,26 @@ function drawRadarChart(canvas, stats, options = {}) {
     ctx.fillText(s.label, cx + labelR * Math.cos(a), cy + labelR * Math.sin(a));
   });
 }
+
+// ── v2.1: 体験版制限モーダル ──────────────────────────────────────────────────
+// IS_TRIAL=true のとき featureName が製品版限定である旨を表示し true を返す。
+// IS_TRIAL=false のとき何もせず false を返す → if (showTrialLimitMessage('機能名')) return; で使う。
+function showTrialLimitMessage(featureName) {
+  if (!window.IS_TRIAL) return false;
+  const overlay = document.getElementById('confirmOverlay');
+  const box = document.getElementById('confirmBox');
+  if (!overlay || !box) {
+    alert(`【${featureName}】は製品版で遊べます！\nDLsite / BOOTH で製品版をチェックしてください。`);
+    return true;
+  }
+  box.innerHTML = `
+    <div class="panel-title" style="color:var(--gold);margin-bottom:12px">🔒 製品版限定機能</div>
+    <p style="line-height:1.8;margin-bottom:20px">
+      【${featureName}】は製品版で解放されます！<br>
+      DLsite / BOOTH で製品版をチェックしてください。
+    </p>
+    <button class="btn btn-gold" style="min-width:120px"
+      onclick="document.getElementById('confirmOverlay').classList.remove('active')">閉じる</button>`;
+  overlay.classList.add('active');
+  return true;
+}

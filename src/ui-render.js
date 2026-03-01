@@ -708,8 +708,10 @@ function renderWeekScreen() {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
     html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調に応じてスケジュールを自動設定します（確認後に手動で進めてください）">🤖 おまかせ</button>';
-    // v2.0: ケアアクションボタン
-    html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
+    // v2.0: ケアアクションボタン（体験版では🔒表示）
+    html += window.IS_TRIAL
+      ? `<button class="btn" onclick="showTrialLimitMessage('ケアアクション')" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.06);color:rgba(232,67,147,0.45);border:1px solid rgba(232,67,147,0.15);font-weight:600" title="製品版限定機能">🔒 ケア</button>`
+      : `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
     html += '</div>';
 
     // Roster schedule overview
@@ -2284,6 +2286,12 @@ let _dbFilterName = '';
 function renderDatabase() {
   const el = document.getElementById('databaseContent');
   if (!el) return;
+  if (window.IS_TRIAL) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2">
+      🔒 データベースは製品版で解放されます<br>
+      <span style="font-size:12px">DLsite / BOOTH で製品版をチェックしてください</span></div>`;
+    return;
+  }
 
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
