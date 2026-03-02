@@ -82,7 +82,8 @@
       "Bash(powershell -Command \"[System.IO.File]::WriteAllText\\(''C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\new_coaches.txt'', ''test content'', [System.Text.Encoding]::UTF8\\)\")",
       "Bash(node -e:*)",
       "Bash(node C:/Users/nkmrk/Downloads/wrestle-manager/read_stdin.js:*)",
-      "Bash(ls -d /c/Users/nkmrk/Downloads/wrestle-manager/image/*/)"
+      "Bash(ls -d /c/Users/nkmrk/Downloads/wrestle-manager/image/*/)",
+      "Bash(grep -n \"isRental\" *.js)"
     ]
   }
 }

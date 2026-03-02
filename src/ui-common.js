@@ -86,6 +86,7 @@ function getWarChallengeDialogue(fighter, orgName) {
 function showWarChallenge() {
   const ev = G.pendingEvent;
   if (!ev || ev.type !== 'war') return;
+  Audio.play('war');
 
   // Switch to tension BGM
   Audio.bgm.play('tension');
@@ -837,7 +838,7 @@ function _renderEventPopup() {
     <button class="event-popup-ok" onclick="closeEventPopup()">OK</button>
   `;
   document.getElementById('eventPopupOverlay').classList.add('active');
-  Audio.play(o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'fanfare' : 'notify');
+  Audio.play(o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event');
   if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
 }
 
@@ -932,7 +933,7 @@ function _renderRetirementPopup() {
     <button class="retirement-popup-btn" onclick="closeRetirementPopup()">${btnLabel}</button>
   `;
   document.getElementById('retirementPopupOverlay').classList.add('active');
-  Audio.play(isInjury ? 'error' : 'notify');
+  Audio.play(isInjury ? 'error' : 'event');
 }
 
 function closeRetirementPopup() {
@@ -991,7 +992,7 @@ function showAwardsCeremony(awards, onDone) {
     document.getElementById('awardsOverlay').classList.remove('active');
     idx++;
     if (idx < steps.length) {
-      setTimeout(() => { steps[idx](); document.getElementById('awardsOverlay').classList.add('active'); Audio.play('notify'); }, 280);
+      setTimeout(() => { steps[idx](); document.getElementById('awardsOverlay').classList.add('active'); Audio.play('reveal'); }, 280);
     } else {
       window._awardsNext = null;
       if (onDone) onDone();
@@ -1001,7 +1002,7 @@ function showAwardsCeremony(awards, onDone) {
   // 開始
   steps[0]();
   document.getElementById('awardsOverlay').classList.add('active');
-  Audio.play('fanfare');
+  Audio.play('award');
 }
 
 function _renderAwardsSlide(html, frame) {
@@ -1882,7 +1883,7 @@ function mqStars(mq) {
 
 // v1.0: Mission clear celebration — tap to dismiss
 function dismissMissionClear(missionId, el) {
-  Audio.play('fanfare');
+  Audio.play('award');
   el.classList.remove('new-clear');
   el.classList.add('clearing');
   // Remove from pending clears
@@ -2465,7 +2466,7 @@ function _renderNextGrowthPopup() {
     if (ev.hotStreak) detail += '　🔥 <em>絶好調突入！</em>';
     btnLabel = '素晴らしい';
     tone = 'gold';
-    Audio.play('fanfare');
+    Audio.play('award');
   } else if (ev.type === 'slump_start') {
     const lines = SLUMP_START_LINES[ev.trigger] || SLUMP_START_LINES['defeat'];
     title = '📉 スランプ…';
@@ -2480,7 +2481,7 @@ function _renderNextGrowthPopup() {
     detail = `${ev.duration || '?'}週間のスランプを乗り越えた！`;
     btnLabel = 'おかえり';
     tone = 'positive';
-    Audio.play('notify');
+    Audio.play('event');
   } else if (ev.type === 'motivation_loss_start') {
     title = '😞 モチベーション喪失…';
     message = MOTIVATION_LOSS_LINES[Math.floor(Math.random() * MOTIVATION_LOSS_LINES.length)];
@@ -2494,7 +2495,7 @@ function _renderNextGrowthPopup() {
     detail = `${ev.duration || '?'}週間の低迷から立ち直った！`;
     btnLabel = '待ってた';
     tone = 'positive';
-    Audio.play('notify');
+    Audio.play('event');
   }
 
   // 顔画像
@@ -2618,7 +2619,7 @@ function showSeasonFanfare(season, onDone) {
     <div style="font-size:12px;color:var(--text-dim);margin-top:14px">— タップで続行 —</div>
   `;
   overlay.classList.add('show');
-  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('fanfare');
+  Audio.play('fanfare');
   window._sfDismiss = () => {
     overlay.classList.remove('show');
     window._sfDismiss = null;
@@ -2665,19 +2666,19 @@ function showNewspaperPanel(articles, onDone) {
 
   window._newsNav = (dir) => {
     idx = Math.max(0, Math.min(articles.length - 1, idx + dir));
-    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    Audio.play('click');
     renderArticle(idx);
   };
 
   window._newsClose = () => {
-    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    Audio.play('click');
     overlay.classList.remove('active');
     window._newsNav = null;
     window._newsClose = null;
     if (onDone) setTimeout(onDone, 100);
   };
 
-  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+  Audio.play('reveal');
   renderArticle(0);
   overlay.classList.add('active');
 }
@@ -2703,7 +2704,7 @@ function showMilestoneEvent(evt, onChoice) {
     btn.addEventListener('click', function() {
       const idx = parseInt(this.dataset.idx);
       const choice = evt.choices[idx];
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+      Audio.play('event');
       box.innerHTML = `<div class="milestone-title">${evt.title}</div>
         <div class="milestone-result">${choice.result}</div>
         <div class="milestone-effect">${choice.effectLabel}</div>
@@ -2918,7 +2919,7 @@ function showChoiceEventModal(event, state, onChoice) {
     btn.addEventListener('click', function() {
       overlay.classList.remove('active');
       const idx = parseInt(this.dataset.choice);
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      Audio.play('click');
       if (onChoice) onChoice(idx);
     });
   });
@@ -2962,7 +2963,7 @@ function showLargeEventModal(event, state, step, onChoice) {
       if (this.hasAttribute('disabled')) return;
       overlay.classList.remove('active');
       const idx = parseInt(this.dataset.choice);
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      Audio.play('click');
       if (onChoice) onChoice(idx);
     });
   });
@@ -2972,7 +2973,7 @@ function showLargeEventModal(event, state, step, onChoice) {
     card.addEventListener('click', function() {
       overlay.classList.remove('active');
       const fId = parseInt(this.dataset.fighterId);
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      Audio.play('click');
       if (onChoice) onChoice(fId);
     });
   });
@@ -3273,7 +3274,7 @@ function _showCareReaction(fighter, text) {
     </div>
   `;
   el.classList.add('show');
-  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('notify');
+  Audio.play('notify');
 
   clearTimeout(window._notifTimer);
   window._notifTimer = setTimeout(() => el.classList.remove('show'), 3500);
@@ -3311,7 +3312,7 @@ function showNotifEventToast(event) {
     </div>
   `;
   el.classList.add('show');
-  Audio.play('notify');
+  Audio.play('event');
 
   // クリックで早期クローズ
   el.onclick = () => {
@@ -3466,7 +3467,7 @@ function showEndingCeremony(data, onDone) {
     setTimeout(() => {
       steps[idx]();
       document.getElementById('awardsOverlay').classList.add('active');
-      Audio.play('notify');
+      Audio.play('reveal');
     }, 280);
   };
 

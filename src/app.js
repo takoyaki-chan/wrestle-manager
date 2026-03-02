@@ -224,6 +224,22 @@ const Audio = (() => {
       osc(2400, 'sine', t, 0.02, 0.08);
       osc(1800, 'sine', t + 0.015, 0.025, 0.05);
     },
+    // notifyより一段重い「ポォン」— E5→G5 上昇2音
+    event() {
+      const t = ensure().currentTime;
+      osc(659, 'sine', t, 0.09, 0.18);
+      osc(659, 'triangle', t, 0.04, 0.08);
+      osc(784, 'sine', t + 0.14, 0.12, 0.22);
+      osc(784, 'triangle', t + 0.14, 0.05, 0.10);
+      noiseHP(t + 0.14, 0.02, 0.06, 5000);
+    },
+    // ソフトなシンバルブラシ＋高域sine減衰 — アワード式スライド切替
+    reveal() {
+      const t = ensure().currentTime;
+      noiseHP(t, 0.04, 0.05, 5000);
+      osc(2093, 'sine', t + 0.02, 0.03, 0.12);
+      osc(3136, 'sine', t + 0.04, 0.02, 0.10);
+    },
 
     // ── Events (OLD: fanfare / NEW: rest) ──
     fanfare() {
@@ -283,31 +299,6 @@ const Audio = (() => {
       osc(311, 'triangle', t + 0.4, 0.8, 0.04);
       oscSweep(200, 100, 'sine', t + 0.3, 0.7, 0.03);
     },
-    championship() {
-      const t = ensure().currentTime;
-      [262, 330, 392].forEach((f, i) => {
-        osc(f, 'sawtooth', t + i * 0.1, 0.2, 0.04);
-        osc(f, 'sine', t + i * 0.1, 0.2, 0.12);
-      });
-      [523, 659, 784, 1047].forEach((f, i) => {
-        osc(f, 'sine', t + 0.4 + i * 0.08, 0.25, 0.15);
-        osc(f * 2, 'sine', t + 0.4 + i * 0.08, 0.15, 0.04);
-      });
-      [1047, 1319, 1568, 2093].forEach(f => osc(f, 'sine', t + 0.8, 1.0, 0.1));
-      osc(2093, 'triangle', t + 0.8, 1.2, 0.05);
-      noiseHP(t + 0.8, 0.4, 0.04, 4000);
-      osc(65, 'sine', t + 0.8, 1.0, 0.06);
-    },
-    seasonEnd() {
-      const t = ensure().currentTime;
-      osc(440, 'sine', t, 0.4, 0.12);
-      osc(523, 'sine', t + 0.25, 0.4, 0.12);
-      osc(659, 'sine', t + 0.5, 0.4, 0.12);
-      osc(880, 'sine', t + 0.8, 1.2, 0.15);
-      osc(880, 'triangle', t + 0.8, 1.5, 0.06);
-      osc(440, 'sine', t + 0.8, 1.5, 0.04);
-      oscSweep(1760, 1720, 'sine', t + 1.0, 1.0, 0.03);
-    },
     war() {
       const t = ensure().currentTime;
       oscSweep(200, 60, 'sine', t, 0.08, 0.15);
@@ -331,6 +322,23 @@ const Audio = (() => {
       g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
       o.connect(f); f.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.4);
       noiseHP(t + 0.05, 0.15, 0.04, 3000);
+    },
+    // C5-E5-G5 ベルハーモニクス＋スパークル — 受賞発表（fanfare代替）
+    award() {
+      const t = ensure().currentTime;
+      bellPartial(523, t,        0.4, 0.15);
+      bellPartial(659, t + 0.12, 0.5, 0.12);
+      bellPartial(784, t + 0.26, 0.6, 0.09);
+      noiseHP(t + 0.26, 0.08, 0.04, 7000);
+    },
+    // 短いドラムロール → シンバル一打 — ランキング発表等
+    tension_hit() {
+      const t = ensure().currentTime;
+      noiseLP(t,        0.12, 0.15, 200);
+      noiseLP(t + 0.04, 0.10, 0.11, 250);
+      noiseLP(t + 0.09, 0.08, 0.08, 300);
+      noiseHP(t + 0.18, 0.5,  0.12, 4000);
+      osc(60, 'sine',   t + 0.18, 0.4, 0.08);
     },
 
     // ── Money (NEW) ──
@@ -356,21 +364,6 @@ const Audio = (() => {
       osc(800, 'sine', t + 0.12, 0.08, 0.1);
       osc(1000, 'sine', t + 0.17, 0.1, 0.08);
     },
-    powerup() {
-      const t = ensure().currentTime;
-      const c = ensure();
-      const o = c.createOscillator(), g = c.createGain(), fl = c.createBiquadFilter();
-      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, t);
-      o.frequency.exponentialRampToValueAtTime(1200, t + 0.3);
-      fl.type = 'lowpass'; fl.frequency.setValueAtTime(600, t);
-      fl.frequency.exponentialRampToValueAtTime(6000, t + 0.3);
-      g.gain.setValueAtTime(0.08, t); g.gain.setValueAtTime(0.08, t + 0.25);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-      o.connect(fl); fl.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.5);
-      osc(1200, 'sine', t + 0.3, 0.2, 0.12);
-      osc(1568, 'sine', t + 0.33, 0.2, 0.1);
-      noiseHP(t + 0.3, 0.06, 0.03, 6000);
-    }
   };
 
   // ╔══════════════════════════════════════════════════╗
@@ -1584,7 +1577,7 @@ const Storage = {
 
 // Alias for backward compat in UI
 function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
-function loadGame(slot) { Audio.play('notify'); const r = Storage.load(slot); if (r && App._refreshTicker) App._refreshTicker(); Audio.bgm.playForState(); return r; }
+function loadGame(slot) { Audio.play('select'); const r = Storage.load(slot); if (r && App._refreshTicker) App._refreshTicker(); Audio.bgm.playForState(); return r; }
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -1694,7 +1687,7 @@ const App = {
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
     const orgName = (input && input.value.trim()) || 'プレイヤー団体';
-    Audio.play('fanfare');
+    Audio.play('award');
     document.getElementById('orgSetupScreen').style.display = 'none';
     // Initialize new game and go to draft
     G = Engine.createInitialState();
@@ -1743,7 +1736,7 @@ const App = {
     if (G.weekPhase !== 'draft') return;
     const picks = G._draftPicks || [];
     if (!Engine.draft.isValidPicks(picks)) return;
-    Audio.play('fanfare');
+    Audio.play('award');
     Audio.bgm.play('management');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
@@ -3257,7 +3250,7 @@ const App = {
         };
       }
     }
-    Audio.play('notify');
+    Audio.play('event');
     showMilestoneEvent(displayEvt, (choiceIdx) => {
       App._applyMilestoneChoice(displayEvt, choiceIdx);
       onDone();
@@ -3335,7 +3328,7 @@ const App = {
     if (result.events && result.events.length > 0) {
       showToast(result.events[result.events.length - 1]);
     }
-    Audio.play('notify');
+    Audio.play('event');
     renderManagePanel();
   },
 
@@ -3399,7 +3392,7 @@ const App = {
       // 結果表示モーダル
       setTimeout(() => {
         showLargeEventModal(enrichedEvent, G, 2, () => {
-          Audio.play('notify');
+          Audio.play('event');
           renderManagePanel();
         });
       }, 300);
@@ -3427,7 +3420,7 @@ const App = {
       // 結果表示モーダル
       setTimeout(() => {
         showLargeEventModal(enrichedEvent, G, 2, () => {
-          Audio.play('notify');
+          Audio.play('event');
           renderManagePanel();
         });
       }, 300);

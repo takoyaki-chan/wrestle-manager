@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-02（コーチ名フルネーム統一＋道場バナー中央配置）
+> 最終更新: 2026-03-02（サウンドデザイン オーバーホール）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**サウンドデザイン オーバーホール（2026-03-02）。** SFXカテゴリ再分類・新規4種追加・未使用3種削除・全呼び出し見直し。
+
+- **新規SFX 4種追加**: `event`（E5→G5 上昇2音、イベント発生・成長通知）、`reveal`（シンバルブラシ＋高域sine減衰、スライド切替）、`award`（C5-E5-G5 ベルハーモニクス＋スパークル、受賞発表）、`tension_hit`（ドラムロール→シンバル一打、緊張演出）
+- **未使用SFX 3種削除**: `championship`（SFX側、BGMジングルは健在）、`seasonEnd`、`powerup`
+- **音の割当て変更**: fanfareを「殿堂入り・シーズン開幕・エンディング」の3箇所に厳選。notify→event（イベント/成長通知系）、fanfare→award（受賞/ミッション完了/ドラフト完了等）、notify→reveal（スライド切替系）、hover→war（対抗戦チャレンジ表示で追加）
+- **typeofガード全削除**: ui-common.js 全9箇所の `typeof Audio !== 'undefined'` ガードを直接 `Audio.play()` 呼び出しに統一（public API側にtry-catchあり）
+- 変更: app.js, ui-common.js
 
 **コーチ名フルネーム統一＋道場バナー中央配置（2026-03-02）。**
 
@@ -270,6 +278,7 @@
 - **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
 - **会場規模連動の試合数** — VENUES.maxMatches（公民館3〜ドーム8）。Engine.util.getMaxMatches(week,venueIdx)で一元管理。特別興行/PPVは+1（上限8）。CARD_DEPTH_MULT 8要素。showCardは空配列初期化→pad/trimで動的調整
 - **レンタルシステム** — G.rentals配列。シーズン(期)単位契約(1-4期,12週/期)。前払い一括。FA+ライバル団体2ソース。同時2-3枠(ロスターサイズ連動)。タイトル戦出場不可。orgPop貢献50%。確認ダイアログ(顔アイコン+費用)。ソート(名前/OVR/費用)対応。ロスター金枠分離表示
+- **SFXカテゴリ体系** — UIカテゴリ(click/hover/select/deselect/error/save)、進行カテゴリ(tick/notify/event/reveal)、経済カテゴリ(coin/spend/stamp)、試合カテゴリ(bell/bellx3/crowd/impact)、ドラマカテゴリ(fanfare/victory/defeat/war/transfer/award/tension_hit)。fanfareは「殿堂入り・シーズン開幕・エンディング」の3箇所のみ使用。notify=軽い情報表示、event=ゲームイベント発生、reveal=段階的表示/スライド切替、award=受賞発表（fanfare代替）
 
 ---
 
