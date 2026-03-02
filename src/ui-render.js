@@ -1206,7 +1206,7 @@ function renderRoster() {
   let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
   html += '<div style="display:flex;flex-direction:column;gap:4px">';
   const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
-  const sorted = [...G.roster].sort((a,b) => {
+  const _sortFn = (a,b) => {
     switch(_rosterSortKey) {
       case 'name': return a.name.localeCompare(b.name, 'ja');
       case 'cond': return b.condition - a.condition;
@@ -1218,7 +1218,10 @@ function renderRoster() {
       }
       default: return ov(b) - ov(a);
     }
-  });
+  };
+  const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
+  const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
+  const sorted = ownFighters;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;
@@ -1298,6 +1301,47 @@ function renderRoster() {
     </div>`;
   });
   html += '</div>';
+  // ── Rental fighters separated section ──
+  if (rentalFighters.length > 0) {
+    const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownFighters.length);
+    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#f39c12">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
+    html += '<div style="display:flex;flex-direction:column;gap:4px">';
+    rentalFighters.forEach(c => {
+      const condPct = c.condition;
+      const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
+      const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
+      const contract = (G.rentals || []).find(r => r.fighterId === c.id);
+      const srcLabel = contract ? (contract.fromSource === 'rival'
+        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || '他団体')
+        : 'FA') : '?';
+      html += `<div style="background:var(--bg-card);border:1px solid rgba(243,156,18,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
+          ${portraitImg(c.id, 56, '', true)}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+              ${fLink(c, {source:'roster', size:'13px'})}<span style="color:#f39c12;font-size:12px"> 🤝</span>
+              <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
+              ${injuryBadge}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
+              <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
+              <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b></span>
+              <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b></span>
+              <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b></span>
+              <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b></span>
+              <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b></span>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
+            <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
+            <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
+            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} ｜ 残${contract ? contract.seasonsLeft : '?'}期(${contract ? contract.seasonsLeft * 12 : '?'}週)</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
   el.innerHTML = html;
 
   _renderRosterGrowthLog();
@@ -1466,7 +1510,9 @@ function renderShowPrep() {
     // v1.2: 12週クールダウンチェック
     const cdCheck = Engine.title.canTitleMatch(G); // { allowed, weeksLeft }
     const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
-    const canTitle = titleEligible && cdCheck.allowed;
+    // Rental restriction: レンタル選手はタイトルマッチ出場不可
+    const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
+    const canTitle = titleEligible && cdCheck.allowed && !slotHasRental;
     const isTitle = G.showCard[i].isTitle || false;
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
@@ -1489,6 +1535,7 @@ function renderShowPrep() {
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
         ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
         ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="タイトルマッチは12週に1回まで">⏳ 次のタイトルマッチまであと${cdCheck.weeksLeft}週</span>` : ''}
+        ${titleEligible && cdCheck.allowed && slotHasRental ? `<span style="color:var(--text-dim);font-size:11px" title="レンタル選手はタイトルマッチに出場できません">🤝 レンタル選手はタイトル戦不可</span>` : ''}
         ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
@@ -1889,18 +1936,34 @@ function renderScout() {
   }
 
   // ── Phase D: Rental Section ──
-  const rentalActive = G.rental;
-  html += '<div class="panel-title" style="font-size:15px;margin-top:18px">🤝 他団体レンタル</div>';
-  if (rentalActive) {
-    const rentalF = G.roster.find(c => c.id === rentalActive.fighterId);
-    const fromOrg = Engine.rival.getOrgInfo(G.aiOrgs, rentalActive.fromOrgId);
-    html += `<div style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:6px;padding:14px;margin-bottom:12px">
-      <div style="font-size:15px;color:var(--gold);font-weight:700;margin-bottom:6px">レンタル中</div>
-      <div style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '不明'} ← ${fromOrg ? fromOrg.name : '不明'}</div>
-      <div style="font-size:13px;color:var(--text-sub)">残り${rentalActive.weeksLeft}週 ｜ ${rentalActive.weeklyCost}万/週</div>
-    </div>`;
-  } else if (G.offSeason) {
+  const activeRentals = G.rentals || [];
+  const ownRoster = G.roster.filter(c => !c.isRental);
+  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+  const remainingSlots = Math.max(0, maxSlots - activeRentals.length);
+  html += `<div class="panel-title" style="font-size:15px;margin-top:18px">🤝 レンタル（${activeRentals.length}/${maxSlots}枠）</div>`;
+  // Active rentals display
+  if (activeRentals.length > 0) {
+    activeRentals.forEach(contract => {
+      const rentalF = G.roster.find(c => c.id === contract.fighterId);
+      const fromLabel = contract.fromSource === 'rival'
+        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || contract.fromOrgId)
+        : 'フリーエージェント';
+      html += `<div style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '不明'}</span>
+            <span style="font-size:12px;color:var(--text-sub);margin-left:8px">← ${fromLabel}</span>
+          </div>
+          <div style="font-size:13px;color:var(--gold)">残り${contract.seasonsLeft}期(${contract.seasonsLeft * 12}週)</div>
+        </div>
+      </div>`;
+    });
+  }
+  // Rental market
+  if (G.offSeason) {
     html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">オフシーズン中はレンタルできません</div>';
+  } else if (remainingSlots <= 0) {
+    html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">レンタル枠が満員です</div>';
   } else {
     const rentals = Engine.rental.getAvailableRentals(G);
     const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
@@ -1908,18 +1971,41 @@ function renderScout() {
     if (visibleRentals.length === 0) {
       html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">レンタル可能な選手がいません</div>';
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">4週間固定 / 同時1名まで / OVR上位2名は対象外 ｜ 紹介枠${visibleRentals.length}名（四半期入替）</div>`;
-      html += '<div style="overflow-x:auto"><table class="data-table"><tr><th>名前</th><th>団体</th><th>Style</th><th>総合</th><th>週費用</th><th>合計</th><th>交渉</th></tr>';
-      visibleRentals.forEach(r => {
-        const canAfford = G.funds >= r.totalFee;
+      // Sort rental candidates
+      const sortKey = window._rentalSortKey || 'fee';
+      const sortAsc = window._rentalSortAsc != null ? window._rentalSortAsc : true;
+      const sorted = [...visibleRentals].sort((a, b) => {
+        let va, vb;
+        if (sortKey === 'ovr') { va = Engine.util.ov(a.fighter); vb = Engine.util.ov(b.fighter); }
+        else if (sortKey === 'fee') { va = a.fees[1]; vb = b.fees[1]; }
+        else if (sortKey === 'name') { va = a.fighter.name; vb = b.fighter.name; return sortAsc ? va.localeCompare(vb,'ja') : vb.localeCompare(va,'ja'); }
+        else { va = 0; vb = 0; }
+        return sortAsc ? va - vb : vb - va;
+      });
+      const arrow = k => sortKey === k ? (sortAsc ? ' ▲' : ' ▼') : '';
+      const thStyle = 'cursor:pointer;user-select:none';
+      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">1〜4期契約（1期=12週） / 前払い一括 / OVR上位${RENTAL_CONFIG.topExclude}名は対象外（団体） ｜ 紹介枠${visibleRentals.length}名（四半期入替）</div>`;
+      html += `<div style="overflow-x:auto"><table class="data-table"><tr>
+        <th style="${thStyle}" onclick="sortRentalTable('name')">名前${arrow('name')}</th>
+        <th>供給元</th><th>Style</th>
+        <th style="${thStyle}" onclick="sortRentalTable('ovr')">総合${arrow('ovr')}</th>
+        <th>期間</th>
+        <th style="${thStyle}" onclick="sortRentalTable('fee')">費用${arrow('fee')}</th>
+        <th>交渉</th></tr>`;
+      sorted.forEach(r => {
+        const srcLabel = r.source === 'rival' ? (r.org?.name || '?') : 'FA';
+        const srcLink = r.source === 'rival' ? `ai:${r.org.id}` : 'free';
+        const feeFor1 = r.fees[1];
+        const selectId = `rentalSeasons_${r.fighter.id}`;
+        const seasonOpts = [1,2,3,4].map(n => `<option value="${n}">${n}期(${n*12}週)</option>`).join('');
         html += `<tr>
-          <td>${fLink(r.fighter, {source:'ai:'+r.org.id})}</td>
-          <td style="font-size:13px;color:var(--text-sub)">${r.org.name}</td>
+          <td>${fLink(r.fighter, {source:srcLink})}</td>
+          <td style="font-size:13px;color:var(--text-sub)">${srcLabel}</td>
           <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
           <td class="num ov">${Engine.util.ov(r.fighter)}</td>
-          <td class="num" style="color:var(--text-sub)">${r.weeklyFee}万</td>
-          <td class="num" style="color:#f39c12">${r.totalFee}万</td>
-          <td><button onclick="requestRental(${r.fighter.id},'${r.org.id}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${canAfford?'':'disabled'}>レンタル</button></td>
+          <td><select id="${selectId}" onchange="updateRentalFee(${r.fighter.id})" style="font-size:12px;padding:2px 4px;background:var(--card-bg);color:var(--text);border:1px solid var(--border)">${seasonOpts}</select></td>
+          <td class="num" style="color:#f39c12"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
+          <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
         </tr>`;
       });
       html += '</table></div>';

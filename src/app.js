@@ -1151,7 +1151,7 @@ const Storage = {
       // v0.9c backward compat: transfer
       if (G.pendingPoach === undefined) G = { ...G, pendingPoach: [] };
       // v0.9d backward compat: rental & events
-      if (G.rental === undefined) G = { ...G, rental: null, warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
+      if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
 
       // v0.96 backward compat: mission system
@@ -1491,6 +1491,29 @@ const Storage = {
           attendanceMomentum: 0,
           _migrated_venue_redesign: true
         };
+      }
+
+      // Rental system migration: G.rental (single object) → G.rentals (array)
+      if (!G._migrated_rental_v2) {
+        const rentals = [];
+        if (G.rental) {
+          // Convert old single rental to new contract format
+          const old = G.rental;
+          rentals.push({
+            fighterId: old.fighterId,
+            fromSource: 'rival',
+            fromOrgId: old.fromOrgId,
+            seasonsLeft: 1,  // finish at next season end
+            fee: 0           // already paid in old system
+          });
+          // Update rental fighter's new fields
+          const rf = (G.roster || []).find(c => c.id === old.fighterId);
+          if (rf) {
+            rf.rentalSource = 'rival';
+            rf.rentalSeasonsLeft = 1;
+          }
+        }
+        G = { ...G, rentals, rental: undefined, _migrated_rental_v2: true };
       }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent

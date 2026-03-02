@@ -1196,10 +1196,13 @@ const TRANSFER_CONFIG = {
 
 // ── Phase D: Rental & Event Constants ──
 const RENTAL_CONFIG = {
-  duration: 4,                          // 4週間固定
-  maxConcurrent: 1,                     // 同時1名
-  minOrgRosterRank: 5,                  // 対象: OVR順5位以下
-  weeklyCost: { S: 80, A: 50, B: 30 }, // 週次費用ティア別
+  minSeasons: 1,                        // 最短1期(12週)
+  maxSeasons: 4,                        // 最長4期(48週)
+  topExclude: 3,                        // 団体内OVR上位3名は対象外
+  faTierMul: 0.85,                      // FA選手の費用倍率（団体所属より安め）
+  tierMul: { S: 1.4, A: 1.15, B: 1.0 }, // 団体ティア別費用倍率
+  /** 同時レンタル枠: ロスター8名以上で3枠、未満で2枠 */
+  getMaxConcurrent(rosterSize) { return rosterSize >= 8 ? 3 : 2; },
 };
 
 const EVENT_CONFIG = {

@@ -1388,7 +1388,7 @@ function showFighterPopup(fighterId, source) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
-            ${c.isRental ? '<span style="font-size:13px;color:#f39c12">🤝 レンタル</span>' : ''}
+            ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル${ct ? `（残${ct.seasonsLeft}期/${ct.seasonsLeft * 12}週）` : ''}</span>`; })() : ''}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
             const td = TRAIT_DEFS[t]; if (!td) return '';
@@ -1852,6 +1852,9 @@ function toggleTitle(slotIndex) {
   if (!m.isTitle) {
     const cd = Engine.title.canTitleMatch(G);
     if (!cd.allowed) { alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`); return; }
+    // Rental restriction
+    const hasRental = [m.left, m.right].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
+    if (hasRental) { alert('レンタル選手はタイトルマッチに出場できません'); return; }
   }
   const champId = G.titles.world.championId;
   if (!champId && !m.isTitle) {
@@ -2250,31 +2253,105 @@ function skipEvent() {
 }
 
 // ── Phase D: Rental UI Functions ──
-function requestRental(fighterId, fromOrgId) {
+function requestRental(fighterId, fromSource, fromOrgId) {
+  const sel = document.getElementById(`rentalSeasons_${fighterId}`);
+  const seasons = sel ? parseInt(sel.value) || 1 : 1;
+
+  // Find fighter info for confirmation dialog
+  let fighterName = '不明', fighterOvr = '?';
+  if (fromSource === 'rival') {
+    const orgData = G.aiOrgs && G.aiOrgs[fromOrgId];
+    const f = orgData ? orgData.roster.find(c => c.id === fighterId) : null;
+    if (f) { fighterName = f.name; fighterOvr = Engine.util.ov(f); }
+  } else {
+    const f = (G.freeAgents || []).find(c => c.id === fighterId);
+    if (f) { fighterName = f.name; fighterOvr = Engine.util.ov(f); }
+  }
+  const feeEl = document.getElementById(`rentalFee_${fighterId}`);
+  const fee = feeEl ? feeEl.textContent : '?';
+  const srcLabel = fromSource === 'rival'
+    ? (RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '他団体')
+    : 'フリーエージェント';
+
+  const portrait = portraitImg(fighterId, 64);
+  const msg = `<div style="text-align:left;font-size:13px;line-height:1.8">
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--gold)">🤝 レンタル確認</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      ${portrait}
+      <div>
+        <div style="font-size:15px;font-weight:700">${fighterName}</div>
+        <div style="font-size:13px;color:var(--text-sub)">総合 <b style="color:var(--gold);font-size:16px">${fighterOvr}</b></div>
+      </div>
+    </div>
+    <div><b>供給元:</b> ${srcLabel}</div>
+    <div><b>期間:</b> ${seasons}期（${seasons * 12}週）</div>
+    <div><b>費用:</b> <span style="color:#f39c12;font-weight:700">${fee}万</span>（前払い一括）</div>
+    <div style="margin-top:6px;font-size:12px;color:var(--text-sub)">残り資金: ${Math.floor(G.funds)}万 → ${Math.floor(G.funds - parseInt(fee))}万</div>
+  </div>`;
+
+  showConfirm(msg, 'レンタルする', () => _executeRental(fighterId, fromSource, fromOrgId, seasons));
+}
+
+function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
   Audio.play('transfer');
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 500 + G.week));
-  const result = Engine.rental.requestRental(rng, G, fighterId, fromOrgId);
+  const result = Engine.rental.requestRental(rng, G, fighterId, fromSource, fromOrgId || null, seasons);
   G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
-  // v1.0c: Show rental reaction with portrait + traits quote
   if (result.success) {
     const fighter = G.roster.find(c => c.id === fighterId);
     if (fighter) {
       const quote = getRentalQuote(fighter);
-      const orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
+      const srcLabel = fromSource === 'rival'
+        ? (RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '') + 'から'
+        : 'フリーエージェントとして';
       showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'positive',
-        message: quote, detail:`${orgCfg ? orgCfg.name + 'から' : ''}レンタル加入！` });
+        message: quote, detail:`${srcLabel}レンタル加入！（${seasons}期 / ${seasons * 12}週）` });
     }
   } else {
-    // Show rejection popup
-    const orgData = G.aiOrgs && G.aiOrgs[fromOrgId];
-    const fighter = orgData ? orgData.roster.find(f => f.id === fighterId) : null;
-    if (fighter) {
-      showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'negative',
-        message: '…今は移籍する気はないわ。', detail:'レンタル交渉は不成立でした' });
+    if (fromSource === 'rival') {
+      const orgData = G.aiOrgs && G.aiOrgs[fromOrgId];
+      const fighter = orgData ? orgData.roster.find(f => f.id === fighterId) : null;
+      if (fighter) {
+        showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'negative',
+          message: '…今は移籍する気はないわ。', detail:'レンタル交渉は不成立でした' });
+      }
+    } else {
+      showToast(result.events[0] || '交渉失敗', 'warning');
     }
   }
   Storage.autoSave();
   refreshAll();
+}
+
+/** Update displayed rental fee when season selector changes */
+function updateRentalFee(fighterId) {
+  const sel = document.getElementById(`rentalSeasons_${fighterId}`);
+  const feeEl = document.getElementById(`rentalFee_${fighterId}`);
+  const btnEl = document.getElementById(`rentalBtn_${fighterId}`);
+  if (!sel || !feeEl) return;
+  const seasons = parseInt(sel.value) || 1;
+  const rentals = Engine.rental.getAvailableRentals(G);
+  const r = rentals.find(x => x.fighter.id === fighterId);
+  if (!r) return;
+  const fee = r.fees[seasons] || r.fees[1];
+  feeEl.textContent = fee;
+  if (btnEl) btnEl.disabled = G.funds < fee;
+}
+
+/** Sort rental table by column key */
+function sortRentalTable(key) {
+  if (window._rentalSortKey === key) {
+    window._rentalSortAsc = !window._rentalSortAsc;
+  } else {
+    window._rentalSortKey = key;
+    window._rentalSortAsc = key === 'name'; // name: A→Z default, ovr/fee: ascending default
+  }
+  renderScout();
+  // Re-scroll to rental section
+  const titles = document.querySelectorAll('.panel-title');
+  for (const t of titles) {
+    if (t.textContent.includes('レンタル')) { t.scrollIntoView({ behavior: 'instant', block: 'start' }); break; }
+  }
 }
 
 // Legacy aliases for Engine functions used in UI rendering

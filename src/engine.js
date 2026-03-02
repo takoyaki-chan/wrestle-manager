@@ -94,12 +94,12 @@ const Engine = {
       const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xFA);
       return Engine.util.seededPick(fa.map(c => c.id), 6, seed);
     },
-    /** Compute visible Rental IDs for this quarter (10 slots) */
+    /** Compute visible Rental IDs for this quarter (20 slots) */
     getVisibleRentalIds(state) {
       const rentals = Engine.rental.getAvailableRentals(state);
-      if (rentals.length <= 10) return rentals.map(r => r.fighter.id);
+      if (rentals.length <= 20) return rentals.map(r => r.fighter.id);
       const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xBE);
-      return Engine.util.seededPick(rentals.map(r => r.fighter.id), 10, seed);
+      return Engine.util.seededPick(rentals.map(r => r.fighter.id), 20, seed);
     },
     /**
      * 全プール（自団体・AI団体・FA・スカウト候補）から占有済み characterDefId を収集する。
@@ -1560,6 +1560,8 @@ const Engine = {
     applySeasonEnd(rng, G) {
       const report = [];
       const newRoster = G.roster.map(c => {
+        // レンタル選手はシーズン末処理対象外（wear/aging は元所属先が管理）
+        if (c.isRental) return c;
         let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
                    seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
         // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
@@ -2704,23 +2706,7 @@ const Engine = {
       s = { ...s, weekPhase: 'gameover' };
       events.push('💀 資金が尽きた…団体は解散を余儀なくされた。');
     }
-    // D-1: Rental weekly processing
-    if (s.rental) {
-      const rentalResult = Engine.rental.advanceRental(s);
-      s = rentalResult.state;
-      events.push(...rentalResult.events);
-      // Merge rental cost into weeklyFinance
-      if (s.rental || rentalResult.returned) {
-        const rentalCost = state.rental.weeklyCost;
-        const wf = s.weeklyFinance;
-        s = { ...s, weeklyFinance: {
-          ...wf,
-          expense: wf.expense + rentalCost,
-          net: wf.net - rentalCost,
-          details: [...wf.details, { label: `レンタル費（${state.rental.weeklyCost}万/週）`, val: -rentalCost, type: 'expense' }]
-        }};
-      }
-    }
+    // D-1: Rental — 費用は前払い済み。週次処理は不要（シーズン末に processSeasonEnd で返却）
     // E3: FA monthly rotation — every 4 weeks, swap 2 out / 2 in
     if (s.week % 4 === 0 && !s.offSeason) {
       let fa = [...(s.freeAgents || [])];
@@ -2841,6 +2827,15 @@ const Engine = {
       const cd = Engine.title.canTitleMatch(state);
       if (!cd.allowed) {
         return { error: `タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）` };
+      }
+      // Rental restriction: レンタル選手はタイトルマッチ出場不可
+      const rentalInTitle = validMatches.filter(m => m.isTitle).some(m => {
+        const l = state.roster.find(c => c.id === m.left);
+        const r = state.roster.find(c => c.id === m.right);
+        return (l && l.isRental) || (r && r.isRental);
+      });
+      if (rentalInTitle) {
+        return { error: 'レンタル選手はタイトルマッチに出場できません' };
       }
     }
 
@@ -3179,7 +3174,16 @@ const Engine = {
   },
   applyShowPopularity(roster, results, orgPop, rng) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
-    const avgMQ = Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length);
+    // Rental: レンタル選手が参加する試合は団体人気への貢献が50%（重み付き平均）
+    let totalWeight = 0, weightedMQ = 0;
+    results.forEach(r => {
+      const lRental = roster.find(c => c.id === r.left.id)?.isRental;
+      const rRental = roster.find(c => c.id === r.right.id)?.isRental;
+      const w = (lRental || rRental) ? 0.5 : 1.0;
+      weightedMQ += r.mq * w;
+      totalWeight += w;
+    });
+    const avgMQ = Math.round(totalWeight > 0 ? weightedMQ / totalWeight : 0);
     // v1.5s26: orgPop帯別MQ閾値シフト（旧フラット+0.2ボーナスを廃止して置き換え）
     // 低orgPopほど閾値が下がり、同じMQでも上がりやすく・下落ペナルティも軽くなる
     const mqAdj = Engine.orgPop.getMQAdjust(orgPop);
@@ -3541,100 +3545,174 @@ const Engine = {
     }
   },
 
-  // ── Phase D: Rental System (rival-spec §8) ────────────────
+  // ── Phase D: Rental System (rental-system-spec) ────────────────
   rental: {
-    /** List all rentable fighters from AI orgs */
+    /** Calculate lump-sum rental fee for a fighter (per season × seasons) */
+    calcSeasonFee(fighter, orgCfgOrNull, seasons) {
+      const ovr = Engine.util.ov(fighter);
+      // 指数カーブ: 低OVRは安く、高OVRは急激に高い (仮値 — 経済パラメータ全体調整時に正式決定)
+      const baseFee = Math.pow(ovr / 50, 2.5) * 25;
+      const tierMul = orgCfgOrNull
+        ? (RENTAL_CONFIG.tierMul[orgCfgOrNull.tier] || 1.0)
+        : RENTAL_CONFIG.faTierMul;
+      const perSeason = Math.max(20, Math.round(baseFee * tierMul * 12));
+      return perSeason * seasons;
+    },
+
+    /** List all rentable fighters (AI orgs + free agents). Returns [{ fighter, source, org?, fee1..fee4 }] */
     getAvailableRentals(state) {
       const results = [];
+      const rentalIds = new Set((state.rentals || []).map(r => r.fighterId));
+      // ── Rival org fighters (top 3 by OVR excluded) ──
       RIVAL_ORGS.forEach(orgCfg => {
         const orgData = state.aiOrgs && state.aiOrgs[orgCfg.id];
         if (!orgData) return;
         const org = { ...orgCfg, roster: orgData.roster, orgPop: orgData.orgPop };
         const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-        // Only rank 5+ (index >= 4) are available
-        sorted.slice(4).forEach(f => {
-          if (f.injury) return; // skip injured
-          const fee = Engine.rental.calcWeeklyFee(f, orgCfg);
-          results.push({ fighter: f, org, weeklyFee: fee, totalFee: fee * RENTAL_CONFIG.duration });
+        sorted.slice(RENTAL_CONFIG.topExclude).forEach(f => {
+          if (f.injury || rentalIds.has(f.id)) return;
+          const fees = {};
+          for (let s = RENTAL_CONFIG.minSeasons; s <= RENTAL_CONFIG.maxSeasons; s++) {
+            fees[s] = Engine.rental.calcSeasonFee(f, orgCfg, s);
+          }
+          results.push({ fighter: f, source: 'rival', org, fees });
         });
+      });
+      // ── Free agents ──
+      (state.freeAgents || []).forEach(f => {
+        if (f.injury || rentalIds.has(f.id)) return;
+        const fees = {};
+        for (let s = RENTAL_CONFIG.minSeasons; s <= RENTAL_CONFIG.maxSeasons; s++) {
+          fees[s] = Engine.rental.calcSeasonFee(f, null, s);
+        }
+        results.push({ fighter: f, source: 'fa', org: null, fees });
       });
       return results;
     },
 
-    calcWeeklyFee(fighter, org) {
-      const ovr = Engine.util.ov(fighter);
-      // v0.99c: 指数カーブ — 低OVRは安く、高OVRは急激に高い
-      const baseFee = Math.pow(ovr / 50, 2.5) * 25;
-      const tierMul = { S: 1.4, A: 1.15, B: 1.0 }[org.tier] || 1.0;
-      return Math.max(5, Math.round(baseFee * tierMul));
+    /** How many more rentals the player can sign */
+    getRemainingSlots(state) {
+      const ownRoster = (state.roster || []).filter(c => !c.isRental);
+      const max = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+      const current = (state.rentals || []).length;
+      return Math.max(0, max - current);
     },
 
     /** Attempt rental negotiation. Returns { success, state, events } */
-    requestRental(rng, state, fighterId, fromOrgId) {
+    requestRental(rng, state, fighterId, fromSource, fromOrgId, seasons) {
       const events = [];
-      if (state.rental) return { success: false, state, events: ['⚠ 既にレンタル中の選手がいます'] };
-
-      const orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
-      const orgData = state.aiOrgs && state.aiOrgs[fromOrgId];
-      if (!orgCfg || !orgData) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
-
-      const fighter = orgData.roster.find(f => f.id === fighterId);
-      if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
-
-      // Negotiation check (rival-spec §8.5)
-      const rankings = state.rankings || [];
-      const pRank = rankings.find(r => r.orgId === 'player');
-      const oRank = rankings.find(r => r.orgId === fromOrgId);
-      let baseRate = 0.80;
-      if (pRank && oRank) {
-        const gap = oRank.rating - pRank.rating;
-        if (gap > 150) baseRate -= 0.3;
-        else if (gap > 80) baseRate -= 0.1;
+      const rentals = state.rentals || [];
+      const ownRoster = state.roster.filter(c => !c.isRental);
+      const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+      if (rentals.length >= maxSlots) {
+        return { success: false, state, events: [`⚠ レンタル枠上限（${maxSlots}名）に達しています`] };
       }
-      baseRate = Math.max(0.3, Math.min(0.9, baseRate));
-
-      if (Engine.rng.float(rng) >= baseRate) {
-        events.push(`❌ ${orgCfg.name}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
-        return { success: false, state, events };
+      if (seasons < RENTAL_CONFIG.minSeasons || seasons > RENTAL_CONFIG.maxSeasons) {
+        return { success: false, state, events: ['⚠ レンタル期間は1〜4期です'] };
       }
 
-      const weeklyFee = Engine.rental.calcWeeklyFee(fighter, orgCfg);
-      // Add rental fighter to player roster (marked as rental)
+      let fighter, orgCfg = null, fee;
+      if (fromSource === 'rival') {
+        orgCfg = RIVAL_ORGS.find(o => o.id === fromOrgId);
+        const orgData = state.aiOrgs && state.aiOrgs[fromOrgId];
+        if (!orgCfg || !orgData) return { success: false, state, events: ['⚠ 団体が見つかりません'] };
+        fighter = orgData.roster.find(f => f.id === fighterId);
+        if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
+        fee = Engine.rental.calcSeasonFee(fighter, orgCfg, seasons);
+
+        // Negotiation check — 格上団体ほど拒否率が高い
+        const rankings = state.rankings || [];
+        const pRank = rankings.find(r => r.orgId === 'player');
+        const oRank = rankings.find(r => r.orgId === fromOrgId);
+        let baseRate = 0.80;
+        if (pRank && oRank) {
+          const gap = oRank.rating - pRank.rating;
+          if (gap > 150) baseRate -= 0.3;
+          else if (gap > 80) baseRate -= 0.1;
+        }
+        baseRate = Math.max(0.3, Math.min(0.9, baseRate));
+        if (Engine.rng.float(rng) >= baseRate) {
+          const orgName = state.rivalOrgNames?.[fromOrgId] || orgCfg.name || fromOrgId;
+          events.push(`❌ ${orgName}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
+          return { success: false, state, events };
+        }
+      } else {
+        // Free agent rental — no negotiation needed
+        fighter = (state.freeAgents || []).find(f => f.id === fighterId);
+        if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
+        fee = Engine.rental.calcSeasonFee(fighter, null, seasons);
+      }
+
+      if (state.funds < fee) {
+        return { success: false, state, events: [`⚠ 資金不足（必要: ${fee}万、所持: ${Math.floor(state.funds)}万）`] };
+      }
+
+      // Create rental fighter on player roster
       const rentalFighter = {
         ...fighter,
-        isRental: true, rentalFromOrg: fromOrgId, rentalWeeksLeft: RENTAL_CONFIG.duration,
+        isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
+        rentalSeasonsLeft: seasons,
         condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }
       };
-      const rental = { fighterId: fighter.id, fromOrgId, weeksLeft: RENTAL_CONFIG.duration, weeklyCost: weeklyFee };
-      const s = { ...state, roster: [...state.roster, rentalFighter], rental };
-      events.push(`🤝 ${fighter.name}を${orgCfg.name}からレンタル！（${weeklyFee}万/週×${RENTAL_CONFIG.duration}週）`);
+      const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, seasonsLeft: seasons, fee };
+      let s = { ...state,
+        roster: [...state.roster, rentalFighter],
+        rentals: [...rentals, rentalContract],
+        funds: state.funds - fee  // 前払い一括
+      };
+      // FA source: remove from freeAgents pool
+      if (fromSource === 'fa') {
+        s = { ...s, freeAgents: (s.freeAgents || []).filter(f => f.id !== fighterId) };
+      }
+      const orgName = fromSource === 'rival'
+        ? (state.rivalOrgNames?.[fromOrgId] || orgCfg?.name || fromOrgId)
+        : 'フリーエージェント';
+      events.push(`🤝 ${fighter.name}を${orgName}からレンタル！（${fee}万/${seasons}期）`);
       return { success: true, state: s, events };
     },
 
-    /** Weekly rental processing: charge fee, decrement weeks, return if done */
-    advanceRental(state) {
-      if (!state.rental) return { state, events: [], returned: false };
+    /** Season-end rental processing: decrement seasonsLeft, return expired fighters */
+    processSeasonEnd(state) {
+      const rentals = state.rentals || [];
+      if (rentals.length === 0) return { state, events: [] };
       const events = [];
-      let r = { ...state.rental, weeksLeft: state.rental.weeksLeft - 1 };
-      let s = { ...state, funds: state.funds - r.weeklyCost };
+      const remaining = [];
+      let s = { ...state };
+      let roster = [...s.roster];
+      let aiOrgs = { ...s.aiOrgs };
+      let freeAgents = [...(s.freeAgents || [])];
 
-      if (r.weeksLeft <= 0) {
-        // Return fighter
-        const rentalF = s.roster.find(c => c.id === r.fighterId);
-        const returning = s.roster.filter(c => c.id !== r.fighterId);
-        // Update fighter in AI org (popularity/injury may have changed)
-        let aiOrgs = s.aiOrgs;
-        const fromData = aiOrgs[r.fromOrgId];
-        if (fromData) {
-          aiOrgs = { ...aiOrgs, [r.fromOrgId]: { ...fromData, roster: fromData.roster.map(f => f.id === r.fighterId
-            ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
-            : f
-          )}};
+      for (const contract of rentals) {
+        const newSeasonsLeft = contract.seasonsLeft - 1;
+        if (newSeasonsLeft <= 0) {
+          // Return fighter
+          const rentalF = roster.find(c => c.id === contract.fighterId);
+          roster = roster.filter(c => c.id !== contract.fighterId);
+          if (contract.fromSource === 'rival' && contract.fromOrgId) {
+            // Return to AI org with updated popularity/injury
+            const fromData = aiOrgs[contract.fromOrgId];
+            if (fromData) {
+              aiOrgs = { ...aiOrgs, [contract.fromOrgId]: { ...fromData, roster: fromData.roster.map(f =>
+                f.id === contract.fighterId
+                  ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
+                  : f
+              )}};
+            }
+          } else {
+            // Return to free agent pool
+            if (rentalF) {
+              const { isRental, rentalFromOrg, rentalSource, rentalSeasonsLeft, ...cleanF } = rentalF;
+              freeAgents = [...freeAgents, cleanF];
+            }
+          }
+          events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
+        } else {
+          remaining.push({ ...contract, seasonsLeft: newSeasonsLeft });
+          // Update rentalSeasonsLeft on the roster fighter too
+          roster = roster.map(c => c.id === contract.fighterId ? { ...c, rentalSeasonsLeft: newSeasonsLeft } : c);
         }
-        events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
-        return { state: { ...s, roster: returning, rental: null, aiOrgs }, events, returned: true };
       }
-      return { state: { ...s, rental: r }, events, returned: false };
+      return { state: { ...s, roster, rentals: remaining, aiOrgs, freeAgents }, events };
     }
   },
 
@@ -4080,11 +4158,16 @@ const Engine = {
         events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
         report.forEach(r => events.push(`  ${r}`));
 
-        // Player retirement check
+        // Rental season-end: decrement seasonsLeft, return expired rentals
+        const rentalEnd = Engine.rental.processSeasonEnd(s);
+        s = rentalEnd.state;
+        events.push(...rentalEnd.events);
+
+        // Player retirement check (skip rental fighters — they return to their org)
         const retirees = [];
         const surviving = [];
         s.roster.forEach(c => {
-          if (Engine.rival.checkRetirement(rng, c)) {
+          if (!c.isRental && Engine.rival.checkRetirement(rng, c)) {
             retirees.push(c);
           } else {
             surviving.push(c);
@@ -4626,7 +4709,7 @@ const Engine = {
       // v0.9c: Phase C — Transfer
       pendingPoach: [],
       // v0.9d: Phase D — Rental & Events
-      rental: null,
+      rentals: [],
       warThisSeason: false,
       challengeTrigger: null,
       pendingEvent: null,
