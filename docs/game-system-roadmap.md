@@ -1,12 +1,38 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-02（道場バナーシーン化＋スタッフ室改名）
+> 最終更新: 2026-03-02（会場規模連動の試合数システム＋レンタルシステム全面リニューアル）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**会場規模連動の試合数システム（2026-03-02）。** 固定試合数（通常4/特別興行6）を廃止し、会場規模に応じた動的試合枠に変更。
+
+- **VENUES maxMatches追加**: 公民館3→小ホールA/B 3→市民会館4→中ホールA 4→中ホールB 5→大ホール5→アリーナ6→大会場7→ドーム8。会場が大きいほど試合数が多い自然な成長感
+- **特別興行/PPVボーナス**: 全会場で+1試合（上限8でキャップ）。「最大6試合」ハードコードを完全除去
+- **Engine.util.getMaxMatches(week, venueIdx)**: 試合数計算の単一ソース。engine.js/ui-render.js/ui-common.js/app.jsの全箇所で使用
+- **CARD_DEPTH_MULT拡張**: 6要素→8要素（7,8試合目は1.0）
+- **会場カードに試合枠表示**: 「試合枠: N試合」を会場選択UIに表示。特別興行時は「(+1)」も表示
+- **showCard動的調整**: 初期値を空配列`[]`に変更。renderShowPrepのpad/trimで会場に応じて自動リサイズ
+- 変更: data.js, engine.js, ui-render.js, ui-common.js, app.js
+
+**レンタルシステム全面リニューアル（2026-03-02）。** レンタルシステムを単発→複数枠・シーズン単位契約に刷新。UI大幅改善。
+
+- **データモデル変更**: G.rental(単体)→G.rentals(配列)。契約: {fighterId, fromSource:'rival'|'fa', fromOrgId, seasonsLeft, fee}
+- **RENTAL_CONFIG**: minSeasons:1, maxSeasons:4, topExclude:3, faTierMul:0.85, tierMul:{S/A/B}, getMaxConcurrent(rosterSize)
+- **費用**: 前払い一括。calcSeasonFee = pow(ovr/50,2.5)*25*tierMul*12*seasons
+- **供給元**: ライバル団体(OVR上位3名除外) + フリーエージェント(制限なし)。表示候補20名に拡大
+- **シーズン末処理**: advanceWeek offWeek1でEngine.rental.processSeasonEnd。seasonsLeft--→0で帰団
+- **確認ダイアログ**: レンタル実行前にshowConfirmで顔アイコン+費用+期間+残り資金を確認表示
+- **ソート機能**: レンタル候補テーブルの名前/総合/費用カラムをクリックで昇降順ソート（▲/▼表示）
+- **期間表記変更**: 「シーズン/季」→「期(N週)」に統一（12週=1期）
+- **タイトル制限**: レンタル選手はタイトルマッチ出場不可（3箇所チェック）
+- **orgPop貢献50%**: レンタル参加試合のMQ重み付け=0.5
+- **ロスター分離表示**: 金枠セクション「🤝 レンタル枠（N/M）」で区分表示
+- **マイグレーション**: _migrated_rental_v2。旧G.rental→G.rentals変換
+- 変更: data.js, engine.js, ui-render.js, ui-common.js, app.js
 
 **道場バナーシーン化＋「スタッフ室」改名（2026-03-02）。** 道場ヘッダーをシーン風に演出。「スタッフ室」→「スタッフ募集」に改名。
 
@@ -235,6 +261,8 @@
 - **選手ポップアップ上半身画像** — getUpperUrl(id)でwebpパス取得。onerrorで従来のface PNGにフォールバック
 - **5能力値カラム色分け** — PW=#e74c3c, SP=#3498db, TE=#2ecc71, ST=#f39c12, MN=#9b59b6。75以上=固有色、60以上=白、未満=薄色
 - **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
+- **会場規模連動の試合数** — VENUES.maxMatches（公民館3〜ドーム8）。Engine.util.getMaxMatches(week,venueIdx)で一元管理。特別興行/PPVは+1（上限8）。CARD_DEPTH_MULT 8要素。showCardは空配列初期化→pad/trimで動的調整
+- **レンタルシステム** — G.rentals配列。シーズン(期)単位契約(1-4期,12週/期)。前払い一括。FA+ライバル団体2ソース。同時2-3枠(ロスターサイズ連動)。タイトル戦出場不可。orgPop貢献50%。確認ダイアログ(顔アイコン+費用)。ソート(名前/OVR/費用)対応。ロスター金枠分離表示
 
 ---
 
