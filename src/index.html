@@ -1053,6 +1053,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p>あなたは新興の女子プロレス団体のオーナーです。</p>
             <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。</p>
             <p>ライバルの3団体（S級・A級・B級）が立ちはだかります。戦略的な経営で頂点に立ちましょう！</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 資金が-1000万円を下回ると<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>になります。赤字経営にはご注意を。</p>
           </div>
         </div>
 
@@ -1061,11 +1062,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <span class="help-icon">📅</span> 基本の流れ <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは48週です。</p>
+            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは<strong>48週</strong>＋オフシーズン4週です。</p>
+            <p><strong style="color:var(--gold)">興行週と練習週：</strong></p>
+            <p>偶数週（第2, 4, 6…週）が<strong>興行週</strong>、奇数週が<strong>練習週</strong>です。つまり<strong>2週に1回</strong>興行を開催できます。</p>
             <p><strong style="color:var(--gold)">毎週やること：</strong></p>
-            <p>① <strong>今週タブ</strong> — スケジュールを選び、⚡強化練習を設定して選手を鍛える</p>
-            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決める</p>
-            <p>③ <strong>週を進める</strong> — 「▶ 次の週へ」ボタンで結果が処理される</p>
+            <p>① <strong>今週タブ</strong> — スケジュール選択・⚡追込設定で選手を鍛える</p>
+            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決めて大会を開催</p>
+            <p>③ <strong>週を進める</strong> — 「▶ 次の週へ」ボタンで結果処理</p>
+            <p><strong style="color:var(--gold)">シーズンの終わり：</strong></p>
+            <p>48週目の後にオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）が開催され、新シーズンが始まります。</p>
             <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
           </div>
         </div>
@@ -1076,11 +1081,19 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
           </button>
           <div class="help-body">
             <p>「団体」タブでは所属選手・コーチの管理と育成状況の確認ができます。</p>
-            <p><strong>スケジュール設定：</strong>「今週」タブのスケジュール列で選手ごとの行動方針を選択できます。</p>
-            <p><strong>⚡強化練習：</strong>「今週」タブの⚡ボタンで強化練習を設定（成長×1.5/体調消耗2倍/最大2週連続）</p>
-            <p><strong>コーチアサイン：</strong>「団体」タブで選手カードの▼ボタンを押すと、コーチアサインや成長状況の詳細が見られます。</p>
+            <p><strong style="color:var(--gold)">スケジュール設定（今週タブ）：</strong></p>
+            <p>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習（デフォルト）</p>
+            <p>・<strong>練習優先</strong> — ステータス成長を重視</p>
+            <p>・<strong>プロモ優先</strong> — 人気上昇を重視（ただし上限あり）</p>
+            <p>・<strong>休養重視</strong> — 体調回復を優先</p>
+            <p><strong style="color:var(--gold)">⚡追込練習（今週タブ）：</strong></p>
+            <p>⚡ボタンで追込練習を設定。成長×1.5倍・体調消耗2倍・怪我リスク5%。最大2週連続、体調50以上が必要。</p>
+            <p><strong style="color:var(--gold)">コーチ：</strong></p>
+            <p>「スタッフ募集」からコーチを雇用できます（団体人気に応じて最大3枠）。</p>
+            <p>・コーチの<strong>指導力</strong>（E〜A）で選手の成長速度がアップ（最大×1.25）</p>
+            <p>・選手とコーチの<strong>スタイル一致</strong>でさらにボーナス</p>
+            <p>・「団体」タブで選手カードの▼ボタンからコーチアサインを管理できます</p>
             <p style="color:var(--text-sub);font-size:12px">⚠️ 体調が低い状態で練習すると怪我のリスクが上がります。体調60未満の選手は休養させましょう。</p>
-            <p><strong>コーチ：</strong>「スタッフ募集」で雇用できます。コーチごとに得意分野があり、対応メニューの効果がアップします。</p>
           </div>
         </div>
 
@@ -1089,29 +1102,38 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>4週に1回の興行週に、対戦カードと会場を決めて大会を開催します。</p>
+            <p>偶数週の興行週に、対戦カードと会場を決めて大会を開催します。</p>
             <p><strong style="color:var(--gold)">カード編成のコツ：</strong></p>
-            <p>・メインイベントには人気の高い選手を配置（MQ＝試合品質が低いとペナルティ）</p>
+            <p>・メインイベントには実力の高い選手を配置（MQ＝試合品質が低いとペナルティ）</p>
             <p>・実力の近い選手同士を組むとMQが高くなりやすい</p>
-            <p>・Heatやタイトルマッチはカードの注目度を上げる</p>
-            <p><strong style="color:var(--gold)">会場選び：</strong></p>
-            <p>集客力は<strong>団体人気</strong>で決まります。キャパに対する集客の割合（満員率）がボーナスに影響します。</p>
-            <p>・🔥 超満員（95%超）→ チケット収入 ×1.5 ＋ Heat上昇</p>
-            <p>・✅ 満員（80%超）→ ×1.2</p>
-            <p>・😰 ガラガラ（25%未満）→ ×0.5 ＋ Heat下落</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 大きすぎる会場を選ぶとガラガラで赤字に。身の丈に合った会場を選びましょう。</p>
+            <p>・因縁のある選手同士は大幅なMQボーナス（最大+12）</p>
+            <p>・タイトルマッチはMQ+10のボーナス</p>
+            <p><strong style="color:var(--gold)">会場選び（全10段階）：</strong></p>
+            <p>公民館（150人）〜ドーム（30,000人）まで10段階。会場が大きいほどコストが高く、試合枠も増えます。</p>
+            <p>集客力は<strong>団体人気</strong>で決まります。満員率がボーナスに影響：</p>
+            <p>・🔥 超満員（95%超）→ チケット収入 ×1.2 ＋ MQ+3 ＋ Heat上昇</p>
+            <p>・✨ 大入り（80%超）→ ×1.1 ＋ MQ+2</p>
+            <p>・😰 ガラガラ（25%未満）→ ×0.5 ＋ MQ-3 ＋ Heat下落 ＋ 団体人気-0.5</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 興行準備画面のリスク指標（🟢安全/🟡注意/🔴危険）を参考に会場を選びましょう。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🔍</span> スカウト・FA <span class="help-arrow">▶</span>
+            <span class="help-icon">🔍</span> スカウト・レンタル <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>「スカウト」画面にフリーエージェント（FA）の選手が表示されます。</p>
-            <p>契約金を支払うことで即座に入団させることができます。</p>
-            <p>FA市場は<strong>4週ごとに入れ替わり</strong>（2名退場＋2名新規参入）ます。良い選手がいたら早めに確保しましょう。</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 シーズン序盤のドラフトで5名を選んだ後、FAで弱点を補強するのが基本戦略です。</p>
+            <p><strong style="color:var(--gold)">フリーエージェント（FA）：</strong></p>
+            <p>「スカウト」タブにFA選手が表示されます。契約金を支払うことで即入団。</p>
+            <p>FA市場は<strong>4週ごとに入れ替わり</strong>（2名退場＋2名新規参入）ます。良い選手は早めに確保を。</p>
+            <p><strong style="color:var(--gold)">レンタル契約：</strong></p>
+            <p>FA選手やライバル団体の選手を<strong>期間限定（1〜4シーズン）</strong>で借りることができます。</p>
+            <p>・費用は前払い一括。選手の実力とシーズン数で変動</p>
+            <p>・同時レンタル枠：ロスター8人未満→2枠、8人以上→3枠</p>
+            <p>・ライバル団体のトップ3選手はレンタル不可</p>
+            <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>、団体人気への貢献も50%</p>
+            <p>・契約終了で自動帰団（加齢・引退の影響なし）</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 シーズン序盤のドラフトで5名を選んだ後、FAやレンタルで戦力を補強するのが基本戦略です。</p>
           </div>
         </div>
 
@@ -1128,38 +1150,92 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p style="padding-left:16px">🅱 勝負（費用×2.0 / 成功率+10%）— バランス型</p>
             <p style="padding-left:16px">🅲 本気（費用×3.0 / 成功率+20%）— 高コスト高確率</p>
             <p>③ 4週間後に結果が出る（失敗時は費用の半額を失う）</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 同時に交渉できるのは1件だけ。S級エースの引き抜きは非常に難しいです。</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 同時に交渉できるのは1件だけ。S級エースの引き抜きは非常に難しいです（基本成功率15%）。</p>
             <p style="color:var(--text-sub);font-size:12px">⚠️ 移籍した選手の人気は×0.75にリセットされます。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📊</span> 人気システム <span class="help-arrow">▶</span>
+            <span class="help-icon">🤝</span> 信頼・士気・ケア <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>選手の人気は試合やプロモで上がりますが、<strong>高くなるほど上がりにくく</strong>なります。</p>
-            <p><strong>人気の上がり方：</strong></p>
-            <p>・試合のMQ（品質）が高いほど上昇量が多い</p>
-            <p>・タイトル戴冠・防衛でボーナス</p>
-            <p>・プロモ（練習メニュー）で直接上昇（ただし上限40まで）</p>
-            <p><strong style="color:var(--red)">人気が下がるケース：</strong></p>
-            <p>・連敗（3連敗で-5、5連敗で-10、7連敗で-15）</p>
-            <p>・スキャンダル（人気40以上の選手にランダム発生）</p>
-            <p>・怪我中の忘却（-1/週）</p>
-            <p>・メインイベントの質が低い（MQ25未満で-5）</p>
+            <p><strong style="color:var(--gold)">信頼度（選手ごと）：</strong></p>
+            <p>選手一人ひとりの信頼度（0〜100）が試合パフォーマンスやイベントに影響します。勝利・ケアで上昇、冷遇・放置で低下。信頼が低いと不満イベントや引き抜きリスクが発生します。</p>
+            <p><strong style="color:var(--gold)">ロッカールーム士気（団体全体）：</strong></p>
+            <p>団体全体の士気（0〜100）が成長速度やイベント発生に影響します。勝ちが続くと上昇、連敗や空席が目立つと低下。「人望」持ちの選手がいると毎週+3されます。</p>
+            <p><strong style="color:var(--gold)">ケアアクション（今週タブ）：</strong></p>
+            <p>・<strong>ボーナス支給</strong>（50万）→ 信頼+5</p>
+            <p>・<strong>コスチューム新調</strong>（80万）→ 人気+2, 信頼+3 ※2週間隔/団体人気20以上</p>
+            <p>・<strong>専属トレーナー</strong>（160万）→ 4週間成長×1.3, 信頼+4</p>
+            <p>・<strong>メディア露出</strong>（120万）→ 人気+4, 信頼+3 ※2週間隔/団体人気20以上</p>
+            <p>・<strong>怪我の特別治療</strong>（200万）→ 離脱期間を半減 ※怪我中のみ/団体人気40以上</p>
+            <p>・<strong>打ち上げ</strong>（100万）→ 全員の信頼+2, 士気+5</p>
+            <p>・<strong>合宿</strong>（320万）→ 2週間全員成長×1.5, 信頼+2</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏆</span> 対抗戦 <span class="help-arrow">▶</span>
+            <span class="help-icon">📈</span> 成長・衰え・引退 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>一定の条件を満たすと、ライバル団体から<strong>対抗戦の挑戦状</strong>が届きます。</p>
-            <p>5対5の団体対抗戦で、勝利すると大きなHeat（注目度）ボーナスとランキングポイントを獲得できます。</p>
-            <p>敗北するとHeatが下がり、ランキングにも影響します。</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 対抗戦はランキング上位を狙うための大きなチャンスです。エース級を温存して万全の状態で臨みましょう。</p>
+            <p><strong style="color:var(--gold)">成長：</strong></p>
+            <p>選手は毎週の練習と試合経験でステータスが成長します。成長速度はコーチの指導力、スケジュール、年齢、特性によって変動します。</p>
+            <p>・<strong>早熟</strong>：若い時期に急成長、26歳以降は鈍化</p>
+            <p>・<strong>晩成</strong>：スロースタート、26〜32歳で本領発揮</p>
+            <p>・<strong>努力家</strong>：練習の成長下限が高い（安定型）</p>
+            <p>・<strong>破天荒</strong>：成長の振れ幅が極端（ギャンブル型）</p>
+            <p><strong style="color:var(--gold)">衰え（wear）：</strong></p>
+            <p>年齢とともに衰えゲージが蓄積し、ステータスが低下していきます。</p>
+            <p>・0〜19：<strong>全盛期</strong>（影響なし）</p>
+            <p>・20〜39：⚠ 衰え（軽度低下）</p>
+            <p>・40〜59：⬇ 衰退期（中度低下＋20%引退判定）</p>
+            <p>・60〜79：⬇⬇ 限界（重度低下＋50%引退判定）</p>
+            <p>・80以上：確定引退</p>
+            <p><strong style="color:var(--gold)">引退：</strong></p>
+            <p>衰えの蓄積のほか、35歳以降は年齢でも引退判定があります（35歳30%〜39歳100%）。引退した選手はロスターから去り、功績に応じて殿堂入りの可能性があります。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📊</span> 人気・MQシステム <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p><strong style="color:var(--gold)">試合品質（MQ）：</strong></p>
+            <p>MQは試合の面白さを表す数値で、団体の評判と収入に直結します。</p>
+            <p>・基本値：両選手のOVR＋スタイル相性＋技のバリエーション</p>
+            <p>・ボーナス：因縁（+5/+8/+12）、タイトル戦（+10）、コーチ（+2）、観客熱（±3）、会場規模（最大+3）</p>
+            <p>・外部ボーナス上限は合計+15まで</p>
+            <p><strong style="color:var(--gold)">選手人気：</strong></p>
+            <p>選手の人気は試合やプロモで上がりますが、<strong>高くなるほど上がりにくく</strong>なります。</p>
+            <p>・高MQ試合、タイトル戴冠・防衛、メディア露出で上昇</p>
+            <p>・プロモで直接上昇（ただし上限あり）</p>
+            <p><strong style="color:var(--red)">人気が下がるケース：</strong></p>
+            <p>・連敗（3連敗-5、5連敗-10、7連敗-15）、スキャンダル、怪我中の忘却（-1/週）</p>
+            <p><strong style="color:var(--gold)">団体人気：</strong></p>
+            <p>団体人気（0〜100）は全体の経営基盤です。高くなるほど上がりにくくなる逓減カーブが適用されます。</p>
+            <p>・スポンサー収入、放送権料、集客力すべてに影響</p>
+            <p>・シーズン末に順位に応じた自然減があるため、維持にも努力が必要</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🎭</span> イベント <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>練習週に様々なイベントがランダムで発生します。</p>
+            <p><strong style="color:var(--gold)">通知イベント：</strong></p>
+            <p>怪我報告、スキャンダル、メンタル変動など自動で処理されるイベントです。</p>
+            <p><strong style="color:var(--gold)">選択イベント：</strong></p>
+            <p>タイトル挑戦要望、休養申請、不満爆発、特別練習志願など、オーナーの判断が求められるイベントです。選手の特性や信頼度に応じて内容が変わります。</p>
+            <p><strong style="color:var(--gold)">大型イベント：</strong></p>
+            <p>稀に発生する重大イベント（練習中の大怪我、内部紛争、対抗戦の挑戦状、ドキュメンタリー取材など）。団体の命運を左右する決断を迫られます。</p>
+            <p><strong style="color:var(--gold)">対抗戦：</strong></p>
+            <p>ライバル団体から対抗戦の挑戦状が届くことがあります。5対5の団体対抗戦で、勝利すると大きなHeat＋ランキングポイントを獲得。敗北はHeat低下とランキングダウン。</p>
+            <p style="color:var(--text-sub);font-size:12px">💡 対抗戦は大きなチャンス。エース級を温存して万全の状態で臨みましょう。</p>
           </div>
         </div>
 
@@ -1173,11 +1249,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p><strong style="color:var(--gold)">2. 公民館から始める</strong></p>
             <p>序盤は公民館（150人）で十分。満員ボーナスを狙って確実に黒字を出しましょう。</p>
             <p><strong style="color:var(--gold)">3. メインイベントを大切に</strong></p>
-            <p>エース候補をメインに据え、高MQを出すことが人気上昇のカギ。低MQのメインはペナルティを受けます。</p>
+            <p>エース候補をメインに据え、高MQを出すことが人気上昇のカギ。同じ相手と繰り返し当てると因縁ボーナスも狙えます。</p>
             <p><strong style="color:var(--gold)">4. 体調管理を忘れずに</strong></p>
             <p>怪我をすると長期離脱＋人気低下のダブルパンチ。体調60未満は必ず休養を。</p>
-            <p><strong style="color:var(--gold)">5. 会場のステップアップは慎重に</strong></p>
-            <p>団体人気が上がったら徐々に大きな会場へ。ガラガラは赤字＋Heat下落で致命的です。</p>
+            <p><strong style="color:var(--gold)">5. コーチを活用する</strong></p>
+            <p>なるべく早くコーチを雇い、エース候補にアサインしましょう。成長速度が大きく変わります。</p>
+            <p><strong style="color:var(--gold)">6. 会場のステップアップは慎重に</strong></p>
+            <p>団体人気が上がったら徐々に大きな会場へ。リスク指標が🟢の会場を選ぶのが安全です。</p>
+            <p><strong style="color:var(--gold)">7. 信頼を大切に</strong></p>
+            <p>選手の信頼度が下がると不満イベントが発生しやすくなります。勝利を重ね、たまにケアアクションで気持ちに応えましょう。</p>
           </div>
         </div>
 

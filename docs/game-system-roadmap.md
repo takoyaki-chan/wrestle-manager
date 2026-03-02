@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-02（サウンドデザイン オーバーホール）
+> 最終更新: 2026-03-03（ヘルプ画面全面書き直し）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -8,13 +8,13 @@
 
 ## 現在の状態
 
-**サウンドデザイン オーバーホール（2026-03-02）。** SFXカテゴリ再分類・新規4種追加・未使用3種削除・全呼び出し見直し。
+**ヘルプ画面全面書き直し（2026-03-03）。** 度重なる更新で古くなっていたヘルプ画面を全11セクションに再構成。
 
-- **新規SFX 4種追加**: `event`（E5→G5 上昇2音、イベント発生・成長通知）、`reveal`（シンバルブラシ＋高域sine減衰、スライド切替）、`award`（C5-E5-G5 ベルハーモニクス＋スパークル、受賞発表）、`tension_hit`（ドラムロール→シンバル一打、緊張演出）
-- **未使用SFX 3種削除**: `championship`（SFX側、BGMジングルは健在）、`seasonEnd`、`powerup`
-- **音の割当て変更**: fanfareを「殿堂入り・シーズン開幕・エンディング」の3箇所に厳選。notify→event（イベント/成長通知系）、fanfare→award（受賞/ミッション完了/ドラフト完了等）、notify→reveal（スライド切替系）、hover→war（対抗戦チャレンジ表示で追加）
-- **typeofガード全削除**: ui-common.js 全9箇所の `typeof Audio !== 'undefined'` ガードを直接 `Audio.play()` 呼び出しに統一（public API側にtry-catchあり）
-- 変更: app.js, ui-common.js
+- **誤り修正**: 満員率ボーナス（旧×1.5/×1.2→正×1.2/×1.1）、興行頻度（旧4週に1回→正2週に1回＝偶数週）
+- **新セクション追加**: 信頼・士気・ケア、成長・衰え・引退、人気・MQシステム、イベント
+- **既存セクション更新**: スカウト→スカウト・レンタルに統合、会場10段階・リスク指標の説明追加、スケジュール4種（バランス/練習優先/プロモ優先/休養重視）の説明追加、コーチシステム詳細化、ゲームオーバー条件の明記
+- **セクション構成（全11）**: ゲームの目的/基本の流れ/団体・育成管理/興行の組み方/スカウト・レンタル/引き抜き交渉/信頼・士気・ケア/成長・衰え・引退/人気・MQシステム/イベント/序盤攻略のコツ
+- 変更: index.html
 
 **コーチ名フルネーム統一＋道場バナー中央配置（2026-03-02）。**
 
@@ -278,7 +278,7 @@
 - **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
 - **会場規模連動の試合数** — VENUES.maxMatches（公民館3〜ドーム8）。Engine.util.getMaxMatches(week,venueIdx)で一元管理。特別興行/PPVは+1（上限8）。CARD_DEPTH_MULT 8要素。showCardは空配列初期化→pad/trimで動的調整
 - **レンタルシステム** — G.rentals配列。シーズン(期)単位契約(1-4期,12週/期)。前払い一括。FA+ライバル団体2ソース。同時2-3枠(ロスターサイズ連動)。タイトル戦出場不可。orgPop貢献50%。確認ダイアログ(顔アイコン+費用)。ソート(名前/OVR/費用)対応。ロスター金枠分離表示
-- **SFXカテゴリ体系** — UIカテゴリ(click/hover/select/deselect/error/save)、進行カテゴリ(tick/notify/event/reveal)、経済カテゴリ(coin/spend/stamp)、試合カテゴリ(bell/bellx3/crowd/impact)、ドラマカテゴリ(fanfare/victory/defeat/war/transfer/award/tension_hit)。fanfareは「殿堂入り・シーズン開幕・エンディング」の3箇所のみ使用。notify=軽い情報表示、event=ゲームイベント発生、reveal=段階的表示/スライド切替、award=受賞発表（fanfare代替）
+- **因縁決着システム** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5、専用演出ポップアップ（「⚡宿敵決着！」ヘッダー＋両者セリフ＋ボーナス明示）、専用SE。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。因縁蓄積ペース抑制: 通常+1/試合（現状維持）、ライバル体質+2は据置、rivalry_chance_upバフ+1据置。詳細: specs/rivalry-resolution-spec.md
 
 ---
 
