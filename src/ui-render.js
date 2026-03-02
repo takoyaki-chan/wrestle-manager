@@ -1267,7 +1267,7 @@ function renderRoster() {
     // Coach badge in card
     let coachBadgeHtml = '';
     if (coachOfChar) {
-      coachBadgeHtml = `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2);display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.replace(/コーチ|トレーナー|道場長|師範|アドバイザー|セコンド|マネージャー/g,'').substring(0,3)}</span>`;
+      coachBadgeHtml = `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2);display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}</span>`;
     }
     html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
       <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
