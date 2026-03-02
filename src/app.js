@@ -2082,11 +2082,7 @@ const App = {
     G = {
       ...G,
       weekPhase: 'showPrep',
-      showCard: [
-        {left: 0, right: 0, isTitle: false},
-        {left: 0, right: 0, isTitle: false},
-        {left: 0, right: 0, isTitle: false}
-      ],
+      showCard: [],  // renderShowPrep の pad/trim で会場に応じた枠数に自動調整
       showVenue: 0
     };
     refreshAll();
@@ -2737,8 +2733,8 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
 
-    // v1.9: 興行終了後にshowCardをリセット — 次週が4試合月でも6枠が残るバグ対策
-    G = { ...G, showCard: [{left:0,right:0,isTitle:false},{left:0,right:0,isTitle:false},{left:0,right:0,isTitle:false}] };
+    // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
+    G = { ...G, showCard: [] };
 
     // v1.4w: 防衛マイルストーン検出
     const _postDefenses = G.titles?.world?.defenses || 0;
@@ -2882,7 +2878,7 @@ const App = {
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
     if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！最大6試合を組もう！';
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
   },
@@ -3057,7 +3053,7 @@ const App = {
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
     if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！最大6試合を組もう！';
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
   },

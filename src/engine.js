@@ -121,6 +121,12 @@ const Engine = {
     },
     isSpecialShow(w) { return w % 12 === 0; },
     isPPV(w) { return w === 48; },
+    /** 会場規模連動の最大試合数。特別興行/PPVは+1（上限8） */
+    getMaxMatches(week, venueIdx) {
+      const base = (VENUES[venueIdx] && VENUES[venueIdx].maxMatches) || 4;
+      const bonus = (Engine.util.isSpecialShow(week) || Engine.util.isPPV(week)) ? 1 : 0;
+      return Math.min(base + bonus, 8);
+    },
     eff(x) {
       if (x <= ENG.effPivot) return x;
       return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;

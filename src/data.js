@@ -602,16 +602,16 @@ const FAN_EXPECT_REACTIONS = {
 };
 // L1: 会場テーブル（10段・popReq撤廃・全会場選択可能）
 const VENUES = [
-  {name:'公民館',    cap:150,   cost:5,    img:'../image/venue_0_kominkan.webp'},     // 0
-  {name:'小ホールA', cap:300,   cost:25,   img:'../image/venue_1_small_hall_a.webp'}, // 1
-  {name:'小ホールB', cap:500,   cost:50,   img:'../image/venue_2_small_hall_b.webp'}, // 2
-  {name:'市民会館',  cap:800,   cost:100,  img:'../image/venue_3_civic_hall.webp'},   // 3
-  {name:'中ホールA', cap:1200,  cost:200,  img:'../image/venue_4_mid_hall_a.webp'},   // 4
-  {name:'中ホールB', cap:2000,  cost:400,  img:'../image/venue_5_mid_hall_b.webp'},   // 5
-  {name:'大ホール',  cap:3500,  cost:800,  img:'../image/venue_6_large_hall.webp'},   // 6
-  {name:'アリーナ',  cap:6000,  cost:1600, img:'../image/venue_7_arena.webp'},        // 7
-  {name:'大会場',    cap:12000, cost:3200, img:'../image/venue_8_grand_venue.webp'},  // 8
-  {name:'ドーム',    cap:30000, cost:9000, img:'../image/venue_9_dome.webp'},         // 9
+  {name:'公民館',    cap:150,   cost:5,    maxMatches:3, img:'../image/venue_0_kominkan.webp'},     // 0
+  {name:'小ホールA', cap:300,   cost:25,   maxMatches:3, img:'../image/venue_1_small_hall_a.webp'}, // 1
+  {name:'小ホールB', cap:500,   cost:50,   maxMatches:3, img:'../image/venue_2_small_hall_b.webp'}, // 2
+  {name:'市民会館',  cap:800,   cost:100,  maxMatches:4, img:'../image/venue_3_civic_hall.webp'},   // 3
+  {name:'中ホールA', cap:1200,  cost:200,  maxMatches:4, img:'../image/venue_4_mid_hall_a.webp'},   // 4
+  {name:'中ホールB', cap:2000,  cost:400,  maxMatches:5, img:'../image/venue_5_mid_hall_b.webp'},   // 5
+  {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
+  {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
+  {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
+  {name:'ドーム',    cap:30000, cost:9000, maxMatches:8, img:'../image/venue_9_dome.webp'},         // 9
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
 const BASE_ATTENDANCE_CURVE = [
@@ -651,8 +651,8 @@ const CARD_POP_CONFIG = {
   SUB_WEIGHT: 0.7,    // サブ試合の重み（メインの7割）
   CARD_MULT:  1.2     // cardPop → cardBonus 変換倍率
 };
-const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0];
-//                        1試合  2試合  3試合  4試合  5試合  6試合
+const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+//                        1試合  2試合  3試合  4試合  5試合  6試合  7試合  8試合
 const CROWD_HEAT_MQ = [
   { min: 0.95, bonus: +3, label: '超満員の熱気' },
   { min: 0.80, bonus: +2, label: '大入りの声援' },

@@ -474,7 +474,7 @@ function renderWeekScreen() {
     if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
     else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
     if (!isPPV(G.week)) {
-      if (isSpecialShow(G.week)) upcomingItems.push('⭐ 今週は特別興行！（最大6試合）');
+      if (isSpecialShow(G.week)) upcomingItems.push('⭐ 今週は特別興行！（試合枠+1）');
       else { const spW = (() => { for (let w = G.week+1; w <= 48; w++) if (isSpecialShow(w) && !isPPV(w)) return w; return null; })(); if (spW) upcomingItems.push(`⭐ 特別興行: 第${spW}週`); }
     }
     if (G.pendingNegotiation) {
@@ -1398,12 +1398,12 @@ function renderShowPrep() {
   if (isPPV(G.week)) {
     html += `<div style="background:linear-gradient(135deg,#2d1b00,#4a2c00);border:1px solid #f39c12;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
       <div style="font-size:16px;font-weight:700;color:#f1c40f;letter-spacing:1px">🏆 PPV GRAND FINAL</div>
-      <div style="font-size:12px;color:#e67e22;margin-top:4px">年間最大の舞台！最大6試合で開催できます</div>
+      <div style="font-size:12px;color:#e67e22;margin-top:4px">年間最大の舞台！全会場で試合枠+1</div>
     </div>`;
   } else if (isSpecialShow(G.week)) {
     html += `<div style="background:linear-gradient(135deg,#1a0033,#2e0055);border:1px solid #9b59b6;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
       <div style="font-size:15px;font-weight:700;color:#d4a8ff;letter-spacing:1px">⭐ 月末特別興行</div>
-      <div style="font-size:12px;color:#a29bfe;margin-top:4px">いつもより2試合多く組める特別な舞台！最大6試合</div>
+      <div style="font-size:12px;color:#a29bfe;margin-top:4px">特別な舞台！全会場で試合枠+1</div>
     </div>`;
   }
 
@@ -1424,15 +1424,15 @@ function renderShowPrep() {
       <div class="venue-name">${v.name}</div>
       <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
       <div class="venue-info">コスト: ${v.cost}万</div>
+      <div class="venue-info">試合枠: ${v.maxMatches}試合${(isSpecialShow(G.week) || isPPV(G.week)) ? ' <span style="color:var(--gold)">(+1)</span>' : ''}</div>
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
   html += '</div>';
 
-  // Match card
-  const maxMatches = isSpecialShow(G.week) || isPPV(G.week) ? 6 : 4;
-  // v1.9: pad up OR trim down to match the current week's limit
-  // （6試合の特別試合後、4試合月に6枠が残るバグ対策）
+  // Match card — 会場規模連動の試合枠
+  const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+  // pad up OR trim down to match the venue's limit
   {
     let adjusted = [...G.showCard];
     while (adjusted.length < maxMatches) adjusted.push({left:0, right:0, isTitle:false});

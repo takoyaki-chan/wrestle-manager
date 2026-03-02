@@ -1819,7 +1819,7 @@ function fLink(c, opts = {}) {
 }
 
 function autoFillCard() {
-  const maxMatches = isSpecialShow(G.week) || isPPV(G.week) ? 6 : 4;
+  const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
   const card = [];
   while (card.length < maxMatches) card.push({left:0, right:0, isTitle:false});
   const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
