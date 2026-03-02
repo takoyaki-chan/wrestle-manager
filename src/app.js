@@ -1779,7 +1779,6 @@ const App = {
     const discount = 0;
     const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
-    Audio.play('stamp');
     // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
     const normalized = {
       ...fighter,

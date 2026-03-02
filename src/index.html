@@ -732,9 +732,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 /* v2.0: 通知型イベント トースト（選手顔＋テキスト＋セリフ） */
 .notif-event-toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-8px);
   background:rgba(14,14,21,0.96);border:1px solid rgba(255,255,255,0.14);border-radius:10px;
-  padding:14px 16px;pointer-events:auto;cursor:pointer;opacity:0;transition:opacity .3s,transform .3s;
+  padding:14px 16px;pointer-events:none;cursor:pointer;opacity:0;transition:opacity .3s,transform .3s;
   z-index:261;font-family:'Noto Sans JP',sans-serif;min-width:240px;max-width:420px}
-.notif-event-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.notif-event-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 .notif-event-toast.notif-warning{border-color:rgba(231,76,60,0.5);
   background:rgba(30,12,12,0.97)}
 .notif-inner{display:flex;align-items:flex-start;gap:12px}

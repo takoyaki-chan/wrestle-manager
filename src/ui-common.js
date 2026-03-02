@@ -569,6 +569,86 @@ function showNegotiationResult() {
   overlay.classList.add('active');
 }
 
+// ── Signing Ceremony Popup (v2.x) ──
+function showSigningCeremony(charId) {
+  const fighter = G.freeAgents.find(c => c.id === charId);
+  if (!fighter) return;
+
+  Audio.play('stamp');
+
+  const fOvr = Engine.util.ov(fighter);
+  const tierCfg = Engine.scout.getTierConfig(fighter.assessedTier || 'material');
+  const signingCost = Engine.scout.getSigningCost(fighter, 0);
+  const salary = getSalary(fighter);
+  const quote = getSigningQuote(fighter);
+  const color = '#2ecc71';
+
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+
+  let html = '';
+
+  // Header
+  html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${color}20,transparent);border-radius:12px 12px 0 0">`;
+  html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">✍ 契約セレモニー</div>`;
+  html += `</div>`;
+
+  // Fighter portrait + info
+  const fUrl = getPortraitUrl(fighter.id);
+  html += `<div style="display:flex;align-items:center;gap:12px;margin:16px 8px 12px;padding:12px;background:var(--bg-card);border:1px solid ${color}33;border-radius:8px">`;
+  if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${color};object-fit:cover" alt="">`;
+  else html += `<div style="width:80px;height:80px;border-radius:50%;border:3px solid ${color};display:flex;align-items:center;justify-content:center;background:${color}11;font-size:30px;font-weight:900;color:${color}">${fighter.name.charAt(0)}</div>`;
+  html += `<div style="flex:1">`;
+  html += `<div style="font-size:16px;font-weight:700;color:var(--text-main)">${fighter.name} <span style="font-size:24px;font-weight:900;color:var(--gold)">${fOvr}</span></div>`;
+  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px"><span class="badge badge-${fighter.style}">${fighter.style}</span></div>`;
+  html += `</div></div>`;
+
+  // Contract details
+  html += `<div style="margin:0 8px 12px;padding:12px;background:var(--bg-card);border:1px solid rgba(212,168,67,0.2);border-radius:8px">`;
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px">`;
+  html += `<span style="color:var(--text-sub)">契約金</span>`;
+  html += `<span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>`;
+  html += `</div>`;
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-dim)">`;
+  html += `<span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>`;
+  html += `<span>給与: ${salary}万/週</span>`;
+  html += `</div></div>`;
+
+  // Signing speech bubble
+  html += `<div style="background:var(--panel-bg);border:1px solid ${color}33;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
+  html += `<div style="position:absolute;top:-8px;left:40px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${color}33"></div>`;
+  html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${quote}」</p>`;
+  html += `</div>`;
+
+  // Buttons
+  html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:8px">`;
+  html += `<button class="btn btn-gold" style="min-width:120px;padding:10px 24px" onclick="confirmSigning(${charId})">✍ 契約する</button>`;
+  html += `<button class="btn" style="min-width:100px;padding:10px 20px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">やめる</button>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+function confirmSigning(charId) {
+  // Close the ceremony overlay
+  document.getElementById('showResultOverlay').classList.remove('active');
+  // Capture fighter info before signing (for welcome popup)
+  const fighter = G.freeAgents.find(c => c.id === charId);
+  const name = fighter ? fighter.name : '???';
+  const fighterId = fighter ? fighter.id : charId;
+  const welcomeQuote = fighter ? getWelcomeQuote(fighter) : 'よろしくお願いします！';
+  // Execute the actual signing logic
+  App.signFighter(charId);
+  // Show welcome event popup
+  showEventPopup({
+    type: 'fighter', id: fighterId, name,
+    tone: 'positive',
+    message: `「${welcomeQuote}」`,
+    detail: `${name}がロスターに加わりました！`
+  });
+}
+
 // ── Coach Tooltip (profile popup) ──
 function showCoachTooltip(coachId) {
   const c = ALL_COACHES.find(co => co.id === coachId);
@@ -774,6 +854,34 @@ const EVENT_QUOTES = {
     'この団体で新しいスタートです。よろしくお願いします！',
     '契約ありがとうございます！全力で戦います！',
     '新しい仲間ができて嬉しいです。頑張ります！',
+  ],
+  // v2.x: FA welcome lines after signing (trait-keyed, short one-liners)
+  faWelcome: {
+    'リーダー気質': ['みんなをまとめてみせる。ついてきて！', 'チームを勝利に導くわ。約束する。'],
+    '努力家': ['毎日コツコツ、頑張ります！見ていてください！', '練習量だけは誰にも負けません…！'],
+    '負けず嫌い': ['絶対に勝つ！そのために来たんだから！', '負けるのは嫌い。勝ちにこだわります！'],
+    '華': ['この団体のスターになってみせますよ♪', 'キラキラ輝いちゃいますよ～♪'],
+    'ヒール適性': ['…ふん、まあ精々期待しておきなさい。', '暴れさせてもらうわよ。覚悟してね？'],
+    'ムードメーカー': ['わーい！今日から仲間だ！よろしく！', 'みんなで楽しくやりましょー！'],
+    '威圧感': ['…見ていなさい。格が違うことを証明してやる。', '弱い相手には興味がないの。強いのを出しなさい。'],
+    '闘志': ['燃えてきた…！早く試合がしたい！', '闘いの場をくれてありがとう…！全力で応えます！'],
+    '破天荒': ['よっしゃー！大暴れするぞー！', 'ルール？あんまり守れる自信ないけど…えへへ！'],
+    '忠誠心': ['この団体のために…全てを捧げます。', 'ここが私の居場所。絶対に離れません。'],
+    '野心': ['頂点まで一直線よ。邪魔はさせないわ。', 'チャンピオンベルト、絶対に獲ります。'],
+    'ファンサービス': ['ファンの皆さーん！応援よろしくお願いします！', '笑顔と元気を届けます♪ よろしくです！'],
+    '鉄人': ['毎週フル出場、お任せください！', '丈夫さなら誰にも負けません。どんどん使ってください！'],
+    '適応力': ['すぐ馴染んでみせますよ。心配しないでください。', 'どんな相手でも合わせられます。任せてください！'],
+    '名勝負製造機': ['記憶に残る試合、たくさん見せますよ。', 'お客さんの心を震わせてみせます。'],
+    '引き出し上手': ['みんなの良さを引き出せたら嬉しいな。', 'いい試合を一緒に作りましょう！'],
+    '人望': ['仲間と一緒に強くなりたいです！よろしく！', 'みんなで支え合って頑張りましょう！'],
+    _heel: ['…まあ、それなりにやってあげるわ。', '期待しすぎないでちょうだい。'],
+    _babyface: ['頑張ります！よろしくお願いします！', '精一杯やります…！応援してくださいね！'],
+    _neutral: ['よろしくお願いします。頑張ります。', '力になれるよう、精一杯やります。']
+  },
+  faWelcomeGeneric: [
+    'よろしくお願いします！頑張ります！',
+    '精一杯やります！応援してください！',
+    '新しい仲間として、全力で頑張ります！',
   ],
   // v1.0c: Rental greeting lines (trait-keyed)
   rentalGreeting: {
@@ -1243,6 +1351,26 @@ function getSigningQuote(char) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
   const generic = EVENT_QUOTES.faSigningGeneric || ['よろしくお願いします！'];
+  return generic[Math.floor(Math.random() * generic.length)];
+}
+
+// v2.x: Get FA welcome quote after signing (traits-based)
+function getWelcomeQuote(char) {
+  const lines = EVENT_QUOTES.faWelcome || {};
+  const traits = char.traits || [];
+  for (const trait of traits) {
+    if (lines[trait]) {
+      const arr = lines[trait];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  const role = char.role || 'Neutral';
+  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
+  if (lines[roleKey]) {
+    const arr = lines[roleKey];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  const generic = EVENT_QUOTES.faWelcomeGeneric || ['よろしくお願いします！頑張ります！'];
   return generic[Math.floor(Math.random() * generic.length)];
 }
 
@@ -1747,7 +1875,7 @@ function showFighterPopup(fighterId, source) {
         </div>
         ${!canNeg
           ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
-          : `<button onclick="closeFighterPopup();signFighter(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
+          : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
           ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
         }
       </div>`;
