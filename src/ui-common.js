@@ -2531,10 +2531,13 @@ function showScreen(id, evt) {
   Audio.play('click');
   // Safety: 残存オーバーレイがタブ操作をブロックしないよう強制解除
   ['careOverlay','confirmOverlay','growthEventOverlay','milestoneOverlay',
-   'newspaperOverlay','seasonFanfareOverlay'].forEach(oid => {
+   'newspaperOverlay','seasonFanfareOverlay','eventPopupOverlay'].forEach(oid => {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
   });
+  // v2.0 fix: 通知トーストの残存ブロック防止
+  const _toastEl = document.getElementById('notifEventToast');
+  if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; clearTimeout(window._notifTimer); }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const screenEl = document.getElementById(`screen-${id}`);
   if (screenEl) screenEl.classList.add('active');
@@ -3477,14 +3480,15 @@ function showNotifEventToast(event) {
   };
 
   clearTimeout(window._notifTimer);
+  clearTimeout(window._notifSafetyTimer);
   // テキスト量に応じて表示時間を動的調整（最低8秒、セリフ付きは10秒〜）
   const textLen = (event.text || '').length + (event.detail || '').length + (event.dialogue || '').length;
   const baseDuration = isWarning ? 8000 : 9000;
   const duration = Math.min(baseDuration + Math.max(0, textLen - 40) * 40, 15000);
-  window._notifTimer = setTimeout(() => {
-    el.classList.remove('show');
-    el.onclick = null;
-  }, duration);
+  const dismiss = () => { el.classList.remove('show'); el.onclick = null; };
+  window._notifTimer = setTimeout(dismiss, duration);
+  // Safety: 万が一メインタイマーが発火しなかった場合のバックアップ（2倍の時間後に強制クリア）
+  window._notifSafetyTimer = setTimeout(dismiss, duration * 2);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1797,7 +1797,7 @@ const App = {
       losingStreak: fighter.losingStreak || 0,
       preInjuryPop: fighter.preInjuryPop ?? null
     };
-    let c = Engine.popularity.applyTransferReset(normalized); // v1.0b: Transfer popularity reset
+    let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
     // v1.3: Record debut event
     c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
