@@ -1776,7 +1776,8 @@ const App = {
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
-    const finalCost = Engine.scout.getSigningCost(fighter, 0);
+    const discount = 0;
+    const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     Audio.play('stamp');
     // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
