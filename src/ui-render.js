@@ -815,11 +815,12 @@ function renderWeekScreen() {
     monthBuf.forEach(entry => {
       if (!entry.finance || !entry.finance.details) return;
       entry.finance.details.forEach(d => {
-        const key = d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+        // 興行固有項目（チケット・会場費）は会場/動員が異なるためラベル全体をキーに保持
+        const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
+        const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
         if (!monthlyDetails[key]) monthlyDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
         monthlyDetails[key].val += d.val;
         monthlyDetails[key].count++;
-        // Use the latest label (may contain dynamic info)
         monthlyDetails[key].label = d.label;
       });
       monthIncome += (entry.finance.income || 0);
@@ -1631,7 +1632,8 @@ function renderFinance() {
     monthBuf.forEach(entry => {
       if (!entry.finance || !entry.finance.details) return;
       entry.finance.details.forEach(d => {
-        const key = d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+        const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
+        const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
         if (!pastDetails[key]) pastDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
         pastDetails[key].val += d.val;
         pastDetails[key].count++;

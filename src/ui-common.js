@@ -2073,8 +2073,35 @@ function renderShowResult(results, injuryResults) {
   let html = `<div class="show-result-title">${showName}</div>`;
   const avgMQ = Math.round(results.reduce((s,r) => s + r.mq, 0) / results.length);
   const heat = getHeatLevel();
+
+  // 観客動員バナー
+  const venue = VENUES[G.showVenue];
+  const attendance = G.lastShowAttendance || 0;
+  const cap = venue.cap;
+  const occRate = cap > 0 ? attendance / cap : 0;
+  const occPct = Math.round(occRate * 100);
+  const occEntry = OCCUPANCY_BONUS.find(b => occRate >= b.min) || OCCUPANCY_BONUS[OCCUPANCY_BONUS.length - 1];
+  const isSellout = occRate >= 0.95;
+  const isGoodCrowd = occRate >= 0.80;
+  const attendBorder = isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : occRate >= 0.60 ? 'var(--border)' : '#e74c3c';
+  const attendBg = isSellout ? 'rgba(212,168,67,0.15)' : isGoodCrowd ? 'rgba(46,204,113,0.08)' : occRate >= 0.60 ? 'rgba(255,255,255,0.03)' : 'rgba(231,76,60,0.08)';
+  const barColor = isSellout ? 'linear-gradient(90deg,var(--gold),#f1c40f)' : isGoodCrowd ? 'linear-gradient(90deg,#2ecc71,#27ae60)' : occRate >= 0.60 ? '#3498db' : occRate >= 0.40 ? '#e67e22' : '#e74c3c';
+
+  html += `<div style="text-align:center;margin-bottom:16px;padding:14px 16px;border-radius:8px;border:1px solid ${attendBorder};background:${attendBg}">
+    <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${venue.name}</div>
+    <div style="font-size:${isSellout ? '28px' : '24px'};font-weight:900;color:${isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : 'var(--text-main)'};letter-spacing:1px${isSellout ? ';text-shadow:0 0 12px rgba(212,168,67,0.5)' : ''}">
+      ${isSellout ? '🎉 ' : ''}${attendance.toLocaleString()}人${isSellout ? ' 🎉' : ''}
+    </div>
+    <div style="font-size:12px;color:var(--text-dim);margin:4px 0 8px">/ ${cap.toLocaleString()}席</div>
+    <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin:0 auto;max-width:280px">
+      <div style="width:${Math.min(occPct, 100)}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.5s"></div>
+    </div>
+    <div style="margin-top:6px;font-size:${isSellout ? '16px' : '14px'};font-weight:700;color:${isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : 'var(--text-sub)'}">
+      ${occEntry.label}（${occPct}%）
+    </div>
+  </div>`;
+
   html += `<div style="text-align:center;margin-bottom:18px">
-    <div style="font-size:14px;color:var(--text-sub)">${VENUES[G.showVenue].name}</div>
     <div style="margin-top:6px">${mqStars(avgMQ)} <span style="font-size:15px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>
     <div style="margin-top:6px;font-size:13px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}</span> <span style="color:var(--text-dim)">（集客×${heat.mult}）</span></div>
   </div>`;

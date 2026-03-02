@@ -2475,6 +2475,8 @@ const App = {
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
+    // 興行結果画面で動員数を表示するためにstateに保存
+    s = { ...s, lastShowAttendance: preAttendance };
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
       results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
