@@ -968,32 +968,99 @@ function _renderRosterDojoHeader() {
   const el = document.getElementById('rosterDojoHeader');
   if (!el) return;
   const hired = getHiredCoaches();
-  let html = '<div class="dojo-header">';
-  html += '<img src="image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
+
+  // --- 雰囲気テキスト生成 ---
   const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
   const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
-  html += `<div class="dojo-atmosphere level-${atmo.level}">
-    <span class="dojo-atmosphere-emoji">${atmo.emoji}</span>
-    <span class="dojo-atmosphere-text">「${atmo.text}」</span>
-  </div>`;
-  if (G.currentCoachReport) {
-    const r = G.currentCoachReport;
-    const cObj = ALL_COACHES.find(c => c.id === r.coachId);
-    html += `<div class="coach-report-bubble" onclick="showCoachTooltip(${r.coachId})">
-      <div class="coach-report-avatar">${cObj ? coachPortraitImg(cObj, 40) : ''}</div>
-      <div class="coach-report-body">
-        <div class="coach-report-name">💬 ${r.coachName}</div>
-        <div class="coach-report-text">「${r.reportText}」</div>
-      </div>
-    </div>`;
+
+  let html = '<div class="dojo-header">';
+  html += '<img src="../image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
+  html += '<div class="dojo-header-overlay"></div>';
+
+  // --- コーチ吹き出し（左下） ---
+  const report = G.currentCoachReport;
+  const coachForBubble = report
+    ? ALL_COACHES.find(c => c.id === report.coachId)
+    : (hired.length > 0 ? hired[0] : null);
+
+  if (coachForBubble || atmo) {
+    html += '<div class="dojo-scene-coach">';
+    if (coachForBubble) {
+      html += `<div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
+        ${coachPortraitImg(coachForBubble, 48)}
+      </div>`;
+    }
+    html += '<div class="dojo-scene-bubble">';
+    if (report && coachForBubble) {
+      html += `<div class="coach-name">💬 ${report.coachName}</div>`;
+      html += `「${report.reportText}」`;
+    } else if (coachForBubble) {
+      html += `<div class="coach-name">💬 ${coachForBubble.name}</div>`;
+      html += `「${atmo.text}」`;
+    } else {
+      html += `${atmo.emoji}「${atmo.text}」`;
+    }
+    html += '</div></div>';
   }
-  html += '</div>';
-  // Coach trait summary
+
+  // --- 選手アイコン（右下） ---
+  // 雰囲気レベルに応じた人数: level1=0, level2=0-1, level3=1, level4=1-2, level5=2-3
+  const levelMaxMap = [0, 0, 1, 1, 2, 3]; // index = atmo.level (1-5)
+  const levelMinMap = [0, 0, 0, 1, 1, 2];
+  const maxFighters = levelMaxMap[atmo.level] || 0;
+  const minFighters = levelMinMap[atmo.level] || 0;
+
+  if (maxFighters > 0 && G.roster && G.roster.length > 0) {
+    const fRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 777));
+    const available = G.roster.filter(c => !c.injury);
+    // シャッフル
+    const shuffled = [...available];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Engine.rng.int(fRng, 0, i);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const count = minFighters + Engine.rng.int(fRng, 0, maxFighters - minFighters);
+    const picked = shuffled.slice(0, Math.min(count, shuffled.length));
+
+    if (picked.length > 0) {
+      html += '<div class="dojo-scene-fighters">';
+      picked.forEach((c, idx) => {
+        const offsetY = Engine.rng.int(fRng, -5, 5);
+        const delay = Engine.rng.int(fRng, 0, 8);
+        const cycle = 13 + Engine.rng.int(fRng, 0, 6); // 13-19sでバラけさせる
+        html += `<div class="dojo-scene-fighter-wrap" style="margin-bottom:${offsetY}px" title="${c.name}" onclick="showFighterPopup(${c.id},'roster')">`;
+        html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
+        html += `<div class="dojo-scene-fighter">${portraitImg(c.id, 40)}</div>`;
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  html += '</div>'; // .dojo-header 閉じ
+
+  // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
     const traitParts = hired.map(c => c.trait);
     html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ特性: <strong>${traitParts.join('、')}</strong></div>`;
   }
   el.innerHTML = html;
+
+  // 吹き出しテキストを毎サイクルでランダム差し替え
+  const DOJO_SHOUTS = [
+    'はぁっ…!','ふっ!','せいっ!','よいしょ!','もう一本!',
+    'はっ!','くっ…!','たぁっ!','いける…!','まだまだ!',
+    'おりゃ!','よし!','うぅっ…','どりゃ!','そこだ!'
+  ];
+  el.querySelectorAll('.dojo-scene-shout').forEach(s => {
+    const pick = (prev) => {
+      let t;
+      do { t = DOJO_SHOUTS[Math.floor(Math.random() * DOJO_SHOUTS.length)]; } while (t === prev && DOJO_SHOUTS.length > 1);
+      return t;
+    };
+    s.textContent = pick('');
+    s.addEventListener('animationiteration', () => { s.textContent = pick(s.textContent); });
+  });
 }
 
 function _renderRosterTrainingPanel(c, hired) {
@@ -1119,7 +1186,7 @@ function renderRoster() {
       });
       staffHtml += '</div>';
     } else {
-      staffHtml += `<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">コーチ未雇用 — <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ室</span>から雇用できます</div>`;
+      staffHtml += `<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">コーチ未雇用 — <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ募集</span>から雇用できます</div>`;
     }
     staffEl.innerHTML = staffHtml;
   }
@@ -1267,6 +1334,11 @@ function renderShowPrep() {
 
   let html = '';
 
+  // 興行準備ヘッダーバナー
+  html += '<div class="arena-header">';
+  html += '<img src="../image/arena-header.webp" class="arena-header-img" onerror="this.style.display=\'none\'" alt="">';
+  html += '</div>';
+
   // v2.0 Phase1-6: メディア密着取材バナー
   if (G.mediaSpotlight) {
     const sp = G.mediaSpotlight;
@@ -1304,6 +1376,7 @@ function renderShowPrep() {
     else { riskClass = 'venue-danger'; riskLabel = '✕ 危険'; }
     html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}"
       onclick="App.setShowVenue(${i});renderShowPrep()">
+      ${v.img ? `<img src="${v.img}" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;opacity:0.8" onerror="this.style.display='none'" alt="">` : ''}
       <div class="venue-name">${v.name}</div>
       <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
       <div class="venue-info">コスト: ${v.cost}万</div>

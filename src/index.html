@@ -92,8 +92,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 
 /* L1: Venue Selection (10段・リスク指標付き) */
 .venue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.venue-card{padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
-  border-radius:4px;cursor:pointer;transition:all .2s;text-align:center}
+.venue-card{padding:0;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
+  border-radius:4px;cursor:pointer;transition:all .2s;text-align:center;overflow:hidden}
+.venue-card .venue-name,.venue-card .venue-info,.venue-card .venue-risk{padding:0 10px}
+.venue-card .venue-name{padding-top:8px}
+.venue-card .venue-risk{padding-bottom:8px}
 .venue-card:hover{border-color:rgba(212,168,67,0.3)}
 .venue-card.selected{border-color:var(--gold);background:rgba(212,168,67,0.08)}
 .venue-card.venue-safe{border-left:3px solid var(--green)}
@@ -175,8 +178,22 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .train-coach-row .coach-slots{color:var(--text-dim);font-size:12px;margin-left:auto}
 .train-tendency{font-size:13px;color:var(--text-sub);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)}
 /* §3 Dojo Header + Atmosphere */
-.dojo-header{margin-bottom:14px}
-.dojo-header-img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;opacity:0.85;display:block;margin-bottom:8px}
+.dojo-header{margin-bottom:14px;position:relative;overflow:hidden;border-radius:8px}
+.dojo-header-img{width:100%;max-height:200px;object-fit:cover;display:block}
+.dojo-header-overlay{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(transparent 0%,rgba(0,0,0,0.7) 100%);pointer-events:none}
+.dojo-scene-coach{position:absolute;bottom:8px;left:10px;display:flex;align-items:flex-end;gap:8px;max-width:70%;z-index:2}
+.dojo-scene-coach-avatar{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);overflow:hidden;flex-shrink:0;background:rgba(0,0,0,0.3)}
+.dojo-scene-coach-avatar img{width:100%;height:100%;object-fit:cover}
+.dojo-scene-bubble{background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 10px;color:#fff;font-size:12px;line-height:1.4;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+.dojo-scene-bubble .coach-name{font-size:10px;color:var(--gold);font-weight:700;margin-bottom:2px}
+.dojo-scene-fighters{position:absolute;bottom:8px;right:48px;display:flex;align-items:flex-end;gap:8px;z-index:2}
+.dojo-scene-fighter-wrap{position:relative;cursor:pointer;flex-shrink:0}
+.dojo-scene-fighter-wrap:hover .dojo-scene-fighter{border-color:var(--gold);transform:scale(1.08)}
+.dojo-scene-fighter{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);overflow:hidden;background:rgba(0,0,0,0.3);transition:border-color .2s,transform .2s}
+.dojo-scene-fighter img,.dojo-scene-fighter .portrait{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%}
+.dojo-scene-shout{position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:9px;padding:2px 5px;border-radius:4px;white-space:nowrap;pointer-events:none;text-shadow:0 1px 1px rgba(0,0,0,0.4);
+  animation:shoutFade var(--shout-cycle,14s) ease-in-out infinite;animation-delay:var(--shout-delay,0s)}
+@keyframes shoutFade{0%{opacity:0}2%{opacity:1}18%{opacity:1}22%{opacity:0}100%{opacity:0}}
 .dojo-atmosphere{padding:10px 14px;border-radius:6px;font-size:14px;display:flex;align-items:center;gap:8px;
   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}
 .dojo-atmosphere-emoji{font-size:20px;flex-shrink:0}
@@ -186,6 +203,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .dojo-atmosphere.level-4 .dojo-atmosphere-text{color:var(--text)}
 .dojo-atmosphere.level-5{border-color:rgba(231,76,60,0.2);background:rgba(231,76,60,0.04)}
 .dojo-atmosphere.level-5 .dojo-atmosphere-text{color:#e8a87c;font-weight:600}
+.arena-header{margin-bottom:14px}
+.arena-header-img{width:100%;max-height:180px;object-fit:cover;border-radius:8px;opacity:0.85;display:block}
 /* §2 Coach Report Bubble */
 .coach-report-bubble{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-top:8px;
   background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:8px;
@@ -951,7 +970,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <div id="rosterDojoHeader"></div>
     <div class="panel">
       <div class="panel-title">🎓 所属スタッフ (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
-        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)">スタッフ室 →</button>
+        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)">スタッフ募集 →</button>
       </div>
       <div id="rosterStaffSection"></div>
     </div>
@@ -1005,7 +1024,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   <!-- SCREEN: Staff Room (Coach Management) -->
   <div class="screen" id="screen-coach">
     <div class="panel">
-      <div class="panel-title">🎓 スタッフ室
+      <div class="panel-title">🎓 スタッフ募集
         <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)">← 団体に戻る</button>
       </div>
       <div id="coachContent"></div>
@@ -1061,7 +1080,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p><strong>⚡強化練習：</strong>「今週」タブの⚡ボタンで強化練習を設定（成長×1.5/体調消耗2倍/最大2週連続）</p>
             <p><strong>コーチアサイン：</strong>「団体」タブで選手カードの▼ボタンを押すと、コーチアサインや成長状況の詳細が見られます。</p>
             <p style="color:var(--text-sub);font-size:12px">⚠️ 体調が低い状態で練習すると怪我のリスクが上がります。体調60未満の選手は休養させましょう。</p>
-            <p><strong>コーチ：</strong>「スタッフ室」で雇用できます。コーチごとに得意分野があり、対応メニューの効果がアップします。</p>
+            <p><strong>コーチ：</strong>「スタッフ募集」で雇用できます。コーチごとに得意分野があり、対応メニューの効果がアップします。</p>
           </div>
         </div>
 

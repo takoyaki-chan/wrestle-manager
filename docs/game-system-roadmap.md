@@ -1,12 +1,19 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-02（タブ統合＆並び替え）
+> 最終更新: 2026-03-02（道場バナーシーン化＋スタッフ室改名）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**道場バナーシーン化＋「スタッフ室」改名（2026-03-02）。** 道場ヘッダーをシーン風に演出。「スタッフ室」→「スタッフ募集」に改名。
+
+- **道場バナーシーン化**: dojo-headerをposition:relativeコンテナ化。バナー画像上にグラデーションオーバーレイ（下部→半透明黒）を重ねる。左下にコーチ吹き出し（報告あり:コーチアバター+報告テキスト、報告なし:先頭コーチ+雰囲気テキスト、未雇用:emoji+テキストのみ）。右下に雰囲気レベル連動の選手アイコン（level1:0人、level2:0-1人、level3:1人、level4:1-2人、level5:2-3人）をseedRNGで週固定選出、±5pxのY軸揺らぎ。選手アイコンは全員吹き出し付き（15種の掛け声テキスト、13-19sサイクルでループ、毎サイクル被りなしランダム差し替え）。クリックで選手ポップアップ連携
+- **CSS新規11クラス**: .dojo-header-overlay, .dojo-scene-coach, .dojo-scene-coach-avatar, .dojo-scene-bubble, .dojo-scene-bubble .coach-name, .dojo-scene-fighters, .dojo-scene-fighter
+- **「スタッフ室」→「スタッフ募集」改名**: 5箇所（index.html×3: ボタン/パネルタイトル/ヘルプ文、ui-render.js×1: 未雇用案内、app.js×1: ミッション説明）
+- 変更: index.html, ui-render.js, app.js
 
 **タブ統合＆並び替え（2026-03-02）。** 育成タブを廃止し団体タブに統合。ナビバー並び替え。
 

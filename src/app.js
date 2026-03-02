@@ -811,7 +811,7 @@ const Audio = (() => {
 const MISSIONS = [
   // ── BEGINNER: 最初の一歩 ──
   { id:'hire_coach',    phase:0, icon:'育', name:'コーチを雇おう',
-    desc:'スタッフ室から最初のコーチを雇用しよう。選手の成長速度が大幅にアップ！',
+    desc:'スタッフ募集から最初のコーチを雇用しよう。選手の成長速度が大幅にアップ！',
     screen:'coach', check: G => G.coaches.length >= 1 },
   { id:'set_schedule',  phase:0, icon:'予', name:'スケジュールを変更してみよう',
     desc:'今週タブで選手のスケジュールを「練習優先」や「プロモ優先」に変更してみよう。',
