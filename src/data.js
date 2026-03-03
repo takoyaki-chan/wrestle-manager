@@ -730,10 +730,54 @@ const TITLES = [
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {matches:2, label:'因縁', mqBonus:5, color:'#fdcb6e', emoji:'⚡'},
-  {matches:4, label:'宿敵', mqBonus:8, color:'#e17055', emoji:'🔥'},
-  {matches:7, label:'永遠のライバル', mqBonus:12, color:'#d63031', emoji:'💥'}
+  {matches:2, label:'因縁', mqBonus:3, color:'#fdcb6e', emoji:'⚡'},
+  {matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
+  {matches:7, label:'永遠のライバル', mqBonus:6, color:'#d63031', emoji:'💥'}
 ];
+
+// 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
+const RIVALRY_CONFRONTATION_LINES = {
+  pairs: [
+    ['今日こそ、決着をつける', '……望むところよ'],
+    ['何度やっても結果は同じだ', 'それは終わってから言いなさい'],
+    ['この因縁、今夜終わりにしよう', '最後にふさわしい試合にしましょう'],
+    ['覚悟はいいわね？', '生まれた時からできてるわ'],
+    ['あなたを超える。今日、ここで', '超えられるものなら、やってみなさい'],
+  ],
+  eternalPairs: [
+    ['長かった……この物語に、終止符を打つ', 'ええ……最高の結末を見せましょう'],
+    ['何度も戦った。でも今日が最後だ', 'わかっている。だから全力で来なさい'],
+    ['あなたがいなければ、今の私はいない', '……お互い様よ。だから今日も全力で'],
+  ],
+};
+
+// 因縁決着システム — 試合後の決着セリフ
+const RIVALRY_RESOLUTION_LINES = {
+  winner: [
+    'ようやく決着がついた……最高の相手だった',
+    'この勝利は、あの人がいたから掴めた',
+    '何度でも言う。あなたは最高のライバルだ',
+    'この拳が届いた……それだけで十分だ',
+    '終わった……でも、この因縁に感謝している',
+  ],
+  loser: [
+    '負けた……でも、この試合は誇りに思う',
+    '悔しい。でも、あなたが強かった。それだけだ',
+    '次は……いや、今はこの敗北を受け入れる',
+    'ありがとう。あなたのおかげで強くなれた',
+    '完敗だ。でも私はまだ終わらない',
+  ],
+  eternalWinner: [
+    'この物語に終止符を打てた……感無量だ',
+    '長かった。でも、あなたなしでは辿り着けなかった',
+    'これが最終章。最高のエンディングだった',
+  ],
+  eternalLoser: [
+    'あなたには敵わなかった。でも、この戦いは宝物だ',
+    '幾度となく戦った。すべてが私の財産だ',
+    '最後まで……全力だった。悔いはない',
+  ],
+};
 
 // v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
 const MQ_EXTERNAL_CAP = 15;
@@ -1026,13 +1070,13 @@ const RIVAL_ORG_NAME_POOL = {
 };
 const RIVAL_ORGS = [
   { id:'org_s', name:'', tier:'S', championScore:60,
-    coachMul:1.30, facilityMul:1.15, scoutStyle:'immediate',
+    coachMul:1.30, facilityMul:1.00, scoutStyle:'immediate',
     desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
   { id:'org_a', name:'', tier:'A', championScore:40,
-    coachMul:1.15, facilityMul:1.10, scoutStyle:'youth',
+    coachMul:1.15, facilityMul:1.00, scoutStyle:'youth',
     desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
   { id:'org_b', name:'', tier:'B', championScore:20,
-    coachMul:1.00, facilityMul:1.05, scoutStyle:'conservative',
+    coachMul:1.00, facilityMul:1.00, scoutStyle:'conservative',
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
 
@@ -1164,9 +1208,9 @@ const AI_SCOUT_CFG = {
 
 // F1: AI tier differentiation — roster quality caps & growth bonus
 const AI_TIER_LIMITS = {
-  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.20, faAggressiveness: 0.60 },
-  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
-  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 0.90, faAggressiveness: 0.20 }
+  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.60 },
+  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.40 },
+  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 0.95, faAggressiveness: 0.20 }
 };
 
 // AI season growth config (rival-spec §4.1)

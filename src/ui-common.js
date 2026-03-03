@@ -1054,6 +1054,122 @@ function closeRetirementPopup() {
   }
 }
 
+// ── 因縁決着ポップアップ（宣戦布告 / 決着 共用）────────────────
+let _rivalryPopupQueue = [];
+let _rivalryPopupCallback = null;
+
+/**
+ * 因縁ポップアップをキュー表示
+ * @param {Array} items - ポップアップデータの配列
+ *   宣戦布告: { phase:'confrontation', leftId, rightId, leftName, rightName, isEternal }
+ *   決着:     { phase:'resolution', winnerId, loserId, winnerName, loserName, isEternal, popBonus, orgPopBonus }
+ * @param {Function} onAllDone
+ */
+function showRivalryPopups(items, onAllDone) {
+  if (!items || items.length === 0) { if (onAllDone) onAllDone(); return; }
+  _rivalryPopupQueue = [...items];
+  _rivalryPopupCallback = onAllDone || null;
+  _renderRivalryPopup();
+}
+
+function _rivalryFaceHtml(id) {
+  const url = getPortraitUrl(id);
+  if (url) return `<img src="${url}" alt="">`;
+  const ch = ALL_CHARS.find(c => c.id === id);
+  return `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
+}
+
+function _renderRivalryPopup() {
+  if (_rivalryPopupQueue.length === 0) {
+    if (_rivalryPopupCallback) { const cb = _rivalryPopupCallback; _rivalryPopupCallback = null; cb(); }
+    return;
+  }
+  const o = _rivalryPopupQueue[0];
+  const box = document.getElementById('rivalryPopupBox');
+
+  if (o.phase === 'confrontation') {
+    // 宣戦布告
+    const lines = o.isEternal ? RIVALRY_CONFRONTATION_LINES.eternalPairs : RIVALRY_CONFRONTATION_LINES.pairs;
+    const pair = lines[Math.floor(Math.random() * lines.length)];
+    const headerEmoji = o.isEternal ? '💥' : '🔥';
+    const headerText = o.isEternal ? '永遠のライバル ── 最終対決' : '宿敵対決！';
+
+    box.className = `rivalry-popup${o.isEternal ? ' eternal' : ''}`;
+    box.innerHTML = `
+      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
+      <div class="rivalry-popup-vs">
+        <div class="rivalry-popup-fighter">
+          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.leftId)}</div>
+          <div class="rivalry-popup-name">${o.leftName}</div>
+        </div>
+        <div class="rivalry-popup-vs-icon">VS</div>
+        <div class="rivalry-popup-fighter">
+          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.rightId)}</div>
+          <div class="rivalry-popup-name">${o.rightName}</div>
+        </div>
+      </div>
+      <div class="rivalry-popup-lines">
+        <div class="rivalry-popup-line-name">${o.leftName}</div>
+        <div class="rivalry-popup-line">${pair[0]}</div>
+        <div class="rivalry-popup-line-name">${o.rightName}</div>
+        <div class="rivalry-popup-line">${pair[1]}</div>
+      </div>
+      <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
+    `;
+    document.getElementById('rivalryPopupOverlay').classList.add('active');
+    Audio.play('war');
+
+  } else {
+    // 決着
+    const winLines = o.isEternal ? RIVALRY_RESOLUTION_LINES.eternalWinner : RIVALRY_RESOLUTION_LINES.winner;
+    const loseLines = o.isEternal ? RIVALRY_RESOLUTION_LINES.eternalLoser : RIVALRY_RESOLUTION_LINES.loser;
+    const winLine = winLines[Math.floor(Math.random() * winLines.length)];
+    const loseLine = loseLines[Math.floor(Math.random() * loseLines.length)];
+    const headerEmoji = o.isEternal ? '💥' : '⚡';
+    const headerText = o.isEternal ? '永遠のライバル ── 最終決着！' : '宿敵決着！';
+
+    box.className = `rivalry-popup resolution${o.isEternal ? ' eternal' : ''}`;
+    box.innerHTML = `
+      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
+      <div class="rivalry-popup-vs">
+        <div class="rivalry-popup-fighter">
+          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.winnerId)}</div>
+          <div class="rivalry-popup-name">${o.winnerName}</div>
+        </div>
+        <div class="rivalry-popup-vs-icon">VS</div>
+        <div class="rivalry-popup-fighter">
+          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.loserId)}</div>
+          <div class="rivalry-popup-name">${o.loserName}</div>
+        </div>
+      </div>
+      <div class="rivalry-popup-lines">
+        <div class="rivalry-popup-line-name">${o.winnerName}</div>
+        <div class="rivalry-popup-line">${winLine}</div>
+        <div class="rivalry-popup-line-name">${o.loserName}</div>
+        <div class="rivalry-popup-line">${loseLine}</div>
+      </div>
+      <div class="rivalry-popup-bonus">
+        📈 両選手の人気 +${o.popBonus}　　🏢 団体人気 +${o.orgPopBonus}
+      </div>
+      <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
+    `;
+    document.getElementById('rivalryPopupOverlay').classList.add('active');
+    Audio.play('award');
+  }
+}
+
+function closeRivalryPopup() {
+  document.getElementById('rivalryPopupOverlay').classList.remove('active');
+  _rivalryPopupQueue.shift();
+  if (_rivalryPopupQueue.length > 0) {
+    setTimeout(_renderRivalryPopup, 300);
+  } else if (_rivalryPopupCallback) {
+    const cb = _rivalryPopupCallback;
+    _rivalryPopupCallback = null;
+    setTimeout(cb, 200);
+  }
+}
+
 // ── v1.4: Awards Ceremony ────────────────────────────────────
 
 /**
@@ -1861,7 +1977,8 @@ function showFighterPopup(fighterId, source) {
       const discount = 0;
       const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
       const signingCost = Engine.scout.getSigningCost(c, discount);
-      const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
+      const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G);
+      const viaTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, c, G);
       const canAfford = G.funds >= signingCost;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
@@ -1873,6 +1990,7 @@ function showFighterPopup(fighterId, source) {
           <span>給与: ${getSalary(c)}万/週</span>
           ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
         </div>
+        ${viaTicket ? '<div style="text-align:center;font-size:13px;color:#f1c40f;padding:6px 8px;margin-bottom:8px;background:rgba(241,196,15,0.1);border:1px solid rgba(241,196,15,0.3);border-radius:6px">🎫 逸材特別交渉枠を使用します（1回限り）</div>' : ''}
         ${!canNeg
           ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
           : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>

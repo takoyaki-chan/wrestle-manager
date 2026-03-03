@@ -1910,9 +1910,10 @@ function renderScout() {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const roleIcon = c.role === 'Babyface' ? 'BF' : c.role === 'Heel' ? 'HL' : 'NT';
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
-    const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
+    const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G);
+    const viaTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, c, G);
     const rowOpacity = canNeg ? '' : 'opacity:0.45;';
-    html += `<div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;${rowOpacity}cursor:pointer" onclick="showFighterPopup(${c.id},'free')">
+    html += `<div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--bg-card);border:1px solid ${viaTicket ? 'rgba(241,196,15,0.5)' : 'var(--border)'};border-radius:8px;margin-bottom:8px;${rowOpacity}cursor:pointer" onclick="showFighterPopup(${c.id},'free')">
       ${portraitImg(c.id, 80, '', true)}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
@@ -1923,6 +1924,7 @@ function renderScout() {
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
+          ${viaTicket ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4);font-weight:600">🎫 特別交渉枠</span>' : ''}
           ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
         </div>
       </div>

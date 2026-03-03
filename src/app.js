@@ -1772,10 +1772,11 @@ const App = {
     if (G.roster.some(c => c.id === charId)) {
       Audio.play('error'); alert('この選手はすでに自団体に所属しています'); return;
     }
-    // Gate: check orgPop requirement (pricing-balance-spec §2)
-    if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter)) {
+    // Gate: check orgPop requirement (pricing-balance-spec §2) — FA context with eliteTicket support
+    if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter, 'fa', G)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
+    const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
     const discount = 0;
     const finalCost = Engine.scout.getSigningCost(fighter, discount);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
@@ -1806,7 +1807,10 @@ const App = {
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
     if (titleMsg) log.push(titleMsg);
-    G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log };
+    // v1.9: 逸材特別交渉枠の消費
+    const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
+    if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
+    G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
     refreshAll();
   },
 
@@ -2216,14 +2220,48 @@ const App = {
 
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
+
+    // 宿敵+ペアの宣戦布告ポップアップを検出
+    const confrontations = [];
+    validMatches.forEach((m, i) => {
+      const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
+      if (rivalLvl && rivalLvl.matches >= 4) {
+        const cl = G.roster.find(c => c.id === m.left);
+        const cr = G.roster.find(c => c.id === m.right);
+        if (cl && cr) {
+          confrontations.push({
+            phase: 'confrontation', idx: i,
+            leftId: m.left, rightId: m.right,
+            leftName: cl.name, rightName: cr.name,
+            isEternal: rivalLvl.matches >= 7,
+          });
+        }
+      }
+    });
+
     // Initialize preview state
     App._showPreview = {
       validMatches,
       results: new Array(validMatches.length).fill(null),
       currentWatching: -1,
-      stateSnapshot: JSON.parse(JSON.stringify(G))
+      stateSnapshot: JSON.parse(JSON.stringify(G)),
+      confrontationPairs: confrontations.map(c => c.idx),
     };
-    renderMatchPreview();
+
+    const startMatchPreview = () => renderMatchPreview();
+
+    if (confrontations.length > 0) {
+      // 乱入ポップアップがある場合はそれが終わってから宣戦布告→プレビュー
+      if (intrusion) {
+        _onEventPopupQueueEmpty = () => {
+          showRivalryPopups(confrontations, startMatchPreview);
+        };
+      } else {
+        showRivalryPopups(confrontations, startMatchPreview);
+      }
+    } else {
+      renderMatchPreview();
+    }
   },
 
   // Skip a single match (instant calculation)
@@ -2395,14 +2433,21 @@ const App = {
     const events = [];
 
     // Rivalry & coach bonuses
+    const confrontationPairs = sp.confrontationPairs || [];
+    const deferredRivalryPairs = []; // 宿敵+ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
       if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
-      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
-      rivalries = rivalResult.rivalries;
-      if (rivalResult.msg) events.push(rivalResult.msg);
+      // 宿敵+ペアは決着判定のため recordRivalry を保留
+      if (confrontationPairs.includes(i)) {
+        deferredRivalryPairs.push(i);
+      } else {
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+        rivalries = rivalResult.rivalries;
+        if (rivalResult.msg) events.push(rivalResult.msg);
+      }
       const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
       if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
     });
@@ -2484,6 +2529,46 @@ const App = {
         events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
       }
     }
+
+    // 因縁決着判定（全MQボーナス適用後）
+    const rivalryResolutions = [];
+    deferredRivalryPairs.forEach(idx => {
+      const r = results[idx];
+      const m = validMatches[idx];
+      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq);
+      if (resolution) {
+        // 決着成立: matches リセット + lastResolvedWeek 記録
+        const key = Engine.title.getRivalryKey(m.left, m.right);
+        rivalries = { ...rivalries, [key]: { matches: 0, lastWeek: s.week, lastResolvedWeek: s.week } };
+        // 報酬: 両選手 popularity 直接加算（逓減対象外）
+        roster = roster.map(c => {
+          if (c.id === m.left || c.id === m.right) {
+            return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
+          }
+          return c;
+        });
+        s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + resolution.orgPopBonus) };
+        // 勝者/敗者判定
+        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
+        const loserId = winnerId === m.left ? m.right : m.left;
+        const winnerName = winnerId === r.left.id ? r.left.name : r.right.name;
+        const loserName = loserId === r.left.id ? r.left.name : r.right.name;
+        rivalryResolutions.push({
+          phase: 'resolution', winnerId, loserId, winnerName, loserName,
+          isEternal: resolution.isEternal, popBonus: resolution.popBonus, orgPopBonus: resolution.orgPopBonus,
+        });
+        r.rivalryResolved = true;
+        const emoji = resolution.isEternal ? '💥' : '⚡';
+        const label = resolution.isEternal ? '永遠のライバル最終決着' : '宿敵決着';
+        events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${resolution.orgPopBonus}`);
+      } else {
+        // 不完全燃焼: 通常通り recordRivalry 実行
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+        rivalries = rivalResult.rivalries;
+        if (rivalResult.msg) events.push(rivalResult.msg);
+      }
+    });
+    App._pendingRivalryResolutions = rivalryResolutions;
 
     // MQ popularity
     const mainEventIdx = 0; // index 0 = main event in showCard order
@@ -2768,33 +2853,33 @@ const App = {
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
 
-    // v1.8: ブレークスルー/スランプ発生ポップアップ（試合 → 怪我 → breakthrough の順）
+    // ポップアップ連鎖: eventPopups → 因縁決着 → ブレークスルー/スランプ → 引退
     const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
     if (G._pendingGrowthEvents) {
       const { _pendingGrowthEvents: _, ...cleanG } = G;
       G = cleanG;
     }
+    const pendingResolutions = App._pendingRivalryResolutions || [];
+    App._pendingRivalryResolutions = [];
+
+    // チェーンを逆順に組み立て（retirement ← growth ← resolution ← eventPopups）
+    let nextAction = null;
+    if (pendingInjuryRetirements.length > 0) {
+      nextAction = () => showRetirementPopups(pendingInjuryRetirements);
+    }
     if (pendingGrowthEventsShow.length > 0) {
-      const showGrowthPopups = () => showGrowthEventPopups(pendingGrowthEventsShow, () => {
-        // v1.3-3: Show injury retirement popups after growth popups
-        if (pendingInjuryRetirements.length > 0) {
-          showRetirementPopups(pendingInjuryRetirements);
-        }
-      });
+      const after = nextAction;
+      nextAction = () => showGrowthEventPopups(pendingGrowthEventsShow, after || (() => {}));
+    }
+    if (pendingResolutions.length > 0) {
+      const after = nextAction;
+      nextAction = () => showRivalryPopups(pendingResolutions, after || (() => {}));
+    }
+    if (nextAction) {
       if (hasEventPopups) {
-        _onEventPopupQueueEmpty = showGrowthPopups;
+        _onEventPopupQueueEmpty = nextAction;
       } else {
-        setTimeout(showGrowthPopups, 200);
-      }
-    } else {
-      // v1.3-3: Show injury retirement popups after event popups finish
-      if (pendingInjuryRetirements.length > 0) {
-        const showRetirements = () => { showRetirementPopups(pendingInjuryRetirements); };
-        if (hasEventPopups) {
-          _onEventPopupQueueEmpty = showRetirements;
-        } else {
-          setTimeout(showRetirements, 200);
-        }
+        setTimeout(nextAction, 200);
       }
     }
 
@@ -3039,6 +3124,21 @@ const App = {
     if (pendingLargeEvent) {
       const largeDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
       setTimeout(() => App.handleLargeEvent(pendingLargeEvent), largeDelay);
+    }
+
+    // v1.9: 逸材特別交渉枠アンロック通知
+    const pendingEliteTicket = G._pendingEliteTicket || false;
+    if (G._pendingEliteTicket) {
+      const { _pendingEliteTicket: _, ...cleanEt } = G;
+      G = cleanEt;
+    }
+    if (pendingEliteTicket) {
+      const etDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 500;
+      setTimeout(() => showEventPopup({
+        type: 'system', emoji: '🎫', tone: 'gold',
+        message: '逸材特別交渉枠を獲得！',
+        detail: '団体の評判が業界に広まり、逸材クラスの選手にも交渉の道が開けました。\nFA市場で逸材ランクの選手1名と特別に交渉できます。\n※ この権利はいつでも使えます（温存OK）\n※ 1回限りの特別枠です\n※ 超逸材ランクには使用できません'
+      }), etDelay);
     }
 
     // v1.0: Auto-advance on non-monthly weeks

@@ -1,12 +1,31 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（ヘルプ画面全面書き直し）
+> 最終更新: 2026-03-03（バランス調整 v1.9）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**バランス調整 v1.9（2026-03-03）。** AI団体成長バランス・年齢カーブ型契約費用・逸材特別交渉枠の3点を実装。
+
+- **変更C: AI団体成長バランス調整**: RIVAL_ORGS facilityMulを全て1.00に（実質廃止）。AI_TIER_LIMITS growthBonusをS:1.20→1.05、A:1.05→1.00、B:0.90→0.95に再調整。プレイヤーに施設システムがないためfacilityMulが歪めていた問題を解消
+- **変更B: 年齢カーブ型契約費用**: ageMarketMultiplier関数追加。21歳以下の逸材+個性2つ以上に若手プレミアム(1.10-1.35)、26-27歳0.95、28-29歳0.85。30歳以降は既存reassessに委譲（二重適用なし）。calcAssessedValueに組み込み
+- **変更A: 逸材特別交渉枠（FA専用）**: orgPop≥25到達時にG.eliteTicket=true。FA一覧でeliteティア選手1名のreqPopを無視して交渉可能（1回限り、superElite不可、スカウト不可）。canNegotiateにcontext/state引数追加。🎫バッジ+金枠ボーダー+使用確認メッセージ。tickWeekで検知→_pendingEliteTicket transient→processWeekでgoldポップアップ通知
+- 設計書: `specs/balance-adjustment-spec-v1.9.md`
+- 変更: data.js, engine.js, app.js, ui-render.js, ui-common.js
+
+**因縁決着システム＋因縁MQボーナス半減（2026-03-03）。** 因縁に「決着」のゴールを追加し「発生→盛り上がり→決着→報酬」のサイクルを完成。2段階演出（試合前の宣戦布告→試合後の決着セリフ）でカタルシスを演出。因縁MQボーナスも約半分に引き下げ。
+
+- **因縁MQボーナス半減**: 因縁+5/宿敵+8/永遠のライバル+12 → +3/+4/+6に引き下げ
+- **決着条件**: 宿敵以上(matches≥4)で対戦しMQ≥50で決着成立。matchesゼロリセット+両選手pop+4+orgPop+1.5（永遠のライバル: pop+6, orgPop+2.5）
+- **宣戦布告ポップアップ（試合前）**: 宿敵+ペアの試合開始前に対決前セリフをコール＆レスポンスで表示。通常5パターン+永遠のライバル専用3パターン。SE: Audio.play('war')
+- **決着ポップアップ（試合後）**: 勝者/敗者のセリフ＋ボーナス明示。永遠のライバル専用セリフ+赤枠+金枠演出。SE: Audio.play('award')
+- **クールダウン**: 決着後lastResolvedWeek記録、同ペアは4週間ファン期待カードに出さない
+- **ポップアップ連鎖**: eventPopups → 決着ポップアップ → growthPopups → retirementPopups
+- **Engine.title.checkResolution()**: 決着判定ヘルパー。deferredRivalryPairsパターンで宿敵+ペアのrecordRivalryをMQ確定後まで保留
+- 変更: data.js, engine.js, index.html, ui-common.js, app.js
 
 **ヘルプ画面全面書き直し（2026-03-03）。** 度重なる更新で古くなっていたヘルプ画面を全11セクションに再構成。
 
@@ -253,7 +272,7 @@
 - **ケアシステム2週間隔制限** — costume/mediaは2週に1回/選手/アクション（state.week - _careWeekUsed[actionId] < 2 で管理）。orgPopゲート: costume/media≥20、special_treatment≥40。ロック時はUI上で「知名度XXで解放」表示
 - **Heat維持困難化** — HOT以上（heatScore≥6）で上昇×0.5、冷め速度1.5倍
 - **内部小数化** — popularity/orgPopを小数のまま保持。表示はdispPop/dispOrgPop（Math.round）
-- **MQ外部ボーナスキャップ** — 外部ボーナス合計+15上限。因縁+3/+5/+8、タイトル+5、コーチ+2、超満員+3/大入り+2、会場0-2
+- **MQ外部ボーナスキャップ** — 外部ボーナス合計+15上限。因縁+3/+4/+6、タイトル+5、コーチ+2、超満員+3/大入り+2、会場0-2
 - **タイトルマッチ格差ペナルティ** — OVR差>10:MQ-3、>20:MQ-6（キャップ後別途減算）
 - **特性4種効果** — 適応力:growthPenalty+0.2軽減、人望:lockerRoomMorale+3/週、忠誠心:引き抜き確率×0.25、野心:挑戦者MQ+2+ブレークスルー+0.5%
 - **trustパラメータ** — レスラーに trust(0-100) 追加。mentalCoeffの変動係数。自然減衰(-1/月)
@@ -278,7 +297,10 @@
 - **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
 - **会場規模連動の試合数** — VENUES.maxMatches（公民館3〜ドーム8）。Engine.util.getMaxMatches(week,venueIdx)で一元管理。特別興行/PPVは+1（上限8）。CARD_DEPTH_MULT 8要素。showCardは空配列初期化→pad/trimで動的調整
 - **レンタルシステム** — G.rentals配列。シーズン(期)単位契約(1-4期,12週/期)。前払い一括。FA+ライバル団体2ソース。同時2-3枠(ロスターサイズ連動)。タイトル戦出場不可。orgPop貢献50%。確認ダイアログ(顔アイコン+費用)。ソート(名前/OVR/費用)対応。ロスター金枠分離表示
-- **因縁決着システム** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5、専用演出ポップアップ（「⚡宿敵決着！」ヘッダー＋両者セリフ＋ボーナス明示）、専用SE。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。因縁蓄積ペース抑制: 通常+1/試合（現状維持）、ライバル体質+2は据置、rivalry_chance_upバフ+1据置。詳細: specs/rivalry-resolution-spec.md
+- **AI団体成長バランス（v1.9）** — facilityMul全団体1.00（実質廃止）。growthBonus: S=1.05, A=1.00, B=0.95。coachMulのみで差異化
+- **年齢カーブ型契約費用（v1.9）** — ageMarketMultiplier: 21歳以下の逸材+個性2つ以上で1.10-1.35プレミアム、22-25歳=1.0、26-27歳=0.95、28-29歳=0.85、30歳以降=1.0（既存reassessに委譲）。calcAssessedValueでbaseValue*variance*ageMulとして適用
+- **逸材特別交渉枠（v1.9）** — orgPop≥25到達時にG.eliteTicket=true（1回限り）。canNegotiate(orgPop, fighter, context, state)の第3-4引数で判定。context='fa'かつeliteTicket=trueかつtierId='elite'でreqPop無視。superElite不可、スカウト不可。契約成功時にeliteTicket=false,eliteTicketUsed=true。isEliteTicketRequired()ヘルパーでUI表示判定。_pendingEliteTicket transientフィールドでgoldポップアップ通知
+- **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---
 
@@ -327,6 +349,8 @@
 | 成長イベントシステム | growth-event-spec-v1.0.md |
 | 世界観演出システム | world-presentation-spec-v1.4.md |
 | データベースタブ | database-tab-spec-v1.0.md |
+| 因縁決着システム | rivalry-resolution-spec.md |
+| バランス調整 v1.9 | balance-adjustment-spec-v1.9.md |
 
 ### docs/archive/（旧版・完了済み）
 

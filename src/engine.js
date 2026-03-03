@@ -735,6 +735,17 @@ const Engine = {
       for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
       return best;
     },
+    // 因縁決着判定: 宿敵+(matches>=4) かつ MQ>=50 で決着成立
+    checkResolution(rivalLvl, mq) {
+      if (!rivalLvl || rivalLvl.matches < 4) return null;
+      if (mq < 50) return null;
+      const isEternal = rivalLvl.matches >= 7;
+      return {
+        isEternal,
+        popBonus: isEternal ? 6 : 4,
+        orgPopBonus: isEternal ? 2.5 : 1.5,
+      };
+    },
     // Returns { rivalries, msg }
     recordRivalry(G, id1, id2) {
       const key = Engine.title.getRivalryKey(id1, id2);
@@ -745,7 +756,7 @@ const Engine = {
       // v1.5s25b: rivalry_chance_up バフ（マイルストーン）
       const rivalryChanceUp = (G.milestoneBuffs || []).find(b => b.type === 'rivalry_chance_up');
       if (rivalryChanceUp) rivalryBonus += 1;
-      const newEntry = { matches: oldEntry.matches + rivalryBonus, lastWeek: G.week };
+      const newEntry = { ...oldEntry, matches: oldEntry.matches + rivalryBonus, lastWeek: G.week };
       const newRivalries = { ...G.rivalries, [key]: newEntry };
       const newLvl = Engine.title.getRivalryLevel({ ...G, rivalries: newRivalries }, id1, id2);
       let msg = null;
@@ -2805,6 +2816,11 @@ const Engine = {
         }
       }
     }
+    // v1.9: 逸材特別交渉枠 — orgPop≥25到達検知
+    if (s.orgPop >= 25 && !s.eliteTicket && !s.eliteTicketUsed) {
+      s = { ...s, eliteTicket: true, _pendingEliteTicket: true };
+      events.push('🎫 逸材特別交渉枠を獲得！ FA市場で逸材ランクの選手1名と特別に交渉できます');
+    }
     // v1.2-9: Flavor events (雑誌取材・TV出演)
     const flavorRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 5555));
     const flavorEvents = Engine.flavor.check(s, flavorRng);
@@ -3739,6 +3755,25 @@ const Engine = {
       }
       return Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
     },
+    /** Age-based market value multiplier (balance-adjustment-spec v1.9 §B.2) */
+    ageMarketMultiplier(age, fighter, rng) {
+      if (age <= 21) {
+        const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
+        const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
+        const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
+        const tier = Engine.scout.getTier(potTotal, curTotal);
+        const isElitePlus = (tier.id === 'elite' || tier.id === 'superElite');
+        const traitCount = (fighter.traits || []).length;
+        if (isElitePlus && traitCount >= 2) {
+          return 1.10 + Engine.rng.float(rng) * 0.25; // 1.10〜1.35
+        }
+        return 1.0;
+      }
+      if (age <= 25) return 1.0;
+      if (age <= 27) return 0.95;
+      if (age <= 29) return 0.85;
+      return 1.0; // 30以降は既存reassessが処理
+    },
     /** Calculate assessedValue for a fighter. Returns { assessedValue, assessedTier, assessedVariance, assessedSeason } */
     calcAssessedValue(fighter, rng, currentSeason) {
       const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
@@ -3747,18 +3782,30 @@ const Engine = {
       const tier = Engine.scout.getTier(potTotal, curTotal);
       const baseValue = tier.baseMin + Math.round(Engine.rng.float(rng) * (tier.baseMax - tier.baseMin));
       const variance = 0.70 + Engine.rng.float(rng) * 0.60; // 0.70〜1.30
+      const ageMul = Engine.scout.ageMarketMultiplier(fighter.age || 22, fighter, rng);
       return {
-        assessedValue: Math.round(baseValue * variance),
+        assessedValue: Math.round(baseValue * variance * ageMul),
         assessedTier: tier.id,
         assessedVariance: variance,
         assessedSeason: currentSeason || 1
       };
     },
-    /** Check if player org can negotiate with this tier */
-    canNegotiate(orgPop, tierIdOrFighter) {
+    /** Check if player org can negotiate with this tier
+     *  @param {string} context - 'fa' | 'scout' (default: 'scout')
+     *  @param {object} state - game state (for eliteTicket check) */
+    canNegotiate(orgPop, tierIdOrFighter, context, state) {
       const tierId = typeof tierIdOrFighter === 'string' ? tierIdOrFighter : (tierIdOrFighter.assessedTier || 'material');
       const tier = Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
-      return orgPop >= tier.reqPop;
+      if (orgPop >= tier.reqPop) return true;
+      // 逸材特別交渉枠: FA専用、eliteのみ（superElite不可）
+      if (context === 'fa' && state && state.eliteTicket && tierId === 'elite') return true;
+      return false;
+    },
+    /** Check if canNegotiate is only possible via eliteTicket */
+    isEliteTicketRequired(orgPop, tierIdOrFighter, state) {
+      const tierId = typeof tierIdOrFighter === 'string' ? tierIdOrFighter : (tierIdOrFighter.assessedTier || 'material');
+      const tier = Engine.scout.TIERS.find(t => t.id === tierId) || Engine.scout.TIERS[Engine.scout.TIERS.length - 1];
+      return orgPop < tier.reqPop && state && state.eliteTicket && tierId === 'elite';
     },
     /** Get tier config by id */
     getTierConfig(tierId) {
@@ -6579,6 +6626,8 @@ Engine.fanExpect = {
     // Priority 3: 因縁ペア（matches >= 2 以上で、再戦希望）
     Object.entries(rivalries).forEach(([key, rv]) => {
       if ((rv.matches || 0) < 2) return;
+      // 決着後4週間のクールダウン中は候補から除外
+      if (rv.lastResolvedWeek && (state.week - rv.lastResolvedWeek) < 4) return;
       const ids = key.split('-');
       const f1 = roster.find(f => f.id === parseInt(ids[0]));
       const f2 = roster.find(f => f.id === parseInt(ids[1]));
