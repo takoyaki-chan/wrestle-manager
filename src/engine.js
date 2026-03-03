@@ -5930,8 +5930,10 @@ Engine.trust = {
           else if (!isDraw) delta += Engine.trust.applyCoeff(1, mental);
           else          delta += Engine.trust.applyCoeff(1, mental);  // 引き分けも+1
 
-          // §1-3: 好試合（MQ70+）追加+2
-          if (mq >= 70) delta += Engine.trust.applyCoeff(2, mental);
+          // §1-3: 好試合ボーナス+2（閾値 = そのファイターのMQ上限の75%）
+          const fighterOvr = Engine.util.ov(fighter);
+          const fighterMqCeiling = fighterOvr <= 50 ? 20 + fighterOvr * 0.60 : 50 + (fighterOvr - 50) * 1.10;
+          if (mq >= Math.round(fighterMqCeiling * 0.75)) delta += Engine.trust.applyCoeff(2, mental);
 
           // §1-3: タイトルマッチ+5
           if (titleFighters.has(fighter.id)) delta += Engine.trust.applyCoeff(5, mental);
@@ -5973,8 +5975,8 @@ Engine.trust = {
       const rosterAvgOV = roster.length > 0
         ? roster.reduce((s, c) => s + Engine.util.ov(c), 0) / roster.length
         : 50;
-      const adj = Engine.util.getOVMQAdjust(rosterAvgOV);
-      if (avgMQ >= (65 + adj.shift)) delta += 3;
+      const rosterMqCeiling = rosterAvgOV <= 50 ? 20 + rosterAvgOV * 0.60 : 50 + (rosterAvgOV - 50) * 1.10;
+      if (avgMQ >= Math.round(rosterMqCeiling * 0.75)) delta += 3;
     }
 
     // trust < 25 の選手が多いほど空気が悪化（-2/名）
