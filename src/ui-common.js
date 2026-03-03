@@ -2142,7 +2142,7 @@ function autoFillCard() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
   const card = [];
   while (card.length < maxMatches) card.push({left:0, right:0, isTitle:false});
-  const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
+  const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
   const used = new Set();
   const numMatches = Math.min(maxMatches, Math.floor(sorted.length / 2));
   const champId = G.titles.world.championId;
@@ -3091,7 +3091,7 @@ function showCareActionModal(state, onConfirm) {
     const individualActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition !== 'slump_or_motivation_loss');
     const slumpActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition === 'slump_or_motivation_loss');
     const teamActions = Object.values(actions).filter(a => a.category === 'team');
-    const anyInSlump = roster.some(f => typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump(f));
+    const anyInSlump = roster.some(f => typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump && Engine.careActions.isInSlump(f));
 
     let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
 
@@ -3215,7 +3215,7 @@ function showCareActionModal(state, onConfirm) {
     const selectableRoster = isInjuredOnly
       ? roster.filter(f => f.injury)
       : isSlumpOnly
-        ? roster.filter(f => !f.injury && (typeof Engine !== 'undefined' && Engine.careActions ? Engine.careActions.isInSlump(f) : true))
+        ? roster.filter(f => !f.injury && (typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump ? Engine.careActions.isInSlump(f) : true))
         : roster.filter(f => !f.injury);
 
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;

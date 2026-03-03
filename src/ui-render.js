@@ -726,7 +726,9 @@ function renderWeekScreen() {
       const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
       const statusHtml = c.injury
         ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
-        : '<span style="font-size:12px;color:#2ecc71">健康</span>';
+        : c.forcedRest
+          ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
+          : '<span style="font-size:12px;color:#2ecc71">健康</span>';
       const schedDisabled = c.injury ? 'disabled' : '';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
       // Intensive button for week screen
@@ -1372,7 +1374,7 @@ function getAvailableForSlot(slotIndex, side) {
   // Fighters in other slots are included but marked with _usedInOtherSlot for swap UI
   const used = getUsedFighterIds(slotIndex);
   const otherSide = side === 'left' ? G.showCard[slotIndex].right : G.showCard[slotIndex].left;
-  return G.roster.filter(c => c.id !== otherSide && !c.injury).map(c => ({
+  return G.roster.filter(c => c.id !== otherSide && !c.injury && !c.forcedRest).map(c => ({
     ...c, _usedInOtherSlot: used.has(c.id)
   }));
 }
@@ -1450,12 +1452,14 @@ function renderShowPrep() {
   }
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
+  // forcedRest（S3休養願い承認）の選手も除外
   {
-    const rosterIds = new Set(G.roster.map(c => c.id));
+    const rosterMap = new Map(G.roster.map(c => [c.id, c]));
     let dirty = false;
     const cleaned = G.showCard.map(m => {
-      const leftOk = m.left > 0 && rosterIds.has(m.left);
-      const rightOk = m.right > 0 && rosterIds.has(m.right);
+      const lf = rosterMap.get(m.left), rf = rosterMap.get(m.right);
+      const leftOk = m.left > 0 && lf && !lf.forcedRest;
+      const rightOk = m.right > 0 && rf && !rf.forcedRest;
       if ((m.left > 0 && !leftOk) || (m.right > 0 && !rightOk)) dirty = true;
       return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
         isTitle: !!m.isTitle && leftOk && rightOk };
@@ -1794,7 +1798,7 @@ function renderRanking() {
       // Player org card
       const rc = getRankColor(r.rank);
       const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
-      const sorted = [...G.roster].filter(c => !c.injury).sort((a,b) => ov(b) - ov(a));
+      const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
       // Put champion first if exists
       let topFighters = sorted.slice(0, topCount);
       if (G.titles?.world?.championId) {

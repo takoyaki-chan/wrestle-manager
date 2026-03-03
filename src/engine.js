@@ -3097,7 +3097,8 @@ const Engine = {
     }
 
     let s = { ...state, totalShows: state.totalShows + 1, weekPhase: 'showExec' };
-    let roster = s.roster.map(c => ({ ...c }));
+    // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
+    let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
     let rivalries = { ...s.rivalries };
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
@@ -6411,9 +6412,9 @@ Engine.eventSystem = {
       case 'S3': {
         if (choiceIdx === 0) {
           applyTrust(event.fighter, 3);
-          // 休養設定（scheduleをrestに）
-          roster = roster.map(f => f.id === event.fighter ? { ...f, schedule: 'rest' } : f);
-          events.push(`🛌 ${event.name}を休養させた（信頼度+3）`);
+          // 休養設定（scheduleをrestに＋次の興行を欠場させるforcedRestフラグ）
+          roster = roster.map(f => f.id === event.fighter ? { ...f, schedule: 'rest', forcedRest: true } : f);
+          events.push(`🛌 ${event.name}を休養させた（信頼度+3、次の興行は欠場）`);
         } else if (choiceIdx === 1) {
           applyTrust(event.fighter, -2);
           events.push(`😓 ${event.name}を励まして続けさせた（信頼度-2）`);
