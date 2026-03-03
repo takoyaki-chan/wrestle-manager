@@ -3044,7 +3044,7 @@ const App = {
     if (G.weekPhase !== 'manage') return;
     Audio.play('select');
     const roster = G.roster.map(c => {
-      if (c.injury || c.isRental) return c;
+      if (c.injury || c.isRental || c.forcedRest) return c;
       if (c.condition >= 80) return { ...c, schedule: 'practice', intensive: true };
       if (c.condition >= 75) return { ...c, schedule: 'practice', intensive: false };
       if (c.condition >= 60) return { ...c, schedule: 'balance',  intensive: false };
