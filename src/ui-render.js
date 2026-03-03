@@ -1223,6 +1223,24 @@ function renderRoster() {
   const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
   const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
   const sorted = ownFighters;
+  // roster-cap v1.0: 所属枠ヘッダー
+  const rosterCap = G.rosterCap || 6;
+  const isFull = ownFighters.length >= rosterCap;
+  const rosterCapHtml = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid ${isFull ? 'rgba(231,76,60,0.5)' : 'var(--border)'};border-radius:6px">
+    <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
+    <span style="font-size:15px;font-weight:700;color:${isFull ? '#e74c3c' : 'var(--text)'}">${ownFighters.length}/${rosterCap}名</span>
+    ${isFull ? '<span style="font-size:12px;color:#e74c3c">⚠ 上限に達しています</span>' : ''}
+  </div>`;
+  const rosterEl = document.getElementById('rosterContent');
+  if (rosterEl) {
+    let capEl = rosterEl.querySelector('#rosterCapHeader');
+    if (!capEl) {
+      capEl = document.createElement('div');
+      capEl.id = 'rosterCapHeader';
+      rosterEl.insertBefore(capEl, rosterEl.firstChild);
+    }
+    capEl.innerHTML = rosterCapHtml;
+  }
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;
@@ -1498,9 +1516,11 @@ function renderShowPrep() {
       avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
       avail.forEach(c => {
         const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
+        const lastRunMark = c.lastRun ? '🌅 ' : '';
         const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
         const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})${usedSuffix}</option>`;
+        const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})${usedSuffix}${lastRunSuffix}</option>`;
       });
       return opts;
     };
@@ -1518,7 +1538,12 @@ function renderShowPrep() {
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
 
-    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px">
+    // ラストランチェック
+    const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
+    const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
+    const isLastRunMatch = lastRunL || lastRunR;
+
+    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}">
       <div class="match-slot-num">${isMain ? '★' : i+1}</div>
       <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 80) : ''}</div>
       <div class="match-fighter">
@@ -1540,6 +1565,7 @@ function renderShowPrep() {
         ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
+        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===maxMatches-1?' +メイン+5':''})</span>` : ''}
       </div>
     </div>`;
   }
@@ -1890,9 +1916,13 @@ function renderScout() {
   document.getElementById('rosterCount').textContent = G.roster.length;
 
   const discount = 0;
-  let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    所属: ${G.roster.length}名 ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
-  </div>`;
+  const _ownCount = G.roster.filter(f => !f.isRental).length;
+  const _rCap = G.rosterCap || 6;
+  const _capFull = _ownCount >= _rCap;
+  let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">
+    所属: <span style="color:${_capFull ? '#e74c3c' : 'var(--text)'};font-weight:${_capFull ? '700' : 'normal'}">${_ownCount}/${_rCap}名</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
+  </div>
+  ${_capFull ? `<div style="padding:8px 12px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.4);border-radius:6px;font-size:13px;color:#e74c3c;margin-bottom:10px">⚠ ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
 
   // Free agents — compact card list (click name/portrait to open popup with acquire button)
   const visibleFAIds = Engine.util.getVisibleFAIds(G);

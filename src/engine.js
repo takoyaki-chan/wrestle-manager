@@ -1334,7 +1334,129 @@ const Engine = {
       const lines = RETIREMENT_LINES[category] || RETIREMENT_LINES.A2_uncrowned;
       const idx = Math.floor(Engine.rng.float(rng) * lines.length);
       return { line: lines[idx], category };
-    }
+    },
+
+    // §1.2: 引退勧告が可能な選手かチェック
+    canAdvise(fighter) {
+      if (!fighter || fighter.isRental) return false;
+      if ((fighter.wear || 0) >= 20) return true;
+      if ((fighter.careerSeasons || 0) >= 8) return true;
+      if ((fighter.age || 0) >= 30) return true;
+      return false;
+    },
+
+    // 直近勝率（キャリア通算で近似）
+    calcRecentWinRate(fighter) {
+      const w = fighter.wins || 0;
+      const l = fighter.losses || 0;
+      const d = fighter.draws || 0;
+      const total = w + l + d;
+      return total > 0 ? w / total : 0.5;
+    },
+
+    // §1.3: 受諾率計算
+    calcAcceptance(fighter, G) {
+      let rate = 50;
+      const wear = fighter.wear || 0;
+      if (wear >= 60)      rate += 40;
+      else if (wear >= 40) rate += 25;
+      else if (wear >= 20) rate += 10;
+
+      const isChamp = G.titles?.world?.championId === fighter.id;
+      if (isChamp) rate -= 30;
+      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      if (!hasWonTitle) rate += 10;
+
+      const trust = fighter.trust ?? 50;
+      if (trust >= 80)      rate += 20;
+      else if (trust >= 60) rate += 10;
+      else if (trust >= 40) rate += 0;
+      else if (trust >= 20) rate -= 10;
+      else                  rate -= 25;
+
+      const winRate = Engine.retirement.calcRecentWinRate(fighter);
+      if (winRate <= 0.4) rate += 10;
+
+      return Engine.util.clamp(rate, 5, 95);
+    },
+
+    // §1.5/§1.6: 受諾・拒否セリフ選択
+    selectAdviseLine(fighter, G, accepted, rng) {
+      const wear = fighter.wear || 0;
+      const isChamp = G.titles?.world?.championId === fighter.id;
+      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      const winRate = Engine.retirement.calcRecentWinRate(fighter);
+      const isHeel = fighter.role === 'Heel';
+
+      if (accepted) {
+        let cat;
+        if (wear >= 60)         cat = 'accept_terminal';
+        else if (winRate <= 0.4) cat = 'accept_winless';
+        else if (isHeel)         cat = 'accept_heel';
+        else if (hasWonTitle)    cat = 'accept_former_champ';
+        else                     cat = 'accept_no_title';
+        const pool = RETIRE_ACCEPT_LINES[cat] || RETIRE_ACCEPT_LINES.accept_no_title;
+        return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+      } else {
+        let cat;
+        if (isChamp)              cat = 'refuse_champ';
+        else if ((fighter.trust ?? 50) < 40) cat = 'refuse_distrust';
+        else if (isHeel)          cat = 'refuse_heel';
+        else                      cat = 'refuse_fighting';
+        const pool = RETIRE_REFUSE_LINES[cat] || RETIRE_REFUSE_LINES.refuse_fighting;
+        return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+      }
+    },
+
+    // §1: 引退勧告アクション（純粋関数）
+    advise(rng, G, fighterId) {
+      const fighter = G.roster.find(c => c.id === fighterId);
+      if (!fighter || !Engine.retirement.canAdvise(fighter)) return G;
+      if ((fighter.retireAdviceCooldown || 0) > 0) return G;
+
+      const rate = Engine.retirement.calcAcceptance(fighter, G);
+      const accepted = Engine.rng.float(rng) * 100 < rate;
+
+      if (accepted) {
+        const line = Engine.retirement.selectAdviseLine(fighter, G, true, rng);
+        let updated = Engine.career.ensure({ ...fighter, lastRun: true, lastRunWeek: G.season * 12 + G.week });
+        updated = Engine.career.addEvent(updated, { type: 'retain', reason: 'player_retire', season: G.season, week: G.week, age: fighter.age });
+        return {
+          ...G,
+          roster: G.roster.map(c => c.id === fighterId ? updated : c),
+          _pendingRetireAdviseResult: { accepted: true, fighter: updated, line },
+        };
+      } else {
+        const line = Engine.retirement.selectAdviseLine(fighter, G, false, rng);
+        let updated = { ...fighter, trust: Math.max(0, (fighter.trust ?? 50) - 5), retireAdviceCooldown: 48 };
+        let lockerRoomMorale = G.lockerRoomMorale;
+        if (Engine.rng.float(rng) < 0.70) {
+          updated = { ...updated, proveMode: 4 };
+        } else {
+          lockerRoomMorale = Math.max(0, (lockerRoomMorale || 50) - 2);
+        }
+        return {
+          ...G,
+          roster: G.roster.map(c => c.id === fighterId ? updated : c),
+          lockerRoomMorale,
+          _pendingRetireAdviseResult: { accepted: false, fighter: updated, line },
+        };
+      }
+    },
+
+    // §3.4: 引き留めセリフ選択
+    selectRetainLine(fighter, G) {
+      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      const isHeel = fighter.role === 'Heel';
+      const trust = fighter.trust ?? 50;
+      let cat;
+      if (hasWonTitle)   cat = 'former_champ';
+      else if (trust >= 70) cat = 'high_trust';
+      else if (isHeel)   cat = 'heel';
+      else               cat = 'default';
+      const pool = RETAIN_LINES[cat] || RETAIN_LINES.default;
+      return pool[Math.floor(Math.random() * pool.length)];
+    },
   },
 
   // ── Coach System (v3.0 redesign: teaching × style × trait) ────────────────
@@ -1523,7 +1645,50 @@ const Engine = {
     },
     getSalaryTotal(G) {
       return Engine.coach.getHiredCoaches(G).reduce((s, c) => s + c.salary, 0);
-    }
+    },
+
+    // §4: 引退アドバイス生成（UI表示専用 — rng不要、Math.random()使用OK）
+    getRetireAdvice(G, fighterId) {
+      const hired = Engine.coach.getHiredCoaches(G);
+      if (hired.length === 0) return { coachId: null, coachName: null, text: null };
+      const assignedCoach = Engine.coach.getCharCoach(G, fighterId);
+      const coach = assignedCoach || hired[0];
+      const isAssigned = !!assignedCoach;
+      const fighter = G.roster.find(c => c.id === fighterId);
+      if (!fighter) return { coachId: null, coachName: null, text: null };
+      const rate = Engine.retirement.calcAcceptance(fighter, G);
+      const obsRank = coach.observation || 'D';
+      const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
+      const isInaccurate = inaccuracy > 0 && Math.random() < inaccuracy;
+      const text = Engine.coach._buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned);
+      return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji, text };
+    },
+
+    _buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned) {
+      const prefix = isAssigned ? '' : '担当じゃないから確信はないですが…';
+      const pool = COACH_RETIRE_ADVICE_TEXTS;
+      if (obsRank === 'E' || obsRank === 'D') {
+        return prefix + '…ちょっとわかりません';
+      }
+      if (obsRank === 'C') {
+        const positive = isInaccurate ? (rate < 50) : (rate >= 50);
+        const texts = positive ? pool.C_positive : pool.C_negative;
+        return prefix + texts[Math.floor(Math.random() * texts.length)];
+      }
+      if (obsRank === 'B') {
+        let tier;
+        if (isInaccurate) { tier = rate >= 70 ? 'maybe' : rate >= 40 ? 'high' : 'hard'; }
+        else               { tier = rate >= 70 ? 'high'  : rate >= 40 ? 'maybe' : 'hard'; }
+        const texts = pool[`B_${tier}`];
+        return prefix + texts[Math.floor(Math.random() * texts.length)];
+      }
+      // A rank (4段階 + 揺らぎ5%)
+      let tier;
+      if (isInaccurate) { tier = rate >= 80 ? 'likely' : rate >= 60 ? 'sure' : rate >= 40 ? 'hard' : 'iffy'; }
+      else               { tier = rate >= 80 ? 'sure'   : rate >= 60 ? 'likely' : rate >= 40 ? 'iffy' : 'hard'; }
+      const texts = pool[`A_${tier}`];
+      return prefix + (texts ? texts[Math.floor(Math.random() * texts.length)] : '…読めません');
+    },
   },
 
   // ── §3 Locker Room Visualization ──────────────────────
@@ -2160,7 +2325,7 @@ const Engine = {
         const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
         let roster = aiData.roster.map(f => ({ ...f }));
         const need = Math.max(0, cfg.idealRoster - roster.length);
-        const maxPicks = Math.min(need + 1, cfg.maxPicks);
+        const maxPicks = Math.min(need, cfg.maxPicks); // roster-cap v1.0: 上限超過を防ぐため need のみ
         let budget = cfg.budget;
         let picked = 0;
 
@@ -2233,8 +2398,8 @@ const Engine = {
         const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
         const roster = newOrgs[org.id].roster;
 
-        // If roster is already full, skip acquiring
-        if (roster.length >= cfg.idealRoster + 2) continue;
+        // If roster is already full, skip acquiring (roster-cap v1.0: idealRosterをハードキャップとして統一)
+        if (roster.length >= cfg.idealRoster) continue;
 
         // Try to poach from lower-tier orgs
         for (const sourceOrg of sortedOrgs) {
@@ -2401,6 +2566,10 @@ const Engine = {
 
       roster = roster.map(c => {
         let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+
+        // 引退勧告クールダウン減算・見返しモード減算
+        if ((nc.retireAdviceCooldown || 0) > 0) nc = { ...nc, retireAdviceCooldown: nc.retireAdviceCooldown - 1 };
+        if ((nc.proveMode || 0) > 0) nc = { ...nc, proveMode: nc.proveMode - 1 };
 
         // v1.3-2: §3.3 growthPenaltyカウントダウン（毎週 — 怪我中も時間は経過する）
         if (nc.growthPenalty) {
@@ -3001,7 +3170,7 @@ const Engine = {
     let nextMatchMqConsumed = false;
     // v2.0: ファン期待度チェック（期待カードは MQ+5 ボーナス）
     const fanExpects = Engine.fanExpect.generate(s);
-    const results = rawResults.map(r => {
+    const results = rawResults.map((r, matchIdx) => {
       let externalMQ = 0;
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
@@ -3026,6 +3195,33 @@ const Engine = {
         const champId = s.titles?.world?.championId;
         const challenger = champId === r.left.id ? r.right : (champId === r.right.id ? r.left : null);
         if (challenger && Traits.has(challenger, '野心')) externalMQ += 2;
+      }
+      // ラストランMQボーナス (§2.2)
+      const lrLeft  = s.roster.find(c => c.id === r.left.id);
+      const lrRight = s.roster.find(c => c.id === r.right.id);
+      const lastRunFighter = lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null);
+      if (lastRunFighter) {
+        externalMQ += 3;  // ラストラン基本 +3
+        if (matchIdx === rawResults.length - 1) externalMQ += 5;  // メインイベント +5
+        r.isLastRunMatch = true;
+        r.lastRunFighterId = lastRunFighter.id;
+        // 因縁相手との引退試合ボーナス (§2.6)
+        const opponentId = lastRunFighter.id === r.left.id ? r.right.id : r.left.id;
+        const rivalLevel = Engine.title.getRivalryLevel(s, lastRunFighter.id, opponentId);
+        if (rivalLevel && rivalLevel.matches >= 4) {
+          if (rivalLevel.matches >= 7) {
+            externalMQ += 5;  // 永遠のライバル +5
+            r.lastRunRivalBonus = 5;
+          } else {
+            externalMQ += 3;  // 宿敵 +3
+            r.lastRunRivalBonus = 3;
+          }
+        }
+      }
+      // 見返しモード MQボーナス +2 (§1.7)
+      if ((lrLeft?.proveMode || 0) > 0 || (lrRight?.proveMode || 0) > 0) {
+        externalMQ += 2;
+        r.proveModeBonus = 2;
       }
       const positiveExternal = Math.max(0, externalMQ);
       const negativeExternal = Math.min(0, externalMQ);
@@ -3593,6 +3789,15 @@ const Engine = {
         let resetFighter = Engine.popularity.applyTransferReset(newFighter);
         // v1.3: Record transfer event
         resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
+        // roster-cap v1.0: ロスター枠チェック
+        const _ownCount = state.roster.filter(f => !f.isRental).length;
+        if (_ownCount >= (state.rosterCap || 6)) {
+          events.push(`⚠ ${fighter.name}の交渉は成立したが、ロスター枠が上限のため加入できない`);
+          return {
+            state: { ...state, pendingNegotiation: null },
+            events, success: false, fighter
+          };
+        }
         events.push(`🎉 ${fighter.name}の引き抜き交渉成功！（-${neg.totalCost}万）`);
         return {
           state: {
@@ -4300,6 +4505,25 @@ const Engine = {
         s = rentalEnd.state;
         events.push(...rentalEnd.events);
 
+        // ラストラン期限切れチェック（最終週を過ぎても試合なし → 自動引退）
+        const lastRunExpiredList = [];
+        const lastRunActive = [];
+        s.roster.forEach(c => {
+          if (c.lastRun) {
+            // lastRunWeek はシーズン*12+週で保存。現在より4週以上前なら期限切れ
+            const startAbsWeek = c.lastRunWeek || 0;
+            const currentAbsWeek = s.season * 12 + s.week;
+            if (currentAbsWeek - startAbsWeek >= 4) {
+              lastRunExpiredList.push(c);
+            } else {
+              lastRunActive.push(c);
+            }
+          } else {
+            lastRunActive.push(c);
+          }
+        });
+        s = { ...s, roster: lastRunActive };
+
         // Player retirement check (skip rental fighters — they return to their org)
         const retirees = [];
         const surviving = [];
@@ -4310,22 +4534,28 @@ const Engine = {
             surviving.push(c);
           }
         });
-        if (retirees.length > 0) {
+        // ラストラン期限切れ選手をretirees扱いで統合
+        const allRetirees = [...retirees, ...lastRunExpiredList];
+
+        if (allRetirees.length > 0) {
           // v1.3: Save retirees with career records for year-end awards
-          const retiredWithRecords = retirees.map(c => {
+          const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFADE));
+          const retiredWithRecords = allRetirees.map(c => {
             let f = Engine.career.ensure(c);
             f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
             return f;
           });
           // v1.3-3: Build pending retirement presentation data
-          const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFADE));
           const pendingRetirements = retiredWithRecords.map(f => {
-            const { line, category } = Engine.retirement.selectLine(f, 'season_end', s, lineRng);
+            const isLastRunExpired = lastRunExpiredList.some(c => c.id === f.id);
+            const route = isLastRunExpired ? 'lastrun_expired' : 'season_end';
+            const { line, category } = Engine.retirement.selectLine(f, isLastRunExpired ? 'season_end' : 'season_end', s, lineRng);
             const summary = Engine.retirement.buildCareerSummary(f);
-            return { fighter: f, route: 'season_end', line, category, summary };
+            const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
+            return { fighter: f, route, line, category, summary, canRetain };
           });
           s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
-          retirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+          allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
         }
 
         // AI season end processing (steps 1-5)
@@ -4828,6 +5058,8 @@ const Engine = {
       matchHistory: [],
       titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
       titleEstablished: false, // v1.0: 団体王座は条件達成後に解禁
+      rosterCap: 6,   // roster-cap-design v1.0: 段階解放（6→8→10→12→16）
+      warWon: false,  // 対抗戦初勝利フラグ
       rivalries: {},
       coaches: [],
       availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [] }),

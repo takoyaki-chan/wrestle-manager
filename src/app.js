@@ -1525,6 +1525,17 @@ const Storage = {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
       }
 
+      // roster-cap v1.0: rosterCap互換性マイグレーション
+      if (G.rosterCap === undefined) {
+        let cap = 6;
+        if (G.titleEstablished) cap = Math.max(cap, 8);
+        if (G.survivalCleared) cap = Math.max(cap, 10);
+        if (G.warWon) cap = Math.max(cap, 12);
+        if ((G.rankings || [])[0]?.orgId === 'player') cap = 16;
+        G = { ...G, rosterCap: cap };
+      }
+      if (G.warWon === undefined) G = { ...G, warWon: false };
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -1783,6 +1794,10 @@ const App = {
     if (G.roster.some(c => c.id === charId)) {
       Audio.play('error'); alert('この選手はすでに自団体に所属しています'); return;
     }
+    // roster-cap v1.0: ロスター枠チェック
+    if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
+      Audio.play('error'); alert(`ロスター枠が上限（${G.rosterCap || 6}名）に達しています`); return;
+    }
     // Gate: check orgPop requirement (pricing-balance-spec §2) — FA context with eliteTicket support
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter, 'fa', G)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
@@ -1894,6 +1909,11 @@ const App = {
     });
 
     if (result.result === 'success') {
+      // roster-cap v1.0: ロスター枠チェック
+      if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
+        Audio.play('error'); alert(`ロスター枠が上限（${G.rosterCap || 6}名）に達しています`);
+        return;
+      }
       if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       Audio.play('stamp');
       // Clean internal props before adding to roster
@@ -1986,6 +2006,49 @@ const App = {
       showScreen('week');
       refreshAll();
     }
+  },
+
+  // 引退勧告アクション
+  doRetireAdvise(fighterId) {
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAD71, fighterId));
+    const result = Engine.retirement.advise(rng, G, fighterId);
+    if (!result._pendingRetireAdviseResult) return;
+    const { accepted, fighter, line } = result._pendingRetireAdviseResult;
+    const { _pendingRetireAdviseResult: _, ...cleanG } = result;
+    G = cleanG;
+    Storage.autoSave();
+    refreshAll();
+    // 結果ポップアップ表示
+    showRetireAdviseResultPopup(accepted, fighter, line);
+  },
+
+  // 引き留めアクション（引退ポップアップから呼ばれる）
+  doRetainFighter(fighterId) {
+    const retiredIdx = (G.retiredFighters || []).findIndex(c => c.id === fighterId);
+    if (retiredIdx < 0) { closeRetirementPopup(); return; }
+    const fighter = G.retiredFighters[retiredIdx];
+    // 引き留め上限チェック
+    if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
+    const retainLine = Engine.retirement.selectRetainLine(fighter, G);
+    const updatedFighter = {
+      ...fighter,
+      wear: (fighter.wear || 0) + 10,
+      retainCount: (fighter.retainCount || 0) + 1,
+      retainInjuryBonus: ((fighter.retainInjuryBonus || 0) + 0.05),
+      lastRun: false,
+      lastRunWeek: null,
+    };
+    const newRetired = [...G.retiredFighters];
+    newRetired.splice(retiredIdx, 1);
+    G = { ...G, roster: [...G.roster, updatedFighter], retiredFighters: newRetired };
+    Storage.autoSave();
+    refreshAll();
+    closeRetirementPopup();
+    // 引き留め成功セリフ表示
+    showEventPopup({
+      type: 'fighter', id: fighter.id, name: fighter.name, tone: 'positive',
+      message: retainLine, detail: `${fighter.name}の引き留めに成功しました（引き留め ${updatedFighter.retainCount}/2回目）`,
+    });
   },
 
   // Release a fighter
@@ -2858,7 +2921,7 @@ const App = {
     }
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
-    App.checkTitleEstablishment();
+    App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     // v1.5s25b: 興行後バフ消費 + 週次バフ消費
     App._tickMilestoneBuffsShow();
     App._applyWeeklyBuffEffects();
@@ -2960,7 +3023,7 @@ const App = {
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
     App.checkSurvivalUpdate();
-    App.checkTitleEstablishment();
+    App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     sessionRng = Engine.rng.create(G.rngSeed);
     App._refreshTicker();
     Storage.autoSave();
@@ -3011,7 +3074,7 @@ const App = {
     }
     App.checkMissionUpdate();
     App.checkSurvivalUpdate();
-    App.checkTitleEstablishment();
+    App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
@@ -3178,7 +3241,7 @@ const App = {
     }
     // v0.97: Update survival gauge
     App.checkSurvivalUpdate();
-    App.checkTitleEstablishment();
+    App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // v1.4w: 交渉成功時の新聞イベント
@@ -3529,6 +3592,17 @@ const App = {
       // 新聞パネルイベント
       const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
       App._pushNewsEvent({ type: newsType, data: { orgName: event.orgName, fighterName: playerFighter.name, challengerName: challenger.name } });
+      // roster-cap v1.0: 対抗戦初勝利でrosterCap→12
+      if (newsType === 'interPromoWin' && !G.warWon) {
+        const newCap = Math.max(G.rosterCap || 6, 12);
+        G = { ...G, warWon: true, rosterCap: newCap };
+        setTimeout(() => showEventPopup({
+          type: 'generic', emoji: '🏢', name: '契約枠拡大！',
+          message: `${event.orgName}との対抗戦に勝利し、業界での存在感を示しました！`,
+          detail: `さらなる契約枠を確保しました（→${newCap}名）`,
+          tone: 'gold'
+        }), 600);
+      }
 
       // 結果表示モーダル
       setTimeout(() => {
@@ -3633,13 +3707,31 @@ const App = {
     const wasCleared = G.survivalCleared;
     G = sResult.state;
     if (sResult.graduated && !wasCleared) {
+      const newCap = Math.max(G.rosterCap || 6, 10);
+      G = { ...G, rosterCap: newCap };
       // Show graduation popup!
       setTimeout(() => showEventPopup({
         type: 'generic', emoji: '🎊', name: '経営安定化達成！',
         message: '赤字地獄を乗り越え、ついに安定した黒字経営を達成しました！',
-        detail: '💪 これからは成長フェーズです。更なる高みを目指しましょう！',
+        detail: `💪 これからは成長フェーズです。更なる高みを目指しましょう！\n🏢 経営が安定し、選手との契約枠が拡大しました（→${newCap}名）`,
         tone: 'gold'
       }), 200);
+    }
+  },
+
+  // roster-cap v1.0: SQ（ランキング1位）でrosterCap→16
+  checkRosterCapMilestones() {
+    if ((G.rosterCap || 6) >= 16) return;
+    const rank1 = (G.rankings || [])[0];
+    if (rank1?.orgId === 'player') {
+      const newCap = 16;
+      G = { ...G, rosterCap: newCap };
+      setTimeout(() => showEventPopup({
+        type: 'generic', emoji: '🏢', name: '契約枠拡大！',
+        message: '業界の頂点を極めた団体に、もはや制限はない！',
+        detail: `選手との契約枠が最大まで拡大しました（→${newCap}名）`,
+        tone: 'gold'
+      }), 400);
     }
   },
 
@@ -3648,11 +3740,12 @@ const App = {
     if (window.IS_TRIAL) return; // 体験版: タイトル自動設立を抑制
     if (G.titleEstablished) return;
     if (Engine.title.checkTitleEstablishment(G)) {
-      G = { ...G, titleEstablished: true };
+      const newCap = Math.max(G.rosterCap || 6, 8);
+      G = { ...G, titleEstablished: true, rosterCap: newCap };
       setTimeout(() => showEventPopup({
         type: 'generic', emoji: '🏆', name: '団体王座 設立！',
         message: '団体の実績が認められ、団体王座を設立できるようになりました！',
-        detail: '🎖️ 興行で「初代王者決定戦」を組んで、初代チャンピオンを決めましょう！',
+        detail: `🎖️ 興行で「初代王者決定戦」を組んで、初代チャンピオンを決めましょう！\n🏢 選手との契約枠が拡大しました（→${newCap}名）`,
         tone: 'gold'
       }), 300);
     }

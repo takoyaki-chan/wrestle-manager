@@ -1026,6 +1026,13 @@ function _renderRetirementPopup() {
   // Button label
   const btnLabel = isInjury ? '……' : '送り出す';
 
+  // §3: 引き留めボタン（wear 40-79、retainCount < 2、シーズン末のみ）
+  const canRetain = r.canRetain && !isInjury;
+  const retainCount = f.retainCount || 0;
+  const retainBtnHtml = canRetain
+    ? `<button class="retirement-popup-btn" onclick="doRetainFighter(${f.id})" style="background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#2ecc71;margin-top:6px">🤝 引き留める（あと${2 - retainCount}回）</button>`
+    : '';
+
   box.className = `retirement-popup${isInjury ? ' injury' : ''}`;
   box.innerHTML = `
     <div class="retirement-popup-face">${faceHtml}</div>
@@ -1037,6 +1044,7 @@ function _renderRetirementPopup() {
     ${injuryNote}${vacancyNote}
     <div class="retirement-popup-line">${r.line}</div>
     <button class="retirement-popup-btn" onclick="closeRetirementPopup()">${btnLabel}</button>
+    ${retainBtnHtml}
   `;
   document.getElementById('retirementPopupOverlay').classList.add('active');
   Audio.play(isInjury ? 'error' : 'event');
@@ -1050,6 +1058,29 @@ function closeRetirementPopup() {
   } else {
     if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
   }
+}
+
+// ── 引退勧告結果ポップアップ ────────────────
+function showRetireAdviseResultPopup(accepted, fighter, line) {
+  const url = getPortraitUrl(fighter.id);
+  const faceHtml = url
+    ? `<img src="${url}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${accepted ? 'var(--gold)' : '#e74c3c'}">`
+    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:32px">${fighter.name.charAt(0)}</div>`;
+  const box = document.getElementById('retirementPopupBox');
+  const headerColor = accepted ? 'var(--gold)' : '#e74c3c';
+  const headerText  = accepted ? '🌅 引退を受諾' : '💢 引退を拒否';
+  const subText     = accepted
+    ? `${fighter.name} がラストラン状態に入りました。<br>次の興行で引退試合を組みましょう。`
+    : `${fighter.name} に断られました。${fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。'}`;
+  box.innerHTML = `
+    <div style="text-align:center;margin-bottom:12px">${faceHtml}</div>
+    <div style="text-align:center;font-size:18px;font-weight:700;color:${headerColor};margin-bottom:4px">${headerText}</div>
+    <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">${subText}</div>
+    <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--text);line-height:1.7;text-align:center;border-left:3px solid ${headerColor};margin-bottom:14px">「${line}」</div>
+    <button class="retirement-popup-btn" onclick="document.getElementById('retirementPopupOverlay').classList.remove('active')">閉じる</button>
+  `;
+  document.getElementById('retirementPopupOverlay').classList.add('active');
+  Audio.play(accepted ? 'event' : 'error');
 }
 
 // ── 因縁決着ポップアップ（宣戦布告 / 決着 共用）────────────────
@@ -1631,6 +1662,7 @@ function showFighterPopup(fighterId, source) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
+            ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル${ct ? `（残${ct.seasonsLeft}期/${ct.seasonsLeft * 12}週）` : ''}</span>`; })() : ''}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
@@ -1956,10 +1988,41 @@ function showFighterPopup(fighterId, source) {
 
     // ══════ TAB 2: Management (Roster only) ══════
     if (tabIdx === 2 && isRoster) {
-      // Release button
       if (!c.isRental) {
+        // §5.1 引退セクション
+        const canAdvise = Engine.retirement.canAdvise(c);
+        if (c.lastRun) {
+          // ラストラン中
+          const lastRunStart = c.lastRunWeek || 0;
+          const currentAbsWeek = G.season * 12 + G.week;
+          const weeksLeft = Math.max(0, 4 - (currentAbsWeek - lastRunStart));
+          html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.3);border-radius:6px;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">🌅 ラストラン中</div>
+            <div style="font-size:12px;color:var(--text-sub)">引退試合をカードに組みましょう。（期限 あと約${weeksLeft}週）</div>
+          </div>`;
+        } else if (canAdvise) {
+          // 引退勧告可能
+          const cooldown = c.retireAdviceCooldown || 0;
+          const advice = Engine.coach.getRetireAdvice(G, c.id);
+          html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.2);border-radius:6px;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px;border-bottom:1px solid rgba(212,168,67,0.15);padding-bottom:4px">─── 引退 ───</div>`;
+          if (advice.text) {
+            html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;border-left:2px solid rgba(212,168,67,0.4)">
+              💬 <span style="color:var(--text-dim)">${advice.coachName}</span>「${advice.text}」
+            </div>`;
+          }
+          if (cooldown > 0) {
+            html += `<button disabled style="font-size:13px;padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);border-radius:6px;width:100%;cursor:not-allowed">🌅 引退を勧める（クールダウン ${cooldown}週）</button>`;
+          } else {
+            html += `<button onclick="closeFighterPopup();doRetireAdvise(${c.id})" style="font-size:13px;padding:8px 14px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:var(--gold);border-radius:6px;width:100%;cursor:pointer;font-weight:700">🌅 引退を勧める</button>`;
+          }
+          html += `</div>`;
+        }
+
+        // 解雇ボタン
         const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
-        html += `<div style="margin-top:8px;padding:14px;background:rgba(196,30,58,0.06);border:1px solid rgba(196,30,58,0.15);border-radius:6px">
+        html += `<div style="margin-top:4px;padding:14px;background:rgba(196,30,58,0.06);border:1px solid rgba(196,30,58,0.15);border-radius:6px">
+          <div style="font-size:12px;font-weight:700;color:#f08b9e;margin-bottom:6px;border-bottom:1px solid rgba(196,30,58,0.2);padding-bottom:4px">─── 契約 ───</div>
           <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px">⚠️ 選手の解雇は取り消せません。</div>
           <button onclick="closeFighterPopup();releaseFighter(${c.id})" style="font-size:13px;padding:10px 16px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:6px;width:100%" ${inCard ? 'disabled title="カード登録中"' : ''}>🚪 この選手を解雇する</button>
           ${inCard ? '<div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center">※興行カード登録中のため解雇できません</div>' : ''}
@@ -1978,6 +2041,10 @@ function showFighterPopup(fighterId, source) {
       const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G);
       const viaTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, c, G);
       const canAfford = G.funds >= signingCost;
+      // roster-cap v1.0
+      const _ownRosterCount = G.roster.filter(f => !f.isRental).length;
+      const _rCap = G.rosterCap || 6;
+      const _rosterFull = _ownRosterCount >= _rCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
           <span style="color:var(--text-sub)">契約金</span>
@@ -1989,10 +2056,12 @@ function showFighterPopup(fighterId, source) {
           ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
         </div>
         ${viaTicket ? '<div style="text-align:center;font-size:13px;color:#f1c40f;padding:6px 8px;margin-bottom:8px;background:rgba(241,196,15,0.1);border:1px solid rgba(241,196,15,0.3);border-radius:6px">🎫 逸材特別交渉枠を使用します（1回限り）</div>' : ''}
-        ${!canNeg
-          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
-          : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
-          ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+        ${_rosterFull
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">🏢 ロスター枠が上限（${_rCap}名）に達しています</div>`
+          : !canNeg
+            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
+            : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
+            ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
         }
       </div>`;
     }
@@ -2005,6 +2074,10 @@ function showFighterPopup(fighterId, source) {
       const picks = G.scoutPicks || [];
       const maxPicks = G.scoutMaxPicks || 3;
       const slotsLeft = picks.length < maxPicks;
+      // roster-cap v1.0
+      const _scoutOwnCount = G.roster.filter(f => !f.isRental).length;
+      const _scoutCap = G.rosterCap || 6;
+      const _scoutFull = _scoutOwnCount >= _scoutCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
           <span style="color:var(--text-sub)">契約金</span>
@@ -2016,15 +2089,17 @@ function showFighterPopup(fighterId, source) {
           ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
         </div>
         ${c._hasCompetition ? `<div style="font-size:11px;color:#e74c3c;margin-bottom:8px;padding:4px 8px;background:rgba(231,76,60,0.1);border-radius:4px">⚔ 他団体が注目 — 競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</div>` : ''}
-        ${!canNeg
-          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
-          : !slotsLeft
-          ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">獲得枠上限に達しています</div>`
-          : `<div style="display:flex;gap:8px">
-              <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ 獲得指名</button>
-              <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
-            </div>
-            ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+        ${_scoutFull
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">🏢 ロスター枠が上限（${_scoutCap}名）に達しています</div>`
+          : !canNeg
+            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
+            : !slotsLeft
+            ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">獲得枠上限に達しています</div>`
+            : `<div style="display:flex;gap:8px">
+                <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ 獲得指名</button>
+                <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
+              </div>
+              ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
         }
       </div>`;
     }
@@ -2438,6 +2513,8 @@ function renderShowResult(results, injuryResults) {
 }
 
 // Legacy function aliases for onclick handlers in UI
+function doRetireAdvise(id) { App.doRetireAdvise(id); }
+function doRetainFighter(id) { App.doRetainFighter(id); }
 function signFighter(id) { App.signFighter(id); }
 function releaseFighter(id) { App.releaseFighter(id); }
 function scoutPick(id) { App.scoutEventPick(id); }
