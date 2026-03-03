@@ -52,7 +52,15 @@ fi
 
 # Copy images
 echo "🖼️  画像ファイルをコピー中..."
-cp image/*.png "${DIST_DIR}/image/"
+cp image/*.png image/*.webp "${DIST_DIR}/image/" 2>/dev/null || true
+if [ -d image/coach ]; then
+  mkdir -p "${DIST_DIR}/image/coach"
+  cp image/coach/* "${DIST_DIR}/image/coach/"
+fi
+if [ -d image/upper ]; then
+  mkdir -p "${DIST_DIR}/image/upper"
+  cp image/upper/* "${DIST_DIR}/image/upper/"
+fi
 
 # Copy BGM files
 echo "🎵 BGMファイルをコピー中..."
