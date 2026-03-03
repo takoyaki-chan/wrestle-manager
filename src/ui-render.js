@@ -1223,24 +1223,14 @@ function renderRoster() {
   const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
   const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
   const sorted = ownFighters;
-  // roster-cap v1.0: 所属枠ヘッダー
+  // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
   const rosterCap = G.rosterCap || 6;
   const isFull = ownFighters.length >= rosterCap;
-  const rosterCapHtml = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid ${isFull ? 'rgba(231,76,60,0.5)' : 'var(--border)'};border-radius:6px">
+  html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid ${isFull ? 'rgba(231,76,60,0.5)' : 'var(--border)'};border-radius:6px">
     <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
     <span style="font-size:15px;font-weight:700;color:${isFull ? '#e74c3c' : 'var(--text)'}">${ownFighters.length}/${rosterCap}名</span>
     ${isFull ? '<span style="font-size:12px;color:#e74c3c">⚠ 上限に達しています</span>' : ''}
-  </div>`;
-  const rosterEl = document.getElementById('rosterContent');
-  if (rosterEl) {
-    let capEl = rosterEl.querySelector('#rosterCapHeader');
-    if (!capEl) {
-      capEl = document.createElement('div');
-      capEl.id = 'rosterCapHeader';
-      rosterEl.insertBefore(capEl, rosterEl.firstChild);
-    }
-    capEl.innerHTML = rosterCapHtml;
-  }
+  </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;

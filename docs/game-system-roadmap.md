@@ -1,12 +1,27 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（MQスコア減点制リデザイン v2.0）
+> 最終更新: 2026-03-03（引退勧告・引き留めシステム v1.1 + ロスター枠制限 v1.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**引退勧告・引き留めシステム v1.1（2026-03-03）。** プレイヤーが選手に引退を勧告し、受諾した選手がラストラン状態に入る仕組み。拒否時は信頼低下+見返しモードMQボーナス。シーズン末の引退時に引き留め可（最大2回、wear+10代償）。コーチの観察眼ランクに応じた受諾率アドバイス。
+
+- **Engine.retirement**: canAdvise(wear≥20/age≥30/careerSeasons≥8)、calcAcceptance(wear/isChamp/trust/winRate)、advise(受諾→lastRun=true/拒否→trust-5+proveMode4週or morale-2)
+- **ラストラン**: lastRun=true → Pass2 MQ+3(基本)+5(メイン) + 因縁ボーナス+3/+5。4週後にシーズン末と同じ引退処理。ポップアップに「🌅ラストラン」バッジ
+- **引き留め**: canRetain(retainCount<2, wear<80)。wear+10, retainCount+1, injuryBonus+0.05。retiredFightersからrosterへ移動
+- **コーチアドバイス**: E-D:不明確、C:2段階25%flip、B:3段階15%shift、A:4段階5%shift。COACH_RETIRE_ADVICE_TEXTS
+
+**ロスター枠制限 v1.0（2026-03-03）。** プレイヤー団体にハードキャップ（段階解放6→8→10→12→16）、AI団体はidealRosterでハードキャップ化。
+
+- **段階解放**: ドラフト6→タイトル設立8→サバイバルクリア10→対抗戦初勝利12→ランキング1位16。各トリガーで通知ポップアップ
+- **AIハードキャップ**: S:16/A:13/B:10（B tier 9→10に変更）。aiScout: need+1廃止。aiInterTransfer: idealRoster+2→idealRosterに統一
+- **全獲得経路チェック**: signFighter/scoutEventResolve/resolveNegotiation の3経路で `ownCount >= rosterCap` ガード
+- **UI**: ロスター画面「所属 N/M名」ヘッダー、スカウト画面キャップ警告バナー、ポップアップ獲得ボタン無効化
+- **マイグレーション**: 旧セーブ互換（titleEstablished/survivalCleared/warWon/ranking1位から逆算）
 
 **MQスコア減点制リデザイン v2.0（2026-03-03）。** 加点制を廃止し「天井−減点」方式に全面移行。OVが試合品質の上限を決め、ドラマ・ペース・決着不足で減点される設計。
 
@@ -232,7 +247,7 @@
 | Phase | タスク | 重さ | 状態 |
 |---|--------|:----:|------|
 | 1 | **ランキング計算の刷新** championScore廃止、TOP5基礎力+対戦pt計算式、ランキングUI更新、団体比較連動 | 中 | **実装済み** |
-| 2 | **ロスター人数制限** ROSTER_CAP(P:12/S:16/A:13/B:10)、全獲得経路にチェック、AI無限膨張バグ修正、UI表示 | 中 | 未着手 |
+| 2 | **ロスター人数制限** プレイヤー段階解放6→16、AI:idealRosterハードキャップ化(S:16/A:13/B:10)、全獲得経路チェック、UI表示 | 中 | **実装済み** |
 | 3 | **対戦ポイントシステム** battlePointsフィールド運用開始、AI同士の対抗戦ポイント処理、サミット条件緩和(ランク3位以上) | 中 | 未着手 |
 | 4 | **統一トーナメント** Engine.tournament新規実装、第24週開催、8名シングルエリミネーション、代表選手選択UI | 大 | 未着手 |
 
@@ -339,6 +354,8 @@
 - **選手成長リバランス v1.0** — GROWTH_SEASON_BASE=8.0の「シーズン予算」モデル。calcGrowthをshare(残距離比例)ベースに全面書換え。×0.4練習補正撤廃。aiSeasonGrowthも同モデルに統一。ageMultiplier新カーブ（20-22歳ピーク1.3、33歳以上0）。AI離脱イベント（S:10%/A:12%/B:15%で成長50%カット）。convergenceFactor+STYLE_GROWTHは非参照化（残置）。practiceShare=0.6（練習:試合=6:4）。設計書: docs/growth-rebalance-design-v1.0.md
 - **ランキング計算（v2: ranking-roster-redesign Phase 1）** — 旧: `championScore + calcStarPower(全員合算) + calcTotalPop(全員合算) + summitBonus`。新: `TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 + battlePoints[orgId]`。TOP5は各指標で独立に上位5名を選出し平均（5名未満はある分だけ平均）。battlePointsはシーズンリセット。対抗戦±12pt、頂上決戦±10ptのゼロサム移動。BATTLE_POINT_CFG定数で管理。団体比較レーダーも連動（TOP5実力/TOP5人気）。設計書: docs/ranking-roster-redesign-v1.0.md
 - **MQスコア減点制（v2.0）** — 旧加点制(Base+Drama+Pacing+Finish)を廃止。新: `天井(OVシーリング) − ドラマ減点 − ペース減点 − 決着減点`。天井=OV依存曲線(15-100)。ドラマ減点=基本30からKO/カウンター/逆転/大技で回復。ペース減点=7-14ターン理想帯(0)、<5ターン=-12。決着減点=フォールはClimaxで0〜3、ピン=0、タイムアウト=-10。特性ボーナス（名勝負製造機/引き出し上手）は天井超え加点として維持。外部ボーナス(Pass2, cap+15)は変更なし。simulateMatch戻り値に `finishPhase`・`mqDetail` を追加。設計書: specs/mq-deduction-redesign-v2.0.md
+- **引退勧告・引き留めシステム v1.1** — Engine.retirement: canAdvise(wear≥20/age≥30/careerSeasons≥8)、calcAcceptance(50±wear±champ±trust±winRate, clamp 5-95)。受諾→lastRun=true(4週)、Pass2 MQ+3(基本)+5(メイン)+因縁+3/+5。拒否→trust-5, retireAdviceCooldown=48週, 70%でproveMode4週(MQ+2)/30%でmorale-2。引き留め→retiredFighters→roster, wear+10, retainCount+1(最大2回), injuryBonus+0.05。コーチアドバイス: Engine.coach.getRetireAdvice(obsRank別4段階+COACH_OBS_INACCURACY flip)。UI: ポップアップTab2引退セクション+ラストランバッジ+ラストマッチ金枠表示。設計書: specs/retirement-advisory-spec-v1_1.md
+- **ロスター枠制限 v1.0** — G.rosterCap(初期6)段階解放: タイトル設立→8、サバイバルクリア→10、対抗戦初勝利(warWon)→12、ランキング1位→16。レンタル別枠(isRental除外)。AIハードキャップ: AI_SCOUT_CFG.idealRoster(S:16/A:13/B:10)。aiScout: need+1→need、aiInterTransfer: idealRoster+2→idealRoster。全獲得経路チェック: signFighter/scoutEventResolve/resolveNegotiation。UI: renderRoster「所属 N/M名」ヘッダー、renderScoutキャップ警告バナー、ポップアップ獲得ボタン無効化。マイグレーション: 旧セーブは達成状況から逆算。設計書: specs/roster-cap-design-v1.0.md
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---
@@ -393,6 +410,9 @@
 | データベースタブ | database-tab-spec-v1.0.md |
 | 因縁決着システム | rivalry-resolution-spec.md |
 | バランス調整 v1.9 | balance-adjustment-spec-v1.9.md |
+| レンタルシステム | rental-system-spec.md |
+| ロスター枠制限 v1.0 | roster-cap-design-v1.0.md |
+| 引退勧告・引き留め v1.1 | retirement-advisory-spec-v1_1.md |
 
 ### docs/archive/（旧版・完了済み）
 

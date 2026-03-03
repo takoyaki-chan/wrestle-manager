@@ -1,24 +1,35 @@
-# バランス調整 v1.9 実装
+# 引退勧告・引き留めシステム v1.1 + ロスター枠制限 v1.0
 
-## 変更C：AI団体成長バランス調整（data.js数値変更のみ）
-- [x] RIVAL_ORGS: facilityMul を全て 1.00 に変更（3箇所）
-- [x] AI_TIER_LIMITS: growthBonus を S:1.05, A:1.00, B:0.95 に変更
+## 引退勧告・引き留めシステム v1.1
+- [x] data.js: RETIRE_ACCEPT_LINES/REFUSE_LINES/RETAIN_LINES/COACH_RETIRE_ADVICE_TEXTS 追加
+- [x] engine.js: Engine.retirement (canAdvise/calcAcceptance/calcRecentWinRate/selectAdviseLine/advise/selectRetainLine)
+- [x] engine.js: Engine.coach.getRetireAdvice + _buildRetireAdviceText
+- [x] engine.js: Pass2 MQ ラストラン+3/メイン+5/因縁+3or+5、proveMode+2
+- [x] engine.js: processManage retireAdviceCooldown/proveMode デクリメント
+- [x] engine.js: advanceWeek offWeek1 lastRun期限切れ処理 + canRetainフラグ
+- [x] app.js: doRetireAdvise / doRetainFighter アクション
+- [x] ui-common.js: showRetireAdviseResultPopup / _renderRetirementPopup引き留めボタン / Tab2引退セクション
+- [x] ui-render.js: renderShowPrep ラストランバッジ+金枠
+- [x] ui-common.js: ポップアップヘッダーに🌅ラストランバッジ
 
-## 変更B：年齢カーブ型契約費用（engine.js）
-- [x] ageMarketMultiplier 関数を追加
-- [x] calcAssessedValue に ageMul 適用を組み込む
-
-## 変更A：逸材特別交渉枠（engine.js + app.js + ui-render.js + ui-common.js）
-- [x] engine.js: canNegotiate に context + state 引数追加、FA+eliteTicket 判定
-- [x] engine.js: isEliteTicketRequired ヘルパー追加
-- [x] engine.js: tickWeek で orgPop≥25 到達検知 → eliteTicket + _pendingEliteTicket 設定
-- [x] app.js: signFighter で FA文脈canNegotiate + eliteTicket 消費ロジック
-- [x] app.js: processWeek で _pendingEliteTicket 通知ポップアップ表示
-- [x] ui-render.js: FA一覧で canNegotiate('fa', G) + 🎫特別交渉枠バッジ + 金枠ボーダー
-- [x] ui-common.js: FAポップアップで canNegotiate('fa', G) + 使用確認メッセージ
+## ロスター枠制限 v1.0
+- [x] engine.js: GameState初期化に rosterCap:6 / warWon:false 追加
+- [x] data.js: AI_SCOUT_CFG.B.idealRoster 9→10
+- [x] engine.js: aiScout need+1→need、aiInterTransfer idealRoster+2→idealRoster
+- [x] engine.js: resolveNegotiation ロスター枠チェック追加
+- [x] app.js: checkTitleEstablishment rosterCap→8
+- [x] app.js: checkSurvivalUpdate rosterCap→10
+- [x] app.js: finalizeInterPromoEvent warWon + rosterCap→12
+- [x] app.js: checkRosterCapMilestones (ランキング1位) rosterCap→16
+- [x] app.js: signFighter / scoutEventResolve キャップチェック
+- [x] app.js: Storage.load() マイグレーション（旧セーブ互換）
+- [x] ui-render.js: renderRoster「所属 N/M名」ヘッダー
+- [x] ui-render.js: renderScout キャップ警告バナー
+- [x] ui-common.js: showFighterPopup FA/scout獲得ボタン disabled
 
 ## レビュー
-- canNegotiate 全8呼び出し箇所を確認済み: FA文脈3箇所(fa,G) / スカウト文脈3箇所(引数省略) / engine定義2箇所
-- スカウトではeliteTicket無効（context省略時はundefined → 'fa'チェック通過せず）
-- 30歳以降の年齢倍率1.0 → 既存reassess(age30/age35plus)と二重適用なし
-- _pendingEliteTicket transientフィールドはtickWeekで設定→processWeekで消費・表示のパターンに準拠
+- 全Engine関数は純粋関数（DOM禁止）原則に準拠
+- transientフィールド: _pendingRetireAdviseResult（tickWeek転送不要、App.doRetireAdvise内で即消費）
+- canRetainフラグはadvanceWeek内で計算しpendingRetirementsに付与（UI再計算不要）
+- ロスター枠チェックはisRental除外（レンタル別枠）
+- マイグレーションは既存達成状況から逆算（超過状態は許容、新規獲得のみブロック）
