@@ -1144,7 +1144,7 @@ const Storage = {
       // v0.9c backward compat: transfer
       if (G.pendingPoach === undefined) G = { ...G, pendingPoach: [] };
       // v0.9d backward compat: rental & events
-      if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null, summitBonus: 0 };
+      if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
 
       // v0.96 backward compat: mission system
@@ -1507,6 +1507,17 @@ const Storage = {
           }
         }
         G = { ...G, rentals, rental: undefined, _migrated_rental_v2: true };
+      }
+
+      // ranking-roster-redesign v1.0 Phase 1: battlePoints + summitBonus廃止
+      if (!G._migrated_ranking_v2) {
+        const bp = { player: 0, org_s: 0, org_a: 0, org_b: 0 };
+        // summitBonusが残っていればplayer battlePointsに移行
+        if (G.summitBonus) bp.player = G.summitBonus;
+        G = { ...G, battlePoints: bp, _migrated_ranking_v2: true };
+        delete G.summitBonus;
+        // ランキングを再計算
+        G = { ...G, rankings: Engine.ranking.updateRankings(G) };
       }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent

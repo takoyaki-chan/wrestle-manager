@@ -1,12 +1,40 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（コーチ上半身画像＋データベースコーチタブ）
+> 最終更新: 2026-03-03（ランキング・ロスター・団体間対戦 リデザイン Phase 1）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**ランキング計算刷新 Phase 1（2026-03-03）。** ティア固定ハンデ・頭数依存ランキングを廃止し、TOP5ベースの基礎力＋対戦ポイントの新計算式に移行。
+
+- **新ランキング計算式**: `rating = TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 + battlePoints`
+- **championScore廃止**: RIVAL_ORGS から championScore プロパティ削除（旧: S=60/A=40/B=20/Player=0or30）
+- **summitBonus廃止→battlePoints統合**: `state.summitBonus` を削除し `state.battlePoints: { player:0, org_s:0, org_a:0, org_b:0 }` に移行。シーズンリセット対象
+- **対戦ポイント移動**: 対抗戦勝敗で±12pt、頂上決戦勝敗で±10pt のゼロサム移動を実装
+- **BATTLE_POINT_CFG定数**: war:12, summit:10, tournament:{champion:20,runnerUp:8,semiFinal:0,firstRound:-14}, tournamentWeek:24
+- **Engine.ranking全面書換え**: `calcStarPower`/`calcTotalPop` 廃止。`_topNAvg(roster, valueFn, n)`/`calcBaseScore(roster)`/`calcOrgRating(roster, battlePt)` 新設
+- **ランキングUIリニューアル**: テーブル列を「⭐スター / 👥人気計」→「基礎力 / 対戦pt」に変更。対戦ptは色分け表示（正=緑/負=赤）。ツールチップ更新
+- **団体比較レーダーチャート更新**: 「エース力」→「TOP5実力」（TOP5平均OVR/90×100）、「スター度」→「TOP5人気」（TOP5平均pop/80×100）に変更
+- **セーブデータ互換**: `_migrated_ranking_v2`。旧summitBonus→battlePoints.player移行。ランキング再計算
+- 設計書: `docs/ranking-roster-redesign-v1.0.md`
+- 変更: data.js, engine.js, app.js, ui-render.js
+
+**選手成長リバランス v1.0（2026-03-03）。** プレイヤー(+3 OVR/年)とAI(+8 OVR/年)の構造的不公平を解消。「シーズン予算」モデルに統一。
+
+- **GROWTH_SEASON_BASE = 8.0**: 4ステ合計の1シーズン成長予算（ageMul=1.0時）。プレイヤー・AI共通基盤
+- **calcGrowth全面書換え（shareベース）**: convergenceFactor+STYLE_GROWTH方式を廃止。`share = remaining / totalRemaining` で残距離比例配分。`perPractice = (seasonBudget × ageMul × coachMul × practiceShare × share) / 9`。特性ボーナス（ムードメーカー/リーダー気質/負けず嫌い）・variance（努力家/破天荒）・intensiveMul維持
+- **×0.4練習補正撤廃**: tickWeek processManage内の `growth * 0.4` を2箇所（intensive/practice）から削除。penMult/statusMult/trainingBoostMult/trainerMultは維持
+- **ageMultiplier新カーブ**: ≤17:0.8（新人）、18-19:1.1（急成長期入口）、20-22:1.3（黄金の成長期）、23-25:1.0（安定）、26-28:0.6（仕上げ）、29-30:0.15（ほぼ停止）、31-32:0.05（微成長）、33+:0。早熟/晩成/遅咲き特性修正は維持
+- **aiSeasonGrowth書換え**: STYLE_GROWTH×convFactor方式を廃止。`seasonBudget = GROWTH_SEASON_BASE × ageMul × coachMul × tierGrowth` のshare配分に統一。facilityMul参照削除
+- **AI離脱イベント（怪我擬似反映）**: processSeasonEndにS級10%/A級12%/B級15%の離脱判定追加。`_aiGrowthHalf=true`で成長50%カット
+- **AI_SEASON_CFG整理**: trainWeeks/seasonVariance*/matchGrowthBase/matchesPerSeason/matchVariance*を削除。popConvergeRate/popRandomRange/tierPopBonusのみ残置
+- **practiceShare: 0.6**: GROWTH_CONFIGに追加。練習:試合 = 6:4 の予算配分
+- **convergenceFactor deprecation**: 関数は残置、非参照化。deprecationコメント追加
+- 設計書: `docs/growth-rebalance-design-v1.0.md`
+- 変更: data.js, engine.js
 
 **コーチ上半身画像＋データベースコーチタブ（2026-03-03）。** コーチ詳細ポップアップに上半身WebP画像を追加し、データベースタブにコーチ一覧を新設。
 
@@ -186,6 +214,15 @@
 
 ## 次の実装予定
 
+### ランキング・ロスター・団体間対戦 リデザイン（設計書: `docs/ranking-roster-redesign-v1.0.md`）
+
+| Phase | タスク | 重さ | 状態 |
+|---|--------|:----:|------|
+| 1 | **ランキング計算の刷新** championScore廃止、TOP5基礎力+対戦pt計算式、ランキングUI更新、団体比較連動 | 中 | **実装済み** |
+| 2 | **ロスター人数制限** ROSTER_CAP(P:12/S:16/A:13/B:10)、全獲得経路にチェック、AI無限膨張バグ修正、UI表示 | 中 | 未着手 |
+| 3 | **対戦ポイントシステム** battlePointsフィールド運用開始、AI同士の対抗戦ポイント処理、サミット条件緩和(ランク3位以上) | 中 | 未着手 |
+| 4 | **統一トーナメント** Engine.tournament新規実装、第24週開催、8名シングルエリミネーション、代表選手選択UI | 大 | 未着手 |
+
 ### コーチ＋ロッカールーム統合リデザイン（設計書: `docs/coach-lockerroom-redesign-v1.0.md`）
 
 | Phase | タスク | 重さ | 状態 |
@@ -196,40 +233,19 @@
 | D | **§3 ロッカールーム可視化** 道場ヘッダー・雰囲気テキスト5段階+ノイズ揺らぎ | 中 | **実装済み** |
 | E | **§4 施設システム廃止** 成長速度→コーチ吸収・施設UI削除 | 中 | 未着手（§1依存） |
 
-### v2.0イベントシステム — 残タスク
-
-| # | タスク | 重さ | 状態 |
-|---|--------|:----:|------|
-| Phase1-6 | **大型イベント（B1〜B4）** 練習中の怪我・選手間対立・他団体対抗戦・メディア密着取材 | 中 | **実装済み** |
-| Phase1-7 | **セリフバリエーション拡充 + バランス調整** セリフ73個追加、N1ウェイト増、S4低コスト選択肢、チームスピリットバフ、トースト時間動的化 | 中 | **実装済み** |
-
-### Phase 2: プレイの方向性・動機付け
-
-数シーズン遊んだ後のマンネリ防止を目標とする。
-
-- **ファン期待度の拡張** — より多様な期待パターン、長期的な期待の蓄積
-- **物語的な目標イベント** — 「○○にふさわしい舞台を用意できるか？」等、大型イベント（B枠）の一種。KPI的数値目標ではなくドラマの文脈を持った目標
-- **ロッカールームの空気の可視化** — ~~リデザインPhase Dで対応~~ **Phase D実装済み**（雰囲気テキスト5段階+ノイズ揺らぎ）
-
-### Phase 3: ゲームの個性確立
-
-「女子プロレスのドラマを演出するゲーム」としての独自性確立を目標とする。
-
-- **ストーリーアーク** — 数ヶ月にわたる抗争管理。完結時に大きな収益
-- **練習システムのリデザイン** — コーチ割当は **Phase B実装済み**（35名コーチ、格C/B/A、指導力/観察眼、得意スタイル、コーチ特性6種）。**タブ統合実装済み**（育成タブ廃止→団体タブに統合、⚡追込を今週タブに移動）
-
 ### 拡張候補
 
 | 項目 | 優先度 | 備考 |
 |---|---|---|
 | フィニッシャー（キャラ固有必殺技） | 高 | 設計書 第3部 3.11 |
 | ライバルストーリー自動生成 | 高 | 未設計 |
-| エンディング/ゲームオーバー演出 | — | **v2.1実装済み** |
+| ストーリーアーク（数ヶ月にわたる抗争管理） | 高 | 未設計 |
 | コーチ転身 | 中 | scout-system-spec §8.2 で予約済み |
 | タッグマッチ・タッグ王座 | 中 | — |
 | 敵AI団体専用キャラクター | 中 | 固有キャラで世界観を深める |
 | マネージャー的存在（説明キャラ） | 中 | チュートリアル・イベントの語り手 |
 | マインド依存の成長イベント | 中 | mnの存在感を強化 |
+| エンディング/ゲームオーバー演出 | — | **v2.1実装済み** |
 | 選手/団体の情報一覧タブ | — | **データベースタブとして実装済み** |
 
 ---
@@ -307,6 +323,8 @@
 - **AI団体成長バランス（v1.9）** — facilityMul全団体1.00（実質廃止）。growthBonus: S=1.05, A=1.00, B=0.95。coachMulのみで差異化
 - **年齢カーブ型契約費用（v1.9）** — ageMarketMultiplier: 21歳以下の逸材+個性2つ以上で1.10-1.35プレミアム、22-25歳=1.0、26-27歳=0.95、28-29歳=0.85、30歳以降=1.0（既存reassessに委譲）。calcAssessedValueでbaseValue*variance*ageMulとして適用
 - **逸材特別交渉枠（v1.9）** — orgPop≥25到達時にG.eliteTicket=true（1回限り）。canNegotiate(orgPop, fighter, context, state)の第3-4引数で判定。context='fa'かつeliteTicket=trueかつtierId='elite'でreqPop無視。superElite不可、スカウト不可。契約成功時にeliteTicket=false,eliteTicketUsed=true。isEliteTicketRequired()ヘルパーでUI表示判定。_pendingEliteTicket transientフィールドでgoldポップアップ通知
+- **選手成長リバランス v1.0** — GROWTH_SEASON_BASE=8.0の「シーズン予算」モデル。calcGrowthをshare(残距離比例)ベースに全面書換え。×0.4練習補正撤廃。aiSeasonGrowthも同モデルに統一。ageMultiplier新カーブ（20-22歳ピーク1.3、33歳以上0）。AI離脱イベント（S:10%/A:12%/B:15%で成長50%カット）。convergenceFactor+STYLE_GROWTHは非参照化（残置）。practiceShare=0.6（練習:試合=6:4）。設計書: docs/growth-rebalance-design-v1.0.md
+- **ランキング計算（v2: ranking-roster-redesign Phase 1）** — 旧: `championScore + calcStarPower(全員合算) + calcTotalPop(全員合算) + summitBonus`。新: `TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 + battlePoints[orgId]`。TOP5は各指標で独立に上位5名を選出し平均（5名未満はある分だけ平均）。battlePointsはシーズンリセット。対抗戦±12pt、頂上決戦±10ptのゼロサム移動。BATTLE_POINT_CFG定数で管理。団体比較レーダーも連動（TOP5実力/TOP5人気）。設計書: docs/ranking-roster-redesign-v1.0.md
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---
@@ -333,6 +351,8 @@
 | 世界観設定 | world-setting.md |
 | ロスターランダム化 v2 | roster-randomization-design-v2.md |
 | 難易度リバランス設計 | difficulty-rebalance-design-v1.0.md |
+| 選手成長リバランス v1.0 | growth-rebalance-design-v1.0.md |
+| ランキング・ロスター・団体間対戦 リデザイン v1.0 | ranking-roster-redesign-v1.0.md |
 
 ### specs/（現行仕様書）
 

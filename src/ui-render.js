@@ -932,7 +932,7 @@ function renderWeekScreen() {
       html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
-        <p style="font-size:12px;color:var(--text-sub)">勝利で団体人気+${EVENT_CONFIG.summitPopReward}、レーティング+${EVENT_CONFIG.summitRatingReward}</p>
+        <p style="font-size:12px;color:var(--text-sub)">勝利で団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${BATTLE_POINT_CFG.summit} / 敗北で対戦pt-${BATTLE_POINT_CFG.summit}</p>
       </div>`;
       html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
         <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
@@ -1733,15 +1733,15 @@ function renderRanking() {
 
   // Ranking table — tooltip texts stored in global to avoid HTML-in-attribute issues
   window._rankTips = {
-    rating: '👑 王者ボーナス: 30pt<br>⭐ スター得点 + 👥 人気計<br>の合計がランキング評価値',
-    star:   '人気50以上 = 15pt（トップスター）<br>人気35以上 = 8pt（スター）<br>人気20以上 = 3pt（中堅）<br>スターの厚みを示す',
-    pop:    '所属選手の人気を全員合計した値（×0.1）<br>団体全体の層の厚さを示す'
+    rating: '基礎力 + 対戦ポイントの合計が<br>ランキング評価値',
+    base:   'TOP5平均OVR × 1.5 + TOP5平均人気 × 1.0<br>選手の実力と人気で決まる基礎力',
+    battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
   html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
     `<th style="text-align:right">評価値${tt('rating')}</th>` +
-    `<th style="text-align:right">⭐ スター${tt('star')}</th>` +
-    `<th style="text-align:right">👥 人気計${tt('pop')}</th>` +
+    `<th style="text-align:right">基礎力${tt('base')}</th>` +
+    `<th style="text-align:right">対戦pt${tt('battle')}</th>` +
     `<th style="text-align:right">人数</th></tr>`;
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
@@ -1751,12 +1751,13 @@ function renderRanking() {
     const bgStyle = isPlayer ? `background:${rc}10` : '';
     const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
     const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${rc}20;color:${rc};border:1px solid ${rc}40;margin-left:6px">${org.tier}</span>` : '';
+    const bpColor = r.battlePt > 0 ? '#2ecc71' : r.battlePt < 0 ? '#e74c3c' : 'var(--text-dim)';
     html += `<tr style="${bgStyle}">
       <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
       <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
       <td class="num" style="font-size:16px;font-weight:700">${r.rating}</td>
-      <td class="num">${r.starPower}</td>
-      <td class="num">${r.totalPop}</td>
+      <td class="num">${r.baseScore}</td>
+      <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</td>
       <td class="num">${r.rosterSize}</td>
     </tr>`;
   });
@@ -2657,7 +2658,7 @@ function _renderDbHallOfFame() {
 let _dbCompareTarget = 'org_s';
 
 function _renderDbOrgCompare() {
-  const AXES = ['エース力', '層の厚さ', '将来性', '団体人気', 'スター度'];
+  const AXES = ['TOP5実力', '層の厚さ', '将来性', '団体人気', 'TOP5人気'];
   const playerScores = Engine.database.getOrgCompareScores(G, 'player');
   const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
 
@@ -2712,7 +2713,7 @@ function _drawOrgCompareChart() {
   const cvs = document.getElementById('dbCompareChart');
   if (!cvs) return;
 
-  const AXES = ['エース力', '層の厚さ', '将来性', '団体人気', 'スター度'];
+  const AXES = ['TOP5実力', '層の厚さ', '将来性', '団体人気', 'TOP5人気'];
   const scoreKeys = ['ace', 'depth', 'potential', 'popularity', 'starPower'];
   const playerScores = Engine.database.getOrgCompareScores(G, 'player');
   const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);

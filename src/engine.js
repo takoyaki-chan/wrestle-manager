@@ -1504,7 +1504,7 @@ const Engine = {
 
   // ── Growth System v1.0 (IMMUTABLE) ─────────────────────
   growth: {
-    // Convergence factor (training-spec §2.4) — growth slows near trainCap
+    // DEPRECATED (growth-rebalance v1.0): calcGrowth/aiSeasonGrowthで不使用。参照用に残置。
     convergenceFactor(value, trainCap, notionValue) {
       if (value >= trainCap) return 0;
       const remaining = trainCap - value;
@@ -1514,40 +1514,42 @@ const Engine = {
       return Engine.util.clamp(factor, 0.02, 1.2);
     },
 
-    // Weekly growth calculation (training-spec §2.3) — v1.0 convergence-based
+    // Weekly growth calculation — growth-rebalance v1.0: シーズン予算(share)ベース
     calcGrowth(rng, G, char, stat) {
       if (stat === 'mn') return 0; // MNT is innate, no training growth
       const current = char[stat];
       const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
-      const notion = char.notionValue ? char.notionValue[stat] : current;
       if (current >= trainCap) return 0;
 
-      const styleKey = char.style || 'Allround';
-      const styleGain = (STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround)[stat] || 0.7;
+      // 残り距離ベースの配分比率
+      const remaining = trainCap - current;
+      const totalRemaining = ['pw','sp','te','st'].reduce((s, st) =>
+        s + Math.max(0, (char.trainCap?.[st] || char.pot?.[st] || char[st]) - char[st]), 0);
+      if (totalRemaining <= 0) return 0;
+      const share = remaining / totalRemaining;
+
       const age = char.age || (16 + (char.careerSeasons || 0));
       const ageMul = ageMultiplier(age, char.traits);
       if (ageMul <= 0) return 0;
 
       const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
-      const convFactor = Engine.growth.convergenceFactor(current, trainCap, notion);
 
-      let baseGain = styleGain * ageMul * coachMul * convFactor;
-      // 努力家: weeklyVariance 下限引き上げに移行（baseGain乗算は廃止）
-      // ムードメーカー: 団体にいるだけで全体の練習効率+5%（自分含む）
-      if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) baseGain *= 1.05;
-      // リーダー気質: エースが所属していれば若手(≤21)の成長+10%
-      if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) baseGain *= 1.10;
-      // 負けず嫌い: 直近の試合で負けていれば成長+20%
-      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') baseGain *= 1.20;
+      // 1練習あたりbase = seasonBudget × practiceShare × share / 9週
+      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul;
+      const perPractice = (seasonBudget * GROWTH_CONFIG.practiceShare * share) / 9;
 
-      // 努力家: 下振れしにくい（0.75〜1.5）、通常: 0.5〜1.5
+      // 特性ボーナス
+      let bonus = 1.0;
+      if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) bonus *= 1.05;
+      if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
+      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.20;
+
+      // variance（努力家: 0.75-1.5、破天荒: 0.0-2.5、通常: 0.5-1.5）
       const vFloor = Traits.has(char, '努力家') ? 0.75 : 0.5;
       let weeklyVariance = vFloor + Engine.rng.float(rng) * (1.5 - vFloor);
-      // 破天荒: 成長の振れ幅拡大 (0.0〜2.5)（後勝ちで上書き）
       if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
-      const rawGain = baseGain * weeklyVariance;
 
-      // Intensive training bonus
+      const rawGain = perPractice * bonus * weeklyVariance;
       const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
       const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
       return Math.min(Math.ceil(finalGain), trainCap - current);
@@ -1634,41 +1636,52 @@ const Engine = {
     }
   },
 
-  // ── Ranking System (IMMUTABLE) ─────────────────────────
+  // ── Ranking System (ranking-roster-redesign v1.0 §2) ─────────────────────────
   ranking: {
-    calcStarPower(roster) {
-      return roster.reduce((score, f) => {
-        for (const t of STAR_POWER) { if (f.popularity >= t.minPop) return score + t.points; }
-        return score;
-      }, 0);
+    /** TOP-N平均を計算（N未満ならある分だけ平均、0名なら0） */
+    _topNAvg(roster, valueFn, n) {
+      if (!roster || roster.length === 0) return 0;
+      const vals = roster.map(valueFn).sort((a, b) => b - a);
+      const slice = vals.slice(0, n);
+      return slice.reduce((s, v) => s + v, 0) / slice.length;
     },
-    calcTotalPop(roster) {
-      return Math.round(roster.reduce((s, f) => s + (f.popularity || 0), 0) * 0.1);
+    /** 基礎力スコア = TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 */
+    calcBaseScore(roster) {
+      const top5OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 5);
+      const top5Pop = Engine.ranking._topNAvg(roster, f => f.popularity || 0, 5);
+      return Math.round(top5OVR * 1.5 + top5Pop * 1.0);
     },
-    calcOrgRating(championScore, roster) {
-      return championScore + Engine.ranking.calcStarPower(roster) + Engine.ranking.calcTotalPop(roster);
+    /** rating = 基礎力スコア + 対戦ポイント */
+    calcOrgRating(roster, battlePt) {
+      return Engine.ranking.calcBaseScore(roster) + (battlePt || 0);
     },
-    // Returns updated rankings array: [{orgId, name, rating, championScore, starPower, totalPop}]
+    // Returns updated rankings array: [{orgId, name, rating, baseScore, top5OVR, top5Pop, battlePt, rosterSize}]
     updateRankings(state) {
-      const playerChampScore = state.titles.world.championId ? 30 : 0;
-      const playerRating = Engine.ranking.calcOrgRating(playerChampScore, state.roster) + (state.summitBonus || 0);
+      const bp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
+      const playerRating = Engine.ranking.calcOrgRating(state.roster, bp.player);
+      const pTop5OVR = Engine.ranking._topNAvg(state.roster, f => Engine.util.ov(f), 5);
+      const pTop5Pop = Engine.ranking._topNAvg(state.roster, f => f.popularity || 0, 5);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
         rating: playerRating,
-        championScore: playerChampScore,
-        starPower: Engine.ranking.calcStarPower(state.roster),
-        totalPop: Engine.ranking.calcTotalPop(state.roster),
+        baseScore: Engine.ranking.calcBaseScore(state.roster),
+        top5OVR: Math.round(pTop5OVR * 10) / 10,
+        top5Pop: Math.round(pTop5Pop * 10) / 10,
+        battlePt: bp.player,
         rosterSize: state.roster.length
       }];
       RIVAL_ORGS.forEach(org => {
         const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? state.aiOrgs[org.id].roster : [];
-        const r = Engine.ranking.calcOrgRating(org.championScore, aiRoster);
+        const r = Engine.ranking.calcOrgRating(aiRoster, bp[org.id]);
+        const t5OVR = Engine.ranking._topNAvg(aiRoster, f => Engine.util.ov(f), 5);
+        const t5Pop = Engine.ranking._topNAvg(aiRoster, f => f.popularity || 0, 5);
         entries.push({
           orgId: org.id, name: org.name,
           rating: r,
-          championScore: org.championScore,
-          starPower: Engine.ranking.calcStarPower(aiRoster),
-          totalPop: Engine.ranking.calcTotalPop(aiRoster),
+          baseScore: Engine.ranking.calcBaseScore(aiRoster),
+          top5OVR: Math.round(t5OVR * 10) / 10,
+          top5Pop: Math.round(t5Pop * 10) / 10,
+          battlePt: bp[org.id],
           rosterSize: aiRoster.length
         });
       });
@@ -1900,7 +1913,7 @@ const Engine = {
       const data = aiOrgs && aiOrgs[orgId];
       if (!cfg || !data) return null;
       return { id: cfg.id, orgId: cfg.id, name: cfg.name, tier: cfg.tier,
-               championScore: cfg.championScore, coachMul: cfg.coachMul, facilityMul: cfg.facilityMul,
+               coachMul: cfg.coachMul, facilityMul: cfg.facilityMul,
                roster: data.roster, orgPop: data.orgPop };
     },
     // Utility: get all AI orgs as array with merged config+state
@@ -1964,7 +1977,16 @@ const Engine = {
           newAiOrgs[org.id]._lastSeasonGrowthEvents = geResult.aiGrowthEvents;
         }
 
-        // Step 3: 成長一括 (rival-spec §4.1 — aiSeasonGrowth)
+        // Step 2c: AI離脱イベント（growth-rebalance §3.6 — 怪我擬似反映）
+        roster.forEach(f => {
+          const injuryChance = org.tier === 'S' ? 0.10 : org.tier === 'A' ? 0.12 : 0.15;
+          if (Engine.rng.float(rng) < injuryChance) {
+            f._aiGrowthHalf = true; // 成長50%カット
+            events.push(`${org.emoji} ${f.name}: 長期離脱`);
+          }
+        });
+
+        // Step 3: 成長一括 (growth-rebalance v1.0 — seasonBudgetベース)
         roster = roster.map(f => Engine.rival.aiSeasonGrowth(rng, f, org));
 
         // Step 4: 人気変動 (rival-spec §4.2)
@@ -1997,7 +2019,7 @@ const Engine = {
       return { aiOrgs: newAiOrgs, events };
     },
 
-    // AI season growth (rival-spec §4.1 + F1 tier growth bonus) — 48 weeks in one calculation
+    // AI season growth — growth-rebalance v1.0: プレイヤーと同一のseasonBudgetモデル
     aiSeasonGrowth(rng, fighter, org) {
       const f = { ...fighter };
       // v1.8: スランプ/モチベ喪失による成長ブロック
@@ -2008,30 +2030,29 @@ const Engine = {
       const growthMod = f._aiGrowthHalf ? 0.5 : 1.0;
       const age = f.age || 20;
       const ageMul = ageMultiplier(age, (f || {}).traits);
-      if (ageMul <= 0) { const { _aiGrowthHalf: _, ...clean } = f; return clean; } // no growth at 35+
+      if (ageMul <= 0) { const { _aiGrowthHalf: _, _aiGrowthBlock: _b, ...clean } = f; return clean; }
 
-      const styleKey = f.style || 'Allround';
-      const styleTable = STYLE_GROWTH[styleKey] || STYLE_GROWTH.Allround;
       const coachMul = org.coachMul || 1.0;
-      const facilityMul = org.facilityMul || 1.0;
-      // F1: Tier-based growth bonus — S-tier compounds advantage each season
       const tierGrowth = (AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B).growthBonus;
-      const notion = f.notionValue || {pw:f.pw,sp:f.sp,te:f.te,st:f.st,mn:f.mn};
-      const trainCap = f.trainCap || f.pot || notion;
-      const cfg = AI_SEASON_CFG;
+      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul * tierGrowth;
 
-      ['pw','sp','te','st'].forEach(s => {
-        if (f[s] >= trainCap[s]) return;
-        const convFactor = Engine.growth.convergenceFactor(f[s], trainCap[s], notion[s]);
-        const weeklyGain = (styleTable[s] || 0.7) * ageMul * coachMul * facilityMul * tierGrowth * convFactor;
-        const seasonVariance = cfg.seasonVarianceMin + Engine.rng.float(rng) * (cfg.seasonVarianceMax - cfg.seasonVarianceMin);
-        const trainingGain = weeklyGain * cfg.trainWeeks * seasonVariance;
-        const matchVariance = cfg.matchVarianceMin + Engine.rng.float(rng) * (cfg.matchVarianceMax - cfg.matchVarianceMin);
-        const matchGain = cfg.matchGrowthBase * cfg.matchesPerSeason * convFactor * matchVariance;
-        // v1.8: _aiGrowthHalf = スランプ → 成長50%カット
-        f[s] = Math.min(trainCap[s], f[s] + Math.round((trainingGain + matchGain) * growthMod));
+      const stats = ['pw','sp','te','st'];
+      const totalRemaining = stats.reduce((s, st) =>
+        s + Math.max(0, (f.trainCap?.[st] || 100) - f[st]), 0);
+      if (totalRemaining <= 0) {
+        const { _aiGrowthHalf: _h, _aiGrowthBlock: _b, ...cleanF } = f;
+        return cleanF;
+      }
+
+      stats.forEach(s => {
+        if (f[s] >= (f.trainCap?.[s] || 100)) return;
+        const remaining = (f.trainCap?.[s] || 100) - f[s];
+        const share = remaining / totalRemaining;
+        const variance = 0.85 + Engine.rng.float(rng) * 0.30; // 0.85-1.15
+        const gain = Math.round(seasonBudget * share * variance * growthMod);
+        f[s] = Math.min(f.trainCap?.[s] || 100, f[s] + gain);
       });
-      // 一時フィールドを除去してクリーンな fighter を返す
+
       const { _aiGrowthHalf: _h, _aiGrowthBlock: _b, ...cleanF } = f;
       return cleanF;
     },
@@ -2424,7 +2445,7 @@ const Engine = {
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
           const trainerMult = Engine.careActions.getTrainerMult(nc);
-          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
@@ -2454,7 +2475,7 @@ const Engine = {
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
           const trainerMult = Engine.careActions.getTrainerMult(nc);
-          const trainGrowth = Math.round(growth * 0.4 * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
@@ -4134,7 +4155,7 @@ const Engine = {
       return { results, playerWins, aiWins };
     },
 
-    /** Apply war outcome to state */
+    /** Apply war outcome to state (v2: battlePoints 対戦ポイント移動) */
     applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
       let popDelta = 0;
       if (playerWins > aiWins) popDelta = EVENT_CONFIG.warPopReward;
@@ -4142,9 +4163,21 @@ const Engine = {
       else popDelta = EVENT_CONFIG.warPopPenalty;
       const events = [];
       const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '引き分け' : '負け越し…';
-      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}）`);
+      // 対戦ポイント移動
+      const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      let bpMsg = '';
+      if (playerWins > aiWins) {
+        bp.player = (bp.player || 0) + BATTLE_POINT_CFG.war;
+        if (opponentOrgId && bp[opponentOrgId] !== undefined) bp[opponentOrgId] = (bp[opponentOrgId] || 0) - BATTLE_POINT_CFG.war;
+        bpMsg = `、対戦pt+${BATTLE_POINT_CFG.war}`;
+      } else if (playerWins < aiWins) {
+        bp.player = (bp.player || 0) - BATTLE_POINT_CFG.war;
+        if (opponentOrgId && bp[opponentOrgId] !== undefined) bp[opponentOrgId] = (bp[opponentOrgId] || 0) + BATTLE_POINT_CFG.war;
+        bpMsg = `、対戦pt-${BATTLE_POINT_CFG.war}`;
+      }
+      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}${bpMsg}）`);
       return {
-        state: { ...state, orgPop: Math.max(0, Math.min(100, state.orgPop + popDelta)), warThisSeason: true, pendingEvent: null },
+        state: { ...state, orgPop: Math.max(0, Math.min(100, state.orgPop + popDelta)), battlePoints: bp, warThisSeason: true, pendingEvent: null },
         events
       };
     },
@@ -4170,21 +4203,36 @@ const Engine = {
                playerFighter: playerAce, aiFighter: aiAce };
     },
 
-    /** Apply summit outcome */
+    /** Apply summit outcome (v2: battlePoints 対戦ポイント移動) */
     applySummitOutcome(state, won) {
       const events = [];
       if (won) {
-        events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、レーティング+${EVENT_CONFIG.summitRatingReward}`);
+        const ptTransfer = BATTLE_POINT_CFG.summit;
+        const opponentOrgId = state.pendingEvent?.opponentOrgId;
+        const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+        bp.player = (bp.player || 0) + ptTransfer;
+        if (opponentOrgId && bp[opponentOrgId] !== undefined) {
+          bp[opponentOrgId] = (bp[opponentOrgId] || 0) - ptTransfer;
+        }
+        events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${ptTransfer}`);
         return {
           state: { ...state,
             orgPop: Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward),
-            summitBonus: (state.summitBonus || 0) + EVENT_CONFIG.summitRatingReward,
+            battlePoints: bp,
             pendingEvent: null
           }, events
         };
       }
-      events.push('🏆 頂上決戦敗北…しかし挑戦したこと自体が名誉');
-      return { state: { ...state, pendingEvent: null }, events };
+      // 敗北時: ポイントは相手に移動
+      const ptTransfer = BATTLE_POINT_CFG.summit;
+      const opponentOrgId = state.pendingEvent?.opponentOrgId;
+      const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      bp.player = (bp.player || 0) - ptTransfer;
+      if (opponentOrgId && bp[opponentOrgId] !== undefined) {
+        bp[opponentOrgId] = (bp[opponentOrgId] || 0) + ptTransfer;
+      }
+      events.push(`🏆 頂上決戦敗北…対戦pt-${ptTransfer}。しかし挑戦したこと自体が名誉`);
+      return { state: { ...state, battlePoints: bp, pendingEvent: null }, events };
     },
 
     /** Helper: get ace (highest OVR non-injured fighter) */
@@ -4419,7 +4467,7 @@ const Engine = {
 
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
-              summitBonus: 0, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
+              battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
@@ -4438,7 +4486,7 @@ const Engine = {
         s.rankings.forEach((r, i) => {
           const org = RIVAL_ORGS.find(o => o.orgId === r.orgId || o.id === r.orgId);
           const emoji = r.orgId === 'player' ? '🏠' : (org ? org.emoji : '');
-          events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (👑${r.championScore} ⭐${r.starPower} 👥${r.totalPop})`);
+          events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (基礎${r.baseScore} 対戦${r.battlePt >= 0 ? '+' : ''}${r.battlePt})`);
         });
         events.push(`🎬 シーズン${s.season}開幕！`);
         return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
@@ -4766,7 +4814,7 @@ const Engine = {
       warThisSeason: false,
       challengeTrigger: null,
       pendingEvent: null,
-      summitBonus: 0,
+      battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 },
       // F2: Negotiation system
       pendingNegotiation: null,
       negotiatedThisSeason: [],
@@ -6731,12 +6779,9 @@ Engine.database = {
       orgPop = state.aiOrgs?.[orgId]?.orgPop ?? (org ? (org.tier === 'S' ? 75 : org.tier === 'A' ? 50 : 30) : 30);
     }
 
-    // エース力: TOP3平均OVR / 90 * 100
-    const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-    const top3 = sorted.slice(0, 3);
-    const ace = top3.length > 0
-      ? Math.min(100, Math.round(top3.reduce((s, f) => s + Engine.util.ov(f), 0) / top3.length / 90 * 100))
-      : 0;
+    // TOP5実力: TOP5平均OVR / 90 * 100（ランキング基礎力と連動）
+    const top5OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 5);
+    const ace = Math.min(100, Math.round(top5OVR / 90 * 100));
 
     // 層の厚さ: 全員平均OVR / 75 * 100
     const depth = roster.length > 0
@@ -6757,9 +6802,9 @@ Engine.database = {
     // 団体人気: orgPop / 100 * 100（最大100）
     const popularity = Math.min(100, Math.round(Engine.util.dispOrgPop(orgPop)));
 
-    // スター度: 人気50以上の選手数 × 20（5人=100）
-    const starCount = roster.filter(f => Engine.util.dispPop(f.popularity || 0) >= 50).length;
-    const starPower = Math.min(100, starCount * 20);
+    // TOP5人気: TOP5平均pop / 80 * 100（ランキング基礎力と連動）
+    const top5Pop = Engine.ranking._topNAvg(roster, f => f.popularity || 0, 5);
+    const starPower = Math.min(100, Math.round(top5Pop / 80 * 100));
 
     return { ace, depth, potential, popularity, starPower };
   },

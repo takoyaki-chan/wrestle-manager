@@ -1057,8 +1057,10 @@ const GROWTH_CONFIG = {
   intensiveCondDrain: 2.0, // condition drain multiplier
   intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
-  intensiveMinCond: 50     // min condition to allow intensive
+  intensiveMinCond: 50,    // min condition to allow intensive
+  practiceShare: 0.6       // 練習:試合 = 6:4 の予算配分
 };
+const GROWTH_SEASON_BASE = 8.0; // 1シーズンの成長予算（4ステ合計、ageMul=1.0時）
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
@@ -1070,16 +1072,24 @@ const RIVAL_ORG_NAME_POOL = {
   B: ['なでしこプロレス', 'あさひ女子プロレス', '春日野プロレス', 'ふたば女子プロレス']
 };
 const RIVAL_ORGS = [
-  { id:'org_s', name:'', tier:'S', championScore:60,
+  { id:'org_s', name:'', tier:'S',
     coachMul:1.30, facilityMul:1.00, scoutStyle:'immediate',
     desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
-  { id:'org_a', name:'', tier:'A', championScore:40,
+  { id:'org_a', name:'', tier:'A',
     coachMul:1.15, facilityMul:1.00, scoutStyle:'youth',
     desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
-  { id:'org_b', name:'', tier:'B', championScore:20,
+  { id:'org_b', name:'', tier:'B',
     coachMul:1.00, facilityMul:1.00, scoutStyle:'conservative',
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
+
+// ranking-roster-redesign v1.0 §4: 対戦ポイント設定（Phase 3 で使用）
+const BATTLE_POINT_CFG = {
+  war: 12,
+  summit: 10,
+  tournament: { champion: 20, runnerUp: 8, semiFinal: 0, firstRound: -14 },
+  tournamentWeek: 24,
+};
 
 // ── Scout Event Name Generation & Config (scout-spec §3) ──────
 const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
@@ -1129,13 +1139,14 @@ const STAR_POWER = [
 // Age multiplier table (training-spec §5.2)
 function ageMultiplier(age, traits) {
   let mul;
-  if (age <= 18) mul = 1.5;
-  else if (age <= 21) mul = 1.2;
-  else if (age <= 25) mul = 1.0;
-  else if (age <= 29) mul = 0.7;
-  else if (age <= 32) mul = 0.3;
-  else if (age <= 34) mul = 0.1;
-  else mul = 0;
+  if (age <= 17)      mul = 0.8;   // 新人: 体がまだできていない
+  else if (age <= 19) mul = 1.1;   // 急成長期の入口
+  else if (age <= 22) mul = 1.3;   // 黄金の成長期
+  else if (age <= 25) mul = 1.0;   // 安定成長
+  else if (age <= 28) mul = 0.6;   // 仕上げ段階
+  else if (age <= 30) mul = 0.15;  // ほぼ停止
+  else if (age <= 32) mul = 0.05;  // 微成長
+  else                mul = 0;     // 成長なし
 
   if (!Array.isArray(traits)) return mul;
 
@@ -1214,15 +1225,8 @@ const AI_TIER_LIMITS = {
   B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 0.95, faAggressiveness: 0.20 }
 };
 
-// AI season growth config (rival-spec §4.1)
+// AI season config (人気変動用。成長はGROWTH_SEASON_BASEベースに移行済み)
 const AI_SEASON_CFG = {
-  trainWeeks: 30,              // 練習を行う週数概算
-  seasonVarianceMin: 0.75,     // シーズン全体ランダム幅
-  seasonVarianceMax: 1.25,
-  matchGrowthBase: 0.2,        // 試合1回あたり成長base
-  matchesPerSeason: 24,        // 年間試合数概算
-  matchVarianceMin: 0.5,
-  matchVarianceMax: 1.5,
   popConvergeRate: 0.3,        // 人気ターゲットへの収束率
   popRandomRange: 5,           // 人気ランダム幅 ±5
   tierPopBonus: { S:8, A:4, B:2 }
@@ -1261,7 +1265,6 @@ const EVENT_CONFIG = {
   // D-4: 頂上決戦
   summitMinRank: 2,                     // ランキング2位以上で発生
   summitPopReward: 10,
-  summitRatingReward: 15,
 };
 
 // ╔══════════════════════════════════════════════════════════╗
