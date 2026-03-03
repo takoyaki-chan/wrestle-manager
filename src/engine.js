@@ -72,9 +72,7 @@ const Engine = {
     getQuarter(w) { return Math.ceil(w / 12); },
     getMonth(w) { return ((Math.ceil(w / 4) - 1 + 3) % 12) + 1; },
     getWeekInMonth(w) { return ((w - 1) % 4) + 1; },
-    getWeekInQuarter(w) { return ((w - 1) % 12) + 1; },
-    getQuarterLabel(w) { return QUARTER_LABELS[this.getQuarter(w)] || '🌸 春'; },
-    formatDate(s, w) { return `${s}年目 ${this.getQuarterLabel(w)} 第${this.getWeekInQuarter(w)}週`; },
+    formatDate(s, w) { return `${s}年目 ${this.getMonth(w)}月 第${this.getWeekInMonth(w)}週`; },
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },
@@ -147,14 +145,7 @@ const Engine = {
       const current = stats.reduce((s, k) => s + char[k], 0);
       const cap = stats.reduce((s, k) => s + (char.trainCap ? char.trainCap[k] : (char.pot ? char.pot[k] : char[k])), 0);
       return cap > 0 ? Math.round(current / cap * 100) : 100;
-    },
-    // v0.9 低OV帯MQガード: 低OVほどMQ閾値が下がりペナルティが軽くなる
-    getOVMQAdjust(avgOV) {
-      if (avgOV < 30) return { shift: -15, mult: 0.3 };
-      if (avgOV < 40) return { shift: -10, mult: 0.5 };
-      if (avgOV < 50) return { shift: -5,  mult: 0.7 };
-      return { shift: 0, mult: 1.0 };
-    },
+    }
   },
 
   // ── Battle Engine (DOM-free) ──────────────────────────
@@ -499,14 +490,11 @@ const Engine = {
       return { ...fighter, preInjuryPop: null };
     },
     // §B-4: Main event poor match penalty
-    checkMainEventPenalty(mq, avgOV) {
-      // v0.9 低OV帯MQガード: avgOVに応じてペナルティ閾値をシフト・軽減
-      const adj = Engine.util.getOVMQAdjust(avgOV || 50);
-      let penalty = 0;
-      if      (mq < (25 + adj.shift)) penalty = -5;
-      else if (mq < (35 + adj.shift)) penalty = -3;
-      else if (mq < (45 + adj.shift)) penalty = -1;
-      return Math.round(penalty * adj.mult);
+    checkMainEventPenalty(mq) {
+      if (mq < 25) return -5;
+      if (mq < 35) return -3;
+      if (mq < 45) return -1;
+      return 0;
     },
     // §B-5: Transfer popularity reset (×0.75)
     applyTransferReset(fighter) {
@@ -546,9 +534,7 @@ const Engine = {
       return 0;
     },
     // v1.7: 育成補助金（地域振興助成金）— orgPop 40未満の小団体を支援
-    // difficulty-mode v1.0: hard モードでは補助金なし
-    getSubsidy(orgPop, difficultyMode) {
-      if (difficultyMode === 'hard') return 0;
+    getSubsidy(orgPop) {
       for (const s of SUBSIDY_TABLE) if (orgPop <= s.max) return s.val;
       return 0;
     },
@@ -646,14 +632,8 @@ const Engine = {
       return HEAT_LEVELS.find(h => G.heatScore >= h.min && G.heatScore <= h.max) || HEAT_LEVELS[2];
     },
     getMult(G) { return Engine.heat.getLevel(G).mult; },
-    calcUpdate(G, avgMQ, avgOV) {
-      // v0.9 低OV帯MQガード: avgOVに応じてHeat閾値をシフト
-      const adj = Engine.util.getOVMQAdjust(avgOV || 50);
-      let delta = avgMQ >= (75 + adj.shift) ? 2
-                : avgMQ >= (60 + adj.shift) ? 1
-                : avgMQ >= (40 + adj.shift) ? 0
-                : avgMQ >= (25 + adj.shift) ? -1 : -2;
-      if (delta < 0) delta *= adj.mult;
+    calcUpdate(G, avgMQ) {
+      let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
       // v1.5: 施策E — Heat上限帯の減衰（HOT以上では上昇量半減）
       if (delta > 0 && G.heatScore >= 6) delta *= 0.5;
       if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
@@ -791,10 +771,19 @@ const Engine = {
       for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
       return best;
     },
-    // 因縁決着判定: 宿敵+(matches>=4) かつ MQ>=50 で決着成立
-    checkResolution(rivalLvl, mq) {
+    // 因縁決着判定: 宿敵+(matches>=4) かつ MQ>=動的閾値 で決着成立
+    // v2.1: 閾値を天井の80%に動的化（下限30, 上限50）— 低OVR帯でも決着可能に
+    checkResolution(rivalLvl, mq, avgOV) {
       if (!rivalLvl || rivalLvl.matches < 4) return null;
-      if (mq < 50) return null;
+      // 天井計算（battle-engine §1 と同一式）
+      let ceiling;
+      if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
+      else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
+      else ceiling = 83 + (avgOV - 80) * 0.85;
+      ceiling = Math.round(Engine.util.clamp(ceiling, 15, 100));
+      // 動的閾値: ceiling×0.80, 下限30, 上限50
+      const threshold = Math.min(50, Math.max(30, Math.round(ceiling * 0.80)));
+      if (mq < threshold) return null;
       const isEternal = rivalLvl.matches >= 7;
       return {
         isEternal,
@@ -2855,7 +2844,7 @@ const Engine = {
       if (broadcast > 0) details.push({ label: '放映権収入', val: broadcast, type: 'income' });
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給）
-      const subsidy = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
+      const subsidy = Engine.economy.getSubsidy(G.orgPop);
       totalIncome += subsidy;
       if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
 
@@ -3284,11 +3273,8 @@ const Engine = {
 
     // Heat (immutable)
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
-    const avgOV = results.length > 0
-      ? Math.round(results.reduce((a, r) => a + (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2, 0) / results.length)
-      : 50;
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ, avgOV);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
@@ -3405,8 +3391,8 @@ const Engine = {
     const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles);
     s = { ...s, roster: trustResult.roster, lockerRoomMorale: Engine.trust.updateLockerRoomMorale(s, trustResult) };
 
-    // v1.7: 育成補助金打ち切り通知（hard モードでは補助金がないためスキップ）
-    if (G.difficultyMode !== 'hard' && state.orgPop < 40 && popResult.orgPop >= 40) {
+    // v1.7: 育成補助金打ち切り通知
+    if (state.orgPop < 40 && popResult.orgPop >= 40) {
       events.push('🏛️ 団体人気が40に到達！ 地域振興助成金の支給が終了しました。自立経営の始まりです！');
     }
 
@@ -3451,8 +3437,7 @@ const Engine = {
 
       // v1.0b §B-4: Main event poor match penalty (both fighters)
       if (isMainEvent) {
-        const matchAvgOV = Math.round((Engine.util.ov(result.left) + Engine.util.ov(result.right)) / 2);
-        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq, matchAvgOV);
+        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
         if (mainPenalty < 0) {
           popDelta += mainPenalty; // penalties are not diminished
           popEvents.push(`📉 メインイベントの低MQ(${result.mq})で${c.name}の人気${mainPenalty}`);
@@ -5148,8 +5133,6 @@ const Engine = {
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
       endingClearedSeason: null,
-      // difficulty-mode v1.0
-      difficultyMode: 'normal', // 'normal' | 'hard'
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -5930,10 +5913,8 @@ Engine.trust = {
           else if (!isDraw) delta += Engine.trust.applyCoeff(1, mental);
           else          delta += Engine.trust.applyCoeff(1, mental);  // 引き分けも+1
 
-          // §1-3: 好試合ボーナス+2（閾値 = そのファイターのMQ上限の75%）
-          const fighterOvr = Engine.util.ov(fighter);
-          const fighterMqCeiling = fighterOvr <= 50 ? 20 + fighterOvr * 0.60 : 50 + (fighterOvr - 50) * 1.10;
-          if (mq >= Math.round(fighterMqCeiling * 0.75)) delta += Engine.trust.applyCoeff(2, mental);
+          // §1-3: 好試合（MQ70+）追加+2
+          if (mq >= 70) delta += Engine.trust.applyCoeff(2, mental);
 
           // §1-3: タイトルマッチ+5
           if (titleFighters.has(fighter.id)) delta += Engine.trust.applyCoeff(5, mental);
@@ -5967,16 +5948,11 @@ Engine.trust = {
     const current = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let delta = 0;
 
-    // 興行成功ボーナス（avgMQ閾値をロースター平均OVで調整）
+    // 興行成功ボーナス（avgMQ 65+ で+3）
     const results = state.lastShowResults || [];
     if (results.length > 0) {
       const avgMQ = results.reduce((s, r) => s + r.mq, 0) / results.length;
-      const roster = state.roster || [];
-      const rosterAvgOV = roster.length > 0
-        ? roster.reduce((s, c) => s + Engine.util.ov(c), 0) / roster.length
-        : 50;
-      const rosterMqCeiling = rosterAvgOV <= 50 ? 20 + rosterAvgOV * 0.60 : 50 + (rosterAvgOV - 50) * 1.10;
-      if (avgMQ >= Math.round(rosterMqCeiling * 0.75)) delta += 3;
+      if (avgMQ >= 65) delta += 3;
     }
 
     // trust < 25 の選手が多いほど空気が悪化（-2/名）
@@ -6025,16 +6001,8 @@ Engine.careActions = {
     return fighter._bonusRepeat || 0;
   },
 
-  // ── スランプ判定 ─────────────────────────────────────────────────────────
-  isInSlump(fighter) {
-    if (!fighter) return false;
-    const momentum = fighter.recoveryMomentum;
-    if (momentum !== undefined && momentum < 0) return true;
-    return (fighter.trust != null ? fighter.trust : 50) < 40;
-  },
-
   // ── アクション実行（純粋関数） ─────────────────────────────────────────────
-  // 返り値: { roster, funds, events, reactionKey, reactionFighterId, changes }
+  // 返り値: { roster, state, funds, events, reactionKey, reactionFighterId }
   execute(actionId, fighterId, state) {
     const cfg = Engine.careActions.getConfig(actionId);
     if (!cfg) return null;
@@ -6046,7 +6014,6 @@ Engine.careActions = {
     const events = [];
     let reactionKey = actionId;
     let reactionFighterId = fighterId;
-    let changes = [];
 
     const applyTrust = (fighter, delta) => {
       const mental = fighter.mn || 50;
@@ -6063,87 +6030,40 @@ Engine.careActions = {
 
       if (actionId === 'bonus') {
         const repeatCount = Engine.careActions.getBonusRepeatCount(f);
-        const prevTrust = f.trust != null ? f.trust : 50;
         const trustGain = Math.max(1, cfg.effects.trust - repeatCount * 2);  // 逓減
         f = applyTrust(f, trustGain);
         f._bonusRepeat = repeatCount + 1;
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
-        changes = [{ label: '信頼度', before: prevTrust, after: f.trust }];
         events.push(`💴 ${f.name}にボーナスを支給（信頼度+${trustGain}）`);
       } else if (actionId === 'costume') {
         // v2.0: 2週に1回制限
         if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
-        const prevPop = f.popularity || 1;
-        const prevTrust = f.trust != null ? f.trust : 50;
-        const newPop = Engine.util.clamp(prevPop + cfg.effects.popularity, 1, 100);
+        const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        changes = [{ label: '人気', before: prevPop, after: newPop }, { label: '信頼度', before: prevTrust, after: f.trust }];
         events.push(`👗 ${f.name}のコスチュームを新調（人気+${cfg.effects.popularity}、信頼度+${cfg.effects.trust}）`);
       } else if (actionId === 'trainer') {
         // 専属トレーナー: 成長バフを付与（growthPenaltyの逆パターンとして実装）
-        const prevTrust = f.trust != null ? f.trust : 50;
         f = applyTrust(f, cfg.effects.trust);
         f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
-        changes = [{ label: '信頼度', before: prevTrust, after: f.trust }, { label: '成長バフ', text: `+30% (${cfg.effects.growth_boost.weeks}週間)` }];
         events.push(`🏋️ ${f.name}に専属トレーナーを手配（${cfg.effects.growth_boost.weeks}週間 成長+30%）`);
       } else if (actionId === 'media') {
         // v2.0: 2週に1回制限
         if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
-        const prevPop = f.popularity || 1;
-        const prevTrust = f.trust != null ? f.trust : 50;
-        const newPop = Engine.util.clamp(prevPop + cfg.effects.popularity, 1, 100);
+        const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
         // 練習休み: condition を少し回復（スキップ扱い）
         f = { ...f, condition: Math.min(100, (f.condition || 70) + 5) };
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        changes = [{ label: '人気', before: prevPop, after: newPop }, { label: '信頼度', before: prevTrust, after: f.trust }];
         events.push(`📺 ${f.name}のメディア露出を手配（人気+${cfg.effects.popularity}）`);
       } else if (actionId === 'special_treatment') {
         if (!f.injury) return { error: 'not_injured' };
         const cur = f.injury.weeksLeft || 0;
         const reduced = Math.max(1, Math.floor(cur / 2));
         f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
-        changes = [{ label: '回復期間', text: `${cur}週→${reduced}週` }];
         events.push(`🏥 ${f.name}の特別治療（回復期間 ${cur}週→${reduced}週）`);
-      } else if (actionId === 'encourage') {
-        // スランプ/モチベ低下のみ対象
-        if (!Engine.careActions.isInSlump(f)) return { error: 'not_in_slump' };
-        // クールダウン: 1週に1回
-        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 1) return { error: 'cooldown' };
-        const prevTrust = f.trust != null ? f.trust : 50;
-        const isHighTrust = prevTrust >= 60;
-        const trustGain = isHighTrust ? 2 : 1;
-        const momentumGain = isHighTrust ? 0.7 : 0.5;
-        reactionKey = isHighTrust ? 'encourage_high_trust' : 'encourage';
-        f = applyTrust(f, trustGain);
-        f = { ...f, recoveryMomentum: Math.min(3, (f.recoveryMomentum || 0) + momentumGain) };
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        changes = [{ label: '信頼度', before: prevTrust, after: f.trust }, { label: 'モチベ回復', text: `+${momentumGain}` }];
-        events.push(`💬 ${f.name}に声かけ（信頼度+${trustGain}、モチベ+${momentumGain}）`);
-      } else if (actionId === 'refresh_leave') {
-        // スランプ/モチベ低下のみ対象
-        if (!Engine.careActions.isInSlump(f)) return { error: 'not_in_slump' };
-        // クールダウン: 4週に1回
-        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 4) return { error: 'cooldown' };
-        const prevTrust = f.trust != null ? f.trust : 50;
-        const prevCondition = f.condition != null ? f.condition : 70;
-        f = applyTrust(f, 3);
-        const newCondition = Math.min(100, prevCondition + 15);
-        f = { ...f,
-          condition: newCondition,
-          recoveryMomentum: Math.min(3, (f.recoveryMomentum || 0) + 3.0),
-          schedule: 'rest',
-        };
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        changes = [
-          { label: '信頼度', before: prevTrust, after: f.trust },
-          { label: '状態', before: prevCondition, after: newCondition },
-          { label: 'モチベ回復', text: '+3.0' },
-        ];
-        events.push(`🌴 ${f.name}にリフレッシュ休暇（状態+15、信頼度+3、モチベ大回復）`);
       }
 
       roster[idx] = f;
@@ -6171,7 +6091,7 @@ Engine.careActions = {
     }
 
     const newFunds = (state.funds || 0) - cfg.cost;
-    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId, changes };
+    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId };
   },
 
   // ── トレーナーバフの週次消費（processManage内で呼び出し） ─────────────────

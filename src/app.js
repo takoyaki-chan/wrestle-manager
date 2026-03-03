@@ -904,7 +904,7 @@ const Survival = {
 
     const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
     const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
-    const subsidy = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
+    const subsidy = Engine.economy.getSubsidy(G.orgPop);
     const totalBaseIncome = sponsor + broadcast + subsidy;
 
     // Estimate average show income per week (shows happen ~every 4 weeks)
@@ -1536,9 +1536,6 @@ const Storage = {
       }
       if (G.warWon === undefined) G = { ...G, warWon: false };
 
-      // difficulty-mode v1.0: 既存セーブに difficultyMode がない場合は 'normal' として扱う
-      if (G.difficultyMode === undefined) G = { ...G, difficultyMode: 'normal' };
-
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -1708,52 +1705,18 @@ const App = {
     Audio.bgm.play('management');
   },
 
-  // Confirm org setup → proceed to difficulty selection
+  // Confirm org setup and proceed to draft
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
-    App._pendingOrgName = (input && input.value.trim()) || 'プレイヤー団体';
-    App._pendingDifficulty = 'normal';
-    Audio.play('select');
-    document.getElementById('orgSetupScreen').style.display = 'none';
-    document.getElementById('difficultyScreen').style.display = 'flex';
-    App._updateDifficultyUI('normal');
-  },
-
-  // Select difficulty (radio toggle)
-  selectDifficulty(mode) {
-    App._pendingDifficulty = mode;
-    App._updateDifficultyUI(mode);
-  },
-
-  _updateDifficultyUI(mode) {
-    const normalOpt = document.getElementById('diffOptNormal');
-    const hardOpt = document.getElementById('diffOptHard');
-    const normalRadio = document.getElementById('diffRadioNormal');
-    const hardRadio = document.getElementById('diffRadioHard');
-    if (normalOpt) normalOpt.classList.toggle('selected', mode === 'normal');
-    if (hardOpt) hardOpt.classList.toggle('selected', mode === 'hard');
-    if (normalRadio) normalRadio.textContent = mode === 'normal' ? '◉' : '○';
-    if (hardRadio) hardRadio.textContent = mode === 'hard' ? '◉' : '○';
-  },
-
-  // Confirm difficulty and start game
-  confirmDifficulty() {
-    const orgName = App._pendingOrgName || 'プレイヤー団体';
-    const difficultyMode = App._pendingDifficulty || 'normal';
+    const orgName = (input && input.value.trim()) || 'プレイヤー団体';
     Audio.play('award');
-    document.getElementById('difficultyScreen').style.display = 'none';
+    document.getElementById('orgSetupScreen').style.display = 'none';
+    // Initialize new game and go to draft
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, orgName, difficultyMode, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    G = { ...G, orgName, _draftPicks: [], _draftFocus: null, gameLog: [] };
     Audio.bgm.play('kaimaku');
     refreshAll();
-  },
-
-  // Back from difficulty to org setup
-  backFromDifficulty() {
-    Audio.play('click');
-    document.getElementById('difficultyScreen').style.display = 'none';
-    document.getElementById('orgSetupScreen').style.display = 'flex';
   },
 
   // Back to title from org setup
@@ -2646,7 +2609,8 @@ const App = {
     deferredRivalryPairs.forEach(idx => {
       const r = results[idx];
       const m = validMatches[idx];
-      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq);
+      const avgOV = (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2;
+      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV);
       if (resolution) {
         // 決着成立: matches リセット + lastResolvedWeek 記録
         const key = Engine.title.getRivalryKey(m.left, m.right);
@@ -2695,11 +2659,8 @@ const App = {
 
     // Heat
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
-    const avgOV = results.length > 0
-      ? Math.round(results.reduce((a, r) => a + (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2, 0) / results.length)
-      : 50;
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ, avgOV);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
@@ -3689,8 +3650,7 @@ const App = {
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
     if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
     if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
-    if (result.error === 'not_in_slump')        { showToast('スランプ・モチベーション低下中の選手にのみ使用できます'); return; }
-    if (result.error === 'cooldown') { showToast('クールダウン中です'); return; }
+    if (result.error === 'cooldown') { showToast('クールダウン中です（2週に1回まで）'); return; }
     if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return; }
 
     // state 更新
@@ -3702,9 +3662,6 @@ const App = {
     };
     Storage.autoSave();
 
-    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
-    const changes = result.changes || [];
-
     // フィードバック: 選手の顔+セリフ表示（個人向けのみ）
     const reactionKey = result.reactionKey || actionId;
     const reactFighterId = result.reactionFighterId;
@@ -3712,7 +3669,7 @@ const App = {
       const fighter = G.roster.find(f => f.id === reactFighterId);
       if (fighter) {
         const text = Engine.careActions.getReactionText(reactionKey, fighter);
-        _showCareReaction(fighter, text, changes, cfg.cost || 0, G.funds);
+        _showCareReaction(fighter, text);
       }
     } else {
       // 団体向け: 代表の1人を選んでセリフ表示
@@ -3720,14 +3677,14 @@ const App = {
       if (healthyRoster.length > 0) {
         const rep = healthyRoster[Math.floor(Math.random() * healthyRoster.length)];
         const text = Engine.careActions.getReactionText(reactionKey, rep);
-        _showCareReaction(rep, text, [], cfg.cost || 0, G.funds);
+        _showCareReaction(rep, text);
       }
     }
 
     // 料金差引トースト
+    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
     const label = cfg.label || actionId;
-    const costLabel = cfg.cost > 0 ? `（-${cfg.cost}万）` : '';
-    showToast(`${cfg.emoji || '💝'} ${label} 実行${costLabel}`);
+    showToast(`${cfg.emoji || '💝'} ${label} 実行（-${cfg.cost || 0}万）`);
     Audio.play('coin');
     renderManagePanel();
   },

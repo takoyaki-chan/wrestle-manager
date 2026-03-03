@@ -1,29 +1,12 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-04（ケアシステム強化 v1.0: 確認ステップ + before/after表示 + スランプ対応アクション）
+> 最終更新: 2026-03-03（引退勧告・引き留めシステム v1.1 + ロスター枠制限 v1.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
-
-**ケアシステム強化 v1.0（2026-03-04）。** 高コストアクションの確認ステップ・実行後ビフォーアフター表示・スランプ対応2アクションを追加。
-
-- **S1 確認ステップ**: cost≥100の個人向けアクション（trainer/media/special_treatment/refresh_leave）で選手ポートレート+残資金表示の確認画面を挟む。cost<100（bonus/costume/encourage）は即実行のまま
-- **S2 フィードバック強化**: Engine.careActions.execute戻り値にchangesフィールド追加（全アクション対応）。_showCareReaction拡張（changes/cost/remainingFunds引数）。cost≥100でビフォーアフター表示、cost≥200で表示5秒に延長
-- **S3 新アクション**: encourage（💬声かけ/無料/CD1週/trust+1〜+2,モチベ+0.5〜+0.7）、refresh_leave（🌴リフレッシュ休暇/100万/CD4週/trust+3,状態+15,モチベ+3.0）。condition=slump_or_motivation_loss（trust<40 or recoveryMomentum<0）
-- **UIセクション分離**: ケアモーダルに「💔 スランプ対応」セクション新設。対象者なし時はグレーアウト
-- 設計書: `specs/care-enhancement-spec-v1.0.md`
-- 変更: data.js, engine.js, ui-common.js, app.js, index.html
-
-**v0.9 patch（2026-03-03）。** 難易度選択・低OV帯MQガード・シーズン日付フォーマットの3点を実装。
-
-- **A. 難易度選択（補助金なしモード）**: NEW GAME → 団体設立 → 難易度選択の3段階フロー。`difficultyMode: 'normal'|'hard'` をGameStateに追加。hardモードでは補助金ゼロ・打ち切り通知スキップ・収支画面に「上級モード」バッジ表示。セーブデータ互換マイグレーション
-- **B. 低OV帯MQガード**: `Engine.util.getOVMQAdjust(avgOV)` 追加。avgOV<30で shift=-15/mult=0.3、<40で-10/0.5、<50で-5/0.7、50+は変更なし。Heat.calcUpdate・checkMainEventPenalty・updateLockerRoomMoraleの3箇所に適用。序盤選手がOV範囲内の好試合をしてもペナルティを受けない設計に
-- **C. シーズン日付フォーマット**: 「1年目 4月 第1週」→「1年目 🌸 春 第1週」。`getWeekInQuarter(w)`・`getQuarterLabel(w)` 追加。`formatDate` 変更のみで全呼び出し箇所に自動伝播
-- 変更: engine.js, app.js, ui-render.js, index.html
-- 設計書: `specs/v09-patch-spec.md`
 
 **引退勧告・引き留めシステム v1.1（2026-03-03）。** プレイヤーが選手に引退を勧告し、受諾した選手がラストラン状態に入る仕組み。拒否時は信頼低下+見返しモードMQボーナス。シーズン末の引退時に引き留め可（最大2回、wear+10代償）。コーチの観察眼ランクに応じた受諾率アドバイス。
 
@@ -99,7 +82,7 @@
 **因縁決着システム＋因縁MQボーナス半減（2026-03-03）。** 因縁に「決着」のゴールを追加し「発生→盛り上がり→決着→報酬」のサイクルを完成。2段階演出（試合前の宣戦布告→試合後の決着セリフ）でカタルシスを演出。因縁MQボーナスも約半分に引き下げ。
 
 - **因縁MQボーナス半減**: 因縁+5/宿敵+8/永遠のライバル+12 → +3/+4/+6に引き下げ
-- **決着条件**: 宿敵以上(matches≥4)で対戦しMQ≥50で決着成立。matchesゼロリセット+両選手pop+4+orgPop+1.5（永遠のライバル: pop+6, orgPop+2.5）
+- **決着条件**: 宿敵以上(matches>=4)で対戦しMQ>=動的閾値で決着成立。閾値=天井×0.80(下限30,上限50)。matchesゼロリセット+両選手pop+4+orgPop+1.5（永遠のライバル: pop+6, orgPop+2.5）。v2.1で固定50から動的化（低OVR帯の因縁破綻を修正）
 - **宣戦布告ポップアップ（試合前）**: 宿敵+ペアの試合開始前に対決前セリフをコール＆レスポンスで表示。通常5パターン+永遠のライバル専用3パターン。SE: Audio.play('war')
 - **決着ポップアップ（試合後）**: 勝者/敗者のセリフ＋ボーナス明示。永遠のライバル専用セリフ+赤枠+金枠演出。SE: Audio.play('award')
 - **クールダウン**: 決着後lastResolvedWeek記録、同ペアは4週間ファン期待カードに出さない
@@ -430,7 +413,6 @@
 | レンタルシステム | rental-system-spec.md |
 | ロスター枠制限 v1.0 | roster-cap-design-v1.0.md |
 | 引退勧告・引き留め v1.1 | retirement-advisory-spec-v1_1.md |
-| ケアシステム強化 v1.0 | care-enhancement-spec-v1.0.md |
 
 ### docs/archive/（旧版・完了済み）
 
