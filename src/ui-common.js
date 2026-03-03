@@ -666,50 +666,48 @@ function showCoachTooltip(coachId) {
 
   let html = '';
 
-  // Header
-  html += `<div class="coach-tooltip-header" style="background:${color}0a">
-    <div class="coach-tooltip-avatar" style="background:linear-gradient(135deg, ${color}33, ${color}11);border:2px solid ${color}88;display:flex;align-items:center;justify-content:center;overflow:hidden">
+  const upperUrl = getCoachUpperUrl(c.id);
+  const faceUrl = getCoachPortraitUrl(c.id);
+
+  // Header（左: 上半身画像、右: 情報）
+  html += `<div class="coach-tooltip-header" style="background:${color}0a">`;
+
+  // 左: 上半身画像 or アバター
+  if (upperUrl) {
+    html += `<div style="flex-shrink:0;position:relative">
+      <img class="coach-tooltip-upper-img" src="${upperUrl}" alt="${c.name}" onerror="this.onerror=null;${faceUrl ? `this.src='${faceUrl}';this.style.height='88px';this.style.width='88px';this.style.borderRadius='50%'` : `this.parentElement.innerHTML='<div style=\\'width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,${color}33,${color}11);border:2px solid ${color}88\\'>${c.emoji}</div>'`}">
+    </div>`;
+  } else {
+    html += `<div class="coach-tooltip-avatar" style="background:linear-gradient(135deg, ${color}33, ${color}11);border:2px solid ${color}88;overflow:hidden">
       ${coachPortraitImg(c, 84)}
-    </div>
-    <div style="flex:1;min-width:0">
-      <div style="font-weight:700;font-size:18px;margin-bottom:4px">${c.name}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    </div>`;
+  }
+
+  // 右: 名前・ステータス
+  html += `<div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="font-weight:700;font-size:20px;margin-bottom:6px">${c.name}</div>
+        <button onclick="closeCoachTooltip()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
         <span class="coach-trait">${c.trait}</span>
         ${isHired ? '<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">雇用中</span>' : ''}
       </div>
-    </div>
-    <button onclick="closeCoachTooltip()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;line-height:1">✕</button>
-  </div>`;
+      <div style="font-size:13px;color:var(--text);line-height:1.8">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <span style="color:var(--text-sub)">指導力 <strong style="color:${color}">${c.teaching}</strong></span>
+          <span style="color:var(--text-sub)">観察眼 <strong style="color:${color}">${c.observation}</strong></span>
+          <span style="color:var(--text-sub)">得意 <strong style="color:var(--text)">${styleName}</strong></span>
+        </div>
+        <div style="margin-top:4px;color:var(--text-sub);font-size:12px">成長倍率 <strong style="color:var(--gold)">×${teachingMult}</strong></div>
+      </div>
+    </div>`;
+
+  html += `</div>`;
 
   // Body
   html += '<div class="coach-tooltip-body">';
-
-  // Teaching power
-  html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">指導力</div>
-    <div style="font-size:13px;color:var(--text);line-height:1.6">
-      ランク <strong style="color:${color}">${c.teaching}</strong>（成長倍率 <strong style="color:var(--gold)">×${teachingMult}</strong>）<br>
-      <span style="font-size:11px;color:var(--text-sub)">担当選手の練習効率を高めます。スタイルが一致するとさらに+0.05ボーナス。</span>
-    </div>
-  </div>`;
-
-  // Observation
-  html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">観察眼</div>
-    <div style="font-size:13px;color:var(--text);line-height:1.6">
-      ランク <strong style="color:${color}">${c.observation}</strong>
-      <span style="font-size:11px;color:var(--text-dim)">（将来のコーチ報告の精度に影響）</span>
-    </div>
-  </div>`;
-
-  // Style
-  html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">得意スタイル</div>
-    <div style="font-size:13px;color:var(--text)">${styleName}
-      <span style="font-size:11px;color:var(--text-sub)">— 選手のスタイルと一致時、指導力+0.05</span>
-    </div>
-  </div>`;
 
   // Trait
   html += `<div class="coach-tooltip-section">

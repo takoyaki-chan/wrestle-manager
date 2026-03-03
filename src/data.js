@@ -401,6 +401,7 @@ const COACH_PORTRAIT = {
   31:'coach_kanzaki', 32:'coach_ganryu', 33:'coach_hazuki', 34:'coach_midou', 35:'coach_kisaragi'
 };
 function getCoachPortraitUrl(id) { return COACH_PORTRAIT[id] ? `../image/coach/face_${COACH_PORTRAIT[id]}.png` : ''; }
+function getCoachUpperUrl(id) { return COACH_PORTRAIT[id] ? `../image/coach/upper_${COACH_PORTRAIT[id]}.webp` : ''; }
 function coachPortraitImg(coach, size = 48) {
   const url = getCoachPortraitUrl(coach.id);
   if (url) {

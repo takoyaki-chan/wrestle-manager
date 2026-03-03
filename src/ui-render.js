@@ -2352,12 +2352,16 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=殿堂 2=団体比較
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
 let _dbFilterStyle = '';
 let _dbFilterName = '';
+let _dbCoachSortKey = 'grade';
+let _dbCoachSortAsc = false;
+let _dbCoachFilterGrade = '';
+let _dbCoachFilterName = '';
 
 function renderDatabase() {
   const el = document.getElementById('databaseContent');
@@ -2371,8 +2375,9 @@ function renderDatabase() {
 
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
-    { label: '🏅 殿堂', idx: 1 },
+    { label: '🏋️ 全コーチ', idx: 1 },
     { label: '⚔ 団体比較', idx: 2 },
+    { label: '🏅 殿堂', idx: 3 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
@@ -2383,8 +2388,9 @@ function renderDatabase() {
   html += `</div>`;
   html += `<div id="dbSubContent">`;
   if (_dbSubTab === 0) html += _renderDbFighters();
-  else if (_dbSubTab === 1) html += _renderDbHallOfFame();
-  else html += _renderDbOrgCompare();
+  else if (_dbSubTab === 1) html += _renderDbCoaches();
+  else if (_dbSubTab === 2) html += _renderDbOrgCompare();
+  else html += _renderDbHallOfFame();
   html += `</div>`;
 
   el.innerHTML = html;
@@ -2514,6 +2520,96 @@ function _renderDbFighters() {
       ${_statCell(f.pw, '#e74c3c')}${_statCell(f.sp, '#3498db')}${_statCell(f.te, '#2ecc71')}${_statCell(f.st, '#f39c12')}${_statCell(f.mn, '#9b59b6')}
       <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
       <td class="num">${Engine.util.dispPop(f.popularity || 0)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+// ── 全コーチ一覧 ────────────────────────────────────────────
+function _renderDbCoaches() {
+  const GRADE_COLORS = { C: '#888', B: '#2ecc71', A: 'var(--gold)' };
+  const GRADE_ORDER = { A: 0, B: 1, C: 2 };
+  const RANK_ORDER = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+
+  let coaches = [...ALL_COACHES];
+
+  // フィルタ
+  if (_dbCoachFilterGrade) {
+    coaches = coaches.filter(c => c.grade === _dbCoachFilterGrade);
+  }
+  if (_dbCoachFilterName) {
+    const q = _dbCoachFilterName.toLowerCase();
+    coaches = coaches.filter(c => c.name.toLowerCase().includes(q));
+  }
+
+  // ソート
+  coaches.sort((a, b) => {
+    let va, vb;
+    if (_dbCoachSortKey === 'grade') { va = GRADE_ORDER[a.grade] ?? 9; vb = GRADE_ORDER[b.grade] ?? 9; }
+    else if (_dbCoachSortKey === 'name') { va = a.name; vb = b.name; }
+    else if (_dbCoachSortKey === 'teaching') { va = RANK_ORDER[a.teaching] ?? 9; vb = RANK_ORDER[b.teaching] ?? 9; }
+    else if (_dbCoachSortKey === 'observation') { va = RANK_ORDER[a.observation] ?? 9; vb = RANK_ORDER[b.observation] ?? 9; }
+    else if (_dbCoachSortKey === 'style') { va = a.style || ''; vb = b.style || ''; }
+    else if (_dbCoachSortKey === 'salary') { va = a.salary || 0; vb = b.salary || 0; }
+    else if (_dbCoachSortKey === 'hireFee') { va = a.hireFee || 0; vb = b.hireFee || 0; }
+    else { va = GRADE_ORDER[a.grade] ?? 9; vb = GRADE_ORDER[b.grade] ?? 9; }
+    if (va < vb) return _dbCoachSortAsc ? -1 : 1;
+    if (va > vb) return _dbCoachSortAsc ? 1 : -1;
+    return 0;
+  });
+
+  // フィルタバー
+  let html = `<div class="db-filter-bar">
+    <select onchange="_dbCoachFilterGrade=this.value;renderDatabase()">
+      <option value="">グレード: 全て</option>
+      <option value="A" ${_dbCoachFilterGrade === 'A' ? 'selected' : ''}>A級</option>
+      <option value="B" ${_dbCoachFilterGrade === 'B' ? 'selected' : ''}>B級</option>
+      <option value="C" ${_dbCoachFilterGrade === 'C' ? 'selected' : ''}>C級</option>
+    </select>
+    <input type="text" placeholder="🔍 名前検索..." value="${_dbCoachFilterName}"
+      oninput="_dbCoachFilterName=this.value;renderDatabase()" style="max-width:160px">
+    <span class="db-count">全${ALL_COACHES.length}名 / 表示中: ${coaches.length}名</span>
+  </div>`;
+
+  // ソート用ヘッダー
+  const th = (key, label, w) => {
+    const active = _dbCoachSortKey === key;
+    const ind = active ? (_dbCoachSortAsc ? ' ▲' : ' ▼') : '';
+    return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbCoachSortKey='${key}';_dbCoachSortAsc=${active ? !_dbCoachSortAsc : false};renderDatabase()">${label}${ind}</th>`;
+  };
+
+  html += `<table class="db-table">
+    <thead><tr>
+      <th style="width:40px"></th>
+      ${th('name', '名前')}
+      ${th('grade', 'グレード', '80px')}
+      ${th('teaching', '指導力', '65px')}
+      ${th('observation', '観察眼', '65px')}
+      ${th('style', '得意', '90px')}
+      <th style="width:100px">特性</th>
+      ${th('salary', '給与', '70px')}
+      ${th('hireFee', '雇用費', '70px')}
+      <th style="width:55px">状態</th>
+    </tr></thead>
+    <tbody>`;
+
+  coaches.forEach(c => {
+    const gc = GRADE_COLORS[c.grade] || '#888';
+    const isHired = G.coaches.includes(c.id);
+    const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
+    html += `<tr class="clickable" onclick="showCoachTooltip(${c.id})">
+      <td>${coachPortraitImg(c, 36)}</td>
+      <td style="font-weight:600">${c.name}</td>
+      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
+      <td class="num" style="font-weight:700;color:${gc}">${c.teaching}</td>
+      <td class="num" style="color:${gc}">${c.observation}</td>
+      <td style="font-size:12px">${styleName}</td>
+      <td style="font-size:11px;color:var(--text-sub)">${c.trait}</td>
+      <td class="num" style="font-size:12px">${c.salary}万</td>
+      <td class="num" style="font-size:12px">${c.hireFee}万</td>
+      <td>${isHired ? '<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">雇用中</span>' : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
     </tr>`;
   });
 
