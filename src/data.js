@@ -1990,6 +1990,20 @@ const CARE_ACTIONS = {
     effects: { injury_reduction: true }, minOrgPop: 40,
     condition: 'injured',
   },
+  encourage: {
+    id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
+    desc: 'スランプ中の選手に声をかける（信頼度+1〜2、モチベ回復）',
+    effects: { trust: 1 }, minOrgPop: 0,
+    condition: 'slump_or_motivation_loss',
+    cooldown: 1,
+  },
+  refresh_leave: {
+    id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
+    desc: '休暇でリフレッシュ（状態+15、信頼度+3、モチベ大回復）',
+    effects: { recoveryMomentum: 3.0, condition: 15, trust: 3, skip_training: true }, minOrgPop: 0,
+    condition: 'slump_or_motivation_loss',
+    cooldown: 4,
+  },
   // 団体全体向けアクション
   party: {
     id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', cost: 100, category: 'team',
@@ -2035,6 +2049,28 @@ const CARE_REACTION_DIALOGUES = {
   special_treatment: {
     努力家:   ['ありがとうございます…早く試合に戻りたいんです'],
     default:  ['助かります…', 'ありがとうございます'],
+  },
+  encourage: {
+    努力家:   ['ありがとうございます…もう一度、頑張ってみます！', 'その言葉、すごく嬉しかったです。頑張ります！'],
+    負けず嫌い: ['こんなところで止まってられない！次は絶対やります！', 'ありがとうございます。負けてられません！'],
+    野心:     ['…わかりました。まだ諦めません', 'ここで終わるつもりはありません。やります'],
+    忠誠心:   ['…声をかけてもらえて、救われました', 'ありがとうございます…頑張ります'],
+    破天荒:   ['うわー、しんみりした！でも元気出た！やってやる！', 'よし！やってやる！'],
+    default:  ['ありがとうございます…', 'もう少し、頑張ってみます', 'その言葉、嬉しかったです'],
+  },
+  encourage_high_trust: {
+    努力家:   ['あなたに言われると、本当に力が出ます！もっと頑張れます！'],
+    負けず嫌い: ['あなたが信じてくれるなら、絶対やります！'],
+    野心:     ['あなたの期待には必ず応えます！'],
+    忠誠心:   ['ずっと見てくれてたんですね…絶対に報いてみせます'],
+    default:  ['ずっと見てくれてたんですね…頑張ります！', 'あなたに言われると、本当に力が出ます！'],
+  },
+  refresh_leave: {
+    努力家:   ['え…でも練習が…でも、ありがとうございます！', '少し休んで、また全力で頑張ります！'],
+    野心:     ['リフレッシュして、もっと上を目指します！', '充電してきます！絶対戻ってきます'],
+    忠誠心:   ['…そんなに気にかけてもらえるとは。ありがとうございます', 'ゆっくり休んで、また頑張ります'],
+    破天荒:   ['やった！バカンスだ！でも戻ったら本気出します！'],
+    default:  ['ありがとうございます！行ってきます！', 'ゆっくり休んで戻ってきます！', 'ありがとうございます…少し、休みます'],
   },
   party: {
     default:  ['お疲れ様でした〜！', 'みんなで楽しく過ごせました！'],

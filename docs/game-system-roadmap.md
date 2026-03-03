@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（v0.9 patch: 難易度選択 + 低OV帯MQガード + シーズン日付フォーマット）
+> 最終更新: 2026-03-04（ケアシステム強化 v1.0: 確認ステップ + before/after表示 + スランプ対応アクション）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**ケアシステム強化 v1.0（2026-03-04）。** 高コストアクションの確認ステップ・実行後ビフォーアフター表示・スランプ対応2アクションを追加。
+
+- **S1 確認ステップ**: cost≥100の個人向けアクション（trainer/media/special_treatment/refresh_leave）で選手ポートレート+残資金表示の確認画面を挟む。cost<100（bonus/costume/encourage）は即実行のまま
+- **S2 フィードバック強化**: Engine.careActions.execute戻り値にchangesフィールド追加（全アクション対応）。_showCareReaction拡張（changes/cost/remainingFunds引数）。cost≥100でビフォーアフター表示、cost≥200で表示5秒に延長
+- **S3 新アクション**: encourage（💬声かけ/無料/CD1週/trust+1〜+2,モチベ+0.5〜+0.7）、refresh_leave（🌴リフレッシュ休暇/100万/CD4週/trust+3,状態+15,モチベ+3.0）。condition=slump_or_motivation_loss（trust<40 or recoveryMomentum<0）
+- **UIセクション分離**: ケアモーダルに「💔 スランプ対応」セクション新設。対象者なし時はグレーアウト
+- 設計書: `specs/care-enhancement-spec-v1.0.md`
+- 変更: data.js, engine.js, ui-common.js, app.js, index.html
 
 **v0.9 patch（2026-03-03）。** 難易度選択・低OV帯MQガード・シーズン日付フォーマットの3点を実装。
 
@@ -421,6 +430,7 @@
 | レンタルシステム | rental-system-spec.md |
 | ロスター枠制限 v1.0 | roster-cap-design-v1.0.md |
 | 引退勧告・引き留め v1.1 | retirement-advisory-spec-v1_1.md |
+| ケアシステム強化 v1.0 | care-enhancement-spec-v1.0.md |
 
 ### docs/archive/（旧版・完了済み）
 

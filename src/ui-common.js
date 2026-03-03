@@ -3088,8 +3088,10 @@ function showCareActionModal(state, onConfirm) {
   const roster = (state.roster || []).filter(f => !f.isRental);
 
   function renderMain() {
-    const individualActions = Object.values(actions).filter(a => a.category === 'individual');
+    const individualActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition !== 'slump_or_motivation_loss');
+    const slumpActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition === 'slump_or_motivation_loss');
     const teamActions = Object.values(actions).filter(a => a.category === 'team');
+    const anyInSlump = roster.some(f => typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump(f));
 
     let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
 
@@ -3110,9 +3112,27 @@ function showCareActionModal(state, onConfirm) {
           <div class="care-action-name">${a.label}</div>
           <div class="care-action-desc">${a.desc}${extraInfo}</div>
         </div>
-        <span class="care-action-cost">${a.cost}万</span>
+        <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
       </div>`;
     });
+
+    // スランプケアセクション（対象者がいるときのみ強調表示）
+    if (slumpActions.length > 0) {
+      const sectionStyle = anyInSlump ? 'color:#e8439f' : '';
+      html += `<div class="care-section-label" style="margin-top:16px;${sectionStyle}">💔 スランプ対応${anyInSlump ? '' : ' <span style="font-size:10px;font-weight:400;opacity:0.5">（対象者なし）</span>'}</div>`;
+      slumpActions.forEach(a => {
+        const canAfford = funds >= a.cost;
+        const disabled = !canAfford || !anyInSlump ? 'disabled' : '';
+        html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
+          <span class="care-action-emoji">${a.emoji}</span>
+          <div class="care-action-info">
+            <div class="care-action-name">${a.label}</div>
+            <div class="care-action-desc">${a.desc}</div>
+          </div>
+          <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
+        </div>`;
+      });
+    }
 
     html += '<div class="care-section-label" style="margin-top:16px">🏟️ 団体向け</div>';
     teamActions.forEach(a => {
@@ -3164,11 +3184,39 @@ function showCareActionModal(state, onConfirm) {
     document.getElementById('careTeamBackBtn').addEventListener('click', renderMain);
   }
 
+  // S1.2: 個人向けアクション確認画面（cost >= 100 のみ）
+  function renderIndividualConfirm(actionId, cfg, fighterId) {
+    const fighter = roster.find(f => f.id === fighterId);
+    if (!fighter) { renderFighterSelect(actionId, cfg); return; }
+    const remainingFunds = funds - cfg.cost;
+    const fundsColor = remainingFunds < 200 ? '#e74c3c' : '#2ecc71';
+
+    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
+    html += `<div style="text-align:center;margin:12px 0">`;
+    html += portraitImg(fighter.id, 88, '');
+    html += `<div style="font-weight:700;margin-top:6px">${fighter.name}</div>`;
+    html += `</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
+    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
+    html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careIndivConfirmBtn">実行する</button>`;
+    html += '<button class="care-close-btn" id="careIndivBackBtn">← 戻る</button>';
+    box.innerHTML = html;
+
+    document.getElementById('careIndivConfirmBtn').addEventListener('click', () => {
+      if (onConfirm) onConfirm(actionId, fighterId);
+      overlay.classList.remove('active');
+    });
+    document.getElementById('careIndivBackBtn').addEventListener('click', () => renderFighterSelect(actionId, cfg));
+  }
+
   function renderFighterSelect(actionId, cfg) {
     const isInjuredOnly = cfg.condition === 'injured';
+    const isSlumpOnly = cfg.condition === 'slump_or_motivation_loss';
     const selectableRoster = isInjuredOnly
       ? roster.filter(f => f.injury)
-      : roster.filter(f => !f.injury);
+      : isSlumpOnly
+        ? roster.filter(f => !f.injury && (typeof Engine !== 'undefined' && Engine.careActions ? Engine.careActions.isInSlump(f) : true))
+        : roster.filter(f => !f.injury);
 
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
     html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${cfg.desc}</div>`;
@@ -3183,7 +3231,8 @@ function showCareActionModal(state, onConfirm) {
         html += `<option value="${f.id}">${f.name}${injuryLabel}</option>`;
       });
       html += '</select>';
-      html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careConfirmBtn">実行（${cfg.cost}万）</button>`;
+      const costLabel = cfg.cost > 0 ? `${cfg.cost}万` : '無料';
+      html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careConfirmBtn">実行（${costLabel}）</button>`;
     }
 
     html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
@@ -3194,8 +3243,13 @@ function showCareActionModal(state, onConfirm) {
       confirmBtn.addEventListener('click', () => {
         const sel = document.getElementById('careFighterSelect');
         const fighterId = sel ? parseInt(sel.value) : null;
-        if (onConfirm) onConfirm(actionId, fighterId);
-        overlay.classList.remove('active');
+        // S1.1: cost >= 100 は確認画面を挟む
+        if (cfg.cost >= 100) {
+          renderIndividualConfirm(actionId, cfg, fighterId);
+        } else {
+          if (onConfirm) onConfirm(actionId, fighterId);
+          overlay.classList.remove('active');
+        }
       });
     }
     document.getElementById('careBackBtn').addEventListener('click', renderMain);
@@ -3610,25 +3664,45 @@ function _buildB4Modal(event, state, roster) {
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.0: ケアリアクション ポップアップ — 選手顔+セリフをトーストで表示
 // ─────────────────────────────────────────────────────────────────────────────
-function _showCareReaction(fighter, text) {
+function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds = 0) {
   if (!fighter || !text) return;
   const el = document.getElementById('notifEventToast');
   if (!el) { showToast(text); return; }
 
   const face = portraitImg(fighter.id, 120, 'notif-face');
   el.className = 'notif-event-toast care-reaction-toast';
+
+  // S2.1: cost >= 100 のときのみ before/after changes を表示
+  let changesHtml = '';
+  if (changes && changes.length > 0 && cost >= 100) {
+    changesHtml = '<div class="care-r-changes">';
+    changes.forEach(c => {
+      if (c.text !== undefined) {
+        changesHtml += `<span class="care-r-change">${c.label}: ${c.text}</span>`;
+      } else {
+        const diff = c.after - c.before;
+        const sign = diff >= 0 ? '+' : '';
+        changesHtml += `<span class="care-r-change">${c.label}: ${c.before}→${c.after} (${sign}${diff})</span>`;
+      }
+    });
+    changesHtml += '</div>';
+  }
+
   el.innerHTML = `
     <div class="notif-inner">
       ${face}
       <div class="care-r-name">${fighter.name}</div>
       <div class="care-r-speech">「${text}」</div>
+      ${changesHtml}
     </div>
   `;
   el.classList.add('show');
   Audio.play('notify');
 
+  // S2.2: cost >= 200 は長めに表示
+  const duration = cost >= 200 ? 5000 : 3500;
   clearTimeout(window._notifTimer);
-  window._notifTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  window._notifTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
 function showNotifEventToast(event) {

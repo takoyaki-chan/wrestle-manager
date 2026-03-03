@@ -3689,7 +3689,8 @@ const App = {
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
     if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
     if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
-    if (result.error === 'cooldown') { showToast('クールダウン中です（2週に1回まで）'); return; }
+    if (result.error === 'not_in_slump')        { showToast('スランプ・モチベーション低下中の選手にのみ使用できます'); return; }
+    if (result.error === 'cooldown') { showToast('クールダウン中です'); return; }
     if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return; }
 
     // state 更新
@@ -3701,6 +3702,9 @@ const App = {
     };
     Storage.autoSave();
 
+    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
+    const changes = result.changes || [];
+
     // フィードバック: 選手の顔+セリフ表示（個人向けのみ）
     const reactionKey = result.reactionKey || actionId;
     const reactFighterId = result.reactionFighterId;
@@ -3708,7 +3712,7 @@ const App = {
       const fighter = G.roster.find(f => f.id === reactFighterId);
       if (fighter) {
         const text = Engine.careActions.getReactionText(reactionKey, fighter);
-        _showCareReaction(fighter, text);
+        _showCareReaction(fighter, text, changes, cfg.cost || 0, G.funds);
       }
     } else {
       // 団体向け: 代表の1人を選んでセリフ表示
@@ -3716,14 +3720,14 @@ const App = {
       if (healthyRoster.length > 0) {
         const rep = healthyRoster[Math.floor(Math.random() * healthyRoster.length)];
         const text = Engine.careActions.getReactionText(reactionKey, rep);
-        _showCareReaction(rep, text);
+        _showCareReaction(rep, text, [], cfg.cost || 0, G.funds);
       }
     }
 
     // 料金差引トースト
-    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
     const label = cfg.label || actionId;
-    showToast(`${cfg.emoji || '💝'} ${label} 実行（-${cfg.cost || 0}万）`);
+    const costLabel = cfg.cost > 0 ? `（-${cfg.cost}万）` : '';
+    showToast(`${cfg.emoji || '💝'} ${label} 実行${costLabel}`);
     Audio.play('coin');
     renderManagePanel();
   },
