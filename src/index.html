@@ -319,6 +319,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .org-setup-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;
   background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
 .org-setup-desc{font-size:14px;color:var(--text-sub);line-height:1.8;margin-bottom:32px}
+.difficulty-option{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;cursor:pointer;transition:border-color 0.2s,background 0.2s;background:rgba(255,255,255,0.03)}
+.difficulty-option:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.25)}
+.difficulty-option.selected{border-color:var(--gold);background:rgba(212,168,67,0.08)}
+.difficulty-option-radio{font-size:20px;color:var(--gold);min-width:20px;text-align:center}
 .org-setup-input-wrap{margin-bottom:32px}
 .org-setup-label{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif;text-transform:uppercase}
 .org-setup-input{width:100%;padding:14px 20px;font-size:20px;font-weight:700;text-align:center;letter-spacing:2px;
@@ -1345,6 +1349,43 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     </button>
     <div style="margin-top:16px">
       <button class="title-btn" onclick="App.backToTitle()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(255,255,255,0.15);color:var(--text-sub)">
+        ← 戻る
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Difficulty Selection Screen (difficulty-mode v1.0) -->
+<div class="org-setup" id="difficultyScreen" style="display:none">
+  <div class="org-setup-bg"></div>
+  <div class="org-setup-content">
+    <div class="org-setup-icon">⚔️</div>
+    <div class="org-setup-title">難易度を選択</div>
+    <div class="org-setup-desc">
+      プレイスタイルを選んでください。<br>
+      <span style="color:var(--text-sub);font-size:13px">開始後は変更できません</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin:24px 0;width:100%;max-width:380px">
+      <label class="difficulty-option" id="diffOptNormal" onclick="App.selectDifficulty('normal')">
+        <div class="difficulty-option-radio" id="diffRadioNormal">◉</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;color:var(--text)">通常モード</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">地域振興助成金あり（orgPop 40まで補助金支給）</div>
+        </div>
+      </label>
+      <label class="difficulty-option" id="diffOptHard" onclick="App.selectDifficulty('hard')">
+        <div class="difficulty-option-radio" id="diffRadioHard">○</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700;color:var(--text)">上級モード <span style="font-size:12px;color:var(--red);font-weight:400">HARD</span></div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">補助金なし — すべて自力で稼ぐ</div>
+        </div>
+      </label>
+    </div>
+    <button class="title-btn primary" onclick="App.confirmDifficulty()" style="font-size:20px;padding:12px 48px">
+      ゲーム開始
+    </button>
+    <div style="margin-top:16px">
+      <button class="title-btn" onclick="App.backFromDifficulty()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(255,255,255,0.15);color:var(--text-sub)">
         ← 戻る
       </button>
     </div>

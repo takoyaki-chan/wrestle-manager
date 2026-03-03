@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（引退勧告・引き留めシステム v1.1 + ロスター枠制限 v1.0）
+> 最終更新: 2026-03-03（v0.9 patch: 難易度選択 + 低OV帯MQガード + シーズン日付フォーマット）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**v0.9 patch（2026-03-03）。** 難易度選択・低OV帯MQガード・シーズン日付フォーマットの3点を実装。
+
+- **A. 難易度選択（補助金なしモード）**: NEW GAME → 団体設立 → 難易度選択の3段階フロー。`difficultyMode: 'normal'|'hard'` をGameStateに追加。hardモードでは補助金ゼロ・打ち切り通知スキップ・収支画面に「上級モード」バッジ表示。セーブデータ互換マイグレーション
+- **B. 低OV帯MQガード**: `Engine.util.getOVMQAdjust(avgOV)` 追加。avgOV<30で shift=-15/mult=0.3、<40で-10/0.5、<50で-5/0.7、50+は変更なし。Heat.calcUpdate・checkMainEventPenalty・updateLockerRoomMoraleの3箇所に適用。序盤選手がOV範囲内の好試合をしてもペナルティを受けない設計に
+- **C. シーズン日付フォーマット**: 「1年目 4月 第1週」→「1年目 🌸 春 第1週」。`getWeekInQuarter(w)`・`getQuarterLabel(w)` 追加。`formatDate` 変更のみで全呼び出し箇所に自動伝播
+- 変更: engine.js, app.js, ui-render.js, index.html
+- 設計書: `specs/v09-patch-spec.md`
 
 **引退勧告・引き留めシステム v1.1（2026-03-03）。** プレイヤーが選手に引退を勧告し、受諾した選手がラストラン状態に入る仕組み。拒否時は信頼低下+見返しモードMQボーナス。シーズン末の引退時に引き留め可（最大2回、wear+10代償）。コーチの観察眼ランクに応じた受諾率アドバイス。
 

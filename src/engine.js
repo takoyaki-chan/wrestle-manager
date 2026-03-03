@@ -72,7 +72,9 @@ const Engine = {
     getQuarter(w) { return Math.ceil(w / 12); },
     getMonth(w) { return ((Math.ceil(w / 4) - 1 + 3) % 12) + 1; },
     getWeekInMonth(w) { return ((w - 1) % 4) + 1; },
-    formatDate(s, w) { return `${s}年目 ${this.getMonth(w)}月 第${this.getWeekInMonth(w)}週`; },
+    getWeekInQuarter(w) { return ((w - 1) % 12) + 1; },
+    getQuarterLabel(w) { return QUARTER_LABELS[this.getQuarter(w)] || '🌸 春'; },
+    formatDate(s, w) { return `${s}年目 ${this.getQuarterLabel(w)} 第${this.getWeekInQuarter(w)}週`; },
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },
@@ -145,7 +147,14 @@ const Engine = {
       const current = stats.reduce((s, k) => s + char[k], 0);
       const cap = stats.reduce((s, k) => s + (char.trainCap ? char.trainCap[k] : (char.pot ? char.pot[k] : char[k])), 0);
       return cap > 0 ? Math.round(current / cap * 100) : 100;
-    }
+    },
+    // v0.9 低OV帯MQガード: 低OVほどMQ閾値が下がりペナルティが軽くなる
+    getOVMQAdjust(avgOV) {
+      if (avgOV < 30) return { shift: -15, mult: 0.3 };
+      if (avgOV < 40) return { shift: -10, mult: 0.5 };
+      if (avgOV < 50) return { shift: -5,  mult: 0.7 };
+      return { shift: 0, mult: 1.0 };
+    },
   },
 
   // ── Battle Engine (DOM-free) ──────────────────────────
@@ -490,11 +499,14 @@ const Engine = {
       return { ...fighter, preInjuryPop: null };
     },
     // §B-4: Main event poor match penalty
-    checkMainEventPenalty(mq) {
-      if (mq < 25) return -5;
-      if (mq < 35) return -3;
-      if (mq < 45) return -1;
-      return 0;
+    checkMainEventPenalty(mq, avgOV) {
+      // v0.9 低OV帯MQガード: avgOVに応じてペナルティ閾値をシフト・軽減
+      const adj = Engine.util.getOVMQAdjust(avgOV || 50);
+      let penalty = 0;
+      if      (mq < (25 + adj.shift)) penalty = -5;
+      else if (mq < (35 + adj.shift)) penalty = -3;
+      else if (mq < (45 + adj.shift)) penalty = -1;
+      return Math.round(penalty * adj.mult);
     },
     // §B-5: Transfer popularity reset (×0.75)
     applyTransferReset(fighter) {
@@ -534,7 +546,9 @@ const Engine = {
       return 0;
     },
     // v1.7: 育成補助金（地域振興助成金）— orgPop 40未満の小団体を支援
-    getSubsidy(orgPop) {
+    // difficulty-mode v1.0: hard モードでは補助金なし
+    getSubsidy(orgPop, difficultyMode) {
+      if (difficultyMode === 'hard') return 0;
       for (const s of SUBSIDY_TABLE) if (orgPop <= s.max) return s.val;
       return 0;
     },
@@ -632,8 +646,14 @@ const Engine = {
       return HEAT_LEVELS.find(h => G.heatScore >= h.min && G.heatScore <= h.max) || HEAT_LEVELS[2];
     },
     getMult(G) { return Engine.heat.getLevel(G).mult; },
-    calcUpdate(G, avgMQ) {
-      let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
+    calcUpdate(G, avgMQ, avgOV) {
+      // v0.9 低OV帯MQガード: avgOVに応じてHeat閾値をシフト
+      const adj = Engine.util.getOVMQAdjust(avgOV || 50);
+      let delta = avgMQ >= (75 + adj.shift) ? 2
+                : avgMQ >= (60 + adj.shift) ? 1
+                : avgMQ >= (40 + adj.shift) ? 0
+                : avgMQ >= (25 + adj.shift) ? -1 : -2;
+      if (delta < 0) delta *= adj.mult;
       // v1.5: 施策E — Heat上限帯の減衰（HOT以上では上昇量半減）
       if (delta > 0 && G.heatScore >= 6) delta *= 0.5;
       if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
@@ -2835,7 +2855,7 @@ const Engine = {
       if (broadcast > 0) details.push({ label: '放映権収入', val: broadcast, type: 'income' });
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給）
-      const subsidy = Engine.economy.getSubsidy(G.orgPop);
+      const subsidy = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
       totalIncome += subsidy;
       if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
 
@@ -3264,8 +3284,11 @@ const Engine = {
 
     // Heat (immutable)
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const avgOV = results.length > 0
+      ? Math.round(results.reduce((a, r) => a + (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2, 0) / results.length)
+      : 50;
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ, avgOV);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
@@ -3382,8 +3405,8 @@ const Engine = {
     const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles);
     s = { ...s, roster: trustResult.roster, lockerRoomMorale: Engine.trust.updateLockerRoomMorale(s, trustResult) };
 
-    // v1.7: 育成補助金打ち切り通知
-    if (state.orgPop < 40 && popResult.orgPop >= 40) {
+    // v1.7: 育成補助金打ち切り通知（hard モードでは補助金がないためスキップ）
+    if (G.difficultyMode !== 'hard' && state.orgPop < 40 && popResult.orgPop >= 40) {
       events.push('🏛️ 団体人気が40に到達！ 地域振興助成金の支給が終了しました。自立経営の始まりです！');
     }
 
@@ -3428,7 +3451,8 @@ const Engine = {
 
       // v1.0b §B-4: Main event poor match penalty (both fighters)
       if (isMainEvent) {
-        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
+        const matchAvgOV = Math.round((Engine.util.ov(result.left) + Engine.util.ov(result.right)) / 2);
+        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq, matchAvgOV);
         if (mainPenalty < 0) {
           popDelta += mainPenalty; // penalties are not diminished
           popEvents.push(`📉 メインイベントの低MQ(${result.mq})で${c.name}の人気${mainPenalty}`);
@@ -5124,6 +5148,8 @@ const Engine = {
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
       endingClearedSeason: null,
+      // difficulty-mode v1.0
+      difficultyMode: 'normal', // 'normal' | 'hard'
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -5939,11 +5965,16 @@ Engine.trust = {
     const current = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let delta = 0;
 
-    // 興行成功ボーナス（avgMQ 65+ で+3）
+    // 興行成功ボーナス（avgMQ閾値をロースター平均OVで調整）
     const results = state.lastShowResults || [];
     if (results.length > 0) {
       const avgMQ = results.reduce((s, r) => s + r.mq, 0) / results.length;
-      if (avgMQ >= 65) delta += 3;
+      const roster = state.roster || [];
+      const rosterAvgOV = roster.length > 0
+        ? roster.reduce((s, c) => s + Engine.util.ov(c), 0) / roster.length
+        : 50;
+      const adj = Engine.util.getOVMQAdjust(rosterAvgOV);
+      if (avgMQ >= (65 + adj.shift)) delta += 3;
     }
 
     // trust < 25 の選手が多いほど空気が悪化（-2/名）

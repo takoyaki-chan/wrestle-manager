@@ -904,7 +904,7 @@ const Survival = {
 
     const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
     const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
-    const subsidy = Engine.economy.getSubsidy(G.orgPop);
+    const subsidy = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
     const totalBaseIncome = sponsor + broadcast + subsidy;
 
     // Estimate average show income per week (shows happen ~every 4 weeks)
@@ -1536,6 +1536,9 @@ const Storage = {
       }
       if (G.warWon === undefined) G = { ...G, warWon: false };
 
+      // difficulty-mode v1.0: 既存セーブに difficultyMode がない場合は 'normal' として扱う
+      if (G.difficultyMode === undefined) G = { ...G, difficultyMode: 'normal' };
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -1705,18 +1708,52 @@ const App = {
     Audio.bgm.play('management');
   },
 
-  // Confirm org setup and proceed to draft
+  // Confirm org setup → proceed to difficulty selection
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
-    const orgName = (input && input.value.trim()) || 'プレイヤー団体';
-    Audio.play('award');
+    App._pendingOrgName = (input && input.value.trim()) || 'プレイヤー団体';
+    App._pendingDifficulty = 'normal';
+    Audio.play('select');
     document.getElementById('orgSetupScreen').style.display = 'none';
-    // Initialize new game and go to draft
+    document.getElementById('difficultyScreen').style.display = 'flex';
+    App._updateDifficultyUI('normal');
+  },
+
+  // Select difficulty (radio toggle)
+  selectDifficulty(mode) {
+    App._pendingDifficulty = mode;
+    App._updateDifficultyUI(mode);
+  },
+
+  _updateDifficultyUI(mode) {
+    const normalOpt = document.getElementById('diffOptNormal');
+    const hardOpt = document.getElementById('diffOptHard');
+    const normalRadio = document.getElementById('diffRadioNormal');
+    const hardRadio = document.getElementById('diffRadioHard');
+    if (normalOpt) normalOpt.classList.toggle('selected', mode === 'normal');
+    if (hardOpt) hardOpt.classList.toggle('selected', mode === 'hard');
+    if (normalRadio) normalRadio.textContent = mode === 'normal' ? '◉' : '○';
+    if (hardRadio) hardRadio.textContent = mode === 'hard' ? '◉' : '○';
+  },
+
+  // Confirm difficulty and start game
+  confirmDifficulty() {
+    const orgName = App._pendingOrgName || 'プレイヤー団体';
+    const difficultyMode = App._pendingDifficulty || 'normal';
+    Audio.play('award');
+    document.getElementById('difficultyScreen').style.display = 'none';
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, orgName, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    G = { ...G, orgName, difficultyMode, _draftPicks: [], _draftFocus: null, gameLog: [] };
     Audio.bgm.play('kaimaku');
     refreshAll();
+  },
+
+  // Back from difficulty to org setup
+  backFromDifficulty() {
+    Audio.play('click');
+    document.getElementById('difficultyScreen').style.display = 'none';
+    document.getElementById('orgSetupScreen').style.display = 'flex';
   },
 
   // Back to title from org setup
@@ -2658,8 +2695,11 @@ const App = {
 
     // Heat
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const avgOV = results.length > 0
+      ? Math.round(results.reduce((a, r) => a + (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2, 0) / results.length)
+      : 50;
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ, avgOV);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 

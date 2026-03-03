@@ -27,8 +27,8 @@ function refreshTopBar() {
   const subsidyEl = document.getElementById('dispSubsidy');
   if (subsidyEl) {
     const popInt = Engine.util.dispOrgPop(G.orgPop);
-    if (popInt < 40) {
-      const subsidyAmt = Engine.economy.getSubsidy(G.orgPop);
+    if (popInt < 40 && G.difficultyMode !== 'hard') {
+      const subsidyAmt = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
       const remaining = 40 - popInt;
       const tipHtml = `<strong style="color:var(--gold)">🏛️ 地域振興助成金</strong><br>
 現在の支給額: <strong style="color:#2ecc71">+${subsidyAmt}万/週</strong>（自動）<br>
@@ -1595,7 +1595,10 @@ function renderShowPrep() {
 
 function renderFinance() {
   const el = document.getElementById('financeContent');
-  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+  const hardBadge = G.difficultyMode === 'hard'
+    ? `<span style="display:inline-block;font-size:11px;font-weight:700;color:#e74c3c;border:1px solid #e74c3c;border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:middle">上級モード</span>`
+    : '';
+  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万${hardBadge}</div>`;
 
   // Funds history chart (improved with Y-axis labels and grid lines)
   const fh = G.fundsHistory || [];
