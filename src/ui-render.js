@@ -2658,7 +2658,7 @@ function _renderDbHallOfFame() {
 let _dbCompareTarget = 'org_s';
 
 function _renderDbOrgCompare() {
-  const AXES = ['TOP5実力', '層の厚さ', '将来性', '団体人気', 'TOP5人気'];
+  const AXES = ['TOP5実力', '層の厚さ', '団体人気', 'TOP5人気'];
   const playerScores = Engine.database.getOrgCompareScores(G, 'player');
   const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
 
@@ -2667,7 +2667,7 @@ function _renderDbOrgCompare() {
   const targetName = targetOrg ? (targetOrg.name || targetOrg.id) : _dbCompareTarget;
   const playerName = G.orgName || 'プレイヤー団体';
 
-  const scoreKeys = ['ace', 'depth', 'potential', 'popularity', 'starPower'];
+  const scoreKeys = ['ace', 'depth', 'popularity', 'starPower'];
 
   let html = `<div class="db-compare-wrap">
     <div class="db-compare-select">
@@ -2713,8 +2713,8 @@ function _drawOrgCompareChart() {
   const cvs = document.getElementById('dbCompareChart');
   if (!cvs) return;
 
-  const AXES = ['TOP5実力', '層の厚さ', '将来性', '団体人気', 'TOP5人気'];
-  const scoreKeys = ['ace', 'depth', 'potential', 'popularity', 'starPower'];
+  const AXES = ['TOP5実力', '層の厚さ', '団体人気', 'TOP5人気'];
+  const scoreKeys = ['ace', 'depth', 'popularity', 'starPower'];
   const playerScores = Engine.database.getOrgCompareScores(G, 'player');
   const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
   const targetOrg = RIVAL_ORGS.find(o => o.id === _dbCompareTarget);

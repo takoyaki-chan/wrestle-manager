@@ -6788,17 +6788,6 @@ Engine.database = {
       ? Math.min(100, Math.round(roster.reduce((s, f) => s + Engine.util.ov(f), 0) / roster.length / 75 * 100))
       : 0;
 
-    // 将来性: 25歳以下のpotTotal平均 / 400 * 100
-    const young = roster.filter(f => (f.age || 99) <= 25);
-    const potential = young.length > 0
-      ? Math.min(100, Math.round(
-          young.reduce((s, f) => {
-            const pt = f.pot ? (f.pot.pw + f.pot.sp + f.pot.te + f.pot.st + f.pot.mn) : 0;
-            return s + pt;
-          }, 0) / young.length / 400 * 100
-        ))
-      : 0;
-
     // 団体人気: orgPop / 100 * 100（最大100）
     const popularity = Math.min(100, Math.round(Engine.util.dispOrgPop(orgPop)));
 
@@ -6806,6 +6795,6 @@ Engine.database = {
     const top5Pop = Engine.ranking._topNAvg(roster, f => f.popularity || 0, 5);
     const starPower = Math.min(100, Math.round(top5Pop / 80 * 100));
 
-    return { ace, depth, potential, popularity, starPower };
+    return { ace, depth, popularity, starPower };
   },
 };
