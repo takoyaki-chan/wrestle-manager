@@ -1,12 +1,25 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-03（ランキング・ロスター・団体間対戦 リデザイン Phase 1）
+> 最終更新: 2026-03-03（MQスコア減点制リデザイン v2.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**MQスコア減点制リデザイン v2.0（2026-03-03）。** 加点制を廃止し「天井−減点」方式に全面移行。OVが試合品質の上限を決め、ドラマ・ペース・決着不足で減点される設計。
+
+- **天井（OVシーリング）**: avgOV≤50: `20+OV×0.60`（OV40→44）、≤80: `50+(OV-50)×1.10`（OV70→72）、超: `83+(OV-80)×0.85`（OV90→92）。clamp(15,100)
+- **ドラマ減点**: 基本-30。KO×8（上限2回）・カウンター×2.5（上限3）・逆転×1.5（上限3）・大技×0.4（上限6）で回復
+- **ペーシング減点**: 7-14ターン=0（理想）、5-16=3（許容）、<5=12（瞬殺）、17+=6（だらだら）
+- **決着減点**: フォール/ギブアップはフェーズ連動(Climax:0/End:1/他:3)、ピン=0、丸め込み=1、TKO=2、タイムアウト=10
+- **`finishPhase`フィールド追加**: simulateMatch戻り値に決着フェーズ名(`'Opening'|'Mid'|'End'|'Climax'|'Timeout'`)を追加
+- **`mqDetail`フィールド追加**: デバッグ用内訳 `{ ceiling, dramaPenalty, pacingPenalty, finishPenalty }` を戻り値に追加
+- **外部ボーナス・Pass 2は変更なし**: キャップ+15、因縁/タイトル/コーチ等のボーナスは維持
+- **シミュレーション結果**: OV40同士avg 43→23、OV80同士avg 57→62（高OVは正当に評価される設計）
+- 変更: engine.js のみ（L247, L317-356の各決着箇所, L374-391 MQ計算ブロック, return文）
+- 設計書: `specs/mq-deduction-redesign-v2.0.md`
 
 **ランキング計算刷新 Phase 1（2026-03-03）。** ティア固定ハンデ・頭数依存ランキングを廃止し、TOP5ベースの基礎力＋対戦ポイントの新計算式に移行。
 
@@ -325,6 +338,7 @@
 - **逸材特別交渉枠（v1.9）** — orgPop≥25到達時にG.eliteTicket=true（1回限り）。canNegotiate(orgPop, fighter, context, state)の第3-4引数で判定。context='fa'かつeliteTicket=trueかつtierId='elite'でreqPop無視。superElite不可、スカウト不可。契約成功時にeliteTicket=false,eliteTicketUsed=true。isEliteTicketRequired()ヘルパーでUI表示判定。_pendingEliteTicket transientフィールドでgoldポップアップ通知
 - **選手成長リバランス v1.0** — GROWTH_SEASON_BASE=8.0の「シーズン予算」モデル。calcGrowthをshare(残距離比例)ベースに全面書換え。×0.4練習補正撤廃。aiSeasonGrowthも同モデルに統一。ageMultiplier新カーブ（20-22歳ピーク1.3、33歳以上0）。AI離脱イベント（S:10%/A:12%/B:15%で成長50%カット）。convergenceFactor+STYLE_GROWTHは非参照化（残置）。practiceShare=0.6（練習:試合=6:4）。設計書: docs/growth-rebalance-design-v1.0.md
 - **ランキング計算（v2: ranking-roster-redesign Phase 1）** — 旧: `championScore + calcStarPower(全員合算) + calcTotalPop(全員合算) + summitBonus`。新: `TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 + battlePoints[orgId]`。TOP5は各指標で独立に上位5名を選出し平均（5名未満はある分だけ平均）。battlePointsはシーズンリセット。対抗戦±12pt、頂上決戦±10ptのゼロサム移動。BATTLE_POINT_CFG定数で管理。団体比較レーダーも連動（TOP5実力/TOP5人気）。設計書: docs/ranking-roster-redesign-v1.0.md
+- **MQスコア減点制（v2.0）** — 旧加点制(Base+Drama+Pacing+Finish)を廃止。新: `天井(OVシーリング) − ドラマ減点 − ペース減点 − 決着減点`。天井=OV依存曲線(15-100)。ドラマ減点=基本30からKO/カウンター/逆転/大技で回復。ペース減点=7-14ターン理想帯(0)、<5ターン=-12。決着減点=フォールはClimaxで0〜3、ピン=0、タイムアウト=-10。特性ボーナス（名勝負製造機/引き出し上手）は天井超え加点として維持。外部ボーナス(Pass2, cap+15)は変更なし。simulateMatch戻り値に `finishPhase`・`mqDetail` を追加。設計書: specs/mq-deduction-redesign-v2.0.md
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---
@@ -364,7 +378,8 @@
 | コンディション/怪我 | condition-system-spec-v1.0.md |
 | 週間ゲームループ | weekly-gameloop-spec-v1_0.md |
 | 育成/トレーニング v1.2 | training-system-spec-v1_2.md |
-| MQスコア＋人気 | mq-popularity-spec-v1.0.md |
+| MQスコア＋人気（旧加点制） | mq-popularity-spec-v1.0.md |
+| MQスコア減点制 v2.0 | mq-deduction-redesign-v2.0.md |
 | 団体ランキング/勝利条件 | org-ranking-spec-v1_0.md |
 | タイトル/ベルト | title-system-spec-v1.0.md |
 | スカウト | scout-system-spec-v1.0.md |

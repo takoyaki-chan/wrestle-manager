@@ -244,7 +244,7 @@ const Engine = {
       };
       R.mhp = R.hp;
 
-      let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null;
+      let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
       // 威圧感: 序盤モメンタム優位（左+/右-）
       if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 5;
       if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 5;
@@ -317,6 +317,7 @@ const Engine = {
               if (!escaped) {
                 winner = atkSide;
                 finType = finLabel;
+                finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、${mv.n}で${finLabel}勝ち！`);
               }
@@ -326,6 +327,7 @@ const Engine = {
               if (Engine.rng.float(rng) * 100 < successRate) {
                 winner = atkSide;
                 finType = 'ピン';
+                finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
               } else {
@@ -341,6 +343,7 @@ const Engine = {
               if (Engine.rng.float(rng) * 100 < rSuccess) {
                 winner = atkSide;
                 finType = '丸め込み';
+                finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
               }
@@ -350,6 +353,7 @@ const Engine = {
               if (Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
                 winner = atkSide;
                 finType = 'TKO';
+                finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ レフェリーストップ！ ${atk.name}のTKO勝利！`);
               }
@@ -368,24 +372,54 @@ const Engine = {
           winner = L.hp > R.hp ? 'left' : 'right';
           finType = 'HP判定';
         }
+        finishPhase = 'Timeout';
         log.push(`⏰ 時間切れ！ ${winner === 'draw' ? 'ドロー' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
       }
 
-      // Calculate MQ
+      // Calculate MQ (v2.0 deduction system — §1〜§5 of mq-deduction-redesign-v2.0.md)
       const matchTurns = turn - 1;
       const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
-      let mq = 0;
-      mq += Math.min(30, avgOV * 0.35);
-      const lengthScore = matchTurns <= 8 ? matchTurns * 1.5 : matchTurns <= 15 ? 12 + (matchTurns - 8) * 1.0 :
-        matchTurns <= 30 ? 19 + Math.min(1, (matchTurns - 15) * 0.07) : 20 - (matchTurns - 30) * 0.3;
-      mq += Math.max(0, Math.min(20, lengthScore));
-      mq += Math.min(15, totalCounters * 3);
-      mq += Math.min(20, totalKickouts * 8);
-      mq += Math.min(10, leadChanges * 2.5);
-      mq += Math.min(5, bigMoves * 0.8);
-      // 名勝負製造機: MQに+5ボーナス
+
+      // §1 天井（OVシーリング）
+      let ceiling;
+      if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
+      else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
+      else ceiling = 83 + (avgOV - 80) * 0.85;
+      ceiling = Math.round(Engine.util.clamp(ceiling, 15, 100));
+
+      // §2 ドラマ減点（見せ場不足がペナルティ）
+      let dramaPenalty = 30;
+      dramaPenalty -= Math.min(totalKickouts, 2) * 8;
+      dramaPenalty -= Math.min(totalCounters, 3) * 2.5;
+      dramaPenalty -= Math.min(leadChanges, 3) * 1.5;
+      dramaPenalty -= Math.min(bigMoves, 6) * 0.4;
+      dramaPenalty = Math.max(0, Math.round(dramaPenalty));
+
+      // §3 ペーシング減点
+      let pacingPenalty = 0;
+      if (matchTurns >= 7 && matchTurns <= 14) pacingPenalty = 0;
+      else if (matchTurns >= 5 && matchTurns <= 16) pacingPenalty = 3;
+      else if (matchTurns < 5) pacingPenalty = 12;
+      else pacingPenalty = 6;
+
+      // §4 決着減点
+      let finishPenalty = 0;
+      if (finType === 'フォール' || finType === 'ギブアップ') {
+        finishPenalty = (finishPhase === 'Climax') ? 0 : (finishPhase === 'End') ? 1 : 3;
+      } else if (finType === 'ピン') {
+        finishPenalty = 0;
+      } else if (finType === '丸め込み') {
+        finishPenalty = 1;
+      } else if (finType === 'TKO') {
+        finishPenalty = 2;
+      } else {
+        finishPenalty = 10; // 時間切れ / HP判定
+      }
+
+      // §5 最終MQ
+      let mq = ceiling - dramaPenalty - pacingPenalty - finishPenalty;
+      // 特性ボーナス（天井を超える加点として機能）
       if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 5;
-      // 引き出し上手: 格下とのMQが下がりにくい（OV差が大きい場合にMQ底上げ）
       const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
       if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(8, ovDiff * 0.3);
       mq = Math.round(Engine.util.clamp(mq, 5, 100));
@@ -396,7 +430,9 @@ const Engine = {
         turns: matchTurns,
         hpLeft: { final: Math.max(0, L.hp), max: L.mhp },
         hpRight: { final: Math.max(0, R.hp), max: R.mhp },
-        mq, log
+        mq, log,
+        finishPhase,
+        mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty }
       };
     }
   },
