@@ -3102,6 +3102,8 @@ const Engine = {
         else events.push(`${ev.headline}（ヒート+${ev.heatGain}）`);
       });
     }
+    // validateGameState: 不変条件チェック（tickWeek末尾で常時実行）
+    s = Engine.validateGameState(s);
     return { state: s, events };
   },
 
@@ -5750,6 +5752,8 @@ const Engine = {
       ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
       ppvPhase: null,      // null | 'entry' | 'locked' | 'show' | 'tv'
       ppvName: '',
+      // デバッグ・検証システム
+      debugLog: [],
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -7818,3 +7822,209 @@ Engine.database = {
     return { ace, depth, popularity, starPower };
   },
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  validateGameState: ランタイム不変条件チェック（常時オン）
+//  違反検出時はconsole.warnに出力し、G.debugLogに記録する。ゲーム進行は止めない。
+// ══════════════════════════════════════════════════════════════════════════════
+Engine.validateGameState = function(G) {
+  if (!G) return G;
+  const violations = [];
+  const w = G.week;
+  const s = G.season;
+
+  function warn(msg) {
+    violations.push(msg);
+    if (typeof console !== 'undefined') console.warn(`[WM Debug] Week ${w}, Season ${s}: ${msg}`);
+  }
+
+  function isValidNum(v) { return typeof v === 'number' && isFinite(v) && !isNaN(v); }
+
+  // ── キャラクター関連 ──
+  const allCharIds = typeof ALL_CHARS !== 'undefined' ? new Set(ALL_CHARS.map(c => c.id)) : null;
+  const rosterIds = new Set();
+  const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+
+  if (Array.isArray(G.roster)) {
+    if (G.rosterCap && G.roster.filter(c => !c.isRental).length > G.rosterCap) {
+      warn(`ロスター人数(${G.roster.filter(c => !c.isRental).length})がキャップ(${G.rosterCap})を超過`);
+    }
+    G.roster.forEach(c => {
+      if (!c || !c.id) { warn('ロスターにid未定義のキャラが存在'); return; }
+      rosterIds.add(c.id);
+      if (allCharIds && !allCharIds.has(c.id) && !c.isIntrusion) {
+        warn(`キャラID ${c.id} ("${c.name}") がマスターデータに存在しない`);
+      }
+      STATS.forEach(stat => {
+        if (!isValidNum(c[stat])) {
+          warn(`キャラ "${c.name}" (id:${c.id}) の${stat}が不正値: ${c[stat]}`);
+        } else if (c[stat] < 0 || c[stat] > 200) {
+          warn(`キャラ "${c.name}" (id:${c.id}) の${stat}が範囲外: ${c[stat]}（範囲: 0-200）`);
+        }
+      });
+      if (c.popularity !== undefined && !isValidNum(c.popularity)) {
+        warn(`キャラ "${c.name}" (id:${c.id}) のpopularityが不正値: ${c.popularity}`);
+      }
+      if (c.popularity !== undefined && c.popularity < 0) {
+        warn(`キャラ "${c.name}" (id:${c.id}) のpopularityが負値: ${c.popularity}`);
+      }
+      if (c.condition !== undefined && !isValidNum(c.condition)) {
+        warn(`キャラ "${c.name}" (id:${c.id}) のconditionが不正値: ${c.condition}`);
+      }
+      if (c.trust !== undefined) {
+        if (!isValidNum(c.trust)) {
+          warn(`キャラ "${c.name}" (id:${c.id}) のtrustが不正値: ${c.trust}`);
+        } else if (c.trust < 0 || c.trust > 100) {
+          warn(`キャラ "${c.name}" (id:${c.id}) のtrustが範囲外: ${c.trust}（範囲: 0-100）`);
+        }
+      }
+      if (c.age !== undefined && (!isValidNum(c.age) || c.age < 10 || c.age > 60)) {
+        warn(`キャラ "${c.name}" (id:${c.id}) のageが不正値: ${c.age}`);
+      }
+    });
+  }
+
+  // ── 経済関連 ──
+  if (!isValidNum(G.funds)) {
+    warn(`資金(funds)が不正値: ${G.funds}`);
+  }
+  if (G.weeklyFinance) {
+    if (!isValidNum(G.weeklyFinance.income)) warn(`weeklyFinance.incomeが不正値: ${G.weeklyFinance.income}`);
+    if (!isValidNum(G.weeklyFinance.expense)) warn(`weeklyFinance.expenseが不正値: ${G.weeklyFinance.expense}`);
+  }
+  // 会場キャパ超過チェック（直近の興行結果がある場合）
+  if (Array.isArray(G.lastShowResults) && G.lastShowResults.length > 0 && G.showVenue !== undefined) {
+    const venues = typeof VENUES !== 'undefined' ? VENUES : null;
+    if (venues && venues[G.showVenue]) {
+      const cap = venues[G.showVenue].cap;
+      if (G._lastAttendance && G._lastAttendance > cap * 1.5) {
+        warn(`観客数(${G._lastAttendance})が会場キャパ(${cap})の1.5倍を超過`);
+      }
+    }
+  }
+
+  // ── シーズン・進行関連 ──
+  if (!isValidNum(G.season) || G.season < 1) {
+    warn(`seasonが不正値: ${G.season}`);
+  }
+  if (!G.offSeason) {
+    if (!isValidNum(G.week) || G.week < 1 || G.week > 48) {
+      warn(`weekが範囲外: ${G.week}（範囲: 1-48）`);
+    }
+  }
+  if (!isValidNum(G.orgPop)) {
+    warn(`orgPopが不正値: ${G.orgPop}`);
+  } else if (G.orgPop < 0 || G.orgPop > 100) {
+    warn(`orgPopが範囲外: ${G.orgPop}（範囲: 0-100）`);
+  }
+  if (!isValidNum(G.heatScore)) {
+    warn(`heatScoreが不正値: ${G.heatScore}`);
+  }
+
+  // weekPhaseの妥当性
+  const validPhases = ['draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
+                       'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary'];
+  if (G.weekPhase && !validPhases.includes(G.weekPhase)) {
+    warn(`weekPhaseが不正値: "${G.weekPhase}"`);
+  }
+
+  // ppvPhaseの妥当性
+  const validPPVPhases = [null, undefined, 'entry', 'locked', 'show', 'tv'];
+  if (G.ppvPhase !== undefined && G.ppvPhase !== null && !['entry', 'locked', 'show', 'tv'].includes(G.ppvPhase)) {
+    warn(`ppvPhaseが不正値: "${G.ppvPhase}"`);
+  }
+
+  // ── タイトル関連 ──
+  if (G.titles && G.titles.world) {
+    const champ = G.titles.world.championId;
+    if (champ !== null && champ !== undefined) {
+      if (!rosterIds.has(champ)) {
+        warn(`王者ID ${champ} がロスターに存在しない`);
+      }
+    }
+    if (G.titles.world.defenses !== undefined && !isValidNum(G.titles.world.defenses)) {
+      warn(`タイトル防衛数が不正値: ${G.titles.world.defenses}`);
+    }
+  }
+
+  // ── Rivalry関連 ──
+  if (G.rivalries && typeof G.rivalries === 'object') {
+    // 全ロスター＋AI全ロスターのIDセットを構築
+    const allActiveIds = new Set(rosterIds);
+    if (G.aiOrgs) {
+      Object.values(G.aiOrgs).forEach(org => {
+        if (org && Array.isArray(org.roster)) org.roster.forEach(c => allActiveIds.add(c.id));
+      });
+    }
+    Object.entries(G.rivalries).forEach(([key, riv]) => {
+      if (!riv || typeof riv !== 'object') { warn(`rivalry "${key}" が不正なオブジェクト`); return; }
+      // キーからIDを復元（"id1_id2" 形式）
+      const parts = key.split('_').map(Number);
+      if (parts.length === 2) {
+        parts.forEach(id => {
+          if (!allActiveIds.has(id)) {
+            warn(`rivalry "${key}" の参照先ID ${id} がどのロスターにも存在しない`);
+          }
+        });
+      }
+      if (riv.matches !== undefined && (!isValidNum(riv.matches) || riv.matches < 0)) {
+        warn(`rivalry "${key}" のmatchesが不正値: ${riv.matches}`);
+      }
+    });
+  }
+
+  // ── AI団体関連 ──
+  if (G.aiOrgs && typeof G.aiOrgs === 'object') {
+    Object.entries(G.aiOrgs).forEach(([orgId, org]) => {
+      if (!org || typeof org !== 'object') { warn(`aiOrgs "${orgId}" が不正`); return; }
+      if (!isValidNum(org.orgPop)) {
+        warn(`aiOrgs "${orgId}" のorgPopが不正値: ${org.orgPop}`);
+      }
+      if (Array.isArray(org.roster)) {
+        org.roster.forEach(c => {
+          STATS.forEach(stat => {
+            if (!isValidNum(c[stat])) {
+              warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) の${stat}が不正値: ${c[stat]}`);
+            }
+          });
+        });
+      }
+    });
+  }
+
+  // ── 汎用: トップレベルプロパティのundefined/NaNチェック ──
+  const criticalNumProps = ['funds', 'orgPop', 'heatScore', 'season', 'week', 'totalShows', 'lockerRoomMorale'];
+  criticalNumProps.forEach(prop => {
+    if (G[prop] !== undefined && !isValidNum(G[prop])) {
+      warn(`トップレベルプロパティ "${prop}" が不正値: ${G[prop]}`);
+    }
+  });
+
+  // ── battlePointsチェック ──
+  if (G.battlePoints && typeof G.battlePoints === 'object') {
+    Object.entries(G.battlePoints).forEach(([key, val]) => {
+      if (!isValidNum(val)) {
+        warn(`battlePoints.${key} が不正値: ${val}`);
+      }
+    });
+  }
+
+  // debugLogに記録
+  if (violations.length > 0) {
+    const log = Array.isArray(G.debugLog) ? G.debugLog : [];
+    const newEntries = violations.map(msg => ({
+      week: G.week,
+      season: G.season,
+      type: 'invariant_violation',
+      message: msg,
+      timestamp: Date.now(),
+    }));
+    return { ...G, debugLog: [...log, ...newEntries] };
+  }
+  return G;
+};
+
+// Node.js モジュールエクスポート（ブラウザではスキップ）
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Engine };
+}

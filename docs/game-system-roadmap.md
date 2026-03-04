@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（PPVバグ修正+エンディングバグ修正）
+> 最終更新: 2026-03-05（デバッグ・検証システム導入）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**デバッグ・検証システム導入（2026-03-05）。** `validateGameState(G)` による常時不変条件チェックと、UIなし高速自動シミュレーション `test/auto-sim.js` を実装。
+
+- **Engine.validateGameState(G)**: tickWeek末尾で毎週実行。キャラステータス(pw/sp/te/st/mn 0-200)、人気(≥0)、コンディション(0-100)、trust(0-100)、年齢(10-60)、ロスター枠上限、キャラID整合性、funds/weeklyFinance NaN検出、観客動員上限、week/season範囲、orgPop(0-100)、weekPhase/ppvPhase列挙値、タイトル王者存在確認、因縁相互参照、AI団体データNaN検出、battlePoints妥当性を網羅チェック。違反は`G.debugLog`に記録+`console.warn`で`[WM Debug]`出力。ゲーム進行は停止しない
+- **test/auto-sim.js**: `node test/auto-sim.js [シーズン数] [シード]` で実行。vm.ScriptでブラウザJSをNode.jsグローバルスコープにロード。興行カード自動編成(ランダムシャッフル+タイトルマッチ判定)、選択型/大型イベント自動応答、PPVフェーズ自動遷移、スカウト自動獲得を実装。transientフィールド一括消化。tickWeek+advanceWeek毎にvalidateGameState実行+violation収集。ゲームオーバー時はseed変更で自動再起動。MAX_ITER安全弁
+- **module.exports追加**: engine.js, data.js, victory-lines.js に `typeof module` ガード付きexportsブロック追加（ブラウザ動作に影響なし）
+- **初回実行結果（100シーズン/seed=42）**: 5,200週シミュレーション完了(0.4秒)。検出: condition NaN違反1件（キャラid:21 "木ノ内幸音", Season 1 Week 29〜）、エラー0件、ゲームオーバー0件
+- 変更: engine.js, data.js, victory-lines.js, test/auto-sim.js（新規）
 
 **PPV進行バグ修正＋エンディング繰り返しバグ修正（2026-03-05）。**
 

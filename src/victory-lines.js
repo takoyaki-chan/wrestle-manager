@@ -728,3 +728,8 @@ function getSigningLine(fighter, context) {
             || SCOUT_SIGNING_LINES.neutral.direct.standard;
   return pool[Math.floor(Math.random() * pool.length)];
 }
+
+// Node.js モジュールエクスポート（ブラウザではスキップ）
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { VICTORY_LINES, SCOUT_SIGNING_LINES, getVictoryLine, getSigningLine };
+}
