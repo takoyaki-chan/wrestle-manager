@@ -2921,6 +2921,58 @@ const App = {
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
+    // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える (mirrors Engine.executeShow)
+    const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
+    results.forEach(r => {
+      [
+        { charId: r.left.id, won: r.winner === 'left' },
+        { charId: r.right.id, won: r.winner === 'right' },
+      ].forEach(({ charId, won }) => {
+        const fighter = roster.find(c => c.id === charId);
+        if (!fighter || fighter.isIntrusion) return;
+        const oppId = charId === r.left.id ? r.right.id : r.left.id;
+        const oppInRoster = roster.find(c => c.id === oppId);
+        const oppRaw = charId === r.left.id ? r.right : r.left;
+        const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+        const selfOvr = Engine.util.ov(fighter);
+
+        const matchGrowthBase = 1.5;
+        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
+        const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0;
+        const resultBonus = won ? 0.0 : 0.2;
+        const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+
+        if (fighter.growthPenalty) {
+          const rawMult = fighter.growthPenalty.multiplier;
+          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+        }
+
+        const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+        const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+        const pool = [...allStats];
+        const chosen = [];
+        for (let i = 0; i < numStats; i++) {
+          const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
+          chosen.push(pool.splice(idx, 1)[0]);
+        }
+        const growthPerStat = matchGrowth / numStats;
+
+        roster = roster.map(c => {
+          if (c.id !== charId) return c;
+          let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+          chosen.forEach(stat => {
+            const gain = Math.max(0, Math.round(growthPerStat));
+            if (gain > 0) {
+              nc[stat] = Math.min(100, nc[stat] + gain);
+              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+            }
+          });
+          return nc;
+        });
+      });
+    });
+
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
 
     // v0.95: Season stats

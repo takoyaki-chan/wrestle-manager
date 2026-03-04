@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-04（PPV GRAND FINAL Step 1-6 全完了）
+> 最終更新: 2026-03-04（matchGrowth欠落バグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -341,6 +341,7 @@
 
 ## 設計決定ログ（実装済みルール集）
 
+- **matchGrowth欠落バグ修正** — App.finalizeShow（ビジュアル観戦モード）に試合成長処理が欠落していた。Engine.executeShow/applyPPVResultsにはあったがApp側にミラーされておらず、通常興行で選手の試合成長が一切発生していなかった。seed 1732でEngine.executeShowと同一のRNG系列を使用。怪我処理後・ブレークスルー判定前に配置
 - **ロスターランダム化** — potTotal重み付き配分。S級≥690, A級≥640。シリーズボーナス+0.3。dormant動的計算
 - **チャンピオン集客ボーナス** — チャンピオン出場時に集客×1.10
 - **乱入マッチ** — チャンピオン3回防衛後、タイトルマッチ当日に20%で発生。隣接団体OVR90%以上の選手が乱入。勝利+2/敗北-15〜-20
