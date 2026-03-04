@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-04（CLAUDE.md策定 + フィニッシャーシステム設計完了 + 因縁リデザイン/施設廃止 実装済み反映）
+> 最終更新: 2026-03-04（PPV GRAND FINAL Step 1-6 全完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**PPV GRAND FINAL Step 1-6 全完了（2026-03-04）。** 年末合同興行PPVの全機能が実装完了。
+
+- **Step 1: データ＋エンジン基盤**: data.jsにPPV定数群（PPV_SLOTS/PPV_REWARD/PPV_NAMES/PPV_OPPONENT_LINES/PPV_HYPE_TEMPLATES）追加。engine.jsにEngine.ppv名前空間を新設（checkUnlock/getSlotCount/getAIEntries/resolveInjuries/calcExcitement/generateCard/pickName/generateHype/getOpponentLine/getSummitPair）。GameStateにppvUnlocked/ppvEntries/ppvPhase/ppvName追加。orgPop変動箇所（tickWeek/applyWarOutcome/applySummitOutcome）にppvUnlocked自動チェック
+- **Step 2: Week 43/48フロー**: advanceWeekにWeek 43 PPVエントリー発火を追加（ppvUnlocked→ppvEntry/未解禁→tv）。AI団体エントリー自動生成。既存のD-4サミットチェックをPPV統合時スキップに変更。シーズンリセットでppvPhase/ppvEntries/ppvNameをクリア
+- **Step 3: エントリーUI**: renderWeekScreenにppvEntry描画（大会名ヘッダー+枠数+チャンピオン自動エントリー+選手選択リスト+確定ボタン）。togglePPVPick/confirmPPVEntry関数。ppvPhaseをentry→lockedに遷移。セーブデータマイグレーション(_migrated_ppv_v2)
+- **Step 4: PPV当日演出＋TV観戦＋結果処理**: Engine.ppv.preparePPVDay/simulatePPVMatch/applyPPVResults/simulateTVResults追加。advanceWeekにWeek48 PPV分岐（ppvShow/ppvTV weekPhase）。App._ppvPreview+9関数（initPPVShow/ppvWatchMatch/ppvSkipMatch/ppvSkipAll/_receivePPVBattleResult/finalizePPV/closePPVResult/initPPVTV/closePPVTV）。UI: renderPPVMatchPreview（カード順次公開+煽り文+VS画面+観る/スキップ）, renderPPVResult（全試合結果+報酬+対戦pt）, renderPPVTVResult（テレビ中継簡略表示）。battle-engine iframe連携
+- **Step 5-6: 結果処理完成＋演出仕上げ**: applyPPVResultsに因縁MQボーナス(+3/+5/+8)+コーチMQボーナス(+2)+因縁決着判定(checkResolution)+ヒート更新(calcUpdate)+試合成長(stat+1-2)+matchupLog記録を追加。finalizePPVにブレークスルー判定+careerBestMQ+敗北スランプ+モチベ喪失チェックを追加。closePPVResultにポップアップチェーン(因縁決着+ブレークスルー/スランプ)+バフ消費を追加。結果画面にMQボーナス内訳+因縁決着バッジ+ヒート変動を表示。怪我判定なし(condition=80固定)、orgPop変動なし(合同大会)。RNG seed: 0xBBF6-0xBBFA
 
 **フィニッシャーシステム設計完了 + CLAUDE.md策定（2026-03-04）。** フィニッシャーシステムの設計書v1.0を完成。演出レイヤー専用の差し替え方式（エンジン計算に影響なし）、フェーズ連動確率発動、顔画像切り抜きカットイン演出、5ステップ実装計画を確定。カットインビジュアルプロトタイプ（finisher-cutin-demo.html）で演出検証済み。CLAUDE.mdをリポジトリルートに新設し、ゲームの魂（三本柱・感情設計・数値哲学・やらないことリスト・機能追加判断基準）と開発ルールを統合。
 
@@ -252,7 +260,7 @@
 |---|--------|:----:|------|
 | 1 | **ランキング計算の刷新** championScore廃止、TOP5基礎力+対戦pt計算式、ランキングUI更新、団体比較連動 | 中 | **実装済み** |
 | 2 | **ロスター人数制限** プレイヤー段階解放6→16、AI:idealRosterハードキャップ化(S:16/A:13/B:10)、全獲得経路チェック、UI表示 | 中 | **実装済み** |
-| 3 | **対戦ポイントシステム** battlePointsフィールド運用開始、AI同士の対抗戦ポイント処理、サミット条件緩和(ランク3位以上) | 中 | 未着手 |
+| 3 | **対戦ポイントシステム** battlePointsフィールド運用開始、AI同士の対抗戦ポイント処理、サミット条件緩和(ランク3位以上) | 中 | **実装済み**（warChance 50%化のみ。AI同士のポイント処理はトーナメント/PPVに委任。summitMinRankは2を維持） |
 | 4 | **統一トーナメント** Engine.tournament新規実装、第24週開催、8名シングルエリミネーション、代表選手選択UI | 大 | 未着手 |
 
 ### コーチ＋ロッカールーム統合リデザイン（設計書: `docs/coach-lockerroom-redesign-v1.0.md`）
@@ -275,6 +283,16 @@
 | **D. カード鮮度システム** matchupLog記録、初顔合わせMQ+2、マンネリMQ-3/-5/-8（12興行ウィンドウ） | 中 | **実装済み** |
 | **E. 演出・UI** 鮮度メッセージ、好敵手表示、最終決着ポップアップ | 小 | **実装済み** |
 | **F. マイグレーション** resolutionCount/matchupLog初期化、ラベル参照更新 | 小 | **実装済み** |
+
+### PPV GRAND FINAL 合同興行（設計書: `specs/ppv-grand-final-spec-v2.0.md`）
+
+| Step | タスク | 重さ | 状態 |
+|------|--------|:----:|------|
+| 1 | **データ＋エンジン基盤** PPV定数 + Engine.ppv名前空間 | 中 | **実装済み** |
+| 2 | **Week 43/48 フロー** advanceWeek連携 + ppvPhase管理 | 中 | **実装済み** |
+| 3 | **エントリーUI** 選手選択画面 + AI自動選出 | 中 | **実装済み** |
+| 4 | **PPV当日演出＋結果処理** 試合発表+観戦+TV+報酬+ポイント+人気 | 大 | **実装済み** |
+| 5-6 | **結果処理完成＋演出仕上げ** MQボーナス+因縁決着+ヒート+成長+ブレークスルー+UI改善 | 中 | **実装済み** |
 
 ### フィニッシャーシステム（設計書: `specs/finisher-system-spec-v1.0.md`）
 
@@ -330,8 +348,10 @@
 - **殿堂入り条件** — 獲得＋防衛合計13回以上、またはグランドスラム
 - **衰退・引退はdurability + wear方式** — wearは28+durability歳から蓄積。wear 20〜39で軽度衰退、40〜59で本格衰退（引退20%/年）、60〜79で末期（50%/年）、80+で確定引退
 - **壊滅的怪我** — 重傷時に追加判定。基本2〜3%、ベテラン(wear40+)は5〜8%。即引退
-- **PPVは全団体合同大会** — エントリー制（Week44締切）、Week48開催。枠数はランク依存（S=5,A=4,B=3,4位=2）
-- **PPVマッチメイクは盛り上がり優先** — 因縁最優先、次に盛り上がりスコア
+- **PPV GRAND FINAL** — orgPop≥30で永続解禁(ppvUnlocked)。Week43エントリー受付(ppvPhase:'entry'→'locked')、Week48開催。枠数ランク依存(1位:5/2位:4/3位:3/4位:2名)。チャンピオン自動エントリー。AI団体OVR上位自動選出。未解禁時はTV観戦モード(ppvPhase:'tv')。出場報酬ランク依存(1位:300/2位:200/3位:150/4位:100万円)
+- **PPVマッチメイクは盛り上がり優先** — 因縁最優先(宿敵以上+異団体制約)、次にcalcExcitement貪欲法。サミット(ランク1位vs2位エース)はメインイベント固定。同団体対戦禁止
+- **PPV当日は専用実行パス** — App._ppvPreview+9関数。通常興行（executeShow/finalizeShow）とは独立。対抗戦(war)パターン踏襲。会場/集客/チケット収益なし、固定報酬PPV_REWARD[rank]。condition=80固定。RNG seed: 0xBBF2(hype)/0xBBF3(battle)/0xBBF6(成長)/0xBBF7(BT)/0xBBF8(スランプ)/0xBBF9(momentum)/0xBBFA(モチベ喪失)/0xBBF5(TV)。カード順次公開（前座→メイン、card末尾→先頭）。TV観戦モード: AI全自動+battlePoints更新のみ
+- **PPV事後効果** — 因縁MQボーナス(+3/+5/+8)+コーチMQボーナス+因縁決着判定+ヒート更新+試合成長+matchupLog+ブレークスルー+careerBestMQ+スランプ+モチベ喪失。怪我なし(condition=80人工的)、orgPop変動なし(合同大会)、会場熱気/カード鮮度/ファン期待度は非適用
 - **年末表彰式** — 新人王・ベストマッチ・MVP・チャンピオン紹介・殿堂入り
 - **集客計算は加算方式** — heat/title/champ/charismaのボーナスを加算し上限2.0倍キャップ
 - **人気の自然減衰** — 毎週-0.5（人気10超の全選手）
@@ -440,6 +460,13 @@
 | ロスター枠制限 v1.0 | roster-cap-design-v1.0.md |
 | 引退勧告・引き留め v1.1 | retirement-advisory-spec-v1_1.md |
 | フィニッシャーシステム v1.0 | finisher-system-spec-v1.0.md |
+| PPV GRAND FINAL 合同興行 v2.0 | ppv-grand-final-spec-v2.0.md |
+
+### docs/（実装ガイド）
+
+| ドキュメント | ファイル |
+|---|---|
+| PPV実装指示書 | ppv-implementation-guide.md |
 
 ### docs/archive/（旧版・完了済み）
 

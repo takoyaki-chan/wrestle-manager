@@ -1273,7 +1273,7 @@ const RENTAL_CONFIG = {
 
 const EVENT_CONFIG = {
   // D-2: 対抗戦
-  warChancePerSeason: 0.30,             // 年1回30%
+  warChancePerSeason: 0.50,             // 年1回50%
   warMatchCount: { min: 3, max: 5 },
   warPopReward: 5,                      // 勝利時団体人気
   warPopPenalty: -3,                    // 敗北時
@@ -2456,6 +2456,72 @@ const COACH_REPORT_TEXTS = {
 };
 const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
 const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 🔧 的外れ確率
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PPV GRAND FINAL 設定 — ppv-grand-final-spec-v2.0.md
+// ─────────────────────────────────────────────────────────────────────────────
+const PPV_UNLOCK_POP = 30;  // 出場解禁に必要な orgPop
+const PPV_SLOTS = { 1: 5, 2: 4, 3: 3, 4: 2 };  // ランク→出場枠数
+const PPV_REWARD = { 1: 300, 2: 200, 3: 150, 4: 100 };  // ランク→出場報酬（万円）
+const PPV_ENTRY_WEEK = 43;  // エントリー受付週
+const PPV_SHOW_WEEK = 48;   // PPV開催週
+
+const PPV_NAMES = [
+  'GENESIS', 'STARDOM FINAL', 'GRAND CLASH',
+  'BURNING SPIRIT', "QUEEN'S SUMMIT", 'DREAM FESTIVAL',
+  'ULTIMATE GLORY', 'CROWN JEWEL', 'FIGHTING DESTINY',
+  'RISING STAR', 'ETERNAL CLASH', 'GLORY ROAD'
+];
+
+const PPV_OPPONENT_LINES = {
+  confident: [
+    'あんたの全力、見せてもらうわよ',
+    '悪いけど、今日は負けるわけにはいかないの',
+    'この大舞台、最高の気分ね',
+    '私の実力、思い知らせてあげる',
+  ],
+  fierce: [
+    'ぶっ潰してやるわ！',
+    '泣いても知らないわよ？',
+    '容赦しない。覚悟しなさい',
+    'あんたじゃ私には勝てない',
+  ],
+  respectful: [
+    '正々堂々、最高の試合にしましょう',
+    'あなたと戦えるのを楽しみにしてた',
+    'お互い全力で…最高の舞台だもの',
+    'この対戦、ずっと待ってました',
+  ],
+  calm: [
+    '手加減はしない。覚悟して',
+    '結果で語りましょう',
+    '余計な言葉はいらないわ',
+    '実力の差を見せてあげる',
+  ],
+};
+
+const PPV_HYPE_TEMPLATES = {
+  rivalry: [
+    '因縁の対決！{name1}と{name2}、この大舞台で決着なるか！',
+    '積み重ねてきた因縁——{name1}と{name2}の物語が、ここで動く！',
+  ],
+  tierGap: [
+    '{org2}の壁！{name1}は{name2}を越えられるか！',
+    '格上挑戦！{name1}が{org2}の{name2}に挑む！',
+  ],
+  closeOVR: [
+    '実力伯仲！{name1}と{name2}、どちらが勝ってもおかしくない！',
+    '互角の実力——勝敗を分けるのは、この一瞬の判断！',
+  ],
+  starMatch: [
+    'スター対決！{name1}と{name2}、夢のカードが実現！',
+    '人気者同士の激突！{name1} vs {name2}、会場が沸く！',
+  ],
+  summit: [
+    '団体の威信を懸けた頂上決戦！{name1} vs {name2}！',
+    '年間王者を決める最終決戦——{name1}と{name2}、頂点に立つのはどちらだ！',
+  ],
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4

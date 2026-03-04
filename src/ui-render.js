@@ -941,6 +941,88 @@ function renderWeekScreen() {
       </div>`;
     }
   }
+  // ── PPV ENTRY PHASE ──
+  else if (G.weekPhase === 'ppvEntry') {
+    const ppvName = G.ppvName || 'GRAND FINAL';
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    const rankings = G.rankings || [];
+    const pRank = Engine.ranking.getPlayerRank(rankings);
+    const maxSlots = Engine.ppv.getSlotCount(pRank);
+    const champ = getWorldChampion();
+    const champAutoEntry = champ && !champ.injury && !champ.isRental;
+    const remainingSlots = champAutoEntry ? maxSlots - 1 : maxSlots;
+    const picks = G._ppvPicks || [];
+
+    // ヘッダー
+    html += `<div style="text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(241,196,15,0.15),rgba(231,76,60,0.08));border:1px solid rgba(241,196,15,0.35);border-radius:10px;margin-bottom:16px">
+      <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">🏟️ PPV GRAND FINAL「${ppvName}」</h2>
+      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">出場枠: <strong>${maxSlots}名</strong>（ランク${pRank}位）</p>
+      <p style="font-size:12px;color:var(--text-dim);margin:0">出場報酬: ${PPV_REWARD[pRank] || 100}万円</p>
+    </div>`;
+
+    // チャンピオン自動エントリー
+    if (champAutoEntry) {
+      html += `<div style="padding:10px 14px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        ${portraitImg(champ.id, 40)}
+        <span style="font-size:13px;color:var(--text-main)">👑 <strong>${champ.name}</strong> — チャンピオンとして自動エントリー</span>
+      </div>`;
+    }
+
+    // 残り枠の選択
+    html += `<div style="margin-bottom:12px">
+      <h4 style="color:var(--text-main);margin:0 0 8px 0;font-size:14px">出場選手を選択（残り${remainingSlots - picks.length}枠）</h4>`;
+
+    const eligible = (G.roster || []).filter(c => {
+      if (champAutoEntry && c.id === champ.id) return false;
+      if (c.injury) return false;
+      if (c.isRental) return false;
+      return true;
+    }).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+
+    eligible.forEach(c => {
+      const ovr = Engine.util.ov(c);
+      const picked = picks.includes(c.id);
+      const full = picks.length >= remainingSlots && !picked;
+      const disabled = full ? 'opacity:0.4;pointer-events:none;' : '';
+      const bg = picked ? 'background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.4);' : '';
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;cursor:pointer;${bg}${disabled}" onclick="togglePPVPick(${c.id})">
+        <span style="font-size:18px;width:24px;text-align:center">${picked ? '✅' : '⬜'}</span>
+        ${portraitImg(c.id, 36)}
+        <span style="flex:1;font-size:13px;color:var(--text-main)">${c.name}</span>
+        <span style="font-size:11px;color:var(--text-sub)">OVR ${ovr}</span>
+        <span style="font-size:11px;color:var(--text-dim)">人気 ${Math.round(c.popularity || 0)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+
+    // 注意書き
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
+      ※ エントリー後の変更はできません<br>
+      ※ PPVまでに負傷した場合、自動的に代理選手が出場します<br>
+      ※ レンタル選手はエントリーできません
+    </div>`;
+
+    // 確定ボタン
+    const canConfirm = picks.length === remainingSlots;
+    const btnStyle = canConfirm ? '' : 'opacity:0.4;pointer-events:none;';
+    html += `<div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px;${btnStyle}" onclick="confirmPPVEntry()">🏟️ エントリー確定（${picks.length}/${remainingSlots}名）</button>
+    </div>`;
+  }
+  // ── PPV SHOW DAY PHASE ──
+  else if (G.weekPhase === 'ppvShow') {
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    html += `<div style="text-align:center;padding:24px;color:var(--gold);font-size:18px">
+      PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催中…
+    </div>`;
+  }
+  // ── PPV TV PHASE ──
+  else if (G.weekPhase === 'ppvTV') {
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 📺 PPV テレビ中継`;
+    html += `<div style="text-align:center;padding:24px;color:var(--text-sub);font-size:16px">
+      📺 PPV GRAND FINAL テレビ中継中…
+    </div>`;
+  }
 
   // ── SCOUT EVENT PHASE ──
   else if (G.weekPhase === 'scoutEvent') {

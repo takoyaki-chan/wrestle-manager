@@ -2963,7 +2963,14 @@ const Engine = {
     if (settle.orgPopPenalty) {
       s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100) };
     }
+    // PPV解禁チェック（orgPop変動後）
+    let ppvUnlockEvent = null;
+    if (!s.ppvUnlocked && Engine.ppv.checkUnlock(s.orgPop)) {
+      s = { ...s, ppvUnlocked: true };
+      ppvUnlockEvent = '🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます';
+    }
     const events = [...manage.events, settle.summary];
+    if (ppvUnlockEvent) events.push(ppvUnlockEvent);
     // v2.1: 破産判定
     if (s.funds <= 0) {
       s = { ...s, weekPhase: 'gameover' };
@@ -4370,6 +4377,515 @@ const Engine = {
     }
   },
 
+  // ── PPV GRAND FINAL (ppv-grand-final-spec-v2.0) ─────────────
+  ppv: {
+    /** orgPop 30 到達で PPV 解禁判定 */
+    checkUnlock(orgPop) {
+      return (orgPop || 0) >= PPV_UNLOCK_POP;
+    },
+
+    /** ランキング順位 → 出場枠数 */
+    getSlotCount(rank) {
+      return PPV_SLOTS[rank] || PPV_SLOTS[4];
+    },
+
+    /** AI団体の代表選出（OVR上位、怪我除外） */
+    getAIEntries(aiOrgData, slots) {
+      const available = (aiOrgData.roster || []).filter(f => !f.injury);
+      return available
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+        .slice(0, slots)
+        .map(f => ({ ...f }));
+    },
+
+    /** 怪我→自動繰り上げ処理。新配列を返す */
+    resolveInjuries(entries, roster) {
+      const resolved = [];
+      const usedIds = new Set(entries.map(f => f.id));
+      for (const f of entries) {
+        if (f.injury) {
+          const sub = roster
+            .filter(r => !usedIds.has(r.id) && !r.injury && !r.isRental)
+            .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+          if (sub) {
+            usedIds.add(sub.id);
+            resolved.push({ ...sub, _ppvSubstitute: true, _replacedName: f.name });
+          }
+          // 繰り上げ不可→枠削減（pushしない）
+        } else {
+          resolved.push(f);
+        }
+      }
+      return resolved;
+    },
+
+    /** 盛り上がりスコア（ペアの品質指標） */
+    calcExcitement(f1, f2) {
+      const ovrSum = Engine.util.ov(f1) + Engine.util.ov(f2);
+      const popSum = (f1.popularity || 0) + (f2.popularity || 0);
+      const ovrGap = Math.abs(Engine.util.ov(f1) - Engine.util.ov(f2));
+      return ovrSum + popSum * 0.5 - ovrGap * 2;
+    },
+
+    /** マッチメイク生成。summitPair がある場合はメインに固定 */
+    generateCard(allEntries, rivalries, summitPair) {
+      // 全選手をフラット化（団体IDをタグ付け）
+      const pool = [];
+      for (const [orgId, fighters] of Object.entries(allEntries)) {
+        for (const f of fighters) {
+          pool.push({ ...f, _ppvOrgId: orgId });
+        }
+      }
+      // サミットペアをプールから除外
+      const summitIds = new Set();
+      if (summitPair) {
+        summitIds.add(summitPair.fighter1.id);
+        summitIds.add(summitPair.fighter2.id);
+      }
+      const remaining = pool.filter(f => !summitIds.has(f.id));
+
+      // Step 1: 因縁ペアを最優先マッチング
+      const matched = [];
+      const usedIds = new Set();
+      const rivalryKeys = Object.keys(rivalries || {});
+      for (const key of rivalryKeys) {
+        const ids = key.split('-');
+        if (ids.length !== 2) continue;
+        const [id1, id2] = ids;
+        const f1 = remaining.find(f => String(f.id) === id1 && !usedIds.has(f.id));
+        const f2 = remaining.find(f => String(f.id) === id2 && !usedIds.has(f.id));
+        if (f1 && f2 && f1._ppvOrgId !== f2._ppvOrgId) {
+          const rivalry = rivalries[key];
+          if (rivalry && (rivalry.level || 0) >= 1) {
+            matched.push({ left: f1, right: f2, excitement: Engine.ppv.calcExcitement(f1, f2), isRivalry: true });
+            usedIds.add(f1.id);
+            usedIds.add(f2.id);
+          }
+        }
+      }
+
+      // Step 2: 残りを盛り上がりスコアで最適マッチング（異団体制約）
+      const unmatched = remaining.filter(f => !usedIds.has(f.id));
+      const pairs = [];
+      for (let i = 0; i < unmatched.length; i++) {
+        for (let j = i + 1; j < unmatched.length; j++) {
+          if (unmatched[i]._ppvOrgId !== unmatched[j]._ppvOrgId) {
+            pairs.push({ i, j, score: Engine.ppv.calcExcitement(unmatched[i], unmatched[j]) });
+          }
+        }
+      }
+      pairs.sort((a, b) => b.score - a.score);
+      const usedIdx = new Set();
+      for (const p of pairs) {
+        if (usedIdx.has(p.i) || usedIdx.has(p.j)) continue;
+        matched.push({ left: unmatched[p.i], right: unmatched[p.j], excitement: p.score, isRivalry: false });
+        usedIdx.add(p.i);
+        usedIdx.add(p.j);
+      }
+
+      // 盛り上がりスコア昇順（前座→セミ→メイン手前）
+      matched.sort((a, b) => a.excitement - b.excitement);
+
+      // サミットをメインイベント（最終試合）に追加
+      if (summitPair) {
+        const f1 = pool.find(f => f.id === summitPair.fighter1.id) || { ...summitPair.fighter1, _ppvOrgId: summitPair.org1Id };
+        const f2 = pool.find(f => f.id === summitPair.fighter2.id) || { ...summitPair.fighter2, _ppvOrgId: summitPair.org2Id };
+        matched.push({
+          left: f1, right: f2,
+          excitement: 999, isSummit: true, isRivalry: false,
+        });
+      }
+
+      return matched;
+    },
+
+    /** 大会名をseedで選択 */
+    pickName(rng) {
+      return PPV_NAMES[Engine.rng.int(rng, 0, PPV_NAMES.length - 1)];
+    },
+
+    /** 煽り文生成 */
+    generateHype(match, rivalries) {
+      const n1 = match.left.name, n2 = match.right.name;
+      const o1 = match.left._ppvOrgName || '', o2 = match.right._ppvOrgName || '';
+      let templates;
+      if (match.isSummit) templates = PPV_HYPE_TEMPLATES.summit;
+      else if (match.isRivalry) templates = PPV_HYPE_TEMPLATES.rivalry;
+      else {
+        const ovrGap = Math.abs(Engine.util.ov(match.left) - Engine.util.ov(match.right));
+        const popSum = (match.left.popularity || 0) + (match.right.popularity || 0);
+        if (ovrGap > 15) templates = PPV_HYPE_TEMPLATES.tierGap;
+        else if (popSum > 100) templates = PPV_HYPE_TEMPLATES.starMatch;
+        else templates = PPV_HYPE_TEMPLATES.closeOVR;
+      }
+      const tmpl = templates[Math.floor(Math.random() * templates.length)];
+      return tmpl.replace(/{name1}/g, n1).replace(/{name2}/g, n2)
+                .replace(/{org1}/g, o1).replace(/{org2}/g, o2);
+    },
+
+    /** 対戦相手の一言セリフ選択 */
+    getOpponentLine(rng, fighter) {
+      const mn = fighter.mn || 50, pw = fighter.pw || 50;
+      let tone;
+      if (mn >= 70) tone = Math.random() > 0.5 ? 'calm' : 'respectful';
+      else if (pw >= 70) tone = 'fierce';
+      else tone = 'confident';
+      const lines = PPV_OPPONENT_LINES[tone] || PPV_OPPONENT_LINES.confident;
+      return lines[Engine.rng.int(rng, 0, lines.length - 1)];
+    },
+
+    /** サミットペアを決定（ランク1位 vs 2位） */
+    getSummitPair(state) {
+      const rankings = state.rankings || [];
+      if (rankings.length < 2) return null;
+      const rank1 = rankings[0];
+      const rank2 = rankings[1];
+
+      let ace1, ace1OrgId;
+      if (rank1.orgId === 'player') {
+        ace1 = Engine.event.getAce(state.roster);
+        ace1OrgId = 'player';
+      } else {
+        const org1 = Engine.rival.getOrgInfo(state.aiOrgs, rank1.orgId);
+        ace1 = org1 ? Engine.event.getAce(org1.roster) : null;
+        ace1OrgId = rank1.orgId;
+      }
+
+      let ace2, ace2OrgId;
+      if (rank2.orgId === 'player') {
+        ace2 = Engine.event.getAce(state.roster);
+        ace2OrgId = 'player';
+      } else {
+        const org2 = Engine.rival.getOrgInfo(state.aiOrgs, rank2.orgId);
+        ace2 = org2 ? Engine.event.getAce(org2.roster) : null;
+        ace2OrgId = rank2.orgId;
+      }
+
+      if (!ace1 || !ace2) return null;
+      return { fighter1: ace1, fighter2: ace2, org1Id: ace1OrgId, org2Id: ace2OrgId };
+    },
+
+    /** PPV当日: カード生成統合関数（純粋関数） */
+    preparePPVDay(state) {
+      const entries = {};
+      const substitutions = [];
+      const orgNames = { player: state.orgName || 'プレイヤー団体' };
+      RIVAL_ORGS.forEach(org => { orgNames[org.id] = org.name; });
+
+      // プレイヤーエントリーの再取得（Week43スナップショットから最新stateへ）
+      const rawEntries = state.ppvEntries || {};
+      const playerIds = (rawEntries.player || []).map(f => f.id);
+      entries.player = playerIds.map(id => {
+        const fresh = (state.roster || []).find(c => c.id === id);
+        return fresh ? { ...fresh } : (rawEntries.player || []).find(f => f.id === id);
+      }).filter(Boolean);
+
+      // プレイヤー怪我→自動繰り上げ
+      const resolvedPlayer = Engine.ppv.resolveInjuries(entries.player, state.roster || []);
+      resolvedPlayer.forEach(f => {
+        if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: 'player' });
+      });
+      entries.player = resolvedPlayer;
+
+      // AI団体エントリーの再取得＋怪我処理
+      RIVAL_ORGS.forEach(org => {
+        const rawOrgEntries = rawEntries[org.id] || [];
+        const aiData = state.aiOrgs[org.id];
+        const aiRoster = aiData ? aiData.roster : [];
+        const refreshed = rawOrgEntries.map(f => {
+          const fresh = aiRoster.find(c => c.id === f.id);
+          return fresh ? { ...fresh } : f;
+        }).filter(Boolean);
+        const resolved = Engine.ppv.resolveInjuries(refreshed, aiRoster);
+        resolved.forEach(f => {
+          if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: org.id });
+        });
+        entries[org.id] = resolved;
+      });
+
+      // 団体名タグ付け
+      for (const [orgId, fighters] of Object.entries(entries)) {
+        fighters.forEach(f => { f._ppvOrgName = orgNames[orgId] || orgId; f._ppvOrgId = orgId; });
+      }
+
+      // サミットペア＋カード生成
+      const summitPair = Engine.ppv.getSummitPair(state);
+      const rivalries = state.rivalries || {};
+      const card = Engine.ppv.generateCard(entries, rivalries, summitPair);
+
+      // 煽り文＋セリフ付加
+      const hypeRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xBBF2));
+      card.forEach(match => {
+        match.hype = Engine.ppv.generateHype(match, rivalries);
+        match.opponentLineLeft = Engine.ppv.getOpponentLine(hypeRng, match.left);
+        match.opponentLineRight = Engine.ppv.getOpponentLine(hypeRng, match.right);
+      });
+
+      return { card, substitutions, summitPair };
+    },
+
+    /** PPV用バトル実行（condition=80固定） */
+    simulatePPVMatch(left, right, rng) {
+      const pf = { ...left, condition: 80 };
+      const af = { ...right, condition: 80 };
+      return Engine.battle.simulateMatch(pf, af, rng);
+    },
+
+    /** PPV結果をGameStateに反映（純粋関数） */
+    applyPPVResults(state, card, results, summitPair) {
+      let s = { ...state };
+      let roster = (s.roster || []).map(c => ({ ...c }));
+      let rivalries = { ...(s.rivalries || {}) };
+      const events = [];
+      const rankings = s.rankings || [];
+      const pRank = Engine.ranking.getPlayerRank(rankings);
+      const mqBonuses = []; // 各試合のMQボーナス内訳（UI表示用）
+
+      // Step 5-6: 宿敵+ペアの検出（因縁決着判定用に保留）
+      const deferredRivalryIdxs = [];
+      card.forEach((match, idx) => {
+        const pLeft = roster.find(c => c.id === match.left.id);
+        const pRight = roster.find(c => c.id === match.right.id);
+        if (!pLeft && !pRight) return;
+        const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
+        if (rivalLvl && !rivalLvl.isGoodRival && rivalLvl.matches >= 4) {
+          deferredRivalryIdxs.push(idx);
+        }
+      });
+
+      // 各試合: MQボーナス加算 → MQ人気反映 → 因縁カウンタ更新
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        const pLeft = roster.find(c => c.id === match.left.id);
+        const pRight = roster.find(c => c.id === match.right.id);
+        const bonusInfo = { rivalry: 0, coach: 0 };
+
+        // Step 5-6: 因縁MQボーナス（プレイヤー選手が関与する試合のみ）
+        if (pLeft || pRight) {
+          const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
+          if (rivalLvl) {
+            r.mq = Math.min(100, r.mq + rivalLvl.mqBonus);
+            r.rivalryBonus = rivalLvl;
+            bonusInfo.rivalry = rivalLvl.mqBonus;
+          }
+          // Step 5-6: コーチMQボーナス
+          const coachMQ = Engine.coach.getMQBonusForMatch(s, match.left.id, match.right.id);
+          if (coachMQ > 0) {
+            r.mq = Math.min(100, r.mq + coachMQ);
+            r.coachMQBonus = coachMQ;
+            bonusInfo.coach = coachMQ;
+          }
+        }
+        mqBonuses.push(bonusInfo);
+
+        // MQ人気反映
+        const isMainEvent = match.isSummit;
+        const mqPop = Engine.applyMQPopularity(roster, {
+          left: match.left, right: match.right,
+          winner: r.winner, mq: r.mq
+        }, isMainEvent);
+        roster = mqPop.roster;
+
+        // 因縁カウンタ更新（保留ペア以外）
+        if ((pLeft || pRight) && !deferredRivalryIdxs.includes(idx)) {
+          const rr = Engine.title.recordRivalry({ ...s, rivalries, roster }, match.left.id, match.right.id);
+          rivalries = rr.rivalries;
+          if (rr.msg) events.push(rr.msg);
+        }
+      });
+
+      // Step 5-6: 因縁決着判定（全MQボーナス適用後）
+      const rivalryResolutions = [];
+      deferredRivalryIdxs.forEach(idx => {
+        const r = results[idx];
+        const match = card[idx];
+        const avgOV = (Engine.util.ov(match.left) + Engine.util.ov(match.right)) / 2;
+        const key = Engine.title.getRivalryKey(match.left.id, match.right.id);
+        const currentEntry = rivalries[key] || {};
+        const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV, currentEntry.resolutionCount || 0);
+        if (resolution) {
+          const isSecondResolution = resolution.newResolutionCount >= 2;
+          const updatedEntry = {
+            matches: 0, lastWeek: s.week, lastResolvedWeek: s.week,
+            resolutionCount: resolution.newResolutionCount,
+            ...(isSecondResolution ? { resolved: true } : {}),
+          };
+          rivalries = { ...rivalries, [key]: { ...rivalries[key], ...updatedEntry } };
+          // 報酬: 両選手 popularity 直接加算（orgPopBonus は合同大会のため適用しない）
+          roster = roster.map(c => {
+            if (c.id === match.left.id || c.id === match.right.id) {
+              return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
+            }
+            return c;
+          });
+          const winnerId = r.winner === 'left' ? match.left.id : (r.winner === 'right' ? match.right.id : match.left.id);
+          const loserId = winnerId === match.left.id ? match.right.id : match.left.id;
+          const winnerName = winnerId === match.left.id ? match.left.name : match.right.name;
+          const loserName = loserId === match.left.id ? match.left.name : match.right.name;
+          rivalryResolutions.push({
+            phase: 'resolution', winnerId, loserId, winnerName, loserName,
+            isFate: resolution.isFate, isSecondResolution,
+            popBonus: resolution.popBonus, orgPopBonus: 0,
+          });
+          r.rivalryResolved = true;
+          const emoji = resolution.isFate ? '💥' : '⚡';
+          const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
+          events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus}`);
+        } else {
+          // 不完全燃焼: 通常通り recordRivalry
+          const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, match.left.id, match.right.id);
+          rivalries = rivalResult.rivalries;
+          if (rivalResult.msg) events.push(rivalResult.msg);
+        }
+      });
+
+      // Step 5-6: ヒート更新
+      const avgMQ = results.length > 0 ? Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length) : 0;
+      const oldHeat = Engine.heat.getLevel(s);
+      const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+      const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
+      const heatChange = { oldLabel: oldHeat.label, newLabel: newHeat.label, oldId: oldHeat.id, newId: newHeat.id, newEmoji: newHeat.emoji, newMult: newHeat.mult };
+      if (oldHeat.id !== newHeat.id) {
+        events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
+      }
+
+      // Step 5-6: 試合成長（プレイヤー所属選手のみ）
+      const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF6));
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        [
+          { fighter: match.left, oppFighter: match.right, won: r.winner === 'left' },
+          { fighter: match.right, oppFighter: match.left, won: r.winner === 'right' },
+        ].forEach(({ fighter, oppFighter, won }) => {
+          const rosterF = roster.find(c => c.id === fighter.id);
+          if (!rosterF) return; // プレイヤー所属でない
+          const selfOvr = Engine.util.ov(rosterF);
+          const oppOvr = Engine.util.ov(oppFighter);
+          const matchGrowthBase = 1.5;
+          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
+          const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0;
+          const resultBonus = won ? 0.0 : 0.2;
+          const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, rosterF.id);
+          let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+          if (rosterF.growthPenalty) {
+            const rawMult = rosterF.growthPenalty.multiplier;
+            matchGrowth *= (rawMult < 1.0 && Traits.has(rosterF, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+          }
+          const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+          const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+          const pool = [...allStats];
+          const chosen = [];
+          for (let i = 0; i < numStats; i++) {
+            const si = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
+            chosen.push(pool.splice(si, 1)[0]);
+          }
+          const growthPerStat = matchGrowth / numStats;
+          roster = roster.map(c => {
+            if (c.id !== rosterF.id) return c;
+            let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }) } };
+            chosen.forEach(stat => {
+              const gain = Math.max(0, Math.round(growthPerStat));
+              if (gain > 0) {
+                nc[stat] = Math.min(100, nc[stat] + gain);
+                nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+              }
+            });
+            return nc;
+          });
+        });
+      });
+
+      // Step 5-6: matchupLog 記録（プレイヤー選手が参加した試合のみ）
+      const newMatchupEntries = [];
+      card.forEach((match, idx) => {
+        const pLeft = roster.find(c => c.id === match.left.id);
+        const pRight = roster.find(c => c.id === match.right.id);
+        if (pLeft || pRight) {
+          newMatchupEntries.push({ leftId: match.left.id, rightId: match.right.id, showCount: s.totalShows });
+        }
+      });
+
+      // サミット: battlePoints ±10
+      const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      if (summitPair) {
+        const summitIdx = card.findIndex(m => m.isSummit);
+        if (summitIdx >= 0) {
+          const sr = results[summitIdx];
+          const winnerOrgId = sr.winner === 'left' ? card[summitIdx].left._ppvOrgId : card[summitIdx].right._ppvOrgId;
+          const loserOrgId = sr.winner === 'left' ? card[summitIdx].right._ppvOrgId : card[summitIdx].left._ppvOrgId;
+          const ptTransfer = BATTLE_POINT_CFG.summit;
+          const winKey = winnerOrgId === 'player' ? 'player' : winnerOrgId;
+          const loseKey = loserOrgId === 'player' ? 'player' : loserOrgId;
+          if (bp[winKey] !== undefined) bp[winKey] = (bp[winKey] || 0) + ptTransfer;
+          if (bp[loseKey] !== undefined) bp[loseKey] = Math.max(-50, (bp[loseKey] || 0) - ptTransfer);
+          const winnerName = sr.winner === 'left' ? card[summitIdx].left.name : card[summitIdx].right.name;
+          const playerInSummit = card[summitIdx].left._ppvOrgId === 'player' || card[summitIdx].right._ppvOrgId === 'player';
+          if (playerInSummit) {
+            const playerWon = winnerOrgId === 'player';
+            events.push(`🏆 頂上決戦: ${winnerName}勝利！ 対戦pt${playerWon ? '+' : '-'}${ptTransfer}`);
+          } else {
+            events.push(`🏆 頂上決戦: ${winnerName}勝利！`);
+          }
+        }
+      }
+
+      // PPV出場報酬
+      const reward = PPV_REWARD[pRank] || PPV_REWARD[4];
+      events.push(`💰 PPV出場報酬: ${reward}万円`);
+
+      s = { ...s, roster, rivalries, battlePoints: bp, heatScore: newHeatScore,
+            funds: (s.funds || 0) + reward,
+            matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
+      return { state: s, events, rivalryResolutions, heatChange, mqBonuses };
+    },
+
+    /** TV観戦用全自動シミュレーション */
+    simulateTVResults(state, rng) {
+      const rankings = state.rankings || [];
+      const entries = {};
+      RIVAL_ORGS.forEach(org => {
+        const orgRank = rankings.find(r => r.orgId === org.id);
+        const rank = orgRank ? orgRank.rank : 4;
+        const slots = Engine.ppv.getSlotCount(rank);
+        const aiData = state.aiOrgs[org.id];
+        const orgEntries = aiData ? Engine.ppv.getAIEntries(aiData, slots) : [];
+        orgEntries.forEach(f => { f._ppvOrgName = org.name; f._ppvOrgId = org.id; });
+        entries[org.id] = orgEntries;
+      });
+
+      const summitPair = Engine.ppv.getSummitPair(state);
+      const rivalries = state.rivalries || {};
+      const card = Engine.ppv.generateCard(entries, rivalries, summitPair);
+      card.forEach(match => {
+        match.hype = Engine.ppv.generateHype(match, rivalries);
+      });
+
+      const results = card.map((match, idx) => {
+        const matchRng = Engine.rng.create(Engine.rng.derive(rng, idx, match.left.id, match.right.id));
+        return Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+      });
+
+      // サミットbattlePoints更新
+      const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      const events = [];
+      if (summitPair) {
+        const summitIdx = card.findIndex(m => m.isSummit);
+        if (summitIdx >= 0) {
+          const sr = results[summitIdx];
+          const winnerOrgId = sr.winner === 'left' ? card[summitIdx].left._ppvOrgId : card[summitIdx].right._ppvOrgId;
+          const loserOrgId = sr.winner === 'left' ? card[summitIdx].right._ppvOrgId : card[summitIdx].left._ppvOrgId;
+          const ptTransfer = BATTLE_POINT_CFG.summit;
+          if (bp[winnerOrgId] !== undefined) bp[winnerOrgId] = (bp[winnerOrgId] || 0) + ptTransfer;
+          if (bp[loserOrgId] !== undefined) bp[loserOrgId] = Math.max(-50, (bp[loserOrgId] || 0) - ptTransfer);
+          const winName = sr.winner === 'left' ? card[summitIdx].left.name : card[summitIdx].right.name;
+          events.push(`🏆 頂上決戦: ${winName}勝利！`);
+        }
+      }
+
+      return { card, results, battlePoints: bp, events };
+    },
+  },
+
   // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
   event: {
     /** D-2: Check if rivalry war should trigger (Q2/Q3 end) */
@@ -4458,10 +4974,13 @@ const Engine = {
         bpMsg = `、対戦pt-${BATTLE_POINT_CFG.war}`;
       }
       events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}${bpMsg}）`);
-      return {
-        state: { ...state, orgPop: Math.max(0, Math.min(100, state.orgPop + popDelta)), battlePoints: bp, warThisSeason: true, pendingEvent: null },
-        events
-      };
+      const newOrgPop = Math.max(0, Math.min(100, state.orgPop + popDelta));
+      const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null };
+      if (!warState.ppvUnlocked && Engine.ppv.checkUnlock(newOrgPop)) {
+        warState.ppvUnlocked = true;
+        events.push('🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます');
+      }
+      return { state: warState, events };
     },
 
     /** D-4: Check summit match conditions */
@@ -4497,13 +5016,13 @@ const Engine = {
           bp[opponentOrgId] = (bp[opponentOrgId] || 0) - ptTransfer;
         }
         events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${ptTransfer}`);
-        return {
-          state: { ...state,
-            orgPop: Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward),
-            battlePoints: bp,
-            pendingEvent: null
-          }, events
-        };
+        const summitOrgPop = Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward);
+        const summitState = { ...state, orgPop: summitOrgPop, battlePoints: bp, pendingEvent: null };
+        if (!summitState.ppvUnlocked && Engine.ppv.checkUnlock(summitOrgPop)) {
+          summitState.ppvUnlocked = true;
+          events.push('🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます');
+        }
+        return { state: summitState, events };
       }
       // 敗北時: ポイントは相手に移動
       const ptTransfer = BATTLE_POINT_CFG.summit;
@@ -4775,6 +5294,7 @@ const Engine = {
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
+              ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined,
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
@@ -4805,6 +5325,18 @@ const Engine = {
 
     // ── REGULAR WEEK ADVANCE ──
     s = { ...s, week: s.week + 1 };
+
+    // PPV Week 48: PPVフェーズがアクティブなら通常興行をバイパス
+    if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'locked') {
+      s = { ...s, ppvPhase: 'show' };
+      events.push(`🏟️ PPV GRAND FINAL「${s.ppvName}」開催日！`);
+      return { state: { ...s, weekPhase: 'ppvShow' }, events };
+    }
+    if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'tv') {
+      events.push(`📺 PPV GRAND FINAL「${s.ppvName}」テレビ中継`);
+      return { state: { ...s, weekPhase: 'ppvTV' }, events };
+    }
+
     if (s.week > 48) {
       // F2: Force-resolve any pending negotiation before offseason
       if (s.pendingNegotiation) {
@@ -4867,12 +5399,38 @@ const Engine = {
       return { state: { ...s, weekPhase: 'event' }, events };
     }
 
-    // D-4: Summit match check (PPV weeks, rank ≤ 2)
-    const summitCheck = Engine.event.checkSummitMatch(s);
-    if (summitCheck) {
-      s = { ...s, pendingEvent: summitCheck };
-      events.push(`🏆 頂上決戦のチャンス！ ${summitCheck.orgName}のエース${summitCheck.aiFighter.name}に挑戦可能`);
-      return { state: { ...s, weekPhase: 'event' }, events };
+    // PPV GRAND FINAL: Week 43 エントリー受付
+    if (s.week === PPV_ENTRY_WEEK) {
+      const ppvRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBBF1));
+      const ppvName = Engine.ppv.pickName(ppvRng);
+      if (s.ppvUnlocked) {
+        // AI団体のエントリー自動生成
+        const rankings = s.rankings || [];
+        const aiEntries = {};
+        RIVAL_ORGS.forEach(org => {
+          const orgRank = rankings.find(r => r.orgId === org.id);
+          const rank = orgRank ? orgRank.rank : 4;
+          const slots = Engine.ppv.getSlotCount(rank);
+          const aiData = s.aiOrgs[org.id];
+          aiEntries[org.id] = aiData ? Engine.ppv.getAIEntries(aiData, slots) : [];
+        });
+        s = { ...s, ppvPhase: 'entry', ppvName, _ppvAIEntries: aiEntries };
+        events.push(`🏟️ PPV GRAND FINAL「${ppvName}」エントリー受付開始！出場選手を選んでください`);
+        return { state: { ...s, weekPhase: 'ppvEntry' }, events };
+      } else {
+        // テレビ観戦モード予約
+        s = { ...s, ppvPhase: 'tv', ppvName };
+      }
+    }
+
+    // D-4: Summit match check (PPV weeks, rank ≤ 2) — PPV統合時はスキップ
+    if (!s.ppvPhase || s.ppvPhase === null) {
+      const summitCheck = Engine.event.checkSummitMatch(s);
+      if (summitCheck) {
+        s = { ...s, pendingEvent: summitCheck };
+        events.push(`🏆 頂上決戦のチャンス！ ${summitCheck.orgName}のエース${summitCheck.aiFighter.name}に挑戦可能`);
+        return { state: { ...s, weekPhase: 'event' }, events };
+      }
     }
 
     return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
@@ -5166,6 +5724,11 @@ const Engine = {
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
       endingClearedSeason: null,
+      // PPV GRAND FINAL
+      ppvUnlocked: false,
+      ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
+      ppvPhase: null,      // null | 'entry' | 'locked' | 'show' | 'tv'
+      ppvName: '',
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;

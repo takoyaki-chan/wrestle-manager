@@ -1645,6 +1645,17 @@ const Storage = {
         G = { ...G, _migrated_matchuplog_v2: true };
       }
 
+      // PPV GRAND FINAL マイグレーション
+      if (!G._migrated_ppv_v2) {
+        G = { ...G,
+          ppvUnlocked: (G.orgPop || 0) >= PPV_UNLOCK_POP,
+          ppvEntries: G.ppvEntries || null,
+          ppvPhase: G.ppvPhase || null,
+          ppvName: G.ppvName || '',
+          _migrated_ppv_v2: true,
+        };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2334,6 +2345,12 @@ const App = {
   // Show preparation
   startShowPrep() {
     if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
+    // PPV週は通常興行不可
+    if (G.ppvPhase === 'locked' || G.ppvPhase === 'show') {
+      Audio.play('error');
+      showToast('今週はPPV GRAND FINALが開催されます。通常興行は行えません。');
+      return;
+    }
     Audio.play('crowd');
     G = {
       ...G,
@@ -2589,6 +2606,12 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    // PPV context: route to PPV handler
+    const pp = App._ppvPreview;
+    if (pp && pp.currentWatching >= 0) {
+      App._receivePPVBattleResult(data);
+      return;
+    }
     // War context: route to war handler
     const wp = App._warPreview;
     if (wp && wp.currentWatching >= 0) {
@@ -2633,7 +2656,12 @@ const App = {
     // Auto-skip the stuck match
     const sp = App._showPreview;
     const wp = App._warPreview;
-    if (sp && sp.currentWatching >= 0) {
+    const ppvPrev = App._ppvPreview;
+    if (ppvPrev && ppvPrev.currentWatching >= 0) {
+      const idx = ppvPrev.currentWatching;
+      ppvPrev.currentWatching = -1;
+      if (!ppvPrev.results[idx]) App.ppvSkipMatch(idx);
+    } else if (sp && sp.currentWatching >= 0) {
       const idx = sp.currentWatching;
       sp.currentWatching = -1;
       if (!sp.results[idx]) App.skipMatch(idx);
@@ -3453,6 +3481,17 @@ const App = {
     G = { ...G, monthlyFinanceBuffer: [] };
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // PPV Week 48: PPVフェーズに入った場合は専用フローへ
+    if (G.weekPhase === 'ppvShow') {
+      Storage.autoSave();
+      App.initPPVShow();
+      return;
+    }
+    if (G.weekPhase === 'ppvTV') {
+      Storage.autoSave();
+      App.initPPVTV();
+      return;
+    }
     // v0.96: Update mission completions
     if (G.missionEnabled) {
       const mResult = Mission.updateCompleted(G);
@@ -4181,6 +4220,309 @@ const App = {
     setTimeout(() => renderWarFinalResult(ev, wp.results, playerWins, aiWins, eventWon), 300);
     App._warPreview = null;
   }
+};
+
+// ══════════════════════════════════════════════
+//  PPV GRAND FINAL: Show Day System (Step 4)
+// ══════════════════════════════════════════════
+App._ppvPreview = null;
+
+App.initPPVShow = function() {
+  const ppvDay = Engine.ppv.preparePPVDay(G);
+  App._ppvPreview = {
+    card: ppvDay.card,
+    substitutions: ppvDay.substitutions,
+    summitPair: ppvDay.summitPair,
+    results: new Array(ppvDay.card.length).fill(null),
+    currentWatching: -1,
+  };
+  Audio.bgm.play('battle');
+
+  // 代替通知ポップアップ
+  if (ppvDay.substitutions.length > 0) {
+    let popupChain = Promise.resolve();
+    ppvDay.substitutions.forEach(sub => {
+      const orgName = sub.orgId === 'player' ? (G.orgName || '自団体') : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
+      popupChain = popupChain.then(() => new Promise(resolve => {
+        showEventPopup({
+          type: 'system', tone: 'negative',
+          message: `${sub.original}が出場不能！`,
+          detail: `${orgName}の${sub.substitute}が緊急出場`,
+        });
+        setTimeout(resolve, 1500);
+      }));
+    });
+    popupChain.then(() => renderPPVMatchPreview());
+  } else {
+    renderPPVMatchPreview();
+  }
+};
+
+App.ppvWatchMatch = function(idx) {
+  const pp = App._ppvPreview;
+  if (!pp || pp.results[idx]) return;
+  pp.currentWatching = idx;
+  const match = pp.card[idx];
+
+  const overlay = document.getElementById('battleOverlay');
+  overlay.style.display = 'block';
+  const escBtn = document.getElementById('battleEscapeBtn');
+  if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+  clearTimeout(App._escBtnTimer);
+  App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
+
+  const iframe = document.getElementById('battleIframe');
+  const total = pp.card.length;
+  const matchNum = total - idx;
+  const msg = {
+    type: 'START_MATCH',
+    left: {
+      ...match.left, condition: 80,
+      portraitUrl: getPortraitUrl(match.left.id),
+      vl: match.left.voiceLines || match.left.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.left.id]) || ['…！']
+    },
+    right: {
+      ...match.right, condition: 80,
+      portraitUrl: getPortraitUrl(match.right.id),
+      vl: match.right.voiceLines || match.right.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.right.id]) || ['…！']
+    },
+    matchInfo: {
+      header: match.isSummit ? '🏆 頂上決戦' : `PPV 第${matchNum}試合`,
+      subHeader: `${match.left.name} vs ${match.right.name}`,
+      matchNum,
+      totalMatches: total,
+      isTitle: false,
+    }
+  };
+  let sent = false;
+  const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
+  iframe.onload = () => setTimeout(sendOnce, 200);
+  const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
+  iframe.src = baseSrc + '?t=' + Date.now();
+  setTimeout(sendOnce, 800);
+};
+
+App.ppvSkipMatch = function(idx) {
+  const pp = App._ppvPreview;
+  if (!pp || pp.results[idx]) return;
+  const match = pp.card[idx];
+  const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
+  pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+  Audio.play('tick');
+  renderPPVMatchPreview();
+  if (pp.results.every(r => r !== null)) App.finalizePPV();
+};
+
+App.ppvSkipAll = function() {
+  const pp = App._ppvPreview;
+  if (!pp) return;
+  pp.card.forEach((match, idx) => {
+    if (pp.results[idx]) return;
+    const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
+    pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+  });
+  Audio.play('bellx3');
+  App.finalizePPV();
+};
+
+App._receivePPVBattleResult = function(data) {
+  clearTimeout(App._escBtnTimer);
+  const escBtn = document.getElementById('battleEscapeBtn');
+  if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+  const pp = App._ppvPreview;
+  if (!pp || pp.currentWatching < 0) return;
+  const idx = pp.currentWatching;
+  if (pp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; pp.currentWatching = -1; return; }
+  const match = pp.card[idx];
+  pp.results[idx] = {
+    left: match.left, right: match.right,
+    winner: data.winner,
+    finType: data.finType || '', finMove: data.finMove || '',
+    turns: data.turns || 0,
+    mq: data.mq || 50,
+    hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+    hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+    log: data.log || []
+  };
+  document.getElementById('battleOverlay').style.display = 'none';
+  pp.currentWatching = -1;
+  try { Audio.play('coin'); } catch(e) {}
+  renderPPVMatchPreview();
+  if (pp.results.every(r => r !== null)) App.finalizePPV();
+};
+
+App.finalizePPV = function() {
+  const pp = App._ppvPreview;
+  if (!pp) return;
+  if (pp.results.some(r => r === null)) return;
+
+  // 結果反映
+  const result = Engine.ppv.applyPPVResults(G, pp.card, pp.results, pp.summitPair);
+  let s = result.state;
+  let roster = s.roster.map(c => ({ ...c }));
+  const events = result.events;
+
+  // Step 5-6: ブレークスルー判定 + careerBestMQ + スランプ + モチベ喪失
+  const pendingGrowthEvents = [];
+  const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF7));
+  pp.results.forEach((r, idx) => {
+    const match = pp.card[idx];
+    [
+      { fId: match.left.id, oppF: match.right, won: r.winner === 'left' },
+      { fId: match.right.id, oppF: match.left, won: r.winner === 'right' },
+    ].forEach(({ fId, oppF, won }) => {
+      const fighter = roster.find(c => c.id === fId);
+      if (!fighter) return; // プレイヤー所属でない
+      const oppOvr = Engine.util.ov(oppF);
+      const isRivalryResolution = !!r.rivalryResolved;
+
+      // ブレークスルー判定
+      const btContext = { isTitle: false, won, isPPV: true, isRivalryResolution, isWarMatch: false };
+      const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
+        btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
+      );
+      if (btResult) {
+        roster = roster.map(c => c.id === fId ? btResult.fighter : c);
+        pendingGrowthEvents.push({
+          type: 'breakthrough', fighterId: fId,
+          stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
+        });
+      }
+
+      // careerBestMQ 更新
+      const updatedFighter = roster.find(c => c.id === fId);
+      if (r.mq > (updatedFighter.careerBestMQ || 0)) {
+        roster = roster.map(c => c.id === fId ? { ...c, careerBestMQ: r.mq } : c);
+      }
+
+      // 敗北スランプ判定
+      if (!won) {
+        const slumpRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF8, fId));
+        const slumpFighter = roster.find(c => c.id === fId);
+        if (Engine.growthEvents.checkSlump(slumpRng, slumpFighter, 'defeat')) {
+          const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
+          roster = roster.map(c => c.id === fId ? newF : c);
+          pendingGrowthEvents.push({ type: 'slump_start', fighterId: fId, trigger: 'defeat' });
+        }
+      }
+
+      // momentum更新 + モチベ喪失チェック
+      const momRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF9, fId));
+      const momFighter = roster.find(c => c.id === fId);
+      let updF = Engine.growthEvents.updateSlumpMomentumAfterMatch(momFighter, r.mq, won, momRng);
+      updF = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(updF, r.mq, won, momRng);
+      if (!won && updF.slump) {
+        const mlRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBFA, fId));
+        if (Engine.growthEvents.checkMotivationLoss(mlRng, updF, 'defeat')) {
+          updF = Engine.growthEvents.applyMotivationLoss(updF, s.season, s.week);
+          pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: fId });
+        }
+      }
+      if (updF !== momFighter) {
+        roster = roster.map(c => c.id === fId ? updF : c);
+      }
+    });
+  });
+
+  s = { ...s, roster };
+
+  // シーズンstats更新
+  const stats = { ...(G.seasonStats || {}) };
+  stats.showCount = (stats.showCount || 0) + 1;
+  pp.results.forEach(r => {
+    if (r.mq > (stats.bestMQ || 0)) { stats.bestMQ = r.mq; stats.bestMQMatch = `PPV ${r.left?.name || '?'} vs ${r.right?.name || '?'}`; }
+  });
+
+  G = { ...G, ...s, seasonStats: stats, weekPhase: 'showExec', gameLog: [...G.gameLog, ...events] };
+
+  // ポップアップ用データを保存
+  if (pendingGrowthEvents.length > 0) {
+    G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
+  }
+  App._pendingRivalryResolutions = result.rivalryResolutions || [];
+
+  const savedCard = pp.card;
+  const savedResults = pp.results;
+  const savedSummitPair = pp.summitPair;
+  const savedHeatChange = result.heatChange;
+  const savedMQBonuses = result.mqBonuses;
+  App._ppvPreview = null;
+
+  Audio.bgm.playJingle('victory');
+  renderPPVResult(savedCard, savedResults, savedSummitPair, savedHeatChange, savedMQBonuses);
+};
+
+App.closePPVResult = function() {
+  const resultOverlay = document.getElementById('showResultOverlay');
+  resultOverlay.classList.remove('active');
+  Audio.play('coin');
+  Audio.bgm.play('management');
+
+  // Step 5-6: ポップアップ用データ取得 + Gからクリア
+  const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
+  if (G._pendingGrowthEvents) {
+    const { _pendingGrowthEvents: _, ...cleanG } = G;
+    G = cleanG;
+  }
+  const pendingResolutions = App._pendingRivalryResolutions || [];
+  App._pendingRivalryResolutions = [];
+
+  // tickWeek→settlement→week48完了
+  const result = Engine.tickWeek(G);
+  const stats = { ...G.seasonStats };
+  if (result.state.weeklyFinance) {
+    stats.totalRevenue += result.state.weeklyFinance.income || 0;
+    stats.totalExpense += result.state.weeklyFinance.expense || 0;
+  }
+  const fh = [...(G.fundsHistory || []), result.state.funds];
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  G = { ...G, showCard: [] };
+
+  App._refreshTicker();
+  App.checkMissionUpdate();
+  App.checkSurvivalUpdate();
+  // Step 5-6: バフ消費
+  App._tickMilestoneBuffsShow();
+  App._applyWeeklyBuffEffects();
+  App._tickMilestoneBuffsWeekly();
+  Storage.autoSave();
+
+  // Step 5-6: ポップアップチェーン（逆順に組み立て: growth ← resolution）
+  let nextAction = null;
+  if (pendingGrowthEventsShow.length > 0) {
+    const after = nextAction;
+    nextAction = () => showGrowthEventPopups(pendingGrowthEventsShow, after || (() => {}));
+  }
+  if (pendingResolutions.length > 0) {
+    const after = nextAction;
+    nextAction = () => showRivalryPopups(pendingResolutions, after || (() => {}));
+  }
+  if (nextAction) {
+    setTimeout(nextAction, 200);
+  }
+
+  // advanceWeek → オフシーズンへ
+  App.advanceWeek();
+};
+
+App.initPPVTV = function() {
+  const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
+  const tvResult = Engine.ppv.simulateTVResults(G, tvRng);
+
+  // battlePoints反映
+  G = { ...G, battlePoints: tvResult.battlePoints, gameLog: [...G.gameLog, ...tvResult.events] };
+
+  renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
+};
+
+App.closePPVTV = function() {
+  const overlay = document.getElementById('showResultOverlay');
+  overlay.classList.remove('active');
+  Audio.play('coin');
+
+  // ppvPhaseクリア→advanceWeek→オフシーズンへ
+  G = { ...G, ppvPhase: null };
+  App.advanceWeek();
 };
 
 // v2.1: クレジット画面
