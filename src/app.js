@@ -1708,6 +1708,9 @@ const Storage = {
       G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
       if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
       refreshAll();
+      // PPVフェーズの復帰: オーバーレイを再初期化
+      if (G.weekPhase === 'ppvShow') App.initPPVShow();
+      else if (G.weekPhase === 'ppvTV') App.initPPVTV();
       return true;
     }
     return false;
@@ -1723,6 +1726,9 @@ const Storage = {
     if (data && Storage.deserialize(data)) {
       if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
       refreshAll();
+      // PPVフェーズの復帰: オーバーレイを再初期化
+      if (G.weekPhase === 'ppvShow') App.initPPVShow();
+      else if (G.weekPhase === 'ppvTV') App.initPPVTV();
     }
   },
 
