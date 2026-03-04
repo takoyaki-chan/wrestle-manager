@@ -3095,7 +3095,9 @@ function showCareActionModal(state, onConfirm) {
     const individualActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition !== 'slump_or_motivation_loss');
     const slumpActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition === 'slump_or_motivation_loss');
     const teamActions = Object.values(actions).filter(a => a.category === 'team');
-    const anyInSlump = roster.some(f => typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump && Engine.careActions.isInSlump(f));
+    const anyInSlump = roster.some(f => Engine.careActions && Engine.careActions.isInSlump(f));
+    const currentWeek = state.week || 0;
+    const teamWeekUsed = state._teamCareWeekUsed || {};
 
     let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
 
@@ -3141,14 +3143,18 @@ function showCareActionModal(state, onConfirm) {
     html += '<div class="care-section-label" style="margin-top:16px">🏟️ 団体向け</div>';
     teamActions.forEach(a => {
       const canAfford = funds >= a.cost;
-      const disabled = !canAfford ? 'disabled' : '';
+      const usedThisWeek = teamWeekUsed[a.id] === currentWeek;
+      const disabled = !canAfford || usedThisWeek ? 'disabled' : '';
+      const costLabel = usedThisWeek
+        ? `<span style="color:var(--text-dim);font-size:11px">今週使用済</span>`
+        : `<span class="care-action-cost">${a.cost}万</span>`;
       html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
         <span class="care-action-emoji">${a.emoji}</span>
         <div class="care-action-info">
           <div class="care-action-name">${a.label}</div>
           <div class="care-action-desc">${a.desc}</div>
         </div>
-        <span class="care-action-cost">${a.cost}万</span>
+        ${costLabel}
       </div>`;
     });
 
@@ -3188,6 +3194,76 @@ function showCareActionModal(state, onConfirm) {
     return `<div class="care-expect"><div class="care-expect-label">期待される効果</div>${items.map(i => `<div class="care-expect-item">${i}</div>`).join('')}</div>`;
   }
 
+  // ── 結果画面（実行後、モーダル内に直接表示） ─────────────────────────────
+  function renderResult(data) {
+    if (!data) { overlay.classList.remove('active'); return; }
+    const { fighter, fighters, text, changes, cost, remainingFunds, emoji, label, actionId } = data;
+    const themeMap = {
+      bonus: '#f39c12', costume: '#9b59b6', trainer: '#e74c3c',
+      media: '#3498db', special_treatment: '#1abc9c',
+      encourage: '#27ae60', refresh_leave: '#16a085',
+      party: '#e8439f', camp: '#2980b9',
+    };
+    const color = themeMap[actionId] || '#e8439f';
+    const isPremium = cost >= 100;
+
+    let html = `<div class="care-result-header" style="border-color:${color}">`;
+    html += `<span class="care-result-action-emoji">${emoji}</span>`;
+    html += `<span class="care-result-action-label">${label}</span>`;
+    html += `</div>`;
+
+    if (fighter) {
+      html += `<div class="care-result-portrait-wrap">`;
+      html += portraitImg(fighter.id, isPremium ? 150 : 120, 'care-result-portrait');
+      html += `<div class="care-result-name">${fighter.name}</div>`;
+      html += `</div>`;
+    } else if (fighters && fighters.length > 0) {
+      const shown = fighters.filter(f => !f.injury && !f.isRental).slice(0, 5);
+      html += `<div class="care-result-team-row">`;
+      shown.forEach(f => {
+        html += `<div class="care-result-team-member">${portraitImg(f.id, 56, '')}<div class="care-result-team-name">${f.name.split(/\s/).pop()}</div></div>`;
+      });
+      if (fighters.length > 5) html += `<div class="care-result-team-more">+${fighters.length - 5}人</div>`;
+      html += `</div>`;
+    }
+
+    if (text) {
+      html += `<div class="care-result-speech">「${text}」</div>`;
+    }
+
+    if (changes && changes.length > 0) {
+      html += `<div class="care-result-changes">`;
+      changes.forEach((c, i) => {
+        if (c.text !== undefined) {
+          html += `<div class="care-result-change" style="animation-delay:${i * 0.08}s">`;
+          html += `<span class="care-rc-label">${c.emoji || ''} ${c.label}</span>`;
+          html += `<span class="care-rc-val care-rc-up">${c.text}</span></div>`;
+        } else {
+          const diff = c.after - c.before;
+          const cls = diff >= 0 ? 'care-rc-up' : 'care-rc-down';
+          const sign = diff >= 0 ? '+' : '';
+          html += `<div class="care-result-change" style="animation-delay:${i * 0.08}s">`;
+          html += `<span class="care-rc-label">${c.emoji || ''} ${c.label}</span>`;
+          html += `<span class="care-rc-val ${cls}">${c.before}<span class="care-rc-arrow"> → </span><strong>${c.after}</strong> <span class="care-rc-diff">(${sign}${diff})</span></span></div>`;
+        }
+      });
+      html += `</div>`;
+    }
+
+    if (cost > 0) {
+      const fc = remainingFunds < 200 ? '#e74c3c' : 'var(--text-dim)';
+      html += `<div class="care-result-cost">費用 <strong style="color:#e8439f">-${cost}万</strong>｜残金 <strong style="color:${fc}">${remainingFunds.toLocaleString()}万</strong></div>`;
+    }
+
+    html += `<button class="btn care-result-close-btn" id="careResultCloseBtn" style="border-color:${color};color:${color}">閉じる ✓</button>`;
+    box.innerHTML = html;
+
+    requestAnimationFrame(() => {
+      box.querySelectorAll('.care-result-change').forEach(el => el.classList.add('care-rc-animate'));
+    });
+    document.getElementById('careResultCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
+  }
+
   // A-2: 団体向けアクション確認画面
   function renderTeamConfirm(actionId, cfg) {
     const remainingFunds = funds - cfg.cost;
@@ -3201,8 +3277,9 @@ function showCareActionModal(state, onConfirm) {
     box.innerHTML = html;
 
     document.getElementById('careTeamConfirmBtn').addEventListener('click', () => {
-      if (onConfirm) onConfirm(actionId, null);
-      overlay.classList.remove('active');
+      const displayData = onConfirm ? onConfirm(actionId, null) : null;
+      if (displayData) renderResult(displayData);
+      else overlay.classList.remove('active');
     });
     document.getElementById('careTeamBackBtn').addEventListener('click', renderMain);
   }
@@ -3227,8 +3304,9 @@ function showCareActionModal(state, onConfirm) {
     box.innerHTML = html;
 
     document.getElementById('careIndivConfirmBtn').addEventListener('click', () => {
-      if (onConfirm) onConfirm(actionId, fighterId);
-      overlay.classList.remove('active');
+      const displayData = onConfirm ? onConfirm(actionId, fighterId) : null;
+      if (displayData) renderResult(displayData);
+      else overlay.classList.remove('active');
     });
     document.getElementById('careIndivBackBtn').addEventListener('click', () => renderFighterSelect(actionId, cfg));
   }
@@ -3239,7 +3317,7 @@ function showCareActionModal(state, onConfirm) {
     const selectableRoster = isInjuredOnly
       ? roster.filter(f => f.injury)
       : isSlumpOnly
-        ? roster.filter(f => !f.injury && (typeof Engine !== 'undefined' && Engine.careActions && Engine.careActions.isInSlump ? Engine.careActions.isInSlump(f) : true))
+        ? roster.filter(f => !f.injury && Engine.careActions && Engine.careActions.isInSlump(f))
         : roster.filter(f => !f.injury);
 
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
@@ -3252,7 +3330,8 @@ function showCareActionModal(state, onConfirm) {
       html += '<select class="care-fighter-select" id="careFighterSelect">';
       selectableRoster.forEach(f => {
         const injuryLabel = f.injury ? ` (怪我中 ${f.injury.weeksLeft}週)` : '';
-        html += `<option value="${f.id}">${f.name}${injuryLabel}</option>`;
+        const slumpLabel = f.slump ? ' [スランプ]' : f.motivationLoss ? ' [モチベ喪失]' : '';
+        html += `<option value="${f.id}">${f.name}${injuryLabel}${slumpLabel}</option>`;
       });
       html += '</select>';
       const costLabel = cfg.cost > 0 ? `${cfg.cost}万` : '無料';
@@ -3267,12 +3346,12 @@ function showCareActionModal(state, onConfirm) {
       confirmBtn.addEventListener('click', () => {
         const sel = document.getElementById('careFighterSelect');
         const fighterId = sel ? parseInt(sel.value) : null;
-        // S1.1: cost >= 100 は確認画面を挟む
         if (cfg.cost >= 100) {
           renderIndividualConfirm(actionId, cfg, fighterId);
         } else {
-          if (onConfirm) onConfirm(actionId, fighterId);
-          overlay.classList.remove('active');
+          const displayData = onConfirm ? onConfirm(actionId, fighterId) : null;
+          if (displayData) renderResult(displayData);
+          else overlay.classList.remove('active');
         }
       });
     }

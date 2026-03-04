@@ -3704,48 +3704,54 @@ const App = {
     if (showTrialLimitMessage('ケアアクション')) return; // 体験版
     Audio.play('click');
     showCareActionModal(G, (actionId, fighterId) => {
-      App.executeCareAction(actionId, fighterId);
+      return App.executeCareAction(actionId, fighterId);  // displayData を返す
     });
   },
 
   // v2.0: ケアアクション実行 (event-system-spec-v2.md §2)
+  // 返り値: displayData オブジェクト（モーダル内結果画面用）または null（エラー時）
   executeCareAction(actionId, fighterId) {
     const result = Engine.careActions.execute(actionId, fighterId, G);
-    if (!result) { showToast('アクションが見つかりません'); return; }
-    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
-    if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return; }
-    if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return; }
-    if (result.error === 'cooldown') { showToast('クールダウン中です（2週に1回まで）'); return; }
-    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return; }
+    if (!result) { showToast('アクションが見つかりません'); return null; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return null; }
+    if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return null; }
+    if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return null; }
+    if (result.error === 'not_slump')           { showToast('スランプ中の選手ではありません'); return null; }
+    if (result.error === 'cooldown') { showToast('今週はすでに使用済みです'); return null; }
+    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return null; }
 
     // state 更新
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
       lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      _teamCareWeekUsed: result._teamCareWeekUsed || G._teamCareWeekUsed || {},
       gameLog: [...(G.gameLog || []), ...(result.events || [])]
     };
     Storage.autoSave();
 
-    // フィードバック: 選手の顔+セリフ+before/after表示
+    // displayData 構築（モーダル内結果画面へ渡す）
     const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
     const reactionKey = result.reactionKey || actionId;
-    const reactFighterId = result.reactionFighterId;
     const careChanges = result.changes || [];
-    if (reactFighterId != null) {
-      const fighter = G.roster.find(f => f.id === reactFighterId);
+    let displayData = null;
+
+    if (result.reactionFighterId != null) {
+      const fighter = G.roster.find(f => f.id === result.reactionFighterId);
       if (fighter) {
         const text = Engine.careActions.getReactionText(reactionKey, fighter);
-        _showCareReaction(fighter, text, careChanges, cfg.cost || 0, result.funds);
+        displayData = { fighter, fighters: null, text, changes: careChanges,
+          cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
       }
     } else {
-      // 団体向け: 代表の1人を選んでセリフ表示
+      // 団体向け: ランダムに1人を代表として選ぶ + 複数アイコン用
       const healthyRoster = G.roster.filter(f => !f.injury && !f.isRental);
-      if (healthyRoster.length > 0) {
-        const rep = healthyRoster[Math.floor(Math.random() * healthyRoster.length)];
-        const text = Engine.careActions.getReactionText(reactionKey, rep);
-        _showCareReaction(rep, text, careChanges, cfg.cost || 0, result.funds);
-      }
+      const rep = healthyRoster.length > 0
+        ? healthyRoster[Math.floor(Math.random() * healthyRoster.length)]
+        : null;
+      const text = rep ? Engine.careActions.getReactionText(reactionKey, rep) : null;
+      displayData = { fighter: rep, fighters: healthyRoster, text, changes: careChanges,
+        cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
     }
 
     // サウンド: 費用に応じた達成感
@@ -3753,6 +3759,7 @@ const App = {
     else if (cfg.cost >= 80) Audio.play('event');
     else Audio.play('notify');
     renderManagePanel();
+    return displayData;
   },
 
   // v0.96: Mission system

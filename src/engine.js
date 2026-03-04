@@ -6027,7 +6027,7 @@ Engine.careActions = {
   },
 
   // ── アクション実行（純粋関数） ─────────────────────────────────────────────
-  // 返り値: { roster, state, funds, events, reactionKey, reactionFighterId }
+  // 返り値: { roster, funds, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed }
   execute(actionId, fighterId, state) {
     const cfg = Engine.careActions.getConfig(actionId);
     if (!cfg) return null;
@@ -6036,6 +6036,7 @@ Engine.careActions = {
 
     let roster = [...state.roster];
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    let _teamCareWeekUsed = state._teamCareWeekUsed ? { ...state._teamCareWeekUsed } : {};
     const events = [];
     let reactionKey = actionId;
     let reactionFighterId = fighterId;
@@ -6056,33 +6057,34 @@ Engine.careActions = {
       let f = { ...roster[idx] };
       const _before = { trust: f.trust != null ? f.trust : 50, popularity: f.popularity || 0, condition: f.condition || 50 };
 
+      // 全個人アクション: 同一選手への同一アクションは1週に1回まで
+      const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
+      const cooldown = cfg.cooldown != null ? cfg.cooldown : 1;
+      if (state.week - lastUsed < cooldown) return { error: 'cooldown' };
+
       if (actionId === 'bonus') {
         const repeatCount = Engine.careActions.getBonusRepeatCount(f);
         const trustGain = Math.max(1, cfg.effects.trust - repeatCount * 2);  // 逓減
         f = applyTrust(f, trustGain);
         f._bonusRepeat = repeatCount + 1;
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
         events.push(`💴 ${f.name}にボーナスを支給（信頼度+${trustGain}）`);
       } else if (actionId === 'costume') {
-        // v2.0: 2週に1回制限
-        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`👗 ${f.name}のコスチュームを新調（人気+${cfg.effects.popularity}、信頼度+${cfg.effects.trust}）`);
       } else if (actionId === 'trainer') {
-        // 専属トレーナー: 成長バフを付与（growthPenaltyの逆パターンとして実装）
         f = applyTrust(f, cfg.effects.trust);
         f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`🏋️ ${f.name}に専属トレーナーを手配（${cfg.effects.growth_boost.weeks}週間 成長+30%）`);
       } else if (actionId === 'media') {
-        // v2.0: 2週に1回制限
-        if (state.week - ((f._careWeekUsed || {})[actionId] || -99) < 2) return { error: 'cooldown' };
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
-        // 練習休み: condition を少し回復（スキップ扱い）
         f = { ...f, condition: Math.min(100, (f.condition || 70) + 5) };
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`📺 ${f.name}のメディア露出を手配（人気+${cfg.effects.popularity}）`);
@@ -6091,7 +6093,36 @@ Engine.careActions = {
         const cur = f.injury.weeksLeft || 0;
         const reduced = Math.max(1, Math.floor(cur / 2));
         f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         events.push(`🏥 ${f.name}の特別治療（回復期間 ${cur}週→${reduced}週）`);
+      } else if (actionId === 'encourage') {
+        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
+        const highTrust = (f.trust || 50) >= 60;
+        const momentumBoost = highTrust ? 4.0 : 2.5;
+        const trustGain = highTrust ? 2 : 1;
+        if (f.slump) {
+          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+        }
+        if (f.motivationLoss) {
+          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
+        }
+        f = applyTrust(f, trustGain);
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
+        reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
+        events.push(`💬 ${f.name}に声かけ（スランプ回復促進）`);
+      } else if (actionId === 'refresh_leave') {
+        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
+        if (f.slump) {
+          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + 12.0 } };
+        }
+        if (f.motivationLoss) {
+          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + 8.0 } };
+        }
+        const newCondition = Math.min(100, (f.condition || 70) + (cfg.effects.condition || 15));
+        f = { ...f, condition: newCondition };
+        f = applyTrust(f, cfg.effects.trust || 3);
+        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
+        events.push(`🌴 ${f.name}にリフレッシュ休暇（スランプ回復大促進・状態+15）`);
       }
 
       roster[idx] = f;
@@ -6101,14 +6132,19 @@ Engine.careActions = {
       if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: _before.popularity, after: _after.popularity });
       if (_after.condition !== _before.condition) changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
       if (actionId === 'trainer') changes.push({ label: '成長速度', emoji: '📈', text: `${cfg.effects.growth_boost.weeks}週間 +30%` });
-      if (actionId === 'special_treatment' && f.injury) {
-        const cur = roster[idx].injury.weeksLeft;
-        changes.push({ label: '離脱期間', emoji: '🏥', text: `${Math.ceil(cur * 2)}週 → ${cur}週に短縮` });
+      if (actionId === 'special_treatment' && roster[idx].injury) {
+        const reduced = roster[idx].injury.weeksLeft;
+        changes.push({ label: '離脱期間', emoji: '🏥', text: `${Math.ceil(reduced * 2)}週 → ${reduced}週に短縮` });
+      }
+      if (actionId === 'encourage' || actionId === 'refresh_leave') {
+        changes.push({ label: 'スランプ回復', emoji: '💪', text: '促進中（次週以降に効果発現）' });
       }
     }
 
     // ── 団体全体向けアクション ──
     if (cfg.category === 'team') {
+      // 団体向けも1週に1回まで
+      if (_teamCareWeekUsed[actionId] === state.week) return { error: 'cooldown' };
       const _beforeMorale = lockerRoomMorale;
       if (actionId === 'party') {
         roster = roster.map(f => {
@@ -6119,7 +6155,8 @@ Engine.careActions = {
         changes.push({ label: '全員の信頼度', emoji: '🤝', text: `+${cfg.effects.trust_all}` });
         changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
         events.push(`🎉 打ち上げ・慰労会を開催（全員の信頼度+${cfg.effects.trust_all}、雰囲気+${cfg.effects.morale}）`);
-        reactionFighterId = null;  // 全員反応
+        reactionFighterId = null;
+        _teamCareWeekUsed = { ..._teamCareWeekUsed, [actionId]: state.week };
       } else if (actionId === 'camp') {
         roster = roster.map(f => {
           if (f.injury) return f;
@@ -6130,11 +6167,12 @@ Engine.careActions = {
         changes.push({ label: '全員の成長速度', emoji: '📈', text: `${cfg.effects.growth_all.weeks}週間 +50%` });
         events.push(`⛺ 合宿を実施（全員の成長バフ+50%、${cfg.effects.growth_all.weeks}週間）`);
         reactionFighterId = null;
+        _teamCareWeekUsed = { ..._teamCareWeekUsed, [actionId]: state.week };
       }
     }
 
     const newFunds = (state.funds || 0) - cfg.cost;
-    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId, changes };
+    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed };
   },
 
   // ── トレーナーバフの週次消費（processManage内で呼び出し） ─────────────────
@@ -6162,6 +6200,11 @@ Engine.careActions = {
       const { _bonusRepeat: _, ...rest } = f;
       return rest;
     });
+  },
+
+  // ── スランプ/モチベ喪失状態チェック ────────────────────────────────────────
+  isInSlump(fighter) {
+    return !!(fighter.slump || fighter.motivationLoss);
   },
 
   // ── リアクションセリフ選択 ────────────────────────────────────────────────
