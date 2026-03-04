@@ -2854,8 +2854,8 @@ const Engine = {
       totalIncome += broadcast;
       if (broadcast > 0) details.push({ label: '放映権収入', val: broadcast, type: 'income' });
 
-      // v1.7: 育成補助金（orgPop 40未満の団体に支給）
-      const subsidy = Engine.economy.getSubsidy(G.orgPop);
+      // v1.7: 育成補助金（orgPop 40未満の団体に支給、通常モードは対象外）
+      const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
       totalIncome += subsidy;
       if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
 
@@ -3415,8 +3415,8 @@ const Engine = {
     const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles);
     s = { ...s, roster: trustResult.roster, lockerRoomMorale: Engine.trust.updateLockerRoomMorale(s, trustResult) };
 
-    // v1.7: 育成補助金打ち切り通知
-    if (state.orgPop < 40 && popResult.orgPop >= 40) {
+    // v1.7: 育成補助金打ち切り通知（通常モードは補助金なし）
+    if (state.difficultyMode !== 'hard' && state.orgPop < 40 && popResult.orgPop >= 40) {
       events.push('🏛️ 団体人気が40に到達！ 地域振興助成金の支給が終了しました。自立経営の始まりです！');
     }
 

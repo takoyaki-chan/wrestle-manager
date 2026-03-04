@@ -981,7 +981,7 @@ const Survival = {
 
     const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
     const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
-    const subsidy = Engine.economy.getSubsidy(G.orgPop);
+    const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
     const totalBaseIncome = sponsor + broadcast + subsidy;
 
     // Estimate average show income per week (shows happen ~every 4 weeks)
