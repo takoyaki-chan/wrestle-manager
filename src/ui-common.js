@@ -3213,7 +3213,7 @@ function showCareActionModal(state, onConfirm) {
   // ── 結果画面（実行後、モーダル内に直接表示） ─────────────────────────────
   function renderResult(data) {
     if (!data) { overlay.classList.remove('active'); return; }
-    const { fighter, fighters, text, changes, cost, remainingFunds, emoji, label, actionId } = data;
+    const { fighter, fighters, repFighter, text, changes, cost, remainingFunds, emoji, label, actionId, isTeam } = data;
     const themeMap = {
       bonus: '#f39c12', costume: '#9b59b6', trainer: '#e74c3c',
       media: '#3498db', special_treatment: '#1abc9c',
@@ -3228,23 +3228,35 @@ function showCareActionModal(state, onConfirm) {
     html += `<span class="care-result-action-label">${label}</span>`;
     html += `</div>`;
 
-    if (fighter) {
+    if (isTeam && fighters && fighters.length > 0) {
+      // 団体向け表示（camp / party）
+      const isCamp = actionId === 'camp';
+      const iconSize = isCamp ? 72 : 64;
+      const teamCls = isCamp ? 'camp-team' : 'party-team';
+      html += `<div class="care-result-team-row ${teamCls}">`;
+      fighters.forEach(f => {
+        html += `<div class="care-result-team-member">${portraitImg(f.id, iconSize, '')}<div class="care-result-team-name">${f.name.split(/\s/).pop()}</div></div>`;
+      });
+      html += `</div>`;
+      // 代表者セリフ
+      if (text && repFighter) {
+        html += `<div class="care-result-speech" style="border-left-color:${color}80">「${text}」<span style="font-size:11px;color:var(--text-dim);margin-left:6px">— ${repFighter.name}</span></div>`;
+      }
+      // camp: フレーバーテキスト
+      if (isCamp && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && fighters.length >= 2) {
+        const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
+        const shuffled = [...fighters].sort(() => Math.random() - 0.5);
+        const flavorText = tmpl.replace('{name1}', shuffled[0].name).replace('{name2}', shuffled[1] ? shuffled[1].name : shuffled[0].name);
+        html += `<div class="care-result-camp-flavor">${flavorText}</div>`;
+      }
+    } else if (fighter) {
       html += `<div class="care-result-portrait-wrap">`;
       html += portraitImg(fighter.id, isPremium ? 150 : 120, 'care-result-portrait');
       html += `<div class="care-result-name">${fighter.name}</div>`;
       html += `</div>`;
-    } else if (fighters && fighters.length > 0) {
-      const shown = fighters.filter(f => !f.injury && !f.isRental).slice(0, 5);
-      html += `<div class="care-result-team-row">`;
-      shown.forEach(f => {
-        html += `<div class="care-result-team-member">${portraitImg(f.id, 56, '')}<div class="care-result-team-name">${f.name.split(/\s/).pop()}</div></div>`;
-      });
-      if (fighters.length > 5) html += `<div class="care-result-team-more">+${fighters.length - 5}人</div>`;
-      html += `</div>`;
-    }
-
-    if (text) {
-      html += `<div class="care-result-speech">「${text}」</div>`;
+      if (text) {
+        html += `<div class="care-result-speech">「${text}」</div>`;
+      }
     }
 
     if (changes && changes.length > 0) {

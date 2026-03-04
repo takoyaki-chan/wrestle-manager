@@ -3708,7 +3708,7 @@ const App = {
       showToast(result.events[result.events.length - 1]);
     }
     Audio.play('event');
-    renderManagePanel();
+    renderWeekScreen();
   },
 
   // v2.0 Phase1-6: 大型イベントUIフロー制御
@@ -3772,7 +3772,7 @@ const App = {
       setTimeout(() => {
         showLargeEventModal(enrichedEvent, G, 2, () => {
           Audio.play('event');
-          renderManagePanel();
+          renderWeekScreen();
         });
       }, 300);
 
@@ -3837,7 +3837,7 @@ const App = {
       setTimeout(() => {
         showLargeEventModal(enrichedEvent, G, 2, () => {
           Audio.play('event');
-          renderManagePanel();
+          renderWeekScreen();
         });
       }, 300);
     }
@@ -3913,15 +3913,16 @@ const App = {
         ? healthyRoster[Math.floor(Math.random() * healthyRoster.length)]
         : null;
       const text = rep ? Engine.careActions.getReactionText(reactionKey, rep) : null;
-      displayData = { fighter: rep, fighters: healthyRoster, text, changes: careChanges,
-        cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
+      displayData = { fighter: null, fighters: healthyRoster, repFighter: rep, text, changes: careChanges,
+        cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId, isTeam: true };
     }
 
-    // サウンド: 費用に応じた達成感
-    if (cfg.cost >= 160) Audio.play('award');
+    // サウンド: アクション種別で分岐
+    if (actionId === 'camp') Audio.play('fanfare');
+    else if (cfg.cost >= 160) Audio.play('award');
     else if (cfg.cost >= 80) Audio.play('event');
     else Audio.play('notify');
-    renderManagePanel();
+    renderWeekScreen();
     return displayData;
   },
 

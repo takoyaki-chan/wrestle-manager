@@ -883,6 +883,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   transition:background .15s,opacity .15s}
 .care-result-close-btn:hover{background:rgba(255,255,255,0.09)}
 
+/* camp 専用スタイル */
+.care-result-camp-flavor{font-size:12px;line-height:1.6;color:var(--text-dim);font-style:italic;
+  text-align:center;margin:0 0 14px;padding:8px 12px;background:rgba(41,128,185,0.08);
+  border-radius:6px;border-left:3px solid rgba(41,128,185,0.3)}
+/* 団体アクション全員表示の顔サイズ上書き */
+.care-result-team-row.camp-team .care-result-team-member img{width:72px;height:72px}
+.care-result-team-row.party-team .care-result-team-member img{width:64px;height:64px}
+.care-result-team-row.camp-team .care-result-team-name{font-size:11px;max-width:76px}
+
 /* v2.0 Phase1-6: 大型イベント 選手選択グリッド */
 .large-evt-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;
   max-height:320px;overflow-y:auto;padding:4px}
