@@ -643,10 +643,6 @@ function renderWeekScreen() {
       }
 
       html += '</div></div>'; // .survival-body, .survival-panel
-    } else if (G.survivalCleared && G.survivalClearSeason) {
-      // Compact "CLEARED" badge
-      const fresh = G.survivalClearSeason === G.season && Math.abs((G.survivalClearWeek || 0) - G.week) <= 4;
-      html += `<div class="survival-cleared-badge${fresh ? ' fresh' : ''}">🏆 経営サバイバル CLEARED！ <span style="font-weight:400;font-size:12px;color:var(--text-dim)">（${Engine.util.formatDate(G.survivalClearSeason, G.survivalClearWeek)}で達成）</span></div>`;
     }
 
     // ── v0.96: MISSION PANEL ──
@@ -860,8 +856,6 @@ function renderWeekScreen() {
           ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字'} — 倒産まで推定${sWeeks === Infinity ? '∞' : sWeeks}週
         </div>`;
       }
-    } else if (G.survivalCleared) {
-      html += `<div style="margin-top:6px;font-size:12px;color:#2ecc71">🏆 経営安定化達成済み</div>`;
     }
 
     if (G.funds <= -1000) {
@@ -1599,10 +1593,7 @@ function renderShowPrep() {
 
 function renderFinance() {
   const el = document.getElementById('financeContent');
-  const hardBadge = G.difficultyMode === 'hard'
-    ? `<span style="display:inline-block;font-size:11px;font-weight:700;color:#e74c3c;border:1px solid #e74c3c;border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:middle">上級モード</span>`
-    : '';
-  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万${hardBadge}</div>`;
+  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
 
   // Funds history chart (improved with Y-axis labels and grid lines)
   const fh = G.fundsHistory || [];
@@ -1700,6 +1691,13 @@ function renderFinance() {
 
 function renderLog() {
   const el = document.getElementById('logContent');
+  // ゲーム設定バッジ
+  const modeLabel = G.difficultyMode === 'hard' ? '上級モード（補助金なし）' : '補助金モード';
+  const modeColor = G.difficultyMode === 'hard' ? '#e74c3c' : '#3498db';
+  let html = `<div style="margin-bottom:10px;font-size:11px;color:var(--text-dim)">
+    <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>
+    <span style="margin-left:6px">${G.orgName} — ${Engine.util.formatDate(G.season, G.week)}</span>
+  </div>`;
   // v0.95: Enhanced log with filter
   const categories = [
     { key: 'all', label: '全て', icon: '全' },
@@ -1709,7 +1707,7 @@ function renderLog() {
     { key: 'season', label: 'シーズン', icon: '季', match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
   ];
   const currentFilter = el.dataset.filter || 'all';
-  let html = '<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">';
+  html += '<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">';
   categories.forEach(cat => {
     const active = currentFilter === cat.key;
     html += `<button onclick="document.getElementById('logContent').dataset.filter='${cat.key}';renderLog()" style="font-size:12px;padding:3px 8px;border-radius:3px;cursor:pointer;border:1px solid ${active ? 'var(--gold)' : 'var(--border)'};background:${active ? 'rgba(212,168,67,0.15)' : 'transparent'};color:${active ? 'var(--gold)' : 'var(--text-dim)'}">${cat.icon} ${cat.label}</button>`;

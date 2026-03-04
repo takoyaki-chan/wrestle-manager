@@ -1637,6 +1637,8 @@ function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
 function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
 
 // ── App Commands (G mutation ONLY via G = newState) ──
+let _pendingOrgName = '';
+let _selectedDifficulty = 'normal';
 const App = {
   // ═══ Title Screen (v1.0) ═══
 
@@ -1644,8 +1646,10 @@ const App = {
   showTitleScreen() {
     const titleEl = document.getElementById('titleScreen');
     const orgEl = document.getElementById('orgSetupScreen');
+    const diffEl = document.getElementById('difficultyScreen');
     titleEl.style.display = 'flex';
     orgEl.style.display = 'none';
+    if (diffEl) diffEl.style.display = 'none';
 
     // Populate title portraits (pick 7 iconic characters)
     const titleIds = [1, 16, 11, 5, 17, 12, 4];
@@ -1714,18 +1718,45 @@ const App = {
     Audio.bgm.play('management');
   },
 
-  // Confirm org setup and proceed to draft
+  // Confirm org setup → proceed to difficulty selection
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
-    const orgName = (input && input.value.trim()) || 'プレイヤー団体';
-    Audio.play('award');
+    _pendingOrgName = (input && input.value.trim()) || 'プレイヤー団体';
+    Audio.play('select');
     document.getElementById('orgSetupScreen').style.display = 'none';
-    // Initialize new game and go to draft
+    document.getElementById('difficultyScreen').style.display = 'flex';
+    App.selectDifficulty('hard');
+  },
+
+  // Select difficulty (update radio UI)
+  selectDifficulty(mode) {
+    _selectedDifficulty = mode;
+    const optNormal = document.getElementById('diffOptNormal');
+    const optHard = document.getElementById('diffOptHard');
+    const radNormal = document.getElementById('diffRadioNormal');
+    const radHard = document.getElementById('diffRadioHard');
+    if (optNormal) optNormal.classList.toggle('selected', mode === 'normal');
+    if (optHard) optHard.classList.toggle('selected', mode === 'hard');
+    if (radNormal) radNormal.textContent = mode === 'normal' ? '◉' : '○';
+    if (radHard) radHard.textContent = mode === 'hard' ? '◉' : '○';
+  },
+
+  // Confirm difficulty and start game
+  confirmDifficulty() {
+    Audio.play('award');
+    document.getElementById('difficultyScreen').style.display = 'none';
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, orgName, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    G = { ...G, orgName: _pendingOrgName, difficultyMode: _selectedDifficulty, _draftPicks: [], _draftFocus: null, gameLog: [] };
     Audio.bgm.play('kaimaku');
     refreshAll();
+  },
+
+  // Back from difficulty to org setup
+  backFromDifficulty() {
+    Audio.play('click');
+    document.getElementById('difficultyScreen').style.display = 'none';
+    document.getElementById('orgSetupScreen').style.display = 'flex';
   },
 
   // Back to title from org setup

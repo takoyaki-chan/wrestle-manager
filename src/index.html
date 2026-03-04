@@ -1382,18 +1382,18 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <span style="color:var(--text-sub);font-size:13px">開始後は変更できません</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin:24px 0;width:100%;max-width:380px">
-      <label class="difficulty-option" id="diffOptNormal" onclick="App.selectDifficulty('normal')">
-        <div class="difficulty-option-radio" id="diffRadioNormal">◉</div>
+      <label class="difficulty-option" id="diffOptHard" onclick="App.selectDifficulty('hard')">
+        <div class="difficulty-option-radio" id="diffRadioHard">◉</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">通常モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">地域振興助成金あり（orgPop 40まで補助金支給）</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">上級モード</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">補助金なし — すべて自力で稼ぐ</div>
         </div>
       </label>
-      <label class="difficulty-option" id="diffOptHard" onclick="App.selectDifficulty('hard')">
-        <div class="difficulty-option-radio" id="diffRadioHard">○</div>
+      <label class="difficulty-option" id="diffOptNormal" onclick="App.selectDifficulty('normal')">
+        <div class="difficulty-option-radio" id="diffRadioNormal">○</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">上級モード <span style="font-size:12px;color:var(--red);font-weight:400">HARD</span></div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">補助金なし — すべて自力で稼ぐ</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">補助金モード</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">団体人気40まで補助金支給</div>
         </div>
       </label>
     </div>
