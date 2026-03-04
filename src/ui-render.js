@@ -1222,10 +1222,10 @@ function renderRoster() {
   // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
   const rosterCap = G.rosterCap || 6;
   const isFull = ownFighters.length >= rosterCap;
-  html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid ${isFull ? 'rgba(231,76,60,0.5)' : 'var(--border)'};border-radius:6px">
+  html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
     <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
-    <span style="font-size:15px;font-weight:700;color:${isFull ? '#e74c3c' : 'var(--text)'}">${ownFighters.length}/${rosterCap}名</span>
-    ${isFull ? '<span style="font-size:12px;color:#e74c3c">⚠ 上限に達しています</span>' : ''}
+    <span style="font-size:15px;font-weight:700;color:var(--text)">${ownFighters.length}/${rosterCap}名</span>
+    ${isFull ? '<span style="font-size:12px;color:var(--text-dim)">（上限）</span>' : ''}
   </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
@@ -1698,10 +1698,13 @@ function renderFinance() {
 function renderLog() {
   const el = document.getElementById('logContent');
   // ゲーム設定バッジ
-  const modeLabel = G.difficultyMode === 'hard' ? '上級モード（補助金なし）' : '補助金モード';
+  const modeLabel = G.difficultyMode === 'hard' ? '通常モード（補助金なし）' : '補助金モード';
   const modeColor = G.difficultyMode === 'hard' ? '#e74c3c' : '#3498db';
+  const survivalBadge = G.survivalCleared
+    ? '<span style="color:#2ecc71;border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:1px 6px;font-weight:700;margin-left:6px">🎊 経営安定化クリア</span>'
+    : '';
   let html = `<div style="margin-bottom:10px;font-size:11px;color:var(--text-dim)">
-    <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>
+    <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>${survivalBadge}
     <span style="margin-left:6px">${G.orgName} — ${Engine.util.formatDate(G.season, G.week)}</span>
   </div>`;
   // v0.95: Enhanced log with filter
@@ -1921,9 +1924,9 @@ function renderScout() {
   const _rCap = G.rosterCap || 6;
   const _capFull = _ownCount >= _rCap;
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">
-    所属: <span style="color:${_capFull ? '#e74c3c' : 'var(--text)'};font-weight:${_capFull ? '700' : 'normal'}">${_ownCount}/${_rCap}名</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
+    所属: <span style="color:var(--text)">${_ownCount}/${_rCap}名${_capFull ? '（上限）' : ''}</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
   </div>
-  ${_capFull ? `<div style="padding:8px 12px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.4);border-radius:6px;font-size:13px;color:#e74c3c;margin-bottom:10px">⚠ ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
+  ${_capFull ? `<div style="padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-sub);margin-bottom:10px">ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
 
   // Free agents — compact card list (click name/portrait to open popup with acquire button)
   const visibleFAIds = Engine.util.getVisibleFAIds(G);
@@ -1961,9 +1964,9 @@ function renderScout() {
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:28px;font-weight:900;color:var(--gold)">${ov(c)}</div>
-        <div style="font-size:11px;color:var(--text-dim)">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
-        <div style="font-size:11px;color:var(--text-dim)">契約 <b style="color:var(--gold)">${Engine.scout.getSigningCost(c, 0).toLocaleString()}万</b></div>
+        <div style="font-size:28px;font-weight:900;color:var(--gold);line-height:1">${ov(c)}<span style="font-size:10px;font-weight:600;color:var(--text-dim);margin-left:2px">OVR</span></div>
+        <div style="font-size:22px;font-weight:800;color:#e8439f;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
       </div>
     </div>`;
   });

@@ -1661,6 +1661,22 @@ const Storage = {
       }
       if (G.warWon === undefined) G = { ...G, warWon: false };
 
+      // scout-pricing v2: assessedValue再計算（TIERS baseMin/Max引き上げ対応）
+      if (!G._migrated_scout_pricing_v2) {
+        const rng = Engine.rng.create(0xFACE + (G.season || 1));
+        const reassess = (fighters) => fighters.map(f => {
+          if (!f.assessedValue) return f;
+          const av = Engine.scout.calcAssessedValue(f, rng, G.season || 1);
+          return { ...f, assessedValue: av.assessedValue, assessedTier: av.assessedTier };
+        });
+        G = { ...G, freeAgents: reassess(G.freeAgents || []) };
+        const aiOrgs = { ...G.aiOrgs };
+        Object.keys(aiOrgs).forEach(k => {
+          if (aiOrgs[k]?.roster) aiOrgs[k] = { ...aiOrgs[k], roster: reassess(aiOrgs[k].roster) };
+        });
+        G = { ...G, aiOrgs, _migrated_scout_pricing_v2: true };
+      }
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -3904,7 +3920,7 @@ const App = {
       if (fighter) {
         const text = Engine.careActions.getReactionText(reactionKey, fighter);
         displayData = { fighter, fighters: null, text, changes: careChanges,
-          cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
+          cost: result.cost || cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
       }
     } else {
       // 団体向け: ランダムに1人を代表として選ぶ + 複数アイコン用
@@ -3914,13 +3930,14 @@ const App = {
         : null;
       const text = rep ? Engine.careActions.getReactionText(reactionKey, rep) : null;
       displayData = { fighter: null, fighters: healthyRoster, repFighter: rep, text, changes: careChanges,
-        cost: cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId, isTeam: true };
+        cost: result.cost || cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId, isTeam: true };
     }
 
     // サウンド: アクション種別で分岐
+    const soundCost = result.cost || cfg.cost || 0;
     if (actionId === 'camp') Audio.play('fanfare');
-    else if (cfg.cost >= 160) Audio.play('award');
-    else if (cfg.cost >= 80) Audio.play('event');
+    else if (soundCost >= 160) Audio.play('award');
+    else if (soundCost >= 80) Audio.play('event');
     else Audio.play('notify');
     renderWeekScreen();
     return displayData;

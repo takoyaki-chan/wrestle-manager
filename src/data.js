@@ -2021,14 +2021,14 @@ const CARE_ACTIONS = {
   },
   // 団体全体向けアクション（1週に1回まで）
   party: {
-    id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', cost: 100, category: 'team',
+    id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
     desc: '全員の信頼度+2、ロッカールーム空気+5（1週1回）',
-    effects: { trust_all: 2, morale: 5 }, minOrgPop: 0,
+    effects: { trust_all: 2, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
   },
   camp: {
-    id: 'camp', label: '合宿', emoji: '⛺', cost: 320, category: 'team',
+    id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
     desc: '全員の成長+中（2週間集中）、信頼度+2（1週1回）',
-    effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 2 }, minOrgPop: 0,
+    effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 2 }, minOrgPop: 0, minHeadcount: 4,
   },
 };
 

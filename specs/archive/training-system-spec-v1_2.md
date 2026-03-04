@@ -1,6 +1,11 @@
 # 🏋️ 育成/トレーニングシステム設計書 v1.2
 
-> **ステータス**: 🟡 一部改定中（§1.4確定、§2.4/§5.2/§7改定予定）
+> **⚠️ [OUTDATED] 成長計算セクション（§成長速度計算）は旧方式です。**
+> **旧方式: `convergenceFactor + STYLE_GROWTH` → 現行方式: `shareベース + GROWTH_SEASON_BASE（シーズン予算モデル）`**
+> **→ 成長計算の正は `docs/growth-rebalance-design-v1.0.md` を参照してください。**
+> **※ パラメータレイヤー定義・コーチ連動・施設効果等の構造設計は引き続き有効です。**
+>
+> **ステータス**: ⚠️ 部分的に旧版（成長計算セクション乖離）
 > **作成日**: 2026-02-19
 > **更新日**: 2026-02-23（セッション8）
 > **依存**: character-data-spec-v1.4.md / battle-engine-spec-v4.1b.md / economy-system-spec-v1.0.md / weekly-gameloop-spec-v1.0.md / mq-popularity-spec-v1.0.md / condition-system-spec-v1.0.md

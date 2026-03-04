@@ -1,6 +1,11 @@
 # 🏆 団体ランキング／勝利条件 設計書 v1.0
 
-> **ステータス**: 🟢 確定（タイトル関連は title-system-spec-v1.0.md で補完済み）
+> **⚠️ [OUTDATED] ランキング計算方式は全面改定済みです。**
+> **旧方式: `championScore + starPower + totalPop` → 現行方式: `TOP5平均OVR + TOP5平均pop + battlePoints`**
+> **→ ランキング計算の正は `docs/ranking-roster-redesign-v1.0.md` を参照してください。**
+> **※ 勝利条件（1位到達でクリア）・ゲームオーバー条件の基本設計は引き続き有効です。**
+>
+> **ステータス**: ⚠️ 部分的に旧版（ランキング計算セクション乖離）
 > **作成日**: 2026-02-19
 > **依存**: mq-popularity-spec-v1.0.md / economy-system-spec-v1.0.md / training-system-spec-v1.0.md / title-system-spec-v1.0.md
 > **ロードマップ対応**: フェーズ2 ⑥ 団体ランキング（勝利条件）

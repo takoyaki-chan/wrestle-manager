@@ -4037,11 +4037,11 @@ const Engine = {
   scout: {
     // Tier thresholds for assessedValue calculation
     TIERS: [
-      { id: 'superElite', label: '超逸材', minPot: 850, minCur: 350, baseMin: 500, baseMax: 800, reqPop: 70, compRate: 0.95, compMul: 2.0, bidWin: 0.30, color: '#e74c3c' },
-      { id: 'elite',      label: '逸材',   minPot: 740, minCur: 300, baseMin: 300, baseMax: 500, reqPop: 50, compRate: 0.85, compMul: 1.5, bidWin: 0.50, color: '#f39c12' },
-      { id: 'promising',  label: '有望',   minPot: 690, minCur: 260, baseMin: 150, baseMax: 300, reqPop: 0,  compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
-      { id: 'raw',        label: '原石',   minPot: 550, minCur: 180, baseMin: 80,  baseMax: 150, reqPop: 0,  compRate: 0.15, compMul: 1.15, bidWin: 0.50, color: '#2ecc71' },
-      { id: 'material',   label: '素材',   minPot: 0,   minCur: 0,   baseMin: 30,  baseMax: 80,  reqPop: 0,  compRate: 0.05, compMul: 1.1, bidWin: 0.50, color: '#95a5a6' },
+      { id: 'superElite', label: '超逸材', minPot: 850, minCur: 350, baseMin: 1400, baseMax: 3000, reqPop: 70, compRate: 0.95, compMul: 2.0, bidWin: 0.30, color: '#e74c3c' },
+      { id: 'elite',      label: '逸材',   minPot: 740, minCur: 300, baseMin: 600,  baseMax: 1400, reqPop: 50, compRate: 0.85, compMul: 1.5, bidWin: 0.50, color: '#f39c12' },
+      { id: 'promising',  label: '有望',   minPot: 690, minCur: 260, baseMin: 250,  baseMax: 500,  reqPop: 0,  compRate: 0.50, compMul: 1.3, bidWin: 0.50, color: '#3498db' },
+      { id: 'raw',        label: '原石',   minPot: 550, minCur: 180, baseMin: 120,  baseMax: 250,  reqPop: 0,  compRate: 0.15, compMul: 1.15, bidWin: 0.50, color: '#2ecc71' },
+      { id: 'material',   label: '素材',   minPot: 0,   minCur: 0,   baseMin: 50,   baseMax: 120,  reqPop: 0,  compRate: 0.05, compMul: 1.1, bidWin: 0.50, color: '#95a5a6' },
     ],
     /** Determine tier from potential/current totals */
     getTier(potTotal, curTotal) {
@@ -4075,8 +4075,16 @@ const Engine = {
       const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
       const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
       const tier = Engine.scout.getTier(potTotal, curTotal);
-      const baseValue = tier.baseMin + Math.round(Engine.rng.float(rng) * (tier.baseMax - tier.baseMin));
-      const variance = 0.70 + Engine.rng.float(rng) * 0.60; // 0.70〜1.30
+      const tiers = Engine.scout.TIERS;
+      const tierIdx = tiers.indexOf(tier);
+      // ティア内位置をステータスから算出（0.0=下端, 1.0=上端）
+      const nextTier = tierIdx > 0 ? tiers[tierIdx - 1] : null;
+      const potCeil = nextTier ? nextTier.minPot : tier.minPot + 150;
+      const position = Math.min(1.0, Math.max(0, (potTotal - tier.minPot) / (potCeil - tier.minPot)));
+      // べき乗カーブ: 下端は安く、上端は急激に高い（exponent=2.0）
+      const curved = Math.pow(position, 2.0);
+      const baseValue = tier.baseMin + Math.round(curved * (tier.baseMax - tier.baseMin));
+      const variance = 0.85 + Engine.rng.float(rng) * 0.30; // 0.85〜1.15（市場のブレ）
       const ageMul = Engine.scout.ageMarketMultiplier(fighter.age || 22, fighter, rng);
       return {
         assessedValue: Math.round(baseValue * variance * ageMul),
@@ -6029,13 +6037,24 @@ Engine.careActions = {
     return fighter._bonusRepeat || 0;
   },
 
+  // ── コスト計算（団体向けは人数×単価、個人向けは固定） ─────────────────────
+  calcCost(cfg, state) {
+    if (cfg.category === 'team' && cfg.unitCost) {
+      const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
+      return cfg.unitCost * Math.max(headcount, cfg.minHeadcount || 4);
+    }
+    return cfg.cost || 0;
+  },
+
   // ── アクション実行（純粋関数） ─────────────────────────────────────────────
   // 返り値: { roster, funds, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed }
   execute(actionId, fighterId, state) {
     const cfg = Engine.careActions.getConfig(actionId);
     if (!cfg) return null;
     if (cfg.minOrgPop && (state.orgPop || 0) < cfg.minOrgPop) return { error: 'orgpop_locked', required: cfg.minOrgPop };
-    if ((state.funds || 0) < cfg.cost) return { error: 'funds_insufficient' };
+    // 団体向けアクションは人数×単価（最低minHeadcount人分）
+    const actualCost = Engine.careActions.calcCost(cfg, state);
+    if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
 
     let roster = [...state.roster];
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
@@ -6174,8 +6193,8 @@ Engine.careActions = {
       }
     }
 
-    const newFunds = (state.funds || 0) - cfg.cost;
-    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed };
+    const newFunds = (state.funds || 0) - actualCost;
+    return { roster, lockerRoomMorale, funds: newFunds, cost: actualCost, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed };
   },
 
   // ── トレーナーバフの週次消費（processManage内で呼び出し） ─────────────────

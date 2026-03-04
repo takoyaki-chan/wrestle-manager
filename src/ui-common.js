@@ -3158,12 +3158,15 @@ function showCareActionModal(state, onConfirm) {
 
     html += '<div class="care-section-label" style="margin-top:16px">🏟️ 団体向け</div>';
     teamActions.forEach(a => {
-      const canAfford = funds >= a.cost;
+      const teamCost = Engine.careActions.calcCost(a, state);
+      const canAfford = funds >= teamCost;
       const usedThisWeek = teamWeekUsed[a.id] === currentWeek;
       const disabled = !canAfford || usedThisWeek ? 'disabled' : '';
+      const headcount = roster.filter(f => !f.injury).length;
+      const effectiveHead = Math.max(headcount, a.minHeadcount || 4);
       const costLabel = usedThisWeek
         ? `<span style="color:var(--text-dim);font-size:11px">今週使用済</span>`
-        : `<span class="care-action-cost">${a.cost}万</span>`;
+        : `<span class="care-action-cost">${teamCost}万<span style="font-size:10px;color:var(--text-dim);display:block">${a.unitCost}万×${effectiveHead}人</span></span>`;
       html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
         <span class="care-action-emoji">${a.emoji}</span>
         <div class="care-action-info">
@@ -3294,12 +3297,15 @@ function showCareActionModal(state, onConfirm) {
 
   // A-2: 団体向けアクション確認画面
   function renderTeamConfirm(actionId, cfg) {
-    const remainingFunds = funds - cfg.cost;
+    const teamCost = Engine.careActions.calcCost(cfg, state);
+    const remainingFunds = funds - teamCost;
     const fundsColor = remainingFunds < 200 ? '#e74c3c' : '#2ecc71';
+    const headcount = roster.filter(f => !f.injury).length;
+    const effectiveHead = Math.max(headcount, cfg.minHeadcount || 4);
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
     html += _buildExpectHtml(cfg);
-    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
+    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${teamCost}万</strong><span style="font-size:11px;color:var(--text-dim)">（${cfg.unitCost}万×${effectiveHead}人）</span> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
     html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careTeamConfirmBtn">実行する</button>`;
     html += '<button class="care-close-btn" id="careTeamBackBtn">← 戻る</button>';
     box.innerHTML = html;
