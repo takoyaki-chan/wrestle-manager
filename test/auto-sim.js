@@ -175,7 +175,7 @@ function autoHandleScoutEvent(G, simRng) {
   for (const f of toSign) {
     const cost = f.assessedValue || 100;
     if (G.funds - cost < 0) continue;
-    newRoster.push(f);
+    newRoster.push({ ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance', wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0, injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }, intensive: false, intensiveWeeks: 0 });
     newFA = newFA.filter(c => c.id !== f.id);
     G = { ...G, funds: G.funds - cost };
   }

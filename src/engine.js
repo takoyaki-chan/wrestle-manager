@@ -1981,6 +1981,7 @@ const Engine = {
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
         careerSeasons: Math.max(0, ((age || 20) - 16)), // v1.4: 新人王判定用
+        condition: 70 + Engine.rng.int(rng, 0, 19),
         losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
         assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
@@ -7923,7 +7924,7 @@ Engine.validateGameState = function(G) {
 
   // weekPhaseの妥当性
   const validPhases = ['draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
-                       'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary'];
+                       'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer'];
   if (G.weekPhase && !validPhases.includes(G.weekPhase)) {
     warn(`weekPhaseが不正値: "${G.weekPhase}"`);
   }
