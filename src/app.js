@@ -364,6 +364,83 @@ const Audio = (() => {
       osc(800, 'sine', t + 0.12, 0.08, 0.1);
       osc(1000, 'sine', t + 0.17, 0.1, 0.08);
     },
+
+    // ── Rivalry SFX (NEW) ──
+    // 宣戦布告: ドラムロール→ゴング→ブラス上昇→歓声
+    rivalry_confrontation() {
+      const t = ensure().currentTime;
+      // 1. ドラムロール連打（5発、クレッシェンド）
+      for (let i = 0; i < 5; i++) {
+        const g = 0.04 + i * 0.025;
+        noiseLP(t + i * 0.08, 0.06, g, 300);
+        osc(80 + i * 5, 'sine', t + i * 0.08, 0.05, g * 0.5);
+      }
+      // 2. ゴング一打
+      osc(90, 'sine', t + 0.4, 1.2, 0.12);
+      osc(800, 'sine', t + 0.4, 0.3, 0.06);
+      osc(1600, 'sine', t + 0.4, 0.15, 0.03);
+      noiseHP(t + 0.4, 0.08, 0.06, 5000);
+      // 3. ブラス上昇＋歓声
+      oscSweep(200, 500, 'sawtooth', t + 0.7, 0.4, 0.05);
+      noiseHP(t + 0.8, 0.6, 0.04, 2000);
+    },
+    // 宿命の相手 宣戦布告: より太く長い
+    fate_confrontation() {
+      const t = ensure().currentTime;
+      const vol = 1.2;
+      // 1. ドラムロール連打（5発、クレッシェンド、音量1.2倍）
+      for (let i = 0; i < 5; i++) {
+        const g = (0.04 + i * 0.025) * vol;
+        noiseLP(t + i * 0.08, 0.06, g, 300);
+        osc(80 + i * 5, 'sine', t + i * 0.08, 0.05, g * 0.5);
+      }
+      // 2. ゴング一打
+      osc(90, 'sine', t + 0.4, 1.2, 0.12 * vol);
+      osc(800, 'sine', t + 0.4, 0.3, 0.06 * vol);
+      osc(1600, 'sine', t + 0.4, 0.15, 0.03 * vol);
+      noiseHP(t + 0.4, 0.08, 0.06 * vol, 5000);
+      // 3. ブラス上昇＋歓声（延長）
+      oscSweep(200, 500, 'sawtooth', t + 0.7, 0.4, 0.05 * vol);
+      noiseHP(t + 0.8, 0.9, 0.04 * vol, 2000);
+      // 4. 太い低音＋追加ブラス
+      osc(60, 'sine', t + 0.5, 1.5, 0.08);
+      oscSweep(300, 600, 'sawtooth', t + 0.8, 0.5, 0.04);
+    },
+    // 宿敵決着: インパクト＋ファンファーレ＋歓声
+    rivalry_resolution() {
+      const t = ensure().currentTime;
+      // インパクト
+      osc(60, 'sine', t, 0.3, 0.1);
+      noise(t, 0.06, 0.1);
+      // ファンファーレ（4音）
+      bellPartial(523, t + 0.1,  0.5, 0.12);
+      bellPartial(659, t + 0.22, 0.6, 0.10);
+      bellPartial(784, t + 0.36, 0.7, 0.08);
+      bellPartial(1047, t + 0.5, 0.8, 0.06);
+      // 歓声
+      noiseHP(t + 0.3, 0.8, 0.05, 2000);
+      noiseHP(t + 0.5, 0.5, 0.03, 5000);
+    },
+    // 宿命の相手 最終決着: 壮大版
+    fate_resolution() {
+      const t = ensure().currentTime;
+      // 深いインパクト
+      osc(50, 'sine', t, 0.5, 0.12);
+      osc(100, 'sine', t, 0.3, 0.08);
+      noise(t, 0.08, 0.12);
+      // 壮大ファンファーレ（5音）
+      bellPartial(523, t + 0.1,  0.7, 0.14);
+      bellPartial(659, t + 0.25, 0.8, 0.12);
+      bellPartial(784, t + 0.4,  0.9, 0.10);
+      bellPartial(1047, t + 0.55, 1.0, 0.08);
+      bellPartial(1319, t + 0.7, 0.8, 0.06);
+      // 大歓声
+      noiseHP(t + 0.3, 1.2, 0.06, 2000);
+      noiseHP(t + 0.6, 0.8, 0.04, 5000);
+      // 低音の重み
+      osc(65, 'sine', t + 0.5, 1.0, 0.06);
+      oscSweep(200, 400, 'sawtooth', t + 0.8, 0.5, 0.03);
+    },
   };
 
   // ╔══════════════════════════════════════════════════╗
@@ -1526,7 +1603,46 @@ const Storage = {
         Object.entries(G.rivalries || {}).forEach(([key, rv]) => {
           migratedRivalries[key] = { ...rv, resolutionCount: rv.resolutionCount || 0 };
         });
-        G = { ...G, rivalries: migratedRivalries, matchupLog: G.matchupLog || [], _migrated_rivalry_v2: true };
+        // matchupLog補完: rivalriesから対戦履歴を復元し、初顔合わせ誤判定を防ぐ
+        let migratedLog = G.matchupLog || [];
+        if (migratedLog.length === 0) {
+          const currentShow = G.totalShows || 0;
+          Object.entries(G.rivalries || {}).forEach(([key, rv]) => {
+            const ids = key.split('-').map(Number);
+            if (ids.length !== 2 || !ids[0] || !ids[1]) return;
+            const matches = rv.matches || 0;
+            for (let j = 0; j < matches; j++) {
+              migratedLog.push({
+                leftId: ids[0], rightId: ids[1],
+                showCount: Math.max(1, currentShow - matches + j + 1)
+              });
+            }
+          });
+        }
+        G = { ...G, rivalries: migratedRivalries, matchupLog: migratedLog, _migrated_rivalry_v2: true };
+      }
+
+      // matchupLog補完v2: 既にrivalry_v2マイグレーション済みだが空logのセーブデータ対応
+      if (!G._migrated_matchuplog_v2) {
+        if ((G.matchupLog || []).length === 0 && Object.keys(G.rivalries || {}).length > 0) {
+          const currentShow = G.totalShows || 0;
+          const backfillLog = [];
+          Object.entries(G.rivalries || {}).forEach(([key, rv]) => {
+            const ids = key.split('-').map(Number);
+            if (ids.length !== 2 || !ids[0] || !ids[1]) return;
+            const matches = rv.matches || 0;
+            for (let j = 0; j < matches; j++) {
+              backfillLog.push({
+                leftId: ids[0], rightId: ids[1],
+                showCount: Math.max(1, currentShow - matches + j + 1)
+              });
+            }
+          });
+          if (backfillLog.length > 0) {
+            G = { ...G, matchupLog: backfillLog };
+          }
+        }
+        G = { ...G, _migrated_matchuplog_v2: true };
       }
 
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent

@@ -1145,8 +1145,16 @@ function _renderRivalryPopup() {
       </div>
       <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
     `;
-    document.getElementById('rivalryPopupOverlay').classList.add('active');
-    Audio.play('war');
+    const overlay = document.getElementById('rivalryPopupOverlay');
+    box.style.opacity = '0';
+    box.style.transform = 'scale(0.9)';
+    overlay.classList.add('active');
+    setTimeout(() => {
+      Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation');
+      box.style.transition = 'opacity 0.3s, transform 0.3s';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }, 350);
 
   } else {
     // 決着
@@ -1185,8 +1193,16 @@ function _renderRivalryPopup() {
       ${goodRivalMsg}
       <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
     `;
-    document.getElementById('rivalryPopupOverlay').classList.add('active');
-    Audio.play('award');
+    const overlay = document.getElementById('rivalryPopupOverlay');
+    box.style.opacity = '0';
+    box.style.transform = 'scale(0.9)';
+    overlay.classList.add('active');
+    setTimeout(() => {
+      Audio.play(o.isFate ? 'fate_resolution' : 'rivalry_resolution');
+      box.style.transition = 'opacity 0.3s, transform 0.3s';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }, 300);
   }
 }
 

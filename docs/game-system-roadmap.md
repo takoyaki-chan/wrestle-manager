@@ -8,6 +8,8 @@
 
 ## 現在の状態
 
+**因縁演出強化 + カード鮮度UI（2026-03-04）。** 宣戦布告・決着ポップアップの専用SE新設（4種: rivalry_confrontation / fate_confrontation / rivalry_resolution / fate_resolution）。ポップアップ表示にタメ演出追加。カード編成画面に鮮度プレビュータグ表示（初顔合わせ/マンネリを事前確認可能）。matchupLogマイグレーション修正（既存対戦ペアの初顔合わせ誤判定を解消）。
+
 **引退勧告・引き留めシステム v1.1（2026-03-03）。** プレイヤーが選手に引退を勧告し、受諾した選手がラストラン状態に入る仕組み。拒否時は信頼低下+見返しモードMQボーナス。シーズン末の引退時に引き留め可（最大2回、wear+10代償）。コーチの観察眼ランクに応じた受諾率アドバイス。
 
 - **Engine.retirement**: canAdvise(wear≥20/age≥30/careerSeasons≥8)、calcAcceptance(wear/isChamp/trust/winRate)、advise(受諾→lastRun=true/拒否→trust-5+proveMode4週or morale-2)

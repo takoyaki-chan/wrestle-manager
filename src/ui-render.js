@@ -1526,6 +1526,11 @@ function renderShowPrep() {
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
 
+    // カード鮮度プレビュー
+    const freshnessPreview = (curL > 0 && curR > 0)
+      ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0)
+      : null;
+
     // ラストランチェック
     const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
     const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
@@ -1553,6 +1558,7 @@ function renderShowPrep() {
         ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
+        ${freshnessPreview && freshnessPreview.label ? `<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:11px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>` : ''}
         ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===maxMatches-1?' +メイン+5':''})</span>` : ''}
       </div>
     </div>`;
