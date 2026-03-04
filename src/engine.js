@@ -5630,7 +5630,8 @@ Engine.growthEvents = {
   // ─── §2 ブレークスルー ────────────────────────────────
 
   /** §2.3 ブレークスルー確率計算（0〜3.5%を返す、判定は呼び出し側） */
-  calcBreakthroughProb(fighter, mq, oppOvr, isTitle, won) {
+  calcBreakthroughProb(fighter, mq, oppOvr, context) {
+    const { isTitle = false, won = false, isPPV = false, isRivalryResolution = false, isWarMatch = false } = context || {};
     const selfOvr = Engine.util.ov(fighter);
     const ovrDiff = oppOvr - selfOvr;
     let prob = 0;
@@ -5639,9 +5640,11 @@ Engine.growthEvents = {
     const prevBest = fighter.careerBestMQ || 0;
     if (mq > prevBest) prob += 1.0;
     if (isTitle) prob += 0.5;
-    // 野心: タイトルマッチでのブレークスルー確率+0.5%（チャンピオンへの野望が成長を後押し）
+    // 野心: タイトルマッチでのブレークスルー確率+0.5%
     if (isTitle && Traits.has(fighter, '野心')) prob += 0.5;
-    if (mq >= 70) prob += 0.5;
+    if (isRivalryResolution) prob += 0.8;
+    if (isPPV) prob += 0.5;
+    if (isWarMatch) prob += 0.5;
     if (!won) prob += 0.3;
     if ((fighter.age || 20) <= 25) prob += 0.3;
     return Math.min(prob, 3.5) / 100;
@@ -5649,10 +5652,10 @@ Engine.growthEvents = {
 
   /** §2 ブレークスルー判定・効果適用（純粋関数）
    * @returns {{ fighter, stat, gain, hotStreak }} or null */
-  checkAndApplyBreakthrough(rng, fighter, mq, oppOvr, isTitle, won, season, week) {
+  checkAndApplyBreakthrough(rng, fighter, mq, oppOvr, context, season, week) {
     // スランプ/モチベ喪失中はブレークスルー判定なし
     if (fighter.slump || fighter.motivationLoss) return null;
-    const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, isTitle, won);
+    const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, context);
     if (prob <= 0 || Engine.rng.float(rng) >= prob) return null;
 
     // §2.4 ジャンプ量 +3〜6、5ステ均等

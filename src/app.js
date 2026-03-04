@@ -1993,6 +1993,11 @@ const App = {
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
     if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
     G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
+    Audio.play('stamp');
+    const faSigningLine = getSigningLine(fighter, 'fa_signing');
+    showEventPopup({ type:'fighter', id: fighter.id, name: fighter.name,
+      tone:'positive', message: faSigningLine,
+      detail:`📝 契約金: ${finalCost}万 [${tierCfg.label}]` });
     refreshAll();
   },
 
@@ -2084,8 +2089,16 @@ const App = {
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
       log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
-      showEventPopup({ type:'scout', tone:'positive',
-        message:`${cand.name}の獲得に成功！`, detail:`契約金: ${result.cost}万 [${tierCfg.label}]` });
+      const signingContext = (choice === 'direct') ? 'direct'
+        : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
+        : 'direct';
+      const signingLine = getSigningLine(cand, signingContext);
+      showEventPopup({ type:'fighter', id: cand.id, name: cand.name,
+        tone:'positive', message: signingLine,
+        detail:`📝 契約金: ${result.cost}万 [${tierCfg.label}]` });
+      if (signingContext === 'competition_won') {
+        Audio.play('fanfare');
+      }
     } else if (result.result === 'lost') {
       Audio.play('error');
       // Lost candidate goes to AI org or freeAgent
@@ -2890,16 +2903,10 @@ const App = {
         const oppOvr = oppFighter ? Engine.util.ov(oppFighter) : (r[charId === r.left.id ? 'right' : 'left']?.pw ?? 50);
         const isTitle = !!r.isTitleMatch;
 
-        // careerBestMQ 更新（ブレークスルー判定に使うため先に更新）
-        const wasNewBest = r.mq > (fighter.careerBestMQ || 0);
-        if (wasNewBest) {
-          roster = roster.map(c => c.id === charId ? { ...c, careerBestMQ: r.mq } : c);
-        }
-
-        // ブレークスルー判定
-        const btFighter = roster.find(c => c.id === charId);
+        // ブレークスルー判定（careerBestMQ更新前に実施 — mq > prevBest 判定のため）
+        const btContext = { isTitle, won, isPPV: isPPV(s.week), isRivalryResolution: !!r.rivalryResolved, isWarMatch: false };
         const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
-          btRng, btFighter, r.mq, oppOvr, isTitle, won, s.season, s.week
+          btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
         );
         if (btResult) {
           roster = roster.map(c => c.id === charId ? btResult.fighter : c);
@@ -2907,6 +2914,12 @@ const App = {
             type: 'breakthrough', fighterId: charId,
             stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
           });
+        }
+
+        // careerBestMQ 更新（ブレークスルー判定後に実施）
+        const btUpdatedFighter = roster.find(c => c.id === charId);
+        if (r.mq > (btUpdatedFighter.careerBestMQ || 0)) {
+          roster = roster.map(c => c.id === charId ? { ...c, careerBestMQ: r.mq } : c);
         }
 
         // §4.2 敗北スランプ判定
@@ -3390,11 +3403,19 @@ const App = {
     }
     if (pendingEliteTicket) {
       const etDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 500;
-      setTimeout(() => showEventPopup({
-        type: 'system', emoji: '🎫', tone: 'gold',
-        message: '逸材特別交渉枠を獲得！',
-        detail: '団体の評判が業界に広まり、逸材クラスの選手にも交渉の道が開けました。\nFA市場で逸材ランクの選手1名と特別に交渉できます。\n※ この権利はいつでも使えます（温存OK）\n※ 1回限りの特別枠です\n※ 超逸材ランクには使用できません'
-      }), etDelay);
+      setTimeout(() => {
+        Audio.play('fanfare');
+        setTimeout(() => Audio.play('stamp'), 400);
+        showEventPopup({
+          type: 'system', emoji: '🏅', tone: 'gold',
+          message: '🎊 逸材特別交渉枠を獲得！ 🎊',
+          detail: '団体の名声が業界に轟いた！\n'
+                + '逸材クラスの選手たちが、あなたの団体に注目しています。\n\n'
+                + '💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n'
+                + '⏳ いつでも使用可能（温存OK）\n'
+                + '⚠️ 1回限り / 超逸材には使用不可'
+        });
+      }, etDelay);
     }
 
     // v1.0: Auto-advance on non-monthly weeks
@@ -3770,6 +3791,32 @@ const App = {
       const rng3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B6));
       const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
       App._applyLargeEventResult(result3);
+
+      // B3 ブレークスルー判定（対抗戦は isWarMatch=true）
+      const btRngB3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB3B8));
+      const won = matchResult.winner === 'left';
+      const oppOvr = Engine.util.ov(challenger);
+      const btCtx = { isTitle: false, won, isPPV: false, isRivalryResolution: false, isWarMatch: true };
+      const btResultB3 = Engine.growthEvents.checkAndApplyBreakthrough(
+        btRngB3, playerFighter, matchResult.mq, oppOvr, btCtx, G.season, G.week
+      );
+      if (btResultB3) {
+        G = { ...G, roster: G.roster.map(c => c.id === fighterId ? btResultB3.fighter : c) };
+        // careerBestMQ更新
+        const updF = G.roster.find(c => c.id === fighterId);
+        if (matchResult.mq > (updF.careerBestMQ || 0)) {
+          G = { ...G, roster: G.roster.map(c => c.id === fighterId ? { ...c, careerBestMQ: matchResult.mq } : c) };
+        }
+        setTimeout(() => showGrowthEventPopups([{
+          type: 'breakthrough', fighterId,
+          stat: btResultB3.stat, gain: btResultB3.gain, hotStreak: btResultB3.hotStreak
+        }]), 600);
+      } else {
+        // ブレークスルー不発でもcareerBestMQ更新
+        if (matchResult.mq > (playerFighter.careerBestMQ || 0)) {
+          G = { ...G, roster: G.roster.map(c => c.id === fighterId ? { ...c, careerBestMQ: matchResult.mq } : c) };
+        }
+      }
 
       // 新聞パネルイベント
       const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
