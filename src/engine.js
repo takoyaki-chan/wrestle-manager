@@ -166,7 +166,7 @@ const Engine = {
       const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
       let rate = baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus);
       // 威圧感: 相手の命中率を低下させる
-      if (Traits.has(def, '威圧感')) rate -= 3;
+      if (Traits.has(def, '威圧感')) rate -= 2;
       return Engine.util.clamp(rate, ENG.hitMin, ENG.hitMax);
     },
     calcCounterRate(atk, def, ph) {
@@ -174,7 +174,7 @@ const Engine = {
       let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
       if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
       // 威圧感: 相手のカウンター率を低下させる
-      if (Traits.has(atk, '威圧感')) rate -= 3;
+      if (Traits.has(atk, '威圧感')) rate -= 2;
       return Engine.util.clamp(rate, ENG.counterMin, ENG.counterMax);
     },
     calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
@@ -246,8 +246,8 @@ const Engine = {
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
       // 威圧感: 序盤モメンタム優位（左+/右-）
-      if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 5;
-      if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 5;
+      if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 3;
+      if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 3;
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
 
       while (turn <= MAX_T && !winner) {
@@ -419,9 +419,9 @@ const Engine = {
       // §5 最終MQ
       let mq = ceiling - dramaPenalty - pacingPenalty - finishPenalty;
       // 特性ボーナス（天井を超える加点として機能）
-      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 5;
+      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 3;
       const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
-      if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(8, ovDiff * 0.3);
+      if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(4, ovDiff * 0.15);
       mq = Math.round(Engine.util.clamp(mq, 5, 100));
 
       return {
@@ -741,7 +741,13 @@ const Engine = {
         const wl = c.injury.weeksLeft - 1;
         if (wl <= 0) {
           events.push(`✅ ${c.name}が${c.injury.type}から復帰！`);
-          return Engine.popularity.clearPreInjury({ ...c, injury: null });
+          let recovered = Engine.popularity.clearPreInjury({ ...c, injury: null });
+          // ガラスの身体: 復帰のたびにファンの応援で人気+2
+          if (Traits.has(c, 'ガラスの身体')) {
+            recovered = { ...recovered, popularity: Math.min(100, recovered.popularity + 2) };
+            events.push(`💐 ${c.name}の復帰にファンから温かい声援が！（人気+2）`);
+          }
+          return recovered;
         }
         // v1.0b: Apply injury forgetting (popularity decay while injured)
         const decayed = Engine.popularity.applyInjuryDecay(c);
@@ -808,7 +814,14 @@ const Engine = {
       if (oldEntry.resolved) return { rivalries: G.rivalries, msg: null };
       const old = Engine.title.getRivalryLevel(G, id1, id2);
       // ライバル体質: 因縁カウント+1加速（通常1→2）
-      let rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
+      const c1Ref = G.roster.find(c=>c.id===id1)||{};
+      const c2Ref = G.roster.find(c=>c.id===id2)||{};
+      let rivalryBonus = (Traits.has(c1Ref, 'ライバル体質') || Traits.has(c2Ref, 'ライバル体質')) ? 2 : 1;
+      // ヒール適性: 対立構造を生みやすい（50%の確率で因縁+1加速）
+      if (Traits.has(c1Ref, 'ヒール適性') || Traits.has(c2Ref, 'ヒール適性')) {
+        const heelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.week, id1.charCodeAt?.(0) || 0, 0xBEE1));
+        if (Engine.rng.float(heelRng) < 0.5) rivalryBonus += 1;
+      }
       // v1.5s25b: rivalry_chance_up バフ（マイルストーン）
       const rivalryChanceUp = (G.milestoneBuffs || []).find(b => b.type === 'rivalry_chance_up');
       if (rivalryChanceUp) rivalryBonus += 1;
@@ -1761,9 +1774,11 @@ const Engine = {
 
       // 特性ボーナス
       let bonus = 1.0;
-      if (G.roster && G.roster.some(c => Traits.has(c, 'ムードメーカー') && !c.injury)) bonus *= 1.05;
+      // ムードメーカーは士気システムに移動（updateLockerRoomMorale）
       if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
-      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.20;
+      if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.10;
+      // 反骨心: trust30以下のとき逆境バフ×1.15
+      if (Traits.has(char, '反骨心') && (char.trust != null ? char.trust : 50) <= 30) bonus *= 1.15;
 
       // variance（努力家: 0.75-1.5、破天荒: 0.0-2.5、通常: 0.5-1.5）
       const vFloor = Traits.has(char, '努力家') ? 0.75 : 0.5;
@@ -2672,7 +2687,8 @@ const Engine = {
           const trainerMult = Engine.careActions.getTrainerMult(nc);
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
-          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus);
+          const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
+          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus + adaptBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
             nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
@@ -2703,7 +2719,8 @@ const Engine = {
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
-          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus);
+          const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
+          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
           // v1.0b: Apply diminishing returns + promo pop cap
@@ -3222,7 +3239,7 @@ const Engine = {
       if (r.isTitleMatch) {
         const champId = s.titles?.world?.championId;
         const challenger = champId === r.left.id ? r.right : (champId === r.right.id ? r.left : null);
-        if (challenger && Traits.has(challenger, '野心')) externalMQ += 2;
+        if (challenger && Traits.has(challenger, '野心')) externalMQ += 1;
       }
       // ラストランMQボーナス (§2.2)
       const lrLeft  = s.roster.find(c => c.id === r.left.id);
@@ -3460,6 +3477,8 @@ const Engine = {
       // Base raw gain from MQ
       let rawGain = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
       if (isWinner) rawGain += 1;
+      // ファンサービス: 試合の質に関わらず、興行出場で人気+1（ファンとの交流で支持を得る）
+      if (Traits.has(c, 'ファンサービス')) rawGain += 1;
       // ヒール適性 + Heel: 試合後の人気上昇ボーナス
       if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) rawGain += 1;
 
@@ -3468,7 +3487,9 @@ const Engine = {
 
       // v1.0b §B-4: Main event poor match penalty (both fighters)
       if (isMainEvent) {
-        const mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
+        let mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
+        // 闘志: 負けても心を打つファイター — メインイベント低MQペナルティ半減
+        if (mainPenalty < 0 && Traits.has(c, '闘志')) mainPenalty = Math.round(mainPenalty / 2);
         if (mainPenalty < 0) {
           popDelta += mainPenalty; // penalties are not diminished
           popEvents.push(`📉 メインイベントの低MQ(${result.mq})で${c.name}の人気${mainPenalty}`);
@@ -6471,7 +6492,7 @@ Engine.trust = {
   // クール・内向系（沈黙型）: 上記なし → N5通知のみ
   isDirectType(fighter) {
     const traits = fighter.traits || [];
-    return traits.some(t => ['闘志', '負けず嫌い', '野心', '破天荒'].includes(t));
+    return traits.some(t => ['闘志', '負けず嫌い', '野心', '破天荒', '反骨心'].includes(t));
   },
 
   // ── §1-3/1-4: 興行後の trust 月次更新 ───────────────────────────────────
@@ -6530,6 +6551,9 @@ Engine.trust = {
       // §1-3/1-4: 月次自然変動（-1/月 + mental/50 回復）
       delta += Engine.trust.calcMonthlyNatural(mental);
 
+      // 反骨心: trust変動が激しい（上昇・下降とも×1.3）
+      if (Traits.has(fighter, '反骨心')) delta *= 1.3;
+
       const oldTrust = fighter.trust != null ? fighter.trust : 50;
       const newTrust = Engine.util.clamp(Math.round(oldTrust + delta), 0, 100);
       if (newTrust !== oldTrust) {
@@ -6561,6 +6585,10 @@ Engine.trust = {
     // 人望: 在籍中の間だけロッカールーム士気に+3ボーナス
     const hasNinbo = (trustResult.roster || []).some(f => Traits.has(f, '人望') && !f.injury);
     if (hasNinbo) delta += 3;
+
+    // ムードメーカー: 明るさで空気を持ち上げる +5/週
+    const hasMoodMaker = (trustResult.roster || []).some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
+    if (hasMoodMaker) delta += 5;
 
     return Engine.util.clamp(Math.round(current + delta), 0, 100);
   },
