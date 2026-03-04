@@ -83,7 +83,14 @@
       "Bash(node -e:*)",
       "Bash(node C:/Users/nkmrk/Downloads/wrestle-manager/read_stdin.js:*)",
       "Bash(ls -d /c/Users/nkmrk/Downloads/wrestle-manager/image/*/)",
-      "Bash(grep -n \"isRental\" *.js)"
+      "Bash(grep -n \"isRental\" *.js)",
+      "Bash(node --check src/engine.js)",
+      "Bash(node --check src/app.js)",
+      "Bash(node --check src/ui-common.js)",
+      "Bash(node --check src/data.js)",
+      "Bash(git mv specs/retirement-advisory-spec-v1.0.md specs/archive/)",
+      "Bash(git mv specs/difficulty-mode-spec.md specs/archive/)",
+      "Bash(git mv docs/session31-coach-system-summary.md docs/archive/)"
     ]
   }
 }

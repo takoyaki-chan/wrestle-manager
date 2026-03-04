@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フィニッシャーカットイン v3 — 顔大</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #eee;
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  h1 { font-size: 16px; font-weight: 700; color: #aaa; letter-spacing: 0.1em; }
+
+  /* === 試合画面モック === */
+  .battle-stage {
+    width: 560px;
+    height: 400px;
+    background: #0d0d1a;
+    border: 2px solid #333;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .battle-stage .mock-text {
+    color: #555;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* === フラッシュ === */
+  .flash-overlay {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .flash-overlay.active {
+    animation: flashBang 0.45s ease-out forwards;
+  }
+  @keyframes flashBang {
+    0%   { opacity: 0.85; }
+    20%  { opacity: 0.45; }
+    100% { opacity: 0; }
+  }
+
+  /* === 画面揺れ === */
+  .battle-stage.shake {
+    animation: stageShake 0.4s ease-out;
+  }
+  @keyframes stageShake {
+    0%   { transform: translate(0, 0); }
+    15%  { transform: translate(-5px, 3px); }
+    30%  { transform: translate(4px, -3px); }
+    45%  { transform: translate(-3px, 2px); }
+    60%  { transform: translate(2px, -1px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* === カットイン帯 === */
+  .cutin-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) skewY(-2deg);
+    height: 150px;
+    z-index: 20;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+  }
+  .cutin-band.active {
+    animation: cutinShow 0.1s 0.08s ease-out forwards;
+  }
+  @keyframes cutinShow {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .cutin-band.fadeout {
+    animation: cutinHide 0.3s ease-in forwards;
+  }
+  @keyframes cutinHide {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* 背景 */
+  .cutin-bg {
+    position: absolute;
+    left: -20px;
+    right: -20px;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(
+      100deg,
+      rgba(180, 10, 30, 0.97) 0%,
+      rgba(220, 25, 60, 0.95) 25%,
+      rgba(180, 15, 40, 0.93) 60%,
+      rgba(40, 0, 10, 0.97) 100%
+    );
+    border-top: 2.5px solid rgba(255, 200, 50, 0.9);
+    border-bottom: 2.5px solid rgba(255, 200, 50, 0.9);
+  }
+  .cutin-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent 0px, transparent 6px,
+      rgba(255,255,255,0.035) 6px, rgba(255,255,255,0.035) 12px
+    );
+  }
+
+  /* 速度線 */
+  .speed-lines {
+    position: absolute;
+    left: -20px;
+    right: -20px;
+    top: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 22px,
+      rgba(255,255,255,0.06) 22px, rgba(255,255,255,0.06) 23px
+    );
+  }
+  .cutin-band.active .speed-lines {
+    animation: speedScroll 0.2s linear infinite;
+  }
+  @keyframes speedScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-23px); }
+  }
+
+  /* === 顔画像（大きく切り抜き） === */
+  .cutin-face {
+    position: relative;
+    z-index: 2;
+    width: 220px;
+    height: 150px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-right: 2.5px solid rgba(255, 200, 50, 0.75);
+    transform: translateX(-350px) skewY(2deg);
+  }
+  .cutin-face img {
+    display: block;
+    /* 原寸より大きく引き伸ばして顔をドーンと見せる */
+    width: 360px;
+    height: 360px;
+    margin-top: -105px;
+    margin-left: -70px;
+  }
+  .cutin-band.active .cutin-face {
+    animation: faceSlide 0.2s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes faceSlide {
+    0%   { transform: translateX(-350px) skewY(2deg); }
+    100% { transform: translateX(0) skewY(2deg); }
+  }
+
+  /* === 技名 === */
+  .cutin-text {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    padding: 0 16px 0 24px;
+    transform: translateX(60px) skewY(2deg);
+    opacity: 0;
+  }
+  .cutin-band.active .cutin-text {
+    animation: textSlide 0.25s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes textSlide {
+    0%   { transform: translateX(60px) skewY(2deg); opacity: 0; }
+    100% { transform: translateX(0) skewY(2deg); opacity: 1; }
+  }
+
+  .cutin-move-name {
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow:
+      0 0 14px rgba(255, 200, 50, 0.7),
+      0 0 28px rgba(255, 80, 40, 0.3),
+      2px 2px 0 rgba(0,0,0,0.65);
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+  }
+  .cutin-char-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 200, 50, 0.85);
+    margin-top: 8px;
+    letter-spacing: 0.15em;
+  }
+
+  /* 右端アクセント */
+  .cutin-accent {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    z-index: 2;
+    background: linear-gradient(180deg,
+      rgba(255, 200, 50, 0.9) 0%,
+      rgba(255, 120, 30, 0.7) 50%,
+      rgba(255, 200, 50, 0.9) 100%
+    );
+    transform: skewY(2deg);
+    opacity: 0;
+  }
+  .cutin-band.active .cutin-accent {
+    animation: accentIn 0.15s 0.25s ease-out forwards;
+  }
+  @keyframes accentIn {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  /* === カラバリ：青 === */
+  .cutin-band.style-blue .cutin-bg {
+    background: linear-gradient(100deg,
+      rgba(10, 25, 120, 0.97) 0%, rgba(20, 50, 170, 0.95) 25%,
+      rgba(15, 35, 140, 0.93) 60%, rgba(0, 3, 35, 0.97) 100%);
+    border-color: rgba(100, 200, 255, 0.85);
+  }
+  .cutin-band.style-blue .cutin-face { border-right-color: rgba(100, 200, 255, 0.7); }
+  .cutin-band.style-blue .cutin-move-name {
+    text-shadow: 0 0 14px rgba(100, 200, 255, 0.7), 0 0 28px rgba(50, 130, 255, 0.3), 2px 2px 0 rgba(0,0,0,0.65);
+  }
+  .cutin-band.style-blue .cutin-char-name { color: rgba(100, 200, 255, 0.85); }
+  .cutin-band.style-blue .cutin-accent {
+    background: linear-gradient(180deg, rgba(100, 200, 255, 0.9) 0%, rgba(50, 130, 255, 0.7) 50%, rgba(100, 200, 255, 0.9) 100%);
+  }
+
+  /* === カラバリ：金 === */
+  .cutin-band.style-gold .cutin-bg {
+    background: linear-gradient(100deg,
+      rgba(140, 100, 10, 0.97) 0%, rgba(200, 160, 25, 0.95) 25%,
+      rgba(160, 120, 15, 0.93) 60%, rgba(35, 25, 0, 0.97) 100%);
+    border-color: rgba(255, 230, 130, 0.9);
+  }
+  .cutin-band.style-gold .cutin-face { border-right-color: rgba(255, 230, 130, 0.7); }
+  .cutin-band.style-gold .cutin-move-name {
+    text-shadow: 0 0 14px rgba(255, 230, 130, 0.7), 0 0 28px rgba(255, 190, 40, 0.3), 2px 2px 0 rgba(0,0,0,0.65);
+  }
+  .cutin-band.style-gold .cutin-char-name { color: rgba(255, 230, 130, 0.85); }
+  .cutin-band.style-gold .cutin-accent {
+    background: linear-gradient(180deg, rgba(255, 230, 130, 0.9) 0%, rgba(255, 190, 40, 0.7) 50%, rgba(255, 230, 130, 0.9) 100%);
+  }
+
+  /* === 操作 === */
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button {
+    background: #dc143c; color: #fff; border: none;
+    padding: 10px 20px; font-size: 14px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    border-radius: 6px; cursor: pointer;
+    transition: all 0.12s; letter-spacing: 0.04em;
+  }
+  button:hover { filter: brightness(1.2); transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button.blue { background: #1a3ca0; }
+  button.gold { background: #9a7a10; }
+
+  .note { color: #666; font-size: 11px; max-width: 560px; text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<h1>フィニッシャーカットイン v3 — 顔大＋フル幅</h1>
+
+<div class="battle-stage" id="stage">
+  <div class="mock-text">─ 試合画面 ─<br>ボタンを押してカットイン演出をテスト</div>
+  <div class="flash-overlay" id="flash"></div>
+  <div class="cutin-band" id="cutin">
+    <div class="cutin-bg"></div>
+    <div class="speed-lines"></div>
+    <div class="cutin-face">
+      <img src="face_uenohara_y.png" alt="">
+    </div>
+    <div class="cutin-text">
+      <div class="cutin-move-name" id="moveName">紫電キャメルクラッチ</div>
+      <div class="cutin-char-name" id="charName">── 上野原 ゆい ──</div>
+    </div>
+    <div class="cutin-accent"></div>
+  </div>
+</div>
+
+<div class="controls">
+  <button onclick="play('')">▶ 赤（標準）</button>
+  <button class="blue" onclick="play('style-blue')">▶ 青</button>
+  <button class="gold" onclick="play('style-gold')">▶ 金（決着）</button>
+</div>
+
+<div class="note">
+  v2→v3: 帯の高さ 105px→150px、顔窓 160×105→220×150、画像360px拡大表示。<br>
+  顔がドーンと大きく映るように。技名32px。画面の約40%を帯が占める迫力。
+</div>
+
+<script>
+  let busy = false;
+
+  function play(style) {
+    if (busy) return;
+    busy = true;
+
+    const stage = document.getElementById('stage');
+    const flash = document.getElementById('flash');
+    const cutin = document.getElementById('cutin');
+
+    flash.classList.remove('active');
+    cutin.classList.remove('active', 'fadeout', 'style-blue', 'style-gold');
+    stage.classList.remove('shake');
+    void cutin.offsetWidth;
+
+    if (style) cutin.classList.add(style);
+
+    flash.classList.add('active');
+    stage.classList.add('shake');
+    setTimeout(() => cutin.classList.add('active'), 80);
+    setTimeout(() => {
+      cutin.classList.remove('active');
+      cutin.classList.add('fadeout');
+    }, 1800);
+    setTimeout(() => {
+      cutin.classList.remove('fadeout', 'style-blue', 'style-gold');
+      flash.classList.remove('active');
+      stage.classList.remove('shake');
+      busy = false;
+    }, 2300);
+  }
+</script>
+
+</body>
+</html>
