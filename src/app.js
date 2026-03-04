@@ -3649,10 +3649,11 @@ const App = {
     }
   },
 
-  // v2.1: エンディング演出チェック（初クリア時のみ）
+  // v2.1: エンディング演出チェック（初クリア時のみ、1回限り）
   _checkAndShowEnding(onDone) {
     if (window.IS_TRIAL) { onDone(); return; } // 体験版: エンディングをスキップ
-    if (G.endingCleared && G.endingClearedSeason === G.season - 1) {
+    if (G.endingCleared && G.endingClearedSeason === G.season - 1 && !G.endingShown) {
+      G = { ...G, endingShown: true };
       const data = Engine.ending.buildClearData(G);
       showEndingCeremony(data, onDone);
     } else {
@@ -4559,8 +4560,10 @@ App.closePPVResult = function() {
     setTimeout(nextAction, 200);
   }
 
-  // advanceWeek → オフシーズンへ
-  App.advanceWeek();
+  // ppvPhase='tv'に遷移→TV中継フェーズへ（weekは48のまま）
+  G = { ...G, ppvPhase: 'tv' };
+  Storage.autoSave();
+  App.initPPVTV();
 };
 
 App.initPPVTV = function() {

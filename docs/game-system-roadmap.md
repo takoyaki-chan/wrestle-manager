@@ -1,12 +1,18 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（個別特性リバランス）
+> 最終更新: 2026-03-05（PPVバグ修正+エンディングバグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**PPV進行バグ修正＋エンディング繰り返しバグ修正（2026-03-05）。**
+
+- **PPV進行バグ修正**: closePPVResultがApp.advanceWeek()を呼んでいたためweek 48→49に進み、ppvTV判定（week===48 && ppvPhase==='tv'）を完全スキップしていた。advanceWeek呼び出しをppvPhase='tv'+initPPVTV()直接呼び出しに修正。weekは48のまま維持しTV中継フェーズを正常に遷移
+- **エンディング繰り返しバグ修正**: _checkAndShowEndingの条件`endingClearedSeason === G.season - 1`が新シーズン中ずっとtrueで、毎週エンディングポップアップが表示されていた。`endingShown`フラグを追加し1回限りの表示に修正
+- 変更: app.js
 
 **キャラクターデータ同期＋反骨心セリフ追加（2026-03-05）。** NotionキャラDB→Spec→ゲームデータの全面同期。個別特性リバランスと合わせてキャラ41名のデータ修正を反映。
 
@@ -356,6 +362,8 @@
 
 ## 設計決定ログ（実装済みルール集）
 
+- **PPV進行バグ（closePPVResult）** — closePPVResultがApp.advanceWeek()を呼んでweek 48→49に進めていたため、ppvTV判定(week===48)をスキップ。ppvPhase='tv'+initPPVTV()直接呼び出しに修正
+- **エンディング繰り返しバグ** — `endingClearedSeason === G.season - 1`が新シーズン全52週でtrue。`endingShown`永続フラグで1回限りに
 - **matchGrowth欠落バグ修正** — App.finalizeShow（ビジュアル観戦モード）に試合成長処理が欠落していた。Engine.executeShow/applyPPVResultsにはあったがApp側にミラーされておらず、通常興行で選手の試合成長が一切発生していなかった。seed 1732でEngine.executeShowと同一のRNG系列を使用。怪我処理後・ブレークスルー判定前に配置
 - **ロスターランダム化** — potTotal重み付き配分。S級≥690, A級≥640。シリーズボーナス+0.3。dormant動的計算
 - **チャンピオン集客ボーナス** — チャンピオン出場時に集客×1.10
