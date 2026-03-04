@@ -1090,8 +1090,8 @@ let _rivalryPopupCallback = null;
 /**
  * 因縁ポップアップをキュー表示
  * @param {Array} items - ポップアップデータの配列
- *   宣戦布告: { phase:'confrontation', leftId, rightId, leftName, rightName, isEternal }
- *   決着:     { phase:'resolution', winnerId, loserId, winnerName, loserName, isEternal, popBonus, orgPopBonus }
+ *   宣戦布告: { phase:'confrontation', leftId, rightId, leftName, rightName, isFate }
+ *   決着:     { phase:'resolution', winnerId, loserId, winnerName, loserName, isFate, isSecondResolution, popBonus, orgPopBonus }
  * @param {Function} onAllDone
  */
 function showRivalryPopups(items, onAllDone) {
@@ -1118,12 +1118,12 @@ function _renderRivalryPopup() {
 
   if (o.phase === 'confrontation') {
     // 宣戦布告
-    const lines = o.isEternal ? RIVALRY_CONFRONTATION_LINES.eternalPairs : RIVALRY_CONFRONTATION_LINES.pairs;
+    const lines = o.isFate ? RIVALRY_CONFRONTATION_LINES.fatePairs : RIVALRY_CONFRONTATION_LINES.pairs;
     const pair = lines[Math.floor(Math.random() * lines.length)];
-    const headerEmoji = o.isEternal ? '💥' : '🔥';
-    const headerText = o.isEternal ? '永遠のライバル ── 最終対決' : '宿敵対決！';
+    const headerEmoji = o.isFate ? '💥' : '🔥';
+    const headerText = o.isFate ? '宿命の対決！' : '宿敵対決！';
 
-    box.className = `rivalry-popup${o.isEternal ? ' eternal' : ''}`;
+    box.className = `rivalry-popup${o.isFate ? ' fate' : ''}`;
     box.innerHTML = `
       <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
       <div class="rivalry-popup-vs">
@@ -1150,14 +1150,16 @@ function _renderRivalryPopup() {
 
   } else {
     // 決着
-    const winLines = o.isEternal ? RIVALRY_RESOLUTION_LINES.eternalWinner : RIVALRY_RESOLUTION_LINES.winner;
-    const loseLines = o.isEternal ? RIVALRY_RESOLUTION_LINES.eternalLoser : RIVALRY_RESOLUTION_LINES.loser;
+    const winLines = o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner;
+    const loseLines = o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser;
     const winLine = winLines[Math.floor(Math.random() * winLines.length)];
     const loseLine = loseLines[Math.floor(Math.random() * loseLines.length)];
-    const headerEmoji = o.isEternal ? '💥' : '⚡';
-    const headerText = o.isEternal ? '永遠のライバル ── 最終決着！' : '宿敵決着！';
+    const headerEmoji = o.isFate ? '💥' : '⚡';
+    const headerText = o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！');
 
-    box.className = `rivalry-popup resolution${o.isEternal ? ' eternal' : ''}`;
+    box.className = `rivalry-popup resolution${o.isFate ? ' fate' : ''}`;
+    const goodRivalMsg = o.isSecondResolution
+      ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>` : '';
     box.innerHTML = `
       <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
       <div class="rivalry-popup-vs">
@@ -1180,6 +1182,7 @@ function _renderRivalryPopup() {
       <div class="rivalry-popup-bonus">
         📈 両選手の人気 +${o.popBonus}　　🏢 団体人気 +${o.orgPopBonus}
       </div>
+      ${goodRivalMsg}
       <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
     `;
     document.getElementById('rivalryPopupOverlay').classList.add('active');
@@ -2433,8 +2436,9 @@ function renderShowResult(results, injuryResults) {
     const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
 
     const spotlightInMatch = G.mediaSpotlight && (G.mediaSpotlight.fighterId === r.left.id || G.mediaSpotlight.fighterId === r.right.id);
+    const freshTag = r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">${r.freshnessBonus > 0 ? '✨' : '😐'}${r.freshnessLabel}</span>` : '';
     html += `<div class="match-result" style="${isMain ? 'border-left-color:var(--gold);background:rgba(212,168,67,0.05)' : ''}">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${spotlightInMatch ? ' <span class="media-spotlight-badge">📺 取材中</span>' : ''}</div>`;
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${matchLabel}${r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${freshTag}${spotlightInMatch ? ' <span class="media-spotlight-badge">📺 取材中</span>' : ''}</div>`;
 
     if (isDraw) {
       html += `<div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:4px 0 8px;flex-wrap:wrap">
@@ -2449,7 +2453,7 @@ function renderShowResult(results, injuryResults) {
         </div>
       </div>
       <div style="margin-top:2px;font-size:13px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
-      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>` : ''}</span></div>`;
     } else {
       const winnerF = leftIsWinner ? r.left : r.right;
       html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:4px 0 8px;flex-wrap:wrap">
@@ -2468,7 +2472,7 @@ function renderShowResult(results, injuryResults) {
           background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winnerF.name} 勝利</span>
         <span style="font-size:13px;color:var(--text-sub)">${r.finType}${r.finMove ? `（${r.finMove}）` : ''} / ${r.turns}ターン</span>
       </div>
-      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}</span></div>`;
+      <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>` : ''}</span></div>`;
     }
 
     // HP bars

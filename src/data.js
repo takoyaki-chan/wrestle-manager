@@ -733,7 +733,7 @@ const TITLES = [
 const RIVALRY_THRESHOLDS = [
   {matches:2, label:'因縁', mqBonus:3, color:'#fdcb6e', emoji:'⚡'},
   {matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
-  {matches:7, label:'永遠のライバル', mqBonus:6, color:'#d63031', emoji:'💥'}
+  {matches:7, label:'宿命の相手', mqBonus:6, color:'#d63031', emoji:'💥'}
 ];
 
 // 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
@@ -745,7 +745,7 @@ const RIVALRY_CONFRONTATION_LINES = {
     ['覚悟はいいわね？', '生まれた時からできてるわ'],
     ['あなたを超える。今日、ここで', '超えられるものなら、やってみなさい'],
   ],
-  eternalPairs: [
+  fatePairs: [
     ['長かった……この物語に、終止符を打つ', 'ええ……最高の結末を見せましょう'],
     ['何度も戦った。でも今日が最後だ', 'わかっている。だから全力で来なさい'],
     ['あなたがいなければ、今の私はいない', '……お互い様よ。だから今日も全力で'],
@@ -768,12 +768,12 @@ const RIVALRY_RESOLUTION_LINES = {
     'ありがとう。あなたのおかげで強くなれた',
     '完敗だ。でも私はまだ終わらない',
   ],
-  eternalWinner: [
+  fateWinner: [
     'この物語に終止符を打てた……感無量だ',
     '長かった。でも、あなたなしでは辿り着けなかった',
     'これが最終章。最高のエンディングだった',
   ],
-  eternalLoser: [
+  fateLoser: [
     'あなたには敵わなかった。でも、この戦いは宝物だ',
     '幾度となく戦った。すべてが私の財産だ',
     '最後まで……全力だった。悔いはない',
@@ -782,6 +782,23 @@ const RIVALRY_RESOLUTION_LINES = {
 
 // v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
 const MQ_EXTERNAL_CAP = 15;
+
+// 好敵手（決着2回完了後の永続ステータス）
+const GOODRIVAL_MQ_BONUS = 2;
+const GOODRIVAL_LABEL = '好敵手';
+const GOODRIVAL_EMOJI = '🤝';
+const GOODRIVAL_COLOR = '#74b9ff';
+
+// カード鮮度システム
+const FRESHNESS_CONFIG = {
+  windowShows: 12,        // 直近12興行を対象
+  firstMeetBonus: 2,      // 初顔合わせボーナス
+  penalties: [
+    { minCount: 3, mqPenalty: -3 },   // マンネリ
+    { minCount: 4, mqPenalty: -5 },   // 深刻なマンネリ
+    { minCount: 5, mqPenalty: -8 },   // 完全なマンネリ
+  ],
+};
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4B: COACH DATA (v2.0 redesign)                  ║

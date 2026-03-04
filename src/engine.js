@@ -767,14 +767,22 @@ const Engine = {
     getRivalryLevel(G, id1, id2) {
       const r = Engine.title.getRivalry(G, id1, id2);
       if (!r) return null;
+      // v2.0: 好敵手（決着2回完了）
+      if (r.resolved) {
+        return { matches: r.matches || 0, label: GOODRIVAL_LABEL, mqBonus: GOODRIVAL_MQ_BONUS,
+                 color: GOODRIVAL_COLOR, emoji: GOODRIVAL_EMOJI, isGoodRival: true };
+      }
       let best = null;
       for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
       return best;
     },
-    // 因縁決着判定: 宿敵+(matches>=4) かつ MQ>=動的閾値 で決着成立
+    // 因縁決着判定: v2.0 — 決着2回上限。1回目=宿敵(4+)、2回目=宿命の相手(7+)
     // v2.1: 閾値を天井の80%に動的化（下限30, 上限50）— 低OVR帯でも決着可能に
-    checkResolution(rivalLvl, mq, avgOV) {
-      if (!rivalLvl || rivalLvl.matches < 4) return null;
+    checkResolution(rivalLvl, mq, avgOV, resolutionCount) {
+      resolutionCount = resolutionCount || 0;
+      if (resolutionCount >= 2) return null; // 好敵手: もう決着しない
+      const requiredMatches = resolutionCount === 0 ? 4 : 7;
+      if (!rivalLvl || rivalLvl.matches < requiredMatches) return null;
       // 天井計算（battle-engine §1 と同一式）
       let ceiling;
       if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
@@ -784,17 +792,20 @@ const Engine = {
       // 動的閾値: ceiling×0.80, 下限30, 上限50
       const threshold = Math.min(50, Math.max(30, Math.round(ceiling * 0.80)));
       if (mq < threshold) return null;
-      const isEternal = rivalLvl.matches >= 7;
+      const isFate = rivalLvl.matches >= 7;
       return {
-        isEternal,
-        popBonus: isEternal ? 6 : 4,
-        orgPopBonus: isEternal ? 2.5 : 1.5,
+        isFate,
+        popBonus: isFate ? 6 : 4,
+        orgPopBonus: isFate ? 2.5 : 1.5,
+        newResolutionCount: resolutionCount + 1,
       };
     },
     // Returns { rivalries, msg }
     recordRivalry(G, id1, id2) {
       const key = Engine.title.getRivalryKey(id1, id2);
       const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0 };
+      // v2.0: 好敵手は matches 加算しない
+      if (oldEntry.resolved) return { rivalries: G.rivalries, msg: null };
       const old = Engine.title.getRivalryLevel(G, id1, id2);
       // ライバル体質: 因縁カウント+1加速（通常1→2）
       let rivalryBonus = (Traits.has(G.roster.find(c=>c.id===id1)||{}, 'ライバル体質') || Traits.has(G.roster.find(c=>c.id===id2)||{}, 'ライバル体質')) ? 2 : 1;
@@ -3220,7 +3231,7 @@ const Engine = {
         const rivalLevel = Engine.title.getRivalryLevel(s, lastRunFighter.id, opponentId);
         if (rivalLevel && rivalLevel.matches >= 4) {
           if (rivalLevel.matches >= 7) {
-            externalMQ += 5;  // 永遠のライバル +5
+            externalMQ += 5;  // 宿命の相手 +5
             r.lastRunRivalBonus = 5;
           } else {
             externalMQ += 3;  // 宿敵 +3
@@ -3233,6 +3244,14 @@ const Engine = {
         externalMQ += 2;
         r.proveModeBonus = 2;
       }
+      // v2.0: カード鮮度（初顔合わせボーナスはキャップ対象、マンネリペナルティはキャップ対象外）
+      const freshnessResult = Engine.freshness.calc(s.matchupLog || [], r.left.id, r.right.id, s.totalShows);
+      if (freshnessResult.bonus !== 0) {
+        r.freshnessBonus = freshnessResult.bonus;
+        r.freshnessLabel = freshnessResult.label;
+      }
+      if (freshnessResult.bonus > 0) externalMQ += freshnessResult.bonus;
+      const freshnessPenalty = freshnessResult.bonus < 0 ? freshnessResult.bonus : 0;
       const positiveExternal = Math.max(0, externalMQ);
       const negativeExternal = Math.min(0, externalMQ);
       const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
@@ -3240,8 +3259,8 @@ const Engine = {
       let titleGapPenalty = 0;
       if (r.isTitleMatch && r.titleOVRGap > 20) titleGapPenalty = -6;
       else if (r.isTitleMatch && r.titleOVRGap > 10) titleGapPenalty = -3;
-      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty, 5, 100);
-      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty;
+      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty, 5, 100);
+      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty;
       if (titleGapPenalty < 0) r.titleGapPenalty = titleGapPenalty;
       return r;
     });
@@ -3386,7 +3405,11 @@ const Engine = {
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
-    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
+    // v2.0: matchupLog にカード鮮度用の対戦記録を追加
+    const newMatchupEntries = validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows }));
+    const updatedMatchupLog = [...(s.matchupLog || []), ...newMatchupEntries];
+
+    s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek, matchupLog: updatedMatchupLog };
 
     // v2.0: trust 月次更新（興行参加/不参加・勝敗・MQ・連敗・自然変動）
     const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles);
@@ -5071,6 +5094,7 @@ const Engine = {
       rosterCap: 6,   // roster-cap-design v1.0: 段階解放（6→8→10→12→16）
       warWon: false,  // 対抗戦初勝利フラグ
       rivalries: {},
+      matchupLog: [],  // カード鮮度: 全対戦履歴
       coaches: [],
       availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [] }),
       seasonGrowth: {},
@@ -6927,6 +6951,49 @@ Engine.eventSystem = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// v2.0: Card Freshness System (rivalry-resolution-spec v2.0 §5)
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.freshness = {
+  /**
+   * カード鮮度計算（純粋関数）
+   * @param {Array} matchupLog - [{leftId, rightId, showCount}, ...]
+   * @param {number} id1 - 選手ID
+   * @param {number} id2 - 選手ID
+   * @param {number} currentShowCount - G.totalShows（興行通し番号）
+   * @returns {{ bonus: number, label: string|null }}
+   */
+  calc(matchupLog, id1, id2, currentShowCount) {
+    const key1 = Math.min(id1, id2);
+    const key2 = Math.max(id1, id2);
+    if (!matchupLog || matchupLog.length === 0) {
+      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ' };
+    }
+    // 初顔合わせ判定: 全履歴に存在しないペア
+    const hasEverFought = matchupLog.some(e =>
+      Math.min(e.leftId, e.rightId) === key1 && Math.max(e.leftId, e.rightId) === key2
+    );
+    if (!hasEverFought) {
+      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ' };
+    }
+    // 12興行ウィンドウ内の対戦回数
+    const windowStart = currentShowCount - FRESHNESS_CONFIG.windowShows;
+    const countInWindow = matchupLog.filter(e =>
+      e.showCount > windowStart &&
+      Math.min(e.leftId, e.rightId) === key1 && Math.max(e.leftId, e.rightId) === key2
+    ).length;
+    // ペナルティ判定（最も重いものを適用）
+    for (let i = FRESHNESS_CONFIG.penalties.length - 1; i >= 0; i--) {
+      const p = FRESHNESS_CONFIG.penalties[i];
+      if (countInWindow >= p.minCount) {
+        const label = countInWindow >= 5 ? '完全なマンネリ' : countInWindow >= 4 ? '深刻なマンネリ' : 'マンネリ';
+        return { bonus: p.mqPenalty, label };
+      }
+    }
+    return { bonus: 0, label: null };
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v2.0: Fan Expectation System (event-system-spec-v2.md §4)
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.fanExpect = {
@@ -6951,6 +7018,7 @@ Engine.fanExpect = {
 
     // Priority 3: 因縁ペア（matches >= 2 以上で、再戦希望）
     Object.entries(rivalries).forEach(([key, rv]) => {
+      if (rv.resolved) return; // v2.0: 好敵手は期待カードから除外
       if ((rv.matches || 0) < 2) return;
       // 決着後4週間のクールダウン中は候補から除外
       if (rv.lastResolvedWeek && (state.week - rv.lastResolvedWeek) < 4) return;

@@ -1520,6 +1520,15 @@ const Storage = {
         G = { ...G, rankings: Engine.ranking.updateRankings(G) };
       }
 
+      // 因縁リデザインv2: resolutionCount + matchupLog
+      if (!G._migrated_rivalry_v2) {
+        const migratedRivalries = {};
+        Object.entries(G.rivalries || {}).forEach(([key, rv]) => {
+          migratedRivalries[key] = { ...rv, resolutionCount: rv.resolutionCount || 0 };
+        });
+        G = { ...G, rivalries: migratedRivalries, matchupLog: G.matchupLog || [], _migrated_rivalry_v2: true };
+      }
+
       // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
       if (G.weekPhase !== 'scoutEvent') {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
@@ -2295,11 +2304,11 @@ const App = {
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
-    // 宿敵+ペアの宣戦布告ポップアップを検出
+    // 宿敵+ペアの宣戦布告ポップアップを検出（好敵手は対象外）
     const confrontations = [];
     validMatches.forEach((m, i) => {
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
-      if (rivalLvl && rivalLvl.matches >= 4) {
+      if (rivalLvl && !rivalLvl.isGoodRival && rivalLvl.matches >= 4) {
         const cl = G.roster.find(c => c.id === m.left);
         const cr = G.roster.find(c => c.id === m.right);
         if (cl && cr) {
@@ -2307,7 +2316,7 @@ const App = {
             phase: 'confrontation', idx: i,
             leftId: m.left, rightId: m.right,
             leftName: cl.name, rightName: cr.name,
-            isEternal: rivalLvl.matches >= 7,
+            isFate: rivalLvl.matches >= 7,
           });
         }
       }
@@ -2604,17 +2613,37 @@ const App = {
       }
     }
 
+    // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない）
+    results.forEach((r, i) => {
+      const m = validMatches[i];
+      const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows);
+      if (fr.bonus > 0) {
+        r.mq = Math.min(100, r.mq + fr.bonus);
+        r.freshnessBonus = fr.bonus; r.freshnessLabel = fr.label;
+      } else if (fr.bonus < 0) {
+        r.mq = Engine.util.clamp(r.mq + fr.bonus, 5, 100);
+        r.freshnessBonus = fr.bonus; r.freshnessLabel = fr.label;
+      }
+    });
+
     // 因縁決着判定（全MQボーナス適用後）
     const rivalryResolutions = [];
     deferredRivalryPairs.forEach(idx => {
       const r = results[idx];
       const m = validMatches[idx];
       const avgOV = (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2;
-      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV);
+      const currentEntry = rivalries[Engine.title.getRivalryKey(m.left, m.right)] || {};
+      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV, currentEntry.resolutionCount || 0);
       if (resolution) {
-        // 決着成立: matches リセット + lastResolvedWeek 記録
+        // 決着成立: matches リセット + lastResolvedWeek + resolutionCount 更新
         const key = Engine.title.getRivalryKey(m.left, m.right);
-        rivalries = { ...rivalries, [key]: { matches: 0, lastWeek: s.week, lastResolvedWeek: s.week } };
+        const isSecondResolution = resolution.newResolutionCount >= 2;
+        const updatedEntry = {
+          matches: 0, lastWeek: s.week, lastResolvedWeek: s.week,
+          resolutionCount: resolution.newResolutionCount,
+          ...(isSecondResolution ? { resolved: true } : {}),
+        };
+        rivalries = { ...rivalries, [key]: { ...rivalries[key], ...updatedEntry } };
         // 報酬: 両選手 popularity 直接加算（逓減対象外）
         roster = roster.map(c => {
           if (c.id === m.left || c.id === m.right) {
@@ -2630,11 +2659,12 @@ const App = {
         const loserName = loserId === r.left.id ? r.left.name : r.right.name;
         rivalryResolutions.push({
           phase: 'resolution', winnerId, loserId, winnerName, loserName,
-          isEternal: resolution.isEternal, popBonus: resolution.popBonus, orgPopBonus: resolution.orgPopBonus,
+          isFate: resolution.isFate, isSecondResolution,
+          popBonus: resolution.popBonus, orgPopBonus: resolution.orgPopBonus,
         });
         r.rivalryResolved = true;
-        const emoji = resolution.isEternal ? '💥' : '⚡';
-        const label = resolution.isEternal ? '永遠のライバル最終決着' : '宿敵決着';
+        const emoji = resolution.isFate ? '💥' : '⚡';
+        const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
         events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${resolution.orgPopBonus}`);
       } else {
         // 不完全燃焼: 通常通り recordRivalry 実行
@@ -2763,7 +2793,11 @@ const App = {
       });
     });
 
-    s = { ...s, roster };
+    // matchupLog 記録（鮮度計算の後、最終更新の前）
+    const newMatchupEntries = validMatches.map(m => ({
+      leftId: m.left, rightId: m.right, showCount: s.totalShows,
+    }));
+    s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
     if (pendingGrowthEvents.length > 0) {
       G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
     }
