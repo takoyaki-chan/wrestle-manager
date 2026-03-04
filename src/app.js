@@ -3696,14 +3696,16 @@ const App = {
     };
     Storage.autoSave();
 
-    // フィードバック: 選手の顔+セリフ表示（個人向けのみ）
+    // フィードバック: 選手の顔+セリフ+before/after表示
+    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
     const reactionKey = result.reactionKey || actionId;
     const reactFighterId = result.reactionFighterId;
+    const careChanges = result.changes || [];
     if (reactFighterId != null) {
       const fighter = G.roster.find(f => f.id === reactFighterId);
       if (fighter) {
         const text = Engine.careActions.getReactionText(reactionKey, fighter);
-        _showCareReaction(fighter, text);
+        _showCareReaction(fighter, text, careChanges, cfg.cost || 0, result.funds);
       }
     } else {
       // 団体向け: 代表の1人を選んでセリフ表示
@@ -3711,15 +3713,14 @@ const App = {
       if (healthyRoster.length > 0) {
         const rep = healthyRoster[Math.floor(Math.random() * healthyRoster.length)];
         const text = Engine.careActions.getReactionText(reactionKey, rep);
-        _showCareReaction(rep, text);
+        _showCareReaction(rep, text, careChanges, cfg.cost || 0, result.funds);
       }
     }
 
-    // 料金差引トースト
-    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
-    const label = cfg.label || actionId;
-    showToast(`${cfg.emoji || '💝'} ${label} 実行（-${cfg.cost || 0}万）`);
-    Audio.play('coin');
+    // サウンド: 費用に応じた達成感
+    if (cfg.cost >= 160) Audio.play('award');
+    else if (cfg.cost >= 80) Audio.play('event');
+    else Audio.play('notify');
     renderManagePanel();
   },
 

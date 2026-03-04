@@ -6047,11 +6047,14 @@ Engine.careActions = {
       return { ...fighter, trust: newTrust };
     };
 
+    const changes = [];
+
     // ── 個人向けアクション ──
     if (cfg.category === 'individual') {
       const idx = roster.findIndex(f => f.id === fighterId);
       if (idx < 0) return { error: 'fighter_not_found' };
       let f = { ...roster[idx] };
+      const _before = { trust: f.trust != null ? f.trust : 50, popularity: f.popularity || 0, condition: f.condition || 50 };
 
       if (actionId === 'bonus') {
         const repeatCount = Engine.careActions.getBonusRepeatCount(f);
@@ -6092,16 +6095,29 @@ Engine.careActions = {
       }
 
       roster[idx] = f;
+      // before/after changes 構築
+      const _after = { trust: f.trust, popularity: f.popularity || 0, condition: f.condition || 50 };
+      if (_after.trust !== _before.trust) changes.push({ label: '信頼度', emoji: '🤝', before: _before.trust, after: _after.trust });
+      if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: _before.popularity, after: _after.popularity });
+      if (_after.condition !== _before.condition) changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
+      if (actionId === 'trainer') changes.push({ label: '成長速度', emoji: '📈', text: `${cfg.effects.growth_boost.weeks}週間 +30%` });
+      if (actionId === 'special_treatment' && f.injury) {
+        const cur = roster[idx].injury.weeksLeft;
+        changes.push({ label: '離脱期間', emoji: '🏥', text: `${Math.ceil(cur * 2)}週 → ${cur}週に短縮` });
+      }
     }
 
     // ── 団体全体向けアクション ──
     if (cfg.category === 'team') {
+      const _beforeMorale = lockerRoomMorale;
       if (actionId === 'party') {
         roster = roster.map(f => {
           if (f.injury) return f;
           return applyTrust(f, cfg.effects.trust_all);
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + cfg.effects.morale, 0, 100);
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `+${cfg.effects.trust_all}` });
+        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
         events.push(`🎉 打ち上げ・慰労会を開催（全員の信頼度+${cfg.effects.trust_all}、雰囲気+${cfg.effects.morale}）`);
         reactionFighterId = null;  // 全員反応
       } else if (actionId === 'camp') {
@@ -6110,13 +6126,15 @@ Engine.careActions = {
           const newF = applyTrust(f, cfg.effects.trust_all);
           return { ...newF, _trainerBuff: { weeksLeft: cfg.effects.growth_all.weeks, mult: cfg.effects.growth_all.mult } };
         });
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `+${cfg.effects.trust_all}` });
+        changes.push({ label: '全員の成長速度', emoji: '📈', text: `${cfg.effects.growth_all.weeks}週間 +50%` });
         events.push(`⛺ 合宿を実施（全員の成長バフ+50%、${cfg.effects.growth_all.weeks}週間）`);
         reactionFighterId = null;
       }
     }
 
     const newFunds = (state.funds || 0) - cfg.cost;
-    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId };
+    return { roster, lockerRoomMorale, funds: newFunds, events, reactionKey, reactionFighterId, changes };
   },
 
   // ── トレーナーバフの週次消費（processManage内で呼び出し） ─────────────────

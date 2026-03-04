@@ -3172,11 +3172,30 @@ function showCareActionModal(state, onConfirm) {
     document.getElementById('careCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
   }
 
+  // 期待される効果のHTMLを構築
+  function _buildExpectHtml(cfg) {
+    const items = [];
+    const e = cfg.effects || {};
+    if (e.trust) items.push(`🤝 信頼度 +${e.trust}`);
+    if (e.popularity) items.push(`⭐ 人気 +${e.popularity}`);
+    if (e.trust_all) items.push(`🤝 全員の信頼度 +${e.trust_all}`);
+    if (e.morale) items.push(`🏠 ロッカールーム雰囲気 +${e.morale}`);
+    if (e.growth_boost) items.push(`📈 成長速度 +${Math.round((e.growth_boost.mult - 1) * 100)}%（${e.growth_boost.weeks}週間）`);
+    if (e.growth_all) items.push(`📈 全員の成長速度 +${Math.round((e.growth_all.mult - 1) * 100)}%（${e.growth_all.weeks}週間）`);
+    if (cfg.id === 'media') items.push('💪 状態 少し回復');
+    if (cfg.id === 'special_treatment') items.push('🏥 離脱期間を半分に短縮');
+    if (items.length === 0) return '';
+    return `<div class="care-expect"><div class="care-expect-label">期待される効果</div>${items.map(i => `<div class="care-expect-item">${i}</div>`).join('')}</div>`;
+  }
+
   // A-2: 団体向けアクション確認画面
   function renderTeamConfirm(actionId, cfg) {
+    const remainingFunds = funds - cfg.cost;
+    const fundsColor = remainingFunds < 200 ? '#e74c3c' : '#2ecc71';
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
-    html += `<div style="font-size:14px;color:#e8439f;font-weight:700;text-align:center;margin-bottom:14px">費用: ${cfg.cost}万</div>`;
+    html += _buildExpectHtml(cfg);
+    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
     html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careTeamConfirmBtn">実行する</button>`;
     html += '<button class="care-close-btn" id="careTeamBackBtn">← 戻る</button>';
     box.innerHTML = html;
@@ -3201,6 +3220,7 @@ function showCareActionModal(state, onConfirm) {
     html += `<div style="font-weight:700;margin-top:6px">${fighter.name}</div>`;
     html += `</div>`;
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
+    html += _buildExpectHtml(cfg);
     html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
     html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careIndivConfirmBtn">実行する</button>`;
     html += '<button class="care-close-btn" id="careIndivBackBtn">← 戻る</button>';
@@ -3673,24 +3693,27 @@ function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds
   const el = document.getElementById('notifEventToast');
   if (!el) { showToast(text); return; }
 
-  const face = portraitImg(fighter.id, 120, 'notif-face');
-  el.className = 'notif-event-toast care-reaction-toast';
+  const isPremium = cost >= 100;
+  const face = portraitImg(fighter.id, isPremium ? 140 : 120, 'notif-face');
+  el.className = `notif-event-toast care-reaction-toast${isPremium ? ' care-premium' : ''}`;
 
-  // S2.1: cost >= 100 のときのみ before/after changes を表示
+  // before/after changes 表示（changesがあれば常に表示）
   let changesHtml = '';
-  if (changes && changes.length > 0 && cost >= 100) {
+  if (changes && changes.length > 0) {
     changesHtml = '<div class="care-r-changes">';
     changes.forEach(c => {
       if (c.text !== undefined) {
-        changesHtml += `<span class="care-r-change">${c.label}: ${c.text}</span>`;
+        changesHtml += `<div class="care-r-change"><span class="care-r-change-label">${c.emoji || ''} ${c.label}</span><span class="care-r-change-value care-r-change-up">${c.text}</span></div>`;
       } else {
         const diff = c.after - c.before;
-        const sign = diff >= 0 ? '+' : '';
-        changesHtml += `<span class="care-r-change">${c.label}: ${c.before}→${c.after} (${sign}${diff})</span>`;
+        const cls = diff >= 0 ? 'care-r-change-up' : 'care-r-change-down';
+        changesHtml += `<div class="care-r-change"><span class="care-r-change-label">${c.emoji || ''} ${c.label}</span><span class="care-r-change-value ${cls}">${c.before} → ${c.after}</span></div>`;
       }
     });
     changesHtml += '</div>';
   }
+
+  const costHtml = cost > 0 ? `<div class="care-r-cost">-${cost}万（残金: ${remainingFunds.toLocaleString()}万）</div>` : '';
 
   el.innerHTML = `
     <div class="notif-inner">
@@ -3698,13 +3721,13 @@ function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds
       <div class="care-r-name">${fighter.name}</div>
       <div class="care-r-speech">「${text}」</div>
       ${changesHtml}
+      ${costHtml}
     </div>
   `;
   el.classList.add('show');
-  Audio.play('notify');
 
-  // S2.2: cost >= 200 は長めに表示
-  const duration = cost >= 200 ? 5000 : 3500;
+  // 表示時間: 高額ほど長く
+  const duration = cost >= 160 ? 5500 : cost >= 80 ? 4500 : 3500;
   clearTimeout(window._notifTimer);
   window._notifTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
