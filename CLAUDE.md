@@ -82,3 +82,33 @@ v0.85bで確立。すべての実装はこの原則に従う。
 - 作業完了時は `docs/game-system-roadmap.md` を必ず更新する
 - UI確認はスクリーンショットではなくユーザーに委任する
 - 完了報告時に「確認してほしい画面・操作・表示」を具体的に列挙する
+
+## 自動検証システム（auto-sim）
+
+### 仕組み
+- **`Engine.validateGameState(G)`**: tickWeek末尾で毎週実行される不変条件チェッカー。キャラステータス範囲・NaN検出・参照整合性など約20種を検証。違反は `[WM Debug]` でコンソール出力 + `G.debugLog` に記録。ゲーム進行は止めない
+- **`test/auto-sim.js`**: UIなし高速シミュレーション。プレイヤー判断をランダム自動化して数千シーズンを数十秒で回し、validateGameStateの違反を収集・報告する
+
+### 自動実行（Claude Codeフック）
+- **engine.js / data.js / victory-lines.js を編集すると自動で500シーズン（10シード×50シーズン）のチェックが走る**
+- 違反検出時はフィードバックが返り、その場で修正に入る
+- フック実体: `.claude/hooks/auto-sim-check.sh`、設定: `.claude/settings.json`
+
+### 手動実行
+```bash
+node test/auto-sim.js 100         # 100シーズン（ランダムシード）
+node test/auto-sim.js 100 42      # 100シーズン（シード指定）
+# 大規模テスト: 100シード × 100シーズン = 10,000シーズン
+for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "Result:"
+```
+
+### いつ回すか
+- **engine.js を変更したとき** → フックが自動実行（追加の手動実行は不要）
+- **大きなリバランスや数値変更の後** → 手動で大規模テスト（100×100）を推奨
+- **app.js や UI のみの変更** → 不要
+
+### 教訓: makeAIFighter condition未設定バグ（2026-03-05検出）
+- `makeAIFighter` にconditionフィールドが無く、FA選手がロスター加入時に `condition: undefined` → NaN伝播
+- `makeChar`（プレイヤー用）にはあったが `makeAIFighter`（AI/FA用）に無かった
+- **教訓: 新しいキャラクター生成パスを追加する際は、makeCharと同じフィールドセットを持つか必ず確認する**
+- auto-sim 10,000シーズンで61%のシードで再現 → 修正後100%クリア
