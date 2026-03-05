@@ -765,7 +765,7 @@ function renderWeekScreen() {
         <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
         <td>${statusHtml}</td>
         <td>
-          <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:13px;padding:4px" ${schedDisabled}>
+          <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:15px;padding:8px 12px;border-radius:6px;min-width:120px" ${schedDisabled}>
             <option value="balance" ${c.schedule==='balance'?'selected':''}>バランス</option>
             <option value="practice" ${c.schedule==='practice'?'selected':''}>練習優先</option>
             <option value="promo" ${c.schedule==='promo'?'selected':''}>プロモ優先</option>
@@ -1371,12 +1371,14 @@ function renderRoster() {
       const matchIcon = sm.icon ? `<span style="font-weight:700">${sm.icon}</span>` : '';
       coachBadgeHtml = `<span class="coach-match-badge ${sm.cls}" style="display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}${matchIcon}</span>`;
     }
-    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
-        ${portraitImg(c.id, 56, '', true)}
+    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}${!c.isRental ? ';cursor:pointer' : ''}" ${!c.isRental ? `onclick="toggleRosterDetail(${c.id})"` : ''}>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px">
+        <div onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')" style="cursor:pointer;flex-shrink:0">
+          ${portraitImg(c.id, 56, '', true)}
+        </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-            ${fLink(c, {source:'roster', size:'13px'})}${champBadge}${rentalBadge}
+            <span onclick="event.stopPropagation()">${fLink(c, {source:'roster', size:'13px'})}</span>${champBadge}${rentalBadge}
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachBadgeHtml}
@@ -1396,7 +1398,7 @@ function renderRoster() {
           <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
           <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
           <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
-          ${!c.isRental ? `<button class="roster-expand-btn" onclick="event.stopPropagation();toggleRosterDetail(${c.id})" title="育成詳細">▼</button>` : ''}
+          ${!c.isRental ? `<span style="font-size:10px;color:var(--text-dim);margin-top:2px;display:block">▼ 育成</span>` : ''}
         </div>
       </div>
       ${!c.isRental ? _renderRosterTrainingPanel(c, hired) : ''}

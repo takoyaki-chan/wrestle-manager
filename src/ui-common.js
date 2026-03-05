@@ -1899,10 +1899,11 @@ function showFighterPopup(fighterId, source) {
         if (coach) {
           const sm = getCoachStyleMatch(coach, c);
           const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}" style="margin-left:4px">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none" style="margin-left:4px">不一致</span>';
+          const styleBadgeCls = sm.type === 'none' ? 'style="font-size:10px;padding:1px 5px;margin-left:4px;border-radius:3px;background:rgba(136,136,136,0.08);color:#888;border:1px solid rgba(136,136,136,0.2);opacity:0.7"' : `class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px"`;
           html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
             🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
-            <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px">${coach.style}</span>
+            <span ${styleBadgeCls}>${coach.style}</span>
             ${matchHtml}
             <span style="color:var(--text-dim);font-size:12px;margin-left:4px">指導力${coach.teaching} / ${coach.trait}</span>
           </div>`;

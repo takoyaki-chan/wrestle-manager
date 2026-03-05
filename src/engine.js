@@ -4495,23 +4495,44 @@ const Engine = {
         }
       }
 
-      // Step 2: 残りを盛り上がりスコアで最適マッチング（異団体制約）
+      // Step 2: プレイヤー選手を優先マッチング（異団体制約）
       const unmatched = remaining.filter(f => !usedIds.has(f.id));
+      const playerUnmatched = unmatched.filter(f => f._ppvOrgId === 'player');
+      const aiUnmatched = unmatched.filter(f => f._ppvOrgId !== 'player');
+      const usedIdx = new Set();
+
+      // Step 2a: プレイヤー選手を最適なAI対戦相手とマッチング
+      for (const pf of playerUnmatched) {
+        let bestOpponent = null, bestScore = -Infinity;
+        for (const af of aiUnmatched) {
+          if (usedIdx.has(af.id)) continue;
+          const score = Engine.ppv.calcExcitement(pf, af);
+          if (score > bestScore) { bestScore = score; bestOpponent = af; }
+        }
+        if (bestOpponent) {
+          matched.push({ left: pf, right: bestOpponent, excitement: bestScore, isRivalry: false });
+          usedIdx.add(pf.id);
+          usedIdx.add(bestOpponent.id);
+        }
+      }
+
+      // Step 2b: 残りのAI選手同士をマッチング
+      const stillUnmatched = unmatched.filter(f => !usedIds.has(f.id) && !usedIdx.has(f.id));
       const pairs = [];
-      for (let i = 0; i < unmatched.length; i++) {
-        for (let j = i + 1; j < unmatched.length; j++) {
-          if (unmatched[i]._ppvOrgId !== unmatched[j]._ppvOrgId) {
-            pairs.push({ i, j, score: Engine.ppv.calcExcitement(unmatched[i], unmatched[j]) });
+      for (let i = 0; i < stillUnmatched.length; i++) {
+        for (let j = i + 1; j < stillUnmatched.length; j++) {
+          if (stillUnmatched[i]._ppvOrgId !== stillUnmatched[j]._ppvOrgId) {
+            pairs.push({ i, j, score: Engine.ppv.calcExcitement(stillUnmatched[i], stillUnmatched[j]) });
           }
         }
       }
       pairs.sort((a, b) => b.score - a.score);
-      const usedIdx = new Set();
+      const usedIdx2 = new Set();
       for (const p of pairs) {
-        if (usedIdx.has(p.i) || usedIdx.has(p.j)) continue;
-        matched.push({ left: unmatched[p.i], right: unmatched[p.j], excitement: p.score, isRivalry: false });
-        usedIdx.add(p.i);
-        usedIdx.add(p.j);
+        if (usedIdx2.has(p.i) || usedIdx2.has(p.j)) continue;
+        matched.push({ left: stillUnmatched[p.i], right: stillUnmatched[p.j], excitement: p.score, isRivalry: false });
+        usedIdx2.add(p.i);
+        usedIdx2.add(p.j);
       }
 
       // 盛り上がりスコア昇順（前座→セミ→メイン手前）
@@ -4606,6 +4627,9 @@ const Engine = {
       // プレイヤーエントリーの再取得（Week43スナップショットから最新stateへ）
       const rawEntries = state.ppvEntries || {};
       const playerIds = (rawEntries.player || []).map(f => f.id);
+      if (playerIds.length === 0) {
+        console.warn('[WM Debug] PPV preparePPVDay: ppvEntries.player is empty. ppvEntries keys:', Object.keys(rawEntries));
+      }
       entries.player = playerIds.map(id => {
         const fresh = (state.roster || []).find(c => c.id === id);
         return fresh ? { ...fresh } : (rawEntries.player || []).find(f => f.id === id);
@@ -4616,9 +4640,13 @@ const Engine = {
       resolvedPlayer.forEach(f => {
         if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: 'player' });
       });
+      if (entries.player.length > 0 && resolvedPlayer.length === 0) {
+        console.warn('[WM Debug] PPV: All player entries lost to injuries. Original:', entries.player.length);
+      }
       entries.player = resolvedPlayer;
 
       // AI団体エントリーの再取得＋怪我処理
+      let totalAIEntries = 0;
       RIVAL_ORGS.forEach(org => {
         const rawOrgEntries = rawEntries[org.id] || [];
         const aiData = state.aiOrgs[org.id];
@@ -4631,8 +4659,13 @@ const Engine = {
         resolved.forEach(f => {
           if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: org.id });
         });
+        totalAIEntries += resolved.length;
         entries[org.id] = resolved;
       });
+
+      if (totalAIEntries === 0) {
+        console.warn('[WM Debug] PPV: No AI entries survived. Raw AI entry counts:', RIVAL_ORGS.map(o => `${o.id}:${(rawEntries[o.id]||[]).length}`).join(', '));
+      }
 
       // 団体名タグ付け
       for (const [orgId, fighters] of Object.entries(entries)) {
@@ -4643,6 +4676,9 @@ const Engine = {
       const summitPair = Engine.ppv.getSummitPair(state);
       const rivalries = state.rivalries || {};
       const card = Engine.ppv.generateCard(entries, rivalries, summitPair);
+      if (card.length === 0) {
+        console.warn('[WM Debug] PPV: Generated card is empty. Pool sizes:', Object.entries(entries).map(([k,v]) => `${k}:${v.length}`).join(', '), 'summitPair:', !!summitPair);
+      }
 
       // 煽り文＋セリフ付加
       const hypeRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xBBF2));

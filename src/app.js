@@ -4337,6 +4337,18 @@ App.initPPVShow = function() {
   };
   Audio.bgm.play('battle');
 
+  // カードが空の場合は即座にfinalize（スタック防止）
+  if (ppvDay.card.length === 0) {
+    console.warn('[WM Debug] PPV card is empty — entries:', JSON.stringify(G.ppvEntries ? Object.fromEntries(Object.entries(G.ppvEntries).map(([k,v]) => [k, (v||[]).length])) : 'null'));
+    showEventPopup({
+      type: 'system', tone: 'negative',
+      message: 'カード編成不成立',
+      detail: '出場可能な選手が不足しており、対戦カードを組めませんでした',
+    });
+    setTimeout(() => App.finalizePPV(), 1500);
+    return;
+  }
+
   // 代替通知ポップアップ
   if (ppvDay.substitutions.length > 0) {
     let popupChain = Promise.resolve();
