@@ -2155,6 +2155,100 @@ function closeFighterPopup() {
   document.getElementById('fighterPopupOverlay').classList.remove('active');
 }
 
+/** PPV VS比較ポップアップ — 両選手のステータスを並べて表示 */
+function showPPVVSDetail(matchIdx) {
+  const pp = App._ppvPreview;
+  if (!pp || !pp.card[matchIdx]) return;
+  const match = pp.card[matchIdx];
+  const left = match.left, right = match.right;
+  Audio.play('hover');
+
+  const STYLE_META = {
+    Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
+    Submission:{color:'#e67e22',icon:'SUB'}, Speed:{color:'#2ecc71',icon:'SPD'},
+    Allround:{color:'#f1c40f',icon:'ALL'}, Brawler:{color:'#e88a82',icon:'BRW'}
+  };
+  const STATS = [
+    {key:'pw',label:'PW',name:'パワー',color:'#e74c3c'},
+    {key:'sp',label:'SP',name:'スピード',color:'#3498db'},
+    {key:'te',label:'TE',name:'テクニック',color:'#2ecc71'},
+    {key:'st',label:'ST',name:'スタミナ',color:'#f39c12'},
+    {key:'mn',label:'MN',name:'マインド',color:'#9b59b6'}
+  ];
+
+  function renderSide(f) {
+    const sm = STYLE_META[f.style] || STYLE_META.Allround;
+    const ovr = Engine.util.ov(f);
+    const orgColor = f._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === f._ppvOrgId)?.color || 'var(--text-main)');
+    const url = getPortraitUrl(f.id);
+    const imgHtml = url
+      ? `<img src="${url}" style="width:72px;height:72px;border-radius:50%;border:2px solid ${orgColor}66;object-fit:cover" alt="">`
+      : portraitImg(f.id, 72);
+
+    let html = `<div style="text-align:center;flex:1;min-width:130px">`;
+    html += imgHtml;
+    html += `<div style="font-size:14px;font-weight:700;color:${orgColor};margin-top:6px">${f.name}</div>`;
+    html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">${f._ppvOrgName || ''}</div>`;
+    html += `<div style="font-size:11px;margin-bottom:2px"><span class="badge badge-${f.style}" style="font-size:10px;padding:1px 6px">${f.style}</span>`;
+    if (f.role) html += ` <span class="badge badge-${f.role==='Babyface'?'bf':f.role==='Heel'?'heel':'neutral'}" style="font-size:10px;padding:1px 6px">${f.role}</span>`;
+    html += `</div>`;
+    html += `<div style="font-size:28px;font-weight:900;color:var(--gold);margin:4px 0">${ovr}</div>`;
+    // 各ステータスバー
+    STATS.forEach(s => {
+      const val = f[s.key] || 0;
+      html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;font-size:10px">`;
+      html += `<span style="width:20px;text-align:right;color:var(--text-dim)">${s.label}</span>`;
+      html += `<div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">`;
+      html += `<div style="width:${val}%;height:100%;background:${s.color};border-radius:3px"></div>`;
+      html += `</div>`;
+      html += `<span style="width:22px;color:var(--text-sub);font-weight:600">${val}</span>`;
+      html += `</div>`;
+    });
+    // 特性
+    const traits = (f.traits || []).filter(t => t);
+    if (traits.length > 0) {
+      html += `<div style="margin-top:6px;font-size:10px;color:var(--text-sub)">`;
+      html += traits.map(t => {
+        const td = typeof TRAIT_DATA !== 'undefined' ? TRAIT_DATA[t] : null;
+        return `<span style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;margin:1px">${td?.label || t}</span>`;
+      }).join(' ');
+      html += `</div>`;
+    }
+    // 人気
+    html += `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">人気 ${f.popularity || 0}</div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  const matchNum = matchIdx + 1;
+  const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
+
+  let html = `<div style="padding:16px">`;
+  html += `<div style="text-align:center;font-size:14px;color:var(--gold);font-weight:700;margin-bottom:12px">${matchLabel}</div>`;
+  html += `<div style="display:flex;align-items:flex-start;gap:12px;justify-content:center">`;
+  html += renderSide(left);
+  html += `<div style="font-size:18px;font-weight:900;color:var(--text-dim);padding-top:60px">VS</div>`;
+  html += renderSide(right);
+  html += `</div>`;
+  // 因縁情報
+  if (match.isRivalry) {
+    const key1 = `${left.id}-${right.id}`, key2 = `${right.id}-${left.id}`;
+    const rivalry = (G.rivalries || {})[key1] || (G.rivalries || {})[key2];
+    if (rivalry) {
+      const lvlNames = ['', '好敵手', '宿敵', '永遠のライバル'];
+      html += `<div style="text-align:center;margin-top:10px;font-size:12px;color:#e74c3c">🔥 ${lvlNames[rivalry.level] || '因縁'} (${rivalry.matches || 0}戦)</div>`;
+    }
+  }
+  html += `<div style="text-align:center;margin-top:14px">`;
+  html += `<button class="btn" style="padding:8px 24px;font-size:13px;background:var(--bg-mid);color:var(--text-sub)" onclick="closeFighterPopup()">閉じる</button>`;
+  html += `</div>`;
+  html += `</div>`;
+
+  const box = document.getElementById('fighterPopupBox');
+  box.innerHTML = html;
+  document.getElementById('fighterPopupOverlay').classList.add('active');
+}
+
 // ── Name link helper ──
 // Returns clickable HTML for a fighter name. Use everywhere.
 function fLink(c, opts = {}) {
@@ -2801,6 +2895,9 @@ function renderPPVMatchPreview() {
       html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
       html += `</div>`;
     } else if (isNext) {
+      html += `<div style="text-align:center;margin-top:4px;margin-bottom:4px">`;
+      html += `<button class="btn" style="font-size:11px;padding:4px 14px;background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid var(--border)" onclick="showPPVVSDetail(${idx})">📊 両選手の詳細を見る</button>`;
+      html += `</div>`;
       html += `<div style="display:flex;gap:8px;margin-top:6px">`;
       html += `<button class="btn btn-blue" style="flex:1;font-size:13px;padding:8px 0" onclick="App.ppvWatchMatch(${idx})">🎬 試合を観る</button>`;
       html += `<button class="btn" style="flex:1;font-size:13px;padding:8px 0;background:var(--bg-mid);color:var(--text-sub)" onclick="App.ppvSkipMatch(${idx})">⏭ スキップ</button>`;
