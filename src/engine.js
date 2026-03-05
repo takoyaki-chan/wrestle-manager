@@ -1787,7 +1787,9 @@ const Engine = {
 
       const rawGain = perPractice * bonus * weeklyVariance;
       const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
-      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
+      // growth-rebalance v2: trainCap接近時の逓減（残り10以内で√(remaining/10)倍）
+      const convergenceMul = remaining < 10 ? Math.sqrt(remaining / 10) : 1.0;
+      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * convergenceMul * 10) / 10);
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
 
@@ -2271,7 +2273,9 @@ const Engine = {
 
       const coachMul = org.coachMul || 1.0;
       const tierGrowth = (AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B).growthBonus;
-      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul * tierGrowth;
+      // growth-rebalance v2: AI団体も興行を開催→試合成長相当を予算に含める
+      const aiMatchEquivalent = 1.15;
+      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul * tierGrowth * aiMatchEquivalent;
 
       const stats = ['pw','sp','te','st'];
       const totalRemaining = stats.reduce((s, st) =>
@@ -3385,10 +3389,10 @@ const Engine = {
         const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
         const selfOvr = Engine.util.ov(fighter);
 
-        // §2.3 成長計算
-        const matchGrowthBase = 1.5;
-        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
-        const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0; // MQ65以上を接戦とみなす
+        // §2.3 成長計算 — growth-rebalance v2: 試合成長を適正化
+        const matchGrowthBase = 0.7;
+        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+        const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
         const resultBonus = won ? 0.0 : 0.2;
         const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
         let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
@@ -4785,9 +4789,10 @@ const Engine = {
           if (!rosterF) return; // プレイヤー所属でない
           const selfOvr = Engine.util.ov(rosterF);
           const oppOvr = Engine.util.ov(oppFighter);
-          const matchGrowthBase = 1.5;
-          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
-          const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0;
+          // growth-rebalance v2: 試合成長を適正化
+          const matchGrowthBase = 0.7;
+          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+          const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
           const resultBonus = won ? 0.0 : 0.2;
           const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, rosterF.id);
           let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
@@ -6255,8 +6260,8 @@ Engine.growthEvents = {
     const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, context);
     if (prob <= 0 || Engine.rng.float(rng) >= prob) return null;
 
-    // §2.4 ジャンプ量 +3〜6、5ステ均等
-    const gain = Engine.rng.int(rng, 3, 6);
+    // §2.4 ジャンプ量 +2〜4、5ステ均等 — growth-rebalance v2: 3-6→2-4に適正化
+    const gain = Engine.rng.int(rng, 2, 4);
     const stats = ['pw', 'sp', 'te', 'st', 'mn'];
     const stat = stats[Engine.rng.int(rng, 0, 4)];
     const cap = fighter.trainCap ? (fighter.trainCap[stat] || 100) : 100;

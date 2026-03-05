@@ -1,12 +1,22 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（デバッグ・検証システム導入）
+> 最終更新: 2026-03-05（成長バランスリバランス v2）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**成長バランスリバランス v2（2026-03-05）。** プレイヤーvs AI成長速度の構造的不公平を解消。旧: Player Top5がS8で84(AI 78を逆転)→S13で93.5(AI 79)と独占。新: S12でPlayer 83=AI 83に到達し、中盤〜後半は拮抗した競争が成立。
+
+- **試合成長の適正化**: matchGrowthBase 1.5→0.7（旧: ~40 OVR/season → 新: ~14）。opponentBonus上限0.8→0.5、closeMatchBonus 0.5→0.3。3箇所(engine.js executeShow/applyPPVResults, app.js finalizeShow)を統一修正
+- **ブレークスルー適正化**: ジャンプ量3-6→2-4に縮小
+- **trainCap接近時の逓減**: calcGrowthに`convergenceMul = √(remaining/10)`を追加（残り10以内で自然減速）
+- **AI成長強化**: aiSeasonGrowthに`aiMatchEquivalent=1.15`を追加（AI団体も興行開催による成長を反映）。AI_TIER_LIMITS growthBonus: S 1.05→1.12, A 1.00→1.05, B 0.95→1.00
+- **分析ツール**: test/growth-analysis.js（年次別OVR推移・Top5/Top10分布・AI tier別比較）
+- **検証**: 20シード×15シーズン分析 + 10シード×100シーズン(1000シーズン)安定性テスト ALL CLEAR
+- 変更: engine.js, app.js, data.js, test/growth-analysis.js（新規）
 
 **デバッグ・検証システム導入（2026-03-05）。** `validateGameState(G)` による常時不変条件チェックと、UIなし高速自動シミュレーション `test/auto-sim.js` を実装。
 
@@ -333,6 +343,15 @@
 | 4 | **試合ログ反映** 試合結果テキスト・ログにフィニッシャー技名差し込み | 小 | 未着手 |
 | 5 | **調整** テストプレイで発動確率・顔切り抜き位置の微調整 | 小 | 未着手 |
 
+### 成長バランスリバランス v2（★高優先）→ **実装済み**
+
+| タスク | 重さ | 状態 |
+|--------|:----:|------|
+| **A. 現状分析** auto-simで年次別OVR推移・AI比較データ収集。プレイヤーvs AI成長速度の定量比較 | 小 | **実装済み** |
+| **B. プレイヤー成長速度の調整** 週次成長・試合成長・ブレークスルー確率・コーチ補正の複合効果を見直し。成長天井の逓減カーブ強化 | 中 | **実装済み** |
+| **C. AI団体の成長強化** AI側の成長手段拡充（FA補強の質向上・成長イベント相当の仕組み等）。tierGrowth倍率見直し | 中 | **実装済み** |
+| **D. 長期ゲームバランス検証** 10年・15年スパンでの勢力図推移を確認。中盤以降もAI団体が脅威であり続けるか | 小 | **実装済み** |
+
 ### 拡張候補
 
 | 項目 | 優先度 | 備考 |
@@ -428,7 +447,8 @@
 - **イベントポップアップautoCloseMs** — showEventPopup opts.autoCloseMs指定時にsetTimeout(closeEventPopup, ms)で自動閉じ。closeEventPopup内でclearTimeout。ファン期待リアクションで使用（2500ms）
 - **会場規模連動の試合数** — VENUES.maxMatches（公民館3〜ドーム8）。Engine.util.getMaxMatches(week,venueIdx)で一元管理。特別興行/PPVは+1（上限8）。CARD_DEPTH_MULT 8要素。showCardは空配列初期化→pad/trimで動的調整
 - **レンタルシステム** — G.rentals配列。シーズン(期)単位契約(1-4期,12週/期)。前払い一括。FA+ライバル団体2ソース。同時2-3枠(ロスターサイズ連動)。タイトル戦出場不可。orgPop貢献50%。確認ダイアログ(顔アイコン+費用)。ソート(名前/OVR/費用)対応。ロスター金枠分離表示
-- **AI団体成長バランス（v1.9）** — facilityMul全団体1.00（実質廃止）。growthBonus: S=1.05, A=1.00, B=0.95。coachMulのみで差異化
+- **AI団体成長バランス（v1.9→v2）** — facilityMul全団体1.00（実質廃止）。growthBonus: S=1.12, A=1.05, B=1.00。aiMatchEquivalent=1.15を追加（AI興行による試合成長相当）
+- **成長バランスリバランスv2** — matchGrowthBase 1.5→0.7、opponentBonus上限0.8→0.5、closeMatchBonus 0.5→0.3、ブレークスルー3-6→2-4。calcGrowthにtrainCap接近逓減(convergenceMul=√(remaining/10))追加。旧: Player Top5がS8で84/AI78→S13で93.5/AI79（一方的独占）。新: S12でPlayer 83=AI 83に到達し中盤以降拮抗
 - **年齢カーブ型契約費用（v1.9）** — ageMarketMultiplier: 21歳以下の逸材+個性2つ以上で1.10-1.35プレミアム、22-25歳=1.0、26-27歳=0.95、28-29歳=0.85、30歳以降=1.0（既存reassessに委譲）。calcAssessedValueでbaseValue*variance*ageMulとして適用
 - **逸材特別交渉枠（v1.9）** — orgPop≥25到達時にG.eliteTicket=true（1回限り）。canNegotiate(orgPop, fighter, context, state)の第3-4引数で判定。context='fa'かつeliteTicket=trueかつtierId='elite'でreqPop無視。superElite不可、スカウト不可。契約成功時にeliteTicket=false,eliteTicketUsed=true。isEliteTicketRequired()ヘルパーでUI表示判定。_pendingEliteTicket transientフィールドでgoldポップアップ通知
 - **選手成長リバランス v1.0** — GROWTH_SEASON_BASE=8.0の「シーズン予算」モデル。calcGrowthをshare(残距離比例)ベースに全面書換え。×0.4練習補正撤廃。aiSeasonGrowthも同モデルに統一。ageMultiplier新カーブ（20-22歳ピーク1.3、33歳以上0）。AI離脱イベント（S:10%/A:12%/B:15%で成長50%カット）。convergenceFactor+STYLE_GROWTHは非参照化（残置）。practiceShare=0.6（練習:試合=6:4）。設計書: docs/growth-rebalance-design-v1.0.md

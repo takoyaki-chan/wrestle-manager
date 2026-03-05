@@ -2947,9 +2947,10 @@ const App = {
         const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
         const selfOvr = Engine.util.ov(fighter);
 
-        const matchGrowthBase = 1.5;
-        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.3, 0.8);
-        const closeMatchBonus = r.mq >= 65 ? 0.5 : 0.0;
+        // growth-rebalance v2: 試合成長を適正化
+        const matchGrowthBase = 0.7;
+        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+        const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
         const resultBonus = won ? 0.0 : 0.2;
         const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
         let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;

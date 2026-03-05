@@ -1237,10 +1237,11 @@ const AI_SCOUT_CFG = {
 };
 
 // F1: AI tier differentiation — roster quality caps & growth bonus
+// growth-rebalance v2: tierGrowth引き上げ（AI団体も興行で選手が育つ想定）
 const AI_TIER_LIMITS = {
-  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.60 },
-  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.40 },
-  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 0.95, faAggressiveness: 0.20 }
+  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.12, faAggressiveness: 0.60 },
+  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
+  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.20 }
 };
 
 // AI season config (人気変動用。成長はGROWTH_SEASON_BASEベースに移行済み)
