@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（character-data-spec v1.6更新：Notion再エクスポート反映）
+> 最終更新: 2026-03-05（契約更新交渉イベント＋性格・属性フィールド追加）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -8,14 +8,27 @@
 
 ## 現在の状態
 
-**キャラクターデータスペック v1.6更新（2026-03-05）。** Notion再エクスポート(124名)を反映。
+**契約更新交渉イベント＋性格・属性フィールド追加（2026-03-05）。** シーズン開幕時、低trust選手との1対1交渉イベント。5性格タイプ×昇給要求/移籍志願の2態度×選択分岐。コンテキスト差し込み（在籍年数・戦績・初期メンバー・ライバル）で体感バリエーション大幅拡張。Notion DB由来の性格（6種）・属性（5種）を全98名に付与。
 
-- **阿部みのり WM=Yes化**: 団地妻プロレス9名→10名。初期値: 43/40/38/48/50、潜在値: 122/135/138/128/144、allrounder/babyface
-- **東金沙織 潜在値修正**: 潜PWR 151→145、潜SPD 141→134
-- **椿山みさき 潜在値修正**: 潜PWR 135→137、潜TEC 126→141
-- **南谷杏 特性追加**: なし→「ファンサービス」
-- **採用数**: 97名→98名、ティアE 2名→3名、§6.2非採用リスト 21名→20名
-- 変更: specs/character-data-spec-v1.4.md (内容はv1.6相当)
+- **性格・属性フィールド追加**: ALL_CHARS全98名にpersonality(normal/bold/quiet/easygoing/earnest/emotional)とarchetype(normal/ojousama/delinquent/cool/seductive)を追加。getPersonalityTypeは明示的personality優先（quiet→introverted, easygoing→carefree変換）、normalは特性ベース推論フォールバック。spec v1.6→v1.7（§2.8/§2.9/§3.8新設）
+- **Engine.contract モジュール**: generateNegotiations（trust閾値判定+特性補正）、resolveNegotiation（選択→結果判定）、determineDeparture（退団先: 引退/ライバル移籍/FA）、getPersonalityType（明示的personality優先→26特性フォールバック）
+- **オフシーズンフロー拡張**: offWeek 4に契約交渉を挿入、旧offWeek 4処理をoffWeek 5に移動
+- **金銭システム**: salaryBonusフィールド追加（永続的週給加算）、引き留めボーナス（一時金）
+- **セリフ30セット**: CONTRACT_NEGOTIATION_LINES（raise_open/transfer_open/raise_accept/raise_negotiate_accept/raise_negotiate_refuse/raise_refuse/transfer_retain_success/transfer_retain_fail/transfer_release/transfer_listen × 5性格）+ コンテキスト差し込みテンプレート
+- **UI**: 3画面構成（サマリー→1対1交渉→結果サマリー）、careOverlay再利用、移籍志願→理由を聞く→サブ選択の多段階フロー
+- **退団処理**: roster除外+コーチ解除+タイトル空位化+行き先振り分け+ロッカールームモラール影響
+- **検証**: auto-sim 10,000シーズン ALL CLEAR
+- 変更: engine.js, data.js, ui-common.js, app.js, test/auto-sim.js
+
+**勝利セリフ全面改定＋spec v1.6 data.js完全適用（2026-03-05）。** Excelマスターデータを元にvictory-lines.js全面更新、data.js潜在値同期完了。
+
+- **勝利セリフ改定**: ID 1〜99のうち約50名分を修正。キャラ個性に沿った一人称・語尾・感情表現に全面刷新。変更ID: 1,2,3,4,5,6,7,8,9,11,12,15,16,17,18,21,22,23,24,33,34,35,36,37,38,41,42,43,44,45,46,47,48,52,65,66,67,70,71,72,76,78,81,82,86,90,91,93,95,96,97,98,99
+- **東金沙織 潜在値修正**: 潜PWR 151→145、潜SPD 141→134 (spec v1.6反映)
+- **椿山みさき 潜在値修正**: 潜PWR 135→137、潜TEC 126→141 (spec v1.6反映)
+- **西川ちあき MNT修正**: 潜MNT 130→135 (§2.2.1手動オーバーライド)
+- **久堂梨々花 MNT修正**: 潜MNT 109→133 (§2.2.1手動オーバーライド)
+- **高島さや 潜在値大幅修正**: 潜PWR 87→129、潜SPD 102→164、潜TEC 85→166、潜STA 83→132 (§2.2.1 14歳中学生の将来性反映)
+- 変更: src/victory-lines.js, src/data.js
 
 **PPVカード生成バグ修正＋UI改善（2026-03-05）。**
 

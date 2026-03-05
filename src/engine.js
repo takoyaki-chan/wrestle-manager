@@ -138,7 +138,8 @@ const Engine = {
       const popBonus = SALARY_PARAMS.popMax * Math.pow(pop / 100, SALARY_PARAMS.popExp);
       const isChamp = titles && titles.world && titles.world.championId === c.id;
       const titleBonus = isChamp ? SALARY_PARAMS.titleBonus : 0;
-      return Math.round(base + popBonus + titleBonus);
+      const contractBonus = c.salaryBonus || 0;
+      return Math.round(base + popBonus + titleBonus + contractBonus);
     },
     getPotentialPct(char) {
       const stats = ['pw','sp','te','st','mn'];
@@ -5290,8 +5291,26 @@ const Engine = {
 
         events.push('📅 オフシーズン第3週: 移籍ウィンドウ');
 
-      } else if (offWeek >= 4) {
-        // OffWeek 4: New season preparation — advance to next season
+      } else if (offWeek === 4) {
+        // OffWeek 4 (NEW): 契約更新交渉 — シーズン開幕前に低trust選手との1対1交渉
+        if (s.season >= 2 && !s.pendingContractNegotiations) {
+          const contractRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0E7));
+          const negResult = Engine.contract.generateNegotiations(contractRng, s);
+          if (negResult.negotiations.length > 0) {
+            s = { ...s,
+              pendingContractNegotiations: negResult.negotiations,
+              _contractAutoRenewed: negResult.autoRenewedCount,
+            };
+            events.push(`📋 シーズン${s.season} 契約更新: 意見あり ${negResult.negotiations.length}名`);
+            return { state: { ...s, offWeek, weekPhase: 'contractNegotiation' }, events };
+          }
+          events.push(`📋 シーズン${s.season} 契約更新: 全選手が自動残留`);
+        }
+        // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
+        events.push('📅 オフシーズン第4週: 契約更新完了');
+
+      } else if (offWeek >= 5) {
+        // OffWeek 5: New season preparation — advance to next season
         // v0.95: Archive season stats before transition
         const oldSeason = s.season;
         const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
@@ -8004,7 +8023,8 @@ Engine.validateGameState = function(G) {
 
   // weekPhaseの妥当性
   const validPhases = ['draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
-                       'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer'];
+                       'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer',
+                       'contractNegotiation'];
   if (G.weekPhase && !validPhases.includes(G.weekPhase)) {
     warn(`weekPhaseが不正値: "${G.weekPhase}"`);
   }
@@ -8081,6 +8101,15 @@ Engine.validateGameState = function(G) {
     }
   });
 
+  // ── salaryBonusチェック ──
+  (G.roster || []).forEach(c => {
+    if (c.salaryBonus !== undefined && c.salaryBonus !== 0) {
+      if (!isValidNum(c.salaryBonus) || c.salaryBonus < 0 || c.salaryBonus > 100) {
+        warn(`キャラ "${c.name}" のsalaryBonusが不正値: ${c.salaryBonus}`);
+      }
+    }
+  });
+
   // ── battlePointsチェック ──
   if (G.battlePoints && typeof G.battlePoints === 'object') {
     Object.entries(G.battlePoints).forEach(([key, val]) => {
@@ -8103,6 +8132,426 @@ Engine.validateGameState = function(G) {
     return { ...G, debugLog: [...log, ...newEntries] };
   }
   return G;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 契約更新交渉システム (contract-negotiation-event-spec v1.0)
+// シーズン開幕時、低trust選手との1対1交渉イベント
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.contract = {
+  // ── 性格タイプマッピング: 明示的personality優先 → 特性推論フォールバック ──
+  getPersonalityType(fighter) {
+    // 明示的personality (quiet→introverted, easygoing→carefree にマッピング)
+    const p = fighter.personality;
+    if (p && p !== 'normal') {
+      if (p === 'quiet') return 'introverted';
+      if (p === 'easygoing') return 'carefree';
+      return p; // bold, earnest, emotional はそのまま
+    }
+    // personality未設定 or 'normal': 特性ベース推論にフォールバック
+    const traits = fighter.traits || [];
+    if (traits.some(t => ['威圧感', '野心', '闘志', '反骨心'].includes(t))) return 'bold';
+    if (traits.some(t => ['破天荒', 'ムードメーカー', '華'].includes(t))) return 'carefree';
+    if (traits.some(t => ['負けず嫌い', 'ライバル体質', 'ガラスの身体'].includes(t))) return 'emotional';
+    if (traits.some(t => ['努力家', '忠誠心', 'リーダー気質', '人望', '適応力'].includes(t))) return 'earnest';
+    if (traits.some(t => ['晩成', '遅咲き', '不屈', '番狂わせ体質'].includes(t))) return 'introverted';
+    if (fighter.role === 'Heel') return 'bold';
+    if (fighter.role === 'Babyface') return 'earnest';
+    return 'introverted';
+  },
+
+  // ── コンテキスト変数抽出 ──────────────────────────────────────────────────
+  extractContext(fighter, state) {
+    const seasons = fighter.careerSeasons || 0;
+    const wins = fighter.wins || 0;
+    const losses = fighter.losses || 0;
+    const total = wins + losses + (fighter.draws || 0);
+    const isFounder = seasons >= (state.season - 1);
+    // 出場頻度: 今シーズンの試合数相当（wins+losses+draws で近似）
+    const showCount = (state.seasonStats || {}).showCount || 0;
+    const fewMatches = showCount > 0 && total < showCount * 0.3;
+    // 成績評価
+    let record = 'average';
+    if (total > 0) {
+      const winRate = wins / total;
+      if (winRate >= 0.6) record = 'good';
+      else if (winRate < 0.35) record = 'bad';
+    }
+    if (fewMatches) record = 'few_matches';
+    // ライバル検索
+    let rivalName = '';
+    if (state.rivalries) {
+      for (const other of (state.roster || [])) {
+        if (other.id === fighter.id) continue;
+        const lvl = Engine.title.getRivalryLevel(state, fighter.id, other.id);
+        if (lvl && lvl.matches >= 2) { rivalName = other.name; break; }
+      }
+    }
+    return { careerSeasons: seasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
+  },
+
+  // ── 金銭計算 ─────────────────────────────────────────────────────────────
+  calcRaiseAmount(fighter, state) {
+    const currentSalary = Engine.util.getSalary(fighter, state.titles);
+    const ovr = Engine.util.ov(fighter);
+    const pop = fighter.popularity || 1;
+    const ovrFactor = Math.pow(ovr / 60, 1.5);
+    const baseRaisePct = 0.15 + (pop / 100) * 0.10;
+    const raw = Math.round(currentSalary * baseRaisePct * ovrFactor);
+    return Engine.util.clamp(raw, 3, 30);
+  },
+
+  calcCounterOffer(raiseAmount) {
+    return Math.max(2, Math.round(raiseAmount * 0.5));
+  },
+
+  calcRetentionBonus(fighter, state) {
+    const currentSalary = Engine.util.getSalary(fighter, state.titles);
+    const ovr = Engine.util.ov(fighter);
+    const weeksFactor = 8 + Math.floor(ovr / 20);
+    return Math.round(currentSalary * weeksFactor);
+  },
+
+  // ── 交渉対象の生成 ───────────────────────────────────────────────────────
+  generateNegotiations(rng, state) {
+    const roster = (state.roster || []).filter(c => !c.isRental);
+    const negotiations = [];
+    const isChampId = state.titles && state.titles.world ? state.titles.world.championId : null;
+
+    for (const f of roster) {
+      const trust = f.trust != null ? f.trust : 50;
+      if (trust >= 40) continue; // 自動残留
+
+      // 態度と基本確率の決定
+      let attitude, baseProb;
+      if (trust >= 25) {
+        attitude = 'raise';
+        baseProb = trust >= 30 ? (0.60 + (40 - trust) * 0.03) : 0.90;
+      } else {
+        attitude = 'transfer';
+        baseProb = trust >= 15 ? (0.50 + (25 - trust) * 0.05) : 1.0;
+      }
+
+      // 特性補正
+      if (Traits.has(f, '忠誠心')) baseProb *= 0.5;
+      if (Traits.has(f, '反骨心')) baseProb += 0.20;
+      if (Traits.has(f, '野心') && f.id !== isChampId) baseProb += 0.15;
+      if (f.id === isChampId) baseProb -= 0.30;
+      baseProb = Engine.util.clamp(baseProb, 0.05, 1.0);
+
+      if (Engine.rng.float(rng) >= baseProb) continue;
+
+      const personality = Engine.contract.getPersonalityType(f);
+      const context = Engine.contract.extractContext(f, state);
+      const raiseAmount = Engine.contract.calcRaiseAmount(f, state);
+
+      negotiations.push({
+        fighterId: f.id,
+        fighterName: f.name,
+        attitude,
+        personality,
+        raiseAmount,
+        counterOffer: Engine.contract.calcCounterOffer(raiseAmount),
+        retentionBonus: Engine.contract.calcRetentionBonus(f, state),
+        context,
+        trust,
+      });
+    }
+
+    // 上限4名: trust低い順に選出
+    negotiations.sort((a, b) => a.trust - b.trust);
+    const capped = negotiations.slice(0, 4);
+    return {
+      negotiations: capped,
+      autoRenewedCount: roster.length - capped.length,
+    };
+  },
+
+  // ── セリフ選択 ───────────────────────────────────────────────────────────
+  selectDialogue(rng, personality, phase, context) {
+    if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return '';
+    const pool = CONTRACT_NEGOTIATION_LINES[phase];
+    if (!pool) return '';
+    const lines = pool[personality] || pool.introverted || [''];
+    let text = lines[Engine.rng.int(rng, 0, lines.length - 1)];
+    // コンテキスト差し込み
+    text = Engine.contract._insertTenure(text, context);
+    text = Engine.contract._insertRecord(text, context);
+    text = Engine.contract._insertRivalry(text, context);
+    text = Engine.contract._insertTenureFarewell(text, context);
+    text = text.replace(/\{wins\}/g, String(context.wins || 0));
+    text = text.replace(/\{losses\}/g, String(context.losses || 0));
+    text = text.replace(/\{n\}/g, String(context.careerSeasons || 1));
+    text = text.replace(/\{rivalName\}/g, context.rivalName || '');
+    return text;
+  },
+
+  _insertTenure(text, ctx) {
+    if (!text.includes('{tenure}')) return text;
+    if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure\}/g, '');
+    const t = CONTRACT_NEGOTIATION_LINES.tenure;
+    const n = ctx.careerSeasons || 1;
+    let insert = '';
+    if (ctx.isFounder && t.founder) insert = t.founder;
+    else if (n <= 1 && t['1']) insert = t['1'];
+    else if (n <= 3 && t.short) insert = t.short.replace(/\{n\}/g, String(n));
+    else if (t.long) insert = t.long.replace(/\{n\}/g, String(n));
+    return text.replace(/\{tenure\}/g, insert);
+  },
+
+  _insertRecord(text, ctx) {
+    if (!text.includes('{record}')) return text;
+    if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{record\}/g, '');
+    const r = CONTRACT_NEGOTIATION_LINES.record;
+    let insert = (r[ctx.record] || r.average || '').replace(/\{wins\}/g, String(ctx.wins || 0)).replace(/\{losses\}/g, String(ctx.losses || 0));
+    return text.replace(/\{record\}/g, insert);
+  },
+
+  _insertRivalry(text, ctx) {
+    if (!text.includes('{rivalry}')) return text;
+    if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{rivalry\}/g, '');
+    const r = CONTRACT_NEGOTIATION_LINES.rivalry;
+    const insert = ctx.rivalName ? (r.has_rival || '').replace(/\{rivalName\}/g, ctx.rivalName) : (r.no_rival || '');
+    return text.replace(/\{rivalry\}/g, insert);
+  },
+
+  _insertTenureFarewell(text, ctx) {
+    if (!text.includes('{tenure_farewell}')) return text;
+    if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure_farewell\}/g, '');
+    const t = CONTRACT_NEGOTIATION_LINES.tenure_farewell;
+    const n = ctx.careerSeasons || 1;
+    let insert = '';
+    if (ctx.isFounder && t.founder) insert = t.founder;
+    else if (n >= 4 && t.long) insert = t.long.replace(/\{n\}/g, String(n));
+    else insert = t.short || '';
+    return text.replace(/\{tenure_farewell\}/g, insert);
+  },
+
+  // ── 交渉解決 ─────────────────────────────────────────────────────────────
+  // choiceIdx: 0=A(受ける/引留), 1=B(交渉/理由を聞く), 2=C(拒否/送り出す)
+  // subChoice: 'retain'|'release' (Bの理由を聞く後のサブ選択, 移籍志願のみ)
+  resolveNegotiation(rng, state, neg, choiceIdx, subChoice) {
+    let s = { ...state };
+    const fi = s.roster.findIndex(c => c.id === neg.fighterId);
+    if (fi < 0) return { state: s, result: { type: 'error' }, reactionDialogue: '' };
+    let f = { ...s.roster[fi] };
+    const ctx = neg.context;
+    let resultType = 'stay';
+    let reactionPhase = '';
+    let trustDelta = 0;
+    let salaryDelta = 0;
+    let fundsCost = 0;
+    let moraleDelta = 0;
+    let escalated = false; // 移籍志願に発展したか
+
+    if (neg.attitude === 'raise') {
+      if (choiceIdx === 0) {
+        // A: 昇給を受ける
+        salaryDelta = neg.raiseAmount;
+        trustDelta = 12;
+        reactionPhase = 'raise_accept';
+      } else if (choiceIdx === 1) {
+        // B: 交渉する
+        let successRate = 0.50;
+        successRate += ((f.trust || 50) - 30) * 0.01;
+        successRate += ((f.mn || 50) - 50) * 0.005;
+        if (Traits.has(f, '忠誠心')) successRate += 0.15;
+        if (Traits.has(f, '野心')) successRate -= 0.10;
+        if (Traits.has(f, '反骨心')) successRate -= 0.15;
+        successRate = Engine.util.clamp(successRate, 0.15, 0.85);
+
+        if (Engine.rng.float(rng) < successRate) {
+          salaryDelta = neg.counterOffer;
+          trustDelta = 6;
+          reactionPhase = 'raise_negotiate_accept';
+        } else {
+          trustDelta = -8;
+          reactionPhase = 'raise_negotiate_refuse';
+          // 失敗後の展開
+          const roll = Engine.rng.float(rng);
+          if (roll < 0.20 && (f.trust || 50) < 20) {
+            resultType = 'depart'; // 即退団
+          } else if (roll < 0.50) {
+            escalated = true; // 移籍志願に発展（UI側で表示）
+          }
+          // 残り50%: 不満を抱えたまま残留（trustDelta-8のみ）
+        }
+      } else {
+        // C: 拒否する
+        trustDelta = -15;
+        reactionPhase = 'raise_refuse';
+        if (Engine.rng.float(rng) < 0.40) {
+          escalated = true;
+        }
+      }
+    } else {
+      // 移籍志願
+      if (choiceIdx === 0 || (choiceIdx === 1 && subChoice === 'retain')) {
+        // A: 引き留める / B→引き留める
+        fundsCost = neg.retentionBonus;
+        let retainRate = 0.55;
+        retainRate += ((f.trust || 50) - 15) * 0.015;
+        retainRate += (f.careerSeasons || 0) * 0.03;
+        if (Traits.has(f, '忠誠心')) retainRate += 0.20;
+        if (Traits.has(f, '反骨心')) retainRate -= 0.15;
+        if (ctx.isFounder) retainRate += 0.10;
+        retainRate = Engine.util.clamp(retainRate, 0.10, 0.80);
+
+        if (Engine.rng.float(rng) < retainRate) {
+          trustDelta = 8;
+          moraleDelta = 2;
+          reactionPhase = 'transfer_retain_success';
+        } else {
+          resultType = 'depart';
+          reactionPhase = 'transfer_retain_fail';
+        }
+      } else if (choiceIdx === 1 && !subChoice) {
+        // B: 理由を聞く（サブ選択待ち — UIが再度resolveを呼ぶ）
+        reactionPhase = 'transfer_listen';
+        resultType = 'listen'; // UI側でサブ選択を表示するための特別な結果
+      } else {
+        // C: 送り出す / B→送り出す
+        resultType = 'depart';
+        reactionPhase = 'transfer_release';
+      }
+    }
+
+    // trust適用（メンタル係数付き）
+    if (trustDelta !== 0) {
+      const adjusted = Engine.trust.applyCoeff(trustDelta, f.mn);
+      f.trust = Engine.util.clamp((f.trust || 50) + adjusted, 0, 100);
+    }
+
+    // 昇給適用
+    if (salaryDelta > 0) {
+      f.salaryBonus = (f.salaryBonus || 0) + salaryDelta;
+    }
+
+    // ロスター更新
+    const newRoster = [...s.roster];
+    newRoster[fi] = f;
+    s = { ...s, roster: newRoster };
+
+    // 資金消費
+    if (fundsCost > 0) {
+      s = { ...s, funds: s.funds - fundsCost };
+    }
+
+    // 退団処理
+    let departureInfo = null;
+    if (resultType === 'depart') {
+      const depResult = Engine.contract.processDeparture(rng, f, s);
+      s = depResult.state;
+      departureInfo = depResult.info;
+      // モラール低下
+      const seasons = f.careerSeasons || 0;
+      if (ctx.isFounder) moraleDelta = -8;
+      else if (seasons >= 4) moraleDelta = -5;
+      else moraleDelta = -3;
+      // 人望持ちがいればペナルティ半減
+      if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) {
+        moraleDelta = Math.ceil(moraleDelta / 2);
+      }
+    }
+
+    // モラール適用
+    if (moraleDelta !== 0) {
+      const newMorale = Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100);
+      s = { ...s, lockerRoomMorale: newMorale };
+    }
+
+    const reactionDialogue = Engine.contract.selectDialogue(rng, neg.personality, reactionPhase, ctx);
+
+    return {
+      state: s,
+      result: {
+        type: resultType, // 'stay', 'depart', 'listen', 'error'
+        fighterId: neg.fighterId,
+        fighterName: neg.fighterName,
+        attitude: neg.attitude,
+        trustDelta,
+        salaryDelta,
+        fundsCost,
+        moraleDelta,
+        escalated,
+        departureInfo,
+      },
+      reactionDialogue,
+    };
+  },
+
+  // ── 退団処理 ─────────────────────────────────────────────────────────────
+  processDeparture(rng, fighter, state) {
+    let s = { ...state };
+    // roster から除外
+    s = { ...s, roster: s.roster.filter(c => c.id !== fighter.id) };
+    // コーチ解除
+    if (s.coachAssign) {
+      const newAssign = { ...s.coachAssign };
+      Object.keys(newAssign).forEach(cId => {
+        if (newAssign[cId] === fighter.id) delete newAssign[cId];
+      });
+      s = { ...s, coachAssign: newAssign };
+    }
+    // タイトル空位化
+    if (s.titles && s.titles.world && s.titles.world.championId === fighter.id) {
+      s = { ...s, titles: { ...s.titles, world: { ...s.titles.world, championId: null, defenses: 0 } } };
+    }
+
+    // 行き先決定
+    const info = Engine.contract.determineDeparture(rng, fighter, s);
+
+    if (info.type === 'retire') {
+      s = { ...s, retiredFighters: [...(s.retiredFighters || []), fighter] };
+    } else if (info.type === 'rival') {
+      const orgId = info.orgId;
+      if (s.aiOrgs && s.aiOrgs[orgId]) {
+        const orgData = s.aiOrgs[orgId];
+        const transferredFighter = { ...fighter, orgId, trust: 50, salaryBonus: 0 };
+        const newOrg = { ...orgData, roster: [...orgData.roster, transferredFighter] };
+        s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: newOrg } };
+      }
+      info.orgName = Engine.contract._getOrgName(orgId, s);
+    } else {
+      // freeAgent
+      const faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+      s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+    }
+
+    return { state: s, info };
+  },
+
+  // ── 退団先決定 ───────────────────────────────────────────────────────────
+  determineDeparture(rng, fighter, state) {
+    const ovr = Engine.util.ov(fighter);
+    const age = fighter.age || 20;
+    const wear = fighter.wear || 0;
+
+    // 高wear or 高齢 → 引退の可能性
+    if (wear >= 50 || age >= 28) {
+      if (Engine.rng.float(rng) < 0.4 + (wear / 200)) return { type: 'retire' };
+    }
+
+    // 強い選手 → ライバル団体
+    if (ovr >= 50) {
+      const eligibleOrgs = RIVAL_ORGS.filter(org => {
+        const orgData = state.aiOrgs && state.aiOrgs[org.id];
+        return orgData && orgData.roster.length < 12;
+      });
+      if (eligibleOrgs.length > 0 && Engine.rng.float(rng) < 0.6) {
+        const target = eligibleOrgs[Engine.rng.int(rng, 0, eligibleOrgs.length - 1)];
+        return { type: 'rival', orgId: target.id };
+      }
+    }
+
+    return { type: 'freeAgent' };
+  },
+
+  _getOrgName(orgId, state) {
+    if (state.rivalOrgNames && state.rivalOrgNames[orgId]) return state.rivalOrgNames[orgId];
+    const org = RIVAL_ORGS.find(o => o.id === orgId);
+    return org ? (org.name || orgId) : orgId;
+  },
 };
 
 // Node.js モジュールエクスポート（ブラウザではスキップ）

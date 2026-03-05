@@ -4722,3 +4722,252 @@ function showTrialLimitMessage(featureName) {
   overlay.classList.add('active');
   return true;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 契約更新交渉UI (contract-negotiation-event-spec v1.0)
+// careOverlay/careBox を再利用する3画面構成
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 画面1: サマリー — 「シーズンN 契約更新 ／ 意見あり：M名」
+function showContractSummaryModal(negotiations, autoCount, season, onStart) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onStart) onStart(); return; }
+
+  let facesHtml = negotiations.map(n => {
+    const attBadge = n.attitude === 'raise'
+      ? '<span style="font-size:10px;color:#f39c12">💰 昇給要求</span>'
+      : '<span style="font-size:10px;color:#e74c3c">🚪 移籍志願</span>';
+    return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:4px 8px">
+      ${portraitImg(n.fighterId, 52)}
+      <span style="font-size:11px">${n.fighterName}</span>
+      ${attBadge}
+    </div>`;
+  }).join('');
+
+  box.innerHTML = `
+    <div class="care-title" style="border-bottom:1px solid rgba(232,67,147,0.3);padding-bottom:10px;margin-bottom:12px">
+      📋 シーズン${season} 契約更新
+    </div>
+    <div style="font-size:13px;color:var(--text-sub);margin-bottom:14px">
+      自動更新: <strong>${autoCount}名</strong>　／　意見あり: <strong style="color:#e74c3c">${negotiations.length}名</strong>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px">
+      ${facesHtml}
+    </div>
+    <button class="btn btn-gold" id="contractStartBtn" style="width:100%;padding:12px;font-size:14px;font-weight:700">
+      交渉を始める
+    </button>`;
+
+  document.getElementById('contractStartBtn').addEventListener('click', () => {
+    overlay.classList.remove('active');
+    Audio.play('click');
+    if (onStart) onStart();
+  });
+  overlay.classList.add('active');
+}
+
+// 画面2: 1対1交渉 — 選手の顔+セリフ+選択肢
+function showContractNegotiationModal(neg, idx, total, state, onChoice) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onChoice) onChoice(0); return; }
+
+  const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
+  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const isTransfer = neg.attitude === 'transfer';
+  const borderColor = isTransfer ? '#e74c3c' : '#f39c12';
+  const attLabel = isTransfer ? '🚪 移籍志願' : '💰 昇給要求';
+
+  // セリフ生成
+  const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
+  const openPhase = isTransfer ? 'transfer_open' : 'raise_open';
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg.personality, openPhase, neg.context);
+
+  // 選択肢の構築
+  let choices;
+  if (neg.attitude === 'raise') {
+    choices = [
+      { label: '昇給を受ける', hint: `信頼↑↑ 給与+${neg.raiseAmount}万/週`, idx: 0 },
+      { label: '交渉する', hint: `成功時 給与+${neg.counterOffer}万/週`, idx: 1 },
+      { label: '拒否する', hint: '信頼↓↓', idx: 2 },
+    ];
+  } else {
+    choices = [
+      { label: '引き留める', hint: `${neg.retentionBonus}万 支出`, idx: 0,
+        disabled: (state.funds || 0) < neg.retentionBonus },
+      { label: '理由を聞く', hint: '', idx: 1 },
+      { label: '送り出す', hint: '退団', idx: 2 },
+    ];
+  }
+
+  let html = `
+    <div class="care-title" style="border-bottom:1px solid ${borderColor};padding-bottom:10px;margin-bottom:12px">
+      📋 契約交渉 (${idx + 1}/${total})　<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:${borderColor}22;color:${borderColor}">${attLabel}</span>
+    </div>
+    <div class="care-reaction" style="border-color:${borderColor}">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:${borderColor}">
+        <strong style="font-size:12px;color:var(--text-dim)">${neg.fighterName}</strong><br>
+        「${dialogue}」
+      </div>
+    </div>`;
+
+  // 金額情報
+  if (neg.attitude === 'raise') {
+    const currentSalary = fighter ? Engine.util.getSalary(fighter, state.titles) : 0;
+    html += `<div style="font-size:12px;color:var(--text-dim);margin:8px 0;padding:8px;background:rgba(243,156,18,0.08);border-radius:6px">
+      現在の週給: ${currentSalary}万 → 要求: ${currentSalary + neg.raiseAmount}万 (+${neg.raiseAmount}万/週)
+    </div>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--text-dim);margin:8px 0;padding:8px;background:rgba(231,76,60,0.08);border-radius:6px">
+      引き留めボーナス: ${neg.retentionBonus}万（一時金）
+    </div>`;
+  }
+
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">';
+  choices.forEach(c => {
+    const disabled = c.disabled ? 'disabled style="opacity:0.4;cursor:default"' : '';
+    const hintHtml = c.hint ? `<span style="font-size:11px;color:var(--text-dim);margin-left:8px">${c.hint}</span>` : '';
+    html += `<button class="btn" data-choice="${c.idx}" ${disabled}
+      style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+      <span>${c.label}</span>${hintHtml}
+    </button>`;
+  });
+  html += '</div>';
+
+  box.innerHTML = html;
+  box.querySelectorAll('.btn[data-choice]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (this.disabled) return;
+      overlay.classList.remove('active');
+      Audio.play('click');
+      if (onChoice) onChoice(parseInt(this.dataset.choice));
+    });
+  });
+  overlay.classList.add('active');
+}
+
+// リアクション表示 — 選択後のセリフを見せてから次へ
+function showContractReactionModal(neg, reactionText, onDone) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onDone) onDone(); return; }
+  if (!reactionText) { if (onDone) onDone(); return; }
+
+  const face = portraitImg(neg.fighterId, 72, 'care-reaction-portrait');
+  box.innerHTML = `
+    <div class="care-reaction" style="border-color:rgba(232,67,147,0.3)">
+      ${face}
+      <div class="care-reaction-bubble">
+        <strong style="font-size:12px;color:var(--text-dim)">${neg.fighterName}</strong><br>
+        「${reactionText}」
+      </div>
+    </div>
+    <button class="btn" id="contractReactionOk" style="width:100%;margin-top:14px;padding:10px;font-size:13px">次へ</button>`;
+  document.getElementById('contractReactionOk').addEventListener('click', () => {
+    overlay.classList.remove('active');
+    Audio.play('click');
+    if (onDone) onDone();
+  });
+  overlay.classList.add('active');
+}
+
+// 理由を聞く → サブ選択（引き留め or 送り出す）
+function showContractListenModal(neg, listenText, state, onSubChoice) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onSubChoice) onSubChoice('release'); return; }
+
+  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const canAfford = (state.funds || 0) >= neg.retentionBonus;
+
+  box.innerHTML = `
+    <div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">
+      📋 ${neg.fighterName}の話を聞く
+    </div>
+    <div class="care-reaction" style="border-color:#e74c3c">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:#e74c3c">
+        <strong style="font-size:12px;color:var(--text-dim)">${neg.fighterName}</strong><br>
+        「${listenText}」
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <button class="btn" data-sub="retain" ${canAfford ? '' : 'disabled style="opacity:0.4;cursor:default"'}
+        style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+        <span>引き留める</span><span style="font-size:11px;color:var(--text-dim)">${neg.retentionBonus}万 支出</span>
+      </button>
+      <button class="btn" data-sub="release"
+        style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600">
+        送り出す
+      </button>
+    </div>`;
+
+  box.querySelectorAll('.btn[data-sub]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (this.disabled) return;
+      overlay.classList.remove('active');
+      Audio.play('click');
+      if (onSubChoice) onSubChoice(this.dataset.sub);
+    });
+  });
+  overlay.classList.add('active');
+}
+
+// 画面3: 結果サマリー
+function showContractResultModal(results, onDone) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onDone) onDone(); return; }
+
+  const stayed = results.filter(r => r.type === 'stay');
+  const departed = results.filter(r => r.type === 'depart');
+  const raised = results.filter(r => r.salaryDelta > 0);
+
+  let html = `<div class="care-title" style="border-bottom:1px solid rgba(232,67,147,0.3);padding-bottom:10px;margin-bottom:12px">📋 契約更新 完了</div>`;
+  html += `<div style="font-size:13px;margin-bottom:14px;line-height:1.8">
+    残留: <strong style="color:#2ecc71">${stayed.length}名</strong>`;
+  if (raised.length > 0) html += ` (昇給: ${raised.length}名)`;
+  html += `<br>退団: <strong style="color:#e74c3c">${departed.length}名</strong></div>`;
+
+  if (departed.length > 0) {
+    html += '<div style="padding:10px;background:rgba(231,76,60,0.06);border-radius:8px;margin-bottom:14px">';
+    departed.forEach(r => {
+      let dest = '';
+      if (r.departureInfo) {
+        if (r.departureInfo.type === 'retire') dest = '→ 引退';
+        else if (r.departureInfo.type === 'rival') dest = `→ ${r.departureInfo.orgName || 'ライバル団体'}`;
+        else dest = '→ フリーエージェント';
+      }
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+        ${portraitImg(r.fighterId, 32)}
+        <span style="font-size:13px">${r.fighterName}</span>
+        <span style="font-size:11px;color:var(--text-dim);margin-left:auto">${dest}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (raised.length > 0) {
+    html += '<div style="padding:10px;background:rgba(243,156,18,0.06);border-radius:8px;margin-bottom:14px">';
+    raised.forEach(r => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+        ${portraitImg(r.fighterId, 32)}
+        <span style="font-size:13px">${r.fighterName}</span>
+        <span style="font-size:11px;color:#f39c12;margin-left:auto">+${r.salaryDelta}万/週</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  html += `<button class="btn btn-gold" id="contractResultOk" style="width:100%;padding:12px;font-size:14px;font-weight:700">シーズン開幕へ</button>`;
+
+  box.innerHTML = html;
+  document.getElementById('contractResultOk').addEventListener('click', () => {
+    overlay.classList.remove('active');
+    Audio.play('click');
+    if (onDone) onDone();
+  });
+  overlay.classList.add('active');
+}

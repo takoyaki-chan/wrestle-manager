@@ -1688,6 +1688,12 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_scout_pricing_v2: true };
       }
 
+      // 契約交渉: salaryBonusフィールド追加
+      if (!G._migrated_contract_v1) {
+        G.roster.forEach(f => { if (f.salaryBonus === undefined) f.salaryBonus = 0; });
+        G = { ...G, _migrated_contract_v1: true };
+      }
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -2208,6 +2214,79 @@ const App = {
       showScreen('week');
       refreshAll();
     }
+  },
+
+  // ── 契約更新交渉フロー ───────────────────────────────────────────────────
+  handleContractNegotiations() {
+    const negotiations = G.pendingContractNegotiations || [];
+    const autoCount = G._contractAutoRenewed || 0;
+    if (negotiations.length === 0) {
+      // 交渉不要 — transientクリアして次へ
+      const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
+      G = clean;
+      App.advanceWeek();
+      return;
+    }
+
+    const season = G.season || 1;
+    const results = [];
+    let idx = 0;
+
+    function processNext() {
+      if (idx >= negotiations.length) {
+        // 全交渉完了 → 結果サマリー
+        showContractResultModal(results, () => {
+          const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
+          G = { ...clean, gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          App.advanceWeek();
+        });
+        return;
+      }
+
+      const neg = negotiations[idx];
+      showContractNegotiationModal(neg, idx, negotiations.length, G, (choiceIdx) => {
+        App._resolveContractChoice(neg, choiceIdx, results, () => {
+          idx++;
+          processNext();
+        });
+      });
+    }
+
+    // サマリー画面 → 交渉開始
+    showContractSummaryModal(negotiations, autoCount, season, () => processNext());
+  },
+
+  _resolveContractChoice(neg, choiceIdx, results, onDone) {
+    const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
+    const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, choiceIdx);
+    G = result.state;
+
+    if (result.result.type === 'listen') {
+      // 理由を聞く → サブ選択
+      showContractListenModal(neg, result.reactionDialogue, G, (subChoice) => {
+        const subRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 3));
+        const subResult = Engine.contract.resolveNegotiation(subRng, G, neg, 1, subChoice);
+        G = subResult.state;
+        results.push(subResult.result);
+        showContractReactionModal(neg, subResult.reactionDialogue, onDone);
+      });
+      return;
+    }
+
+    results.push(result.result);
+
+    // 移籍志願に発展した場合 → 移籍志願として再交渉
+    if (result.result.escalated) {
+      const escNeg = { ...neg, attitude: 'transfer' };
+      showContractReactionModal(neg, result.reactionDialogue, () => {
+        showContractNegotiationModal(escNeg, results.length - 1, results.length, G, (escChoice) => {
+          App._resolveContractChoice(escNeg, escChoice, results, onDone);
+        });
+      });
+      return;
+    }
+
+    showContractReactionModal(neg, result.reactionDialogue, onDone);
   },
 
   // 引退勧告アクション
@@ -3579,6 +3658,12 @@ const App = {
     G = { ...G, monthlyFinanceBuffer: [] };
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // 契約更新交渉フェーズ
+    if (G.weekPhase === 'contractNegotiation') {
+      Storage.autoSave();
+      App.handleContractNegotiations();
+      return;
+    }
     // PPV Week 48: PPVフェーズに入った場合は専用フローへ
     if (G.weekPhase === 'ppvShow') {
       Storage.autoSave();

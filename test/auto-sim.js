@@ -158,6 +158,38 @@ function autoHandlePPVEntry(G, simRng) {
   return G;
 }
 
+// 契約更新交渉の自動処理
+function autoHandleContractNegotiation(G, simRng) {
+  if (G.weekPhase !== 'contractNegotiation') return G;
+  const negotiations = G.pendingContractNegotiations || [];
+  let state = { ...G };
+  for (const neg of negotiations) {
+    const roll = Engine.rng.float(simRng);
+    let choiceIdx, subChoice;
+    if (neg.attitude === 'raise') {
+      // 70% 受ける, 20% 交渉, 10% 拒否
+      choiceIdx = roll < 0.7 ? 0 : (roll < 0.9 ? 1 : 2);
+    } else {
+      // 60% 引留, 20% 理由を聞く→引留, 20% 送り出す
+      if (roll < 0.6) { choiceIdx = 0; }
+      else if (roll < 0.8) { choiceIdx = 1; subChoice = 'retain'; }
+      else { choiceIdx = 2; }
+    }
+    const resolveRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId));
+    const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, choiceIdx, subChoice);
+    state = result.state;
+    // 昇給拒否→移籍志願に発展した場合、引き留めを試みる
+    if (result.result.escalated) {
+      const escNeg = { ...neg, attitude: 'transfer' };
+      const escResult = Engine.contract.resolveNegotiation(resolveRng, state, escNeg, 0);
+      state = escResult.state;
+    }
+  }
+  // transientフィールドクリア
+  const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = state;
+  return clean;
+}
+
 // スカウトイベント自動処理
 function autoHandleScoutEvent(G, simRng) {
   if (G.weekPhase !== 'scoutEvent') return G;
@@ -261,6 +293,10 @@ function runSimulation(seed, seasons) {
         if (G.weekPhase === 'scoutEvent') {
           G = autoHandleScoutEvent(G, simRng);
         }
+      }
+      // ── 契約更新交渉の自動処理 ──
+      if (G.weekPhase === 'contractNegotiation') {
+        G = autoHandleContractNegotiation(G, simRng);
       }
 
       // ── 興行週: カード自動編成→executeShow ──
