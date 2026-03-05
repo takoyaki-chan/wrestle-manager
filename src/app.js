@@ -4332,7 +4332,7 @@ App.ppvWatchMatch = function(idx) {
 
   const iframe = document.getElementById('battleIframe');
   const total = pp.card.length;
-  const matchNum = total - idx;
+  const matchNum = idx + 1;
   const msg = {
     type: 'START_MATCH',
     left: {
@@ -4560,10 +4560,10 @@ App.closePPVResult = function() {
     setTimeout(nextAction, 200);
   }
 
-  // ppvPhase='tv'に遷移→TV中継フェーズへ（weekは48のまま）
-  G = { ...G, ppvPhase: 'tv' };
+  // PPV参加済み→TV中継フェーズをスキップし直接オフシーズンへ
+  G = { ...G, ppvPhase: null };
   Storage.autoSave();
-  App.initPPVTV();
+  App.advanceWeek();
 };
 
 App.initPPVTV = function() {

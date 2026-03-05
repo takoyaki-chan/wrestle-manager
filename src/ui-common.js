@@ -2710,22 +2710,23 @@ function renderPPVMatchPreview() {
   html += `<div style="font-size:13px;color:var(--text-sub)">全${total}試合 — ${resolved}/${total} 完了</div>`;
   html += `</div>`;
 
-  // 次の未解決試合を特定（前座=card末尾から順にメイン=card先頭へ）
+  // 次の未解決試合を特定（前座=card[0]から順にメイン=card[total-1]へ）
   let nextIdx = -1;
-  for (let i = total - 1; i >= 0; i--) {
+  for (let i = 0; i < total; i++) {
     if (pp.results[i] === null) { nextIdx = i; break; }
   }
 
-  // カード表示: card[0]=メイン(上), card[total-1]=前座(下)
-  for (let di = 0; di < total; di++) {
+  // カード表示: card[0]=前座(下), card[total-1]=メイン(上)
+  // 表示はメインイベントから上→前座を下へ
+  for (let di = total - 1; di >= 0; di--) {
     const idx = di;
     const match = pp.card[idx];
     const result = pp.results[idx];
     const isResolved = result !== null;
     const isNext = idx === nextIdx;
-    // nextIdxより大きいidx（=前座側で既処理）は公開。nextIdx以下は未公開（メイン側）
-    const isRevealed = isResolved || (nextIdx >= 0 && idx >= nextIdx);
-    const matchNum = total - idx;
+    // nextIdx以下は公開済み or 次の試合。nextIdxより大きいidxは未到達（メイン側は霧）
+    const isRevealed = isResolved || (nextIdx >= 0 && idx <= nextIdx);
+    const matchNum = idx + 1;
     const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
 
     if (!isRevealed) {
@@ -2748,26 +2749,26 @@ function renderPPVMatchPreview() {
     if (match.isRivalry) html += `<span style="font-size:11px;color:#e74c3c;border:1px solid rgba(231,76,60,0.3);padding:1px 6px;border-radius:3px">🔥 因縁</span>`;
     html += `</div>`;
 
-    // VS画面: 選手情報
+    // VS画面: 選手情報（名前クリックで詳細ポップアップ）
     const orgColorL = match.left._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === match.left._ppvOrgId)?.color || 'var(--text-main)');
     const orgColorR = match.right._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === match.right._ppvOrgId)?.color || 'var(--text-main)');
     html += `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">`;
     // 左選手
-    html += `<div style="text-align:center">`;
+    html += `<div style="text-align:center;cursor:pointer" onclick="showFighterPopup(${match.left.id})">`;
     const urlL = getPortraitUrl(match.left.id);
     if (urlL) html += `<img src="${urlL}" style="width:64px;height:64px;border-radius:50%;border:2px solid ${orgColorL}44;object-fit:cover" alt="">`;
     else html += portraitImg(match.left.id, 64);
-    html += `<div style="font-size:13px;color:${orgColorL};font-weight:600;margin-top:4px">${match.left.name}</div>`;
+    html += `<div style="font-size:13px;color:${orgColorL};font-weight:600;margin-top:4px;text-decoration:underline dotted;text-underline-offset:2px">${match.left.name}</div>`;
     html += `<div style="font-size:10px;color:var(--text-dim)">${match.left._ppvOrgName || ''} / OVR ${Engine.util.ov(match.left)}</div>`;
     html += `</div>`;
     // VS
     html += `<div style="font-size:16px;font-weight:700;color:var(--text-dim);padding:0 8px">VS</div>`;
     // 右選手
-    html += `<div style="text-align:center">`;
+    html += `<div style="text-align:center;cursor:pointer" onclick="showFighterPopup(${match.right.id})">`;
     const urlR = getPortraitUrl(match.right.id);
     if (urlR) html += `<img src="${urlR}" style="width:64px;height:64px;border-radius:50%;border:2px solid ${orgColorR}44;object-fit:cover" alt="">`;
     else html += portraitImg(match.right.id, 64);
-    html += `<div style="font-size:13px;color:${orgColorR};font-weight:600;margin-top:4px">${match.right.name}</div>`;
+    html += `<div style="font-size:13px;color:${orgColorR};font-weight:600;margin-top:4px;text-decoration:underline dotted;text-underline-offset:2px">${match.right.name}</div>`;
     html += `<div style="font-size:10px;color:var(--text-dim)">${match.right._ppvOrgName || ''} / OVR ${Engine.util.ov(match.right)}</div>`;
     html += `</div>`;
     html += `</div>`;
@@ -2776,9 +2777,20 @@ function renderPPVMatchPreview() {
     if (match.hype && isNext && !isResolved) {
       html += `<div style="text-align:center;font-size:12px;color:var(--gold);font-style:italic;margin-bottom:4px;line-height:1.4">${match.hype}</div>`;
     }
-    // 対戦相手セリフ（未解決の次の試合のみ）
-    if (isNext && !isResolved && match.opponentLineRight) {
-      html += `<div style="text-align:center;font-size:11px;color:var(--text-sub);margin-bottom:6px">「${match.opponentLineRight}」</div>`;
+    // セリフ演出（未解決の次の試合のみ — 自団体選手がいる場合は両者のセリフ表示）
+    if (isNext && !isResolved) {
+      const hasPlayerFighter = match.left._ppvOrgId === 'player' || match.right._ppvOrgId === 'player';
+      if (hasPlayerFighter) {
+        // 自団体選手がいる試合: 両者のキャラセリフを表示
+        const lineL = _getPPVPreMatchLine(match.left);
+        const lineR = _getPPVPreMatchLine(match.right);
+        html += `<div style="margin:6px 0;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">`;
+        html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:4px"><span style="color:${orgColorL};font-weight:600">${match.left.name}</span>「${lineL}」</div>`;
+        html += `<div style="font-size:12px;color:var(--text-main)"><span style="color:${orgColorR};font-weight:600">${match.right.name}</span>「${lineR}」</div>`;
+        html += `</div>`;
+      } else if (match.opponentLineRight) {
+        html += `<div style="text-align:center;font-size:11px;color:var(--text-sub);margin-bottom:6px">「${match.opponentLineRight}」</div>`;
+      }
     }
 
     if (isResolved) {
@@ -2809,6 +2821,24 @@ function renderPPVMatchPreview() {
   overlay.classList.add('active');
 }
 
+/** PPV試合前のキャラセリフ取得（VICTORY_LINESベース or PPV_OPPONENT_LINES フォールバック） */
+function _getPPVPreMatchLine(fighter) {
+  // VICTORY_LINESからキャラ固有セリフがあればPPV風にアレンジ
+  const vl = (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]) || null;
+  if (vl && vl.length > 0) {
+    // 勝利セリフの一部をそのまま使う（PPV前の意気込みとして自然）
+    return vl[Math.floor(Math.random() * vl.length)];
+  }
+  // フォールバック: ステータスベースの汎用セリフ
+  const mn = fighter.mn || 50, pw = fighter.pw || 50;
+  let tone;
+  if (mn >= 70) tone = Math.random() > 0.5 ? 'calm' : 'respectful';
+  else if (pw >= 70) tone = 'fierce';
+  else tone = 'confident';
+  const lines = PPV_OPPONENT_LINES[tone] || PPV_OPPONENT_LINES.confident;
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
 function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
@@ -2825,12 +2855,13 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   html += `<div style="margin-top:8px">${mqStars(avgMQ)} <span style="font-size:14px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>`;
   html += `</div>`;
 
-  // 各試合結果
+  // 各試合結果（メインイベント→前座の順）
   const total = card.length;
-  card.forEach((match, idx) => {
-    const r = results[idx];
-    if (!r) return;
-    const matchNum = total - idx;
+  for (let di = total - 1; di >= 0; di--) {
+    const match = card[di];
+    const r = results[di];
+    if (!r) continue;
+    const matchNum = di + 1;
     const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
     const wName = r.winner === 'draw' ? '引き分け' : r.winner === 'left' ? match.left.name : match.right.name;
     const lName = r.winner === 'left' ? match.right.name : match.left.name;
@@ -2838,7 +2869,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     const summitBorder = match.isSummit ? 'border-left:3px solid var(--gold);' : '';
 
     // MQボーナス内訳テキスト
-    const bonus = mqBonuses ? mqBonuses[idx] : null;
+    const bonus = mqBonuses ? mqBonuses[di] : null;
     let bonusTags = '';
     if (bonus) {
       if (bonus.rivalry > 0) bonusTags += ` <span style="color:#e74c3c;font-size:10px">🔥因縁+${bonus.rivalry}</span>`;
@@ -2856,7 +2887,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     html += `</div>`;
     html += `<div style="font-size:12px;color:var(--text-sub)">${r.finType || ''}${r.finMove ? '（' + r.finMove + '）' : ''} MQ: <span style="color:${mqColor};font-weight:600">${r.mq}</span>${bonusTags}</div>`;
     html += `</div>`;
-  });
+  }
 
   // 報酬 & 対戦pt & ヒート
   html += `<div style="text-align:center;margin-top:16px;padding:12px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px">`;
@@ -2897,10 +2928,12 @@ function renderPPVTVResult(card, results, ppvName) {
   html += `</div>`;
 
   const total = card.length;
-  card.forEach((match, idx) => {
-    const r = results[idx];
-    if (!r) return;
-    const matchNum = total - idx;
+  // メインイベント(末尾)→前座(先頭)の順に表示
+  for (let di = total - 1; di >= 0; di--) {
+    const match = card[di];
+    const r = results[di];
+    if (!r) continue;
+    const matchNum = di + 1;
     const matchLabel = match.isSummit ? '🏆 頂上決戦' : `第${matchNum}試合`;
     const wName = r.winner === 'draw' ? '引き分け' : r.winner === 'left' ? match.left.name : match.right.name;
     const lName = r.winner === 'left' ? match.right.name : match.left.name;
@@ -2913,7 +2946,7 @@ function renderPPVTVResult(card, results, ppvName) {
     html += `<span style="font-size:13px;color:var(--text-sub);opacity:0.6">×${lName}</span> `;
     html += `<span style="font-size:11px;color:${mqColor}">(MQ ${r.mq})</span>`;
     html += `</div>`;
-  });
+  }
 
   html += `<div style="text-align:center;margin-top:16px;padding:12px;font-size:13px;color:var(--text-dim);font-style:italic">`;
   html += `来年こそは、この舞台に…！`;

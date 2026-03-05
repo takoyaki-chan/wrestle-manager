@@ -1012,8 +1012,9 @@ function renderWeekScreen() {
   // ── PPV SHOW DAY PHASE ──
   else if (G.weekPhase === 'ppvShow') {
     document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
-    html += `<div style="text-align:center;padding:24px;color:var(--gold);font-size:18px">
-      PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催中…
+    html += `<div style="text-align:center;padding:24px">
+      <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催日！</div>
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ PPV カードを表示</button>
     </div>`;
   }
   // ── PPV TV PHASE ──

@@ -370,7 +370,10 @@
 
 ## 設計決定ログ（実装済みルール集）
 
-- **PPV進行バグ（closePPVResult）** — closePPVResultがApp.advanceWeek()を呼んでweek 48→49に進めていたため、ppvTV判定(week===48)をスキップ。ppvPhase='tv'+initPPVTV()直接呼び出しに修正
+- **PPV参加後TV遷移バグ修正** — closePPVResultがppvPhase='tv'に遷移しTV中継画面を表示していたため、参加済みの自団体エースが結果から消える問題。ppvPhase=null+advanceWeek()直接呼び出しに修正し、PPV参加後はTV画面をスキップしてオフシーズンへ直行
+- **PPV試合表示順修正** — card[0]=前座/card[total-1]=メインの構造に合わせ、表示順をメインイベント上→前座下に逆転。matchNum=idx+1に修正。nextIdx探索も前座→メイン順に変更。renderPPVMatchPreview/renderPPVResult/renderPPVTVResult全3箇所を修正
+- **PPV開催中画面進行不能修正** — renderWeekScreen ppvShow状態にカード表示ボタンを追加。オーバーレイが閉じた場合でも再表示可能に
+- **PPV選手詳細＋セリフ演出** — 試合カードの選手名クリックでshowFighterPopup表示。自団体選手がいる試合ではVICTORY_LINESベースのキャラ固有セリフを両者表示
 - **エンディング繰り返しバグ** — `endingClearedSeason === G.season - 1`が新シーズン全52週でtrue。`endingShown`永続フラグで1回限りに
 - **matchGrowth欠落バグ修正** — App.finalizeShow（ビジュアル観戦モード）に試合成長処理が欠落していた。Engine.executeShow/applyPPVResultsにはあったがApp側にミラーされておらず、通常興行で選手の試合成長が一切発生していなかった。seed 1732でEngine.executeShowと同一のRNG系列を使用。怪我処理後・ブレークスルー判定前に配置
 - **ロスターランダム化** — potTotal重み付き配分。S級≥690, A級≥640。シリーズボーナス+0.3。dormant動的計算
