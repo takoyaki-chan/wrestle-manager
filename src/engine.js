@@ -6901,11 +6901,11 @@ Engine.careActions = {
     return fighter._trainerBuff ? fighter._trainerBuff.mult : 1.0;
   },
 
-  // ── シーズン末にボーナス逓減カウンタをリセット ───────────────────────────
+  // ── シーズン末にボーナス逓減カウンタ＋ケア使用記録をリセット ─────────────
   resetSeasonalCounters(roster) {
     return roster.map(f => {
-      if (!f._bonusRepeat) return f;
-      const { _bonusRepeat: _, ...rest } = f;
+      if (!f._bonusRepeat && !f._careWeekUsed) return f;
+      const { _bonusRepeat: _br, _careWeekUsed: _cw, ...rest } = f;
       return rest;
     });
   },

@@ -3962,14 +3962,32 @@ function showCareActionModal(state, onConfirm) {
     html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${cfg.desc}</div>`;
     html += '<div class="care-section-label">対象選手を選択</div>';
 
+    const currentWeek = state.week || 0;
+    const cooldown = cfg.cooldown != null ? cfg.cooldown : 1;
+    const availableRoster = selectableRoster.filter(f => {
+      const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
+      return currentWeek - lastUsed >= cooldown;
+    });
+
     if (selectableRoster.length === 0) {
       html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">対象選手がいません</div>';
+    } else if (availableRoster.length === 0) {
+      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">今週は全員使用済みです（来週以降また使えます）</div>';
     } else {
+      // クールダウン中でない選手を先に、使用済みを後ろにソート
+      const sorted = [...selectableRoster].sort((a, b) => {
+        const aUsed = currentWeek - ((a._careWeekUsed || {})[actionId] || -99) < cooldown;
+        const bUsed = currentWeek - ((b._careWeekUsed || {})[actionId] || -99) < cooldown;
+        return (aUsed ? 1 : 0) - (bUsed ? 1 : 0);
+      });
       html += '<select class="care-fighter-select" id="careFighterSelect">';
-      selectableRoster.forEach(f => {
+      sorted.forEach(f => {
+        const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
+        const onCooldown = currentWeek - lastUsed < cooldown;
         const injuryLabel = f.injury ? ` (怪我中 ${f.injury.weeksLeft}週)` : '';
         const slumpLabel = f.slump ? ' [スランプ]' : f.motivationLoss ? ' [モチベ喪失]' : '';
-        html += `<option value="${f.id}">${f.name}${injuryLabel}${slumpLabel}</option>`;
+        const cdLabel = onCooldown ? ' ✓今週使用済' : '';
+        html += `<option value="${f.id}" ${onCooldown ? 'disabled' : ''}>${f.name}${injuryLabel}${slumpLabel}${cdLabel}</option>`;
       });
       html += '</select>';
       const costLabel = cfg.cost > 0 ? `${cfg.cost}万` : '無料';
