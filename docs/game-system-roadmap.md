@@ -1,12 +1,22 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（契約更新交渉イベント＋性格・属性フィールド追加）
+> 最終更新: 2026-03-05（全セリフ personality×archetype 構造化）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**全セリフシステム personality×archetype 構造化（2026-03-05）。** 全共有セリフ定数をpersonality(7種)×archetype(6種)の2層ネスト構造に統一。21種の既存組み合わせに対して口調・態度の分離された個別セリフを実装。ヘルパー関数 `getDialoguePool(lineObj, fighter)` / `pickDialogueLine(lineObj, fighter)` で一貫したアクセスを提供。
+
+- **変換対象**: SLUMP_START/END_LINES, MOTIVATION_LOSS/RECOVERY_LINES, BREAKTHROUGH_LINES, RETIREMENT_LINES系4定数, AWARD_LINES, NEGOTIATE_LINES, NOTIF_DIALOGUES, CARE_REACTION_DIALOGUES, CHOICE_EVENT_DIALOGUES, LARGE_EVENT_DIALOGUES, EVENT_QUOTES(8エントリ), PPV_OPPONENT_LINES, RIVALRY_RESOLUTION_LINES, ENDING_LINES.fighter, SCOUT_SIGNING_LINES, CONTRACT_NEGOTIATION_LINES
+- **ヘルパー**: `getDialoguePool(lineObj, fighter)` → Engine用(seeded RNG併用)、`pickDialogueLine(lineObj, fighter)` → UI用(Math.random)。personality→archetype→`_default`の3段フォールバック
+- **SCOUT_SIGNING_LINES再構築**: 旧role×context×ageGroup → context→personality→archetype。SIGNING_TRAIT_LINES廃止（personality×archetypeに吸収）
+- **CONTRACT_NEGOTIATION_LINES拡張**: 旧5性格(bold/introverted/carefree/earnest/emotional) → 7性格×archetype。negotiationオブジェクトにarchetype追加。selectDialogueをfighterオブジェクト受け取りに変更
+- **getPersonalityType廃止**: 旧personality→introverted/carefree変換マッピング不要に。negotiation生成時にfighter.personality/archetypeを直接格納
+- **検証**: auto-sim 3,000シーズン ALL CLEAR
+- 変更: data.js, engine.js, ui-common.js, victory-lines.js
 
 **契約更新交渉イベント＋性格・属性フィールド追加（2026-03-05）。** シーズン開幕時、低trust選手との1対1交渉イベント。5性格タイプ×昇給要求/移籍志願の2態度×選択分岐。コンテキスト差し込み（在籍年数・戦績・初期メンバー・ライバル）で体感バリエーション大幅拡張。Notion DB由来の性格（6種）・属性（5種）を全98名に付与。
 

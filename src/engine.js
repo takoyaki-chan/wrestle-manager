@@ -1365,9 +1365,10 @@ const Engine = {
         }
       }
 
-      const lines = RETIREMENT_LINES[category] || RETIREMENT_LINES.A2_uncrowned;
-      const idx = Math.floor(Engine.rng.float(rng) * lines.length);
-      return { line: lines[idx], category };
+      const catObj = RETIREMENT_LINES[category] || RETIREMENT_LINES.A2_uncrowned;
+      const pool = getDialoguePool(catObj, fighter);
+      const idx = Math.floor(Engine.rng.float(rng) * pool.length);
+      return { line: pool[idx], category };
     },
 
     // §1.2: 引退勧告が可能な選手かチェック
@@ -1429,7 +1430,8 @@ const Engine = {
         else if (isHeel)         cat = 'accept_heel';
         else if (hasWonTitle)    cat = 'accept_former_champ';
         else                     cat = 'accept_no_title';
-        const pool = RETIRE_ACCEPT_LINES[cat] || RETIRE_ACCEPT_LINES.accept_no_title;
+        const catObj = RETIRE_ACCEPT_LINES[cat] || RETIRE_ACCEPT_LINES.accept_no_title;
+        const pool = getDialoguePool(catObj, fighter);
         return pool[Engine.rng.int(rng, 0, pool.length - 1)];
       } else {
         let cat;
@@ -1437,7 +1439,8 @@ const Engine = {
         else if ((fighter.trust ?? 50) < 40) cat = 'refuse_distrust';
         else if (isHeel)          cat = 'refuse_heel';
         else                      cat = 'refuse_fighting';
-        const pool = RETIRE_REFUSE_LINES[cat] || RETIRE_REFUSE_LINES.refuse_fighting;
+        const catObj = RETIRE_REFUSE_LINES[cat] || RETIRE_REFUSE_LINES.refuse_fighting;
+        const pool = getDialoguePool(catObj, fighter);
         return pool[Engine.rng.int(rng, 0, pool.length - 1)];
       }
     },
@@ -1488,8 +1491,8 @@ const Engine = {
       else if (trust >= 70) cat = 'high_trust';
       else if (isHeel)   cat = 'heel';
       else               cat = 'default';
-      const pool = RETAIN_LINES[cat] || RETAIN_LINES.default;
-      return pool[Math.floor(Math.random() * pool.length)];
+      const catObj = RETAIN_LINES[cat] || RETAIN_LINES.default;
+      return pickDialogueLine(catObj, fighter);
     },
   },
 
@@ -1983,6 +1986,8 @@ const Engine = {
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
         style: template.style, role: template.role, pot: { ...template.pot },
         traits: template.traits || [],
+        personality: template.personality || 'normal',
+        archetype: template.archetype || 'normal',
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
@@ -3720,21 +3725,12 @@ const Engine = {
 
   // ── F2: Player Negotiation System ────────────────
   negotiate: {
-    /** Get traits-based dialogue for a fighter */
+    /** Get personality×archetype dialogue for a fighter */
     getDialogue(fighter, phase) {
-      const lines = NEGOTIATE_LINES[phase];
-      if (!lines) return '';
-      const ch = ALL_CHARS.find(c => c.id === fighter.id);
-      const traits = ch ? (ch.traits || []) : [];
-      const role = ch ? ch.role : 'Neutral';
-      // Check trait-specific lines first
-      for (const t of traits) {
-        if (lines[t]) return lines[t];
-      }
-      // Fall back to role
-      if (role === 'Heel' && lines._heel) return lines._heel;
-      if (role === 'Babyface' && lines._babyface) return lines._babyface;
-      return lines._neutral || '';
+      const phaseObj = NEGOTIATE_LINES[phase];
+      if (!phaseObj) return '';
+      const ch = ALL_CHARS.find(c => c.id === fighter.id) || fighter;
+      return pickDialogueLine(phaseObj, ch);
     },
 
     /** Calculate base fee for poaching a fighter */
@@ -4576,15 +4572,10 @@ const Engine = {
                 .replace(/{org1}/g, o1).replace(/{org2}/g, o2);
     },
 
-    /** 対戦相手の一言セリフ選択 */
+    /** 対戦相手の一言セリフ選択（personality×archetype） */
     getOpponentLine(rng, fighter) {
-      const mn = fighter.mn || 50, pw = fighter.pw || 50;
-      let tone;
-      if (mn >= 70) tone = Math.random() > 0.5 ? 'calm' : 'respectful';
-      else if (pw >= 70) tone = 'fierce';
-      else tone = 'confident';
-      const lines = PPV_OPPONENT_LINES[tone] || PPV_OPPONENT_LINES.confident;
-      return lines[Engine.rng.int(rng, 0, lines.length - 1)];
+      const pool = getDialoguePool(PPV_OPPONENT_LINES, fighter);
+      return pool[Engine.rng.int(rng, 0, pool.length - 1)];
     },
 
     /** サミットペアを決定（ランク1位 vs 2位） */
@@ -6927,16 +6918,9 @@ Engine.careActions = {
   // ── リアクションセリフ選択 ────────────────────────────────────────────────
   getReactionText(actionId, fighter) {
     if (typeof CARE_REACTION_DIALOGUES === 'undefined') return '…';
-    const dialogues = CARE_REACTION_DIALOGUES[actionId] || {};
-    const traits = (fighter && fighter.traits) || [];
-    for (const trait of traits) {
-      if (dialogues[trait]) {
-        const pool = dialogues[trait];
-        return pool[Math.floor(Math.random() * pool.length)];
-      }
-    }
-    const defPool = dialogues.default || ['…'];
-    return defPool[Math.floor(Math.random() * defPool.length)];
+    const dialogues = CARE_REACTION_DIALOGUES[actionId];
+    if (!dialogues) return '…';
+    return pickDialogueLine(dialogues, fighter);
   },
 };
 
@@ -7121,16 +7105,10 @@ Engine.eventSystem = {
     const key = event.type === 'S4'
       ? (Engine.trust.isDirectType(f) ? 'S4_direct' : 'S4_silent')
       : event.type;
-    const dialogues = CHOICE_EVENT_DIALOGUES[key] || {};
-    const traits = f.traits || [];
-    for (const trait of traits) {
-      if (dialogues[trait]) {
-        const pool = dialogues[trait];
-        return pool[Engine.rng.int(rng, 0, pool.length - 1)];
-      }
-    }
-    const defPool = dialogues.default || ['…'];
-    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    const dialogues = CHOICE_EVENT_DIALOGUES[key];
+    if (!dialogues) return '';
+    const pool = getDialoguePool(dialogues, f);
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   // ── 選択型イベントの選択肢定義生成 ──────────────────────────────────────
@@ -7336,7 +7314,7 @@ Engine.eventSystem = {
     return { text: sub(tmpl.text), detail: sub(tmpl.detail || '') };
   },
 
-  // ── 通知型イベント 特性別セリフ選択 ─────────────────────────────────────
+  // ── 通知型イベント personality×archetype セリフ選択 ─────────────────────
   getNotifDialogue(rng, event, roster) {
     if (!roster || event.fighter == null) return null;
     const f = roster.find(f => f.id === event.fighter);
@@ -7345,15 +7323,8 @@ Engine.eventSystem = {
     if (typeof NOTIF_DIALOGUES === 'undefined') return null;
     const dialogues = NOTIF_DIALOGUES[key];
     if (!dialogues) return null;
-    const traits = f.traits || [];
-    for (const trait of traits) {
-      if (dialogues[trait] && dialogues[trait].length > 0) {
-        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
-      }
-    }
-    const defPool = dialogues.default;
-    if (!defPool || defPool.length === 0) return null;
-    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    const pool = getDialoguePool(dialogues, f);
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   // ── Phase1-6: 大型イベント生成（B1〜B4） ─────────────────────────────────
@@ -7438,21 +7409,10 @@ Engine.eventSystem = {
     if (!dialogues) return '';
     // B3_challenger は配列なので別処理（生成時にセット済み）
     if (key === 'B3') return '';
-    // 選手の特性からセリフ選択
     const fId = event.fighter || event.fighter1;
     const f = roster ? roster.find(f => f.id === fId) : null;
-    if (!f) {
-      const defPool = dialogues.default || ['…'];
-      return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
-    }
-    const traits = f.traits || [];
-    for (const trait of traits) {
-      if (dialogues[trait] && dialogues[trait].length > 0) {
-        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
-      }
-    }
-    const defPool = dialogues.default || ['…'];
-    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    const pool = getDialoguePool(dialogues, f);
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   // B2用: fighter2のセリフ取得
@@ -7461,18 +7421,8 @@ Engine.eventSystem = {
     const dialogues = LARGE_EVENT_DIALOGUES.B2_fighter2;
     if (!dialogues) return '';
     const f = roster ? roster.find(f => f.id === event.fighter2) : null;
-    if (!f) {
-      const defPool = dialogues.default || ['…'];
-      return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
-    }
-    const traits = f.traits || [];
-    for (const trait of traits) {
-      if (dialogues[trait] && dialogues[trait].length > 0) {
-        return dialogues[trait][Engine.rng.int(rng, 0, dialogues[trait].length - 1)];
-      }
-    }
-    const defPool = dialogues.default || ['…'];
-    return defPool[Engine.rng.int(rng, 0, defPool.length - 1)];
+    const pool = getDialoguePool(dialogues, f);
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   // ── Phase1-6: 大型イベント効果適用（純粋関数） ──────────────────────────
@@ -8146,7 +8096,7 @@ Engine.contract = {
     if (p && p !== 'normal') {
       if (p === 'quiet') return 'introverted';
       if (p === 'easygoing') return 'carefree';
-      return p; // bold, earnest, emotional はそのまま
+      return p; // bold, earnest, emotional, shy はそのまま
     }
     // personality未設定 or 'normal': 特性ベース推論にフォールバック
     const traits = fighter.traits || [];
@@ -8241,7 +8191,6 @@ Engine.contract = {
 
       if (Engine.rng.float(rng) >= baseProb) continue;
 
-      const personality = Engine.contract.getPersonalityType(f);
       const context = Engine.contract.extractContext(f, state);
       const raiseAmount = Engine.contract.calcRaiseAmount(f, state);
 
@@ -8249,7 +8198,8 @@ Engine.contract = {
         fighterId: f.id,
         fighterName: f.name,
         attitude,
-        personality,
+        personality: f.personality || 'normal',
+        archetype: f.archetype || 'normal',
         raiseAmount,
         counterOffer: Engine.contract.calcCounterOffer(raiseAmount),
         retentionBonus: Engine.contract.calcRetentionBonus(f, state),
@@ -8268,11 +8218,11 @@ Engine.contract = {
   },
 
   // ── セリフ選択 ───────────────────────────────────────────────────────────
-  selectDialogue(rng, personality, phase, context) {
+  selectDialogue(rng, fighter, phase, context) {
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return '';
     const pool = CONTRACT_NEGOTIATION_LINES[phase];
     if (!pool) return '';
-    const lines = pool[personality] || pool.introverted || [''];
+    const lines = getDialoguePool(pool, fighter);
     let text = lines[Engine.rng.int(rng, 0, lines.length - 1)];
     // コンテキスト差し込み
     text = Engine.contract._insertTenure(text, context);
@@ -8460,7 +8410,7 @@ Engine.contract = {
       s = { ...s, lockerRoomMorale: newMorale };
     }
 
-    const reactionDialogue = Engine.contract.selectDialogue(rng, neg.personality, reactionPhase, ctx);
+    const reactionDialogue = Engine.contract.selectDialogue(rng, neg, reactionPhase, ctx);
 
     return {
       state: s,

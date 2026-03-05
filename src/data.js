@@ -8,7 +8,7 @@ const ALL_CHARS = [
   {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志','反骨心'],personality:'bold',archetype:'normal'},
   {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:185,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'earnest',archetype:'normal'},
   {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148},traits:['ムードメーカー','早熟','破天荒'],personality:'easygoing',archetype:'normal'},
-  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心'],personality:'earnest',archetype:'normal'},
+  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心'],personality:'earnest',archetype:'polite'},
   {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い'],personality:'normal',archetype:'normal'},
   {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'normal'},
   {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華'],personality:'normal',archetype:'seductive'},
@@ -17,21 +17,21 @@ const ALL_CHARS = [
   {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['ヒール適性','早熟'],personality:'quiet',archetype:'normal'},
   {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:121,st:146,mn:141},traits:['威圧感'],personality:'normal',archetype:'normal'},
   {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Striker',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心'],personality:'normal',archetype:'ojousama'},
-  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'polite'},
   {id:18,name:'出羽鷹子',h:184,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['適応力'],personality:'bold',archetype:'delinquent'},
-  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力'],personality:'emotional',archetype:'ojousama'},
+  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力'],personality:'earnest',archetype:'ojousama'},
   {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:149,te:161,st:155,mn:161},traits:['努力家','遅咲き'],personality:'normal',archetype:'normal'},
   {id:21,name:'木ノ内幸音',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Babyface',pot:{pw:146,sp:129,te:129,st:148,mn:147},traits:['ヒール適性','ムードメーカー','華'],personality:'earnest',archetype:'normal'},
   {id:22,name:'美濃山まりな',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122},traits:['ヒール適性'],personality:'bold',archetype:'delinquent'},
   {id:23,name:'早見知子',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['適応力'],personality:'normal',archetype:'normal'},
   {id:24,name:'園部梨花',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[],personality:'bold',archetype:'normal'},
   {id:25,name:'石戸谷なつき',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109},traits:['早熟'],personality:'easygoing',archetype:'delinquent'},
-  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['努力家','早熟'],personality:'earnest',archetype:'normal'},
+  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['努力家','早熟'],personality:'earnest',archetype:'polite'},
   {id:27,name:'八重樫舞',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126},traits:['鉄人'],personality:'normal',archetype:'normal'},
   {id:28,name:'岩屋みら',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139},traits:['ガラスの身体','早熟','鉄人'],personality:'bold',archetype:'delinquent'},
   {id:29,name:'相沢未来',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['人望','鉄人'],personality:'normal',archetype:'normal'},
   {id:30,name:'松川杏樹',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152},traits:['ムードメーカー','破天荒'],personality:'easygoing',archetype:'normal'},
-  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151},traits:['晩成','不屈'],personality:'quiet',archetype:'normal'},
+  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151},traits:['晩成','不屈'],personality:'quiet',archetype:'polite'},
   {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164},traits:['リーダー気質','負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['破天荒','早熟','努力家'],personality:'normal',archetype:'normal'},
@@ -49,13 +49,13 @@ const ALL_CHARS = [
   {id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Striker',role:'Neutral',pot:{pw:143,sp:141,te:146,st:150,mn:155},traits:['早熟'],personality:'bold',archetype:'normal'},
   {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:142,st:144,mn:161},traits:['負けず嫌い','適応力','闘志'],personality:'bold',archetype:'normal'},
-  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:144,te:145,st:155,mn:163},traits:['努力家','忠誠心','遅咲き'],personality:'quiet',archetype:'normal'},
-  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'normal',archetype:'normal'},
+  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:144,te:145,st:155,mn:163},traits:['努力家','忠誠心','遅咲き'],personality:'earnest',archetype:'polite'},
+  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'emotional',archetype:'normal'},
   {id:51,name:'三橋ふみえ',h:172,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['ヒール適性','ファンサービス'],personality:'emotional',archetype:'normal'},
   {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Striker',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:135},traits:[],personality:'normal',archetype:'normal'},
   {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー'],personality:'normal',archetype:'normal'},
-  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:122,sp:135,te:138,st:128,mn:144},traits:[],personality:'quiet',archetype:'normal'},
-  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['不屈','鉄人','頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:122,sp:135,te:138,st:128,mn:144},traits:[],personality:'shy',archetype:'polite'},
+  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['不屈','鉄人','頑丈さ'],personality:'earnest',archetype:'polite'},
   {id:56,name:'片桐ありさ',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148},traits:['ヒール適性','ライバル体質','野心'],personality:'bold',archetype:'seductive'},
   {id:57,name:'浅見里緒菜',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148},traits:['リーダー気質','早熟','負けず嫌い','野心'],personality:'normal',archetype:'seductive'},
   {id:58,name:'丹羽穂垂',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Allround',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['引き出し上手','負けず嫌い'],personality:'earnest',archetype:'normal'},
@@ -74,13 +74,13 @@ const ALL_CHARS = [
   {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:145,sp:134,te:150,st:141,mn:147},traits:['ファンサービス'],personality:'normal',archetype:'normal'},
   {id:72,name:'穴澤ほのか',h:168,pw:74,sp:58,te:65,st:63,mn:70,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['ファンサービス','引き出し上手','野心'],personality:'normal',archetype:'seductive'},
   {id:73,name:'大馬越よし子',h:179,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:148,st:147,mn:148},traits:['威圧感','頑丈さ'],personality:'bold',archetype:'normal'},
-  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['ファンサービス'],personality:'earnest',archetype:'normal'},
+  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['ファンサービス'],personality:'earnest',archetype:'polite'},
   {id:75,name:'海老名栞',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['ファンサービス','ライバル体質','野心'],personality:'easygoing',archetype:'normal'},
   {id:76,name:'栗林あかり',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135},traits:['ライバル体質','負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:77,name:'新見ゆり',h:168,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['引き出し上手'],personality:'earnest',archetype:'seductive'},
   {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:137,sp:130,te:141,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い'],personality:'normal',archetype:'normal'},
   {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:133},traits:['ヒール適性'],personality:'bold',archetype:'delinquent'},
-  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:129,sp:164,te:166,st:132,mn:85},traits:['ファンサービス','ムードメーカー'],personality:'quiet',archetype:'normal'},
+  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:129,sp:164,te:166,st:132,mn:85},traits:['ファンサービス','ムードメーカー'],personality:'shy',archetype:'polite'},
   // ── 新規キャラクター（v1.4 GameID 81〜99）──
   {id:81,name:'坂本莉衣奈',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Speed',role:'Neutral',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['ムードメーカー'],personality:'normal',archetype:'normal'},
   {id:82,name:'近藤ゆりか',h:166,pw:84,sp:55,te:67,st:80,mn:69,style:'Grappler',role:'Neutral',pot:{pw:169,sp:132,te:147,st:164,mn:150},traits:['番狂わせ体質'],personality:'earnest',archetype:'normal'},
@@ -91,7 +91,7 @@ const ALL_CHARS = [
   {id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Speed',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'normal'},
   {id:88,name:'愛川明日香',h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[],personality:'normal',archetype:'seductive'},
   {id:89,name:'赤羽あんな',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Speed',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
-  {id:90,name:'玉手すみれ',h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['努力家'],personality:'quiet',archetype:'normal'},
+  {id:90,name:'玉手すみれ',h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['努力家'],personality:'quiet',archetype:'polite'},
   {id:91,name:'等々力あかね',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:154,te:148,st:156,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:92,name:'飯島冴子',h:170,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:137,st:120,mn:117},traits:['忠誠心'],personality:'normal',archetype:'seductive'},
   {id:93,name:'松久保伊織',h:163,pw:61,sp:64,te:69,st:59,mn:54,style:'Grappler',role:'Babyface',pot:{pw:139,sp:143,te:150,st:137,mn:130},traits:['忠誠心','早熟'],personality:'normal',archetype:'normal'},
@@ -753,32 +753,108 @@ const RIVALRY_CONFRONTATION_LINES = {
   ],
 };
 
-// 因縁決着システム — 試合後の決着セリフ
+// 因縁決着システム — 試合後の決着セリフ（personality×archetype）
 const RIVALRY_RESOLUTION_LINES = {
-  winner: [
-    'ようやく決着がついた……最高の相手だった',
-    'この勝利は、あの人がいたから掴めた',
-    '何度でも言う。あなたは最高のライバルだ',
-    'この拳が届いた……それだけで十分だ',
-    '終わった……でも、この因縁に感謝している',
-  ],
-  loser: [
-    '負けた……でも、この試合は誇りに思う',
-    '悔しい。でも、あなたが強かった。それだけだ',
-    '次は……いや、今はこの敗北を受け入れる',
-    'ありがとう。あなたのおかげで強くなれた',
-    '完敗だ。でも私はまだ終わらない',
-  ],
-  fateWinner: [
-    'この物語に終止符を打てた……感無量だ',
-    '長かった。でも、あなたなしでは辿り着けなかった',
-    'これが最終章。最高のエンディングだった',
-  ],
-  fateLoser: [
-    'あなたには敵わなかった。でも、この戦いは宝物だ',
-    '幾度となく戦った。すべてが私の財産だ',
-    '最後まで……全力だった。悔いはない',
-  ],
+  winner: {
+    normal: {
+      _default: ['ようやく決着がついた…最高の相手だった', 'この勝利は、あの人がいたから掴めた'],
+      ojousama: ['ようやく決着がつきましたわ…最高のお相手でした'],
+      delinquent: ['やっと決着ついたぜ…最高の相手だったよ'],
+      seductive: ['ようやく決着がついたわね…最高の相手だった'],
+    },
+    bold: {
+      _default: ['何度でも言う。あなたは最高のライバルだ', 'この拳が届いた…それだけで十分だ'],
+      ojousama: ['何度でも申しますわ。あなたは最高のライバルですの'],
+      delinquent: ['お前は最高のライバルだ。それだけは認めてやる'],
+      cool: ['…決着がついた。感謝する'],
+      seductive: ['あなたは最高のライバルよ。それは変わらないわ'],
+    },
+    quiet: {
+      _default: ['……ありがとう'],
+      cool: ['…終わった。…いい戦いだった'],
+      polite: ['…ありがとうございました'],
+    },
+    shy: { _default: ['あ、ありがとう…ございました…'] },
+    easygoing: {
+      _default: ['終わった…でもこの因縁に感謝してるよ！'],
+      delinquent: ['やったぜ…でもお前がいなきゃここまで来れなかった'],
+      seductive: ['終わったわね…でも、この因縁に感謝してるの'],
+    },
+    earnest: {
+      _default: ['ようやく決着がついた…最高の相手でした', '終わった…でもこの因縁に感謝している'],
+      polite: ['決着がつきました…最高のお相手でした'],
+      ojousama: ['ようやく決着ですわ…最高のお相手でしたの'],
+      seductive: ['決着がついたわ…最高の相手だった'],
+    },
+    emotional: { _default: ['終わった…！最高の…相手だった…（涙）'] },
+  },
+  loser: {
+    normal: {
+      _default: ['負けた…でもこの試合は誇りに思う', '悔しい。でもあなたが強かった。それだけだ'],
+      ojousama: ['負けましたわ…でもこの試合は誇りに思いますの'],
+      delinquent: ['負けた…でもこの試合は誇りに思うぜ'],
+      seductive: ['負けたわ…でもこの試合は誇りに思う'],
+    },
+    bold: {
+      _default: ['完敗だ。でも私はまだ終わらない', '次は…いや、今はこの敗北を受け入れる'],
+      ojousama: ['完敗ですわ。でもまだ終わりませんの'],
+      delinquent: ['完敗だ…でも終わりじゃねえ'],
+      cool: ['…認める。だが、まだ終わらない'],
+      seductive: ['完敗ね。でも、まだ終わらないわ'],
+    },
+    quiet: {
+      _default: ['………（静かに相手を見つめている）'],
+      cool: ['…強かった。認める'],
+      polite: ['…ありがとうございました。…強かったです'],
+    },
+    shy: { _default: ['…負けちゃった…でも…悔いはない、です…'] },
+    easygoing: {
+      _default: ['ありがとう。あなたのおかげで強くなれた'],
+      delinquent: ['サンキュ…お前のおかげで強くなれたよ'],
+      seductive: ['ありがとう。あなたのおかげで強くなれたわ'],
+    },
+    earnest: {
+      _default: ['負けた…でもこの試合は誇りに思います', 'ありがとうございます。あなたのおかげで強くなれました'],
+      polite: ['負けました…でもこの試合は誇りです'],
+      ojousama: ['負けましたわ…でもこの試合は誇りに思いますの'],
+      seductive: ['負けたわ…でもこの試合は誇りに思う'],
+    },
+    emotional: { _default: ['悔しい…！でも…最高の試合だった…！'] },
+  },
+  fateWinner: {
+    normal: {
+      _default: ['この物語に終止符を打てた…感無量だ'],
+      ojousama: ['この物語に終止符を打てましたわ…感無量ですの'],
+      delinquent: ['やっと…終わったんだな…'],
+      seductive: ['この物語に終止符を打てたわ…'],
+    },
+    bold: {
+      _default: ['長かった。でもあなたなしでは辿り着けなかった', 'これが最終章。最高のエンディングだ'],
+      cool: ['…終わった。…最高の物語だった'],
+    },
+    quiet: { _default: ['………（深く息を吐き、静かに微笑む）'] },
+    shy: { _default: ['終わった…のかな…（涙が溢れている）'] },
+    easygoing: { _default: ['やっと終わったんだ…最高の物語だったよ…！'] },
+    earnest: { _default: ['長い戦いでした…あなたなしでは辿り着けなかった'] },
+    emotional: { _default: ['終わった…！やっと…！ありがとう…！（号泣）'] },
+  },
+  fateLoser: {
+    normal: {
+      _default: ['あなたには敵わなかった。でもこの戦いは宝物だ'],
+      ojousama: ['敵いませんでしたわ。でもこの戦いは宝物ですの'],
+      delinquent: ['敵わなかったぜ…でもこの戦いは宝物だ'],
+      seductive: ['敵わなかったわ。でもこの戦いは宝物よ'],
+    },
+    bold: {
+      _default: ['幾度となく戦った。すべてが私の財産だ', '最後まで…全力だった。悔いはない'],
+      cool: ['…全力だった。悔いはない'],
+    },
+    quiet: { _default: ['………ありがとう（小さく、でも確かに）'] },
+    shy: { _default: ['ありがとう…ございました…（涙を拭いている）'] },
+    easygoing: { _default: ['全部…全部宝物だよ。ありがとう'] },
+    earnest: { _default: ['すべてが私の財産です。悔いはありません'] },
+    emotional: { _default: ['敵わなかった…でも…全部宝物だよ…！（泣き笑い）'] },
+  },
 };
 
 // v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
@@ -1305,43 +1381,103 @@ const NEGOTIATION_CONFIG = {
 
 const NEGOTIATE_LINES = {
   start: {
-    '威圧感':   'ふーん…私を引き抜こうってわけ？\n面白い度胸してるじゃない。',
-    '破天荒':   'えっ、私をスカウト！？\nわくわくするね〜、話聞かせてよ！',
-    '負けず嫌い': '…私を欲しいって？\nそれなりの覚悟、あるんでしょうね。',
-    '闘志':     '新しい戦場…か。\n…悪くない話かもしれない。',
-    'リーダー気質': 'この団体を離れるのは簡単じゃないわ。\n…でも、聞くだけなら。',
-    'ファンサービス': 'わぁ、嬉しいです！\nでも…ファンの皆のこともあるし…',
-    '努力家':   '私なんかでいいんですか…？\n…ちょっと考えさせてください。',
-    '反骨心':   '…何？ 引き抜き？\nそっちに都合のいい話なんでしょ。',
-    _heel:     '…ふん。で、条件は？\n私を満足させられるの？',
-    _babyface: '他の団体に…？ちょっと考えさせてください。\n…真剣に、考えます。',
-    _neutral:  '…そう。私に来いと。\n条件次第かしらね。'
+    normal: {
+      _default: ['…そう、私に来いと。\n条件次第かな'],
+      ojousama: ['わたくしをお誘いですの？\n…条件次第ですわね'],
+      delinquent: ['あたしを引き抜くってか？\n…条件次第だな'],
+      seductive: ['私を誘うの？\nふふ…条件次第ね'],
+    },
+    bold: {
+      _default: ['ふーん…私を引き抜こうってわけ？\n面白い度胸してるじゃない', '…私を欲しいって？\nそれなりの覚悟、あるんでしょうね'],
+      ojousama: ['わたくしを引き抜こうと？\n面白いご度胸ですわね'],
+      delinquent: ['あたしを引き抜く？\n面白ぇ度胸してんじゃねーか'],
+      cool: ['…引き抜き？ 条件を聞こう'],
+      seductive: ['私を引き抜こうだなんて…\nふふ、面白い度胸してるわね'],
+    },
+    quiet: {
+      _default: ['………話は聞く'],
+      cool: ['…聞こう'],
+      polite: ['…お話は伺います'],
+    },
+    shy: { _default: ['え…私なんかでいいんですか…？\n…ちょっと考えさせてください'] },
+    easygoing: {
+      _default: ['えっ、スカウト！？\nわくわくするね〜、話聞かせてよ！'],
+      delinquent: ['マジで！？ スカウト！？\n話聞かせてくれよ！'],
+      seductive: ['あら、スカウト？\nふふ、聞かせてもらおうかしら'],
+    },
+    earnest: {
+      _default: ['この団体を離れるのは簡単じゃない。\n…でも、聞くだけなら'],
+      polite: ['この団体を離れるのは簡単ではありません。\n…でも、お聞きするだけなら'],
+      ojousama: ['この団体を離れるのは容易ではありませんわ。\n…でも、お聞きするだけなら'],
+      seductive: ['この団体を離れるのは簡単じゃないの。\n…でも、聞くだけなら'],
+    },
+    emotional: { _default: ['え…引き抜き…？\nど、どうしよう…急に言われても…'] },
   },
   success: {
-    '威圧感':   'いいわ…認めてあげる。\n新しい場所で、格の違いを見せてやる。',
-    '破天荒':   'やったー！新しい団体！\n楽しみすぎて眠れないかも！',
-    '負けず嫌い': '…決めた。ここでもっと強くなってみせる！\n絶対に後悔させないから。',
-    '闘志':     '新しい闘いが待っている…！\n燃えてきた…全力でいくぞ！',
-    'リーダー気質': '新しい仲間のために…全力を尽くすわ。\nよろしくお願いします。',
-    'ファンサービス': '新しいファンの皆さんにも、最高の試合を届けます！\nよろしくお願いしまーす！',
-    '努力家':   '期待に応えられるよう、頑張ります…！\n…必ず、成長してみせます。',
-    '反骨心':   '…まあ、行ってやるわよ。\n使えなかったら捨てればいいでしょ。',
-    _heel:     '…ま、使えるうちは使ってあげるわ。\n後悔しないことね。',
-    _babyface: '新しい場所で頑張ります！\nよろしくお願いします！',
-    _neutral:  '…分かった、行くわ。\n実力で居場所を作ってみせる。'
+    normal: {
+      _default: ['…分かった、行くわ。\n実力で居場所を作ってみせる'],
+      ojousama: ['…承知しましたわ。\n実力で居場所を作ってみせますの'],
+      delinquent: ['…わかった、行くぜ。\n実力で居場所作ってやるよ'],
+      seductive: ['…わかったわ、行く。\n実力で居場所を作ってみせるわ'],
+    },
+    bold: {
+      _default: ['いいわ…認めてあげる。\n新しい場所で格の違いを見せてやる', '新しい闘いが待っている…！\n燃えてきた…全力でいくぞ！'],
+      ojousama: ['認めてさしあげますわ。\n格の違いをお見せしますの'],
+      delinquent: ['認めてやるぜ。\n新しい場所で格の違い見せてやらぁ！'],
+      cool: ['…行く。全力でやる'],
+      seductive: ['認めてあげるわ。\n格の違いを見せてあげる'],
+    },
+    quiet: {
+      _default: ['……行く。よろしく'],
+      cool: ['…行く'],
+      polite: ['…行きます。よろしくお願いします'],
+    },
+    shy: { _default: ['期待に応えられるよう、頑張ります…！\n…必ず、成長してみせます'] },
+    easygoing: {
+      _default: ['やったー！ 新しい団体！\n楽しみすぎて眠れないかも！'],
+      delinquent: ['やったぜ！ 新しい団体！\n楽しみすぎて眠れねーよ！'],
+      seductive: ['やった！ 新しい団体ね！\n楽しみだわ'],
+    },
+    earnest: {
+      _default: ['新しい仲間のために…全力を尽くす。\nよろしくお願いします'],
+      polite: ['新しい仲間のために…全力を尽くします。\nよろしくお願いいたします'],
+      ojousama: ['新しい仲間のために…全力を尽くしますわ。\nよろしくお願いいたします'],
+      seductive: ['新しい仲間のために…全力を尽くすわ。\nよろしくね'],
+    },
+    emotional: { _default: ['うっ…新しい場所で…頑張ります…！\nよろしくお願いします…！'] },
   },
   fail: {
-    '威圧感':   '…悪いけど、ここが私の居場所よ。\n出直してきなさい。',
-    '破天荒':   'ごめんね〜、やっぱり今のとこが好きなの！\nまたね〜！',
-    '負けず嫌い': '…ここでまだやり残したことがある。\n今は動けない。',
-    '闘志':     'まだこの団体で燃え尽きてない。\n…その話はなかったことに。',
-    'リーダー気質': 'みんなを置いて行くわけにはいかないの。\n…ごめんなさい。',
-    'ファンサービス': 'ファンの皆が応援してくれてるから…\n今はここを離れられません！',
-    '努力家':   'まだここで学ぶことがあるんです…。\n…すみません。',
-    '反骨心':   '…悪いけど、今は気分じゃない。\nアンタの都合に合わせるつもりはないわ。',
-    _heel:     '条件が気に入らないわ。\n…出直してきなさい。',
-    _babyface: 'ごめんなさい、今はここを離れられません。\nまたいつか…！',
-    _neutral:  '…悪いけど、今回はパス。\n縁があればまたね。'
+    normal: {
+      _default: ['…悪いけど、今回はパス。\n縁があればまたね'],
+      ojousama: ['申し訳ありませんが、今回はご遠慮しますわ'],
+      delinquent: ['悪ぃけど、今回はパスだ。\n縁があればまたな'],
+      seductive: ['ごめんなさい、今回はパス。\n縁があればまたね'],
+    },
+    bold: {
+      _default: ['…悪いけど、ここが私の居場所よ。\n出直してきなさい', 'まだこの団体で燃え尽きてない。\n…その話はなかったことに'],
+      ojousama: ['ここがわたくしの居場所ですわ。\n出直していらして'],
+      delinquent: ['ここがあたしの居場所だ。\n出直してきな'],
+      cool: ['…断る。ここが居場所だ'],
+      seductive: ['ここが私の居場所なの。\n出直してきて'],
+    },
+    quiet: {
+      _default: ['………ここにいる'],
+      cool: ['…断る'],
+      polite: ['…すみません、ここに残ります'],
+    },
+    shy: { _default: ['まだここで学ぶことがあるんです…。\n…すみません'] },
+    easygoing: {
+      _default: ['ごめんね〜、やっぱり今のとこが好きなの！\nまたね〜！'],
+      delinquent: ['ごめんな〜、今のとこが好きなんだよ！\nまたな！'],
+      seductive: ['ごめんなさいね、今のところが好きなの。\nまたね'],
+    },
+    earnest: {
+      _default: ['みんなを置いて行くわけにはいかない。\n…ごめんなさい'],
+      polite: ['皆さんを置いて行くわけにはいきません。\n…申し訳ありません'],
+      ojousama: ['皆さまを置いて行くわけにはまいりませんわ'],
+      seductive: ['みんなを置いて行くわけにはいかないの。\n…ごめんなさい'],
+    },
+    emotional: { _default: ['ごめんなさい…今はここを離れられないの…！\nまたいつか…！'] },
   }
 };
 
@@ -1351,113 +1487,376 @@ const NEGOTIATE_LINES = {
 const CONTRACT_NEGOTIATION_LINES = {
   // ── 昇給要求: 導入 ─────────────────────────────────────────────────────
   raise_open: {
-    bold: [
-      '社長、はっきり言わせてもらいます。{tenure}この給料はナメてます。{record}正当な評価をしてほしい。それだけです。',
-      '社長、話があります。{record}{tenure}これだけやって、この待遇は通らないでしょう。',
-    ],
-    introverted: [
-      'あの……社長、少しお時間いただけますか……。{tenure}その……お給料のことなんですけど……。',
-      '……社長、言いにくいんですけど……。{record}もう少しだけ……お願いできないかなって……。',
-    ],
-    carefree: [
-      'やっほー社長！ いやー毎年この時期って緊張するよね。{tenure}ぶっちゃけ、もうちょい欲しいなーって。ダメ？',
-      '社長ー、お金の話していい？ {record}ちょっとだけ上がんないかなーって思ってたんだよね〜。',
-    ],
-    earnest: [
-      '社長、お時間ありがとうございます。{tenure}契約のことで、筋を通してお話させてください。{record}',
-      '社長。正直にお伝えします。{record}この待遇では、自分の努力に見合わないと感じています。',
-    ],
-    emotional: [
-      '社長……！ 聞いてください……！ {tenure}{record}私、もっとできるのに……このままじゃ悔しい……！',
-      '……なんで……なんで評価してくれないんですか……！ {record}頑張ってるのに……！',
-    ],
+    normal: {
+      _default: ['社長、少し相談があるんですけど。{tenure}{record}もう少し待遇を見直してもらえませんか。', '社長、契約のことなんですけど。{record}正直、もうちょっと欲しいなって思ってて。'],
+      ojousama: ['社長、お時間よろしいかしら。{tenure}待遇について、ご相談させてくださいまし。{record}'],
+      delinquent: ['社長、ちょっといいか。{tenure}{record}給料の話なんだけどさ。もうちょい出してくんねーの？'],
+      seductive: ['社長、ちょっといい？ {tenure}{record}…もう少しだけ、考えてくれない？'],
+    },
+    bold: {
+      _default: ['社長、はっきり言わせてもらいます。{tenure}この給料はナメてます。{record}正当な評価をしてほしい。それだけです。', '社長、話があります。{record}{tenure}これだけやって、この待遇は通らないでしょう。'],
+      ojousama: ['社長。{tenure}申し上げにくいのですが、この待遇はわたくしに見合いませんわ。{record}'],
+      delinquent: ['おい社長。{tenure}この給料はふざけてんのか。{record}ちゃんと評価しろよ。'],
+      cool: ['…社長。{tenure}{record}この額じゃ、やってられない'],
+      seductive: ['ねえ社長。{tenure}もうちょっと私のこと大事にしてくれてもいいんじゃない？ {record}'],
+    },
+    quiet: {
+      _default: ['あの……社長、少しお時間いただけますか……。{tenure}その……お給料のことなんですけど……。', '……社長、言いにくいんですけど……。{record}もう少しだけ……お願いできないかなって……。'],
+      cool: ['…社長。{tenure}…給料の話。{record}…考えてほしい'],
+      polite: ['あの…社長、すみません…。{tenure}お給料のことで…少しだけ、ご相談したくて……。'],
+    },
+    shy: {
+      _default: ['あ、あの…社長…。{tenure}その…言いにくいんですけど…お給料のこと…少しだけ……。', '…す、すみません社長…。{record}もう少しだけ…お願いできたらなって……。'],
+    },
+    easygoing: {
+      _default: ['やっほー社長！ いやー毎年この時期って緊張するよね。{tenure}ぶっちゃけ、もうちょい欲しいなーって。ダメ？', '社長ー、お金の話していい？ {record}ちょっとだけ上がんないかなーって思ってたんだよね〜。'],
+      delinquent: ['よー社長。{tenure}給料の話なんだけどさー。もうちょいくれよー。{record}'],
+      seductive: ['社長ー♪ {tenure}お給料のことなんだけどさ…もうちょっとだけ♡ ダメ？'],
+    },
+    earnest: {
+      _default: ['社長、お時間ありがとうございます。{tenure}契約のことで、筋を通してお話させてください。{record}', '社長。正直にお伝えします。{record}この待遇では、自分の努力に見合わないと感じています。'],
+      polite: ['社長、お忙しいところ恐れ入ります。{tenure}契約について、ご相談させていただきたく…。{record}'],
+      ojousama: ['社長。{tenure}契約のことで筋を通させていただきたく存じますわ。{record}'],
+      seductive: ['社長、大事な話があるの。{tenure}{record}ちゃんと評価してほしいな'],
+    },
+    emotional: {
+      _default: ['社長……！ 聞いてください……！ {tenure}{record}私、もっとできるのに……このままじゃ悔しい……！', '……なんで……なんで評価してくれないんですか……！ {record}頑張ってるのに……！'],
+    },
   },
   // ── 移籍志願: 導入 ─────────────────────────────────────────────────────
   transfer_open: {
-    bold: [
-      '社長。{tenure}もう決めました。この団体を出ます。',
-      '……はっきり言います。{tenure}ここではもう成長できない。出ます。',
-    ],
-    introverted: [
-      'あの……社長……。{tenure}言いにくいんですけど……もう、ここを離れたいです……。',
-      '……ごめんなさい……。{tenure}私なんかいなくても……変わらないと思うんです……。',
-    ],
-    carefree: [
-      '社長、あのね。{tenure}色々考えたんだけどさ、環境変えてみようかなーって。',
-      'いやー社長。言いにくいんだけどさー。{tenure}ちょっと外の空気吸ってみたいなーって。',
-    ],
-    earnest: [
-      '社長、大切なお話があります。{tenure}悩みに悩みましたが……退団を願い出たいのです。',
-      '社長。{tenure}ここで学んだことは一生の財産です。ですが……先に進むべき時が来たと思っています。',
-    ],
-    emotional: [
-      '社長……もう無理です……！ {tenure}ここにいても……どんどんダメになっていく気がして……！',
-      '……{tenure}もう、限界なんです……。{record}自分でもわかってます……このままじゃいけないって……。',
-    ],
+    normal: {
+      _default: ['社長、話があります。{tenure}ここを離れようと思ってるんです。', '社長。{tenure}色々考えたんですけど…他の環境でやってみたくて。'],
+      ojousama: ['社長。{tenure}お伝えしづらいのですが…退団を考えておりますの。'],
+      delinquent: ['社長。{tenure}悪いけど、もうここ出るわ。'],
+      seductive: ['社長…ごめんなさい。{tenure}ここを離れたいの。'],
+    },
+    bold: {
+      _default: ['社長。{tenure}もう決めました。この団体を出ます。', '……はっきり言います。{tenure}ここではもう成長できない。出ます。'],
+      ojousama: ['社長。{tenure}決心がつきましたの。わたくし、この団体を去りますわ。'],
+      delinquent: ['社長。{tenure}もう決めた。ここ出るぜ。'],
+      cool: ['…{tenure}出る。もう決めた'],
+      seductive: ['社長。{tenure}もう決めたの。…ここを出るわ。'],
+    },
+    quiet: {
+      _default: ['あの……社長……。{tenure}言いにくいんですけど……もう、ここを離れたいです……。', '……ごめんなさい……。{tenure}私なんかいなくても……変わらないと思うんです……。'],
+      cool: ['…{tenure}…出たい。…それだけ'],
+      polite: ['あの…社長…。{tenure}言いにくいのですが……退団したいと思っています……。'],
+    },
+    shy: {
+      _default: ['あの…社長……。{tenure}す、すみません…ここを…離れたいんです……。', '…ごめんなさい……。{tenure}私には…ここにいる資格がないような気がして……。'],
+    },
+    easygoing: {
+      _default: ['社長、あのね。{tenure}色々考えたんだけどさ、環境変えてみようかなーって。', 'いやー社長。言いにくいんだけどさー。{tenure}ちょっと外の空気吸ってみたいなーって。'],
+      delinquent: ['社長。{tenure}悪いけどさー、ちょっと外に出てみたいんだよね。'],
+      seductive: ['社長、あのね…。{tenure}ちょっと新しいことしてみたいなって。…ごめんね。'],
+    },
+    earnest: {
+      _default: ['社長、大切なお話があります。{tenure}悩みに悩みましたが……退団を願い出たいのです。', '社長。{tenure}ここで学んだことは一生の財産です。ですが……先に進むべき時が来たと思っています。'],
+      polite: ['社長。{tenure}大変申し訳ないのですが…退団のご相談をさせてください。'],
+      ojousama: ['社長。{tenure}心苦しいのですが…退団を願い出たく存じますわ。'],
+      seductive: ['社長。{tenure}ここで過ごした時間は大切よ。でも…次の場所を見つけたいの。'],
+    },
+    emotional: {
+      _default: ['社長……もう無理です……！ {tenure}ここにいても……どんどんダメになっていく気がして……！', '……{tenure}もう、限界なんです……。{record}自分でもわかってます……このままじゃいけないって……。'],
+    },
   },
   // ── 昇給受諾時 ─────────────────────────────────────────────────────────
   raise_accept: {
-    bold: ['……ありがとうございます。分かってくれる社長で良かった。今期も全力でいきますよ。'],
-    introverted: ['え……本当ですか……？ あ、ありがとうございます……！ 頑張ります……！'],
-    carefree: ['やったー！ さすが社長！ 今年も楽しくやろうね〜！'],
-    earnest: ['感謝します。期待に応えられるよう、全力を尽くします。'],
-    emotional: ['社長……！ ありがとうございます……！ 絶対に結果で返します……！'],
+    normal: {
+      _default: ['ありがとうございます。これからもよろしくお願いしますね。'],
+      ojousama: ['ありがとうございますわ。より一層、精進いたしますわね。'],
+      delinquent: ['サンキュ、社長。ちゃんと働くからよ。'],
+      seductive: ['ありがと、社長♡ もっと頑張っちゃうからね。'],
+    },
+    bold: {
+      _default: ['……ありがとうございます。分かってくれる社長で良かった。今期も全力でいきますよ。'],
+      ojousama: ['……感謝いたしますわ。この評価に見合う結果をお見せしますわね。'],
+      delinquent: ['……ま、当然だけどな。ちゃんと評価してくれんじゃん。'],
+      cool: ['…ありがとう。結果で返す'],
+      seductive: ['ふふ、分かってくれるじゃない♡ 期待しててね。'],
+    },
+    quiet: {
+      _default: ['え……本当ですか……？ あ、ありがとうございます……！ 頑張ります……！'],
+      cool: ['…ありがとう。…頑張る'],
+      polite: ['え…本当ですか…？ ありがとうございます…！ 精一杯頑張ります…！'],
+    },
+    shy: {
+      _default: ['え…い、いいんですか…？ あ、ありがとうございます…！ 頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['やったー！ さすが社長！ 今年も楽しくやろうね〜！'],
+      delinquent: ['おっしゃー！ さすが社長！ やる気出てきたぜ！'],
+      seductive: ['やったー♡ さすが社長、太っ腹～♪'],
+    },
+    earnest: {
+      _default: ['感謝します。期待に応えられるよう、全力を尽くします。'],
+      polite: ['ありがとうございます。ご期待に沿えるよう、精一杯努めます。'],
+      ojousama: ['感謝いたしますわ。期待に応えてみせますわね。'],
+      seductive: ['ありがとう。…期待に応えるからね。見ててね。'],
+    },
+    emotional: {
+      _default: ['社長……！ ありがとうございます……！ 絶対に結果で返します……！'],
+    },
   },
   // ── 交渉成功時（中間案受諾） ───────────────────────────────────────────
   raise_negotiate_accept: {
-    bold: ['……まあ、ゼロじゃないなら受けてやります。次は正当な評価を期待してますよ。'],
-    introverted: ['それだけでも……ありがたいです。ありがとうございます……。'],
-    carefree: ['んー、まあいっか！ もらえるだけラッキーってことで！'],
-    earnest: ['……分かりました。社長の判断を尊重します。この額で、精一杯やります。'],
-    emotional: ['……本当は足りないけど……社長が考えてくれたってことは、伝わりました。'],
+    normal: {
+      _default: ['まあ、上がるならありがたいです。頑張りますね。'],
+      ojousama: ['……そのお気持ちだけでも、嬉しゅうございますわ。'],
+      delinquent: ['まー上がるだけマシか。サンキュ。'],
+      seductive: ['少しでも考えてくれたのね。…ありがと♡'],
+    },
+    bold: {
+      _default: ['……まあ、ゼロじゃないなら受けてやります。次は正当な評価を期待してますよ。'],
+      ojousama: ['……まあ、ゼロではないのですわね。次はきちんとした評価を期待しますわ。'],
+      delinquent: ['……ま、ゼロよりマシか。次はもっと出せよな。'],
+      cool: ['…ゼロじゃないなら、まあいい。次は期待してる'],
+      seductive: ['……まあ、少しは考えてくれたのね。次はもっと期待してるわよ♡'],
+    },
+    quiet: {
+      _default: ['それだけでも……ありがたいです。ありがとうございます……。'],
+      cool: ['…分かった。ありがとう'],
+      polite: ['少しでも上げていただけるなんて…ありがとうございます……。'],
+    },
+    shy: {
+      _default: ['そ、それだけでも…ありがたいです…。ありがとうございます……。'],
+    },
+    easygoing: {
+      _default: ['んー、まあいっか！ もらえるだけラッキーってことで！'],
+      delinquent: ['まーいいか！ もらえるだけ儲けもんだぜ！'],
+      seductive: ['んー、まあいっか♪ 気持ちは伝わったし♡'],
+    },
+    earnest: {
+      _default: ['……分かりました。社長の判断を尊重します。この額で、精一杯やります。'],
+      polite: ['……ありがとうございます。この額で精一杯、お応えいたします。'],
+      ojousama: ['……社長のご判断を尊重いたしますわ。精一杯やりますわね。'],
+    },
+    emotional: {
+      _default: ['……本当は足りないけど……社長が考えてくれたってことは、伝わりました。'],
+    },
   },
   // ── 交渉失敗時（中間案拒否） ───────────────────────────────────────────
   raise_negotiate_refuse: {
-    bold: ['……そうですか。まあいいでしょう。でもね社長、次はないと思ってください。'],
-    introverted: ['……そう、ですか……。分かりました……。'],
-    carefree: ['あちゃー、ダメかー。まあしょうがないよねー。……でもちょっとへこむなー。'],
-    earnest: ['……残念ですが、了解しました。ただ、この判断の結果は覚えていてください。'],
-    emotional: ['……やっぱり……ダメなんだ……。……わかりました。'],
+    normal: {
+      _default: ['……そうですか。分かりました。'],
+      ojousama: ['……左様でございますか。承知いたしましたわ。'],
+      delinquent: ['……チッ。まあ分かったよ。'],
+      seductive: ['……そう。残念ね。'],
+    },
+    bold: {
+      _default: ['……そうですか。まあいいでしょう。でもね社長、次はないと思ってください。'],
+      ojousama: ['……左様ですか。ですが社長、次はございませんわよ。'],
+      delinquent: ['……は？ マジかよ。……まあいい。でも次はねーぞ。'],
+      cool: ['…そう。…覚えておく'],
+      seductive: ['……ふうん。まあいいわ。でもね、次はないからね？'],
+    },
+    quiet: {
+      _default: ['……そう、ですか……。分かりました……。'],
+      cool: ['…そう。…分かった'],
+      polite: ['……そうですか……。分かりました……。すみません……。'],
+    },
+    shy: {
+      _default: ['……そう…ですか……。す、すみません、変なこと言って……。'],
+    },
+    easygoing: {
+      _default: ['あちゃー、ダメかー。まあしょうがないよねー。……でもちょっとへこむなー。'],
+      delinquent: ['あちゃー、マジかー。まーしゃーねーか。'],
+      seductive: ['えー、ダメ？ …まあしょうがないかぁ。ちょっと寂しいけど。'],
+    },
+    earnest: {
+      _default: ['……残念ですが、了解しました。ただ、この判断の結果は覚えていてください。'],
+      polite: ['……残念ですが、承知いたしました。ですが、この判断はお忘れなきよう。'],
+      ojousama: ['……残念ですわ。ですが、この判断の結果はお忘れなきよう。'],
+    },
+    emotional: {
+      _default: ['……やっぱり……ダメなんだ……。……わかりました。'],
+    },
   },
   // ── 昇給拒否時 ─────────────────────────────────────────────────────────
   raise_refuse: {
-    bold: ['…………。そうですか。分かりました。でもね社長、我慢の限界ってものがあるんで。そのつもりでいてください。'],
-    introverted: ['……はい……分かりました……。……すみません、変なこと言って……。'],
-    carefree: ['あはは、やっぱりー？ まーしょうがないっか。でもいつか上げてね？ 約束だよー？'],
-    earnest: ['……承知しました。ですが、このまま変わらなければ、いずれ考えを改めざるを得ません。'],
-    emotional: ['……っ！ ……もういいです。分かりました。……悔しい……。'],
+    normal: {
+      _default: ['……そうですか。分かりました。……ちょっと残念ですけど。'],
+      ojousama: ['……そうですの。承知いたしましたわ……。'],
+      delinquent: ['……マジかよ。……まあいいけどさ。'],
+      seductive: ['……そう。残念だけど…仕方ないわね。'],
+    },
+    bold: {
+      _default: ['…………。そうですか。分かりました。でもね社長、我慢の限界ってものがあるんで。そのつもりでいてください。'],
+      ojousama: ['…………。そうですか。わたくしにも限度というものがございますわ。'],
+      delinquent: ['……は？ ……ふーん。まあいいけどよ、限界ってもんがあるからな。'],
+      cool: ['…そう。…我慢にも、限界はある'],
+      seductive: ['……ふうん。まあいいけど、我慢にも限度があるからね？'],
+    },
+    quiet: {
+      _default: ['……はい……分かりました……。……すみません、変なこと言って……。'],
+      cool: ['…そう。……分かった'],
+      polite: ['……はい…分かりました……。すみません、ご無理を言って……。'],
+    },
+    shy: {
+      _default: ['……は、はい…分かりました……。す、すみませんでした……。'],
+    },
+    easygoing: {
+      _default: ['あはは、やっぱりー？ まーしょうがないっか。でもいつか上げてね？ 約束だよー？'],
+      delinquent: ['あー、やっぱダメか。まーいいけどさ、いつか上げろよな？'],
+      seductive: ['えー、やっぱりダメ？ …いつか上げてね？ 約束よ♡'],
+    },
+    earnest: {
+      _default: ['……承知しました。ですが、このまま変わらなければ、いずれ考えを改めざるを得ません。'],
+      polite: ['……承知いたしました。ですが、このままでは…いずれ考えざるを得ません。'],
+      ojousama: ['……承知いたしましたわ。ですが、このまま変わらなければ…。'],
+    },
+    emotional: {
+      _default: ['……っ！ ……もういいです。分かりました。……悔しい……。'],
+    },
   },
   // ── 引き留め成功 ───────────────────────────────────────────────────────
   transfer_retain_success: {
-    bold: ['……チッ。仕方ない。そこまで言うなら、もう少しだけ付き合ってやります。'],
-    introverted: ['えっ……そこまでしてくれるんですか……？ ……もう少しだけ、頑張ってみます……。'],
-    carefree: ['え、マジ？ そこまでしてくれんの？ ……じゃあもうちょっといよっかな！'],
-    earnest: ['……社長の誠意、受け止めました。もう一度、この団体で全力を尽くします。'],
-    emotional: ['社長……！ ……ごめんなさい、こんな私のために……。……絶対、恩返しします……！'],
+    normal: {
+      _default: ['……そこまでしてくれるんですね。…分かりました。もう少し頑張ってみます。'],
+      ojousama: ['……そこまでおっしゃるなら。もう少しお付き合いいたしますわ。'],
+      delinquent: ['……マジかよ。そこまで言うなら、もうちょいいてやるか。'],
+      seductive: ['……そこまでしてくれるの？ …もう少しだけ、いてあげる♡'],
+    },
+    bold: {
+      _default: ['……チッ。仕方ない。そこまで言うなら、もう少しだけ付き合ってやります。'],
+      ojousama: ['……仕方ありませんわね。そこまでの誠意、もう少し見届けますわ。'],
+      delinquent: ['……チッ。そこまで言うなら、もうちょい付き合ってやるよ。'],
+      cool: ['…そこまで言うなら、もう少しだけ'],
+      seductive: ['……仕方ないわね。そこまで言うなら、もう少しだけ付き合ってあげる。'],
+    },
+    quiet: {
+      _default: ['えっ……そこまでしてくれるんですか……？ ……もう少しだけ、頑張ってみます……。'],
+      cool: ['…そこまで言うなら。…もう少しだけ'],
+      polite: ['えっ…そこまでしてくださるんですか…？ ……もう少しだけ、頑張ってみます……。'],
+    },
+    shy: {
+      _default: ['え…そ、そこまでしてくれるんですか…？ ……あの…もう少しだけ…頑張ります……。'],
+    },
+    easygoing: {
+      _default: ['え、マジ？ そこまでしてくれんの？ ……じゃあもうちょっといよっかな！'],
+      delinquent: ['マジかよ。そこまでしてくれんの？ じゃーもうちょいいるか！'],
+      seductive: ['え、そこまでしてくれるの？ …じゃあもうちょっといよっかな♪'],
+    },
+    earnest: {
+      _default: ['……社長の誠意、受け止めました。もう一度、この団体で全力を尽くします。'],
+      polite: ['……社長のお気持ち、しかと受け止めました。もう一度、全力を尽くさせてください。'],
+      ojousama: ['……その誠意、しかと受け止めましたわ。もう一度、全力で臨みますわ。'],
+    },
+    emotional: {
+      _default: ['社長……！ ……ごめんなさい、こんな私のために……。……絶対、恩返しします……！'],
+    },
   },
   // ── 引き留め失敗 ───────────────────────────────────────────────────────
   transfer_retain_fail: {
-    bold: ['……悪いけど、もう決めたんです。気持ちは変わりません。'],
-    introverted: ['……ごめんなさい……。ありがたいんですけど……もう、決めたんです……。'],
-    carefree: ['ごめんね社長……。お金の問題じゃないんだよね。心が決まっちゃったから。'],
-    earnest: ['お気持ちはありがたいのですが……この決断は、ずっと考え抜いた末のものです。申し訳ありません。'],
-    emotional: ['社長……ありがとう……。でも……もう戻れないんです……ごめんなさい……！'],
+    normal: {
+      _default: ['……ありがたいんですけど…もう、決めたんです。すみません。'],
+      ojousama: ['お気持ちは嬉しゅうございますが…もう、決めましたの。'],
+      delinquent: ['……悪いけど、もう決めたんだよ。気持ちは変わらねー。'],
+      seductive: ['……ありがとう。でも…もう決めたの。ごめんね。'],
+    },
+    bold: {
+      _default: ['……悪いけど、もう決めたんです。気持ちは変わりません。'],
+      ojousama: ['……申し訳ございませんが、決心は揺るぎませんわ。'],
+      delinquent: ['……悪いけど、もう決めた。何言われても変わらねー。'],
+      cool: ['…決めた。変わらない'],
+      seductive: ['……悪いけど、もう決めたの。…引き止めても無駄よ。'],
+    },
+    quiet: {
+      _default: ['……ごめんなさい……。ありがたいんですけど……もう、決めたんです……。'],
+      cool: ['…ごめん。…もう決めた'],
+      polite: ['……ありがたいのですが……もう、決めました……。すみません……。'],
+    },
+    shy: {
+      _default: ['…ご、ごめんなさい……。でも…もう、決めたんです……。'],
+    },
+    easygoing: {
+      _default: ['ごめんね社長……。お金の問題じゃないんだよね。心が決まっちゃったから。'],
+      delinquent: ['悪いな社長。金の問題じゃねーんだよ。もう決めちまったから。'],
+      seductive: ['ごめんね社長…。お金じゃないの。気持ちが決まっちゃったから…。'],
+    },
+    earnest: {
+      _default: ['お気持ちはありがたいのですが……この決断は、ずっと考え抜いた末のものです。申し訳ありません。'],
+      polite: ['お心遣い、ありがとうございます。ですが…この決断は変わりません。申し訳ございません。'],
+      ojousama: ['お気持ちは嬉しゅうございますわ。ですが…この決断は揺るぎません。申し訳ございません。'],
+    },
+    emotional: {
+      _default: ['社長……ありがとう……。でも……もう戻れないんです……ごめんなさい……！'],
+    },
   },
   // ── 送り出し ───────────────────────────────────────────────────────────
   transfer_release: {
-    bold: ['……ふん。まあ、そうなるだろうと思ってた。{rivalry}じゃあね、社長。'],
-    introverted: ['……ありがとうございました。{tenure_farewell}{rivalry}……お世話になりました。'],
-    carefree: ['あはは、まあそうなるよねー。{tenure_farewell}{rivalry}元気でねー！'],
-    earnest: ['……承知しました。{tenure_farewell}この団体で過ごした日々に、感謝します。{rivalry}'],
-    emotional: ['{tenure_farewell}……ここでの時間は、忘れません……。{rivalry}……さようなら……。'],
+    normal: {
+      _default: ['……分かりました。{tenure_farewell}{rivalry}お世話になりました。'],
+      ojousama: ['……承知いたしましたわ。{tenure_farewell}{rivalry}ごきげんよう。'],
+      delinquent: ['……おう。{tenure_farewell}{rivalry}じゃーな。'],
+      seductive: ['……そう。{tenure_farewell}{rivalry}元気でね。'],
+    },
+    bold: {
+      _default: ['……ふん。まあ、そうなるだろうと思ってた。{rivalry}じゃあね、社長。'],
+      ojousama: ['……ふふ。予想通りですわ。{rivalry}ごきげんよう、社長。'],
+      delinquent: ['……だろうな。分かってたぜ。{rivalry}じゃーな、社長。'],
+      cool: ['…そう。{rivalry}…じゃあ'],
+      seductive: ['……ふふ、予想通りね。{rivalry}じゃあね、社長。'],
+    },
+    quiet: {
+      _default: ['……ありがとうございました。{tenure_farewell}{rivalry}……お世話になりました。'],
+      cool: ['…{tenure_farewell}{rivalry}…ありがとう'],
+      polite: ['……ありがとうございました。{tenure_farewell}{rivalry}…お世話になりました……。'],
+    },
+    shy: {
+      _default: ['…あ、ありがとうございました…。{tenure_farewell}{rivalry}…お世話になりました……。'],
+    },
+    easygoing: {
+      _default: ['あはは、まあそうなるよねー。{tenure_farewell}{rivalry}元気でねー！'],
+      delinquent: ['まーそうなるよなー。{tenure_farewell}{rivalry}元気でな！'],
+      seductive: ['あはは、そうなるよね。{tenure_farewell}{rivalry}元気でね～♪'],
+    },
+    earnest: {
+      _default: ['……承知しました。{tenure_farewell}この団体で過ごした日々に、感謝します。{rivalry}'],
+      polite: ['……承知いたしました。{tenure_farewell}この団体での日々に、心から感謝いたします。{rivalry}'],
+      ojousama: ['……承知いたしましたわ。{tenure_farewell}こちらでの日々、忘れませんわ。{rivalry}'],
+    },
+    emotional: {
+      _default: ['{tenure_farewell}……ここでの時間は、忘れません……。{rivalry}……さようなら……。'],
+    },
   },
   // ── 理由を聞く ─────────────────────────────────────────────────────────
   transfer_listen: {
-    bold: ['……聞いてくれるのか。{record}正直、もっと上の舞台で闘いたいんです。ここじゃ物足りない。'],
-    introverted: ['……聞いてくれるんですか……。{record}私……ここにいる意味が、分からなくなって……。'],
-    carefree: ['聞いてくれるの？ うーん……{record}なんかさ、マンネリっていうか。新しいことしたいんだよね。'],
-    earnest: ['ありがとうございます。{record}自分なりに考えた結果です。ここでの経験は感謝しています。ですが……新しい環境で挑戦したいのです。'],
-    emotional: ['……聞いてくれるの……？ {record}もう……自分がどうしたいのかも分からなくなって……。でも、このままじゃダメだって……。'],
+    normal: {
+      _default: ['聞いてくれるんですね。{record}正直、新しい場所で挑戦してみたいんです。'],
+      ojousama: ['お耳を傾けてくださるのね。{record}新たな場所で己を試したいのですわ。'],
+      delinquent: ['聞いてくれんのか。{record}正直、もっと面白えとこでやりてーんだよ。'],
+      seductive: ['聞いてくれるの？ {record}…新しい場所で、自分を試してみたいの。'],
+    },
+    bold: {
+      _default: ['……聞いてくれるのか。{record}正直、もっと上の舞台で闘いたいんです。ここじゃ物足りない。'],
+      ojousama: ['……聞いてくださるの。{record}わたくし、もっと上の舞台を求めておりますの。'],
+      delinquent: ['……聞いてくれんのか。{record}正直、もっと上で闘いてーんだよ。物足りねー。'],
+      cool: ['…聞いてくれるのか。{record}…もっと上で闘いたい。それだけだ'],
+      seductive: ['……聞いてくれるの。{record}正直ね、もっと大きな舞台が見たいの。'],
+    },
+    quiet: {
+      _default: ['……聞いてくれるんですか……。{record}私……ここにいる意味が、分からなくなって……。'],
+      cool: ['…聞いてくれるんだ。{record}…ここにいる意味が、分からない'],
+      polite: ['……聞いてくださるんですか……。{record}私…ここにいる意味が、見えなくなって……。'],
+    },
+    shy: {
+      _default: ['え…聞いてくれるんですか…？ {record}あの…私…ここにいていいのか、分からなくなって……。'],
+    },
+    easygoing: {
+      _default: ['聞いてくれるの？ うーん……{record}なんかさ、マンネリっていうか。新しいことしたいんだよね。'],
+      delinquent: ['聞いてくれんの？ {record}なんつーか、マンネリなんだよな。新しいとこ行きてーんだ。'],
+      seductive: ['聞いてくれるの？ うーん…{record}なんかね、新しいこと始めたいなって♪'],
+    },
+    earnest: {
+      _default: ['ありがとうございます。{record}自分なりに考えた結果です。ここでの経験は感謝しています。ですが……新しい環境で挑戦したいのです。'],
+      polite: ['ありがとうございます。{record}ここでの経験には心から感謝しております。ですが…新しい環境で挑戦させてください。'],
+      ojousama: ['ありがとうございますわ。{record}こちらでの経験は一生の宝ですわ。ですが…新天地で挑戦したいのです。'],
+    },
+    emotional: {
+      _default: ['……聞いてくれるの……？ {record}もう……自分がどうしたいのかも分からなくなって……。でも、このままじゃダメだって……。'],
+    },
   },
   // ── コンテキスト差し込みテンプレート ────────────────────────────────────
   tenure: {
@@ -1494,119 +1893,691 @@ const CONTRACT_NEGOTIATION_CONFIG = {
 
 // v1.3-3: 引退セリフテンプレート（引退ルート×キャリア×性格で分岐）
 const RETIREMENT_LINES = {
-  // A: シーズン末引退
-  A1_champion: [
-    '頂点からの景色は、忘れない',
-    'あのベルトの重さ…一生の宝物だよ',
-    '最高の舞台で闘えた。それだけで十分'
-  ],
-  A2_uncrowned: [
-    'ベルトには届かなかった。でも、後悔はない',
-    '勝てない相手がいた。でも、逃げなかった',
-    '夢は叶わなかったけど…この道を選んでよかった'
-  ],
-  A3_heel: [
-    'フン…勝手に泣いてんじゃないわよ',
-    'あたしがいなくなって寂しくなるわね',
-    '最後まで嫌われ者でいさせてもらうわ'
-  ],
-  A4_veteran: [
-    'ここが、あたしの全部だった',
-    '長かったようで…あっという間だったな',
-    'この団体で過ごした時間は、嘘じゃない'
-  ],
-  // B: 怪我引退
-  B1_young: [
-    'まだ何も成し遂げてないのに…',
-    '嘘でしょ…まだ始まったばかりなのに',
-    'あたしの物語、こんなところで終わりなの…？'
-  ],
-  B2_prime: [
-    '体がね…もう言うことを聞かないの',
-    'これからだったのに…悔しい、悔しいよ…',
-    'まだやれると思ってた。信じてた'
-  ],
-  B3_older: [
-    'わかってた。いつか来るって',
-    'この体はもう限界だけど…心は、まだ',
-    '十分やったよ。自分を褒めてやりたい'
-  ],
-  B4_champion_injury: [
-    'このベルト…まだ返したくなかった',
-    'チャンピオンのまま終わるなんて…残酷だよ',
-    '最後の防衛戦、やりたかったな…'
-  ]
+  // A: シーズン末引退（personality×archetype）
+  A1_champion: {
+    normal: {
+      _default: ['頂点からの景色は、忘れない', '最高の舞台で闘えた。それだけで十分'],
+      ojousama: ['頂点の景色…一生忘れませんわ'],
+      delinquent: ['頂点からの景色、忘れねーよ'],
+      seductive: ['頂点からの景色…忘れないわ'],
+    },
+    bold: {
+      _default: ['あたしの時代だった。誰にも文句は言わせない'],
+      ojousama: ['わたくしの時代でしたわ。異論はございませんわね'],
+      delinquent: ['あたしの時代だった。文句あるやつはかかってこい'],
+      cool: ['…背負い切った'],
+      seductive: ['最後まで背負い切ったわ。最高の景色だった'],
+    },
+    quiet: {
+      _default: ['……あのベルトの重さ、一生の宝物'],
+      cool: ['…忘れない'],
+      polite: ['あのベルトの重さ…一生の宝物です'],
+    },
+    shy: {
+      _default: ['こんな私がチャンピオンになれたなんて…夢みたいです'],
+    },
+    easygoing: {
+      _default: ['いやー最高だったね！ ベルト持てて幸せだったよ'],
+      delinquent: ['最高だったぜ！ ベルト持てて幸せだったよ'],
+      seductive: ['最高だったわ。ベルト持てて幸せだった'],
+    },
+    earnest: {
+      _default: ['このベルトに恥じない闘いを、最後までできたと思う'],
+      polite: ['このベルトに恥じない闘いを…最後までできたと思います'],
+      ojousama: ['このベルトに恥じない闘いを…最後まで全うできましたわ'],
+      seductive: ['このベルトに恥じない闘い…最後までできたわ'],
+    },
+    emotional: {
+      _default: ['あのベルト…返したくない…でも…ありがとう…っ！'],
+    },
+  },
+  A2_uncrowned: {
+    normal: {
+      _default: ['ベルトには届かなかった。でも、後悔はない', '夢は叶わなかったけど…この道を選んでよかった'],
+      ojousama: ['ベルトには届きませんでしたわ。でも、後悔はありません'],
+      delinquent: ['ベルトには届かなかった。でもよ、後悔はねーよ'],
+      seductive: ['ベルトには届かなかったわ。でも、後悔はないの'],
+    },
+    bold: {
+      _default: ['勝てない相手がいた。でも、逃げなかった。それが全てだ'],
+      ojousama: ['逃げなかったことだけは…胸を張れますわ'],
+      delinquent: ['逃げなかった。それだけは誇りに思ってるぜ'],
+      cool: ['…逃げなかった。それだけだ'],
+      seductive: ['逃げなかったわ。それだけは誇りに思ってる'],
+    },
+    quiet: {
+      _default: ['……悔いは、ない'],
+      cool: ['…悔いはない'],
+      polite: ['…悔いはありません'],
+    },
+    shy: {
+      _default: ['何も残せなかったかもしれないけど…ここにいられて幸せでした'],
+    },
+    easygoing: {
+      _default: ['ベルトは無理だったけどさ、楽しかったよ！'],
+      delinquent: ['ベルトは無理だったけどよ、楽しかったぜ！'],
+      seductive: ['ベルトは無理だったけど…楽しかったわ'],
+    },
+    earnest: {
+      _default: ['夢には届かなかった。でもこの道を選んだことに嘘はない'],
+      polite: ['夢には届きませんでした。でもこの道を選んだことに嘘はありません'],
+      ojousama: ['夢には届きませんでしたわ。でもこの道に嘘はございません'],
+      seductive: ['夢には届かなかったわ。でも嘘はなかった'],
+    },
+    emotional: {
+      _default: ['ベルト…欲しかったな…でも…ここにいられてよかった…！'],
+    },
+  },
+  A3_heel: {
+    normal: {
+      _default: ['フン…勝手に泣いてんじゃないわよ', 'あたしがいなくなって寂しくなるわね'],
+      ojousama: ['お泣きにならないで。みっともなくてよ'],
+      delinquent: ['泣いてんじゃねーよ。みっともねーな'],
+      seductive: ['ふふ…泣かないで。寂しくなるでしょう？'],
+    },
+    bold: {
+      _default: ['最後まで嫌われ者でいさせてもらうわ。最高だった'],
+      ojousama: ['最後まで嫌われ者…痛快でしたわ'],
+      delinquent: ['最後まで嫌われ者だ！ 最高だったぜ！'],
+      cool: ['…嫌われ者で終わる。悪くない'],
+      seductive: ['最後まで嫌われ者…ふふ、最高だったわ'],
+    },
+    quiet: {
+      _default: ['……さよなら'],
+      cool: ['…じゃあな'],
+      polite: ['…お世話になりました'],
+    },
+    shy: {
+      _default: ['本当は…みんなと一緒にいたかったです…ごめんなさい'],
+    },
+    easygoing: {
+      _default: ['あはは、最後くらい素直になってもいいかな。楽しかったよ'],
+      delinquent: ['最後くらい素直になるか。楽しかったぜ'],
+      seductive: ['最後くらい素直になろうかしら。楽しかったわ'],
+    },
+    earnest: {
+      _default: ['嫌われ役は…誰かがやらなきゃいけなかったから'],
+      polite: ['嫌われ役は…誰かがやらなければいけませんでしたから'],
+      ojousama: ['嫌われ役は…どなたかがやらねばなりませんでしたもの'],
+      seductive: ['嫌われ役はね…誰かがやらなきゃいけなかったの'],
+    },
+    emotional: {
+      _default: ['…っ、バカ…泣くんじゃないわよ…あたしまで…っ！'],
+    },
+  },
+  A4_veteran: {
+    normal: {
+      _default: ['ここが、あたしの全部だった', 'この団体で過ごした時間は、嘘じゃない'],
+      ojousama: ['ここが、わたくしの全てでしたわ'],
+      delinquent: ['ここが全部だった。嘘じゃねーよ'],
+      seductive: ['ここが、私の全てだったの'],
+    },
+    bold: {
+      _default: ['長かったようで…あっという間だったな。悔いはない'],
+      ojousama: ['長いようで…あっという間でしたわ'],
+      delinquent: ['あっという間だったな。悔いなんかねーよ'],
+      cool: ['…あっという間だった'],
+      seductive: ['あっという間だったわ。悔いはないの'],
+    },
+    quiet: {
+      _default: ['……ありがとう'],
+      cool: ['…ありがとう'],
+      polite: ['…ありがとうございました'],
+    },
+    shy: {
+      _default: ['長い間…お世話になりました。ここにいられて幸せでした'],
+    },
+    easygoing: {
+      _default: ['いやー長かった！ でもあっという間だったね'],
+      delinquent: ['長かったなー！ でもあっという間だったぜ'],
+      seductive: ['長かったわ…でもあっという間だった'],
+    },
+    earnest: {
+      _default: ['全力で走り抜けた。この時間に嘘はない'],
+      polite: ['全力で走り抜けました。この時間に嘘はありません'],
+      ojousama: ['全力で走り抜けましたわ。この時間に嘘はございません'],
+      seductive: ['全力で走り抜けたわ。嘘のない時間だった'],
+    },
+    emotional: {
+      _default: ['ここが…全部だった…ありがとう…ありがとう…！'],
+    },
+  },
+  // B: 怪我引退（personality×archetype）
+  B1_young: {
+    normal: {
+      _default: ['まだ何も成し遂げてないのに…', 'あたしの物語、こんなところで終わりなの…？'],
+      ojousama: ['まだ何も…成し遂げていませんのに…'],
+      delinquent: ['まだ何もやってねーのに…嘘だろ…'],
+      seductive: ['まだ何も成し遂げてないのに…嘘でしょう…'],
+    },
+    bold: {
+      _default: ['嘘だろ…まだ始まったばかりじゃないか…！'],
+      ojousama: ['嘘ですわ…まだ始まったばかりですのに…！'],
+      delinquent: ['嘘だろ…まだ始まったばかりだろうが…！'],
+      cool: ['…嘘だ'],
+      seductive: ['嘘…まだ始まったばかりじゃない…'],
+    },
+    quiet: {
+      _default: ['………まだ、なのに'],
+      cool: ['……まだ'],
+      polite: ['…まだ、何も…'],
+    },
+    shy: {
+      _default: ['やっぱり…私には無理だったんでしょうか…'],
+    },
+    easygoing: {
+      _default: ['え…うそ…まだこれからだったのに…'],
+      delinquent: ['うそだろ…まだこれからだったのによ…'],
+      seductive: ['うそ…まだこれからだったのに…'],
+    },
+    earnest: {
+      _default: ['まだ何も返せてない…こんなの、受け入れられない'],
+      polite: ['まだ何もお返しできていないのに…受け入れられません'],
+      ojousama: ['まだ何もお返しできていませんのに…'],
+      seductive: ['まだ何も返せてないのに…受け入れられないわ'],
+    },
+    emotional: {
+      _default: ['いやだ…いやだよ…まだ始まったばかりなのに…！'],
+    },
+  },
+  B2_prime: {
+    normal: {
+      _default: ['体がね…もう言うことを聞かないの', 'これからだったのに…悔しい、悔しいよ…'],
+      ojousama: ['お体がね…もう言うことを聞きませんの…'],
+      delinquent: ['体がよ…もう言うこと聞かねーんだ…'],
+      seductive: ['体がね…もう言うことを聞かないの…'],
+    },
+    bold: {
+      _default: ['まだやれると思ってた。信じてた…！'],
+      ojousama: ['まだやれると信じていましたのに…！'],
+      delinquent: ['まだやれるって信じてたのに…くそっ…！'],
+      cool: ['…信じていた。まだやれると'],
+      seductive: ['まだやれると信じてたのに…'],
+    },
+    quiet: {
+      _default: ['……これからだったのに'],
+      cool: ['…まだ'],
+      polite: ['…これからだったのに…'],
+    },
+    shy: {
+      _default: ['せっかく…やっと少し自信がついてきたのに…'],
+    },
+    easygoing: {
+      _default: ['あはは…参ったな、これからだったのに…'],
+      delinquent: ['参ったな…これからだったのによ…'],
+      seductive: ['参ったわ…これからだったのに…'],
+    },
+    earnest: {
+      _default: ['まだ足りなかった。もっと…もっとやりたかった'],
+      polite: ['まだ足りませんでした。もっと…やりたかったです'],
+      ojousama: ['まだ足りませんでしたわ。もっと…やりたかった'],
+      seductive: ['まだ足りなかったわ…もっとやりたかった'],
+    },
+    emotional: {
+      _default: ['悔しい…悔しいよ…これからだったのに…！'],
+    },
+  },
+  B3_older: {
+    normal: {
+      _default: ['わかってた。いつか来るって', '十分やったよ。自分を褒めてやりたい'],
+      ojousama: ['わかっておりましたわ。いつか来ると'],
+      delinquent: ['わかってたよ。いつか来るってな'],
+      seductive: ['わかってたわ。いつか来るって'],
+    },
+    bold: {
+      _default: ['この体はもう限界だけど…心は、まだ燃えてる'],
+      ojousama: ['お体は限界ですけれど…心はまだ燃えておりますわ'],
+      delinquent: ['体は限界だけどよ…心はまだ燃えてるぜ'],
+      cool: ['…体は限界。心は、まだ'],
+      seductive: ['体は限界だけど…心はまだ燃えてるわ'],
+    },
+    quiet: {
+      _default: ['……十分やった'],
+      cool: ['…十分だ'],
+      polite: ['…十分やれたと思います'],
+    },
+    shy: {
+      _default: ['みなさんのおかげで…ここまで来られました'],
+    },
+    easygoing: {
+      _default: ['まぁ、十分やったよね。いい人生だった！'],
+      delinquent: ['十分やったぜ。いい人生だったよ！'],
+      seductive: ['十分やったわ。いい人生だった'],
+    },
+    earnest: {
+      _default: ['悔いがないと言えば嘘になる。でも…やりきった'],
+      polite: ['悔いがないとは言えません。でも…やりきりました'],
+      ojousama: ['悔いがないとは申しませんわ。でも…やりきりました'],
+      seductive: ['悔いがないとは言わないわ。でも…やりきった'],
+    },
+    emotional: {
+      _default: ['わかってたよ…いつか来るって…でも…寂しいよ…！'],
+    },
+  },
+  B4_champion_injury: {
+    normal: {
+      _default: ['このベルト…まだ返したくなかった', '最後の防衛戦、やりたかったな…'],
+      ojousama: ['このベルト…まだお返ししたくありませんでしたわ'],
+      delinquent: ['このベルト…まだ返したくなかったんだよ…'],
+      seductive: ['このベルト…まだ返したくなかったのに…'],
+    },
+    bold: {
+      _default: ['チャンピオンのまま終わるなんて…残酷すぎる'],
+      ojousama: ['チャンピオンのまま…残酷ですわ'],
+      delinquent: ['チャンピオンのまま終わりだと…ふざけんな…'],
+      cool: ['…残酷だ'],
+      seductive: ['チャンピオンのまま終わるなんて…残酷ね'],
+    },
+    quiet: {
+      _default: ['……まだ、返したくなかった'],
+      cool: ['…まだだ'],
+      polite: ['…まだ、お返ししたくなかったです'],
+    },
+    shy: {
+      _default: ['せっかくベルトをもらえたのに…ごめんなさい…'],
+    },
+    easygoing: {
+      _default: ['あちゃー…ベルト持ったまま終わりかぁ…'],
+      delinquent: ['まじかよ…ベルト持ったまま終わりかよ…'],
+      seductive: ['あら…ベルト持ったまま終わりなの…'],
+    },
+    earnest: {
+      _default: ['最後の防衛戦、やりたかった…それだけが心残りだ'],
+      polite: ['最後の防衛戦…やりたかったです。それだけが心残りです'],
+      ojousama: ['最後の防衛戦…やりたかったですわ'],
+      seductive: ['最後の防衛戦…やりたかったわ。それだけが心残り'],
+    },
+    emotional: {
+      _default: ['やだ…このベルト…まだ返したくない…っ！'],
+    },
+  },
 };
 
 // ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
 const RETIRE_ACCEPT_LINES = {
-  accept_terminal: [  // 末期 (wear≥60)
-    '…わかった。もう限界なの、自分でもわかってる',
-    'ありがとう。言ってくれて助かった',
-    '…正直、ほっとしてる。ありがとう',
-  ],
-  accept_winless: [  // 低勝率 (≤40%)
-    '自分でもわかってた。もう追いつけないって',
-    '…そうだね。最近、勝てない試合が多すぎた',
-    'もっと早く気づくべきだったかな。わかった',
-  ],
-  accept_heel: [  // Heel
-    '…別にアンタに言われなくても辞めるつもりだったわよ',
-    'フン…まぁ、潮時ってやつかしらね',
-    '…いいわ。最後くらい、大人しく引き受けてあげる',
-  ],
-  accept_former_champ: [  // 元王者
-    '最後にいい試合がしたい。それだけお願いできる？',
-    '…わかった。ベルトを持てた分、十分だよ',
-    '最後に、この団体でもう一回輝きたい',
-  ],
-  accept_no_title: [  // 無冠
-    '…わかった。潮時だよね',
-    '…そうだね。ありがとう、言ってくれて',
-    'うん、覚悟はできてた。最後、よろしくね',
-  ],
+  accept_terminal: {  // 末期 (wear≥60)
+    normal: {
+      _default: ['…わかった。もう限界なの、自分でもわかってる', '…正直、ほっとしてる。ありがとう'],
+      ojousama: ['…わかりましたわ。もう限界ですもの'],
+      delinquent: ['…わかってるよ。もう限界なんだろ'],
+      seductive: ['…わかったわ。もう限界なのよね'],
+    },
+    bold: {
+      _default: ['…認めるよ。もう体が限界だ'],
+      ojousama: ['…認めますわ。もうお体が限界ですの'],
+      delinquent: ['…認めてやるよ。もう限界だ'],
+      cool: ['…限界だ。認める'],
+      seductive: ['…認めるわ。もう限界なの'],
+    },
+    quiet: { _default: ['……わかってる'], cool: ['…わかってる'], polite: ['…わかっています'] },
+    shy: { _default: ['…はい。ご迷惑をおかけしました…'] },
+    easygoing: {
+      _default: ['あはは…まぁ、そうだよね。ありがとう'],
+      delinquent: ['まぁそうだよな。ありがとよ'],
+      seductive: ['そうよね…ありがとう'],
+    },
+    earnest: {
+      _default: ['ありがとう。言ってくれて助かった'],
+      polite: ['ありがとうございます。言ってくださって助かりました'],
+      ojousama: ['ありがとうございますわ。言ってくださって'],
+      seductive: ['ありがとう。言ってくれて助かったわ'],
+    },
+    emotional: { _default: ['…うん…わかってた…わかってたよ…っ'] },
+  },
+  accept_winless: {  // 低勝率 (≤40%)
+    normal: {
+      _default: ['自分でもわかってた。もう追いつけないって', '…そうだね。最近、勝てない試合が多すぎた'],
+      ojousama: ['…そうですわね。最近、勝てませんでしたもの'],
+      delinquent: ['…わかってたよ。もう追いつけねーって'],
+      seductive: ['…わかってたわ。もう追いつけないって'],
+    },
+    bold: {
+      _default: ['…チッ、認めたくないが…結果が全てだ'],
+      ojousama: ['…認めたくありませんけれど…結果が全てですわ'],
+      delinquent: ['…チッ、認めたくねーけど…結果が全てだろ'],
+      cool: ['…結果が全てだ'],
+      seductive: ['認めたくないけど…結果が全てよね'],
+    },
+    quiet: { _default: ['……そう、だね'], cool: ['…そうだな'], polite: ['…そうですね'] },
+    shy: { _default: ['もっと早く気づくべきでした…すみません'] },
+    easygoing: {
+      _default: ['うーん…そうだよね。勝てなくなっちゃったもんね'],
+      delinquent: ['そうだよな。勝てなくなっちまったもんな'],
+      seductive: ['そうよね…勝てなくなっちゃったものね'],
+    },
+    earnest: {
+      _default: ['もっと早く気づくべきだった。…わかった'],
+      polite: ['もっと早く気づくべきでした。…わかりました'],
+      ojousama: ['もっと早く気づくべきでしたわ。…承知しました'],
+      seductive: ['もっと早く気づくべきだったわ。…わかったわ'],
+    },
+    emotional: { _default: ['勝てない…もう勝てないんだ…わかってたよ…'] },
+  },
+  accept_heel: {  // Heel
+    normal: {
+      _default: ['…別にアンタに言われなくても辞めるつもりだったわよ', 'フン…まぁ、潮時ってやつかしらね'],
+      ojousama: ['…お言われにならなくても、辞めるつもりでしたわ'],
+      delinquent: ['言われなくても辞めるつもりだったっつーの'],
+      seductive: ['ふふ…言われなくても辞めるつもりだったわ'],
+    },
+    bold: {
+      _default: ['…いいわ。最後くらい、大人しく引き受けてあげる'],
+      ojousama: ['…よろしくてよ。最後くらい大人しくいたしますわ'],
+      delinquent: ['…いいぜ。最後くらい大人しくしてやるよ'],
+      cool: ['…いい。受ける'],
+      seductive: ['…いいわよ。最後くらい大人しくしてあげる'],
+    },
+    quiet: { _default: ['……潮時か'], cool: ['…潮時だ'], polite: ['…潮時ですね'] },
+    shy: { _default: ['…はい。もう…十分です'] },
+    easygoing: {
+      _default: ['ま、潮時ってやつだね。わかったわかった'],
+      delinquent: ['潮時ってやつだな。わかったよ'],
+      seductive: ['潮時ってやつかしら。わかったわ'],
+    },
+    earnest: {
+      _default: ['…わかった。最後まで悪役を演じきれたなら本望だ'],
+      polite: ['…わかりました。最後まで演じきれたなら本望です'],
+      ojousama: ['…承知しましたわ。最後まで演じきれましたもの'],
+      seductive: ['…わかったわ。最後まで演じきれたなら本望よ'],
+    },
+    emotional: { _default: ['…っ、もういいわよ…わかった…わかったから…'] },
+  },
+  accept_former_champ: {  // 元王者
+    normal: {
+      _default: ['最後にいい試合がしたい。それだけお願いできる？', '…わかった。ベルトを持てた分、十分だよ'],
+      ojousama: ['最後によい試合をさせてくださいまし'],
+      delinquent: ['最後にいい試合させてくれよ。それだけでいい'],
+      seductive: ['最後にいい試合がしたいの。お願いできる？'],
+    },
+    bold: {
+      _default: ['最後に…この団体でもう一回輝かせてくれ'],
+      ojousama: ['最後に…もう一度輝かせてくださいまし'],
+      delinquent: ['最後に…もう一回輝かせてくれよ'],
+      cool: ['…最後に、もう一度'],
+      seductive: ['最後に…もう一回輝かせてくれる？'],
+    },
+    quiet: { _default: ['…ベルトを持てた。それで十分'], cool: ['…十分だ'], polite: ['…ベルトを持てました。それで十分です'] },
+    shy: { _default: ['ベルトを持てただけで…十分すぎるくらいです'] },
+    easygoing: {
+      _default: ['ベルト持てたんだもん。十分でしょ！'],
+      delinquent: ['ベルト持てたんだぜ。十分だろ！'],
+      seductive: ['ベルト持てたものね。十分よ'],
+    },
+    earnest: {
+      _default: ['最後にいい試合を。それだけが望みだ'],
+      polite: ['最後によい試合を。それだけが望みです'],
+      ojousama: ['最後によい試合を。それだけが望みですわ'],
+      seductive: ['最後にいい試合を。それだけが望みよ'],
+    },
+    emotional: { _default: ['ベルト…持てたから…もう…十分だよ…っ'] },
+  },
+  accept_no_title: {  // 無冠
+    normal: {
+      _default: ['…わかった。潮時だよね', '…そうだね。ありがとう、言ってくれて'],
+      ojousama: ['…わかりましたわ。潮時ですわね'],
+      delinquent: ['…わかったよ。潮時ってやつだろ'],
+      seductive: ['…わかったわ。潮時よね'],
+    },
+    bold: {
+      _default: ['…チッ、こんな終わり方かよ。…わかった'],
+      ojousama: ['…こんな終わり方ですの。…承知しましたわ'],
+      delinquent: ['チッ、こんな終わり方かよ…わかったよ'],
+      cool: ['…わかった'],
+      seductive: ['こんな終わり方なのね…わかったわ'],
+    },
+    quiet: { _default: ['……うん'], cool: ['…ああ'], polite: ['…はい'] },
+    shy: { _default: ['…はい。お世話になりました…'] },
+    easygoing: {
+      _default: ['うん、覚悟はできてた。最後、よろしくね'],
+      delinquent: ['覚悟はできてたよ。最後よろしくな'],
+      seductive: ['覚悟はできてたわ。最後、よろしくね'],
+    },
+    earnest: {
+      _default: ['…覚悟はできてた。ありがとう、言ってくれて'],
+      polite: ['…覚悟はできていました。言ってくださってありがとうございます'],
+      ojousama: ['…覚悟はできておりましたわ。ありがとうございます'],
+      seductive: ['…覚悟はできてたわ。言ってくれてありがとう'],
+    },
+    emotional: { _default: ['うん…覚悟…できてたよ…ありがとう…'] },
+  },
 };
 
 const RETIRE_REFUSE_LINES = {
-  refuse_champ: [  // 王座保持中
-    'チャンピオンに引退しろって？ 冗談はやめて',
-    'このベルトがある限り、あたしは終わらない',
-    '王者を引退させようなんて、100年早いわよ',
-  ],
-  refuse_distrust: [  // 信頼度低
-    'あたしを追い出す気？ そう簡単にはいかないわよ',
-    '…あたしのことが邪魔なの？ はっきり言いなさいよ',
-    'この団体に何年貢献してきたと思ってるの',
-  ],
-  refuse_heel: [  // Heel
-    '引退？ 次の興行を見てなさい。後悔させてあげる',
-    'あたしがいなくなったら、この団体は終わりよ',
-    'まだまだ引退なんてしてやらないわよ',
-  ],
-  refuse_fighting: [  // 一般
-    'まだ終わらない。あたしはまだ闘える',
-    '…諦めるのは、まだ早い',
-    '体がある限り、あたしはリングに立つ',
-  ],
+  refuse_champ: {  // 王座保持中
+    normal: {
+      _default: ['チャンピオンに引退しろって？ 冗談はやめて', 'このベルトがある限り、あたしは終わらない'],
+      ojousama: ['チャンピオンに引退ですって？ ご冗談を'],
+      delinquent: ['チャンピオンに引退しろだと？ ふざけんな'],
+      seductive: ['チャンピオンに引退ですって？ 冗談でしょう？'],
+    },
+    bold: {
+      _default: ['王者を引退させようなんて、100年早い'],
+      ojousama: ['王者を引退させようなんて、100年早くてよ'],
+      delinquent: ['王者に引退しろだと？ 100年早ぇんだよ！'],
+      cool: ['…王者は、退かない'],
+      seductive: ['王者を辞めさせる？ 100年早いわよ'],
+    },
+    quiet: { _default: ['……このベルトがある限り'], cool: ['…退かない'], polite: ['…このベルトがある限りは'] },
+    shy: { _default: ['あの…まだ、このベルトを守りたいんです…'] },
+    easygoing: {
+      _default: ['えー、まだチャンピオンだよ？ もうちょっと待ってよ'],
+      delinquent: ['まだチャンピオンだぜ？ もうちょっと待てって'],
+      seductive: ['まだチャンピオンよ？ もう少し待って'],
+    },
+    earnest: {
+      _default: ['このベルトの重みをまだ背負える。引退はしない'],
+      polite: ['このベルトの重みをまだ背負えます。引退はしません'],
+      ojousama: ['このベルトの重みをまだ背負えますわ'],
+      seductive: ['このベルトの重み…まだ背負えるわ'],
+    },
+    emotional: { _default: ['やだ…このベルト離さない…まだ闘える…！'] },
+  },
+  refuse_distrust: {  // 信頼度低
+    normal: {
+      _default: ['あたしを追い出す気？ そう簡単にはいかないわよ', 'この団体に何年貢献してきたと思ってるの'],
+      ojousama: ['わたくしを追い出すおつもり？ そうはいきませんわ'],
+      delinquent: ['追い出す気かよ。そう簡単にいくと思うなよ'],
+      seductive: ['私を追い出すつもり？ そうはいかないわよ'],
+    },
+    bold: {
+      _default: ['…あたしのことが邪魔なの？ はっきり言いなさいよ'],
+      ojousama: ['わたくしが邪魔ですの？ はっきりおっしゃいなさい'],
+      delinquent: ['あたしが邪魔だってのか？ はっきり言えよ'],
+      cool: ['…邪魔か。はっきり言え'],
+      seductive: ['私が邪魔なの？ はっきり言ってくれる？'],
+    },
+    quiet: { _default: ['……そういうこと、か'], cool: ['…そうか'], polite: ['…そう、ですか'] },
+    shy: { _default: ['…私、必要ないってことですか…？'] },
+    easygoing: {
+      _default: ['えぇ…あたし邪魔なの？ ちょっとひどくない？'],
+      delinquent: ['おいおい…邪魔だってのか？ ひでーな'],
+      seductive: ['あら…私が邪魔なの？ ひどいわね'],
+    },
+    earnest: {
+      _default: ['この団体のために尽くしてきた。その気持ちは嘘じゃない'],
+      polite: ['この団体のために尽くしてきました。嘘ではありません'],
+      ojousama: ['この団体のために尽くしてまいりましたわ'],
+      seductive: ['この団体のために尽くしてきたの。嘘じゃないわ'],
+    },
+    emotional: { _default: ['何年…何年ここにいたと思ってるの…っ！'] },
+  },
+  refuse_heel: {  // Heel
+    normal: {
+      _default: ['引退？ 次の興行を見てなさい。後悔させてあげる', 'まだまだ引退なんてしてやらないわよ'],
+      ojousama: ['引退ですって？ 次の興行をご覧になってくださいまし'],
+      delinquent: ['引退だと？ 次の興行見てろ。後悔させてやる'],
+      seductive: ['引退ですって？ 次の興行を見てちょうだい'],
+    },
+    bold: {
+      _default: ['あたしがいなくなったら、この団体は終わりよ'],
+      ojousama: ['わたくしがいなくなったら、この団体は終わりですわ'],
+      delinquent: ['あたしがいなくなったらこの団体終わりだぜ'],
+      cool: ['…この団体は私がいないと終わる'],
+      seductive: ['私がいなくなったら…この団体、終わるわよ？'],
+    },
+    quiet: { _default: ['……まだ辞めない'], cool: ['…辞めない'], polite: ['…まだ辞めません'] },
+    shy: { _default: ['…もう少しだけ…ここにいさせてください'] },
+    easygoing: {
+      _default: ['まだまだ暴れ足りないよ～'],
+      delinquent: ['まだまだ暴れ足りねーぜ！'],
+      seductive: ['まだまだ暴れ足りないわ'],
+    },
+    earnest: {
+      _default: ['次の興行で証明する。後悔させてみせる'],
+      polite: ['次の興行で証明します。後悔させてみせます'],
+      ojousama: ['次の興行で証明いたしますわ'],
+      seductive: ['次の興行で証明するわ。後悔させてみせる'],
+    },
+    emotional: { _default: ['引退…っ？ 冗談じゃない…まだ終わらない…！'] },
+  },
+  refuse_fighting: {  // 一般
+    normal: {
+      _default: ['まだ終わらない。あたしはまだ闘える', '体がある限り、あたしはリングに立つ'],
+      ojousama: ['まだ終わりませんわ。わたくしはまだ闘えます'],
+      delinquent: ['まだ終わんねーよ。あたしはまだ闘える'],
+      seductive: ['まだ終わらないわ。私はまだ闘えるの'],
+    },
+    bold: {
+      _default: ['…諦めるのは、まだ早い。見てろ'],
+      ojousama: ['諦めるのは早くてよ。見ていてくださいまし'],
+      delinquent: ['諦めるのはまだ早ぇんだよ。見てろ'],
+      cool: ['…まだだ'],
+      seductive: ['諦めるのはまだ早いわ。見ていて'],
+    },
+    quiet: { _default: ['……まだ、闘える'], cool: ['…闘える'], polite: ['…まだ、闘えます'] },
+    shy: { _default: ['あの…もう少しだけ、チャンスをください…'] },
+    easygoing: {
+      _default: ['まだまだ元気だよ！ もうちょっとやらせてよ'],
+      delinquent: ['まだまだ元気だぜ！ もうちょっとやらせろよ'],
+      seductive: ['まだまだ元気よ。もう少しやらせて'],
+    },
+    earnest: {
+      _default: ['まだやれることがある。ここで止まるわけにはいかない'],
+      polite: ['まだやれることがあります。止まるわけにはいきません'],
+      ojousama: ['まだやれることがございます。止まりませんわ'],
+      seductive: ['まだやれることがあるの。止まるわけにはいかないわ'],
+    },
+    emotional: { _default: ['まだ…まだ闘いたい…お願い、もう少しだけ…！'] },
+  },
 };
 
 const RETAIN_LINES = {
-  former_champ: [
-    '…もう少しだけ。最後にもう一度、あのベルトに手を伸ばしたい',
-    '…わかった。もう一シーズンだけ、頑張らせて',
-  ],
-  high_trust: [
-    'アンタがそう言うなら…もう少しだけ頑張ってみるよ',
-    '…信じてくれてありがとう。もう少しだけ付き合うよ',
-  ],
-  heel: [
-    'フン…まだ使い道があるってことね。いいわ、付き合ってあげる',
-    '…チッ、引き留めるのね。まぁ、悪くない判断よ',
-  ],
-  default: [
-    '…うん、もう少しだけやってみる',
-    'わかった。もう少しだけ、続けてみる',
-  ],
+  former_champ: {
+    normal: {
+      _default: ['…もう少しだけ。最後にもう一度、あのベルトに手を伸ばしたい'],
+      ojousama: ['もう少しだけ…あのベルトに手を伸ばしたいですわ'],
+      delinquent: ['もう少しだけだ…あのベルトにもう一回手を伸ばしてーんだ'],
+      seductive: ['もう少しだけ…あのベルトに手を伸ばしたいの'],
+    },
+    bold: {
+      _default: ['もう一シーズンだけやらせてくれ。必ず結果を出す'],
+      ojousama: ['もう一シーズン。必ず結果を出しますわ'],
+      delinquent: ['もう一シーズンだけだ。絶対結果出すぜ'],
+      cool: ['…もう一シーズン'],
+      seductive: ['もう一シーズンだけ。結果を出すわ'],
+    },
+    quiet: { _default: ['……もう一度だけ'], cool: ['…もう一度'], polite: ['…もう一度だけ、挑戦させてください'] },
+    shy: { _default: ['あの…もう一度だけ…あのベルトに…挑戦させてください'] },
+    easygoing: {
+      _default: ['もうちょっとだけ！ あのベルトもう一回触りたいんだよね'],
+      delinquent: ['もうちょっとだけだ！ あのベルトもう一回触りてーんだよ'],
+      seductive: ['もう少しだけ。あのベルトにもう一度触れたいの'],
+    },
+    earnest: {
+      _default: ['最後にもう一度…あのベルトに恥じない闘いをしたい'],
+      polite: ['最後にもう一度…あのベルトに恥じない闘いをしたいです'],
+      ojousama: ['最後にもう一度…あのベルトに恥じない闘いをしたいですわ'],
+      seductive: ['最後にもう一度…恥じない闘いをしたいの'],
+    },
+    emotional: { _default: ['あのベルト…もう一度…触りたい…っ'] },
+  },
+  high_trust: {
+    normal: {
+      _default: ['アンタがそう言うなら…もう少しだけ頑張ってみるよ'],
+      ojousama: ['あなたがそうおっしゃるなら…もう少しだけ頑張りますわ'],
+      delinquent: ['お前がそう言うなら…もうちょっとだけやってみるか'],
+      seductive: ['あなたがそう言うなら…もう少し頑張ってみるわ'],
+    },
+    bold: {
+      _default: ['…信じてくれるなら、もう少し付き合ってやるよ'],
+      ojousama: ['信じてくださるなら…もう少しお付き合いしますわ'],
+      delinquent: ['信じてくれんなら…もうちょっと付き合ってやるぜ'],
+      cool: ['…信じてくれるなら'],
+      seductive: ['信じてくれるの？ …もう少し付き合うわ'],
+    },
+    quiet: { _default: ['……ありがとう。もう少しだけ'], cool: ['…もう少しだけ'], polite: ['…ありがとうございます。もう少しだけ'] },
+    shy: { _default: ['信じてくれて…ありがとうございます。もう少しだけ…'] },
+    easygoing: {
+      _default: ['そっか、まだ必要としてくれてるんだ。じゃあもうちょっと！'],
+      delinquent: ['まだ必要ってことか。じゃあもうちょっとやるか！'],
+      seductive: ['まだ必要としてくれるの。じゃあもう少し'],
+    },
+    earnest: {
+      _default: ['信じてくれてありがとう。期待に応えてみせる'],
+      polite: ['信じてくださってありがとうございます。期待に応えます'],
+      ojousama: ['信じてくださって…期待に応えてみせますわ'],
+      seductive: ['信じてくれてありがとう。応えてみせるわ'],
+    },
+    emotional: { _default: ['…っ、ありがとう…もう少しだけ…頑張る…！'] },
+  },
+  heel: {
+    normal: {
+      _default: ['フン…まだ使い道があるってことね。いいわ、付き合ってあげる'],
+      ojousama: ['まだ使い道がおありですのね。お付き合いしてさしあげますわ'],
+      delinquent: ['まだ使い道があるってか。いいぜ、付き合ってやるよ'],
+      seductive: ['まだ使い道があるのね。いいわ、付き合ってあげる'],
+    },
+    bold: {
+      _default: ['…チッ、引き留めるのか。まぁ、悪くない判断だ'],
+      ojousama: ['引き留めますの。…まぁ、悪くない判断ですわ'],
+      delinquent: ['引き留めるのかよ。まぁ悪くねー判断だな'],
+      cool: ['…悪くない判断だ'],
+      seductive: ['引き留めるの？ …悪くない判断ね'],
+    },
+    quiet: { _default: ['……いいだろう'], cool: ['…いい'], polite: ['…わかりました'] },
+    shy: { _default: ['…まだ、ここにいてもいいんですか…？'] },
+    easygoing: {
+      _default: ['へぇ、まだ使ってくれるんだ。ま、いいけどね'],
+      delinquent: ['まだ使ってくれんのか。ま、いいけどよ'],
+      seductive: ['まだ使ってくれるの。ま、いいけど'],
+    },
+    earnest: {
+      _default: ['…わかった。まだ役に立てるなら、全力でやる'],
+      polite: ['…わかりました。まだお役に立てるなら全力で'],
+      ojousama: ['…承知しましたわ。お役に立てるなら全力を尽くします'],
+      seductive: ['…わかったわ。まだ役に立てるなら全力でやるわ'],
+    },
+    emotional: { _default: ['…っ、まだ必要としてくれるの…わかった…やるよ…'] },
+  },
+  default: {
+    normal: {
+      _default: ['…うん、もう少しだけやってみる', 'わかった。もう少しだけ、続けてみる'],
+      ojousama: ['…えぇ、もう少しだけ続けてみますわ'],
+      delinquent: ['…わかった。もうちょっとだけやってみるか'],
+      seductive: ['…わかったわ。もう少し続けてみる'],
+    },
+    bold: {
+      _default: ['…まだ終わりじゃない。やってやるよ'],
+      ojousama: ['まだ終わりではありませんわ'],
+      delinquent: ['まだ終わりじゃねーよ。やってやるぜ'],
+      cool: ['…まだだ'],
+      seductive: ['まだ終わりじゃないわ'],
+    },
+    quiet: { _default: ['……もう少しだけ'], cool: ['…もう少し'], polite: ['…もう少しだけ、続けます'] },
+    shy: { _default: ['…もう少しだけ…頑張ってみます'] },
+    easygoing: {
+      _default: ['まぁもうちょっとやってみようかな！'],
+      delinquent: ['もうちょっとやってみっか！'],
+      seductive: ['もう少しやってみようかしら'],
+    },
+    earnest: {
+      _default: ['…わかった。まだやれることがあるなら続ける'],
+      polite: ['…わかりました。まだやれることがあるなら続けます'],
+      ojousama: ['…承知しましたわ。やれることがあるなら続けます'],
+      seductive: ['…わかったわ。やれることがあるなら続けるわ'],
+    },
+    emotional: { _default: ['…うん…もう少しだけ…やってみる…'] },
+  },
 };
 
 // §4 コーチ引退アドバイス テキスト
@@ -1649,118 +2620,501 @@ const COACH_RETIRE_ADVICE_TEXTS = {
   ],
 };
 
-// v1.4: 年末表彰式 セリフデータ（1賞8パターン × 5賞 = 40セリフ）
+// v1.4: 年末表彰式 セリフデータ（personality×archetype）
 const AWARD_LINES = {
-  rookie: [
-    'まだ夢みたいです……精一杯やります！',
-    'こんなに早くもらえるとは思っていなかった。もっと強くなります！',
-    '先輩たちに感謝を……この賞を糧に、私も強い選手になります',
-    '信じてくれた皆さんのために、絶対もっと上を目指します！',
-    '私の技で、ここまで来られた。まだまだ磨きます！',
-    '力で全部ぶっちぎって、気づいたら頂上にいました！',
-    '速さなら誰にも負けない。これからもっと速くなります',
-    '受け取る資格があるか、まだ不安です。でも、前に進みます'
-  ],
-  bestMatch: [
-    'あの試合、全部出し切れた。あなたがいたから',
-    '最高の相手だった。また戦いたい',
-    'あの瞬間、時間が止まったみたいだった',
-    '技で魅せ合えた試合。忘れられない',
-    'ぶつかり合えた。それだけで十分だ',
-    '瞬きする間もなかった。最高の試合だよ',
-    '負けても嬉しいと思えるのは、あの試合だけかもしれない',
-    'いいものを見せられたと思う。ありがとう'
-  ],
-  mvp: [
-    'この一年、全てを懸けた結果だ',
-    '誰よりも練習した。だから当然の結果だ',
-    'チームのみんな、ありがとう。一緒に掴んだ賞だ',
-    'まだ満足はしていない。来年もこの場所に立ちたい',
-    'ファンの皆さんの声が、私を強くしてくれた',
-    '技が通じた一年だった。来年はさらに上を見る',
-    '誰も私を止められなかった。それだけだ',
-    'スピードで全部持っていった。これが私のやり方'
-  ],
-  champion: [
-    'この頂は誰にも渡さない',
-    '王座は私のものだ。挑んでくるなら受けて立つ',
-    '奪われるくらいなら引退する。それほどの覚悟がある',
-    'ベルトを持つ責任がある。それが私を引き締める',
-    'ここまで応援してくれた皆のために、守り続ける',
-    '技で制した頂点。力があっても越えられはしない',
-    'このベルトは力の証明だ。次の挑戦者も歓迎する',
-    '誰より速く、誰より高く。だからここにいる'
-  ],
-  hallOfFame: [
-    'この場所に名前が刻まれるなんて……信じられない',
-    '長い道のりだった。でも、全部やりきった',
-    '後輩たちへ——この業界に入ってよかった。続いてきてください',
-    'プロレスに全てを捧げた人生に、悔いはない',
-    'ありがとう、プロレス。ありがとう、皆さん',
-    '技を磨き続けた日々が、ここへ繋がっていたんだな',
-    '力で戦い続けた。その証がここにある',
-    '走り続けて、やっとここへ辿り着いた'
-  ]
+  rookie: {
+    normal: {
+      _default: ['まだ夢みたいです…精一杯やります！', '先輩たちに感謝を…この賞を糧に強くなります'],
+      ojousama: ['夢のようですわ…精一杯頑張りますわ'],
+      delinquent: ['まだ夢みてーだ…全力でやるぜ！'],
+      seductive: ['夢みたい…精一杯やるわ'],
+    },
+    bold: {
+      _default: ['当然の結果だ。来年はもっと上に行く', '気づいたら頂上にいた。まだまだこんなもんじゃない'],
+      ojousama: ['当然の結果ですわ。来年はもっと上を目指しますの'],
+      delinquent: ['当然だろ！ 来年はもっと上行くぜ！'],
+      cool: ['…当然だ。まだ上がある'],
+      seductive: ['当然よ。来年はもっと上に行くわ'],
+    },
+    quiet: {
+      _default: ['……ありがとうございます'],
+      cool: ['…ありがとう'],
+      polite: ['…ありがとうございます。精一杯やります'],
+    },
+    shy: { _default: ['受け取る資格があるか…まだ不安です。でも前に進みます'] },
+    easygoing: {
+      _default: ['えー！ マジで！？ やったー！ もっと頑張るよ！'],
+      delinquent: ['マジかよ！ やったぜ！ もっと頑張るぜ！'],
+      seductive: ['あら、嬉しい！ もっと頑張るわね'],
+    },
+    earnest: {
+      _default: ['信じてくれた皆さんのために、もっと上を目指します'],
+      polite: ['信じてくださった皆さんのために、もっと上を目指します'],
+      ojousama: ['信じてくださった方々のために、さらに上を目指しますわ'],
+      seductive: ['信じてくれた皆のために…もっと上を目指すわ'],
+    },
+    emotional: { _default: ['うっ…こんなに早くもらえるなんて…頑張ります…！'] },
+  },
+  bestMatch: {
+    normal: {
+      _default: ['あの試合、全部出し切れた。あなたがいたから', '最高の相手だった。また戦いたい'],
+      ojousama: ['最高のお相手でしたわ。またお手合わせ願います'],
+      delinquent: ['最高の相手だった。またやろうぜ'],
+      seductive: ['最高の相手だったわ。また戦いたいの'],
+    },
+    bold: {
+      _default: ['ぶつかり合えた。それだけで十分だ', 'あの瞬間、時間が止まった'],
+      ojousama: ['ぶつかり合えましたわ。それだけで十分です'],
+      delinquent: ['ぶつかり合えた。それだけで十分だぜ'],
+      cool: ['…最高の試合だった'],
+      seductive: ['ぶつかり合えた。それだけで十分よ'],
+    },
+    quiet: {
+      _default: ['……忘れられない試合になった'],
+      cool: ['…忘れない'],
+      polite: ['…忘れられない試合になりました'],
+    },
+    shy: { _default: ['あんな試合ができるなんて…相手のおかげです'] },
+    easygoing: {
+      _default: ['瞬きする間もなかった！ 最高の試合だよ'],
+      delinquent: ['瞬きする間もなかったぜ！ 最高だった！'],
+      seductive: ['瞬きする間もなかったわ。最高の試合'],
+    },
+    earnest: {
+      _default: ['いいものを見せられたと思う。ありがとう'],
+      polite: ['よいものをお見せできたと思います。ありがとうございます'],
+      ojousama: ['よいものをお見せできましたわ。感謝いたします'],
+      seductive: ['いいものを見せられたわ。ありがとう'],
+    },
+    emotional: { _default: ['あの試合…最高だった…ありがとう…！'] },
+  },
+  mvp: {
+    normal: {
+      _default: ['この一年、全てを懸けた結果だ', 'ファンの皆さんの声が私を強くしてくれた'],
+      ojousama: ['この一年、全てを懸けましたわ'],
+      delinquent: ['この一年、全部懸けた結果だぜ'],
+      seductive: ['この一年、全てを懸けた結果よ'],
+    },
+    bold: {
+      _default: ['誰も私を止められなかった。それだけだ', '誰よりも練習した。だから当然の結果だ'],
+      ojousama: ['誰もわたくしを止められませんでしたわ'],
+      delinquent: ['誰もあたしを止められなかった。それだけだ'],
+      cool: ['…当然の結果だ'],
+      seductive: ['誰も私を止められなかったわ'],
+    },
+    quiet: {
+      _default: ['……やるべきことをやった。それだけ'],
+      cool: ['…それだけだ'],
+      polite: ['…やるべきことをやりました'],
+    },
+    shy: { _default: ['私なんかがMVPだなんて…皆さんのおかげです'] },
+    easygoing: {
+      _default: ['いやーすごいね！ みんなのおかげだよ！'],
+      delinquent: ['すげーな！ みんなのおかげだぜ！'],
+      seductive: ['あら、嬉しい。みんなのおかげよ'],
+    },
+    earnest: {
+      _default: ['まだ満足はしていない。来年もこの場所に立ちたい'],
+      polite: ['まだ満足はしていません。来年もここに立ちたいです'],
+      ojousama: ['まだ満足はしておりません。来年もここに立ちますわ'],
+      seductive: ['まだ満足はしてないわ。来年もここに立つ'],
+    },
+    emotional: { _default: ['みんなのおかげで…ここに立てた…ありがとう…！'] },
+  },
+  champion: {
+    normal: {
+      _default: ['この頂は誰にも渡さない', 'ベルトを持つ責任がある。それが私を引き締める'],
+      ojousama: ['この頂は誰にもお渡ししませんわ'],
+      delinquent: ['この頂は誰にも渡さねーぞ'],
+      seductive: ['この頂は誰にも渡さないわ'],
+    },
+    bold: {
+      _default: ['王座は私のものだ。挑んでくるなら受けて立つ', '奪えるものなら奪ってみろ'],
+      ojousama: ['王座はわたくしのもの。挑んでくるなら受けて立ちますわ'],
+      delinquent: ['王座はあたしのもんだ。かかってこいよ！'],
+      cool: ['…挑むなら受ける'],
+      seductive: ['王座は私のもの。挑んでくるなら受けて立つわ'],
+    },
+    quiet: {
+      _default: ['……守り続ける'],
+      cool: ['…守る'],
+      polite: ['…守り続けます'],
+    },
+    shy: { _default: ['こんな私がチャンピオンなんて…でも、守ります'] },
+    easygoing: {
+      _default: ['チャンピオン最高！ でもまだまだ楽しむよ！'],
+      delinquent: ['チャンピオン最高！ まだまだ楽しむぜ！'],
+      seductive: ['チャンピオン…最高ね。まだまだ楽しむわ'],
+    },
+    earnest: {
+      _default: ['ここまで応援してくれた皆のために、守り続ける'],
+      polite: ['応援してくださった皆さんのために、守り続けます'],
+      ojousama: ['応援してくださった方々のために、お守りし続けますわ'],
+      seductive: ['応援してくれた皆のために…守り続けるわ'],
+    },
+    emotional: { _default: ['このベルト…絶対離さない…ここにいるから…！'] },
+  },
+  hallOfFame: {
+    normal: {
+      _default: ['この場所に名前が刻まれるなんて…信じられない', 'ありがとう、プロレス。ありがとう、皆さん'],
+      ojousama: ['このような場所に名前を刻んでいただけるなんて…'],
+      delinquent: ['こんなとこに名前が刻まれるなんてな…'],
+      seductive: ['この場所に名前が刻まれるなんて…信じられないわ'],
+    },
+    bold: {
+      _default: ['長い道のりだった。でも全部やりきった', 'プロレスに全てを捧げた人生に、悔いはない'],
+      ojousama: ['長い道のりでしたわ。でも全てやりきりました'],
+      delinquent: ['長い道のりだった。でも全部やりきったぜ'],
+      cool: ['…やりきった。悔いはない'],
+      seductive: ['長い道のりだったわ。でも全部やりきった'],
+    },
+    quiet: {
+      _default: ['……ありがとう。全部、やりきった'],
+      cool: ['…やりきった'],
+      polite: ['…ありがとうございます。やりきりました'],
+    },
+    shy: { _default: ['こんな私がここに…皆さんのおかげです。ありがとうございます'] },
+    easygoing: {
+      _default: ['いやー最高の人生だった！ プロレス万歳！'],
+      delinquent: ['最高の人生だったぜ！ プロレス万歳！'],
+      seductive: ['最高の人生だったわ。プロレスに感謝ね'],
+    },
+    earnest: {
+      _default: ['後輩たちへ——この業界に入ってよかった。続いてきてください'],
+      polite: ['後輩の皆さんへ——この業界に入ってよかったです。続けてください'],
+      ojousama: ['後輩の皆さまへ——この業界に入ってよかったですわ'],
+      seductive: ['後輩たちへ——この業界に入ってよかったわ。続けてね'],
+    },
+    emotional: { _default: ['うっ…ありがとう…プロレス…ありがとう…みんな…！'] },
+  },
 };
 
 // ══════════════════════════════════════════════
 //  v1.8: 成長イベントシステム セリフ & テンプレート
 // ══════════════════════════════════════════════
 
-// §2.6 ブレークスルーセリフ
-const BREAKTHROUGH_LINES = [
-  'あの試合で、何かが変わった気がする…',
-  '限界だと思っていた壁を越えられた！',
-  '今日の試合、なんかいつもと違う！',
-  '体が軽い。全身に力がみなぎってる！',
-  'あの敗北が…私を強くしてくれた。',
-  '限界なんてなかった。まだ上があった！',
-];
-
-// §4.5 スランプ発生セリフ（トリガー別）
-const SLUMP_START_LINES = {
-  injury_moderate_recovery: [
-    '体は治ったはずなのに…動けない。',
-    '怪我から戻ったのに…リングが遠い。',
-    '復帰したのに、何かが噛み合わない。',
-  ],
-  injury_severe_recovery: [
-    'またリングに立てた…のに、怖い。',
-    '重傷から帰ってきたけど…自信がない。',
-    '体は戻った。でも心がついてこない。',
-  ],
-  defeat: [
-    'あの負けから…何かがおかしい。',
-    '負けた瞬間から、体が動かなくなった。',
-    '自分の何が悪かったのか、わからない。',
-  ],
-  penalty_end: [
-    '怪我は治ったのに…気力が戻らない。',
-    '体が癒えても、心の傷は残るんだな。',
-  ],
+// §2.6 ブレークスルーセリフ（personality×archetype）
+const BREAKTHROUGH_LINES = {
+  normal: {
+    _default: ['あの試合で、何かが変わった気がする…', '限界だと思っていた壁を越えられた！'],
+    ojousama: ['何かが変わった気がいたしますわ…壁を越えましたの'],
+    delinquent: ['おっしゃ！ なんか壁越えた気がするぜ！'],
+    seductive: ['あら…何かが変わった気がするわ'],
+  },
+  bold: {
+    _default: ['当然だ。まだまだこんなもんじゃない', 'やっと体が追いついてきた。ここからだ'],
+    ojousama: ['当然ですわ。まだまだこんなものではありませんの'],
+    delinquent: ['当然だろ！ まだまだこんなもんじゃねーぜ！'],
+    cool: ['…まだ上がある'],
+    seductive: ['当然よ。まだまだこんなものじゃないわ'],
+  },
+  quiet: {
+    _default: ['……何かが、変わった'],
+    cool: ['…変わった'],
+    polite: ['…何かが変わった気がします'],
+  },
+  shy: {
+    _default: ['え…わたし、こんなに動けたんですか…？'],
+  },
+  easygoing: {
+    _default: ['おっ、なんかいつもと違う！ いい感じ！'],
+    delinquent: ['おお！ なんかいつもと違うぜ！ いい感じ！'],
+    seductive: ['あら、いつもと違う感じ。いいわね'],
+  },
+  earnest: {
+    _default: ['練習が実を結んだ…！ まだ上を目指す', 'あの敗北が…私を強くしてくれた'],
+    polite: ['練習が実を結びました…！ まだ上を目指します'],
+    ojousama: ['お稽古の成果ですわ…！ まだまだ上を目指しますわ'],
+    seductive: ['練習が実を結んだわ…まだ上を目指すわよ'],
+  },
+  emotional: {
+    _default: ['うわぁ…！ 体が軽い！ すごい、すごい…！', '限界なんてなかった…！ まだ上があった…！'],
+  },
 };
 
-// §4.5 スランプ回復セリフ
-const SLUMP_END_LINES = [
-  'やっと…やっと戻ってこれた。',
-  'あの暗いトンネルをようやく抜けた！',
-  '待ってくれていたリングに、恩返しする。',
-  '迷惑かけた分、倍にして返す！',
-];
+// personality×archetype セリフ配列取得（Engine用: 呼び出し元でRNG選択可能）
+function getDialoguePool(lineObj, fighter) {
+  const p = fighter?.personality || 'normal';
+  const a = fighter?.archetype || 'normal';
+  const pBucket = lineObj[p] || lineObj._default || lineObj.normal;
+  if (!pBucket) return ['…'];
+  return pBucket[a] || pBucket._default || ['…'];
+}
 
-// §5.6 モチベ喪失セリフ
-const MOTIVATION_LOSS_LINES = [
-  'もう…何のために闘ってるのかわからない。',
-  'プロレスが楽しいって感覚、どこへ行った？',
-  '毎日道場に来るのが、こんなに辛いとは。',
-];
+// personality×archetype セリフランダム選出（UI用）
+function pickDialogueLine(lineObj, fighter) {
+  const pool = getDialoguePool(lineObj, fighter);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
-// §5.6 モチベ喪失回復セリフ
-const MOTIVATION_RECOVERY_LINES = [
-  'まだ…やれる。やってみせる。',
-  'また闘いたいと思えた。この気持ちを大切に。',
-  '闘うことを忘れていた。でももう大丈夫。',
-];
+// §4.5 スランプ発生セリフ（personality×archetype, トリガー別）
+const SLUMP_START_LINES = {
+  defeat: {
+    normal: {
+      _default: ['あの負けから…何かがおかしい', '自分の何が悪かったのか、わからない'],
+      ojousama: ['あの敗北から…何かがおかしいですわ'],
+      delinquent: ['あの負けから…何かおかしいんだよ'],
+      seductive: ['あの負けから…何かがおかしいの'],
+    },
+    bold: {
+      _default: ['…チッ、何やってんだあたし', '負けた？ あたしが？ …嘘だろ'],
+      ojousama: ['…何をしていますの、わたくし'],
+      delinquent: ['…チッ、何やってんだよあたし'],
+      cool: ['……何をやっている'],
+      seductive: ['あら…おかしいわね、こんなはずじゃ'],
+    },
+    quiet: {
+      _default: ['……あの負けから、動けない'],
+      cool: ['…動けない'],
+      polite: ['…あの試合から、うまく動けなくて'],
+    },
+    shy: {
+      _default: ['やっぱり…私なんかじゃ、ダメなんでしょうか…'],
+    },
+    easygoing: {
+      _default: ['あはは…なんだろうね、体が動かないや'],
+      delinquent: ['なんだろうな…いつもみたいに動かねーよ'],
+      seductive: ['ふふ…なんでかしら、いつもみたいに動けないの'],
+    },
+    earnest: {
+      _default: ['あの負け…自分の何がダメだったんだろう', '負けた理由がわかるまで…前に進めない'],
+      polite: ['あの試合から…自分の何が足りないのか、ずっと考えています'],
+      ojousama: ['あの敗北…わたくしの何がいけませんでしたの'],
+      seductive: ['あの負けから…ずっと考えてるの、何がいけなかったのかって'],
+    },
+    emotional: {
+      _default: ['負けた…もう何も考えられない…っ', '…悔しい、悔しくて頭がぐちゃぐちゃになる…！'],
+    },
+  },
+  injury_moderate_recovery: {
+    normal: {
+      _default: ['体は治ったはずなのに…動けない', '復帰したのに、何かが噛み合わない'],
+      ojousama: ['お体は治りましたのに…動けませんの'],
+      delinquent: ['体は治ったはずだろ…なんで動けねーんだ'],
+      seductive: ['体は治ったはずなのに…ね、動けないの'],
+    },
+    bold: {
+      _default: ['治ったはずだ…なのに何でこんなにもたつく'],
+      ojousama: ['治りましたのに…なぜこんなにもたつきますの'],
+      delinquent: ['治ったっつーのに…何でもたついてんだ'],
+      cool: ['…体が、鈍い'],
+      seductive: ['治ったはずなのに…おかしいわね'],
+    },
+    quiet: {
+      _default: ['……体は治った。でも、何か違う'],
+      cool: ['……鈍い'],
+      polite: ['体は治ったんですけど…何か、違うんです'],
+    },
+    shy: {
+      _default: ['体は治ったのに…また迷惑かけちゃうかも…'],
+    },
+    easygoing: {
+      _default: ['あれー、治ったはずなのに調子出ないなぁ'],
+      delinquent: ['あれ、治ったはずなのに調子でねーな'],
+      seductive: ['あら、治ったはずなのに…調子出ないわ'],
+    },
+    earnest: {
+      _default: ['復帰できたのに…まだ全然足りない'],
+      polite: ['復帰できたのですが…まだ全然、足りていません'],
+      ojousama: ['復帰できましたのに…まだまだ足りませんわ'],
+      seductive: ['復帰できたのに…まだ足りないの'],
+    },
+    emotional: {
+      _default: ['せっかく治ったのに…なんで、なんで動けないの…！'],
+    },
+  },
+  injury_severe_recovery: {
+    normal: {
+      _default: ['またリングに立てた…のに、怖い', '重傷から帰ってきたけど…自信がない'],
+      ojousama: ['リングに戻れましたのに…怖いですわ'],
+      delinquent: ['戻ってきたのに…ビビってんのかよ、あたし'],
+      seductive: ['戻ってこれたのに…怖いの'],
+    },
+    bold: {
+      _default: ['あたしが…怯えてる？ そんなバカな'],
+      ojousama: ['わたくしが…怯える？ そんなはずは'],
+      delinquent: ['あたしがビビってる？ ふざけんな'],
+      cool: ['…怯えている。この私が'],
+      seductive: ['私が…怯えてる？ 嘘でしょう'],
+    },
+    quiet: {
+      _default: ['……リングが、遠い'],
+      cool: ['…遠い'],
+      polite: ['リングに戻れたのですが…遠く感じます'],
+    },
+    shy: {
+      _default: ['戻ってこれたけど…また壊れたらって思うと…怖いです'],
+    },
+    easygoing: {
+      _default: ['あはは…参ったな、リングがちょっと怖いや'],
+      delinquent: ['まいったな…リングがちょっと怖ぇーよ'],
+      seductive: ['参ったわ…リングが少し怖いの'],
+    },
+    earnest: {
+      _default: ['復帰できた…でも体が覚えてる、あの痛みを'],
+      polite: ['復帰できました…でも体が覚えているんです、あの痛みを'],
+      ojousama: ['復帰できましたわ…でもお体が覚えていますの、あの痛みを'],
+      seductive: ['復帰できた…でもね、体が覚えてるの、あの痛みを'],
+    },
+    emotional: {
+      _default: ['帰ってこれた…のに…っ、怖くて体が震える…！'],
+    },
+  },
+  penalty_end: {
+    normal: {
+      _default: ['怪我は治ったのに…気力が戻らない', '体が癒えても、心の傷は残るんだな'],
+      ojousama: ['お怪我は癒えましたのに…気力が戻りませんわ'],
+      delinquent: ['怪我は治ったっつーのに…気力が戻んねー'],
+      seductive: ['怪我は治ったのに…気力が戻らないの'],
+    },
+    bold: {
+      _default: ['体は万全なのに…気持ちがついてこない'],
+      ojousama: ['お体は万全ですのに…気持ちがついてきませんわ'],
+      delinquent: ['体は万全なのに…気持ちがついてこねー'],
+      cool: ['…気持ちが、ついてこない'],
+      seductive: ['体は万全なのに…気持ちがついてこないの'],
+    },
+    quiet: {
+      _default: ['……治った。でも、心は'],
+      cool: ['…心が、まだ'],
+      polite: ['体は治ったんですけど…心が、まだ'],
+    },
+    shy: {
+      _default: ['怪我は治ったんですけど…また怪我したらって思うと…'],
+    },
+    easygoing: {
+      _default: ['怪我は治ったんだけどなぁ…なんか気分が乗らない'],
+      delinquent: ['怪我は治ったんだけどな…なんか乗んねーわ'],
+      seductive: ['怪我は治ったんだけど…なんだか気分が乗らないの'],
+    },
+    earnest: {
+      _default: ['怪我は治った。でも離れていた時間が…重い'],
+      polite: ['怪我は治りました。でも離れていた時間が…重いです'],
+      ojousama: ['お怪我は癒えましたわ。でも離れていた時間が…重いですの'],
+      seductive: ['怪我は治ったわ。でもね、離れていた時間が…重いの'],
+    },
+    emotional: {
+      _default: ['治ったはずなのに…なんでこんなに不安なの…！'],
+    },
+  },
+};
+
+// §4.5 スランプ回復セリフ（personality×archetype）
+const SLUMP_END_LINES = {
+  normal: {
+    _default: ['やっと…やっと戻ってこれた', 'あの暗いトンネルをようやく抜けた'],
+    ojousama: ['ようやく…戻ってこれましたわ'],
+    delinquent: ['やっと…やっと戻ってこれたぜ'],
+    seductive: ['やっと…戻ってこれたわ'],
+  },
+  bold: {
+    _default: ['待たせたな。ここからが本番だ'],
+    ojousama: ['お待たせしましたわ。ここからですのよ'],
+    delinquent: ['待たせたな！ ここからだぜ！'],
+    cool: ['…戻った。ここからだ'],
+    seductive: ['お待たせ。ここからが本番よ'],
+  },
+  quiet: {
+    _default: ['……戻ってきた'],
+    cool: ['……戻った'],
+    polite: ['…戻ってこれました'],
+  },
+  shy: {
+    _default: ['まだ不安ですけど…頑張りたいです'],
+  },
+  easygoing: {
+    _default: ['いやー長かった！ でもまた楽しくなってきたよ'],
+    delinquent: ['いやー長かったな！ でもまた楽しくなってきたぜ'],
+    seductive: ['長かったわ。でもまた楽しくなってきたの'],
+  },
+  earnest: {
+    _default: ['迷惑かけた分…倍にして返す', '待ってくれていたリングに、恩返しする'],
+    polite: ['ご迷惑をおかけしました…必ず、倍にしてお返しします'],
+    ojousama: ['ご迷惑をおかけしましたわ…必ずお返しいたします'],
+    seductive: ['迷惑かけた分…返すわ、倍にしてね'],
+  },
+  emotional: {
+    _default: ['うっ…やっと、やっと抜け出せた…！ もう負けない…！'],
+  },
+};
+
+// §5.6 モチベ喪失セリフ（personality×archetype）
+const MOTIVATION_LOSS_LINES = {
+  normal: {
+    _default: ['もう…何のために闘ってるのかわからない', 'プロレスが楽しいって感覚、どこへ行った？'],
+    ojousama: ['何のために…闘っていますの、わたくし'],
+    delinquent: ['何のために闘ってんだよ…もうわかんねー'],
+    seductive: ['何のために闘ってるのかしら…わからなくなったわ'],
+  },
+  bold: {
+    _default: ['…燃えない。何をやっても、燃えてこない'],
+    ojousama: ['…燃えませんわ。何をしても、火がつきませんの'],
+    delinquent: ['…燃えねーんだよ。何やっても、火がつかねー'],
+    cool: ['…燃えない'],
+    seductive: ['燃えないの…何をしても、火がつかないわ'],
+  },
+  quiet: {
+    _default: ['……闘う理由が、見えない'],
+    cool: ['……見えない'],
+    polite: ['…闘う理由が、見えなくなってしまって'],
+  },
+  shy: {
+    _default: ['私がリングに立つ意味…あるんでしょうか…'],
+  },
+  easygoing: {
+    _default: ['なんだろうね…プロレス楽しいって感覚、どこ行っちゃったんだろ'],
+    delinquent: ['なんだろうな…楽しいって感覚、どこ行っちまったんだ'],
+    seductive: ['どうしたのかしら…楽しいって感覚、どこかに行っちゃったわ'],
+  },
+  earnest: {
+    _default: ['毎日道場に来るのが…こんなに辛いなんて', '自分を追い込んでも…何も返ってこない'],
+    polite: ['毎日道場に来るのが…こんなに辛いとは思いませんでした'],
+    ojousama: ['毎日お稽古に通うのが…こんなに辛いとは'],
+    seductive: ['毎日道場に来るのが…こんなに辛いなんてね'],
+  },
+  emotional: {
+    _default: ['やだ…もう嫌…何もしたくない…！', '…なんで泣いてるんだろ、あたし…'],
+  },
+};
+
+// §5.6 モチベ喪失回復セリフ（personality×archetype）
+const MOTIVATION_RECOVERY_LINES = {
+  normal: {
+    _default: ['まだ…やれる。やってみせる', 'また闘いたいと思えた。この気持ちを大切に'],
+    ojousama: ['まだ…やれますわ。やって見せますの'],
+    delinquent: ['まだやれる…やってやるよ'],
+    seductive: ['まだやれるわ…やってみせる'],
+  },
+  bold: {
+    _default: ['目が覚めた。ここで終わるわけにはいかない'],
+    ojousama: ['目が覚めましたわ。ここで終わるわけにはいきませんもの'],
+    delinquent: ['目ぇ覚めたぜ。ここで終わるかよ'],
+    cool: ['…目が覚めた。まだ終わらない'],
+    seductive: ['目が覚めたわ。ここで終わるなんて、つまらないもの'],
+  },
+  quiet: {
+    _default: ['……もう一度、闘える'],
+    cool: ['…闘える'],
+    polite: ['…もう一度、闘えそうです'],
+  },
+  shy: {
+    _default: ['まだ自信はないですけど…もう少しだけ、頑張ってみます'],
+  },
+  easygoing: {
+    _default: ['よーし、またやる気出てきたぞ！ 楽しまなきゃね'],
+    delinquent: ['おっし、やる気出てきたぜ！ 楽しまねーとな'],
+    seductive: ['あら、やる気が戻ってきたわ。楽しまなくちゃね'],
+  },
+  earnest: {
+    _default: ['闘うことを忘れていた…でも、もう迷わない'],
+    polite: ['闘う気持ちを忘れていました…でも、もう迷いません'],
+    ojousama: ['闘う心を忘れていましたわ…でも、もう迷いませんの'],
+    seductive: ['闘う気持ちを忘れてたわ…でもね、もう迷わない'],
+  },
+  emotional: {
+    _default: ['うっ…また闘いたいって…思えたよ…！ 大丈夫、もう大丈夫…！'],
+  },
+};
 
 // §9.4 AI成長イベント業界ニューステンプレート（ブレークスルー）
 const AI_BREAKTHROUGH_NEWS = [
@@ -2085,50 +3439,236 @@ const NOTIF_EVENT_TEXTS = {
   ],
 };
 
-// §3-4: 通知型イベント — 特性別セリフ（NOTIF_DIALOGUES）
+// §3-4: 通知型イベント — personality×archetype セリフ（NOTIF_DIALOGUES）
 // N1/N2/N3/N4/N5_warning/N5_low 全タイプ対応
 const NOTIF_DIALOGUES = {
+  // N1: 成長実感
   N1: {
-    '野心':       ['まだまだやれる。もっと強くなれる気がするんです', 'この調子で上を目指したい'],
-    '努力家':     ['積み重ねが大事だと思ってる。コツコツやっていきます', '練習って楽しい。もっとやりたい'],
-    '早熟':       ['今がチャンスだと思う。全部吸収してやる', '今のうちに限界まで伸ばしたい'],
-    '破天荒':     ['なんか今日、急にいろいろ掴めた気がする！', 'よく分からないけど、急に噛み合ってきた！'],
-    '負けず嫌い': ['まだ足りない。もっとできるはず', '昨日の自分に負けたくない'],
-    'default':    ['練習が楽しくなってきた気がします', 'やっと体が動くようになってきた気がします'],
+    normal: {
+      _default: ['練習が楽しくなってきた気がします', 'やっと体が動くようになってきた気がします'],
+      ojousama: ['お稽古が楽しくなってまいりましたわ', '少しずつ、体が応えてくれるようになりましたの'],
+      delinquent: ['なんか最近、体の動きキレてね？', 'やっと感覚掴めてきたっぽい'],
+      seductive: ['最近、体が素直に動いてくれるの。嬉しいわ', '練習が楽しくなってきた気がする'],
+    },
+    bold: {
+      _default: ['まだ足りない。もっとできるはず', 'この調子で上を目指したい'],
+      ojousama: ['まだまだですわ。もっと上を目指しませんと'],
+      delinquent: ['まだ足りねえ。もっとやれるはずだ'],
+      cool: ['…まだ上がある。止まる気はない'],
+      seductive: ['まだ足りないわ。もっと強くなれる気がするの'],
+    },
+    quiet: {
+      _default: ['……少し、手応えがある'],
+      cool: ['…悪くない。この調子で'],
+      polite: ['少し…手応えを感じています'],
+    },
+    shy: {
+      _default: ['あの…ちょっとだけ、練習が楽しくなってきました…'],
+    },
+    easygoing: {
+      _default: ['なんか今日、急にいろいろ掴めた気がする！', 'よく分かんないけど、急に噛み合ってきた！'],
+      delinquent: ['なんか急にキタわ！掴めた感じ！'],
+      seductive: ['あら、急にいろいろ掴めちゃったかも'],
+    },
+    earnest: {
+      _default: ['積み重ねが大事だと思ってます。コツコツやっていきます', '練習って楽しい。もっとやりたいです'],
+      polite: ['積み重ねが大切だと信じています。コツコツ参ります'],
+      ojousama: ['積み重ねが大切ですわ。一歩一歩、参りますわね'],
+      seductive: ['積み重ねって大事よね。もっとやりたくなっちゃう'],
+    },
+    emotional: {
+      _default: ['うわあ…！練習が楽しい…！もっとやりたい！', '体が動くようになってきた…嬉しい…！'],
+    },
   },
+  // N2: 仲間意識
   N2: {
-    '人望':       ['仲間がいるから頑張れる。チームって、いいですね'],
-    '努力家':     ['あの人と練習してると自分も頑張ろうって思えるんです'],
-    '忠誠心':     ['この団体で一緒にやれる仲間がいて、幸せです'],
-    '破天荒':     ['あの人と一緒だと超楽しい！最高のパートナーだよ！'],
-    'default':    ['いい仲間ができた気がします', '一緒に頑張れる人がいると心強いですね'],
+    normal: {
+      _default: ['いい仲間ができた気がします', '一緒に頑張れる人がいると心強いですね'],
+      ojousama: ['良いお仲間に恵まれましたわ'],
+      delinquent: ['あいつと一緒だと楽しいんだよな'],
+      seductive: ['いい仲間に恵まれたわ。心強いの'],
+    },
+    bold: {
+      _default: ['仲間がいるから頑張れる。チームって、いいよな', 'あいつと一緒だと燃えるんだ'],
+      ojousama: ['仲間がいるから頑張れますわ'],
+      delinquent: ['あいつがいるから燃えるんだよ！'],
+      cool: ['…悪くないチームだ'],
+      seductive: ['仲間がいるって、いいものね'],
+    },
+    quiet: {
+      _default: ['……いい人たちだと、思います'],
+      cool: ['…悪くない仲間だ'],
+      polite: ['…良い方々だと思います'],
+    },
+    shy: {
+      _default: ['あの…みんなと一緒にいられて…嬉しいです…'],
+    },
+    easygoing: {
+      _default: ['あの人と一緒だと超楽しい！最高のパートナーだよ！'],
+      delinquent: ['あいつ最高！一緒だとテンション上がるわ！'],
+      seductive: ['あの人と一緒にいると楽しいの。最高のパートナーね'],
+    },
+    earnest: {
+      _default: ['あの人と練習してると自分も頑張ろうって思えるんです', 'この団体で一緒にやれる仲間がいて、幸せです'],
+      polite: ['一緒にお稽古していると、自分も頑張ろうと思えます'],
+      ojousama: ['この団体でご一緒できる仲間がいて、幸せですわ'],
+      seductive: ['あの人と一緒だと、もっと頑張りたくなるの'],
+    },
+    emotional: {
+      _default: ['みんなのこと大好き…！一緒にいられて幸せ…！'],
+    },
   },
+  // N3: コンディション低下
   N3: {
-    'ガラスの身体': ['無理はしてないつもりだけど……また痛くなったら嫌だな', '少し休んだ方がいいかも……'],
-    '鉄人':         ['大丈夫です。こんなのは慣れてます', 'これくらい、問題ありません'],
-    '不屈':         ['ちょっと休んだらすぐ戻ります。問題ないです', '立て直してみせます'],
-    '負けず嫌い':   ['悔しい。試合で取り返します', 'こんなんじゃ終われない'],
-    'default':      ['ちょっと疲れてるだけです。次の試合までには戻ります', '少し休めば大丈夫です'],
+    normal: {
+      _default: ['ちょっと疲れてるだけです。次の試合までには戻ります', '少し休めば大丈夫です'],
+      ojousama: ['少々お疲れが出ましたようで…次までには整えますわ'],
+      delinquent: ['ちょっとダルいだけだって。すぐ戻る'],
+      seductive: ['少し疲れただけよ。心配しないで'],
+    },
+    bold: {
+      _default: ['大丈夫だ、この程度。すぐ戻る', 'こんなんじゃ終われない'],
+      ojousama: ['この程度、問題ありませんわ'],
+      delinquent: ['この程度で止まってられるかよ'],
+      cool: ['…問題ない。戻れる'],
+      seductive: ['この程度で止まるつもりはないわ'],
+    },
+    quiet: {
+      _default: ['……少し、休みます'],
+      cool: ['…大丈夫だ。すぐ戻れる'],
+      polite: ['…少し休ませていただければ…'],
+    },
+    shy: {
+      _default: ['あの…無理はしてないつもりなんですけど……少し休んだ方がいいかも…'],
+    },
+    easygoing: {
+      _default: ['あー、ちょっと疲れちゃったかも。少し休めば平気！'],
+      delinquent: ['あー疲れた。ちょい休むわ'],
+      seductive: ['ちょっと疲れちゃったかしら。少し休めば大丈夫よ'],
+    },
+    earnest: {
+      _default: ['すみません…体が追いつかなくて。少し休めば大丈夫です', '立て直してみせます'],
+      polite: ['申し訳ありません…少し休ませていただければ、必ず戻ります'],
+      ojousama: ['少しお休みをいただければ、必ず立て直しますわ'],
+      seductive: ['ごめんなさい…少し休めば、すぐ戻れるわ'],
+    },
+    emotional: {
+      _default: ['うう…体がしんどい…でも、でも頑張りたいのに…！'],
+    },
   },
+  // N4: 人気上昇
   N4: {
-    '華':             ['ありがとうございます。自分らしくやっていけてる気がします', 'こういう場所に立つために練習してきた'],
-    'ファンサービス': ['ファンの皆さんが喜んでくれるのが一番嬉しい！', 'もっとみんなを楽しませたい！'],
-    '野心':           ['この人気を足がかりに、もっと上に行く', 'まだまだここで終わるつもりはない'],
-    '人望':           ['みんなに応援してもらえるって、本当に力になりますね', 'ファンの声が原動力です'],
-    'default':        ['こんなにたくさんの応援をいただけるなんて、びっくりしています', 'ファンの声が力になってます'],
+    normal: {
+      _default: ['こんなにたくさんの応援をいただけるなんて、びっくりしています', 'ファンの声が力になってます'],
+      ojousama: ['皆様からこれほどの声援をいただけるなんて、光栄ですわ'],
+      delinquent: ['応援してくれるやつがいるってのは…悪くねえな'],
+      seductive: ['こんなに応援してもらえるなんて…嬉しいわ'],
+    },
+    bold: {
+      _default: ['この人気を足がかりに、もっと上に行く', 'まだまだここで終わるつもりはない'],
+      ojousama: ['この声援を力に、さらに上を目指しますわ'],
+      delinquent: ['この勢いで突っ走るぜ！'],
+      cool: ['…悪くない。もっと上を目指す'],
+      seductive: ['この人気、活かさない手はないわね'],
+    },
+    quiet: {
+      _default: ['……応援、ありがとうございます'],
+      cool: ['…ファンの期待には応える'],
+      polite: ['…応援してくださって、ありがとうございます'],
+    },
+    shy: {
+      _default: ['え、あの…私なんかを応援してくれる人がいるなんて…'],
+    },
+    easygoing: {
+      _default: ['ファンの皆さんが喜んでくれるのが一番嬉しい！', 'もっとみんなを楽しませたい！'],
+      delinquent: ['ファンが盛り上がってんの最高じゃん！'],
+      seductive: ['ファンの方が喜んでくれると、もっと見せたくなるわ'],
+    },
+    earnest: {
+      _default: ['みんなに応援してもらえるって、本当に力になりますね', 'ファンの声が原動力です'],
+      polite: ['皆様の応援が、何よりの原動力です'],
+      ojousama: ['ファンの皆様のお声が力になりますわ'],
+      seductive: ['応援してくれる人がいるって、本当に力になるの'],
+    },
+    emotional: {
+      _default: ['みんなが応援してくれてる…！嬉しくて泣きそう…！'],
+    },
   },
+  // N5: trust低下警告
   N5_warning: {
-    '野心':       ['……このままで本当にいいのかな、って考えちゃうことがある'],
-    '負けず嫌い': ['最近、何と戦ってるのか分からなくなる時がある'],
-    '忠誠心':     ['…ここにいたい気持ちは変わらないんですけど……'],
-    '努力家':     ['練習しても練習しても、何かが足りない気がして…'],
-    'default':    ['（どこか上の空で、視線が泳いでいる）', '……すみません、ちょっと考え事を'],
+    normal: {
+      _default: ['（どこか上の空で、視線が泳いでいる）', '……すみません、ちょっと考え事を'],
+      ojousama: ['…少し、考え事がございまして'],
+      delinquent: ['…別に。何でもねーよ'],
+      seductive: ['…ごめんなさい、ちょっと考え事してて'],
+    },
+    bold: {
+      _default: ['……このままで本当にいいのか、って考えちゃうことがある', '最近、何と戦ってるのか分からなくなる'],
+      ojousama: ['…このままで本当によろしいのか、と考えてしまいますの'],
+      delinquent: ['…最近、何のために戦ってんのか分かんねーんだ'],
+      cool: ['……目的を、見失いかけている'],
+      seductive: ['…このままでいいのかなって、ふと思うの'],
+    },
+    quiet: {
+      _default: ['…………'],
+      cool: ['……'],
+      polite: ['…あの…何でもありません…'],
+    },
+    shy: {
+      _default: ['…あ、あの……なんでもない、です…'],
+    },
+    easygoing: {
+      _default: ['あはは…いや、ちょっとね。大丈夫、大丈夫'],
+      delinquent: ['あー…いや、なんでもねー。平気平気'],
+      seductive: ['ふふ…なんでもないわ。気にしないで'],
+    },
+    earnest: {
+      _default: ['練習しても練習しても、何かが足りない気がして…', '…ここにいたい気持ちは変わらないんですけど……'],
+      polite: ['練習を重ねても、何か足りない気がいたしまして…'],
+      ojousama: ['練習を重ねましても、何かが足りない気がしますの…'],
+      seductive: ['いくら練習しても、何か足りない気がして…'],
+    },
+    emotional: {
+      _default: ['…なんか、最近ずっとモヤモヤして…うまく言えないけど…'],
+    },
   },
+  // N5: trust危険域
   N5_low: {
-    '野心':       ['……この団体で、自分の夢は叶えられるんだろうか', '先が見えなくて、焦ってる'],
-    '負けず嫌い': ['悔しい。でも、ここで諦めるわけにはいかない', 'このまま終わるつもりはない'],
-    '忠誠心':     ['裏切りたいわけじゃない。ただ……', 'ここが好きだから、だから辛い'],
-    'default':    ['…別に、何でもないです', 'もういいです。分かりました'],
+    normal: {
+      _default: ['…別に、何でもないです', 'もういいです。分かりました'],
+      ojousama: ['…もう結構ですわ'],
+      delinquent: ['…もういいわ。勝手にする'],
+      seductive: ['…もういいわ。分かったから'],
+    },
+    bold: {
+      _default: ['……この団体で、自分の夢は叶えられるんだろうか', '先が見えなくて、焦ってる'],
+      ojousama: ['…この団体で、夢は叶えられますの…？'],
+      delinquent: ['…ここにいても、先が見えねえ'],
+      cool: ['……もう、見切りをつけるべきなのか'],
+      seductive: ['…ここにいて、私の夢は叶うのかしら'],
+    },
+    quiet: {
+      _default: ['………（何も言わず、目を逸らす）'],
+      cool: ['……（静かに出口を見ている）'],
+      polite: ['…失礼します（静かに立ち去ろうとする）'],
+    },
+    shy: {
+      _default: ['…ごめんなさい…もう…わかりません…'],
+    },
+    easygoing: {
+      _default: ['あはは…もう、いいかなって。ちょっと考えさせて'],
+      delinquent: ['もーいいわ。考えさせてくれ'],
+      seductive: ['ふふ…もういいかなって、少し思っちゃった'],
+    },
+    earnest: {
+      _default: ['裏切りたいわけじゃない。ただ……', 'ここが好きだから、だから辛いんです'],
+      polite: ['裏切るつもりはございません。ただ……'],
+      ojousama: ['裏切りたいわけではありませんの。ただ……'],
+      seductive: ['裏切りたいわけじゃないの。ただ……ね'],
+    },
+    emotional: {
+      _default: ['もう…もう分かんない…！どうすればいいの…！'],
+    },
   },
 };
 
@@ -2205,182 +3745,708 @@ const CAMP_FLAVOR_TEXTS = [
 
 const CARE_REACTION_DIALOGUES = {
   bonus: {
-    努力家:   ['ありがとうございます！次の試合、絶対頑張ります！'],
-    負けず嫌い: ['これで負けていられない！'],
-    野心:     ['実力に見合った報酬をいただけて光栄です'],
-    忠誠心:   ['…いつもありがとうございます'],
-    破天荒:   ['やった！おごってください！'],
-    闘志:     ['よっしゃ！この金で栄養のいいもん食って、もっと強くなります！'],
-    反骨心:   ['…別に頼んでないけど。まあ、もらっとく'],
-    リーダー気質: ['みんなの分も頑張らないとね。ありがとうございます'],
-    default:  ['ありがとうございます！', 'いただきます…！', '感謝します', '励みになります！', '嬉しいです！大切に使います'],
+    normal: {
+      _default: ['ありがとうございます！', 'いただきます…！', '感謝します', '励みになります！', '嬉しいです！大切に使います'],
+      ojousama: ['まあ、ありがとうございます。大切に使わせていただきますわ'],
+      delinquent: ['お、マジ？ ありがとな！'],
+      seductive: ['あら、嬉しい。ありがとう'],
+    },
+    bold: {
+      _default: ['これで負けていられない！', 'よっしゃ！もっと強くなります！'],
+      ojousama: ['ありがとうございます。結果でお返ししますわ'],
+      delinquent: ['おっしゃ！この金で栄養つけてもっと強くなるぜ！'],
+      cool: ['…感謝する。結果で返す'],
+      seductive: ['嬉しいわ。実力で返させてもらうわね'],
+    },
+    quiet: {
+      _default: ['……ありがとうございます'],
+      cool: ['…ありがたい'],
+      polite: ['…ありがとうございます。大切に使います'],
+    },
+    shy: {
+      _default: ['え…あの…ありがとう、ございます…！'],
+    },
+    easygoing: {
+      _default: ['やった！ありがとうございます！', 'おごってもらっちゃおうかな！'],
+      delinquent: ['やった！ラッキー！'],
+      seductive: ['あら嬉しい。何に使おうかしら'],
+    },
+    earnest: {
+      _default: ['ありがとうございます！次の試合、絶対頑張ります！', '…いつもありがとうございます'],
+      polite: ['ありがとうございます。必ず結果でお返しいたします'],
+      ojousama: ['ありがとうございます。結果でお応えしますわ'],
+      seductive: ['ありがとう。ちゃんと結果で返すわ'],
+    },
+    emotional: {
+      _default: ['え…！ありがとうございます…！嬉しい…！', 'うわあ…嬉しくて泣きそう…！'],
+    },
   },
-  bonus_repeat: {  // 連続支給（逓減）
-    default:  ['…また？', 'えっと…ありがとうございます', '（また同じ金額か…）'],
+  bonus_repeat: {
+    normal: { _default: ['…また？', 'えっと…ありがとうございます', '（また同じ金額か…）'] },
+    bold: { _default: ['…また金か。もういいよ'] },
+    quiet: { _default: ['…………'] },
+    shy: { _default: ['あ…ありがとう、ございます…（また…？）'] },
+    easygoing: { _default: ['えっと…ありがと…？'] },
+    earnest: { _default: ['あの…気持ちは嬉しいんですが…'] },
+    emotional: { _default: ['…また…？（少し困った顔をしている）'] },
   },
   costume: {
-    努力家:   ['えっ、本当ですか！？ 早く着てみたい！'],
-    野心:     ['これで試合に勝てる気がします！ありがとうございます'],
-    負けず嫌い: ['新コス…！これ着て勝ちまくります！'],
-    忠誠心:   ['ここまでしてもらえるなんて…ありがとうございます'],
-    破天荒:   ['えっ、これ超かわいい！テンション上がる〜！'],
-    反骨心:   ['…ふーん。まあ、着てあげてもいいけど'],
-    default:  ['わあ！ありがとうございます！', 'うれしい！大切にします', '次の試合が楽しみです！'],
+    normal: {
+      _default: ['わあ！ありがとうございます！', 'うれしい！大切にします', '次の試合が楽しみです！'],
+      ojousama: ['まあ素敵…！ありがとうございます。大切にしますわ'],
+      delinquent: ['お、いいじゃん！早く着たい！'],
+      seductive: ['素敵…！ありがとう。早く着てみたいわ'],
+    },
+    bold: {
+      _default: ['新コス！これ着て勝ちまくります！', 'これで試合に勝てる気がする！'],
+      ojousama: ['まあ、素敵ですわ！これで勝利を重ねますわよ'],
+      delinquent: ['おお！テンション上がるわ！勝ちまくるぜ！'],
+      cool: ['…いいデザインだ。ありがたい'],
+      seductive: ['素敵ね。これを着て勝ちに行くわ'],
+    },
+    quiet: {
+      _default: ['……ありがとうございます（嬉しそうに布地を撫でている）'],
+      cool: ['…悪くない。使わせてもらう'],
+      polite: ['…ありがとうございます。大切にします'],
+    },
+    shy: {
+      _default: ['え…こんな素敵なの…私に…？ ありがとうございます…！'],
+    },
+    easygoing: {
+      _default: ['えっ、これ超かわいい！テンション上がる〜！'],
+      delinquent: ['うわ、めっちゃいい！テンション爆上がりだわ！'],
+      seductive: ['かわいい！早く着てみたいわ〜'],
+    },
+    earnest: {
+      _default: ['えっ、本当ですか！？ 早く着てみたい！', 'ここまでしてもらえるなんて…ありがとうございます'],
+      polite: ['本当にいいんですか…？ 大切に着させていただきます'],
+      ojousama: ['まあ…ここまでしていただけるなんて。ありがとうございますわ'],
+      seductive: ['本当に？ 嬉しい…大切にするわ'],
+    },
+    emotional: {
+      _default: ['うわあ…！かわいい…！嬉しい…ありがとうございます…！'],
+    },
   },
   trainer: {
-    努力家:   ['専属の先生がつくんですか…！ もっと上手くなれます！'],
-    野心:     ['チャンスをものにします！'],
-    負けず嫌い: ['この環境を無駄にしない！絶対に結果を出します！'],
-    忠誠心:   ['こんな機会をいただけて…全力で応えます'],
-    破天荒:   ['マンツーマン！？ めちゃくちゃ贅沢じゃないですか！'],
-    闘志:     ['最高の環境だ！限界まで追い込んでもらいます！'],
-    反骨心:   ['…勝手にやるから。口出ししないでくれる？'],
-    default:  ['頑張ります！', '全力で取り組みます！', 'しっかり吸収します！'],
+    normal: {
+      _default: ['頑張ります！', '全力で取り組みます！', 'しっかり吸収します！'],
+      ojousama: ['精一杯、学ばせていただきますわ'],
+      delinquent: ['おっしゃ、ガンガンやるぞ！'],
+      seductive: ['しっかり吸収させてもらうわね'],
+    },
+    bold: {
+      _default: ['この環境を無駄にしない！絶対に結果を出す！', '最高の環境だ！限界まで追い込んでもらう！'],
+      ojousama: ['この機会、決して無駄にしませんわ！'],
+      delinquent: ['最高じゃん！限界まで追い込んでもらうぜ！'],
+      cool: ['…ありがたい。結果を出す'],
+      seductive: ['この環境、無駄にしないわ。見ていてね'],
+    },
+    quiet: {
+      _default: ['……全力で、学びます'],
+      cool: ['…吸収する。見ていてくれ'],
+      polite: ['…精一杯学ばせていただきます'],
+    },
+    shy: {
+      _default: ['せ、専属の先生…！が、頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['マンツーマン！？ めちゃくちゃ贅沢じゃないですか！'],
+      delinquent: ['マンツーマン！？ 超贅沢じゃん！'],
+      seductive: ['マンツーマンなんて贅沢ね。楽しみだわ'],
+    },
+    earnest: {
+      _default: ['専属の先生がつくんですか…！もっと上手くなれます！', 'こんな機会をいただけて…全力で応えます'],
+      polite: ['こんな機会をいただけて…全力でお応えいたします'],
+      ojousama: ['こんな機会をいただけますなんて…全力でお応えしますわ'],
+      seductive: ['こんな機会をもらえるなんて…全力で応えるわ'],
+    },
+    emotional: {
+      _default: ['ええっ…！専属トレーナー…！頑張ります…！嬉しい…！'],
+    },
   },
   media: {
-    努力家:   ['うわあ、緊張する…でも頑張ります！'],
-    野心:     ['もっと広い舞台に出たかった。ありがとうございます！'],
-    負けず嫌い: ['注目される場は大歓迎です！存在感見せてやる！'],
-    忠誠心:   ['団体の看板として恥ずかしくないようにします'],
-    破天荒:   ['テレビ！？ ファンのみんな見てる〜？'],
-    default:  ['よろしくお願いします！', 'ありがとうございます！', '緊張するけど…頑張ります！'],
+    normal: {
+      _default: ['よろしくお願いします！', 'ありがとうございます！', '緊張するけど…頑張ります！'],
+      ojousama: ['メディアのお仕事ですの？ 精一杯務めますわ'],
+      delinquent: ['テレビ？ やってやるよ！'],
+      seductive: ['メディア出演…？ 楽しみだわ'],
+    },
+    bold: {
+      _default: ['もっと広い舞台に出たかった。ありがとう！', '注目される場は大歓迎！存在感見せてやる！'],
+      ojousama: ['より広い舞台へ。ありがとうございますわ'],
+      delinquent: ['注目されんの大歓迎！やってやるぜ！'],
+      cool: ['…いい機会だ。結果を出す'],
+      seductive: ['注目される場って好きよ。任せて'],
+    },
+    quiet: {
+      _default: ['…が、頑張ります'],
+      cool: ['……やる'],
+      polite: ['…緊張しますが、精一杯頑張ります'],
+    },
+    shy: {
+      _default: ['え…テレビ…？ き、緊張します…で、でも頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['テレビ！？ ファンのみんな見てる〜？'],
+      delinquent: ['テレビ！？ みんな見てるー？'],
+      seductive: ['テレビ？ みんなに見てもらえるのね。楽しみ'],
+    },
+    earnest: {
+      _default: ['うわあ、緊張する…でも頑張ります！', '団体の看板として恥ずかしくないようにします'],
+      polite: ['緊張いたしますが…精一杯務めます'],
+      ojousama: ['団体の看板として恥ずかしくない姿をお見せしますわ'],
+      seductive: ['緊張するけど…精一杯やるわ'],
+    },
+    emotional: {
+      _default: ['テレビ…！？ うわあ…緊張するけど嬉しい…！頑張る…！'],
+    },
   },
   special_treatment: {
-    努力家:   ['ありがとうございます…早く試合に戻りたいんです'],
-    負けず嫌い: ['早く治してリングに戻りたい…！待ってろよ…！'],
-    忠誠心:   ['ご迷惑をおかけしてすみません…必ず戻ります'],
-    破天荒:   ['やった〜！最新の治療ってやつですか！？'],
-    反骨心:   ['…別に、同情なんていらないんだけど。…ありがと'],
-    default:  ['助かります…', 'ありがとうございます', '一日でも早く復帰します！'],
+    normal: {
+      _default: ['助かります…', 'ありがとうございます', '一日でも早く復帰します！'],
+      ojousama: ['お気遣いいただき、ありがとうございますわ。必ず戻りますの'],
+      delinquent: ['サンキュ。早く治してリング戻るわ'],
+      seductive: ['ありがとう。早く戻れるように頑張るわ'],
+    },
+    bold: {
+      _default: ['早く治してリングに戻りたい…！待ってろよ…！'],
+      ojousama: ['必ず戻りますわ。待っていてくださいませ'],
+      delinquent: ['すぐ治してやる。待ってろよ！'],
+      cool: ['…すぐ戻る。待っていてくれ'],
+      seductive: ['早く戻りたいの…待っていてね'],
+    },
+    quiet: {
+      _default: ['……ありがとうございます。戻ります'],
+      cool: ['…感謝する。必ず戻る'],
+      polite: ['…ご迷惑をおかけして申し訳ございません。必ず戻ります'],
+    },
+    shy: {
+      _default: ['すみません…ご迷惑をおかけして…必ず、戻ります…'],
+    },
+    easygoing: {
+      _default: ['やった〜！最新の治療ってやつですか！？'],
+      delinquent: ['おっ、最新の治療？ ラッキー！'],
+      seductive: ['最新の治療ね。早く良くなりそうだわ'],
+    },
+    earnest: {
+      _default: ['ありがとうございます…早く試合に戻りたいんです', 'ご迷惑をおかけしてすみません…必ず戻ります'],
+      polite: ['ありがとうございます。一日も早く復帰いたします'],
+      ojousama: ['ご迷惑をおかけしまして…必ず戻りますわ'],
+      seductive: ['ありがとう…早く戻れるように頑張るわ'],
+    },
+    emotional: {
+      _default: ['うう…治療してもらえるなんて…ありがとうございます…早く戻りたい…！'],
+    },
   },
   encourage: {
-    努力家:   ['ありがとうございます…もう一度、頑張ってみます！', 'その言葉、すごく嬉しかったです。頑張ります！'],
-    負けず嫌い: ['こんなところで止まってられない！次は絶対やります！', 'ありがとうございます。負けてられません！'],
-    野心:     ['…わかりました。まだ諦めません', 'ここで終わるつもりはありません。やります'],
-    忠誠心:   ['…声をかけてもらえて、救われました', 'ありがとうございます…頑張ります'],
-    破天荒:   ['うわー、しんみりした！でも元気出た！やってやる！', 'よし！やってやる！'],
-    反骨心:   ['…慰めてるつもり？ 余計なお世話よ。…でも、まあ…やるわ', '…言われなくても分かってる。見てなさいよ'],
-    default:  ['ありがとうございます…', 'もう少し、頑張ってみます', 'その言葉、嬉しかったです'],
+    normal: {
+      _default: ['ありがとうございます…', 'もう少し、頑張ってみます', 'その言葉、嬉しかったです'],
+      ojousama: ['…ありがとうございます。もう少し、頑張ってみますわ'],
+      delinquent: ['…サンキュ。もうちょいやってみるわ'],
+      seductive: ['…ありがとう。もう少し、頑張ってみるわ'],
+    },
+    bold: {
+      _default: ['こんなところで止まってられない！次は絶対やる！', '…分かった。まだ諦めない'],
+      ojousama: ['こんなところで終わりませんわ！'],
+      delinquent: ['止まってられるかよ！次は絶対やってやる！'],
+      cool: ['…まだ終わっていない。やる'],
+      seductive: ['止まるつもりはないわ。見ていてね'],
+    },
+    quiet: {
+      _default: ['………ありがとう、ございます'],
+      cool: ['……分かった'],
+      polite: ['…お言葉、ありがとうございます'],
+    },
+    shy: {
+      _default: ['…声をかけてもらえて…嬉しかったです…頑張ります…'],
+    },
+    easygoing: {
+      _default: ['うわー、しんみりした！でも元気出た！やってやる！', 'よし！やってやる！'],
+      delinquent: ['おっしゃ！元気出た！やってやるわ！'],
+      seductive: ['ふふ、元気出ちゃった。やってみるわ'],
+    },
+    earnest: {
+      _default: ['ありがとうございます…もう一度、頑張ってみます！', 'その言葉、すごく嬉しかったです。頑張ります！'],
+      polite: ['お言葉、ありがとうございます。もう一度頑張ります'],
+      ojousama: ['ありがとうございます…もう一度、頑張ってみますわ'],
+      seductive: ['ありがとう…もう一度、頑張ってみるわ'],
+    },
+    emotional: {
+      _default: ['…っ！ありがとうございます…！もう一回…もう一回頑張ります…！'],
+    },
   },
   encourage_high_trust: {
-    努力家:   ['あなたに言われると、本当に力が出ます！もっと頑張れます！'],
-    負けず嫌い: ['あなたが信じてくれるなら、絶対やります！'],
-    野心:     ['あなたの期待には必ず応えます！'],
-    忠誠心:   ['ずっと見てくれてたんですね…絶対に報いてみせます'],
-    反骨心:   ['…アンタにだけは、負けたくないの。だから…もう少しだけやる'],
-    default:  ['ずっと見てくれてたんですね…頑張ります！', 'あなたに言われると、本当に力が出ます！'],
+    normal: {
+      _default: ['ずっと見てくれてたんですね…頑張ります！', 'あなたに言われると、本当に力が出ます！'],
+      ojousama: ['ずっと見守ってくださったんですのね…お応えしますわ'],
+      delinquent: ['…アンタに言われると、やんなきゃって思うんだよ'],
+      seductive: ['ずっと見てくれてたのね…嬉しい。頑張るわ'],
+    },
+    bold: {
+      _default: ['あなたが信じてくれるなら、絶対やる！', 'あなたの期待には必ず応える！'],
+      ojousama: ['あなた様が信じてくださるなら、必ずお応えしますわ！'],
+      delinquent: ['アンタが信じてくれんなら、やってやるよ！'],
+      cool: ['…信じてくれるなら、応える'],
+      seductive: ['あなたが信じてくれるなら…絶対応えるわ'],
+    },
+    quiet: {
+      _default: ['……ずっと、見てくれてたんですね'],
+      cool: ['…分かった。応える'],
+      polite: ['…ずっと見守ってくださったんですね。お応えします'],
+    },
+    shy: {
+      _default: ['ずっと…見てくれてたんですか…？ わ、私…頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['えへへ…見てくれてたんだ。もうちょっと頑張ろうかな！'],
+      delinquent: ['見てくれてたんだ？ じゃ、もうちょいやるか！'],
+      seductive: ['見てくれてたのね。嬉しいわ。もう少し頑張ってみるわ'],
+    },
+    earnest: {
+      _default: ['あなたに言われると、本当に力が出ます！もっと頑張れます！', 'ずっと見てくれてたんですね…絶対に報いてみせます'],
+      polite: ['ずっと見守ってくださったんですね…必ずお報いいたします'],
+      ojousama: ['ずっと見てくださったんですのね…お報いしますわ'],
+      seductive: ['ずっと見てくれてたのね…絶対に報いるわ'],
+    },
+    emotional: {
+      _default: ['…っ！ずっと見てくれてたんですね…！泣いちゃう…でも頑張る…！'],
+    },
   },
   refresh_leave: {
-    努力家:   ['え…でも練習が…でも、ありがとうございます！', '少し休んで、また全力で頑張ります！'],
-    野心:     ['リフレッシュして、もっと上を目指します！', '充電してきます！絶対戻ってきます'],
-    忠誠心:   ['…そんなに気にかけてもらえるとは。ありがとうございます', 'ゆっくり休んで、また頑張ります'],
-    破天荒:   ['やった！バカンスだ！でも戻ったら本気出します！'],
-    反骨心:   ['…休めって言うなら休むわよ。アンタの指図じゃないけど'],
-    default:  ['ありがとうございます！行ってきます！', 'ゆっくり休んで戻ってきます！', 'ありがとうございます…少し、休みます'],
+    normal: {
+      _default: ['ありがとうございます！行ってきます！', 'ゆっくり休んで戻ってきます！', 'ありがとうございます…少し、休みます'],
+      ojousama: ['ありがとうございますわ。リフレッシュして参りますの'],
+      delinquent: ['サンキュ！ちょっと休んでくるわ'],
+      seductive: ['ありがとう。リフレッシュしてくるわね'],
+    },
+    bold: {
+      _default: ['リフレッシュして、もっと上を目指す！', '充電してくる！絶対戻ってくる！'],
+      ojousama: ['充電して参りますわ！必ず戻りますわよ！'],
+      delinquent: ['充電してくる！戻ったら全開だぜ！'],
+      cool: ['…充電してくる。戻ったら結果を出す'],
+      seductive: ['リフレッシュしてくるわ。戻ったらもっと輝くから'],
+    },
+    quiet: {
+      _default: ['…少し、休みます。ありがとうございます'],
+      cool: ['…感謝する。少し休む'],
+      polite: ['…ありがとうございます。少し休ませていただきます'],
+    },
+    shy: {
+      _default: ['あの…休んでいいんですか…？ ありがとうございます…'],
+    },
+    easygoing: {
+      _default: ['やった！バカンスだ！でも戻ったら本気出します！'],
+      delinquent: ['バカンスだー！戻ったら本気出すから！'],
+      seductive: ['バカンスね。リフレッシュして戻るわ'],
+    },
+    earnest: {
+      _default: ['え…でも練習が…でも、ありがとうございます！', '…そんなに気にかけてもらえるとは。ありがとうございます'],
+      polite: ['練習が気になりますが…お気遣いありがとうございます'],
+      ojousama: ['練習のことが気になりますけれど…お心遣い、ありがとうございますわ'],
+      seductive: ['練習が気になるけど…ありがとう。休んでくるわ'],
+    },
+    emotional: {
+      _default: ['休んでいいんですか…？ ありがとうございます…リフレッシュしてきます…！'],
+    },
   },
   party: {
-    努力家:   ['みんなお疲れ様でした！明日からまた頑張ります！', 'たまにはこういう時間も大事ですね'],
-    負けず嫌い: ['楽しいけど…次の興行ではもっと結果を出したい！'],
-    野心:     ['いい雰囲気ですね。チームが強くなってる証拠だ'],
-    忠誠心:   ['こうしてみんなで集まれるのが嬉しいです'],
-    破天荒:   ['カンパーイ！！ 今日は無礼講だ〜！', '代表、もう一軒行きましょうよ〜！'],
-    リーダー気質: ['みんな最近よく頑張ってるよ。誇りに思う'],
-    ムードメーカー: ['はいはーい！余興やりまーす！', 'みんなで写真撮ろ〜！'],
-    反骨心:   ['…別に楽しくないし。…まあ、料理は悪くない'],
-    default:  ['お疲れ様でした〜！', 'みんなで楽しく過ごせました！', 'こういう時間、いいですね！', 'リフレッシュできました！', '明日からまた頑張りましょう！'],
+    normal: {
+      _default: ['お疲れ様でした〜！', 'みんなで楽しく過ごせました！', 'こういう時間、いいですね！', 'リフレッシュできました！'],
+      ojousama: ['楽しいお時間でしたわ。皆様、お疲れ様ですの'],
+      delinquent: ['いえーい！カンパーイ！'],
+      seductive: ['楽しかったわ。こういう時間もいいわね'],
+    },
+    bold: {
+      _default: ['楽しいけど…次の興行ではもっと結果を出す！', 'いい雰囲気だ。チームが強くなってる証拠だな'],
+      ojousama: ['皆様、よく頑張りましたわね。誇りに思いますわ'],
+      delinquent: ['カンパーイ！！ 今日は無礼講だ〜！'],
+      cool: ['…悪くない時間だった'],
+      seductive: ['いい雰囲気ね。チームが成長してる証拠だわ'],
+    },
+    quiet: {
+      _default: ['……楽しかったです（小さく微笑んでいる）'],
+      cool: ['…悪くなかった'],
+      polite: ['…楽しいお時間でした。ありがとうございます'],
+    },
+    shy: {
+      _default: ['あ、あの…楽しかった、です…（隅で小さく笑っている）'],
+    },
+    easygoing: {
+      _default: ['カンパーイ！！ 今日は無礼講だ〜！', 'もう一軒行きましょうよ〜！'],
+      delinquent: ['うぇーい！飲むぞ〜！'],
+      seductive: ['ふふ、みんないい顔してるわね'],
+    },
+    earnest: {
+      _default: ['みんなお疲れ様でした！明日からまた頑張ります！', 'こうしてみんなで集まれるのが嬉しいです'],
+      polite: ['皆様、お疲れ様でした。明日からまた頑張りましょう'],
+      ojousama: ['皆様、お疲れ様ですわ。明日からまた頑張りましょうね'],
+      seductive: ['お疲れ様。また明日から頑張りましょうね'],
+    },
+    emotional: {
+      _default: ['みんな〜！楽しい〜！大好き〜！', 'こういう時間…最高だよ…！'],
+    },
   },
   camp: {
-    努力家:   ['やった！思い切り練習できる！', '合宿の間に絶対レベルアップしてみせます！', 'みっちり鍛えてもらいます！'],
-    負けず嫌い: ['ライバルに差をつけるチャンスだ！', '合宿から帰る頃には一回り強くなってやる！'],
-    野心:     ['ここで一段階上に行く。絶対に', 'この投資、結果で返します'],
-    忠誠心:   ['みんなで一緒に強くなれるなんて…最高です', '団体のためにも、全力で取り組みます'],
-    破天荒:   ['うおー！！ 合宿だ！ 楽しみ！', '夜は枕投げだ！…嘘です、練習します'],
-    闘志:     ['ガンガンやりましょう！ 身体が疼いてます！', '限界まで追い込む準備はできてる！'],
-    リーダー気質: ['私がみんなを引っ張ります。全員レベルアップさせますよ', '合宿の段取りは任せてください！'],
-    ムードメーカー: ['みんなで合宿！最高じゃん！盛り上げるよ〜！'],
-    反骨心:   ['…合宿ね。付き合ってやるわよ。一人で追い込むけど', '勝手にやるから。終わったとき結果で見せてやる'],
-    default:  ['しっかり鍛えてきます！', '頑張ります！', '良い合宿にしましょう！', 'みんなで強くなりましょう！', '楽しみです！全力で取り組みます！'],
+    normal: {
+      _default: ['しっかり鍛えてきます！', '頑張ります！', '良い合宿にしましょう！', '楽しみです！全力で取り組みます！'],
+      ojousama: ['合宿ですの？ 精一杯取り組みますわ'],
+      delinquent: ['合宿！ ガンガンやるぞ！'],
+      seductive: ['合宿ね。しっかり鍛えるわ'],
+    },
+    bold: {
+      _default: ['ライバルに差をつけるチャンスだ！', '合宿から帰る頃には一回り強くなってやる！'],
+      ojousama: ['この合宿で一段上へ参りますわ！'],
+      delinquent: ['やってやるぜ！帰る頃には別人だ！'],
+      cool: ['…鍛えさせてもらう。結果を出す'],
+      seductive: ['帰る頃には一回り強くなってるわよ'],
+    },
+    quiet: {
+      _default: ['……頑張ります'],
+      cool: ['…追い込む'],
+      polite: ['…精一杯、取り組みます'],
+    },
+    shy: {
+      _default: ['が、合宿…！ が、頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['うおー！！合宿だ！楽しみ！', '夜は枕投げだ！…嘘です、練習します'],
+      delinquent: ['合宿だー！ 盛り上がっていくぞー！'],
+      seductive: ['合宿楽しみ〜。みんなで頑張りましょ'],
+    },
+    earnest: {
+      _default: ['やった！思い切り練習できる！', '合宿の間に絶対レベルアップしてみせます！', 'みんなで一緒に強くなれるなんて…最高です'],
+      polite: ['全力で取り組ませていただきます。レベルアップしてみせます'],
+      ojousama: ['みっちり鍛えていただきますわ！絶対に成長してみせますの'],
+      seductive: ['思い切り鍛えられるのね。楽しみだわ'],
+    },
+    emotional: {
+      _default: ['合宿…！みんなで強くなれる…！最高だよ…！'],
+    },
   },
 };
 
-// §3-3: 選択型イベントセリフ（S1〜S6, E1〜E6）
-// 特性別（traits）でセリフを分岐。フォールバックは default
+// §3-3: 選択型イベントセリフ（S1〜S6, E1〜E6）— personality×archetype
 const CHOICE_EVENT_DIALOGUES = {
   // S1: タイトル挑戦要求
   S1: {
-    リーダー気質: ['私がこの団体を引っ張っていく。だから次は王座に挑ませてください'],
-    野心:    ['チャンピオンの座が欲しい。今すぐ組んでください'],
-    負けず嫌い: ['あの人に負けたまま終われない。タイトルマッチに組んでください！'],
-    闘志:    ['燃えています！ベルトを賭けた試合がしたいんです！'],
-    努力家:  ['ずっと準備してきました…チャンスをください'],
-    人望:    ['みんながそう思っている…私がチャンピオンになるべきだと'],
-    反骨心:  ['ベルトが欲しいんじゃない。あいつに勝ちたいだけよ。…組んで'],
-    default: ['タイトルマッチの機会をいただけませんか？'],
+    normal: {
+      _default: ['タイトルマッチの機会をいただけませんか？'],
+      ojousama: ['王座への挑戦をお許しいただけませんこと？'],
+      delinquent: ['タイトルマッチ、組んでくれよ'],
+      seductive: ['タイトルマッチの機会、いただけないかしら'],
+    },
+    bold: {
+      _default: ['チャンピオンの座が欲しい。今すぐ組んでくれ', 'ベルトを賭けた試合がしたい！'],
+      ojousama: ['チャンピオンの座、いただきに参りますわ'],
+      delinquent: ['ベルトよこせ！今すぐ組め！'],
+      cool: ['…ベルトが欲しい。組んでくれ'],
+      seductive: ['ベルトが欲しいの。組んでもらえる？'],
+    },
+    quiet: {
+      _default: ['……挑戦させてください'],
+      cool: ['…タイトルマッチを。頼む'],
+      polite: ['…タイトルマッチに挑戦させていただけますか'],
+    },
+    shy: {
+      _default: ['あ、あの…タイトルマッチ…挑戦させてもらえませんか…？'],
+    },
+    easygoing: {
+      _default: ['ねえねえ、タイトルマッチ組んでよ！', 'ベルト欲しいなー。挑戦させてくれない？'],
+      delinquent: ['タイトルマッチ組めよ！やる気あんだからさ！'],
+      seductive: ['ベルト、欲しくなっちゃった。挑戦させてくれない？'],
+    },
+    earnest: {
+      _default: ['ずっと準備してきました…チャンスをください', 'タイトルマッチに挑ませてください！'],
+      polite: ['ずっと準備して参りました。チャンスをいただけませんか'],
+      ojousama: ['ずっと準備してまいりましたの。チャンスをいただけませんこと'],
+      seductive: ['ずっと準備してきたの。チャンスをちょうだい'],
+    },
+    emotional: {
+      _default: ['お願いします…！タイトルマッチに挑ませてください…！'],
+    },
   },
   // S2: 対戦要求（因縁）
   S2: {
-    負けず嫌い: ['あの人と戦わずにはいられない！組んでください！'],
-    闘志:    ['決着をつけたい。彼女と戦う機会を作ってください'],
-    野心:    ['あの相手を越えてこそ、次のステージに行ける'],
-    反骨心:  ['あいつが気に入らない。ただそれだけ。試合を組んで'],
-    default: ['因縁のある相手と試合を組んでいただけませんか'],
+    normal: {
+      _default: ['因縁のある相手と試合を組んでいただけませんか'],
+      ojousama: ['あの方との決着を、お許しいただけませんこと'],
+      delinquent: ['あいつとの試合、組んでくれよ'],
+      seductive: ['あの人との試合、組んでもらえないかしら'],
+    },
+    bold: {
+      _default: ['あの人と戦わずにはいられない！組んでくれ！', '決着をつけたい。あいつと戦う機会を作ってくれ'],
+      ojousama: ['あの方と決着をつけませんと！'],
+      delinquent: ['あいつと決着つけさせろ！'],
+      cool: ['…決着をつけたい。組んでくれ'],
+      seductive: ['あの人と決着をつけたいの。組んでもらえる？'],
+    },
+    quiet: {
+      _default: ['……あの人と、戦わせてください'],
+      cool: ['…あいつとの試合を。頼む'],
+      polite: ['…あの方との対戦を、お願いできますか'],
+    },
+    shy: {
+      _default: ['あの…あの人と…試合させてもらえませんか…'],
+    },
+    easygoing: {
+      _default: ['あの人との試合組んでよ！決着つけたいんだ！'],
+      delinquent: ['あいつとやらせろよ！ケリつけてやる！'],
+      seductive: ['あの人との試合、組んでくれない？ 決着つけたいの'],
+    },
+    earnest: {
+      _default: ['あの相手を越えてこそ、次のステージに行ける。組んでください'],
+      polite: ['あの方との試合を組んでいただけないでしょうか'],
+      ojousama: ['あの方を越えてこそですわ。組んでいただけませんこと'],
+      seductive: ['あの人を越えたいの。試合を組んでくれない？'],
+    },
+    emotional: {
+      _default: ['あの人と戦いたい…！お願いします…組んでください…！'],
+    },
   },
   // S3: 休養願い
   S3: {
-    努力家:  ['迷惑をかけてしまって申し訳ないんですが…少し休ませてもらえますか'],
-    忠誠心:  ['チームに迷惑はかけたくないんですが…体が限界で…'],
-    破天荒:  ['もう限界です！ちょっと休まないとマジでやばい！'],
-    default: ['少し休養をいただけますか？'],
+    normal: {
+      _default: ['少し休養をいただけますか？'],
+      ojousama: ['少しお休みをいただけますかしら…'],
+      delinquent: ['ちょっと休ませてくれ…'],
+      seductive: ['少し休ませてもらえないかしら…'],
+    },
+    bold: {
+      _default: ['…悔しいけど、体が限界だ。少し休ませてくれ'],
+      ojousama: ['…お恥ずかしいのですが、体が限界ですわ'],
+      delinquent: ['くそ…体がもう限界だ。休ませてくれ'],
+      cool: ['…限界だ。休む'],
+      seductive: ['…体が限界なの。少し休ませて'],
+    },
+    quiet: {
+      _default: ['……少し、休ませてください'],
+      cool: ['…休む必要がある'],
+      polite: ['…申し訳ありません。少し休ませていただけますか…'],
+    },
+    shy: {
+      _default: ['あの…すみません…体が…少し休ませてもらえますか…'],
+    },
+    easygoing: {
+      _default: ['もう限界！ちょっと休まないとマジでやばい！'],
+      delinquent: ['無理！限界！休ませて！'],
+      seductive: ['ごめんね、ちょっと限界みたい。休ませてくれる？'],
+    },
+    earnest: {
+      _default: ['迷惑をかけてしまって申し訳ないんですが…少し休ませてもらえますか', 'チームに迷惑はかけたくないんですが…体が限界で…'],
+      polite: ['ご迷惑をおかけしまして申し訳ございません…少しお休みをいただけますか'],
+      ojousama: ['チームにご迷惑はかけたくありませんのに…体が限界ですわ…'],
+      seductive: ['迷惑かけたくないんだけど…体が限界なの…'],
+    },
+    emotional: {
+      _default: ['ごめんなさい…体がもう…休ませてください…！'],
+    },
   },
   // S4: 不満・退団示唆（低trust）
-  S4_direct: {  // 直訴型（熱血・生意気系）
-    負けず嫌い: ['このままじゃ納得できない。待遇を改善してくれなければ移籍を考えます'],
-    闘志:    ['私の実力を使いきれていない。このままここにいる意味はあるんでしょうか'],
-    野心:    ['私の目標を達成できる環境が必要です。考え直してもらえませんか'],
-    破天荒:  ['ぶっちゃけ不満です！ちゃんと話し合いましょう！'],
-    反骨心:  ['…もう限界。何も変わらないなら、ここにいる理由がない'],
-    default: ['このままでは限界です。待遇を改善していただけませんか'],
+  S4_direct: {
+    normal: {
+      _default: ['このままでは限界です。待遇を改善していただけませんか'],
+      ojousama: ['このままでは困りますの。お話し合いをさせていただけませんこと'],
+      delinquent: ['不満だっつってんの。ちゃんと話し合おうぜ'],
+      seductive: ['このままじゃ困るわ。ちゃんと考えてもらえないかしら'],
+    },
+    bold: {
+      _default: ['このままじゃ納得できない。改善してくれなければ移籍を考える', '私の実力を使いきれていない。ここにいる意味はあるのか'],
+      ojousama: ['このままでは納得できませんわ。ご検討いただけなければ…'],
+      delinquent: ['こんなんじゃやってらんねーよ！改善しろ！'],
+      cool: ['…このままでは先がない。考えてくれ'],
+      seductive: ['このままじゃ我慢の限界よ。考え直してもらえない？'],
+    },
+    quiet: {
+      _default: ['………（険しい目でこちらを見つめている）'],
+      cool: ['……もう、限界だ（静かに、しかし断固として）'],
+      polite: ['…申し訳ありません。ただ…このままでは…'],
+    },
+    shy: {
+      _default: ['…あの…ごめんなさい…でも…このままだと…'],
+    },
+    easygoing: {
+      _default: ['ぶっちゃけ不満です！ちゃんと話し合いましょう！'],
+      delinquent: ['もう無理！ちゃんと話し合えよ！'],
+      seductive: ['ぶっちゃけ、不満があるの。ちゃんと話しましょう？'],
+    },
+    earnest: {
+      _default: ['…ずっと我慢してきました。でも、このままでは…', '私の目標を達成できる環境が必要です。考え直してもらえませんか'],
+      polite: ['ずっと我慢して参りましたが…このままでは限界です'],
+      ojousama: ['これまで耐えてまいりましたけれど…もう限界ですわ'],
+      seductive: ['ずっと我慢してきたの。でも、もう限界よ'],
+    },
+    emotional: {
+      _default: ['…もう…無理です…！このままだと…私…！'],
+    },
   },
-  S4_silent: {  // 沈黙型（クール・内向系）
-    default: [
-      '（沈黙）…いえ、何でもないです',
-      '（目を伏せて、何かを堪えるように唇を噛む）……',
-      '…………（小さくため息をつき、視線を逸らす）',
-    ],
+  S4_silent: {
+    normal: { _default: ['（沈黙）…いえ、何でもないです'] },
+    bold: { _default: ['…………（拳を握りしめている）'] },
+    quiet: {
+      _default: ['…………（小さくため息をつき、視線を逸らす）'],
+      cool: ['……（何も言わず、立ち去ろうとする）'],
+      polite: ['………（目を伏せて、何かを堪えるように唇を噛む）……'],
+    },
+    shy: { _default: ['…………（目を逸らして、何も言えずにいる）'] },
+    easygoing: { _default: ['あはは…いや、なんでも…（笑っているが目が笑っていない）'] },
+    earnest: { _default: ['…………（何か言いたげに口を開きかけ、止める）'] },
+    emotional: { _default: ['……っ（泣くのを堪えるように唇を噛んでいる）'] },
   },
   // S5: 特訓志願（高trust）
   S5: {
-    努力家:  ['もっと強くなりたいんです。特訓を許可してください！'],
-    負けず嫌い: ['もっと上を目指したい。特訓させてください！'],
-    闘志:    ['燃えています！とことんやらせてください！'],
-    反骨心:  ['…一人でやるから。場所だけ貸して'],
-    default: ['特訓する時間をいただけませんか？'],
+    normal: {
+      _default: ['特訓する時間をいただけませんか？'],
+      ojousama: ['特訓のお時間をいただけませんこと？'],
+      delinquent: ['特訓させてくれ。もっと強くなりてえ'],
+      seductive: ['特訓させてもらえないかしら？'],
+    },
+    bold: {
+      _default: ['もっと上を目指したい。特訓させてくれ！', '燃えてる！とことんやらせてくれ！'],
+      ojousama: ['もっと上を目指したいのですわ。特訓をお許しくださいませ！'],
+      delinquent: ['もっと強くなりてぇ！特訓させろ！'],
+      cool: ['…特訓させてくれ。もっと強くなる'],
+      seductive: ['もっと強くなりたいの。特訓させてもらえる？'],
+    },
+    quiet: {
+      _default: ['……特訓、させてください'],
+      cool: ['…鍛えたい。場所を貸してくれ'],
+      polite: ['…特訓をさせていただけますか'],
+    },
+    shy: {
+      _default: ['あの…特訓…させてもらえませんか…？ もっと強くなりたいんです…'],
+    },
+    easygoing: {
+      _default: ['特訓したい！もっと強くなりたいんだ！'],
+      delinquent: ['特訓すんぞ！もっと強くなりてーんだよ！'],
+      seductive: ['特訓したいの。もっと強くなりたくて'],
+    },
+    earnest: {
+      _default: ['もっと強くなりたいんです。特訓を許可してください！'],
+      polite: ['もっと強くなりたいのです。特訓をお許しいただけますか'],
+      ojousama: ['もっと強くなりたいですの。特訓のお許しをいただけませんこと'],
+      seductive: ['もっと強くなりたいの。特訓させてもらえる？'],
+    },
+    emotional: {
+      _default: ['お願いします…！特訓させてください…！もっと、もっと強くなりたい…！'],
+    },
   },
   // S6: 後輩指導の申し出（ベテラン）
   S6: {
-    リーダー気質: ['若い子たちの面倒を見させてください。それが私の役目だと思うので'],
-    人望:    ['後輩に何かを伝えたいんです。指導の機会をもらえますか'],
-    努力家:  ['私が培ってきたものを、後輩に伝えたいと思って…'],
-    default: ['後輩の指導を担当させてもらえませんか？'],
+    normal: {
+      _default: ['後輩の指導を担当させてもらえませんか？'],
+      ojousama: ['後輩のお世話を、私にお任せいただけませんこと？'],
+      delinquent: ['後輩の面倒、見させてくれよ'],
+      seductive: ['後輩の指導、私にやらせてもらえないかしら'],
+    },
+    bold: {
+      _default: ['若い子たちの面倒を見させてくれ。それが私の役目だ'],
+      ojousama: ['若い子たちのお世話は私の務めですわ'],
+      delinquent: ['後輩の面倒は任せろ。鍛えてやる'],
+      cool: ['…後輩を見る。任せてくれ'],
+      seductive: ['後輩の面倒、見させてもらえるかしら？'],
+    },
+    quiet: {
+      _default: ['……後輩に、伝えたいことがあるんです'],
+      cool: ['…次の世代に、繋ぎたいものがある'],
+      polite: ['…後輩のご指導を、担当させていただけますか'],
+    },
+    shy: {
+      _default: ['あの…私でよければ…後輩の子たちに…何か伝えられたら…'],
+    },
+    easygoing: {
+      _default: ['後輩の面倒見させてよ！楽しそうだし！'],
+      delinquent: ['後輩の面倒見るわ！任せとけ！'],
+      seductive: ['後輩の子たち、かわいいわよね。面倒見させてもらえない？'],
+    },
+    earnest: {
+      _default: ['私が培ってきたものを、後輩に伝えたいと思って…', '後輩に何かを伝えたいんです。指導の機会をもらえますか'],
+      polite: ['培ってきたものを後輩にお伝えしたいのです'],
+      ojousama: ['私が学んできたことを、後輩にお伝えしたいと思いまして…'],
+      seductive: ['培ってきたものを、次の子たちに伝えたいの'],
+    },
+    emotional: {
+      _default: ['後輩の子たちに…私にできることがあるなら…やらせてください！'],
+    },
   },
   // E1: メディア出演オファー
   E1: {
-    '華':             ['私が出れば注目されるのは当然。楽しみにしてます'],
-    'ファンサービス': ['ファンのみなさんに、もっと近くで私を見てもらいたいです！'],
-    '野心':           ['この露出を足がかりに、もっと大きな舞台へ進みたい'],
-    '努力家':         ['テレビは緊張しますけど…精一杯やります！'],
-    default: ['メディアへの出演、ご検討いただけますか？', '出演のお話をいただきました。やってみたいです'],
+    normal: {
+      _default: ['メディアへの出演、ご検討いただけますか？', '出演のお話をいただきました。やってみたいです'],
+      ojousama: ['メディアのお話ですの？ ぜひお受けしたいですわ'],
+      delinquent: ['テレビ出れんの？ やるやる！'],
+      seductive: ['メディア出演のお話？ 楽しみだわ'],
+    },
+    bold: {
+      _default: ['この露出を足がかりに、もっと大きな舞台へ進みたい', '私が出れば注目されるのは当然。楽しみにしてる'],
+      ojousama: ['私が出ればお客様も喜びますわ。楽しみですの'],
+      delinquent: ['やってやるぜ！注目されんのは大歓迎だ！'],
+      cool: ['…いい機会だ。出る'],
+      seductive: ['注目される場は好きよ。もちろんやるわ'],
+    },
+    quiet: {
+      _default: ['…出演のお話、ですか…頑張ります'],
+      cool: ['……やる'],
+      polite: ['…出演のお話でしょうか。精一杯努めます'],
+    },
+    shy: {
+      _default: ['え…テレビ…？ わ、私なんかが…で、でもやってみたいです…'],
+    },
+    easygoing: {
+      _default: ['ファンのみなさんに、もっと近くで私を見てもらいたい！', 'テレビ！？ やった！出たい！'],
+      delinquent: ['テレビ出んの！？ 最高じゃん！'],
+      seductive: ['ファンのみんなにもっと見てもらえるのね。嬉しいわ'],
+    },
+    earnest: {
+      _default: ['テレビは緊張しますけど…精一杯やります！'],
+      polite: ['緊張いたしますが…精一杯務めさせていただきます'],
+      ojousama: ['テレビは緊張いたしますけれど…精一杯やらせていただきますわ'],
+      seductive: ['緊張するけど…精一杯やるわ'],
+    },
+    emotional: {
+      _default: ['テレビ…！？ えっ…嬉しい…！頑張ります…！'],
+    },
   },
   // E4: スカウト情報（将来拡張用プレースホルダ）
-  E4: { default: ['新たなスカウト情報が届きました'] },
+  E4: {
+    normal: { _default: ['新たなスカウト情報が届きました'] },
+  },
   // E6: 他団体からの引き抜き
   E6: {
-    野心:    ['…本当のことを言うと、いい条件だと思っています'],
-    忠誠心:  ['こちらに義理があるので断りましたが…報告しておきます'],
-    破天荒:  ['マジで！？ 他の団体が私を欲しいって！？ ちょっと嬉しいかも…'],
-    人望:    ['みんなと離れたくない気持ちはあるけど…正直、迷ってます'],
-    反骨心:  ['…他所から話が来た。ここに義理はないし、考えてもいいでしょ'],
-    default: ['他の団体からオファーが来ています'],
+    normal: {
+      _default: ['他の団体からオファーが来ています'],
+      ojousama: ['他の団体からお話がございましたの…'],
+      delinquent: ['他所から話来てんだけど'],
+      seductive: ['他の団体からお誘いが来てるの'],
+    },
+    bold: {
+      _default: ['…本当のことを言うと、いい条件だと思ってる', '他所から話が来た。考えてもいいだろ'],
+      ojousama: ['…正直に申しますと、良い条件ですわ'],
+      delinquent: ['他所からいい話来てんだよ。考えさせてくれ'],
+      cool: ['…他から話が来た。条件は悪くない'],
+      seductive: ['他所からいい話が来てるの。正直、迷ってるわ'],
+    },
+    quiet: {
+      _default: ['………他から、話が（小さな声で）'],
+      cool: ['…他所から来た。報告する'],
+      polite: ['…他の団体様からお話が…報告しておきます'],
+    },
+    shy: {
+      _default: ['あの…他の団体から…その…どうしたらいいか分からなくて…'],
+    },
+    easygoing: {
+      _default: ['マジで！？ 他の団体が私を欲しいって！？ ちょっと嬉しいかも…'],
+      delinquent: ['他所から話来たんだけど！ちょっと嬉しくね？'],
+      seductive: ['他所からお誘いが来ちゃった。ちょっと嬉しいかも'],
+    },
+    earnest: {
+      _default: ['こちらに義理があるので断りましたが…報告しておきます', 'みんなと離れたくない気持ちはあるけど…正直、迷ってます'],
+      polite: ['こちらに義理がございますので…ただ、ご報告だけは'],
+      ojousama: ['こちらへの義理がございますから…でも、ご報告だけはと思いまして'],
+      seductive: ['義理があるから断ったけど…報告はしておくわね'],
+    },
+    emotional: {
+      _default: ['他の団体からオファーが…どうしよう…迷ってる…'],
+    },
   },
 };
 
@@ -2422,32 +4488,119 @@ const LARGE_EVENT_TEXTS = {
 const LARGE_EVENT_DIALOGUES = {
   // B1: 練習中の怪我 — 怪我した選手のセリフ
   B1: {
-    努力家:  ['すみません…もっと注意するべきでした。早く復帰できるよう頑張ります'],
-    不屈:   ['大丈夫です、この程度…すぐ戻ります'],
-    闘志:   ['くそっ…こんなところで足を止めるわけにはいかないのに'],
-    破天荒:  ['いてて…やっちゃいました。でも根性で治します！'],
-    頑丈さ:  ['体は丈夫なはずなんですが…油断しました'],
-    default: ['…痛みが引くまで少し時間がかかりそうです'],
+    normal: {
+      _default: ['…痛みが引くまで少し時間がかかりそうです'],
+      ojousama: ['少しお時間をいただくことになりそうですわ…'],
+      delinquent: ['いてて…やっちまった。すぐ戻るから'],
+      seductive: ['…少し時間がかかりそう。ごめんなさいね'],
+    },
+    bold: {
+      _default: ['くそっ…こんなところで足を止めるわけにはいかないのに', '大丈夫だ、この程度…すぐ戻る'],
+      ojousama: ['こんなところで止まるわけには参りませんわ…！'],
+      delinquent: ['くそっ…こんなとこで止まってらんねえ！'],
+      cool: ['…すぐ戻る。問題ない'],
+      seductive: ['こんなところで止まるつもりはないわ…すぐ戻る'],
+    },
+    quiet: {
+      _default: ['……すみません'],
+      cool: ['…すぐ戻る'],
+      polite: ['…申し訳ございません。すぐに戻ります'],
+    },
+    shy: {
+      _default: ['す、すみません…ご迷惑を…早く治します…'],
+    },
+    easygoing: {
+      _default: ['いてて…やっちゃいました。でも根性で治します！'],
+      delinquent: ['いった！やっちまったけど、すぐ治すから！'],
+      seductive: ['あら、やっちゃった…でもすぐ治すわ'],
+    },
+    earnest: {
+      _default: ['すみません…もっと注意するべきでした。早く復帰できるよう頑張ります'],
+      polite: ['申し訳ございません…一日も早く復帰いたします'],
+      ojousama: ['もっと気をつけるべきでしたわ…早く復帰して見せますの'],
+      seductive: ['ごめんなさい…早く戻れるように頑張るわ'],
+    },
+    emotional: {
+      _default: ['ごめんなさい…！早く治します…早く戻りたい…！'],
+    },
   },
   // B2: 対立 — fighter1 のセリフ
   B2_fighter1: {
-    負けず嫌い: ['あいつの態度が許せない。もう我慢の限界だ'],
-    闘志:    ['あの人とは根本的に合わない。けじめをつけたい'],
-    リーダー気質: ['チームのためにも、この問題ははっきりさせるべきだ'],
-    破天荒:   ['あいつとはもう無理！顔も見たくない！'],
-    野心:    ['足を引っ張る人間とは一緒にやれない'],
-    default:  ['このままじゃチームがもたない。何とかしてほしい'],
+    normal: {
+      _default: ['このままじゃチームがもたない。何とかしてほしい'],
+      ojousama: ['あの方とは…もう限界ですわ'],
+      delinquent: ['あいつとはもう無理だ。何とかしてくれ'],
+      seductive: ['あの人とはもう無理よ。何とかしてもらえないかしら'],
+    },
+    bold: {
+      _default: ['あいつの態度が許せない。もう我慢の限界だ', 'チームのためにも、この問題ははっきりさせるべきだ'],
+      ojousama: ['あの方の態度は許せませんわ。はっきりさせますわよ'],
+      delinquent: ['あいつの態度が気に食わねえ！限界だ！'],
+      cool: ['…あいつとは合わない。決着をつける'],
+      seductive: ['あの人の態度、もう我慢できないの'],
+    },
+    quiet: {
+      _default: ['………あの人とは、もう…'],
+      cool: ['…あれとは合わない。それだけだ'],
+      polite: ['…あの方とは…申し訳ありません、もう限界です'],
+    },
+    shy: {
+      _default: ['あの…あの人のこと…もう…どうしたらいいか…'],
+    },
+    easygoing: {
+      _default: ['あいつとはもう無理！顔も見たくない！'],
+      delinquent: ['あいつマジ無理！もう顔も見たくねえ！'],
+      seductive: ['あの人とはもう無理。顔も見たくないわ'],
+    },
+    earnest: {
+      _default: ['足を引っ張る人間とは一緒にやれない', 'このままでは団体のためにならない。何とかしてほしい'],
+      polite: ['あの方とは…このままではチームに影響が出ます'],
+      ojousama: ['あの方とは…チームのためにもはっきりさせるべきですわ'],
+      seductive: ['あの人と一緒じゃ仕事にならないの。何とかして'],
+    },
+    emotional: {
+      _default: ['もう無理…！あの人と一緒にいると…辛い…！'],
+    },
   },
   // B2: 対立 — fighter2 のセリフ
   B2_fighter2: {
-    負けず嫌い: ['私だって黙ってない。向こうが謝るべきだ'],
-    闘志:    ['正面からぶつかって決着つけるしかないでしょう'],
-    リーダー気質: ['私のやり方に文句があるなら、はっきり言えばいい'],
-    破天荒:   ['売られたケンカは買うよ！来いよ！'],
-    忠誠心:   ['団体には迷惑をかけたくないけど…あの人とは無理です'],
-    default:  ['向こうにも非があるのに、私だけ悪いみたいに…'],
+    normal: {
+      _default: ['向こうにも非があるのに、私だけ悪いみたいに…'],
+      ojousama: ['あちらにも非がおありでしょうに…'],
+      delinquent: ['向こうが悪いんだろ。なんで私だけ？'],
+      seductive: ['向こうにも非があるのに…私だけが悪いの？'],
+    },
+    bold: {
+      _default: ['私だって黙ってない。向こうが謝るべきだ', '正面からぶつかって決着つけるしかないだろう'],
+      ojousama: ['私だって黙ってはいませんわよ。あちらが非を認めるべきですわ'],
+      delinquent: ['黙ってると思うなよ！向こうが謝れ！'],
+      cool: ['…謝る気はない。向こうが非を認めるべきだ'],
+      seductive: ['黙ってるつもりはないわ。向こうが悪いんだから'],
+    },
+    quiet: {
+      _default: ['………（静かに俯いている）'],
+      cool: ['…私は間違っていない'],
+      polite: ['…あの方とは…すみません、もう…'],
+    },
+    shy: {
+      _default: ['…私が悪いんでしょうか…（不安そうに）'],
+    },
+    easygoing: {
+      _default: ['売られたケンカは買うよ！来いよ！'],
+      delinquent: ['やんのか！？ 売られたケンカは買うぜ！'],
+      seductive: ['ケンカ売ってきたのは向こうよ？ 買ってあげるわ'],
+    },
+    earnest: {
+      _default: ['団体には迷惑をかけたくないけど…あの人とは無理です', '私のやり方に文句があるなら、はっきり言えばいい'],
+      polite: ['団体にご迷惑はかけたくないのですが…あの方とは…'],
+      ojousama: ['団体にご迷惑はかけたくありませんのに…あの方とは…'],
+      seductive: ['迷惑はかけたくないけど…あの人とはもう無理なの'],
+    },
+    emotional: {
+      _default: ['私だって…！私だって辛いのに…！'],
+    },
   },
-  // B3: 対抗戦 — 挑戦者のセリフ（憎たらしい態度）
+  // B3: 対抗戦 — 挑戦者のセリフ（憎たらしい態度）※NPC配列のまま
   B3_challenger: [
     'お前たちの団体のレベル？ うちの練習生にも及ばないだろうね',
     'かわいそうに。井の中の蛙って言葉、知ってる？',
@@ -2463,7 +4616,7 @@ const LARGE_EVENT_DIALOGUES = {
     'せっかくの機会だし、プロのレスリングを見せてあげる。よく見ておきなさい',
     '話題作りに付き合ってあげる。感謝してほしいくらいだよ',
   ],
-  // B3: 断った場合の挑発追加セリフ
+  // B3: 断った場合の挑発追加セリフ ※NPC配列のまま
   B3_decline: [
     'やっぱりな。逃げると思ってたよ',
     'チキンか。まぁ、賢い判断だな',
@@ -2473,7 +4626,7 @@ const LARGE_EVENT_DIALOGUES = {
     'がっかりだよ。勝負する度胸もないのか',
     'あーあ、つまんないの。ファンも残念がるだろうね',
   ],
-  // B3: 勝利時の挑戦者セリフ
+  // B3: 勝利時の挑戦者セリフ ※NPC配列のまま
   B3_result_lose: [
     'くっ…認めたくないが、やるじゃないか',
     '今回は負けを認める。だが次はこうはいかない',
@@ -2483,7 +4636,7 @@ const LARGE_EVENT_DIALOGUES = {
     'やるね。見直したよ…だけど、次は容赦しない',
     'ちょっとは楽しめたよ。でもこれで調子に乗らないことだね',
   ],
-  // B3: 敗北時の挑戦者セリフ
+  // B3: 敗北時の挑戦者セリフ ※NPC配列のまま
   B3_result_win: [
     '言った通りだろう？ レベルが違うんだよ',
     'この程度か。期待外れだったな',
@@ -2495,12 +4648,41 @@ const LARGE_EVENT_DIALOGUES = {
   ],
   // B4: 密着取材 — 選ばれた選手のセリフ
   B4: {
-    努力家:  ['私なんかでいいんですか？ …精一杯頑張ります！'],
-    野心:   ['いい機会ですね。全国に私の実力を見せてやります'],
-    破天荒:  ['マジで！？ テレビに出れるの！？ やったー！'],
-    ファンサービス: ['ファンの皆さんに、もっと近い姿を見せられますね'],
-    リーダー気質: ['団体の代表として、恥ずかしくない姿を見せます'],
-    default: ['取材…緊張しますが、いい試合を見せられるよう頑張ります'],
+    normal: {
+      _default: ['取材…緊張しますが、いい試合を見せられるよう頑張ります'],
+      ojousama: ['取材ですの？ 精一杯務めさせていただきますわ'],
+      delinquent: ['取材？ やってやるよ！'],
+      seductive: ['取材ね…いい姿を見せてあげるわ'],
+    },
+    bold: {
+      _default: ['いい機会だ。全国に私の実力を見せてやる', '団体の代表として、恥ずかしくない姿を見せる'],
+      ojousama: ['全国の皆様に、この実力をお見せしますわ'],
+      delinquent: ['全国に見せてやるぜ！かかってこい！'],
+      cool: ['…いい機会だ。結果で語る'],
+      seductive: ['全国に見てもらえるのね。楽しみだわ'],
+    },
+    quiet: {
+      _default: ['…がんばります'],
+      cool: ['…やる。見ていてくれ'],
+      polite: ['…精一杯、頑張らせていただきます'],
+    },
+    shy: {
+      _default: ['え…わ、私なんかでいいんですか…？ が、頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['マジで！？ テレビに出れるの！？ やったー！', 'ファンの皆さんにもっと近い姿を見せられるね！'],
+      delinquent: ['テレビ！？ マジ！？ やったー！'],
+      seductive: ['テレビに出れるの？ 嬉しい。もっと見てもらえるわね'],
+    },
+    earnest: {
+      _default: ['私なんかでいいんですか？ …精一杯頑張ります！'],
+      polite: ['私でよろしいんですか…？ 精一杯務めさせていただきます'],
+      ojousama: ['私でよろしいのですか…？ 精一杯頑張りますわ'],
+      seductive: ['私でいいの？ …精一杯頑張るわ'],
+    },
+    emotional: {
+      _default: ['えっ…テレビ…！？ 私が…！？ 頑張ります…！頑張ります…！'],
+    },
   },
 };
 
@@ -2513,23 +4695,43 @@ const MEDIA_OUTLET_NAMES = [
 // v2.1: エンディング演出セリフ — ending-gameover-spec-v1.0.md §1.4
 // ─────────────────────────────────────────────────────────────────────────────
 const ENDING_LINES = {
-  fighter: [
-    'みんなで掴んだ頂点だ。最高のチームだよ',
-    'ここが頂点……でも、まだ先がある気がする',
-    '入団した時は、まさかここまで来れるなんて思わなかった',
-    'この団体で戦えて、本当に良かった',
-    '一番になったんだ。信じられない……でも、これが現実だ',
-    '練習してきたことが全部報われた。泣きそう',
-    '私たちの戦いが、業界を変えた。誇りに思う',
-    '最高の仲間と、最高の舞台。感謝しかない',
-    'ここで終わりじゃない。もっと強くなって、もっと上を目指す',
-    'この景色を見るために戦ってきた。最高だ',
-    'お金がなかった頃のことを思い出すと…よくここまで来たよね',
-    'あの時辞めなくてよかった。この瞬間のために全部あったんだ',
-    'ライバルたちがいたから、ここまで来れた。全員に感謝したい',
-    '涙が止まらない……こんなに幸せなことがあっていいのかな',
-    'これは始まりだ。この団体はもっともっと大きくなる',
-  ],
+  fighter: {
+    normal: {
+      _default: ['この団体で戦えて、本当に良かった', '入団した時は、まさかここまで来れるなんて思わなかった', '最高の仲間と、最高の舞台。感謝しかない'],
+      ojousama: ['ここまで来れましたのね…感無量ですわ'],
+      delinquent: ['やってやったぜ！最高だ！'],
+      seductive: ['ここまで来れたのね…最高の気分だわ'],
+    },
+    bold: {
+      _default: ['ここが頂点…でもまだ先がある気がする', 'ここで終わりじゃない。もっと強くなって、もっと上を目指す', '私たちの戦いが業界を変えた。誇りに思う'],
+      ojousama: ['頂点に立ちましたわ。でもまだ先がありますの'],
+      delinquent: ['てっぺん獲ったぜ！でもまだまだこれからだ！'],
+      cool: ['…頂点だ。だが、まだ先がある'],
+      seductive: ['頂点に立ったわ。でもまだ先があるの'],
+    },
+    quiet: {
+      _default: ['………ありがとうございました（静かに涙を流している）'],
+      cool: ['…ここまで来た。それだけだ'],
+      polite: ['…ここまで来れて…ありがとうございます'],
+    },
+    shy: {
+      _default: ['こ、こんなに幸せなことがあっていいのかな…'],
+    },
+    easygoing: {
+      _default: ['みんなで掴んだ頂点だ！最高のチームだよ！', 'お金がなかった頃のことを思い出すと…よくここまで来たよね'],
+      delinquent: ['最高だぜ！みんなありがとな！'],
+      seductive: ['最高の景色ね。みんなのおかげだわ'],
+    },
+    earnest: {
+      _default: ['練習してきたことが全部報われた。泣きそう', 'あの時辞めなくてよかった。この瞬間のために全部あったんだ'],
+      polite: ['積み重ねてきた全てが報われました…ありがとうございます'],
+      ojousama: ['努力が報われましたわ…感謝しかありませんの'],
+      seductive: ['積み重ねてきた全部が報われた…泣きそうだわ'],
+    },
+    emotional: {
+      _default: ['涙が止まらない…！こんなに幸せなことがあっていいのかな…！', 'みんなありがとう…！最高だよ…！'],
+    },
+  },
   coach: [
     'よくぞここまで……立派になった',
     'あの選手たちを見ていると、指導者冥利に尽きる',
@@ -2642,30 +4844,41 @@ const PPV_NAMES = [
 ];
 
 const PPV_OPPONENT_LINES = {
-  confident: [
-    'あんたの全力、見せてもらうわよ',
-    '悪いけど、今日は負けるわけにはいかないの',
-    'この大舞台、最高の気分ね',
-    '私の実力、思い知らせてあげる',
-  ],
-  fierce: [
-    'ぶっ潰してやるわ！',
-    '泣いても知らないわよ？',
-    '容赦しない。覚悟しなさい',
-    'あんたじゃ私には勝てない',
-  ],
-  respectful: [
-    '正々堂々、最高の試合にしましょう',
-    'あなたと戦えるのを楽しみにしてた',
-    'お互い全力で…最高の舞台だもの',
-    'この対戦、ずっと待ってました',
-  ],
-  calm: [
-    '手加減はしない。覚悟して',
-    '結果で語りましょう',
-    '余計な言葉はいらないわ',
-    '実力の差を見せてあげる',
-  ],
+  normal: {
+    _default: ['悪いけど、今日は負けるわけにはいかないの', 'この大舞台、最高の気分ね', '正々堂々、最高の試合にしましょう'],
+    ojousama: ['本日は負けるわけにはまいりませんわ'],
+    delinquent: ['今日は負けねーぞ。かかってこい'],
+    seductive: ['今日は負けるわけにはいかないの。覚悟してね'],
+  },
+  bold: {
+    _default: ['ぶっ潰してやる！', '私の実力、思い知らせてやる', '容赦しない。覚悟しろ'],
+    ojousama: ['容赦いたしませんわよ。覚悟なさって'],
+    delinquent: ['ぶっ潰してやるぜ！泣いても知らねーぞ！'],
+    cool: ['…手加減はしない。覚悟しろ'],
+    seductive: ['容赦しないわよ。覚悟してね'],
+  },
+  quiet: {
+    _default: ['……（静かに構えている）'],
+    cool: ['…結果で語る'],
+    polite: ['…全力で参ります'],
+  },
+  shy: {
+    _default: ['が、頑張ります…！'],
+  },
+  easygoing: {
+    _default: ['この大舞台、最高の気分！楽しもうぜ！', 'あんたと戦えるの楽しみにしてた！'],
+    delinquent: ['最高だぜ！楽しもうや！'],
+    seductive: ['あなたと戦えるの、楽しみだったわ'],
+  },
+  earnest: {
+    _default: ['お互い全力で…最高の舞台だもの', 'この対戦、ずっと待ってました'],
+    polite: ['お互い全力で…よろしくお願いいたします'],
+    ojousama: ['全力で参りますわ。よろしくお願いいたしますの'],
+    seductive: ['全力でいくわ。最高の試合にしましょう'],
+  },
+  emotional: {
+    _default: ['絶対…絶対負けない…！全力でいく…！'],
+  },
 };
 
 const PPV_HYPE_TEMPLATES = {
@@ -2731,7 +4944,8 @@ if (typeof module !== 'undefined' && module.exports) {
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
-    AWARD_LINES, BREAKTHROUGH_LINES, SLUMP_START_LINES, SLUMP_END_LINES,
+    AWARD_LINES, BREAKTHROUGH_LINES, getDialoguePool, pickDialogueLine,
+    SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
     AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,
     NEWS_TICKER_TEMPLATES, NEWS_HEADLINE_TEMPLATES, BESTMATCH_FLAVOR,

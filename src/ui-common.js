@@ -797,28 +797,41 @@ const EVENT_QUOTES = {
   ],
   // v1.0: Draft candidate speech (when focused in draft)
   draftInterest: {
-    'リーダー気質': ['私についてきてくれれば、このチームは絶対に強くなる。', '団体を背負う覚悟はできてるわ。任せなさい。'],
-    '努力家': ['地道にコツコツ…それが私のやり方です。信じてもらえますか？', '誰よりも練習します。見ていてください。'],
-    '負けず嫌い': ['私を選んでくれるなら、絶対に後悔はさせない！', '負ける気なんて、さらさらないから！'],
-    '華': ['私がリングに立てば、お客さんは絶対に盛り上がりますよ♪', 'スター性なら誰にも負けません。選んで損はさせませんよ？'],
-    'ヒール適性': ['ふふ…面白そうな団体じゃない。使ってくれるなら、暴れてあげるわよ？', '善人ばかりのチームじゃつまらないでしょ？'],
-    'ムードメーカー': ['えへへ、一緒に楽しくやりましょうよ！', '私がいれば道場の雰囲気は最高になりますよ！'],
-    '威圧感': ['…選ぶなら、覚悟を決めなさい。私は手加減しないわよ。', '私の前に立てる選手がいるか…それが問題ね。'],
-    '遅咲き': ['今はまだ未熟かもしれません…でも、必ず大きく咲いてみせます。', '時間をください。きっと期待を超えてみせますから。'],
-    '早熟': ['もう準備はできてます。今すぐ試合に出してください！', '待ちきれない…早くリングに立ちたい！'],
-    '闘志': ['闘いたい…誰でもいい、強い相手と闘わせてください！', '心の炎は消えない。どんな逆境だって乗り越えてみせる！'],
-    '破天荒': ['ルールとか常識とか、つまんないこと言わないでよね！', '退屈なプロレスはしないって約束するよ！'],
-    '忠誠心': ['選んでくださるなら…ずっと、この団体で戦い続けます。', 'この恩は一生忘れません。裏切りは絶対にしません。'],
-    '番狂わせ体質': ['格上だって関係ない。私、なぜか大一番で燃えるんです。', '数字じゃ測れない力がある…って信じてくれますか？'],
-    '野心': ['てっぺんを獲る。それ以外に興味はないわ。', 'この業界の頂点に立つ。そのために最高の環境を選ぶの。'],
-    'ファンサービス': ['お客さんの笑顔が私の原動力です！一緒に楽しい団体を作りましょう！', 'ファンあってのプロレスですから。大切にしますよ♪'],
-    '鉄人': ['怪我？そんなの関係ないです。365日戦えます。', '丈夫さだけは誰にも負けません。フル稼働でいきましょう！'],
-    '適応力': ['どんなスタイルの相手でも合わせられます。使いやすいですよ？', '環境が変わっても大丈夫。すぐ馴染んでみせます。'],
-    '名勝負製造機': ['私の試合を見れば、きっと鳥肌が立ちますよ。', '記憶に残る試合を約束します。それが私の誇りだから。'],
-    'ライバル体質': ['ライバルがいるから強くなれる。切磋琢磨しましょう？', '誰かと競い合うのが好きなの。いい環境をください。'],
-    '引き出し上手': ['相手の良さも引き出せる…そんな選手になりたいんです。', '試合の中で成長できるタイプです。たくさん組ませてください。'],
-    '人望': ['みんなで強くなりたい。一人じゃプロレスはできないから。', 'チームの絆を大切にします。団結力なら負けません。'],
-    '反骨心': ['…期待なんてしないで。でも、裏切りもしないから。', 'アンタの団体が気に入ったわけじゃない。…ただ、ここでなら戦える気がしただけ。']
+    normal: {
+      _default: ['よろしくお願いします。精一杯やります', '選んでいただけたら、全力で頑張ります'],
+      ojousama: ['お選びいただけるなら、精一杯努めますわ'],
+      delinquent: ['選んでくれるなら、全力で暴れるぜ'],
+      seductive: ['選んでくれるなら…期待に応えるわよ'],
+    },
+    bold: {
+      _default: ['てっぺんを獲る。それ以外に興味はない', '私を選んでくれるなら、絶対に後悔はさせない！'],
+      ojousama: ['頂点に立つために参りますわ。覚悟はよろしくて？'],
+      delinquent: ['選ぶなら覚悟しろよ。手加減なんかしねえからな'],
+      cool: ['…闘わせてくれ。結果で語る'],
+      seductive: ['私を選んで。後悔はさせないわ'],
+    },
+    quiet: {
+      _default: ['………よろしくお願いします'],
+      cool: ['…戦わせてくれるなら、応える'],
+      polite: ['…選んでいただけたら、精一杯やらせていただきます'],
+    },
+    shy: {
+      _default: ['あ、あの…私なんかで良ければ…が、頑張ります…'],
+    },
+    easygoing: {
+      _default: ['えへへ、一緒に楽しくやりましょうよ！', '退屈なプロレスはしないって約束するよ！'],
+      delinquent: ['楽しくやろうぜ！退屈なのは嫌いだからな！'],
+      seductive: ['一緒に楽しい団体を作りましょう？'],
+    },
+    earnest: {
+      _default: ['地道にコツコツ…それが私のやり方です。信じてもらえますか？', '誰よりも練習します。見ていてください'],
+      polite: ['地道に努力するのが取り柄です。信じていただけますか'],
+      ojousama: ['コツコツ積み重ねるのが信条ですの。見ていてくださいませ'],
+      seductive: ['地道に頑張るタイプよ。見ていてくれる？'],
+    },
+    emotional: {
+      _default: ['選んでくれたら…全力で…全力で頑張ります…！'],
+    },
   },
   injury: [
     'うぅ…痛い…。でも、すぐ戻ります！',
@@ -828,127 +841,284 @@ const EVENT_QUOTES = {
     'あぁっ…！リハビリ、頑張ります…！'
   ],
   titleWin: {
-    'リーダー気質': ['この団体を背負って立つ。それがチャンピオンの使命よ。', 'ベルトを獲った。ここからが本当の闘いね。'],
-    '努力家': ['コツコツ積み重ねてきて……よかった。本当に、よかった……！', '諦めなくてよかった…。このベルト、努力の結晶です。'],
-    '負けず嫌い': ['当然の結果よ！…でも、ちょっとだけ泣きそう。', 'やっと…やっと獲れた！次は誰が来ても負けないから！'],
-    '華': ['新チャンピオン誕生♪ 皆さん、これからもっと輝きますよ！', 'ベルトが似合うのは私だけでしょ？ ふふ♪'],
-    'ヒール適性': ['ふふ…このベルト、しばらく返す気はないわよ？', '当然の結果ね。実力が違うのよ。'],
-    '闘志': ['燃える…！もっと強い相手と闘いたい！誰でもかかってこい！', 'この炎は消えない。ベルトを懸けて、もっと熱い闘いを！'],
-    '野心': ['てっぺんに立った。でもまだ足りない……もっと上へ。', 'これが始まりよ。このベルトで時代を作る。'],
-    '威圧感': ['…当然だ。この座は私のためにある。', 'ようやくベルトが正しい場所に来たわね。'],
-    '反骨心': ['…別に嬉しくなんかない。ただ、やるべきことをやっただけ。', '期待してなかったくせに。…まあ、見てたでしょ。'],
-    _default: ['やった…！チャンピオンになれた…！夢みたい！', 'このベルト、絶対に手放しません！', '最高の気分です！応援ありがとうございます！']
+    normal: {
+      _default: ['やった…！チャンピオンになれた…！夢みたい！', 'このベルト、絶対に手放しません！', '最高の気分です！応援ありがとうございます！'],
+      ojousama: ['チャンピオンですわ…！夢のようですわね…！'],
+      delinquent: ['やったぜ！チャンピオンだ！最高！'],
+      seductive: ['チャンピオン…最高の気分ね'],
+    },
+    bold: {
+      _default: ['てっぺんに立った。でもまだ足りない…もっと上へ', 'この炎は消えない。ベルトを懸けて、もっと熱い闘いを！'],
+      ojousama: ['頂点に立ちましたわ。でもここからが本当の闘いですの'],
+      delinquent: ['やっと獲ったぜ！次は誰が来ても負けねえ！'],
+      cool: ['…当然だ。この座は私のためにある'],
+      seductive: ['これが始まりよ。このベルトで時代を作る'],
+    },
+    quiet: {
+      _default: ['………（ベルトを抱きしめている）'],
+      cool: ['…ようやくだ。この座は渡さない'],
+      polite: ['…ありがとうございます…（涙をこらえている）'],
+    },
+    shy: {
+      _default: ['え…わ、私が…チャンピオン…？ 夢みたい…'],
+    },
+    easygoing: {
+      _default: ['新チャンピオン誕生！みんな、これからもっと盛り上がるよ！', 'ベルト獲っちゃった！最高！'],
+      delinquent: ['チャンピオンだぜー！最高だろ！'],
+      seductive: ['ベルトが似合うのは私だけでしょ？ ふふ'],
+    },
+    earnest: {
+      _default: ['コツコツ積み重ねてきて…よかった。本当に、よかった…！', '諦めなくてよかった…このベルト、努力の結晶です'],
+      polite: ['積み重ねが報われました…本当に、ありがとうございます'],
+      ojousama: ['努力が報われましたわ…！このベルト、大切にしますの'],
+      seductive: ['積み重ねてきて…よかった。このベルト、大切にするわ'],
+    },
+    emotional: {
+      _default: ['うわああ…！チャンピオン…！嬉しい…泣いちゃう…！'],
+    },
   },
   // タイトル防衛成功（チャンピオン側）
   titleDefense: {
-    'リーダー気質': ['まだ誰にもこの座は譲れない。団体の顔として、闘い続ける。', 'この団体のベルトの重み、わかっているから。'],
-    '努力家': ['防衛できた…！でも満足しない。もっと強くなります。', '日々の積み重ねが、ちゃんと結果に出てくれた。'],
-    '負けず嫌い': ['まだまだ負けるわけにはいかないのよ！', 'いい挑戦者だった。…でも、このベルトは渡さない。'],
-    '華': ['チャンピオンは私♪ また守り切っちゃいました！', '防衛って地味に見える？ ふふ、そんなことないでしょ？'],
-    'ヒール適性': ['何度来ても結果は同じよ。身の程を知りなさい。', '挑戦者の分際で私に勝てると思った？'],
-    '闘志': ['いい試合だった…！また挑戦してこい！待ってる！', '防衛するたびに強くなれる。もっと来い！'],
-    '野心': ['防衛は通過点。私が目指すのはもっと先よ。', 'まだ誰も私を超えられない。当然でしょう。'],
-    '威圧感': ['…次の挑戦者は、もう少しマシなのを連れてきなさい。', '格が違う。それだけのこと。'],
-    '反骨心': ['…負けるわけないでしょ。私を誰だと思ってるの。', 'ふん。防衛？ 当たり前のことをしただけよ。'],
-    _default: ['防衛成功…！ほっとした…。でも、もっと強くならないと。', 'このベルトの重さ、守るたびに感じます。', '挑戦してくれてありがとう。次もこのベルト、守ります。']
+    normal: {
+      _default: ['防衛成功…！ほっとした…。でも、もっと強くならないと。', 'このベルトの重さ、守るたびに感じます。'],
+      ojousama: ['防衛いたしましたわ。この座、まだまだ譲りませんの'],
+      delinquent: ['防衛だ！まだまだ渡さねーぞ！'],
+      seductive: ['防衛成功…。このベルト、まだ返す気はないわ'],
+    },
+    bold: {
+      _default: ['まだ誰にもこの座は譲れない。もっと来い！', '防衛は通過点。私が目指すのはもっと先だ'],
+      ojousama: ['まだ誰にもお譲りしませんわ。もっと上を目指しますの'],
+      delinquent: ['まだまだ負けるわけねーだろ！かかってこい！'],
+      cool: ['…格が違う。それだけのことだ'],
+      seductive: ['まだ誰も私を超えられないわね。当然でしょう'],
+    },
+    quiet: {
+      _default: ['………（静かにベルトを見つめている）'],
+      cool: ['…次も勝つ。それだけだ'],
+      polite: ['…守れました。次も、頑張ります'],
+    },
+    shy: {
+      _default: ['よ、よかった…守れた…（ほっとしている）'],
+    },
+    easygoing: {
+      _default: ['チャンピオンは私！また守り切っちゃいました！', 'いい試合だった！また挑戦してきてね！'],
+      delinquent: ['まだまだ渡さねーよ！最高！'],
+      seductive: ['防衛って地味に見える？ ふふ、そんなことないでしょ？'],
+    },
+    earnest: {
+      _default: ['防衛できた…！でも満足しない。もっと強くなります', '日々の積み重ねが結果に出てくれた'],
+      polite: ['防衛できました。でも、まだまだ精進いたします'],
+      ojousama: ['防衛できましたわ。でもまだ満足はしませんの'],
+      seductive: ['防衛できたわ…でも満足しない。もっと強くなる'],
+    },
+    emotional: {
+      _default: ['守れた…！嬉しい…！次も絶対守る…！'],
+    },
   },
   // タイトル挑戦失敗（挑戦者側）
   titleChallengeLoss: {
-    'リーダー気質': ['……完敗ね。でも、この経験を次に活かすわ。', '悔しい。でも、チームの前で弱音は吐けない。'],
-    '努力家': ['…足りなかった。もっと練習して、必ずもう一度挑戦します。', '悔しい…。でも、ここで腐っちゃだめだ。'],
-    '負けず嫌い': ['くっ…！こんなの認めない！もう一回やらせて！！', '悔しい……悔しい！！ 絶対に見返してやる！'],
-    '華': ['今日は負けちゃったけど…次はもっといい試合しますから！', '……悔しいな。でも、下を向いてたら応援してくれる人に失礼だもんね。'],
-    'ヒール適性': ['…ちっ。今日は運が悪かっただけよ。', 'このまま終わると思うなよ。必ず奪い返す。'],
-    '闘志': ['くそっ…！でも、いい闘いだった。次こそ…！', '負けた。でも心は折れてない。まだ燃えてる。'],
-    '野心': ['…今日は認める。でも、この借りは必ず返すわ。', 'てっぺんへの道は、まだ終わってない。'],
-    '威圧感': ['………。次はない。次で、終わらせる。', '…認めたくはないが、今日は相手が上だった。'],
-    '反骨心': ['……別にいい。最初から期待なんてしてない。…してないったら。', 'ふん…。次があるなら、その時に叩き潰すだけよ。'],
-    _default: ['悔しい…。でも、いい経験になりました。次こそは…！', 'まだ実力が足りなかった…。もっと強くなって帰ってきます。', '負けちゃった…。でも、諦めません。絶対に。']
+    normal: {
+      _default: ['悔しい…。でも、いい経験になりました。次こそは…！', 'まだ実力が足りなかった…。もっと強くなって帰ってきます。'],
+      ojousama: ['悔しゅうございますわ…でも、次こそは…'],
+      delinquent: ['くそっ…次は絶対勝つ…！'],
+      seductive: ['悔しいわ…でも、次こそはね'],
+    },
+    bold: {
+      _default: ['くっ…！こんなの認めない！もう一回やらせてくれ！', '…今日は認める。でもこの借りは必ず返す'],
+      ojousama: ['認めませんわ…！もう一度お願いいたします！'],
+      delinquent: ['こんなの認めねえ！もう一回だ！'],
+      cool: ['…次はない。次で、終わらせる'],
+      seductive: ['…今日は認めるわ。でもこの借り、必ず返す'],
+    },
+    quiet: {
+      _default: ['………（唇を噛んでいる）'],
+      cool: ['…次で終わらせる'],
+      polite: ['…悔しいです。でも、もう一度挑戦します'],
+    },
+    shy: {
+      _default: ['…ごめんなさい…でも…諦めたくない…です…'],
+    },
+    easygoing: {
+      _default: ['今日は負けちゃったけど…次はもっといい試合するから！', '悔しいけど、下向いてたら応援してくれる人に失礼だもんね'],
+      delinquent: ['くそー！悔しい！でも次やってやるからな！'],
+      seductive: ['今日は負けちゃったわね。次はもっと輝くから見ていて'],
+    },
+    earnest: {
+      _default: ['…足りなかった。もっと練習して、必ずもう一度挑戦します', '悔しい…でもここで腐っちゃだめだ'],
+      polite: ['実力が足りませんでした。もっと精進いたします'],
+      ojousama: ['実力が足りませんでしたわ…もっと精進いたしますの'],
+      seductive: ['足りなかったわ…でも、もう一度挑戦する'],
+    },
+    emotional: {
+      _default: ['悔しい…！悔しい…！でも…絶対諦めない…！'],
+    },
   },
   // タイトル陥落（前王者側）
   titleLoss: {
-    'リーダー気質': ['…ベルトを失った。でも、ここから立て直す。それがリーダーよ。', '悔しいけど、認めなきゃいけない。…強かった。'],
-    '努力家': ['…努力が足りなかったんだ。もう一度、一からやり直します。', 'ベルトを手放してしまった…。でも、ここで終わりじゃない。'],
-    '負けず嫌い': ['嘘でしょ…！私のベルトが…！絶対に取り返す！！', 'こんなの…こんなの認められるわけない…！'],
-    '華': ['……ベルトがない自分なんて想像できなかった。…でも、私は私だから。', '負けちゃった…。でもファンの皆さんが応援してくれる限り、私は立ち上がる。'],
-    'ヒール適性': ['……覚えておきなさい。このベルト、すぐに返してもらうわ。', 'ふん…。一時的に預けてるだけよ。'],
-    '闘志': ['ベルトを失った…。でもこの悔しさが、次の炎になる。', '…負けたか。でも、まだ闘える。まだ終わってない。'],
-    '野心': ['…ベルトのない景色なんて見たくなかった。必ず取り返す。', '一度落ちた場所から這い上がる。それが私よ。'],
-    '威圧感': ['…………。……次は、容赦しない。', '…認めよう。だが、これで終わりではない。'],
-    '反骨心': ['…ベルト持ってた時より、今のほうが燃えてるかもね。', '取られた？ …ちょうどよかった。追う側のほうが性に合ってるのよ。'],
-    _default: ['ベルトを失ってしまった…。でも、この団体で戦い続けます。', '…悔しい。チャンピオンとしてもっとやれたはずなのに。', '今は…少し、一人にしてください。']
+    normal: {
+      _default: ['ベルトを失ってしまった…。でも、この団体で戦い続けます。', '…悔しい。チャンピオンとしてもっとやれたはずなのに。'],
+      ojousama: ['ベルトを失いましたわ…でも、ここで終わりではありませんの'],
+      delinquent: ['くそ…ベルト取られた…でも終わりじゃねえ'],
+      seductive: ['ベルトがない景色なんて…でも、ここで終わらないわ'],
+    },
+    bold: {
+      _default: ['嘘だろ…！私のベルトが…！絶対に取り返す！', 'ベルトを失った…でもこの悔しさが次の炎になる'],
+      ojousama: ['認めませんわ…！必ず取り返しますの！'],
+      delinquent: ['こんなの認めねえ！絶対取り返す！'],
+      cool: ['……次は、容赦しない'],
+      seductive: ['…覚えておきなさい。すぐに返してもらうわ'],
+    },
+    quiet: {
+      _default: ['……今は…一人にしてください'],
+      cool: ['…認めよう。だが、終わりではない'],
+      polite: ['…申し訳ございません。でも…もう一度…'],
+    },
+    shy: {
+      _default: ['…ごめんなさい…ベルト…守れなかった…'],
+    },
+    easygoing: {
+      _default: ['負けちゃった…でもファンが応援してくれる限り、立ち上がるよ', '…ベルトがない自分なんて想像できなかった。でも、私は私だから'],
+      delinquent: ['くそー！でもまだ終わってねえから！'],
+      seductive: ['負けちゃったわね…でも私は私。立ち上がるわ'],
+    },
+    earnest: {
+      _default: ['…努力が足りなかったんだ。もう一度、一からやり直します', 'ベルトを手放してしまった…でもここで終わりじゃない'],
+      polite: ['努力が足りませんでした。一から出直します'],
+      ojousama: ['実力が足りませんでしたわ。一から出直しますの'],
+      seductive: ['足りなかった…でも、ここで終わりにはしないわ'],
+    },
+    emotional: {
+      _default: ['嘘…嘘だよ…ベルトが…！でも…でも諦めない…！'],
+    },
   },
   release: [
     'そう…ですか。ここでの思い出、忘れません。',
     'お世話になりました…。どこかで強くなって戻ります。',
     '悔しいです…でも、ありがとうございました。',
   ],
-  // v1.0c: FA signing lines (trait-keyed)
+  // v1.0c: FA signing lines (personality×archetype)
   faSigning: {
-    'リーダー気質': ['ここを最強の団体にしてみせるわ。任せなさい。', 'チームを引っ張る覚悟はできてるわ。よろしくね。'],
-    '努力家': ['ありがとうございます…毎日練習して、絶対に期待に応えます！', 'コツコツ頑張るのが取り柄です。よろしくお願いします。'],
-    '負けず嫌い': ['待ってました！ここで誰にも負けない選手になってみせる！', '契約してくれたこと、後悔させないから！'],
-    '華': ['新しいステージ、ワクワクしますね♪ お客さんを沸かせますよ！', '私の輝き、この団体で見せてあげます♪'],
-    'ヒール適性': ['ふふ…拾ってくれたこと、感謝してあげるわ。', '面白い団体ね。好きにやらせてもらうわよ？'],
-    'ムードメーカー': ['やったー！よろしくお願いします！楽しくやりましょ！', '盛り上げ役なら任せてください！道場の空気変えますよ！'],
-    '威圧感': ['…いいわ。この団体で、格の違いを見せてやる。', '選んだ以上、相応の舞台を用意しなさいよ。'],
-    '闘志': ['新しい闘いの場…！燃えてきた！', '強い相手がいるなら、すぐにでも試合を組んでください！'],
-    '破天荒': ['やっほー！新天地だ！暴れまくるよ！', 'ここなら好き放題やれそう！楽しみ！'],
-    '忠誠心': ['拾ってくださって…ありがとうございます。この恩は忘れません。', 'ここが私の居場所です。ずっとこの団体で戦います。'],
-    '野心': ['てっぺんを獲るために来たの。わかってるわよね？', 'ここを踏み台にするつもりはないわ。一緒に頂点に立ちましょう。'],
-    'ファンサービス': ['ファンの皆さんに喜んでもらえるよう頑張ります！', 'お客さんとの距離が近い団体、いいですね♪ よろしくです！'],
-    '反骨心': ['…拾ってくれたの？ ふーん。まあ、やれるだけやるわ。', '感謝はしない。でも結果は出す。見てなさい。'],
-    _heel: ['…ふん。まあ、使えるだけ使ってちょうだい。', '条件は悪くない。やってあげるわ。'],
-    _babyface: ['ありがとうございます！精一杯、頑張りますね！', '夢に一歩近づけた…この団体で花を咲かせます！'],
-    _neutral: ['よろしくお願いします。力になれるよう頑張ります。', '新しい環境…悪くないですね。頑張ります。']
+    normal: {
+      _default: ['よろしくお願いします。力になれるよう頑張ります', '新しい環境…悪くないですね。頑張ります'],
+      ojousama: ['よろしくお願いいたしますわ。お力になりますの'],
+      delinquent: ['よろしくな。暴れさせてもらうぜ'],
+      seductive: ['よろしくね。力になるわ'],
+    },
+    bold: {
+      _default: ['てっぺんを獲るために来た。わかってるよな？', '新しい闘いの場…！燃えてきた！'],
+      ojousama: ['頂点を獲るために参りましたわ。ご期待くださいませ'],
+      delinquent: ['やってやるぜ！暴れまくるからな！'],
+      cool: ['…戦わせてくれ。結果は出す'],
+      seductive: ['てっぺん獲りに来たの。一緒に頂点に立ちましょう'],
+    },
+    quiet: {
+      _default: ['…よろしくお願いします'],
+      cool: ['…やる。見ていてくれ'],
+      polite: ['…お世話になります。精一杯やらせていただきます'],
+    },
+    shy: {
+      _default: ['あ、あの…よろしくお願いします…頑張ります…'],
+    },
+    easygoing: {
+      _default: ['やっほー！新天地だ！暴れまくるよ！', 'ここなら好き放題やれそう！楽しみ！'],
+      delinquent: ['よっしゃー！新天地だ！暴れるぞ！'],
+      seductive: ['新しい場所ね。楽しみだわ。よろしく'],
+    },
+    earnest: {
+      _default: ['ありがとうございます…毎日練習して、絶対に期待に応えます！', 'この恩は忘れません。ずっとこの団体で戦います'],
+      polite: ['ありがとうございます。期待にお応えいたします'],
+      ojousama: ['ありがとうございますわ。ご期待に応えてみせますの'],
+      seductive: ['ありがとう。期待に応えるわ'],
+    },
+    emotional: {
+      _default: ['ありがとうございます…！嬉しい…！全力で頑張ります…！'],
+    },
   },
   faSigningGeneric: [
     'この団体で新しいスタートです。よろしくお願いします！',
     '契約ありがとうございます！全力で戦います！',
     '新しい仲間ができて嬉しいです。頑張ります！',
   ],
-  // v2.x: FA welcome lines after signing (trait-keyed, short one-liners)
+  // v2.x: FA welcome lines after signing (personality×archetype)
   faWelcome: {
-    'リーダー気質': ['みんなをまとめてみせる。ついてきて！', 'チームを勝利に導くわ。約束する。'],
-    '努力家': ['毎日コツコツ、頑張ります！見ていてください！', '練習量だけは誰にも負けません…！'],
-    '負けず嫌い': ['絶対に勝つ！そのために来たんだから！', '負けるのは嫌い。勝ちにこだわります！'],
-    '華': ['この団体のスターになってみせますよ♪', 'キラキラ輝いちゃいますよ～♪'],
-    'ヒール適性': ['…ふん、まあ精々期待しておきなさい。', '暴れさせてもらうわよ。覚悟してね？'],
-    'ムードメーカー': ['わーい！今日から仲間だ！よろしく！', 'みんなで楽しくやりましょー！'],
-    '威圧感': ['…見ていなさい。格が違うことを証明してやる。', '弱い相手には興味がないの。強いのを出しなさい。'],
-    '闘志': ['燃えてきた…！早く試合がしたい！', '闘いの場をくれてありがとう…！全力で応えます！'],
-    '破天荒': ['よっしゃー！大暴れするぞー！', 'ルール？あんまり守れる自信ないけど…えへへ！'],
-    '忠誠心': ['この団体のために…全てを捧げます。', 'ここが私の居場所。絶対に離れません。'],
-    '野心': ['頂点まで一直線よ。邪魔はさせないわ。', 'チャンピオンベルト、絶対に獲ります。'],
-    'ファンサービス': ['ファンの皆さーん！応援よろしくお願いします！', '笑顔と元気を届けます♪ よろしくです！'],
-    '鉄人': ['毎週フル出場、お任せください！', '丈夫さなら誰にも負けません。どんどん使ってください！'],
-    '適応力': ['すぐ馴染んでみせますよ。心配しないでください。', 'どんな相手でも合わせられます。任せてください！'],
-    '名勝負製造機': ['記憶に残る試合、たくさん見せますよ。', 'お客さんの心を震わせてみせます。'],
-    '引き出し上手': ['みんなの良さを引き出せたら嬉しいな。', 'いい試合を一緒に作りましょう！'],
-    '人望': ['仲間と一緒に強くなりたいです！よろしく！', 'みんなで支え合って頑張りましょう！'],
-    '反骨心': ['…馴れ合うつもりはないから。勝手にやる。', '別に仲良くなりに来たわけじゃない。'],
-    _heel: ['…まあ、それなりにやってあげるわ。', '期待しすぎないでちょうだい。'],
-    _babyface: ['頑張ります！よろしくお願いします！', '精一杯やります…！応援してくださいね！'],
-    _neutral: ['よろしくお願いします。頑張ります。', '力になれるよう、精一杯やります。']
+    normal: {
+      _default: ['よろしくお願いします。頑張ります', '力になれるよう、精一杯やります'],
+      ojousama: ['よろしくお願いいたしますわ。精一杯務めますの'],
+      delinquent: ['よろしくな！ガンガンやるぜ'],
+      seductive: ['よろしくね。精一杯やるわ'],
+    },
+    bold: {
+      _default: ['頂点まで一直線だ。邪魔はさせない', '燃えてきた…！早く試合がしたい！'],
+      ojousama: ['頂点を目指しますわ。ご期待くださいませ'],
+      delinquent: ['大暴れするぞー！覚悟しとけ！'],
+      cool: ['…見ていろ。格の違いを証明する'],
+      seductive: ['頂点まで一直線よ。見ていてね'],
+    },
+    quiet: {
+      _default: ['…よろしくお願いします'],
+      cool: ['…やるべきことをやる'],
+      polite: ['…精一杯、頑張らせていただきます'],
+    },
+    shy: {
+      _default: ['よ、よろしくお願いします…が、頑張ります…！'],
+    },
+    easygoing: {
+      _default: ['わーい！今日から仲間だ！よろしく！', 'みんなで楽しくやりましょー！'],
+      delinquent: ['よっしゃー！楽しくやろうぜ！'],
+      seductive: ['よろしくね。楽しくやりましょう'],
+    },
+    earnest: {
+      _default: ['毎日コツコツ、頑張ります！見ていてください！', 'この団体のために…全てを捧げます'],
+      polite: ['毎日精進いたします。見ていてください'],
+      ojousama: ['コツコツ頑張りますわ。見ていてくださいませ'],
+      seductive: ['毎日頑張るわ。見ていてね'],
+    },
+    emotional: {
+      _default: ['嬉しい…！よろしくお願いします…！頑張ります…！'],
+    },
   },
   faWelcomeGeneric: [
     'よろしくお願いします！頑張ります！',
     '精一杯やります！応援してください！',
     '新しい仲間として、全力で頑張ります！',
   ],
-  // v1.0c: Rental greeting lines (trait-keyed)
+  // v1.0c: Rental greeting lines (personality×archetype)
   rentalGreeting: {
-    'リーダー気質': ['短い間だけど、私がいる間はチームを引っ張るわ。', 'レンタルでも手は抜かない。チームのために全力よ。'],
-    '努力家': ['短い期間ですが、精一杯やらせていただきます！', '限られた時間でも成長したい。よろしくお願いします。'],
-    '負けず嫌い': ['レンタルだからって舐めないでよね！全試合全力よ！', '負けず嫌いは治りません。全部勝ちにいきます！'],
-    '華': ['お邪魔しまーす♪ 短い間だけど盛り上げますよ！', 'ゲストとして最高のパフォーマンスを見せますね♪'],
-    'ヒール適性': ['…よそ者が来たと思って甘く見ないことね。', 'ふん…まあ、短い間だけ付き合ってあげるわ。'],
-    '闘志': ['よその団体でも闘志は変わらない！燃えるぞ！', '新しい相手と闘える…ワクワクするな！'],
-    '破天荒': ['おじゃましまーす！短い間だけど暴れるよー！', '一時的だからこそ思い切り好き放題やるね！'],
-    '反骨心': ['…レンタルね。どうせ使い捨てでしょ。好きにやらせてもらうわ。', '借り物扱いは慣れてる。でも手は抜かない。'],
-    _heel: ['…別に、仕事だからやるだけよ。', '短い間の付き合いよ。馴れ合うつもりはないわ。'],
-    _babyface: ['短い間ですが、よろしくお願いします！仲良くしてくださいね！', 'お世話になります！力になれるよう頑張ります！'],
-    _neutral: ['レンタルですが、手は抜きませんので。よろしく。', '短い間ですがよろしくお願いします。']
+    normal: {
+      _default: ['レンタルですが、手は抜きませんので。よろしく', '短い間ですがよろしくお願いします'],
+      ojousama: ['短い間ですが、よろしくお願いいたしますわ'],
+      delinquent: ['よろしくな。手は抜かねーから'],
+      seductive: ['短い間だけど、よろしくね'],
+    },
+    bold: {
+      _default: ['レンタルだからって舐めるなよ！全試合全力だ！', 'よその団体でも闘志は変わらない！燃えるぞ！'],
+      ojousama: ['レンタルでも手は抜きませんわよ！'],
+      delinquent: ['レンタル？ 関係ねえ！暴れるぞ！'],
+      cool: ['…手は抜かない。見ていろ'],
+      seductive: ['レンタルでも全力よ。見ていてね'],
+    },
+    quiet: {
+      _default: ['…短い間ですが、よろしくお願いします'],
+      cool: ['…やるべきことはやる'],
+      polite: ['…短い間ですが、精一杯務めさせていただきます'],
+    },
+    shy: {
+      _default: ['あ、あの…短い間ですけど…よろしくお願いします…'],
+    },
+    easygoing: {
+      _default: ['おじゃましまーす！短い間だけど暴れるよー！', '一時的だからこそ思い切り好き放題やるね！'],
+      delinquent: ['おじゃまー！暴れさせてもらうぜ！'],
+      seductive: ['お邪魔するわね。短い間だけど楽しみましょう'],
+    },
+    earnest: {
+      _default: ['短い期間ですが、精一杯やらせていただきます！', '限られた時間でも成長したい。よろしくお願いします'],
+      polite: ['短い間ですが、精一杯務めさせていただきます'],
+      ojousama: ['短い間ですが、精一杯お務めいたしますわ'],
+      seductive: ['短い間だけど、精一杯やるわ'],
+    },
+    emotional: {
+      _default: ['よろしくお願いします…！短い間だけど…全力で…！'],
+    },
   },
   rentalGreetingGeneric: [
     '短い間ですが、よろしくお願いします！',
@@ -1214,10 +1384,12 @@ function _renderRivalryPopup() {
 
   } else {
     // 決着
-    const winLines = o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner;
-    const loseLines = o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser;
-    const winLine = winLines[Math.floor(Math.random() * winLines.length)];
-    const loseLine = loseLines[Math.floor(Math.random() * loseLines.length)];
+    const winLineObj = o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner;
+    const loseLineObj = o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser;
+    const winFighter = ALL_CHARS.find(c => c.id === o.winnerId);
+    const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
+    const winLine = pickDialogueLine(winLineObj, winFighter);
+    const loseLine = pickDialogueLine(loseLineObj, loseFighter);
     const headerEmoji = o.isFate ? '💥' : '⚡';
     const headerText = o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！');
 
@@ -1341,11 +1513,12 @@ function _renderAwardsSlide(html, frame) {
   else box.classList.remove('hall-of-fame');
 }
 
-// セリフをランダム選出（AWARD_LINES[key]から1つ）
-function _awardLine(key) {
-  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES[key]) || [];
-  if (!pool.length) return '';
-  return pool[Math.floor(Math.random() * pool.length)];
+// セリフをランダム選出（AWARD_LINES[key]からpersonality×archetypeで1つ）
+function _awardLine(key, charId) {
+  const lineObj = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES[key]);
+  if (!lineObj) return '';
+  const ch = charId ? ALL_CHARS.find(c => c.id === charId) : null;
+  return pickDialogueLine(lineObj, ch);
 }
 
 // ベストマッチ用フレーバーテキスト
@@ -1385,7 +1558,7 @@ function _buildRookieAward(d) {
   <div class="awards-detail" style="margin-top:8px">キャリア1年目の選手が見つかりませんでした</div>
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
   }
-  const line = _awardLine('rookie');
+  const line = _awardLine('rookie', d.id);
   return `<div class="awards-category">🌟 新人王 🌟</div>
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 150)}</div>
   <div class="awards-name">${d.name}</div>
@@ -1400,13 +1573,9 @@ function _buildBestMatchAward(d) {
   const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
   const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
   const flavor = _bestMatchFlavor(d.mq);
-  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES.bestMatch) || [];
-  // 2つの異なるセリフを選出
-  const i1 = Math.floor(Math.random() * pool.length);
-  let i2 = Math.floor(Math.random() * Math.max(pool.length - 1, 1));
-  if (pool.length > 1 && i2 >= i1) i2++;
-  const line1 = pool[i1] || '';
-  const line2 = pool[Math.min(i2, pool.length - 1)] || '';
+  // 各選手のpersonality×archetypeでセリフ選出
+  const line1 = _awardLine('bestMatch', f1.id);
+  const line2 = _awardLine('bestMatch', f2.id);
   return `<div class="awards-category">🎬 ベストマッチ 🎬</div>
   <div style="display:flex;justify-content:center;align-items:flex-start;gap:10px;margin:6px 0 8px">
     <div style="flex:1;text-align:center">
@@ -1432,7 +1601,7 @@ function _buildBestMatchAward(d) {
 }
 
 function _buildMVPAward(d) {
-  const line = _awardLine('mvp');
+  const line = _awardLine('mvp', d.id);
   return `<div class="awards-category">👑 MVP 👑</div>
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
   <div class="awards-name">${d.name}</div>
@@ -1448,15 +1617,8 @@ function _buildChampionsAward(champions) {
   <div class="awards-detail" style="margin:20px 0">チャンピオン情報なし</div>
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
   }
-  const pool = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES.champion) || [];
-  // 3つの異なるセリフを選出
-  const indices = [];
-  for (let i = 0; i < Math.min(3, pool.length); i++) {
-    let idx;
-    do { idx = Math.floor(Math.random() * pool.length); } while (indices.includes(idx));
-    indices.push(idx);
-  }
-  const lines = indices.map(i => pool[i] || '');
+  // 各チャンピオンのpersonality×archetypeでセリフ選出
+  const lines = champions.map(ch => _awardLine('champion', ch.id));
   const [c1, c2, c3] = champions;
   // 1位（大）
   const defText1 = c1.isPlayer && c1.defenses != null ? `<br>防衛 ${c1.defenses}回` : '';
@@ -1488,7 +1650,7 @@ function _buildChampionsAward(champions) {
 }
 
 function _buildHallOfFame(d) {
-  const line = _awardLine('hallOfFame');
+  const line = _awardLine('hallOfFame', d.id);
   return `<div class="awards-category" style="color:rgba(255,215,0,0.9)">🏛️ 殿堂入り 🏛️</div>
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 130)}</div>
   <div class="awards-name gold">✦ ${d.name} ✦</div>
@@ -1542,117 +1704,56 @@ function pickQuote(category) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// 特性ベースのセリフ取得（タイトルマッチリアクション等）
+// personality×archetype セリフ取得（タイトルマッチリアクション等）
 function getTraitQuote(category, char) {
   const pool = EVENT_QUOTES[category];
   if (!pool) return '…';
   if (Array.isArray(pool)) return pool[Math.floor(Math.random() * pool.length)];
-  const traits = (char && char.traits) || [];
-  for (const trait of traits) {
-    if (pool[trait]) {
-      const arr = pool[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-  }
-  const defPool = pool._default || ['…'];
-  return defPool[Math.floor(Math.random() * defPool.length)];
+  return pickDialogueLine(pool, char);
 }
 
 // v1.0: Get a draft-context quote for a specific character
-// Uses their traits to pick a personality-appropriate line
 function getDraftQuote(char) {
-  const traitQuotes = EVENT_QUOTES.draftInterest || {};
-  const traits = char.traits || [];
-  // Try each trait to find a matching quote pool
-  for (const trait of traits) {
-    if (traitQuotes[trait]) {
-      const arr = traitQuotes[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-  }
-  // Fallback to generic draftJoin
-  return pickQuote('draftJoin');
+  const pool = EVENT_QUOTES.draftInterest;
+  if (!pool) return pickQuote('draftJoin');
+  return pickDialogueLine(pool, char);
 }
 
-// v1.0c: Get FA signing quote (traits-based)
+// v1.0c: Get FA signing quote (personality×archetype)
 function getSigningQuote(char) {
-  const lines = EVENT_QUOTES.faSigning || {};
-  const traits = char.traits || [];
-  for (const trait of traits) {
-    if (lines[trait]) {
-      const arr = lines[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+  const pool = EVENT_QUOTES.faSigning;
+  if (!pool) {
+    const generic = EVENT_QUOTES.faSigningGeneric || ['よろしくお願いします！'];
+    return generic[Math.floor(Math.random() * generic.length)];
   }
-  // Role fallback
-  const role = char.role || 'Neutral';
-  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
-  if (lines[roleKey]) {
-    const arr = lines[roleKey];
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-  const generic = EVENT_QUOTES.faSigningGeneric || ['よろしくお願いします！'];
-  return generic[Math.floor(Math.random() * generic.length)];
+  return pickDialogueLine(pool, char);
 }
 
-// v2.x: Get FA welcome quote after signing (traits-based)
+// v2.x: Get FA welcome quote after signing (personality×archetype)
 function getWelcomeQuote(char) {
-  const lines = EVENT_QUOTES.faWelcome || {};
-  const traits = char.traits || [];
-  for (const trait of traits) {
-    if (lines[trait]) {
-      const arr = lines[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+  const pool = EVENT_QUOTES.faWelcome;
+  if (!pool) {
+    const generic = EVENT_QUOTES.faWelcomeGeneric || ['よろしくお願いします！頑張ります！'];
+    return generic[Math.floor(Math.random() * generic.length)];
   }
-  const role = char.role || 'Neutral';
-  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
-  if (lines[roleKey]) {
-    const arr = lines[roleKey];
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-  const generic = EVENT_QUOTES.faWelcomeGeneric || ['よろしくお願いします！頑張ります！'];
-  return generic[Math.floor(Math.random() * generic.length)];
+  return pickDialogueLine(pool, char);
 }
 
-// v1.0c: Get rental greeting quote (traits-based)
+// v1.0c: Get rental greeting quote (personality×archetype)
 function getRentalQuote(char) {
-  const lines = EVENT_QUOTES.rentalGreeting || {};
-  const traits = char.traits || [];
-  for (const trait of traits) {
-    if (lines[trait]) {
-      const arr = lines[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+  const pool = EVENT_QUOTES.rentalGreeting;
+  if (!pool) {
+    const generic = EVENT_QUOTES.rentalGreetingGeneric || ['よろしくお願いします！'];
+    return generic[Math.floor(Math.random() * generic.length)];
   }
-  const role = char.role || 'Neutral';
-  const roleKey = role === 'Heel' ? '_heel' : role === 'Babyface' ? '_babyface' : '_neutral';
-  if (lines[roleKey]) {
-    const arr = lines[roleKey];
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-  const generic = EVENT_QUOTES.rentalGreetingGeneric || ['よろしくお願いします！'];
-  return generic[Math.floor(Math.random() * generic.length)];
+  return pickDialogueLine(pool, char);
 }
 
 // v1.0: Get a draft "interest" line (when focused, before picking)
 function getDraftInterestLine(char) {
-  const traitQuotes = EVENT_QUOTES.draftInterest || {};
-  const traits = char.traits || [];
-  for (const trait of traits) {
-    if (traitQuotes[trait]) {
-      const arr = traitQuotes[trait];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-  }
-  // Generic interest lines
-  const generic = [
-    '私を選んでくれるの…？嬉しい！',
-    'この団体、面白そう…気になってたんです。',
-    'よろしくお願いします…！精一杯やります！',
-    '入れてくれるなら、全力で頑張りますよ！'
-  ];
-  return generic[Math.floor(Math.random() * generic.length)];
+  const pool = EVENT_QUOTES.draftInterest;
+  if (!pool) return pickQuote('draftJoin');
+  return pickDialogueLine(pool, char);
 }
 
 // ── Fighter Detail Popup ──
@@ -2999,14 +3100,8 @@ function _getPPVPreMatchLine(fighter) {
     // 勝利セリフの一部をそのまま使う（PPV前の意気込みとして自然）
     return vl[Math.floor(Math.random() * vl.length)];
   }
-  // フォールバック: ステータスベースの汎用セリフ
-  const mn = fighter.mn || 50, pw = fighter.pw || 50;
-  let tone;
-  if (mn >= 70) tone = Math.random() > 0.5 ? 'calm' : 'respectful';
-  else if (pw >= 70) tone = 'fierce';
-  else tone = 'confident';
-  const lines = PPV_OPPONENT_LINES[tone] || PPV_OPPONENT_LINES.confident;
-  return lines[Math.floor(Math.random() * lines.length)];
+  // フォールバック: personality×archetypeベースの汎用セリフ
+  return pickDialogueLine(PPV_OPPONENT_LINES, fighter);
 }
 
 function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
@@ -3341,37 +3436,37 @@ function _renderNextGrowthPopup() {
     const f = fighter;
     const statNames = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
     title = '💥 ブレークスルー！';
-    message = f ? Engine.rng.pick(Engine.rng.create(Date.now()), BREAKTHROUGH_LINES) : 'ブレークスルー！';
+    message = f ? pickDialogueLine(BREAKTHROUGH_LINES, f) : 'ブレークスルー！';
     detail  = `${statNames[ev.stat] || ev.stat} <strong>+${parseFloat((+ev.gain).toFixed(1))}</strong>`;
     if (ev.hotStreak) detail += '　🔥 <em>絶好調突入！</em>';
     btnLabel = '素晴らしい';
     tone = 'gold';
     Audio.play('award');
   } else if (ev.type === 'slump_start') {
-    const lines = SLUMP_START_LINES[ev.trigger] || SLUMP_START_LINES['defeat'];
+    const triggerLines = SLUMP_START_LINES[ev.trigger] || SLUMP_START_LINES['defeat'];
     title = '📉 スランプ…';
-    message = lines[Math.floor(Math.random() * lines.length)];
+    message = pickDialogueLine(triggerLines, fighter);
     detail = 'しばらく成長が止まるかもしれない';
     btnLabel = '見守る';
     tone = 'negative';
     Audio.play('error');
   } else if (ev.type === 'slump_end') {
     title = '💪 スランプ脱出！';
-    message = SLUMP_END_LINES[Math.floor(Math.random() * SLUMP_END_LINES.length)];
+    message = pickDialogueLine(SLUMP_END_LINES, fighter);
     detail = `${ev.duration || '?'}週間のスランプを乗り越えた！`;
     btnLabel = 'おかえり';
     tone = 'positive';
     Audio.play('event');
   } else if (ev.type === 'motivation_loss_start') {
     title = '😞 モチベーション喪失…';
-    message = MOTIVATION_LOSS_LINES[Math.floor(Math.random() * MOTIVATION_LOSS_LINES.length)];
+    message = pickDialogueLine(MOTIVATION_LOSS_LINES, fighter);
     detail = '成長が止まり、能力が低下していく';
     btnLabel = '……';
     tone = 'negative';
     Audio.play('error');
   } else if (ev.type === 'motivation_loss_end') {
     title = '🌅 再起！';
-    message = MOTIVATION_RECOVERY_LINES[Math.floor(Math.random() * MOTIVATION_RECOVERY_LINES.length)];
+    message = pickDialogueLine(MOTIVATION_RECOVERY_LINES, fighter);
     detail = `${ev.duration || '?'}週間の低迷から立ち直った！`;
     btnLabel = '待ってた';
     tone = 'positive';
@@ -4422,8 +4517,8 @@ function showEndingCeremony(data, onDone) {
   }
 
   // 選手・コーチのセリフプール
-  const fighterLines = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.fighter) || [];
-  const coachLines   = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.coach)   || [];
+  const fighterLineObj = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.fighter) || null;
+  const coachLines     = (typeof ENDING_LINES !== 'undefined' && ENDING_LINES.coach)   || [];
 
   // ── スライド1: タイトル（業界制覇） ─────────────────────────────
   steps.push(() => {
@@ -4458,16 +4553,16 @@ function showEndingCeremony(data, onDone) {
   // ── スライド3: 選手たちの声 ──────────────────────────────────────
   const fighters = data.top3Fighters || [];
   if (fighters.length > 0) {
-    const fLines = _pickLines(fighterLines, fighters.length);
     steps.push(() => {
-      let fHtml = fighters.map((f, i) => {
+      let fHtml = fighters.map((f) => {
         const ovrRaw = typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : NaN;
         const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
+        const line = fighterLineObj ? pickDialogueLine(fighterLineObj, f) : '最高だ！';
         return `<div style="flex:1;text-align:center;min-width:0">
           <div style="display:flex;justify-content:center;margin-bottom:5px">${_awardsPortrait(f.id, 80)}</div>
           <div style="font-size:11px;font-weight:700;color:var(--text)">${f.name}</div>
           <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr}</div>
-          <div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${fLines[i] || '最高だ！'}」</div>
+          <div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${line}」</div>
         </div>`;
       }).join('');
       _renderAwardsSlide(
@@ -4782,7 +4877,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   // セリフ生成
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
   const openPhase = isTransfer ? 'transfer_open' : 'raise_open';
-  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg.personality, openPhase, neg.context);
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context);
 
   // 選択肢の構築
   let choices;
