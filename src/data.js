@@ -1987,22 +1987,22 @@ const CARE_ACTIONS = {
   // 個人向けアクション（cooldown: 週数。省略時=1、同一週は常に不可）
   bonus: {
     id: 'bonus', label: 'ボーナス支給', emoji: '💴', cost: 50, category: 'individual',
-    desc: '信頼度+5（連続使用で効果逓減・1週1回）',
+    desc: '信頼が少し上がる（連続使用で効果逓減・1週1回）',
     effects: { trust: 5 }, minOrgPop: 0, cooldown: 1,
   },
   costume: {
     id: 'costume', label: 'コスチューム新調', emoji: '👗', cost: 80, category: 'individual',
-    desc: '人気+2、信頼度+3（2週に1回）',
+    desc: '人気+2、信頼も上がる（2週に1回）',
     effects: { popularity: 2, trust: 3 }, minOrgPop: 20, cooldown: 2,
   },
   trainer: {
     id: 'trainer', label: '専属トレーナー手配', emoji: '🏋️', cost: 160, category: 'individual',
-    desc: '4週間 成長速度+30%、信頼度+4（1週1回）',
+    desc: '4週間 成長速度+30%、信頼も上がる（1週1回）',
     effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 4 }, minOrgPop: 0, cooldown: 1,
   },
   media: {
     id: 'media', label: 'メディア露出手配', emoji: '📺', cost: 120, category: 'individual',
-    desc: '人気+4、信頼度+3（2週に1回・今週練習休み）',
+    desc: '人気+4、信頼も上がる（2週に1回・今週練習休み）',
     effects: { popularity: 4, trust: 3, skip_training: true }, minOrgPop: 20, cooldown: 2,
   },
   special_treatment: {
@@ -2013,25 +2013,25 @@ const CARE_ACTIONS = {
   },
   encourage: {
     id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
-    desc: 'スランプ中の選手に声をかける（信頼度+1〜2、回復促進・1週1回）',
+    desc: 'スランプ中の選手に声をかける（回復促進・1週1回）',
     effects: { trust: 1 }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 1,
   },
   refresh_leave: {
     id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
-    desc: '休暇でリフレッシュ（状態+15、信頼度+3、回復大促進・4週に1回）',
+    desc: '休暇でリフレッシュ（状態回復・回復大促進・4週に1回）',
     effects: { condition: 15, trust: 3, skip_training: true }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 4,
   },
   // 団体全体向けアクション（1週に1回まで）
   party: {
     id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
-    desc: '全員の信頼度+2、ロッカールーム空気+5（1週1回）',
+    desc: '全員の信頼が少し上がり、ロッカールームの空気も良くなる（1週1回）',
     effects: { trust_all: 2, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
   },
   camp: {
     id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
-    desc: '全員の成長+中（2週間集中）、信頼度+2（1週1回）',
+    desc: '全員の成長+中（2週間集中）、信頼も少し上がる（1週1回）',
     effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 2 }, minOrgPop: 0, minHeadcount: 4,
   },
 };

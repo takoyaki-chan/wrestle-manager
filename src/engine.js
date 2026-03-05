@@ -6598,6 +6598,37 @@ Engine.trust = {
     return Engine.util.clamp(Math.round(current + delta), 0, 100);
   },
 
+  // ── 信頼度変化のニュアンス表現（UI向け・数値を隠す） ─────────────────────
+  describeChange(delta) {
+    const d = Math.abs(delta);
+    if (delta > 0) {
+      if (d >= 8) return '信頼が大きく上がった';
+      if (d >= 4) return '信頼が上がった';
+      return '少し信頼が増したようだ';
+    }
+    if (delta < 0) {
+      if (d >= 8) return '信頼が大きく下がった';
+      if (d >= 4) return '信頼が下がった';
+      return '少し距離を感じる';
+    }
+    return '';
+  },
+
+  describeChangeHint(delta) {
+    const d = Math.abs(delta);
+    if (delta > 0) {
+      if (d >= 8) return '信頼が大きく上がる';
+      if (d >= 4) return '信頼が上がる';
+      return '信頼が少し上がる';
+    }
+    if (delta < 0) {
+      if (d >= 8) return '信頼が大きく下がる';
+      if (d >= 4) return '信頼が下がる';
+      return '信頼が少し下がる';
+    }
+    return '';
+  },
+
   // ── 信頼度帯の判定 ───────────────────────────────────────────────────────
   getTrustBand(trust) {
     const t = trust != null ? trust : 50;
@@ -6687,13 +6718,13 @@ Engine.careActions = {
         f._bonusRepeat = repeatCount + 1;
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
-        events.push(`💴 ${f.name}にボーナスを支給（信頼度+${trustGain}）`);
+        events.push(`💴 ${f.name}にボーナスを支給`);
       } else if (actionId === 'costume') {
         const newPop = Engine.util.clamp((f.popularity || 1) + cfg.effects.popularity, 1, 100);
         f = { ...f, popularity: newPop };
         f = applyTrust(f, cfg.effects.trust);
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`👗 ${f.name}のコスチュームを新調（人気+${cfg.effects.popularity}、信頼度+${cfg.effects.trust}）`);
+        events.push(`👗 ${f.name}のコスチュームを新調（人気+${cfg.effects.popularity}）`);
       } else if (actionId === 'trainer') {
         f = applyTrust(f, cfg.effects.trust);
         f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
@@ -6746,7 +6777,10 @@ Engine.careActions = {
       roster[idx] = f;
       // before/after changes 構築
       const _after = { trust: f.trust, popularity: f.popularity || 0, condition: f.condition || 50 };
-      if (_after.trust !== _before.trust) changes.push({ label: '信頼度', emoji: '🤝', before: _before.trust, after: _after.trust });
+      if (_after.trust !== _before.trust) {
+        const trustDesc = Engine.trust.describeChange(_after.trust - _before.trust);
+        changes.push({ label: '信頼度', emoji: '🤝', text: trustDesc });
+      }
       if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: _before.popularity, after: _after.popularity });
       if (_after.condition !== _before.condition) changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
       if (actionId === 'trainer') changes.push({ label: '成長速度', emoji: '📈', text: `${cfg.effects.growth_boost.weeks}週間 +30%` });
@@ -6754,8 +6788,10 @@ Engine.careActions = {
         const reduced = roster[idx].injury.weeksLeft;
         changes.push({ label: '離脱期間', emoji: '🏥', text: `${Math.ceil(reduced * 2)}週 → ${reduced}週に短縮` });
       }
-      if (actionId === 'encourage' || actionId === 'refresh_leave') {
-        changes.push({ label: 'スランプ回復', emoji: '💪', text: '促進中（次週以降に効果発現）' });
+      if (actionId === 'encourage') {
+        changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
+      } else if (actionId === 'refresh_leave') {
+        changes.push({ label: 'スランプ回復', emoji: '💪', text: '心身ともにリフレッシュし、回復が大きく進んだ' });
       }
     }
 
@@ -6770,9 +6806,9 @@ Engine.careActions = {
           return applyTrust(f, cfg.effects.trust_all);
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + cfg.effects.morale, 0, 100);
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `+${cfg.effects.trust_all}` });
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
         changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
-        events.push(`🎉 打ち上げ・慰労会を開催（全員の信頼度+${cfg.effects.trust_all}、雰囲気+${cfg.effects.morale}）`);
+        events.push(`🎉 打ち上げ・慰労会を開催（チームの雰囲気が良くなった）`);
         reactionFighterId = null;
         _teamCareWeekUsed = { ..._teamCareWeekUsed, [actionId]: state.week };
       } else if (actionId === 'camp') {
@@ -6781,7 +6817,7 @@ Engine.careActions = {
           const newF = applyTrust(f, cfg.effects.trust_all);
           return { ...newF, _trainerBuff: { weeksLeft: cfg.effects.growth_all.weeks, mult: cfg.effects.growth_all.mult } };
         });
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `+${cfg.effects.trust_all}` });
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
         changes.push({ label: '全員の成長速度', emoji: '📈', text: `${cfg.effects.growth_all.weeks}週間 +50%` });
         events.push(`⛺ 合宿を実施（全員の成長バフ+50%、${cfg.effects.growth_all.weeks}週間）`);
         reactionFighterId = null;
@@ -7039,31 +7075,31 @@ Engine.eventSystem = {
     const funds = state.funds || 0;
     switch (event.type) {
       case 'S1': return [
-        { label: '受ける',       hint: '信頼度+8、次興行でタイトルマッチ調整を検討',  idx: 0 },
-        { label: 'まだ早い',     hint: '信頼度-5（約束として記憶）',                   idx: 1 },
-        { label: '却下する',     hint: '信頼度-10',                                   idx: 2 },
+        { label: '受ける',       hint: '信頼が大きく上がる、次興行でタイトルマッチ調整を検討',  idx: 0 },
+        { label: 'まだ早い',     hint: '信頼が下がる（約束として記憶）',                       idx: 1 },
+        { label: '却下する',     hint: '信頼が大きく下がる',                                   idx: 2 },
       ];
       case 'S3': return [
-        { label: '休ませる',     hint: '信頼度+3、回復促進',                          idx: 0 },
-        { label: '励ます',       hint: '信頼度-2（無理強い）',                        idx: 1 },
-        { label: '無視する',     hint: '信頼度-5、怪我リスク増',                      idx: 2 },
+        { label: '休ませる',     hint: '信頼が少し上がる、回復促進',                  idx: 0 },
+        { label: '励ます',       hint: '信頼が少し下がる（無理強い）',                idx: 1 },
+        { label: '無視する',     hint: '信頼が下がる、怪我リスク増',                  idx: 2 },
       ];
       case 'S4': {
         const s4Choices = [
-          { label: `待遇改善（-100万）`, hint: funds >= 100 ? '信頼度+8' : '資金不足', idx: 0, disabled: funds < 100 },
-          { label: '出場を約束する',     hint: '信頼度保留（約束のプレッシャー）',      idx: 1 },
-          { label: '突っぱねる',         hint: '信頼度-15、退団リスク',                idx: 2 },
+          { label: `待遇改善（-100万）`, hint: funds >= 100 ? '信頼が大きく上がる' : '資金不足', idx: 0, disabled: funds < 100 },
+          { label: '出場を約束する',     hint: '信頼は保留（約束のプレッシャー）',               idx: 1 },
+          { label: '突っぱねる',         hint: '信頼が大きく下がる、退団リスク',                 idx: 2 },
         ];
-        if (funds < 200) s4Choices.push({ label: '励ましの言葉をかける', hint: '信頼度+3（少ないが無料）', idx: 3 });
+        if (funds < 200) s4Choices.push({ label: '励ましの言葉をかける', hint: '信頼が少し上がる（無料）', idx: 3 });
         return s4Choices;
       }
       case 'S5': return [
-        { label: '許可する',       hint: '強化練習に設定、信頼度+3',                idx: 0 },
+        { label: '許可する',       hint: '強化練習に設定、信頼が少し上がる',        idx: 0 },
         { label: '通常練習を指示', hint: '変化なし',                               idx: 1 },
-        { label: '別メニューを提案', hint: '信頼度+1',                             idx: 2 },
+        { label: '別メニューを提案', hint: '信頼がわずかに上がる',                 idx: 2 },
       ];
       case 'E1': return [
-        { label: '出す',       hint: '人気+4、信頼度+2、コンディション-5',         idx: 0 },
+        { label: '出す',       hint: '人気+4、信頼が少し上がる、コンディション-5', idx: 0 },
         { label: '断る',       hint: '変化なし',                                  idx: 1 },
         { label: '別の選手を推薦', hint: 'チームの人気+2（ランダムな選手）',       idx: 2 },
       ];
@@ -7072,9 +7108,9 @@ Engine.eventSystem = {
         { label: '断る',            hint: '変化なし',                             idx: 1 },
       ];
       case 'E6': return [
-        { label: `契約金を積む（-100万）`, hint: funds >= 100 ? '信頼度+10、引き止め確定' : '資金不足', idx: 0, disabled: funds < 100 },
-        { label: '説得する',              hint: '信頼度次第で引き止め成功',                           idx: 1 },
-        { label: '放出する',              hint: '資金+50、選手が退団',                                idx: 2 },
+        { label: `契約金を積む（-100万）`, hint: funds >= 100 ? '信頼が大きく上がる、引き止め確定' : '資金不足', idx: 0, disabled: funds < 100 },
+        { label: '説得する',              hint: '信頼次第で引き止め成功',                                      idx: 1 },
+        { label: '放出する',              hint: '資金+50、選手が退団',                                         idx: 2 },
       ];
       default: return [{ label: '了解', hint: '', idx: 0 }];
     }
@@ -7102,13 +7138,13 @@ Engine.eventSystem = {
         const f = getFighter();
         if (choiceIdx === 0) {
           applyTrust(event.fighter, 8);
-          events.push(`✅ ${event.name}のタイトル挑戦要求を受諾（信頼度+8）`);
+          events.push(`✅ ${event.name}のタイトル挑戦要求を受諾`);
         } else if (choiceIdx === 1) {
           applyTrust(event.fighter, -5);
-          events.push(`⚠️ ${event.name}のタイトル挑戦要求を保留（信頼度-5）`);
+          events.push(`⚠️ ${event.name}のタイトル挑戦要求を保留`);
         } else {
           applyTrust(event.fighter, -10);
-          events.push(`❌ ${event.name}のタイトル挑戦要求を却下（信頼度-10）`);
+          events.push(`❌ ${event.name}のタイトル挑戦要求を却下`);
         }
         break;
       }
@@ -7117,13 +7153,13 @@ Engine.eventSystem = {
           applyTrust(event.fighter, 3);
           // 休養設定（scheduleをrestに＋次の興行を欠場させるforcedRestフラグ）
           roster = roster.map(f => f.id === event.fighter ? { ...f, schedule: 'rest', forcedRest: true } : f);
-          events.push(`🛌 ${event.name}を休養させた（信頼度+3、次の興行は欠場）`);
+          events.push(`🛌 ${event.name}を休養させた（次の興行は欠場）`);
         } else if (choiceIdx === 1) {
           applyTrust(event.fighter, -2);
-          events.push(`😓 ${event.name}を励まして続けさせた（信頼度-2）`);
+          events.push(`😓 ${event.name}を励まして続けさせた`);
         } else {
           applyTrust(event.fighter, -5);
-          events.push(`⚠️ ${event.name}の休養願いを無視（信頼度-5、怪我リスク増）`);
+          events.push(`⚠️ ${event.name}の休養願いを無視（怪我リスク増）`);
         }
         break;
       }
@@ -7132,17 +7168,17 @@ Engine.eventSystem = {
           funds -= 100;
           applyTrust(event.fighter, 8);
           lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 5, 0, 100);
-          events.push(`💴 ${event.name}の待遇を改善（-100万、信頼度+8）`);
+          events.push(`💴 ${event.name}の待遇を改善（-100万）`);
         } else if (choiceIdx === 1) {
           events.push(`🤝 ${event.name}への出場約束（次の興行に出場させること）`);
         } else if (choiceIdx === 3) {
           applyTrust(event.fighter, 3);
           lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
-          events.push(`💬 ${event.name}を励ました（信頼度+3）`);
+          events.push(`💬 ${event.name}を励ました`);
         } else {
           applyTrust(event.fighter, -15);
           lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 10, 0, 100);
-          events.push(`💢 ${event.name}の要求を突っぱねた（信頼度-15、退団リスク）`);
+          events.push(`💢 ${event.name}の要求を突っぱねた（退団リスク）`);
         }
         break;
       }
@@ -7150,10 +7186,10 @@ Engine.eventSystem = {
         if (choiceIdx === 0) {
           roster = roster.map(f => f.id === event.fighter ? { ...f, intensive: true } : f);
           applyTrust(event.fighter, 3);
-          events.push(`⚡ ${event.name}の特訓を許可（信頼度+3）`);
+          events.push(`⚡ ${event.name}の特訓を許可`);
         } else if (choiceIdx === 2) {
           applyTrust(event.fighter, 1);
-          events.push(`📋 ${event.name}に別メニューを提案（信頼度+1）`);
+          events.push(`📋 ${event.name}に別メニューを提案`);
         }
         break;
       }
@@ -7166,7 +7202,7 @@ Engine.eventSystem = {
             return { ...f, popularity: newPop, condition: newCond };
           });
           applyTrust(event.fighter, 2);
-          events.push(`📺 ${event.name}のメディア出演を手配（人気+4、信頼度+2）`);
+          events.push(`📺 ${event.name}のメディア出演を手配（人気+4）`);
         } else if (choiceIdx === 2) {
           const others = roster.filter(f => f.id !== event.fighter && !f.injury);
           if (others.length > 0) {
@@ -7195,14 +7231,14 @@ Engine.eventSystem = {
         if (choiceIdx === 0 && funds >= 100) {
           funds -= 100;
           applyTrust(event.fighter, 10);
-          events.push(`💴 ${event.name}を契約金で引き止め（-100万、信頼度+10）`);
+          events.push(`💴 ${event.name}を契約金で引き止め（-100万）`);
         } else if (choiceIdx === 1) {
           // 信頼度次第で成功
           const f = getFighter();
           const trust = f ? (f.trust != null ? f.trust : 50) : 50;
           if (trust >= 35) {
             applyTrust(event.fighter, 5);
-            events.push(`🤝 ${event.name}の説得に成功（信頼度+5）`);
+            events.push(`🤝 ${event.name}の説得に成功`);
           } else {
             // 退団
             roster = roster.filter(f => f.id !== event.fighter);
@@ -7430,7 +7466,7 @@ Engine.eventSystem = {
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: worsen ? '練習中の怪我(悪化)' : '練習中の怪我' } };
           });
           if (worsen) events.push(`💥 ${event.name}を無理させた結果、症状が悪化！（${injWeeks}週離脱）`);
-          else events.push(`😤 ${event.name}を無理させた（${injWeeks}週離脱、信頼度+3）`);
+          else events.push(`😤 ${event.name}を無理させた（${injWeeks}週離脱）`);
         } else {
           // 通常の治療（choiceIdx === 1、または資金不足でchoice 0を選んだ場合）
           const injWeeks = severity === 'moderate' ? 6 : 3;
@@ -7455,7 +7491,7 @@ Engine.eventSystem = {
             applyTrust(event.fighter1, 5);
             applyTrust(event.fighter2, 5);
             lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 3, 0, 100);
-            events.push(`🤝 ${event.name1}と${event.name2}の対立を話し合いで解決（両者信頼度+5）`);
+            events.push(`🤝 ${event.name1}と${event.name2}の対立を話し合いで解決`);
             return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
           } else if (choiceIdx === 1) {
             // 試合で決着 → nextStep で Step 2 へ
@@ -7465,7 +7501,7 @@ Engine.eventSystem = {
             applyTrust(event.fighter1, -8);
             applyTrust(event.fighter2, -8);
             lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 10, 0, 100);
-            events.push(`😡 ${event.name1}と${event.name2}の対立を放置（両者信頼度-8、士気-10）`);
+            events.push(`😡 ${event.name1}と${event.name2}の対立を放置（士気低下）`);
             return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
           }
         }

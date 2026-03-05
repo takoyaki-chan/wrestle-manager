@@ -3507,9 +3507,9 @@ function showCareActionModal(state, onConfirm) {
   function _buildExpectHtml(cfg) {
     const items = [];
     const e = cfg.effects || {};
-    if (e.trust) items.push(`🤝 信頼度 +${e.trust}`);
+    if (e.trust) items.push(`🤝 信頼が${e.trust >= 4 ? '上がる' : '少し上がる'}`);
     if (e.popularity) items.push(`⭐ 人気 +${e.popularity}`);
-    if (e.trust_all) items.push(`🤝 全員の信頼度 +${e.trust_all}`);
+    if (e.trust_all) items.push(`🤝 全員の信頼が少し上がる`);
     if (e.morale) items.push(`🏠 ロッカールーム雰囲気 +${e.morale}`);
     if (e.growth_boost) items.push(`📈 成長速度 +${Math.round((e.growth_boost.mult - 1) * 100)}%（${e.growth_boost.weeks}週間）`);
     if (e.growth_all) items.push(`📈 全員の成長速度 +${Math.round((e.growth_all.mult - 1) * 100)}%（${e.growth_all.weeks}週間）`);
@@ -3856,7 +3856,7 @@ function _buildB1Modal(event, state, roster) {
   const canAfford = funds >= 200;
   html += `<button class="btn" data-choice="0" ${canAfford ? '' : 'disabled'}
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between${canAfford ? '' : ';opacity:0.4;cursor:default'}">
-    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・信頼度+5</span>
+    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・信頼が上がる</span>
   </button>`;
   html += `<button class="btn" data-choice="1"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
@@ -3864,7 +3864,7 @@ function _buildB1Modal(event, state, roster) {
   </button>`;
   html += `<button class="btn" data-choice="2"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">信頼度+3、40%で悪化リスク</span>
+    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">信頼が少し上がる、40%で悪化リスク</span>
   </button>`;
   html += '</div>';
   return html;
@@ -3905,11 +3905,11 @@ function _buildB2Step1(event, state, roster) {
 
   html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
   html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>話し合いで解決</span><span style="font-size:11px;color:var(--text-dim)">両者信頼度+5、士気+3</span></button>`;
+    <span>話し合いで解決</span><span style="font-size:11px;color:var(--text-dim)">両者の信頼が上がる、士気も回復</span></button>`;
   html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>試合で決着させる</span><span style="font-size:11px;color:var(--text-dim)">勝者信頼度+10、敗者-5</span></button>`;
+    <span>試合で決着させる</span><span style="font-size:11px;color:var(--text-dim)">勝者の信頼が大きく上がる、敗者は下がる</span></button>`;
   html += `<button class="btn" data-choice="2" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>放置する</span><span style="font-size:11px;color:var(--text-dim)">両者信頼度-8、士気-10</span></button>`;
+    <span>放置する</span><span style="font-size:11px;color:var(--text-dim)">両者の信頼が大きく下がる、士気も低下</span></button>`;
   html += '</div>';
   return html;
 }
