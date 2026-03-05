@@ -1523,11 +1523,14 @@ const Engine = {
       const coach = Engine.coach.getCharCoach(G, charId);
       if (!coach) return 1.0;
       let mult = COACH_RANKS[coach.teaching] || 1.0;
-      // Style match bonus (+0.05)
+      // Style match bonus (specialist +0.08 / allround +0.05)
       const char = G.roster.find(c => c.id === charId);
       if (char) {
-        const charStyle = COACH_STYLE_MATCH[char.style] || 'all';
-        if (coach.style === 'all' || coach.style === charStyle) mult += COACH_STYLE_BONUS;
+        if (coach.style === 'Allround') {
+          mult += COACH_STYLE_BONUS.allround;
+        } else if (coach.style === char.style) {
+          mult += COACH_STYLE_BONUS.specialist;
+        }
       }
       // Trait: 新人育成 — OVR≤60 で追加倍率
       const traitDef = COACH_TRAIT_DEFS[coach.trait];

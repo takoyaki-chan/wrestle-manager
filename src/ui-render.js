@@ -2,6 +2,14 @@
 let _rosterSortKey = 'ovr';
 function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 
+// Coach-fighter style match helper
+function getCoachStyleMatch(coach, fighter) {
+  if (!coach || !fighter) return { type: 'none', bonus: 0, label: '', icon: '', cls: 'none' };
+  if (coach.style === 'Allround') return { type: 'allround', bonus: 0.05, label: '万能', icon: '○', cls: 'allround' };
+  if (coach.style === fighter.style) return { type: 'specialist', bonus: 0.08, label: '一致', icon: '✦', cls: 'specialist' };
+  return { type: 'none', bonus: 0, label: '不一致', icon: '', cls: 'none' };
+}
+
 function refreshTopBar() {
   // Audio mute button sync
   const muteBtn = document.getElementById('muteBtn');
@@ -1178,7 +1186,9 @@ function _renderRosterTrainingPanel(c, hired) {
       const isCurrent = coach && coach.id === h.id;
       const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
       const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
-      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}] (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+      const sm = getCoachStyleMatch(h, c);
+      const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
+      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
     });
     html += '</select>';
     if (coach) {
@@ -1187,8 +1197,9 @@ function _renderRosterTrainingPanel(c, hired) {
     html += '</div>';
     if (coach) {
       const mult = COACH_RANKS[coach.teaching] || 1.0;
-      const styleName = COACH_STYLE_MAP[coach.style] || 'オールラウンド';
-      const effDesc = `成長×${mult} ${styleName} ${coach.trait}`;
+      const sm = getCoachStyleMatch(coach, c);
+      const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none">不一致</span>';
+      const effDesc = `成長×${mult} <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}`;
       html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
     }
   } else if (coach) {
@@ -1236,8 +1247,7 @@ function renderRoster() {
 
     const coachEffectShort = (c) => {
       const mult = COACH_RANKS[c.teaching] || 1.0;
-      const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
-      return `${c.grade}級 ×${mult} ${styleName}`;
+      return `${c.grade}級 ×${mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
     };
 
     let staffHtml = '';
@@ -1254,7 +1264,9 @@ function renderRoster() {
             <div style="display:flex;flex-wrap:wrap;gap:4px">`;
         if (assignedChars.length > 0) {
           assignedChars.forEach(ch => {
-            staffHtml += `<span style="display:inline-flex;align-items:center;gap:3px;font-size:12px;padding:2px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 20, '', true)} ${ch.name.substring(0,4)}</span>`;
+            const sm = getCoachStyleMatch(c, ch);
+            const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'}">${sm.icon}</span>` : '';
+            staffHtml += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${ch.name.substring(0,4)}${matchIcon}</span>`;
           });
         } else {
           staffHtml += `<span style="font-size:12px;color:var(--text-dim);font-style:italic">担当なし</span>`;
@@ -1352,10 +1364,12 @@ function renderRoster() {
         `<span class="train-growth-arrow ${a.cls}" title="${a.label}">${a.arrow}</span>`
       ).join('')}</span>`;
     }
-    // Coach badge in card
+    // Coach badge in card (with style match indicator)
     let coachBadgeHtml = '';
     if (coachOfChar) {
-      coachBadgeHtml = `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2);display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}</span>`;
+      const sm = getCoachStyleMatch(coachOfChar, c);
+      const matchIcon = sm.icon ? `<span style="font-weight:700">${sm.icon}</span>` : '';
+      coachBadgeHtml = `<span class="coach-match-badge ${sm.cls}" style="display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}${matchIcon}</span>`;
     }
     html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
       <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
@@ -2262,11 +2276,9 @@ function renderCoach() {
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const coachEffectHtml = (c) => {
     const mult = COACH_RANKS[c.teaching] || 1.0;
-    const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
-    const color = gradeColors[c.grade] || '#888';
     return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
       <span style="font-size:12px;color:var(--gold);font-weight:700">指導×${mult}</span>
-      <span style="font-size:11px;color:var(--text-sub)">${styleName}</span>
+      <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span>
       <span class="coach-trait">${c.trait}</span>`;
   };
 
@@ -2300,7 +2312,9 @@ function renderCoach() {
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">`;
         assignedChars.forEach(ch => {
-          html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 22, '', true)} ${fLink(ch, {source:'roster', size:'12px'})} <strong style="color:var(--gold)">${ov(ch)}</strong></span>`;
+          const sm = getCoachStyleMatch(c, ch);
+          const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'};margin-left:2px">${sm.icon}</span>` : '';
+          html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 22, '', true)} ${fLink(ch, {source:'roster', size:'12px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
         });
         html += `</div>`;
       } else {
@@ -2716,14 +2730,13 @@ function _renderDbCoaches() {
   coaches.forEach(c => {
     const gc = GRADE_COLORS[c.grade] || '#888';
     const isHired = G.coaches.includes(c.id);
-    const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
     html += `<tr class="clickable" onclick="showCoachTooltip(${c.id})">
       <td>${coachPortraitImg(c, 36)}</td>
       <td style="font-weight:600">${c.name}</td>
       <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
       <td class="num" style="font-weight:700;color:${gc}">${c.teaching}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
-      <td style="font-size:12px">${styleName}</td>
+      <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
       <td style="font-size:11px;color:var(--text-sub)">${c.trait}</td>
       <td class="num" style="font-size:12px">${c.salary}万</td>
       <td class="num" style="font-size:12px">${c.hireFee}万</td>

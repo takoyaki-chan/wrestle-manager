@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（成長バランスリバランス v2）
+> 最終更新: 2026-03-05（コーチスタイル統一＋マッチ演出）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**コーチスタイル統一＋マッチ演出（2026-03-05）。** コーチ得意スタイルを選手と同じ6種に統一し、スタイルマッチ状態を色・グローで視覚化。
+
+- **スタイル統一**: コーチの旧4種(pw/sp/te/all)→選手と同じ6種(Grappler/Striker/Speed/Submission/Brawler/Allround)に変更。COACH_STYLE_MATCH中間マッピング廃止
+- **2段階ボーナス**: COACH_STYLE_BONUS 0.05(一律)→専門一致+0.08/万能+0.05。専門型コーチを選ぶ意味が生まれる
+- **35名再配分**: Allround 14名(40%)→7名(20%)に削減。新分布: Grappler7/Striker4/Speed6/Submission6/Brawler5/Allround7
+- **視覚演出**: 全6箇所にCSS glowバッジ。専門一致=緑枠+✦、万能=金枠+○、不一致=灰色半透明。対象: ロスターカード/コーチアサインDD/スタッフカード/コーチツールチップ/スタッフ募集/選手ポップアップ/DBコーチタブ
+- **検証**: auto-sim 100シーズン ALL CLEAR
+- 変更: data.js, engine.js, index.html, ui-render.js, ui-common.js
 
 **成長バランスリバランス v2（2026-03-05）。** プレイヤーvs AI成長速度の構造的不公平を解消。旧: Player Top5がS8で84(AI 78を逆転)→S13で93.5(AI 79)と独占。新: S12でPlayer 83=AI 83に到達し、中盤〜後半は拮抗した競争が成立。
 

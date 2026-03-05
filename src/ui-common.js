@@ -663,7 +663,6 @@ function showCoachTooltip(coachId) {
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const color = gradeColors[c.grade] || '#888';
   const teachingMult = COACH_RANKS[c.teaching] || 1.0;
-  const styleName = COACH_STYLE_MAP[c.style] || 'オールラウンド';
   const traitDef = COACH_TRAIT_DEFS[c.trait] || {};
   const isHired = G.coaches.includes(c.id);
   const assigned = getCoachAssignees(c.id);
@@ -703,7 +702,7 @@ function showCoachTooltip(coachId) {
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           <span style="color:var(--text-sub)">指導力 <strong style="color:${color}">${c.teaching}</strong></span>
           <span style="color:var(--text-sub)">観察眼 <strong style="color:${color}">${c.observation}</strong></span>
-          <span style="color:var(--text-sub)">得意 <strong style="color:var(--text)">${styleName}</strong></span>
+          <span style="color:var(--text-sub)">得意 <span class="badge badge-${c.style}" style="font-size:12px;padding:1px 6px">${c.style}</span></span>
         </div>
         <div style="margin-top:4px;color:var(--text-sub);font-size:12px">成長倍率 <strong style="color:var(--gold)">×${teachingMult}</strong></div>
       </div>
@@ -737,7 +736,9 @@ function showCoachTooltip(coachId) {
     if (assignedChars.length > 0) {
       html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
       assignedChars.forEach(ch => {
-        html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${ov(ch)}</strong></span>`;
+        const sm = getCoachStyleMatch(c, ch);
+        const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'};margin-left:2px">${sm.icon}</span>` : '';
+        html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
       });
       html += '</div>';
     } else {
@@ -1896,10 +1897,14 @@ function showFighterPopup(fighterId, source) {
       if (isRoster) {
         const coach = getCharCoach(c.id);
         if (coach) {
+          const sm = getCoachStyleMatch(coach, c);
+          const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}" style="margin-left:4px">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none" style="margin-left:4px">不一致</span>';
           html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
             🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
-            <span style="color:var(--text-dim);font-size:12px;margin-left:6px">(${COACH_STYLE_MAP[coach.style] || 'オールラウンド'} / 指導力${coach.teaching} / ${coach.trait})</span>
+            <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px">${coach.style}</span>
+            ${matchHtml}
+            <span style="color:var(--text-dim);font-size:12px;margin-left:4px">指導力${coach.teaching} / ${coach.trait}</span>
           </div>`;
         } else {
           html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:4px">
