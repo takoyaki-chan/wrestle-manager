@@ -6781,7 +6781,7 @@ Engine.careActions = {
         const trustDesc = Engine.trust.describeChange(_after.trust - _before.trust);
         changes.push({ label: '信頼度', emoji: '🤝', text: trustDesc });
       }
-      if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: _before.popularity, after: _after.popularity });
+      if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: Engine.util.dispPop(_before.popularity), after: Engine.util.dispPop(_after.popularity) });
       if (_after.condition !== _before.condition) changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
       if (actionId === 'trainer') changes.push({ label: '成長速度', emoji: '📈', text: `${cfg.effects.growth_boost.weeks}週間 +30%` });
       if (actionId === 'special_treatment' && roster[idx].injury) {

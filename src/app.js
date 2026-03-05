@@ -2757,19 +2757,24 @@ const App = {
     });
 
     // Title outcomes
+    const titleMatchOutcomes = [];
     validMatches.forEach((m, i) => {
       if (!m.isTitle || !results[i]) return;
       const r = results[i];
       const champId = titles.world.championId;
+      const challengerId = champId === m.left ? m.right : m.left;
       const tempState = { ...s, titles, roster };
       if (r.winner === 'draw') {
         if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+          titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
           const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+          titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
         }
       }
     });
@@ -3081,6 +3086,7 @@ const App = {
 
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
+    App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
     // BGM: Play jingle based on title outcome
     const hadTitleChange = validMatches.some((m, i) => m.isTitle && results[i] && results[i].winner !== 'draw');
     Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
@@ -3158,16 +3164,49 @@ const App = {
       }
       App._intrusionData = null;
     }
-    // Check title wins (only if champion is newly crowned this show)
-    const newChampId = G.titles?.world?.championId;
-    if (newChampId && G.titles.world.defenses === 0 && G.lastShowResults?.some(r => r.isTitleMatch)) {
-      const champ = G.roster.find(c => c.id === newChampId);
-      if (champ) {
-        hasEventPopups = true;
-        setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
-          message: pickQuote('titleWin'), detail:`👑 ${champ.name}が新団体王者に！` }), injuries.length * 100 + 50);
+    // タイトルマッチ後リアクション（勝敗問わず）
+    const titleOutcomes = App._lastTitleOutcomes || [];
+    App._lastTitleOutcomes = [];
+    let titlePopupDelay = injuries.length * 100 + 50;
+    titleOutcomes.forEach(to => {
+      if (to.outcome === 'change') {
+        // 新王者リアクション
+        const newChamp = G.roster.find(c => c.id === to.newChampId);
+        if (newChamp) {
+          hasEventPopups = true;
+          const d = titlePopupDelay; titlePopupDelay += 100;
+          setTimeout(() => showEventPopup({ type:'fighter', id:newChamp.id, name:newChamp.name, tone:'gold',
+            message: getTraitQuote('titleWin', newChamp), detail:`👑 ${newChamp.name}が新団体王者に！` }), d);
+        }
+        // 前王者リアクション
+        if (to.prevChampId) {
+          const prevChamp = G.roster.find(c => c.id === to.prevChampId);
+          if (prevChamp) {
+            hasEventPopups = true;
+            const d = titlePopupDelay; titlePopupDelay += 100;
+            setTimeout(() => showEventPopup({ type:'fighter', id:prevChamp.id, name:prevChamp.name, tone:'negative',
+              message: getTraitQuote('titleLoss', prevChamp), detail:`王座陥落…` }), d);
+          }
+        }
+      } else if (to.outcome === 'defense') {
+        // チャンピオン防衛リアクション
+        const champ = G.roster.find(c => c.id === to.champId);
+        if (champ) {
+          hasEventPopups = true;
+          const d = titlePopupDelay; titlePopupDelay += 100;
+          setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
+            message: getTraitQuote('titleDefense', champ), detail:`🛡️ タイトル防衛成功！` }), d);
+        }
+        // 挑戦者リアクション
+        const challenger = G.roster.find(c => c.id === to.challengerId);
+        if (challenger) {
+          hasEventPopups = true;
+          const d = titlePopupDelay; titlePopupDelay += 100;
+          setTimeout(() => showEventPopup({ type:'fighter', id:challenger.id, name:challenger.name, tone:'negative',
+            message: getTraitQuote('titleChallengeLoss', challenger), detail:`タイトル挑戦失敗…` }), d);
+        }
       }
-    }
+    });
     // v1.4w: 興行結果から新聞イベントを収集（tickWeek前）
     const _preDefenses = G.titles?.world?.defenses || 0;
     const _preChampId = G.titles?.world?.championId;
