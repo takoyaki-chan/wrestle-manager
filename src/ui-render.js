@@ -1028,8 +1028,9 @@ function renderWeekScreen() {
   // ── PPV TV PHASE ──
   else if (G.weekPhase === 'ppvTV') {
     document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 📺 PPV テレビ中継`;
-    html += `<div style="text-align:center;padding:24px;color:var(--text-sub);font-size:16px">
-      📺 PPV GRAND FINAL テレビ中継中…
+    html += `<div style="text-align:center;padding:24px">
+      <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 PPV GRAND FINAL テレビ中継中…</div>
+      <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 テレビ中継を見る</button>
     </div>`;
   }
 

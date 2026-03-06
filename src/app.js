@@ -3437,6 +3437,23 @@ const App = {
     Audio.play('tick');
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // 契約更新交渉フェーズ
+    if (G.weekPhase === 'contractNegotiation') {
+      Storage.autoSave();
+      App.handleContractNegotiations();
+      return;
+    }
+    // PPVフェーズ
+    if (G.weekPhase === 'ppvShow') {
+      Storage.autoSave();
+      App.initPPVShow();
+      return;
+    }
+    if (G.weekPhase === 'ppvTV') {
+      Storage.autoSave();
+      App.initPPVTV();
+      return;
+    }
     if (G.missionEnabled) { const mResult = Mission.updateCompleted(G); G = mResult.state; }
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
