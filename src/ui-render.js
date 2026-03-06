@@ -522,10 +522,12 @@ function renderWeekScreen() {
     </div>`;
 
     // v1.9: Month-to-date finance summary (during non-month-end manage weeks)
-    const manageBuf = G.monthlyFinanceBuffer || [];
+    const _cycleNum = Math.ceil(G.week / 4);
+    const _monthStart = (_cycleNum - 1) * 4 + 1;
+    const manageBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _monthStart && h.week < G.week);
     if (manageBuf.length > 0) {
       let mIncome = 0, mExpense = 0;
-      manageBuf.forEach(e => { mIncome += (e.finance?.income || 0); mExpense += (e.finance?.expense || 0); });
+      manageBuf.forEach(e => { mIncome += (e.income || 0); mExpense += (e.expense || 0); });
       const mNet = mIncome - mExpense;
       const netColor = mNet >= 0 ? '#2ecc71' : '#e74c3c';
       const weekInMonth = manageBuf.length + 1;
@@ -780,9 +782,11 @@ function renderWeekScreen() {
     const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
     document.getElementById('weekTitle').textContent = `${dateStr} — 完了`;
     // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
-    const wsBuf = G.monthlyFinanceBuffer || [];
+    const _wsCycleNum = Math.ceil(G.week / 4);
+    const _wsMonthStart = (_wsCycleNum - 1) * 4 + 1;
+    const wsBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _wsMonthStart && h.week <= G.week);
     let wsIncome = 0, wsExpense = 0;
-    wsBuf.forEach(e => { wsIncome += e.finance?.income || 0; wsExpense += e.finance?.expense || 0; });
+    wsBuf.forEach(e => { wsIncome += e.income || 0; wsExpense += e.expense || 0; });
     const wsNet = wsIncome - wsExpense;
     const netColor = wsNet >= 0 ? 'var(--green)' : 'var(--red)';
     const wsWeeks = wsBuf.map(e => e.week).filter(Boolean);
@@ -805,19 +809,21 @@ function renderWeekScreen() {
   }
   else if (G.weekPhase === 'settled') {
     const heat = getHeatLevel();
-    const monthBuf = G.monthlyFinanceBuffer || [];
+    const _sCycleNum = Math.ceil(G.week / 4);
+    const _sMonthStart = (_sCycleNum - 1) * 4 + 1;
+    const monthBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _sMonthStart && h.week <= G.week);
     const weeksInMonth = monthBuf.length;
     html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート</h3>`;
     html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
     const settleChamp = getWorldChampion();
     if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 団体王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
 
-    // v1.0: Aggregate monthly finance from buffer
+    // v1.0: Aggregate monthly finance from financeHistory
     const monthlyDetails = {};
     let monthIncome = 0, monthExpense = 0;
     monthBuf.forEach(entry => {
-      if (!entry.finance || !entry.finance.details) return;
-      entry.finance.details.forEach(d => {
+      if (!entry.details) return;
+      entry.details.forEach(d => {
         // 興行固有項目（チケット・会場費）は会場/動員が異なるためラベル全体をキーに保持
         const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
         const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
@@ -826,13 +832,14 @@ function renderWeekScreen() {
         monthlyDetails[key].count++;
         monthlyDetails[key].label = d.label;
       });
-      monthIncome += (entry.finance.income || 0);
-      monthExpense += (entry.finance.expense || 0);
+      monthIncome += (entry.income || 0);
+      monthExpense += (entry.expense || 0);
     });
     const monthNet = monthIncome - monthExpense;
 
     // Show week range
     const weekNums = monthBuf.map(e => e.week).filter(Boolean);
+
     if (weekNums.length > 1) {
       html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週</div>`;
     }
@@ -1694,100 +1701,186 @@ function renderShowPrep() {
   el.innerHTML = html;
 }
 
+// 財務タブリデザイン: ラベル正規化ヘルパー
+function _normalizeFinanceLabel(label) {
+  if (label.startsWith('チケット収入')) return 'チケット収入';
+  if (label.startsWith('グッズ収入')) return 'グッズ収入';
+  if (label.startsWith('会場費')) return '会場費';
+  return label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+}
+
+// 財務タブリデザイン: 期間フィルタ
+function _getFilteredFinance(period) {
+  const history = G.financeHistory || [];
+  switch (period) {
+    case 'month': {
+      const startWeek = Math.max(1, G.week - 3);
+      return history.filter(h => h.season === G.season && h.week >= startWeek && h.week <= G.week);
+    }
+    case 'year':
+      return history.filter(h => h.season === G.season);
+    case 'all':
+    default:
+      return history;
+  }
+}
+
 function renderFinance() {
   const el = document.getElementById('financeContent');
-  let html = `<div style="font-size:24px;font-weight:900;margin-bottom:8px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+  const period = el.dataset.financePeriod || 'month';
+  const tab = el.dataset.financeTab || 'summary';
+  const filtered = _getFilteredFinance(period);
 
-  // Funds history chart (improved with Y-axis labels and grid lines)
-  const fh = G.fundsHistory || [];
-  if (fh.length > 1) {
-    const leftPad = 55, chartH = 120;
-    const chartW = 380;
-    const plotW = chartW - leftPad;
-    const fMin = Math.min(...fh, 0);
-    const fMax = Math.max(...fh, 1);
-    const range = fMax - fMin || 1;
-
-    // Nice grid line calculation
-    const rawStep = range / 4;
-    const niceSteps = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
-    const step = niceSteps.find(s => s >= rawStep) || Math.ceil(rawStep / 1000) * 1000;
-    const gridLines = [];
-    for (let v = Math.ceil(fMin / step) * step; v <= fMax; v += step) gridLines.push(v);
-    if (fMin <= 0 && fMax >= 0 && !gridLines.includes(0)) gridLines.push(0);
-    gridLines.sort((a, b) => a - b);
-
-    const toY = v => chartH - Math.round(((v - fMin) / range) * chartH);
-    const points = fh.map((v, i) => `${leftPad + Math.round(i * plotW / Math.max(fh.length - 1, 1))},${toY(v)}`).join(' ');
-
-    let svg = `<svg width="${chartW}" height="${chartH + 16}" style="display:block;overflow:visible">`;
-    gridLines.forEach(val => {
-      const y = toY(val);
-      const isZero = val === 0;
-      svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(255,255,255,${isZero ? 0.2 : 0.06})" stroke-width="${isZero ? 1 : 0.5}"${isZero ? ' stroke-dasharray="4"' : ''}/>`;
-      svg += `<text x="${leftPad - 6}" y="${y + 3}" text-anchor="end" fill="rgba(255,255,255,${isZero ? 0.4 : 0.2})" font-size="10">${val.toLocaleString()}</text>`;
-    });
-    const lineColor = G.funds >= 0 ? '#2ecc71' : '#e74c3c';
-    svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
-    const lastX = leftPad + plotW;
-    const lastY = toY(fh[fh.length - 1]);
-    svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
-    svg += `<text x="${lastX}" y="${lastY - 8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length - 1].toLocaleString()}万</text>`;
-    svg += '</svg>';
-
-    html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>
-      ${svg}
-    </div>`;
-  }
-
-  // Past 4 weeks actual breakdown from monthlyFinanceBuffer
-  const monthBuf = G.monthlyFinanceBuffer || [];
-  if (monthBuf.length > 0) {
-    const pastDetails = {};
-    let pastIncome = 0, pastExpense = 0;
-    monthBuf.forEach(entry => {
-      if (!entry.finance || !entry.finance.details) return;
-      entry.finance.details.forEach(d => {
-        const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
-        const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
-        if (!pastDetails[key]) pastDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
-        pastDetails[key].val += d.val;
-        pastDetails[key].count++;
-        pastDetails[key].label = d.label;
-      });
-      pastIncome += (entry.finance.income || 0);
-      pastExpense += (entry.finance.expense || 0);
-    });
-    const pastNet = pastIncome - pastExpense;
-    const weekNums = monthBuf.map(e => e.week).filter(Boolean);
-    const weekRange = weekNums.length > 1 ? `第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週` : `第${weekNums[0]}週`;
-    html += `<div class="panel-title">過去${monthBuf.length}週コスト内訳 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${weekRange})</span></div>`;
-    Object.values(pastDetails).forEach(d => {
-      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}万</span></div>`;
-    });
-    html += `<div class="finance-row finance-total"><span>${monthBuf.length}週間収支</span><span class="f-val ${pastNet >= 0 ? 'income' : 'expense'}">${pastNet >= 0 ? '+' : ''}${pastNet}万</span></div>`;
-  } else {
-    html += '<div class="panel-title">週間コスト内訳（推定）</div>';
-    html += `<div style="font-size:11px;color:var(--text-dim);padding:4px 0 8px">今月の実績はまだありません</div>`;
-    html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-    html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
-    const coachTotal = getCoachSalaryTotal();
-    if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-    const totalWeekly = calcWeeklySalary() + calcFixedCosts() + coachTotal;
-    html += `<div class="finance-row finance-total"><span>週間支出合計</span><span class="f-val expense">-${totalWeekly}万</span></div>`;
-    const broadcastTotal = getBroadcastIncome();
-    html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
-    html += `<div class="finance-row"><span class="f-label">放映権</span><span class="f-val income">+${broadcastTotal}万/週</span></div>`;
-  }
-
-  // Salary detail
-  html += '<div class="panel-title" style="margin-top:16px">選手別給与</div>';
-  html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
-  [...G.roster].sort((a,b) => getSalary(b) - getSalary(a)).forEach(c => {
-    html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
+  // ── 期間フィルタバー ──
+  const periodDefs = [{ k:'month', l:'今月' }, { k:'year', l:'年間' }, { k:'all', l:'全期間' }];
+  let html = `<div style="display:flex;gap:6px;margin-bottom:10px">`;
+  periodDefs.forEach(p => {
+    const a = period === p.k;
+    html += `<button onclick="document.getElementById('financeContent').dataset.financePeriod='${p.k}';renderFinance()" style="flex:1;padding:6px 4px;border:1px solid ${a?'var(--gold)':'var(--border)'};background:${a?'rgba(255,200,60,0.1)':'var(--bg-card)'};border-radius:5px;cursor:pointer;font-size:12px;color:${a?'var(--gold)':'var(--text-dim)'};font-weight:${a?700:400}">${p.l}</button>`;
   });
-  html += '</table>';
+  html += `</div>`;
+
+  // ── サブタブバー ──
+  const tabDefs = [{ k:'summary', l:'📊 総合' }, { k:'income', l:'📈 収入' }, { k:'expense', l:'📉 支出' }, { k:'salary', l:'💰 給与' }];
+  html += `<div style="display:flex;gap:4px;margin-bottom:14px">`;
+  tabDefs.forEach(t => {
+    const a = tab === t.k;
+    html += `<button onclick="document.getElementById('financeContent').dataset.financeTab='${t.k}';renderFinance()" style="flex:1;padding:7px 2px;border:1px solid ${a?'var(--gold)':'var(--border)'};background:${a?'rgba(255,200,60,0.1)':'var(--bg-card)'};border-radius:5px;cursor:pointer;font-size:11px;color:${a?'var(--gold)':'var(--text-dim)'};font-weight:${a?700:400}">${t.l}</button>`;
+  });
+  html += `</div>`;
+
+  // ── 総合タブ ──
+  if (tab === 'summary') {
+    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+
+    // 資金推移チャート
+    const fh = G.fundsHistory || [];
+    if (fh.length > 1) {
+      const leftPad = 55, chartH = 120, chartW = 380;
+      const plotW = chartW - leftPad;
+      const fMin = Math.min(...fh, 0);
+      const fMax = Math.max(...fh, 1);
+      const range = fMax - fMin || 1;
+      const rawStep = range / 4;
+      const niceSteps = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+      const step = niceSteps.find(s => s >= rawStep) || Math.ceil(rawStep / 1000) * 1000;
+      const gridLines = [];
+      for (let v = Math.ceil(fMin / step) * step; v <= fMax; v += step) gridLines.push(v);
+      if (fMin <= 0 && fMax >= 0 && !gridLines.includes(0)) gridLines.push(0);
+      gridLines.sort((a, b) => a - b);
+      const toY = v => chartH - Math.round(((v - fMin) / range) * chartH);
+      const points = fh.map((v, i) => `${leftPad + Math.round(i * plotW / Math.max(fh.length - 1, 1))},${toY(v)}`).join(' ');
+      let svg = `<svg width="${chartW}" height="${chartH + 16}" style="display:block;overflow:visible">`;
+      gridLines.forEach(val => {
+        const y = toY(val);
+        const isZero = val === 0;
+        svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(255,255,255,${isZero?0.2:0.06})" stroke-width="${isZero?1:0.5}"${isZero?' stroke-dasharray="4"':''}/>`;
+        svg += `<text x="${leftPad-6}" y="${y+3}" text-anchor="end" fill="rgba(255,255,255,${isZero?0.4:0.2})" font-size="10">${val.toLocaleString()}</text>`;
+      });
+      const lineColor = G.funds >= 0 ? '#2ecc71' : '#e74c3c';
+      svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
+      const lastX = leftPad + plotW, lastY = toY(fh[fh.length - 1]);
+      svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
+      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length-1].toLocaleString()}万</text>`;
+      svg += '</svg>';
+      html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>${svg}</div>`;
+    }
+
+    // 期間サマリ
+    if (filtered.length > 0) {
+      let totalIncome = 0, totalExpense = 0;
+      filtered.forEach(h => { totalIncome += h.income || 0; totalExpense += h.expense || 0; });
+      const totalNet = totalIncome - totalExpense;
+      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
+      html += `<div class="panel-title">期間サマリ — ${periodLabel} <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${filtered.length}週)</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">📈 総収入</span><span class="f-val income">+${totalIncome.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">📉 総支出</span><span class="f-val expense">-${totalExpense.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>純利益</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString()}万</span></div>`;
+    } else {
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の記録はまだありません</div>`;
+      // 推定週間コスト（初回表示用）
+      html += '<div class="panel-title" style="margin-top:12px">週間コスト内訳（推定）</div>';
+      html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+      const coachTotal = getCoachSalaryTotal();
+      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">放映権</span><span class="f-val income">+${getBroadcastIncome()}万/週</span></div>`;
+    }
+  }
+
+  // ── 収入タブ ──
+  else if (tab === 'income') {
+    const items = {};
+    filtered.forEach(h => {
+      (h.details || []).filter(d => d.type === 'income').forEach(d => {
+        const key = _normalizeFinanceLabel(d.label);
+        if (!items[key]) items[key] = { label: key, val: 0, count: 0 };
+        items[key].val += d.val;
+        items[key].count++;
+      });
+    });
+    const sorted = Object.values(items).sort((a, b) => b.val - a.val);
+    const total = sorted.reduce((s, i) => s + i.val, 0);
+    if (sorted.length > 0) {
+      sorted.forEach(d => {
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val income">+${d.val.toLocaleString()}万</span></span></div>`;
+      });
+      html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
+      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${total.toLocaleString()}万</span></div>`;
+    } else {
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の収入記録はありません</div>`;
+    }
+  }
+
+  // ── 支出タブ ──
+  else if (tab === 'expense') {
+    const items = {};
+    filtered.forEach(h => {
+      (h.details || []).filter(d => d.type === 'expense').forEach(d => {
+        const key = _normalizeFinanceLabel(d.label);
+        if (!items[key]) items[key] = { label: key, val: 0, count: 0 };
+        items[key].val += d.val;
+        items[key].count++;
+      });
+    });
+    const sorted = Object.values(items).sort((a, b) => a.val - b.val);
+    const total = sorted.reduce((s, i) => s + i.val, 0);
+    if (sorted.length > 0) {
+      sorted.forEach(d => {
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${d.val.toLocaleString()}万</span></span></div>`;
+      });
+      html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
+      html += `<div class="finance-row finance-total"><span>総支出</span><span class="f-val expense">${total.toLocaleString()}万</span></div>`;
+    } else {
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の支出記録はありません</div>`;
+    }
+  }
+
+  // ── 給与タブ ──
+  else if (tab === 'salary') {
+    // 期間中の給与支払い合計
+    let salaryTotal = 0, salaryWeeks = 0;
+    filtered.forEach(h => {
+      (h.details || []).filter(d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与').forEach(d => {
+        salaryTotal += d.val;
+        salaryWeeks++;
+      });
+    });
+    if (salaryWeeks > 0) {
+      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
+      html += `<div class="panel-title">${periodLabel}の給与支払い</div>`;
+      html += `<div class="finance-row finance-total"><span>給与支払い合計 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}週)</span></span><span class="f-val expense">${salaryTotal.toLocaleString()}万</span></div>`;
+      html += `<div style="margin-bottom:14px"></div>`;
+    }
+    // 選手別給与（現在のスナップショット）
+    html += '<div class="panel-title">選手別給与（現在）</div>';
+    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
+    [...G.roster].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
+      html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
+    });
+    html += '</table>';
+  }
 
   el.innerHTML = html;
 }

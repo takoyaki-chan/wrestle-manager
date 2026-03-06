@@ -3436,21 +3436,29 @@ const App = {
     showNewspaperPanel(articles, callback);
   },
 
-  // v2.0-C3: Always stop — no auto-advance. Accumulate monthly buffer and set weekSummary or settled phase.
+  // v2.0-C3: Always stop — no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
   _tryAutoAdvance() {
-    const monthBuf = [...(G.monthlyFinanceBuffer || [])];
-    monthBuf.push({ week: G.week, finance: { ...G.weeklyFinance }, funds: G.funds });
+    // 財務タブリデザイン: financeHistory に週次決算を永続蓄積
+    const newHistory = [...(G.financeHistory || [])];
+    newHistory.push({
+      season: G.season,
+      week: G.week,
+      income: G.weeklyFinance.income || 0,
+      expense: G.weeklyFinance.expense || 0,
+      details: [...(G.weeklyFinance.details || [])],
+      funds: G.funds,
+    });
     const isMonthEnd = G.week % 4 === 0;
     if (!isMonthEnd) {
       // Non-month-end: show brief weekly summary instead of auto-advancing
-      G = { ...G, monthlyFinanceBuffer: monthBuf, weekPhase: 'weekSummary' };
+      G = { ...G, financeHistory: newHistory, weekPhase: 'weekSummary' };
       Storage.autoSave();
       showScreen('week');
       refreshAll();
       return true; // signal: handled (caller should return)
     }
     // Month-end: accumulate and stop at settled (existing behavior)
-    G = { ...G, monthlyFinanceBuffer: monthBuf };
+    G = { ...G, financeHistory: newHistory };
     return false;
   },
 
@@ -3712,8 +3720,6 @@ const App = {
   // Advance to next week via Engine
   advanceWeek() {
     Audio.play('tick');
-    // v1.0: Clear monthly finance buffer after monthly report
-    G = { ...G, monthlyFinanceBuffer: [] };
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     // 契約更新交渉フェーズ

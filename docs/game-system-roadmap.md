@@ -1,12 +1,14 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-06（パッチ3項目: ケアカードUI・好敵手期待カード・ティッカー全面改修）
+> 最終更新: 2026-03-06（財務タブリデザイン: 4サブタブ+3期間フィルタ + salaryBonus自然減衰）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**財務タブリデザイン実装完了（2026-03-06）。** 収支画面を「総合/収入/支出/給与」4サブタブ＋「今月/年間/全期間」3期間フィルタに全面刷新。`financeHistory`（永続週次決算履歴）新設・`monthlyFinanceBuffer`廃止。salaryBonus毎シーズン末20%自然減衰（1万以下→0クリーン）。auto-sim 300シーズン ALL CLEAR。
 
 **パッチ3項目実装完了（2026-03-06）。** (1)ケアモーダルのキャラ選択をカード型UI（portraitImg+名前+状態タグ+ピンク枠）に刷新。`<select>`廃止、イベント委譲で選択管理。(2)好敵手ペア（resolved=true）をファン期待カードに復帰。matchupLog+rv.lastWeekを使ったクールダウン判定（4週）、priority1で追加、🤝テキスト。(3)ティッカーニュース全面改修: streak追跡（processSettlement+applyPPVResults双方）、generateTicker8カテゴリ書き換え（aiAce/rivalryActive/rivalryGoodRival/champion/championLongReign/economyGood/economyStruggle新設、economy廃止）、NEWS_TICKER_TEMPLATES完全置換（世界観整合・14カテゴリ）。auto-sim 200シーズン ALL CLEAR。
 

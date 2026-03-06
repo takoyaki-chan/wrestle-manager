@@ -2135,6 +2135,11 @@ const Engine = {
         }
         // v1.3: Update peakOVR record
         nc = Engine.career.updatePeakOVR(nc, G.season);
+        // 財務タブリデザイン: salaryBonus 20%自然減衰（シーズン末）
+        if (nc.salaryBonus && nc.salaryBonus > 0) {
+          nc.salaryBonus = Math.round(nc.salaryBonus * 0.8);
+          if (nc.salaryBonus <= 1) nc.salaryBonus = 0;
+        }
         return nc;
       });
       return { roster: newRoster, report };
@@ -4558,12 +4563,14 @@ const Engine = {
     /** Calculate lump-sum rental fee for a fighter (per season × seasons) */
     calcSeasonFee(fighter, orgCfgOrNull, seasons) {
       const ovr = Engine.util.ov(fighter);
-      // 指数カーブ: 低OVRは安く、高OVRは急激に高い (仮値 — 経済パラメータ全体調整時に正式決定)
+      // 指数カーブ: 低OVRは安く、高OVRは急激に高い
       const baseFee = Math.pow(ovr / 50, 2.5) * 25;
       const tierMul = orgCfgOrNull
         ? (RENTAL_CONFIG.tierMul[orgCfgOrNull.tier] || 1.0)
         : RENTAL_CONFIG.faTierMul;
-      const perSeason = Math.max(20, Math.round(baseFee * tierMul * 12));
+      // OVR依存割引: 低OVR帯ほど大きく値引き(×0.35)、高OVR帯で緩やかに収束(×0.70)
+      const discount = 0.35 + 0.35 * Math.min(1, (ovr - 30) / 65);
+      const perSeason = Math.max(20, Math.round(baseFee * tierMul * 12 * discount));
       return perSeason * seasons;
     },
 
@@ -6486,6 +6493,8 @@ const Engine = {
       ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
       ppvPhase: null,      // null | 'entry' | 'locked' | 'show' | 'tv'
       ppvName: '',
+      // 財務タブリデザイン: 週次決算履歴（永続蓄積・クリアしない）
+      financeHistory: [],
       // デバッグ・検証システム
       debugLog: [],
     };
