@@ -1,12 +1,14 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-06（プロモ改修 v1.0 実装完了）
+> 最終更新: 2026-03-06（パッチ3項目: ケアカードUI・好敵手期待カード・ティッカー全面改修）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**パッチ3項目実装完了（2026-03-06）。** (1)ケアモーダルのキャラ選択をカード型UI（portraitImg+名前+状態タグ+ピンク枠）に刷新。`<select>`廃止、イベント委譲で選択管理。(2)好敵手ペア（resolved=true）をファン期待カードに復帰。matchupLog+rv.lastWeekを使ったクールダウン判定（4週）、priority1で追加、🤝テキスト。(3)ティッカーニュース全面改修: streak追跡（processSettlement+applyPPVResults双方）、generateTicker8カテゴリ書き換え（aiAce/rivalryActive/rivalryGoodRival/champion/championLongReign/economyGood/economyStruggle新設、economy廃止）、NEWS_TICKER_TEMPLATES完全置換（世界観整合・14カテゴリ）。auto-sim 200シーズン ALL CLEAR。
 
 **プロモ改修 v1.0 実装完了（2026-03-06）。** プロモ＝商売コンセプト全面実装。PROMO_POP_CAP 55→70、プロモイベント収入（pop帯別15-85万/週）、MQ蓄積ボーナス（promoStack最大3回×1.3=+3.9）、お任せロジック最適化。auto-sim 1,000シーズン ALL CLEAR。
 

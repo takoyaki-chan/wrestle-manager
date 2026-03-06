@@ -3962,36 +3962,50 @@ function showCareActionModal(state, onConfirm) {
 
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
     html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${cfg.desc}</div>`;
-    html += '<div class="care-section-label">対象選手を選択</div>';
+    html += '<div class="care-section-label">対象選手を選択（タップで選択）</div>';
 
     const currentWeek = state.week || 0;
     const cooldown = cfg.cooldown != null ? cfg.cooldown : 1;
+
+    if (selectableRoster.length === 0) {
+      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">対象選手がいません</div>';
+      html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
+      box.innerHTML = html;
+      document.getElementById('careBackBtn').addEventListener('click', renderMain);
+      return;
+    }
+
+    // クールダウン中でない選手を先に、使用済みを後ろにソート
+    const sorted = [...selectableRoster].sort((a, b) => {
+      const aUsed = currentWeek - ((a._careWeekUsed || {})[actionId] || -99) < cooldown;
+      const bUsed = currentWeek - ((b._careWeekUsed || {})[actionId] || -99) < cooldown;
+      return (aUsed ? 1 : 0) - (bUsed ? 1 : 0);
+    });
+
     const availableRoster = selectableRoster.filter(f => {
       const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
       return currentWeek - lastUsed >= cooldown;
     });
+    const defaultId = availableRoster.length > 0 ? availableRoster[0].id : null;
 
-    if (selectableRoster.length === 0) {
-      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">対象選手がいません</div>';
-    } else if (availableRoster.length === 0) {
+    if (availableRoster.length === 0) {
       html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">今週は全員使用済みです（来週以降また使えます）</div>';
     } else {
-      // クールダウン中でない選手を先に、使用済みを後ろにソート
-      const sorted = [...selectableRoster].sort((a, b) => {
-        const aUsed = currentWeek - ((a._careWeekUsed || {})[actionId] || -99) < cooldown;
-        const bUsed = currentWeek - ((b._careWeekUsed || {})[actionId] || -99) < cooldown;
-        return (aUsed ? 1 : 0) - (bUsed ? 1 : 0);
-      });
-      html += '<select class="care-fighter-select" id="careFighterSelect">';
+      html += '<div class="care-fighter-grid" id="careFighterGrid">';
       sorted.forEach(f => {
         const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
         const onCooldown = currentWeek - lastUsed < cooldown;
-        const injuryLabel = f.injury ? ` (怪我中 ${f.injury.weeksLeft}週)` : '';
-        const slumpLabel = f.slump ? ' [スランプ]' : f.motivationLoss ? ' [モチベ喪失]' : '';
-        const cdLabel = onCooldown ? ' ✓今週使用済' : '';
-        html += `<option value="${f.id}" ${onCooldown ? 'disabled' : ''}>${f.name}${injuryLabel}${slumpLabel}${cdLabel}</option>`;
+        const isSelected = f.id === defaultId;
+        const lastName = f.name.split(/\s/).pop();
+        const statusTag = f.injury ? '怪我中' : f.slump ? 'スランプ' : f.motivationLoss ? 'モチベ喪失' : '';
+        html += `<div class="care-fighter-card${isSelected ? ' selected' : ''}${onCooldown ? ' on-cooldown' : ''}" data-id="${f.id}">`;
+        html += portraitImg(f.id, 56, '');
+        html += `<div class="care-fighter-card-name">${lastName}</div>`;
+        if (statusTag) html += `<div class="care-fighter-card-status">${statusTag}</div>`;
+        if (onCooldown) html += '<div class="care-fighter-card-cd">✓済</div>';
+        html += '</div>';
       });
-      html += '</select>';
+      html += '</div>';
       const costLabel = cfg.cost > 0 ? `${cfg.cost}万` : '無料';
       html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careConfirmBtn">実行（${costLabel}）</button>`;
     }
@@ -3999,15 +4013,25 @@ function showCareActionModal(state, onConfirm) {
     html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
     box.innerHTML = html;
 
+    let selectedFighterId = defaultId;
+    const grid = document.getElementById('careFighterGrid');
+    if (grid) {
+      grid.addEventListener('click', e => {
+        const card = e.target.closest('.care-fighter-card');
+        if (!card || card.classList.contains('on-cooldown')) return;
+        selectedFighterId = parseInt(card.dataset.id);
+        grid.querySelectorAll('.care-fighter-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+      });
+    }
+
     const confirmBtn = document.getElementById('careConfirmBtn');
     if (confirmBtn) {
       confirmBtn.addEventListener('click', () => {
-        const sel = document.getElementById('careFighterSelect');
-        const fighterId = sel ? parseInt(sel.value) : null;
         if (cfg.cost >= 100) {
-          renderIndividualConfirm(actionId, cfg, fighterId);
+          renderIndividualConfirm(actionId, cfg, selectedFighterId);
         } else {
-          const displayData = onConfirm ? onConfirm(actionId, fighterId) : null;
+          const displayData = onConfirm ? onConfirm(actionId, selectedFighterId) : null;
           if (displayData) renderResult(displayData);
           else overlay.classList.remove('active');
         }

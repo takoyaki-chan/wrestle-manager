@@ -3517,12 +3517,16 @@ const Engine = {
         momentumDelta = Engine.economy.calcMomentumDelta(rev.occupancyRate);
         if (rev.occupancyRate < 0.30) orgPopPenalty = MOMENTUM_CONFIG.EMPTY_ORGPOP_PENALTY;
 
-        // Win/loss tracking (immutable)
+        // Win/loss tracking + streak追跡 (immutable)
         G.lastShowResults.forEach(r => {
           const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
           if (wId) {
             const lId = wId === r.left.id ? r.right.id : r.left.id;
-            roster = roster.map(c => c.id === wId ? { ...c, wins: c.wins + 1 } : c.id === lId ? { ...c, losses: c.losses + 1 } : c);
+            roster = roster.map(c => {
+              if (c.id === wId) return { ...c, wins: c.wins + 1, streak: (c.streak > 0 ? c.streak : 0) + 1 };
+              if (c.id === lId) return { ...c, losses: c.losses + 1, streak: (c.streak < 0 ? c.streak : 0) - 1 };
+              return c;
+            });
           } else {
             roster = roster.map(c => (c.id === r.left.id || c.id === r.right.id) ? { ...c, draws: c.draws + 1 } : c);
           }
@@ -5507,6 +5511,22 @@ const Engine = {
         });
       });
 
+      // streak追跡 + 勝敗記録 (PPV, immutable)
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        const wId = r.winner === 'left' ? match.left.id : r.winner === 'right' ? match.right.id : null;
+        if (wId) {
+          const lId = wId === match.left.id ? match.right.id : match.left.id;
+          roster = roster.map(c => {
+            if (c.id === wId) return { ...c, wins: (c.wins || 0) + 1, streak: (c.streak > 0 ? c.streak : 0) + 1 };
+            if (c.id === lId) return { ...c, losses: (c.losses || 0) + 1, streak: (c.streak < 0 ? c.streak : 0) - 1 };
+            return c;
+          });
+        } else if (r.winner === 'draw') {
+          roster = roster.map(c => (c.id === match.left.id || c.id === match.right.id) ? { ...c, draws: (c.draws || 0) + 1 } : c);
+        }
+      });
+
       // Step 5-6: matchupLog 記録（プレイヤー選手が参加した試合のみ）
       const newMatchupEntries = [];
       card.forEach((match, idx) => {
@@ -6809,27 +6829,25 @@ Engine.news = {
       }
     }
 
-    // 好成績・不振（自団体ロスターの勝敗比率から生成）
+    // 自団体: 実際のstreak値を使用（3連勝以上 / 3連敗以上）
     (state.roster || []).forEach(f => {
-      const wins = f.wins || 0; const losses = f.losses || 0;
-      const total = wins + losses;
-      if (total >= 4 && wins >= total * 0.75) {
-        items.push({ cat: 'winStreak', data: { name: f.name, count: wins } });
+      const streak = f.streak || 0;
+      if (streak >= 3) {
+        items.push({ cat: 'winStreak', data: { name: f.name, count: streak } });
       }
-      if (total >= 3 && losses >= total * 0.7) {
-        items.push({ cat: 'loseStreak', data: { name: f.name, count: losses } });
+      if (streak <= -3) {
+        items.push({ cat: 'loseStreak', data: { name: f.name, count: Math.abs(streak) } });
       }
     });
 
-    // AI団体の選手ピックアップ（連勝的フレーバー）
+    // AI団体: エース級選手の動向フレーバー
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const org = RIVAL_ORGS.find(o => o.id === orgId);
         if (!org || !state.aiOrgs[orgId].roster) return;
         const top = [...state.aiOrgs[orgId].roster].sort((a, b) => ov(b) - ov(a));
         if (top.length > 0 && Engine.rng.float(rng) < 0.25) {
-          const f = top[0];
-          items.push({ cat: 'winStreak', data: { name: f.name, count: Engine.rng.int(rng, 4, 8) } });
+          items.push({ cat: 'aiAce', data: { name: top[0].name, org: org.name } });
         }
       });
     }
@@ -6863,19 +6881,50 @@ Engine.news = {
       items.push({ cat: 'scout', data: {} });
     }
 
-    // 経済
+    // 経済（AI団体のtierで分岐）
     if (state.aiOrgs) {
       const orgIds = Object.keys(state.aiOrgs);
       if (orgIds.length > 0 && Engine.rng.float(rng) < 0.15) {
         const orgId = Engine.rng.pick(rng, orgIds);
         const org = RIVAL_ORGS.find(o => o.id === orgId);
-        if (org) items.push({ cat: 'economy', data: { org: org.name } });
+        if (org) {
+          const tier = org.tier || 'B';
+          const cat = (tier === 'S' || tier === 'A') ? 'economyGood' : 'economyStruggle';
+          items.push({ cat, data: { org: org.name } });
+        }
       }
     }
 
     // 一般
     if (Engine.rng.float(rng) < 0.2) {
       items.push({ cat: 'general', data: {} });
+    }
+
+    // rivalry — 因縁ペアのフレーバー（自団体のみ）
+    const rivalryKeys = Object.keys(state.rivalries || {});
+    rivalryKeys.forEach(key => {
+      const rv = state.rivalries[key];
+      if (!rv || (rv.matches || 0) < 2) return;
+      if (Engine.rng.float(rng) < 0.2) {
+        const ids = key.split('-');
+        const f1 = (state.roster || []).find(f => f.id === parseInt(ids[0]));
+        const f2 = (state.roster || []).find(f => f.id === parseInt(ids[1]));
+        if (f1 && f2) {
+          const cat = rv.resolved ? 'rivalryGoodRival' : 'rivalryActive';
+          items.push({ cat, data: { name1: f1.name, name2: f2.name } });
+        }
+      }
+    });
+
+    // champion — 王座フレーバー（自団体にチャンピオンがいる場合）
+    const champId = state.titles?.world?.championId;
+    if (champId && Engine.rng.float(rng) < 0.2) {
+      const champ = (state.roster || []).find(f => f.id === champId);
+      if (champ) {
+        const defenses = state.titles.world.defenses || 0;
+        const cat = defenses >= 5 ? 'championLongReign' : 'champion';
+        items.push({ cat, data: { name: champ.name, defenses } });
+      }
     }
 
     // テンプレート適用して3〜5件選出
@@ -8660,7 +8709,27 @@ Engine.fanExpect = {
 
     // Priority 3: 因縁ペア（matches >= 2 以上で、再戦希望）
     Object.entries(rivalries).forEach(([key, rv]) => {
-      if (rv.resolved) return; // v2.0: 好敵手は期待カードから除外
+      if (rv.resolved) {
+        // 好敵手: 名勝負再現への期待として低優先度で候補に入れる
+        const ids = key.split('-');
+        const id1 = parseInt(ids[0]);
+        const id2 = parseInt(ids[1]);
+        // lastWeekが未更新の場合はmatchupLogで最終対戦興行を確認
+        let lastFightWeek = rv.lastWeek || 0;
+        if (!lastFightWeek) {
+          const lastShow = (state.matchupLog || [])
+            .filter(log => Math.min(log.leftId, log.rightId) === Math.min(id1, id2) && Math.max(log.leftId, log.rightId) === Math.max(id1, id2))
+            .reduce((max, log) => Math.max(max, log.showCount || 0), 0);
+          lastFightWeek = lastShow * 4; // 1興行 ≈ 4週
+        }
+        if (lastFightWeek && (state.week - lastFightWeek) < 4) return;
+        const f1 = roster.find(f => f.id === id1);
+        const f2 = roster.find(f => f.id === id2);
+        if (f1 && f2) {
+          addCandidate(f1, f2, `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声`, 1);
+        }
+        return;
+      }
       if ((rv.matches || 0) < 2) return;
       // 決着後4週間のクールダウン中は候補から除外
       if (rv.lastResolvedWeek && (state.week - rv.lastResolvedWeek) < 4) return;
