@@ -66,6 +66,45 @@ fi
 echo "🎵 BGMファイルをコピー中..."
 cp bgm/* "${DIST_DIR}/bgm/" 2>/dev/null || true
 
+# ── ゲーム起動用ショートカット＋README ─────────────────────────────────────────
+echo "📝 起動ファイル・README を生成中..."
+cat > "${DIST_DIR}/ゲームスタート.html" << 'REDIRECT_EOF'
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=src/index.html"><title>Wrestle Manager</title></head>
+<body style="background:#1a1a2e;color:#eee;font-family:sans-serif;text-align:center;padding-top:100px">
+<p>ゲームを起動中...</p><p><a href="src/index.html" style="color:#e8439f">クリックしても開かない場合はここをクリック</a></p>
+</body></html>
+REDIRECT_EOF
+
+cat > "${DIST_DIR}/README.txt" << 'README_EOF'
+========================================
+  Wrestle Manager — 遊び方
+========================================
+
+■ 起動方法
+  「ゲームスタート.html」をダブルクリックしてください。
+  ブラウザが開いてゲームが始まります。
+
+  うまく開かない場合は、src フォルダ内の
+  index.html を直接ブラウザで開いてください。
+
+■ 推奨環境
+  ・PC（Chrome / Edge / Firefox）
+  ・インストール不要
+  ・インターネット接続不要
+
+■ セーブデータ
+  セーブデータはブラウザ内に保存されます。
+  ゲームのフォルダを移動・削除してもセーブは消えません。
+  ※ ブラウザのデータを削除するとセーブも消えます。
+
+■ 注意事項
+  本ソフトは開発中のプロトタイプです。
+  バグや未完成の要素が含まれる場合があります。
+
+========================================
+README_EOF
+
 # Count files
 SRC_COUNT=$(ls -1 "${DIST_DIR}/src/" | wc -l)
 IMG_COUNT=$(ls -1 "${DIST_DIR}/image/" | wc -l)

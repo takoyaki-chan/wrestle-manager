@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "C:/Users/nkmrk/Downloads/wrestle-manager"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "const http=require('http'),fs=require('fs'),path=require('path');const root='C:/Users/nkmrk/Downloads/wrestle-manager/src';http.createServer((req,res)=>{let u=req.url.split('?')[0];let f=path.join(root,u==='/'?'index.html':u);if(!fs.existsSync(f)){f=path.join(root,'..',u)}try{const d=fs.readFileSync(f);const ext=path.extname(f);const m={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg','.json':'application/json'};res.writeHead(200,{'Content-Type':m[ext]||'application/octet-stream'});res.end(d)}catch(e){res.writeHead(404);res.end('404: '+u)}}).listen(5173,()=>console.log('serving on 5173'))"],
       "port": 5173
     }
   ]

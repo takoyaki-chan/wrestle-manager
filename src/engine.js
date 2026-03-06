@@ -76,6 +76,8 @@ const Engine = {
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },
+    // v2.1: trust内部float→表示整数ヘルパー
+    dispTrust(v) { return Math.round(v != null ? v : 50); },
     /** Pick N items from array using seeded shuffle (deterministic per season+quarter) */
     seededPick(arr, n, seed) {
       if (arr.length <= n) return [...arr];
@@ -1133,12 +1135,261 @@ const Engine = {
       }
       return f;
     },
+
+    /** §D-2 キャリアサマリー生成（UI表示用）
+     * @returns {{ wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary }} */
+    buildSummary(fighter) {
+      const cr = fighter.careerRecord || {};
+      const wins = fighter.wins || 0;
+      const losses = fighter.losses || 0;
+      const draws = fighter.draws || 0;
+      const total = wins + losses + draws;
+      const winRate = total > 0 ? Math.round(wins / total * 100) : 0;
+      const bestMQ = fighter.careerBestMQ || 0;
+      const peakOVR = cr.peakOVR || Engine.util.ov(fighter);
+      const peakSeason = cr.peakOVRSeason || 0;
+      const totalTitleWins = cr.totalTitleWins || 0;
+      const totalDefenses = cr.totalDefenses || 0;
+      // タイトル歴テキスト
+      let titleSummary = null;
+      if (totalTitleWins > 0) {
+        // historyからタイトル名を取得
+        const titleWins = (cr.history || []).filter(e => e.type === 'titleWin');
+        if (titleWins.length > 0) {
+          const beltName = titleWins[0].orgName || '団体王座';
+          titleSummary = totalTitleWins > 1
+            ? `元${beltName}王者（${totalTitleWins}度戴冠・通算${totalDefenses}度防衛）`
+            : `元${beltName}王者（${totalDefenses}度防衛）`;
+        } else {
+          titleSummary = `タイトル${totalTitleWins}回獲得（通算${totalDefenses}度防衛）`;
+        }
+      }
+      return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, totalTitleWins, totalDefenses };
+    },
+
     /** Generate durability: normal distribution N(0,2), clamped to -4..+4 (v1.3-1 §1.1) */
     generateDurability(rng) {
       // Sum of 12 uniform(0,1) − 6 ≈ N(0,1); multiply by 2 → N(0,2)
       let s = 0;
       for (let i = 0; i < 12; i++) s += Engine.rng.float(rng);
       return Math.max(-4, Math.min(4, Math.round((s - 6) * 2)));
+    },
+
+    // ── NPC記録統一 Part C: 経歴自動生成 ──────────────────────────────────
+
+    /** §C-3 個別選手の経歴生成 */
+    generateBackstory(fighter, state) {
+      const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, fighter.id, 0xBACE));
+      const age = fighter.age || 20;
+      const careerSeasons = Math.max(1, age - 16);
+      const ovr = Engine.util.ov(fighter);
+      const traits = fighter.traits || [];
+      const orgId = fighter._orgId || 'fa';
+      const rivalOrgNames = state.rivalOrgNames || {};
+
+      const history = [];
+      const careerHistory = [];
+
+      // §C-3-1 peakOVR算出
+      const peakAge = 26 + Engine.rng.int(rng, 0, 4);
+      let peakOVR, peakOVRSeason;
+      if (age >= peakAge) {
+        const decayPerYear = 0.5 + Engine.rng.float(rng) * 1.0;
+        peakOVR = Engine.util.clamp(
+          ovr + Math.round((age - peakAge) * decayPerYear),
+          ovr, ovr + 15
+        );
+        peakOVRSeason = Math.max(1, careerSeasons - (age - peakAge));
+      } else {
+        peakOVR = ovr;
+        peakOVRSeason = careerSeasons;
+      }
+
+      // §C-3-2 ベストMQ生成
+      let careerBestMQ;
+      if (peakOVR >= 80) careerBestMQ = 68 + Engine.rng.int(rng, 0, 12);
+      else if (peakOVR >= 60) careerBestMQ = 55 + Engine.rng.int(rng, 0, 12);
+      else if (peakOVR >= 40) careerBestMQ = 40 + Engine.rng.int(rng, 0, 12);
+      else careerBestMQ = 30 + Engine.rng.int(rng, 0, 10);
+      if (Traits.has(fighter, '名勝負製造機')) careerBestMQ += 5;
+
+      // §C-3-3 デビュー
+      const isFA = orgId === 'fa' || orgId === 'dormant';
+      history.push({ type: 'debut', season: 1, week: 1,
+        via: isFA ? 'fa' : 'draft',
+        orgId: isFA ? undefined : orgId,
+        orgName: isFA ? undefined : (rivalOrgNames[orgId] || orgId)
+      });
+      careerHistory.push({ type: 'debut', season: 1, week: 1,
+        detail: isFA ? 'プロデビュー' : `${rivalOrgNames[orgId] || ''}入団` });
+
+      // §C-3-3 ブレークスルー
+      let btExpected = careerSeasons * 0.08;
+      // 若年シーズン補正
+      const youngSeasons = Math.max(0, Math.min(careerSeasons, 25 - 16));
+      btExpected += youngSeasons * 0.08 * 0.3; // ×1.3の0.3分
+      // 高ポテンシャル補正
+      const potOVR = fighter.trainCap
+        ? Math.round(((fighter.trainCap.pw || 50) + (fighter.trainCap.sp || 50) + (fighter.trainCap.te || 50) + (fighter.trainCap.st || 50) + (fighter.trainCap.mn || 50)) / 5)
+        : 50;
+      if (potOVR >= 150) btExpected *= 1.2; // potOVRが150以上は高ポテ（各ステ平均30）
+      // Poisson近似
+      let btCount = 0;
+      let L = Math.exp(-btExpected);
+      let p = 1.0;
+      for (let k = 0; k < 5; k++) {
+        p *= Engine.rng.float(rng);
+        if (p < L) break;
+        btCount++;
+      }
+      btCount = Math.min(btCount, 5);
+      const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+      for (let i = 0; i < btCount; i++) {
+        // キャリア前半に偏重
+        const seasonFrac = Engine.rng.float(rng) * Engine.rng.float(rng); // 前半偏重
+        const btSeason = Math.max(1, Math.min(careerSeasons, Math.ceil(seasonFrac * careerSeasons)));
+        const btWeek = 2 + Engine.rng.int(rng, 0, 44);
+        const stat = stats[Engine.rng.int(rng, 0, 4)];
+        const gain = Engine.rng.int(rng, 2, 4);
+        history.push({ type: 'breakthrough', season: btSeason, week: btWeek, stat, gain });
+        careerHistory.push({ type: 'breakthrough', season: btSeason, week: btWeek,
+          detail: `${stat.toUpperCase()} +${gain} のブレークスルー！` });
+      }
+
+      // §C-3-3 タイトル歴
+      let totalTitleWins = 0, totalDefenses = 0;
+      const allOrgIds = ['org_s', 'org_a', 'org_b'];
+      // タイトル対象団体の決定
+      let titleOrgId = orgId;
+      if (isFA) {
+        titleOrgId = allOrgIds[Engine.rng.int(rng, 0, 2)];
+      }
+      const titleThresholds = { org_s: 75, org_a: 68, org_b: 60 };
+      const threshold = titleThresholds[titleOrgId] || 68;
+      const titleProb = Math.min(0.30, Math.max(0, (peakOVR - (threshold - 5)) * 0.02));
+
+      const generateTitleReign = (beltId, beltName, reignSeason) => {
+        const defenses = Math.min(8, Math.round((peakOVR - threshold) / 3 + Engine.rng.int(rng, 0, 3)));
+        const crownWeek = 2 + Engine.rng.int(rng, 0, 44);
+        history.push({ type: 'titleWin', season: reignSeason, week: crownWeek, beltId, orgName: beltName });
+        careerHistory.push({ type: 'title_win', season: reignSeason, detail: `${beltName} 獲得` });
+        totalTitleWins++;
+        // 3,5回目の防衛を記録
+        if (defenses >= 3) {
+          history.push({ type: 'titleDefense', season: reignSeason, week: crownWeek + 6, beltId, count: 3 });
+          careerHistory.push({ type: 'title_defense', season: reignSeason, detail: `${beltName} 3度防衛` });
+        }
+        if (defenses >= 5) {
+          history.push({ type: 'titleDefense', season: Math.min(careerSeasons, reignSeason + 1), week: crownWeek, beltId, count: 5 });
+          careerHistory.push({ type: 'title_defense', season: Math.min(careerSeasons, reignSeason + 1), detail: `${beltName} 5度防衛` });
+        }
+        totalDefenses += defenses;
+        // 陥落
+        const lossSeason = Math.min(careerSeasons, reignSeason + 1 + Engine.rng.int(rng, 0, 1));
+        const lossWeek = 2 + Engine.rng.int(rng, 0, 44);
+        history.push({ type: 'titleLoss', season: lossSeason, week: lossWeek, beltId, defenses });
+        careerHistory.push({ type: 'title_loss', season: lossSeason,
+          detail: `${beltName} 陥落（${defenses}度防衛）` });
+        return lossSeason;
+      };
+
+      if (peakOVR >= threshold && Engine.rng.float(rng) < titleProb) {
+        const beltId = titleOrgId + '_title';
+        const beltName = (rivalOrgNames[titleOrgId] || titleOrgId) + '王座';
+        // 戴冠シーズン（キャリア中盤〜後半）
+        const crownSeason = Math.max(2, Math.ceil(careerSeasons * (0.4 + Engine.rng.float(rng) * 0.4)));
+        const lossSeason = generateTitleReign(beltId, beltName, crownSeason);
+        // 複数回戴冠（peakOVR >= 閾値+15 なら15%）
+        if (peakOVR >= threshold + 15 && Engine.rng.float(rng) < 0.15) {
+          const secondSeason = Math.min(careerSeasons, lossSeason + 1 + Engine.rng.int(rng, 0, 2));
+          generateTitleReign(beltId, beltName, secondSeason);
+        }
+      }
+
+      // §C-3-3 移籍歴
+      if (careerSeasons >= 5 && Engine.rng.float(rng) < 0.15) {
+        const transferSeason = 2 + Engine.rng.int(rng, 0, Math.min(careerSeasons - 2, 8));
+        const fromOrgPool = allOrgIds.filter(o => o !== orgId);
+        const fromOrg = fromOrgPool[Engine.rng.int(rng, 0, fromOrgPool.length - 1)];
+        const fromName = rivalOrgNames[fromOrg] || fromOrg;
+        const toName = isFA ? 'フリー' : (rivalOrgNames[orgId] || orgId);
+        history.push({ type: 'transfer', season: transferSeason, week: 1, fromOrg: fromName, toOrg: toName });
+        careerHistory.push({ type: 'transfer', season: transferSeason, detail: `${fromName}から移籍` });
+        // 2回目移籍（10シーズン以上で5%）
+        if (careerSeasons >= 10 && Engine.rng.float(rng) < 0.05) {
+          const t2Season = transferSeason + 2 + Engine.rng.int(rng, 0, 3);
+          if (t2Season <= careerSeasons) {
+            const from2Pool = allOrgIds.filter(o => o !== orgId && o !== fromOrg);
+            const from2 = from2Pool.length > 0 ? from2Pool[Engine.rng.int(rng, 0, from2Pool.length - 1)] : fromOrg;
+            const from2Name = rivalOrgNames[from2] || from2;
+            history.push({ type: 'transfer', season: t2Season, week: 1, fromOrg: from2Name, toOrg: toName });
+            careerHistory.push({ type: 'transfer', season: t2Season, detail: `${from2Name}から移籍` });
+          }
+        }
+      }
+
+      // §C-3-3 怪我歴
+      const injuryPool = ['膝の負傷', '肩の負傷', '腰の負傷', '首の負傷', '足首の負傷'];
+      for (let s = 1; s <= careerSeasons; s++) {
+        if (Engine.rng.float(rng) < 0.08) {
+          const injType = injuryPool[Engine.rng.int(rng, 0, injuryPool.length - 1)];
+          careerHistory.push({ type: 'injury', season: s, detail: `${injType}で長期欠場` });
+        }
+      }
+
+      // §C-3-4 trust初期値
+      let baseTrust = 50;
+      if (careerSeasons >= 8) baseTrust += Engine.rng.int(rng, 0, 5);
+      if (Traits.has(fighter, '忠誠心')) baseTrust += 5;
+      baseTrust += Engine.rng.int(rng, -5, 5);
+      const trust = Engine.util.clamp(baseTrust, 35, 65);
+
+      // §C-3-5 時系列ソート
+      history.sort((a, b) => (a.season - b.season) || ((a.week || 0) - (b.week || 0)));
+      careerHistory.sort((a, b) => (a.season - b.season) || ((a.week || 0) - (b.week || 0)));
+
+      return {
+        careerRecord: { history, totalTitleWins, totalDefenses, peakOVR, peakOVRSeason },
+        careerHistory,
+        careerBestMQ,
+        trust
+      };
+    },
+
+    /** §C-1 全選手一括経歴生成（confirmDraft後に呼び出し）*/
+    generateAllBackstories(state) {
+      let s = { ...state };
+      const applyBackstory = (fighter, orgId) => {
+        const f = { ...fighter, _orgId: orgId };
+        const bs = Engine.career.generateBackstory(f, s);
+        return { ...f,
+          careerRecord: bs.careerRecord,
+          careerHistory: bs.careerHistory,
+          careerBestMQ: bs.careerBestMQ,
+          trust: bs.trust,
+          _orgId: undefined
+        };
+      };
+
+      // プレイヤーロスター
+      s = { ...s, roster: s.roster.map(f => applyBackstory(f, 'player')) };
+
+      // AI団体ロスター
+      const aiOrgs = { ...s.aiOrgs };
+      Object.keys(aiOrgs).forEach(orgId => {
+        const od = aiOrgs[orgId];
+        if (!od || !od.roster) return;
+        aiOrgs[orgId] = { ...od,
+          roster: od.roster.map(f => applyBackstory(f, orgId)),
+          matchupLog: [], seasonBreakthroughs: [], showCount: 0
+        };
+      });
+      s = { ...s, aiOrgs };
+
+      // フリーエージェント
+      s = { ...s, freeAgents: (s.freeAgents || []).map(f => applyBackstory(f, 'fa')) };
+
+      return s;
     }
   },
 
@@ -1152,7 +1403,8 @@ const Engine = {
     get(G, fighterId) {
       const fighter = (G.roster || []).find(c => c.id === fighterId)
         || (G.retiredFighters || []).find(c => c.id === fighterId)
-        || (G.freeAgents || []).find(c => c.id === fighterId);
+        || (G.freeAgents || []).find(c => c.id === fighterId)
+        || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === fighterId);
       if (!fighter) return [];
 
       const milestones = [];
@@ -1166,20 +1418,25 @@ const Engine = {
             milestones.push({ season: ev.season || 1, week: ev.week || 1, type: 'debut',
               text: `${ev.via === 'draft' ? 'ドラフト' : ev.via === 'fa' ? 'FA' : ev.via === 'scout' ? 'スカウト' : ''}入団` });
             break;
-          case 'titleWin':
+          case 'titleWin': {
+            const twName = ev.orgName || '団体王座';
             milestones.push({ season: ev.season, week: ev.week, type: 'title_win',
-              text: '団体王座 獲得', detail: `${ev.beltId === 'world' ? '世界' : ''}チャンピオンに！` });
+              text: `${twName} 獲得`, detail: 'チャンピオンに！' });
             break;
-          case 'titleLoss':
+          }
+          case 'titleLoss': {
+            const tlName = ev.orgName || '団体王座';
             milestones.push({ season: ev.season, week: ev.week, type: 'title_loss',
-              text: `団体王座 陥落`, detail: ev.defenses ? `${ev.defenses}度防衛の末に陥落` : undefined });
+              text: `${tlName} 陥落`, detail: ev.defenses ? `${ev.defenses}度防衛の末に陥落` : undefined });
             break;
+          }
           case 'titleDefense': {
             const cnt = ev.count || 1;
+            const tdName = ev.orgName || '王座';
             // Only show significant defenses (3, 5, 10, etc.)
             if (cnt === 3 || cnt === 5 || cnt >= 10 && cnt % 5 === 0) {
               milestones.push({ season: ev.season, week: ev.week, type: 'title_defense',
-                text: `王座${cnt}度防衛達成` });
+                text: `${tdName}${cnt}度防衛達成` });
             }
             break;
           }
@@ -1464,7 +1721,7 @@ const Engine = {
         };
       } else {
         const line = Engine.retirement.selectAdviseLine(fighter, G, false, rng);
-        let updated = { ...fighter, trust: Math.max(0, (fighter.trust ?? 50) - 5), retireAdviceCooldown: 48 };
+        let updated = { ...fighter, trust: Math.max(0, (fighter.trust ?? 50) - 3.82), retireAdviceCooldown: 48 };
         let lockerRoomMorale = G.lockerRoomMorale;
         if (Engine.rng.float(rng) < 0.70) {
           updated = { ...updated, proveMode: 4 };
@@ -1829,7 +2086,8 @@ const Engine = {
         // レンタル選手はシーズン末処理対象外（wear/aging は元所属先が管理）
         if (c.isRental) return c;
         let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
-                   seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+                   seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) },
+                   promoStack: 0 }; // プロモ改修 v1.0: シーズン末リセット
         // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
         const decayStartAge = 28 + (nc.durability || 0);
         if (nc.age >= decayStartAge) {
@@ -2013,6 +2271,7 @@ const Engine = {
         careerHistory: [],
         growthPenalty: null,
         trust: 50,
+        promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -2236,14 +2495,37 @@ const Engine = {
       return config.general;
     },
 
-    /** AI対戦カード生成: OVR近接ペアリング */
-    generateAIMatchCard(roster) {
+    /** AI対戦カード生成: OVR近接ペアリング + matchupLog鮮度考慮 */
+    generateAIMatchCard(roster, matchupLog, showCount) {
       const available = roster
         .filter(f => !f.injury && (f.condition || 70) > 20)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      // matchupLogがある場合、直近3回以内の同カードにペナルティ
+      const recentThreshold = (showCount || 0) - 3;
+      const recentPairs = new Set();
+      if (matchupLog && matchupLog.length > 0) {
+        matchupLog.filter(e => (e.showCount || 0) >= recentThreshold).forEach(e => {
+          recentPairs.add(`${Math.min(e.leftId, e.rightId)}_${Math.max(e.leftId, e.rightId)}`);
+        });
+      }
       const matches = [];
-      for (let i = 0; i + 1 < available.length; i += 2) {
-        matches.push({ left: available[i], right: available[i + 1] });
+      const used = new Set();
+      for (let i = 0; i < available.length; i++) {
+        if (used.has(available[i].id)) continue;
+        let bestJ = -1, bestScore = -Infinity;
+        for (let j = i + 1; j < available.length; j++) {
+          if (used.has(available[j].id)) continue;
+          const ovrDiff = Math.abs(Engine.util.ov(available[i]) - Engine.util.ov(available[j]));
+          let score = -ovrDiff; // OVR近いほど高スコア
+          const pairKey = `${Math.min(available[i].id, available[j].id)}_${Math.max(available[i].id, available[j].id)}`;
+          if (recentPairs.has(pairKey)) score -= 20; // 直近カード重複ペナルティ
+          if (score > bestScore) { bestScore = score; bestJ = j; }
+        }
+        if (bestJ >= 0) {
+          matches.push({ left: available[i], right: available[bestJ] });
+          used.add(available[i].id);
+          used.add(available[bestJ].id);
+        }
       }
       return matches;
     },
@@ -2320,9 +2602,10 @@ const Engine = {
         }
       });
 
-      // 興行週: カードベースのsimulateMatch処理
+      // 興行週: カードベースのsimulateMatch処理 + 完全統一試合後処理
       if (isShow) {
-        const matchCard = Engine.rival.generateAIMatchCard(roster);
+        const matchCard = Engine.rival.generateAIMatchCard(roster, orgData.matchupLog, orgData.showCount);
+        const matchResults = []; // trust計算用
         for (const card of matchCard) {
           const leftIdx = roster.findIndex(f => f.id === card.left.id);
           const rightIdx = roster.findIndex(f => f.id === card.right.id);
@@ -2332,6 +2615,7 @@ const Engine = {
             state.rngSeed, state.season, state.week, card.left.id ^ card.right.id
           ));
           const result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
+          matchResults.push(result);
 
           // 各選手に試合成長を適用
           [leftIdx, rightIdx].forEach((fi, side) => {
@@ -2339,6 +2623,7 @@ const Engine = {
             const selfOvr = Engine.util.ov(nc);
             const oppOvr = Engine.util.ov(roster[side === 0 ? rightIdx : leftIdx]);
             const won = (result.winner === 'left' && side === 0) || (result.winner === 'right' && side === 1);
+            const isDraw = result.winner === 'draw';
 
             // 試合成長計算（プレイヤーと同一ロジック）
             const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
@@ -2377,9 +2662,59 @@ const Engine = {
 
             // 勝敗記録
             if (won) nc.wins = (nc.wins || 0) + 1;
-            else if (result.winner === 'draw') nc.draws = (nc.draws || 0) + 1;
+            else if (isDraw) nc.draws = (nc.draws || 0) + 1;
             else nc.losses = (nc.losses || 0) + 1;
-            nc.lastMatchResult = won ? 'win' : (result.winner === 'draw' ? 'draw' : 'loss');
+            nc.lastMatchResult = won ? 'win' : (isDraw ? 'draw' : 'loss');
+
+            // ★ ブレークスルー判定（プレイヤーと同一）
+            const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
+              matchRng, nc, result.mq, oppOvr,
+              { isTitle: false, isRivalryResolution: false, isPPV: false, isWarMatch: false, won },
+              state.season, state.week
+            );
+            if (btResult) {
+              nc = btResult.fighter;
+              // 脅威通知用に蓄積
+              orgData.seasonBreakthroughs = [...(orgData.seasonBreakthroughs || []),
+                { fighter: { name: nc.name, id: nc.id }, stat: btResult.stat, gain: btResult.gain }
+              ];
+            }
+
+            // ★ careerBestMQ更新
+            nc.careerBestMQ = Math.max(nc.careerBestMQ || 0, result.mq);
+
+            // ★ 連敗追跡 + 人気MQ連動（簡易版）
+            {
+              let rawGain = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
+              if (won) rawGain += 1;
+              if (Traits.has(nc, 'ファンサービス')) rawGain += 1;
+              if (Traits.has(nc, 'ヒール適性') && (nc.role === 'Heel' || nc.role === 'Dirty') && result.mq >= 40) rawGain += 1;
+              let popDelta = Engine.popularity.applyDiminishing(rawGain, nc.popularity || 10);
+              const streakResult = Engine.popularity.checkLosingStreak(nc, won || isDraw);
+              popDelta += streakResult.popDelta;
+              nc.popularity = Engine.util.clamp((nc.popularity || 10) + popDelta, 1, 100);
+              nc.losingStreak = streakResult.losingStreak;
+            }
+
+            // ★ スランプ判定（敗北時）
+            if (!won && !isDraw) {
+              if (Engine.growthEvents.checkSlump(matchRng, nc, 'defeat')) {
+                nc = Engine.growthEvents.applySlump(nc, 'defeat', state.season, state.week);
+              }
+            }
+
+            // ★ スランプmomentum更新（試合後）
+            nc = Engine.growthEvents.updateSlumpMomentumAfterMatch(nc, result.mq, won, matchRng);
+
+            // ★ モチベ喪失判定（スランプ中敗北）
+            if (!won && !isDraw && nc.slump) {
+              if (Engine.growthEvents.checkMotivationLoss(matchRng, nc, 'defeat')) {
+                nc = Engine.growthEvents.applyMotivationLoss(nc, state.season, state.week);
+              }
+            }
+
+            // ★ モチベ喪失momentum更新（試合後）
+            nc = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(nc, result.mq, won, matchRng);
 
             // condition消耗
             nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
@@ -2395,6 +2730,18 @@ const Engine = {
             roster[fi] = nc;
           });
         }
+
+        // ★ AI trust変動（プレイヤーと同一ロジック）
+        const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, {}, state);
+        roster = aiTrustResult.roster;
+
+        // ★ matchupLog蓄積
+        const newEntries = matchCard.map(m => ({
+          leftId: m.left.id, rightId: m.right.id,
+          showCount: orgData.showCount || 0
+        }));
+        orgData.matchupLog = [...(orgData.matchupLog || []), ...newEntries];
+        orgData.showCount = (orgData.showCount || 0) + 1;
 
         // 興行週: 全選手に自然回復
         roster = roster.map(f => ({ ...f, condition: Math.min(100, (f.condition || 70) + 3) }));
@@ -2429,21 +2776,8 @@ const Engine = {
         // Step 2: 衰退判定 (v1.3-1 §3 — wear-based)
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
-        // Step 2b: v1.8 AI成長イベント（ブレークスルー・スランプ・モチベ喪失）
-        const geResult = Engine.growthEvents.aiSeasonGrowthEvents(rng, roster, org);
-        roster = geResult.fighters;
-        geResult.aiGrowthEvents.forEach(ev => {
-          const tbl = { breakthrough: 'ブレークスルー', slump: 'スランプ', motivation_loss: 'モチベ喪失' };
-          events.push(`${org.emoji} ${ev.fighter.name}: ${tbl[ev.type] || ev.type}`);
-        });
-        if (geResult.aiGrowthEvents.length > 0) {
-          // aiOrgs[org.id] への aiGrowthEvents 記録（脅威通知で参照）
-          newAiOrgs[org.id] = newAiOrgs[org.id] || {};
-          newAiOrgs[org.id]._lastSeasonGrowthEvents = geResult.aiGrowthEvents;
-        }
-
-        // Step 2c: [廃止] AI離脱イベント → processAIWeekで実怪我に置き換え
-        // Step 3: [廃止] aiSeasonGrowth → processAIWeekで週次成長に置き換え
+        // Step 2b: peakOVR更新（decay適用後）
+        roster = roster.map(f => Engine.career.updatePeakOVR(f, state.season));
 
         // 怪我中の選手を回復（シーズン末リセット）
         roster.forEach(f => {
@@ -2454,9 +2788,6 @@ const Engine = {
           f.lastMatchResult = null;
           f.seasonInjuries = 0;
         });
-
-        // Step 4: 人気変動 (rival-spec §4.2)
-        roster = roster.map(f => Engine.rival.aiSeasonPopularity(rng, f, org));
 
         // Step 5: 引退判定 (scout-spec §7)
         const surviving = [];
@@ -2479,7 +2810,11 @@ const Engine = {
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
         events.push(`${org.emoji} ${org.name}: ロスター${roster.length}名 (平均OVR ${avgOvr})`);
 
-        newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop };
+        // seasonBreakthroughsは脅威通知参照後にリセット（次シーズン用）
+        const seasonBT = aiData.seasonBreakthroughs || [];
+        newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop,
+          _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
+          seasonBreakthroughs: [] };
       });
 
       return { aiOrgs: newAiOrgs, events };
@@ -2830,6 +3165,7 @@ const Engine = {
       const trainingBoostMult = trainingBoostBuff ? trainingBoostBuff.multiplier : 1.0;
       const promoBoostBuff = mBuffs.find(b => b.type === 'promo_boost');
       const promoBoostAmount = promoBoostBuff ? promoBoostBuff.amount : 0;
+      const promoIncomes = []; // プロモ収入蓄積（processSettlement で使用）
 
       roster = roster.map(c => {
         let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
@@ -2917,7 +3253,9 @@ const Engine = {
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
           const trainerMult = Engine.careActions.getTrainerMult(nc);
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
+          // §13.2: 練習孤立デバフ（成長効率×0.7）
+          const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus + adaptBonus);
@@ -2933,11 +3271,27 @@ const Engine = {
         }
 
         let action = nc.schedule;
-        if (action === 'balance') action = Engine.util.isShowWeek(G.week) ? 'promo' : 'practice';
+        if (action === 'balance') {
+          if (Engine.util.isShowWeek(G.week)) {
+            // 興行週: pop上限未達 or promoStack未満3なら promo、それ以外は practice
+            const popBenefit = nc.popularity < PROMO_POP_CAP;
+            const stackBenefit = (nc.promoStack || 0) < 3;
+            action = (popBenefit || stackBenefit) ? 'promo' : 'practice';
+          } else {
+            action = 'practice';
+          }
+        }
         if (nc.condition <= 30) action = 'rest';
         const mentalBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
         if (action === 'practice') {
+          // §13.3: ボイコット中は成長ゼロ
+          if (nc._boycottZeroGrowth) {
+            nc._weekAction = 'practice';
+            nc.intensiveWeeks = 0;
+            delete nc._boycottZeroGrowth;
+            return nc;
+          }
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
           // v1.3-2: §2.6 練習成長×0.4 + §3.3 growthPenalty適用
@@ -2948,7 +3302,9 @@ const Engine = {
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
           const trainerMult = Engine.careActions.getTrainerMult(nc);
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * 10) / 10;
+          // §13.2: 練習孤立デバフ（成長効率×0.7）
+          const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
@@ -2962,6 +3318,16 @@ const Engine = {
           nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus + mentalBonus);
           nc.intensiveWeeks = 0;
+          // プロモ改修 v1.0: promoStack蓄積（最大3）
+          nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
+          // イベント収入計算（RNGを独立シードで分離して再現性を保つ）
+          const piEntry = PROMO_EVENT_INCOME.find(e => nc.popularity >= e.min && nc.popularity <= e.max);
+          if (piEntry) {
+            const namePool = nc.popularity < 30 ? PROMO_EVENT_NAMES.low : nc.popularity < 60 ? PROMO_EVENT_NAMES.mid : PROMO_EVENT_NAMES.high;
+            const nameRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, nc.id ^ 0xFEA5));
+            const eventName = namePool[Engine.rng.int(nameRng, 0, namePool.length - 1)];
+            promoIncomes.push({ name: nc.name, income: piEntry.val, eventName });
+          }
         } else {
           const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
           nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + mentalBonus + restIronBonus);
@@ -3030,7 +3396,7 @@ const Engine = {
             const textKey = rawEvent.type === 'N5'
               ? (rawEvent.band === 'low' ? 'N5_low' : 'N5_warning')
               : rawEvent.type;
-            const textData = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2 });
+            const textData = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2, coach: rawEvent.coachName });
             const dialogue = Engine.eventSystem.getNotifDialogue(evtRng, applied.event, roster);
             pendingNotifEvent = { ...applied.event, ...textData, dialogue };
           }
@@ -3071,6 +3437,7 @@ const Engine = {
       if (pendingChoiceEvent) result._pendingChoiceEvent = pendingChoiceEvent;
       if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
       if (pendingCoachReport) result._pendingCoachReport = pendingCoachReport;
+      if (promoIncomes.length > 0) result._pendingPromoIncomes = promoIncomes;
       return result;
     },
 
@@ -3094,6 +3461,13 @@ const Engine = {
         totalExpense += coachSalary;
         details.push({ label: `コーチ給与（${G.coaches.length}名）`, val: -coachSalary, type: 'expense' });
       }
+
+      // プロモ改修 v1.0: プロモイベント収入（選手ごと別枠）
+      const promoIncomes = G._pendingPromoIncomes || [];
+      promoIncomes.forEach(pi => {
+        totalIncome += pi.income;
+        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}）`, val: pi.income, type: 'income' });
+      });
 
       const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
       totalIncome += sponsor;
@@ -3165,7 +3539,13 @@ const Engine = {
       }
 
       // Natural condition recovery (+ mental coach bonus)
-      roster = roster.map(c => ({ ...c, condition: Math.min(100, c.condition + 3 + Engine.coach.getCondBonus(G, c.id)) }));
+      // §13.2: trust < 45 → コンディション回復 ×0.8
+      roster = roster.map(c => {
+        const baseRecovery = 3 + Engine.coach.getCondBonus(G, c.id);
+        const trust = c.trust != null ? c.trust : 50;
+        const recovery = trust < 45 ? baseRecovery * 0.8 : baseRecovery;
+        return { ...c, condition: Math.min(100, c.condition + recovery) };
+      });
 
       const net = totalIncome - totalExpense;
       const newFunds = G.funds + net;
@@ -3194,6 +3574,7 @@ const Engine = {
     if (manage._pendingLargeEvent) s = { ...s, _pendingLargeEvent: manage._pendingLargeEvent };
     if (manage._pendingTeamSpirit) s = { ...s, _pendingTeamSpirit: manage._pendingTeamSpirit };
     if (manage._pendingCoachReport) s = { ...s, _pendingCoachReport: manage._pendingCoachReport };
+    if (manage._pendingPromoIncomes) s = { ...s, _pendingPromoIncomes: manage._pendingPromoIncomes };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // v1.0b: Apply occupancy heat delta
@@ -3405,6 +3786,10 @@ const Engine = {
         }
       }
       result.coachMQBonus = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
+      // プロモ改修 v1.0: promoStackボーナス（両者の高い方を採用）
+      const promoLeft  = charL ? ((charL.promoStack || 0) * PROMO_MQ_PER_STACK) : 0;
+      const promoRight = charR ? ((charR.promoStack || 0) * PROMO_MQ_PER_STACK) : 0;
+      result.promoStackBonus = Math.max(promoLeft, promoRight);
       // 因縁更新（副作用）
       const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
       rivalries = rivalResult.rivalries;
@@ -3466,6 +3851,7 @@ const Engine = {
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
       if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
+      if (r.promoStackBonus > 0) externalMQ += r.promoStackBonus;
       externalMQ += crowdMQ.total;
       // v1.5s25b: mq_boost（キャップ対象）
       externalMQ += mqBoostAmount;
@@ -3529,9 +3915,16 @@ const Engine = {
       let titleGapPenalty = 0;
       if (r.isTitleMatch && r.titleOVRGap > 20) titleGapPenalty = -6;
       else if (r.isTitleMatch && r.titleOVRGap > 10) titleGapPenalty = -3;
-      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty, 5, 100);
-      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty;
+      // §13.2: trust < 35 → MQ -1.53（意欲低下ペナルティ、キャップ対象外）
+      let trustMQPenalty = 0;
+      const leftTrust = lrLeft ? (lrLeft.trust != null ? lrLeft.trust : 50) : 50;
+      const rightTrust = lrRight ? (lrRight.trust != null ? lrRight.trust : 50) : 50;
+      if (leftTrust < 35) trustMQPenalty -= 1.53;
+      if (rightTrust < 35) trustMQPenalty -= 1.53;
+      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty + trustMQPenalty, 5, 100);
+      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty + trustMQPenalty;
       if (titleGapPenalty < 0) r.titleGapPenalty = titleGapPenalty;
+      if (trustMQPenalty < 0) r.trustMQPenalty = trustMQPenalty;
       return r;
     });
 
@@ -3560,6 +3953,10 @@ const Engine = {
     const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 10) / 10} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+
+    // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
+    const matchParticipantIds = new Set(results.flatMap(r => [r.left.id, r.right.id]));
+    roster = roster.map(c => matchParticipantIds.has(c.id) ? { ...c, promoStack: 0 } : c);
 
     // Heat (immutable)
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
@@ -3681,8 +4078,33 @@ const Engine = {
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek, matchupLog: updatedMatchupLog };
 
+    // §13.4: 突然の退団チェック（trust < 15, 2.5%/興行、trust更新前に判定）
+    const departureRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xDE7A, s.season, s.week));
+    const departureResult = Engine.trust.checkSuddenDepartures(departureRng, s);
+    if (departureResult.departed.length > 0) {
+      s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
+      departureResult.departed.forEach(d => {
+        events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
+        // 退団先振り分け
+        if (d.destination === 'rival') {
+          const aiOrgs = Object.entries(s.aiOrgs || {});
+          if (aiOrgs.length > 0) {
+            const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
+            const transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0 };
+            delete transferred.trustCap; delete transferred.s4Count;
+            org.roster = [...(org.roster || []), transferred];
+          }
+        } else {
+          const faFighter = { ...d.fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+          delete faFighter.trustCap; delete faFighter.s4Count;
+          s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+        }
+      });
+      s = { ...s, _pendingSuddenDepartures: departureResult.departed };
+    }
+
     // v2.0: trust 月次更新（興行参加/不参加・勝敗・MQ・連敗・自然変動）
-    const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles);
+    const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles, s);
     s = { ...s, roster: trustResult.roster, lockerRoomMorale: Engine.trust.updateLockerRoomMorale(s, trustResult) };
 
     // v1.7: 育成補助金打ち切り通知（通常モードは補助金なし）
@@ -5413,19 +5835,16 @@ const Engine = {
         s = { ...s, aiOrgs: aiResult.aiOrgs };
         events.push(...aiResult.events);
 
-        // v1.8: AI成長イベント通知（脅威/好機アラートを state に格納）
+        // NPC記録統一: 脅威通知は seasonBreakthroughs から生成
         const aiGrowthAlerts = [];
         RIVAL_ORGS.forEach(org => {
-          const ge = aiResult.aiOrgs[org.id]?._lastSeasonGrowthEvents || [];
-          ge.forEach(ev => {
-            if (ev.type === 'breakthrough') {
-              // S級 or 隣接ランク → 脅威
-              const isThreat = org.tier === 'S';
-              aiGrowthAlerts.push({ type: 'threat', org, fighter: ev.fighter, stat: ev.stat, gain: ev.gain, isMajor: isThreat });
-            } else if (ev.type === 'slump' || ev.type === 'motivation_loss') {
-              aiGrowthAlerts.push({ type: 'opportunity', org, fighter: ev.fighter, eventType: ev.type });
-            }
+          const bt = aiResult.aiOrgs[org.id]?._lastSeasonBreakthroughs || [];
+          bt.forEach(ev => {
+            const isThreat = org.tier === 'S';
+            aiGrowthAlerts.push({ type: 'threat', org, fighter: ev.fighter, stat: ev.stat, gain: ev.gain, isMajor: isThreat });
           });
+          // スランプ/モチベ喪失はもう週次で処理されるため、シーズン末一括では通知しない
+          // （将来的にAI選手のスランプ/モチベ喪失を週次で通知する拡張ポイント）
         });
         if (aiGrowthAlerts.length > 0) {
           s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
@@ -5517,15 +5936,24 @@ const Engine = {
         if (s.season >= 2 && !s.pendingContractNegotiations) {
           const contractRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0E7));
           const negResult = Engine.contract.generateNegotiations(contractRng, s);
+          // §13.5: P-自発的残留の通知
+          if (negResult.voluntaryStays && negResult.voluntaryStays.length > 0) {
+            negResult.voluntaryStays.forEach(vs => {
+              events.push(`✨ ${vs.fighterName}:「${vs.line}」`);
+            });
+          }
           if (negResult.negotiations.length > 0) {
             s = { ...s,
               pendingContractNegotiations: negResult.negotiations,
               _contractAutoRenewed: negResult.autoRenewedCount,
+              _contractVoluntaryStays: negResult.voluntaryStays || [],
             };
-            events.push(`📋 シーズン${s.season} 契約更新: 意見あり ${negResult.negotiations.length}名`);
+            events.push(`📋 シーズン${s.season} 契約更新: 意見あり ${negResult.negotiations.length}名` +
+              (negResult.voluntaryStays.length > 0 ? `、自発残留 ${negResult.voluntaryStays.length}名` : ''));
             return { state: { ...s, offWeek, weekPhase: 'contractNegotiation' }, events };
           }
-          events.push(`📋 シーズン${s.season} 契約更新: 全選手が自動残留`);
+          events.push(`📋 シーズン${s.season} 契約更新: 全選手が自動残留` +
+            (negResult.voluntaryStays.length > 0 ? `（自発残留 ${negResult.voluntaryStays.length}名）` : ''));
         }
         // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
         events.push('📅 オフシーズン第4週: 契約更新完了');
@@ -5783,6 +6211,7 @@ const Engine = {
       careerHistory: [],   // v1.3-2: 経歴記録 [{type,week,season,detail}]
       growthPenalty: null, // v1.3-2: 成長デバフ {remainingWeeks,multiplier,source} | null
       trust: 50,           // v2.0: 信頼度 0-100（隠しパラメータ）
+      promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
     };
   },
 
@@ -6712,50 +7141,7 @@ Engine.growthEvents = {
     return nf;
   },
 
-  // ─── §9 AI団体成長イベント ────────────────────────────
-
-  /** §9 AI団体シーズン末一括判定
-   * @returns {{ fighters: Array, aiGrowthEvents: Array }} */
-  aiSeasonGrowthEvents(rng, fighters, org) {
-    const tier = org.tier || 'B';
-    const btProb    = tier === 'S' ? 0.08 : tier === 'A' ? 0.06 : 0.04;
-    const slumpProb = 0.05;
-    const motivProb = 0.01;
-    const aiGrowthEvents = [];
-
-    const newFighters = fighters.map(f => {
-      let nf = { ...f };
-      // スランプ / モチベ喪失（排他: モチベ優先）
-      // AI統一成長: _aiGrowthBlock/_aiGrowthHalf → motivationLoss/slumpフラグに統一
-      if (Engine.rng.float(rng) < motivProb) {
-        // モチベ喪失: 成長量0 + 能力微減
-        const stats = ['pw', 'sp', 'te', 'st'];
-        const stat = Engine.rng.pick(rng, stats);
-        const decay = Engine.rng.int(rng, 2, 4);
-        nf[stat] = Math.max(1, (nf[stat] || 30) - decay);
-        nf.motivationLoss = true; // processAIWeekで成長ゼロ
-        aiGrowthEvents.push({ type: 'motivation_loss', org, fighter: f });
-      } else if (Engine.rng.float(rng) < slumpProb) {
-        nf.slump = true; // processAIWeekで成長ゼロ
-        aiGrowthEvents.push({ type: 'slump', org, fighter: f });
-      }
-      // ブレークスルー（モチベ喪失中は発生しない）
-      if (!nf.motivationLoss && Engine.rng.float(rng) < btProb) {
-        const stats = ['pw', 'sp', 'te', 'st'];
-        const stat = Engine.rng.pick(rng, stats);
-        const gain = Engine.rng.int(rng, 3, 6);
-        const cap = nf.trainCap ? (nf.trainCap[stat] || 100) : 100;
-        const actualGain = Math.round(Math.min(gain, cap - (nf[stat] || 0)) * 10) / 10;
-        if (actualGain > 0) {
-          nf[stat] = (nf[stat] || 0) + actualGain;
-          aiGrowthEvents.push({ type: 'breakthrough', org, fighter: f, stat, gain: actualGain });
-        }
-      }
-      return nf;
-    });
-
-    return { fighters: newFighters, aiGrowthEvents };
-  }
+  // §9 AI団体成長イベント: [廃止] processAIWeek週次処理に完全移行済み
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -6771,10 +7157,13 @@ Engine.trust = {
     return delta * (1.0 - mn / 200);
   },
 
-  // ── §1-4自然変動: -1/月 + mental/50 の回復 ────────────────────────────────
-  // Mental 100 → +1/月、Mental 50 → ±0/月、Mental 25 → -0.5（切り捨てで 0）
-  calcMonthlyNatural(mental) {
-    return -1 + Math.floor((mental || 50) / 50);
+  // ── §8.1: 自然変動（連続関数化）────────────────────────────────────────────
+  // MN100 → ±0.00 / MN50 → -0.23 / MN25 → -0.35 / MN10 → -0.41
+  // §13.5 P-後輩への好影響: trust70+の選手1人につき +0.05/興行（最大3人分 = +0.15）
+  calcMonthlyNatural(mental, seniorCount) {
+    const base = -0.46 + ((mental || 50) / 217);
+    const seniorBonus = 0.05 * Math.min(seniorCount || 0, 3);
+    return base + seniorBonus;
   },
 
   // ── §1-6: 特性による行動分岐 ─────────────────────────────────────────────
@@ -6785,10 +7174,18 @@ Engine.trust = {
     return traits.some(t => ['闘志', '負けず嫌い', '野心', '破天荒', '反骨心'].includes(t));
   },
 
-  // ── §1-3/1-4: 興行後の trust 月次更新 ───────────────────────────────────
-  // 参加した選手: 勝敗 + MQボーナス + タイトルボーナス + 連敗ペナルティ + 自然変動
-  // 参加しなかった選手（怪我除く）: -8 + 自然変動
-  applyShowTrust(roster, results, titles) {
+  // ── §2-5 v2.1: 興行後の trust 更新 ────────────────────────────────────────
+  // 出場/不出場ベース。勝敗は信頼度に影響しない（v2.1設計変更）
+  // §4.2: 高信頼帯の上昇逓減
+  gainMult(trust) {
+    return trust < 70 ? 1.0 : Math.max(0, 1.0 - Math.pow((trust - 70) / 30, 1.4));
+  },
+  // §5.2: low帯の回復減衰
+  recoveryMult(trust) {
+    return trust >= 40 ? 1.0 : 0.35 + (trust / 40) * 0.65;
+  },
+
+  applyShowTrust(roster, results, titles, state) {
     if (results.length === 0) return { roster, changes: [] };
 
     // 出場選手IDセット
@@ -6801,99 +7198,185 @@ Engine.trust = {
       titleFighters.add(r.left.id); titleFighters.add(r.right.id);
     });
 
+    // メインイベント出場選手（最後の試合）
+    const mainFighters = new Set();
+    if (results.length > 0) {
+      const main = results[results.length - 1];
+      mainFighters.add(main.left.id); mainFighters.add(main.right.id);
+    }
+
+    // 因縁カード出場選手
+    const rivalryFighters = new Set();
+    results.forEach(r => {
+      if (r.rivalryLevel) {
+        rivalryFighters.add(r.left.id); rivalryFighters.add(r.right.id);
+      }
+    });
+
+    // 好試合（MQ70+）選手
+    const goodMatchFighters = new Set();
+    results.forEach(r => {
+      if ((r.mq || 0) >= 70) {
+        goodMatchFighters.add(r.left.id); goodMatchFighters.add(r.right.id);
+      }
+    });
+
+    // §13.5 P-後輩への好影響: trust 70+の選手数（怪我なし）
+    const seniorCount = roster.filter(f => !f.injury && (f.trust != null ? f.trust : 50) >= 70).length;
+
+    // §14.1D: trustCap期限切れチェック
+    const currentWeek = state ? (state.season || 1) * 100 + (state.week || 1) : 0;
+
     const changes = [];
     const newRoster = roster.map(fighter => {
-      // 怪我中は変動なし
+      // 怪我中は変動なし（noAppearStreakもリセットしない）
       if (fighter.injury) return fighter;
 
       const mental = fighter.mn || 50;
+      const oldTrust = fighter.trust != null ? fighter.trust : 50;
       let delta = 0;
+      let updated = { ...fighter };
 
       if (participated.has(fighter.id)) {
-        // 出場した場合
-        const match = results.find(r => r.left.id === fighter.id || r.right.id === fighter.id);
-        if (match) {
-          const won = (match.left.id === fighter.id && match.winner === 'left') ||
-                      (match.right.id === fighter.id && match.winner === 'right');
-          const isDraw = match.winner === 'draw';
-          const mq = match.mq || 0;
+        // §2.2: 出場 基本値 +1.53
+        let gainDelta = 1.53;
 
-          // §1-3: 勝利+3 / 敗北+1
-          if (won)      delta += Engine.trust.applyCoeff(3, mental);
-          else if (!isDraw) delta += Engine.trust.applyCoeff(1, mental);
-          else          delta += Engine.trust.applyCoeff(1, mental);  // 引き分けも+1
+        // §5.2: low帯の回復減衰（出場基本値に適用）
+        gainDelta *= Engine.trust.recoveryMult(oldTrust);
 
-          // §1-3: 好試合（MQ70+）追加+2
-          if (mq >= 70) delta += Engine.trust.applyCoeff(2, mental);
+        // §3: 舞台の質による追加
+        if (mainFighters.has(fighter.id))     gainDelta += 1.07;  // メイン抜擢
+        if (titleFighters.has(fighter.id))    gainDelta += 1.84;  // タイトルマッチ
+        if (rivalryFighters.has(fighter.id))  gainDelta += 0.77;  // 因縁カード
+        if (goodMatchFighters.has(fighter.id)) gainDelta += 0.54;  // 好試合MQ70+
 
-          // §1-3: タイトルマッチ+5
-          if (titleFighters.has(fighter.id)) delta += Engine.trust.applyCoeff(5, mental);
+        // §10: メンタル係数
+        gainDelta = Engine.trust.applyCoeff(gainDelta, mental);
 
-          // §1-4: 連敗ペナルティ（2連敗以降）— losingStreak はこの時点で更新済み
-          const streak = fighter.losingStreak || 0;
-          if (!won && !isDraw && streak >= 2) delta += Engine.trust.applyCoeff(-3, mental);
-        }
+        // §11: 反骨心
+        if (Traits.has(fighter, '反骨心')) gainDelta *= 1.3;
+
+        // §4.2: 高信頼帯の上昇逓減（正方向のみ）
+        if (gainDelta > 0) gainDelta *= Engine.trust.gainMult(oldTrust);
+
+        delta += gainDelta;
+
+        // §2.3B: 出場したのでストリークリセット
+        updated.noAppearStreak = 0;
       } else {
-        // §1-4: 興行に出場できなかった月 -8
-        delta += Engine.trust.applyCoeff(-8, mental);
+        // §2.2: 不出場 基本値 -2.64
+        const streak = fighter.noAppearStreak || 0;
+        // §2.3: 連続不出場の蓄積倍率
+        const streakMults = [1.00, 1.15, 1.35, 1.55];
+        const streakMult = streak < streakMults.length ? streakMults[streak] : 1.55;
+        let lossDelta = -2.64 * streakMult;
+
+        // §10: メンタル係数
+        lossDelta = Engine.trust.applyCoeff(lossDelta, mental);
+
+        // §11: 反骨心
+        if (Traits.has(fighter, '反骨心')) lossDelta *= 1.3;
+
+        // §4.3: 負方向は逓減なし
+        delta += lossDelta;
+
+        // §2.3B: ストリーク加算
+        updated.noAppearStreak = streak + 1;
       }
 
-      // §1-3/1-4: 月次自然変動（-1/月 + mental/50 回復）
-      delta += Engine.trust.calcMonthlyNatural(mental);
+      // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響
+      delta += Engine.trust.calcMonthlyNatural(mental, seniorCount);
 
-      // 反骨心: trust変動が激しい（上昇・下降とも×1.3）
-      if (Traits.has(fighter, '反骨心')) delta *= 1.3;
+      let newTrust = Engine.util.clamp(oldTrust + delta, 0, 100);
 
-      const oldTrust = fighter.trust != null ? fighter.trust : 50;
-      const newTrust = Engine.util.clamp(Math.round(oldTrust + delta), 0, 100);
-      if (newTrust !== oldTrust) {
-        changes.push({ id: fighter.id, name: fighter.name, from: oldTrust, to: newTrust, delta: Math.round(delta) });
+      // §14.1D: trustCap処理（S4/E6後遺症）
+      if (updated.trustCap) {
+        if (currentWeek >= updated.trustCap.expiresWeek) {
+          updated.trustCap = null;
+        } else if (newTrust > updated.trustCap.value) {
+          newTrust = updated.trustCap.value;
+        }
       }
-      return { ...fighter, trust: newTrust };
+
+      if (Math.round(newTrust) !== Math.round(oldTrust)) {
+        changes.push({ id: fighter.id, name: fighter.name, from: oldTrust, to: newTrust, delta });
+      }
+      return { ...updated, trust: newTrust };
     });
 
     return { roster: newRoster, changes };
   },
 
-  // ── §5: ロッカールームの空気 更新 ────────────────────────────────────────
-  // 上昇: 興行成功（avgMQ高）+3 / 下降: trust<25の選手 -2/月
+  // ── §9 v2.1: ロッカールーム士気 更新 ─────────────────────────────────────
+  // §9.2: trust<40の連続関数ペナルティ / §9.3-9.4: 人望・ムードメーカー重複処理
   updateLockerRoomMorale(state, trustResult) {
     const current = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let delta = 0;
 
-    // 興行成功ボーナス（avgMQ 65+ で+3）
+    // §9.3: 興行成功ボーナス（avgMQ 65+）
     const results = state.lastShowResults || [];
     if (results.length > 0) {
       const avgMQ = results.reduce((s, r) => s + r.mq, 0) / results.length;
-      if (avgMQ >= 65) delta += 3;
+      if (avgMQ >= 65) delta += 1.84;
     }
 
-    // trust < 25 の選手が多いほど空気が悪化（-2/名）
-    const lowTrustCount = (trustResult.roster || []).filter(f => (f.trust || 50) < 25).length;
-    delta -= lowTrustCount * 2;
+    // §9.2: trust<40の選手ごとの連続関数ペナルティ
+    const rosterArr = trustResult.roster || [];
+    rosterArr.forEach(f => {
+      const trust = f.trust != null ? f.trust : 50;
+      if (trust < 40) {
+        delta -= (40 - trust) / 40 * 3.06;
+      }
+    });
 
-    // 人望: 在籍中の間だけロッカールーム士気に+3ボーナス
-    const hasNinbo = (trustResult.roster || []).some(f => Traits.has(f, '人望') && !f.injury);
-    if (hasNinbo) delta += 3;
+    // §9.3-9.4: 人望・ムードメーカー（重複処理）
+    const hasNinbo = rosterArr.some(f => Traits.has(f, '人望') && !f.injury);
+    const hasMoodMaker = rosterArr.some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
+    if (hasNinbo && hasMoodMaker) {
+      // 高い方フル + 低い方半減
+      delta += 2.53 + 1.84 * 0.5;  // = +3.45
+    } else if (hasMoodMaker) {
+      delta += 2.53;
+    } else if (hasNinbo) {
+      delta += 1.84;
+    }
 
-    // ムードメーカー: 明るさで空気を持ち上げる +5/週
-    const hasMoodMaker = (trustResult.roster || []).some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
-    if (hasMoodMaker) delta += 5;
-
-    return Engine.util.clamp(Math.round(current + delta), 0, 100);
+    return Engine.util.clamp(current + delta, 0, 100);
   },
 
-  // ── 信頼度変化のニュアンス表現（UI向け・数値を隠す） ─────────────────────
+  // §13.4: 突然の退団チェック（trust < 15, 2.5%/興行）
+  // 返り値: { departed: [{id, name, destination}], roster, lockerRoomMorale }
+  checkSuddenDepartures(rng, state) {
+    const roster = state.roster || [];
+    const morale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    const departed = [];
+    let newMorale = morale;
+    const newRoster = roster.filter(f => {
+      if (f.isRental) return true;
+      const trust = f.trust != null ? f.trust : 50;
+      if (trust >= 15) return true;
+      if (Engine.rng.float(rng) >= 0.025) return true;
+      // 退団確定
+      const pop = f.popularity || 0;
+      const destination = pop >= 40 ? 'rival' : 'free';
+      departed.push({ id: f.id, name: f.name, destination, fighter: f });
+      newMorale = Engine.util.clamp(newMorale - 4.59, 0, 100);
+      return false;
+    });
+    return { departed, roster: newRoster, lockerRoomMorale: newMorale };
+  },
+
+  // ── §12.1H v2.1: 信頼度変化のニュアンス表現（閾値調整） ──────────────────
   describeChange(delta) {
     const d = Math.abs(delta);
     if (delta > 0) {
-      if (d >= 8) return '信頼が大きく上がった';
-      if (d >= 4) return '信頼が上がった';
+      if (d >= 5.0) return '信頼が大きく上がった';
+      if (d >= 2.5) return '信頼が上がった';
       return '少し信頼が増したようだ';
     }
     if (delta < 0) {
-      if (d >= 8) return '信頼が大きく下がった';
-      if (d >= 4) return '信頼が下がった';
+      if (d >= 5.0) return '信頼が大きく下がった';
+      if (d >= 2.5) return '信頼が下がった';
       return '少し距離を感じる';
     }
     return '';
@@ -6902,13 +7385,13 @@ Engine.trust = {
   describeChangeHint(delta) {
     const d = Math.abs(delta);
     if (delta > 0) {
-      if (d >= 8) return '信頼が大きく上がる';
-      if (d >= 4) return '信頼が上がる';
+      if (d >= 5.0) return '信頼が大きく上がる';
+      if (d >= 2.5) return '信頼が上がる';
       return '信頼が少し上がる';
     }
     if (delta < 0) {
-      if (d >= 8) return '信頼が大きく下がる';
-      if (d >= 4) return '信頼が下がる';
+      if (d >= 5.0) return '信頼が大きく下がる';
+      if (d >= 2.5) return '信頼が下がる';
       return '信頼が少し下がる';
     }
     return '';
@@ -6975,10 +7458,21 @@ Engine.careActions = {
     let reactionKey = actionId;
     let reactionFighterId = fighterId;
 
-    const applyTrust = (fighter, delta) => {
+    // §6.1: OVR傾斜係数（低OVRほどケア効果が高い）
+    const careOvrMult = (fighter) => {
+      const ovr = Engine.util.ov(fighter);
+      return 0.7 + (100 - ovr) / 100 * 0.9;
+    };
+    const applyTrust = (fighter, delta, skipOvrScale) => {
       const mental = fighter.mn || 50;
-      const adjusted = Engine.trust.applyCoeff(delta, mental);
-      const newTrust = Engine.util.clamp(Math.round((fighter.trust != null ? fighter.trust : 50) + adjusted), 0, 100);
+      let adjusted = Engine.trust.applyCoeff(delta, mental);
+      // §6.1: OVR傾斜をケアアクションに適用（skipOvrScale=trueの場合はスキップ）
+      if (!skipOvrScale) adjusted *= careOvrMult(fighter);
+      // §6.3: low帯減衰はケアアクションには適用しない
+      const oldTrust = fighter.trust != null ? fighter.trust : 50;
+      // §4.2: 高信頼帯の上昇逓減（正方向のみ）
+      if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+      const newTrust = Engine.util.clamp(oldTrust + adjusted, 0, 100);
       return { ...fighter, trust: newTrust };
     };
 
@@ -6998,7 +7492,7 @@ Engine.careActions = {
 
       if (actionId === 'bonus') {
         const repeatCount = Engine.careActions.getBonusRepeatCount(f);
-        const trustGain = Math.max(1, cfg.effects.trust - repeatCount * 2);  // 逓減
+        const trustGain = Math.max(0.77, cfg.effects.trust - repeatCount * 1.53);  // 逓減（v2.1: 出場1回分ずつ減衰、最低=声かけ相当）
         f = applyTrust(f, trustGain);
         f._bonusRepeat = repeatCount + 1;
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
@@ -7033,14 +7527,13 @@ Engine.careActions = {
         if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
         const highTrust = (f.trust || 50) >= 60;
         const momentumBoost = highTrust ? 4.0 : 2.5;
-        const trustGain = highTrust ? 2 : 1;
         if (f.slump) {
           f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
         }
         if (f.motivationLoss) {
           f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
         }
-        f = applyTrust(f, trustGain);
+        f = applyTrust(f, cfg.effects.trust || 0.77);
         f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 ${f.name}に声かけ（スランプ回復促進）`);
@@ -7183,6 +7676,23 @@ Engine.eventSystem = {
 
   // ── 通知型イベント生成 + 効果適用 ────────────────────────────────────────
   generateNotifEvent(rng, state, roster) {
+    // §13.2: N-練習孤立（trust < 50, 10%/週, N-コーチ報告と排他）
+    const isolationPool = roster.filter(f => (f.trust != null ? f.trust : 50) < 50 && !f.injury);
+    if (isolationPool.length > 0) {
+      // N-コーチ報告（trust < 45, コーチ在籍時, 15%, N-孤立と排他）
+      const coachReportPool = isolationPool.filter(f => (f.trust != null ? f.trust : 50) < 45);
+      const coaches = Engine.coach.getHiredCoaches(state);
+      if (coachReportPool.length > 0 && coaches.length > 0 && Engine.rng.float(rng) < 0.15) {
+        const f = Engine.rng.pick(rng, coachReportPool);
+        const coach = Engine.rng.pick(rng, coaches);
+        return { type: 'N_coach_report', fighter: f.id, name: f.name, coachName: coach.name };
+      }
+      if (Engine.rng.float(rng) < 0.10) {
+        const f = Engine.rng.pick(rng, isolationPool);
+        return { type: 'N_isolation', fighter: f.id, name: f.name };
+      }
+    }
+
     // N5優先判定（trust閾値接近の選手が存在する場合、50%でN5を優先）
     const n5Pool = roster.filter(f => {
       const t = f.trust != null ? f.trust : 50;
@@ -7231,6 +7741,17 @@ Engine.eventSystem = {
     const fId = event.fighter;
 
     switch (event.type) {
+      case 'N_isolation': {
+        // §13.2: 練習孤立 — その週の成長効率 ×0.7
+        const newRoster = roster.map(f => {
+          if (f.id !== fId) return f;
+          return { ...f, _isolationDebuff: true };  // processManageで成長×0.7に使用
+        });
+        return { roster: newRoster, event };
+      }
+      case 'N_coach_report':
+        // §13.2: コーチ報告 — 純粋な情報提供（効果なし）
+        return { roster, event };
       case 'N1': {
         // 成長できる能力値を選ぶ（trainCapに余裕がある stat）
         const stats = ['pw', 'sp', 'te', 'st', 'mn'];
@@ -7260,7 +7781,11 @@ Engine.eventSystem = {
         const newRoster = roster.map(f => {
           if (f.id !== fId) return f;
           const newPop = Engine.util.clamp((f.popularity || 1) + 1, 1, 100);
-          const newTrust = Engine.util.clamp((f.trust != null ? f.trust : 50) + 2, 0, 100);
+          const oldTrust = f.trust != null ? f.trust : 50;
+          let trustDelta = Engine.trust.applyCoeff(2, f.mn || 50);
+          if (Traits.has(f, '反骨心')) trustDelta *= 1.3;
+          if (trustDelta > 0) trustDelta *= Engine.trust.gainMult(oldTrust);
+          const newTrust = Engine.util.clamp(oldTrust + trustDelta, 0, 100);
           return { ...f, popularity: newPop, trust: newTrust };
         });
         return { roster: newRoster, event };
@@ -7280,6 +7805,27 @@ Engine.eventSystem = {
     if (s4Pool.length > 0 && Engine.rng.float(rng) < 0.60) {
       const f = Engine.rng.pick(rng, s4Pool);
       return { type: 'S4', fighter: f.id, name: f.name, isDirect: Engine.trust.isDirectType(f) };
+    }
+
+    // §13.3: S-練習ボイコット（trust < 38, 8%）
+    const boycottPool = roster.filter(f => (f.trust != null ? f.trust : 50) < 38 && !f.injury);
+    if (boycottPool.length > 0 && Engine.rng.float(rng) < 0.08) {
+      const f = Engine.rng.pick(rng, boycottPool);
+      return { type: 'S_boycott', fighter: f.id, name: f.name };
+    }
+
+    // §13.3: S-ロッカールーム愚痴（trust < 35, ロスター4+, 6%）
+    const grumblePool = roster.filter(f => (f.trust != null ? f.trust : 50) < 35 && !f.injury);
+    if (grumblePool.length > 0 && roster.length >= 4 && Engine.rng.float(rng) < 0.06) {
+      const f = Engine.rng.pick(rng, grumblePool);
+      return { type: 'S_grumble', fighter: f.id, name: f.name };
+    }
+
+    // §13.3: S-SNS匂わせ（trust < 30, pop 40+, 5%）
+    const snsPool = roster.filter(f => (f.trust != null ? f.trust : 50) < 30 && (f.popularity || 0) >= 40 && !f.injury);
+    if (snsPool.length > 0 && Engine.rng.float(rng) < 0.05) {
+      const f = Engine.rng.pick(rng, snsPool);
+      return { type: 'S_sns', fighter: f.id, name: f.name };
     }
 
     // S3: condition <= 40 — 休養願い
@@ -7347,9 +7893,9 @@ Engine.eventSystem = {
     const funds = state.funds || 0;
     switch (event.type) {
       case 'S1': return [
-        { label: '受ける',       hint: '信頼が大きく上がる、次興行でタイトルマッチ調整を検討',  idx: 0 },
-        { label: 'まだ早い',     hint: '信頼が下がる（約束として記憶）',                       idx: 1 },
-        { label: '却下する',     hint: '信頼が大きく下がる',                                   idx: 2 },
+        { label: '受ける',       hint: '信頼が上がる、次興行でタイトルマッチ調整を検討',  idx: 0 },
+        { label: 'まだ早い',     hint: '信頼が下がる（約束として記憶）',                  idx: 1 },
+        { label: '却下する',     hint: '信頼が大きく下がる',                              idx: 2 },
       ];
       case 'S3': return [
         { label: '休ませる',     hint: '信頼が少し上がる、回復促進',                  idx: 0 },
@@ -7357,12 +7903,19 @@ Engine.eventSystem = {
         { label: '無視する',     hint: '信頼が下がる、怪我リスク増',                  idx: 2 },
       ];
       case 'S4': {
+        // §13.4: S4リデザイン — コスト動的化（週給×12）、2回目強化
+        const f4 = (state.roster || []).find(f => f.id === event.fighter);
+        const s4Count = f4 ? (f4.s4Count || 0) : 0;
+        const weeklySalary = f4 ? Engine.util.getSalary(f4, state.titles) : 100;
+        const costMult = s4Count >= 1 ? 1.5 : 1.0;
+        const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);  // 市場価値50% (2回目は75%)
         const s4Choices = [
-          { label: `待遇改善（-100万）`, hint: funds >= 100 ? '信頼が大きく上がる' : '資金不足', idx: 0, disabled: funds < 100 },
-          { label: '出場を約束する',     hint: '信頼は保留（約束のプレッシャー）',               idx: 1 },
-          { label: '突っぱねる',         hint: '信頼が大きく下がる、退団リスク',                 idx: 2 },
+          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '信頼+10、ただしキャップ発動' : '資金不足', idx: 0, disabled: funds < s4Cost },
+          { label: '出場を約束する',     hint: '次興行で出さないと信頼大幅低下',               idx: 1 },
+          { label: '励ましの言葉',       hint: '信頼が少し上がる（焼け石に水）',               idx: 3 },
+          { label: '突っぱねる',         hint: '信頼が大きく下がる、士気低下',                 idx: 2 },
         ];
-        if (funds < 200) s4Choices.push({ label: '励ましの言葉をかける', hint: '信頼が少し上がる（無料）', idx: 3 });
+        if (s4Count >= 1) s4Choices.push({ label: '放出する', hint: '移籍金回収して退団', idx: 4 });
         return s4Choices;
       }
       case 'S5': return [
@@ -7379,10 +7932,32 @@ Engine.eventSystem = {
         { label: '受ける（+150万）', hint: '資金+150、全選手コンディション-8',     idx: 0 },
         { label: '断る',            hint: '変化なし',                             idx: 1 },
       ];
-      case 'E6': return [
-        { label: `契約金を積む（-100万）`, hint: funds >= 100 ? '信頼が大きく上がる、引き止め確定' : '資金不足', idx: 0, disabled: funds < 100 },
-        { label: '説得する',              hint: '信頼次第で引き止め成功',                                      idx: 1 },
-        { label: '放出する',              hint: '資金+50、選手が退団',                                         idx: 2 },
+      case 'E6': {
+        // §13.4: E6リデザイン — コスト動的化（週給×12）
+        const f6 = (state.roster || []).find(f => f.id === event.fighter);
+        const e6Salary = f6 ? Engine.util.getSalary(f6, state.titles) : 100;
+        const e6Cost = Math.round(e6Salary * 12);
+        return [
+          { label: `契約金を積む（-${e6Cost}万）`, hint: funds >= e6Cost ? '引き止め確定、キャップ発動' : '資金不足', idx: 0, disabled: funds < e6Cost },
+          { label: '説得する',              hint: '信頼次第で引き止め成功',                                      idx: 1 },
+          { label: '放出する',              hint: '資金+50、選手が退団',                                         idx: 2 },
+        ];
+      }
+      // §13.3: 新規選択型イベント
+      case 'S_boycott': return [
+        { label: '話を聞く',       hint: '信頼+2.30、その週の成長ゼロ',                idx: 0 },
+        { label: '放っておく',     hint: '信頼-1.53、成長ゼロ+コンディション-3',       idx: 1 },
+        { label: `ボーナスで釣る（-50万）`, hint: funds >= 50 ? '信頼+3.82、成長ゼロ' : '資金不足', idx: 2, disabled: funds < 50 },
+      ];
+      case 'S_grumble': return [
+        { label: '個別に声をかける',       hint: '本人信頼+1.53、士気ペナルティはそのまま', idx: 0 },
+        { label: '全体ミーティングを開く', hint: '本人信頼+0.77、士気微回復',             idx: 1 },
+        { label: '無視する',               hint: '士気さらに低下',                         idx: 2 },
+      ];
+      case 'S_sns': return [
+        { label: '直接話す',       hint: '信頼+2.30、団体人気ペナはそのまま',             idx: 0 },
+        { label: `メディア対応する（-30万）`, hint: funds >= 30 ? '団体人気ペナ相殺' : '資金不足', idx: 1, disabled: funds < 30 },
+        { label: '放置する',       hint: '団体人気さらに低下',                             idx: 2 },
       ];
       default: return [{ label: '了解', hint: '', idx: 0 }];
     }
@@ -7399,8 +7974,11 @@ Engine.eventSystem = {
     const applyTrust = (fighterId, delta) => {
       roster = roster.map(f => {
         if (f.id !== fighterId) return f;
-        const adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
-        return { ...f, trust: Engine.util.clamp(Math.round((f.trust != null ? f.trust : 50) + adjusted), 0, 100) };
+        const oldTrust = f.trust != null ? f.trust : 50;
+        let adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
+        if (Traits.has(f, '反骨心')) adjusted *= 1.3;
+        if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+        return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
       });
     };
     const getFighter = () => roster.find(f => f.id === event.fighter);
@@ -7409,47 +7987,74 @@ Engine.eventSystem = {
       case 'S1': {
         const f = getFighter();
         if (choiceIdx === 0) {
-          applyTrust(event.fighter, 8);
+          applyTrust(event.fighter, 4.59);
           events.push(`✅ ${event.name}のタイトル挑戦要求を受諾`);
         } else if (choiceIdx === 1) {
-          applyTrust(event.fighter, -5);
+          applyTrust(event.fighter, -3.06);
           events.push(`⚠️ ${event.name}のタイトル挑戦要求を保留`);
         } else {
-          applyTrust(event.fighter, -10);
+          applyTrust(event.fighter, -6.07);
           events.push(`❌ ${event.name}のタイトル挑戦要求を却下`);
         }
         break;
       }
       case 'S3': {
         if (choiceIdx === 0) {
-          applyTrust(event.fighter, 3);
+          applyTrust(event.fighter, 2.30);
           // 休養設定（scheduleをrestに＋次の興行を欠場させるforcedRestフラグ）
           roster = roster.map(f => f.id === event.fighter ? { ...f, schedule: 'rest', forcedRest: true } : f);
           events.push(`🛌 ${event.name}を休養させた（次の興行は欠場）`);
         } else if (choiceIdx === 1) {
-          applyTrust(event.fighter, -2);
+          applyTrust(event.fighter, -1.53);
           events.push(`😓 ${event.name}を励まして続けさせた`);
         } else {
-          applyTrust(event.fighter, -5);
+          applyTrust(event.fighter, -3.82);
           events.push(`⚠️ ${event.name}の休養願いを無視（怪我リスク増）`);
         }
         break;
       }
       case 'S4': {
-        if (choiceIdx === 0 && funds >= 100) {
-          funds -= 100;
-          applyTrust(event.fighter, 8);
-          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 5, 0, 100);
-          events.push(`💴 ${event.name}の待遇を改善（-100万）`);
+        // §13.4: S4リデザイン — 発火時点で士気-2.30
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 2.30, 0, 100);
+        const f4 = getFighter();
+        const s4Count = f4 ? (f4.s4Count || 0) : 0;
+        const weeklySalary = f4 ? Engine.util.getSalary(f4, state.titles) : 100;
+        const costMult = s4Count >= 1 ? 1.5 : 1.0;
+        const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);
+        if (choiceIdx === 0 && funds >= s4Cost) {
+          funds -= s4Cost;
+          // trust +10.0 直接適用（applyCoeff/gainMultなし、固定値）
+          roster = roster.map(f => {
+            if (f.id !== event.fighter) return f;
+            const oldT = f.trust != null ? f.trust : 50;
+            const capVal = s4Count >= 1 ? 55 : 60;
+            const capWeeks = s4Count >= 1 ? 12 : 8;
+            const currentWeek = (state.season || 1) * 100 + (state.week || 1);
+            return {
+              ...f,
+              trust: Engine.util.clamp(oldT + 10.0, 0, 100),
+              s4Count: s4Count + 1,
+              trustCap: { value: capVal, expiresWeek: currentWeek + capWeeks },
+            };
+          });
+          events.push(`💴 ${event.name}の待遇を改善（-${s4Cost}万、信頼キャップ発動）`);
         } else if (choiceIdx === 1) {
+          roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
           events.push(`🤝 ${event.name}への出場約束（次の興行に出場させること）`);
         } else if (choiceIdx === 3) {
-          applyTrust(event.fighter, 3);
-          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
-          events.push(`💬 ${event.name}を励ました`);
+          applyTrust(event.fighter, 2.30);
+          roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
+          events.push(`💬 ${event.name}を励ました（焼け石に水）`);
+        } else if (choiceIdx === 4) {
+          // 2回目以降: 放出（移籍金回収）
+          const releaseFunds = Math.round(weeklySalary * 6);
+          funds += releaseFunds;
+          roster = roster.filter(f => f.id !== event.fighter);
+          events.push(`📋 ${event.name}を放出（+${releaseFunds}万）`);
         } else {
-          applyTrust(event.fighter, -15);
-          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 10, 0, 100);
+          applyTrust(event.fighter, -9.18);
+          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 4.59, 0, 100);
+          roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
           events.push(`💢 ${event.name}の要求を突っぱねた（退団リスク）`);
         }
         break;
@@ -7457,10 +8062,10 @@ Engine.eventSystem = {
       case 'S5': {
         if (choiceIdx === 0) {
           roster = roster.map(f => f.id === event.fighter ? { ...f, intensive: true } : f);
-          applyTrust(event.fighter, 3);
+          applyTrust(event.fighter, 2.30);
           events.push(`⚡ ${event.name}の特訓を許可`);
         } else if (choiceIdx === 2) {
-          applyTrust(event.fighter, 1);
+          applyTrust(event.fighter, 0.77);
           events.push(`📋 ${event.name}に別メニューを提案`);
         }
         break;
@@ -7473,7 +8078,7 @@ Engine.eventSystem = {
             const newCond = Math.max(20, (f.condition || 70) - 5);
             return { ...f, popularity: newPop, condition: newCond };
           });
-          applyTrust(event.fighter, 2);
+          applyTrust(event.fighter, 1.53);
           events.push(`📺 ${event.name}のメディア出演を手配（人気+4）`);
         } else if (choiceIdx === 2) {
           const others = roster.filter(f => f.id !== event.fighter && !f.injury);
@@ -7500,19 +8105,28 @@ Engine.eventSystem = {
         break;
       }
       case 'E6': {
-        if (choiceIdx === 0 && funds >= 100) {
-          funds -= 100;
-          applyTrust(event.fighter, 10);
-          events.push(`💴 ${event.name}を契約金で引き止め（-100万）`);
+        // §13.4: E6リデザイン — コスト動的化+trust依存成功率+trustCap
+        const f6 = getFighter();
+        const e6Salary = f6 ? Engine.util.getSalary(f6, state.titles) : 100;
+        const e6Cost = Math.round(e6Salary * 12);
+        if (choiceIdx === 0 && funds >= e6Cost) {
+          funds -= e6Cost;
+          applyTrust(event.fighter, 6.89);
+          // trustCap(60, 8週) — S4と同じ後遺症
+          const currentWeek = (state.season || 1) * 100 + (state.week || 1);
+          roster = roster.map(f => f.id === event.fighter
+            ? { ...f, trustCap: { value: 60, expiresWeek: currentWeek + 8 } } : f);
+          events.push(`💴 ${event.name}を契約金で引き止め（-${e6Cost}万、信頼キャップ発動）`);
         } else if (choiceIdx === 1) {
-          // 信頼度次第で成功
-          const f = getFighter();
-          const trust = f ? (f.trust != null ? f.trust : 50) : 50;
-          if (trust >= 35) {
-            applyTrust(event.fighter, 5);
+          // §13.4: 説得成功率をtrust依存に段階化
+          const trust = f6 ? (f6.trust != null ? f6.trust : 50) : 50;
+          let successRate;
+          if (trust >= 35) successRate = 0.60;
+          else if (trust >= 25) successRate = 0.30;
+          else successRate = 0.10;
+          if (Math.random() < successRate) {
             events.push(`🤝 ${event.name}の説得に成功`);
           } else {
-            // 退団
             roster = roster.filter(f => f.id !== event.fighter);
             events.push(`📋 ${event.name}の説得に失敗、他団体へ移籍`);
           }
@@ -7521,6 +8135,72 @@ Engine.eventSystem = {
           roster = roster.filter(f => f.id !== event.fighter);
           funds += 50;
           events.push(`📋 ${event.name}を放出（+50万）`);
+        }
+        break;
+      }
+      // §13.3: S-練習ボイコット
+      case 'S_boycott': {
+        // どの選択でも成長ゼロ（_boycottZeroGrowth フラグ）
+        roster = roster.map(f => f.id === event.fighter ? { ...f, _boycottZeroGrowth: true } : f);
+        if (choiceIdx === 0) {
+          applyTrust(event.fighter, 2.30);
+          events.push(`👂 ${event.name}の話を聞いた（その週の成長ゼロ）`);
+        } else if (choiceIdx === 2 && funds >= 50) {
+          funds -= 50;
+          // OVR傾斜適用のtrust加算
+          const bFighter = getFighter();
+          const bOvr = bFighter ? Engine.util.ov(bFighter) : 50;
+          const careOvrMult = 0.7 + (100 - bOvr) / 100 * 0.9;
+          applyTrust(event.fighter, 3.82 * careOvrMult);
+          events.push(`💴 ${event.name}にボーナス支給（-50万、その週の成長ゼロ）`);
+        } else {
+          applyTrust(event.fighter, -1.53);
+          roster = roster.map(f => f.id === event.fighter ? { ...f, condition: Math.max(0, (f.condition || 70) - 3) } : f);
+          events.push(`🚶 ${event.name}を放っておいた（成長ゼロ+コンディション-3）`);
+        }
+        break;
+      }
+      // §13.3: S-ロッカールーム愚痴
+      case 'S_grumble': {
+        // 発火時効果: 士気-2.30 + ランダム同僚trust-0.77
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 2.30, 0, 100);
+        const others = roster.filter(f => f.id !== event.fighter && !f.injury);
+        if (others.length > 0) {
+          const victim = others[Math.floor(Math.random() * others.length)];
+          applyTrust(victim.id, -0.77);
+        }
+        if (choiceIdx === 0) {
+          applyTrust(event.fighter, 1.53);
+          events.push(`💬 ${event.name}に個別に声をかけた（士気ペナルティは残る）`);
+        } else if (choiceIdx === 1) {
+          applyTrust(event.fighter, 0.77);
+          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 1.23, 0, 100);
+          events.push(`📢 全体ミーティングを開いた（士気微回復）`);
+        } else {
+          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 1.23, 0, 100);
+          events.push(`🙈 ${event.name}の愚痴を無視した（士気さらに低下）`);
+        }
+        break;
+      }
+      // §13.3: S-SNS匂わせ
+      case 'S_sns': {
+        // 発火時効果: orgPop -0.77
+        const orgPopPenalty = -0.77;
+        // orgPopは直接変更できないのでeventsで伝達し、呼び出し側で処理
+        if (choiceIdx === 0) {
+          applyTrust(event.fighter, 2.30);
+          events.push(`💬 ${event.name}と直接話した（団体人気ペナルティはそのまま）`);
+          events.push(`__orgPop:${orgPopPenalty}`);
+        } else if (choiceIdx === 1 && funds >= 30) {
+          funds -= 30;
+          // メディア対応でorgPopペナルティ相殺
+          events.push(`📰 メディア対応した（-30万、団体人気ペナルティ相殺）`);
+        } else if (choiceIdx === 2) {
+          events.push(`🙈 ${event.name}のSNSを放置した（団体人気さらに低下）`);
+          events.push(`__orgPop:${orgPopPenalty * 2}`);
+        } else {
+          // fallback: orgPopペナルティのみ
+          events.push(`__orgPop:${orgPopPenalty}`);
         }
         break;
       }
@@ -7540,7 +8220,7 @@ Engine.eventSystem = {
     const tmpl = Engine.rng.pick(rng, pool);
     const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name1\}/g, vars.name1 || '')
       .replace(/\{name2\}/g, vars.name2 || '').replace(/\{orgName\}/g, vars.orgName || '')
-      .replace(/\{outletName\}/g, vars.outletName || '') : '';
+      .replace(/\{outletName\}/g, vars.outletName || '').replace(/\{coach\}/g, vars.coach || '') : '';
     if (typeof tmpl === 'string') return { text: sub(tmpl), detail: '' };
     return { text: sub(tmpl.text), detail: sub(tmpl.detail || '') };
   },
@@ -7669,8 +8349,11 @@ Engine.eventSystem = {
     const applyTrust = (fighterId, delta) => {
       roster = roster.map(f => {
         if (f.id !== fighterId) return f;
-        const adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
-        return { ...f, trust: Engine.util.clamp(Math.round((f.trust != null ? f.trust : 50) + adjusted), 0, 100) };
+        const oldTrust = f.trust != null ? f.trust : 50;
+        let adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
+        if (Traits.has(f, '反骨心')) adjusted *= 1.3;
+        if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+        return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
       });
     };
 
@@ -8401,10 +9084,17 @@ Engine.contract = {
   generateNegotiations(rng, state) {
     const roster = (state.roster || []).filter(c => !c.isRental);
     const negotiations = [];
+    const voluntaryStays = [];
     const isChampId = state.titles && state.titles.world ? state.titles.world.championId : null;
 
     for (const f of roster) {
       const trust = f.trust != null ? f.trust : 50;
+      // §13.5: P-自発的残留（trust 75+で交渉スキップ）
+      if (trust >= 75) {
+        const line = Engine.contract.getVoluntaryStayLine(rng, f);
+        voluntaryStays.push({ fighterId: f.id, fighterName: f.name, line });
+        continue;
+      }
       if (trust >= 40) continue; // 自動残留
 
       // 態度と基本確率の決定
@@ -8448,7 +9138,8 @@ Engine.contract = {
     const capped = negotiations.slice(0, 4);
     return {
       negotiations: capped,
-      autoRenewedCount: roster.length - capped.length,
+      voluntaryStays,
+      autoRenewedCount: roster.length - capped.length - voluntaryStays.length,
     };
   },
 
@@ -8469,6 +9160,13 @@ Engine.contract = {
     text = text.replace(/\{n\}/g, String(context.careerSeasons || 1));
     text = text.replace(/\{rivalName\}/g, context.rivalName || '');
     return text;
+  },
+
+  // §13.5: P-自発的残留セリフ取得
+  getVoluntaryStayLine(rng, fighter) {
+    if (typeof VOLUNTARY_STAY_LINES === 'undefined') return '残ります。';
+    const pool = getDialoguePool(VOLUNTARY_STAY_LINES, fighter);
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   _insertTenure(text, ctx) {
@@ -8607,9 +9305,9 @@ Engine.contract = {
       f.trust = Engine.util.clamp((f.trust || 50) + adjusted, 0, 100);
     }
 
-    // 昇給適用
+    // 昇給適用（上限100万/週まで）
     if (salaryDelta > 0) {
-      f.salaryBonus = (f.salaryBonus || 0) + salaryDelta;
+      f.salaryBonus = Math.min(100, (f.salaryBonus || 0) + salaryDelta);
     }
 
     // ロスター更新

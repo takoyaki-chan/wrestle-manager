@@ -1,12 +1,17 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-06（AI統一成長モデル v1.0 実装）
+> 最終更新: 2026-03-06（プロモ改修 v1.0 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**プロモ改修 v1.0 実装完了（2026-03-06）。** プロモ＝商売コンセプト全面実装。PROMO_POP_CAP 55→70、プロモイベント収入（pop帯別15-85万/週）、MQ蓄積ボーナス（promoStack最大3回×1.3=+3.9）、お任せロジック最適化。auto-sim 1,000シーズン ALL CLEAR。
+
+- **NPC記録完全統一**: processAIWeek興行週にcheckAndApplyBreakthrough/checkLosingStreak/checkSlump/applyShowTrust/MQ連動人気変動を追加。aiSeasonGrowthEvents/aiSeasonPopularity廃止。ゲーム開始時（ドラフト直後）に全98キャラの過去経歴を自動生成（年齢・OVRから逆算した戦績・タイトル歴・ブレークスルー歴・移籍歴）。AI団体タイトルは団体名を冠する（例: 皇武館王座）。設計書: specs/npc-record-unification-spec-v1.0.md
+- **プロモ改修「プロモ＝商売」**: PROMO_POP_CAP 55→70。プロモイベント収入新設（pop帯別15-85万/週、握手会・地域イベント等の直接現金）。MQ蓄積ボーナス（promoStack最大3回×1.3=+3.9）。お任せロジック最適化（pop70+stack3で自動練習切替）。ハードモード序盤の資金難を救済する突破口。設計書: specs/promo-redesign-spec-v1.0.md
 
 **AI統一成長モデル v1.0（2026-03-06）。** `aiSeasonGrowth`の一括計算を廃止し、AI選手もプレイヤーと完全同一の`calcGrowth`+`simulateMatch`を週次で通す統一成長モデルを実装。5フェーズ構成。
 
@@ -354,6 +359,23 @@
 
 ## 次の実装予定
 
+### NPC記録データ完全統一（設計書: `specs/npc-record-unification-spec-v1.0.md`）
+
+| Step | タスク | 重さ | 状態 |
+|------|--------|:----:|------|
+| 1 | **Part A+B: processAIWeek統一 + 旧コード廃止** processAIWeek興行週に全試合後処理追加(BT/careerBestMQ/losingStreak/slump/motivationLoss/momentum/trust/MQ連動pop)。aiSeasonGrowthEvents廃止、aiSeasonPopularity廃止、脅威通知をseasonBreakthroughsに切替、processSeasonEndにpeakOVR更新追加 | 大 | 未着手 |
+| 2 | **Part C: 経歴自動生成** Engine.career.generateBackstory/generateAllBackstories実装。ドラフト直後に全98キャラの過去経歴生成（peakOVR/careerBestMQ/ブレークスルー/団体名タイトル歴/移籍歴/怪我歴/trust初期値）。seedベースRNG再現性 | 大 | 未着手 |
+| 3 | **Part D: 表示統一** milestone.get/buildSummaryのAI団体検索追加、スカウト画面に戦績・タイトル歴表示、対抗戦・PPVパネル表示統一、マイルストーン年表のAI選手対応 | 中 | 未着手 |
+
+### プロモ改修「プロモ＝商売」（設計書: `specs/promo-redesign-spec-v1.0.md`）
+
+| タスク | 重さ | 状態 |
+|--------|:----:|------|
+| **§1 人気上限引き上げ** PROMO_POP_CAP 55→70 | 小 | **実装済み** |
+| **§2 プロモイベント収入** PROMO_EVENT_INCOME テーブル(pop帯別15-85万)、PROMO_EVENT_NAMES(演出用イベント名プール)、calcWeeklyFinanceに計上、週次精算表示 | 中 | **実装済み** |
+| **§3 MQ蓄積ボーナス** promoStackフィールド(0-3)、プロモ実行で+1、試合出場で0リセット、PROMO_MQ_PER_STACK=1.3、simulateMatch Pass2で加算 | 中 | **実装済み** |
+| **§4 お任せロジック最適化** balance判定: pop≥70 かつ promoStack≥3 なら練習に自動切替 | 小 | **実装済み** |
+
 ### ランキング・ロスター・団体間対戦 リデザイン（設計書: `docs/ranking-roster-redesign-v1.0.md`）
 
 | Phase | タスク | 重さ | 状態 |
@@ -431,6 +453,7 @@
 | 項目 | 優先度 | 備考 |
 |---|---|---|
 | フィニッシャー（キャラ固有必殺技） | 高 | **設計完了** specs/finisher-system-spec-v1.0.md。SE素材＋初期キャラリスト待ち |
+| 選手間関係性システム（友好値・敵対値） | 高 | 未設計。「交流」スケジュール選択肢、タッグ相性、trust安定、因縁加速 |
 | ライバルストーリー自動生成 | 高 | 未設計 |
 | ストーリーアーク（数ヶ月にわたる抗争管理） | 高 | 未設計 |
 | コーチ転身 | 中 | scout-system-spec §8.2 で予約済み |
@@ -531,6 +554,8 @@
 - **引退勧告・引き留めシステム v1.1** — Engine.retirement: canAdvise(wear≥20/age≥30/careerSeasons≥8)、calcAcceptance(50±wear±champ±trust±winRate, clamp 5-95)。受諾→lastRun=true(4週)、Pass2 MQ+3(基本)+5(メイン)+因縁+3/+5。拒否→trust-5, retireAdviceCooldown=48週, 70%でproveMode4週(MQ+2)/30%でmorale-2。引き留め→retiredFighters→roster, wear+10, retainCount+1(最大2回), injuryBonus+0.05。コーチアドバイス: Engine.coach.getRetireAdvice(obsRank別4段階+COACH_OBS_INACCURACY flip)。UI: ポップアップTab2引退セクション+ラストランバッジ+ラストマッチ金枠表示。設計書: specs/retirement-advisory-spec-v1_1.md
 - **ロスター枠制限 v1.0** — G.rosterCap(初期6)段階解放: タイトル設立→8、サバイバルクリア→10、対抗戦初勝利(warWon)→12、ランキング1位→16。レンタル別枠(isRental除外)。AIハードキャップ: AI_SCOUT_CFG.idealRoster(S:16/A:13/B:10)。aiScout: need+1→need、aiInterTransfer: idealRoster+2→idealRoster。全獲得経路チェック: signFighter/scoutEventResolve/resolveNegotiation。UI: renderRoster「所属 N/M名」ヘッダー、renderScoutキャップ警告バナー、ポップアップ獲得ボタン無効化。マイグレーション: 旧セーブは達成状況から逆算。設計書: specs/roster-cap-design-v1.0.md
 - **AI統一成長モデル v1.0** — aiSeasonGrowth一括計算を廃止。processAIWeek(rng,state,org)で毎週calcGrowth+simulateMatchを実行。AI_COACH_CONFIG: S/A/Bティア別×エース/一般のcoachMul+intensiveRate+practiceRate。convergenceMul比率ベース化(convergenceRatio=0.15)。matchGrowthBase 0.7→0.35。makeAIFighterに16フィールド追加。initRandomRosterでA級elite1名保証。設計書: specs/ai-unified-growth-spec-v1.0.md
+- **NPC記録データ完全統一（設計確定）** — AI選手にプレイヤーと完全同一の試合後処理を適用。processAIWeek興行週にcheckAndApplyBreakthrough/checkLosingStreak/checkSlump/checkMotivationLoss/updateMomentum/applyShowTrust/MQ連動人気変動を追加。aiSeasonGrowthEvents+aiSeasonPopularity廃止。ゲーム開始時（ドラフト直後）に全98キャラの過去経歴自動生成: peakOVR/careerBestMQ/ブレークスルー/団体名タイトル歴(皇武館王座等)/移籍歴/怪我歴/trust初期値。AI団体matchupLog新設+カード鮮度考慮。milestone.get/buildSummaryのAI団体検索追加。設計書: specs/npc-record-unification-spec-v1.0.md
+- **プロモ改修「プロモ＝商売」（設計確定）** — プロモ＝リング外の営業活動（握手会・地域イベント・SNS配信・グッズ販売会）。①PROMO_POP_CAP 55→70（逓減で自然に頭打ち）。②プロモイベント収入PROMO_EVENT_INCOME: pop帯別15-85万/週の直接現金（低人気帯15万でもゼロではない=頑張る子にお金を出す世界観）。③MQ蓄積ボーナス: promoStack最大3回×1.3=+3.9（因縁「宿敵」並み、ただし練習3週犠牲）。④お任せロジック: pop≥70+stack≥3で自動練習切替。ハードモード序盤（orgPop 10-25、補助金なし）の資金難救済が主目的。高人気帯は控えめ設計で終盤は自然にプロモ卒業。設計書: specs/promo-redesign-spec-v1.0.md
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---

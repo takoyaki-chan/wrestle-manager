@@ -1901,9 +1901,9 @@ function showFighterPopup(fighterId, source) {
       html += `</div>`;
     }
 
-    // ── Tab bar（NPC は戦績・経歴タブを非表示）──
+    // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──
     const tabs = ['📊 能力'];
-    if (orgLabel === '') tabs.push('📋 戦績・経歴');
+    tabs.push('📋 戦績・経歴');
     if (isRoster) tabs.push('⚙️ 管理');
     if (tabIdx >= tabs.length) tabIdx = 0;
     html += `<div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15)">
@@ -2095,8 +2095,10 @@ function showFighterPopup(fighterId, source) {
       const pOrgName = G.orgName || 'プレイヤー団体';
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
-      // ── Compact Record Row（NPCは戦績非記録のため非表示）──
-      if (orgLabel === '') {
+      // ── Compact Record Row（NPC記録統一: 全選手に戦績表示）──
+      {
+        const summary = Engine.career.buildSummary(c);
+        const bestMQ = summary.bestMQ || c.bestMQ || (c.careerBestMQ || 0);
         html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
             <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
@@ -2105,16 +2107,16 @@ function showFighterPopup(fighterId, source) {
             <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
             <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
-            ${c.bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${c.bestMQ}</span>` : ''}
+            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${G.titles.world.defenses}防衛）</span>` : ''}
+            ${summary.peakOVR > 0 && !isChamp ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="color:#f39c12;font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
+          ${summary.titleSummary ? `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${summary.titleSummary}</div>` : ''}
         </div>`;
       }
 
-      // ── Milestone Timeline / Career History（NPCは非表示）──
-      if (orgLabel !== '') {
-        // NPC: 経歴データは記録・公開していないため何も表示しない
-      } else if (milestones.length > 0) {
+      // ── Milestone Timeline / Career History（NPC記録統一: 全選手に表示）──
+      if (milestones.length > 0) {
         // Group by season
         const bySeason = {};
         milestones.forEach(m => {
@@ -2165,8 +2167,8 @@ function showFighterPopup(fighterId, source) {
         html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
       }
 
-      // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPCは非表示）
-      const hist = (orgLabel === '') ? (c.careerHistory || []) : [];
+      // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPC記録統一: 全選手に表示）
+      const hist = c.careerHistory || [];
       if (hist.length > 0) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
@@ -3805,7 +3807,7 @@ function showCareActionModal(state, onConfirm) {
   function _buildExpectHtml(cfg) {
     const items = [];
     const e = cfg.effects || {};
-    if (e.trust) items.push(`🤝 信頼が${e.trust >= 4 ? '上がる' : '少し上がる'}`);
+    if (e.trust) items.push(`🤝 信頼が${e.trust >= 2.5 ? '上がる' : '少し上がる'}`);
     if (e.popularity) items.push(`⭐ 人気 +${e.popularity}`);
     if (e.trust_all) items.push(`🤝 全員の信頼が少し上がる`);
     if (e.morale) items.push(`🏠 ロッカールーム雰囲気 +${e.morale}`);
@@ -4040,9 +4042,11 @@ function showChoiceEventModal(event, state, onChoice) {
     E1: '📺 メディア出演オファー', E2: '💼 スポンサー提案',
     E3: '🤝 合同練習の誘い',  E4: '🔍 スカウト情報',
     E5: '💴 営業試合依頼',   E6: '🚨 他団体からの引き抜き',
+    S_boycott: '🚫 練習ボイコット', S_grumble: '😤 ロッカールームの愚痴',
+    S_sns: '📱 SNS匂わせ',
   };
   const title = typeLabels[event.type] || event.type;
-  const isUrgent = event.type === 'S4' || event.type === 'E6';
+  const isUrgent = event.type === 'S4' || event.type === 'E6' || event.type === 'S_grumble' || event.type === 'S_sns';
   const borderColor = isUrgent ? '#e74c3c' : 'rgba(232,67,147,0.3)';
 
   let html = `<div class="care-title" style="border-bottom:1px solid ${borderColor};padding-bottom:10px;margin-bottom:12px">${title}</div>`;
@@ -4472,7 +4476,7 @@ function showNotifEventToast(event) {
   const el = document.getElementById('notifEventToast');
   if (!el) { showToast(event.text || ''); return; }  // fallback
 
-  const isWarning = event.type === 'N5';
+  const isWarning = event.type === 'N5' || event.type === 'N_isolation' || event.type === 'N_coach_report' || event.type === 'N_sudden_departure';
 
   // 顔画像: 2人(N2)は80px×2、1人は120px
   const f1Id = event.fighter;

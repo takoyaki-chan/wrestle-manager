@@ -680,7 +680,21 @@ const LOSING_STREAK_PENALTIES = [
   {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
   {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
 ];
-const PROMO_POP_CAP = 55; // プロモのみで到達可能な人気上限
+const PROMO_POP_CAP = 70; // プロモのみで到達可能な人気上限（旧55→70）
+const PROMO_MQ_PER_STACK = 1.3; // promoStack 1回あたりのMQボーナス（最大3スタック×1.3=+3.9）
+const PROMO_EVENT_INCOME = [
+  { min:  0, max: 14, val:  15 },  // 地元の小イベント
+  { min: 15, max: 29, val:  25 },  // 地域イベント常連
+  { min: 30, max: 44, val:  40 },  // ファンミ・握手会
+  { min: 45, max: 59, val:  55 },  // 単独イベント成立
+  { min: 60, max: 74, val:  70 },  // メディア出演含む
+  { min: 75, max:100, val:  85 },  // 大型イベント
+];
+const PROMO_EVENT_NAMES = {
+  low:  ['地域イベント出演', '商店街キャンペーン', 'SNS配信', '地元FM出演'],
+  mid:  ['握手会', 'ファンミーティング', 'トークショー', 'グッズ販売会'],
+  high: ['大型イベント出演', 'TV番組出演', '雑誌撮影会', 'スペシャルショー'],
+};
 const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
 const SPONSOR_TABLE = [
   {min:0,max:19,val:0},{min:20,max:39,val:10},{min:40,max:59,val:30},
@@ -3533,6 +3547,30 @@ const NOTIF_EVENT_TEXTS = {
     { text: '🚪 {name}が一人で練習場を出ていった', detail: '全体練習の終了前に、{name}が黙って荷物をまとめて帰っていった。ケアアクションでボーナスを支給するか、試合で活躍の場を与えることで状況を改善できるかもしれない。' },
     { text: '⚡ {name}の態度にチーム内でも不安の声が', detail: '{name}の不満げな態度がチームメイトにも伝わっている。このまま放置すると退団リスクが高まりそうだ。待遇改善や直接の対話が必要かもしれない。' },
   ],
+  // §13.2: N-練習孤立（trust < 50, 10%/週）
+  N_isolation: [
+    { text: '😶 {name}が最近、練習で一人でいることが増えた…', detail: '合同練習の後も{name}は一人で黙々とストレッチをしている。以前はチームメイトと談笑していたのだが、最近はほとんど会話がない。' },
+    { text: '🚶 {name}が練習後にすぐ帰るようになった', detail: '以前は最後まで残って自主練をしていた{name}だが、最近は練習が終わると荷物をまとめてさっと帰ってしまう。何かを抱えているようだ。' },
+    { text: '😔 {name}が休憩時間にひとりぼっちだった', detail: '休憩時間、他の選手たちが輪になって話す中、{name}は隅でスマホを見つめていた。以前はいつも誰かと一緒にいたのに。' },
+    { text: '👤 {name}が道場の隅で黙々と練習していた', detail: 'みんなが中央のリングで合同練習をしている時、{name}は壁際で一人、基礎練習を繰り返していた。周囲とは見えない壁ができている。' },
+    { text: '🫥 {name}の表情が硬い日が増えた', detail: '{name}の笑顔を見る機会がめっきり減った。練習中も淡々とメニューをこなすだけで、チームメイトとの雑談もほとんどない。' },
+    { text: '😶‍🌫️ {name}が自主練も一人で行うようになった', detail: '以前はスパーリング相手を自分から探していた{name}が、最近は一人でサンドバッグを叩いている姿しか見ない。心を閉ざし始めているのかもしれない。' },
+  ],
+  // §13.2: N-コーチ報告（trust < 45, コーチ在籍時, 15%/週）
+  N_coach_report: [
+    { text: '📋 コーチ{coach}が報告:「{name}の様子が最近おかしい」', detail: 'コーチ{coach}が社長室を訪れた。「{name}のことなんですが…練習中の集中力が明らかに落ちています。少し気にかけてやってほしい」' },
+    { text: '📝 コーチ{coach}:「{name}のことで相談が…」', detail: '「{name}が最近、試合後も練習後もすぐに帰ってしまうんです。前は自主練していたのに。何か不満があるのかもしれません」とコーチ{coach}が心配そうに報告した。' },
+    { text: '🗣️ コーチ{coach}が{name}について進言', detail: '「社長、{name}のモチベーションが下がっているように見えます。練習態度は悪くないんですが…どこか投げやりというか。ケアが必要かもしれません」' },
+    { text: '⚠️ コーチ{coach}:「{name}が心配です」', detail: '「{name}とは最近あまり話せていないんです。こちらから声をかけても素っ気ない返事しか返ってこなくて。何か手を打った方がいいかもしれません」' },
+    { text: '👀 コーチ{coach}が{name}の変調に気づいた', detail: '「{name}、最近ちょっとおかしいです。技の精度は保ってるんですが、目が死んでるというか…このまま放っておくとまずいかもしれません」' },
+    { text: '📊 コーチ{coach}の定期報告に{name}の名前が', detail: '月次の選手状態報告の中で、コーチ{coach}が{name}の名前を特記していた。「要注意。練習態度に変化あり。面談を推奨します」' },
+  ],
+  // §13.4: 突然の退団（trust < 15, 2.5%/興行）
+  N_sudden_departure: [
+    { text: '🚪 {name}が荷物をまとめて団体を去った', detail: '朝、道場に着くと{name}のロッカーが空になっていた。誰にも何も言わず、荷物をまとめて去ったらしい。誰も止められなかった。' },
+    { text: '📦 {name}が突然いなくなった…', detail: '昨日まで普通に練習に来ていた{name}が、今日は姿を見せなかった。ロッカーの私物はすべて持ち出されていた。連絡もつかない。' },
+    { text: '💨 {name}の姿が消えた', detail: '気がつけば{name}はもういなかった。ロッカールームには何も残っていない。チームメイトたちも言葉を失っている。' },
+  ],
 };
 
 // §3-4: 通知型イベント — personality×archetype セリフ（NOTIF_DIALOGUES）
@@ -3773,23 +3811,23 @@ const CARE_ACTIONS = {
   // 個人向けアクション（cooldown: 週数。省略時=1、同一週は常に不可）
   bonus: {
     id: 'bonus', label: 'ボーナス支給', emoji: '💴', cost: 50, category: 'individual',
-    desc: '信頼が少し上がる（連続使用で効果逓減・1週1回）',
-    effects: { trust: 5 }, minOrgPop: 0, cooldown: 1,
+    desc: '信頼が上がる（連続使用で効果逓減・1週1回）',
+    effects: { trust: 4.59 }, minOrgPop: 0, cooldown: 1,
   },
   costume: {
     id: 'costume', label: 'コスチューム新調', emoji: '👗', cost: 80, category: 'individual',
     desc: '人気+2、信頼も上がる（2週に1回）',
-    effects: { popularity: 2, trust: 3 }, minOrgPop: 20, cooldown: 2,
+    effects: { popularity: 2, trust: 5.36 }, minOrgPop: 20, cooldown: 2,
   },
   trainer: {
     id: 'trainer', label: '専属トレーナー手配', emoji: '🏋️', cost: 160, category: 'individual',
     desc: '4週間 成長速度+30%、信頼も上がる（1週1回）',
-    effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 4 }, minOrgPop: 0, cooldown: 1,
+    effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 5.97 }, minOrgPop: 0, cooldown: 1,
   },
   media: {
     id: 'media', label: 'メディア露出手配', emoji: '📺', cost: 120, category: 'individual',
     desc: '人気+4、信頼も上がる（2週に1回・今週練習休み）',
-    effects: { popularity: 4, trust: 3, skip_training: true }, minOrgPop: 20, cooldown: 2,
+    effects: { popularity: 4, trust: 5.36, skip_training: true }, minOrgPop: 20, cooldown: 2,
   },
   special_treatment: {
     id: 'special_treatment', label: '怪我の特別治療', emoji: '🏥', cost: 200, category: 'individual',
@@ -3800,25 +3838,25 @@ const CARE_ACTIONS = {
   encourage: {
     id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
     desc: 'スランプ中の選手に声をかける（回復促進・1週1回）',
-    effects: { trust: 1 }, minOrgPop: 0,
+    effects: { trust: 0.77 }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 1,
   },
   refresh_leave: {
     id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
     desc: '休暇でリフレッシュ（状態回復・回復大促進・4週に1回）',
-    effects: { condition: 15, trust: 3, skip_training: true }, minOrgPop: 0,
+    effects: { condition: 15, trust: 5.36, skip_training: true }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 4,
   },
   // 団体全体向けアクション（1週に1回まで）
   party: {
     id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
     desc: '全員の信頼が少し上がり、ロッカールームの空気も良くなる（1週1回）',
-    effects: { trust_all: 2, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
+    effects: { trust_all: 1.84, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
   },
   camp: {
     id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
     desc: '全員の成長+中（2週間集中）、信頼も少し上がる（1週1回）',
-    effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 2 }, minOrgPop: 0, minHeadcount: 4,
+    effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 1.84 }, minOrgPop: 0, minHeadcount: 4,
   },
 };
 
@@ -4544,6 +4582,113 @@ const CHOICE_EVENT_DIALOGUES = {
       _default: ['他の団体からオファーが…どうしよう…迷ってる…'],
     },
   },
+  // §13.3: S-練習ボイコット（trust < 38）
+  S_boycott: {
+    normal: {
+      _default: ['……今日は練習する気分じゃないです', '……すみません、今日は帰ります'],
+      ojousama: ['今日はお稽古をお休みさせていただきますわ…理由は…ご想像にお任せしますわ'],
+      delinquent: ['練習？やる意味あんの？出してもらえねぇんじゃ同じだろ'],
+      cool: ['…………（荷物をまとめて帰ろうとしている）'],
+      seductive: ['ごめんなさいね…今日はちょっと、気持ちが入らなくて'],
+    },
+    bold: {
+      _default: ['練習？出してもくれないのに何の意味があるんだよ', 'リングに上がれないなら練習しても仕方ないだろ'],
+      delinquent: ['はぁ？やる気出ないっつの。文句あんなら試合組めよ'],
+    },
+    quiet: {
+      _default: ['…………（黙って道場を出ていこうとしている）', '……すみません…今日は……'],
+      cool: ['………（静かにテーピングを外している）'],
+    },
+    easygoing: {
+      _default: ['あはは…今日はちょっとサボりまーす…', '練習ねぇ…うーん、今日はパスで'],
+    },
+    earnest: {
+      _default: ['すみません…今日はどうしても体が動かなくて…', '練習に集中できなくて…申し訳ありません'],
+      polite: ['大変申し訳ございません…今日はどうしても…'],
+    },
+    emotional: {
+      _default: ['もう無理…練習なんてできない…', '出してもらえないのに練習して…何になるの…'],
+    },
+  },
+  // §13.3: S-ロッカールーム愚痴（trust < 35）
+  S_grumble: {
+    normal: {
+      _default: ['（ロッカールームで不満を漏らしている…周囲に伝播し始めた）'],
+      ojousama: ['（控室で「あの方の采配、少しおかしくなくて？」と囁いている）'],
+      delinquent: ['（「マジふざけんな」とロッカーを蹴る音が聞こえてきた）'],
+      cool: ['（無言で佇んでいるが、周囲が気を遣って重い空気になっている）'],
+      seductive: ['（「最近、ここにいる意味あるのかしら」と同僚に漏らしている）'],
+    },
+    bold: {
+      _default: ['（「なんで俺たちがこんな扱い受けなきゃいけないんだ」と大声で言っている）'],
+    },
+    quiet: {
+      _default: ['（黙っているが、その沈黙がかえって周囲を不安にさせている）'],
+    },
+    easygoing: {
+      _default: ['（いつもの笑顔が消え、「ちょっとさぁ…」と珍しく愚痴をこぼしている）'],
+    },
+    earnest: {
+      _default: ['（「自分、このままでいいんですかね…」と後輩に弱音を吐いている）'],
+    },
+    emotional: {
+      _default: ['（涙ぐみながら「もう限界かも…」とチームメイトに打ち明けている）'],
+    },
+  },
+  // §13.3: S-SNS匂わせ（trust < 30, pop 40+）
+  S_sns: {
+    normal: {
+      _default: ['（SNSに「自分の居場所はどこなんだろう」と意味深な投稿）'],
+      ojousama: ['（SNSに「窮屈な場所からは、いつでも出ていけますの」と投稿）'],
+      delinquent: ['（SNSに「もう我慢の限界」と不穏な投稿）'],
+      cool: ['（SNSに風景写真と「遠くへ」とだけ投稿。ファンがざわついている）'],
+      seductive: ['（SNSに「次のステージが待っているかも」と匂わせ投稿）'],
+    },
+    bold: {
+      _default: ['（SNSに「このまま終わるつもりはない」と宣言的な投稿）'],
+    },
+    quiet: {
+      _default: ['（SNSに「…」とだけ投稿。ファンの間で憶測が広がっている）'],
+    },
+    easygoing: {
+      _default: ['（SNSに「最近ちょっと考えることがあってー」と珍しく真面目な投稿）'],
+    },
+    earnest: {
+      _default: ['（SNSに「自分は本当にここで必要とされているのか」と率直な投稿）'],
+    },
+    emotional: {
+      _default: ['（SNSに涙の絵文字と「もうダメかもしれない」と投稿。炎上し始めている）'],
+    },
+  },
+};
+
+// §13.5: P-自発的残留セリフ（trust 75+で契約交渉スキップ）
+const VOLUNTARY_STAY_LINES = {
+  normal: {
+    _default: ['残ります。ここが自分の居場所ですから'],
+    ojousama: ['わたくし、こちらに残らせていただきますわ。ここが一番輝ける場所ですもの'],
+    delinquent: ['どこにも行かねーよ。ここが一番おもしれーからな'],
+    cool: ['（静かにうなずいている）……ここにいる'],
+    seductive: ['あら、他に行く場所なんてないわ。ここが好きなの'],
+  },
+  bold: {
+    _default: ['他に行く理由がない。ここで頂点を目指す'],
+    delinquent: ['行くわけねーだろ。ここで一番になるまで帰らねぇよ'],
+  },
+  quiet: {
+    _default: ['………（静かにうなずいている）'],
+    cool: ['…………（契約書にペンを走らせた）'],
+  },
+  easygoing: {
+    _default: ['いやー当然残るでしょ！ここ楽しいもん！'],
+  },
+  earnest: {
+    _default: ['来年も精一杯頑張ります。よろしくお願いします'],
+    polite: ['来年もどうぞよろしくお願いいたします。精進してまいります'],
+  },
+  emotional: {
+    _default: ['ここで戦えることが幸せなんです…（涙）'],
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5023,7 +5168,7 @@ if (typeof module !== 'undefined' && module.exports) {
     VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE, GOODS_PRICE, OCCUPANCY_BONUS,
     MOMENTUM_CONFIG, WEEKLY_FLUCTUATION, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
-    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, TRANSFER_POP_MULT,
+    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_MQ_PER_STACK, PROMO_EVENT_INCOME, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
     SPONSOR_TABLE, BROADCAST_TABLE, FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,
     TITLES, RIVALRY_THRESHOLDS, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,

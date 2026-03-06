@@ -1694,6 +1694,26 @@ const Storage = {
         G = { ...G, _migrated_contract_v1: true };
       }
 
+      // NPC記録統一: AI選手にcareerBestMQ + orgDataにmatchupLog/seasonBreakthroughs/showCount
+      if (!G._migrated_npc_record_v1) {
+        const aiOrgs = { ...G.aiOrgs };
+        Object.keys(aiOrgs).forEach(orgId => {
+          const od = aiOrgs[orgId];
+          if (!od) return;
+          aiOrgs[orgId] = { ...od,
+            matchupLog: od.matchupLog || [],
+            seasonBreakthroughs: od.seasonBreakthroughs || [],
+            showCount: od.showCount || 0
+          };
+          (od.roster || []).forEach(f => {
+            if (f.careerBestMQ === undefined) f.careerBestMQ = 0;
+            if (f.losingStreak === undefined) f.losingStreak = 0;
+            if (f.noAppearStreak === undefined) f.noAppearStreak = 0;
+          });
+        });
+        G = { ...G, aiOrgs, _migrated_npc_record_v1: true };
+      }
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -1957,9 +1977,11 @@ const App = {
     Audio.bgm.play('management');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
+    // NPC記録統一 Part C: 全選手の経歴自動生成（ドラフト完了後・ゲーム本編開始前）
+    G = Engine.career.generateAllBackstories(G);
     // Show welcome popups for drafted fighters with character-specific quotes
     const drafted = G.roster.filter(c => picks.includes(c.id));
-    // v1.3: Record debut event for drafted fighters
+    // v1.3: Record debut event for drafted fighters（経歴生成後に上書き — プレイヤー団体デビューを正式記録）
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
       ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
       : c) };
@@ -3570,6 +3592,25 @@ const App = {
       setTimeout(() => showGrowthEventPopups(weekGrowthEvents), baseDelay);
     }
 
+    // §13.4: 突然の退団表示
+    const pendingSuddenDepartures = G._pendingSuddenDepartures || null;
+    if (G._pendingSuddenDepartures) {
+      const { _pendingSuddenDepartures: _, ...cleanSd } = G;
+      G = cleanSd;
+    }
+    if (pendingSuddenDepartures && pendingSuddenDepartures.length > 0) {
+      const sdDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 150;
+      pendingSuddenDepartures.forEach((d, i) => {
+        setTimeout(() => showNotifEventToast({
+          type: 'N_sudden_departure',
+          fighter: d.id,
+          name: d.name,
+          text: `🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`,
+          detail: d.destination === 'rival' ? `${d.name}は他団体へ移籍した。` : `${d.name}はフリーとなった。`,
+        }), sdDelay + i * 200);
+      });
+    }
+
     // v2.0: 週次通知イベント表示（N1〜N5 トースト通知）
     const pendingNotifEvent = G._pendingNotifEvent || null;
     if (G._pendingNotifEvent) {
@@ -3953,15 +3994,26 @@ const App = {
   // v2.0: 選択型イベントの選択結果を適用
   applyChoiceEvent(event, choiceIdx) {
     const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, G);
+    // §13.3: __orgPop: イベントからorgPop変動を抽出して適用
+    let orgPopDelta = 0;
+    const displayEvents = [];
+    (result.events || []).forEach(e => {
+      if (typeof e === 'string' && e.startsWith('__orgPop:')) {
+        orgPopDelta += parseFloat(e.replace('__orgPop:', ''));
+      } else {
+        displayEvents.push(e);
+      }
+    });
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
       lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
-      gameLog: [...(G.gameLog || []), ...(result.events || [])]
+      orgPop: Engine.util.clamp((G.orgPop || 0) + orgPopDelta, 0, 100),
+      gameLog: [...(G.gameLog || []), ...displayEvents]
     };
     Storage.autoSave();
-    if (result.events && result.events.length > 0) {
-      showToast(result.events[result.events.length - 1]);
+    if (displayEvents.length > 0) {
+      showToast(displayEvents[displayEvents.length - 1]);
     }
     Audio.play('event');
     renderWeekScreen();
@@ -4120,7 +4172,6 @@ const App = {
 
   // v2.0: ケアアクション モーダル表示
   openCareModal() {
-    if (showTrialLimitMessage('ケアアクション')) return; // 体験版
     Audio.play('click');
     showCareActionModal(G, (actionId, fighterId) => {
       return App.executeCareAction(actionId, fighterId);  // displayData を返す
@@ -4232,7 +4283,6 @@ const App = {
 
   // v1.0: Title establishment check
   checkTitleEstablishment() {
-    if (window.IS_TRIAL) return; // 体験版: タイトル自動設立を抑制
     if (G.titleEstablished) return;
     if (Engine.title.checkTitleEstablishment(G)) {
       const newCap = Math.max(G.rosterCap || 6, 8);

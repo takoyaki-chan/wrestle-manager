@@ -90,7 +90,15 @@
       "Bash(node --check src/data.js)",
       "Bash(git mv specs/retirement-advisory-spec-v1.0.md specs/archive/)",
       "Bash(git mv specs/difficulty-mode-spec.md specs/archive/)",
-      "Bash(git mv docs/session31-coach-system-summary.md docs/archive/)"
+      "Bash(git mv docs/session31-coach-system-summary.md docs/archive/)",
+      "Bash(grep -n \"^function renderMatchPreview\\\\|^const renderMatchPreview\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "Bash(sed \"s/''//g\")",
+      "Bash(node test/auto-sim.js 100 31337)",
+      "Bash(node test/auto-sim.js 500 31337)",
+      "Bash(node tools/add-personality.js)",
+      "Bash(node test/auto-sim.js 500)",
+      "Bash(xargs grep -l \"finance\\\\|財務\\\\|収支タブ\\\\|支出\\\\|収入\")",
+      "Bash(node test/auto-sim.js 50 42)"
     ]
   }
 }
