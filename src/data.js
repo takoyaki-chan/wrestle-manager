@@ -16,7 +16,7 @@ const ALL_CHARS = [
   {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:128,st:143,mn:155},traits:['破天荒'],personality:'bold',archetype:'cool'},
   {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['ヒール適性','早熟'],personality:'quiet',archetype:'normal'},
   {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:121,st:146,mn:141},traits:['威圧感'],personality:'normal',archetype:'normal'},
-  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Striker',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心'],personality:'normal',archetype:'ojousama'},
+  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心'],personality:'normal',archetype:'ojousama'},
   {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'polite'},
   {id:18,name:'出羽鷹子',h:184,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['適応力'],personality:'bold',archetype:'delinquent'},
   {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力'],personality:'earnest',archetype:'ojousama'},
@@ -1154,7 +1154,9 @@ const GROWTH_CONFIG = {
   intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50,    // min condition to allow intensive
-  practiceShare: 0.6       // 練習:試合 = 6:4 の予算配分
+  practiceShare: 0.6,      // 練習:試合 = 6:4 の予算配分
+  convergenceRatio: 0.15,  // 🔧 trainCapの上位15%で減速開始
+  matchGrowthBase: 0.35    // 🔧 試合1回あたりの基本成長（旧: 0.7）
 };
 const GROWTH_SEASON_BASE = 8.0; // 1シーズンの成長予算（4ステ合計、ageMul=1.0時）
 
@@ -1322,7 +1324,61 @@ const AI_TIER_LIMITS = {
   B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.20 }
 };
 
-// AI season config (人気変動用。成長はGROWTH_SEASON_BASEベースに移行済み)
+// AI統一成長 Phase4: AI団体のコーチ環境設定（ティア別）
+const AI_COACH_CONFIG = {
+  S: {
+    ace: {
+      count: 3,                    // OVR上位3名がエース
+      top1: {
+        coachMul: 1.25,            // 🔧 Aランク相当
+        intensiveRate: 0.30,       // 🔧 強化練習確率 30%
+        practiceRate: 0.85,        // 🔧 練習週になる確率 85%（残りはrest）
+      },
+      top2_3: {
+        coachMul: 1.18,            // 🔧 Bランク相当
+        intensiveRate: 0.20,       // 🔧 20%
+        practiceRate: 0.85,        // 🔧 85%
+      },
+    },
+    general: {
+      coachMul: 1.12,              // 🔧 Cランク相当
+      intensiveRate: 0.05,         // 🔧 5%
+      practiceRate: 0.75,          // 🔧 75%
+    },
+  },
+  A: {
+    ace: {
+      count: 1,                    // OVR上位1名がエース
+      top1: {
+        coachMul: 1.18,            // 🔧 Bランク相当
+        intensiveRate: 0.20,       // 🔧 20%
+        practiceRate: 0.75,        // 🔧 75%
+      },
+    },
+    general: {
+      coachMul: 1.12,              // 🔧 Cランク相当
+      intensiveRate: 0.0,          // 強化練習なし
+      practiceRate: 0.60,          // 🔧 60%
+    },
+  },
+  B: {
+    ace: {
+      count: 1,                    // OVR上位1名がエース
+      top1: {
+        coachMul: 1.12,            // 🔧 Cランク相当
+        intensiveRate: 0.0,        // 強化練習なし
+        practiceRate: 0.55,        // 🔧 55%
+      },
+    },
+    general: {
+      coachMul: 1.08,              // 🔧 Dランク相当
+      intensiveRate: 0.0,          // 強化練習なし
+      practiceRate: 0.45,          // 🔧 45%
+    },
+  },
+};
+
+// AI season config (人気変動用。成長はprocessAIWeekベースに移行済み)
 const AI_SEASON_CFG = {
   popConvergeRate: 0.3,        // 人気ターゲットへの収束率
   popRandomRange: 5,           // 人気ランダム幅 ±5

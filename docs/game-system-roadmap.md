@@ -1,12 +1,24 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-05（全セリフ personality×archetype 構造化）
+> 最終更新: 2026-03-06（AI統一成長モデル v1.0 実装）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**AI統一成長モデル v1.0（2026-03-06）。** `aiSeasonGrowth`の一括計算を廃止し、AI選手もプレイヤーと完全同一の`calcGrowth`+`simulateMatch`を週次で通す統一成長モデルを実装。5フェーズ構成。
+
+- **Phase 5: convergenceMul比率ベース化** — trainCap接近逓減を固定値(remaining<10)から比率ベース(`convergenceRatio=0.15`, trainCapの上位15%で減速開始)に変更。trainCap95→OVR80.8から減速、trainCap65→OVR55.3から減速
+- **Phase 1: MATCH_GROWTH_BASE定数化** — ハードコード`0.7`を`GROWTH_CONFIG.matchGrowthBase=0.35`に置き換え。試合成長: ~23.2pt/年→~14.9pt/年
+- **Phase 2: makeAIFighterフィールド補完** — processAIWeek用に16フィールド追加(schedule/wins/losses/draws/injury/seasonGrowth/intensive/intensiveWeeks/lastMatchResult/careerRecord/durability/wear/seasonInjuries/careerHistory/growthPenalty/trust)
+- **Phase 4: AI_COACH_CONFIG導入** — ティア別コーチ環境定数。S級:エース3名(top1=coachMul1.25/intensive30%/practice85%, top2_3=1.18/20%/85%)、一般(1.12/5%/75%)。A級:エース1名(1.18/20%/75%)、一般(1.12/0%/60%)。B級:エース1名(1.12/0%/55%)、一般(1.08/0%/45%)。`getAceConfig`でOVR順位からエース判定
+- **Phase 3: processAIWeek新設** — `Engine.rival.processAIWeek(rng, state, org)`をtickWeekパイプラインに組み込み。練習週: aceConfig.practiceRateで練習/休養判定、calcGrowthにoverrideCoachMul引数追加。興行週: OVR近接ペアリング→simulateMatch→試合成長(プレイヤーと同一ロジック)→怪我判定→勝敗記録。aiSeasonGrowth呼び出し廃止、AI離脱イベント(擬似怪我)廃止、aiSeasonGrowthEventsのフラグをslump/motivationLossに統一。A級elite1名保証(initRandomRoster)
+- **設計ターゲット**: S級#1=+5.6 OVR/年(最強)、プレイヤー標準=+5.0/年、A級#1=+4.6/年、B級一般=+3.4/年。プレイヤーの後発逸材がS12-13でS級#1にギリギリ追いつく
+- **検証**: auto-sim 2,000シーズン ALL CLEAR
+- 変更: data.js(GROWTH_CONFIG+AI_COACH_CONFIG), engine.js(calcGrowth/makeAIFighter/processAIWeek/tickWeek/processSeasonEnd/aiSeasonGrowthEvents/initRandomRoster/validateGameState)
+- 設計書: specs/ai-unified-growth-spec-v1.0.md
 
 **全セリフシステム personality×archetype 構造化（2026-03-05）。** 全共有セリフ定数をpersonality(7種)×archetype(6種)の2層ネスト構造に統一。21種の既存組み合わせに対して口調・態度の分離された個別セリフを実装。ヘルパー関数 `getDialoguePool(lineObj, fighter)` / `pickDialogueLine(lineObj, fighter)` で一貫したアクセスを提供。
 
@@ -382,6 +394,19 @@
 | 4 | **PPV当日演出＋結果処理** 試合発表+観戦+TV+報酬+ポイント+人気 | 大 | **実装済み** |
 | 5-6 | **結果処理完成＋演出仕上げ** MQボーナス+因縁決着+ヒート+成長+ブレークスルー+UI改善 | 中 | **実装済み** |
 
+### 信頼度システム リデザイン（設計書: `specs/trust-redesign-v2.1.md`）
+
+| Step | タスク | 重さ | 状態 |
+|------|--------|:----:|------|
+| 1 | **基本値差し替え** applyShowTrust全面書き換え: 勝敗削除→出場/不出場基本値(+1.53/-2.64)、舞台追加、連続不出場蓄積、noAppearStreakステート追加 | 大 | 未着手 |
+| 2 | **low帯回復減衰** trust<40で出場回復に減衰係数。ケアアクションは減衰なし | 小 | 未着手 |
+| 3 | **ケアアクション差し替え** CARE_ACTIONS trust値を小数化 + OVR傾斜係数適用 | 中 | 未着手 |
+| 4 | **選択型イベント値差し替え** S1/S3/S4/S5/E1/E6の整数trust値を小数化 | 中 | 未着手 |
+| 5 | **ロッカールーム士気差し替え** 連続関数化+人望×ムードメーカー重複処理 | 小 | 未着手 |
+| 6 | **自然変動連続関数化** calcMonthlyNatural差し替え | 小 | 未着手 |
+| 7 | **Math.round除去+dispTrust追加** 内部float化、表示用ヘルパー追加 | 小 | 未着手 |
+| 8 | **信頼低下イベント見直し** S4/E6の発火条件・選択肢・効果の再設計（後続spec） | 中 | 設計待ち |
+
 ### フィニッシャーシステム（設計書: `specs/finisher-system-spec-v1.0.md`）
 
 | Step | タスク | 重さ | 状態 |
@@ -505,6 +530,7 @@
 - **MQスコア減点制（v2.0）** — 旧加点制(Base+Drama+Pacing+Finish)を廃止。新: `天井(OVシーリング) − ドラマ減点 − ペース減点 − 決着減点`。天井=OV依存曲線(15-100)。ドラマ減点=基本30からKO/カウンター/逆転/大技で回復。ペース減点=7-14ターン理想帯(0)、<5ターン=-12。決着減点=フォールはClimaxで0〜3、ピン=0、タイムアウト=-10。特性ボーナス（名勝負製造機/引き出し上手）は天井超え加点として維持。外部ボーナス(Pass2, cap+15)は変更なし。simulateMatch戻り値に `finishPhase`・`mqDetail` を追加。設計書: specs/mq-deduction-redesign-v2.0.md
 - **引退勧告・引き留めシステム v1.1** — Engine.retirement: canAdvise(wear≥20/age≥30/careerSeasons≥8)、calcAcceptance(50±wear±champ±trust±winRate, clamp 5-95)。受諾→lastRun=true(4週)、Pass2 MQ+3(基本)+5(メイン)+因縁+3/+5。拒否→trust-5, retireAdviceCooldown=48週, 70%でproveMode4週(MQ+2)/30%でmorale-2。引き留め→retiredFighters→roster, wear+10, retainCount+1(最大2回), injuryBonus+0.05。コーチアドバイス: Engine.coach.getRetireAdvice(obsRank別4段階+COACH_OBS_INACCURACY flip)。UI: ポップアップTab2引退セクション+ラストランバッジ+ラストマッチ金枠表示。設計書: specs/retirement-advisory-spec-v1_1.md
 - **ロスター枠制限 v1.0** — G.rosterCap(初期6)段階解放: タイトル設立→8、サバイバルクリア→10、対抗戦初勝利(warWon)→12、ランキング1位→16。レンタル別枠(isRental除外)。AIハードキャップ: AI_SCOUT_CFG.idealRoster(S:16/A:13/B:10)。aiScout: need+1→need、aiInterTransfer: idealRoster+2→idealRoster。全獲得経路チェック: signFighter/scoutEventResolve/resolveNegotiation。UI: renderRoster「所属 N/M名」ヘッダー、renderScoutキャップ警告バナー、ポップアップ獲得ボタン無効化。マイグレーション: 旧セーブは達成状況から逆算。設計書: specs/roster-cap-design-v1.0.md
+- **AI統一成長モデル v1.0** — aiSeasonGrowth一括計算を廃止。processAIWeek(rng,state,org)で毎週calcGrowth+simulateMatchを実行。AI_COACH_CONFIG: S/A/Bティア別×エース/一般のcoachMul+intensiveRate+practiceRate。convergenceMul比率ベース化(convergenceRatio=0.15)。matchGrowthBase 0.7→0.35。makeAIFighterに16フィールド追加。initRandomRosterでA級elite1名保証。設計書: specs/ai-unified-growth-spec-v1.0.md
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---

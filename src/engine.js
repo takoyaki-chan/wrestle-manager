@@ -909,7 +909,6 @@ const Engine = {
     },
     // Returns { allowed: boolean, weeksLeft: number }
     canTitleMatch(state) {
-      if (window.IS_TRIAL) return { allowed: false, weeksLeft: 0 }; // 体験版
       if (!state.titleEstablished) return { allowed: false, weeksLeft: 0 };
       const last = state.lastTitleMatchWeek; // 絶対週数 or null
       if (last == null) return { allowed: true, weeksLeft: 0 };
@@ -1756,7 +1755,8 @@ const Engine = {
     },
 
     // Weekly growth calculation — growth-rebalance v1.0: シーズン予算(share)ベース
-    calcGrowth(rng, G, char, stat) {
+    // AI統一成長 Phase3: overrideCoachMul引数追加（AI団体はプレイヤーのコーチシステムを持たない）
+    calcGrowth(rng, G, char, stat, overrideCoachMul = null) {
       if (stat === 'mn') return 0; // MNT is innate, no training growth
       const current = char[stat];
       const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
@@ -1773,7 +1773,7 @@ const Engine = {
       const ageMul = ageMultiplier(age, char.traits);
       if (ageMul <= 0) return 0;
 
-      const coachMul = Engine.coach.getCharGrowthMult(G, char.id, stat);
+      const coachMul = overrideCoachMul ?? Engine.coach.getCharGrowthMult(G, char.id, stat);
 
       // 1練習あたりbase = seasonBudget × practiceShare × share / 9週
       const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul;
@@ -1794,8 +1794,10 @@ const Engine = {
 
       const rawGain = perPractice * bonus * weeklyVariance;
       const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
-      // growth-rebalance v2: trainCap接近時の逓減（残り10以内で√(remaining/10)倍）
-      const convergenceMul = remaining < 10 ? Math.sqrt(remaining / 10) : 1.0;
+      // AI統一成長 Phase5: trainCap比率ベース逓減（上位15%で減速開始）
+      const convergenceThreshold = trainCap * GROWTH_CONFIG.convergenceRatio;
+      const convergenceMul = remaining < convergenceThreshold
+        ? Math.sqrt(remaining / convergenceThreshold) : 1.0;
       const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * convergenceMul * 10) / 10);
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
@@ -1995,7 +1997,22 @@ const Engine = {
         condition: 70 + Engine.rng.int(rng, 0, 19),
         losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
-        assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason
+        assessedVariance: av.assessedVariance, assessedSeason: av.assessedSeason,
+        // AI統一成長 Phase2: processAIWeekに必要なフィールド補完
+        schedule: 'balance',
+        wins: 0, losses: 0, draws: 0,
+        injury: null,
+        seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+        intensive: false,
+        intensiveWeeks: 0,
+        lastMatchResult: null,
+        careerRecord: Engine.career.createRecord(),
+        durability: Engine.career.generateDurability(rng),
+        wear: 0,
+        seasonInjuries: 0,
+        careerHistory: [],
+        growthPenalty: null,
+        trust: 50,
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -2082,9 +2099,18 @@ const Engine = {
       pool.push(...poolForAB);
 
       // Step 6: Fill A級 (max 3 elites — AI_TIER_LIMITS)
+      // AI統一成長 §4.3: A級にelite以上1名を保証
       const aMembers = [];
-      const aPicked = weightedPick(pool, aMembers, cfg.org_a, (AI_TIER_LIMITS.A || {}).maxProdigies || 3, 1.0, 640);
-      const aAll = aPicked.map(c => c.id);
+      const eliteInPool = pool.filter(c => c.tierClass === 'elite');
+      if (eliteInPool.length > 0) {
+        // eliteプールから1名をA級に確定配置
+        const eliteIdx = pool.indexOf(eliteInPool[0]);
+        const guaranteed = pool.splice(eliteIdx, 1)[0];
+        aMembers.push(guaranteed);
+      }
+      const aRemaining = cfg.org_a - aMembers.length;
+      const aPicked = weightedPick(pool, aMembers, aRemaining, (AI_TIER_LIMITS.A || {}).maxProdigies || 3, 1.0, 640);
+      const aAll = aMembers.map(c => c.id);
 
       // Step 7: Fill B級 (max 1 elite — AI_TIER_LIMITS)
       const bMembers = [];
@@ -2186,6 +2212,197 @@ const Engine = {
       return Math.round((baseFee + popBonus) * tierMul);
     },
 
+    // ── AI統一成長 Phase3+4: AI週次処理 ────────────────────
+    // AI団体の選手にプレイヤーと同一のcalcGrowth+simulateMatchを適用
+
+    /** エース判定: ティア別コーチ環境を返す */
+    getAceConfig(org, fighter) {
+      const config = AI_COACH_CONFIG[org.tier] || AI_COACH_CONFIG.B;
+      const roster = (org.roster || [])
+        .filter(f => !f.injury)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const rank = roster.findIndex(f => f.id === fighter.id);
+      if (rank < 0) return config.general; // 怪我中→general扱い
+
+      if (rank === 0 && config.ace.top1) {
+        return config.ace.top1;
+      }
+      if (rank < config.ace.count && config.ace.top2_3) {
+        return config.ace.top2_3;
+      }
+      if (rank < config.ace.count) {
+        return config.ace.top1; // A級・B級はtop1設定をエース全員に適用
+      }
+      return config.general;
+    },
+
+    /** AI対戦カード生成: OVR近接ペアリング */
+    generateAIMatchCard(roster) {
+      const available = roster
+        .filter(f => !f.injury && (f.condition || 70) > 20)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const matches = [];
+      for (let i = 0; i + 1 < available.length; i += 2) {
+        matches.push({ left: available[i], right: available[i + 1] });
+      }
+      return matches;
+    },
+
+    /** AI週次処理メイン: tickWeekから毎週呼び出し */
+    processAIWeek(rng, state, org) {
+      const orgData = state.aiOrgs[org.id];
+      if (!orgData || !orgData.roster || orgData.roster.length === 0) return orgData;
+
+      let roster = orgData.roster.map(f => ({ ...f,
+        seasonGrowth: { ...(f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }) }
+      }));
+
+      const isShow = Engine.util.isShowWeek(state.week);
+
+      roster = roster.map((f, idx) => {
+        let nc = { ...f };
+
+        // 療養処理
+        if (nc.injury) {
+          nc.condition = Math.min(100, (nc.condition || 50) + 5);
+          nc.injury = { ...nc.injury, weeksLeft: nc.injury.weeksLeft - 1 };
+          if (nc.injury.weeksLeft <= 0) {
+            nc.injury = null;
+          }
+          return nc;
+        }
+
+        // スランプ/モチベ喪失は成長0
+        const statusBlocked = nc.slump || nc.motivationLoss;
+
+        if (isShow) {
+          // 興行週: simulateMatchは別途カードベースで処理（下のprocessAIShowで）
+          // ここではskip — 興行処理はカード単位で行う
+          return nc;
+        } else {
+          // 練習週処理
+          const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
+          const roll = Engine.rng.float(rng);
+
+          if (roll < aceConfig.practiceRate) {
+            // 練習
+            const isIntensive = Engine.rng.float(rng) < aceConfig.intensiveRate;
+            const growStat = Engine.coach.pickGrowthStat(rng, state, nc.id);
+            const growth = Engine.growth.calcGrowth(rng, state, nc, growStat, aceConfig.coachMul);
+
+            const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
+            const intensiveMult = isIntensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+            const trainGrowth = Math.round(growth * statusMult * intensiveMult * 10) / 10;
+
+            if (trainGrowth > 0) {
+              nc[growStat] = Math.min(nc.trainCap?.[growStat] || 100, nc[growStat] + trainGrowth);
+              nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth;
+            }
+
+            // condition消耗
+            const condDrain = isIntensive ? (6 + Engine.rng.int(rng, 0, 7)) : (3 + Engine.rng.int(rng, 0, 3));
+            const ironBonus = (nc.traits || []).includes('鉄人') ? 2 : 0;
+            nc.condition = Math.max(0, (nc.condition || 70) - condDrain + ironBonus);
+
+            // 強化練習時の怪我判定
+            if (isIntensive && Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance) {
+              const weeks = 1 + Engine.rng.int(rng, 0, 1);
+              nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
+            }
+          } else {
+            // 休養
+            nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7));
+          }
+          // 自然回復
+          nc.condition = Math.min(100, (nc.condition || 70) + 3);
+          return nc;
+        }
+      });
+
+      // 興行週: カードベースのsimulateMatch処理
+      if (isShow) {
+        const matchCard = Engine.rival.generateAIMatchCard(roster);
+        for (const card of matchCard) {
+          const leftIdx = roster.findIndex(f => f.id === card.left.id);
+          const rightIdx = roster.findIndex(f => f.id === card.right.id);
+          if (leftIdx < 0 || rightIdx < 0) continue;
+
+          const matchRng = Engine.rng.create(Engine.rng.derive(
+            state.rngSeed, state.season, state.week, card.left.id ^ card.right.id
+          ));
+          const result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
+
+          // 各選手に試合成長を適用
+          [leftIdx, rightIdx].forEach((fi, side) => {
+            let nc = { ...roster[fi] };
+            const selfOvr = Engine.util.ov(nc);
+            const oppOvr = Engine.util.ov(roster[side === 0 ? rightIdx : leftIdx]);
+            const won = (result.winner === 'left' && side === 0) || (result.winner === 'right' && side === 1);
+
+            // 試合成長計算（プレイヤーと同一ロジック）
+            const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+            const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+            const closeMatchBonus = result.mq >= 65 ? 0.3 : 0.0;
+            const resultBonus = won ? 0.0 : 0.2;
+            let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
+
+            // growthPenalty適用
+            if (nc.growthPenalty) {
+              const rawMult = nc.growthPenalty.multiplier;
+              matchGrowth *= (rawMult < 1.0 && (nc.traits || []).includes('適応力'))
+                ? Math.min(1.0, rawMult + 0.2) : rawMult;
+            }
+
+            // スランプ/モチベ喪失は成長0
+            if (nc.slump || nc.motivationLoss) matchGrowth = 0;
+
+            // 1〜2ステータスに分配
+            const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+            const numStats = Engine.rng.float(matchRng) < 0.5 ? 1 : 2;
+            const pool = [...allStats];
+            const chosen = [];
+            for (let i = 0; i < numStats; i++) {
+              const si = Engine.rng.int(matchRng, 0, pool.length - 1);
+              chosen.push(pool.splice(si, 1)[0]);
+            }
+            const growthPerStat = matchGrowth / numStats;
+            chosen.forEach(stat => {
+              const gain = Math.max(0, Math.round(growthPerStat));
+              if (gain > 0) {
+                nc[stat] = Math.min(nc.trainCap?.[stat] || 100, nc[stat] + gain);
+                nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+              }
+            });
+
+            // 勝敗記録
+            if (won) nc.wins = (nc.wins || 0) + 1;
+            else if (result.winner === 'draw') nc.draws = (nc.draws || 0) + 1;
+            else nc.losses = (nc.losses || 0) + 1;
+            nc.lastMatchResult = won ? 'win' : (result.winner === 'draw' ? 'draw' : 'loss');
+
+            // condition消耗
+            nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
+
+            // 怪我判定（簡易: conditionが低いほど怪我しやすい）
+            const injuryChance = nc.condition < 30 ? 0.08 : 0.03;
+            if (Engine.rng.float(matchRng) < injuryChance) {
+              const weeks = 2 + Engine.rng.int(matchRng, 0, 3);
+              nc.injury = { type: '試合負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
+            }
+
+            roster[fi] = nc;
+          });
+        }
+
+        // 興行週: 全選手に自然回復
+        roster = roster.map(f => ({ ...f, condition: Math.min(100, (f.condition || 70) + 3) }));
+      }
+
+      return { ...orgData, roster };
+    },
+
     // ── B-1: AI Season End Processing (8-step pipeline) ────
     // rival-spec §4: processes all AI orgs at season end
     processSeasonEnd(rng, state) {
@@ -2225,17 +2442,18 @@ const Engine = {
           newAiOrgs[org.id]._lastSeasonGrowthEvents = geResult.aiGrowthEvents;
         }
 
-        // Step 2c: AI離脱イベント（growth-rebalance §3.6 — 怪我擬似反映）
-        roster.forEach(f => {
-          const injuryChance = org.tier === 'S' ? 0.10 : org.tier === 'A' ? 0.12 : 0.15;
-          if (Engine.rng.float(rng) < injuryChance) {
-            f._aiGrowthHalf = true; // 成長50%カット
-            events.push(`${org.emoji} ${f.name}: 長期離脱`);
-          }
-        });
+        // Step 2c: [廃止] AI離脱イベント → processAIWeekで実怪我に置き換え
+        // Step 3: [廃止] aiSeasonGrowth → processAIWeekで週次成長に置き換え
 
-        // Step 3: 成長一括 (growth-rebalance v1.0 — seasonBudgetベース)
-        roster = roster.map(f => Engine.rival.aiSeasonGrowth(rng, f, org));
+        // 怪我中の選手を回復（シーズン末リセット）
+        roster.forEach(f => {
+          if (f.injury) f.injury = null;
+          // seasonGrowthリセット
+          f.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+          f.wins = 0; f.losses = 0; f.draws = 0;
+          f.lastMatchResult = null;
+          f.seasonInjuries = 0;
+        });
 
         // Step 4: 人気変動 (rival-spec §4.2)
         roster = roster.map(f => Engine.rival.aiSeasonPopularity(rng, f, org));
@@ -2994,6 +3212,18 @@ const Engine = {
     if (settle.orgPopPenalty) {
       s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100) };
     }
+    // AI統一成長 Phase3: AI団体の週次処理（練習+興行）
+    if (s.aiOrgs && !s.offSeason) {
+      const AI_WEEK_SEEDS = { org_s: 0xA101, org_a: 0xA102, org_b: 0xA103 };
+      const newAiOrgs = {};
+      Object.keys(s.aiOrgs).forEach(orgId => {
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        if (!org) { newAiOrgs[orgId] = s.aiOrgs[orgId]; return; }
+        const aiRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, AI_WEEK_SEEDS[orgId] || 0xA100));
+        newAiOrgs[orgId] = Engine.rival.processAIWeek(aiRng, s, org);
+      });
+      s = { ...s, aiOrgs: newAiOrgs };
+    }
     // PPV解禁チェック（orgPop変動後）
     let ppvUnlockEvent = null;
     if (!s.ppvUnlocked && Engine.ppv.checkUnlock(s.orgPop)) {
@@ -3398,8 +3628,8 @@ const Engine = {
         const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
         const selfOvr = Engine.util.ov(fighter);
 
-        // §2.3 成長計算 — growth-rebalance v2: 試合成長を適正化
-        const matchGrowthBase = 0.7;
+        // §2.3 成長計算 — AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
+        const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
         const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
         const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
         const resultBonus = won ? 0.0 : 0.2;
@@ -4820,8 +5050,8 @@ const Engine = {
           if (!rosterF) return; // プレイヤー所属でない
           const selfOvr = Engine.util.ov(rosterF);
           const oppOvr = Engine.util.ov(oppFighter);
-          // growth-rebalance v2: 試合成長を適正化
-          const matchGrowthBase = 0.7;
+          // AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
+          const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
           const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
           const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
           const resultBonus = won ? 0.0 : 0.2;
@@ -6496,20 +6726,21 @@ Engine.growthEvents = {
     const newFighters = fighters.map(f => {
       let nf = { ...f };
       // スランプ / モチベ喪失（排他: モチベ優先）
+      // AI統一成長: _aiGrowthBlock/_aiGrowthHalf → motivationLoss/slumpフラグに統一
       if (Engine.rng.float(rng) < motivProb) {
         // モチベ喪失: 成長量0 + 能力微減
         const stats = ['pw', 'sp', 'te', 'st'];
         const stat = Engine.rng.pick(rng, stats);
         const decay = Engine.rng.int(rng, 2, 4);
         nf[stat] = Math.max(1, (nf[stat] || 30) - decay);
-        nf._aiGrowthBlock = true; // 成長ゼロ
+        nf.motivationLoss = true; // processAIWeekで成長ゼロ
         aiGrowthEvents.push({ type: 'motivation_loss', org, fighter: f });
       } else if (Engine.rng.float(rng) < slumpProb) {
-        nf._aiGrowthHalf = true;  // 成長50%カット
+        nf.slump = true; // processAIWeekで成長ゼロ
         aiGrowthEvents.push({ type: 'slump', org, fighter: f });
       }
       // ブレークスルー（モチベ喪失中は発生しない）
-      if (!nf._aiGrowthBlock && Engine.rng.float(rng) < btProb) {
+      if (!nf.motivationLoss && Engine.rng.float(rng) < btProb) {
         const stats = ['pw', 'sp', 'te', 'st'];
         const stat = Engine.rng.pick(rng, stats);
         const gain = Engine.rng.int(rng, 3, 6);
@@ -8038,6 +8269,10 @@ Engine.validateGameState = function(G) {
               warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) の${stat}が不正値: ${c[stat]}`);
             }
           });
+          // AI統一成長: condition/winsなどの数値検証
+          if (c.condition !== undefined && !isValidNum(c.condition)) {
+            warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) のconditionが不正値: ${c.condition}`);
+          }
         });
       }
     });
