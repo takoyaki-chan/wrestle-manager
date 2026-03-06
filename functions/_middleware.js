@@ -17,7 +17,7 @@ export async function onRequest(context) {
         status: 302,
         headers: {
           "Location": url.origin + "/",
-          ""Set - Cookie": "wm_auth = ok; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400"
+          "Set-Cookie": "wm_auth=ok; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400"
         }
       });
     }
