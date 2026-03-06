@@ -7,20 +7,16 @@ export async function onRequest(context) {
   }
 
   const url = new URL(context.request.url);
+  const password = url.searchParams.get("password");
 
-  if (context.request.method === "POST") {
-    const formData = await context.request.formData();
-    const password = formData.get("password");
-
-    if (password === CORRECT_PASSWORD) {
-      return new Response(null, {
-        status: 302,
-        headers: {
-          "Location": url.origin + "/",
-          "Set-Cookie": "wm_auth=ok; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400"
-        }
-      });
-    }
+  if (password === CORRECT_PASSWORD) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": url.origin + "/",
+        "Set-Cookie": "wm_auth=ok; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400"
+      }
+    });
   }
 
   return new Response(`<!DOCTYPE html>
@@ -40,7 +36,7 @@ export async function onRequest(context) {
   <div class="box">
     <h2>Wrestle Manager</h2>
     <p>パスワードを入力してください</p>
-    <form method="POST">
+    <form method="GET">
       <input type="password" name="password" placeholder="Password" autofocus>
       <button type="submit">Enter</button>
     </form>
