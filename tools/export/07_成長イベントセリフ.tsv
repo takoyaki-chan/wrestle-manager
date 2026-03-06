@@ -1,0 +1,28 @@
+﻿カテゴリKey	カテゴリ名	トリガー	番号	現在のセリフ	修正後セリフ
+breakthrough	ブレークスルー		1	あの試合で、何かが変わった気がする…	
+breakthrough	ブレークスルー		2	限界だと思っていた壁を越えられた！	
+breakthrough	ブレークスルー		3	今日の試合、なんかいつもと違う！	
+breakthrough	ブレークスルー		4	体が軽い。全身に力がみなぎってる！	
+breakthrough	ブレークスルー		5	あの敗北が…私を強くしてくれた。	
+breakthrough	ブレークスルー		6	限界なんてなかった。まだ上があった！	
+slump_start	スランプ開始	injury_moderate_recovery	1	体は治ったはずなのに…動けない。	
+slump_start	スランプ開始	injury_moderate_recovery	2	怪我から戻ったのに…リングが遠い。	
+slump_start	スランプ開始	injury_moderate_recovery	3	復帰したのに、何かが噛み合わない。	
+slump_start	スランプ開始	injury_severe_recovery	1	またリングに立てた…のに、怖い。	
+slump_start	スランプ開始	injury_severe_recovery	2	重傷から帰ってきたけど…自信がない。	
+slump_start	スランプ開始	injury_severe_recovery	3	体は戻った。でも心がついてこない。	
+slump_start	スランプ開始	defeat	1	あの負けから…何かがおかしい。	
+slump_start	スランプ開始	defeat	2	負けた瞬間から、体が動かなくなった。	
+slump_start	スランプ開始	defeat	3	自分の何が悪かったのか、わからない。	
+slump_start	スランプ開始	penalty_end	1	怪我は治ったのに…気力が戻らない。	
+slump_start	スランプ開始	penalty_end	2	体が癒えても、心の傷は残るんだな。	
+slump_end	スランプ脱出		1	やっと…やっと戻ってこれた。	
+slump_end	スランプ脱出		2	あの暗いトンネルをようやく抜けた！	
+slump_end	スランプ脱出		3	待ってくれていたリングに、恩返しする。	
+slump_end	スランプ脱出		4	迷惑かけた分、倍にして返す！	
+motivation_loss	モチベーション喪失		1	もう…何のために闘ってるのかわからない。	
+motivation_loss	モチベーション喪失		2	プロレスが楽しいって感覚、どこへ行った？	
+motivation_loss	モチベーション喪失		3	毎日道場に来るのが、こんなに辛いとは。	
+motivation_recovery	モチベーション回復		1	まだ…やれる。やってみせる。	
+motivation_recovery	モチベーション回復		2	また闘いたいと思えた。この気持ちを大切に。	
+motivation_recovery	モチベーション回復		3	闘うことを忘れていた。でももう大丈夫。	
