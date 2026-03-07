@@ -4040,8 +4040,11 @@ const App = {
     }
     Storage.autoSave();
     refreshAll();
+    // 引き止め成功でrosterに戻った選手を殿堂入り候補から除外
+    const rosterIds = new Set(G.roster.map(c => c.id));
+    pendingAwards.hallOfFame = (pendingAwards.hallOfFame || []).filter(h => !rosterIds.has(h.id));
     // v1.4w: 殿堂入りの新聞イベント収集
-    if (pendingAwards.hallOfFame && pendingAwards.hallOfFame.length > 0) {
+    if (pendingAwards.hallOfFame.length > 0) {
       pendingAwards.hallOfFame.forEach(h => {
         App._pushNewsEvent({ type: 'hallOfFame', characterId: h.id,
           data: { name: h.name, titles: h.titleReigns || 0, defenses: h.totalDefenses || 0 } });
@@ -4050,7 +4053,7 @@ const App = {
     // 表彰式ポップアップ開始
     showAwardsCeremony(pendingAwards, () => {
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
-      if (pendingAwards.hallOfFame && pendingAwards.hallOfFame.length > 0) {
+      if (pendingAwards.hallOfFame.length > 0) {
         G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
       } else {
         G = { ...G, retiredFighters: [] };
