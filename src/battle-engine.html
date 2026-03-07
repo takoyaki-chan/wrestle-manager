@@ -352,7 +352,7 @@ const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukama
 91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',96:'matsushita_m',
 97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'};
 function getFaceUrl(f){return f.portraitUrl || (PORTRAIT[f.id] ? `../image/face_${PORTRAIT[f.id]}.png` : '');}
-function getUpperUrl(f){return PORTRAIT[f.id] ? `../image/upper/upper_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
+function getUpperUrl(f){return PORTRAIT[f.id] ? `../image/stand/stand_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
 
 // ═══ MOVES (v3.5 data preserved) ═══
 const commonMoves=[
