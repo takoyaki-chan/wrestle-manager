@@ -257,7 +257,7 @@ function renderWeekScreen() {
                     <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
                   </div>
                   <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
-                    <div>📏 ${c.h}cm ｜ 📅 ${c.age || 16}歳</div>
+                    <div>📏 ${c.h}cm ｜ 📅 ${c.age || 17}歳</div>
                     <div style="color:${c.coachEval.color}">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
                   </div>
                   <div style="margin-top:6px">

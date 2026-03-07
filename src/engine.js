@@ -1338,8 +1338,8 @@ const Engine = {
     /** §C-3 個別選手の経歴生成 */
     generateBackstory(fighter, state) {
       const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, fighter.id, 0xBACE));
-      const age = fighter.age || 20;
-      const careerSeasons = Math.max(1, age - 16);
+      const age = fighter.age || 17;
+      const careerSeasons = Math.max(1, age - 17);
       const ovr = Engine.util.ov(fighter);
       const traits = fighter.traits || [];
       const orgId = fighter._orgId || 'fa';
@@ -1349,7 +1349,7 @@ const Engine = {
       const careerHistory = [];
 
       // §C-3-1 peakOVR算出
-      const peakAge = 26 + Engine.rng.int(rng, 0, 4);
+      const peakAge = 21 + Engine.rng.int(rng, 0, 3);
       let peakOVR, peakOVRSeason;
       if (age >= peakAge) {
         const decayPerYear = 0.5 + Engine.rng.float(rng) * 1.0;
@@ -1384,7 +1384,7 @@ const Engine = {
       // §C-3-3 ブレークスルー
       let btExpected = careerSeasons * 0.08;
       // 若年シーズン補正
-      const youngSeasons = Math.max(0, Math.min(careerSeasons, 25 - 16));
+      const youngSeasons = Math.max(0, Math.min(careerSeasons, 22 - 17));
       btExpected += youngSeasons * 0.08 * 0.3; // ×1.3の0.3分
       // 高ポテンシャル補正
       const potOVR = fighter.trainCap
@@ -1465,7 +1465,7 @@ const Engine = {
       }
 
       // §C-3-3 移籍歴
-      if (careerSeasons >= 5 && Engine.rng.float(rng) < 0.15) {
+      if (careerSeasons >= 4 && Engine.rng.float(rng) < 0.15) {
         const transferSeason = 2 + Engine.rng.int(rng, 0, Math.min(careerSeasons - 2, 8));
         const fromOrgPool = allOrgIds.filter(o => o !== orgId);
         const fromOrg = fromOrgPool[Engine.rng.int(rng, 0, fromOrgPool.length - 1)];
@@ -1474,7 +1474,7 @@ const Engine = {
         history.push({ type: 'transfer', season: transferSeason, week: 1, fromOrg: fromName, toOrg: toName });
         careerHistory.push({ type: 'transfer', season: transferSeason, detail: `${fromName}から移籍` });
         // 2回目移籍（10シーズン以上で5%）
-        if (careerSeasons >= 10 && Engine.rng.float(rng) < 0.05) {
+        if (careerSeasons >= 7 && Engine.rng.float(rng) < 0.05) {
           const t2Season = transferSeason + 2 + Engine.rng.int(rng, 0, 3);
           if (t2Season <= careerSeasons) {
             const from2Pool = allOrgIds.filter(o => o !== orgId && o !== fromOrg);
@@ -1497,7 +1497,7 @@ const Engine = {
 
       // §C-3-4 trust初期値
       let baseTrust = 50;
-      if (careerSeasons >= 8) baseTrust += Engine.rng.int(rng, 0, 5);
+      if (careerSeasons >= 6) baseTrust += Engine.rng.int(rng, 0, 5);
       if (Traits.has(fighter, '忠誠心')) baseTrust += 5;
       baseTrust += Engine.rng.int(rng, -5, 5);
       const trust = Engine.util.clamp(baseTrust, 35, 65);
@@ -1759,9 +1759,9 @@ const Engine = {
         const isChamp = state.titles?.world?.championId === fighter.id;
         if (isChamp) {
           category = 'B4_champion_injury';
-        } else if (fighter.age <= 25) {
+        } else if (fighter.age <= 22) {
           category = 'B1_young';
-        } else if (fighter.age <= 30) {
+        } else if (fighter.age <= 26) {
           category = 'B2_prime';
         } else {
           category = 'B3_older';
@@ -1772,7 +1772,7 @@ const Engine = {
           category = 'A3_heel';
         } else if ((fighter.careerRecord?.totalTitleWins || 0) > 0) {
           category = 'A1_champion';
-        } else if ((fighter.careerSeasons || 0) >= 10) {
+        } else if ((fighter.careerSeasons || 0) >= 7) {
           category = 'A4_veteran';
         } else {
           category = 'A2_uncrowned';
@@ -1789,8 +1789,8 @@ const Engine = {
     canAdvise(fighter) {
       if (!fighter || fighter.isRental) return false;
       if ((fighter.wear || 0) >= 20) return true;
-      if ((fighter.careerSeasons || 0) >= 8) return true;
-      if ((fighter.age || 0) >= 30) return true;
+      if ((fighter.careerSeasons || 0) >= 6) return true;
+      if ((fighter.age || 0) >= 25) return true;
       return false;
     },
 
@@ -1890,7 +1890,7 @@ const Engine = {
             const rosterIds = G.roster.filter(c => c.id !== fighterId).map(c => c.id);
             updatedG = Engine.relationships.applyToRoster(G, fighterId, rosterIds, { min: -8, max: -5 }, { min: 0, max: 0 }, proveRelRng);
             // 同世代（年齢差3以内）→本人 rivalry +3〜+5
-            const sameGenIds = G.roster.filter(c => c.id !== fighterId && Math.abs((c.age || 20) - (fighter.age || 20)) <= 3).map(c => c.id);
+            const sameGenIds = G.roster.filter(c => c.id !== fighterId && Math.abs((c.age || 17) - (fighter.age || 17)) <= 3).map(c => c.id);
             if (sameGenIds.length > 0) {
               updatedG = Engine.relationships.applyFromRoster(updatedG, sameGenIds, fighterId, { min: 0, max: 0 }, { min: 3, max: 5 }, proveRelRng);
             }
@@ -2196,7 +2196,7 @@ const Engine = {
       if (totalRemaining <= 0) return 0;
       const share = remaining / totalRemaining;
 
-      const age = char.age || (16 + (char.careerSeasons || 0));
+      const age = char.age || (17 + (char.careerSeasons || 0));
       const ageMul = ageMultiplier(age, char.traits);
       if (ageMul <= 0) return 0;
 
@@ -2209,7 +2209,7 @@ const Engine = {
       // 特性ボーナス
       let bonus = 1.0;
       // ムードメーカーは士気システムに移動（updateLockerRoomMorale）
-      if ((char.age || 99) <= 21 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
+      if ((char.age || 99) <= 19 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
       if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.10;
       // 反骨心: trust30以下のとき逆境バフ×1.15
       if (Traits.has(char, '反骨心') && (char.trust != null ? char.trust : 50) <= 30) bonus *= 1.15;
@@ -2255,11 +2255,11 @@ const Engine = {
       const newRoster = G.roster.map(c => {
         // レンタル選手はシーズン末処理対象外（wear/aging は元所属先が管理）
         if (c.isRental) return c;
-        let nc = { ...c, age: (c.age || 16) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
+        let nc = { ...c, age: (c.age || 17) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
                    seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) },
                    promoStack: 0 }; // プロモ改修 v1.0: シーズン末リセット
         // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
-        const decayStartAge = 28 + (nc.durability || 0);
+        const decayStartAge = 23 + (nc.durability || 0);
         if (nc.age >= decayStartAge) {
           const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
           let wearBonus = 0;
@@ -2294,13 +2294,13 @@ const Engine = {
         nc.seasonInjuries = 0; // v1.3-2: §5.4 シーズンリセット
         nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
         // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
-        if (nc.age === 30) {
-          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 30));
-          const rv = Engine.scout.reassess(nc, 'age30', ageRng, G.season);
+        if (nc.age === 25) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 25));
+          const rv = Engine.scout.reassess(nc, 'age25', ageRng, G.season);
           nc = { ...nc, ...rv };
-        } else if (nc.age >= 35 && nc.age <= 36) {
-          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 35));
-          const rv = Engine.scout.reassess(nc, 'age35plus', ageRng, G.season);
+        } else if (nc.age >= 28 && nc.age <= 29) {
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, nc.id, 28));
+          const rv = Engine.scout.reassess(nc, 'age28plus', ageRng, G.season);
           nc = { ...nc, ...rv };
         }
         // v1.3: Update peakOVR record
@@ -2389,10 +2389,10 @@ const Engine = {
     // Generate entry-level current values (training-spec §1.3)
     generateStartValues(rng, notionValue, entryAge) {
       let baseRatio;
-      if (entryAge <= 17)      baseRatio = 0.55;
+      if (entryAge <= 18)      baseRatio = 0.55;
       else if (entryAge <= 20) baseRatio = 0.65;
       else if (entryAge <= 24) baseRatio = 0.75;
-      else if (entryAge <= 29) baseRatio = 0.85;
+      else if (entryAge <= 27) baseRatio = 0.85;
       else                     baseRatio = 0.90;
       const vals = {};
       ['pw','sp','te','st'].forEach(s => {
@@ -2407,7 +2407,7 @@ const Engine = {
       const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
       const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
       // AI fighters start closer to their Notion values (established pros)
-      const maturity = Math.min(1.0, 0.70 + (age - 16) * 0.04 + Engine.rng.float(rng) * 0.10);
+      const maturity = Math.min(1.0, 0.70 + (age - 17) * 0.04 + Engine.rng.float(rng) * 0.10);
       const current = {};
       ['pw','sp','te','st','mn'].forEach(s => {
         current[s] = Math.min(trainCap[s], Math.round(notion[s] * maturity));
@@ -2416,6 +2416,16 @@ const Engine = {
       // Calculate assessed value (pricing-balance-spec §1)
       const charForAssess = { ...current, pot: template.pot, trainCap };
       const av = Engine.scout.calcAssessedValue(charForAssess, rng, 1);
+      const durability = Engine.career.generateDurability(rng);
+      // 初期Wear付与: decayStartAge超の選手にはwear蓄積済みとして生成
+      const effectiveAge = age || (17 + Engine.rng.int(rng, 0, 11));
+      const aiInitDecayStart = 23 + (durability || 0);
+      let initWear = 0;
+      if (effectiveAge >= aiInitDecayStart) {
+        const yearsOfWear = effectiveAge - aiInitDecayStart;
+        initWear = yearsOfWear * (8 + Engine.rng.int(rng, -3, 3));
+        initWear = Math.min(79, Math.max(0, initWear));
+      }
       return {
         id: template.id, name: template.name, h: template.h,
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
@@ -2425,8 +2435,8 @@ const Engine = {
         archetype: template.archetype || 'normal',
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
-        orgId, age: age || (16 + Engine.rng.int(rng, 0, 12)),
-        careerSeasons: Math.max(0, ((age || 20) - 16)), // v1.4: 新人王判定用
+        orgId, age: effectiveAge,
+        careerSeasons: Math.max(0, (effectiveAge - 17)),
         condition: 70 + Engine.rng.int(rng, 0, 19),
         losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
@@ -2440,8 +2450,8 @@ const Engine = {
         intensiveWeeks: 0,
         lastMatchResult: null,
         careerRecord: Engine.career.createRecord(),
-        durability: Engine.career.generateDurability(rng),
-        wear: 0,
+        durability,
+        wear: initWear,
         seasonInjuries: 0,
         careerHistory: [],
         growthPenalty: null,
@@ -2584,7 +2594,7 @@ const Engine = {
         const roster = ids.map(id => {
           const t = ALL_CHARS.find(c => c.id === id);
           if (!t) return null;
-          return Engine.rival.makeAIFighter(t, rng, org.id, 15 + Engine.rng.int(rng, 0, 18));
+          return Engine.rival.makeAIFighter(t, rng, org.id, 17 + Engine.rng.int(rng, 0, 11));
         }).filter(Boolean);
         // Sort by OVR desc and boost top fighters' popularity for realism
         roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -2939,9 +2949,9 @@ const Engine = {
 
         // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
         roster.forEach(f => {
-          f.age = (f.age || 20) + 1;
+          f.age = (f.age || 17) + 1;
           f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
-          const aiDecayStart = 28 + (f.durability || 0);
+          const aiDecayStart = 23 + (f.durability || 0);
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
             f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - (f.durability || 0));
@@ -3004,7 +3014,7 @@ const Engine = {
         return clean;
       }
       const growthMod = f._aiGrowthHalf ? 0.5 : 1.0;
-      const age = f.age || 20;
+      const age = f.age || 17;
       const ageMul = ageMultiplier(age, (f || {}).traits);
       if (ageMul <= 0) { const { _aiGrowthHalf: _, _aiGrowthBlock: _b, ...clean } = f; return clean; }
 
@@ -3141,7 +3151,7 @@ const Engine = {
           const cost = rank === 'prodigy' ? 200 : rank === 'promising' ? 100 : 50;
           if (budget < cost) continue;
 
-          const age = 16 + Engine.rng.int(rng, 0, 4);
+          const age = 17 + Engine.rng.int(rng, 0, 2);
           const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
           roster.push(newFighter);
           poolIds = poolIds.filter(id => id !== candId);
@@ -3874,7 +3884,7 @@ const Engine = {
       for (const r of removed) {
         // Only return to pool if the char exists in ALL_CHARS (has portrait)
         // v1.5: store {id, age} to preserve age and prevent eternal youth glitch
-        if (ALL_CHARS.find(c => c.id === r.id)) pool.push({ id: r.id, age: r.age || 18 });
+        if (ALL_CHARS.find(c => c.id === r.id)) pool.push({ id: r.id, age: r.age || 17 });
       }
       // Add up to 2 from pool to FA
       // 占有済みID（現在のfa＋ロスター＋AI団体）を収集して重複を防ぐ
@@ -3888,8 +3898,8 @@ const Engine = {
         const id = typeof entry === 'object' ? entry.id : entry;
         const age = typeof entry === 'object' ? entry.age : null;
         if (faOccupied.has(id)) return false;
-        // 年齢保持エントリは22歳超えで除外（プロ入りの機会を逃した）
-        if (age !== null && age >= 22) return false;
+        // 年齢保持エントリは21歳超えで除外（プロ入りの機会を逃した）
+        if (age !== null && age >= 21) return false;
         return true;
       });
       const addCount = Math.min(2, eligiblePool.length);
@@ -3902,7 +3912,7 @@ const Engine = {
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template) continue;
         // v1.5: use stored age for returning FA fighters; fresh 18-24 for new entrants from initial pool
-        const age = storedAge !== null ? storedAge : (18 + Engine.rng.int(faRng, 0, 6));
+        const age = storedAge !== null ? storedAge : (17 + Engine.rng.int(faRng, 0, 4));
         const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
         fa.push(fighter);
         added.push(fighter);
@@ -3925,10 +3935,10 @@ const Engine = {
         Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => emergOccupied.add(c.id)));
         curFA.forEach(c => emergOccupied.add(c.id));
         curPool.forEach(e => emergOccupied.add(typeof e === 'object' ? e.id : e));
-        // pool内で実際に有効なエントリ数（22歳未満かつ未占有）
+        // pool内で実際に有効なエントリ数（21歳未満かつ未占有）
         const eligibleInPool = curPool.filter(e => {
           const age = typeof e === 'object' ? e.age : null;
-          return age === null || age < 22;
+          return age === null || age < 21;
         }).length;
         // FAが空 かつ 有効poolが3未満 → 緊急補充
         if (curFA.length === 0 && eligibleInPool < 3) {
@@ -3940,10 +3950,10 @@ const Engine = {
             const directCount = Math.min(3, shuffled.length);
             const poolCount = Math.min(5, shuffled.length - directCount);
             const directFighters = shuffled.slice(0, directCount).map(c => {
-              const age = 18 + Engine.rng.int(emergRng, 0, 2);
+              const age = 17 + Engine.rng.int(emergRng, 0, 2);
               return Engine.rival.makeAIFighter(c, emergRng, null, age);
             });
-            const newPoolEntries = shuffled.slice(directCount, directCount + poolCount).map(c => ({ id: c.id, age: 18 + Engine.rng.int(emergRng, 0, 2) }));
+            const newPoolEntries = shuffled.slice(directCount, directCount + poolCount).map(c => ({ id: c.id, age: 17 + Engine.rng.int(emergRng, 0, 2) }));
             s = { ...s,
               freeAgents: [...curFA, ...directFighters],
               dormantPool: [...curPool, ...newPoolEntries]
@@ -5107,7 +5117,7 @@ const Engine = {
     },
     /** Age-based market value multiplier (balance-adjustment-spec v1.9 §B.2) */
     ageMarketMultiplier(age, fighter, rng) {
-      if (age <= 21) {
+      if (age <= 19) {
         const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
         const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
         const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
@@ -5119,10 +5129,10 @@ const Engine = {
         }
         return 1.0;
       }
-      if (age <= 25) return 1.0;
-      if (age <= 27) return 0.95;
-      if (age <= 29) return 0.85;
-      return 1.0; // 30以降は既存reassessが処理
+      if (age <= 22) return 1.0;
+      if (age <= 24) return 0.95;
+      if (age <= 26) return 0.85;
+      return 1.0; // 27以降はreassessが処理
     },
     /** Calculate assessedValue for a fighter. Returns { assessedValue, assessedTier, assessedVariance, assessedSeason } */
     calcAssessedValue(fighter, rng, currentSeason) {
@@ -5180,10 +5190,10 @@ const Engine = {
         case 'titleDefend3': case 'seasonMVP':
           base.assessedValue = Math.round(base.assessedValue * 1.1);
           break;
-        case 'age30':
+        case 'age25':
           base.assessedValue = Math.round(base.assessedValue * 0.8);
           break;
-        case 'age35plus':
+        case 'age28plus':
           base.assessedValue = Math.round(base.assessedValue * 0.6);
           break;
         case 'severeInjury':
@@ -5224,10 +5234,10 @@ const Engine = {
       // §3.1 Age distribution
       const ageRoll = Engine.rng.float(rng);
       let age;
-      if (ageRoll < 0.40) age = 15 + Engine.rng.int(rng, 0, 1);       // 15-16: 40%
-      else if (ageRoll < 0.65) age = 17;                                // 17: 25%
-      else if (ageRoll < 0.85) age = 18 + Engine.rng.int(rng, 0, 1);   // 18-19: 20%
-      else age = 20 + Engine.rng.int(rng, 0, 2);                        // 20-22: 15%
+      if (ageRoll < 0.40) age = 16 + Engine.rng.int(rng, 0, 1);       // 16-17: 40%
+      else if (ageRoll < 0.65) age = 18;                                // 18: 25%
+      else if (ageRoll < 0.85) age = 19;                                // 19: 20%
+      else age = 20;                                                     // 20: 15%
 
       // §3.2 Notion values
       let avgTarget;
@@ -5263,7 +5273,7 @@ const Engine = {
 
       // §6.1 Start values (entry age ratio)
       let startRatio;
-      if (age <= 17) startRatio = 0.55 + Engine.rng.float(rng) * 0.10;
+      if (age <= 18) startRatio = 0.55 + Engine.rng.float(rng) * 0.10;
       else if (age <= 20) startRatio = 0.65 + Engine.rng.float(rng) * 0.10;
       else startRatio = 0.75 + Engine.rng.float(rng) * 0.10;
       const cur = {};
@@ -6287,10 +6297,10 @@ const Engine = {
           s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
         }
 
-        // FA: 加齢 + 20歳超えで自動引退（プロ入りを諦めた）
-        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 18) + 1 }));
-        const agedOutFA = agedFA.filter(f => f.age > 20);
-        const youngFA   = agedFA.filter(f => f.age <= 20);
+        // FA: 加齢 + 21歳超えで自動引退（プロ入りを諦めた）
+        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1 }));
+        const agedOutFA = agedFA.filter(f => f.age > 21);
+        const youngFA   = agedFA.filter(f => f.age <= 21);
         if (agedOutFA.length > 0) {
           const retiredFA = agedOutFA.map(f => Engine.career.addEvent(
             Engine.career.ensure(f),
@@ -6438,10 +6448,10 @@ const Engine = {
         {
           const MIN_ELIGIBLE = 6;
           const currentPool = s.dormantPool || [];
-          // 有効エントリ = 22歳未満（またはage不明）のエントリ
+          // 有効エントリ = 21歳未満（またはage不明）のエントリ
           const eligibleCount = currentPool.filter(e => {
             const age = typeof e === 'object' ? e.age : null;
-            return age === null || age < 22;
+            return age === null || age < 21;
           }).length;
           if (eligibleCount < MIN_ELIGIBLE) {
             const occupiedIds = new Set();
@@ -6454,7 +6464,7 @@ const Engine = {
               const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
               const needed = Math.min(available.length, MIN_ELIGIBLE - eligibleCount + 4);
               const shuffled = [...available].sort(() => Engine.rng.float(refillRng) - 0.5);
-              const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 18 + Engine.rng.int(refillRng, 0, 2) }));
+              const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 17 + Engine.rng.int(refillRng, 0, 2) }));
               s = { ...s, dormantPool: [...currentPool, ...newEntries] };
               events.push(`🌱 新世代${newEntries.length}名がプロ入りを目指してFA市場に参入`);
             }
@@ -6615,7 +6625,7 @@ const Engine = {
     const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
     const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
     // Player roster starts at entry-level values (training-spec §1.3)
-    const entryAge = opts.age || 16;
+    const entryAge = opts.age || 17;
     const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, entryAge);
     // Calculate assessed value (pricing-balance-spec §1)
     const charWithStats = { ...template, pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn };
@@ -6686,7 +6696,7 @@ const Engine = {
     getCandidateInfo(seed, coachMult) {
       return DRAFT_CONFIG.candidates.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
         const ratio = Engine.draft._entryRatio(age);
         const entryPw = Math.round(t.pw * ratio);
         const entrySp = Math.round(t.sp * ratio);
@@ -6703,7 +6713,7 @@ const Engine = {
     getFixedInfo(seed, coachMult) {
       return DRAFT_CONFIG.fixed.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
         const ratio = Engine.draft._entryRatio(age);
         const entryPw = Math.round(t.pw * ratio);
         const entrySp = Math.round(t.sp * ratio);
@@ -6729,7 +6739,7 @@ const Engine = {
       // Build roster (use draftAges for age variation)
       const roster = rosterIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+        const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
         return Engine.makeChar(t, rng, { age });
       });
       // FA = original free pool - draft used (fixed + candidates) + rejected
@@ -6789,7 +6799,7 @@ const Engine = {
     ORG_ASSIGN.player = rosterIds;
     const roster = rosterIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
-      const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 16;
+      const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
       return Engine.makeChar(t, rng, { age });
     });
 
@@ -7428,7 +7438,7 @@ Engine.growthEvents = {
     if (isPPV) prob += 0.5;
     if (isWarMatch) prob += 0.5;
     if (!won) prob += 0.3;
-    if ((fighter.age || 20) <= 25) prob += 0.3;
+    if ((fighter.age || 17) <= 22) prob += 0.3;
     return Math.min(prob, 3.5) / 100;
   },
 
@@ -9424,7 +9434,7 @@ Engine.validateGameState = function(G) {
           warn(`キャラ "${c.name}" (id:${c.id}) のtrustが範囲外: ${c.trust}（範囲: 0-100）`);
         }
       }
-      if (c.age !== undefined && (!isValidNum(c.age) || c.age < 10 || c.age > 60)) {
+      if (c.age !== undefined && (!isValidNum(c.age) || c.age < 10 || c.age > 40)) {
         warn(`キャラ "${c.name}" (id:${c.id}) のageが不正値: ${c.age}`);
       }
     });
@@ -10002,11 +10012,11 @@ Engine.contract = {
   // ── 退団先決定 ───────────────────────────────────────────────────────────
   determineDeparture(rng, fighter, state) {
     const ovr = Engine.util.ov(fighter);
-    const age = fighter.age || 20;
+    const age = fighter.age || 17;
     const wear = fighter.wear || 0;
 
     // 高wear or 高齢 → 引退の可能性
-    if (wear >= 50 || age >= 28) {
+    if (wear >= 50 || age >= 25) {
       if (Engine.rng.float(rng) < 0.4 + (wear / 200)) return { type: 'retire' };
     }
 

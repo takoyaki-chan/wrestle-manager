@@ -1261,7 +1261,7 @@ const Storage = {
           const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, nc.id, 777));
           nc.trainCap = Engine.rival.generateTrainCap(rng, nc.notionValue, nc.pot);
         }
-        if (nc.age === undefined) nc.age = 16 + (nc.careerSeasons || 0);
+        if (nc.age === undefined) nc.age = 17 + (nc.careerSeasons || 0);
         return nc;
       };
       G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
@@ -1279,11 +1279,11 @@ const Storage = {
         return { ...c, ...startVals };
       })};
 
-      // v1.2 migration: fix freeAgents stuck at age 16 (should be 18-26)
+      // v1.2 migration: fix freeAgents stuck at age 16-17 (should be 17-23)
       G = { ...G, freeAgents: G.freeAgents.map(c => {
-        if (c.age !== 16) return c; // only fix age-16 FAs
+        if (c.age > 17) return c; // only fix age ≤17 FAs (legacy: was 16)
         const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
-        const newAge = 18 + Engine.rng.int(ageRng, 0, 8);
+        const newAge = 17 + Engine.rng.int(ageRng, 0, 6);
         const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
         const startVals = Engine.rival.generateStartValues(ageRng, nv, newAge);
         return { ...c, age: newAge, ...startVals };
@@ -1380,9 +1380,9 @@ const Storage = {
           if (c.durability !== undefined && c.wear !== undefined) return c;
           const mRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1331));
           const dur = c.durability !== undefined ? c.durability : Engine.career.generateDurability(mRng);
-          const decayStart = 28 + dur;
+          const decayStart = 23 + dur;
           // 既存ベテランへの配慮: 理論値の70%でwearを後付け
-          const wearYears = Math.max(0, (c.age || 20) - decayStart);
+          const wearYears = Math.max(0, (c.age || 17) - decayStart);
           const estimatedWear = c.wear !== undefined ? c.wear : Math.round(wearYears * 8 * 0.7);
           return { ...c, durability: dur, wear: estimatedWear };
         });
@@ -1456,7 +1456,7 @@ const Storage = {
               ...od,
               roster: od.roster.map(f => ({
                 ...f,
-                careerSeasons: f.careerSeasons != null ? f.careerSeasons : Math.max(0, (f.age || 20) - 16)
+                careerSeasons: f.careerSeasons != null ? f.careerSeasons : Math.max(0, (f.age || 17) - 17)
               }))
             };
           });
@@ -3913,7 +3913,7 @@ const App = {
         const f = r.fighter;
         if (!f) return;
         const ovr = Engine.util.ov(f);
-        if (ovr >= 70 || (f.age || 20) >= 30) {
+        if (ovr >= 70 || (f.age || 17) >= 25) {
           const rec = f.careerRecord || {};
           const seasons = f.careerSeasons || 0;
           App._pushNewsEvent({ type: 'retirement', characterId: f.id,

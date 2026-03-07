@@ -356,7 +356,7 @@ function generateDraftConfig(seed) {
   // v1.2: Generate age for each draft member (16-19)
   const draftAges = {};
   [...fixed, ...candidates].forEach(id => {
-    draftAges[id] = 16 + Engine.rng.int(rng, 0, 3);
+    draftAges[id] = 17 + Engine.rng.int(rng, 0, 2);
   });
   DRAFT_CONFIG = { fixed, candidates, pickCount: ROSTER_CFG.draftPicks, draftAges };
   return DRAFT_CONFIG;
@@ -1257,55 +1257,36 @@ const STAR_POWER = [
 // Age multiplier table (training-spec §5.2)
 function ageMultiplier(age, traits) {
   let mul;
-  if (age <= 17)      mul = 0.8;   // 新人: 体がまだできていない
-  else if (age <= 19) mul = 1.1;   // 急成長期の入口
-  else if (age <= 22) mul = 1.3;   // 黄金の成長期
-  else if (age <= 25) mul = 1.0;   // 安定成長
-  else if (age <= 28) mul = 0.6;   // 仕上げ段階
-  else if (age <= 30) mul = 0.15;  // ほぼ停止
-  else if (age <= 32) mul = 0.05;  // 微成長
+  if (age <= 17)      mul = 0.70;  // 新人: 体がまだできていない
+  else if (age <= 18) mul = 1.00;  // 成長開始
+  else if (age <= 20) mul = 1.30;  // 黄金の成長期
+  else if (age <= 22) mul = 1.00;  // 安定成長
+  else if (age <= 24) mul = 0.50;  // 仕上げ段階
+  else if (age <= 26) mul = 0.10;  // ほぼ停止
   else                mul = 0;     // 成長なし
 
   if (!Array.isArray(traits)) return mul;
 
-  // 早熟: ≤21で+30%、≥26で-30%
+  // 早熟: ≤18で+30%、≥23で-30%
   if (traits.includes('早熟')) {
-    if (age <= 21) mul *= 1.3;
-    else if (age >= 26) mul *= 0.7;
+    if (age <= 18) mul *= 1.3;
+    else if (age >= 23) mul *= 0.7;
   }
-  // 晩成: ≤21で-20%、26-32で+40%
+  // 晩成: ≤18で-20%、21-27で+40%
   if (traits.includes('晩成')) {
-    if (age <= 21) mul *= 0.8;
-    else if (age >= 26 && age <= 32) mul *= 1.4;
+    if (age <= 18) mul *= 0.8;
+    else if (age >= 21 && age <= 27) mul *= 1.4;
   }
-  // 遅咲き: ≤25で-20%、26-34で爆発的成長
+  // 遅咲き: ≤20で-20%、21-29で爆発的成長
   if (traits.includes('遅咲き')) {
-    if (age <= 25) mul *= 0.8;
-    else if (age <= 34) mul = Math.max(mul, 0.9);
+    if (age <= 20) mul *= 0.8;
+    else if (age <= 29) mul = Math.max(mul, 0.9);
   }
   return mul;
 }
 
-// Decay table (training-spec §5.4)
-// [decayChance per stat, decayAmount per stat]
-const DECAY_TABLE = {
-  // age 30-32: mild decay
-  early: {
-    chance: { pw:0.20, sp:0.25, te:0.10, st:0.15 },
-    amount: { pw:1, sp:1, te:1, st:1 }
-  },
-  // age 33-34: moderate decay
-  mid: {
-    chance: { pw:0.40, sp:0.50, te:0.20, st:0.35 },
-    amount: { pw:2, sp:2, te:2, st:2 }
-  },
-  // age 35+: guaranteed decay
-  late: {
-    chance: { pw:1.0, sp:1.0, te:1.0, st:1.0 },
-    amount: { pw:3, sp:3, te:2, st:3 },
-    mntChance: 0.05, mntAmount: 1
-  }
-};
+// [DEPRECATED] 旧年齢ベースdecay — applyDecayはwearベースに移行済み
+// const DECAY_TABLE = { ... };
 
 // Retirement config (scout-spec §7)
 const RETIRE_CFG = {
@@ -5227,7 +5208,7 @@ if (typeof module !== 'undefined' && module.exports) {
     GROWTH_CONFIG, GROWTH_SEASON_BASE,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG,
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
-    STYLE_GROWTH, STAR_POWER, DECAY_TABLE, RETIRE_CFG, WEAR_TABLE,
+    STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_SEASON_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,

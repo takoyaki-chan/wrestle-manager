@@ -1224,7 +1224,7 @@ function _renderRetirementPopup() {
   }
 
   // Career years
-  const careerYears = f.careerSeasons || Math.max(1, (f.age || 20) - (f.debutAge || 18));
+  const careerYears = f.careerSeasons || Math.max(1, (f.age || 17) - (f.debutAge || 17));
   const dividerText = `━━ ${careerYears}年間の軌跡 ━━`;
 
   // Career summary
