@@ -1714,6 +1714,42 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_npc_record_v1: true };
       }
 
+      // Phase 1: 人間関係データ基盤 — 既存セーブデータとの互換性
+      if (!G._migrated_relationships_v1) {
+        if (!G.relationships || Object.keys(G.relationships).length === 0) {
+          G = Engine.relationships.initialize(G);
+        }
+        if (!G.relationshipCounters) {
+          G = { ...G, relationshipCounters: {} };
+        }
+        G = { ...G, _migrated_relationships_v1: true };
+      }
+
+      // Phase 5: ライバル称号tierフィールドマイグレーション
+      if (!G._migrated_rivalry_tier_v1) {
+        const rivalries = { ...G.rivalries };
+        for (const key of Object.keys(rivalries)) {
+          const entry = rivalries[key];
+          if (entry.tier === undefined) {
+            let tier = 0;
+            if (!entry.resolved) {
+              if ((entry.matches || 0) >= 7) tier = 3;
+              else if ((entry.matches || 0) >= 4) tier = 2;
+              else if ((entry.matches || 0) >= 2) tier = 1;
+            }
+            rivalries[key] = {
+              ...entry,
+              tier,
+              tierPromotedWeek: 0,
+              matchesSinceTier: 0,
+              bestMQSinceTier: 0,
+              oneSided: null,
+            };
+          }
+        }
+        G = { ...G, rivalries, relationshipHistory: G.relationshipHistory || [], _migrated_rivalry_tier_v1: true };
+      }
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -1979,6 +2015,8 @@ const App = {
     G = Engine.draft.completeDraft(G, picks, rng);
     // NPC記録統一 Part C: 全選手の経歴自動生成（ドラフト完了後・ゲーム本編開始前）
     G = Engine.career.generateAllBackstories(G);
+    // Phase 1: 人間関係データ基盤 — 全ペアの初期値生成
+    G = Engine.relationships.initialize(G);
     // Show welcome popups for drafted fighters with character-specific quotes
     const drafted = G.roster.filter(c => picks.includes(c.id));
     // v1.3: Record debut event for drafted fighters（経歴生成後に上書き — プレイヤー団体デビューを正式記録）
@@ -2199,6 +2237,16 @@ const App = {
       ...G, funds: newFunds, roster: newRoster, freeAgents, aiOrgs, titles,
       scoutCandidates: candidates, scoutPicks: picks, scoutPendingPick: null, gameLog: log,
     };
+    // O-02: FA/スカウトで入団 — 既存メンバー全員→新入選手 bond -3〜+3 + 再接触チェック
+    if (result.result === 'success' && G.relationships) {
+      const scoutRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE44, G.season, candidateId));
+      const existingIds = G.roster.filter(c => c.id !== candidateId).map(c => c.id);
+      G = Engine.relationships.applyFromRoster(G, existingIds, candidateId, { min: -3, max: 3 }, { min: 0, max: 0 }, scoutRelRng);
+      const recontactEvents = Engine.relationships.checkRecontact(G, candidateId, existingIds);
+      if (recontactEvents.length > 0) {
+        G = Engine.relationships.applyRecontactEvents(G, recontactEvents);
+      }
+    }
     refreshAll();
     showScreen('scoutEvent');
   },
@@ -2344,6 +2392,13 @@ const App = {
     const newRetired = [...G.retiredFighters];
     newRetired.splice(retiredIdx, 1);
     G = { ...G, roster: [...G.roster, updatedFighter], retiredFighters: newRetired };
+    // O-13: 引退撤回 — 本人→団体全体 bond +5〜+8, 同僚全員→本人 bond +2〜+3
+    if (G.relationships) {
+      const retainRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE46, G.season, fighterId));
+      const rosterIds = G.roster.filter(c => c.id !== fighterId).map(c => c.id);
+      G = Engine.relationships.applyToRoster(G, fighterId, rosterIds, { min: 5, max: 8 }, { min: 0, max: 0 }, retainRelRng);
+      G = Engine.relationships.applyFromRoster(G, rosterIds, fighterId, { min: 2, max: 3 }, { min: 0, max: 0 }, retainRelRng);
+    }
     Storage.autoSave();
     refreshAll();
     closeRetirementPopup();
@@ -2362,6 +2417,23 @@ const App = {
     const c = G.roster[idx];
     const cName = c.name;
     const cId = c.id;
+    // O-07: 解雇 — roster除外前に関係値更新
+    if (G.relationships) {
+      const releaseRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE45, G.season, charId));
+      const colleagueIds = G.roster.filter(f => f.id !== charId).map(f => f.id);
+      // 解雇された側→団体全体: bond -10〜-15
+      G = Engine.relationships.applyToRoster(G, charId, colleagueIds, { min: -15, max: -10 }, { min: 0, max: 0 }, releaseRelRng);
+      // 残留者→解雇された側: 性格別 bond
+      for (const cid of colleagueIds) {
+        const colleague = G.roster.find(f => f.id === cid);
+        const p = colleague?.personality || 'normal';
+        let bMin, bMax;
+        if (p === 'bold' || p === 'emotional') { bMin = 0; bMax = 2; }
+        else if (p === 'earnest' || p === 'quiet') { bMin = -2; bMax = 0; }
+        else { bMin = -1; bMax = 1; } // easygoing, normal
+        G = Engine.relationships.applyFromRoster(G, [cid], charId, { min: bMin, max: bMax }, { min: 0, max: 0 }, releaseRelRng);
+      }
+    }
     const newRoster = G.roster.filter((_, i) => i !== idx);
     const newFA = [...G.freeAgents, c];
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
@@ -2825,6 +2897,8 @@ const App = {
     let rivalries = { ...s.rivalries };
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
+    // Phase 4: 興行前の連敗数を記録（C-05/C-06判定用）
+    const preShowLosingStreaks = new Map(roster.map(c => [c.id, c.losingStreak || 0]));
 
     // Rivalry & coach bonuses
     const confrontationPairs = sp.confrontationPairs || [];
@@ -2838,7 +2912,7 @@ const App = {
       if (confrontationPairs.includes(i)) {
         deferredRivalryPairs.push(i);
       } else {
-        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, result.mq);
         rivalries = rivalResult.rivalries;
         if (rivalResult.msg) events.push(rivalResult.msg);
       }
@@ -2888,8 +2962,9 @@ const App = {
       const intruderWon = titles.world.championId === intruderId;
       if (intruderWon) {
         // 王座空位 + ヒートダウン
+        // Phase0修正: ヒートペナルティ振れ幅拡大 -7〜-20（旧: -15〜-20）
         const intRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8889));
-        const penalty = -(15 + Engine.rng.int(intRng, 0, 5));
+        const penalty = -(7 + Engine.rng.int(intRng, 0, 13));
         titles = { ...titles, world: { ...titles.world, championId: null, defenses: 0 } };
         s = { ...s, heatScore: Math.max(0, (s.heatScore || 50) + penalty) };
         events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}`);
@@ -2900,6 +2975,9 @@ const App = {
       }
       // 乱入選手をrosterから除去
       roster = roster.filter(c => !c.isIntrusion);
+      // Phase0修正: lastIntrusionWeek更新（クールダウン計算用）
+      const intAbsWeek = ((s.season - 1) * 52) + s.week;
+      s = { ...s, lastIntrusionWeek: intAbsWeek };
     }
 
     // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
@@ -2957,6 +3035,8 @@ const App = {
         const updatedEntry = {
           matches: 0, lastWeek: s.week, lastResolvedWeek: s.week,
           resolutionCount: resolution.newResolutionCount,
+          // Phase 5: 決着後はtier/カウンターもリセット
+          tier: 0, matchesSinceTier: 0, bestMQSinceTier: 0, oneSided: null,
           ...(isSecondResolution ? { resolved: true } : {}),
         };
         rivalries = { ...rivalries, [key]: { ...rivalries[key], ...updatedEntry } };
@@ -2983,8 +3063,8 @@ const App = {
         const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
         events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${resolution.orgPopBonus}`);
       } else {
-        // 不完全燃焼: 通常通り recordRivalry 実行
-        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right);
+        // 不完全燃焼: 通常通り recordRivalry 実行 — Phase 5: matchMQ渡し
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
         rivalries = rivalResult.rivalries;
         if (rivalResult.msg) events.push(rivalResult.msg);
       }
@@ -3012,20 +3092,60 @@ const App = {
 
     // Injuries — separate RNG per fighter to avoid correlation
     const injuryResults = [];
+    const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
         const li = Engine.injury.check(injRngL, lc, r, 0, Engine.coach.getInjuryMult(s, r.left.id));
-        if (li) { roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+        if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
         const ri = Engine.injury.check(injRngR, rc, r, 0, Engine.coach.getInjuryMult(s, r.right.id));
-        if (ri) { roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+        if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
       }
     });
+
+    // Phase 2: 試合結果の関係値反映（spec §3.1）
+    // losingStreakはMQ popularity更新済み、injuredIdは怪我処理済み、careerBestMQは未更新（後で更新）
+    if (s.relationships) {
+      const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2A));
+      let relState = { ...s, roster, relationshipCounters: s.relationshipCounters };
+      results.forEach((r, idx) => {
+        const charIdA = r.left.id;
+        const charIdB = r.right.id;
+        const fA = roster.find(c => c.id === charIdA);
+        const fB = roster.find(c => c.id === charIdB);
+
+        let stage = 'normal';
+        if (r.isTitleMatch) stage = 'title';
+
+        const context = {
+          mq: r.mq,
+          winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
+          hpA: r.hpLeft, hpB: r.hpRight,
+          turns: r.turns,
+          stage,
+          isTitleMatch: !!r.isTitleMatch,
+          rivalryResolved: !!r.rivalryResolved,
+          injuredId: matchInjuredIds[idx],
+          isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
+          isCareerBestB: fB ? r.mq > (fB.careerBestMQ || 0) : false,
+          losingStreakA: fA ? (fA.losingStreak || 0) : 0,
+          losingStreakB: fB ? (fB.losingStreak || 0) : 0,
+          isProveModeA: fA ? (fA.proveMode || 0) > 0 : false,
+          isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
+        };
+        relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
+      });
+      roster = relState.roster || roster;
+      s = { ...s, relationships: relState.relationships, relationshipCounters: relState.relationshipCounters };
+      // Phase 4: 興行コンテキストの関係値反映（C-04/C-05/C-06/C-10）
+      const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
+      s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
+    }
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
     const executedTitleMatch = validMatches.some(m => m.isTitle);
@@ -3123,6 +3243,11 @@ const App = {
             type: 'breakthrough', fighterId: charId,
             stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
           });
+          // Phase 4 G-01: ブレークスルー → OVR近接キャラからrivalry上昇
+          if (s.relationships) {
+            const btRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE57, charId));
+            s = Engine.relationships.applyBreakthroughEffect(s, charId, btRelRng);
+          }
         }
 
         // careerBestMQ 更新（ブレークスルー判定後に実施）
@@ -3139,6 +3264,11 @@ const App = {
             const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
             roster = roster.map(c => c.id === charId ? newF : c);
             pendingGrowthEvents.push({ type: 'slump_start', fighterId: charId, trigger: 'defeat' });
+            // Phase 4 G-03: スランプ → bond60+心配、rivalry30+低下
+            if (s.relationships) {
+              const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, charId));
+              s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 2 }, symRng);
+            }
           }
         }
 
@@ -3154,6 +3284,11 @@ const App = {
           if (Engine.growthEvents.checkMotivationLoss(mlRng, updatedF, 'defeat')) {
             updatedF = Engine.growthEvents.applyMotivationLoss(updatedF, s.season, s.week);
             pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: charId });
+            // Phase 4 G-06: モチベ喪失 → bond60+心配、rivalry30+低下
+            if (s.relationships) {
+              const symRng2 = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE59, charId));
+              s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 1 }, symRng2);
+            }
           }
         }
         if (updatedF !== momFighter) {
@@ -3182,6 +3317,10 @@ const App = {
                gameLog: [...G.gameLog, ...spotResult.events] };
         if (spotResult.orgPopDelta) {
           G = { ...G, orgPop: G.orgPop + spotResult.orgPopDelta };
+        }
+        // Phase 4 E-04: メディアスポットライト終了時の関係値反映
+        if (spotResult.relationships) {
+          G = { ...G, relationships: spotResult.relationships };
         }
       }
     }
@@ -3861,6 +4000,44 @@ const App = {
     // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
+    // Phase 4 E-05: 表彰式の関係値反映
+    if (G.relationships) {
+      const awardRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBE5B));
+      let relState = { ...G };
+      const rosterIds = (G.roster || []).filter(f => !f.isRental).map(f => f.id);
+      // 各賞の受賞者（プレイヤー団体所属のみ）に対して関係値を適用
+      const awardWinners = [];
+      if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
+        awardWinners.push(pendingAwards.rookieOfYear.id);
+      }
+      if (pendingAwards.mvp && pendingAwards.mvp.isPlayerOrg) {
+        awardWinners.push(pendingAwards.mvp.fighter ? pendingAwards.mvp.fighter.id : pendingAwards.mvp.id);
+      }
+      for (const winnerId of awardWinners) {
+        if (!winnerId || !rosterIds.includes(winnerId)) continue;
+        const otherIds = rosterIds.filter(id => id !== winnerId);
+        if (otherIds.length === 0) continue;
+        // winner→roster: bond +2~+3
+        relState = Engine.relationships.applyToRoster(relState, winnerId, otherIds,
+          { min: 2, max: 3 }, { min: 0, max: 0 }, awardRelRng);
+        // roster→winner: bond +1~+2
+        relState = Engine.relationships.applyFromRoster(relState, otherIds, winnerId,
+          { min: 1, max: 2 }, { min: 0, max: 0 }, awardRelRng);
+        // OVR近接者(diff≤5)→winner: rivalry +2~+4
+        const winnerFighter = (G.roster || []).find(f => f.id === winnerId);
+        if (winnerFighter) {
+          const winnerOvr = Engine.util.ov(winnerFighter);
+          const closeIds = (G.roster || []).filter(f =>
+            f.id !== winnerId && !f.isRental && Math.abs(Engine.util.ov(f) - winnerOvr) <= 5
+          ).map(f => f.id);
+          if (closeIds.length > 0) {
+            relState = Engine.relationships.applyFromRoster(relState, closeIds, winnerId,
+              { min: 0, max: 0 }, { min: 2, max: 4 }, awardRelRng);
+          }
+        }
+      }
+      G = { ...G, relationships: relState.relationships };
+    }
     Storage.autoSave();
     refreshAll();
     // v1.4w: 殿堂入りの新聞イベント収集
@@ -4121,6 +4298,11 @@ const App = {
         if (matchResult.mq > (updF.careerBestMQ || 0)) {
           G = { ...G, roster: G.roster.map(c => c.id === fighterId ? { ...c, careerBestMQ: matchResult.mq } : c) };
         }
+        // Phase 4 G-01: ブレークスルー → 関係値反映
+        if (G.relationships) {
+          const btRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE57, fighterId));
+          G = Engine.relationships.applyBreakthroughEffect(G, fighterId, btRelRng);
+        }
         setTimeout(() => showGrowthEventPopups([{
           type: 'breakthrough', fighterId,
           stat: btResultB3.stat, gain: btResultB3.gain, hotStreak: btResultB3.hotStreak
@@ -4166,6 +4348,8 @@ const App = {
     if (result.mediaSpotlight !== undefined) updates.mediaSpotlight = result.mediaSpotlight;
     if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
     if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
+    // Phase 4: E-02/E-03 大型イベントの関係値反映
+    if (result.relationships) updates.relationships = result.relationships;
     if (result.events && result.events.length > 0) {
       updates.gameLog = [...(G.gameLog || []), ...result.events];
     }
@@ -4204,6 +4388,10 @@ const App = {
       _teamCareWeekUsed: result._teamCareWeekUsed || G._teamCareWeekUsed || {},
       gameLog: [...(G.gameLog || []), ...(result.events || [])]
     };
+    // Phase 4: ケアアクションの関係値反映
+    if (result.relationships) {
+      G = { ...G, relationships: result.relationships };
+    }
     Storage.autoSave();
 
     // displayData 構築（モーダル内結果画面へ渡す）
@@ -4470,6 +4658,29 @@ const App = {
     }
     else { evStats.eventsLost = (evStats.eventsLost || 0) + 1; }
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+
+    // Phase 4 E-01: 対抗戦の関係値反映
+    if (G.relationships) {
+      const warRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE5A));
+      let relState = { ...G };
+      // 対戦した選手間: bond 0~+2, rivalry +5~+8
+      wp.results.forEach(r => {
+        const playerId = r.playerFighter.id;
+        const aiId = r.aiFighter.id;
+        relState = Engine.relationships.applyToRoster(relState, [playerId], aiId,
+          { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
+        relState = Engine.relationships.applyToRoster(relState, [aiId], playerId,
+          { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
+      });
+      // チームメイト間: bond +2~+4
+      const participantIds = [...warFighterIds];
+      if (participantIds.length >= 2) {
+        relState = Engine.relationships.applyAllPairs(relState, participantIds,
+          { min: 2, max: 4 }, { min: 0, max: 0 }, warRelRng);
+      }
+      G = { ...G, relationships: relState.relationships };
+    }
+
     Storage.autoSave();
 
     // Close match preview overlay, show final result
@@ -4656,6 +4867,11 @@ App.finalizePPV = function() {
           type: 'breakthrough', fighterId: fId,
           stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
         });
+        // Phase 4 G-01: ブレークスルー → 関係値反映
+        if (s.relationships) {
+          const btRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE57, fId));
+          s = Engine.relationships.applyBreakthroughEffect(s, fId, btRelRng);
+        }
       }
 
       // careerBestMQ 更新
@@ -4672,6 +4888,11 @@ App.finalizePPV = function() {
           const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
           roster = roster.map(c => c.id === fId ? newF : c);
           pendingGrowthEvents.push({ type: 'slump_start', fighterId: fId, trigger: 'defeat' });
+          // Phase 4 G-03: スランプ → 関係値反映
+          if (s.relationships) {
+            const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, fId));
+            s = Engine.relationships.applySympathyEffect(s, fId, { min: 1, max: 2 }, symRng);
+          }
         }
       }
 
@@ -4685,6 +4906,11 @@ App.finalizePPV = function() {
         if (Engine.growthEvents.checkMotivationLoss(mlRng, updF, 'defeat')) {
           updF = Engine.growthEvents.applyMotivationLoss(updF, s.season, s.week);
           pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: fId });
+          // Phase 4 G-06: モチベ喪失 → 関係値反映
+          if (s.relationships) {
+            const symRng2 = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE59, fId));
+            s = Engine.relationships.applySympathyEffect(s, fId, { min: 1, max: 1 }, symRng2);
+          }
         }
       }
       if (updF !== momFighter) {

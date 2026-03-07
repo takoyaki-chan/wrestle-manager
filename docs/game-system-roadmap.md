@@ -1,12 +1,130 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-06（財務タブリデザイン: 4サブタブ+3期間フィルタ + salaryBonus自然減衰）
+> 最終更新: 2026-03-07（Phase 5: ライバル称号システム統合）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**Phase 5: ライバル称号システム統合 実装完了（2026-03-07）。** ライバル称号（因縁/宿敵/宿命の相手/好敵手）の判定を matches カウントのみから、rivalry値 + 対戦実績の複合条件に書き換え。降格ロジック・片側因縁を新設。週次判定関数 `checkRivalryTitles` で昇格/降格を一元管理。auto-sim 500シーズン ALL CLEAR。
+
+- **称号判定の変更**: matches カウントのみ → `tier` フィールド（0-3）による直接管理。昇格/降格は週次判定 `checkRivalryTitles` が担当
+- **昇格条件**:
+  - tier 0→1（因縁）: 双方rivalry 30+ OR 片方50+ AND matches 2+
+  - tier 1→2（宿敵）: 双方rivalry 50+ AND matchesSinceTier 3+ AND bestMQSinceTier 70+
+  - tier 2→3（宿命の相手）: 双方rivalry 70+ AND matchesSinceTier 3+ AND bestMQSinceTier 80+
+- **降格条件**:
+  - 宿命の相手→宿敵: 双方rivalry 50以下
+  - 宿敵→因縁: 双方rivalry 35以下
+  - 因縁→消滅: 双方rivalry 20以下 AND 48週以上対戦なし → `relationshipHistory` に記録
+- **片側因縁**: 片方rivalry 50+/もう片方30未満 → MQ+1ボーナス。認知イベント（勝利/僅差でrivalry +8~+12ブースト、大敗でrivalry/bond低下）
+- **因縁MQボーナス下方修正**: 因縁 +3 → +2。宿敵+4/宿命+6/好敵手+2は据え置き
+- **recordRivalry 修正**: `matchMQ` 引数追加。`matchesSinceTier`/`bestMQSinceTier` を対戦ごとに更新。昇格メッセージは週次判定に移譲
+- **決着時tierリセット**: 因縁決着成立時に tier/matchesSinceTier/bestMQSinceTier/oneSided をリセット
+- **マイグレーション**: `_migrated_rivalry_tier_v1` — 既存 matches から tier を逆算
+- **RNGシード**: 認知イベントは applyMatchResult 内の既存 rng を共用
+- 変更: data.js, engine.js, app.js
+
+**Phase 4: ケアアクション/成長イベント/大型イベント/表彰式の反映 実装完了（2026-03-07）。** spec §3のイベント影響マトリクスを完成。ケアアクション(C系)、成長イベント(G系)、大型イベント(E系)の残り全トリガーをbond/rivalryに接続。Phase 1〜3と合わせて全イベント種別が関係値に影響するようになった。auto-sim 500シーズン ALL CLEAR。
+
+- **C系（ケアアクション/興行コンテキスト）10種**:
+  - C-01/C-02: 激励/リフレッシュ休暇 → target→roster bond +1~+2
+  - C-03: 合宿/パーティ → 全ペア bond +2~+4
+  - C-04: タイトルマッチ不出場 → 非出場者→タイトル選手 bond -1~-3, rivalry +2~+5
+  - C-05: 連敗3+選手を起用 → fighter→roster bond +2~+3
+  - C-06: 連敗3+選手を干す → fighter→roster bond -3~-5
+  - C-07: 衣装変更 → target→roster bond +1~+2
+  - C-08: メディア出演 → target→roster bond +1~+2, roster→target bond -1
+  - C-09: 特別待遇 → target→roster bond +2~+3, roster→target bond -2~-3
+  - C-10: 前座→メイン → bond -1~-2, rivalry +1~+3
+- **G系（成長イベント）8種**:
+  - G-01: ブレークスルー → OVR差5以内の全キャラ→本人 rivalry +3~+5
+  - G-03: スランプ発症 → bond60+心配(bond +1~+2), rivalry30+低下(rivalry -3~-5)
+  - G-04: OVR差10+格差 → 上位者→下位者 rivalry -2~-4/週
+  - G-05: OVR差5以内接近 → 両者 rivalry +3~+5（4週毎）
+  - G-06: モチベ喪失 → bond60+心配(bond +1~+1), rivalry30+低下
+  - G-07: モチベ自動引退 → bond60+→本人 bond -5~-8
+  - G-08: prove mode中の試合 → 対戦相手→本人 bond +1~+3, rivalry +2~+4
+- **E系（イベント/大型）6種**:
+  - E-01: 対抗戦 → 対戦者間 bond 0~+2, rivalry +5~+8; チームメイト間 bond +2~+4
+  - E-02: B2対立決着 → loser→winner bond -3~-5, rivalry +8~+12; winner→loser bond 0~-2, rivalry +8~+12
+  - E-03: B3対抗戦 → 対戦者間 rivalry +5~+10; 仲間→代表 bond +2
+  - E-04: B4メディアスポットライト終了 → target→roster bond +1~+2; OVR近接→target rivalry +1~+3
+  - E-05: 表彰式 → winner→roster bond +2~+3; roster→winner bond +1~+2; OVR近接→winner rivalry +2~+4
+  - E-06: スキャンダル → roster→対象 bond -2~0
+- **新ヘルパー関数**: `applyAllPairs` / `applyShowContextEffects` / `applyBreakthroughEffect` / `applySympathyEffect` / `applyAutoRetireEffect`
+- **フック箇所**: careActions.execute, processManage, executeShow, processWeeklyDecay, applyLargeEventEffect, processMediaSpotlight（engine.js）; executeCareAction, finalizeShow, finalizeWar, finalizePPV, _checkAndShowAwards, _applyLargeEventResult（app.js）
+- **RNGシード**: 0xBE50〜0xBE5B
+- 変更: engine.js, app.js
+
+**Phase 2: 試合結果の反映 実装完了（2026-03-07）。** 毎週の試合結果をbond/rivalryに接続。1試合ごとに13種のイベント分類（M-01〜M-13）を判定し、該当するものすべてを重複適用。通常興行・PPV・AI団体の全試合で関係値が変動。auto-sim 1,000シーズン ALL CLEAR。
+
+- **中核関数**: `Engine.relationships.applyMatchResult(state, charIdA, charIdB, context, rng)` — 1試合ぶんのイベント分類→逓減倍率適用→bond/rivalry変動を一括処理
+- **イベント分類13種**:
+  - M-01: ベースライン（全試合 bond+0~1, rivalry+0.5~1.5）
+  - M-02: 僅差の好勝負（loser HP≥15% or winner HP≤30% → bond+2~4, rivalry+5~8）
+  - M-03a/b: 圧勝（turns≤5 or 圧倒的HP差 → 非対称。勝者はrivalry-3~-5で興味喪失、敗者はrivalry+5~+10で強く意識）
+  - M-04: 名勝負 MQ80+（bond+3~6, rivalry+8~12）
+  - M-05: PPV（rivalry+10~15）
+  - M-06: タイトルマッチ（rivalry+8~12）
+  - M-10: 因縁決着（bond+5~10, rivalry-10~-15）逓減なし
+  - M-11: 怪我（圧勝時/名勝負時/通常で異なる非対称効果）
+  - M-12: 連敗ストリーク3+（連敗者→勝者 rivalry+2~4）
+  - M-13: キャリアベストMQ更新（bond+2~3, rivalry+3~5）逓減なし
+- **フック箇所**: App.finalizeShow（通常興行UI）、Engine.executeShow（auto-sim）、applyPPVResults（PPV）、tickWeek（AI団体）
+- **重要**: 実ゲームの興行処理は`App.finalizeShow()`（app.js）が担当。`Engine.executeShow`はauto-sim専用。両方にフックを配置
+- **AI団体**: M-01のみの簡易処理、逓減なし（処理負荷軽減）
+- **M-13タイミング**: careerBestMQ更新処理（app.js）より前に判定（finalizeShow/executeShow/applyPPVResults内）
+- **RNGシード**: 通常興行 0xBE2A、PPV 0xBE2B、AI団体 0xBE2C
+- 変更: engine.js, app.js
+- 設計書: specs/relationship-system-spec-v0.2.md (§2.3, §3.1)、specs/relationship-system-implementation-plan-v1.0.md (Phase 2)
+
+**Phase 3: 団体運営・契約イベントの反映 実装完了（2026-03-07）。** 入団・退団・引退・解雇・レンタル・引き抜きなど団体運営上の出来事をbond/rivalryに接続。14種イベント分類（O-01〜O-14）の全フックを実装。多対一ヘルパー関数と再接触イベント（reunion/grudge/unfinished）を追加。auto-sim 500シーズン ALL CLEAR。
+
+- **多対一ヘルパー**: `Engine.relationships.applyToRoster(state, charId, roster, opts, rng)` / `applyFromRoster(state, charId, roster, opts, rng)` — 逓減なしで1対全員の関係値を一括変動
+- **再接触イベント**: `Engine.relationships.checkRecontact(state, charId, rng)` / `applyRecontactEvents(state, events)` — reunion（久々の再会）/ grudge（禍根の再燃）/ unfinished（因縁の持ち越し）の3種
+- **イベント分類14種**:
+  - O-01: 試合ベースライン（Phase 1実装済み、追加なし）
+  - O-02: 入団（bond -3~+3）— app.js `scoutEventResolve`
+  - O-03: 退団（bond -15~-8, rivalry +5~+10）— `Engine.contract.processDeparture`
+  - O-04: 引退（bond -10~-5、bond60以上の相手のみ）— season-end + executeShow怪我引退
+  - O-05: 残留合意（bond +1~+2）— `Engine.contract.resolveNegotiation`
+  - O-06: 対立退団（bond -15~-8, rivalry +5~+10）— `Engine.contract.processDeparture`
+  - O-07: 解雇（解雇された側→全員 bond -15~-10、残留者→解雇された側 personality別bond）— app.js `releaseFighter`
+  - O-08: 突然離脱（bond -10~-5）— `executeShow`
+  - O-09: 引き抜き（bond -15~-8, rivalry +5~+10）— `resolvePoach` + `playerPoach`
+  - O-10: レンタル加入（bond -2~+2）— `Engine.rental.requestRental`
+  - O-11: レンタル帰団（bond -6~-3）— `Engine.rental.processSeasonEnd`
+  - O-12: prove mode（本人→全体 bond -8~-5、同世代→本人 rivalry +3~+5）— `Engine.retirement.advise`
+  - O-13: 引退撤回（本人→全体 bond +5~+8、全員→本人 bond +2~+3）— app.js `doRetainFighter`
+  - O-14: 週次自然変動（Phase 1実装済み、追加なし）
+- **RNGシード**: 0xBE3A〜0xBE46
+- 変更: engine.js, app.js
+- 設計書: specs/relationship-system-spec-v0.2.md (§3.2)
+
+**Phase 1: 人間関係データ基盤 実装完了（2026-03-07）。** GameStateに非対称2軸（bond/rivalry）の人間関係データ構造を追加。全キャラ間の初期値生成（同団体ボーナス/OVR近接/性格・アーキタイプ相性/バックストーリー初期関係）、接触状態判定、週次自然減衰/凍結処理、逓減カウンター減衰を実装。UI表示なし・MQ等への影響なし。データが裏で動くだけの段階。auto-sim 1,000シーズン ALL CLEAR。
+
+- **データ構造**: `relationships`（"idA>idB": {bond, rivalry}）+ `relationshipCounters`（逓減カウンター）
+- **Engine.relationships名前空間**: initialize / isInContact / processWeeklyDecay / getDiminishingMultiplier
+- **性格相性マトリクス**: personality 7種 × archetype 6種の bond/rivalry 補正。ガウス散らしσ=2.5で個体差。3点根拠（スケール文脈/相対比較/プレイ体験）をコード内コメントに記載
+- **バックストーリー初期関係**: 同団体内から2〜4組をランダム生成（同期入団/元タッグ/過去の遺恨）
+- **週次処理**: tickWeek末尾に統合。接触あり→bond50方向微減+rivalry微減。接触なし→bond凍結+rivalry超低速減衰。同団体ボーナス+0.2〜+0.5/週
+- **パフォーマンス**: processWeeklyDecay 約1.3ms/週（3,306エントリ）。ルックアップテーブル事前構築で最適化
+- **デバッグヘルパー**: inspect(state,idA,idB) / topRelations(state,charId,axis,n) / stats(state)
+- **セーブ互換**: `_migrated_relationships_v1` — 既存セーブロード時にinitialize自動実行
+- **RNGシード**: 初期化 0xBE1A、週次処理 0xBE1B
+- 変更: engine.js, app.js
+
+**Phase0 不整合修正6項目 実装完了（2026-03-07）。** B系大型イベント頻度を実用レベルに引き上げ、trust処理・orgPop処理の不整合を修正。乱入システムにクールダウンと振れ幅を追加。auto-sim 50シーズン ALL CLEAR。
+
+- **修正1: B系大型イベント発火レート引き上げ**（engine.js `generateWeeklyEvent`/`generateLargeEvent`）— 種別重み 通知50/選択40/大型10 → 通知35/選択25/大型40。クールダウン 8週→4週。実効レート 2.5%→10%/週、体感1〜2回/シーズン
+- **修正2: B4 trust処理統一**（engine.js `processMediaSpotlight`）— 取材大成功時のtrust +3直接加算を`applyCoeff`+`gainMult`+反骨心×1.3経由に変更。全trust変動経路を統一
+- **修正3: 因縁決着orgPopボーナス追加**（engine.js `applyPPVResults`）— 1回目（宿敵決着）+1.5、2回目（宿命の相手 最終決着）+2.5。`applyOrgPopChange`逓減適用。イベントログに表示
+- **修正4: B3辞退ペナルティ追加**（engine.js `applyLargeEventEffect`）— 対抗戦オファー辞退時 orgPop -1（逓減適用）。辞退/受諾のジレンマ設計
+- **修正5: 乱入クールダウン28週追加**（engine.js `Engine.intrusion.check` + app.js）— `lastIntrusionWeek`フィールド追加。check冒頭でabsWeek差分判定。乱入発生時にapp.jsで記録更新。既存セーブ互換（`|| 0`フォールバック）
+- **修正6: 乱入heatペナルティ振れ幅拡大**（engine.js + app.js）— -15〜-20固定 → -7〜-20（下限緩和）。「軽傷で済む可能性」がある緊張感に
 
 **財務タブリデザイン実装完了（2026-03-06）。** 収支画面を「総合/収入/支出/給与」4サブタブ＋「今月/年間/全期間」3期間フィルタに全面刷新。`financeHistory`（永続週次決算履歴）新設・`monthlyFinanceBuffer`廃止。salaryBonus毎シーズン末20%自然減衰（1万以下→0クリーン）。auto-sim 300シーズン ALL CLEAR。
 
@@ -457,7 +575,7 @@
 | 項目 | 優先度 | 備考 |
 |---|---|---|
 | フィニッシャー（キャラ固有必殺技） | 高 | **設計完了** specs/finisher-system-spec-v1.0.md。SE素材＋初期キャラリスト待ち |
-| 選手間関係性システム（友好値・敵対値） | 高 | 未設計。「交流」スケジュール選択肢、タッグ相性、trust安定、因縁加速 |
+| 選手間関係性システム（bond/rivalry） | 高 | **Phase 1〜3 実装済み**（データ基盤・試合結果反映・団体運営イベント反映）。specs/relationship-system-spec-v0.2.md。次フェーズ: ライバル称号統合→相関図UI |
 | ライバルストーリー自動生成 | 高 | 未設計 |
 | ストーリーアーク（数ヶ月にわたる抗争管理） | 高 | 未設計 |
 | コーチ転身 | 中 | scout-system-spec §8.2 で予約済み |
@@ -476,7 +594,7 @@
 |---------|-----:|------|
 | index.html | ~1,320 | HTML+CSS+起動処理 |
 | data.js | ~2,000 | 全データ定数（キャラ98名・コーチ35名・技160種） |
-| engine.js | ~6,100 | ゲームロジック全体 |
+| engine.js | ~10,100 | ゲームロジック全体 |
 | app.js | ~3,530 | Audio+Storage+Mission+App統合 |
 | ui-common.js | ~3,200 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
 | ui-render.js | ~2,550 | 全render関数+データベースタブ |
@@ -620,6 +738,7 @@
 | 引退勧告・引き留め v1.1 | retirement-advisory-spec-v1_1.md |
 | フィニッシャーシステム v1.0 | finisher-system-spec-v1.0.md |
 | PPV GRAND FINAL 合同興行 v2.0 | ppv-grand-final-spec-v2.0.md |
+| 人間関係システム v0.2 | relationship-system-spec-v0.2.md |
 
 ### docs/（実装ガイド）
 

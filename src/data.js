@@ -746,10 +746,16 @@ const TITLES = [
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {matches:2, label:'因縁', mqBonus:3, color:'#fdcb6e', emoji:'⚡'},
-  {matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
-  {matches:7, label:'宿命の相手', mqBonus:6, color:'#d63031', emoji:'💥'}
+  {tier:1, matches:2, label:'因縁', mqBonus:2, color:'#fdcb6e', emoji:'⚡'},
+  {tier:2, matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
+  {tier:3, matches:7, label:'宿命の相手', mqBonus:6, color:'#d63031', emoji:'💥'}
 ];
+
+// Phase 5: 片側因縁（一方的にライバル視している状態）
+const ONESIDED_RIVALRY_MQ_BONUS = 1;
+const ONESIDED_RIVALRY_LABEL = '片側因縁';
+const ONESIDED_RIVALRY_EMOJI = '⚡';
+const ONESIDED_RIVALRY_COLOR = '#ffeaa7';
 
 // 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
 const RIVALRY_CONFRONTATION_LINES = {
