@@ -4928,6 +4928,9 @@ const Engine = {
     getAvailableRentals(state) {
       const results = [];
       const rentalIds = new Set((state.rentals || []).map(r => r.fighterId));
+      // 自団体在籍IDを除外対象に追加（既に保有しているキャラはレンタル候補から除外）
+      const rosterIds = new Set((state.roster || []).map(c => c.id));
+      const excluded = id => rentalIds.has(id) || rosterIds.has(id);
       // ── Rival org fighters (top 3 by OVR excluded) ──
       RIVAL_ORGS.forEach(orgCfg => {
         const orgData = state.aiOrgs && state.aiOrgs[orgCfg.id];
@@ -4935,7 +4938,7 @@ const Engine = {
         const org = { ...orgCfg, roster: orgData.roster, orgPop: orgData.orgPop };
         const sorted = [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
         sorted.slice(RENTAL_CONFIG.topExclude).forEach(f => {
-          if (f.injury || rentalIds.has(f.id)) return;
+          if (f.injury || excluded(f.id)) return;
           const fees = {};
           for (let s = RENTAL_CONFIG.minSeasons; s <= RENTAL_CONFIG.maxSeasons; s++) {
             fees[s] = Engine.rental.calcSeasonFee(f, orgCfg, s);
@@ -4943,15 +4946,7 @@ const Engine = {
           results.push({ fighter: f, source: 'rival', org, fees });
         });
       });
-      // ── Free agents ──
-      (state.freeAgents || []).forEach(f => {
-        if (f.injury || rentalIds.has(f.id)) return;
-        const fees = {};
-        for (let s = RENTAL_CONFIG.minSeasons; s <= RENTAL_CONFIG.maxSeasons; s++) {
-          fees[s] = Engine.rental.calcSeasonFee(f, null, s);
-        }
-        results.push({ fighter: f, source: 'fa', org: null, fees });
-      });
+      // FAはスカウトタブで直接契約できるためレンタル枠には表示しない
       return results;
     },
 
@@ -9320,24 +9315,34 @@ Engine.database = {
    */
   getAllFighters(state) {
     const result = [];
+    const seenIds = new Set(); // 重複排除: player優先 → AI → FA
     const orgName = state.orgName || 'プレイヤー団体';
 
-    // プレイヤー団体
+    // プレイヤー団体（最優先）
     (state.roster || []).forEach(f => {
-      result.push({ ...f, _orgId: 'player', _orgName: orgName, _orgTier: 'player' });
+      if (!seenIds.has(f.id)) {
+        seenIds.add(f.id);
+        result.push({ ...f, _orgId: 'player', _orgName: orgName, _orgTier: 'player' });
+      }
     });
 
     // AI団体
     RIVAL_ORGS.forEach(org => {
       const aiRoster = state.aiOrgs?.[org.id]?.roster || [];
       aiRoster.forEach(f => {
-        result.push({ ...f, _orgId: org.id, _orgName: state.rivalOrgNames?.[org.id] || org.name || org.id, _orgTier: org.tier });
+        if (!seenIds.has(f.id)) {
+          seenIds.add(f.id);
+          result.push({ ...f, _orgId: org.id, _orgName: state.rivalOrgNames?.[org.id] || org.name || org.id, _orgTier: org.tier });
+        }
       });
     });
 
     // フリーエージェント
     (state.freeAgents || []).forEach(f => {
-      result.push({ ...f, _orgId: 'fa', _orgName: 'FA', _orgTier: 'fa' });
+      if (!seenIds.has(f.id)) {
+        seenIds.add(f.id);
+        result.push({ ...f, _orgId: 'fa', _orgName: 'FA', _orgTier: 'fa' });
+      }
     });
 
     return result;
