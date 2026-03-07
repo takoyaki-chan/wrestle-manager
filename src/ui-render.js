@@ -2577,7 +2577,7 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
@@ -2587,6 +2587,10 @@ let _dbCoachSortKey = 'grade';
 let _dbCoachSortAsc = false;
 let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
+// Phase 6: 相関図 state
+let _relmapCenterId = null;
+let _relmapFilter = 'all';
+let _relmapSelected = null;
 
 function renderDatabase() {
   const el = document.getElementById('databaseContent');
@@ -2603,6 +2607,7 @@ function renderDatabase() {
     { label: '🏋️ 全コーチ', idx: 1 },
     { label: '⚔ 団体比較', idx: 2 },
     { label: '🏅 殿堂', idx: 3 },
+    { label: '🔗 相関図', idx: 4 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
@@ -2615,13 +2620,16 @@ function renderDatabase() {
   if (_dbSubTab === 0) html += _renderDbFighters();
   else if (_dbSubTab === 1) html += _renderDbCoaches();
   else if (_dbSubTab === 2) html += _renderDbOrgCompare();
-  else html += _renderDbHallOfFame();
+  else if (_dbSubTab === 3) html += _renderDbHallOfFame();
+  else if (_dbSubTab === 4) html += _renderDbRelmap();
   html += `</div>`;
 
   el.innerHTML = html;
 
   // 団体比較ならレーダーチャートを描画
   if (_dbSubTab === 2) _drawOrgCompareChart();
+  // 相関図ならマップを描画（DOM挿入後に実行）
+  if (_dbSubTab === 4) _drawRelmapAfterRender();
 }
 
 function setDbSubTab(idx) {
@@ -2960,5 +2968,487 @@ function _drawOrgCompareChart() {
       fillAlpha: 0.15,
     },
   });
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  RELATIONSHIP MAP (Phase 6)                              ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const _RELMAP_ORG_COLORS = { player: '#d4a843', org_s: '#d63031', org_a: '#6c5ce7', org_b: '#00b894', fa: '#8bc4f0' };
+
+function _relmapGetAllChars() {
+  return Engine.database.getAllFighters(G);
+}
+
+function _relmapGetOrgLabel(f) {
+  if (f._orgId === 'player') return G.orgName || 'プレイヤー団体';
+  if (f._orgId === 'fa') return 'フリー';
+  const org = RIVAL_ORGS.find(o => o.id === f._orgId);
+  return org ? (G.rivalOrgNames?.[f._orgId] || org.name || f._orgId) : f._orgName || '?';
+}
+
+function _relmapGetOrgColor(f) {
+  return _RELMAP_ORG_COLORS[f._orgId] || 'var(--text-dim)';
+}
+
+function _relmapGetPairs(centerId) {
+  const allChars = _relmapGetAllChars();
+  const rels = G.relationships || {};
+  const history = G.relationshipHistory || [];
+  const pairs = [];
+
+  for (const target of allChars) {
+    if (target.id === centerId) continue;
+    const keyAB = `${centerId}>${target.id}`;
+    const keyBA = `${target.id}>${centerId}`;
+    const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
+    const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
+    const bondAB = Math.round(rAB.bond * 10) / 10;
+    const bondBA = Math.round(rBA.bond * 10) / 10;
+    const rivAB = Math.round(rAB.rivalry * 10) / 10;
+    const rivBA = Math.round(rBA.rivalry * 10) / 10;
+
+    // Get rivalry title
+    const rivalLvl = Engine.title.getRivalryLevel(G, centerId, target.id);
+    const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
+    const isOneSided = rivalLvl?.isOneSided || false;
+
+    // Past rivalry check
+    const pastEntries = history.filter(h =>
+      (h.id1 === centerId && h.id2 === target.id) || (h.id1 === target.id && h.id2 === centerId)
+    );
+    const hasPast = pastEntries.length > 0;
+    const pastPeakTier = hasPast ? Math.max(...pastEntries.map(e => e.peakTier || e.tier || 1)) : 0;
+
+    // Sort score (spec §5-4)
+    const sortScore =
+      (hasTitle ? 1000 + rivAB + rivBA : 0) +
+      (isOneSided ? 500 : 0) +
+      Math.max(rivAB, rivBA) +
+      Math.abs(bondAB - 50) + Math.abs(bondBA - 50);
+
+    // Skip if essentially no relationship
+    if (sortScore < 3 && !hasPast) continue;
+
+    pairs.push({
+      targetId: target.id,
+      target,
+      bondAB, bondBA, rivAB, rivBA,
+      rivalLvl,
+      hasTitle, isOneSided,
+      hasPast, pastPeakTier,
+      sortScore,
+    });
+  }
+
+  pairs.sort((a, b) => b.sortScore - a.sortScore);
+  return pairs;
+}
+
+function _relmapFaceHtml(charId, size) {
+  const pUrl = getPortraitUrl(charId);
+  if (pUrl) return `<img src="${pUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${size}px;height:${size}px;object-fit:cover"><span style="display:none;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">👤</span>`;
+  return `<span style="display:flex;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">👤</span>`;
+}
+
+function _relmapBondColor(val) {
+  if (val >= 65) return '#74b9ff';
+  if (val >= 45) return 'var(--text-sub)';
+  return '#ff7675';
+}
+
+function _renderDbRelmap() {
+  const allChars = _relmapGetAllChars();
+  // Default center: first roster member
+  if (!_relmapCenterId || !allChars.find(c => c.id === _relmapCenterId)) {
+    _relmapCenterId = allChars.length > 0 ? allChars[0].id : null;
+  }
+  if (!_relmapCenterId) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">選手がいません</div>';
+
+  const centerChar = allChars.find(c => c.id === _relmapCenterId);
+  if (!centerChar) return '';
+
+  let pairs = _relmapGetPairs(_relmapCenterId);
+
+  // Apply filter
+  if (_relmapFilter === 'team') {
+    pairs = pairs.filter(p => p.target._orgId === centerChar._orgId);
+  } else if (_relmapFilter === 'rival') {
+    pairs = pairs.filter(p => p.hasTitle || p.isOneSided || p.rivAB >= 30 || p.rivBA >= 30);
+  } else if (_relmapFilter === 'bond') {
+    pairs = [...pairs].sort((a, b) => b.bondAB - a.bondAB);
+  }
+
+  // Breadcrumb
+  let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
+    <span style="cursor:pointer" onclick="setDbSubTab(0)">📊 データベース</span>
+    <span style="color:var(--text-dim)">›</span>
+    <span style="cursor:pointer" onclick="showFighterPopup(${centerChar.id})">👤 ${centerChar.name}</span>
+    <span style="color:var(--text-dim)">›</span>
+    <span style="color:var(--gold)">🔗 相関図</span>
+  </div>`;
+
+  html += `<div class="rel-layout">`;
+
+  // ── Left sidebar ──
+  html += `<div class="rel-sidebar">`;
+  html += `<div class="panel" style="padding:12px">`;
+  html += `<div class="panel-title">🔗 RELATIONSHIP MAP</div>`;
+
+  // Character selector
+  html += `<div class="char-selector" style="margin-bottom:10px"><select onchange="_relmapCenterId=parseInt(this.value);_relmapSelected=null;renderDatabase()">`;
+  // Group by org
+  const groups = {};
+  for (const c of allChars) {
+    const orgKey = c._orgId;
+    if (!groups[orgKey]) groups[orgKey] = { label: _relmapGetOrgLabel(c), chars: [] };
+    groups[orgKey].chars.push(c);
+  }
+  for (const [orgKey, g] of Object.entries(groups)) {
+    html += `<optgroup label="── ${g.label} ──">`;
+    g.chars.forEach(c => {
+      const ovr = Engine.util.ov(c);
+      html += `<option value="${c.id}"${c.id === _relmapCenterId ? ' selected' : ''}>${c.name}（OVR ${ovr}）</option>`;
+    });
+    html += `</optgroup>`;
+  }
+  html += `</select></div>`;
+
+  // Filter buttons
+  const filters = [
+    { key: 'all', label: '全体' },
+    { key: 'team', label: '同団体' },
+    { key: 'rival', label: 'ライバル' },
+    { key: 'bond', label: '親密度順' },
+  ];
+  html += `<div class="filter-row">`;
+  filters.forEach(f => {
+    html += `<button class="filter-btn${_relmapFilter === f.key ? ' active' : ''}" onclick="_relmapFilter='${f.key}';renderDatabase()">${f.label}</button>`;
+  });
+  html += `</div>`;
+  html += `</div>`; // end panel
+
+  // Relationship list
+  html += `<div class="panel" style="padding:12px;flex:1">`;
+  html += `<div class="panel-title">📋 人間関係一覧</div>`;
+  html += `<div class="rel-list">`;
+
+  const listPairs = pairs.slice(0, 15);
+  listPairs.forEach(p => {
+    const orgColor = _relmapGetOrgColor(p.target);
+    const orgLabel = _relmapGetOrgLabel(p.target);
+    const ovr = Engine.util.ov(p.target);
+    const isSelected = _relmapSelected === p.targetId;
+
+    let badges = '';
+    if (p.rivalLvl && !p.isOneSided) {
+      badges += `<span class="rel-badge title-badge" style="background:${p.rivalLvl.color}22;color:${p.rivalLvl.color};border:1px solid ${p.rivalLvl.color}44">${p.rivalLvl.emoji} ${p.rivalLvl.label}</span>`;
+    }
+    if (p.isOneSided && p.rivalLvl) {
+      const aggId = p.rivalLvl.aggressor;
+      const aggChar = allChars.find(c => c.id === aggId);
+      const aggName = aggChar ? aggChar.name.split(' ')[0] : '?';
+      badges += `<span class="rel-badge" style="background:rgba(253,203,110,0.1);color:#fdcb6e;border:1px solid rgba(253,203,110,0.2)">⚡ 片側因縁（${aggName}→）</span>`;
+    }
+    if (p.hasPast && !p.hasTitle) {
+      badges += `<span class="rel-badge" style="background:rgba(255,255,255,0.04);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)">💨 過去の因縁</span>`;
+    }
+    if (p.bondAB >= 75) badges += `<span class="rel-badge bond-high">信頼</span>`;
+    if (p.bondAB < 35) badges += `<span class="rel-badge bond-low">不信</span>`;
+    if (p.rivAB >= 40 && !p.hasTitle && !p.isOneSided) badges += `<span class="rel-badge rival">🔥 競争意識</span>`;
+
+    html += `<div class="rel-item${isSelected ? ' selected' : ''}" onclick="_relmapCenterId=${p.targetId};_relmapSelected=null;renderDatabase()">
+      <div class="rel-item-face" style="border-color:${orgColor}">${_relmapFaceHtml(p.targetId, 32)}</div>
+      <div class="rel-item-info">
+        <div class="rel-item-name">${p.target.name}</div>
+        <div class="rel-item-org" style="color:${orgColor}">${orgLabel} ─ OVR ${ovr}</div>
+        <div class="rel-item-badges">${badges}</div>
+      </div>
+      <div class="rel-item-vals">
+        <div style="display:flex;align-items:baseline;gap:2px;justify-content:flex-end">
+          <span style="font-size:9px;color:var(--text-dim)">親</span>
+          <span class="val-bond" style="color:${_relmapBondColor(p.bondAB)}">${Math.round(p.bondAB)}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:2px;justify-content:flex-end">
+          <span style="font-size:9px;color:var(--text-dim)">競</span>
+          <span class="val-rivalry">${p.rivAB > 10 ? Math.round(p.rivAB) : '<span style="color:var(--text-dim)">-</span>'}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  if (listPairs.length === 0) {
+    html += `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">関係のある選手がいません</div>`;
+  }
+
+  html += `</div>`; // end rel-list
+  html += `</div>`; // end panel
+  html += `</div>`; // end sidebar
+
+  // ── Right: Map ──
+  html += `<div class="panel" style="padding:0;position:relative">`;
+  html += `<div class="rel-map-container" id="relmapContainer">`;
+  html += `<svg class="map-svg" id="relmapSvg"></svg>`;
+
+  // Legend
+  html += `<div class="map-legend">
+    <div class="legend-line"><div class="legend-swatch" style="background:#74b9ff"></div> 親密度（高）</div>
+    <div class="legend-line"><div class="legend-swatch" style="background:#ff7675"></div> 親密度（低）</div>
+    <div class="legend-line"><div class="legend-swatch" style="background:#e17055;height:4px"></div> 競争意識 🔥</div>
+    <div class="legend-line" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
+      <span style="font-size:9px">線の太さ＝感情の強度</span>
+    </div>
+  </div>`;
+
+  // Detail panel (populated by JS after render)
+  html += `<div class="rel-detail-panel" id="relmapDetailPanel"></div>`;
+
+  html += `</div>`; // end map-container
+  html += `</div>`; // end panel
+
+  html += `</div>`; // end rel-layout
+
+  return html;
+}
+
+// ── Map drawing (called after DOM insertion) ──
+function _drawRelmapAfterRender() {
+  const container = document.getElementById('relmapContainer');
+  const svg = document.getElementById('relmapSvg');
+  if (!container || !svg) return;
+
+  const allChars = _relmapGetAllChars();
+  const centerChar = allChars.find(c => c.id === _relmapCenterId);
+  if (!centerChar) return;
+
+  let pairs = _relmapGetPairs(_relmapCenterId);
+  if (_relmapFilter === 'team') pairs = pairs.filter(p => p.target._orgId === centerChar._orgId);
+  else if (_relmapFilter === 'rival') pairs = pairs.filter(p => p.hasTitle || p.isOneSided || p.rivAB >= 30 || p.rivBA >= 30);
+  else if (_relmapFilter === 'bond') pairs = [...pairs].sort((a, b) => b.bondAB - a.bondAB);
+
+  const w = container.offsetWidth;
+  const h = container.offsetHeight;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // Clear old nodes
+  container.querySelectorAll('.map-center, .map-node').forEach(n => n.remove());
+  svg.innerHTML = '<defs></defs>';
+
+  // Center node
+  const centerEl = document.createElement('div');
+  centerEl.className = 'map-center';
+  centerEl.style.left = cx + 'px';
+  centerEl.style.top = cy + 'px';
+  const centerFaceHtml = _relmapFaceHtml(_relmapCenterId, 58);
+  centerEl.innerHTML = `
+    <div class="map-center-face">${centerFaceHtml}</div>
+    <div class="map-center-name">${centerChar.name}</div>
+  `;
+  centerEl.style.cursor = 'pointer';
+  centerEl.onclick = () => showFighterPopup(_relmapCenterId);
+  container.appendChild(centerEl);
+
+  // Peripheral nodes
+  const nodeCount = Math.min(pairs.length, 10);
+  const radius = Math.min(w, h) * 0.35;
+  const startAngle = -Math.PI / 2;
+
+  pairs.slice(0, nodeCount).forEach((p, i) => {
+    const angle = startAngle + (2 * Math.PI * i / nodeCount);
+    const strength = (Math.abs(p.bondAB - 50) + Math.abs(p.rivAB)) / 100;
+    const r = radius * (0.75 + strength * 0.25);
+    const nx = cx + Math.cos(angle) * r;
+    const ny = cy + Math.sin(angle) * r;
+
+    // Draw connection lines
+    _drawRelmapConnection(svg, cx, cy, nx, ny, p, angle, i);
+
+    // Node element
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'map-node';
+    nodeEl.style.left = nx + 'px';
+    nodeEl.style.top = ny + 'px';
+    const orgColor = _relmapGetOrgColor(p.target);
+    const isSelected = _relmapSelected === p.targetId;
+    const borderColor = isSelected ? 'var(--gold)' : (p.rivalLvl ? p.rivalLvl.color : orgColor);
+
+    let titleHtml = '';
+    if (p.hasTitle && p.rivalLvl) {
+      titleHtml = `<div class="map-node-title" style="background:${p.rivalLvl.color}22;color:${p.rivalLvl.color};border:1px solid ${p.rivalLvl.color}55">${p.rivalLvl.emoji} ${p.rivalLvl.label}</div>`;
+    } else if (p.isOneSided) {
+      titleHtml = `<div class="map-node-title" style="background:rgba(253,203,110,0.1);color:#fdcb6e;border:1px solid rgba(253,203,110,0.3)">⚡ 片側</div>`;
+    } else if (p.hasPast && !p.hasTitle) {
+      titleHtml = `<div class="map-node-title" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1)">💨 過去</div>`;
+    }
+
+    const faceHtml = _relmapFaceHtml(p.targetId, 40);
+    nodeEl.innerHTML = `
+      <div class="map-node-face" style="border-color:${borderColor};${isSelected ? 'box-shadow:0 0 12px rgba(212,168,67,0.4)' : ''}">${faceHtml}</div>
+      <div class="map-node-name">${p.target.name.split(' ')[0]}</div>
+      ${titleHtml}
+    `;
+    nodeEl.onclick = () => { _relmapCenterId = p.targetId; _relmapSelected = null; renderDatabase(); };
+    nodeEl.onmouseenter = () => { _relmapSelected = p.targetId; _updateRelmapDetail(pairs, allChars); };
+    nodeEl.onmouseleave = () => { _relmapSelected = null; _updateRelmapDetail(pairs, allChars); };
+    container.appendChild(nodeEl);
+  });
+
+  // Detail panel (show on hover)
+  _updateRelmapDetail(pairs, allChars);
+}
+
+function _drawRelmapConnection(svg, cx, cy, nx, ny, p, angle, idx) {
+  const defs = svg.querySelector('defs');
+  const offset = 7;
+  const perpX = Math.cos(angle + Math.PI / 2) * offset;
+  const perpY = Math.sin(angle + Math.PI / 2) * offset;
+
+  const dx = nx - cx, dy = ny - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const ux = dx / dist, uy = dy / dist;
+  const startPad = 36;
+  const endPad = 26;
+
+  // A→B line (center → node)
+  const bondAB = p.bondAB;
+  const colorAB = bondAB >= 50 ? `rgba(116,185,255,${0.3 + (bondAB - 50) / 80})` : `rgba(255,118,117,${0.3 + (50 - bondAB) / 80})`;
+  const hexAB = bondAB >= 50 ? '#74b9ff' : '#ff7675';
+  const widthAB = 1.5 + Math.abs(bondAB - 50) / 18;
+
+  const markIdAB = `arrow_${idx}_ab`;
+  const markerAB = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  markerAB.setAttribute('id', markIdAB);
+  markerAB.setAttribute('markerWidth', '8');
+  markerAB.setAttribute('markerHeight', '6');
+  markerAB.setAttribute('refX', '7');
+  markerAB.setAttribute('refY', '3');
+  markerAB.setAttribute('orient', 'auto');
+  markerAB.innerHTML = `<polygon points="0 0, 8 3, 0 6" fill="${hexAB}" opacity="0.8"/>`;
+  defs.appendChild(markerAB);
+
+  const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line1.setAttribute('x1', cx + ux * startPad + perpX);
+  line1.setAttribute('y1', cy + uy * startPad + perpY);
+  line1.setAttribute('x2', nx - ux * endPad + perpX);
+  line1.setAttribute('y2', ny - uy * endPad + perpY);
+  line1.setAttribute('stroke', colorAB);
+  line1.setAttribute('stroke-width', widthAB);
+  if (bondAB < 40) line1.setAttribute('stroke-dasharray', '4,4');
+  line1.setAttribute('marker-end', `url(#${markIdAB})`);
+  svg.appendChild(line1);
+
+  // B→A line (node → center)
+  const bondBA = p.bondBA;
+  const colorBA = bondBA >= 50 ? `rgba(116,185,255,${0.3 + (bondBA - 50) / 80})` : `rgba(255,118,117,${0.3 + (50 - bondBA) / 80})`;
+  const hexBA = bondBA >= 50 ? '#74b9ff' : '#ff7675';
+  const widthBA = 1.5 + Math.abs(bondBA - 50) / 18;
+
+  const markIdBA = `arrow_${idx}_ba`;
+  const markerBA = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  markerBA.setAttribute('id', markIdBA);
+  markerBA.setAttribute('markerWidth', '8');
+  markerBA.setAttribute('markerHeight', '6');
+  markerBA.setAttribute('refX', '7');
+  markerBA.setAttribute('refY', '3');
+  markerBA.setAttribute('orient', 'auto');
+  markerBA.innerHTML = `<polygon points="0 0, 8 3, 0 6" fill="${hexBA}" opacity="0.8"/>`;
+  defs.appendChild(markerBA);
+
+  const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line2.setAttribute('x1', nx - ux * endPad - perpX);
+  line2.setAttribute('y1', ny - uy * endPad - perpY);
+  line2.setAttribute('x2', cx + ux * startPad - perpX);
+  line2.setAttribute('y2', cy + uy * startPad - perpY);
+  line2.setAttribute('stroke', colorBA);
+  line2.setAttribute('stroke-width', widthBA);
+  if (bondBA < 40) line2.setAttribute('stroke-dasharray', '4,4');
+  line2.setAttribute('marker-end', `url(#${markIdBA})`);
+  svg.appendChild(line2);
+
+  // Rivalry overlay (center dashed line, orange)
+  const maxRiv = Math.max(p.rivAB, p.rivBA);
+  if (maxRiv > 20) {
+    const rivLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    rivLine.setAttribute('x1', cx + ux * startPad);
+    rivLine.setAttribute('y1', cy + uy * startPad);
+    rivLine.setAttribute('x2', nx - ux * endPad);
+    rivLine.setAttribute('y2', ny - uy * endPad);
+    rivLine.setAttribute('stroke', `rgba(225,112,85,${0.15 + maxRiv / 200})`);
+    rivLine.setAttribute('stroke-width', maxRiv / 20);
+    rivLine.setAttribute('stroke-dasharray', '8,4');
+    svg.appendChild(rivLine);
+
+    if (maxRiv >= 50) {
+      const mx = (cx + nx) / 2;
+      const my = (cy + ny) / 2;
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', mx);
+      text.setAttribute('y', my);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'central');
+      text.setAttribute('font-size', maxRiv >= 70 ? '16' : '12');
+      text.textContent = '\uD83D\uDD25';
+      svg.appendChild(text);
+    }
+  }
+
+  // Past rivalry (gray dashed)
+  if (p.hasPast && maxRiv <= 20 && bondAB >= 40 && bondBA >= 40) {
+    const grayLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    grayLine.setAttribute('x1', cx + ux * startPad);
+    grayLine.setAttribute('y1', cy + uy * startPad);
+    grayLine.setAttribute('x2', nx - ux * endPad);
+    grayLine.setAttribute('y2', ny - uy * endPad);
+    grayLine.setAttribute('stroke', 'rgba(255,255,255,0.08)');
+    grayLine.setAttribute('stroke-width', '2');
+    grayLine.setAttribute('stroke-dasharray', '2,6');
+    svg.appendChild(grayLine);
+  }
+}
+
+function _updateRelmapDetail(pairs, allChars) {
+  const panel = document.getElementById('relmapDetailPanel');
+  if (!panel) return;
+  if (!_relmapSelected) { panel.classList.remove('show'); return; }
+
+  const p = pairs.find(pp => pp.targetId === _relmapSelected);
+  if (!p) { panel.classList.remove('show'); return; }
+
+  panel.classList.add('show');
+  const centerChar = allChars.find(c => c.id === _relmapCenterId);
+  const cName = centerChar ? centerChar.name.split(' ')[0] : '?';
+  const tName = p.target.name.split(' ')[0];
+
+  let titleHtml = '';
+  if (p.hasTitle && p.rivalLvl) {
+    titleHtml = `<span style="color:${p.rivalLvl.color};font-size:12px;font-weight:700">${p.rivalLvl.emoji} ${p.rivalLvl.label}（${p.rivalLvl.matches}戦）</span>`;
+  }
+  if (p.isOneSided && p.rivalLvl) {
+    const aggChar = allChars.find(c => c.id === p.rivalLvl.aggressor);
+    const aggName = aggChar ? aggChar.name.split(' ')[0] : '?';
+    titleHtml = `<span style="color:#fdcb6e;font-size:12px;font-weight:700">⚡ 片側因縁（${aggName}→）</span>`;
+  }
+  if (p.hasPast && !p.hasTitle) {
+    titleHtml += ` <span style="color:var(--text-dim);font-size:11px">💨 過去の因縁</span>`;
+  }
+
+  const b1Color = _relmapBondColor(p.bondAB);
+  const b2Color = _relmapBondColor(p.bondBA);
+
+  panel.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-weight:700;font-size:12px">${centerChar ? centerChar.name : ''}</span>
+    <span style="color:var(--text-dim);font-size:10px">⇄</span>
+    <span style="font-weight:700;font-size:12px">${p.target.name}</span>
+    ${titleHtml}
+    <span style="color:var(--text-dim);font-size:10px">│</span>
+    <span style="font-size:10px;color:var(--text-dim)">${cName}→${tName}</span>
+    <span class="rel-compact-label">親</span><span class="rel-compact-val" style="color:${b1Color}">${Math.round(p.bondAB)}</span>
+    <span class="rel-compact-label">競</span><span class="rel-compact-val" style="color:#e17055">${Math.round(p.rivAB)}</span>
+    <span style="color:var(--text-dim);font-size:10px">│</span>
+    <span style="font-size:10px;color:var(--text-dim)">${tName}→${cName}</span>
+    <span class="rel-compact-label">親</span><span class="rel-compact-val" style="color:${b2Color}">${Math.round(p.bondBA)}</span>
+    <span class="rel-compact-label">競</span><span class="rel-compact-val" style="color:#e17055">${Math.round(p.rivBA)}</span>
+  </div>`;
 }
 

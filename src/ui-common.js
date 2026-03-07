@@ -1901,6 +1901,11 @@ function showFighterPopup(fighterId, source) {
       html += `</div>`;
     }
 
+    // ── 相関図ボタン（全キャラ共通）──
+    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px">
+      <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 RELATIONSHIP MAP</button>
+    </div>`;
+
     // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──
     const tabs = ['📊 能力'];
     tabs.push('📋 戦績・経歴');
@@ -2329,6 +2334,17 @@ function showFighterPopup(fighterId, source) {
 function closeFighterPopup() {
   window._fpTab = 0; // Reset to first tab
   document.getElementById('fighterPopupOverlay').classList.remove('active');
+}
+
+// Phase 6: 相関図画面を開く
+function openRelationshipMap(charId) {
+  closeFighterPopup();
+  showScreen('database');
+  _dbSubTab = 4; // relmap tab
+  _relmapCenterId = charId;
+  _relmapFilter = 'all';
+  _relmapSelected = null;
+  renderDatabase();
 }
 
 /** PPV VS比較ポップアップ — 両選手のステータスを並べて表示 */
