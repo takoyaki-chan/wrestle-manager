@@ -6125,6 +6125,16 @@ const Engine = {
       s = { ...s, negotiationResult: { success: negResult.success, fighter: negResult.fighter } };
     }
 
+    // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
+    // NOTE: C-2の早期リターン前に実行。transfer windowと週が重なるため後に置くとスキップされる
+    const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
+    const warCheck = Engine.event.checkRivalryWar(eventRng, s);
+    if (warCheck) {
+      s = { ...s, pendingEvent: warCheck, warThisSeason: true };
+      events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
+      return { state: { ...s, weekPhase: 'event' }, events };
+    }
+
     // C-2: Quarterly transfer window check
     if (TRANSFER_CONFIG.windows.includes(s.week)) {
       const trng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 800 + s.week));
@@ -6151,15 +6161,6 @@ const Engine = {
       };
       events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
       return { state: { ...s, weekPhase: 'scoutEvent' }, events };
-    }
-
-    // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
-    const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
-    const warCheck = Engine.event.checkRivalryWar(eventRng, s);
-    if (warCheck) {
-      s = { ...s, pendingEvent: warCheck, warThisSeason: true };
-      events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
-      return { state: { ...s, weekPhase: 'event' }, events };
     }
 
     // PPV GRAND FINAL: Week 43 エントリー受付

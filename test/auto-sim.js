@@ -245,6 +245,21 @@ function collectViolations(G, violations) {
 }
 
 // ── Step 5: シミュレーションメインループ ──
+
+// 頻度チェックの期待レンジ定義
+// min/max を外れるとバグの疑いがある（ロジック到達不全・確率設定ミスなど）
+// ※ 閾値は100シーズン以上のシミュレーションで統計的に安定する値を設定
+const FREQ_THRESHOLDS = [
+  // 対抗戦: week24/36で50%チェック×2 = 実効約75%/シーズン。min=0.60でバグを検出できる
+  // (バグあり時は transfer window の早期returnでスキップされ ~0.50 に低下する)
+  { key: 'warRate',   label: '対抗戦/シーズン',           min: 0.60, max: 0.95 },
+  // スカウト: オフシーズン(1回) + シーズン中week29(1回) = 2.0/シーズンが正常
+  // どちらかがバグで消えると ~1.0 まで低下する
+  { key: 'scoutRate', label: 'スカウトイベント/シーズン', min: 1.00, max: 2.50 },
+  // 興行: isShowWeek(even) × シーズン48週 = 最大24回。イベント等で数回減少しうる
+  { key: 'showRate',  label: '興行/シーズン',             min: 18,   max: 26   },
+];
+
 function runSimulation(seed, seasons) {
   const violations = [];
   const errors = [];
@@ -252,6 +267,17 @@ function runSimulation(seed, seasons) {
   let gameOverCount = 0;
   let currentSeed = seed;
   const MAX_ITER = seasons * 60; // 安全弁（1シーズン≒52+4週）
+
+  // 頻度トラッキング
+  const stats = {
+    seasons: 0,
+    warEvents: 0,        // warThisSeason が false→true になった回数
+    poachEvents: 0,      // weekPhase:'transfer' に遷移した回数
+    scoutEvents: 0,      // weekPhase:'scoutEvent' に遷移した回数
+    ppvEvents: 0,        // weekPhase:'ppvEntry' に遷移した回数
+    showCount: 0,        // 実行した興行の総数
+    titleMatchCount: 0,  // タイトルマッチの総数
+  };
 
   let G;
   try {
@@ -303,6 +329,8 @@ function runSimulation(seed, seasons) {
       if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage') {
         G = autoSetupShowCard(G, simRng);
         if (G.showCard && G.showCard.length > 0) {
+          stats.showCount++;
+          stats.titleMatchCount += G.showCard.filter(m => m.isTitle).length;
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
             G = showResult.state;
@@ -321,10 +349,20 @@ function runSimulation(seed, seasons) {
       G = clearTransients(G);
       G = collectViolations(G, violations);
 
-      // ── advanceWeek（次の週へ） ──
+      // ── advanceWeek（次の週へ）── 対抗戦・移籍・スカウト等のチェックはここで行われる
+      const _wasWar = G.warThisSeason;
+      const _prevPhase = G.weekPhase;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
       totalWeeks++;
+
+      // 頻度トラッキング（advanceWeek後の状態変化を検出）
+      if (G.warThisSeason && !_wasWar) stats.warEvents++;
+      if (G.weekPhase !== _prevPhase) {
+        if (G.weekPhase === 'transfer')   stats.poachEvents++;
+        if (G.weekPhase === 'scoutEvent') stats.scoutEvents++;
+        if (G.weekPhase === 'ppvEntry')   stats.ppvEvents++;
+      }
 
       // advanceWeek後にもvalidate
       G = Engine.validateGameState(G);
@@ -333,6 +371,7 @@ function runSimulation(seed, seasons) {
       // ── シーズン遷移検出 ──
       if (!G.offSeason && G.week === 1 && G.season > 1) {
         completed++;
+        stats.seasons++;
         if (completed % 50 === 0) {
           process.stdout.write(`  ... ${completed}/${seasons} seasons completed\r`);
         }
@@ -362,7 +401,7 @@ function runSimulation(seed, seasons) {
     errors.push({ season: G.season, week: G.week, seed: currentSeed, error: `MAX_ITER (${MAX_ITER}) に到達。無限ループの可能性` });
   }
 
-  return { violations, errors, totalWeeks, gameOverCount };
+  return { violations, errors, totalWeeks, gameOverCount, stats };
 }
 
 // ── Step 6: 実行 & レポート出力 ──
@@ -403,10 +442,48 @@ if (result.errors.length > 0) {
   });
 }
 
+// 頻度レポート
+const freqWarnings = [];
+const s = result.stats;
+if (s.seasons >= 10) {
+  const rates = {
+    warRate:   s.warEvents        / s.seasons,
+    poachRate: s.poachEvents      / s.seasons,
+    scoutRate: s.scoutEvents      / s.seasons,
+    ppvRate:   s.ppvEvents        / s.seasons,
+    showRate:  s.showCount        / s.seasons,
+    titleRate: s.titleMatchCount  / s.seasons,
+  };
+
+  console.log('');
+  console.log(`Frequency Stats (${s.seasons} seasons):`);
+
+  // 閾値あり項目
+  FREQ_THRESHOLDS.forEach(t => {
+    const v = rates[t.key];
+    const ok = v >= t.min && v <= t.max;
+    const status = ok ? '[OK]' : '[!!]';
+    console.log(`  ${status} ${t.label.padEnd(24)} ${v.toFixed(2).padStart(5)}   期待: ${t.min}-${t.max}`);
+    if (!ok) freqWarnings.push(`${t.label}: ${v.toFixed(2)} (期待値 ${t.min}–${t.max})`);
+  });
+
+  // 参考情報（閾値なし — ゲーム状態依存で変動するため）
+  console.log(`  [--] ${'PPV/シーズン'.padEnd(24)} ${rates.ppvRate.toFixed(2).padStart(5)}`);
+  console.log(`  [--] ${'引き抜き発生/シーズン'.padEnd(22)} ${rates.poachRate.toFixed(2).padStart(5)}   ※rank1時は0が正常`);
+  console.log(`  [--] ${'タイトルマッチ/シーズン'.padEnd(22)} ${rates.titleRate.toFixed(2).padStart(5)}   ※auto-simでは0が正常(未設立)`);
+}
+
+if (freqWarnings.length > 0) {
+  console.log('');
+  freqWarnings.forEach(w => console.log(`[FREQ WARN] ${w} — ロジック到達不全やバグの可能性`));
+}
+
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
 console.log(`Total errors: ${result.errors.length}`);
+console.log(`Freq warnings: ${freqWarnings.length}`);
 console.log(`Total weeks simulated: ${result.totalWeeks}`);
 console.log(`Game overs: ${result.gameOverCount}`);
 console.log(`Elapsed: ${elapsed}s`);
-console.log(`Result: ${uniqueViolations.length === 0 && result.errors.length === 0 ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
+const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0;
+console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);

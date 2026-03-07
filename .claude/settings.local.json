@@ -99,7 +99,8 @@
       "Bash(node test/auto-sim.js 500)",
       "Bash(xargs grep -l \"finance\\\\|財務\\\\|収支タブ\\\\|支出\\\\|収入\")",
       "Bash(node test/auto-sim.js 50 42)",
-      "Bash(grep -n \"initState\\\\|function initState\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)"
+      "Bash(grep -n \"initState\\\\|function initState\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
+      "WebFetch(domain:www.youtube.com)"
     ]
   }
 }
