@@ -8981,10 +8981,10 @@ Engine.eventSystem = {
             const loserId2 = winner === 'fighter1' ? event.fighter2 : event.fighter1;
             // loser→winner: bond -3~-5, rivalry +8~+12
             let relState = Engine.relationships.applyToRoster(
-              state, [loserId2], winnerId2, { min: -5, max: -3 }, { min: 8, max: 12 }, relRng);
+              state, loserId2, [winnerId2], { min: -5, max: -3 }, { min: 8, max: 12 }, relRng);
             // winner→loser: bond 0~-2, rivalry +8~+12
             relState = Engine.relationships.applyToRoster(
-              relState, [winnerId2], loserId2, { min: -2, max: 0 }, { min: 8, max: 12 }, relRng);
+              relState, winnerId2, [loserId2], { min: -2, max: 0 }, { min: 8, max: 12 }, relRng);
             relationships = relState.relationships;
           }
           return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, relationships };
@@ -9041,9 +9041,9 @@ Engine.eventSystem = {
             const opponentId = event.opponentId;
             let relState = { ...state };
             if (opponentId) {
-              relState = Engine.relationships.applyToRoster(relState, [fighterId], opponentId,
+              relState = Engine.relationships.applyToRoster(relState, fighterId, [opponentId],
                 { min: 0, max: 0 }, { min: 5, max: 10 }, relRng);
-              relState = Engine.relationships.applyToRoster(relState, [opponentId], fighterId,
+              relState = Engine.relationships.applyToRoster(relState, opponentId, [fighterId],
                 { min: 0, max: 0 }, { min: 5, max: 10 }, relRng);
             }
             // 団体仲間(roster)→代表選手: bond +2

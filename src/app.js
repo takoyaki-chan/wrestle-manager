@@ -4670,9 +4670,10 @@ const App = {
       wp.results.forEach(r => {
         const playerId = r.playerFighter.id;
         const aiId = r.aiFighter.id;
-        relState = Engine.relationships.applyToRoster(relState, [playerId], aiId,
+        // applyToRoster(state, sourceId, targetIds[], ...) — sourceは単体, targetは配列
+        relState = Engine.relationships.applyToRoster(relState, playerId, [aiId],
           { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
-        relState = Engine.relationships.applyToRoster(relState, [aiId], playerId,
+        relState = Engine.relationships.applyToRoster(relState, aiId, [playerId],
           { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
       });
       // チームメイト間: bond +2~+4

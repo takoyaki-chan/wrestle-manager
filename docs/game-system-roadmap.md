@@ -664,6 +664,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 
 ## 設計決定ログ（実装済みルール集）
 
+- **対抗戦進行不能バグ修正** — 対抗戦(D-2 rivalry war)受諾後にゲームが進行不能になる問題。finalizeWar内のEngine.relationships.applyToRoster呼び出しで引数の順序が逆（sourceId/targetIds[]を[sourceIds]/targetIdとして渡していた）。for...ofで数値をイテレートしようとしてTypeError→finalizeWar中断→オーバーレイが閉じず操作不能に。同じパターンがengine.jsのE-02(B2対立決着)とE-03(B3対抗戦)にも存在したため全6箇所を修正
 - **殿堂入り引き止めバグ修正** — 殿堂入り条件を満たした選手の引き止めに成功すると、rosterに戻ったにもかかわらず殿堂入りしてしまう問題。pendingAwardsはtickWeek内で事前計算されるため、引き止め後もhallOfFameリストに残っていた。_checkAndShowAwardsで表彰式UI表示前にG.rosterと照合し、引き止め済み選手をhallOfFameから除外するフィルタを追加
 - **PPV参加後TV遷移バグ修正** — closePPVResultがppvPhase='tv'に遷移しTV中継画面を表示していたため、参加済みの自団体エースが結果から消える問題。ppvPhase=null+advanceWeek()直接呼び出しに修正し、PPV参加後はTV画面をスキップしてオフシーズンへ直行
 - **PPV試合表示順修正** — card[0]=前座/card[total-1]=メインの構造に合わせ、表示順をメインイベント上→前座下に逆転。matchNum=idx+1に修正。nextIdx探索も前座→メイン順に変更。renderPPVMatchPreview/renderPPVResult/renderPPVTVResult全3箇所を修正
