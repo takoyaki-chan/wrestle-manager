@@ -3093,7 +3093,7 @@ function _renderDbRelmap() {
   // ── Left sidebar ──
   html += `<div class="rel-sidebar">`;
   html += `<div class="panel" style="padding:12px">`;
-  html += `<div class="panel-title">🔗 RELATIONSHIP MAP</div>`;
+  html += `<div class="panel-title">🔗 相関図</div>`;
 
   // Character selector
   html += `<div class="char-selector" style="margin-bottom:10px"><select onchange="_relmapCenterId=parseInt(this.value);_relmapSelected=null;renderDatabase()">`;
