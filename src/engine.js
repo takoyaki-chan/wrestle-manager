@@ -2626,7 +2626,8 @@ const Engine = {
         });
         orgs[org.id] = {
           roster,
-          orgPop: {S:75,A:55,B:35}[org.tier] || 30
+          orgPop: {S:75,A:55,B:35}[org.tier] || 30,
+          lockerRoomMorale: 60,  // Phase 5: プレイヤーと同じ初期値
         };
       });
       return { aiOrgs: orgs, rivalOrgNames: nameMap };
@@ -2733,6 +2734,148 @@ const Engine = {
         }
       }
       return matches;
+    },
+
+    // ── Phase 5: AIケアアクション自動処理 ──────────────────────────────────
+    // 練習週に実行。ティア依存で頻度・効果を決定。
+    // 返り値: 更新後の roster
+    processAICare(rng, roster, tier) {
+      const cfg = {
+        S: { careChance: 0.35, careStrength: 4.5, teamCareChance: 0.15, teamCareStrength: 1.5 },
+        A: { careChance: 0.20, careStrength: 3.5, teamCareChance: 0.08, teamCareStrength: 1.2 },
+        B: { careChance: 0.10, careStrength: 2.5, teamCareChance: 0.04, teamCareStrength: 0.8 },
+      }[tier] || { careChance: 0.10, careStrength: 2.5, teamCareChance: 0.04, teamCareStrength: 0.8 };
+
+      // ── 個人ケア: trust低い順にソートし、確率でケア ──
+      const careTargets = roster
+        .filter(f => !f.injury && !f.isRental)
+        .map(f => ({ id: f.id, trust: f.trust != null ? f.trust : 50 }))
+        .sort((a, b) => a.trust - b.trust);
+
+      let careCount = 0;
+      for (const target of careTargets) {
+        if (target.trust >= 60) break;
+        if (careCount >= 2) break;
+        if (Engine.rng.float(rng) >= cfg.careChance) continue;
+
+        const urgency = target.trust < 30 ? 1.3 : (target.trust < 45 ? 1.1 : 1.0);
+        const trustDelta = cfg.careStrength * urgency;
+
+        roster = roster.map(f => {
+          if (f.id !== target.id) return f;
+          const oldTrust = f.trust != null ? f.trust : 50;
+          const adjusted = trustDelta * Engine.trust.gainMult(oldTrust);
+          return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+        });
+        careCount++;
+      }
+
+      // ── 団体全体ケア（打ち上げ/合宿相当）: 確率で全員のtrust微増 ──
+      if (Engine.rng.float(rng) < cfg.teamCareChance) {
+        roster = roster.map(f => {
+          if (f.injury || f.isRental) return f;
+          const oldTrust = f.trust != null ? f.trust : 50;
+          const adjusted = cfg.teamCareStrength * Engine.trust.gainMult(oldTrust);
+          return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+        });
+      }
+
+      return roster;
+    },
+
+    // ── Phase 5: AI選択型イベント処理 ──────────────────────────────────
+    // プレイヤーと同じgenerateChoiceEventを使い、ティア依存でRNG選択する。
+    // 返り値: { roster, lockerRoomMorale, orgPopDelta } or null（イベントなし）
+    processAIChoiceEvent(rng, state, orgId, roster, orgData) {
+      const org = RIVAL_ORGS.find(o => o.id === orgId);
+      if (!org) return null;
+
+      const aiState = {
+        titles: orgData.titles || {},
+        funds: this._estimateAIFunds(org.tier),
+        roster,
+        coaches: [],  // AI団体にコーチなし（generateNotifEventフォールバック用）
+        lockerRoomMorale: orgData.lockerRoomMorale != null ? orgData.lockerRoomMorale : 60,
+        season: state.season,
+        week: state.week,
+      };
+
+      const event = Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
+      if (!event || event.type === 'N1' || event.type === 'N2' || event.type === 'N3' ||
+          event.type === 'N4' || event.type === 'N5' || event.type === 'N_isolation') {
+        return null;
+      }
+
+      const choiceIdx = this._pickAIChoice(rng, event, org.tier, aiState);
+      const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState);
+
+      let orgPopDelta = 0;
+      (result.events || []).forEach(e => {
+        if (typeof e === 'string' && e.startsWith('__orgPop:')) {
+          orgPopDelta += parseFloat(e.substring(9)) || 0;
+        }
+      });
+
+      return {
+        roster: result.roster,
+        lockerRoomMorale: result.lockerRoomMorale,
+        orgPopDelta,
+      };
+    },
+
+    _estimateAIFunds(tier) {
+      if (tier === 'S') return 3000;
+      if (tier === 'A') return 1500;
+      return 600;
+    },
+
+    _pickAIChoice(rng, event, tier, aiState) {
+      const roll = Engine.rng.float(rng);
+
+      switch (event.type) {
+        case 'S1':
+          if (tier === 'S') return roll < 0.80 ? 0 : (roll < 0.95 ? 1 : 2);
+          if (tier === 'A') return roll < 0.60 ? 0 : (roll < 0.85 ? 1 : 2);
+          return roll < 0.40 ? 0 : (roll < 0.75 ? 1 : 2);
+
+        case 'S3':
+          return roll < 0.60 ? 0 : (roll < 0.85 ? 1 : 2);
+
+        case 'S4':
+          if (tier === 'S') return roll < 0.70 ? 0 : (roll < 0.85 ? 1 : (roll < 0.95 ? 3 : 2));
+          if (tier === 'A') return roll < 0.40 ? 0 : (roll < 0.65 ? 1 : (roll < 0.85 ? 3 : 2));
+          return roll < 0.15 ? 0 : (roll < 0.45 ? 1 : (roll < 0.75 ? 3 : 2));
+
+        case 'S5':
+          return roll < 0.70 ? 0 : (roll < 0.90 ? 2 : 1);
+
+        case 'E1':
+          return roll < 0.60 ? 0 : (roll < 0.80 ? 2 : 1);
+
+        case 'E5':
+          if (tier === 'S') return roll < 0.20 ? 0 : 1;
+          if (tier === 'A') return roll < 0.50 ? 0 : 1;
+          return roll < 0.80 ? 0 : 1;
+
+        case 'E6':
+          if (tier === 'S') return roll < 0.80 ? 0 : (roll < 0.95 ? 1 : 2);
+          if (tier === 'A') return roll < 0.50 ? 0 : (roll < 0.80 ? 1 : 2);
+          return roll < 0.30 ? 0 : (roll < 0.60 ? 1 : 2);
+
+        case 'S_boycott':
+          if (tier === 'S') return roll < 0.50 ? 2 : 0;
+          return roll < 0.60 ? 0 : (roll < 0.80 ? 2 : 1);
+
+        case 'S_grumble':
+          return roll < 0.50 ? 0 : (roll < 0.80 ? 1 : 2);
+
+        case 'S_sns':
+          if (tier === 'S') return roll < 0.60 ? 1 : 0;
+          return roll < 0.50 ? 0 : (roll < 0.70 ? 1 : 2);
+
+        default:
+          return 0;
+      }
     },
 
     /** AI週次処理メイン: tickWeekから毎週呼び出し */
@@ -2941,8 +3084,13 @@ const Engine = {
         }
 
         // ★ AI trust変動（プレイヤーと同一ロジック）
-        const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, {}, state);
+        // Phase 5: AI団体のtitles情報を渡す（G3: タイトル機会なし判定のため）
+        const aiTitles = orgData.titles || {};
+        const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, aiTitles, state);
         roster = aiTrustResult.roster;
+
+        // Phase 5: matchResultsを呼び出し元に返す（bond/rivalryフル更新用）
+        orgData._lastMatchResults = matchResults;
 
         // ★ matchupLog蓄積
         const newEntries = matchCard.map(m => ({
@@ -2954,6 +3102,29 @@ const Engine = {
 
         // 興行週: 全選手に自然回復
         roster = roster.map(f => ({ ...f, condition: Math.min(100, (f.condition || 70) + 3) }));
+
+        // Phase 5: AI選択型イベント処理（興行週のみ）
+        const aiEventRng = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed, state.season, state.week, 0xAE01, org.id.charCodeAt(4) || 0
+        ));
+        const aiEventResult = Engine.rival.processAIChoiceEvent(aiEventRng, state, org.id, roster, orgData);
+        if (aiEventResult) {
+          roster = aiEventResult.roster;
+          if (aiEventResult.lockerRoomMorale != null) {
+            orgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
+          }
+          if (aiEventResult.orgPopDelta) {
+            orgData.orgPop = Engine.util.clamp((orgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
+          }
+        }
+      }
+
+      // Phase 5: AIケアアクション（練習週のみ）
+      if (!isShow) {
+        const aiCareRng = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed, state.season, state.week, 0xAC01, org.id.charCodeAt(4) || 0
+        ));
+        roster = Engine.rival.processAICare(aiCareRng, roster, org.tier);
       }
 
       return { ...orgData, roster };
@@ -3000,14 +3171,21 @@ const Engine = {
 
         // Step 5: 引退判定 (scout-spec §7)
         const surviving = [];
+        const aiRetirees = [];
         roster.forEach(f => {
           if (Engine.rival.checkRetirement(rng, f)) {
             retiredNames.push(`${f.name}(${f.age}歳)`);
+            aiRetirees.push(f);
           } else {
             surviving.push(f);
           }
         });
         roster = surviving;
+
+        // Phase 5 R3: AI引退者の退団trust影響（同団体の残存メンバーに適用）
+        aiRetirees.forEach(retiree => {
+          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退' });
+        });
 
         // Step 6: AIスカウト → handled separately in offseason week 2
         // Step 7: AI間移籍 → handled separately
@@ -3861,28 +4039,36 @@ const Engine = {
         }
       });
       s = { ...s, aiOrgs: newAiOrgs };
-      // Phase 2: AI試合のベースライン関係値更新（M-01のみ、逓減なし）
-      if (aiMatchPairs.length > 0 && s.relationships) {
-        const aiRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2C));
-        const rels = { ...s.relationships };
-        aiMatchPairs.forEach(([idA, idB]) => {
-          const keyAB = Engine.relationships._key(idA, idB);
-          const keyBA = Engine.relationships._key(idB, idA);
-          const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
-          const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
-          rAB.bond += Engine.rng.int(aiRelRng, 0, 1);
-          rAB.rivalry += Engine.rng.int(aiRelRng, 5, 15) / 10;
-          rBA.bond += Engine.rng.int(aiRelRng, 0, 1);
-          rBA.rivalry += Engine.rng.int(aiRelRng, 5, 15) / 10;
-          rAB.bond = Engine.util.clamp(rAB.bond, 0, 100);
-          rAB.rivalry = Engine.util.clamp(rAB.rivalry, 0, 100);
-          rBA.bond = Engine.util.clamp(rBA.bond, 0, 100);
-          rBA.rivalry = Engine.util.clamp(rBA.rivalry, 0, 100);
-          rels[keyAB] = rAB;
-          rels[keyBA] = rBA;
-        });
-        s = { ...s, relationships: rels };
-      }
+      // Phase 5: AI試合の関係値更新（applyMatchResult フル適用）
+      Object.keys(newAiOrgs).forEach(orgId => {
+        const aiOrgData = newAiOrgs[orgId];
+        const aiMatchResults = aiOrgData._lastMatchResults || [];
+        if (aiMatchResults.length > 0 && s.relationships) {
+          const aiRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2C, orgId.charCodeAt(4) || 0));
+          aiMatchResults.forEach(r => {
+            const context = {
+              mq: r.mq,
+              winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
+              hpA: r.hpLeft || { final: 50, max: 100 },
+              hpB: r.hpRight || { final: 50, max: 100 },
+              turns: r.turns || 10,
+              stage: 'normal',
+              isTitleMatch: false,
+              rivalryResolved: false,
+              injuredId: null,
+              isCareerBestA: false,
+              isCareerBestB: false,
+              losingStreakA: 0,
+              losingStreakB: 0,
+              isProveModeA: false,
+              isProveModeB: false,
+            };
+            s = Engine.relationships.applyMatchResult(s, r.left.id, r.right.id, context, aiRelRng);
+          });
+          // 消費済みフラグをクリア
+          delete aiOrgData._lastMatchResults;
+        }
+      });
     }
     // PPV解禁チェック（orgPop変動後）
     let ppvUnlockEvent = null;
@@ -4016,6 +4202,14 @@ const Engine = {
       const titleResult = Engine.title.checkRivalryTitles(s);
       s = titleResult.state;
       titleResult.events.forEach(e => events.push(e));
+    }
+    // Phase 5: スナップショットフラグの安全弁クリア（snapshot.generate未実装時に蓄積防止）
+    if (!Engine.snapshot) {
+      s = { ...s, roster: s.roster.map(f => {
+        const { _grievanceFlags, _relationshipFlags, _departureBondImpact,
+                _snapshotBonusSources, ...clean } = f;
+        return clean;
+      })};
     }
     // validateGameState: 不変条件チェック（tickWeek末尾で常時実行）
     s = Engine.validateGameState(s);
@@ -4328,7 +4522,7 @@ const Engine = {
       for (const ir of injRetirees) {
         const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
         if (!retiredF) continue;
-        roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships);
+        roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships, { name: retiredF.name, reason: '怪我引退' });
       }
     }
 
@@ -4454,7 +4648,7 @@ const Engine = {
       s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
       // Phase 3 R3: 仲の良い選手を失ったtrust影響
       departureResult.departed.forEach(d => {
-        const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships);
+        const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships, { name: d.name, reason: '突然退団' });
         s = { ...s, roster: updatedRoster };
       });
       departureResult.departed.forEach(d => {
@@ -4664,7 +4858,7 @@ const Engine = {
           s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
         }
         // Phase 3 R3: 仲の良い選手を失ったtrust影響
-        const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships);
+        const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '引き抜き' });
         s = { ...s, roster: impactedRoster };
         // Fighter leaves — player gets transfer fee
         s = { ...s,
@@ -4703,7 +4897,7 @@ const Engine = {
             s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
           }
           // Phase 3 R3: 仲の良い選手を失ったtrust影響
-          const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships);
+          const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '防衛失敗' });
           s = { ...s, roster: impactedRoster2 };
           // Defense failed — forced transfer
           const targetId = poach.org.id;
@@ -6353,7 +6547,7 @@ const Engine = {
           s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
           // Phase 3 R3: 仲の良い選手を失ったtrust影響（シーズン末引退）
           allRetirees.forEach(retiree => {
-            const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships);
+            const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退' });
             s = { ...s, roster: impacted };
           });
           allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
@@ -7002,6 +7196,8 @@ const Engine = {
       financeHistory: [],
       // デバッグ・検証システム
       debugLog: [],
+      // Phase 5: スナップショット通知のクールダウン管理
+      _snapshotCooldowns: {},
       // Phase 1: 人間関係データ基盤
       relationships: {},
       relationshipCounters: {},
@@ -7756,6 +7952,7 @@ Engine.trust = {
   // rosterContext は applyShowTrust 内で事前計算してキャッシュする。
   calcGrievanceDelta(fighter, rosterContext, titles, state) {
     let delta = 0;
+    const flags = {};  // Phase 5: スナップショット用フラグ
 
     // ── G1: 給与不公平（OVR±5帯の同僚平均と比較） ──
     const myOvr = Engine.util.ov(fighter);
@@ -7766,7 +7963,8 @@ Engine.trust = {
     if (peers.length >= 2) {
       const avgPeerSalary = peers.reduce((s, e) => s + e.salary, 0) / peers.length;
       if (mySalary < avgPeerSalary * 0.8) {
-        delta -= 0.4;  // 給与不公平
+        delta -= 0.4;
+        flags.G1 = true;
       }
     }
 
@@ -7776,7 +7974,12 @@ Engine.trust = {
       e => e.id !== fighter.id && (e.age || 20) < myAge - 3 && e.salary > mySalary * 1.1
     );
     if (hasRicherJunior) {
-      delta -= 0.6;  // 後輩の方が給与が高い
+      delta -= 0.6;
+      flags.G2 = true;
+      const juniorEntry = rosterContext.salaryByOvr.find(
+        e => e.id !== fighter.id && (e.age || 20) < myAge - 3 && e.salary > mySalary * 1.1
+      );
+      if (juniorEntry) flags.G2_juniorId = juniorEntry.id;
     }
 
     // ── G3: 長期間タイトルに絡めない（OVR上位3位 + 非王者 + 8興行タイトル戦なし） ──
@@ -7786,7 +7989,8 @@ Engine.trust = {
         const lastTitle = fighter.lastTitleShowWeek || 0;
         const currentAbsWeek = (state.season || 1) * 48 + (state.week || 1);
         if (currentAbsWeek - lastTitle >= 8) {
-          delta -= 0.5;  // 長期間タイトルに絡めない
+          delta -= 0.5;
+          flags.G3 = true;
         }
       }
     }
@@ -7795,17 +7999,19 @@ Engine.trust = {
     const rosterSize = rosterContext.activeRosterSize;
     const streak = fighter.noAppearStreak || 0;
     if (rosterSize >= 10 && streak >= 2) {
-      delta -= 0.35;  // ロスター過密
+      delta -= 0.35;
+      flags.G4 = true;
     }
 
-    return delta;
+    return { delta, flags };
   },
 
   // ── Phase 3: 選手間関係によるtrust変動（興行ごと） ───────────────────────
   // matchContext: { participatedIds: Set, matchResults: [{leftId, rightId, winnerId}], sameOrgActiveRoster: [] }
   calcRelationshipTrustDelta(fighter, state, matchContext) {
-    if (!state.relationships) return 0;
+    if (!state.relationships) return { delta: 0, flags: {} };
     let delta = 0;
+    const flags = {};  // Phase 5: スナップショット用フラグ
     const rels = state.relationships;
 
     // ── R1: bond低いペアが同興行出場（双方に適用） ──
@@ -7817,6 +8023,8 @@ Engine.trust = {
         const r = rels[key];
         if (r && r.bond <= 27) {
           delta -= 0.3;
+          if (!flags.R1) flags.R1 = [];
+          flags.R1.push(otherId);
         }
       }
     }
@@ -7836,6 +8044,7 @@ Engine.trust = {
       }
       if (bondFriends <= 1) {
         delta -= 0.4;
+        flags.R2 = true;
       }
     }
 
@@ -7853,19 +8062,21 @@ Engine.trust = {
 
       const won = mr.winnerId === fighter.id;
       const lost = mr.winnerId === oppId;
-      if (won) delta += 0.2;       // R4: ライバルに勝った
-      else if (lost) delta -= 0.3; // R5: ライバルに負けた
+      if (won) { delta += 0.2; flags.R4 = oppId; }
+      else if (lost) { delta -= 0.3; flags.R5 = oppId; }
     }
 
-    return delta;
+    return { delta, flags };
   },
 
   // ── Phase 3 R3: 仲の良い選手が退団/引退した時のtrust影響 ──────────────
   // 残されたロスターメンバーのうち、退団者とbond65+の選手のtrustを直接低下させる。
   // delta = -(bond - 50) * 0.2  →  bond65: -3.0 / bond75: -5.0 / bond85: -7.0
   // 返り値: 更新後のroster
-  applyDepartureTrustImpact(roster, departedId, relationships) {
+  applyDepartureTrustImpact(roster, departedId, relationships, meta) {
     if (!relationships) return roster;
+    const departedName = (meta && meta.name) || '';
+    const reason = (meta && meta.reason) || '';
     return roster.map(f => {
       const key = Engine.relationships._key(f.id, departedId);
       const r = relationships[key];
@@ -7874,7 +8085,10 @@ Engine.trust = {
       const oldTrust = f.trust != null ? f.trust : 50;
       const newTrust = Engine.util.clamp(oldTrust + impact, 0, 100);
       if (Math.abs(newTrust - oldTrust) < 0.01) return f;
-      return { ...f, trust: newTrust };
+      return {
+        ...f, trust: newTrust,
+        _departureBondImpact: { departedId, departedName, bond: r.bond, reason },  // Phase 5: スナップショット用
+      };
     });
   },
 
@@ -8009,6 +8223,11 @@ Engine.trust = {
         // gainMultは即時ボーナスにも適用（高trust帯では逓減する）
         if (bonus > 0) bonus *= Engine.trust.gainMult(oldTrust);
         delta += bonus;
+        // Phase 5: スナップショット用ソース転写
+        if (updated._trustBonusSources) {
+          updated._snapshotBonusSources = updated._trustBonusSources;
+          delete updated._trustBonusSources;
+        }
         delete updated._trustBonus;
       }
 
@@ -8019,8 +8238,12 @@ Engine.trust = {
           ovrRank: ovrRankMap[fighter.id] || 99,
           activeRosterSize: activeRoster.length,
         };
-        const grievance = Engine.trust.calcGrievanceDelta(fighter, rosterContext, titles, state);
-        delta += grievance;
+        const grievanceResult = Engine.trust.calcGrievanceDelta(fighter, rosterContext, titles, state);
+        delta += grievanceResult.delta;
+        // Phase 5: スナップショット用フラグを選手オブジェクトに転写
+        if (Object.keys(grievanceResult.flags).length > 0) {
+          updated._grievanceFlags = grievanceResult.flags;
+        }
       }
 
       // Phase 3: 選手間関係によるtrust変動
@@ -8030,8 +8253,12 @@ Engine.trust = {
           matchResults: matchResultsForTrust,
           sameOrgActiveRoster,
         };
-        const relDelta = Engine.trust.calcRelationshipTrustDelta(fighter, state, matchContext);
-        delta += relDelta;
+        const relResult = Engine.trust.calcRelationshipTrustDelta(fighter, state, matchContext);
+        delta += relResult.delta;
+        // Phase 5: スナップショット用フラグを選手オブジェクトに転写
+        if (Object.keys(relResult.flags).length > 0) {
+          updated._relationshipFlags = relResult.flags;
+        }
       }
 
       // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響

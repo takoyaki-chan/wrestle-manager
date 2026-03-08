@@ -3255,7 +3255,11 @@ const App = {
           btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
         );
         if (btResult) {
-          const btFighter = { ...btResult.fighter, _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5 };
+          const btFighter = {
+            ...btResult.fighter,
+            _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5,
+            _trustBonusSources: [...(btResult.fighter._trustBonusSources || []), 'breakthrough'],
+          };
           roster = roster.map(c => c.id === charId ? btFighter : c);
           const btHintFighter = roster.find(c => c.id === charId) || fighter;
           const btHintLine = pickDialogueLine(BT_HINT_LINES, btHintFighter);
@@ -3275,7 +3279,8 @@ const App = {
         const btUpdatedFighter = roster.find(c => c.id === charId);
         if (r.mq > (btUpdatedFighter.careerBestMQ || 0)) {
           roster = roster.map(c => c.id === charId
-            ? { ...c, careerBestMQ: r.mq, _trustBonus: (c._trustBonus || 0) + 1.2 }
+            ? { ...c, careerBestMQ: r.mq, _trustBonus: (c._trustBonus || 0) + 1.2,
+                _trustBonusSources: [...(c._trustBonusSources || []), 'careerBestMQ'] }
             : c);
         }
 
@@ -4686,7 +4691,8 @@ const App = {
     if (winnerPlayerIds.length > 0) {
       G = { ...G, roster: G.roster.map(c =>
         winnerPlayerIds.includes(c.id)
-          ? { ...c, _trustBonus: (c._trustBonus || 0) + 2.3 }
+          ? { ...c, _trustBonus: (c._trustBonus || 0) + 2.3,
+              _trustBonusSources: [...(c._trustBonusSources || []), 'warVictory'] }
           : c
       )};
     }
