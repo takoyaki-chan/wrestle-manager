@@ -167,6 +167,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .phase-pill{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;
   padding:4px 12px;border:1px solid rgba(212,168,67,0.3);border-radius:2px;color:var(--gold-light);transition:all .3s}
 .phase-pill.flash{background:rgba(212,168,67,0.2);box-shadow:0 0 15px rgba(212,168,67,0.3)}
+.phase-pill.bigmatch{border-color:rgba(255,215,0,0.5);color:#ffd700;text-shadow:0 0 6px rgba(255,215,0,0.3)}
+.phase-pill.bigmatch.flash{background:rgba(255,215,0,0.25);box-shadow:0 0 25px rgba(255,215,0,0.4),0 0 50px rgba(255,215,0,0.15)}
 .narration-box{min-height:48px;padding:8px;background:rgba(0,0,0,0.3);border-radius:3px;
   border-left:3px solid var(--gold-dim)}
 .nar-line{opacity:0;transform:translateY(5px);transition:all .3s;font-size:14px;line-height:1.6;margin-bottom:4px}
@@ -306,6 +308,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   15%{transform:translate(-50%,-50%) scale(1);opacity:1}
   70%{opacity:1}100%{transform:translate(-50%,-50%) scale(0.9);opacity:0}}
 .finish-count-text.show{animation:countPop 0.8s ease-out forwards}
+/* ═══ RIVALRY CUTIN ═══ */
+.cutin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+.cutin-overlay.show{opacity:1}
+.cutin-box{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(8,8,13,0.95),rgba(14,14,21,0.92));
+  border:2px solid var(--gold-dim);border-radius:8px;padding:12px 20px;
+  box-shadow:0 0 30px rgba(212,168,67,0.3),0 0 60px rgba(0,0,0,0.6);
+  transform:translateX(-40px);animation:cutinSlide .4s ease-out forwards;max-width:85%}
+.cutin-box.right{flex-direction:row-reverse;transform:translateX(40px)}
+.cutin-portrait{width:56px;height:56px;border-radius:50%;border:2px solid var(--gold);
+  object-fit:cover;flex-shrink:0}
+.cutin-text{font-size:15px;line-height:1.5;color:var(--text-main);font-weight:700;
+  text-shadow:0 0 8px rgba(212,168,67,0.3)}
+.cutin-name{font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:2px}
+@keyframes cutinSlide{to{transform:translateX(0)}}
 </style>
 </head>
 <body>
@@ -317,6 +334,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   <div id="screenContainer"></div>
   <div class="result-overlay" id="resultOverlay"></div>
   <div class="finish-click-overlay" id="finishOverlay"></div>
+  <div class="cutin-overlay" id="cutinOverlay"></div>
   <div class="finish-click-btn" id="finishBtn"></div>
 </div>
 <script>
@@ -507,6 +525,81 @@ atkC:{
   big:["これで…終わりだっ！","決めるっ！","受けてみなさいっ！","覚悟しなっ！"]
 }};
 
+// ═══ RIVALRY CUTIN LINES ═══
+// personality別のカットイン台詞（フェーズ切り替え時 + フィニッシュ前）
+const CUTIN_LINES = {
+  // 攻めている側
+  atk: {
+    bold: ["まだまだこんなもんじゃないよ！","ここからが本番だ！","逃がさないよ！","あたしの全部、受けてみな！"],
+    quiet: ["…まだ、終わらない","…ここからよ","…負けるわけにはいかない","…見ていて"],
+    easygoing: ["あはは、楽しくなってきた！","いい試合にしようよ！","まだまだいけるよ〜！","本気出しちゃうよ？"],
+    earnest: ["絶対に…勝つ！","ここで引くわけにはいかないんです！","全力で…いきます！","諦めない…！"],
+    emotional: ["負けたくないっ…！","絶対に…絶対にっ…！","うぅっ…でも、負けないっ…！","こんなところで…終われないっ！"],
+    normal: ["いくよ！","まだまだ！","負けないから！","ここからよ！"]
+  },
+  // 受けている側
+  def: {
+    bold: ["…効くじゃん。でもまだだよ","その程度で終わると思った？","…面白い。もっとやりなよ","はっ…やるね"],
+    quiet: ["…まだ立てる","…この程度では","…大丈夫","…まだ"],
+    easygoing: ["いたた〜…でもまだ大丈夫！","う〜ん、なかなかやるね！","あちゃ〜…でも負けないよ！","おっと、危ない危ない！"],
+    earnest: ["くっ…でも、まだです！","負けません…！","まだ…立てます！","ここからです…！"],
+    emotional: ["痛い…っ！ でも…でもっ…！","うぅ…まだ…まだなのにっ…！","こんなの…こんなので…！","泣かない…泣かないよ…！"],
+    normal: ["くっ…！","まだよ…！","負けない…！","ここからよ…！"]
+  },
+  // クライマックス突入時
+  climax: {
+    bold: ["（ここからだ…ここからが、あたしの時間だ）","（さあ…決めにいく）"],
+    quiet: ["（…集中。今だけは、何も考えなくていい）","（…身体が軽い。いける）"],
+    easygoing: ["（わくわくする…この瞬間が一番好き）","（最高の試合にしよう！）"],
+    earnest: ["（ここまで来た…あとは、出し切るだけ）","（全部…全部出し切る）"],
+    emotional: ["（胸が苦しい…でも、この痛みが、生きてる証だから）","（お願い、身体…もう少しだけ動いて）"],
+    normal: ["（…ここからだ）","（負けない…！）"]
+  }
+};
+
+// カットイン表示関数
+function showCutin(side, charData, lineType) {
+  const mi = matchData && matchData.matchInfo;
+  if (!mi) return;
+  const personality = side === 'left'
+    ? (mi.leftPersonality || 'normal')
+    : (mi.rightPersonality || 'normal');
+  const lines = CUTIN_LINES[lineType] && CUTIN_LINES[lineType][personality];
+  if (!lines || !lines.length) return;
+  const text = lines[Math.floor(Math.random() * lines.length)];
+  const overlay = document.getElementById('cutinOverlay');
+  if (!overlay) return;
+  const portraitUrl = charData.portraitUrl || '';
+  const dirClass = side === 'right' ? ' right' : '';
+  overlay.innerHTML = `<div class="cutin-box${dirClass}">
+    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="">` : ''}
+    <div><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div></div>
+  </div>`;
+  overlay.classList.add('show');
+  setTimeout(() => { overlay.classList.remove('show'); }, 2200);
+  setTimeout(() => { overlay.innerHTML = ''; }, 2600);
+}
+
+// フェーズ切り替え時のカットイン判定
+function tryRivalryCutin(phaseName) {
+  const mi = matchData && matchData.matchInfo;
+  if (!mi || !mi.rivalryTier || mi.rivalryTier <= 0) return;
+  // 既に表示済みのフェーズはスキップ
+  const key = phaseName.toLowerCase();
+  if (S.cutinShown && S.cutinShown[key]) return;
+  if (S.cutinShown) S.cutinShown[key] = true;
+  // 発動率: tier1=30%, tier2=50%, tier3=80%
+  const rates = [0, 0.30, 0.50, 0.80];
+  const rate = rates[Math.min(mi.rivalryTier, 3)] || 0;
+  if (Math.random() > rate) return;
+  // モメンタム優位側がatk、劣位側がdef
+  const isLeftLeading = S.mom > 0;
+  const side = isLeftLeading ? 'left' : 'right';
+  const charData = isLeftLeading ? S.L : S.R;
+  const lineType = phaseName === 'Climax' ? 'climax' : 'atk';
+  showCutin(side, charData, lineType);
+}
+
 // ═══ CONSTANTS ═══
 const MAX_T=20;
 const PHASES=[
@@ -515,6 +608,16 @@ const PHASES=[
   {name:'End',min:9,max:12,mult:1.2,sCh:55,tempo:2500,counterBonus:5},
   {name:'Climax',min:13,max:20,mult:1.4,sCh:70,tempo:3000,counterBonus:8}
 ];
+// ── Tier 2: ビッグマッチ ──
+const BIGMATCH_MAX_T=24;
+const BIGMATCH_PHASES=[
+  {name:'Opening',min:1,max:6,mult:0.9,sCh:20,tempo:2000,counterBonus:0},
+  {name:'Mid',min:7,max:12,mult:1.05,sCh:40,tempo:2000,counterBonus:3},
+  {name:'End',min:13,max:18,mult:1.2,sCh:55,tempo:2500,counterBonus:5},
+  {name:'Climax',min:19,max:24,mult:1.4,sCh:70,tempo:3000,counterBonus:8}
+];
+// Active tier state (set in startMatchFromData)
+let _maxT=MAX_T, _phases=PHASES, _isBigMatch=false;
 
 // ═══ v4.1 ENGINE CONFIG ═══
 const ENG = {
@@ -583,6 +686,8 @@ const ENG = {
   rollupTecBonus: 0.18,     // TEC helps rollup success
   rollupBaseSuccess: 16,    // was flat 15%
 };
+const BIGMATCH_ENG={...ENG,hpBase:85,hpScale:1.50,kickoutMax:3,guEscapeMax:3};
+let _eng=ENG; // Active engine config (switched in startMatchFromData)
 
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
 // v4.1: Effective stat with diminishing returns above 100 (except MN)
@@ -593,7 +698,7 @@ function eff(x){
   return p+(x-p)*s;
 }
 
-function phase(t){return PHASES.find(p=>t>=p.min&&t<=p.max)||PHASES[3]}
+function phase(t){return _phases.find(p=>t>=p.min&&t<=p.max)||_phases[_phases.length-1]}
 function ov(c){return Math.round((c.pw+c.sp+c.te+c.st+c.mn)/5)}
 function pk(a){return a[Math.floor(Math.random()*a.length)]}
 function tpl(t,v){return t.replace(/\{(\w)\}/g,(_,k)=>v[k]||'')}
@@ -654,17 +759,17 @@ function determineFinishType(mv, atk, def) {
 
 // ═══ v4.1: KICKOUT / ESCAPE ═══
 function calcKickoutChance(def, ph) {
-  let chance = (def.mn / 100) * ENG.kickoutMnScale;
-  if (ph.name === 'Climax') chance *= ENG.kickoutClimaxMult;
+  let chance = (def.mn / 100) * _eng.kickoutMnScale;
+  if (ph.name === 'Climax') chance *= _eng.kickoutClimaxMult;
   chance = clamp(chance, 0.05, 0.45);
-  if (def.kickoutCount >= ENG.kickoutMax) chance = 0;
+  if (def.kickoutCount >= _eng.kickoutMax) chance = 0;
   return chance;
 }
 function calcGuEscapeChance(def, ph) {
-  let chance = (def.mn / 100) * ENG.guEscapeMnScale;
+  let chance = (def.mn / 100) * _eng.guEscapeMnScale;
   if (ph.name === 'Climax') chance *= 0.8;
   chance = clamp(chance, 0.05, 0.40);
-  if (def.kickoutCount >= ENG.guEscapeMax) chance = 0;
+  if (def.kickoutCount >= _eng.guEscapeMax) chance = 0;
   return chance;
 }
 
@@ -862,6 +967,15 @@ const FINISH_SUSPENSE={
 };
 
 function showFinishClickBtn(type,v){
+  // フィニッシュ前カットイン（ライバリーtier2+、まだfinishカットイン未表示）
+  const _mi = matchData && matchData.matchInfo;
+  if (_mi && _mi.rivalryTier >= 2 && S.cutinShown && !S.cutinShown.finish) {
+    S.cutinShown.finish = true;
+    // 攻撃側の決め台詞
+    const atkSide = S.mom >= 0 ? 'left' : 'right';
+    const atkChar = atkSide === 'left' ? S.L : S.R;
+    showCutin(atkSide, atkChar, 'atk');
+  }
   const btn=document.getElementById('finishBtn');
   const ov=document.getElementById('finishOverlay');
   const nBtn=document.getElementById('nBtn');
@@ -960,7 +1074,7 @@ function resolveFallClick(p){
     p.log+=` → カウント2.9で返した！【粘り発動】`;S.log.unshift(p.log);S.log=S.log.slice(0,15);
     updPanelState(ds,p.def);
     S.turn++;S.pendingFinishResult=null;
-    if(S.turn>MAX_T){doTimeout();return}
+    if(S.turn>_maxT){doTimeout();return}
     showNBtn();endAnim();
   }
 }
@@ -999,7 +1113,7 @@ function resolveGUClick(p){
     p.log+=` → ロープブレイクで脱出！【粘り発動】`;S.log.unshift(p.log);S.log=S.log.slice(0,15);
     updPanelState(ds,p.def);
     S.turn++;S.pendingFinishResult=null;
-    if(S.turn>MAX_T){doTimeout();return}
+    if(S.turn>_maxT){doTimeout();return}
     showNBtn();endAnim();
   }
 }
@@ -1023,7 +1137,7 @@ function resolveRollupClick(p){
     if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.rollFail),v)}</div>`;
     p.log+=' → カウント2で返した！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
     S.turn++;S.pendingFinishResult=null;
-    if(S.turn>MAX_T){doTimeout();return}
+    if(S.turn>_maxT){doTimeout();return}
     showNBtn();endAnim();
   }
 }
@@ -1052,7 +1166,7 @@ function resolvePinAttemptClick(p){
     showSp(as,pk(CMT.sit.kickoutAtk),'t-def');
     p.log+=' → ニアフォール！ 返した！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
     S.turn++;S.pendingFinishResult=null;
-    if(S.turn>MAX_T){doTimeout();return}
+    if(S.turn>_maxT){doTimeout();return}
     showNBtn();endAnim();
   }
 }
@@ -1165,15 +1279,22 @@ function sendResult() {
 
 // ═══ START MATCH (from postMessage data) ═══
 function startMatchFromData(left, right){
+  // Tier切り替え
+  const mi = matchData && matchData.matchInfo;
+  _isBigMatch = mi && mi.matchTier >= 2;
+  _maxT = _isBigMatch ? BIGMATCH_MAX_T : MAX_T;
+  _phases = _isBigMatch ? BIGMATCH_PHASES : PHASES;
+  _eng = _isBigMatch ? BIGMATCH_ENG : ENG;
   // Ensure vl (voice lines) have defaults
   if (!left.vl || !left.vl.length) left.vl = ['…！'];
   if (!right.vl || !right.vl.length) right.vl = ['…！'];
-  const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(ENG.hpBase+eff(c.st)*ENG.hpScale),mhp:Math.round(ENG.hpBase+eff(c.st)*ENG.hpScale),kickoutCount:0,gritTurns:0});
+  const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(_eng.hpBase+eff(c.st)*_eng.hpScale),mhp:Math.round(_eng.hpBase+eff(c.st)*_eng.hpScale),kickoutCount:0,gritTurns:0});
   S.L=mk(left);S.R=mk(right);
   S.turn=1;S.mom=0;S.prevMom=0;S.log=[];S.winner=null;S.finType=null;S.finMove=null;S.anim=false;
   S.halfTrig={l:false,r:false};S.qtrTrig={l:false,r:false};S.dangerTrig={l:false,r:false};
   S.awaitingFinishClick=false;S.pendingFinishResult=null;stopDrone();
   S.consecutiveHits={left:0,right:0};
+  S.cutinShown={opening:false,mid:false,end:false,climax:false,finish:false};
   S.screen='MATCH';renderMatchWithIntro();
 }
 
@@ -1181,7 +1302,12 @@ function startMatchFromData(left, right){
 function renderMatch(){
   const ct=document.getElementById('screenContainer'),L=S.L,R=S.R,ph=phase(S.turn);
   const hdr=document.querySelector('.site-title');if(hdr)hdr.textContent=matchData&&matchData.matchInfo?matchData.matchInfo.header||'LIVE MATCH':'LIVE MATCH';
-  const sub=document.getElementById('headerSub');if(sub)sub.textContent=matchData&&matchData.matchInfo?matchData.matchInfo.subHeader||'Battle Engine v4.1b':'Battle Engine v4.1b';
+  const sub=document.getElementById('headerSub');
+  if(sub){
+    let subText=matchData&&matchData.matchInfo?matchData.matchInfo.subHeader||'Battle Engine v4.1b':'Battle Engine v4.1b';
+    if(_isBigMatch)subText='⭐ BIG MATCH — '+subText;
+    sub.textContent=subText;
+  }
   const mPct=clamp(50+S.mom*0.5,5,95);
   function panelCls(f,side){
     const pct=f.hp/f.mhp*100;let cls='fighter-panel '+side;
@@ -1223,7 +1349,7 @@ function renderMatch(){
   ct.innerHTML=`<div class="match-grid" id="matchGrid">${fHTML(L,'left')}
     <div class="center-panel">
       <div class="top-line"><span class="turn-label">TURN ${S.turn}</span>
-        <span class="phase-pill" id="pill">${ph.name}</span></div>
+        <span class="phase-pill${_isBigMatch?' bigmatch':''}" id="pill">${ph.name}</span></div>
       <div class="narration-box" id="narBox"><div class="nar-empty">試合開始 — NEXT TURNを押してください</div></div>
       <div class="move-box"><div class="move-label">Current Move</div>
         <div class="move-value" id="moveV">---</div></div>
@@ -1291,6 +1417,12 @@ function nextTurn(){
     const pill=document.getElementById('pill');
     if(pill){pill.textContent=ph.name;pill.classList.add('flash');setTimeout(()=>pill.classList.remove('flash'),600)}
     sfx.phaseChg();
+    // ライバリーカットイン
+    tryRivalryCutin(ph.name);
+    // ビッグマッチClimaxフェーズ → 親にBGM切替通知
+    if(_isBigMatch && ph.name==='Climax' && window.parent!==window){
+      window.parent.postMessage({type:'BIGMATCH_CLIMAX'},'*');
+    }
   }
 
   // === MISS ===
@@ -1313,7 +1445,7 @@ function nextTurn(){
       let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → MISS！ (命中率${Math.round(hitRate)}%)`;
       S.log.unshift(log);S.log=S.log.slice(0,15);
       S.turn++;
-      if(S.turn>MAX_T){doTimeout();return}
+      if(S.turn>_maxT){doTimeout();return}
       endAnim();
     },t(0.4));
     return;
@@ -1367,7 +1499,7 @@ function nextTurn(){
       }
       S.log.unshift(log);S.log=S.log.slice(0,15);
       S.turn++;
-      if(S.turn>MAX_T){doTimeout();return}
+      if(S.turn>_maxT){doTimeout();return}
       endAnim();
     },t(0.4));
     return;
@@ -1490,7 +1622,7 @@ function nextTurn(){
     if(def.hp<=0){doFinish(atk,def,as,ds,mv,log,v);return}
     S.log.unshift(log);S.log=S.log.slice(0,15);
     S.turn++;
-    if(S.turn>MAX_T){doTimeout();return}
+    if(S.turn>_maxT){doTimeout();return}
     endAnim();
   },t(0.7));
 }

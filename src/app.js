@@ -2728,7 +2728,7 @@ const App = {
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) return;
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
+    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     try { Audio.play('tick'); } catch(e) {}
     renderMatchPreview();
     if (sp.results.every(r => r !== null)) App.finalizeShow();
@@ -2762,9 +2762,19 @@ const App = {
         subHeader: `${charL.name} vs ${charR.name}`,
         matchNum: idx + 1,
         totalMatches: sp.validMatches.length,
-        isTitle: !!m.isTitle
+        isTitle: !!m.isTitle,
+        matchTier: m.isTitle ? 2 : 1,
+        rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
+        leftPersonality: charL.personality || 'normal',
+        leftArchetype: charL.archetype || 'normal',
+        rightPersonality: charR.personality || 'normal',
+        rightArchetype: charR.archetype || 'normal'
       }
     };
+    // ビッグマッチBGM: タイトル戦で bigmatch.mp3 を再生
+    if (m.isTitle) {
+      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
+    }
     let sent = false;
     const sendOnce = () => {
       if (sent) return;
@@ -2818,6 +2828,8 @@ const App = {
       hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
+    // ビッグマッチBGMフェードアウト
+    try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     sp.currentWatching = -1;
@@ -2863,7 +2875,7 @@ const App = {
       const charR = G.roster.find(c => c.id === m.right);
       if (!charL || !charR) { hasMissing = true; return; }
       const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng);
+      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     });
     if (sp.results.some(r => r === null)) {
       renderMatchPreview();
@@ -3239,9 +3251,12 @@ const App = {
         );
         if (btResult) {
           roster = roster.map(c => c.id === charId ? btResult.fighter : c);
+          const btHintFighter = roster.find(c => c.id === charId) || fighter;
+          const btHintLine = pickDialogueLine(BT_HINT_LINES, btHintFighter);
           pendingGrowthEvents.push({
             type: 'breakthrough', fighterId: charId,
-            stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
+            stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak,
+            btHint: btHintLine
           });
           // Phase 4 G-01: ブレークスルー → OVR近接キャラからrivalry上昇
           if (s.relationships) {
@@ -4253,7 +4268,7 @@ const App = {
         f2 = { ...f2, pw: (f2.pw || 50) + 5, sp: (f2.sp || 50) + 5, te: (f2.te || 50) + 5, st: (f2.st || 50) + 5 };
       }
 
-      const matchResult = Engine.battle.simulateMatch(f1, f2, rng);
+      const matchResult = Engine.battle.simulateMatch(f1, f2, rng, 2);
       const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
 
       // 結果をeventに添付して Step 2 を適用
@@ -4278,7 +4293,7 @@ const App = {
       const challenger = event.challenger;
       if (!challenger) return;
 
-      const matchResult = Engine.battle.simulateMatch(playerFighter, challenger, rng);
+      const matchResult = Engine.battle.simulateMatch(playerFighter, challenger, rng, 2);
 
       // 結果をeventに添付して Step 2 を適用
       const enrichedEvent = { ...event, matchResult, selectedFighterId: fighterId };
@@ -4306,9 +4321,12 @@ const App = {
           const btRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE57, fighterId));
           G = Engine.relationships.applyBreakthroughEffect(G, fighterId, btRelRng);
         }
+        const btHintFighterB3 = G.roster.find(c => c.id === fighterId) || playerFighter;
+        const btHintLineB3 = pickDialogueLine(BT_HINT_LINES, btHintFighterB3);
         setTimeout(() => showGrowthEventPopups([{
           type: 'breakthrough', fighterId,
-          stat: btResultB3.stat, gain: btResultB3.gain, hotStreak: btResultB3.hotStreak
+          stat: btResultB3.stat, gain: btResultB3.gain, hotStreak: btResultB3.hotStreak,
+          btHint: btHintLineB3
         }]), 600);
       } else {
         // ブレークスルー不発でもcareerBestMQ更新
@@ -4546,9 +4564,17 @@ const App = {
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: idx + 1,
         totalMatches: wp.card.length,
-        isTitle: false
+        isTitle: false,
+        matchTier: 2,
+        rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
+        leftPersonality: pf.personality || 'normal',
+        leftArchetype: pf.archetype || 'normal',
+        rightPersonality: af.personality || 'normal',
+        rightArchetype: af.archetype || 'normal'
       }
     };
+    // ビッグマッチBGM
+    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -4617,6 +4643,8 @@ const App = {
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0
     };
+    // ビッグマッチBGMフェードアウト
+    try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     wp.currentWatching = -1;
@@ -4776,8 +4804,16 @@ App.ppvWatchMatch = function(idx) {
       matchNum,
       totalMatches: total,
       isTitle: false,
+      matchTier: 2,
+      rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, match.left.id, match.right.id); return rl ? rl.tier : 0; })(),
+      leftPersonality: match.left.personality || 'normal',
+      leftArchetype: match.left.archetype || 'normal',
+      rightPersonality: match.right.personality || 'normal',
+      rightArchetype: match.right.archetype || 'normal'
     }
   };
+  // ビッグマッチBGM
+  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
@@ -4828,6 +4864,7 @@ App._receivePPVBattleResult = function(data) {
     hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
     log: data.log || []
   };
+  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
   document.getElementById('battleOverlay').style.display = 'none';
   pp.currentWatching = -1;
   try { Audio.play('coin'); } catch(e) {}
@@ -4867,9 +4904,12 @@ App.finalizePPV = function() {
       );
       if (btResult) {
         roster = roster.map(c => c.id === fId ? btResult.fighter : c);
+        const btHintFighterPPV = roster.find(c => c.id === fId) || fighter;
+        const btHintLinePPV = pickDialogueLine(BT_HINT_LINES, btHintFighterPPV);
         pendingGrowthEvents.push({
           type: 'breakthrough', fighterId: fId,
-          stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak
+          stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak,
+          btHint: btHintLinePPV
         });
         // Phase 4 G-01: ブレークスルー → 関係値反映
         if (s.relationships) {

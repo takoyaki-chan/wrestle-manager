@@ -153,11 +153,12 @@ const Engine = {
 
   // ── Battle Engine (DOM-free) ──────────────────────────
   battle: {
-    phase(t) {
-      return PHASES.find(p => t >= p.min && t <= p.max) || PHASES[3];
+    phase(t, _phases) {
+      const p = _phases || PHASES;
+      return p.find(pp => t >= pp.min && t <= pp.max) || p[p.length - 1];
     },
-    selMove(rng, style, turn) {
-      const ph = Engine.battle.phase(turn);
+    selMove(rng, style, turn, _phases) {
+      const ph = Engine.battle.phase(turn, _phases);
       const use = Engine.rng.float(rng) * 100 < ph.sCh;
       const pool = use ? styleMoves[style] : commonMoves;
       const cat = Engine.rng.weighted(rng, catW[style]);
@@ -195,20 +196,22 @@ const Engine = {
     determineFinishType(rng, mv) {
       return Engine.rng.weighted(rng, ENG.finishWeights[mv.c] || ENG.finishWeights.strike);
     },
-    calcKickoutChance(def, ph) {
-      let chance = (def.mn / 100) * ENG.kickoutMnScale;
-      if (ph.name === 'Climax') chance *= ENG.kickoutClimaxMult;
+    calcKickoutChance(def, ph, _eng) {
+      const e = _eng || ENG;
+      let chance = (def.mn / 100) * e.kickoutMnScale;
+      if (ph.name === 'Climax') chance *= e.kickoutClimaxMult;
       // 闘志: HP低下時のキックアウト率UP
       if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
       chance = Engine.util.clamp(chance, 0.05, 0.45);
-      if (def.kickoutCount >= ENG.kickoutMax) chance = 0;
+      if (def.kickoutCount >= e.kickoutMax) chance = 0;
       return chance;
     },
-    calcGuEscapeChance(def, ph) {
-      let chance = (def.mn / 100) * ENG.guEscapeMnScale;
+    calcGuEscapeChance(def, ph, _eng) {
+      const e = _eng || ENG;
+      let chance = (def.mn / 100) * e.guEscapeMnScale;
       if (ph.name === 'Climax') chance *= 0.8;
       chance = Engine.util.clamp(chance, 0.05, 0.40);
-      if (def.kickoutCount >= ENG.guEscapeMax) chance = 0;
+      if (def.kickoutCount >= e.guEscapeMax) chance = 0;
       return chance;
     },
     checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph) {
@@ -231,18 +234,24 @@ const Engine = {
     },
 
     // Main match simulation — pure function, no DOM
-    simulateMatch(charL, charR, rng) {
+    // matchTier: 1=通常, 2=ビッグマッチ(PPV/タイトル/対抗戦)
+    simulateMatch(charL, charR, rng, matchTier) {
       const clamp = Engine.util.clamp;
       const B = Engine.battle;
 
+      const tier = matchTier || 1;
+      const maxT    = tier >= 2 ? BIGMATCH_MAX_T    : MAX_T;
+      const phases  = tier >= 2 ? BIGMATCH_PHASES   : PHASES;
+      const eng     = tier >= 2 ? BIGMATCH_ENG      : ENG;
+
       const eff = Engine.util.eff;
       const L = {
-        ...charL, hp: Math.round(ENG.hpBase + eff(charL.st) * ENG.hpScale),
+        ...charL, hp: Math.round(eng.hpBase + eff(charL.st) * eng.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       L.mhp = L.hp;
       const R = {
-        ...charR, hp: Math.round(ENG.hpBase + eff(charR.st) * ENG.hpScale),
+        ...charR, hp: Math.round(eng.hpBase + eff(charR.st) * eng.hpScale),
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
       R.mhp = R.hp;
@@ -253,15 +262,15 @@ const Engine = {
       if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 3;
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
 
-      while (turn <= MAX_T && !winner) {
-        const ph = B.phase(turn);
+      while (turn <= maxT && !winner) {
+        const ph = B.phase(turn, phases);
         const leftChance = 50 + mom * 0.3;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
         const atk = isLeftAtk ? L : R;
         const def = isLeftAtk ? R : L;
         const atkSide = isLeftAtk ? 'left' : 'right';
 
-        const mv = B.selMove(rng, atk.style, turn);
+        const mv = B.selMove(rng, atk.style, turn, phases);
         const hitRate = B.calcHitRate(mv, atk, def);
         const roll = Engine.rng.float(rng) * 100;
 
@@ -271,9 +280,9 @@ const Engine = {
         } else {
           const counterRate = B.calcCounterRate(atk, def, ph);
           if (Engine.rng.float(rng) * 100 < counterRate) {
-            const cDmg = Math.max(ENG.dmgFloor, Math.round(mv.d * ENG.counterDmgMult));
+            const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
             atk.hp -= cDmg;
-            mom += isLeftAtk ? -ENG.counterMomShift : ENG.counterMomShift;
+            mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
             def.consecutiveHits = 0;
             totalCounters++;
             log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${cDmg}ダメージ`);
@@ -298,21 +307,21 @@ const Engine = {
               const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
               let escaped = false;
               if (fType === 'fall' || fType === 'tko') {
-                const koChance = B.calcKickoutChance(def, ph);
+                const koChance = B.calcKickoutChance(def, ph, eng);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
                   def.kickoutCount++;
-                  def.gritTurns = ENG.gritDuration;
+                  def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
                 }
               } else if (fType === 'gu') {
-                const escChance = B.calcGuEscapeChance(def, ph);
+                const escChance = B.calcGuEscapeChance(def, ph, eng);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
                   def.kickoutCount++;
-                  def.gritTurns = ENG.gritDuration;
+                  def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
                   totalKickouts++;
                 }
@@ -334,13 +343,13 @@ const Engine = {
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
               } else {
-                def.gritTurns = ENG.gritDuration;
+                def.gritTurns = eng.gritDuration;
                 log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
                 totalKickouts++;
               }
             }
-            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < ENG.rollupHpThreshold) {
-              let rSuccess = ENG.rollupBaseSuccess + (Engine.util.eff(atk.te) * ENG.rollupTecBonus);
+            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {
+              let rSuccess = eng.rollupBaseSuccess + (Engine.util.eff(atk.te) * eng.rollupTecBonus);
               // 番狂わせ体質: 格上相手の丸め込み成功率UP
               if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
               if (Engine.rng.float(rng) * 100 < rSuccess) {
@@ -351,9 +360,9 @@ const Engine = {
                 log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
               }
             }
-            else if (!winner && atk.consecutiveHits >= ENG.tkoConsecutiveThreshold
-                     && def.hp / def.mhp < ENG.tkoHpThreshold) {
-              if (Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
+            else if (!winner && atk.consecutiveHits >= eng.tkoConsecutiveThreshold
+                     && def.hp / def.mhp < eng.tkoHpThreshold) {
+              if (Engine.rng.float(rng) * 100 < eng.tkoBaseRate) {
                 winner = atkSide;
                 finType = 'TKO';
                 finishPhase = ph.name;
@@ -398,12 +407,20 @@ const Engine = {
       dramaPenalty -= Math.min(bigMoves, 6) * 0.4;
       dramaPenalty = Math.max(0, Math.round(dramaPenalty));
 
-      // §3 ペーシング減点
+      // §3 ペーシング減点（Tier別適正ターン帯）
       let pacingPenalty = 0;
-      if (matchTurns >= 7 && matchTurns <= 14) pacingPenalty = 0;
-      else if (matchTurns >= 5 && matchTurns <= 16) pacingPenalty = 3;
-      else if (matchTurns < 5) pacingPenalty = 12;
-      else pacingPenalty = 6;
+      if (tier >= 2) {
+        // Tier 2: 長期戦は13-21ターンが適正
+        if (matchTurns >= 13 && matchTurns <= 21) pacingPenalty = 0;
+        else if (matchTurns >= 10 && matchTurns <= 23) pacingPenalty = 3;
+        else if (matchTurns < 10) pacingPenalty = 12;
+        else pacingPenalty = 6;
+      } else {
+        if (matchTurns >= 7 && matchTurns <= 14) pacingPenalty = 0;
+        else if (matchTurns >= 5 && matchTurns <= 16) pacingPenalty = 3;
+        else if (matchTurns < 5) pacingPenalty = 12;
+        else pacingPenalty = 6;
+      }
 
       // §4 決着減点
       let finishPenalty = 0;
@@ -434,7 +451,7 @@ const Engine = {
         hpLeft: { final: Math.max(0, L.hp), max: L.mhp },
         hpRight: { final: Math.max(0, R.hp), max: R.mhp },
         mq, log,
-        finishPhase,
+        finishPhase, matchTier: tier, btHintTurn: null,
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty }
       };
     }
@@ -4036,7 +4053,7 @@ const Engine = {
       const charR = roster.find(c => c.id === m.right);
       if (!charL || !charR) return null;
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
-      const result = Engine.battle.simulateMatch(charL, charR, matchRng);
+      const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
       // メタデータ記録（MQにはまだ加算しない）
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) result.rivalryBonus = rivalLvl;
@@ -5712,7 +5729,7 @@ const Engine = {
     simulatePPVMatch(left, right, rng) {
       const pf = { ...left, condition: 80 };
       const af = { ...right, condition: 80 };
-      return Engine.battle.simulateMatch(pf, af, rng);
+      return Engine.battle.simulateMatch(pf, af, rng, 2);
     },
 
     /** PPV結果をGameStateに反映（純粋関数） */
@@ -6074,7 +6091,7 @@ const Engine = {
       const pf = { ...playerFighter, condition: 80 };
       const af = { ...aiFighter, condition: 80 };
       // Use battle engine
-      const result = Engine.battle.simulateMatch(pf, af, rng);
+      const result = Engine.battle.simulateMatch(pf, af, rng, 2);
       result.mq = Math.min(100, result.mq + mqBonus);
       return result;
     },

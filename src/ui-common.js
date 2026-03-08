@@ -3502,10 +3502,14 @@ function _renderNextGrowthPopup() {
     }
   }
 
+  // ブレイクスルー兆し（試合中のモノローグ）
+  const hintHtml = ev.btHint ? `<div class="growth-event-hint">${ev.btHint}</div>` : '';
+
   box.className = `growth-event-box ${tone}`;
   box.innerHTML = `
     <div class="growth-event-face">${faceHtml}</div>
     <div class="growth-event-name">${fighter ? fighter.name : ''}</div>
+    ${hintHtml}
     <div class="growth-event-title">${title}</div>
     <div class="growth-event-msg">${message}</div>
     ${detail ? `<div class="growth-event-detail">${detail}</div>` : ''}

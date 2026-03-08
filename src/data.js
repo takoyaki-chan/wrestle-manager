@@ -563,6 +563,22 @@ const ENG = {
   rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 16
 };
 
+// ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
+const BIGMATCH_MAX_T = 24;
+const BIGMATCH_PHASES = [
+  {name:'Opening',min:1,max:6,mult:0.9,sCh:20,counterBonus:0},
+  {name:'Mid',min:7,max:12,mult:1.05,sCh:40,counterBonus:3},
+  {name:'End',min:13,max:18,mult:1.2,sCh:55,counterBonus:5},
+  {name:'Climax',min:19,max:24,mult:1.4,sCh:70,counterBonus:8}
+];
+const BIGMATCH_ENG = {
+  ...ENG,
+  hpBase: 85,
+  hpScale: 1.20,
+  kickoutMax: 3,
+  guEscapeMax: 3,
+};
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝
@@ -2890,7 +2906,35 @@ const AWARD_LINES = {
 //  v1.8: 成長イベントシステム セリフ & テンプレート
 // ══════════════════════════════════════════════
 
-// §2.6 ブレークスルーセリフ（personality×archetype）
+// §2.6a ブレイクスルー兆し — 試合中のモノローグ（personality別）
+const BT_HINT_LINES = {
+  normal: {
+    _default: ['（…体が軽い。いつもと、何かが違う——）', '（…動ける。まだ、動ける——）'],
+    ojousama: ['（…お体が軽いですわ。何かが変わりましたの——）'],
+    delinquent: ['（…なんだ、この感覚。体が勝手に動きやがる——）'],
+  },
+  bold: {
+    _default: ['（…体が勝手に動く。これが、あたしの限界の先——）', '（…見えた。次の一手が、はっきりと——）'],
+    cool: ['（…限界の、その先——）'],
+    delinquent: ['（…体が勝手に動きやがる。これが限界の先かよ——）'],
+  },
+  quiet: {
+    _default: ['（…見える。次の一手が、はっきりと）', '（…体が、勝手に動いている——）'],
+    cool: ['（——見えた）'],
+  },
+  easygoing: {
+    _default: ['（…あれ？ なんか今日、すっごく調子いいかも——）', '（…体が軽い。いつもと全然違う——）'],
+  },
+  earnest: {
+    _default: ['（…あの練習が、今、実を結ぼうとしている——）', '（…わかる。体が覚えている。次の一手——）'],
+    polite: ['（…あのお稽古が、今、実を結ぼうとしている——）'],
+  },
+  emotional: {
+    _default: ['（…わたしの体、こんなに動けたんだ——！）', '（…すごい。体が勝手に。止まらない——）'],
+  },
+};
+
+// §2.6b ブレークスルーセリフ（personality×archetype）
 const BREAKTHROUGH_LINES = {
   normal: {
     _default: ['あの試合で、何かが変わった気がする…', '限界だと思っていた壁を越えられた！'],
@@ -5214,7 +5258,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
-    AWARD_LINES, BREAKTHROUGH_LINES, getDialoguePool, pickDialogueLine,
+    AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
     AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,
