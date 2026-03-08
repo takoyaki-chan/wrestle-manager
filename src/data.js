@@ -1237,8 +1237,8 @@ const RIVAL_ORGS = [
 
 // ranking-roster-redesign v1.0 §4: 対戦ポイント設定（Phase 3 で使用）
 const BATTLE_POINT_CFG = {
-  war: 12,
-  summit: 10,
+  war: 9,
+  summit: 7,
   tournament: { champion: 20, runnerUp: 8, semiFinal: 0, firstRound: -14 },
   tournamentWeek: 24,
 };
@@ -1376,9 +1376,9 @@ const AI_COACH_CONFIG = {
       },
     },
     general: {
-      coachMul: 1.12,              // 🔧 Cランク相当
-      intensiveRate: 0.05,         // 🔧 5%
-      practiceRate: 0.75,          // 🔧 75%
+      coachMul: 1.18,              // 🔧 Bランク相当（S級の資金力で一般枠にも良いコーチ）
+      intensiveRate: 0.12,         // 🔧 12%（組織的な強化練習体制）
+      practiceRate: 0.80,          // 🔧 80%（高いプロ意識による練習文化）
     },
   },
   A: {

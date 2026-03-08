@@ -316,7 +316,9 @@
 - **championScore廃止**: RIVAL_ORGS から championScore プロパティ削除（旧: S=60/A=40/B=20/Player=0or30）
 - **summitBonus廃止→battlePoints統合**: `state.summitBonus` を削除し `state.battlePoints: { player:0, org_s:0, org_a:0, org_b:0 }` に移行。シーズンリセット対象
 - **対戦ポイント移動**: 対抗戦勝敗で±12pt、頂上決戦勝敗で±10pt のゼロサム移動を実装
-- **BATTLE_POINT_CFG定数**: war:12, summit:10, tournament:{champion:20,runnerUp:8,semiFinal:0,firstRound:-14}, tournamentWeek:24
+- **BATTLE_POINT_CFG定数**: war:9, summit:7, tournament:{champion:20,runnerUp:8,semiFinal:0,firstRound:-14}, tournamentWeek:24
+  - S級-A級ティアバランス調整（2026-03-08）: war 12→9、summit 10→7（S-A間baseScore差~15ptをサミット1敗で逆転できる問題を修正）
+  - 同調整で AI_COACH_CONFIG.S.general 強化: coachMul 1.12→1.18、intensiveRate 0.05→0.12、practiceRate 0.75→0.80
 - **Engine.ranking全面書換え**: `calcStarPower`/`calcTotalPop` 廃止。`_topNAvg(roster, valueFn, n)`/`calcBaseScore(roster)`/`calcOrgRating(roster, battlePt)` 新設
 - **ランキングUIリニューアル**: テーブル列を「⭐スター / 👥人気計」→「基礎力 / 対戦pt」に変更。対戦ptは色分け表示（正=緑/負=赤）。ツールチップ更新
 - **団体比較レーダーチャート更新**: 「エース力」→「TOP5実力」（TOP5平均OVR/90×100）、「スター度」→「TOP5人気」（TOP5平均pop/80×100）に変更
