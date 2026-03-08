@@ -1987,16 +1987,16 @@ const Engine = {
       }
       return mult;
     },
-    // Stat selection (uniform — STYLE_GROWTH handles direction)
+    // Stat selection (MN は試合経験で成長するため練習対象から除外)
     pickGrowthStat(rng, G, charId) {
-      const stats = ['pw','sp','te','st','mn'];
+      const stats = ['pw','sp','te','st'];
       const r = Engine.rng.float(rng);
       let cumulative = 0;
       for (let i = 0; i < stats.length; i++) {
-        cumulative += 0.2;
+        cumulative += 0.25;
         if (r < cumulative) return stats[i];
       }
-      return stats[4];
+      return stats[3];
     },
     // §1.5 引き出し上手: MQ bonus
     getMQBonusForMatch(G, leftId, rightId) {
@@ -3494,7 +3494,10 @@ const Engine = {
             action = 'practice';
           }
         }
-        if (nc.condition <= 30) action = 'rest';
+        // §2: 体調自動管理 — condition < 60 で方針を無視して自動休養
+        let autoRested = false;
+        if (action !== 'rest' && nc.condition < 60) { action = 'rest'; autoRested = true; }
+        if (nc.condition <= 30) action = 'rest'; // 安全弁
         const mentalBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
         if (action === 'practice') {
@@ -3546,7 +3549,7 @@ const Engine = {
           nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + mentalBonus + restIronBonus);
           nc.intensiveWeeks = 0;
         }
-        nc._weekAction = action;
+        nc._weekAction = autoRested ? 'auto_rest' : action;
         return nc;
       });
 

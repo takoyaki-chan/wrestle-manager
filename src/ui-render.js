@@ -716,17 +716,17 @@ function renderWeekScreen() {
     } else {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
-    html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調に応じてスケジュールを自動設定します（確認後に手動で進めてください）">🤖 おまかせ</button>';
+    html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調に応じて強化ON/OFFを最適化し、体調60未満の選手を休養にします。各選手の方針はそのまま維持されます">🤖 おまかせ</button>';
     html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
     html += '</div>';
 
     // Roster schedule overview
     const canManageWeek = G.weekPhase === 'manage';
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール</th><th>⚡</th><th>今週の行動</th></tr>';
+    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th><th>⚡</th><th>今週の行動</th></tr>';
     G.roster.forEach(c => {
       const condPct = c.condition;
       const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
-      const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+      const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
       const statusHtml = c.injury
         ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
         : c.forcedRest
@@ -755,7 +755,7 @@ function renderWeekScreen() {
       else {
         previewAction = c.schedule || 'balance';
         if (previewAction === 'balance') previewAction = isShow ? 'promo' : 'practice';
-        if (c.condition <= 30) previewAction = 'rest';
+        if (c.condition < 60) previewAction = 'auto_rest';
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
       html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
@@ -765,10 +765,10 @@ function renderWeekScreen() {
         <td>${statusHtml}</td>
         <td>
           <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:15px;padding:8px 12px;border-radius:6px;min-width:120px" ${schedDisabled}>
-            <option value="balance" ${c.schedule==='balance'?'selected':''}>バランス</option>
-            <option value="practice" ${c.schedule==='practice'?'selected':''}>練習優先</option>
-            <option value="promo" ${c.schedule==='promo'?'selected':''}>プロモ優先</option>
-            <option value="rest" ${c.schedule==='rest'?'selected':''}>休養重視</option>
+            <option value="balance" ${c.schedule==='balance'?'selected':''} title="非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します">バランス</option>
+            <option value="practice" ${c.schedule==='practice'?'selected':''} title="毎週練習を行います。ステータス成長に集中したい時に。体調60未満で自動休養します">練習優先</option>
+            <option value="promo" ${c.schedule==='promo'?'selected':''} title="毎週プロモ活動を行います。人気を上げたい時に（上限70）。体調60未満で自動休養します">プロモ優先</option>
+            <option value="rest" ${c.schedule==='rest'?'selected':''} title="強制的に休養させます。体調管理よりも確実に休ませたい時に">休養重視</option>
           </select>
         </td>
         <td>${intBtnHtml}</td>
@@ -1177,7 +1177,7 @@ function _renderRosterTrainingPanel(c, hired) {
     html += `<div class="stat-bar-wrap">
       <span class="stat-bar-label">${statLabels[s]}</span>
       <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
-      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}</span>
+      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}${s === 'mn' ? ' <span class="stat-bar-note" title="メンタルは練習では成長しません。試合経験によって成長します">※試合で成長</span>' : ''}</span>
     </div>`;
   });
   // Coach assign dropdown

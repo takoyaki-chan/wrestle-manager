@@ -3656,15 +3656,17 @@ const App = {
   },
 
   // Process a week (manage + settle) via tickWeek
-  // A-3: おまかせ育成 — コンディション帯別に最適スケジュールを積極設定して止まる（週は自動で進めない）
+  // A-3: おまかせ育成 — 方針を維持しつつ強化ON/OFFと体調60未満の休養を自動設定
   autoManage() {
     if (G.weekPhase !== 'manage') return;
     Audio.play('select');
     const roster = G.roster.map(c => {
       if (c.injury || c.isRental || c.forcedRest) return c;
-      if (c.condition >= 80) return { ...c, schedule: 'practice', intensive: true };
-      if (c.condition >= 75) return { ...c, schedule: 'practice', intensive: false };
-      if (c.condition >= 60) return { ...c, schedule: 'balance',  intensive: false };
+      const policy = c.schedule || 'balance'; // 現在の方針を保持
+      if (c.condition >= 80) return { ...c, schedule: policy, intensive: true };
+      if (c.condition >= 75) return { ...c, schedule: policy, intensive: false };
+      if (c.condition >= 60) return { ...c, schedule: policy, intensive: false };
+      // < 60: 方針に関わらず休養
       return { ...c, schedule: 'rest', intensive: false };
     });
     G = { ...G, roster };
