@@ -1913,11 +1913,23 @@ function renderLog() {
   });
   html += '</div>';
 
-  const filtered = currentFilter === 'all' ? G.gameLog : G.gameLog.filter(categories.find(c => c.key === currentFilter)?.match || (() => true));
+  // ログエントリのテキスト取得ヘルパー（文字列 or オブジェクト両対応）
+  const getLogText = (entry) => typeof entry === 'string' ? entry : (entry && entry.text ? entry.text : '');
+  const isSnapshot = (entry) => typeof entry === 'object' && entry && entry.type === 'snapshot';
+  const matchFilter = (entry, fn) => fn(getLogText(entry));
+  const filtered = currentFilter === 'all' ? G.gameLog : G.gameLog.filter(entry => {
+    if (isSnapshot(entry)) return currentFilter === 'all'; // スナップショットは「全て」のみ
+    const fn = categories.find(c => c.key === currentFilter)?.match;
+    return fn ? matchFilter(entry, fn) : true;
+  });
   const display = filtered.slice(-100).reverse();
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
   display.forEach(l => {
-    html += `<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;color:var(--text-sub)">${l}</div>`;
+    if (isSnapshot(l)) {
+      html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
+    } else {
+      html += `<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;color:var(--text-sub)">${getLogText(l)}</div>`;
+    }
   });
   el.innerHTML = html;
 }

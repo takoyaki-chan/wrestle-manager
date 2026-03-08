@@ -4203,14 +4203,55 @@ const Engine = {
       s = titleResult.state;
       titleResult.events.forEach(e => events.push(e));
     }
-    // Phase 5: スナップショットフラグの安全弁クリア（snapshot.generate未実装時に蓄積防止）
-    if (!Engine.snapshot) {
-      s = { ...s, roster: s.roster.map(f => {
-        const { _grievanceFlags, _relationshipFlags, _departureBondImpact,
-                _snapshotBonusSources, ...clean } = f;
-        return clean;
-      })};
-    }
+    // ── スナップショット生成 ──
+    const snapshotRng = Engine.rng.create(
+      Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5A30)
+    );
+    const snapshotResult = Engine.snapshot.generate(snapshotRng, s);
+    s = snapshotResult.state;
+
+    // スナップショットをeventsに振り分け
+    snapshotResult.snapshots.forEach(snap => {
+      // embedded（ブレイクスルー/対抗戦）は既存演出に追記
+      if (snap.embedded) {
+        if (snap.source === 'breakthrough') {
+          // _pendingGrowthEvents のbreakthroughエントリを探して追記
+          const pgEvents = s._pendingGrowthEvents || [];
+          const btLog = pgEvents.find(
+            e => e.type === 'breakthrough' && e.fighterId === snap.fighterId
+          );
+          if (btLog) {
+            btLog.snapshotText = snap.text;
+          }
+        }
+        // warVictory embedded は通常ログとして追加（モーダルは既に表示済み）
+        if (snap.source === 'warVictory') {
+          events.push({
+            type: 'snapshot',
+            text: snap.text,
+            source: snap.source,
+            fighterId: snap.fighterId,
+          });
+        }
+        return;
+      }
+
+      // R3モーダル（bond 75+）はstate経由でUI側に渡す
+      if (snap.modalType === 'R3') {
+        s = { ...s, _pendingR3Modal: snap };
+        return;
+      }
+
+      // 通常スナップショット → eventsの末尾に追加
+      events.push({
+        type: 'snapshot',
+        text: snap.text,
+        source: snap.source,
+        fighterId: snap.fighterId,
+        fighter2Id: snap.fighter2Id || null,
+      });
+    });
+
     // validateGameState: 不変条件チェック（tickWeek末尾で常時実行）
     s = Engine.validateGameState(s);
     return { state: s, events };
@@ -6092,6 +6133,9 @@ const Engine = {
             popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
           });
           r.rivalryResolved = true;
+          // スナップショット用: 因縁解消フラグ
+          if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
+          s._rivalryResolvedThisWeek.push({ fighterId: match.left.id, fighter2Id: match.right.id });
           const emoji = resolution.isFate ? '💥' : '⚡';
           const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
           events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
@@ -11607,6 +11651,389 @@ Engine.relationships = {
 
     return { ...state, relationships: rels, relationshipCounters: counters };
   },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Engine.snapshot — スナップショット通知システム
+//  snapshot-engine-instruction.md
+// ══════════════════════════════════════════════════════════════════════════════
+Engine.snapshot = {
+
+  // ═══ メイン生成関数 ═══
+  generate(rng, state) {
+    // 1. 候補収集
+    const candidates = this._collectCandidates(rng, state);
+
+    // 2. クールダウン除外（R3はクールダウン無視）
+    const filtered = candidates.filter(c =>
+      c.source === 'R3' || !this._isOnCooldown(c, state)
+    );
+
+    // 3. embedded（枠外確定）と slot（通常枠）を分離
+    const embedded = filtered.filter(c => c.type === 'embedded');
+    const slotCandidates = filtered.filter(c => c.type !== 'embedded');
+
+    // 4. 通常枠の抽選（最大2件、R3は必ず含む）
+    const slotSelected = this._weightedSample(rng, slotCandidates, 2);
+
+    // 5. テキスト生成
+    const allSelected = [...embedded, ...slotSelected];
+    const snapshots = allSelected.map(c => this._buildSnapshotText(rng, c, state));
+
+    // 6. クールダウン更新（embedded以外の slotSelected のみ対象）
+    const newCooldowns = this._updateCooldowns(slotSelected, state);
+
+    // 7. フラグクリア（全選手）
+    const cleanedRoster = state.roster.map(f => {
+      const { _grievanceFlags, _relationshipFlags, _departureBondImpact,
+              _snapshotBonusSources, ...clean } = f;
+      return clean;
+    });
+
+    const newState = {
+      ...state,
+      roster: cleanedRoster,
+      _snapshotCooldowns: newCooldowns,
+    };
+
+    // 因縁解消フラグクリア
+    delete newState._rivalryResolvedThisWeek;
+
+    return { snapshots, state: newState };
+  },
+
+  // ═══ 候補収集 ═══
+  _collectCandidates(rng, state) {
+    const candidates = [];
+    const roster = state.roster;
+    const relationships = state.relationships || {};
+
+    const seenR1Pairs = new Set();
+
+    roster.forEach(f => {
+      if (f.injury || f.isRental) return;
+
+      // ── G系: _grievanceFlags ──
+      const gf = f._grievanceFlags;
+      if (gf) {
+        if (gf.G1 && Engine.rng.float(rng) < 0.03) {
+          candidates.push({ source: 'G1', weight: 2, fighterId: f.id, type: 'slot' });
+        }
+        if (gf.G2 && Engine.rng.float(rng) < 0.03) {
+          candidates.push({ source: 'G2', weight: 3, fighterId: f.id, fighter2Id: gf.G2_juniorId || null, type: 'slot' });
+        }
+        if (gf.G3 && Engine.rng.float(rng) < 0.04) {
+          candidates.push({ source: 'G3', weight: 4, fighterId: f.id, type: 'slot' });
+        }
+        if (gf.G4 && Engine.rng.float(rng) < 0.02) {
+          candidates.push({ source: 'G4', weight: 1, fighterId: f.id, type: 'slot' });
+        }
+      }
+
+      // ── R系: _relationshipFlags ──
+      const rf = f._relationshipFlags;
+      if (rf) {
+        if (rf.R2 && Engine.rng.float(rng) < 0.03) {
+          candidates.push({ source: 'R2', weight: 4, fighterId: f.id, type: 'slot' });
+        }
+        if (rf.R4 && Engine.rng.float(rng) < 0.12) {
+          candidates.push({ source: 'R4', weight: 3, fighterId: f.id, fighter2Id: rf.R4, type: 'slot' });
+        }
+        if (rf.R5 && Engine.rng.float(rng) < 0.12) {
+          candidates.push({ source: 'R5', weight: 3, fighterId: f.id, fighter2Id: rf.R5, type: 'slot' });
+        }
+        if (rf.R1) {
+          rf.R1.forEach(oppId => {
+            const pairKey = Math.min(f.id, oppId) + '_' + Math.max(f.id, oppId);
+            if (!seenR1Pairs.has(pairKey) && Engine.rng.float(rng) < 0.05) {
+              candidates.push({ source: 'R1', weight: 3, fighterId: f.id, fighter2Id: oppId, type: 'slot' });
+              seenR1Pairs.add(pairKey);
+            }
+          });
+        }
+      }
+
+      // ── R3: 仲良し退団（100%発火、rng判定なし） ──
+      const dbi = f._departureBondImpact;
+      if (dbi && dbi.bond >= 65) {
+        candidates.push({
+          source: 'R3', weight: 10, fighterId: f.id, fighter2Id: dbi.departedId,
+          bond: dbi.bond, departedName: dbi.departedName, reason: dbi.reason,
+          type: 'slot',
+        });
+      }
+
+      // ── ブレイクスルー / careerBestMQ / 対抗戦勝利: _snapshotBonusSources ──
+      const sbs = f._snapshotBonusSources;
+      if (sbs) {
+        sbs.forEach(source => {
+          if (source === 'breakthrough') {
+            candidates.push({ source: 'breakthrough', fighterId: f.id, type: 'embedded' });
+          }
+          if (source === 'careerBestMQ' && Engine.rng.float(rng) < 0.08) {
+            candidates.push({ source: 'careerBestMQ', weight: 2, fighterId: f.id, type: 'slot' });
+          }
+          if (source === 'warVictory') {
+            candidates.push({ source: 'warVictory', fighterId: f.id, type: 'embedded' });
+          }
+        });
+      }
+    });
+
+    // ── Phase 4系: リアルタイム走査（フックフラグなし） ──
+    const playerRoster = roster.filter(f => !f.injury && !f.isRental);
+    const seenPhasePairs = new Set();
+
+    for (let i = 0; i < playerRoster.length; i++) {
+      for (let j = i + 1; j < playerRoster.length; j++) {
+        const a = playerRoster[i];
+        const b = playerRoster[j];
+        const pairKey = Math.min(a.id, b.id) + '_' + Math.max(a.id, b.id);
+        if (seenPhasePairs.has(pairKey)) continue;
+        seenPhasePairs.add(pairKey);
+
+        // 性格不一致: personalityCompatibility が -3以下
+        if (typeof Engine.relationships.personalityCompatibility === 'function') {
+          const compat = Engine.relationships.personalityCompatibility(a, b);
+          if (compat <= -3 && Engine.rng.float(rng) < 0.02) {
+            candidates.push({ source: 'friction', weight: 2, fighterId: a.id, fighter2Id: b.id, type: 'slot' });
+          }
+        }
+
+        // 世代近接: 年齢差3以内
+        const ageDiff = Math.abs((a.age || 20) - (b.age || 20));
+        if (ageDiff <= 3 && Engine.rng.float(rng) < 0.02) {
+          candidates.push({ source: 'generation', weight: 2, fighterId: a.id, fighter2Id: b.id, type: 'slot' });
+        }
+      }
+    }
+
+    // 因縁解消: state._rivalryResolvedThisWeek
+    if (state._rivalryResolvedThisWeek) {
+      state._rivalryResolvedThisWeek.forEach(pair => {
+        if (Engine.rng.float(rng) < 0.30) {
+          candidates.push({
+            source: 'rivalryResolved', weight: 5,
+            fighterId: pair.fighterId, fighter2Id: pair.fighter2Id,
+            type: 'slot',
+          });
+        }
+      });
+    }
+
+    return candidates;
+  },
+
+  // ═══ クールダウン判定 ═══
+  _isOnCooldown(candidate, state) {
+    const key = this._cooldownKey(candidate);
+    const cooldowns = state._snapshotCooldowns || {};
+    const lastWeek = cooldowns[key];
+    if (lastWeek == null) return false;
+    const currentAbsWeek = (state.season - 1) * 48 + state.week;
+    return (currentAbsWeek - lastWeek) < 6;
+  },
+
+  _cooldownKey(candidate) {
+    if (candidate.fighter2Id != null) {
+      const min = Math.min(candidate.fighterId, candidate.fighter2Id);
+      const max = Math.max(candidate.fighterId, candidate.fighter2Id);
+      return `pair_${min}_${max}`;
+    }
+    return `fighter_${candidate.fighterId}`;
+  },
+
+  // ═══ 重み付き抽選（非復元抽出） ═══
+  _weightedSample(rng, candidates, maxCount) {
+    if (candidates.length === 0) return [];
+
+    const guaranteed = candidates.filter(c => c.source === 'R3');
+    const rest = candidates.filter(c => c.source !== 'R3');
+
+    if (guaranteed.length >= maxCount) {
+      return guaranteed.slice(0, maxCount);
+    }
+
+    const result = [...guaranteed];
+    let remainingSlots = maxCount - result.length;
+    let pool = [...rest];
+
+    while (remainingSlots > 0 && pool.length > 0) {
+      const totalWeight = pool.reduce((sum, c) => sum + c.weight, 0);
+      if (totalWeight <= 0) break;
+
+      let roll = Engine.rng.float(rng) * totalWeight;
+      let selectedIdx = 0;
+      for (let i = 0; i < pool.length; i++) {
+        roll -= pool[i].weight;
+        if (roll <= 0) { selectedIdx = i; break; }
+      }
+
+      result.push(pool[selectedIdx]);
+      pool.splice(selectedIdx, 1);
+      remainingSlots--;
+    }
+
+    return result;
+  },
+
+  // ═══ クールダウン更新 ═══
+  _updateCooldowns(selected, state) {
+    const currentAbsWeek = (state.season - 1) * 48 + state.week;
+    const cooldowns = { ...(state._snapshotCooldowns || {}) };
+
+    selected.forEach(c => {
+      const key = this._cooldownKey(c);
+      cooldowns[key] = currentAbsWeek;
+    });
+
+    // 24週以上前のエントリを削除（state肥大防止）
+    Object.keys(cooldowns).forEach(key => {
+      if (currentAbsWeek - cooldowns[key] > 24) {
+        delete cooldowns[key];
+      }
+    });
+
+    return cooldowns;
+  },
+
+  // ═══ テキスト生成 ═══
+  _buildSnapshotText(rng, candidate, state) {
+    const { source, fighterId, fighter2Id } = candidate;
+    const fighter = state.roster.find(f => f.id === fighterId);
+    const name = fighter ? fighter.name : '???';
+
+    let name2 = null;
+    if (fighter2Id != null) {
+      const f2 = state.roster.find(f => f.id === fighter2Id);
+      name2 = f2 ? f2.name : (candidate.departedName || '???');
+    }
+
+    // ── R3 特殊分岐 ──
+    if (source === 'R3') {
+      if (candidate.bond >= 75) {
+        // タイプD: モーダル
+        const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.R3.modal, fighter);
+        const text = this._expandTemplate(line, name, name2);
+        return {
+          text, source, fighterId, fighter2Id,
+          modalType: 'R3',
+          departedName: candidate.departedName,
+          reason: candidate.reason,
+        };
+      } else {
+        // タイプA: ログのみ
+        const line = this._pickRandom(rng, SNAPSHOT_TEXTS.R3.scene);
+        return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+      }
+    }
+
+    // ── embedded タイプ ──
+    if (candidate.type === 'embedded') {
+      if (source === 'breakthrough') {
+        const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.breakthrough.voice, fighter);
+        return { text: `${name}\u3000${line}`, source, fighterId, embedded: true };
+      }
+      if (source === 'warVictory') {
+        const data = SNAPSHOT_TEXTS.warVictory;
+        if (Engine.rng.float(rng) < 0.5 && data.scene && data.scene.length > 0) {
+          const line = this._pickRandom(rng, data.scene);
+          return { text: this._expandTemplate(line, name, name2), source, fighterId, embedded: true };
+        } else {
+          const line = this._resolveVoice(rng, data.voice, fighter);
+          return { text: `${name}\u3000${line}`, source, fighterId, embedded: true };
+        }
+      }
+    }
+
+    // ── 通常タイプ選択 ──
+    const data = SNAPSHOT_TEXTS[source];
+    if (!data) {
+      return { text: '', source, fighterId, fighter2Id };
+    }
+
+    const selectedType = this._selectType(rng, source, data);
+
+    if (selectedType === 'C') {
+      const line = this._pickRandom(rng, data.staff);
+      return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+    }
+
+    if (selectedType === 'B') {
+      const line = this._resolveVoice(rng, data.voice, fighter);
+      const expanded = this._expandTemplate(line, name, name2);
+      return { text: `${name}\u3000${expanded}`, source, fighterId, fighter2Id };
+    }
+
+    // タイプA（デフォルト）
+    const line = this._pickRandom(rng, data.scene);
+    return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+  },
+
+  // ═══ タイプ選択 ═══
+  _selectType(rng, source, data) {
+    const hasVoice = data.voice && Object.keys(data.voice).length > 0;
+    const hasStaff = data.staff && data.staff.length > 0;
+    const roll = Engine.rng.float(rng);
+
+    if (hasStaff) {
+      if (roll < 0.60) return 'A';
+      if (roll < 0.90) return 'C';
+      return hasVoice ? 'B' : 'A';
+    }
+
+    if (hasVoice) {
+      if (roll < 0.60) return 'A';
+      return 'B';
+    }
+
+    return 'A';
+  },
+
+  // ═══ personality × archetype セリフ解決 ═══
+  _resolveVoice(rng, voiceData, fighter) {
+    if (!voiceData) return '…';
+
+    const personality = (fighter && fighter.personality) || 'normal';
+    const archetype = (fighter && fighter.archetype) || 'normal';
+
+    const personalityBlock = voiceData[personality] || voiceData.normal;
+    if (!personalityBlock) return '…';
+
+    const candidates =
+      personalityBlock[archetype] ||
+      personalityBlock._default ||
+      (voiceData.normal && voiceData.normal._default);
+
+    if (!candidates || candidates.length === 0) return '…';
+
+    return candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
+  },
+
+  // ═══ ヘルパー ═══
+
+  _expandTemplate(template, name, name2) {
+    let s = template.replace(/\{name\}/g, name);
+    if (name2) s = s.replace(/\{name2\}/g, name2);
+    return s;
+  },
+
+  _pickRandom(rng, arr) {
+    if (!arr || arr.length === 0) return '…';
+    return arr[Engine.rng.int(rng, 0, arr.length - 1)];
+  },
+
+}; // Engine.snapshot 終わり
+
+// ── 性格相性ヘルパー（Engine.snapshot._collectCandidates から使用）──
+Engine.relationships.personalityCompatibility = function(a, b) {
+  const pAdj = Engine.relationships._getPersonalityBondAdj(
+    a.personality || 'normal', b.personality || 'normal'
+  );
+  const aAdj = Engine.relationships._getArchetypeBondAdj(
+    a.archetype || 'normal', b.archetype || 'normal'
+  );
+  return pAdj + aAdj;
 };
 
 // Node.js モジュールエクスポート（ブラウザではスキップ）

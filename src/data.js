@@ -5197,6 +5197,336 @@ const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック'
 const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 🔧 的外れ確率
 
 // ─────────────────────────────────────────────────────────────────────────────
+// スナップショット通知テキスト — snapshot-engine-instruction.md
+// ─────────────────────────────────────────────────────────────────────────────
+const SNAPSHOT_TEXTS = {
+  // ── G1: 給与不公平 ──
+  G1: {
+    scene: [
+      '給料日。{name}が明細をじっと見つめていた',
+      '{name}が食堂で同僚たちの輪に入らず、黙って食事をしていた',
+      '{name}がロッカールームで、誰かの契約書をちらりと見ていた',
+    ],
+    voice: {
+      normal: {
+        _default: ['…まあ、こんなもんか', '…頑張ってるのにな'],
+        ojousama: ['…お金のことで文句を言うつもりはないけれど'],
+        delinquent: ['…チッ'],
+      },
+      bold: {
+        _default: ['…なんであの子と同じ扱いなわけ？', '…納得いかない'],
+        ojousama: ['…わたくしの価値、ちゃんと見てくださっているのかしら'],
+        delinquent: ['…ふざけんなよ'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…'],
+      },
+      earnest: {
+        _default: ['…もっと結果を出せばいいだけの話、だよね', '…自分の力不足かな'],
+        ojousama: ['…努力が足りないのかしら。でも…'],
+      },
+      emotional: {
+        _default: ['…なんで…なんでだろ', '…悔しいな'],
+        delinquent: ['…やってられっかよ'],
+      },
+    },
+  },
+
+  // ── G2: 後輩の方が給与が高い ──
+  G2: {
+    scene: [
+      '{name}が後輩の{name2}の試合を腕を組んで見ていた。複雑な表情だ',
+      '{name}が{name2}に技を教えている。だが、その目にどこか翳りがある',
+    ],
+    voice: {
+      normal: {
+        _default: ['…あの子、伸びたな', '…先輩としてちゃんと見てるよ。…でもね'],
+      },
+      bold: {
+        _default: ['…年功序列なんて古い。分かってる。分かってるけど', '…あたしだって負けてない'],
+        delinquent: ['…ガキが調子乗ってんじゃねーよ'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…そう。それだけのことだ'],
+      },
+      earnest: {
+        _default: ['…あの子が評価されるのは正しいと思う。思うんだけど'],
+      },
+      emotional: {
+        _default: ['…先に始めたのはあたしなのに', '…置いていかれてる気がする'],
+      },
+    },
+  },
+
+  // ── G3: タイトルに絡めない ──
+  G3: {
+    scene: [
+      '{name}がタイトルマッチのポスターの前で足を止めていた',
+      '{name}が練習中、いつもより打ち込みが荒い。何かを持て余している',
+      'タイトル戦の話題が出た時、{name}だけが黙っていた',
+    ],
+    voice: {
+      normal: {
+        _default: ['…いつになったら'],
+      },
+      bold: {
+        _default: ['…いつになったらあたしの番が来るの？', '…待つのは好きじゃない'],
+        ojousama: ['…わたくしにふさわしい舞台がまだ来ないなんて'],
+        delinquent: ['…いい加減使えよ。腐るぞ'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…チャンスは自分で作るものだと思っている'],
+      },
+      earnest: {
+        _default: ['…実力が足りないから？ それとも…', '…もう少し、待てばいいのかな'],
+      },
+      emotional: {
+        _default: ['…悔しくないって言ったら嘘になる', '…あたしも、あそこに立ちたい'],
+        seductive: ['…もう少し目立たないとダメなのかしら'],
+      },
+    },
+  },
+
+  // ── G4: ロスター過密 ──
+  G4: {
+    scene: [
+      '{name}が試合のない週末を持て余しているようだ',
+      '控え室の隅で、{name}がストレッチをしている。出番を待つ背中に焦りが見える',
+      '{name}が自主練の後、一人でリングを見つめていた',
+    ],
+    voice: {
+      normal: {
+        _default: ['…出番、来ないかな'],
+      },
+      bold: {
+        _default: ['…使ってくれなきゃ意味ないじゃん', '…あたしの居場所、あるのかな'],
+      },
+      quiet: {
+        _default: ['…'],
+      },
+      earnest: {
+        _default: ['…準備はできてる。いつでも'],
+      },
+      emotional: {
+        _default: ['…見てくれてるのかな、あたしのこと'],
+      },
+    },
+  },
+
+  // ── R1: 低bond同興行 ──
+  R1: {
+    scene: [
+      '{name}と{name2}が控え室で目を合わせなかった',
+      '{name}と{name2}の間に、見えない壁がある。周りもそれを感じている',
+      '{name}と{name2}が同じテーブルに座ることを避けていた',
+    ],
+    staff: [
+      'スタッフから: {name}と{name2}、最近どうも空気がピリついてまして…',
+    ],
+  },
+
+  // ── R2: 孤立 ──
+  R2: {
+    scene: [
+      '昼休み。他の選手たちが談笑する中、{name}だけが離れた場所にいた',
+      '{name}が一人でリングの片付けをしている。手伝う者はいない',
+      '練習後の更衣室。{name}のロッカーの周りだけ、少し空間が空いている',
+    ],
+    voice: {
+      normal: {
+        _default: ['…まあ、一人のほうが気楽だし'],
+      },
+      bold: {
+        _default: ['…別にいいけど。あたしは一人でやれるし'],
+        delinquent: ['…ハッ、群れるのは趣味じゃねーんだよ'],
+      },
+      quiet: {
+        _default: ['……'],
+        cool: ['…孤独には慣れている'],
+      },
+      earnest: {
+        _default: ['…もっとみんなと話した方がいいのかな'],
+        polite: ['…何か気に障ることをしたのでしょうか'],
+      },
+      emotional: {
+        _default: ['…みんな、あたしのこと嫌いなのかな', '…ここにいていいのかな'],
+        ojousama: ['…こういう寂しさは初めてですわ'],
+      },
+    },
+  },
+
+  // ── R3: 仲良し退団/引退 ──
+  R3: {
+    scene: [
+      '{name}は{name2}の退団を知り、しばらく言葉を失っていた',
+      '{name2}がいなくなったロッカーの前で、{name}が立ち止まっていた',
+    ],
+    modal: {
+      normal: {
+        _default: ['…いなくなっちゃうんだ', '…{name2}がいない控え室なんて想像できない'],
+      },
+      bold: {
+        _default: ['…バカ。何も言わずに行くなよ', '…あいつがいないと、張り合いがない'],
+        delinquent: ['…チッ。…寂しいなんて言わねーけど'],
+      },
+      quiet: {
+        _default: ['……'],
+        cool: ['…そうか。…分かった'],
+      },
+      earnest: {
+        _default: ['{name2}のために、あたしはここで頑張るから', '…ありがとう。ずっと支えてくれて'],
+        polite: ['{name2}さんとご一緒できて幸せでした。…お元気で'],
+      },
+      emotional: {
+        _default: ['…やだ。嫌だよ。なんで…', '…{name2}がいないなんて、あたし…'],
+        ojousama: ['…{name2}。……あなたがいなくなるなんて'],
+      },
+    },
+  },
+
+  // ── R4: ライバルに勝利 ──
+  R4: {
+    scene: [
+      '試合後、{name}の目に静かな炎が燃えていた',
+      '{name}がリングを降りる時、一瞬だけ{name2}のほうを振り返った。満足げに',
+    ],
+    voice: {
+      normal: {
+        _default: ['…やっと、追いついた'],
+      },
+      bold: {
+        _default: ['…ふん。まだまだこんなもんじゃないけどね', '…勝った。でも、まだ終わってない'],
+        delinquent: ['…ザマァ見ろ'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…次も同じ結果とは限らない。気を引き締めろ、自分'],
+      },
+      earnest: {
+        _default: ['…努力は裏切らない。…{name2}、ありがとう'],
+      },
+      emotional: {
+        _default: ['…勝った…勝ったよ…！', '…泣くな、あたし。まだ先がある'],
+      },
+    },
+  },
+
+  // ── R5: ライバルに敗北 ──
+  R5: {
+    scene: [
+      '{name}は無言でリングを降りた。その拳だけが震えていた',
+      '{name}が帰り際、振り返って{name2}のほうを一瞬だけ見た',
+      '試合後の通路で、{name}が壁を叩く音がした',
+    ],
+    voice: {
+      normal: {
+        _default: ['…まだ、足りないのか', '…くやしい'],
+      },
+      bold: {
+        _default: ['…次は絶対に負けない', '…この借りは必ず返す'],
+        delinquent: ['…クソッ…！'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…敗因は分かっている。次までに修正する'],
+      },
+      earnest: {
+        _default: ['…あの人にはまだ勝てない。でも、だからこそ', '…もっと練習する。絶対に'],
+      },
+      emotional: {
+        _default: ['…悔しい…悔しい…！', '…なんであたしは勝てないの'],
+        ojousama: ['…こんなはずでは…こんなはずでは、ないのに'],
+      },
+    },
+  },
+
+  // ── 性格不一致の摩擦（Phase 4系） ──
+  friction: {
+    scene: [
+      '{name}と{name2}が練習メニューの順番で揉めていた。些細なことだが',
+      '{name}が{name2}の練習態度について、小声で何か言っていた',
+      '{name}と{name2}が同時に控え室に入った瞬間、空気が変わった',
+    ],
+    staff: [
+      'スタッフから: {name}と{name2}、ちょっと相性が良くないみたいで…',
+    ],
+  },
+
+  // ── 世代近接のポジティブ（Phase 4系） ──
+  generation: {
+    scene: [
+      '{name}と{name2}が一緒に帰っていく姿が見えた。同世代の気安さがある',
+      '{name}と{name2}が自販機の前で笑い合っていた。何が面白いのか、こちらには分からないが',
+      '{name}が{name2}を自主練に誘っている。いい雰囲気だ',
+      '{name}と{name2}が昼食を一緒に取っている。どうやら仲がいいらしい',
+    ],
+  },
+
+  // ── 因縁解消後のくすぶり（Phase 4系） ──
+  rivalryResolved: {
+    scene: [
+      '決着はついた。だが{name}と{name2}が目を合わせた時、そこにはまだ何かがあった',
+      '因縁は終わった。はずだ。…だが{name}は{name2}の動向を気にしている',
+    ],
+  },
+
+  // ── 自己ベストMQ更新 ──
+  careerBestMQ: {
+    scene: [
+      '{name}が試合後、自分の両手を見つめていた。何かを掴んだ表情だ',
+      '{name}の試合が終わった後、先輩たちが小さく頷いていた',
+    ],
+  },
+
+  // ── ブレイクスルーでtrust上昇（embedded: 既存演出に1行追加） ──
+  breakthrough: {
+    voice: {
+      normal: {
+        _default: ['…ここで頑張ってきてよかった'],
+      },
+      bold: {
+        _default: ['…まだまだ強くなれる！この団体でなら'],
+      },
+      quiet: {
+        _default: ['…この場所に感謝している'],
+        cool: ['…環境に恵まれた。それは認める'],
+      },
+      earnest: {
+        _default: ['…みんなのおかげです。もっと恩返しがしたい'],
+      },
+      emotional: {
+        _default: ['…うれしい…ここにいてよかった'],
+      },
+    },
+  },
+
+  // ── 対抗戦勝利（embedded: 対抗戦結果モーダルに追加） ──
+  warVictory: {
+    scene: [
+      '{name}はチームの勝利に拳を握りしめた。この団体の看板を背負う覚悟が見えた',
+    ],
+    voice: {
+      bold: {
+        _default: ['…あたしが勝つんだよ。この団体を背負ってるんだから'],
+      },
+      earnest: {
+        _default: ['…みんなの想いを背負って戦えて光栄です'],
+      },
+      emotional: {
+        _default: ['…勝った…！ みんなのおかげだよ…！'],
+      },
+      quiet: {
+        _default: ['…'],
+        cool: ['…当然の結果だ'],
+      },
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PPV GRAND FINAL 設定 — ppv-grand-final-spec-v2.0.md
 // ─────────────────────────────────────────────────────────────────────────────
 const PPV_UNLOCK_POP = 30;  // 出場解禁に必要な orgPop
@@ -5322,7 +5652,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CARE_ACTIONS, CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
     CHOICE_EVENT_DIALOGUES, LARGE_EVENT_TEXTS, LARGE_EVENT_DIALOGUES,
     MEDIA_OUTLET_NAMES, ENDING_LINES, TEAM_SPIRIT_TEXTS, ATMOSPHERE_TEXTS,
-    COACH_REPORT_TEXTS, STAT_LABELS_JP, COACH_OBS_INACCURACY,
+    COACH_REPORT_TEXTS, STAT_LABELS_JP, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
     PPV_UNLOCK_POP, PPV_SLOTS, PPV_REWARD, PPV_ENTRY_WEEK, PPV_SHOW_WEEK,
     PPV_NAMES, PPV_OPPONENT_LINES, PPV_HYPE_TEMPLATES, CREDITS,
     DRAFT_CONFIG, ORG_ASSIGN, generateDraftConfig, seededShuffle,

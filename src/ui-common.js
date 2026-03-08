@@ -397,6 +397,40 @@ function closeWarFinalResult(eventWon) {
   setTimeout(() => { Audio.bgm.play('management'); refreshAll(); }, eventWon ? 2000 : 500);
 }
 
+// ── R3 モーダル: 仲良し退団/引退演出 ──
+function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
+  const overlay = document.createElement('div');
+  overlay.className = 'r3-modal-overlay';
+
+  const isRetired = reason && (reason.includes('引退') || reason === 'retired');
+  const departureText = isRetired
+    ? `${departedName} が引退した。`
+    : `${departedName} が去った。`;
+
+  const faceHtml = fighterFace
+    ? `<div class="r3-modal-face"><img src="${fighterFace}" alt="${fighterName}" /></div>`
+    : '';
+
+  overlay.innerHTML = `
+    <div class="r3-modal">
+      ${faceHtml}
+      <p class="r3-modal-departure">${departureText}</p>
+      <p class="r3-modal-name">${fighterName}</p>
+      <p class="r3-modal-line">${line}</p>
+      <button class="r3-modal-close">閉じる</button>
+    </div>
+  `;
+
+  overlay.querySelector('.r3-modal-close').addEventListener('click', () => {
+    overlay.remove();
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+}
+
 function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
   const overlay = document.getElementById('confirmOverlay');
@@ -3521,6 +3555,8 @@ function _renderNextGrowthPopup() {
 
   // ブレイクスルー兆し（試合中のモノローグ）
   const hintHtml = ev.btHint ? `<div class="growth-event-hint">${ev.btHint}</div>` : '';
+  // スナップショット追記（あれば）
+  const snapHtml = ev.snapshotText ? `<div class="log-snapshot" style="margin-top:8px;font-size:11px">\u{1F4AD} ${ev.snapshotText}</div>` : '';
 
   box.className = `growth-event-box ${tone}`;
   box.innerHTML = `
@@ -3530,6 +3566,7 @@ function _renderNextGrowthPopup() {
     <div class="growth-event-title">${title}</div>
     <div class="growth-event-msg">${message}</div>
     ${detail ? `<div class="growth-event-detail">${detail}</div>` : ''}
+    ${snapHtml}
     <button class="growth-event-btn" onclick="closeGrowthEventPopup()">${btnLabel}</button>
   `;
   overlay.classList.add('active');

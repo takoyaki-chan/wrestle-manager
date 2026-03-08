@@ -3562,6 +3562,23 @@ const App = {
       }
     }
 
+    // スナップショット R3モーダル表示（興行後）
+    if (G._pendingR3Modal) {
+      const r3ModalShow = G._pendingR3Modal;
+      const { _pendingR3Modal: _, ...cleanR3Show } = G;
+      G = cleanR3Show;
+      const r3Fighter = G.roster.find(f => f.id === r3ModalShow.fighterId);
+      setTimeout(() => {
+        showR3Modal({
+          fighterName: r3Fighter ? r3Fighter.name : '???',
+          fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
+          departedName: r3ModalShow.departedName || '???',
+          reason: r3ModalShow.reason || 'departed',
+          line: r3ModalShow.text,
+        });
+      }, 800);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -3849,6 +3866,26 @@ const App = {
     if (pendingLargeEvent) {
       const largeDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
       setTimeout(() => App.handleLargeEvent(pendingLargeEvent), largeDelay);
+    }
+
+    // スナップショット R3モーダル表示
+    const pendingR3Modal = G._pendingR3Modal || null;
+    if (G._pendingR3Modal) {
+      const { _pendingR3Modal: _, ...cleanR3 } = G;
+      G = cleanR3;
+    }
+    if (pendingR3Modal) {
+      const r3Fighter = G.roster.find(f => f.id === pendingR3Modal.fighterId);
+      const r3Delay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
+      setTimeout(() => {
+        showR3Modal({
+          fighterName: r3Fighter ? r3Fighter.name : '???',
+          fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
+          departedName: pendingR3Modal.departedName || '???',
+          reason: pendingR3Modal.reason || 'departed',
+          line: pendingR3Modal.text,
+        });
+      }, r3Delay);
     }
 
     // v1.9: 逸材特別交渉枠アンロック通知
