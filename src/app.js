@@ -2905,7 +2905,8 @@ const App = {
       return;
     }
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
-    let roster = s.roster.map(c => ({ ...c }));
+    // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
+    let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
     let rivalries = { ...s.rivalries };
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
@@ -4880,7 +4881,8 @@ App.finalizePPV = function() {
   // 結果反映
   const result = Engine.ppv.applyPPVResults(G, pp.card, pp.results, pp.summitPair);
   let s = result.state;
-  let roster = s.roster.map(c => ({ ...c }));
+  // forcedRest（S3休養願い）フラグをクリア
+  let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
   const events = result.events;
 
   // Step 5-6: ブレークスルー判定 + careerBestMQ + スランプ + モチベ喪失
