@@ -2476,6 +2476,7 @@ const Engine = {
         trust: 50,
         promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
+        orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -4323,6 +4324,12 @@ const Engine = {
           s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -10, max: -5 }, { min: 0, max: 0 }, injRetRelRng);
         }
       }
+      // Phase 3 R3: 仲の良い選手を失ったtrust影響
+      for (const ir of injRetirees) {
+        const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
+        if (!retiredF) continue;
+        roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships);
+      }
     }
 
     // Phase 2: 試合結果の関係値反映（spec §3.1）
@@ -4445,6 +4452,11 @@ const Engine = {
         s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -10, max: -5 }, { min: 0, max: 0 }, sdRelRng);
       });
       s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
+      // Phase 3 R3: 仲の良い選手を失ったtrust影響
+      departureResult.departed.forEach(d => {
+        const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships);
+        s = { ...s, roster: updatedRoster };
+      });
       departureResult.departed.forEach(d => {
         events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
         // 退団先振り分け
@@ -4452,7 +4464,8 @@ const Engine = {
           const aiOrgs = Object.entries(s.aiOrgs || {});
           if (aiOrgs.length > 0) {
             const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
-            const transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0 };
+            const absWeekNow = ((s.season || 1) - 1) * 48 + (s.week || 1);
+            const transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
             delete transferred.trustCap; delete transferred.s4Count;
             org.roster = [...(org.roster || []), transferred];
           }
@@ -4650,6 +4663,9 @@ const Engine = {
           const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
           s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
         }
+        // Phase 3 R3: 仲の良い選手を失ったtrust影響
+        const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships);
+        s = { ...s, roster: impactedRoster };
         // Fighter leaves — player gets transfer fee
         s = { ...s,
           roster: s.roster.filter(c => c.id !== fighterIdToRelease),
@@ -4661,6 +4677,8 @@ const Engine = {
         if (targetData) {
           // v1.0b: Transfer popularity reset
           let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+          // Phase 3: orgJoinWeek設定
+          resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
           // v1.3: Record transfer event
           resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach' });
           const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
@@ -4684,6 +4702,9 @@ const Engine = {
             const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
             s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
           }
+          // Phase 3 R3: 仲の良い選手を失ったtrust影響
+          const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships);
+          s = { ...s, roster: impactedRoster2 };
           // Defense failed — forced transfer
           const targetId = poach.org.id;
           const targetData = s.aiOrgs[targetId];
@@ -4694,6 +4715,8 @@ const Engine = {
           if (targetData) {
             // v1.0b: Transfer popularity reset
             let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+            // Phase 3: orgJoinWeek設定
+            resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
             // v1.3: Record forced transfer
             resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach_forced' });
             const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
@@ -4737,6 +4760,8 @@ const Engine = {
         careerSeasons: fighter.careerSeasons || 0,
         intensive: false, intensiveWeeks: 0
       };
+      // Phase 3: orgJoinWeek設定
+      newFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
       // v1.3: Record transfer event
       newFighter = Engine.career.addEvent(newFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'poach' });
       s = { ...s,
@@ -4918,6 +4943,8 @@ const Engine = {
         };
         // v1.0b: Transfer popularity reset
         let resetFighter = Engine.popularity.applyTransferReset(newFighter);
+        // Phase 3: orgJoinWeek設定
+        resetFighter.orgJoinWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
         // v1.3: Record transfer event
         resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
         // roster-cap v1.0: ロスター枠チェック
@@ -5064,7 +5091,8 @@ const Engine = {
         ...fighter,
         isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
         rentalSeasonsLeft: seasons,
-        condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }
+        condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+        orgJoinWeek: ((state.season || 1) - 1) * 48 + (state.week || 1),
       };
       const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, seasonsLeft: seasons, fee };
       let s = { ...state,
@@ -6323,6 +6351,11 @@ const Engine = {
             return { fighter: f, route, line, category, summary, canRetain };
           });
           s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
+          // Phase 3 R3: 仲の良い選手を失ったtrust影響（シーズン末引退）
+          allRetirees.forEach(retiree => {
+            const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships);
+            s = { ...s, roster: impacted };
+          });
           allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
         }
 
@@ -6710,6 +6743,7 @@ const Engine = {
       trust: 50,           // v2.0: 信頼度 0-100（隠しパラメータ）
       promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
       lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
+      orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
     };
   },
 
@@ -7767,6 +7801,83 @@ Engine.trust = {
     return delta;
   },
 
+  // ── Phase 3: 選手間関係によるtrust変動（興行ごと） ───────────────────────
+  // matchContext: { participatedIds: Set, matchResults: [{leftId, rightId, winnerId}], sameOrgActiveRoster: [] }
+  calcRelationshipTrustDelta(fighter, state, matchContext) {
+    if (!state.relationships) return 0;
+    let delta = 0;
+    const rels = state.relationships;
+
+    // ── R1: bond低いペアが同興行出場（双方に適用） ──
+    // 条件: 双方が今回の興行に出場 かつ bond27以下
+    if (matchContext.participatedIds.has(fighter.id)) {
+      for (const otherId of matchContext.participatedIds) {
+        if (otherId === fighter.id) continue;
+        const key = Engine.relationships._key(fighter.id, otherId);
+        const r = rels[key];
+        if (r && r.bond <= 27) {
+          delta -= 0.3;
+        }
+      }
+    }
+
+    // ── R2: ロッカールーム内で孤立 ──
+    // 条件: 同団体在籍8週以上、アクティブロスター内でbond50+の相手が1人以下
+    const orgJoinWeek = fighter.orgJoinWeek || 0;
+    const currentAbsWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+    if (currentAbsWeek - orgJoinWeek >= 8) {
+      const sameOrgRoster = matchContext.sameOrgActiveRoster;
+      let bondFriends = 0;
+      for (const mate of sameOrgRoster) {
+        if (mate.id === fighter.id) continue;
+        const key = Engine.relationships._key(mate.id, fighter.id);
+        const r = rels[key];
+        if (r && r.bond >= 50) bondFriends++;
+      }
+      if (bondFriends <= 1) {
+        delta -= 0.4;
+      }
+    }
+
+    // ── R4/R5: rivalry高い相手との勝敗 ──
+    // 条件: rivalry40以上の相手と試合して勝った/負けた
+    for (const mr of matchContext.matchResults) {
+      const isLeft = mr.leftId === fighter.id;
+      const isRight = mr.rightId === fighter.id;
+      if (!isLeft && !isRight) continue;
+
+      const oppId = isLeft ? mr.rightId : mr.leftId;
+      const key = Engine.relationships._key(fighter.id, oppId);
+      const r = rels[key];
+      if (!r || r.rivalry < 40) continue;
+
+      const won = mr.winnerId === fighter.id;
+      const lost = mr.winnerId === oppId;
+      if (won) delta += 0.2;       // R4: ライバルに勝った
+      else if (lost) delta -= 0.3; // R5: ライバルに負けた
+    }
+
+    return delta;
+  },
+
+  // ── Phase 3 R3: 仲の良い選手が退団/引退した時のtrust影響 ──────────────
+  // 残されたロスターメンバーのうち、退団者とbond65+の選手のtrustを直接低下させる。
+  // delta = -(bond - 50) * 0.2  →  bond65: -3.0 / bond75: -5.0 / bond85: -7.0
+  // 返り値: 更新後のroster
+  applyDepartureTrustImpact(roster, departedId, relationships) {
+    if (!relationships) return roster;
+    return roster.map(f => {
+      const key = Engine.relationships._key(f.id, departedId);
+      const r = relationships[key];
+      if (!r || r.bond < 65) return f;
+      const impact = -((r.bond - 50) * 0.2);
+      const oldTrust = f.trust != null ? f.trust : 50;
+      const newTrust = Engine.util.clamp(oldTrust + impact, 0, 100);
+      if (Math.abs(newTrust - oldTrust) < 0.01) return f;
+      return { ...f, trust: newTrust };
+    });
+  },
+
   applyShowTrust(roster, results, titles, state) {
     if (results.length === 0) return { roster, changes: [] };
 
@@ -7817,6 +7928,15 @@ Engine.trust = {
     const ovrSorted = [...salaryByOvr].sort((a, b) => b.ovr - a.ovr);
     const ovrRankMap = {};
     ovrSorted.forEach((e, i) => { ovrRankMap[e.id] = i + 1; });
+
+    // Phase 3: bond/rivalry → trust 判定用コンテキスト
+    const matchResultsForTrust = results.map(r => ({
+      leftId: r.left.id,
+      rightId: r.right.id,
+      winnerId: r.winner === 'left' ? r.left.id : (r.winner === 'right' ? r.right.id : null),
+    }));
+    // 同団体アクティブロスター（孤立判定用）
+    const sameOrgActiveRoster = roster.filter(f => !f.injury && !f.isRental);
 
     // §14.1D: trustCap期限切れチェック
     const currentWeek = state ? (state.season || 1) * 100 + (state.week || 1) : 0;
@@ -7901,6 +8021,17 @@ Engine.trust = {
         };
         const grievance = Engine.trust.calcGrievanceDelta(fighter, rosterContext, titles, state);
         delta += grievance;
+      }
+
+      // Phase 3: 選手間関係によるtrust変動
+      if (state.relationships) {
+        const matchContext = {
+          participatedIds: participated,
+          matchResults: matchResultsForTrust,
+          sameOrgActiveRoster,
+        };
+        const relDelta = Engine.trust.calcRelationshipTrustDelta(fighter, state, matchContext);
+        delta += relDelta;
       }
 
       // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響
@@ -10561,6 +10692,32 @@ Engine.relationships = {
       (org.roster || []).forEach(c => charOvrMap.set(c.id, Engine.util.ov(c)));
     });
 
+    // Phase 4: 性格/年齢/スタイル情報マップ
+    const charInfoMap = new Map();
+    (state.roster || []).forEach(c => charInfoMap.set(c.id, {
+      personality: c.personality || 'normal',
+      archetype: c.archetype || 'normal',
+      age: c.age || 20,
+      style: c.style || 'Allround',
+    }));
+    Object.values(state.aiOrgs || {}).forEach(org => {
+      (org.roster || []).forEach(c => charInfoMap.set(c.id, {
+        personality: c.personality || 'normal',
+        archetype: c.archetype || 'normal',
+        age: c.age || 20,
+        style: c.style || 'Allround',
+      }));
+    });
+
+    // Phase 4: 団体ごとのOVR上位5位IDセット（タイトル圏判定用）
+    const orgTopRankMap = new Map();
+    const playerSorted = [...(state.roster || [])].filter(c => !c.injury).sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+    orgTopRankMap.set('player', new Set(playerSorted.slice(0, 5).map(c => c.id)));
+    Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => {
+      const sorted = [...(org.roster || [])].filter(c => !c.injury).sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+      orgTopRankMap.set(orgId, new Set(sorted.slice(0, 5).map(c => c.id)));
+    });
+
     const newRels = {};
     const absWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
 
@@ -10588,29 +10745,75 @@ Engine.relationships = {
         } else if (bond < 50) {
           bond += 0.2 + Engine.rng.float(rng) * 0.1; // +0.2〜+0.3
         }
-        rivalry -= 0.1 + Engine.rng.float(rng) * 0.1; // -0.1〜-0.2
+        rivalry -= 0.15 + Engine.rng.float(rng) * 0.15; // -0.15〜-0.3（Phase 4 F: やや強化）
       } else {
         // 接触なし: bond凍結、rivalry超低速減衰
         rivalry -= 0.1;
       }
 
-      // 同団体所属ボーナス（spec §3.2 O-01）
-      // 自然減衰とは別に加算。同団体なら bond +0.2〜+0.5/週
-      if (sameOrg) {
-        bond += 0.2 + Engine.rng.float(rng) * 0.3; // +0.2〜+0.5
+      // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
+      // bond55から効果が減衰し、60で完全停止。60超は試合やイベントでのみ到達可能
+      if (sameOrg && bond < 60) {
+        const orgBondGain = 0.2 + Engine.rng.float(rng) * 0.3; // +0.2〜+0.5
+        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
+        bond += orgBondGain * ceiling;
       }
 
-      // Phase 4: G-04/G-05 OVR差による週次rivalry変動
+      // Phase 4 B: 性格不一致の週次摩擦
+      // 条件: 同団体 かつ 性格+アーキタイプ相性 <= -3
+      if (sameOrg) {
+        const infoA = charInfoMap.get(idA);
+        const infoB = charInfoMap.get(idB);
+        if (infoA && infoB) {
+          const pAdj = Engine.relationships._getPersonalityBondAdj(infoA.personality, infoB.personality);
+          const aAdj = Engine.relationships._getArchetypeBondAdj(infoA.archetype, infoB.archetype);
+          if (pAdj + aAdj <= -3) {
+            bond -= 0.15;  // 性格不一致摩擦: -0.15/週（48週で-7.2pt）
+          }
+        }
+      }
+
+      // Phase 4 C: 世代近接ボーナス（同団体 + 年齢差3以内）
+      // 同団体ボーナスの60天井とは別枠。接触中の自然減衰と合わせて65程度が実質天井
+      if (sameOrg) {
+        const infoA = charInfoMap.get(idA);
+        const infoB = charInfoMap.get(idB);
+        if (infoA && infoB && Math.abs(infoA.age - infoB.age) <= 3) {
+          bond += 0.1;  // 世代近接: +0.1/週（48週で+4.8pt）
+        }
+      }
+
+      // Phase 4: G-04/G-05 OVR差による週次rivalry変動 + 試合外競争意識
       const ovrA = charOvrMap.get(idA);
       const ovrB = charOvrMap.get(idB);
       if (ovrA !== undefined && ovrB !== undefined) {
         const ovrDiff = Math.abs(ovrA - ovrB);
         if (ovrDiff >= 10 && rivalry >= 20 && ovrA > ovrB) {
-          // G-04: 高い側→低い側 rivalry -2~-4/週
+          // G-04: 高い側→低い側 rivalry -2~-4/週（据え置き）
           rivalry -= 2 + Engine.rng.float(rng) * 2;
-        } else if (ovrDiff <= 5 && rivalry >= 10 && absWeek % 4 === 0) {
-          // G-05: 双方 rivalry +3~+5 (4週に1回)
-          rivalry += 3 + Engine.rng.float(rng) * 2;
+        } else if (ovrDiff <= 5 && absWeek % 4 === 0) {
+          // G-05: OVR近接 rivalry +2~+4 (4週に1回、基本値微減)
+          if (rivalry >= 10) {
+            rivalry += 2 + Engine.rng.float(rng) * 2;
+          }
+
+          // Phase 4 D-1: 同スタイル上乗せ（OVR差5以内 + 同スタイル + 同団体）
+          if (sameOrg) {
+            const infoA = charInfoMap.get(idA);
+            const infoB = charInfoMap.get(idB);
+            if (infoA && infoB && infoA.style === infoB.style && infoA.style !== 'Allround') {
+              rivalry += 1 + Engine.rng.float(rng); // +1~+2（ポジション争いの意識）
+            }
+          }
+        }
+
+        // Phase 4 D-2: タイトル圏の競争意識（同団体 + 双方OVR上位5位 + 4週に1回）
+        if (sameOrg && absWeek % 4 === 0) {
+          const orgId = orgA; // orgA === orgB（sameOrg判定済み）
+          const topSet = orgTopRankMap.get(orgId);
+          if (topSet && topSet.has(idA) && topSet.has(idB)) {
+            rivalry += 0.5 + Engine.rng.float(rng) * 0.5; // +0.5~+1.0
+          }
         }
       }
 
@@ -11013,9 +11216,9 @@ Engine.relationships = {
       rel.rivalry += roll(rivalryMin, rivalryMax) * mult;
     };
 
-    // ═══ M-01: ベースライン（全試合） ═══
-    apply('AB', 'match', context.stage, 0, 1, 0.5, 1.5, true);
-    apply('BA', 'match', context.stage, 0, 1, 0.5, 1.5, true);
+    // ═══ M-01: ベースライン（全試合, Phase 4 E: rivalry抑制） ═══
+    apply('AB', 'match', context.stage, 0, 1, 0.3, 1.0, true);
+    apply('BA', 'match', context.stage, 0, 1, 0.3, 1.0, true);
 
     // ═══ M-02 / M-03 判定（排他） ═══
     let isCloseMatch = false;
@@ -11072,10 +11275,10 @@ Engine.relationships = {
       apply('BA', 'titleMatch', context.stage, 0, 0, 8, 12, true);
     }
 
-    // ═══ M-10: 因縁決着 ═══
+    // ═══ M-10: 因縁決着（Phase 4 G: リセットではなく緩和。高rivalryは維持される） ═══
     if (context.rivalryResolved) {
-      apply('AB', 'rivalryResolution', context.stage, 5, 10, -15, -10, false);
-      apply('BA', 'rivalryResolution', context.stage, 5, 10, -15, -10, false);
+      apply('AB', 'rivalryResolution', context.stage, 5, 10, -8, -5, false);
+      apply('BA', 'rivalryResolution', context.stage, 5, 10, -8, -5, false);
     }
 
     // ═══ M-11: 怪我 ═══

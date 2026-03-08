@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-08（待遇不満・成功体験 Trust連動 Phase 2 実装完了）
+> 最終更新: 2026-03-08（Bond/Rivalry自体の調整 Phase 4 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -666,6 +666,10 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 ---
 
 ## 設計決定ログ（実装済みルール集）
+
+- **Bond/Rivalry自体の調整 Phase 4** — Trust/Bond/Rivalry包括リバランスのPhase 4。同団体ボーナスbond60天井（bond55から減衰し60で停止。60超は試合/イベントでのみ到達可能）。性格不一致の週次摩擦（相性≤-3で-0.15/週）。世代近接ボーナス（年齢差3以内で+0.1/週、別枠で実質65天井）。試合外rivalry拡張（D-1:同スタイルOVR近接+1〜+2/4週、D-2:タイトル圏top5同士+0.5〜+1.0/4週）。M-01ベースラインrivalry抑制（+0.5〜+1.5→+0.3〜+1.0）。接触中rivalry自然減衰強化（-0.1〜-0.2→-0.15〜-0.3）。因縁解消時rivalry緩和を穏やかに（-15〜-10→-8〜-5、リセットではなく緩和）。G-05基本値微減（+3〜+5→+2〜+4）。`charInfoMap`/`orgTopRankMap`事前構築。auto-sim 500シーズンALL CLEAR
+
+- **Bond/Rivalry→Trust連動 Phase 3** — Trust/Bond/Rivalry包括リバランスのPhase 3。選手間の人間関係がtrust（団体への信頼度）に影響する経路を追加。R1:低bond同興行出場（bond27以下で-0.3/ペア）。R2:ロッカールーム内孤立（在籍8週以上でbond50+の相手が1人以下なら-0.4/興行）。R3:仲の良い選手の退団/引退時trust直接低下（bond65+で-(bond-50)×0.2、bond65=-3.0/bond75=-5.0/bond85=-7.0）。R4/R5:rivalry40+の相手との勝敗（勝利+0.2/敗北-0.3）。`calcRelationshipTrustDelta`新設。`applyDepartureTrustImpact`新設（突然退団/怪我引退/引き抜き承諾/防衛失敗/シーズン末引退の5箇所にフック）。`orgJoinWeek`フィールド追加（makeChar/makeAIFighter/全加入箇所9箇所）。AI団体はapplyShowTrust共用で自動適用。auto-sim 500シーズンALL CLEAR
 
 - **待遇不満・成功体験 Trust連動 Phase 2** — Trust/Bond/Rivalry包括リバランスのPhase 2。即時型: ブレイクスルー達成(+3.5)/自己ベストMQ更新(+1.2)/対抗戦勝利(+2.3)を`_trustBonus`パターンで`applyShowTrust`内回収。蓄積型: 給与不公平(-0.4/興行)/後輩高給(-0.6/興行)/タイトル機会なし(-0.5/興行)/ロスター過密(-0.35/興行)を`calcGrievanceDelta`で毎興行判定・重複加算。`lastTitleShowWeek`フィールド追加。AI団体も`applyShowTrust`共用で自動適用。auto-sim 500シーズンALL CLEAR
 

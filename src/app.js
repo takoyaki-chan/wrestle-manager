@@ -2080,6 +2080,8 @@ const App = {
       preInjuryPop: fighter.preInjuryPop ?? null
     };
     let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
+    // Phase 3: orgJoinWeek設定
+    c.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
     // v1.3: Record debut event
     c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
@@ -2182,6 +2184,8 @@ const App = {
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       // v1.3: Record debut event
       let normalizedSigned = normalizeFighterForRoster(signed);
+      // Phase 3: orgJoinWeek設定
+      normalizedSigned.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       newRoster.push(normalizedSigned);
       newFunds -= result.cost;
