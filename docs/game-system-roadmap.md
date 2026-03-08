@@ -690,8 +690,8 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - **FA年齢保存方式** — dormantPool退場時に{id, age}で保存。22歳超はFA参入不可
 - **HEAT倍率圧縮** — Warm ×1.1、Hot ×1.2、On Fire ×1.3。興行週にも軽減衰-0.3
 - **baseAttendance係数** — ~~(orgPop/100)² × 10000~~ L1で廃止 → BASE_ATTENDANCE_CURVE（21点区間線形補間、orgPop 0:20人〜100:30000人）
-- **会場システム（L1）** — 全10段（公民館150〜ドーム30000）、popReq撤廃で全会場選択可能。週次揺らぎ±17%（seed 0xA77E）。勢い補正attendanceMomentum（±15%上限、ガラガラ<30%でorgPop-0.5）。ざっくり予測3段階テキスト。リスク指標（◎安全/△挑戦/✕危険）
-- **給料連続関数** — base=0.65*exp(0.06*OVR) + 80*(pop/100)²人気加算 + タイトル保持者+20万。SALARY_TABLE廃止→SALARY_PARAMS
+- **会場システム（L1）** — 全10段（公民館150〜ドーム30000）、popReq撤廃で全会場選択可能。~~週次揺らぎ±17%~~→L1rで会場スケール揺らぎVENUE_FLUCTUATIONに置換（seed 0xA77E）。勢い補正attendanceMomentum（±15%上限、ガラガラ<30%でorgPop-0.5）。ざっくり予測3段階テキスト。リスク指標（◎安全/△挑戦/✕危険）
+- **給料連続関数** — base=~~0.65~~0.55*exp(~~0.06~~0.062*OVR) + 80*(pop/100)²人気加算 + タイトル保持者+20万。SALARY_TABLE廃止→SALARY_PARAMS（L1rで中間層微調整）
 - **グッズ単価** — 0.15万/人（チケット:グッズ比率 3:1）
 - **育成補助金** — orgPop 40未満に地域振興助成金（0-19:80万/週、20-29:65万/週、30-34:45万/週、35-39:20万/週）。推定週間収支にも反映
 - **orgPop逓減カーブ** — 0→×1.0, 20→×0.70, 40→×0.35, 55→×0.20, 70→×0.12, 85→×0.08
@@ -736,6 +736,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - **AI統一成長モデル v1.0** — aiSeasonGrowth一括計算を廃止。processAIWeek(rng,state,org)で毎週calcGrowth+simulateMatchを実行。AI_COACH_CONFIG: S/A/Bティア別×エース/一般のcoachMul+intensiveRate+practiceRate。convergenceMul比率ベース化(convergenceRatio=0.15)。matchGrowthBase 0.7→0.35。makeAIFighterに16フィールド追加。initRandomRosterでA級elite1名保証。設計書: specs/ai-unified-growth-spec-v1.0.md
 - **NPC記録データ完全統一（設計確定）** — AI選手にプレイヤーと完全同一の試合後処理を適用。processAIWeek興行週にcheckAndApplyBreakthrough/checkLosingStreak/checkSlump/checkMotivationLoss/updateMomentum/applyShowTrust/MQ連動人気変動を追加。aiSeasonGrowthEvents+aiSeasonPopularity廃止。ゲーム開始時（ドラフト直後）に全98キャラの過去経歴自動生成: peakOVR/careerBestMQ/ブレークスルー/団体名タイトル歴(皇武館王座等)/移籍歴/怪我歴/trust初期値。AI団体matchupLog新設+カード鮮度考慮。milestone.get/buildSummaryのAI団体検索追加。設計書: specs/npc-record-unification-spec-v1.0.md
 - **プロモ改修「プロモ＝商売」（設計確定）** — プロモ＝リング外の営業活動（握手会・地域イベント・SNS配信・グッズ販売会）。①PROMO_POP_CAP 55→70（逓減で自然に頭打ち）。②プロモイベント収入PROMO_EVENT_INCOME: pop帯別15-85万/週の直接現金（低人気帯15万でもゼロではない=頑張る子にお金を出す世界観）。③MQ蓄積ボーナス: promoStack最大3回×1.3=+3.9（因縁「宿敵」並み、ただし練習3週犠牲）。④お任せロジック: pop≥70+stack≥3で自動練習切替。ハードモード序盤（orgPop 10-25、補助金なし）の資金難救済が主目的。高人気帯は控えめ設計で終盤は自然にプロモ卒業。設計書: specs/promo-redesign-spec-v1.0.md
+- **経済リバランスL1r（実装済み）** — ドームを「収益装置」から「聖地」に再設計。①会場スケール集客揺らぎ: WEEKLY_FLUCTUATION(一律±17%)をVENUE_FLUCTUATION(会場別±10%〜±40%)に置換。公民館±10%(地元常連で安定)→ドーム±40%(超ハイリスク)の段階的リスク勾配。②BASE_ATTENDANCE_CURVE上位2点引き下げ: [95,20000→16000],[100,30000→20000]。orgPop=100でも基礎集客20000=ドーム67%。超満員には好揺らぎ+勢い+ヒート全好条件が必要。③ドーム会場費: 9000→12000万。稼働率60%以下で赤字確定。④給与カーブ中間層微調整: baseA 0.65→0.55, baseB 0.06→0.062。OVR50-60は-5〜7%減、OVR80以上は実質変化なし。ドーム50回シミュレーション: 赤字率48%、大当たり(5000万+)14%、平均純利益+176万。変更: src/data.js(VENUE_FLUCTUATION/BASE_ATTENDANCE_CURVE/VENUES[9]/SALARY_PARAMS) + src/engine.js(calcAttendance揺らぎ計算)
 - **因縁決着システム（実装済み）** — 因縁を「発生→盛り上がり→決着→報酬」のサイクルにする。2段階演出: 試合前に宣戦布告ポップアップ（ペア台詞コール＆レスポンス、通常5パターン+永遠3パターン、SE:'war'）→ 試合後に決着ポップアップ（勝者/敗者セリフ+ボーナス明示、SE:'award'）。決着条件: 宿敵以上(matches≥4)で試合しMQ≥50。決着成立時: matchesをゼロリセット、両選手pop+4、orgPop+1.5。永遠のライバル(matches≥7)からの決着はpop+6、orgPop+2.5、赤枠+金枠演出強化。クールダウン: 決着後lastResolvedWeekを記録、同ペアは4週間ファン期待カードに出さない。MQ<50の試合は「不完全燃焼」として因縁残存。deferredRivalryPairsパターン: 宿敵+ペアのrecordRivalryをMQ確定後まで保留し、レベルアップメッセージと決着リセットの矛盾を防止。因縁MQボーナス半減: +5/+8/+12→+3/+4/+6。ポップアップ連鎖: eventPopups→決着→growth→retirement。詳細: specs/rivalry-resolution-spec.md
 
 ---

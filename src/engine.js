@@ -597,9 +597,10 @@ const Engine = {
       const champBonus = hasChampOnCard ? 0.10 : 0.0;
       const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
       const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus, 2.0);
-      // Step 4: 週次揺らぎ（rng=nullならプレビュー用で1.0）
+      // Step 4: 週次揺らぎ（会場スケール — 大会場ほどハイリスク）
+      const fluctRange = VENUE_FLUCTUATION[venueIdx] || 0.17;
       const fluctuation = rng
-        ? WEEKLY_FLUCTUATION.MIN + Engine.rng.float(rng) * (WEEKLY_FLUCTUATION.MAX - WEEKLY_FLUCTUATION.MIN)
+        ? (1.0 - fluctRange) + Engine.rng.float(rng) * (2 * fluctRange)
         : 1.0;
       // Step 5: 勢い補正
       const momentumMult = 1.0 + (G.attendanceMomentum || 0);

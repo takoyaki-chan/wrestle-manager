@@ -589,8 +589,8 @@ const BIGMATCH_ENG = {
 // ╚══════════════════════════════════════════════════════════╝
 // 給与連続関数パラメータ（R4: テーブル廃止→指数関数）
 const SALARY_PARAMS = {
-  baseA: 0.65,       // 指数カーブ係数A
-  baseB: 0.06,       // 指数カーブ係数B — base = A * exp(B * OVR)
+  baseA: 0.55,       // 指数カーブ係数A（L1r: 0.65→0.55 中間層給与微調整）
+  baseB: 0.062,      // 指数カーブ係数B — base = A * exp(B * OVR)（L1r: 0.06→0.062 高OVR維持）
   popMax: 80,        // 人気加算の最大値（万）
   popExp: 2,         // 人気カーブ指数 — popBonus = popMax * (pop/100)^popExp
   titleBonus: 20,    // タイトル保持者固定加算（万）
@@ -634,14 +634,14 @@ const VENUES = [
   {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
   {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
   {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
-  {name:'ドーム',    cap:30000, cost:9000, maxMatches:8, img:'../image/venue_9_dome.webp'},         // 9
+  {name:'ドーム',    cap:30000, cost:12000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
 const BASE_ATTENDANCE_CURVE = [
   [0,20],[5,60],[10,130],[15,200],[20,300],[25,420],[30,550],
   [35,720],[40,900],[45,1150],[50,1500],[55,1900],[60,2500],
   [65,3200],[70,4000],[75,5200],[80,7000],[85,9500],[90,14000],
-  [95,20000],[100,30000]
+  [95,16000],[100,20000]
 ];
 const TICKET_PRICE = 0.5; // 万円/人（v1.7: シミュレーション後に要調整）
 const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
@@ -663,7 +663,20 @@ const MOMENTUM_CONFIG = {
   CAP: 0.15,                  // 上限±15%
   EMPTY_ORGPOP_PENALTY: -0.5, // <30%時のorgPopダメージ
 };
-const WEEKLY_FLUCTUATION = { MIN: 0.83, MAX: 1.17 }; // ±17%
+// L1r: 会場スケール集客揺らぎ（会場インデックス順、±%）
+// 小規模会場は地元常連で安定、大規模会場はハイリスク・ハイリターン
+const VENUE_FLUCTUATION = [
+  0.10,  // 0: 公民館    ±10%
+  0.12,  // 1: 小ホールA  ±12%
+  0.12,  // 2: 小ホールB  ±12%
+  0.14,  // 3: 市民会館   ±14%
+  0.15,  // 4: 中ホールA  ±15%
+  0.17,  // 5: 中ホールB  ±17%（旧一律値と同等）
+  0.20,  // 6: 大ホール   ±20%
+  0.25,  // 7: アリーナ   ±25%
+  0.30,  // 8: 大会場    ±30%
+  0.40,  // 9: ドーム    ±40% — 超ハイリスク
+];
 const ATTENDANCE_PREDICTION = [
   { min: 0.85, text: '🔥 今週は盛り上がりそうだ', color: 'var(--green)' },
   { min: 0.55, text: '🤔 まずまずの手応えだ',     color: 'var(--text-sub)' },
