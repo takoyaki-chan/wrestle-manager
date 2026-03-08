@@ -611,10 +611,10 @@ const PHASES=[
 // ── Tier 2: ビッグマッチ ──
 const BIGMATCH_MAX_T=24;
 const BIGMATCH_PHASES=[
-  {name:'Opening',min:1,max:6,mult:0.9,sCh:20,tempo:2000,counterBonus:0},
-  {name:'Mid',min:7,max:12,mult:1.05,sCh:40,tempo:2000,counterBonus:3},
-  {name:'End',min:13,max:18,mult:1.2,sCh:55,tempo:2500,counterBonus:5},
-  {name:'Climax',min:19,max:24,mult:1.4,sCh:70,tempo:3000,counterBonus:8}
+  {name:'Opening',min:1,max:6,mult:0.70,sCh:15,tempo:2000,counterBonus:0},
+  {name:'Mid',min:7,max:12,mult:0.85,sCh:35,tempo:2000,counterBonus:2},
+  {name:'End',min:13,max:18,mult:1.00,sCh:50,tempo:2500,counterBonus:4},
+  {name:'Climax',min:19,max:24,mult:1.20,sCh:65,tempo:3000,counterBonus:7}
 ];
 // Active tier state (set in startMatchFromData)
 let _maxT=MAX_T, _phases=PHASES, _isBigMatch=false;
@@ -686,7 +686,7 @@ const ENG = {
   rollupTecBonus: 0.18,     // TEC helps rollup success
   rollupBaseSuccess: 16,    // was flat 15%
 };
-const BIGMATCH_ENG={...ENG,hpBase:85,hpScale:1.50,kickoutMax:3,guEscapeMax:3};
+const BIGMATCH_ENG={...ENG,hpBase:85,hpScale:1.47,rollupBaseSuccess:11,rollupHpThreshold:0.25,pinAttemptHpThreshold:0.25,pinAttemptSuccessBase:14,pinAttemptClimax:18,kickoutMax:3,guEscapeMax:3};
 let _eng=ENG; // Active engine config (switched in startMatchFromData)
 
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}

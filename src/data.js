@@ -566,15 +566,20 @@ const ENG = {
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
 const BIGMATCH_MAX_T = 24;
 const BIGMATCH_PHASES = [
-  {name:'Opening',min:1,max:6,mult:0.9,sCh:20,counterBonus:0},
-  {name:'Mid',min:7,max:12,mult:1.05,sCh:40,counterBonus:3},
-  {name:'End',min:13,max:18,mult:1.2,sCh:55,counterBonus:5},
-  {name:'Climax',min:19,max:24,mult:1.4,sCh:70,counterBonus:8}
+  {name:'Opening',min:1,max:6,mult:0.70,sCh:15,counterBonus:0},
+  {name:'Mid',min:7,max:12,mult:0.85,sCh:35,counterBonus:2},
+  {name:'End',min:13,max:18,mult:1.00,sCh:50,counterBonus:4},
+  {name:'Climax',min:19,max:24,mult:1.20,sCh:65,counterBonus:7}
 ];
 const BIGMATCH_ENG = {
   ...ENG,
   hpBase: 85,
-  hpScale: 1.20,
+  hpScale: 1.10,
+  rollupBaseSuccess: 11,
+  rollupHpThreshold: 0.25,
+  pinAttemptHpThreshold: 0.25,
+  pinAttemptSuccessBase: 14,
+  pinAttemptClimax: 18,
   kickoutMax: 3,
   guEscapeMax: 3,
 };
