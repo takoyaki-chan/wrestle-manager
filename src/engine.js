@@ -4775,11 +4775,15 @@ const Engine = {
       const cfg = NEGOTIATION_CONFIG;
       let rate = cfg.baseSuccessRates[orgCfg.tier] || 30;
 
-      // Reductions
+      // ── Reductions ──
       const orgData = state.aiOrgs[orgCfg.id];
+      // 主力帯ペナルティ（OVR順位ベース）
       if (orgData) {
         const sorted = [...orgData.roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
-        if (sorted[0] && sorted[0].id === fighter.id) rate -= 15; // ace
+        const ovrRank = sorted.findIndex(f => f.id === fighter.id) + 1; // 1-indexed
+        if (ovrRank === 1) rate -= 20;       // エース
+        else if (ovrRank <= 3) rate -= 12;   // 主力2-3番手
+        else if (ovrRank <= 5) rate -= 7;    // 準主力4-5番手
       }
       if (Engine.util.ov(fighter) >= 80) rate -= 10;
       // Check if player org is last in rankings
@@ -4787,7 +4791,14 @@ const Engine = {
       const playerRank = rankings.find(r => r.orgId === 'player');
       if (playerRank && playerRank.rank === rankings.length) rate -= 10;
 
-      // Additions
+      // trust修正（AI選手のtrust: 初期値50, processAIWeek内で変動）
+      const trust = fighter.trust != null ? fighter.trust : 50;
+      if (trust >= 60) rate -= 18;           // 忠誠的
+      // trust 40-59: ±0（中立帯）
+      else if (trust < 25) rate += 15;       // 強い不満
+      else if (trust < 40) rate += 8;        // 不満
+
+      // ── Additions ──
       if (Engine.util.ov(fighter) < 50) rate += 10;
       // War victory bonus: check if player beat this org this season
       if (state.warVictories && state.warVictories.includes(orgCfg.id)) rate += 15;
@@ -4798,6 +4809,21 @@ const Engine = {
       rate += cfg.planBonusRates[planIndex] || 0;
 
       return Math.max(cfg.clampMin, Math.min(cfg.clampMax, rate));
+    },
+
+    /** trust75以上なら交渉拒否（門前払い） */
+    isNegotiationBlocked(fighter) {
+      const trust = fighter.trust != null ? fighter.trust : 50;
+      return trust >= 75;
+    },
+
+    /** 成功率を曖昧ラベルに変換（UIから呼び出す） */
+    getRateLabel(rate) {
+      if (rate <= 10) return { text: 'ほぼ不可能', color: '#e74c3c' };
+      if (rate <= 20) return { text: '非常に困難', color: '#e67e22' };
+      if (rate <= 35) return { text: '厳しい',     color: '#f39c12' };
+      if (rate <= 50) return { text: '五分五分',   color: '#f1c40f' };
+      return { text: '見込みあり', color: '#2ecc71' };
     },
 
     /** Start a negotiation (result pre-determined by rng) */

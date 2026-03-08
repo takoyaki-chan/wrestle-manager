@@ -419,6 +419,16 @@ function showNegotiatePopup(orgId, fighterId) {
   const fighter = orgData.roster.find(f => f.id === fighterId);
   if (!fighter) return;
 
+  // trust拒否チェック（門前払い）
+  if (Engine.negotiate.isNegotiationBlocked(fighter)) {
+    const dialogue = Engine.negotiate.getDialogue(fighter, 'blocked');
+    showConfirm(
+      `${fighter.name}は今の団体に強い忠誠を抱いており、交渉に応じません。<br><br>「${dialogue.replace(/\n/g, '<br>')}」`,
+      'OK', () => {}
+    );
+    return;
+  }
+
   // Check constraints
   if (G.pendingNegotiation) {
     showConfirm('現在交渉中の案件があります。同時に交渉できるのは1件までです。', 'OK', () => {});
@@ -477,7 +487,8 @@ function showNegotiatePopup(orgId, fighterId) {
     const opacity = canAfford ? '1' : '0.5';
     html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;background:var(--bg-card);${borderStyle};border-radius:6px;opacity:${opacity}">`;
     html += `<div><div style="font-size:13px;font-weight:700;color:${canAfford ? rc : 'var(--text-dim)'}">${planLabels[i]} <span style="font-size:11px;font-weight:400;color:var(--text-sub)">${planDescs[i]}</span></div>`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">費用: ${cost}万 ｜ 失敗時損失: ${failCost}万 ｜ 成功率: ${rate}%</div></div>`;
+    const rateLabel = Engine.negotiate.getRateLabel(rate);
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">費用: ${cost}万 ｜ 失敗時損失: ${failCost}万 ｜ 見通し: <span style="color:${rateLabel.color};font-weight:600">${rateLabel.text}</span></div></div>`;
     html += `<button class="btn" style="font-size:12px;padding:6px 14px;background:${canAfford ? rc+'20' : 'var(--bg-mid)'};color:${canAfford ? rc : '#666'};border:1px solid ${canAfford ? rc+'40' : '#444'}" ${canAfford ? `onclick="confirmNegotiation('${orgId}',${fighterId},${i})"` : 'disabled'}>選択</button>`;
     html += `</div>`;
   }
@@ -508,10 +519,13 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
   const cost = Math.round(baseFee * NEGOTIATION_CONFIG.baseFeeMultipliers[planIndex]);
   const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
 
+  const confirmRate = Engine.negotiate.calcSuccessRate(G, fighter, orgCfg, planIndex);
+  const confirmRateLabel = Engine.negotiate.getRateLabel(confirmRate);
   document.getElementById('showResultOverlay').classList.remove('active');
   showConfirm(
     `<div style="text-align:center"><strong>${fighter.name}</strong>への引き抜き交渉を開始します。<br><br>` +
     `プラン: ${planLabels[planIndex]}（費用: ${cost}万）<br>` +
+    `見通し: <strong style="color:${confirmRateLabel.color}">${confirmRateLabel.text}</strong><br>` +
     `交渉期間: 4週間（キャンセル不可）<br><br>` +
     `よろしいですか？</div>`,
     '交渉開始',
@@ -1888,10 +1902,13 @@ function showFighterPopup(fighterId, source) {
 
     // ── 引き抜きアクションバー（AI所属選手のみ）──
     if (negotiateOrgId) {
-      const canNeg = !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(c.id);
-      const negLabel = G.pendingNegotiation
-        ? (G.pendingNegotiation.fighterId === c.id ? '⏳ 交渉中' : '— 他の選手と交渉中')
-        : (G.negotiatedThisSeason || []).includes(c.id) ? '✓ 今季交渉済' : null;
+      const trustBlocked = negotiateOrgId && Engine.negotiate.isNegotiationBlocked(c);
+      const canNeg = !trustBlocked && !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(c.id);
+      const negLabel = trustBlocked
+        ? '🔒 忠誠度が高く交渉に応じない'
+        : G.pendingNegotiation
+          ? (G.pendingNegotiation.fighterId === c.id ? '⏳ 交渉中' : '— 他の選手と交渉中')
+          : (G.negotiatedThisSeason || []).includes(c.id) ? '✓ 今季交渉済' : null;
       html += `<div style="padding:8px 16px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px">`;
       if (canNeg) {
         html += `<button onclick="closeFighterPopup();showNegotiatePopup('${negotiateOrgId}',${c.id})" style="font-size:13px;padding:6px 18px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.4);border-radius:4px;cursor:pointer;font-weight:700">🤝 選手を引き抜く</button>`;

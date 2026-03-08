@@ -316,6 +316,7 @@
 - **championScore廃止**: RIVAL_ORGS から championScore プロパティ削除（旧: S=60/A=40/B=20/Player=0or30）
 - **summitBonus廃止→battlePoints統合**: `state.summitBonus` を削除し `state.battlePoints: { player:0, org_s:0, org_a:0, org_b:0 }` に移行。シーズンリセット対象
 - **対戦ポイント移動**: 対抗戦勝敗で±12pt、頂上決戦勝敗で±10pt のゼロサム移動を実装
+- **引き抜きシステム改修（2026-03-08）**: 主力帯ペナルティ追加（OVR1位-20/2-3位-12/4-5位-7）、trust連動（trust60+-18/trust<40+8/trust<25+15）、trust75+で門前払い（isNegotiationBlocked）、成功率→曖昧ラベル表示（getRateLabel）、clampMin 5→3/clampMax 70→65。trust拒否セリフはpersonality×archetype分岐で新設。auto-sim 100シーズン ALL CLEAR
 - **BATTLE_POINT_CFG定数**: war:9, summit:7, tournament:{champion:20,runnerUp:8,semiFinal:0,firstRound:-14}, tournamentWeek:24
   - S級-A級ティアバランス調整（2026-03-08）: war 12→9、summit 10→7（S-A間baseScore差~15ptをサミット1敗で逆転できる問題を修正）
   - 同調整で AI_COACH_CONFIG.S.general 強化: coachMul 1.12→1.18、intensiveRate 0.05→0.12、practiceRate 0.75→0.80
