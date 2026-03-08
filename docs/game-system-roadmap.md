@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-08（AI団体同等処理化 Phase 5 実装完了）
+> 最終更新: 2026-03-09（施設システム廃止 Phase E 完了 + スカウト割引orgPop連動）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**施設システム廃止 Phase E 完了 + スカウト割引orgPop連動（2026-03-09）。** §4の残作業を完了。施設システム関連のデッドコード（facilityMul / facilityReduction / facilityDiscount / dormBonus）を全除去。スカウト契約金にorgPop連動割引を新設（0-19→0% / 20-39→5% / 40-59→10% / 60-79→15% / 80+→20%）。auto-sim 100シーズン ALL CLEAR。
+
+- **デッドコード除去**: data.js RIVAL_ORGSのfacilityMul、engine.js injury.check()のfacilityReductionパラメータ（関数シグネチャ+全4呼び出し箇所）、getOrgInfo()のfacilityMul参照、dormBonus変数（宣言+3参照箇所）、getSigningCost()のfacilityDiscount引数
+- **injuryInfo構造変更**: `{ injury, reducedWeeks, originalWeeks }` → `{ injury, weeks }`。`reducedWeeks`/`originalWeeks`の参照を全てweeksに統一
+- **スカウト割引orgPop連動**: `getSigningCost(fighter, facilityDiscount)` → `getSigningCost(fighter, orgPop)`。orgPop帯別割引率テーブル内蔵。`getScoutDiscount(orgPop)` ヘルパー新設（UI表示用）
+- **UI表示**: FA選手ポップアップ・スカウト候補ポップアップに🔍割引%表示。契約ログに「スカウト網割引N%」表示
+- **プロモ効果**: 既存promoStack + PROMO_POP_CAP機構で十分機能。追加のorgPop連動は不要（「強者がさらに強くなる」構造回避）
+- 変更: data.js, engine.js, app.js, ui-common.js, ui-render.js
 
 **ライフサイクルリデザイン Phase 4 実装完了（2026-03-07）。** キャリア寿命を大幅短縮し、世代交代のテンポを加速する全面リバランス。A群14箇所（必須調整）+B群16箇所（調整推奨）の計30箇所を変更。auto-sim 500シーズン ALL CLEAR。
 
@@ -460,7 +469,7 @@
 - **バグ修正**: _pendingTeamSpirit がtickWeekで未転送（チームスピリットトースト未発火）を修正。renderWeekScreen L641 の streak未定義エラーを修正
 - **UI**: .dojo-atmosphere（level-1~5色分け）、.coach-report-bubble（ゴールド枠吹き出し、クリックでコーチツールチップ連携）
 
-**リデザイン Phase A〜D 全完了。** 残りは Phase E（施設システム廃止）のみ。設計書: `docs/coach-lockerroom-redesign-v1.0.md`
+**リデザイン Phase A〜E 全完了。** 設計書: `docs/coach-lockerroom-redesign-v1.0.md`
 
 **Phase1-7 セリフバリエーション拡充+バランス調整セッション完了。** セリフ73個追加+バランス微調整4点。
 
@@ -553,7 +562,7 @@
 | B | **§1 コーチシステム** 格C/B/A・指導力/観察眼・得意スタイル・コーチ特性6種・枠(orgPop連動1-3枠)・コスト・プール30-40人 | 大 | **実装済み** |
 | C | **§2 観察眼システム** コーチ報告（25%/週）・ランク別情報レベル(E-A)・揺らぎ(的外れ)・インライン表示 | 中 | **実装済み** |
 | D | **§3 ロッカールーム可視化** 道場ヘッダー・雰囲気テキスト5段階+ノイズ揺らぎ | 中 | **実装済み** |
-| E | **§4 施設システム廃止** 成長速度→コーチ吸収・施設UI削除 | 中 | **実装済み** |
+| E | **§4 施設システム廃止** 成長速度→コーチ吸収・施設UI削除・デッドコード除去・スカウト割引orgPop連動 | 中 | **実装済み** |
 
 ### 因縁リデザイン＋カード鮮度システム（設計書: `specs/rivalry-resolution-spec.md` v2.0）
 

@@ -631,7 +631,7 @@ function showSigningCeremony(charId) {
 
   const fOvr = Engine.util.ov(fighter);
   const tierCfg = Engine.scout.getTierConfig(fighter.assessedTier || 'material');
-  const signingCost = Engine.scout.getSigningCost(fighter, 0);
+  const signingCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
   const salary = getSalary(fighter);
   const quote = getSigningQuote(fighter);
   const color = '#2ecc71';
@@ -2295,9 +2295,9 @@ function showFighterPopup(fighterId, source) {
 
     // ══════ Acquire Button (Free Agents & Scout Candidates) ══════
     if (isFree && tabIdx === 0) {
-      const discount = 0;
+      const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
       const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
-      const signingCost = Engine.scout.getSigningCost(c, discount);
+      const signingCost = Engine.scout.getSigningCost(c, G.orgPop || 0);
       const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G);
       const viaTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, c, G);
       const canAfford = G.funds >= signingCost;
@@ -2313,7 +2313,7 @@ function showFighterPopup(fighterId, source) {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-dim)">
           <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
           <span>給与: ${getSalary(c)}万/週</span>
-          ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
+          ${scoutDisc > 0 ? `<span style="color:#f39c12">🔍 スカウト網割引${scoutDisc}%</span>` : ''}
         </div>
         ${viaTicket ? '<div style="text-align:center;font-size:13px;color:#f1c40f;padding:6px 8px;margin-bottom:8px;background:rgba(241,196,15,0.1);border:1px solid rgba(241,196,15,0.3);border-radius:6px">🎫 逸材特別交渉枠を使用します（1回限り）</div>' : ''}
         ${_rosterFull
@@ -2326,9 +2326,9 @@ function showFighterPopup(fighterId, source) {
       </div>`;
     }
     if (isScoutCandidate && tabIdx === 0) {
-      const discount = 0;
+      const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
       const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
-      const signingCost = Engine.scout.getSigningCost(c, discount);
+      const signingCost = Engine.scout.getSigningCost(c, G.orgPop || 0);
       const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c);
       const canAfford = G.funds >= signingCost;
       const picks = G.scoutPicks || [];
@@ -2346,7 +2346,7 @@ function showFighterPopup(fighterId, source) {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;color:var(--text-dim)">
           <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
           <span>獲得枠: ${picks.length}/${maxPicks}</span>
-          ${discount > 0 ? `<span style="color:#f39c12">割引${discount}%</span>` : ''}
+          ${scoutDisc > 0 ? `<span style="color:#f39c12">🔍 割引${scoutDisc}%</span>` : ''}
         </div>
         ${c._hasCompetition ? `<div style="font-size:11px;color:#e74c3c;margin-bottom:8px;padding:4px 8px;background:rgba(231,76,60,0.1);border-radius:4px">⚔ 他団体が注目 — 競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</div>` : ''}
         ${_scoutFull

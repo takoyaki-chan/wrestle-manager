@@ -2058,8 +2058,7 @@ const App = {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
     const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
-    const discount = 0;
-    const finalCost = Engine.scout.getSigningCost(fighter, discount);
+    const finalCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
     const normalized = {
@@ -2088,7 +2087,8 @@ const App = {
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${discount > 0 ? ` / スカウト網割引${discount}%` : ''}）`];
+    const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
+    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト網割引${scoutDisc}%` : ''}）`];
     if (titleMsg) log.push(titleMsg);
     // v1.9: 逸材特別交渉枠の消費
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
@@ -2116,13 +2116,13 @@ const App = {
     if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
-    const baseCost = Engine.scout.getSigningCost(cand, 0);
+    const baseCost = Engine.scout.getSigningCost(cand, G.orgPop || 0);
     if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
 
     if (cand._hasCompetition) {
       // Show competition resolution modal
       G = { ...G, scoutPendingPick: candidateId };
-      renderScoutCompetitionModal(cand, baseCost, 0);
+      renderScoutCompetitionModal(cand, baseCost, Engine.scout.getScoutDiscount(G.orgPop || 0));
     } else {
       // No competition: direct sign
       this.scoutEventResolve(candidateId, 'direct');
@@ -2134,7 +2134,7 @@ const App = {
     if (!G.scoutCandidates) return;
     const cand = G.scoutCandidates.find(c => c.id === candidateId);
     if (!cand) return;
-    const baseCost = Engine.scout.getSigningCost(cand, 0);
+    const baseCost = Engine.scout.getSigningCost(cand, G.orgPop || 0);
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, candidateId));
 
     let result;
@@ -2143,7 +2143,7 @@ const App = {
     } else {
       result = Engine.scout.resolveCompetition(rng, cand, choice);
       if (result.cost > 0) {
-        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, 0);
+        result.cost = Engine.scout.getSigningCost({ assessedValue: result.cost }, G.orgPop || 0);
       }
     }
 
@@ -3114,13 +3114,13 @@ const App = {
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-        const li = Engine.injury.check(injRngL, lc, r, 0, Engine.coach.getInjuryMult(s, r.left.id));
+        const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id));
         if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-        const ri = Engine.injury.check(injRngR, rc, r, 0, Engine.coach.getInjuryMult(s, r.right.id));
+        const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id));
         if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
       }
     });

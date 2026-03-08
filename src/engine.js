@@ -673,7 +673,7 @@ const Engine = {
 
   // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
   injury: {
-    check(rng, fighter, matchResult, facilityReduction, coachInjuryMult = 1.0, week = 0, season = 0) {
+    check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0) {
       if (!fighter) return null;
       const isLeft = matchResult.left.id === fighter.id;
       const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
@@ -693,9 +693,8 @@ const Engine = {
       if (Traits.has(fighter, '不屈')) weeks = Math.max(1, weeks - 1);
       // 鉄人: 復帰期間-1週（最低1）
       if (Traits.has(fighter, '鉄人')) weeks = Math.max(1, weeks - 1);
-      const reducedWeeks = Math.max(1, weeks - facilityReduction);
       // v0.99: Reassess value on severe injury (pricing-balance-spec §4.2)
-      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: reducedWeeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: weeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
       // v1.0b: Record pre-injury popularity for injury forgetting
       updatedFighter = Engine.popularity.recordPreInjury(updatedFighter);
       if (injury.type === '重傷' && updatedFighter.assessedValue) {
@@ -744,14 +743,14 @@ const Engine = {
           type: 'injury',
           week,
           season,
-          detail: `${injury.type}（${reducedWeeks}週離脱）`,
+          detail: `${injury.type}（${weeks}週離脱）`,
         };
         updatedFighter = { ...updatedFighter, careerHistory: [...(updatedFighter.careerHistory || []), histEntry] };
       }
 
       return {
         newFighter: updatedFighter,
-        injuryInfo: { injury, reducedWeeks, originalWeeks: weeks },
+        injuryInfo: { injury, weeks },
         retireType  // null | 'wearInjury' | 'careerEnding'
       };
     },
@@ -2652,7 +2651,7 @@ const Engine = {
       const data = aiOrgs && aiOrgs[orgId];
       if (!cfg || !data) return null;
       return { id: cfg.id, orgId: cfg.id, name: cfg.name, tier: cfg.tier,
-               coachMul: cfg.coachMul, facilityMul: cfg.facilityMul,
+               coachMul: cfg.coachMul,
                roster: data.roster, orgPop: data.orgPop };
     },
     // Utility: get all AI orgs as array with merged config+state
@@ -3547,7 +3546,6 @@ const Engine = {
         else if (heatScore < 0) heatScore = Math.round(Math.min(0, heatScore + 0.3) * 10) / 10;
       }
 
-      const dormBonus = 0; // 施設廃止: コンディションボーナスはコーチ特性(コンディショニング)で個別付与
       const stateForCalc = { ...G, roster, heatScore };
 
       // v1.5s25b: マイルストーンバフ参照用（ループ外で1回取得）
@@ -3655,7 +3653,7 @@ const Engine = {
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
-          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + dormBonus + adaptBonus);
+          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
             nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
@@ -3708,7 +3706,7 @@ const Engine = {
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
-          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + dormBonus + mentalBonus + ironBonus + hardWorkerBonus);
+          nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
           // v1.0b: Apply diminishing returns + promo pop cap
@@ -3716,7 +3714,7 @@ const Engine = {
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
           nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
-          nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + dormBonus + mentalBonus);
+          nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + mentalBonus);
           nc.intensiveWeeks = 0;
           // プロモ改修 v1.0: promoStack蓄積（最大3）
           nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
@@ -4502,7 +4500,7 @@ const Engine = {
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, 0, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
+      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -4522,7 +4520,7 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, 0, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
+      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -5530,11 +5528,17 @@ const Engine = {
       const av = Engine.scout.calcAssessedValue(fighter, rng, currentSeason);
       return { ...fighter, ...av };
     },
-    /** Get signing cost after facility discount */
-    getSigningCost(fighter, facilityDiscount) {
+    /** Get signing cost with orgPop-based scout network discount (§4 施設廃止→orgPop連動) */
+    getSigningCost(fighter, orgPop) {
       const base = fighter.assessedValue || 50;
-      const discount = facilityDiscount || 0; // percentage (0, 15, 25)
+      const pop = orgPop || 0;
+      const discount = pop >= 80 ? 20 : pop >= 60 ? 15 : pop >= 40 ? 10 : pop >= 20 ? 5 : 0;
       return Math.max(10, Math.round(base * (100 - discount) / 100));
+    },
+    /** Get scout discount percentage for display */
+    getScoutDiscount(orgPop) {
+      const pop = orgPop || 0;
+      return pop >= 80 ? 20 : pop >= 60 ? 15 : pop >= 40 ? 10 : pop >= 20 ? 5 : 0;
     },
 
     // ── Scout Event Functions (scout-spec §2-§6) ──────────────

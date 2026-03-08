@@ -1225,13 +1225,13 @@ const RIVAL_ORG_NAME_POOL = {
 };
 const RIVAL_ORGS = [
   { id:'org_s', name:'', tier:'S',
-    coachMul:1.30, facilityMul:1.00, scoutStyle:'immediate',
+    coachMul:1.30, scoutStyle:'immediate',
     desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
   { id:'org_a', name:'', tier:'A',
-    coachMul:1.15, facilityMul:1.00, scoutStyle:'youth',
+    coachMul:1.15, scoutStyle:'youth',
     desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
   { id:'org_b', name:'', tier:'B',
-    coachMul:1.00, facilityMul:1.00, scoutStyle:'conservative',
+    coachMul:1.00, scoutStyle:'conservative',
     desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
 
