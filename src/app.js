@@ -3251,7 +3251,8 @@ const App = {
           btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
         );
         if (btResult) {
-          roster = roster.map(c => c.id === charId ? btResult.fighter : c);
+          const btFighter = { ...btResult.fighter, _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5 };
+          roster = roster.map(c => c.id === charId ? btFighter : c);
           const btHintFighter = roster.find(c => c.id === charId) || fighter;
           const btHintLine = pickDialogueLine(BT_HINT_LINES, btHintFighter);
           pendingGrowthEvents.push({
@@ -3269,7 +3270,9 @@ const App = {
         // careerBestMQ 更新（ブレークスルー判定後に実施）
         const btUpdatedFighter = roster.find(c => c.id === charId);
         if (r.mq > (btUpdatedFighter.careerBestMQ || 0)) {
-          roster = roster.map(c => c.id === charId ? { ...c, careerBestMQ: r.mq } : c);
+          roster = roster.map(c => c.id === charId
+            ? { ...c, careerBestMQ: r.mq, _trustBonus: (c._trustBonus || 0) + 1.2 }
+            : c);
         }
 
         // §4.2 敗北スランプ判定
@@ -4673,6 +4676,16 @@ const App = {
     const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
     const eventWon = playerWins > aiWins;
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
+
+    // Phase 2: 対抗戦勝利選手のtrust bonus
+    const winnerPlayerIds = wp.results.filter(r => r.playerWon).map(r => r.playerFighter.id);
+    if (winnerPlayerIds.length > 0) {
+      G = { ...G, roster: G.roster.map(c =>
+        winnerPlayerIds.includes(c.id)
+          ? { ...c, _trustBonus: (c._trustBonus || 0) + 2.3 }
+          : c
+      )};
+    }
 
     // v1.3: Record war appearances for participating player fighters
     const warFighterIds = new Set(wp.card.map(m => m.playerFighter.id));

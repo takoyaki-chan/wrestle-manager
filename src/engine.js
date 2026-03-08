@@ -2475,6 +2475,7 @@ const Engine = {
         growthPenalty: null,
         trust: 50,
         promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
+        lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -2876,7 +2877,7 @@ const Engine = {
               state.season, state.week
             );
             if (btResult) {
-              nc = btResult.fighter;
+              nc = { ...btResult.fighter, _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5 };
               // 脅威通知用に蓄積
               orgData.seasonBreakthroughs = [...(orgData.seasonBreakthroughs || []),
                 { fighter: { name: nc.name, id: nc.id }, stat: btResult.stat, gain: btResult.gain }
@@ -2884,7 +2885,11 @@ const Engine = {
             }
 
             // ★ careerBestMQ更新
-            nc.careerBestMQ = Math.max(nc.careerBestMQ || 0, result.mq);
+            const prevBestMQ = nc.careerBestMQ || 0;
+            nc.careerBestMQ = Math.max(prevBestMQ, result.mq);
+            if (result.mq > prevBestMQ) {
+              nc._trustBonus = (nc._trustBonus || 0) + 1.2;
+            }
 
             // ★ 連敗追跡 + 人気MQ連動（簡易版）
             {
@@ -6130,13 +6135,15 @@ const Engine = {
     resolveWar(rng, state, card) {
       const results = [];
       let playerWins = 0, aiWins = 0;
+      const winnerPlayerIds = [];  // 対抗戦勝利選手ID
       card.forEach(match => {
         const r = Engine.event.resolveEventMatch(rng, match.playerFighter, match.aiFighter, 0);
         const pWin = r.winner === 'left'; // player is always left in resolveEventMatch
-        if (pWin) playerWins++; else aiWins++;
+        if (pWin) { playerWins++; winnerPlayerIds.push(match.playerFighter.id); }
+        else aiWins++;
         results.push({ ...r, playerFighter: match.playerFighter, aiFighter: match.aiFighter, playerWon: pWin });
       });
-      return { results, playerWins, aiWins };
+      return { results, playerWins, aiWins, winnerPlayerIds };
     },
 
     /** Apply war outcome to state (v2: battlePoints 対戦ポイント移動) */
@@ -6702,6 +6709,7 @@ const Engine = {
       growthPenalty: null, // v1.3-2: 成長デバフ {remainingWeeks,multiplier,source} | null
       trust: 50,           // v2.0: 信頼度 0-100（隠しパラメータ）
       promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
+      lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
     };
   },
 
@@ -7709,6 +7717,56 @@ Engine.trust = {
     return trust >= 40 ? 1.0 : 0.35 + (trust / 40) * 0.65;
   },
 
+  // ── Phase 2: 待遇不満の蓄積型trust減少 ───────────────────────────────────
+  // 毎興行、条件を満たす選手にじわじわ効く。全条件は重複加算。
+  // rosterContext は applyShowTrust 内で事前計算してキャッシュする。
+  calcGrievanceDelta(fighter, rosterContext, titles, state) {
+    let delta = 0;
+
+    // ── G1: 給与不公平（OVR±5帯の同僚平均と比較） ──
+    const myOvr = Engine.util.ov(fighter);
+    const mySalary = Engine.util.getSalary(fighter, titles || {});
+    const peers = rosterContext.salaryByOvr.filter(
+      e => e.id !== fighter.id && Math.abs(e.ovr - myOvr) <= 5
+    );
+    if (peers.length >= 2) {
+      const avgPeerSalary = peers.reduce((s, e) => s + e.salary, 0) / peers.length;
+      if (mySalary < avgPeerSalary * 0.8) {
+        delta -= 0.4;  // 給与不公平
+      }
+    }
+
+    // ── G2: 後輩の方が給与が高い（年齢差3+、給与×1.1超） ──
+    const myAge = fighter.age || 20;
+    const hasRicherJunior = rosterContext.salaryByOvr.some(
+      e => e.id !== fighter.id && (e.age || 20) < myAge - 3 && e.salary > mySalary * 1.1
+    );
+    if (hasRicherJunior) {
+      delta -= 0.6;  // 後輩の方が給与が高い
+    }
+
+    // ── G3: 長期間タイトルに絡めない（OVR上位3位 + 非王者 + 8興行タイトル戦なし） ──
+    if (rosterContext.ovrRank <= 3) {
+      const isChamp = titles?.world?.championId === fighter.id;
+      if (!isChamp) {
+        const lastTitle = fighter.lastTitleShowWeek || 0;
+        const currentAbsWeek = (state.season || 1) * 48 + (state.week || 1);
+        if (currentAbsWeek - lastTitle >= 8) {
+          delta -= 0.5;  // 長期間タイトルに絡めない
+        }
+      }
+    }
+
+    // ── G4: ロスター過密による構造的不満（ロスター10人以上 + 直近2興行連続不出場） ──
+    const rosterSize = rosterContext.activeRosterSize;
+    const streak = fighter.noAppearStreak || 0;
+    if (rosterSize >= 10 && streak >= 2) {
+      delta -= 0.35;  // ロスター過密
+    }
+
+    return delta;
+  },
+
   applyShowTrust(roster, results, titles, state) {
     if (results.length === 0) return { roster, changes: [] };
 
@@ -7748,6 +7806,18 @@ Engine.trust = {
     // §13.5 P-後輩への好影響: trust 70+の選手数（怪我なし）
     const seniorCount = roster.filter(f => !f.injury && (f.trust != null ? f.trust : 50) >= 70).length;
 
+    // Phase 2: 蓄積型不満の判定用コンテキスト（ロスター全体の給与・OVR情報をキャッシュ）
+    const activeRoster = roster.filter(f => !f.injury && !f.isRental);
+    const salaryByOvr = activeRoster.map(f => ({
+      id: f.id,
+      ovr: Engine.util.ov(f),
+      salary: Engine.util.getSalary(f, titles || {}),
+      age: f.age || 20,
+    }));
+    const ovrSorted = [...salaryByOvr].sort((a, b) => b.ovr - a.ovr);
+    const ovrRankMap = {};
+    ovrSorted.forEach((e, i) => { ovrRankMap[e.id] = i + 1; });
+
     // §14.1D: trustCap期限切れチェック
     const currentWeek = state ? (state.season || 1) * 100 + (state.week || 1) : 0;
 
@@ -7785,6 +7855,11 @@ Engine.trust = {
 
         delta += gainDelta;
 
+        // Phase 2: タイトル戦出場週の追跡
+        if (titleFighters.has(fighter.id)) {
+          updated.lastTitleShowWeek = (state.season || 1) * 48 + (state.week || 1);
+        }
+
         // §2.3B: 出場したのでストリークリセット
         updated.noAppearStreak = 0;
       } else {
@@ -7806,6 +7881,26 @@ Engine.trust = {
 
         // §2.3B: ストリーク加算
         updated.noAppearStreak = streak + 1;
+      }
+
+      // Phase 2: 即時型trust bonus回収（ブレイクスルー/careerBestMQ/対抗戦勝利）
+      if (updated._trustBonus) {
+        let bonus = updated._trustBonus;
+        // gainMultは即時ボーナスにも適用（高trust帯では逓減する）
+        if (bonus > 0) bonus *= Engine.trust.gainMult(oldTrust);
+        delta += bonus;
+        delete updated._trustBonus;
+      }
+
+      // Phase 2: 蓄積型待遇不満（怪我中でなければ毎興行判定）
+      if (!fighter.injury) {
+        const rosterContext = {
+          salaryByOvr,
+          ovrRank: ovrRankMap[fighter.id] || 99,
+          activeRosterSize: activeRoster.length,
+        };
+        const grievance = Engine.trust.calcGrievanceDelta(fighter, rosterContext, titles, state);
+        delta += grievance;
       }
 
       // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響

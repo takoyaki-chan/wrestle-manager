@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-08（ビッグマッチエンジン Tier 2 全8Step実装完了）
+> 最終更新: 2026-03-08（待遇不満・成功体験 Trust連動 Phase 2 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -666,6 +666,8 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 ---
 
 ## 設計決定ログ（実装済みルール集）
+
+- **待遇不満・成功体験 Trust連動 Phase 2** — Trust/Bond/Rivalry包括リバランスのPhase 2。即時型: ブレイクスルー達成(+3.5)/自己ベストMQ更新(+1.2)/対抗戦勝利(+2.3)を`_trustBonus`パターンで`applyShowTrust`内回収。蓄積型: 給与不公平(-0.4/興行)/後輩高給(-0.6/興行)/タイトル機会なし(-0.5/興行)/ロスター過密(-0.35/興行)を`calcGrievanceDelta`で毎興行判定・重複加算。`lastTitleShowWeek`フィールド追加。AI団体も`applyShowTrust`共用で自動適用。auto-sim 500シーズンALL CLEAR
 
 - **対抗戦進行不能バグ修正** — 対抗戦(D-2 rivalry war)受諾後にゲームが進行不能になる問題。finalizeWar内のEngine.relationships.applyToRoster呼び出しで引数の順序が逆（sourceId/targetIds[]を[sourceIds]/targetIdとして渡していた）。for...ofで数値をイテレートしようとしてTypeError→finalizeWar中断→オーバーレイが閉じず操作不能に。同じパターンがengine.jsのE-02(B2対立決着)とE-03(B3対抗戦)にも存在したため全6箇所を修正
 - **殿堂入り引き止めバグ修正** — 殿堂入り条件を満たした選手の引き止めに成功すると、rosterに戻ったにもかかわらず殿堂入りしてしまう問題。pendingAwardsはtickWeek内で事前計算されるため、引き止め後もhallOfFameリストに残っていた。_checkAndShowAwardsで表彰式UI表示前にG.rosterと照合し、引き止め済み選手をhallOfFameから除外するフィルタを追加
