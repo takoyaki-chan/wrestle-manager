@@ -1,12 +1,22 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-09（施設システム廃止 Phase E 完了 + スカウト割引orgPop連動）
+> 最終更新: 2026-03-09（スナップショット通知システム + 施設システム廃止 Phase E 完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**スナップショット通知システム本体 実装完了（2026-03-09）。** 選手の感情・不満・人間関係を雰囲気テキストとして週次通知するシステム。Engine.snapshotモジュール新設。15種のスナップショット候補（G1-G4不満系/R1-R5人間関係系/Phase4摩擦・世代・因縁解消/careerBestMQ/breakthrough・warVictory embedded）。tickWeek末尾で候補収集→6週CD除外→重み付き抽選(max2件/週)→personality×archetypeセリフ解決→テキスト生成。R3モーダル演出（bond75+退団/引退時フルスクリーン表示）。gameLog描画拡張（文字列/オブジェクト両対応）。auto-sim 500シーズン ALL CLEAR。
+
+- **SNAPSHOT_TEXTS**: data.jsに15種の通知テキストデータ追加。scene(情景描写)/voice(personality→archetype→_defaultフォールバック)/staff(スタッフ報告)/modal(R3専用)の4タイプ
+- **Engine.snapshot.generate()**: 候補収集→CD判定→重み付きサンプリング（非復元）→テキスト生成。R3は保証枠。embedded型はgameLogではなく_pendingGrowthEvents/eventsに付加
+- **R3モーダル**: bond75+の退団/引退時にフルスクリーン演出。processWeek（非興行週）/finalizeShow（興行週）の両パスで発火
+- **gameLog二重フォーマット**: renderLog()がstring(従来)/object(snapshot)を透過的に描画。💭プレフィクス+イタリック体
+- **CSS**: .log-snapshot/.r3-modal-overlay/.r3-modal/@keyframes r3FadeIn
+- **補助**: _rivalryResolvedThisWeekフック（因縁解消検知）、Engine.relationships.personalityCompatibility()ヘルパー
+- 変更: data.js, engine.js, app.js, ui-common.js, ui-render.js, index.html（7ファイル、875行追加）
 
 **施設システム廃止 Phase E 完了 + スカウト割引orgPop連動（2026-03-09）。** §4の残作業を完了。施設システム関連のデッドコード（facilityMul / facilityReduction / facilityDiscount / dormBonus）を全除去。スカウト契約金にorgPop連動割引を新設（0-19→0% / 20-39→5% / 40-59→10% / 60-79→15% / 80+→20%）。auto-sim 100シーズン ALL CLEAR。
 
