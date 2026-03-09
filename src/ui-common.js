@@ -2892,6 +2892,8 @@ function autoSave() { Storage.autoSave(); }
 function loadAutoSave() { Storage.loadAutoSave(); refreshAll(); }
 function getAutoSaveInfo() { return Storage.getAutoSaveInfo(); }
 function getSaveInfo(slot) { return Storage.getSaveInfo(slot); }
+function exportSave(slot) { Audio.play('click'); Storage.exportToFile(slot); }
+function importSave() { Storage.importFromFile(); }
 
 // C-4: Transfer & Ace UI functions
 function resolvePoach(fighterId, accepted) {

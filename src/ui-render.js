@@ -2472,7 +2472,10 @@ function renderSave() {
         <div class="save-slot-title">オートセーブ</div>
         <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
       </div>
-      <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
+      <div class="btn-row">
+        <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
+        <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">📥 書出</button>
+      </div>
     </div>`;
   } else {
     html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
@@ -2494,6 +2497,7 @@ function renderSave() {
           <button class="btn btn-gold btn-sm" onclick="showConfirm('スロット${i}に上書きセーブしますか？','セーブ',()=>saveGame(${i}))">セーブ</button>
           <button class="btn btn-blue btn-sm" onclick="showConfirm('スロット${i}からロードしますか？\\n現在の進行は失われます。','ロード',()=>loadGame(${i}))">ロード</button>
           <button class="btn btn-red btn-sm" onclick="showConfirm('スロット${i}のデータを削除しますか？','削除',()=>deleteSave(${i}))">削除</button>
+          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">📥 書出</button>
         </div>
       </div>`;
     } else {
@@ -2506,6 +2510,22 @@ function renderSave() {
       </div>`;
     }
   }
+
+  // Data Transfer section
+  html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+  <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">📦 データ移行</div>
+  <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+    セーブデータをファイルとして書き出し、別のデバイスやブラウザに移行できます。<br>
+    上のスロットの「📥 書出」でファイル保存、下の「読み込む」で復元してください。
+  </div>
+  <div class="save-slot" style="border-color:rgba(116,185,255,0.2);background:rgba(116,185,255,0.03)">
+    <div>
+      <div class="save-slot-title" style="color:#74b9ff">📤 ファイルから読み込む</div>
+      <div class="save-slot-meta">JSONファイルを選択するとすぐにロードされます</div>
+    </div>
+    <button class="btn btn-blue btn-sm" onclick="importSave()">ファイルを選択</button>
+  </div>
+</div>`;
 
   // Settings: Org name change
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">

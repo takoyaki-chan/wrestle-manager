@@ -1814,6 +1814,69 @@ const Storage = {
 
   deleteSave(slot) {
     localStorage.removeItem(SAVE_KEY + slot);
+  },
+
+  exportToFile(slotOrAuto) {
+    const key = slotOrAuto === 'auto' ? AUTOSAVE_KEY : SAVE_KEY + slotOrAuto;
+    const raw = localStorage.getItem(key);
+    if (!raw) { alert('セーブデータがありません'); return; }
+
+    const parsed = JSON.parse(raw);
+    const datePart = new Date().toISOString().slice(0, 10);
+    const seasonPart = `S${parsed.season || 1}W${parsed.week || 1}`;
+    const slotLabel = slotOrAuto === 'auto' ? 'auto' : `slot${slotOrAuto}`;
+    const filename = `wm_save_${slotLabel}_${seasonPart}_${datePart}.json`;
+
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+
+  importFromFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const raw = ev.target.result;
+
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed.season || !parsed.roster || !parsed.rngSeed) {
+            alert('有効なセーブデータではありません');
+            return;
+          }
+        } catch {
+          alert('ファイルの読み込みに失敗しました');
+          return;
+        }
+
+        if (Storage.deserialize(raw)) {
+          G = { ...G, gameLog: [...G.gameLog, '📂 ファイルからデータを読み込みました'] };
+          if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+          refreshAll();
+          if (G.weekPhase === 'ppvShow') App.initPPVShow();
+          else if (G.weekPhase === 'ppvTV') App.initPPVTV();
+          if (App._refreshTicker) App._refreshTicker();
+          Audio.bgm.playForState();
+          Audio.play('save');
+        } else {
+          alert('データの読み込みに失敗しました。ファイルが破損している可能性があります。');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   }
 };
 
