@@ -2599,12 +2599,34 @@ let _dbCoachSortKey = 'grade';
 let _dbCoachSortAsc = false;
 let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
-// Phase 6: 相関図 state
+// Phase 6v2: 相関図 state (force-directed network)
 let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
+let _relmapViewMode = 'network'; // 'network' | 'focus'
+let _relmapFilterRelOnly = false;
+let _relmapFilterThreshold = 5;
+let _relmapCompareA = null;
+let _relmapCompareB = null;
+let _relmapAnimId = null; // requestAnimationFrame id
+let _relmapNodes = [];
+let _relmapLinks = [];
+let _relmapNodeMap = {};
+let _relmapVelocities = [];
+let _relmapAlpha = { value: 1.0, decay: 0.0015, min: 0.005 };
+let _relmapFrameCount = 0;
+let _relmapDragTarget = null;
+let _relmapDragOffset = { x: 0, y: 0 };
+let _relmapDragMoved = false;
+let _relmapCtxTarget = null;
+let _relmapFocusTargets = {};
+let _relmapW = 0;
+let _relmapH = 0;
 
 function renderDatabase() {
+  // Stop any running relmap animation when switching tabs
+  if (_relmapAnimId) { cancelAnimationFrame(_relmapAnimId); _relmapAnimId = null; }
+
   const el = document.getElementById('databaseContent');
   if (!el) return;
   if (window.IS_TRIAL) {
@@ -2613,6 +2635,10 @@ function renderDatabase() {
       <span style="font-size:12px">DLsite / BOOTH で製品版をチェックしてください</span></div>`;
     return;
   }
+
+  // Toggle relmap-active class on panel
+  const panel = el.closest('.panel') || el.parentElement;
+  if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
 
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
@@ -2987,6 +3013,13 @@ function _drawOrgCompareChart() {
 // ╚══════════════════════════════════════════════════════════╝
 
 const _RELMAP_ORG_COLORS = { player: '#d4a843', org_s: '#d63031', org_a: '#6c5ce7', org_b: '#00b894', fa: '#8bc4f0' };
+const _RELMAP_STAT_META = [
+  { key: 'pw', label: 'PW', color: '#e74c3c' },
+  { key: 'sp', label: 'SP', color: '#3498db' },
+  { key: 'te', label: 'TE', color: '#2ecc71' },
+  { key: 'st', label: 'ST', color: '#f39c12' },
+  { key: 'mn', label: 'MN', color: '#9b59b6' },
+];
 
 function _relmapGetAllChars() {
   return Engine.database.getAllFighters(G);
@@ -2999,68 +3032,74 @@ function _relmapGetOrgLabel(f) {
   return org ? (G.rivalOrgNames?.[f._orgId] || org.name || f._orgId) : f._orgName || '?';
 }
 
+function _relmapGetOrgEmoji(orgId) {
+  if (orgId === 'player') return '\u2B50';
+  const org = RIVAL_ORGS.find(o => o.id === orgId);
+  return org ? org.emoji : '\uD83C\uDFE2';
+}
+
 function _relmapGetOrgColor(f) {
   return _RELMAP_ORG_COLORS[f._orgId] || 'var(--text-dim)';
 }
 
-function _relmapGetPairs(centerId) {
-  const allChars = _relmapGetAllChars();
+function _relmapGetOrgColorById(orgId) {
+  return _RELMAP_ORG_COLORS[orgId] || '#888';
+}
+
+// Build link data between all character pairs with meaningful relationships
+function _relmapBuildLinks(allChars) {
   const rels = G.relationships || {};
   const history = G.relationshipHistory || [];
-  const pairs = [];
+  const links = [];
+  const seen = new Set();
 
-  for (const target of allChars) {
-    if (target.id === centerId) continue;
-    const keyAB = `${centerId}>${target.id}`;
-    const keyBA = `${target.id}>${centerId}`;
-    const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
-    const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
-    const bondAB = Math.round(rAB.bond * 10) / 10;
-    const bondBA = Math.round(rBA.bond * 10) / 10;
-    const rivAB = Math.round(rAB.rivalry * 10) / 10;
-    const rivBA = Math.round(rBA.rivalry * 10) / 10;
+  for (let i = 0; i < allChars.length; i++) {
+    for (let j = i + 1; j < allChars.length; j++) {
+      const a = allChars[i], b = allChars[j];
+      const keyAB = `${a.id}>${b.id}`, keyBA = `${b.id}>${a.id}`;
+      const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
+      const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
+      const bondAB = Math.round(rAB.bond * 10) / 10;
+      const bondBA = Math.round(rBA.bond * 10) / 10;
+      const rivAB = Math.round(rAB.rivalry * 10) / 10;
+      const rivBA = Math.round(rBA.rivalry * 10) / 10;
 
-    // Get rivalry title
-    const rivalLvl = Engine.title.getRivalryLevel(G, centerId, target.id);
-    const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
-    const isOneSided = rivalLvl?.isOneSided || false;
+      const rivalLvl = Engine.title.getRivalryLevel(G, a.id, b.id);
+      const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
+      const isOneSided = rivalLvl?.isOneSided || false;
 
-    // Past rivalry check
-    const pastEntries = history.filter(h =>
-      (h.id1 === centerId && h.id2 === target.id) || (h.id1 === target.id && h.id2 === centerId)
-    );
-    const hasPast = pastEntries.length > 0;
-    const pastPeakTier = hasPast ? Math.max(...pastEntries.map(e => e.peakTier || e.tier || 1)) : 0;
+      const pastEntries = history.filter(h =>
+        (h.id1 === a.id && h.id2 === b.id) || (h.id1 === b.id && h.id2 === a.id)
+      );
+      const hasPast = pastEntries.length > 0;
 
-    // Sort score (spec §5-4)
-    const sortScore =
-      (hasTitle ? 1000 + rivAB + rivBA : 0) +
-      (isOneSided ? 500 : 0) +
-      Math.max(rivAB, rivBA) +
-      Math.abs(bondAB - 50) + Math.abs(bondBA - 50);
+      const strength = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50) + rivAB + rivBA) / 200;
+      const sortScore =
+        (hasTitle ? 1000 + rivAB + rivBA : 0) +
+        (isOneSided ? 500 : 0) +
+        Math.max(rivAB, rivBA) +
+        Math.abs(bondAB - 50) + Math.abs(bondBA - 50);
 
-    // Skip if essentially no relationship
-    if (sortScore < 3 && !hasPast) continue;
+      if (sortScore < 3 && !hasPast) continue;
 
-    pairs.push({
-      targetId: target.id,
-      target,
-      bondAB, bondBA, rivAB, rivBA,
-      rivalLvl,
-      hasTitle, isOneSided,
-      hasPast, pastPeakTier,
-      sortScore,
-    });
+      links.push({
+        a: a.id, b: b.id, source: a.id, target: b.id,
+        bondAB, bondBA, rivAB, rivBA,
+        rivalLvl, hasTitle, isOneSided, hasPast,
+        strength, sortScore,
+        rivalTitle: hasTitle && rivalLvl ? rivalLvl.label : null,
+        titleColor: hasTitle && rivalLvl ? rivalLvl.color : null,
+        titleEmoji: hasTitle && rivalLvl ? rivalLvl.emoji : null,
+      });
+    }
   }
-
-  pairs.sort((a, b) => b.sortScore - a.sortScore);
-  return pairs;
+  return links;
 }
 
 function _relmapFaceHtml(charId, size) {
   const pUrl = getPortraitUrl(charId);
-  if (pUrl) return `<img src="${pUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${size}px;height:${size}px;object-fit:cover"><span style="display:none;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">👤</span>`;
-  return `<span style="display:flex;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">👤</span>`;
+  if (pUrl) return `<img src="${pUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%"><span style="display:none;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">\uD83D\uDC64</span>`;
+  return `<span style="display:flex;width:${size}px;height:${size}px;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">\uD83D\uDC64</span>`;
 }
 
 function _relmapBondColor(val) {
@@ -3069,398 +3108,726 @@ function _relmapBondColor(val) {
   return '#ff7675';
 }
 
+function _relmapGetLinksFor(id) {
+  return _relmapLinks.filter(l => l.a === id || l.b === id);
+}
+
+// ══════════════════════════════════════════════════════════
+// _renderDbRelmap — HTML skeleton generation
+// ══════════════════════════════════════════════════════════
 function _renderDbRelmap() {
   const allChars = _relmapGetAllChars();
+  if (!allChars.length) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">選手がいません</div>';
+
   // Default center: first roster member
   if (!_relmapCenterId || !allChars.find(c => c.id === _relmapCenterId)) {
     _relmapCenterId = allChars.length > 0 ? allChars[0].id : null;
   }
-  if (!_relmapCenterId) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">選手がいません</div>';
 
-  const centerChar = allChars.find(c => c.id === _relmapCenterId);
-  if (!centerChar) return '';
+  const centerChar = _relmapCenterId ? allChars.find(c => c.id === _relmapCenterId) : null;
 
-  let pairs = _relmapGetPairs(_relmapCenterId);
+  let html = `<div id="relmapRoot" class="relmap-root">`;
 
-  // Apply filter
-  if (_relmapFilter === 'team') {
-    pairs = pairs.filter(p => p.target._orgId === centerChar._orgId);
-  } else if (_relmapFilter === 'rival') {
-    pairs = pairs.filter(p => p.hasTitle || p.isOneSided || p.rivAB >= 30 || p.rivBA >= 30);
-  } else if (_relmapFilter === 'bond') {
-    pairs = [...pairs].sort((a, b) => b.bondAB - a.bondAB);
-  }
-
-  // Breadcrumb
-  let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
-    <span style="cursor:pointer" onclick="setDbSubTab(0)">📊 データベース</span>
-    <span style="color:var(--text-dim)">›</span>
-    <span style="cursor:pointer" onclick="showFighterPopup(${centerChar.id})">👤 ${centerChar.name}</span>
-    <span style="color:var(--text-dim)">›</span>
-    <span style="color:var(--gold)">🔗 相関図</span>
-  </div>`;
-
-  html += `<div class="rel-layout">`;
-
-  // ── Left sidebar ──
-  html += `<div class="rel-sidebar">`;
-  html += `<div class="panel" style="padding:12px">`;
-  html += `<div class="panel-title">🔗 相関図</div>`;
-
-  // Character selector
-  html += `<div class="char-selector" style="margin-bottom:10px"><select onchange="_relmapCenterId=parseInt(this.value);_relmapSelected=null;renderDatabase()">`;
-  // Group by org
-  const groups = {};
-  for (const c of allChars) {
-    const orgKey = c._orgId;
-    if (!groups[orgKey]) groups[orgKey] = { label: _relmapGetOrgLabel(c), chars: [] };
-    groups[orgKey].chars.push(c);
-  }
-  for (const [orgKey, g] of Object.entries(groups)) {
-    html += `<optgroup label="── ${g.label} ──">`;
-    g.chars.forEach(c => {
-      const ovr = Engine.util.ov(c);
-      html += `<option value="${c.id}"${c.id === _relmapCenterId ? ' selected' : ''}>${c.name}（OVR ${ovr}）</option>`;
-    });
-    html += `</optgroup>`;
-  }
-  html += `</select></div>`;
-
-  // Filter buttons
-  const filters = [
-    { key: 'all', label: '全体' },
-    { key: 'team', label: '同団体' },
-    { key: 'rival', label: 'ライバル' },
-    { key: 'bond', label: '親密度順' },
-  ];
-  html += `<div class="filter-row">`;
-  filters.forEach(f => {
-    html += `<button class="filter-btn${_relmapFilter === f.key ? ' active' : ''}" onclick="_relmapFilter='${f.key}';renderDatabase()">${f.label}</button>`;
-  });
+  // ── Header bar ──
+  html += `<div class="relmap-header">`;
+  html += `<span class="rm-title">\uD83D\uDD17 RELATIONSHIP MAP</span>`;
+  html += `<div class="rm-header-sep"></div>`;
+  // View mode toggle
+  html += `<div class="rm-view-toggle">`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='network'?' active':''}" onclick="_relmapSetViewMode('network')">\uD83C\uDF10 ネットワーク</button>`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='focus'?' active':''}" onclick="_relmapSetViewMode('focus')">\uD83C\uDFAF フォーカス</button>`;
   html += `</div>`;
-  html += `</div>`; // end panel
+  // Center indicator
+  html += `<div class="rm-center-indicator" id="rmCenterIndicator" style="display:${_relmapCenterId && centerChar?'flex':'none'}">`;
+  html += `<span class="ci-label">CENTER</span>`;
+  html += `<span class="ci-name" id="rmCenterName">${centerChar ? centerChar.name : ''}</span>`;
+  html += `<span class="ci-clear" onclick="_relmapClearCenter()" title="解除">\u2715</span>`;
+  html += `</div>`;
+  // Link filters
+  html += `<div class="rm-header-controls">`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='all'?' active':''}" onclick="_relmapSetFilter('all')">全リンク</button>`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='rivalry'?' active':''}" onclick="_relmapSetFilter('rivalry')">ライバル</button>`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='bond'?' active':''}" onclick="_relmapSetFilter('bond')">親密度</button>`;
+  html += `</div>`;
+  html += `</div>`; // end header
 
-  // Relationship list
-  html += `<div class="panel" style="padding:12px;flex:1">`;
-  html += `<div class="panel-title">📋 人間関係一覧</div>`;
-  html += `<div class="rel-list">`;
+  // ── Main area ──
+  html += `<div class="relmap-main">`;
 
-  const listPairs = pairs.slice(0, 15);
-  listPairs.forEach(p => {
-    const orgColor = _relmapGetOrgColor(p.target);
-    const orgLabel = _relmapGetOrgLabel(p.target);
-    const ovr = Engine.util.ov(p.target);
-    const isSelected = _relmapSelected === p.targetId;
+  // Sidebar
+  html += `<div class="relmap-sidebar" id="rmSidebar"></div>`;
 
-    let badges = '';
-    if (p.rivalLvl && !p.isOneSided) {
-      badges += `<span class="rel-badge title-badge" style="background:${p.rivalLvl.color}22;color:${p.rivalLvl.color};border:1px solid ${p.rivalLvl.color}44">${p.rivalLvl.emoji} ${p.rivalLvl.label}</span>`;
-    }
-    if (p.isOneSided && p.rivalLvl) {
-      const aggId = p.rivalLvl.aggressor;
-      const aggChar = allChars.find(c => c.id === aggId);
-      const aggName = aggChar ? aggChar.name.split(' ')[0] : '?';
-      badges += `<span class="rel-badge" style="background:rgba(253,203,110,0.1);color:#fdcb6e;border:1px solid rgba(253,203,110,0.2)">⚡ 片側因縁（${aggName}→）</span>`;
-    }
-    if (p.hasPast && !p.hasTitle) {
-      badges += `<span class="rel-badge" style="background:rgba(255,255,255,0.04);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)">💨 過去の因縁</span>`;
-    }
-    if (p.bondAB >= 75) badges += `<span class="rel-badge bond-high">信頼</span>`;
-    if (p.bondAB < 35) badges += `<span class="rel-badge bond-low">不信</span>`;
-    if (p.rivAB >= 40 && !p.hasTitle && !p.isOneSided) badges += `<span class="rel-badge rival">🔥 競争意識</span>`;
-
-    html += `<div class="rel-item${isSelected ? ' selected' : ''}" onclick="_relmapCenterId=${p.targetId};_relmapSelected=null;renderDatabase()">
-      <div class="rel-item-face" style="border-color:${orgColor}">${_relmapFaceHtml(p.targetId, 32)}</div>
-      <div class="rel-item-info">
-        <div class="rel-item-name">${p.target.name}</div>
-        <div class="rel-item-org" style="color:${orgColor}">${orgLabel} ─ OVR ${ovr}</div>
-        <div class="rel-item-badges">${badges}</div>
-      </div>
-      <div class="rel-item-vals">
-        <div style="display:flex;align-items:baseline;gap:2px;justify-content:flex-end">
-          <span style="font-size:9px;color:var(--text-dim)">親</span>
-          <span class="val-bond" style="color:${_relmapBondColor(p.bondAB)}">${Math.round(p.bondAB)}</span>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:2px;justify-content:flex-end">
-          <span style="font-size:9px;color:var(--text-dim)">競</span>
-          <span class="val-rivalry">${p.rivAB > 10 ? Math.round(p.rivAB) : '<span style="color:var(--text-dim)">-</span>'}</span>
-        </div>
-      </div>
-    </div>`;
-  });
-
-  if (listPairs.length === 0) {
-    html += `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">関係のある選手がいません</div>`;
+  // Graph canvas
+  html += `<div class="relmap-canvas" id="relmapContainer">`;
+  html += `<svg id="relmapSvg"><defs>`;
+  html += `<filter id="rm-glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  html += `<filter id="rm-glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  // Org zone gradients
+  for (const [orgId, color] of Object.entries(_RELMAP_ORG_COLORS)) {
+    const op = orgId === 'player' ? 0.08 : 0.06;
+    html += `<radialGradient id="rm-zone-${orgId}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${color}" stop-opacity="${op}"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></radialGradient>`;
   }
-
-  html += `</div>`; // end rel-list
-  html += `</div>`; // end panel
-  html += `</div>`; // end sidebar
-
-  // ── Right: Map ──
-  html += `<div class="panel" style="padding:0;position:relative">`;
-  html += `<div class="rel-map-container" id="relmapContainer">`;
-  html += `<svg class="map-svg" id="relmapSvg"></svg>`;
+  html += `</defs><g id="relmapZoneLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g></svg>`;
+  html += `</div>`; // end canvas
 
   // Legend
-  html += `<div class="map-legend">
-    <div class="legend-line"><div class="legend-swatch" style="background:#74b9ff"></div> 親密度（高）</div>
-    <div class="legend-line"><div class="legend-swatch" style="background:#ff7675"></div> 親密度（低）</div>
-    <div class="legend-line"><div class="legend-swatch" style="background:#e17055;height:4px"></div> 競争意識 🔥</div>
-    <div class="legend-line" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">
-      <span style="font-size:9px">線の太さ＝感情の強度</span>
-    </div>
-  </div>`;
+  html += `<div class="relmap-legend">`;
+  html += `<div class="rm-legend-title">LEGEND</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#74b9ff"></div> 親密（高）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#ff7675"></div> 不信（低）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#e17055"></div> 競争意識</div>`;
+  html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">ノードサイズ＝OVR<br>クリック＝中心切替<br>右クリック＝メニュー</div>`;
+  html += `</div>`;
 
-  // Detail panel (populated by JS after render)
-  html += `<div class="rel-detail-panel" id="relmapDetailPanel"></div>`;
+  html += `</div>`; // end main
 
-  html += `</div>`; // end map-container
-  html += `</div>`; // end panel
+  // Detail panel
+  html += `<div class="relmap-detail" id="relmapDetailPanel"></div>`;
 
-  html += `</div>`; // end rel-layout
+  // Select hint
+  html += `<div class="rm-select-hint" id="relmapSelectHint"></div>`;
+
+  // Tooltip
+  html += `<div class="rm-tooltip" id="relmapTooltip"></div>`;
+
+  // Context menu
+  html += `<div class="rm-ctx-menu" id="relmapCtxMenu">`;
+  html += `<div class="rm-ctx-item" id="rmCtxCenter"><span class="rm-ctx-icon">\uD83C\uDFAF</span>中心に設定</div>`;
+  html += `<div class="rm-ctx-item" id="rmCtxDetail"><span class="rm-ctx-icon">\uD83D\uDCCB</span>詳細を見る</div>`;
+  html += `<div class="rm-ctx-sep"></div>`;
+  html += `<div class="rm-ctx-item" id="rmCtxCompare"><span class="rm-ctx-icon">\u2696</span>比較に追加</div>`;
+  html += `</div>`;
+
+  // Compare popup overlay
+  html += `<div class="rm-popup-overlay" id="relmapPopupOverlay"><div class="rm-popup-card" id="relmapPopupCard"></div></div>`;
+
+  html += `</div>`; // end relmap-root
 
   return html;
 }
 
-// ── Map drawing (called after DOM insertion) ──
+// ══════════════════════════════════════════════════════════
+// _drawRelmapAfterRender — physics sim + event listeners
+// ══════════════════════════════════════════════════════════
 function _drawRelmapAfterRender() {
   const container = document.getElementById('relmapContainer');
   const svg = document.getElementById('relmapSvg');
   if (!container || !svg) return;
 
+  const W = container.offsetWidth;
+  const H = container.offsetHeight;
+  _relmapW = W; _relmapH = H;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  // Build nodes & links from game data
   const allChars = _relmapGetAllChars();
-  const centerChar = allChars.find(c => c.id === _relmapCenterId);
-  if (!centerChar) return;
-
-  let pairs = _relmapGetPairs(_relmapCenterId);
-  if (_relmapFilter === 'team') pairs = pairs.filter(p => p.target._orgId === centerChar._orgId);
-  else if (_relmapFilter === 'rival') pairs = pairs.filter(p => p.hasTitle || p.isOneSided || p.rivAB >= 30 || p.rivBA >= 30);
-  else if (_relmapFilter === 'bond') pairs = [...pairs].sort((a, b) => b.bondAB - a.bondAB);
-
-  const w = container.offsetWidth;
-  const h = container.offsetHeight;
-  const cx = w / 2;
-  const cy = h / 2;
-
-  // Clear old nodes
-  container.querySelectorAll('.map-center, .map-node').forEach(n => n.remove());
-  svg.innerHTML = '<defs></defs>';
-
-  // Center node
-  const centerEl = document.createElement('div');
-  centerEl.className = 'map-center';
-  centerEl.style.left = cx + 'px';
-  centerEl.style.top = cy + 'px';
-  const centerFaceHtml = _relmapFaceHtml(_relmapCenterId, 58);
-  centerEl.innerHTML = `
-    <div class="map-center-face">${centerFaceHtml}</div>
-    <div class="map-center-name">${centerChar.name}</div>
-  `;
-  centerEl.style.cursor = 'pointer';
-  centerEl.onclick = () => showFighterPopup(_relmapCenterId);
-  container.appendChild(centerEl);
-
-  // Peripheral nodes
-  const nodeCount = Math.min(pairs.length, 10);
-  const radius = Math.min(w, h) * 0.35;
-  const startAngle = -Math.PI / 2;
-
-  pairs.slice(0, nodeCount).forEach((p, i) => {
-    const angle = startAngle + (2 * Math.PI * i / nodeCount);
-    const strength = (Math.abs(p.bondAB - 50) + Math.abs(p.rivAB)) / 100;
-    const r = radius * (0.75 + strength * 0.25);
-    const nx = cx + Math.cos(angle) * r;
-    const ny = cy + Math.sin(angle) * r;
-
-    // Draw connection lines
-    _drawRelmapConnection(svg, cx, cy, nx, ny, p, angle, i);
-
-    // Node element
-    const nodeEl = document.createElement('div');
-    nodeEl.className = 'map-node';
-    nodeEl.style.left = nx + 'px';
-    nodeEl.style.top = ny + 'px';
-    const orgColor = _relmapGetOrgColor(p.target);
-    const isSelected = _relmapSelected === p.targetId;
-    const borderColor = isSelected ? 'var(--gold)' : (p.rivalLvl ? p.rivalLvl.color : orgColor);
-
-    let titleHtml = '';
-    if (p.hasTitle && p.rivalLvl) {
-      titleHtml = `<div class="map-node-title" style="background:${p.rivalLvl.color}22;color:${p.rivalLvl.color};border:1px solid ${p.rivalLvl.color}55">${p.rivalLvl.emoji} ${p.rivalLvl.label}</div>`;
-    } else if (p.isOneSided) {
-      titleHtml = `<div class="map-node-title" style="background:rgba(253,203,110,0.1);color:#fdcb6e;border:1px solid rgba(253,203,110,0.3)">⚡ 片側</div>`;
-    } else if (p.hasPast && !p.hasTitle) {
-      titleHtml = `<div class="map-node-title" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1)">💨 過去</div>`;
-    }
-
-    const faceHtml = _relmapFaceHtml(p.targetId, 40);
-    nodeEl.innerHTML = `
-      <div class="map-node-face" style="border-color:${borderColor};${isSelected ? 'box-shadow:0 0 12px rgba(212,168,67,0.4)' : ''}">${faceHtml}</div>
-      <div class="map-node-name">${p.target.name.split(' ')[0]}</div>
-      ${titleHtml}
-    `;
-    nodeEl.onclick = () => { _relmapCenterId = p.targetId; _relmapSelected = null; renderDatabase(); };
-    nodeEl.onmouseenter = () => { _relmapSelected = p.targetId; _updateRelmapDetail(pairs, allChars); };
-    nodeEl.onmouseleave = () => { _relmapSelected = null; _updateRelmapDetail(pairs, allChars); };
-    container.appendChild(nodeEl);
+  _relmapNodeMap = {};
+  _relmapNodes = allChars.map(c => {
+    const ovr = Engine.util.ov(c);
+    const n = { id: c.id, name: c.name, orgId: c._orgId, ovr, style: c.style,
+      pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn,
+      r: 12 + (ovr - 60) * 0.5, color: _relmapGetOrgColorById(c._orgId),
+      x: 0, y: 0, _hidden: false, _dragging: false, _char: c };
+    _relmapNodeMap[n.id] = n;
+    return n;
   });
 
-  // Detail panel (show on hover)
-  _updateRelmapDetail(pairs, allChars);
+  _relmapLinks = _relmapBuildLinks(allChars);
+
+  // Initial positions: cluster by org
+  const orgCenters = {
+    player: { x: W * 0.3, y: H * 0.35 },
+    org_s: { x: W * 0.7, y: H * 0.3 },
+    org_a: { x: W * 0.25, y: H * 0.7 },
+    org_b: { x: W * 0.7, y: H * 0.7 },
+    fa: { x: W * 0.5, y: H * 0.5 },
+  };
+  _relmapNodes.forEach(n => {
+    const c = orgCenters[n.orgId] || { x: W / 2, y: H / 2 };
+    n.x = c.x + (Math.random() - 0.5) * 120;
+    n.y = c.y + (Math.random() - 0.5) * 120;
+  });
+
+  _relmapVelocities = _relmapNodes.map(() => ({ vx: 0, vy: 0 }));
+  _relmapAlpha = { value: 1.0, decay: 0.0015, min: 0.005 };
+  _relmapFrameCount = 0;
+  _relmapFocusTargets = {};
+
+  // Apply visibility
+  _relmapUpdateVisibility();
+
+  // Draw org zones
+  _relmapDrawOrgZones(orgCenters);
+
+  // Render sidebar
+  _relmapRenderSidebar(orgCenters);
+
+  // Start animation
+  _relmapAnimId = requestAnimationFrame(function _loop() {
+    _relmapTick(orgCenters);
+    _relmapAnimId = requestAnimationFrame(_loop);
+  });
+
+  // ── Event listeners ──
+  _relmapSetupInteraction(svg, container);
+
+  // Context menu items
+  const ctxCenter = document.getElementById('rmCtxCenter');
+  const ctxDetail = document.getElementById('rmCtxDetail');
+  const ctxCompare = document.getElementById('rmCtxCompare');
+  if (ctxCenter) ctxCenter.onclick = () => { if (_relmapCtxTarget) _relmapSetCenter(_relmapCtxTarget); _relmapHideCtxMenu(); };
+  if (ctxDetail) ctxDetail.onclick = () => { if (_relmapCtxTarget) showFighterPopup(_relmapCtxTarget); _relmapHideCtxMenu(); };
+  if (ctxCompare) ctxCompare.onclick = () => { if (_relmapCtxTarget) _relmapHandleCompareClick(_relmapCtxTarget); _relmapHideCtxMenu(); };
+
+  // Popup overlay close
+  const popOver = document.getElementById('relmapPopupOverlay');
+  if (popOver) popOver.addEventListener('click', e => { if (e.target === e.currentTarget) _relmapClosePopup(); });
+
+  // Show detail for initial center if set
+  if (_relmapCenterId) _relmapShowDetailForNode(_relmapCenterId);
 }
 
-function _drawRelmapConnection(svg, cx, cy, nx, ny, p, angle, idx) {
-  const defs = svg.querySelector('defs');
-  const offset = 7;
-  const perpX = Math.cos(angle + Math.PI / 2) * offset;
-  const perpY = Math.sin(angle + Math.PI / 2) * offset;
+// ══════════════════════════════════════════════════════════
+// Physics tick
+// ══════════════════════════════════════════════════════════
+function _relmapTick(orgCenters) {
+  const W = _relmapW, H = _relmapH;
+  const nodes = _relmapNodes, links = _relmapLinks, vel = _relmapVelocities;
+  const a = Math.max(_relmapAlpha.value, _relmapAlpha.min);
 
-  const dx = nx - cx, dy = ny - cy;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const ux = dx / dist, uy = dy / dist;
-  const startPad = 36;
-  const endPad = 26;
-
-  // A→B line (center → node)
-  const bondAB = p.bondAB;
-  const colorAB = bondAB >= 50 ? `rgba(116,185,255,${0.3 + (bondAB - 50) / 80})` : `rgba(255,118,117,${0.3 + (50 - bondAB) / 80})`;
-  const hexAB = bondAB >= 50 ? '#74b9ff' : '#ff7675';
-  const widthAB = 1.5 + Math.abs(bondAB - 50) / 18;
-
-  const markIdAB = `arrow_${idx}_ab`;
-  const markerAB = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-  markerAB.setAttribute('id', markIdAB);
-  markerAB.setAttribute('markerWidth', '8');
-  markerAB.setAttribute('markerHeight', '6');
-  markerAB.setAttribute('refX', '7');
-  markerAB.setAttribute('refY', '3');
-  markerAB.setAttribute('orient', 'auto');
-  markerAB.innerHTML = `<polygon points="0 0, 8 3, 0 6" fill="${hexAB}" opacity="0.8"/>`;
-  defs.appendChild(markerAB);
-
-  const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line1.setAttribute('x1', cx + ux * startPad + perpX);
-  line1.setAttribute('y1', cy + uy * startPad + perpY);
-  line1.setAttribute('x2', nx - ux * endPad + perpX);
-  line1.setAttribute('y2', ny - uy * endPad + perpY);
-  line1.setAttribute('stroke', colorAB);
-  line1.setAttribute('stroke-width', widthAB);
-  if (bondAB < 40) line1.setAttribute('stroke-dasharray', '4,4');
-  line1.setAttribute('marker-end', `url(#${markIdAB})`);
-  svg.appendChild(line1);
-
-  // B→A line (node → center)
-  const bondBA = p.bondBA;
-  const colorBA = bondBA >= 50 ? `rgba(116,185,255,${0.3 + (bondBA - 50) / 80})` : `rgba(255,118,117,${0.3 + (50 - bondBA) / 80})`;
-  const hexBA = bondBA >= 50 ? '#74b9ff' : '#ff7675';
-  const widthBA = 1.5 + Math.abs(bondBA - 50) / 18;
-
-  const markIdBA = `arrow_${idx}_ba`;
-  const markerBA = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-  markerBA.setAttribute('id', markIdBA);
-  markerBA.setAttribute('markerWidth', '8');
-  markerBA.setAttribute('markerHeight', '6');
-  markerBA.setAttribute('refX', '7');
-  markerBA.setAttribute('refY', '3');
-  markerBA.setAttribute('orient', 'auto');
-  markerBA.innerHTML = `<polygon points="0 0, 8 3, 0 6" fill="${hexBA}" opacity="0.8"/>`;
-  defs.appendChild(markerBA);
-
-  const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  line2.setAttribute('x1', nx - ux * endPad - perpX);
-  line2.setAttribute('y1', ny - uy * endPad - perpY);
-  line2.setAttribute('x2', cx + ux * startPad - perpX);
-  line2.setAttribute('y2', cy + uy * startPad - perpY);
-  line2.setAttribute('stroke', colorBA);
-  line2.setAttribute('stroke-width', widthBA);
-  if (bondBA < 40) line2.setAttribute('stroke-dasharray', '4,4');
-  line2.setAttribute('marker-end', `url(#${markIdBA})`);
-  svg.appendChild(line2);
-
-  // Rivalry overlay (center dashed line, orange)
-  const maxRiv = Math.max(p.rivAB, p.rivBA);
-  if (maxRiv > 20) {
-    const rivLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    rivLine.setAttribute('x1', cx + ux * startPad);
-    rivLine.setAttribute('y1', cy + uy * startPad);
-    rivLine.setAttribute('x2', nx - ux * endPad);
-    rivLine.setAttribute('y2', ny - uy * endPad);
-    rivLine.setAttribute('stroke', `rgba(225,112,85,${0.15 + maxRiv / 200})`);
-    rivLine.setAttribute('stroke-width', maxRiv / 20);
-    rivLine.setAttribute('stroke-dasharray', '8,4');
-    svg.appendChild(rivLine);
-
-    if (maxRiv >= 50) {
-      const mx = (cx + nx) / 2;
-      const my = (cy + ny) / 2;
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', mx);
-      text.setAttribute('y', my);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'central');
-      text.setAttribute('font-size', maxRiv >= 70 ? '16' : '12');
-      text.textContent = '\uD83D\uDD25';
-      svg.appendChild(text);
+  if (_relmapViewMode === 'network') {
+    // Cluster gravity
+    nodes.forEach((n, i) => {
+      if (n._hidden) return;
+      const c = orgCenters[n.orgId] || { x: W / 2, y: H / 2 };
+      vel[i].vx += (c.x - n.x) * 0.008 * a;
+      vel[i].vy += (c.y - n.y) * 0.008 * a;
+    });
+    // Link attraction
+    links.forEach(l => {
+      const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
+      if (!s || !t || s._hidden || t._hidden) return;
+      const si = nodes.indexOf(s), ti = nodes.indexOf(t);
+      const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const td = 100 + (1 - l.strength) * 150;
+      const f = (dist - td) * 0.003 * a;
+      const fx = dx / dist * f, fy = dy / dist * f;
+      vel[si].vx += fx; vel[si].vy += fy;
+      vel[ti].vx -= fx; vel[ti].vy -= fy;
+    });
+    // Repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i]._hidden) continue;
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (nodes[j]._hidden) continue;
+        const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const md = (nodes[i].r + nodes[j].r + 30) * 3;
+        if (dist < md) {
+          const rf = (md - dist) * 0.02 * a / dist;
+          vel[i].vx -= dx * rf; vel[i].vy -= dy * rf;
+          vel[j].vx += dx * rf; vel[j].vy += dy * rf;
+        }
+      }
+    }
+  } else {
+    // Focus mode: pull toward target positions
+    nodes.forEach((n, i) => {
+      if (n._hidden) return;
+      const ft = _relmapFocusTargets[n.id];
+      if (ft) { vel[i].vx += (ft.x - n.x) * 0.05 * a; vel[i].vy += (ft.y - n.y) * 0.05 * a; }
+    });
+    // Light repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i]._hidden) continue;
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (nodes[j]._hidden) continue;
+        const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        if (dist < 60) {
+          const rf = (60 - dist) * 0.03 * a / dist;
+          vel[i].vx -= dx * rf; vel[i].vy -= dy * rf;
+          vel[j].vx += dx * rf; vel[j].vy += dy * rf;
+        }
+      }
     }
   }
 
-  // Past rivalry (gray dashed)
-  if (p.hasPast && maxRiv <= 20 && bondAB >= 40 && bondBA >= 40) {
-    const grayLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    grayLine.setAttribute('x1', cx + ux * startPad);
-    grayLine.setAttribute('y1', cy + uy * startPad);
-    grayLine.setAttribute('x2', nx - ux * endPad);
-    grayLine.setAttribute('y2', ny - uy * endPad);
-    grayLine.setAttribute('stroke', 'rgba(255,255,255,0.08)');
-    grayLine.setAttribute('stroke-width', '2');
-    grayLine.setAttribute('stroke-dasharray', '2,6');
-    svg.appendChild(grayLine);
+  // Apply velocities
+  nodes.forEach((n, i) => {
+    if (n._dragging || n._hidden) return;
+    vel[i].vx *= 0.65; vel[i].vy *= 0.65;
+    n.x += vel[i].vx; n.y += vel[i].vy;
+    n.x = Math.max(n.r + 30, Math.min(W - n.r - 30, n.x));
+    n.y = Math.max(n.r + 30, Math.min(H - n.r - 30, n.y));
+  });
+  _relmapAlpha.value -= _relmapAlpha.decay;
+
+  // Render every 2 frames
+  _relmapFrameCount++;
+  if (_relmapFrameCount % 2 === 0) _relmapRender(orgCenters);
+}
+
+function _relmapReheat() { _relmapAlpha.value = 0.8; }
+
+// ══════════════════════════════════════════════════════════
+// SVG Render (innerHTML bulk update)
+// ══════════════════════════════════════════════════════════
+function _relmapRender(orgCenters) {
+  const nodes = _relmapNodes, links = _relmapLinks;
+  const linkLayer = document.getElementById('relmapLinkLayer');
+  const nodeLayer = document.getElementById('relmapNodeLayer');
+  const zoneLayer = document.getElementById('relmapZoneLayer');
+  if (!linkLayer || !nodeLayer) return;
+
+  const focused = _relmapCenterId;
+  const vm = _relmapViewMode;
+  const filter = _relmapFilter;
+
+  // ── Links ──
+  let lh = '';
+  links.forEach(l => {
+    const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
+    if (!s || !t || s._hidden || t._hidden) return;
+    const dimmed = focused && vm === 'network' && focused !== s.id && focused !== t.id;
+    const highlighted = focused && (focused === s.id || focused === t.id);
+    if (!highlighted && l.strength < 0.15 && filter === 'all' && vm === 'network') return;
+    if (filter === 'rivalry' && l.rivAB < 25 && l.rivBA < 25 && !l.rivalTitle) return;
+    if (filter === 'bond' && Math.abs(l.bondAB - 50) < 15 && Math.abs(l.bondBA - 50) < 15) return;
+
+    const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / dist, uy = dy / dist, px = -uy * 4, py = ux * 4;
+    const sp = s.r + 4, ep = t.r + 4;
+    const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
+
+    // Bond A→B
+    const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
+    const wAB = 1 + Math.abs(bAB - 50) / 25;
+    lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
+    // Bond B→A
+    const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
+    const wBA = 1 + Math.abs(bBA - 50) / 25;
+    lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
+
+    // Rivalry overlay
+    const mr = Math.max(l.rivAB, l.rivBA);
+    if (mr > 20) {
+      const ro = dimmed ? 0.02 : (highlighted || vm === 'focus' ? 0.6 : 0.25);
+      lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${mr/15}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
+      if (mr >= 50 && !dimmed) {
+        const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+        lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||vm==='focus'?1:0.6}">\uD83D\uDD25</text>`;
+      }
+    }
+    // Rivalry title badge
+    if (l.rivalTitle && !dimmed) {
+      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2 - 12;
+      const tw = l.rivalTitle.length * 9 + 24;
+      lh += `<rect x="${mx-tw/2}" y="${my-9}" width="${tw}" height="18" rx="3" fill="${l.titleColor}22" stroke="${l.titleColor}55" stroke-width="1"/>`;
+      lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9" font-weight="700" fill="${l.titleColor}">${l.titleEmoji} ${l.rivalTitle}</text>`;
+    }
+    // One-sided icon
+    if (l.isOneSided && !dimmed) {
+      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2 + 12;
+      lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fdcb6e" opacity="0.8">\u26A1</text>`;
+    }
+  });
+  linkLayer.innerHTML = lh;
+
+  // ── Nodes ──
+  let nh = '';
+  nodes.forEach(n => {
+    if (n._hidden) return;
+    const isConn = focused && vm === 'network' && links.some(l => (l.a === focused && l.b === n.id) || (l.b === focused && l.a === n.id));
+    const dimmed = focused && vm === 'network' && focused !== n.id && !isConn;
+    const isFocused = focused === n.id;
+    const op = focused && vm === 'network' ? (dimmed ? 0.1 : 1) : 1;
+    const oc = n.color, r = n.r;
+    const hasRiv = links.some(l => (l.a === n.id || l.b === n.id) && l.rivalTitle);
+    const isCmpA = _relmapCompareA === n.id, isCmpB = _relmapCompareB === n.id;
+    const nodeR = vm === 'focus' && isFocused ? r * 1.3 : r;
+
+    nh += `<g class="rm-node-group" data-id="${n.id}" opacity="${op}" style="cursor:pointer">`;
+    // Compare selection ring
+    if (isCmpA || isCmpB) {
+      const rc = isCmpA ? '#74b9ff' : '#ff7675';
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR+8}" fill="none" stroke="${rc}" stroke-width="2.5" stroke-dasharray="5,3"/>`;
+      nh += `<text x="${n.x}" y="${n.y-nodeR-12}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.8)" stroke-width="2">${isCmpA?'\u2460 LEFT':'\u2461 RIGHT'}</text>`;
+    }
+    // Focus glow
+    if (isFocused) {
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR+6}" fill="none" stroke="${oc}" stroke-width="2" opacity="0.3"><animate attributeName="r" values="${nodeR+4};${nodeR+20};${nodeR+4}" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/></circle>`;
+    }
+    // Rival pulse ring
+    if (hasRiv && !dimmed) {
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR+3}" fill="none" stroke="#e17055" stroke-width="1.5" opacity="0.25"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/></circle>`;
+    }
+    // Main circle
+    nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="${isFocused?oc+'33':'rgba(15,15,25,0.9)'}" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
+    // OVR text
+    nh += `<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
+    // Name label
+    const nameStr = n.name.length > 5 ? n.name.slice(0, 5) + '\u2026' : n.name;
+    nh += `<text x="${n.x}" y="${n.y+nodeR+13}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'var(--text-dim)':'var(--text)'}" paint-order="stroke" stroke="rgba(0,0,0,0.8)" stroke-width="3">${nameStr}</text>`;
+    // Org emoji
+    nh += `<text x="${n.x}" y="${n.y+nodeR+24}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" fill="${oc}" opacity="0.6">${_relmapGetOrgEmoji(n.orgId)}</text>`;
+    nh += `</g>`;
+  });
+  nodeLayer.innerHTML = nh;
+
+  // Zone follow (network only)
+  if (vm === 'network' && zoneLayer) {
+    const og = {};
+    nodes.forEach(n => { if (n._hidden) return; if (!og[n.orgId]) og[n.orgId] = { sx: 0, sy: 0, c: 0 }; og[n.orgId].sx += n.x; og[n.orgId].sy += n.y; og[n.orgId].c++; });
+    zoneLayer.querySelectorAll('.rm-org-zone').forEach(el => {
+      const g = og[el.dataset.org]; if (g) { el.setAttribute('cx', g.sx / g.c); el.setAttribute('cy', g.sy / g.c); }
+    });
+    zoneLayer.querySelectorAll('.rm-zone-label').forEach(t => {
+      const oid = t.dataset.org; if (oid && og[oid]) { t.setAttribute('x', og[oid].sx / og[oid].c); t.setAttribute('y', og[oid].sy / og[oid].c); }
+    });
   }
 }
 
-function _updateRelmapDetail(pairs, allChars) {
+// ══════════════════════════════════════════════════════════
+// Org zone backgrounds
+// ══════════════════════════════════════════════════════════
+function _relmapDrawOrgZones(orgCenters) {
+  const zoneLayer = document.getElementById('relmapZoneLayer');
+  if (!zoneLayer) return;
+  zoneLayer.innerHTML = '';
+  if (_relmapViewMode === 'focus') return;
+  Object.entries(orgCenters).forEach(([orgId, center]) => {
+    const orgName = _relmapGetOrgNameById(orgId);
+    const color = _RELMAP_ORG_COLORS[orgId] || '#888';
+    zoneLayer.innerHTML += `<circle class="rm-org-zone" data-org="${orgId}" cx="${center.x}" cy="${center.y}" r="180" fill="url(#rm-zone-${orgId})"/>`;
+    zoneLayer.innerHTML += `<text class="rm-zone-label" data-org="${orgId}" x="${center.x}" y="${center.y}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="36" font-weight="700" letter-spacing="6" fill="${color}" opacity="0.07">${orgName}</text>`;
+  });
+}
+
+function _relmapGetOrgNameById(orgId) {
+  if (orgId === 'player') return G.orgName || 'プレイヤー団体';
+  if (orgId === 'fa') return 'フリー';
+  const org = RIVAL_ORGS.find(o => o.id === orgId);
+  return org ? (G.rivalOrgNames?.[orgId] || org.name) : orgId;
+}
+
+// ══════════════════════════════════════════════════════════
+// Visibility control
+// ══════════════════════════════════════════════════════════
+function _relmapUpdateVisibility() {
+  const nodes = _relmapNodes, links = _relmapLinks;
+  if (_relmapViewMode === 'focus' && _relmapCenterId) {
+    const fl = _relmapGetLinksFor(_relmapCenterId);
+    const connIds = new Set(fl.map(l => l.a === _relmapCenterId ? l.b : l.a));
+    connIds.add(_relmapCenterId);
+    nodes.forEach(n => { n._hidden = !connIds.has(n.id); });
+    // Compute radial positions
+    const cx = _relmapW / 2, cy = _relmapH / 2;
+    _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
+    const sorted = [...fl].sort((a, b) => b.strength - a.strength);
+    const count = sorted.length;
+    const maxR = Math.min(_relmapW, _relmapH) * 0.38;
+    sorted.forEach((l, i) => {
+      const oid = l.a === _relmapCenterId ? l.b : l.a;
+      const angle = -Math.PI / 2 + (2 * Math.PI * i / count);
+      const distFactor = 0.6 + l.strength * 0.4;
+      _relmapFocusTargets[oid] = { x: cx + Math.cos(angle) * maxR * distFactor, y: cy + Math.sin(angle) * maxR * distFactor };
+    });
+  } else if (_relmapViewMode === 'focus' && !_relmapCenterId) {
+    nodes.forEach(n => { n._hidden = false; });
+  } else {
+    // Network mode: apply threshold filter
+    if (_relmapFilterRelOnly) {
+      const hasRel = new Set();
+      links.forEach(l => { if (l.strength >= _relmapFilterThreshold / 100) { hasRel.add(l.a); hasRel.add(l.b); } });
+      nodes.forEach(n => { n._hidden = !hasRel.has(n.id); });
+    } else {
+      nodes.forEach(n => { n._hidden = false; });
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// Sidebar
+// ══════════════════════════════════════════════════════════
+function _relmapRenderSidebar(orgCenters) {
+  const sb = document.getElementById('rmSidebar');
+  if (!sb) return;
+  let h = '';
+  // Reset button
+  h += `<div class="rm-sb-btn" onclick="_relmapResetAll()">\uD83D\uDD04 全体を表示</div>`;
+  // Display filter panel
+  h += `<div class="rm-filter-panel">`;
+  h += `<div class="rm-fp-title">\uD83D\uDCCA 表示フィルタ</div>`;
+  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
+  h += `<div class="rm-fp-row"><span style="font-size:10px">強度</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
+  h += `</div>`;
+  // Org cards
+  const orgOrder = ['player', 'org_s', 'org_a', 'org_b', 'fa'];
+  orgOrder.forEach(orgId => {
+    const color = _RELMAP_ORG_COLORS[orgId] || '#888';
+    const orgName = _relmapGetOrgNameById(orgId);
+    const emoji = _relmapGetOrgEmoji(orgId);
+    const oc = _relmapNodes.filter(n => n.orgId === orgId);
+    if (!oc.length) return;
+    const avg = Math.round(oc.reduce((s, n) => s + n.ovr, 0) / oc.length);
+    const topChars = [...oc].sort((a, b) => b.ovr - a.ovr).slice(0, 6);
+    h += `<div class="rm-org-card" style="border-left-color:${color}" onclick="_relmapFocusOrg('${orgId}')">`;
+    h += `<div class="rm-org-card-name" style="color:${color}">${emoji} ${orgName}</div>`;
+    h += `<div class="rm-org-card-stats">所属 ${oc.length}名 \u2500 平均OVR ${avg}</div>`;
+    h += `<div class="rm-org-card-roster">`;
+    topChars.forEach(n => {
+      const pUrl = getPortraitUrl(n.id);
+      h += `<div class="rm-org-card-face" style="border-color:${color}">${pUrl ? `<img src="${pUrl}" onerror="this.parentElement.textContent='\uD83D\uDC64'">` : '\uD83D\uDC64'}</div>`;
+    });
+    if (oc.length > 6) h += `<div class="rm-org-card-face" style="border-color:${color};font-size:8px;color:var(--text-dim)">+${oc.length - 6}</div>`;
+    h += `</div></div>`;
+  });
+  sb.innerHTML = h;
+}
+
+// ══════════════════════════════════════════════════════════
+// Interaction (drag, click, context menu, tooltip)
+// ══════════════════════════════════════════════════════════
+function _relmapSetupInteraction(svg, container) {
+  function svgCoords(e) {
+    const r = svg.getBoundingClientRect();
+    return { x: (e.clientX - r.left) / r.width * _relmapW, y: (e.clientY - r.top) / r.height * _relmapH };
+  }
+
+  svg.addEventListener('mousedown', e => {
+    const g = e.target.closest('.rm-node-group');
+    if (!g) return;
+    const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
+    if (!n) return;
+    _relmapDragTarget = n; n._dragging = true; _relmapDragMoved = false;
+    const p = svgCoords(e);
+    _relmapDragOffset.x = p.x - n.x; _relmapDragOffset.y = p.y - n.y;
+  });
+
+  svg.addEventListener('mousemove', e => {
+    if (_relmapDragTarget) {
+      _relmapDragMoved = true;
+      const p = svgCoords(e);
+      _relmapDragTarget.x = p.x - _relmapDragOffset.x;
+      _relmapDragTarget.y = p.y - _relmapDragOffset.y;
+      _relmapReheat();
+    }
+    const g = e.target.closest('.rm-node-group');
+    const tt = document.getElementById('relmapTooltip');
+    if (g && !_relmapDragTarget && tt) {
+      const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
+      if (!n) return;
+      const cl = _relmapGetLinksFor(id), rv = cl.filter(l => l.rivalTitle);
+      const orgName = _relmapGetOrgNameById(n.orgId);
+      const emoji = _relmapGetOrgEmoji(n.orgId);
+      tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${orgName}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>`;
+      tt.classList.add('show'); tt.style.left = (e.clientX + 16) + 'px'; tt.style.top = (e.clientY - 10) + 'px';
+    } else if (tt) { tt.classList.remove('show'); }
+  });
+
+  svg.addEventListener('mouseup', () => {
+    if (_relmapDragTarget) { _relmapDragTarget._dragging = false; _relmapDragTarget = null; }
+  });
+
+  svg.addEventListener('click', e => {
+    if (_relmapDragMoved) { _relmapDragMoved = false; return; }
+    _relmapHideCtxMenu();
+    const g = e.target.closest('.rm-node-group');
+    if (g) { const id = parseInt(g.dataset.id); _relmapSetCenter(id); }
+    else { if (_relmapViewMode === 'network') _relmapClearCenter(); }
+  });
+
+  svg.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const g = e.target.closest('.rm-node-group');
+    if (!g) { _relmapHideCtxMenu(); return; }
+    _relmapCtxTarget = parseInt(g.dataset.id);
+    const cm = document.getElementById('relmapCtxMenu');
+    if (cm) { cm.style.left = e.clientX + 'px'; cm.style.top = e.clientY + 'px'; cm.classList.add('show'); }
+  });
+
+  // Global click to close ctx menu
+  document.addEventListener('click', e => { if (!e.target.closest('.rm-ctx-menu')) _relmapHideCtxMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { _relmapClosePopup(); _relmapHideCtxMenu(); } });
+}
+
+function _relmapHideCtxMenu() {
+  const cm = document.getElementById('relmapCtxMenu');
+  if (cm) cm.classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════════
+// View mode / center / filter controls
+// ══════════════════════════════════════════════════════════
+function _relmapSetViewMode(mode) {
+  _relmapViewMode = mode;
+  document.querySelectorAll('.rm-view-toggle .rm-vt-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.rm-vt-btn:nth-child(${mode === 'network' ? 1 : 2})`);
+  if (btn) btn.classList.add('active');
+  const zoneLayer = document.getElementById('relmapZoneLayer');
+  if (zoneLayer) zoneLayer.innerHTML = '';
+  if (mode === 'network') {
+    const W = _relmapW, H = _relmapH;
+    const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
+    _relmapDrawOrgZones(orgCenters);
+  }
+  _relmapUpdateVisibility();
+  _relmapReheat();
+}
+
+function _relmapSetCenter(nodeId) {
+  _relmapCenterId = nodeId;
+  const n = _relmapNodeMap[nodeId];
+  const ci = document.getElementById('rmCenterIndicator');
+  if (ci) { ci.style.display = 'flex'; }
+  const cn = document.getElementById('rmCenterName');
+  if (cn) cn.textContent = n ? n.name : '';
+  _relmapUpdateVisibility();
+  _relmapShowDetailForNode(nodeId);
+  _relmapReheat();
+}
+
+function _relmapClearCenter() {
+  _relmapCenterId = null;
+  const ci = document.getElementById('rmCenterIndicator');
+  if (ci) ci.style.display = 'none';
+  const dp = document.getElementById('relmapDetailPanel');
+  if (dp) dp.classList.remove('show');
+  _relmapUpdateVisibility();
+  _relmapReheat();
+}
+
+function _relmapResetAll() {
+  _relmapClearCenter();
+  _relmapCompareA = null; _relmapCompareB = null;
+  const sh = document.getElementById('relmapSelectHint');
+  if (sh) sh.classList.remove('show');
+  if (_relmapViewMode === 'focus') _relmapSetViewMode('network');
+  _relmapReheat();
+}
+
+function _relmapFocusOrg(orgId) {
+  const oc = _relmapNodes.filter(n => n.orgId === orgId).sort((a, b) => b.ovr - a.ovr);
+  if (oc.length) _relmapSetCenter(oc[0].id);
+}
+
+function _relmapSetFilter(f) {
+  _relmapFilter = f;
+  document.querySelectorAll('.rm-header-controls .rm-ctrl-btn').forEach(b => b.classList.remove('active'));
+  const btns = document.querySelectorAll('.rm-header-controls .rm-ctrl-btn');
+  const idx = f === 'all' ? 0 : f === 'rivalry' ? 1 : 2;
+  if (btns[idx]) btns[idx].classList.add('active');
+  _relmapReheat();
+}
+
+// ══════════════════════════════════════════════════════════
+// Detail panel (bottom)
+// ══════════════════════════════════════════════════════════
+function _relmapShowDetailForNode(nodeId) {
   const panel = document.getElementById('relmapDetailPanel');
-  if (!panel) return;
-  if (!_relmapSelected) { panel.classList.remove('show'); return; }
+  const n = _relmapNodeMap[nodeId];
+  if (!panel || !n) { if (panel) panel.classList.remove('show'); return; }
+  const nl = _relmapGetLinksFor(nodeId).sort((a, b) => b.strength - a.strength);
+  if (!nl.length) { panel.classList.remove('show'); return; }
 
-  const p = pairs.find(pp => pp.targetId === _relmapSelected);
-  if (!p) { panel.classList.remove('show'); return; }
+  const top = nl[0], oid = top.a === nodeId ? top.b : top.a, other = _relmapNodeMap[oid];
+  if (!other) { panel.classList.remove('show'); return; }
+  const isS = top.a === nodeId;
+  const bf = isS ? top.bondAB : top.bondBA, br = isS ? top.bondBA : top.bondAB;
+  const rf = isS ? top.rivAB : top.rivBA, rr = isS ? top.rivBA : top.rivAB;
+  const bfc = bf >= 50 ? '#74b9ff' : '#ff7675', brc = br >= 50 ? '#74b9ff' : '#ff7675';
 
+  let tb = '';
+  if (top.rivalTitle) tb = `<span class="rm-detail-rivalry-badge" style="background:${top.titleColor}22;color:${top.titleColor};border:1px solid ${top.titleColor}44">${top.titleEmoji} ${top.rivalTitle}</span>`;
+
+  panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
+    <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${other.name}</span>${tb}</div>
+    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:#e17055"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:#e17055"></div></div></div></div></div>
+    <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 比較</span></div>`;
   panel.classList.add('show');
-  const centerChar = allChars.find(c => c.id === _relmapCenterId);
-  const cName = centerChar ? centerChar.name.split(' ')[0] : '?';
-  const tName = p.target.name.split(' ')[0];
+}
 
-  let titleHtml = '';
-  if (p.hasTitle && p.rivalLvl) {
-    titleHtml = `<span style="color:${p.rivalLvl.color};font-size:12px;font-weight:700">${p.rivalLvl.emoji} ${p.rivalLvl.label}（${p.rivalLvl.matches}戦）</span>`;
-  }
-  if (p.isOneSided && p.rivalLvl) {
-    const aggChar = allChars.find(c => c.id === p.rivalLvl.aggressor);
-    const aggName = aggChar ? aggChar.name.split(' ')[0] : '?';
-    titleHtml = `<span style="color:#fdcb6e;font-size:12px;font-weight:700">⚡ 片側因縁（${aggName}→）</span>`;
-  }
-  if (p.hasPast && !p.hasTitle) {
-    titleHtml += ` <span style="color:var(--text-dim);font-size:11px">💨 過去の因縁</span>`;
-  }
+// ══════════════════════════════════════════════════════════
+// Compare popup
+// ══════════════════════════════════════════════════════════
+function _relmapHandleCompareClick(id) {
+  if (_relmapCompareA === id) { _relmapCompareA = _relmapCompareB; _relmapCompareB = null; }
+  else if (_relmapCompareB === id) { _relmapCompareB = null; }
+  else if (!_relmapCompareA) { _relmapCompareA = id; }
+  else if (!_relmapCompareB) { _relmapCompareB = id; }
+  else { _relmapCompareA = _relmapCompareB; _relmapCompareB = id; }
+  _relmapUpdateCompareHint();
+  _relmapReheat();
+  if (_relmapCompareA && _relmapCompareB) _relmapShowComparePopup();
+}
 
-  const b1Color = _relmapBondColor(p.bondAB);
-  const b2Color = _relmapBondColor(p.bondBA);
+function _relmapUpdateCompareHint() {
+  const h = document.getElementById('relmapSelectHint');
+  if (!h) return;
+  if (!_relmapCompareA) { h.classList.remove('show'); return; }
+  const aN = _relmapNodeMap[_relmapCompareA]?.name || '?';
+  if (!_relmapCompareB) { h.textContent = `\u2696 \u2460 ${aN} を選択 \u2192 \u2461右側の選手をクリック`; h.classList.add('show'); }
+  else { h.classList.remove('show'); }
+}
 
-  panel.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="font-weight:700;font-size:12px">${centerChar ? centerChar.name : ''}</span>
-    <span style="color:var(--text-dim);font-size:10px">⇄</span>
-    <span style="font-weight:700;font-size:12px">${p.target.name}</span>
-    ${titleHtml}
-    <span style="color:var(--text-dim);font-size:10px">│</span>
-    <span style="font-size:10px;color:var(--text-dim)">${cName}→${tName}</span>
-    <span class="rel-compact-label">親</span><span class="rel-compact-val" style="color:${b1Color}">${Math.round(p.bondAB)}</span>
-    <span class="rel-compact-label">競</span><span class="rel-compact-val" style="color:#e17055">${Math.round(p.rivAB)}</span>
-    <span style="color:var(--text-dim);font-size:10px">│</span>
-    <span style="font-size:10px;color:var(--text-dim)">${tName}→${cName}</span>
-    <span class="rel-compact-label">親</span><span class="rel-compact-val" style="color:${b2Color}">${Math.round(p.bondBA)}</span>
-    <span class="rel-compact-label">競</span><span class="rel-compact-val" style="color:#e17055">${Math.round(p.rivBA)}</span>
-  </div>`;
+function _relmapShowComparePopup() {
+  const a = _relmapNodeMap[_relmapCompareA], b = _relmapNodeMap[_relmapCompareB];
+  if (!a || !b) return;
+  const rel = _relmapLinks.find(l => (l.a === a.id && l.b === b.id) || (l.a === b.id && l.b === a.id));
+  const isAS = rel ? rel.a === a.id : true;
+  const aUp = getUpperUrl(a.id), bUp = getUpperUrl(b.id);
+  const aColor = a.color, bColor = b.color;
+  const aOrgName = _relmapGetOrgNameById(a.orgId), bOrgName = _relmapGetOrgNameById(b.orgId);
+  const aEmoji = _relmapGetOrgEmoji(a.orgId), bEmoji = _relmapGetOrgEmoji(b.orgId);
+
+  let h = `<div class="rm-popup-close" onclick="_relmapClosePopup()">\u2715</div>`;
+  h += `<div class="rm-compare-header"><div class="rm-compare-side">`;
+  h += `<div class="rm-compare-upper-img" style="border-color:${aColor}">${aUp?`<img src="${aUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${aUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
+  h += `<div class="rm-compare-name">${a.name}</div><div class="rm-compare-org" style="color:${aColor}">${aEmoji} ${aOrgName} \u2500 ${a.style}</div><div class="rm-compare-ovr-badge">OVR ${a.ovr}</div>`;
+  h += `</div><div class="rm-compare-divider">\u21C4</div><div class="rm-compare-side">`;
+  h += `<div class="rm-compare-upper-img" style="border-color:${bColor}">${bUp?`<img src="${bUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${bUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
+  h += `<div class="rm-compare-name">${b.name}</div><div class="rm-compare-org" style="color:${bColor}">${bEmoji} ${bOrgName} \u2500 ${b.style}</div><div class="rm-compare-ovr-badge">OVR ${b.ovr}</div>`;
+  h += `</div></div>`;
+
+  h += `<div class="rm-compare-body">`;
+  // Stats comparison
+  _RELMAP_STAT_META.forEach(s => {
+    const va = a[s.key] || 0, vb = b[s.key] || 0;
+    const aW = va > vb, bW = vb > va;
+    h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${va}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${vb}</div></div></div>`;
+  });
+
+  // Relationship section
+  if (rel) {
+    const bAtoB = isAS ? rel.bondAB : rel.bondBA, rAtoB = isAS ? rel.rivAB : rel.rivBA;
+    const bBtoA = isAS ? rel.bondBA : rel.bondAB, rBtoA = isAS ? rel.rivBA : rel.rivAB;
+    const cAB = bAtoB >= 50 ? '#74b9ff' : '#ff7675', cBA = bBtoA >= 50 ? '#74b9ff' : '#ff7675';
+    let tH = '';
+    if (rel.rivalTitle) tH = `<span style="color:${rel.titleColor};font-size:13px;font-weight:700">${rel.titleEmoji} ${rel.rivalTitle}</span>`;
+    h += `<div class="rm-cmp-rel-section"><div class="rm-cmp-rel-header">\uD83D\uDD17 RELATIONSHIP ${tH}</div>`;
+    h += `<div class="rm-cmp-rel-row"><div class="rm-cmp-rel-side">`;
+    h += `<div class="rm-cmp-rel-side-title" style="color:${aColor}">${a.name.slice(0,4)} の感情</div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    h += `</div><div class="rm-cmp-rel-side">`;
+    h += `<div class="rm-cmp-rel-side-title" style="color:${bColor}">${b.name.slice(0,5)} の感情</div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    h += `</div></div></div>`;
+  } else {
+    h += `<div class="rm-cmp-rel-section"><div class="rm-cmp-rel-header" style="color:var(--text-dim)">\uD83D\uDD17 直接の関係はありません</div></div>`;
+  }
+  h += `</div>`;
+
+  const card = document.getElementById('relmapPopupCard');
+  if (card) { card.className = 'rm-popup-card rm-compare-card'; card.style.width = '860px'; card.innerHTML = h; }
+  const overlay = document.getElementById('relmapPopupOverlay');
+  if (overlay) overlay.classList.add('show');
+}
+
+function _relmapClosePopup() {
+  const overlay = document.getElementById('relmapPopupOverlay');
+  if (overlay) overlay.classList.remove('show');
 }
 

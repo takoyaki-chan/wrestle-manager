@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>相関図 プロトタイプ v5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a14;--panel-bg:#12121e;--card-bg:#1a1a2e;--border:rgba(255,255,255,0.08);--gold:#d4a843;--text:#e0e0e0;--text-sub:#9a9aaa;--text-dim:#555568}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;overflow:hidden;height:100vh;width:100vw;user-select:none}
+
+/* ═══ Header ═══ */
+.header-bar{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;background:linear-gradient(180deg,rgba(10,10,20,0.95) 0%,rgba(10,10,20,0.7) 100%);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px}
+.header-bar .title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:2px;color:var(--gold)}
+.header-bar .subtitle{font-size:11px;color:var(--text-dim);letter-spacing:1px}
+.header-sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+.center-indicator{display:flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.2);border-radius:4px}
+.center-indicator .ci-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim)}
+.center-indicator .ci-name{font-size:13px;font-weight:700;color:var(--gold)}
+.center-indicator .ci-clear{font-size:10px;color:var(--text-dim);cursor:pointer;padding:2px 6px;border-radius:2px;transition:all .2s}
+.center-indicator .ci-clear:hover{color:var(--text);background:rgba(255,255,255,0.06)}
+.header-controls{margin-left:auto;display:flex;gap:6px;align-items:center}
+.ctrl-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;padding:5px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:3px;color:var(--text-sub);cursor:pointer;transition:all .2s}
+.ctrl-btn:hover{border-color:var(--gold);color:var(--gold)}
+.ctrl-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.08)}
+/* View mode toggle */
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.view-toggle .vt-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;padding:5px 12px;background:transparent;border:none;color:var(--text-sub);cursor:pointer;transition:all .2s}
+.view-toggle .vt-btn:not(:last-child){border-right:1px solid var(--border)}
+.view-toggle .vt-btn:hover{color:var(--gold)}
+.view-toggle .vt-btn.active{background:rgba(212,168,67,0.08);color:var(--gold)}
+
+/* ═══ Sidebar ═══ */
+.sidebar-left{position:fixed;left:10px;top:56px;bottom:10px;width:210px;z-index:50;display:flex;flex-direction:column;gap:6px;pointer-events:none;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.sidebar-left::-webkit-scrollbar{width:3px}
+.sidebar-left::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+.sidebar-left>*{pointer-events:auto}
+.sb-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;background:rgba(10,10,20,0.85);backdrop-filter:blur(8px);border:1px solid rgba(212,168,67,0.2);border-radius:6px;cursor:pointer;transition:all .2s;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--gold);flex-shrink:0}
+.sb-btn:hover{background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.4)}
+/* Filter panel */
+.filter-panel{background:rgba(10,10,20,0.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;padding:8px 10px;flex-shrink:0}
+.fp-title{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--text-dim);margin-bottom:6px}
+.fp-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;color:var(--text-sub)}
+.fp-row label{cursor:pointer;display:flex;align-items:center;gap:4px}
+.fp-row input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px}
+.fp-row input[type=range]{flex:1;accent-color:var(--gold);height:3px}
+.fp-row .fp-val{font-family:'Oswald',sans-serif;font-size:11px;color:var(--gold);min-width:24px;text-align:right}
+.org-card{background:rgba(10,10,20,0.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;transition:all .2s;border-left:3px solid var(--border);flex-shrink:0}
+.org-card:hover{border-color:rgba(255,255,255,0.15)}
+.org-card-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;margin-bottom:2px}
+.org-card-stats{font-size:9px;color:var(--text-dim);line-height:1.5}
+.org-card-roster{display:flex;margin-top:4px}
+.org-card-face{width:22px;height:22px;border-radius:50%;border:1.5px solid;overflow:hidden;margin-left:-4px;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:10px}
+.org-card-face:first-child{margin-left:0}
+.org-card-face img{width:100%;height:100%;object-fit:cover}
+
+/* ═══ Canvas ═══ */
+#graphCanvas{position:fixed;top:48px;left:0;right:0;bottom:0}
+svg{width:100%;height:100%}
+.rivalry-line{animation:dash-march 1.5s linear infinite}
+@keyframes dash-march{to{stroke-dashoffset:-20}}
+
+/* ═══ Legend ═══ */
+.legend{position:fixed;top:56px;right:10px;z-index:50;background:rgba(10,10,20,0.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:10px;color:var(--text-sub);line-height:1.9}
+.legend-title{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--text-dim);margin-bottom:2px}
+.legend-line{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:20px;height:3px;border-radius:1px}
+.legend-swatch.thick{height:5px}
+
+/* ═══ Tooltip ═══ */
+.tooltip{position:fixed;z-index:200;background:rgba(10,10,20,0.95);border:1px solid var(--border);border-radius:4px;padding:8px 12px;font-size:11px;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.tooltip.show{display:block}
+
+/* ═══ Detail panel ═══ */
+.detail-panel{position:fixed;bottom:10px;left:230px;right:10px;z-index:60;background:rgba(10,10,20,0.92);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:none}
+.detail-panel.show{display:flex;gap:16px;align-items:center}
+.detail-faces{display:flex;align-items:center;gap:10px}
+.detail-face{width:46px;height:46px;border-radius:50%;border:2px solid;overflow:hidden;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+.detail-face img{width:100%;height:100%;object-fit:cover}
+.detail-arr{font-family:'Oswald',sans-serif;font-size:12px;color:var(--text-dim)}
+.detail-info{flex:1;min-width:0}
+.detail-names{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.detail-meters{display:flex;gap:20px;margin-top:4px;flex-wrap:wrap}
+.detail-meter-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim)}
+.detail-meter-val{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600}
+.detail-meter-bar{width:70px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:2px;overflow:hidden}
+.detail-meter-fill{height:100%;border-radius:2px;transition:width .4s}
+.detail-rivalry-badge{font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px}
+
+/* ═══ Context menu ═══ */
+.ctx-menu{position:fixed;z-index:300;background:rgba(12,12,22,0.96);border:1px solid var(--border);border-radius:6px;padding:4px 0;min-width:170px;box-shadow:0 8px 30px rgba(0,0,0,0.5);display:none}
+.ctx-menu.show{display:block}
+.ctx-item{padding:8px 16px;font-size:12px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:8px}
+.ctx-item:hover{background:rgba(255,255,255,0.05)}
+.ctx-item .ctx-icon{font-size:14px;width:20px;text-align:center}
+.ctx-sep{height:1px;background:var(--border);margin:2px 8px}
+
+/* ═══ Popup ═══ */
+.popup-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+.popup-overlay.show{display:flex}
+.popup-card{background:var(--panel-bg);border:1px solid var(--border);border-radius:10px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.6);position:relative}
+.popup-close{position:absolute;top:10px;right:12px;font-size:18px;color:var(--text-dim);cursor:pointer;z-index:10;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.popup-close:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+
+/* ═══ Compare popup ═══ */
+.compare-card{width:900px}
+.compare-header{display:flex;align-items:stretch;border-bottom:1px solid var(--border);position:relative}
+.compare-side{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px 16px}
+.compare-side:first-child{border-right:1px solid var(--border)}
+.compare-upper-img{width:220px;height:280px;border-radius:8px;overflow:hidden;border:2px solid;margin-bottom:10px;background:var(--card-bg);position:relative}
+.compare-upper-img img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.compare-upper-img .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:rgba(0,0,0,0.3)}
+.compare-name{font-size:18px;font-weight:700;text-align:center}
+.compare-org{font-size:10px;margin-top:2px;text-align:center}
+.compare-ovr-badge{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;padding:3px 10px;border-radius:3px;margin-top:6px;display:inline-block;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);color:var(--gold)}
+.compare-divider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:var(--panel-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:var(--text-dim);z-index:5}
+.compare-body{padding:16px 20px 20px}
+.cmp-stat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cmp-bar-left{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.cmp-bar-right{flex:1;display:flex;align-items:center;gap:8px}
+.cmp-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--text-sub);width:30px;text-align:center;flex-shrink:0}
+.cmp-val{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;width:30px;text-align:center;flex-shrink:0}
+.cmp-bar-track{flex:1;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;position:relative}
+.cmp-bar-fill{position:absolute;top:0;height:100%;border-radius:3px;transition:width .5s}
+.cmp-bar-left .cmp-bar-fill{right:0}
+.cmp-bar-right .cmp-bar-fill{left:0}
+
+/* Compare relationship — each side shows THAT character's feelings */
+.cmp-rel-section{margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+.cmp-rel-header{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cmp-rel-row{display:flex;gap:0;margin-bottom:0}
+.cmp-rel-side{flex:1;padding:12px 16px}
+.cmp-rel-side:first-child{border-right:1px solid var(--border)}
+.cmp-rel-side-title{font-size:11px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.cmp-rel-meter{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.cmp-rel-meter-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim);width:50px}
+.cmp-rel-meter-val{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;width:40px}
+.cmp-rel-meter-bar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.cmp-rel-meter-fill{height:100%;border-radius:2px}
+
+/* ═══ Select hint ═══ */
+.select-hint{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:80;background:rgba(10,10,20,0.9);border:1px solid rgba(212,168,67,0.3);border-radius:6px;padding:8px 20px;font-size:12px;color:var(--gold);display:none;white-space:nowrap}
+.select-hint.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header-bar">
+  <span class="title">🔗 RELATIONSHIP MAP</span>
+  <span class="subtitle">人間相関図</span>
+  <div class="header-sep"></div>
+  <!-- View mode toggle -->
+  <div class="view-toggle">
+    <button class="vt-btn active" id="vtNetwork" onclick="setViewMode('network')">🌐 ネットワーク</button>
+    <button class="vt-btn" id="vtFocus" onclick="setViewMode('focus')">🎯 フォーカス</button>
+  </div>
+  <!-- Center indicator (focus mode) -->
+  <div class="center-indicator" id="centerIndicator" style="display:none">
+    <span class="ci-label">CENTER</span>
+    <span class="ci-name" id="centerName"></span>
+    <span class="ci-clear" onclick="clearCenter()" title="解除">✕</span>
+  </div>
+  <!-- Link filters -->
+  <div class="header-controls">
+    <button class="ctrl-btn active" id="btnAllLinks" onclick="setFilter('all')">全リンク</button>
+    <button class="ctrl-btn" id="btnRivalry" onclick="setFilter('rivalry')">ライバル</button>
+    <button class="ctrl-btn" id="btnBond" onclick="setFilter('bond')">親密度</button>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar-left" id="orgSidebar"></div>
+
+<!-- ═══ LEGEND ═══ -->
+<div class="legend">
+  <div class="legend-title">LEGEND</div>
+  <div class="legend-line"><div class="legend-swatch" style="background:#74b9ff"></div> 親密（高）</div>
+  <div class="legend-line"><div class="legend-swatch" style="background:#ff7675"></div> 不信（低）</div>
+  <div class="legend-line"><div class="legend-swatch thick" style="background:#e17055"></div> 競争意識</div>
+  <div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">ノードサイズ＝OVR<br>クリック＝中心切替<br>右クリック＝メニュー</div>
+</div>
+
+<div class="detail-panel" id="detailPanel"></div>
+<div class="select-hint" id="selectHint"></div>
+<div class="tooltip" id="tooltip"></div>
+
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" id="ctxCenter"><span class="ctx-icon">🎯</span>中心に設定</div>
+  <div class="ctx-item" id="ctxDetail"><span class="ctx-icon">📋</span>詳細を見る</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctxCompare"><span class="ctx-icon">⚖</span>比較に追加</div>
+</div>
+
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-card" id="popupCard"></div>
+</div>
+
+<div id="graphCanvas">
+  <svg id="mainSvg">
+    <defs>
+      <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <radialGradient id="zone-player" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d4a843" stop-opacity="0.08"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0"/></radialGradient>
+      <radialGradient id="zone-org_s" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d63031" stop-opacity="0.06"/><stop offset="100%" stop-color="#d63031" stop-opacity="0"/></radialGradient>
+      <radialGradient id="zone-org_a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6c5ce7" stop-opacity="0.06"/><stop offset="100%" stop-color="#6c5ce7" stop-opacity="0"/></radialGradient>
+      <radialGradient id="zone-org_b" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00b894" stop-opacity="0.06"/><stop offset="100%" stop-color="#00b894" stop-opacity="0"/></radialGradient>
+    </defs>
+    <g id="zoneLayer"></g><g id="linkLayer"></g><g id="nodeLayer"></g>
+  </svg>
+</div>
+
+<script>
+// ══════════════════ DATA ══════════════════
+const ORG_META={player:{name:'ドリームスター',color:'#d4a843',emoji:'⭐'},org_s:{name:'クイーンズ・クラウン',color:'#d63031',emoji:'👑'},org_a:{name:'ネオ・フォース',color:'#6c5ce7',emoji:'💫'},org_b:{name:'リバティ',color:'#00b894',emoji:'🌙'},fa:{name:'フリー',color:'#8bc4f0',emoji:'🕊️'}};
+const STAT_META=[{key:'pw',label:'PW',color:'#e74c3c'},{key:'sp',label:'SP',color:'#3498db'},{key:'te',label:'TE',color:'#2ecc71'},{key:'st',label:'ST',color:'#f39c12'},{key:'mn',label:'MN',color:'#9b59b6'}];
+const PORTRAIT={11:'tachibana_r',1:'abukuma_t',5:'fukamachi_m',37:'shirogane_r',38:'shiba_a',39:'kamiya_s',4:'takatsu_k',8:'hayashi_m',19:'shijo_a',36:'manabe_a',12:'ikoma_e',41:'negishi_a',13:'domae_y',18:'dewa_t',40:'takanawa_m',28:'iwaya_m',24:'sonobe_r',26:'miyamori_n',32:'futasato_a',31:'hiramatsu_k',27:'yaegashi_m',16:'okochi_s',15:'kusunoki_n',14:'kuroe_m',20:'kishi_y',21:'kinouchi_y',17:'kawanobe_n',25:'ishitoya_n'};
+function faceUrl(id){return PORTRAIT[id]?`image/face_${PORTRAIT[id]}.png`:null}
+function upperUrl(id){return PORTRAIT[id]?`image/upper/upper_${PORTRAIT[id]}.webp`:null}
+function faceHtml(id,sz){const u=faceUrl(id);return u?`<img src="${u}" style="width:${sz}px;height:${sz}px;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;width:${sz}px;height:${sz}px;align-items:center;justify-content:center;font-size:${Math.round(sz*0.5)}px">👤</span>`:`<span style="display:flex;width:${sz}px;height:${sz}px;align-items:center;justify-content:center;font-size:${Math.round(sz*0.5)}px">👤</span>`}
+
+const CHARS=[
+  {id:11,name:'橘玲美',orgId:'player',ovr:82,style:'Speed',pw:72,sp:88,te:78,st:80,mn:82},
+  {id:1,name:'阿武隈塔子',orgId:'player',ovr:78,style:'Grappler',pw:85,sp:65,te:82,st:78,mn:70},
+  {id:5,name:'深町真琴',orgId:'player',ovr:75,style:'Submission',pw:68,sp:72,te:85,st:70,mn:78},
+  {id:37,name:'白銀麗子',orgId:'player',ovr:88,style:'Allround',pw:86,sp:82,te:90,st:85,mn:88},
+  {id:38,name:'芝彩音',orgId:'player',ovr:71,style:'Striker',pw:78,sp:75,te:62,st:68,mn:65},
+  {id:39,name:'神谷沙奈絵',orgId:'player',ovr:68,style:'Speed',pw:60,sp:80,te:65,st:62,mn:72},
+  {id:4,name:'高津小春',orgId:'player',ovr:65,style:'Grappler',pw:72,sp:58,te:68,st:65,mn:60},
+  {id:8,name:'林真尋',orgId:'player',ovr:73,style:'Brawler',pw:80,sp:68,te:65,st:76,mn:70},
+  {id:19,name:'四条あずさ',orgId:'org_s',ovr:91,style:'Allround',pw:90,sp:86,te:92,st:88,mn:92},
+  {id:36,name:'真鍋綾乃',orgId:'org_s',ovr:85,style:'Grappler',pw:88,sp:72,te:90,st:82,mn:78},
+  {id:12,name:'生駒エリカ',orgId:'org_s',ovr:83,style:'Striker',pw:90,sp:80,te:75,st:82,mn:78},
+  {id:41,name:'根岸亞里亞',orgId:'org_s',ovr:79,style:'Submission',pw:72,sp:75,te:86,st:74,mn:82},
+  {id:13,name:'堂前ユキ',orgId:'org_s',ovr:76,style:'Speed',pw:65,sp:86,te:78,st:72,mn:75},
+  {id:18,name:'出羽鷹子',orgId:'org_s',ovr:72,style:'Brawler',pw:82,sp:62,te:68,st:78,mn:65},
+  {id:40,name:'高輪まみ',orgId:'org_s',ovr:69,style:'Grappler',pw:75,sp:60,te:72,st:68,mn:65},
+  {id:28,name:'岩屋みら',orgId:'org_a',ovr:80,style:'Striker',pw:85,sp:78,te:72,st:80,mn:76},
+  {id:24,name:'園部梨花',orgId:'org_a',ovr:77,style:'Speed',pw:68,sp:85,te:75,st:72,mn:80},
+  {id:26,name:'宮守なつめ',orgId:'org_a',ovr:74,style:'Allround',pw:74,sp:72,te:76,st:72,mn:75},
+  {id:32,name:'双里明日香',orgId:'org_a',ovr:70,style:'Grappler',pw:78,sp:62,te:74,st:68,mn:65},
+  {id:31,name:'平松かなみ',orgId:'org_a',ovr:67,style:'Submission',pw:58,sp:65,te:78,st:62,mn:72},
+  {id:27,name:'八重樫舞',orgId:'org_a',ovr:64,style:'Brawler',pw:72,sp:58,te:60,st:68,mn:58},
+  {id:16,name:'大河内紗代子',orgId:'org_b',ovr:76,style:'Allround',pw:76,sp:72,te:78,st:75,mn:76},
+  {id:15,name:'楠木なぎさ',orgId:'org_b',ovr:72,style:'Speed',pw:62,sp:82,te:70,st:68,mn:72},
+  {id:14,name:'黒江舞',orgId:'org_b',ovr:69,style:'Striker',pw:76,sp:68,te:65,st:70,mn:66},
+  {id:20,name:'岸ゆみえ',orgId:'org_b',ovr:66,style:'Grappler',pw:72,sp:58,te:70,st:65,mn:62},
+  {id:21,name:'木ノ内幸音',orgId:'org_b',ovr:63,style:'Submission',pw:55,sp:60,te:72,st:60,mn:68},
+  {id:17,name:'川野辺菜穂子',orgId:'fa',ovr:74,style:'Allround',pw:74,sp:70,te:76,st:72,mn:74},
+  {id:25,name:'石戸谷なつき',orgId:'fa',ovr:70,style:'Brawler',pw:78,sp:64,te:65,st:72,mn:66},
+];
+
+const RELATIONSHIPS=(()=>{const r=[];
+  r.push({a:37,b:19,bondAB:35,bondBA:40,rivAB:82,rivBA:78,rivalTitle:'永遠のライバル',titleColor:'#e74c3c',titleEmoji:'🔥🔥🔥'});
+  r.push({a:11,b:12,bondAB:28,bondBA:32,rivAB:65,rivBA:58,rivalTitle:'宿敵',titleColor:'#e17055',titleEmoji:'🔥🔥'});
+  r.push({a:1,b:36,bondAB:62,bondBA:55,rivAB:55,rivBA:60,rivalTitle:'因縁',titleColor:'#fdcb6e',titleEmoji:'🔥'});
+  r.push({a:28,b:19,bondAB:25,bondBA:30,rivAB:70,rivBA:45,rivalTitle:'宿敵',titleColor:'#e17055',titleEmoji:'🔥🔥'});
+  r.push({a:5,b:41,bondAB:45,bondBA:50,rivAB:48,rivBA:52,rivalTitle:'因縁',titleColor:'#fdcb6e',titleEmoji:'🔥'});
+  r.push({a:38,b:12,bondAB:50,bondBA:50,rivAB:55,rivBA:12,isOneSided:true,aggressor:38});
+  r.push({a:31,b:37,bondAB:42,bondBA:50,rivAB:60,rivBA:8,isOneSided:true,aggressor:31});
+  r.push({a:11,b:37,bondAB:78,bondBA:72,rivAB:15,rivBA:20});
+  r.push({a:11,b:1,bondAB:72,bondBA:68,rivAB:8,rivBA:5});
+  r.push({a:37,b:8,bondAB:65,bondBA:70,rivAB:5,rivBA:3});
+  r.push({a:5,b:39,bondAB:68,bondBA:62,rivAB:10,rivBA:12});
+  r.push({a:38,b:4,bondAB:74,bondBA:71,rivAB:3,rivBA:5});
+  r.push({a:1,b:5,bondAB:60,bondBA:58,rivAB:15,rivBA:18});
+  r.push({a:19,b:36,bondAB:65,bondBA:58,rivAB:25,rivBA:30});
+  r.push({a:12,b:13,bondAB:70,bondBA:65,rivAB:10,rivBA:8});
+  r.push({a:19,b:41,bondAB:55,bondBA:60,rivAB:20,rivBA:15});
+  r.push({a:28,b:24,bondAB:72,bondBA:68,rivAB:12,rivBA:10});
+  r.push({a:26,b:32,bondAB:65,bondBA:62,rivAB:8,rivBA:15});
+  r.push({a:16,b:15,bondAB:70,bondBA:72,rivAB:5,rivBA:8});
+  r.push({a:14,b:20,bondAB:58,bondBA:55,rivAB:18,rivBA:22});
+  r.push({a:8,b:16,bondAB:66,bondBA:62,rivAB:20,rivBA:18});
+  r.push({a:39,b:24,bondAB:58,bondBA:55,rivAB:30,rivBA:25});
+  r.push({a:17,b:37,bondAB:60,bondBA:55,rivAB:35,rivBA:28});
+  r.push({a:25,b:28,bondAB:55,bondBA:52,rivAB:22,rivBA:18});
+  r.push({a:18,b:32,bondAB:30,bondBA:28,rivAB:42,rivBA:38});
+  r.push({a:15,b:13,bondAB:68,bondBA:60,rivAB:15,rivBA:20});
+  r.push({a:37,b:12,bondAB:22,bondBA:25,rivAB:35,rivBA:30});
+  r.push({a:36,b:28,bondAB:30,bondBA:28,rivAB:45,rivBA:50});
+  return r;
+})();
+
+// ══════════════════ STATE ══════════════════
+let viewMode='network'; // 'network' | 'focus'
+let currentFilter='all';
+let focusedNode=null; // used in both modes
+let compareA=null,compareB=null,ctxTarget=null;
+let filterThreshold=5; // min relationship strength to show node
+let filterRelOnly=false; // hide unrelated nodes
+
+const W=window.innerWidth,H=window.innerHeight-48;
+const svgEl=document.getElementById('mainSvg');
+svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+const nodeMap={};
+const nodes=CHARS.map(c=>{const n={...c,r:12+(c.ovr-60)*0.5,color:ORG_META[c.orgId].color};nodeMap[n.id]=n;return n});
+const links=[];
+RELATIONSHIPS.forEach(rel=>{if(!nodeMap[rel.a]||!nodeMap[rel.b])return;links.push({...rel,source:rel.a,target:rel.b,strength:(Math.abs(rel.bondAB-50)+Math.abs(rel.bondBA-50)+rel.rivAB+rel.rivBA)/200})});
+
+function getLinksFor(id){return links.filter(l=>l.a===id||l.b===id)}
+
+const orgCenters={player:{x:W*0.3,y:H*0.35},org_s:{x:W*0.7,y:H*0.3},org_a:{x:W*0.25,y:H*0.7},org_b:{x:W*0.7,y:H*0.7},fa:{x:W*0.5,y:H*0.5}};
+nodes.forEach(n=>{const c=orgCenters[n.orgId];n.x=c.x+(Math.random()-0.5)*120;n.y=c.y+(Math.random()-0.5)*120});
+
+// Target positions for focus mode
+const focusTargets={};
+
+// ══════════════════ PHYSICS ══════════════════
+const alpha={value:1.0,decay:0.0015,min:0.005};
+const velocities=nodes.map(()=>({vx:0,vy:0}));
+
+function tick(){
+  const a=Math.max(alpha.value,alpha.min);
+
+  if(viewMode==='network'){
+    // Cluster gravity
+    nodes.forEach((n,i)=>{if(n._hidden)return;const c=orgCenters[n.orgId];velocities[i].vx+=(c.x-n.x)*0.008*a;velocities[i].vy+=(c.y-n.y)*0.008*a});
+    // Link attraction
+    links.forEach(l=>{const s=nodeMap[l.a],t=nodeMap[l.b];if(!s||!t||s._hidden||t._hidden)return;const si=nodes.indexOf(s),ti=nodes.indexOf(t);const dx=t.x-s.x,dy=t.y-s.y,dist=Math.sqrt(dx*dx+dy*dy)||1,td=100+(1-l.strength)*150,f=(dist-td)*0.003*a,fx=dx/dist*f,fy=dy/dist*f;velocities[si].vx+=fx;velocities[si].vy+=fy;velocities[ti].vx-=fx;velocities[ti].vy-=fy});
+    // Repulsion
+    for(let i=0;i<nodes.length;i++){if(nodes[i]._hidden)continue;for(let j=i+1;j<nodes.length;j++){if(nodes[j]._hidden)continue;const dx=nodes[j].x-nodes[i].x,dy=nodes[j].y-nodes[i].y,dist=Math.sqrt(dx*dx+dy*dy)||1,md=(nodes[i].r+nodes[j].r+30)*3;if(dist<md){const rf=(md-dist)*0.02*a/dist;velocities[i].vx-=dx*rf;velocities[i].vy-=dy*rf;velocities[j].vx+=dx*rf;velocities[j].vy+=dy*rf}}}
+  } else {
+    // Focus mode: pull toward target positions
+    nodes.forEach((n,i)=>{
+      if(n._hidden)return;
+      const ft=focusTargets[n.id];
+      if(ft){velocities[i].vx+=(ft.x-n.x)*0.05*a;velocities[i].vy+=(ft.y-n.y)*0.05*a}
+    });
+    // Light repulsion
+    for(let i=0;i<nodes.length;i++){if(nodes[i]._hidden)continue;for(let j=i+1;j<nodes.length;j++){if(nodes[j]._hidden)continue;const dx=nodes[j].x-nodes[i].x,dy=nodes[j].y-nodes[i].y,dist=Math.sqrt(dx*dx+dy*dy)||1;if(dist<60){const rf=(60-dist)*0.03*a/dist;velocities[i].vx-=dx*rf;velocities[i].vy-=dy*rf;velocities[j].vx+=dx*rf;velocities[j].vy+=dy*rf}}}
+  }
+
+  // Apply velocities
+  nodes.forEach((n,i)=>{if(n._dragging||n._hidden)return;velocities[i].vx*=0.65;velocities[i].vy*=0.65;n.x+=velocities[i].vx;n.y+=velocities[i].vy;n.x=Math.max(n.r+30,Math.min(W-n.r-30,n.x));n.y=Math.max(n.r+30,Math.min(H-n.r-30,n.y))});
+  alpha.value-=alpha.decay;
+  render();requestAnimationFrame(tick);
+}
+function reheat(){alpha.value=0.8}
+requestAnimationFrame(tick);
+
+// ══════════════════ VISIBILITY ══════════════════
+function updateVisibility(){
+  if(viewMode==='focus'&&focusedNode){
+    const fl=getLinksFor(focusedNode);
+    const connIds=new Set(fl.map(l=>l.a===focusedNode?l.b:l.a));
+    connIds.add(focusedNode);
+    nodes.forEach(n=>{n._hidden=!connIds.has(n.id)});
+    // Compute radial positions
+    const cx=W/2,cy=H/2;
+    focusTargets[focusedNode]={x:cx,y:cy};
+    const sorted=[...fl].sort((a,b)=>b.strength-a.strength);
+    const count=sorted.length;
+    const maxR=Math.min(W,H)*0.38;
+    sorted.forEach((l,i)=>{
+      const oid=l.a===focusedNode?l.b:l.a;
+      const angle=-Math.PI/2+(2*Math.PI*i/count);
+      const distFactor=0.6+l.strength*0.4;
+      focusTargets[oid]={x:cx+Math.cos(angle)*maxR*distFactor,y:cy+Math.sin(angle)*maxR*distFactor};
+    });
+  } else if(viewMode==='focus'&&!focusedNode){
+    nodes.forEach(n=>{n._hidden=false});
+  } else {
+    // Network mode: apply threshold filter
+    if(filterRelOnly){
+      const hasRel=new Set();
+      links.forEach(l=>{if(l.strength>=filterThreshold/100){hasRel.add(l.a);hasRel.add(l.b)}});
+      nodes.forEach(n=>{n._hidden=!hasRel.has(n.id)});
+    }else{
+      nodes.forEach(n=>{n._hidden=false});
+    }
+  }
+}
+updateVisibility();
+
+// ══════════════════ RENDER ══════════════════
+const zoneLayer=document.getElementById('zoneLayer'),linkLayer=document.getElementById('linkLayer'),nodeLayer=document.getElementById('nodeLayer');
+
+function drawOrgZones(){
+  zoneLayer.innerHTML='';
+  if(viewMode==='focus')return; // no zones in focus mode
+  Object.entries(orgCenters).forEach(([orgId,center])=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',center.x);c.setAttribute('cy',center.y);c.setAttribute('r',180);c.setAttribute('fill',`url(#zone-${orgId})`);c.classList.add('org-zone');c.dataset.org=orgId;zoneLayer.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',center.x);t.setAttribute('y',center.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');t.setAttribute('font-family','Oswald,sans-serif');t.setAttribute('font-size','36');t.setAttribute('font-weight','700');t.setAttribute('letter-spacing','6');t.setAttribute('fill',ORG_META[orgId].color);t.setAttribute('opacity','0.07');t.textContent=ORG_META[orgId].name;zoneLayer.appendChild(t);
+  });
+}
+drawOrgZones();
+
+let frameCount=0;
+function render(){
+  frameCount++;if(frameCount%2!==0)return;
+  // Links
+  let lh='';
+  links.forEach(l=>{
+    const s=nodeMap[l.a],t=nodeMap[l.b];if(!s||!t||s._hidden||t._hidden)return;
+    const dimmed=focusedNode&&viewMode==='network'&&focusedNode!==s.id&&focusedNode!==t.id;
+    const highlighted=focusedNode&&(focusedNode===s.id||focusedNode===t.id);
+    if(!highlighted&&l.strength<0.15&&currentFilter==='all'&&viewMode==='network')return;
+    if(currentFilter==='rivalry'&&l.rivAB<25&&l.rivBA<25&&!l.rivalTitle)return;
+    if(currentFilter==='bond'&&Math.abs(l.bondAB-50)<15&&Math.abs(l.bondBA-50)<15)return;
+    const dx=t.x-s.x,dy=t.y-s.y,dist=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/dist,uy=dy/dist,px=-uy*4,py=ux*4,sp=s.r+4,ep=t.r+4;
+    const baseOp=dimmed?0.04:(highlighted||viewMode==='focus'?1:0.6);
+    const bAB=l.bondAB,cAB=bAB>=50?`rgba(116,185,255,${0.2+(bAB-50)/100})`:`rgba(255,118,117,${0.2+(50-bAB)/100})`,wAB=1+Math.abs(bAB-50)/25;
+    lh+=`<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
+    const bBA=l.bondBA,cBA=bBA>=50?`rgba(116,185,255,${0.2+(bBA-50)/100})`:`rgba(255,118,117,${0.2+(50-bBA)/100})`,wBA=1+Math.abs(bBA-50)/25;
+    lh+=`<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
+    const mr=Math.max(l.rivAB,l.rivBA);
+    if(mr>20){const ro=dimmed?0.02:(highlighted||viewMode==='focus'?0.6:0.25);lh+=`<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${mr/15}" stroke-dasharray="8,5" ${highlighted||viewMode==='focus'?'filter="url(#glow-red)"':''}/>`;if(mr>=50&&!dimmed){const mx=(s.x+t.x)/2,my=(s.y+t.y)/2;lh+=`<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||viewMode==='focus'?1:0.6}">🔥</text>`;}}
+    if(l.rivalTitle&&!dimmed){const mx=(s.x+t.x)/2,my=(s.y+t.y)/2-12,tw=l.rivalTitle.length*9+24;lh+=`<rect x="${mx-tw/2}" y="${my-9}" width="${tw}" height="18" rx="3" fill="${l.titleColor}22" stroke="${l.titleColor}55" stroke-width="1"/><text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9" font-weight="700" fill="${l.titleColor}">${l.titleEmoji} ${l.rivalTitle}</text>`;}
+    if(l.isOneSided&&!dimmed){const mx=(s.x+t.x)/2,my=(s.y+t.y)/2+12;lh+=`<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fdcb6e" opacity="0.8">⚡</text>`;}
+  });
+  linkLayer.innerHTML=lh;
+
+  // Nodes
+  let nh='';
+  nodes.forEach(n=>{
+    if(n._hidden)return;
+    const isConn=focusedNode&&viewMode==='network'&&links.some(l=>(l.a===focusedNode&&l.b===n.id)||(l.b===focusedNode&&l.a===n.id));
+    const dimmed=focusedNode&&viewMode==='network'&&focusedNode!==n.id&&!isConn;
+    const isFocused=focusedNode===n.id;
+    const op=focusedNode&&viewMode==='network'?(dimmed?0.1:1):1;
+    const oc=ORG_META[n.orgId].color,r=n.r;
+    const hasRiv=links.some(l=>(l.a===n.id||l.b===n.id)&&l.rivalTitle);
+    const isCmpA=compareA===n.id,isCmpB=compareB===n.id;
+    const nodeR=viewMode==='focus'&&isFocused?r*1.3:r;
+
+    nh+=`<g class="node-group" data-id="${n.id}" opacity="${op}" style="cursor:pointer">`;
+    if(isCmpA||isCmpB){const rc=isCmpA?'#74b9ff':'#ff7675';nh+=`<circle cx="${n.x}" cy="${n.y}" r="${nodeR+8}" fill="none" stroke="${rc}" stroke-width="2.5" stroke-dasharray="5,3"/><text x="${n.x}" y="${n.y-nodeR-12}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.8)" stroke-width="2">${isCmpA?'① LEFT':'② RIGHT'}</text>`;}
+    if(isFocused){nh+=`<circle cx="${n.x}" cy="${n.y}" r="${nodeR+6}" fill="none" stroke="${oc}" stroke-width="2" opacity="0.3"><animate attributeName="r" values="${nodeR+4};${nodeR+20};${nodeR+4}" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/></circle>`;}
+    if(hasRiv&&!dimmed){nh+=`<circle cx="${n.x}" cy="${n.y}" r="${nodeR+3}" fill="none" stroke="#e17055" stroke-width="1.5" opacity="0.25"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/></circle>`;}
+    nh+=`<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="${isFocused?oc+'33':'rgba(15,15,25,0.9)'}" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#glow-gold)"':''}/>`;
+    nh+=`<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
+    nh+=`<text x="${n.x}" y="${n.y+nodeR+13}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${viewMode==='focus'?11:10}" font-weight="600" fill="${dimmed?'var(--text-dim)':'var(--text)'}" paint-order="stroke" stroke="rgba(0,0,0,0.8)" stroke-width="3">${n.name.length>5?n.name.slice(0,5)+'…':n.name}</text>`;
+    nh+=`<text x="${n.x}" y="${n.y+nodeR+24}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" fill="${oc}" opacity="0.6">${ORG_META[n.orgId].emoji}</text>`;
+    nh+=`</g>`;
+  });
+  nodeLayer.innerHTML=nh;
+
+  // Zone follow (network only)
+  if(viewMode==='network'){
+    const og={};nodes.forEach(n=>{if(n._hidden)return;if(!og[n.orgId])og[n.orgId]={sx:0,sy:0,c:0};og[n.orgId].sx+=n.x;og[n.orgId].sy+=n.y;og[n.orgId].c++});
+    zoneLayer.querySelectorAll('.org-zone').forEach(el=>{const g=og[el.dataset.org];if(g){el.setAttribute('cx',g.sx/g.c);el.setAttribute('cy',g.sy/g.c)}});
+    zoneLayer.querySelectorAll('text').forEach(t=>{const oid=Object.keys(ORG_META).find(k=>ORG_META[k].name===t.textContent);if(oid&&og[oid]){t.setAttribute('x',og[oid].sx/og[oid].c);t.setAttribute('y',og[oid].sy/og[oid].c)}});
+  }
+}
+
+// ══════════════════ SIDEBAR ══════════════════
+function renderOrgSidebar(){
+  const sb=document.getElementById('orgSidebar');let h='';
+  // Reset button
+  h+=`<div class="sb-btn" onclick="resetAll()"><span style="font-size:14px">🔄</span> 全体を表示</div>`;
+  // Display filter panel
+  h+=`<div class="filter-panel">
+    <div class="fp-title">📊 表示フィルタ</div>
+    <div class="fp-row"><label><input type="checkbox" id="chkRelOnly" ${filterRelOnly?'checked':''} onchange="filterRelOnly=this.checked;updateVisibility();reheat()"> 関係ありのみ表示</label></div>
+    <div class="fp-row"><span style="font-size:10px">強度しきい値</span><input type="range" min="0" max="40" value="${filterThreshold}" id="sliderThreshold" oninput="filterThreshold=parseInt(this.value);document.getElementById('threshVal').textContent=this.value;updateVisibility();reheat()"><span class="fp-val" id="threshVal">${filterThreshold}</span></div>
+  </div>`;
+  // Org cards
+  Object.entries(ORG_META).forEach(([orgId,meta])=>{
+    const oc=CHARS.filter(c=>c.orgId===orgId);if(!oc.length)return;
+    const avg=Math.round(oc.reduce((s,c)=>s+c.ovr,0)/oc.length);
+    h+=`<div class="org-card" style="border-left-color:${meta.color}" onclick="focusOrg('${orgId}')">
+      <div class="org-card-name" style="color:${meta.color}">${meta.emoji} ${meta.name}</div>
+      <div class="org-card-stats">所属 ${oc.length}名 ─ 平均OVR ${avg}</div>
+      <div class="org-card-roster">${oc.slice(0,6).map(c=>{const u=faceUrl(c.id);return`<div class="org-card-face" style="border-color:${meta.color}">${u?`<img src="${u}" onerror="this.parentElement.textContent='👤'">`:'👤'}</div>`}).join('')}${oc.length>6?`<div class="org-card-face" style="border-color:${meta.color};font-size:8px;color:var(--text-dim)">+${oc.length-6}</div>`:''}</div>
+    </div>`;
+  });
+  sb.innerHTML=h;
+}
+renderOrgSidebar();
+
+// ══════════════════ INTERACTION ══════════════════
+let dragTarget=null,dragOffset={x:0,y:0},dragMoved=false;
+function svgCoords(e){const r=svgEl.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+
+svgEl.addEventListener('mousedown',e=>{const g=e.target.closest('.node-group');if(!g)return;const id=parseInt(g.dataset.id),n=nodeMap[id];if(!n)return;dragTarget=n;n._dragging=true;dragMoved=false;const p=svgCoords(e);dragOffset.x=p.x-n.x;dragOffset.y=p.y-n.y});
+svgEl.addEventListener('mousemove',e=>{
+  if(dragTarget){dragMoved=true;const p=svgCoords(e);dragTarget.x=p.x-dragOffset.x;dragTarget.y=p.y-dragOffset.y;reheat()}
+  const g=e.target.closest('.node-group'),tt=document.getElementById('tooltip');
+  if(g&&!dragTarget){const id=parseInt(g.dataset.id),n=nodeMap[id];if(!n)return;const cl=getLinksFor(id),rv=cl.filter(l=>l.rivalTitle);
+    tt.innerHTML=`<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${ORG_META[n.orgId].color};font-size:10px;margin-bottom:3px">${ORG_META[n.orgId].emoji} ${ORG_META[n.orgId].name}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>`;
+    tt.classList.add('show');tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-10)+'px';
+  }else{tt.classList.remove('show')}
+});
+svgEl.addEventListener('mouseup',()=>{if(dragTarget){dragTarget._dragging=false;dragTarget=null}});
+svgEl.addEventListener('click',e=>{if(dragMoved){dragMoved=false;return}hideCtxMenu();const g=e.target.closest('.node-group');if(g){const id=parseInt(g.dataset.id);setCenter(id)}else{if(viewMode==='network')clearCenter()}});
+svgEl.addEventListener('contextmenu',e=>{e.preventDefault();const g=e.target.closest('.node-group');if(!g){hideCtxMenu();return}ctxTarget=parseInt(g.dataset.id);const cm=document.getElementById('ctxMenu');cm.style.left=e.clientX+'px';cm.style.top=e.clientY+'px';cm.classList.add('show')});
+document.addEventListener('click',e=>{if(!e.target.closest('.ctx-menu'))hideCtxMenu()});
+document.getElementById('ctxCenter').onclick=()=>{if(ctxTarget)setCenter(ctxTarget);hideCtxMenu()};
+document.getElementById('ctxDetail').onclick=()=>{if(ctxTarget)showFighterDetail(ctxTarget);hideCtxMenu()};
+document.getElementById('ctxCompare').onclick=()=>{if(ctxTarget)handleCompareClick(ctxTarget);hideCtxMenu()};
+function hideCtxMenu(){document.getElementById('ctxMenu').classList.remove('show')}
+document.getElementById('popupOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closePopup()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopup();hideCtxMenu()}});
+function closePopup(){document.getElementById('popupOverlay').classList.remove('show')}
+
+// ══════════════════ VIEW MODE ══════════════════
+function setViewMode(mode){
+  viewMode=mode;
+  document.querySelectorAll('.view-toggle .vt-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(mode==='network'?'vtNetwork':'vtFocus').classList.add('active');
+  drawOrgZones();
+  updateVisibility();reheat();
+}
+
+// ══════════════════ CENTER / FOCUS ══════════════════
+function setCenter(nodeId){
+  focusedNode=nodeId;const n=nodeMap[nodeId];
+  const ci=document.getElementById('centerIndicator');ci.style.display='flex';
+  document.getElementById('centerName').textContent=n?n.name:'';
+  updateVisibility();showDetailForNode(nodeId);reheat();
+}
+function clearCenter(){
+  focusedNode=null;document.getElementById('centerIndicator').style.display='none';
+  document.getElementById('detailPanel').classList.remove('show');
+  updateVisibility();reheat();
+}
+function resetAll(){clearCenter();compareA=null;compareB=null;document.getElementById('selectHint').classList.remove('show');if(viewMode==='focus')setViewMode('network');reheat()}
+function focusOrg(orgId){const oc=nodes.filter(n=>n.orgId===orgId).sort((a,b)=>b.ovr-a.ovr);if(oc.length)setCenter(oc[0].id)}
+function setFilter(f){currentFilter=f;document.querySelectorAll('.header-controls .ctrl-btn').forEach(b=>b.classList.remove('active'));const btn=document.getElementById(f==='all'?'btnAllLinks':f==='rivalry'?'btnRivalry':'btnBond');if(btn)btn.classList.add('active');reheat()}
+
+// ══════════════════ DETAIL PANEL ══════════════════
+function showDetailForNode(nodeId){
+  const panel=document.getElementById('detailPanel'),n=nodeMap[nodeId];if(!n){panel.classList.remove('show');return}
+  const nl=getLinksFor(nodeId).sort((a,b)=>b.strength-a.strength);if(!nl.length){panel.classList.remove('show');return}
+  const top=nl[0],oid=top.a===nodeId?top.b:top.a,other=nodeMap[oid];
+  const isS=top.a===nodeId;
+  const bf=isS?top.bondAB:top.bondBA,br=isS?top.bondBA:top.bondAB,rf=isS?top.rivAB:top.rivBA,rr=isS?top.rivBA:top.rivAB;
+  const bfc=bf>=50?'#74b9ff':'#ff7675',brc=br>=50?'#74b9ff':'#ff7675';
+  let tb='';if(top.rivalTitle)tb=`<span class="detail-rivalry-badge" style="background:${top.titleColor}22;color:${top.titleColor};border:1px solid ${top.titleColor}44">${top.titleEmoji} ${top.rivalTitle}</span>`;
+  panel.innerHTML=`<div class="detail-faces"><div class="detail-face" style="border-color:${ORG_META[n.orgId].color}" onclick="showFighterDetail(${n.id})">${faceHtml(n.id,46)}</div><span class="detail-arr">⇄</span><div class="detail-face" style="border-color:${ORG_META[other.orgId].color}" onclick="showFighterDetail(${other.id})">${faceHtml(other.id,46)}</div></div>
+    <div class="detail-info"><div class="detail-names"><span style="cursor:pointer" onclick="showFighterDetail(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">⇄</span><span style="cursor:pointer" onclick="showFighterDetail(${other.id})">${other.name}</span>${tb}</div>
+    <div class="detail-meters"><div><div class="detail-meter-label">${n.name.slice(0,3)}→親</div><div class="detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="detail-meter-bar"><div class="detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="detail-meter-label">${other.name.slice(0,3)}→親</div><div class="detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="detail-meter-bar"><div class="detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="detail-meter-label">${n.name.slice(0,3)}→競</div><div class="detail-meter-val" style="color:#e17055">${Math.round(rf)}</div><div class="detail-meter-bar"><div class="detail-meter-fill" style="width:${rf}%;background:#e17055"></div></div></div><div><div class="detail-meter-label">${other.name.slice(0,3)}→競</div><div class="detail-meter-val" style="color:#e17055">${Math.round(rr)}</div><div class="detail-meter-bar"><div class="detail-meter-fill" style="width:${rr}%;background:#e17055"></div></div></div></div></div>
+    <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterDetail(${n.id})">📋 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="compareA=${n.id};compareB=${other.id};showComparePopup()">⚖ 比較</span></div>`;
+  panel.classList.add('show');
+}
+
+// ══════════════════ FIGHTER DETAIL ══════════════════
+function showFighterDetail(charId){
+  // 実装時: showFighterPopup(charId) を呼ぶ
+  const n=nodeMap[charId];if(!n)return;
+  const card=document.getElementById('popupCard');card.className='popup-card';card.style.width='480px';
+  card.innerHTML=`<div class="popup-close" onclick="closePopup()">✕</div><div style="padding:40px;text-align:center"><div style="font-size:14px;color:var(--text-dim);margin-bottom:16px;font-family:Oswald,sans-serif;letter-spacing:1px">FIGHTER DETAIL</div><div style="width:80px;height:80px;border-radius:50%;border:3px solid ${ORG_META[n.orgId].color};margin:0 auto 12px;overflow:hidden;background:var(--card-bg)">${faceHtml(n.id,80)}</div><div style="font-size:20px;font-weight:700">${n.name}</div><div style="color:${ORG_META[n.orgId].color};font-size:11px;margin-top:4px">${ORG_META[n.orgId].emoji} ${ORG_META[n.orgId].name} ─ ${n.style}</div><div style="font-family:Oswald,sans-serif;font-size:32px;font-weight:700;color:var(--gold);margin-top:12px">OVR ${n.ovr}</div><div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-dim)">※ 実装時は既存の showFighterPopup を呼び出します</div></div>`;
+  document.getElementById('popupOverlay').classList.add('show');
+}
+
+// ══════════════════ COMPARE ══════════════════
+function handleCompareClick(id){
+  if(compareA===id){compareA=compareB;compareB=null}
+  else if(compareB===id){compareB=null}
+  else if(!compareA){compareA=id}
+  else if(!compareB){compareB=id}
+  else{compareA=compareB;compareB=id}
+  updateCompareHint();reheat();
+  if(compareA&&compareB)showComparePopup();
+}
+function updateCompareHint(){
+  const h=document.getElementById('selectHint');
+  if(!compareA){h.classList.remove('show');return}
+  const aN=nodeMap[compareA]?.name||'?';
+  if(!compareB){h.textContent=`⚖ ① ${aN} を選択 → ②右側の選手をクリック`;h.classList.add('show')}
+  else{h.classList.remove('show')}
+}
+
+function showComparePopup(){
+  const a=nodeMap[compareA],b=nodeMap[compareB];if(!a||!b)return;
+  const rel=links.find(l=>(l.a===a.id&&l.b===b.id)||(l.a===b.id&&l.b===a.id));
+  const isAS=rel?rel.a===a.id:true;
+  const aUp=upperUrl(a.id),bUp=upperUrl(b.id);
+
+  let h=`<div class="popup-close" onclick="closePopup()">✕</div>`;
+  h+=`<div class="compare-header"><div class="compare-side">
+    <div class="compare-upper-img" style="border-color:${ORG_META[a.orgId].color}">${aUp?`<img src="${aUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${aUp?'style="display:none"':''}>👤</div></div>
+    <div class="compare-name">${a.name}</div><div class="compare-org" style="color:${ORG_META[a.orgId].color}">${ORG_META[a.orgId].emoji} ${ORG_META[a.orgId].name} ─ ${a.style}</div><div class="compare-ovr-badge">OVR ${a.ovr}</div>
+  </div><div class="compare-divider">⇄</div><div class="compare-side">
+    <div class="compare-upper-img" style="border-color:${ORG_META[b.orgId].color}">${bUp?`<img src="${bUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${bUp?'style="display:none"':''}>👤</div></div>
+    <div class="compare-name">${b.name}</div><div class="compare-org" style="color:${ORG_META[b.orgId].color}">${ORG_META[b.orgId].emoji} ${ORG_META[b.orgId].name} ─ ${b.style}</div><div class="compare-ovr-badge">OVR ${b.ovr}</div>
+  </div></div>`;
+
+  h+=`<div class="compare-body">`;
+  // Stats
+  STAT_META.forEach(s=>{const va=a[s.key]||0,vb=b[s.key]||0;const aW=va>vb,bW=vb>va;
+    h+=`<div class="cmp-stat-row"><div class="cmp-bar-left"><div class="cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${va}</div><div class="cmp-bar-track"><div class="cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="cmp-label">${s.label}</div><div class="cmp-bar-right"><div class="cmp-bar-track"><div class="cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${vb}</div></div></div>`});
+
+  // Relationship — each side shows THAT character's feelings
+  if(rel){
+    const bAtoB=isAS?rel.bondAB:rel.bondBA, rAtoB=isAS?rel.rivAB:rel.rivBA;
+    const bBtoA=isAS?rel.bondBA:rel.bondAB, rBtoA=isAS?rel.rivBA:rel.rivAB;
+    const cAB=bAtoB>=50?'#74b9ff':'#ff7675', cBA=bBtoA>=50?'#74b9ff':'#ff7675';
+    let tH='';if(rel.rivalTitle)tH=`<span style="color:${rel.titleColor};font-size:13px;font-weight:700">${rel.titleEmoji} ${rel.rivalTitle}</span>`;
+    h+=`<div class="cmp-rel-section"><div class="cmp-rel-header">🔗 RELATIONSHIP ${tH}</div>
+      <div class="cmp-rel-row">
+        <div class="cmp-rel-side">
+          <div class="cmp-rel-side-title" style="color:${ORG_META[a.orgId].color}">${a.name.slice(0,4)} の感情</div>
+          <div class="cmp-rel-meter"><div class="cmp-rel-meter-label">親密度</div><div class="cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="cmp-rel-meter-bar"><div class="cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>
+          <div class="cmp-rel-meter"><div class="cmp-rel-meter-label">競争意識</div><div class="cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="cmp-rel-meter-bar"><div class="cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>
+        </div>
+        <div class="cmp-rel-side">
+          <div class="cmp-rel-side-title" style="color:${ORG_META[b.orgId].color}">${b.name.slice(0,5)} の感情</div>
+          <div class="cmp-rel-meter"><div class="cmp-rel-meter-label">親密度</div><div class="cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="cmp-rel-meter-bar"><div class="cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>
+          <div class="cmp-rel-meter"><div class="cmp-rel-meter-label">競争意識</div><div class="cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="cmp-rel-meter-bar"><div class="cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>
+        </div>
+      </div></div>`;
+  }else{h+=`<div class="cmp-rel-section"><div class="cmp-rel-header" style="color:var(--text-dim)">🔗 直接の関係はありません</div></div>`}
+  h+=`</div>`;
+
+  const card=document.getElementById('popupCard');card.className='popup-card compare-card';card.style.width='900px';card.innerHTML=h;
+  document.getElementById('popupOverlay').classList.add('show');
+}
+</script>
+</body>
+</html>
