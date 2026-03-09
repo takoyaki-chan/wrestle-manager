@@ -2604,8 +2604,9 @@ let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
 let _relmapViewMode = 'network'; // 'network' | 'focus'
-let _relmapFilterRelOnly = false;
-let _relmapFilterThreshold = 5;
+let _relmapFilterRelOnly = true;
+let _relmapFilterThreshold = 14;
+let _relmapFilterUserSet = false; // true once player changes filter manually
 let _relmapCompareA = null;
 let _relmapCompareB = null;
 let _relmapAnimId = null; // requestAnimationFrame id
@@ -3168,6 +3169,9 @@ function _renderDbRelmap() {
   html += `<svg id="relmapSvg"><defs>`;
   html += `<filter id="rm-glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   html += `<filter id="rm-glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  // Bond arrowheads (warm=blue, cold=red)
+  html += `<marker id="rm-arrow-warm" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#74b9ff" opacity="0.7"/></marker>`;
+  html += `<marker id="rm-arrow-cold" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ff7675" opacity="0.7"/></marker>`;
   // Org zone gradients
   for (const [orgId, color] of Object.entries(_RELMAP_ORG_COLORS)) {
     const op = orgId === 'player' ? 0.08 : 0.06;
@@ -3423,14 +3427,16 @@ function _relmapRender(orgCenters) {
     const sp = s.r + 4, ep = t.r + 4;
     const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
 
-    // Bond A→B
+    // Bond A→B (with arrowhead)
     const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
     const wAB = 1 + Math.abs(bAB - 50) / 25;
-    lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
-    // Bond B→A
+    const mAB = bAB >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
+    lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mAB}"/>`;
+    // Bond B→A (with arrowhead)
     const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
     const wBA = 1 + Math.abs(bBA - 50) / 25;
-    lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round"/>`;
+    const mBA = bBA >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
+    lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mBA}"/>`;
 
     // Rivalry overlay
     const mr = Math.max(l.rivAB, l.rivBA);
@@ -3624,8 +3630,8 @@ function _relmapRenderSidebar(orgCenters) {
   // Display filter panel
   h += `<div class="rm-filter-panel">`;
   h += `<div class="rm-fp-title">\uD83D\uDCCA 表示フィルタ</div>`;
-  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
-  h += `<div class="rm-fp-row"><span style="font-size:10px">強度</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
+  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapFilterUserSet=true;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
+  h += `<div class="rm-fp-row"><span style="font-size:10px">強度</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);_relmapFilterUserSet=true;document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
   h += `</div>`;
   // Org cards
   const orgOrder = ['player', 'org_s', 'org_a', 'org_b', 'fa'];
@@ -3807,8 +3813,15 @@ function _relmapResetAll() {
 }
 
 function _relmapFocusOrg(orgId) {
-  const oc = _relmapNodes.filter(n => n.orgId === orgId).sort((a, b) => b.ovr - a.ovr);
-  if (oc.length) _relmapSetCenter(oc[0].id);
+  // Pan to org cluster center without changing focused character
+  const oc = _relmapNodes.filter(n => n.orgId === orgId);
+  if (!oc.length) return;
+  const cx = oc.reduce((s, n) => s + n.x, 0) / oc.length;
+  const cy = oc.reduce((s, n) => s + n.y, 0) / oc.length;
+  const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
+  _relmapPanX = cx - vw / 2;
+  _relmapPanY = cy - vh / 2;
+  _relmapReheat();
 }
 
 function _relmapSetFilter(f) {
