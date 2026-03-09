@@ -3939,51 +3939,51 @@ const CARE_ACTIONS = {
   // 個人向けアクション（cooldown: 週数。省略時=1、同一週は常に不可）
   bonus: {
     id: 'bonus', label: 'ボーナス支給', emoji: '💴', cost: 50, category: 'individual',
-    desc: '信頼が上がる（連続使用で効果逓減・1週1回）',
+    desc: '信頼が上がる（1ストック・連続使用で効果逓減）',
     effects: { trust: 4.59 }, minOrgPop: 0, cooldown: 1,
   },
   costume: {
     id: 'costume', label: 'コスチューム新調', emoji: '👗', cost: 80, category: 'individual',
-    desc: '人気+2、信頼も上がる（2週に1回）',
-    effects: { popularity: 2, trust: 5.36 }, minOrgPop: 20, cooldown: 2,
+    desc: '次の試合で注目度UP・信頼が上がる（1ストック・2週に1回）',
+    effects: { trust: 5.36 }, minOrgPop: 20, cooldown: 2,
   },
   trainer: {
     id: 'trainer', label: '専属トレーナー手配', emoji: '🏋️', cost: 160, category: 'individual',
-    desc: '4週間 成長速度+30%、信頼も上がる（1週1回）',
+    desc: '4週間 成長速度+30%、信頼も上がる（1ストック）',
     effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 5.97 }, minOrgPop: 0, cooldown: 1,
   },
   media: {
     id: 'media', label: 'メディア露出手配', emoji: '📺', cost: 120, category: 'individual',
-    desc: '人気+4、信頼も上がる（2週に1回・今週練習休み）',
-    effects: { popularity: 4, trust: 5.36, skip_training: true }, minOrgPop: 20, cooldown: 2,
+    desc: '団体の知名度が少し上がる・信頼も上がる（1ストック・2週に1回）',
+    effects: { trust: 5.36, skip_training: true }, minOrgPop: 20, cooldown: 2,
   },
   special_treatment: {
     id: 'special_treatment', label: '怪我の特別治療', emoji: '🏥', cost: 200, category: 'individual',
-    desc: '離脱期間を半分に短縮（怪我中のみ・1週1回）',
+    desc: '怪我の回復を早める（1ストック・怪我中のみ）',
     effects: { injury_reduction: true }, minOrgPop: 40,
     condition: 'injured', cooldown: 1,
   },
   encourage: {
     id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
-    desc: 'スランプ中の選手に声をかける（回復促進・1週1回）',
+    desc: 'スランプ中の選手に声をかける（ストック不要・週1回）',
     effects: { trust: 0.77 }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 1,
   },
   refresh_leave: {
     id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
-    desc: '休暇でリフレッシュ（状態回復・回復大促進・4週に1回）',
+    desc: '休暇でリフレッシュ（1ストック・4週に1回）',
     effects: { condition: 15, trust: 5.36, skip_training: true }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 4,
   },
   // 団体全体向けアクション（1週に1回まで）
   party: {
     id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
-    desc: '全員の信頼が少し上がり、ロッカールームの空気も良くなる（1週1回）',
+    desc: '全員の信頼と雰囲気が少し上がる（1ストック）',
     effects: { trust_all: 1.84, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
   },
   camp: {
     id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
-    desc: '全員の成長+中（2週間集中）、信頼も少し上がる（1週1回）',
+    desc: '全員の成長+中、信頼も少し上がる（2ストック）',
     effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 1.84 }, minOrgPop: 0, minHeadcount: 4,
   },
 };

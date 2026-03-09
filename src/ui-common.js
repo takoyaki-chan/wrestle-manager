@@ -3797,23 +3797,31 @@ function showCareActionModal(state, onConfirm) {
     const currentWeek = state.week || 0;
     const teamWeekUsed = state._teamCareWeekUsed || {};
 
-    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
+    const careStock = state.careStock != null ? state.careStock : 5;
+    const careStockMax = state.careStockMax || 5;
+    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">⚡ <strong style="color:${careStock <= 1 ? '#e74c3c' : '#f1c40f'}">${careStock}/${careStockMax}</strong>&nbsp;&nbsp;資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
 
     html += '<div class="care-section-label">👤 個人向け</div>';
     const orgPop = state.orgPop || 0;
+    // v3.0: アクション別ストック消費量
+    const getStockCost = (id) => id === 'encourage' ? 0 : id === 'camp' ? 2 : 1;
     individualActions.forEach(a => {
       const canAfford = funds >= a.cost;
       const isInjuredOnly = a.condition === 'injured';
       const anyInjured = roster.some(f => f.injury);
       const orgPopLocked = a.minOrgPop && orgPop < a.minOrgPop;
-      const disabled = !canAfford || (isInjuredOnly && !anyInjured) || orgPopLocked ? 'disabled' : '';
+      const sc = getStockCost(a.id);
+      const stockInsufficient = sc > 0 && careStock < sc;
+      const disabled = !canAfford || (isInjuredOnly && !anyInjured) || orgPopLocked || stockInsufficient ? 'disabled' : '';
       let extraInfo = '';
       if (orgPopLocked) extraInfo = ` <span style="color:#e74c3c;font-size:10px">（知名度 ${a.minOrgPop} で解放）</span>`;
+      else if (stockInsufficient) extraInfo = ' <span style="color:#e74c3c;font-size:10px">（ストック不足）</span>';
       else if (isInjuredOnly) extraInfo = ' <span style="color:#f39c12;font-size:10px">（怪我中のみ）</span>';
+      const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
       html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
         <span class="care-action-emoji">${a.emoji}</span>
         <div class="care-action-info">
-          <div class="care-action-name">${a.label}</div>
+          <div class="care-action-name">${a.label}${stockLabel}</div>
           <div class="care-action-desc">${a.desc}${extraInfo}</div>
         </div>
         <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
@@ -3826,12 +3834,17 @@ function showCareActionModal(state, onConfirm) {
       html += `<div class="care-section-label" style="margin-top:16px;${sectionStyle}">💔 スランプ対応${anyInSlump ? '' : ' <span style="font-size:10px;font-weight:400;opacity:0.5">（対象者なし）</span>'}</div>`;
       slumpActions.forEach(a => {
         const canAfford = funds >= a.cost;
-        const disabled = !canAfford || !anyInSlump ? 'disabled' : '';
+        const sc = getStockCost(a.id);
+        const stockInsufficient = sc > 0 && careStock < sc;
+        const disabled = !canAfford || !anyInSlump || stockInsufficient ? 'disabled' : '';
+        let extraInfo = '';
+        if (stockInsufficient && anyInSlump) extraInfo = ' <span style="color:#e74c3c;font-size:10px">（ストック不足）</span>';
+        const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
         html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
           <span class="care-action-emoji">${a.emoji}</span>
           <div class="care-action-info">
-            <div class="care-action-name">${a.label}</div>
-            <div class="care-action-desc">${a.desc}</div>
+            <div class="care-action-name">${a.label}${stockLabel}</div>
+            <div class="care-action-desc">${a.desc}${extraInfo}</div>
           </div>
           <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
         </div>`;
@@ -3843,16 +3856,22 @@ function showCareActionModal(state, onConfirm) {
       const teamCost = Engine.careActions.calcCost(a, state);
       const canAfford = funds >= teamCost;
       const usedThisWeek = teamWeekUsed[a.id] === currentWeek;
-      const disabled = !canAfford || usedThisWeek ? 'disabled' : '';
+      const sc = getStockCost(a.id);
+      const stockInsufficient = sc > 0 && careStock < sc;
+      const disabled = !canAfford || usedThisWeek || stockInsufficient ? 'disabled' : '';
       const headcount = roster.filter(f => !f.injury).length;
       const effectiveHead = Math.max(headcount, a.minHeadcount || 4);
-      const costLabel = usedThisWeek
-        ? `<span style="color:var(--text-dim);font-size:11px">今週使用済</span>`
+      let statusLabel = '';
+      if (usedThisWeek) statusLabel = `<span style="color:var(--text-dim);font-size:11px">今週使用済</span>`;
+      else if (stockInsufficient) statusLabel = `<span style="color:#e74c3c;font-size:11px">ストック不足</span>`;
+      const costLabel = statusLabel
+        ? statusLabel
         : `<span class="care-action-cost">${teamCost}万<span style="font-size:10px;color:var(--text-dim);display:block">${a.unitCost}万×${effectiveHead}人</span></span>`;
+      const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
       html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
         <span class="care-action-emoji">${a.emoji}</span>
         <div class="care-action-info">
-          <div class="care-action-name">${a.label}</div>
+          <div class="care-action-name">${a.label}${stockLabel}</div>
           <div class="care-action-desc">${a.desc}</div>
         </div>
         ${costLabel}

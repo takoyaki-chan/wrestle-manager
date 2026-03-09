@@ -1750,6 +1750,15 @@ const Storage = {
         G = { ...G, rivalries, relationshipHistory: G.relationshipHistory || [], _migrated_rivalry_tier_v1: true };
       }
 
+      // v3.0: ケアストック制マイグレーション
+      if (G.careStock === undefined) {
+        G = { ...G,
+          careStock: 5,
+          careStockMax: 5,
+          careStockLastRecovery: ((G.season || 1) - 1) * 48 + (G.week || 1),
+        };
+      }
+
       return true;
     } catch(e) { console.error('Load failed:', e); return false; }
   },
@@ -4509,6 +4518,7 @@ const App = {
   executeCareAction(actionId, fighterId) {
     const result = Engine.careActions.execute(actionId, fighterId, G);
     if (!result) { showToast('アクションが見つかりません'); return null; }
+    if (result.error === 'stock_insufficient') { showToast('ケアストックが不足しています'); return null; }
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return null; }
     if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return null; }
     if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return null; }
@@ -4522,11 +4532,17 @@ const App = {
       funds: result.funds,
       lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
       _teamCareWeekUsed: result._teamCareWeekUsed || G._teamCareWeekUsed || {},
+      careStock: result.careStock != null ? result.careStock : G.careStock,
       gameLog: [...(G.gameLog || []), ...(result.events || [])]
     };
     // Phase 4: ケアアクションの関係値反映
     if (result.relationships) {
       G = { ...G, relationships: result.relationships };
+    }
+    // v3.0: メディア → orgPop +0.4（逓減適用）
+    if (result.orgPopDelta) {
+      const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
+      G = { ...G, orgPop: newOrgPop };
     }
     Storage.autoSave();
 
