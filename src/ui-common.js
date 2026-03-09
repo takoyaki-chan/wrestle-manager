@@ -1867,8 +1867,8 @@ function showFighterPopup(fighterId, source) {
   // Stats
   const STATS = [
     {key:'pw',label:'PW',color:'#e74c3c',name:'パワー'},
-    {key:'sp',label:'SP',color:'#3498db',name:'スピード'},
-    {key:'te',label:'TE',color:'#2ecc71',name:'テクニック'},
+    {key:'sp',label:'SP',color:'#2ecc71',name:'スピード'},
+    {key:'te',label:'TE',color:'#3498db',name:'テクニック'},
     {key:'st',label:'ST',color:'#f39c12',name:'スタミナ'},
     {key:'mn',label:'MN',color:'#9b59b6',name:'マインド'}
   ];
@@ -2413,8 +2413,8 @@ function showPPVVSDetail(matchIdx) {
   };
   const STATS = [
     {key:'pw',label:'PW',name:'パワー',color:'#e74c3c'},
-    {key:'sp',label:'SP',name:'スピード',color:'#3498db'},
-    {key:'te',label:'TE',name:'テクニック',color:'#2ecc71'},
+    {key:'sp',label:'SP',name:'スピード',color:'#2ecc71'},
+    {key:'te',label:'TE',name:'テクニック',color:'#3498db'},
     {key:'st',label:'ST',name:'スタミナ',color:'#f39c12'},
     {key:'mn',label:'MN',name:'マインド',color:'#9b59b6'}
   ];

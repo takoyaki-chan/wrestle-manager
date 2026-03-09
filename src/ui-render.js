@@ -2702,7 +2702,7 @@ function setDbSubTab(idx) {
   renderDatabase();
 }
 
-const _STAT_COLORS = { pw: '#e74c3c', sp: '#3498db', te: '#2ecc71', st: '#f39c12', mn: '#9b59b6' };
+const _STAT_COLORS = { pw: '#e74c3c', sp: '#2ecc71', te: '#3498db', st: '#f39c12', mn: '#9b59b6' };
 function _statCell(val, color) {
   const v = Math.round(val || 0);
   const c = v >= 75 ? (color || '#e74c3c') : v >= 60 ? 'var(--text-main)' : 'var(--text-dim)';

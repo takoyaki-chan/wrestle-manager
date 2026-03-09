@@ -1987,12 +1987,25 @@ const Engine = {
       return mult;
     },
     // Stat selection (MN は試合経験で成長するため練習対象から除外)
+    // スタイル別に成長しやすいステータスに傾き (スピード型なら SP が伸びやすい等)
     pickGrowthStat(rng, G, charId) {
+      const char = (G.roster || []).find(c => c.id === charId)
+        || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === charId);
+      const style = char ? char.style : 'Allround';
+      const STYLE_WEIGHTS = {
+        Striker:    [0.35, 0.35, 0.15, 0.15], // pw sp te st
+        Grappler:   [0.35, 0.15, 0.35, 0.15],
+        Speed:      [0.10, 0.50, 0.15, 0.25],
+        Submission: [0.10, 0.15, 0.40, 0.35],
+        Brawler:    [0.40, 0.10, 0.15, 0.35],
+        Allround:   [0.25, 0.25, 0.25, 0.25],
+      };
+      const weights = STYLE_WEIGHTS[style] || STYLE_WEIGHTS.Allround;
       const stats = ['pw','sp','te','st'];
       const r = Engine.rng.float(rng);
       let cumulative = 0;
       for (let i = 0; i < stats.length; i++) {
-        cumulative += 0.25;
+        cumulative += weights[i];
         if (r < cumulative) return stats[i];
       }
       return stats[3];
