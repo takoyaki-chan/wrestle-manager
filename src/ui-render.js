@@ -2647,6 +2647,8 @@ let _relmapZoom = 1.0;
 let _relmapPanX = 0;
 let _relmapPanY = 0;
 let _relmapPanning = false;
+let _relmapOrgCenters = null;
+let _relmapOrgFilter = null; // orgId string or null — show only this org's members
 let _relmapPanStart = { x: 0, y: 0 };
 let _relmapPanStartPan = { x: 0, y: 0 };
 
@@ -3301,10 +3303,8 @@ function _drawRelmapAfterRender() {
   _relmapRenderSidebar(orgCenters);
 
   // Start animation
-  _relmapAnimId = requestAnimationFrame(function _loop() {
-    _relmapTick(orgCenters);
-    _relmapAnimId = requestAnimationFrame(_loop);
-  });
+  _relmapOrgCenters = orgCenters;
+  _relmapStartLoop();
 
   // ── Event listeners ──
   _relmapSetupInteraction(svg, container);
@@ -3333,11 +3333,11 @@ function _relmapTick(orgCenters) {
   const nodes = _relmapNodes, links = _relmapLinks, vel = _relmapVelocities;
   const a = Math.max(_relmapAlpha.value, _relmapAlpha.min);
 
-  if (_relmapViewMode === 'network') {
-    // Cluster gravity
+  if (_relmapViewMode === 'network' || _relmapOrgFilter) {
+    // Cluster gravity (centered when org filtered)
     nodes.forEach((n, i) => {
       if (n._hidden) return;
-      const c = orgCenters[n.orgId] || { x: W / 2, y: H / 2 };
+      const c = _relmapOrgFilter ? { x: W / 2, y: H / 2 } : (orgCenters[n.orgId] || { x: W / 2, y: H / 2 });
       vel[i].vx += (c.x - n.x) * 0.008 * a;
       vel[i].vy += (c.y - n.y) * 0.008 * a;
     });
@@ -3406,7 +3406,20 @@ function _relmapTick(orgCenters) {
   if (_relmapFrameCount % 2 === 0) _relmapRender(orgCenters);
 }
 
-function _relmapReheat() { _relmapAlpha.value = 0.8; }
+function _relmapReheat() { _relmapAlpha.value = 0.8; _relmapStartLoop(); }
+
+function _relmapStartLoop() {
+  if (_relmapAnimId) return; // already running
+  _relmapAnimId = requestAnimationFrame(function _loop() {
+    _relmapTick(_relmapOrgCenters);
+    if (_relmapAlpha.value > _relmapAlpha.min || _relmapDragTarget || _relmapPanning) {
+      _relmapAnimId = requestAnimationFrame(_loop);
+    } else {
+      _relmapRender(_relmapOrgCenters); // final render
+      _relmapAnimId = null;
+    }
+  });
+}
 
 // ══════════════════════════════════════════════════════════
 // SVG Render (innerHTML bulk update)
@@ -3434,8 +3447,8 @@ function _relmapRender(orgCenters) {
   links.forEach(l => {
     const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
     if (!s || !t || s._hidden || t._hidden) return;
-    // Focus mode: only show links to/from center (reduce clutter)
-    if (vm === 'focus' && focused && s.id !== focused && t.id !== focused) return;
+    // Focus mode: only show links to/from center (reduce clutter) — except when org filter shows all intra-org links
+    if (vm === 'focus' && focused && !_relmapOrgFilter && s.id !== focused && t.id !== focused) return;
     const dimmed = focused && vm === 'network' && focused !== s.id && focused !== t.id;
     const highlighted = focused && (focused === s.id || focused === t.id);
     if (!highlighted && l.strength < 0.15 && filter === 'all' && vm === 'network') return;
@@ -3447,25 +3460,28 @@ function _relmapRender(orgCenters) {
     const sp = s.r + 4, ep = t.r + 4;
     const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
 
-    // Bond A→B (with arrowhead)
-    const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
-    const wAB = 1 + Math.abs(bAB - 50) / 25;
-    const mAB = bAB >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
-    lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mAB}"/>`;
-    // Bond B→A (with arrowhead)
-    const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
-    const wBA = 1 + Math.abs(bBA - 50) / 25;
-    const mBA = bBA >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
-    lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mBA}"/>`;
+    // Bond A→B / B→A (skip when rivalry-only filter)
+    if (filter !== 'rivalry') {
+      const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
+      const wAB = 1 + Math.abs(bAB - 50) / 25;
+      const mAB = bAB >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
+      lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mAB}"/>`;
+      const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
+      const wBA = 1 + Math.abs(bBA - 50) / 25;
+      const mBA = bBA >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
+      lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mBA}"/>`;
+    }
 
-    // Rivalry overlay
-    const mr = Math.max(l.rivAB, l.rivBA);
-    if (mr > 20) {
-      const ro = dimmed ? 0.02 : (highlighted || vm === 'focus' ? 0.6 : 0.25);
-      lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${mr/15}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
-      if (mr >= 50 && !dimmed) {
-        const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
-        lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||vm==='focus'?1:0.6}">\uD83D\uDD25</text>`;
+    // Rivalry overlay (skip when bond-only filter)
+    if (filter !== 'bond') {
+      const mr = Math.max(l.rivAB, l.rivBA);
+      if (mr > 20) {
+        const ro = dimmed ? 0.02 : (highlighted || vm === 'focus' ? 0.6 : 0.25);
+        lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${mr/15}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
+        if (mr >= 50 && !dimmed) {
+          const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+          lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||vm==='focus'?1:0.6}">\uD83D\uDD25</text>`;
+        }
       }
     }
     // Rivalry title badge
@@ -3551,8 +3567,8 @@ function _relmapRender(orgCenters) {
   });
   nodeLayer.innerHTML = nh;
 
-  // Zone follow (network only)
-  if (vm === 'network' && zoneLayer) {
+  // Zone follow (network only, not when org filtered)
+  if (vm === 'network' && !_relmapOrgFilter && zoneLayer) {
     const og = {};
     nodes.forEach(n => { if (n._hidden) return; if (!og[n.orgId]) og[n.orgId] = { sx: 0, sy: 0, c: 0 }; og[n.orgId].sx += n.x; og[n.orgId].sy += n.y; og[n.orgId].c++; });
     zoneLayer.querySelectorAll('.rm-org-zone').forEach(el => {
@@ -3571,7 +3587,7 @@ function _relmapDrawOrgZones(orgCenters) {
   const zoneLayer = document.getElementById('relmapZoneLayer');
   if (!zoneLayer) return;
   zoneLayer.innerHTML = '';
-  if (_relmapViewMode === 'focus') return;
+  if (_relmapViewMode === 'focus' || _relmapOrgFilter) return;
   Object.entries(orgCenters).forEach(([orgId, center]) => {
     const orgName = _relmapGetOrgNameById(orgId);
     const color = _RELMAP_ORG_COLORS[orgId] || '#888';
@@ -3592,6 +3608,29 @@ function _relmapGetOrgNameById(orgId) {
 // ══════════════════════════════════════════════════════════
 function _relmapUpdateVisibility() {
   const nodes = _relmapNodes, links = _relmapLinks;
+
+  // Org filter overrides all other visibility logic
+  if (_relmapOrgFilter) {
+    nodes.forEach(n => { n._hidden = n.orgId !== _relmapOrgFilter; });
+    // In org filter, set focus targets for visible nodes (centered layout)
+    if (_relmapViewMode === 'focus' && _relmapCenterId) {
+      const visible = nodes.filter(n => !n._hidden);
+      const cx = _relmapW / 2, cy = _relmapH / 2;
+      _relmapFocusTargets = {};
+      const centerNode = visible.find(n => n.id === _relmapCenterId);
+      if (centerNode) {
+        _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
+        const others = visible.filter(n => n.id !== _relmapCenterId);
+        const maxR = Math.min(_relmapW, _relmapH) * 0.35;
+        others.forEach((n, i) => {
+          const angle = -Math.PI / 2 + (2 * Math.PI * i / others.length);
+          _relmapFocusTargets[n.id] = { x: cx + Math.cos(angle) * maxR, y: cy + Math.sin(angle) * maxR };
+        });
+      }
+    }
+    return;
+  }
+
   if (_relmapViewMode === 'focus' && _relmapCenterId) {
     const fl = _relmapGetLinksFor(_relmapCenterId);
 
@@ -3685,7 +3724,7 @@ function _relmapRenderSidebar(orgCenters) {
     if (!oc.length) return;
     const avg = Math.round(oc.reduce((s, n) => s + n.ovr, 0) / oc.length);
     const topChars = [...oc].sort((a, b) => b.ovr - a.ovr).slice(0, 6);
-    h += `<div class="rm-org-card" style="border-left-color:${color}" onclick="_relmapFocusOrg('${orgId}')">`;
+    h += `<div class="rm-org-card${_relmapOrgFilter===orgId?' rm-org-active':''}" style="border-left-color:${color}" onclick="_relmapFocusOrg('${orgId}')">`;
     h += `<div class="rm-org-card-name" style="color:${color}">${emoji} ${orgName}</div>`;
     h += `<div class="rm-org-card-stats">所属 ${oc.length}名 \u2500 平均OVR ${avg}</div>`;
     h += `<div class="rm-org-card-roster">`;
@@ -3848,21 +3887,25 @@ function _relmapClearCenter() {
 function _relmapResetAll() {
   _relmapClearCenter();
   _relmapCompareA = null; _relmapCompareB = null;
+  _relmapOrgFilter = null;
   const sh = document.getElementById('relmapSelectHint');
   if (sh) sh.classList.remove('show');
   if (_relmapViewMode === 'focus') _relmapSetViewMode('network');
+  _relmapRenderSidebar(_relmapOrgCenters);
   _relmapReheat();
 }
 
 function _relmapFocusOrg(orgId) {
-  // Pan to org cluster center without changing focused character
-  const oc = _relmapNodes.filter(n => n.orgId === orgId);
-  if (!oc.length) return;
-  const cx = oc.reduce((s, n) => s + n.x, 0) / oc.length;
-  const cy = oc.reduce((s, n) => s + n.y, 0) / oc.length;
-  const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
-  _relmapPanX = cx - vw / 2;
-  _relmapPanY = cy - vh / 2;
+  // Toggle org filter: show only this org's members and their internal relationships
+  if (_relmapOrgFilter === orgId) {
+    _relmapOrgFilter = null; // toggle off
+  } else {
+    _relmapOrgFilter = orgId;
+  }
+  // Reset zoom/pan to center
+  _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+  _relmapUpdateVisibility();
+  _relmapRenderSidebar(_relmapOrgCenters);
   _relmapReheat();
 }
 
@@ -3872,6 +3915,7 @@ function _relmapSetFilter(f) {
   const btns = document.querySelectorAll('.rm-header-controls .rm-ctrl-btn');
   const idx = f === 'all' ? 0 : f === 'rivalry' ? 1 : 2;
   if (btns[idx]) btns[idx].classList.add('active');
+  _relmapUpdateVisibility();
   _relmapReheat();
 }
 
