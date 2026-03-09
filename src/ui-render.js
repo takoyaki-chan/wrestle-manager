@@ -1943,9 +1943,9 @@ function renderRanking() {
 
   let html = '';
 
-  // Rank-based color map: 1=gold, 2=red, 3=purple, 4=green
-  const RANK_COLORS = { 1: '#d4a843', 2: '#e74c3c', 3: '#9b59b6', 4: '#2ecc71' };
-  const getRankColor = (rank) => RANK_COLORS[rank] || '#888';
+  // Org-identity-based color map (matches RIVAL_ORGS + relmap)
+  const ORG_RANK_COLORS = { player: '#d4a843', org_s: '#d63031', org_a: '#6c5ce7', org_b: '#00b894' };
+  const getRankColor = (rank, orgId) => ORG_RANK_COLORS[orgId] || '#888';
 
   // Victory condition reminder
   const topAI = rankings.find(r => r.orgId !== 'player');
@@ -1979,7 +1979,7 @@ function renderRanking() {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
     const emoji = isPlayer ? '🏠' : (org ? org.emoji : '');
-    const rc = getRankColor(r.rank);
+    const rc = getRankColor(r.rank, r.orgId);
     const bgStyle = isPlayer ? `background:${rc}10` : '';
     const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
     const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${rc}20;color:${rc};border:1px solid ${rc}40;margin-left:6px">${org.tier}</span>` : '';
@@ -2005,7 +2005,7 @@ function renderRanking() {
 
     if (isPlayer) {
       // Player org card
-      const rc = getRankColor(r.rank);
+      const rc = getRankColor(r.rank, r.orgId);
       const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
       const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
       // Put champion first if exists
@@ -2051,7 +2051,7 @@ function renderRanking() {
       </div>`;
     } else if (org) {
       // AI org card — use rank color
-      const rc = getRankColor(r.rank);
+      const rc = getRankColor(r.rank, r.orgId);
       const aiData = G.aiOrgs && G.aiOrgs[org.id];
       if (!aiData) return;
       const roster = aiData.roster;
@@ -3492,6 +3492,7 @@ function _relmapRender(orgCenters) {
     const hasRiv = links.some(l => (l.a === n.id || l.b === n.id) && l.rivalTitle);
     const isCmpA = _relmapCompareA === n.id, isCmpB = _relmapCompareB === n.id;
     const nodeR = vm === 'focus' && isFocused ? r * 1.3 : r;
+    const pUrl = getPortraitUrl(n.id);
 
     nh += `<g class="rm-node-group" data-id="${n.id}" opacity="${op}" style="cursor:pointer">`;
     // Compare selection ring
@@ -3508,15 +3509,24 @@ function _relmapRender(orgCenters) {
     if (hasRiv && !dimmed) {
       nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR+3}" fill="none" stroke="#e17055" stroke-width="1.5" opacity="0.25"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/></circle>`;
     }
-    // Main circle
-    nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="${isFocused?oc+'33':'rgba(15,15,25,0.9)'}" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
-    // OVR text
-    nh += `<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
+    // Main circle (border ring + face image or fallback)
+    if (pUrl) {
+      const clipId = `rm-clip-${n.id}`;
+      nh += `<clipPath id="${clipId}"><circle cx="${n.x}" cy="${n.y}" r="${nodeR-1}"/></clipPath>`;
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="rgba(15,15,25,0.9)" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
+      nh += `<image href="${pUrl}" x="${n.x-nodeR}" y="${n.y-nodeR}" width="${nodeR*2}" height="${nodeR*2}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+    } else {
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="${isFocused?oc+'33':'rgba(15,15,25,0.9)'}" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
+      nh += `<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
+    }
+    // OVR badge below face
+    const ovrY = n.y + nodeR + 10;
+    const ovrW = 22, ovrH = 13;
+    nh += `<rect x="${n.x-ovrW/2}" y="${ovrY-ovrH/2}" width="${ovrW}" height="${ovrH}" rx="3" fill="rgba(10,10,20,0.85)" stroke="${oc}" stroke-width="1"/>`;
+    nh += `<text x="${n.x}" y="${ovrY+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${oc}">${n.ovr}</text>`;
     // Name label
     const nameStr = n.name.length > 5 ? n.name.slice(0, 5) + '\u2026' : n.name;
-    nh += `<text x="${n.x}" y="${n.y+nodeR+13}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'rgba(160,160,180,0.4)':'#e8e8e8'}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="3">${nameStr}</text>`;
-    // Org emoji
-    nh += `<text x="${n.x}" y="${n.y+nodeR+24}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" fill="${oc}" opacity="0.6">${_relmapGetOrgEmoji(n.orgId)}</text>`;
+    nh += `<text x="${n.x}" y="${ovrY+14}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'rgba(160,160,180,0.4)':'#e8e8e8'}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="3">${nameStr}</text>`;
     nh += `</g>`;
   });
   nodeLayer.innerHTML = nh;
