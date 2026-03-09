@@ -2547,14 +2547,22 @@ const Engine = {
         return result;
       }
 
-      // Step 4: Fill S級 (superElites guaranteed + fill remaining slots)
-      const sMembers = [...superElites];
-      const sRemaining = cfg.org_s - superElites.length;
+      // Step 4: Fill S級 (superElites + elite top3 guaranteed + fill remaining)
+      // 3c: S級にelite上位3名を確定配置
+      const elitesSorted = shuffled
+        .filter(c => c.tierClass === 'elite')
+        .sort((a, b) => b.potTotal - a.potTotal);
+      const guaranteedElites = elitesSorted.slice(0, 3);
+      const guaranteedIds = new Set(guaranteedElites.map(c => c.id));
+
+      const sMembers = [...superElites, ...guaranteedElites];
+      const sRemaining = cfg.org_s - sMembers.length;
       // Sort pool by potTotal desc for S-tier (strongest first)
+      // poolからguaranteed分を除外
       shuffled.sort((a, b) => b.potTotal - a.potTotal);
-      const pool = [...shuffled];
-      const sPicked = weightedPick(pool, sMembers, sRemaining, 99, 3.0, 690); // S: strong potTotal bias, 有望以上のみ
-      const sAll = [...superElites.map(c => c.id), ...sPicked.map(c => c.id)];
+      const pool = shuffled.filter(c => !guaranteedIds.has(c.id));
+      const sPicked = weightedPick(pool, sMembers, sRemaining, 99, 3.0, 720); // S: strong potTotal bias, 有望以上のみ
+      const sAll = [...sMembers.map(c => c.id), ...sPicked.map(c => c.id)];
 
       // Step 5: Re-shuffle remaining pool for A/B (reset sorting)
       const poolForAB = seededShuffle(pool, rng);
@@ -2618,7 +2626,7 @@ const Engine = {
         // Sort by OVR desc and boost top fighters' popularity for realism
         roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
         roster.forEach((f, i) => {
-          const tierBonus = {S:8,A:4,B:2}[org.tier] || 0;
+          const tierBonus = {S:14,A:4,B:1}[org.tier] || 0;
           if (i === 0) f.popularity = Math.min(90, f.popularity + 15 + tierBonus); // ace
           else if (i < 3) f.popularity = Math.min(85, f.popularity + 8 + tierBonus);
           else if (i < 6) f.popularity = Math.min(75, f.popularity + 3 + tierBonus);
