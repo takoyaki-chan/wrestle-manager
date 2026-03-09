@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（Trust総合リバランス+ケアストック制 Phase T1-T3 実装完了）
+> 最終更新: 2026-03-10（シーズンレポート表示バグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 

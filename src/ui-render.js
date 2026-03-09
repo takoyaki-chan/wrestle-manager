@@ -372,12 +372,16 @@ function renderWeekScreen() {
     const st = G.seasonStats || {};
     const lastArchive = (G.seasonHistory || []).slice(-1)[0];
     if (offW <= 1 && (st.showCount > 0 || lastArchive)) {
-      const src = lastArchive || st;
+      // 今終わったシーズンのデータを使う（lastArchiveは前シーズンのもの）
+      const src = st.showCount > 0 ? st : (lastArchive || st);
       const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
-      const recapRank = lastArchive ? lastArchive.rank : (G.rankings ? Engine.ranking.getPlayerRank(G.rankings) : 0);
+      // 現在のランキングを再計算（G.rankingsはシーズン開始時点で更新が止まるため）
+      const _recapRankings = Engine.ranking.updateRankings(G);
+      const recapRank = Engine.ranking.getPlayerRank(_recapRankings);
       const recapRankColor = recapRank===1?'var(--gold)':recapRank===2?'#e74c3c':recapRank===3?'#9b59b6':'#2ecc71';
+      const _recapSeason = src === st && st.showCount > 0 ? G.season : (lastArchive ? lastArchive.season : G.season);
       html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
-        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${lastArchive ? lastArchive.season : G.season} レポート</h4>
+        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${_recapSeason} レポート</h4>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
             <div style="font-size:20px;font-weight:900;color:${recapRankColor}">${recapRank || '-'}位</div>
