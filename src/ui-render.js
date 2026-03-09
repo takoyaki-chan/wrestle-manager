@@ -3522,8 +3522,8 @@ function _relmapRender(orgCenters) {
     // OVR badge below face
     const ovrY = n.y + nodeR + 10;
     const ovrW = 22, ovrH = 13;
-    nh += `<rect x="${n.x-ovrW/2}" y="${ovrY-ovrH/2}" width="${ovrW}" height="${ovrH}" rx="3" fill="rgba(10,10,20,0.85)" stroke="${oc}" stroke-width="1"/>`;
-    nh += `<text x="${n.x}" y="${ovrY+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${oc}">${n.ovr}</text>`;
+    nh += `<rect x="${n.x-ovrW/2}" y="${ovrY-ovrH/2}" width="${ovrW}" height="${ovrH}" rx="3" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>`;
+    nh += `<text x="${n.x}" y="${ovrY+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="#fff">${n.ovr}</text>`;
     // Name label
     const nameStr = n.name.length > 5 ? n.name.slice(0, 5) + '\u2026' : n.name;
     nh += `<text x="${n.x}" y="${ovrY+14}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'rgba(160,160,180,0.4)':'#e8e8e8'}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="3">${nameStr}</text>`;
@@ -3617,8 +3617,20 @@ function _relmapUpdateVisibility() {
   } else if (_relmapViewMode === 'focus' && !_relmapCenterId) {
     nodes.forEach(n => { n._hidden = false; });
   } else {
-    // Network mode: apply threshold filter
-    if (_relmapFilterRelOnly) {
+    // Network mode: apply filters
+    const filter = _relmapFilter;
+    if (filter === 'rivalry') {
+      // Show only nodes involved in rivalry links
+      const rivNodes = new Set();
+      links.forEach(l => { if (l.rivAB >= 25 || l.rivBA >= 25 || l.rivalTitle) { rivNodes.add(l.a); rivNodes.add(l.b); } });
+      nodes.forEach(n => { n._hidden = !rivNodes.has(n.id); });
+    } else if (filter === 'bond') {
+      // Show only nodes involved in notable bond links (using sidebar threshold)
+      const bondNodes = new Set();
+      const th = _relmapFilterThreshold;
+      links.forEach(l => { if (Math.abs(l.bondAB - 50) >= th || Math.abs(l.bondBA - 50) >= th) { bondNodes.add(l.a); bondNodes.add(l.b); } });
+      nodes.forEach(n => { n._hidden = !bondNodes.has(n.id); });
+    } else if (_relmapFilterRelOnly) {
       const hasRel = new Set();
       links.forEach(l => { if (l.strength >= _relmapFilterThreshold / 100) { hasRel.add(l.a); hasRel.add(l.b); } });
       nodes.forEach(n => { n._hidden = !hasRel.has(n.id); });
