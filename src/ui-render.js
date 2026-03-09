@@ -2622,6 +2622,12 @@ let _relmapCtxTarget = null;
 let _relmapFocusTargets = {};
 let _relmapW = 0;
 let _relmapH = 0;
+let _relmapZoom = 1.0;
+let _relmapPanX = 0;
+let _relmapPanY = 0;
+let _relmapPanning = false;
+let _relmapPanStart = { x: 0, y: 0 };
+let _relmapPanStartPan = { x: 0, y: 0 };
 
 function renderDatabase() {
   // Stop any running relmap animation when switching tabs
@@ -3179,6 +3185,13 @@ function _renderDbRelmap() {
   html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">ノードサイズ＝OVR<br>クリック＝中心切替<br>右クリック＝メニュー</div>`;
   html += `</div>`;
 
+  // Zoom controls
+  html += `<div class="rm-zoom-controls">`;
+  html += `<button class="rm-zoom-btn" onclick="_relmapZoomIn()" title="拡大">＋</button>`;
+  html += `<button class="rm-zoom-btn" onclick="_relmapZoomOut()" title="縮小">−</button>`;
+  html += `<button class="rm-zoom-btn rm-zoom-fit" onclick="_relmapZoomFit()" title="リセット">⊙</button>`;
+  html += `</div>`;
+
   html += `</div>`; // end main
 
   // Detail panel
@@ -3217,6 +3230,7 @@ function _drawRelmapAfterRender() {
   const W = container.offsetWidth;
   const H = container.offsetHeight;
   _relmapW = W; _relmapH = H;
+  _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
   // Build nodes & links from game data
@@ -3380,6 +3394,13 @@ function _relmapRender(orgCenters) {
   const zoneLayer = document.getElementById('relmapZoneLayer');
   if (!linkLayer || !nodeLayer) return;
 
+  // Update viewBox for zoom/pan
+  const svg = document.getElementById('relmapSvg');
+  if (svg) {
+    const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
+    svg.setAttribute('viewBox', `${_relmapPanX} ${_relmapPanY} ${vw} ${vh}`);
+  }
+
   const focused = _relmapCenterId;
   const vm = _relmapViewMode;
   const filter = _relmapFilter;
@@ -3389,11 +3410,13 @@ function _relmapRender(orgCenters) {
   links.forEach(l => {
     const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
     if (!s || !t || s._hidden || t._hidden) return;
+    // Focus mode: only show links to/from center (reduce clutter)
+    if (vm === 'focus' && focused && s.id !== focused && t.id !== focused) return;
     const dimmed = focused && vm === 'network' && focused !== s.id && focused !== t.id;
     const highlighted = focused && (focused === s.id || focused === t.id);
     if (!highlighted && l.strength < 0.15 && filter === 'all' && vm === 'network') return;
     if (filter === 'rivalry' && l.rivAB < 25 && l.rivBA < 25 && !l.rivalTitle) return;
-    if (filter === 'bond' && Math.abs(l.bondAB - 50) < 15 && Math.abs(l.bondBA - 50) < 15) return;
+    if (filter === 'bond' && Math.abs(l.bondAB - 50) < 10 && Math.abs(l.bondBA - 50) < 10) return;
 
     const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
     const ux = dx / dist, uy = dy / dist, px = -uy * 4, py = ux * 4;
@@ -3430,6 +3453,23 @@ function _relmapRender(orgCenters) {
     if (l.isOneSided && !dimmed) {
       const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2 + 12;
       lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fdcb6e" opacity="0.8">\u26A1</text>`;
+    }
+    // Filter-specific value labels
+    if (!dimmed && (filter === 'bond' || filter === 'rivalry')) {
+      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+      const ox = -uy * 12, oy = ux * 12; // perpendicular offset
+      if (filter === 'bond') {
+        const bABr = Math.round(l.bondAB), bBAr = Math.round(l.bondBA);
+        const cABv = l.bondAB >= 50 ? '#74b9ff' : '#ff7675', cBAv = l.bondBA >= 50 ? '#74b9ff' : '#ff7675';
+        lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="${cABv}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${bABr}</text>`;
+        lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="${cBAv}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${bBAr}</text>`;
+      } else {
+        const maxRiv = Math.max(l.rivAB, l.rivBA);
+        if (maxRiv >= 15) {
+          lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="#e17055" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.rivAB)}</text>`;
+          lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="#e17055" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.rivBA)}</text>`;
+        }
+      }
     }
   });
   linkLayer.innerHTML = lh;
@@ -3468,7 +3508,7 @@ function _relmapRender(orgCenters) {
     nh += `<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
     // Name label
     const nameStr = n.name.length > 5 ? n.name.slice(0, 5) + '\u2026' : n.name;
-    nh += `<text x="${n.x}" y="${n.y+nodeR+13}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'var(--text-dim)':'var(--text)'}" paint-order="stroke" stroke="rgba(0,0,0,0.8)" stroke-width="3">${nameStr}</text>`;
+    nh += `<text x="${n.x}" y="${n.y+nodeR+13}" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="${vm==='focus'?11:10}" font-weight="600" fill="${dimmed?'rgba(160,160,180,0.4)':'#e8e8e8'}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="3">${nameStr}</text>`;
     // Org emoji
     nh += `<text x="${n.x}" y="${n.y+nodeR+24}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" fill="${oc}" opacity="0.6">${_relmapGetOrgEmoji(n.orgId)}</text>`;
     nh += `</g>`;
@@ -3518,20 +3558,45 @@ function _relmapUpdateVisibility() {
   const nodes = _relmapNodes, links = _relmapLinks;
   if (_relmapViewMode === 'focus' && _relmapCenterId) {
     const fl = _relmapGetLinksFor(_relmapCenterId);
-    const connIds = new Set(fl.map(l => l.a === _relmapCenterId ? l.b : l.a));
-    connIds.add(_relmapCenterId);
-    nodes.forEach(n => { n._hidden = !connIds.has(n.id); });
-    // Compute radial positions
-    const cx = _relmapW / 2, cy = _relmapH / 2;
-    _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
-    const sorted = [...fl].sort((a, b) => b.strength - a.strength);
-    const count = sorted.length;
-    const maxR = Math.min(_relmapW, _relmapH) * 0.38;
-    sorted.forEach((l, i) => {
+
+    // Calculate relationship intensity for each link
+    const intensityLinks = fl.map(l => {
       const oid = l.a === _relmapCenterId ? l.b : l.a;
-      const angle = -Math.PI / 2 + (2 * Math.PI * i / count);
-      const distFactor = 0.6 + l.strength * 0.4;
-      _relmapFocusTargets[oid] = { x: cx + Math.cos(angle) * maxR * distFactor, y: cy + Math.sin(angle) * maxR * distFactor };
+      const bondAB = l.a === _relmapCenterId ? l.bondAB : l.bondBA;
+      const bondBA = l.a === _relmapCenterId ? l.bondBA : l.bondAB;
+      const rivAB = l.a === _relmapCenterId ? l.rivAB : l.rivBA;
+      const rivBA = l.a === _relmapCenterId ? l.rivBA : l.rivAB;
+      // Intensity = how much this person matters psychologically
+      // High rivalry = strong (competitive tension)
+      // High bond deviation from 50 = strong (love or hate)
+      // Very low bond = strong negative feeling (enemy/distrust)
+      const bondDev = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50)) / 2;
+      const rivalryMax = Math.max(rivAB, rivBA);
+      const intensity = Math.max(bondDev * 1.2, rivalryMax, bondDev + rivalryMax * 0.6);
+      return { oid, intensity, l };
+    });
+    intensityLinks.sort((a, b) => b.intensity - a.intensity);
+
+    // Limit to top N connections (reduce clutter)
+    const maxConn = 18;
+    const shown = intensityLinks.slice(0, maxConn);
+    const shownIds = new Set(shown.map(il => il.oid));
+    shownIds.add(_relmapCenterId);
+    nodes.forEach(n => { n._hidden = !shownIds.has(n.id); });
+
+    // Place by intensity: strong = close, weak = far
+    const cx = _relmapW / 2, cy = _relmapH / 2;
+    _relmapFocusTargets = {};
+    _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
+    const maxR = Math.min(_relmapW, _relmapH) * 0.40;
+    const minR = maxR * 0.18;
+    const topI = shown.length ? shown[0].intensity : 1;
+    shown.forEach((il, i) => {
+      const angle = -Math.PI / 2 + (2 * Math.PI * i / shown.length);
+      const norm = topI > 0 ? il.intensity / topI : 0;
+      // Strong intensity = close (minR), weak = far (maxR)
+      const dist = maxR - (maxR - minR) * norm;
+      _relmapFocusTargets[il.oid] = { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist };
     });
   } else if (_relmapViewMode === 'focus' && !_relmapCenterId) {
     nodes.forEach(n => { n._hidden = false; });
@@ -3592,17 +3657,24 @@ function _relmapRenderSidebar(orgCenters) {
 function _relmapSetupInteraction(svg, container) {
   function svgCoords(e) {
     const r = svg.getBoundingClientRect();
-    return { x: (e.clientX - r.left) / r.width * _relmapW, y: (e.clientY - r.top) / r.height * _relmapH };
+    const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
+    return { x: _relmapPanX + (e.clientX - r.left) / r.width * vw, y: _relmapPanY + (e.clientY - r.top) / r.height * vh };
   }
 
   svg.addEventListener('mousedown', e => {
     const g = e.target.closest('.rm-node-group');
-    if (!g) return;
-    const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
-    if (!n) return;
-    _relmapDragTarget = n; n._dragging = true; _relmapDragMoved = false;
-    const p = svgCoords(e);
-    _relmapDragOffset.x = p.x - n.x; _relmapDragOffset.y = p.y - n.y;
+    if (g) {
+      const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
+      if (!n) return;
+      _relmapDragTarget = n; n._dragging = true; _relmapDragMoved = false;
+      const p = svgCoords(e);
+      _relmapDragOffset.x = p.x - n.x; _relmapDragOffset.y = p.y - n.y;
+    } else {
+      // Empty space drag → pan
+      _relmapPanning = true; _relmapDragMoved = false;
+      _relmapPanStart = { x: e.clientX, y: e.clientY };
+      _relmapPanStartPan = { x: _relmapPanX, y: _relmapPanY };
+    }
   });
 
   svg.addEventListener('mousemove', e => {
@@ -3612,10 +3684,19 @@ function _relmapSetupInteraction(svg, container) {
       _relmapDragTarget.x = p.x - _relmapDragOffset.x;
       _relmapDragTarget.y = p.y - _relmapDragOffset.y;
       _relmapReheat();
+    } else if (_relmapPanning) {
+      const r = svg.getBoundingClientRect();
+      const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
+      const dx = (e.clientX - _relmapPanStart.x) / r.width * vw;
+      const dy = (e.clientY - _relmapPanStart.y) / r.height * vh;
+      _relmapPanX = _relmapPanStartPan.x - dx;
+      _relmapPanY = _relmapPanStartPan.y - dy;
+      _relmapDragMoved = true;
+      _relmapReheat();
     }
     const g = e.target.closest('.rm-node-group');
     const tt = document.getElementById('relmapTooltip');
-    if (g && !_relmapDragTarget && tt) {
+    if (g && !_relmapDragTarget && !_relmapPanning && tt) {
       const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
       if (!n) return;
       const cl = _relmapGetLinksFor(id), rv = cl.filter(l => l.rivalTitle);
@@ -3623,16 +3704,21 @@ function _relmapSetupInteraction(svg, container) {
       const emoji = _relmapGetOrgEmoji(n.orgId);
       tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${orgName}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>`;
       tt.classList.add('show'); tt.style.left = (e.clientX + 16) + 'px'; tt.style.top = (e.clientY - 10) + 'px';
-    } else if (tt) { tt.classList.remove('show'); }
+    } else if (tt && !_relmapDragTarget) { tt.classList.remove('show'); }
   });
 
   svg.addEventListener('mouseup', () => {
     if (_relmapDragTarget) { _relmapDragTarget._dragging = false; _relmapDragTarget = null; }
+    _relmapPanning = false;
   });
 
+  // Click: close compare popup + set center
   svg.addEventListener('click', e => {
     if (_relmapDragMoved) { _relmapDragMoved = false; return; }
     _relmapHideCtxMenu();
+    // Close compare popup if open
+    const popOver = document.getElementById('relmapPopupOverlay');
+    if (popOver && popOver.classList.contains('show')) { _relmapClosePopup(); return; }
     const g = e.target.closest('.rm-node-group');
     if (g) { const id = parseInt(g.dataset.id); _relmapSetCenter(id); }
     else { if (_relmapViewMode === 'network') _relmapClearCenter(); }
@@ -3647,7 +3733,20 @@ function _relmapSetupInteraction(svg, container) {
     if (cm) { cm.style.left = e.clientX + 'px'; cm.style.top = e.clientY + 'px'; cm.classList.add('show'); }
   });
 
-  // Global click to close ctx menu
+  // Wheel zoom
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    const p = svgCoords(e);
+    const oldZoom = _relmapZoom;
+    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    _relmapZoom = Math.max(0.3, Math.min(5, _relmapZoom * factor));
+    // Zoom toward mouse cursor position
+    _relmapPanX = p.x - (p.x - _relmapPanX) * (oldZoom / _relmapZoom);
+    _relmapPanY = p.y - (p.y - _relmapPanY) * (oldZoom / _relmapZoom);
+    _relmapReheat();
+  }, { passive: false });
+
+  // Global close
   document.addEventListener('click', e => { if (!e.target.closest('.rm-ctx-menu')) _relmapHideCtxMenu(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { _relmapClosePopup(); _relmapHideCtxMenu(); } });
 }
@@ -3829,5 +3928,33 @@ function _relmapShowComparePopup() {
 function _relmapClosePopup() {
   const overlay = document.getElementById('relmapPopupOverlay');
   if (overlay) overlay.classList.remove('show');
+  _relmapCompareA = null; _relmapCompareB = null;
+  _relmapUpdateCompareHint();
+  _relmapReheat();
+}
+
+function _relmapZoomIn() {
+  const cx = _relmapPanX + _relmapW / _relmapZoom / 2;
+  const cy = _relmapPanY + _relmapH / _relmapZoom / 2;
+  const oldZoom = _relmapZoom;
+  _relmapZoom = Math.min(5, _relmapZoom * 1.3);
+  _relmapPanX = cx - (cx - _relmapPanX) * (oldZoom / _relmapZoom);
+  _relmapPanY = cy - (cy - _relmapPanY) * (oldZoom / _relmapZoom);
+  _relmapReheat();
+}
+
+function _relmapZoomOut() {
+  const cx = _relmapPanX + _relmapW / _relmapZoom / 2;
+  const cy = _relmapPanY + _relmapH / _relmapZoom / 2;
+  const oldZoom = _relmapZoom;
+  _relmapZoom = Math.max(0.3, _relmapZoom / 1.3);
+  _relmapPanX = cx - (cx - _relmapPanX) * (oldZoom / _relmapZoom);
+  _relmapPanY = cy - (cy - _relmapPanY) * (oldZoom / _relmapZoom);
+  _relmapReheat();
+}
+
+function _relmapZoomFit() {
+  _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+  _relmapReheat();
 }
 
