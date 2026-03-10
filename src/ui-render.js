@@ -3678,7 +3678,8 @@ function _relmapUpdateVisibility() {
       _relmapFocusTargets[il.oid] = { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist };
     });
   } else if (_relmapViewMode === 'focus' && !_relmapCenterId) {
-    nodes.forEach(n => { n._hidden = false; });
+    // No center selected in focus mode: hide all to avoid O(n²) physics on all nodes
+    nodes.forEach(n => { n._hidden = true; });
   } else {
     // Network mode: apply filters
     const filter = _relmapFilter;
@@ -3861,6 +3862,18 @@ function _relmapSetViewMode(mode) {
     const W = _relmapW, H = _relmapH;
     const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
     _relmapDrawOrgZones(orgCenters);
+  }
+  // フォーカスモードに切り替える際、中心未設定なら自動でプレイヤー最高OVR選手を設定
+  // （全ノード一斉表示によるO(n²)物理演算負荷を防ぐ）
+  if (mode === 'focus' && !_relmapCenterId && _relmapNodes.length > 0) {
+    const playerNodes = _relmapNodes.filter(n => n.orgId === 'player');
+    const candidates = playerNodes.length ? playerNodes : _relmapNodes;
+    const top = candidates.reduce((best, n) => n.ovr > best.ovr ? n : best, candidates[0]);
+    _relmapCenterId = top.id;
+    const ci = document.getElementById('rmCenterIndicator');
+    if (ci) ci.style.display = 'flex';
+    const cn = document.getElementById('rmCenterName');
+    if (cn) cn.textContent = top.name;
   }
   _relmapUpdateVisibility();
   _relmapReheat();
