@@ -3400,6 +3400,14 @@ function _relmapBuildInlineFacePattern(patternId, pUrl) {
   return `<pattern id="${safeId}" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="${safeUrl}" xlink:href="${safeUrl}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`;
 }
 
+function _relmapPolarOffset(radiusX, radiusY, angle, scale) {
+  const amp = scale == null ? 1 : scale;
+  return {
+    x: Math.cos(angle) * radiusX * amp,
+    y: Math.sin(angle) * radiusY * amp,
+  };
+}
+
 function _drawRelmapAfterRender() {
   const container = document.getElementById('relmapContainer');
   const svg = document.getElementById('relmapSvg');
@@ -4075,13 +4083,13 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   // 団体エリア中心（2×2グリッド、ランキング順: 上段→下段、左→右交互）
   const HEADER_H = 16;
   const areaPositions = [
-    { cx: 0.30, cy: 0.26 }, // rank1: 左上
-    { cx: 0.70, cy: 0.26 }, // rank2: 右上
-    { cx: 0.30, cy: 0.72 }, // rank3: 左下
-    { cx: 0.70, cy: 0.72 }, // rank4: 右下
+    { cx: 0.28, cy: 0.24 },
+    { cx: 0.73, cy: 0.27 },
+    { cx: 0.27, cy: 0.74 },
+    { cx: 0.72, cy: 0.71 },
   ];
-  const areaRadiusX = drawW * 0.20;
-  const areaRadiusY = H * 0.20;
+  const areaRadiusX = drawW * 0.23;
+  const areaRadiusY = H * 0.23;
 
   // Pass 1: 各選手の初期位置を計算
   const allNodes = [];
@@ -4100,19 +4108,27 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
       const r = R_MIN + ovrNorm * (R_MAX - R_MIN);
       const hash = _relmapIdHash(f.id);
       const hash2 = _relmapIdHash(f.id + 9999);
-      // Y: OVR高い=上寄り（エリア内）
-      const yOff = (1 - ovrNorm) * areaRadiusY * 1.6 - areaRadiusY * 0.6;
-      // X: ハッシュで水平散らし
-      const xOff = (hash - 0.5) * areaRadiusX * 1.8;
-      // 微小な追加ジッター
-      const jitterY = (hash2 - 0.5) * areaRadiusY * 0.3;
+      const hash3 = _relmapIdHash(f.id * 17 + org.rank * 101);
+      const rankNorm = n > 1 ? rank / (n - 1) : 0;
+      const angle = (-Math.PI * 0.58)
+        + rankNorm * Math.PI * (1.18 + hash2 * 0.2)
+        + (hash - 0.5) * 0.6;
+      const radial = 0.18 + rankNorm * 0.82;
+      const spread = _relmapPolarOffset(areaRadiusX, areaRadiusY, angle, radial);
+      const xOff = spread.x + (hash2 - 0.5) * areaRadiusX * 0.28;
+      const yBase = (1 - ovrNorm) * areaRadiusY * 1.32 - areaRadiusY * 0.52;
+      const yOff = yBase + spread.y * 0.42 + (hash3 - 0.5) * areaRadiusY * 0.18;
+      const aceLift = rank === 0 ? areaRadiusY * 0.18 : rank < 3 ? areaRadiusY * 0.08 : 0;
+      const homeX = areaCX + xOff;
+      const homeY = areaCY + yOff - aceLift;
 
       allNodes.push({
         id: f.id, fighter: f, orgId: org.id, orgColor: org.color,
         orgName: org.name, orgRank: org.rank, inOrgRank: rank,
-        x: areaCX + xOff, y: areaCY + yOff + jitterY,
+        x: homeX, y: homeY,
         r, ovr, isChamp: !!champId && f.id === champId,
         isAce: rank === 0, isTop3: rank < 3,
+        homeX, homeY,
       });
       fighterOrgMap[f.id] = org.id;
     });
@@ -4129,8 +4145,8 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
         if (dist < minDist && dist > 0.01) {
           const push = (minDist - dist) / 2;
           const nx = dx / dist, ny = dy / dist;
-          a.x -= nx * push * 0.8; a.y -= ny * push * 0.3;
-          b.x += nx * push * 0.8; b.y += ny * push * 0.3;
+          a.x -= nx * push * 0.9; a.y -= ny * push * 0.45;
+          b.x += nx * push * 0.9; b.y += ny * push * 0.45;
         }
       }
     }
@@ -4284,7 +4300,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const HEADER_H = 40;
   const PAD_TOP = HEADER_H + 20;
   const PAD_BOTTOM = 28;
-  const PAD_X = 60;
+  const PAD_X = 52;
   const contentH = H - PAD_TOP - PAD_BOTTOM;
   const usableW = drawW - PAD_X * 2;
 
@@ -4300,16 +4316,21 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     const ovr = Engine.util.ov(f);
     const ovrNorm = (ovr - ovrMin) / ovrRange;
     const r = R_MIN + ovrNorm * (R_MAX - R_MIN);
-    // Y: OVR高い=上
     const y = PAD_TOP + r + (1 - ovrNorm) * (contentH - R_MAX * 2);
-    // X: ハッシュで水平散らし（中央寄りバイアス: 0.2~0.8に圧縮）
     const hash = _relmapIdHash(f.id);
-    const xNorm = 0.15 + hash * 0.7; // 端に行きすぎない
-    const x = leftOffset + PAD_X + xNorm * usableW;
+    const hash2 = _relmapIdHash(f.id + 313);
+    const rankNorm = n > 1 ? i / (n - 1) : 0;
+    const angle = -Math.PI * 0.72 + rankNorm * Math.PI * 1.44 + (hash - 0.5) * 0.5;
+    const arc = _relmapPolarOffset(usableW * 0.28, contentH * 0.12, angle, 0.35 + rankNorm * 0.75);
+    const homeX = centerXArea + arc.x;
+    const aceLift = i === 0 ? r * 0.6 : i < 3 ? r * 0.24 : 0;
+    const homeY = y - aceLift;
+    const x = homeX + (hash2 - 0.5) * usableW * 0.12;
     return {
-      id: f.id, fighter: f, x, y, r, ovr, ovrNorm,
+      id: f.id, fighter: f, x, y: homeY, r, ovr, ovrNorm,
       isChamp: !!champId && f.id === champId,
       isAce: i === 0, isTop3: i < 3, rank: i,
+      homeX, homeY,
     };
   });
 
@@ -4325,12 +4346,15 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
           const push = (minDist - dist) / 2;
           const nx = dx / dist, ny = dy / dist;
           // 水平優先で押し出し（縦のOVR序列を保つ）
-          a.x -= nx * push * 0.8; a.y -= ny * push * 0.2;
-          b.x += nx * push * 0.8; b.y += ny * push * 0.2;
+          a.x -= nx * push * 0.85; a.y -= ny * push * 0.35;
+          b.x += nx * push * 0.85; b.y += ny * push * 0.35;
         }
       }
       // 各パスの各ノードで境界を維持（衝突回避で外に出るのを防ぐ）
       const nd = nodes[i];
+      const spring = nd.isAce ? 0.045 : nd.isTop3 ? 0.032 : 0.022;
+      nd.x += (nd.homeX - nd.x) * spring;
+      nd.y += (nd.homeY - nd.y) * (spring * 0.8);
       nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
       nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
     }
