@@ -4091,6 +4091,20 @@ function _relmapRenderPowerView() {
   _relmapApplyViewport(svg);
 }
 
+function _relmapDedupPowerRoster(roster, takenIds) {
+  const seen = new Set();
+  const unique = [];
+  (roster || []).forEach(f => {
+    if (!f || !Number.isFinite(f.id)) return;
+    if (seen.has(f.id)) return;
+    if (takenIds && takenIds.has(f.id)) return;
+    seen.add(f.id);
+    if (takenIds) takenIds.add(f.id);
+    unique.push(f);
+  });
+  return unique;
+}
+
 // 勢力図 viewMode — 散布型階層SVG
 // ══════════════════════════════════════════════════════════
 function _drawRelmapPowerView(svg) {
@@ -4121,12 +4135,14 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   // 団体リスト（ランキング順）
   const rankings = Engine.ranking.updateRankings(G);
   const rankOrder = [...rankings].sort((a, b) => a.rank - b.rank);
+  const takenIds = new Set();
   const orgList = rankOrder.map(r => {
     const isPlayer = r.orgId === 'player';
     const aiData = !isPlayer ? ((G.aiOrgs || {})[r.orgId] || {}) : {};
-    const roster = isPlayer
+    const rawRoster = isPlayer
       ? (G.roster || []).filter(c => !c.isRental)
       : (aiData.roster || []);
+    const roster = _relmapDedupPowerRoster(rawRoster, takenIds);
     return {
       id: r.orgId, name: r.name, rank: r.rank,
       color: _RELMAP_ORG_COLORS[r.orgId] || '#888',
@@ -4351,9 +4367,10 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const orgId = _relmapOrgFilter;
   const isPlayer = orgId === 'player';
   const aiData = !isPlayer ? ((G.aiOrgs || {})[orgId] || {}) : {};
-  const roster = isPlayer
+  const rawRoster = isPlayer
     ? (G.roster || []).filter(c => !c.isRental)
     : (aiData.roster || []);
+  const roster = _relmapDedupPowerRoster(rawRoster);
   const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
   const n = sorted.length;
   const drawW = W - leftOffset;

@@ -1003,3 +1003,5 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - 2026-03-10: Tuned relationship-map power-view layout to feel less rigid by loosening org cluster placement, adding more organic polar spread, and softening collision movement in both overview and single-org views.
 
 - 2026-03-10: Enabled relationship-map power-view zoom, pan, and direct node dragging so the faction view can be manipulated like the network view while preserving per-view layout positions.
+
+- 2026-03-10: Deduplicated relationship-map power-view rosters by fighter id so the same portrait cannot appear multiple times when a fighter remains referenced in more than one org roster.
