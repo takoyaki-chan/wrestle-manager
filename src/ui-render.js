@@ -3056,6 +3056,111 @@ const _RELMAP_STAT_META = [
   { key: 'mn', label: 'MN', color: '#9b59b6' },
 ];
 
+// ── 感情テキストシステム ──────────────────────────────
+const EMOTION_TEXTS = {
+  trust: {
+    normal:    'そばにいてくれるだけで、なんだか安心する',
+    ojousama:  'お隣にいてくださると、心が穏やかになりますの',
+    delinquent:'一緒にいると……なんか、落ち着くんだよな',
+    cool:      '信頼できる数少ない人間。それだけで十分',
+    seductive: '隣にいると、居心地がいいのよね……ふふ',
+    polite:    '本当に感謝しています。大切な存在です',
+  },
+  rival_friend: {
+    normal:    '負けたくない。でも、おかげで強くなれている気がする',
+    ojousama:  '負けたくありませんけれど……実力は認めざるを得ませんわ',
+    delinquent:'ぜってー負けねえ。でもまあ……いるから燃えんだよ',
+    cool:      '互いに高め合える関係。……悪くない',
+    seductive: '勝ちたい……でも、追いかけてる時間も嫌いじゃないの',
+    polite:    '競い合えることが、自分の力になっています',
+  },
+  destined_rival: {
+    normal:    '考えない日はない。絶対に、越えなきゃいけない壁',
+    ojousama:  '何があっても……わたくしの手で超えてみせますわ',
+    delinquent:'四六時中頭ん中にいやがる。絶対ぶっ倒す',
+    cool:      '……いなければ、今の自分はいない。だからこそ、倒す',
+    seductive: '頭から離れない……悔しいけど、そういうことなのよね',
+    polite:    'その存在が、私を突き動かしています。必ず、超えてみせます',
+  },
+  acquaintance: {
+    normal:    'まあ、知ってはいるけど……それだけかな',
+    ojousama:  '存じ上げてはおりますけれど、特別な感情はございませんわ',
+    delinquent:'あー、いたな。別にどうでもいいけど',
+    cool:      '認識はしている。それ以上でもそれ以下でもない',
+    seductive: '知ってるわよ、一応ね。……それだけ',
+    polite:    'お名前は存じています。お話する機会は少ないですけれど',
+  },
+  intrigued: {
+    normal:    'なんだろう、目で追ってしまう。気にしてないと言えば嘘になる',
+    ojousama:  'なぜかしら……気にかかって仕方がありませんの',
+    delinquent:'……別に気にしてねーし。してねーけど、目に入んだよ',
+    cool:      '気にしていないつもりだった……',
+    seductive: 'ちょっと気になるのよね……何がとは言えないけど',
+    polite:    'つい気にかけてしまいます。理由はよくわかりませんが',
+  },
+  hostile_competitor: {
+    normal:    '負けたくない。それだけは、はっきりしている',
+    ojousama:  '絶対に遅れを取りたくありませんの。それだけですわ',
+    delinquent:'負けねえ。死んでも負けねえ',
+    cool:      '負けるわけにはいかない。理屈じゃない',
+    seductive: '負けたくないの。理由なんて知らないわ',
+    polite:    'どうしても負けたくないんです。強い気持ちがあります',
+  },
+  indifferent: {
+    normal:    '正直、あまり印象がない',
+    ojousama:  'どなたでしたかしら……存じ上げませんわ',
+    delinquent:'誰だっけ。知らね',
+    cool:      '記憶にない',
+    seductive: 'んー……誰だったかしら',
+    polite:    '申し訳ありません、あまり存じ上げなくて……',
+  },
+  contempt: {
+    normal:    '……格が違う。同じ土俵とは思えない',
+    ojousama:  'わたくしとでは、住む世界が違いますもの',
+    delinquent:'ハッ、雑魚が視界に入んな',
+    cool:      '実力差は明白。相手にする価値を感じない',
+    seductive: 'あの程度で同じリングに？……可愛いわね',
+    polite:    '……実力の差は、正直感じています',
+  },
+  irritation: {
+    normal:    '目障り。視界に入るだけで気が散る',
+    ojousama:  'どうにも、気に障りますの',
+    delinquent:'見るとイライラすんだよ。近寄んな',
+    cool:      '……不快。なるべく視界に入れたくない',
+    seductive: 'なんか癇に障るのよね……嫌な感じ',
+    polite:    '近くにいると、どうも気持ちが落ち着かなくて……',
+  },
+  hatred: {
+    normal:    '顔を見ると、腹の底が煮えくり返る',
+    ojousama:  '思い出すだけで……はらわたが煮えくりますわ',
+    delinquent:'ぶっ潰す。絶対にぶっ潰す。それしか考えてねえ',
+    cool:      '……殺意に近い感情がある。自覚はしている',
+    seductive: '許せない。この気持ち、絶対に消えない',
+    polite:    '……どうしても、許すことができません',
+  },
+};
+
+function getEmotionCategory(bond, rivalry, selfOvr, targetOvr) {
+  const bLvl = bond >= 65 ? 'high' : bond >= 40 ? 'mid' : 'low';
+  const rLvl = rivalry >= 50 ? 'high' : rivalry >= 20 ? 'mid' : 'low';
+  if (bLvl === 'high' && rLvl === 'low') return 'trust';
+  if (bLvl === 'high' && rLvl === 'mid') return 'rival_friend';
+  if (bLvl === 'high' && rLvl === 'high') return 'destined_rival';
+  if (bLvl === 'mid' && rLvl === 'low') return 'acquaintance';
+  if (bLvl === 'mid' && rLvl === 'mid') return 'intrigued';
+  if (bLvl === 'mid' && rLvl === 'high') return 'hostile_competitor';
+  if (bLvl === 'low' && rLvl === 'low') return (selfOvr - targetOvr >= 10) ? 'contempt' : 'indifferent';
+  if (bLvl === 'low' && rLvl === 'mid') return 'irritation';
+  return 'hatred'; // low × high
+}
+
+function getEmotionText(bond, rivalry, selfOvr, targetOvr, archetype) {
+  const category = getEmotionCategory(bond, rivalry, selfOvr, targetOvr);
+  const at = archetype || 'normal';
+  const texts = EMOTION_TEXTS[category];
+  return texts[at] || texts.normal;
+}
+
 function _relmapGetAllChars() {
   return Engine.database.getAllFighters(G);
 }
@@ -4500,6 +4605,8 @@ function _relmapShowComparePopup() {
     h += `<div class="rm-cmp-rel-direction" style="color:${bColor}">→ ${b.name.slice(0,5)} への感情</div>`;
     h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
     h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    const emotionAtoB = getEmotionText(bAtoB, rAtoB, a.ovr, b.ovr, a._char?.archetype);
+    h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionAtoB}</div>`;
     h += `</div>`;
   }
   h += `</div><div class="rm-compare-divider">\u21C4</div><div class="rm-compare-side">`;
@@ -4511,12 +4618,32 @@ function _relmapShowComparePopup() {
     h += `<div class="rm-cmp-rel-direction" style="color:${aColor}">← ${a.name.slice(0,5)} への感情</div>`;
     h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
     h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    const emotionBtoA = getEmotionText(bBtoA, rBtoA, b.ovr, a.ovr, b._char?.archetype);
+    h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionBtoA}</div>`;
     h += `</div>`;
   }
   h += `</div></div>`;
 
   if (!rel) {
     h += `<div style="text-align:center;padding:6px 0;color:var(--text-dim);font-size:12px">\uD83D\uDD17 直接の関係はありません</div>`;
+  }
+
+  // 関係性タグ
+  const relTags = [];
+  const ageA = a._char?.age || 17, ageB = b._char?.age || 17;
+  const ageDiff = Math.abs(ageA - ageB);
+  if (ageDiff <= 2) relTags.push('\uD83D\uDC65 同世代');
+  const isColleague = Engine.orgTimeline.wereColleagues(a._char || {}, b._char || {});
+  if (isColleague) relTags.push('\uD83E\uDD1D 元同僚');
+  if (ageDiff >= 3 && (a.orgId === b.orgId || isColleague)) {
+    const senior = ageA > ageB ? a.name : b.name;
+    const junior = ageA > ageB ? b.name : a.name;
+    relTags.push(`\uD83D\uDD30 ${senior}\u2192${junior}`);
+  }
+  const h2hRec = Engine.h2h.getRecord(G, a.id, b.id);
+  if (h2hRec && h2hRec.bestMQ >= 85) relTags.push('\u2728 名勝負あり');
+  if (relTags.length > 0) {
+    h += `<div class="rm-cmp-tags">${relTags.join('<span class="rm-cmp-tag-sep">\uFF0F</span>')}</div>`;
   }
 
   h += `<div class="rm-compare-body">`;

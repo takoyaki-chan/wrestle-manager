@@ -2489,6 +2489,7 @@ const Engine = {
         promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
+        orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
       };
     },
     // Initialize all AI org rosters from ORG_ASSIGN
@@ -4084,6 +4085,12 @@ const Engine = {
             };
             s = Engine.relationships.applyMatchResult(s, r.left.id, r.right.id, context, aiRelRng);
           });
+          // h2h記録: AI団体の試合
+          let aiH2h = { ...(s.h2h || {}) };
+          aiMatchResults.forEach(r => {
+            aiH2h = Engine.h2h.update(aiH2h, r.left.id, r.right.id, r.winner, r.mq, false, false, s.season, s.week);
+          });
+          s = { ...s, h2h: aiH2h };
           // 消費済みフラグをクリア
           delete aiOrgData._lastMatchResults;
         }
@@ -4704,6 +4711,14 @@ const Engine = {
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
+    // h2h記録: プレイヤー団体興行（auto-sim用パス）
+    let exH2h = { ...(s.h2h || {}) };
+    results.forEach((r, idx) => {
+      const m = validMatches[idx];
+      exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
+    });
+    s = { ...s, h2h: exH2h };
+
     // v2.0: matchupLog にカード鮮度用の対戦記録を追加
     const newMatchupEntries = validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows }));
     const updatedMatchupLog = [...(s.matchupLog || []), ...newMatchupEntries];
@@ -4734,12 +4749,14 @@ const Engine = {
           if (aiOrgs.length > 0) {
             const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
             const absWeekNow = ((s.season || 1) - 1) * 48 + (s.week || 1);
-            const transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+            let transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+            transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
             delete transferred.trustCap; delete transferred.s4Count;
             org.roster = [...(org.roster || []), transferred];
           }
         } else {
-          const faFighter = { ...d.fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+          let faFighter = { ...d.fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+          faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
           delete faFighter.trustCap; delete faFighter.s4Count;
           s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
         }
@@ -4948,6 +4965,8 @@ const Engine = {
           let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
           // Phase 3: orgJoinWeek設定
           resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+          // orgTimeline: 所属変更記録
+          resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
           // v1.3: Record transfer event
           resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach' });
           const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
@@ -4986,6 +5005,8 @@ const Engine = {
             let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
             // Phase 3: orgJoinWeek設定
             resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+            // orgTimeline: 所属変更記録
+            resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
             // v1.3: Record forced transfer
             resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach_forced' });
             const newAiOrgs = { ...s.aiOrgs, [targetId]: { ...targetData, roster: [...targetData.roster, resetFighter] } };
@@ -5031,6 +5052,8 @@ const Engine = {
       };
       // Phase 3: orgJoinWeek設定
       newFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+      // orgTimeline: 所属変更記録
+      newFighter = Engine.orgTimeline.transfer(newFighter, 'player', s.season, s.week);
       // v1.3: Record transfer event
       newFighter = Engine.career.addEvent(newFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'poach' });
       s = { ...s,
@@ -7022,6 +7045,7 @@ const Engine = {
       promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
       lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
       orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
+      orgTimeline: [{ orgId: template._orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
     };
   },
 
@@ -7289,6 +7313,8 @@ const Engine = {
       // Phase 1: 人間関係データ基盤
       relationships: {},
       relationshipCounters: {},
+      // h2h: ペア別対戦履歴
+      h2h: {},
     };
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
@@ -10614,14 +10640,16 @@ Engine.contract = {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {
         const orgData = s.aiOrgs[orgId];
-        const transferredFighter = { ...fighter, orgId, trust: 50, salaryBonus: 0 };
+        let transferredFighter = { ...fighter, orgId, trust: 50, salaryBonus: 0 };
+        transferredFighter = Engine.orgTimeline.transfer(transferredFighter, orgId, s.season, s.week);
         const newOrg = { ...orgData, roster: [...orgData.roster, transferredFighter] };
         s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: newOrg } };
       }
       info.orgName = Engine.contract._getOrgName(orgId, s);
     } else {
       // freeAgent
-      const faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+      let faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+      faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
       s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
     }
 
@@ -12104,6 +12132,90 @@ Engine.relationships.personalityCompatibility = function(a, b) {
     a.archetype || 'normal', b.archetype || 'normal'
   );
   return pAdj + aAdj;
+};
+
+// ── Engine.h2h: ペア別対戦履歴 ──────────────────────────
+Engine.h2h = {
+  getKey(id1, id2) {
+    const a = Math.min(id1, id2), b = Math.max(id1, id2);
+    return `${a}>${b}`;
+  },
+  getRecord(state, id1, id2) {
+    const key = this.getKey(id1, id2);
+    return (state.h2h || {})[key] || null;
+  },
+  /** 特定のファイターから見た勝敗を返す */
+  getRecordFor(state, selfId, opponentId) {
+    const rec = this.getRecord(state, selfId, opponentId);
+    if (!rec) return null;
+    const isA = selfId < opponentId;
+    return {
+      matches: rec.matches,
+      wins: isA ? rec.winsA : rec.winsB,
+      losses: isA ? rec.winsB : rec.winsA,
+      draws: rec.draws,
+      bestMQ: rec.bestMQ,
+      lastMatch: rec.lastMatch,
+      hadTitleMatch: rec.hadTitleMatch,
+      hadPPV: rec.hadPPV,
+    };
+  },
+  /** 試合結果からh2hを更新し、新しいh2hオブジェクトを返す */
+  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week) {
+    const a = Math.min(leftId, rightId), b = Math.max(leftId, rightId);
+    const key = `${a}>${b}`;
+    const newH2h = { ...(h2h || {}) };
+    const entry = { ...(newH2h[key] || { matches: 0, winsA: 0, winsB: 0, draws: 0, bestMQ: 0, hadTitleMatch: false, hadPPV: false }) };
+    entry.matches += 1;
+    if (winner === 'draw') entry.draws += 1;
+    else {
+      const winnerId = winner === 'left' ? leftId : rightId;
+      if (winnerId === a) entry.winsA += 1;
+      else entry.winsB += 1;
+    }
+    entry.bestMQ = Math.max(entry.bestMQ, mq || 0);
+    entry.lastMatch = { season, week };
+    if (isTitleMatch) entry.hadTitleMatch = true;
+    if (isPPV) entry.hadPPV = true;
+    newH2h[key] = entry;
+    return newH2h;
+  },
+};
+
+// ── Engine.orgTimeline: ファイター所属団体履歴 ──────────
+Engine.orgTimeline = {
+  /** 所属変更を記録（ファイターの新コピーを返す） */
+  transfer(fighter, newOrgId, season, week) {
+    const timeline = [...(fighter.orgTimeline || [])];
+    if (timeline.length > 0) {
+      const last = { ...timeline[timeline.length - 1], toSeason: season, toWeek: week };
+      timeline[timeline.length - 1] = last;
+    }
+    timeline.push({ orgId: newOrgId, fromSeason: season, fromWeek: week });
+    return { ...fighter, orgTimeline: timeline };
+  },
+  /** 2人が同時期に同じ団体にいたかを判定（現在同団体は除外） */
+  wereColleagues(fighterA, fighterB) {
+    const tlA = fighterA?.orgTimeline || [];
+    const tlB = fighterB?.orgTimeline || [];
+    if (tlA.length === 0 || tlB.length === 0) return false;
+    const currentOrgA = !tlA[tlA.length - 1].toSeason ? tlA[tlA.length - 1].orgId : null;
+    const currentOrgB = !tlB[tlB.length - 1].toSeason ? tlB[tlB.length - 1].orgId : null;
+    for (const a of tlA) {
+      for (const b of tlB) {
+        if (a.orgId !== b.orgId) continue;
+        if (a.orgId === 'fa') continue;
+        // 現在同じ団体の組み合わせはスキップ
+        if (a.orgId === currentOrgA && a.orgId === currentOrgB && !a.toSeason && !b.toSeason) continue;
+        const aStart = a.fromSeason * 100 + (a.fromWeek || 1);
+        const aEnd = a.toSeason ? a.toSeason * 100 + (a.toWeek || 1) : 99999;
+        const bStart = b.fromSeason * 100 + (b.fromWeek || 1);
+        const bEnd = b.toSeason ? b.toSeason * 100 + (b.toWeek || 1) : 99999;
+        if (aStart < bEnd && bStart < aEnd) return true;
+      }
+    }
+    return false;
+  },
 };
 
 // Node.js モジュールエクスポート（ブラウザではスキップ）

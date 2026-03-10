@@ -1,12 +1,22 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（勢力図v2追加修正 + 比較ポップアップ感情配置改善）
+> 最終更新: 2026-03-10（h2hデータ蓄積・orgTimeline・感情テキスト・関係性タグ）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**h2hデータ蓄積・orgTimeline・感情テキスト・関係性タグ 実装完了（2026-03-10）。**
+
+- **G.h2h**: ペア別対戦履歴データ蓄積。キー`${min}>${max}`で全対戦ペアの成績（勝敗数/ベストMQ/タイトル戦・PPV有無）を記録。Engine.h2h名前空間（getKey/getRecord/getRecordFor/update）。プレイヤー興行/AI興行/対抗戦/PPV の4パスで記録
+- **fighter.orgTimeline**: ファイター個人の所属団体履歴。配列形式（orgId/fromSeason/fromWeek/toSeason/toWeek）。Engine.orgTimeline名前空間（transfer/wereColleagues）。スカウト獲得/引き抜き/解雇/突然退団/契約退団の全移籍パスで記録
+- **感情テキストシステム**: bond×rivalry×OVR差→10カテゴリ（trust/rival_friend/destined_rival/acquaintance/intrigued/hostile_competitor/indifferent/contempt/irritation/hatred）判定。archetype別60パターン固定テキスト。比較ポップアップの各キャラ感情メーター下に💭表示
+- **関係性タグ**: 比較ポップアップのヘッダーとボディ間に表示。👥同世代（年齢差2以内）/🔰先輩→後輩（年齢差3+、同団体or元同僚）/🤝元同僚（orgTimeline重複判定）/✨名勝負あり（h2h.bestMQ≥85）
+- **既存セーブ移行**: `_migrated_h2h_orgTimeline_v1`。h2h={}初期化、全ファイターにorgTimeline初期エントリ生成
+- 変更: engine.js, app.js, ui-render.js, index.html
+- auto-sim 500シーズン ALL CLEAR
 
 **勢力図v2追加修正 + 比較ポップアップ感情配置改善 実装完了（2026-03-10）。**
 
