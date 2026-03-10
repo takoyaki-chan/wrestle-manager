@@ -1195,24 +1195,18 @@ const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（
 // ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
 // ╚══════════════════════════════════════════════════════════╝
 const GROWTH_CONFIG = {
-  baseGrowthRate: 0.02,   // base fraction of gap to close per practice
-  growthRandom: 1.5,      // random bonus on growth
+  baseLearning: 2.0,        // 🆕 v2.0: 1回の練習の基本成長量（距離比率=1.0時）
   declineStartSeason: 4,  // decline begins after this many seasons
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
-  peakBonusSeason: 2,     // seasons 1-2 have bonus growth
-  peakGrowthMult: 1.3,    // growth multiplier during peak seasons
   // v0.8: Intensive training
   intensiveMult: 1.5,     // growth multiplier for intensive training
   intensiveCondDrain: 2.0, // condition drain multiplier
   intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50,    // min condition to allow intensive
-  practiceShare: 0.6,      // 練習:試合 = 6:4 の予算配分
-  convergenceRatio: 0.15,  // 🔧 trainCapの上位15%で減速開始
   matchGrowthBase: 0.35    // 🔧 試合1回あたりの基本成長（旧: 0.7）
 };
-const GROWTH_SEASON_BASE = 8.0; // 1シーズンの成長予算（4ステ合計、ageMul=1.0時）
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
@@ -5634,7 +5628,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FRESHNESS_CONFIG, COACH_RANKS, COACH_STYLE_MAP, COACH_STYLE_BONUS,
     COACH_SLOT_THRESHOLDS, COACH_POOL_CFG, COACH_TRAIT_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
-    GROWTH_CONFIG, GROWTH_SEASON_BASE,
+    GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG,
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,

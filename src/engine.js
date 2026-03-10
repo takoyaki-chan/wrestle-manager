@@ -2211,20 +2211,17 @@ const Engine = {
       return Engine.util.clamp(factor, 0.02, 1.2);
     },
 
-    // Weekly growth calculation — growth-rebalance v1.0: シーズン予算(share)ベース
+    // Weekly growth calculation — growth-system-redesign v2.0: trainCap距離ベース成長
     // AI統一成長 Phase3: overrideCoachMul引数追加（AI団体はプレイヤーのコーチシステムを持たない）
     calcGrowth(rng, G, char, stat, overrideCoachMul = null) {
       if (stat === 'mn') return 0; // MNT is innate, no training growth
+
       const current = char[stat];
       const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
       if (current >= trainCap) return 0;
 
-      // 残り距離ベースの配分比率
       const remaining = trainCap - current;
-      const totalRemaining = ['pw','sp','te','st'].reduce((s, st) =>
-        s + Math.max(0, (char.trainCap?.[st] || char.pot?.[st] || char[st]) - char[st]), 0);
-      if (totalRemaining <= 0) return 0;
-      const share = remaining / totalRemaining;
+      const ratio = remaining / trainCap; // 距離比率: 天井から遠いほど1.0に近い
 
       const age = char.age || (17 + (char.careerSeasons || 0));
       const ageMul = ageMultiplier(age, char.traits);
@@ -2232,16 +2229,13 @@ const Engine = {
 
       const coachMul = overrideCoachMul ?? Engine.coach.getCharGrowthMult(G, char.id, stat);
 
-      // 1練習あたりbase = seasonBudget × practiceShare × share / 9週
-      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul;
-      const perPractice = (seasonBudget * GROWTH_CONFIG.practiceShare * share) / 9;
+      // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ
+      const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul;
 
       // 特性ボーナス
       let bonus = 1.0;
-      // ムードメーカーは士気システムに移動（updateLockerRoomMorale）
       if ((char.age || 99) <= 19 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
       if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.10;
-      // 反骨心: trust30以下のとき逆境バフ×1.15
       if (Traits.has(char, '反骨心') && (char.trust != null ? char.trust : 50) <= 30) bonus *= 1.15;
 
       // variance（努力家: 0.75-1.5、破天荒: 0.0-2.5、通常: 0.5-1.5）
@@ -2249,13 +2243,10 @@ const Engine = {
       let weeklyVariance = vFloor + Engine.rng.float(rng) * (1.5 - vFloor);
       if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
 
-      const rawGain = perPractice * bonus * weeklyVariance;
+      const rawGain = baseGain * bonus * weeklyVariance;
       const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
-      // AI統一成長 Phase5: trainCap比率ベース逓減（上位15%で減速開始）
-      const convergenceThreshold = trainCap * GROWTH_CONFIG.convergenceRatio;
-      const convergenceMul = remaining < convergenceThreshold
-        ? Math.sqrt(remaining / convergenceThreshold) : 1.0;
-      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * convergenceMul * 10) / 10);
+
+      const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
 
@@ -3226,46 +3217,6 @@ const Engine = {
       });
 
       return { aiOrgs: newAiOrgs, events };
-    },
-
-    // AI season growth — growth-rebalance v1.0: プレイヤーと同一のseasonBudgetモデル
-    aiSeasonGrowth(rng, fighter, org) {
-      const f = { ...fighter };
-      // v1.8: スランプ/モチベ喪失による成長ブロック
-      if (f._aiGrowthBlock) {
-        const { _aiGrowthBlock: _, _aiGrowthHalf: __, ...clean } = f;
-        return clean;
-      }
-      const growthMod = f._aiGrowthHalf ? 0.5 : 1.0;
-      const age = f.age || 17;
-      const ageMul = ageMultiplier(age, (f || {}).traits);
-      if (ageMul <= 0) { const { _aiGrowthHalf: _, _aiGrowthBlock: _b, ...clean } = f; return clean; }
-
-      const coachMul = org.coachMul || 1.0;
-      const tierGrowth = (AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B).growthBonus;
-      // growth-rebalance v2: AI団体も興行を開催→試合成長相当を予算に含める
-      const aiMatchEquivalent = 1.15;
-      const seasonBudget = GROWTH_SEASON_BASE * ageMul * coachMul * tierGrowth * aiMatchEquivalent;
-
-      const stats = ['pw','sp','te','st'];
-      const totalRemaining = stats.reduce((s, st) =>
-        s + Math.max(0, (f.trainCap?.[st] || 100) - f[st]), 0);
-      if (totalRemaining <= 0) {
-        const { _aiGrowthHalf: _h, _aiGrowthBlock: _b, ...cleanF } = f;
-        return cleanF;
-      }
-
-      stats.forEach(s => {
-        if (f[s] >= (f.trainCap?.[s] || 100)) return;
-        const remaining = (f.trainCap?.[s] || 100) - f[s];
-        const share = remaining / totalRemaining;
-        const variance = 0.85 + Engine.rng.float(rng) * 0.30; // 0.85-1.15
-        const gain = Math.round(seasonBudget * share * variance * growthMod);
-        f[s] = Math.min(f.trainCap?.[s] || 100, f[s] + gain);
-      });
-
-      const { _aiGrowthHalf: _h, _aiGrowthBlock: _b, ...cleanF } = f;
-      return cleanF;
     },
 
     // AI season popularity (rival-spec §4.2)
