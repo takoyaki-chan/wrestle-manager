@@ -3253,6 +3253,32 @@ function _renderDbRelmap() {
 }
 
 // ══════════════════════════════════════════════════════════
+// Face pattern helper — defsに<pattern>として顔画像を登録
+// innerHTMLでnodeLayerを書き換えても画像が再読込されない
+// ══════════════════════════════════════════════════════════
+function _relmapBuildFacePatterns(svg) {
+  const defs = svg.querySelector('defs');
+  if (!defs) return;
+  defs.querySelectorAll('[id^="rm-face-"]').forEach(el => el.remove());
+  _relmapNodes.forEach(n => {
+    const pUrl = getPortraitUrl(n.id);
+    if (!pUrl) return;
+    const pat = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pat.id = `rm-face-${n.id}`;
+    pat.setAttribute('patternContentUnits', 'objectBoundingBox');
+    pat.setAttribute('width', '1');
+    pat.setAttribute('height', '1');
+    const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    img.setAttribute('href', pUrl);
+    img.setAttribute('width', '1');
+    img.setAttribute('height', '1');
+    img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    pat.appendChild(img);
+    defs.appendChild(pat);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
 // _drawRelmapAfterRender — physics sim + event listeners
 // ══════════════════════════════════════════════════════════
 function _drawRelmapAfterRender() {
@@ -3299,6 +3325,9 @@ function _drawRelmapAfterRender() {
   _relmapAlpha = { value: 1.0, decay: 0.0015, min: 0.005 };
   _relmapFrameCount = 0;
   _relmapFocusTargets = {};
+
+  // Build face image patterns in <defs> (persistent across innerHTML updates)
+  _relmapBuildFacePatterns(svg);
 
   // Apply visibility
   _relmapUpdateVisibility();
@@ -3552,12 +3581,9 @@ function _relmapRender(orgCenters) {
     if (hasRiv && !dimmed) {
       nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR+3}" fill="none" stroke="#e17055" stroke-width="1.5" opacity="0.25"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/></circle>`;
     }
-    // Main circle (border ring + face image or fallback)
+    // Main circle (border ring + face pattern or fallback)
     if (pUrl) {
-      const clipId = `rm-clip-${n.id}`;
-      nh += `<clipPath id="${clipId}"><circle cx="${n.x}" cy="${n.y}" r="${nodeR-1}"/></clipPath>`;
-      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="rgba(15,15,25,0.9)" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
-      nh += `<image href="${pUrl}" x="${n.x-nodeR}" y="${n.y-nodeR}" width="${nodeR*2}" height="${nodeR*2}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+      nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="url(#rm-face-${n.id})" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
     } else {
       nh += `<circle cx="${n.x}" cy="${n.y}" r="${nodeR}" fill="${isFocused?oc+'33':'rgba(15,15,25,0.9)'}" stroke="${oc}" stroke-width="${isFocused?3:2}" ${isFocused?'filter="url(#rm-glow-gold)"':''}/>`;
       nh += `<text x="${n.x}" y="${n.y+1}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="${nodeR*0.7}" font-weight="600" fill="${oc}" opacity="0.5">${n.ovr}</text>`;
@@ -4298,6 +4324,7 @@ function _relmapSetViewMode(mode) {
         }
         defsHtml += '</defs>';
         svg.innerHTML = defsHtml + '<g id="relmapZoneLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g>';
+        _relmapBuildFacePatterns(svg);
       }
     }
     _relmapOrgFilter = null;
