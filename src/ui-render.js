@@ -3386,6 +3386,20 @@ function _relmapBuildFacePatterns(svg) {
 // ══════════════════════════════════════════════════════════
 // _drawRelmapAfterRender — physics sim + event listeners
 // ══════════════════════════════════════════════════════════
+function _relmapEscapeAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/\"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function _relmapBuildInlineFacePattern(patternId, pUrl) {
+  const safeUrl = _relmapEscapeAttr(pUrl);
+  const safeId = _relmapEscapeAttr(patternId);
+  return `<pattern id="${safeId}" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="${safeUrl}" xlink:href="${safeUrl}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`;
+}
+
 function _drawRelmapAfterRender() {
   const container = document.getElementById('relmapContainer');
   const svg = document.getElementById('relmapSvg');
@@ -4129,6 +4143,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   });
 
   // Pass 3: SVG文字列を3層で構築（ライン→背景→ノード）
+  let defsSvg = '<defs>';
   let linesSvg = '', bgSvg = '', nodeSvg = '';
 
   // ── 層1: 団体間因縁アーク ──
@@ -4209,10 +4224,9 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
 
     // 顔アイコン or 塗り円
     if (pUrl) {
-      const clipId = `pmap-clip-${f.id}`;
-      nodeSvg += `<clipPath id="${clipId}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r - 0.5).toFixed(1)}"/></clipPath>`;
-      nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
-      nodeSvg += `<image href="${pUrl}" x="${(x - r).toFixed(1)}" y="${(y - r).toFixed(1)}" width="${(r * 2).toFixed(1)}" height="${(r * 2).toFixed(1)}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+      const patternId = `pmap-face-${f.id}`;
+      defsSvg += _relmapBuildInlineFacePattern(patternId, pUrl);
+      nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="url(#${patternId})" stroke="${strokeColor}" stroke-width="${sw}"/>`;
     } else {
       const fillOp = isAce ? 0.45 : isTop3 ? 0.28 : 0.18;
       nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${orgColor}" fill-opacity="${fillOp}" stroke="${strokeColor}" stroke-width="${sw}"/>`;
@@ -4238,7 +4252,8 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
 
   bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  ── 因縁  / クリックで詳細 / サイドバーで団体表示</text>`;
 
-  svg.innerHTML = linesSvg + bgSvg + nodeSvg;
+  defsSvg += '</defs>';
+  svg.innerHTML = defsSvg + linesSvg + bgSvg + nodeSvg;
 }
 
 // 単体団体ビュー — 有機的散布型
@@ -4327,6 +4342,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
   });
 
+  let defsSvg = '<defs>';
   let svgHtml = '';
 
   // ヘッダー
@@ -4360,10 +4376,9 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 
     // 顔アイコン or 塗り円
     if (pUrl) {
-      const clipId = `ph-clip-${f.id}`;
-      svgHtml += `<clipPath id="${clipId}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r - 0.5).toFixed(1)}"/></clipPath>`;
-      svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
-      svgHtml += `<image href="${pUrl}" x="${(x - r).toFixed(1)}" y="${(y - r).toFixed(1)}" width="${(r * 2).toFixed(1)}" height="${(r * 2).toFixed(1)}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+      const patternId = `ph-face-${f.id}`;
+      defsSvg += _relmapBuildInlineFacePattern(patternId, pUrl);
+      svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="url(#${patternId})" stroke="${strokeColor}" stroke-width="${sw}"/>`;
     } else {
       svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
       svgHtml += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${color}" font-size="${(r * 0.6).toFixed(1)}" font-family="sans-serif">${ovr}</text>`;
@@ -4389,7 +4404,8 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 
   svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い（OVR高）  ● サイズ=OVR  クリックで詳細</text>`;
 
-  svg.innerHTML = svgHtml;
+  defsSvg += '</defs>';
+  svg.innerHTML = defsSvg + svgHtml;
 }
 
 // ══════════════════════════════════════════════════════════

@@ -997,3 +997,5 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - セッション17のバランスシミュレーション結果: `tests/balance-sim.js` で再現可能
 - 会場ロック判定は `Math.round(G.orgPop)` で比較すること（内部小数化対応）
 - **立ち絵画像**: `image/stand/stand_{charId}.webp`（512×768, 2:3）に98枚プレースホルダー配置済み。本番画像で上書きするだけで差し替え可能。観戦モードのCSS `aspect-ratio:2/3` をそのまま利用可能
+
+- 2026-03-10: Fixed missing faction-map portraits in the relationship map by switching power-view SVG portraits from direct <image>+clipPath rendering to inline face patterns.
