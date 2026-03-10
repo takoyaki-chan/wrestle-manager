@@ -369,17 +369,16 @@ function renderWeekScreen() {
     </div>`;
 
     // v0.95: Season Recap Card (show detailed stats from completed season)
+    // 常に現在のシーズンデータを使う（lastArchiveは前シーズンのもので混同を防ぐ）
     const st = G.seasonStats || {};
-    const lastArchive = (G.seasonHistory || []).slice(-1)[0];
-    if (offW <= 1 && (st.showCount > 0 || lastArchive)) {
-      // 今終わったシーズンのデータを使う（lastArchiveは前シーズンのもの）
-      const src = st.showCount > 0 ? st : (lastArchive || st);
+    if (offW <= 1) {
+      const src = st;
       const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
       // 現在のランキングを再計算（G.rankingsはシーズン開始時点で更新が止まるため）
       const _recapRankings = Engine.ranking.updateRankings(G);
       const recapRank = Engine.ranking.getPlayerRank(_recapRankings);
       const recapRankColor = recapRank===1?'var(--gold)':recapRank===2?'#e74c3c':recapRank===3?'#9b59b6':'#2ecc71';
-      const _recapSeason = src === st && st.showCount > 0 ? G.season : (lastArchive ? lastArchive.season : G.season);
+      const _recapSeason = G.season;
       html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
         <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${_recapSeason} レポート</h4>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
@@ -2679,6 +2678,7 @@ function renderDatabase() {
     { label: '⚔ 団体比較', idx: 2 },
     { label: '🏅 殿堂', idx: 3 },
     { label: '🔗 相関図', idx: 4 },
+    { label: '🗺 勢力図', idx: 5 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
@@ -2693,6 +2693,7 @@ function renderDatabase() {
   else if (_dbSubTab === 2) html += _renderDbOrgCompare();
   else if (_dbSubTab === 3) html += _renderDbHallOfFame();
   else if (_dbSubTab === 4) html += _renderDbRelmap();
+  else if (_dbSubTab === 5) html += _renderDbPowerMap();
   html += `</div>`;
 
   el.innerHTML = html;
@@ -2701,6 +2702,8 @@ function renderDatabase() {
   if (_dbSubTab === 2) _drawOrgCompareChart();
   // 相関図ならマップを描画（DOM挿入後に実行）
   if (_dbSubTab === 4) _drawRelmapAfterRender();
+  // 勢力図ならSVG接続線を描画
+  if (_dbSubTab === 5) _drawPowerMapSvg();
 }
 
 function setDbSubTab(idx) {
@@ -2959,6 +2962,24 @@ function _renderDbHallOfFame() {
 // ── 団体比較 ──────────────────────────────────────────────
 let _dbCompareTarget = 'org_s';
 
+// ══════════════════════════════════════════════════════════
+// 勢力図サブタブ（A案）— SVGコンテナのみ返す。描画は_buildOrgColumnSvgContent共通関数
+// ══════════════════════════════════════════════════════════
+function _renderDbPowerMap() {
+  return `<div id="pmapContainer" style="width:100%;height:560px;position:relative;overflow:hidden">
+    <svg id="pmapSvg" viewBox="0 0 640 560" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block"></svg>
+    <div style="position:absolute;top:6px;right:8px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.7;pointer-events:none">
+      ↑ 強い / ↓ 弱い<br>● サイズ = OVR<br>── 団体間の因縁
+    </div>
+  </div>`;
+}
+
+function _drawPowerMapSvg() {
+  const svg = document.getElementById('pmapSvg');
+  if (!svg) return;
+  _buildOrgColumnSvgContent(svg, 640, 560);
+}
+
 function _renderDbOrgCompare() {
   const AXES = ['TOP5実力', '層の厚さ', '団体人気', 'TOP5人気'];
   const playerScores = Engine.database.getOrgCompareScores(G, 'player');
@@ -3169,6 +3190,7 @@ function _renderDbRelmap() {
   html += `<div class="rm-view-toggle">`;
   html += `<button class="rm-vt-btn${_relmapViewMode==='network'?' active':''}" onclick="_relmapSetViewMode('network')">\uD83C\uDF10 ネットワーク</button>`;
   html += `<button class="rm-vt-btn${_relmapViewMode==='focus'?' active':''}" onclick="_relmapSetViewMode('focus')">\uD83C\uDFAF フォーカス</button>`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='power'?' active':''}" onclick="_relmapSetViewMode('power')">\uD83D\uDDFA\uFE0F 勢力図</button>`;
   html += `</div>`;
   // Center indicator
   html += `<div class="rm-center-indicator" id="rmCenterIndicator" style="display:${_relmapCenterId && centerChar?'flex':'none'}">`;
@@ -3851,14 +3873,344 @@ function _relmapHideCtxMenu() {
 // ══════════════════════════════════════════════════════════
 // View mode / center / filter controls
 // ══════════════════════════════════════════════════════════
+// 勢力図 viewMode — 団体列型階層SVG（A案・C案共通）
+// ══════════════════════════════════════════════════════════
+function _drawRelmapPowerView(svg) {
+  const W = _relmapW, H = _relmapH;
+  if (!W || !H) return;
+  // サイドバー幅分オフセット（サイドバーは左に固定200px）
+  const sidebar = document.querySelector('.rm-sidebar, .relmap-sidebar');
+  const sidebarW = sidebar ? sidebar.offsetWidth : 200;
+  _buildOrgColumnSvgContent(svg, W, H, sidebarW);
+}
+
+// 団体列型序列SVG共通実装（+ 単体団体横並びビュー）
+// ・各列 = 1団体、ランキング順（左=1位）
+// ・行 = 選手（上=OVR高い、緩やかなOVRベース縦配置）
+// ・ノード = 顔アイコン+OVRバッジ
+// ・王者 = 金リング+王冠
+// ・団体間因縁 = オレンジ破線アーク
+// ・org filter有効時 = 横並びビューに切り替え
+function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
+  leftOffset = leftOffset || 0;
+  const drawW = W - leftOffset;
+
+  // 単体団体ビュー（orgFilter有効時）
+  if (_relmapOrgFilter && _relmapOrgFilter !== 'fa') {
+    _buildOrgHorizontalView(svg, W, H, leftOffset);
+    return;
+  }
+
+  // 団体リスト（ランキング順）
+  const rankings = Engine.ranking.updateRankings(G);
+  const rankOrder = [...rankings].sort((a, b) => a.rank - b.rank);
+  const orgList = rankOrder.map(r => {
+    const isPlayer = r.orgId === 'player';
+    const aiData = !isPlayer ? ((G.aiOrgs || {})[r.orgId] || {}) : {};
+    const roster = isPlayer
+      ? (G.roster || []).filter(c => !c.isRental)
+      : (aiData.roster || []);
+    return {
+      id: r.orgId, name: r.name, rank: r.rank,
+      color: _RELMAP_ORG_COLORS[r.orgId] || '#888',
+      roster,
+    };
+  });
+
+  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  const colCount = orgList.length;
+  const colW = drawW / colCount;
+  const HEADER_H = 58;
+  const contentH = H - HEADER_H - 6;
+  const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣'];
+
+  // 適応的ノードサイズ（全団体中の最大在籍数に合わせてスケール）
+  const maxN = Math.max(1, ...orgList.map(org => org.roster.length));
+  const baseR = Math.max(12, Math.min(18, Math.floor((contentH - 20) / (maxN * 2.8))));
+
+  // OVRレンジ（全選手）→ 縦位置の緩やかな正規化に使用
+  const allFighters = orgList.flatMap(org => org.roster);
+  const allOVRs = allFighters.map(f => Engine.util.ov(f));
+  const globalOVRMin = allOVRs.length ? Math.min(...allOVRs) : 50;
+  const globalOVRMax = allOVRs.length ? Math.max(...allOVRs) : 90;
+  const globalOVRRange = Math.max(1, globalOVRMax - globalOVRMin);
+
+  // Pass 1: 各選手の描画位置を計算（ランクベース60%+OVRベース40%のブレンド）
+  const posMap = {};
+  const sortedRosters = {};
+  const fighterOrgMap = {};
+
+  orgList.forEach((org, ci) => {
+    const cx = leftOffset + ci * colW + colW / 2;
+    const sorted = [...org.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    sortedRosters[org.id] = sorted;
+    const n = Math.max(sorted.length, 1);
+    const PAD = baseR + 4;
+    const zone = contentH - PAD * 2;
+    sorted.forEach((f, rank) => {
+      const ovr = Engine.util.ov(f);
+      const r = baseR;
+      // ランクベース: 均等配置
+      const rankY = HEADER_H + PAD + (n > 1 ? rank * zone / (n - 1) : zone / 2);
+      // OVRベース: OVRが高いほど上（y小）
+      const ovrNorm = (ovr - globalOVRMin) / globalOVRRange;
+      const ovrY = HEADER_H + PAD + (1 - ovrNorm) * zone;
+      // 60%ランク + 40%OVRブレンド
+      const y = rankY * 0.6 + ovrY * 0.4;
+      posMap[f.id] = { x: cx, y, r, color: org.color };
+      fighterOrgMap[f.id] = org.id;
+    });
+  });
+
+  // Pass 2: SVG文字列を3層で構築（ライン→背景+ヘッダー→ノード）
+  let linesSvg = '', bgSvg = '', nodeSvg = '';
+
+  // ── 層1: 団体間因縁アーク ──
+  if (G.relationships) {
+    const crossPairs = new Set();
+    Object.keys(G.relationships).forEach(key => {
+      const sep = key.indexOf('>');
+      if (sep < 0) return;
+      const aId = key.slice(0, sep), bId = key.slice(sep + 1);
+      const orgA = fighterOrgMap[aId], orgB = fighterOrgMap[bId];
+      if (!orgA || !orgB || orgA === orgB) return;
+      const pairKey = aId < bId ? `${aId}>${bId}` : `${bId}>${aId}`;
+      if (crossPairs.has(pairKey)) return;
+      crossPairs.add(pairKey);
+      const rivAB = (G.relationships[key] || {}).rivalry || 0;
+      const rivBA = (G.relationships[`${bId}>${aId}`] || {}).rivalry || 0;
+      const maxRiv = Math.max(rivAB, rivBA);
+      if (maxRiv < 22) return;
+      const posA = posMap[aId], posB = posMap[bId];
+      if (!posA || !posB) return;
+      const opacity = Math.min(0.55, 0.1 + maxRiv / 130);
+      const sw = Math.min(2.5, 0.5 + maxRiv / 55);
+      const mx = (posA.x + posB.x) / 2;
+      const my = Math.min(posA.y, posB.y) - Math.abs(posA.x - posB.x) * 0.2;
+      linesSvg += `<path d="M${posA.x.toFixed(1)},${posA.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${posB.x.toFixed(1)},${posB.y.toFixed(1)}" fill="none" stroke="#e67e22" stroke-width="${sw.toFixed(2)}" stroke-opacity="${opacity.toFixed(2)}" stroke-dasharray="5,3"/>`;
+    });
+  }
+
+  // ── 層2: 列背景 + ヘッダー ──
+  orgList.forEach((org, ci) => {
+    const cx = (leftOffset + ci * colW + colW / 2).toFixed(1);
+    const x0 = (leftOffset + ci * colW + 2).toFixed(1);
+    const cw = (colW - 4).toFixed(1);
+    const n = sortedRosters[org.id].length;
+    const rankEmoji = RANK_EMOJIS[org.rank - 1] || `${org.rank}位`;
+    bgSvg += `<rect x="${x0}" y="${(HEADER_H - 2).toFixed(1)}" width="${cw}" height="${(contentH + 4).toFixed(1)}" fill="${org.color}" fill-opacity="0.04" rx="5"/>`;
+    if (ci < colCount - 1) {
+      const lx = (leftOffset + (ci + 1) * colW).toFixed(1);
+      bgSvg += `<line x1="${lx}" y1="6" x2="${lx}" y2="${(H - 4).toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    }
+    bgSvg += `<text x="${cx}" y="18" text-anchor="middle" font-size="15" font-family="sans-serif">${rankEmoji}</text>`;
+    const dispName = org.name.length > 9 ? org.name.slice(0, 8) + '…' : org.name;
+    bgSvg += `<text x="${cx}" y="36" text-anchor="middle" fill="${org.color}" font-size="11.5" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.55)" stroke-width="2.5" paint-order="stroke">${dispName}</text>`;
+    bgSvg += `<text x="${cx}" y="51" text-anchor="middle" fill="${org.color}" font-size="9.5" fill-opacity="0.5" font-family="sans-serif">${n}名在籍</text>`;
+  });
+
+  // ── 層3: 選手ノード（顔アイコン + OVRバッジ + 名前）──
+  orgList.forEach((org, ci) => {
+    const sorted = sortedRosters[org.id];
+    const n = sorted.length;
+    const labelSide = ci % 2 === 0 ? -1 : 1;
+    sorted.forEach((f, rank) => {
+      const pos = posMap[f.id];
+      if (!pos) return;
+      const { x, y, r } = pos;
+      const ovr = Engine.util.ov(f);
+      const isChamp = !!champId && f.id === champId;
+      const isAce = rank === 0;
+      const isTop3 = rank < 3;
+      const strokeColor = isChamp ? '#d4a843' : org.color;
+      const sw = isChamp ? 2.5 : isAce ? 2.2 : 1.3;
+      const pUrl = getPortraitUrl(f.id);
+
+      // エースのオーラ
+      if (isAce) {
+        nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 6).toFixed(1)}" fill="${org.color}" fill-opacity="0.12"/>`;
+      }
+      // 王者リング + 王冠
+      if (isChamp) {
+        nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 4).toFixed(1)}" fill="none" stroke="#d4a843" stroke-width="1.8" stroke-opacity="0.8"/>`;
+        nodeSvg += `<text x="${x.toFixed(1)}" y="${(y - r - 3).toFixed(1)}" text-anchor="middle" font-size="11" font-family="sans-serif">👑</text>`;
+      }
+
+      // 顔アイコン or 塗り円
+      if (pUrl) {
+        const clipId = `pmap-clip-${f.id}`;
+        nodeSvg += `<clipPath id="${clipId}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r - 0.5).toFixed(1)}"/></clipPath>`;
+        nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
+        nodeSvg += `<image href="${pUrl}" x="${(x - r).toFixed(1)}" y="${(y - r).toFixed(1)}" width="${(r * 2).toFixed(1)}" height="${(r * 2).toFixed(1)}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+      } else {
+        const fillOp = isAce ? 0.45 : isTop3 ? 0.28 : 0.18;
+        nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${org.color}" fill-opacity="${fillOp}" stroke="${strokeColor}" stroke-width="${sw}"/>`;
+        nodeSvg += `<text x="${x.toFixed(1)}" y="${(y + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.min(10, r * 0.75).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+      }
+
+      // OVRバッジ（顔アイコン下に常に表示）
+      const badgeY = y + r + 8;
+      nodeSvg += `<rect x="${(x - 12).toFixed(1)}" y="${(badgeY - 6).toFixed(1)}" width="24" height="13" rx="3" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isTop3 ? '0.65' : '0.4'})" stroke-width="1"/>`;
+      nodeSvg += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="8.5" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+
+      // 名前ラベル（上位N名 or ロスター小さいとき全員）
+      const showNameLimit = Math.max(4, Math.ceil(contentH / (baseR * 7)));
+      if (rank < showNameLimit || n <= 6) {
+        const name = (f.name || '').slice(0, 5);
+        const lx = x + labelSide * (r + 5);
+        const anchor = labelSide < 0 ? 'end' : 'start';
+        const fs = isAce ? 10.5 : isTop3 ? 10 : 9.5;
+        nodeSvg += `<text x="${lx.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="${anchor}" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
+      }
+    });
+  });
+
+  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● 顔=実際の選手  ── 団体間の因縁 / 団体名クリックで組織内表示</text>`;
+
+  svg.innerHTML = linesSvg + bgSvg + nodeSvg;
+}
+
+// 単体団体横並びビュー（orgFilter有効時）
+// ・選手を横一列（OVR降順左→右）に並べる
+// ・n>10の場合は2行に分割
+// ・縦位置はOVRに応じて緩やかに変化
+// ・大きめ顔アイコン + OVRバッジ + 名前
+function _buildOrgHorizontalView(svg, W, H, leftOffset) {
+  const orgId = _relmapOrgFilter;
+  const isPlayer = orgId === 'player';
+  const aiData = !isPlayer ? ((G.aiOrgs || {})[orgId] || {}) : {};
+  const roster = isPlayer
+    ? (G.roster || []).filter(c => !c.isRental)
+    : (aiData.roster || []);
+  const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+  const n = sorted.length;
+  const drawW = W - leftOffset;
+
+  if (!n) {
+    svg.innerHTML = `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H / 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="14" font-family="sans-serif">選手なし</text>`;
+    return;
+  }
+
+  const color = _RELMAP_ORG_COLORS[orgId] || '#888';
+  const orgName = _relmapGetOrgNameById(orgId);
+  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+
+  const HEADER_H = 40;
+  const contentH = H - HEADER_H - 16;
+
+  // 2行かどうか（11人以上で2行）
+  const useRows = n > 10 ? 2 : 1;
+  const perRow = Math.ceil(n / useRows);
+  const PAD_X = 28;
+  const usableW = drawW - PAD_X * 2;
+
+  // ノード半径（行あたりの人数と幅から算出）
+  const r = Math.min(22, Math.max(14, Math.floor(usableW / (perRow * 2.7))));
+
+  // 各行の中心Y（2行時は上寄りに詰める）
+  const rowCenterY = useRows === 1
+    ? [HEADER_H + contentH * 0.45]
+    : [HEADER_H + contentH * 0.30, HEADER_H + contentH * 0.70];
+
+  // OVRレンジ（緩やかな縦変位用）
+  const ovrs = sorted.map(f => Engine.util.ov(f));
+  const ovrMin = Math.min(...ovrs), ovrMax = Math.max(...ovrs);
+  const ovrRange = Math.max(1, ovrMax - ovrMin);
+
+  let svgHtml = '';
+
+  // ヘッダー
+  const centerX = (leftOffset + drawW / 2).toFixed(1);
+  svgHtml += `<text x="${centerX}" y="26" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" paint-order="stroke">${orgName}（${n}名）</text>`;
+  svgHtml += `<line x1="${(leftOffset + 20).toFixed(1)}" y1="34" x2="${(leftOffset + drawW - 20).toFixed(1)}" y2="34" stroke="${color}" stroke-width="1" stroke-opacity="0.3"/>`;
+
+  sorted.forEach((f, i) => {
+    const rowIdx = Math.floor(i / perRow);
+    const colIdx = i % perRow;
+    const thisRowN = rowIdx === useRows - 1 ? n - (useRows - 1) * perRow : perRow;
+
+    // 横位置（行内で均等）
+    const totalRowW = thisRowN > 1 ? (thisRowN - 1) * Math.min(usableW / (thisRowN - 1), usableW / (perRow - 1) + r) : 0;
+    const rowStartX = leftOffset + PAD_X + (usableW - Math.min(usableW, totalRowW)) / 2;
+    const xSpacing = thisRowN > 1 ? Math.min(usableW / (thisRowN - 1), usableW / (perRow - 1) + r * 0.5) : 0;
+    const x = thisRowN === 1 ? leftOffset + PAD_X + usableW / 2 : rowStartX + colIdx * xSpacing;
+
+    // 縦位置（OVRに応じて緩やかに変化）
+    const ovr = Engine.util.ov(f);
+    const ovrNorm = (ovr - ovrMin) / ovrRange; // 0=低, 1=高
+    const baseY = rowCenterY[rowIdx] || rowCenterY[0];
+    // 同行内: 高OVR=わずかに上、低OVR=わずかに下（最大±12px）
+    const yShift = (0.5 - ovrNorm) * (useRows === 1 ? 16 : 8);
+    const y = baseY + yShift;
+
+    const isChamp = !!champId && f.id === champId;
+    const isAce = i === 0;
+    const strokeColor = isChamp ? '#d4a843' : color;
+    const sw = isChamp ? 2.5 : isAce ? 2.2 : 1.5;
+    const pUrl = getPortraitUrl(f.id);
+
+    // 順位ラベル（ノード上）
+    svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - 5).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.32)" font-size="9" font-family="sans-serif">#${i + 1}</text>`;
+
+    // 王冠
+    if (isChamp) {
+      svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - 15).toFixed(1)}" text-anchor="middle" font-size="13" font-family="sans-serif">👑</text>`;
+    }
+
+    // エースのオーラ
+    if (isAce) {
+      svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 7).toFixed(1)}" fill="${color}" fill-opacity="0.1"/>`;
+    }
+
+    // 顔アイコン or 塗り円
+    if (pUrl) {
+      const clipId = `ph-clip-${f.id}`;
+      svgHtml += `<clipPath id="${clipId}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r - 0.5).toFixed(1)}"/></clipPath>`;
+      svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
+      svgHtml += `<image href="${pUrl}" x="${(x - r).toFixed(1)}" y="${(y - r).toFixed(1)}" width="${(r * 2).toFixed(1)}" height="${(r * 2).toFixed(1)}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`;
+    } else {
+      svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="rgba(10,10,20,0.9)" stroke="${strokeColor}" stroke-width="${sw}"/>`;
+      svgHtml += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${color}" font-size="${(r * 0.65).toFixed(1)}" font-family="sans-serif">${ovr}</text>`;
+    }
+
+    // OVRバッジ
+    const badgeY = y + r + 8;
+    svgHtml += `<rect x="${(x - 13).toFixed(1)}" y="${(badgeY - 6.5).toFixed(1)}" width="26" height="14" rx="3.5" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isAce ? '0.7' : '0.45'})" stroke-width="1"/>`;
+    svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="9" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+
+    // 名前
+    const name = (f.name || '').slice(0, 5);
+    svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + 15).toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${isAce ? 10.5 : 10}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
+  });
+
+  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">← 強い（OVR高）  ↑↓ 縦位置もOVRに連動  →弱い（OVR低）</text>`;
+
+  svg.innerHTML = svgHtml;
+}
+
+// ══════════════════════════════════════════════════════════
 function _relmapSetViewMode(mode) {
   _relmapViewMode = mode;
   document.querySelectorAll('.rm-view-toggle .rm-vt-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`.rm-vt-btn:nth-child(${mode === 'network' ? 1 : 2})`);
+  const btnIdx = mode === 'network' ? 1 : mode === 'focus' ? 2 : 3;
+  const btn = document.querySelector(`.rm-vt-btn:nth-child(${btnIdx})`);
   if (btn) btn.classList.add('active');
   const zoneLayer = document.getElementById('relmapZoneLayer');
   if (zoneLayer) zoneLayer.innerHTML = '';
+
+  if (mode === 'power') {
+    // 勢力図モード: 物理演算停止・全ノード非表示・SVGに団体ノードを直描画
+    if (_relmapAnimId) { cancelAnimationFrame(_relmapAnimId); _relmapAnimId = null; }
+    _relmapNodes.forEach(n => { n._hidden = true; });
+    const svg = document.getElementById('relmapSvg');
+    if (svg) _drawRelmapPowerView(svg);
+    return;
+  }
+
   if (mode === 'network') {
+    // 勢力図から戻ってきた場合はSVGをリセット
+    const svg = document.getElementById('relmapSvg');
+    if (svg) { svg.innerHTML = ''; const zl = document.getElementById('relmapZoneLayer'); if (zl) zl.innerHTML = ''; }
     const W = _relmapW, H = _relmapH;
     const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
     _relmapDrawOrgZones(orgCenters);
@@ -3918,6 +4270,13 @@ function _relmapFocusOrg(orgId) {
     _relmapOrgFilter = null; // toggle off
   } else {
     _relmapOrgFilter = orgId;
+  }
+  // 勢力図モード: 直接SVGを再描画
+  if (_relmapViewMode === 'power') {
+    const svg = document.getElementById('relmapSvg');
+    if (svg) _drawRelmapPowerView(svg);
+    _relmapRenderSidebar(_relmapOrgCenters);
+    return;
   }
   // Reset zoom/pan to center
   _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;

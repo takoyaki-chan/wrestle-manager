@@ -1,12 +1,19 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（シーズンレポート表示バグ修正）
+> 最終更新: 2026-03-10（勢力図改善 + シーズンレポートバグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**勢力図改善 + シーズンレポートバグ修正 実装完了（2026-03-10）。**
+
+- **相関図 勢力図ビュー改善**: `_buildOrgColumnSvgContent`を完全リライト。顔アイコン（SVG clipPath+image）+OVRバッジ表示（相関図ノードと同形式）。ノードサイズを最大在籍数に合わせて適応的スケーリング（r=12〜18）。縦位置をランクベース60%+OVRベース40%のブレンド（高OVR選手が緩やかに上に）。団体フィルタ有効時に`_buildOrgHorizontalView`へルーティング。
+- **勢力図 単体団体ビュー（_buildOrgHorizontalView新設）**: 左サイドバーで団体を選択すると横並びレイアウトに切替。10名超は2行レイアウト、OVRベースの微妙な縦位置変化付き。r=14〜22の大きめポートレートアイコン。`_relmapFocusOrg`を勢力図モード対応に修正（物理演算なしでSVG直接再描画）。
+- **シーズンレポートバグ修正**: `offW <= 1`時のシーズンレポート表示条件を修正。旧コード：`st.showCount > 0 || lastArchive`条件 + lastArchiveへのフォールバック → 前シーズンデータが表示されることがあった。新コード：常に現在のシーズンデータ（`st = G.seasonStats`）と現在のシーズン番号（`G.season`）を使用。条件分岐を`offW <= 1`のみに簡素化。
+- 変更: ui-render.js, docs/game-system-roadmap.md
 
 **Trust総合リバランス設計完了（2026-03-09）。** ケアアクション構造問題の調査→trustシミュレーション→パラメータ探索を実施。「trustグラビティ」（anchor以上で追加減衰）方式を採用し、出場のみの均衡を98→64に下げる設計を確定。ケアストック制（最大5・4週回復）、定常マイナス要素5種（M1-M5）、単発ガツン系イベント5種（S_scandal/S_powerstruggle/S_humiliation/S_betrayal/S_fanrevolt）の4層構造でロードマップに追加。実装はClaude Codeでの実機テストを経て数値確定予定。
 
