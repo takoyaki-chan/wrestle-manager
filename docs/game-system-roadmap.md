@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（年末表彰式コールバック防御+closePPVTV tickWeek修正）
+> 最終更新: 2026-03-10（成長v2.0: baseLearning 4.0 + trainCap修正 + 試合成長ageMultiplier適用）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**成長v2.0チューニング: baseLearning 4.0 + trainCap修正 + 試合成長ageMultiplier適用（2026-03-10）。**
+
+- **baseLearning 2.0→4.0**: GROWTH_CONFIG.baseLearningを倍増。trainCap到達率が改善（avg 74%, median 76%）
+- **trainCapチェック修正**: Player興行(executeShow)とPPV(applyPPVResults)の試合成長で`Math.min(100, ...)`のハードキャップ100を使用していた箇所をtrainCap参照に修正。AI団体の試合成長は既にtrainCapチェック済みだった
+- **試合成長にageMultiplier適用**: 試合成長(matchGrowth)に年齢倍率が掛かっておらず、25歳以降も年間約5.4ポイントの試合成長がdecayを打ち消していた問題を修正。3箇所(AI週次興行/Player興行/PPV)すべてに`ageMultiplier(age, traits)`を乗算。age25-26の年間試合成長: 5.4→0.54、27歳+は0に。これでdecay（5〜10/年）が確実に上回り、25歳から下降線→27-28歳で引退に向かう設計が機能する
+- **検証スクリプト**: `test/growth-v2-verification.js` 新規作成。6セクション出力（年齢別OVR推移/trainCap到達率分布/注目選手軌跡/団体平均OVR/成長イベント頻度/年齢帯別シーズン成長量）
+- 変更: data.js, engine.js
+- auto-sim 50シーズン ALL CLEAR
 
 **年末表彰式コールバック防御 + closePPVTV tickWeek修正（2026-03-10）。**
 
