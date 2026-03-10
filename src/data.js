@@ -1195,7 +1195,7 @@ const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（
 // ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
 // ╚══════════════════════════════════════════════════════════╝
 const GROWTH_CONFIG = {
-  baseLearning: 2.0,        // 🆕 v2.0: 1回の練習の基本成長量（距離比率=1.0時）
+  baseLearning: 4.0,        // v2.0: 1回の練習の基本成長量（距離比率=1.0時）
   declineStartSeason: 4,  // decline begins after this many seasons
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
