@@ -4028,14 +4028,25 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   }
 
   // ── 層2: 団体エリア背景 + ラベル ──
+  // 各団体の勢力指数を算出（人数+平均OVR）→背景円の大きさに反映
+  const orgStrengths = orgList.map(org => {
+    const ovrs = org.roster.map(f => Engine.util.ov(f));
+    const avgOvr = ovrs.length ? ovrs.reduce((s, v) => s + v, 0) / ovrs.length : 40;
+    return org.roster.length * (avgOvr / 60);
+  });
+  const maxStrength = Math.max(1, ...orgStrengths);
+  const baseAreaR = Math.max(areaRadiusX, areaRadiusY);
+
   orgList.forEach((org, ci) => {
     const areaPos = areaPositions[ci] || areaPositions[0];
     const areaCX = leftOffset + drawW * areaPos.cx;
     const areaCY = HEADER_H + (H - HEADER_H) * areaPos.cy;
     const n = org.roster.length;
     const rankEmoji = RANK_EMOJIS[org.rank - 1] || `${org.rank}位`;
-    // 薄い円形背景
-    bgSvg += `<circle cx="${areaCX.toFixed(1)}" cy="${areaCY.toFixed(1)}" r="${(Math.max(areaRadiusX, areaRadiusY) * 1.1).toFixed(1)}" fill="${org.color}" fill-opacity="0.04"/>`;
+    // 勢力比例の背景円（弱い団体は小さく、強い団体は大きく）
+    const strengthNorm = orgStrengths[ci] / maxStrength; // 0~1
+    const bgR = baseAreaR * (0.5 + strengthNorm * 0.7); // 50%~120%
+    bgSvg += `<circle cx="${areaCX.toFixed(1)}" cy="${areaCY.toFixed(1)}" r="${bgR.toFixed(1)}" fill="${org.color}" fill-opacity="${(0.02 + strengthNorm * 0.04).toFixed(3)}"/>`;
     // 団体名ラベル（エリア上部）
     const labelY = areaCY - areaRadiusY - 8;
     bgSvg += `<text x="${areaCX.toFixed(1)}" y="${Math.max(14, labelY).toFixed(1)}" text-anchor="middle" font-size="13" font-family="sans-serif">${rankEmoji}</text>`;
@@ -4126,27 +4137,29 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 
   const HEADER_H = 40;
   const PAD_TOP = HEADER_H + 20;
-  const PAD_BOTTOM = 24;
-  const PAD_X = 40;
+  const PAD_BOTTOM = 28;
+  const PAD_X = 60;
   const contentH = H - PAD_TOP - PAD_BOTTOM;
   const usableW = drawW - PAD_X * 2;
 
-  // OVR比例ノードサイズ
-  const R_MIN = 12, R_MAX = 35;
+  // OVR比例ノードサイズ（ドラマチックに：最強=かなり大きい）
+  const R_MIN = 12, R_MAX = 45;
   const ovrs = sorted.map(f => Engine.util.ov(f));
   const ovrMin = Math.min(...ovrs), ovrMax = Math.max(...ovrs);
   const ovrRange = Math.max(1, ovrMax - ovrMin);
 
   // 初期位置計算
+  const centerXArea = leftOffset + drawW / 2;
   const nodes = sorted.map((f, i) => {
     const ovr = Engine.util.ov(f);
     const ovrNorm = (ovr - ovrMin) / ovrRange;
     const r = R_MIN + ovrNorm * (R_MAX - R_MIN);
     // Y: OVR高い=上
-    const y = PAD_TOP + (1 - ovrNorm) * contentH;
-    // X: ハッシュで水平散らし（中央寄りバイアス）
+    const y = PAD_TOP + r + (1 - ovrNorm) * (contentH - R_MAX * 2);
+    // X: ハッシュで水平散らし（中央寄りバイアス: 0.2~0.8に圧縮）
     const hash = _relmapIdHash(f.id);
-    const x = leftOffset + PAD_X + hash * usableW;
+    const xNorm = 0.15 + hash * 0.7; // 端に行きすぎない
+    const x = leftOffset + PAD_X + xNorm * usableW;
     return {
       id: f.id, fighter: f, x, y, r, ovr, ovrNorm,
       isChamp: !!champId && f.id === champId,
@@ -4154,29 +4167,33 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     };
   });
 
-  // 衝突回避（6パス）
-  for (let pass = 0; pass < 6; pass++) {
+  // 衝突回避（8パス、多めに回して端に溢れないように）
+  for (let pass = 0; pass < 8; pass++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i], b = nodes[j];
         const dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.r + b.r + 5;
+        const minDist = a.r + b.r + 6;
         if (dist < minDist && dist > 0.01) {
           const push = (minDist - dist) / 2;
           const nx = dx / dist, ny = dy / dist;
           // 水平優先で押し出し（縦のOVR序列を保つ）
-          a.x -= nx * push * 0.8; a.y -= ny * push * 0.25;
-          b.x += nx * push * 0.8; b.y += ny * push * 0.25;
+          a.x -= nx * push * 0.8; a.y -= ny * push * 0.2;
+          b.x += nx * push * 0.8; b.y += ny * push * 0.2;
         }
       }
+      // 各パスの各ノードで境界を維持（衝突回避で外に出るのを防ぐ）
+      const nd = nodes[i];
+      nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
+      nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
     }
   }
 
-  // 境界クランプ
+  // 最終境界クランプ（名前+バッジ分の余裕を持たせる）
   nodes.forEach(nd => {
-    nd.x = Math.max(leftOffset + PAD_X * 0.5 + nd.r, Math.min(W - nd.r - 4, nd.x));
-    nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r, nd.y));
+    nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
+    nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
   });
 
   let svgHtml = '';
@@ -4264,12 +4281,33 @@ function _relmapSetViewMode(mode) {
   }
 
   if (mode === 'network') {
-    // 勢力図から戻ってきた場合はSVGをリセット
+    // 勢力図から戻る場合: SVGのdefs+描画レイヤーを完全再構築 + orgFilter解除 + ズームリセット
     const svg = document.getElementById('relmapSvg');
-    if (svg) { svg.innerHTML = ''; const zl = document.getElementById('relmapZoneLayer'); if (zl) zl.innerHTML = ''; }
+    if (svg) {
+      const existingNodeLayer = document.getElementById('relmapNodeLayer');
+      if (!existingNodeLayer) {
+        // power viewがsvg.innerHTMLを上書きしたため、defs+レイヤーを再構築
+        let defsHtml = '<defs>';
+        defsHtml += '<filter id="rm-glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+        defsHtml += '<filter id="rm-glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+        defsHtml += '<marker id="rm-arrow-warm" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#74b9ff" opacity="0.7"/></marker>';
+        defsHtml += '<marker id="rm-arrow-cold" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ff7675" opacity="0.7"/></marker>';
+        for (const [orgId, clr] of Object.entries(_RELMAP_ORG_COLORS)) {
+          const op = orgId === 'player' ? 0.08 : 0.06;
+          defsHtml += `<radialGradient id="rm-zone-${orgId}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${clr}" stop-opacity="${op}"/><stop offset="100%" stop-color="${clr}" stop-opacity="0"/></radialGradient>`;
+        }
+        defsHtml += '</defs>';
+        svg.innerHTML = defsHtml + '<g id="relmapZoneLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g>';
+      }
+    }
+    _relmapOrgFilter = null;
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    // 全ノードを表示に戻す（_relmapUpdateVisibilityで正式に処理される）
+    _relmapNodes.forEach(n => { n._hidden = false; });
     const W = _relmapW, H = _relmapH;
     const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
     _relmapDrawOrgZones(orgCenters);
+    _relmapRenderSidebar(orgCenters);
   }
   // フォーカスモードに切り替える際、中心未設定なら自動でプレイヤー最高OVR選手を設定
   // （全ノード一斉表示によるO(n²)物理演算負荷を防ぐ）
@@ -4411,14 +4449,46 @@ function _relmapShowComparePopup() {
   const aOrgName = _relmapGetOrgNameById(a.orgId), bOrgName = _relmapGetOrgNameById(b.orgId);
   const aEmoji = _relmapGetOrgEmoji(a.orgId), bEmoji = _relmapGetOrgEmoji(b.orgId);
 
+  // 関係データ事前取得（ヘッダーに埋め込むため）
+  const bAtoB = rel ? (isAS ? rel.bondAB : rel.bondBA) : 0;
+  const rAtoB = rel ? (isAS ? rel.rivAB : rel.rivBA) : 0;
+  const bBtoA = rel ? (isAS ? rel.bondBA : rel.bondAB) : 0;
+  const rBtoA = rel ? (isAS ? rel.rivBA : rel.rivAB) : 0;
+  const cAB = bAtoB >= 50 ? '#74b9ff' : '#ff7675', cBA = bBtoA >= 50 ? '#74b9ff' : '#ff7675';
+
   let h = `<div class="rm-popup-close" onclick="_relmapClosePopup()">\u2715</div>`;
+
+  // ライバル称号バナー（あれば）
+  if (rel && rel.rivalTitle) {
+    h += `<div style="text-align:center;padding:6px 0 2px;font-size:13px;font-weight:700;color:${rel.titleColor}">${rel.titleEmoji} ${rel.rivalTitle}</div>`;
+  }
+
+  // ヘッダー: アイコン+名前+OVR+感情メーターを各キャラの下に配置
   h += `<div class="rm-compare-header"><div class="rm-compare-side">`;
   h += `<div class="rm-compare-upper-img" style="border-color:${aColor}">${aUp?`<img src="${aUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${aUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
   h += `<div class="rm-compare-name">${a.name}</div><div class="rm-compare-org" style="color:${aColor}">${aEmoji} ${aOrgName} \u2500 ${a.style}</div><div class="rm-compare-ovr-badge">OVR ${a.ovr}</div>`;
+  // A→Bへの感情（Aのアイコンの下）
+  if (rel) {
+    h += `<div class="rm-cmp-rel-inline">`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    h += `</div>`;
+  }
   h += `</div><div class="rm-compare-divider">\u21C4</div><div class="rm-compare-side">`;
   h += `<div class="rm-compare-upper-img" style="border-color:${bColor}">${bUp?`<img src="${bUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${bUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
   h += `<div class="rm-compare-name">${b.name}</div><div class="rm-compare-org" style="color:${bColor}">${bEmoji} ${bOrgName} \u2500 ${b.style}</div><div class="rm-compare-ovr-badge">OVR ${b.ovr}</div>`;
+  // B→Aへの感情（Bのアイコンの下）
+  if (rel) {
+    h += `<div class="rm-cmp-rel-inline">`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    h += `</div>`;
+  }
   h += `</div></div>`;
+
+  if (!rel) {
+    h += `<div style="text-align:center;padding:6px 0;color:var(--text-dim);font-size:12px">\uD83D\uDD17 直接の関係はありません</div>`;
+  }
 
   h += `<div class="rm-compare-body">`;
   // Stats comparison
@@ -4427,27 +4497,6 @@ function _relmapShowComparePopup() {
     const aW = va > vb, bW = vb > va;
     h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${va}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${vb}</div></div></div>`;
   });
-
-  // Relationship section
-  if (rel) {
-    const bAtoB = isAS ? rel.bondAB : rel.bondBA, rAtoB = isAS ? rel.rivAB : rel.rivBA;
-    const bBtoA = isAS ? rel.bondBA : rel.bondAB, rBtoA = isAS ? rel.rivBA : rel.rivAB;
-    const cAB = bAtoB >= 50 ? '#74b9ff' : '#ff7675', cBA = bBtoA >= 50 ? '#74b9ff' : '#ff7675';
-    let tH = '';
-    if (rel.rivalTitle) tH = `<span style="color:${rel.titleColor};font-size:13px;font-weight:700">${rel.titleEmoji} ${rel.rivalTitle}</span>`;
-    h += `<div class="rm-cmp-rel-section"><div class="rm-cmp-rel-header">\uD83D\uDD17 RELATIONSHIP ${tH}</div>`;
-    h += `<div class="rm-cmp-rel-row"><div class="rm-cmp-rel-side">`;
-    h += `<div class="rm-cmp-rel-side-title" style="color:${aColor}">${a.name.slice(0,4)} の感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
-    h += `</div><div class="rm-cmp-rel-side">`;
-    h += `<div class="rm-cmp-rel-side-title" style="color:${bColor}">${b.name.slice(0,5)} の感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
-    h += `</div></div></div>`;
-  } else {
-    h += `<div class="rm-cmp-rel-section"><div class="rm-cmp-rel-header" style="color:var(--text-dim)">\uD83D\uDD17 直接の関係はありません</div></div>`;
-  }
   h += `</div>`;
 
   const card = document.getElementById('relmapPopupCard');
