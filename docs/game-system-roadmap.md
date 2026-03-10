@@ -1001,3 +1001,5 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - 2026-03-10: Fixed missing faction-map portraits in the relationship map by switching power-view SVG portraits from direct <image>+clipPath rendering to inline face patterns.
 
 - 2026-03-10: Tuned relationship-map power-view layout to feel less rigid by loosening org cluster placement, adding more organic polar spread, and softening collision movement in both overview and single-org views.
+
+- 2026-03-10: Enabled relationship-map power-view zoom, pan, and direct node dragging so the faction view can be manipulated like the network view while preserving per-view layout positions.

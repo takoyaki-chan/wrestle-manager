@@ -3569,7 +3569,14 @@ function _relmapTick(orgCenters) {
   if (_relmapFrameCount % 2 === 0) _relmapRender(orgCenters);
 }
 
-function _relmapReheat() { _relmapAlpha.value = 0.8; _relmapStartLoop(); }
+function _relmapReheat() {
+  if (_relmapViewMode === 'power') {
+    _relmapRenderPowerView();
+    return;
+  }
+  _relmapAlpha.value = 0.8;
+  _relmapStartLoop();
+}
 
 function _relmapStartLoop() {
   if (_relmapAnimId) return; // already running
@@ -3920,7 +3927,8 @@ function _relmapSetupInteraction(svg, container) {
       if (!n) return;
       _relmapDragTarget = n; n._dragging = true; _relmapDragMoved = false;
       const p = svgCoords(e);
-      _relmapDragOffset.x = p.x - n.x; _relmapDragOffset.y = p.y - n.y;
+      const displayPos = _relmapGetDisplayPos(n);
+      _relmapDragOffset.x = p.x - displayPos.x; _relmapDragOffset.y = p.y - displayPos.y;
     } else {
       // Empty space drag → pan
       _relmapPanning = true; _relmapDragMoved = false;
@@ -3933,9 +3941,17 @@ function _relmapSetupInteraction(svg, container) {
     if (_relmapDragTarget) {
       _relmapDragMoved = true;
       const p = svgCoords(e);
-      _relmapDragTarget.x = p.x - _relmapDragOffset.x;
-      _relmapDragTarget.y = p.y - _relmapDragOffset.y;
-      _relmapReheat();
+      const nextX = p.x - _relmapDragOffset.x;
+      const nextY = p.y - _relmapDragOffset.y;
+      if (_relmapViewMode === 'power') {
+        const key = _relmapOrgFilter && _relmapOrgFilter !== 'fa' ? _relmapOrgFilter : '__overview__';
+        _relmapSetPowerPos(_relmapDragTarget, key, nextX, nextY);
+        _relmapRenderPowerView();
+      } else {
+        _relmapDragTarget.x = nextX;
+        _relmapDragTarget.y = nextY;
+        _relmapReheat();
+      }
     } else if (_relmapPanning) {
       const r = svg.getBoundingClientRect();
       const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
@@ -3944,7 +3960,8 @@ function _relmapSetupInteraction(svg, container) {
       _relmapPanX = _relmapPanStartPan.x - dx;
       _relmapPanY = _relmapPanStartPan.y - dy;
       _relmapDragMoved = true;
-      _relmapReheat();
+      if (_relmapViewMode === 'power') _relmapApplyViewport(svg);
+      else _relmapReheat();
     }
     const g = e.target.closest('.rm-node-group');
     const tt = document.getElementById('relmapTooltip');
@@ -4002,7 +4019,8 @@ function _relmapSetupInteraction(svg, container) {
     // Zoom toward mouse cursor position
     _relmapPanX = p.x - (p.x - _relmapPanX) * (oldZoom / _relmapZoom);
     _relmapPanY = p.y - (p.y - _relmapPanY) * (oldZoom / _relmapZoom);
-    _relmapReheat();
+    if (_relmapViewMode === 'power') _relmapApplyViewport(svg);
+    else _relmapReheat();
   }, { passive: false });
 
   // Global close
@@ -4025,6 +4043,54 @@ function _relmapIdHash(id) {
   return (h & 0xffff) / 0xffff;
 }
 
+function _relmapApplyViewport(svg) {
+  if (!svg) return;
+  const vw = _relmapW / _relmapZoom;
+  const vh = _relmapH / _relmapZoom;
+  svg.setAttribute('viewBox', `${_relmapPanX} ${_relmapPanY} ${vw} ${vh}`);
+}
+
+function _relmapGetPowerPos(node, key, fallbackX, fallbackY) {
+  if (!node) return { x: fallbackX, y: fallbackY };
+  if (key === '__overview__') {
+    return {
+      x: Number.isFinite(node._powerOverviewX) ? node._powerOverviewX : fallbackX,
+      y: Number.isFinite(node._powerOverviewY) ? node._powerOverviewY : fallbackY,
+    };
+  }
+  const saved = node._powerOrgPositions && node._powerOrgPositions[key];
+  return {
+    x: saved && Number.isFinite(saved.x) ? saved.x : fallbackX,
+    y: saved && Number.isFinite(saved.y) ? saved.y : fallbackY,
+  };
+}
+
+function _relmapSetPowerPos(node, key, x, y) {
+  if (!node) return;
+  if (key === '__overview__') {
+    node._powerOverviewX = x;
+    node._powerOverviewY = y;
+    return;
+  }
+  if (!node._powerOrgPositions) node._powerOrgPositions = {};
+  node._powerOrgPositions[key] = { x, y };
+}
+
+function _relmapGetDisplayPos(node) {
+  if (!node) return { x: 0, y: 0 };
+  if (_relmapViewMode !== 'power') return { x: node.x, y: node.y };
+  const key = _relmapOrgFilter && _relmapOrgFilter !== 'fa' ? _relmapOrgFilter : '__overview__';
+  return _relmapGetPowerPos(node, key, node.x, node.y);
+}
+
+function _relmapRenderPowerView() {
+  if (_relmapViewMode !== 'power') return;
+  const svg = document.getElementById('relmapSvg');
+  if (!svg) return;
+  _drawRelmapPowerView(svg);
+  _relmapApplyViewport(svg);
+}
+
 // 勢力図 viewMode — 散布型階層SVG
 // ══════════════════════════════════════════════════════════
 function _drawRelmapPowerView(svg) {
@@ -4044,6 +4110,7 @@ function _drawRelmapPowerView(svg) {
 function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   leftOffset = leftOffset || 0;
   const drawW = W - leftOffset;
+  const layoutKey = '__overview__';
 
   // 単体団体ビュー（orgFilter有効時）
   if (_relmapOrgFilter && _relmapOrgFilter !== 'fa') {
@@ -4121,11 +4188,13 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
       const aceLift = rank === 0 ? areaRadiusY * 0.18 : rank < 3 ? areaRadiusY * 0.08 : 0;
       const homeX = areaCX + xOff;
       const homeY = areaCY + yOff - aceLift;
+      const mapNode = _relmapNodeMap[f.id];
+      const savedPos = _relmapGetPowerPos(mapNode, layoutKey, homeX, homeY);
 
       allNodes.push({
         id: f.id, fighter: f, orgId: org.id, orgColor: org.color,
         orgName: org.name, orgRank: org.rank, inOrgRank: rank,
-        x: homeX, y: homeY,
+        x: savedPos.x, y: savedPos.y,
         r, ovr, isChamp: !!champId && f.id === champId,
         isAce: rank === 0, isTop3: rank < 3,
         homeX, homeY,
@@ -4156,6 +4225,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   allNodes.forEach(n => {
     n.x = Math.max(leftOffset + n.r + 2, Math.min(W - n.r - 2, n.x));
     n.y = Math.max(HEADER_H + n.r + 2, Math.min(H - n.r - 16, n.y));
+    _relmapSetPowerPos(_relmapNodeMap[n.id], layoutKey, n.x, n.y);
   });
 
   // Pass 3: SVG文字列を3層で構築（ライン→背景→ノード）
@@ -4326,8 +4396,10 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     const aceLift = i === 0 ? r * 0.6 : i < 3 ? r * 0.24 : 0;
     const homeY = y - aceLift;
     const x = homeX + (hash2 - 0.5) * usableW * 0.12;
+    const mapNode = _relmapNodeMap[f.id];
+    const savedPos = _relmapGetPowerPos(mapNode, orgId, x, homeY);
     return {
-      id: f.id, fighter: f, x, y: homeY, r, ovr, ovrNorm,
+      id: f.id, fighter: f, x: savedPos.x, y: savedPos.y, r, ovr, ovrNorm,
       isChamp: !!champId && f.id === champId,
       isAce: i === 0, isTop3: i < 3, rank: i,
       homeX, homeY,
@@ -4364,6 +4436,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   nodes.forEach(nd => {
     nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
     nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
+    _relmapSetPowerPos(_relmapNodeMap[nd.id], orgId, nd.x, nd.y);
   });
 
   let defsSvg = '<defs>';
@@ -4446,8 +4519,8 @@ function _relmapSetViewMode(mode) {
     // 勢力図モード: 物理演算停止・全ノード非表示・SVGに団体ノードを直描画
     if (_relmapAnimId) { cancelAnimationFrame(_relmapAnimId); _relmapAnimId = null; }
     _relmapNodes.forEach(n => { n._hidden = true; });
-    const svg = document.getElementById('relmapSvg');
-    if (svg) _drawRelmapPowerView(svg);
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    _relmapRenderPowerView();
     return;
   }
 
@@ -4539,8 +4612,8 @@ function _relmapFocusOrg(orgId) {
   }
   // 勢力図モード: 直接SVGを再描画
   if (_relmapViewMode === 'power') {
-    const svg = document.getElementById('relmapSvg');
-    if (svg) _drawRelmapPowerView(svg);
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    _relmapRenderPowerView();
     _relmapRenderSidebar(_relmapOrgCenters);
     return;
   }
