@@ -1,12 +1,21 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（h2hデータ蓄積・orgTimeline・感情テキスト・関係性タグ）
+> 最終更新: 2026-03-10（年末表彰式コールバック防御+closePPVTV tickWeek修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**年末表彰式コールバック防御 + closePPVTV tickWeek修正（2026-03-10）。**
+
+- **問題**: シーズン48週経過時の年末表彰式が表示されたりされなかったりする間欠的バグ
+- **原因分析**: `_showNewsPanelIfNeeded → _checkAndShowEnding → _checkAndShowAwards` のコールバックチェーンにtry-catchがなく、中間ステップでランタイムエラーが発生すると後続の `_checkAndShowAwards` が呼ばれなくなる
+- **修正1 `_safeAwardsChain()`**: 各ステップをtry-catchで包み、中間エラーがあっても必ず表彰式チェックまで到達する防御的ラッパーを新設。`App.advanceWeek()` 内の3箇所のコールバックチェーンをすべて `_safeAwardsChain()` に統一
+- **修正2 `closePPVTV` tickWeek追加**: PPV TV観戦（プレイヤー不参加）でweek 48を処理する際、`Engine.tickWeek` が呼ばれていなかった。訓練・給与・関係値更新・バフ効果など週次処理が丸ごとスキップされていた。`closePPVResult` と同等のtickWeek処理を追加
+- 変更: app.js
+- auto-sim 500シーズン（125シーズン時点で違反0）
 
 **h2hデータ蓄積・orgTimeline・感情テキスト・関係性タグ 実装完了（2026-03-10）。**
 

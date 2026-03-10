@@ -4099,9 +4099,7 @@ const App = {
     // v1.3-3: Show retirement popups (season-end)
     if (pendingRetirements && pendingRetirements.length > 0) {
       refreshAll();
-      showRetirementPopups(pendingRetirements, () => {
-        App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards()));
-      });
+      showRetirementPopups(pendingRetirements, () => App._safeAwardsChain());
       return;
     }
 
@@ -4131,11 +4129,25 @@ const App = {
     });
 
     if (aiAlerts.length > 0) {
-      showAIGrowthAlerts(aiAlerts, () => App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards())));
+      showAIGrowthAlerts(aiAlerts, () => App._safeAwardsChain());
     } else {
       // v1.4: 引退者なしでも新聞パネル→エンディングチェック→表彰式チェック
-      App._showNewsPanelIfNeeded(() => App._checkAndShowEnding(() => App._checkAndShowAwards()));
+      App._safeAwardsChain();
     }
+  },
+
+  // 表彰式チェーン安全実行: 中間ステップのエラーで表彰式が消失しないよう防御
+  _safeAwardsChain() {
+    const awardsCallback = () => {
+      try { App._checkAndShowAwards(); }
+      catch (e) { console.error('[WM] _checkAndShowAwards error:', e); try { refreshAll(); } catch (_) {} }
+    };
+    const endingCallback = () => {
+      try { App._checkAndShowEnding(awardsCallback); }
+      catch (e) { console.error('[WM] _checkAndShowEnding error:', e); awardsCallback(); }
+    };
+    try { App._showNewsPanelIfNeeded(endingCallback); }
+    catch (e) { console.error('[WM] _showNewsPanelIfNeeded error:', e); endingCallback(); }
   },
 
   // v1.9: 新シーズン開幕ファンファーレのトリガー判定
@@ -5251,8 +5263,25 @@ App.closePPVTV = function() {
   overlay.classList.remove('active');
   Audio.play('coin');
 
+  // tickWeek: PPV TV観戦中でも週次処理（訓練・給与・関係値）は実行する
+  const result = Engine.tickWeek(G);
+  const stats = { ...G.seasonStats };
+  if (result.state.weeklyFinance) {
+    stats.totalRevenue += result.state.weeklyFinance.income || 0;
+    stats.totalExpense += result.state.weeklyFinance.expense || 0;
+  }
+  const fh = [...(G.fundsHistory || []), result.state.funds];
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+
+  App._refreshTicker();
+  App.checkMissionUpdate();
+  App.checkSurvivalUpdate();
+  App._applyWeeklyBuffEffects();
+  App._tickMilestoneBuffsWeekly();
+
   // ppvPhaseクリア→advanceWeek→オフシーズンへ
   G = { ...G, ppvPhase: null };
+  Storage.autoSave();
   App.advanceWeek();
 };
 
