@@ -2991,6 +2991,8 @@ const Engine = {
             const closeMatchBonus = result.mq >= 65 ? 0.3 : 0.0;
             const resultBonus = won ? 0.0 : 0.2;
             let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
+            // v2.0: 試合成長にも年齢倍率を適用（若いほど試合から多く吸収する）
+            matchGrowth *= ageMultiplier(nc.age || 17, nc.traits);
 
             // growthPenalty適用
             if (nc.growthPenalty) {
@@ -4622,6 +4624,8 @@ const Engine = {
         const resultBonus = won ? 0.0 : 0.2;
         const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
         let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+        // v2.0: 試合成長にも年齢倍率を適用
+        matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
 
         // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
         if (fighter.growthPenalty) {
@@ -6191,6 +6195,8 @@ const Engine = {
           const resultBonus = won ? 0.0 : 0.2;
           const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, rosterF.id);
           let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+          // v2.0: 試合成長にも年齢倍率を適用
+          matchGrowth *= ageMultiplier(rosterF.age || 17, rosterF.traits);
           if (rosterF.growthPenalty) {
             const rawMult = rosterF.growthPenalty.multiplier;
             matchGrowth *= (rawMult < 1.0 && Traits.has(rosterF, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
