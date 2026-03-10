@@ -4644,9 +4644,10 @@ const Engine = {
           if (c.id !== charId) return c;
           let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
           chosen.forEach(stat => {
-            const gain = Math.max(0, Math.round(growthPerStat));
+            const cap = nc.trainCap?.[stat] || 100;
+            const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
             if (gain > 0) {
-              nc[stat] = Math.min(100, nc[stat] + gain);
+              nc[stat] = nc[stat] + gain;
               nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
             }
           });
@@ -6207,9 +6208,10 @@ const Engine = {
             if (c.id !== rosterF.id) return c;
             let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }) } };
             chosen.forEach(stat => {
-              const gain = Math.max(0, Math.round(growthPerStat));
+              const cap = nc.trainCap?.[stat] || 100;
+              const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
               if (gain > 0) {
-                nc[stat] = Math.min(100, nc[stat] + gain);
+                nc[stat] = nc[stat] + gain;
                 nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
               }
             });
