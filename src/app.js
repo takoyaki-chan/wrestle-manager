@@ -1171,6 +1171,7 @@ const Storage = {
         G.coaches.forEach(id => { ca[id] = []; });
         G = { ...G, coachAssign: ca };
       }
+      G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
 
       // v0.85 backward compat
       if (!G.rngSeed) G = { ...G, rngSeed: Date.now() ^ 0xDEADBEEF };
@@ -2141,10 +2142,6 @@ const App = {
     if (G.roster.some(c => c.id === charId)) {
       Audio.play('error'); alert('この選手はすでに自団体に所属しています'); return;
     }
-    // roster-cap v1.0: ロスター枠チェック
-    if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
-      Audio.play('error'); alert(`ロスター枠が上限（${G.rosterCap || 6}名）に達しています`); return;
-    }
     // Gate: check orgPop requirement (pricing-balance-spec §2) — FA context with eliteTicket support
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter, 'fa', G)) {
       Audio.play('error'); alert('団体の知名度が足りません！'); return;
@@ -2152,6 +2149,16 @@ const App = {
     const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
     const finalCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+    if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
+      App._queueRosterOverflowSigning({
+        source: 'fa',
+        fighterId: fighter.id,
+        fighter: { ...fighter },
+        cost: finalCost,
+        meta: { usedEliteTicket }
+      });
+      return;
+    }
     // Ensure all roster-required properties exist (FA from dormant pool via makeAIFighter may lack them)
     const normalized = {
       ...fighter,
@@ -2192,6 +2199,191 @@ const App = {
       tone:'positive', message: faSigningLine,
       detail:`📝 契約金: ${finalCost}万 [${tierCfg.label}]` });
     refreshAll();
+  },
+
+  _normalizeFighterForRoster(fighter) {
+    return {
+      ...fighter,
+      seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(fighter?.seasonGrowth || {}) },
+      wins: fighter?.wins ?? 0,
+      losses: fighter?.losses ?? 0,
+      draws: fighter?.draws ?? 0,
+      injury: fighter?.injury ?? null,
+      condition: typeof fighter?.condition === 'number' ? fighter.condition : 80,
+      schedule: ['balance', 'practice', 'promo', 'rest'].includes(fighter?.schedule) ? fighter.schedule : 'balance',
+      intensive: !!fighter?.intensive,
+      intensiveWeeks: fighter?.intensiveWeeks || 0,
+      lastMatchResult: fighter?.lastMatchResult || null,
+      losingStreak: fighter?.losingStreak || 0,
+      preInjuryPop: fighter?.preInjuryPop ?? null,
+      careerSeasons: fighter?.careerSeasons || 0,
+      promoStack: fighter?.promoStack || 0,
+    };
+  },
+
+  _releaseFighterForOverflow(charId) {
+    const idx = G.roster.findIndex(c => c.id === charId);
+    if (idx < 0) return null;
+    const target = G.roster[idx];
+    if (G.relationships) {
+      const releaseRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE45, G.season, charId));
+      const colleagueIds = G.roster.filter(f => f.id !== charId).map(f => f.id);
+      G = Engine.relationships.applyToRoster(G, charId, colleagueIds, { min: -15, max: -10 }, { min: 0, max: 0 }, releaseRelRng);
+      for (const cid of colleagueIds) {
+        const colleague = G.roster.find(f => f.id === cid);
+        const p = colleague?.personality || 'normal';
+        let bMin, bMax;
+        if (p === 'bold' || p === 'emotional') { bMin = 0; bMax = 2; }
+        else if (p === 'earnest' || p === 'quiet') { bMin = -2; bMax = 0; }
+        else { bMin = -1; bMax = 1; }
+        G = Engine.relationships.applyFromRoster(G, [cid], charId, { min: bMin, max: bMax }, { min: 0, max: 0 }, releaseRelRng);
+      }
+    }
+    const newRoster = G.roster.filter((_, i) => i !== idx);
+    const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
+    const newFA = [...G.freeAgents, releasedFighter];
+    const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const log = [...G.gameLog, `📤 ${target.name}を解雇`];
+    if (titleMsg) log.push(titleMsg);
+    G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    return target;
+  },
+
+  _queueRosterOverflowSigning(payload) {
+    G = { ...G, pendingRosterOverflowSigning: payload };
+    Storage.autoSave();
+    refreshAll();
+    if (typeof showRosterOverflowSigningModal === 'function') {
+      setTimeout(() => showRosterOverflowSigningModal(G.pendingRosterOverflowSigning), 50);
+    }
+  },
+
+  _showRosterOverflowSigningModalIfNeeded(delay = 0) {
+    if (!G.pendingRosterOverflowSigning || typeof showRosterOverflowSigningModal !== 'function') return;
+    const pending = G.pendingRosterOverflowSigning;
+    setTimeout(() => {
+      if (!G.pendingRosterOverflowSigning) return;
+      if (G.pendingRosterOverflowSigning.source !== pending.source || G.pendingRosterOverflowSigning.fighterId !== pending.fighterId) return;
+      showRosterOverflowSigningModal(G.pendingRosterOverflowSigning);
+    }, delay);
+  },
+
+  cancelRosterOverflowSigning() {
+    if (!G.pendingRosterOverflowSigning) return;
+    const pending = G.pendingRosterOverflowSigning;
+    const update = { pendingRosterOverflowSigning: null };
+    if (pending.source === 'negotiation') update.negotiationResult = null;
+    G = { ...G, ...update };
+    Storage.autoSave();
+    refreshAll();
+  },
+
+  confirmRosterOverflowSigning(releaseId) {
+    const pending = G.pendingRosterOverflowSigning;
+    if (!pending) return;
+    const releaseTarget = G.roster.find(c => c.id === releaseId && !c.isRental && !c.lastRun);
+    if (!releaseTarget) {
+      Audio.play('error');
+      return;
+    }
+    if (G.funds < pending.cost) {
+      Audio.play('error');
+      alert('資金が足りません！');
+      return;
+    }
+    if (pending.source === 'fa' && !G.freeAgents.some(c => c.id === pending.fighterId)) {
+      G = { ...G, pendingRosterOverflowSigning: null };
+      refreshAll();
+      Audio.play('error');
+      alert('対象選手が市場に見つかりませんでした。');
+      return;
+    }
+    if (pending.source === 'scout' && !(G.scoutCandidates || []).some(c => c.id === pending.fighterId) && !pending.fighter) {
+      G = { ...G, pendingRosterOverflowSigning: null };
+      refreshAll();
+      Audio.play('error');
+      alert('対象選手がスカウト候補に見つかりませんでした。');
+      return;
+    }
+    if (pending.source === 'negotiation') {
+      const orgData = pending.meta?.fromOrgId ? G.aiOrgs?.[pending.meta.fromOrgId] : null;
+      const fighter = orgData?.roster?.find(f => f.id === pending.fighterId);
+      if (!orgData || !fighter) {
+        G = { ...G, pendingRosterOverflowSigning: null, negotiationResult: null };
+        refreshAll();
+        Audio.play('error');
+        alert('交渉対象の選手が見つかりませんでした。');
+        return;
+      }
+    }
+    const released = App._releaseFighterForOverflow(releaseId);
+    if (!released) return;
+    let signedFighter = pending.fighter;
+    let detail = `解雇: ${released.name}`;
+    let message = '契約が成立しました';
+    if (pending.source === 'fa') {
+      const idx = G.freeAgents.findIndex(c => c.id === pending.fighterId);
+      const fighter = G.freeAgents[idx];
+      const usedEliteTicket = !!pending.meta?.usedEliteTicket;
+      let normalized = App._normalizeFighterForRoster({ ...fighter, orgId: 'player' });
+      normalized.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
+      const tierCfg = Engine.scout.getTierConfig(normalized.assessedTier || 'material');
+      const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
+      const newFA = G.freeAgents.filter((_, i) => i !== idx);
+      const newRoster = [...G.roster, normalized];
+      const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+      const log = [...G.gameLog, `📝 ${normalized.name}と契約（契約金: ${pending.cost}万）[${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト割引 ${scoutDisc}%` : ''}`];
+      if (titleMsg) log.push(titleMsg);
+      if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
+      G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
+      signedFighter = normalized;
+      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
+      message = getSigningLine(fighter, 'fa_signing');
+    } else if (pending.source === 'scout') {
+      const cand = (G.scoutCandidates || []).find(c => c.id === pending.fighterId) || pending.fighter;
+      const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
+      const signed = { ...cand };
+      delete signed._notion; delete signed._estimate; delete signed._isSeed;
+      delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
+      let normalizedSigned = App._normalizeFighterForRoster(signed);
+      normalizedSigned.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
+      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      const candidates = (G.scoutCandidates || []).filter(c => c.id !== pending.fighterId);
+      const picks = [...(G.scoutPicks || [])];
+      if (!picks.includes(pending.fighterId)) picks.push(pending.fighterId);
+      const newRoster = [...G.roster, normalizedSigned];
+      const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+      const log = [...G.gameLog, `📝 スカウト獲得 ${normalizedSigned.name} [${tierCfg.label}] 契約金${pending.cost}万`];
+      if (titleMsg) log.push(titleMsg);
+      G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
+      signedFighter = normalizedSigned;
+      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
+      message = getSigningLine(cand, pending.meta?.choice === 'direct' ? 'direct' : 'competition_won');
+    } else if (pending.source === 'negotiation') {
+      const fromOrgId = pending.meta?.fromOrgId;
+      const fromOrgName = pending.meta?.fromOrgName || '他団体';
+      const orgData = G.aiOrgs[fromOrgId];
+      const fighter = orgData.roster.find(f => f.id === pending.fighterId);
+      let resetFighter = Engine.popularity.applyTransferReset({ ...fighter, orgId: 'player', trust: 50, salaryBonus: 0 });
+      resetFighter.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      resetFighter = Engine.orgTimeline.transfer(resetFighter, 'player', G.season, G.week);
+      resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: G.season, week: G.week, fromOrg: fromOrgName, toOrg: 'player', via: 'negotiate' });
+      const newAiOrgs = { ...G.aiOrgs, [fromOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== pending.fighterId) } };
+      G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, `🎉 ${fighter.name}の引き抜き交渉成功！（-${pending.cost}万）`], negotiationResult: null };
+      App._pushNewsEvent({ type: 'poachSuccess', characterId: resetFighter.id,
+        data: { name: resetFighter.name, toOrg: G.orgName || '\u3042\u306a\u305f\u306e\u56e3\u4f53', fromOrg: fromOrgName, ovr: Engine.util.ov(resetFighter), cost: pending.cost } });
+      signedFighter = resetFighter;
+      detail = `解雇: ${released.name} / 移籍金: ${pending.cost}万`;
+      message = `${resetFighter.name}との契約が成立した`;
+    }
+    G = { ...G, pendingRosterOverflowSigning: null };
+    Storage.autoSave();
+    refreshAll();
+    Audio.play('stamp');
+    showEventPopup({ type: 'fighter', id: signedFighter.id, name: signedFighter.name, tone: 'positive', message, detail });
   },
 
   // ── Scout Event Methods (scout-spec §2-§5) ──────────────
@@ -2263,12 +2455,17 @@ const App = {
     });
 
     if (result.result === 'success') {
-      // roster-cap v1.0: ロスター枠チェック
+      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
-        Audio.play('error'); alert(`ロスター枠が上限（${G.rosterCap || 6}名）に達しています`);
+        App._queueRosterOverflowSigning({
+          source: 'scout',
+          fighterId: cand.id,
+          fighter: { ...cand },
+          cost: result.cost,
+          meta: { choice }
+        });
         return;
       }
-      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       Audio.play('stamp');
       // Clean internal props before adding to roster
       const signed = { ...cand };
@@ -4014,6 +4211,11 @@ const App = {
       }, etDelay);
     }
 
+    if (G.pendingRosterOverflowSigning) {
+      const overflowDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 1100;
+      App._showRosterOverflowSigningModalIfNeeded(overflowDelay);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -4059,7 +4261,7 @@ const App = {
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // v1.4w: 交渉成功時の新聞イベント
-    if (G.negotiationResult && G.negotiationResult.success && G.negotiationResult.fighter) {
+    if (G.negotiationResult && G.negotiationResult.success && G.negotiationResult.fighter && !(G.pendingRosterOverflowSigning && G.pendingRosterOverflowSigning.source === 'negotiation')) {
       const nf = G.negotiationResult.fighter;
       const fromOrg = (G.transferLog || []).slice(-1)[0];
       App._pushNewsEvent({ type: 'poachSuccess', characterId: nf.id,
@@ -4137,9 +4339,28 @@ const App = {
   },
 
   // 表彰式チェーン安全実行: 中間ステップのエラーで表彰式が消失しないよう防御
+  _recoverPendingAwards() {
+    if (G.pendingAwards) return true;
+    if (!G.offSeason || G.offWeek !== 1) return false;
+    if (!Array.isArray(G.seasonHistory) || G.seasonHistory.length === 0) return false;
+    try {
+      const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xA11D));
+      const pendingAwards = Engine.awards.generate(rng, G);
+      G = { ...G, pendingAwards, gameLog: [...(G.gameLog || []), '🛠 年末表彰データを復旧しました'] };
+      Storage.autoSave();
+      return true;
+    } catch (e) {
+      console.error('[WM] pendingAwards recovery failed:', e);
+      return false;
+    }
+  },
+
   _safeAwardsChain() {
     const awardsCallback = () => {
-      try { App._checkAndShowAwards(); }
+      try {
+        App._recoverPendingAwards();
+        App._checkAndShowAwards();
+      }
       catch (e) { console.error('[WM] _checkAndShowAwards error:', e); try { refreshAll(); } catch (_) {} }
     };
     const endingCallback = () => {

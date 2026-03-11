@@ -1803,11 +1803,36 @@ const Engine = {
     },
 
     // §1.2: 引退勧告が可能な選手かチェック
+    getPeakDropRatio(fighter) {
+      if (!fighter) return 0;
+      const currentOvr = Engine.util.ov(fighter);
+      const peakOvr = Math.max(currentOvr, fighter.careerRecord?.peakOVR || 0);
+      if (!peakOvr) return 0;
+      return Math.max(0, (peakOvr - currentOvr) / peakOvr);
+    },
+
+    getDeclinePresentation(fighter) {
+      if (!fighter) {
+        return { visible: false, stage: 'none', dropRatio: 0, peakOVR: 0, currentOVR: 0 };
+      }
+      const currentOVR = Engine.util.ov(fighter);
+      const peakOVR = Math.max(currentOVR, fighter.careerRecord?.peakOVR || 0);
+      const dropRatio = Engine.retirement.getPeakDropRatio(fighter);
+      let stage = 'none';
+      if ((fighter.wear || 0) >= 60) stage = 'terminal';
+      else if ((fighter.wear || 0) >= 40) stage = 'major';
+      else if (dropRatio >= 0.05) stage = 'early';
+      return { visible: stage !== 'none', stage, dropRatio, peakOVR, currentOVR };
+    },
+
+    // §1.2: 引退勧告が可能な選手かチェック
     canAdvise(fighter) {
       if (!fighter || fighter.isRental) return false;
-      if ((fighter.wear || 0) >= 20) return true;
-      if ((fighter.careerSeasons || 0) >= 6) return true;
-      if ((fighter.age || 0) >= 25) return true;
+      const dropRatio = Engine.retirement.getPeakDropRatio(fighter);
+      if ((fighter.wear || 0) >= 40) return true;
+      if (dropRatio >= 0.05) return true;
+      if ((fighter.lowPerformanceSeasons || 0) >= 1) return true;
+      if ((fighter.careerSeasons || 0) >= 7 && (fighter.age || 0) >= 26) return true;
       return false;
     },
 
@@ -1944,8 +1969,30 @@ const Engine = {
     getHiredCoaches(G) {
       return G.coaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
     },
+    sanitizeAssignments(G, coachAssign = G.coachAssign) {
+      const rosterIds = new Set((G.roster || []).map(c => c.id));
+      const sanitized = {};
+      (G.coaches || []).forEach(coachId => {
+        const raw = (coachAssign && Array.isArray(coachAssign[coachId])) ? coachAssign[coachId] : [];
+        const seen = new Set();
+        sanitized[coachId] = raw.filter(charId => {
+          if (!rosterIds.has(charId) || seen.has(charId)) return false;
+          seen.add(charId);
+          return true;
+        });
+      });
+      return sanitized;
+    },
     getCoachAssignees(G, coachId) {
-      return (G.coachAssign && G.coachAssign[coachId]) || [];
+      const raw = (G.coachAssign && Array.isArray(G.coachAssign[coachId])) ? G.coachAssign[coachId] : [];
+      if (!G.roster) return raw;
+      const rosterIds = new Set(G.roster.map(c => c.id));
+      const seen = new Set();
+      return raw.filter(charId => {
+        if (!rosterIds.has(charId) || seen.has(charId)) return false;
+        seen.add(charId);
+        return true;
+      });
     },
     getCharCoach(G, charId) {
       for (const coachId of G.coaches) {
@@ -1954,18 +2001,19 @@ const Engine = {
       return null;
     },
     assignToCoach(G, coachId, charId) {
-      const current = G.coachAssign[coachId] || [];
-      if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: G.coachAssign, success: false };
-      return { coachAssign: { ...G.coachAssign, [coachId]: [...current, charId] }, success: true };
+      const baseAssign = Engine.coach.sanitizeAssignments(G);
+      const current = baseAssign[coachId] || [];
+      if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: baseAssign, success: false };
+      if (current.includes(charId)) return { coachAssign: baseAssign, success: true };
+      return { coachAssign: { ...baseAssign, [coachId]: [...current, charId] }, success: true };
     },
     unassignFromCoach(G, charId) {
-      const newAssign = {};
-      for (const coachId of Object.keys(G.coachAssign)) {
-        newAssign[coachId] = G.coachAssign[coachId].filter(id => id !== charId);
+      const newAssign = Engine.coach.sanitizeAssignments(G);
+      for (const coachId of Object.keys(newAssign)) {
+        newAssign[coachId] = newAssign[coachId].filter(id => id !== charId);
       }
       return newAssign;
     },
-    // §1.3+§1.4+§1.5: teaching rank → base mult + style bonus + trait bonus
     getCharGrowthMult(G, charId, stat) {
       const coach = Engine.coach.getCharCoach(G, charId);
       if (!coach) return 1.0;
@@ -4946,7 +4994,7 @@ const Engine = {
         }
         // Phase 3 R3: 仲の良い選手を失ったtrust影響
         const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '引き抜き' });
-        s = { ...s, roster: impactedRoster };
+        s = { ...s, roster: impactedRoster, coachAssign: Engine.coach.unassignFromCoach(s, fighterIdToRelease) };
         // Fighter leaves — player gets transfer fee
         s = { ...s,
           roster: s.roster.filter(c => c.id !== fighterIdToRelease),
@@ -4987,7 +5035,7 @@ const Engine = {
           }
           // Phase 3 R3: 仲の良い選手を失ったtrust影響
           const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '防衛失敗' });
-          s = { ...s, roster: impactedRoster2 };
+          s = { ...s, roster: impactedRoster2, coachAssign: Engine.coach.unassignFromCoach(s, fighterIdToRelease) };
           // Defense failed — forced transfer
           const targetId = poach.org.id;
           const targetData = s.aiOrgs[targetId];
@@ -5237,10 +5285,20 @@ const Engine = {
         // roster-cap v1.0: ロスター枠チェック
         const _ownCount = state.roster.filter(f => !f.isRental).length;
         if (_ownCount >= (state.rosterCap || 6)) {
-          events.push(`⚠ ${fighter.name}の交渉は成立したが、ロスター枠が上限のため加入できない`);
+          events.push(`⚠ ${fighter.name}の交渉は成立したが、ロスター枠が上限のため加入を保留した`);
           return {
-            state: { ...state, pendingNegotiation: null },
-            events, success: false, fighter
+            state: {
+              ...state,
+              pendingNegotiation: null,
+              pendingRosterOverflowSigning: {
+                source: 'negotiation',
+                fighterId: fighter.id,
+                fighter: resetFighter,
+                cost: neg.totalCost,
+                meta: { fromOrgId: neg.orgId, fromOrgName: orgCfg.name }
+              }
+            },
+            events, success: true, fighter: resetFighter
           };
         }
         events.push(`🎉 ${fighter.name}の引き抜き交渉成功！（-${neg.totalCost}万）`);
@@ -10614,17 +10672,12 @@ Engine.contract = {
       const colleagueIds = s.roster.filter(c => c.id !== fighter.id).map(c => c.id);
       s = Engine.relationships.applyFromRoster(s, colleagueIds, fighter.id, { min: -15, max: -8 }, { min: 5, max: 10 }, depRelRng);
     }
-    // roster から除外
-    s = { ...s, roster: s.roster.filter(c => c.id !== fighter.id) };
-    // コーチ解除
-    if (s.coachAssign) {
-      const newAssign = { ...s.coachAssign };
-      Object.keys(newAssign).forEach(cId => {
-        if (newAssign[cId] === fighter.id) delete newAssign[cId];
-      });
-      s = { ...s, coachAssign: newAssign };
-    }
-    // タイトル空位化
+    // roster ????
+    s = {
+      ...s,
+      roster: s.roster.filter(c => c.id !== fighter.id),
+      coachAssign: Engine.coach.unassignFromCoach(s, fighter.id),
+    };
     if (s.titles && s.titles.world && s.titles.world.championId === fighter.id) {
       s = { ...s, titles: { ...s.titles, world: { ...s.titles.world, championId: null, defenses: 0 } } };
     }

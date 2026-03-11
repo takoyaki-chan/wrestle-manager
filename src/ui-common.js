@@ -444,6 +444,50 @@ function showConfirm(msg, yesLabel, onYes) {
   overlay.classList.add('active');
 }
 
+function showRosterOverflowSigningModal(pending) {
+  if (!pending) return;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  const fighter = pending.fighter || {};
+  const releaseCandidates = (G.roster || []).filter(c => !c.isRental && !c.lastRun);
+  const sourceLabel = pending.source === 'negotiation' ? '交渉成立選手' : '加入予定選手';
+  let html = '';
+  html += `<div style="text-align:center;font-size:20px;font-weight:900;color:var(--gold);margin-bottom:12px">所属上限に達しています</div>`;
+  html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">1名解雇すると、この選手と契約できます。</div>`;
+  html += `<div style="padding:12px 14px;margin-bottom:14px;border-radius:10px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.22)">`;
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${sourceLabel}</div>`;
+  html += `<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px">${fighter.name || '選手'}</div>`;
+  html += `<div style="font-size:12px;color:var(--text-sub)">OVR ${Engine.util.ov(fighter || {})} ｜ ${fighter.age || '?'}歳 ｜ 契約金 ${pending.cost || 0}万</div>`;
+  html += `</div>`;
+  if (releaseCandidates.length === 0) {
+    html += `<div style="font-size:13px;color:var(--text-sub);text-align:center;margin-bottom:14px">解雇できる所属選手がいません。</div>`;
+  } else {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">解雇する選手を選んでください</div>`;
+    html += `<div style="display:grid;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:12px">`;
+    releaseCandidates.forEach(c => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08)">`;
+      html += `<div><div style="font-size:14px;font-weight:700;color:var(--text)">${c.name}</div><div style="font-size:12px;color:var(--text-sub)">OVR ${ov(c)} ｜ ${c.age || '?'}歳</div></div>`;
+      html += `<button class="btn btn-gold" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="confirmRosterOverflowSigning(${c.id})">解雇して契約</button>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+  html += `<div style="display:flex;justify-content:center"><button class="btn" style="min-width:120px;padding:10px 22px;background:var(--bg-mid);color:var(--text-sub)" onclick="cancelRosterOverflowSigning()">やめる</button></div>`;
+  box.innerHTML = html;
+  overlay.classList.add('active');
+  Audio.play('notify');
+}
+
+function confirmRosterOverflowSigning(releaseId) {
+  document.getElementById('showResultOverlay').classList.remove('active');
+  App.confirmRosterOverflowSigning(releaseId);
+}
+
+function cancelRosterOverflowSigning() {
+  document.getElementById('showResultOverlay').classList.remove('active');
+  App.cancelRosterOverflowSigning();
+}
+
 // ── F2: Negotiation Popup ──
 function showNegotiatePopup(orgId, fighterId) {
   Audio.play('hover');
@@ -1917,7 +1961,7 @@ function showFighterPopup(fighterId, source) {
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
-            ${(() => { const w = c.wear || 0; if (w >= 60) return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (w >= 40) return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (w >= 20) return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
+            ${(() => { const decline = Engine.retirement.getDeclinePresentation(c); if (decline.stage === 'terminal') return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (decline.stage === 'major') return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (decline.stage === 'early') return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
             ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
             ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
             ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
