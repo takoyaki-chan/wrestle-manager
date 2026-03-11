@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking Screen Preview Lite</title>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --panel: rgba(16, 20, 32, 0.94);
+      --panel-soft: rgba(255,255,255,0.03);
+      --line: rgba(255,255,255,0.08);
+      --text: #f3efe5;
+      --muted: #a7aebb;
+      --gold: #d4a843;
+      --gold-soft: #f0d078;
+      --red: #d94b4b;
+      --violet: #7a6df0;
+      --green: #19b98f;
+      --blue: #69c7ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Noto Sans JP", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top center, rgba(212,168,67,0.16), transparent 24%),
+        linear-gradient(180deg, #10141d 0%, #090b11 58%, #07090d 100%);
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 24px auto 40px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(212,168,67,0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+      box-shadow: 0 24px 72px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(14px);
+    }
+    .status-bar {
+      display: grid;
+      grid-template-columns: 1.3fr auto auto auto;
+      gap: 10px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+    .status-main, .status-mini, .table-wrap, .card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      position: relative;
+      overflow: hidden;
+    }
+    .status-main::before, .status-mini::before, .table-wrap::before, .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(140deg, rgba(255,255,255,0.03), transparent 42%);
+      pointer-events: none;
+    }
+    .status-main {
+      padding: 14px 16px;
+      background:
+        radial-gradient(circle at 92% 10%, rgba(212,168,67,0.18), transparent 20%),
+        linear-gradient(135deg, rgba(212,168,67,0.08), rgba(255,255,255,0.01) 38%),
+        var(--panel);
+    }
+    .status-main .title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .status-main .sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .status-mini {
+      min-width: 130px;
+      padding: 12px 14px;
+      display: grid;
+      align-content: center;
+    }
+    .status-mini .k {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+    .status-mini .v {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 30px;
+      line-height: 1;
+      color: var(--gold-soft);
+    }
+    .table-wrap {
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 10px;
+      padding: 2px 4px 10px;
+    }
+    .table-head .title {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+    }
+    .table-head .sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      padding: 8px 10px;
+      text-align: left;
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr.player-row {
+      background: linear-gradient(90deg, rgba(212,168,67,0.14), rgba(255,255,255,0.015) 44%);
+      box-shadow: inset 0 0 0 1px rgba(212,168,67,0.12);
+    }
+    tr.top-row {
+      background: linear-gradient(90deg, rgba(217,75,75,0.12), rgba(255,255,255,0.01) 40%);
+    }
+    .rank-no {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 26px;
+      line-height: 1;
+      font-weight: 700;
+    }
+    .org-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .org-sub {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .tier {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      border: 1px solid currentColor;
+      vertical-align: middle;
+    }
+    .num {
+      text-align: right;
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .num.small { font-size: 18px; }
+    .faces-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .face {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+      background: linear-gradient(135deg, #5b6275, #262d39);
+    }
+    .gold { background: linear-gradient(135deg, #f0c874, #875b1b); }
+    .red { background: linear-gradient(135deg, #ef7a7a, #702121); }
+    .violet { background: linear-gradient(135deg, #9d90ff, #42317d); }
+    .green { background: linear-gradient(135deg, #6ce7c2, #16735a); }
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--blue);
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      padding: 14px;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-link {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(105,199,255,0.26);
+      background: rgba(105,199,255,0.08);
+      color: var(--blue);
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .champ-line {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .leaders {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .leader {
+      width: 110px;
+      text-align: center;
+    }
+    .leader .portrait {
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 8px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(135deg, #3f4657, #1d2330);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .leader .name {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .leader .meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .toggle {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: var(--gold-soft);
+    }
+    .history {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    @media (max-width: 980px) {
+      .status-bar { grid-template-columns: 1fr 1fr; }
+      .status-main { grid-column: 1 / -1; }
+      .faces-inline { justify-content: flex-start; }
+      th:nth-child(6), td:nth-child(6) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="status-bar">
+      <div class="status-main">
+        <div class="title">現在2位。1位のEMPRESSまであと12pt</div>
+        <div class="sub">今の通知帯を少し整理して、順位・差分・格の積み上がりをひと目で把握できる形にした案です。構成は変えず、情報の見え方だけを整えています。</div>
+      </div>
+      <div class="status-mini"><div class="k">Rank</div><div class="v">#2</div></div>
+      <div class="status-mini"><div class="k">Legacy</div><div class="v">30</div></div>
+      <div class="status-mini"><div class="k">Battle</div><div class="v">+6</div></div>
+    </section>
+
+    <section class="table-wrap">
+      <div class="table-head">
+        <div>
+          <div class="title">Ranking Board</div>
+          <div class="sub">元の表レイアウトのまま、質感と導線だけ強化</div>
+        </div>
+        <div class="sub">行から勢力図へそのまま飛べる</div>
+      </div>
+
+      <table>
+        <tr>
+          <th style="width:56px">#</th>
+          <th>団体名</th>
+          <th style="text-align:right">評価値</th>
+          <th style="text-align:right">実力</th>
+          <th style="text-align:right">対戦pt</th>
+          <th style="text-align:right">顔役</th>
+          <th style="text-align:right">人数</th>
+        </tr>
+        <tr class="top-row">
+          <td><span class="rank-no" style="color:var(--red)">1</span></td>
+          <td>
+            <div class="org-name">🔥 EMPRESS <span class="tier" style="color:var(--red)">S</span><span class="map-link">🗺️ 勢力図</span></div>
+            <div class="org-sub"><span>格 +50</span><span>上位3人が盤石</span></div>
+          </td>
+          <td class="num">194</td>
+          <td class="num small">138</td>
+          <td class="num small" style="color:#7fe0a7">+6</td>
+          <td>
+            <div class="faces-inline">
+              <span class="face red">R</span><span class="face red">E</span><span class="face red">K</span>
+            </div>
+          </td>
+          <td class="num small">16</td>
+        </tr>
+        <tr class="player-row">
+          <td><span class="rank-no" style="color:var(--gold)">2</span></td>
+          <td>
+            <div class="org-name">🏠 プレイヤー団体 <span class="tier" style="color:var(--gold)">YOU</span><span class="map-link">🗺️ 勢力図</span></div>
+            <div class="org-sub"><span>格 +30</span><span>あと12ptで首位</span></div>
+          </td>
+          <td class="num" style="color:var(--gold-soft)">182</td>
+          <td class="num small">146</td>
+          <td class="num small" style="color:#7fe0a7">+6</td>
+          <td>
+            <div class="faces-inline">
+              <span class="face gold">A</span><span class="face gold">M</span><span class="face gold">S</span>
+            </div>
+          </td>
+          <td class="num small">11</td>
+        </tr>
+        <tr>
+          <td><span class="rank-no" style="color:var(--violet)">3</span></td>
+          <td>
+            <div class="org-name">⚡ VALKYRIE <span class="tier" style="color:var(--violet)">A</span><span class="map-link">🗺️ 勢力図</span></div>
+            <div class="org-sub"><span>格 +30</span><span>スター依存型</span></div>
+          </td>
+          <td class="num">156</td>
+          <td class="num small">128</td>
+          <td class="num small" style="color:#ff9d9d">-2</td>
+          <td>
+            <div class="faces-inline">
+              <span class="face violet">V</span><span class="face violet">L</span><span class="face violet">Y</span>
+            </div>
+          </td>
+          <td class="num small">13</td>
+        </tr>
+        <tr>
+          <td><span class="rank-no" style="color:var(--green)">4</span></td>
+          <td>
+            <div class="org-name">🌿 GREEN OCEAN <span class="tier" style="color:var(--green)">B</span><span class="map-link">🗺️ 勢力図</span></div>
+            <div class="org-sub"><span>格 +15</span><span>伸びしろ大</span></div>
+          </td>
+          <td class="num">127</td>
+          <td class="num small">111</td>
+          <td class="num small">+1</td>
+          <td>
+            <div class="faces-inline">
+              <span class="face green">G</span><span class="face green">R</span><span class="face green">N</span>
+            </div>
+          </td>
+          <td class="num small">10</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="cards">
+      <div class="card" style="border-color:rgba(217,75,75,0.24);background:linear-gradient(90deg, rgba(217,75,75,0.10), rgba(255,255,255,0.012) 42%), var(--panel);">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="color:var(--red)">🔥 EMPRESS <span class="tier" style="color:var(--red)">1位</span></div>
+            <div class="card-meta">194pt ・ 16名 ・ 平均OVR 80 ・ 団体人気 76</div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-link">🗺️ 勢力図で見る</a>
+          </div>
+        </div>
+        <div class="champ-line">説明: 業界の王座に君臨する絶対王者団体</div>
+        <div class="leaders">
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #ef7a7a, #702121)">R</div><div class="name">レイラ・クイーン</div><div class="meta">OVR 90</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #ef7a7a, #702121)">E</div><div class="name">エマ・ブレイズ</div><div class="meta">POP 85</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #ef7a7a, #702121)">K</div><div class="name">キラ・ノヴァ</div><div class="meta">OVR 84</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #ef7a7a, #702121)">N</div><div class="name">ナディア</div><div class="meta">OVR 80</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #ef7a7a, #702121)">T</div><div class="name">テッサ</div><div class="meta">POP 78</div></div>
+        </div>
+        <div class="toggle">▼ 選手一覧を見る</div>
+      </div>
+
+      <div class="card" style="border-color:rgba(212,168,67,0.26);background:linear-gradient(90deg, rgba(212,168,67,0.12), rgba(255,255,255,0.012) 45%), var(--panel);">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="color:var(--gold-soft)">🏠 プレイヤー団体 <span class="tier" style="color:var(--gold)">2位</span></div>
+            <div class="card-meta">182pt ・ 11名 ・ 平均OVR 78 ・ 団体人気 61</div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-link">🗺️ 勢力図で見る</a>
+          </div>
+        </div>
+        <div class="champ-line">王者: 天城レイナ</div>
+        <div class="leaders">
+          <div class="leader"><div class="portrait gold">A</div><div class="name">天城レイナ</div><div class="meta">OVR 88</div></div>
+          <div class="leader"><div class="portrait gold">M</div><div class="name">美月カレン</div><div class="meta">POP 81</div></div>
+          <div class="leader"><div class="portrait gold">S</div><div class="name">白峰アオイ</div><div class="meta">OVR 82</div></div>
+        </div>
+        <div class="toggle">▼ 選手一覧を見る</div>
+      </div>
+
+      <div class="card" style="border-color:rgba(122,109,240,0.22);background:linear-gradient(90deg, rgba(122,109,240,0.10), rgba(255,255,255,0.012) 42%), var(--panel);">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="color:var(--violet)">⚡ VALKYRIE <span class="tier" style="color:var(--violet)">3位</span></div>
+            <div class="card-meta">156pt ・ 13名 ・ 平均OVR 74 ・ 団体人気 55</div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-link">🗺️ 勢力図で見る</a>
+          </div>
+        </div>
+        <div class="champ-line">説明: スター選手の爆発力で上位に食い込む技巧派団体</div>
+        <div class="leaders">
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #9d90ff, #42317d)">V</div><div class="name">ヴェラ・ムーン</div><div class="meta">OVR 83</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #9d90ff, #42317d)">L</div><div class="name">ルナ・ヴァイス</div><div class="meta">POP 77</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #9d90ff, #42317d)">Y</div><div class="name">ユイ・スパーク</div><div class="meta">OVR 79</div></div>
+        </div>
+        <div class="toggle">▼ 選手一覧を見る</div>
+      </div>
+
+      <div class="card" style="border-color:rgba(25,185,143,0.22);background:linear-gradient(90deg, rgba(25,185,143,0.10), rgba(255,255,255,0.012) 42%), var(--panel);">
+        <div class="card-head">
+          <div>
+            <div class="card-title" style="color:var(--green)">🌿 GREEN OCEAN <span class="tier" style="color:var(--green)">4位</span></div>
+            <div class="card-meta">127pt ・ 10名 ・ 平均OVR 69 ・ 団体人気 41</div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-link">🗺️ 勢力図で見る</a>
+          </div>
+        </div>
+        <div class="champ-line">説明: 若手と成長株でじわじわ追い上げる発展途上の団体</div>
+        <div class="leaders">
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #6ce7c2, #16735a)">G</div><div class="name">グレイス・リーフ</div><div class="meta">OVR 75</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #6ce7c2, #16735a)">R</div><div class="name">リナ・グロウ</div><div class="meta">POP 66</div></div>
+          <div class="leader"><div class="portrait" style="background:linear-gradient(135deg, #6ce7c2, #16735a)">N</div><div class="name">ノア・スプリング</div><div class="meta">OVR 72</div></div>
+        </div>
+        <div class="toggle">▼ 選手一覧を見る</div>
+      </div>
+    </section>
+
+    <section class="history">
+      <div class="table-head" style="margin-bottom:6px;padding:0 0 8px">
+        <div>
+          <div class="title">Season History</div>
+          <div class="sub">この下の履歴テーブルも現状維持でそのまま接続</div>
+        </div>
+      </div>
+      <table>
+        <tr><th>シーズン</th><th style="text-align:right">順位</th><th style="text-align:right">興行数</th><th style="text-align:right">最高MQ</th><th style="text-align:right">収支</th><th style="text-align:right">最終資金</th><th style="text-align:right">人数</th></tr>
+        <tr><td>5年目</td><td class="num small" style="color:var(--gold-soft)">2位</td><td class="num small">11</td><td class="num small">86</td><td class="num small" style="color:#7fe0a7">+1,240</td><td class="num small">6,820</td><td class="num small">11</td></tr>
+        <tr><td>4年目</td><td class="num small">3位</td><td class="num small">10</td><td class="num small">81</td><td class="num small" style="color:#7fe0a7">+820</td><td class="num small">5,580</td><td class="num small">10</td></tr>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

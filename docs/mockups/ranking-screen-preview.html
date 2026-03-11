@@ -1,0 +1,599 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking Screen Preview v2</title>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --panel: rgba(16, 20, 32, 0.94);
+      --panel-soft: rgba(255, 255, 255, 0.04);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #f3efe5;
+      --muted: #a6acb8;
+      --gold: #d4a843;
+      --gold-soft: #f2d483;
+      --red: #d94b4b;
+      --violet: #7a6df0;
+      --green: #19b98f;
+      --blue: #69c7ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Noto Sans JP", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top center, rgba(212,168,67,0.16), transparent 24%),
+        radial-gradient(circle at 12% 20%, rgba(105,199,255,0.12), transparent 18%),
+        linear-gradient(180deg, #10141d 0%, #090b11 58%, #07090d 100%);
+    }
+    .shell {
+      width: min(1240px, calc(100vw - 28px));
+      margin: 24px auto 40px;
+      padding: 18px;
+      border-radius: 26px;
+      border: 1px solid rgba(212,168,67,0.16);
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+      box-shadow: 0 24px 72px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(14px);
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(140deg, rgba(255,255,255,0.03), transparent 42%);
+      pointer-events: none;
+    }
+    .status-panel {
+      padding: 18px 20px;
+      display: grid;
+      gap: 14px;
+      background:
+        radial-gradient(circle at 92% 8%, rgba(212,168,67,0.18), transparent 18%),
+        linear-gradient(135deg, rgba(212,168,67,0.08), rgba(255,255,255,0.01) 34%),
+        var(--panel);
+    }
+    .status-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .status-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(212,168,67,0.12);
+      border: 1px solid rgba(212,168,67,0.2);
+      color: var(--gold-soft);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .status-title {
+      font-size: 27px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin: 0 0 4px;
+    }
+    .status-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .pulse {
+      min-width: 168px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.03);
+    }
+    .pulse-label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .pulse-value {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 44px;
+      line-height: 1;
+      color: var(--gold-soft);
+    }
+    .pulse-note {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .status-box {
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.028);
+    }
+    .status-box .k {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .status-box .v {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .face-panel {
+      padding: 18px 18px 16px;
+      display: grid;
+      gap: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.012)),
+        var(--panel);
+    }
+    .panel-title {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+    }
+    .panel-copy {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-top: 4px;
+    }
+    .leaders {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .leader-card {
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      text-align: center;
+    }
+    .leader-card.champion {
+      border-color: rgba(212,168,67,0.24);
+      background: linear-gradient(180deg, rgba(212,168,67,0.16), rgba(212,168,67,0.04));
+    }
+    .portrait {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 10px 20px rgba(0,0,0,0.22);
+      background: linear-gradient(135deg, #495264, #232937);
+    }
+    .portrait.gold { background: linear-gradient(135deg, #f2c572, #8a5f1f); }
+    .portrait.red { background: linear-gradient(135deg, #ef7676, #6f1f1f); }
+    .portrait.blue { background: linear-gradient(135deg, #7ad1ff, #254b73); }
+    .leader-name {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .leader-role {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .leader-stat {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 22px;
+      color: var(--gold-soft);
+    }
+    .board {
+      display: grid;
+      grid-template-columns: 1.2fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .ranking-panel {
+      padding: 14px;
+    }
+    .ranking-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 8px 14px;
+    }
+    .ranking-note {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .rows {
+      display: grid;
+      gap: 12px;
+    }
+    .rank-card {
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0.012));
+    }
+    .rank-card.player {
+      border-color: rgba(212,168,67,0.34);
+      background: linear-gradient(90deg, rgba(212,168,67,0.16), rgba(255,255,255,0.018) 40%);
+      box-shadow: inset 0 0 0 1px rgba(212,168,67,0.1);
+    }
+    .rank-main {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr) 108px 94px;
+      gap: 12px;
+      align-items: center;
+    }
+    .rank-badge {
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 30px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .org-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      min-width: 0;
+    }
+    .org-name {
+      font-size: 18px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tier {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      border: 1px solid currentColor;
+    }
+    .org-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .big-num, .mid-num {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      text-align: right;
+      line-height: 1;
+    }
+    .big-num .label, .mid-num .label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .big-num .value {
+      font-size: 30px;
+    }
+    .mid-num .value {
+      font-size: 24px;
+    }
+    .faces-strip {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .faces {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .mini-face {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.14);
+      background: linear-gradient(135deg, #5b6275, #262d39);
+    }
+    .mini-face.gold { background: linear-gradient(135deg, #f0c874, #875b1b); }
+    .mini-face.red { background: linear-gradient(135deg, #ef7a7a, #702121); }
+    .mini-face.violet { background: linear-gradient(135deg, #9d90ff, #42317d); }
+    .mini-face.green { background: linear-gradient(135deg, #6ce7c2, #16735a); }
+    .faces-caption {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .reason {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .throne-box {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(212,168,67,0.22);
+      background: linear-gradient(180deg, rgba(212,168,67,0.16), rgba(212,168,67,0.05));
+    }
+    .throne-box .name {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .throne-box .score {
+      font-family: "Oswald", "Arial Narrow", sans-serif;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--gold-soft);
+    }
+    .reason-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.026);
+    }
+    .reason-card h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--gold-soft);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .reason-list {
+      display: grid;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .reason-list strong { color: var(--text); }
+    @media (max-width: 980px) {
+      .topbar, .board { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .leaders { grid-template-columns: 1fr 1fr 1fr; }
+      .rank-main { grid-template-columns: 56px 1fr; }
+      .big-num, .mid-num { text-align: left; }
+      .rank-main > .big-num, .rank-main > .mid-num { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="topbar">
+      <div class="panel status-panel">
+        <div class="status-head">
+          <div>
+            <div class="status-label">ranking status</div>
+            <h1 class="status-title">現在2位。1位のEMPRESSまであと12pt</h1>
+            <div class="status-sub">大見出しで煽るのではなく、いま必要な状況だけを静かに整理する構成です。毎回見る画面なので、熱量よりも見通しを優先しています。</div>
+          </div>
+          <div class="pulse">
+            <div class="pulse-label">Gap To First</div>
+            <div class="pulse-value">12</div>
+            <div class="pulse-note">格30まで積み上がっていて、上位陣が揃えば射程圏</div>
+          </div>
+        </div>
+        <div class="status-grid">
+          <div class="status-box"><div class="k">Rank</div><div class="v">#2 / 4</div></div>
+          <div class="status-box"><div class="k">Rating</div><div class="v">182 pt</div></div>
+          <div class="status-box"><div class="k">Legacy</div><div class="v">30 / 50</div></div>
+          <div class="status-box"><div class="k">Battle Pt</div><div class="v">+6</div></div>
+        </div>
+      </div>
+
+      <div class="panel face-panel">
+        <div>
+          <div class="panel-title">Faces Of The Promotion</div>
+          <div class="panel-copy">顔アイコンは飾りではなく、「この順位を誰が支えているのか」を見せるためのものです。上位ほど重く評価される現行仕様と噛み合います。</div>
+        </div>
+        <div class="leaders">
+          <div class="leader-card champion">
+            <div class="portrait gold">A</div>
+            <div class="leader-name">天城レイナ</div>
+            <div class="leader-role">絶対的エース</div>
+            <div class="leader-stat">OVR 88</div>
+          </div>
+          <div class="leader-card">
+            <div class="portrait red">M</div>
+            <div class="leader-name">美月カレン</div>
+            <div class="leader-role">主力スター</div>
+            <div class="leader-stat">POP 81</div>
+          </div>
+          <div class="leader-card">
+            <div class="portrait blue">S</div>
+            <div class="leader-name">白峰アオイ</div>
+            <div class="leader-role">勝負どころの柱</div>
+            <div class="leader-stat">OVR 82</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="board">
+      <div class="panel ranking-panel">
+        <div class="ranking-head">
+          <div>
+            <div class="panel-title">Ranking Board</div>
+            <div class="ranking-note">団体ごとのスコアに加えて、その順位を作っている顔役もひと目で見える案</div>
+          </div>
+          <div class="ranking-note">top-heavy / face-driven</div>
+        </div>
+
+        <div class="rows">
+          <div class="rank-card">
+            <div class="rank-main">
+              <div class="rank-badge" style="color:var(--red)">1</div>
+              <div>
+                <div class="org-name-row">
+                  <div class="org-name">🔥 EMPRESS</div>
+                  <span class="tier" style="color:var(--red)">S</span>
+                </div>
+                <div class="org-meta"><span>実力 138</span><span>格 +50</span><span>対戦 +6</span></div>
+              </div>
+              <div class="big-num"><span class="label">Rating</span><span class="value">194</span></div>
+              <div class="mid-num"><span class="label">Gap</span><span class="value">--</span></div>
+            </div>
+            <div class="faces-strip">
+              <div class="faces">
+                <div class="mini-face red">R</div>
+                <div class="mini-face red">E</div>
+                <div class="mini-face red">K</div>
+                <div class="faces-caption">この団体を引っ張る顔役3人</div>
+              </div>
+              <div class="faces-caption">ロスター16名</div>
+            </div>
+          </div>
+
+          <div class="rank-card player">
+            <div class="rank-main">
+              <div class="rank-badge" style="color:var(--gold)">2</div>
+              <div>
+                <div class="org-name-row">
+                  <div class="org-name">🏠 プレイヤー団体</div>
+                  <span class="tier" style="color:var(--gold)">YOU</span>
+                </div>
+                <div class="org-meta"><span>実力 146</span><span>格 +30</span><span>対戦 +6</span></div>
+              </div>
+              <div class="big-num"><span class="label">Rating</span><span class="value" style="color:var(--gold-soft)">182</span></div>
+              <div class="mid-num"><span class="label">Gap</span><span class="value" style="color:var(--gold-soft)">-12</span></div>
+            </div>
+            <div class="faces-strip">
+              <div class="faces">
+                <div class="mini-face gold">A</div>
+                <div class="mini-face gold">M</div>
+                <div class="mini-face gold">S</div>
+                <div class="faces-caption">上位評価を支える主力3人を表示</div>
+              </div>
+              <div class="faces-caption">ロスター11名</div>
+            </div>
+          </div>
+
+          <div class="rank-card">
+            <div class="rank-main">
+              <div class="rank-badge" style="color:var(--violet)">3</div>
+              <div>
+                <div class="org-name-row">
+                  <div class="org-name">⚡ VALKYRIE</div>
+                  <span class="tier" style="color:var(--violet)">A</span>
+                </div>
+                <div class="org-meta"><span>実力 128</span><span>格 +30</span><span>対戦 -2</span></div>
+              </div>
+              <div class="big-num"><span class="label">Rating</span><span class="value">156</span></div>
+              <div class="mid-num"><span class="label">Gap</span><span class="value" style="color:#ff9d9d">-38</span></div>
+            </div>
+            <div class="faces-strip">
+              <div class="faces">
+                <div class="mini-face violet">V</div>
+                <div class="mini-face violet">L</div>
+                <div class="mini-face violet">Y</div>
+                <div class="faces-caption">3位団体の顔が誰かすぐ分かる</div>
+              </div>
+              <div class="faces-caption">ロスター13名</div>
+            </div>
+          </div>
+
+          <div class="rank-card">
+            <div class="rank-main">
+              <div class="rank-badge" style="color:var(--green)">4</div>
+              <div>
+                <div class="org-name-row">
+                  <div class="org-name">🌿 GREEN OCEAN</div>
+                  <span class="tier" style="color:var(--green)">B</span>
+                </div>
+                <div class="org-meta"><span>実力 111</span><span>格 +15</span><span>対戦 +1</span></div>
+              </div>
+              <div class="big-num"><span class="label">Rating</span><span class="value">127</span></div>
+              <div class="mid-num"><span class="label">Gap</span><span class="value" style="color:#ff9d9d">-67</span></div>
+            </div>
+            <div class="faces-strip">
+              <div class="faces">
+                <div class="mini-face green">G</div>
+                <div class="mini-face green">R</div>
+                <div class="mini-face green">N</div>
+                <div class="faces-caption">下位団体もキャラの顔で記憶に残る</div>
+              </div>
+              <div class="faces-caption">ロスター10名</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel reason">
+        <div class="throne-box">
+          <div class="panel-title" style="margin-bottom:10px">The Throne</div>
+          <div class="name"><span>👑 EMPRESS</span><small style="font-size:13px;color:var(--muted)">S Tier</small></div>
+          <div class="score">194 pt</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted)">誰が王座に座っているのかを、静かにでもはっきり見せる枠</div>
+        </div>
+
+        <div class="reason-card">
+          <h3>Why Faces Matter</h3>
+          <div class="reason-list">
+            <div><strong>上位選手の質が重要</strong> というルールを、数字だけでなく見た目でも伝えられます。</div>
+            <div><strong>団体順位の理由</strong> が「この3人が引っ張っているから」と直感的に分かります。</div>
+            <div><strong>旧マップの華やかさ</strong> を持ち込みつつ、今回は順位表示の意味に接続できます。</div>
+          </div>
+        </div>
+
+        <div class="reason-card">
+          <h3>Direction</h3>
+          <div class="reason-list">
+            <div>左上は情報整理だけにして、押しつけがましいヒーローコピーは置かない。</div>
+            <div>各団体の行に顔役3人を添えて、「誰が順位を作っているか」を見せる。</div>
+            <div>自団体は色帯よりも、主力の顔ぶれと1位との差で印象づける。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

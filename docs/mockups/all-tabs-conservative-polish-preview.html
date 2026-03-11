@@ -1,0 +1,474 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Tabs Conservative Polish Preview</title>
+  <style>
+    :root {
+      --bg-dark: #08080d;
+      --card-bg: #0e0e15;
+      --panel-bg: #121220;
+      --gold: #d4a843;
+      --gold-light: #f0d078;
+      --blue: #4a8fd4;
+      --red: #c41e3a;
+      --green: #2ecc71;
+      --text-main: #ebeef4;
+      --text-sub: rgba(255,255,255,0.62);
+      --text-dim: rgba(255,255,255,0.34);
+      --border: rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.16);
+      --radius-panel: 8px;
+      --radius-card: 6px;
+      --radius-image: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+    }
+    .app { max-width: 1200px; margin: 0 auto; padding: 12px; }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-panel);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .top-bar-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 3px;
+      background: linear-gradient(180deg,#fff 20%,var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .top-bar-info { display: flex; gap: 16px; font-size: 12px; flex-wrap: wrap; }
+    .info-item { display: flex; align-items: center; gap: 4px; }
+    .info-label { color: var(--text-sub); font-size: 12px; font-family: 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    .info-val { font-weight: 700; font-size: 14px; }
+    .info-val.gold { color: var(--gold-light); }
+    .nav-bar { display: flex; gap: 4px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+    .nav-btn {
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 5px;
+      color: var(--text-sub);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+    .nav-btn:hover { border-color: rgba(212,168,67,0.32); color: var(--text-main); }
+    .nav-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-panel);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .panel-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner {
+      min-height: 164px;
+      border-radius: var(--radius-panel);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      align-items: end;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .banner::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.58));
+    }
+    .banner-text { position: relative; z-index: 1; }
+    .banner-text h2 {
+      margin: 0 0 4px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 24px;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+    .banner-text p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.82); line-height: 1.7; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat-card {
+      background: rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .stat-label { font-size: 10px; color: var(--text-sub); font-family: 'Oswald', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; color: var(--gold-light); line-height: 1; }
+    .cols-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th {
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .data-table td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .data-table tr:hover { background: rgba(255,255,255,0.02); }
+    .data-table .num { text-align: right; font-family: 'Oswald', sans-serif; font-weight: 600; }
+    .card-list { display: grid; gap: 10px; }
+    .entry {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      background: rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-card);
+    }
+    .face {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-image);
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+    .hero {
+      width: 82px;
+      height: 82px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+    }
+    .portrait {
+      width: 92px;
+      height: 118px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+    }
+    .entry-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .entry-meta { font-size: 12px; color: var(--text-sub); line-height: 1.7; }
+    .btn {
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-gold { background: linear-gradient(135deg,var(--gold),#b8912e); color: var(--bg-dark); border: none; }
+    .btn-blue { background: rgba(74,143,212,0.15); border: 1px solid rgba(74,143,212,0.3); color: var(--blue); }
+    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+    .subnav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .subnav button {
+      font-family: 'Oswald', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+    .subnav button.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
+    .map-preview {
+      min-height: 250px;
+      border-radius: var(--radius-panel);
+      border: 1px solid rgba(255,255,255,0.06);
+      background:
+        radial-gradient(circle at 22% 28%, rgba(212,168,67,0.14), transparent 16%),
+        radial-gradient(circle at 72% 38%, rgba(74,143,212,0.14), transparent 18%),
+        radial-gradient(circle at 54% 72%, rgba(196,30,58,0.10), transparent 18%),
+        rgba(255,255,255,0.02);
+      position: relative;
+      overflow: hidden;
+    }
+    .map-node {
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .map-label {
+      position: absolute;
+      font-size: 11px;
+      color: var(--text-main);
+      background: rgba(10,10,20,0.86);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 4px 8px;
+    }
+    .save-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .save-card {
+      background: rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-card);
+      padding: 14px;
+    }
+    .help-item {
+      padding: 12px;
+      background: rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-card);
+      margin-bottom: 8px;
+    }
+    .help-item strong { display: block; color: var(--gold-light); margin-bottom: 6px; }
+    @media (max-width: 980px) {
+      .stat-grid, .cols-2, .save-grid { grid-template-columns: 1fr; }
+      .entry { grid-template-columns: auto 1fr; }
+      .entry > :last-child { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-bar">
+      <div class="top-bar-title">WRESTLE MANAGER</div>
+      <div class="top-bar-info">
+        <div class="info-item"><span class="info-label">Date</span><span class="info-val gold">5年目 4月 第1週</span></div>
+        <div class="info-item"><span class="info-label">Funds</span><span class="info-val">6,820万</span></div>
+        <div class="info-item"><span class="info-label">Pop</span><span class="info-val">61</span></div>
+        <div class="info-item"><span class="info-label">Rank</span><span class="info-val gold">2位</span></div>
+      </div>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-btn active" data-screen="week">今週</button>
+      <button class="nav-btn" data-screen="show">興行準備</button>
+      <button class="nav-btn" data-screen="roster">ロスター</button>
+      <button class="nav-btn" data-screen="scout">スカウト</button>
+      <button class="nav-btn" data-screen="ranking">ランキング</button>
+      <button class="nav-btn" data-screen="database">データベース</button>
+      <button class="nav-btn" data-screen="finance">財務</button>
+      <button class="nav-btn" data-screen="log">ログ</button>
+      <button class="nav-btn" data-screen="save">セーブ</button>
+      <button class="nav-btn" data-screen="help">ヘルプ</button>
+    </div>
+
+    <section class="screen active" id="screen-week">
+      <div class="banner" style="background-image:url('../../image/dojo-header.webp')">
+        <div class="banner-text"><h2>今週</h2><p>現行の空気感はそのままに、文字の見やすさと画像の角丸だけを少し整えた版。</p></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Current Goal</div><div class="stat-value">12pt</div></div>
+        <div class="stat-card"><div class="stat-label">Roster Mood</div><div class="stat-value">8</div></div>
+        <div class="stat-card"><div class="stat-label">Intensive</div><div class="stat-value">3</div></div>
+        <div class="stat-card"><div class="stat-label">Priority</div><div class="stat-value">育成</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Weekly Management</div>
+        <table class="data-table">
+          <tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール</th><th>今週の行動</th></tr>
+          <tr><td><div style="display:flex;align-items:center;gap:10px"><img class="face" src="../../image/face_asami_r.png" alt="">天城レイナ</div></td><td class="num">88</td><td class="num">84</td><td>好調</td><td>バランス</td><td>練習 + プロモ</td></tr>
+          <tr><td><div style="display:flex;align-items:center;gap:10px"><img class="face" src="../../image/face_hasegawa_r.png" alt="">美月カレン</div></td><td class="num">82</td><td class="num">71</td><td>通常</td><td>プロモ優先</td><td>メディア対応</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-show">
+      <div class="banner" style="background-image:url('../../image/arena-header.webp')">
+        <div class="banner-text"><h2>興行準備</h2><p>バナーの圧は残しつつ、周辺テキストだけ少し整理。</p></div>
+      </div>
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-title">Match Card</div>
+          <div class="card-list">
+            <div class="entry"><img class="face" src="../../image/face_asami_r.png" alt=""><div><div class="entry-name">天城レイナ vs レイラ・クイーン</div><div class="entry-meta">メインイベント ・ タイトル戦 ・ MQ期待 83</div></div><a class="btn btn-gold">編集</a></div>
+            <div class="entry"><img class="face" src="../../image/face_hasegawa_r.png" alt=""><div><div class="entry-name">美月カレン vs エマ・ブレイズ</div><div class="entry-meta">セミファイナル ・ 話題性高</div></div><a class="btn btn-gold">編集</a></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Venue & Boost</div>
+          <div class="entry"><img class="hero" src="../../image/venue_7_arena.webp" alt=""><div><div class="entry-name">アリーナ会場</div><div class="entry-meta">収容 12,000 ・ 人気補正 高 ・ いまの熱量に最適</div></div><a class="btn btn-gold">選択中</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-roster">
+      <div class="banner" style="background-image:url('../../image/dojo-header.webp')">
+        <div class="banner-text"><h2>ロスター</h2><p>立ち絵も顔画像も、元画像をそのまま使いながら角の丸めだけを統一。</p></div>
+      </div>
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-title">Staff</div>
+          <div class="card-list">
+            <div class="entry"><img class="hero" src="../../image/coach/face_coach_akagi.png" alt=""><div><div class="entry-name">赤城コーチ</div><div class="entry-meta">成長補正 x1.3 ・ 主担当 3名</div></div><a class="btn btn-blue">詳細</a></div>
+            <div class="entry"><img class="hero" src="../../image/coach/face_coach_hazuki.png" alt=""><div><div class="entry-name">葉月コーチ</div><div class="entry-meta">人気育成担当 ・ プロモ支援に強い</div></div><a class="btn btn-blue">詳細</a></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Roster Highlights</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap"><img class="portrait" src="../../image/upper/upper_asami_r.webp" alt=""><img class="portrait" src="../../image/upper/upper_hasegawa_r.webp" alt=""><img class="portrait" src="../../image/upper/upper_shirogane_r.webp" alt=""></div>
+          <div class="tag-row"><span class="tag">王者あり</span><span class="tag">主力3人が高水準</span><span class="tag">ロスター 11/12</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-scout">
+      <div class="panel">
+        <div class="panel-title">Scout / Free Agent</div>
+        <div class="card-list">
+          <div class="entry"><img class="hero" src="../../image/upper/upper_tachibana_r.webp" alt=""><div><div class="entry-name">立花リオ</div><div class="entry-meta">OVR 79 ・ 人気 68 ・ 将来性高 ・ 忠誠心あり</div><div class="tag-row"><span class="tag">即戦力</span><span class="tag">人気型</span></div></div><a class="btn btn-gold">交渉</a></div>
+          <div class="entry"><img class="hero" src="../../image/upper/upper_kudo_r.webp" alt=""><div><div class="entry-name">工藤レナ</div><div class="entry-meta">OVR 74 ・ 打撃型 ・ 伸びしろあり</div><div class="tag-row"><span class="tag">安価</span><span class="tag">若手</span></div></div><a class="btn btn-blue">詳細</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-ranking">
+      <div class="panel">
+        <div class="panel-title">Ranking</div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Current Rank</div><div class="stat-value">2</div></div>
+          <div class="stat-card"><div class="stat-label">Gap</div><div class="stat-value">12</div></div>
+          <div class="stat-card"><div class="stat-label">Legacy</div><div class="stat-value">30</div></div>
+          <div class="stat-card"><div class="stat-label">Battle</div><div class="stat-value">+6</div></div>
+        </div>
+        <table class="data-table">
+          <tr><th>#</th><th>団体名</th><th style="text-align:right">評価値</th><th style="text-align:right">実力</th><th style="text-align:right">対戦</th><th style="text-align:right">顔役</th></tr>
+          <tr><td class="num" style="color:var(--red)">1</td><td>🔥 EMPRESS</td><td class="num">194</td><td class="num">138</td><td class="num" style="color:var(--green)">+6</td><td><div style="display:flex;gap:6px;justify-content:flex-end"><img class="face" src="../../image/face_hasegawa_r.png" alt=""><img class="face" src="../../image/face_shirogane_r.png" alt=""><img class="face" src="../../image/face_asami_r.png" alt=""></div></td></tr>
+          <tr><td class="num" style="color:var(--gold-light)">2</td><td>🏠 プレイヤー団体</td><td class="num">182</td><td class="num">146</td><td class="num" style="color:var(--green)">+6</td><td><div style="display:flex;gap:6px;justify-content:flex-end"><img class="face" src="../../image/face_asami_r.png" alt=""><img class="face" src="../../image/face_hasegawa_r.png" alt=""><img class="face" src="../../image/face_shirogane_r.png" alt=""></div></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-database">
+      <div class="panel">
+        <div class="panel-title">Database</div>
+        <div class="subnav"><button class="active">全選手</button><button>全コーチ</button><button>団体比較</button><button>殿堂</button><button>相関図</button></div>
+        <div class="cols-2">
+          <div class="panel" style="margin:0">
+            <div class="panel-title">Fighter List</div>
+            <table class="data-table">
+              <tr><th>名前</th><th>所属</th><th style="text-align:right">OVR</th><th style="text-align:right">人気</th></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:10px"><img class="face" src="../../image/face_asami_r.png" alt="">天城レイナ</div></td><td>プレイヤー</td><td class="num">88</td><td class="num">79</td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:10px"><img class="face" src="../../image/face_hasegawa_r.png" alt="">美月カレン</div></td><td>プレイヤー</td><td class="num">82</td><td class="num">81</td></tr>
+            </table>
+          </div>
+          <div class="panel" style="margin:0">
+            <div class="panel-title">勢力図</div>
+            <div class="map-preview">
+              <img class="map-node" src="../../image/face_asami_r.png" alt="" style="left:18%;top:28%"><span class="map-label" style="left:13%;top:55%">プレイヤー主力</span>
+              <img class="map-node" src="../../image/face_hasegawa_r.png" alt="" style="left:62%;top:24%"><span class="map-label" style="left:58%;top:51%">S級中心</span>
+              <img class="map-node" src="../../image/face_shirogane_r.png" alt="" style="left:42%;top:62%"><span class="map-label" style="left:38%;top:88%">A級中核</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-finance">
+      <div class="panel">
+        <div class="panel-title">Finance</div>
+        <div class="subnav"><button class="active">総合</button><button>収入</button><button>支出</button><button>給与</button></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Funds</div><div class="stat-value">6820</div></div>
+          <div class="stat-card"><div class="stat-label">Monthly Profit</div><div class="stat-value">1240</div></div>
+          <div class="stat-card"><div class="stat-label">Salary</div><div class="stat-value">410</div></div>
+          <div class="stat-card"><div class="stat-label">Sponsor</div><div class="stat-value">180</div></div>
+        </div>
+        <table class="data-table">
+          <tr><th>項目</th><th style="text-align:right">金額</th><th>メモ</th></tr>
+          <tr><td>興行収入</td><td class="num" style="color:var(--green)">+1850</td><td>アリーナ成功</td></tr>
+          <tr><td>選手給与</td><td class="num" style="color:#f08b9e">-410</td><td>ロスター11名</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-log">
+      <div class="panel">
+        <div class="panel-title">Game Log</div>
+        <div class="card-list">
+          <div class="entry"><div class="num">04</div><div><div class="entry-name">頂上決戦で勝利</div><div class="entry-meta">対戦ポイント +10。1位との差が12ptまで縮まる。</div></div><a class="btn btn-blue">詳細</a></div>
+          <div class="entry"><div class="num">03</div><div><div class="entry-name">天城レイナが王座防衛</div><div class="entry-meta">人気上昇 +2。団体の格も着実に伸長。</div></div><a class="btn btn-blue">詳細</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-save">
+      <div class="panel">
+        <div class="panel-title">Save / Load</div>
+        <div class="save-grid">
+          <div class="save-card"><div class="entry-name">Slot 1</div><div class="entry-meta">5年目 4月 第1週 ・ 2位 ・ 6,820万</div><div class="tag-row"><a class="btn btn-blue">ロード</a><a class="btn btn-gold">上書き</a></div></div>
+          <div class="save-card"><div class="entry-name">Slot 2</div><div class="entry-meta">3年目 2月 第3週 ・ 4位 ・ 3,120万</div><div class="tag-row"><a class="btn btn-blue">ロード</a><a class="btn btn-gold">上書き</a></div></div>
+          <div class="save-card"><div class="entry-name">Slot 3</div><div class="entry-meta">Empty</div><div class="tag-row"><a class="btn btn-gold">セーブ</a></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-help">
+      <div class="panel">
+        <div class="panel-title">Help</div>
+        <div class="help-item"><strong>基本の流れ</strong><span style="color:var(--text-sub)">選手を育て、興行を成功させ、人気と資金を積み上げながらランキング1位を目指します。</span></div>
+        <div class="help-item"><strong>今週タブ</strong><span style="color:var(--text-sub)">スケジュール、休養、追込練習を管理する中心画面です。</span></div>
+        <div class="help-item"><strong>ランキング</strong><span style="color:var(--text-sub)">実力スコア、格ポイント、対戦ポイントの合計で順位が決まります。</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const screens = document.querySelectorAll('.screen');
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        screens.forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
