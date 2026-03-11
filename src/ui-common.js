@@ -2663,9 +2663,9 @@ function updateSchedulePreview(fighterId, newSchedule) {
   else if (c.intensive) action = 'intensive';
   else {
     if (action === 'balance') action = isShowWeek(G.week) ? 'promo' : 'practice';
-    if (c.condition <= 30) action = 'rest';
+    if (action !== 'rest' && c.condition < 60) action = 'auto_rest';
   }
-  const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+  const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
   const label = actionLabels[action] || action;
   // Update the cell in the table
   const cell = document.getElementById('action-' + fighterId);

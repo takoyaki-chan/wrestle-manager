@@ -3996,7 +3996,7 @@ const App = {
     const roster = G.roster.map(c => {
       if (c.injury || c.isRental || c.forcedRest) return c;
       const policy = c.schedule || 'balance'; // 現在の方針を保持
-      if (c.condition >= 80) return { ...c, schedule: policy, intensive: true };
+      if (c.condition >= 80) return { ...c, schedule: policy, intensive: policy !== 'rest' };
       if (c.condition >= 75) return { ...c, schedule: policy, intensive: false };
       if (c.condition >= 60) return { ...c, schedule: policy, intensive: false };
       // < 60: 方針に関わらず休養
