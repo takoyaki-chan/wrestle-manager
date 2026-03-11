@@ -2460,7 +2460,7 @@ const Engine = {
         rosterSize: (state.roster || []).length
       }];
       RIVAL_ORGS.forEach(org => {
-        const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? state.aiOrgs[org.id].roster : [];
+        const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? Engine.rival.dedupeRoster(state.aiOrgs[org.id].roster || []) : [];
         const breakdown = Engine.ranking.calcOrgRating(state, org.id, aiRoster, bp[org.id]);
         entries.push({
           orgId: org.id, name: org.name,
@@ -2757,6 +2757,32 @@ const Engine = {
     // Utility: get all AI orgs as array with merged config+state
     getAllOrgs(aiOrgs) {
       return RIVAL_ORGS.map(cfg => Engine.rival.getOrgInfo(aiOrgs, cfg.id)).filter(Boolean);
+    },
+    dedupeRoster(roster) {
+      const seen = new Set();
+      const unique = [];
+      (roster || []).forEach(f => {
+        if (!f || seen.has(f.id)) return;
+        seen.add(f.id);
+        unique.push(f);
+      });
+      return unique;
+    },
+    pushUniqueFighter(roster, fighter) {
+      if (!fighter) return roster || [];
+      const target = Array.isArray(roster) ? roster : [];
+      if (target.some(f => f && f.id === fighter.id)) return target;
+      target.push(fighter);
+      return target;
+    },
+    sanitizeAIOrgs(aiOrgs) {
+      if (!aiOrgs) return aiOrgs;
+      const sanitized = {};
+      Object.keys(aiOrgs).forEach(orgId => {
+        const org = aiOrgs[orgId];
+        sanitized[orgId] = org ? { ...org, roster: Engine.rival.dedupeRoster(org.roster || []) } : org;
+      });
+      return sanitized;
     },
 
     // Check if current week is a transfer window
@@ -3416,7 +3442,7 @@ const Engine = {
 
           const age = 17 + Engine.rng.int(rng, 0, 2);
           const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
-          roster.push(newFighter);
+          Engine.rival.pushUniqueFighter(roster, newFighter);
           poolIds = poolIds.filter(id => id !== candId);
           dormantEntries = dormantEntries.filter(e => (typeof e === 'object' ? e.id : e) !== candId);
           budget -= cost;
@@ -3483,7 +3509,7 @@ const Engine = {
           // v1.0b: Transfer popularity reset
           const resetTarget = Engine.popularity.applyTransferReset(target);
           Object.assign(target, resetTarget);
-          newOrgs[org.id].roster.push(target);
+          Engine.rival.pushUniqueFighter(newOrgs[org.id].roster, target);
           events.push(`📋 ${target.name}が${sourceOrg.name}→${org.name}に引き抜き`);
           break; // Max 1 poach per org per season
         }
@@ -3509,7 +3535,7 @@ const Engine = {
           // v1.0b: Transfer popularity reset
           const resetTransferee = Engine.popularity.applyTransferReset(transferee);
           Object.assign(transferee, resetTransferee);
-          newOrgs[org.id].roster.push(transferee);
+          Engine.rival.pushUniqueFighter(newOrgs[org.id].roster, transferee);
           events.push(`📋 ${transferee.name}が${srcOrg.name}→${org.name}に移籍`);
           break;
         }
@@ -3555,7 +3581,7 @@ const Engine = {
 
           // Acquire
           const acquired = Engine.popularity.applyTransferReset({ ...fa, orgId: org.id });
-          roster.push(acquired);
+          Engine.rival.pushUniqueFighter(roster, acquired);
           freeAgents = freeAgents.filter(f => f.id !== fa.id);
           events.push(`${org.emoji} ${org.name}がFA ${fa.name}を獲得`);
           break; // 1 FA per org per offseason

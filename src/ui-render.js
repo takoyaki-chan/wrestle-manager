@@ -2057,7 +2057,7 @@ function renderRanking() {
       const rc = getRankColor(r.rank, r.orgId);
       const aiData = G.aiOrgs && G.aiOrgs[org.id];
       if (!aiData) return;
-      const roster = aiData.roster;
+      const roster = Engine.rival.dedupeRoster(aiData.roster || []);
       const rEntry = rankings.find(re => re.orgId === org.id);
       const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
       const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, topCount);

@@ -1197,6 +1197,9 @@ const Storage = {
           G = { ...G, freeAgents: newFreeAgents, aiOrgs: newAiOrgs };
         }
       }
+      if (G.aiOrgs) {
+        G = { ...G, aiOrgs: Engine.rival.sanitizeAIOrgs(G.aiOrgs) };
+      }
       // データ整合性: プレイヤーロスター選手がfreeAgentsに重複している場合は除去
       if (G.roster && G.freeAgents) {
         const rosterIds = new Set(G.roster.map(c => c.id));
@@ -2503,7 +2506,8 @@ const App = {
       if (lostResult.destination === 'aiOrg') {
         const orgData = aiOrgs[lostResult.orgId];
         if (orgData) {
-          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: [...orgData.roster, normalizeFighterForRoster(cleanFighter)] } };
+          const nextRoster = Engine.rival.dedupeRoster([...(orgData.roster || []), normalizeFighterForRoster(cleanFighter)]);
+          aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: nextRoster } };
         }
         const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
         log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
