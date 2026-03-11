@@ -2696,7 +2696,6 @@ const Engine = {
     },
 
     initAIOrgs(rng) {
-      // Randomly assign org names from pool
       const nameMap = {};
       RIVAL_ORGS.forEach(org => {
         const pool = RIVAL_ORG_NAME_POOL[org.tier];
@@ -2715,23 +2714,23 @@ const Engine = {
           if (!t) return null;
           return Engine.rival.makeAIFighter(t, rng, org.id, 17 + Engine.rng.int(rng, 0, 11));
         }).filter(Boolean);
-        // Sort by OVR desc and boost top fighters' popularity for realism
-        roster.sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+        roster.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
         roster.forEach((f, i) => {
-          const tierBonus = {S:14,A:4,B:1}[org.tier] || 0;
-          if (i === 0) f.popularity = Math.min(90, f.popularity + 15 + tierBonus); // ace
+          const tierBonus = { S: 14, A: 4, B: 1 }[org.tier] || 0;
+          if (i === 0) f.popularity = Math.min(90, f.popularity + 15 + tierBonus);
           else if (i < 3) f.popularity = Math.min(85, f.popularity + 8 + tierBonus);
           else if (i < 6) f.popularity = Math.min(75, f.popularity + 3 + tierBonus);
         });
         orgs[org.id] = {
           roster,
-          orgPop: {S:75,A:55,B:35}[org.tier] || 30,
-          lockerRoomMorale: 60,  // Phase 5: プレイヤーと同じ初期値
+          orgPop: { S: 75, A: 55, B: 35 }[org.tier] || 30,
+          lockerRoomMorale: 60,
+          coaches: [],
+          coachAssign: {},
         };
       });
-      return { aiOrgs: orgs, rivalOrgNames: nameMap };
+      return { aiOrgs: Engine.rival.ensureAICoachStaffing(rng, orgs), rivalOrgNames: nameMap };
     },
-
     /** Restore org names from saved state */
     applyOrgNames(nameMap) {
       if (!nameMap) return;
@@ -2750,9 +2749,19 @@ const Engine = {
       const cfg = RIVAL_ORGS.find(o => o.id === orgId);
       const data = aiOrgs && aiOrgs[orgId];
       if (!cfg || !data) return null;
-      return { id: cfg.id, orgId: cfg.id, name: cfg.name, tier: cfg.tier,
-               coachMul: cfg.coachMul,
-               roster: data.roster, orgPop: data.orgPop };
+      return {
+        id: cfg.id,
+        orgId: cfg.id,
+        name: cfg.name,
+        tier: cfg.tier,
+        coachMul: cfg.coachMul,
+        roster: data.roster,
+        orgPop: data.orgPop,
+        coaches: data.coaches || [],
+        coachAssign: data.coachAssign || {},
+        lockerRoomMorale: data.lockerRoomMorale,
+        titles: data.titles || {},
+      };
     },
     // Utility: get all AI orgs as array with merged config+state
     getAllOrgs(aiOrgs) {
@@ -2780,11 +2789,177 @@ const Engine = {
       const sanitized = {};
       Object.keys(aiOrgs).forEach(orgId => {
         const org = aiOrgs[orgId];
-        sanitized[orgId] = org ? { ...org, roster: Engine.rival.dedupeRoster(org.roster || []) } : org;
+        sanitized[orgId] = org ? {
+          ...org,
+          roster: Engine.rival.dedupeRoster(org.roster || []),
+          coaches: Array.isArray(org.coaches) ? [...org.coaches] : [],
+          coachAssign: { ...(org.coachAssign || {}) },
+        } : org;
       });
       return sanitized;
     },
 
+    buildAIState(baseState, orgData, roster, tier) {
+      const fallbackTier = tier || 'B';
+      const data = orgData || {};
+      return {
+        ...baseState,
+        roster: roster || data.roster || [],
+        titles: data.titles || {},
+        coaches: Array.isArray(data.coaches) ? [...data.coaches] : [],
+        coachAssign: { ...(data.coachAssign || {}) },
+        orgPop: data.orgPop != null ? data.orgPop : ({ S: 75, A: 55, B: 35 }[fallbackTier] || 30),
+        lockerRoomMorale: data.lockerRoomMorale != null ? data.lockerRoomMorale : 60,
+        funds: data.funds != null ? data.funds : Engine.rival._estimateAIFunds(fallbackTier),
+      };
+    },
+
+    _getAICoachPlan(tier) {
+      const plan = AI_COACH_STAFFING[tier] || AI_COACH_STAFFING.B || { grades: [] };
+      return [...(plan.grades || [])];
+    },
+
+    _getAICoachGradeOrder(targetGrade) {
+      if (targetGrade === 'A') return ['A', 'B', 'C'];
+      if (targetGrade === 'B') return ['B', 'C', 'A'];
+      return ['C', 'B', 'A'];
+    },
+
+    _pickAICoachId(rng, targetGrade, usedCoachIds, orgPop) {
+      const gradeOrder = Engine.rival._getAICoachGradeOrder(targetGrade);
+      let best = null;
+      gradeOrder.forEach((grade, idx) => {
+        ALL_COACHES.filter(coach => {
+          if (usedCoachIds.has(coach.id)) return false;
+          if (coach.grade !== grade) return false;
+          return (orgPop || 0) >= (coach.minOrgPop || 0);
+        }).forEach(coach => {
+          const traitDef = COACH_TRAIT_DEFS[coach.trait] || {};
+          let score = 100 - (idx * 18);
+          score += (COACH_RANKS[coach.teaching] || 1) * 10;
+          if (coach.style === 'Allround') score += 2;
+          if (traitDef.growthMult) score += 6;
+          if (traitDef.matchGrowthBonus) score += 5;
+          if ((traitDef.condDrain || 0) < 0) score += 4;
+          if ((traitDef.injuryMult || 1) < 1) score += 3;
+          if (traitDef.mqBonus) score += 4;
+          if (traitDef.decayReduction) score += 2;
+          if (traitDef.scoutBonus) score -= 8;
+          score += Engine.rng.float(rng);
+          if (!best || score > best.score) best = { id: coach.id, score };
+        });
+      });
+      return best ? best.id : null;
+    },
+
+    _getAIFighterDevelopmentScore(fighter) {
+      const capSource = fighter.trainCap || fighter.pot || {};
+      const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+      const avgCap = stats.reduce((sum, stat) => sum + (capSource[stat] || fighter[stat] || 50), 0) / stats.length;
+      return (Engine.util.ov(fighter) * 0.7) + (avgCap * 0.3);
+    },
+
+    _getAIFighterCoachFit(fighter, coach) {
+      if (!fighter || !coach) return -Infinity;
+      const traitDef = COACH_TRAIT_DEFS[coach.trait] || {};
+      const capSource = fighter.trainCap || fighter.pot || {};
+      const remaining = ['pw', 'sp', 'te', 'st'].reduce((sum, stat) => {
+        const cap = capSource[stat] || fighter[stat] || 0;
+        return sum + Math.max(0, cap - (fighter[stat] || 0));
+      }, 0) / 4;
+      let score = Engine.rival._getAIFighterDevelopmentScore(fighter);
+      if (coach.style === fighter.style) score += 8;
+      else if (coach.style === 'Allround') score += 4;
+      if (traitDef.growthMult) score += (fighter.age || 99) <= 21 ? 6 : 2;
+      if (traitDef.matchGrowthBonus) score += Engine.util.ov(fighter) >= 55 ? 5 : 2;
+      if ((traitDef.condDrain || 0) < 0 || (traitDef.injuryMult || 1) < 1) {
+        score += Math.max(0, 80 - (fighter.condition || 70)) * 0.08;
+      }
+      if (traitDef.mqBonus) score += (fighter.popularity || 0) >= 40 ? 3 : 1;
+      if (traitDef.decayReduction) score += (fighter.age || 17) >= 27 ? 5 : 0;
+      if (traitDef.scoutBonus) score -= 6;
+      score += remaining * 0.08;
+      return score;
+    },
+
+    buildAICoachAssignments(roster, coachIds) {
+      const coaches = (coachIds || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+      if (coaches.length === 0) return {};
+
+      const orderedRoster = [...(roster || [])].sort((a, b) => (
+        Engine.rival._getAIFighterDevelopmentScore(b) - Engine.rival._getAIFighterDevelopmentScore(a)
+      ));
+      const loads = new Map(coaches.map(coach => [coach.id, 0]));
+      const coachAssign = {};
+
+      orderedRoster.forEach(fighter => {
+        let bestCoach = null;
+        let bestScore = -Infinity;
+        coaches.forEach(coach => {
+          const currentLoad = loads.get(coach.id) || 0;
+          if (currentLoad >= COACH_MAX_ASSIGN) return;
+          const fitScore = Engine.rival._getAIFighterCoachFit(fighter, coach) - (currentLoad * 3);
+          if (fitScore > bestScore) {
+            bestCoach = coach;
+            bestScore = fitScore;
+          }
+        });
+        if (!bestCoach) return;
+        if (!coachAssign[bestCoach.id]) coachAssign[bestCoach.id] = [];
+        coachAssign[bestCoach.id].push(fighter.id);
+        loads.set(bestCoach.id, (loads.get(bestCoach.id) || 0) + 1);
+      });
+
+      return coachAssign;
+    },
+
+    ensureAICoachStaffing(rng, aiOrgs, reservedCoachIds = []) {
+      if (!aiOrgs) return aiOrgs;
+      const sanitized = Engine.rival.sanitizeAIOrgs(aiOrgs);
+      const usedCoachIds = new Set(reservedCoachIds || []);
+      const next = {};
+      const tierOrder = { S: 0, A: 1, B: 2 };
+      const sortedOrgs = [...RIVAL_ORGS].sort((a, b) => tierOrder[a.tier] - tierOrder[b.tier]);
+
+      sortedOrgs.forEach(cfg => {
+        const current = sanitized[cfg.id] || {};
+        const currentCoaches = (current.coaches || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+        const keepPool = [...currentCoaches];
+        const selected = [];
+        const plan = Engine.rival._getAICoachPlan(cfg.tier);
+        const orgPop = current.orgPop != null ? current.orgPop : ({ S: 75, A: 55, B: 35 }[cfg.tier] || 30);
+
+        plan.forEach(targetGrade => {
+          const keepIdx = keepPool.findIndex(coach => coach.grade === targetGrade && !usedCoachIds.has(coach.id));
+          if (keepIdx >= 0) {
+            const kept = keepPool.splice(keepIdx, 1)[0];
+            selected.push(kept.id);
+            usedCoachIds.add(kept.id);
+            return;
+          }
+          const pickedId = Engine.rival._pickAICoachId(rng, targetGrade, usedCoachIds, orgPop);
+          if (pickedId != null) {
+            selected.push(pickedId);
+            usedCoachIds.add(pickedId);
+          }
+        });
+
+        const roster = Engine.rival.dedupeRoster(current.roster || []);
+        next[cfg.id] = {
+          ...current,
+          roster,
+          orgPop,
+          lockerRoomMorale: current.lockerRoomMorale != null ? current.lockerRoomMorale : 60,
+          coaches: selected,
+          coachAssign: Engine.rival.buildAICoachAssignments(roster, selected),
+        };
+      });
+
+      Object.keys(sanitized).forEach(orgId => {
+        if (!next[orgId]) next[orgId] = sanitized[orgId];
+      });
+      return next;
+    },
     // Check if current week is a transfer window
     isTransferWindow(week) {
       return TRANSFER_CONFIG.windows.includes(week);
@@ -2911,33 +3086,36 @@ const Engine = {
     // ── Phase 5: AI選択型イベント処理 ──────────────────────────────────
     // プレイヤーと同じgenerateChoiceEventを使い、ティア依存でRNG選択する。
     // 返り値: { roster, lockerRoomMorale, orgPopDelta } or null（イベントなし）
-    processAIChoiceEvent(rng, state, orgId, roster, orgData) {
+    processAIWeeklyEvent(rng, state, orgId, roster, orgData) {
       const org = RIVAL_ORGS.find(o => o.id === orgId);
       if (!org) return null;
 
-      const aiState = {
-        titles: orgData.titles || {},
-        funds: this._estimateAIFunds(org.tier),
-        roster,
-        coaches: [],  // AI団体にコーチなし（generateNotifEventフォールバック用）
-        lockerRoomMorale: orgData.lockerRoomMorale != null ? orgData.lockerRoomMorale : 60,
-        season: state.season,
-        week: state.week,
-      };
+      const aiState = Engine.rival.buildAIState(state, orgData, roster, org.tier);
+      let event = Engine.eventSystem.generateWeeklyEvent(rng, aiState);
+      if (!event) return null;
 
-      const event = Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
-      if (!event || event.type === 'N1' || event.type === 'N2' || event.type === 'N3' ||
-          event.type === 'N4' || event.type === 'N5' || event.type === 'N_isolation') {
-        return null;
+      if ((event.type || '').charAt(0) === 'B') {
+        event = Engine.eventSystem.generateNotifEvent(rng, aiState, roster)
+          || Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
+        if (!event) return null;
+      }
+
+      const eventPrefix = (event.type || '').charAt(0);
+      if (eventPrefix !== 'S' && eventPrefix !== 'E') {
+        const applied = Engine.eventSystem.applyNotifEffect(rng, event, roster);
+        return {
+          roster: applied.roster,
+          lockerRoomMorale: aiState.lockerRoomMorale,
+          orgPopDelta: 0,
+        };
       }
 
       const choiceIdx = this._pickAIChoice(rng, event, org.tier, aiState);
       const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState);
-
       let orgPopDelta = 0;
-      (result.events || []).forEach(e => {
-        if (typeof e === 'string' && e.startsWith('__orgPop:')) {
-          orgPopDelta += parseFloat(e.substring(9)) || 0;
+      (result.events || []).forEach(entry => {
+        if (typeof entry === 'string' && entry.indexOf('__orgPop:') === 0) {
+          orgPopDelta += parseFloat(entry.substring(9)) || 0;
         }
       });
 
@@ -3008,89 +3186,94 @@ const Engine = {
       const orgData = state.aiOrgs[org.id];
       if (!orgData || !orgData.roster || orgData.roster.length === 0) return orgData;
 
-      let roster = orgData.roster.map(f => ({ ...f,
+      let nextOrgData = { ...orgData };
+      let roster = orgData.roster.map(f => ({
+        ...f,
         seasonGrowth: { ...(f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }) }
       }));
 
       const isShow = Engine.util.isShowWeek(state.week);
+      const tierState = () => Engine.rival.buildAIState(state, nextOrgData, roster, org.tier);
 
-      roster = roster.map((f, idx) => {
+      roster = roster.map(f => {
         let nc = { ...f };
 
-        // 療養処理
         if (nc.injury) {
           nc.condition = Math.min(100, (nc.condition || 50) + 5);
           nc.injury = { ...nc.injury, weeksLeft: nc.injury.weeksLeft - 1 };
-          if (nc.injury.weeksLeft <= 0) {
-            nc.injury = null;
-          }
+          if (nc.injury.weeksLeft <= 0) nc.injury = null;
           return nc;
         }
 
-        // スランプ/モチベ喪失は成長0
+        if (isShow) return nc;
+
+        const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
+        const roll = Engine.rng.float(rng);
+        const stateForCalc = tierState();
         const statusBlocked = nc.slump || nc.motivationLoss;
+        const condBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
-        if (isShow) {
-          // 興行週: simulateMatchは別途カードベースで処理（下のprocessAIShowで）
-          // ここではskip — 興行処理はカード単位で行う
-          return nc;
-        } else {
-          // 練習週処理
-          const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
-          const roll = Engine.rng.float(rng);
+        if (roll < aceConfig.practiceRate) {
+          if (nc._boycottZeroGrowth) {
+            nc.intensiveWeeks = 0;
+            delete nc._boycottZeroGrowth;
+            return nc;
+          }
 
-          if (roll < aceConfig.practiceRate) {
-            // 練習
-            const isIntensive = Engine.rng.float(rng) < aceConfig.intensiveRate;
-            const growStat = Engine.coach.pickGrowthStat(rng, state, nc.id);
-            const growth = Engine.growth.calcGrowth(rng, state, nc, growStat, aceConfig.coachMul);
+          const isIntensive = Engine.rng.float(rng) < aceConfig.intensiveRate;
+          const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
+          const intensiveMult = isIntensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+          const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
+          const trainGrowth = Math.round(growth * statusMult * intensiveMult * isolationMult * 10) / 10;
 
-            const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-            const intensiveMult = isIntensive ? GROWTH_CONFIG.intensiveMult : 1.0;
-            const trainGrowth = Math.round(growth * statusMult * intensiveMult * 10) / 10;
+          if (trainGrowth > 0) {
+            nc[growStat] = Math.min(nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100, nc[growStat] + trainGrowth);
+            nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth;
+          }
 
-            if (trainGrowth > 0) {
-              nc[growStat] = Math.min(nc.trainCap?.[growStat] || 100, nc[growStat] + trainGrowth);
-              nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth;
-            }
-
-            // condition消耗
-            const condDrain = isIntensive ? (6 + Engine.rng.int(rng, 0, 7)) : (3 + Engine.rng.int(rng, 0, 3));
-            const ironBonus = (nc.traits || []).includes('鉄人') ? 2 : 0;
-            nc.condition = Math.max(0, (nc.condition || 70) - condDrain + ironBonus);
-
-            // 強化練習時の怪我判定
-            if (isIntensive && Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance) {
+          if (isIntensive) {
+            const adaptBonus = (nc.traits || []).includes('\u9069\u5fdc\u529b') ? 2 : 0;
+            nc.condition = Math.max(0, (nc.condition || 70) - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
+            if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
               const weeks = 1 + Engine.rng.int(rng, 0, 1);
-              nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              nc.injury = { type: 'training injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
             }
+            nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
           } else {
-            // 休養
-            nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7));
+            const ironBonus = (nc.traits || []).includes('\u9244\u4eba') ? 2 : 0;
+            nc.condition = Math.max(0, (nc.condition || 70) - (3 + Engine.rng.int(rng, 0, 3)) + condBonus + ironBonus);
+            nc.intensiveWeeks = 0;
           }
-          // 自然回復
-          nc.condition = Math.min(100, (nc.condition || 70) + 3);
-          return nc;
+        } else {
+          nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus);
+          nc.intensiveWeeks = 0;
         }
+
+        nc.condition = Math.min(100, (nc.condition || 70) + 3 + condBonus);
+        return nc;
       });
 
-      // 興行週: カードベースのsimulateMatch処理 + 完全統一試合後処理
       if (isShow) {
-        const matchCard = Engine.rival.generateAIMatchCard(roster, orgData.matchupLog, orgData.showCount);
-        const matchResults = []; // trust計算用
+        const aiShowState = tierState();
+        const matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount);
+        const matchResults = [];
+
         for (const card of matchCard) {
           const leftIdx = roster.findIndex(f => f.id === card.left.id);
           const rightIdx = roster.findIndex(f => f.id === card.right.id);
           if (leftIdx < 0 || rightIdx < 0) continue;
 
-          const matchRng = Engine.rng.create(Engine.rng.derive(
-            state.rngSeed, state.season, state.week, card.left.id ^ card.right.id
-          ));
-          const result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
+          const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
+          let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
+          const coachMQBonus = Engine.coach.getMQBonusForMatch(aiShowState, card.left.id, card.right.id);
+          if (coachMQBonus > 0) {
+            result = { ...result, coachMQBonus, mq: Engine.util.clamp(result.mq + coachMQBonus, 0, 100) };
+          }
           matchResults.push(result);
 
-          // 各選手に試合成長を適用
           [leftIdx, rightIdx].forEach((fi, side) => {
             let nc = { ...roster[fi] };
             const selfOvr = Engine.util.ov(nc);
@@ -3098,26 +3281,22 @@ const Engine = {
             const won = (result.winner === 'left' && side === 0) || (result.winner === 'right' && side === 1);
             const isDraw = result.winner === 'draw';
 
-            // 試合成長計算（プレイヤーと同一ロジック）
             const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+            const coachMatchBonus = Engine.coach.getMatchGrowthBonus(aiShowState, nc.id);
             const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
             const closeMatchBonus = result.mq >= 65 ? 0.3 : 0.0;
             const resultBonus = won ? 0.0 : 0.2;
-            let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus;
-            // v2.0: 試合成長にも年齢倍率を適用（若いほど試合から多く吸収する）
+            let matchGrowth = matchGrowthBase + coachMatchBonus + opponentBonus + closeMatchBonus + resultBonus;
             matchGrowth *= ageMultiplier(nc.age || 17, nc.traits);
 
-            // growthPenalty適用
             if (nc.growthPenalty) {
               const rawMult = nc.growthPenalty.multiplier;
-              matchGrowth *= (rawMult < 1.0 && (nc.traits || []).includes('適応力'))
-                ? Math.min(1.0, rawMult + 0.2) : rawMult;
+              matchGrowth *= (rawMult < 1.0 && (nc.traits || []).includes('\u9069\u5fdc\u529b'))
+                ? Math.min(1.0, rawMult + 0.2)
+                : rawMult;
             }
-
-            // スランプ/モチベ喪失は成長0
             if (nc.slump || nc.motivationLoss) matchGrowth = 0;
 
-            // 1〜2ステータスに分配
             const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
             const numStats = Engine.rng.float(matchRng) < 0.5 ? 1 : 2;
             const pool = [...allStats];
@@ -3130,18 +3309,16 @@ const Engine = {
             chosen.forEach(stat => {
               const gain = Math.max(0, Math.round(growthPerStat));
               if (gain > 0) {
-                nc[stat] = Math.min(nc.trainCap?.[stat] || 100, nc[stat] + gain);
+                nc[stat] = Math.min(nc.trainCap && nc.trainCap[stat] ? nc.trainCap[stat] : 100, nc[stat] + gain);
                 nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
               }
             });
 
-            // 勝敗記録
             if (won) nc.wins = (nc.wins || 0) + 1;
             else if (isDraw) nc.draws = (nc.draws || 0) + 1;
             else nc.losses = (nc.losses || 0) + 1;
             nc.lastMatchResult = won ? 'win' : (isDraw ? 'draw' : 'loss');
 
-            // ★ ブレークスルー判定（プレイヤーと同一）
             const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
               matchRng, nc, result.mq, oppOvr,
               { isTitle: false, isRivalryResolution: false, isPPV: false, isWarMatch: false, won },
@@ -3149,60 +3326,46 @@ const Engine = {
             );
             if (btResult) {
               nc = { ...btResult.fighter, _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5 };
-              // 脅威通知用に蓄積
-              orgData.seasonBreakthroughs = [...(orgData.seasonBreakthroughs || []),
-                { fighter: { name: nc.name, id: nc.id }, stat: btResult.stat, gain: btResult.gain }
-              ];
+              nextOrgData.seasonBreakthroughs = [...(nextOrgData.seasonBreakthroughs || []), {
+                fighter: { name: nc.name, id: nc.id },
+                stat: btResult.stat,
+                gain: btResult.gain,
+              }];
             }
 
-            // ★ careerBestMQ更新
             const prevBestMQ = nc.careerBestMQ || 0;
             nc.careerBestMQ = Math.max(prevBestMQ, result.mq);
-            if (result.mq > prevBestMQ) {
-              nc._trustBonus = (nc._trustBonus || 0) + 1.2;
-            }
+            if (result.mq > prevBestMQ) nc._trustBonus = (nc._trustBonus || 0) + 1.2;
 
-            // ★ 連敗追跡 + 人気MQ連動（簡易版）
-            {
-              let rawGain = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
-              if (won) rawGain += 1;
-              if (Traits.has(nc, 'ファンサービス')) rawGain += 1;
-              if (Traits.has(nc, 'ヒール適性') && (nc.role === 'Heel' || nc.role === 'Dirty') && result.mq >= 40) rawGain += 1;
-              let popDelta = Engine.popularity.applyDiminishing(rawGain, nc.popularity || 10);
-              const streakResult = Engine.popularity.checkLosingStreak(nc, won || isDraw);
-              popDelta += streakResult.popDelta;
-              nc.popularity = Engine.util.clamp((nc.popularity || 10) + popDelta, 1, 100);
-              nc.losingStreak = streakResult.losingStreak;
-            }
+            let rawGain = result.mq >= 70 ? 3 : result.mq >= 50 ? 2 : result.mq >= 30 ? 1 : 0;
+            if (won) rawGain += 1;
+            if (Traits.has(nc, '\u30d5\u30a1\u30f3\u30b5\u30fc\u30d3\u30b9')) rawGain += 1;
+            if (Traits.has(nc, '\u30d2\u30fc\u30eb\u9069\u6027') && (nc.role === 'Heel' || nc.role === 'Dirty') && result.mq >= 40) rawGain += 1;
+            let popDelta = Engine.popularity.applyDiminishing(rawGain, nc.popularity || 10);
+            const streakResult = Engine.popularity.checkLosingStreak(nc, won || isDraw);
+            popDelta += streakResult.popDelta;
+            nc.popularity = Engine.util.clamp((nc.popularity || 10) + popDelta, 1, 100);
+            nc.losingStreak = streakResult.losingStreak;
 
-            // ★ スランプ判定（敗北時）
             if (!won && !isDraw) {
               if (Engine.growthEvents.checkSlump(matchRng, nc, 'defeat')) {
                 nc = Engine.growthEvents.applySlump(nc, 'defeat', state.season, state.week);
               }
             }
-
-            // ★ スランプmomentum更新（試合後）
             nc = Engine.growthEvents.updateSlumpMomentumAfterMatch(nc, result.mq, won, matchRng);
 
-            // ★ モチベ喪失判定（スランプ中敗北）
             if (!won && !isDraw && nc.slump) {
               if (Engine.growthEvents.checkMotivationLoss(matchRng, nc, 'defeat')) {
                 nc = Engine.growthEvents.applyMotivationLoss(nc, state.season, state.week);
               }
             }
-
-            // ★ モチベ喪失momentum更新（試合後）
             nc = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(nc, result.mq, won, matchRng);
 
-            // condition消耗
             nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
-
-            // 怪我判定（簡易: conditionが低いほど怪我しやすい）
-            const injuryChance = nc.condition < 30 ? 0.08 : 0.03;
+            const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id);
             if (Engine.rng.float(matchRng) < injuryChance) {
               const weeks = 2 + Engine.rng.int(matchRng, 0, 3);
-              nc.injury = { type: '試合負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              nc.injury = { type: 'match injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
             }
 
@@ -3210,55 +3373,41 @@ const Engine = {
           });
         }
 
-        // ★ AI trust変動（プレイヤーと同一ロジック）
-        // Phase 5: AI団体のtitles情報を渡す（G3: タイトル機会なし判定のため）
-        const aiTitles = orgData.titles || {};
+        const aiTitles = nextOrgData.titles || {};
         const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, aiTitles, state);
         roster = aiTrustResult.roster;
 
-        // Phase 5: matchResultsを呼び出し元に返す（bond/rivalryフル更新用）
-        orgData._lastMatchResults = matchResults;
+        nextOrgData._lastMatchResults = matchResults;
+        const newEntries = matchCard.map(m => ({ leftId: m.left.id, rightId: m.right.id, showCount: nextOrgData.showCount || 0 }));
+        nextOrgData.matchupLog = [...(nextOrgData.matchupLog || []), ...newEntries];
+        nextOrgData.showCount = (nextOrgData.showCount || 0) + 1;
 
-        // ★ matchupLog蓄積
-        const newEntries = matchCard.map(m => ({
-          leftId: m.left.id, rightId: m.right.id,
-          showCount: orgData.showCount || 0
-        }));
-        orgData.matchupLog = [...(orgData.matchupLog || []), ...newEntries];
-        orgData.showCount = (orgData.showCount || 0) + 1;
-
-        // 興行週: 全選手に自然回復
-        roster = roster.map(f => ({ ...f, condition: Math.min(100, (f.condition || 70) + 3) }));
-
-        // Phase 5: AI選択型イベント処理（興行週のみ）
-        const aiEventRng = Engine.rng.create(Engine.rng.derive(
-          state.rngSeed, state.season, state.week, 0xAE01, org.id.charCodeAt(4) || 0
-        ));
-        const aiEventResult = Engine.rival.processAIChoiceEvent(aiEventRng, state, org.id, roster, orgData);
+        roster = roster.map(f => {
+          const condBonus = Engine.coach.getCondBonus(aiShowState, f.id);
+          return { ...f, condition: Math.min(100, (f.condition || 70) + 3 + condBonus) };
+        });
+      } else {
+        const aiEventRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xAE01, org.id.charCodeAt(4) || 0));
+        const aiEventResult = Engine.rival.processAIWeeklyEvent(aiEventRng, state, org.id, roster, nextOrgData);
         if (aiEventResult) {
           roster = aiEventResult.roster;
-          if (aiEventResult.lockerRoomMorale != null) {
-            orgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
-          }
-          if (aiEventResult.orgPopDelta) {
-            orgData.orgPop = Engine.util.clamp((orgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
+          if (aiEventResult.lockerRoomMorale != null) nextOrgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
+          if (typeof aiEventResult.orgPopDelta === 'number') {
+            nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
           }
         }
-      }
 
-      // Phase 5: AIケアアクション（練習週のみ）
-      if (!isShow) {
-        const aiCareRng = Engine.rng.create(Engine.rng.derive(
-          state.rngSeed, state.season, state.week, 0xAC01, org.id.charCodeAt(4) || 0
-        ));
+        const aiCareRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xAC01, org.id.charCodeAt(4) || 0));
         roster = Engine.rival.processAICare(aiCareRng, roster, org.tier);
       }
 
-      return { ...orgData, roster };
+      return {
+        ...nextOrgData,
+        roster,
+        coachAssign: Engine.rival.buildAICoachAssignments(roster, nextOrgData.coaches || []),
+      };
     },
 
-    // ── B-1: AI Season End Processing (8-step pipeline) ────
-    // rival-spec §4: processes all AI orgs at season end
     processSeasonEnd(rng, state) {
       const events = [];
       const newAiOrgs = {};
@@ -4110,6 +4259,8 @@ const Engine = {
     // AI統一成長 Phase3: AI団体の週次処理（練習+興行）
     if (s.aiOrgs && !s.offSeason) {
       const AI_WEEK_SEEDS = { org_s: 0xA101, org_a: 0xA102, org_b: 0xA103 };
+      const aiCoachRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xAC77));
+      s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(aiCoachRng, s.aiOrgs, s.coaches || []) };
       const newAiOrgs = {};
       const aiMatchPairs = []; // Phase 2: AI試合ペア収集
       Object.keys(s.aiOrgs).forEach(orgId => {

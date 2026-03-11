@@ -1414,6 +1414,14 @@ const AI_COACH_CONFIG = {
   },
 };
 
+// AI hidden coach staffing by org tier.
+// "C???" is treated as C grade because current coach data stops at C.
+const AI_COACH_STAFFING = {
+  S: { grades: ['A', 'A', 'B', 'B'] },
+  A: { grades: ['B', 'B', 'B'] },
+  B: { grades: ['B', 'C'] },
+};
+
 // AI season config (人気変動用。成長はprocessAIWeekベースに移行済み)
 const AI_SEASON_CFG = {
   popConvergeRate: 0.3,        // 人気ターゲットへの収束率
@@ -5639,7 +5647,7 @@ if (typeof module !== 'undefined' && module.exports) {
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG,
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
-    AI_SCOUT_CFG, AI_TIER_LIMITS, AI_SEASON_CFG,
+    AI_SCOUT_CFG, AI_TIER_LIMITS, AI_COACH_STAFFING, AI_SEASON_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
