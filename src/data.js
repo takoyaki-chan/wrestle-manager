@@ -1237,6 +1237,13 @@ const BATTLE_POINT_CFG = {
   tournamentWeek: 24,
 };
 
+const RANKING_CONFIG = {
+  weightsTop10: [2.4, 1.9, 1.55, 1.25, 1.05, 0.75, 0.55, 0.4, 0.28, 0.18],
+  ovrMultiplier: 1.2,
+  popMultiplier: 0.9,
+  legacyCapByTier: { S: 50, A: 30, B: 15, player: 50 },
+  hallOfFameLegacyPerInductee: 10,
+};
 // ── Scout Event Name Generation & Config (scout-spec §3) ──────
 const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
 const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
@@ -5629,7 +5636,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_SLOT_THRESHOLDS, COACH_POOL_CFG, COACH_TRAIT_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
-    RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG,
+    RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG,
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_SEASON_CFG,

@@ -2346,42 +2346,81 @@ const Engine = {
       const slice = vals.slice(0, n);
       return slice.reduce((s, v) => s + v, 0) / slice.length;
     },
-    /** 基礎力スコア = TOP5平均OVR × 1.5 + TOP5平均pop × 1.0 */
-    calcBaseScore(roster) {
-      const top5OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 5);
-      const top5Pop = Engine.ranking._topNAvg(roster, f => f.popularity || 0, 5);
-      return Math.round(top5OVR * 1.5 + top5Pop * 1.0);
+    _weightedTopAvg(roster, valueFn, weights) {
+      if (!roster || roster.length === 0) return 0;
+      const vals = roster.map(valueFn).sort((a, b) => b - a);
+      const limit = Math.min(vals.length, weights.length);
+      if (limit === 0) return 0;
+      let total = 0;
+      let totalWeight = 0;
+      for (let i = 0; i < limit; i++) {
+        total += vals[i] * weights[i];
+        totalWeight += weights[i];
+      }
+      return totalWeight > 0 ? total / totalWeight : 0;
     },
-    /** rating = 基礎力スコア + 対戦ポイント */
-    calcOrgRating(roster, battlePt) {
-      return Engine.ranking.calcBaseScore(roster) + (battlePt || 0);
+    calcLegacyScore(state, orgId) {
+      const caps = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.legacyCapByTier) || {};
+      if (orgId === 'player') {
+        const cap = caps.player || 50;
+        const hofCount = (state.hallOfFame || []).length;
+        const per = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.hallOfFameLegacyPerInductee) || 10;
+        return Math.min(cap, hofCount * per);
+      }
+      const org = RIVAL_ORGS.find(o => o.id === orgId);
+      if (!org) return 0;
+      return caps[org.tier] || 0;
     },
-    // Returns updated rankings array: [{orgId, name, rating, baseScore, top5OVR, top5Pop, battlePt, rosterSize}]
+    calcRosterPower(roster) {
+      const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
+      const weights = cfg.weightsTop10 || [1.6, 1.45, 1.3, 1.2, 1.1, 1.0, 0.92, 0.84, 0.76, 0.68];
+      const weightedOVR = Engine.ranking._weightedTopAvg(roster, f => Engine.util.ov(f), weights);
+      const weightedPop = Engine.ranking._weightedTopAvg(roster, f => f.popularity || 0, weights);
+      const ovrMult = cfg.ovrMultiplier || 1.2;
+      const popMult = cfg.popMultiplier || 0.9;
+      const baseScore = Math.round(weightedOVR * ovrMult + weightedPop * popMult);
+      return {
+        weightedOVR: Math.round(weightedOVR * 10) / 10,
+        weightedPop: Math.round(weightedPop * 10) / 10,
+        baseScore,
+      };
+    },
+    /** rating = 実力スコア + legacy + 対戦ポイント */
+    calcOrgRating(state, orgId, roster, battlePt) {
+      const power = Engine.ranking.calcRosterPower(roster);
+      const legacyScore = Engine.ranking.calcLegacyScore(state, orgId);
+      return {
+        rating: power.baseScore + legacyScore + (battlePt || 0),
+        baseScore: power.baseScore,
+        legacyScore,
+        weightedOVR: power.weightedOVR,
+        weightedPop: power.weightedPop,
+      };
+    },
+    // Returns updated rankings array: [{orgId, name, rating, baseScore, legacyScore, weightedOVR, weightedPop, battlePt, rosterSize}]
     updateRankings(state) {
       const bp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
-      const playerRating = Engine.ranking.calcOrgRating(state.roster, bp.player);
-      const pTop5OVR = Engine.ranking._topNAvg(state.roster, f => Engine.util.ov(f), 5);
-      const pTop5Pop = Engine.ranking._topNAvg(state.roster, f => f.popularity || 0, 5);
+      const playerBreakdown = Engine.ranking.calcOrgRating(state, 'player', state.roster || [], bp.player);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
-        rating: playerRating,
-        baseScore: Engine.ranking.calcBaseScore(state.roster),
-        top5OVR: Math.round(pTop5OVR * 10) / 10,
-        top5Pop: Math.round(pTop5Pop * 10) / 10,
+        rating: playerBreakdown.rating,
+        baseScore: playerBreakdown.baseScore,
+        legacyScore: playerBreakdown.legacyScore,
+        weightedOVR: playerBreakdown.weightedOVR,
+        weightedPop: playerBreakdown.weightedPop,
         battlePt: bp.player,
-        rosterSize: state.roster.length
+        rosterSize: (state.roster || []).length
       }];
       RIVAL_ORGS.forEach(org => {
         const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? state.aiOrgs[org.id].roster : [];
-        const r = Engine.ranking.calcOrgRating(aiRoster, bp[org.id]);
-        const t5OVR = Engine.ranking._topNAvg(aiRoster, f => Engine.util.ov(f), 5);
-        const t5Pop = Engine.ranking._topNAvg(aiRoster, f => f.popularity || 0, 5);
+        const breakdown = Engine.ranking.calcOrgRating(state, org.id, aiRoster, bp[org.id]);
         entries.push({
           orgId: org.id, name: org.name,
-          rating: r,
-          baseScore: Engine.ranking.calcBaseScore(aiRoster),
-          top5OVR: Math.round(t5OVR * 10) / 10,
-          top5Pop: Math.round(t5Pop * 10) / 10,
+          rating: breakdown.rating,
+          baseScore: breakdown.baseScore,
+          legacyScore: breakdown.legacyScore,
+          weightedOVR: breakdown.weightedOVR,
+          weightedPop: breakdown.weightedPop,
           battlePt: bp[org.id],
           rosterSize: aiRoster.length
         });
