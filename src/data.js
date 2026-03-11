@@ -1195,7 +1195,7 @@ const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（
 // ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
 // ╚══════════════════════════════════════════════════════════╝
 const GROWTH_CONFIG = {
-  baseLearning: 4.0,        // v2.0: 1回の練習の基本成長量（距離比率=1.0時）
+  baseLearning: 3.5,        // v2.0: 1回の練習の基本成長量（距離比率=1.0時）
   declineStartSeason: 4,  // decline begins after this many seasons
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
@@ -1205,7 +1205,7 @@ const GROWTH_CONFIG = {
   intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50,    // min condition to allow intensive
-  matchGrowthBase: 0.35    // 🔧 試合1回あたりの基本成長（旧: 0.7）
+  matchGrowthBase: 0.5    // 🔧 試合1回あたりの基本成長（旧: 0.7）
 };
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -1294,7 +1294,7 @@ function ageMultiplier(age, traits) {
   let mul;
   if (age <= 17)      mul = 0.70;  // 新人: 体がまだできていない
   else if (age <= 18) mul = 1.00;  // 成長開始
-  else if (age <= 20) mul = 1.30;  // 黄金の成長期
+  else if (age <= 20) mul = 1.15;  // 黄金の成長期
   else if (age <= 22) mul = 1.00;  // 安定成長
   else if (age <= 24) mul = 0.50;  // 仕上げ段階
   else if (age <= 26) mul = 0.10;  // ほぼ停止

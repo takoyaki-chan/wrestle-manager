@@ -3482,7 +3482,7 @@ const App = {
         const selfOvr = Engine.util.ov(fighter);
 
         // growth-rebalance v2: 試合成長を適正化
-        const matchGrowthBase = 0.7;
+        const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
         const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
         const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
         const resultBonus = won ? 0.0 : 0.2;
