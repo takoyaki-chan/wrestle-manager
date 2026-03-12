@@ -241,6 +241,14 @@ const Audio = (() => {
       osc(3136, 'sine', t + 0.04, 0.02, 0.10);
     },
 
+    paper() {
+      const t = ensure().currentTime;
+      noiseBP(t, 0.11, 0.08, 1800, 0.8);
+      noiseHP(t + 0.015, 0.06, 0.05, 4200);
+      oscSweep(980, 420, 'triangle', t + 0.01, 0.12, 0.05);
+      osc(760, 'sine', t + 0.05, 0.08, 0.04);
+    },
+
     // ── Events (OLD: fanfare / NEW: rest) ──
     fanfare() {
       const t = ensure().currentTime;
@@ -3081,9 +3089,9 @@ const App = {
       left: { ...charL, portraitUrl: getPortraitUrl(charL.id), vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
       right: { ...charR, portraitUrl: getPortraitUrl(charR.id), vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
       matchInfo: {
-        header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : `MATCH ${idx + 1}`,
+        header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
         subHeader: `${charL.name} vs ${charR.name}`,
-        matchNum: idx + 1,
+        matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         isTitle: !!m.isTitle,
         matchTier: m.isTitle ? 2 : 1,
@@ -3689,16 +3697,261 @@ const App = {
     renderShowResult(results, injuryResults);
   },
 
+  // ─── 新聞記事テキスト生成 ───────────────────────────────────────────────
+  _NEWSPAPER_HEADLINES: {
+    // タイトル戦勝利
+    titleWin: [
+      d => `${d.winner.name}、${d.finishLabel}で戴冠！`,
+      d => `王座奪取！ ${d.winner.name}が${d.loser.name}を下す`,
+      d => `新王者${d.winner.name}誕生——${d.venue.name}が揺れた`,
+    ],
+    titleDefend: [
+      d => `王者${d.winner.name}、${d.loser.name}の挑戦を退ける`,
+      d => `${d.winner.name}防衛成功！ 王座の威厳を示す`,
+    ],
+    // 因縁試合
+    rivalry: [
+      d => `宿命の対決——${d.winner.name}が${d.rivalLabel}を制す`,
+      d => `${d.left.name}vs${d.right.name}、因縁に決着か`,
+      d => `${d.rivalLabel}の行方——${d.winner.name}に軍配`,
+    ],
+    // 圧勝
+    dominant: [
+      d => `${d.winner.name}、圧巻の${d.turns}ターン決着！`,
+      d => `電撃決着！ ${d.winner.name}が${d.loser.name}を一蹴`,
+      d => `${d.loser.name}なすすべなし——${d.winner.name}の完勝`,
+    ],
+    // 僅差の好勝負
+    closeMQ: [
+      d => `死闘${d.turns}ターン——${d.winner.name}が辛くも勝利`,
+      d => `${d.winner.name}と${d.loser.name}、名勝負の果てに`,
+      d => `激闘の末に${d.winner.name}！ MQ ${d.mq}の熱戦`,
+    ],
+    // 番狂わせ
+    upset: [
+      d => `大番狂わせ！ ${d.winner.name}が格上${d.loser.name}を撃破`,
+      d => `ジャイアントキリング——${d.winner.name}の衝撃勝利`,
+      d => `誰が予想した？ ${d.winner.name}が${d.loser.name}を沈める`,
+    ],
+    // 高MQ
+    superMQ: [
+      d => `歴史的名勝負！ MQ ${d.mq}を記録`,
+      d => `語り継がれる一戦——${d.winner.name}vs${d.loser.name}`,
+    ],
+    // ドロー
+    draw: [
+      d => `${d.left.name}と${d.right.name}、決着つかず`,
+      d => `譲らぬ二人——メインはドローに終わる`,
+      d => `痛み分け。${d.left.name}も${d.right.name}も一歩も退かず`,
+    ],
+    // 通常
+    normal: [
+      d => `${d.winner.name}がメインイベントを制す`,
+      d => `${d.winner.name}、${d.finishLabel}で勝利`,
+      d => `${d.venue.name}のメイン、${d.winner.name}に軍配`,
+    ],
+  },
+
+  _NEWSPAPER_ARTICLES: {
+    // タイトル戦
+    titleWin: [
+      d => `${d.venue.name}に詰めかけた${d.attendance.toLocaleString()}人の観衆が見届けたのは、新たな王者の誕生だった。${d.winner.name}は序盤から積極的に攻め込み、${d.finishLabel}で${d.loser.name}から3カウントを奪取。試合後、ベルトを手にした${d.winner.name}の表情には、長い道のりを歩んできた者だけが見せる充足感が浮かんでいた。`,
+      d => `${d.loser.name}の牙城がついに崩れた。${d.turns}ターンに及ぶ攻防の末、${d.winner.name}が${d.finishLabel}で王座を奪取。${d.venue.name}のリングに立つ新王者に、${d.attendance.toLocaleString()}人のファンが惜しみない拍手を送った。`,
+    ],
+    titleDefend: [
+      d => `${d.loser.name}の挑戦を受けた王者${d.winner.name}は、${d.turns}ターンの攻防を経て${d.finishLabel}で防衛に成功。${d.attendance.toLocaleString()}人の前で王座の重みを証明した。敗れた${d.loser.name}もリング上で健闘を称えられ、次なる挑戦への期待が膨らむ。`,
+    ],
+    // 因縁試合
+    rivalry: [
+      d => `もはや説明不要のカード。${d.left.name}と${d.right.name}による${d.rivalLabel}は今回も期待を裏切らなかった。${d.turns}ターン、互いの手の内を知り尽くした二人の攻防はMQ ${d.mq}を記録。最後は${d.winner.name}の${d.finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。`,
+      d => `${d.rivalLabel}として知られる二人が再びリングで激突。${d.venue.name}の空気は試合前から張り詰めていた。${d.winner.name}が${d.finishLabel}で勝利を収めたが、敗れた${d.loser.name}の闘志は折れていない。次の対戦が、すでに待ち遠しい。`,
+    ],
+    // 好敵手
+    goodRival: [
+      d => `互いを高め合う二人の戦いは、今回もファンの心を掴んだ。${d.left.name}と${d.right.name}は${d.turns}ターンにわたり好勝負を展開。${d.winner.name}が${d.finishLabel}で勝利を手にしたが、試合後に交わした視線には敵意ではなく敬意が宿っていた。MQ ${d.mq}。`,
+    ],
+    // 圧勝
+    dominant: [
+      d => `わずか${d.turns}ターン。${d.winner.name}は${d.loser.name}に反撃の余地すら与えなかった。${d.finishLabel}が決まった瞬間、${d.venue.name}は静まり返った。実力差を見せつけた${d.winner.name}の強さは本物だ。`,
+      d => `${d.loser.name}にとっては厳しい夜となった。${d.winner.name}の猛攻に防戦一方、${d.turns}ターンでの決着に${d.attendance.toLocaleString()}人の観客も言葉を失った。`,
+    ],
+    // 僅差の好勝負
+    closeMQ: [
+      d => `${d.turns}ターンの死闘——勝敗を分けたのは、ほんのわずかな差だった。${d.winner.name}と${d.loser.name}はMQ ${d.mq}の名勝負を演じ、${d.venue.name}の${d.attendance.toLocaleString()}人を総立ちにさせた。${d.finishLabel}で辛くも勝利した${d.winner.name}だが、敗れた${d.loser.name}の評価もまた上がったはずだ。`,
+      d => `最後の最後まで勝負の行方は分からなかった。${d.loser.name}も見せ場を作り続けたが、${d.winner.name}の${d.finishLabel}が決着を告げた。消耗戦を制した${d.winner.name}のタフネスが光った${d.turns}ターン。MQ ${d.mq}は今シーズン屈指の数字だ。`,
+    ],
+    // 番狂わせ
+    upset: [
+      d => `戦前の予想を覆す結果となった。OVR格差${d.ovrGap}ポイントの壁を、${d.winner.name}は気迫で打ち破った。${d.finishLabel}が決まった瞬間、${d.venue.name}は驚きと興奮に包まれた。格上${d.loser.name}からの金星は、${d.winner.name}にとって大きな自信になるだろう。`,
+    ],
+    // 超高MQ
+    superMQ: [
+      d => `MQ ${d.mq}——今シーズンのベストバウト候補が生まれた。${d.left.name}と${d.right.name}は${d.turns}ターンにわたって技術と闘志をぶつけ合い、${d.venue.name}の${d.attendance.toLocaleString()}人を熱狂の渦に巻き込んだ。${d.winner.name}が${d.finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。`,
+    ],
+    // ドロー
+    draw: [
+      d => `${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、引き分けという結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。`,
+      d => `決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこのドローだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。`,
+    ],
+    // 通常
+    normal: [
+      d => `${d.venue.name}で行われた${d.showName}のメインイベントは、${d.winner.name}が${d.finishLabel}で${d.loser.name}を下して幕を閉じた。${d.turns}ターンの試合は${d.attendance.toLocaleString()}人の観客を沸かせ、MQ ${d.mq}を記録した。`,
+      d => `${d.winner.name}がメインの大舞台で堂々たる勝利を飾った。${d.loser.name}も要所で見せ場を作ったが、最終的には${d.winner.name}の${d.finishLabel}に沈んだ。${d.attendance.toLocaleString()}人の観客が見守った${d.turns}ターンの一戦。`,
+    ],
+    // 低MQ
+    lowMQ: [
+      d => `正直に言えば、メインイベントは物足りなさが残った。${d.winner.name}が${d.finishLabel}で${d.loser.name}を下したものの、MQ ${d.mq}という数字が試合内容を物語っている。${d.attendance.toLocaleString()}人のファンは、次回の興行にこそ期待を寄せるだろう。`,
+    ],
+  },
+
+  _generateNewspaperTexts(d) {
+    // カテゴリ優先度で選択
+    let cat;
+    if (d.isDraw) cat = 'draw';
+    else if (d.isSuperMQ && !d.isDominant) cat = 'superMQ';
+    else if (d.isTitleMatch) cat = d.winner ? 'titleWin' : 'titleDefend';
+    else if (d.isUpset) cat = 'upset';
+    else if (d.hasRivalry) cat = 'rivalry';
+    else if (d.isDominant) cat = 'dominant';
+    else if (d.isCloseMatch && d.isHighMQ) cat = 'closeMQ';
+    else if (d.isLowMQ) cat = 'normal';
+    else cat = 'normal';
+
+    // 防衛戦判定（タイトルマッチで勝った場合、王者かどうか）
+    if (d.isTitleMatch && !d.isDraw) {
+      // シンプルに titleWin を使用（防衛/奪取の区別はテキストで吸収）
+      if (cat !== 'superMQ' && cat !== 'upset') cat = 'titleWin';
+    }
+
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const HL = App._NEWSPAPER_HEADLINES;
+    const AR = App._NEWSPAPER_ARTICLES;
+
+    const headline = pick(HL[cat] || HL.normal)(d);
+
+    // サブヘッドライン：常にカードと数値情報
+    let subheadline;
+    if (d.isDraw) {
+      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人、${d.turns}ターンの攻防は決着を見ず。全${d.totalMatches}試合の平均MQ ${d.avgMQ}`;
+    } else if (d.otherHighMQ.length > 0) {
+      subheadline = `${d.venue.name}大会、観客${d.attendance.toLocaleString()}人。全${d.totalMatches}試合平均MQ ${d.avgMQ}——好カード続出の${d.showName}`;
+    } else {
+      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人。メインMQ ${d.mq}、全${d.totalMatches}試合平均MQ ${d.avgMQ}`;
+    }
+
+    // 記事本文
+    let articleCat = cat;
+    if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
+    const articlePool = AR[articleCat] || AR.normal;
+    let article = pick(articlePool)(d);
+
+    // 低MQ追記
+    if (d.isLowMQ && cat !== 'draw') {
+      article = pick(AR.lowMQ)(d);
+    }
+
+    return { headline, subheadline, article };
+  },
+    const results = G.lastShowResults || [];
+    if (!results.length) return null;
+    const main = results[0];
+    if (!main || !main.left || !main.right) return null;
+    const venue = VENUES[G.showVenue] || { name: 'Arena' };
+    const isDraw = main.winner === 'draw';
+    const winner = isDraw ? null : (main.winner === 'left' ? main.left : main.right);
+    const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
+    const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
+    const attendance = G.lastShowAttendance || 0;
+    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `定期興行 #${G.totalShows}`);
+    const finishLabel = [main.finType, main.finMove].filter(Boolean).join(' / ') || '激闘決着';
+    const turns = main.turns || 0;
+    const mq = main.mq || avgMQ;
+    const hpL = main.hpLeft || { final: 0, max: 100 };
+    const hpR = main.hpRight || { final: 0, max: 100 };
+
+    // 試合状況フラグ
+    const loserHpPct = isDraw ? 50 : (main.winner === 'left'
+      ? Math.round((hpR.final / Math.max(1, hpR.max)) * 100)
+      : Math.round((hpL.final / Math.max(1, hpL.max)) * 100));
+    const winnerHpPct = isDraw ? 50 : (main.winner === 'left'
+      ? Math.round((hpL.final / Math.max(1, hpL.max)) * 100)
+      : Math.round((hpR.final / Math.max(1, hpR.max)) * 100));
+    const isCloseMatch = !isDraw && loserHpPct >= 15;
+    const isDominant = !isDraw && turns <= 6;
+    const isLongBattle = turns >= 18;
+    const isHighMQ = mq >= 80;
+    const isSuperMQ = mq >= 90;
+    const isLowMQ = mq < 40;
+    const isPPVShow = isPPV(G.week);
+    const isSpecial = isSpecialShow(G.week);
+
+    // 因縁・関係データ
+    const rivalLvl = getRivalryLevel(main.left.id, main.right.id);
+    const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
+    const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
+    const rivalLabel = rivalLvl ? rivalLvl.label : null;
+    let bondAvg = 50;
+    if (G.relationships) {
+      const kAB = `${main.left.id}>${main.right.id}`;
+      const kBA = `${main.right.id}>${main.left.id}`;
+      const bA = G.relationships[kAB]?.bond || 50;
+      const bB = G.relationships[kBA]?.bond || 50;
+      bondAvg = Math.round((bA + bB) / 2);
+    }
+    const isHighBond = bondAvg >= 70;
+
+    // OVR差
+    const ovrL = Engine.util.ov(main.left);
+    const ovrR = Engine.util.ov(main.right);
+    const ovrGap = Math.abs(ovrL - ovrR);
+    const isUpset = !isDraw && winner && (
+      (winner.id === main.left.id && ovrL < ovrR - 8) ||
+      (winner.id === main.right.id && ovrR < ovrL - 8)
+    );
+
+    // 他の試合のハイライト
+    const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
+    const totalMatches = results.length;
+
+    // ─── テキスト生成 ───
+    const np = _generateNewspaperTexts({
+      isDraw, winner, loser, left: main.left, right: main.right,
+      isTitleMatch: !!main.isTitleMatch, finishLabel, turns, mq,
+      loserHpPct, winnerHpPct, isCloseMatch, isDominant, isLongBattle,
+      isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
+      hasRivalry, isGoodRival, rivalLabel, isHighBond,
+      ovrGap, isUpset, venue, attendance, showName, avgMQ,
+      otherHighMQ, totalMatches, orgName: G.orgName
+    });
+
+    return {
+      showName, venueName: venue.name, attendance, avgMQ,
+      headline: np.headline, subheadline: np.subheadline, article: np.article,
+      winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
+      turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch
+    };
+  },
+
+
   // Close show result and advance via tickWeek
   closeShowResult() {
     if (App._closingShowResult) return;
     const resultOverlay = document.getElementById('showResultOverlay');
     if (!resultOverlay || G.weekPhase !== 'showExec') return;
+    if (!App._showResultNewspaperSeen) {
+      const paperData = App._buildShowResultNewspaperData();
+      if (paperData) {
+        App._showResultNewspaperSeen = true;
+        resultOverlay.classList.remove('active');
+        showShowResultNewspaper(paperData, () => App.closeShowResult());
+        return;
+      }
+    }
     App._closingShowResult = true;
     try {
-    Audio.play('coin');
-    Audio.bgm.play('management');
-    resultOverlay.classList.remove('active');
+      Audio.play('coin');
+      Audio.bgm.play('management');
+      resultOverlay.classList.remove('active');
 
     // v1.3-3: Extract pending injury retirements before state changes
     const pendingInjuryRetirements = G._pendingInjuryRetirements || [];
@@ -3918,6 +4171,7 @@ const App = {
       try { refreshAll(); } catch(e2) {}
     } finally {
       App._closingShowResult = false;
+      App._showResultNewspaperSeen = false;
     }
   },
 

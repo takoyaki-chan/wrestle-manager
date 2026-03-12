@@ -2775,8 +2775,8 @@ function renderMatchPreview() {
     // relParts は後段のカードHTMLで直接使用
 
     // 画像装飾
-    const imgBorderL = isMain ? '2px solid rgba(74,143,212,0.5);box-shadow:0 0 12px rgba(74,143,212,0.25)' : '2px solid rgba(74,143,212,0.3)';
-    const imgBorderR = isMain ? '2px solid rgba(196,30,58,0.5);box-shadow:0 0 12px rgba(196,30,58,0.25)' : '2px solid rgba(196,30,58,0.3)';
+    const imgBorderL = isMain ? '2px solid rgba(212,168,67,0.6);box-shadow:0 0 12px rgba(212,168,67,0.3)' : '2px solid rgba(255,255,255,0.15)';
+    const imgBorderR = isMain ? '2px solid rgba(212,168,67,0.6);box-shadow:0 0 12px rgba(212,168,67,0.3)' : '2px solid rgba(255,255,255,0.15)';
     const makeUpperStyled = (url, fallbackId, border) => url
       ? `<img src="${url}" style="width:${imgW}px;height:${imgH}px;object-fit:cover;object-position:top center;border-radius:6px;border:${border}" onerror="this.style.display='none'" alt="">`
       : portraitImg(fallbackId, imgW);
@@ -3855,47 +3855,52 @@ function showShowResultNewspaper(data, onDone) {
     ? `<img src="${url}" alt="" style="width:132px;height:132px;border-radius:18px;object-fit:cover;border:3px solid rgba(82,53,23,0.28);box-shadow:0 14px 30px rgba(0,0,0,0.18);${extra}">`
     : `<div style="width:132px;height:132px;border-radius:18px;display:grid;place-items:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 14px 30px rgba(0,0,0,0.18);${extra}">${fallback?.name || 'MAIN'}</div>`;
 
+  const articleHtml = data.article
+    ? `<div style="font-size:13.5px;line-height:1.85;color:#3a2e1c;padding:12px 4px 4px;text-indent:1em;border-top:1px solid rgba(95,69,35,0.15);">${data.article}</div>`
+    : '';
+
   box.innerHTML = `
-    <div style="display:grid;gap:14px;padding:20px 22px 18px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);box-shadow:0 24px 60px rgba(0,0,0,0.32);">
+    <div style="display:grid;gap:12px;padding:20px 22px 18px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);box-shadow:0 24px 60px rgba(0,0,0,0.32);">
       <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:3px double rgba(95,69,35,0.45);padding-bottom:10px;">
-        <div>
+        <div style="flex:1;">
           <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#7a5b32;font-weight:900;">Extra Edition</div>
-          <div style="font-size:34px;line-height:1;font-weight:1000;letter-spacing:0.04em;">${data.headline}</div>
+          <div style="font-size:28px;line-height:1.15;font-weight:1000;letter-spacing:0.02em;">${data.headline}</div>
         </div>
-        <div style="text-align:right;font-size:12px;color:#6a5435;">${data.showName}<br>${data.venueName}</div>
+        <div style="text-align:right;font-size:11px;color:#6a5435;white-space:nowrap;">${data.showName}<br>${data.venueName}</div>
       </div>
-      <div style="font-size:14px;line-height:1.7;color:#4b3a24;border-bottom:1px solid rgba(95,69,35,0.18);padding-bottom:12px;">${data.subheadline}</div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;">
-        <div style="display:grid;justify-items:center;gap:8px;">
-          ${portrait(pLeft, data.left, leftWin ? 'outline:5px solid rgba(240,212,139,0.75);transform:scale(1.06);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
-          <div style="font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.left.name}</div>
+      <div style="font-size:13px;line-height:1.6;color:#5b4b34;border-bottom:1px solid rgba(95,69,35,0.18);padding-bottom:10px;">${data.subheadline}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;">
+        <div style="display:grid;justify-items:center;gap:6px;">
+          ${portrait(pLeft, data.left, leftWin ? 'outline:4px solid rgba(240,212,139,0.75);transform:scale(1.04);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
+          <div style="font-size:16px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.left.name}</div>
         </div>
-        <div style="display:grid;justify-items:center;gap:10px;padding-bottom:18px;">
-          <div style="font-size:44px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">${data.isDraw ? 'DRAW' : 'VS'}</div>
-          <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:11px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">${data.isDraw ? 'Time Limit' : 'Winner'}</div>
+        <div style="display:grid;justify-items:center;gap:8px;padding-bottom:12px;">
+          <div style="font-size:40px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">${data.isDraw ? 'DRAW' : 'VS'}</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">${data.isDraw ? 'Time Limit' : 'Winner'}</div>
         </div>
-        <div style="display:grid;justify-items:center;gap:8px;">
-          ${portrait(pRight, data.right, rightWin ? 'outline:5px solid rgba(240,212,139,0.75);transform:scale(1.06);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
-          <div style="font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.right.name}</div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.22);">
-        <div style="font-size:16px;font-weight:900;">${data.isDraw ? 'Time-limit draw' : `${data.winner.name} wins`}</div>
-        <div style="font-size:13px;color:#5b4b34;">${data.finishLabel}${data.turns ? ` / ${data.turns}T` : ''}</div>
-        <div style="font-size:14px;color:#5b4b34;">MQ <strong style="font-size:22px;color:#15120d;">${data.mq}</strong></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="display:grid;gap:6px;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.18);">
-          <label style="font-size:12px;color:#6a5e4c;">${data.left.name}</label>
-          <strong style="font-size:13px;">HP ${data.hpLeft.final}/${data.hpLeft.max}</strong>
-          <div style="height:7px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
-        </div>
-        <div style="display:grid;gap:6px;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.18);">
-          <label style="font-size:12px;color:#6a5e4c;">${data.right.name}</label>
-          <strong style="font-size:13px;">HP ${data.hpRight.final}/${data.hpRight.max}</strong>
-          <div style="height:7px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        <div style="display:grid;justify-items:center;gap:6px;">
+          ${portrait(pRight, data.right, rightWin ? 'outline:4px solid rgba(240,212,139,0.75);transform:scale(1.04);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
+          <div style="font-size:16px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.right.name}</div>
         </div>
       </div>
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.22);">
+        <div style="font-size:14px;font-weight:900;">${data.isDraw ? 'Time-limit draw' : `${data.winner.name} wins`}</div>
+        <div style="font-size:12px;color:#5b4b34;">${data.finishLabel}${data.turns ? ` / ${data.turns}T` : ''}</div>
+        <div style="font-size:13px;color:#5b4b34;">MQ <strong style="font-size:20px;color:#15120d;">${data.mq}</strong></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:11px;color:#6a5e4c;">${data.left.name}</label>
+          <strong style="font-size:12px;">HP ${data.hpLeft.final}/${data.hpLeft.max}</strong>
+          <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:11px;color:#6a5e4c;">${data.right.name}</label>
+          <strong style="font-size:12px;">HP ${data.hpRight.final}/${data.hpRight.max}</strong>
+          <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+      </div>
+      ${articleHtml}
       <button class="newspaper-close" onclick="window._showResultPaperClose()">Close</button>
     </div>
   `;
