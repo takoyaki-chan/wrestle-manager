@@ -3418,10 +3418,10 @@ const Engine = {
         let roster = aiData.roster.map(f => ({ ...f }));
         const retiredNames = [];
 
-        // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
+        // Step 1: ���� + wear�~�� (v1.3-1 ��7 ? AI team: baseWear + durability�␳ only)
         roster.forEach(f => {
           f.age = (f.age || 17) + 1;
-          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
+          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: �V�l������p
           const aiDecayStart = 23 + (f.durability || 0);
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
@@ -3429,28 +3429,28 @@ const Engine = {
           }
         });
 
-        // Step 2: 衰退判定 (v1.3-1 §3 — wear-based)
+        // Step 2: ���ޔ��� (v1.3-1 ��3 ? wear-based)
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
-        // Step 2b: peakOVR更新（decay適用後）
+        // Step 2b: peakOVR�X�V�idecay�K�p��j
         roster = roster.map(f => Engine.career.updatePeakOVR(f, state.season));
 
-        // 怪我中の選手を回復（シーズン末リセット）
+        // ���䒆�̑I����񕜁i�V�[�Y�������Z�b�g�j
         roster.forEach(f => {
           if (f.injury) f.injury = null;
-          // seasonGrowthリセット
+          // seasonGrowth���Z�b�g
           f.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
           f.wins = 0; f.losses = 0; f.draws = 0;
           f.lastMatchResult = null;
           f.seasonInjuries = 0;
         });
 
-        // Step 5: 引退判定 (scout-spec §7)
+        // Step 5: ���ޔ��� (scout-spec ��7)
         const surviving = [];
         const aiRetirees = [];
         roster.forEach(f => {
-          if (Engine.rival.checkRetirement(rng, f)) {
-            retiredNames.push(`${f.name}(${f.age}歳)`);
+          if (Engine.rival.checkRetirement(rng, f, { isAI: true })) {
+            retiredNames.push(`${f.name}(${f.age}��)`);
             aiRetirees.push(f);
           } else {
             surviving.push(f);
@@ -3458,22 +3458,22 @@ const Engine = {
         });
         roster = surviving;
 
-        // Phase 5 R3: AI引退者の退団trust影響（同団体の残存メンバーに適用）
+        // Phase 5 R3: AI���ގ҂̑ޒctrust�e���i���c�̂̎c�������o�[�ɓK�p�j
         aiRetirees.forEach(retiree => {
-          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退' });
+          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI����' });
         });
 
-        // Step 6: AIスカウト → handled separately in offseason week 2
-        // Step 7: AI間移籍 → handled separately
-        // Step 8: org-rating → recalculated after all processing
+        // Step 6: AI�X�J�E�g �� handled separately in offseason week 2
+        // Step 7: AI�Ԉڐ� �� handled separately
+        // Step 8: org-rating �� recalculated after all processing
 
         if (retiredNames.length > 0) {
-          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('、')} が引退`);
+          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('�A')} ������`);
         }
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
-        events.push(`${org.emoji} ${org.name}: ロスター${roster.length}名 (平均OVR ${avgOvr})`);
+        events.push(`${org.emoji} ${org.name}: ���X�^�[${roster.length}�� (����OVR ${avgOvr})`);
 
-        // seasonBreakthroughsは脅威通知参照後にリセット（次シーズン用）
+        // seasonBreakthroughs�͋��Вʒm�Q�ƌ�Ƀ��Z�b�g�i���V�[�Y���p�j
         const seasonBT = aiData.seasonBreakthroughs || [];
         newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop,
           _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
@@ -3483,7 +3483,7 @@ const Engine = {
       return { aiOrgs: newAiOrgs, events };
     },
 
-    // AI season popularity (rival-spec §4.2)
+    // AI season popularity (rival-spec ��4.2)
     aiSeasonPopularity(rng, fighter, org) {
       const f = { ...fighter };
       const overall = Engine.util.ov(f);
@@ -3495,14 +3495,32 @@ const Engine = {
       return f;
     },
 
-    // Retirement check (v1.3-1 §4 — wear-based, replaces age-based chances)
-    checkRetirement(rng, fighter) {
-      const wear = fighter.wear || 0;
+    // Retirement check (v1.3-1 ��4 ? wear-based, replaces age-based chances)
+    getAIRetirementAgeChance(age) {
+      const safeAge = age || 0;
+      if (safeAge >= 39) return 1.0;
+      if (safeAge >= 38) return 0.82;
+      if (safeAge >= 37) return 0.65;
+      if (safeAge >= 36) return 0.45;
+      if (safeAge >= 35) return 0.32;
+      if (safeAge >= 34) return 0.24;
+      if (safeAge >= 33) return 0.18;
+      if (safeAge >= 32) return 0.12;
+      if (safeAge >= 31) return 0.08;
+      if (safeAge >= 30) return 0.05;
+      return 0;
+    },
 
-      // wear 80+: 確定引退 (§3)
+    // Retirement check (v1.3-1 ?4 + AI age pressure)
+    checkRetirement(rng, fighter, options = {}) {
+      const { isAI = false } = options;
+      const wear = fighter.wear || 0;
+      const age = fighter.age || 17;
+
+      // wear 80+: ???? (?3)
       if (wear >= 80) return true;
 
-      // 自主引退: OVR < Notion * 0.60 が2シーズン連続 (§4.4 — 既存ルート維持)
+      // ????: OVR < Notion * 0.60 ?2?????? (?4.4 ? ???????)
       const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
       const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
       const currentOvr = Engine.util.ov(fighter);
@@ -3513,18 +3531,22 @@ const Engine = {
         fighter.lowPerformanceSeasons = 0;
       }
 
-      // wear閾値ベースの引退確率 (§4.1)
+      // wear?????????? (?4.1)
       let retireChance = 0;
-      if (wear >= 60)      retireChance = 0.50; // 末期
-      else if (wear >= 40) retireChance = 0.20; // 本格衰退
-      // wear < 40: 引退確率なし
+      if (wear >= 60)      retireChance = 0.50; // ??
+      else if (wear >= 40) retireChance = 0.20; // ????
+      if (isAI) {
+        const ageChance = Engine.rival.getAIRetirementAgeChance(age);
+        retireChance = Math.max(retireChance, ageChance);
+        if (age >= 34 && wear >= 30) retireChance = Math.min(0.95, retireChance + 0.10);
+        if (age >= 36 && wear >= 20) retireChance = Math.min(0.98, retireChance + 0.08);
+      }
+      // wear < 40: ??????
       if (retireChance > 0 && Engine.rng.float(rng) < retireChance) return true;
 
       return false;
     },
 
-    // ── B-3: AI Scouting (rival-spec §5 + F1 tier limits) ────
-    // F1 helper: count prodigies/promising on a roster
     countRosterRanks(roster) {
       let prodigies = 0, promising = 0;
       roster.forEach(f => {
@@ -4811,7 +4833,7 @@ const Engine = {
         const highBondIds = rosterIdsForRetire.filter(cid => {
           const key = Engine.relationships._key(cid, retiredF.id);
           const r = s.relationships?.[key];
-          return r && r.bond >= 60;
+          return r && Engine.relationships.isPositiveBond(r.bond);
         });
         if (highBondIds.length > 0) {
           s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -10, max: -5 }, { min: 0, max: 0 }, injRetRelRng);
@@ -6869,7 +6891,7 @@ const Engine = {
               if (cid === retiree.id) return false;
               const key = Engine.relationships._key(cid, retiree.id);
               const r = s.relationships?.[key];
-              return r && r.bond >= 60;
+              return r && Engine.relationships.isPositiveBond(r.bond);
             });
             if (highBondIds.length > 0) {
               s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
@@ -8380,7 +8402,7 @@ Engine.trust = {
         if (otherId === fighter.id) continue;
         const key = Engine.relationships._key(fighter.id, otherId);
         const r = rels[key];
-        if (r && r.bond <= 27) {
+        if (r && Engine.relationships.isNegativeBond(r.bond)) {
           delta -= 0.3;
           if (!flags.R1) flags.R1 = [];
           flags.R1.push(otherId);
@@ -8399,7 +8421,7 @@ Engine.trust = {
         if (mate.id === fighter.id) continue;
         const key = Engine.relationships._key(mate.id, fighter.id);
         const r = rels[key];
-        if (r && r.bond >= 50) bondFriends++;
+        if (r && Engine.relationships.isPositiveBond(r.bond)) bondFriends++;
       }
       if (bondFriends <= 1) {
         delta -= 0.4;
@@ -8439,8 +8461,8 @@ Engine.trust = {
     return roster.map(f => {
       const key = Engine.relationships._key(f.id, departedId);
       const r = relationships[key];
-      if (!r || r.bond < 65) return f;
-      const impact = -((r.bond - 50) * 0.2);
+      if (!r || !Engine.relationships.isPositiveBond(r.bond)) return f;
+      const impact = -(Math.max(0, r.bond) * 0.2);
       const oldTrust = f.trust != null ? f.trust : 50;
       const newTrust = Engine.util.clamp(oldTrust + impact, 0, 100);
       if (Math.abs(newTrust - oldTrust) < 0.01) return f;
@@ -11042,6 +11064,64 @@ Engine.relationships = {
     return sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
   },
 
+  _getAxisBounds(axis) {
+    if (axis === 'bond') return { min: -100, max: 100 };
+    return { min: 0, max: 100 };
+  },
+
+  _clampAxisValue(value, axis) {
+    const bounds = this._getAxisBounds(axis);
+    return Engine.util.clamp(value, bounds.min, bounds.max);
+  },
+
+  _getPositiveGainScale(axis, current) {
+    if (axis === 'bond') {
+      if (current >= 90) return 0.08;
+      if (current >= 75) return 0.18;
+      if (current >= 60) return 0.35;
+      if (current >= 40) return 0.6;
+      if (current >= 20) return 0.8;
+      return 1.0;
+    }
+    if (current >= 95) return 0.08;
+    if (current >= 90) return 0.12;
+    if (current >= 80) return 0.22;
+    if (current >= 70) return 0.35;
+    if (current >= 60) return 0.5;
+    if (current >= 40) return 0.7;
+    return 1.0;
+  },
+
+  _applyAxisDelta(current, delta, axis) {
+    const adjusted = delta > 0
+      ? delta * this._getPositiveGainScale(axis, current)
+      : delta;
+    return this._clampAxisValue(current + adjusted, axis);
+  },
+
+  getBondBand(bond) {
+    const b = bond != null ? bond : 0;
+    if (b >= 75) return 'devoted';
+    if (b >= 35) return 'close';
+    if (b > -20) return 'neutral';
+    if (b > -50) return 'strained';
+    if (b > -80) return 'hostile';
+    return 'toxic';
+  },
+
+  isPositiveBond(bond) {
+    return bond >= 35;
+  },
+
+  isNegativeBond(bond) {
+    return bond <= -50;
+  },
+
+  migrateLegacyBondValue(bond) {
+    const legacy = bond != null ? bond : 50;
+    return this._clampAxisValue((legacy - 50) * 2, 'bond');
+  },
+
   // ══════════════════════════════════════════════════════════
   //  性格/アーキタイプ相性ルックアップ
   // ══════════════════════════════════════════════════════════
@@ -11094,7 +11174,7 @@ Engine.relationships = {
         if (i === j) continue;
         const a = allChars[i], b = allChars[j];
         const key = this._key(a.id, b.id);
-        relationships[key] = { bond: 50, rivalry: 0 };
+        relationships[key] = { bond: 0, rivalry: 0 };
       }
     }
 
@@ -11173,18 +11253,18 @@ Engine.relationships = {
 
         if (bsType === '同期入団') {
           // bond高め: 70〜80（双方向）
-          relationships[keyAB].bond = 70 + Engine.rng.int(rng, 0, 10);
-          relationships[keyBA].bond = 70 + Engine.rng.int(rng, 0, 10);
+          relationships[keyAB].bond = 35 + Engine.rng.int(rng, 0, 10);
+          relationships[keyBA].bond = 35 + Engine.rng.int(rng, 0, 10);
         } else if (bsType === '元タッグパートナー') {
           // bond高め: 65〜75 + rivalry中程度: 20〜30（双方向）
-          relationships[keyAB].bond = 65 + Engine.rng.int(rng, 0, 10);
-          relationships[keyBA].bond = 65 + Engine.rng.int(rng, 0, 10);
+          relationships[keyAB].bond = 28 + Engine.rng.int(rng, 0, 12);
+          relationships[keyBA].bond = 28 + Engine.rng.int(rng, 0, 12);
           relationships[keyAB].rivalry = 20 + Engine.rng.int(rng, 0, 10);
           relationships[keyBA].rivalry = 20 + Engine.rng.int(rng, 0, 10);
         } else {
           // 過去の遺恨: bond低め: 20〜30 + rivalry高め: 40〜55（双方向）
-          relationships[keyAB].bond = 20 + Engine.rng.int(rng, 0, 10);
-          relationships[keyBA].bond = 20 + Engine.rng.int(rng, 0, 10);
+          relationships[keyAB].bond = -60 + Engine.rng.int(rng, 0, 18);
+          relationships[keyBA].bond = -60 + Engine.rng.int(rng, 0, 18);
           relationships[keyAB].rivalry = 40 + Engine.rng.int(rng, 0, 15);
           relationships[keyBA].rivalry = 40 + Engine.rng.int(rng, 0, 15);
         }
@@ -11194,7 +11274,7 @@ Engine.relationships = {
 
     // Step 6: 全値クランプ
     Object.keys(relationships).forEach(key => {
-      relationships[key].bond = Engine.util.clamp(relationships[key].bond, 0, 100);
+      relationships[key].bond = this._clampAxisValue(relationships[key].bond, 'bond');
       relationships[key].rivalry = Engine.util.clamp(relationships[key].rivalry, 0, 100);
     });
 
@@ -11343,24 +11423,33 @@ Engine.relationships = {
       const inContact = sameOrg || recentMatchPairs.has(key);
 
       if (inContact) {
-        // 接触あり: bond→50方向に微減/微増、rivalry微減
-        if (bond > 50) {
-          bond -= 0.2 + Engine.rng.float(rng) * 0.1; // -0.2〜-0.3
-        } else if (bond < 50) {
-          bond += 0.2 + Engine.rng.float(rng) * 0.1; // +0.2〜+0.3
+        const bondPull = 0.16 + Engine.rng.float(rng) * 0.1 + Math.max(0, Math.abs(bond) - 20) * 0.012;
+        if (bond > 0) {
+          bond -= bondPull;
+        } else if (bond < 0) {
+          bond += bondPull;
         }
-        rivalry -= 0.15 + Engine.rng.float(rng) * 0.15; // -0.15〜-0.3（Phase 4 F: やや強化）
+
+        let rivalryDecay = 0.28 + Engine.rng.float(rng) * 0.22;
+        if (rivalry >= 85) rivalryDecay += 0.45;
+        else if (rivalry >= 70) rivalryDecay += 0.25;
+        else if (rivalry >= 50) rivalryDecay += 0.12;
+        rivalry -= rivalryDecay;
       } else {
-        // 接触なし: bond凍結、rivalry超低速減衰
-        rivalry -= 0.1;
+        let rivalryDecay = 0.16;
+        if (rivalry >= 85) rivalryDecay += 0.45;
+        else if (rivalry >= 70) rivalryDecay += 0.28;
+        else if (rivalry >= 50) rivalryDecay += 0.14;
+        else if (rivalry >= 30) rivalryDecay += 0.06;
+        rivalry -= rivalryDecay;
       }
 
       // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
       // bond55から効果が減衰し、60で完全停止。60超は試合やイベントでのみ到達可能
-      if (sameOrg && bond < 60) {
+      if (sameOrg && bond < 35) {
         const orgBondGain = 0.2 + Engine.rng.float(rng) * 0.3; // +0.2〜+0.5
-        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
-        bond += orgBondGain * ceiling;
+        const ceiling = bond < 20 ? 1.0 : Math.max(0, (35 - bond) / 15);
+        bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
       }
 
       // Phase 4 B: 性格不一致の週次摩擦
@@ -11383,7 +11472,7 @@ Engine.relationships = {
         const infoA = charInfoMap.get(idA);
         const infoB = charInfoMap.get(idB);
         if (infoA && infoB && Math.abs(infoA.age - infoB.age) <= 3) {
-          bond += 0.1;  // 世代近接: +0.1/週（48週で+4.8pt）
+          bond = this._applyAxisDelta(bond, 0.1, 'bond');  // generation proximity: +0.1/week (~+4.8 over 48 weeks)
         }
       }
 
@@ -11398,7 +11487,7 @@ Engine.relationships = {
         } else if (ovrDiff <= 5 && absWeek % 4 === 0) {
           // G-05: OVR近接 rivalry +2~+4 (4週に1回、基本値微減)
           if (rivalry >= 10) {
-            rivalry += 2 + Engine.rng.float(rng) * 2;
+            rivalry = this._applyAxisDelta(rivalry, 2 + Engine.rng.float(rng) * 2, 'rivalry');
           }
 
           // Phase 4 D-1: 同スタイル上乗せ（OVR差5以内 + 同スタイル + 同団体）
@@ -11406,7 +11495,7 @@ Engine.relationships = {
             const infoA = charInfoMap.get(idA);
             const infoB = charInfoMap.get(idB);
             if (infoA && infoB && infoA.style === infoB.style && infoA.style !== 'Allround') {
-              rivalry += 1 + Engine.rng.float(rng); // +1~+2（ポジション争いの意識）
+              rivalry = this._applyAxisDelta(rivalry, 1 + Engine.rng.float(rng), 'rivalry'); // same-style position battle
             }
           }
         }
@@ -11416,13 +11505,13 @@ Engine.relationships = {
           const orgId = orgA; // orgA === orgB（sameOrg判定済み）
           const topSet = orgTopRankMap.get(orgId);
           if (topSet && topSet.has(idA) && topSet.has(idB)) {
-            rivalry += 0.5 + Engine.rng.float(rng) * 0.5; // +0.5~+1.0
+            rivalry = this._applyAxisDelta(rivalry, 0.5 + Engine.rng.float(rng) * 0.5, 'rivalry'); // +0.5~+1.0
           }
         }
       }
 
       newRels[key] = {
-        bond: Engine.util.clamp(bond, 0, 100),
+        bond: this._clampAxisValue(bond, 'bond'),
         rivalry: Engine.util.clamp(rivalry, 0, 100)
       };
     }
@@ -11456,8 +11545,8 @@ Engine.relationships = {
     const rels = state.relationships || {};
     const keyAB = this._key(charIdA, charIdB);
     const keyBA = this._key(charIdB, charIdA);
-    const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
-    const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
+    const rAB = rels[keyAB] || { bond: 0, rivalry: 0 };
+    const rBA = rels[keyBA] || { bond: 0, rivalry: 0 };
 
     const getLabel = (val, table) => {
       for (const entry of table) {
@@ -11550,9 +11639,11 @@ Engine.relationships = {
     for (const tid of targetIds) {
       if (tid === sourceId) continue;
       const key = this._key(sourceId, tid);
-      const r = { ...(rels[key] || { bond: 50, rivalry: 0 }) };
-      r.bond = Engine.util.clamp(r.bond + bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min), 0, 100);
-      r.rivalry = Engine.util.clamp(r.rivalry + rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min), 0, 100);
+      const r = { ...(rels[key] || { bond: 0, rivalry: 0 }) };
+      const bondRoll = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
+      r.bond = this._applyAxisDelta(r.bond, bondRoll, 'bond');
+      const rivalryRoll = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
+      r.rivalry = this._applyAxisDelta(r.rivalry, rivalryRoll, 'rivalry');
       rels[key] = r;
     }
     return { ...state, relationships: rels };
@@ -11565,9 +11656,11 @@ Engine.relationships = {
     for (const sid of sourceIds) {
       if (sid === targetId) continue;
       const key = this._key(sid, targetId);
-      const r = { ...(rels[key] || { bond: 50, rivalry: 0 }) };
-      r.bond = Engine.util.clamp(r.bond + bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min), 0, 100);
-      r.rivalry = Engine.util.clamp(r.rivalry + rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min), 0, 100);
+      const r = { ...(rels[key] || { bond: 0, rivalry: 0 }) };
+      const bondRoll = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
+      r.bond = this._applyAxisDelta(r.bond, bondRoll, 'bond');
+      const rivalryRoll = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
+      r.rivalry = this._applyAxisDelta(r.rivalry, rivalryRoll, 'rivalry');
       rels[key] = r;
     }
     return { ...state, relationships: rels };
@@ -11585,14 +11678,18 @@ Engine.relationships = {
       for (let j = i + 1; j < charIds.length; j++) {
         const idA = charIds[i], idB = charIds[j];
         const keyAB = this._key(idA, idB);
-        const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
-        rAB.bond = Engine.util.clamp(rAB.bond + bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min), 0, 100);
-        rAB.rivalry = Engine.util.clamp(rAB.rivalry + rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min), 0, 100);
+        const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
+        const bondRollAB = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
+        rAB.bond = this._applyAxisDelta(rAB.bond, bondRollAB, 'bond');
+        const rivalryRollAB = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
+        rAB.rivalry = this._applyAxisDelta(rAB.rivalry, rivalryRollAB, 'rivalry');
         rels[keyAB] = rAB;
         const keyBA = this._key(idB, idA);
-        const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
-        rBA.bond = Engine.util.clamp(rBA.bond + bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min), 0, 100);
-        rBA.rivalry = Engine.util.clamp(rBA.rivalry + rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min), 0, 100);
+        const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
+        const bondRollBA = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
+        rBA.bond = this._applyAxisDelta(rBA.bond, bondRollBA, 'bond');
+        const rivalryRollBA = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
+        rBA.rivalry = this._applyAxisDelta(rBA.rivalry, rivalryRollBA, 'rivalry');
         rels[keyBA] = rBA;
       }
     }
@@ -11675,8 +11772,9 @@ Engine.relationships = {
       const targetId = parseInt(key.substring(sepIdx + 1), 10);
       if (targetId !== fighterId) continue;
       const r = { ...rels[key] };
-      if (r.bond >= 60) {
-        r.bond = Math.min(100, r.bond + bondRange.min + Engine.rng.float(rng) * (bondRange.max - bondRange.min));
+      if (this.isPositiveBond(r.bond)) {
+        const bondRoll = bondRange.min + Engine.rng.float(rng) * (bondRange.max - bondRange.min);
+        r.bond = this._applyAxisDelta(r.bond, bondRoll, 'bond');
       }
       if (r.rivalry >= 30) {
         r.rivalry = Math.max(0, r.rivalry - (3 + Engine.rng.float(rng) * 2));
@@ -11696,8 +11794,8 @@ Engine.relationships = {
       const targetId = parseInt(key.substring(sepIdx + 1), 10);
       if (targetId !== fighterId) continue;
       const r = { ...rels[key] };
-      if (r.bond >= 60) {
-        r.bond = Math.max(0, r.bond - (5 + Engine.rng.float(rng) * 3));
+      if (this.isPositiveBond(r.bond)) {
+        r.bond = this._clampAxisValue(r.bond - (5 + Engine.rng.float(rng) * 3), 'bond');
       }
       newRels[key] = r;
     }
@@ -11720,13 +11818,24 @@ Engine.relationships = {
       const rBA = state.relationships[keyBA];
       if (!rAB && !rBA) continue;
       const bondMax = Math.max(rAB?.bond || 0, rBA?.bond || 0);
-      const bondMin = Math.min(rAB?.bond || 50, rBA?.bond || 50);
+      const bondMin = Math.min(rAB?.bond ?? 0, rBA?.bond ?? 0);
       const rivalryMax = Math.max(rAB?.rivalry || 0, rBA?.rivalry || 0);
 
-      if (bondMax >= 80) {
+      if (this.getBondBand(bondMax) === 'devoted') {
         events.push({ type: 'reunion', charA: newCharId, charB: rid, effect: { conditionBonus: 5 + Math.floor(Math.random() * 6) } });
       }
-      if (bondMin <= 20) {
+      if (bondMin <= -80) {
+        events.push({
+          type: 'vendetta',
+          charA: newCharId,
+          charB: rid,
+          effect: {
+            moralePenalty: -(5 + Math.floor(Math.random() * 4)),
+            rivalryBonus: 4 + Math.floor(Math.random() * 3),
+            bondPenalty: -(2 + Math.floor(Math.random() * 2)),
+          },
+        });
+      } else if (this.isNegativeBond(bondMin)) {
         events.push({ type: 'grudge', charA: newCharId, charB: rid, effect: { moralePenalty: -(2 + Math.floor(Math.random() * 4)) } });
       }
       if (rivalryMax >= 60) {
@@ -11740,29 +11849,43 @@ Engine.relationships = {
   applyRecontactEvents(state, events) {
     let s = { ...state };
     const log = [...(s.gameLog || [])];
+    const rels = { ...(s.relationships || {}) };
     const getName = (id) => {
       const c = (s.roster || []).find(r => r.id === id);
       return c ? c.name : id;
     };
     for (const ev of events) {
       if (ev.type === 'reunion') {
-        // 双方のcondition +5〜+10
+        // ???condition +5?+10
         s = { ...s, roster: s.roster.map(c => {
           if (c.id === ev.charA || c.id === ev.charB) {
             return { ...c, condition: Math.min(100, (c.condition || 80) + ev.effect.conditionBonus) };
           }
           return c;
         })};
-        log.push(`🤝 ${getName(ev.charA)}と${getName(ev.charB)}が再会！ 旧友との再会でコンディション上昇`);
+        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}???? ????????????????`);
       } else if (ev.type === 'grudge') {
-        // lockerRoomMorale -2〜-5
+        // lockerRoomMorale -2?-5
         s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
-        log.push(`😤 ${getName(ev.charA)}と${getName(ev.charB)}——因縁の相手と同じ屋根の下。ロッカールームの空気が険悪に`);
+        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}?????????????????????????????`);
+      } else if (ev.type === 'vendetta') {
+        s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
+        const keyAB = this._key(ev.charA, ev.charB);
+        const keyBA = this._key(ev.charB, ev.charA);
+        const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
+        const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
+        rAB.bond = this._clampAxisValue(rAB.bond + ev.effect.bondPenalty, 'bond');
+        rBA.bond = this._clampAxisValue(rBA.bond + ev.effect.bondPenalty, 'bond');
+        rAB.rivalry = this._clampAxisValue(rAB.rivalry + ev.effect.rivalryBonus, 'rivalry');
+        rBA.rivalry = this._clampAxisValue(rBA.rivalry + ev.effect.rivalryBonus, 'rivalry');
+        rels[keyAB] = rAB;
+        rels[keyBA] = rBA;
+        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}?????????????????????????`);
       } else if (ev.type === 'unfinished') {
-        log.push(`🔥 ${getName(ev.charA)}と${getName(ev.charB)}——あの時の決着をつける時が来た`);
+        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}????????????????`);
       }
     }
-    return { ...s, gameLog: log };
+    return { ...s, relationships: rels, gameLog: log };
   },
 
   // ══════════════════════════════════════════════════════════
@@ -11784,11 +11907,12 @@ Engine.relationships = {
     const rels = { ...state.relationships };
     const counters = { ...(state.relationshipCounters || {}) };
     const week = state.week || 0;
+    const absWeek = ((state.season || 1) - 1) * 48 + week;
 
     const keyAB = this._key(charIdA, charIdB);
     const keyBA = this._key(charIdB, charIdA);
-    const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
-    const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
+    const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
+    const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
 
     const aWon = context.winner === 'win';
     const bWon = context.winner === 'lose';
@@ -11813,11 +11937,11 @@ Engine.relationships = {
         const cKey = this._counterKey(idFrom, idTo, eventType, stage);
         const counter = counters[cKey] || { count: 0, lastWeek: 0 };
         mult = this.getDiminishingMultiplier(counter.count);
-        counters[cKey] = { count: counter.count + 1, lastWeek: week };
+        counters[cKey] = { count: counter.count + 1, lastWeek: absWeek };
       }
 
-      rel.bond += roll(bondMin, bondMax) * mult;
-      rel.rivalry += roll(rivalryMin, rivalryMax) * mult;
+      rel.bond = this._applyAxisDelta(rel.bond, roll(bondMin, bondMax) * mult, 'bond');
+      rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult, 'rivalry');
     };
 
     // ═══ M-01: ベースライン（全試合, Phase 4 E: rivalry抑制） ═══
@@ -11974,9 +12098,9 @@ Engine.relationships = {
     }
 
     // ── 全値クランプ ──
-    rAB.bond = Engine.util.clamp(rAB.bond, 0, 100);
+    rAB.bond = this._clampAxisValue(rAB.bond, 'bond');
     rAB.rivalry = Engine.util.clamp(rAB.rivalry, 0, 100);
-    rBA.bond = Engine.util.clamp(rBA.bond, 0, 100);
+    rBA.bond = this._clampAxisValue(rBA.bond, 'bond');
     rBA.rivalry = Engine.util.clamp(rBA.rivalry, 0, 100);
 
     rels[keyAB] = rAB;
@@ -12088,7 +12212,7 @@ Engine.snapshot = {
 
       // ── R3: 仲良し退団（100%発火、rng判定なし） ──
       const dbi = f._departureBondImpact;
-      if (dbi && dbi.bond >= 65) {
+      if (dbi && this.isPositiveBond(dbi.bond)) {
         candidates.push({
           source: 'R3', weight: 10, fighterId: f.id, fighter2Id: dbi.departedId,
           bond: dbi.bond, departedName: dbi.departedName, reason: dbi.reason,
@@ -12244,7 +12368,7 @@ Engine.snapshot = {
 
     // ── R3 特殊分岐 ──
     if (source === 'R3') {
-      if (candidate.bond >= 75) {
+      if (this.getBondBand(candidate.bond) === 'devoted') {
         // タイプD: モーダル
         const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.R3.modal, fighter);
         const text = this._expandTemplate(line, name, name2);

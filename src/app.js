@@ -1773,6 +1773,20 @@ const Storage = {
       }
 
       // h2h + orgTimeline マイグレーション
+      if (!G._migrated_relationships_v2_bond_scale) {
+        if (G.relationships) {
+          const migratedRelationships = {};
+          Object.entries(G.relationships).forEach(([key, rel]) => {
+            migratedRelationships[key] = {
+              ...rel,
+              bond: Engine.relationships.migrateLegacyBondValue(rel?.bond),
+            };
+          });
+          G = { ...G, relationships: migratedRelationships };
+        }
+        G = { ...G, _migrated_relationships_v2_bond_scale: true };
+      }
+
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
         // 全ファイターにorgTimeline初期エントリを生成
