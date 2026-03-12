@@ -3164,6 +3164,78 @@ function _renderDbOrgCompare() {
     </div>`;
   });
 
+  const briefItems = [
+    { title: '勝ち筋', desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
+    { title: '注意点', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
+    { title: '補強提案', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
+  ];
+  const planHtml = d.actions.slice(0, 2).map(a => `<div class="db-cmp-brief-card">
+      <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
+      <p>${a.text}</p>
+    </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きな追加アクションはありません。</p></div>`;
+  const roleCopy = {
+    'エース': '看板の勝負所。ここで主導権を取れるかが全体像を左右する。',
+    '主力': '中核カード。興行の温度を押し上げる役目を担う。',
+    '中堅': '層の厚さが見えるポイント。団体力の差が最も出やすい。',
+  };
+  function buildMatchupCard(m, featured) {
+    const pUrl = getPortraitUrl(m.player.id);
+    const rUrl = getPortraitUrl(m.rival.id);
+    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
+    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
+    const ovrDiff = m.player.ovr - m.rival.ovr;
+    const popDiff = m.player.pop - m.rival.pop;
+    const edgeClass = ovrDiff > 2 ? 'player' : ovrDiff < -2 ? 'rival' : 'even';
+    const edgeText = ovrDiff > 2 ? `${d.playerName}優勢` : ovrDiff < -2 ? `${d.rivalName}優勢` : '互角';
+    const signValue = n => n > 0 ? `+${n}` : `${n}`;
+    return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
+      <div class="db-cmp-match-top">
+        <span class="db-cmp-role-chip">${m.role}</span>
+        <span class="db-cmp-edge ${edgeClass}">${edgeText}</span>
+      </div>
+      <div class="db-cmp-match-faceoff">
+        <div class="db-cmp-match-side">
+          <div class="db-cmp-match-avatar player ${featured ? 'lg' : ''}">${pAvatar}</div>
+          <div class="db-cmp-match-meta">
+            <strong>${m.player.name}</strong>
+            <span>${d.playerName}</span>
+            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
+          </div>
+        </div>
+        <div class="db-cmp-match-center">
+          <div class="db-cmp-match-vs">${featured ? 'SHOWDOWN' : 'VS'}</div>
+          <div class="db-cmp-match-metrics">
+            <span>OVR ${signValue(ovrDiff)}</span>
+            <span>人気 ${signValue(popDiff)}</span>
+          </div>
+        </div>
+        <div class="db-cmp-match-side right">
+          <div class="db-cmp-match-avatar rival ${featured ? 'lg' : ''}" style="background:linear-gradient(180deg,${rc},${hexDim(rc,0.4)})">${rAvatar}</div>
+          <div class="db-cmp-match-meta">
+            <strong>${m.rival.name}</strong>
+            <span>${d.rivalName}</span>
+            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
+          </div>
+        </div>
+      </div>
+      <p class="db-cmp-match-copy">${roleCopy[m.role] || 'このカードが団体比較の温度を決める。'}</p>
+    </article>`;
+  }
+
+  if (d.matchups.length) {
+    const [featured, ...rest] = d.matchups;
+    html += `<section class="db-cmp-spotlight-panel">
+      <div class="db-cmp-panel-title">Key Matchups</div>
+      ${buildMatchupCard(featured, true)}
+      ${rest.length ? `<div class="db-cmp-match-grid">${rest.map(m => buildMatchupCard(m, false)).join('')}</div>` : ''}
+    </section>`;
+  } else {
+    html += `<section class="db-cmp-spotlight-panel">
+      <div class="db-cmp-panel-title">Key Matchups</div>
+      <div class="db-cmp-recommend"><p>比較できる主力選手データがまだ不足しています。</p></div>
+    </section>`;
+  }
+
   html += `<section class="db-cmp-main-grid">
     <div class="db-cmp-panel">
       <h2 class="db-cmp-panel-title">Power Snapshot</h2>
@@ -3173,59 +3245,12 @@ function _renderDbOrgCompare() {
       </div>
     </div>
     <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">GM Summary</h2>
+      <h2 class="db-cmp-panel-title">GM Brief</h2>
       <div class="db-cmp-story"><strong>現状総評</strong><p>${d.summaryText}</p></div>
       <div class="db-cmp-insight-list">
-        <div class="db-cmp-insight"><div><strong>勝ち筋</strong><div class="desc">${d.opportunity}</div></div><span class="db-cmp-badge good">Opportunity</span></div>
-        <div class="db-cmp-insight"><div><strong>注意点</strong><div class="desc">${d.risk}</div></div><span class="db-cmp-badge bad">Risk</span></div>
-        <div class="db-cmp-insight"><div><strong>補強提案</strong><div class="desc">${d.scout}</div></div><span class="db-cmp-badge warn">Scout</span></div>
+        ${briefItems.map(item => `<div class="db-cmp-insight"><div><strong>${item.title}</strong><div class="desc">${item.desc}</div></div><span class="db-cmp-badge ${item.badgeClass}">${item.badge}</span></div>`).join('')}
       </div>
-    </div>
-  </section>`;
-
-  // --- Section 4+5: Key Matchups + Action Board ---
-  let matchupHtml = '';
-  d.matchups.forEach(m => {
-    const pUrl = getPortraitUrl(m.player.id);
-    const rUrl = getPortraitUrl(m.rival.id);
-    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
-    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
-    matchupHtml += `<div class="db-cmp-fighter-row">
-      <div class="db-cmp-fighter">
-        <div class="db-cmp-avatar player">${pAvatar}</div>
-        <div class="db-cmp-fighter-meta"><strong>${m.player.name}</strong><span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span></div>
-      </div>
-      <div class="db-cmp-role-chip">${m.role}</div>
-      <div class="db-cmp-fighter right">
-        <div class="db-cmp-avatar" style="background:linear-gradient(180deg,${rc},${hexDim(rc,0.4)})">${rAvatar}</div>
-        <div class="db-cmp-fighter-meta"><strong>${m.rival.name}</strong><span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span></div>
-      </div>
-    </div>`;
-  });
-
-  let actionHtml = '';
-  d.actions.forEach(a => {
-    actionHtml += `<div class="db-cmp-recommend">
-      <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
-      <p>${a.text}</p>
-    </div>`;
-  });
-
-  if (!matchupHtml) {
-    matchupHtml = `<div class="db-cmp-recommend"><p>比較できる主力選手データがまだ不足しています。</p></div>`;
-  }
-  if (!actionHtml) {
-    actionHtml = `<div class="db-cmp-recommend"><p>提案データを集計中です。</p></div>`;
-  }
-
-  html += `<section class="db-cmp-lower-grid">
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">Key Matchups</h2>
-      <div class="db-cmp-roster">${matchupHtml}</div>
-    </div>
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">Action Board</h2>
-      <div class="db-cmp-recommend-grid">${actionHtml}</div>
+      <div class="db-cmp-brief-grid">${planHtml}</div>
     </div>
   </section>`;
 
