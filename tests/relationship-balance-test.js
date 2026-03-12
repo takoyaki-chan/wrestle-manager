@@ -37,6 +37,10 @@ function makeFighter(id, extra = {}) {
   };
 }
 
+function isTenthStep(value) {
+  return Math.abs(value * 10 - Math.round(value * 10)) < 1e-9;
+}
+
 function makeState(overrides = {}) {
   const fighterA = makeFighter(1);
   const fighterB = makeFighter(2);
@@ -49,8 +53,8 @@ function makeState(overrides = {}) {
     aiOrgs: {},
     matchupLog: [],
     relationships: {
-      '1>2': { bond: 0, rivalry: 0 },
-      '2>1': { bond: 0, rivalry: 0 },
+      '1>2': { bond: 50, rivalry: 0 },
+      '2>1': { bond: 50, rivalry: 0 },
     },
     relationshipCounters: {},
     ...overrides,
@@ -62,7 +66,7 @@ function testHighValueGainsAreSoftCapped() {
   const state = makeState({
     relationships: {
       '1>2': { bond: 95, rivalry: 92 },
-      '2>1': { bond: 0, rivalry: 0 },
+      '2>1': { bond: 50, rivalry: 0 },
     },
   });
 
@@ -84,13 +88,35 @@ function testWeeklyDecayCoolsHotRivalry() {
   const state = makeState({
     relationships: {
       '1>2': { bond: 92, rivalry: 90 },
-      '2>1': { bond: 0, rivalry: 0 },
+      '2>1': { bond: 50, rivalry: 0 },
     },
   });
 
   const next = Engine.relationships.processWeeklyDecay(state, rng);
   assert.ok(next.relationships['1>2'].bond < 91.7, 'high bond should drift back from the cap each week');
   assert.ok(next.relationships['1>2'].rivalry < 89.25, 'high rivalry should cool noticeably each week');
+}
+
+function testRelationshipValuesStayOnTenthSteps() {
+  const rng = Engine.rng.create(250);
+  const state = makeState({
+    relationships: {
+      '1>2': { bond: 61.37, rivalry: 18.26 },
+      '2>1': { bond: 48.88, rivalry: 11.94 },
+    },
+  });
+
+  const next = Engine.relationships.applyToRoster(
+    state,
+    1,
+    [2],
+    { min: 1.25, max: 1.25 },
+    { min: 2.35, max: 2.35 },
+    rng
+  );
+
+  assert.ok(isTenthStep(next.relationships['1>2'].bond), 'bond should be quantized to tenths');
+  assert.ok(isTenthStep(next.relationships['1>2'].rivalry), 'rivalry should be quantized to tenths');
 }
 
 function testCountersUseAbsoluteWeek() {
@@ -118,18 +144,12 @@ function testCountersUseAbsoluteWeek() {
   assert.strictEqual(next.relationshipCounters[counterKey].lastWeek, 53, 'counter should store absolute week');
 }
 
-function testLegacyBondMigrationMapsNeutralToZero() {
-  assert.strictEqual(Engine.relationships.migrateLegacyBondValue(50), 0, 'legacy neutral bond should map to 0');
-  assert.strictEqual(Engine.relationships.migrateLegacyBondValue(25), -50, 'legacy low bond should become hostile');
-  assert.strictEqual(Engine.relationships.migrateLegacyBondValue(100), 100, 'legacy cap should stay at the new cap');
-}
-
-function testToxicRecontactEscalatesRivalry() {
+function testLowBondVendettaStillWorksInsideZeroToHundredScale() {
   const state = makeState({
     lockerRoomMorale: 60,
     relationships: {
-      '1>2': { bond: -85, rivalry: 40 },
-      '2>1': { bond: -82, rivalry: 38 },
+      '1>2': { bond: 5, rivalry: 40 },
+      '2>1': { bond: 8, rivalry: 38 },
     },
   });
 
@@ -140,15 +160,15 @@ function testToxicRecontactEscalatesRivalry() {
     effect: { moralePenalty: -6, rivalryBonus: 5, bondPenalty: -2 },
   }]);
 
-  assert.strictEqual(next.lockerRoomMorale, 54, 'toxic reunion should hurt locker room morale');
-  assert.ok(next.relationships['1>2'].rivalry >= 45, 'toxic reunion should reignite rivalry');
-  assert.ok(next.relationships['1>2'].bond <= -87, 'toxic reunion should deepen bond hostility');
+  assert.strictEqual(next.lockerRoomMorale, 54, 'vendetta should hurt locker room morale');
+  assert.ok(next.relationships['1>2'].rivalry >= 45, 'vendetta should reignite rivalry');
+  assert.ok(next.relationships['1>2'].bond <= 3, 'vendetta should push bond closer to zero');
 }
 
 testHighValueGainsAreSoftCapped();
 testWeeklyDecayCoolsHotRivalry();
+testRelationshipValuesStayOnTenthSteps();
 testCountersUseAbsoluteWeek();
-testLegacyBondMigrationMapsNeutralToZero();
-testToxicRecontactEscalatesRivalry();
+testLowBondVendettaStillWorksInsideZeroToHundredScale();
 
 console.log('relationship-balance-test: ok');

@@ -8433,7 +8433,7 @@ Engine.trust = {
       const key = Engine.relationships._key(f.id, departedId);
       const r = relationships[key];
       if (!r || !Engine.relationships.isPositiveBond(r.bond)) return f;
-      const impact = -(Math.max(0, r.bond) * 0.2);
+      const impact = -(Math.max(0, r.bond - 50) * 0.2);
       const oldTrust = f.trust != null ? f.trust : 50;
       const newTrust = Engine.util.clamp(oldTrust + impact, 0, 100);
       if (Math.abs(newTrust - oldTrust) < 0.01) return f;
@@ -11036,13 +11036,25 @@ Engine.relationships = {
   },
 
   _getAxisBounds(axis) {
-    if (axis === 'bond') return { min: -100, max: 100 };
+    if (axis === 'bond') return { min: 0, max: 100 };
     return { min: 0, max: 100 };
+  },
+
+  _roundAxisValue(value) {
+    const numeric = Number.isFinite(value) ? value : 0;
+    return Math.round((numeric + Number.EPSILON) * 10) / 10;
+  },
+
+  _rollAxisValue(rng, min, max) {
+    const scaledMin = Math.round(Math.min(min, max) * 10);
+    const scaledMax = Math.round(Math.max(min, max) * 10);
+    return Engine.rng.int(rng, scaledMin, scaledMax) / 10;
   },
 
   _clampAxisValue(value, axis) {
     const bounds = this._getAxisBounds(axis);
-    return Engine.util.clamp(value, bounds.min, bounds.max);
+    const clamped = Engine.util.clamp(value, bounds.min, bounds.max);
+    return this._roundAxisValue(clamped);
   },
 
   _getPositiveGainScale(axis, current) {
@@ -11071,26 +11083,21 @@ Engine.relationships = {
   },
 
   getBondBand(bond) {
-    const b = bond != null ? bond : 0;
-    if (b >= 75) return 'devoted';
-    if (b >= 35) return 'close';
-    if (b > -20) return 'neutral';
-    if (b > -50) return 'strained';
-    if (b > -80) return 'hostile';
+    const b = bond != null ? bond : 50;
+    if (b >= 85) return 'devoted';
+    if (b >= 70) return 'close';
+    if (b >= 50) return 'neutral';
+    if (b >= 30) return 'strained';
+    if (b >= 10) return 'hostile';
     return 'toxic';
   },
 
   isPositiveBond(bond) {
-    return bond >= 35;
+    return bond >= 60;
   },
 
   isNegativeBond(bond) {
-    return bond <= -50;
-  },
-
-  migrateLegacyBondValue(bond) {
-    const legacy = bond != null ? bond : 50;
-    return this._clampAxisValue((legacy - 50) * 2, 'bond');
+    return bond < 50;
   },
 
   // ══════════════════════════════════════════════════════════
@@ -11145,7 +11152,7 @@ Engine.relationships = {
         if (i === j) continue;
         const a = allChars[i], b = allChars[j];
         const key = this._key(a.id, b.id);
-        relationships[key] = { bond: 0, rivalry: 0 };
+        relationships[key] = { bond: 50, rivalry: 0 };
       }
     }
 
@@ -11156,7 +11163,7 @@ Engine.relationships = {
         const a = allChars[i], b = allChars[j];
         if (a.orgId && a.orgId === b.orgId) {
           const key = this._key(a.id, b.id);
-          relationships[key].bond += 3 + Engine.rng.int(rng, 0, 5); // +3〜+8
+          relationships[key].bond += this._rollAxisValue(rng, 3, 8); // +3〜+8
         }
       }
     }
@@ -11168,7 +11175,7 @@ Engine.relationships = {
         const a = allChars[i], b = allChars[j];
         if (Math.abs(a.ovr - b.ovr) <= 5) {
           const key = this._key(a.id, b.id);
-          relationships[key].rivalry += 2 + Engine.rng.int(rng, 0, 4); // +2〜+6
+          relationships[key].rivalry += this._rollAxisValue(rng, 2, 6); // +2〜+6
         }
       }
     }
@@ -11224,20 +11231,20 @@ Engine.relationships = {
 
         if (bsType === '同期入団') {
           // bond高め: 70〜80（双方向）
-          relationships[keyAB].bond = 35 + Engine.rng.int(rng, 0, 10);
-          relationships[keyBA].bond = 35 + Engine.rng.int(rng, 0, 10);
+          relationships[keyAB].bond = this._rollAxisValue(rng, 70, 80);
+          relationships[keyBA].bond = this._rollAxisValue(rng, 70, 80);
         } else if (bsType === '元タッグパートナー') {
           // bond高め: 65〜75 + rivalry中程度: 20〜30（双方向）
-          relationships[keyAB].bond = 28 + Engine.rng.int(rng, 0, 12);
-          relationships[keyBA].bond = 28 + Engine.rng.int(rng, 0, 12);
-          relationships[keyAB].rivalry = 20 + Engine.rng.int(rng, 0, 10);
-          relationships[keyBA].rivalry = 20 + Engine.rng.int(rng, 0, 10);
+          relationships[keyAB].bond = this._rollAxisValue(rng, 65, 75);
+          relationships[keyBA].bond = this._rollAxisValue(rng, 65, 75);
+          relationships[keyAB].rivalry = this._rollAxisValue(rng, 20, 30);
+          relationships[keyBA].rivalry = this._rollAxisValue(rng, 20, 30);
         } else {
           // 過去の遺恨: bond低め: 20〜30 + rivalry高め: 40〜55（双方向）
-          relationships[keyAB].bond = -60 + Engine.rng.int(rng, 0, 18);
-          relationships[keyBA].bond = -60 + Engine.rng.int(rng, 0, 18);
-          relationships[keyAB].rivalry = 40 + Engine.rng.int(rng, 0, 15);
-          relationships[keyBA].rivalry = 40 + Engine.rng.int(rng, 0, 15);
+          relationships[keyAB].bond = this._rollAxisValue(rng, 20, 30);
+          relationships[keyBA].bond = this._rollAxisValue(rng, 20, 30);
+          relationships[keyAB].rivalry = this._rollAxisValue(rng, 40, 55);
+          relationships[keyBA].rivalry = this._rollAxisValue(rng, 40, 55);
         }
         break;
       }
@@ -11246,7 +11253,7 @@ Engine.relationships = {
     // Step 6: 全値クランプ
     Object.keys(relationships).forEach(key => {
       relationships[key].bond = this._clampAxisValue(relationships[key].bond, 'bond');
-      relationships[key].rivalry = Engine.util.clamp(relationships[key].rivalry, 0, 100);
+      relationships[key].rivalry = this._clampAxisValue(relationships[key].rivalry, 'rivalry');
     });
 
     return { ...state, relationships, relationshipCounters: {} };
@@ -11394,10 +11401,10 @@ Engine.relationships = {
       const inContact = sameOrg || recentMatchPairs.has(key);
 
       if (inContact) {
-        const bondPull = 0.16 + Engine.rng.float(rng) * 0.1 + Math.max(0, Math.abs(bond) - 20) * 0.012;
-        if (bond > 0) {
+        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12 + Math.max(0, Math.abs(bond - 50) - 20) * 0.01;
+        if (bond > 50) {
           bond -= bondPull;
-        } else if (bond < 0) {
+        } else if (bond < 50) {
           bond += bondPull;
         }
 
@@ -11417,9 +11424,9 @@ Engine.relationships = {
 
       // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
       // bond55から効果が減衰し、60で完全停止。60超は試合やイベントでのみ到達可能
-      if (sameOrg && bond < 35) {
+      if (sameOrg && bond < 60) {
         const orgBondGain = 0.2 + Engine.rng.float(rng) * 0.3; // +0.2〜+0.5
-        const ceiling = bond < 20 ? 1.0 : Math.max(0, (35 - bond) / 15);
+        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
         bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
       }
 
@@ -11483,7 +11490,7 @@ Engine.relationships = {
 
       newRels[key] = {
         bond: this._clampAxisValue(bond, 'bond'),
-        rivalry: Engine.util.clamp(rivalry, 0, 100)
+        rivalry: this._clampAxisValue(rivalry, 'rivalry')
       };
     }
 
@@ -11516,8 +11523,8 @@ Engine.relationships = {
     const rels = state.relationships || {};
     const keyAB = this._key(charIdA, charIdB);
     const keyBA = this._key(charIdB, charIdA);
-    const rAB = rels[keyAB] || { bond: 0, rivalry: 0 };
-    const rBA = rels[keyBA] || { bond: 0, rivalry: 0 };
+    const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
+    const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
 
     const getLabel = (val, table) => {
       for (const entry of table) {
@@ -11527,8 +11534,8 @@ Engine.relationships = {
     };
 
     return {
-      [`${charIdA}→${charIdB}`]: { bond: Math.round(rAB.bond * 10) / 10, rivalry: Math.round(rAB.rivalry * 10) / 10 },
-      [`${charIdB}→${charIdA}`]: { bond: Math.round(rBA.bond * 10) / 10, rivalry: Math.round(rBA.rivalry * 10) / 10 },
+      [`${charIdA}→${charIdB}`]: { bond: this._roundAxisValue(rAB.bond), rivalry: this._roundAxisValue(rAB.rivalry) },
+      [`${charIdB}→${charIdA}`]: { bond: this._roundAxisValue(rBA.bond), rivalry: this._roundAxisValue(rBA.rivalry) },
       contact: this.isInContact(state, charIdA, charIdB),
       [`label${charIdA}to${charIdB}`]: { bond: getLabel(rAB.bond, BOND_LABELS), rivalry: getLabel(rAB.rivalry, RIVALRY_LABELS) },
       [`label${charIdB}to${charIdA}`]: { bond: getLabel(rBA.bond, BOND_LABELS), rivalry: getLabel(rBA.rivalry, RIVALRY_LABELS) },
@@ -11551,7 +11558,7 @@ Engine.relationships = {
     const allChars = typeof ALL_CHARS !== 'undefined' ? ALL_CHARS : [];
     return top.map(r => {
       const c = allChars.find(ch => ch.id === r.targetId);
-      return { id: r.targetId, name: c ? c.name : `ID:${r.targetId}`, [axis]: Math.round(r.value * 10) / 10 };
+      return { id: r.targetId, name: c ? c.name : `ID:${r.targetId}`, [axis]: this._roundAxisValue(r.value) };
     });
   },
 
@@ -11583,9 +11590,9 @@ Engine.relationships = {
         prevMax = l.max;
       }
       return {
-        mean: Math.round(mean * 10) / 10,
-        median: Math.round(median * 10) / 10,
-        sd: Math.round(sd * 10) / 10,
+        mean: this._roundAxisValue(mean),
+        median: this._roundAxisValue(median),
+        sd: this._roundAxisValue(sd),
         bands
       };
     };
@@ -11610,7 +11617,7 @@ Engine.relationships = {
     for (const tid of targetIds) {
       if (tid === sourceId) continue;
       const key = this._key(sourceId, tid);
-      const r = { ...(rels[key] || { bond: 0, rivalry: 0 }) };
+      const r = { ...(rels[key] || { bond: 50, rivalry: 0 }) };
       const bondRoll = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
       r.bond = this._applyAxisDelta(r.bond, bondRoll, 'bond');
       const rivalryRoll = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
@@ -11627,7 +11634,7 @@ Engine.relationships = {
     for (const sid of sourceIds) {
       if (sid === targetId) continue;
       const key = this._key(sid, targetId);
-      const r = { ...(rels[key] || { bond: 0, rivalry: 0 }) };
+      const r = { ...(rels[key] || { bond: 50, rivalry: 0 }) };
       const bondRoll = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
       r.bond = this._applyAxisDelta(r.bond, bondRoll, 'bond');
       const rivalryRoll = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
@@ -11649,14 +11656,14 @@ Engine.relationships = {
       for (let j = i + 1; j < charIds.length; j++) {
         const idA = charIds[i], idB = charIds[j];
         const keyAB = this._key(idA, idB);
-        const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
+        const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
         const bondRollAB = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
         rAB.bond = this._applyAxisDelta(rAB.bond, bondRollAB, 'bond');
         const rivalryRollAB = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
         rAB.rivalry = this._applyAxisDelta(rAB.rivalry, rivalryRollAB, 'rivalry');
         rels[keyAB] = rAB;
         const keyBA = this._key(idB, idA);
-        const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
+        const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
         const bondRollBA = bondDelta.min + Engine.rng.float(rng) * (bondDelta.max - bondDelta.min);
         rBA.bond = this._applyAxisDelta(rBA.bond, bondRollBA, 'bond');
         const rivalryRollBA = rivalryDelta.min + Engine.rng.float(rng) * (rivalryDelta.max - rivalryDelta.min);
@@ -11795,7 +11802,7 @@ Engine.relationships = {
       if (this.getBondBand(bondMax) === 'devoted') {
         events.push({ type: 'reunion', charA: newCharId, charB: rid, effect: { conditionBonus: 5 + Math.floor(Math.random() * 6) } });
       }
-      if (bondMin <= -80) {
+      if (bondMin <= 10) {
         events.push({
           type: 'vendetta',
           charA: newCharId,
@@ -11806,7 +11813,7 @@ Engine.relationships = {
             bondPenalty: -(2 + Math.floor(Math.random() * 2)),
           },
         });
-      } else if (this.isNegativeBond(bondMin)) {
+      } else if (bondMin < 50) {
         events.push({ type: 'grudge', charA: newCharId, charB: rid, effect: { moralePenalty: -(2 + Math.floor(Math.random() * 4)) } });
       }
       if (rivalryMax >= 60) {
@@ -11843,8 +11850,8 @@ Engine.relationships = {
         s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
         const keyAB = this._key(ev.charA, ev.charB);
         const keyBA = this._key(ev.charB, ev.charA);
-        const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
-        const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
+        const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
+        const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
         rAB.bond = this._clampAxisValue(rAB.bond + ev.effect.bondPenalty, 'bond');
         rBA.bond = this._clampAxisValue(rBA.bond + ev.effect.bondPenalty, 'bond');
         rAB.rivalry = this._clampAxisValue(rAB.rivalry + ev.effect.rivalryBonus, 'rivalry');
@@ -11882,8 +11889,8 @@ Engine.relationships = {
 
     const keyAB = this._key(charIdA, charIdB);
     const keyBA = this._key(charIdB, charIdA);
-    const rAB = { ...(rels[keyAB] || { bond: 0, rivalry: 0 }) };
-    const rBA = { ...(rels[keyBA] || { bond: 0, rivalry: 0 }) };
+    const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
+    const rBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
 
     const aWon = context.winner === 'win';
     const bWon = context.winner === 'lose';
@@ -11891,10 +11898,8 @@ Engine.relationships = {
 
     // ── ヘルパー: レンジ内ランダム値（整数レンジはint、小数レンジは10倍スケール） ──
     const roll = (min, max) => {
-      if (min === max) return min;
-      const isInt = Number.isInteger(min) && Number.isInteger(max);
-      if (isInt) return Engine.rng.int(rng, min, max);
-      return Engine.rng.int(rng, Math.round(min * 10), Math.round(max * 10)) / 10;
+      if (min === max) return this._roundAxisValue(min);
+      return this._rollAxisValue(rng, min, max);
     };
 
     // ── ヘルパー: イベント適用（1方向分） ──
@@ -12070,9 +12075,9 @@ Engine.relationships = {
 
     // ── 全値クランプ ──
     rAB.bond = this._clampAxisValue(rAB.bond, 'bond');
-    rAB.rivalry = Engine.util.clamp(rAB.rivalry, 0, 100);
+    rAB.rivalry = this._clampAxisValue(rAB.rivalry, 'rivalry');
     rBA.bond = this._clampAxisValue(rBA.bond, 'bond');
-    rBA.rivalry = Engine.util.clamp(rBA.rivalry, 0, 100);
+    rBA.rivalry = this._clampAxisValue(rBA.rivalry, 'rivalry');
 
     rels[keyAB] = rAB;
     rels[keyBA] = rBA;
