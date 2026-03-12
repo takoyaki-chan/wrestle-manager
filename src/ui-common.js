@@ -2725,15 +2725,6 @@ function renderMatchPreview() {
   const progressPct = total > 0 ? Math.round((resolved / total) * 100) : 0;
 
   let html = `<div class="show-result-title">${showName}</div>`;
-  html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px">
-    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px">
-      <span style="font-size:12px;color:var(--text-sub)">進行 <strong style="color:var(--text-main)">${resolved}/${total}</strong></span>
-      <span style="font-size:12px;color:var(--text-sub)">次戦 <strong style="color:${nextIdx === 0 ? 'var(--gold)' : 'var(--blue)'}">${nextOrder}</strong></span>
-    </div>
-    <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden">
-      <div style="width:${progressPct}%;height:100%;background:${progressPct === 100 ? 'var(--gold)' : 'var(--green)'};border-radius:3px;transition:width .3s"></div>
-    </div>
-  </div>`;
 
   html += `<div style="display:grid;gap:8px">`;
   for (let idx = 0; idx < total; idx++) {
@@ -2756,37 +2747,67 @@ function renderMatchPreview() {
         : '<span style="padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:10px;font-weight:700">待機</span>';
     const titleTag = m.isTitle ? ' <span style="color:var(--gold);font-size:11px">🏆 タイトル戦</span>' : '';
 
-    html += `<div data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};border-radius:6px;padding:12px;opacity:${isResolved ? 0.7 : isNext ? 1 : 0.55}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    // アッパー画像
+    const upperL = getUpperUrl(charL.id);
+    const upperR = getUpperUrl(charR.id);
+    const imgW = isMain ? 120 : 100;
+    const imgH = isMain ? 150 : 125;
+    const makeUpper = (url, fallbackId) => url
+      ? `<img src="${url}" style="width:${imgW}px;height:${imgH}px;object-fit:cover;object-position:top center;border-radius:4px" onerror="this.style.display='none'" alt="">`
+      : portraitImg(fallbackId, imgW);
+
+    // 関係性データ
+    const relAB = (G.relationships || {})[`${charL.id}>${charR.id}`] || { bond: 50, rivalry: 0 };
+    const relBA = (G.relationships || {})[`${charR.id}>${charL.id}`] || { bond: 50, rivalry: 0 };
+    const bondAvg = Math.round((relAB.bond + relBA.bond) / 2);
+    const rivMax = Math.max(relAB.rivalry, relBA.rivalry);
+    const bondColor = bondAvg >= 60 ? 'var(--blue)' : bondAvg <= 35 ? '#e74c3c' : 'var(--text-dim)';
+    const rivalLvl = getRivalryLevel(charL.id, charR.id);
+
+    // 関係性ストリップ
+    const relParts = [];
+    if (rivalLvl) {
+      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}（MQ+${rivalLvl.mqBonus}）</span>`);
+    } else if (rivMax > 10) {
+      relParts.push(`<span style="color:#e67e22">⚡ 因縁 ${Math.round(rivMax)}</span>`);
+    }
+    relParts.push(`<span style="color:${bondColor}">🤝 友好 ${bondAvg}</span>`);
+    const relStrip = `<div style="display:flex;align-items:center;gap:12px;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:var(--text-dim)">${relParts.join('<span style="color:rgba(255,255,255,0.15)"> | </span>')}</div>`;
+
+    html += `<div data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};border-radius:6px;overflow:hidden;opacity:${isResolved ? 0.7 : isNext ? 1 : 0.55}">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px 8px">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:${isMain ? '20px' : '16px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
           ${statusBadge}${titleTag}
         </div>
         <span style="font-size:11px;color:var(--text-dim)">${isResolved ? '試合済み' : isNext ? '観戦またはスキップ' : '待機中'}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center">
-        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="display:grid;justify-items:center;gap:4px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
-          ${portraitImg(charL.id, isMain ? 88 : 76)}
-          <div style="font-size:${isMain ? '15px' : '13px'};font-weight:700;color:var(--blue)">${charL.name}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;padding:0 12px 10px">
+        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="display:grid;justify-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
+          ${makeUpper(upperL, charL.id)}
+          <div style="font-size:${isMain ? '14px' : '13px'};font-weight:700;color:var(--blue)">${charL.name}</div>
+          <div style="font-size:11px;color:var(--text-dim)">OVR <strong style="color:var(--text-sub)">${Engine.util.ov(charL)}</strong></div>
         </button>
-        <div style="display:grid;justify-items:center;gap:4px">
-          <span class="match-slot-vs" style="font-size:${isMain ? '20px' : '16px'}">VS</span>
+        <div style="display:grid;justify-items:center;gap:4px;padding-bottom:42px">
+          <span class="match-slot-vs" style="font-size:${isMain ? '22px' : '18px'}">VS</span>
         </div>
-        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="display:grid;justify-items:center;gap:4px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
-          ${portraitImg(charR.id, isMain ? 88 : 76)}
-          <div style="font-size:${isMain ? '15px' : '13px'};font-weight:700;color:var(--red)">${charR.name}</div>
+        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="display:grid;justify-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
+          ${makeUpper(upperR, charR.id)}
+          <div style="font-size:${isMain ? '14px' : '13px'};font-weight:700;color:var(--red)">${charR.name}</div>
+          <div style="font-size:11px;color:var(--text-dim)">OVR <strong style="color:var(--text-sub)">${Engine.util.ov(charR)}</strong></div>
         </button>
-      </div>`;
+      </div>
+      ${relStrip}`;
 
     if (isResolved) {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? charL.name : charR.name;
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-      html += `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+      html += `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
         <div style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${result.finType ? ` <span>(${result.finType})</span>` : ''}</div>
         <div style="font-size:12px;color:${mqColor};font-weight:700">MQ ${result.mq}</div>
       </div>`;
     } else if (isNext) {
-      html += `<div style="display:flex;gap:8px;margin-top:10px">
+      html += `<div style="display:flex;gap:8px;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
         <button class="btn btn-blue" style="flex:1;font-size:13px;padding:8px 0" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>
         <button class="btn" style="flex:1;font-size:13px;padding:8px 0;background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid rgba(255,255,255,0.08)" onclick="App.skipMatch(${idx})">⏭ スキップ</button>
       </div>`;
