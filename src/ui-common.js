@@ -2685,7 +2685,6 @@ function renderMatchPreview() {
   const sp = App._showPreview;
   if (!sp) return;
 
-  // Auto-resolve any matches with stale roster refs so they don't block progress
   sp.validMatches.forEach((m, idx) => {
     if (sp.results[idx]) return;
     const charL = G.roster.find(c => c.id === m.left);
@@ -2694,11 +2693,9 @@ function renderMatchPreview() {
       sp.results[idx] = { winner: 'draw', mq: 0, finType: '', turns: 0, log: [], _stale: true };
     }
   });
-  // If all resolved after cleanup, finalize immediately
   if (sp.results.every(r => r !== null)) {
     try { App.finalizeShow(); } catch(e) {
       console.error('finalizeShow error:', e);
-      // Show recovery UI instead of freezing
       const overlay = document.getElementById('showResultOverlay');
       const box = document.getElementById('showResultBox');
       box.innerHTML = `<div class="show-result-title">エラー</div>
@@ -2720,18 +2717,26 @@ function renderMatchPreview() {
   const resolved = sp.results.filter(r => r !== null).length;
   const total = sp.validMatches.length;
 
-  let html = `<div class="show-result-title">${showName}</div>`;
-  html += `<div style="text-align:center;margin-bottom:16px;color:var(--text-sub);font-size:12px">試合カード — ${resolved}/${total} 完了</div>`;
-
-  // Determine next match: highest unresolved index (undercard first, main last)
   let nextIdx = -1;
   for (let i = total - 1; i >= 0; i--) {
     if (sp.results[i] === null) { nextIdx = i; break; }
   }
+  const nextOrder = nextIdx >= 0 ? (nextIdx === 0 ? 'メインイベント' : `第${total - nextIdx}試合`) : '全試合完了';
+  const progressPct = total > 0 ? Math.round((resolved / total) * 100) : 0;
 
-  // Display: main event (idx 0) at top → opening match (idx total-1) at bottom
-  for (let di = 0; di < total; di++) {
-    const idx = di;
+  let html = `<div class="show-result-title">${showName}</div>`;
+  html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--text-sub)">進行 <strong style="color:var(--text-main)">${resolved}/${total}</strong></span>
+      <span style="font-size:12px;color:var(--text-sub)">次戦 <strong style="color:${nextIdx === 0 ? 'var(--gold)' : 'var(--blue)'}">${nextOrder}</strong></span>
+    </div>
+    <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden">
+      <div style="width:${progressPct}%;height:100%;background:${progressPct === 100 ? 'var(--gold)' : 'var(--green)'};border-radius:3px;transition:width .3s"></div>
+    </div>
+  </div>`;
+
+  html += `<div style="display:grid;gap:8px">`;
+  for (let idx = 0; idx < total; idx++) {
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
@@ -2740,56 +2745,71 @@ function renderMatchPreview() {
     const isResolved = result !== null;
     const isNext = idx === nextIdx;
     const isMain = idx === 0;
-    const titleTag = m.isTitle ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">🏆 TITLE</span>' : '';
-    const matchLabel = isMain ? '★ メインイベント' : `第${total - idx}試合`;
+    const order = total - idx;
+    const matchLabel = isMain ? '★ メインイベント' : `第${order}試合`;
+    const borderColor = isMain ? 'rgba(212,168,67,0.3)' : isNext ? 'rgba(74,143,212,0.35)' : 'rgba(255,255,255,0.06)';
+    const cardBg = isMain ? 'rgba(212,168,67,0.04)' : isNext ? 'rgba(74,143,212,0.05)' : 'rgba(0,0,0,0.25)';
+    const statusBadge = isResolved
+      ? '<span style="padding:2px 7px;border-radius:3px;background:rgba(46,204,113,0.15);color:var(--green);font-size:10px;font-weight:700">完了</span>'
+      : isNext
+        ? '<span style="padding:2px 7px;border-radius:3px;background:rgba(74,143,212,0.15);color:var(--blue);font-size:10px;font-weight:700">次戦</span>'
+        : '<span style="padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:10px;font-weight:700">待機</span>';
+    const titleTag = m.isTitle ? ' <span style="color:var(--gold);font-size:11px">🏆 タイトル戦</span>' : '';
 
-    html += `<div data-match-next="${isNext}" style="background:var(--bg-card);border:1px solid ${isNext ? 'var(--blue)' : 'var(--border)'};border-radius:6px;padding:12px;margin-bottom:8px;${isResolved ? 'opacity:0.6' : !isNext ? 'opacity:0.4' : ''}">`;
-    html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
-    html += `<div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">`;
-    html += `${portraitImg(charL.id, 80)}`;
-    html += `<span style="color:var(--blue)">${charL.name}</span>`;
-    html += `<span style="color:var(--text-dim);margin:0 8px">vs</span>`;
-    html += `<span style="color:var(--red)">${charR.name}</span>${titleTag}`;
-    html += `${portraitImg(charR.id, 80)}`;
-    html += `</div>`;
-    html += `<div style="font-size:12px;color:var(--text-dim)">${matchLabel}</div>`;
-    html += `</div>`;
+    html += `<div data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};border-radius:6px;padding:12px;opacity:${isResolved ? 0.7 : isNext ? 1 : 0.55}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:${isMain ? '20px' : '16px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
+          ${statusBadge}${titleTag}
+        </div>
+        <span style="font-size:11px;color:var(--text-dim)">${isResolved ? '試合済み' : isNext ? '観戦またはスキップ' : '待機中'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center">
+        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="display:grid;justify-items:center;gap:4px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
+          ${portraitImg(charL.id, isMain ? 88 : 76)}
+          <div style="font-size:${isMain ? '15px' : '13px'};font-weight:700;color:var(--blue)">${charL.name}</div>
+        </button>
+        <div style="display:grid;justify-items:center;gap:4px">
+          <span class="match-slot-vs" style="font-size:${isMain ? '20px' : '16px'}">VS</span>
+        </div>
+        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="display:grid;justify-items:center;gap:4px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
+          ${portraitImg(charR.id, isMain ? 88 : 76)}
+          <div style="font-size:${isMain ? '15px' : '13px'};font-weight:700;color:var(--red)">${charR.name}</div>
+        </button>
+      </div>`;
 
     if (isResolved) {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? charL.name : charR.name;
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-      html += `<div style="display:flex;align-items:center;gap:12px;font-size:11px">`;
-      html += `<span style="color:var(--green)">✔ ${wName}${result.finType ? ' (' + result.finType + ')' : ''}</span>`;
-      html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
-      html += `</div>`;
+      html += `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${result.finType ? ` <span>(${result.finType})</span>` : ''}</div>
+        <div style="font-size:12px;color:${mqColor};font-weight:700">MQ ${result.mq}</div>
+      </div>`;
     } else if (isNext) {
-      html += `<div style="display:flex;gap:8px;margin-top:4px">`;
-      html += `<button class="btn btn-blue" style="flex:1;font-size:12px;padding:6px 0" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>`;
-      html += `<button class="btn" style="flex:1;font-size:12px;padding:6px 0;background:var(--bg-mid);color:var(--text-sub)" onclick="App.skipMatch(${idx})">⏭ スキップ</button>`;
-      html += `</div>`;
-    } else {
-      html += `<div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:4px">前の試合を先に進めてください</div>`;
+      html += `<div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-blue" style="flex:1;font-size:13px;padding:8px 0" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>
+        <button class="btn" style="flex:1;font-size:13px;padding:8px 0;background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid rgba(255,255,255,0.08)" onclick="App.skipMatch(${idx})">⏭ スキップ</button>
+      </div>`;
     }
+
     html += `</div>`;
   }
+  html += `</div>`;
 
-  // Skip all button (only if there are unresolved matches)
   const remaining = sp.results.filter(r => r === null).length;
   if (remaining > 0) {
-    html += `<div style="margin-top:16px;text-align:center">`;
-    html += `<button class="btn btn-gold" style="width:100%;padding:12px 0;font-size:14px" onclick="App.skipAllMatches()">⏩ 全試合スキップ（${remaining}試合）</button>`;
-    html += `</div>`;
+    html += `<div style="margin-top:14px;text-align:center">
+      <button class="btn btn-gold" style="width:100%;padding:10px 0;font-size:13px" onclick="App.skipAllMatches()">⏩ 全試合スキップ（${remaining}試合）</button>
+    </div>`;
   }
 
   box.innerHTML = html;
   overlay.classList.add('active');
-  // Auto-scroll to next match (near bottom for opening matches)
   if (nextIdx >= 0) {
     const nextEl = box.querySelector('[data-match-next="true"]');
     if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
   }
 }
-
 // ── Show Result Renderer ────────────────────────────────
 function renderShowResult(results, injuryResults) {
   const overlay = document.getElementById('showResultOverlay');
@@ -3779,6 +3799,78 @@ function showNewspaperPanel(articles, onDone) {
   renderArticle(0);
   overlay.classList.add('active');
 }
+
+function showShowResultNewspaper(data, onDone) {
+  const overlay = document.getElementById('newspaperOverlay');
+  const box = document.getElementById('newspaperBox');
+  if (!overlay || !box || !data) { if (onDone) onDone(); return; }
+
+  const pLeft = data.left ? getPortraitUrl(data.left.id) : '';
+  const pRight = data.right ? getPortraitUrl(data.right.id) : '';
+  const leftWin = !data.isDraw && data.winner && data.winner.id === data.left.id;
+  const rightWin = !data.isDraw && data.winner && data.winner.id === data.right.id;
+  const lPct = Math.max(0, Math.min(100, Math.round(((data.hpLeft?.final || 0) / Math.max(1, data.hpLeft?.max || 1)) * 100)));
+  const rPct = Math.max(0, Math.min(100, Math.round(((data.hpRight?.final || 0) / Math.max(1, data.hpRight?.max || 1)) * 100)));
+  const portrait = (url, fallback, extra='') => url
+    ? `<img src="${url}" alt="" style="width:132px;height:132px;border-radius:18px;object-fit:cover;border:3px solid rgba(82,53,23,0.28);box-shadow:0 14px 30px rgba(0,0,0,0.18);${extra}">`
+    : `<div style="width:132px;height:132px;border-radius:18px;display:grid;place-items:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 14px 30px rgba(0,0,0,0.18);${extra}">${fallback?.name || 'MAIN'}</div>`;
+
+  box.innerHTML = `
+    <div style="display:grid;gap:14px;padding:20px 22px 18px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);box-shadow:0 24px 60px rgba(0,0,0,0.32);">
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:3px double rgba(95,69,35,0.45);padding-bottom:10px;">
+        <div>
+          <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#7a5b32;font-weight:900;">Extra Edition</div>
+          <div style="font-size:34px;line-height:1;font-weight:1000;letter-spacing:0.04em;">${data.headline}</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:#6a5435;">${data.showName}<br>${data.venueName}</div>
+      </div>
+      <div style="font-size:14px;line-height:1.7;color:#4b3a24;border-bottom:1px solid rgba(95,69,35,0.18);padding-bottom:12px;">${data.subheadline}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;">
+        <div style="display:grid;justify-items:center;gap:8px;">
+          ${portrait(pLeft, data.left, leftWin ? 'outline:5px solid rgba(240,212,139,0.75);transform:scale(1.06);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
+          <div style="font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.left.name}</div>
+        </div>
+        <div style="display:grid;justify-items:center;gap:10px;padding-bottom:18px;">
+          <div style="font-size:44px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">${data.isDraw ? 'DRAW' : 'VS'}</div>
+          <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:11px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">${data.isDraw ? 'Time Limit' : 'Winner'}</div>
+        </div>
+        <div style="display:grid;justify-items:center;gap:8px;">
+          ${portrait(pRight, data.right, rightWin ? 'outline:5px solid rgba(240,212,139,0.75);transform:scale(1.06);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
+          <div style="font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.45);">${data.right.name}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.22);">
+        <div style="font-size:16px;font-weight:900;">${data.isDraw ? 'Time-limit draw' : `${data.winner.name} wins`}</div>
+        <div style="font-size:13px;color:#5b4b34;">${data.finishLabel}${data.turns ? ` / ${data.turns}T` : ''}</div>
+        <div style="font-size:14px;color:#5b4b34;">MQ <strong style="font-size:22px;color:#15120d;">${data.mq}</strong></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="display:grid;gap:6px;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:12px;color:#6a5e4c;">${data.left.name}</label>
+          <strong style="font-size:13px;">HP ${data.hpLeft.final}/${data.hpLeft.max}</strong>
+          <div style="height:7px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+        <div style="display:grid;gap:6px;padding:10px 12px;border:1px solid rgba(125,95,50,0.24);border-radius:14px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:12px;color:#6a5e4c;">${data.right.name}</label>
+          <strong style="font-size:13px;">HP ${data.hpRight.final}/${data.hpRight.max}</strong>
+          <div style="height:7px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+      </div>
+      <button class="newspaper-close" onclick="window._showResultPaperClose()">Close</button>
+    </div>
+  `;
+
+  window._showResultPaperClose = () => {
+    Audio.play('click');
+    overlay.classList.remove('active');
+    window._showResultPaperClose = null;
+    if (onDone) setTimeout(onDone, 120);
+  };
+
+  Audio.play('paper');
+  overlay.classList.add('active');
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // v1.5s25b: Milestone Event Popup — ナレーション形式の3択イベント
