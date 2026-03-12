@@ -3922,7 +3922,7 @@ const App = {
     const totalMatches = results.length;
 
     // ─── テキスト生成 ───
-    const np = _generateNewspaperTexts({
+    const np = App._generateNewspaperTexts({
       isDraw, winner, loser, left: main.left, right: main.right,
       isTitleMatch: !!main.isTitleMatch, finishLabel, turns, mq,
       loserHpPct, winnerHpPct, isCloseMatch, isDominant, isLongBattle,
