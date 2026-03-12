@@ -3823,11 +3823,11 @@ function _relmapRender(orgCenters) {
     // Bond A→B / B→A (skip when rivalry-only filter)
     if (filter !== 'rivalry') {
       const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
-      const wAB = 1 + Math.abs(bAB - 50) / 25;
+      const wAB = Math.min(1.9, 0.85 + Math.abs(bAB - 50) / 40);
       const mAB = bAB >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
       lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mAB}"/>`;
       const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
-      const wBA = 1 + Math.abs(bBA - 50) / 25;
+      const wBA = Math.min(1.9, 0.85 + Math.abs(bBA - 50) / 40);
       const mBA = bBA >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
       lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mBA}"/>`;
     }
@@ -3837,7 +3837,8 @@ function _relmapRender(orgCenters) {
       const mr = Math.max(l.rivAB, l.rivBA);
       if (mr > 20) {
         const ro = dimmed ? 0.02 : (highlighted || vm === 'focus' ? 0.6 : 0.25);
-        lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${mr/15}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
+        const rivalryStroke = Math.min(highlighted || vm === 'focus' ? 3.0 : 2.4, 0.9 + mr / 28);
+        lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${rivalryStroke}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
         if (mr >= 50 && !dimmed) {
           const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
           lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||vm==='focus'?1:0.6}">\uD83D\uDD25</text>`;
