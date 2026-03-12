@@ -2612,7 +2612,7 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
@@ -2635,6 +2635,11 @@ let _relmapCompareB = null;
 let _relmapAnimId = null; // requestAnimationFrame id
 let _relmapNodes = [];
 let _relmapLinks = [];
+let _relmapVisibleLinks = [];
+let _relmapLinksByNode = {};
+let _relmapLinksByPair = {};
+let _relmapVisibleNodeHasRivalTitle = {};
+let _relmapVisibleNodeConnectedToFocus = {};
 let _relmapNodeMap = {};
 let _relmapVelocities = [];
 let _relmapAlpha = { value: 1.0, decay: 0.0015, min: 0.005 };
@@ -2654,6 +2659,10 @@ let _relmapOrgCenters = null;
 let _relmapOrgFilter = null; // orgId string or null — show only this org's members
 let _relmapPanStart = { x: 0, y: 0 };
 let _relmapPanStartPan = { x: 0, y: 0 };
+const _RELMAP_FOCUS_MAX_CONN = 12;
+const _RELMAP_NETWORK_LINK_BUDGET = 110;
+const _RELMAP_NETWORK_LINKS_PER_NODE = 4;
+const _RELMAP_FILTERED_LINK_BUDGET = 180;
 
 function renderDatabase() {
   // Stop any running relmap animation when switching tabs
@@ -2678,6 +2687,7 @@ function renderDatabase() {
     { label: '⚔ 団体比較', idx: 2 },
     { label: '🏅 殿堂', idx: 3 },
     { label: '🔗 相関図', idx: 4 },
+    { label: '📰 新聞', idx: 5 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
@@ -2692,6 +2702,7 @@ function renderDatabase() {
   else if (_dbSubTab === 2) html += _renderDbOrgCompare();
   else if (_dbSubTab === 3) html += _renderDbHallOfFame();
   else if (_dbSubTab === 4) html += _renderDbRelmap();
+  else if (_dbSubTab === 5) html += _renderDbNewspaper();
   html += `</div>`;
 
   el.innerHTML = html;
@@ -2705,6 +2716,74 @@ function renderDatabase() {
 function setDbSubTab(idx) {
   _dbSubTab = idx;
   renderDatabase();
+}
+
+// ── 📰 新聞サブタブ ──────────────────────────────────────────────────────
+function _renderDbNewspaper() {
+  const d = G.currentNewspaper;
+  if (!d) {
+    return `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2;">
+      📰 現在の新聞はありません<br>
+      <span style="font-size:12px;color:var(--text-sub);">興行を開催すると、翌週に新聞が届きます</span></div>`;
+  }
+
+  const pLeft = d.left ? getPortraitUrl(d.left.id) : '';
+  const pRight = d.right ? getPortraitUrl(d.right.id) : '';
+  const leftWin = !d.isDraw && d.winner && d.winner.id === d.left.id;
+  const rightWin = !d.isDraw && d.winner && d.winner.id === d.right.id;
+  const lPct = Math.max(0, Math.min(100, Math.round(((d.hpLeft?.final || 0) / Math.max(1, d.hpLeft?.max || 1)) * 100)));
+  const rPct = Math.max(0, Math.min(100, Math.round(((d.hpRight?.final || 0) / Math.max(1, d.hpRight?.max || 1)) * 100)));
+  const portrait = (url, fallback, extra='') => url
+    ? `<img src="${url}" alt="" style="width:110px;height:110px;border-radius:14px;object-fit:cover;border:3px solid rgba(82,53,23,0.28);box-shadow:0 10px 24px rgba(0,0,0,0.15);${extra}">`
+    : `<div style="width:110px;height:110px;border-radius:14px;display:grid;place-items:center;font-size:14px;font-weight:900;color:#fff;box-shadow:0 10px 24px rgba(0,0,0,0.15);${extra}">${fallback?.name || '?'}</div>`;
+
+  const articleHtml = d.article
+    ? `<div style="font-size:13.5px;line-height:1.85;color:#3a2e1c;padding:12px 4px 4px;text-indent:1em;border-top:1px solid rgba(95,69,35,0.15);">${d.article}</div>`
+    : '';
+
+  return `
+    <div style="max-width:520px;margin:12px auto;display:grid;gap:12px;padding:20px 22px 18px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:3px double rgba(95,69,35,0.45);padding-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#7a5b32;font-weight:900;">Extra Edition</div>
+          <div style="font-size:26px;line-height:1.15;font-weight:1000;letter-spacing:0.02em;">${d.headline}</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#6a5435;white-space:nowrap;">${d.showName}<br>${d.venueName}</div>
+      </div>
+      <div style="font-size:13px;line-height:1.6;color:#5b4b34;border-bottom:1px solid rgba(95,69,35,0.18);padding-bottom:10px;">${d.subheadline}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;">
+        <div style="display:grid;justify-items:center;gap:5px;">
+          ${portrait(pLeft, d.left, leftWin ? 'outline:4px solid rgba(240,212,139,0.75);transform:scale(1.04);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
+          <div style="font-size:15px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.left.name}</div>
+        </div>
+        <div style="display:grid;justify-items:center;gap:6px;padding-bottom:10px;">
+          <div style="font-size:36px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">${d.isDraw ? 'DRAW' : 'VS'}</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">${d.isDraw ? 'Time Limit' : 'Winner'}</div>
+        </div>
+        <div style="display:grid;justify-items:center;gap:5px;">
+          ${portrait(pRight, d.right, rightWin ? 'outline:4px solid rgba(240,212,139,0.75);transform:scale(1.04);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
+          <div style="font-size:15px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.right.name}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.22);">
+        <div style="font-size:14px;font-weight:900;">${d.isDraw ? 'Time-limit draw' : `${d.winner.name} wins`}</div>
+        <div style="font-size:12px;color:#5b4b34;">${d.finishLabel}${d.turns ? ` / ${d.turns}T` : ''}</div>
+        <div style="font-size:13px;color:#5b4b34;">MQ <strong style="font-size:20px;color:#15120d;">${d.mq}</strong></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:11px;color:#6a5e4c;">${d.left.name}</label>
+          <strong style="font-size:12px;">HP ${d.hpLeft.final}/${d.hpLeft.max}</strong>
+          <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+          <label style="font-size:11px;color:#6a5e4c;">${d.right.name}</label>
+          <strong style="font-size:12px;">HP ${d.hpRight.final}/${d.hpRight.max}</strong>
+          <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+        </div>
+      </div>
+      ${articleHtml}
+    </div>`;
 }
 
 const _STAT_COLORS = { pw: '#e74c3c', sp: '#2ecc71', te: '#3498db', st: '#f39c12', mn: '#9b59b6' };
@@ -3187,53 +3266,166 @@ function _relmapGetOrgColorById(orgId) {
 }
 
 // Build link data between all character pairs with meaningful relationships
+function _relmapPairKey(aId, bId) {
+  return aId < bId ? `${aId}>${bId}` : `${bId}>${aId}`;
+}
+
 function _relmapBuildLinks(allChars) {
   const rels = G.relationships || {};
   const history = G.relationshipHistory || [];
+  const rivalries = G.rivalries || {};
   const links = [];
+  const charsById = new Map(allChars.map(c => [String(c.id), c]));
+  const pairKeys = new Set();
+
+  Object.keys(rels).forEach(key => {
+    const sep = key.indexOf('>');
+    if (sep <= 0) return;
+    const aId = key.slice(0, sep);
+    const bId = key.slice(sep + 1);
+    if (!charsById.has(aId) || !charsById.has(bId) || aId === bId) return;
+    pairKeys.add(_relmapPairKey(Number(aId), Number(bId)));
+  });
+
+  history.forEach(entry => {
+    const aId = Number(entry && entry.id1);
+    const bId = Number(entry && entry.id2);
+    if (!Number.isFinite(aId) || !Number.isFinite(bId) || aId === bId) return;
+    if (!charsById.has(String(aId)) || !charsById.has(String(bId))) return;
+    pairKeys.add(_relmapPairKey(aId, bId));
+  });
+
+  Object.keys(rivalries).forEach(key => {
+    const parts = key.split('-');
+    if (parts.length !== 2) return;
+    const aId = Number(parts[0]);
+    const bId = Number(parts[1]);
+    if (!Number.isFinite(aId) || !Number.isFinite(bId) || aId === bId) return;
+    if (!charsById.has(String(aId)) || !charsById.has(String(bId))) return;
+    pairKeys.add(_relmapPairKey(aId, bId));
+  });
+
+  pairKeys.forEach(pairKey => {
+    const sep = pairKey.indexOf('>');
+    const aId = Number(pairKey.slice(0, sep));
+    const bId = Number(pairKey.slice(sep + 1));
+    const a = charsById.get(String(aId));
+    const b = charsById.get(String(bId));
+    if (!a || !b) return;
+
+    const keyAB = `${a.id}>${b.id}`;
+    const keyBA = `${b.id}>${a.id}`;
+    const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
+    const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
+    const bondAB = Math.round(rAB.bond * 10) / 10;
+    const bondBA = Math.round(rBA.bond * 10) / 10;
+    const rivAB = Math.round(rAB.rivalry * 10) / 10;
+    const rivBA = Math.round(rBA.rivalry * 10) / 10;
+
+    const rivalLvl = Engine.title.getRivalryLevel(G, a.id, b.id);
+    const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
+    const isOneSided = rivalLvl?.isOneSided || false;
+    const hasPast = history.some(h =>
+      (h.id1 === a.id && h.id2 === b.id) || (h.id1 === b.id && h.id2 === a.id)
+    );
+
+    const strength = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50) + rivAB + rivBA) / 200;
+    const sortScore =
+      (hasTitle ? 1000 + rivAB + rivBA : 0) +
+      (isOneSided ? 500 : 0) +
+      Math.max(rivAB, rivBA) +
+      Math.abs(bondAB - 50) + Math.abs(bondBA - 50);
+
+    if (sortScore < 3 && !hasPast) return;
+
+    links.push({
+      a: a.id, b: b.id, source: a.id, target: b.id,
+      bondAB, bondBA, rivAB, rivBA,
+      rivalLvl, hasTitle, isOneSided, hasPast,
+      strength, sortScore,
+      rivalTitle: hasTitle && rivalLvl ? rivalLvl.label : null,
+      titleColor: hasTitle && rivalLvl ? rivalLvl.color : null,
+      titleEmoji: hasTitle && rivalLvl ? rivalLvl.emoji : null,
+    });
+  });
+
+  return links.sort((a, b) => b.sortScore - a.sortScore);
+}
+
+function _relmapBuildLinkIndexes(links) {
+  const byNode = {};
+  const byPair = {};
+  (links || []).forEach(link => {
+    const pairKey = _relmapPairKey(link.a, link.b);
+    byPair[pairKey] = link;
+    if (!byNode[link.a]) byNode[link.a] = [];
+    if (!byNode[link.b]) byNode[link.b] = [];
+    byNode[link.a].push(link);
+    byNode[link.b].push(link);
+  });
+  Object.keys(byNode).forEach(id => byNode[id].sort((a, b) => b.sortScore - a.sortScore));
+  _relmapLinksByNode = byNode;
+  _relmapLinksByPair = byPair;
+}
+
+function _relmapGetLinksFor(id) {
+  return _relmapLinksByNode[id] ? [..._relmapLinksByNode[id]] : [];
+}
+
+function _relmapGetLinkBetween(aId, bId) {
+  return _relmapLinksByPair[_relmapPairKey(aId, bId)] || null;
+}
+
+function _relmapLinkPassesFilter(link, filter) {
+  if (!link) return false;
+  if (filter === 'rivalry') return link.rivAB >= 25 || link.rivBA >= 25 || !!link.rivalTitle;
+  if (filter === 'bond') return Math.abs(link.bondAB - 50) >= 10 || Math.abs(link.bondBA - 50) >= 10;
+  return true;
+}
+
+function _relmapSelectRenderableLinks(candidateLinks, budget, maxPerNode, priorityNodeId) {
+  const selected = [];
+  const degree = {};
   const seen = new Set();
+  const sorted = [...(candidateLinks || [])].sort((a, b) => {
+    const aPriority = priorityNodeId && (a.a === priorityNodeId || a.b === priorityNodeId) ? 1 : 0;
+    const bPriority = priorityNodeId && (b.a === priorityNodeId || b.b === priorityNodeId) ? 1 : 0;
+    if (aPriority !== bPriority) return bPriority - aPriority;
+    if (!!a.rivalTitle !== !!b.rivalTitle) return a.rivalTitle ? -1 : 1;
+    return b.sortScore - a.sortScore;
+  });
 
-  for (let i = 0; i < allChars.length; i++) {
-    for (let j = i + 1; j < allChars.length; j++) {
-      const a = allChars[i], b = allChars[j];
-      const keyAB = `${a.id}>${b.id}`, keyBA = `${b.id}>${a.id}`;
-      const rAB = rels[keyAB] || { bond: 50, rivalry: 0 };
-      const rBA = rels[keyBA] || { bond: 50, rivalry: 0 };
-      const bondAB = Math.round(rAB.bond * 10) / 10;
-      const bondBA = Math.round(rBA.bond * 10) / 10;
-      const rivAB = Math.round(rAB.rivalry * 10) / 10;
-      const rivBA = Math.round(rBA.rivalry * 10) / 10;
+  sorted.forEach(link => {
+    if (selected.length >= budget) return;
+    const key = _relmapPairKey(link.a, link.b);
+    if (seen.has(key)) return;
+    const aCount = degree[link.a] || 0;
+    const bCount = degree[link.b] || 0;
+    const bypassCap = priorityNodeId && (link.a === priorityNodeId || link.b === priorityNodeId);
+    if (!bypassCap && (aCount >= maxPerNode || bCount >= maxPerNode)) return;
+    seen.add(key);
+    degree[link.a] = aCount + 1;
+    degree[link.b] = bCount + 1;
+    selected.push(link);
+  });
 
-      const rivalLvl = Engine.title.getRivalryLevel(G, a.id, b.id);
-      const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
-      const isOneSided = rivalLvl?.isOneSided || false;
+  return selected;
+}
 
-      const pastEntries = history.filter(h =>
-        (h.id1 === a.id && h.id2 === b.id) || (h.id1 === b.id && h.id2 === a.id)
-      );
-      const hasPast = pastEntries.length > 0;
-
-      const strength = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50) + rivAB + rivBA) / 200;
-      const sortScore =
-        (hasTitle ? 1000 + rivAB + rivBA : 0) +
-        (isOneSided ? 500 : 0) +
-        Math.max(rivAB, rivBA) +
-        Math.abs(bondAB - 50) + Math.abs(bondBA - 50);
-
-      if (sortScore < 3 && !hasPast) continue;
-
-      links.push({
-        a: a.id, b: b.id, source: a.id, target: b.id,
-        bondAB, bondBA, rivAB, rivBA,
-        rivalLvl, hasTitle, isOneSided, hasPast,
-        strength, sortScore,
-        rivalTitle: hasTitle && rivalLvl ? rivalLvl.label : null,
-        titleColor: hasTitle && rivalLvl ? rivalLvl.color : null,
-        titleEmoji: hasTitle && rivalLvl ? rivalLvl.emoji : null,
-      });
+function _relmapRebuildVisibleLinkState() {
+  _relmapVisibleNodeHasRivalTitle = {};
+  _relmapVisibleNodeConnectedToFocus = {};
+  const focused = _relmapCenterId;
+  (_relmapVisibleLinks || []).forEach(link => {
+    if (link.rivalTitle) {
+      _relmapVisibleNodeHasRivalTitle[link.a] = true;
+      _relmapVisibleNodeHasRivalTitle[link.b] = true;
     }
-  }
-  return links;
+    if (focused && (link.a === focused || link.b === focused)) {
+      const otherId = link.a === focused ? link.b : link.a;
+      _relmapVisibleNodeConnectedToFocus[otherId] = true;
+    }
+  });
 }
 
 function _relmapFaceHtml(charId, size) {
@@ -3246,10 +3438,6 @@ function _relmapBondColor(val) {
   if (val >= 65) return '#74b9ff';
   if (val >= 45) return 'var(--text-sub)';
   return '#ff7675';
-}
-
-function _relmapGetLinksFor(id) {
-  return _relmapLinks.filter(l => l.a === id || l.b === id);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3422,17 +3610,19 @@ function _drawRelmapAfterRender() {
   // Build nodes & links from game data
   const allChars = _relmapGetAllChars();
   _relmapNodeMap = {};
-  _relmapNodes = allChars.map(c => {
+  _relmapNodes = allChars.map((c, index) => {
     const ovr = Engine.util.ov(c);
     const n = { id: c.id, name: c.name, orgId: c._orgId, ovr, style: c.style,
       pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn,
       r: 12 + (ovr - 60) * 0.5, color: _relmapGetOrgColorById(c._orgId),
-      x: 0, y: 0, _hidden: false, _dragging: false, _char: c };
+      x: 0, y: 0, _hidden: false, _dragging: false, _char: c, _index: index };
     _relmapNodeMap[n.id] = n;
     return n;
   });
 
   _relmapLinks = _relmapBuildLinks(allChars);
+  _relmapBuildLinkIndexes(_relmapLinks);
+  _relmapVisibleLinks = _relmapLinks.slice();
 
   // Initial positions: cluster by org
   const orgCenters = {
@@ -3493,7 +3683,7 @@ function _drawRelmapAfterRender() {
 // ══════════════════════════════════════════════════════════
 function _relmapTick(orgCenters) {
   const W = _relmapW, H = _relmapH;
-  const nodes = _relmapNodes, links = _relmapLinks, vel = _relmapVelocities;
+  const nodes = _relmapNodes, links = _relmapVisibleLinks, vel = _relmapVelocities;
   const a = Math.max(_relmapAlpha.value, _relmapAlpha.min);
 
   if (_relmapViewMode === 'network' || _relmapOrgFilter) {
@@ -3508,7 +3698,7 @@ function _relmapTick(orgCenters) {
     links.forEach(l => {
       const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
       if (!s || !t || s._hidden || t._hidden) return;
-      const si = nodes.indexOf(s), ti = nodes.indexOf(t);
+      const si = s._index, ti = t._index;
       const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const td = 100 + (1 - l.strength) * 150;
       const f = (dist - td) * 0.003 * a;
@@ -3595,7 +3785,7 @@ function _relmapStartLoop() {
 // SVG Render (innerHTML bulk update)
 // ══════════════════════════════════════════════════════════
 function _relmapRender(orgCenters) {
-  const nodes = _relmapNodes, links = _relmapLinks;
+  const nodes = _relmapNodes, links = _relmapVisibleLinks;
   const linkLayer = document.getElementById('relmapLinkLayer');
   const nodeLayer = document.getElementById('relmapNodeLayer');
   const zoneLayer = document.getElementById('relmapZoneLayer');
@@ -3690,12 +3880,12 @@ function _relmapRender(orgCenters) {
   let nh = '';
   nodes.forEach(n => {
     if (n._hidden) return;
-    const isConn = focused && vm === 'network' && links.some(l => (l.a === focused && l.b === n.id) || (l.b === focused && l.a === n.id));
+    const isConn = focused && vm === 'network' && !!_relmapVisibleNodeConnectedToFocus[n.id];
     const dimmed = focused && vm === 'network' && focused !== n.id && !isConn;
     const isFocused = focused === n.id;
     const op = focused && vm === 'network' ? (dimmed ? 0.1 : 1) : 1;
     const oc = n.color, r = n.r;
-    const hasRiv = links.some(l => (l.a === n.id || l.b === n.id) && l.rivalTitle);
+    const hasRiv = !!_relmapVisibleNodeHasRivalTitle[n.id];
     const isCmpA = _relmapCompareA === n.id, isCmpB = _relmapCompareB === n.id;
     const nodeR = vm === 'focus' && isFocused ? r * 1.3 : r;
     const pUrl = getPortraitUrl(n.id);
@@ -3774,59 +3964,60 @@ function _relmapGetOrgNameById(orgId) {
 // Visibility control
 // ══════════════════════════════════════════════════════════
 function _relmapUpdateVisibility() {
-  const nodes = _relmapNodes, links = _relmapLinks;
+  const nodes = _relmapNodes;
+  const links = _relmapLinks;
+  let candidateLinks = links;
 
-  // Org filter overrides all other visibility logic
   if (_relmapOrgFilter) {
-    nodes.forEach(n => { n._hidden = n.orgId !== _relmapOrgFilter; });
-    // In org filter, set focus targets for visible nodes (centered layout)
-    if (_relmapViewMode === 'focus' && _relmapCenterId) {
+    const visibleNodeIds = new Set();
+    nodes.forEach(n => {
+      const show = n.orgId === _relmapOrgFilter;
+      n._hidden = !show;
+      if (show) visibleNodeIds.add(n.id);
+    });
+    candidateLinks = links.filter(l =>
+      visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesFilter(l, _relmapFilter)
+    );
+
+    if (_relmapViewMode === 'focus' && _relmapCenterId && visibleNodeIds.has(_relmapCenterId)) {
       const visible = nodes.filter(n => !n._hidden);
       const cx = _relmapW / 2, cy = _relmapH / 2;
       _relmapFocusTargets = {};
-      const centerNode = visible.find(n => n.id === _relmapCenterId);
-      if (centerNode) {
-        _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
-        const others = visible.filter(n => n.id !== _relmapCenterId);
-        const maxR = Math.min(_relmapW, _relmapH) * 0.35;
-        others.forEach((n, i) => {
-          const angle = -Math.PI / 2 + (2 * Math.PI * i / others.length);
-          _relmapFocusTargets[n.id] = { x: cx + Math.cos(angle) * maxR, y: cy + Math.sin(angle) * maxR };
-        });
-      }
+      _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
+      const others = visible.filter(n => n.id !== _relmapCenterId);
+      const maxR = Math.min(_relmapW, _relmapH) * 0.35;
+      others.forEach((n, i) => {
+        const angle = -Math.PI / 2 + (2 * Math.PI * i / Math.max(1, others.length));
+        _relmapFocusTargets[n.id] = { x: cx + Math.cos(angle) * maxR, y: cy + Math.sin(angle) * maxR };
+      });
     }
+
+    _relmapVisibleLinks = _relmapSelectRenderableLinks(candidateLinks, _RELMAP_FILTERED_LINK_BUDGET, _RELMAP_NETWORK_LINKS_PER_NODE + 1, _relmapCenterId);
+    _relmapRebuildVisibleLinkState();
     return;
   }
 
   if (_relmapViewMode === 'focus' && _relmapCenterId) {
-    const fl = _relmapGetLinksFor(_relmapCenterId);
+    const fl = _relmapGetLinksFor(_relmapCenterId)
+      .filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
 
-    // Calculate relationship intensity for each link
     const intensityLinks = fl.map(l => {
       const oid = l.a === _relmapCenterId ? l.b : l.a;
       const bondAB = l.a === _relmapCenterId ? l.bondAB : l.bondBA;
       const bondBA = l.a === _relmapCenterId ? l.bondBA : l.bondAB;
       const rivAB = l.a === _relmapCenterId ? l.rivAB : l.rivBA;
       const rivBA = l.a === _relmapCenterId ? l.rivBA : l.rivAB;
-      // Intensity = how much this person matters psychologically
-      // High rivalry = strong (competitive tension)
-      // High bond deviation from 50 = strong (love or hate)
-      // Very low bond = strong negative feeling (enemy/distrust)
       const bondDev = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50)) / 2;
       const rivalryMax = Math.max(rivAB, rivBA);
       const intensity = Math.max(bondDev * 1.2, rivalryMax, bondDev + rivalryMax * 0.6);
       return { oid, intensity, l };
-    });
-    intensityLinks.sort((a, b) => b.intensity - a.intensity);
+    }).sort((a, b) => b.intensity - a.intensity);
 
-    // Limit to top N connections (reduce clutter)
-    const maxConn = 18;
-    const shown = intensityLinks.slice(0, maxConn);
+    const shown = intensityLinks.slice(0, _RELMAP_FOCUS_MAX_CONN);
     const shownIds = new Set(shown.map(il => il.oid));
     shownIds.add(_relmapCenterId);
     nodes.forEach(n => { n._hidden = !shownIds.has(n.id); });
 
-    // Place by intensity: strong = close, weak = far
     const cx = _relmapW / 2, cy = _relmapH / 2;
     _relmapFocusTargets = {};
     _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
@@ -3834,42 +4025,59 @@ function _relmapUpdateVisibility() {
     const minR = maxR * 0.18;
     const topI = shown.length ? shown[0].intensity : 1;
     shown.forEach((il, i) => {
-      const angle = -Math.PI / 2 + (2 * Math.PI * i / shown.length);
+      const angle = -Math.PI / 2 + (2 * Math.PI * i / Math.max(1, shown.length));
       const norm = topI > 0 ? il.intensity / topI : 0;
-      // Strong intensity = close (minR), weak = far (maxR)
       const dist = maxR - (maxR - minR) * norm;
       _relmapFocusTargets[il.oid] = { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist };
     });
-  } else if (_relmapViewMode === 'focus' && !_relmapCenterId) {
-    // No center selected in focus mode: hide all to avoid O(n²) physics on all nodes
-    nodes.forEach(n => { n._hidden = true; });
-  } else {
-    // Network mode: apply filters
-    const filter = _relmapFilter;
-    if (filter === 'rivalry') {
-      // Show only nodes involved in rivalry links
-      const rivNodes = new Set();
-      links.forEach(l => { if (l.rivAB >= 25 || l.rivBA >= 25 || l.rivalTitle) { rivNodes.add(l.a); rivNodes.add(l.b); } });
-      nodes.forEach(n => { n._hidden = !rivNodes.has(n.id); });
-    } else if (filter === 'bond') {
-      // Show only nodes involved in notable bond links (using sidebar threshold)
-      const bondNodes = new Set();
-      const th = _relmapFilterThreshold;
-      links.forEach(l => { if (Math.abs(l.bondAB - 50) >= th || Math.abs(l.bondBA - 50) >= th) { bondNodes.add(l.a); bondNodes.add(l.b); } });
-      nodes.forEach(n => { n._hidden = !bondNodes.has(n.id); });
-    } else if (_relmapFilterRelOnly) {
-      const hasRel = new Set();
-      links.forEach(l => { if (l.strength >= _relmapFilterThreshold / 100) { hasRel.add(l.a); hasRel.add(l.b); } });
-      nodes.forEach(n => { n._hidden = !hasRel.has(n.id); });
-    } else {
-      nodes.forEach(n => { n._hidden = false; });
-    }
+
+    _relmapVisibleLinks = shown.map(il => il.l);
+    _relmapRebuildVisibleLinkState();
+    return;
   }
+
+  if (_relmapViewMode === 'focus' && !_relmapCenterId) {
+    nodes.forEach(n => { n._hidden = true; });
+    _relmapVisibleLinks = [];
+    _relmapFocusTargets = {};
+    _relmapRebuildVisibleLinkState();
+    return;
+  }
+
+  if (_relmapFilter === 'rivalry') {
+    const visibleNodeIds = new Set();
+    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+    candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
+    nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
+  } else if (_relmapFilter === 'bond') {
+    const visibleNodeIds = new Set();
+    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+    candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
+    nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
+  } else if (_relmapFilterRelOnly) {
+    const visibleNodeIds = new Set();
+    candidateLinks = links.filter(l => l.strength >= _relmapFilterThreshold / 100);
+    candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
+    nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
+  } else {
+    nodes.forEach(n => { n._hidden = false; });
+    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+  }
+
+  candidateLinks = candidateLinks.filter(l => !(_relmapNodeMap[l.a]?._hidden) && !(_relmapNodeMap[l.b]?._hidden));
+  const budget = _relmapFilter === 'all' ? _RELMAP_NETWORK_LINK_BUDGET : _RELMAP_FILTERED_LINK_BUDGET;
+  const maxPerNode = _relmapFilter === 'all' ? _RELMAP_NETWORK_LINKS_PER_NODE : _RELMAP_NETWORK_LINKS_PER_NODE + 2;
+  _relmapVisibleLinks = _relmapSelectRenderableLinks(candidateLinks, budget, maxPerNode, _relmapCenterId);
+
+  if (_relmapFilter === 'all' && !_relmapFilterRelOnly) {
+    const shownIds = new Set();
+    _relmapVisibleLinks.forEach(l => { shownIds.add(l.a); shownIds.add(l.b); });
+    nodes.forEach(n => { n._hidden = !shownIds.has(n.id); });
+  }
+
+  _relmapRebuildVisibleLinkState();
 }
 
-// ══════════════════════════════════════════════════════════
-// Sidebar
-// ══════════════════════════════════════════════════════════
 function _relmapRenderSidebar(orgCenters) {
   const sb = document.getElementById('rmSidebar');
   if (!sb) return;
@@ -4704,7 +4912,7 @@ function _relmapUpdateCompareHint() {
 function _relmapShowComparePopup() {
   const a = _relmapNodeMap[_relmapCompareA], b = _relmapNodeMap[_relmapCompareB];
   if (!a || !b) return;
-  const rel = _relmapLinks.find(l => (l.a === a.id && l.b === b.id) || (l.a === b.id && l.b === a.id));
+  const rel = _relmapGetLinkBetween(a.id, b.id);
   const isAS = rel ? rel.a === a.id : true;
   const aUp = getUpperUrl(a.id), bUp = getUpperUrl(b.id);
   const aColor = a.color, bColor = b.color;

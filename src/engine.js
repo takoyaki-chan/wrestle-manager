@@ -4226,6 +4226,10 @@ const Engine = {
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
   tickWeek(state) {
+    // 新聞クリア: 次の興行週に入ったら古い新聞を消す
+    if (state.currentNewspaper && Engine.util.isShowWeek(state.week)) {
+      state = { ...state, currentNewspaper: null };
+    }
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
     const manage = Engine.season.processManage(rng, state);
     let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };

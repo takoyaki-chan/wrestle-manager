@@ -3694,6 +3694,13 @@ const App = {
     // BGM: Play jingle based on title outcome
     const hadTitleChange = validMatches.some((m, i) => m.isTitle && results[i] && results[i].winner !== 'draw');
     Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
+
+    // 新聞データをGに保存（データベースタブで閲覧）
+    const paperData = App._buildShowResultNewspaperData();
+    if (paperData) {
+      G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
+    }
+
     renderShowResult(results, injuryResults);
   },
 
@@ -3938,15 +3945,6 @@ const App = {
     if (App._closingShowResult) return;
     const resultOverlay = document.getElementById('showResultOverlay');
     if (!resultOverlay || G.weekPhase !== 'showExec') return;
-    if (!App._showResultNewspaperSeen) {
-      const paperData = App._buildShowResultNewspaperData();
-      if (paperData) {
-        App._showResultNewspaperSeen = true;
-        resultOverlay.classList.remove('active');
-        showShowResultNewspaper(paperData, () => App.closeShowResult());
-        return;
-      }
-    }
     App._closingShowResult = true;
     try {
       Audio.play('coin');
@@ -4171,7 +4169,6 @@ const App = {
       try { refreshAll(); } catch(e2) {}
     } finally {
       App._closingShowResult = false;
-      App._showResultNewspaperSeen = false;
     }
   },
 
