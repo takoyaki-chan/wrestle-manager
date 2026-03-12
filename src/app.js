@@ -1576,17 +1576,19 @@ const Storage = {
 
       // Rental system migration: G.rental (single object) → G.rentals (array)
       if (!G._migrated_rental_v2) {
-        const rentals = [];
+        const rentals = Array.isArray(G.rentals) ? [...G.rentals] : [];
         if (G.rental) {
           // Convert old single rental to new contract format
           const old = G.rental;
-          rentals.push({
-            fighterId: old.fighterId,
-            fromSource: 'rival',
-            fromOrgId: old.fromOrgId,
-            seasonsLeft: 1,  // finish at next season end
-            fee: 0           // already paid in old system
-          });
+          if (!rentals.some(r => r.fighterId === old.fighterId)) {
+            rentals.push({
+              fighterId: old.fighterId,
+              fromSource: 'rival',
+              fromOrgId: old.fromOrgId,
+              seasonsLeft: 1,  // finish at next season end
+              fee: 0           // already paid in old system
+            });
+          }
           // Update rental fighter's new fields
           const rf = (G.roster || []).find(c => c.id === old.fighterId);
           if (rf) {
