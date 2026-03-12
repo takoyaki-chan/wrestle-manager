@@ -802,7 +802,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 
 ## 設計決定ログ（実装済みルール集）
 
-- **新聞データベースタブ移行 + 興行画面UIリデザイン + 新聞記事テキスト強化（2026-03-12）** — 試合後新聞ポップアップ廃止→データベースサブタブ(idx=5「📰 新聞」)に移行。G.currentNewspaper(headline/subheadline/article/対戦データ)をfinalizeShowで保存。tickWeek冒頭で次の興行週(isShowWeek)にクリア→非興行週1週間閲覧可能。_renderDbNewspaper()でセピア調パネル内レンダリング。試合直前カード: 5列グリッドレイアウト、アッパー画像大表示、金色枠装飾、因縁/bond表示。新聞記事: 10カテゴリ×複数パターン(titleWin/rivalry/dominant/closeMQ/upset/superMQ/draw/normal/lowMQ/goodRival)。試合状況フラグに基づき見出し+サブ見出し+記事本文を自動生成。変更: app.js/ui-render.js/ui-common.js/engine.js
+- **新聞データベースタブ移行 + 興行画面UIリデザイン + 新聞記事テキスト強化（2026-03-12）** — 試合後新聞ポップアップ廃止→データベースサブタブ(idx=5「📰 新聞」)に移行。G.currentNewspaper(headline/subheadline/article/対戦データ)をfinalizeShowで保存。tickWeek冒頭で次の興行週(isShowWeek かつ generatedWeek/Season不一致)にクリア→非興行週+興行当週の2週間閲覧可能。_renderDbNewspaper()でセピア調パネル内レンダリング。試合直前カード: 5列グリッドレイアウト、アッパー画像大表示、金色枠装飾、因縁/bond表示。新聞記事: 10カテゴリ×複数パターン(titleWin/rivalry/dominant/closeMQ/upset/superMQ/draw/normal/lowMQ/goodRival)。試合状況フラグに基づき見出し+サブ見出し+記事本文を自動生成。バグ修正: (1)SyntaxError修正(_buildShowResultNewspaperDataメソッド宣言欠落) (2)App.プレフィックス追加(_generateNewspaperTexts呼び出し) (3)tickWeekで同一興行週の新聞が即消去される問題をgeneratedWeek/Season比較で修正。変更: app.js/ui-render.js/ui-common.js/engine.js
 
 - **Trust総合リバランス + ケアストック制 Phase T1-T3 実装（2026-03-10）** — 確定パラメータ: Trustグラビティ gravity=0.04/anchor=60。M3低MQ不満(-0.46/興行、MQ<40)。M1/M2/M4/M5は廃止。ケアストック制: 最大5、4週ごとに+1回復、合宿=2消費、打ち上げ=1消費、声かけ=ストック不要。コスチューム: pop永続上昇廃止→次試合MQ+2一時バフ(`_costumeDebut`フラグ、Pass2で消費後クリア)。メディア: pop+4廃止→orgPop+0.4(逓減適用)。特別治療: 確定半減→確率ベース(50%:1週/35%:2週/15%:3週、8週+で+1週)。UI: ケアモーダルにストック残量⚡N/M表示、各アクションに消費量表示、ストック不足時disabled化。セーブデータマイグレーション(careStock=5/careStockMax=5/careStockLastRecovery)。auto-sim 500シーズンALL CLEAR
 

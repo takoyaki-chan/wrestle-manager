@@ -3696,9 +3696,13 @@ const App = {
     Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
 
     // 新聞データをGに保存（データベースタブで閲覧）
-    const paperData = App._buildShowResultNewspaperData();
-    if (paperData) {
-      G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
+    try {
+      const paperData = App._buildShowResultNewspaperData();
+      if (paperData) {
+        G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
+      }
+    } catch (e) {
+      console.error('[WM] 新聞データ生成エラー:', e);
     }
 
     renderShowResult(results, injuryResults);

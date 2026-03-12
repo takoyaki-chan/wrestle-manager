@@ -4226,8 +4226,10 @@ const Engine = {
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
   tickWeek(state) {
-    // 新聞クリア: 次の興行週に入ったら古い新聞を消す
-    if (state.currentNewspaper && Engine.util.isShowWeek(state.week)) {
+    // 新聞クリア: 次の興行週（生成時と異なる週）に入ったら古い新聞を消す
+    if (state.currentNewspaper && Engine.util.isShowWeek(state.week)
+        && (state.currentNewspaper.generatedWeek !== state.week
+            || state.currentNewspaper.generatedSeason !== state.season)) {
       state = { ...state, currentNewspaper: null };
     }
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
