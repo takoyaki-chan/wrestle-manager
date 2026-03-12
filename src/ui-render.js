@@ -4989,8 +4989,9 @@ function _relmapShowComparePopup() {
   // Stats comparison
   _RELMAP_STAT_META.forEach(s => {
     const va = a[s.key] || 0, vb = b[s.key] || 0;
+    const displayVa = Math.round(va), displayVb = Math.round(vb);
     const aW = va > vb, bW = vb > va;
-    h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${va}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${vb}</div></div></div>`;
+    h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${displayVa}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${displayVb}</div></div></div>`;
   });
   h += `</div>`;
 
