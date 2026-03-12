@@ -12404,7 +12404,7 @@ Engine.snapshot = {
 
       // ── R3: 仲良し退団（100%発火、rng判定なし） ──
       const dbi = f._departureBondImpact;
-      if (dbi && this.isPositiveBond(dbi.bond)) {
+      if (dbi && Engine.relationships.isPositiveBond(dbi.bond)) {
         candidates.push({
           source: 'R3', weight: 10, fighterId: f.id, fighter2Id: dbi.departedId,
           bond: dbi.bond, departedName: dbi.departedName, reason: dbi.reason,
@@ -12560,7 +12560,7 @@ Engine.snapshot = {
 
     // ── R3 特殊分岐 ──
     if (source === 'R3') {
-      if (this.getBondBand(candidate.bond) === 'devoted') {
+      if (Engine.relationships.getBondBand(candidate.bond) === 'devoted') {
         // タイプD: モーダル
         const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.R3.modal, fighter);
         const text = this._expandTemplate(line, name, name2);
