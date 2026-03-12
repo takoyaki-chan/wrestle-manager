@@ -3859,6 +3859,7 @@ const App = {
 
     return { headline, subheadline, article };
   },
+  _buildShowResultNewspaperData() {
     const results = G.lastShowResults || [];
     if (!results.length) return null;
     const main = results[0];
