@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show UI Mockup</title>
+<style>
+:root{
+  --bg:#090a0f;
+  --panel:#11131b;
+  --panel-2:#171a24;
+  --paper:#f3ead7;
+  --paper-line:#d7c6a5;
+  --ink:#15120d;
+  --line:rgba(255,255,255,.08);
+  --text:#eef1f7;
+  --sub:rgba(255,255,255,.62);
+  --dim:rgba(255,255,255,.32);
+  --gold:#d9ab45;
+  --gold-2:#f0d48b;
+  --blue:#62a6ff;
+  --red:#ef6277;
+  --green:#44d18e;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;background:
+  radial-gradient(circle at top, rgba(217,171,69,.14), transparent 28%),
+  linear-gradient(180deg, #0b0c12, #08090d 40%, #05060a);
+  color:var(--text)}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 18px 60px;display:grid;gap:22px}
+.hero{display:grid;gap:16px;padding:22px;border:1px solid rgba(217,171,69,.22);border-radius:24px;background:
+  linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.015)),
+  linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.05));box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-2)}
+.hero-row{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
+.title{font-size:52px;line-height:.95;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-2)}
+.subtitle{color:var(--sub);max-width:780px;line-height:1.7}
+.metrics{display:flex;gap:10px;flex-wrap:wrap}
+.chip{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);font-size:12px;color:var(--sub)}
+.chip strong{color:var(--text)}
+.progress{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.progress > span{display:block;height:100%;width:66%;background:linear-gradient(90deg,var(--blue),var(--gold));box-shadow:0 0 20px rgba(217,171,69,.35)}
+.grid{display:grid;grid-template-columns:1.08fr .92fr;gap:22px}
+.panel{padding:18px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 16px 36px rgba(0,0,0,.22)}
+.panel h2{margin:0 0 14px;font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-2)}
+.flow-note{margin:0 0 18px;color:var(--sub);font-size:13px;line-height:1.8}
+.ramp{position:relative;display:grid;gap:14px;padding-left:28px}
+.ramp::before{content:"";position:absolute;left:9px;top:6px;bottom:24px;width:2px;background:linear-gradient(180deg, rgba(98,166,255,.35), rgba(217,171,69,.75))}
+.step{position:relative;display:grid;gap:8px}
+.step::before{content:"";position:absolute;left:-23px;top:24px;width:14px;height:14px;border-radius:50%;background:#24364f;border:2px solid rgba(98,166,255,.45);box-shadow:0 0 0 6px rgba(98,166,255,.08)}
+.step.main::before{background:#5b4619;border-color:rgba(217,171,69,.65);box-shadow:0 0 0 8px rgba(217,171,69,.12)}
+.step.current::before{background:#2f6fd8;box-shadow:0 0 0 8px rgba(98,166,255,.16),0 0 22px rgba(98,166,255,.28)}
+.step-label{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.match-card{padding:16px;border-radius:20px;border:1px solid var(--line);background:
+  linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.02)),
+  linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.04));display:grid;gap:12px}
+.step.current .match-card{border-color:rgba(98,166,255,.45);box-shadow:0 0 0 1px rgba(98,166,255,.14),0 18px 36px rgba(0,0,0,.28)}
+.step.main .match-card{border-color:rgba(217,171,69,.34);transform:translateY(-2px)}
+.match-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub)}
+.badge.gold{color:var(--gold-2);border-color:rgba(217,171,69,.28)}
+.badge.blue{color:#9bc4ff;border-color:rgba(98,166,255,.28)}
+.badge.red{color:#ffb0ba;border-color:rgba(239,98,119,.28)}
+.state{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.state.ready{color:#9bc4ff}.state.done{color:var(--gold-2)}.state.locked{color:var(--dim)}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.fighter{padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);display:grid;gap:8px}
+.fighter.winner{border-color:rgba(217,171,69,.5);background:linear-gradient(180deg, rgba(217,171,69,.14), rgba(255,255,255,.03))}
+.fighter.loser{opacity:.72}
+.fighter-top{display:flex;gap:10px;align-items:center}
+.portrait{width:72px;height:72px;border-radius:18px;display:grid;place-items:center;font-size:26px;font-weight:900;color:#fff}
+.portrait.blue{background:linear-gradient(135deg,#3568cf,#6db0ff)}
+.portrait.red{background:linear-gradient(135deg,#b63458,#ff8a8a)}
+.name{font-size:18px;font-weight:800}
+.meta{font-size:12px;color:var(--sub);line-height:1.5}
+.vs-mark{display:grid;justify-items:center;gap:8px;color:var(--dim)}
+.vs-mark strong{font-size:34px;letter-spacing:.08em;color:var(--gold-2)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:180px;padding:12px 14px;border:0;border-radius:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.btn.watch{background:linear-gradient(135deg,#2f6fd8,#5aa8ff);color:#fff}
+.btn.skip{background:rgba(255,255,255,.07);color:var(--sub);border:1px solid var(--line)}
+.summary{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
+.summary .winner-call{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ribbon{padding:7px 12px;border-radius:999px;background:linear-gradient(135deg,var(--gold),#b9892a);color:#16120b;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.mq{font-size:14px;color:var(--sub)}
+.mq strong{font-size:22px;color:var(--text)}
+.paper{background:
+  linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04)),
+  linear-gradient(180deg, #f6eddc, #ead9b8 85%, #dfcda8);
+  color:var(--ink);border:1px solid #ccb68b;border-radius:18px;padding:18px;box-shadow:0 18px 44px rgba(0,0,0,.28)}
+.paper-head{display:grid;gap:8px;padding-bottom:14px;border-bottom:3px double var(--paper-line)}
+.paper-kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6f5d3c}
+.paper-title{font-size:40px;line-height:1.02;font-weight:900;letter-spacing:.02em}
+.paper-sub{font-size:13px;line-height:1.7;color:#554933}
+.paper-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}
+.big-photo{display:grid;gap:12px}
+.photo-stage{min-height:260px;border:1px solid var(--paper-line);border-radius:18px;background:
+  radial-gradient(circle at 50% 20%, rgba(255,255,255,.28), transparent 26%),
+  linear-gradient(180deg,#25211a,#0e0d0b 55%, #1f1912);padding:18px;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px}
+.paper-fighter{display:grid;justify-items:center;gap:8px}
+.paper-portrait{width:132px;height:168px;border-radius:18px;display:grid;place-items:center;font-size:54px;font-weight:900;color:#fff;box-shadow:0 18px 32px rgba(0,0,0,.35)}
+.paper-portrait.blue{background:linear-gradient(180deg,#4f8fff,#1d49aa)}
+.paper-portrait.red{background:linear-gradient(180deg,#ff8396,#9f213f)}
+.paper-portrait.winner{outline:5px solid rgba(240,212,139,.7);transform:scale(1.06)}
+.paper-name{font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.45)}
+.paper-mid{display:grid;justify-items:center;gap:12px;padding-bottom:18px}
+.paper-mid strong{font-size:48px;color:#f0d48b;letter-spacing:.08em}
+.extranote{padding:10px 12px;border:1px solid var(--paper-line);border-radius:14px;background:rgba(255,255,255,.22)}
+.extranote h3{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#6f5d3c}
+.extranote p{margin:0;font-size:13px;line-height:1.8;color:#443926}
+.score-strip{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--paper-line);border-radius:14px;background:rgba(255,255,255,.22)}
+.score-strip .main-call{font-size:16px;font-weight:900}
+.hp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hp-box{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--paper-line);border-radius:14px;background:rgba(255,255,255,.18)}
+.hp-box label{font-size:12px;color:#6a5e4c}
+.hp-box strong{font-size:13px}
+.bar{height:7px;border-radius:999px;background:rgba(38,31,20,.12);overflow:hidden}
+.bar span{display:block;height:100%;border-radius:inherit}
+.log{padding:14px;border-radius:16px;background:rgba(255,255,255,.2);border:1px solid var(--paper-line);font-size:13px;color:#493d2a;line-height:1.8}
+.log strong{color:#1a1610}
+.note{font-size:13px;color:var(--sub);line-height:1.8}
+@media (max-width: 980px){.grid,.paper-grid{grid-template-columns:1fr}.title{font-size:40px}}
+@media (max-width: 700px){.vs,.photo-stage{grid-template-columns:1fr}.vs-mark,.paper-mid{padding:4px 0}.actions .btn{min-width:0}.hp-grid{grid-template-columns:1fr}.paper-title{font-size:30px}.paper-portrait{width:110px;height:144px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Mockup / Show Presentation</div>
+    <div class="hero-row">
+      <div>
+        <div class="title">Ramp To Main Event</div>
+        <div class="subtitle">第1試合から順に消化していき、下の試合から熱量を積み上げて最後にメインイベントへ到達する見せ方です。右側は勝敗発表をスポーツ新聞の号外風にした一面モックです。</div>
+      </div>
+      <div style="min-width:min(360px,100%);display:grid;gap:10px">
+        <div class="metrics">
+          <span class="chip">Progress <strong>3 / 4</strong></span>
+          <span class="chip">Current <strong>第3試合</strong></span>
+          <span class="chip">Final <strong>Main Event</strong></span>
+        </div>
+        <div class="progress"><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>興行カード進行</h2>
+      <p class="flow-note">カードは下から上へ盛り上がりが増していく階段状の導線。メインイベントが常に上で待ち構え、現在の試合だけが強く発光する想定です。</p>
+      <div class="ramp">
+        <div class="step">
+          <div class="step-label">Start / 第1試合</div>
+          <article class="match-card">
+            <div class="match-head">
+              <div class="badges">
+                <span class="badge">第1試合</span>
+                <span class="badge gold">Result</span>
+              </div>
+              <div class="state done">Finished</div>
+            </div>
+            <div class="vs">
+              <div class="fighter winner">
+                <div class="fighter-top">
+                  <div class="portrait blue">M</div>
+                  <div>
+                    <div class="name">美月カレン</div>
+                    <div class="meta">Technique / Pop 82<br>会場を温める opener</div>
+                  </div>
+                </div>
+              </div>
+              <div class="vs-mark"><strong>VS</strong><div>84 MQ</div></div>
+              <div class="fighter loser">
+                <div class="fighter-top">
+                  <div class="portrait red">V</div>
+                  <div>
+                    <div class="name">ヴァルキリー真央</div>
+                    <div class="meta">Brawler / Pop 80<br>観客の空気を一気に上げる</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Build / 第2試合</div>
+          <article class="match-card">
+            <div class="match-head">
+              <div class="badges">
+                <span class="badge">第2試合</span>
+                <span class="badge red">因縁</span>
+              </div>
+              <div class="state done">Finished</div>
+            </div>
+            <div class="vs">
+              <div class="fighter loser">
+                <div class="fighter-top">
+                  <div class="portrait blue">A</div>
+                  <div>
+                    <div class="name">青葉しずく</div>
+                    <div class="meta">Striker / Pop 71</div>
+                  </div>
+                </div>
+              </div>
+              <div class="vs-mark"><strong>VS</strong><div>77 MQ</div></div>
+              <div class="fighter winner">
+                <div class="fighter-top">
+                  <div class="portrait red">R</div>
+                  <div>
+                    <div class="name">紅レイナ</div>
+                    <div class="meta">Power / Pop 76<br>流れを奪う勝ち名乗り</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="step current">
+          <div class="step-label">Now / 第3試合</div>
+          <article class="match-card">
+            <div class="match-head">
+              <div class="badges">
+                <span class="badge">第3試合</span>
+                <span class="badge blue">Up Next</span>
+              </div>
+              <div class="state ready">Now Focused</div>
+            </div>
+            <div class="vs">
+              <div class="fighter">
+                <div class="fighter-top">
+                  <div class="portrait blue">N</div>
+                  <div>
+                    <div class="name">夏樹ノア</div>
+                    <div class="meta">Speed / Pop 73<br>ここで会場の熱が最高潮に向かう</div>
+                  </div>
+                </div>
+              </div>
+              <div class="vs-mark"><strong>VS</strong><div>Watch Match</div></div>
+              <div class="fighter">
+                <div class="fighter-top">
+                  <div class="portrait red">K</div>
+                  <div>
+                    <div class="name">霧島カナ</div>
+                    <div class="meta">Submission / Pop 75<br>次のメインを引き立てる前哨戦</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn watch">試合を見る</button>
+              <button class="btn skip">スキップ</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="step main">
+          <div class="step-label">Climax / Main Event</div>
+          <article class="match-card">
+            <div class="match-head">
+              <div class="badges">
+                <span class="badge gold">Main Event</span>
+                <span class="badge gold">Title Match</span>
+              </div>
+              <div class="state locked">Waiting</div>
+            </div>
+            <div class="vs">
+              <div class="fighter">
+                <div class="fighter-top">
+                  <div class="portrait blue">E</div>
+                  <div>
+                    <div class="name">エレナ・クロス</div>
+                    <div class="meta">Submission / Pop 88</div>
+                  </div>
+                </div>
+              </div>
+              <div class="vs-mark"><strong>VS</strong><div>Main Event</div></div>
+              <div class="fighter">
+                <div class="fighter-top">
+                  <div class="portrait red">S</div>
+                  <div>
+                    <div class="name">桜庭セナ</div>
+                    <div class="meta">Allround / Pop 90</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="note">メインイベントは常に画面上部で待機。下位カードを片付けるたびに視線が一段ずつ上へ移っていく構成です。</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>スポーツ新聞風結果演出</h2>
+      <article class="paper">
+        <div class="paper-head">
+          <div class="paper-kicker">臨時増刊 / Main Event Result / Tokyo Night Edition</div>
+          <div class="paper-title">エレナ・クロス 王座死守！<br>12ターン激闘を制す</div>
+          <div class="paper-sub">試合終了後に全面を紙面風へ切り替え、見出し・勝者・決着技を一気に見せる構成です。通常のUIとは空気を変えて「終わった感」を強く出せます。</div>
+        </div>
+
+        <div class="paper-grid">
+          <div class="big-photo">
+            <div class="photo-stage">
+              <div class="paper-fighter">
+                <div class="paper-portrait blue winner">E</div>
+                <div class="paper-name">エレナ・クロス</div>
+              </div>
+              <div class="paper-mid">
+                <strong>VS</strong>
+                <div class="ribbon">Winner</div>
+              </div>
+              <div class="paper-fighter">
+                <div class="paper-portrait red">S</div>
+                <div class="paper-name">桜庭セナ</div>
+              </div>
+            </div>
+            <div class="score-strip">
+              <div class="main-call">決着技: クロス・アームロック</div>
+              <div class="mq">MQ <strong>91</strong></div>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:12px">
+            <div class="extranote">
+              <h3>一面のポイント</h3>
+              <p>勝者名を大見出しにして、敗者は写真とサブ情報へ下げます。試合ログやHPは二段目に回し、最初の1秒で「誰が勝ったか」が分かるようにします。</p>
+            </div>
+            <div class="hp-grid">
+              <div class="hp-box">
+                <label>エレナ・クロス</label>
+                <strong>HP 38 / 100</strong>
+                <div class="bar"><span style="width:38%;background:#44d18e"></span></div>
+              </div>
+              <div class="hp-box">
+                <label>桜庭セナ</label>
+                <strong>HP 4 / 100</strong>
+                <div class="bar"><span style="width:4%;background:#ef6277"></span></div>
+              </div>
+            </div>
+            <div class="log">
+              <strong>導入案</strong><br>
+              1. 通常結果UIの前に「号外が刷り上がる」ような短いトランジションを入れる。<br>
+              2. メインイベントだけ紙面を大きく、通常カードは小さめ見出しにする。<br>
+              3. タイトル戦なら帯色を金、番狂わせなら赤見出しにして新聞らしい強弱を付ける。
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+</div>
+</body>
+</html>
