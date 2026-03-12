@@ -5116,6 +5116,7 @@ const Engine = {
 
       // AI → Player poach attempts
       s.roster.forEach(fighter => {
+        if (fighter.isRental) return;
         if (fighter.popularity < cfg.poachMinPopularity) return;
         if (s.titles?.world?.championId === fighter.id) return; // チャンピオンは対象外
 
@@ -5159,6 +5160,12 @@ const Engine = {
 
       const poach = pending[idx];
       const events = [];
+
+      if (poach && poach.fighter && poach.fighter.isRental) {
+        pending.splice(idx, 1);
+        s = { ...s, pendingPoach: pending };
+        return { state: s, events: ['rental poach offer ignored'] };
+      }
 
       // O-09用RNG
       const poachRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3F, s.season, s.week, fighterIdToRelease));
