@@ -2772,44 +2772,63 @@ function renderMatchPreview() {
       relParts.push(`<span style="color:#e67e22">⚡ 因縁 ${Math.round(rivMax)}</span>`);
     }
     relParts.push(`<span style="color:${bondColor}">🤝 友好 ${bondAvg}</span>`);
-    const relStrip = `<div style="display:flex;align-items:center;gap:12px;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:var(--text-dim)">${relParts.join('<span style="color:rgba(255,255,255,0.15)"> | </span>')}</div>`;
+    // relParts は後段のカードHTMLで直接使用
+
+    // 画像装飾
+    const imgBorderL = isMain ? '2px solid rgba(74,143,212,0.5);box-shadow:0 0 12px rgba(74,143,212,0.25)' : '2px solid rgba(74,143,212,0.3)';
+    const imgBorderR = isMain ? '2px solid rgba(196,30,58,0.5);box-shadow:0 0 12px rgba(196,30,58,0.25)' : '2px solid rgba(196,30,58,0.3)';
+    const makeUpperStyled = (url, fallbackId, border) => url
+      ? `<img src="${url}" style="width:${imgW}px;height:${imgH}px;object-fit:cover;object-position:top center;border-radius:6px;border:${border}" onerror="this.style.display='none'" alt="">`
+      : portraitImg(fallbackId, imgW);
+
+    const ovrL = Engine.util.ov(charL), ovrR = Engine.util.ov(charR);
+    const vsSize = isMain ? '32px' : '26px';
 
     html += `<div data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};border-radius:6px;overflow:hidden;opacity:${isResolved ? 0.7 : isNext ? 1 : 0.55}">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px 8px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:${isMain ? '20px' : '16px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
-          ${statusBadge}${titleTag}
-        </div>
-        <span style="font-size:11px;color:var(--text-dim)">${isResolved ? '試合済み' : isNext ? '観戦またはスキップ' : '待機中'}</span>
+      <div style="text-align:center;padding:10px 12px 6px">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:${isMain ? '20px' : '16px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}; letter-spacing:2px">${matchLabel}</span>
+        ${statusBadge}${titleTag}
       </div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;padding:0 12px 10px">
-        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="display:grid;justify-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
-          ${makeUpper(upperL, charL.id)}
-          <div style="font-size:${isMain ? '14px' : '13px'};font-weight:700;color:var(--blue)">${charL.name}</div>
-          <div style="font-size:11px;color:var(--text-dim)">OVR <strong style="color:var(--text-sub)">${Engine.util.ov(charL)}</strong></div>
-        </button>
-        <div style="display:grid;justify-items:center;gap:4px;padding-bottom:42px">
-          <span class="match-slot-vs" style="font-size:${isMain ? '22px' : '18px'}">VS</span>
+      <div style="display:grid;grid-template-columns:auto auto 44px auto auto;gap:0;align-items:center;justify-content:center;padding:4px 12px 10px">
+        <div style="text-align:right;padding-right:8px">
+          <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer;color:inherit">
+            <div style="font-size:${isMain ? '14px' : '12px'};font-weight:700;color:var(--blue);margin-bottom:2px">${charL.name}</div>
+          </button>
+          <div style="font-size:${isMain ? '18px' : '15px'};font-weight:700;color:var(--text-main)">${ovrL}</div>
+          <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">OVR</div>
         </div>
-        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="display:grid;justify-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;color:inherit">
-          ${makeUpper(upperR, charR.id)}
-          <div style="font-size:${isMain ? '14px' : '13px'};font-weight:700;color:var(--red)">${charR.name}</div>
-          <div style="font-size:11px;color:var(--text-dim)">OVR <strong style="color:var(--text-sub)">${Engine.util.ov(charR)}</strong></div>
+        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
+          ${makeUpperStyled(upperL, charL.id, imgBorderL)}
         </button>
+        <div style="text-align:center;padding:0 2px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:${vsSize};font-weight:700;color:#c41e3a;text-shadow:0 0 8px rgba(196,30,58,0.4);letter-spacing:2px">VS</div>
+        </div>
+        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
+          ${makeUpperStyled(upperR, charR.id, imgBorderR)}
+        </button>
+        <div style="text-align:left;padding-left:8px">
+          <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer;color:inherit">
+            <div style="font-size:${isMain ? '14px' : '12px'};font-weight:700;color:var(--red);margin-bottom:2px">${charR.name}</div>
+          </button>
+          <div style="font-size:${isMain ? '18px' : '15px'};font-weight:700;color:var(--text-main)">${ovrR}</div>
+          <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">OVR</div>
+        </div>
       </div>
-      ${relStrip}`;
+      <div style="text-align:center;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:var(--text-dim)">
+        ${relParts.join('<span style="color:rgba(255,255,255,0.15);margin:0 6px">|</span>')}
+      </div>`;
 
     if (isResolved) {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? charL.name : charR.name;
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-      html += `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
-        <div style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${result.finType ? ` <span>(${result.finType})</span>` : ''}</div>
-        <div style="font-size:12px;color:${mqColor};font-weight:700">MQ ${result.mq}</div>
+      html += `<div style="display:flex;justify-content:center;gap:16px;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${result.finType ? ` (${result.finType})` : ''}</span>
+        <span style="font-size:12px;color:${mqColor};font-weight:700">MQ ${result.mq}</span>
       </div>`;
     } else if (isNext) {
-      html += `<div style="display:flex;gap:8px;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
-        <button class="btn btn-blue" style="flex:1;font-size:13px;padding:8px 0" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>
-        <button class="btn" style="flex:1;font-size:13px;padding:8px 0;background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid rgba(255,255,255,0.08)" onclick="App.skipMatch(${idx})">⏭ スキップ</button>
+      html += `<div style="display:flex;gap:8px;align-items:center;justify-content:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
+        <button class="btn btn-blue" style="font-size:13px;padding:8px 24px" onclick="App.watchMatch(${idx})">🎬 この試合を観る</button>
+        <button class="btn" style="font-size:11px;padding:6px 10px;background:rgba(255,255,255,0.06);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)" onclick="App.skipMatch(${idx})">⏭</button>
       </div>`;
     }
 
