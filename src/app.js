@@ -804,19 +804,26 @@ const Audio = (() => {
   const FileBGM = {
     _audio: null,
     _fadeTimer: null,
-    play(src, { loop = false, volume = null } = {}) {
+    _mix: 1,
+    _resolveVolume(volume = null, mix = 1) {
+      if (volume !== null) return volume;
+      return Math.min(1.0, _bgmVol * 8 * mix);
+    },
+    play(src, { loop = false, volume = null, mix = 1 } = {}) {
       if (_bgmMuted) return;
       FileBGM.stop();
       BGM.stop();
       const a = new window.Audio(src);
       a.loop = loop;
-      a.volume = volume !== null ? volume : Math.min(1.0, _bgmVol * 8);
+      FileBGM._mix = mix;
+      a.volume = FileBGM._resolveVolume(volume, mix);
       a.play().catch(() => {});
       FileBGM._audio = a;
     },
     stop() {
       if (FileBGM._fadeTimer) { clearInterval(FileBGM._fadeTimer); FileBGM._fadeTimer = null; }
       if (FileBGM._audio) { FileBGM._audio.pause(); FileBGM._audio.currentTime = 0; FileBGM._audio = null; }
+      FileBGM._mix = 1;
     },
     fadeOut(durationMs = 2000) {
       if (!FileBGM._audio) return Promise.resolve();
@@ -839,7 +846,7 @@ const Audio = (() => {
       });
     },
     updateVolume() {
-      if (FileBGM._audio) FileBGM._audio.volume = Math.min(1.0, _bgmVol * 8);
+      if (FileBGM._audio) FileBGM._audio.volume = FileBGM._resolveVolume(null, FileBGM._mix);
     }
   };
 
@@ -3073,7 +3080,7 @@ const App = {
     };
     // ビッグマッチBGM: タイトル戦で bigmatch.mp3 を再生
     if (m.isTitle) {
-      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
+      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
     }
     let sent = false;
     const sendOnce = () => {
@@ -4973,7 +4980,7 @@ const App = {
       }
     };
     // ビッグマッチBGM
-    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
+    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -5231,7 +5238,7 @@ App.ppvWatchMatch = function(idx) {
     }
   };
   // ビッグマッチBGM
-  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true }); } catch(e) {}
+  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
