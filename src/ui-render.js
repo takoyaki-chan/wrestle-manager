@@ -2684,10 +2684,10 @@ function renderDatabase() {
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
     { label: '🏋️ 全コーチ', idx: 1 },
-    { label: '⚔ 団体比較', idx: 2 },
-    { label: '🏅 殿堂', idx: 3 },
     { label: '🔗 相関図', idx: 4 },
+    { label: '⚔ 団体比較', idx: 2 },
     { label: '📰 新聞', idx: 5 },
+    { label: '🏅 殿堂', idx: 3 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
