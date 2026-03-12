@@ -10255,6 +10255,222 @@ Engine.database = {
 
     return { ace, depth, popularity, starPower };
   },
+
+  /**
+   * 団体比較分析データ一括取得
+   * UI用に全セクション（スコア/タグ/グレード/サマリー/マッチアップ/提案）を返す
+   */
+  getOrgCompareAnalysis(state, orgId) {
+    const playerScores = Engine.database.getOrgCompareScores(state, 'player');
+    const rivalScores = Engine.database.getOrgCompareScores(state, orgId);
+    const targetOrg = RIVAL_ORGS.find(o => o.id === orgId);
+    const rivalNameMap = state.rivalOrgNames || {};
+    const targetColor = targetOrg ? targetOrg.color : '#888';
+    const targetName = rivalNameMap[orgId] || (targetOrg ? (targetOrg.name || targetOrg.id) : orgId);
+    const playerName = state.orgName || 'プレイヤー団体';
+    const targetDesc = targetOrg?.desc || '比較対象団体';
+
+    const pRoster = state.roster || [];
+    const rRoster = state.aiOrgs?.[orgId]?.roster || [];
+    const pOrgPop = state.orgPop || 0;
+    const rOrgPop = state.aiOrgs?.[orgId]?.orgPop ?? (targetOrg ? (targetOrg.tier === 'S' ? 75 : targetOrg.tier === 'A' ? 50 : 30) : 30);
+
+    // --- 生のTOP5平均値 ---
+    const pTop5Ovr = Math.round(Engine.ranking._topNAvg(pRoster, f => Engine.util.ov(f), 5));
+    const rTop5Ovr = Math.round(Engine.ranking._topNAvg(rRoster, f => Engine.util.ov(f), 5));
+
+    // --- スコア差分 ---
+    const KEYS = ['ace', 'depth', 'popularity', 'starPower'];
+    const diffs = {};
+    KEYS.forEach(k => { diffs[k] = playerScores[k] - rivalScores[k]; });
+
+    // --- タグ計算ヘルパー ---
+    function computeTags(roster, orgPop, isPlayer) {
+      const tags = [];
+      if (roster.length === 0) return tags;
+      const ovrs = roster.map(f => Engine.util.ov(f)).sort((a, b) => b - a);
+      const top1 = ovrs[0] || 0;
+      const top5Avg = ovrs.slice(0, 5).reduce((s, v) => s + v, 0) / Math.min(5, ovrs.length);
+      // エース依存度
+      if (top1 - top5Avg > 8) tags.push('エース依存度 高い');
+      else tags.push('エース依存度 低め');
+      // 若手比率
+      const currentSeason = state.season || 1;
+      const youngCount = roster.filter(f => (currentSeason - (f.debutSeason || 1)) <= 2).length;
+      const youthPct = Math.round(youngCount / roster.length * 100);
+      tags.push(`若手比率 ${youthPct}%`);
+      // 勢い（プレイヤー: momentum、AI: orgPop vs tier default）
+      if (isPlayer) {
+        const m = state.attendanceMomentum || 0;
+        tags.push(m > 0.03 ? '勢い 上昇中' : m < -0.03 ? '勢い 下降気味' : '勢い 安定');
+      } else {
+        const tierDefault = targetOrg ? (targetOrg.tier === 'S' ? 75 : targetOrg.tier === 'A' ? 55 : 35) : 40;
+        tags.push(orgPop > tierDefault + 5 ? '勢い 上昇中' : orgPop < tierDefault - 5 ? '勢い 下降気味' : '勢い 安定');
+      }
+      return tags;
+    }
+
+    // --- グレード ---
+    const totalDiff = KEYS.reduce((s, k) => s + diffs[k], 0);
+    let grade, gradeDesc;
+    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面的に劣勢。長期戦略での巻き返しが必要。'; }
+    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で差がある。弱点の補強が急務。'; }
+    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角の勝負。戦略次第で十分勝てる。'; }
+    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。強みを活かせば安定して上回れる。'; }
+    else { grade = 'A'; gradeDesc = '圧倒的優位。この差を維持したい。'; }
+
+    // --- サマリーテキスト ---
+    const AXIS_META = [
+      { key: 'ace', label: 'TOP5実力',
+        lead: '主力戦力で上回っており、正面対決でも十分戦える',
+        trail: '主力の実力差があり、エース級の強化が課題',
+        even: '主力の実力は互角' },
+      { key: 'depth', label: '選手層',
+        lead: '選手層の厚さで優勢。年間を通した安定感がある',
+        trail: '選手層で劣勢。中堅の底上げか補強が必要',
+        even: '選手層は互角' },
+      { key: 'popularity', label: '団体人気',
+        lead: '団体人気で優勢。興行の集客力を武器にできる',
+        trail: '団体人気で後れを取っている。興行の質で巻き返したい',
+        even: '団体人気は互角' },
+      { key: 'starPower', label: 'TOP5人気',
+        lead: 'スター性で優位。ビッグマッチの期待値が高い',
+        trail: 'スター性で差がつき、看板選手の育成が急務',
+        even: 'スター性は互角' },
+    ];
+    const sorted = [...AXIS_META].sort((a, b) => Math.abs(diffs[b.key]) - Math.abs(diffs[a.key]));
+    const positiveAxes = [...AXIS_META].filter(ax => diffs[ax.key] > 0).sort((a, b) => diffs[b.key] - diffs[a.key]);
+    const negativeAxes = [...AXIS_META].filter(ax => diffs[ax.key] < 0).sort((a, b) => diffs[a.key] - diffs[b.key]);
+    const evenAxes = [...AXIS_META].sort((a, b) => Math.abs(diffs[a.key]) - Math.abs(diffs[b.key]));
+    const leadAxis = positiveAxes[0] || evenAxes[0];
+    const chaseAxis = negativeAxes[0] || evenAxes[0];
+    const frags = sorted.slice(0, 2).map(ax => {
+      const d = diffs[ax.key];
+      return d >= 10 ? ax.lead : d <= -10 ? ax.trail : ax.even;
+    });
+    let summaryText = `${targetName}との比較では、${frags[0]}。一方で${frags[1]}。`;
+    if (positiveAxes.length === 0 && negativeAxes.length > 0) {
+      summaryText = `${targetName}との比較では、明確な優位はまだ少ない。特に${negativeAxes[0].trail}が、${evenAxes[0].label}は構成次第で十分対抗できる。`;
+    } else if (negativeAxes.length === 0 && positiveAxes.length > 0) {
+      summaryText = `${targetName}との比較では、${positiveAxes[0].lead}。大きな弱点は少なく、${evenAxes[0].label}も含めて優位を維持できている。`;
+    }
+
+    // 勝ち筋・注意点・補強提案
+    const opportunityTexts = {
+      ace: '主力の実力差を活かし、エース対決で存在感を示したい。',
+      depth: '選手層の厚さを活かし、複数カードの質で興行全体を底上げできる。',
+      popularity: '団体人気を活かした集客力で、興行規模の面で優位に立てる。',
+      starPower: 'スター選手の人気を武器に、看板カードで勝負を仕掛けたい。',
+    };
+    const riskTexts = {
+      ace: '主力の実力差が大きく、エース対決では不利な構図。',
+      depth: '選手層の薄さが露呈しやすく、年間を通すと不安定。',
+      popularity: '団体人気の差が集客に直結するため、興行規模で劣る。',
+      starPower: 'スター性の差が大きく、看板対決では分が悪い。',
+    };
+    const scoutTexts = {
+      ace: '即戦力のエース候補を優先的にスカウトしたい。',
+      depth: '中堅層の補強が急務。FA市場の中堅選手に注目。',
+      popularity: '興行の質を上げて団体人気の底上げが最優先。',
+      starPower: '人気のあるサブエース候補を獲得し、TOP5人気を底上げしたい。',
+    };
+    const pivotTexts = {
+      ace: '主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。',
+      depth: '選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。',
+      popularity: '団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。',
+      starPower: 'スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。',
+    };
+    const guardTexts = {
+      ace: '大きな弱点はないが、主力のコンディション次第で一気に差が縮まりやすい。',
+      depth: '大きな弱点はないが、層の消耗が続くと優位が崩れやすい。',
+      popularity: '大きな弱点はないが、集客が鈍ると優位を保ちにくい。',
+      starPower: '大きな弱点はないが、看板選手への依存が進むと勢いを失いやすい。',
+    };
+    const sustainTexts = {
+      ace: '大きな穴はない。次は主力の優位を長期的に維持できる育成計画を進めたい。',
+      depth: '大きな穴はない。次は中堅層の育成で年間を通した安定感をさらに高めたい。',
+      popularity: '大きな穴はない。次は興行演出と結果で団体人気の優位を固めたい。',
+      starPower: '大きな穴はない。次は次世代の人気選手を育て、看板層を厚くしたい。',
+    };
+
+    // --- TOP3マッチアップ ---
+    const ROLES = ['エース', '主力', '中堅'];
+    const pSorted = [...pRoster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const rSorted = [...rRoster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const matchups = [];
+    for (let i = 0; i < 3; i++) {
+      const pf = pSorted[i];
+      const rf = rSorted[i];
+      if (pf && rf) {
+        matchups.push({
+          role: ROLES[i],
+          player: { id: pf.id, name: pf.name, ovr: Engine.util.ov(pf), pop: Math.round(pf.popularity || 0) },
+          rival: { id: rf.id, name: rf.name, ovr: Engine.util.ov(rf), pop: Math.round(rf.popularity || 0) },
+        });
+      }
+    }
+
+    // --- アクション提案 ---
+    const actions = [];
+    // 1. 最大弱点
+    const actionTitles = { ace: '主力戦力の強化', depth: '選手層の拡充', popularity: '団体人気の向上', starPower: 'スター性の向上' };
+    const actionDescs = {
+      ace: '上位選手のOVRを引き上げるため、エース候補の育成や即戦力の補強を検討。',
+      depth: '中堅以下の底上げやロスター拡充で、年間を通した安定感を確保。',
+      popularity: '興行の質とカード編成で団体人気を向上させ、集客力を強化。',
+      starPower: '人気のある選手の獲得や、既存選手のメディア露出で人気を向上。',
+    };
+    if (negativeAxes.length > 0) {
+      const worstKey = chaseAxis.key;
+      actions.push({ title: '補強優先度 1', badge: actionTitles[worstKey], badgeClass: 'warn', text: actionDescs[worstKey] });
+    } else {
+      actions.push({ title: '優位維持プラン', badge: 'Keep Edge', badgeClass: 'good', text: sustainTexts[leadAxis.key] });
+    }
+
+    // 2. 若手比較
+    const pYouth = pRoster.filter(f => ((state.season || 1) - (f.debutSeason || 1)) <= 2).length;
+    const rYouth = rRoster.filter(f => ((state.season || 1) - (f.debutSeason || 1)) <= 2).length;
+    const pYouthPct = pRoster.length > 0 ? pYouth / pRoster.length : 0;
+    const rYouthPct = rRoster.length > 0 ? rYouth / rRoster.length : 0;
+    if (pYouthPct > rYouthPct + 0.05) {
+      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'good', text: '若手比率で優位。中長期で主力昇格を狙い、選手層の強みを維持したい。' });
+    } else if (pYouthPct < rYouthPct - 0.05) {
+      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'bad', text: '若手比率で劣勢。将来を見据えたスカウトや若手登用の検討が必要。' });
+    } else {
+      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'good', text: '若手比率は互角。現有戦力の育成を継続しつつ、将来の柱を育てたい。' });
+    }
+
+    // 3. エースギャップ
+    const aceDiff = diffs.ace;
+    if (aceDiff < -10) {
+      actions.push({ title: '危険シグナル', badge: 'Ace Gap', badgeClass: 'bad', text: 'エース対決を前面に出すと力負けしやすい。複数カード構成が安全。' });
+    } else if (aceDiff > 10) {
+      actions.push({ title: '戦略的優位', badge: 'Ace Power', badgeClass: 'good', text: 'エース対決で優勢。看板カードを前面に押し出す興行編成が有効。' });
+    } else {
+      actions.push({ title: '戦略ポイント', badge: 'Balance', badgeClass: 'warn', text: 'エース級は互角。カード構成やストーリー性で差をつけたい。' });
+    }
+
+    return {
+      playerName, rivalName: targetName, rivalTier: targetOrg?.tier || '?',
+      playerSubtitle: 'プレイヤー団体',
+      rivalSubtitle: `Tier ${targetOrg?.tier || '?'} / ${targetDesc}`,
+      rivalColor: targetColor, rivalEmoji: targetOrg?.emoji || '',
+      playerScores, rivalScores, diffs,
+      playerRosterCount: pRoster.length, rivalRosterCount: rRoster.length,
+      pTop5Ovr, rTop5Ovr,
+      pOrgPop: Math.round(Engine.util.dispOrgPop(pOrgPop)),
+      rOrgPop: Math.round(Engine.util.dispOrgPop(rOrgPop)),
+      playerTags: computeTags(pRoster, pOrgPop, true),
+      rivalTags: computeTags(rRoster, rOrgPop, false),
+      grade, gradeDesc,
+      summaryText,
+      opportunity: positiveAxes.length > 0 ? opportunityTexts[leadAxis.key] : pivotTexts[leadAxis.key],
+      risk: negativeAxes.length > 0 ? riskTexts[chaseAxis.key] : guardTexts[chaseAxis.key],
+      scout: negativeAxes.length > 0 ? scoutTexts[chaseAxis.key] : sustainTexts[chaseAxis.key],
+      matchups,
+      actions,
+    };
+  },
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -2707,8 +2707,6 @@ function renderDatabase() {
 
   el.innerHTML = html;
 
-  // 団体比較ならレーダーチャートを描画
-  if (_dbSubTab === 2) _drawOrgCompareChart();
   // 相関図ならマップを描画（DOM挿入後に実行）
   if (_dbSubTab === 4) _drawRelmapAfterRender();
 }
@@ -3041,85 +3039,197 @@ let _dbCompareTarget = 'org_s';
 // 勢力図サブタブ（A案）— SVGコンテナのみ返す。描画は_buildOrgColumnSvgContent共通関数
 // ══════════════════════════════════════════════════════════
 function _renderDbOrgCompare() {
-  const AXES = ['TOP5実力', '層の厚さ', '団体人気', 'TOP5人気'];
-  const playerScores = Engine.database.getOrgCompareScores(G, 'player');
-  const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
+  const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
+  const rc = d.rivalColor;
+  // CSS custom property で rival 色を動的設定
+  const tierCls = d.rivalTier === 'S' ? 's' : d.rivalTier === 'A' ? 'a' : 'b';
 
-  const targetOrg = RIVAL_ORGS.find(o => o.id === _dbCompareTarget);
-  const targetColor = targetOrg ? targetOrg.color : '#888';
-  const targetName = targetOrg ? (targetOrg.name || targetOrg.id) : _dbCompareTarget;
-  const playerName = G.orgName || 'プレイヤー団体';
+  // --- Helper: hex → rgba ---
+  function hexDim(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  const rivalDim = hexDim(rc, 0.12);
+  const rivalGlow = hexDim(rc, 0.06);
+  const rivalGrad = `linear-gradient(90deg,${rc},${hexDim(rc, 0.6)})`;
 
-  const scoreKeys = ['ace', 'depth', 'popularity', 'starPower'];
-
-  let html = `<div class="db-compare-wrap">
-    <div class="db-compare-select">
-      <span style="font-size:13px;color:var(--gold);font-weight:700">🏠 ${playerName}</span>
-      <span style="color:var(--text-dim)">vs</span>
-      <select onchange="_dbCompareTarget=this.value;renderDatabase()">
-        ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${o.name || o.id} (${o.tier})</option>`).join('')}
-      </select>
-    </div>`;
-
-  // 凡例
-  html += `<div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;font-size:12px">
-    <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#d4a843;margin-right:4px;vertical-align:middle"></span>${playerName}</span>
-    <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:${targetColor};margin-right:4px;vertical-align:middle"></span>${targetName}</span>
+  // --- Section 1: Hero ---
+  let html = `<div class="db-cmp-select">
+    <label>Compare with</label>
+    <select onchange="_dbCompareTarget=this.value;renderDatabase()">
+      ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${G.rivalOrgNames?.[o.id] || o.name || o.id} (Tier ${o.tier})</option>`).join('')}
+    </select>
   </div>`;
 
-  // Canvas（300×300）
-  html += `<div class="db-compare-canvas-wrap"><canvas id="dbCompareChart" width="300" height="300"></canvas></div>`;
+  html += `<section class="db-cmp-hero" style="--rival-glow:${rivalGlow}">
+    <div class="db-cmp-grade">
+      <div class="grade-label">Matchup Difficulty</div>
+      <div class="grade-value">${d.grade}</div>
+      <div class="grade-desc">${d.gradeDesc}</div>
+    </div>
+    <div class="db-cmp-versus">
+      <article class="db-cmp-org-card player">
+        <div class="db-cmp-org-head">
+          <div class="db-cmp-org-name"><strong>${d.playerName}</strong><span>${d.playerSubtitle}</span></div>
+          <div class="db-cmp-tier player">Player</div>
+        </div>
+        <div class="db-cmp-tags">${(d.playerTags.length ? d.playerTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
+        <div class="db-cmp-mini-stats">
+          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.playerScores.ace}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.playerScores.starPower}</strong></div>
+          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.playerRosterCount}</strong></div>
+          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.pOrgPop}</strong></div>
+        </div>
+      </article>
+      <div class="db-cmp-vs-mark"><div class="db-cmp-vs-ring">VS</div></div>
+      <article class="db-cmp-org-card rival" style="--rival-dim:${rivalDim}">
+        <div class="db-cmp-org-head">
+          <div class="db-cmp-org-name"><strong>${d.rivalName}</strong><span>${d.rivalSubtitle}</span></div>
+          <div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>
+        </div>
+        <div class="db-cmp-tags">${(d.rivalTags.length ? d.rivalTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
+        <div class="db-cmp-mini-stats">
+          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.rivalScores.ace}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.rivalScores.starPower}</strong></div>
+          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.rivalRosterCount}</strong></div>
+          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.rOrgPop}</strong></div>
+        </div>
+      </article>
+    </div>
+  </section>`;
 
-  // 数値比較テーブル
-  html += `<table class="db-compare-table"><tbody>`;
-  AXES.forEach((axis, i) => {
-    const key = scoreKeys[i];
-    const pv = playerScores[key];
-    const tv = targetScores[key];
-    const diff = pv - tv;
-    const diffAbs = Math.abs(diff);
-    const diffLabel = diffAbs >= 20 ? (diff > 0 ? ' ★ 圧勝' : ' ★ 大差') : '';
-    const diffColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'var(--text-dim)';
-    html += `<tr>
-      <td>${axis}</td>
-      <td style="color:var(--gold);font-weight:700;text-align:right;width:50px">${pv}</td>
-      <td style="color:var(--text-dim);text-align:center;width:20px">vs</td>
-      <td style="color:${targetColor};font-weight:700;text-align:left;width:50px">${tv}</td>
-      <td style="color:${diffColor};font-size:12px">${diff > 0 ? '+' : ''}${diff}<span style="font-size:11px">${diffLabel}</span></td>
-    </tr>`;
+  // --- Section 2+3: Power Snapshot + GM Summary ---
+  const AXES = [
+    { key: 'ace', label: 'TOP5実力' },
+    { key: 'starPower', label: 'TOP5人気' },
+    { key: 'popularity', label: '団体人気' },
+    { key: 'depth', label: '選手層' },
+  ];
+  // SVG radar (diamond: top=ace, right=starPower, bottom=popularity, left=depth)
+  const R = 110, cx = 160, cy = 150;
+  const dirs = [[0,-1],[1,0],[0,1],[-1,0]]; // top, right, bottom, left
+  function radarPt(scores, keys) {
+    return keys.map((k, i) => {
+      const v = scores[k] / 100 * R;
+      return `${cx + dirs[i][0] * v},${cy + dirs[i][1] * v}`;
+    }).join(' ');
+  }
+  const axisKeys = ['ace','starPower','popularity','depth'];
+  const pPts = radarPt(d.playerScores, axisKeys);
+  const rPts = radarPt(d.rivalScores, axisKeys);
+
+  // Grid rings
+  let gridSvg = '';
+  [1, 0.75, 0.5, 0.25].forEach((s, i) => {
+    const a = [0, -R*s, R*s, 0, 0, R*s, -R*s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
+    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(255,255,255,${0.12 - i * 0.02})"/>`;
   });
-  html += `</tbody></table></div>`;
+
+  const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体比較レーダー">
+    <defs>
+      <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f0d078" stop-opacity="0.35"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0.08"/></linearGradient>
+      <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
+    </defs>
+    <g>
+      ${gridSvg}
+      <line x1="${cx}" y1="${cy - R - 8}" x2="${cx}" y2="${cy + R + 8}" stroke="rgba(255,255,255,0.08)"/>
+      <line x1="${cx - R - 8}" y1="${cy}" x2="${cx + R + 8}" y2="${cy}" stroke="rgba(255,255,255,0.08)"/>
+      <polygon points="${pPts}" fill="url(#gP)" stroke="#d4a843" stroke-width="2"/>
+      <polygon points="${rPts}" fill="url(#gR)" stroke="${rc}" stroke-width="2" opacity="0.7"/>
+      ${axisKeys.map((k, i) => {
+        const pv = d.playerScores[k] / 100 * R;
+        const rv = d.rivalScores[k] / 100 * R;
+        return `<circle cx="${cx + dirs[i][0]*pv}" cy="${cy + dirs[i][1]*pv}" r="3.5" fill="#f0d078"/>
+                <circle cx="${cx + dirs[i][0]*rv}" cy="${cy + dirs[i][1]*rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
+      }).join('')}
+      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5実力</text>
+      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
+      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
+      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
+    </g>
+  </svg>`;
+
+  // Axis bars
+  let axisBars = '';
+  AXES.forEach(ax => {
+    const diff = d.diffs[ax.key];
+    const cls = diff > 0 ? 'good' : diff < 0 ? 'bad' : '';
+    const sign = diff > 0 ? '+' : '';
+    axisBars += `<div class="db-cmp-axis-row">
+      <header><strong>${ax.label}</strong><span class="db-cmp-diff ${cls}">${sign}${diff}</span></header>
+      <div class="db-cmp-meter">
+        <span class="bar-player" style="width:${d.playerScores[ax.key]}%"></span>
+        <span class="bar-rival" style="width:${d.rivalScores[ax.key]}%;background:${rivalGrad}"></span>
+      </div>
+    </div>`;
+  });
+
+  html += `<section class="db-cmp-main-grid">
+    <div class="db-cmp-panel">
+      <h2 class="db-cmp-panel-title">Power Snapshot</h2>
+      <div class="db-cmp-analysis">
+        <div class="db-cmp-chart-box">${svgChart}</div>
+        <div class="db-cmp-axis-table">${axisBars}</div>
+      </div>
+    </div>
+    <div class="db-cmp-panel">
+      <h2 class="db-cmp-panel-title">GM Summary</h2>
+      <div class="db-cmp-story"><strong>現状総評</strong><p>${d.summaryText}</p></div>
+      <div class="db-cmp-insight-list">
+        <div class="db-cmp-insight"><div><strong>勝ち筋</strong><div class="desc">${d.opportunity}</div></div><span class="db-cmp-badge good">Opportunity</span></div>
+        <div class="db-cmp-insight"><div><strong>注意点</strong><div class="desc">${d.risk}</div></div><span class="db-cmp-badge bad">Risk</span></div>
+        <div class="db-cmp-insight"><div><strong>補強提案</strong><div class="desc">${d.scout}</div></div><span class="db-cmp-badge warn">Scout</span></div>
+      </div>
+    </div>
+  </section>`;
+
+  // --- Section 4+5: Key Matchups + Action Board ---
+  let matchupHtml = '';
+  d.matchups.forEach(m => {
+    const pUrl = getPortraitUrl(m.player.id);
+    const rUrl = getPortraitUrl(m.rival.id);
+    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
+    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
+    matchupHtml += `<div class="db-cmp-fighter-row">
+      <div class="db-cmp-fighter">
+        <div class="db-cmp-avatar player">${pAvatar}</div>
+        <div class="db-cmp-fighter-meta"><strong>${m.player.name}</strong><span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span></div>
+      </div>
+      <div class="db-cmp-role-chip">${m.role}</div>
+      <div class="db-cmp-fighter right">
+        <div class="db-cmp-avatar" style="background:linear-gradient(180deg,${rc},${hexDim(rc,0.4)})">${rAvatar}</div>
+        <div class="db-cmp-fighter-meta"><strong>${m.rival.name}</strong><span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span></div>
+      </div>
+    </div>`;
+  });
+
+  let actionHtml = '';
+  d.actions.forEach(a => {
+    actionHtml += `<div class="db-cmp-recommend">
+      <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
+      <p>${a.text}</p>
+    </div>`;
+  });
+
+  if (!matchupHtml) {
+    matchupHtml = `<div class="db-cmp-recommend"><p>比較できる主力選手データがまだ不足しています。</p></div>`;
+  }
+  if (!actionHtml) {
+    actionHtml = `<div class="db-cmp-recommend"><p>提案データを集計中です。</p></div>`;
+  }
+
+  html += `<section class="db-cmp-lower-grid">
+    <div class="db-cmp-panel">
+      <h2 class="db-cmp-panel-title">Key Matchups</h2>
+      <div class="db-cmp-roster">${matchupHtml}</div>
+    </div>
+    <div class="db-cmp-panel">
+      <h2 class="db-cmp-panel-title">Action Board</h2>
+      <div class="db-cmp-recommend-grid">${actionHtml}</div>
+    </div>
+  </section>`;
+
   return html;
-}
-
-function _drawOrgCompareChart() {
-  const cvs = document.getElementById('dbCompareChart');
-  if (!cvs) return;
-
-  const AXES = ['TOP5実力', '層の厚さ', '団体人気', 'TOP5人気'];
-  const scoreKeys = ['ace', 'depth', 'popularity', 'starPower'];
-  const playerScores = Engine.database.getOrgCompareScores(G, 'player');
-  const targetScores = Engine.database.getOrgCompareScores(G, _dbCompareTarget);
-  const targetOrg = RIVAL_ORGS.find(o => o.id === _dbCompareTarget);
-  const targetColor = targetOrg ? targetOrg.color : '#888';
-
-  const stats = AXES.map((label, i) => ({
-    label,
-    value: playerScores[scoreKeys[i]],
-    color: 'rgba(255,255,255,0.6)',
-  }));
-
-  drawRadarChart(cvs, stats, {
-    fillColor: '#d4a843',
-    fillAlpha: 0.25,
-    radius: 110,
-    labelSize: 11,
-    data2: {
-      values: scoreKeys.map(k => targetScores[k]),
-      fillColor: targetColor,
-      fillAlpha: 0.15,
-    },
-  });
 }
 
 // ╔══════════════════════════════════════════════════════════╗
