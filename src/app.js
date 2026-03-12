@@ -3089,7 +3089,7 @@ const App = {
     };
     // ビッグマッチBGM: タイトル戦で bigmatch.mp3 を再生
     if (m.isTitle) {
-      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
+      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
     }
     let sent = false;
     const sendOnce = () => {
@@ -5237,7 +5237,7 @@ const App = {
       }
     };
     // ビッグマッチBGM
-    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
+    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -5495,7 +5495,7 @@ App.ppvWatchMatch = function(idx) {
     }
   };
   // ビッグマッチBGM
-  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.4 }); } catch(e) {}
+  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
