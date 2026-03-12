@@ -3382,7 +3382,7 @@ function requestRental(fighterId, fromSource, fromOrgId) {
 
 function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
   Audio.play('transfer');
-  const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 500 + G.week));
+  const rng = (typeof sessionRng !== 'undefined' && sessionRng) ? sessionRng : Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, fighterId, seasons));
   const result = Engine.rental.requestRental(rng, G, fighterId, fromSource, fromOrgId || null, seasons);
   G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
   if (result.success) {

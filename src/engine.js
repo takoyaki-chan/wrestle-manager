@@ -5610,22 +5610,7 @@ const Engine = {
         if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
         fee = Engine.rental.calcSeasonFee(fighter, orgCfg, seasons);
 
-        // Negotiation check — 格上団体ほど拒否率が高い
-        const rankings = state.rankings || [];
-        const pRank = rankings.find(r => r.orgId === 'player');
-        const oRank = rankings.find(r => r.orgId === fromOrgId);
-        let baseRate = 0.80;
-        if (pRank && oRank) {
-          const gap = oRank.rating - pRank.rating;
-          if (gap > 150) baseRate -= 0.3;
-          else if (gap > 80) baseRate -= 0.1;
-        }
-        baseRate = Math.max(0.3, Math.min(0.9, baseRate));
-        if (Engine.rng.float(rng) >= baseRate) {
-          const orgName = state.rivalOrgNames?.[fromOrgId] || orgCfg.name || fromOrgId;
-          events.push(`❌ ${orgName}がレンタル要請を拒否（交渉成功率${Math.round(baseRate * 100)}%）`);
-          return { success: false, state, events };
-        }
+        // Rival rentals now succeed deterministically once listed and affordable.
       } else {
         // Free agent rental — no negotiation needed
         fighter = (state.freeAgents || []).find(f => f.id === fighterId);
