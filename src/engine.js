@@ -3449,7 +3449,7 @@ const Engine = {
         const surviving = [];
         const aiRetirees = [];
         roster.forEach(f => {
-          if (Engine.rival.checkRetirement(rng, f, { isAI: true })) {
+          if (Engine.rival.checkRetirement(rng, f)) {
             retiredNames.push(`${f.name}(${f.age}��)`);
             aiRetirees.push(f);
           } else {
@@ -3495,32 +3495,15 @@ const Engine = {
       return f;
     },
 
-    // Retirement check (v1.3-1 ��4 ? wear-based, replaces age-based chances)
-    getAIRetirementAgeChance(age) {
-      const safeAge = age || 0;
-      if (safeAge >= 39) return 1.0;
-      if (safeAge >= 38) return 0.82;
-      if (safeAge >= 37) return 0.65;
-      if (safeAge >= 36) return 0.45;
-      if (safeAge >= 35) return 0.32;
-      if (safeAge >= 34) return 0.24;
-      if (safeAge >= 33) return 0.18;
-      if (safeAge >= 32) return 0.12;
-      if (safeAge >= 31) return 0.08;
-      if (safeAge >= 30) return 0.05;
-      return 0;
-    },
-
-    // Retirement check (v1.3-1 ?4 + AI age pressure)
-    checkRetirement(rng, fighter, options = {}) {
-      const { isAI = false } = options;
+    // Retirement check (v1.3-1 ?4)
+    checkRetirement(rng, fighter) {
       const wear = fighter.wear || 0;
       const age = fighter.age || 17;
 
       // wear 80+: ???? (?3)
       if (wear >= 80) return true;
 
-      // ????: OVR < Notion * 0.60 ?2?????? (?4.4 ? ???????)
+      // ????: OVR < Notion * 0.60 ?2?????? (?4.4 - ???????)
       const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
       const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
       const currentOvr = Engine.util.ov(fighter);
@@ -3535,18 +3518,16 @@ const Engine = {
       let retireChance = 0;
       if (wear >= 60)      retireChance = 0.50; // ??
       else if (wear >= 40) retireChance = 0.20; // ????
-      if (isAI) {
-        const ageChance = Engine.rival.getAIRetirementAgeChance(age);
-        retireChance = Math.max(retireChance, ageChance);
-        if (age >= 34 && wear >= 30) retireChance = Math.min(0.95, retireChance + 0.10);
-        if (age >= 36 && wear >= 20) retireChance = Math.min(0.98, retireChance + 0.08);
-      }
+      if (RETIRE_CFG.chances[age] != null) retireChance = Math.max(retireChance, RETIRE_CFG.chances[age]);
+      else if (age >= 33) retireChance = 1.0;
       // wear < 40: ??????
       if (retireChance > 0 && Engine.rng.float(rng) < retireChance) return true;
 
       return false;
     },
 
+    // ���� B-3: AI Scouting (rival-spec ��5 + F1 tier limits) ��������
+    // F1 helper: count prodigies/promising on a roster
     countRosterRanks(roster) {
       let prodigies = 0, promising = 0;
       roster.forEach(f => {
@@ -5609,7 +5590,6 @@ const Engine = {
         fighter = orgData.roster.find(f => f.id === fighterId);
         if (!fighter) return { success: false, state, events: ['⚠ 選手が見つかりません'] };
         fee = Engine.rental.calcSeasonFee(fighter, orgCfg, seasons);
-
         // Rival rentals now succeed deterministically once listed and affordable.
       } else {
         // Free agent rental — no negotiation needed

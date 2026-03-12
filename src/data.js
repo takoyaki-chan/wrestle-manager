@@ -1325,7 +1325,7 @@ function ageMultiplier(age, traits) {
 
 // Retirement config (scout-spec §7)
 const RETIRE_CFG = {
-  chances: { 35:0.30, 36:0.50, 37:0.75, 38:0.90 }, // 39+ = 確定
+  chances: { 30:0.15, 31:0.40, 32:0.75, 33:1.00 }, // 33+ = guaranteed
   voluntaryThreshold: 0.60,  // OVR < Notion * 0.60
   voluntarySeasons: 2,       // 2シーズン連続で自主引退
   decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
