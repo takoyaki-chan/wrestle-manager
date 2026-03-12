@@ -1163,6 +1163,8 @@ const Storage = {
   },
 
   deserialize(json) {
+    const prevG = G;
+    const prevNextGenCharId = nextGenCharId;
     try {
       const state = JSON.parse(json);
       // Replace G entirely with saved state, preserving any missing defaults
@@ -1800,7 +1802,12 @@ const Storage = {
       }
 
       return true;
-    } catch(e) { console.error('Load failed:', e); return false; }
+    } catch(e) {
+      G = prevG;
+      nextGenCharId = prevNextGenCharId;
+      console.error('Load failed:', e);
+      return false;
+    }
   },
 
   save(slot) {
@@ -1840,7 +1847,9 @@ const Storage = {
       // PPVフェーズの復帰: オーバーレイを再初期化
       if (G.weekPhase === 'ppvShow') App.initPPVShow();
       else if (G.weekPhase === 'ppvTV') App.initPPVTV();
+      return true;
     }
+    return false;
   },
 
   getAutoSaveInfo() {
@@ -2017,12 +2026,13 @@ const App = {
   titleContinue() {
     Audio.play('select');
     document.getElementById('titleScreen').style.display = 'none';
-    // Load autosave
-    G = Engine.createInitialState();
+    if (!Storage.loadAutoSave()) {
+      Audio.play('error');
+      App.showTitleScreen();
+      alert('オートセーブの読み込みに失敗しました。');
+      return;
+    }
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
-    refreshAll();
-    Storage.loadAutoSave();
     App._refreshTicker(); // v1.4w
     Audio.bgm.playForState();
     refreshAll();
@@ -4497,6 +4507,26 @@ const App = {
   },
 
   // Advance to next week via Engine
+  advanceCurrentFlow() {
+    if (G.weekPhase === 'manage') {
+      App.processWeek();
+      return;
+    }
+    if (G.weekPhase === 'weekSummary') {
+      App.advanceFromWeekSummary();
+      return;
+    }
+    if (G.weekPhase === 'contractNegotiation') {
+      App.handleContractNegotiations();
+      return;
+    }
+    if (G.offSeason || G.weekPhase === 'offseason' || G.weekPhase === 'settled') {
+      App.advanceWeek();
+      return;
+    }
+    Audio.play('error');
+  },
+
   advanceWeek() {
     Audio.play('tick');
     const result = Engine.advanceWeek(G);

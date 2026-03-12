@@ -2651,7 +2651,7 @@ function startShowPrep() {
 // Legacy aliases for UI onclick handlers
 function executeShow() { App.executeShow(); }
 function closeShowResult() { App.closeShowResult(); }
-function doProcessWeek() { App.processWeek(); }
+function doProcessWeek() { App.advanceCurrentFlow(); }
 // v1.0: Instant schedule→action preview update
 function updateSchedulePreview(fighterId, newSchedule) {
   const c = G.roster.find(r => r.id === fighterId);
@@ -2671,7 +2671,7 @@ function updateSchedulePreview(fighterId, newSchedule) {
   const cell = document.getElementById('action-' + fighterId);
   if (cell) cell.innerHTML = `<span class="sched-tag ${action}">${label}</span>`;
 }
-function advanceWeek() { App.advanceWeek(); }
+function advanceWeek() { App.advanceCurrentFlow(); }
 
 // ═══ Battle Engine postMessage Listener (v0.86) ═══
 window.addEventListener('message', function(e) {
