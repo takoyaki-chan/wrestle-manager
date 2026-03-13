@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-13（E2演出テキスト全般 実装完了）
+> 最終更新: 2026-03-13（E2追加修正: セリフ性格分類の統一 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -847,6 +847,8 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 ---
 
 ## 設計決定ログ（実装済みルール集）
+
+- **E2追加修正: セリフ性格分類の統一（2026-03-13）** — キャラクター直接発話セリフの全箇所をpersonality×archetype辞書形式に統一。修正1-3: RIVALRY_CONFRONTATION_LINES/RIVALRY_CONFRONTATION_LINES_70/RIVALRY_CONFRONTATION_LINES_90をpairs配列→attacker/defender(+fateAttacker/fateDefender)のpersonality×archetype辞書に変換。修正4: UPSET_RIVALRY_LINES.loserLines新規追加（番狂わせ敗者専用セリフ、格上が格下に負けた衝撃・動揺）。修正5: WEEKLY_STORY_TICKER.awakeningをフラット配列→personality×archetype辞書に変換（覚醒するnameB側のpersonalityで選出）。UI: ui-common.js宣戦布告ポップアップをpickDialogueLine(attackerPool,leftFighter)/pickDialogueLine(defenderPool,rightFighter)に変更。番狂わせ時loserLinesをUPSET_RIVALRY_LINES.loserLinesから選出。engine.js覚醒イベントをgetDialoguePool+Engine.rng管理の選出に変更。全7personality×6archetype対応、人数少(shy/quiet/emotional)は_defaultのみ、人数多(normal/earnest/bold)は主要archetype充実。auto-sim 500シーズンALL CLEAR
 
 - **新聞データベースタブ移行 + 興行画面UIリデザイン + 新聞記事テキスト強化（2026-03-12）** — 試合後新聞ポップアップ廃止→データベースサブタブ(idx=5「📰 新聞」)に移行。G.currentNewspaper(headline/subheadline/article/対戦データ)をfinalizeShowで保存。tickWeek冒頭で次の興行週(isShowWeek かつ generatedWeek/Season不一致)にクリア→非興行週+興行当週の2週間閲覧可能。_renderDbNewspaper()でセピア調パネル内レンダリング。試合直前カード: 5列グリッドレイアウト、アッパー画像大表示、金色枠装飾、因縁/bond表示。新聞記事: 10カテゴリ×複数パターン(titleWin/rivalry/dominant/closeMQ/upset/superMQ/draw/normal/lowMQ/goodRival)。試合状況フラグに基づき見出し+サブ見出し+記事本文を自動生成。バグ修正: (1)SyntaxError修正(_buildShowResultNewspaperDataメソッド宣言欠落) (2)App.プレフィックス追加(_generateNewspaperTexts呼び出し) (3)tickWeekで同一興行週の新聞が即消去される問題をgeneratedWeek/Season比較で修正。変更: app.js/ui-render.js/ui-common.js/engine.js
 

@@ -12178,7 +12178,10 @@ Engine.relationships = {
             boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
             boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
             relationships[keyBA] = boostedBA;
-            events.push(`[awakening] ${_pick(WEEKLY_STORY_TICKER.awakening, left.name, right.name)}`);
+            // right=B(覚醒する側)のpersonality×archetypeでセリフ選出
+            const awPool1 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, right);
+            const awTpl1 = awPool1[Engine.rng.int(rng, 0, awPool1.length - 1)];
+            events.push(`[awakening] ${awTpl1.replace(/\{nameA\}/g, left.name).replace(/\{nameB\}/g, right.name)}`);
           }
         }
         if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20 && relAB.bond >= 60) {
@@ -12189,7 +12192,10 @@ Engine.relationships = {
             boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
             boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
             relationships[keyAB] = boostedAB;
-            events.push(`[awakening] ${_pick(WEEKLY_STORY_TICKER.awakening, right.name, left.name)}`);
+            // left=B(覚醒する側)のpersonality×archetypeでセリフ選出
+            const awPool2 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, left);
+            const awTpl2 = awPool2[Engine.rng.int(rng, 0, awPool2.length - 1)];
+            events.push(`[awakening] ${awTpl2.replace(/\{nameA\}/g, right.name).replace(/\{nameB\}/g, left.name)}`);
           }
         }
       }

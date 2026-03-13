@@ -1436,13 +1436,26 @@ function _renderRivalryPopup() {
 
   if (o.phase === 'confrontation') {
     // 宣戦布告
-    // rivalry帯別のテキストプール選択
+    // rivalry帯別のテキストプール選択（personality×archetype対応）
     const rivalryVal = o.rivalry || 0;
-    const lines = rivalryVal >= 90 ? RIVALRY_CONFRONTATION_LINES_90.pairs
-      : rivalryVal >= 70 ? RIVALRY_CONFRONTATION_LINES_70.pairs
-      : o.isFate ? RIVALRY_CONFRONTATION_LINES.fatePairs
-      : RIVALRY_CONFRONTATION_LINES.pairs;
-    const pair = lines[Math.floor(Math.random() * lines.length)];
+    const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
+    const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
+    let attackerPool, defenderPool;
+    if (rivalryVal >= 90) {
+      attackerPool = RIVALRY_CONFRONTATION_LINES_90.attacker;
+      defenderPool = RIVALRY_CONFRONTATION_LINES_90.defender;
+    } else if (rivalryVal >= 70) {
+      attackerPool = RIVALRY_CONFRONTATION_LINES_70.attacker;
+      defenderPool = RIVALRY_CONFRONTATION_LINES_70.defender;
+    } else if (o.isFate) {
+      attackerPool = RIVALRY_CONFRONTATION_LINES.fateAttacker;
+      defenderPool = RIVALRY_CONFRONTATION_LINES.fateDefender;
+    } else {
+      attackerPool = RIVALRY_CONFRONTATION_LINES.attacker;
+      defenderPool = RIVALRY_CONFRONTATION_LINES.defender;
+    }
+    const leftLine = pickDialogueLine(attackerPool, leftFighter);
+    const rightLine = pickDialogueLine(defenderPool, rightFighter);
     const headerEmoji = rivalryVal >= 70 ? '💥' : '🔥';
     const headerText = rivalryVal >= 70 ? '宿命の対決！' : '宿敵対決！';
 
@@ -1462,9 +1475,9 @@ function _renderRivalryPopup() {
       </div>
       <div class="rivalry-popup-lines">
         <div class="rivalry-popup-line-name">${o.leftName}</div>
-        <div class="rivalry-popup-line">${pair[0]}</div>
+        <div class="rivalry-popup-line">${leftLine}</div>
         <div class="rivalry-popup-line-name">${o.rightName}</div>
-        <div class="rivalry-popup-line">${pair[1]}</div>
+        <div class="rivalry-popup-line">${rightLine}</div>
       </div>
       <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
     `;
@@ -2982,8 +2995,9 @@ function renderShowResult(results, injuryResults) {
       const ovrL = Engine.util.ov(loseF);
       const isUpsetRivalry = ovrW < ovrL - 8;
       const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
+      const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
       const winLine = pickDialogueLine(winPool, winChar);
-      const loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
+      const loseLine = pickDialogueLine(losePool, loseChar);
       html += `<div style="margin-top:10px;padding:8px 12px;background:rgba(231,76,60,0.08);border-left:3px solid ${r.rivalryBonus.color || '#e17055'};border-radius:4px;font-size:12px">
         <div style="color:var(--text-sub);margin-bottom:4px"><b>${winF.name}</b>: 「${winLine}」</div>
         <div style="color:var(--text-sub)"><b>${loseF.name}</b>: 「${loseLine}」</div>
