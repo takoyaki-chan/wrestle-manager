@@ -226,18 +226,23 @@ function renderWeekScreen() {
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
               <span style="font-weight:700;font-size:17px">${c.name}</span>
               ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">✓ 選択中</span>' : ''}
-              ${tooExpensive ? '<span style="color:#e74c3c;font-size:11px;font-weight:700">💰 資金不足</span>' : ''}
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
               <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
-              <span style="font-size:12px;color:var(--gold);padding:2px 6px">💰 ${c.assessedValue || 0}万</span>
             </div>
           </div>
-          <div style="text-align:center;min-width:60px">
-            <div style="font-size:24px;font-weight:900;color:${picked?'#2ecc71':'var(--text)'}">${c.ovr}</div>
-            <div style="font-size:11px;color:var(--text-dim)">OVR</div>
-            <div style="font-size:11px;color:${c.coachEval.color};margin-top:2px">${c.coachEval.emoji} ${c.coachEval.text}</div>
+          <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+            <div style="text-align:center;min-width:52px">
+              <div style="font-size:24px;font-weight:900;color:${picked?'#2ecc71':'var(--text)'}">${c.ovr}</div>
+              <div style="font-size:10px;color:var(--text-dim)">OVR</div>
+              <div style="font-size:10px;color:${c.coachEval.color};margin-top:2px">${c.coachEval.emoji} ${c.coachEval.text}</div>
+            </div>
+            <div style="text-align:center;min-width:52px">
+              <div style="font-size:22px;font-weight:900;color:var(--gold)">${c.assessedValue || 0}</div>
+              <div style="font-size:10px;color:var(--gold)">契約金(万)</div>
+              ${tooExpensive ? '<div style="font-size:10px;color:#e74c3c;font-weight:700;margin-top:2px">資金不足</div>' : ''}
+            </div>
           </div>
           <div style="font-size:18px;color:var(--text-dim)">▼</div>
         </div>`;
