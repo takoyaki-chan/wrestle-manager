@@ -9682,6 +9682,8 @@ Engine.eventSystem = {
                  challenger: { id: challenger.id, name: challenger.name,
                    pw: challenger.pw, sp: challenger.sp, te: challenger.te,
                    st: challenger.st, mn: challenger.mn,
+                   style: challenger.style || 'Allround',
+                   role: challenger.role,
                    popularity: challenger.popularity || 0, traits: challenger.traits || [] },
                  challengerDialogue: dialogue };
       }
