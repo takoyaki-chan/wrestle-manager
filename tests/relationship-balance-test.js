@@ -165,10 +165,70 @@ function testLowBondVendettaStillWorksInsideZeroToHundredScale() {
   assert.ok(next.relationships['1>2'].bond <= 3, 'vendetta should push bond closer to zero');
 }
 
+
+function testRivalryLevelUsesRelationshipValues() {
+  const state = makeState({
+    rivalries: {
+      '1-2': { matches: 1, resolutionCount: 0 },
+    },
+    relationships: {
+      '1>2': { bond: 58, rivalry: 65 },
+      '2>1': { bond: 61, rivalry: 68 },
+    },
+  });
+
+  const lvl = Engine.title.getRivalryLevel(state, 1, 2);
+  assert.ok(lvl, 'rivalry level should exist for mutual rivalry');
+  assert.strictEqual(lvl.label, '宿敵', 'label should be derived from rivalry value band');
+  assert.strictEqual(lvl.mqBonus, 4, 'mutual rivalry65 with positive bond should grant rivalry bonus plus chemistry bonus');
+}
+
+function testResolutionRequiresPPVAndBranchesByBond() {
+  const goodState = makeState({
+    rivalries: { '1-2': { matches: 3, resolutionCount: 1 } },
+    relationships: {
+      '1>2': { bond: 65, rivalry: 82 },
+      '2>1': { bond: 68, rivalry: 85 },
+    },
+  });
+  const bitterState = makeState({
+    rivalries: { '1-2': { matches: 3, resolutionCount: 1 } },
+    relationships: {
+      '1>2': { bond: 25, rivalry: 82 },
+      '2>1': { bond: 28, rivalry: 84 },
+    },
+  });
+
+  const goodPair = Engine.title.getRivalryPairState(goodState, 1, 2);
+  const bitterPair = Engine.title.getRivalryPairState(bitterState, 1, 2);
+  assert.strictEqual(Engine.title.checkResolution(goodPair, 82, 70, 1, false), null, 'resolution should not happen outside PPV');
+  assert.strictEqual(Engine.title.checkResolution(goodPair, 82, 70, 1, true).resolved, 'goodRival', 'high bond should branch to good rival');
+  assert.strictEqual(Engine.title.checkResolution(bitterPair, 82, 70, 1, true).resolved, 'bitter', 'low bond should branch to bitter rival');
+}
+
+function testNeglectedRivalryPenaltyUsesWeeksNotMatches() {
+  const state = makeState({
+    season: 2,
+    week: 10,
+    rivalries: {
+      '1-2': { matches: 5, lastAbsWeek: ((2 - 1) * 48) + 6 },
+    },
+    relationships: {
+      '1>2': { bond: 35, rivalry: 66 },
+      '2>1': { bond: 33, rivalry: 64 },
+    },
+  });
+
+  const penalty = Engine.title.getNeglectedRivalryPenalty(state);
+  assert.strictEqual(penalty, -0.2, 'neglected rivalry penalty should trigger from rivalry value band and elapsed weeks');
+}
 testHighValueGainsAreSoftCapped();
 testWeeklyDecayCoolsHotRivalry();
 testRelationshipValuesStayOnTenthSteps();
 testCountersUseAbsoluteWeek();
+testRivalryLevelUsesRelationshipValues();
+testResolutionRequiresPPVAndBranchesByBond();
+testNeglectedRivalryPenaltyUsesWeeksNotMatches();
 testLowBondVendettaStillWorksInsideZeroToHundredScale();
 
 console.log('relationship-balance-test: ok');

@@ -831,9 +831,10 @@ const TITLES = [
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {tier:1, matches:2, label:'因縁', mqBonus:2, color:'#fdcb6e', emoji:'⚡'},
-  {tier:2, matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
-  {tier:3, matches:7, label:'宿命の相手', mqBonus:6, color:'#d63031', emoji:'💥'}
+  {tier:1, min:30, label:'因縁', color:'#fdcb6e', emoji:'⚡'},
+  {tier:2, min:50, label:'宿敵', color:'#e17055', emoji:'🔥'},
+  {tier:3, min:70, label:'宿命', color:'#d63031', emoji:'💥'},
+  {tier:3, min:90, label:'宿命', color:'#d63031', emoji:'💥'}
 ];
 
 // Phase 5: 片側因縁（一方的にライバル視している状態）
@@ -970,6 +971,336 @@ const GOODRIVAL_MQ_BONUS = 2;
 const GOODRIVAL_LABEL = '好敵手';
 const GOODRIVAL_EMOJI = '🤝';
 const GOODRIVAL_COLOR = '#74b9ff';
+const BITTER_RIVAL_MQ_BONUS = 3;
+const BITTER_RIVAL_LABEL = '宿怨';
+const BITTER_RIVAL_EMOJI = '💀';
+const BITTER_RIVAL_COLOR = '#636e72';
+
+// ══════════════════════════════════════════════════════════
+//  E2: 演出テキスト — 因縁・関係イベント用
+// ══════════════════════════════════════════════════════════
+
+// ── 好敵手ルート決着セリフ（personality×archetype）──
+const GOODRIVAL_RESOLUTION_LINES = {
+  winner: {
+    normal: {
+      _default: ['あなたがいたから、ここまで来られた。……ありがとう', '最高のライバルだった。これからも、よろしく'],
+      ojousama: ['あなたがいてくださったから、ここまで来られましたわ。……感謝いたします'],
+      delinquent: ['お前がいたから強くなれた。……サンキュな'],
+      cool: ['……認めている。これからも、共に'],
+      seductive: ['あなたがいたから輝けた。……ありがとう'],
+    },
+    bold: {
+      _default: ['お前は俺の誇りだ。これからも全力でぶつかってこい', '最高の好敵手だ。胸を張れ'],
+      ojousama: ['あなたは私の誇りですわ。これからも全力でいらっしゃい'],
+      delinquent: ['お前は俺の誇りだ。これからも来いよ'],
+      cool: ['……好敵手だ。それ以上の言葉はいらない'],
+    },
+    quiet: {
+      _default: ['………（手を差し出す）'],
+      cool: ['……ありがとう。……これからも'],
+      polite: ['…ありがとうございました。…これからも、お願いします'],
+    },
+    shy: { _default: ['あ、あの…ずっと…尊敬してました…（手を握る）'] },
+    easygoing: {
+      _default: ['最高の相手だったよ！ これからも一緒に上を目指そう！'],
+      delinquent: ['最高だったぜ！ まだまだ一緒にやろうな！'],
+    },
+    earnest: {
+      _default: ['あなたのおかげで成長できました。……好敵手として、これからも', 'ここまでの全試合に感謝します。これからもよろしくお願いします'],
+      polite: ['あなたのおかげで成長できました。これからもよろしくお願いいたします'],
+    },
+    emotional: { _default: ['ありがとう……！ あなたがいなかったら……今の私はいない……！（涙）'] },
+  },
+  loser: {
+    normal: {
+      _default: ['負けた。でも……誇らしい。あなたが好敵手で良かった', '悔しいけど、清々しい。最高の試合をありがとう'],
+      ojousama: ['負けましたわ。でも……あなたが好敵手で良かった'],
+      delinquent: ['負けたけどよ……清々しいぜ。お前が好敵手で良かった'],
+    },
+    bold: {
+      _default: ['完敗だ。だが悔いはない。最高の好敵手だった', '負けた。けど胸を張って言える——お前は最高のライバルだ'],
+      cool: ['……負けた。だが……悪くない'],
+    },
+    quiet: {
+      _default: ['………（涙を拭い、静かに笑う）'],
+      cool: ['……負けた。……でも、悔いはない'],
+      polite: ['…ありがとう、ございました…（深々とお辞儀）'],
+    },
+    shy: { _default: ['負けちゃった…でも…嬉しいです…変かな…（涙）'] },
+    easygoing: {
+      _default: ['負けたけど、なんか笑っちゃうよ。最高の相手だもん！'],
+      delinquent: ['負けたけど……へへ、最高だったぜ'],
+    },
+    earnest: {
+      _default: ['負けました。でもこの試合は一生忘れません', '悔しい。でも……ありがとうございます。最高の好敵手です'],
+      polite: ['負けました。でもこの試合は一生の宝です'],
+    },
+    emotional: { _default: ['負けた……！ でも嬉しい……！ 最高の好敵手……！（号泣）'] },
+  },
+};
+
+// ── 宿怨ルート決着セリフ（personality×archetype）──
+const BITTER_RESOLUTION_LINES = {
+  winner: {
+    normal: {
+      _default: ['……終わった。もう二度と、あなたの顔は見たくない', '決着はついた。これで終わりにしよう'],
+      ojousama: ['これで決着ですわ。もう……関わりたくありませんの'],
+      delinquent: ['終わりだ。もう目の前に現れるな'],
+      cool: ['……決着だ。消えろ'],
+      seductive: ['終わったわ。もう……あなたの顔は見たくない'],
+    },
+    bold: {
+      _default: ['叩き潰した。これが答えだ', 'やっと黙らせた。これで終わりだ'],
+      ojousama: ['叩き潰しましたわ。これが私の答えですの'],
+      delinquent: ['ぶっ潰した。文句あるか'],
+      cool: ['……終わりだ'],
+    },
+    quiet: {
+      _default: ['………（無言で背を向ける）'],
+      cool: ['……もう終わった'],
+    },
+    shy: { _default: ['…終わった…のかな…（震えが止まらない）'] },
+    easygoing: {
+      _default: ['……はぁ。やっと終わった。もう勘弁してくれ'],
+      delinquent: ['……ふぅ。もう絡んでくんなよ'],
+    },
+    earnest: {
+      _default: ['決着をつけました。これ以上は……もう十分です'],
+      polite: ['決着がつきました。……もう、十分です'],
+    },
+    emotional: { _default: ['終わった……！ やっと……終わったんだ……！'] },
+  },
+  loser: {
+    normal: {
+      _default: ['……認めない。こんなの認めない', '負けた？ ……いいだろう。覚えておけ'],
+      ojousama: ['認めませんわ……こんな結末、認めませんの……！'],
+      delinquent: ['ちくしょう……覚えてろ……！'],
+      cool: ['……今日は負けた。だが……終わらない'],
+      seductive: ['……覚えていなさい。これで終わりだと思わないで'],
+    },
+    bold: {
+      _default: ['認めない。絶対に。この借りは必ず返す', '……もう一度だ。もう一度やらせろ……！'],
+      ojousama: ['認めませんわ……！ この借りは必ず返しますの……！'],
+    },
+    quiet: {
+      _default: ['………（拳を握りしめ、唇を噛む）'],
+      cool: ['………（静かに目を閉じる）'],
+    },
+    shy: { _default: ['…こんなの…いやだ…………'] },
+    easygoing: {
+      _default: ['……ははっ。参ったよ。でも忘れないからな'],
+      delinquent: ['くそっ……忘れねえぞ……'],
+    },
+    earnest: {
+      _default: ['認めません……こんな結末は認めません……！', '負けた……でもこれで終わりなんかじゃない……！'],
+      polite: ['……認めません。こんな結末は……認められません'],
+    },
+    emotional: { _default: ['嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）'] },
+  },
+};
+
+// ── カード編成時 宣戦布告テキスト（rivalry帯別）──
+const RIVALRY_CONFRONTATION_LINES_70 = {
+  // rivalry 70〜89: 宿命の対決
+  pairs: [
+    ['逃げ場はない。ここで全てを終わらせる', '……来なさい。全力で迎え撃つ'],
+    ['あなたの存在が、私を追い詰めてきた。今夜それを終わらせる', 'なら証明してみせなさい。あなたが上だと'],
+    ['何度夢に見たことか。あなたを倒す、この瞬間を', '夢で終わらせてあげましょう'],
+    ['もう後がない。ここで決める', '……同感よ。だから本気で行く'],
+    ['この因縁に、終止符を打つ', '打てるものなら、打ってみなさい'],
+  ],
+};
+const RIVALRY_CONFRONTATION_LINES_90 = {
+  // rivalry 90〜100: 最上位
+  pairs: [
+    ['……この日をどれだけ待ったか', '……私もよ。もう言葉はいらない'],
+    ['全てを賭ける。残らず全てを', '……ええ。私もよ'],
+    ['あなたを超えなければ、私の物語は終わらない', '……なら、超えてみせなさい'],
+  ],
+};
+
+// ── 週次ティッカーテキスト ──
+const WEEKLY_STORY_TICKER = {
+  // 第1層: 双方条件
+  bestFriends: [
+    // 親友ゾーン（bond70+, rivalry40未満）
+    '{nameA}と{nameB}が練習後に並んで帰る姿が目撃された',
+    '{nameA}と{nameB}がトレーニングで息の合った動きを見せている',
+    '{nameA}が{nameB}の体調を気遣っている姿があった',
+  ],
+  hostileEnemy: [
+    // 憎い敵ゾーン（rivalry40+, bond40未満）
+    '{nameA}と{nameB}の間に張り詰めた空気が漂っている',
+    '{nameA}と{nameB}が控室で目も合わせない',
+    'ロッカールームの一角で{nameA}と{nameB}の冷たい空気が流れている',
+  ],
+  clash: [
+    // 衝突発生（憎い敵ゾーン、5%判定ヒット時）
+    '{nameA}と{nameB}が練習中に激しく言い合いになった',
+    '{nameA}と{nameB}の口論が控室に響いた',
+    '{nameA}が{nameB}に食ってかかり、スタッフが止めに入った',
+    '{nameA}と{nameB}の間で一触即発の空気が走った',
+    '{nameA}と{nameB}が掴み合いになりかけ、周囲が慌てて止めた',
+  ],
+  goodRivalZone: [
+    // 好敵手的ゾーン（rivalry40+, bond50+）
+    '{nameA}が{nameB}の試合映像を繰り返し見ている',
+    '{nameA}と{nameB}が練習後に言葉を交わし、互いに頷いていた',
+    '{nameA}は{nameB}の試合結果を真っ先に確認している',
+  ],
+  // 第2層: 非対称
+  unrequitedBond: [
+    // 片思い（A→B bond70+ / B→A bond40以下）
+    '{nameA}が{nameB}に話しかけるも、素っ気ない反応だった',
+    '{nameA}は{nameB}のことを親友だと思っている——{nameB}がどう思っているかは別として',
+    '{nameA}が{nameB}を誘うが、{nameB}は別の用事があると去っていった',
+  ],
+  onesidedHostility: [
+    // 一方的な敵意（A→B rivalry50+ bond30以下 / B→A rivalry20以下）
+    '{nameA}が{nameB}を睨みつけている。{nameB}は気づいていない',
+    '{nameA}は{nameB}の名前を聞くたびに表情を歪めている',
+    '{nameA}の練習が日に日に荒くなっている——{nameB}への執念が滲む',
+  ],
+  temperatureDiff: [
+    // 温度差（A→B bond70+ / B→A bond50-65, 差15+）
+    '{nameA}が{nameB}との距離に少し戸惑っている様子だ',
+    '{nameA}は{nameB}との関係をもっと深めたいようだが……',
+  ],
+  crossAsymmetry: [
+    // クロス非対称（A: 高riv+低bond / B: 低riv+高bond）
+    '{nameA}は{nameB}を目の敵にしている。{nameB}は{nameA}のことを仲間だと思っているのに',
+    '{nameB}が笑顔で話しかけた{nameA}は、拳を握りしめて背を向けた',
+  ],
+  // 高rivalry: 非対戦時の意識テキスト
+  highRivalryAwareness: [
+    '{nameA}は客席から{nameB}の試合を食い入るように見つめていた',
+    '{nameA}は{nameB}の試合結果を聞いて、ゆっくりとテーピングを巻き直した',
+    '{nameA}が{nameB}の勝利を知り、静かに拳を握った',
+    '花道の奥から{nameA}が{nameB}の試合を見ていた。その目は揺れていない',
+  ],
+  // resolved状態のティッカー
+  goodRivalTicker: [
+    '{nameA}と{nameB}が練習後に静かに言葉を交わしていた',
+    '{nameA}と{nameB}——好敵手の二人が並んでストレッチをしている',
+    '{nameA}は{nameB}の試合を見て、小さく微笑んだ',
+  ],
+  bitterRivalTicker: [
+    '{nameA}と{nameB}が控室ですれ違い、空気が凍りついた',
+    '{nameA}の表情が一瞬歪んだ——{nameB}の名前を聞いただけで',
+    '{nameA}と{nameB}が同じ廊下を歩くことを、誰もが避けさせている',
+  ],
+  // trust警告帯テキスト（trust 40-49）
+  trustWarning: [
+    '{name}の表情が最近曇っている',
+    '{name}の練習への集中力が落ちてきている',
+    '{name}がひとりでロッカールームに佇んでいた',
+    '{name}の笑顔が減った——周囲もそれに気づいている',
+  ],
+  // 因縁カード放置テキスト
+  neglectedRivalry: [
+    'ファンが{nameA}と{nameB}の対戦を待ち望んでいる',
+    '「{nameA}vs{nameB}はいつ実現するんだ」——SNSで声が上がっている',
+    '因縁のカードが宙に浮いたまま——ファンの不満が募っている',
+  ],
+  // 覚醒イベント（クロス非対称: A高riv低bond / B低riv高bond → Bがキレる）
+  awakening: [
+    '{nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」',
+    '{nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」',
+    '{nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」',
+    '「ずっと仲間だと思ってた。でも……あなたにとって私はただの邪魔者なんでしょう」——{nameB}の声が震えている',
+  ],
+};
+
+// ── 試合後リアクション（高rivalryペア用、personality×archetype）──
+const RIVALRY_MATCH_REACTION = {
+  winnerLines: {
+    normal: {
+      _default: ['まだ終わっていない。次も必ず勝つ', 'あいつとの戦いは……まだ続く'],
+      ojousama: ['まだ終わっておりませんわ。次も勝ちますの'],
+      delinquent: ['次もぶっ倒す。覚えとけ'],
+      cool: ['……まだだ'],
+      seductive: ['まだ終わってないわ。次も待ってなさい'],
+    },
+    bold: {
+      _default: ['この勝利は通過点だ。本当の決着はまだ先にある'],
+      ojousama: ['通過点ですわ。真の決着はまだ先ですの'],
+      cool: ['……一つ、借りを返した'],
+    },
+    quiet: {
+      _default: ['………（相手の方を一瞬だけ振り返る）'],
+      cool: ['……まだ終わらない'],
+    },
+    shy: { _default: ['勝った…けど…まだ…終わりじゃない…'] },
+    easygoing: {
+      _default: ['一個勝ち！ でもまだまだこれからだよ！'],
+      delinquent: ['一勝！ でもまだまだだぜ！'],
+    },
+    earnest: {
+      _default: ['勝ちました。でもこの因縁はまだ続きます'],
+      polite: ['勝たせていただきました。でもまだ……終わりではありません'],
+    },
+    emotional: { _default: ['勝った……！ でもまだ……まだ終わらない……！'] },
+  },
+  loserLines: {
+    normal: {
+      _default: ['次は負けない。絶対に', '……覚えていろ。この借りは返す'],
+      ojousama: ['次は負けませんわ。覚えていらっしゃい'],
+      delinquent: ['くそっ……次は絶対ぶっ倒す'],
+      cool: ['……次は、ない。次こそ倒す'],
+      seductive: ['次は……負けないわ'],
+    },
+    bold: {
+      _default: ['認めない。この負けは認めない。必ず借りを返す'],
+      cool: ['……忘れない。この敗北を'],
+    },
+    quiet: {
+      _default: ['………（静かに拳を握りしめる）'],
+      cool: ['……次だ'],
+    },
+    shy: { _default: ['…負けちゃった……でも……次は…絶対…'] },
+    easygoing: {
+      _default: ['あちゃー、負けた。でも次があるさ。絶対やり返す！'],
+      delinquent: ['くっそー！ 次は見てろよ！'],
+    },
+    earnest: {
+      _default: ['負けました。でも諦めません。必ず借りを返します'],
+      polite: ['……悔しいです。でも、次は必ず'],
+    },
+    emotional: { _default: ['悔しい……！ 絶対……絶対やり返す……！'] },
+  },
+};
+
+// ── 番狂わせ × 高rivalry 専用テキスト ──
+const UPSET_RIVALRY_LINES = {
+  winnerLines: {
+    normal: {
+      _default: ['見たか……！ 格上だなんて、もう言わせない……！'],
+      ojousama: ['ご覧になりまして？ 格上などと……もう言わせませんわ'],
+      delinquent: ['どうだ……！ これが俺の答えだ！'],
+      cool: ['……証明した'],
+      seductive: ['見てた？ これが私の答えよ'],
+    },
+    bold: {
+      _default: ['ついに……ついに倒した……！ この日をどれだけ待ったか……！'],
+      cool: ['……やった。……ようやく'],
+    },
+    quiet: {
+      _default: ['………（膝をつき、震えている）……勝った…？'],
+      cool: ['……勝った。……信じられない'],
+    },
+    shy: { _default: ['え…勝った…の…？ ほんとに…？（涙が溢れる）'] },
+    easygoing: {
+      _default: ['うっそ……勝っちゃった……！ やばい、信じられない……！'],
+      delinquent: ['マジか……やったぞ……！'],
+    },
+    earnest: {
+      _default: ['やりました……！ ずっとこの人を目標にしてきて……ついに……！'],
+      polite: ['勝ちました……！ ずっと追いかけてきた背中に……ついに……！'],
+    },
+    emotional: { _default: ['勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）'] },
+  },
+};
 
 // カード鮮度システム
 const FRESHNESS_CONFIG = {
@@ -5690,7 +6021,10 @@ if (typeof module !== 'undefined' && module.exports) {
     SPONSOR_TABLE, BROADCAST_TABLE, FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,
     TITLES, RIVALRY_THRESHOLDS, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
-    MQ_EXTERNAL_CAP, GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR,
+    MQ_EXTERNAL_CAP, GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
+    GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES,
+    RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,
+    WEEKLY_STORY_TICKER, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,
     FRESHNESS_CONFIG, COACH_RANKS, COACH_STYLE_MAP, COACH_STYLE_BONUS,
     COACH_SLOT_THRESHOLDS, COACH_POOL_CFG, COACH_TRAIT_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
@@ -5719,3 +6053,4 @@ if (typeof module !== 'undefined' && module.exports) {
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,
   };
 }
+

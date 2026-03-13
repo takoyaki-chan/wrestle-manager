@@ -1436,10 +1436,15 @@ function _renderRivalryPopup() {
 
   if (o.phase === 'confrontation') {
     // 宣戦布告
-    const lines = o.isFate ? RIVALRY_CONFRONTATION_LINES.fatePairs : RIVALRY_CONFRONTATION_LINES.pairs;
+    // rivalry帯別のテキストプール選択
+    const rivalryVal = o.rivalry || 0;
+    const lines = rivalryVal >= 90 ? RIVALRY_CONFRONTATION_LINES_90.pairs
+      : rivalryVal >= 70 ? RIVALRY_CONFRONTATION_LINES_70.pairs
+      : o.isFate ? RIVALRY_CONFRONTATION_LINES.fatePairs
+      : RIVALRY_CONFRONTATION_LINES.pairs;
     const pair = lines[Math.floor(Math.random() * lines.length)];
-    const headerEmoji = o.isFate ? '💥' : '🔥';
-    const headerText = o.isFate ? '宿命の対決！' : '宿敵対決！';
+    const headerEmoji = rivalryVal >= 70 ? '💥' : '🔥';
+    const headerText = rivalryVal >= 70 ? '宿命の対決！' : '宿敵対決！';
 
     box.className = `rivalry-popup${o.isFate ? ' fate' : ''}`;
     box.innerHTML = `
@@ -1476,18 +1481,28 @@ function _renderRivalryPopup() {
 
   } else {
     // 決着
-    const winLineObj = o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner;
-    const loseLineObj = o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser;
+    const isGoodRival = o.resolutionType === 'goodRival';
+    const isBitter = o.resolutionType === 'bitter';
+    // 好敵手/宿怨は専用セリフプール、それ以外は既存セリフ
+    const winLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
+      : isBitter ? BITTER_RESOLUTION_LINES.winner
+      : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner);
+    const loseLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.loser
+      : isBitter ? BITTER_RESOLUTION_LINES.loser
+      : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser);
     const winFighter = ALL_CHARS.find(c => c.id === o.winnerId);
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    const headerEmoji = o.isFate ? '💥' : '⚡';
-    const headerText = o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！');
+    const headerEmoji = isBitter ? '💀' : isGoodRival ? '🤝' : (o.isFate ? '💥' : '⚡');
+    const headerText = isBitter ? '宿怨決着！' : isGoodRival ? '好敵手誕生！' : (o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！'));
 
-    box.className = `rivalry-popup resolution${o.isFate ? ' fate' : ''}`;
-    const goodRivalMsg = o.isSecondResolution
-      ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>` : '';
+    box.className = `rivalry-popup resolution${useFateLines ? ' fate' : ''}`;
+    const goodRivalMsg = isGoodRival
+      ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>`
+      : isBitter
+        ? `<div class="rivalry-popup-goodrival">💀 ふたりは「宿怨」になった</div>`
+        : '';
     box.innerHTML = `
       <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
       <div class="rivalry-popup-vs">
@@ -1518,7 +1533,7 @@ function _renderRivalryPopup() {
     box.style.transform = 'scale(0.9)';
     overlay.classList.add('active');
     setTimeout(() => {
-      Audio.play(o.isFate ? 'fate_resolution' : 'rivalry_resolution');
+      Audio.play((o.isFate || o.resolutionType === 'goodRival' || o.resolutionType === 'bitter') ? 'fate_resolution' : 'rivalry_resolution');
       box.style.transition = 'opacity 0.3s, transform 0.3s';
       box.style.opacity = '1';
       box.style.transform = 'scale(1)';
@@ -2121,12 +2136,11 @@ function showFighterPopup(fighterId, source) {
           const parts = key.split('-').map(Number);
           if (!parts.includes(c.id)) return null;
           const otherId = parts.find(id => id !== c.id);
-          let level = null;
-          for (const t of RIVALRY_THRESHOLDS) { if (entry.matches >= t.matches) level = t; }
+          const level = Engine.title.getRivalryLevel(G, c.id, otherId);
           return level ? { otherId, entry, level } : null;
         })
         .filter(Boolean)
-        .sort((a, b) => b.entry.matches - a.entry.matches);
+        .sort((a, b) => (b.level.rivalry || 0) - (a.level.rivalry || 0));
 
       const myExpects = isRoster
         ? Engine.fanExpect.generate(G).filter(e => e.leftId === c.id || e.rightId === c.id)
@@ -2139,7 +2153,7 @@ function showFighterPopup(fighterId, source) {
           myRivalries.forEach(r => {
             const other = findFighter(r.otherId);
             const lvl = r.level;
-            html += `<div style="font-size:12px;margin-bottom:3px">${lvl.emoji} <span style="color:${lvl.color};font-weight:600">${lvl.label}</span>: ${other ? `<span class="flink" onclick="event.stopPropagation();showFighterPopup(${r.otherId},'')">${other.name}</span>` : `ID#${r.otherId}`} <span style="color:var(--text-dim)">(${r.entry.matches}試合)</span></div>`;
+            html += `<div style="font-size:12px;margin-bottom:3px">${lvl.emoji} <span style="color:${lvl.color};font-weight:600">${lvl.label}</span>: ${other ? `<span class="flink" onclick="event.stopPropagation();showFighterPopup(${r.otherId},'')">${other.name}</span>` : `ID#${r.otherId}`} <span style="color:var(--text-dim)">(riv ${Math.round(lvl.rivalry || 0)} / ${r.entry.matches || 0}戦)</span></div>`;
           });
         }
         if (myExpects.length > 0) {
@@ -2519,11 +2533,11 @@ function showPPVVSDetail(matchIdx) {
   html += `</div>`;
   // 因縁情報
   if (match.isRivalry) {
-    const key1 = `${left.id}-${right.id}`, key2 = `${right.id}-${left.id}`;
-    const rivalry = (G.rivalries || {})[key1] || (G.rivalries || {})[key2];
-    if (rivalry) {
-      const lvlNames = ['', '好敵手', '宿敵', '永遠のライバル'];
-      html += `<div style="text-align:center;margin-top:10px;font-size:12px;color:#e74c3c">🔥 ${lvlNames[rivalry.level] || '因縁'} (${rivalry.matches || 0}戦)</div>`;
+    const level = Engine.title.getRivalryLevel(G, left.id, right.id);
+    if (level) {
+      const pairKey = `${Math.min(left.id, right.id)}-${Math.max(left.id, right.id)}`;
+      const entry = (G.rivalries || {})[pairKey] || {};
+      html += `<div style="text-align:center;margin-top:10px;font-size:12px;color:${level.color}">${level.emoji} ${level.label} (riv ${Math.round(level.rivalry || 0)} / ${entry.matches || 0}戦)</div>`;
     }
   }
   html += `<div style="text-align:center;margin-top:14px">`;
@@ -2956,6 +2970,25 @@ function renderShowResult(results, injuryResults) {
         </div>
       </div>
     </div>`;
+
+    // 高rivalryペアの試合後リアクション
+    if (!isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 40) {
+      const winF = leftIsWinner ? r.left : r.right;
+      const loseF = leftIsWinner ? r.right : r.left;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
+      // 番狂わせ判定（OVR差8+）
+      const ovrW = Engine.util.ov(winF);
+      const ovrL = Engine.util.ov(loseF);
+      const isUpsetRivalry = ovrW < ovrL - 8;
+      const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
+      const winLine = pickDialogueLine(winPool, winChar);
+      const loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
+      html += `<div style="margin-top:10px;padding:8px 12px;background:rgba(231,76,60,0.08);border-left:3px solid ${r.rivalryBonus.color || '#e17055'};border-radius:4px;font-size:12px">
+        <div style="color:var(--text-sub);margin-bottom:4px"><b>${winF.name}</b>: 「${winLine}」</div>
+        <div style="color:var(--text-sub)"><b>${loseF.name}</b>: 「${loseLine}」</div>
+      </div>`;
+    }
 
     html += `<details style="margin-top:8px"><summary style="font-size:12px;color:var(--text-dim);cursor:pointer">試合ログを見る</summary>
         <div style="font-size:11px;color:var(--text-sub);margin-top:4px;max-height:200px;overflow-y:auto">

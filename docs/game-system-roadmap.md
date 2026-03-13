@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-13（Bond/Rivalry/Trust イベント設計スペック v1.0 完成）
+> 最終更新: 2026-03-13（E2演出テキスト全般 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -8,7 +8,21 @@
 
 ## 現在の状態
 
-**Bond/Rivalry/Trust イベント設計スペック v1.0 完成（2026-03-13）。**
+**Bond/Rivalry/Trust イベント設計 Phase E-2 演出テキスト実装完了（2026-03-13）。**
+
+- **E2 演出テキスト全般**: relationship-event-design-spec-v1.0.md §7.1/§9.2 Phase E-2 の全テキスト差し替え完了
+  - **好敵手ルート専用セリフ**: GOODRIVAL_RESOLUTION_LINES（勝者/敗者 × personality×archetype）
+  - **宿怨ルート専用セリフ**: BITTER_RESOLUTION_LINES（勝者/敗者 × personality×archetype）
+  - **カード編成時 rivalry帯別テキスト**: 70-89帯=RIVALRY_CONFRONTATION_LINES_70、90-100帯=RIVALRY_CONFRONTATION_LINES_90
+  - **週次ティッカー本番テキスト**: WEEKLY_STORY_TICKER（親友/憎い敵/衝突/好敵手的/片思い/一方的敵意/温度差/クロス非対称/高rivalry意識/好敵手/宿怨/trust警告/因縁放置/覚醒 の14カテゴリ）
+  - **試合後リアクション**: RIVALRY_MATCH_REACTION（高rivalryペアの勝者/敗者反応、personality×archetype）
+  - **番狂わせ×高rivalry**: UPSET_RIVALRY_LINES（格上の宿敵をついに倒した系、personality×archetype）
+  - **覚醒イベント**: クロス非対称（A:高riv低bond / B:低riv高bond）で1.5%/週でB覚醒（rivalry+15-20、bond-10-15）。ドラマ文言4パターン
+  - **バグ修正**: processWeeklyStoryEvents内の`relationships`変数未宣言を修正（前セッションのバグ）
+- 変更: data.js, engine.js, app.js, ui-common.js（4ファイル）
+- auto-sim 100シーズン ALL CLEAR
+
+**Bond/Rivalry/Trust イベント設計スペック v1.0 + Phase A-E1 実装完了（2026-03-13）。**
 
 - **因縁段階システム再設計**: `RIVALRY_THRESHOLDS` のtier/matchesベース昇格を廃止。rivalry値の連続的MQボーナスカーブに変換（30→+1, 50→+2〜3, 70→+4〜5, 90→+6）。表示ラベルはbondバンドと同じ思想で表示専用
 - **因縁決着のbond分岐**: 2回目決着時にbond≥50→好敵手🤝（resolved='goodRival'）、bond<50→宿怨💀（resolved='bitter', MQ+3, rivalry30〜40凍結）。M-14尊敬ルート維持
@@ -17,7 +31,6 @@
 - **trust中間帯（40〜60）**: trustSensitivity感度カーブ導入。中間帯×1.5/警告帯×1.3/安定帯×1.0/盤石帯×0.7。trust40台に警告ティッカー・練習効率低下・bond形成阻害
 - **高rivalryのゲームプレイ効果**: ①演出充実（カード編成ラベル/試合後反応/ティッカー）が最優先、②orgPop飴と鞭（対戦+0.3〜0.5/放置−0.2/週）、③控えめ集客ボーナス（メイン+3〜5%/サブ+1.5〜3%、累積上限+8%）
 - 設計書: `specs/relationship-event-design-spec-v1.0.md`
-- 次ステップ: 数値調整（auto-sim）、ティッカーテキスト執筆、スナップショット連携設計。実装はClaude Code
 
 **S級エース強化 & NPC団体チャンピオン設計完了（2026-03-13）。**
 

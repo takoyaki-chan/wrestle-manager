@@ -597,7 +597,8 @@ const Engine = {
       const titleBonus = hasTitleMatch ? 0.15 : 0.0;
       const champBonus = hasChampOnCard ? 0.10 : 0.0;
       const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
-      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus, 2.0);
+      const rivalryAttendanceBonus = Engine.title.getAttendanceBonusPct(G, G.showCard || []);
+      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus + rivalryAttendanceBonus, 2.0);
       // Step 4: 週次揺らぎ（会場スケール — 大会場ほどハイリスク）
       const fluctRange = VENUE_FLUCTUATION[venueIdx] || 0.17;
       const fluctuation = rng
@@ -791,106 +792,202 @@ const Engine = {
     getRivalry(G, id1, id2) {
       return G.rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
     },
-    getRivalryLevel(G, id1, id2) {
-      const r = Engine.title.getRivalry(G, id1, id2);
-      // 好敵手（従来通り: resolved === true → 好敵手を返す）
-      if (r && r.resolved) {
-        return { matches: r.matches || 0, label: GOODRIVAL_LABEL, mqBonus: GOODRIVAL_MQ_BONUS,
-                 color: GOODRIVAL_COLOR, emoji: GOODRIVAL_EMOJI, isGoodRival: true };
+    getRivalryBand(rivalry) {
+      if (rivalry == null || rivalry < 30) return null;
+      let best = null;
+      for (const t of RIVALRY_THRESHOLDS) {
+        if (rivalry >= t.min) best = t;
       }
-      // Phase 5: tier ベースの判定
-      if (r && r.tier >= 1) {
-        const t = RIVALRY_THRESHOLDS.find(th => th.tier === r.tier);
-        if (t) return { ...t, matches: r.matches || 0 };
-      }
-      // Phase 5: 片側因縁チェック（G.relationships から）
-      if (G.relationships) {
-        const keyAB = `${id1}>${id2}`;
-        const keyBA = `${id2}>${id1}`;
-        const relAB = G.relationships[keyAB];
-        const relBA = G.relationships[keyBA];
-        const rivAB = relAB?.rivalry || 0;
-        const rivBA = relBA?.rivalry || 0;
-        if ((rivAB >= 50 && rivBA < 30) || (rivBA >= 50 && rivAB < 30)) {
-          const aggressor = rivAB >= 50 ? id1 : id2;
-          return { matches: r?.matches || 0, label: ONESIDED_RIVALRY_LABEL,
-                   mqBonus: ONESIDED_RIVALRY_MQ_BONUS, color: ONESIDED_RIVALRY_COLOR,
-                   emoji: ONESIDED_RIVALRY_EMOJI, isOneSided: true, aggressor };
-        }
-      }
-      // 従来のmatches判定（tier未設定の既存データ用フォールバック）
-      if (r) {
-        let best = null;
-        for (const t of RIVALRY_THRESHOLDS) { if (r.matches >= t.matches) best = t; }
-        return best;
-      }
-      return null;
+      return best ? { ...best } : null;
     },
-    // 因縁決着判定: v2.0 — 決着2回上限。1回目=宿敵(4+)、2回目=宿命の相手(7+)
-    // v2.1: 閾値を天井の80%に動的化（下限30, 上限50）— 低OVR帯でも決着可能に
-    checkResolution(rivalLvl, mq, avgOV, resolutionCount) {
+    getRivalryMQBonus(rivalry) {
+      if (rivalry == null || rivalry < 30) return 0;
+      if (rivalry < 50) return 1;
+      if (rivalry < 60) return 2;
+      if (rivalry < 70) return 3;
+      if (rivalry < 80) return 4;
+      if (rivalry < 90) return 5;
+      return 6;
+    },
+    getRivalryPairState(G, id1, id2) {
+      const entry = Engine.title.getRivalry(G, id1, id2) || null;
+      const keyAB = `${id1}>${id2}`;
+      const keyBA = `${id2}>${id1}`;
+      const relAB = G.relationships?.[keyAB] || null;
+      const relBA = G.relationships?.[keyBA] || null;
+      const rivalryAB = relAB?.rivalry || 0;
+      const rivalryBA = relBA?.rivalry || 0;
+      const bondAB = relAB?.bond ?? 50;
+      const bondBA = relBA?.bond ?? 50;
+      const minRivalry = Math.min(rivalryAB, rivalryBA);
+      const maxRivalry = Math.max(rivalryAB, rivalryBA);
+      const minBond = Math.min(bondAB, bondBA);
+      const avgBond = (bondAB + bondBA) / 2;
+      const resolvedType = entry?.resolved === true ? 'goodRival' : (entry?.resolved || null);
+      const isOneSided = !resolvedType && maxRivalry >= 50 && minRivalry < 30;
+      const aggressor = isOneSided
+        ? (rivalryAB >= rivalryBA ? id1 : id2)
+        : null;
+      const band = Engine.title.getRivalryBand(minRivalry);
+      return {
+        entry,
+        rivalryAB,
+        rivalryBA,
+        bondAB,
+        bondBA,
+        minRivalry,
+        maxRivalry,
+        minBond,
+        avgBond,
+        band,
+        resolvedType,
+        isOneSided,
+        aggressor,
+        matches: entry?.matches || 0,
+      };
+    },
+    getRivalryLevel(G, id1, id2) {
+      const pair = Engine.title.getRivalryPairState(G, id1, id2);
+      const pendingClashBonus = pair.entry?.pendingClashBonus || 0;
+      if (pair.resolvedType === 'goodRival') {
+        return {
+          matches: pair.matches,
+          tier: 3,
+          rivalry: 5,
+          label: GOODRIVAL_LABEL,
+          mqBonus: GOODRIVAL_MQ_BONUS + pendingClashBonus,
+          color: GOODRIVAL_COLOR,
+          emoji: GOODRIVAL_EMOJI,
+          isGoodRival: true,
+          resolvedType: 'goodRival',
+        };
+      }
+      if (pair.resolvedType === 'bitter') {
+        return {
+          matches: pair.matches,
+          tier: 3,
+          rivalry: 35,
+          label: BITTER_RIVAL_LABEL,
+          mqBonus: BITTER_RIVAL_MQ_BONUS + pendingClashBonus,
+          color: BITTER_RIVAL_COLOR,
+          emoji: BITTER_RIVAL_EMOJI,
+          isBitterRival: true,
+          resolvedType: 'bitter',
+        };
+      }
+      if (pair.isOneSided) {
+        return {
+          matches: pair.matches,
+          tier: 0,
+          rivalry: pair.maxRivalry,
+          label: ONESIDED_RIVALRY_LABEL,
+          mqBonus: ONESIDED_RIVALRY_MQ_BONUS + pendingClashBonus,
+          color: ONESIDED_RIVALRY_COLOR,
+          emoji: ONESIDED_RIVALRY_EMOJI,
+          isOneSided: true,
+          aggressor: pair.aggressor,
+        };
+      }
+      if (!pair.band) return null;
+      return {
+        matches: pair.matches,
+        tier: pair.band.tier,
+        rivalry: pair.minRivalry,
+        label: pair.band.label,
+        mqBonus: Engine.title.getRivalryMQBonus(pair.minRivalry) + (pair.minBond >= 50 && pair.minRivalry >= 40 ? 1 : 0) + pendingClashBonus,
+        color: pair.band.color,
+        emoji: pair.band.emoji,
+      };
+    },
+    checkResolution(pairState, mq, avgOV, resolutionCount, isPPV) {
       resolutionCount = resolutionCount || 0;
-      if (resolutionCount >= 2) return null; // 好敵手: もう決着しない
-      const requiredMatches = resolutionCount === 0 ? 4 : 7;
-      if (!rivalLvl || rivalLvl.matches < requiredMatches) return null;
-      // 天井計算（battle-engine §1 と同一式）
+      if (!pairState || pairState.resolvedType) return null;
+      if (resolutionCount >= 2) return null;
+      if (!isPPV) return null;
+
       let ceiling;
       if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
       else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
       else ceiling = 83 + (avgOV - 80) * 0.85;
       ceiling = Math.round(Engine.util.clamp(ceiling, 15, 100));
-      // 動的閾値: ceiling×0.80, 下限30, 上限50
       const threshold = Math.min(50, Math.max(30, Math.round(ceiling * 0.80)));
       if (mq < threshold) return null;
-      const isFate = rivalLvl.matches >= 7;
+
+      const shortcutGoodRival = pairState.rivalryAB >= 80 && pairState.rivalryBA >= 80
+        && pairState.bondAB >= 60 && pairState.bondBA >= 60 && mq >= 75;
+      if (shortcutGoodRival) {
+        return {
+          type: 'goodRival',
+          label: GOODRIVAL_LABEL,
+          emoji: GOODRIVAL_EMOJI,
+          popBonus: 6,
+          orgPopBonus: 2.5,
+          newResolutionCount: 2,
+          resolved: 'goodRival',
+          rivalryRange: [0, 5],
+          isShortcut: true,
+        };
+      }
+
+      if (resolutionCount === 0) {
+        if (pairState.minRivalry < 60) return null;
+        return {
+          type: 'first',
+          label: '因縁決着',
+          emoji: '⚡',
+          popBonus: 4,
+          orgPopBonus: 1.5,
+          newResolutionCount: 1,
+          rivalryRange: pairState.minBond >= 50 ? [10, 20] : [25, 35],
+        };
+      }
+
+      if (pairState.minRivalry < 80) return null;
+      const resolved = pairState.minBond >= 50 ? 'goodRival' : 'bitter';
       return {
-        isFate,
-        popBonus: isFate ? 6 : 4,
-        orgPopBonus: isFate ? 2.5 : 1.5,
-        newResolutionCount: resolutionCount + 1,
+        type: resolved,
+        label: resolved === 'goodRival' ? GOODRIVAL_LABEL : BITTER_RIVAL_LABEL,
+        emoji: resolved === 'goodRival' ? GOODRIVAL_EMOJI : BITTER_RIVAL_EMOJI,
+        popBonus: 6,
+        orgPopBonus: 2.5,
+        newResolutionCount: 2,
+        resolved,
+        rivalryRange: resolved === 'goodRival' ? [0, 5] : [30, 40],
       };
     },
     // Returns { rivalries, msg }
     // Phase 5: matchMQ引数追加（bestMQSinceTier更新用）。昇格メッセージは出さない（checkRivalryTitlesで判定）
     recordRivalry(G, id1, id2, matchMQ) {
       const key = Engine.title.getRivalryKey(id1, id2);
-      const oldEntry = G.rivalries[key] || { matches: 0, lastWeek: 0, tier: 0, matchesSinceTier: 0, bestMQSinceTier: 0 };
-      // v2.0: 好敵手は matches 加算しない
+      const oldEntry = G.rivalries[key] || {
+        matches: 0,
+        lastWeek: 0,
+        resolutionCount: 0,
+        lastBand: 0,
+        oneSided: null,
+      };
       if (oldEntry.resolved) return { rivalries: G.rivalries, msg: null };
-      // ライバル体質: 因縁カウント+1加速（通常1→2）
-      const c1Ref = G.roster.find(c=>c.id===id1)||{};
-      const c2Ref = G.roster.find(c=>c.id===id2)||{};
+      const c1Ref = G.roster.find(c => c.id === id1) || {};
+      const c2Ref = G.roster.find(c => c.id === id2) || {};
       let rivalryBonus = (Traits.has(c1Ref, 'ライバル体質') || Traits.has(c2Ref, 'ライバル体質')) ? 2 : 1;
-      // ヒール適性: 対立構造を生みやすい（50%の確率で因縁+1加速）
       if (Traits.has(c1Ref, 'ヒール適性') || Traits.has(c2Ref, 'ヒール適性')) {
         const heelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.week, id1.charCodeAt?.(0) || 0, 0xBEE1));
         if (Engine.rng.float(heelRng) < 0.5) rivalryBonus += 1;
       }
-      // v1.5s25b: rivalry_chance_up バフ（マイルストーン）
       const rivalryChanceUp = (G.milestoneBuffs || []).find(b => b.type === 'rivalry_chance_up');
       if (rivalryChanceUp) rivalryBonus += 1;
       const newEntry = {
         ...oldEntry,
-        matches: oldEntry.matches + rivalryBonus,
-        matchesSinceTier: (oldEntry.matchesSinceTier || 0) + 1,
-        bestMQSinceTier: Math.max(oldEntry.bestMQSinceTier || 0, matchMQ || 0),
+        matches: (oldEntry.matches || 0) + rivalryBonus,
         lastWeek: G.week,
       };
-      const newRivalries = { ...G.rivalries, [key]: newEntry };
-      // Phase 5: 昇格メッセージはcheckRivalryTitlesで出すため、ここでは出さない
-      return { rivalries: newRivalries, msg: null };
+      return { rivalries: { ...G.rivalries, [key]: newEntry }, msg: null };
     },
-    // ══════════════════════════════════════════════════════════
-    // Phase 5: 週次ライバル称号判定 — tickWeek内でrelationships処理後に呼ぶ
+    // Phase 5: 週次ライバル表示更新
     // Returns { state, events }
-    // ══════════════════════════════════════════════════════════
     checkRivalryTitles(state) {
-      const rels = state.relationships || {};
-      let rivalries = { ...state.rivalries };
-      let relationshipHistory = [...(state.relationshipHistory || [])];
+      const rivalries = { ...(state.rivalries || {}) };
       const events = [];
-      const absWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
-      // 全キャラ名前マップ構築
       const nameMap = new Map();
       (state.roster || []).forEach(c => nameMap.set(c.id, c.name));
       Object.values(state.aiOrgs || {}).forEach(org => {
@@ -898,117 +995,87 @@ const Engine = {
       });
       (state.freeAgents || []).forEach(c => nameMap.set(c.id, c.name));
       const getName = (id) => nameMap.get(id) || '?';
+      const pairsToCheck = new Set(Object.keys(rivalries));
 
-      // 走査対象: 全rivalriesエントリ + relationships から高rivalry ペアを抽出
-      const pairsToCheck = new Set();
-      for (const key of Object.keys(rivalries)) {
-        pairsToCheck.add(key);
-      }
-      // relationships から rivalry 30+ のペアも候補（片側因縁/新規因縁の検出用）
-      for (const key of Object.keys(rels)) {
-        const r = rels[key];
-        if ((r.rivalry || 0) >= 30) {
-          const sepIdx = key.indexOf('>');
-          const idA = parseInt(key.substring(0, sepIdx), 10);
-          const idB = parseInt(key.substring(sepIdx + 1), 10);
-          const rivalryKey = Engine.title.getRivalryKey(idA, idB);
-          pairsToCheck.add(rivalryKey);
-        }
-      }
+      Object.keys(state.relationships || {}).forEach(key => {
+        const sepIdx = key.indexOf('>');
+        const idA = parseInt(key.substring(0, sepIdx), 10);
+        const idB = parseInt(key.substring(sepIdx + 1), 10);
+        pairsToCheck.add(Engine.title.getRivalryKey(idA, idB));
+      });
 
       for (const key of pairsToCheck) {
-        const parts = key.split('-');
-        const id1 = parseInt(parts[0], 10);
-        const id2 = parseInt(parts[1], 10);
-        let entry = rivalries[key] || { matches: 0, lastWeek: 0, tier: 0, matchesSinceTier: 0, bestMQSinceTier: 0 };
-        if (entry.resolved) continue; // 好敵手はスキップ
+        const [id1, id2] = key.split('-').map(Number);
+        const pairState = Engine.title.getRivalryPairState(state, id1, id2);
+        const entry = rivalries[key] || { matches: 0, lastWeek: 0, resolutionCount: 0, lastBand: 0, oneSided: null };
+        const prevBand = entry.lastBand || 0;
+        const nextBand = pairState.band ? pairState.band.tier : 0;
 
-        const tier = entry.tier || 0;
-        const keyAB = `${id1}>${id2}`;
-        const keyBA = `${id2}>${id1}`;
-        const rivAB = rels[keyAB]?.rivalry || 0;
-        const rivBA = rels[keyBA]?.rivalry || 0;
-        const rivMin = Math.min(rivAB, rivBA);
-        const rivMax = Math.max(rivAB, rivBA);
-        let newTier = tier;
-        let changed = false;
-
-        // ── 1. 降格チェック ──
-        if (tier === 3 && rivMin <= 50) {
-          newTier = 2; changed = true;
-          events.push(`🔥 ${getName(id1)} vs ${getName(id2)} — 意識の低下…宿命の相手から宿敵に`);
-        }
-        if ((newTier === 2 || tier === 2) && newTier >= 2 && rivMin <= 35) {
-          newTier = 1; changed = true;
-          if (tier === 2) events.push(`⚡ ${getName(id1)} vs ${getName(id2)} — 関係の希薄化…宿敵から因縁に`);
-        }
-        if ((newTier === 1 || tier === 1) && newTier <= 1 && rivMin <= 20) {
-          const weeksSinceLast = absWeek - (entry.lastWeek || 0);
-          if (weeksSinceLast >= 48) {
-            newTier = 0; changed = true;
-            events.push(`💨 ${getName(id1)} vs ${getName(id2)} — 因縁が風化した`);
-            // 履歴記録
-            const peakTier = Math.max(tier, entry.tier || 0);
-            const peakLabel = peakTier === 3 ? '宿命の相手' : (peakTier === 2 ? '宿敵' : '因縁');
-            relationshipHistory.push({
-              id1, id2, peakTier, peakLabel,
-              dissolvedWeek: absWeek,
-              totalMatches: entry.matches || 0,
-            });
+        if (!pairState.resolvedType && nextBand !== prevBand) {
+          if (nextBand > prevBand && pairState.band) {
+            events.push(`${pairState.band.emoji} ${getName(id1)} vs ${getName(id2)} — ${pairState.band.label}が深まっている`);
+          } else if (nextBand > 0) {
+            const labelInfo = pairState.band || RIVALRY_THRESHOLDS.find(t => t.tier === nextBand);
+            if (labelInfo) events.push(`${labelInfo.emoji} ${getName(id1)} vs ${getName(id2)} — ${labelInfo.label}に落ち着いた`);
+          } else if (prevBand > 0) {
+            events.push(`… ${getName(id1)} vs ${getName(id2)} — 因縁はひとまず静まった`);
           }
         }
 
-        // ── 2. 昇格チェック（1ティアずつ、降格後の値で判定）──
-        if (newTier === 0 && entry.matches >= 2) {
-          if (rivMin >= 30 || rivMax >= 50) {
-            newTier = 1; changed = true;
-            events.push(`⚡ ${getName(id1)} vs ${getName(id2)} — 因縁関係に発展！（MQ+${RIVALRY_THRESHOLDS[0].mqBonus}）`);
-          }
-        }
-        if (newTier === 1 && tier <= 1) {
-          if (rivMin >= 50 && (entry.matchesSinceTier || 0) >= 3 && (entry.bestMQSinceTier || 0) >= 70) {
-            newTier = 2; changed = true;
-            events.push(`🔥 ${getName(id1)} vs ${getName(id2)} — 宿敵関係に発展！（MQ+${RIVALRY_THRESHOLDS[1].mqBonus}）`);
-          }
-        }
-        if (newTier === 2 && tier <= 2) {
-          if (rivMin >= 70 && (entry.matchesSinceTier || 0) >= 3 && (entry.bestMQSinceTier || 0) >= 80) {
-            newTier = 3; changed = true;
-            events.push(`💥 ${getName(id1)} vs ${getName(id2)} — 宿命の相手に発展！（MQ+${RIVALRY_THRESHOLDS[2].mqBonus}）`);
-          }
-        }
-
-        // ── 3. tier変更の反映 ──
-        if (changed) {
-          const isPromotion = newTier > tier;
-          entry = {
-            ...entry,
-            tier: newTier,
-            tierPromotedWeek: isPromotion ? absWeek : (entry.tierPromotedWeek || absWeek),
-            matchesSinceTier: isPromotion ? 0 : entry.matchesSinceTier,
-            bestMQSinceTier: isPromotion ? 0 : entry.bestMQSinceTier,
-          };
-          rivalries[key] = entry;
-        }
-
-        // ── 4. 片側因縁の更新 ──
-        if ((entry.tier || 0) === 0) {
-          if (rivMax >= 50 && rivMin < 30) {
-            const aggressor = rivAB >= 50 ? id1 : id2;
-            entry = { ...entry, oneSided: aggressor };
-            rivalries[key] = entry;
-          } else if (entry.oneSided) {
-            entry = { ...entry, oneSided: null };
-            rivalries[key] = entry;
-          }
-        } else if (entry.oneSided) {
-          // tier 1以上なら片側因縁解除
-          entry = { ...entry, oneSided: null };
-          rivalries[key] = entry;
-        }
+        rivalries[key] = {
+          ...entry,
+          lastBand: pairState.resolvedType ? 0 : nextBand,
+          oneSided: pairState.resolvedType ? null : (pairState.isOneSided ? pairState.aggressor : null),
+        };
       }
 
-      return { state: { ...state, rivalries, relationshipHistory }, events };
+      return { state: { ...state, rivalries }, events };
+    },
+
+    getMatchChemistryBonus(pairState) {
+      if (!pairState || pairState.resolvedType || pairState.isOneSided) return 0;
+      if (pairState.minBond >= 70 && pairState.maxRivalry < 40) return 1;
+      return 0;
+    },
+
+    getBookedRivalryOrgPopBonus(state, matches) {
+      if (!matches || matches.length === 0) return 0;
+      let raw = 0;
+      matches.forEach(match => {
+        const pairState = Engine.title.getRivalryPairState(state, match.leftId, match.rightId);
+        if (pairState.minRivalry >= 80) raw += 0.5;
+        else if (pairState.minRivalry >= 60) raw += 0.3;
+      });
+      if (raw <= 0) return 0;
+      return Engine.orgPop.applyOrgPopChange(Math.min(raw, 1.0), state.orgPop || 0, null);
+    },
+
+    getNeglectedRivalryPenalty(state) {
+      const absWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+      let raw = 0;
+      Object.entries(state.rivalries || {}).forEach(([key, entry]) => {
+        const ids = key.split('-').map(Number);
+        const pairState = Engine.title.getRivalryPairState(state, ids[0], ids[1]);
+        if (pairState.resolvedType || pairState.minRivalry < 60) return;
+        if (!entry.lastAbsWeek) return;
+        if ((absWeek - entry.lastAbsWeek) >= 3) raw -= 0.2;
+      });
+      return Math.max(raw, -1.0);
+    },
+
+    getAttendanceBonusPct(state, showCard) {
+      if (!showCard || showCard.length === 0) return 0;
+      let total = 0;
+      showCard.forEach((m, idx) => {
+        if (!m || !m.left || !m.right) return;
+        const pairState = Engine.title.getRivalryPairState(state, m.left, m.right);
+        const rivalry = pairState.minRivalry;
+        if (rivalry < 60) return;
+        if (idx === 0) total += rivalry >= 80 ? 0.05 : 0.03;
+        else if (idx === 1) total += rivalry >= 80 ? 0.03 : 0.015;
+        else total += rivalry >= 80 ? 0.01 : 0.005;
+      });
+      return Math.min(total, 0.08);
     },
 
     getWorldChampion(G) {
@@ -3275,7 +3342,9 @@ const Engine = {
           const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           const intensiveMult = isIntensive ? GROWTH_CONFIG.intensiveMult : 1.0;
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
-          const trainGrowth = Math.round(growth * statusMult * intensiveMult * isolationMult * 10) / 10;
+          const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
+          const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
+          const trainGrowth = Math.round(growth * statusMult * intensiveMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
             nc[growStat] = Math.min(nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100, nc[growStat] + trainGrowth);
@@ -3285,7 +3354,7 @@ const Engine = {
           if (isIntensive) {
             const adaptBonus = (nc.traits || []).includes('\u9069\u5fdc\u529b') ? 2 : 0;
             nc.condition = Math.max(0, (nc.condition || 70) - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
-            if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
+            if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
               const weeks = 1 + Engine.rng.int(rng, 0, 1);
               nc.injury = { type: 'training injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
@@ -3411,7 +3480,7 @@ const Engine = {
             nc = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(nc, result.mq, won, matchRng);
 
             nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
-            const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id);
+            const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id) * (nc._relationshipInjuryMult || 1.0);
             if (Engine.rng.float(matchRng) < injuryChance) {
               const weeks = 2 + Engine.rng.int(matchRng, 0, 3);
               nc.injury = { type: 'match injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
@@ -3985,11 +4054,13 @@ const Engine = {
           const trainerMult = Engine.careActions.getTrainerMult(nc);
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * 10) / 10;
+          const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
+          const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
-          if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id)) {
+          if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
             nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
             events.push(`⚠️ ${nc.name}が強化練習中に負傷！（${weeks}週離脱）`);
@@ -4037,7 +4108,9 @@ const Engine = {
           const trainerMult = Engine.careActions.getTrainerMult(nc);
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * 10) / 10;
+          const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
+          const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
@@ -4552,6 +4625,9 @@ const Engine = {
     if (s.relationships && Object.keys(s.relationships).length > 0) {
       const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE1B));
       s = Engine.relationships.processWeeklyDecay(s, relRng);
+      const weeklyRelResult = Engine.relationships.processWeeklyStoryEvents(s, relRng);
+      s = weeklyRelResult.state;
+      weeklyRelResult.events.forEach(e => events.push(e));
     }
     // Phase 5: ライバル称号 週次判定（昇格/降格/片側因縁）
     if (s.rivalries && s.relationships) {
@@ -4664,8 +4740,11 @@ const Engine = {
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
       const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
       // メタデータ記録（MQにはまだ加算しない）
+      const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) result.rivalryBonus = rivalLvl;
+      const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
+      if (chemistryBonus > 0) result.friendshipBonus = chemistryBonus;
       if (m.isTitle) {
         result.isTitleMatch = true;
         // v2.1: OVR差格差ペナルティ用にチャンピオンvs挑戦者のOVR差を記録
@@ -4736,6 +4815,7 @@ const Engine = {
     const results = rawResults.map((r, matchIdx) => {
       let externalMQ = 0;
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
+      if (r.friendshipBonus) externalMQ += r.friendshipBonus;
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
       if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
       if (r.promoStackBonus > 0) externalMQ += r.promoStackBonus;
@@ -4772,9 +4852,9 @@ const Engine = {
         // 因縁相手との引退試合ボーナス (§2.6)
         const opponentId = lastRunFighter.id === r.left.id ? r.right.id : r.left.id;
         const rivalLevel = Engine.title.getRivalryLevel(s, lastRunFighter.id, opponentId);
-        if (rivalLevel && rivalLevel.matches >= 4) {
-          if (rivalLevel.matches >= 7) {
-            externalMQ += 5;  // 宿命の相手 +5
+        if (rivalLevel && ((rivalLevel.rivalry || 0) >= 50 || rivalLevel.isGoodRival || rivalLevel.isBitterRival)) {
+          if ((rivalLevel.rivalry || 0) >= 70 || rivalLevel.isGoodRival || rivalLevel.isBitterRival) {
+            externalMQ += 5;  // 宿命/宿怨クラス +5
             r.lastRunRivalBonus = 5;
           } else {
             externalMQ += 3;  // 宿敵 +3
@@ -4850,8 +4930,17 @@ const Engine = {
       events.push(...mqPop.popEvents);
     });
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
+    const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
+    if (bookedRivalryOrgPopBonus !== 0) {
+      popResult = {
+        ...popResult,
+        popDelta: Math.round((popResult.popDelta + bookedRivalryOrgPopBonus) * 10) / 10,
+        orgPop: Engine.util.clamp((popResult.orgPop || 0) + bookedRivalryOrgPopBonus, 0, 100),
+      };
+      events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
+    }
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 10) / 10} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
@@ -5012,7 +5101,7 @@ const Engine = {
         const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
         const resultBonus = won ? 0.0 : 0.2;
         const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+        let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
         // v2.0: 試合成長にも年齢倍率を適用
         matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
 
@@ -6449,14 +6538,14 @@ const Engine = {
       const pRank = Engine.ranking.getPlayerRank(rankings);
       const mqBonuses = []; // 各試合のMQボーナス内訳（UI表示用）
 
-      // Step 5-6: 宿敵+ペアの検出（因縁決着判定用に保留）
+      // PPVでは双方rivalry60+ペアを決着判定用に保留
       const deferredRivalryIdxs = [];
       card.forEach((match, idx) => {
         const pLeft = roster.find(c => c.id === match.left.id);
         const pRight = roster.find(c => c.id === match.right.id);
         if (!pLeft && !pRight) return;
-        const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
-        if (rivalLvl && !rivalLvl.isGoodRival && rivalLvl.matches >= 4) {
+        const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
+        if (!pairState.resolvedType && pairState.minRivalry >= 60) {
           deferredRivalryIdxs.push(idx);
         }
       });
@@ -6470,11 +6559,17 @@ const Engine = {
 
         // Step 5-6: 因縁MQボーナス（プレイヤー選手が関与する試合のみ）
         if (pLeft || pRight) {
+          const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
           const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
           if (rivalLvl) {
             r.mq = Math.min(100, r.mq + rivalLvl.mqBonus);
             r.rivalryBonus = rivalLvl;
             bonusInfo.rivalry = rivalLvl.mqBonus;
+          }
+          const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
+          if (chemistryBonus > 0) {
+            r.mq = Math.min(100, r.mq + chemistryBonus);
+            r.friendshipBonus = chemistryBonus;
           }
           // Step 5-6: コーチMQボーナス
           const coachMQ = Engine.coach.getMQBonusForMatch(s, match.left.id, match.right.id);
@@ -6510,27 +6605,43 @@ const Engine = {
         const avgOV = (Engine.util.ov(match.left) + Engine.util.ov(match.right)) / 2;
         const key = Engine.title.getRivalryKey(match.left.id, match.right.id);
         const currentEntry = rivalries[key] || {};
-        const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV, currentEntry.resolutionCount || 0);
+        const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
+        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0, true);
         if (resolution) {
-          const isSecondResolution = resolution.newResolutionCount >= 2;
+          const isFinalResolution = resolution.newResolutionCount >= 2;
+          const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, match.left.id, match.right.id, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
           const updatedEntry = {
-            matches: 0, lastWeek: s.week, lastResolvedWeek: s.week,
+            ...rivalries[key],
+            matches: 0,
+            lastWeek: s.week,
+            lastAbsWeek: ((s.season || 1) - 1) * 48 + (s.week || 1),
+            lastResolvedWeek: s.week,
             resolutionCount: resolution.newResolutionCount,
-            // Phase 5: 決着後はtier/カウンターもリセット
-            tier: 0, matchesSinceTier: 0, bestMQSinceTier: 0, oneSided: null,
-            ...(isSecondResolution ? { resolved: true } : {}),
+            lastBand: 0,
+            oneSided: null,
+            pendingClashBonus: 0,
+            ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
           };
-          rivalries = { ...rivalries, [key]: { ...rivalries[key], ...updatedEntry } };
-          // 報酬: 両選手 popularity 直接加算
+          rivalries = { ...rivalries, [key]: updatedEntry };
+          if (s.relationships) {
+            const rels = { ...(s.relationships || {}) };
+            const keyAB = `${match.left.id}>${match.right.id}`;
+            const keyBA = `${match.right.id}>${match.left.id}`;
+            const relAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
+            const relBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
+            relAB.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+            relBA.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+            rels[keyAB] = relAB;
+            rels[keyBA] = relBA;
+            s = { ...s, relationships: rels };
+          }
           roster = roster.map(c => {
             if (c.id === match.left.id || c.id === match.right.id) {
               return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
             }
             return c;
           });
-          // Phase0修正: 因縁決着orgPopボーナス追加（1回目+1.5, 2回目+2.5, 逓減適用）
-          const rivalOrgPopRaw = isSecondResolution ? 2.5 : 1.5;
-          const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(rivalOrgPopRaw, s.orgPop, null);
+          const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(resolution.orgPopBonus, s.orgPop, null);
           s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + rivalOrgPopDelta, 0, 100) };
           const winnerId = r.winner === 'left' ? match.left.id : (r.winner === 'right' ? match.right.id : match.left.id);
           const loserId = winnerId === match.left.id ? match.right.id : match.left.id;
@@ -6538,15 +6649,16 @@ const Engine = {
           const loserName = loserId === match.left.id ? match.left.name : match.right.name;
           rivalryResolutions.push({
             phase: 'resolution', winnerId, loserId, winnerName, loserName,
-            isFate: resolution.isFate, isSecondResolution,
+            resolutionType: resolution.resolved || 'first',
+            isFate: pairState.minRivalry >= 70,
+            isSecondResolution: isFinalResolution,
             popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
           });
           r.rivalryResolved = true;
-          // スナップショット用: 因縁解消フラグ
           if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
           s._rivalryResolvedThisWeek.push({ fighterId: match.left.id, fighter2Id: match.right.id });
-          const emoji = resolution.isFate ? '💥' : '⚡';
-          const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
+          const emoji = resolution.emoji || '⚡';
+          const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
           events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
         } else {
           // 不完全燃焼: 通常通り recordRivalry — Phase 5: matchMQ渡し
@@ -6555,6 +6667,12 @@ const Engine = {
           if (rivalResult.msg) events.push(rivalResult.msg);
         }
       });
+
+      const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, card.map(m => ({ leftId: m.left.id, rightId: m.right.id })));
+      if (bookedRivalryOrgPopBonus !== 0) {
+        s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + bookedRivalryOrgPopBonus, 0, 100) };
+        events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
+      }
 
       // Step 5-6: ヒート更新
       const avgMQ = results.length > 0 ? Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length) : 0;
@@ -6584,7 +6702,7 @@ const Engine = {
           const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
           const resultBonus = won ? 0.0 : 0.2;
           const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, rosterF.id);
-          let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
+          let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
           // v2.0: 試合成長にも年齢倍率を適用
           matchGrowth *= ageMultiplier(rosterF.age || 17, rosterF.traits);
           if (rosterF.growthPenalty) {
@@ -8407,6 +8525,14 @@ Engine.trust = {
     return delta * (1.0 - mn / 200);
   },
 
+  trustSensitivity(trust) {
+    const t = trust != null ? trust : 50;
+    if (t <= 44) return 1.3;
+    if (t <= 60) return 1.5;
+    if (t <= 75) return 1.0;
+    return 0.7;
+  },
+
   // ── §8.1: 自然変動（連続関数化）────────────────────────────────────────────
   // MN100 → ±0.00 / MN50 → -0.23 / MN25 → -0.35 / MN10 → -0.41
   // §13.5 P-後輩への好影響: trust70+の選手1人につき +0.05/興行（最大3人分 = +0.15）
@@ -8594,7 +8720,7 @@ Engine.trust = {
 
     // タイトルマッチ出場選手IDセット
     const titleFighters = new Set();
-    results.filter(r => r.isTitle).forEach(r => {
+    results.filter(r => r.isTitle || r.isTitleMatch).forEach(r => {
       titleFighters.add(r.left.id); titleFighters.add(r.right.id);
     });
 
@@ -8608,7 +8734,7 @@ Engine.trust = {
     // 因縁カード出場選手
     const rivalryFighters = new Set();
     results.forEach(r => {
-      if (r.rivalryLevel) {
+      if (r.rivalryBonus || r.rivalryLevel) {
         rivalryFighters.add(r.left.id); rivalryFighters.add(r.right.id);
       }
     });
@@ -8763,6 +8889,7 @@ Engine.trust = {
       // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響
       delta += Engine.trust.calcMonthlyNatural(mental, seniorCount, oldTrust);
 
+      delta *= Engine.trust.trustSensitivity(oldTrust);
       let newTrust = Engine.util.clamp(oldTrust + delta, 0, 100);
 
       // §14.1D: trustCap処理（S4/E6後遺症）
@@ -10241,37 +10368,33 @@ Engine.fanExpect = {
       candidates.push({ leftId: f1.id, rightId: f2.id, leftName: f1.name, rightName: f2.name, reason, priority });
     };
 
-    // Priority 3: 因縁ペア（matches >= 2 以上で、再戦希望）
+    // Priority 3: rivalry値の高いペアを優先
     Object.entries(rivalries).forEach(([key, rv]) => {
-      if (rv.resolved) {
-        // 好敵手: 名勝負再現への期待として低優先度で候補に入れる
-        const ids = key.split('-');
-        const id1 = parseInt(ids[0]);
-        const id2 = parseInt(ids[1]);
-        // lastWeekが未更新の場合はmatchupLogで最終対戦興行を確認
-        let lastFightWeek = rv.lastWeek || 0;
-        if (!lastFightWeek) {
-          const lastShow = (state.matchupLog || [])
-            .filter(log => Math.min(log.leftId, log.rightId) === Math.min(id1, id2) && Math.max(log.leftId, log.rightId) === Math.max(id1, id2))
-            .reduce((max, log) => Math.max(max, log.showCount || 0), 0);
-          lastFightWeek = lastShow * 4; // 1興行 ≈ 4週
-        }
-        if (lastFightWeek && (state.week - lastFightWeek) < 4) return;
-        const f1 = roster.find(f => f.id === id1);
-        const f2 = roster.find(f => f.id === id2);
-        if (f1 && f2) {
-          addCandidate(f1, f2, `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声`, 1);
-        }
+      const ids = key.split('-');
+      const id1 = parseInt(ids[0]);
+      const id2 = parseInt(ids[1]);
+      const pairState = Engine.title.getRivalryPairState(state, id1, id2);
+      const f1 = roster.find(f => f.id === id1);
+      const f2 = roster.find(f => f.id === id2);
+      if (!f1 || !f2) return;
+
+      if (pairState.resolvedType === 'goodRival') {
+        const lastFightWeek = rv.lastAbsWeek || 0;
+        if (lastFightWeek && ((((state.season || 1) - 1) * 48 + (state.week || 1)) - lastFightWeek) < 4) return;
+        addCandidate(f1, f2, `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声`, 1);
         return;
       }
-      if ((rv.matches || 0) < 2) return;
-      // 決着後4週間のクールダウン中は候補から除外
+      if (pairState.resolvedType === 'bitter') {
+        addCandidate(f1, f2, `💀 ${f1.name} vs ${f2.name}の遺恨決着を望む声が高まっています！`, 3);
+        return;
+      }
+      if (pairState.minRivalry < 50 && !pairState.isOneSided) return;
       if (rv.lastResolvedWeek && (state.week - rv.lastResolvedWeek) < 4) return;
-      const ids = key.split('-');
-      const f1 = roster.find(f => f.id === parseInt(ids[0]));
-      const f2 = roster.find(f => f.id === parseInt(ids[1]));
-      if (!f1 || !f2) return;
-      addCandidate(f1, f2, `${f1.name} vs ${f2.name}の決着を望む声が高まっています！`, 3);
+      const priority = pairState.minRivalry >= 80 ? 3 : pairState.minRivalry >= 60 ? 2 : 1;
+      const reason = pairState.isOneSided
+        ? `${f1.name} vs ${f2.name}の温度差ある対決が話題です！`
+        : `${f1.name} vs ${f2.name}の決着を望む声が高まっています！`;
+      addCandidate(f1, f2, reason, priority);
     });
 
     // Priority 2: チャンピオンへの挑戦（人気3位以内のノンチャンプ）
@@ -10881,7 +11004,7 @@ Engine.contract = {
       for (const other of (state.roster || [])) {
         if (other.id === fighter.id) continue;
         const lvl = Engine.title.getRivalryLevel(state, fighter.id, other.id);
-        if (lvl && lvl.matches >= 2) { rivalName = other.name; break; }
+        if (lvl && ((lvl.rivalry || 0) >= 40 || lvl.isGoodRival || lvl.isBitterRival)) { rivalName = other.name; break; }
       }
     }
     return { careerSeasons: seasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
@@ -11909,6 +12032,209 @@ Engine.relationships = {
     keysToDelete.forEach(k => delete counters[k]);
 
     return { ...state, relationships: newRels, relationshipCounters: counters };
+  },
+
+  processWeeklyStoryEvents(state, rng) {
+    if (!state.relationships || !state.roster) return { state, events: [] };
+
+    let relationships = { ...state.relationships };
+    let roster = (state.roster || []).map(f => {
+      const clean = { ...f };
+      delete clean._relationshipGrowthMult;
+      delete clean._relationshipInjuryMult;
+      delete clean._warningTrustDebuff;
+      return clean;
+    });
+    let rivalries = { ...(state.rivalries || {}) };
+    let orgPop = state.orgPop || 0;
+    let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    const events = [];
+    const activeRoster = roster.filter(f => !f.injury && !f.isRental);
+    const rosterIndex = new Map(roster.map((f, idx) => [f.id, idx]));
+    const participated = new Set();
+    (state.lastShowResults || []).forEach(r => {
+      participated.add(r.left.id);
+      participated.add(r.right.id);
+    });
+
+    const updateFighter = (fighterId, updater) => {
+      const idx = rosterIndex.get(fighterId);
+      if (idx == null) return;
+      roster[idx] = updater(roster[idx]);
+    };
+    const applyTrustDelta = (fighterId, rawDelta) => {
+      updateFighter(fighterId, fighter => {
+        const oldTrust = fighter.trust != null ? fighter.trust : 50;
+        const adjusted = rawDelta * Engine.trust.trustSensitivity(oldTrust);
+        return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+      });
+    };
+    const applyConditionDelta = (fighterId, delta) => {
+      updateFighter(fighterId, fighter => ({ ...fighter, condition: Engine.util.clamp((fighter.condition || 70) + delta, 0, 100) }));
+    };
+    const markGrowthPressure = (fighterId, growthMult, injuryMult) => {
+      updateFighter(fighterId, fighter => ({
+        ...fighter,
+        _relationshipGrowthMult: Math.max(fighter._relationshipGrowthMult || 1.0, growthMult),
+        _relationshipInjuryMult: Math.max(fighter._relationshipInjuryMult || 1.0, injuryMult),
+      }));
+    };
+
+    let moralePenaltyRaw = 0;
+    const pairEventNames = [];
+
+    // ティッカーテキストヘルパー: テンプレートプールからランダムピック＋名前差し込み
+    const _pick = (pool, nameA, nameB) => {
+      const tpl = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+      return tpl.replace(/\{nameA\}/g, nameA).replace(/\{nameB\}/g, nameB).replace(/\{name\}/g, nameA);
+    };
+
+    for (let i = 0; i < activeRoster.length; i++) {
+      for (let j = i + 1; j < activeRoster.length; j++) {
+        const left = activeRoster[i];
+        const right = activeRoster[j];
+        const keyAB = `${left.id}>${right.id}`;
+        const keyBA = `${right.id}>${left.id}`;
+        const relAB = state.relationships[keyAB] || { bond: 50, rivalry: 0 };
+        const relBA = state.relationships[keyBA] || { bond: 50, rivalry: 0 };
+        const pairState = Engine.title.getRivalryPairState({ ...state, roster, rivalries }, left.id, right.id);
+
+        // ── 親友ゾーン（bond70+, rivalry40未満）──
+        if (pairState.minBond >= 70 && pairState.maxRivalry < 40) {
+          if (participated.has(left.id) && participated.has(right.id)) {
+            const recover = pairState.minBond >= 85 ? 2 : 1;
+            applyConditionDelta(left.id, recover);
+            applyConditionDelta(right.id, recover);
+          }
+          if (left.slump) {
+            updateFighter(left.id, fighter => ({ ...fighter, slump: { ...fighter.slump, recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 3 } }));
+          }
+          if (right.slump) {
+            updateFighter(right.id, fighter => ({ ...fighter, slump: { ...fighter.slump, recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 3 } }));
+          }
+        }
+
+        // ── 憎い敵ゾーン（rivalry40+, bond40未満）──
+        if (pairState.minRivalry >= 40 && Math.max(relAB.bond, relBA.bond) < 40) {
+          moralePenaltyRaw += 0.5;
+          markGrowthPressure(left.id, 1.2, 1.15);
+          markGrowthPressure(right.id, 1.2, 1.15);
+          if (Engine.rng.float(rng) < 0.05) {
+            const clashBonus = 1 + Engine.rng.int(rng, 0, 1);
+            const clashDamage = 2 + Engine.rng.int(rng, 0, 1);
+            const pairKey = Engine.title.getRivalryKey(left.id, right.id);
+            rivalries[pairKey] = { ...(rivalries[pairKey] || {}), pendingClashBonus: Math.max((rivalries[pairKey]?.pendingClashBonus || 0), clashBonus) };
+            applyConditionDelta(left.id, -clashDamage);
+            applyConditionDelta(right.id, -clashDamage);
+            applyTrustDelta(left.id, -0.4);
+            applyTrustDelta(right.id, -0.4);
+            pairEventNames.push(_pick(WEEKLY_STORY_TICKER.clash, left.name, right.name));
+          }
+        }
+
+        // ── 好敵手的ゾーン（rivalry40+, bond50+）──
+        if (pairState.minRivalry >= 40 && pairState.minBond >= 50) {
+          markGrowthPressure(left.id, 1.1, 1.0);
+          markGrowthPressure(right.id, 1.1, 1.0);
+        }
+
+        // ── 片思い（A→B bond70+ / B→A bond40以下, 差30+）──
+        if (relAB.bond >= 70 && relBA.bond <= 40 && (relAB.bond - relBA.bond) >= 30) {
+          applyTrustDelta(left.id, -0.3);
+        }
+        if (relBA.bond >= 70 && relAB.bond <= 40 && (relBA.bond - relAB.bond) >= 30) {
+          applyTrustDelta(right.id, -0.3);
+        }
+
+        // ── 一方的な敵意（A→B rivalry50+ bond30以下 / B→A rivalry20以下）──
+        if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20) {
+          applyTrustDelta(left.id, -0.4);
+          markGrowthPressure(left.id, 1.15, 1.15);
+          if (Engine.rng.float(rng) < 0.035) {
+            applyConditionDelta(left.id, -2);
+            const boosted = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
+            boosted.rivalry = this._clampAxisValue((boosted.rivalry || 0) + 2, 'rivalry');
+            relationships[keyBA] = boosted;
+          }
+        }
+        if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20) {
+          applyTrustDelta(right.id, -0.4);
+          markGrowthPressure(right.id, 1.15, 1.15);
+          if (Engine.rng.float(rng) < 0.035) {
+            applyConditionDelta(right.id, -2);
+            const boosted = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
+            boosted.rivalry = this._clampAxisValue((boosted.rivalry || 0) + 2, 'rivalry');
+            relationships[keyAB] = boosted;
+          }
+        }
+
+        // ── クロス非対称 覚醒イベント（A:高riv低bond / B:低riv高bond → Bキレ）──
+        if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20 && relBA.bond >= 60) {
+          if (Engine.rng.float(rng) < 0.015) {
+            // 覚醒: B→A rivalry大幅上昇, bond低下
+            const awakeRiv = 15 + Engine.rng.int(rng, 0, 5);
+            const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
+            const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
+            boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
+            boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+            relationships[keyBA] = boostedBA;
+            events.push(`[awakening] ${_pick(WEEKLY_STORY_TICKER.awakening, left.name, right.name)}`);
+          }
+        }
+        if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20 && relAB.bond >= 60) {
+          if (Engine.rng.float(rng) < 0.015) {
+            const awakeRiv = 15 + Engine.rng.int(rng, 0, 5);
+            const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
+            const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
+            boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
+            boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+            relationships[keyAB] = boostedAB;
+            events.push(`[awakening] ${_pick(WEEKLY_STORY_TICKER.awakening, right.name, left.name)}`);
+          }
+        }
+      }
+    }
+
+    // ── trust警告帯ティッカー（trust 40-49）──
+    roster = roster.map(f => {
+      const trust = f.trust != null ? f.trust : 50;
+      if (trust >= 40 && trust <= 49) return { ...f, _warningTrustDebuff: true };
+      return f;
+    });
+    const warningNames = roster.filter(f => {
+      const trust = f.trust != null ? f.trust : 50;
+      return trust >= 40 && trust <= 49;
+    }).slice(0, 2).map(f => f.name);
+    warningNames.forEach(name => events.push(`[trust-warning] ${_pick(WEEKLY_STORY_TICKER.trustWarning, name, '')}`));
+
+    // ── 憎い敵ゾーンのモラルペナルティ ──
+    const moraleDelta = -Math.min(2, moralePenaltyRaw);
+    if (moraleDelta < 0) {
+      lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + moraleDelta, 0, 100);
+      events.push(`[hostile-pairs] ロッカールームの空気が重い`);
+    }
+    if (pairEventNames.length > 0) {
+      pairEventNames.slice(0, 2).forEach(text => events.push(`[rivalry-clash] ${text}`));
+    }
+
+    // ── 因縁放置ペナルティ ──
+    const neglectPenalty = Engine.title.getNeglectedRivalryPenalty({ ...state, roster, rivalries });
+    if (neglectPenalty < 0) {
+      orgPop = Engine.util.clamp(orgPop + neglectPenalty, 0, 100);
+      // neglectedRivalryのペア名を取得してテキスト生成
+      const neglectPairs = Engine.title.getNeglectedRivalryPairs ? Engine.title.getNeglectedRivalryPairs({ ...state, roster, rivalries }) : null;
+      if (neglectPairs && neglectPairs.length > 0) {
+        const np = neglectPairs[0];
+        events.push(`[neglected-rivalry] ${_pick(WEEKLY_STORY_TICKER.neglectedRivalry, np.nameA || '', np.nameB || '')}`);
+      } else {
+        events.push(`[neglected-rivalry] ファンが因縁カードの実現を待ち望んでいる`);
+      }
+    }
+
+    return {
+      state: { ...state, roster, rivalries, relationships, orgPop, lockerRoomMorale },
+      events,
+    };
   },
 
   // ══════════════════════════════════════════════════════════

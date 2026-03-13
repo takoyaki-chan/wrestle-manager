@@ -3014,11 +3014,11 @@ const App = {
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
-    // 宿敵+ペアの宣戦布告ポップアップを検出（好敵手は対象外）
+    // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外）
     const confrontations = [];
     validMatches.forEach((m, i) => {
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
-      if (rivalLvl && !rivalLvl.isGoodRival && rivalLvl.matches >= 4) {
+      if (rivalLvl && !rivalLvl.isGoodRival && !rivalLvl.isBitterRival && (rivalLvl.rivalry || 0) >= 50) {
         const cl = G.roster.find(c => c.id === m.left);
         const cr = G.roster.find(c => c.id === m.right);
         if (cl && cr) {
@@ -3026,7 +3026,8 @@ const App = {
             phase: 'confrontation', idx: i,
             leftId: m.left, rightId: m.right,
             leftName: cl.name, rightName: cr.name,
-            isFate: rivalLvl.matches >= 7,
+            rivalry: rivalLvl.rivalry || 0,
+            isFate: (rivalLvl.rivalry || 0) >= 70,
           });
         }
       }
@@ -3256,17 +3257,16 @@ const App = {
     const deferredRivalryPairs = []; // 宿敵+ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
+      const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
+      const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
+      if (chemistryBonus > 0) { result.mq = Math.min(100, result.mq + chemistryBonus); result.friendshipBonus = chemistryBonus; }
       if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
-      // 宿敵+ペアは決着判定のため recordRivalry を保留
-      if (confrontationPairs.includes(i)) {
-        deferredRivalryPairs.push(i);
-      } else {
-        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, result.mq);
-        rivalries = rivalResult.rivalries;
-        if (rivalResult.msg) events.push(rivalResult.msg);
-      }
+      // 通常興行では因縁決着は起こさず、PPVに向けて積み上げる
+      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, result.mq);
+      rivalries = rivalResult.rivalries;
+      if (rivalResult.msg) events.push(rivalResult.msg);
       const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
       if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
     });
@@ -3381,55 +3381,8 @@ const App = {
       }
     });
 
-    // 因縁決着判定（全MQボーナス適用後）
+    // 因縁決着はPPV限定。通常興行では次戦への蓄積のみ行う
     const rivalryResolutions = [];
-    deferredRivalryPairs.forEach(idx => {
-      const r = results[idx];
-      const m = validMatches[idx];
-      const avgOV = (Engine.util.ov(r.left) + Engine.util.ov(r.right)) / 2;
-      const currentEntry = rivalries[Engine.title.getRivalryKey(m.left, m.right)] || {};
-      const resolution = Engine.title.checkResolution(r.rivalryBonus, r.mq, avgOV, currentEntry.resolutionCount || 0);
-      if (resolution) {
-        // 決着成立: matches リセット + lastResolvedWeek + resolutionCount 更新
-        const key = Engine.title.getRivalryKey(m.left, m.right);
-        const isSecondResolution = resolution.newResolutionCount >= 2;
-        const updatedEntry = {
-          matches: 0, lastWeek: s.week, lastResolvedWeek: s.week,
-          resolutionCount: resolution.newResolutionCount,
-          // Phase 5: 決着後はtier/カウンターもリセット
-          tier: 0, matchesSinceTier: 0, bestMQSinceTier: 0, oneSided: null,
-          ...(isSecondResolution ? { resolved: true } : {}),
-        };
-        rivalries = { ...rivalries, [key]: { ...rivalries[key], ...updatedEntry } };
-        // 報酬: 両選手 popularity 直接加算（逓減対象外）
-        roster = roster.map(c => {
-          if (c.id === m.left || c.id === m.right) {
-            return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
-          }
-          return c;
-        });
-        s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + resolution.orgPopBonus) };
-        // 勝者/敗者判定
-        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
-        const loserId = winnerId === m.left ? m.right : m.left;
-        const winnerName = winnerId === r.left.id ? r.left.name : r.right.name;
-        const loserName = loserId === r.left.id ? r.left.name : r.right.name;
-        rivalryResolutions.push({
-          phase: 'resolution', winnerId, loserId, winnerName, loserName,
-          isFate: resolution.isFate, isSecondResolution,
-          popBonus: resolution.popBonus, orgPopBonus: resolution.orgPopBonus,
-        });
-        r.rivalryResolved = true;
-        const emoji = resolution.isFate ? '💥' : '⚡';
-        const label = isSecondResolution ? '宿命の相手 最終決着' : (resolution.isFate ? '宿命の相手決着' : '宿敵決着');
-        events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${resolution.orgPopBonus}`);
-      } else {
-        // 不完全燃焼: 通常通り recordRivalry 実行 — Phase 5: matchMQ渡し
-        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
-        rivalries = rivalResult.rivalries;
-        if (rivalResult.msg) events.push(rivalResult.msg);
-      }
-    });
     App._pendingRivalryResolutions = rivalryResolutions;
 
     // MQ popularity
@@ -3440,8 +3393,17 @@ const App = {
       roster = mqPop.roster;
     });
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    const popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
     roster = popResult.roster;
+    const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
+    if (bookedRivalryOrgPopBonus !== 0) {
+      popResult = {
+        ...popResult,
+        popDelta: Math.round((popResult.popDelta + bookedRivalryOrgPopBonus) * 10) / 10,
+        orgPop: Engine.util.clamp((popResult.orgPop || 0) + bookedRivalryOrgPopBonus, 0, 100),
+      };
+      events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
+    }
     events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 10) / 10} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // Heat
