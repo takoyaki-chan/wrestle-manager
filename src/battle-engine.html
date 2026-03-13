@@ -705,12 +705,13 @@ function tpl(t,v){return t.replace(/\{(\w)\}/g,(_,k)=>v[k]||'')}
 function wRand(w){const e=Object.entries(w),t=e.reduce((s,[,v])=>s+v,0);let r=Math.random()*t;
   for(const[k,v]of e){r-=v;if(r<=0)return k}return e[e.length-1][0]}
 function selMove(style,turn,defHpRatio,atkHpRatio){
-  const ph=phase(turn),use=Math.random()*100<ph.sCh,pool=use?styleMoves[style]:commonMoves;
+  const rs=(style&&styleMoves[style]&&catW[style])?style:'Allround';
+  const ph=phase(turn),use=Math.random()*100<ph.sCh,pool=use?styleMoves[rs]:commonMoves;
   // 相手HP<30%: 65%の確率でフィニッシャー(d>=12)を狙う
   if(defHpRatio!==undefined&&defHpRatio<0.30&&Math.random()<0.65){
     const finPool=pool.filter(m=>m.d>=12);
     if(finPool.length)return pk(finPool);
-    const finStyle=styleMoves[style].filter(m=>m.d>=12);
+    const finStyle=styleMoves[rs].filter(m=>m.d>=12);
     if(finStyle.length)return pk(finStyle);
   }
   // 自分HP<25%: 40%の確率で逃げ技（rollup/弱サブミッション）を試みる
@@ -718,7 +719,7 @@ function selMove(style,turn,defHpRatio,atkHpRatio){
     const escPool=pool.filter(m=>m.c==='rollup'||(m.c==='submission'&&m.d<=7));
     if(escPool.length)return pk(escPool);
   }
-  const cat=wRand(catW[style]),cands=pool.filter(m=>m.c===cat);
+  const cat=wRand(catW[rs]),cands=pool.filter(m=>m.c===cat);
   return cands.length?pk(cands):pk(pool);
 }
 
