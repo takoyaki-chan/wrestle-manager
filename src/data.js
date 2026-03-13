@@ -1,236 +1,238 @@
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 1: CHARACTER DATA                               笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 1: CHARACTER DATA                               ║
+// ╚══════════════════════════════════════════════════════════╝
 const ALL_CHARS = [
-  {id:1,name:'髦ｿ豁ｦ髫亥｡泌ｭ・,h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164},traits:['繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','莠ｺ譛・,'螽∝悸諢・,'蠑輔″蜃ｺ縺嶺ｸ頑焔','繧ｬ繝ｩ繧ｹ縺ｮ霄ｫ菴・],personality:'normal',archetype:'normal'},
-  {id:2,name:'蟇悟ｲ｡蜉螂亥ｭ・,h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168},traits:['蜉ｪ蜉帛ｮｶ','鬆台ｸ医＆','髣伜ｿ・,'雋縺代★雖後＞'],personality:'bold',archetype:'ojousama'},
-  {id:3,name:'貔､蜃ｺ縺ｿ縺壹″',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔','譌ｩ辭・,'驕ｩ蠢懷鴨'],personality:'normal',archetype:'normal'},
-  {id:4,name:'鬮俶ｴ･蟆乗丼',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['譎ｩ謌・,'逡ｪ迢ゅｏ縺帑ｽ楢ｳｪ','雋縺代★雖後＞','髣伜ｿ・,'蜿埼ｪｨ蠢・],personality:'bold',archetype:'normal'},
-  {id:5,name:'豺ｱ逕ｺ逵溽清',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:185,te:141,st:170,mn:142},traits:['蜉ｪ蜉帛ｮｶ','闖ｯ','驩・ｺｺ'],personality:'earnest',archetype:'normal'},
-  {id:6,name:'蜑ｯ豐｢縺溘∪縺・,h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148},traits:['繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ','譌ｩ辭・,'遐ｴ螟ｩ闕・],personality:'easygoing',archetype:'normal'},
-  {id:7,name:'鬮倬嚴縺ｾ縺輔∩',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔','蠢隱蠢・],personality:'earnest',archetype:'polite'},
-  {id:8,name:'譫礼悄蟆・,h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['雋縺代★雖後＞'],personality:'normal',archetype:'normal'},
-  {id:9,name:'螳・伐蟾晞㈹螂・,h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'easygoing',archetype:'normal'},
-  {id:11,name:'讖倡軸鄒・,h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['繝偵・繝ｫ驕ｩ諤ｧ','螽∝悸諢・,'譌ｩ辭・,'闖ｯ'],personality:'normal',archetype:'seductive'},
-  {id:12,name:'逕滄ｧ偵お繝ｪ繧ｫ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Heel',pot:{pw:161,sp:152,te:156,st:167,mn:167},traits:['雋縺代★雖後＞','髣伜ｿ・,'驩・ｺｺ','莠ｺ譛・,'蜿埼ｪｨ蠢・],personality:'bold',archetype:'delinquent'},
-  {id:13,name:'蝣ょ燕繝ｦ繧ｭ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:128,st:143,mn:155},traits:['遐ｴ螟ｩ闕・],personality:'bold',archetype:'cool'},
-  {id:14,name:'鮟呈ｱ溯・',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['繝偵・繝ｫ驕ｩ諤ｧ','譌ｩ辭・],personality:'quiet',archetype:'normal'},
-  {id:15,name:'讌譛ｨ縺ｪ縺弱＆',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:121,st:146,mn:141},traits:['螽∝悸諢・],personality:'normal',archetype:'normal'},
-  {id:16,name:'螟ｧ豐ｳ蜀・ｴ嶺ｻ｣蟄・,h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','螽∝悸諢・,'闖ｯ','驥主ｿ・],personality:'normal',archetype:'ojousama'},
-  {id:17,name:'蟾晞㍽霎ｺ闖懃ｩょｭ・,h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['繝ｩ繧､繝舌Ν菴楢ｳｪ','蜷榊享雋陬ｽ騾讖・,'闖ｯ','雋縺代★雖後＞'],personality:'earnest',archetype:'polite'},
-  {id:18,name:'蜃ｺ鄒ｽ鮃ｹ蟄・,h:184,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['驕ｩ蠢懷鴨'],personality:'bold',archetype:'delinquent'},
-  {id:19,name:'蝗帶擅縺ゅ★縺・,h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['蠢隱蠢・,'驕ｩ蠢懷鴨'],personality:'earnest',archetype:'ojousama'},
-  {id:20,name:'蟯ｸ繧・∩縺・,h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:149,te:161,st:155,mn:161},traits:['蜉ｪ蜉帛ｮｶ','驕・調縺・],personality:'normal',archetype:'normal'},
-  {id:21,name:'譛ｨ繝主・蟷ｸ髻ｳ',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Babyface',pot:{pw:146,sp:129,te:129,st:148,mn:147},traits:['繝偵・繝ｫ驕ｩ諤ｧ','繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ','闖ｯ'],personality:'earnest',archetype:'normal'},
-  {id:22,name:'鄒取ｿ・ｱｱ縺ｾ繧翫↑',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122},traits:['繝偵・繝ｫ驕ｩ諤ｧ'],personality:'bold',archetype:'delinquent'},
-  {id:23,name:'譌ｩ隕狗衍蟄・,h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['驕ｩ蠢懷鴨'],personality:'normal',archetype:'normal'},
-  {id:24,name:'蝨帝Κ譴ｨ闃ｱ',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[],personality:'bold',archetype:'normal'},
-  {id:25,name:'遏ｳ謌ｸ隹ｷ縺ｪ縺､縺・,h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109},traits:['譌ｩ辭・],personality:'easygoing',archetype:'delinquent'},
-  {id:26,name:'螳ｮ螳医↑縺､繧・,h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['蜉ｪ蜉帛ｮｶ','譌ｩ辭・],personality:'earnest',archetype:'polite'},
-  {id:27,name:'蜈ｫ驥肴ｨｫ闊・,h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126},traits:['驩・ｺｺ'],personality:'normal',archetype:'normal'},
-  {id:28,name:'蟯ｩ螻九∩繧・,h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139},traits:['繧ｬ繝ｩ繧ｹ縺ｮ霄ｫ菴・,'譌ｩ辭・,'驩・ｺｺ'],personality:'bold',archetype:'delinquent'},
-  {id:29,name:'逶ｸ豐｢譛ｪ譚･',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['莠ｺ譛・,'驩・ｺｺ'],personality:'normal',archetype:'normal'},
-  {id:30,name:'譚ｾ蟾晄搶讓ｹ',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152},traits:['繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ','遐ｴ螟ｩ闕・],personality:'easygoing',archetype:'normal'},
-  {id:31,name:'蟷ｳ譚ｾ縺九↑縺ｿ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151},traits:['譎ｩ謌・,'荳榊ｱ・],personality:'quiet',archetype:'polite'},
-  {id:32,name:'蜿碁㈹譏取律鬥・,h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:33,name:'譴・Ω荳倥∩縺ｮ繧・,h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164},traits:['繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:34,name:'蛹礼腹蜷我ｹ・,h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['遐ｴ螟ｩ闕・,'譌ｩ辭・,'蜉ｪ蜉帛ｮｶ'],personality:'normal',archetype:'normal'},
-  {id:35,name:'荳企㍽蜴溷ｼ･逕・,h:179,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135},traits:['鬆台ｸ医＆'],personality:'bold',archetype:'normal'},
-  {id:36,name:'逵滄豪邯ｾ荵・,h:181,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138},traits:['鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:37,name:'逋ｽ驫鮗怜ｭ・,h:165,pw:74,sp:82,te:82,st:83,mn:78,style:'Allround',role:'Babyface',pot:{pw:156,sp:167,te:167,st:168,mn:161},traits:['荳榊ｱ・,'闖ｯ','鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:38,name:'闃晏ｽｩ髻ｳ',h:168,pw:88,sp:64,te:67,st:78,mn:76,style:'Grappler',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159},traits:['闖ｯ','髣伜ｿ・],personality:'bold',archetype:'ojousama'},
-  {id:39,name:'逾櫁ｰｷ豐吝･育ｵｵ',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Striker',role:'Neutral',pot:{pw:138,sp:159,te:143,st:144,mn:128},traits:['蠢隱蠢・],personality:'quiet',archetype:'cool'},
-  {id:40,name:'鬮倩ｼｪ縺ｾ縺ｿ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Allround',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:['鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:41,name:'譬ｹ蟯ｸ莠樣㈹莠・,h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['繝偵・繝ｫ驕ｩ諤ｧ','譌ｩ辭・],personality:'easygoing',archetype:'seductive'},
-  {id:42,name:'譛ｬ驛ｷ逵溽炊蟄・,h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Grappler',role:'Heel',pot:{pw:174,sp:147,te:124,st:146,mn:152},traits:['繝偵・繝ｫ驕ｩ諤ｧ','螽∝悸諢・],personality:'bold',archetype:'delinquent'},
-  {id:43,name:'驥第ｲ｢譁・,h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141},traits:['鬆台ｸ医＆'],personality:'normal',archetype:'delinquent'},
-  {id:44,name:'遖乗ｵｦ逅・ｹ・,h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:129,te:124,st:117,mn:116},traits:[],personality:'normal',archetype:'normal'},
-  {id:45,name:'鬮俶ｧｻ蜊・ｭｳ',h:164,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156},traits:['繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','闖ｯ','驥主ｿ・],personality:'normal',archetype:'seductive'},
-  {id:46,name:'莠墓ｲ｢驕･',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['荳榊ｱ・,'蜷榊享雋陬ｽ騾讖・,'蠑輔″蜃ｺ縺嶺ｸ頑焔','雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:47,name:'譁手陸鮗ｻ陦｣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Striker',role:'Neutral',pot:{pw:143,sp:141,te:146,st:150,mn:155},traits:['譌ｩ辭・],personality:'bold',archetype:'normal'},
-  {id:48,name:'闖頑ｱ迺・ｭ・,h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:142,st:144,mn:161},traits:['雋縺代★雖後＞','驕ｩ蠢懷鴨','髣伜ｿ・],personality:'bold',archetype:'normal'},
-  {id:49,name:'鬮俶ｩ九∪繧・∩',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:144,te:145,st:155,mn:163},traits:['蜉ｪ蜉帛ｮｶ','蠢隱蠢・,'驕・調縺・],personality:'earnest',archetype:'polite'},
-  {id:50,name:'逶ｸ逕ｰ關・,h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','驕ｩ蠢懷鴨'],personality:'emotional',archetype:'normal'},
-  {id:51,name:'荳画ｩ九・縺ｿ縺・,h:172,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['繝偵・繝ｫ驕ｩ諤ｧ','繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'emotional',archetype:'normal'},
-  {id:52,name:'隘ｿ蟾昴■縺ゅ″',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Striker',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:135},traits:[],personality:'normal',archetype:'normal'},
-  {id:53,name:'蟆乗｣ｮ縺輔↑縺・,h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ'],personality:'normal',archetype:'normal'},
-  {id:54,name:'髦ｿ驛ｨ縺ｿ縺ｮ繧・,h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:122,sp:135,te:138,st:128,mn:144},traits:[],personality:'shy',archetype:'polite'},
-  {id:55,name:'螟ｧ荵・ｿ晄｡・ｭ・,h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['荳榊ｱ・,'驩・ｺｺ','鬆台ｸ医＆'],personality:'earnest',archetype:'polite'},
-  {id:56,name:'迚・｡舌≠繧翫＆',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148},traits:['繝偵・繝ｫ驕ｩ諤ｧ','繝ｩ繧､繝舌Ν菴楢ｳｪ','驥主ｿ・],personality:'bold',archetype:'seductive'},
-  {id:57,name:'豬・ｦ矩㈹邱定除',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148},traits:['繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','譌ｩ辭・,'雋縺代★雖後＞','驥主ｿ・],personality:'normal',archetype:'seductive'},
-  {id:58,name:'荳ｹ鄒ｽ遨ょ桙',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Allround',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔','雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:59,name:'豎霎ｺ繝槭Μ',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:151,sp:126,te:112,st:141,mn:129},traits:['雋縺代★雖後＞'],personality:'bold',archetype:'delinquent'},
-  {id:60,name:'鬥ｬ蜈･讖九⊇縺ｨ繧・,h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:167,sp:148,te:137,st:151,mn:161},traits:['譌ｩ辭・,'驩・ｺｺ','鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:61,name:'隕ｳ髻ｳ蟠弱○繧翫°',h:169,pw:73,sp:73,te:67,st:63,mn:66,style:'Allround',role:'Heel',pot:{pw:155,sp:155,te:147,st:142,mn:146},traits:['繝偵・繝ｫ驕ｩ諤ｧ','闖ｯ','驥主ｿ・],personality:'normal',archetype:'normal'},
-  {id:62,name:'螳ｮ繧ｱ轢ｬ蜊・､・,h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125},traits:['繝偵・繝ｫ驕ｩ諤ｧ','螽∝悸諢・],personality:'bold',archetype:'delinquent'},
-  {id:63,name:'莨雁兇蜴滓枚螂・,h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132},traits:['蠢隱蠢・],personality:'earnest',archetype:'normal'},
-  {id:64,name:'貉ｯ譛ｬ縺ｻ縺溘ｋ',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122},traits:[],personality:'easygoing',archetype:'normal'},
-  {id:65,name:'蛟芽ｦ玖除縲・,h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','蜷榊享雋陬ｽ騾讖・],personality:'normal',archetype:'normal'},
-  {id:66,name:'髟ｷ隹ｷ蟾昴Ξ繧ｪ繝・,h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161},traits:['莠ｺ譛・,'蠑輔″蜃ｺ縺嶺ｸ頑焔'],personality:'normal',archetype:'seductive'},
-  {id:67,name:'譟ｳ蟲ｶ縺ｿ縺壹⊇',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','闖ｯ','驥主ｿ・],personality:'normal',archetype:'normal'},
-  {id:68,name:'螟ｧ蠎ｭ諢幄除',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:148,sp:160,te:128,st:151,mn:159},traits:['雋縺代★雖後＞'],personality:'emotional',archetype:'normal'},
-  {id:69,name:'譌ｩ蟾昴Δ繝・,h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['闖ｯ','雋縺代★雖後＞'],personality:'normal',archetype:'normal'},
-  {id:70,name:'豬懃ｫｹ鄒主調',h:167,pw:80,sp:57,te:63,st:68,mn:68,style:'Grappler',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔','蠢隱蠢・],personality:'normal',archetype:'normal'},
-  {id:71,name:'譚ｱ驥第ｲ咏ｹ・,h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:145,sp:134,te:150,st:141,mn:147},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'normal',archetype:'normal'},
-  {id:72,name:'遨ｴ貔､縺ｻ縺ｮ縺・,h:168,pw:74,sp:58,te:65,st:63,mn:70,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','蠑輔″蜃ｺ縺嶺ｸ頑焔','驥主ｿ・],personality:'normal',archetype:'seductive'},
-  {id:73,name:'螟ｧ鬥ｬ雜翫ｈ縺怜ｭ・,h:179,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:148,st:147,mn:148},traits:['螽∝悸諢・,'鬆台ｸ医＆'],personality:'bold',archetype:'normal'},
-  {id:74,name:'蟇悟｣ｫ隕九Ω荳倬▼',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'earnest',archetype:'polite'},
-  {id:75,name:'豬ｷ閠∝錐譬・,h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','繝ｩ繧､繝舌Ν菴楢ｳｪ','驥主ｿ・],personality:'easygoing',archetype:'normal'},
-  {id:76,name:'譬玲棊縺ゅ°繧・,h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135},traits:['繝ｩ繧､繝舌Ν菴楢ｳｪ','雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:77,name:'譁ｰ隕九ｆ繧・,h:168,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔'],personality:'earnest',archetype:'seductive'},
-  {id:78,name:'讀ｿ螻ｱ縺ｿ縺輔″',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:137,sp:130,te:141,st:142,mn:138},traits:['蠑輔″蜃ｺ縺嶺ｸ頑焔','闖ｯ','雋縺代★雖後＞'],personality:'normal',archetype:'normal'},
-  {id:79,name:'荵・よ｢ｨ縲・干',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:133},traits:['繝偵・繝ｫ驕ｩ諤ｧ'],personality:'bold',archetype:'delinquent'},
-  {id:80,name:'鬮伜ｳｶ縺輔ｄ',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:129,sp:164,te:166,st:132,mn:85},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ'],personality:'shy',archetype:'polite'},
-  // 笏笏 譁ｰ隕上く繝｣繝ｩ繧ｯ繧ｿ繝ｼ・・1.4 GameID 81縲・9・俄楳笏
-  {id:81,name:'蝮よ悽闔芽｡｣螂・,h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Speed',role:'Neutral',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ'],personality:'normal',archetype:'normal'},
-  {id:82,name:'霑題陸繧・ｊ縺・,h:166,pw:84,sp:55,te:67,st:80,mn:69,style:'Grappler',role:'Neutral',pot:{pw:169,sp:132,te:147,st:164,mn:150},traits:['逡ｪ迢ゅｏ縺帑ｽ楢ｳｪ'],personality:'earnest',archetype:'normal'},
-  {id:83,name:'菴蝉ｹ・俣縺ｲ繧医ｊ',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:84,name:'蜊苓ｰｷ譚・,h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'bold',archetype:'normal'},
-  {id:85,name:'魘ｨ蠢礼伐繝ｫ繝ｼ繧ｷ繝ｼ',h:172,pw:74,sp:58,te:43,st:69,mn:73,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:116,st:150,mn:155},traits:['鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:86,name:'闃ｹ豐｢莠憺㈹邏・,h:166,pw:70,sp:70,te:53,st:58,mn:61,style:'Allround',role:'Heel',pot:{pw:151,sp:151,te:129,st:135,mn:139},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'emotional',archetype:'seductive'},
-  {id:87,name:'繝ｬ繧ｪ繝翫・O繝ｻ繧ｷ繝･繧ｿ繧､繝ｳ繝輔ぉ繝ｫ繝・,h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Speed',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['闖ｯ'],personality:'earnest',archetype:'normal'},
-  {id:88,name:'諢帛ｷ晄・譌･鬥・,h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[],personality:'normal',archetype:'seductive'},
-  {id:89,name:'襍､鄒ｽ縺ゅｓ縺ｪ',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Speed',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ'],personality:'bold',archetype:'normal'},
-  {id:90,name:'邇画焔縺吶∩繧・,h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['蜉ｪ蜉帛ｮｶ'],personality:'quiet',archetype:'polite'},
-  {id:91,name:'遲峨・鴨縺ゅ°縺ｭ',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:154,te:148,st:156,mn:148},traits:['雋縺代★雖後＞'],personality:'earnest',archetype:'normal'},
-  {id:92,name:'鬟ｯ蟲ｶ蜀ｴ蟄・,h:170,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:137,st:120,mn:117},traits:['蠢隱蠢・],personality:'normal',archetype:'seductive'},
-  {id:93,name:'譚ｾ荵・ｿ昜ｼ顔ｹ・,h:163,pw:61,sp:64,te:69,st:59,mn:54,style:'Grappler',role:'Babyface',pot:{pw:139,sp:143,te:150,st:137,mn:130},traits:['蠢隱蠢・,'譌ｩ辭・],personality:'normal',archetype:'normal'},
-  {id:94,name:'鬆郁陸鄒取怦',h:158,pw:58,sp:58,te:65,st:48,mn:45,style:'Submission',role:'Heel',pot:{pw:135,sp:135,te:144,st:122,mn:118},traits:['繝偵・繝ｫ驕ｩ諤ｧ'],personality:'normal',archetype:'normal'},
-  {id:95,name:'蟆剰･ｿ繧・″縺・,h:165,pw:57,sp:63,te:77,st:61,mn:74,style:'Allround',role:'Neutral',pot:{pw:134,sp:142,te:160,st:139,mn:156},traits:['繧ｬ繝ｩ繧ｹ縺ｮ霄ｫ菴・,'繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','譌ｩ辭・],personality:'normal',archetype:'normal'},
-  {id:96,name:'譚ｾ荳狗悄逅・ｺ・,h:171,pw:72,sp:71,te:65,st:68,mn:58,style:'Allround',role:'Neutral',pot:{pw:154,sp:152,te:144,st:148,mn:135},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','譌ｩ辭・],personality:'normal',archetype:'normal'},
-  {id:97,name:'蟯ｩ蟠弱∩縺ｩ繧・,h:158,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:151,sp:163,te:122,st:156,mn:141},traits:['蜉ｪ蜉帛ｮｶ','雋縺代★雖後＞','鬆台ｸ医＆'],personality:'earnest',archetype:'normal'},
-  {id:98,name:'邀ｳ螻ｱ譚城㈹',h:169,pw:69,sp:64,te:77,st:68,mn:71,style:'Allround',role:'Babyface',pot:{pw:150,sp:143,te:160,st:148,mn:152},traits:['繧ｬ繝ｩ繧ｹ縺ｮ霄ｫ菴・,'繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ','莠ｺ譛・,'蠑輔″蜃ｺ縺嶺ｸ頑焔'],personality:'normal',archetype:'normal'},
-  {id:99,name:'荳画ｵｦ譌ｩ邏',h:166,pw:76,sp:73,te:74,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:159,sp:155,te:156,st:161,mn:144},traits:['繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','繝ｩ繧､繝舌Ν菴楢ｳｪ','譌ｩ辭・],personality:'bold',archetype:'normal'}
+  {id:1,name:'阿武隈塔子',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164},traits:['リーダー気質','人望','威圧感','引き出し上手','ガラスの身体'],personality:'normal',archetype:'normal'},
+  {id:2,name:'富岡加奈子',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168},traits:['努力家','頑丈さ','闘志','負けず嫌い'],personality:'bold',archetype:'ojousama'},
+  {id:3,name:'澤出みずき',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154},traits:['引き出し上手','早熟','適応力'],personality:'normal',archetype:'normal'},
+  {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志','反骨心'],personality:'bold',archetype:'normal'},
+  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:185,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'earnest',archetype:'normal'},
+  {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148},traits:['ムードメーカー','早熟','破天荒'],personality:'easygoing',archetype:'normal'},
+  {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心'],personality:'earnest',archetype:'polite'},
+  {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い'],personality:'normal',archetype:'normal'},
+  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'normal'},
+  {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華'],personality:'normal',archetype:'seductive'},
+  {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Heel',pot:{pw:161,sp:152,te:156,st:167,mn:167},traits:['負けず嫌い','闘志','鉄人','人望','反骨心'],personality:'bold',archetype:'delinquent'},
+  {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:128,st:143,mn:155},traits:['破天荒'],personality:'bold',archetype:'cool'},
+  {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['ヒール適性','早熟'],personality:'quiet',archetype:'normal'},
+  {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:121,st:146,mn:141},traits:['威圧感'],personality:'normal',archetype:'normal'},
+  {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心'],personality:'normal',archetype:'ojousama'},
+  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'polite'},
+  {id:18,name:'出羽鷹子',h:184,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['適応力'],personality:'bold',archetype:'delinquent'},
+  {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力'],personality:'earnest',archetype:'ojousama'},
+  {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:149,te:161,st:155,mn:161},traits:['努力家','遅咲き'],personality:'normal',archetype:'normal'},
+  {id:21,name:'木ノ内幸音',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Babyface',pot:{pw:146,sp:129,te:129,st:148,mn:147},traits:['ヒール適性','ムードメーカー','華'],personality:'earnest',archetype:'normal'},
+  {id:22,name:'美濃山まりな',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122},traits:['ヒール適性'],personality:'bold',archetype:'delinquent'},
+  {id:23,name:'早見知子',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['適応力'],personality:'normal',archetype:'normal'},
+  {id:24,name:'園部梨花',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[],personality:'bold',archetype:'normal'},
+  {id:25,name:'石戸谷なつき',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109},traits:['早熟'],personality:'easygoing',archetype:'delinquent'},
+  {id:26,name:'宮守なつめ',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['努力家','早熟'],personality:'earnest',archetype:'polite'},
+  {id:27,name:'八重樫舞',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126},traits:['鉄人'],personality:'normal',archetype:'normal'},
+  {id:28,name:'岩屋みら',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139},traits:['ガラスの身体','早熟','鉄人'],personality:'bold',archetype:'delinquent'},
+  {id:29,name:'相沢未来',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['人望','鉄人'],personality:'normal',archetype:'normal'},
+  {id:30,name:'松川杏樹',h:174,pw:76,sp:65,te:71,st:63,mn:71,style:'Grappler',role:'Neutral',pot:{pw:159,sp:144,te:152,st:142,mn:152},traits:['ムードメーカー','破天荒'],personality:'easygoing',archetype:'normal'},
+  {id:31,name:'平松かなみ',h:158,pw:66,sp:58,te:75,st:72,mn:70,style:'Submission',role:'Babyface',pot:{pw:146,sp:135,te:158,st:154,mn:151},traits:['晩成','不屈'],personality:'quiet',archetype:'polite'},
+  {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164},traits:['リーダー気質','負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['破天荒','早熟','努力家'],personality:'normal',archetype:'normal'},
+  {id:35,name:'上野原弥生',h:179,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135},traits:['頑丈さ'],personality:'bold',archetype:'normal'},
+  {id:36,name:'真鍋綾乃',h:181,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138},traits:['頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:37,name:'白銀麗子',h:165,pw:74,sp:82,te:82,st:83,mn:78,style:'Allround',role:'Babyface',pot:{pw:156,sp:167,te:167,st:168,mn:161},traits:['不屈','華','頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:38,name:'芝彩音',h:168,pw:88,sp:64,te:67,st:78,mn:76,style:'Grappler',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159},traits:['華','闘志'],personality:'bold',archetype:'ojousama'},
+  {id:39,name:'神谷沙奈絵',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Striker',role:'Neutral',pot:{pw:138,sp:159,te:143,st:144,mn:128},traits:['忠誠心'],personality:'quiet',archetype:'cool'},
+  {id:40,name:'高輪まみ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Allround',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:['頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['ヒール適性','早熟'],personality:'easygoing',archetype:'seductive'},
+  {id:42,name:'本郷真理子',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Grappler',role:'Heel',pot:{pw:174,sp:147,te:124,st:146,mn:152},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent'},
+  {id:43,name:'金沢文',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141},traits:['頑丈さ'],personality:'normal',archetype:'delinquent'},
+  {id:44,name:'福浦理乃',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:129,te:124,st:117,mn:116},traits:[],personality:'normal',archetype:'normal'},
+  {id:45,name:'高槻千歳',h:164,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156},traits:['リーダー気質','華','野心'],personality:'normal',archetype:'seductive'},
+  {id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Striker',role:'Neutral',pot:{pw:143,sp:141,te:146,st:150,mn:155},traits:['早熟'],personality:'bold',archetype:'normal'},
+  {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:142,st:144,mn:161},traits:['負けず嫌い','適応力','闘志'],personality:'bold',archetype:'normal'},
+  {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:144,te:145,st:155,mn:163},traits:['努力家','忠誠心','遅咲き'],personality:'earnest',archetype:'polite'},
+  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'emotional',archetype:'normal'},
+  {id:51,name:'三橋ふみえ',h:172,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['ヒール適性','ファンサービス'],personality:'emotional',archetype:'normal'},
+  {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Striker',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:135},traits:[],personality:'normal',archetype:'normal'},
+  {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー'],personality:'normal',archetype:'normal'},
+  {id:54,name:'阿部みのり',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:122,sp:135,te:138,st:128,mn:144},traits:[],personality:'shy',archetype:'polite'},
+  {id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['不屈','鉄人','頑丈さ'],personality:'earnest',archetype:'polite'},
+  {id:56,name:'片桐ありさ',h:167,pw:68,sp:63,te:80,st:68,mn:68,style:'Submission',role:'Neutral',pot:{pw:148,sp:142,te:164,st:148,mn:148},traits:['ヒール適性','ライバル体質','野心'],personality:'bold',archetype:'seductive'},
+  {id:57,name:'浅見里緒菜',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148},traits:['リーダー気質','早熟','負けず嫌い','野心'],personality:'normal',archetype:'seductive'},
+  {id:58,name:'丹羽穂垂',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Allround',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['引き出し上手','負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:59,name:'池辺マリ',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:151,sp:126,te:112,st:141,mn:129},traits:['負けず嫌い'],personality:'bold',archetype:'delinquent'},
+  {id:60,name:'馬入橋ほとり',h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:167,sp:148,te:137,st:151,mn:161},traits:['早熟','鉄人','頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:61,name:'観音崎せりか',h:169,pw:73,sp:73,te:67,st:63,mn:66,style:'Allround',role:'Heel',pot:{pw:155,sp:155,te:147,st:142,mn:146},traits:['ヒール適性','華','野心'],personality:'normal',archetype:'normal'},
+  {id:62,name:'宮ケ瀬千夏',h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent'},
+  {id:63,name:'伊勢原文奈',h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132},traits:['忠誠心'],personality:'earnest',archetype:'normal'},
+  {id:64,name:'湯本ほたる',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122},traits:[],personality:'easygoing',archetype:'normal'},
+  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169},traits:['ファンサービス','名勝負製造機'],personality:'normal',archetype:'normal'},
+  {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161},traits:['人望','引き出し上手'],personality:'normal',archetype:'seductive'},
+  {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168},traits:['ファンサービス','華','野心'],personality:'normal',archetype:'normal'},
+  {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:148,sp:160,te:128,st:151,mn:159},traits:['負けず嫌い'],personality:'emotional',archetype:'normal'},
+  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い'],personality:'normal',archetype:'normal'},
+  {id:70,name:'浜竹美咲',h:167,pw:80,sp:57,te:63,st:68,mn:68,style:'Grappler',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['引き出し上手','忠誠心'],personality:'normal',archetype:'normal'},
+  {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:145,sp:134,te:150,st:141,mn:147},traits:['ファンサービス'],personality:'normal',archetype:'normal'},
+  {id:72,name:'穴澤ほのか',h:168,pw:74,sp:58,te:65,st:63,mn:70,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['ファンサービス','引き出し上手','野心'],personality:'normal',archetype:'seductive'},
+  {id:73,name:'大馬越よし子',h:179,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:169,sp:122,te:148,st:147,mn:148},traits:['威圧感','頑丈さ'],personality:'bold',archetype:'normal'},
+  {id:74,name:'富士見ヶ丘遥',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['ファンサービス'],personality:'earnest',archetype:'polite'},
+  {id:75,name:'海老名栞',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['ファンサービス','ライバル体質','野心'],personality:'easygoing',archetype:'normal'},
+  {id:76,name:'栗林あかり',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135},traits:['ライバル体質','負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:77,name:'新見ゆり',h:168,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['引き出し上手'],personality:'earnest',archetype:'seductive'},
+  {id:78,name:'椿山みさき',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:137,sp:130,te:141,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い'],personality:'normal',archetype:'normal'},
+  {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:133},traits:['ヒール適性'],personality:'bold',archetype:'delinquent'},
+  {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:129,sp:164,te:166,st:132,mn:85},traits:['ファンサービス','ムードメーカー'],personality:'shy',archetype:'polite'},
+  // ── 新規キャラクター（v1.4 GameID 81〜99）──
+  {id:81,name:'坂本莉衣奈',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Speed',role:'Neutral',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['ムードメーカー'],personality:'normal',archetype:'normal'},
+  {id:82,name:'近藤ゆりか',h:166,pw:84,sp:55,te:67,st:80,mn:69,style:'Grappler',role:'Neutral',pot:{pw:169,sp:132,te:147,st:164,mn:150},traits:['番狂わせ体質'],personality:'earnest',archetype:'normal'},
+  {id:83,name:'佐久間ひより',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:84,name:'南谷杏',h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
+  {id:85,name:'鴨志田ルーシー',h:172,pw:74,sp:58,te:43,st:69,mn:73,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:116,st:150,mn:155},traits:['頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:86,name:'芹沢亜里紗',h:166,pw:70,sp:70,te:53,st:58,mn:61,style:'Allround',role:'Heel',pot:{pw:151,sp:151,te:129,st:135,mn:139},traits:['ファンサービス'],personality:'emotional',archetype:'seductive'},
+  {id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Speed',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'normal'},
+  {id:88,name:'愛川明日香',h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[],personality:'normal',archetype:'seductive'},
+  {id:89,name:'赤羽あんな',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Speed',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
+  {id:90,name:'玉手すみれ',h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['努力家'],personality:'quiet',archetype:'polite'},
+  {id:91,name:'等々力あかね',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:154,te:148,st:156,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
+  {id:92,name:'飯島冴子',h:170,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:137,st:120,mn:117},traits:['忠誠心'],personality:'normal',archetype:'seductive'},
+  {id:93,name:'松久保伊織',h:163,pw:61,sp:64,te:69,st:59,mn:54,style:'Grappler',role:'Babyface',pot:{pw:139,sp:143,te:150,st:137,mn:130},traits:['忠誠心','早熟'],personality:'normal',archetype:'normal'},
+  {id:94,name:'須藤美月',h:158,pw:58,sp:58,te:65,st:48,mn:45,style:'Submission',role:'Heel',pot:{pw:135,sp:135,te:144,st:122,mn:118},traits:['ヒール適性'],personality:'normal',archetype:'normal'},
+  {id:95,name:'小西ゆきえ',h:165,pw:57,sp:63,te:77,st:61,mn:74,style:'Allround',role:'Neutral',pot:{pw:134,sp:142,te:160,st:139,mn:156},traits:['ガラスの身体','ファンサービス','早熟'],personality:'normal',archetype:'normal'},
+  {id:96,name:'松下真理亜',h:171,pw:72,sp:71,te:65,st:68,mn:58,style:'Allround',role:'Neutral',pot:{pw:154,sp:152,te:144,st:148,mn:135},traits:['ファンサービス','早熟'],personality:'normal',archetype:'normal'},
+  {id:97,name:'岩崎みどり',h:158,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:151,sp:163,te:122,st:156,mn:141},traits:['努力家','負けず嫌い','頑丈さ'],personality:'earnest',archetype:'normal'},
+  {id:98,name:'米山杏里',h:169,pw:69,sp:64,te:77,st:68,mn:71,style:'Allround',role:'Babyface',pot:{pw:150,sp:143,te:160,st:148,mn:152},traits:['ガラスの身体','リーダー気質','人望','引き出し上手'],personality:'normal',archetype:'normal'},
+  {id:99,name:'三浦早紀',h:166,pw:76,sp:73,te:74,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:159,sp:155,te:156,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟'],personality:'bold',archetype:'normal'}
 ];
-// Character profiles (brief bios for fighter popup) 窶・v1.4 蜈ｨ99蜷・const CHAR_PROFILES = {
-  1:'謚懊″繧灘・縺滉ｽ捺ｼ縺ｨ繝代Ρ繝ｼ縺ｧ邊慕伐蟶ょ・譛蠑ｷ縺ｨ隰ｳ繧上ｌ縺滉ｼ晁ｪｬ縺ｮ繝ｬ繧ｹ繝ｩ繝ｼ縲る擇蛟定ｦ九′濶ｯ縺丈ｺｺ譛帙ｂ蜴壹＞縲ゅヱ繝ｯ繝ｼ繝懊Β縺ｨ蠑ｷ辜医↑繝ｩ繝ｪ繧｢繝・ヨ繧呈ｭｦ蝎ｨ縺ｫ蝨ｧ蛟堤噪縺ｪ蟄伜惠諢溘〒蟇ｾ謌ｦ逶ｸ謇九ｒ鬟ｲ縺ｿ霎ｼ繧縲・,
-  2:'蟷ｼ蟆第悄縺ｯ逞・ｼｱ縺縺｣縺溘′縲∽ｸ榊ｱ医・邊ｾ逾槭〒繝ｪ繝上ン繝ｪ繧剃ｹ励ｊ雜翫∴繝代Ρ繝ｼ繝ｬ繧ｹ繝ｩ繝ｼ縺ｸ縺ｨ螟芽ｲ後＠縺滄延閻穂ｻ､螫｢縲ゅΓ繧､繝峨・鬮倬嚴縺ｨ縺ｨ繧ゅ↓骰幃軒繧帝㍾縺ｭ縲∝ｸょ・譛画焚縺ｮ繝代Ρ繝ｼ繝輔ぃ繧､繧ｿ繝ｼ縺ｫ謌宣聞縺励◆縲・,
-  3:'繧・＆縺励￡縺ｪ髮ｰ蝗ｲ豌励〒逶ｮ遶九◆縺ｪ縺・魂雎｡縺縺後∫｢ｺ縺九↑蜉帙ｒ遘倥ａ繧矩國繧後◆螳溷鴨閠・ょｮｶ蠎ｭ縺ｮ莠区ュ縺ｧ霆｢譬｡縺励※邊慕伐蟄ｦ蝨偵ｒ髮｢繧後◆縲ゅ←繧薙↑逶ｸ謇九↓繧よ沐霆溘↓蟇ｾ蠢懊〒縺阪ｋ蝎ｨ逕ｨ縺輔′譛螟ｧ縺ｮ豁ｦ蝎ｨ縺ｧ縲∬ｩｦ蜷亥ｱ暮幕繧定ｪｭ繧蜉帙↓繧ょ━繧後ｋ縲・,
-  4:'蜑｣驕謎ｻ戊ｾｼ縺ｿ縺ｮ髣伜ｿ励〒譬ｼ荳翫↓繧よｱｺ縺励※蠑輔°縺ｪ縺・ｲ縺代★雖後＞縲よ橿陦薙・邊怜炎繧翫□縺後Γ繝ｳ繧ｿ繝ｫ縺ｮ蠑ｷ縺輔・邊慕伐髫丈ｸ縲りｩｦ蜷育ｵら乢縺ｫ蠎募鴨繧堤匱謠ｮ縺吶ｋ繧ｿ繧､繝励〒縲∽ｽ募ｺｦ謇薙■縺ｮ繧√＆繧後※繧らｫ九■荳翫′繧倶ｸ榊ｱ医・邊ｾ逾槭・隕ｳ螳｢縺ｮ蠢・ｒ謗ｴ繧縲ょｰ・擂縺ｮ謚陦灘髄荳頑ｬ｡隨ｬ縺ｧ縺ｯ螟ｧ蛹悶￠縺吶ｋ蜿ｯ閭ｽ諤ｧ繧堤ｧ倥ａ縺滄ｸ譚舌・,
-  5:'髯ｸ荳企Κ縺ｮ蠢ｫ雜ｳ螂ｳ蟄舌ゅせ繝医う繝・け縺ｫ骰帙∴荳翫￡縺溯・蜉帙°繧臥ｹｰ繧雁・縺吶せ繝斐・繝峨→雹ｴ繧頑橿縺ｧ逶ｸ謇九ｒ鄙ｻ蠑・☆繧句ｮ溷鴨閠・ら洒霍晞屬襍ｰ縺ｧ骰帙∴縺溽・逋ｺ逧・↑蜉騾溷鴨縺ｯ繝ｪ繝ｳ繧ｰ縺ｧ繧る⊆諞ｾ縺ｪ縺冗匱謠ｮ縺輔ｌ繧九る｣帙・謚繝ｻ雹ｴ繧頑橿縺ｮ蛻・ｌ蜻ｳ縺ｯ荳邏壼刀縲・,
-  6:'蝎ｨ逕ｨ縺輔′蜈峨ｋ荳・・蝙九・繧､繝壹・繧ｹ螽倥ゅｄ繧区ｰ励ｒ蜃ｺ縺励◆譎ゅ・蟇ｾ蠢懷鴨縺ｯ逶ｮ繧定ｦ句ｼｵ繧九ｂ縺ｮ縺後≠繧九′縲∵勸谿ｵ縺ｯ縺ｮ繧薙・繧翫・繝ｼ繧ｹ縲ゆｸｭ蟄ｦ譎ゆｻ｣縺ｯ逕滄ｧ偵・繧ｯ繝ｩ繧ｹ繝｡繝ｼ繝医ゅ↑縺ｫ繧・ｉ蝗邵√′縺ゅｋ讒伜ｭ舌・,
-  7:'蟇悟ｲ｡螳ｶ縺ｮ蟆ょｱ槭Γ繧､繝峨↓縺励※蠢螳溘↑隴ｷ陦帙る未遽謚縺ｮ繧ｻ繝ｳ繧ｹ縺ｫ蜈峨ｋ繧ゅ・縺後≠繧翫√♀螫｢讒倥ｒ謾ｯ縺医↑縺後ｉ蝨ｰ驕薙↓蜉帙ｒ縺､縺代※縺・ｋ縲ゅ♀螫｢讒倥ｒ螳医ｋ縺溘ａ縺ｪ繧芽・繧峨・霄ｫ繧堤崟縺ｫ縺吶ｋ縺薙→繧ょ鹿繧上↑縺・鍵霄ｫ逧・↑諤ｧ譬ｼ縲・,
-  8:'繝舌せ繧ｱ驛ｨ謇螻槭・髟ｷ霄ｫ繝輔ぃ繧､繧ｿ繝ｼ縲る°蜍暮Κ縺ｮ莉ｲ髢薙◆縺｡縺ｨ繧ゆｺ､豬√′縺ゅｋ縲よ遠謦・↓蜈峨ｋ繧ゅ・縺ｯ縺ゅｋ縺梧橿陦馴擇縺ｫ隱ｲ鬘後ｒ谿九☆縲・74cm縺ｮ髟ｷ霄ｫ縺九ｉ郢ｰ繧雁・縺吶Μ繝ｼ繝√・髟ｷ縺・遠謦・・閼・ｨ√□縺後√げ繝ｩ繧ｦ繝ｳ繝峨↓謖√■霎ｼ縺ｾ繧後ｋ縺ｨ闍ｦ謌ｦ縺吶ｋ蛯ｾ蜷代′縺ゅｋ縲・,
-  9:'縺翫＠繧・ｌ縺ｫ逶ｮ隕壹ａ縺溯・遘ｰ繧ｫ繝ｯ繧､繧､邉ｻ螂ｳ蟄舌らｷｴ鄙偵ｈ繧顔ｾ主ｮｹ縺ｫ繧ｹ繝医う繝・け縺縺後∬ｪｿ蟄舌′濶ｯ縺・凾縺ｯ逶ｸ謇九ｒ螳悟ｰ√☆繧九％縺ｨ繧ゅりｩｦ蜷医〒縺ｯ諢丞､悶↓繧ゅせ繝斐・繝峨ｒ豢ｻ縺九＠縺溷ｷｧ縺ｿ縺ｪ遶九■蝗槭ｊ繧定ｦ九○繧九％縺ｨ縺後≠繧翫∽ｾｮ繧九→逞帙＞逶ｮ縺ｫ驕ｭ縺・・,
-  11:'鬮俶｡逕溘→縺励※縺ｯ螟ｧ莠ｺ縺ｳ縺溷魂雎｡縺ｮ螂ｳ蟄宣ｫ倡函縲ょ梨陌千噪縺ｪ荳髱｢繧呈戟縺｡縲・未遽謚縺ｨ邨槭ａ謚縺ｧ逶ｸ謇九ｒ霑ｽ縺・ｩｰ繧√ｋ繧ｹ繧ｿ繧､繝ｫ繧貞･ｽ繧蜊ｱ髯ｺ縺ｪ螳溷鴨閠・ら恚隴ｷ遘代〒蟄ｦ繧薙□遏･隴倥ｒ繝励Ο繝ｬ繧ｹ縺ｫ謖√■霎ｼ繧薙□迢ｬ閾ｪ縺ｮ繧ｵ繝悶Α繝・す繝ｧ繝ｳ謚陦薙・蟶ょ・繝医ャ繝励け繝ｩ繧ｹ縺ｧ縲∽ｸ蠎ｦ謐輔∪繧後・閼ｱ蜃ｺ縺ｯ閾ｳ髮｣縺ｮ讌ｭ縲・,
-  12:'蟆乗氛縺ｪ縺後ｉ菴捺ｼ縺ｫ莨ｼ蜷医ｏ縺ｬ繝代Ρ繝ｼ縺ｨ荳榊ｱ医・髣伜ｿ励〒逶ｸ謇九ｒ縺ｭ縺倅ｼ上○繧九・53cm縺ｮ蟆上＆縺ｪ菴薙↓螳ｿ繧矩利蠢励・隱ｰ繧医ｊ繧よｿ縺励￥縲√ち繝輔ロ繧ｹ縺ｨ譬ｹ諤ｧ縺ｧ螟ｧ蝙矩∈謇九↓繧ら悄縺｣蜷代°繧臥ｫ九■蜷代°縺・ゅメ繝ｼ繝繝｡繧､繝医°繧峨・菫｡鬆ｼ繧ょ字縺上・ｼ繧ゅ＠縺・Μ繝ｼ繝繝ｼ譬ｼ縲・,
-  13:'蜿｣謨ｰ縺ｯ讌ｵ繧√※蟆代↑縺・遠謦・姶縺ｮ逕ｳ縺怜ｭ舌ゆｸ謦・ｿ・ｮｺ繧堤炊諠ｳ縺ｨ縺吶ｋ謌ｦ髣倡汲縲る惚縺域栢縺九ｌ縺滓教雜ｳ縺九ｉ郢ｰ繧雁・縺輔ｌ繧区遠謦・・繧ｹ繝斐・繝峨→繝代Ρ繝ｼ繧貞・縺ｭ蛯吶∴縲∬ｩｦ蜷医′蟋九∪繧後・逶ｸ謇九ｒ螳ｹ襍ｦ縺ｪ縺乗遠縺｡謚懊￥縲ょｯ｡鮟吶ｆ縺医↓菴輔ｒ閠・∴縺ｦ縺・ｋ縺区雫縺ｿ縺ｫ縺上￥縲∝ｯｾ謌ｦ逶ｸ謇九↓荳肴ｰ怜袖縺ｪ蝨ｧ繧剃ｸ弱∴繧九・,
-  14:'蝨ｰ荳九・繝ｭ繝ｬ繧ｹ縺ｧ蜊第ｯ繝輔ぃ繧､繝医↓逶ｮ隕壹ａ縺溷ｰ丞ｿ・・・蜆ｪ遲臥函縲ゅΜ繝ｳ繧ｰ縺ｫ荳翫′繧九→S諤ｧ縺瑚ｱｹ螟峨☆繧倶ｺ碁擇諤ｧ縺ｮ謖√■荳ｻ縲よ勸谿ｵ縺ｯ縺翫→縺ｪ縺励￥謗ｧ縺医ａ縺ｪ逕溷ｾ偵□縺後√Μ繝ｳ繧ｰ縺ｫ荳翫′繧九→逶ｮ縺､縺阪′螟峨ｏ繧翫し繝・ぅ繧ｹ繝・ぅ繝・け縺ｪ髢｢遽謚繧貞濤諡励↓莉墓寺縺代ｋ縲ゅ◎縺ｮ螟芽ｲ後・繧翫・隕九ｋ閠・ｒ繧ｾ繝・→縺輔○繧九′螯吶↑莠ｺ豌励′縺ゅｋ縲・,
-  15:'蜩ｲ邇夜ｫ俶｡荳縺ｮ繝代Ρ繝ｼ繧定ｪ・ｋ驥肴姶霆翫ら函鬧偵→讖倥ｒ諷輔≧蠢鄒ｩ閠・□縺後∬ｺｫ蜀・ｻ･螟悶↓縺ｯ髱槫ｸｸ縺ｫ蜀ｷ豺｡縺ｧ謾ｻ謦・噪縲・78cm縺ｮ髟ｷ霄ｫ縺ｨ蝨ｧ蛟堤噪縺ｪ繝代Ρ繝ｼ縺ｧ逶ｸ謇九ｒ蜉帑ｻｻ縺帙↓縺ｭ縺倅ｼ上○繧九・,
-  16:'蜷榊ｮｶ繝ｻ螟ｧ豐ｳ蜀・ｮｶ縺ｮ莉､螫｢縺ｫ縺励※鞫ｺ蜃ｺ蟾晏･ｳ蟄ｦ髯｢繧呈髪驟阪☆繧句･ｳ蟶昴るｫ倥＞繧ｫ繝ｪ繧ｹ繝樊ｧ縺ｨ蜀ｷ驟ｷ縺輔〒蟄ｦ蝨偵↓蜷幄・縺吶ｋ縲ょ・蝗ｽ縺九ｉ螳溷鴨閠・ｒ邱ｨ蜈･縺輔○繧区ｨｩ蜉帙→雉・≡蜉帙ｒ謖√■縲∬・繧峨ｂ蜊楢ｶ翫＠縺溯ｺｫ菴楢・蜉帙〒鬆らせ縺ｫ遶九▽縲ゅ◎縺ｮ謾ｯ驟肴ｬｲ縺ｨ驥主ｿ・・逡吶∪繧九→縺薙ｍ繧堤衍繧峨★縲∫ｲ慕伐蟶ょ・菴薙・隕・ｨｩ繧偵ｂ迢吶≧縲・,
-  17:'蠑ｷ謨ｵ縺ｨ縺ｮ蟇ｾ謌ｦ縺悟､壹￥謨玲姶邯壹″縺ｮ蜊ｰ雎｡縺縺後∝､ｧ豐ｳ蜀・ｒ遐ｴ縺｣縺溷ｮ溽ｸｾ繧呈戟縺､蜷榊享雋陬ｽ騾讖溘ゅヴ繧｢繝弱・閻募燕縺ｯ繝励Ο邏壹ゅ←繧薙↑逶ｸ謇九→繧ょ剱縺ｿ蜷医≧螟ｩ諤ｧ縺ｮ隧ｦ蜷医そ繝ｳ繧ｹ繧呈戟縺｡縲∝ｽｼ螂ｳ縺ｮ隧ｦ蜷医・蟶ｸ縺ｫ隕句ｿ懊∴縺後≠繧九らｹ顔ｴｰ縺ｪ諢滓ｧ縺ｨ闖ｯ繧・°縺ｪ蟄伜惠諢溘〒縲∝享謨励↓髢｢繧上ｉ縺壹ヵ繧｡繝ｳ縺ｮ蠢・ｒ謗ｴ繧遞譛峨↑蟄伜惠縲・,
-  18:'螟ｧ豐ｳ蜀・′蜈ｨ蝗ｽ縺九ｉ蜻ｼ縺ｳ蟇・○縺溽ｷｨ蜈･邨・・荳隗偵ょｸょ・螻域欠縺ｮ菴捺ｼ縺ｨ繝代Ρ繝ｼ縺ｯ髦ｿ豁ｦ髫医↓繧ょｼ輔￠繧貞叙繧峨↑縺・・84cm縺ｮ髟ｷ霄ｫ縺九ｉ郢ｰ繧雁・縺呵ｱｪ蠢ｫ縺ｪ繝代Ρ繝ｼ谿ｺ豕輔′豁ｦ蝎ｨ縲りｩｦ蜷井ｸｭ縺ｫ逶ｸ謇九・繧ｹ繧ｿ繧､繝ｫ縺ｫ蜷医ｏ縺帙◆謌ｦ陦灘､画峩繧ゅ％縺ｪ縺帙ｋ蝎ｨ逕ｨ縺輔ｒ菴ｵ縺帶戟縺､縲・,
-  19:'螟ｧ豐ｳ蜀・ｻ榊屮縺ｮ螳溷鴨閠・・荳ｭ縺ｧ縺ｯ迴阪＠縺・ｸ闊ｬ蜈･蟄ｦ邨・ょｿ・ュ逧・↓繧ょ､ｧ豐ｳ蜀・↓蠢・・縺吶ｋ蠢螳溘↑菫｡螂芽・ゆｸ・・蝙九・繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝繝ｼ縺ｧ逶ｮ遶九▲縺溷ｼｱ轤ｹ縺ｯ縺ｪ縺・′縲∵ｱｺ螳壽遠縺ｫ谺縺代ｋ驛ｨ蛻・′縺ゅｋ縲ょ､ｧ豐ｳ蜀・∈縺ｮ蠢隱蠢・・譛ｬ迚ｩ縺ｧ縲∝多縺倥ｉ繧後ｌ縺ｰ謐ｨ縺ｦ鬧偵ｂ蜴ｭ繧上↑縺・ｦ壽ぁ繧呈戟縺､縲・,
-  20:'蜀ｷ髱呎ｲ育捩縺ｪ謌ｦ陦鍋愍縺ｧ逶ｸ謇九ｒ隕ｳ蟇溘＠縺ｦ謌ｦ縺・ョ繝ｼ繧ｿ閾ｳ荳贋ｸｻ鄒ｩ閠・りｺｫ菴楢・蜉帙↓縺ｯ荳榊ｮ峨′縺ゅｋ縺梧橿陦薙〒陬懊≧縲ら嶌謇九・逋悶ｒ迸ｬ譎ゅ↓隕区栢縺剰ｦｳ蟇溽愍縺ｯ隧ｦ蜷医ｒ驥阪・繧九＃縺ｨ縺ｫ逎ｨ縺九ｌ縺ｦ縺・ｋ縲ょ巻蜉帙ｒ遨阪∩驥阪・繧句ｧｿ蜍｢縺ｯ陦ｰ縺医★縲・聞譛溽噪縺ｪ謌宣聞縺梧悄蠕・＆繧後ｋ遏･諤ｧ豢ｾ縲・,
-  21:'讖倡軸鄒弱↓諞ｧ繧後※繝偵・繝ｫ繧堤岼謖・☆螟ｩ辟ｶ螽倥ょ｣ｰ縺悟､ｧ縺阪￥縺ｦ縺・ｋ縺輔＞縲よ橿陦薙・諡吶＞縺後ち繝輔ロ繧ｹ縺ｯ萓ｮ繧後↑縺・ゅヲ繝ｼ繝ｫ繧貞錐荵励ｋ繧上ｊ縺ｫ縺ｯ邏縺ｮ譏弱ｋ縺輔′謚代∴繧峨ｌ縺壹∬ｦｳ螳｢繧呈･ｽ縺励∪縺帙ｋ繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ逧・ｭ伜惠縲り庄縺ｮ縺ゅｋ謖ｯ繧玖・縺・〒迢ｬ閾ｪ縺ｮ繝輔ぃ繝ｳ螻､繧堤佐蠕励＠縺､縺､縺ゅｋ縲・,
-  22:'螟ｧ豐ｳ蜀・峩螻櫁ｦｪ陦幃嚏縲ょｷｨ菴薙〒逶ｸ謇九ｒ謚ｼ縺励▽縺ｶ縺吶Λ繝輔ヵ繧｡繧､繝医′謖√■蜻ｳ縺ｮ驥埼㍼邏壹ヶ繝ｭ繧ｦ繝ｩ繝ｼ縲ゅ◎縺ｮ菴捺ｼ繧呈ｴｻ縺九＠縺溘ヱ繝ｯ繝輔Ν縺ｪ謾ｻ謦・・縲∝腰邏斐□縺檎ｴ螢雁鴨縺ｯ謚懃ｾ､縲・,
-  23:'螟ｧ豐ｳ蜀・・蜿悶ｊ蟾ｻ縺阪よ・遨ｺ謇九ｒ縺九§縺｣縺ｦ縺・◆繧峨＠縺・′縲∝・菴鍋噪縺ｪ閭ｽ蜉帙・菴弱＞縲・,
-  24:'螟ｧ豐ｳ蜀・・蜿悶ｊ蟾ｻ縺阪・繝ｪ繝ｼ繝繝ｼ豌怜叙繧翫ょｮ溷鴨縺ｯ莨ｴ繧上↑縺・′縲∵焚縺ｮ蜉帙〒螽∝ｼｵ繧頑淵繧峨☆蟆冗黄縲・,
-  25:'螟ｧ豐ｳ蜀・・蜿悶ｊ蟾ｻ縺阪ゅヱ繝ｯ繝ｼ縺ｯ縺ゅｊ縺昴≧縺縺碁ｭ縺ｯ謔ｪ縺昴≧縲る・驥阪↑繝悶Ο繧ｦ繝ｩ繝ｼ縲・,
-  26:'蟒・｡蟇ｸ蜑阪・蜈・･遏ｳ蟾晞ｫ俶｡蜃ｺ霄ｫ縲ゅヰ繝ｩ繝ｳ繧ｹ驥崎ｦ悶・蝣・ｮ溘↑繝輔ぃ繧､繝医〒遒ｺ縺九↑螳溷鴨繧定ｦ九○繧九よｯ肴｡縺ｮ蟒・｡繧堤ｵ碁ｨ薙＠縺溯協縺・昴＞蜃ｺ繧偵ヰ繝阪↓縲∵掠縺上°繧芽・遶句ｿ・ｒ骰帙∴縺ｦ縺阪◆縲ょｮ牙ｮ壽─縺ｮ縺ゅｋ隧ｦ蜷磯°縺ｳ縺ｨ邊倥ｊ蠑ｷ縺輔〒縲√←繧薙↑逶ｸ謇九↓繧ゆｸ螳壻ｻ･荳翫・謌ｦ縺・′縺ｧ縺阪ｋ菫｡鬆ｼ縺ｮ縺翫￠繧矩∈謇九・,
-  27:'蜈・･遏ｳ蟾晞ｫ俶｡蜃ｺ霄ｫ縲りｺｫ菴楢・蜉帙↓迚ｩ繧定ｨ繧上○繧九ヱ繝ｯ繝ｼ・・せ繝斐・繝峨ち繧､繝励ゅち繝輔ロ繧ｹ縺ｫ繧ょｮ夊ｩ輔′縺ゅｋ縲る延莠ｺ縺ｨ蜻ｼ縺ｶ縺ｫ縺ｵ縺輔ｏ縺励＞鬆大▼縺ｪ閧我ｽ薙〒諤ｪ謌醍衍繧峨★縺ｮ繧ｿ繝輔＆縺梧怙螟ｧ縺ｮ豁ｦ蝎ｨ縲よ橿陦馴擇縺ｮ隱ｲ鬘後ｒ蜈区恪縺ｧ縺阪ｌ縺ｰ縲√ヨ繝・・驕ｸ謇九・莉ｲ髢灘・繧翫ｂ螟｢縺ｧ縺ｯ縺ｪ縺・・繝・Φ繧ｷ繝｣繝ｫ繧堤ｧ倥ａ繧九・,
-  28:'蜈・憧邇門屁螟ｩ邇九・荳莠ｺ縺ｧ螂ｳ蟄仙､ｧ逕溷慍荳九Ξ繧ｹ繝ｩ繝ｼ縲ゅヱ繝ｯ繝ｼ縺ｨ繧ｹ繝斐・繝峨ｒ蜈ｼ縺ｭ蛯吶∴繧九′縲√せ繧ｿ繝溘リ縺ｫ荳榊ｮ峨ｒ謚ｱ縺医ｋ縲ょ・逶帶悄縺ｮ辷・匱蜉帙・蟶ょ・縺ｧ繧ょｱ域欠縺縺｣縺溘′縲∵ｪ謌代′縺｡縺ｪ菴楢ｳｪ縺梧怙螟ｧ縺ｮ蠑ｱ轤ｹ縲・,
-  29:'辟｡蜷肴｡繝ｻ螂･螻ｱ蟾昴ｒ逵悟､ｧ莨壽ｱｺ蜍昴∪縺ｧ蟆弱＞縺溘・繝ｭ繝ｬ繧ｹ驛ｨ荳ｻ蟆・り・縺ｮ繧ｱ繧ｬ繧剃ｹ励ｊ雜翫∴縺滉ｸ榊ｱ医・繧ｭ繝｣繝励ユ繝ｳ縲る・｢・↓遶九◆縺輔ｌ繧九⊇縺ｩ蜉帙ｒ逋ｺ謠ｮ縺吶ｋ繧ｿ繧､繝励〒縲√メ繝ｼ繝繝｡繧､繝医°繧峨・菫｡鬆ｼ縺ｯ邨ｶ螟ｧ縲・,
-  30:'螂･螻ｱ蟾晞ｫ俶｡縺ｫ霆｢譬｡縺励※縺阪◆174cm縺ｮ螟ｧ蝙矩∈謇九ゅΒ繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ豌苓ｳｪ縺ｧ縲√メ繝ｼ繝縺ｮ蜈ｨ蝗ｽ螟ｧ莨壼・蝣ｴ縺ｮ螟｢繧貞ｾ梧款縺励☆繧九よ・縺ｾ繧後◆菴捺ｼ繧呈ｴｻ縺九＠縺溘げ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺梧ｭｦ蝎ｨ縺ｧ縲∝梛遐ｴ繧翫↑逋ｺ諠ｳ縺ｧ逶ｸ謇九ｒ鄙ｻ蠑・☆繧九％縺ｨ繧ゅ≠繧九る區豌励↑諤ｧ譬ｼ縺ｧ繝√・繝縺ｮ髮ｰ蝗ｲ豌励ｒ譏弱ｋ縺上☆繧区ｬ縺九○縺ｪ縺・ｭ伜惠縲・,
-  31:'螂･螻ｱ蟾昴・繝ｭ繝ｬ繧ｹ驛ｨ縺ｮ蜑ｯ繧ｭ繝｣繝励ユ繝ｳ縲ょ暑莠ｺ繧貞・豌励▼縺代ｋ縺溘ａ蟋九ａ縺滄Κ豢ｻ縺ｧ遶ｶ謚縺ｮ讌ｽ縺励＆縺ｫ逶ｮ隕壹ａ縺溘る未遽謚繧剃ｸｭ蠢・→縺励◆謚蟾ｧ豢ｾ縺ｧ縲∵勦謌仙梛縺ｨ縺励※蟆・擂縺ｮ謌宣聞縺梧怙繧よ悄蠕・＆繧後ｋ驕ｸ謇九・荳莠ｺ縲よ而縺医ａ縺ｪ諤ｧ譬ｼ縺縺後√＞縺冶ｩｦ蜷医↓縺ｪ繧九→邊倥ｊ蠑ｷ縺輔ｒ逋ｺ謠ｮ縺吶ｋ縲・,
-  32:'蟆丞ｭｦ逕滓凾莉｣縺ｯ豕ｨ逶ｮ縺ｮ繧ｵ繝悶Α繝・す繝ｧ繝ｳ菴ｿ縺・□縺｣縺溘′莨ｸ縺ｳ謔ｩ繧薙□驕主悉繧呈戟縺､縲ょ･･螻ｱ蟾昴〒諠・・繧貞叙繧頑綾縺励◆1蟷ｴ逕溘ゅ°縺､縺ｦ縺ｮ螟ｩ謇榊ｰ大･ｳ縺梧賢謚倥ｒ荵励ｊ雜翫∴縺ｦ蜀崎ｵｷ繧貞峙繧句ｧｿ縺ｯ縲√メ繝ｼ繝繝｡繧､繝医↓繧り憶縺・絢豼繧剃ｸ弱∴縺ｦ縺・ｋ縲りｲ縺代★雖後＞縺ｮ諤ｧ譬ｼ縺碁利莠牙ｿ・↓轣ｫ繧偵▽縺代◆譎ゅ√◎縺ｮ謚陦薙・遒ｺ縺九↑霈昴″繧定ｦ九○繧九・,
-  33:'蜷埼摩繝ｻ蟯ｬ豬懷･ｳ蟄舌・荳ｻ蟆・ゅ♀縺励→繧・°縺ｪ螳ｹ雋後↑縺後ｉ蜉ｪ蜉帙〒謗ｴ繧薙□螳溷鴨縺ｧ蜈ｨ蝗ｽ蛻ｶ隕・ｒ逶ｮ謖・☆縲よ栢縺阪ｓ蜃ｺ縺滓燕閭ｽ縺ｯ縺ｪ縺・′縲√≠繧峨ｆ繧矩擇縺ｧ繝上う繝ｬ繝吶Ν縺ｫ縺ｾ縺ｨ縺ｾ縺｣縺溽ｷ丞粋蜉帙・鬮倥＆縺梧ｭｦ蝎ｨ縲ゅメ繝ｼ繝繧堤紫縺・ｋ繝ｪ繝ｼ繝繝ｼ繧ｷ繝・・縺ｫ繧ょ━繧後・Κ蜩｡縺溘■縺九ｉ豺ｱ縺・噴諢上ｒ髮・ａ縺ｦ縺・ｋ縲・,
-  34:'1蟷ｴ譎ゅ°繧峨Ξ繧ｮ繝･繝ｩ繝ｼ縺ｮ謇崎・縺ｮ蝪翫ら音縺ｫ繧ｰ繝ｩ繧ｦ繝ｳ繝画橿陦薙↓蜆ｪ繧後ｋ蟯ｬ豬懊・蜑ｯ蟆・よ｢・Ω荳倥ｒ豺ｱ縺丈ｿ｡鬆ｼ縺励※縺・ｋ縲よ掠辭溷梛縺ｮ螟ｩ謇崎ｌ縺ｧ縲∵橿陦馴擇縺ｧ縺ｯ荳顔ｴ夂函縺吶ｉ蜃後＄繧ｻ繝ｳ繧ｹ縺ｮ謖√■荳ｻ縲ょ梛遐ｴ繧翫↑髢・″縺ｧ隧ｦ蜷医ｒ蜍輔°縺吝渚髱｢縲∝ｮ牙ｮ壽─縺ｫ谺縺代ｋ荳髱｢繧ゅ≠繧九′縲√◎縺ｮ貎懷惠閭ｽ蜉帙・險医ｊ遏･繧後↑縺・・,
-  35:'荳ｭ蟄ｦ縺九ｉ諤･謌宣聞縺礼音蠕・函縺ｧ蟯ｬ豬懊↓蜈･蟄ｦ縺励◆螟ｧ蝙・蟷ｴ逕溘ゅ悟ｲｬ豬懊・繝・う繝ｳ繧ｿ繝ｯ繝ｼ縲阪・荳隗偵ｒ諡・≧蟆・擂縺ｮ騾ｸ譚舌・79cm縺ｮ諱ｵ縺ｾ繧後◆菴捺ｼ繧呈ｴｻ縺九＠縺溘ヱ繝ｯ繝ｼ繧ｰ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺梧ｭｦ蝎ｨ縺ｧ縲・台ｸ医＆繧よ釜繧顔ｴ吩ｻ倥″縲ゅ∪縺邊怜炎繧翫□縺梧・髟ｷ縺ｮ菴吝慍縺ｯ螟ｧ縺阪￥縲∝錐髢譬｡縺ｮ譛ｪ譚･繧呈球縺・ｭ伜惠縺ｨ縺励※譛溷ｾ・＆繧後ｋ縲・,
-  36:'181cm縺ｮ髟ｷ霄ｫ繧定ｪ・ｊ荳企㍽蜴溘→荳ｦ縺ｶ縲悟ｲｬ豬懊・繝・う繝ｳ繧ｿ繝ｯ繝ｼ縲阪よｼ髣俶橿莉戊ｾｼ縺ｿ縺ｮ螳溯ｷｵ逧・ユ繧ｯ縺ｧ谺｡譛滉ｸｻ蟆・呵｣懊ゆｸ企㍽蜴溘→縺ｮ莠梧椢逵区攸縺ｨ縺励※蟯ｬ豬懊・譛蜑咲ｷ壹ｒ謾ｯ縺医ｋ繝代Ρ繝ｼ繧ｰ繝ｩ繝・・繝ｩ繝ｼ縲ょ・髱吶↑隧ｦ蜷磯°縺ｳ縺ｨ蝣・ｮ溘↑髦ｲ蠕｡蜉帙〒螳牙ｮ壹＠縺溯ｩｦ蜷医′縺ｧ縺阪ｋ菫｡鬆ｼ蠎ｦ縺ｮ鬮倥＞驕ｸ謇九・,
-  37:'蜷埼摩繝ｻ蟋ｫ螳ｮ螂ｳ蟄舌・荳ｻ蟆・ゅ梧沐縺ｮ逋ｽ驫縲阪悟ｧｫ螳ｮ縺ｮ逋ｽ髮ｪ蟋ｫ縲阪→蜻ｼ縺ｰ繧後ｋ螳ｹ蟋ｿ遶ｯ鮗励↑莠ｺ豌励Ξ繧ｹ繝ｩ繝ｼ縲ゅヰ繝ｩ繝ｳ繧ｹ縺ｮ蜿悶ｌ縺滄ｫ倥＞邱丞粋蜉帙→縲√←繧薙↑遯ｮ蝨ｰ縺ｧ繧よ釜繧後↑縺・ｸ榊ｱ医・邊ｾ逾槫鴨縺梧怙螟ｧ縺ｮ豁ｦ蝎ｨ縲ょ━髮・〒闖ｯ鮗励↑隧ｦ蜷医せ繧ｿ繧､繝ｫ縺ｯ螟壹￥縺ｮ繝輔ぃ繝ｳ繧帝ｭ・ｺ・＠縲∝・蝗ｽ逧・↓繧ら衍蜷榊ｺｦ縺ｮ鬮倥＞繝医ャ繝励Ξ繧ｹ繝ｩ繝ｼ縲・,
-  38:'蟋ｫ螳ｮ縺ｮ蜑ｯ荳ｻ蟆・↓縺励※縲悟央縺ｮ闃昴阪・逡ｰ蜷阪ｒ謖√▽莠梧椢逵区攸縺ｮ荳隗偵ゅ♀螫｢讒俶純縺・・荳ｭ縺ｧ繧ゆｸ逡ｪ縺ｮ縺雁ｬ｢讒倥ょ刀縺ｮ濶ｯ縺・ｫ九■螻・険繧玖・縺・°繧峨・諠ｳ蜒上〒縺阪↑縺・悸蛟堤噪縺ｪ繝代Ρ繝ｼ縺ｨ邨・∩謚縺ｧ逶ｸ謇九ｒ縺ｭ縺倅ｼ上○繧九ら區驫縺ｨ縺ｯ蟇ｾ辣ｧ逧・↑蜑帙・繧ｹ繧ｿ繧､繝ｫ縺ｧ縲∽ｺ偵＞繧定｣懊＞蜷医≧蟋ｫ螳ｮ縺ｮ螻句床鬪ｨ縲・,
-  39:'繧ｭ繝ｬ縺ｮ縺ゅｋ謇捺茶繧ｳ繝ｳ繝薙ロ繝ｼ繧ｷ繝ｧ繝ｳ縺ｫ螳夊ｩ輔′縺ゅｋ蟇｡鮟吶↑2蟷ｴ逕溘よｬ｡譛溘く繝｣繝励ユ繝ｳ縺ｨ逶ｮ縺輔ｌ繧句ｮ溷鴨閠・りｩｦ蜷井ｸｭ縺ｯ蜀ｷ髱呎ｲ育捩縺縺後∽ｸ蠎ｦ繧ｹ繧､繝・メ縺悟・繧九→螳ｹ襍ｦ縺ｮ縺ｪ縺・せ繝斐・繝峨〒逶ｸ謇九ｒ霑ｽ縺・ｾｼ繧縲よｬ｡荳紋ｻ｣縺ｮ蟋ｫ螳ｮ繧堤何蠑輔☆繧矩ｸ譚舌・,
-  40:'蟆乗氛縺縺後ち繝輔ロ繧ｹ縺ｨ繧ｹ繧ｿ繝溘リ縺ｧ蠕悟濠繧よ判繧∵焔繧堤ｷｩ繧√↑縺・怏譛帶ｪ縲・蟷ｴ逕溘°繧峨Ξ繧ｮ繝･繝ｩ繝ｼ繧呈雫繧薙□蜉ｪ蜉帛ｮｶ縲・49cm縺ｨ譛蟆上け繝ｩ繧ｹ縺ｮ菴捺ｼ縺縺後∫ｲ倥ｊ縺ｧ螟ｧ蝙矩∈謇九↓繧る｣溘ｉ縺・▽縺丞ｧｿ縺ｯ隕ｳ螳｢縺ｮ蠢懈抄繧帝寔繧√ｋ縲ょ慍驕薙↑蜉ｪ蜉帙ｒ遨阪∩驥阪・繧九ち繧､繝励〒縲∫捩螳溘↓螳溷鴨繧剃ｼｸ縺ｰ縺励※縺・ｋ縲・,
-  41:'荳画ｴ･豬憺ｫ俶｡繝励Ο繝ｬ繧ｹ驛ｨ縺ｮ繝ｪ繝ｼ繝繝ｼ譬ｼ縲ゅし繝悶Α繝・す繝ｧ繝ｳ謚陦薙・逶ｸ蠖薙↑繧ゅ・縺ｧ縲∬・逕ｱ螂疲叛縺ｪ逋ｺ諠ｳ縺九ｉ郢ｰ繧雁・縺吝､牙援逧・↑謾ｻ繧√・蟇ｾ遲悶′髮｣縺励＞縲ゅヲ繝ｼ繝ｫ蟇・ｊ縺ｮ繧ｹ繧ｿ繧､繝ｫ縺縺梧悽莠ｺ縺ｯ豺ｱ縺剰・∴縺ｦ縺翫ｉ縺壹√◆縺螂ｽ縺阪↓謌ｦ縺・◆縺・□縺代・莠ｫ讌ｽ荳ｻ鄒ｩ閠・・,
-  42:'荳画ｴ･豬懊・3蟷ｴ逕溘りｷｯ荳頑ｼ髣倥・螳滓姶邨碁ｨ薙ｂ雎雁ｯ後〒縲√Ν繝ｼ繝ｫ辟｡逕ｨ縺ｮ蝟ｧ蝌ｩ繝輔ぃ繧､繝医・蠕玲э荳ｭ縺ｮ蠕玲э縲りｱｪ蠢ｫ縺ｪ繝代Ρ繝ｼ繧ｰ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺ｨ蝣ｴ螟紋ｹｱ髣倥ｒ蜴ｭ繧上↑縺・Λ繝輔せ繧ｿ繧､繝ｫ縺梧戟縺｡蜻ｳ縲ゆｸ隕狗ｲ玲垓縺縺瑚ｩｦ蜷医・邨・∩遶九※縺ｫ縺ｯ迢ｬ閾ｪ縺ｮ蜍俶園繧呈戟縺｡縲√ム繝ｼ繝・ぅ縺ｪ鬧・￠蠑輔″縺ｫ繧る聞縺代※縺・ｋ縲・,
-  43:'荳画ｴ･豬憺囂荳縺ｮ諤ｪ蜉帙ｒ隱・ｋ2蟷ｴ逕溘るｭ縺ｮ蝗櫁ｻ｢縺ｯ驤阪＞縺後ヱ繝ｯ繝ｼ縺ｯ蝨ｧ蛟堤噪縲よｰ励・蜷代￥縺ｾ縺ｾ證ｴ繧後ｋ蝠城｡悟・縲・81cm縺ｮ蟾ｨ菴薙°繧臥ｹｰ繧雁・縺吶ヱ繝ｯ繝ｼ繝繝ｼ繝悶・蝨ｧ蟾ｻ縺ｧ縲∵雫縺ｾ繧後◆繧画怙蠕碁・ｌ繧九・縺ｯ閾ｳ髮｣縺ｮ讌ｭ縲りｩｦ蜷磯°縺ｳ縺ｯ螟ｧ髮第滑縺縺後√◎縺ｮ遐ｴ螢雁鴨縺縺代〒蜍昴■繧呈鏡縺医ｋ縺ｻ縺ｩ縺ｮ諤ｪ蜉帙・蜚ｯ荳辟｡莠後・,
-  44:'荳画ｴ･豬懊・1蟷ｴ逕溘Ξ繧ｮ繝･繝ｩ繝ｼ縲り・蜉帙′螢ｲ繧翫□縺後∪縺縺ｾ縺謚陦謎ｸ崎ｶｳ縲ゆｼｸ縺ｳ縺励ｍ縺ｫ譛溷ｾ・′縺九°繧狗匱螻暮比ｸ翫・譁ｰ莠ｺ縲・,
-  45:'蝗｣蝨ｰ蜀・・繝ｭ繝ｬ繧ｹ縺ｮ繝偵お繝ｩ繝ｫ繧ｭ繝ｼ縺ｮ繝医ャ繝励↓蠎ｧ繧区髪驟崎・ゆｺ墓ｲ｢繧貞濤諡励↓謾ｻ謦・＠縲∵＄諤匁帆豐ｻ縺ｧ蝗｣蝨ｰ繧呈髪驟阪☆繧狗ｭ也払螳ｶ縲ょ酷雜翫＠縺溽衍諤ｧ縺ｨ迢｡迪ｾ縺輔〒逶ｸ謇九・蠑ｱ縺ｿ繧定ｦ区栢縺阪∝ｿ・炊謌ｦ縺ｧ霑ｽ縺・ｩｰ繧√※縺九ｉ繝ｪ繝ｳ繧ｰ縺ｧ縺ｨ縺ｩ繧√ｒ蛻ｺ縺吶らｭ也払縺縺代〒縺ｪ縺乗ｭ｣髱｢縺九ｉ縺ｮ謌ｦ縺・〒繧ょｼｷ縺・＄繧九∋縺肴雰縲・,
-  46:'縺九▽縺ｦ蝗｣蝨ｰ縺ｮ螳溷鴨閠・→縺励※蟆頑噴繧帝寔繧√◆縺後・ｫ俶ｧｻ縺ｮ遲也払縺ｧ蝨ｰ菴阪→蜿倶ｺｺ繧貞､ｱ縺・ｭ､遶九ゅ◎繧後〒繧よ釜繧後★縺ｫ・募ｹｴ縺ｮ髮御ｼ上・蠕後↓鬮俶ｧｻ繧堤ｴ繧雁慍菴阪ｒ蝗槫ｾｩ縺励◆縲ら嶌謇九・濶ｯ縺輔ｒ蠑輔″蜃ｺ縺励↑縺後ｉ謌ｦ縺・ｪ螳溘↑繧ｹ繧ｿ繧､繝ｫ縺ｯ螟壹￥縺ｮ謾ｯ謖√ｒ髮・ａ縺ｦ縺・ｋ縲・,
-  47:'蜈･螻・蟷ｴ逶ｮ縺ｪ縺後ｉ鬮倥＞螳溷鴨繧堤､ｺ縺呵凶謇九・螳溷鴨閠・る強縺・遠謦・ｒ蠕玲э縺ｨ縺吶ｋ譌ｩ辭溷梛縲り凶縺輔↓莨ｼ蜷医ｏ縺ｬ蜀ｷ髱吶↑隧ｦ蜷磯°縺ｳ縺ｨ遒ｺ縺九↑謇捺茶謚陦薙〒縲∫洒譛滄俣縺ｧ繝医ャ繝励け繝ｩ繧ｹ縺ｮ螳溷鴨繧定ｺｫ縺ｫ縺､縺代◆縲よ掠辭溷梛繧・∴縺ｫ莨ｸ縺ｳ縺励ｍ縺梧・蠢ｵ縺輔ｌ繧九′縲∫樟譎らせ縺ｮ螳溷鴨縺ｯ萓ｮ繧後↑縺・・,
-  48:'邊慕伐蜿ｰ蝗｣蝨ｰ縺ｫ蜈･螻・＠縺ｦ縺阪◆縺｡繧・▲縺ｨ縺阪▽繧√・螂･縺輔ｓ縲ょ燕縺ｮ菴上∪縺・〒縺ｯ逕ｺ蜀・ｼ壹・繝ｭ繝ｬ繧ｹ縺ｮ螳溷鴨閠・ょ､悶↓縺ｯ蜴ｳ縺励￥螳ｶ縺ｧ縺ｯ髯ｽ豌励りｲ縺代★雖後＞縺ｮ諤ｧ譬ｼ縺ｨ驕ｩ蠢懷鴨縺ｮ鬮倥＆縺ｧ譁ｰ縺励＞迺ｰ蠅・↓繧ゅ☆縺舌↓貅ｶ縺題ｾｼ繧薙□縲よ遠謦・ｒ霆ｸ縺ｫ縺励◆謾ｻ謦・噪縺ｪ繧ｹ繧ｿ繧､繝ｫ縺ｧ縲・利蠢励ｒ蜑埼擇縺ｫ謚ｼ縺怜・縺咏・縺・ｩｦ蜷医ｒ隕九○繧九・,
-  49:'縺翫▲縺ｨ繧翫＠縺溯ご縺｡縺ｮ濶ｯ縺・♀螫｢讒伜ｦｻ縲ゆｺ墓ｲ｢縺ｫ蟶ｫ莠九＠繝励Ο繝ｬ繧ｹ縺ｮ蝓ｺ譛ｬ縺九ｉ蟄ｦ縺ｳ縲∫捩螳溘↓螳溷鴨繧偵▽縺代※縺・ｋ謌宣聞譬ｪ縲ょ巻蜉帛ｮｶ縺ｧ縲∝ｸｫ蛹縺ｧ縺ゅｋ莠墓ｲ｢縺ｮ謨吶∴繧堤ｴ逶ｴ縺ｫ蜷ｸ蜿弱＠縺ｦ縺・ｋ縲ら｢ｺ螳溘↓謌宣聞繧堤ｶ壹￠縺ｦ縺翫ｊ縲√Γ繝ｳ繧ｿ繝ｫ縺ｮ蠑ｷ縺輔・蝗｣蝨ｰ蜀・〒繧ょｱ域欠縲・,
-  50:'隕九◆逶ｮ繧りｨ蜍輔ｂ闍･縲・＠縺・曝縺井ｸ頑焔縲ゅ°縺､縺ｦ縺ｮ莠墓ｲ｢縺ｮ蜿倶ｺｺ縺縺後・ｫ俶ｧｻ繧ｰ繝ｫ繝ｼ繝励↓髷肴崛縺医＠縺滉ｸ匁ｸ｡繧贋ｸ頑焔縲・,
-  51:'逕ｷ諤ｧ髯｣繧貞袖譁ｹ縺ｫ縺､縺代Ξ繝輔ぉ繝ｪ繝ｼ縺吶ｉ隱俶ヱ縺吶ｋ鬲疲ｧ縺ｮ螂ｳ縲ら嶌謇九・蟷ｸ縺帙↑鬘斐′闍ｦ逞帙〒豁ｪ繧縺ｮ繧定ｦ九ｋ縺ｮ縺瑚ｶ｣蜻ｳ縲ゅし繝悶Α繝・す繝ｧ繝ｳ謚陦薙・遒ｺ縺九〒縲∝渚蜑・☆繧後☆繧後・鬧・￠蠑輔″縺ｧ逶ｸ謇九ｒ鄙ｻ蠑・☆繧玖ｩｦ蜷亥ｷｧ閠・・,
-  52:'鬮俶ｧｻ縺ｮ蜿悶ｊ蟾ｻ縺阪ゅ°縺､縺ｦ縺ｯ莠墓ｲ｢縺ｮ蜿倶ｺｺ縺縺｣縺溘・,
-  53:'蟷ｴ縺ｮ蜑ｲ縺ｫ關ｽ縺｡逹縺阪′縺ｪ縺・ぜ繝懊Λ螯ｻ縲ゅ〒繧ょ､ｫ蟀ｦ莉ｲ縺ｯ蜀・ｺ縲ゅヱ繝ｯ繝ｼ縺ｯ縺ゅｋ縺後ユ繧ｯ繝九ャ繧ｯ縺瑚ｿｽ縺・▽縺九↑縺・・,
-  54:'縺ｩ縺薙↓縺ｧ繧ゅ＞繧句ｹｳ蜃｡縺ｪOL縲る°蜍輔・闍ｦ謇九□縺後∬・蝣ｴ縺ｮ莠ｺ髢馴未菫ゅ・荳ｭ縺ｧ蜷ｦ蠢懊↑縺上Μ繝ｳ繧ｰ縺ｫ遶九◆縺輔ｌ繧九・,
-  55:'遉ｾ髟ｷ遘俶嶌縺ｨ縺励※繧ｹ繧ｫ繧ｦ繝医＆繧後◆謇榊ｪ帙らｾ手ｲ後→螳溷鴨縺ｧ迸ｬ縺城俣縺ｫ遉ｾ蜀・・繝峨Φ繝翫・蠎ｧ繧堤佐蠕励＠縺溘ゆｸ榊ｱ医・邊ｾ逾槭→驩・ｺｺ縺ｮ繧ｹ繧ｿ繝溘リ繧貞・縺ｭ蛯吶∴縲√←繧薙↑蜉｣蜍｢縺九ｉ繧る・ｻ｢繧堤漁縺医ｋ邊倥ｊ蠑ｷ縺輔′譛螟ｧ縺ｮ豁ｦ蝎ｨ縲よｭ｣邨ｱ豢ｾ縺ｮ繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝峨せ繧ｿ繧､繝ｫ縺ｧ豁｣髱｢縺九ｉ蝣ゅ・→謌ｦ縺・ｧｿ蜍｢縺梧髪謖√ｒ髮・ａ縺ｦ縺・ｋ縲・,
-  56:'鄒惹ｺｺ縺ｧ莉穂ｺ九ｂ縺ｧ縺阪ｋ邨檎炊隱ｲ縺ｮ縺雁ｧ峨＆繧薙ら､ｾ蜀・・繝ｭ繝ｬ繧ｹ縺ｧ鬮倥＞蜍晉紫繧定ｪ・ｊ縲∫ｲ倡捩雉ｪ縺ｪ縺・◆縺ｶ繧翫ｒ螂ｽ繧繧ｵ繝・ぅ繧ｹ繝医ゅし繝悶Α繝・す繝ｧ繝ｳ謚陦薙ｒ鬧・ｽｿ縺励※逶ｸ謇九ｒ縺倥ｏ縺倥ｏ縺ｨ霑ｽ縺・ｩｰ繧√ｋ隧ｦ蜷磯°縺ｳ縺悟ｾ玲э縲・,
-  57:'蜈・､ｾ蜀・・繝峨Φ繝翫・鄒惹ｺｺ蜿嶺ｻ伜ｬ｢縲ょ､ｧ荵・ｿ昴・逋ｻ蝣ｴ縺ｧ蝨ｰ菴阪ｒ閼・°縺輔ｌ縺溘らｭ也払縺ｧ蜻ｨ蝗ｲ繧貞虚縺九＠縲∬・蛻・・螳牙・縺ｪ蝣ｴ謇縺九ｉ謖・尚繧貞濤繧九ち繧､繝励ゅし繝悶Α繝・す繝ｧ繝ｳ謚陦薙・縺ｪ縺九↑縺九・繧ゅ・縺ｧ縲√◎繧後↓繝励Λ繧ｹ縺励※繝ｪ繝ｳ繧ｰ螟悶〒縺ｮ謾ｿ豐ｻ蜉帙ｒ豁ｦ蝎ｨ縺ｫ證苓ｺ阪☆繧九・,
-  58:'譁ｰ莠ｺ繝ｻ菴蝉ｹ・俣縺ｮ謨呵ご諡・ｽ薙よュ縺ｫ蜴壹＞諤ｧ譬ｼ縺ｧ縲∝ｾ瑚ｼｩ縺ｮ縺溘ａ縺ｫ迚・｡舌↓遶九■蜷代°縺｣縺溘ゅヰ繝ｩ繝ｳ繧ｹ縺ｮ蜿悶ｌ縺溷・ｮ溘↑繧ｹ繧ｿ繧､繝ｫ縺梧戟縺｡蜻ｳ縲りｲ縺代★雖後＞縺ｮ諤ｧ譬ｼ縺ｨ髱｢蛟定ｦ九・濶ｯ縺輔〒縲∫､ｾ蜀・・闍･謇九°繧峨・蟋芽ｲｴ蛻・→縺励※諷輔ｏ繧後※縺・ｋ縲・,
-  59:'螟ｧ荵・ｿ昴・莠ｺ豌励↓雖牙ｦｬ縺吶ｋ螂ｳ諤ｧ遉ｾ蜩｡縲ょ・霈ｩ縺ｮ豬・ｦ九↓蛻ｩ逕ｨ縺輔ｌ螟ｧ荵・ｿ昴↓隧ｦ蜷医ｒ謖代ｓ縺逶ｴ諠・梛繝悶Ο繧ｦ繝ｩ繝ｼ縲ゅヱ繝ｯ繝ｼ縺ｧ謚ｼ縺吶せ繧ｿ繧､繝ｫ縺ｯ闕貞炎繧翫□縺後∫峩諠・噪縺ｪ諤ｧ譬ｼ繧・∴縺ｮ辷・匱蜉帙・萓ｮ繧後↑縺・・,
-  60:'迚ｹ谿翫↑陦遲九〒荳譎ら噪縺ｫ螂ｳ諤ｧ蛹悶＠縺溷・逕ｷ蟄舌よ・縺ｾ繧後◆菴捺ｼ縺ｨ繝代Ρ繝ｼ縲√◎縺励※邊ｾ逾樒噪縺ｪ蠑ｷ縺輔〒繝ｪ繝ｳ繧ｰ繧貞宛縺吶ｋ縲ら塙諤ｧ譎ゆｻ｣縺ｮ霄ｫ菴楢・蜉帙・谿区ｻ薙→螂ｳ諤ｧ蛹門ｾ後↓霄ｫ縺ｫ縺､縺代◆縺励↑繧・°縺輔ｒ菴ｵ縺帶戟縺､逡ｰ濶ｲ縺ｮ繧ｰ繝ｩ繝・・繝ｩ繝ｼ縲る延莠ｺ縺ｨ蜻ｼ縺ｶ縺ｫ縺ｵ縺輔ｏ縺励＞繧ｿ繝輔ロ繧ｹ縺ｧ縲・聞譛滓姶縺ｫ繧り舌∴縺・ｋ繧ｹ繧ｿ繝溘リ縺ｮ謖√■荳ｻ縲・,
-  61:'繧ｮ繝｣繝ｫ3莠ｺ陦・・繝ｪ繝ｼ繝繝ｼ譬ｼ縲ゅけ繝ｩ繧ｹ繧ｫ繝ｼ繧ｹ繝医・繝医ャ繝励↓蜷幄・縺励√Ν繝・け繧ｹ縺ｫ繧りｺｫ菴楢・蜉帙↓繧り・菫｡縺ゅｊ縺ｮ螳溷鴨閠・り庄繧・°縺ｪ繝ｫ繝・け繧ｹ縺ｨ鬮倥＞繝励Λ繧､繝峨〒豕ｨ逶ｮ繧帝寔繧√ｋ縲ゅｈ繧雁､ｧ縺阪↑闊槫床縺ｧ縺ｮ豢ｻ霄阪ｒ陌手ｦ也怦縲・→迢吶▲縺ｦ縺・ｋ縲・,
-  62:'繧ｮ繝｣繝ｫ3莠ｺ陦・・荳隗偵よ°縺吶ｋ荵吝･ｳ縺ｨ縺励※莨雁兇蜴滓枚螂医ｒ隴ｦ謌偵＠縺ｦ縺・◆縲ゅヱ繝ｯ繝ｼ縺ｨ螽∝悸諢溘ｒ豁ｦ蝎ｨ縺ｫ縺励◆繝ｩ繝輔ヵ繧｡繧､繝医′謖√■蜻ｳ縺ｧ縲∽ｽ捺ｼ繧呈ｴｻ縺九＠縺溷悸蜉帙・逶ｸ蠖薙よ°諢帙Δ繝ｼ繝峨・譎ゅ・逕倥＞縺後√Μ繝ｳ繧ｰ縺ｫ荳翫′繧九→迯ｰ迪帙↑謌ｦ髣俶悽閭ｽ繧貞翁縺榊・縺励↓縺吶ｋ縲・,
-  63:'繧ｯ繝ｩ繧ｹ縺ｮ蜆ｪ遲臥函蟋泌藤髟ｷ縲ゅぐ繝｣繝ｫ繧ｰ繝ｫ繝ｼ繝励→縺ｮ霆玖ｽ｢縺ｧ遶句ｴ繧貞､ｱ縺｣縺溘′縲∬官縺ｮ蠑ｷ縺輔・螟ｱ縺｣縺ｦ縺・↑縺・ら悄髱｢逶ｮ縺ｧ豁｣鄒ｩ諢溘′蠑ｷ縺・り・蜉帙・蟷ｳ蝮・噪縺縺後∵怙蠕後∪縺ｧ隲ｦ繧√↑縺・ｧｿ蜍｢縺ｯ蜻ｨ蝗ｲ縺ｮ蟆頑噴繧帝寔繧√※縺・ｋ縲・,
-  64:'繧ｮ繝｣繝ｫ3莠ｺ陦・・荳莠ｺ縲る聞縺・ｂ縺ｮ縺ｫ蟾ｻ縺九ｌ繧九ち繧､繝励〒縲√ヰ繝・け縺後＞繧区凾縺縺大ｼｷ豌励↓縺ｪ繧倶ｸ匁ｸ｡繧贋ｸ頑焔縲・,
-  65:'莠ｺ蠖薙◆繧翫・濶ｯ縺輔〒謔｣閠・↓繧ょ酔蜒壹↓繧ゆｺｺ豌励・繝翫・繧ｹ縲ゆｻ穂ｺ倶ｸｭ縺ｯ蜆ｪ縺励＞縺後∝､悶↓蜃ｺ繧後・縺代▲縺薙≧豈定・縲ら恚隴ｷ蟶ｫ縺ｨ縺励※縺ｮ隕ｳ蟇溽愍縺ｯ繝ｪ繝ｳ繧ｰ縺ｧ繧る⊆諞ｾ縺ｪ縺冗匱謠ｮ縺輔ｌ縲∝錐蜍晁ｲ陬ｽ騾讖溘→縺励※螂ｽ隧ｦ蜷医ｒ逕溘∩蜃ｺ縺励※縺阪◆縲ゅヰ繝ｩ繝ｳ繧ｹ縺ｮ蜿悶ｌ縺滄ｫ倥＞邱丞粋蜉帙→繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ邊ｾ逾槭〒蟷・ｺ・＞謾ｯ謖√ｒ髮・ａ繧九・,
-  66:'鬮俶｡譎ゆｻ｣縺ｯ繧ｯ繝ｩ繧ｹ縺ｮ繝槭ラ繝ｳ繝翫□縺｣縺溽ｾ惹ｺｺ逵玖ｭｷ蟶ｫ縲ょ､夐｡阪・蛟滄≡繧定レ雋縺・慍荳区ｼ髣倥・荳也阜縺ｫ霄ｫ繧呈兜縺倥◆縲りｿｽ縺・ｩｰ繧√ｉ繧後◆迺ｰ蠅・〒蝓ｹ縺｣縺溽ｲｾ逾樒噪繧ｿ繝輔＆縺ｨ蠑輔″蜃ｺ縺励・螟壹＆縺梧怙螟ｧ縺ｮ豁ｦ蝎ｨ縲ら峡迚ｹ縺ｮ髮ｰ蝗ｲ豌励ｒ縺ｾ縺ｨ縺・∝捉蝗ｲ繧貞ｼ輔″縺､縺代ｋ繧ｫ繝ｪ繧ｹ繝樊ｧ繧呈戟縺､縲・,
-  67:'縺九▽縺ｦ縺ｯ螟ｩ謇咲ｾ主ｰ大･ｳ繝斐い繝九せ繝医→縺励※蜷阪ｒ鬥ｳ縺帙◆縲ょ､｢遐ｴ繧後◆蠕後ｂ遘倥ａ縺滓昴＞縺ｯ豸医∴縺壹∵悍縺ｿ繧偵°縺ｪ縺医ｋ縺溘ａ縺ｫ蝨ｰ荳九・繝ｭ繝ｬ繧ｹ縺ｫ霄ｫ繧呈兜縺倥ｋ縲らｹ顔ｴｰ縺ｪ謖・・縺九ｉ郢ｰ繧雁・縺吶・縺ｯ莉翫ｄ繝斐い繝弱〒縺ｯ縺ｪ縺上∝ｮｹ襍ｦ縺ｪ縺・ヱ繝ｯ繝ｼ繧ｰ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縲り庄繧・°縺ｪ螳ｹ蟋ｿ縺ｮ迸ｳ縺ｮ螂･縺ｫ縺ｯ縲∵賢謚倥ｒ荵励ｊ雜翫∴縺溯・□縺代′謖√▽隕壽ぁ縺悟ｮｿ縺｣縺ｦ縺・ｋ縲・,
-  68:'繝・Φ繝・Ξ螂ｳ蟄仙､ｧ逕溘りｲ縺代★雖後＞縺ｧ縲∝､ｧ蛻・↑莠ｺ縺ｮ縺溘ａ縺ｪ繧牙・蜉帙〒謌ｦ縺・ュ辭ｱ螳ｶ縲ゅせ繝斐・繝峨・縺ゅｋ謇捺茶縺梧ｭｦ蝎ｨ縺ｮ繧ｹ繝医Λ繧､繧ｫ繝ｼ縺ｧ縲∵─諠・ｒ繧ｨ繝阪Ν繧ｮ繝ｼ縺ｫ螟峨∴縺ｦ謌ｦ縺・ち繧､繝励ょ､ｧ蛻・↑莠ｺ繧貞ｮ医ｋ縺溘ａ縺ｫ繝ｪ繝ｳ繧ｰ縺ｫ遶九▽蟋ｿ縺ｯ蠢懈抄縺励◆縺上↑繧矩ｭ・鴨繧呈叛縺｣縺ｦ縺・ｋ縲・,
-  69:'迴ｾ蠖ｹ螂ｳ蟄仙､ｧ逕溘Ξ繝ｼ繧ｹ繧ｯ繧､繝ｼ繝ｳ縲ゅメ繧｢繝ｪ繝ｼ繝・ぅ繝ｳ繧ｰ驛ｨ莉戊ｾｼ縺ｿ縺ｮ霄ｫ菴楢・蜉帙〒繧ｹ繝斐・繝・ぅ繝ｼ縺ｪ隧ｦ蜷医ｒ螻暮幕縺吶ｋ縲よ戟縺｡蜑阪・闖ｯ繧・°縺輔→菫頑撫縺輔ｒ豢ｻ縺九＠縺溘せ繝斐・繝峨せ繧ｿ繧､繝ｫ縺ｧ隕ｳ螳｢繧帝ｭ・ｺ・☆繧九りｲ縺代★雖後＞縺ｮ諤ｧ譬ｼ縺ｧ縲∬庄鮗励↑隕九◆逶ｮ縺ｨ縺ｯ陬剰・縺ｫ譬ｹ諤ｧ縺ｮ縺ゅｋ邊倥ｊ蠑ｷ縺・ｩｦ蜷医ｒ隕九○繧九・,
-  70:'譛ｪ莠｡莠ｺ縺ｮ繧ｯ繝ｪ繝ｼ繝九Φ繧ｰ蠎嶺ｸｻ縲ゅヱ繝ｯ繝輔Ν縺ｪ邨・∩謚縺梧ｭｦ蝎ｨ縺ｮ蟋仙ｾ｡閧後る擇蛟定ｦ九・濶ｯ縺・ｺｺ譟・〒蜻ｨ蝗ｲ縺九ｉ鬆ｼ繧翫↓縺輔ｌ繧句ｭ伜惠縲ゅヱ繝ｯ繝輔Ν縺ｪ繧ｰ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺ｫ蜉縺医∝ｼ輔″蜃ｺ縺嶺ｸ頑焔縺ｪ隧ｦ蜷磯°縺ｳ縺ｧ闍･謇九・謌宣聞繧呈焔蜉ｩ縺代☆繧九％縺ｨ繧ょ､壹＞縲・,
-  71:'繝｢繝・Ν縺ｨ蜈ｼ讌ｭ縺ｮ繝ｬ繝ｼ繧ｹ繧ｯ繧､繝ｼ繝ｳ縲り庄繧・°縺ｪ繝ｫ繝・け繧ｹ縺ｮ陬上↓蝣・ｮ溘↑螳溷鴨繧堤ｧ倥ａ繧九ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ邊ｾ逾樊亮逶帙〒闖ｯ繧・°縺ｪ隧ｦ蜷医ｒ蠢・′縺代ｋ縺後∝ｮ溷鴨繧ら｢ｺ縺九ょｮ牙ｮ壽─縺ｮ縺ゅｋ繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝峨せ繧ｿ繧､繝ｫ縺ｧ縲√←繧薙↑逶ｸ謇九→繧ゆｸ螳壻ｻ･荳翫・隧ｦ蜷医′縺ｧ縺阪ｋ菫｡鬆ｼ蠎ｦ縺ｮ鬮倥＞驕ｸ謇九・,
-  72:'蜆ｪ縺励￡縺ｪ豺大･ｳ縺ｮ莉ｮ髱｢縺ｮ荳九↓蛻ｩ蟾ｱ逧・↑繧ｵ繧､繧ｳ繝代せ縺ｮ譛ｬ諤ｧ繧帝國縺吶ゆｽ捺ｼ繝ｻ繝代Ρ繝ｼ繝ｻ螳溷鴨縺吶∋縺ｦ蛯吶∴縺溷些髯ｺ縺ｪ鄒主･ｳ縲ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ縺ｧ莠ｺ豌励ｒ髮・ａ繧玖｣上〒縲∫嶌謇九ｒ邊ｾ逾樒噪縺ｫ霑ｽ縺・ｩｰ繧√ｋ蟾ｧ縺ｿ縺ｪ蠢・炊謌ｦ繧貞ｱ暮幕縺吶ｋ縲り・繧峨・菫晁ｺｫ繧・ｬｲ縺ｮ縺溘ａ縺ｫ縺ｯ謇区ｮｵ繧帝∈縺ｰ縺ｪ縺・・,
-  73:'螟冗･ｭ縺ｮ螂臥ｴ崎ｩｦ蜷医↓蜃ｺ蝣ｴ縺励◆螂ｳ諤ｧ縲ょｨ∝悸諢溘・縺ゅｋ菴捺ｼ縺ｨ鬆台ｸ医＆繧呈ｭｦ蝎ｨ縺ｫ縺吶ｋ繝代Ρ繝ｼ繧ｰ繝ｩ繝・・繝ｩ繝ｼ縲・79cm縺ｮ菴捺ｼ縺九ｉ郢ｰ繧雁・縺呵ｱｪ蠢ｫ縺ｪ繧ｰ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺ｯ蜉帛ｼｷ縺輔↓貅｢繧後∵磁霑第姶縺ｧ縺ｯ辟｡鬘槭・蠑ｷ縺輔ｒ隱・ｋ縲・,
-  74:'繝溘せ繧ｳ繝ｳ繧ｰ繝ｩ繝ｳ繝励Μ縺ｮ譁・ｭｦ驛ｨ逕溘ゅ♀豺代ｄ縺九↑蜊ｰ雎｡縺縺梧ｧ譬ｼ縺ｯ繧上ｊ縺ｨ蠑ｷ豌励ゆｻ乗､・邏壹・謇榊ｪ帙ら衍諤ｧ縺ｨ蜩∵ｼ繧呈─縺倥＆縺帙ｋ遶九■螻・険繧玖・縺・・荳ｭ縺ｫ縲∬ｩｦ蜷医〒縺ｯ諢丞､悶↑雋縺代ｓ豌励ｒ隕励°縺帙ｋ縲・,
-  75:'繝溘せ繧ｳ繝ｳ2菴阪・驥主ｿ・ｮｶ縲よ・繧九￥蠢ｫ豢ｻ縺ｪ鄒惹ｺｺ縺ｮ譛ｬ諤ｧ縺ｯ蛻ｩ蟾ｱ逧・〒縲∽ｻ紋ｺｺ繧定ｹｴ關ｽ縺ｨ縺吶％縺ｨ縺ｫ繧よ慣謚励′縺ｪ縺・ゅヵ繧｡繝ｳ縺ｮ蜑阪〒縺ｯ隨鷹｡斐ｒ謖ｯ繧翫∪縺上′縲√Λ繧､繝舌Ν縺ｫ縺ｯ螳ｹ襍ｦ縺ｮ縺ｪ縺・ｿ・炊謌ｦ繧剃ｻ墓寺縺代ｋ縲・,
-  76:'蛻昴ａ縺ｦ縺ｮ諱倶ｺｺ縺ｫ豬ｮ縺九ｌ繧狗ｴ逶ｴ縺ｧ譏弱ｋ縺・･ｳ蟄宣ｫ倡函縲よ橿陦馴擇縺ｯ縺ｾ縺逋ｺ螻暮比ｸ翫□縺後√ヱ繝ｯ繝ｼ縺ｨ繧ｹ繝斐・繝峨・繝舌Λ繝ｳ繧ｹ縺瑚憶縺・・,
-  77:'闍･縺上＠縺ｦ螟ｧ莠ｺ縺ｳ縺溯牡豌励ｒ謖√▲縺溷･ｳ蟄宣ｫ倡函縲ょ・髱吶↑隕ｳ蟇溽愍縺ｧ逶ｸ謇九・髫吶ｒ隕区栢縺冗衍諤ｧ豢ｾ縲ょｼ輔″蜃ｺ縺励・螟壹＞蝣・ｮ溘↑繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝繝ｼ縲・,
-  78:'逕ｰ闊取坩繧峨＠縺九ｉ謚懊￠蜃ｺ縺励◆縺・→鬘倥＞邯壹￠縺ｦ驛ｽ莨壹↓蜃ｺ縺ｦ縺阪◆縲ょｼ輔″蜃ｺ縺嶺ｸ頑焔縺ｪ隧ｦ蜷医そ繝ｳ繧ｹ縺ｨ邏疲惷縺輔°繧画擂繧狗峡閾ｪ縺ｮ鬲・鴨縺ｧ縲√ヵ繧｡繝ｳ螻､繧堤佐蠕励＠縺ｦ縺・ｋ縲よｼ荳顔嶌謇九↓繧よｱｺ縺励※蠑輔°縺ｪ縺・ｲ倥ｊ蠑ｷ縺輔′謖√■蜻ｳ縲・,
-  79:'繝上ル繝ｼ繝医Λ繝・・縺ｧ繧ｪ繝､繧ｸ迢ｩ繧翫ｒ縺励※縺・◆繧ｮ繝｣繝ｫ縲よ焔谿ｵ繧帝∈縺ｰ縺ｪ縺・ム繝ｼ繝・ぅ縺ｪ繝悶Ο繧ｦ繝ｩ繝ｼ縲・,
-  80:'繝励Ο繝ｬ繧ｹ繧偵☆繧九↓縺ｯ荳堺ｼｼ蜷医＞縺ｪ闖ｯ螂｢縺ｧ縺ｲ蠑ｱ縺ｪ蟆大･ｳ縲よ・譌･繧偵ｂ遏･繧後〓譌･縲・↓諤ｯ縺医↑縺後ｉ繧よ・蜻ｽ縺ｫ逕溘″縺ｦ縺・ｋ縲ょ・繧ｹ繝・・繧ｿ繧ｹ縺梧怙菴弱け繝ｩ繧ｹ縺縺後√Β繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ縺ｨ縺励※蝣ｴ繧呈・繧九￥縺吶ｋ繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ邊ｾ逾槭・隱ｰ縺ｫ繧りｲ縺代↑縺・ょｽｼ螂ｳ縺後Μ繝ｳ繧ｰ縺ｫ遶九▽蟋ｿ縺ｯ縲∝ｼｷ縺輔→縺ｯ菴輔°繧貞撫縺・°縺代ｋ縲・,
-  // 笏笏 譁ｰ隕上く繝｣繝ｩ繧ｯ繧ｿ繝ｼ・・1.4 GameID 81縲・9・俄楳笏
-  81:'譁ｰ蜊・蟷ｴ逶ｮ縺ｮ闍･謇軌L縲ゅ♀縺倥＆繧謎ｺｺ豌励↓繧医ｋ謇句字縺・し繝昴・繝医〒蝟ｶ讌ｭ謌千ｸｾ繧ょ･ｽ隱ｿ縺ｧ縲√■繧・▲縺ｨ隱ｿ蟄舌↓荵励▲縺ｦ縺・ｋ蜈・ｰ怜魂縲ゅ・繝ｭ繝ｬ繧ｹ縺ｧ縺ｯ繧ｹ繝斐・繝峨ｒ豢ｻ縺九＠縺溯ｻｽ蠢ｫ縺ｪ繝輔ぃ繧､繝医せ繧ｿ繧､繝ｫ縺梧戟縺｡蜻ｳ縺ｧ縲√Β繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ豌苓ｳｪ繧ら嶌縺ｾ縺｣縺ｦ隧ｦ蜷井ｼ壼ｴ繧堤屁繧贋ｸ翫￡繧九ゅせ繧ｿ繝溘リ縺ｨ繝｡繝ｳ繧ｿ繝ｫ縺ｮ鬮倥＆縺ｧ邊倥ｊ蠑ｷ縺・ｩｦ蜷磯°縺ｳ繧定ｦ九○繧九・,
-  82:'荳ｭ騾泌・遉ｾ3蟷ｴ逶ｮ縺ｮ邱丞漁驛ｨ蜩｡縲ゆｺ句漁閨ｷ縺ｮ繧ｭ繝｣繝ｪ繧｢縺ｯ髟ｷ縺丞━遘縺縺後∫､ｾ蜀・・莠ｺ髢馴未菫ゅ↓繧ｹ繝医Ξ繧ｹ繧呈ｺ懊ａ縺ｦ縺・ｋ縲ゅせ繝医Ξ繧ｹ縺ｮ謐後￠蜿｣縺ｨ縺励※蟋九ａ縺溘・繝ｭ繝ｬ繧ｹ縺ｧ諢丞､悶↑謇崎・縺碁幕闃ｱ縲ょ悸蛟堤噪縺ｪ繝代Ρ繝ｼ縺ｨ繧ｿ繝輔ロ繧ｹ縺ｧ繝ｪ繝ｳ繧ｰ繧呈髪驟阪☆繧九げ繝ｩ繝・・繝ｩ繝ｼ縺ｧ縺ゅｊ縲∽ｾｮ繧後↑縺・ｮ溷鴨閠・・,
-  83:'譁ｰ蜊・蟷ｴ逶ｮ縺ｮ譁ｰ莠ｺOL縲ゅ∪縺縺ｾ縺莉穂ｺ九・隕壽據縺ｪ縺・′縲√ｄ繧区ｰ励→雋縺代ｓ豌励□縺代・貅｢繧後※縺・ｋ縲らｵ碁ｨ謎ｸ崎ｶｳ繧呈ｰ玲戟縺｡縺ｮ蠑ｷ縺輔〒陬懊＞縲∝・霈ｩ縺溘■縺ｫ鬟溘ｉ縺・▽縺丞ｧｿ縺ｯ蠢懈抄縺励◆縺上↑繧矩ｭ・鴨縺後≠繧九ゆｸｹ鄒ｽ縺ｮ謖・ｰ弱・繧ゅ→逹螳溘↓謌宣聞縺励※縺翫ｊ縲∝ｰ・擂諤ｧ縺ｫ譛溷ｾ・′縺九°繧九・,
-  84:'螟ｧ謇倶ｸ榊虚逕｣縺ｮ莠句漁閨ｷOL縲ょ霧讌ｭ閨ｷ縺ｮ逕ｷ縺溘■縺ｫ蝗ｲ縺ｾ繧後◆繧ｹ繝医Ξ繧ｹ繧貞慍荳九・繝ｭ繝ｬ繧ｹ縺ｧ逋ｺ謨｣縺励※縺・ｋ縲・,
-  85:'蜷榊燕縺後■繧・▲縺ｨ繧ｭ繝ｩ繧ｭ繝ｩ縺ｪ螟ｧ蟄ｦ4蟷ｴ逕溘ゅい繝代Ξ繝ｫ縺ｫ蟆ｱ閨ｷ蜀・ｮ壽ｸ医∩縲ょ酔縺倥し繝ｼ繧ｯ繝ｫ縺ｮ蠕瑚ｼｩ縺ｫ蠖ｼ豌乗戟縺｡縲ゅげ繝ｩ繝・・繝ｪ繝ｳ繧ｰ繧定ｻｸ縺ｫ繧ｿ繝輔ロ繧ｹ縺ｧ邊倥ｋ隧ｦ蜷医せ繧ｿ繧､繝ｫ縲ょｰｱ豢ｻ繧よ°諢帙ｂ鬆・ｪｿ縺ｧ縲√・繝ｭ繝ｬ繧ｹ縺ｯ縺ゅ￥縺ｾ縺ｧ雜｣蜻ｳ縺ｮ蟒ｶ髟ｷ縺縺梧ｽ懷惠閭ｽ蜉帙・萓ｮ繧後↑縺・・,
-  86:'譟仙喧邊ｧ蜩∽ｼ夂､ｾ縺ｮ莨∫判驛ｨ繧堤紫縺・ｋ謇榊･ｳ縲ょ慍荳九・繝ｭ繝ｬ繧ｹ縺ｧ繧ｹ繝医Ξ繧ｹ繧堤匱謨｣縺吶ｋ騾｣謌ｦ騾｣蜍昴・繝繝ｼ繝・ぅ繝輔ぃ繧､繧ｿ繝ｼ縲ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ縺ｮ陬上↓髫縺輔ｌ縺滓悽諤ｧ縺ｯ縺九↑繧翫・繝繝ｼ繝・ぅ繝輔ぃ繧､繧ｿ繝ｼ縺ｧ縲∝渚蜑・☆繧後☆繧後・鬧・￠蠑輔″繧呈･ｽ縺励・縲・,
-  87:'繧ｪ繝ｼ繧ｹ繝医Μ繧｢縺九ｉ縺ｮ逡吝ｭｦ逕溘ゆｽ捺桃遶ｶ謚縺ｮ蠑ｷ蛹夜∈謇九〒縲・≡鬮ｪ遒ｧ逵ｼ縺ｮ鄒主ｰ大･ｳ縺悟慍荳九Μ繝ｳ繧ｰ縺ｫ闊槭＞髯阪ｊ縺溘ゆｽ捺桃莉戊ｾｼ縺ｿ縺ｮ闖ｯ鮗励↑遨ｺ荳ｭ谿ｺ豕輔→繧ｹ繝斐・繝峨・隕ｳ螳｢繧帝ｭ・ｺ・＠縲√◎縺ｮ闖ｯ繧・°縺ｪ蟄伜惠諢溘〒荳霄堺ｺｺ豌苓・↓縲ゅげ繝ｩ繧ｦ繝ｳ繝画橿陦薙↓縺ｯ隱ｲ鬘後ｒ谿九☆縺後∬ｺｫ菴楢・蜉帙・鬮倥＆縺ｧ蜊∝・繧ｫ繝舌・縺励※縺・ｋ縲・,
-  88:'郢∬庄陦励・諤ｪ縺励￡縺ｪ繝励Ο繝ｬ繧ｹ繧ｯ繝ｩ繝悶・繧ｭ繝｣繧ｹ繝医よ仂縺ｯ譎ｮ騾壹・OL縲∝､懊・繝ｪ繝ｳ繧ｰ縺ｫ荳翫′繧九ユ繧ｯ繝九す繝｣繝ｳ縲ゆｺ碁㍾逕滓ｴｻ縺ｮ荳ｭ縺ｧ蝓ｹ縺｣縺溘し繝悶Α繝・す繝ｧ繝ｳ謚陦薙・遒ｺ縺九↑繧ゅ・縲ょ慍蜻ｳ縺縺悟・ｮ溘↑隧ｦ蜷磯°縺ｳ縺ｧ縲∫衍繧倶ｺｺ縺樒衍繧句ｮ溷鴨閠・・,
-  89:'譚ｱ蝠・ｺ苓｡励・繧ｱ繝ｼ繧ｭ螻九・逵区攸螽倥ょｹｼ鬥ｴ譟薙ｒ繧√＄繧九Λ繧､繝舌Ν縺ｨ縺ｮ蝗邵√ｒ謚ｱ縺医ｋ繧ｹ繝斐・繝峨ヵ繧｡繧､繧ｿ繝ｼ縲よ戟縺｡蜑阪・蠢ｫ豢ｻ縺輔→鬮倥＞霄ｫ菴楢・蜉帙ｒ豢ｻ縺九＠縺溘せ繝斐・繝峨せ繧ｿ繧､繝ｫ縺梧ｭｦ蝎ｨ縲ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ縺ｫ繧ら・蠢・〒縲∝膚蠎苓｡励・鬘斐→縺励※蝨ｰ蜈・〒縺ｮ莠ｺ豌励・謚懃ｾ､縲・,
-  90:'隘ｿ蝠・ｺ苓｡励・蜥瑚藷蟄仙ｱ九・荳莠ｺ螽倥よ・繧後・逕ｷ蟄舌ｒ繧√＄繧願ｵ､鄒ｽ縺ｨ髯ｺ謔ｪ縲ゅさ繝・さ繝・→螳溷鴨繧堤ｩ阪∩荳翫￡繧九ち繧､繝励〒縲・聞譛滓姶縺ｧ逵滉ｾ｡繧堤匱謠ｮ縺吶ｋ縲らｲ倥ｊ蠑ｷ縺・げ繝ｩ繝・・繝ｪ繝ｳ繧ｰ縺ｧ逶ｸ謇九ｒ豸郁励＆縺帙ｋ謖∽ｹ・姶蝙九・繧ｹ繧ｿ繧､繝ｫ縺梧戟縺｡蜻ｳ縲・,
-  91:'蟶ｸ蟾晞ｫ俶｡繝励Ο繝ｬ繧ｹ驛ｨ縺ｮ繧ｭ繝｣繝励ユ繝ｳ縲ょｮ牙ｮ壹＠縺溷ｮ溷鴨繧呈戟縺､繝舌Λ繝ｳ繧ｹ蝙九ヵ繧｡繧､繧ｿ繝ｼ縲・70cm縺ｮ諱ｵ縺ｾ繧後◆菴捺ｼ繧呈ｴｻ縺九＠縺溘ヰ繝ｩ繝ｳ繧ｹ縺ｮ濶ｯ縺・ｩｦ蜷磯°縺ｳ縺ｧ螳牙ｮ壹＠縺滓・邵ｾ繧呈ｮ九＠縺ｦ縺・ｋ縲・,
-  92:'縺昴・濶ｲ鬥吶〒螟ｧ蜍｢縺ｮ髱貞ｰ大ｹｴ繧呈か縺ｾ縺帙ｋ鄒惹ｺｺ鬢願ｭｷ謨呵ｫｭ縲ゅし繝悶Α繝・す繝ｧ繝ｳ謚陦薙・遒ｺ縺九□縺後せ繧ｿ繝溘リ縺ｫ髮｣縺ゅｊ縲ょ・髱吶↓逶ｸ謇九・諤･謇繧定ｦ区･ｵ繧√ｋ髢｢遽謚縺ｯ螳牙ｮ壹＠縺ｦ縺・ｋ縺後√せ繧ｿ繝溘リ荳崎ｶｳ縺ｯ豺ｱ蛻ｻ縺ｧ髟ｷ譛滓姶縺ｫ謖√■霎ｼ縺ｾ繧後ｋ縺ｨ荳豌励↓螟ｱ騾溘☆繧句ｼｱ轤ｹ繧呈干縺医ｋ縲・,
-  93:'蜷埼摩譬｡繝励Ο繝ｬ繧ｹ驛ｨ縺ｮ繧ｨ繝ｼ繧ｹ縲ょｮｹ蟋ｿ遶ｯ鮗励・謌千ｸｾ蜆ｪ遘繝ｻ髱｢蛟定ｦ玖憶縺励・荳画牛蟄舌′縺昴ｍ縺・・蟷ｴ谺｡縺九ｉ鬆ｭ隗偵ｒ迴ｾ縺励√メ繝ｼ繝繝｡繧､繝医°繧峨・菫｡鬆ｼ繧ょ字縺・ｺｺ譬ｼ閠・ゅげ繝ｩ繝・・繝ｪ繝ｳ繧ｰ繧定ｻｸ縺ｫ縺励◆繝舌Λ繝ｳ繧ｹ縺ｮ濶ｯ縺・せ繧ｿ繧､繝ｫ縺縺後∫ｪ∝・縺励◆豁ｦ蝎ｨ縺後↑縺・・縺瑚ｪｲ鬘後・,
-  94:'縺九▽縺ｦ縺ｯ譛溷ｾ・・譛画悍譬ｪ縺縺｣縺溘′譚ｾ荵・ｿ昴→縺ｮ蟾ｮ縺ｫ閾ｪ菫｡繧貞､ｱ縺・％繧定ｸ上∩螟悶＠縺溘る裸隧ｦ蜷医〒鬯ｱ螻医ｒ縺ｶ縺､縺代ｋ縲ゅヲ繝ｼ繝ｫ諤ｧ繧貞ｸｯ縺ｳ縺溘し繝悶Α繝・す繝ｧ繝ｳ謚陦薙・譚ｾ荵・ｿ昴↓繧ょ乾繧峨↑縺・よ賢謚倥ｒ邨碁ｨ薙＠縺溯・音譛峨・蜊ｱ縺・＆縺ｨ髣伜ｿ励′蜈･繧頑ｷｷ縺倥ｊ縲∽ｺ域ｸｬ荳崎・縺ｪ辷・匱蜉帙ｒ隕九○繧九％縺ｨ縺後≠繧九・,
-  95:'關ｽ縺｡逹縺・◆髮ｰ蝗ｲ豌励・闍･謇九Ξ繝ｼ繧ｹ繧ｯ繧､繝ｼ繝ｳ縲り凶謇九Ξ繝ｼ繧ｵ繝ｼ縺ｨ縺ｮ遘伜ｯ・・諱九ｒ閭ｸ縺ｫ遘倥ａ繧九ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ邊ｾ逾樊亮逶帙〒闖ｯ繧・°縺ｪ隧ｦ蜷医ｒ隕九○繧九′縲√ぎ繝ｩ繧ｹ縺ｮ霄ｫ菴薙→縺・≧蠑ｱ轤ｹ繧呈干縺医∵ｪ謌代・繝ｪ繧ｹ繧ｯ縺ｯ蟶ｸ縺ｫ莉倥″縺ｾ縺ｨ縺・・,
-  96:'繝溘せ繧ｳ繝ｳ蜆ｪ蜍昴・繝・ル繧ｹ繧ｵ繝ｼ繧ｯ繝ｫ謇螻槭り庄繧・°縺ｪ繝ｫ繝・け繧ｹ縺ｧ螟ｧ蟄ｦ逕滓ｴｻ繧定ｬｳ豁後☆繧区掠辭溷梛繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝繝ｼ縲ゅユ繝九せ縺ｧ骰帙∴縺溘ヵ繝・ヨ繝ｯ繝ｼ繧ｯ縺ｨ繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ邊ｾ逾槭〒隧ｦ蜷医ｒ逶帙ｊ荳翫￡繧九・,
-  97:'邏譛ｴ縺ｪ髮ｰ蝗ｲ豌励□縺梧°縺ｫ繧らｩ肴･ｵ逧・↑菴楢ご莨夂ｳｻ螂ｳ蟄仙､ｧ逕溘る°蜍慕･樒ｵ梧栢鄒､縺ｧ菴捺ｼ縺ｫ隕句粋繧上〓繝代Ρ繝ｼ繧らｧ倥ａ繧九ょ巻蜉帛ｮｶ縺ｧ雋縺代★雖後＞縺ｮ諤ｧ譬ｼ縺ｯ邱ｴ鄙偵↓繧ゅΜ繝ｳ繧ｰ縺ｫ繧り｡ｨ繧後・惚縺域栢縺九ｌ縺滄台ｸ医↑菴薙→鬮倥＞霄ｫ菴楢・蜉帙〒繝代Ρ繝輔Ν縺ｪ隧ｦ蜷医ｒ螻暮幕縺吶ｋ縲よ橿陦馴擇縺ｮ隱ｲ鬘悟・譛阪′莉雁ｾ後・骰ｵ縲・,
-  98:'莠ｺ譛帙ｒ髮・ａ繧狗函蠕剃ｼ夐聞縲ゆｸ画ｵｦ縺九ｉ縺ｮ雖牙ｦｬ繧定ｲｷ縺・枚蛹也･ｭ繝励Ο繝ｬ繧ｹ縺ｫ蜃ｺ蝣ｴ縲ゅΜ繝ｼ繝繝ｼ繧ｷ繝・・縺ｨ謚陦薙′蜈峨ｋ縲ょｼ輔″蜃ｺ縺嶺ｸ頑焔縺ｪ隧ｦ蜷医そ繝ｳ繧ｹ縺ｨ逕滓擂縺ｮ莠ｺ譛帙〒蜻ｨ蝗ｲ繧貞袖譁ｹ縺ｫ縺､縺代ｋ縲・,
-  99:'繝√い繝ｪ繝ｼ繝繝ｼ驛ｨ驛ｨ髟ｷ縺ｧ譬｡蜀・・莠ｺ豌苓・らｱｳ螻ｱ縺ｸ縺ｮ雖牙ｦｬ蠢・°繧峨・繝ｭ繝ｬ繧ｹ繝槭ャ繝√ｒ莉墓寺縺代◆縲ゅヵ繧｡繝ｳ繧ｵ繝ｼ繝薙せ縺ｫ髟ｷ縺代◆闖ｯ繧・°縺輔・陬上↓繝ｩ繧､繝舌Ν諢剰ｭ倥・蠑ｷ縺・ｧ譬ｼ繧呈戟縺､縲ょｮ溷鴨縺ｯ逶ｸ蠖薙↑繧ゅ・縲・,
+// Character profiles (brief bios for fighter popup) — v1.4 全99名
+const CHAR_PROFILES = {
+  1:'抜きん出た体格とパワーで粕田市内最強と謳われた伝説のレスラー。面倒見が良く人望も厚い。パワーボムと強烈なラリアットを武器に圧倒的な存在感で対戦相手を飲み込む。',
+  2:'幼少期は病弱だったが、不屈の精神でリハビリを乗り越えパワーレスラーへと変貌した鉄腕令嬢。メイドの高階とともに鍛錬を重ね、市内有数のパワーファイターに成長した。',
+  3:'やさしげな雰囲気で目立たない印象だが、確かな力を秘める隠れた実力者。家庭の事情で転校して粕田学園を離れた。どんな相手にも柔軟に対応できる器用さが最大の武器で、試合展開を読む力にも優れる。',
+  4:'剣道仕込みの闘志で格上にも決して引かない負けず嫌い。技術は粗削りだがメンタルの強さは粕田随一。試合終盤に底力を発揮するタイプで、何度打ちのめされても立ち上がる不屈の精神は観客の心を掴む。将来の技術向上次第では大化けする可能性を秘めた逸材。',
+  5:'陸上部の快足女子。ストイックに鍛え上げた脚力から繰り出すスピードと蹴り技で相手を翻弄する実力者。短距離走で鍛えた爆発的な加速力はリングでも遺憾なく発揮される。飛び技・蹴り技の切れ味は一級品。',
+  6:'器用さが光る万能型マイペース娘。やる気を出した時の対応力は目を見張るものがあるが、普段はのんびりペース。中学時代は生駒のクラスメート。なにやら因縁がある様子。',
+  7:'富岡家の専属メイドにして忠実な護衛。関節技のセンスに光るものがあり、お嬢様を支えながら地道に力をつけている。お嬢様を守るためなら自らの身を盾にすることも厭わない献身的な性格。',
+  8:'バスケ部所属の長身ファイター。運動部の仲間たちとも交流がある。打撃に光るものはあるが技術面に課題を残す。174cmの長身から繰り出すリーチの長い打撃は脅威だが、グラウンドに持ち込まれると苦戦する傾向がある。',
+  9:'おしゃれに目覚めた自称カワイイ系女子。練習より美容にストイックだが、調子が良い時は相手を完封することも。試合では意外にもスピードを活かした巧みな立ち回りを見せることがあり、侮ると痛い目に遭う。',
+  11:'高校生としては大人びた印象の女子高生。嗜虐的な一面を持ち、関節技と絞め技で相手を追い詰めるスタイルを好む危険な実力者。看護科で学んだ知識をプロレスに持ち込んだ独自のサブミッション技術は市内トップクラスで、一度捕まれば脱出は至難の業。',
+  12:'小柄ながら体格に似合わぬパワーと不屈の闘志で相手をねじ伏せる。153cmの小さな体に宿る闘志は誰よりも激しく、タフネスと根性で大型選手にも真っ向から立ち向かう。チームメイトからの信頼も厚く、頼もしいリーダー格。',
+  13:'口数は極めて少ない打撃戦の申し子。一撃必殺を理想とする戦闘狂。鍛え抜かれた拳足から繰り出される打撃はスピードとパワーを兼ね備え、試合が始まれば相手を容赦なく打ち抜く。寡黙ゆえに何を考えているか掴みにくく、対戦相手に不気味な圧を与える。',
+  14:'地下プロレスで卑怯ファイトに目覚めた小心者の優等生。リングに上がるとS性が豹変する二面性の持ち主。普段はおとなしく控えめな生徒だが、リングに上がると目つきが変わりサディスティックな関節技を執拗に仕掛ける。その変貌ぶりは見る者をゾッとさせるが妙な人気がある。',
+  15:'哲玖高校一のパワーを誇る重戦車。生駒と橘を慕う忠義者だが、身内以外には非常に冷淡で攻撃的。178cmの長身と圧倒的なパワーで相手を力任せにねじ伏せる。',
+  16:'名家・大河内家の令嬢にして摺出川女学院を支配する女帝。高いカリスマ性と冷酷さで学園に君臨する。全国から実力者を編入させる権力と資金力を持ち、自らも卓越した身体能力で頂点に立つ。その支配欲と野心は留まるところを知らず、粕田市全体の覇権をも狙う。',
+  17:'強敵との対戦が多く敗戦続きの印象だが、大河内を破った実績を持つ名勝負製造機。ピアノの腕前はプロ級。どんな相手とも噛み合う天性の試合センスを持ち、彼女の試合は常に見応えがある。繊細な感性と華やかな存在感で、勝敗に関わらずファンの心を掴む稀有な存在。',
+  18:'大河内が全国から呼び寄せた編入組の一角。市内屈指の体格とパワーは阿武隈にも引けを取らない。184cmの長身から繰り出す豪快なパワー殺法が武器。試合中に相手のスタイルに合わせた戦術変更もこなせる器用さを併せ持つ。',
+  19:'大河内軍団の実力者の中では珍しい一般入学組。心情的にも大河内に心酔する忠実な信奉者。万能型のオールラウンダーで目立った弱点はないが、決定打に欠ける部分がある。大河内への忠誠心は本物で、命じられれば捨て駒も厭わない覚悟を持つ。',
+  20:'冷静沈着な戦術眼で相手を観察して戦うデータ至上主義者。身体能力には不安があるが技術で補う。相手の癖を瞬時に見抜く観察眼は試合を重ねるごとに磨かれている。努力を積み重ねる姿勢は衰えず、長期的な成長が期待される知性派。',
+  21:'橘玲美に憧れてヒールを目指す天然娘。声が大きくてうるさい。技術は拙いがタフネスは侮れない。ヒールを名乗るわりには素の明るさが抑えられず、観客を楽しませるムードメーカー的存在。華のある振る舞いで独自のファン層を獲得しつつある。',
+  22:'大河内直属親衛隊。巨体で相手を押しつぶすラフファイトが持ち味の重量級ブロウラー。その体格を活かしたパワフルな攻撃は、単純だが破壊力は抜群。',
+  23:'大河内の取り巻き。昔空手をかじっていたらしいが、全体的な能力は低い。',
+  24:'大河内の取り巻きのリーダー気取り。実力は伴わないが、数の力で威張り散らす小物。',
+  25:'大河内の取り巻き。パワーはありそうだが頭は悪そう。鈍重なブロウラー。',
+  26:'廃校寸前の元砥石川高校出身。バランス重視の堅実なファイトで確かな実力を見せる。母校の廃校を経験した苦い思い出をバネに、早くから自立心を鍛えてきた。安定感のある試合運びと粘り強さで、どんな相手にも一定以上の戦いができる信頼のおける選手。',
+  27:'元砥石川高校出身。身体能力に物を言わせるパワー＆スピードタイプ。タフネスにも定評がある。鉄人と呼ぶにふさわしい頑健な肉体で怪我知らずのタフさが最大の武器。技術面の課題を克服できれば、トップ選手の仲間入りも夢ではないポテンシャルを秘める。',
+  28:'元哲玖四天王の一人で女子大生地下レスラー。パワーとスピードを兼ね備えるが、スタミナに不安を抱える。全盛期の爆発力は市内でも屈指だったが、怪我がちな体質が最大の弱点。',
+  29:'無名校・奥山川を県大会決勝まで導いたプロレス部主将。膝のケガを乗り越えた不屈のキャプテン。逆境に立たされるほど力を発揮するタイプで、チームメイトからの信頼は絶大。',
+  30:'奥山川高校に転校してきた174cmの大型選手。ムードメーカー気質で、チームの全国大会出場の夢を後押しする。恵まれた体格を活かしたグラップリングが武器で、型破りな発想で相手を翻弄することもある。陽気な性格でチームの雰囲気を明るくする欠かせない存在。',
+  31:'奥山川プロレス部の副キャプテン。友人を元気づけるため始めた部活で競技の楽しさに目覚めた。関節技を中心とした技巧派で、晩成型として将来の成長が最も期待される選手の一人。控えめな性格だが、いざ試合になると粘り強さを発揮する。',
+  32:'小学生時代は注目のサブミッション使いだったが伸び悩んだ過去を持つ。奥山川で情熱を取り戻した1年生。かつての天才少女が挫折を乗り越えて再起を図る姿は、チームメイトにも良い刺激を与えている。負けず嫌いの性格が闘争心に火をつけた時、その技術は確かな輝きを見せる。',
+  33:'名門・岬浜女子の主将。おしとやかな容貌ながら努力で掴んだ実力で全国制覇を目指す。抜きん出た才能はないが、あらゆる面でハイレベルにまとまった総合力の高さが武器。チームを率いるリーダーシップにも優れ、部員たちから深い敬意を集めている。',
+  34:'1年時からレギュラーの才能の塊。特にグラウンド技術に優れる岬浜の副将。梅ヶ丘を深く信頼している。早熟型の天才肌で、技術面では上級生すら凌ぐセンスの持ち主。型破りな閃きで試合を動かす反面、安定感に欠ける一面もあるが、その潜在能力は計り知れない。',
+  35:'中学から急成長し特待生で岬浜に入学した大型1年生。「岬浜のツインタワー」の一角を担う将来の逸材。179cmの恵まれた体格を活かしたパワーグラップリングが武器で、頑丈さも折り紙付き。まだ粗削りだが成長の余地は大きく、名門校の未来を担う存在として期待される。',
+  36:'181cmの長身を誇り上野原と並ぶ「岬浜のツインタワー」。格闘技仕込みの実践的テクで次期主将候補。上野原との二枚看板として岬浜の最前線を支えるパワーグラップラー。冷静な試合運びと堅実な防御力で安定した試合ができる信頼度の高い選手。',
+  37:'名門・姫宮女子の主将。「柔の白銀」「姫宮の白雪姫」と呼ばれる容姿端麗な人気レスラー。バランスの取れた高い総合力と、どんな窮地でも折れない不屈の精神力が最大の武器。優雅で華麗な試合スタイルは多くのファンを魅了し、全国的にも知名度の高いトップレスラー。',
+  38:'姫宮の副主将にして「剛の芝」の異名を持つ二枚看板の一角。お嬢様揃いの中でも一番のお嬢様。品の良い立ち居振る舞いからは想像できない圧倒的なパワーと組み技で相手をねじ伏せる。白銀とは対照的な剛のスタイルで、互いを補い合う姫宮の屋台骨。',
+  39:'キレのある打撃コンビネーションに定評がある寡黙な2年生。次期キャプテンと目される実力者。試合中は冷静沈着だが、一度スイッチが入ると容赦のないスピードで相手を追い込む。次世代の姫宮を牽引する逸材。',
+  40:'小柄だがタフネスとスタミナで後半も攻め手を緩めない有望株。1年生からレギュラーを掴んだ努力家。149cmと最小クラスの体格だが、粘りで大型選手にも食らいつく姿は観客の応援を集める。地道な努力を積み重ねるタイプで、着実に実力を伸ばしている。',
+  41:'三津浜高校プロレス部のリーダー格。サブミッション技術は相当なもので、自由奔放な発想から繰り出す変則的な攻めは対策が難しい。ヒール寄りのスタイルだが本人は深く考えておらず、ただ好きに戦いたいだけの享楽主義者。',
+  42:'三津浜の3年生。路上格闘の実戦経験も豊富で、ルール無用の喧嘩ファイトは得意中の得意。豪快なパワーグラップリングと場外乱闘を厭わないラフスタイルが持ち味。一見粗暴だが試合の組み立てには独自の勘所を持ち、ダーティな駆け引きにも長けている。',
+  43:'三津浜随一の怪力を誇る2年生。頭の回転は鈍いがパワーは圧倒的。気の向くまま暴れる問題児。181cmの巨体から繰り出すパワームーブは圧巻で、掴まれたら最後逃れるのは至難の業。試合運びは大雑把だが、その破壊力だけで勝ちを拾えるほどの怪力は唯一無二。',
+  44:'三津浜の1年生レギュラー。腕力が売りだがまだまだ技術不足。伸びしろに期待がかかる発展途上の新人。',
+  45:'団地内プロレスのヒエラルキーのトップに座る支配者。井沢を執拗に攻撃し、恐怖政治で団地を支配する策略家。卓越した知性と狡猾さで相手の弱みを見抜き、心理戦で追い詰めてからリングでとどめを刺す。策略だけでなく正面からの戦いでも強い恐るべき敵。',
+  46:'かつて団地の実力者として尊敬を集めたが、高槻の策略で地位と友人を失い孤立。それでも折れずに５年の雌伏の後に高槻を破り地位を回復した。相手の良さを引き出しながら戦う誠実なスタイルは多くの支持を集めている。',
+  47:'入居2年目ながら高い実力を示す若手の実力者。鋭い打撃を得意とする早熟型。若さに似合わぬ冷静な試合運びと確かな打撃技術で、短期間でトップクラスの実力を身につけた。早熟型ゆえに伸びしろが懸念されるが、現時点の実力は侮れない。',
+  48:'粕田台団地に入居してきたちょっときつめの奥さん。前の住まいでは町内会プロレスの実力者。外には厳しく家では陽気。負けず嫌いの性格と適応力の高さで新しい環境にもすぐに溶け込んだ。打撃を軸にした攻撃的なスタイルで、闘志を前面に押し出す熱い試合を見せる。',
+  49:'おっとりした育ちの良いお嬢様妻。井沢に師事しプロレスの基本から学び、着実に実力をつけている成長株。努力家で、師匠である井沢の教えを素直に吸収している。確実に成長を続けており、メンタルの強さは団地内でも屈指。',
+  50:'見た目も言動も若々しい甘え上手。かつての井沢の友人だが、高槻グループに鞍替えした世渡り上手。',
+  51:'男性陣を味方につけレフェリーすら誘惑する魔性の女。相手の幸せな顔が苦痛で歪むのを見るのが趣味。サブミッション技術は確かで、反則すれすれの駆け引きで相手を翻弄する試合巧者。',
+  52:'高槻の取り巻き。かつては井沢の友人だった。',
+  53:'年の割に落ち着きがないズボラ妻。でも夫婦仲は円満。パワーはあるがテクニックが追いつかない。',
+  54:'どこにでもいる平凡なOL。運動は苦手だが、職場の人間関係の中で否応なくリングに立たされる。',
+  55:'社長秘書としてスカウトされた才媛。美貌と実力で瞬く間に社内マドンナの座を獲得した。不屈の精神と鉄人のスタミナを兼ね備え、どんな劣勢からも逆転を狙える粘り強さが最大の武器。正統派のオールラウンドスタイルで正面から堂々と戦う姿勢が支持を集めている。',
+  56:'美人で仕事もできる経理課のお姉さん。社内プロレスで高い勝率を誇り、粘着質ないたぶりを好むサディスト。サブミッション技術を駆使して相手をじわじわと追い詰める試合運びが得意。',
+  57:'元社内マドンナの美人受付嬢。大久保の登場で地位を脅かされた。策略で周囲を動かし、自分は安全な場所から指揮を執るタイプ。サブミッション技術はなかなかのもので、それにプラスしてリング外での政治力を武器に暗躍する。',
+  58:'新人・佐久間の教育担当。情に厚い性格で、後輩のために片桐に立ち向かった。バランスの取れた堅実なスタイルが持ち味。負けず嫌いの性格と面倒見の良さで、社内の若手からは姉貴分として慕われている。',
+  59:'大久保の人気に嫉妬する女性社員。先輩の浅見に利用され大久保に試合を挑んだ直情型ブロウラー。パワーで押すスタイルは荒削りだが、直情的な性格ゆえの爆発力は侮れない。',
+  60:'特殊な血筋で一時的に女性化した元男子。恵まれた体格とパワー、そして精神的な強さでリングを制する。男性時代の身体能力の残滓と女性化後に身につけたしなやかさを併せ持つ異色のグラップラー。鉄人と呼ぶにふさわしいタフネスで、長期戦にも耐えうるスタミナの持ち主。',
+  61:'ギャル3人衆のリーダー格。クラスカーストのトップに君臨し、ルックスにも身体能力にも自信ありの実力者。華やかなルックスと高いプライドで注目を集める。より大きな舞台での活躍を虎視眈々と狙っている。',
+  62:'ギャル3人衆の一角。恋する乙女として伊勢原文奈を警戒していた。パワーと威圧感を武器にしたラフファイトが持ち味で、体格を活かした圧力は相当。恋愛モードの時は甘いが、リングに上がると獰猛な戦闘本能を剥き出しにする。',
+  63:'クラスの優等生委員長。ギャルグループとの軋轢で立場を失ったが、芯の強さは失っていない。真面目で正義感が強い。能力は平均的だが、最後まで諦めない姿勢は周囲の尊敬を集めている。',
+  64:'ギャル3人衆の一人。長いものに巻かれるタイプで、バックがいる時だけ強気になる世渡り上手。',
+  65:'人当たりの良さで患者にも同僚にも人気のナース。仕事中は優しいが、外に出ればけっこう毒舌。看護師としての観察眼はリングでも遺憾なく発揮され、名勝負製造機として好試合を生み出してきた。バランスの取れた高い総合力とファンサービス精神で幅広い支持を集める。',
+  66:'高校時代はクラスのマドンナだった美人看護師。多額の借金を背負い地下格闘の世界に身を投じた。追い詰められた環境で培った精神的タフさと引き出しの多さが最大の武器。独特の雰囲気をまとい、周囲を引きつけるカリスマ性を持つ。',
+  67:'かつては天才美少女ピアニストとして名を馳せた。夢破れた後も秘めた思いは消えず、望みをかなえるために地下プロレスに身を投じる。繊細な指先から繰り出すのは今やピアノではなく、容赦ないパワーグラップリング。華やかな容姿の瞳の奥には、挫折を乗り越えた者だけが持つ覚悟が宿っている。',
+  68:'ツンデレ女子大生。負けず嫌いで、大切な人のためなら全力で戦う情熱家。スピードのある打撃が武器のストライカーで、感情をエネルギーに変えて戦うタイプ。大切な人を守るためにリングに立つ姿は応援したくなる魅力を放っている。',
+  69:'現役女子大生レースクイーン。チアリーディング部仕込みの身体能力でスピーディーな試合を展開する。持ち前の華やかさと俊敏さを活かしたスピードスタイルで観客を魅了する。負けず嫌いの性格で、華麗な見た目とは裏腹に根性のある粘り強い試合を見せる。',
+  70:'未亡人のクリーニング店主。パワフルな組み技が武器の姐御肌。面倒見の良い人柄で周囲から頼りにされる存在。パワフルなグラップリングに加え、引き出し上手な試合運びで若手の成長を手助けすることも多い。',
+  71:'モデルと兼業のレースクイーン。華やかなルックスの裏に堅実な実力を秘める。ファンサービス精神旺盛で華やかな試合を心がけるが、実力も確か。安定感のあるオールラウンドスタイルで、どんな相手とも一定以上の試合ができる信頼度の高い選手。',
+  72:'優しげな淑女の仮面の下に利己的なサイコパスの本性を隠す。体格・パワー・実力すべて備えた危険な美女。ファンサービスで人気を集める裏で、相手を精神的に追い詰める巧みな心理戦を展開する。自らの保身や欲のためには手段を選ばない。',
+  73:'夏祭の奉納試合に出場した女性。威圧感のある体格と頑丈さを武器にするパワーグラップラー。179cmの体格から繰り出す豪快なグラップリングは力強さに溢れ、接近戦では無類の強さを誇る。',
+  74:'ミスコングランプリの文学部生。お淑やかな印象だが性格はわりと強気。仏検1級の才媛。知性と品格を感じさせる立ち居振る舞いの中に、試合では意外な負けん気を覗かせる。',
+  75:'ミスコン2位の野心家。明るく快活な美人の本性は利己的で、他人を蹴落とすことにも抵抗がない。ファンの前では笑顔を振りまくが、ライバルには容赦のない心理戦を仕掛ける。',
+  76:'初めての恋人に浮かれる素直で明るい女子高生。技術面はまだ発展途上だが、パワーとスピードのバランスが良い。',
+  77:'若くして大人びた色気を持った女子高生。冷静な観察眼で相手の隙を見抜く知性派。引き出しの多い堅実なオールラウンダー。',
+  78:'田舎暮らしから抜け出したいと願い続けて都会に出てきた。引き出し上手な試合センスと純朴さから来る独自の魅力で、ファン層を獲得している。格上相手にも決して引かない粘り強さが持ち味。',
+  79:'ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。',
+  80:'プロレスをするには不似合いな華奢でひ弱な少女。明日をも知れぬ日々に怯えながらも懸命に生きている。全ステータスが最低クラスだが、ムードメーカーとして場を明るくするファンサービス精神は誰にも負けない。彼女がリングに立つ姿は、強さとは何かを問いかける。',
+  // ── 新規キャラクター（v1.4 GameID 81〜99）──
+  81:'新卒3年目の若手OL。おじさん人気による手厚いサポートで営業成績も好調で、ちょっと調子に乗っている元気印。プロレスではスピードを活かした軽快なファイトスタイルが持ち味で、ムードメーカー気質も相まって試合会場を盛り上げる。スタミナとメンタルの高さで粘り強い試合運びを見せる。',
+  82:'中途入社3年目の総務部員。事務職のキャリアは長く優秀だが、社内の人間関係にストレスを溜めている。ストレスの捌け口として始めたプロレスで意外な才能が開花。圧倒的なパワーとタフネスでリングを支配するグラップラーであり、侮れない実力者。',
+  83:'新卒1年目の新人OL。まだまだ仕事は覚束ないが、やる気と負けん気だけは溢れている。経験不足を気持ちの強さで補い、先輩たちに食らいつく姿は応援したくなる魅力がある。丹羽の指導のもと着実に成長しており、将来性に期待がかかる。',
+  84:'大手不動産の事務職OL。営業職の男たちに囲まれたストレスを地下プロレスで発散している。',
+  85:'名前がちょっとキラキラな大学4年生。アパレルに就職内定済み。同じサークルの後輩に彼氏持ち。グラップリングを軸にタフネスで粘る試合スタイル。就活も恋愛も順調で、プロレスはあくまで趣味の延長だが潜在能力は侮れない。',
+  86:'某化粧品会社の企画部を率いる才女。地下プロレスでストレスを発散する連戦連勝のダーティファイター。ファンサービスの裏に隠された本性はかなりのダーティファイターで、反則すれすれの駆け引きを楽しむ。',
+  87:'オーストリアからの留学生。体操競技の強化選手で、金髪碧眼の美少女が地下リングに舞い降りた。体操仕込みの華麗な空中殺法とスピードは観客を魅了し、その華やかな存在感で一躍人気者に。グラウンド技術には課題を残すが、身体能力の高さで十分カバーしている。',
+  88:'繁華街の怪しげなプロレスクラブのキャスト。昼は普通のOL、夜はリングに上がるテクニシャン。二重生活の中で培ったサブミッション技術は確かなもの。地味だが堅実な試合運びで、知る人ぞ知る実力者。',
+  89:'東商店街のケーキ屋の看板娘。幼馴染をめぐるライバルとの因縁を抱えるスピードファイター。持ち前の快活さと高い身体能力を活かしたスピードスタイルが武器。ファンサービスにも熱心で、商店街の顔として地元での人気は抜群。',
+  90:'西商店街の和菓子屋の一人娘。憧れの男子をめぐり赤羽と険悪。コツコツと実力を積み上げるタイプで、長期戦で真価を発揮する。粘り強いグラップリングで相手を消耗させる持久戦型のスタイルが持ち味。',
+  91:'常川高校プロレス部のキャプテン。安定した実力を持つバランス型ファイター。170cmの恵まれた体格を活かしたバランスの良い試合運びで安定した成績を残している。',
+  92:'その色香で大勢の青少年を悩ませる美人養護教諭。サブミッション技術は確かだがスタミナに難あり。冷静に相手の急所を見極める関節技は安定しているが、スタミナ不足は深刻で長期戦に持ち込まれると一気に失速する弱点を抱える。',
+  93:'名門校プロレス部のエース。容姿端麗・成績優秀・面倒見良しの三拍子がそろう。1年次から頭角を現し、チームメイトからの信頼も厚い人格者。グラップリングを軸にしたバランスの良いスタイルだが、突出した武器がないのが課題。',
+  94:'かつては期待の有望株だったが松久保との差に自信を失い道を踏み外した。闇試合で鬱屈をぶつける。ヒール性を帯びたサブミッション技術は松久保にも劣らない。挫折を経験した者特有の危うさと闘志が入り混じり、予測不能な爆発力を見せることがある。',
+  95:'落ち着いた雰囲気の若手レースクイーン。若手レーサーとの秘密の恋を胸に秘める。ファンサービス精神旺盛で華やかな試合を見せるが、ガラスの身体という弱点を抱え、怪我のリスクは常に付きまとう。',
+  96:'ミスコン優勝のテニスサークル所属。華やかなルックスで大学生活を謳歌する早熟型オールラウンダー。テニスで鍛えたフットワークとファンサービス精神で試合を盛り上げる。',
+  97:'素朴な雰囲気だが恋にも積極的な体育会系女子大生。運動神経抜群で体格に見合わぬパワーも秘める。努力家で負けず嫌いの性格は練習にもリングにも表れ、鍛え抜かれた頑丈な体と高い身体能力でパワフルな試合を展開する。技術面の課題克服が今後の鍵。',
+  98:'人望を集める生徒会長。三浦からの嫉妬を買い文化祭プロレスに出場。リーダーシップと技術が光る。引き出し上手な試合センスと生来の人望で周囲を味方につける。',
+  99:'チアリーダー部部長で校内の人気者。米山への嫉妬心からプロレスマッチを仕掛けた。ファンサービスに長けた華やかさの裏にライバル意識の強い性格を持つ。実力は相当なもの。',
 };
 
-// 笏笏 Trait Definitions (traits-v2.1) 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ── Trait Definitions (traits-v2.1) ─────────────────────
 const TRAIT_DEFS = {
-  '闖ｯ':           {cat:'pop',    icon:'闖ｯ', color:'#e91e9c', en:'Charisma',         desc:'髮・ｮ｢蜉帙↓繝懊・繝翫せ縲ゅげ繝・ぜ螢ｲ荳翫・驥阪∩繧ょ｢怜刈'},
-  '繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ':{cat:'pop',    icon:'螂・, color:'#f39c12', en:'Fan Service',      desc:'繧ｰ繝・ぜ螢ｲ荳翫↓繝懊・繝翫せ縲り・陦悟・蝣ｴ縺ｧ莠ｺ豌励′荳翫′繧翫ｄ縺吶＞'},
-  '繝偵・繝ｫ驕ｩ諤ｧ':   {cat:'pop',    icon:'謔ｪ', color:'#9b59b6', en:'Heel Aptitude',    desc:'謔ｪ蠖ｹ繝繝ｼ繝悶〒莠ｺ豌励ｒ遞ｼ縺弱∝屏邵√ｂ逕溘∩繧・☆縺・},
-  '蜷榊享雋陬ｽ騾讖・: {cat:'match',  icon:'蜷・, color:'#f1c40f', en:'Match Maker',      desc:'隧ｦ蜷亥刀雉ｪ縺ｫ繧上★縺九↑繝懊・繝翫せ'},
-  '蠑輔″蜃ｺ縺嶺ｸ頑焔': {cat:'match',  icon:'蠑・, color:'#2ecc71', en:'Best Bringer',     desc:'譬ｼ荳九→縺ｮ隧ｦ蜷医〒繧りｳｪ縺御ｸ九′繧翫↓縺上＞'},
-  '繝ｩ繧､繝舌Ν菴楢ｳｪ': {cat:'match',  icon:'髣・, color:'#e74c3c', en:'Rivalry Prone',    desc:'繝ｩ繧､繝舌Ν蝗邵√′逕溘∪繧後ｄ縺吶＞'},
-  '譌ｩ辭・:         {cat:'growth', icon:'譌ｩ', color:'#27ae60', en:'Early Bloomer',    desc:'闍･謇区悄縺ｮ謌宣聞縺碁溘＞縲ょ・逶帶悄遏ｭ繧・, excl:'A'},
-  '譎ｩ謌・:         {cat:'growth', icon:'譎ｩ', color:'#16a085', en:'Late Bloomer',     desc:'闍･謇区悄縺ｯ驕・＞縺悟・逶帶悄縺碁聞縺・, excl:'A'},
-  '驕・調縺・:       {cat:'growth', icon:'驕・, color:'#1abc9c', en:'Late Starter',     desc:'25豁ｳ莉･髯阪↓諤･謌宣聞縺吶ｋ', excl:'A'},
-  '蜉ｪ蜉帛ｮｶ':       {cat:'growth', icon:'蜉ｪ', color:'#3498db', en:'Hard Worker',      desc:'謌宣聞縺悟ｮ牙ｮ壹＠繧・☆縺上∫ｷｴ鄙偵〒菴薙ｒ螢翫＠縺ｫ縺上＞'},
-  '遐ｴ螟ｩ闕・:       {cat:'growth', icon:'遐ｴ', color:'#e67e22', en:'Maverick',         desc:'謌宣聞縺ｫ繝繝ｩ縺ゅｊ縲ら・逋ｺ逧・°蛛懈ｻ・},
-  '驕ｩ蠢懷鴨':       {cat:'growth', icon:'驕ｩ', color:'#1abc9c', en:'Adaptability',     desc:'諤ｪ謌台ｸｭ縺ｧ繧よ・髟ｷ縺瑚誠縺｡縺ｫ縺上￥縲∬ｿｽ縺・ｾｼ縺ｿ邱ｴ鄙偵↓繧ょｼｷ縺・},
-  '鬆台ｸ医＆':       {cat:'body',   icon:'鬆・, color:'#2980b9', en:'Durability',       desc:'諤ｪ謌代＠縺ｫ縺上＞', excl:'B'},
-  '繧ｬ繝ｩ繧ｹ縺ｮ霄ｫ菴・: {cat:'body',   icon:'閼・, color:'#c0392b', en:'Glass Body',       desc:'諤ｪ謌代＠繧・☆縺・′縲∝ｾｩ蟶ｰ縺ｮ縺溘・縺ｫ繝輔ぃ繝ｳ縺ｮ螢ｰ謠ｴ繧帝寔繧√ｋ', excl:'B'},
-  '驩・ｺｺ':         {cat:'body',   icon:'驩・, color:'#7f8c8d', en:'Iron Man',         desc:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ蜈ｨ闊ｬ縺ｫ蠑ｷ縺・, excl:'B'},
-  '荳榊ｱ・:         {cat:'body',   icon:'螻・, color:'#d35400', en:'Indomitable',      desc:'諤ｪ謌代°繧峨・蠕ｩ蟶ｰ縺碁溘＞'},
-  '繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ':{cat:'org',   icon:'蜥・, color:'#f39c12', en:'Mood Maker',       desc:'譏弱ｋ縺輔〒繝ｭ繝・き繝ｼ繝ｫ繝ｼ繝縺ｮ遨ｺ豌励ｒ謖√■荳翫￡繧・},
-  '莠ｺ譛・:         {cat:'org',    icon:'譛・, color:'#3498db', en:'Respect',           desc:'蝨ｨ邀堺ｸｭ縺ｯ繝ｭ繝・き繝ｼ繝ｫ繝ｼ繝螢ｫ豌励′豈朱ｱ+3'},
-  '雋縺代★雖後＞':   {cat:'org',    icon:'雋', color:'#e74c3c', en:'Competitive',      desc:'雋縺代◆鄙碁ｱ縺ｮ邱ｴ鄙呈・髟ｷ縺ｫ繝懊・繝翫せ'},
-  '繝ｪ繝ｼ繝繝ｼ豌苓ｳｪ': {cat:'org',    icon:'蟆・, color:'#f1c40f', en:'Leadership',        desc:'闍･謇九・謌宣聞邇・↓繝懊・繝翫せ'},
-  '蠢隱蠢・:       {cat:'org',    icon:'蠢', color:'#2ecc71', en:'Loyalty',           desc:'蠑輔″謚懊″繧ｪ繝輔ぃ繝ｼ縺梧擂繧狗｢ｺ邇・′螟ｧ蟷・↓菴惹ｸ・},
-  '驥主ｿ・:         {cat:'org',    icon:'驥・, color:'#9b59b6', en:'Ambition',          desc:'繧ｿ繧､繝医Ν謖第姶譎ゅ↓隧ｦ蜷医′逶帙ｊ荳翫′繧翫∬ｦ夐・縺励ｄ縺吶＞'},
-  '逡ｪ迢ゅｏ縺帑ｽ楢ｳｪ': {cat:'special',icon:'逡ｪ', color:'#e74c3c', en:'Upset Specialist', desc:'譬ｼ荳顔嶌謇九↓荳ｸ繧∬ｾｼ縺ｿ邇ⅡP'},
-  '髣伜ｿ・:         {cat:'special',icon:'蠢・, color:'#c0392b', en:'Fighting Spirit',  desc:'轢墓ｭｻ縺九ｉ邊倥ｋ蜉帙′蠑ｷ縺上∬ｲ縺代※繧ゆｺｺ豌励′關ｽ縺｡縺ｫ縺上＞'},
-  '螽∝悸諢・:       {cat:'special',icon:'螽・, color:'#8e44ad', en:'Intimidation',     desc:'蟇ｾ謌ｦ逶ｸ謇九・蠎冗乢繝｢繝｡繝ｳ繧ｿ繝縺御ｸ榊茜'},
-  '蜿埼ｪｨ蠢・:       {cat:'special',icon:'蜿・, color:'#c0392b', en:'Rebellious',       desc:'謇ｱ縺・↓縺上＞縺碁・｢・↓蠑ｷ縺・ゆｿ｡鬆ｼ菴惹ｸ区凾縺ｫ謌宣聞UP'}
+  '華':           {cat:'pop',    icon:'華', color:'#e91e9c', en:'Charisma',         desc:'集客力にボーナス。グッズ売上の重みも増加'},
+  'ファンサービス':{cat:'pop',    icon:'奉', color:'#f39c12', en:'Fan Service',      desc:'グッズ売上にボーナス。興行出場で人気が上がりやすい'},
+  'ヒール適性':   {cat:'pop',    icon:'悪', color:'#9b59b6', en:'Heel Aptitude',    desc:'悪役ムーブで人気を稼ぎ、因縁も生みやすい'},
+  '名勝負製造機': {cat:'match',  icon:'名', color:'#f1c40f', en:'Match Maker',      desc:'試合品質にわずかなボーナス'},
+  '引き出し上手': {cat:'match',  icon:'引', color:'#2ecc71', en:'Best Bringer',     desc:'格下との試合でも質が下がりにくい'},
+  'ライバル体質': {cat:'match',  icon:'闘', color:'#e74c3c', en:'Rivalry Prone',    desc:'ライバル因縁が生まれやすい'},
+  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'若手期の成長が速い。全盛期短め', excl:'A'},
+  '晩成':         {cat:'growth', icon:'晩', color:'#16a085', en:'Late Bloomer',     desc:'若手期は遅いが全盛期が長い', excl:'A'},
+  '遅咲き':       {cat:'growth', icon:'遅', color:'#1abc9c', en:'Late Starter',     desc:'25歳以降に急成長する', excl:'A'},
+  '努力家':       {cat:'growth', icon:'努', color:'#3498db', en:'Hard Worker',      desc:'成長が安定しやすく、練習で体を壊しにくい'},
+  '破天荒':       {cat:'growth', icon:'破', color:'#e67e22', en:'Maverick',         desc:'成長にムラあり。爆発的か停滞'},
+  '適応力':       {cat:'growth', icon:'適', color:'#1abc9c', en:'Adaptability',     desc:'怪我中でも成長が落ちにくく、追い込み練習にも強い'},
+  '頑丈さ':       {cat:'body',   icon:'頑', color:'#2980b9', en:'Durability',       desc:'怪我しにくい', excl:'B'},
+  'ガラスの身体': {cat:'body',   icon:'脆', color:'#c0392b', en:'Glass Body',       desc:'怪我しやすいが、復帰のたびにファンの声援を集める', excl:'B'},
+  '鉄人':         {cat:'body',   icon:'鉄', color:'#7f8c8d', en:'Iron Man',         desc:'コンディション全般に強い', excl:'B'},
+  '不屈':         {cat:'body',   icon:'屈', color:'#d35400', en:'Indomitable',      desc:'怪我からの復帰が速い'},
+  'ムードメーカー':{cat:'org',   icon:'和', color:'#f39c12', en:'Mood Maker',       desc:'明るさでロッカールームの空気を持ち上げる'},
+  '人望':         {cat:'org',    icon:'望', color:'#3498db', en:'Respect',           desc:'在籍中はロッカールーム士気が毎週+3'},
+  '負けず嫌い':   {cat:'org',    icon:'負', color:'#e74c3c', en:'Competitive',      desc:'負けた翌週の練習成長にボーナス'},
+  'リーダー気質': {cat:'org',    icon:'将', color:'#f1c40f', en:'Leadership',        desc:'若手の成長率にボーナス'},
+  '忠誠心':       {cat:'org',    icon:'忠', color:'#2ecc71', en:'Loyalty',           desc:'引き抜きオファーが来る確率が大幅に低下'},
+  '野心':         {cat:'org',    icon:'野', color:'#9b59b6', en:'Ambition',          desc:'タイトル挑戦時に試合が盛り上がり、覚醒しやすい'},
+  '番狂わせ体質': {cat:'special',icon:'番', color:'#e74c3c', en:'Upset Specialist', desc:'格上相手に丸め込み率UP'},
+  '闘志':         {cat:'special',icon:'志', color:'#c0392b', en:'Fighting Spirit',  desc:'瀕死から粘る力が強く、負けても人気が落ちにくい'},
+  '威圧感':       {cat:'special',icon:'威', color:'#8e44ad', en:'Intimidation',     desc:'対戦相手の序盤モメンタムが不利'},
+  '反骨心':       {cat:'special',icon:'反', color:'#c0392b', en:'Rebellious',       desc:'扱いにくいが逆境に強い。信頼低下時に成長UP'}
 };
 
 // Trait utility functions
@@ -252,57 +254,65 @@ const Traits = {
   }
 };
 
-// 笏笏 Roster Randomization Config (v1.0 roster-randomization-design) 笏笏
-// Slot counts 窶・dormant = ALL_CHARS.length - org_s - org_a - org_b - fa
+// ── Roster Randomization Config (v1.0 roster-randomization-design) ──
+// Slot counts — dormant = ALL_CHARS.length - org_s - org_a - org_b - fa
 const ROSTER_CFG = {
-  org_s: 16,           // S邏壹せ繝ｭ繝・ヨ
-  org_a: 13,           // A邏壹せ繝ｭ繝・ヨ
-  org_b: 10,           // B邏壹せ繝ｭ繝・ヨ
-  fa: 22,              // FA・医ラ繝ｩ繝輔ヨ蜑搾ｼ俄・縺薙％縺九ｉ8蜷阪′繝峨Λ繝輔ヨ蛟呵｣・  draftFixed: 2,       // 繝峨Λ繝輔ヨ蝗ｺ螳壽棧・亥ｼｱ繧√・驕ｸ謇具ｼ・  draftCandidates: 6,  // 繝峨Λ繝輔ヨ蛟呵｣懈焚
-  draftPicks: 3,       // 繝励Ξ繧､繝､繝ｼ驕ｸ謚樊焚
-  superEliteThreshold: 850,  // 雜・ｸ譚壬otTotal髢ｾ蛟､ 竊・S邏夂｢ｺ螳・  eliteThreshold: 740,       // 騾ｸ譚壬otTotal髢ｾ蛟､
-  seriesBonus: 0.3,          // 蜷後す繝ｪ繝ｼ繧ｺ驥阪∩莉倥￠繝懊・繝翫せ・・縲・縲∝ｼｱ繧・ｼ・};
+  org_s: 16,           // S級スロット
+  org_a: 13,           // A級スロット
+  org_b: 10,           // B級スロット
+  fa: 22,              // FA（ドラフト前）— ここから8名がドラフト候補
+  draftFixed: 2,       // ドラフト固定枠（弱めの選手）
+  draftCandidates: 6,  // ドラフト候補数
+  draftPicks: 3,       // プレイヤー選択数
+  superEliteThreshold: 850,  // 超逸材potTotal閾値 → S級確定
+  eliteThreshold: 740,       // 逸材potTotal閾値
+  seriesBonus: 0.3,          // 同シリーズ重み付けボーナス（0〜1、弱め）
+};
 
-// Character group tags 窶・for series weighting (蜷後げ繝ｫ繝ｼ繝励′蜷悟屮菴薙↓蟆代＠蛛上ｊ繧・☆縺・
+// Character group tags — for series weighting (同グループが同団体に少し偏りやすい)
 // School-level for school-based series, series-level for others
 const CHAR_GROUP = {
-  // 蟄ｦ蝨貞･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・邊慕伐蟄ｦ蝨帝ｫ俶｡
+  // 学園女子プロレス — 粕田学園高校
   1:'kasuda',2:'kasuda',3:'kasuda',4:'kasuda',5:'kasuda',6:'kasuda',7:'kasuda',8:'kasuda',9:'kasuda',
-  // 蟄ｦ蝨貞･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・蜩ｲ邇門嵜髫幃ｫ俶｡
+  // 学園女子プロレス — 哲玖国際高校
   11:'tekkyu',12:'tekkyu',13:'tekkyu',14:'tekkyu',15:'tekkyu',
-  // 蟄ｦ蝨貞･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・鞫ｺ蜃ｺ蟾晏･ｳ蟄ｦ髯｢
+  // 学園女子プロレス — 摺出川女学院
   16:'suridegawa',17:'suridegawa',18:'suridegawa',19:'suridegawa',20:'suridegawa',
   21:'suridegawa',22:'suridegawa',23:'suridegawa',24:'suridegawa',25:'suridegawa',
-  // 蟄ｦ蝨貞･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・蜈・･遏ｳ蟾晞ｫ俶｡
+  // 学園女子プロレス — 元砥石川高校
   26:'mototoishi',27:'mototoishi',
-  // 蟄ｦ蝨貞･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・縺昴・莉・  28:'gakuen_other',
-  // 螂ｳ蟄宣ｫ倡函繝励Ο繝ｬ繧ｹ 窶・螂･螻ｱ蟾晞ｫ俶｡
+  // 学園女子プロレス — その他
+  28:'gakuen_other',
+  // 女子高生プロレス — 奥山川高校
   29:'okuyama',30:'okuyama',31:'okuyama',32:'okuyama',
-  // 螂ｳ蟄宣ｫ倡函繝励Ο繝ｬ繧ｹ 窶・蟯ｬ豬懷･ｳ蟄宣ｫ俶｡
+  // 女子高生プロレス — 岬浜女子高校
   33:'misakihama',34:'misakihama',35:'misakihama',36:'misakihama',
-  // 螂ｳ蟄宣ｫ倡函繝励Ο繝ｬ繧ｹ 窶・蟋ｫ螳ｮ螂ｳ蟄仙ｭｦ髯｢
+  // 女子高生プロレス — 姫宮女子学院
   37:'himemiya',38:'himemiya',39:'himemiya',40:'himemiya',
-  // 螂ｳ蟄宣ｫ倡函繝励Ο繝ｬ繧ｹ 窶・荳画ｴ･豬憺ｫ俶｡
+  // 女子高生プロレス — 三津浜高校
   41:'mitsuhama',42:'mitsuhama',43:'mitsuhama',44:'mitsuhama',
-  // 蝗｣蝨ｰ螯ｻ繝励Ο繝ｬ繧ｹ
+  // 団地妻プロレス
   45:'danchi',46:'danchi',47:'danchi',48:'danchi',49:'danchi',50:'danchi',51:'danchi',52:'danchi',53:'danchi',
-  // OL繝励Ο繝ｬ繧ｹ
+  // OLプロレス
   54:'ol',55:'ol',56:'ol',57:'ol',58:'ol',59:'ol',81:'ol',82:'ol',83:'ol',84:'ol',86:'ol',
-  // JK縺ｫ縺ｪ縺｣縺滉ｿｺ(ry
+  // JKになった俺(ry
   60:'jk_ore',61:'jk_ore',62:'jk_ore',63:'jk_ore',64:'jk_ore',
-  // RQ繝励Ο繝ｬ繧ｹ
+  // RQプロレス
   69:'rq',71:'rq',72:'rq',95:'rq',
-  // 螂ｳ蟄仙､ｧ逕溘・繝ｭ繝ｬ繧ｹ
+  // 女子大生プロレス
   68:'joshidai',74:'joshidai',75:'joshidai',85:'joshidai',96:'joshidai',97:'joshidai',
-  // 蝠・ｺ苓｡・  73:'shotengai',89:'shotengai',90:'shotengai',
-  // 繝槭ラ繝ｳ繝翫・繝ｭ繝ｬ繧ｹ
+  // 商店街
+  73:'shotengai',89:'shotengai',90:'shotengai',
+  // マドンナプロレス
   66:'madonna',67:'madonna',
-  // 蟶ｸ蟾晞ｫ俶｡・亥･ｳ蟄宣ｫ倡函繝励Ο繝ｬ繧ｹ・・  91:'tokikawa',
-  // 縺昴・莉厄ｼ亥句挨 窶・繧ｰ繝ｫ繝ｼ繝励・繝ｼ繝翫せ縺ｪ縺暦ｼ・  65:'other',70:'other',76:'other',77:'other',78:'other',79:'other',80:'other',
+  // 常川高校（女子高生プロレス）
+  91:'tokikawa',
+  // その他（個別 — グループボーナスなし）
+  65:'other',70:'other',76:'other',77:'other',78:'other',79:'other',80:'other',
   87:'other',88:'other',92:'other',93:'other',94:'other',98:'other',99:'other',
 };
 
-// Mutable draft config 窶・initialized by seed in createInitialState
+// Mutable draft config — initialized by seed in createInitialState
 let DRAFT_CONFIG = {
   fixed: [],
   candidates: [],
@@ -323,79 +333,78 @@ function generateDraftConfig(seed) {
   const faIds = ORG_ASSIGN.free || [];
   const eliteThreshold = ROSTER_CFG.eliteThreshold || 740;
   const eliteOvrCap = 80;
-  const cheapMax = 120;
-  const cheapGuarantee = 2;
-  const getPotTotal = (c) => ((c.pot?.pw || 0) + (c.pot?.sp || 0) + (c.pot?.te || 0) + (c.pot?.st || 0) + (c.pot?.mn || 0));
-  const getDraftAge = (id) => {
-    const ageRng = Engine.rng.create(Engine.rng.derive(seed, 0xDA67, id));
-    return 17 + Engine.rng.int(ageRng, 0, 2);
-  };
-  const getEntryRatio = (age) => age <= 18 ? 0.55 : 0.625;
-  const getAssessedValue = (c, age, id) => {
-    if (!Engine.scout || typeof Engine.scout.calcAssessedValue !== 'function') return Number.MAX_SAFE_INTEGER;
+  const cheapMax = 120;     // §3.6: 素材帯の契約金上限
+  const cheapGuarantee = 2; // §3.6: 最低2名の安価候補を保証
+
+  function getPotTotal(c) { return c.pot.pw + c.pot.sp + c.pot.te + c.pot.st + c.pot.mn; }
+  function getDraftAge(id) { return 17 + Engine.rng.int(Engine.rng.create(Engine.rng.derive(seed, 0xDA67, id)), 0, 2); }
+  function getEntryRatio(age) { return age <= 18 ? 0.55 : 0.625; }
+  function getAssessedValue(c, age, id) {
     const ratio = getEntryRatio(age);
-    const assessRng = Engine.rng.create(Engine.rng.derive(seed, 0xC057, id));
-    return Engine.scout.calcAssessedValue({
-      pw: Math.round(c.pw * ratio),
-      sp: Math.round(c.sp * ratio),
-      te: Math.round(c.te * ratio),
-      st: Math.round(c.st * ratio),
-      mn: c.mn,
-      pot: c.pot,
-      age
-    }, assessRng, 1).assessedValue || Number.MAX_SAFE_INTEGER;
-  };
+    const charForAssess = {
+      pw: Math.round(c.pw * ratio), sp: Math.round(c.sp * ratio),
+      te: Math.round(c.te * ratio), st: Math.round(c.st * ratio), mn: c.mn,
+      pot: c.pot, age
+    };
+    const avRng = Engine.rng.create(Engine.rng.derive(seed, 0xC057, id));
+    return Engine.scout.calcAssessedValue(charForAssess, avRng, 1).assessedValue;
+  }
+
+  // Compute OVR + potTotal + assessedValue for each FA
   const withOvr = faIds.map(id => {
     const c = ALL_CHARS.find(ch => ch.id === id);
     if (!c) return null;
+    const ovr = Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5);
+    const potTotal = getPotTotal(c);
     const age = getDraftAge(id);
-    return {
-      id,
-      ovr: Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5),
-      potTotal: getPotTotal(c),
-      assessedValue: getAssessedValue(c, age, id)
-    };
+    const assessedValue = getAssessedValue(c, age, id);
+    return { id, ovr, potTotal, assessedValue };
   }).filter(Boolean);
   withOvr.sort((a, b) => a.ovr - b.ovr);
+
+  // Fixed: 2 from weakest tier (bottom 40%)
   const weakCutoff = Math.max(2, Math.floor(withOvr.length * 0.4));
   const weakPool = withOvr.slice(0, weakCutoff);
   const weakShuffled = seededShuffle(weakPool.map(x => x.id), rng);
   const fixed = weakShuffled.slice(0, ROSTER_CFG.draftFixed);
+
+  // Candidates: mid tier (OVR 40-70), excluding fixed
   const fixedSet = new Set(fixed);
   const midPool = withOvr.filter(x => !fixedSet.has(x.id) && x.ovr >= 40 && x.ovr <= 70);
   const candidatePool = midPool.length >= ROSTER_CFG.draftCandidates
-    ? midPool
-    : [...midPool, ...withOvr.filter(x => !fixedSet.has(x.id) && !midPool.some(m => m.id === x.id))];
-  const pickUnique = (pool, count, excludedIds) => {
-    const excluded = excludedIds || new Set();
-    return seededShuffle(pool.filter(x => !excluded.has(x.id)).map(x => x.id), rng).slice(0, count);
-  };
-  const guaranteed = [];
-  const guaranteedSet = new Set();
-  const elitePool = withOvr.filter(x => !fixedSet.has(x.id) && x.ovr <= eliteOvrCap && x.potTotal >= eliteThreshold);
+    ? midPool : [...midPool, ...withOvr.filter(x => !fixedSet.has(x.id) && !midPool.some(m => m.id === x.id))];
+
+  // §2: 逸材保証 — potTotal >= eliteThreshold かつ OVR <= eliteOvrCap から1名
+  const elitePool = candidatePool.filter(x => x.potTotal >= eliteThreshold && x.ovr <= eliteOvrCap);
+  let guaranteed = [];
   if (elitePool.length > 0) {
-    const [eliteId] = pickUnique(elitePool, 1);
-    if (eliteId != null) {
-      guaranteed.push(eliteId);
-      guaranteedSet.add(eliteId);
-    }
+    const eliteShuffled = seededShuffle(elitePool.map(x => x.id), rng);
+    guaranteed.push(eliteShuffled[0]);
   } else {
     console.warn('Draft: no elite candidate in FA pool');
   }
-  const cheapPool = candidatePool.filter(x => x.assessedValue <= cheapMax);
-  const cheapAlready = guaranteed.filter(id => cheapPool.some(x => x.id === id)).length;
-  const cheapNeed = Math.max(0, cheapGuarantee - cheapAlready);
-  pickUnique(cheapPool, cheapNeed, guaranteedSet).forEach(id => {
-    guaranteed.push(id);
-    guaranteedSet.add(id);
-  });
-  const remaining = pickUnique(candidatePool, ROSTER_CFG.draftCandidates - guaranteed.length, guaranteedSet);
-  let candidates = [...guaranteed, ...remaining];
-  if (candidates.length < ROSTER_CFG.draftCandidates) {
-    const topUp = pickUnique(withOvr.filter(x => !fixedSet.has(x.id)), ROSTER_CFG.draftCandidates - candidates.length, new Set(candidates));
-    candidates = [...candidates, ...topUp];
-  }
-  candidates = seededShuffle(candidates, rng).slice(0, ROSTER_CFG.draftCandidates);
+
+  // §3.6: 安価候補保証 — assessedValue <= cheapMax から最低2名
+  const guaranteedSet = new Set(guaranteed);
+  // 逸材が安価帯の場合はカウントに含める
+  const cheapAlready = guaranteed.filter(id => {
+    const x = withOvr.find(w => w.id === id);
+    return x && x.assessedValue <= cheapMax;
+  }).length;
+  const cheapPool = candidatePool.filter(x => !guaranteedSet.has(x.id) && x.assessedValue <= cheapMax);
+  const cheapShuffled = seededShuffle(cheapPool.map(x => x.id), rng);
+  const cheapGuaranteed = cheapShuffled.slice(0, Math.max(0, cheapGuarantee - cheapAlready));
+  guaranteed = [...guaranteed, ...cheapGuaranteed];
+
+  // 残りをcandidatePoolからランダム補充
+  const allGuaranteedSet = new Set(guaranteed);
+  const remainingPool = candidatePool.filter(x => !allGuaranteedSet.has(x.id));
+  const remainShuffled = seededShuffle(remainingPool.map(x => x.id), rng);
+  const remaining = remainShuffled.slice(0, ROSTER_CFG.draftCandidates - guaranteed.length);
+  // シャッフルして逸材の位置をランダム化
+  const candidates = seededShuffle([...guaranteed, ...remaining], rng);
+
+  // Generate age for each draft member
   const draftAges = {};
   [...fixed, ...candidates].forEach(id => {
     draftAges[id] = getDraftAge(id);
@@ -404,7 +413,7 @@ function generateDraftConfig(seed) {
   return DRAFT_CONFIG;
 }
 
-// Portrait mapping: character id 竊・filename key
+// Portrait mapping: character id → filename key
 // Usage: `image/face_${PORTRAIT[id]}.png`
 const PORTRAIT = {
   1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukamachi_m',
@@ -473,87 +482,88 @@ function portraitImg(id, size = 80, cls = '', clickable = false) {
   return `<div class="portrait${statusCls} ${cls}" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};flex-shrink:0;${clickStyle}"${clickEv}>${initial}</div>`;
 }
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 2: MOVE DATA (from v3.5)                        笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 2: MOVE DATA (from v3.5)                        ║
+// ╚══════════════════════════════════════════════════════════╝
 const commonMoves=[
-{n:'繧ｹ繝医Φ繝斐Φ繧ｰ',d:2,c:'strike'},{n:'繝懊ョ繧｣繝代Φ繝・,d:3,c:'strike'},{n:'繝舌ャ繧ｯ繧ｨ繝ｫ繝懊・',d:3,c:'strike'},
-{n:'繝翫ャ繧ｯ繝ｫ繝代Φ繝・,d:3,c:'strike'},{n:'騾・ｰｴ蟷ｳ繝√Ι繝・・',d:4,c:'strike'},{n:'繧ｨ繝ｫ繝懊・繝ｻ繧ｹ繧ｿ繝ｳ繝・,d:5,c:'strike'},
-{n:'繝槭す繝ｳ繧ｬ繝ｳ繝ｻ繝√Ι繝・・',d:5,c:'strike'},{n:'繝九・繧ｭ繝・け',d:6,c:'strike'},{n:'繝倥ャ繝峨ヰ繝・ヨ',d:6,c:'strike'},
-{n:'繝薙ャ繧ｰ繝悶・繝・,d:7,c:'strike'},{n:'菴守ｩｺ繝峨Ο繝・・繧ｭ繝・け',d:7,c:'strike'},{n:'繧ｵ繝・き繝ｼ繝懊・繝ｫ繧ｭ繝・け',d:7,c:'strike'},
-{n:'繝峨Ο繝・・繧ｭ繝・け',d:8,c:'strike'},{n:'繧ｸ繝｣繝ｳ繝斐Φ繧ｰ繝ｻ繧ｨ繝ｫ繝懊・',d:8,c:'strike'},{n:'繝ｭ繝ｼ繝ｪ繝ｳ繧ｰ繝ｻ繧ｨ繝ｫ繝懊・',d:9,c:'strike'},
-{n:'蟒ｶ鬮・脈繧・,d:9,c:'strike'},{n:'繝溘し繧､繝ｫ繧ｭ繝・け',d:9,c:'strike'},{n:'繝ｩ繝ｪ繧｢繝・ヨ',d:10,c:'strike'},
-{n:'繧ｹ繝ｼ繝代・繧ｭ繝・け',d:10,c:'strike'},{n:'繧ｯ繝ｭ繝ｼ繧ｺ繝ｩ繧､繝ｳ',d:10,c:'strike'},
-{n:'繝ｭ繝・け繧｢繝・・縺九ｉ縺ｮ謚ｼ縺苓ｾｼ縺ｿ',d:2,c:'throw'},{n:'繧ｷ繝ｧ繝ｫ繝繝ｼ繧ｿ繝・け繝ｫ',d:3,c:'throw'},
-{n:'繝偵ャ繝励ヨ繧ｹ',d:3,c:'throw'},{n:'繧｢繝ｼ繝繝峨Λ繝・げ',d:3,c:'throw'},{n:'繝倥ャ繝峨Ο繝・け繝ｻ繝・う繧ｯ繝繧ｦ繝ｳ',d:3,c:'throw'},
-{n:'繝輔ぃ繧､繝､繝ｼ繝槭Φ繧ｺ繧ｭ繝｣繝ｪ繝ｼ',d:4,c:'throw'},{n:'繝懊ョ繧｣繧ｹ繝ｩ繝',d:6,c:'throw'},{n:'繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:7,c:'throw'},
-{n:'繧ｹ繝翫ャ繝励・繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:7,c:'throw'},{n:'繝悶Ξ繝ｼ繝ｳ繝舌せ繧ｿ繝ｼ',d:8,c:'throw'},
-{n:'繧ｵ繧､繝峨・繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:8,c:'throw'},{n:'繝阪ャ繧ｯ繝悶Μ繝ｼ繧ｫ繝ｼ',d:8,c:'throw'},
-{n:'繧ｹ繧ｦ繧｣繝ｳ繧ｮ繝ｳ繧ｰ繝ｻ繝阪ャ繧ｯ繝悶Μ繝ｼ繧ｫ繝ｼ',d:8,c:'throw'},
-{n:'繝舌ャ繧ｯ繝悶Μ繝ｼ繧ｫ繝ｼ',d:8,c:'throw'},{n:'繧ｵ繝｢繧｢繝ｳ繝ｻ繝峨Ο繝・・',d:9,c:'throw'},
-{n:'繝吶Μ繝ｼ繝ｻ繝医ぇ繝ｻ繝吶Μ繝ｼ',d:9,c:'throw'},{n:'繧ｿ繧､繧ｬ繝ｼ繝ｻ繝峨Λ繧､繝舌・',d:9,c:'throw'},
-{n:'繧ｹ繝代う繝ｳ繝舌せ繧ｿ繝ｼ',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
-{n:'繝√Φ繝ｭ繝・け',d:2,c:'submission'},{n:'繝阪ャ繧ｯ繝ｭ繝・け',d:2,c:'submission'},{n:'繝倥ャ繝峨Ο繝・け',d:3,c:'submission'},
-{n:'繝ｪ繧ｹ繝医Ο繝・け',d:4,c:'submission'},{n:'繝上Φ繝槭・繝ｭ繝・け',d:4,c:'submission'},{n:'繧｢繝ｼ繝繝ｪ繝ｳ繧ｬ繝ｼ',d:4,c:'submission'},
-{n:'繧ｹ繝ｪ繝ｼ繝代・繝ｻ繝帙・繝ｫ繝・,d:6,c:'submission'},{n:'繝輔Ν繝阪Ν繧ｽ繝ｳ',d:6,c:'submission'},
-{n:'繧ｳ繝悶Λ繝・う繧ｹ繝・,d:7,c:'submission'},{n:'繝吶い繝上ャ繧ｰ',d:7,c:'submission'},
-{n:'繧ｭ繝｣繝｡繝ｫ繧ｯ繝ｩ繝・メ',d:7,c:'submission'},{n:'繧､繝ｳ繝・ぅ繧｢繝ｳ繝ｻ繝・せ繝ｭ繝・け',d:7,c:'submission'},
-{n:'繝懊せ繝医Φ繧ｯ繝ｩ繝・,d:8,c:'submission'},{n:'繧｢繧ｭ繝ｬ繧ｹ閻ｱ蝗ｺ繧・,d:9,c:'submission'},
-{n:'繝輔Λ繧､繝ｳ繧ｰ繝ｻ繧ｯ繝ｭ繧ｹ繝懊ョ繧｣',d:7,c:'aerial'},{n:'繝繧､繝薙Φ繧ｰ繝ｻ繝懊ョ繧｣繝ｻ繝励Ξ繧ｹ',d:8,c:'aerial'},
-{n:'繧ｻ繝ｳ繝医・繝ｳ',d:7,c:'aerial'},{n:'繝医・繝ｻ繧ｹ繧､繧ｷ繝ｼ繝',d:9,c:'aerial'},
-{n:'繝励Λ繝ｳ繝√Ε繝ｻ繧ｹ繧､繧ｷ繝ｼ繝',d:8,c:'aerial'},{n:'繝繧､繝薙Φ繧ｰ繝ｻ繧ｨ繝ｫ繝懊・',d:8,c:'aerial'},
-{n:'繝繧､繝薙Φ繧ｰ繝ｻ繝倥ャ繝峨ヰ繝・ヨ',d:7,c:'aerial'},{n:'繝溘し繧､繝ｫ繧ｭ繝・け・磯｣幢ｼ・,d:9,c:'aerial'},
-{n:'繧ｨ繝ｫ繝懊・繝峨Ο繝・・',d:3,c:'ground'},{n:'繝九・繝峨Ο繝・・',d:4,c:'ground'},{n:'繝ｬ繝・げ繝峨Ο繝・・',d:4,c:'ground'},
-{n:'繧ｹ繝ｩ繧､繝・ぅ繝ｳ繧ｰ繧ｭ繝・け',d:4,c:'ground'},{n:'繧ｹ繝医Φ繝斐Φ繧ｰ騾｣謇・,d:3,c:'ground'},
-{n:'繝倥い繝励Ν繝ｻ繧ｹ繝ｩ繝',d:3,c:'ground'},{n:'繝輔ぉ繧､繧ｹ繧ｦ繧ｩ繝・す繝･',d:4,c:'ground'},{n:'繝繝悶Ν繝九・繝峨Ο繝・・',d:5,c:'ground'},
-{n:'繧ｹ繧ｯ繝ｼ繝ｫ繝懊・繧､',d:4,c:'rollup'},{n:'鬥門崋繧・,d:4,c:'rollup'},
-{n:'繧ｹ繝｢繝ｼ繝ｫ繝ｻ繝代ャ繧ｱ繝ｼ繧ｸ',d:5,c:'rollup'},{n:'繝ｩ繝ｻ繝槭ヲ繧ｹ繝医Λ繝ｫ',d:5,c:'rollup'},
-{n:'繧ｦ繝ｩ繧ｫ繝ｳ繝ｻ繝ｩ繝・,d:5,c:'rollup'},{n:'蝗櫁ｻ｢繧ｨ繝灘崋繧・,d:5,c:'rollup'},
-{n:'繝ｨ繝ｼ繝ｭ繝斐い繝ｳ繝ｻ繧ｯ繝ｩ繝・メ',d:5,c:'rollup'}
+{n:'ストンピング',d:2,c:'strike'},{n:'ボディパンチ',d:3,c:'strike'},{n:'バックエルボー',d:3,c:'strike'},
+{n:'ナックルパンチ',d:3,c:'strike'},{n:'逆水平チョップ',d:4,c:'strike'},{n:'エルボー・スタンプ',d:5,c:'strike'},
+{n:'マシンガン・チョップ',d:5,c:'strike'},{n:'ニーキック',d:6,c:'strike'},{n:'ヘッドバット',d:6,c:'strike'},
+{n:'ビッグブーツ',d:7,c:'strike'},{n:'低空ドロップキック',d:7,c:'strike'},{n:'サッカーボールキック',d:7,c:'strike'},
+{n:'ドロップキック',d:8,c:'strike'},{n:'ジャンピング・エルボー',d:8,c:'strike'},{n:'ローリング・エルボー',d:9,c:'strike'},
+{n:'延髄斬り',d:9,c:'strike'},{n:'ミサイルキック',d:9,c:'strike'},{n:'ラリアット',d:10,c:'strike'},
+{n:'スーパーキック',d:10,c:'strike'},{n:'クローズライン',d:10,c:'strike'},
+{n:'ロックアップからの押し込み',d:2,c:'throw'},{n:'ショルダータックル',d:3,c:'throw'},
+{n:'ヒップトス',d:3,c:'throw'},{n:'アームドラッグ',d:3,c:'throw'},{n:'ヘッドロック・テイクダウン',d:3,c:'throw'},
+{n:'ファイヤーマンズキャリー',d:4,c:'throw'},{n:'ボディスラム',d:6,c:'throw'},{n:'スープレックス',d:7,c:'throw'},
+{n:'スナップ・スープレックス',d:7,c:'throw'},{n:'ブレーンバスター',d:8,c:'throw'},
+{n:'サイド・スープレックス',d:8,c:'throw'},{n:'ネックブリーカー',d:8,c:'throw'},
+{n:'スウィンギング・ネックブリーカー',d:8,c:'throw'},
+{n:'バックブリーカー',d:8,c:'throw'},{n:'サモアン・ドロップ',d:9,c:'throw'},
+{n:'ベリー・トゥ・ベリー',d:9,c:'throw'},{n:'タイガー・ドライバー',d:9,c:'throw'},
+{n:'スパインバスター',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
+{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:3,c:'submission'},
+{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:4,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
+{n:'スリーパー・ホールド',d:6,c:'submission'},{n:'フルネルソン',d:6,c:'submission'},
+{n:'コブラツイスト',d:7,c:'submission'},{n:'ベアハッグ',d:7,c:'submission'},
+{n:'キャメルクラッチ',d:7,c:'submission'},{n:'インディアン・デスロック',d:7,c:'submission'},
+{n:'ボストンクラブ',d:8,c:'submission'},{n:'アキレス腱固め',d:9,c:'submission'},
+{n:'フライング・クロスボディ',d:7,c:'aerial'},{n:'ダイビング・ボディ・プレス',d:8,c:'aerial'},
+{n:'セントーン',d:7,c:'aerial'},{n:'トペ・スイシーダ',d:9,c:'aerial'},
+{n:'プランチャ・スイシーダ',d:8,c:'aerial'},{n:'ダイビング・エルボー',d:8,c:'aerial'},
+{n:'ダイビング・ヘッドバット',d:7,c:'aerial'},{n:'ミサイルキック（飛）',d:9,c:'aerial'},
+{n:'エルボードロップ',d:3,c:'ground'},{n:'ニードロップ',d:4,c:'ground'},{n:'レッグドロップ',d:4,c:'ground'},
+{n:'スライディングキック',d:4,c:'ground'},{n:'ストンピング連打',d:3,c:'ground'},
+{n:'ヘアプル・スラム',d:3,c:'ground'},{n:'フェイスウォッシュ',d:4,c:'ground'},{n:'ダブルニードロップ',d:5,c:'ground'},
+{n:'スクールボーイ',d:4,c:'rollup'},{n:'首固め',d:4,c:'rollup'},
+{n:'スモール・パッケージ',d:5,c:'rollup'},{n:'ラ・マヒストラル',d:5,c:'rollup'},
+{n:'ウラカン・ラナ',d:5,c:'rollup'},{n:'回転エビ固め',d:5,c:'rollup'},
+{n:'ヨーロピアン・クラッチ',d:5,c:'rollup'}
 ];
 const styleMoves={
-Grappler:[{n:'繝代Ρ繝ｼ繝懊Β',d:14,c:'throw'},{n:'繧ｷ繝・ヨ繧｢繧ｦ繝医・繝代Ρ繝ｼ繝懊Β',d:15,c:'throw'},
-{n:'繧ｸ繝｣繝ｼ繝槭Φ繝ｻ繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:13,c:'throw'},{n:'繝√Ι繝ｼ繧ｯ繧ｹ繝ｩ繝',d:13,c:'throw'},
-{n:'繝・せ繝舌Ξ繝ｼ繝懊Β',d:14,c:'throw'},{n:'繝舌ャ繧ｯ繝峨Ο繝・・',d:13,c:'throw'},
-{n:'繝ｩ繧ｹ繝医Λ繧､繝・,d:16,c:'throw'},{n:'蝙ら峩關ｽ荳句ｼ上ヶ繝ｬ繝ｼ繝ｳ繝舌せ繧ｿ繝ｼ',d:14,c:'throw'},
-{n:'蜉帛ｼｷ縺・Λ繝ｪ繧｢繝・ヨ',d:12,c:'strike'},{n:'鬆ｭ遯√″',d:11,c:'strike'},
-{n:'繧ｫ繝翫ョ繧｣繧｢繝ｳ繝ｻ繝舌ャ繧ｯ繝悶Μ繝ｼ繧ｫ繝ｼ',d:10,c:'submission'},{n:'繧｢繝ｫ繧ｼ繝ｳ繝√Φ繝ｻ繝舌ャ繧ｯ繝悶Μ繝ｼ繧ｫ繝ｼ',d:11,c:'submission'}],
-Speed:[{n:'繝輔Λ繝ｳ繧ｱ繝ｳ繧ｷ繝･繧ｿ繧､繝翫・',d:12,c:'throw'},{n:'繝医Ν繝阪・繝吋DT',d:13,c:'throw'},
-{n:'繧ｷ繝｣繧､繝九Φ繧ｰ繝ｻ繧ｦ繧｣繧ｶ繝ｼ繝・,d:12,c:'strike'},{n:'繝繝ｼ繝ｳ繧ｵ繝ｫ繝医・繝励Ξ繧ｹ',d:15,c:'aerial'},
-{n:'繧ｷ繝･繝ｼ繝・ぅ繝ｳ繧ｰ繝ｻ繧ｹ繧ｿ繝ｼ繝ｻ繝励Ξ繧ｹ',d:16,c:'aerial'},{n:'450繧ｹ繝励Λ繝・す繝･',d:15,c:'aerial'},
-{n:'繝輔Ο繝・げ繝ｻ繧ｹ繝励Λ繝・す繝･',d:13,c:'aerial'},{n:'繧ｹ繝ｯ繝ｳ繝医Φ繝ｻ繝懊Β',d:14,c:'aerial'},
-{n:'繝医・繝ｻ繧ｳ繝ｳ繝偵・繝ｭ',d:11,c:'aerial'},
-{n:'繝繧､繝薙Φ繧ｰ繝ｻ繧ｻ繝ｳ繝医・繝ｳ',d:10,c:'aerial'},{n:'繝峨Λ繧ｴ繝ｳ繝ｻ繧ｹ繧ｯ繝ｪ繝･繝ｼ',d:10,c:'throw'},
-{n:'繝上Μ繧ｱ繝ｼ繝ｳ繝ｩ繝・,d:12,c:'throw'}],
-Technique:[{n:'繧｢繝ｼ繝繝舌・',d:11,c:'submission'},{n:'繝輔ぅ繧ｮ繝･繧｢繝ｻ繝輔か繝ｼ繝ｻ繝ｬ繝・げ繝ｭ繝・け',d:12,c:'submission'},
-{n:'繧ｷ繝｣繝ｼ繝励す繝･繝ｼ繧ｿ繝ｼ',d:13,c:'submission'},{n:'STF',d:12,c:'submission'},
-{n:'荳芽ｧ堤ｵ槭ａ',d:12,c:'submission'},{n:'繧ｯ繝ｭ繧ｹ繝輔ぉ繧､繧ｹ',d:13,c:'submission'},
-{n:'蜊榊崋繧・,d:14,c:'submission'},{n:'繝峨Λ繧ｴ繝ｳ繧ｹ繝ｪ繝ｼ繝代・',d:13,c:'submission'},
-{n:'繧ｭ繝繝ｩ繝ｭ繝・け',d:11,c:'submission'},{n:'繧ｿ繧､繧ｬ繝ｼ繝ｻ繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:14,c:'throw'},
-{n:'繝峨Λ繧ｴ繝ｳ繝ｻ繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:15,c:'throw'},{n:'繝輔ぅ繝・す繝｣繝ｼ繝槭Φ繝ｻ繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:13,c:'throw'}],
-Allround:[{n:'繝輔ぃ繝ｫ繧ｳ繝ｳ繧｢繝ｭ繝ｼ',d:13,c:'throw'},{n:'縺ｿ縺｡縺ｮ縺上ラ繝ｩ繧､繝舌・II',d:14,c:'throw'},
-{n:'繧ｨ繧ｯ繧ｹ繝励Ο繝ｼ繝繝ｼ',d:12,c:'throw'},{n:'繝弱・繧ｶ繝ｳ繝ｩ繧､繝・・繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:12,c:'throw'},
-{n:'繝繝悶Ν繧｢繝ｼ繝繝ｻ繧ｹ繝ｼ繝励Ξ繝・け繧ｹ',d:13,c:'throw'},{n:'繝ｪ繧｢繝阪う繧ｭ繝・ラ繝√Ι繝ｼ繧ｯ',d:11,c:'submission'},
-{n:'繝・く繧ｵ繧ｹ繝ｻ繧ｯ繝ｭ繝ｼ繝舌・繝帙・繝ｫ繝・,d:12,c:'submission'},{n:'繧｢繝ｳ繧ｯ繝ｫ繝ｻ繝ｭ繝・け',d:11,c:'submission'},
-{n:'繝輔ぉ繝九ャ繧ｯ繧ｹ繝ｻ繧ｹ繝励Λ繝・す繝･',d:15,c:'aerial'},{n:'繝繧､繝薙Φ繧ｰ繝ｻ繝懊ョ繧｣繝ｻ繝励Ξ繧ｹ・亥､ｧ・・,d:11,c:'aerial'},
-{n:'繧ｹ繝斐い繝ｼ',d:12,c:'strike'},{n:'繧､繝ｳ繝励Λ繝ｳ繝・DT',d:13,c:'throw'}],
-Striker:[{n:'繧ｷ繝｣繧､繝九Φ繧ｰ繝ｻ繧ｦ繧｣繧ｶ繝ｼ繝会ｼ域遠・・,d:13,c:'strike'},{n:'繧ｸ繝｣繝ｳ繝斐Φ繧ｰ繝九・',d:12,c:'strike'},
-{n:'繝上う繧ｭ繝・け',d:11,c:'strike'},{n:'繝舌ぜ繧ｽ繝ｼ繧ｭ繝・け',d:14,c:'strike'},
-{n:'PK',d:11,c:'strike'},{n:'繝ｩ繝ｳ繝九Φ繧ｰ繧ｨ繝ｫ繝懊・',d:13,c:'strike'},
-{n:'繧ｹ繝斐ル繝ｳ繧ｰ繝舌ャ繧ｯ繝輔ぅ繧ｹ繝・,d:12,c:'strike'},{n:'繧ｱ繝ｳ繧ｫ繧ｭ繝・け',d:15,c:'strike'},
-{n:'繧ｨ繝ｫ繝懊・騾｣謇・,d:10,c:'strike'},{n:'繧ｳ繝ｼ繝翫・繝ｩ繝・す繝･',d:11,c:'strike'},
-{n:'繝代う繝ｫ繝峨Λ繧､繝舌・',d:14,c:'throw'},{n:'繝・・繝繧ｹ繝医Φ繝ｻ繝代う繝ｫ繝峨Λ繧､繝舌・',d:16,c:'throw'}],
-Submission:[{n:'繧ｮ繝ｭ繝√Φ繝√Ι繝ｼ繧ｯ',d:13,c:'submission'},{n:'閧ｩ蝗ｺ繧・,d:12,c:'submission'},
-{n:'繝偵・繝ｫ繝ｻ繝帙・繝ｫ繝・,d:13,c:'submission'},{n:'繝ｭ繝｡繝ｭ繝ｻ繧ｹ繝壹す繝｣繝ｫ',d:14,c:'submission'},
-{n:'繝・く繧ｵ繧ｹ繝ｻ繧ｯ繝ｭ繝ｼ繝舌・繝帙・繝ｫ繝会ｼ亥ｰゑｼ・,d:13,c:'submission'},{n:'繝ｪ繧｢繝阪う繧ｭ繝・ラ繝√Ι繝ｼ繧ｯ・亥ｰゑｼ・,d:12,c:'submission'},
-{n:'繧｢繝ｳ繧ｯ繝ｫ繝ｻ繝ｭ繝・け・亥ｰゑｼ・,d:12,c:'submission'},{n:'繧ｯ繝ｭ繧ｹ繝輔ぉ繧､繧ｹ・亥ｰゑｼ・,d:14,c:'submission'},
-{n:'蜊榊崋繧・ｼ亥ｰゑｼ・,d:15,c:'submission'},{n:'繝輔ぅ繧ｮ繝･繧｢繝ｻ繝輔か繝ｼ・亥ｰゑｼ・,d:14,c:'submission'},
-{n:'繝舌ャ繧ｯ繝峨Ο繝・・・亥ｰゑｼ・,d:13,c:'throw'},{n:'繝峨Λ繧ｴ繝ｳ繝ｻ繧ｹ繧ｯ繝ｪ繝･繝ｼ・亥ｰゑｼ・,d:11,c:'throw'}],
-Brawler:[{n:'繧ｨ繝ｫ繝懊・繧ｹ繝槭ャ繧ｷ繝･',d:12,c:'strike'},{n:'繝舌ャ繧ｯ繝上Φ繝峨ヶ繝ｭ繝ｼ',d:11,c:'strike'},
-{n:'繝倥ャ繝峨ヰ繝・ヨ騾｣謇・,d:11,c:'strike'},{n:'繧ｳ繝ｼ繝翫・繝ｩ繝・す繝･・亥密・・,d:12,c:'strike'},
-{n:'繝代う繝ｫ繝峨Λ繧､繝舌・・亥密・・,d:15,c:'throw'},{n:'繝・・繝繧ｹ繝医Φ繝ｻ繝代う繝ｫ繝峨Λ繧､繝舌・・亥密・・,d:16,c:'throw'},
-{n:'繝√Ι繝ｼ繧ｯ繧ｹ繝ｩ繝・亥密・・,d:14,c:'throw'},{n:'繧ｵ繧､繝峨え繧ｩ繝ｼ繧ｯ繧ｹ繝ｩ繝',d:12,c:'throw'},
-{n:'繝ｩ繝ｳ繝九Φ繧ｰ繝代Ρ繝ｼ繧ｹ繝ｩ繝',d:13,c:'throw'},{n:'繝阪ャ繧ｯ繝上Φ繧ｮ繝ｳ繧ｰ繝・Μ繝ｼ',d:12,c:'submission'},
-{n:'繝輔ぉ繧､繧ｹ繧ｦ繧ｩ繝・す繝･騾｣謇・,d:10,c:'ground'},{n:'繧ｹ繝医Φ繝斐Φ繧ｰ荵ｱ謇・,d:11,c:'ground'}]
+Grappler:[{n:'パワーボム',d:14,c:'throw'},{n:'シットアウト・パワーボム',d:15,c:'throw'},
+{n:'ジャーマン・スープレックス',d:13,c:'throw'},{n:'チョークスラム',d:13,c:'throw'},
+{n:'デスバレーボム',d:14,c:'throw'},{n:'バックドロップ',d:13,c:'throw'},
+{n:'ラストライド',d:16,c:'throw'},{n:'垂直落下式ブレーンバスター',d:14,c:'throw'},
+{n:'力強いラリアット',d:12,c:'strike'},{n:'頭突き',d:11,c:'strike'},
+{n:'カナディアン・バックブリーカー',d:10,c:'submission'},{n:'アルゼンチン・バックブリーカー',d:11,c:'submission'}],
+Speed:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネードDDT',d:13,c:'throw'},
+{n:'シャイニング・ウィザード',d:12,c:'strike'},{n:'ムーンサルト・プレス',d:15,c:'aerial'},
+{n:'シューティング・スター・プレス',d:16,c:'aerial'},{n:'450スプラッシュ',d:15,c:'aerial'},
+{n:'フロッグ・スプラッシュ',d:13,c:'aerial'},{n:'スワントン・ボム',d:14,c:'aerial'},
+{n:'トペ・コンヒーロ',d:11,c:'aerial'},
+{n:'ダイビング・セントーン',d:10,c:'aerial'},{n:'ドラゴン・スクリュー',d:10,c:'throw'},
+{n:'ハリケーンラナ',d:12,c:'throw'}],
+Technique:[{n:'アームバー',d:11,c:'submission'},{n:'フィギュア・フォー・レッグロック',d:12,c:'submission'},
+{n:'シャープシューター',d:13,c:'submission'},{n:'STF',d:12,c:'submission'},
+{n:'三角絞め',d:12,c:'submission'},{n:'クロスフェイス',d:13,c:'submission'},
+{n:'卍固め',d:14,c:'submission'},{n:'ドラゴンスリーパー',d:13,c:'submission'},
+{n:'キムラロック',d:11,c:'submission'},{n:'タイガー・スープレックス',d:14,c:'throw'},
+{n:'ドラゴン・スープレックス',d:15,c:'throw'},{n:'フィッシャーマン・スープレックス',d:13,c:'throw'}],
+Allround:[{n:'ファルコンアロー',d:13,c:'throw'},{n:'みちのくドライバーII',d:14,c:'throw'},
+{n:'エクスプローダー',d:12,c:'throw'},{n:'ノーザンライツ・スープレックス',d:12,c:'throw'},
+{n:'ダブルアーム・スープレックス',d:13,c:'throw'},{n:'リアネイキッドチョーク',d:11,c:'submission'},
+{n:'テキサス・クローバーホールド',d:12,c:'submission'},{n:'アンクル・ロック',d:11,c:'submission'},
+{n:'フェニックス・スプラッシュ',d:15,c:'aerial'},{n:'ダイビング・ボディ・プレス（大）',d:11,c:'aerial'},
+{n:'スピアー',d:12,c:'strike'},{n:'インプラントDDT',d:13,c:'throw'}],
+Striker:[{n:'シャイニング・ウィザード（打）',d:13,c:'strike'},{n:'ジャンピングニー',d:12,c:'strike'},
+{n:'ハイキック',d:11,c:'strike'},{n:'バズソーキック',d:14,c:'strike'},
+{n:'PK',d:11,c:'strike'},{n:'ランニングエルボー',d:13,c:'strike'},
+{n:'スピニングバックフィスト',d:12,c:'strike'},{n:'ケンカキック',d:15,c:'strike'},
+{n:'エルボー連打',d:10,c:'strike'},{n:'コーナーラッシュ',d:11,c:'strike'},
+{n:'パイルドライバー',d:14,c:'throw'},{n:'ツームストン・パイルドライバー',d:16,c:'throw'}],
+Submission:[{n:'ギロチンチョーク',d:13,c:'submission'},{n:'肩固め',d:12,c:'submission'},
+{n:'ヒール・ホールド',d:13,c:'submission'},{n:'ロメロ・スペシャル',d:14,c:'submission'},
+{n:'テキサス・クローバーホールド（専）',d:13,c:'submission'},{n:'リアネイキッドチョーク（専）',d:12,c:'submission'},
+{n:'アンクル・ロック（専）',d:12,c:'submission'},{n:'クロスフェイス（専）',d:14,c:'submission'},
+{n:'卍固め（専）',d:15,c:'submission'},{n:'フィギュア・フォー（専）',d:14,c:'submission'},
+{n:'バックドロップ（専）',d:13,c:'throw'},{n:'ドラゴン・スクリュー（専）',d:11,c:'throw'}],
+Brawler:[{n:'エルボースマッシュ',d:12,c:'strike'},{n:'バックハンドブロー',d:11,c:'strike'},
+{n:'ヘッドバット連打',d:11,c:'strike'},{n:'コーナーラッシュ（喧）',d:12,c:'strike'},
+{n:'パイルドライバー（喧）',d:15,c:'throw'},{n:'ツームストン・パイルドライバー（喧）',d:16,c:'throw'},
+{n:'チョークスラム（喧）',d:14,c:'throw'},{n:'サイドウォークスラム',d:12,c:'throw'},
+{n:'ランニングパワースラム',d:13,c:'throw'},{n:'ネックハンギングツリー',d:12,c:'submission'},
+{n:'フェイスウォッシュ連打',d:10,c:'ground'},{n:'ストンピング乱打',d:11,c:'ground'}]
 };
 const catW={
 Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15,rollup:5},
@@ -565,8 +575,9 @@ Submission:{strike:10,throw:10,submission:45,aerial:5,ground:15,rollup:10},
 Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  ║
+// ╚══════════════════════════════════════════════════════════╝
 const MAX_T = 20;
 const PHASES = [
   {name:'Opening',min:1,max:4,mult:0.9,sCh:20,counterBonus:0},
@@ -589,7 +600,7 @@ const ENG = {
   pinAttemptMomBonus: 0.15, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   finishWeights: {
-    // bug fix: 髱枹ubmission謚縺ｮgu=0, submission謚縺ｮfall=0 縺ｫ邨ｱ荳
+    // bug fix: 非submission技のgu=0, submission技のfall=0 に統一
     strike:    {fall:90, gu:0, tko:10},
     throw:     {fall:85, gu:0, tko:15},
     aerial:    {fall:85, gu:0, tko:15},
@@ -603,7 +614,7 @@ const ENG = {
   rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 16
 };
 
-// 笏笏 Tier 2: 繝薙ャ繧ｰ繝槭ャ繝∫畑繝代Λ繝｡繝ｼ繧ｿ・・PV/繧ｿ繧､繝医Ν/蟇ｾ謚玲姶/繝医・繝翫Γ繝ｳ繝茨ｼ俄楳笏
+// ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
 const BIGMATCH_MAX_T = 24;
 const BIGMATCH_PHASES = [
   {name:'Opening',min:1,max:6,mult:0.70,sCh:15,counterBonus:0},
@@ -624,131 +635,152 @@ const BIGMATCH_ENG = {
   guEscapeMax: 3,
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4: ECONOMY CONFIG                               笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
-// 邨ｦ荳朱｣邯夐未謨ｰ繝代Λ繝｡繝ｼ繧ｿ・・4: 繝・・繝悶Ν蟒・ｭ｢竊呈欠謨ｰ髢｢謨ｰ・・const SALARY_PARAMS = {
-  baseA: 0.55,       // 謖・焚繧ｫ繝ｼ繝紋ｿよ焚A・・1r: 0.65竊・.55 荳ｭ髢灘ｱ､邨ｦ荳主ｾｮ隱ｿ謨ｴ・・  baseB: 0.062,      // 謖・焚繧ｫ繝ｼ繝紋ｿよ焚B 窶・base = A * exp(B * OVR)・・1r: 0.06竊・.062 鬮楼VR邯ｭ謖・ｼ・  popMax: 80,        // 莠ｺ豌怜刈邂励・譛螟ｧ蛟､・井ｸ・ｼ・  popExp: 2,         // 莠ｺ豌励き繝ｼ繝匁欠謨ｰ 窶・popBonus = popMax * (pop/100)^popExp
-  titleBonus: 20,    // 繧ｿ繧､繝医Ν菫晄戟閠・崋螳壼刈邂暦ｼ井ｸ・ｼ・};
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4: ECONOMY CONFIG                               ║
+// ╚══════════════════════════════════════════════════════════╝
+// 給与連続関数パラメータ（R4: テーブル廃止→指数関数）
+const SALARY_PARAMS = {
+  baseA: 0.55,       // 指数カーブ係数A（L1r: 0.65→0.55 中間層給与微調整）
+  baseB: 0.062,      // 指数カーブ係数B — base = A * exp(B * OVR)（L1r: 0.06→0.062 高OVR維持）
+  popMax: 80,        // 人気加算の最大値（万）
+  popExp: 2,         // 人気カーブ指数 — popBonus = popMax * (pop/100)^popExp
+  titleBonus: 20,    // タイトル保持者固定加算（万）
+};
 const FAN_EXPECT_REACTIONS = {
   goodCrowd: [
-    '縺薙ｌ縺瑚ｦ九◆縺九▲縺溘ｓ縺繧茨ｼ・譛鬮倥・隧ｦ蜷医□縺｣縺滂ｼ・,
-    '譛溷ｾ・壹ｊ窶ｦ縺・ｄ縲∵悄蠕・ｻ･荳翫・蜷榊享雋縺縺｣縺滂ｼ・,
-    '莨壼ｴ縺御ｸ縺､縺ｫ縺ｪ縺｣縺溽椪髢薙□縺｣縺溪ｦ・・,
-    '繝輔ぃ繝ｳ縺ｮ螢ｰ縺碁∈謇九↓螻翫＞縺溯ｩｦ蜷医□縺｣縺・,
-    '豁ｴ蜿ｲ縺ｫ谿九ｋ繧ｫ繝ｼ繝峨ｒ螳溽樟縺励※縺上ｌ縺滂ｼ・,
+    'これが見たかったんだよ！ 最高の試合だった！',
+    '期待通り…いや、期待以上の名勝負だった！',
+    '会場が一つになった瞬間だった…！',
+    'ファンの声が選手に届いた試合だった',
+    '歴史に残るカードを実現してくれた！',
   ],
   badCrowd: [
-    '繧ゅ≧蟆代＠蝎帙∩蜷医▲縺ｦ縺ｻ縺励°縺｣縺溪ｦ',
-    '譛溷ｾ・′螟ｧ縺阪☆縺弱◆縺ｮ縺九ｂ縺励ｌ縺ｪ縺・,
-    '谺｡縺薙◎譛ｬ蠖薙・蜷榊享雋繧定ｦ九○縺ｦ縺ｻ縺励＞',
-    '繧ｫ繝ｼ繝峨・譛鬮倥□縺｣縺溘・縺ｫ窶ｦ蜀・ｮｹ縺瑚ｿｽ縺・▽縺九↑縺九▲縺・,
+    'もう少し噛み合ってほしかった…',
+    '期待が大きすぎたのかもしれない',
+    '次こそ本当の名勝負を見せてほしい',
+    'カードは最高だったのに…内容が追いつかなかった',
   ],
   goodWinner: [
-    '縺ｿ繧薙↑縺ｮ螢ｰ縺瑚◇縺薙∴縺ｦ縺溘ｈ',
-    '縺薙・隧ｦ蜷医∫ｵｶ蟇ｾ縺ｫ雋縺代ｉ繧後↑縺九▲縺・,
-    '譛溷ｾ・↓蠢懊∴繧峨ｌ縺溘↑繧俄ｦ螫峨＠縺・,
-    '譛鬮倥・逶ｸ謇九↓譛鬮倥・闊槫床縲よ─隰昴＠縺九↑縺・,
-    '縺ゅ・豁灘｣ｰ縺檎ｧ√・蜉帙↓縺ｪ縺｣縺・,
+    'みんなの声が聞こえてたよ',
+    'この試合、絶対に負けられなかった',
+    '期待に応えられたなら…嬉しい',
+    '最高の相手に最高の舞台。感謝しかない',
+    'あの歓声が私の力になった',
   ],
   badWinner: [
-    '窶ｦ縺ｾ縺繧・ｌ縺溘・縺・,
-    '縺薙・邨先棡縺倥ｃ貅雜ｳ縺ｧ縺阪↑縺・,
-    '谺｡縺ｯ繧ゅ▲縺ｨ縺・＞隧ｦ蜷医↓縺吶ｋ縲らｴ・據縺吶ｋ',
-    '蠢懈抄縺励※縺上ｌ縺溘・縺ｫ窶ｦ謔斐＠縺・,
+    '…まだやれたはず',
+    'この結果じゃ満足できない',
+    '次はもっといい試合にする。約束する',
+    '応援してくれたのに…悔しい',
   ],
 };
-// L1: 莨壼ｴ繝・・繝悶Ν・・0谿ｵ繝ｻpopReq謦､蟒・・蜈ｨ莨壼ｴ驕ｸ謚槫庄閭ｽ・・const VENUES = [
-  {name:'蜈ｬ豌鷹､ｨ',    cap:150,   cost:5,    maxMatches:3, img:'../image/venue_0_kominkan.webp'},     // 0
-  {name:'蟆上・繝ｼ繝ｫA', cap:300,   cost:25,   maxMatches:3, img:'../image/venue_1_small_hall_a.webp'}, // 1
-  {name:'蟆上・繝ｼ繝ｫB', cap:500,   cost:50,   maxMatches:3, img:'../image/venue_2_small_hall_b.webp'}, // 2
-  {name:'蟶よｰ台ｼ夐､ｨ',  cap:800,   cost:100,  maxMatches:4, img:'../image/venue_3_civic_hall.webp'},   // 3
-  {name:'荳ｭ繝帙・繝ｫA', cap:1200,  cost:200,  maxMatches:4, img:'../image/venue_4_mid_hall_a.webp'},   // 4
-  {name:'荳ｭ繝帙・繝ｫB', cap:2000,  cost:400,  maxMatches:5, img:'../image/venue_5_mid_hall_b.webp'},   // 5
-  {name:'螟ｧ繝帙・繝ｫ',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
-  {name:'繧｢繝ｪ繝ｼ繝・,  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
-  {name:'螟ｧ莨壼ｴ',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
-  {name:'繝峨・繝',    cap:30000, cost:12000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9
+// L1: 会場テーブル（10段・popReq撤廃・全会場選択可能）
+const VENUES = [
+  {name:'公民館',    cap:150,   cost:5,    maxMatches:3, img:'../image/venue_0_kominkan.webp'},     // 0
+  {name:'小ホールA', cap:300,   cost:25,   maxMatches:3, img:'../image/venue_1_small_hall_a.webp'}, // 1
+  {name:'小ホールB', cap:500,   cost:50,   maxMatches:3, img:'../image/venue_2_small_hall_b.webp'}, // 2
+  {name:'市民会館',  cap:800,   cost:100,  maxMatches:4, img:'../image/venue_3_civic_hall.webp'},   // 3
+  {name:'中ホールA', cap:1200,  cost:200,  maxMatches:4, img:'../image/venue_4_mid_hall_a.webp'},   // 4
+  {name:'中ホールB', cap:2000,  cost:400,  maxMatches:5, img:'../image/venue_5_mid_hall_b.webp'},   // 5
+  {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
+  {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
+  {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
+  {name:'ドーム',    cap:30000, cost:12000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9
 ];
-// L1: orgPop竊貞渕遉朱寔螳｢蜉帙・蛹ｺ髢鍋ｷ壼ｽ｢陬憺俣繝・・繝悶Ν・医く繝｣繝鷹撼萓晏ｭ假ｼ・const BASE_ATTENDANCE_CURVE = [
+// L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
+const BASE_ATTENDANCE_CURVE = [
   [0,20],[5,60],[10,130],[15,200],[20,300],[25,420],[30,550],
   [35,720],[40,900],[45,1150],[50,1500],[55,1900],[60,2500],
   [65,3200],[70,4000],[75,5200],[80,7000],[85,9500],[90,14000],
   [95,16000],[100,20000]
 ];
-const TICKET_PRICE = 0.5; // 荳・・/莠ｺ・・1.7: 繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ蠕後↓隕∬ｪｿ謨ｴ・・const GOODS_PRICE = 0.15; // 荳・・/莠ｺ・・1.7: 0.08竊・.15 繧ｰ繝・ぜ蜿主・蠎穂ｸ翫￡・・const OCCUPANCY_BONUS = [
-  {min:0.95, ticketMult:1.2, label:'櫨 雜・ｺ蜩｡・・,    heatDelta:+1},
-  {min:0.80, ticketMult:1.1, label:'笨ｨ 螟ｧ蜈･繧奇ｼ・,    heatDelta:+1},
-  {min:0.60, ticketMult:1.0, label:'総 逶帶ｳ・,        heatDelta:0},
-  {min:0.40, ticketMult:0.85,label:'筐・縺ｾ縺壹∪縺・,    heatDelta:0},
-  {min:0.25, ticketMult:0.7, label:'弌 遨ｺ蟶ｭ逶ｮ遶九▽',  heatDelta:-1},
-  {min:0.0,  ticketMult:0.5, label:'于 繧ｬ繝ｩ繧ｬ繝ｩ',    heatDelta:-2},
+const TICKET_PRICE = 0.5; // 万円/人（v1.7: シミュレーション後に要調整）
+const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
+const OCCUPANCY_BONUS = [
+  {min:0.95, ticketMult:1.2, label:'🔥 超満員！',    heatDelta:+1},
+  {min:0.80, ticketMult:1.1, label:'✨ 大入り！',    heatDelta:+1},
+  {min:0.60, ticketMult:1.0, label:'👍 盛況',        heatDelta:0},
+  {min:0.40, ticketMult:0.85,label:'➖ まずまず',    heatDelta:0},
+  {min:0.25, ticketMult:0.7, label:'😟 空席目立つ',  heatDelta:-1},
+  {min:0.0,  ticketMult:0.5, label:'😰 ガラガラ',    heatDelta:-2},
 ];
-// L1: 蜍｢縺・｣懈ｭ｣・域ｺ蜩｡/繧ｬ繝ｩ繧ｬ繝ｩ騾｣骼門柑譫懶ｼ・const MOMENTUM_CONFIG = {
-  SELLOUT_DELTA: 0.04,        // 95%+竊・4%
-  GOOD_DELTA: 0.02,           // 80%+竊・2%
-  NEUTRAL_MIN: 0.60,          // 60-80%竊陳ｱ0
-  WEAK_DELTA: -0.03,          // 30-60%竊・3%
-  EMPTY_DELTA: -0.05,         // <30%竊・5%
-  CAP: 0.15,                  // 荳企剞ﾂｱ15%
-  EMPTY_ORGPOP_PENALTY: -0.5, // <30%譎ゅ・orgPop繝繝｡繝ｼ繧ｸ
+// L1: 勢い補正（満員/ガラガラ連鎖効果）
+const MOMENTUM_CONFIG = {
+  SELLOUT_DELTA: 0.04,        // 95%+→+4%
+  GOOD_DELTA: 0.02,           // 80%+→+2%
+  NEUTRAL_MIN: 0.60,          // 60-80%→±0
+  WEAK_DELTA: -0.03,          // 30-60%→-3%
+  EMPTY_DELTA: -0.05,         // <30%→-5%
+  CAP: 0.15,                  // 上限±15%
+  EMPTY_ORGPOP_PENALTY: -0.5, // <30%時のorgPopダメージ
 };
-// L1r: 莨壼ｴ繧ｹ繧ｱ繝ｼ繝ｫ髮・ｮ｢謠ｺ繧峨℃・井ｼ壼ｴ繧､繝ｳ繝・ャ繧ｯ繧ｹ鬆・・ｱ%・・// 蟆剰ｦ乗ｨ｡莨壼ｴ縺ｯ蝨ｰ蜈・ｸｸ騾｣縺ｧ螳牙ｮ壹∝､ｧ隕乗ｨ｡莨壼ｴ縺ｯ繝上う繝ｪ繧ｹ繧ｯ繝ｻ繝上う繝ｪ繧ｿ繝ｼ繝ｳ
+// L1r: 会場スケール集客揺らぎ（会場インデックス順、±%）
+// 小規模会場は地元常連で安定、大規模会場はハイリスク・ハイリターン
 const VENUE_FLUCTUATION = [
-  0.10,  // 0: 蜈ｬ豌鷹､ｨ    ﾂｱ10%
-  0.12,  // 1: 蟆上・繝ｼ繝ｫA  ﾂｱ12%
-  0.12,  // 2: 蟆上・繝ｼ繝ｫB  ﾂｱ12%
-  0.14,  // 3: 蟶よｰ台ｼ夐､ｨ   ﾂｱ14%
-  0.15,  // 4: 荳ｭ繝帙・繝ｫA  ﾂｱ15%
-  0.17,  // 5: 荳ｭ繝帙・繝ｫB  ﾂｱ17%・域立荳蠕句､縺ｨ蜷檎ｭ会ｼ・  0.20,  // 6: 螟ｧ繝帙・繝ｫ   ﾂｱ20%
-  0.25,  // 7: 繧｢繝ｪ繝ｼ繝・  ﾂｱ25%
-  0.30,  // 8: 螟ｧ莨壼ｴ    ﾂｱ30%
-  0.40,  // 9: 繝峨・繝    ﾂｱ40% 窶・雜・ワ繧､繝ｪ繧ｹ繧ｯ
+  0.10,  // 0: 公民館    ±10%
+  0.12,  // 1: 小ホールA  ±12%
+  0.12,  // 2: 小ホールB  ±12%
+  0.14,  // 3: 市民会館   ±14%
+  0.15,  // 4: 中ホールA  ±15%
+  0.17,  // 5: 中ホールB  ±17%（旧一律値と同等）
+  0.20,  // 6: 大ホール   ±20%
+  0.25,  // 7: アリーナ   ±25%
+  0.30,  // 8: 大会場    ±30%
+  0.40,  // 9: ドーム    ±40% — 超ハイリスク
 ];
 const ATTENDANCE_PREDICTION = [
-  { min: 0.85, text: '櫨 莉企ｱ縺ｯ逶帙ｊ荳翫′繧翫◎縺・□', color: 'var(--green)' },
-  { min: 0.55, text: '､・縺ｾ縺壹∪縺壹・謇句ｿ懊∴縺',     color: 'var(--text-sub)' },
-  { min: 0.00, text: '弌 蟆代＠螳｢雜ｳ縺悟ｿ・・縺',        color: 'var(--red)' },
+  { min: 0.85, text: '🔥 今週は盛り上がりそうだ', color: 'var(--green)' },
+  { min: 0.55, text: '🤔 まずまずの手応えだ',     color: 'var(--text-sub)' },
+  { min: 0.00, text: '😟 少し客足が心配だ',        color: 'var(--red)' },
 ];
-// 笏笏 Card Pop & Crowd MQ Constants (v1.0c) 笏笏
+// ── Card Pop & Crowd MQ Constants (v1.0c) ──
 const CARD_POP_CONFIG = {
-  SUB_WEIGHT: 0.7,    // 繧ｵ繝冶ｩｦ蜷医・驥阪∩・医Γ繧､繝ｳ縺ｮ7蜑ｲ・・  CARD_MULT:  1.2     // cardPop 竊・cardBonus 螟画鋤蛟咲紫
+  SUB_WEIGHT: 0.7,    // サブ試合の重み（メインの7割）
+  CARD_MULT:  1.2     // cardPop → cardBonus 変換倍率
 };
 const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
-//                        1隧ｦ蜷・ 2隧ｦ蜷・ 3隧ｦ蜷・ 4隧ｦ蜷・ 5隧ｦ蜷・ 6隧ｦ蜷・ 7隧ｦ蜷・ 8隧ｦ蜷・const CROWD_HEAT_MQ = [
-  { min: 0.95, bonus: +3, label: '雜・ｺ蜩｡縺ｮ辭ｱ豌・ },
-  { min: 0.80, bonus: +2, label: '螟ｧ蜈･繧翫・螢ｰ謠ｴ' },
-  { min: 0.60, bonus: +1, label: '逶帶ｳ√・髮ｰ蝗ｲ豌・ },
+//                        1試合  2試合  3試合  4試合  5試合  6試合  7試合  8試合
+const CROWD_HEAT_MQ = [
+  { min: 0.95, bonus: +3, label: '超満員の熱気' },
+  { min: 0.80, bonus: +2, label: '大入りの声援' },
+  { min: 0.60, bonus: +1, label: '盛況の雰囲気' },
   { min: 0.40, bonus:  0, label: '' },
-  { min: 0.25, bonus: -1, label: '遨ｺ蟶ｭ縺ｮ髱吶￠縺・ },
-  { min: 0.00, bonus: -3, label: '繧ｬ繝ｩ繧ｬ繝ｩ縺ｮ蟇ゅ＠縺・ },
+  { min: 0.25, bonus: -1, label: '空席の静けさ' },
+  { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
 ];
-// L1: 10谿ｵ蟇ｾ蠢・窶・蜈ｬ豌鷹､ｨ=0, 蟆就=0, 蟆州=+1, 蟶よｰ・+1, 荳ｭA=+1, 荳ｭB=+1, 螟ｧ繝帙・繝ｫ=+2, 繧｢繝ｪ繝ｼ繝・+2, 螟ｧ莨壼ｴ=+2, 繝峨・繝=+3
+// L1: 10段対応 — 公民館=0, 小A=0, 小B=+1, 市民=+1, 中A=+1, 中B=+1, 大ホール=+2, アリーナ=+2, 大会場=+2, ドーム=+3
 const VENUE_SCALE_MQ = [0, 0, 1, 1, 1, 1, 2, 2, 2, 3];
 
-// 笏笏 Popularity System Constants (v1.0b) 笏笏
+// ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {
-  baseChance: 0.005,   // 騾ｱ0.5%
-  champChance: 0.0025,   // 繝√Ε繝ｳ繝斐が繝ｳ縺ｯ蜊雁・
-  minPop: 40,           // 莠ｺ豌・0莉･荳翫・縺ｿ蟇ｾ雎｡
+  baseChance: 0.005,   // 週0.5%
+  champChance: 0.0025,   // チャンピオンは半分
+  minPop: 40,           // 人気40以上のみ対象
   penaltyMin: 20,
   penaltyMax: 35,
-  messages: ['堂 騾ｱ蛻願ｪ後↓繧ｹ繧ｯ繝ｼ繝励′窶ｦ', '導 SNS縺ｧ轤惹ｸ企ｨ貞虚縺娯ｦ', '笞・・邏陦悟撫鬘後′逋ｺ隕壺ｦ']
+  messages: ['📰 週刊誌にスクープが…', '📱 SNSで炎上騒動が…', '⚠️ 素行問題が発覚…']
 };
 const LOSING_STREAK_PENALTIES = [
-  {threshold: 3, penalty: -5, msg: '髯ｰ繧翫′隕九∴蟋九ａ繧銀ｦ'},
-  {threshold: 5, penalty: -10, msg: '菴手ｿｷ縺梧ｷｱ蛻ｻ蛹問ｦ'},
-  {threshold: 7, penalty: -15, msg: '螟ｱ譛帶─縺悟ｺ・′繧銀ｦ'}
+  {threshold: 3, penalty: -5, msg: '陰りが見え始める…'},
+  {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
+  {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
 ];
-const PROMO_POP_CAP = 70; // 繝励Ο繝｢縺ｮ縺ｿ縺ｧ蛻ｰ驕泌庄閭ｽ縺ｪ莠ｺ豌嶺ｸ企剞・域立55竊・0・・const PROMO_MQ_PER_STACK = 1.3; // promoStack 1蝗槭≠縺溘ｊ縺ｮMQ繝懊・繝翫せ・域怙螟ｧ3繧ｹ繧ｿ繝・けﾃ・.3=+3.9・・const PROMO_EVENT_INCOME = [
-  { min:  0, max: 14, val:  15 },  // 蝨ｰ蜈・・蟆上う繝吶Φ繝・  { min: 15, max: 29, val:  25 },  // 蝨ｰ蝓溘う繝吶Φ繝亥ｸｸ騾｣
-  { min: 30, max: 44, val:  40 },  // 繝輔ぃ繝ｳ繝溘・謠｡謇倶ｼ・  { min: 45, max: 59, val:  55 },  // 蜊倡峡繧､繝吶Φ繝域・遶・  { min: 60, max: 74, val:  70 },  // 繝｡繝・ぅ繧｢蜃ｺ貍泌性繧
-  { min: 75, max:100, val:  85 },  // 螟ｧ蝙九う繝吶Φ繝・];
+const PROMO_POP_CAP = 70; // プロモのみで到達可能な人気上限（旧55→70）
+const PROMO_MQ_PER_STACK = 1.3; // promoStack 1回あたりのMQボーナス（最大3スタック×1.3=+3.9）
+const PROMO_EVENT_INCOME = [
+  { min:  0, max: 14, val:  15 },  // 地元の小イベント
+  { min: 15, max: 29, val:  25 },  // 地域イベント常連
+  { min: 30, max: 44, val:  40 },  // ファンミ・握手会
+  { min: 45, max: 59, val:  55 },  // 単独イベント成立
+  { min: 60, max: 74, val:  70 },  // メディア出演含む
+  { min: 75, max:100, val:  85 },  // 大型イベント
+];
 const PROMO_EVENT_NAMES = {
-  low:  ['蝨ｰ蝓溘う繝吶Φ繝亥・貍・, '蝠・ｺ苓｡励く繝｣繝ｳ繝壹・繝ｳ', 'SNS驟堺ｿ｡', '蝨ｰ蜈ェM蜃ｺ貍・],
-  mid:  ['謠｡謇倶ｼ・, '繝輔ぃ繝ｳ繝溘・繝・ぅ繝ｳ繧ｰ', '繝医・繧ｯ繧ｷ繝ｧ繝ｼ', '繧ｰ繝・ぜ雋ｩ螢ｲ莨・],
-  high: ['螟ｧ蝙九う繝吶Φ繝亥・貍・, 'TV逡ｪ邨・・貍・, '髮題ｪ梧聴蠖ｱ莨・, '繧ｹ繝壹す繝｣繝ｫ繧ｷ繝ｧ繝ｼ'],
+  low:  ['地域イベント出演', '商店街キャンペーン', 'SNS配信', '地元FM出演'],
+  mid:  ['握手会', 'ファンミーティング', 'トークショー', 'グッズ販売会'],
+  high: ['大型イベント出演', 'TV番組出演', '雑誌撮影会', 'スペシャルショー'],
 };
-const TRANSFER_POP_MULT = 0.75; // 遘ｻ邀肴凾縺ｮ莠ｺ豌励Μ繧ｻ繝・ヨ菫よ焚
+const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
 const SPONSOR_TABLE = [
   {min:0,max:19,val:0},{min:20,max:39,val:10},{min:40,max:59,val:30},
   {min:60,max:79,val:60},{min:80,max:94,val:120},{min:95,max:100,val:200}
@@ -757,449 +789,465 @@ const BROADCAST_TABLE = [
   {min:70,max:84,val:50},{min:85,max:94,val:100},{min:95,max:100,val:200}
 ];
 const FIXED_COSTS = {admin:30};
-// v1.7: 閧ｲ謌占｣懷勧驥・窶・蠎冗乢縺ｮ蝗｣菴馴°蝟ｶ繧呈髪謠ｴ・・rgPop 40莉･荳翫〒謇薙■蛻・ｊ・・const SUBSIDY_TABLE = [
-  {max:19, val:80},  // orgPop 0-19: 80荳・騾ｱ
-  {max:29, val:65},  // orgPop 20-29: 65荳・騾ｱ
-  {max:34, val:45},  // orgPop 30-34: 45荳・騾ｱ・育ｷｩ陦晏ｸｯ・・  {max:39, val:20},  // orgPop 35-39: 20荳・騾ｱ
+// v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
+const SUBSIDY_TABLE = [
+  {max:19, val:80},  // orgPop 0-19: 80万/週
+  {max:29, val:65},  // orgPop 20-29: 65万/週
+  {max:34, val:45},  // orgPop 30-34: 45万/週（緩衝帯）
+  {max:39, val:20},  // orgPop 35-39: 20万/週
 ];
 
 // Heat System
 const HEAT_LEVELS = [
-  {id:'ice_cold', label:'Ice Cold',  emoji:'ｧ・, color:'#74b9ff', mult:0.7, min:-999, max:-6, anim:''},
-  {id:'cold',     label:'Cold',   emoji:'笶・ｸ・, color:'#a29bfe', mult:0.85, min:-5, max:-2, anim:''},
-  {id:'neutral',  label:'Neutral', emoji:'筐・, color:'#dfe6e9', mult:1.0, min:-1, max:1, anim:''},
-  {id:'warm',     label:'Warm',   emoji:'櫨', color:'#fdcb6e', mult:1.1, min:2, max:5, anim:''},
-  {id:'hot',      label:'Hot',   emoji:'櫨櫨', color:'#e17055', mult:1.2, min:6, max:9, anim:'heat-pulse'},
-  {id:'on_fire',  label:'On Fire!', emoji:'櫨櫨櫨', color:'#d63031', mult:1.3, min:10, max:999, anim:'heat-blaze'}
+  {id:'ice_cold', label:'Ice Cold',  emoji:'🧊', color:'#74b9ff', mult:0.7, min:-999, max:-6, anim:''},
+  {id:'cold',     label:'Cold',   emoji:'❄️', color:'#a29bfe', mult:0.85, min:-5, max:-2, anim:''},
+  {id:'neutral',  label:'Neutral', emoji:'➖', color:'#dfe6e9', mult:1.0, min:-1, max:1, anim:''},
+  {id:'warm',     label:'Warm',   emoji:'🔥', color:'#fdcb6e', mult:1.1, min:2, max:5, anim:''},
+  {id:'hot',      label:'Hot',   emoji:'🔥🔥', color:'#e17055', mult:1.2, min:6, max:9, anim:'heat-pulse'},
+  {id:'on_fire',  label:'On Fire!', emoji:'🔥🔥🔥', color:'#d63031', mult:1.3, min:10, max:999, anim:'heat-blaze'}
 ];
 
 // Quarter / Season display labels
-const QUARTER_LABELS = {1:'減 譏･', 2:'笘・・螟・, 3:'高 遘・, 4:'笶・ｸ・蜀ｬ'};
+const QUARTER_LABELS = {1:'🌸 春', 2:'☀️ 夏', 3:'🍂 秋', 4:'❄️ 冬'};
 
 // Injury System
 const INJURY_TABLE = [
-  {type:'霆ｽ蛯ｷ', minWeeks:1, maxWeeks:2, threshold:0.12, color:'#fdcb6e'},
-  {type:'荳ｭ蛯ｷ', minWeeks:3, maxWeeks:4, threshold:0.05, color:'#e17055'},
-  {type:'驥榊す', minWeeks:6, maxWeeks:8, threshold:0.02, color:'#d63031'}
+  {type:'軽傷', minWeeks:1, maxWeeks:2, threshold:0.12, color:'#fdcb6e'},
+  {type:'中傷', minWeeks:3, maxWeeks:4, threshold:0.05, color:'#e17055'},
+  {type:'重傷', minWeeks:6, maxWeeks:8, threshold:0.02, color:'#d63031'}
 ];
 
 // v1.3-2: Growth penalty table by injury severity
 const INJURY_DEBUFF_TABLE = {
-  '霆ｽ蛯ｷ': { remainingWeeks: 6,  multiplier: 0.7,  source: 'minor'    },
-  '荳ｭ蛯ｷ': { remainingWeeks: 14, multiplier: 0.4,  source: 'moderate' },
-  '驥榊す': { remainingWeeks: 24, multiplier: 0.15, source: 'severe'   },
+  '軽傷': { remainingWeeks: 6,  multiplier: 0.7,  source: 'minor'    },
+  '中傷': { remainingWeeks: 14, multiplier: 0.4,  source: 'moderate' },
+  '重傷': { remainingWeeks: 24, multiplier: 0.15, source: 'severe'   },
 };
 
 // Title System
 const TITLES = [
-  {id:'world', name:'蝗｣菴鍋視蠎ｧ', mqBonus:10, popBonus:3, attendBonus:1.15, emoji:'醇'}
+  {id:'world', name:'団体王座', mqBonus:10, popBonus:3, attendBonus:1.15, emoji:'🏆'}
 ];
 
 // Rivalry System
 const RIVALRY_THRESHOLDS = [
-  {tier:1, matches:2, label:'蝗邵・, mqBonus:2, color:'#fdcb6e', emoji:'笞｡'},
-  {tier:2, matches:4, label:'螳ｿ謨ｵ', mqBonus:4, color:'#e17055', emoji:'櫨'},
-  {tier:3, matches:7, label:'螳ｿ蜻ｽ縺ｮ逶ｸ謇・, mqBonus:6, color:'#d63031', emoji:'徴'}
+  {tier:1, matches:2, label:'因縁', mqBonus:2, color:'#fdcb6e', emoji:'⚡'},
+  {tier:2, matches:4, label:'宿敵', mqBonus:4, color:'#e17055', emoji:'🔥'},
+  {tier:3, matches:7, label:'宿命の相手', mqBonus:6, color:'#d63031', emoji:'💥'}
 ];
 
-// Phase 5: 迚・・蝗邵・ｼ井ｸ譁ｹ逧・↓繝ｩ繧､繝舌Ν隕悶＠縺ｦ縺・ｋ迥ｶ諷具ｼ・const ONESIDED_RIVALRY_MQ_BONUS = 1;
-const ONESIDED_RIVALRY_LABEL = '迚・・蝗邵・;
-const ONESIDED_RIVALRY_EMOJI = '笞｡';
+// Phase 5: 片側因縁（一方的にライバル視している状態）
+const ONESIDED_RIVALRY_MQ_BONUS = 1;
+const ONESIDED_RIVALRY_LABEL = '片側因縁';
+const ONESIDED_RIVALRY_EMOJI = '⚡';
 const ONESIDED_RIVALRY_COLOR = '#ffeaa7';
 
-// 蝗邵∵ｱｺ逹繧ｷ繧ｹ繝・Β 窶・隧ｦ蜷亥燕縺ｮ螳｣謌ｦ蟶・相繧ｻ繝ｪ繝包ｼ医・繧｢蜿ｰ隧橸ｼ・const RIVALRY_CONFRONTATION_LINES = {
+// 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
+const RIVALRY_CONFRONTATION_LINES = {
   pairs: [
-    ['莉頑律縺薙◎縲∵ｱｺ逹繧偵▽縺代ｋ', '窶ｦ窶ｦ譛帙・縺ｨ縺薙ｍ繧・],
-    ['菴募ｺｦ繧・▲縺ｦ繧らｵ先棡縺ｯ蜷後§縺', '縺昴ｌ縺ｯ邨ゅｏ縺｣縺ｦ縺九ｉ險縺・↑縺輔＞'],
-    ['縺薙・蝗邵√∽ｻ雁､懃ｵゅｏ繧翫↓縺励ｈ縺・, '譛蠕後↓縺ｵ縺輔ｏ縺励＞隧ｦ蜷医↓縺励∪縺励ｇ縺・],
-    ['隕壽ぁ縺ｯ縺・＞繧上・・・, '逕溘∪繧後◆譎ゅ°繧峨〒縺阪※繧九ｏ'],
-    ['縺ゅ↑縺溘ｒ雜・∴繧九ゆｻ頑律縲√％縺薙〒', '雜・∴繧峨ｌ繧九ｂ縺ｮ縺ｪ繧峨√ｄ縺｣縺ｦ縺ｿ縺ｪ縺輔＞'],
+    ['今日こそ、決着をつける', '……望むところよ'],
+    ['何度やっても結果は同じだ', 'それは終わってから言いなさい'],
+    ['この因縁、今夜終わりにしよう', '最後にふさわしい試合にしましょう'],
+    ['覚悟はいいわね？', '生まれた時からできてるわ'],
+    ['あなたを超える。今日、ここで', '超えられるものなら、やってみなさい'],
   ],
   fatePairs: [
-    ['髟ｷ縺九▲縺溪ｦ窶ｦ縺薙・迚ｩ隱槭↓縲∫ｵよｭ｢隨ｦ繧呈遠縺､', '縺医∴窶ｦ窶ｦ譛鬮倥・邨先忰繧定ｦ九○縺ｾ縺励ｇ縺・],
-    ['菴募ｺｦ繧よ姶縺｣縺溘ゅ〒繧ゆｻ頑律縺梧怙蠕後□', '繧上°縺｣縺ｦ縺・ｋ縲ゅ□縺九ｉ蜈ｨ蜉帙〒譚･縺ｪ縺輔＞'],
-    ['縺ゅ↑縺溘′縺・↑縺代ｌ縺ｰ縲∽ｻ翫・遘√・縺・↑縺・, '窶ｦ窶ｦ縺贋ｺ偵＞讒倥ｈ縲ゅ□縺九ｉ莉頑律繧ょ・蜉帙〒'],
+    ['長かった……この物語に、終止符を打つ', 'ええ……最高の結末を見せましょう'],
+    ['何度も戦った。でも今日が最後だ', 'わかっている。だから全力で来なさい'],
+    ['あなたがいなければ、今の私はいない', '……お互い様よ。だから今日も全力で'],
   ],
 };
 
-// 蝗邵∵ｱｺ逹繧ｷ繧ｹ繝・Β 窶・隧ｦ蜷亥ｾ後・豎ｺ逹繧ｻ繝ｪ繝包ｼ・ersonalityﾃ預rchetype・・const RIVALRY_RESOLUTION_LINES = {
+// 因縁決着システム — 試合後の決着セリフ（personality×archetype）
+const RIVALRY_RESOLUTION_LINES = {
   winner: {
     normal: {
-      _default: ['繧医≧繧・￥豎ｺ逹縺後▽縺・◆窶ｦ譛鬮倥・逶ｸ謇九□縺｣縺・, '縺薙・蜍晏茜縺ｯ縲√≠縺ｮ莠ｺ縺後＞縺溘°繧画雫繧√◆'],
-      ojousama: ['繧医≧繧・￥豎ｺ逹縺後▽縺阪∪縺励◆繧鞘ｦ譛鬮倥・縺顔嶌謇九〒縺励◆'],
-      delinquent: ['繧・▲縺ｨ豎ｺ逹縺､縺・◆縺懌ｦ譛鬮倥・逶ｸ謇九□縺｣縺溘ｈ'],
-      seductive: ['繧医≧繧・￥豎ｺ逹縺後▽縺・◆繧上・窶ｦ譛鬮倥・逶ｸ謇九□縺｣縺・],
+      _default: ['ようやく決着がついた…最高の相手だった', 'この勝利は、あの人がいたから掴めた'],
+      ojousama: ['ようやく決着がつきましたわ…最高のお相手でした'],
+      delinquent: ['やっと決着ついたぜ…最高の相手だったよ'],
+      seductive: ['ようやく決着がついたわね…最高の相手だった'],
     },
     bold: {
-      _default: ['菴募ｺｦ縺ｧ繧りｨ縺・ゅ≠縺ｪ縺溘・譛鬮倥・繝ｩ繧､繝舌Ν縺', '縺薙・諡ｳ縺悟ｱ翫＞縺溪ｦ縺昴ｌ縺縺代〒蜊∝・縺'],
-      ojousama: ['菴募ｺｦ縺ｧ繧ら筏縺励∪縺吶ｏ縲ゅ≠縺ｪ縺溘・譛鬮倥・繝ｩ繧､繝舌Ν縺ｧ縺吶・'],
-      delinquent: ['縺雁燕縺ｯ譛鬮倥・繝ｩ繧､繝舌Ν縺縲ゅ◎繧後□縺代・隱阪ａ縺ｦ繧・ｋ'],
-      cool: ['窶ｦ豎ｺ逹縺後▽縺・◆縲よ─隰昴☆繧・],
-      seductive: ['縺ゅ↑縺溘・譛鬮倥・繝ｩ繧､繝舌Ν繧医ゅ◎繧後・螟峨ｏ繧峨↑縺・ｏ'],
+      _default: ['何度でも言う。あなたは最高のライバルだ', 'この拳が届いた…それだけで十分だ'],
+      ojousama: ['何度でも申しますわ。あなたは最高のライバルですの'],
+      delinquent: ['お前は最高のライバルだ。それだけは認めてやる'],
+      cool: ['…決着がついた。感謝する'],
+      seductive: ['あなたは最高のライバルよ。それは変わらないわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・],
-      cool: ['窶ｦ邨ゅｏ縺｣縺溘やｦ縺・＞謌ｦ縺・□縺｣縺・],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆'],
+      _default: ['……ありがとう'],
+      cool: ['…終わった。…いい戦いだった'],
+      polite: ['…ありがとうございました'],
     },
-    shy: { _default: ['縺ゅ√≠繧翫′縺ｨ縺・ｦ縺斐＊縺・∪縺励◆窶ｦ'] },
+    shy: { _default: ['あ、ありがとう…ございました…'] },
     easygoing: {
-      _default: ['邨ゅｏ縺｣縺溪ｦ縺ｧ繧ゅ％縺ｮ蝗邵√↓諢溯ｬ昴＠縺ｦ繧九ｈ・・],
-      delinquent: ['繧・▲縺溘●窶ｦ縺ｧ繧ゅ♀蜑阪′縺・↑縺阪ｃ縺薙％縺ｾ縺ｧ譚･繧後↑縺九▲縺・],
-      seductive: ['邨ゅｏ縺｣縺溘ｏ縺ｭ窶ｦ縺ｧ繧ゅ√％縺ｮ蝗邵√↓諢溯ｬ昴＠縺ｦ繧九・'],
+      _default: ['終わった…でもこの因縁に感謝してるよ！'],
+      delinquent: ['やったぜ…でもお前がいなきゃここまで来れなかった'],
+      seductive: ['終わったわね…でも、この因縁に感謝してるの'],
     },
     earnest: {
-      _default: ['繧医≧繧・￥豎ｺ逹縺後▽縺・◆窶ｦ譛鬮倥・逶ｸ謇九〒縺励◆', '邨ゅｏ縺｣縺溪ｦ縺ｧ繧ゅ％縺ｮ蝗邵√↓諢溯ｬ昴＠縺ｦ縺・ｋ'],
-      polite: ['豎ｺ逹縺後▽縺阪∪縺励◆窶ｦ譛鬮倥・縺顔嶌謇九〒縺励◆'],
-      ojousama: ['繧医≧繧・￥豎ｺ逹縺ｧ縺吶ｏ窶ｦ譛鬮倥・縺顔嶌謇九〒縺励◆縺ｮ'],
-      seductive: ['豎ｺ逹縺後▽縺・◆繧鞘ｦ譛鬮倥・逶ｸ謇九□縺｣縺・],
+      _default: ['ようやく決着がついた…最高の相手でした', '終わった…でもこの因縁に感謝している'],
+      polite: ['決着がつきました…最高のお相手でした'],
+      ojousama: ['ようやく決着ですわ…最高のお相手でしたの'],
+      seductive: ['決着がついたわ…最高の相手だった'],
     },
-    emotional: { _default: ['邨ゅｏ縺｣縺溪ｦ・∵怙鬮倥・窶ｦ逶ｸ謇九□縺｣縺溪ｦ・域ｶ呻ｼ・] },
+    emotional: { _default: ['終わった…！最高の…相手だった…（涙）'] },
   },
   loser: {
     normal: {
-      _default: ['雋縺代◆窶ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴≧', '謔斐＠縺・ゅ〒繧ゅ≠縺ｪ縺溘′蠑ｷ縺九▲縺溘ゅ◎繧後□縺代□'],
-      ojousama: ['雋縺代∪縺励◆繧鞘ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴＞縺ｾ縺吶・'],
-      delinquent: ['雋縺代◆窶ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴≧縺・],
-      seductive: ['雋縺代◆繧鞘ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴≧'],
+      _default: ['負けた…でもこの試合は誇りに思う', '悔しい。でもあなたが強かった。それだけだ'],
+      ojousama: ['負けましたわ…でもこの試合は誇りに思いますの'],
+      delinquent: ['負けた…でもこの試合は誇りに思うぜ'],
+      seductive: ['負けたわ…でもこの試合は誇りに思う'],
     },
     bold: {
-      _default: ['螳梧風縺縲ゅ〒繧らｧ√・縺ｾ縺邨ゅｏ繧峨↑縺・, '谺｡縺ｯ窶ｦ縺・ｄ縲∽ｻ翫・縺薙・謨怜圏繧貞女縺大・繧後ｋ'],
-      ojousama: ['螳梧風縺ｧ縺吶ｏ縲ゅ〒繧ゅ∪縺邨ゅｏ繧翫∪縺帙ｓ縺ｮ'],
-      delinquent: ['螳梧風縺窶ｦ縺ｧ繧らｵゅｏ繧翫§繧・・縺・],
-      cool: ['窶ｦ隱阪ａ繧九ゅ□縺後√∪縺邨ゅｏ繧峨↑縺・],
-      seductive: ['螳梧風縺ｭ縲ゅ〒繧ゅ√∪縺邨ゅｏ繧峨↑縺・ｏ'],
+      _default: ['完敗だ。でも私はまだ終わらない', '次は…いや、今はこの敗北を受け入れる'],
+      ojousama: ['完敗ですわ。でもまだ終わりませんの'],
+      delinquent: ['完敗だ…でも終わりじゃねえ'],
+      cool: ['…認める。だが、まだ終わらない'],
+      seductive: ['完敗ね。でも、まだ終わらないわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ・磯撕縺九↓逶ｸ謇九ｒ隕九▽繧√※縺・ｋ・・],
-      cool: ['窶ｦ蠑ｷ縺九▲縺溘りｪ阪ａ繧・],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆縲やｦ蠑ｷ縺九▲縺溘〒縺・],
+      _default: ['………（静かに相手を見つめている）'],
+      cool: ['…強かった。認める'],
+      polite: ['…ありがとうございました。…強かったです'],
     },
-    shy: { _default: ['窶ｦ雋縺代■繧・▲縺溪ｦ縺ｧ繧やｦ謔斐＞縺ｯ縺ｪ縺・√〒縺吮ｦ'] },
+    shy: { _default: ['…負けちゃった…でも…悔いはない、です…'] },
     easygoing: {
-      _default: ['縺ゅｊ縺後→縺・ゅ≠縺ｪ縺溘・縺翫°縺偵〒蠑ｷ縺上↑繧後◆'],
-      delinquent: ['繧ｵ繝ｳ繧ｭ繝･窶ｦ縺雁燕縺ｮ縺翫°縺偵〒蠑ｷ縺上↑繧後◆繧・],
-      seductive: ['縺ゅｊ縺後→縺・ゅ≠縺ｪ縺溘・縺翫°縺偵〒蠑ｷ縺上↑繧後◆繧・],
+      _default: ['ありがとう。あなたのおかげで強くなれた'],
+      delinquent: ['サンキュ…お前のおかげで強くなれたよ'],
+      seductive: ['ありがとう。あなたのおかげで強くなれたわ'],
     },
     earnest: {
-      _default: ['雋縺代◆窶ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴＞縺ｾ縺・, '縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅ≠縺ｪ縺溘・縺翫°縺偵〒蠑ｷ縺上↑繧後∪縺励◆'],
-      polite: ['雋縺代∪縺励◆窶ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｧ縺・],
-      ojousama: ['雋縺代∪縺励◆繧鞘ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴＞縺ｾ縺吶・'],
-      seductive: ['雋縺代◆繧鞘ｦ縺ｧ繧ゅ％縺ｮ隧ｦ蜷医・隱・ｊ縺ｫ諤昴≧'],
+      _default: ['負けた…でもこの試合は誇りに思います', 'ありがとうございます。あなたのおかげで強くなれました'],
+      polite: ['負けました…でもこの試合は誇りです'],
+      ojousama: ['負けましたわ…でもこの試合は誇りに思いますの'],
+      seductive: ['負けたわ…でもこの試合は誇りに思う'],
     },
-    emotional: { _default: ['謔斐＠縺・ｦ・√〒繧やｦ譛鬮倥・隧ｦ蜷医□縺｣縺溪ｦ・・] },
+    emotional: { _default: ['悔しい…！でも…最高の試合だった…！'] },
   },
   fateWinner: {
     normal: {
-      _default: ['縺薙・迚ｩ隱槭↓邨よｭ｢隨ｦ繧呈遠縺ｦ縺溪ｦ諢溽┌驥上□'],
-      ojousama: ['縺薙・迚ｩ隱槭↓邨よｭ｢隨ｦ繧呈遠縺ｦ縺ｾ縺励◆繧鞘ｦ諢溽┌驥上〒縺吶・'],
-      delinquent: ['繧・▲縺ｨ窶ｦ邨ゅｏ縺｣縺溘ｓ縺縺ｪ窶ｦ'],
-      seductive: ['縺薙・迚ｩ隱槭↓邨よｭ｢隨ｦ繧呈遠縺ｦ縺溘ｏ窶ｦ'],
+      _default: ['この物語に終止符を打てた…感無量だ'],
+      ojousama: ['この物語に終止符を打てましたわ…感無量ですの'],
+      delinquent: ['やっと…終わったんだな…'],
+      seductive: ['この物語に終止符を打てたわ…'],
     },
     bold: {
-      _default: ['髟ｷ縺九▲縺溘ゅ〒繧ゅ≠縺ｪ縺溘↑縺励〒縺ｯ霎ｿ繧顔捩縺代↑縺九▲縺・, '縺薙ｌ縺梧怙邨らｫ縲よ怙鬮倥・繧ｨ繝ｳ繝・ぅ繝ｳ繧ｰ縺'],
-      cool: ['窶ｦ邨ゅｏ縺｣縺溘やｦ譛鬮倥・迚ｩ隱槭□縺｣縺・],
+      _default: ['長かった。でもあなたなしでは辿り着けなかった', 'これが最終章。最高のエンディングだ'],
+      cool: ['…終わった。…最高の物語だった'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ窶ｦ・域ｷｱ縺乗・繧貞瑞縺阪・撕縺九↓蠕ｮ隨代・・・] },
-    shy: { _default: ['邨ゅｏ縺｣縺溪ｦ縺ｮ縺九↑窶ｦ・域ｶ吶′貅｢繧後※縺・ｋ・・] },
-    easygoing: { _default: ['繧・▲縺ｨ邨ゅｏ縺｣縺溘ｓ縺窶ｦ譛鬮倥・迚ｩ隱槭□縺｣縺溘ｈ窶ｦ・・] },
-    earnest: { _default: ['髟ｷ縺・姶縺・〒縺励◆窶ｦ縺ゅ↑縺溘↑縺励〒縺ｯ霎ｿ繧顔捩縺代↑縺九▲縺・] },
-    emotional: { _default: ['邨ゅｏ縺｣縺溪ｦ・√ｄ縺｣縺ｨ窶ｦ・√≠繧翫′縺ｨ縺・ｦ・・ｼ亥捷豕｣・・] },
+    quiet: { _default: ['………（深く息を吐き、静かに微笑む）'] },
+    shy: { _default: ['終わった…のかな…（涙が溢れている）'] },
+    easygoing: { _default: ['やっと終わったんだ…最高の物語だったよ…！'] },
+    earnest: { _default: ['長い戦いでした…あなたなしでは辿り着けなかった'] },
+    emotional: { _default: ['終わった…！やっと…！ありがとう…！（号泣）'] },
   },
   fateLoser: {
     normal: {
-      _default: ['縺ゅ↑縺溘↓縺ｯ謨ｵ繧上↑縺九▲縺溘ゅ〒繧ゅ％縺ｮ謌ｦ縺・・螳晉黄縺'],
-      ojousama: ['謨ｵ縺・∪縺帙ｓ縺ｧ縺励◆繧上ゅ〒繧ゅ％縺ｮ謌ｦ縺・・螳晉黄縺ｧ縺吶・'],
-      delinquent: ['謨ｵ繧上↑縺九▲縺溘●窶ｦ縺ｧ繧ゅ％縺ｮ謌ｦ縺・・螳晉黄縺'],
-      seductive: ['謨ｵ繧上↑縺九▲縺溘ｏ縲ゅ〒繧ゅ％縺ｮ謌ｦ縺・・螳晉黄繧・],
+      _default: ['あなたには敵わなかった。でもこの戦いは宝物だ'],
+      ojousama: ['敵いませんでしたわ。でもこの戦いは宝物ですの'],
+      delinquent: ['敵わなかったぜ…でもこの戦いは宝物だ'],
+      seductive: ['敵わなかったわ。でもこの戦いは宝物よ'],
     },
     bold: {
-      _default: ['蟷ｾ蠎ｦ縺ｨ縺ｪ縺乗姶縺｣縺溘ゅ☆縺ｹ縺ｦ縺檎ｧ√・雋｡逕｣縺', '譛蠕後∪縺ｧ窶ｦ蜈ｨ蜉帙□縺｣縺溘よｔ縺・・縺ｪ縺・],
-      cool: ['窶ｦ蜈ｨ蜉帙□縺｣縺溘よｔ縺・・縺ｪ縺・],
+      _default: ['幾度となく戦った。すべてが私の財産だ', '最後まで…全力だった。悔いはない'],
+      cool: ['…全力だった。悔いはない'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ窶ｦ縺ゅｊ縺後→縺・ｼ亥ｰ上＆縺上√〒繧ら｢ｺ縺九↓・・] },
-    shy: { _default: ['縺ゅｊ縺後→縺・ｦ縺斐＊縺・∪縺励◆窶ｦ・域ｶ吶ｒ諡ｭ縺・※縺・ｋ・・] },
-    easygoing: { _default: ['蜈ｨ驛ｨ窶ｦ蜈ｨ驛ｨ螳晉黄縺繧医ゅ≠繧翫′縺ｨ縺・] },
-    earnest: { _default: ['縺吶∋縺ｦ縺檎ｧ√・雋｡逕｣縺ｧ縺吶よｔ縺・・縺ゅｊ縺ｾ縺帙ｓ'] },
-    emotional: { _default: ['謨ｵ繧上↑縺九▲縺溪ｦ縺ｧ繧やｦ蜈ｨ驛ｨ螳晉黄縺繧遺ｦ・・ｼ域ｳ｣縺咲ｬ代＞・・] },
+    quiet: { _default: ['………ありがとう（小さく、でも確かに）'] },
+    shy: { _default: ['ありがとう…ございました…（涙を拭いている）'] },
+    easygoing: { _default: ['全部…全部宝物だよ。ありがとう'] },
+    earnest: { _default: ['すべてが私の財産です。悔いはありません'] },
+    emotional: { _default: ['敵わなかった…でも…全部宝物だよ…！（泣き笑い）'] },
   },
 };
 
-// v1.5s25: MQ螟夜Κ繝懊・繝翫せ蜷郁ｨ医・荳企剞・亥屏邵・繧ｿ繧､繝医Ν+繧ｳ繝ｼ繝・隕ｳ螳｢縺ｮ蜷郁ｨ医く繝｣繝・・・・const MQ_EXTERNAL_CAP = 15;
+// v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
+const MQ_EXTERNAL_CAP = 15;
 
-// 螂ｽ謨ｵ謇具ｼ域ｱｺ逹2蝗槫ｮ御ｺ・ｾ後・豌ｸ邯壹せ繝・・繧ｿ繧ｹ・・const GOODRIVAL_MQ_BONUS = 2;
-const GOODRIVAL_LABEL = '螂ｽ謨ｵ謇・;
-const GOODRIVAL_EMOJI = '､・;
+// 好敵手（決着2回完了後の永続ステータス）
+const GOODRIVAL_MQ_BONUS = 2;
+const GOODRIVAL_LABEL = '好敵手';
+const GOODRIVAL_EMOJI = '🤝';
 const GOODRIVAL_COLOR = '#74b9ff';
 
-// 繧ｫ繝ｼ繝蛾ｮｮ蠎ｦ繧ｷ繧ｹ繝・Β
+// カード鮮度システム
 const FRESHNESS_CONFIG = {
-  windowShows: 12,        // 逶ｴ霑・2闊郁｡後ｒ蟇ｾ雎｡
-  firstMeetBonus: 2,      // 蛻晞｡泌粋繧上○繝懊・繝翫せ
+  windowShows: 12,        // 直近12興行を対象
+  firstMeetBonus: 2,      // 初顔合わせボーナス
   penalties: [
-    { minCount: 3, mqPenalty: -3 },   // 繝槭Φ繝阪Μ
-    { minCount: 4, mqPenalty: -5 },   // 豺ｱ蛻ｻ縺ｪ繝槭Φ繝阪Μ
-    { minCount: 5, mqPenalty: -8 },   // 螳悟・縺ｪ繝槭Φ繝阪Μ
+    { minCount: 3, mqPenalty: -3 },   // マンネリ
+    { minCount: 4, mqPenalty: -5 },   // 深刻なマンネリ
+    { minCount: 5, mqPenalty: -8 },   // 完全なマンネリ
   ],
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4B: COACH DATA (v2.0 redesign)                  笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4B: COACH DATA (v2.0 redesign)                  ║
+// ╚══════════════════════════════════════════════════════════╝
 
-// 謖・ｰ主鴨繝ｩ繝ｳ繧ｯ蛻･謌宣聞蛟咲紫 肌
+// 指導力ランク別成長倍率 🔧
 const COACH_RANKS = { E:1.05, D:1.08, C:1.12, B:1.18, A:1.25 };
 
-// 蠕玲э繧ｹ繧ｿ繧､繝ｫ陦ｨ遉ｺ蜷搾ｼ磯∈謇九せ繧ｿ繧､繝ｫ縺ｨ邨ｱ荳・・const COACH_STYLE_MAP = {
-  Grappler:'繧ｰ繝ｩ繝・・繝ｩ繝ｼ', Striker:'繧ｹ繝医Λ繧､繧ｫ繝ｼ', Speed:'繧ｹ繝斐・繝・,
-  Submission:'繧ｵ繝悶Α繝・す繝ｧ繝ｳ', Brawler:'繝悶Ο繝ｼ繝ｩ繝ｼ', Allround:'繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝・
+// 得意スタイル表示名（選手スタイルと統一）
+const COACH_STYLE_MAP = {
+  Grappler:'グラップラー', Striker:'ストライカー', Speed:'スピード',
+  Submission:'サブミッション', Brawler:'ブローラー', Allround:'オールラウンド'
 };
 
-// 繧ｹ繧ｿ繧､繝ｫ繝槭ャ繝√・繝ｼ繝翫せ・亥ｰる摩荳閾ｴ+0.08 / 繧ｪ繝ｼ繝ｫ繝ｩ繧ｦ繝ｳ繝我ｸ・・+0.05・・const COACH_STYLE_BONUS = { specialist: 0.08, allround: 0.05 };
+// スタイルマッチボーナス（専門一致+0.08 / オールラウンド万能+0.05）
+const COACH_STYLE_BONUS = { specialist: 0.08, allround: 0.05 };
 
-// 繧ｳ繝ｼ繝∵棧・・rgPop騾｣蜍包ｼ・const COACH_SLOT_THRESHOLDS = [
+// コーチ枠（orgPop連動）
+const COACH_SLOT_THRESHOLDS = [
   { slots:1, minOrgPop:0 },
   { slots:2, minOrgPop:25 },
   { slots:3, minOrgPop:50 }
 ];
 
-// 繧ｷ繝ｼ繧ｺ繝ｳ繝励・繝ｫ險ｭ螳・const COACH_POOL_CFG = { candidatesMin:5, candidatesMax:8 };
+// シーズンプール設定
+const COACH_POOL_CFG = { candidatesMin:5, candidatesMax:8 };
 
-// 繧ｳ繝ｼ繝∫音諤ｧ螳夂ｾｩ 肌
+// コーチ特性定義 🔧
 const COACH_TRAIT_DEFS = {
-  '譁ｰ莠ｺ閧ｲ謌・:       { desc:'OVR60莉･荳九・驕ｸ謇九・謌宣聞騾溷ｺｦ ﾃ・.15', growthMult:1.15, ovrThreshold:60 },       // 肌
-  '繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ':   { desc:'OVR80莉･荳翫・驕ｸ謇九・陦ｰ縺磯㍼ -1/蝗・,   decayReduction:1, ovrThreshold:80 },       // 肌
-  '繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ': { desc:'諡・ｽ馴∈謇九・諤ｪ謌醍｢ｺ邇・ﾃ・.8縲・ｱ谺｡繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ豸郁・-2', injuryMult:0.8, condDrain:-2 }, // 肌
-  '螳滓姶荳ｻ鄒ｩ':       { desc:'隧ｦ蜷亥・蝣ｴ譎ゅ・謌宣聞繝懊・繝翫せ +0.3',    matchGrowthBonus:0.3 },                    // 肌
-  '蠑輔″蜃ｺ縺嶺ｸ頑焔':   { desc:'諡・ｽ馴∈謇九・隧ｦ蜷・Q +2',              mqBonus:2 },                               // 肌
-  '莠ｺ閼域戟縺｡':       { desc:'繧ｹ繧ｫ繧ｦ繝亥呵｣懊↓霑ｽ蜉+1莠ｺ',           scoutBonus:1 }                             // 肌
+  '新人育成':       { desc:'OVR60以下の選手の成長速度 ×1.15', growthMult:1.15, ovrThreshold:60 },       // 🔧
+  'ベテラン調整':   { desc:'OVR80以上の選手の衰え量 -1/回',   decayReduction:1, ovrThreshold:80 },       // 🔧
+  'コンディショニング': { desc:'担当選手の怪我確率 ×0.8、週次コンディション消耗 -2', injuryMult:0.8, condDrain:-2 }, // 🔧
+  '実戦主義':       { desc:'試合出場時の成長ボーナス +0.3',    matchGrowthBonus:0.3 },                    // 🔧
+  '引き出し上手':   { desc:'担当選手の試合MQ +2',              mqBonus:2 },                               // 🔧
+  '人脈持ち':       { desc:'スカウト候補に追加+1人',           scoutBonus:1 }                             // 🔧
 };
 
-// 繝輔か繝ｼ繝槭ャ繝・ {id, name, emoji, hasPortrait, grade, teaching, observation, style, trait,
-//               salary(荳・騾ｱ), hireFee(荳・, minOrgPop, desc, [age, gender, origin, profile]}
+// フォーマット: {id, name, emoji, hasPortrait, grade, teaching, observation, style, trait,
+//               salary(万/週), hireFee(万), minOrgPop, desc, [age, gender, origin, profile]}
 const ALL_COACHES = [
-  // 笏笏 譌｢蟄・莠ｺ・・asPortrait: true・峨Μ繝・じ繧､繝ｳ 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-  {id:1, name:'鬯ｼ蝪・蜑帛ｿ・,          emoji:'潮', hasPortrait:true,
-   grade:'B', teaching:'B', observation:'D', style:'Grappler', trait:'譁ｰ莠ｺ閧ｲ謌・,
+  // ── 既存8人（hasPortrait: true）リデザイン ──────────────────────────────
+  {id:1, name:'鬼塚 剛志',          emoji:'💪', hasPortrait:true,
+   grade:'B', teaching:'B', observation:'D', style:'Grappler', trait:'新人育成',
    salary:25, hireFee:200, minOrgPop:30,
-   age:58, gender:'逕ｷ', origin:'蛹玲ｵｷ驕・,
-   desc:'繝代Ρ繝ｼ閧ｲ謌舌・鬯ｼ縲り凶謇矩∈謇九ｒ蜉帛ｼｷ縺城惚縺井ｸ翫￡繧九・,
-   profile:'蜈・沐驕灘・譌･譛ｬ莉｣陦ｨ縲ょｼ暮蠕後・迢ｬ閾ｪ縺ｮ繝代Ρ繝ｼ繝医Ξ繝ｼ繝九Φ繧ｰ逅・ｫ悶ｒ遒ｺ遶九＠縲∝､壹￥縺ｮ譬ｼ髣伜ｮｶ繧定ご縺ｦ荳翫￡縺溘ゅ悟鴨縺ｪ縺肴橿縺ｯ辟｡蜉帙阪′蜿｣逋悶ょ宍縺励＞縺後∝ｼ溷ｭ先Φ縺・・辭ｱ陦謖・ｰ手・・},
-  {id:2, name:'鬟幃ｳ･ 逵溽清',          emoji:'暢', hasPortrait:true,
-   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:58, gender:'男', origin:'北海道',
+   desc:'パワー育成の鬼。若手選手を力強く鍛え上げる。',
+   profile:'元柔道全日本代表。引退後は独自のパワートレーニング理論を確立し、多くの格闘家を育て上げた。「力なき技は無力」が口癖。厳しいが、弟子想いの熱血指導者。'},
+  {id:2, name:'飛鳥 真琴',          emoji:'💨', hasPortrait:true,
+   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'実戦主義',
    salary:22, hireFee:180, minOrgPop:30,
-   age:34, gender:'螂ｳ', origin:'螟ｧ髦ｪ',
-   desc:'繧ｹ繝斐・繝牙ｼｷ蛹悶・蟆る摩螳ｶ縲りｩｦ蜷医〒菴ｿ縺医ｋ繧ｹ繝斐・繝峨ｒ蠕ｹ蠎慕噪縺ｫ蜿ｩ縺崎ｾｼ繧縲・,
-   profile:'蜈・匣荳顔洒霍晞屬驕ｸ謇九〒縲・00m襍ｰ縺ｮ蜈・ず繝･繝九い譌･譛ｬ險倬鹸菫晄戟閠・ゅせ繝昴・繝・ｧ大ｭｦ繧貞ｰよ判縺励∝渚蠢憺溷ｺｦ縺ｨ迸ｬ逋ｺ蜉帙・譛驕ｩ蛹悶↓迚ｹ蛹悶＠縺溽峡閾ｪ繝｡繧ｽ繝・ラ繧呈戟縺､縲よ・繧九￥蜑榊髄縺阪↑諤ｧ譬ｼ縺ｧ驕ｸ謇九°繧峨・菫｡鬆ｼ縺悟字縺・・},
-  {id:3, name:'鮓ｴ隕・豁｣蝸｣',          emoji:'識', hasPortrait:true,
-   grade:'B', teaching:'C', observation:'B', style:'Striker', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:34, gender:'女', origin:'大阪',
+   desc:'スピード強化の専門家。試合で使えるスピードを徹底的に叩き込む。',
+   profile:'元陸上短距離選手で、100m走の元ジュニア日本記録保持者。スポーツ科学を専攻し、反応速度と瞬発力の最適化に特化した独自メソッドを持つ。明るく前向きな性格で選手からの信頼が厚い。'},
+  {id:3, name:'鶴見 正嗣',          emoji:'🎯', hasPortrait:true,
+   grade:'B', teaching:'C', observation:'B', style:'Striker', trait:'引き出し上手',
    salary:20, hireFee:160, minOrgPop:30,
-   age:62, gender:'逕ｷ', origin:'莠ｬ驛ｽ',
-   desc:'繝・け繝九ャ繧ｯ縺ｮ蛹縲る∈謇九・貎懷惠閭ｽ蜉帙ｒ蠑輔″蜃ｺ縺呵ｦｳ蟇溽愍縺碁強縺・・,
-   profile:'莨晉ｵｱ豢ｾ遨ｺ謇九・蜈ｫ谿ｵ蟶ｫ遽・〒縲∵橿縺ｮ邊ｾ蠎ｦ縺ｨ鄒弱＠縺輔ｒ讌ｵ髯舌∪縺ｧ霑ｽ豎ゅ☆繧玖・莠ｺ豌苓ｳｪ縲ょｯ｡鮟吶□縺後∽ｸ險荳險縺ｫ蜷ｫ闢・′縺ゅｋ縲ゅ梧橿縺ｯ蜊・屓縺ｮ蜿榊ｾｩ縺九ｉ逕溘∪繧後ｋ縲阪→郢ｰ繧願ｿ斐＠謨吶∴縺ｦ縺・ｋ縲・},
-  {id:4, name:'蟯ｩ逕ｰ 諡捺ｵｷ',          emoji:'純', hasPortrait:true,
-   grade:'C', teaching:'C', observation:'D', style:'Brawler', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+   age:62, gender:'男', origin:'京都',
+   desc:'テクニックの匠。選手の潜在能力を引き出す観察眼が鋭い。',
+   profile:'伝統派空手の八段師範で、技の精度と美しさを極限まで追求する職人気質。寡黙だが、一言一言に含蓄がある。「技は千回の反復から生まれる」と繰り返し教えている。'},
+  {id:4, name:'岩田 拓海',          emoji:'🏃', hasPortrait:true,
+   grade:'C', teaching:'C', observation:'D', style:'Brawler', trait:'コンディショニング',
    salary:10, hireFee:60, minOrgPop:0,
-   age:41, gender:'逕ｷ', origin:'髟ｷ驥・,
-   desc:'繧ｹ繧ｿ繝溘リ縺ｨ繝輔ぅ繧ｸ繧ｫ繝ｫ蠑ｷ蛹悶・繝励Ο縲ゅさ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ邂｡逅・↓繧ょｮ夊ｩ輔′縺ゅｋ縲・,
-   profile:'蜈・ヨ繝ｩ繧､繧｢繧ｹ繝ｭ繝ｳ驕ｸ謇九るｫ伜慍繝医Ξ繝ｼ繝九Φ繧ｰ繧・ｿ・ぜ讖溯・縺ｮ蠑ｷ蛹悶・繝ｭ繧ｰ繝ｩ繝縺ｫ邊ｾ騾壹らｧ大ｭｦ逧・い繝励Ο繝ｼ繝√〒驕ｸ謇九・謖∽ｹ・鴨繧呈怙螟ｧ髯舌∪縺ｧ蠑輔″蜃ｺ縺吶よｸｩ蜴壹〒險育判逧・↑諤ｧ譬ｼ縲・},
-  {id:5, name:'豐｢譚・邇ｲ蟄・,          emoji:'ｧ', hasPortrait:true,
-   grade:'C', teaching:'D', observation:'C', style:'Allround', trait:'繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ',
+   age:41, gender:'男', origin:'長野',
+   desc:'スタミナとフィジカル強化のプロ。コンディション管理にも定評がある。',
+   profile:'元トライアスロン選手。高地トレーニングや心肺機能の強化プログラムに精通。科学的アプローチで選手の持久力を最大限まで引き出す。温厚で計画的な性格。'},
+  {id:5, name:'沢村 玲子',          emoji:'🧠', hasPortrait:true,
+   grade:'C', teaching:'D', observation:'C', style:'Allround', trait:'ベテラン調整',
    salary:8, hireFee:50, minOrgPop:0,
-   age:45, gender:'螂ｳ', origin:'譚ｱ莠ｬ',
-   desc:'繝｡繝ｳ繧ｿ繝ｫ蠑ｷ蛹悶・蟆る摩螳ｶ縲ゅ・繝・Λ繝ｳ驕ｸ謇九・髟ｷ譛溷ｮ牙ｮ夂ｨｼ蜒阪ｒ謾ｯ縺医ｋ縲・,
-   profile:'閾ｨ蠎雁ｿ・炊螢ｫ縺ｮ雉・ｼ繧呈戟縺､繧ｹ繝昴・繝・ｿ・炊蟄ｦ閠・りｩｦ蜷亥燕縺ｮ繝励Ξ繝・す繝｣繝ｼ邂｡逅・・寔荳ｭ蜉帷ｶｭ謖√√Δ繝√・繝ｼ繧ｷ繝ｧ繝ｳ邂｡逅・ｒ蠕玲э縺ｨ縺吶ｋ縲らｩ上ｄ縺九↑迚ｩ閻ｰ縺縺後∵ｸ蠢・ｒ遯√￥豢槫ｯ溷鴨繧呈戟縺､縲・},
-  {id:6, name:'譛晄律 鄒ｩ逕ｷ',          emoji:'箝・, hasPortrait:true,
-   grade:'C', teaching:'C', observation:'C', style:'Allround', trait:'譁ｰ莠ｺ閧ｲ謌・,
+   age:45, gender:'女', origin:'東京',
+   desc:'メンタル強化の専門家。ベテラン選手の長期安定稼働を支える。',
+   profile:'臨床心理士の資格を持つスポーツ心理学者。試合前のプレッシャー管理、集中力維持、モチベーション管理を得意とする。穏やかな物腰だが、核心を突く洞察力を持つ。'},
+  {id:6, name:'朝日 義男',          emoji:'⭐', hasPortrait:true,
+   grade:'C', teaching:'C', observation:'C', style:'Allround', trait:'新人育成',
    salary:9, hireFee:55, minOrgPop:0,
-   age:52, gender:'逕ｷ', origin:'遖丞ｲ｡',
-   desc:'荳・・蝙九・謖・ｰ手・り凶謇九・邱丞粋蜉帛ｺ穂ｸ翫￡縺悟ｾ玲э縲・,
-   profile:'蜈・・繝ｭ繝ｬ繧ｹ繝ｩ繝ｼ縺ｧ縲∫樟蠖ｹ譎ゆｻ｣縺ｯ縲悟勣逕ｨ雋ｧ荵上阪→蜻ｼ縺ｰ繧後↑縺後ｉ繧・5蟷ｴ縺ｮ繧ｭ繝｣繝ｪ繧｢繧貞・縺・＠縺溯協蜉ｴ莠ｺ縲ょ・縺ｦ縺ｮ繝昴ず繧ｷ繝ｧ繝ｳ繧堤ｵ碁ｨ薙＠縺溯ｱ雁ｯ後↑遏･隴倥〒縲∬凶謇九・邱丞粋蜉帛ｺ穂ｸ翫￡繧貞ｾ玲э縺ｨ縺吶ｋ縲る擇蛟定ｦ九′濶ｯ縺・・},
-  {id:7, name:'邏・棊 螟ｪ荳',          emoji:'汐', hasPortrait:true,
-   grade:'C', teaching:'D', observation:'B', style:'Allround', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:52, gender:'男', origin:'福岡',
+   desc:'万能型の指導者。若手の総合力底上げが得意。',
+   profile:'元プロレスラーで、現役時代は「器用貧乏」と呼ばれながらも15年のキャリアを全うした苦労人。全てのポジションを経験した豊富な知識で、若手の総合力底上げを得意とする。面倒見が良い。'},
+  {id:7, name:'紅林 太一',          emoji:'🎬', hasPortrait:true,
+   grade:'C', teaching:'D', observation:'B', style:'Allround', trait:'引き出し上手',
    salary:10, hireFee:70, minOrgPop:0,
-   age:48, gender:'逕ｷ', origin:'蜷榊商螻・,
-   desc:'隧ｦ蜷域ｧ区・縺ｮ驕比ｺｺ縲よ球蠖馴∈謇九・隧ｦ蜷・Q繧貞ｼ輔″荳翫￡繧九・,
-   profile:'蜈・・繝ｭ繝ｬ繧ｹ螳滓ｳ√い繝翫え繝ｳ繧ｵ繝ｼ縺ｧ隧ｦ蜷域ｧ区・繧堤・遏･縺吶ｋ繧ｻ繧ｳ繝ｳ繝峨・繝ｳ縲ゅΜ繝ｳ繧ｰ螟悶°繧峨梧ｬ｡縺ｮ螻暮幕縲阪ｒ逧・｢ｺ縺ｫ謖・､ｺ縺励∬ｩｦ蜷医・繝峨Λ繝樊ｧ繧貞ｼ輔″荳翫￡繧九りｩｱ陦薙↓髟ｷ縺代∫､ｾ莠､逧・↑諤ｧ譬ｼ縲・},
-  {id:8, name:'逋ｽ蟾・豐呵ｶ',          emoji:'謄', hasPortrait:true,
-   grade:'C', teaching:'E', observation:'D', style:'Allround', trait:'莠ｺ閼域戟縺｡',
+   age:48, gender:'男', origin:'名古屋',
+   desc:'試合構成の達人。担当選手の試合MQを引き上げる。',
+   profile:'元プロレス実況アナウンサーで試合構成を熟知するセコンドマン。リング外から「次の展開」を的確に指示し、試合のドラマ性を引き上げる。話術に長け、社交的な性格。'},
+  {id:8, name:'白川 沙耶',          emoji:'📣', hasPortrait:true,
+   grade:'C', teaching:'E', observation:'D', style:'Allround', trait:'人脈持ち',
    salary:6, hireFee:40, minOrgPop:0,
-   age:29, gender:'螂ｳ', origin:'讓ｪ豬・,
-   desc:'讌ｭ逡御ｺｺ閼医′雎雁ｯ後ゅせ繧ｫ繧ｦ繝亥呵｣懊↓霑ｽ蜉驕ｸ謇九ｒ蠑輔″霎ｼ繧縲・,
-   profile:'蜈・敢閭ｽ莠句漁謇繝槭ロ繝ｼ繧ｸ繝｣繝ｼ縺ｧ縲ヾNS繝槭・繧ｱ繝・ぅ繝ｳ繧ｰ縺ｨ繝｡繝・ぅ繧｢髴ｲ蜃ｺ謌ｦ逡･縺ｮ繝励Ο縲る∈謇九・鬲・鴨繧貞ｼ輔″蜃ｺ縺吶ヶ繝ｩ繝ｳ繝・ぅ繝ｳ繧ｰ縺悟ｾ玲э縲り｡悟虚蜉帙′縺ゅｊ縲∝ｸｸ縺ｫ譁ｰ縺励＞繝励Ο繝｢繝ｼ繧ｷ繝ｧ繝ｳ莨∫判繧呈署譯医☆繧九・},
+   age:29, gender:'女', origin:'横浜',
+   desc:'業界人脈が豊富。スカウト候補に追加選手を引き込む。',
+   profile:'元芸能事務所マネージャーで、SNSマーケティングとメディア露出戦略のプロ。選手の魅力を引き出すブランディングが得意。行動力があり、常に新しいプロモーション企画を提案する。'},
 
-  // 笏笏 譁ｰ隕修繧ｰ繝ｬ繝ｼ繝会ｼ・2莠ｺ・俄楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-  {id:9, name:'螟ｧ譽ｮ 蛛･蜷ｾ',        emoji:'･・, hasPortrait:false,
-   grade:'C', teaching:'D', observation:'E', style:'Brawler', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+  // ── 新規Cグレード（12人）────────────────────────────────────────────────
+  {id:9, name:'大森 健吾',        emoji:'🥊', hasPortrait:false,
+   grade:'C', teaching:'D', observation:'E', style:'Brawler', trait:'コンディショニング',
    salary:6, hireFee:35, minOrgPop:0,
-   age:32, gender:'逕ｷ', origin:'蝓ｼ邇・,
-   desc:'蜈・・繝・ぅ繝薙Ν繝繝ｼ縺ｮ繝医Ξ繝ｼ繝翫・縲ょ慍驕薙↓繝輔ぅ繧ｸ繧ｫ繝ｫ縺ｮ蝨溷床繧剃ｽ懊ｋ縲・,
-   profile:'蜈・い繝槭メ繝･繧｢繝懊ョ繧｣繝薙Ν蜈･雉櫁・らｭ玖ｉ縺･縺上ｊ縺ｮ遏･隴倥・遒ｺ縺九□縺後√・繝ｭ繝ｬ繧ｹ謖・ｰ弱・邨碁ｨ薙・縺ｾ縺豬・＞縲ょ慍驕薙↑繝輔ぅ繧ｸ繧ｫ繝ｫ繝医Ξ繝ｼ繝九Φ繧ｰ縺ｧ驕ｸ謇九・蝨溷床繧偵さ繝・さ繝・ｽ懊ｊ荳翫￡繧九ょ哨荳区焔縺縺後・ｻ吶・→莉倥″蜷医▲縺ｦ縺上ｌ繧倶ｿ｡鬆ｼ諢溘′縺ゅｋ縲・},
-  {id:10, name:'螳ｮ譛ｬ 闃ｱ闖・,   emoji:'験', hasPortrait:false,
-   grade:'C', teaching:'E', observation:'D', style:'Speed', trait:'譁ｰ莠ｺ閧ｲ謌・,
+   age:32, gender:'男', origin:'埼玉',
+   desc:'元ボディビルダーのトレーナー。地道にフィジカルの土台を作る。',
+   profile:'元アマチュアボディビル入賞者。筋肉づくりの知識は確かだが、プロレス指導の経験はまだ浅い。地道なフィジカルトレーニングで選手の土台をコツコツ作り上げる。口下手だが、黙々と付き合ってくれる信頼感がある。'},
+  {id:10, name:'宮本 花菜',   emoji:'🌱', hasPortrait:false,
+   grade:'C', teaching:'E', observation:'D', style:'Speed', trait:'新人育成',
    salary:5, hireFee:30, minOrgPop:0,
-   age:26, gender:'螂ｳ', origin:'逾槫･亥ｷ・,
-   desc:'蜈・ｽ捺桃驕ｸ謇九・闍･謇九さ繝ｼ繝√よ眠莠ｺ縺ｮ邏雉ｪ繧定ｦ区栢縺冗峩諢溘′驪ｭ縺・・,
-   profile:'菴捺桃遶ｶ謚縺ｧ蝓ｹ縺｣縺溯ｺｫ菴楢・蜉帙→遨ｺ髢楢ｪ崎ｭ伜鴨繧呈戟縺､闍･縺阪さ繝ｼ繝√よ眠莠ｺ縺ｮ邏雉ｪ繧定ｦ区栢縺冗峩諢溘↓蜆ｪ繧後∬穀蜑翫ｊ縺ｪ蜴溽浹繧定ｦ九▽縺大・縺吶・縺悟ｾ玲э縲よ欠蟆守ｵ碁ｨ薙・縺ｾ縺豬・＞縺後・∈謇九→蜷後§逶ｮ邱壹〒謌宣聞繧貞ｾ梧款縺励☆繧句ｧｿ蜍｢縺梧戟縺｡蜻ｳ縲・},
-  {id:11, name:'逵溷｣・鮴榊､ｪ',     emoji:'､ｼ', hasPortrait:false,
-   grade:'C', teaching:'C', observation:'D', style:'Submission', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:26, gender:'女', origin:'神奈川',
+   desc:'元体操選手の若手コーチ。新人の素質を見抜く直感が鋭い。',
+   profile:'体操競技で培った身体能力と空間認識力を持つ若きコーチ。新人の素質を見抜く直感に優れ、荒削りな原石を見つけ出すのが得意。指導経験はまだ浅いが、選手と同じ目線で成長を後押しする姿勢が持ち味。'},
+  {id:11, name:'真壁 龍太',     emoji:'🤼', hasPortrait:false,
+   grade:'C', teaching:'C', observation:'D', style:'Submission', trait:'実戦主義',
    salary:9, hireFee:55, minOrgPop:0,
-   age:37, gender:'逕ｷ', origin:'豐也ｸ・,
-   desc:'蜈ギMA驕ｸ謇九ょｮ滓姶縺ｧ菴ｿ縺医ｋ繝・け繝九ャ繧ｯ縺縺代ｒ蜿ｩ縺崎ｾｼ繧縲・,
-   profile:'MMA縺ｮ螳滓姶邨碁ｨ薙°繧蛾未遽謚繧・げ繝ｩ繧ｦ繝ｳ繝峨ユ繧ｯ繝九ャ繧ｯ縺ｫ邊ｾ騾壹ゅ瑚ｩｦ蜷医〒菴ｿ縺医↑縺・橿陦薙・謨吶∴縺ｪ縺・阪′繝｢繝・ヨ繝ｼ縺ｮ螳滓姶豢ｾ縲よ─諠・ｒ陦ｨ縺ｫ蜃ｺ縺輔↑縺・け繝ｼ繝ｫ縺ｪ謖・ｰ弱せ繧ｿ繧､繝ｫ縺縺後∬ｩｦ蜷亥燕縺ｮ繧｢繝峨ヰ繧､繧ｹ縺ｯ逧・｢ｺ縺ｧ鬆ｼ繧翫↓縺ｪ繧九・},
-  {id:12, name:'髟ｷ隹ｷ蟾・鄒主調', emoji:'ｩｺ', hasPortrait:false,
-   grade:'C', teaching:'D', observation:'C', style:'Brawler', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+   age:37, gender:'男', origin:'沖縄',
+   desc:'元MMA選手。実戦で使えるテクニックだけを叩き込む。',
+   profile:'MMAの実戦経験から関節技やグラウンドテクニックに精通。「試合で使えない技術は教えない」がモットーの実戦派。感情を表に出さないクールな指導スタイルだが、試合前のアドバイスは的確で頼りになる。'},
+  {id:12, name:'長谷川 美咲', emoji:'🩺', hasPortrait:false,
+   grade:'C', teaching:'D', observation:'C', style:'Brawler', trait:'コンディショニング',
    salary:7, hireFee:45, minOrgPop:0,
-   age:33, gender:'螂ｳ', origin:'髱吝ｲ｡',
-   desc:'逅・ｭｦ逋よｳ募｣ｫ縲る∈謇九・謨・囿莠磯亟縺ｨ繝ｪ繧ｫ繝舌Μ繝ｼ縺ｫ迚ｹ蛹悶・,
-   profile:'繧ｹ繝昴・繝・Μ繝上ン繝ｪ縺ｮ蟆る摩螳ｶ縺ｨ縺励※縲・∈謇九・謨・囿莠磯亟縺ｨ蝗槫ｾｩ繧呈髪縺医ｋ縲よｴｾ謇九＆縺ｯ縺ｪ縺・′縲√さ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ邂｡逅・↓縺翫＞縺ｦ蝣・ｮ溘↑莉穂ｺ九ｒ縺吶ｋ縲ゅ悟｣翫ｌ縺ｦ縺九ｉ縺ｧ縺ｯ驕・＞縲阪′蜿｣逋悶〒縲∵律縲・・菴楢ｪｿ繝√ぉ繝・け繧呈ｬ縺九＆縺ｪ縺・・},
-  {id:13, name:'鮟堤伐 菫ｮ蟷ｳ',       emoji:'発', hasPortrait:false,
-   grade:'C', teaching:'E', observation:'C', style:'Striker', trait:'莠ｺ閼域戟縺｡',
+   age:33, gender:'女', origin:'静岡',
+   desc:'理学療法士。選手の故障予防とリカバリーに特化。',
+   profile:'スポーツリハビリの専門家として、選手の故障予防と回復を支える。派手さはないが、コンディション管理において堅実な仕事をする。「壊れてからでは遅い」が口癖で、日々の体調チェックを欠かさない。'},
+  {id:13, name:'黒田 修平',       emoji:'🔭', hasPortrait:false,
+   grade:'C', teaching:'E', observation:'C', style:'Striker', trait:'人脈持ち',
    salary:7, hireFee:40, minOrgPop:0,
-   age:44, gender:'逕ｷ', origin:'蠎・ｳｶ',
-   desc:'蜈・せ繝昴・繝・ｴ呵ｨ倩・よ･ｭ逡悟・菴薙↓蠑ｵ繧雁ｷ｡繧峨＆繧後◆諠・ｱ邯ｲ繧呈戟縺､縲・,
-   profile:'髟ｷ蟷ｴ縺ｮ蜿匁攝豢ｻ蜍輔〒遽峨＞縺滉ｺｺ閼医・讌ｭ逡碁囂荳縲ゅ≠繧峨ｆ繧句屮菴薙・蜀・ュ繧・怏譛幃∈謇九・諠・ｱ縺碁寔縺ｾ縺｣縺ｦ縺上ｋ縲ゅさ繝ｼ繝√→縺励※縺ｮ謖・ｰ主鴨縺ｯ縺ｾ縺縺ｾ縺縺縺後√せ繧ｫ繧ｦ繝域ュ蝣ｱ縺ｮ雉ｪ縺ｨ騾溘＆縺ｧ縺ｯ蜿ｳ縺ｫ蜃ｺ繧玖・′縺・↑縺・ゅ♀縺励ｃ縺ｹ繧雁･ｽ縺阪〒蝗｣菴薙・繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ縲・},
-  {id:14, name:'蝨溷ｱ・蠑倡ｾ・,   emoji:'暑・・, hasPortrait:false,
-   grade:'C', teaching:'C', observation:'D', style:'Grappler', trait:'繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ',
+   age:44, gender:'男', origin:'広島',
+   desc:'元スポーツ紙記者。業界全体に張り巡らされた情報網を持つ。',
+   profile:'長年の取材活動で築いた人脈は業界随一。あらゆる団体の内情や有望選手の情報が集まってくる。コーチとしての指導力はまだまだだが、スカウト情報の質と速さでは右に出る者がいない。おしゃべり好きで団体のムードメーカー。'},
+  {id:14, name:'土屋 弘美',   emoji:'🏋️', hasPortrait:false,
+   grade:'C', teaching:'C', observation:'D', style:'Grappler', trait:'ベテラン調整',
    salary:9, hireFee:58, minOrgPop:0,
-   age:50, gender:'螂ｳ', origin:'譁ｰ貎・,
-   desc:'蜈・え繧ｨ繧､繝医Μ繝輔ユ繧｣繝ｳ繧ｰ驕ｸ謇九ゅ・繝・Λ繝ｳ縺ｮ繝代Ρ繝ｼ邯ｭ謖√↓髟ｷ縺代◆蟋牙ｾ｡閧後・,
-   profile:'繝代Ρ繝ｼ邉ｻ繝医Ξ繝ｼ繝九Φ繧ｰ縺ｮ遏･隴倥→荳ｭ鬮伜ｹｴ縺ｮ菴謎ｽ懊ｊ縺ｮ邨碁ｨ薙ｒ菴ｵ縺帶戟縺､繝吶ユ繝ｩ繝ｳ繧ｳ繝ｼ繝√ょｹｴ鮨｢繧帝㍾縺ｭ縺滄∈謇九・霄ｫ菴薙ｒ逅・ｧ｣縺励∫┌逅・・縺ｪ縺・婿豕輔〒繝代Ρ繝ｼ繧堤ｶｭ謖√＆縺帙ｋ縺薙→縺ｫ髟ｷ縺代※縺・ｋ縲ゅ後≠繧薙◆縺ｯ縺ｾ縺縺ｾ縺繧・ｌ繧九阪→驕ｸ謇九ｒ鮠楢・縺吶ｋ鬆ｼ繧後ｋ蟋牙ｾ｡縲・},
-  {id:15, name:'譫・諡捺ｵｷ',     emoji:'ｦ・, hasPortrait:false,
-   grade:'C', teaching:'D', observation:'D', style:'Striker', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:50, gender:'女', origin:'新潟',
+   desc:'元ウエイトリフティング選手。ベテランのパワー維持に長けた姉御肌。',
+   profile:'パワー系トレーニングの知識と中高年の体作りの経験を併せ持つベテランコーチ。年齢を重ねた選手の身体を理解し、無理のない方法でパワーを維持させることに長けている。「あんたはまだまだやれる」と選手を鼓舞する頼れる姉御。'},
+  {id:15, name:'林 拓海',     emoji:'🦅', hasPortrait:false,
+   grade:'C', teaching:'D', observation:'D', style:'Striker', trait:'実戦主義',
    salary:6, hireFee:38, minOrgPop:0,
-   age:30, gender:'逕ｷ', origin:'蜈ｵ蠎ｫ',
-   desc:'蜈・く繝・け繝懊け繧ｵ繝ｼ縲ょｮ滓姶蠖｢蠑上〒繧ｹ繝斐・繝峨→蜿榊ｰ・･樒ｵ後ｒ骰帙∴繧九・,
-   profile:'繧ｭ繝・け繝懊け繧ｷ繝ｳ繧ｰ縺ｧ逎ｨ縺・◆繝輔ャ繝医Ρ繝ｼ繧ｯ縺ｨ蜿榊ｰ・･樒ｵ後ｒ豁ｦ蝎ｨ縺ｫ縺吶ｋ繧ｹ繝斐・繝臥ｳｻ繧ｳ繝ｼ繝√ゅ瑚・∴繧句燕縺ｫ蜍輔￠縲阪′繝｢繝・ヨ繝ｼ縺ｧ縲∝ｮ滓姶蠖｢蠑上・邱ｴ鄙偵ｒ螂ｽ繧縲ゅｄ繧・ｧ諤･縺ｪ縺ｨ縺薙ｍ縺ｯ縺ゅｋ縺後・∈謇九→荳邱偵↓豎励ｒ豬√☆諠・・逧・↑謖・ｰ弱〒諷輔ｏ繧後※縺・ｋ縲・},
-  {id:16, name:'譽ｮ逕ｰ 謔蟄・, emoji:'抽', hasPortrait:false,
-   grade:'C', teaching:'E', observation:'E', style:'Submission', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+   age:30, gender:'男', origin:'兵庫',
+   desc:'元キックボクサー。実戦形式でスピードと反射神経を鍛える。',
+   profile:'キックボクシングで磨いたフットワークと反射神経を武器にするスピード系コーチ。「考える前に動け」がモットーで、実戦形式の練習を好む。やや性急なところはあるが、選手と一緒に汗を流す情熱的な指導で慕われている。'},
+  {id:16, name:'森田 悠子', emoji:'💊', hasPortrait:false,
+   grade:'C', teaching:'E', observation:'E', style:'Submission', trait:'コンディショニング',
    salary:5, hireFee:30, minOrgPop:0,
-   age:38, gender:'螂ｳ', origin:'蟯ｩ謇・,
-   desc:'繝ｨ繧ｬ縺ｨ譬・､雁ｭｦ縺ｫ繧医ｋ蝨ｰ蜻ｳ縺縺悟・ｮ溘↑繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ邂｡逅・・,
-   profile:'繝ｨ繧ｬ縺ｨ譬・､雁ｭｦ縺ｮ遏･隴倥ｒ邨・∩蜷医ｏ縺帙◆迢ｬ閾ｪ縺ｮ繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ謖・ｰ弱′謖√■蜻ｳ縲ら岼遶九▽謌先棡縺ｯ縺吶＄縺ｫ縺ｯ蜃ｺ縺ｪ縺・′縲・聞譛溽噪縺ｫ驕ｸ謇九・菴楢ｳｪ繧呈隼蝟・☆繧句・ｮ溘↑謇玖・縺後≠繧九ら黄髱吶°縺ｧ蟄伜惠諢溘・阮・＞縺後・∈謇九・蟆上＆縺ｪ螟牙喧繧りｦ矩・＆縺ｪ縺・・},
-  {id:17, name:'遽蜴・髫・,   emoji:'博', hasPortrait:false,
-   grade:'C', teaching:'D', observation:'C', style:'Grappler', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:38, gender:'女', origin:'岩手',
+   desc:'ヨガと栄養学による地味だが堅実なコンディション管理。',
+   profile:'ヨガと栄養学の知識を組み合わせた独自のコンディショニング指導が持ち味。目立つ成果はすぐには出ないが、長期的に選手の体質を改善する堅実な手腕がある。物静かで存在感は薄いが、選手の小さな変化も見逃さない。'},
+  {id:17, name:'篠原 隆',   emoji:'🔎', hasPortrait:false,
+   grade:'C', teaching:'D', observation:'C', style:'Grappler', trait:'引き出し上手',
    salary:8, hireFee:50, minOrgPop:0,
-   age:55, gender:'逕ｷ', origin:'辭頑悽',
-   desc:'蜈・Ξ繝輔ぉ繝ｪ繝ｼ豁ｴ30蟷ｴ縲ゅΜ繝ｳ繧ｰ縺ｮ荳ｭ縺九ｉ蝓ｹ縺｣縺溯ｩｦ蜷育愍縺ｮ謖√■荳ｻ縲・,
-   profile:'繝ｬ繝輔ぉ繝ｪ繝ｼ縺ｨ縺励※謨ｰ蜊・ｩｦ蜷医ｒ繝ｪ繝ｳ繧ｰ縺ｮ荳ｭ縺九ｉ隕九※縺阪◆隧ｦ蜷育愍縺ｮ謖√■荳ｻ縲る∈謇九・髟ｷ謇繧定ｦ区栢縺阪√◎繧後ｒ豢ｻ縺九☆隧ｦ蜷磯°縺ｳ繧呈署譯医☆繧九・縺悟ｾ玲э縲り・繧峨Μ繝ｳ繧ｰ縺ｫ荳翫′繧九％縺ｨ縺ｯ縺ｪ縺・′縲∵橿陦薙い繝峨ヰ繧､繧ｹ縺ｮ豁｣遒ｺ縺輔・謚倥ｊ邏吩ｻ倥″縲よ而縺医ａ縺縺後∬ｨ闡峨↓驥阪∩縺後≠繧九・},
-  {id:18, name:'襍､蝓・蜃・,     emoji:'ｪ・, hasPortrait:false,
-   grade:'C', teaching:'C', observation:'E', style:'Grappler', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:55, gender:'男', origin:'熊本',
+   desc:'元レフェリー歴30年。リングの中から培った試合眼の持ち主。',
+   profile:'レフェリーとして数千試合をリングの中から見てきた試合眼の持ち主。選手の長所を見抜き、それを活かす試合運びを提案するのが得意。自らリングに上がることはないが、技術アドバイスの正確さは折り紙付き。控えめだが、言葉に重みがある。'},
+  {id:18, name:'赤城 凛',     emoji:'🪖', hasPortrait:false,
+   grade:'C', teaching:'C', observation:'E', style:'Grappler', trait:'実戦主義',
    salary:8, hireFee:48, minOrgPop:0,
-   age:36, gender:'螂ｳ', origin:'鄒､鬥ｬ',
-   desc:'蜈・･ｳ蟄舌Ξ繧ｹ繝ｪ繝ｳ繧ｰ驕ｸ謇九ゅせ繝代Ν繧ｿ蠑上〒繝輔ぅ繧ｸ繧ｫ繝ｫ繧帝惚縺井ｸ翫￡繧九・,
-   profile:'繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ縺ｧ骰帙∴縺溷ｮ滓姶諢溯ｦ壹→蝨ｧ蛟堤噪縺ｪ繝輔ぅ繧ｸ繧ｫ繝ｫ繧呈戟縺､繧ｹ繝代Ν繧ｿ繧ｳ繝ｼ繝√らｷｴ鄙偵・蜴ｳ縺励＞縺後・∈謇九′螢√ｒ荵励ｊ雜翫∴縺溽椪髢薙↓隕九○繧狗ｬ鷹｡斐・譛ｬ迚ｩ縲ゅ檎曝繧・°縺励※蠑ｷ縺上↑縺｣縺滉ｺｺ髢薙・縺・↑縺・阪′菫｡譚｡縲ゆｸ榊勣逕ｨ縺縺後・∈謇九・謌宣聞繧定ｪｰ繧医ｊ繧ょ万縺ｶ縲・},
-  {id:19, name:'隘ｿ蟯｡ 蟄ｦ', emoji:'投', hasPortrait:false,
-   grade:'C', teaching:'C', observation:'C', style:'Submission', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:36, gender:'女', origin:'群馬',
+   desc:'元女子レスリング選手。スパルタ式でフィジカルを鍛え上げる。',
+   profile:'レスリングで鍛えた実戦感覚と圧倒的なフィジカルを持つスパルタコーチ。練習は厳しいが、選手が壁を乗り越えた瞬間に見せる笑顔は本物。「甘やかして強くなった人間はいない」が信条。不器用だが、選手の成長を誰よりも喜ぶ。'},
+  {id:19, name:'西岡 学', emoji:'📊', hasPortrait:false,
+   grade:'C', teaching:'C', observation:'C', style:'Submission', trait:'引き出し上手',
    salary:10, hireFee:65, minOrgPop:0,
-   age:40, gender:'逕ｷ', origin:'螂郁憶',
-   desc:'繝舌う繧ｪ繝｡繧ｫ繝九け繧ｹ遐皮ｩｶ閠・らｧ大ｭｦ逧・・譫舌〒驕ｸ謇九・謚陦薙ｒ譛驕ｩ蛹悶☆繧九・,
-   profile:'霄ｫ菴薙・蜍輔″繧堤ｧ大ｭｦ逧・↓蛻・梵縺吶ｋ繧ｹ繝壹す繝｣繝ｪ繧ｹ繝医よ丐蜒丞・譫舌ｄ繝・・繧ｿ繧帝ｧ・ｽｿ縺励※驕ｸ謇九・謚陦薙ｒ譛驕ｩ蛹悶☆繧九ゅ・繝ｭ繝ｬ繧ｹ縺ｮ迴ｾ蝣ｴ邨碁ｨ薙・蟆代↑縺・′縲∫炊隲悶↓蝓ｺ縺･縺・◆逧・｢ｺ縺ｪ謾ｹ蝟・署譯医〒菫｡鬆ｼ繧貞ｾ励▽縺､縺ゅｋ縲りｩｱ縺怜ｧ九ａ繧九→豁｢縺ｾ繧峨↑縺・・繝九い繝・け縺ｪ荳髱｢繧ゅ・},
-  {id:20, name:'阯､蜴・蜊・丼',   emoji:'ｧ・, hasPortrait:false,
-   grade:'C', teaching:'D', observation:'C', style:'Speed', trait:'繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ',
+   age:40, gender:'男', origin:'奈良',
+   desc:'バイオメカニクス研究者。科学的分析で選手の技術を最適化する。',
+   profile:'身体の動きを科学的に分析するスペシャリスト。映像分析やデータを駆使して選手の技術を最適化する。プロレスの現場経験は少ないが、理論に基づいた的確な改善提案で信頼を得つつある。話し始めると止まらないマニアックな一面も。'},
+  {id:20, name:'藤原 千春',   emoji:'🧘', hasPortrait:false,
+   grade:'C', teaching:'D', observation:'C', style:'Speed', trait:'ベテラン調整',
    salary:7, hireFee:45, minOrgPop:0,
-   age:47, gender:'螂ｳ', origin:'遏ｳ蟾・,
-   desc:'蜈・Γ繝ｳ繧ｿ繝ｫ繝医Ξ繝ｼ繝翫・縲ゅ・繝・Λ繝ｳ驕ｸ謇九・蠢・ｒ謾ｯ縺磯利蠢励ｒ蜀咲せ轣ｫ縺吶ｋ縲・,
-   profile:'謨ｰ螟壹￥縺ｮ繝励Ο繧｢繧ｹ繝ｪ繝ｼ繝医・繝｡繝ｳ繧ｿ繝ｫ繧ｱ繧｢繧呈焔謗帙￠縺ｦ縺阪◆繝吶ユ繝ｩ繝ｳ縲る聞蟷ｴ謌ｦ縺・ｶ壹￠縺滄∈謇九・蠢・・逍ｲ蜉ｴ繧定ｪｭ縺ｿ蜿悶ｊ縲∝・縺ｳ髣伜ｿ励ｒ轣ｯ縺呎焔蜉ｩ縺代ｒ縺吶ｋ縲ゅ瑚ｺｫ菴薙′蜍輔°縺ｪ縺・・縺ｯ縲∝ｿ・′豁｢縺ｾ縺｣縺ｦ縺・ｋ縺九ｉ縲阪′謖∬ｫ悶らｩ上ｄ縺九↑隱槭ｊ蜿｣縺ｧ驕ｸ謇九↓蟇・ｊ豺ｻ縺・・},
+   age:47, gender:'女', origin:'石川',
+   desc:'元メンタルトレーナー。ベテラン選手の心を支え闘志を再点火する。',
+   profile:'数多くのプロアスリートのメンタルケアを手掛けてきたベテラン。長年戦い続けた選手の心の疲労を読み取り、再び闘志を灯す手助けをする。「身体が動かないのは、心が止まっているから」が持論。穏やかな語り口で選手に寄り添う。'},
 
-  // 笏笏 譁ｰ隕州繧ｰ繝ｬ繝ｼ繝会ｼ・0莠ｺ・俄楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-  {id:21, name:'辭願ｰｷ 驩・ｹ・, emoji:'翠', hasPortrait:false,
-   grade:'B', teaching:'B', observation:'C', style:'Brawler', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+  // ── 新規Bグレード（10人）────────────────────────────────────────────────
+  {id:21, name:'熊谷 鉄也', emoji:'🐉', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'C', style:'Brawler', trait:'コンディショニング',
    salary:28, hireFee:220, minOrgPop:30,
-   age:46, gender:'逕ｷ', origin:'螳ｮ蝓・,
-   desc:'蜈・Λ繧ｰ繝薙・譌･譛ｬ莉｣陦ｨ繝輔ぅ繧ｸ繧ｫ繝ｫ繧ｳ繝ｼ繝√ゅヱ繝ｯ繝ｼ縺ｨ菴楢ｪｿ邂｡逅・ｒ鬮俶ｬ｡蜈・〒荳｡遶九・,
-   profile:'繝ｩ繧ｰ繝薙・譌･譛ｬ莉｣陦ｨ縺ｮ繝輔ぅ繧ｸ繧ｫ繝ｫ繧呈髪縺医◆螳溽ｸｾ繧呈戟縺､荳豬√・繧ｹ繝医Ξ繝ｳ繧ｰ繧ｹ・・さ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ繧ｳ繝ｼ繝√ゅヱ繝ｯ繝ｼ繝医Ξ繝ｼ繝九Φ繧ｰ縺ｨ菴楢ｪｿ邂｡逅・・荳｡遶九ｒ鬮倥＞谺｡蜈・〒螳溽樟縺吶ｋ縲りｱｪ蠢ｫ縺ｪ隕九◆逶ｮ縺ｫ蜿阪＠縺ｦ邱ｻ蟇・↑繝励Ο繧ｰ繝ｩ繝繧堤ｵ・・縲ゅ悟ｼｷ縺・ｺｫ菴薙・縲∵ｭ｣縺励＞邂｡逅・°繧臥函縺ｾ繧後ｋ縲阪′菫｡譚｡縲・},
-  {id:22, name:'螳芽陸 鄒取ｳ｢',   emoji:'笞｡', hasPortrait:false,
-   grade:'B', teaching:'B', observation:'D', style:'Striker', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:46, gender:'男', origin:'宮城',
+   desc:'元ラグビー日本代表フィジカルコーチ。パワーと体調管理を高次元で両立。',
+   profile:'ラグビー日本代表のフィジカルを支えた実績を持つ一流のストレングス＆コンディショニングコーチ。パワートレーニングと体調管理の両立を高い次元で実現する。豪快な見た目に反して緻密なプログラムを組む。「強い身体は、正しい管理から生まれる」が信条。'},
+  {id:22, name:'安藤 美波',   emoji:'⚡', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'D', style:'Striker', trait:'実戦主義',
    salary:24, hireFee:190, minOrgPop:30,
-   age:31, gender:'螂ｳ', origin:'諢帷衍',
-   desc:'蜈・･ｳ蟄信MA邇玖・碁麻蜈峨阪ゅせ繝斐・繝峨ｒ豢ｻ縺九＠縺溷ｮ滓姶謖・ｰ弱・驕比ｺｺ縲・,
-   profile:'MMA縺ｧ縲碁麻蜈峨阪・逡ｰ蜷阪ｒ蜿悶▲縺溘せ繝斐・繝峨ヵ繧｡繧､繧ｿ繝ｼ縲ら樟蠖ｹ譎ゆｻ｣縺ｮ螳滓姶邨碁ｨ薙ｒ蝓ｺ縺ｫ縲√せ繝斐・繝峨ｒ豢ｻ縺九＠縺滓判髦ｲ縺ｮ讌ｵ諢上ｒ蜿ｩ縺崎ｾｼ繧縲ょｦ･蜊斐ｒ險ｱ縺輔↑縺・せ繝医う繝・け縺ｪ謖・ｰ弱□縺後・∈謇九°繧峨・菫｡鬆ｼ縺ｯ蜴壹＞縲ゅ碁溘＆縺ｯ謇崎・縺倥ｃ縺ｪ縺・∝濤蠢ｵ縺縲阪→隱ｬ縺上・},
-  {id:23, name:'蝣蜀・鄒ｩ蟄・,     emoji:'嫌', hasPortrait:false,
-   grade:'B', teaching:'C', observation:'B', style:'Grappler', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:31, gender:'女', origin:'愛知',
+   desc:'元女子MMA王者「閃光」。スピードを活かした実戦指導の達人。',
+   profile:'MMAで「閃光」の異名を取ったスピードファイター。現役時代の実戦経験を基に、スピードを活かした攻防の極意を叩き込む。妥協を許さないストイックな指導だが、選手からの信頼は厚い。「速さは才能じゃない、執念だ」と説く。'},
+  {id:23, name:'堀内 義孝',     emoji:'🌙', hasPortrait:false,
+   grade:'B', teaching:'C', observation:'B', style:'Grappler', trait:'引き出し上手',
    salary:20, hireFee:165, minOrgPop:30,
-   age:53, gender:'逕ｷ', origin:'螻ｱ譴ｨ',
-   desc:'蜈・Ξ繧ｹ繝ｪ繝ｳ繧ｰ繝翫す繝ｧ繝翫Ν繧ｳ繝ｼ繝√る∈謇九・髫繧後◆謇崎・繧定ｦ矩・＆縺ｪ縺・錐莨ｯ讌ｽ縲・,
-   profile:'繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ謖・ｰ弱・荳也阜縺ｧ髟ｷ蟷ｴ蝓ｹ縺｣縺溯ｦｳ蟇溽愍縺ｯ縲・∈謇九・髫繧後◆謇崎・繧定ｦ矩・＆縺ｪ縺・よｴｾ謇九↑謖・ｰ弱・縺励↑縺・′縲∽ｸ莠ｺ縺ｲ縺ｨ繧翫・迚ｹ諤ｧ縺ｫ蜷医ｏ縺帙◆謚陦捺欠蟆弱〒逹螳溘↓驕ｸ謇九ｒ莨ｸ縺ｰ縺吶ゅ檎ｭ斐∴縺ｯ驕ｸ謇九・荳ｭ縺ｫ縺ゅｋ縲ゅ◎繧後ｒ蠑輔″蜃ｺ縺吶・縺御ｿｺ縺ｮ莉穂ｺ九□縲阪→隱槭ｋ縲・},
-  {id:24, name:'荳ｭ譚・邏怜ｼ・,   emoji:'醇', hasPortrait:false,
-   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'譁ｰ莠ｺ閧ｲ謌・,
+   age:53, gender:'男', origin:'山梨',
+   desc:'元レスリングナショナルコーチ。選手の隠れた才能を見逃さない名伯楽。',
+   profile:'レスリング指導の世界で長年培った観察眼は、選手の隠れた才能を見逃さない。派手な指導はしないが、一人ひとりの特性に合わせた技術指導で着実に選手を伸ばす。「答えは選手の中にある。それを引き出すのが俺の仕事だ」と語る。'},
+  {id:24, name:'中村 紗弓',   emoji:'🏆', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'新人育成',
    salary:30, hireFee:250, minOrgPop:30,
-   age:35, gender:'螂ｳ', origin:'蜊・痩',
-   desc:'蜈・眠菴捺桃譌･譛ｬ莉｣陦ｨ縲ょ渕遉弱・鄒弱＠縺輔°繧牙ｼｷ縺・∈謇九ｒ閧ｲ縺ｦ繧倶ｸ・・蝙九・,
-   profile:'譁ｰ菴捺桃縺ｮ鄒弱＠縺輔→蜴ｳ縺励＆縺ｮ荳ｭ縺ｧ蝓ｹ繧上ｌ縺滉ｸ・・蝙九・謖・ｰ主鴨繧呈戟縺､縲よ眠莠ｺ縺ｮ蝓ｺ遉惹ｽ懊ｊ縺九ｉ繝｡繝ｳ繧ｿ繝ｫ髱｢縺ｾ縺ｧ蟷・ｺ・￥繧ｫ繝舌・縺励√ヰ繝ｩ繝ｳ繧ｹ縺ｮ蜿悶ｌ縺滄∈謇九ｒ閧ｲ謌舌☆繧九ゅ悟渕遉弱′鄒弱＠縺・∈謇九・縲∝ｿ・★蠑ｷ縺上↑繧九阪ｒ菫｡縺倥※逍代ｏ縺ｪ縺・ュ辭ｱ逧・↑謖・ｰ手・・},
-  {id:25, name:'螳ｮ豐｢ 蠎ｷ蠑・,     emoji:'孱・・, hasPortrait:false,
-   grade:'B', teaching:'C', observation:'B', style:'Brawler', trait:'繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ',
+   age:35, gender:'女', origin:'千葉',
+   desc:'元新体操日本代表。基礎の美しさから強い選手を育てる万能型。',
+   profile:'新体操の美しさと厳しさの中で培われた万能型の指導力を持つ。新人の基礎作りからメンタル面まで幅広くカバーし、バランスの取れた選手を育成する。「基礎が美しい選手は、必ず強くなる」を信じて疑わない情熱的な指導者。'},
+  {id:25, name:'宮沢 康弘',     emoji:'🛡️', hasPortrait:false,
+   grade:'B', teaching:'C', observation:'B', style:'Brawler', trait:'ベテラン調整',
    salary:22, hireFee:180, minOrgPop:30,
-   age:57, gender:'逕ｷ', origin:'螻ｱ蠖｢',
-   desc:'蜈・せ繝昴・繝・紛蠖｢螟也ｧ大現縲ょ現蟄ｦ逧・衍隕九〒繝吶ユ繝ｩ繝ｳ驕ｸ謇九・蟇ｿ蜻ｽ繧貞ｻｶ縺ｰ縺吶・,
-   profile:'蛹ｻ蟶ｫ縺ｨ縺励※縺ｮ豺ｱ縺・ｺｫ菴鍋衍隴倥ｒ謖√▽逡ｰ濶ｲ縺ｮ繧ｳ繝ｼ繝√ゅ・繝・Λ繝ｳ驕ｸ謇狗音譛峨・霄ｫ菴薙・謔ｩ縺ｿ繧貞現蟄ｦ逧・ｦ句慍縺九ｉ逅・ｧ｣縺励・←蛻・↑隱ｿ謨ｴ豕輔ｒ謠先｡医☆繧九ゅ碁∈謇九・蟇ｿ蜻ｽ繧剃ｸ蟷ｴ縺ｧ繧ょｻｶ縺ｰ縺吶阪％縺ｨ縺ｫ諠・・繧呈ｳｨ縺舌よ・驥阪↑諤ｧ譬ｼ縺ｧ縲∫┌逅・・邨ｶ蟇ｾ縺ｫ縺輔○縺ｪ縺・・},
-  {id:26, name:'繧ｫ繝ｫ繝ｭ繧ｹ 逵溽炊', emoji:'倹', hasPortrait:false,
-   grade:'B', teaching:'D', observation:'B', style:'Allround', trait:'莠ｺ閼域戟縺｡',
+   age:57, gender:'男', origin:'山形',
+   desc:'元スポーツ整形外科医。医学的知見でベテラン選手の寿命を延ばす。',
+   profile:'医師としての深い身体知識を持つ異色のコーチ。ベテラン選手特有の身体の悩みを医学的見地から理解し、適切な調整法を提案する。「選手の寿命を一年でも延ばす」ことに情熱を注ぐ。慎重な性格で、無理は絶対にさせない。'},
+  {id:26, name:'カルロス 真理', emoji:'🌐', hasPortrait:false,
+   grade:'B', teaching:'D', observation:'B', style:'Allround', trait:'人脈持ち',
    salary:18, hireFee:150, minOrgPop:30,
-   age:42, gender:'螂ｳ', origin:'繝悶Λ繧ｸ繝ｫ',
-   desc:'譌･邉ｻ繝悶Λ繧ｸ繝ｫ莠ｺ縺ｮ蜈・お繝ｼ繧ｸ繧ｧ繝ｳ繝医ょ嵜蜀・､悶・譬ｼ髣俶橿逡後↓螟ｪ縺・ヱ繧､繝励ｒ謖√▽縲・,
-   profile:'譌･譛ｬ縺ｨ繝悶Λ繧ｸ繝ｫ縺ｮ譬ｼ髣俶橿繧ｳ繝溘Η繝九ユ繧｣縺ｫ螟ｪ縺・ヱ繧､繝励ｒ謖√▽蝗ｽ髫帶ｴｾ繧ｳ繝ｼ繝√よｵｷ螟悶・譛画悍驕ｸ謇九・諠・ｱ縺ｫ繧らｲｾ騾壹＠縲∽ｻ門屮菴薙→縺ｮ莠､貂峨〒繧ょ鴨繧堤匱謠ｮ縺吶ｋ縲よ欠蟆主鴨縺ｯ逋ｺ螻暮比ｸ翫□縺後∽ｺｺ閼医→諠・ｱ蜿朱寔蜉帙・B譬ｼ髫丈ｸ縲ゅ御ｺｺ繧堤ｹ九＄縺薙→縺後∫ｧ√・荳逡ｪ縺ｮ謚陦薙阪→隱槭ｋ縲・},
-  {id:27, name:'螟ｧ豐ｳ蜴・蜑帛｣ｫ',   emoji:'ｦ・, hasPortrait:false,
-   grade:'B', teaching:'B', observation:'B', style:'Grappler', trait:'譁ｰ莠ｺ閧ｲ謌・,
+   age:42, gender:'女', origin:'ブラジル',
+   desc:'日系ブラジル人の元エージェント。国内外の格闘技界に太いパイプを持つ。',
+   profile:'日本とブラジルの格闘技コミュニティに太いパイプを持つ国際派コーチ。海外の有望選手の情報にも精通し、他団体との交渉でも力を発揮する。指導力は発展途上だが、人脈と情報収集力はB格随一。「人を繋ぐことが、私の一番の技術」と語る。'},
+  {id:27, name:'大河原 剛士',   emoji:'🦁', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'B', style:'Grappler', trait:'新人育成',
    salary:32, hireFee:270, minOrgPop:30,
-   age:43, gender:'逕ｷ', origin:'蛹玲ｵｷ驕・,
-   desc:'蜈・げ繝ｬ繧ｳ繝ｭ繝ｼ繝槭Φ蜈ｨ譌･譛ｬ邇玖・り凶謇九・繝代Ρ繝ｼ繧堤洒譛滄俣縺ｧ髢玖干縺輔○繧九・,
-   profile:'繧ｰ繝ｬ繧ｳ繝ｭ繝ｼ繝槭Φ縺ｧ骰帙∴荳翫￡縺溷悸蛟堤噪縺ｪ繝代Ρ繝ｼ縺ｨ縲∬凶謇九ｒ荳莠ｺ蜑阪↓閧ｲ縺ｦ繧区焔閻輔ｒ蜈ｼ縺ｭ蛯吶∴縺溷ｮ溷鴨豢ｾ繧ｳ繝ｼ繝√ょ渕遉惹ｽ灘鴨縺ｮ蠕ｹ蠎輔→螳滓姶邱ｴ鄙偵ｒ邨・∩蜷医ｏ縺帙◆謖・ｰ弱〒縲∵眠莠ｺ縺ｮ繝代Ρ繝ｼ繧堤洒譛滄俣縺ｧ髢玖干縺輔○繧九ゅ悟ｼｷ縺上↑繧翫◆縺・↑繧峨√∪縺夊・蛻・↓雋縺代ｋ縺ｪ縲阪′蜿｣逋悶・},
-  {id:28, name:'鄒ｽ逕ｰ 蟆冗卆蜷・,   emoji:'笞厄ｸ・, hasPortrait:false,
-   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'繝吶ユ繝ｩ繝ｳ隱ｿ謨ｴ',
+   age:43, gender:'男', origin:'北海道',
+   desc:'元グレコローマン全日本王者。若手のパワーを短期間で開花させる。',
+   profile:'グレコローマンで鍛え上げた圧倒的なパワーと、若手を一人前に育てる手腕を兼ね備えた実力派コーチ。基礎体力の徹底と実戦練習を組み合わせた指導で、新人のパワーを短期間で開花させる。「強くなりたいなら、まず自分に負けるな」が口癖。'},
+  {id:28, name:'羽田 小百合',   emoji:'⚖️', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'C', style:'Speed', trait:'ベテラン調整',
    salary:26, hireFee:210, minOrgPop:30,
-   age:44, gender:'螂ｳ', origin:'譚ｱ莠ｬ',
-   desc:'蜈・・繝ｭ繝繝ｳ繧ｵ繝ｼ縲ゅ・繝・Λ繝ｳ縺ｮ蜍輔″縺ｮ繧ｭ繝ｬ縺ｨ縺励↑繧・°縺輔ｒ邯ｭ謖√＆縺帙ｋ縲・,
-   profile:'繝繝ｳ繧ｹ縺ｧ蝓ｹ縺｣縺溯ｺｫ菴捺桃菴懊→陦ｨ迴ｾ蜉帙・遏･隕九ｒ繝励Ο繝ｬ繧ｹ縺ｫ蠢懃畑縺吶ｋ逡ｰ濶ｲ縺ｮ繧ｳ繝ｼ繝√ゅ・繝・Λ繝ｳ驕ｸ謇九・蜍輔″縺ｮ繧ｭ繝ｬ繧堤ｶｭ謖√＠縲∝ｹｴ鮨｢繧呈─縺倥＆縺帙↑縺・＠縺ｪ繧・°縺輔ｒ蠑輔″蜃ｺ縺吶ゅ瑚ｺｫ菴薙・讌ｽ蝎ｨ縲よ焔蜈･繧後ｒ諤繧後・髻ｳ縺ｯ驤阪ｋ縲阪→縺・≧蜩ｲ蟄ｦ縺ｧ繧ｹ繝斐・繝峨ｒ螳医ｊ邯壹￠繧九・},
-  {id:29, name:'髯ｳ 蛛画・', emoji:'中', hasPortrait:false,
-   grade:'B', teaching:'C', observation:'B', style:'Submission', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+   age:44, gender:'女', origin:'東京',
+   desc:'元プロダンサー。ベテランの動きのキレとしなやかさを維持させる。',
+   profile:'ダンスで培った身体操作と表現力の知見をプロレスに応用する異色のコーチ。ベテラン選手の動きのキレを維持し、年齢を感じさせないしなやかさを引き出す。「身体は楽器。手入れを怠れば音は鈍る」という哲学でスピードを守り続ける。'},
+  {id:29, name:'陳 偉明', emoji:'💆', hasPortrait:false,
+   grade:'B', teaching:'C', observation:'B', style:'Submission', trait:'コンディショニング',
    salary:21, hireFee:170, minOrgPop:30,
-   age:49, gender:'逕ｷ', origin:'蜿ｰ貉ｾ',
-   desc:'譚ｱ豢句現蟄ｦ縺ｮ蟆る摩螳ｶ縲ょｿ・ｺｫ繧堤ｷ丞粋逧・↓險ｺ縺ｦ譛驕ｩ縺ｪ繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ縺ｫ蟆弱￥縲・,
-   profile:'譚ｱ豢句現蟄ｦ縺ｮ蜿｡譎ｺ縺ｨ繧ｹ繝昴・繝・ｧ大ｭｦ繧定檮蜷医＆縺帙◆繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ縺ｮ驕比ｺｺ縲る∈謇九・蠢・ｺｫ縺ｮ迥ｶ諷九ｒ邱丞粋逧・↓險ｺ縺ｦ縲∵怙驕ｩ縺ｪ隱ｿ謨ｴ繧呈命縺吶ゅ梧ｰ励・豬√ｌ縺梧紛縺医・縲∬ｺｫ菴薙・閾ｪ縺壹→蠢懊∴繧九阪→縺・≧蜩ｲ蟄ｦ縺ｫ蝓ｺ縺･縺冗峡閾ｪ縺ｮ繧｢繝励Ο繝ｼ繝√・縲∝､壹￥縺ｮ驕ｸ謇九°繧臥ｵｶ螟ｧ縺ｪ菫｡鬆ｼ繧貞ｾ励※縺・ｋ縲・},
-  {id:30, name:'蜀ｴ蟲ｶ 讌・,   emoji:'畠', hasPortrait:false,
-   grade:'B', teaching:'B', observation:'D', style:'Submission', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:49, gender:'男', origin:'台湾',
+   desc:'東洋医学の専門家。心身を総合的に診て最適なコンディションに導く。',
+   profile:'東洋医学の叡智とスポーツ科学を融合させたコンディショニングの達人。選手の心身の状態を総合的に診て、最適な調整を施す。「気の流れが整えば、身体は自ずと応える」という哲学に基づく独自のアプローチは、多くの選手から絶大な信頼を得ている。'},
+  {id:30, name:'冴島 楓',   emoji:'🔩', hasPortrait:false,
+   grade:'B', teaching:'B', observation:'D', style:'Submission', trait:'実戦主義',
    salary:25, hireFee:200, minOrgPop:30,
-   age:39, gender:'螂ｳ', origin:'螟ｧ髦ｪ',
-   desc:'蜈・ヶ繝ｩ繧ｸ繝ｪ繧｢繝ｳ譟碑｡馴ｻ貞ｸｯ縲ょ渚蠕ｩ繝峨Μ繝ｫ縺ｧ髢｢遽謚縺ｨ蟇晄橿縺ｮ謚陦薙ｒ蜿ｩ縺崎ｾｼ繧縲・,
-   profile:'繝悶Λ繧ｸ繝ｪ繧｢繝ｳ譟碑｡薙・蝗ｽ髫帛､ｧ莨壹〒蜆ｪ蜍晉ｵ碁ｨ薙ｒ謖√▽謚蟾ｧ豢ｾ縲ゆｸ縺､縺ｮ謚繧剃ｽ慕卆蝗槭→蜿榊ｾｩ縺輔○繧九ラ繝ｪ繝ｫ蠑乗欠蟆弱〒縲・∈謇九・繝・け繝九ャ繧ｯ繧堤｢ｺ螳溘↓蠎穂ｸ翫￡縺吶ｋ縲ょ哨謨ｰ縺ｯ蟆代↑縺・′縲√・繝・ヨ荳翫〒縺ｮ謇区悽縺ｯ髮・ｼ√ゅ瑚ｺｫ菴薙′隕壹∴繧九∪縺ｧ縲∽ｽ募ｺｦ縺ｧ繧ゅ阪′謖・ｰ主憧蟄ｦ縲・},
+   age:39, gender:'女', origin:'大阪',
+   desc:'元ブラジリアン柔術黒帯。反復ドリルで関節技と寝技の技術を叩き込む。',
+   profile:'ブラジリアン柔術の国際大会で優勝経験を持つ技巧派。一つの技を何百回と反復させるドリル式指導で、選手のテクニックを確実に底上げする。口数は少ないが、マット上での手本は雄弁。「身体が覚えるまで、何度でも」が指導哲学。'},
 
-  // 笏笏 譁ｰ隕就繧ｰ繝ｬ繝ｼ繝会ｼ・莠ｺ・俄楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-  {id:31, name:'逾槫ｴ・驪ｼ蟄・,           emoji:'荘', hasPortrait:false,
-   grade:'A', teaching:'A', observation:'B', style:'Allround', trait:'譁ｰ莠ｺ閧ｲ謌・,
+  // ── 新規Aグレード（5人）────────────────────────────────────────────────
+  {id:31, name:'神崎 鋼子',           emoji:'👑', hasPortrait:false,
+   grade:'A', teaching:'A', observation:'B', style:'Allround', trait:'新人育成',
    salary:80, hireFee:700, minOrgPop:55,
-   age:60, gender:'螂ｳ', origin:'譚ｱ莠ｬ',
-   desc:'縲碁延縺ｮ豈阪阪→蜻ｼ縺ｰ繧後ｋ莨晁ｪｬ逧・欠蟆手・ゆｽ穂ｺｺ繧ゅ・譌･譛ｬ莉｣陦ｨ驕ｸ謇九ｒ霈ｩ蜃ｺ縺励◆譛鬮伜ｳｰ縲・,
-   profile:'螂ｳ蟄舌ヰ繝ｬ繝ｼ繝懊・繝ｫ譌･譛ｬ莉｣陦ｨ逶｣逹｣縺ｨ縺励※莠碑ｼｪ縺ｫ4蠎ｦ蟶ｯ蜷後＠縲√碁延縺ｮ豈阪阪→蜻ｼ縺ｰ繧後◆莨晁ｪｬ逧・欠蟆手・ょｽｼ螂ｳ縺ｮ蜈・°繧牙ｷ｣遶九▲縺滓律譛ｬ莉｣陦ｨ驕ｸ謇九・荳｡謇九〒縺ｯ謨ｰ縺医″繧後↑縺・よ眠莠ｺ縺ｮ蜴溽浹繧定ｦ区栢縺冗愍蜉帙→縲∵燕閭ｽ繧呈怙螟ｧ髯舌↓蠑輔″蜃ｺ縺呎欠蟆主鴨縺ｯ莉悶・霑ｽ髫上ｒ險ｱ縺輔↑縺・りｿ大ｹｴ縺ｯ螂ｳ蟄舌・繝ｭ繝ｬ繧ｹ逡後↓繧ゅ◎縺ｮ謇玖・繧堤匱謠ｮ縺励∵ｼ髣俶橿譛ｪ邨碁ｨ薙・驕ｸ謇九ｒ荳豬√・繝ｬ繧ｹ繝ｩ繝ｼ縺ｸ閧ｲ縺ｦ荳翫￡繧句ｮ溽ｸｾ繧呈ｬ｡縲・→謇薙■遶九※縺ｦ縺・ｋ縲ょ宍縺励＆縺ｮ螂･縺ｫ豺ｱ縺・・諠・ｒ遘倥ａ縺溘√せ繝昴・繝・欠蟆守阜縺ｮ逕溘″繧倶ｼ晁ｪｬ縲・},
-  {id:32, name:'蟾梧ｵ・豁｣驕・,           emoji:'星', hasPortrait:false,
-   grade:'A', teaching:'A', observation:'C', style:'Grappler', trait:'螳滓姶荳ｻ鄒ｩ',
+   age:60, gender:'女', origin:'東京',
+   desc:'「鉄の母」と呼ばれる伝説的指導者。何人もの日本代表選手を輩出した最高峰。',
+   profile:'女子バレーボール日本代表監督として五輪に4度帯同し、「鉄の母」と呼ばれた伝説的指導者。彼女の元から巣立った日本代表選手は両手では数えきれない。新人の原石を見抜く眼力と、才能を最大限に引き出す指導力は他の追随を許さない。近年は女子プロレス界にもその手腕を発揮し、格闘技未経験の選手を一流のレスラーへ育て上げる実績を次々と打ち立てている。厳しさの奥に深い愛情を秘めた、スポーツ指導界の生きる伝説。'},
+  {id:32, name:'巌流 正道',           emoji:'🐯', hasPortrait:false,
+   grade:'A', teaching:'A', observation:'C', style:'Grappler', trait:'実戦主義',
    salary:70, hireFee:600, minOrgPop:55,
-   age:56, gender:'逕ｷ', origin:'鮖ｿ蜈仙ｳｶ',
-   desc:'蜈・､ｧ逶ｸ謦ｲ蜉帛｣ｫ縺ｮ繝代Ρ繝ｼ邉ｻ譛鬮伜ｳｰ縲ょｮ滓姶縺ｧ騾夂畑縺吶ｋ蜉帙ｒ譛遏ｭ縺ｧ霄ｫ縺ｫ縺､縺代＆縺帙ｋ縲・,
-   profile:'隗堤阜縺ｧ骰帙∴荳翫￡縺溷悸蛟堤噪縺ｪ繝代Ρ繝ｼ逅・ｫ悶→縲∵ｼ髣俶橿謖・ｰ弱〒逎ｨ縺・◆螳滓姶繝｡繧ｽ繝・ラ繧呈戟縺､譛鬮伜ｳｰ縺ｮ繝代Ρ繝ｼ邉ｻ繧ｳ繝ｼ繝√ゅ◎縺ｮ謖・ｰ弱ｒ蜿励￠縺滄∈謇九・萓句､悶↑縺上ヱ繝ｯ繝ｼ縺ｧ隧ｦ蜷医ｒ謾ｯ驟阪☆繧九ｈ縺・↓縺ｪ繧九→險繧上ｌ繧九ょｨ∝悸逧・↑鬚ｨ雋後□縺後∝ｼ溷ｭ先昴＞縺ｮ莠ｺ諠・ｮｶ縲ゅ悟鴨縺ｨ縺ｯ縲∬ｦ壽ぁ縺ｮ邨先匕縺縲阪→隱ｬ縺上・},
-  {id:33, name:'闡画怦 繝ｬ繝・, emoji:'減', hasPortrait:false,
-   grade:'A', teaching:'A', observation:'B', style:'Speed', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:56, gender:'男', origin:'鹿児島',
+   desc:'元大相撲力士のパワー系最高峰。実戦で通用する力を最短で身につけさせる。',
+   profile:'角界で鍛え上げた圧倒的なパワー理論と、格闘技指導で磨いた実戦メソッドを持つ最高峰のパワー系コーチ。その指導を受けた選手は例外なくパワーで試合を支配するようになると言われる。威圧的な風貌だが、弟子思いの人情家。「力とは、覚悟の結晶だ」と説く。'},
+  {id:33, name:'葉月 レミ', emoji:'🌸', hasPortrait:false,
+   grade:'A', teaching:'A', observation:'B', style:'Speed', trait:'引き出し上手',
    salary:65, hireFee:550, minOrgPop:55,
-   age:45, gender:'螂ｳ', origin:'遖丞ｲ｡',
-   desc:'蜈・す繝ｧ繝ｼ繝医ヨ繝ｩ繝・け繧ｹ繝斐・繝峨せ繧ｱ繝ｼ繝井ｺ碑ｼｪ驫繝｡繝繝ｪ繧ｹ繝医ょ･ｳ蟄舌・繝ｭ繝ｬ繧ｹ縺ｧ繧ゆｸ譎ゆｻ｣繧堤ｯ峨＞縺溽焚濶ｲ縺ｮ邨梧ｭｴ繧呈戟縺､縲・,
-   profile:'繧ｷ繝ｧ繝ｼ繝医ヨ繝ｩ繝・け繧ｹ繝斐・繝峨せ繧ｱ繝ｼ繝医〒繧ｪ繝ｪ繝ｳ繝斐ャ繧ｯ驫繝｡繝繝ｫ繧堤佐蠕励＠縺溷・繧ｹ繝励Μ繝ｳ繧ｿ繝ｼ縲よｰｷ荳翫〒蝓ｹ縺｣縺溽・逋ｺ逧・↑蜉騾溷鴨縺ｨ謗･隗ｦ繧呈＄繧後↑縺・享雋蠎ｦ閭ｸ繧呈ｭｦ蝎ｨ縺ｫ縲∝ｼ暮蠕後・螂ｳ蟄舌・繝ｭ繝ｬ繧ｹ縺ｫ霆｢霄ｫ縺励※荳譎ゆｻ｣繧堤ｯ峨＞縺溽焚濶ｲ縺ｮ邨梧ｭｴ繧呈戟縺､縲ゆｺ後▽縺ｮ荳也阜縺ｧ鬆らせ繧堤衍繧句ｽｼ螂ｳ縺縺九ｉ縺薙◎縲・∈謇九・荳ｭ縺ｫ逵繧九せ繝斐・繝峨・謇崎・繧定ｪｰ繧医ｊ繧ら噪遒ｺ縺ｫ隕区栢縺阪∝ｼ輔″蜃ｺ縺吶％縺ｨ縺後〒縺阪ｋ縲ゅ碁溘＆縺ｮ譛ｬ雉ｪ縺ｯ縲∽ｸ豁ｩ逶ｮ縺ｫ蜈ｨ縺ｦ繧呈・縺代ｋ隕壽ぁ縲阪→隱槭ｋ繧ｫ繝ｪ繧ｹ繝槭・},
-  {id:34, name:'蠕｡蝣・貂・屁驛・, emoji:'鹿', hasPortrait:false,
-   grade:'A', teaching:'B', observation:'A', style:'Submission', trait:'蠑輔″蜃ｺ縺嶺ｸ頑焔',
+   age:45, gender:'女', origin:'福岡',
+   desc:'元ショートトラックスピードスケート五輪銀メダリスト。女子プロレスでも一時代を築いた異色の経歴を持つ。',
+   profile:'ショートトラックスピードスケートでオリンピック銀メダルを獲得した元スプリンター。氷上で培った爆発的な加速力と接触を恐れない勝負度胸を武器に、引退後は女子プロレスに転身して一時代を築いた異色の経歴を持つ。二つの世界で頂点を知る彼女だからこそ、選手の中に眠るスピードの才能を誰よりも的確に見抜き、引き出すことができる。「速さの本質は、一歩目に全てを懸ける覚悟」と語るカリスマ。'},
+  {id:34, name:'御堂 清四郎', emoji:'🎭', hasPortrait:false,
+   grade:'A', teaching:'B', observation:'A', style:'Submission', trait:'引き出し上手',
    salary:60, hireFee:500, minOrgPop:55,
-   age:65, gender:'逕ｷ', origin:'譚ｱ莠ｬ',
-   desc:'譟秘％莠碑ｼｪ驥代Γ繝繝ｪ繧ｹ繝医梧橿縺ｮ逾槭阪よ･ｭ逡碁囂荳縺ｮ隕ｳ蟇溽愍繧呈戟縺､逕溘￠繧倶ｼ晁ｪｬ縲・,
-   profile:'譟秘％縺ｧ繧ｪ繝ｪ繝ｳ繝斐ャ繧ｯ驥代Γ繝繝ｫ繧堤佐蠕励＠縲梧橿縺ｮ逾槭阪→遘ｰ縺輔ｌ繧狗函縺代ｋ莨晁ｪｬ縲ゆｸ也阜譟秘％谿ｿ蝣ょ・繧翫ｒ譫懊◆縺励∝ｼ暮蠕後・蝗ｽ髫帶沐驕馴｣逶溘ユ繧ｯ繝九き繝ｫ繧｢繝峨ヰ繧､繧ｶ繝ｼ縺ｨ縺励※荳也阜蜷・嵜縺ｮ驕ｸ謇九ｒ謖・ｰ弱る∈謇九・蜍輔″繧剃ｸ逶ｮ隕九◆縺縺代〒縺昴・蠑ｷ縺ｿ縺ｨ蠑ｱ轤ｹ繧定ｦ区栢縺剰ｦｳ蟇溽愍縺ｯ縲∵･ｭ逡後〒譛繧ら撫諤悶＆繧後ｋ閭ｽ蜉帙ょ､壹￥繧定ｪ槭ｉ縺ｪ縺・′縲√◎縺ｮ縺ｲ縺ｨ險縺碁∈謇九・莠ｺ逕溘ｒ螟峨∴繧九→險繧上ｌ繧九・},
-  {id:35, name:'螯よ怦 阮ｫ',         emoji:'諺', hasPortrait:false,
-   grade:'A', teaching:'B', observation:'A', style:'Allround', trait:'繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ',
+   age:65, gender:'男', origin:'東京',
+   desc:'柔道五輪金メダリスト「技の神」。業界随一の観察眼を持つ生ける伝説。',
+   profile:'柔道でオリンピック金メダルを獲得し「技の神」と称される生ける伝説。世界柔道殿堂入りを果たし、引退後は国際柔道連盟テクニカルアドバイザーとして世界各国の選手を指導。選手の動きを一目見ただけでその強みと弱点を見抜く観察眼は、業界で最も畏怖される能力。多くを語らないが、そのひと言が選手の人生を変えると言われる。'},
+  {id:35, name:'如月 薫',         emoji:'🌿', hasPortrait:false,
+   grade:'A', teaching:'B', observation:'A', style:'Allround', trait:'コンディショニング',
    salary:55, hireFee:450, minOrgPop:55,
-   age:52, gender:'螂ｳ', origin:'莠ｬ驛ｽ',
-   desc:'JOC蟶ｯ蜷後・繧ｹ繝昴・繝・現蟄ｦ蜊壼｣ｫ縲ゅさ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ邂｡逅・・譛鬮俶ｨｩ螽√・,
-   profile:'繧ｪ繝ｪ繝ｳ繝斐ャ繧ｯ縺ｮ闊槫床縺ｧ譌･譛ｬ縺ｮ繝医ャ繝励い繧ｹ繝ｪ繝ｼ繝医ｒ謾ｯ縺育ｶ壹￠縺ｦ縺阪◆繧ｹ繝昴・繝・現蟄ｦ縺ｮ譛鬮俶ｨｩ螽√りｺｫ菴薙・繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝九Φ繧ｰ縺ｫ髢｢縺励※縲√％縺ｮ莠ｺ縺ｮ蜿ｳ縺ｫ蜃ｺ繧玖・・譌･譛ｬ縺ｫ縺・↑縺・→險繧上ｌ繧九らｧ大ｭｦ逧・ｹ諡縺ｫ蝓ｺ縺･縺冗ｷｻ蟇・↑繝励Ο繧ｰ繝ｩ繝縺ｧ驕ｸ謇九・貎懷惠閭ｽ蜉帙ｒ髯千阜縺ｾ縺ｧ蠑輔″蜃ｺ縺吶ょ・髱吶↑螟冶ｦ九・螂･縺ｫ縲・∈謇九∈縺ｮ豺ｱ縺・ュ辭ｱ繧堤ｧ倥ａ縺ｦ縺・ｋ縲・}
+   age:52, gender:'女', origin:'京都',
+   desc:'JOC帯同のスポーツ医学博士。コンディション管理の最高権威。',
+   profile:'オリンピックの舞台で日本のトップアスリートを支え続けてきたスポーツ医学の最高権威。身体のコンディショニングに関して、この人の右に出る者は日本にいないと言われる。科学的根拠に基づく緻密なプログラムで選手の潜在能力を限界まで引き出す。冷静な外見の奥に、選手への深い情熱を秘めている。'}
 ];
-const COACH_HIRE_FEE = 80; // 蠕梧婿莠呈鋤繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ・亥推繧ｳ繝ｼ繝∝句挨hireFee縺ｧ荳頑嶌縺搾ｼ・const COACH_MAX_ASSIGN = 3; // v2.0: 1繧ｳ繝ｼ繝√≠縺溘ｊ譛螟ｧ諡・ｽ馴∈謇区焚・・竊・・・
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+const COACH_HIRE_FEE = 80; // 後方互換フォールバック（各コーチ個別hireFeeで上書き）
+const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（4→3）
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
+// ╚══════════════════════════════════════════════════════════╝
 const GROWTH_CONFIG = {
-  baseLearning: 3.0,        // v2.0: 1蝗槭・邱ｴ鄙偵・蝓ｺ譛ｬ謌宣聞驥擾ｼ郁ｷ晞屬豈皮紫=1.0譎ゑｼ・  declineStartSeason: 4,  // decline begins after this many seasons
+  baseLearning: 3.0,        // v2.0: 1回の練習の基本成長量（距離比率=1.0時）
+  declineStartSeason: 4,  // decline begins after this many seasons
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
   // v0.8: Intensive training
@@ -1208,29 +1256,32 @@ const GROWTH_CONFIG = {
   intensiveInjuryChance: 0.05, // 5% chance of minor injury
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50,    // min condition to allow intensive
-  matchGrowthBase: 0.5    // 肌 隧ｦ蜷・蝗槭≠縺溘ｊ縺ｮ蝓ｺ譛ｬ謌宣聞・域立: 0.7・・};
+  matchGrowthBase: 0.5    // 🔧 試合1回あたりの基本成長（旧: 0.7）
+};
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4E: RIVAL ORGANIZATION CONFIG (v0.9)             ║
+// ╚══════════════════════════════════════════════════════════╝
 // RIVAL_ORGS: name is set at game start via initRivalOrgNames()
 const RIVAL_ORG_NAME_POOL = {
-  S: ['逧・ｭｦ鬢ｨ', '蜃ｰ鄙斐・繝ｭ繝ｬ繧ｹ', '繧ｰ繝ｩ繝ｳ繧ｨ繝ｳ繝励Ξ繧ｹ', '螟ｩ鬆ゅ・繝ｭ繝ｬ繧ｹ'],
-  A: ['繝弱Χ繧｡繧､繝ｳ繝代け繝・, '繝悶Ξ繧､繧ｯ繧ｹ繝ｫ繝ｼ', '繧､繝ｳ繝代Ν繧ｹ', '繧､繧ｰ繝九ャ繧ｷ繝ｧ繝ｳ'],
-  B: ['縺ｪ縺ｧ縺励％繝励Ο繝ｬ繧ｹ', '縺ゅ＆縺ｲ螂ｳ蟄舌・繝ｭ繝ｬ繧ｹ', '譏･譌･驥弱・繝ｭ繝ｬ繧ｹ', '縺ｵ縺溘・螂ｳ蟄舌・繝ｭ繝ｬ繧ｹ']
+  S: ['皇武館', '凰翔プロレス', 'グランエンプレス', '天頂プロレス'],
+  A: ['ノヴァインパクト', 'ブレイクスルー', 'インパルス', 'イグニッション'],
+  B: ['なでしこプロレス', 'あさひ女子プロレス', '春日野プロレス', 'ふたば女子プロレス']
 };
 const RIVAL_ORGS = [
   { id:'org_s', name:'', tier:'S',
     coachMul:1.30, scoutStyle:'immediate',
-    desc:'讌ｭ逡後・鬆らせ縺ｫ蜷幄・縺吶ｋ邨ｶ蟇ｾ邇玖・, color:'#d63031', emoji:'荘' },
+    desc:'業界の頂点に君臨する絶対王者', color:'#d63031', emoji:'👑' },
   { id:'org_a', name:'', tier:'A',
     coachMul:1.15, scoutStyle:'youth',
-    desc:'闍･謇倶ｸｻ菴薙・謾ｻ謦・噪縺ｪ謖第姶閠・, color:'#6c5ce7', emoji:'牒' },
+    desc:'若手主体の攻撃的な挑戦者', color:'#6c5ce7', emoji:'💫' },
   { id:'org_b', name:'', tier:'B',
     coachMul:1.00, scoutStyle:'conservative',
-    desc:'蝣・ｮ溽ｵ悟霧縺ｮ蟆剰ｦ乗ｨ｡蝗｣菴・, color:'#00b894', emoji:'嫌' }
+    desc:'堅実経営の小規模団体', color:'#00b894', emoji:'🌙' }
 ];
 
-// ranking-roster-redesign v1.0 ﾂｧ4: 蟇ｾ謌ｦ繝昴う繝ｳ繝郁ｨｭ螳夲ｼ・hase 3 縺ｧ菴ｿ逕ｨ・・const BATTLE_POINT_CFG = {
+// ranking-roster-redesign v1.0 §4: 対戦ポイント設定（Phase 3 で使用）
+const BATTLE_POINT_CFG = {
   war: 9,
   summit: 7,
   tournament: { champion: 20, runnerUp: 8, semiFinal: 0, firstRound: -14 },
@@ -1244,18 +1295,18 @@ const RANKING_CONFIG = {
   legacyCapByTier: { S: 50, A: 30, B: 15, player: 50 },
   hallOfFameLegacyPerInductee: 10,
 };
-// 笏笏 Scout Event Name Generation & Config (scout-spec ﾂｧ3) 笏笏笏笏笏笏
-const SCOUT_SURNAMES = ['螟ｩ鄒ｽ','遘句ｱｱ','豬・・,'螳芽陸','鬟ｯ逕ｰ','豎荳・,'遏ｳ蜴・,'豕・,'莨頑擲','蟯ｩ蟠・,'荳企㍽','蜀・伐','譴・次','豎溷哨','驕阯､','螟ｧ蝓・,'蟆丞ｷ・,'闕ｻ驥・,'蜉阯､','蟾晏哨','闖雁慍','譯占ｰｷ','荵・ｿ・,'譬怜次','蟆乗ｳ・,'蠕瑚陸','菴蝉ｼｯ','蝮ゆｺ・,'譯懷ｺｭ','菴舌・惠','遽蜴・,'譟ｴ蟠・,'逋ｽ遏ｳ','譚画ｵｦ','轢ｬ謌ｸ','譟楢ｰｷ','鬮俶收','遶ｹ蜀・,'遶玖干','逕ｰ荳ｭ','豢･逕ｰ','蝨溷ｱ・,'蟇ｺ逕ｰ','荳ｭ蟲ｶ','髟ｷ隹ｷ蟾・,'隘ｿ譚・,'驥主哨','關ｩ蜴・,'闃ｱ螻ｱ','豬懷ｴ・,'蜴溽伐','蟷ｳ驥・,'遖冗伐','譏滄㍽','譚ｾ蟯｡','豌ｴ驥・,'螳ｮ蟠・,'譚台ｸ・,'譛帶怦','遏｢蟲ｶ','螻ｱ蜿｣','貉ｯ豬・,'蜷牙ｷ・,'闍･譫・,'鮃ｲ蟆ｾ','貂｡霎ｺ'];
-const SCOUT_GIVENNAMES = ['縺ゅ°繧・,'縺ゅ°縺ｭ','縺ゅｆ縺ｿ','縺ゅｊ縺・,'縺・ｍ縺ｯ','縺・◆','縺医∩','縺九☆縺ｿ','縺九↑縺ｧ','縺阪ｉ繧・,'縺上ｋ縺ｿ','縺輔￥繧・,'縺励♀繧・,'縺吶∩繧・,'縺帙ｊ縺ｪ','縺昴ｉ','縺｡縺ｯ繧・,'縺､繧縺・,'縺ｪ縺・,'縺ｪ縺､縺・,'縺ｫ縺・↑','縺ｭ縺ｭ','縺ｯ繧九°','縺ｲ縺九ｊ','縺ｲ縺ｪ縺・,'縺ｵ縺・°','縺ｾ縺ｩ縺・,'縺ｾ縺ｲ繧・,'縺ｿ縺・,'縺ｿ縺輔″','縺ｿ繧・″','繧ゅ∴','繧・＞縺ｪ','繧・≧縺・,'繧・°繧・,'繧医＠縺ｮ','繧翫％','繧翫＆','繧翫・','繧九↑','繧後＞縺・,'繧上°縺ｪ'];
-const SCOUT_TRAITS_POOL = ['蜉ｪ蜉帛ｮｶ','譌ｩ辭・,'譎ｩ謌・,'驕・調縺・,'驕ｩ蠢懷鴨','遐ｴ螟ｩ闕・,'鬆台ｸ医＆','荳榊ｱ・,'驩・ｺｺ','雋縺代★雖後＞','蠢隱蠢・,'繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','逡ｪ迢ゅｏ縺帑ｽ楢ｳｪ','髣伜ｿ・,'蜿埼ｪｨ蠢・];
+// ── Scout Event Name Generation & Config (scout-spec §3) ──────
+const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
+const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
+const SCOUT_TRAITS_POOL = ['努力家','早熟','晩成','遅咲き','適応力','破天荒','頑丈さ','不屈','鉄人','負けず嫌い','忠誠心','ファンサービス','番狂わせ体質','闘志','反骨心'];
 const SCOUT_EVENT_CFG = {
-  offseason: { count: [8, 10], maxPicks: 3, seedChance: 0.30 },  // ﾂｧ1.1 + ﾂｧ5.3
-  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },  // ﾂｧ1.1 + ﾂｧ5.3
+  offseason: { count: [8, 10], maxPicks: 3, seedChance: 0.30 },  // §1.1 + §5.3
+  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },  // §1.1 + §5.3
   midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
 let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
 
-// Mutable org roster assignment 窶・populated by initRandomRoster() at game start
+// Mutable org roster assignment — populated by initRandomRoster() at game start
 // dormant = remaining IDs not in any org or free
 let ORG_ASSIGN = {
   player:   [],  // Set after draft
@@ -1265,7 +1316,7 @@ let ORG_ASSIGN = {
   free:     [],  // Populated by initRandomRoster (FA pool)
 };
 
-// Style-based growth allocation (training-spec ﾂｧ3.1)
+// Style-based growth allocation (training-spec §3.1)
 const STYLE_GROWTH = {
   Grappler:   {pw:1.0,sp:0.4,te:0.8,st:0.8},
   Striker:    {pw:0.8,sp:0.8,te:0.4,st:1.0},
@@ -1275,119 +1326,141 @@ const STYLE_GROWTH = {
   Brawler:    {pw:1.0,sp:0.5,te:0.2,st:1.0}
 };
 
-// Transfer system config (v1.0 ﾂｧ7 modified: quarterly windows)
+// Transfer system config (v1.0 §7 modified: quarterly windows)
 // Transfer config: see TRANSFER_CONFIG in Section 4H for active constants
 
-// org-rating star power thresholds (org-ranking-spec ﾂｧ1.3)
+// org-rating star power thresholds (org-ranking-spec §1.3)
 const STAR_POWER = [
-  {minPop:50, points:15, label:'繝医ャ繝励せ繧ｿ繝ｼ'},
-  {minPop:35, points:8,  label:'繧ｹ繧ｿ繝ｼ'},
-  {minPop:20, points:3,  label:'荳ｭ蝣・}
+  {minPop:50, points:15, label:'トップスター'},
+  {minPop:35, points:8,  label:'スター'},
+  {minPop:20, points:3,  label:'中堅'}
 ];
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4G: PHASE B 窶・SEASON CYCLE CONSTANTS (v0.9)      笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4G: PHASE B — SEASON CYCLE CONSTANTS (v0.9)      ║
+// ╚══════════════════════════════════════════════════════════╝
 
-// Age multiplier table (training-spec ﾂｧ5.2)
+// Age multiplier table (training-spec §5.2)
 function ageMultiplier(age, traits) {
   let mul;
-  if (age <= 17)      mul = 0.70;  // 譁ｰ莠ｺ: 菴薙′縺ｾ縺縺ｧ縺阪※縺・↑縺・  else if (age <= 18) mul = 1.00;  // 謌宣聞髢句ｧ・  else if (age <= 20) mul = 1.15;  // 鮟・≡縺ｮ謌宣聞譛・  else if (age <= 22) mul = 1.00;  // 螳牙ｮ壽・髟ｷ
-  else if (age <= 24) mul = 0.50;  // 莉穂ｸ翫￡谿ｵ髫・  else if (age <= 26) mul = 0.10;  // 縺ｻ縺ｼ蛛懈ｭ｢
-  else                mul = 0;     // 謌宣聞縺ｪ縺・
+  if (age <= 17)      mul = 0.70;  // 新人: 体がまだできていない
+  else if (age <= 18) mul = 1.00;  // 成長開始
+  else if (age <= 20) mul = 1.15;  // 黄金の成長期
+  else if (age <= 22) mul = 1.00;  // 安定成長
+  else if (age <= 24) mul = 0.50;  // 仕上げ段階
+  else if (age <= 26) mul = 0.10;  // ほぼ停止
+  else                mul = 0;     // 成長なし
+
   if (!Array.isArray(traits)) return mul;
 
-  // 譌ｩ辭・ 竕､18縺ｧ+30%縲≫翁23縺ｧ-30%
-  if (traits.includes('譌ｩ辭・)) {
+  // 早熟: ≤18で+30%、≥23で-30%
+  if (traits.includes('早熟')) {
     if (age <= 18) mul *= 1.3;
     else if (age >= 23) mul *= 0.7;
   }
-  // 譎ｩ謌・ 竕､18縺ｧ-20%縲・1-27縺ｧ+40%
-  if (traits.includes('譎ｩ謌・)) {
+  // 晩成: ≤18で-20%、21-27で+40%
+  if (traits.includes('晩成')) {
     if (age <= 18) mul *= 0.8;
     else if (age >= 21 && age <= 27) mul *= 1.4;
   }
-  // 驕・調縺・ 竕､20縺ｧ-20%縲・1-29縺ｧ辷・匱逧・・髟ｷ
-  if (traits.includes('驕・調縺・)) {
+  // 遅咲き: ≤20で-20%、21-29で爆発的成長
+  if (traits.includes('遅咲き')) {
     if (age <= 20) mul *= 0.8;
     else if (age <= 29) mul = Math.max(mul, 0.9);
   }
   return mul;
 }
 
-// [DEPRECATED] 譌ｧ蟷ｴ鮨｢繝吶・繧ｹdecay 窶・applyDecay縺ｯwear繝吶・繧ｹ縺ｫ遘ｻ陦梧ｸ医∩
+// [DEPRECATED] 旧年齢ベースdecay — applyDecayはwearベースに移行済み
 // const DECAY_TABLE = { ... };
 
-// Retirement config (scout-spec ﾂｧ7)
+// Retirement config (scout-spec §7)
 const RETIRE_CFG = {
   chances: { 30:0.15, 31:0.40, 32:0.75, 33:1.00 }, // 33+ = guaranteed
   voluntaryThreshold: 0.60,  // OVR < Notion * 0.60
-  voluntarySeasons: 2,       // 2繧ｷ繝ｼ繧ｺ繝ｳ騾｣邯壹〒閾ｪ荳ｻ蠑暮
-  decayFloor: 0.70,          // 陦ｰ騾荳矩剞 = Notion ﾃ・0.70
+  voluntarySeasons: 2,       // 2シーズン連続で自主引退
+  decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
 };
 
-// Wear system: wear threshold effects (v1.3-1-decay-retirement-spec ﾂｧ3)
+// Wear system: wear threshold effects (v1.3-1-decay-retirement-spec §3)
 const WEAR_TABLE = [
-  // wear 0-19: 蜈ｨ逶帶悄 窶・no effect
+  // wear 0-19: 全盛期 — no effect
   { min:  0, max: 19, label: null,        decayMin: 0, decayMax: 0, retireChance: 0    },
-  // wear 20-39: 霆ｽ蠎ｦ陦ｰ騾
-  { min: 20, max: 39, label: '笞 陦ｰ縺・,  decayMin: 1, decayMax: 2, retireChance: 0    },
-  // wear 40-59: 譛ｬ譬ｼ陦ｰ騾
-  { min: 40, max: 59, label: '筮・陦ｰ騾譛・, decayMin: 2, decayMax: 4, retireChance: 0.20 },
-  // wear 60-79: 譛ｫ譛・  { min: 60, max: 79, label: '筮・ｬ・髯千阜', decayMin: 3, decayMax: 5, retireChance: 0.50 },
-  // wear 80+: 遒ｺ螳壼ｼ暮
+  // wear 20-39: 軽度衰退
+  { min: 20, max: 39, label: '⚠ 衰え',  decayMin: 1, decayMax: 2, retireChance: 0    },
+  // wear 40-59: 本格衰退
+  { min: 40, max: 59, label: '⬇ 衰退期', decayMin: 2, decayMax: 4, retireChance: 0.20 },
+  // wear 60-79: 末期
+  { min: 60, max: 79, label: '⬇⬇ 限界', decayMin: 3, decayMax: 5, retireChance: 0.50 },
+  // wear 80+: 確定引退
   { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
 ];
 
-// AI scout config (rival-spec ﾂｧ5)
+// AI scout config (rival-spec §5)
 const AI_SCOUT_CFG = {
   S: { budget:800, maxPicks:3, idealRoster:16, rates:{prodigy:0.90, promising:0.80, rough:0.30} },
   A: { budget:500, maxPicks:3, idealRoster:13, rates:{prodigy:0.70, promising:0.60, rough:0.50} },
-  B: { budget:200, maxPicks:2, idealRoster:10, rates:{prodigy:0.30, promising:0.50, rough:0.60} } // roster-cap v1.0: 9竊・0
+  B: { budget:200, maxPicks:2, idealRoster:10, rates:{prodigy:0.30, promising:0.50, rough:0.60} } // roster-cap v1.0: 9→10
 };
 
-// F1: AI tier differentiation 窶・roster quality caps & growth bonus
-// growth-rebalance v2: tierGrowth蠑輔″荳翫￡・・I蝗｣菴薙ｂ闊郁｡後〒驕ｸ謇九′閧ｲ縺､諠ｳ螳夲ｼ・const AI_TIER_LIMITS = {
+// F1: AI tier differentiation — roster quality caps & growth bonus
+// growth-rebalance v2: tierGrowth引き上げ（AI団体も興行で選手が育つ想定）
+const AI_TIER_LIMITS = {
   S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.12, faAggressiveness: 0.60 },
   A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
   B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.20 }
 };
 
-// AI邨ｱ荳謌宣聞 Phase4: AI蝗｣菴薙・繧ｳ繝ｼ繝∫腸蠅・ｨｭ螳夲ｼ医ユ繧｣繧｢蛻･・・const AI_COACH_CONFIG = {
+// AI統一成長 Phase4: AI団体のコーチ環境設定（ティア別）
+const AI_COACH_CONFIG = {
   S: {
     ace: {
-      count: 3,                    // OVR荳贋ｽ・蜷阪′繧ｨ繝ｼ繧ｹ
+      count: 3,                    // OVR上位3名がエース
       top1: {
-        coachMul: 1.25,            // 肌 A繝ｩ繝ｳ繧ｯ逶ｸ蠖・        intensiveRate: 0.30,       // 肌 蠑ｷ蛹也ｷｴ鄙堤｢ｺ邇・30%
-        practiceRate: 0.85,        // 肌 邱ｴ鄙帝ｱ縺ｫ縺ｪ繧狗｢ｺ邇・85%・域ｮ九ｊ縺ｯrest・・      },
+        coachMul: 1.25,            // 🔧 Aランク相当
+        intensiveRate: 0.30,       // 🔧 強化練習確率 30%
+        practiceRate: 0.85,        // 🔧 練習週になる確率 85%（残りはrest）
+      },
       top2_3: {
-        coachMul: 1.18,            // 肌 B繝ｩ繝ｳ繧ｯ逶ｸ蠖・        intensiveRate: 0.20,       // 肌 20%
-        practiceRate: 0.85,        // 肌 85%
+        coachMul: 1.18,            // 🔧 Bランク相当
+        intensiveRate: 0.20,       // 🔧 20%
+        practiceRate: 0.85,        // 🔧 85%
       },
     },
     general: {
-      coachMul: 1.18,              // 肌 B繝ｩ繝ｳ繧ｯ逶ｸ蠖難ｼ・邏壹・雉・≡蜉帙〒荳闊ｬ譫縺ｫ繧り憶縺・さ繝ｼ繝・ｼ・      intensiveRate: 0.12,         // 肌 12%・育ｵ・ｹ皮噪縺ｪ蠑ｷ蛹也ｷｴ鄙剃ｽ灘宛・・      practiceRate: 0.80,          // 肌 80%・磯ｫ倥＞繝励Ο諢剰ｭ倥↓繧医ｋ邱ｴ鄙呈枚蛹厄ｼ・    },
+      coachMul: 1.18,              // 🔧 Bランク相当（S級の資金力で一般枠にも良いコーチ）
+      intensiveRate: 0.12,         // 🔧 12%（組織的な強化練習体制）
+      practiceRate: 0.80,          // 🔧 80%（高いプロ意識による練習文化）
+    },
   },
   A: {
     ace: {
-      count: 1,                    // OVR荳贋ｽ・蜷阪′繧ｨ繝ｼ繧ｹ
+      count: 1,                    // OVR上位1名がエース
       top1: {
-        coachMul: 1.18,            // 肌 B繝ｩ繝ｳ繧ｯ逶ｸ蠖・        intensiveRate: 0.20,       // 肌 20%
-        practiceRate: 0.75,        // 肌 75%
+        coachMul: 1.18,            // 🔧 Bランク相当
+        intensiveRate: 0.20,       // 🔧 20%
+        practiceRate: 0.75,        // 🔧 75%
       },
     },
     general: {
-      coachMul: 1.12,              // 肌 C繝ｩ繝ｳ繧ｯ逶ｸ蠖・      intensiveRate: 0.0,          // 蠑ｷ蛹也ｷｴ鄙偵↑縺・      practiceRate: 0.60,          // 肌 60%
+      coachMul: 1.12,              // 🔧 Cランク相当
+      intensiveRate: 0.0,          // 強化練習なし
+      practiceRate: 0.60,          // 🔧 60%
     },
   },
   B: {
     ace: {
-      count: 1,                    // OVR荳贋ｽ・蜷阪′繧ｨ繝ｼ繧ｹ
+      count: 1,                    // OVR上位1名がエース
       top1: {
-        coachMul: 1.12,            // 肌 C繝ｩ繝ｳ繧ｯ逶ｸ蠖・        intensiveRate: 0.0,        // 蠑ｷ蛹也ｷｴ鄙偵↑縺・        practiceRate: 0.55,        // 肌 55%
+        coachMul: 1.12,            // 🔧 Cランク相当
+        intensiveRate: 0.0,        // 強化練習なし
+        practiceRate: 0.55,        // 🔧 55%
       },
     },
     general: {
-      coachMul: 1.08,              // 肌 D繝ｩ繝ｳ繧ｯ逶ｸ蠖・      intensiveRate: 0.0,          // 蠑ｷ蛹也ｷｴ鄙偵↑縺・      practiceRate: 0.45,          // 肌 45%
+      coachMul: 1.08,              // 🔧 Dランク相当
+      intensiveRate: 0.0,          // 強化練習なし
+      practiceRate: 0.45,          // 🔧 45%
     },
   },
 };
@@ -1400,39 +1473,51 @@ const AI_COACH_STAFFING = {
   B: { grades: ['B', 'C'] },
 };
 
-// AI season config (莠ｺ豌怜､牙虚逕ｨ縲よ・髟ｷ縺ｯprocessAIWeek繝吶・繧ｹ縺ｫ遘ｻ陦梧ｸ医∩)
+// AI season config (人気変動用。成長はprocessAIWeekベースに移行済み)
 const AI_SEASON_CFG = {
-  popConvergeRate: 0.3,        // 莠ｺ豌励ち繝ｼ繧ｲ繝・ヨ縺ｸ縺ｮ蜿取據邇・  popRandomRange: 5,           // 莠ｺ豌励Λ繝ｳ繝繝蟷・ﾂｱ5
+  popConvergeRate: 0.3,        // 人気ターゲットへの収束率
+  popRandomRange: 5,           // 人気ランダム幅 ±5
   tierPopBonus: { S:8, A:4, B:2 }
 };
 
-// 笏笏 Phase C: Transfer & Ace Constants 笏笏
+// ── Phase C: Transfer & Ace Constants ──
 const TRANSFER_CONFIG = {
-  windows: [12, 24, 36, 48],           // AI遘ｻ邀榊・逅・え繧｣繝ｳ繝峨え・亥屁蜊頑悄譛ｫ・・  poachChancePerFighter: 0.06,          // 1驕ｸ謇九≠縺溘ｊ6%/蝗帛濠譛・  poachMinPopularity: 50,               // 莠ｺ豌・0莉･荳翫′蟇ｾ雎｡
-  poachRequiresHigherRank: true,        // 蠑輔″謚懊″蜈・′繝励Ξ繧､繝､繝ｼ繧医ｊ荳贋ｽ・  championRetentionRate: 1.0,            // 繝√Ε繝ｳ繝斐が繝ｳ: 100%髦ｲ陦・  nonChampionRetentionRate: 0.80,       // 髱槭メ繝｣繝ｳ繝斐が繝ｳ: 80%髦ｲ陦・  retentionCostMultiplier: 0.5,         // 蠑輔″逡吶ａ雋ｻ逕ｨ = 遘ｻ邀埼≡ ﾃ・0.5
+  windows: [12, 24, 36, 48],           // AI移籍処理ウィンドウ（四半期末）
+  poachChancePerFighter: 0.06,          // 1選手あたり6%/四半期
+  poachMinPopularity: 50,               // 人気50以上が対象
+  poachRequiresHigherRank: true,        // 引き抜き元がプレイヤーより上位
+  championRetentionRate: 1.0,            // チャンピオン: 100%防衛
+  nonChampionRetentionRate: 0.80,       // 非チャンピオン: 80%防衛
+  retentionCostMultiplier: 0.5,         // 引き留め費用 = 移籍金 × 0.5
 };
 
-// 笏笏 Phase D: Rental & Event Constants 笏笏
+// ── Phase D: Rental & Event Constants ──
 const RENTAL_CONFIG = {
-  minSeasons: 1,                        // 譛遏ｭ1譛・12騾ｱ)
-  maxSeasons: 4,                        // 譛髟ｷ4譛・48騾ｱ)
-  topExclude: 3,                        // 蝗｣菴灘・OVR荳贋ｽ・蜷阪・蟇ｾ雎｡螟・  faTierMul: 0.85,                      // FA驕ｸ謇九・雋ｻ逕ｨ蛟咲紫・亥屮菴捺園螻槭ｈ繧雁ｮ峨ａ・・  tierMul: { S: 1.4, A: 1.15, B: 1.0 }, // 蝗｣菴薙ユ繧｣繧｢蛻･雋ｻ逕ｨ蛟咲紫
-  /** 蜷梧凾繝ｬ繝ｳ繧ｿ繝ｫ譫: 繝ｭ繧ｹ繧ｿ繝ｼ8蜷堺ｻ･荳翫〒3譫縲∵悴貅縺ｧ2譫 */
+  minSeasons: 1,                        // 最短1期(12週)
+  maxSeasons: 4,                        // 最長4期(48週)
+  topExclude: 3,                        // 団体内OVR上位3名は対象外
+  faTierMul: 0.85,                      // FA選手の費用倍率（団体所属より安め）
+  tierMul: { S: 1.4, A: 1.15, B: 1.0 }, // 団体ティア別費用倍率
+  /** 同時レンタル枠: ロスター8名以上で3枠、未満で2枠 */
   getMaxConcurrent(rosterSize) { return rosterSize >= 8 ? 3 : 2; },
 };
 
 const EVENT_CONFIG = {
-  // D-2: 蟇ｾ謚玲姶
-  warChancePerSeason: 0.50,             // 蟷ｴ1蝗・0%
+  // D-2: 対抗戦
+  warChancePerSeason: 0.50,             // 年1回50%
   warMatchCount: { min: 3, max: 5 },
-  warPopReward: 5,                      // 蜍晏茜譎ょ屮菴謎ｺｺ豌・  warPopPenalty: -3,                    // 謨怜圏譎・  // D-3: 謖第姶迥ｶ
+  warPopReward: 5,                      // 勝利時団体人気
+  warPopPenalty: -3,                    // 敗北時
+  // D-3: 挑戦状
   challengeMQBonus: 10,                 // MQ+10
-  // D-4: 鬆ゆｸ頑ｱｺ謌ｦ
-  summitMinRank: 2,                     // 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ2菴堺ｻ･荳翫〒逋ｺ逕・  summitPopReward: 10,
+  // D-4: 頂上決戦
+  summitMinRank: 2,                     // ランキング2位以上で発生
+  summitPopReward: 10,
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 4I: NEGOTIATION CONFIG (F2: 蠑輔″謚懊″莠､貂・         笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 4I: NEGOTIATION CONFIG (F2: 引き抜き交渉)         ║
+// ╚══════════════════════════════════════════════════════════╝
 const NEGOTIATION_CONFIG = {
   durationWeeks: 4,
   maxConcurrent: 1,
@@ -1448,539 +1533,540 @@ const NEGOTIATION_CONFIG = {
 const NEGOTIATE_LINES = {
   start: {
     normal: {
-      _default: ['窶ｦ縺昴≧縲∫ｧ√↓譚･縺・→縲・n譚｡莉ｶ谺｡隨ｬ縺九↑'],
-      ojousama: ['繧上◆縺上＠繧偵♀隱倥＞縺ｧ縺吶・・歃n窶ｦ譚｡莉ｶ谺｡隨ｬ縺ｧ縺吶ｏ縺ｭ'],
-      delinquent: ['縺ゅ◆縺励ｒ蠑輔″謚懊￥縺｣縺ｦ縺具ｼ歃n窶ｦ譚｡莉ｶ谺｡隨ｬ縺縺ｪ'],
-      seductive: ['遘√ｒ隱倥≧縺ｮ・歃n縺ｵ縺ｵ窶ｦ譚｡莉ｶ谺｡隨ｬ縺ｭ'],
+      _default: ['…そう、私に来いと。\n条件次第かな'],
+      ojousama: ['わたくしをお誘いですの？\n…条件次第ですわね'],
+      delinquent: ['あたしを引き抜くってか？\n…条件次第だな'],
+      seductive: ['私を誘うの？\nふふ…条件次第ね'],
     },
     bold: {
-      _default: ['縺ｵ繝ｼ繧凪ｦ遘√ｒ蠑輔″謚懊％縺・▲縺ｦ繧上￠・歃n髱｢逋ｽ縺・ｺｦ閭ｸ縺励※繧九§繧・↑縺・, '窶ｦ遘√ｒ谺ｲ縺励＞縺｣縺ｦ・歃n縺昴ｌ縺ｪ繧翫・隕壽ぁ縲√≠繧九ｓ縺ｧ縺励ｇ縺・・'],
-      ojousama: ['繧上◆縺上＠繧貞ｼ輔″謚懊％縺・→・歃n髱｢逋ｽ縺・＃蠎ｦ閭ｸ縺ｧ縺吶ｏ縺ｭ'],
-      delinquent: ['縺ゅ◆縺励ｒ蠑輔″謚懊￥・歃n髱｢逋ｽ縺・ｺｦ閭ｸ縺励※繧薙§繧・・繝ｼ縺・],
-      cool: ['窶ｦ蠑輔″謚懊″・・譚｡莉ｶ繧定◇縺薙≧'],
-      seductive: ['遘√ｒ蠑輔″謚懊％縺・□縺ｪ繧薙※窶ｦ\n縺ｵ縺ｵ縲・擇逋ｽ縺・ｺｦ閭ｸ縺励※繧九ｏ縺ｭ'],
+      _default: ['ふーん…私を引き抜こうってわけ？\n面白い度胸してるじゃない', '…私を欲しいって？\nそれなりの覚悟、あるんでしょうね'],
+      ojousama: ['わたくしを引き抜こうと？\n面白いご度胸ですわね'],
+      delinquent: ['あたしを引き抜く？\n面白ぇ度胸してんじゃねーか'],
+      cool: ['…引き抜き？ 条件を聞こう'],
+      seductive: ['私を引き抜こうだなんて…\nふふ、面白い度胸してるわね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ隧ｱ縺ｯ閨槭￥'],
-      cool: ['窶ｦ閨槭％縺・],
-      polite: ['窶ｦ縺願ｩｱ縺ｯ莨ｺ縺・∪縺・],
+      _default: ['………話は聞く'],
+      cool: ['…聞こう'],
+      polite: ['…お話は伺います'],
     },
-    shy: { _default: ['縺遺ｦ遘√↑繧薙°縺ｧ縺・＞繧薙〒縺吶°窶ｦ・歃n窶ｦ縺｡繧・▲縺ｨ閠・∴縺輔○縺ｦ縺上□縺輔＞'] },
+    shy: { _default: ['え…私なんかでいいんですか…？\n…ちょっと考えさせてください'] },
     easygoing: {
-      _default: ['縺医▲縲√せ繧ｫ繧ｦ繝茨ｼ・ｼ歃n繧上￥繧上￥縺吶ｋ縺ｭ縲懊∬ｩｱ閨槭°縺帙※繧茨ｼ・],
-      delinquent: ['繝槭ず縺ｧ・・ｼ・繧ｹ繧ｫ繧ｦ繝茨ｼ・ｼ歃n隧ｱ閨槭°縺帙※縺上ｌ繧茨ｼ・],
-      seductive: ['縺ゅｉ縲√せ繧ｫ繧ｦ繝茨ｼ歃n縺ｵ縺ｵ縲∬◇縺九○縺ｦ繧ゅｉ縺翫≧縺九＠繧・],
+      _default: ['えっ、スカウト！？\nわくわくするね〜、話聞かせてよ！'],
+      delinquent: ['マジで！？ スカウト！？\n話聞かせてくれよ！'],
+      seductive: ['あら、スカウト？\nふふ、聞かせてもらおうかしら'],
     },
     earnest: {
-      _default: ['縺薙・蝗｣菴薙ｒ髮｢繧後ｋ縺ｮ縺ｯ邁｡蜊倥§繧・↑縺・・n窶ｦ縺ｧ繧ゅ∬◇縺上□縺代↑繧・],
-      polite: ['縺薙・蝗｣菴薙ｒ髮｢繧後ｋ縺ｮ縺ｯ邁｡蜊倥〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・n窶ｦ縺ｧ繧ゅ√♀閨槭″縺吶ｋ縺縺代↑繧・],
-      ojousama: ['縺薙・蝗｣菴薙ｒ髮｢繧後ｋ縺ｮ縺ｯ螳ｹ譏薙〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ繧上・n窶ｦ縺ｧ繧ゅ√♀閨槭″縺吶ｋ縺縺代↑繧・],
-      seductive: ['縺薙・蝗｣菴薙ｒ髮｢繧後ｋ縺ｮ縺ｯ邁｡蜊倥§繧・↑縺・・縲・n窶ｦ縺ｧ繧ゅ∬◇縺上□縺代↑繧・],
+      _default: ['この団体を離れるのは簡単じゃない。\n…でも、聞くだけなら'],
+      polite: ['この団体を離れるのは簡単ではありません。\n…でも、お聞きするだけなら'],
+      ojousama: ['この団体を離れるのは容易ではありませんわ。\n…でも、お聞きするだけなら'],
+      seductive: ['この団体を離れるのは簡単じゃないの。\n…でも、聞くだけなら'],
     },
-    emotional: { _default: ['縺遺ｦ蠑輔″謚懊″窶ｦ・歃n縺ｩ縲√←縺・＠繧医≧窶ｦ諤･縺ｫ險繧上ｌ縺ｦ繧やｦ'] },
+    emotional: { _default: ['え…引き抜き…？\nど、どうしよう…急に言われても…'] },
   },
   success: {
     normal: {
-      _default: ['窶ｦ蛻・°縺｣縺溘∬｡後￥繧上・n螳溷鴨縺ｧ螻・ｴ謇繧剃ｽ懊▲縺ｦ縺ｿ縺帙ｋ'],
-      ojousama: ['窶ｦ謇ｿ遏･縺励∪縺励◆繧上・n螳溷鴨縺ｧ螻・ｴ謇繧剃ｽ懊▲縺ｦ縺ｿ縺帙∪縺吶・'],
-      delinquent: ['窶ｦ繧上°縺｣縺溘∬｡後￥縺懊・n螳溷鴨縺ｧ螻・ｴ謇菴懊▲縺ｦ繧・ｋ繧・],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲∬｡後￥縲・n螳溷鴨縺ｧ螻・ｴ謇繧剃ｽ懊▲縺ｦ縺ｿ縺帙ｋ繧・],
+      _default: ['…分かった、行くわ。\n実力で居場所を作ってみせる'],
+      ojousama: ['…承知しましたわ。\n実力で居場所を作ってみせますの'],
+      delinquent: ['…わかった、行くぜ。\n実力で居場所作ってやるよ'],
+      seductive: ['…わかったわ、行く。\n実力で居場所を作ってみせるわ'],
     },
     bold: {
-      _default: ['縺・＞繧鞘ｦ隱阪ａ縺ｦ縺ゅ￡繧九・n譁ｰ縺励＞蝣ｴ謇縺ｧ譬ｼ縺ｮ驕輔＞繧定ｦ九○縺ｦ繧・ｋ', '譁ｰ縺励＞髣倥＞縺悟ｾ・▲縺ｦ縺・ｋ窶ｦ・―n辯・∴縺ｦ縺阪◆窶ｦ蜈ｨ蜉帙〒縺・￥縺橸ｼ・],
-      ojousama: ['隱阪ａ縺ｦ縺輔＠縺ゅ￡縺ｾ縺吶ｏ縲・n譬ｼ縺ｮ驕輔＞繧偵♀隕九○縺励∪縺吶・'],
-      delinquent: ['隱阪ａ縺ｦ繧・ｋ縺懊・n譁ｰ縺励＞蝣ｴ謇縺ｧ譬ｼ縺ｮ驕輔＞隕九○縺ｦ繧・ｉ縺・ｼ・],
-      cool: ['窶ｦ陦後￥縲ょ・蜉帙〒繧・ｋ'],
-      seductive: ['隱阪ａ縺ｦ縺ゅ￡繧九ｏ縲・n譬ｼ縺ｮ驕輔＞繧定ｦ九○縺ｦ縺ゅ￡繧・],
+      _default: ['いいわ…認めてあげる。\n新しい場所で格の違いを見せてやる', '新しい闘いが待っている…！\n燃えてきた…全力でいくぞ！'],
+      ojousama: ['認めてさしあげますわ。\n格の違いをお見せしますの'],
+      delinquent: ['認めてやるぜ。\n新しい場所で格の違い見せてやらぁ！'],
+      cool: ['…行く。全力でやる'],
+      seductive: ['認めてあげるわ。\n格の違いを見せてあげる'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ陦後￥縲ゅｈ繧阪＠縺・],
-      cool: ['窶ｦ陦後￥'],
-      polite: ['窶ｦ陦後″縺ｾ縺吶ゅｈ繧阪＠縺上♀鬘倥＞縺励∪縺・],
+      _default: ['……行く。よろしく'],
+      cool: ['…行く'],
+      polite: ['…行きます。よろしくお願いします'],
     },
-    shy: { _default: ['譛溷ｾ・↓蠢懊∴繧峨ｌ繧九ｈ縺・・大ｼｵ繧翫∪縺吮ｦ・―n窶ｦ蠢・★縲∵・髟ｷ縺励※縺ｿ縺帙∪縺・] },
+    shy: { _default: ['期待に応えられるよう、頑張ります…！\n…必ず、成長してみせます'] },
     easygoing: {
-      _default: ['繧・▲縺溘・・・譁ｰ縺励＞蝗｣菴難ｼ―n讌ｽ縺励∩縺吶℃縺ｦ逵繧後↑縺・°繧ゑｼ・],
-      delinquent: ['繧・▲縺溘●・・譁ｰ縺励＞蝗｣菴難ｼ―n讌ｽ縺励∩縺吶℃縺ｦ逵繧後・繝ｼ繧茨ｼ・],
-      seductive: ['繧・▲縺滂ｼ・譁ｰ縺励＞蝗｣菴薙・・―n讌ｽ縺励∩縺繧・],
+      _default: ['やったー！ 新しい団体！\n楽しみすぎて眠れないかも！'],
+      delinquent: ['やったぜ！ 新しい団体！\n楽しみすぎて眠れねーよ！'],
+      seductive: ['やった！ 新しい団体ね！\n楽しみだわ'],
     },
     earnest: {
-      _default: ['譁ｰ縺励＞莉ｲ髢薙・縺溘ａ縺ｫ窶ｦ蜈ｨ蜉帙ｒ蟆ｽ縺上☆縲・n繧医ｍ縺励￥縺企｡倥＞縺励∪縺・],
-      polite: ['譁ｰ縺励＞莉ｲ髢薙・縺溘ａ縺ｫ窶ｦ蜈ｨ蜉帙ｒ蟆ｽ縺上＠縺ｾ縺吶・n繧医ｍ縺励￥縺企｡倥＞縺・◆縺励∪縺・],
-      ojousama: ['譁ｰ縺励＞莉ｲ髢薙・縺溘ａ縺ｫ窶ｦ蜈ｨ蜉帙ｒ蟆ｽ縺上＠縺ｾ縺吶ｏ縲・n繧医ｍ縺励￥縺企｡倥＞縺・◆縺励∪縺・],
-      seductive: ['譁ｰ縺励＞莉ｲ髢薙・縺溘ａ縺ｫ窶ｦ蜈ｨ蜉帙ｒ蟆ｽ縺上☆繧上・n繧医ｍ縺励￥縺ｭ'],
+      _default: ['新しい仲間のために…全力を尽くす。\nよろしくお願いします'],
+      polite: ['新しい仲間のために…全力を尽くします。\nよろしくお願いいたします'],
+      ojousama: ['新しい仲間のために…全力を尽くしますわ。\nよろしくお願いいたします'],
+      seductive: ['新しい仲間のために…全力を尽くすわ。\nよろしくね'],
     },
-    emotional: { _default: ['縺・▲窶ｦ譁ｰ縺励＞蝣ｴ謇縺ｧ窶ｦ鬆大ｼｵ繧翫∪縺吮ｦ・―n繧医ｍ縺励￥縺企｡倥＞縺励∪縺吮ｦ・・] },
+    emotional: { _default: ['うっ…新しい場所で…頑張ります…！\nよろしくお願いします…！'] },
   },
   blocked: {
     normal: {
-      _default: ['縺ゅ↑縺溘・蝗｣菴薙↓遘ｻ繧区ｰ励・縺ｪ縺・ｏ縲・n莉翫・莉ｲ髢薙・縺薙→繧定・∴縺溘ｉ縲∬ｩｱ繧定◇縺乗ｰ励↓繧ゅ↑繧後↑縺・, '窶ｦ縺昴≧縺・≧隧ｱ縺ｯ蜿励￠繧峨ｌ縺ｪ縺・・n莉翫・縺薙％縺悟･ｽ縺阪□縺九ｉ'],
-      ojousama: ['螟ｧ螟画＄邵ｮ縺ｧ縺吶′縲√◎縺ｮ繧医≧縺ｪ縺願ｩｱ縺ｯ莨ｺ縺医∪縺帙ｓ繧上・n莉翫・蝗｣菴薙∈縺ｮ諤昴＞縺ｯ謠ｺ繧峨℃縺ｾ縺帙ｓ縺ｮ'],
-      delinquent: ['謔ｪ縺・↑縲∬ｩｱ繧定◇縺乗ｰ励↓縺ｪ繧峨・縺・・n莉翫・莉ｲ髢薙ｒ陬丞・繧九ｏ縺代↓縺ｯ縺・°縺ｭ縺・°繧・],
-      seductive: ['縺・ｌ縺励＞縺願ｪ倥＞縺縺代←窶ｦ莉翫・莉ｲ髢薙ｒ鄂ｮ縺・※縺・￥豌励↓縺ｯ縺ｪ繧後↑縺・ｏ縲・n縺斐ａ繧薙↑縺輔＞'],
+      _default: ['あなたの団体に移る気はないわ。\n今の仲間のことを考えたら、話を聞く気にもなれない', '…そういう話は受けられない。\n今のここが好きだから'],
+      ojousama: ['大変恐縮ですが、そのようなお話は伺えませんわ。\n今の団体への思いは揺らぎませんの'],
+      delinquent: ['悪いな、話を聞く気にならねぇ。\n今の仲間を裏切るわけにはいかねぇから'],
+      seductive: ['うれしいお誘いだけど…今の仲間を置いていく気にはなれないわ。\nごめんなさい'],
     },
     bold: {
-      _default: ['遘√′莉翫・繝√・繝繧定｣丞・繧九→諤昴▲縺滂ｼ歃n隕九￥縺ｳ繧峨↑縺・〒', '莉翫・螻・ｴ謇繧呈昏縺ｦ繧区ｰ励・荳蛻・↑縺・・n蟶ｰ縺｣縺ｦ'],
-      ojousama: ['繧上◆縺上＠縺ｸ縺ｮ縺碑ｩ穂ｾ｡縺ｯ蜈画・〒縺吶′縲―n莉翫・蝗｣菴薙ｒ陬丞・繧九↑縺ｩ縺ゅｊ蠕励∪縺帙ｓ繧・],
-      delinquent: ['縺ゅ◆縺励′莉翫・莉ｲ髢薙↓閭後￥縺ｨ諤昴▲縺溘°・歃n逕倥∞繧医∝ｸｰ繧・],
-      cool: ['窶ｦ辟｡諢丞袖縺縲ゆｻ翫％縺薙ｒ髮｢繧後ｋ豌励・縺ｪ縺・],
-      seductive: ['縺ｵ縺ｵ窶ｦ雋ｷ縺・°縺ｶ縺｣縺ｦ縺上ｌ縺ｦ縺ゅｊ縺後→縺・・n縺ｧ繧ゆｻ翫・莉ｲ髢薙ｒ陬丞・繧九▽繧ゅｊ縺ｯ豈幃ｭ縺ｪ縺・ｏ'],
+      _default: ['私が今のチームを裏切ると思った？\n見くびらないで', '今の居場所を捨てる気は一切ない。\n帰って'],
+      ojousama: ['わたくしへのご評価は光栄ですが、\n今の団体を裏切るなどあり得ませんわ'],
+      delinquent: ['あたしが今の仲間に背くと思ったか？\n甘ぇよ、帰れ'],
+      cool: ['…無意味だ。今ここを離れる気はない'],
+      seductive: ['ふふ…買いかぶってくれてありがとう。\nでも今の仲間を裏切るつもりは毛頭ないわ'],
     },
     quiet: {
-      _default: ['窶ｦ莉翫・蜍輔￠縺ｪ縺・ゅ％縺薙↓縺・ｋ'],
-      cool: ['窶ｦ隧ｱ縺ｫ縺ｪ繧峨↑縺・よ妙繧・],
-      polite: ['窶ｦ縺吶∩縺ｾ縺帙ｓ縲ゆｻ翫・縲√％縺薙ｒ髮｢繧後ｋ豌励↓縺ｪ繧後↑縺・ｓ縺ｧ縺・],
+      _default: ['…今は動けない。ここにいる'],
+      cool: ['…話にならない。断る'],
+      polite: ['…すみません。今は、ここを離れる気になれないんです'],
     },
     shy: {
-      _default: ['縺遺ｦ縺ｧ繧ゅ∽ｻ翫・莉ｲ髢薙ｒ鄂ｮ縺・※縺・￥縺ｪ繧薙※窶ｦ\n縺斐ａ繧薙↑縺輔＞縲√←縺・＠縺ｦ繧るｦ悶ｒ邵ｦ縺ｫ謖ｯ繧後↑縺・〒縺・],
+      _default: ['え…でも、今の仲間を置いていくなんて…\nごめんなさい、どうしても首を縦に振れないです'],
     },
     easygoing: {
-      _default: ['縺医▲縲√せ繧ｫ繧ｦ繝茨ｼ∝ｬ峨＠縺・￠縺ｩ縲懊∽ｻ翫・蟄舌◆縺｡縺悟･ｽ縺阪☆縺弱※・―n繝繝ｪ繝繝ｪ縲懶ｼ・, '縺ゅｊ縺後→縺・ｼ√〒繧ゆｻ翫・縺ｨ縺薙′螻・ｿ・慍繧医☆縺弱※縲―n隧ｱ繧定◇縺乗ｰ励↓縺ｪ繧峨↑縺・ｓ縺繧医・縲懶ｼ・],
-      delinquent: ['縺翫▲縲∝ｼ輔″謚懊″縺具ｼ∵ｰ玲戟縺｡縺ｯ螫峨＠縺・￠縺ｩ縺ｪ縲―n莉翫・莉ｲ髢薙′螂ｽ縺阪☆縺弱※蜍輔￠縺ｪ縺・ｏ・・],
-      seductive: ['縺・ｌ縺励＞縺代←縲懊∽ｻ翫・蟄舌◆縺｡縺悟､ｧ螂ｽ縺阪☆縺弱※蜍輔￠縺ｪ縺・・繧医・縲・n縺斐ａ繧薙・'],
+      _default: ['えっ、スカウト！嬉しいけど〜、今の子たちが好きすぎて！\nムリムリ〜！', 'ありがとう！でも今のとこが居心地よすぎて、\n話を聞く気にならないんだよね〜！'],
+      delinquent: ['おっ、引き抜きか！気持ちは嬉しいけどな、\n今の仲間が好きすぎて動けないわ！'],
+      seductive: ['うれしいけど〜、今の子たちが大好きすぎて動けないのよね。\nごめんね'],
     },
     earnest: {
-      _default: ['莉翫・莉ｲ髢薙→縺ｾ縺繧・ｊ驕ゅ￡繧九％縺ｨ縺後≠繧九・n縺昴ｌ縺檎ｵゅｏ繧九∪縺ｧ縲∽ｻ悶・隧ｱ縺ｯ閨槭￠縺ｪ縺・, '莉翫・繝√・繝縺ｸ縺ｮ雋ｬ莉ｻ縺後≠繧九・n縺昴ｌ繧帝比ｸｭ縺ｧ謚輔￡蜃ｺ縺吶ｏ縺代↓縺ｯ縺・°縺ｪ縺・・'],
-      polite: ['莉翫・莉ｲ髢薙∈縺ｮ雋ｬ莉ｻ縺後≠繧翫∪縺吶・n縺昴・豌玲戟縺｡縺後≠繧矩剞繧翫√％縺薙ｒ髮｢繧後ｋ驕ｸ謚槭・縺ｧ縺阪∪縺帙ｓ'],
-      ojousama: ['莉翫・莉ｲ髢薙∈縺ｮ雋ｬ莉ｻ縺後≠繧翫∪縺吶ｏ縲・n縺昴ｌ繧呈棡縺溘☆縺ｾ縺ｧ縲∽ｻ悶・縺願ｩｱ縺ｯ閨槭￠縺ｾ縺帙ｓ縺ｮ'],
-      seductive: ['莉翫・莉ｲ髢薙ｒ騾比ｸｭ縺ｧ謐ｨ縺ｦ繧九↑繧薙※縲∫ｧ√↓縺ｯ閠・∴繧峨ｌ縺ｪ縺・・n窶ｦ縺斐ａ繧薙↑縺輔＞'],
+      _default: ['今の仲間とまだやり遂げることがある。\nそれが終わるまで、他の話は聞けない', '今のチームへの責任がある。\nそれを途中で投げ出すわけにはいかないの'],
+      polite: ['今の仲間への責任があります。\nその気持ちがある限り、ここを離れる選択はできません'],
+      ojousama: ['今の仲間への責任がありますわ。\nそれを果たすまで、他のお話は聞けませんの'],
+      seductive: ['今の仲間を途中で捨てるなんて、私には考えられない。\n…ごめんなさい'],
     },
     emotional: {
-      _default: ['莉翫・蝗｣菴薙′螂ｽ縺阪☆縺弱※窶ｦ縺昴ｓ縺ｪ隧ｱ繧定◇縺・◆繧峨―n閾ｪ蛻・′雖後＞縺ｫ縺ｪ繧翫◎縺・〒窶ｦ・√＃繧√ｓ縺ｪ縺輔＞', '縺薙％縺ｮ縺ｿ繧薙↑縺悟､ｧ螂ｽ縺阪〒窶ｦ・―n陬丞・繧九↑繧薙※閠・∴繧九□縺代〒闍ｦ縺励＞窶ｦ・√＃繧√ｓ縺ｪ縺輔＞窶ｦ・・],
+      _default: ['今の団体が好きすぎて…そんな話を聞いたら、\n自分が嫌いになりそうで…！ごめんなさい', 'ここのみんなが大好きで…！\n裏切るなんて考えるだけで苦しい…！ごめんなさい…！'],
     },
   },
   fail: {
     normal: {
-      _default: ['窶ｦ謔ｪ縺・￠縺ｩ縲∽ｻ雁屓縺ｯ繝代せ縲・n邵√′縺ゅｌ縺ｰ縺ｾ縺溘・'],
-      ojousama: ['逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ縺後∽ｻ雁屓縺ｯ縺秘□諷ｮ縺励∪縺吶ｏ'],
-      delinquent: ['謔ｪ縺・￠縺ｩ縲∽ｻ雁屓縺ｯ繝代せ縺縲・n邵√′縺ゅｌ縺ｰ縺ｾ縺溘↑'],
-      seductive: ['縺斐ａ繧薙↑縺輔＞縲∽ｻ雁屓縺ｯ繝代せ縲・n邵√′縺ゅｌ縺ｰ縺ｾ縺溘・'],
+      _default: ['…悪いけど、今回はパス。\n縁があればまたね'],
+      ojousama: ['申し訳ありませんが、今回はご遠慮しますわ'],
+      delinquent: ['悪ぃけど、今回はパスだ。\n縁があればまたな'],
+      seductive: ['ごめんなさい、今回はパス。\n縁があればまたね'],
     },
     bold: {
-      _default: ['窶ｦ謔ｪ縺・￠縺ｩ縲√％縺薙′遘√・螻・ｴ謇繧医・n蜃ｺ逶ｴ縺励※縺阪↑縺輔＞', '縺ｾ縺縺薙・蝗｣菴薙〒辯・∴蟆ｽ縺阪※縺ｪ縺・・n窶ｦ縺昴・隧ｱ縺ｯ縺ｪ縺九▲縺溘％縺ｨ縺ｫ'],
-      ojousama: ['縺薙％縺後ｏ縺溘￥縺励・螻・ｴ謇縺ｧ縺吶ｏ縲・n蜃ｺ逶ｴ縺励※縺・ｉ縺励※'],
-      delinquent: ['縺薙％縺後≠縺溘＠縺ｮ螻・ｴ謇縺縲・n蜃ｺ逶ｴ縺励※縺阪↑'],
-      cool: ['窶ｦ譁ｭ繧九ゅ％縺薙′螻・ｴ謇縺'],
-      seductive: ['縺薙％縺檎ｧ√・螻・ｴ謇縺ｪ縺ｮ縲・n蜃ｺ逶ｴ縺励※縺阪※'],
+      _default: ['…悪いけど、ここが私の居場所よ。\n出直してきなさい', 'まだこの団体で燃え尽きてない。\n…その話はなかったことに'],
+      ojousama: ['ここがわたくしの居場所ですわ。\n出直していらして'],
+      delinquent: ['ここがあたしの居場所だ。\n出直してきな'],
+      cool: ['…断る。ここが居場所だ'],
+      seductive: ['ここが私の居場所なの。\n出直してきて'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ縺薙％縺ｫ縺・ｋ'],
-      cool: ['窶ｦ譁ｭ繧・],
-      polite: ['窶ｦ縺吶∩縺ｾ縺帙ｓ縲√％縺薙↓谿九ｊ縺ｾ縺・],
+      _default: ['………ここにいる'],
+      cool: ['…断る'],
+      polite: ['…すみません、ここに残ります'],
     },
-    shy: { _default: ['縺ｾ縺縺薙％縺ｧ蟄ｦ縺ｶ縺薙→縺後≠繧九ｓ縺ｧ縺吮ｦ縲・n窶ｦ縺吶∩縺ｾ縺帙ｓ'] },
+    shy: { _default: ['まだここで学ぶことがあるんです…。\n…すみません'] },
     easygoing: {
-      _default: ['縺斐ａ繧薙・縲懊√ｄ縺｣縺ｱ繧贋ｻ翫・縺ｨ縺薙′螂ｽ縺阪↑縺ｮ・―n縺ｾ縺溘・縲懶ｼ・],
-      delinquent: ['縺斐ａ繧薙↑縲懊∽ｻ翫・縺ｨ縺薙′螂ｽ縺阪↑繧薙□繧茨ｼ―n縺ｾ縺溘↑・・],
-      seductive: ['縺斐ａ繧薙↑縺輔＞縺ｭ縲∽ｻ翫・縺ｨ縺薙ｍ縺悟･ｽ縺阪↑縺ｮ縲・n縺ｾ縺溘・'],
+      _default: ['ごめんね〜、やっぱり今のとこが好きなの！\nまたね〜！'],
+      delinquent: ['ごめんな〜、今のとこが好きなんだよ！\nまたな！'],
+      seductive: ['ごめんなさいね、今のところが好きなの。\nまたね'],
     },
     earnest: {
-      _default: ['縺ｿ繧薙↑繧堤ｽｮ縺・※陦後￥繧上￠縺ｫ縺ｯ縺・°縺ｪ縺・・n窶ｦ縺斐ａ繧薙↑縺輔＞'],
-      polite: ['逧・＆繧薙ｒ鄂ｮ縺・※陦後￥繧上￠縺ｫ縺ｯ縺・″縺ｾ縺帙ｓ縲・n窶ｦ逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ'],
-      ojousama: ['逧・＆縺ｾ繧堤ｽｮ縺・※陦後￥繧上￠縺ｫ縺ｯ縺ｾ縺・ｊ縺ｾ縺帙ｓ繧・],
-      seductive: ['縺ｿ繧薙↑繧堤ｽｮ縺・※陦後￥繧上￠縺ｫ縺ｯ縺・°縺ｪ縺・・縲・n窶ｦ縺斐ａ繧薙↑縺輔＞'],
+      _default: ['みんなを置いて行くわけにはいかない。\n…ごめんなさい'],
+      polite: ['皆さんを置いて行くわけにはいきません。\n…申し訳ありません'],
+      ojousama: ['皆さまを置いて行くわけにはまいりませんわ'],
+      seductive: ['みんなを置いて行くわけにはいかないの。\n…ごめんなさい'],
     },
-    emotional: { _default: ['縺斐ａ繧薙↑縺輔＞窶ｦ莉翫・縺薙％繧帝屬繧後ｉ繧後↑縺・・窶ｦ・―n縺ｾ縺溘＞縺､縺銀ｦ・・] },
+    emotional: { _default: ['ごめんなさい…今はここを離れられないの…！\nまたいつか…！'] },
   }
 };
 
-// 笏笏 螂醍ｴ・峩譁ｰ莠､貂峨そ繝ｪ繝・(contract-negotiation-event-spec v1.0) 笏笏笏笏笏笏笏笏笏笏笏笏笏
-// 5諤ｧ譬ｼ(bold/introverted/carefree/earnest/emotional) ﾃ・諷句ｺｦ ﾃ・蛻・ｲ・// 繝・Φ繝励Ξ螟画焚: {tenure} {record} {rivalry} {tenure_farewell} {wins} {losses} {n} {rivalName}
+// ── 契約更新交渉セリフ (contract-negotiation-event-spec v1.0) ─────────────
+// 5性格(bold/introverted/carefree/earnest/emotional) × 態度 × 分岐
+// テンプレ変数: {tenure} {record} {rivalry} {tenure_farewell} {wins} {losses} {n} {rivalName}
 const CONTRACT_NEGOTIATION_LINES = {
-  // 笏笏 譏・ｵｦ隕∵ｱ・ 蟆主・ 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 昇給要求: 導入 ─────────────────────────────────────────────────────
   raise_open: {
     normal: {
-      _default: ['遉ｾ髟ｷ縲∝ｰ代＠逶ｸ隲・′縺ゅｋ繧薙〒縺吶￠縺ｩ縲・tenure}{record}繧ゅ≧蟆代＠蠕・∞繧定ｦ狗峩縺励※繧ゅｉ縺医∪縺帙ｓ縺九・, '遉ｾ髟ｷ縲∝･醍ｴ・・縺薙→縺ｪ繧薙〒縺吶￠縺ｩ縲・record}豁｣逶ｴ縲√ｂ縺・■繧・▲縺ｨ谺ｲ縺励＞縺ｪ縺｣縺ｦ諤昴▲縺ｦ縺ｦ縲・],
-      ojousama: ['遉ｾ髟ｷ縲√♀譎る俣繧医ｍ縺励＞縺九＠繧峨・tenure}蠕・∞縺ｫ縺､縺・※縲√＃逶ｸ隲・＆縺帙※縺上□縺輔＞縺ｾ縺励・record}'],
-      delinquent: ['遉ｾ髟ｷ縲√■繧・▲縺ｨ縺・＞縺九・tenure}{record}邨ｦ譁吶・隧ｱ縺ｪ繧薙□縺代←縺輔ゅｂ縺・■繧・＞蜃ｺ縺励※縺上ｓ縺ｭ繝ｼ縺ｮ・・],
-      seductive: ['遉ｾ髟ｷ縲√■繧・▲縺ｨ縺・＞・・{tenure}{record}窶ｦ繧ゅ≧蟆代＠縺縺代∬・∴縺ｦ縺上ｌ縺ｪ縺・ｼ・],
+      _default: ['社長、少し相談があるんですけど。{tenure}{record}もう少し待遇を見直してもらえませんか。', '社長、契約のことなんですけど。{record}正直、もうちょっと欲しいなって思ってて。'],
+      ojousama: ['社長、お時間よろしいかしら。{tenure}待遇について、ご相談させてくださいまし。{record}'],
+      delinquent: ['社長、ちょっといいか。{tenure}{record}給料の話なんだけどさ。もうちょい出してくんねーの？'],
+      seductive: ['社長、ちょっといい？ {tenure}{record}…もう少しだけ、考えてくれない？'],
     },
     bold: {
-      _default: ['遉ｾ髟ｷ縲√・縺｣縺阪ｊ險繧上○縺ｦ繧ゅｉ縺・∪縺吶・tenure}縺薙・邨ｦ譁吶・繝翫Γ縺ｦ縺ｾ縺吶・record}豁｣蠖薙↑隧穂ｾ｡繧偵＠縺ｦ縺ｻ縺励＞縲ゅ◎繧後□縺代〒縺吶・, '遉ｾ髟ｷ縲∬ｩｱ縺後≠繧翫∪縺吶・record}{tenure}縺薙ｌ縺縺代ｄ縺｣縺ｦ縲√％縺ｮ蠕・∞縺ｯ騾壹ｉ縺ｪ縺・〒縺励ｇ縺・・],
-      ojousama: ['遉ｾ髟ｷ縲・tenure}逕ｳ縺嶺ｸ翫￡縺ｫ縺上＞縺ｮ縺ｧ縺吶′縲√％縺ｮ蠕・∞縺ｯ繧上◆縺上＠縺ｫ隕句粋縺・∪縺帙ｓ繧上・record}'],
-      delinquent: ['縺翫＞遉ｾ髟ｷ縲・tenure}縺薙・邨ｦ譁吶・縺ｵ縺悶￠縺ｦ繧薙・縺九・record}縺｡繧・ｓ縺ｨ隧穂ｾ｡縺励ｍ繧医・],
-      cool: ['窶ｦ遉ｾ髟ｷ縲・tenure}{record}縺薙・鬘阪§繧・√ｄ縺｣縺ｦ繧峨ｌ縺ｪ縺・],
-      seductive: ['縺ｭ縺育､ｾ髟ｷ縲・tenure}繧ゅ≧縺｡繧・▲縺ｨ遘√・縺薙→螟ｧ莠九↓縺励※縺上ｌ縺ｦ繧ゅ＞縺・ｓ縺倥ｃ縺ｪ縺・ｼ・{record}'],
+      _default: ['社長、はっきり言わせてもらいます。{tenure}この給料はナメてます。{record}正当な評価をしてほしい。それだけです。', '社長、話があります。{record}{tenure}これだけやって、この待遇は通らないでしょう。'],
+      ojousama: ['社長。{tenure}申し上げにくいのですが、この待遇はわたくしに見合いませんわ。{record}'],
+      delinquent: ['おい社長。{tenure}この給料はふざけてんのか。{record}ちゃんと評価しろよ。'],
+      cool: ['…社長。{tenure}{record}この額じゃ、やってられない'],
+      seductive: ['ねえ社長。{tenure}もうちょっと私のこと大事にしてくれてもいいんじゃない？ {record}'],
     },
     quiet: {
-      _default: ['縺ゅ・窶ｦ窶ｦ遉ｾ髟ｷ縲∝ｰ代＠縺頑凾髢薙＞縺溘□縺代∪縺吶°窶ｦ窶ｦ縲・tenure}縺昴・窶ｦ窶ｦ縺顔ｵｦ譁吶・縺薙→縺ｪ繧薙〒縺吶￠縺ｩ窶ｦ窶ｦ縲・, '窶ｦ窶ｦ遉ｾ髟ｷ縲∬ｨ縺・↓縺上＞繧薙〒縺吶￠縺ｩ窶ｦ窶ｦ縲・record}繧ゅ≧蟆代＠縺縺鯛ｦ窶ｦ縺企｡倥＞縺ｧ縺阪↑縺・°縺ｪ縺｣縺ｦ窶ｦ窶ｦ縲・],
-      cool: ['窶ｦ遉ｾ髟ｷ縲・tenure}窶ｦ邨ｦ譁吶・隧ｱ縲・record}窶ｦ閠・∴縺ｦ縺ｻ縺励＞'],
-      polite: ['縺ゅ・窶ｦ遉ｾ髟ｷ縲√☆縺ｿ縺ｾ縺帙ｓ窶ｦ縲・tenure}縺顔ｵｦ譁吶・縺薙→縺ｧ窶ｦ蟆代＠縺縺代√＃逶ｸ隲・＠縺溘￥縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['あの……社長、少しお時間いただけますか……。{tenure}その……お給料のことなんですけど……。', '……社長、言いにくいんですけど……。{record}もう少しだけ……お願いできないかなって……。'],
+      cool: ['…社長。{tenure}…給料の話。{record}…考えてほしい'],
+      polite: ['あの…社長、すみません…。{tenure}お給料のことで…少しだけ、ご相談したくて……。'],
     },
     shy: {
-      _default: ['縺ゅ√≠縺ｮ窶ｦ遉ｾ髟ｷ窶ｦ縲・tenure}縺昴・窶ｦ險縺・↓縺上＞繧薙〒縺吶￠縺ｩ窶ｦ縺顔ｵｦ譁吶・縺薙→窶ｦ蟆代＠縺縺鯛ｦ窶ｦ縲・, '窶ｦ縺吶√☆縺ｿ縺ｾ縺帙ｓ遉ｾ髟ｷ窶ｦ縲・record}繧ゅ≧蟆代＠縺縺鯛ｦ縺企｡倥＞縺ｧ縺阪◆繧峨↑縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['あ、あの…社長…。{tenure}その…言いにくいんですけど…お給料のこと…少しだけ……。', '…す、すみません社長…。{record}もう少しだけ…お願いできたらなって……。'],
     },
     easygoing: {
-      _default: ['繧・▲縺ｻ繝ｼ遉ｾ髟ｷ・・縺・ｄ繝ｼ豈主ｹｴ縺薙・譎よ悄縺｣縺ｦ邱雁ｼｵ縺吶ｋ繧医・縲・tenure}縺ｶ縺｣縺｡繧・￠縲√ｂ縺・■繧・＞谺ｲ縺励＞縺ｪ繝ｼ縺｣縺ｦ縲ゅム繝｡・・, '遉ｾ髟ｷ繝ｼ縲√♀驥代・隧ｱ縺励※縺・＞・・{record}縺｡繧・▲縺ｨ縺縺台ｸ翫′繧薙↑縺・°縺ｪ繝ｼ縺｣縺ｦ諤昴▲縺ｦ縺溘ｓ縺繧医・縲懊・],
-      delinquent: ['繧医・遉ｾ髟ｷ縲・tenure}邨ｦ譁吶・隧ｱ縺ｪ繧薙□縺代←縺輔・縲ゅｂ縺・■繧・＞縺上ｌ繧医・縲・record}'],
-      seductive: ['遉ｾ髟ｷ繝ｼ笙ｪ {tenure}縺顔ｵｦ譁吶・縺薙→縺ｪ繧薙□縺代←縺補ｦ繧ゅ≧縺｡繧・▲縺ｨ縺縺鯛劭 繝繝｡・・],
+      _default: ['やっほー社長！ いやー毎年この時期って緊張するよね。{tenure}ぶっちゃけ、もうちょい欲しいなーって。ダメ？', '社長ー、お金の話していい？ {record}ちょっとだけ上がんないかなーって思ってたんだよね〜。'],
+      delinquent: ['よー社長。{tenure}給料の話なんだけどさー。もうちょいくれよー。{record}'],
+      seductive: ['社長ー♪ {tenure}お給料のことなんだけどさ…もうちょっとだけ♡ ダメ？'],
     },
     earnest: {
-      _default: ['遉ｾ髟ｷ縲√♀譎る俣縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶・tenure}螂醍ｴ・・縺薙→縺ｧ縲∫ｭ九ｒ騾壹＠縺ｦ縺願ｩｱ縺輔○縺ｦ縺上□縺輔＞縲・record}', '遉ｾ髟ｷ縲よｭ｣逶ｴ縺ｫ縺贋ｼ昴∴縺励∪縺吶・record}縺薙・蠕・∞縺ｧ縺ｯ縲∬・蛻・・蜉ｪ蜉帙↓隕句粋繧上↑縺・→諢溘§縺ｦ縺・∪縺吶・],
-      polite: ['遉ｾ髟ｷ縲√♀蠢吶＠縺・→縺薙ｍ諱舌ｌ蜈･繧翫∪縺吶・tenure}螂醍ｴ・↓縺､縺・※縲√＃逶ｸ隲・＆縺帙※縺・◆縺縺阪◆縺鞘ｦ縲・record}'],
-      ojousama: ['遉ｾ髟ｷ縲・tenure}螂醍ｴ・・縺薙→縺ｧ遲九ｒ騾壹＆縺帙※縺・◆縺縺阪◆縺丞ｭ倥§縺ｾ縺吶ｏ縲・record}'],
-      seductive: ['遉ｾ髟ｷ縲∝､ｧ莠九↑隧ｱ縺後≠繧九・縲・tenure}{record}縺｡繧・ｓ縺ｨ隧穂ｾ｡縺励※縺ｻ縺励＞縺ｪ'],
+      _default: ['社長、お時間ありがとうございます。{tenure}契約のことで、筋を通してお話させてください。{record}', '社長。正直にお伝えします。{record}この待遇では、自分の努力に見合わないと感じています。'],
+      polite: ['社長、お忙しいところ恐れ入ります。{tenure}契約について、ご相談させていただきたく…。{record}'],
+      ojousama: ['社長。{tenure}契約のことで筋を通させていただきたく存じますわ。{record}'],
+      seductive: ['社長、大事な話があるの。{tenure}{record}ちゃんと評価してほしいな'],
     },
     emotional: {
-      _default: ['遉ｾ髟ｷ窶ｦ窶ｦ・・閨槭＞縺ｦ縺上□縺輔＞窶ｦ窶ｦ・・{tenure}{record}遘√√ｂ縺｣縺ｨ縺ｧ縺阪ｋ縺ｮ縺ｫ窶ｦ窶ｦ縺薙・縺ｾ縺ｾ縺倥ｃ謔斐＠縺・ｦ窶ｦ・・, '窶ｦ窶ｦ縺ｪ繧薙〒窶ｦ窶ｦ縺ｪ繧薙〒隧穂ｾ｡縺励※縺上ｌ縺ｪ縺・ｓ縺ｧ縺吶°窶ｦ窶ｦ・・{record}鬆大ｼｵ縺｣縺ｦ繧九・縺ｫ窶ｦ窶ｦ・・],
+      _default: ['社長……！ 聞いてください……！ {tenure}{record}私、もっとできるのに……このままじゃ悔しい……！', '……なんで……なんで評価してくれないんですか……！ {record}頑張ってるのに……！'],
     },
   },
-  // 笏笏 遘ｻ邀榊ｿ鈴｡・ 蟆主・ 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 移籍志願: 導入 ─────────────────────────────────────────────────────
   transfer_open: {
     normal: {
-      _default: ['遉ｾ髟ｷ縲∬ｩｱ縺後≠繧翫∪縺吶・tenure}縺薙％繧帝屬繧後ｈ縺・→諤昴▲縺ｦ繧九ｓ縺ｧ縺吶・, '遉ｾ髟ｷ縲・tenure}濶ｲ縲・・∴縺溘ｓ縺ｧ縺吶￠縺ｩ窶ｦ莉悶・迺ｰ蠅・〒繧・▲縺ｦ縺ｿ縺溘￥縺ｦ縲・],
-      ojousama: ['遉ｾ髟ｷ縲・tenure}縺贋ｼ昴∴縺励▼繧峨＞縺ｮ縺ｧ縺吶′窶ｦ騾蝗｣繧定・∴縺ｦ縺翫ｊ縺ｾ縺吶・縲・],
-      delinquent: ['遉ｾ髟ｷ縲・tenure}謔ｪ縺・￠縺ｩ縲√ｂ縺・％縺灘・繧九ｏ縲・],
-      seductive: ['遉ｾ髟ｷ窶ｦ縺斐ａ繧薙↑縺輔＞縲・tenure}縺薙％繧帝屬繧後◆縺・・縲・],
+      _default: ['社長、話があります。{tenure}ここを離れようと思ってるんです。', '社長。{tenure}色々考えたんですけど…他の環境でやってみたくて。'],
+      ojousama: ['社長。{tenure}お伝えしづらいのですが…退団を考えておりますの。'],
+      delinquent: ['社長。{tenure}悪いけど、もうここ出るわ。'],
+      seductive: ['社長…ごめんなさい。{tenure}ここを離れたいの。'],
     },
     bold: {
-      _default: ['遉ｾ髟ｷ縲・tenure}繧ゅ≧豎ｺ繧√∪縺励◆縲ゅ％縺ｮ蝗｣菴薙ｒ蜃ｺ縺ｾ縺吶・, '窶ｦ窶ｦ縺ｯ縺｣縺阪ｊ險縺・∪縺吶・tenure}縺薙％縺ｧ縺ｯ繧ゅ≧謌宣聞縺ｧ縺阪↑縺・ょ・縺ｾ縺吶・],
-      ojousama: ['遉ｾ髟ｷ縲・tenure}豎ｺ蠢・′縺､縺阪∪縺励◆縺ｮ縲ゅｏ縺溘￥縺励√％縺ｮ蝗｣菴薙ｒ蜴ｻ繧翫∪縺吶ｏ縲・],
-      delinquent: ['遉ｾ髟ｷ縲・tenure}繧ゅ≧豎ｺ繧√◆縲ゅ％縺灘・繧九●縲・],
-      cool: ['窶ｦ{tenure}蜃ｺ繧九ゅｂ縺・ｱｺ繧√◆'],
-      seductive: ['遉ｾ髟ｷ縲・tenure}繧ゅ≧豎ｺ繧√◆縺ｮ縲やｦ縺薙％繧貞・繧九ｏ縲・],
+      _default: ['社長。{tenure}もう決めました。この団体を出ます。', '……はっきり言います。{tenure}ここではもう成長できない。出ます。'],
+      ojousama: ['社長。{tenure}決心がつきましたの。わたくし、この団体を去りますわ。'],
+      delinquent: ['社長。{tenure}もう決めた。ここ出るぜ。'],
+      cool: ['…{tenure}出る。もう決めた'],
+      seductive: ['社長。{tenure}もう決めたの。…ここを出るわ。'],
     },
     quiet: {
-      _default: ['縺ゅ・窶ｦ窶ｦ遉ｾ髟ｷ窶ｦ窶ｦ縲・tenure}險縺・↓縺上＞繧薙〒縺吶￠縺ｩ窶ｦ窶ｦ繧ゅ≧縲√％縺薙ｒ髮｢繧後◆縺・〒縺吮ｦ窶ｦ縲・, '窶ｦ窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ窶ｦ縲・tenure}遘√↑繧薙°縺・↑縺上※繧やｦ窶ｦ螟峨ｏ繧峨↑縺・→諤昴≧繧薙〒縺吮ｦ窶ｦ縲・],
-      cool: ['窶ｦ{tenure}窶ｦ蜃ｺ縺溘＞縲やｦ縺昴ｌ縺縺・],
-      polite: ['縺ゅ・窶ｦ遉ｾ髟ｷ窶ｦ縲・tenure}險縺・↓縺上＞縺ｮ縺ｧ縺吶′窶ｦ窶ｦ騾蝗｣縺励◆縺・→諤昴▲縺ｦ縺・∪縺吮ｦ窶ｦ縲・],
+      _default: ['あの……社長……。{tenure}言いにくいんですけど……もう、ここを離れたいです……。', '……ごめんなさい……。{tenure}私なんかいなくても……変わらないと思うんです……。'],
+      cool: ['…{tenure}…出たい。…それだけ'],
+      polite: ['あの…社長…。{tenure}言いにくいのですが……退団したいと思っています……。'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ遉ｾ髟ｷ窶ｦ窶ｦ縲・tenure}縺吶√☆縺ｿ縺ｾ縺帙ｓ窶ｦ縺薙％繧停ｦ髮｢繧後◆縺・ｓ縺ｧ縺吮ｦ窶ｦ縲・, '窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ窶ｦ縲・tenure}遘√↓縺ｯ窶ｦ縺薙％縺ｫ縺・ｋ雉・ｼ縺後↑縺・ｈ縺・↑豌励′縺励※窶ｦ窶ｦ縲・],
+      _default: ['あの…社長……。{tenure}す、すみません…ここを…離れたいんです……。', '…ごめんなさい……。{tenure}私には…ここにいる資格がないような気がして……。'],
     },
     easygoing: {
-      _default: ['遉ｾ髟ｷ縲√≠縺ｮ縺ｭ縲・tenure}濶ｲ縲・・∴縺溘ｓ縺縺代←縺輔∫腸蠅・､峨∴縺ｦ縺ｿ繧医≧縺九↑繝ｼ縺｣縺ｦ縲・, '縺・ｄ繝ｼ遉ｾ髟ｷ縲りｨ縺・↓縺上＞繧薙□縺代←縺輔・縲・tenure}縺｡繧・▲縺ｨ螟悶・遨ｺ豌怜精縺｣縺ｦ縺ｿ縺溘＞縺ｪ繝ｼ縺｣縺ｦ縲・],
-      delinquent: ['遉ｾ髟ｷ縲・tenure}謔ｪ縺・￠縺ｩ縺輔・縲√■繧・▲縺ｨ螟悶↓蜃ｺ縺ｦ縺ｿ縺溘＞繧薙□繧医・縲・],
-      seductive: ['遉ｾ髟ｷ縲√≠縺ｮ縺ｭ窶ｦ縲・tenure}縺｡繧・▲縺ｨ譁ｰ縺励＞縺薙→縺励※縺ｿ縺溘＞縺ｪ縺｣縺ｦ縲やｦ縺斐ａ繧薙・縲・],
+      _default: ['社長、あのね。{tenure}色々考えたんだけどさ、環境変えてみようかなーって。', 'いやー社長。言いにくいんだけどさー。{tenure}ちょっと外の空気吸ってみたいなーって。'],
+      delinquent: ['社長。{tenure}悪いけどさー、ちょっと外に出てみたいんだよね。'],
+      seductive: ['社長、あのね…。{tenure}ちょっと新しいことしてみたいなって。…ごめんね。'],
     },
     earnest: {
-      _default: ['遉ｾ髟ｷ縲∝､ｧ蛻・↑縺願ｩｱ縺後≠繧翫∪縺吶・tenure}謔ｩ縺ｿ縺ｫ謔ｩ縺ｿ縺ｾ縺励◆縺娯ｦ窶ｦ騾蝗｣繧帝｡倥＞蜃ｺ縺溘＞縺ｮ縺ｧ縺吶・, '遉ｾ髟ｷ縲・tenure}縺薙％縺ｧ蟄ｦ繧薙□縺薙→縺ｯ荳逕溘・雋｡逕｣縺ｧ縺吶ゅ〒縺吶′窶ｦ窶ｦ蜈医↓騾ｲ繧縺ｹ縺肴凾縺梧擂縺溘→諤昴▲縺ｦ縺・∪縺吶・],
-      polite: ['遉ｾ髟ｷ縲・tenure}螟ｧ螟臥筏縺苓ｨｳ縺ｪ縺・・縺ｧ縺吶′窶ｦ騾蝗｣縺ｮ縺皮嶌隲・ｒ縺輔○縺ｦ縺上□縺輔＞縲・],
-      ojousama: ['遉ｾ髟ｷ縲・tenure}蠢・協縺励＞縺ｮ縺ｧ縺吶′窶ｦ騾蝗｣繧帝｡倥＞蜃ｺ縺溘￥蟄倥§縺ｾ縺吶ｏ縲・],
-      seductive: ['遉ｾ髟ｷ縲・tenure}縺薙％縺ｧ驕弱＃縺励◆譎る俣縺ｯ螟ｧ蛻・ｈ縲ゅ〒繧やｦ谺｡縺ｮ蝣ｴ謇繧定ｦ九▽縺代◆縺・・縲・],
+      _default: ['社長、大切なお話があります。{tenure}悩みに悩みましたが……退団を願い出たいのです。', '社長。{tenure}ここで学んだことは一生の財産です。ですが……先に進むべき時が来たと思っています。'],
+      polite: ['社長。{tenure}大変申し訳ないのですが…退団のご相談をさせてください。'],
+      ojousama: ['社長。{tenure}心苦しいのですが…退団を願い出たく存じますわ。'],
+      seductive: ['社長。{tenure}ここで過ごした時間は大切よ。でも…次の場所を見つけたいの。'],
     },
     emotional: {
-      _default: ['遉ｾ髟ｷ窶ｦ窶ｦ繧ゅ≧辟｡逅・〒縺吮ｦ窶ｦ・・{tenure}縺薙％縺ｫ縺・※繧やｦ窶ｦ縺ｩ繧薙←繧薙ム繝｡縺ｫ縺ｪ縺｣縺ｦ縺・￥豌励′縺励※窶ｦ窶ｦ・・, '窶ｦ窶ｦ{tenure}繧ゅ≧縲・剞逡後↑繧薙〒縺吮ｦ窶ｦ縲・record}閾ｪ蛻・〒繧ゅｏ縺九▲縺ｦ縺ｾ縺吮ｦ窶ｦ縺薙・縺ｾ縺ｾ縺倥ｃ縺・￠縺ｪ縺・▲縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['社長……もう無理です……！ {tenure}ここにいても……どんどんダメになっていく気がして……！', '……{tenure}もう、限界なんです……。{record}自分でもわかってます……このままじゃいけないって……。'],
     },
   },
-  // 笏笏 譏・ｵｦ蜿苓ｫｾ譎・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 昇給受諾時 ─────────────────────────────────────────────────────────
   raise_accept: {
     normal: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅ％繧後°繧峨ｂ繧医ｍ縺励￥縺企｡倥＞縺励∪縺吶・縲・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ｏ縲ゅｈ繧贋ｸ螻､縲∫ｲｾ騾ｲ縺・◆縺励∪縺吶ｏ縺ｭ縲・],
-      delinquent: ['繧ｵ繝ｳ繧ｭ繝･縲∫､ｾ髟ｷ縲ゅ■繧・ｓ縺ｨ蜒阪￥縺九ｉ繧医・],
-      seductive: ['縺ゅｊ縺後→縲∫､ｾ髟ｷ笙｡ 繧ゅ▲縺ｨ鬆大ｼｵ縺｣縺｡繧・≧縺九ｉ縺ｭ縲・],
+      _default: ['ありがとうございます。これからもよろしくお願いしますね。'],
+      ojousama: ['ありがとうございますわ。より一層、精進いたしますわね。'],
+      delinquent: ['サンキュ、社長。ちゃんと働くからよ。'],
+      seductive: ['ありがと、社長♡ もっと頑張っちゃうからね。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ょ・縺九▲縺ｦ縺上ｌ繧狗､ｾ髟ｷ縺ｧ濶ｯ縺九▲縺溘ゆｻ頑悄繧ょ・蜉帙〒縺・″縺ｾ縺吶ｈ縲・],
-      ojousama: ['窶ｦ窶ｦ諢溯ｬ昴＞縺溘＠縺ｾ縺吶ｏ縲ゅ％縺ｮ隧穂ｾ｡縺ｫ隕句粋縺・ｵ先棡繧偵♀隕九○縺励∪縺吶ｏ縺ｭ縲・],
-      delinquent: ['窶ｦ窶ｦ縺ｾ縲∝ｽ鍋┯縺縺代←縺ｪ縲ゅ■繧・ｓ縺ｨ隧穂ｾ｡縺励※縺上ｌ繧薙§繧・ｓ縲・],
-      cool: ['窶ｦ縺ゅｊ縺後→縺・らｵ先棡縺ｧ霑斐☆'],
-      seductive: ['縺ｵ縺ｵ縲∝・縺九▲縺ｦ縺上ｌ繧九§繧・↑縺・劭 譛溷ｾ・＠縺ｦ縺ｦ縺ｭ縲・],
+      _default: ['……ありがとうございます。分かってくれる社長で良かった。今期も全力でいきますよ。'],
+      ojousama: ['……感謝いたしますわ。この評価に見合う結果をお見せしますわね。'],
+      delinquent: ['……ま、当然だけどな。ちゃんと評価してくれんじゃん。'],
+      cool: ['…ありがとう。結果で返す'],
+      seductive: ['ふふ、分かってくれるじゃない♡ 期待しててね。'],
     },
     quiet: {
-      _default: ['縺遺ｦ窶ｦ譛ｬ蠖薙〒縺吶°窶ｦ窶ｦ・・縺ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ窶ｦ・・鬆大ｼｵ繧翫∪縺吮ｦ窶ｦ・・],
-      cool: ['窶ｦ縺ゅｊ縺後→縺・やｦ鬆大ｼｵ繧・],
-      polite: ['縺遺ｦ譛ｬ蠖薙〒縺吶°窶ｦ・・縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ・・邊ｾ荳譚ｯ鬆大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['え……本当ですか……？ あ、ありがとうございます……！ 頑張ります……！'],
+      cool: ['…ありがとう。…頑張る'],
+      polite: ['え…本当ですか…？ ありがとうございます…！ 精一杯頑張ります…！'],
     },
     shy: {
-      _default: ['縺遺ｦ縺・√＞縺・ｓ縺ｧ縺吶°窶ｦ・・縺ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ・・鬆大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['え…い、いいんですか…？ あ、ありがとうございます…！ 頑張ります…！'],
     },
     easygoing: {
-      _default: ['繧・▲縺溘・・・縺輔☆縺檎､ｾ髟ｷ・・莉雁ｹｴ繧よ･ｽ縺励￥繧・ｍ縺・・縲懶ｼ・],
-      delinquent: ['縺翫▲縺励ｃ繝ｼ・・縺輔☆縺檎､ｾ髟ｷ・・繧・ｋ豌怜・縺ｦ縺阪◆縺懶ｼ・],
-      seductive: ['繧・▲縺溘・笙｡ 縺輔☆縺檎､ｾ髟ｷ縲∝､ｪ縺｣閻ｹ・樞飭'],
+      _default: ['やったー！ さすが社長！ 今年も楽しくやろうね〜！'],
+      delinquent: ['おっしゃー！ さすが社長！ やる気出てきたぜ！'],
+      seductive: ['やったー♡ さすが社長、太っ腹～♪'],
     },
     earnest: {
-      _default: ['諢溯ｬ昴＠縺ｾ縺吶よ悄蠕・↓蠢懊∴繧峨ｌ繧九ｈ縺・∝・蜉帙ｒ蟆ｽ縺上＠縺ｾ縺吶・],
-      polite: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅ＃譛溷ｾ・↓豐ｿ縺医ｋ繧医≧縲∫ｲｾ荳譚ｯ蜉ｪ繧√∪縺吶・],
-      ojousama: ['諢溯ｬ昴＞縺溘＠縺ｾ縺吶ｏ縲よ悄蠕・↓蠢懊∴縺ｦ縺ｿ縺帙∪縺吶ｏ縺ｭ縲・],
-      seductive: ['縺ゅｊ縺後→縺・やｦ譛溷ｾ・↓蠢懊∴繧九°繧峨・縲りｦ九※縺ｦ縺ｭ縲・],
+      _default: ['感謝します。期待に応えられるよう、全力を尽くします。'],
+      polite: ['ありがとうございます。ご期待に沿えるよう、精一杯努めます。'],
+      ojousama: ['感謝いたしますわ。期待に応えてみせますわね。'],
+      seductive: ['ありがとう。…期待に応えるからね。見ててね。'],
     },
     emotional: {
-      _default: ['遉ｾ髟ｷ窶ｦ窶ｦ・・縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ窶ｦ・・邨ｶ蟇ｾ縺ｫ邨先棡縺ｧ霑斐＠縺ｾ縺吮ｦ窶ｦ・・],
+      _default: ['社長……！ ありがとうございます……！ 絶対に結果で返します……！'],
     },
   },
-  // 笏笏 莠､貂画・蜉滓凾・井ｸｭ髢捺｡亥女隲ｾ・・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 交渉成功時（中間案受諾） ───────────────────────────────────────────
   raise_negotiate_accept: {
     normal: {
-      _default: ['縺ｾ縺ゅ∽ｸ翫′繧九↑繧峨≠繧翫′縺溘＞縺ｧ縺吶る大ｼｵ繧翫∪縺吶・縲・],
-      ojousama: ['窶ｦ窶ｦ縺昴・縺頑ｰ玲戟縺｡縺縺代〒繧ゅ∝ｬ峨＠繧・≧縺斐＊縺・∪縺吶ｏ縲・],
-      delinquent: ['縺ｾ繝ｼ荳翫′繧九□縺代・繧ｷ縺九ゅし繝ｳ繧ｭ繝･縲・],
-      seductive: ['蟆代＠縺ｧ繧り・∴縺ｦ縺上ｌ縺溘・縺ｭ縲やｦ縺ゅｊ縺後→笙｡'],
+      _default: ['まあ、上がるならありがたいです。頑張りますね。'],
+      ojousama: ['……そのお気持ちだけでも、嬉しゅうございますわ。'],
+      delinquent: ['まー上がるだけマシか。サンキュ。'],
+      seductive: ['少しでも考えてくれたのね。…ありがと♡'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺ｾ縺ゅ√ぞ繝ｭ縺倥ｃ縺ｪ縺・↑繧牙女縺代※繧・ｊ縺ｾ縺吶よｬ｡縺ｯ豁｣蠖薙↑隧穂ｾ｡繧呈悄蠕・＠縺ｦ縺ｾ縺吶ｈ縲・],
-      ojousama: ['窶ｦ窶ｦ縺ｾ縺ゅ√ぞ繝ｭ縺ｧ縺ｯ縺ｪ縺・・縺ｧ縺吶ｏ縺ｭ縲よｬ｡縺ｯ縺阪■繧薙→縺励◆隧穂ｾ｡繧呈悄蠕・＠縺ｾ縺吶ｏ縲・],
-      delinquent: ['窶ｦ窶ｦ縺ｾ縲√ぞ繝ｭ繧医ｊ繝槭す縺九よｬ｡縺ｯ繧ゅ▲縺ｨ蜃ｺ縺帙ｈ縺ｪ縲・],
-      cool: ['窶ｦ繧ｼ繝ｭ縺倥ｃ縺ｪ縺・↑繧峨√∪縺ゅ＞縺・よｬ｡縺ｯ譛溷ｾ・＠縺ｦ繧・],
-      seductive: ['窶ｦ窶ｦ縺ｾ縺ゅ∝ｰ代＠縺ｯ閠・∴縺ｦ縺上ｌ縺溘・縺ｭ縲よｬ｡縺ｯ繧ゅ▲縺ｨ譛溷ｾ・＠縺ｦ繧九ｏ繧遺劭'],
+      _default: ['……まあ、ゼロじゃないなら受けてやります。次は正当な評価を期待してますよ。'],
+      ojousama: ['……まあ、ゼロではないのですわね。次はきちんとした評価を期待しますわ。'],
+      delinquent: ['……ま、ゼロよりマシか。次はもっと出せよな。'],
+      cool: ['…ゼロじゃないなら、まあいい。次は期待してる'],
+      seductive: ['……まあ、少しは考えてくれたのね。次はもっと期待してるわよ♡'],
     },
     quiet: {
-      _default: ['縺昴ｌ縺縺代〒繧やｦ窶ｦ縺ゅｊ縺後◆縺・〒縺吶ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ窶ｦ縲・],
-      cool: ['窶ｦ蛻・°縺｣縺溘ゅ≠繧翫′縺ｨ縺・],
-      polite: ['蟆代＠縺ｧ繧ゆｸ翫￡縺ｦ縺・◆縺縺代ｋ縺ｪ繧薙※窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ窶ｦ縲・],
+      _default: ['それだけでも……ありがたいです。ありがとうございます……。'],
+      cool: ['…分かった。ありがとう'],
+      polite: ['少しでも上げていただけるなんて…ありがとうございます……。'],
     },
     shy: {
-      _default: ['縺昴√◎繧後□縺代〒繧やｦ縺ゅｊ縺後◆縺・〒縺吮ｦ縲ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ窶ｦ縲・],
+      _default: ['そ、それだけでも…ありがたいです…。ありがとうございます……。'],
     },
     easygoing: {
-      _default: ['繧薙・縲√∪縺ゅ＞縺｣縺具ｼ・繧ゅｉ縺医ｋ縺縺代Λ繝・く繝ｼ縺｣縺ｦ縺薙→縺ｧ・・],
-      delinquent: ['縺ｾ繝ｼ縺・＞縺具ｼ・繧ゅｉ縺医ｋ縺縺大┫縺代ｂ繧薙□縺懶ｼ・],
-      seductive: ['繧薙・縲√∪縺ゅ＞縺｣縺銀飭 豌玲戟縺｡縺ｯ莨昴ｏ縺｣縺溘＠笙｡'],
+      _default: ['んー、まあいっか！ もらえるだけラッキーってことで！'],
+      delinquent: ['まーいいか！ もらえるだけ儲けもんだぜ！'],
+      seductive: ['んー、まあいっか♪ 気持ちは伝わったし♡'],
     },
     earnest: {
-      _default: ['窶ｦ窶ｦ蛻・°繧翫∪縺励◆縲ら､ｾ髟ｷ縺ｮ蛻､譁ｭ繧貞ｰ企㍾縺励∪縺吶ゅ％縺ｮ鬘阪〒縲∫ｲｾ荳譚ｯ繧・ｊ縺ｾ縺吶・],
-      polite: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅ％縺ｮ鬘阪〒邊ｾ荳譚ｯ縲√♀蠢懊∴縺・◆縺励∪縺吶・],
-      ojousama: ['窶ｦ窶ｦ遉ｾ髟ｷ縺ｮ縺泌愛譁ｭ繧貞ｰ企㍾縺・◆縺励∪縺吶ｏ縲らｲｾ荳譚ｯ繧・ｊ縺ｾ縺吶ｏ縺ｭ縲・],
+      _default: ['……分かりました。社長の判断を尊重します。この額で、精一杯やります。'],
+      polite: ['……ありがとうございます。この額で精一杯、お応えいたします。'],
+      ojousama: ['……社長のご判断を尊重いたしますわ。精一杯やりますわね。'],
     },
     emotional: {
-      _default: ['窶ｦ窶ｦ譛ｬ蠖薙・雜ｳ繧翫↑縺・￠縺ｩ窶ｦ窶ｦ遉ｾ髟ｷ縺瑚・∴縺ｦ縺上ｌ縺溘▲縺ｦ縺薙→縺ｯ縲∽ｼ昴ｏ繧翫∪縺励◆縲・],
+      _default: ['……本当は足りないけど……社長が考えてくれたってことは、伝わりました。'],
     },
   },
-  // 笏笏 莠､貂牙､ｱ謨玲凾・井ｸｭ髢捺｡域拠蜷ｦ・・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 交渉失敗時（中間案拒否） ───────────────────────────────────────────
   raise_negotiate_refuse: {
     normal: {
-      _default: ['窶ｦ窶ｦ縺昴≧縺ｧ縺吶°縲ょ・縺九ｊ縺ｾ縺励◆縲・],
-      ojousama: ['窶ｦ窶ｦ蟾ｦ讒倥〒縺斐＊縺・∪縺吶°縲よ価遏･縺・◆縺励∪縺励◆繧上・],
-      delinquent: ['窶ｦ窶ｦ繝√ャ縲ゅ∪縺ょ・縺九▲縺溘ｈ縲・],
-      seductive: ['窶ｦ窶ｦ縺昴≧縲よｮ句ｿｵ縺ｭ縲・],
+      _default: ['……そうですか。分かりました。'],
+      ojousama: ['……左様でございますか。承知いたしましたわ。'],
+      delinquent: ['……チッ。まあ分かったよ。'],
+      seductive: ['……そう。残念ね。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺昴≧縺ｧ縺吶°縲ゅ∪縺ゅ＞縺・〒縺励ｇ縺・ゅ〒繧ゅ・遉ｾ髟ｷ縲∵ｬ｡縺ｯ縺ｪ縺・→諤昴▲縺ｦ縺上□縺輔＞縲・],
-      ojousama: ['窶ｦ窶ｦ蟾ｦ讒倥〒縺吶°縲ゅ〒縺吶′遉ｾ髟ｷ縲∵ｬ｡縺ｯ縺斐＊縺・∪縺帙ｓ繧上ｈ縲・],
-      delinquent: ['窶ｦ窶ｦ縺ｯ・・繝槭ず縺九ｈ縲やｦ窶ｦ縺ｾ縺ゅ＞縺・ゅ〒繧よｬ｡縺ｯ縺ｭ繝ｼ縺槭・],
-      cool: ['窶ｦ縺昴≧縲やｦ隕壹∴縺ｦ縺翫￥'],
-      seductive: ['窶ｦ窶ｦ縺ｵ縺・ｓ縲ゅ∪縺ゅ＞縺・ｏ縲ゅ〒繧ゅ・縲∵ｬ｡縺ｯ縺ｪ縺・°繧峨・・・],
+      _default: ['……そうですか。まあいいでしょう。でもね社長、次はないと思ってください。'],
+      ojousama: ['……左様ですか。ですが社長、次はございませんわよ。'],
+      delinquent: ['……は？ マジかよ。……まあいい。でも次はねーぞ。'],
+      cool: ['…そう。…覚えておく'],
+      seductive: ['……ふうん。まあいいわ。でもね、次はないからね？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺昴≧縲√〒縺吶°窶ｦ窶ｦ縲ょ・縺九ｊ縺ｾ縺励◆窶ｦ窶ｦ縲・],
-      cool: ['窶ｦ縺昴≧縲やｦ蛻・°縺｣縺・],
-      polite: ['窶ｦ窶ｦ縺昴≧縺ｧ縺吶°窶ｦ窶ｦ縲ょ・縺九ｊ縺ｾ縺励◆窶ｦ窶ｦ縲ゅ☆縺ｿ縺ｾ縺帙ｓ窶ｦ窶ｦ縲・],
+      _default: ['……そう、ですか……。分かりました……。'],
+      cool: ['…そう。…分かった'],
+      polite: ['……そうですか……。分かりました……。すみません……。'],
     },
     shy: {
-      _default: ['窶ｦ窶ｦ縺昴≧窶ｦ縺ｧ縺吶°窶ｦ窶ｦ縲ゅ☆縲√☆縺ｿ縺ｾ縺帙ｓ縲∝､峨↑縺薙→險縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['……そう…ですか……。す、すみません、変なこと言って……。'],
     },
     easygoing: {
-      _default: ['縺ゅ■繧・・縲√ム繝｡縺九・縲ゅ∪縺ゅ＠繧・≧縺後↑縺・ｈ縺ｭ繝ｼ縲やｦ窶ｦ縺ｧ繧ゅ■繧・▲縺ｨ縺ｸ縺薙・縺ｪ繝ｼ縲・],
-      delinquent: ['縺ゅ■繧・・縲√・繧ｸ縺九・縲ゅ∪繝ｼ縺励ｃ繝ｼ縺ｭ繝ｼ縺九・],
-      seductive: ['縺医・縲√ム繝｡・・窶ｦ縺ｾ縺ゅ＠繧・≧縺後↑縺・°縺√ゅ■繧・▲縺ｨ蟇ゅ＠縺・￠縺ｩ縲・],
+      _default: ['あちゃー、ダメかー。まあしょうがないよねー。……でもちょっとへこむなー。'],
+      delinquent: ['あちゃー、マジかー。まーしゃーねーか。'],
+      seductive: ['えー、ダメ？ …まあしょうがないかぁ。ちょっと寂しいけど。'],
     },
     earnest: {
-      _default: ['窶ｦ窶ｦ谿句ｿｵ縺ｧ縺吶′縲∽ｺ・ｧ｣縺励∪縺励◆縲ゅ◆縺縲√％縺ｮ蛻､譁ｭ縺ｮ邨先棡縺ｯ隕壹∴縺ｦ縺・※縺上□縺輔＞縲・],
-      polite: ['窶ｦ窶ｦ谿句ｿｵ縺ｧ縺吶′縲∵価遏･縺・◆縺励∪縺励◆縲ゅ〒縺吶′縲√％縺ｮ蛻､譁ｭ縺ｯ縺雁ｿ倥ｌ縺ｪ縺阪ｈ縺・・],
-      ojousama: ['窶ｦ窶ｦ谿句ｿｵ縺ｧ縺吶ｏ縲ゅ〒縺吶′縲√％縺ｮ蛻､譁ｭ縺ｮ邨先棡縺ｯ縺雁ｿ倥ｌ縺ｪ縺阪ｈ縺・・],
+      _default: ['……残念ですが、了解しました。ただ、この判断の結果は覚えていてください。'],
+      polite: ['……残念ですが、承知いたしました。ですが、この判断はお忘れなきよう。'],
+      ojousama: ['……残念ですわ。ですが、この判断の結果はお忘れなきよう。'],
     },
     emotional: {
-      _default: ['窶ｦ窶ｦ繧・▲縺ｱ繧岩ｦ窶ｦ繝繝｡縺ｪ繧薙□窶ｦ窶ｦ縲やｦ窶ｦ繧上°繧翫∪縺励◆縲・],
+      _default: ['……やっぱり……ダメなんだ……。……わかりました。'],
     },
   },
-  // 笏笏 譏・ｵｦ諡貞凄譎・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 昇給拒否時 ─────────────────────────────────────────────────────────
   raise_refuse: {
     normal: {
-      _default: ['窶ｦ窶ｦ縺昴≧縺ｧ縺吶°縲ょ・縺九ｊ縺ｾ縺励◆縲やｦ窶ｦ縺｡繧・▲縺ｨ谿句ｿｵ縺ｧ縺吶￠縺ｩ縲・],
-      ojousama: ['窶ｦ窶ｦ縺昴≧縺ｧ縺吶・縲よ価遏･縺・◆縺励∪縺励◆繧鞘ｦ窶ｦ縲・],
-      delinquent: ['窶ｦ窶ｦ繝槭ず縺九ｈ縲やｦ窶ｦ縺ｾ縺ゅ＞縺・￠縺ｩ縺輔・],
-      seductive: ['窶ｦ窶ｦ縺昴≧縲よｮ句ｿｵ縺縺代←窶ｦ莉墓婿縺ｪ縺・ｏ縺ｭ縲・],
+      _default: ['……そうですか。分かりました。……ちょっと残念ですけど。'],
+      ojousama: ['……そうですの。承知いたしましたわ……。'],
+      delinquent: ['……マジかよ。……まあいいけどさ。'],
+      seductive: ['……そう。残念だけど…仕方ないわね。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ窶ｦ窶ｦ縲ゅ◎縺・〒縺吶°縲ょ・縺九ｊ縺ｾ縺励◆縲ゅ〒繧ゅ・遉ｾ髟ｷ縲∵・諷｢縺ｮ髯千阜縺｣縺ｦ繧ゅ・縺後≠繧九ｓ縺ｧ縲ゅ◎縺ｮ縺､繧ゅｊ縺ｧ縺・※縺上□縺輔＞縲・],
-      ojousama: ['窶ｦ窶ｦ窶ｦ窶ｦ縲ゅ◎縺・〒縺吶°縲ゅｏ縺溘￥縺励↓繧る剞蠎ｦ縺ｨ縺・≧繧ゅ・縺後＃縺悶＞縺ｾ縺吶ｏ縲・],
-      delinquent: ['窶ｦ窶ｦ縺ｯ・・窶ｦ窶ｦ縺ｵ繝ｼ繧薙ゅ∪縺ゅ＞縺・￠縺ｩ繧医・剞逡後▲縺ｦ繧ゅｓ縺後≠繧九°繧峨↑縲・],
-      cool: ['窶ｦ縺昴≧縲やｦ謌第・縺ｫ繧ゅ・剞逡後・縺ゅｋ'],
-      seductive: ['窶ｦ窶ｦ縺ｵ縺・ｓ縲ゅ∪縺ゅ＞縺・￠縺ｩ縲∵・諷｢縺ｫ繧る剞蠎ｦ縺後≠繧九°繧峨・・・],
+      _default: ['…………。そうですか。分かりました。でもね社長、我慢の限界ってものがあるんで。そのつもりでいてください。'],
+      ojousama: ['…………。そうですか。わたくしにも限度というものがございますわ。'],
+      delinquent: ['……は？ ……ふーん。まあいいけどよ、限界ってもんがあるからな。'],
+      cool: ['…そう。…我慢にも、限界はある'],
+      seductive: ['……ふうん。まあいいけど、我慢にも限度があるからね？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ｯ縺・ｦ窶ｦ蛻・°繧翫∪縺励◆窶ｦ窶ｦ縲やｦ窶ｦ縺吶∩縺ｾ縺帙ｓ縲∝､峨↑縺薙→險縺｣縺ｦ窶ｦ窶ｦ縲・],
-      cool: ['窶ｦ縺昴≧縲やｦ窶ｦ蛻・°縺｣縺・],
-      polite: ['窶ｦ窶ｦ縺ｯ縺・ｦ蛻・°繧翫∪縺励◆窶ｦ窶ｦ縲ゅ☆縺ｿ縺ｾ縺帙ｓ縲√＃辟｡逅・ｒ險縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['……はい……分かりました……。……すみません、変なこと言って……。'],
+      cool: ['…そう。……分かった'],
+      polite: ['……はい…分かりました……。すみません、ご無理を言って……。'],
     },
     shy: {
-      _default: ['窶ｦ窶ｦ縺ｯ縲√・縺・ｦ蛻・°繧翫∪縺励◆窶ｦ窶ｦ縲ゅ☆縲√☆縺ｿ縺ｾ縺帙ｓ縺ｧ縺励◆窶ｦ窶ｦ縲・],
+      _default: ['……は、はい…分かりました……。す、すみませんでした……。'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ縲√ｄ縺｣縺ｱ繧翫・・・縺ｾ繝ｼ縺励ｇ縺・′縺ｪ縺・▲縺九ゅ〒繧ゅ＞縺､縺倶ｸ翫￡縺ｦ縺ｭ・・邏・據縺繧医・・・],
-      delinquent: ['縺ゅ・縲√ｄ縺｣縺ｱ繝繝｡縺九ゅ∪繝ｼ縺・＞縺代←縺輔√＞縺､縺倶ｸ翫￡繧阪ｈ縺ｪ・・],
-      seductive: ['縺医・縲√ｄ縺｣縺ｱ繧翫ム繝｡・・窶ｦ縺・▽縺倶ｸ翫￡縺ｦ縺ｭ・・邏・據繧遺劭'],
+      _default: ['あはは、やっぱりー？ まーしょうがないっか。でもいつか上げてね？ 約束だよー？'],
+      delinquent: ['あー、やっぱダメか。まーいいけどさ、いつか上げろよな？'],
+      seductive: ['えー、やっぱりダメ？ …いつか上げてね？ 約束よ♡'],
     },
     earnest: {
-      _default: ['窶ｦ窶ｦ謇ｿ遏･縺励∪縺励◆縲ゅ〒縺吶′縲√％縺ｮ縺ｾ縺ｾ螟峨ｏ繧峨↑縺代ｌ縺ｰ縲√＞縺壹ｌ閠・∴繧呈隼繧√＊繧九ｒ蠕励∪縺帙ｓ縲・],
-      polite: ['窶ｦ窶ｦ謇ｿ遏･縺・◆縺励∪縺励◆縲ゅ〒縺吶′縲√％縺ｮ縺ｾ縺ｾ縺ｧ縺ｯ窶ｦ縺・★繧瑚・∴縺悶ｋ繧貞ｾ励∪縺帙ｓ縲・],
-      ojousama: ['窶ｦ窶ｦ謇ｿ遏･縺・◆縺励∪縺励◆繧上ゅ〒縺吶′縲√％縺ｮ縺ｾ縺ｾ螟峨ｏ繧峨↑縺代ｌ縺ｰ窶ｦ縲・],
+      _default: ['……承知しました。ですが、このまま変わらなければ、いずれ考えを改めざるを得ません。'],
+      polite: ['……承知いたしました。ですが、このままでは…いずれ考えざるを得ません。'],
+      ojousama: ['……承知いたしましたわ。ですが、このまま変わらなければ…。'],
     },
     emotional: {
-      _default: ['窶ｦ窶ｦ縺｣・・窶ｦ窶ｦ繧ゅ≧縺・＞縺ｧ縺吶ょ・縺九ｊ縺ｾ縺励◆縲やｦ窶ｦ謔斐＠縺・ｦ窶ｦ縲・],
+      _default: ['……っ！ ……もういいです。分かりました。……悔しい……。'],
     },
   },
-  // 笏笏 蠑輔″逡吶ａ謌仙粥 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 引き留め成功 ───────────────────────────────────────────────────────
   transfer_retain_success: {
     normal: {
-      _default: ['窶ｦ窶ｦ縺昴％縺ｾ縺ｧ縺励※縺上ｌ繧九ｓ縺ｧ縺吶・縲やｦ蛻・°繧翫∪縺励◆縲ゅｂ縺・ｰ代＠鬆大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺吶・],
-      ojousama: ['窶ｦ窶ｦ縺昴％縺ｾ縺ｧ縺翫▲縺励ｃ繧九↑繧峨ゅｂ縺・ｰ代＠縺贋ｻ倥″蜷医＞縺・◆縺励∪縺吶ｏ縲・],
-      delinquent: ['窶ｦ窶ｦ繝槭ず縺九ｈ縲ゅ◎縺薙∪縺ｧ險縺・↑繧峨√ｂ縺・■繧・＞縺・※繧・ｋ縺九・],
-      seductive: ['窶ｦ窶ｦ縺昴％縺ｾ縺ｧ縺励※縺上ｌ繧九・・・窶ｦ繧ゅ≧蟆代＠縺縺代√＞縺ｦ縺ゅ￡繧銀劭'],
+      _default: ['……そこまでしてくれるんですね。…分かりました。もう少し頑張ってみます。'],
+      ojousama: ['……そこまでおっしゃるなら。もう少しお付き合いいたしますわ。'],
+      delinquent: ['……マジかよ。そこまで言うなら、もうちょいいてやるか。'],
+      seductive: ['……そこまでしてくれるの？ …もう少しだけ、いてあげる♡'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ繝√ャ縲ゆｻ墓婿縺ｪ縺・ゅ◎縺薙∪縺ｧ險縺・↑繧峨√ｂ縺・ｰ代＠縺縺台ｻ倥″蜷医▲縺ｦ繧・ｊ縺ｾ縺吶・],
-      ojousama: ['窶ｦ窶ｦ莉墓婿縺ゅｊ縺ｾ縺帙ｓ繧上・縲ゅ◎縺薙∪縺ｧ縺ｮ隱諢上√ｂ縺・ｰ代＠隕句ｱ翫￠縺ｾ縺吶ｏ縲・],
-      delinquent: ['窶ｦ窶ｦ繝√ャ縲ゅ◎縺薙∪縺ｧ險縺・↑繧峨√ｂ縺・■繧・＞莉倥″蜷医▲縺ｦ繧・ｋ繧医・],
-      cool: ['窶ｦ縺昴％縺ｾ縺ｧ險縺・↑繧峨√ｂ縺・ｰ代＠縺縺・],
-      seductive: ['窶ｦ窶ｦ莉墓婿縺ｪ縺・ｏ縺ｭ縲ゅ◎縺薙∪縺ｧ險縺・↑繧峨√ｂ縺・ｰ代＠縺縺台ｻ倥″蜷医▲縺ｦ縺ゅ￡繧九・],
+      _default: ['……チッ。仕方ない。そこまで言うなら、もう少しだけ付き合ってやります。'],
+      ojousama: ['……仕方ありませんわね。そこまでの誠意、もう少し見届けますわ。'],
+      delinquent: ['……チッ。そこまで言うなら、もうちょい付き合ってやるよ。'],
+      cool: ['…そこまで言うなら、もう少しだけ'],
+      seductive: ['……仕方ないわね。そこまで言うなら、もう少しだけ付き合ってあげる。'],
     },
     quiet: {
-      _default: ['縺医▲窶ｦ窶ｦ縺昴％縺ｾ縺ｧ縺励※縺上ｌ繧九ｓ縺ｧ縺吶°窶ｦ窶ｦ・・窶ｦ窶ｦ繧ゅ≧蟆代＠縺縺代・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺吮ｦ窶ｦ縲・],
-      cool: ['窶ｦ縺昴％縺ｾ縺ｧ險縺・↑繧峨やｦ繧ゅ≧蟆代＠縺縺・],
-      polite: ['縺医▲窶ｦ縺昴％縺ｾ縺ｧ縺励※縺上□縺輔ｋ繧薙〒縺吶°窶ｦ・・窶ｦ窶ｦ繧ゅ≧蟆代＠縺縺代・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺吮ｦ窶ｦ縲・],
+      _default: ['えっ……そこまでしてくれるんですか……？ ……もう少しだけ、頑張ってみます……。'],
+      cool: ['…そこまで言うなら。…もう少しだけ'],
+      polite: ['えっ…そこまでしてくださるんですか…？ ……もう少しだけ、頑張ってみます……。'],
     },
     shy: {
-      _default: ['縺遺ｦ縺昴√◎縺薙∪縺ｧ縺励※縺上ｌ繧九ｓ縺ｧ縺吶°窶ｦ・・窶ｦ窶ｦ縺ゅ・窶ｦ繧ゅ≧蟆代＠縺縺鯛ｦ鬆大ｼｵ繧翫∪縺吮ｦ窶ｦ縲・],
+      _default: ['え…そ、そこまでしてくれるんですか…？ ……あの…もう少しだけ…頑張ります……。'],
     },
     easygoing: {
-      _default: ['縺医√・繧ｸ・・縺昴％縺ｾ縺ｧ縺励※縺上ｌ繧薙・・・窶ｦ窶ｦ縺倥ｃ縺ゅｂ縺・■繧・▲縺ｨ縺・ｈ縺｣縺九↑・・],
-      delinquent: ['繝槭ず縺九ｈ縲ゅ◎縺薙∪縺ｧ縺励※縺上ｌ繧薙・・・縺倥ｃ繝ｼ繧ゅ≧縺｡繧・＞縺・ｋ縺具ｼ・],
-      seductive: ['縺医√◎縺薙∪縺ｧ縺励※縺上ｌ繧九・・・窶ｦ縺倥ｃ縺ゅｂ縺・■繧・▲縺ｨ縺・ｈ縺｣縺九↑笙ｪ'],
+      _default: ['え、マジ？ そこまでしてくれんの？ ……じゃあもうちょっといよっかな！'],
+      delinquent: ['マジかよ。そこまでしてくれんの？ じゃーもうちょいいるか！'],
+      seductive: ['え、そこまでしてくれるの？ …じゃあもうちょっといよっかな♪'],
     },
     earnest: {
-      _default: ['窶ｦ窶ｦ遉ｾ髟ｷ縺ｮ隱諢上∝女縺第ｭ｢繧√∪縺励◆縲ゅｂ縺・ｸ蠎ｦ縲√％縺ｮ蝗｣菴薙〒蜈ｨ蜉帙ｒ蟆ｽ縺上＠縺ｾ縺吶・],
-      polite: ['窶ｦ窶ｦ遉ｾ髟ｷ縺ｮ縺頑ｰ玲戟縺｡縲√＠縺九→蜿励￠豁｢繧√∪縺励◆縲ゅｂ縺・ｸ蠎ｦ縲∝・蜉帙ｒ蟆ｽ縺上＆縺帙※縺上□縺輔＞縲・],
-      ojousama: ['窶ｦ窶ｦ縺昴・隱諢上√＠縺九→蜿励￠豁｢繧√∪縺励◆繧上ゅｂ縺・ｸ蠎ｦ縲∝・蜉帙〒閾ｨ縺ｿ縺ｾ縺吶ｏ縲・],
+      _default: ['……社長の誠意、受け止めました。もう一度、この団体で全力を尽くします。'],
+      polite: ['……社長のお気持ち、しかと受け止めました。もう一度、全力を尽くさせてください。'],
+      ojousama: ['……その誠意、しかと受け止めましたわ。もう一度、全力で臨みますわ。'],
     },
     emotional: {
-      _default: ['遉ｾ髟ｷ窶ｦ窶ｦ・・窶ｦ窶ｦ縺斐ａ繧薙↑縺輔＞縲√％繧薙↑遘√・縺溘ａ縺ｫ窶ｦ窶ｦ縲やｦ窶ｦ邨ｶ蟇ｾ縲∵←霑斐＠縺励∪縺吮ｦ窶ｦ・・],
+      _default: ['社長……！ ……ごめんなさい、こんな私のために……。……絶対、恩返しします……！'],
     },
   },
-  // 笏笏 蠑輔″逡吶ａ螟ｱ謨・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 引き留め失敗 ───────────────────────────────────────────────────────
   transfer_retain_fail: {
     normal: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後◆縺・ｓ縺ｧ縺吶￠縺ｩ窶ｦ繧ゅ≧縲∵ｱｺ繧√◆繧薙〒縺吶ゅ☆縺ｿ縺ｾ縺帙ｓ縲・],
-      ojousama: ['縺頑ｰ玲戟縺｡縺ｯ螫峨＠繧・≧縺斐＊縺・∪縺吶′窶ｦ繧ゅ≧縲∵ｱｺ繧√∪縺励◆縺ｮ縲・],
-      delinquent: ['窶ｦ窶ｦ謔ｪ縺・￠縺ｩ縲√ｂ縺・ｱｺ繧√◆繧薙□繧医よｰ玲戟縺｡縺ｯ螟峨ｏ繧峨・繝ｼ縲・],
-      seductive: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・ゅ〒繧やｦ繧ゅ≧豎ｺ繧√◆縺ｮ縲ゅ＃繧√ｓ縺ｭ縲・],
+      _default: ['……ありがたいんですけど…もう、決めたんです。すみません。'],
+      ojousama: ['お気持ちは嬉しゅうございますが…もう、決めましたの。'],
+      delinquent: ['……悪いけど、もう決めたんだよ。気持ちは変わらねー。'],
+      seductive: ['……ありがとう。でも…もう決めたの。ごめんね。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ謔ｪ縺・￠縺ｩ縲√ｂ縺・ｱｺ繧√◆繧薙〒縺吶よｰ玲戟縺｡縺ｯ螟峨ｏ繧翫∪縺帙ｓ縲・],
-      ojousama: ['窶ｦ窶ｦ逕ｳ縺苓ｨｳ縺斐＊縺・∪縺帙ｓ縺後∵ｱｺ蠢・・謠ｺ繧九℃縺ｾ縺帙ｓ繧上・],
-      delinquent: ['窶ｦ窶ｦ謔ｪ縺・￠縺ｩ縲√ｂ縺・ｱｺ繧√◆縲ゆｽ戊ｨ繧上ｌ縺ｦ繧ょ､峨ｏ繧峨・繝ｼ縲・],
-      cool: ['窶ｦ豎ｺ繧√◆縲ょ､峨ｏ繧峨↑縺・],
-      seductive: ['窶ｦ窶ｦ謔ｪ縺・￠縺ｩ縲√ｂ縺・ｱｺ繧√◆縺ｮ縲やｦ蠑輔″豁｢繧√※繧ら┌鬧・ｈ縲・],
+      _default: ['……悪いけど、もう決めたんです。気持ちは変わりません。'],
+      ojousama: ['……申し訳ございませんが、決心は揺るぎませんわ。'],
+      delinquent: ['……悪いけど、もう決めた。何言われても変わらねー。'],
+      cool: ['…決めた。変わらない'],
+      seductive: ['……悪いけど、もう決めたの。…引き止めても無駄よ。'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ窶ｦ縲ゅ≠繧翫′縺溘＞繧薙〒縺吶￠縺ｩ窶ｦ窶ｦ繧ゅ≧縲∵ｱｺ繧√◆繧薙〒縺吮ｦ窶ｦ縲・],
-      cool: ['窶ｦ縺斐ａ繧薙やｦ繧ゅ≧豎ｺ繧√◆'],
-      polite: ['窶ｦ窶ｦ縺ゅｊ縺後◆縺・・縺ｧ縺吶′窶ｦ窶ｦ繧ゅ≧縲∵ｱｺ繧√∪縺励◆窶ｦ窶ｦ縲ゅ☆縺ｿ縺ｾ縺帙ｓ窶ｦ窶ｦ縲・],
+      _default: ['……ごめんなさい……。ありがたいんですけど……もう、決めたんです……。'],
+      cool: ['…ごめん。…もう決めた'],
+      polite: ['……ありがたいのですが……もう、決めました……。すみません……。'],
     },
     shy: {
-      _default: ['窶ｦ縺斐√＃繧√ｓ縺ｪ縺輔＞窶ｦ窶ｦ縲ゅ〒繧やｦ繧ゅ≧縲∵ｱｺ繧√◆繧薙〒縺吮ｦ窶ｦ縲・],
+      _default: ['…ご、ごめんなさい……。でも…もう、決めたんです……。'],
     },
     easygoing: {
-      _default: ['縺斐ａ繧薙・遉ｾ髟ｷ窶ｦ窶ｦ縲ゅ♀驥代・蝠城｡後§繧・↑縺・ｓ縺繧医・縲ょｿ・′豎ｺ縺ｾ縺｣縺｡繧・▲縺溘°繧峨・],
-      delinquent: ['謔ｪ縺・↑遉ｾ髟ｷ縲る≡縺ｮ蝠城｡後§繧・・繝ｼ繧薙□繧医ゅｂ縺・ｱｺ繧√■縺ｾ縺｣縺溘°繧峨・],
-      seductive: ['縺斐ａ繧薙・遉ｾ髟ｷ窶ｦ縲ゅ♀驥代§繧・↑縺・・縲よｰ玲戟縺｡縺梧ｱｺ縺ｾ縺｣縺｡繧・▲縺溘°繧俄ｦ縲・],
+      _default: ['ごめんね社長……。お金の問題じゃないんだよね。心が決まっちゃったから。'],
+      delinquent: ['悪いな社長。金の問題じゃねーんだよ。もう決めちまったから。'],
+      seductive: ['ごめんね社長…。お金じゃないの。気持ちが決まっちゃったから…。'],
     },
     earnest: {
-      _default: ['縺頑ｰ玲戟縺｡縺ｯ縺ゅｊ縺後◆縺・・縺ｧ縺吶′窶ｦ窶ｦ縺薙・豎ｺ譁ｭ縺ｯ縲√★縺｣縺ｨ閠・∴謚懊＞縺滓忰縺ｮ繧ゅ・縺ｧ縺吶ら筏縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ縲・],
-      polite: ['縺雁ｿ・▲縺・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ゅ〒縺吶′窶ｦ縺薙・豎ｺ譁ｭ縺ｯ螟峨ｏ繧翫∪縺帙ｓ縲ら筏縺苓ｨｳ縺斐＊縺・∪縺帙ｓ縲・],
-      ojousama: ['縺頑ｰ玲戟縺｡縺ｯ螫峨＠繧・≧縺斐＊縺・∪縺吶ｏ縲ゅ〒縺吶′窶ｦ縺薙・豎ｺ譁ｭ縺ｯ謠ｺ繧九℃縺ｾ縺帙ｓ縲ら筏縺苓ｨｳ縺斐＊縺・∪縺帙ｓ縲・],
+      _default: ['お気持ちはありがたいのですが……この決断は、ずっと考え抜いた末のものです。申し訳ありません。'],
+      polite: ['お心遣い、ありがとうございます。ですが…この決断は変わりません。申し訳ございません。'],
+      ojousama: ['お気持ちは嬉しゅうございますわ。ですが…この決断は揺るぎません。申し訳ございません。'],
     },
     emotional: {
-      _default: ['遉ｾ髟ｷ窶ｦ窶ｦ縺ゅｊ縺後→縺・ｦ窶ｦ縲ゅ〒繧やｦ窶ｦ繧ゅ≧謌ｻ繧後↑縺・ｓ縺ｧ縺吮ｦ窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ窶ｦ・・],
+      _default: ['社長……ありがとう……。でも……もう戻れないんです……ごめんなさい……！'],
     },
   },
-  // 笏笏 騾√ｊ蜃ｺ縺・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 送り出し ───────────────────────────────────────────────────────────
   transfer_release: {
     normal: {
-      _default: ['窶ｦ窶ｦ蛻・°繧翫∪縺励◆縲・tenure_farewell}{rivalry}縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆縲・],
-      ojousama: ['窶ｦ窶ｦ謇ｿ遏･縺・◆縺励∪縺励◆繧上・tenure_farewell}{rivalry}縺斐″縺偵ｓ繧医≧縲・],
-      delinquent: ['窶ｦ窶ｦ縺翫≧縲・tenure_farewell}{rivalry}縺倥ｃ繝ｼ縺ｪ縲・],
-      seductive: ['窶ｦ窶ｦ縺昴≧縲・tenure_farewell}{rivalry}蜈・ｰ励〒縺ｭ縲・],
+      _default: ['……分かりました。{tenure_farewell}{rivalry}お世話になりました。'],
+      ojousama: ['……承知いたしましたわ。{tenure_farewell}{rivalry}ごきげんよう。'],
+      delinquent: ['……おう。{tenure_farewell}{rivalry}じゃーな。'],
+      seductive: ['……そう。{tenure_farewell}{rivalry}元気でね。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺ｵ繧薙ゅ∪縺ゅ√◎縺・↑繧九□繧阪≧縺ｨ諤昴▲縺ｦ縺溘・rivalry}縺倥ｃ縺ゅ・縲∫､ｾ髟ｷ縲・],
-      ojousama: ['窶ｦ窶ｦ縺ｵ縺ｵ縲ゆｺ域Φ騾壹ｊ縺ｧ縺吶ｏ縲・rivalry}縺斐″縺偵ｓ繧医≧縲∫､ｾ髟ｷ縲・],
-      delinquent: ['窶ｦ窶ｦ縺繧阪≧縺ｪ縲ょ・縺九▲縺ｦ縺溘●縲・rivalry}縺倥ｃ繝ｼ縺ｪ縲∫､ｾ髟ｷ縲・],
-      cool: ['窶ｦ縺昴≧縲・rivalry}窶ｦ縺倥ｃ縺・],
-      seductive: ['窶ｦ窶ｦ縺ｵ縺ｵ縲∽ｺ域Φ騾壹ｊ縺ｭ縲・rivalry}縺倥ｃ縺ゅ・縲∫､ｾ髟ｷ縲・],
+      _default: ['……ふん。まあ、そうなるだろうと思ってた。{rivalry}じゃあね、社長。'],
+      ojousama: ['……ふふ。予想通りですわ。{rivalry}ごきげんよう、社長。'],
+      delinquent: ['……だろうな。分かってたぜ。{rivalry}じゃーな、社長。'],
+      cool: ['…そう。{rivalry}…じゃあ'],
+      seductive: ['……ふふ、予想通りね。{rivalry}じゃあね、社長。'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆縲・tenure_farewell}{rivalry}窶ｦ窶ｦ縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆縲・],
-      cool: ['窶ｦ{tenure_farewell}{rivalry}窶ｦ縺ゅｊ縺後→縺・],
-      polite: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆縲・tenure_farewell}{rivalry}窶ｦ縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆窶ｦ窶ｦ縲・],
+      _default: ['……ありがとうございました。{tenure_farewell}{rivalry}……お世話になりました。'],
+      cool: ['…{tenure_farewell}{rivalry}…ありがとう'],
+      polite: ['……ありがとうございました。{tenure_farewell}{rivalry}…お世話になりました……。'],
     },
     shy: {
-      _default: ['窶ｦ縺ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺励◆窶ｦ縲・tenure_farewell}{rivalry}窶ｦ縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆窶ｦ窶ｦ縲・],
+      _default: ['…あ、ありがとうございました…。{tenure_farewell}{rivalry}…お世話になりました……。'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ縲√∪縺ゅ◎縺・↑繧九ｈ縺ｭ繝ｼ縲・tenure_farewell}{rivalry}蜈・ｰ励〒縺ｭ繝ｼ・・],
-      delinquent: ['縺ｾ繝ｼ縺昴≧縺ｪ繧九ｈ縺ｪ繝ｼ縲・tenure_farewell}{rivalry}蜈・ｰ励〒縺ｪ・・],
-      seductive: ['縺ゅ・縺ｯ縲√◎縺・↑繧九ｈ縺ｭ縲・tenure_farewell}{rivalry}蜈・ｰ励〒縺ｭ・樞飭'],
+      _default: ['あはは、まあそうなるよねー。{tenure_farewell}{rivalry}元気でねー！'],
+      delinquent: ['まーそうなるよなー。{tenure_farewell}{rivalry}元気でな！'],
+      seductive: ['あはは、そうなるよね。{tenure_farewell}{rivalry}元気でね～♪'],
     },
     earnest: {
-      _default: ['窶ｦ窶ｦ謇ｿ遏･縺励∪縺励◆縲・tenure_farewell}縺薙・蝗｣菴薙〒驕弱＃縺励◆譌･縲・↓縲∵─隰昴＠縺ｾ縺吶・rivalry}'],
-      polite: ['窶ｦ窶ｦ謇ｿ遏･縺・◆縺励∪縺励◆縲・tenure_farewell}縺薙・蝗｣菴薙〒縺ｮ譌･縲・↓縲∝ｿ・°繧画─隰昴＞縺溘＠縺ｾ縺吶・rivalry}'],
-      ojousama: ['窶ｦ窶ｦ謇ｿ遏･縺・◆縺励∪縺励◆繧上・tenure_farewell}縺薙■繧峨〒縺ｮ譌･縲・∝ｿ倥ｌ縺ｾ縺帙ｓ繧上・rivalry}'],
+      _default: ['……承知しました。{tenure_farewell}この団体で過ごした日々に、感謝します。{rivalry}'],
+      polite: ['……承知いたしました。{tenure_farewell}この団体での日々に、心から感謝いたします。{rivalry}'],
+      ojousama: ['……承知いたしましたわ。{tenure_farewell}こちらでの日々、忘れませんわ。{rivalry}'],
     },
     emotional: {
-      _default: ['{tenure_farewell}窶ｦ窶ｦ縺薙％縺ｧ縺ｮ譎る俣縺ｯ縲∝ｿ倥ｌ縺ｾ縺帙ｓ窶ｦ窶ｦ縲・rivalry}窶ｦ窶ｦ縺輔ｈ縺・↑繧俄ｦ窶ｦ縲・],
+      _default: ['{tenure_farewell}……ここでの時間は、忘れません……。{rivalry}……さようなら……。'],
     },
   },
-  // 笏笏 逅・罰繧定◇縺・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 理由を聞く ─────────────────────────────────────────────────────────
   transfer_listen: {
     normal: {
-      _default: ['閨槭＞縺ｦ縺上ｌ繧九ｓ縺ｧ縺吶・縲・record}豁｣逶ｴ縲∵眠縺励＞蝣ｴ謇縺ｧ謖第姶縺励※縺ｿ縺溘＞繧薙〒縺吶・],
-      ojousama: ['縺願ｳ繧貞だ縺代※縺上□縺輔ｋ縺ｮ縺ｭ縲・record}譁ｰ縺溘↑蝣ｴ謇縺ｧ蟾ｱ繧定ｩｦ縺励◆縺・・縺ｧ縺吶ｏ縲・],
-      delinquent: ['閨槭＞縺ｦ縺上ｌ繧薙・縺九・record}豁｣逶ｴ縲√ｂ縺｣縺ｨ髱｢逋ｽ縺医→縺薙〒繧・ｊ縺ｦ繝ｼ繧薙□繧医・],
-      seductive: ['閨槭＞縺ｦ縺上ｌ繧九・・・{record}窶ｦ譁ｰ縺励＞蝣ｴ謇縺ｧ縲∬・蛻・ｒ隧ｦ縺励※縺ｿ縺溘＞縺ｮ縲・],
+      _default: ['聞いてくれるんですね。{record}正直、新しい場所で挑戦してみたいんです。'],
+      ojousama: ['お耳を傾けてくださるのね。{record}新たな場所で己を試したいのですわ。'],
+      delinquent: ['聞いてくれんのか。{record}正直、もっと面白えとこでやりてーんだよ。'],
+      seductive: ['聞いてくれるの？ {record}…新しい場所で、自分を試してみたいの。'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上ｌ繧九・縺九・record}豁｣逶ｴ縲√ｂ縺｣縺ｨ荳翫・闊槫床縺ｧ髣倥＞縺溘＞繧薙〒縺吶ゅ％縺薙§繧・黄雜ｳ繧翫↑縺・・],
-      ojousama: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上□縺輔ｋ縺ｮ縲・record}繧上◆縺上＠縲√ｂ縺｣縺ｨ荳翫・闊槫床繧呈ｱゅａ縺ｦ縺翫ｊ縺ｾ縺吶・縲・],
-      delinquent: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上ｌ繧薙・縺九・record}豁｣逶ｴ縲√ｂ縺｣縺ｨ荳翫〒髣倥＞縺ｦ繝ｼ繧薙□繧医ら黄雜ｳ繧翫・繝ｼ縲・],
-      cool: ['窶ｦ閨槭＞縺ｦ縺上ｌ繧九・縺九・record}窶ｦ繧ゅ▲縺ｨ荳翫〒髣倥＞縺溘＞縲ゅ◎繧後□縺代□'],
-      seductive: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上ｌ繧九・縲・record}豁｣逶ｴ縺ｭ縲√ｂ縺｣縺ｨ螟ｧ縺阪↑闊槫床縺瑚ｦ九◆縺・・縲・],
+      _default: ['……聞いてくれるのか。{record}正直、もっと上の舞台で闘いたいんです。ここじゃ物足りない。'],
+      ojousama: ['……聞いてくださるの。{record}わたくし、もっと上の舞台を求めておりますの。'],
+      delinquent: ['……聞いてくれんのか。{record}正直、もっと上で闘いてーんだよ。物足りねー。'],
+      cool: ['…聞いてくれるのか。{record}…もっと上で闘いたい。それだけだ'],
+      seductive: ['……聞いてくれるの。{record}正直ね、もっと大きな舞台が見たいの。'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上ｌ繧九ｓ縺ｧ縺吶°窶ｦ窶ｦ縲・record}遘≫ｦ窶ｦ縺薙％縺ｫ縺・ｋ諢丞袖縺後∝・縺九ｉ縺ｪ縺上↑縺｣縺ｦ窶ｦ窶ｦ縲・],
-      cool: ['窶ｦ閨槭＞縺ｦ縺上ｌ繧九ｓ縺縲・record}窶ｦ縺薙％縺ｫ縺・ｋ諢丞袖縺後∝・縺九ｉ縺ｪ縺・],
-      polite: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上□縺輔ｋ繧薙〒縺吶°窶ｦ窶ｦ縲・record}遘≫ｦ縺薙％縺ｫ縺・ｋ諢丞袖縺後∬ｦ九∴縺ｪ縺上↑縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['……聞いてくれるんですか……。{record}私……ここにいる意味が、分からなくなって……。'],
+      cool: ['…聞いてくれるんだ。{record}…ここにいる意味が、分からない'],
+      polite: ['……聞いてくださるんですか……。{record}私…ここにいる意味が、見えなくなって……。'],
     },
     shy: {
-      _default: ['縺遺ｦ閨槭＞縺ｦ縺上ｌ繧九ｓ縺ｧ縺吶°窶ｦ・・{record}縺ゅ・窶ｦ遘≫ｦ縺薙％縺ｫ縺・※縺・＞縺ｮ縺九∝・縺九ｉ縺ｪ縺上↑縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['え…聞いてくれるんですか…？ {record}あの…私…ここにいていいのか、分からなくなって……。'],
     },
     easygoing: {
-      _default: ['閨槭＞縺ｦ縺上ｌ繧九・・・縺・・繧凪ｦ窶ｦ{record}縺ｪ繧薙°縺輔√・繝ｳ繝阪Μ縺｣縺ｦ縺・≧縺九よ眠縺励＞縺薙→縺励◆縺・ｓ縺繧医・縲・],
-      delinquent: ['閨槭＞縺ｦ縺上ｌ繧薙・・・{record}縺ｪ繧薙▽繝ｼ縺九√・繝ｳ繝阪Μ縺ｪ繧薙□繧医↑縲よ眠縺励＞縺ｨ縺楢｡後″縺ｦ繝ｼ繧薙□縲・],
-      seductive: ['閨槭＞縺ｦ縺上ｌ繧九・・・縺・・繧凪ｦ{record}縺ｪ繧薙°縺ｭ縲∵眠縺励＞縺薙→蟋九ａ縺溘＞縺ｪ縺｣縺ｦ笙ｪ'],
+      _default: ['聞いてくれるの？ うーん……{record}なんかさ、マンネリっていうか。新しいことしたいんだよね。'],
+      delinquent: ['聞いてくれんの？ {record}なんつーか、マンネリなんだよな。新しいとこ行きてーんだ。'],
+      seductive: ['聞いてくれるの？ うーん…{record}なんかね、新しいこと始めたいなって♪'],
     },
     earnest: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶・record}閾ｪ蛻・↑繧翫↓閠・∴縺溽ｵ先棡縺ｧ縺吶ゅ％縺薙〒縺ｮ邨碁ｨ薙・諢溯ｬ昴＠縺ｦ縺・∪縺吶ゅ〒縺吶′窶ｦ窶ｦ譁ｰ縺励＞迺ｰ蠅・〒謖第姶縺励◆縺・・縺ｧ縺吶・],
-      polite: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶・record}縺薙％縺ｧ縺ｮ邨碁ｨ薙↓縺ｯ蠢・°繧画─隰昴＠縺ｦ縺翫ｊ縺ｾ縺吶ゅ〒縺吶′窶ｦ譁ｰ縺励＞迺ｰ蠅・〒謖第姶縺輔○縺ｦ縺上□縺輔＞縲・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ｏ縲・record}縺薙■繧峨〒縺ｮ邨碁ｨ薙・荳逕溘・螳昴〒縺吶ｏ縲ゅ〒縺吶′窶ｦ譁ｰ螟ｩ蝨ｰ縺ｧ謖第姶縺励◆縺・・縺ｧ縺吶・],
+      _default: ['ありがとうございます。{record}自分なりに考えた結果です。ここでの経験は感謝しています。ですが……新しい環境で挑戦したいのです。'],
+      polite: ['ありがとうございます。{record}ここでの経験には心から感謝しております。ですが…新しい環境で挑戦させてください。'],
+      ojousama: ['ありがとうございますわ。{record}こちらでの経験は一生の宝ですわ。ですが…新天地で挑戦したいのです。'],
     },
     emotional: {
-      _default: ['窶ｦ窶ｦ閨槭＞縺ｦ縺上ｌ繧九・窶ｦ窶ｦ・・{record}繧ゅ≧窶ｦ窶ｦ閾ｪ蛻・′縺ｩ縺・＠縺溘＞縺ｮ縺九ｂ蛻・°繧峨↑縺上↑縺｣縺ｦ窶ｦ窶ｦ縲ゅ〒繧ゅ√％縺ｮ縺ｾ縺ｾ縺倥ｃ繝繝｡縺縺｣縺ｦ窶ｦ窶ｦ縲・],
+      _default: ['……聞いてくれるの……？ {record}もう……自分がどうしたいのかも分からなくなって……。でも、このままじゃダメだって……。'],
     },
   },
-  // 笏笏 繧ｳ繝ｳ繝・く繧ｹ繝亥ｷｮ縺苓ｾｼ縺ｿ繝・Φ繝励Ξ繝ｼ繝・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── コンテキスト差し込みテンプレート ────────────────────────────────────
   tenure: {
-    '1': '縺ｾ縺1蟷ｴ縺ｧ縺吶￠縺ｩ縲・,
-    short: '縺薙％縺ｧ驕弱＃縺励◆{n}蟷ｴ髢薙・,
-    long: '繧ゅ≧{n}蟷ｴ縺ｫ縺ｪ繧九ｓ縺ｧ縺吶・窶ｦ窶ｦ縲・,
-    founder: '譌玲恕縺偵°繧峨％縺薙↓縺・ｋ繧薙〒縺吶ｈ縲∫ｧ√・,
+    '1': 'まだ1年ですけど、',
+    short: 'ここで過ごした{n}年間、',
+    long: 'もう{n}年になるんですね……。',
+    founder: '旗揚げからここにいるんですよ、私。',
   },
   record: {
-    good: '蜴ｻ蟷ｴ縺ｯ{wins}蜍掉losses}謨励らｵ先棡縺ｯ蜃ｺ縺励※縺溘→諤昴≧繧薙〒縺吶￠縺ｩ縲・,
-    average: '謌千ｸｾ縺ｯ{wins}蜍掉losses}謨励よが縺上・縺ｪ縺九▲縺溘・縺壹〒縺吶・,
-    bad: '謌千ｸｾ縺鶏wins}蜍掉losses}謨励〒窶ｦ窶ｦ閾ｪ蛻・〒繧ゅｏ縺九▲縺ｦ縺ｾ縺吶ゅ〒繧やｦ窶ｦ',
-    few_matches: '縺ゅｓ縺ｾ繧願ｩｦ蜷医↓蜃ｺ縺励※繧ゅｉ縺医↑縺九▲縺溪ｦ窶ｦ縲・,
+    good: '去年は{wins}勝{losses}敗。結果は出してたと思うんですけど。',
+    average: '成績は{wins}勝{losses}敗。悪くはなかったはずです。',
+    bad: '成績が{wins}勝{losses}敗で……自分でもわかってます。でも……',
+    few_matches: 'あんまり試合に出してもらえなかった……。',
   },
   rivalry: {
-    has_rival: '{rivalName}縺ｨ縺ｾ縺豎ｺ逹縺､縺・※縺ｪ縺・￠縺ｩ窶ｦ窶ｦ繧ゅ≧縺・＞縺ｧ縺吶・,
+    has_rival: '{rivalName}とまだ決着ついてないけど……もういいです。',
     no_rival: '',
   },
   tenure_farewell: {
     short: '',
-    long: '縺薙％縺ｧ驕弱＃縺励◆{n}蟷ｴ髢薙∫┌鬧・§繧・↑縺九▲縺溘▲縺ｦ諤昴＞縺溘＞縺ｧ縺吶・,
-    founder: '譌玲恕縺偵・譎ゅ°繧峨＞縺溘ｓ縺縺ｪ窶ｦ窶ｦ縺ｪ繧薙°縲∽ｸ肴晁ｭｰ縲・,
+    long: 'ここで過ごした{n}年間、無駄じゃなかったって思いたいです。',
+    founder: '旗揚げの時からいたんだな……なんか、不思議。',
   },
 };
 
@@ -1993,3455 +2079,3521 @@ const CONTRACT_NEGOTIATION_CONFIG = {
   retentionWeeksBase: 8,
 };
 
-// v1.3-3: 蠑暮繧ｻ繝ｪ繝輔ユ繝ｳ繝励Ξ繝ｼ繝茨ｼ亥ｼ暮繝ｫ繝ｼ繝暗励く繝｣繝ｪ繧｢ﾃ玲ｧ譬ｼ縺ｧ蛻・ｲ撰ｼ・const RETIREMENT_LINES = {
-  // A: 繧ｷ繝ｼ繧ｺ繝ｳ譛ｫ蠑暮・・ersonalityﾃ預rchetype・・  A1_champion: {
+// v1.3-3: 引退セリフテンプレート（引退ルート×キャリア×性格で分岐）
+const RETIREMENT_LINES = {
+  // A: シーズン末引退（personality×archetype）
+  A1_champion: {
     normal: {
-      _default: ['鬆らせ縺九ｉ縺ｮ譎ｯ濶ｲ縺ｯ縲∝ｿ倥ｌ縺ｪ縺・, '譛鬮倥・闊槫床縺ｧ髣倥∴縺溘ゅ◎繧後□縺代〒蜊∝・'],
-      ojousama: ['鬆らせ縺ｮ譎ｯ濶ｲ窶ｦ荳逕溷ｿ倥ｌ縺ｾ縺帙ｓ繧・],
-      delinquent: ['鬆らせ縺九ｉ縺ｮ譎ｯ濶ｲ縲∝ｿ倥ｌ縺ｭ繝ｼ繧・],
-      seductive: ['鬆らせ縺九ｉ縺ｮ譎ｯ濶ｲ窶ｦ蠢倥ｌ縺ｪ縺・ｏ'],
+      _default: ['頂点からの景色は、忘れない', '最高の舞台で闘えた。それだけで十分'],
+      ojousama: ['頂点の景色…一生忘れませんわ'],
+      delinquent: ['頂点からの景色、忘れねーよ'],
+      seductive: ['頂点からの景色…忘れないわ'],
     },
     bold: {
-      _default: ['縺ゅ◆縺励・譎ゆｻ｣縺縺｣縺溘りｪｰ縺ｫ繧よ枚蜿･縺ｯ險繧上○縺ｪ縺・],
-      ojousama: ['繧上◆縺上＠縺ｮ譎ゆｻ｣縺ｧ縺励◆繧上ら焚隲悶・縺斐＊縺・∪縺帙ｓ繧上・'],
-      delinquent: ['縺ゅ◆縺励・譎ゆｻ｣縺縺｣縺溘よ枚蜿･縺ゅｋ繧・▽縺ｯ縺九°縺｣縺ｦ縺薙＞'],
-      cool: ['窶ｦ閭瑚ｲ縺・・縺｣縺・],
-      seductive: ['譛蠕後∪縺ｧ閭瑚ｲ縺・・縺｣縺溘ｏ縲よ怙鬮倥・譎ｯ濶ｲ縺縺｣縺・],
+      _default: ['あたしの時代だった。誰にも文句は言わせない'],
+      ojousama: ['わたくしの時代でしたわ。異論はございませんわね'],
+      delinquent: ['あたしの時代だった。文句あるやつはかかってこい'],
+      cool: ['…背負い切った'],
+      seductive: ['最後まで背負い切ったわ。最高の景色だった'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅ・繝吶Ν繝医・驥阪＆縲∽ｸ逕溘・螳晉黄'],
-      cool: ['窶ｦ蠢倥ｌ縺ｪ縺・],
-      polite: ['縺ゅ・繝吶Ν繝医・驥阪＆窶ｦ荳逕溘・螳晉黄縺ｧ縺・],
+      _default: ['……あのベルトの重さ、一生の宝物'],
+      cool: ['…忘れない'],
+      polite: ['あのベルトの重さ…一生の宝物です'],
     },
     shy: {
-      _default: ['縺薙ｓ縺ｪ遘√′繝√Ε繝ｳ繝斐が繝ｳ縺ｫ縺ｪ繧後◆縺ｪ繧薙※窶ｦ螟｢縺ｿ縺溘＞縺ｧ縺・],
+      _default: ['こんな私がチャンピオンになれたなんて…夢みたいです'],
     },
     easygoing: {
-      _default: ['縺・ｄ繝ｼ譛鬮倥□縺｣縺溘・・・繝吶Ν繝域戟縺ｦ縺ｦ蟷ｸ縺帙□縺｣縺溘ｈ'],
-      delinquent: ['譛鬮倥□縺｣縺溘●・・繝吶Ν繝域戟縺ｦ縺ｦ蟷ｸ縺帙□縺｣縺溘ｈ'],
-      seductive: ['譛鬮倥□縺｣縺溘ｏ縲ゅ・繝ｫ繝域戟縺ｦ縺ｦ蟷ｸ縺帙□縺｣縺・],
+      _default: ['いやー最高だったね！ ベルト持てて幸せだったよ'],
+      delinquent: ['最高だったぜ！ ベルト持てて幸せだったよ'],
+      seductive: ['最高だったわ。ベルト持てて幸せだった'],
     },
     earnest: {
-      _default: ['縺薙・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ縲∵怙蠕後∪縺ｧ縺ｧ縺阪◆縺ｨ諤昴≧'],
-      polite: ['縺薙・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ窶ｦ譛蠕後∪縺ｧ縺ｧ縺阪◆縺ｨ諤昴＞縺ｾ縺・],
-      ojousama: ['縺薙・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ窶ｦ譛蠕後∪縺ｧ蜈ｨ縺・〒縺阪∪縺励◆繧・],
-      seductive: ['縺薙・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｦ譛蠕後∪縺ｧ縺ｧ縺阪◆繧・],
+      _default: ['このベルトに恥じない闘いを、最後までできたと思う'],
+      polite: ['このベルトに恥じない闘いを…最後までできたと思います'],
+      ojousama: ['このベルトに恥じない闘いを…最後まで全うできましたわ'],
+      seductive: ['このベルトに恥じない闘い…最後までできたわ'],
     },
     emotional: {
-      _default: ['縺ゅ・繝吶Ν繝遺ｦ霑斐＠縺溘￥縺ｪ縺・ｦ縺ｧ繧やｦ縺ゅｊ縺後→縺・ｦ縺｣・・],
+      _default: ['あのベルト…返したくない…でも…ありがとう…っ！'],
     },
   },
   A2_uncrowned: {
     normal: {
-      _default: ['繝吶Ν繝医↓縺ｯ螻翫°縺ｪ縺九▲縺溘ゅ〒繧ゅ∝ｾ梧ｔ縺ｯ縺ｪ縺・, '螟｢縺ｯ蜿ｶ繧上↑縺九▲縺溘￠縺ｩ窶ｦ縺薙・驕薙ｒ驕ｸ繧薙〒繧医°縺｣縺・],
-      ojousama: ['繝吶Ν繝医↓縺ｯ螻翫″縺ｾ縺帙ｓ縺ｧ縺励◆繧上ゅ〒繧ゅ∝ｾ梧ｔ縺ｯ縺ゅｊ縺ｾ縺帙ｓ'],
-      delinquent: ['繝吶Ν繝医↓縺ｯ螻翫°縺ｪ縺九▲縺溘ゅ〒繧ゅｈ縲∝ｾ梧ｔ縺ｯ縺ｭ繝ｼ繧・],
-      seductive: ['繝吶Ν繝医↓縺ｯ螻翫°縺ｪ縺九▲縺溘ｏ縲ゅ〒繧ゅ∝ｾ梧ｔ縺ｯ縺ｪ縺・・'],
+      _default: ['ベルトには届かなかった。でも、後悔はない', '夢は叶わなかったけど…この道を選んでよかった'],
+      ojousama: ['ベルトには届きませんでしたわ。でも、後悔はありません'],
+      delinquent: ['ベルトには届かなかった。でもよ、後悔はねーよ'],
+      seductive: ['ベルトには届かなかったわ。でも、後悔はないの'],
     },
     bold: {
-      _default: ['蜍昴※縺ｪ縺・嶌謇九′縺・◆縲ゅ〒繧ゅ・・￡縺ｪ縺九▲縺溘ゅ◎繧後′蜈ｨ縺ｦ縺'],
-      ojousama: ['騾・￡縺ｪ縺九▲縺溘％縺ｨ縺縺代・窶ｦ閭ｸ繧貞ｼｵ繧後∪縺吶ｏ'],
-      delinquent: ['騾・￡縺ｪ縺九▲縺溘ゅ◎繧後□縺代・隱・ｊ縺ｫ諤昴▲縺ｦ繧九●'],
-      cool: ['窶ｦ騾・￡縺ｪ縺九▲縺溘ゅ◎繧後□縺代□'],
-      seductive: ['騾・￡縺ｪ縺九▲縺溘ｏ縲ゅ◎繧後□縺代・隱・ｊ縺ｫ諤昴▲縺ｦ繧・],
+      _default: ['勝てない相手がいた。でも、逃げなかった。それが全てだ'],
+      ojousama: ['逃げなかったことだけは…胸を張れますわ'],
+      delinquent: ['逃げなかった。それだけは誇りに思ってるぜ'],
+      cool: ['…逃げなかった。それだけだ'],
+      seductive: ['逃げなかったわ。それだけは誇りに思ってる'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ謔斐＞縺ｯ縲√↑縺・],
-      cool: ['窶ｦ謔斐＞縺ｯ縺ｪ縺・],
-      polite: ['窶ｦ謔斐＞縺ｯ縺ゅｊ縺ｾ縺帙ｓ'],
+      _default: ['……悔いは、ない'],
+      cool: ['…悔いはない'],
+      polite: ['…悔いはありません'],
     },
     shy: {
-      _default: ['菴輔ｂ谿九○縺ｪ縺九▲縺溘°繧ゅ＠繧後↑縺・￠縺ｩ窶ｦ縺薙％縺ｫ縺・ｉ繧後※蟷ｸ縺帙〒縺励◆'],
+      _default: ['何も残せなかったかもしれないけど…ここにいられて幸せでした'],
     },
     easygoing: {
-      _default: ['繝吶Ν繝医・辟｡逅・□縺｣縺溘￠縺ｩ縺輔∵･ｽ縺励°縺｣縺溘ｈ・・],
-      delinquent: ['繝吶Ν繝医・辟｡逅・□縺｣縺溘￠縺ｩ繧医∵･ｽ縺励°縺｣縺溘●・・],
-      seductive: ['繝吶Ν繝医・辟｡逅・□縺｣縺溘￠縺ｩ窶ｦ讌ｽ縺励°縺｣縺溘ｏ'],
+      _default: ['ベルトは無理だったけどさ、楽しかったよ！'],
+      delinquent: ['ベルトは無理だったけどよ、楽しかったぜ！'],
+      seductive: ['ベルトは無理だったけど…楽しかったわ'],
     },
     earnest: {
-      _default: ['螟｢縺ｫ縺ｯ螻翫°縺ｪ縺九▲縺溘ゅ〒繧ゅ％縺ｮ驕薙ｒ驕ｸ繧薙□縺薙→縺ｫ蝌倥・縺ｪ縺・],
-      polite: ['螟｢縺ｫ縺ｯ螻翫″縺ｾ縺帙ｓ縺ｧ縺励◆縲ゅ〒繧ゅ％縺ｮ驕薙ｒ驕ｸ繧薙□縺薙→縺ｫ蝌倥・縺ゅｊ縺ｾ縺帙ｓ'],
-      ojousama: ['螟｢縺ｫ縺ｯ螻翫″縺ｾ縺帙ｓ縺ｧ縺励◆繧上ゅ〒繧ゅ％縺ｮ驕薙↓蝌倥・縺斐＊縺・∪縺帙ｓ'],
-      seductive: ['螟｢縺ｫ縺ｯ螻翫°縺ｪ縺九▲縺溘ｏ縲ゅ〒繧ょ・縺ｯ縺ｪ縺九▲縺・],
+      _default: ['夢には届かなかった。でもこの道を選んだことに嘘はない'],
+      polite: ['夢には届きませんでした。でもこの道を選んだことに嘘はありません'],
+      ojousama: ['夢には届きませんでしたわ。でもこの道に嘘はございません'],
+      seductive: ['夢には届かなかったわ。でも嘘はなかった'],
     },
     emotional: {
-      _default: ['繝吶Ν繝遺ｦ谺ｲ縺励°縺｣縺溘↑窶ｦ縺ｧ繧やｦ縺薙％縺ｫ縺・ｉ繧後※繧医°縺｣縺溪ｦ・・],
+      _default: ['ベルト…欲しかったな…でも…ここにいられてよかった…！'],
     },
   },
   A3_heel: {
     normal: {
-      _default: ['繝輔Φ窶ｦ蜍晄焔縺ｫ豕｣縺・※繧薙§繧・↑縺・ｏ繧・, '縺ゅ◆縺励′縺・↑縺上↑縺｣縺ｦ蟇ゅ＠縺上↑繧九ｏ縺ｭ'],
-      ojousama: ['縺頑ｳ｣縺阪↓縺ｪ繧峨↑縺・〒縲ゅ∩縺｣縺ｨ繧ゅ↑縺上※繧・],
-      delinquent: ['豕｣縺・※繧薙§繧・・繝ｼ繧医ゅ∩縺｣縺ｨ繧ゅ・繝ｼ縺ｪ'],
-      seductive: ['縺ｵ縺ｵ窶ｦ豕｣縺九↑縺・〒縲ょｯゅ＠縺上↑繧九〒縺励ｇ縺・ｼ・],
+      _default: ['フン…勝手に泣いてんじゃないわよ', 'あたしがいなくなって寂しくなるわね'],
+      ojousama: ['お泣きにならないで。みっともなくてよ'],
+      delinquent: ['泣いてんじゃねーよ。みっともねーな'],
+      seductive: ['ふふ…泣かないで。寂しくなるでしょう？'],
     },
     bold: {
-      _default: ['譛蠕後∪縺ｧ雖後ｏ繧瑚・〒縺・＆縺帙※繧ゅｉ縺・ｏ縲よ怙鬮倥□縺｣縺・],
-      ojousama: ['譛蠕後∪縺ｧ雖後ｏ繧瑚・ｦ逞帛ｿｫ縺ｧ縺励◆繧・],
-      delinquent: ['譛蠕後∪縺ｧ雖後ｏ繧瑚・□・・譛鬮倥□縺｣縺溘●・・],
-      cool: ['窶ｦ雖後ｏ繧瑚・〒邨ゅｏ繧九よが縺上↑縺・],
-      seductive: ['譛蠕後∪縺ｧ雖後ｏ繧瑚・ｦ縺ｵ縺ｵ縲∵怙鬮倥□縺｣縺溘ｏ'],
+      _default: ['最後まで嫌われ者でいさせてもらうわ。最高だった'],
+      ojousama: ['最後まで嫌われ者…痛快でしたわ'],
+      delinquent: ['最後まで嫌われ者だ！ 最高だったぜ！'],
+      cool: ['…嫌われ者で終わる。悪くない'],
+      seductive: ['最後まで嫌われ者…ふふ、最高だったわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺輔ｈ縺ｪ繧・],
-      cool: ['窶ｦ縺倥ｃ縺ゅ↑'],
-      polite: ['窶ｦ縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆'],
+      _default: ['……さよなら'],
+      cool: ['…じゃあな'],
+      polite: ['…お世話になりました'],
     },
     shy: {
-      _default: ['譛ｬ蠖薙・窶ｦ縺ｿ繧薙↑縺ｨ荳邱偵↓縺・◆縺九▲縺溘〒縺吮ｦ縺斐ａ繧薙↑縺輔＞'],
+      _default: ['本当は…みんなと一緒にいたかったです…ごめんなさい'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ縲∵怙蠕後￥繧峨＞邏逶ｴ縺ｫ縺ｪ縺｣縺ｦ繧ゅ＞縺・°縺ｪ縲よ･ｽ縺励°縺｣縺溘ｈ'],
-      delinquent: ['譛蠕後￥繧峨＞邏逶ｴ縺ｫ縺ｪ繧九°縲よ･ｽ縺励°縺｣縺溘●'],
-      seductive: ['譛蠕後￥繧峨＞邏逶ｴ縺ｫ縺ｪ繧阪≧縺九＠繧峨よ･ｽ縺励°縺｣縺溘ｏ'],
+      _default: ['あはは、最後くらい素直になってもいいかな。楽しかったよ'],
+      delinquent: ['最後くらい素直になるか。楽しかったぜ'],
+      seductive: ['最後くらい素直になろうかしら。楽しかったわ'],
     },
     earnest: {
-      _default: ['雖後ｏ繧悟ｽｹ縺ｯ窶ｦ隱ｰ縺九′繧・ｉ縺ｪ縺阪ｃ縺・￠縺ｪ縺九▲縺溘°繧・],
-      polite: ['雖後ｏ繧悟ｽｹ縺ｯ窶ｦ隱ｰ縺九′繧・ｉ縺ｪ縺代ｌ縺ｰ縺・￠縺ｾ縺帙ｓ縺ｧ縺励◆縺九ｉ'],
-      ojousama: ['雖後ｏ繧悟ｽｹ縺ｯ窶ｦ縺ｩ縺ｪ縺溘°縺後ｄ繧峨・縺ｰ縺ｪ繧翫∪縺帙ｓ縺ｧ縺励◆繧ゅ・'],
-      seductive: ['雖後ｏ繧悟ｽｹ縺ｯ縺ｭ窶ｦ隱ｰ縺九′繧・ｉ縺ｪ縺阪ｃ縺・￠縺ｪ縺九▲縺溘・'],
+      _default: ['嫌われ役は…誰かがやらなきゃいけなかったから'],
+      polite: ['嫌われ役は…誰かがやらなければいけませんでしたから'],
+      ojousama: ['嫌われ役は…どなたかがやらねばなりませんでしたもの'],
+      seductive: ['嫌われ役はね…誰かがやらなきゃいけなかったの'],
     },
     emotional: {
-      _default: ['窶ｦ縺｣縲√ヰ繧ｫ窶ｦ豕｣縺上ｓ縺倥ｃ縺ｪ縺・ｏ繧遺ｦ縺ゅ◆縺励∪縺ｧ窶ｦ縺｣・・],
+      _default: ['…っ、バカ…泣くんじゃないわよ…あたしまで…っ！'],
     },
   },
   A4_veteran: {
     normal: {
-      _default: ['縺薙％縺後√≠縺溘＠縺ｮ蜈ｨ驛ｨ縺縺｣縺・, '縺薙・蝗｣菴薙〒驕弱＃縺励◆譎る俣縺ｯ縲∝・縺倥ｃ縺ｪ縺・],
-      ojousama: ['縺薙％縺後√ｏ縺溘￥縺励・蜈ｨ縺ｦ縺ｧ縺励◆繧・],
-      delinquent: ['縺薙％縺悟・驛ｨ縺縺｣縺溘ょ・縺倥ｃ縺ｭ繝ｼ繧・],
-      seductive: ['縺薙％縺後∫ｧ√・蜈ｨ縺ｦ縺縺｣縺溘・'],
+      _default: ['ここが、あたしの全部だった', 'この団体で過ごした時間は、嘘じゃない'],
+      ojousama: ['ここが、わたくしの全てでしたわ'],
+      delinquent: ['ここが全部だった。嘘じゃねーよ'],
+      seductive: ['ここが、私の全てだったの'],
     },
     bold: {
-      _default: ['髟ｷ縺九▲縺溘ｈ縺・〒窶ｦ縺ゅ▲縺ｨ縺・≧髢薙□縺｣縺溘↑縲よｔ縺・・縺ｪ縺・],
-      ojousama: ['髟ｷ縺・ｈ縺・〒窶ｦ縺ゅ▲縺ｨ縺・≧髢薙〒縺励◆繧・],
-      delinquent: ['縺ゅ▲縺ｨ縺・≧髢薙□縺｣縺溘↑縲よｔ縺・↑繧薙°縺ｭ繝ｼ繧・],
-      cool: ['窶ｦ縺ゅ▲縺ｨ縺・≧髢薙□縺｣縺・],
-      seductive: ['縺ゅ▲縺ｨ縺・≧髢薙□縺｣縺溘ｏ縲よｔ縺・・縺ｪ縺・・'],
+      _default: ['長かったようで…あっという間だったな。悔いはない'],
+      ojousama: ['長いようで…あっという間でしたわ'],
+      delinquent: ['あっという間だったな。悔いなんかねーよ'],
+      cool: ['…あっという間だった'],
+      seductive: ['あっという間だったわ。悔いはないの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・],
-      cool: ['窶ｦ縺ゅｊ縺後→縺・],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆'],
+      _default: ['……ありがとう'],
+      cool: ['…ありがとう'],
+      polite: ['…ありがとうございました'],
     },
     shy: {
-      _default: ['髟ｷ縺・俣窶ｦ縺贋ｸ冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆縲ゅ％縺薙↓縺・ｉ繧後※蟷ｸ縺帙〒縺励◆'],
+      _default: ['長い間…お世話になりました。ここにいられて幸せでした'],
     },
     easygoing: {
-      _default: ['縺・ｄ繝ｼ髟ｷ縺九▲縺滂ｼ・縺ｧ繧ゅ≠縺｣縺ｨ縺・≧髢薙□縺｣縺溘・'],
-      delinquent: ['髟ｷ縺九▲縺溘↑繝ｼ・・縺ｧ繧ゅ≠縺｣縺ｨ縺・≧髢薙□縺｣縺溘●'],
-      seductive: ['髟ｷ縺九▲縺溘ｏ窶ｦ縺ｧ繧ゅ≠縺｣縺ｨ縺・≧髢薙□縺｣縺・],
+      _default: ['いやー長かった！ でもあっという間だったね'],
+      delinquent: ['長かったなー！ でもあっという間だったぜ'],
+      seductive: ['長かったわ…でもあっという間だった'],
     },
     earnest: {
-      _default: ['蜈ｨ蜉帙〒襍ｰ繧頑栢縺代◆縲ゅ％縺ｮ譎る俣縺ｫ蝌倥・縺ｪ縺・],
-      polite: ['蜈ｨ蜉帙〒襍ｰ繧頑栢縺代∪縺励◆縲ゅ％縺ｮ譎る俣縺ｫ蝌倥・縺ゅｊ縺ｾ縺帙ｓ'],
-      ojousama: ['蜈ｨ蜉帙〒襍ｰ繧頑栢縺代∪縺励◆繧上ゅ％縺ｮ譎る俣縺ｫ蝌倥・縺斐＊縺・∪縺帙ｓ'],
-      seductive: ['蜈ｨ蜉帙〒襍ｰ繧頑栢縺代◆繧上ょ・縺ｮ縺ｪ縺・凾髢薙□縺｣縺・],
+      _default: ['全力で走り抜けた。この時間に嘘はない'],
+      polite: ['全力で走り抜けました。この時間に嘘はありません'],
+      ojousama: ['全力で走り抜けましたわ。この時間に嘘はございません'],
+      seductive: ['全力で走り抜けたわ。嘘のない時間だった'],
     },
     emotional: {
-      _default: ['縺薙％縺娯ｦ蜈ｨ驛ｨ縺縺｣縺溪ｦ縺ゅｊ縺後→縺・ｦ縺ゅｊ縺後→縺・ｦ・・],
+      _default: ['ここが…全部だった…ありがとう…ありがとう…！'],
     },
   },
-  // B: 諤ｪ謌大ｼ暮・・ersonalityﾃ預rchetype・・  B1_young: {
+  // B: 怪我引退（personality×archetype）
+  B1_young: {
     normal: {
-      _default: ['縺ｾ縺菴輔ｂ謌舌＠驕ゅ￡縺ｦ縺ｪ縺・・縺ｫ窶ｦ', '縺ゅ◆縺励・迚ｩ隱槭√％繧薙↑縺ｨ縺薙ｍ縺ｧ邨ゅｏ繧翫↑縺ｮ窶ｦ・・],
-      ojousama: ['縺ｾ縺菴輔ｂ窶ｦ謌舌＠驕ゅ￡縺ｦ縺・∪縺帙ｓ縺ｮ縺ｫ窶ｦ'],
-      delinquent: ['縺ｾ縺菴輔ｂ繧・▲縺ｦ縺ｭ繝ｼ縺ｮ縺ｫ窶ｦ蝌倥□繧坂ｦ'],
-      seductive: ['縺ｾ縺菴輔ｂ謌舌＠驕ゅ￡縺ｦ縺ｪ縺・・縺ｫ窶ｦ蝌倥〒縺励ｇ縺・ｦ'],
+      _default: ['まだ何も成し遂げてないのに…', 'あたしの物語、こんなところで終わりなの…？'],
+      ojousama: ['まだ何も…成し遂げていませんのに…'],
+      delinquent: ['まだ何もやってねーのに…嘘だろ…'],
+      seductive: ['まだ何も成し遂げてないのに…嘘でしょう…'],
     },
     bold: {
-      _default: ['蝌倥□繧坂ｦ縺ｾ縺蟋九∪縺｣縺溘・縺九ｊ縺倥ｃ縺ｪ縺・°窶ｦ・・],
-      ojousama: ['蝌倥〒縺吶ｏ窶ｦ縺ｾ縺蟋九∪縺｣縺溘・縺九ｊ縺ｧ縺吶・縺ｫ窶ｦ・・],
-      delinquent: ['蝌倥□繧坂ｦ縺ｾ縺蟋九∪縺｣縺溘・縺九ｊ縺繧阪≧縺娯ｦ・・],
-      cool: ['窶ｦ蝌倥□'],
-      seductive: ['蝌倪ｦ縺ｾ縺蟋九∪縺｣縺溘・縺九ｊ縺倥ｃ縺ｪ縺・ｦ'],
+      _default: ['嘘だろ…まだ始まったばかりじゃないか…！'],
+      ojousama: ['嘘ですわ…まだ始まったばかりですのに…！'],
+      delinquent: ['嘘だろ…まだ始まったばかりだろうが…！'],
+      cool: ['…嘘だ'],
+      seductive: ['嘘…まだ始まったばかりじゃない…'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ縺ｾ縺縲√↑縺ｮ縺ｫ'],
-      cool: ['窶ｦ窶ｦ縺ｾ縺'],
-      polite: ['窶ｦ縺ｾ縺縲∽ｽ輔ｂ窶ｦ'],
+      _default: ['………まだ、なのに'],
+      cool: ['……まだ'],
+      polite: ['…まだ、何も…'],
     },
     shy: {
-      _default: ['繧・▲縺ｱ繧岩ｦ遘√↓縺ｯ辟｡逅・□縺｣縺溘ｓ縺ｧ縺励ｇ縺・°窶ｦ'],
+      _default: ['やっぱり…私には無理だったんでしょうか…'],
     },
     easygoing: {
-      _default: ['縺遺ｦ縺・◎窶ｦ縺ｾ縺縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ'],
-      delinquent: ['縺・◎縺繧坂ｦ縺ｾ縺縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ繧遺ｦ'],
-      seductive: ['縺・◎窶ｦ縺ｾ縺縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ'],
+      _default: ['え…うそ…まだこれからだったのに…'],
+      delinquent: ['うそだろ…まだこれからだったのによ…'],
+      seductive: ['うそ…まだこれからだったのに…'],
     },
     earnest: {
-      _default: ['縺ｾ縺菴輔ｂ霑斐○縺ｦ縺ｪ縺・ｦ縺薙ｓ縺ｪ縺ｮ縲∝女縺大・繧後ｉ繧後↑縺・],
-      polite: ['縺ｾ縺菴輔ｂ縺願ｿ斐＠縺ｧ縺阪※縺・↑縺・・縺ｫ窶ｦ蜿励￠蜈･繧後ｉ繧後∪縺帙ｓ'],
-      ojousama: ['縺ｾ縺菴輔ｂ縺願ｿ斐＠縺ｧ縺阪※縺・∪縺帙ｓ縺ｮ縺ｫ窶ｦ'],
-      seductive: ['縺ｾ縺菴輔ｂ霑斐○縺ｦ縺ｪ縺・・縺ｫ窶ｦ蜿励￠蜈･繧後ｉ繧後↑縺・ｏ'],
+      _default: ['まだ何も返せてない…こんなの、受け入れられない'],
+      polite: ['まだ何もお返しできていないのに…受け入れられません'],
+      ojousama: ['まだ何もお返しできていませんのに…'],
+      seductive: ['まだ何も返せてないのに…受け入れられないわ'],
     },
     emotional: {
-      _default: ['縺・ｄ縺窶ｦ縺・ｄ縺繧遺ｦ縺ｾ縺蟋九∪縺｣縺溘・縺九ｊ縺ｪ縺ｮ縺ｫ窶ｦ・・],
+      _default: ['いやだ…いやだよ…まだ始まったばかりなのに…！'],
     },
   },
   B2_prime: {
     normal: {
-      _default: ['菴薙′縺ｭ窶ｦ繧ゅ≧險縺・％縺ｨ繧定◇縺九↑縺・・', '縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ謔斐＠縺・∵ｔ縺励＞繧遺ｦ'],
-      ojousama: ['縺贋ｽ薙′縺ｭ窶ｦ繧ゅ≧險縺・％縺ｨ繧定◇縺阪∪縺帙ｓ縺ｮ窶ｦ'],
-      delinquent: ['菴薙′繧遺ｦ繧ゅ≧險縺・％縺ｨ閨槭°縺ｭ繝ｼ繧薙□窶ｦ'],
-      seductive: ['菴薙′縺ｭ窶ｦ繧ゅ≧險縺・％縺ｨ繧定◇縺九↑縺・・窶ｦ'],
+      _default: ['体がね…もう言うことを聞かないの', 'これからだったのに…悔しい、悔しいよ…'],
+      ojousama: ['お体がね…もう言うことを聞きませんの…'],
+      delinquent: ['体がよ…もう言うこと聞かねーんだ…'],
+      seductive: ['体がね…もう言うことを聞かないの…'],
     },
     bold: {
-      _default: ['縺ｾ縺繧・ｌ繧九→諤昴▲縺ｦ縺溘ゆｿ｡縺倥※縺溪ｦ・・],
-      ojousama: ['縺ｾ縺繧・ｌ繧九→菫｡縺倥※縺・∪縺励◆縺ｮ縺ｫ窶ｦ・・],
-      delinquent: ['縺ｾ縺繧・ｌ繧九▲縺ｦ菫｡縺倥※縺溘・縺ｫ窶ｦ縺上◎縺｣窶ｦ・・],
-      cool: ['窶ｦ菫｡縺倥※縺・◆縲ゅ∪縺繧・ｌ繧九→'],
-      seductive: ['縺ｾ縺繧・ｌ繧九→菫｡縺倥※縺溘・縺ｫ窶ｦ'],
+      _default: ['まだやれると思ってた。信じてた…！'],
+      ojousama: ['まだやれると信じていましたのに…！'],
+      delinquent: ['まだやれるって信じてたのに…くそっ…！'],
+      cool: ['…信じていた。まだやれると'],
+      seductive: ['まだやれると信じてたのに…'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ'],
-      cool: ['窶ｦ縺ｾ縺'],
-      polite: ['窶ｦ縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ'],
+      _default: ['……これからだったのに'],
+      cool: ['…まだ'],
+      polite: ['…これからだったのに…'],
     },
     shy: {
-      _default: ['縺帙▲縺九￥窶ｦ繧・▲縺ｨ蟆代＠閾ｪ菫｡縺後▽縺・※縺阪◆縺ｮ縺ｫ窶ｦ'],
+      _default: ['せっかく…やっと少し自信がついてきたのに…'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ蜿ゅ▲縺溘↑縲√％繧後°繧峨□縺｣縺溘・縺ｫ窶ｦ'],
-      delinquent: ['蜿ゅ▲縺溘↑窶ｦ縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ繧遺ｦ'],
-      seductive: ['蜿ゅ▲縺溘ｏ窶ｦ縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ'],
+      _default: ['あはは…参ったな、これからだったのに…'],
+      delinquent: ['参ったな…これからだったのによ…'],
+      seductive: ['参ったわ…これからだったのに…'],
     },
     earnest: {
-      _default: ['縺ｾ縺雜ｳ繧翫↑縺九▲縺溘ゅｂ縺｣縺ｨ窶ｦ繧ゅ▲縺ｨ繧・ｊ縺溘°縺｣縺・],
-      polite: ['縺ｾ縺雜ｳ繧翫∪縺帙ｓ縺ｧ縺励◆縲ゅｂ縺｣縺ｨ窶ｦ繧・ｊ縺溘°縺｣縺溘〒縺・],
-      ojousama: ['縺ｾ縺雜ｳ繧翫∪縺帙ｓ縺ｧ縺励◆繧上ゅｂ縺｣縺ｨ窶ｦ繧・ｊ縺溘°縺｣縺・],
-      seductive: ['縺ｾ縺雜ｳ繧翫↑縺九▲縺溘ｏ窶ｦ繧ゅ▲縺ｨ繧・ｊ縺溘°縺｣縺・],
+      _default: ['まだ足りなかった。もっと…もっとやりたかった'],
+      polite: ['まだ足りませんでした。もっと…やりたかったです'],
+      ojousama: ['まだ足りませんでしたわ。もっと…やりたかった'],
+      seductive: ['まだ足りなかったわ…もっとやりたかった'],
     },
     emotional: {
-      _default: ['謔斐＠縺・ｦ謔斐＠縺・ｈ窶ｦ縺薙ｌ縺九ｉ縺縺｣縺溘・縺ｫ窶ｦ・・],
+      _default: ['悔しい…悔しいよ…これからだったのに…！'],
     },
   },
   B3_older: {
     normal: {
-      _default: ['繧上°縺｣縺ｦ縺溘ゅ＞縺､縺区擂繧九▲縺ｦ', '蜊∝・繧・▲縺溘ｈ縲り・蛻・ｒ隍偵ａ縺ｦ繧・ｊ縺溘＞'],
-      ojousama: ['繧上°縺｣縺ｦ縺翫ｊ縺ｾ縺励◆繧上ゅ＞縺､縺区擂繧九→'],
-      delinquent: ['繧上°縺｣縺ｦ縺溘ｈ縲ゅ＞縺､縺区擂繧九▲縺ｦ縺ｪ'],
-      seductive: ['繧上°縺｣縺ｦ縺溘ｏ縲ゅ＞縺､縺区擂繧九▲縺ｦ'],
+      _default: ['わかってた。いつか来るって', '十分やったよ。自分を褒めてやりたい'],
+      ojousama: ['わかっておりましたわ。いつか来ると'],
+      delinquent: ['わかってたよ。いつか来るってな'],
+      seductive: ['わかってたわ。いつか来るって'],
     },
     bold: {
-      _default: ['縺薙・菴薙・繧ゅ≧髯千阜縺縺代←窶ｦ蠢・・縲√∪縺辯・∴縺ｦ繧・],
-      ojousama: ['縺贋ｽ薙・髯千阜縺ｧ縺吶￠繧後←窶ｦ蠢・・縺ｾ縺辯・∴縺ｦ縺翫ｊ縺ｾ縺吶ｏ'],
-      delinquent: ['菴薙・髯千阜縺縺代←繧遺ｦ蠢・・縺ｾ縺辯・∴縺ｦ繧九●'],
-      cool: ['窶ｦ菴薙・髯千阜縲ょｿ・・縲√∪縺'],
-      seductive: ['菴薙・髯千阜縺縺代←窶ｦ蠢・・縺ｾ縺辯・∴縺ｦ繧九ｏ'],
+      _default: ['この体はもう限界だけど…心は、まだ燃えてる'],
+      ojousama: ['お体は限界ですけれど…心はまだ燃えておりますわ'],
+      delinquent: ['体は限界だけどよ…心はまだ燃えてるぜ'],
+      cool: ['…体は限界。心は、まだ'],
+      seductive: ['体は限界だけど…心はまだ燃えてるわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蜊∝・繧・▲縺・],
-      cool: ['窶ｦ蜊∝・縺'],
-      polite: ['窶ｦ蜊∝・繧・ｌ縺溘→諤昴＞縺ｾ縺・],
+      _default: ['……十分やった'],
+      cool: ['…十分だ'],
+      polite: ['…十分やれたと思います'],
     },
     shy: {
-      _default: ['縺ｿ縺ｪ縺輔ｓ縺ｮ縺翫°縺偵〒窶ｦ縺薙％縺ｾ縺ｧ譚･繧峨ｌ縺ｾ縺励◆'],
+      _default: ['みなさんのおかげで…ここまで来られました'],
     },
     easygoing: {
-      _default: ['縺ｾ縺√∝香蛻・ｄ縺｣縺溘ｈ縺ｭ縲ゅ＞縺・ｺｺ逕溘□縺｣縺滂ｼ・],
-      delinquent: ['蜊∝・繧・▲縺溘●縲ゅ＞縺・ｺｺ逕溘□縺｣縺溘ｈ・・],
-      seductive: ['蜊∝・繧・▲縺溘ｏ縲ゅ＞縺・ｺｺ逕溘□縺｣縺・],
+      _default: ['まぁ、十分やったよね。いい人生だった！'],
+      delinquent: ['十分やったぜ。いい人生だったよ！'],
+      seductive: ['十分やったわ。いい人生だった'],
     },
     earnest: {
-      _default: ['謔斐＞縺後↑縺・→險縺医・蝌倥↓縺ｪ繧九ゅ〒繧やｦ繧・ｊ縺阪▲縺・],
-      polite: ['謔斐＞縺後↑縺・→縺ｯ險縺医∪縺帙ｓ縲ゅ〒繧やｦ繧・ｊ縺阪ｊ縺ｾ縺励◆'],
-      ojousama: ['謔斐＞縺後↑縺・→縺ｯ逕ｳ縺励∪縺帙ｓ繧上ゅ〒繧やｦ繧・ｊ縺阪ｊ縺ｾ縺励◆'],
-      seductive: ['謔斐＞縺後↑縺・→縺ｯ險繧上↑縺・ｏ縲ゅ〒繧やｦ繧・ｊ縺阪▲縺・],
+      _default: ['悔いがないと言えば嘘になる。でも…やりきった'],
+      polite: ['悔いがないとは言えません。でも…やりきりました'],
+      ojousama: ['悔いがないとは申しませんわ。でも…やりきりました'],
+      seductive: ['悔いがないとは言わないわ。でも…やりきった'],
     },
     emotional: {
-      _default: ['繧上°縺｣縺ｦ縺溘ｈ窶ｦ縺・▽縺区擂繧九▲縺ｦ窶ｦ縺ｧ繧やｦ蟇ゅ＠縺・ｈ窶ｦ・・],
+      _default: ['わかってたよ…いつか来るって…でも…寂しいよ…！'],
     },
   },
   B4_champion_injury: {
     normal: {
-      _default: ['縺薙・繝吶Ν繝遺ｦ縺ｾ縺霑斐＠縺溘￥縺ｪ縺九▲縺・, '譛蠕後・髦ｲ陦帶姶縲√ｄ繧翫◆縺九▲縺溘↑窶ｦ'],
-      ojousama: ['縺薙・繝吶Ν繝遺ｦ縺ｾ縺縺願ｿ斐＠縺励◆縺上≠繧翫∪縺帙ｓ縺ｧ縺励◆繧・],
-      delinquent: ['縺薙・繝吶Ν繝遺ｦ縺ｾ縺霑斐＠縺溘￥縺ｪ縺九▲縺溘ｓ縺繧遺ｦ'],
-      seductive: ['縺薙・繝吶Ν繝遺ｦ縺ｾ縺霑斐＠縺溘￥縺ｪ縺九▲縺溘・縺ｫ窶ｦ'],
+      _default: ['このベルト…まだ返したくなかった', '最後の防衛戦、やりたかったな…'],
+      ojousama: ['このベルト…まだお返ししたくありませんでしたわ'],
+      delinquent: ['このベルト…まだ返したくなかったんだよ…'],
+      seductive: ['このベルト…まだ返したくなかったのに…'],
     },
     bold: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ縺ｾ縺ｾ邨ゅｏ繧九↑繧薙※窶ｦ谿矩・縺吶℃繧・],
-      ojousama: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ縺ｾ縺ｾ窶ｦ谿矩・縺ｧ縺吶ｏ'],
-      delinquent: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ縺ｾ縺ｾ邨ゅｏ繧翫□縺ｨ窶ｦ縺ｵ縺悶￠繧薙↑窶ｦ'],
-      cool: ['窶ｦ谿矩・縺'],
-      seductive: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ縺ｾ縺ｾ邨ゅｏ繧九↑繧薙※窶ｦ谿矩・縺ｭ'],
+      _default: ['チャンピオンのまま終わるなんて…残酷すぎる'],
+      ojousama: ['チャンピオンのまま…残酷ですわ'],
+      delinquent: ['チャンピオンのまま終わりだと…ふざけんな…'],
+      cool: ['…残酷だ'],
+      seductive: ['チャンピオンのまま終わるなんて…残酷ね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ｾ縺縲∬ｿ斐＠縺溘￥縺ｪ縺九▲縺・],
-      cool: ['窶ｦ縺ｾ縺縺'],
-      polite: ['窶ｦ縺ｾ縺縲√♀霑斐＠縺励◆縺上↑縺九▲縺溘〒縺・],
+      _default: ['……まだ、返したくなかった'],
+      cool: ['…まだだ'],
+      polite: ['…まだ、お返ししたくなかったです'],
     },
     shy: {
-      _default: ['縺帙▲縺九￥繝吶Ν繝医ｒ繧ゅｉ縺医◆縺ｮ縺ｫ窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ'],
+      _default: ['せっかくベルトをもらえたのに…ごめんなさい…'],
     },
     easygoing: {
-      _default: ['縺ゅ■繧・・窶ｦ繝吶Ν繝域戟縺｣縺溘∪縺ｾ邨ゅｏ繧翫°縺≫ｦ'],
-      delinquent: ['縺ｾ縺倥°繧遺ｦ繝吶Ν繝域戟縺｣縺溘∪縺ｾ邨ゅｏ繧翫°繧遺ｦ'],
-      seductive: ['縺ゅｉ窶ｦ繝吶Ν繝域戟縺｣縺溘∪縺ｾ邨ゅｏ繧翫↑縺ｮ窶ｦ'],
+      _default: ['あちゃー…ベルト持ったまま終わりかぁ…'],
+      delinquent: ['まじかよ…ベルト持ったまま終わりかよ…'],
+      seductive: ['あら…ベルト持ったまま終わりなの…'],
     },
     earnest: {
-      _default: ['譛蠕後・髦ｲ陦帶姶縲√ｄ繧翫◆縺九▲縺溪ｦ縺昴ｌ縺縺代′蠢・ｮ九ｊ縺'],
-      polite: ['譛蠕後・髦ｲ陦帶姶窶ｦ繧・ｊ縺溘°縺｣縺溘〒縺吶ゅ◎繧後□縺代′蠢・ｮ九ｊ縺ｧ縺・],
-      ojousama: ['譛蠕後・髦ｲ陦帶姶窶ｦ繧・ｊ縺溘°縺｣縺溘〒縺吶ｏ'],
-      seductive: ['譛蠕後・髦ｲ陦帶姶窶ｦ繧・ｊ縺溘°縺｣縺溘ｏ縲ゅ◎繧後□縺代′蠢・ｮ九ｊ'],
+      _default: ['最後の防衛戦、やりたかった…それだけが心残りだ'],
+      polite: ['最後の防衛戦…やりたかったです。それだけが心残りです'],
+      ojousama: ['最後の防衛戦…やりたかったですわ'],
+      seductive: ['最後の防衛戦…やりたかったわ。それだけが心残り'],
     },
     emotional: {
-      _default: ['繧・□窶ｦ縺薙・繝吶Ν繝遺ｦ縺ｾ縺霑斐＠縺溘￥縺ｪ縺・ｦ縺｣・・],
+      _default: ['やだ…このベルト…まだ返したくない…っ！'],
     },
   },
 };
 
-// 笏笏 蠑暮蜍ｧ蜻翫・蠑輔″逡吶ａ繧ｷ繧ｹ繝・Β 繧ｻ繝ｪ繝輔ョ繝ｼ繧ｿ (retirement-advisory-spec-v1_1) 笏笏
+// ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
 const RETIRE_ACCEPT_LINES = {
-  accept_terminal: {  // 譛ｫ譛・(wear竕･60)
+  accept_terminal: {  // 末期 (wear≥60)
     normal: {
-      _default: ['窶ｦ繧上°縺｣縺溘ゅｂ縺・剞逡後↑縺ｮ縲∬・蛻・〒繧ゅｏ縺九▲縺ｦ繧・, '窶ｦ豁｣逶ｴ縲√⊇縺｣縺ｨ縺励※繧九ゅ≠繧翫′縺ｨ縺・],
-      ojousama: ['窶ｦ繧上°繧翫∪縺励◆繧上ゅｂ縺・剞逡後〒縺吶ｂ縺ｮ'],
-      delinquent: ['窶ｦ繧上°縺｣縺ｦ繧九ｈ縲ゅｂ縺・剞逡後↑繧薙□繧・],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲ゅｂ縺・剞逡後↑縺ｮ繧医・'],
+      _default: ['…わかった。もう限界なの、自分でもわかってる', '…正直、ほっとしてる。ありがとう'],
+      ojousama: ['…わかりましたわ。もう限界ですもの'],
+      delinquent: ['…わかってるよ。もう限界なんだろ'],
+      seductive: ['…わかったわ。もう限界なのよね'],
     },
     bold: {
-      _default: ['窶ｦ隱阪ａ繧九ｈ縲ゅｂ縺・ｽ薙′髯千阜縺'],
-      ojousama: ['窶ｦ隱阪ａ縺ｾ縺吶ｏ縲ゅｂ縺・♀菴薙′髯千阜縺ｧ縺吶・'],
-      delinquent: ['窶ｦ隱阪ａ縺ｦ繧・ｋ繧医ゅｂ縺・剞逡後□'],
-      cool: ['窶ｦ髯千阜縺縲りｪ阪ａ繧・],
-      seductive: ['窶ｦ隱阪ａ繧九ｏ縲ゅｂ縺・剞逡後↑縺ｮ'],
+      _default: ['…認めるよ。もう体が限界だ'],
+      ojousama: ['…認めますわ。もうお体が限界ですの'],
+      delinquent: ['…認めてやるよ。もう限界だ'],
+      cool: ['…限界だ。認める'],
+      seductive: ['…認めるわ。もう限界なの'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ繧上°縺｣縺ｦ繧・], cool: ['窶ｦ繧上°縺｣縺ｦ繧・], polite: ['窶ｦ繧上°縺｣縺ｦ縺・∪縺・] },
-    shy: { _default: ['窶ｦ縺ｯ縺・ゅ＃霑ｷ諠代ｒ縺翫°縺代＠縺ｾ縺励◆窶ｦ'] },
+    quiet: { _default: ['……わかってる'], cool: ['…わかってる'], polite: ['…わかっています'] },
+    shy: { _default: ['…はい。ご迷惑をおかけしました…'] },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ縺ｾ縺√√◎縺・□繧医・縲ゅ≠繧翫′縺ｨ縺・],
-      delinquent: ['縺ｾ縺√◎縺・□繧医↑縲ゅ≠繧翫′縺ｨ繧・],
-      seductive: ['縺昴≧繧医・窶ｦ縺ゅｊ縺後→縺・],
+      _default: ['あはは…まぁ、そうだよね。ありがとう'],
+      delinquent: ['まぁそうだよな。ありがとよ'],
+      seductive: ['そうよね…ありがとう'],
     },
     earnest: {
-      _default: ['縺ゅｊ縺後→縺・りｨ縺｣縺ｦ縺上ｌ縺ｦ蜉ｩ縺九▲縺・],
-      polite: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶りｨ縺｣縺ｦ縺上□縺輔▲縺ｦ蜉ｩ縺九ｊ縺ｾ縺励◆'],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ｏ縲りｨ縺｣縺ｦ縺上□縺輔▲縺ｦ'],
-      seductive: ['縺ゅｊ縺後→縺・りｨ縺｣縺ｦ縺上ｌ縺ｦ蜉ｩ縺九▲縺溘ｏ'],
+      _default: ['ありがとう。言ってくれて助かった'],
+      polite: ['ありがとうございます。言ってくださって助かりました'],
+      ojousama: ['ありがとうございますわ。言ってくださって'],
+      seductive: ['ありがとう。言ってくれて助かったわ'],
     },
-    emotional: { _default: ['窶ｦ縺・ｓ窶ｦ繧上°縺｣縺ｦ縺溪ｦ繧上°縺｣縺ｦ縺溘ｈ窶ｦ縺｣'] },
+    emotional: { _default: ['…うん…わかってた…わかってたよ…っ'] },
   },
-  accept_winless: {  // 菴主享邇・(竕､40%)
+  accept_winless: {  // 低勝率 (≤40%)
     normal: {
-      _default: ['閾ｪ蛻・〒繧ゅｏ縺九▲縺ｦ縺溘ゅｂ縺・ｿｽ縺・▽縺代↑縺・▲縺ｦ', '窶ｦ縺昴≧縺縺ｭ縲よ怙霑代∝享縺ｦ縺ｪ縺・ｩｦ蜷医′螟壹☆縺弱◆'],
-      ojousama: ['窶ｦ縺昴≧縺ｧ縺吶ｏ縺ｭ縲よ怙霑代∝享縺ｦ縺ｾ縺帙ｓ縺ｧ縺励◆繧ゅ・'],
-      delinquent: ['窶ｦ繧上°縺｣縺ｦ縺溘ｈ縲ゅｂ縺・ｿｽ縺・▽縺代・繝ｼ縺｣縺ｦ'],
-      seductive: ['窶ｦ繧上°縺｣縺ｦ縺溘ｏ縲ゅｂ縺・ｿｽ縺・▽縺代↑縺・▲縺ｦ'],
+      _default: ['自分でもわかってた。もう追いつけないって', '…そうだね。最近、勝てない試合が多すぎた'],
+      ojousama: ['…そうですわね。最近、勝てませんでしたもの'],
+      delinquent: ['…わかってたよ。もう追いつけねーって'],
+      seductive: ['…わかってたわ。もう追いつけないって'],
     },
     bold: {
-      _default: ['窶ｦ繝√ャ縲∬ｪ阪ａ縺溘￥縺ｪ縺・′窶ｦ邨先棡縺悟・縺ｦ縺'],
-      ojousama: ['窶ｦ隱阪ａ縺溘￥縺ゅｊ縺ｾ縺帙ｓ縺代ｌ縺ｩ窶ｦ邨先棡縺悟・縺ｦ縺ｧ縺吶ｏ'],
-      delinquent: ['窶ｦ繝√ャ縲∬ｪ阪ａ縺溘￥縺ｭ繝ｼ縺代←窶ｦ邨先棡縺悟・縺ｦ縺繧・],
-      cool: ['窶ｦ邨先棡縺悟・縺ｦ縺'],
-      seductive: ['隱阪ａ縺溘￥縺ｪ縺・￠縺ｩ窶ｦ邨先棡縺悟・縺ｦ繧医・'],
+      _default: ['…チッ、認めたくないが…結果が全てだ'],
+      ojousama: ['…認めたくありませんけれど…結果が全てですわ'],
+      delinquent: ['…チッ、認めたくねーけど…結果が全てだろ'],
+      cool: ['…結果が全てだ'],
+      seductive: ['認めたくないけど…結果が全てよね'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺昴≧縲√□縺ｭ'], cool: ['窶ｦ縺昴≧縺縺ｪ'], polite: ['窶ｦ縺昴≧縺ｧ縺吶・'] },
-    shy: { _default: ['繧ゅ▲縺ｨ譌ｩ縺乗ｰ励▼縺上∋縺阪〒縺励◆窶ｦ縺吶∩縺ｾ縺帙ｓ'] },
+    quiet: { _default: ['……そう、だね'], cool: ['…そうだな'], polite: ['…そうですね'] },
+    shy: { _default: ['もっと早く気づくべきでした…すみません'] },
     easygoing: {
-      _default: ['縺・・繧凪ｦ縺昴≧縺繧医・縲ょ享縺ｦ縺ｪ縺上↑縺｣縺｡繧・▲縺溘ｂ繧薙・'],
-      delinquent: ['縺昴≧縺繧医↑縲ょ享縺ｦ縺ｪ縺上↑縺｣縺｡縺ｾ縺｣縺溘ｂ繧薙↑'],
-      seductive: ['縺昴≧繧医・窶ｦ蜍昴※縺ｪ縺上↑縺｣縺｡繧・▲縺溘ｂ縺ｮ縺ｭ'],
+      _default: ['うーん…そうだよね。勝てなくなっちゃったもんね'],
+      delinquent: ['そうだよな。勝てなくなっちまったもんな'],
+      seductive: ['そうよね…勝てなくなっちゃったものね'],
     },
     earnest: {
-      _default: ['繧ゅ▲縺ｨ譌ｩ縺乗ｰ励▼縺上∋縺阪□縺｣縺溘やｦ繧上°縺｣縺・],
-      polite: ['繧ゅ▲縺ｨ譌ｩ縺乗ｰ励▼縺上∋縺阪〒縺励◆縲やｦ繧上°繧翫∪縺励◆'],
-      ojousama: ['繧ゅ▲縺ｨ譌ｩ縺乗ｰ励▼縺上∋縺阪〒縺励◆繧上やｦ謇ｿ遏･縺励∪縺励◆'],
-      seductive: ['繧ゅ▲縺ｨ譌ｩ縺乗ｰ励▼縺上∋縺阪□縺｣縺溘ｏ縲やｦ繧上°縺｣縺溘ｏ'],
+      _default: ['もっと早く気づくべきだった。…わかった'],
+      polite: ['もっと早く気づくべきでした。…わかりました'],
+      ojousama: ['もっと早く気づくべきでしたわ。…承知しました'],
+      seductive: ['もっと早く気づくべきだったわ。…わかったわ'],
     },
-    emotional: { _default: ['蜍昴※縺ｪ縺・ｦ繧ゅ≧蜍昴※縺ｪ縺・ｓ縺窶ｦ繧上°縺｣縺ｦ縺溘ｈ窶ｦ'] },
+    emotional: { _default: ['勝てない…もう勝てないんだ…わかってたよ…'] },
   },
   accept_heel: {  // Heel
     normal: {
-      _default: ['窶ｦ蛻･縺ｫ繧｢繝ｳ繧ｿ縺ｫ險繧上ｌ縺ｪ縺上※繧りｾ槭ａ繧九▽繧ゅｊ縺縺｣縺溘ｏ繧・, '繝輔Φ窶ｦ縺ｾ縺√∵ｽｮ譎ゅ▲縺ｦ繧・▽縺九＠繧峨・'],
-      ojousama: ['窶ｦ縺願ｨ繧上ｌ縺ｫ縺ｪ繧峨↑縺上※繧ゅ∬ｾ槭ａ繧九▽繧ゅｊ縺ｧ縺励◆繧・],
-      delinquent: ['險繧上ｌ縺ｪ縺上※繧りｾ槭ａ繧九▽繧ゅｊ縺縺｣縺溘▲縺､繝ｼ縺ｮ'],
-      seductive: ['縺ｵ縺ｵ窶ｦ險繧上ｌ縺ｪ縺上※繧りｾ槭ａ繧九▽繧ゅｊ縺縺｣縺溘ｏ'],
+      _default: ['…別にアンタに言われなくても辞めるつもりだったわよ', 'フン…まぁ、潮時ってやつかしらね'],
+      ojousama: ['…お言われにならなくても、辞めるつもりでしたわ'],
+      delinquent: ['言われなくても辞めるつもりだったっつーの'],
+      seductive: ['ふふ…言われなくても辞めるつもりだったわ'],
     },
     bold: {
-      _default: ['窶ｦ縺・＞繧上よ怙蠕後￥繧峨＞縲∝､ｧ莠ｺ縺励￥蠑輔″蜿励￠縺ｦ縺ゅ￡繧・],
-      ojousama: ['窶ｦ繧医ｍ縺励￥縺ｦ繧医よ怙蠕後￥繧峨＞螟ｧ莠ｺ縺励￥縺・◆縺励∪縺吶ｏ'],
-      delinquent: ['窶ｦ縺・＞縺懊よ怙蠕後￥繧峨＞螟ｧ莠ｺ縺励￥縺励※繧・ｋ繧・],
-      cool: ['窶ｦ縺・＞縲ょ女縺代ｋ'],
-      seductive: ['窶ｦ縺・＞繧上ｈ縲よ怙蠕後￥繧峨＞螟ｧ莠ｺ縺励￥縺励※縺ゅ￡繧・],
+      _default: ['…いいわ。最後くらい、大人しく引き受けてあげる'],
+      ojousama: ['…よろしくてよ。最後くらい大人しくいたしますわ'],
+      delinquent: ['…いいぜ。最後くらい大人しくしてやるよ'],
+      cool: ['…いい。受ける'],
+      seductive: ['…いいわよ。最後くらい大人しくしてあげる'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ貎ｮ譎ゅ°'], cool: ['窶ｦ貎ｮ譎ゅ□'], polite: ['窶ｦ貎ｮ譎ゅ〒縺吶・'] },
-    shy: { _default: ['窶ｦ縺ｯ縺・ゅｂ縺・ｦ蜊∝・縺ｧ縺・] },
+    quiet: { _default: ['……潮時か'], cool: ['…潮時だ'], polite: ['…潮時ですね'] },
+    shy: { _default: ['…はい。もう…十分です'] },
     easygoing: {
-      _default: ['縺ｾ縲∵ｽｮ譎ゅ▲縺ｦ繧・▽縺縺ｭ縲ゅｏ縺九▲縺溘ｏ縺九▲縺・],
-      delinquent: ['貎ｮ譎ゅ▲縺ｦ繧・▽縺縺ｪ縲ゅｏ縺九▲縺溘ｈ'],
-      seductive: ['貎ｮ譎ゅ▲縺ｦ繧・▽縺九＠繧峨ゅｏ縺九▲縺溘ｏ'],
+      _default: ['ま、潮時ってやつだね。わかったわかった'],
+      delinquent: ['潮時ってやつだな。わかったよ'],
+      seductive: ['潮時ってやつかしら。わかったわ'],
     },
     earnest: {
-      _default: ['窶ｦ繧上°縺｣縺溘よ怙蠕後∪縺ｧ謔ｪ蠖ｹ繧呈ｼ斐§縺阪ｌ縺溘↑繧画悽譛帙□'],
-      polite: ['窶ｦ繧上°繧翫∪縺励◆縲よ怙蠕後∪縺ｧ貍斐§縺阪ｌ縺溘↑繧画悽譛帙〒縺・],
-      ojousama: ['窶ｦ謇ｿ遏･縺励∪縺励◆繧上よ怙蠕後∪縺ｧ貍斐§縺阪ｌ縺ｾ縺励◆繧ゅ・'],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲よ怙蠕後∪縺ｧ貍斐§縺阪ｌ縺溘↑繧画悽譛帙ｈ'],
+      _default: ['…わかった。最後まで悪役を演じきれたなら本望だ'],
+      polite: ['…わかりました。最後まで演じきれたなら本望です'],
+      ojousama: ['…承知しましたわ。最後まで演じきれましたもの'],
+      seductive: ['…わかったわ。最後まで演じきれたなら本望よ'],
     },
-    emotional: { _default: ['窶ｦ縺｣縲√ｂ縺・＞縺・ｏ繧遺ｦ繧上°縺｣縺溪ｦ繧上°縺｣縺溘°繧俄ｦ'] },
+    emotional: { _default: ['…っ、もういいわよ…わかった…わかったから…'] },
   },
-  accept_former_champ: {  // 蜈・視閠・    normal: {
-      _default: ['譛蠕後↓縺・＞隧ｦ蜷医′縺励◆縺・ゅ◎繧後□縺代♀鬘倥＞縺ｧ縺阪ｋ・・, '窶ｦ繧上°縺｣縺溘ゅ・繝ｫ繝医ｒ謖√※縺溷・縲∝香蛻・□繧・],
-      ojousama: ['譛蠕後↓繧医＞隧ｦ蜷医ｒ縺輔○縺ｦ縺上□縺輔＞縺ｾ縺・],
-      delinquent: ['譛蠕後↓縺・＞隧ｦ蜷医＆縺帙※縺上ｌ繧医ゅ◎繧後□縺代〒縺・＞'],
-      seductive: ['譛蠕後↓縺・＞隧ｦ蜷医′縺励◆縺・・縲ゅ♀鬘倥＞縺ｧ縺阪ｋ・・],
-    },
-    bold: {
-      _default: ['譛蠕後↓窶ｦ縺薙・蝗｣菴薙〒繧ゅ≧荳蝗櫁ｼ昴°縺帙※縺上ｌ'],
-      ojousama: ['譛蠕後↓窶ｦ繧ゅ≧荳蠎ｦ霈昴°縺帙※縺上□縺輔＞縺ｾ縺・],
-      delinquent: ['譛蠕後↓窶ｦ繧ゅ≧荳蝗櫁ｼ昴°縺帙※縺上ｌ繧・],
-      cool: ['窶ｦ譛蠕後↓縲√ｂ縺・ｸ蠎ｦ'],
-      seductive: ['譛蠕後↓窶ｦ繧ゅ≧荳蝗櫁ｼ昴°縺帙※縺上ｌ繧具ｼ・],
-    },
-    quiet: { _default: ['窶ｦ繝吶Ν繝医ｒ謖√※縺溘ゅ◎繧後〒蜊∝・'], cool: ['窶ｦ蜊∝・縺'], polite: ['窶ｦ繝吶Ν繝医ｒ謖√※縺ｾ縺励◆縲ゅ◎繧後〒蜊∝・縺ｧ縺・] },
-    shy: { _default: ['繝吶Ν繝医ｒ謖√※縺溘□縺代〒窶ｦ蜊∝・縺吶℃繧九￥繧峨＞縺ｧ縺・] },
-    easygoing: {
-      _default: ['繝吶Ν繝域戟縺ｦ縺溘ｓ縺繧ゅｓ縲ょ香蛻・〒縺励ｇ・・],
-      delinquent: ['繝吶Ν繝域戟縺ｦ縺溘ｓ縺縺懊ょ香蛻・□繧搾ｼ・],
-      seductive: ['繝吶Ν繝域戟縺ｦ縺溘ｂ縺ｮ縺ｭ縲ょ香蛻・ｈ'],
-    },
-    earnest: {
-      _default: ['譛蠕後↓縺・＞隧ｦ蜷医ｒ縲ゅ◎繧後□縺代′譛帙∩縺'],
-      polite: ['譛蠕後↓繧医＞隧ｦ蜷医ｒ縲ゅ◎繧後□縺代′譛帙∩縺ｧ縺・],
-      ojousama: ['譛蠕後↓繧医＞隧ｦ蜷医ｒ縲ゅ◎繧後□縺代′譛帙∩縺ｧ縺吶ｏ'],
-      seductive: ['譛蠕後↓縺・＞隧ｦ蜷医ｒ縲ゅ◎繧後□縺代′譛帙∩繧・],
-    },
-    emotional: { _default: ['繝吶Ν繝遺ｦ謖√※縺溘°繧俄ｦ繧ゅ≧窶ｦ蜊∝・縺繧遺ｦ縺｣'] },
-  },
-  accept_no_title: {  // 辟｡蜀
+  accept_former_champ: {  // 元王者
     normal: {
-      _default: ['窶ｦ繧上°縺｣縺溘よｽｮ譎ゅ□繧医・', '窶ｦ縺昴≧縺縺ｭ縲ゅ≠繧翫′縺ｨ縺・∬ｨ縺｣縺ｦ縺上ｌ縺ｦ'],
-      ojousama: ['窶ｦ繧上°繧翫∪縺励◆繧上よｽｮ譎ゅ〒縺吶ｏ縺ｭ'],
-      delinquent: ['窶ｦ繧上°縺｣縺溘ｈ縲よｽｮ譎ゅ▲縺ｦ繧・▽縺繧・],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲よｽｮ譎ゅｈ縺ｭ'],
+      _default: ['最後にいい試合がしたい。それだけお願いできる？', '…わかった。ベルトを持てた分、十分だよ'],
+      ojousama: ['最後によい試合をさせてくださいまし'],
+      delinquent: ['最後にいい試合させてくれよ。それだけでいい'],
+      seductive: ['最後にいい試合がしたいの。お願いできる？'],
     },
     bold: {
-      _default: ['窶ｦ繝√ャ縲√％繧薙↑邨ゅｏ繧頑婿縺九ｈ縲やｦ繧上°縺｣縺・],
-      ojousama: ['窶ｦ縺薙ｓ縺ｪ邨ゅｏ繧頑婿縺ｧ縺吶・縲やｦ謇ｿ遏･縺励∪縺励◆繧・],
-      delinquent: ['繝√ャ縲√％繧薙↑邨ゅｏ繧頑婿縺九ｈ窶ｦ繧上°縺｣縺溘ｈ'],
-      cool: ['窶ｦ繧上°縺｣縺・],
-      seductive: ['縺薙ｓ縺ｪ邨ゅｏ繧頑婿縺ｪ縺ｮ縺ｭ窶ｦ繧上°縺｣縺溘ｏ'],
+      _default: ['最後に…この団体でもう一回輝かせてくれ'],
+      ojousama: ['最後に…もう一度輝かせてくださいまし'],
+      delinquent: ['最後に…もう一回輝かせてくれよ'],
+      cool: ['…最後に、もう一度'],
+      seductive: ['最後に…もう一回輝かせてくれる？'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺・ｓ'], cool: ['窶ｦ縺ゅ≠'], polite: ['窶ｦ縺ｯ縺・] },
-    shy: { _default: ['窶ｦ縺ｯ縺・ゅ♀荳冶ｩｱ縺ｫ縺ｪ繧翫∪縺励◆窶ｦ'] },
+    quiet: { _default: ['…ベルトを持てた。それで十分'], cool: ['…十分だ'], polite: ['…ベルトを持てました。それで十分です'] },
+    shy: { _default: ['ベルトを持てただけで…十分すぎるくらいです'] },
     easygoing: {
-      _default: ['縺・ｓ縲∬ｦ壽ぁ縺ｯ縺ｧ縺阪※縺溘よ怙蠕後√ｈ繧阪＠縺上・'],
-      delinquent: ['隕壽ぁ縺ｯ縺ｧ縺阪※縺溘ｈ縲よ怙蠕後ｈ繧阪＠縺上↑'],
-      seductive: ['隕壽ぁ縺ｯ縺ｧ縺阪※縺溘ｏ縲よ怙蠕後√ｈ繧阪＠縺上・'],
+      _default: ['ベルト持てたんだもん。十分でしょ！'],
+      delinquent: ['ベルト持てたんだぜ。十分だろ！'],
+      seductive: ['ベルト持てたものね。十分よ'],
     },
     earnest: {
-      _default: ['窶ｦ隕壽ぁ縺ｯ縺ｧ縺阪※縺溘ゅ≠繧翫′縺ｨ縺・∬ｨ縺｣縺ｦ縺上ｌ縺ｦ'],
-      polite: ['窶ｦ隕壽ぁ縺ｯ縺ｧ縺阪※縺・∪縺励◆縲りｨ縺｣縺ｦ縺上□縺輔▲縺ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・],
-      ojousama: ['窶ｦ隕壽ぁ縺ｯ縺ｧ縺阪※縺翫ｊ縺ｾ縺励◆繧上ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      seductive: ['窶ｦ隕壽ぁ縺ｯ縺ｧ縺阪※縺溘ｏ縲りｨ縺｣縺ｦ縺上ｌ縺ｦ縺ゅｊ縺後→縺・],
+      _default: ['最後にいい試合を。それだけが望みだ'],
+      polite: ['最後によい試合を。それだけが望みです'],
+      ojousama: ['最後によい試合を。それだけが望みですわ'],
+      seductive: ['最後にいい試合を。それだけが望みよ'],
     },
-    emotional: { _default: ['縺・ｓ窶ｦ隕壽ぁ窶ｦ縺ｧ縺阪※縺溘ｈ窶ｦ縺ゅｊ縺後→縺・ｦ'] },
+    emotional: { _default: ['ベルト…持てたから…もう…十分だよ…っ'] },
+  },
+  accept_no_title: {  // 無冠
+    normal: {
+      _default: ['…わかった。潮時だよね', '…そうだね。ありがとう、言ってくれて'],
+      ojousama: ['…わかりましたわ。潮時ですわね'],
+      delinquent: ['…わかったよ。潮時ってやつだろ'],
+      seductive: ['…わかったわ。潮時よね'],
+    },
+    bold: {
+      _default: ['…チッ、こんな終わり方かよ。…わかった'],
+      ojousama: ['…こんな終わり方ですの。…承知しましたわ'],
+      delinquent: ['チッ、こんな終わり方かよ…わかったよ'],
+      cool: ['…わかった'],
+      seductive: ['こんな終わり方なのね…わかったわ'],
+    },
+    quiet: { _default: ['……うん'], cool: ['…ああ'], polite: ['…はい'] },
+    shy: { _default: ['…はい。お世話になりました…'] },
+    easygoing: {
+      _default: ['うん、覚悟はできてた。最後、よろしくね'],
+      delinquent: ['覚悟はできてたよ。最後よろしくな'],
+      seductive: ['覚悟はできてたわ。最後、よろしくね'],
+    },
+    earnest: {
+      _default: ['…覚悟はできてた。ありがとう、言ってくれて'],
+      polite: ['…覚悟はできていました。言ってくださってありがとうございます'],
+      ojousama: ['…覚悟はできておりましたわ。ありがとうございます'],
+      seductive: ['…覚悟はできてたわ。言ってくれてありがとう'],
+    },
+    emotional: { _default: ['うん…覚悟…できてたよ…ありがとう…'] },
   },
 };
 
 const RETIRE_REFUSE_LINES = {
-  refuse_champ: {  // 邇句ｺｧ菫晄戟荳ｭ
+  refuse_champ: {  // 王座保持中
     normal: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｫ蠑暮縺励ｍ縺｣縺ｦ・・蜀苓ｫ・・繧・ａ縺ｦ', '縺薙・繝吶Ν繝医′縺ゅｋ髯舌ｊ縲√≠縺溘＠縺ｯ邨ゅｏ繧峨↑縺・],
-      ojousama: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｫ蠑暮縺ｧ縺吶▲縺ｦ・・縺泌・隲・ｒ'],
-      delinquent: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｫ蠑暮縺励ｍ縺縺ｨ・・縺ｵ縺悶￠繧薙↑'],
-      seductive: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｫ蠑暮縺ｧ縺吶▲縺ｦ・・蜀苓ｫ・〒縺励ｇ縺・ｼ・],
+      _default: ['チャンピオンに引退しろって？ 冗談はやめて', 'このベルトがある限り、あたしは終わらない'],
+      ojousama: ['チャンピオンに引退ですって？ ご冗談を'],
+      delinquent: ['チャンピオンに引退しろだと？ ふざけんな'],
+      seductive: ['チャンピオンに引退ですって？ 冗談でしょう？'],
     },
     bold: {
-      _default: ['邇玖・ｒ蠑暮縺輔○繧医≧縺ｪ繧薙※縲・00蟷ｴ譌ｩ縺・],
-      ojousama: ['邇玖・ｒ蠑暮縺輔○繧医≧縺ｪ繧薙※縲・00蟷ｴ譌ｩ縺上※繧・],
-      delinquent: ['邇玖・↓蠑暮縺励ｍ縺縺ｨ・・100蟷ｴ譌ｩ縺・ｓ縺繧茨ｼ・],
-      cool: ['窶ｦ邇玖・・縲・縺九↑縺・],
-      seductive: ['邇玖・ｒ霎槭ａ縺輔○繧具ｼ・100蟷ｴ譌ｩ縺・ｏ繧・],
+      _default: ['王者を引退させようなんて、100年早い'],
+      ojousama: ['王者を引退させようなんて、100年早くてよ'],
+      delinquent: ['王者に引退しろだと？ 100年早ぇんだよ！'],
+      cool: ['…王者は、退かない'],
+      seductive: ['王者を辞めさせる？ 100年早いわよ'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺薙・繝吶Ν繝医′縺ゅｋ髯舌ｊ'], cool: ['窶ｦ騾縺九↑縺・], polite: ['窶ｦ縺薙・繝吶Ν繝医′縺ゅｋ髯舌ｊ縺ｯ'] },
-    shy: { _default: ['縺ゅ・窶ｦ縺ｾ縺縲√％縺ｮ繝吶Ν繝医ｒ螳医ｊ縺溘＞繧薙〒縺吮ｦ'] },
+    quiet: { _default: ['……このベルトがある限り'], cool: ['…退かない'], polite: ['…このベルトがある限りは'] },
+    shy: { _default: ['あの…まだ、このベルトを守りたいんです…'] },
     easygoing: {
-      _default: ['縺医・縲√∪縺繝√Ε繝ｳ繝斐が繝ｳ縺繧茨ｼ・繧ゅ≧縺｡繧・▲縺ｨ蠕・▲縺ｦ繧・],
-      delinquent: ['縺ｾ縺繝√Ε繝ｳ繝斐が繝ｳ縺縺懶ｼ・繧ゅ≧縺｡繧・▲縺ｨ蠕・※縺｣縺ｦ'],
-      seductive: ['縺ｾ縺繝√Ε繝ｳ繝斐が繝ｳ繧茨ｼ・繧ゅ≧蟆代＠蠕・▲縺ｦ'],
+      _default: ['えー、まだチャンピオンだよ？ もうちょっと待ってよ'],
+      delinquent: ['まだチャンピオンだぜ？ もうちょっと待てって'],
+      seductive: ['まだチャンピオンよ？ もう少し待って'],
     },
     earnest: {
-      _default: ['縺薙・繝吶Ν繝医・驥阪∩繧偵∪縺閭瑚ｲ縺医ｋ縲ょｼ暮縺ｯ縺励↑縺・],
-      polite: ['縺薙・繝吶Ν繝医・驥阪∩繧偵∪縺閭瑚ｲ縺医∪縺吶ょｼ暮縺ｯ縺励∪縺帙ｓ'],
-      ojousama: ['縺薙・繝吶Ν繝医・驥阪∩繧偵∪縺閭瑚ｲ縺医∪縺吶ｏ'],
-      seductive: ['縺薙・繝吶Ν繝医・驥阪∩窶ｦ縺ｾ縺閭瑚ｲ縺医ｋ繧・],
+      _default: ['このベルトの重みをまだ背負える。引退はしない'],
+      polite: ['このベルトの重みをまだ背負えます。引退はしません'],
+      ojousama: ['このベルトの重みをまだ背負えますわ'],
+      seductive: ['このベルトの重み…まだ背負えるわ'],
     },
-    emotional: { _default: ['繧・□窶ｦ縺薙・繝吶Ν繝磯屬縺輔↑縺・ｦ縺ｾ縺髣倥∴繧銀ｦ・・] },
+    emotional: { _default: ['やだ…このベルト離さない…まだ闘える…！'] },
   },
-  refuse_distrust: {  // 菫｡鬆ｼ蠎ｦ菴・    normal: {
-      _default: ['縺ゅ◆縺励ｒ霑ｽ縺・・縺呎ｰ暦ｼ・縺昴≧邁｡蜊倥↓縺ｯ縺・°縺ｪ縺・ｏ繧・, '縺薙・蝗｣菴薙↓菴募ｹｴ雋｢迪ｮ縺励※縺阪◆縺ｨ諤昴▲縺ｦ繧九・'],
-      ojousama: ['繧上◆縺上＠繧定ｿｽ縺・・縺吶♀縺､繧ゅｊ・・縺昴≧縺ｯ縺・″縺ｾ縺帙ｓ繧・],
-      delinquent: ['霑ｽ縺・・縺呎ｰ励°繧医ゅ◎縺・ｰ｡蜊倥↓縺・￥縺ｨ諤昴≧縺ｪ繧・],
-      seductive: ['遘√ｒ霑ｽ縺・・縺吶▽繧ゅｊ・・縺昴≧縺ｯ縺・°縺ｪ縺・ｏ繧・],
+  refuse_distrust: {  // 信頼度低
+    normal: {
+      _default: ['あたしを追い出す気？ そう簡単にはいかないわよ', 'この団体に何年貢献してきたと思ってるの'],
+      ojousama: ['わたくしを追い出すおつもり？ そうはいきませんわ'],
+      delinquent: ['追い出す気かよ。そう簡単にいくと思うなよ'],
+      seductive: ['私を追い出すつもり？ そうはいかないわよ'],
     },
     bold: {
-      _default: ['窶ｦ縺ゅ◆縺励・縺薙→縺碁が鬲斐↑縺ｮ・・縺ｯ縺｣縺阪ｊ險縺・↑縺輔＞繧・],
-      ojousama: ['繧上◆縺上＠縺碁が鬲斐〒縺吶・・・縺ｯ縺｣縺阪ｊ縺翫▲縺励ｃ縺・↑縺輔＞'],
-      delinquent: ['縺ゅ◆縺励′驍ｪ鬲斐□縺｣縺ｦ縺ｮ縺具ｼ・縺ｯ縺｣縺阪ｊ險縺医ｈ'],
-      cool: ['窶ｦ驍ｪ鬲斐°縲ゅ・縺｣縺阪ｊ險縺・],
-      seductive: ['遘√′驍ｪ鬲斐↑縺ｮ・・縺ｯ縺｣縺阪ｊ險縺｣縺ｦ縺上ｌ繧具ｼ・],
+      _default: ['…あたしのことが邪魔なの？ はっきり言いなさいよ'],
+      ojousama: ['わたくしが邪魔ですの？ はっきりおっしゃいなさい'],
+      delinquent: ['あたしが邪魔だってのか？ はっきり言えよ'],
+      cool: ['…邪魔か。はっきり言え'],
+      seductive: ['私が邪魔なの？ はっきり言ってくれる？'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺昴≧縺・≧縺薙→縲√°'], cool: ['窶ｦ縺昴≧縺・], polite: ['窶ｦ縺昴≧縲√〒縺吶°'] },
-    shy: { _default: ['窶ｦ遘√∝ｿ・ｦ√↑縺・▲縺ｦ縺薙→縺ｧ縺吶°窶ｦ・・] },
+    quiet: { _default: ['……そういうこと、か'], cool: ['…そうか'], polite: ['…そう、ですか'] },
+    shy: { _default: ['…私、必要ないってことですか…？'] },
     easygoing: {
-      _default: ['縺医∞窶ｦ縺ゅ◆縺鈴が鬲斐↑縺ｮ・・縺｡繧・▲縺ｨ縺ｲ縺ｩ縺上↑縺・ｼ・],
-      delinquent: ['縺翫＞縺翫＞窶ｦ驍ｪ鬲斐□縺｣縺ｦ縺ｮ縺具ｼ・縺ｲ縺ｧ繝ｼ縺ｪ'],
-      seductive: ['縺ゅｉ窶ｦ遘√′驍ｪ鬲斐↑縺ｮ・・縺ｲ縺ｩ縺・ｏ縺ｭ'],
+      _default: ['えぇ…あたし邪魔なの？ ちょっとひどくない？'],
+      delinquent: ['おいおい…邪魔だってのか？ ひでーな'],
+      seductive: ['あら…私が邪魔なの？ ひどいわね'],
     },
     earnest: {
-      _default: ['縺薙・蝗｣菴薙・縺溘ａ縺ｫ蟆ｽ縺上＠縺ｦ縺阪◆縲ゅ◎縺ｮ豌玲戟縺｡縺ｯ蝌倥§繧・↑縺・],
-      polite: ['縺薙・蝗｣菴薙・縺溘ａ縺ｫ蟆ｽ縺上＠縺ｦ縺阪∪縺励◆縲ょ・縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ'],
-      ojousama: ['縺薙・蝗｣菴薙・縺溘ａ縺ｫ蟆ｽ縺上＠縺ｦ縺ｾ縺・ｊ縺ｾ縺励◆繧・],
-      seductive: ['縺薙・蝗｣菴薙・縺溘ａ縺ｫ蟆ｽ縺上＠縺ｦ縺阪◆縺ｮ縲ょ・縺倥ｃ縺ｪ縺・ｏ'],
+      _default: ['この団体のために尽くしてきた。その気持ちは嘘じゃない'],
+      polite: ['この団体のために尽くしてきました。嘘ではありません'],
+      ojousama: ['この団体のために尽くしてまいりましたわ'],
+      seductive: ['この団体のために尽くしてきたの。嘘じゃないわ'],
     },
-    emotional: { _default: ['菴募ｹｴ窶ｦ菴募ｹｴ縺薙％縺ｫ縺・◆縺ｨ諤昴▲縺ｦ繧九・窶ｦ縺｣・・] },
+    emotional: { _default: ['何年…何年ここにいたと思ってるの…っ！'] },
   },
   refuse_heel: {  // Heel
     normal: {
-      _default: ['蠑暮・・谺｡縺ｮ闊郁｡後ｒ隕九※縺ｪ縺輔＞縲ょｾ梧ｔ縺輔○縺ｦ縺ゅ￡繧・, '縺ｾ縺縺ｾ縺蠑暮縺ｪ繧薙※縺励※繧・ｉ縺ｪ縺・ｏ繧・],
-      ojousama: ['蠑暮縺ｧ縺吶▲縺ｦ・・谺｡縺ｮ闊郁｡後ｒ縺碑ｦｧ縺ｫ縺ｪ縺｣縺ｦ縺上□縺輔＞縺ｾ縺・],
-      delinquent: ['蠑暮縺縺ｨ・・谺｡縺ｮ闊郁｡瑚ｦ九※繧阪ょｾ梧ｔ縺輔○縺ｦ繧・ｋ'],
-      seductive: ['蠑暮縺ｧ縺吶▲縺ｦ・・谺｡縺ｮ闊郁｡後ｒ隕九※縺｡繧・≧縺縺・],
+      _default: ['引退？ 次の興行を見てなさい。後悔させてあげる', 'まだまだ引退なんてしてやらないわよ'],
+      ojousama: ['引退ですって？ 次の興行をご覧になってくださいまし'],
+      delinquent: ['引退だと？ 次の興行見てろ。後悔させてやる'],
+      seductive: ['引退ですって？ 次の興行を見てちょうだい'],
     },
     bold: {
-      _default: ['縺ゅ◆縺励′縺・↑縺上↑縺｣縺溘ｉ縲√％縺ｮ蝗｣菴薙・邨ゅｏ繧翫ｈ'],
-      ojousama: ['繧上◆縺上＠縺後＞縺ｪ縺上↑縺｣縺溘ｉ縲√％縺ｮ蝗｣菴薙・邨ゅｏ繧翫〒縺吶ｏ'],
-      delinquent: ['縺ゅ◆縺励′縺・↑縺上↑縺｣縺溘ｉ縺薙・蝗｣菴鍋ｵゅｏ繧翫□縺・],
-      cool: ['窶ｦ縺薙・蝗｣菴薙・遘√′縺・↑縺・→邨ゅｏ繧・],
-      seductive: ['遘√′縺・↑縺上↑縺｣縺溘ｉ窶ｦ縺薙・蝗｣菴薙∫ｵゅｏ繧九ｏ繧茨ｼ・],
+      _default: ['あたしがいなくなったら、この団体は終わりよ'],
+      ojousama: ['わたくしがいなくなったら、この団体は終わりですわ'],
+      delinquent: ['あたしがいなくなったらこの団体終わりだぜ'],
+      cool: ['…この団体は私がいないと終わる'],
+      seductive: ['私がいなくなったら…この団体、終わるわよ？'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺ｾ縺霎槭ａ縺ｪ縺・], cool: ['窶ｦ霎槭ａ縺ｪ縺・], polite: ['窶ｦ縺ｾ縺霎槭ａ縺ｾ縺帙ｓ'] },
-    shy: { _default: ['窶ｦ繧ゅ≧蟆代＠縺縺鯛ｦ縺薙％縺ｫ縺・＆縺帙※縺上□縺輔＞'] },
+    quiet: { _default: ['……まだ辞めない'], cool: ['…辞めない'], polite: ['…まだ辞めません'] },
+    shy: { _default: ['…もう少しだけ…ここにいさせてください'] },
     easygoing: {
-      _default: ['縺ｾ縺縺ｾ縺證ｴ繧瑚ｶｳ繧翫↑縺・ｈ・・],
-      delinquent: ['縺ｾ縺縺ｾ縺證ｴ繧瑚ｶｳ繧翫・繝ｼ縺懶ｼ・],
-      seductive: ['縺ｾ縺縺ｾ縺證ｴ繧瑚ｶｳ繧翫↑縺・ｏ'],
+      _default: ['まだまだ暴れ足りないよ～'],
+      delinquent: ['まだまだ暴れ足りねーぜ！'],
+      seductive: ['まだまだ暴れ足りないわ'],
     },
     earnest: {
-      _default: ['谺｡縺ｮ闊郁｡後〒險ｼ譏弱☆繧九ょｾ梧ｔ縺輔○縺ｦ縺ｿ縺帙ｋ'],
-      polite: ['谺｡縺ｮ闊郁｡後〒險ｼ譏弱＠縺ｾ縺吶ょｾ梧ｔ縺輔○縺ｦ縺ｿ縺帙∪縺・],
-      ojousama: ['谺｡縺ｮ闊郁｡後〒險ｼ譏弱＞縺溘＠縺ｾ縺吶ｏ'],
-      seductive: ['谺｡縺ｮ闊郁｡後〒險ｼ譏弱☆繧九ｏ縲ょｾ梧ｔ縺輔○縺ｦ縺ｿ縺帙ｋ'],
+      _default: ['次の興行で証明する。後悔させてみせる'],
+      polite: ['次の興行で証明します。後悔させてみせます'],
+      ojousama: ['次の興行で証明いたしますわ'],
+      seductive: ['次の興行で証明するわ。後悔させてみせる'],
     },
-    emotional: { _default: ['蠑暮窶ｦ縺｣・・蜀苓ｫ・§繧・↑縺・ｦ縺ｾ縺邨ゅｏ繧峨↑縺・ｦ・・] },
+    emotional: { _default: ['引退…っ？ 冗談じゃない…まだ終わらない…！'] },
   },
-  refuse_fighting: {  // 荳闊ｬ
+  refuse_fighting: {  // 一般
     normal: {
-      _default: ['縺ｾ縺邨ゅｏ繧峨↑縺・ゅ≠縺溘＠縺ｯ縺ｾ縺髣倥∴繧・, '菴薙′縺ゅｋ髯舌ｊ縲√≠縺溘＠縺ｯ繝ｪ繝ｳ繧ｰ縺ｫ遶九▽'],
-      ojousama: ['縺ｾ縺邨ゅｏ繧翫∪縺帙ｓ繧上ゅｏ縺溘￥縺励・縺ｾ縺髣倥∴縺ｾ縺・],
-      delinquent: ['縺ｾ縺邨ゅｏ繧薙・繝ｼ繧医ゅ≠縺溘＠縺ｯ縺ｾ縺髣倥∴繧・],
-      seductive: ['縺ｾ縺邨ゅｏ繧峨↑縺・ｏ縲らｧ√・縺ｾ縺髣倥∴繧九・'],
+      _default: ['まだ終わらない。あたしはまだ闘える', '体がある限り、あたしはリングに立つ'],
+      ojousama: ['まだ終わりませんわ。わたくしはまだ闘えます'],
+      delinquent: ['まだ終わんねーよ。あたしはまだ闘える'],
+      seductive: ['まだ終わらないわ。私はまだ闘えるの'],
     },
     bold: {
-      _default: ['窶ｦ隲ｦ繧√ｋ縺ｮ縺ｯ縲√∪縺譌ｩ縺・りｦ九※繧・],
-      ojousama: ['隲ｦ繧√ｋ縺ｮ縺ｯ譌ｩ縺上※繧医りｦ九※縺・※縺上□縺輔＞縺ｾ縺・],
-      delinquent: ['隲ｦ繧√ｋ縺ｮ縺ｯ縺ｾ縺譌ｩ縺・ｓ縺繧医りｦ九※繧・],
-      cool: ['窶ｦ縺ｾ縺縺'],
-      seductive: ['隲ｦ繧√ｋ縺ｮ縺ｯ縺ｾ縺譌ｩ縺・ｏ縲りｦ九※縺・※'],
+      _default: ['…諦めるのは、まだ早い。見てろ'],
+      ojousama: ['諦めるのは早くてよ。見ていてくださいまし'],
+      delinquent: ['諦めるのはまだ早ぇんだよ。見てろ'],
+      cool: ['…まだだ'],
+      seductive: ['諦めるのはまだ早いわ。見ていて'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺ｾ縺縲・利縺医ｋ'], cool: ['窶ｦ髣倥∴繧・], polite: ['窶ｦ縺ｾ縺縲・利縺医∪縺・] },
-    shy: { _default: ['縺ゅ・窶ｦ繧ゅ≧蟆代＠縺縺代√メ繝｣繝ｳ繧ｹ繧偵￥縺縺輔＞窶ｦ'] },
+    quiet: { _default: ['……まだ、闘える'], cool: ['…闘える'], polite: ['…まだ、闘えます'] },
+    shy: { _default: ['あの…もう少しだけ、チャンスをください…'] },
     easygoing: {
-      _default: ['縺ｾ縺縺ｾ縺蜈・ｰ励□繧茨ｼ・繧ゅ≧縺｡繧・▲縺ｨ繧・ｉ縺帙※繧・],
-      delinquent: ['縺ｾ縺縺ｾ縺蜈・ｰ励□縺懶ｼ・繧ゅ≧縺｡繧・▲縺ｨ繧・ｉ縺帙ｍ繧・],
-      seductive: ['縺ｾ縺縺ｾ縺蜈・ｰ励ｈ縲ゅｂ縺・ｰ代＠繧・ｉ縺帙※'],
+      _default: ['まだまだ元気だよ！ もうちょっとやらせてよ'],
+      delinquent: ['まだまだ元気だぜ！ もうちょっとやらせろよ'],
+      seductive: ['まだまだ元気よ。もう少しやらせて'],
     },
     earnest: {
-      _default: ['縺ｾ縺繧・ｌ繧九％縺ｨ縺後≠繧九ゅ％縺薙〒豁｢縺ｾ繧九ｏ縺代↓縺ｯ縺・°縺ｪ縺・],
-      polite: ['縺ｾ縺繧・ｌ繧九％縺ｨ縺後≠繧翫∪縺吶よｭ｢縺ｾ繧九ｏ縺代↓縺ｯ縺・″縺ｾ縺帙ｓ'],
-      ojousama: ['縺ｾ縺繧・ｌ繧九％縺ｨ縺後＃縺悶＞縺ｾ縺吶よｭ｢縺ｾ繧翫∪縺帙ｓ繧・],
-      seductive: ['縺ｾ縺繧・ｌ繧九％縺ｨ縺後≠繧九・縲よｭ｢縺ｾ繧九ｏ縺代↓縺ｯ縺・°縺ｪ縺・ｏ'],
+      _default: ['まだやれることがある。ここで止まるわけにはいかない'],
+      polite: ['まだやれることがあります。止まるわけにはいきません'],
+      ojousama: ['まだやれることがございます。止まりませんわ'],
+      seductive: ['まだやれることがあるの。止まるわけにはいかないわ'],
     },
-    emotional: { _default: ['縺ｾ縺窶ｦ縺ｾ縺髣倥＞縺溘＞窶ｦ縺企｡倥＞縲√ｂ縺・ｰ代＠縺縺鯛ｦ・・] },
+    emotional: { _default: ['まだ…まだ闘いたい…お願い、もう少しだけ…！'] },
   },
 };
 
 const RETAIN_LINES = {
   former_champ: {
     normal: {
-      _default: ['窶ｦ繧ゅ≧蟆代＠縺縺代よ怙蠕後↓繧ゅ≧荳蠎ｦ縲√≠縺ｮ繝吶Ν繝医↓謇九ｒ莨ｸ縺ｰ縺励◆縺・],
-      ojousama: ['繧ゅ≧蟆代＠縺縺鯛ｦ縺ゅ・繝吶Ν繝医↓謇九ｒ莨ｸ縺ｰ縺励◆縺・〒縺吶ｏ'],
-      delinquent: ['繧ゅ≧蟆代＠縺縺代□窶ｦ縺ゅ・繝吶Ν繝医↓繧ゅ≧荳蝗樊焔繧剃ｼｸ縺ｰ縺励※繝ｼ繧薙□'],
-      seductive: ['繧ゅ≧蟆代＠縺縺鯛ｦ縺ゅ・繝吶Ν繝医↓謇九ｒ莨ｸ縺ｰ縺励◆縺・・'],
+      _default: ['…もう少しだけ。最後にもう一度、あのベルトに手を伸ばしたい'],
+      ojousama: ['もう少しだけ…あのベルトに手を伸ばしたいですわ'],
+      delinquent: ['もう少しだけだ…あのベルトにもう一回手を伸ばしてーんだ'],
+      seductive: ['もう少しだけ…あのベルトに手を伸ばしたいの'],
     },
     bold: {
-      _default: ['繧ゅ≧荳繧ｷ繝ｼ繧ｺ繝ｳ縺縺代ｄ繧峨○縺ｦ縺上ｌ縲ょｿ・★邨先棡繧貞・縺・],
-      ojousama: ['繧ゅ≧荳繧ｷ繝ｼ繧ｺ繝ｳ縲ょｿ・★邨先棡繧貞・縺励∪縺吶ｏ'],
-      delinquent: ['繧ゅ≧荳繧ｷ繝ｼ繧ｺ繝ｳ縺縺代□縲らｵｶ蟇ｾ邨先棡蜃ｺ縺吶●'],
-      cool: ['窶ｦ繧ゅ≧荳繧ｷ繝ｼ繧ｺ繝ｳ'],
-      seductive: ['繧ゅ≧荳繧ｷ繝ｼ繧ｺ繝ｳ縺縺代らｵ先棡繧貞・縺吶ｏ'],
+      _default: ['もう一シーズンだけやらせてくれ。必ず結果を出す'],
+      ojousama: ['もう一シーズン。必ず結果を出しますわ'],
+      delinquent: ['もう一シーズンだけだ。絶対結果出すぜ'],
+      cool: ['…もう一シーズン'],
+      seductive: ['もう一シーズンだけ。結果を出すわ'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ繧ゅ≧荳蠎ｦ縺縺・], cool: ['窶ｦ繧ゅ≧荳蠎ｦ'], polite: ['窶ｦ繧ゅ≧荳蠎ｦ縺縺代∵倦謌ｦ縺輔○縺ｦ縺上□縺輔＞'] },
-    shy: { _default: ['縺ゅ・窶ｦ繧ゅ≧荳蠎ｦ縺縺鯛ｦ縺ゅ・繝吶Ν繝医↓窶ｦ謖第姶縺輔○縺ｦ縺上□縺輔＞'] },
+    quiet: { _default: ['……もう一度だけ'], cool: ['…もう一度'], polite: ['…もう一度だけ、挑戦させてください'] },
+    shy: { _default: ['あの…もう一度だけ…あのベルトに…挑戦させてください'] },
     easygoing: {
-      _default: ['繧ゅ≧縺｡繧・▲縺ｨ縺縺托ｼ・縺ゅ・繝吶Ν繝医ｂ縺・ｸ蝗櫁ｧｦ繧翫◆縺・ｓ縺繧医・'],
-      delinquent: ['繧ゅ≧縺｡繧・▲縺ｨ縺縺代□・・縺ゅ・繝吶Ν繝医ｂ縺・ｸ蝗櫁ｧｦ繧翫※繝ｼ繧薙□繧・],
-      seductive: ['繧ゅ≧蟆代＠縺縺代ゅ≠縺ｮ繝吶Ν繝医↓繧ゅ≧荳蠎ｦ隗ｦ繧後◆縺・・'],
+      _default: ['もうちょっとだけ！ あのベルトもう一回触りたいんだよね'],
+      delinquent: ['もうちょっとだけだ！ あのベルトもう一回触りてーんだよ'],
+      seductive: ['もう少しだけ。あのベルトにもう一度触れたいの'],
     },
     earnest: {
-      _default: ['譛蠕後↓繧ゅ≧荳蠎ｦ窶ｦ縺ゅ・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ縺励◆縺・],
-      polite: ['譛蠕後↓繧ゅ≧荳蠎ｦ窶ｦ縺ゅ・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ縺励◆縺・〒縺・],
-      ojousama: ['譛蠕後↓繧ゅ≧荳蠎ｦ窶ｦ縺ゅ・繝吶Ν繝医↓諱･縺倥↑縺・利縺・ｒ縺励◆縺・〒縺吶ｏ'],
-      seductive: ['譛蠕後↓繧ゅ≧荳蠎ｦ窶ｦ諱･縺倥↑縺・利縺・ｒ縺励◆縺・・'],
+      _default: ['最後にもう一度…あのベルトに恥じない闘いをしたい'],
+      polite: ['最後にもう一度…あのベルトに恥じない闘いをしたいです'],
+      ojousama: ['最後にもう一度…あのベルトに恥じない闘いをしたいですわ'],
+      seductive: ['最後にもう一度…恥じない闘いをしたいの'],
     },
-    emotional: { _default: ['縺ゅ・繝吶Ν繝遺ｦ繧ゅ≧荳蠎ｦ窶ｦ隗ｦ繧翫◆縺・ｦ縺｣'] },
+    emotional: { _default: ['あのベルト…もう一度…触りたい…っ'] },
   },
   high_trust: {
     normal: {
-      _default: ['繧｢繝ｳ繧ｿ縺後◎縺・ｨ縺・↑繧俄ｦ繧ゅ≧蟆代＠縺縺鷹大ｼｵ縺｣縺ｦ縺ｿ繧九ｈ'],
-      ojousama: ['縺ゅ↑縺溘′縺昴≧縺翫▲縺励ｃ繧九↑繧俄ｦ繧ゅ≧蟆代＠縺縺鷹大ｼｵ繧翫∪縺吶ｏ'],
-      delinquent: ['縺雁燕縺後◎縺・ｨ縺・↑繧俄ｦ繧ゅ≧縺｡繧・▲縺ｨ縺縺代ｄ縺｣縺ｦ縺ｿ繧九°'],
-      seductive: ['縺ゅ↑縺溘′縺昴≧險縺・↑繧俄ｦ繧ゅ≧蟆代＠鬆大ｼｵ縺｣縺ｦ縺ｿ繧九ｏ'],
+      _default: ['アンタがそう言うなら…もう少しだけ頑張ってみるよ'],
+      ojousama: ['あなたがそうおっしゃるなら…もう少しだけ頑張りますわ'],
+      delinquent: ['お前がそう言うなら…もうちょっとだけやってみるか'],
+      seductive: ['あなたがそう言うなら…もう少し頑張ってみるわ'],
     },
     bold: {
-      _default: ['窶ｦ菫｡縺倥※縺上ｌ繧九↑繧峨√ｂ縺・ｰ代＠莉倥″蜷医▲縺ｦ繧・ｋ繧・],
-      ojousama: ['菫｡縺倥※縺上□縺輔ｋ縺ｪ繧俄ｦ繧ゅ≧蟆代＠縺贋ｻ倥″蜷医＞縺励∪縺吶ｏ'],
-      delinquent: ['菫｡縺倥※縺上ｌ繧薙↑繧俄ｦ繧ゅ≧縺｡繧・▲縺ｨ莉倥″蜷医▲縺ｦ繧・ｋ縺・],
-      cool: ['窶ｦ菫｡縺倥※縺上ｌ繧九↑繧・],
-      seductive: ['菫｡縺倥※縺上ｌ繧九・・・窶ｦ繧ゅ≧蟆代＠莉倥″蜷医≧繧・],
+      _default: ['…信じてくれるなら、もう少し付き合ってやるよ'],
+      ojousama: ['信じてくださるなら…もう少しお付き合いしますわ'],
+      delinquent: ['信じてくれんなら…もうちょっと付き合ってやるぜ'],
+      cool: ['…信じてくれるなら'],
+      seductive: ['信じてくれるの？ …もう少し付き合うわ'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・ゅｂ縺・ｰ代＠縺縺・], cool: ['窶ｦ繧ゅ≧蟆代＠縺縺・], polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅｂ縺・ｰ代＠縺縺・] },
-    shy: { _default: ['菫｡縺倥※縺上ｌ縺ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅｂ縺・ｰ代＠縺縺鯛ｦ'] },
+    quiet: { _default: ['……ありがとう。もう少しだけ'], cool: ['…もう少しだけ'], polite: ['…ありがとうございます。もう少しだけ'] },
+    shy: { _default: ['信じてくれて…ありがとうございます。もう少しだけ…'] },
     easygoing: {
-      _default: ['縺昴▲縺九√∪縺蠢・ｦ√→縺励※縺上ｌ縺ｦ繧九ｓ縺縲ゅ§繧・≠繧ゅ≧縺｡繧・▲縺ｨ・・],
-      delinquent: ['縺ｾ縺蠢・ｦ√▲縺ｦ縺薙→縺九ゅ§繧・≠繧ゅ≧縺｡繧・▲縺ｨ繧・ｋ縺具ｼ・],
-      seductive: ['縺ｾ縺蠢・ｦ√→縺励※縺上ｌ繧九・縲ゅ§繧・≠繧ゅ≧蟆代＠'],
+      _default: ['そっか、まだ必要としてくれてるんだ。じゃあもうちょっと！'],
+      delinquent: ['まだ必要ってことか。じゃあもうちょっとやるか！'],
+      seductive: ['まだ必要としてくれるの。じゃあもう少し'],
     },
     earnest: {
-      _default: ['菫｡縺倥※縺上ｌ縺ｦ縺ゅｊ縺後→縺・よ悄蠕・↓蠢懊∴縺ｦ縺ｿ縺帙ｋ'],
-      polite: ['菫｡縺倥※縺上□縺輔▲縺ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶よ悄蠕・↓蠢懊∴縺ｾ縺・],
-      ojousama: ['菫｡縺倥※縺上□縺輔▲縺ｦ窶ｦ譛溷ｾ・↓蠢懊∴縺ｦ縺ｿ縺帙∪縺吶ｏ'],
-      seductive: ['菫｡縺倥※縺上ｌ縺ｦ縺ゅｊ縺後→縺・ょｿ懊∴縺ｦ縺ｿ縺帙ｋ繧・],
+      _default: ['信じてくれてありがとう。期待に応えてみせる'],
+      polite: ['信じてくださってありがとうございます。期待に応えます'],
+      ojousama: ['信じてくださって…期待に応えてみせますわ'],
+      seductive: ['信じてくれてありがとう。応えてみせるわ'],
     },
-    emotional: { _default: ['窶ｦ縺｣縲√≠繧翫′縺ｨ縺・ｦ繧ゅ≧蟆代＠縺縺鯛ｦ鬆大ｼｵ繧銀ｦ・・] },
+    emotional: { _default: ['…っ、ありがとう…もう少しだけ…頑張る…！'] },
   },
   heel: {
     normal: {
-      _default: ['繝輔Φ窶ｦ縺ｾ縺菴ｿ縺・％縺後≠繧九▲縺ｦ縺薙→縺ｭ縲ゅ＞縺・ｏ縲∽ｻ倥″蜷医▲縺ｦ縺ゅ￡繧・],
-      ojousama: ['縺ｾ縺菴ｿ縺・％縺後♀縺ゅｊ縺ｧ縺吶・縺ｭ縲ゅ♀莉倥″蜷医＞縺励※縺輔＠縺ゅ￡縺ｾ縺吶ｏ'],
-      delinquent: ['縺ｾ縺菴ｿ縺・％縺後≠繧九▲縺ｦ縺九ゅ＞縺・●縲∽ｻ倥″蜷医▲縺ｦ繧・ｋ繧・],
-      seductive: ['縺ｾ縺菴ｿ縺・％縺後≠繧九・縺ｭ縲ゅ＞縺・ｏ縲∽ｻ倥″蜷医▲縺ｦ縺ゅ￡繧・],
+      _default: ['フン…まだ使い道があるってことね。いいわ、付き合ってあげる'],
+      ojousama: ['まだ使い道がおありですのね。お付き合いしてさしあげますわ'],
+      delinquent: ['まだ使い道があるってか。いいぜ、付き合ってやるよ'],
+      seductive: ['まだ使い道があるのね。いいわ、付き合ってあげる'],
     },
     bold: {
-      _default: ['窶ｦ繝√ャ縲∝ｼ輔″逡吶ａ繧九・縺九ゅ∪縺√∵が縺上↑縺・愛譁ｭ縺'],
-      ojousama: ['蠑輔″逡吶ａ縺ｾ縺吶・縲やｦ縺ｾ縺√∵が縺上↑縺・愛譁ｭ縺ｧ縺吶ｏ'],
-      delinquent: ['蠑輔″逡吶ａ繧九・縺九ｈ縲ゅ∪縺∵が縺上・繝ｼ蛻､譁ｭ縺縺ｪ'],
-      cool: ['窶ｦ謔ｪ縺上↑縺・愛譁ｭ縺'],
-      seductive: ['蠑輔″逡吶ａ繧九・・・窶ｦ謔ｪ縺上↑縺・愛譁ｭ縺ｭ'],
+      _default: ['…チッ、引き留めるのか。まぁ、悪くない判断だ'],
+      ojousama: ['引き留めますの。…まぁ、悪くない判断ですわ'],
+      delinquent: ['引き留めるのかよ。まぁ悪くねー判断だな'],
+      cool: ['…悪くない判断だ'],
+      seductive: ['引き留めるの？ …悪くない判断ね'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ縺・＞縺繧阪≧'], cool: ['窶ｦ縺・＞'], polite: ['窶ｦ繧上°繧翫∪縺励◆'] },
-    shy: { _default: ['窶ｦ縺ｾ縺縲√％縺薙↓縺・※繧ゅ＞縺・ｓ縺ｧ縺吶°窶ｦ・・] },
+    quiet: { _default: ['……いいだろう'], cool: ['…いい'], polite: ['…わかりました'] },
+    shy: { _default: ['…まだ、ここにいてもいいんですか…？'] },
     easygoing: {
-      _default: ['縺ｸ縺・√∪縺菴ｿ縺｣縺ｦ縺上ｌ繧九ｓ縺縲ゅ∪縲√＞縺・￠縺ｩ縺ｭ'],
-      delinquent: ['縺ｾ縺菴ｿ縺｣縺ｦ縺上ｌ繧薙・縺九ゅ∪縲√＞縺・￠縺ｩ繧・],
-      seductive: ['縺ｾ縺菴ｿ縺｣縺ｦ縺上ｌ繧九・縲ゅ∪縲√＞縺・￠縺ｩ'],
+      _default: ['へぇ、まだ使ってくれるんだ。ま、いいけどね'],
+      delinquent: ['まだ使ってくれんのか。ま、いいけどよ'],
+      seductive: ['まだ使ってくれるの。ま、いいけど'],
     },
     earnest: {
-      _default: ['窶ｦ繧上°縺｣縺溘ゅ∪縺蠖ｹ縺ｫ遶九※繧九↑繧峨∝・蜉帙〒繧・ｋ'],
-      polite: ['窶ｦ繧上°繧翫∪縺励◆縲ゅ∪縺縺雁ｽｹ縺ｫ遶九※繧九↑繧牙・蜉帙〒'],
-      ojousama: ['窶ｦ謇ｿ遏･縺励∪縺励◆繧上ゅ♀蠖ｹ縺ｫ遶九※繧九↑繧牙・蜉帙ｒ蟆ｽ縺上＠縺ｾ縺・],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲ゅ∪縺蠖ｹ縺ｫ遶九※繧九↑繧牙・蜉帙〒繧・ｋ繧・],
+      _default: ['…わかった。まだ役に立てるなら、全力でやる'],
+      polite: ['…わかりました。まだお役に立てるなら全力で'],
+      ojousama: ['…承知しましたわ。お役に立てるなら全力を尽くします'],
+      seductive: ['…わかったわ。まだ役に立てるなら全力でやるわ'],
     },
-    emotional: { _default: ['窶ｦ縺｣縲√∪縺蠢・ｦ√→縺励※縺上ｌ繧九・窶ｦ繧上°縺｣縺溪ｦ繧・ｋ繧遺ｦ'] },
+    emotional: { _default: ['…っ、まだ必要としてくれるの…わかった…やるよ…'] },
   },
   default: {
     normal: {
-      _default: ['窶ｦ縺・ｓ縲√ｂ縺・ｰ代＠縺縺代ｄ縺｣縺ｦ縺ｿ繧・, '繧上°縺｣縺溘ゅｂ縺・ｰ代＠縺縺代∫ｶ壹￠縺ｦ縺ｿ繧・],
-      ojousama: ['窶ｦ縺医∞縲√ｂ縺・ｰ代＠縺縺醍ｶ壹￠縺ｦ縺ｿ縺ｾ縺吶ｏ'],
-      delinquent: ['窶ｦ繧上°縺｣縺溘ゅｂ縺・■繧・▲縺ｨ縺縺代ｄ縺｣縺ｦ縺ｿ繧九°'],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲ゅｂ縺・ｰ代＠邯壹￠縺ｦ縺ｿ繧・],
+      _default: ['…うん、もう少しだけやってみる', 'わかった。もう少しだけ、続けてみる'],
+      ojousama: ['…えぇ、もう少しだけ続けてみますわ'],
+      delinquent: ['…わかった。もうちょっとだけやってみるか'],
+      seductive: ['…わかったわ。もう少し続けてみる'],
     },
     bold: {
-      _default: ['窶ｦ縺ｾ縺邨ゅｏ繧翫§繧・↑縺・ゅｄ縺｣縺ｦ繧・ｋ繧・],
-      ojousama: ['縺ｾ縺邨ゅｏ繧翫〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ繧・],
-      delinquent: ['縺ｾ縺邨ゅｏ繧翫§繧・・繝ｼ繧医ゅｄ縺｣縺ｦ繧・ｋ縺・],
-      cool: ['窶ｦ縺ｾ縺縺'],
-      seductive: ['縺ｾ縺邨ゅｏ繧翫§繧・↑縺・ｏ'],
+      _default: ['…まだ終わりじゃない。やってやるよ'],
+      ojousama: ['まだ終わりではありませんわ'],
+      delinquent: ['まだ終わりじゃねーよ。やってやるぜ'],
+      cool: ['…まだだ'],
+      seductive: ['まだ終わりじゃないわ'],
     },
-    quiet: { _default: ['窶ｦ窶ｦ繧ゅ≧蟆代＠縺縺・], cool: ['窶ｦ繧ゅ≧蟆代＠'], polite: ['窶ｦ繧ゅ≧蟆代＠縺縺代∫ｶ壹￠縺ｾ縺・] },
-    shy: { _default: ['窶ｦ繧ゅ≧蟆代＠縺縺鯛ｦ鬆大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺・] },
+    quiet: { _default: ['……もう少しだけ'], cool: ['…もう少し'], polite: ['…もう少しだけ、続けます'] },
+    shy: { _default: ['…もう少しだけ…頑張ってみます'] },
     easygoing: {
-      _default: ['縺ｾ縺√ｂ縺・■繧・▲縺ｨ繧・▲縺ｦ縺ｿ繧医≧縺九↑・・],
-      delinquent: ['繧ゅ≧縺｡繧・▲縺ｨ繧・▲縺ｦ縺ｿ縺｣縺具ｼ・],
-      seductive: ['繧ゅ≧蟆代＠繧・▲縺ｦ縺ｿ繧医≧縺九＠繧・],
+      _default: ['まぁもうちょっとやってみようかな！'],
+      delinquent: ['もうちょっとやってみっか！'],
+      seductive: ['もう少しやってみようかしら'],
     },
     earnest: {
-      _default: ['窶ｦ繧上°縺｣縺溘ゅ∪縺繧・ｌ繧九％縺ｨ縺後≠繧九↑繧臥ｶ壹￠繧・],
-      polite: ['窶ｦ繧上°繧翫∪縺励◆縲ゅ∪縺繧・ｌ繧九％縺ｨ縺後≠繧九↑繧臥ｶ壹￠縺ｾ縺・],
-      ojousama: ['窶ｦ謇ｿ遏･縺励∪縺励◆繧上ゅｄ繧後ｋ縺薙→縺後≠繧九↑繧臥ｶ壹￠縺ｾ縺・],
-      seductive: ['窶ｦ繧上°縺｣縺溘ｏ縲ゅｄ繧後ｋ縺薙→縺後≠繧九↑繧臥ｶ壹￠繧九ｏ'],
+      _default: ['…わかった。まだやれることがあるなら続ける'],
+      polite: ['…わかりました。まだやれることがあるなら続けます'],
+      ojousama: ['…承知しましたわ。やれることがあるなら続けます'],
+      seductive: ['…わかったわ。やれることがあるなら続けるわ'],
     },
-    emotional: { _default: ['窶ｦ縺・ｓ窶ｦ繧ゅ≧蟆代＠縺縺鯛ｦ繧・▲縺ｦ縺ｿ繧銀ｦ'] },
+    emotional: { _default: ['…うん…もう少しだけ…やってみる…'] },
   },
 };
 
-// ﾂｧ4 繧ｳ繝ｼ繝∝ｼ暮繧｢繝峨ヰ繧､繧ｹ 繝・く繧ｹ繝・const COACH_RETIRE_ADVICE_TEXTS = {
+// §4 コーチ引退アドバイス テキスト
+const COACH_RETIRE_ADVICE_TEXTS = {
   C_positive: [
-    '螟壼・縲∝女縺大・繧後※縺上ｌ繧九→諤昴＞縺ｾ縺吶ｈ',
-    '譛ｬ莠ｺ繧ゅ◎繧阪◎繧阪°縺ｪ縺｣縺ｦ諢溘§縺ｯ縺ゅｊ縺ｾ縺吶・',
+    '多分、受け入れてくれると思いますよ',
+    '本人もそろそろかなって感じはありますね',
   ],
   C_negative: [
-    '縺・・繧凪ｦ縺ｾ縺譌ｩ縺・°繧ゅ＠繧後∪縺帙ｓ縺ｭ',
-    '譛ｬ莠ｺ縺ｯ縺ｾ縺繧・ｋ豌励〒縺吶ｈ縲る屮縺励＞縺九→',
+    'うーん…まだ早いかもしれませんね',
+    '本人はまだやる気ですよ。難しいかと',
   ],
   B_high: [
-    '譛ｬ莠ｺ繧りｦ壽ぁ縺励※縺・ｋ繧医≧縺ｧ縺吶る壹ｋ縺ｨ諤昴＞縺ｾ縺吶ｈ',
-    '菴薙・陦ｰ縺医・譛ｬ莠ｺ縺御ｸ逡ｪ繧上°縺｣縺ｦ縺ｾ縺吶°繧峨ょ､ｧ荳亥､ｫ縺ｧ縺励ｇ縺・,
+    '本人も覚悟しているようです。通ると思いますよ',
+    '体の衰えは本人が一番わかってますから。大丈夫でしょう',
   ],
   B_maybe: [
-    '豁｣逶ｴ縲∝濠縲・〒縺吶・縲ょ女縺大・繧後ｋ縺九←縺・°縺ｯ譛ｬ莠ｺ谺｡隨ｬ縺ｧ縺・,
-    '豌玲戟縺｡縺ｯ謠ｺ繧後※繧九→諤昴＞縺ｾ縺吶ゅち繧､繝溘Φ繧ｰ谺｡隨ｬ縺九→',
+    '正直、半々ですね。受け入れるかどうかは本人次第です',
+    '気持ちは揺れてると思います。タイミング次第かと',
   ],
   B_hard: [
-    '縺ｾ縺譛ｬ莠ｺ縺ｫ縺ｯ髣伜ｿ励′縺ゅｊ縺ｾ縺吶・縲よ妙繧峨ｌ繧玖ｦ壽ぁ縺ｯ縺励※縺上□縺輔＞',
-    '逶ｮ縺梧ｭｻ繧薙〒縺ｪ縺・〒縺吶ｈ縲√≠縺ｮ驕ｸ謇九ょｼ暮縺ｯ譌ｩ縺・°縺ｨ',
+    'まだ本人には闘志がありますね。断られる覚悟はしてください',
+    '目が死んでないですよ、あの選手。引退は早いかと',
   ],
   A_sure: [
-    '髢馴＆縺・↑縺丞女縺大・繧後∪縺吶よ悽莠ｺ繧ゅ◎縺ｮ縺､繧ゅｊ縺ｧ縺・,
-    '縺ゅ・驕ｸ謇九∵ｬ｡縺ｮ霄ｫ縺ｮ謖ｯ繧頑婿縺ｾ縺ｧ閠・∴蟋九ａ縺ｦ縺ｾ縺吶ｈ',
+    '間違いなく受け入れます。本人もそのつもりです',
+    'あの選手、次の身の振り方まで考え始めてますよ',
   ],
   A_likely: [
-    '螟壼・騾壹ｋ縺ｧ縺励ｇ縺・よ悽莠ｺ繧り埋縲・ｏ縺九▲縺ｦ縺ｾ縺吶°繧・,
-    '邱ｴ鄙貞ｾ後・陦ｨ諠・ｒ隕九※縺・ｋ縺ｨ窶ｦ蜿励￠蜈･繧後ｋ縺ｨ諤昴＞縺ｾ縺・,
+    '多分通るでしょう。本人も薄々わかってますから',
+    '練習後の表情を見ていると…受け入れると思います',
   ],
   A_iffy: [
-    '豁｣逶ｴ隱ｭ繧√↑縺・〒縺吶よ悽莠ｺ縺ｮ荳ｭ縺ｧ繧よ昭繧後※繧区─縺倥〒縺吶・',
-    '髣伜ｿ励・縺ゅｋ縺代←菴薙′縺､縺・※縺薙↑縺・ｦ隍・尅縺ｪ迥ｶ諷九〒縺・,
+    '正直読めないです。本人の中でも揺れてる感じですね',
+    '闘志はあるけど体がついてこない…複雑な状態です',
   ],
   A_hard: [
-    '豁｢繧√◆譁ｹ縺後＞縺・ゅ≠縺ｮ逶ｮ縺ｯ縺ｾ縺蠑暮縺吶ｋ逶ｮ縺倥ｃ縺ｪ縺・,
-    '譁ｭ險縺励∪縺吶′縲∽ｻ翫・辟｡逅・〒縺吶よ偵ｉ縺帙ｋ縺縺代〒縺吶ｈ',
+    '止めた方がいい。あの目はまだ引退する目じゃない',
+    '断言しますが、今は無理です。怒らせるだけですよ',
   ],
 };
 
-// v1.4: 蟷ｴ譛ｫ陦ｨ蠖ｰ蠑・繧ｻ繝ｪ繝輔ョ繝ｼ繧ｿ・・ersonalityﾃ預rchetype・・const AWARD_LINES = {
+// v1.4: 年末表彰式 セリフデータ（personality×archetype）
+const AWARD_LINES = {
   rookie: {
     normal: {
-      _default: ['謗ｧ螳､縺ｧ豕｣縺阪∪縺励◆縲ょ・縺倥ｃ縺ｪ縺・〒縺吶やｦ譚･蟷ｴ縺ｯ繧ゅ▲縺ｨ荳翫〒豕｣縺阪∪縺・, '縺薙・雉槭・驥阪＆縲√∪縺繧上°繧翫∪縺帙ｓ縲ゅ〒繧ゅΜ繝ｳ繧ｰ縺ｫ荳翫′繧九◆縺ｳ縲√″縺｣縺ｨ繧上°縺｣縺ｦ縺・￥'],
-      ojousama: ['縺ｾ縺輔°繧上◆縺上＠縺後％縺ｮ繧医≧縺ｪ譬・ｪ峨↓窶ｦ霄ｫ縺ｮ蠑輔″邱縺ｾ繧区昴＞縺ｧ縺吶ｏ縲ょ・霈ｩ譁ｹ縺ｮ閭御ｸｭ縲√＠縺九→隕九※縺翫ｊ縺ｾ縺励◆'],
-      delinquent: ['豁｣逶ｴ繝薙ン縺｣縺ｦ繧九ゅ％繧薙↑縺｡繧・ｓ縺ｨ縺励◆雉槭ｂ繧峨▲縺溘・蛻昴ａ縺ｦ縺窶ｦ譚･蟷ｴ繧ょ叙繧・],
-      seductive: ['隕壹∴縺ｦ縺翫＞縺ｦ縲ゅ％縺ｮ蜷榊燕縲∵擂蟷ｴ縺ｯ繧ゅ▲縺ｨ螟ｧ縺阪↑縺ｨ縺薙ｍ縺ｧ蜻ｼ縺ｰ繧後ｋ縺九ｉ'],
+      _default: ['控室で泣きました。嘘じゃないです。…来年はもっと上で泣きます', 'この賞の重さ、まだわかりません。でもリングに上がるたび、きっとわかっていく'],
+      ojousama: ['まさかわたくしがこのような栄誉に…身の引き締まる思いですわ。先輩方の背中、しかと見ておりました'],
+      delinquent: ['正直ビビってる。こんなちゃんとした賞もらったの初めてだ…来年も取る'],
+      seductive: ['覚えておいて。この名前、来年はもっと大きなところで呼ばれるから'],
     },
     bold: {
-      _default: ['譁ｰ莠ｺ邇具ｼ・騾夐℃轤ｹ縺縲よ擂蟷ｴ縺ｯMVP繧堤漁縺・, '譛蛻昴°繧蛾らせ縺励°隕九※縺ｪ縺・ゅ％縺ｮ雉槭・繧ｹ繧ｿ繝ｼ繝医Λ繧､繝ｳ縺'],
-      ojousama: ['蠖鍋┯縺ｮ邨先棡縺ｧ縺吶ｏ縺ｭ縲ゅｏ縺溘￥縺励・螳溷鴨繧偵＃隕ｧ縺ｫ縺ｪ繧後・縲∬ｪｰ繧ゅ′邏榊ｾ励☆繧九〒縺励ｇ縺・ｼ・],
-      delinquent: ['繝上ャ縲∵眠莠ｺ縺ｪ縺ｮ縺ｯ莉雁ｹｴ縺縺代□縲よ擂蟷ｴ縺ｯ蜈ｨ驛ｨ縺九▲縺輔ｉ縺・],
-      cool: ['窶ｦ蟋九∪繧翫↓驕弱℃縺ｪ縺・],
-      seductive: ['螫峨＠縺・ｼ・縺医∴縲∝ｬ峨＠縺・ｏ縲ゅ〒繧ゅ％縺ｮ遞句ｺｦ縺ｧ貅雜ｳ縺吶ｋ螂ｳ縺倥ｃ縺ｪ縺・・'],
+      _default: ['新人王？ 通過点だ。来年はMVPを狙う', '最初から頂点しか見てない。この賞はスタートラインだ'],
+      ojousama: ['当然の結果ですわね。わたくしの実力をご覧になれば、誰もが納得するでしょう？'],
+      delinquent: ['ハッ、新人なのは今年だけだ。来年は全部かっさらう'],
+      cool: ['…始まりに過ぎない'],
+      seductive: ['嬉しい？ ええ、嬉しいわ。でもこの程度で満足する女じゃないの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ｾ縺菴輔ｂ謌舌＠驕ゅ￡縺ｦ縺・↑縺・ゅ％繧後°繧・],
-      cool: ['窶ｦ谺｡'],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅ∪縺縲∬ｶｳ繧翫↑縺・ｂ縺ｮ縺ｰ縺九ｊ縺ｧ縺・],
+      _default: ['……まだ何も成し遂げていない。これから'],
+      cool: ['…次'],
+      polite: ['…ありがとうございます。まだ、足りないものばかりです'],
     },
     shy: {
-      _default: ['縺医▲窶ｦ繧上◆縺励√〒縺吶°窶ｦ・・髢馴＆縺・§繧・ｦ縺ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ'],
-      ojousama: ['繧上√ｏ縺溘￥縺励′窶ｦ・・縺昴ｓ縺ｪ窶ｦ縺ｾ縺縺ｾ縺譛ｪ辭溯・〒縺吶・縺ｫ窶ｦ'],
-      delinquent: ['縺ｯ・・繝槭ず縺ｧ・・縺・ｄ窶ｦ縺ゅ√≠繧翫′縺ｨ縺ｪ窶ｦ'],
+      _default: ['えっ…わたし、ですか…？ 間違いじゃ…あ、ありがとうございます…'],
+      ojousama: ['わ、わたくしが…？ そんな…まだまだ未熟者ですのに…'],
+      delinquent: ['は？ マジで？ いや…あ、ありがとな…'],
     },
     easygoing: {
-      _default: ['縺・◎縺ｧ縺励ｇ・・莉雁ｹｴ荳逡ｪ縺ｳ縺｣縺上ｊ縺励◆縺ｮ縲√％縺ｮ迸ｬ髢薙°繧ゑｼ・, '縺・ｄ繝ｼ讌ｽ縺励°縺｣縺滂ｼ・縺薙％縺ｾ縺ｧ譚･繧後◆縺ｮ縲・°縺後ｈ縺九▲縺溘□縺代°繧ゑｼ・],
-      delinquent: ['縺・▲縺昴□繧搾ｼ・ｼ・縺ｾ縺ゅ＞縺・ｄ縲√ｂ繧峨∴繧九ｂ繧薙・繧ゅｉ縺｣縺ｨ縺擾ｼ・],
-      seductive: ['縺ゅｉ縲∝ｬ峨＠縺・し繝励Λ繧､繧ｺ縲よ擂蟷ｴ縺ｯ繧ゅ▲縺ｨ鬩壹°縺帙※縺ゅ￡繧・],
+      _default: ['うそでしょ！ 今年一番びっくりしたの、この瞬間かも！', 'いやー楽しかった！ ここまで来れたの、運がよかっただけかも！'],
+      delinquent: ['うっそだろ！？ まあいいや、もらえるもんはもらっとく！'],
+      seductive: ['あら、嬉しいサプライズ。来年はもっと驚かせてあげる'],
     },
     earnest: {
-      _default: ['邱ｴ鄙偵・陬丞・繧峨↑縺九▲縺溘やｦ繧ゅ▲縺ｨ蠑ｷ縺上↑縺｣縺ｦ縲√％縺ｮ雉槭↓諱･縺倥↑縺・∈謇九↓縺ｪ繧翫∪縺・],
-      polite: ['豈取律縺ｮ遨阪∩驥阪・縺悟ｱ繧上ｌ縺ｾ縺励◆縲よ欠蟆弱＠縺ｦ縺上□縺輔▲縺溽嚀縺輔ｓ縲√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      ojousama: ['蜉ｪ蜉帙ｒ驥阪・縺ｦ縺ｾ縺・ｊ縺ｾ縺励◆縲ゅ％縺ｮ雉槭ｒ邉ｧ縺ｫ縲√＆繧峨↑繧矩ｫ倥∩繧堤岼謖・＠縺ｾ縺吶ｏ'],
-      seductive: ['蜉ｪ蜉帙＠縺ｦ縺阪◆繧ゅ・縲やｦ縺ｧ繧ゅ∪縺雜ｳ繧翫↑縺・ｏ縲ゅｂ縺｣縺ｨ逎ｨ縺上°繧峨∬ｦ九※縺・※'],
+      _default: ['練習は裏切らなかった。…もっと強くなって、この賞に恥じない選手になります'],
+      polite: ['毎日の積み重ねが報われました。指導してくださった皆さん、ありがとうございます'],
+      ojousama: ['努力を重ねてまいりました。この賞を糧に、さらなる高みを目指しますわ'],
+      seductive: ['努力してきたもの。…でもまだ足りないわ。もっと磨くから、見ていて'],
     },
     emotional: {
-      _default: ['縺やｦ縺繧√□縲∵ｳ｣縺・■繧・≧窶ｦ縲ょｬ峨＠縺・〒縺吮ｦ縺薙ｓ縺ｪ縺ｫ窶ｦ螫峨＠縺・・蛻昴ａ縺ｦ縺ｧ縺吮ｦ・・],
-      ojousama: ['縺ゅ▲窶ｦ豸吶′窶ｦ縺薙√％繧薙↑縺ｨ縺薙ｍ縺ｧ蜿悶ｊ荵ｱ縺吶↑繧薙※窶ｦ螫峨＠縺吶℃縺ｾ縺吶ｏ窶ｦ・・],
-      delinquent: ['縺上▲窶ｦ豕｣縺上°繧医％繧薙↑縺ｨ縺薙〒窶ｦ縲ゅ■縺上＠繧・≧窶ｦ螫峨＠縺・§繧・・縺医°窶ｦ・・],
+      _default: ['あ…だめだ、泣いちゃう…。嬉しいです…こんなに…嬉しいの初めてです…！'],
+      ojousama: ['あっ…涙が…こ、こんなところで取り乱すなんて…嬉しすぎますわ…！'],
+      delinquent: ['くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！'],
     },
   },
   bestMatch: {
     normal: {
-      _default: ['縺ゅ・隧ｦ蜷医・譛蠕後・5蛻・俣縲∵ｰｸ驕縺ｿ縺溘＞縺縺｣縺溘ゅ≠縺ｮ莠ｺ縺ｨ縺縺九ｉ蜃ｺ縺帙◆蜈ｨ蜉帙〒縺・, '邨ゅｏ縺｣縺溽椪髢薙∝享縺｡雋縺代↑繧薙※縺ｩ縺・〒繧ゅｈ縺上↑縺｣縺溘ゅ◎繧後￥繧峨＞縺ｮ隧ｦ蜷医□縺｣縺・],
-      ojousama: ['縺ゅ・繧医≧縺ｪ豼髣倥∫函豸ｯ蠢倥ｌ縺ｾ縺帙ｓ繧上ゅ♀逶ｸ謇九↓蠢・ｈ繧頑噴諢上ｒ'],
-      delinquent: ['縺ゅ・隧ｦ蜷医・繝､繝舌°縺｣縺溘ゆｽ薙′蜍晄焔縺ｫ蜍輔＞縺ｦ縺溘ゅ≠縺・▽縺ｨ縺倥ｃ縺ｪ縺阪ｃ辟｡逅・□縺｣縺・],
-      seductive: ['譛鬮倥↓逞ｺ繧後◆繧上やｦ縺ｾ縺溷袖繧上＞縺溘＞縲√≠縺ｮ諢溯ｦ・],
+      _default: ['あの試合の最後の5分間、永遠みたいだった。あの人とだから出せた全力です', '終わった瞬間、勝ち負けなんてどうでもよくなった。それくらいの試合だった'],
+      ojousama: ['あのような激闘、生涯忘れませんわ。お相手に心より敬意を'],
+      delinquent: ['あの試合はヤバかった。体が勝手に動いてた。あいつとじゃなきゃ無理だった'],
+      seductive: ['最高に痺れたわ。…また味わいたい、あの感覚'],
     },
     bold: {
-      _default: ['蜈ｨ蜉帙→蜈ｨ蜉帙′縺ｶ縺､縺九▲縺溘ゅ≠縺ｮ迸ｬ髢薙√Μ繝ｳ繧ｰ縺ｮ荳翫↓莠御ｺｺ縺励°縺・↑縺九▲縺・, '縺ゅ・隧ｦ蜷医〒蜃ｺ縺玲・縺励∩縺励◆繧牙・縺繧阪≧縲ょ・驛ｨ鄂ｮ縺・※縺阪◆'],
-      ojousama: ['縺ゅ・縺頑婿縺ｨ蜈ｨ蜉帙〒謌ｦ縺医◆縺薙→縲√％繧御ｻ･荳翫・蜷崎ｪ峨・縺ゅｊ縺ｾ縺帙ｓ繧・],
-      delinquent: ['谿ｴ縺｣縺ｦ谿ｴ繧峨ｌ縺ｦ縲∵怙蠕後↓遶九▲縺ｦ縺溘ゅ◎繧後□縺代□縲やｦ譛鬮倥□縺｣縺溘￠縺ｩ縺ｪ'],
-      cool: ['窶ｦ險闡峨・縺・ｉ縺ｪ縺・ゅ≠縺ｮ隧ｦ蜷医′縺吶∋縺ｦ縺'],
-      seductive: ['蜈ｨ蜉帙ｒ蠑輔″蜃ｺ縺励※縺上ｌ縺溽嶌謇九↓諢溯ｬ昴やｦ谺｡縺ｯ繧ゅ▲縺ｨ豼縺励￥縺・￥繧上ｈ・・],
+      _default: ['全力と全力がぶつかった。あの瞬間、リングの上に二人しかいなかった', 'あの試合で出し惜しみしたら嘘だろう。全部置いてきた'],
+      ojousama: ['あのお方と全力で戦えたこと、これ以上の名誉はありませんわ'],
+      delinquent: ['殴って殴られて、最後に立ってた。それだけだ。…最高だったけどな'],
+      cool: ['…言葉はいらない。あの試合がすべてだ'],
+      seductive: ['全力を引き出してくれた相手に感謝。…次はもっと激しくいくわよ？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅ・隧ｦ蜷医・縺薙→縺ｯ縲√★縺｣縺ｨ菴薙′隕壹∴縺ｦ繧・],
-      cool: ['窶ｦ荳逕溘・隧ｦ蜷医□縺｣縺・],
-      polite: ['窶ｦ縺ゅ・譁ｹ縺ｨ謌ｦ縺医※縲∵悽蠖薙↓繧医°縺｣縺溘〒縺・],
+      _default: ['……あの試合のことは、ずっと体が覚えてる'],
+      cool: ['…一生の試合だった'],
+      polite: ['…あの方と戦えて、本当によかったです'],
     },
     shy: {
-      _default: ['縺ゅｓ縺ｪ縺吶＃縺・ｩｦ蜷医↓繧上◆縺励′蜃ｺ縺ｦ縺溘↑繧薙※窶ｦ縲ら嶌謇九′蠑輔″蜃ｺ縺励※縺上ｌ縺溘ｓ縺ｧ縺・],
-      ojousama: ['縺ゅ√≠縺ｮ繧医≧縺ｪ隧ｦ蜷医′縺ｧ縺阪∪縺励◆縺ｮ縺ｯ窶ｦ縺顔嶌謇九・縺翫°縺偵〒縺吶ｏ窶ｦ'],
-      delinquent: ['縺・ｄ窶ｦ縺ゅ◆縺励↑繧薙°縺後≠繧薙↑隧ｦ蜷遺ｦ逶ｸ謇九′縺吶￡縺医ｓ縺繧遺ｦ'],
+      _default: ['あんなすごい試合にわたしが出てたなんて…。相手が引き出してくれたんです'],
+      ojousama: ['あ、あのような試合ができましたのは…お相手のおかげですわ…'],
+      delinquent: ['いや…あたしなんかがあんな試合…相手がすげえんだよ…'],
     },
     easygoing: {
-      _default: ['縺吶▲縺偵・讌ｽ縺励°縺｣縺滂ｼ・邨ゅｏ縺｣縺溽椪髢薙後ｂ縺・蝗橸ｼ√阪▲縺ｦ諤昴▲縺溘ｂ繧・, '隧ｦ蜷井ｸｭ縺壹▲縺ｨ繝九Ζ繝九Ζ縺励※縺溘°繧ゅゅ□縺｣縺ｦ譛鬮倥↑繧薙□繧ゅｓ・・],
-      delinquent: ['邨ゅｏ縺｣縺溽椪髢薙後ｂ縺・繝ｩ繧ｦ繝ｳ繝峨￥繧鯉ｼ√阪▲縺ｦ蜿ｫ縺ｳ縺昴≧縺ｫ縺ｪ縺｣縺滂ｼ・],
-      seductive: ['讌ｽ縺励°縺｣縺溘ｏ縲ゆｹ・＠縺ｶ繧翫↓蜈ｨ驛ｨ蠢倥ｌ縺ｦ螟｢荳ｭ縺ｫ縺ｪ繧後◆'],
+      _default: ['すっげー楽しかった！ 終わった瞬間「もう1回！」って思ったもん', '試合中ずっとニヤニヤしてたかも。だって最高なんだもん！'],
+      delinquent: ['終わった瞬間「もう1ラウンドくれ！」って叫びそうになった！'],
+      seductive: ['楽しかったわ。久しぶりに全部忘れて夢中になれた'],
     },
     earnest: {
-      _default: ['縺ゅ・隧ｦ蜷医・縺溘ａ縺ｫ縺壹▲縺ｨ貅門ｙ縺励※縺阪◆縲ょｱ繧上ｌ縺溽椪髢薙□縺｣縺・, '縺贋ｺ偵＞縺梧戟縺｣縺ｦ繧九ｂ縺ｮ蜈ｨ驛ｨ蜃ｺ縺怜・繧後◆縲ゅ％繧後′繝励Ο繝ｬ繧ｹ縺縺ｨ諤昴≧'],
-      polite: ['縺ゅ・隧ｦ蜷医・荳逕溘・螳晉黄縺ｧ縺吶ょｯｾ謌ｦ逶ｸ謇九・譁ｹ縺ｫ縲∝ｿ・°繧画─隰昴＠縺ｦ縺・∪縺・],
-      ojousama: ['縺ゅ・隧ｦ蜷医↓蜷代￠縺ｦ遨阪∩驥阪・縺滓律縲・′蝣ｱ繧上ｌ縺ｾ縺励◆繧上よ怙鬮倥・縺顔嶌謇九↓諢溯ｬ昴＞縺溘＠縺ｾ縺・],
-      seductive: ['貅門ｙ縺励※縺阪◆繧ゅ・繧貞・驛ｨ蜃ｺ縺帙◆縲やｦ譛鬮倥・逶ｸ謇九′縺・◆縺九ｉ'],
+      _default: ['あの試合のためにずっと準備してきた。報われた瞬間だった', 'お互いが持ってるもの全部出し切れた。これがプロレスだと思う'],
+      polite: ['あの試合は一生の宝物です。対戦相手の方に、心から感謝しています'],
+      ojousama: ['あの試合に向けて積み重ねた日々が報われましたわ。最高のお相手に感謝いたします'],
+      seductive: ['準備してきたものを全部出せた。…最高の相手がいたから'],
     },
     emotional: {
-      _default: ['縺ゅ・隧ｦ蜷医・縺薙→諤昴＞蜃ｺ縺吶□縺代〒窶ｦ縺｣縲ゅ＃繧√ｓ縺ｪ縺輔＞縲∵ｶ吶′窶ｦ譛鬮倥〒縺励◆窶ｦ・・],
-      ojousama: ['諤昴＞蜃ｺ縺吶□縺代〒窶ｦ縺薙ｓ縺ｪ窶ｦ縺顔嶌謇九↓縲∝ｿ・°繧俄ｦ諢溯ｬ昴ｒ窶ｦ縺｣'],
-      delinquent: ['縺｡縺上＠繧・≧窶ｦ縺ゅ・隧ｦ蜷域昴＞蜃ｺ縺励◆繧俄ｦ逶ｮ縺九ｉ豎励′窶ｦ譛鬮倥□縺｣縺溘ｈ窶ｦ・・],
+      _default: ['あの試合のこと思い出すだけで…っ。ごめんなさい、涙が…最高でした…！'],
+      ojousama: ['思い出すだけで…こんな…お相手に、心から…感謝を…っ'],
+      delinquent: ['ちくしょう…あの試合思い出したら…目から汗が…最高だったよ…！'],
     },
   },
   mvp: {
     normal: {
-      _default: ['荳蟷ｴ髢薙・・￡縺ｪ縺九▲縺溘ゅ◎繧後□縺代・閭ｸ繧貞ｼｵ繧後∪縺・, '闍ｦ縺励＞隧ｦ蜷医ｂ縺ゅ▲縺溘ゅ〒繧ょ・驛ｨ縲∽ｻ翫・繧上◆縺励ｒ菴懊▲縺ｦ縺上ｌ縺・],
-      ojousama: ['荳蟷ｴ繧帝壹＠縺ｦ謌宣聞縺ｧ縺阪∪縺励◆縺薙→縲∫嚀縺輔∪縺ｮ縺翫°縺偵〒縺吶ｏ'],
-      delinquent: ['荳蟷ｴ髢薙★縺｣縺ｨ蜈ｨ蜉帙□縺｣縺溘よ焔謚懊＞縺滓律縺ｪ繧薙°荳譌･繧ゅ・縺医ｈ'],
-      seductive: ['荳蟷ｴ髢薙★縺｣縺ｨ隕九※縺・※縺上ｌ縺溘〒縺励ｇ縺・ｼ・窶ｦ縺｡繧・ｓ縺ｨ蠢懊∴縺溘ｏ'],
+      _default: ['一年間、逃げなかった。それだけは胸を張れます', '苦しい試合もあった。でも全部、今のわたしを作ってくれた'],
+      ojousama: ['一年を通して成長できましたこと、皆さまのおかげですわ'],
+      delinquent: ['一年間ずっと全力だった。手抜いた日なんか一日もねえよ'],
+      seductive: ['一年間ずっと見ていてくれたでしょう？ …ちゃんと応えたわ'],
     },
     bold: {
-      _default: ['隱ｰ繧医ｊ繧ょｼｷ縺九▲縺溘よ焚蟄励′縺昴≧險縺｣縺ｦ繧九よ擂蟷ｴ繧ょ酔縺倥□', '縺薙・荳蟷ｴ縲∬ｲ縺代ｋ豌励′縺励↑縺九▲縺溘ょ・隧ｦ蜷医′縺昴ｌ繧定ｨｼ譏弱＠縺ｦ繧・],
-      ojousama: ['繧上◆縺上＠縺梧怙繧りｼ昴＞縺滉ｸ蟷ｴ縺ｧ縺励◆繧上ら焚隲悶・縺ゅｋ譁ｹ縺ｯ繝ｪ繝ｳ繧ｰ縺ｧ縺雁ｾ・■縺励※縺・∪縺・],
-      delinquent: ['荳逡ｪ蠑ｷ縺九▲縺溘・縺ｯ縺ゅ◆縺励□縲よ枚蜿･縺ゅｋ縺ｪ繧画擂縺・ｈ'],
-      cool: ['窶ｦ邨先棡縺瑚ｪ槭▲縺ｦ縺・ｋ'],
-      seductive: ['荳逡ｪ縺ｫ縺ｪ繧九∋縺上＠縺ｦ縺ｪ縺｣縺溘ょｽ鍋┯縺ｧ縺励ｇ縺・ｼ・窶ｦ縺ｧ繧ゅ√∪縺貅雜ｳ縺励※縺ｪ縺・ｏ'],
+      _default: ['誰よりも強かった。数字がそう言ってる。来年も同じだ', 'この一年、負ける気がしなかった。全試合がそれを証明してる'],
+      ojousama: ['わたくしが最も輝いた一年でしたわ。異論のある方はリングでお待ちしています'],
+      delinquent: ['一番強かったのはあたしだ。文句あるなら来いよ'],
+      cool: ['…結果が語っている'],
+      seductive: ['一番になるべくしてなった。当然でしょう？ …でも、まだ満足してないわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ荳隧ｦ蜷医∽ｸ隧ｦ蜷医ゅ◎繧後□縺代ｒ繧・▲縺・],
-      cool: ['窶ｦ遨阪∩驥阪・縺ｮ邨先棡縺'],
-      polite: ['窶ｦ逶ｮ縺ｮ蜑阪・縺薙→縺ｫ髮・ｸｭ縺励◆縺縺代〒縺・],
+      _default: ['……一試合、一試合。それだけをやった'],
+      cool: ['…積み重ねの結果だ'],
+      polite: ['…目の前のことに集中しただけです'],
     },
     shy: {
-      _default: ['MVP縺ｪ繧薙※窶ｦ蜻ｨ繧翫・莠ｺ縺悟ｼｷ縺上＠縺ｦ縺上ｌ縺溘□縺代〒窶ｦ縲ゅ〒繧ゅ∝ｬ峨＠縺・〒縺・],
-      ojousama: ['繧上√ｏ縺溘￥縺励′MVP縺ｧ縺吶・窶ｦ・・蜻ｨ繧翫・譁ｹ縲・↓謾ｯ縺医ｉ繧後◆縺縺代〒縺吶ｏ窶ｦ'],
-      delinquent: ['MVP・・縺ゅ◆縺励′・・縺・ｄ窶ｦ縺ｿ繧薙↑縺悟ｼｷ縺上＠縺ｦ縺上ｌ縺溘ｓ縺繧遺ｦ'],
+      _default: ['MVPなんて…周りの人が強くしてくれただけで…。でも、嬉しいです'],
+      ojousama: ['わ、わたくしがMVPですの…？ 周りの方々に支えられただけですわ…'],
+      delinquent: ['MVP？ あたしが？ いや…みんなが強くしてくれたんだよ…'],
     },
     easygoing: {
-      _default: ['MVP・・莠ｺ逕溘〒荳逡ｪ繧ｫ繝・さ縺・＞荳画枚蟄励ｂ繧峨▲縺｡繧・▲縺滂ｼ・, '縺・ｄ繝ｼ縺薙・荳蟷ｴ讌ｽ縺励°縺｣縺溘↑繝ｼ縲よ･ｽ縺励ｓ縺ｧ縺溘ｉMVP縺ｫ縺ｪ縺｣縺ｦ縺滂ｼ・],
-      delinquent: ['縺・♀縺奇ｼ・MVP・・荳逡ｪ縺・＞髻ｿ縺阪□縺懊％繧鯉ｼ・],
-      seductive: ['譛蜆ｪ遘驕ｸ謇九〒縺吶▲縺ｦ縲やｦ莨ｼ蜷医≧縺ｨ諤昴ｏ縺ｪ縺・ｼ・],
+      _default: ['MVP！ 人生で一番カッコいい三文字もらっちゃった！', 'いやーこの一年楽しかったなー。楽しんでたらMVPになってた！'],
+      delinquent: ['うおお！ MVP！ 一番いい響きだぜこれ！'],
+      seductive: ['最優秀選手ですって。…似合うと思わない？'],
     },
     earnest: {
-      _default: ['豈取律縺ｮ邱ｴ鄙偵′辟｡鬧・§繧・↑縺九▲縺溘ゅ〒繧ゅ％繧後′繧ｴ繝ｼ繝ｫ縺倥ｃ縺ｪ縺・, '縺薙・雉槭・閾ｪ蛻・□縺代・繧ゅ・縺倥ｃ縺ｪ縺・ゆｸ邱偵↓謌ｦ縺｣縺ｦ縺上ｌ縺溷・蜩｡縺ｮ繧ゅ・縺'],
-      polite: ['譌･縲・・遨阪∩驥阪・縺悟ｮ溘ｒ邨舌・縺ｾ縺励◆縲よ擂蟷ｴ繧ょ､峨ｏ繧峨★邊ｾ騾ｲ縺励∪縺・],
-      ojousama: ['蠑帙∪縺ｬ蜉ｪ蜉帙・雉懃黄縺ｧ縺吶ｏ縲よ擂蟷ｴ繧らｲｾ騾ｲ繧堤ｶ壹￠縺ｾ縺吶・'],
-      seductive: ['遨阪∩驥阪・縺ｦ縺阪◆繧ゅ・縺悟ｮ溘▲縺溘やｦ縺ｧ繧ゅ√％縺薙〒豁｢縺ｾ繧九▽繧ゅｊ縺ｯ縺ｪ縺・ｏ'],
+      _default: ['毎日の練習が無駄じゃなかった。でもこれがゴールじゃない', 'この賞は自分だけのものじゃない。一緒に戦ってくれた全員のものだ'],
+      polite: ['日々の積み重ねが実を結びました。来年も変わらず精進します'],
+      ojousama: ['弛まぬ努力の賜物ですわ。来年も精進を続けますの'],
+      seductive: ['積み重ねてきたものが実った。…でも、ここで止まるつもりはないわ'],
     },
     emotional: {
-      _default: ['荳蟷ｴ髢凪ｦ闍ｦ縺励￥縺ｦ窶ｦ縺ｧ繧やｦ蜈ｨ驛ｨ繧・▲縺ｦ縺阪※繧医°縺｣縺溪ｦ縺｣・・縺ゅｊ縺後→縺・ｦ・・],
-      ojousama: ['荳蟷ｴ髢凪ｦ霎帙＞縺薙→繧やｦ螫峨＠縺・％縺ｨ繧やｦ蜈ｨ驛ｨ窶ｦ縺｣縲∝ｱ繧上ｌ縺ｾ縺励◆繧鞘ｦ・・],
-      delinquent: ['縺上◎縺｣窶ｦ豕｣縺上↑豕｣縺上↑窶ｦ縲ゆｸ蟷ｴ髢凪ｦ蜈ｨ驛ｨ蜃ｺ縺怜・縺｣縺溪ｦ縺昴ｌ縺縺代□窶ｦ・・],
+      _default: ['一年間…苦しくて…でも…全部やってきてよかった…っ！ ありがとう…！'],
+      ojousama: ['一年間…辛いことも…嬉しいことも…全部…っ、報われましたわ…！'],
+      delinquent: ['くそっ…泣くな泣くな…。一年間…全部出し切った…それだけだ…！'],
     },
   },
   champion: {
     normal: {
-      _default: ['縺薙・繝吶Ν繝医・驥阪＆繧偵∵ｯ取律諢溘§縺ｦ縺・ｋ縲ゅ□縺九ｉ蠑ｷ縺上↑繧後ｋ', '繝√Ε繝ｳ繝斐が繝ｳ縺ｧ縺ゅｋ縺薙→縺ｯ隱・ｊ縺縲る・￡縺壹↓螳医ｊ謚懊￥'],
-      ojousama: ['縺薙・邇句ｺｧ繧偵♀鬆舌°繧翫＠縺ｦ縺・ｋ髯舌ｊ縲∵怙鬮倥・隧ｦ蜷医ｒ縺顔ｴ・據縺・◆縺励∪縺吶ｏ'],
-      delinquent: ['縺薙・繝吶Ν繝域ｬｲ縺励＞繧・▽縲√＞縺上ｉ縺ｧ繧ゅ°縺九▲縺ｦ縺薙＞縲ょ・蜩｡蜿ｩ縺崎ｿ斐☆'],
-      seductive: ['縺薙・霈昴″縲√ｈ縺丈ｼｼ蜷医≧縺ｧ縺励ｇ縺・ｼ・谺ｲ縺励＞縺ｪ繧俄ｦ螂ｪ縺・↓譚･縺ｪ縺輔＞'],
+      _default: ['このベルトの重さを、毎日感じている。だから強くなれる', 'チャンピオンであることは誇りだ。逃げずに守り抜く'],
+      ojousama: ['この王座をお預かりしている限り、最高の試合をお約束いたしますわ'],
+      delinquent: ['このベルト欲しいやつ、いくらでもかかってこい。全員叩き返す'],
+      seductive: ['この輝き、よく似合うでしょう？ 欲しいなら…奪いに来なさい'],
     },
     bold: {
-      _default: ['譛蠑ｷ縺ｮ險ｼ譏弱ゅ％繧後′繧上◆縺励□', '謖第姶閠・・菴穂ｺｺ縺ｧ繧よ擂縺・らｵ先棡縺ｯ螟峨ｏ繧峨↑縺・],
-      ojousama: ['縺薙・邇句ｺｧ縺ｯ繧上◆縺上＠縺ｫ譛繧ゅ・縺輔ｏ縺励＞縲ゅ◎繧後ｒ險ｼ譏弱＠邯壹￠縺ｾ縺吶ｏ'],
-      delinquent: ['譛蠑ｷ縺ｯ縺ゅ◆縺励□縲りｨｼ諡縺後％縺薙↓縺ゅｋ縲よ枚蜿･縺ｯ諡ｳ縺ｧ險縺・↓譚･縺・],
-      cool: ['窶ｦ縺薙・譎ｯ濶ｲ縺ｯ貂｡縺輔↑縺・],
-      seductive: ['鬆らせ縺九ｉ縺ｮ譎ｯ濶ｲ縺ｯ譛鬮倥ｈ縲やｦ縺ゅ↑縺溘↓縺ｯ隕九○縺ｦ縺ゅ￡縺ｪ縺・￠縺ｩ'],
+      _default: ['最強の証明。これがわたしだ', '挑戦者は何人でも来い。結果は変わらない'],
+      ojousama: ['この王座はわたくしに最もふさわしい。それを証明し続けますわ'],
+      delinquent: ['最強はあたしだ。証拠がここにある。文句は拳で言いに来い'],
+      cool: ['…この景色は渡さない'],
+      seductive: ['頂点からの景色は最高よ。…あなたには見せてあげないけど'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺薙・驥阪＆繧偵∬レ雋縺・ｶ壹￠繧・],
-      cool: ['窶ｦ縺ｾ縺髯阪ｊ縺ｪ縺・],
-      polite: ['窶ｦ縺薙・雋ｬ莉ｻ縲∝・縺・＠縺ｾ縺・],
+      _default: ['……この重さを、背負い続ける'],
+      cool: ['…まだ降りない'],
+      polite: ['…この責任、全うします'],
     },
     shy: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ繧上◆縺励▲縺ｦ窶ｦ縺ｾ縺諷｣繧後↑縺上※縲ゅ〒繧ゅ・繝ｫ繝医′驥阪＞蛻・・・￡縺｡繧・＞縺代↑縺・▲縺ｦ窶ｦ'],
-      ojousama: ['繝√Ε繝ｳ繝斐が繝ｳ縺縺ｪ繧薙※窶ｦ縺ｾ縺菫｡縺倥ｉ繧後∪縺帙ｓ繧上ゅ〒繧ゅ％縺ｮ繝吶Ν繝医↓諱･縺倥↑縺・ｈ縺・↓窶ｦ'],
-      delinquent: ['縺ゅ◆縺励′繝√Ε繝ｳ繝斐が繝ｳ窶ｦ莨ｼ蜷医ｏ縺ｭ縺医°繧ゅ□縺代←窶ｦ縺ｧ繧よｸ｡縺輔・縺遺ｦ'],
+      _default: ['チャンピオンのわたしって…まだ慣れなくて。でもベルトが重い分、逃げちゃいけないって…'],
+      ojousama: ['チャンピオンだなんて…まだ信じられませんわ。でもこのベルトに恥じないように…'],
+      delinquent: ['あたしがチャンピオン…似合わねえかもだけど…でも渡さねえ…'],
     },
     easygoing: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺｣縺ｦ閧ｩ譖ｸ縺阪√↑繧薙°縺上☆縺舌▲縺溘＞縺代←譛鬮倥□縺ｭ・・],
-      delinquent: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ髻ｿ縺阪√◆縺ｾ繧薙・縺医↑・・繧ゅ▲縺ｨ讌ｽ縺励・縺懶ｼ・],
-      seductive: ['繝√Ε繝ｳ繝斐が繝ｳ縲ゅ＞縺・涸縺阪・縲ゆｼｼ蜷医≧縺ｧ縺励ｇ縺・ｼ・],
+      _default: ['チャンピオンって肩書き、なんかくすぐったいけど最高だね！'],
+      delinquent: ['チャンピオンの響き、たまんねえな！ もっと楽しむぜ！'],
+      seductive: ['チャンピオン。いい響きね。似合うでしょう？'],
     },
     earnest: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ蜷阪↓諱･縺倥↑縺・ｩｦ蜷医ｒ縲∵ｯ主屓隕九○繧九ゅ◎繧後′閾ｪ蛻・→縺ｮ邏・據縺', '縺ｲ縺ｨ縺､縺ｲ縺ｨ縺､縺ｮ髦ｲ陦帶姶縺ｫ蜈ｨ蜉帙ｒ豕ｨ縺舌ゅ◎繧後□縺代′邇玖・・蜍吶ａ縺'],
-      polite: ['邇玖・→縺励※縺ｮ雋ｬ莉ｻ繧貞・縺・＠縺ｾ縺吶よｯ手ｩｦ蜷医∵怙鬮倥・隧ｦ蜷医ｒ縺雁ｱ翫￠縺励∪縺・],
-      ojousama: ['縺ｩ縺ｮ隧ｦ蜷医↓繧ょ・霄ｫ蜈ｨ髴翫ｒ豕ｨ縺弱∪縺吶ｏ縲ゅ◎繧後′繧上◆縺上＠縺ｮ遏懈戟縺ｧ縺・],
-      seductive: ['邇玖・→縺励※縺ｮ隱・ｊ縲∵ｯ手ｩｦ蜷医〒險ｼ譏弱☆繧九りｦ九※縺・※縺上ｌ繧九°縺励ｉ'],
+      _default: ['チャンピオンの名に恥じない試合を、毎回見せる。それが自分との約束だ', 'ひとつひとつの防衛戦に全力を注ぐ。それだけが王者の務めだ'],
+      polite: ['王者としての責任を全うします。毎試合、最高の試合をお届けします'],
+      ojousama: ['どの試合にも全身全霊を注ぎますわ。それがわたくしの矜持です'],
+      seductive: ['王者としての誇り、毎試合で証明する。見ていてくれるかしら'],
     },
     emotional: {
-      _default: ['縺薙・繝吶Ν繝医↓窶ｦ縺ｩ繧後□縺代・諠ｳ縺・′隧ｰ縺ｾ縺｣縺ｦ繧九°窶ｦ縺｣縲らｵｶ蟇ｾ縲∵焔謾ｾ縺輔↑縺・ｦ・・],
-      ojousama: ['縺薙・繝吶Ν繝医′窶ｦ縺薙ｓ縺ｪ縺ｫ驥阪￥縺ｦ窶ｦ縺薙ｓ縺ｪ縺ｫ貂ｩ縺九＞縺ｪ繧薙※窶ｦ縺｣'],
-      delinquent: ['縺薙・繝吶Ν繝遺ｦ蜻ｽ諛ｸ縺代〒迯ｲ縺｣縺溘ｓ縺窶ｦ・・邨ｶ蟇ｾ窶ｦ隱ｰ縺ｫ繧よｸ｡縺輔・縺遺ｦ・・],
+      _default: ['このベルトに…どれだけの想いが詰まってるか…っ。絶対、手放さない…！'],
+      ojousama: ['このベルトが…こんなに重くて…こんなに温かいなんて…っ'],
+      delinquent: ['このベルト…命懸けで獲ったんだ…！ 絶対…誰にも渡さねえ…！'],
     },
   },
   hallOfFame: {
     normal: {
-      _default: ['蠕梧ｔ縺ｯ縺ｪ縺・ゆｸ隧ｦ蜷医ｂ縲やｦ繝励Ο繝ｬ繧ｹ縺ｫ蜃ｺ莨壹∴縺ｦ縲∵悽蠖薙↓繧医°縺｣縺・, '縺薙・繝ｪ繝ｳ繧ｰ縺ｧ驕弱＃縺励◆譎る俣縺後√ｏ縺溘＠縺ｮ蜈ｨ縺ｦ縺ｧ縺・],
-      ojousama: ['闖ｯ繧・°縺ｪ闊槫床縺九ｉ髯阪ｊ繧区律縺梧擂縺ｾ縺励◆繧上やｦ縺ｧ繧ゅ√％縺ｮ讌ｭ逡後↓蜈･縺｣縺ｦ荳蠎ｦ繧ょｾ梧ｔ縺励◆縺薙→縺ｯ縺斐＊縺・∪縺帙ｓ'],
-      delinquent: ['縺ｾ縺輔°縺薙ｓ縺ｪ蜷崎ｪ峨≠繧九ｂ繧薙ｂ繧峨∴繧区律縺梧擂繧九→縺ｯ縺ｪ窶ｦ縲ょ・驛ｨ縲√Μ繝ｳ繧ｰ縺後￥繧後◆繧ゅｓ縺'],
-      seductive: ['邏謨ｵ縺ｪ闃ｱ驕薙ｒ逕ｨ諢上＠縺ｦ縺上ｌ繧九・縺ｭ縲やｦ縺ゅｊ縺後→縺・よ怙鬮倥・闊槫床縺縺｣縺溘ｏ'],
+      _default: ['後悔はない。一試合も。…プロレスに出会えて、本当によかった', 'このリングで過ごした時間が、わたしの全てです'],
+      ojousama: ['華やかな舞台から降りる日が来ましたわ。…でも、この業界に入って一度も後悔したことはございません'],
+      delinquent: ['まさかこんな名誉あるもんもらえる日が来るとはな…。全部、リングがくれたもんだ'],
+      seductive: ['素敵な花道を用意してくれるのね。…ありがとう。最高の舞台だったわ'],
     },
     bold: {
-      _default: ['蜈ｨ逶帶悄縺ｯ縺・▽縺九→閨槭°繧後◆繧峨√悟・驛ｨ縺縲阪→遲斐∴繧・, '繧・ｊ谿九＠縺溘％縺ｨ縺ｯ菴輔ｂ縺ｪ縺・ゅ□縺九ｉ縺薙・蝣ｴ縺ｫ遶九※繧・],
-      ojousama: ['繧上◆縺上＠縺ｮ蜷阪′豁ｴ蜿ｲ縺ｫ蛻ｻ縺ｾ繧後ｋ縲やｦ縺ｵ縺輔ｏ縺励＞縺ｨ縲∬・蛻・〒諤昴∴縺ｾ縺吶ｏ'],
-      delinquent: ['繧・ｊ縺溘＞謾ｾ鬘後ｄ縺｣縺ｦ縲∝・驛ｨ蜍昴■蜿悶▲縺溘よ怙鬮倥・莠ｺ逕溘□'],
-      cool: ['窶ｦ蜈ｨ縺ｦ繧・▲縺溘よｔ縺・・縺ｪ縺・],
-      seductive: ['譛鬮倥・闊槫床縺ｧ縲∵怙鬮倥・莠ｺ逕溘□縺｣縺溘やｦ譛蠕後∪縺ｧ鄒弱＠縺九▲縺溘〒縺励ｇ縺・ｼ・],
+      _default: ['全盛期はいつかと聞かれたら、「全部だ」と答える', 'やり残したことは何もない。だからこの場に立てる'],
+      ojousama: ['わたくしの名が歴史に刻まれる。…ふさわしいと、自分で思えますわ'],
+      delinquent: ['やりたい放題やって、全部勝ち取った。最高の人生だ'],
+      cool: ['…全てやった。悔いはない'],
+      seductive: ['最高の舞台で、最高の人生だった。…最後まで美しかったでしょう？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・ゅ％縺ｮ蝣ｴ謇縺後√ｏ縺溘＠縺ｮ蜈ｨ驛ｨ縺縺｣縺・],
-      cool: ['窶ｦ謔斐＞縺ｯ縺ｪ縺・やｦ縺ゅｊ縺後→縺・],
-      polite: ['窶ｦ髟ｷ縺・俣縲√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺励◆縲ょｹｸ縺帙〒縺励◆'],
+      _default: ['……ありがとう。この場所が、わたしの全部だった'],
+      cool: ['…悔いはない。…ありがとう'],
+      polite: ['…長い間、ありがとうございました。幸せでした'],
     },
     shy: {
-      _default: ['縺薙ｓ縺ｪ繧上◆縺励′谿ｿ蝣ゅ↓窶ｦ縲ゅ〒繧やｦ縺薙％縺ｫ遶九※縺ｦ窶ｦ螫峨＠縺・よ悽蠖薙↓螫峨＠縺・〒縺・],
-      ojousama: ['谿ｿ蝣ゅ□縺ｪ繧薙※窶ｦ繧上◆縺上＠縺ｪ繧薙°縺娯ｦ縲ゅ〒繧やｦ蜈画・〒縺吶ｏ窶ｦ譛ｬ蠖薙↓'],
-      delinquent: ['谿ｿ蝣やｦ・・縺ゅ◆縺励′窶ｦ・・窶ｦ莨ｼ蜷医ｏ縺ｭ縺医￠縺ｩ窶ｦ螫峨＠縺・ｈ窶ｦ縺ゅｊ縺後→縺ｪ'],
+      _default: ['こんなわたしが殿堂に…。でも…ここに立てて…嬉しい。本当に嬉しいです'],
+      ojousama: ['殿堂だなんて…わたくしなんかが…。でも…光栄ですわ…本当に'],
+      delinquent: ['殿堂…？ あたしが…？ …似合わねえけど…嬉しいよ…ありがとな'],
     },
     easygoing: {
-      _default: ['縺・ｄ繝ｼ讌ｽ縺励°縺｣縺滂ｼ・蜈ｨ驛ｨ縺ｲ縺｣縺上ｋ繧√※縲∵怙鬮倥・莠ｺ逕滂ｼ・縺ゅｊ縺後→縺ｭ・・, '繝励Ο繝ｬ繧ｹ縺ｫ蜃ｺ莨壹∴縺ｦ繧医°縺｣縺滂ｼ・豈取律縺悟・髯ｺ縺ｿ縺溘＞縺縺｣縺溘ｈ・・],
-      delinquent: ['譛縺｣鬮倥↓讌ｽ縺励＞莠ｺ逕溘□縺｣縺溘●・・縺ｿ繧薙↑縺ゅｊ縺後→縺ｪ・・繝励Ο繝ｬ繧ｹ譛鬮假ｼ・],
-      seductive: ['讌ｽ縺励＞譌･縲・□縺｣縺溘ｏ縲ょ・驛ｨ縲∝ｮ晉黄縲やｦ縺ゅｊ縺後→縺・],
+      _default: ['いやー楽しかった！ 全部ひっくるめて、最高の人生！ ありがとね！', 'プロレスに出会えてよかった！ 毎日が冒険みたいだったよ！'],
+      delinquent: ['最っ高に楽しい人生だったぜ！ みんなありがとな！ プロレス最高！'],
+      seductive: ['楽しい日々だったわ。全部、宝物。…ありがとう'],
     },
     earnest: {
-      _default: ['蠕瑚ｼｩ縺溘■縺ｸ縲ゅΜ繝ｳ繧ｰ縺ｮ荳翫↓遲斐∴縺後≠繧九り協縺励￥縺ｦ繧らｫ九■邯壹￠繧阪ょｿ・★蝣ｱ繧上ｌ繧・, '縺薙・讌ｭ逡後↓蜈ｨ縺ｦ繧呈懇縺偵◆縲やｦ蠕瑚ｼｩ縺溘■縺後ｂ縺｣縺ｨ鬮倥＞蝣ｴ謇縺ｫ陦後▲縺ｦ縺上ｌ繧九↑繧峨√◎繧後′荳逡ｪ螫峨＠縺・],
-      polite: ['蠕瑚ｼｩ縺ｮ逧・＆繧薙ゅΜ繝ｳ繧ｰ縺ｫ逵溷ｮ溘′縺ゅｊ縺ｾ縺吶ゅ←縺・°縲∫ｫ九■邯壹￠縺ｦ縺上□縺輔＞'],
-      ojousama: ['蠕瑚ｼｩ縺ｮ逧・＆縺ｾ縺ｸ縲ゅｏ縺溘￥縺励′豁ｩ繧薙□驕薙ｒ縲√←縺・°雜・∴縺ｦ縺・▲縺ｦ縺上□縺輔＞縺ｾ縺・],
-      seductive: ['蠕瑚ｼｩ縺溘■縺ｸ縲ゅ％縺ｮ荳也阜縺ｫ縺ｯ縲∝巻蜉帙＠縺滉ｺｺ縺縺代′隕九∴繧区勹濶ｲ縺後≠繧九ｏ縲やｦ菫｡縺倥※'],
+      _default: ['後輩たちへ。リングの上に答えがある。苦しくても立ち続けろ。必ず報われる', 'この業界に全てを捧げた。…後輩たちがもっと高い場所に行ってくれるなら、それが一番嬉しい'],
+      polite: ['後輩の皆さん。リングに真実があります。どうか、立ち続けてください'],
+      ojousama: ['後輩の皆さまへ。わたくしが歩んだ道を、どうか超えていってくださいまし'],
+      seductive: ['後輩たちへ。この世界には、努力した人だけが見える景色があるわ。…信じて'],
     },
     emotional: {
-      _default: ['繝励Ο繝ｬ繧ｹ縺娯ｦ繧上◆縺励・螻・ｴ謇縺縺｣縺溪ｦ縲ゅ％縺薙〒蜃ｺ莨壹∴縺滉ｺｺ縺溘■縺娯ｦ蜈ｨ驛ｨ窶ｦ螳晉黄縺ｧ窶ｦ縺｣・・],
-      ojousama: ['縺薙ｓ縺ｪ譌･縺梧擂繧九↑繧薙※窶ｦ繧上◆縺上＠窶ｦ逧・＆縺ｾ縺ｫ謾ｯ縺医ｉ繧後※窶ｦ縺｣縲∝ｹｸ縺帙〒縺励◆繧鞘ｦ・・],
-      delinquent: ['縺｡縺上＠繧・≧窶ｦ豕｣縺上↑縺｣縺､縺｣縺ｦ繧薙□繧坂ｦ縲ゅ∩繧薙↑窶ｦ縺ゅｊ縺後→縺・ｦ譛ｬ蠖薙↓窶ｦ縺上◎窶ｦ・・],
+      _default: ['プロレスが…わたしの居場所だった…。ここで出会えた人たちが…全部…宝物で…っ！'],
+      ojousama: ['こんな日が来るなんて…わたくし…皆さまに支えられて…っ、幸せでしたわ…！'],
+      delinquent: ['ちくしょう…泣くなっつってんだろ…。みんな…ありがとう…本当に…くそ…！'],
     },
   },
 };
 
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
-//  v1.8: 謌宣聞繧､繝吶Φ繝医す繧ｹ繝・Β 繧ｻ繝ｪ繝・& 繝・Φ繝励Ξ繝ｼ繝・// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+// ══════════════════════════════════════════════
+//  v1.8: 成長イベントシステム セリフ & テンプレート
+// ══════════════════════════════════════════════
 
-// ﾂｧ2.6a 繝悶Ξ繧､繧ｯ繧ｹ繝ｫ繝ｼ蜈・＠ 窶・隧ｦ蜷井ｸｭ縺ｮ繝｢繝弱Ο繝ｼ繧ｰ・・ersonality蛻･・・const BT_HINT_LINES = {
+// §2.6a ブレイクスルー兆し — 試合中のモノローグ（personality別）
+const BT_HINT_LINES = {
   normal: {
-    _default: ['・遺ｦ菴薙′霆ｽ縺・ゅ＞縺､繧ゅ→縲∽ｽ輔°縺碁＆縺・披費ｼ・, '・遺ｦ蜍輔￠繧九ゅ∪縺縲∝虚縺代ｋ窶披費ｼ・],
-    ojousama: ['・遺ｦ縺贋ｽ薙′霆ｽ縺・〒縺吶ｏ縲ゆｽ輔°縺悟､峨ｏ繧翫∪縺励◆縺ｮ窶披費ｼ・],
-    delinquent: ['・遺ｦ縺ｪ繧薙□縲√％縺ｮ諢溯ｦ壹ゆｽ薙′蜍晄焔縺ｫ蜍輔″繧・′繧銀披費ｼ・],
+    _default: ['（…体が軽い。いつもと、何かが違う——）', '（…動ける。まだ、動ける——）'],
+    ojousama: ['（…お体が軽いですわ。何かが変わりましたの——）'],
+    delinquent: ['（…なんだ、この感覚。体が勝手に動きやがる——）'],
   },
   bold: {
-    _default: ['・遺ｦ菴薙′蜍晄焔縺ｫ蜍輔￥縲ゅ％繧後′縲√≠縺溘＠縺ｮ髯千阜縺ｮ蜈遺披費ｼ・, '・遺ｦ隕九∴縺溘よｬ｡縺ｮ荳謇九′縲√・縺｣縺阪ｊ縺ｨ窶披費ｼ・],
-    cool: ['・遺ｦ髯千阜縺ｮ縲√◎縺ｮ蜈遺披費ｼ・],
-    delinquent: ['・遺ｦ菴薙′蜍晄焔縺ｫ蜍輔″繧・′繧九ゅ％繧後′髯千阜縺ｮ蜈医°繧遺披費ｼ・],
+    _default: ['（…体が勝手に動く。これが、あたしの限界の先——）', '（…見えた。次の一手が、はっきりと——）'],
+    cool: ['（…限界の、その先——）'],
+    delinquent: ['（…体が勝手に動きやがる。これが限界の先かよ——）'],
   },
   quiet: {
-    _default: ['・遺ｦ隕九∴繧九よｬ｡縺ｮ荳謇九′縲√・縺｣縺阪ｊ縺ｨ・・, '・遺ｦ菴薙′縲∝享謇九↓蜍輔＞縺ｦ縺・ｋ窶披費ｼ・],
-    cool: ['・遺披碑ｦ九∴縺滂ｼ・],
+    _default: ['（…見える。次の一手が、はっきりと）', '（…体が、勝手に動いている——）'],
+    cool: ['（——見えた）'],
   },
   easygoing: {
-    _default: ['・遺ｦ縺ゅｌ・・縺ｪ繧薙°莉頑律縲√☆縺｣縺斐￥隱ｿ蟄舌＞縺・°繧や披費ｼ・, '・遺ｦ菴薙′霆ｽ縺・ゅ＞縺､繧ゅ→蜈ｨ辟ｶ驕輔≧窶披費ｼ・],
+    _default: ['（…あれ？ なんか今日、すっごく調子いいかも——）', '（…体が軽い。いつもと全然違う——）'],
   },
   earnest: {
-    _default: ['・遺ｦ縺ゅ・邱ｴ鄙偵′縲∽ｻ翫∝ｮ溘ｒ邨舌⊂縺・→縺励※縺・ｋ窶披費ｼ・, '・遺ｦ繧上°繧九ゆｽ薙′隕壹∴縺ｦ縺・ｋ縲よｬ｡縺ｮ荳謇銀披費ｼ・],
-    polite: ['・遺ｦ縺ゅ・縺顔ｨｽ蜿､縺後∽ｻ翫∝ｮ溘ｒ邨舌⊂縺・→縺励※縺・ｋ窶披費ｼ・],
+    _default: ['（…あの練習が、今、実を結ぼうとしている——）', '（…わかる。体が覚えている。次の一手——）'],
+    polite: ['（…あのお稽古が、今、実を結ぼうとしている——）'],
   },
   emotional: {
-    _default: ['・遺ｦ繧上◆縺励・菴薙√％繧薙↑縺ｫ蜍輔￠縺溘ｓ縺窶披費ｼ・ｼ・, '・遺ｦ縺吶＃縺・ゆｽ薙′蜍晄焔縺ｫ縲よｭ｢縺ｾ繧峨↑縺・披費ｼ・],
+    _default: ['（…わたしの体、こんなに動けたんだ——！）', '（…すごい。体が勝手に。止まらない——）'],
   },
 };
 
-// ﾂｧ2.6b 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ繧ｻ繝ｪ繝包ｼ・ersonalityﾃ預rchetype・・const BREAKTHROUGH_LINES = {
+// §2.6b ブレークスルーセリフ（personality×archetype）
+const BREAKTHROUGH_LINES = {
   normal: {
-    _default: ['縺ゅ・隧ｦ蜷医〒縲∽ｽ輔°縺悟､峨ｏ縺｣縺滓ｰ励′縺吶ｋ窶ｦ', '髯千阜縺縺ｨ諤昴▲縺ｦ縺・◆螢√ｒ雜翫∴繧峨ｌ縺滂ｼ・],
-    ojousama: ['菴輔°縺悟､峨ｏ縺｣縺滓ｰ励′縺・◆縺励∪縺吶ｏ窶ｦ螢√ｒ雜翫∴縺ｾ縺励◆縺ｮ'],
-    delinquent: ['縺翫▲縺励ｃ・・縺ｪ繧薙°螢∬ｶ翫∴縺滓ｰ励′縺吶ｋ縺懶ｼ・],
-    seductive: ['縺ゅｉ窶ｦ菴輔°縺悟､峨ｏ縺｣縺滓ｰ励′縺吶ｋ繧・],
+    _default: ['あの試合で、何かが変わった気がする…', '限界だと思っていた壁を越えられた！'],
+    ojousama: ['何かが変わった気がいたしますわ…壁を越えましたの'],
+    delinquent: ['おっしゃ！ なんか壁越えた気がするぜ！'],
+    seductive: ['あら…何かが変わった気がするわ'],
   },
   bold: {
-    _default: ['蠖鍋┯縺縲ゅ∪縺縺ｾ縺縺薙ｓ縺ｪ繧ゅｓ縺倥ｃ縺ｪ縺・, '繧・▲縺ｨ菴薙′霑ｽ縺・▽縺・※縺阪◆縲ゅ％縺薙°繧峨□'],
-    ojousama: ['蠖鍋┯縺ｧ縺吶ｏ縲ゅ∪縺縺ｾ縺縺薙ｓ縺ｪ繧ゅ・縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縺ｮ'],
-    delinquent: ['蠖鍋┯縺繧搾ｼ・縺ｾ縺縺ｾ縺縺薙ｓ縺ｪ繧ゅｓ縺倥ｃ縺ｭ繝ｼ縺懶ｼ・],
-    cool: ['窶ｦ縺ｾ縺荳翫′縺ゅｋ'],
-    seductive: ['蠖鍋┯繧医ゅ∪縺縺ｾ縺縺薙ｓ縺ｪ繧ゅ・縺倥ｃ縺ｪ縺・ｏ'],
+    _default: ['当然だ。まだまだこんなもんじゃない', 'やっと体が追いついてきた。ここからだ'],
+    ojousama: ['当然ですわ。まだまだこんなものではありませんの'],
+    delinquent: ['当然だろ！ まだまだこんなもんじゃねーぜ！'],
+    cool: ['…まだ上がある'],
+    seductive: ['当然よ。まだまだこんなものじゃないわ'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ菴輔°縺後∝､峨ｏ縺｣縺・],
-    cool: ['窶ｦ螟峨ｏ縺｣縺・],
-    polite: ['窶ｦ菴輔°縺悟､峨ｏ縺｣縺滓ｰ励′縺励∪縺・],
+    _default: ['……何かが、変わった'],
+    cool: ['…変わった'],
+    polite: ['…何かが変わった気がします'],
   },
   shy: {
-    _default: ['縺遺ｦ繧上◆縺励√％繧薙↑縺ｫ蜍輔￠縺溘ｓ縺ｧ縺吶°窶ｦ・・],
+    _default: ['え…わたし、こんなに動けたんですか…？'],
   },
   easygoing: {
-    _default: ['縺翫▲縲√↑繧薙°縺・▽繧ゅ→驕輔≧・・縺・＞諢溘§・・],
-    delinquent: ['縺翫♀・・縺ｪ繧薙°縺・▽繧ゅ→驕輔≧縺懶ｼ・縺・＞諢溘§・・],
-    seductive: ['縺ゅｉ縲√＞縺､繧ゅ→驕輔≧諢溘§縲ゅ＞縺・ｏ縺ｭ'],
+    _default: ['おっ、なんかいつもと違う！ いい感じ！'],
+    delinquent: ['おお！ なんかいつもと違うぜ！ いい感じ！'],
+    seductive: ['あら、いつもと違う感じ。いいわね'],
   },
   earnest: {
-    _default: ['邱ｴ鄙偵′螳溘ｒ邨舌ｓ縺窶ｦ・・縺ｾ縺荳翫ｒ逶ｮ謖・☆', '縺ゅ・謨怜圏縺娯ｦ遘√ｒ蠑ｷ縺上＠縺ｦ縺上ｌ縺・],
-    polite: ['邱ｴ鄙偵′螳溘ｒ邨舌・縺ｾ縺励◆窶ｦ・・縺ｾ縺荳翫ｒ逶ｮ謖・＠縺ｾ縺・],
-    ojousama: ['縺顔ｨｽ蜿､縺ｮ謌先棡縺ｧ縺吶ｏ窶ｦ・・縺ｾ縺縺ｾ縺荳翫ｒ逶ｮ謖・＠縺ｾ縺吶ｏ'],
-    seductive: ['邱ｴ鄙偵′螳溘ｒ邨舌ｓ縺繧鞘ｦ縺ｾ縺荳翫ｒ逶ｮ謖・☆繧上ｈ'],
+    _default: ['練習が実を結んだ…！ まだ上を目指す', 'あの敗北が…私を強くしてくれた'],
+    polite: ['練習が実を結びました…！ まだ上を目指します'],
+    ojousama: ['お稽古の成果ですわ…！ まだまだ上を目指しますわ'],
+    seductive: ['練習が実を結んだわ…まだ上を目指すわよ'],
   },
   emotional: {
-    _default: ['縺・ｏ縺≫ｦ・・菴薙′霆ｽ縺・ｼ・縺吶＃縺・√☆縺斐＞窶ｦ・・, '髯千阜縺ｪ繧薙※縺ｪ縺九▲縺溪ｦ・・縺ｾ縺荳翫′縺ゅ▲縺溪ｦ・・],
+    _default: ['うわぁ…！ 体が軽い！ すごい、すごい…！', '限界なんてなかった…！ まだ上があった…！'],
   },
 };
 
-// personalityﾃ預rchetype 繧ｻ繝ｪ繝暮・蛻怜叙蠕暦ｼ・ngine逕ｨ: 蜻ｼ縺ｳ蜃ｺ縺怜・縺ｧRNG驕ｸ謚槫庄閭ｽ・・function getDialoguePool(lineObj, fighter) {
+// personality×archetype セリフ配列取得（Engine用: 呼び出し元でRNG選択可能）
+function getDialoguePool(lineObj, fighter) {
   const p = fighter?.personality || 'normal';
   const a = fighter?.archetype || 'normal';
   const pBucket = lineObj[p] || lineObj._default || lineObj.normal;
-  if (!pBucket) return ['窶ｦ'];
-  return pBucket[a] || pBucket._default || ['窶ｦ'];
+  if (!pBucket) return ['…'];
+  return pBucket[a] || pBucket._default || ['…'];
 }
 
-// personalityﾃ預rchetype 繧ｻ繝ｪ繝輔Λ繝ｳ繝繝驕ｸ蜃ｺ・・I逕ｨ・・function pickDialogueLine(lineObj, fighter) {
+// personality×archetype セリフランダム選出（UI用）
+function pickDialogueLine(lineObj, fighter) {
   const pool = getDialoguePool(lineObj, fighter);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// ﾂｧ4.5 繧ｹ繝ｩ繝ｳ繝礼匱逕溘そ繝ｪ繝包ｼ・ersonalityﾃ預rchetype, 繝医Μ繧ｬ繝ｼ蛻･・・const SLUMP_START_LINES = {
+// §4.5 スランプ発生セリフ（personality×archetype, トリガー別）
+const SLUMP_START_LINES = {
   defeat: {
     normal: {
-      _default: ['縺ゅ・雋縺代°繧俄ｦ菴輔°縺後♀縺九＠縺・, '閾ｪ蛻・・菴輔′謔ｪ縺九▲縺溘・縺九√ｏ縺九ｉ縺ｪ縺・],
-      ojousama: ['縺ゅ・謨怜圏縺九ｉ窶ｦ菴輔°縺後♀縺九＠縺・〒縺吶ｏ'],
-      delinquent: ['縺ゅ・雋縺代°繧俄ｦ菴輔°縺翫°縺励＞繧薙□繧・],
-      seductive: ['縺ゅ・雋縺代°繧俄ｦ菴輔°縺後♀縺九＠縺・・'],
+      _default: ['あの負けから…何かがおかしい', '自分の何が悪かったのか、わからない'],
+      ojousama: ['あの敗北から…何かがおかしいですわ'],
+      delinquent: ['あの負けから…何かおかしいんだよ'],
+      seductive: ['あの負けから…何かがおかしいの'],
     },
     bold: {
-      _default: ['窶ｦ繝√ャ縲∽ｽ輔ｄ縺｣縺ｦ繧薙□縺ゅ◆縺・, '雋縺代◆・・縺ゅ◆縺励′・・窶ｦ蝌倥□繧・],
-      ojousama: ['窶ｦ菴輔ｒ縺励※縺・∪縺吶・縲√ｏ縺溘￥縺・],
-      delinquent: ['窶ｦ繝√ャ縲∽ｽ輔ｄ縺｣縺ｦ繧薙□繧医≠縺溘＠'],
-      cool: ['窶ｦ窶ｦ菴輔ｒ繧・▲縺ｦ縺・ｋ'],
-      seductive: ['縺ゅｉ窶ｦ縺翫°縺励＞繧上・縲√％繧薙↑縺ｯ縺壹§繧・],
+      _default: ['…チッ、何やってんだあたし', '負けた？ あたしが？ …嘘だろ'],
+      ojousama: ['…何をしていますの、わたくし'],
+      delinquent: ['…チッ、何やってんだよあたし'],
+      cool: ['……何をやっている'],
+      seductive: ['あら…おかしいわね、こんなはずじゃ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅ・雋縺代°繧峨∝虚縺代↑縺・],
-      cool: ['窶ｦ蜍輔￠縺ｪ縺・],
-      polite: ['窶ｦ縺ゅ・隧ｦ蜷医°繧峨√≧縺ｾ縺丞虚縺代↑縺上※'],
+      _default: ['……あの負けから、動けない'],
+      cool: ['…動けない'],
+      polite: ['…あの試合から、うまく動けなくて'],
     },
     shy: {
-      _default: ['繧・▲縺ｱ繧岩ｦ遘√↑繧薙°縺倥ｃ縲√ム繝｡縺ｪ繧薙〒縺励ｇ縺・°窶ｦ'],
+      _default: ['やっぱり…私なんかじゃ、ダメなんでしょうか…'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ縺ｪ繧薙□繧阪≧縺ｭ縲∽ｽ薙′蜍輔°縺ｪ縺・ｄ'],
-      delinquent: ['縺ｪ繧薙□繧阪≧縺ｪ窶ｦ縺・▽繧ゅ∩縺溘＞縺ｫ蜍輔°縺ｭ繝ｼ繧・],
-      seductive: ['縺ｵ縺ｵ窶ｦ縺ｪ繧薙〒縺九＠繧峨√＞縺､繧ゅ∩縺溘＞縺ｫ蜍輔￠縺ｪ縺・・'],
+      _default: ['あはは…なんだろうね、体が動かないや'],
+      delinquent: ['なんだろうな…いつもみたいに動かねーよ'],
+      seductive: ['ふふ…なんでかしら、いつもみたいに動けないの'],
     },
     earnest: {
-      _default: ['縺ゅ・雋縺鯛ｦ閾ｪ蛻・・菴輔′繝繝｡縺縺｣縺溘ｓ縺繧阪≧', '雋縺代◆逅・罰縺後ｏ縺九ｋ縺ｾ縺ｧ窶ｦ蜑阪↓騾ｲ繧√↑縺・],
-      polite: ['縺ゅ・隧ｦ蜷医°繧俄ｦ閾ｪ蛻・・菴輔′雜ｳ繧翫↑縺・・縺九√★縺｣縺ｨ閠・∴縺ｦ縺・∪縺・],
-      ojousama: ['縺ゅ・謨怜圏窶ｦ繧上◆縺上＠縺ｮ菴輔′縺・￠縺ｾ縺帙ｓ縺ｧ縺励◆縺ｮ'],
-      seductive: ['縺ゅ・雋縺代°繧俄ｦ縺壹▲縺ｨ閠・∴縺ｦ繧九・縲∽ｽ輔′縺・￠縺ｪ縺九▲縺溘・縺九▲縺ｦ'],
+      _default: ['あの負け…自分の何がダメだったんだろう', '負けた理由がわかるまで…前に進めない'],
+      polite: ['あの試合から…自分の何が足りないのか、ずっと考えています'],
+      ojousama: ['あの敗北…わたくしの何がいけませんでしたの'],
+      seductive: ['あの負けから…ずっと考えてるの、何がいけなかったのかって'],
     },
     emotional: {
-      _default: ['雋縺代◆窶ｦ繧ゅ≧菴輔ｂ閠・∴繧峨ｌ縺ｪ縺・ｦ縺｣', '窶ｦ謔斐＠縺・∵ｔ縺励￥縺ｦ鬆ｭ縺後＄縺｡繧・＄縺｡繧・↓縺ｪ繧銀ｦ・・],
+      _default: ['負けた…もう何も考えられない…っ', '…悔しい、悔しくて頭がぐちゃぐちゃになる…！'],
     },
   },
   injury_moderate_recovery: {
     normal: {
-      _default: ['菴薙・豐ｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ窶ｦ蜍輔￠縺ｪ縺・, '蠕ｩ蟶ｰ縺励◆縺ｮ縺ｫ縲∽ｽ輔°縺悟剱縺ｿ蜷医ｏ縺ｪ縺・],
-      ojousama: ['縺贋ｽ薙・豐ｻ繧翫∪縺励◆縺ｮ縺ｫ窶ｦ蜍輔￠縺ｾ縺帙ｓ縺ｮ'],
-      delinquent: ['菴薙・豐ｻ縺｣縺溘・縺壹□繧坂ｦ縺ｪ繧薙〒蜍輔￠縺ｭ繝ｼ繧薙□'],
-      seductive: ['菴薙・豐ｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ窶ｦ縺ｭ縲∝虚縺代↑縺・・'],
+      _default: ['体は治ったはずなのに…動けない', '復帰したのに、何かが噛み合わない'],
+      ojousama: ['お体は治りましたのに…動けませんの'],
+      delinquent: ['体は治ったはずだろ…なんで動けねーんだ'],
+      seductive: ['体は治ったはずなのに…ね、動けないの'],
     },
     bold: {
-      _default: ['豐ｻ縺｣縺溘・縺壹□窶ｦ縺ｪ縺ｮ縺ｫ菴輔〒縺薙ｓ縺ｪ縺ｫ繧ゅ◆縺､縺・],
-      ojousama: ['豐ｻ繧翫∪縺励◆縺ｮ縺ｫ窶ｦ縺ｪ縺懊％繧薙↑縺ｫ繧ゅ◆縺､縺阪∪縺吶・'],
-      delinquent: ['豐ｻ縺｣縺溘▲縺､繝ｼ縺ｮ縺ｫ窶ｦ菴輔〒繧ゅ◆縺､縺・※繧薙□'],
-      cool: ['窶ｦ菴薙′縲・・縺・],
-      seductive: ['豐ｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ窶ｦ縺翫°縺励＞繧上・'],
+      _default: ['治ったはずだ…なのに何でこんなにもたつく'],
+      ojousama: ['治りましたのに…なぜこんなにもたつきますの'],
+      delinquent: ['治ったっつーのに…何でもたついてんだ'],
+      cool: ['…体が、鈍い'],
+      seductive: ['治ったはずなのに…おかしいわね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ菴薙・豐ｻ縺｣縺溘ゅ〒繧ゅ∽ｽ輔°驕輔≧'],
-      cool: ['窶ｦ窶ｦ驤阪＞'],
-      polite: ['菴薙・豐ｻ縺｣縺溘ｓ縺ｧ縺吶￠縺ｩ窶ｦ菴輔°縲・＆縺・ｓ縺ｧ縺・],
+      _default: ['……体は治った。でも、何か違う'],
+      cool: ['……鈍い'],
+      polite: ['体は治ったんですけど…何か、違うんです'],
     },
     shy: {
-      _default: ['菴薙・豐ｻ縺｣縺溘・縺ｫ窶ｦ縺ｾ縺溯ｿｷ諠代°縺代■繧・≧縺九ｂ窶ｦ'],
+      _default: ['体は治ったのに…また迷惑かけちゃうかも…'],
     },
     easygoing: {
-      _default: ['縺ゅｌ繝ｼ縲∵ｲｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ隱ｿ蟄仙・縺ｪ縺・↑縺・],
-      delinquent: ['縺ゅｌ縲∵ｲｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ隱ｿ蟄舌〒縺ｭ繝ｼ縺ｪ'],
-      seductive: ['縺ゅｉ縲∵ｲｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ窶ｦ隱ｿ蟄仙・縺ｪ縺・ｏ'],
+      _default: ['あれー、治ったはずなのに調子出ないなぁ'],
+      delinquent: ['あれ、治ったはずなのに調子でねーな'],
+      seductive: ['あら、治ったはずなのに…調子出ないわ'],
     },
     earnest: {
-      _default: ['蠕ｩ蟶ｰ縺ｧ縺阪◆縺ｮ縺ｫ窶ｦ縺ｾ縺蜈ｨ辟ｶ雜ｳ繧翫↑縺・],
-      polite: ['蠕ｩ蟶ｰ縺ｧ縺阪◆縺ｮ縺ｧ縺吶′窶ｦ縺ｾ縺蜈ｨ辟ｶ縲∬ｶｳ繧翫※縺・∪縺帙ｓ'],
-      ojousama: ['蠕ｩ蟶ｰ縺ｧ縺阪∪縺励◆縺ｮ縺ｫ窶ｦ縺ｾ縺縺ｾ縺雜ｳ繧翫∪縺帙ｓ繧・],
-      seductive: ['蠕ｩ蟶ｰ縺ｧ縺阪◆縺ｮ縺ｫ窶ｦ縺ｾ縺雜ｳ繧翫↑縺・・'],
+      _default: ['復帰できたのに…まだ全然足りない'],
+      polite: ['復帰できたのですが…まだ全然、足りていません'],
+      ojousama: ['復帰できましたのに…まだまだ足りませんわ'],
+      seductive: ['復帰できたのに…まだ足りないの'],
     },
     emotional: {
-      _default: ['縺帙▲縺九￥豐ｻ縺｣縺溘・縺ｫ窶ｦ縺ｪ繧薙〒縲√↑繧薙〒蜍輔￠縺ｪ縺・・窶ｦ・・],
+      _default: ['せっかく治ったのに…なんで、なんで動けないの…！'],
     },
   },
   injury_severe_recovery: {
     normal: {
-      _default: ['縺ｾ縺溘Μ繝ｳ繧ｰ縺ｫ遶九※縺溪ｦ縺ｮ縺ｫ縲∵悶＞', '驥榊す縺九ｉ蟶ｰ縺｣縺ｦ縺阪◆縺代←窶ｦ閾ｪ菫｡縺後↑縺・],
-      ojousama: ['繝ｪ繝ｳ繧ｰ縺ｫ謌ｻ繧後∪縺励◆縺ｮ縺ｫ窶ｦ諤悶＞縺ｧ縺吶ｏ'],
-      delinquent: ['謌ｻ縺｣縺ｦ縺阪◆縺ｮ縺ｫ窶ｦ繝薙ン縺｣縺ｦ繧薙・縺九ｈ縲√≠縺溘＠'],
-      seductive: ['謌ｻ縺｣縺ｦ縺薙ｌ縺溘・縺ｫ窶ｦ諤悶＞縺ｮ'],
+      _default: ['またリングに立てた…のに、怖い', '重傷から帰ってきたけど…自信がない'],
+      ojousama: ['リングに戻れましたのに…怖いですわ'],
+      delinquent: ['戻ってきたのに…ビビってんのかよ、あたし'],
+      seductive: ['戻ってこれたのに…怖いの'],
     },
     bold: {
-      _default: ['縺ゅ◆縺励′窶ｦ諤ｯ縺医※繧具ｼ・縺昴ｓ縺ｪ繝舌き縺ｪ'],
-      ojousama: ['繧上◆縺上＠縺娯ｦ諤ｯ縺医ｋ・・縺昴ｓ縺ｪ縺ｯ縺壹・'],
-      delinquent: ['縺ゅ◆縺励′繝薙ン縺｣縺ｦ繧具ｼ・縺ｵ縺悶￠繧薙↑'],
-      cool: ['窶ｦ諤ｯ縺医※縺・ｋ縲ゅ％縺ｮ遘√′'],
-      seductive: ['遘√′窶ｦ諤ｯ縺医※繧具ｼ・蝌倥〒縺励ｇ縺・],
+      _default: ['あたしが…怯えてる？ そんなバカな'],
+      ojousama: ['わたくしが…怯える？ そんなはずは'],
+      delinquent: ['あたしがビビってる？ ふざけんな'],
+      cool: ['…怯えている。この私が'],
+      seductive: ['私が…怯えてる？ 嘘でしょう'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ繝ｪ繝ｳ繧ｰ縺後・□縺・],
-      cool: ['窶ｦ驕縺・],
-      polite: ['繝ｪ繝ｳ繧ｰ縺ｫ謌ｻ繧後◆縺ｮ縺ｧ縺吶′窶ｦ驕縺乗─縺倥∪縺・],
+      _default: ['……リングが、遠い'],
+      cool: ['…遠い'],
+      polite: ['リングに戻れたのですが…遠く感じます'],
     },
     shy: {
-      _default: ['謌ｻ縺｣縺ｦ縺薙ｌ縺溘￠縺ｩ窶ｦ縺ｾ縺溷｣翫ｌ縺溘ｉ縺｣縺ｦ諤昴≧縺ｨ窶ｦ諤悶＞縺ｧ縺・],
+      _default: ['戻ってこれたけど…また壊れたらって思うと…怖いです'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ蜿ゅ▲縺溘↑縲√Μ繝ｳ繧ｰ縺後■繧・▲縺ｨ諤悶＞繧・],
-      delinquent: ['縺ｾ縺・▲縺溘↑窶ｦ繝ｪ繝ｳ繧ｰ縺後■繧・▲縺ｨ諤悶∞繝ｼ繧・],
-      seductive: ['蜿ゅ▲縺溘ｏ窶ｦ繝ｪ繝ｳ繧ｰ縺悟ｰ代＠諤悶＞縺ｮ'],
+      _default: ['あはは…参ったな、リングがちょっと怖いや'],
+      delinquent: ['まいったな…リングがちょっと怖ぇーよ'],
+      seductive: ['参ったわ…リングが少し怖いの'],
     },
     earnest: {
-      _default: ['蠕ｩ蟶ｰ縺ｧ縺阪◆窶ｦ縺ｧ繧ゆｽ薙′隕壹∴縺ｦ繧九√≠縺ｮ逞帙∩繧・],
-      polite: ['蠕ｩ蟶ｰ縺ｧ縺阪∪縺励◆窶ｦ縺ｧ繧ゆｽ薙′隕壹∴縺ｦ縺・ｋ繧薙〒縺吶√≠縺ｮ逞帙∩繧・],
-      ojousama: ['蠕ｩ蟶ｰ縺ｧ縺阪∪縺励◆繧鞘ｦ縺ｧ繧ゅ♀菴薙′隕壹∴縺ｦ縺・∪縺吶・縲√≠縺ｮ逞帙∩繧・],
-      seductive: ['蠕ｩ蟶ｰ縺ｧ縺阪◆窶ｦ縺ｧ繧ゅ・縲∽ｽ薙′隕壹∴縺ｦ繧九・縲√≠縺ｮ逞帙∩繧・],
+      _default: ['復帰できた…でも体が覚えてる、あの痛みを'],
+      polite: ['復帰できました…でも体が覚えているんです、あの痛みを'],
+      ojousama: ['復帰できましたわ…でもお体が覚えていますの、あの痛みを'],
+      seductive: ['復帰できた…でもね、体が覚えてるの、あの痛みを'],
     },
     emotional: {
-      _default: ['蟶ｰ縺｣縺ｦ縺薙ｌ縺溪ｦ縺ｮ縺ｫ窶ｦ縺｣縲∵悶￥縺ｦ菴薙′髴・∴繧銀ｦ・・],
+      _default: ['帰ってこれた…のに…っ、怖くて体が震える…！'],
     },
   },
   penalty_end: {
     normal: {
-      _default: ['諤ｪ謌代・豐ｻ縺｣縺溘・縺ｫ窶ｦ豌怜鴨縺梧綾繧峨↑縺・, '菴薙′逋偵∴縺ｦ繧ゅ∝ｿ・・蛯ｷ縺ｯ谿九ｋ繧薙□縺ｪ'],
-      ojousama: ['縺頑ｪ謌代・逋偵∴縺ｾ縺励◆縺ｮ縺ｫ窶ｦ豌怜鴨縺梧綾繧翫∪縺帙ｓ繧・],
-      delinquent: ['諤ｪ謌代・豐ｻ縺｣縺溘▲縺､繝ｼ縺ｮ縺ｫ窶ｦ豌怜鴨縺梧綾繧薙・繝ｼ'],
-      seductive: ['諤ｪ謌代・豐ｻ縺｣縺溘・縺ｫ窶ｦ豌怜鴨縺梧綾繧峨↑縺・・'],
+      _default: ['怪我は治ったのに…気力が戻らない', '体が癒えても、心の傷は残るんだな'],
+      ojousama: ['お怪我は癒えましたのに…気力が戻りませんわ'],
+      delinquent: ['怪我は治ったっつーのに…気力が戻んねー'],
+      seductive: ['怪我は治ったのに…気力が戻らないの'],
     },
     bold: {
-      _default: ['菴薙・荳・・縺ｪ縺ｮ縺ｫ窶ｦ豌玲戟縺｡縺後▽縺・※縺薙↑縺・],
-      ojousama: ['縺贋ｽ薙・荳・・縺ｧ縺吶・縺ｫ窶ｦ豌玲戟縺｡縺後▽縺・※縺阪∪縺帙ｓ繧・],
-      delinquent: ['菴薙・荳・・縺ｪ縺ｮ縺ｫ窶ｦ豌玲戟縺｡縺後▽縺・※縺薙・繝ｼ'],
-      cool: ['窶ｦ豌玲戟縺｡縺後√▽縺・※縺薙↑縺・],
-      seductive: ['菴薙・荳・・縺ｪ縺ｮ縺ｫ窶ｦ豌玲戟縺｡縺後▽縺・※縺薙↑縺・・'],
+      _default: ['体は万全なのに…気持ちがついてこない'],
+      ojousama: ['お体は万全ですのに…気持ちがついてきませんわ'],
+      delinquent: ['体は万全なのに…気持ちがついてこねー'],
+      cool: ['…気持ちが、ついてこない'],
+      seductive: ['体は万全なのに…気持ちがついてこないの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ豐ｻ縺｣縺溘ゅ〒繧ゅ∝ｿ・・'],
-      cool: ['窶ｦ蠢・′縲√∪縺'],
-      polite: ['菴薙・豐ｻ縺｣縺溘ｓ縺ｧ縺吶￠縺ｩ窶ｦ蠢・′縲√∪縺'],
+      _default: ['……治った。でも、心は'],
+      cool: ['…心が、まだ'],
+      polite: ['体は治ったんですけど…心が、まだ'],
     },
     shy: {
-      _default: ['諤ｪ謌代・豐ｻ縺｣縺溘ｓ縺ｧ縺吶￠縺ｩ窶ｦ縺ｾ縺滓ｪ謌代＠縺溘ｉ縺｣縺ｦ諤昴≧縺ｨ窶ｦ'],
+      _default: ['怪我は治ったんですけど…また怪我したらって思うと…'],
     },
     easygoing: {
-      _default: ['諤ｪ謌代・豐ｻ縺｣縺溘ｓ縺縺代←縺ｪ縺≫ｦ縺ｪ繧薙°豌怜・縺御ｹ励ｉ縺ｪ縺・],
-      delinquent: ['諤ｪ謌代・豐ｻ縺｣縺溘ｓ縺縺代←縺ｪ窶ｦ縺ｪ繧薙°荵励ｓ縺ｭ繝ｼ繧・],
-      seductive: ['諤ｪ謌代・豐ｻ縺｣縺溘ｓ縺縺代←窶ｦ縺ｪ繧薙□縺区ｰ怜・縺御ｹ励ｉ縺ｪ縺・・'],
+      _default: ['怪我は治ったんだけどなぁ…なんか気分が乗らない'],
+      delinquent: ['怪我は治ったんだけどな…なんか乗んねーわ'],
+      seductive: ['怪我は治ったんだけど…なんだか気分が乗らないの'],
     },
     earnest: {
-      _default: ['諤ｪ謌代・豐ｻ縺｣縺溘ゅ〒繧る屬繧後※縺・◆譎る俣縺娯ｦ驥阪＞'],
-      polite: ['諤ｪ謌代・豐ｻ繧翫∪縺励◆縲ゅ〒繧る屬繧後※縺・◆譎る俣縺娯ｦ驥阪＞縺ｧ縺・],
-      ojousama: ['縺頑ｪ謌代・逋偵∴縺ｾ縺励◆繧上ゅ〒繧る屬繧後※縺・◆譎る俣縺娯ｦ驥阪＞縺ｧ縺吶・'],
-      seductive: ['諤ｪ謌代・豐ｻ縺｣縺溘ｏ縲ゅ〒繧ゅ・縲・屬繧後※縺・◆譎る俣縺娯ｦ驥阪＞縺ｮ'],
+      _default: ['怪我は治った。でも離れていた時間が…重い'],
+      polite: ['怪我は治りました。でも離れていた時間が…重いです'],
+      ojousama: ['お怪我は癒えましたわ。でも離れていた時間が…重いですの'],
+      seductive: ['怪我は治ったわ。でもね、離れていた時間が…重いの'],
     },
     emotional: {
-      _default: ['豐ｻ縺｣縺溘・縺壹↑縺ｮ縺ｫ窶ｦ縺ｪ繧薙〒縺薙ｓ縺ｪ縺ｫ荳榊ｮ峨↑縺ｮ窶ｦ・・],
+      _default: ['治ったはずなのに…なんでこんなに不安なの…！'],
     },
   },
 };
 
-// ﾂｧ4.5 繧ｹ繝ｩ繝ｳ繝怜屓蠕ｩ繧ｻ繝ｪ繝包ｼ・ersonalityﾃ預rchetype・・const SLUMP_END_LINES = {
+// §4.5 スランプ回復セリフ（personality×archetype）
+const SLUMP_END_LINES = {
   normal: {
-    _default: ['繧・▲縺ｨ窶ｦ繧・▲縺ｨ謌ｻ縺｣縺ｦ縺薙ｌ縺・, '縺ゅ・證励＞繝医Φ繝阪Ν繧偵ｈ縺・ｄ縺乗栢縺代◆'],
-    ojousama: ['繧医≧繧・￥窶ｦ謌ｻ縺｣縺ｦ縺薙ｌ縺ｾ縺励◆繧・],
-    delinquent: ['繧・▲縺ｨ窶ｦ繧・▲縺ｨ謌ｻ縺｣縺ｦ縺薙ｌ縺溘●'],
-    seductive: ['繧・▲縺ｨ窶ｦ謌ｻ縺｣縺ｦ縺薙ｌ縺溘ｏ'],
+    _default: ['やっと…やっと戻ってこれた', 'あの暗いトンネルをようやく抜けた'],
+    ojousama: ['ようやく…戻ってこれましたわ'],
+    delinquent: ['やっと…やっと戻ってこれたぜ'],
+    seductive: ['やっと…戻ってこれたわ'],
   },
   bold: {
-    _default: ['蠕・◆縺帙◆縺ｪ縲ゅ％縺薙°繧峨′譛ｬ逡ｪ縺'],
-    ojousama: ['縺雁ｾ・◆縺帙＠縺ｾ縺励◆繧上ゅ％縺薙°繧峨〒縺吶・繧・],
-    delinquent: ['蠕・◆縺帙◆縺ｪ・・縺薙％縺九ｉ縺縺懶ｼ・],
-    cool: ['窶ｦ謌ｻ縺｣縺溘ゅ％縺薙°繧峨□'],
-    seductive: ['縺雁ｾ・◆縺帙ゅ％縺薙°繧峨′譛ｬ逡ｪ繧・],
+    _default: ['待たせたな。ここからが本番だ'],
+    ojousama: ['お待たせしましたわ。ここからですのよ'],
+    delinquent: ['待たせたな！ ここからだぜ！'],
+    cool: ['…戻った。ここからだ'],
+    seductive: ['お待たせ。ここからが本番よ'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ謌ｻ縺｣縺ｦ縺阪◆'],
-    cool: ['窶ｦ窶ｦ謌ｻ縺｣縺・],
-    polite: ['窶ｦ謌ｻ縺｣縺ｦ縺薙ｌ縺ｾ縺励◆'],
+    _default: ['……戻ってきた'],
+    cool: ['……戻った'],
+    polite: ['…戻ってこれました'],
   },
   shy: {
-    _default: ['縺ｾ縺荳榊ｮ峨〒縺吶￠縺ｩ窶ｦ鬆大ｼｵ繧翫◆縺・〒縺・],
+    _default: ['まだ不安ですけど…頑張りたいです'],
   },
   easygoing: {
-    _default: ['縺・ｄ繝ｼ髟ｷ縺九▲縺滂ｼ・縺ｧ繧ゅ∪縺滓･ｽ縺励￥縺ｪ縺｣縺ｦ縺阪◆繧・],
-    delinquent: ['縺・ｄ繝ｼ髟ｷ縺九▲縺溘↑・・縺ｧ繧ゅ∪縺滓･ｽ縺励￥縺ｪ縺｣縺ｦ縺阪◆縺・],
-    seductive: ['髟ｷ縺九▲縺溘ｏ縲ゅ〒繧ゅ∪縺滓･ｽ縺励￥縺ｪ縺｣縺ｦ縺阪◆縺ｮ'],
+    _default: ['いやー長かった！ でもまた楽しくなってきたよ'],
+    delinquent: ['いやー長かったな！ でもまた楽しくなってきたぜ'],
+    seductive: ['長かったわ。でもまた楽しくなってきたの'],
   },
   earnest: {
-    _default: ['霑ｷ諠代°縺代◆蛻・ｦ蛟阪↓縺励※霑斐☆', '蠕・▲縺ｦ縺上ｌ縺ｦ縺・◆繝ｪ繝ｳ繧ｰ縺ｫ縲∵←霑斐＠縺吶ｋ'],
-    polite: ['縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｾ縺励◆窶ｦ蠢・★縲∝阪↓縺励※縺願ｿ斐＠縺励∪縺・],
-    ojousama: ['縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｾ縺励◆繧鞘ｦ蠢・★縺願ｿ斐＠縺・◆縺励∪縺・],
-    seductive: ['霑ｷ諠代°縺代◆蛻・ｦ霑斐☆繧上∝阪↓縺励※縺ｭ'],
+    _default: ['迷惑かけた分…倍にして返す', '待ってくれていたリングに、恩返しする'],
+    polite: ['ご迷惑をおかけしました…必ず、倍にしてお返しします'],
+    ojousama: ['ご迷惑をおかけしましたわ…必ずお返しいたします'],
+    seductive: ['迷惑かけた分…返すわ、倍にしてね'],
   },
   emotional: {
-    _default: ['縺・▲窶ｦ繧・▲縺ｨ縲√ｄ縺｣縺ｨ謚懊￠蜃ｺ縺帙◆窶ｦ・・繧ゅ≧雋縺代↑縺・ｦ・・],
+    _default: ['うっ…やっと、やっと抜け出せた…！ もう負けない…！'],
   },
 };
 
-// ﾂｧ5.6 繝｢繝√・蝟ｪ螟ｱ繧ｻ繝ｪ繝包ｼ・ersonalityﾃ預rchetype・・const MOTIVATION_LOSS_LINES = {
+// §5.6 モチベ喪失セリフ（personality×archetype）
+const MOTIVATION_LOSS_LINES = {
   normal: {
-    _default: ['繧ゅ≧窶ｦ菴輔・縺溘ａ縺ｫ髣倥▲縺ｦ繧九・縺九ｏ縺九ｉ縺ｪ縺・, '繝励Ο繝ｬ繧ｹ縺梧･ｽ縺励＞縺｣縺ｦ諢溯ｦ壹√←縺薙∈陦後▲縺滂ｼ・],
-    ojousama: ['菴輔・縺溘ａ縺ｫ窶ｦ髣倥▲縺ｦ縺・∪縺吶・縲√ｏ縺溘￥縺・],
-    delinquent: ['菴輔・縺溘ａ縺ｫ髣倥▲縺ｦ繧薙□繧遺ｦ繧ゅ≧繧上°繧薙・繝ｼ'],
-    seductive: ['菴輔・縺溘ａ縺ｫ髣倥▲縺ｦ繧九・縺九＠繧俄ｦ繧上°繧峨↑縺上↑縺｣縺溘ｏ'],
+    _default: ['もう…何のために闘ってるのかわからない', 'プロレスが楽しいって感覚、どこへ行った？'],
+    ojousama: ['何のために…闘っていますの、わたくし'],
+    delinquent: ['何のために闘ってんだよ…もうわかんねー'],
+    seductive: ['何のために闘ってるのかしら…わからなくなったわ'],
   },
   bold: {
-    _default: ['窶ｦ辯・∴縺ｪ縺・ゆｽ輔ｒ繧・▲縺ｦ繧ゅ∫㏍縺医※縺薙↑縺・],
-    ojousama: ['窶ｦ辯・∴縺ｾ縺帙ｓ繧上ゆｽ輔ｒ縺励※繧ゅ∫↓縺後▽縺阪∪縺帙ｓ縺ｮ'],
-    delinquent: ['窶ｦ辯・∴縺ｭ繝ｼ繧薙□繧医ゆｽ輔ｄ縺｣縺ｦ繧ゅ∫↓縺後▽縺九・繝ｼ'],
-    cool: ['窶ｦ辯・∴縺ｪ縺・],
-    seductive: ['辯・∴縺ｪ縺・・窶ｦ菴輔ｒ縺励※繧ゅ∫↓縺後▽縺九↑縺・ｏ'],
+    _default: ['…燃えない。何をやっても、燃えてこない'],
+    ojousama: ['…燃えませんわ。何をしても、火がつきませんの'],
+    delinquent: ['…燃えねーんだよ。何やっても、火がつかねー'],
+    cool: ['…燃えない'],
+    seductive: ['燃えないの…何をしても、火がつかないわ'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ髣倥≧逅・罰縺後∬ｦ九∴縺ｪ縺・],
-    cool: ['窶ｦ窶ｦ隕九∴縺ｪ縺・],
-    polite: ['窶ｦ髣倥≧逅・罰縺後∬ｦ九∴縺ｪ縺上↑縺｣縺ｦ縺励∪縺｣縺ｦ'],
+    _default: ['……闘う理由が、見えない'],
+    cool: ['……見えない'],
+    polite: ['…闘う理由が、見えなくなってしまって'],
   },
   shy: {
-    _default: ['遘√′繝ｪ繝ｳ繧ｰ縺ｫ遶九▽諢丞袖窶ｦ縺ゅｋ繧薙〒縺励ｇ縺・°窶ｦ'],
+    _default: ['私がリングに立つ意味…あるんでしょうか…'],
   },
   easygoing: {
-    _default: ['縺ｪ繧薙□繧阪≧縺ｭ窶ｦ繝励Ο繝ｬ繧ｹ讌ｽ縺励＞縺｣縺ｦ諢溯ｦ壹√←縺楢｡後▲縺｡繧・▲縺溘ｓ縺繧・],
-    delinquent: ['縺ｪ繧薙□繧阪≧縺ｪ窶ｦ讌ｽ縺励＞縺｣縺ｦ諢溯ｦ壹√←縺楢｡後▲縺｡縺ｾ縺｣縺溘ｓ縺'],
-    seductive: ['縺ｩ縺・＠縺溘・縺九＠繧俄ｦ讌ｽ縺励＞縺｣縺ｦ諢溯ｦ壹√←縺薙°縺ｫ陦後▲縺｡繧・▲縺溘ｏ'],
+    _default: ['なんだろうね…プロレス楽しいって感覚、どこ行っちゃったんだろ'],
+    delinquent: ['なんだろうな…楽しいって感覚、どこ行っちまったんだ'],
+    seductive: ['どうしたのかしら…楽しいって感覚、どこかに行っちゃったわ'],
   },
   earnest: {
-    _default: ['豈取律驕灘ｴ縺ｫ譚･繧九・縺娯ｦ縺薙ｓ縺ｪ縺ｫ霎帙＞縺ｪ繧薙※', '閾ｪ蛻・ｒ霑ｽ縺・ｾｼ繧薙〒繧やｦ菴輔ｂ霑斐▲縺ｦ縺薙↑縺・],
-    polite: ['豈取律驕灘ｴ縺ｫ譚･繧九・縺娯ｦ縺薙ｓ縺ｪ縺ｫ霎帙＞縺ｨ縺ｯ諤昴＞縺ｾ縺帙ｓ縺ｧ縺励◆'],
-    ojousama: ['豈取律縺顔ｨｽ蜿､縺ｫ騾壹≧縺ｮ縺娯ｦ縺薙ｓ縺ｪ縺ｫ霎帙＞縺ｨ縺ｯ'],
-    seductive: ['豈取律驕灘ｴ縺ｫ譚･繧九・縺娯ｦ縺薙ｓ縺ｪ縺ｫ霎帙＞縺ｪ繧薙※縺ｭ'],
+    _default: ['毎日道場に来るのが…こんなに辛いなんて', '自分を追い込んでも…何も返ってこない'],
+    polite: ['毎日道場に来るのが…こんなに辛いとは思いませんでした'],
+    ojousama: ['毎日お稽古に通うのが…こんなに辛いとは'],
+    seductive: ['毎日道場に来るのが…こんなに辛いなんてね'],
   },
   emotional: {
-    _default: ['繧・□窶ｦ繧ゅ≧雖娯ｦ菴輔ｂ縺励◆縺上↑縺・ｦ・・, '窶ｦ縺ｪ繧薙〒豕｣縺・※繧九ｓ縺繧阪√≠縺溘＠窶ｦ'],
+    _default: ['やだ…もう嫌…何もしたくない…！', '…なんで泣いてるんだろ、あたし…'],
   },
 };
 
-// ﾂｧ5.6 繝｢繝√・蝟ｪ螟ｱ蝗槫ｾｩ繧ｻ繝ｪ繝包ｼ・ersonalityﾃ預rchetype・・const MOTIVATION_RECOVERY_LINES = {
+// §5.6 モチベ喪失回復セリフ（personality×archetype）
+const MOTIVATION_RECOVERY_LINES = {
   normal: {
-    _default: ['縺ｾ縺窶ｦ繧・ｌ繧九ゅｄ縺｣縺ｦ縺ｿ縺帙ｋ', '縺ｾ縺滄利縺・◆縺・→諤昴∴縺溘ゅ％縺ｮ豌玲戟縺｡繧貞､ｧ蛻・↓'],
-    ojousama: ['縺ｾ縺窶ｦ繧・ｌ縺ｾ縺吶ｏ縲ゅｄ縺｣縺ｦ隕九○縺ｾ縺吶・'],
-    delinquent: ['縺ｾ縺繧・ｌ繧銀ｦ繧・▲縺ｦ繧・ｋ繧・],
-    seductive: ['縺ｾ縺繧・ｌ繧九ｏ窶ｦ繧・▲縺ｦ縺ｿ縺帙ｋ'],
+    _default: ['まだ…やれる。やってみせる', 'また闘いたいと思えた。この気持ちを大切に'],
+    ojousama: ['まだ…やれますわ。やって見せますの'],
+    delinquent: ['まだやれる…やってやるよ'],
+    seductive: ['まだやれるわ…やってみせる'],
   },
   bold: {
-    _default: ['逶ｮ縺瑚ｦ壹ａ縺溘ゅ％縺薙〒邨ゅｏ繧九ｏ縺代↓縺ｯ縺・°縺ｪ縺・],
-    ojousama: ['逶ｮ縺瑚ｦ壹ａ縺ｾ縺励◆繧上ゅ％縺薙〒邨ゅｏ繧九ｏ縺代↓縺ｯ縺・″縺ｾ縺帙ｓ繧ゅ・'],
-    delinquent: ['逶ｮ縺・ｦ壹ａ縺溘●縲ゅ％縺薙〒邨ゅｏ繧九°繧・],
-    cool: ['窶ｦ逶ｮ縺瑚ｦ壹ａ縺溘ゅ∪縺邨ゅｏ繧峨↑縺・],
-    seductive: ['逶ｮ縺瑚ｦ壹ａ縺溘ｏ縲ゅ％縺薙〒邨ゅｏ繧九↑繧薙※縲√▽縺ｾ繧峨↑縺・ｂ縺ｮ'],
+    _default: ['目が覚めた。ここで終わるわけにはいかない'],
+    ojousama: ['目が覚めましたわ。ここで終わるわけにはいきませんもの'],
+    delinquent: ['目ぇ覚めたぜ。ここで終わるかよ'],
+    cool: ['…目が覚めた。まだ終わらない'],
+    seductive: ['目が覚めたわ。ここで終わるなんて、つまらないもの'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ繧ゅ≧荳蠎ｦ縲・利縺医ｋ'],
-    cool: ['窶ｦ髣倥∴繧・],
-    polite: ['窶ｦ繧ゅ≧荳蠎ｦ縲・利縺医◎縺・〒縺・],
+    _default: ['……もう一度、闘える'],
+    cool: ['…闘える'],
+    polite: ['…もう一度、闘えそうです'],
   },
   shy: {
-    _default: ['縺ｾ縺閾ｪ菫｡縺ｯ縺ｪ縺・〒縺吶￠縺ｩ窶ｦ繧ゅ≧蟆代＠縺縺代・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺・],
+    _default: ['まだ自信はないですけど…もう少しだけ、頑張ってみます'],
   },
   easygoing: {
-    _default: ['繧医・縺励√∪縺溘ｄ繧区ｰ怜・縺ｦ縺阪◆縺橸ｼ・讌ｽ縺励∪縺ｪ縺阪ｃ縺ｭ'],
-    delinquent: ['縺翫▲縺励√ｄ繧区ｰ怜・縺ｦ縺阪◆縺懶ｼ・讌ｽ縺励∪縺ｭ繝ｼ縺ｨ縺ｪ'],
-    seductive: ['縺ゅｉ縲√ｄ繧区ｰ励′謌ｻ縺｣縺ｦ縺阪◆繧上よ･ｽ縺励∪縺ｪ縺上■繧・・'],
+    _default: ['よーし、またやる気出てきたぞ！ 楽しまなきゃね'],
+    delinquent: ['おっし、やる気出てきたぜ！ 楽しまねーとな'],
+    seductive: ['あら、やる気が戻ってきたわ。楽しまなくちゃね'],
   },
   earnest: {
-    _default: ['髣倥≧縺薙→繧貞ｿ倥ｌ縺ｦ縺・◆窶ｦ縺ｧ繧ゅ√ｂ縺・ｿｷ繧上↑縺・],
-    polite: ['髣倥≧豌玲戟縺｡繧貞ｿ倥ｌ縺ｦ縺・∪縺励◆窶ｦ縺ｧ繧ゅ√ｂ縺・ｿｷ縺・∪縺帙ｓ'],
-    ojousama: ['髣倥≧蠢・ｒ蠢倥ｌ縺ｦ縺・∪縺励◆繧鞘ｦ縺ｧ繧ゅ√ｂ縺・ｿｷ縺・∪縺帙ｓ縺ｮ'],
-    seductive: ['髣倥≧豌玲戟縺｡繧貞ｿ倥ｌ縺ｦ縺溘ｏ窶ｦ縺ｧ繧ゅ・縲√ｂ縺・ｿｷ繧上↑縺・],
+    _default: ['闘うことを忘れていた…でも、もう迷わない'],
+    polite: ['闘う気持ちを忘れていました…でも、もう迷いません'],
+    ojousama: ['闘う心を忘れていましたわ…でも、もう迷いませんの'],
+    seductive: ['闘う気持ちを忘れてたわ…でもね、もう迷わない'],
   },
   emotional: {
-    _default: ['縺・▲窶ｦ縺ｾ縺滄利縺・◆縺・▲縺ｦ窶ｦ諤昴∴縺溘ｈ窶ｦ・・螟ｧ荳亥､ｫ縲√ｂ縺・､ｧ荳亥､ｫ窶ｦ・・],
+    _default: ['うっ…また闘いたいって…思えたよ…！ 大丈夫、もう大丈夫…！'],
   },
 };
 
-// ﾂｧ9.4 AI謌宣聞繧､繝吶Φ繝域･ｭ逡後ル繝･繝ｼ繧ｹ繝・Φ繝励Ξ繝ｼ繝茨ｼ医ヶ繝ｬ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ・・const AI_BREAKTHROUGH_NEWS = [
-  '堂 騾ｱ蛻雁･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・縲鶏org}縺ｮ{name}縲∬ｦ夐・・・{stat}縺梧･謌宣聞縲・,
-  '堂 譛亥・繝励Ο繝ｬ繧ｹ繝槭ぎ繧ｸ繝ｳ 窶・縲瑚｡晄茶・・{name}縺ｮ繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ縺ｫ讌ｭ逡碁ｨ堤┯縲・,
-  '堂 繧ｹ繝昴・繝・ｱ遏･ 窶・縲鶏org}縺ｮ{name}縲∝挨莠ｺ縺ｮ繧医≧縺ｪ謌宣聞繧定ｦ九○繧九・,
-  '堂 繝励Ο繝ｬ繧ｹ騾壻ｿ｡ 窶・縲鶏name}縺ｫ霆｢讖溘ゅ％縺ｮ縺ｾ縺ｾ荳贋ｽ阪∈鬟溘＞霎ｼ繧縺九・,
-  '堂 譬ｼ髣俶橿WEEKLY 窶・縲鶏org}縺ｮ譁ｰ譏毬name}縲∵･豼縺ｪ騾ｲ蛹悶〒豕ｨ逶ｮ繧帝寔繧√ｋ縲・,
-  '堂 繝励Ο繝ｬ繧ｹ譁ｰ閨・窶・縲鶏org}繝ｻ{name}縺梧･謌宣聞縲ゅΛ繧､繝舌Ν蝗｣菴薙↓豼髴・・,
+// §9.4 AI成長イベント業界ニューステンプレート（ブレークスルー）
+const AI_BREAKTHROUGH_NEWS = [
+  '📰 週刊女子プロレス — 「{org}の{name}、覚醒！ {stat}が急成長」',
+  '📰 月刊プロレスマガジン — 「衝撃！ {name}のブレークスルーに業界騒然」',
+  '📰 スポーツ報知 — 「{org}の{name}、別人のような成長を見せる」',
+  '📰 プロレス通信 — 「{name}に転機。このまま上位へ食い込むか」',
+  '📰 格闘技WEEKLY — 「{org}の新星{name}、急激な進化で注目を集める」',
+  '📰 プロレス新聞 — 「{org}・{name}が急成長。ライバル団体に激震」',
 ];
 
-// ﾂｧ9.4 AI謌宣聞繧､繝吶Φ繝域･ｭ逡後ル繝･繝ｼ繧ｹ・医せ繝ｩ繝ｳ繝暦ｼ・const AI_SLUMP_NEWS = [
-  '堂 騾ｱ蛻雁･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・縲鶏org}縺ｮ{name}縲∽ｸ崎ｪｿ縺梧ｷｱ蛻ｻ蛹悶ゆｻ翫す繝ｼ繧ｺ繝ｳ縺ｯ邊ｾ蠖ｩ繧呈ｬ縺上・,
-  '堂 譛亥・繝励Ο繝ｬ繧ｹ繝槭ぎ繧ｸ繝ｳ 窶・縲鶏name}縺ｫ繧ｹ繝ｩ繝ｳ繝励・蠖ｱ縲・org}縺ｫ證鈴峇縲・,
-  '堂 繧ｹ繝昴・繝・ｱ遏･ 窶・縲鶏name}縺ｮ菴手ｿｷ縺檎ｶ壹￥縲・org}縺ｮ蠖ｱ髻ｿ縺ｯ・溘・,
-  '堂 繝励Ο繝ｬ繧ｹ騾壻ｿ｡ 窶・縲梧ｳ｢荵ｱ縺ｮ繧ｷ繝ｼ繧ｺ繝ｳ縲・org}縺ｮ{name}縺檎ｲｾ蠖ｩ繧呈ｬ縺上・,
+// §9.4 AI成長イベント業界ニュース（スランプ）
+const AI_SLUMP_NEWS = [
+  '📰 週刊女子プロレス — 「{org}の{name}、不調が深刻化。今シーズンは精彩を欠く」',
+  '📰 月刊プロレスマガジン — 「{name}にスランプの影。{org}に暗雲」',
+  '📰 スポーツ報知 — 「{name}の低迷が続く。{org}の影響は？」',
+  '📰 プロレス通信 — 「波乱のシーズン。{org}の{name}が精彩を欠く」',
 ];
 
-// ﾂｧ9.4 AI謌宣聞繧､繝吶Φ繝域･ｭ逡後ル繝･繝ｼ繧ｹ・医Δ繝√・蝟ｪ螟ｱ・・const AI_MOTIVATION_LOSS_NEWS = [
-  '堂 騾ｱ蛻雁･ｳ蟄舌・繝ｭ繝ｬ繧ｹ 窶・縲鶏org}縺ｮ{name}縲√Δ繝√・繝ｼ繧ｷ繝ｧ繝ｳ蝟ｪ螟ｱ縺九らｷｴ鄙偵↓繧ょｧｿ繧定ｦ九○縺壹・,
-  '堂 繧ｹ繝昴・繝・ｱ遏･ 窶・縲鶏name}縺ｮ蠑暮蜊ｱ讖滂ｼ・{org}髢｢菫り・′譏弱°縺呎ｷｱ蛻ｻ縺ｪ迥ｶ豕√・,
-  '堂 譛亥・繝励Ο繝ｬ繧ｹ繝槭ぎ繧ｸ繝ｳ 窶・縲鶏name}縺ｮ蜴ｻ蟆ｱ縺ｫ豕ｨ逶ｮ縲・org}縺ｮ莉雁ｾ後・縲・,
-  '堂 譬ｼ髣俶橿WEEKLY 窶・縲後∪縺輔°縺ｮ螟ｱ騾溘・org}縺ｮ{name}縺ｫ菴輔′・溘・,
+// §9.4 AI成長イベント業界ニュース（モチベ喪失）
+const AI_MOTIVATION_LOSS_NEWS = [
+  '📰 週刊女子プロレス — 「{org}の{name}、モチベーション喪失か。練習にも姿を見せず」',
+  '📰 スポーツ報知 — 「{name}の引退危機？ {org}関係者が明かす深刻な状況」',
+  '📰 月刊プロレスマガジン — 「{name}の去就に注目。{org}の今後は」',
+  '📰 格闘技WEEKLY — 「まさかの失速。{org}の{name}に何が？」',
 ];
 
-// ﾂｧ2.6 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼSE繝弱・繝茨ｼ・udio.play縺ｧ菴ｿ逕ｨ・・// 'breakthrough' 繧ｭ繝ｼ繧・Audio 縺ｫ霑ｽ蜉縺吶ｋ・・pp.js蛛ｴ縺ｧ蟇ｾ蠢懶ｼ・
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
-//  v1.4w: 荳也阜隕ｳ貍泌・ 繝九Η繝ｼ繧ｹ繝・Φ繝励Ξ繝ｼ繝・// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+// §2.6 ブレークスルーSEノート（Audio.playで使用）
+// 'breakthrough' キーを Audio に追加する（app.js側で対応）
 
-// ﾂｧ6.1 繝・ぅ繝・き繝ｼ逕ｨ繝・Φ繝励Ξ繝ｼ繝茨ｼ医き繝・ざ繝ｪ蛻･繝ｻ蜷・+繝代ち繝ｼ繝ｳ・・const NEWS_TICKER_TEMPLATES = {
+// ══════════════════════════════════════════════
+//  v1.4w: 世界観演出 ニューステンプレート
+// ══════════════════════════════════════════════
+
+// §6.1 ティッカー用テンプレート（カテゴリ別・各5+パターン）
+const NEWS_TICKER_TEMPLATES = {
   aiShow: [
-    '笳・{org}縲∽ｻ企ｱ繧ょｮ牙ｮ壹＠縺滄寔螳｢縺ｧ闊郁｡後ｒ謌仙粥縺輔○縺・,
-    '笳・{org}縺ｮ闊郁｡後′逶帶ｳ√ょ慍蜈・ヵ繧｡繝ｳ縺ｮ謾ｯ謖√・蜴壹＞',
-    '笳・{org}縺悟・ｮ溘↑闊郁｡碁°蝟ｶ縲りｦｳ螳｢縺ｮ貅雜ｳ蠎ｦ繧ゆｸ翫・→縺ｮ縺薙→',
-    '笳・{org}縺ｮ莉企ｱ縺ｮ闊郁｡後・螂ｽ隧輔ゆｼ壼ｴ縺ｫ縺ｯ辭ｱ豌励′蜈・ｺ縺励※縺・◆',
-    '笳・{org}縲∝慍蝓溷ｯ・捩蝙九・闊郁｡後〒繝輔ぃ繝ｳ螻､繧堤捩螳溘↓蠎・￡縺ｦ縺・ｋ',
+    '◆ {org}、今週も安定した集客で興行を成功させた',
+    '◆ {org}の興行が盛況。地元ファンの支持は厚い',
+    '◆ {org}が堅実な興行運営。観客の満足度も上々とのこと',
+    '◆ {org}の今週の興行は好評。会場には熱気が充満していた',
+    '◆ {org}、地域密着型の興行でファン層を着実に広げている',
   ],
   winStreak: [
-    '笳・{name}縺鶏count}騾｣蜍昜ｸｭ・・邨ｶ螂ｽ隱ｿ縺ｮ豕｢縺ｫ荵励▲縺ｦ縺・ｋ',
-    '笳・蠢ｫ騾ｲ謦・・{name}縲＋count}騾｣蜍昴〒蜍｢縺・′豁｢縺ｾ繧峨↑縺・,
-    '笳・{name}縺ｮ騾｣蜍昴′{count}縺ｫ蛻ｰ驕斐よｬ｡縺ｮ蟇ｾ謌ｦ逶ｸ謇九・謌ｦ縲・＄縲・°',
-    '笳・豁｢縺ｾ繧峨↑縺кname}・・{count}騾｣蜍昴〒豕ｨ逶ｮ蠎ｦ縺梧･荳頑・',
-    '笳・{name}縺鶏count}騾｣蜍昴ょ・螳溘＠縺溽ｷｴ鄙偵・謌先棡縺悟・縺ｦ縺・ｋ',
+    '◆ {name}が{count}連勝中！ 絶好調の波に乗っている',
+    '◆ 快進撃の{name}、{count}連勝で勢いが止まらない',
+    '◆ {name}の連勝が{count}に到達。次の対戦相手は戦々恐々か',
+    '◆ 止まらない{name}！ {count}連勝で注目度が急上昇',
+    '◆ {name}が{count}連勝。充実した練習の成果が出ている',
   ],
   loseStreak: [
-    '笳・{name}縺ｫ蜈・ｰ励′縺ｪ縺・ｦ{count}騾｣謨励↓繝輔ぃ繝ｳ縺九ｉ蠢・・縺ｮ螢ｰ',
-    '笳・{name}縺ｮ荳崎ｪｿ縺檎ｶ壹￥縲・count}騾｣謨励〒陦ｨ諠・↓繧る匆繧翫′',
-    '笳・{name}縺鶏count}騾｣謨嶺ｸｭ縲りｪｿ蟄舌ｒ蜿悶ｊ謌ｻ縺吶″縺｣縺九￠縺梧ｬｲ縺励＞縺ｨ縺薙ｍ',
-    '笳・{name}縺ｮ騾｣謨励′豁｢縺ｾ繧峨↑縺・ょ捉蝗ｲ縺ｮ繧ｵ繝昴・繝医′骰ｵ縺ｫ縺ｪ繧翫◎縺・,
-    '笳・{name}縺瑚協縺励＞譎よ悄繧帝℃縺斐＠縺ｦ縺・ｋ縲・count}騾｣謨励〒繧り・繧峨↑縺・ｧｿ蜍｢縺ｫ繝輔ぃ繝ｳ縺ｯ繧ｨ繝ｼ繝ｫ繧帝√ｋ',
+    '◆ {name}に元気がない…{count}連敗にファンから心配の声',
+    '◆ {name}の不調が続く。{count}連敗で表情にも陰りが',
+    '◆ {name}が{count}連敗中。調子を取り戻すきっかけが欲しいところ',
+    '◆ {name}の連敗が止まらない。周囲のサポートが鍵になりそう',
+    '◆ {name}が苦しい時期を過ごしている。{count}連敗でも腐らない姿勢にファンはエールを送る',
   ],
   aiAce: [
-    '笳・{org}縺ｮ{name}縺悟･ｽ隱ｿ繧堤ｶｭ謖√ゅお繝ｼ繧ｹ縺ｨ縺励※縺ｮ蟄伜惠諢溘ｒ逋ｺ謠ｮ',
-    '笳・{name}縺鶏org}繧堤何蠑穂ｸｭ縲ょｯｾ謌ｦ繧呈悍繧螢ｰ縺悟推蝗｣菴薙°繧我ｸ翫′縺｣縺ｦ縺・ｋ',
-    '笳・{org}縺ｮ{name}縺ｫ豕ｨ逶ｮ縺碁寔縺ｾ繧九ょｮ溷鴨縺ｯ讌ｭ逡悟ｱ域欠縺ｨ縺ｮ隧募愛',
-    '笳・{name}縺ｮ蜈・ｮ溘・繧翫′隧ｱ鬘後↓縲・org}縺ｮ螟ｧ鮟呈浤縺ｯ蛛･蝨ｨ',
-    '笳・{org}縺ｮ逵区攸驕ｸ謇宮name}縲∫ｷｴ鄙偵〒縺ｮ莉穂ｸ翫′繧翫′謚懃ｾ､縺ｨ縺ｮ縺薙→',
+    '◆ {org}の{name}が好調を維持。エースとしての存在感を発揮',
+    '◆ {name}が{org}を牽引中。対戦を望む声が各団体から上がっている',
+    '◆ {org}の{name}に注目が集まる。実力は業界屈指との評判',
+    '◆ {name}の充実ぶりが話題に。{org}の大黒柱は健在',
+    '◆ {org}の看板選手{name}、練習での仕上がりが抜群とのこと',
   ],
   flavor: [
-    '笳・{name}縺御ｻ穂ｺ句ｸｰ繧翫・繝医Ξ繝ｼ繝九Φ繧ｰ蟋ｿ繧担NS縺ｫ謚慕ｨｿ縲ゅヵ繧｡繝ｳ縺悟渚蠢・,
-    '笳・{name}縺悟慍蜈・・繧､繝吶Φ繝医〒繝輔ぃ繝ｳ縺ｨ莠､豬√らｬ鷹｡斐〒蜀咏悄謦ｮ蠖ｱ縺ｫ蠢懊§縺ｦ縺・◆',
-    '笳・{name}縺ｨ{name2}縺悟・辟ｶ繧ｫ繝輔ぉ縺ｧ驕ｭ驕・よэ螟悶↑邨・∩蜷医ｏ縺帙↓繝輔ぃ繝ｳ縺梧ｲｸ縺・,
-    '笳・{name}縺ｮ譛ｬ讌ｭ縺ｧ縺ｮ豢ｻ霄阪・繧翫ｂ隧ｱ鬘後↓縲ゅ梧枚豁ｦ荳｡驕薙阪→繝輔ぃ繝ｳ縺檎ｧｰ雉・,
-    '笳・{name}縺ｨ{name2}縺悟粋蜷後ヨ繝ｬ繝ｼ繝九Φ繧ｰ縲ょ屮菴薙・蝙｣譬ｹ繧定ｶ翫∴縺滉ｺ､豬√′豕ｨ逶ｮ縺輔ｌ繧・,
-    '笳・{name}縺御ｼ第律縺ｮ驕弱＃縺玲婿繧貞・髢九ゅが繝輔・邏鬘斐↓繝輔ぃ繝ｳ縺後⊇縺｣縺薙ｊ',
+    '◆ {name}が仕事帰りのトレーニング姿をSNSに投稿。ファンが反応',
+    '◆ {name}が地元のイベントでファンと交流。笑顔で写真撮影に応じていた',
+    '◆ {name}と{name2}が偶然カフェで遭遇。意外な組み合わせにファンが沸く',
+    '◆ {name}の本業での活躍ぶりも話題に。「文武両道」とファンが称賛',
+    '◆ {name}と{name2}が合同トレーニング。団体の垣根を越えた交流が注目される',
+    '◆ {name}が休日の過ごし方を公開。オフの素顔にファンがほっこり',
   ],
   injury: [
-    '笳・{org}縺ｮ{name}縺後ヨ繝ｬ繝ｼ繝九Φ繧ｰ荳ｭ縺ｫ雋蛯ｷ縺九りｩｳ邏ｰ縺ｯ譛ｪ逋ｺ陦ｨ',
-    '笳・{name}縺ｮ蜃ｺ蝣ｴ縺悟些縺ｶ縺ｾ繧後ｋ縲・org}縺ｮ莉雁ｾ後・繧ｫ繝ｼ繝臥ｷｨ謌舌↓蠖ｱ髻ｿ繧・,
-    '笳・{org}繝ｻ{name}縺ｮ雋蛯ｷ諠・ｱ縲ょｾｩ蟶ｰ譎よ悄縺ｯ譛ｪ螳壹→縺ｮ縺薙→',
-    '笳・{name}縺ｫ繧｢繧ｯ繧ｷ繝・Φ繝医・org}縺ｯ莉｣蠖ｹ縺ｮ讀懆ｨ弱ｒ霑ｫ繧峨ｌ繧・,
-    '笳・{org}縺ｮ{name}縺碁屬閼ｱ縲よ掠譛溷ｾｩ蟶ｰ繧帝｡倥≧螢ｰ縺郡NS縺ｫ貅｢繧後※縺・ｋ',
+    '◆ {org}の{name}がトレーニング中に負傷か。詳細は未発表',
+    '◆ {name}の出場が危ぶまれる。{org}の今後のカード編成に影響も',
+    '◆ {org}・{name}の負傷情報。復帰時期は未定とのこと',
+    '◆ {name}にアクシデント。{org}は代役の検討を迫られる',
+    '◆ {org}の{name}が離脱。早期復帰を願う声がSNSに溢れている',
   ],
   scout: [
-    '笳・蝨ｰ蜈・・繧｢繝槭メ繝･繧｢螟ｧ莨壹〒蟆・擂譛画悍縺ｪ驕ｸ謇九′逶ｮ謦・＆繧後◆縺ｨ縺ｮ諠・ｱ',
-    '笳・蜷・屮菴薙・繧ｹ繧ｫ繧ｦ繝医′豢ｻ逋ｺ蛹悶ゅヵ繝ｪ繝ｼ縺ｮ螳溷鴨閠・ｒ蟾｡繧倶ｺ牙･ｪ謌ｦ縺ｮ豌鈴・',
-    '笳・逡ｰ讌ｭ遞ｮ縺九ｉ霆｢霄ｫ縺励◆譁ｰ莠ｺ縺瑚ｩｱ鬘後↓縲ゅ・繝・Φ繧ｷ繝｣繝ｫ縺ｯ譛ｪ遏･謨ｰ',
-    '笳・蝨ｰ蝓溘・繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ謨吝ｮ､蜃ｺ霄ｫ閠・↓豕ｨ逶ｮ縺碁寔縺ｾ縺｣縺ｦ縺・ｋ',
-    '笳・繝輔Μ繝ｼ縺ｧ豢ｻ蜍穂ｸｭ縺ｮ驕ｸ謇九↓隍・焚蝗｣菴薙′繧ｪ繝輔ぃ繝ｼ繧貞・縺励※縺・ｋ縺ｨ縺ｮ蝎・,
+    '◆ 地元のアマチュア大会で将来有望な選手が目撃されたとの情報',
+    '◆ 各団体のスカウトが活発化。フリーの実力者を巡る争奪戦の気配',
+    '◆ 異業種から転身した新人が話題に。ポテンシャルは未知数',
+    '◆ 地域のレスリング教室出身者に注目が集まっている',
+    '◆ フリーで活動中の選手に複数団体がオファーを出しているとの噂',
   ],
   economyGood: [
-    '笳・{org}縺ｮ邨悟霧縺悟･ｽ隱ｿ縲ゅせ繝昴Φ繧ｵ繝ｼ螂醍ｴ・ｂ鬆・ｪｿ縺ｫ蠅励∴縺ｦ縺・ｋ',
-    '笳・{org}縺ｮ繧ｰ繝・ぜ螢ｲ荳翫′莨ｸ縺ｳ縺ｦ縺・ｋ縲ゆｺｺ豌鈴∈謇九・繧ｿ繧ｪ繝ｫ縺悟刀阮・↓',
-    '笳・{org}縺梧眠縺励＞繧ｹ繝昴Φ繧ｵ繝ｼ繧堤佐蠕励りｳ・≡髱｢縺ｫ菴呵｣輔′逕溘∪繧後◎縺・,
-    '笳・{org}縺ｮ闊郁｡悟庶蜈･縺悟ｮ牙ｮ壹ょ慍蝓溘°繧峨・蜊碑ｳ帙ｂ蠅怜刈蛯ｾ蜷・,
-    '笳・{org}縺檎ｷｴ鄙呈命險ｭ繧呈僑蜈・る∈謇九°繧峨ｂ螂ｽ隧輔・螢ｰ',
+    '◆ {org}の経営が好調。スポンサー契約も順調に増えている',
+    '◆ {org}のグッズ売上が伸びている。人気選手のタオルが品薄に',
+    '◆ {org}が新しいスポンサーを獲得。資金面に余裕が生まれそう',
+    '◆ {org}の興行収入が安定。地域からの協賛も増加傾向',
+    '◆ {org}が練習施設を拡充。選手からも好評の声',
   ],
   economyStruggle: [
-    '笳・{org}縺ｮ髮・ｮ｢縺後ｄ繧・ｼｸ縺ｳ謔ｩ縺ｿ縲よ眠縺溘↑繝輔ぃ繝ｳ髢区挙縺瑚ｪｲ鬘後°',
-    '笳・{org}縺ｮ邨悟霧髯｣縺後ユ繧ｳ蜈･繧檎ｭ悶ｒ讀懆ｨ惹ｸｭ縺ｨ縺ｮ蝣ｱ驕・,
-    '笳・{org}縺檎ｵ瑚ｲｻ蜑頑ｸ帙↓蜿悶ｊ邨・ｓ縺ｧ縺・ｋ縺ｨ縺ｮ蝎ゅょ宍縺励＞蜿ｰ謇莠区ュ縺・,
-    '笳・{org}縺ｮ隕ｳ螳｢蜍募藤縺瑚ｪｲ鬘後↓縲るｭ・鴨逧・↑繧ｫ繝ｼ繝我ｽ懊ｊ縺ｧ蟾ｻ縺崎ｿ斐＠繧貞峙繧・,
-    '笳・{org}縲・剞繧峨ｌ縺滉ｺ育ｮ励・荳ｭ縺ｧ螂ｮ髣倅ｸｭ縲る∈謇九・鬆大ｼｵ繧翫′謾ｯ縺・,
+    '◆ {org}の集客がやや伸び悩み。新たなファン開拓が課題か',
+    '◆ {org}の経営陣がテコ入れ策を検討中との報道',
+    '◆ {org}が経費削減に取り組んでいるとの噂。厳しい台所事情か',
+    '◆ {org}の観客動員が課題に。魅力的なカード作りで巻き返しを図る',
+    '◆ {org}、限られた予算の中で奮闘中。選手の頑張りが支え',
   ],
   rivalryActive: [
-    '笳・{name1}縺ｨ{name2}縺ｮ髢薙↓縺溘□縺ｪ繧峨〓遨ｺ豌励′貍ゅ▲縺ｦ縺・ｋ',
-    '笳・{name1} vs {name2}縺ｮ蝗邵√′豺ｱ縺ｾ縺｣縺ｦ縺・ｋ縲よｬ｡縺ｮ逶ｴ謗･蟇ｾ豎ｺ縺ｫ豕ｨ逶ｮ',
-    '笳・{name1}縺鶏name2}縺ｫ縺､縺・※諢丞袖豺ｱ縺ｪ繧ｳ繝｡繝ｳ繝医ら↓闃ｱ縺梧淵繧倶ｺ域─',
-    '笳・{name1}縺ｨ{name2}縺ｮ繝ｩ繧､繝舌Ν髢｢菫ゅ↓繝輔ぃ繝ｳ縺檎・隕也ｷ壹ｒ騾√▲縺ｦ縺・ｋ',
-    '笳・{name1} vs {name2}縺ｮ蜀肴姶繧呈悍繧繝輔ぃ繝ｳ縺ｮ螢ｰ縺郡NS縺ｧ蠅怜刈荳ｭ',
+    '◆ {name1}と{name2}の間にただならぬ空気が漂っている',
+    '◆ {name1} vs {name2}の因縁が深まっている。次の直接対決に注目',
+    '◆ {name1}が{name2}について意味深なコメント。火花が散る予感',
+    '◆ {name1}と{name2}のライバル関係にファンが熱視線を送っている',
+    '◆ {name1} vs {name2}の再戦を望むファンの声がSNSで増加中',
   ],
   rivalryGoodRival: [
-    '笳・{name1}縺ｨ{name2}縺ｮ蜷榊享雋縺御ｻ翫ｂ隱槭ｊ闕峨↓縺ｪ縺｣縺ｦ縺・ｋ',
-    '笳・{name1}縺ｨ{name2}窶披泌･ｽ謨ｵ謇句酔螢ｫ縺ｮ蜀肴姶繧呈悍繧螢ｰ縺ｯ譬ｹ蠑ｷ縺・,
-    '笳・{name1}縺ｨ{name2}縺ｮ迚ｩ隱槭・邨ゅｏ縺｣縺ｦ繧ゅ√ヵ繧｡繝ｳ縺ｮ險俶・縺ｫ縺ｯ魄ｮ繧・°縺ｫ谿九ｋ',
-    '笳・縲鶏name1} vs {name2}繧偵ｂ縺・ｸ蠎ｦ縲坂披斐ヵ繧｡繝ｳ謚慕･ｨ縺ｧ蜀肴姶蟶梧悍縺御ｸ贋ｽ阪↓',
-    '笳・{name1}縺ｨ{name2}縲∫ｷｴ鄙貞ｴ縺ｧ縺吶ｌ驕輔≧縺ｨ閾ｪ辟ｶ縺ｫ隨鷹｡斐↓縺ｪ繧九→縺・≧',
+    '◆ {name1}と{name2}の名勝負が今も語り草になっている',
+    '◆ {name1}と{name2}——好敵手同士の再戦を望む声は根強い',
+    '◆ {name1}と{name2}の物語は終わっても、ファンの記憶には鮮やかに残る',
+    '◆ 「{name1} vs {name2}をもう一度」——ファン投票で再戦希望が上位に',
+    '◆ {name1}と{name2}、練習場ですれ違うと自然に笑顔になるという',
   ],
   champion: [
-    '笳・邇玖・name}縺ｫ謖第姶閠・呵｣懊′邯壹・よｬ｡縺ｮ髦ｲ陦帶姶縺ｮ逶ｸ謇九・隱ｰ縺',
-    '笳・{name}縺ｮ邇句ｺｧ縺ｫ陌手ｦ也怦縲・→迢吶＞繧貞ｮ壹ａ繧矩∈謇九◆縺｡',
-    '笳・邇玖・name}縲∫ｷｴ鄙偵〒縺ｮ莉穂ｸ翫′繧翫・荳・・縺ｨ縺ｮ縺薙→',
-    '笳・{name}縺ｮ谺｡縺ｮ髦ｲ陦帶姶縺ｫ豕ｨ逶ｮ縺碁寔縺ｾ縺｣縺ｦ縺・ｋ',
-    '笳・邇玖・name}縺後後←繧薙↑謖第姶閠・〒繧ょ女縺代※遶九▽縲阪→蝣ゅ・・繧ｳ繝｡繝ｳ繝・,
+    '◆ 王者{name}に挑戦者候補が続々。次の防衛戦の相手は誰だ',
+    '◆ {name}の王座に虎視眈々と狙いを定める選手たち',
+    '◆ 王者{name}、練習での仕上がりは万全とのこと',
+    '◆ {name}の次の防衛戦に注目が集まっている',
+    '◆ 王者{name}が「どんな挑戦者でも受けて立つ」と堂々のコメント',
   ],
   championLongReign: [
-    '笳・{name}縺ｮ髟ｷ譛滓帆讓ｩ縺檎ｶ壹￥縲・defenses}蠎ｦ縺ｮ髦ｲ陦帙・莨企＃縺ｧ縺ｯ縺ｪ縺・,
-    '笳・邨ｶ蟇ｾ邇玖・name}縲＋defenses}蝗樣亟陦帙・螳溽ｸｾ縺ｫ讌ｭ逡後ｂ閼ｱ蟶ｽ',
-    '笳・{name}縺ｮ邇句ｺｧ縺ｯ繧ゅ・繧・延螢√・defenses}蠎ｦ髦ｲ陦帙・螢√ｒ雜翫∴繧玖・・迴ｾ繧後ｋ縺・,
-    '笳・{name}縺ｮ螳牙ｮ壽─縺碁圀遶九▽縲ら視閠・→縺励※{defenses}蝗槭・髦ｲ陦帙ｒ驥阪・縺滄｢ｨ譬ｼ',
-    '笳・縲鶏name}譎ゆｻ｣縲阪→蜻ｼ縺ｶ螢ｰ繧ゅ・defenses}蝗樣亟陦帙・蛛画･ｭ縺ｯ邯壹￥',
+    '◆ {name}の長期政権が続く。{defenses}度の防衛は伊達ではない',
+    '◆ 絶対王者{name}、{defenses}回防衛の実績に業界も脱帽',
+    '◆ {name}の王座はもはや鉄壁。{defenses}度防衛の壁を越える者は現れるか',
+    '◆ {name}の安定感が際立つ。王者として{defenses}回の防衛を重ねた風格',
+    '◆ 「{name}時代」と呼ぶ声も。{defenses}回防衛の偉業は続く',
   ],
   general: [
-    '笳・莉企ｱ譛ｫ縺ｮ螟ｧ莨壹↓蜷代￠縺ｦSNS縺ｧ縺ｮ隧ｱ鬘後′逶帙ｊ荳翫′繧翫ｒ隕九○縺ｦ縺・ｋ',
-    '笳・繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ髢｢騾｣繧ｰ繝・ぜ縺ｮ螢ｲ荳翫′蝣・ｪｿ縲よ耳縺鈴∈謇九・繧ｿ繧ｪ繝ｫ縺御ｺｺ豌・,
-    '笳・蝨ｰ蝓溘・繧ｹ繝昴・繝・命險ｭ縺ｧ繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ謨吝ｮ､縺ｮ逕ｳ霎ｼ縺悟｢怜刈蛯ｾ蜷・,
-    '笳・莠ｺ豌鈴∈謇九・蠕玲э謚繧堤悄莨ｼ縺吶ｋ莠ｺ縺後ず繝縺ｧ蠅励∴縺ｦ縺・ｋ縺ｨ縺・,
-    '笳・蜷・屮菴薙・隧ｦ蜷医ワ繧､繝ｩ繧､繝亥虚逕ｻ縺ｮ蜀咲函謨ｰ縺御ｼｸ縺ｳ縺ｦ縺・ｋ',
-    '笳・繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ菫晞匱縺ｮ蜉蜈･閠・焚縺悟燕蟷ｴ豈斐〒蠅怜刈縲ょｮ牙・諢剰ｭ倥・鬮倥∪繧翫°',
+    '◆ 今週末の大会に向けてSNSでの話題が盛り上がりを見せている',
+    '◆ レスリング関連グッズの売上が堅調。推し選手のタオルが人気',
+    '◆ 地域のスポーツ施設でレスリング教室の申込が増加傾向',
+    '◆ 人気選手の得意技を真似する人がジムで増えているとか',
+    '◆ 各団体の試合ハイライト動画の再生数が伸びている',
+    '◆ レスリング保険の加入者数が前年比で増加。安全意識の高まりか',
   ],
 };
 
-// ﾂｧ6.2 譁ｰ閨槭ヱ繝阪Ν逕ｨ繝・Φ繝励Ξ繝ｼ繝茨ｼ医う繝吶Φ繝育ｨｮ蛻･縺斐→縺ｫ headline + body 繝壹い縲∝推3+繝代ち繝ｼ繝ｳ・・const NEWS_HEADLINE_TEMPLATES = {
+// §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
+const NEWS_HEADLINE_TEMPLATES = {
   titleChange: [
-    { headline: '豼髴・ｼ＋org}縺ｮ邇句ｺｧ縺悟虚縺・◆・＋name}縺梧眠邇玖・↓',
-      body: '{org}縺ｮ繧ｿ繧､繝医Ν繝槭ャ繝√〒螟ｧ豕｢荵ｱ縲・prevChamp}繧堤ｴ縺｣縺毬name}縺梧眠繝√Ε繝ｳ繝斐が繝ｳ縺ｮ蠎ｧ縺ｫ蟆ｱ縺・◆縲よ眠邇玖・・譎ゆｻ｣縺ｯ髟ｷ縺冗ｶ壹￥縺ｮ縺九√◎繧後→繧や補・ },
-    { headline: '邇句ｺｧ莠､莉｣・＋name}縺鶏org}縺ｮ鬆らせ繧貞･ｪ蜿・,
-      body: '螢ｮ邨ｶ縺ｪ荳謌ｦ縺ｮ譛ｫ縲＋name}縺梧眠繝√Ε繝ｳ繝斐が繝ｳ縺ｫ縲よ風繧後◆{prevChamp}縺ｯ縲梧ｬ｡縺薙◎縲阪→繝ｪ繝吶Φ繧ｸ繧定ｪ薙▲縺溘・org}縺ｮ譁ｰ譎ゆｻ｣縺悟ｧ九∪繧九・ },
-    { headline: '{org}縺ｫ譁ｰ螂ｳ邇玖ｪ慕函縲・name}縺檎視蠎ｧ繧呈斡蜀',
-      body: '{prevChamp}縺ｮ迚吝沁繧貞ｴｩ縺励◆{name}縲ゅヵ繧｡繝ｳ縺ｮ豁灘｣ｰ縺御ｼ壼ｴ繧貞桁繧荳ｭ縲∵眠邇玖・・縲後％縺薙°繧峨′繧ｹ繧ｿ繝ｼ繝医阪→蜉帛ｼｷ縺丞ｮ｣險縺励◆縲・ },
+    { headline: '激震！{org}の王座が動いた！{name}が新王者に',
+      body: '{org}のタイトルマッチで大波乱。{prevChamp}を破った{name}が新チャンピオンの座に就いた。新王者の時代は長く続くのか、それとも――' },
+    { headline: '王座交代！{name}が{org}の頂点を奪取',
+      body: '壮絶な一戦の末、{name}が新チャンピオンに。敗れた{prevChamp}は「次こそ」とリベンジを誓った。{org}の新時代が始まる。' },
+    { headline: '{org}に新女王誕生。{name}が王座を戴冠',
+      body: '{prevChamp}の牙城を崩した{name}。ファンの歓声が会場を包む中、新王者は「ここからがスタート」と力強く宣言した。' },
   ],
   defenseRecord: [
-    { headline: '逶､遏ｳ・＋name}縲＋count}蠎ｦ逶ｮ縺ｮ髦ｲ陦帙↓謌仙粥縲ら視蠎ｧ繧定у縺九☆閠・・縺・ｋ縺ｮ縺・,
-      body: '{org}縺ｮ{name}縺鶏count}蝗樒岼縺ｮ繧ｿ繧､繝医Ν髦ｲ陦帙ｒ驕疲・縲ゅ％縺ｮ螳牙ｮ壽─縺ｯ鬩夂焚逧・□縲よｬ｡縺ｮ謖第姶閠・↓縺ｨ縺｣縺ｦ縲∬ｶ翫∴繧九∋縺榊｣√・縺輔ｉ縺ｫ鬮倥￥縺ｪ縺｣縺溘・ },
-    { headline: '莨晁ｪｬ縺ｸ窶補府name}縲∝燕莠ｺ譛ｪ蛻ｰ縺ｮ{count}蝗樣亟陦・,
-      body: '{org}縺ｮ{name}縺鶏count}蝗樣亟陦帙→縺・≧驥大ｭ怜｡斐ｒ謇薙■遶九※縺溘ゅ◎縺ｮ蠑ｷ縺輔↓蟇ｾ謌ｦ閠・ｂ閼ｱ蟶ｽ縲ゅ後ｂ縺ｯ繧・挨譬ｼ縲阪→讌ｭ逡碁未菫り・ｂ闊後ｒ蟾ｻ縺上・ },
-    { headline: '繧ゅ・繧・･櫁ｩｱ縲・name}縺ｮ邇句ｺｧ縺ｯ隱ｰ縺ｫ繧よｭ｢繧√ｉ繧後↑縺・,
-      body: '{count}蝗樣亟陦帚補輔％縺ｮ謨ｰ蟄励′蜈ｨ縺ｦ繧堤黄隱槭ｋ縲・org}縺ｮ{name}縺ｯ譛譌ｩ豁ｴ蜿ｲ縺ｮ荳驛ｨ縲よ倦繧閠・・縺ｦ繧帝縺代ｋ邨ｶ蟇ｾ邇玖・・縲∝ｭ､鬮倥・鬆ゅ↓遶九■邯壹￠繧九・ },
+    { headline: '盤石！{name}、{count}度目の防衛に成功。王座を脅かす者はいるのか',
+      body: '{org}の{name}が{count}回目のタイトル防衛を達成。この安定感は驚異的だ。次の挑戦者にとって、越えるべき壁はさらに高くなった。' },
+    { headline: '伝説へ――{name}、前人未到の{count}回防衛',
+      body: '{org}の{name}が{count}回防衛という金字塔を打ち立てた。その強さに対戦者も脱帽。「もはや別格」と業界関係者も舌を巻く。' },
+    { headline: 'もはや神話。{name}の王座は誰にも止められない',
+      body: '{count}回防衛――この数字が全てを物語る。{org}の{name}は最早歴史の一部。挑む者全てを退ける絶対王者は、孤高の頂に立ち続ける。' },
   ],
   breakthrough: [
-    { headline: '譁ｰ譏溽・隱包ｼ＋name}縺瑚ｦ夐・縲∽ｸ螟懊↓縺励※蛻･莠ｺ縺ｫ',
-      body: '{org}縺ｮ{name}縺碁ｩ壹￥縺ｹ縺肴・髟ｷ繧定ｦ九○縺溘・detail}縲よ･ｭ逡碁未菫り・ｂ縲後％縺ｮ驕ｸ謇九・蛹悶￠繧九阪→螟ｪ鮠灘愛縲ゆｻ雁ｾ後・豢ｻ霄阪°繧臥岼縺碁屬縺帙↑縺・・ },
-    { headline: '{name}縺ｫ繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ縲・org}縺ｮ譁ｰ縺溘↑豁ｦ蝎ｨ縺ｫ',
-      body: '蝨ｰ驕薙↑蜉ｪ蜉帙′縺､縺・↓螳溘ｒ邨舌ｓ縺縲・org}縺ｮ{name}縺鶏detail}縲ゅ瑚・蛻・〒繧るｩ壹＞縺ｦ縺・ｋ縲阪→譛ｬ莠ｺ縲ゅメ繝ｼ繝縺ｮ謌ｦ蜉帙′荳谿ｵ荳翫′縺｣縺溘・ },
-    { headline: '隕夐・縺ｮ{name}・・{org}縺ｫ螫峨＠縺・ｪ､邂・,
-      body: '譛溷ｾ・ｻ･荳翫・諤･謌宣聞繧帝≠縺偵◆{name}縲・detail}縲・org}縺ｮ繝輔ぃ繝ｳ縺九ｉ縺ｯ縲後え繝√・繧ｨ繝ｼ繧ｹ縺ｯ縺薙・蟄舌□縲阪→豁灘万縺ｮ螢ｰ縺御ｸ翫′縺｣縺ｦ縺・ｋ縲・ },
+    { headline: '新星爆誕！{name}が覚醒、一夜にして別人に',
+      body: '{org}の{name}が驚くべき成長を見せた。{detail}。業界関係者も「この選手は化ける」と太鼓判。今後の活躍から目が離せない。' },
+    { headline: '{name}にブレークスルー。{org}の新たな武器に',
+      body: '地道な努力がついに実を結んだ。{org}の{name}が{detail}。「自分でも驚いている」と本人。チームの戦力が一段上がった。' },
+    { headline: '覚醒の{name}！ {org}に嬉しい誤算',
+      body: '期待以上の急成長を遂げた{name}。{detail}。{org}のファンからは「ウチのエースはこの子だ」と歓喜の声が上がっている。' },
   ],
   slump: [
-    { headline: '蠢・・縺輔ｌ繧宮name}縺ｮ荳崎ｪｿ窶ｦ縺・▽縺ｫ縺ｪ縺｣縺溘ｉ蠕ｩ豢ｻ・・,
-      body: '{org}縺ｮ{name}縺後せ繝ｩ繝ｳ繝励↓髯･縺｣縺ｦ縺・ｋ縲らｷｴ鄙偵〒繧らｲｾ蠖ｩ繧呈ｬ縺阪∝捉蝗ｲ繧ょｿ・・鬘斐ゅ梧悽莠ｺ縺御ｸ逡ｪ闍ｦ縺励ｓ縺ｧ縺・ｋ縲阪→繝√・繝繝｡繧､繝医・隱槭ｋ縲・ },
-    { headline: '{name}縺ｫ證鈴峇縲・org}縺ｮ謌ｦ蜉帙↓蠖ｱ髻ｿ縺・,
-      body: '{org}縺ｮ荳ｻ蜉學name}縺ｮ隱ｿ蟄舌′荳翫′繧峨↑縺・ゅヵ繧｡繝ｳ縺九ｉ縺ｯ豼蜉ｱ縺ｮ螢ｰ縺悟ｯ・○繧峨ｌ繧九′縲∝ｾｩ豢ｻ縺ｮ蜈・＠縺ｯ縺ｾ縺隕九∴縺ｪ縺・・ },
-    { headline: '{org}縺ｮ{name}縲∬協謔ｩ縺ｮ譌･縲・ゅせ繝ｩ繝ｳ繝励・縺・▽譏弱￠繧九・縺・,
-      body: '縺九▽縺ｦ縺ｮ霈昴″繧貞､ｱ縺｣縺毬name}縲ゅ＠縺九＠蜻ｨ蝗ｲ縺ｯ菫｡縺倥※縺・ｋ縲ゅ後≠縺ｮ蟄舌・蠢・★謌ｻ縺｣縺ｦ縺上ｋ縲阪→{org}縺ｮ莉ｲ髢薙◆縺｡縺ｯ蜿｣繧呈純縺医ｋ縲・ },
+    { headline: '心配される{name}の不調…いつになったら復活？',
+      body: '{org}の{name}がスランプに陥っている。練習でも精彩を欠き、周囲も心配顔。「本人が一番苦しんでいる」とチームメイトは語る。' },
+    { headline: '{name}に暗雲。{org}の戦力に影響か',
+      body: '{org}の主力{name}の調子が上がらない。ファンからは激励の声が寄せられるが、復活の兆しはまだ見えない。' },
+    { headline: '{org}の{name}、苦悩の日々。スランプはいつ明けるのか',
+      body: 'かつての輝きを失った{name}。しかし周囲は信じている。「あの子は必ず戻ってくる」と{org}の仲間たちは口を揃える。' },
   ],
   motivationLoss: [
-    { headline: '蠑暮縺銀補府name}縺九ｉ髣伜ｿ励′豸医∴縺滂ｼ・,
-      body: '{org}縺ｮ{name}縺ｫ繝｢繝√・繝ｼ繧ｷ繝ｧ繝ｳ蝟ｪ螟ｱ縺ｮ蝎ゅらｷｴ鄙偵ｒ谺蟶ｭ縺吶ｋ譌･繧ょ｢励∴縺溘→縺・≧縲ゅ後≠縺ｮ繧ｮ繝ｩ繧ｮ繝ｩ縺励※縺・◆逶ｮ縺娯ｦ縲阪→繝輔ぃ繝ｳ繧ょｿ・・繧帝國縺帙↑縺・・ },
-    { headline: '{name}縺ｮ蜴ｻ蟆ｱ縺ｫ證鈴峇縲・org}縺ｯ蠑輔″逡吶ａ繧峨ｌ繧九°',
-      body: '{org}縺ｮ{name}縺碁利蠢励ｒ螟ｱ縺・▽縺､縺ゅｋ縺ｨ縺・≧縲る未菫り・↓繧医ｋ縺ｨ縲後・繝ｭ繝ｬ繧ｹ縺梧･ｽ縺励￥縺ｪ縺・阪→貍上ｉ縺励※縺・ｋ縺ｨ縺九ょｾｩ豢ｻ繧帝｡倥≧螢ｰ縺梧･ｭ逡後↓蠎・′繧九・ },
-    { headline: '{org}縺ｮ{name}縲∝ｿ・％縺薙↓縺ゅｉ縺壹よ･ｭ逡後↓陦晄茶',
-      body: '縺九▽縺ｦ繝ｪ繝ｳ繧ｰ繧呈ｲｸ縺九○縺毬name}縺ｮ逶ｮ縺九ｉ蜈峨′豸医∴縺溘ゅ御ｽ輔・縺溘ａ縺ｫ謌ｦ縺｣縺ｦ縺・ｋ縺九ｏ縺九ｉ縺ｪ縺・坂補輔◎縺ｮ險闡峨↓繝輔ぃ繝ｳ縺ｯ險闡峨ｒ螟ｱ縺｣縺溘・ },
+    { headline: '引退か――{name}から闘志が消えた？',
+      body: '{org}の{name}にモチベーション喪失の噂。練習を欠席する日も増えたという。「あのギラギラしていた目が…」とファンも心配を隠せない。' },
+    { headline: '{name}の去就に暗雲。{org}は引き留められるか',
+      body: '{org}の{name}が闘志を失いつつあるという。関係者によると「プロレスが楽しくない」と漏らしているとか。復活を願う声が業界に広がる。' },
+    { headline: '{org}の{name}、心ここにあらず。業界に衝撃',
+      body: 'かつてリングを沸かせた{name}の目から光が消えた。「何のために戦っているかわからない」――その言葉にファンは言葉を失った。' },
   ],
   hallOfFame: [
-    { headline: '譬・・縺ｮ谿ｿ蝣ょ・繧奇ｼ＋name}縺ｮ霈昴°縺励＞繧ｭ繝｣繝ｪ繧｢繧呈険繧願ｿ斐ｋ',
-      body: '繧ｿ繧､繝医Ν{titles}蝗樒佐蠕励・亟陦學defenses}蝗槭・name}縺ｮ蛛牙､ｧ縺ｪ繧ｭ繝｣繝ｪ繧｢縺ｫ縲∵･ｭ逡悟・菴薙′謨ｬ諢上ｒ陦ｨ縺励◆縲ゅ後・繝ｭ繝ｬ繧ｹ縺ｫ蜈ｨ縺ｦ繧呈懇縺偵◆縲阪→蜿苓ｳ槭・險闡峨・ },
-    { headline: '{name}縲∵ｮｿ蝣ょ・繧翫ゆｼ晁ｪｬ縺ｯ豌ｸ驕縺ｫ蛻ｻ縺ｾ繧後◆',
-      body: '謨ｰ縲・・蜷榊享雋繧堤函繧薙□{name}縺梧ｮｿ蝣ょ・繧翫ゅ後％縺ｮ讌ｭ逡後〒髣倥∴縺ｦ蟷ｸ縺帙□縺｣縺溘阪ゆｼ壼ｴ縺ｯ繧ｹ繧ｿ繝ｳ繝・ぅ繝ｳ繧ｰ繧ｪ繝吶・繧ｷ繝ｧ繝ｳ縺ｫ蛹・∪繧後◆縲・ },
-    { headline: '諢溷虚縺ｮ谿ｿ蝣ょ・繧翫そ繝ｬ繝｢繝九・縲・name}縺ｫ荳・峭縺ｮ諡肴焔',
-      body: '蠑暮蠕後ｂ縺ｪ縺翫ヵ繧｡繝ｳ縺ｫ諢帙＆繧後ｋ{name}縲ゅち繧､繝医Ν{titles}蝗槭・亟陦學defenses}蝗槭・蛛画･ｭ縲ゅ悟ｾ瑚ｼｩ縺溘■縺ｫ驕薙ｒ郢九￡繧峨ｌ縺溘↑繧画悽譛帙阪→豸吶↑縺後ｉ縺ｫ隱槭▲縺溘・ },
+    { headline: '栄光の殿堂入り！{name}の輝かしいキャリアを振り返る',
+      body: 'タイトル{titles}回獲得、防衛{defenses}回。{name}の偉大なキャリアに、業界全体が敬意を表した。「プロレスに全てを捧げた」と受賞の言葉。' },
+    { headline: '{name}、殿堂入り。伝説は永遠に刻まれた',
+      body: '数々の名勝負を生んだ{name}が殿堂入り。「この業界で闘えて幸せだった」。会場はスタンディングオベーションに包まれた。' },
+    { headline: '感動の殿堂入りセレモニー。{name}に万雷の拍手',
+      body: '引退後もなおファンに愛される{name}。タイトル{titles}回、防衛{defenses}回の偉業。「後輩たちに道を繋げられたなら本望」と涙ながらに語った。' },
   ],
   retirement: [
-    { headline: '縺ゅｊ縺後→縺・name}窶補輔Μ繝ｳ繧ｰ縺ｫ蛻･繧後ｒ蜻翫￡縺滓姶螢ｫ',
-      body: '{org}縺ｮ{name}縺檎樟蠖ｹ繧帝縺・◆縲・detail}縲ゅ梧怙蠕後∪縺ｧ蜈ｨ蜉帙〒髣倥∴縺溘阪→繝ｪ繝ｳ繧ｰ繧帝剄繧翫ｋ蟋ｿ縺ｫ縲√ヵ繧｡繝ｳ縺九ｉ諠懷挨縺ｮ豸吶′貅｢繧後◆縲・ },
-    { headline: '{name}縲∝ｼ暮縲・org}縺ｮ荳譎ゆｻ｣縺檎ｵゅｏ繧・,
-      body: '{org}繧呈髪縺医◆{name}縺後Μ繝ｳ繧ｰ繧貞悉縺｣縺溘・detail}縲ゅ後％縺ｮ蝗｣菴薙〒髣倥∴縺ｦ蟷ｸ縺帙□縺｣縺溘坂補輔◎縺ｮ險闡峨′蜈ｨ縺ｦ繧堤黄隱槭ｋ縲・ },
-    { headline: '縺輔ｈ縺・↑繧閲name}縲よ怙蠕後・繧ｴ繝ｳ繧ｰ縺碁ｳｴ縺｣縺・,
-      body: '髟ｷ縺阪↓繧上◆繧顎org}繧定レ雋縺｣縺毬name}縺悟ｼ暮繧呈ｱｺ譁ｭ縲・detail}縲ゅ梧ｔ縺・・縺ｪ縺・阪→遨上ｄ縺九↑陦ｨ諠・〒隱槭▲縺溷ｧｿ縺悟魂雎｡逧・□縺｣縺溘・ },
+    { headline: 'ありがとう{name}――リングに別れを告げた戦士',
+      body: '{org}の{name}が現役を退いた。{detail}。「最後まで全力で闘えた」とリングを降りる姿に、ファンから惜別の涙が溢れた。' },
+    { headline: '{name}、引退。{org}の一時代が終わる',
+      body: '{org}を支えた{name}がリングを去った。{detail}。「この団体で闘えて幸せだった」――その言葉が全てを物語る。' },
+    { headline: 'さようなら{name}。最後のゴングが鳴った',
+      body: '長きにわたり{org}を背負った{name}が引退を決断。{detail}。「悔いはない」と穏やかな表情で語った姿が印象的だった。' },
   ],
   poachSuccess: [
-    { headline: '髮ｻ謦・ｧｻ邀搾ｼ＋name}縺鶏toOrg}縺ｫ蜉蜈･縲・fromOrg}縺ｯ螟ｧ謇捺茶縺・,
-      body: '{fromOrg}縺ｮ{name}縺鶏toOrg}縺ｸ縺ｮ遘ｻ邀阪ｒ豎ｺ譁ｭ縲０VR{ovr}縺ｮ螳溷鴨閠・・豬∝・縺ｫ{fromOrg}髢｢菫り・・陦晄茶繧帝國縺帙↑縺・ゅ梧眠螟ｩ蝨ｰ縺ｧ閾ｪ蛻・ｒ隧ｦ縺励◆縺・阪→{name}縲・ },
-    { headline: '{name}縺檎ｧｻ邀阪・toOrg}縺ｮ謌ｦ蜉帛ｼｷ蛹悶↑繧九°',
-      body: '{fromOrg}縺九ｉ{toOrg}縺ｸ窶補府name}縺ｮ髮ｻ謦・ｧｻ邀阪′豎ｺ縺ｾ縺｣縺溘ゅ後メ繝｣繝ｳ繧ｹ繧呈雫縺ｿ縺ｫ陦後￥縲阪→隱槭ｋ{name}縺ｫ縲∵眠縺溘↑繝輔ぃ繝ｳ縺ｮ譛溷ｾ・′髮・∪繧九・ },
-    { headline: '{toOrg}縺鶏name}繧堤佐蠕暦ｼ・陬懷ｼｷ縺ｮ逶ｮ邇峨↓',
-      body: '{toOrg}縺鶏fromOrg}縺ｮ{name}繧貞ｼ輔″謚懊″縺ｫ謌仙粥縲ょ叉謌ｦ蜉帙→縺励※繝√・繝繧貞ｺ穂ｸ翫￡縺吶ｋ隕玖ｾｼ縺ｿ縲ゅ後％縺ｮ遘ｻ邀阪・螟ｧ縺阪＞縲阪→讌ｭ逡檎ｴ吶′荳讒倥↓蝣ｱ縺倥◆縲・ },
+    { headline: '電撃移籍！{name}が{toOrg}に加入。{fromOrg}は大打撃か',
+      body: '{fromOrg}の{name}が{toOrg}への移籍を決断。OVR{ovr}の実力者の流出に{fromOrg}関係者は衝撃を隠せない。「新天地で自分を試したい」と{name}。' },
+    { headline: '{name}が移籍。{toOrg}の戦力強化なるか',
+      body: '{fromOrg}から{toOrg}へ――{name}の電撃移籍が決まった。「チャンスを掴みに行く」と語る{name}に、新たなファンの期待が集まる。' },
+    { headline: '{toOrg}が{name}を獲得！ 補強の目玉に',
+      body: '{toOrg}が{fromOrg}の{name}を引き抜きに成功。即戦力としてチームを底上げする見込み。「この移籍は大きい」と業界紙が一様に報じた。' },
   ],
 };
 
-// v1.4: 繝吶せ繝医・繝・メ 繝輔Ξ繝ｼ繝舌・繝・く繧ｹ繝茨ｼ・Q蟶ｯ蛻･・・const BESTMATCH_FLAVOR = {
+// v1.4: ベストマッチ フレーバーテキスト（MQ帯別）
+const BESTMATCH_FLAVOR = {
   high: [
-    '豁ｴ蜿ｲ縺ｫ谿九ｋ蜷榊享雋',
-    '莨壼ｴ縺碁怫縺医◆荳謌ｦ',
-    '縺吶∋縺ｦ繧貞・縺怜ｰｽ縺上＠縺滓ｿ髣・
+    '歴史に残る名勝負',
+    '会場が震えた一戦',
+    'すべてを出し尽くした激闘'
   ],
   mid: [
-    '隕ｳ螳｢繧呈ｲｸ縺九○縺溷･ｽ蜍晁ｲ',
-    '莠偵＞縺ｮ諢丞慍縺後・縺､縺九ｊ蜷医▲縺滉ｸ謌ｦ',
-    '謚縺ｨ蜉帙′莠､骭ｯ縺吶ｋ隕句ｿ懊∴縺ゅｋ隧ｦ蜷・
+    '観客を沸かせた好勝負',
+    '互いの意地がぶつかり合った一戦',
+    '技と力が交錯する見応えある試合'
   ],
   low: [
-    '蜈峨ｋ繧ゅ・繧定ｦ九○縺滉ｸ謌ｦ',
-    '闕貞炎繧翫□縺檎・縺・利縺・
+    '光るものを見せた一戦',
+    '荒削りだが熱い闘い'
   ]
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 9: MILESTONE EVENTS (v1.5s25b)                  笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 9: MILESTONE EVENTS (v1.5s25b)                  ║
+// ╚══════════════════════════════════════════════════════════╝
 const MILESTONE_EVENTS = [
   {
     id: 'first_show',
     trigger: { type: 'totalShows', value: 1 },
-    title: '脂 譌玲恕縺定・陦・,
-    narration: '險伜ｿｵ縺吶∋縺咲ｬｬ荳蝗櫁・陦後′蟷輔ｒ髢峨§縺溘・n隕ｳ螳｢縺ｯ縺ｾ縺ｰ繧峨□縺｣縺溘′縲・∈謇九◆縺｡縺ｮ逶ｮ縺ｯ遒ｺ縺九↓霈昴＞縺ｦ縺・◆縲・n縺薙・蜈医∝屮菴薙ｒ縺ｩ縺・ｰ弱＞縺ｦ縺・￥縺銀披・,
+    title: '🎉 旗揚げ興行',
+    narration: '記念すべき第一回興行が幕を閉じた。\n観客はまばらだったが、選手たちの目は確かに輝いていた。\nこの先、団体をどう導いていくか——',
     choices: [
       {
-        label: '匠 蝨ｰ蜈・ｒ蝨ｰ驕薙↓蝗ｺ繧√※縺・￥',
+        label: '🏠 地元を地道に固めていく',
         effect: { type: 'weekly_funds', amount: 40, weeks: 3 },
-        result: '蝨ｰ蜈・・蝠・ｺ苓｡励′蠢懈抄縺励※縺上ｌ繧九％縺ｨ縺ｫ縺ｪ縺｣縺溘・,
-        effectLabel: '陬懷勧驥・40荳・騾ｱ・・騾ｱ髢難ｼ・
+        result: '地元の商店街が応援してくれることになった。',
+        effectLabel: '補助金+40万/週（3週間）'
       },
       {
-        label: '潮 驕ｸ謇九・閧ｲ謌舌↓蜉帙ｒ蜈･繧後ｋ',
+        label: '💪 選手の育成に力を入れる',
         effect: { type: 'training_boost', multiplier: 1.5, weeks: 4 },
-        result: '驕ｸ謇九◆縺｡縺ｮ邱ｴ鄙偵↓縲∽ｸ螻､縺ｮ辭ｱ縺悟・繧雁ｧ九ａ縺溘・,
-        effectLabel: '邱ｴ鄙貞柑邇・・.5・・騾ｱ髢難ｼ・
+        result: '選手たちの練習に、一層の熱が入り始めた。',
+        effectLabel: '練習効率×1.5（4週間）'
       },
       {
-        label: '謄 縺ｨ縺ｫ縺九￥遏･蜷榊ｺｦ繧剃ｸ翫￡縺溘＞',
+        label: '📣 とにかく知名度を上げたい',
         effect: { type: 'attendance_boost', multiplier: 1.3, shows: 2 },
-        result: '繝√Λ繧ｷ驟阪ｊ縺ｫSNS縲√〒縺阪ｋ縺薙→縺ｯ蜈ｨ驛ｨ繧・▲縺溘・n蝎ゅ′蟆代＠縺壹▽蠎・′繧雁ｧ九ａ縺ｦ縺・ｋ縲・,
-        effectLabel: '谺｡2闊郁｡後・髮・ｮ｢ﾃ・.3'
+        result: 'チラシ配りにSNS、できることは全部やった。\n噂が少しずつ広がり始めている。',
+        effectLabel: '次2興行の集客×1.3'
       }
     ]
   },
   {
     id: 'orgpop_20',
     trigger: { type: 'orgPop', value: 20 },
-    title: '堂 蝨ｰ蜈・〒隧ｱ鬘後↓',
-    narration: '蝨ｰ蜈・・繧ｹ繝昴・繝・ｴ吶↓蝗｣菴薙・蜷榊燕縺瑚ｼ峨▲縺溘・n縲後≠縺昴％縺ｮ闊郁｡後∵怙霑鷹擇逋ｽ縺・ｉ縺励＞繧医構n窶披斐◎繧薙↑螢ｰ縺後■繧峨⊇繧芽◇縺薙∴蟋九ａ縺ｦ縺・ｋ縲・,
+    title: '📰 地元で話題に',
+    narration: '地元のスポーツ紙に団体の名前が載った。\n「あそこの興行、最近面白いらしいよ」\n——そんな声がちらほら聞こえ始めている。',
     choices: [
       {
-        label: '､・繝輔ぃ繝ｳ縺ｨ縺ｮ霍晞屬繧堤ｸｮ繧√ｋ',
+        label: '🤝 ファンとの距離を縮める',
         effect: { type: 'promo_boost', amount: 1, weeks: 4 },
-        result: '繝輔ぃ繝ｳ諢溯ｬ昴ョ繝ｼ繧帝幕蛯ｬ縺励◆縲ょｸｸ騾｣繝輔ぃ繝ｳ縺ｮ鬘斐′蟆代＠縺壹▽隕九∴縺ｦ縺阪◆縲・,
-        effectLabel: '繝励Ο繝｢蜉ｹ譫・1・・騾ｱ髢難ｼ・
+        result: 'ファン感謝デーを開催した。常連ファンの顔が少しずつ見えてきた。',
+        effectLabel: 'プロモ効果+1（4週間）'
       },
       {
-        label: '識 隧ｦ蜷医・雉ｪ繧偵ｂ縺｣縺ｨ鬮倥ａ繧・,
+        label: '🎯 試合の質をもっと高める',
         effect: { type: 'mq_boost', amount: 2, weeks: 4 },
-        result: '邱ｴ鄙偵Γ繝九Η繝ｼ繧定ｦ狗峩縺励∬ｩｦ蜷域ｧ区・縺ｫ繧ゅ％縺繧上ｊ蟋九ａ縺溘・,
-        effectLabel: '蜈ｨ隧ｦ蜷・Q+2・・騾ｱ髢難ｼ・
+        result: '練習メニューを見直し、試合構成にもこだわり始めた。',
+        effectLabel: '全試合MQ+2（4週間）'
       },
       {
-        label: '剥 譁ｰ謌ｦ蜉帙・迯ｲ蠕励ｒ諤･縺・,
+        label: '🔍 新戦力の獲得を急ぐ',
         effect: { type: 'fa_discount', percent: 30 },
-        result: '讌ｭ逡後↓鬘斐′蛻ｩ縺丈ｺｺ迚ｩ縺九ｉ縲∵怏譛帙↑驕ｸ謇九・諠・ｱ縺悟・縺｣縺ｦ縺阪◆縲・,
-        effectLabel: '谺｡縺ｮFA迯ｲ蠕苓ｲｻ逕ｨ-30%'
+        result: '業界に顔が利く人物から、有望な選手の情報が入ってきた。',
+        effectLabel: '次のFA獲得費用-30%'
       }
     ]
   },
   {
     id: 'first_rivalry',
     trigger: { type: 'first_rivalry' },
-    title: '笞｡ 蝗邵√・闃ｽ逕溘∴',
-    narration: null, // 蜍慕噪逕滓・・磯∈謇句錐繧貞沂繧∬ｾｼ繧・・    choices: [
+    title: '⚡ 因縁の芽生え',
+    narration: null, // 動的生成（選手名を埋め込む）
+    choices: [
       {
-        label: '櫨 縺薙・蟇ｾ豎ｺ繧偵§縺｣縺上ｊ閧ｲ縺ｦ繧・,
+        label: '🔥 この対決をじっくり育てる',
         effect: { type: 'rivalry_boost', amount: 1 },
-        result: '縺ｵ縺溘ｊ縺ｮ隕也ｷ壹′繝ｪ繝ｳ繧ｰ荳翫〒莠､蟾ｮ縺吶ｋ縺溘・縲∽ｼ壼ｴ縺ｮ遨ｺ豌励′螟峨ｏ繧九・,
-        effectLabel: '蝗邵√き繧ｦ繝ｳ繝・1'
+        result: 'ふたりの視線がリング上で交差するたび、会場の空気が変わる。',
+        effectLabel: '因縁カウント+1'
       },
       {
-        label: '笞費ｸ・辭ｱ縺・≧縺｡縺ｫ螟ｧ荳逡ｪ繧堤ｵ・・',
+        label: '⚔️ 熱いうちに大一番を組む',
         effect: { type: 'next_match_mq', amount: 5 },
-        result: '谺｡縺ｮ蟇ｾ謌ｦ縺後∫音蛻･縺ｪ荳謌ｦ縺ｫ縺ｪ繧倶ｺ域─縺後☆繧九・,
-        effectLabel: '谺｡縺ｮ蟇ｾ謌ｦMQ+5'
+        result: '次の対戦が、特別な一戦になる予感がする。',
+        effectLabel: '次の対戦MQ+5'
       },
       {
-        label: '倹 莉悶・邨・∩蜷医ｏ縺帙ｂ隧ｦ縺励◆縺・,
+        label: '🌐 他の組み合わせも試したい',
         effect: { type: 'rivalry_chance_up', weeks: 3 },
-        result: '縺・ｍ繧薙↑驕ｸ謇九ｒ縺ｶ縺､縺代※縺ｿ繧医≧縲ょ喧蟄ｦ蜿榊ｿ懊・縺ｩ縺薙〒襍ｷ縺阪ｋ縺句・縺九ｉ縺ｪ縺・・,
-        effectLabel: '蝗邵∵・遶九＠繧・☆縺上↑繧具ｼ・騾ｱ髢難ｼ・
+        result: 'いろんな選手をぶつけてみよう。化学反応はどこで起きるか分からない。',
+        effectLabel: '因縁成立しやすくなる（3週間）'
       }
     ]
   }
 ];
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 10: EVENT SYSTEM v2.0 (event-system-spec-v2)    笊・// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 10: EVENT SYSTEM v2.0 (event-system-spec-v2)    ║
+// ╚══════════════════════════════════════════════════════════╝
 
-// ﾂｧ3-3: 騾夂衍蝙九う繝吶Φ繝医ユ繧ｭ繧ｹ繝茨ｼ・1縲廸5・・// {name}, {name2} 縺ｯ繝励Ξ繝ｼ繧ｹ繝帙Ν繝・亥ｮ溯｡梧凾縺ｫ驕ｸ謇句錐縺ｧ鄂ｮ謠幢ｼ・// 蜷・お繝ｳ繝医Μ: { text: 隕句・縺苓｡・ detail: 迥ｶ豕∬ｪｬ譏取枚 }
+// §3-3: 通知型イベントテキスト（N1〜N5）
+// {name}, {name2} はプレースホルダ（実行時に選手名で置換）
+// 各エントリ: { text: 見出し行, detail: 状況説明文 }
 const NOTIF_EVENT_TEXTS = {
   N1: [
-    { text: '潮 {name}縺瑚・荳ｻ繝医Ξ縺ｧ謇句ｿ懊∴繧呈雫繧薙□', detail: '{name}縺瑚ｪｰ繧ゅ＞縺ｪ縺・％蝣ｴ縺ｧ豎励ｒ豬√＠縺ｦ縺・◆縲ょ渕遉弱ｒ縺ｲ縺ｨ縺､縺ｲ縺ｨ縺､遒ｺ隱阪＠縺ｪ縺後ｉ縲∽ｽ募ｺｦ繧らｹｰ繧願ｿ斐☆蟋ｿ縺悟魂雎｡逧・□縲・ },
-    { text: '検 {name}縺ｮ蜉ｪ蜉帙′螳溘ｒ邨舌・縺､縺､縺ゅｋ', detail: '豈取悃縺ｮ譌ｩ蜃ｺ邱ｴ鄙偵′邯壹＞縺ｦ縺・ｋ{name}縲よ怙霑代・繧ｹ繝代・繝ｪ繝ｳ繧ｰ逶ｸ謇九°繧峨ｂ縲悟虚縺阪′螟峨ｏ縺｣縺溘阪→險繧上ｌ繧九％縺ｨ縺悟｢励∴縺ｦ縺阪◆縲・ },
-    { text: '笨ｨ {name}縺檎ｷｴ鄙偵〒逶ｮ繧貞ｼ輔￥繝励Ξ繝ｼ繧定ｦ九○縺・, detail: '莉頑律縺ｮ蜷亥酔邱ｴ鄙偵〒縲＋name}縺御ｻ･蜑阪・縺ｧ縺阪↑縺九▲縺溷虚縺阪ｒ髮｣縺ｪ縺上％縺ｪ縺励※縺ｿ縺帙◆縲ゅさ繝ｼ繝√ｂ諤昴ｏ縺夊ｶｳ繧呈ｭ｢繧√※隕句・縺｣縺ｦ縺・◆縲・ },
-    { text: '嶋 {name}縺ｮ蜍輔″縺梧・繧峨°縺ｫ濶ｯ縺上↑縺｣縺ｦ縺・ｋ', detail: '蜈域怦縺ｮ隧ｦ蜷域丐蜒上→隕区ｯ斐∋繧九→縲＋name}縺ｮ蜍穂ｽ懊↓辟｡鬧・′縺ｪ縺上↑縺｣縺ｦ縺・ｋ縺ｮ縺悟・縺九ｋ縲ょ慍驕薙↑遨阪∩驥阪・縺悟ｽ｢縺ｫ縺ｪ縺｣縺ｦ縺阪◆縲・ },
-    { text: '暑・・{name}縺後ヵ繧｣繧ｸ繧ｫ繝ｫ繝医Ξ繝ｼ繝九Φ繧ｰ縺ｧ謌先棡繧定ｦ九○縺・, detail: '{name}縺瑚・荳ｻ逧・↓蜿悶ｊ邨・ｓ縺ｧ縺・ｋ菴灘ｹｹ繝医Ξ繝ｼ繝九Φ繧ｰ縺ｮ蜉ｹ譫懊′蜃ｺ蟋九ａ縺ｦ縺・ｋ縲ょ女縺題ｺｫ縺ｮ螳牙ｮ壽─縺梧ｼ谿ｵ縺ｫ荳翫′縺｣縺溘・ },
-    { text: '識 {name}縺梧橿縺ｮ邊ｾ蠎ｦ繧剃ｸ翫￡縺ｦ縺阪◆', detail: '郢ｰ繧願ｿ斐＠邱ｴ鄙偵＠縺ｦ縺阪◆騾｣謳ｺ謚縺後＋name}縺ｮ菴薙↓鬥ｴ譟薙ｓ縺ｧ縺阪◆繧医≧縺縲ょｮ滓姶縺ｧ繧ゆｽｿ縺医ｋ繝ｬ繝吶Ν縺ｫ莉穂ｸ翫′繧翫▽縺､縺ゅｋ縲・ },
+    { text: '💪 {name}が自主トレで手応えを掴んだ', detail: '{name}が誰もいない道場で汗を流していた。基礎をひとつひとつ確認しながら、何度も繰り返す姿が印象的だ。' },
+    { text: '🌟 {name}の努力が実を結びつつある', detail: '毎朝の早出練習が続いている{name}。最近はスパーリング相手からも「動きが変わった」と言われることが増えてきた。' },
+    { text: '✨ {name}が練習で目を引くプレーを見せた', detail: '今日の合同練習で、{name}が以前はできなかった動きを難なくこなしてみせた。コーチも思わず足を止めて見入っていた。' },
+    { text: '📈 {name}の動きが明らかに良くなっている', detail: '先月の試合映像と見比べると、{name}の動作に無駄がなくなっているのが分かる。地道な積み重ねが形になってきた。' },
+    { text: '🏋️ {name}がフィジカルトレーニングで成果を見せた', detail: '{name}が自主的に取り組んでいる体幹トレーニングの効果が出始めている。受け身の安定感が格段に上がった。' },
+    { text: '🎯 {name}が技の精度を上げてきた', detail: '繰り返し練習してきた連携技が、{name}の体に馴染んできたようだ。実戦でも使えるレベルに仕上がりつつある。' },
   ],
   N2: [
-    { text: '､・{name}縺ｨ{name2}縺檎ｷｴ鄙貞ｾ後↓隧ｱ縺苓ｾｼ繧薙〒縺・◆', detail: '邱ｴ鄙偵′邨ゅｏ縺｣縺ｦ繧ゅΟ繝・き繝ｼ繝ｫ繝ｼ繝繧帝屬繧後ｈ縺・→縺励↑縺・ｺ御ｺｺ縲ゅ♀莠偵＞縺ｮ謚繧・ｩｦ蜷医・縺薙→繧堤悄蜑｣縺ｫ隱槭ｊ蜷医▲縺ｦ縺・ｋ繧医≧縺縺｣縺溘・ },
-    { text: '町 {name}縺鶏name2}縺ｫ謚縺ｮ繧ｳ繝・ｒ謨吶∴縺ｦ縺・◆', detail: '邱ｴ鄙貞ｾ後＋name}縺鶏name2}縺ｮ蜍輔″繧定ｦ九※閾ｪ繧牙｣ｰ繧偵°縺代◆縲・譎る俣霑代￥莉倥″蜷医▲縺ｦ縲∽ｸ∝ｯｧ縺ｫ謇九⊇縺ｩ縺阪＠縺ｦ縺・◆縺昴≧縺縲・ },
-    { text: '減 {name}縺ｨ{name2}縺ｮ莉ｲ縺梧ｷｱ縺ｾ縺｣縺ｦ縺阪◆', detail: '譛霑代＋name}縺ｨ{name2}縺後ｈ縺剰｡悟虚繧貞・縺ｫ縺励※縺・ｋ縺ｮ縺檎岼縺ｫ縺､縺上ゅΛ繝ｳ繝√ｒ荳邱偵↓縺ｨ縺｣縺溘ｊ縲∫ｧｻ蜍穂ｸｭ繧りｩｱ縺怜粋縺｣縺ｦ縺・ｋ縺薙→縺悟｢励∴縺溘・ },
-    { text: '相 {name}縺ｨ{name2}縺梧ｿ縺励￥隱槭ｊ蜷医▲縺ｦ縺・◆', detail: '繝励Ο繝ｬ繧ｹ縺ｮ蜩ｲ蟄ｦ縺ｫ縺､縺・※縲＋name}縺ｨ{name2}縺檎↓闃ｱ繧呈淵繧峨☆繧医≧縺ｪ隴ｰ隲悶ｒ郢ｰ繧雁ｺ・￡縺溘ゆｺ御ｺｺ縺ｨ繧ら岼繧定ｼ昴°縺帙※縺・◆縲・ },
-    { text: '甑 {name}縺ｨ{name2}縺御ｸ邱偵↓鬟滉ｺ九ｒ縺ｨ縺｣縺ｦ縺・◆', detail: '邱ｴ鄙貞ｾ後＋name}縺ｨ{name2}縺瑚ｿ第園縺ｮ螳夐｣溷ｱ九〒蜷代°縺・粋縺｣縺ｦ隲・ｬ代＠縺ｦ縺・ｋ蟋ｿ縺檎岼謦・＆繧後◆縲ゅメ繝ｼ繝縺ｮ邨先據縺梧ｷｱ縺ｾ縺｣縺ｦ縺・ｋ繧医≧縺縲・ },
-    { text: '､・{name}縺ｨ{name2}縺御ｺ偵＞繧帝ｫ倥ａ蜷医▲縺ｦ縺・ｋ', detail: '{name}縺ｨ{name2}縺瑚・荳ｻ逧・↓繧ｹ繝代・繝ｪ繝ｳ繧ｰ繧帝㍾縺ｭ縺ｦ縺・ｋ縲ょ･ｽ謨ｵ謇九→縺励※蛻・｣狗世逎ｨ縺吶ｋ髢｢菫ゅ′逕溘∪繧後▽縺､縺ゅｋ縲・ },
+    { text: '🤝 {name}と{name2}が練習後に話し込んでいた', detail: '練習が終わってもロッカールームを離れようとしない二人。お互いの技や試合のことを真剣に語り合っているようだった。' },
+    { text: '💬 {name}が{name2}に技のコツを教えていた', detail: '練習後、{name}が{name2}の動きを見て自ら声をかけた。2時間近く付き合って、丁寧に手ほどきしていたそうだ。' },
+    { text: '🌸 {name}と{name2}の仲が深まってきた', detail: '最近、{name}と{name2}がよく行動を共にしているのが目につく。ランチを一緒にとったり、移動中も話し合っていることが増えた。' },
+    { text: '👊 {name}と{name2}が激しく語り合っていた', detail: 'プロレスの哲学について、{name}と{name2}が火花を散らすような議論を繰り広げた。二人とも目を輝かせていた。' },
+    { text: '🍙 {name}と{name2}が一緒に食事をとっていた', detail: '練習後、{name}と{name2}が近所の定食屋で向かい合って談笑している姿が目撃された。チームの結束が深まっているようだ。' },
+    { text: '🤜 {name}と{name2}が互いを高め合っている', detail: '{name}と{name2}が自主的にスパーリングを重ねている。好敵手として切磋琢磨する関係が生まれつつある。' },
   ],
   N3: [
-    { text: '・ {name}縺悟ｰ代＠逍ｲ繧梧ｰ怜袖縺ｮ繧医≧縺窶ｦ', detail: '隧ｦ蜷医′邯壹＞縺溘○縺・°縲＋name}縺ｮ蜍輔″縺ｫ縺・▽繧ゅ・蛻・ｌ縺瑚ｦ九ｉ繧後↑縺・らｷｴ鄙貞ｾ後ｂ縺吶＄縺ｫ莨代・縺薙→縺悟､壹￥縺ｪ縺｣縺ｦ縺・ｋ縲・ },
-    { text: '牽・・{name}縺ｮ繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ縺悟━繧後↑縺・, detail: '{name}縺御ｻ企ｱ縺ｮ邱ｴ鄙偵ｒ遏ｭ邵ｮ縺吶ｋ繧医≧逕ｳ縺怜・縺溘よ悽莠ｺ縺ｯ縲悟､ｧ荳亥､ｫ縲阪→險縺｣縺ｦ縺・ｋ縺後・｡碑牡縺悟━繧後↑縺・・縺梧ｰ励↓縺ｪ繧九・ },
-    { text: '彫 {name}縺ｮ邱ｴ鄙偵↓隕・ｰ励′縺ｪ縺・律縺後≠縺｣縺・, detail: '莉頑律縺ｮ{name}縺ｯ繝ｫ繝ｼ繝・ぅ繝ｳ繧偵％縺ｪ縺励※縺・ｋ縺縺代→縺・▲縺溷魂雎｡縺ｧ縲√＞縺､繧ゅ・髮・ｸｭ蜉帙′縺ｪ縺九▲縺溘ら夢繧後°縲√◎繧後→繧よか縺ｿ縺後≠繧九・縺九・ },
-    { text: '・ {name}縺檎ｷｴ鄙帝㍼繧定誠縺ｨ縺励※縺・ｋ繧医≧縺', detail: '蜈域怦縺ｨ豈斐∋繧九→縲＋name}縺ｮ邱ｴ鄙呈凾髢薙′逶ｮ縺ｫ隕九∴縺ｦ貂帙▲縺ｦ縺・ｋ縲よｪ謌代ｒ謚ｱ縺医※縺・ｋ繧上￠縺ｧ縺ｯ縺ｪ縺・□縺代↓縲∝ｰ代＠蠢・・縺縲・ },
-    { text: '乘 {name}縺碁｣謌ｦ縺ｮ逍ｲ繧後ｒ蠑輔″縺壹▲縺ｦ縺・ｋ', detail: '譛霑代・騾｣謌ｦ縺ｮ繝繝｡繝ｼ繧ｸ縺鶏name}縺ｮ菴薙↓谿九▲縺ｦ縺・ｋ繧医≧縺縲らｷｴ鄙偵〒繧ょ虚縺阪′驤阪￥縲√＞縺､繧ゅ・蛻・ｌ蜻ｳ縺後↑縺・・ },
-    { text: 'ｩｹ {name}縺ｮ菴薙↓逍ｲ蜉ｴ縺梧ｺ懊∪縺｣縺ｦ縺・ｋ繧医≧縺', detail: '邱ｴ鄙貞ｾ後↓{name}縺後せ繝医Ξ繝・メ縺ｫ譎ｮ谿ｵ縺ｮ蛟阪・譎る俣繧偵°縺代※縺・◆縲よ悽莠ｺ縺ｯ菴輔ｂ險繧上↑縺・′縲∽ｽ薙′謔ｲ魑ｴ繧剃ｸ翫￡縺ｦ縺・ｋ縺ｮ縺九ｂ縺励ｌ縺ｪ縺・・ },
+    { text: '😓 {name}が少し疲れ気味のようだ…', detail: '試合が続いたせいか、{name}の動きにいつもの切れが見られない。練習後もすぐに休むことが多くなっている。' },
+    { text: '🌡️ {name}のコンディションが優れない', detail: '{name}が今週の練習を短縮するよう申し出た。本人は「大丈夫」と言っているが、顔色が優れないのが気になる。' },
+    { text: '💤 {name}の練習に覇気がない日があった', detail: '今日の{name}はルーティンをこなしているだけといった印象で、いつもの集中力がなかった。疲れか、それとも悩みがあるのか。' },
+    { text: '😔 {name}が練習量を落としているようだ', detail: '先月と比べると、{name}の練習時間が目に見えて減っている。怪我を抱えているわけではないだけに、少し心配だ。' },
+    { text: '😩 {name}が連戦の疲れを引きずっている', detail: '最近の連戦のダメージが{name}の体に残っているようだ。練習でも動きが鈍く、いつもの切れ味がない。' },
+    { text: '🩹 {name}の体に疲労が溜まっているようだ', detail: '練習後に{name}がストレッチに普段の倍の時間をかけていた。本人は何も言わないが、体が悲鳴を上げているのかもしれない。' },
   ],
   N4: [
-    { text: '謄 繝輔ぃ繝ｳ縺九ｉ{name}縺ｸ縺ｮ蠢懈抄縺ｮ螢ｰ縺悟｢励∴縺ｦ縺・ｋ・・, detail: '莨壼ｴ縺ｮ螟悶〒繧・name}繧貞ｾ・▽繝輔ぃ繝ｳ縺ｮ蟋ｿ縺悟｢励∴縺ｦ縺阪◆縲りｩｦ蜷医ｒ隕九※蛻昴ａ縺ｦ繝励Ο繝ｬ繧ｹ繧貞･ｽ縺阪↓縺ｪ縺｣縺溘→隱槭ｋ繝輔ぃ繝ｳ繧ら樟繧後・縺倥ａ縺ｦ縺・ｋ縲・ },
-    { text: '脂 SNS縺ｧ{name}縺瑚ｩｱ鬘後↓縺ｪ縺｣縺ｦ縺・ｋ・・, detail: '蜈磯ｱ縺ｮ隧ｦ蜷医〒縺ｮ繝上う繝ｩ繧､繝医′諡｡謨｣縺輔ｌ縺ｦ縲＋name}縺ｮSNS繝輔か繝ｭ繝ｯ繝ｼ謨ｰ縺梧･蠅励＠縺ｦ縺・ｋ縲ら衍蜷榊ｺｦ縺檎捩螳溘↓荳翫′縺｣縺ｦ縺阪◆縲・ },
-    { text: '猪 {name}逶ｮ蠖薙※縺ｮ繝輔ぃ繝ｳ縺悟｢励∴縺ｦ縺阪◆・・, detail: '繝√こ繝・ヨ雉ｼ蜈･譎ゅ↓縲鶏name}縺瑚ｦ九◆縺上※譚･縺溘阪→螢ｰ縺ｫ蜃ｺ縺励※縺上ｌ繧九ヵ繧｡繝ｳ縺悟｢励∴縺ｦ縺・ｋ縲ょ慍驕薙↓遨阪∩驥阪・縺ｦ縺阪◆隧ｦ蜷医′螳溘ｒ邨舌ｓ縺ｧ縺・ｋ縲・ },
-    { text: '櫨 {name}縺ｮ莠ｺ豌励′荳翫ｊ隱ｿ蟄舌□・・, detail: '隕ｳ螳｢縺ｮ蜈･繧翫ｒ隕九※縺・ｋ縺ｨ縲＋name}縺悟・繧玖ｩｦ蜷医・譏弱ｉ縺九↓莠ｺ縺悟､壹＞縲ゅヵ繧｡繝ｳ縺悟暑莠ｺ繧定ｪ倥▲縺ｦ譚･蝣ｴ縺吶ｋ縺ｨ縺・≧繧ｱ繝ｼ繧ｹ繧ょｱ蜻翫＆繧後※縺・ｋ縲・ },
-    { text: '寫・・{name}縺ｮ繧ｰ繝・ぜ縺悟｣ｲ繧瑚｡後″螂ｽ隱ｿ・・, detail: '{name}縺ｮT繧ｷ繝｣繝・ｄ繧ｿ繧ｪ繝ｫ縺御ｼ壼ｴ縺ｧ鬟帙・繧医≧縺ｫ螢ｲ繧後※縺・ｋ縲りｿｽ蜉逋ｺ豕ｨ繧呈､懆ｨ弱＠縺ｦ繧ゅ＞縺・°繧ゅ＠繧後↑縺・・ },
-    { text: '導 {name}縺ｮ繝輔ぃ繝ｳ繧｢繝ｼ繝医′SNS縺ｧ諡｡謨｣荳ｭ・・, detail: '繝輔ぃ繝ｳ縺鶏name}縺ｮ繧､繝ｩ繧ｹ繝医ｄ蠢懈抄蜍慕判繧担NS縺ｫ謚慕ｨｿ縺励√◎繧後′螟ｧ縺阪↑隧ｱ鬘後ｒ蜻ｼ繧薙〒縺・ｋ縲ら衍蜷榊ｺｦ縺後§繧上§繧上→荳頑・荳ｭ縺縲・ },
+    { text: '📣 ファンから{name}への応援の声が増えている！', detail: '会場の外でも{name}を待つファンの姿が増えてきた。試合を見て初めてプロレスを好きになったと語るファンも現れはじめている。' },
+    { text: '🎉 SNSで{name}が話題になっている！', detail: '先週の試合でのハイライトが拡散されて、{name}のSNSフォロワー数が急増している。知名度が着実に上がってきた。' },
+    { text: '💖 {name}目当てのファンが増えてきた！', detail: 'チケット購入時に「{name}が見たくて来た」と声に出してくれるファンが増えている。地道に積み重ねてきた試合が実を結んでいる。' },
+    { text: '🔥 {name}の人気が上り調子だ！', detail: '観客の入りを見ていると、{name}が出る試合は明らかに人が多い。ファンが友人を誘って来場するというケースも報告されている。' },
+    { text: '🛍️ {name}のグッズが売れ行き好調！', detail: '{name}のTシャツやタオルが会場で飛ぶように売れている。追加発注を検討してもいいかもしれない。' },
+    { text: '📱 {name}のファンアートがSNSで拡散中！', detail: 'ファンが{name}のイラストや応援動画をSNSに投稿し、それが大きな話題を呼んでいる。知名度がじわじわと上昇中だ。' },
   ],
   N5_warning: [
-    { text: '亳 {name}縺梧怙霑代←縺薙→縺ｪ縺丞・豌励′縺ｪ縺・ｈ縺・□窶ｦ', detail: '縺・▽繧ゅ・遨肴･ｵ逧・↓隧ｱ縺励°縺代※縺上ｋ{name}縺後∵怙霑代・髱吶°縺ｫ邱ｴ鄙偵ｒ縺薙↑縺励※蟶ｰ繧九□縺代↓縺ｪ縺｣縺ｦ縺・ｋ縲ゆｽ輔°豌励↓縺ｪ繧九％縺ｨ縺後≠繧九・縺九ｂ縺励ｌ縺ｪ縺・・ },
-    { text: '眺 {name}縺ｮ讒伜ｭ舌′蟆代＠豌励↓縺ｪ繧・, detail: '邱ｴ鄙剃ｸｭ縺ｮ{name}縺ｮ逶ｮ縺後√←縺薙°驕縺上ｒ隕九※縺・ｋ繧医≧縺ｪ迸ｬ髢薙′蠅励∴縺溘りｩｦ蜷医∈縺ｮ髮・ｸｭ縺ｯ菫昴※縺ｦ縺・ｋ縺後∽ｽ輔°繧呈干縺医※縺・ｋ繧医≧縺ｫ隕九∴繧九・ },
-    { text: '､・{name}縺梧ｵｮ縺九↑縺・｡斐ｒ縺励※縺・◆', detail: '莉頑律縺ｮ{name}縺ｯ譛昴°繧芽｡ｨ諠・′證励°縺｣縺溘ゆｽ輔°閨槭％縺・→縺励◆縺後√悟､ｧ荳亥､ｫ縺ｧ縺吶阪→驕ｮ繧峨ｌ縺ｦ縺励∪縺｣縺溘よｧ伜ｭ舌ｒ隕九※縺翫￥蠢・ｦ√′縺ゅｊ縺昴≧縺縲・ },
-    { text: '・ {name}縺檎ｷｴ鄙剃ｸｭ縺ｫ菴輔°繧定・∴縺ｦ縺・ｋ繧医≧縺縺｣縺・, detail: '繧ｹ繝代・繝ｪ繝ｳ繧ｰ荳ｭ縺ｫ{name}縺御ｸ迸ｬ縺縺大虚縺阪ｒ豁｢繧√ｋ縺薙→縺後≠縺｣縺溘ゆｽ輔°驥阪＞繧ゅ・繧呈干縺医※縺・ｋ繧医≧縺ｫ隕九∴縺溘・ },
-    { text: 'ｫ･ {name}縺瑚・荳ｻ邱ｴ繧呈ｬ蟶ｭ縺吶ｋ譌･縺後≠縺｣縺・, detail: '莉･蜑阪・蠢・★蜿ょ刈縺励※縺・◆閾ｪ荳ｻ邱ｴ縺ｫ{name}縺梧擂縺ｪ縺九▲縺溘ゆｽ楢ｪｿ荳崎憶縺ｧ縺ｯ縺ｪ縺・ｉ縺励＞縺娯ｦ螢ｰ繧偵°縺代※縺ｿ繧九°縲√こ繧｢繧｢繧ｯ繧ｷ繝ｧ繝ｳ縺ｧ豌励↓縺九￠縺ｦ縺ｿ縺ｦ繧ゅ＞縺・°繧ゅ＠繧後↑縺・・ },
-    { text: '・ {name}縺後メ繝ｼ繝繝｡繧､繝医→霍晞屬繧堤ｽｮ縺榊ｧ九ａ縺・, detail: '{name}縺御ｼ第・譎る俣縺ｫ荳莠ｺ縺ｧ驕弱＃縺吶％縺ｨ縺悟｢励∴縺溘ゅ∪縺豺ｱ蛻ｻ縺ｪ谿ｵ髫弱〒縺ｯ縺ｪ縺輔◎縺・□縺後∬ｩｦ蜷医↓蜃ｺ縺励※豢ｻ霄阪・蝣ｴ繧剃ｽ懊ｋ縺薙→縺ｧ螟峨ｏ繧九°繧ゅ＠繧後↑縺・・ },
+    { text: '😶 {name}が最近どことなく元気がないようだ…', detail: 'いつもは積極的に話しかけてくる{name}が、最近は静かに練習をこなして帰るだけになっている。何か気になることがあるのかもしれない。' },
+    { text: '💭 {name}の様子が少し気になる', detail: '練習中の{name}の目が、どこか遠くを見ているような瞬間が増えた。試合への集中は保てているが、何かを抱えているように見える。' },
+    { text: '🤔 {name}が浮かない顔をしていた', detail: '今日の{name}は朝から表情が暗かった。何か聞こうとしたが、「大丈夫です」と遮られてしまった。様子を見ておく必要がありそうだ。' },
+    { text: '😑 {name}が練習中に何かを考えているようだった', detail: 'スパーリング中に{name}が一瞬だけ動きを止めることがあった。何か重いものを抱えているように見えた。' },
+    { text: '🫥 {name}が自主練を欠席する日があった', detail: '以前は必ず参加していた自主練に{name}が来なかった。体調不良ではないらしいが…声をかけてみるか、ケアアクションで気にかけてみてもいいかもしれない。' },
+    { text: '😐 {name}がチームメイトと距離を置き始めた', detail: '{name}が休憩時間に一人で過ごすことが増えた。まだ深刻な段階ではなさそうだが、試合に出して活躍の場を作ることで変わるかもしれない。' },
   ],
   N5_low: [
-    { text: '丶 {name}縺梧怙霑台ｸ肴ｺ縺昴≧縺ｫ縺励※縺・ｋ窶ｦ', detail: '邱ｴ鄙貞ｾ後・繝溘・繝・ぅ繝ｳ繧ｰ縺ｧ縲＋name}縺ｮ蜿励￠遲斐∴縺後・縺｣縺阪ｉ縺ｼ縺・↓縺ｪ縺｣縺ｦ縺阪◆縲ゅメ繝ｼ繝縺ｨ縺ｮ菴輔ｉ縺九・鞫ｩ謫ｦ縺檎函縺倥※縺・ｋ縺九ｂ縺励ｌ縺ｪ縺・・ },
-    { text: '弌 {name}縺九ｉ隨鷹｡斐′豸医∴縺ｦ縺阪◆豌励′縺吶ｋ', detail: '莉･蜑阪・邱ｴ鄙貞ｾ後ｂ繝√・繝繝｡繧､繝医→隲・ｬ代＠縺ｦ縺・◆{name}縺後∵怙霑代・鮟吶▲縺ｦ逹譖ｿ縺医※蟶ｰ繧九％縺ｨ縺悟｢励∴縺溘ゅメ繝ｼ繝縺ｮ髮ｰ蝗ｲ豌励↓繧ょｽｱ髻ｿ縺悟・縺ｦ縺阪◎縺・□縲・ },
-    { text: '弔 {name}縺御ｽ輔°縺ｫ闍帷ｫ九▲縺ｦ縺・ｋ讒伜ｭ舌□', detail: '蟆上＆縺ｪ縺薙→縺ｧ諢滓ュ縺悟・繧・☆縺上↑縺｣縺ｦ縺・ｋ{name}縲ら峩謗･縺ｮ蜴溷屏縺ｯ荳肴・縺縺後∫樟迥ｶ縺ｸ縺ｮ荳肴ｺ縺檎ｩ阪∩驥阪↑縺｣縺ｦ縺・ｋ繧医≧縺縲よ掠繧√↓隧ｱ繧定◇縺・◆譁ｹ縺後＞縺・°繧ゅ＠繧後↑縺・・ },
-    { text: '亳窶昨沍ｫ・・{name}窶ｦ螟ｧ荳亥､ｫ縺繧阪≧縺・, detail: '譛霑代・{name}縺ｯ菴輔ｒ閠・∴縺ｦ縺・ｋ縺ｮ縺玖ｪｭ繧√↑縺・りｿ比ｺ九・縺吶ｋ縺檎岼縺悟粋繧上↑縺・∫ｬ鷹｡斐′荳蛻・ｦ九ｉ繧後↑縺・披斐メ繝ｼ繝縺ｮ隱ｰ繧ゅ′蠢・・縺励※縺・ｋ縲・ },
-    { text: '坎 {name}縺御ｸ莠ｺ縺ｧ邱ｴ鄙貞ｴ繧貞・縺ｦ縺・▲縺・, detail: '蜈ｨ菴鍋ｷｴ鄙偵・邨ゆｺ・燕縺ｫ縲＋name}縺碁ｻ吶▲縺ｦ闕ｷ迚ｩ繧偵∪縺ｨ繧√※蟶ｰ縺｣縺ｦ縺・▲縺溘ゅこ繧｢繧｢繧ｯ繧ｷ繝ｧ繝ｳ縺ｧ繝懊・繝翫せ繧呈髪邨ｦ縺吶ｋ縺九∬ｩｦ蜷医〒豢ｻ霄阪・蝣ｴ繧剃ｸ弱∴繧九％縺ｨ縺ｧ迥ｶ豕√ｒ謾ｹ蝟・〒縺阪ｋ縺九ｂ縺励ｌ縺ｪ縺・・ },
-    { text: '笞｡ {name}縺ｮ諷句ｺｦ縺ｫ繝√・繝蜀・〒繧ゆｸ榊ｮ峨・螢ｰ縺・, detail: '{name}縺ｮ荳肴ｺ縺偵↑諷句ｺｦ縺後メ繝ｼ繝繝｡繧､繝医↓繧ゆｼ昴ｏ縺｣縺ｦ縺・ｋ縲ゅ％縺ｮ縺ｾ縺ｾ謾ｾ鄂ｮ縺吶ｋ縺ｨ騾蝗｣繝ｪ繧ｹ繧ｯ縺碁ｫ倥∪繧翫◎縺・□縲ょｾ・∞謾ｹ蝟・ｄ逶ｴ謗･縺ｮ蟇ｾ隧ｱ縺悟ｿ・ｦ√°繧ゅ＠繧後↑縺・・ },
+    { text: '😤 {name}が最近不満そうにしている…', detail: '練習後のミーティングで、{name}の受け答えがぶっきらぼうになってきた。チームとの何らかの摩擦が生じているかもしれない。' },
+    { text: '😟 {name}から笑顔が消えてきた気がする', detail: '以前は練習後もチームメイトと談笑していた{name}が、最近は黙って着替えて帰ることが増えた。チームの雰囲気にも影響が出てきそうだ。' },
+    { text: '💢 {name}が何かに苛立っている様子だ', detail: '小さなことで感情が出やすくなっている{name}。直接の原因は不明だが、現状への不満が積み重なっているようだ。早めに話を聞いた方がいいかもしれない。' },
+    { text: '😶‍🌫️ {name}…大丈夫だろうか', detail: '最近の{name}は何を考えているのか読めない。返事はするが目が合わない、笑顔が一切見られない——チームの誰もが心配している。' },
+    { text: '🚪 {name}が一人で練習場を出ていった', detail: '全体練習の終了前に、{name}が黙って荷物をまとめて帰っていった。ケアアクションでボーナスを支給するか、試合で活躍の場を与えることで状況を改善できるかもしれない。' },
+    { text: '⚡ {name}の態度にチーム内でも不安の声が', detail: '{name}の不満げな態度がチームメイトにも伝わっている。このまま放置すると退団リスクが高まりそうだ。待遇改善や直接の対話が必要かもしれない。' },
   ],
-  // ﾂｧ13.2: N-邱ｴ鄙貞ｭ､遶具ｼ・rust < 50, 10%/騾ｱ・・  N_isolation: [
-    { text: '亳 {name}縺梧怙霑代∫ｷｴ鄙偵〒荳莠ｺ縺ｧ縺・ｋ縺薙→縺悟｢励∴縺溪ｦ', detail: '蜷亥酔邱ｴ鄙偵・蠕後ｂ{name}縺ｯ荳莠ｺ縺ｧ鮟吶・→繧ｹ繝医Ξ繝・メ繧偵＠縺ｦ縺・ｋ縲ゆｻ･蜑阪・繝√・繝繝｡繧､繝医→隲・ｬ代＠縺ｦ縺・◆縺ｮ縺縺後∵怙霑代・縺ｻ縺ｨ繧薙←莨夊ｩｱ縺後↑縺・・ },
-    { text: '垳 {name}縺檎ｷｴ鄙貞ｾ後↓縺吶＄蟶ｰ繧九ｈ縺・↓縺ｪ縺｣縺・, detail: '莉･蜑阪・譛蠕後∪縺ｧ谿九▲縺ｦ閾ｪ荳ｻ邱ｴ繧偵＠縺ｦ縺・◆{name}縺縺後∵怙霑代・邱ｴ鄙偵′邨ゅｏ繧九→闕ｷ迚ｩ繧偵∪縺ｨ繧√※縺輔▲縺ｨ蟶ｰ縺｣縺ｦ縺励∪縺・ゆｽ輔°繧呈干縺医※縺・ｋ繧医≧縺縲・ },
-    { text: '・ {name}縺御ｼ第・譎る俣縺ｫ縺ｲ縺ｨ繧翫⊂縺｣縺｡縺縺｣縺・, detail: '莨第・譎る俣縲∽ｻ悶・驕ｸ謇九◆縺｡縺瑚ｼｪ縺ｫ縺ｪ縺｣縺ｦ隧ｱ縺吩ｸｭ縲＋name}縺ｯ髫・〒繧ｹ繝槭・繧定ｦ九▽繧√※縺・◆縲ゆｻ･蜑阪・縺・▽繧りｪｰ縺九→荳邱偵↓縺・◆縺ｮ縺ｫ縲・ },
-    { text: '側 {name}縺碁％蝣ｴ縺ｮ髫・〒鮟吶・→邱ｴ鄙偵＠縺ｦ縺・◆', detail: '縺ｿ繧薙↑縺御ｸｭ螟ｮ縺ｮ繝ｪ繝ｳ繧ｰ縺ｧ蜷亥酔邱ｴ鄙偵ｒ縺励※縺・ｋ譎ゅ＋name}縺ｯ螢・圀縺ｧ荳莠ｺ縲∝渕遉守ｷｴ鄙偵ｒ郢ｰ繧願ｿ斐＠縺ｦ縺・◆縲ょ捉蝗ｲ縺ｨ縺ｯ隕九∴縺ｪ縺・｣√′縺ｧ縺阪※縺・ｋ縲・ },
-    { text: 'ｫ･ {name}縺ｮ陦ｨ諠・′遑ｬ縺・律縺悟｢励∴縺・, detail: '{name}縺ｮ隨鷹｡斐ｒ隕九ｋ讖滉ｼ壹′繧√▲縺阪ｊ貂帙▲縺溘らｷｴ鄙剃ｸｭ繧よｷ｡縲・→繝｡繝九Η繝ｼ繧偵％縺ｪ縺吶□縺代〒縲√メ繝ｼ繝繝｡繧､繝医→縺ｮ髮題ｫ・ｂ縺ｻ縺ｨ繧薙←縺ｪ縺・・ },
-    { text: '亳窶昨沍ｫ・・{name}縺瑚・荳ｻ邱ｴ繧ゆｸ莠ｺ縺ｧ陦後≧繧医≧縺ｫ縺ｪ縺｣縺・, detail: '莉･蜑阪・繧ｹ繝代・繝ｪ繝ｳ繧ｰ逶ｸ謇九ｒ閾ｪ蛻・°繧画爾縺励※縺・◆{name}縺後∵怙霑代・荳莠ｺ縺ｧ繧ｵ繝ｳ繝峨ヰ繝・げ繧貞娼縺・※縺・ｋ蟋ｿ縺励°隕九↑縺・ょｿ・ｒ髢峨＊縺怜ｧ九ａ縺ｦ縺・ｋ縺ｮ縺九ｂ縺励ｌ縺ｪ縺・・ },
+  // §13.2: N-練習孤立（trust < 50, 10%/週）
+  N_isolation: [
+    { text: '😶 {name}が最近、練習で一人でいることが増えた…', detail: '合同練習の後も{name}は一人で黙々とストレッチをしている。以前はチームメイトと談笑していたのだが、最近はほとんど会話がない。' },
+    { text: '🚶 {name}が練習後にすぐ帰るようになった', detail: '以前は最後まで残って自主練をしていた{name}だが、最近は練習が終わると荷物をまとめてさっと帰ってしまう。何かを抱えているようだ。' },
+    { text: '😔 {name}が休憩時間にひとりぼっちだった', detail: '休憩時間、他の選手たちが輪になって話す中、{name}は隅でスマホを見つめていた。以前はいつも誰かと一緒にいたのに。' },
+    { text: '👤 {name}が道場の隅で黙々と練習していた', detail: 'みんなが中央のリングで合同練習をしている時、{name}は壁際で一人、基礎練習を繰り返していた。周囲とは見えない壁ができている。' },
+    { text: '🫥 {name}の表情が硬い日が増えた', detail: '{name}の笑顔を見る機会がめっきり減った。練習中も淡々とメニューをこなすだけで、チームメイトとの雑談もほとんどない。' },
+    { text: '😶‍🌫️ {name}が自主練も一人で行うようになった', detail: '以前はスパーリング相手を自分から探していた{name}が、最近は一人でサンドバッグを叩いている姿しか見ない。心を閉ざし始めているのかもしれない。' },
   ],
-  // ﾂｧ13.2: N-繧ｳ繝ｼ繝∝ｱ蜻奇ｼ・rust < 45, 繧ｳ繝ｼ繝∝惠邀肴凾, 15%/騾ｱ・・  N_coach_report: [
-    { text: '搭 繧ｳ繝ｼ繝＋coach}縺悟ｱ蜻・縲鶏name}縺ｮ讒伜ｭ舌′譛霑代♀縺九＠縺・・, detail: '繧ｳ繝ｼ繝＋coach}縺檎､ｾ髟ｷ螳､繧定ｨｪ繧後◆縲ゅ鶏name}縺ｮ縺薙→縺ｪ繧薙〒縺吶′窶ｦ邱ｴ鄙剃ｸｭ縺ｮ髮・ｸｭ蜉帙′譏弱ｉ縺九↓關ｽ縺｡縺ｦ縺・∪縺吶ょｰ代＠豌励↓縺九￠縺ｦ繧・▲縺ｦ縺ｻ縺励＞縲・ },
-    { text: '統 繧ｳ繝ｼ繝＋coach}:縲鶏name}縺ｮ縺薙→縺ｧ逶ｸ隲・′窶ｦ縲・, detail: '縲鶏name}縺梧怙霑代∬ｩｦ蜷亥ｾ後ｂ邱ｴ鄙貞ｾ後ｂ縺吶＄縺ｫ蟶ｰ縺｣縺ｦ縺励∪縺・ｓ縺ｧ縺吶ょ燕縺ｯ閾ｪ荳ｻ邱ｴ縺励※縺・◆縺ｮ縺ｫ縲ゆｽ輔°荳肴ｺ縺後≠繧九・縺九ｂ縺励ｌ縺ｾ縺帙ｓ縲阪→繧ｳ繝ｼ繝＋coach}縺悟ｿ・・縺昴≧縺ｫ蝣ｱ蜻翫＠縺溘・ },
-    { text: '離・・繧ｳ繝ｼ繝＋coach}縺鶏name}縺ｫ縺､縺・※騾ｲ險', detail: '縲檎､ｾ髟ｷ縲＋name}縺ｮ繝｢繝√・繝ｼ繧ｷ繝ｧ繝ｳ縺御ｸ九′縺｣縺ｦ縺・ｋ繧医≧縺ｫ隕九∴縺ｾ縺吶らｷｴ鄙呈・蠎ｦ縺ｯ謔ｪ縺上↑縺・ｓ縺ｧ縺吶′窶ｦ縺ｩ縺薙°謚輔￡繧・ｊ縺ｨ縺・≧縺九ゅこ繧｢縺悟ｿ・ｦ√°繧ゅ＠繧後∪縺帙ｓ縲・ },
-    { text: '笞・・繧ｳ繝ｼ繝＋coach}:縲鶏name}縺悟ｿ・・縺ｧ縺吶・, detail: '縲鶏name}縺ｨ縺ｯ譛霑代≠縺ｾ繧願ｩｱ縺帙※縺・↑縺・ｓ縺ｧ縺吶ゅ％縺｡繧峨°繧牙｣ｰ繧偵°縺代※繧らｴ縺｣豌励↑縺・ｿ比ｺ九＠縺玖ｿ斐▲縺ｦ縺薙↑縺上※縲ゆｽ輔°謇九ｒ謇薙▲縺滓婿縺後＞縺・°繧ゅ＠繧後∪縺帙ｓ縲・ },
-    { text: '操 繧ｳ繝ｼ繝＋coach}縺鶏name}縺ｮ螟芽ｪｿ縺ｫ豌励▼縺・◆', detail: '縲鶏name}縲∵怙霑代■繧・▲縺ｨ縺翫°縺励＞縺ｧ縺吶よ橿縺ｮ邊ｾ蠎ｦ縺ｯ菫昴▲縺ｦ繧九ｓ縺ｧ縺吶′縲∫岼縺梧ｭｻ繧薙〒繧九→縺・≧縺銀ｦ縺薙・縺ｾ縺ｾ謾ｾ縺｣縺ｦ縺翫￥縺ｨ縺ｾ縺壹＞縺九ｂ縺励ｌ縺ｾ縺帙ｓ縲・ },
-    { text: '投 繧ｳ繝ｼ繝＋coach}縺ｮ螳壽悄蝣ｱ蜻翫↓{name}縺ｮ蜷榊燕縺・, detail: '譛域ｬ｡縺ｮ驕ｸ謇狗憾諷句ｱ蜻翫・荳ｭ縺ｧ縲√さ繝ｼ繝＋coach}縺鶏name}縺ｮ蜷榊燕繧堤音險倥＠縺ｦ縺・◆縲ゅ瑚ｦ∵ｳｨ諢上らｷｴ鄙呈・蠎ｦ縺ｫ螟牙喧縺ゅｊ縲る擇隲・ｒ謗ｨ螂ｨ縺励∪縺吶・ },
+  // §13.2: N-コーチ報告（trust < 45, コーチ在籍時, 15%/週）
+  N_coach_report: [
+    { text: '📋 コーチ{coach}が報告:「{name}の様子が最近おかしい」', detail: 'コーチ{coach}が社長室を訪れた。「{name}のことなんですが…練習中の集中力が明らかに落ちています。少し気にかけてやってほしい」' },
+    { text: '📝 コーチ{coach}:「{name}のことで相談が…」', detail: '「{name}が最近、試合後も練習後もすぐに帰ってしまうんです。前は自主練していたのに。何か不満があるのかもしれません」とコーチ{coach}が心配そうに報告した。' },
+    { text: '🗣️ コーチ{coach}が{name}について進言', detail: '「社長、{name}のモチベーションが下がっているように見えます。練習態度は悪くないんですが…どこか投げやりというか。ケアが必要かもしれません」' },
+    { text: '⚠️ コーチ{coach}:「{name}が心配です」', detail: '「{name}とは最近あまり話せていないんです。こちらから声をかけても素っ気ない返事しか返ってこなくて。何か手を打った方がいいかもしれません」' },
+    { text: '👀 コーチ{coach}が{name}の変調に気づいた', detail: '「{name}、最近ちょっとおかしいです。技の精度は保ってるんですが、目が死んでるというか…このまま放っておくとまずいかもしれません」' },
+    { text: '📊 コーチ{coach}の定期報告に{name}の名前が', detail: '月次の選手状態報告の中で、コーチ{coach}が{name}の名前を特記していた。「要注意。練習態度に変化あり。面談を推奨します」' },
   ],
-  // ﾂｧ13.4: 遯∫┯縺ｮ騾蝗｣・・rust < 15, 2.5%/闊郁｡鯉ｼ・  N_sudden_departure: [
-    { text: '坎 {name}縺瑚差迚ｩ繧偵∪縺ｨ繧√※蝗｣菴薙ｒ蜴ｻ縺｣縺・, detail: '譛昴・％蝣ｴ縺ｫ逹縺上→{name}縺ｮ繝ｭ繝・き繝ｼ縺檎ｩｺ縺ｫ縺ｪ縺｣縺ｦ縺・◆縲りｪｰ縺ｫ繧ゆｽ輔ｂ險繧上★縲∬差迚ｩ繧偵∪縺ｨ繧√※蜴ｻ縺｣縺溘ｉ縺励＞縲りｪｰ繧よｭ｢繧√ｉ繧後↑縺九▲縺溘・ },
-    { text: '逃 {name}縺檎ｪ∫┯縺・↑縺上↑縺｣縺溪ｦ', detail: '譏ｨ譌･縺ｾ縺ｧ譎ｮ騾壹↓邱ｴ鄙偵↓譚･縺ｦ縺・◆{name}縺後∽ｻ頑律縺ｯ蟋ｿ繧定ｦ九○縺ｪ縺九▲縺溘ゅΟ繝・き繝ｼ縺ｮ遘∫黄縺ｯ縺吶∋縺ｦ謖√■蜃ｺ縺輔ｌ縺ｦ縺・◆縲る｣邨｡繧ゅ▽縺九↑縺・・ },
-    { text: '暢 {name}縺ｮ蟋ｿ縺梧ｶ医∴縺・, detail: '豌励′縺､縺代・{name}縺ｯ繧ゅ≧縺・↑縺九▲縺溘ゅΟ繝・き繝ｼ繝ｫ繝ｼ繝縺ｫ縺ｯ菴輔ｂ谿九▲縺ｦ縺・↑縺・ゅメ繝ｼ繝繝｡繧､繝医◆縺｡繧りｨ闡峨ｒ螟ｱ縺｣縺ｦ縺・ｋ縲・ },
+  // §13.4: 突然の退団（trust < 15, 2.5%/興行）
+  N_sudden_departure: [
+    { text: '🚪 {name}が荷物をまとめて団体を去った', detail: '朝、道場に着くと{name}のロッカーが空になっていた。誰にも何も言わず、荷物をまとめて去ったらしい。誰も止められなかった。' },
+    { text: '📦 {name}が突然いなくなった…', detail: '昨日まで普通に練習に来ていた{name}が、今日は姿を見せなかった。ロッカーの私物はすべて持ち出されていた。連絡もつかない。' },
+    { text: '💨 {name}の姿が消えた', detail: '気がつけば{name}はもういなかった。ロッカールームには何も残っていない。チームメイトたちも言葉を失っている。' },
   ],
 };
 
-// ﾂｧ3-4: 騾夂衍蝙九う繝吶Φ繝・窶・personalityﾃ預rchetype 繧ｻ繝ｪ繝包ｼ・OTIF_DIALOGUES・・// N1/N2/N3/N4/N5_warning/N5_low 蜈ｨ繧ｿ繧､繝怜ｯｾ蠢・const NOTIF_DIALOGUES = {
-  // N1: 謌宣聞螳滓─
+// §3-4: 通知型イベント — personality×archetype セリフ（NOTIF_DIALOGUES）
+// N1/N2/N3/N4/N5_warning/N5_low 全タイプ対応
+const NOTIF_DIALOGUES = {
+  // N1: 成長実感
   N1: {
     normal: {
-      _default: ['邱ｴ鄙偵′讌ｽ縺励￥縺ｪ縺｣縺ｦ縺阪◆豌励′縺励∪縺・, '繧・▲縺ｨ菴薙′蜍輔￥繧医≧縺ｫ縺ｪ縺｣縺ｦ縺阪◆豌励′縺励∪縺・],
-      ojousama: ['縺顔ｨｽ蜿､縺梧･ｽ縺励￥縺ｪ縺｣縺ｦ縺ｾ縺・ｊ縺ｾ縺励◆繧・, '蟆代＠縺壹▽縲∽ｽ薙′蠢懊∴縺ｦ縺上ｌ繧九ｈ縺・↓縺ｪ繧翫∪縺励◆縺ｮ'],
-      delinquent: ['縺ｪ繧薙°譛霑代∽ｽ薙・蜍輔″繧ｭ繝ｬ縺ｦ縺ｭ・・, '繧・▲縺ｨ諢溯ｦ壽雫繧√※縺阪◆縺｣縺ｽ縺・],
-      seductive: ['譛霑代∽ｽ薙′邏逶ｴ縺ｫ蜍輔＞縺ｦ縺上ｌ繧九・縲ょｬ峨＠縺・ｏ', '邱ｴ鄙偵′讌ｽ縺励￥縺ｪ縺｣縺ｦ縺阪◆豌励′縺吶ｋ'],
+      _default: ['練習が楽しくなってきた気がします', 'やっと体が動くようになってきた気がします'],
+      ojousama: ['お稽古が楽しくなってまいりましたわ', '少しずつ、体が応えてくれるようになりましたの'],
+      delinquent: ['なんか最近、体の動きキレてね？', 'やっと感覚掴めてきたっぽい'],
+      seductive: ['最近、体が素直に動いてくれるの。嬉しいわ', '練習が楽しくなってきた気がする'],
     },
     bold: {
-      _default: ['縺ｾ縺雜ｳ繧翫↑縺・ゅｂ縺｣縺ｨ縺ｧ縺阪ｋ縺ｯ縺・, '縺薙・隱ｿ蟄舌〒荳翫ｒ逶ｮ謖・＠縺溘＞'],
-      ojousama: ['縺ｾ縺縺ｾ縺縺ｧ縺吶ｏ縲ゅｂ縺｣縺ｨ荳翫ｒ逶ｮ謖・＠縺ｾ縺帙ｓ縺ｨ'],
-      delinquent: ['縺ｾ縺雜ｳ繧翫・縺医ゅｂ縺｣縺ｨ繧・ｌ繧九・縺壹□'],
-      cool: ['窶ｦ縺ｾ縺荳翫′縺ゅｋ縲よｭ｢縺ｾ繧区ｰ励・縺ｪ縺・],
-      seductive: ['縺ｾ縺雜ｳ繧翫↑縺・ｏ縲ゅｂ縺｣縺ｨ蠑ｷ縺上↑繧後ｋ豌励′縺吶ｋ縺ｮ'],
+      _default: ['まだ足りない。もっとできるはず', 'この調子で上を目指したい'],
+      ojousama: ['まだまだですわ。もっと上を目指しませんと'],
+      delinquent: ['まだ足りねえ。もっとやれるはずだ'],
+      cool: ['…まだ上がある。止まる気はない'],
+      seductive: ['まだ足りないわ。もっと強くなれる気がするの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蟆代＠縲∵焔蠢懊∴縺後≠繧・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・ゅ％縺ｮ隱ｿ蟄舌〒'],
-      polite: ['蟆代＠窶ｦ謇句ｿ懊∴繧呈─縺倥※縺・∪縺・],
+      _default: ['……少し、手応えがある'],
+      cool: ['…悪くない。この調子で'],
+      polite: ['少し…手応えを感じています'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ縺｡繧・▲縺ｨ縺縺代∫ｷｴ鄙偵′讌ｽ縺励￥縺ｪ縺｣縺ｦ縺阪∪縺励◆窶ｦ'],
+      _default: ['あの…ちょっとだけ、練習が楽しくなってきました…'],
     },
     easygoing: {
-      _default: ['縺ｪ繧薙°莉頑律縲∵･縺ｫ縺・ｍ縺・ｍ謗ｴ繧√◆豌励′縺吶ｋ・・, '繧医￥蛻・°繧薙↑縺・￠縺ｩ縲∵･縺ｫ蝎帙∩蜷医▲縺ｦ縺阪◆・・],
-      delinquent: ['縺ｪ繧薙°諤･縺ｫ繧ｭ繧ｿ繧擾ｼ∵雫繧√◆諢溘§・・],
-      seductive: ['縺ゅｉ縲∵･縺ｫ縺・ｍ縺・ｍ謗ｴ繧√■繧・▲縺溘°繧・],
+      _default: ['なんか今日、急にいろいろ掴めた気がする！', 'よく分かんないけど、急に噛み合ってきた！'],
+      delinquent: ['なんか急にキタわ！掴めた感じ！'],
+      seductive: ['あら、急にいろいろ掴めちゃったかも'],
     },
     earnest: {
-      _default: ['遨阪∩驥阪・縺悟､ｧ莠九□縺ｨ諤昴▲縺ｦ縺ｾ縺吶ゅさ繝・さ繝・ｄ縺｣縺ｦ縺・″縺ｾ縺・, '邱ｴ鄙偵▲縺ｦ讌ｽ縺励＞縲ゅｂ縺｣縺ｨ繧・ｊ縺溘＞縺ｧ縺・],
-      polite: ['遨阪∩驥阪・縺悟､ｧ蛻・□縺ｨ菫｡縺倥※縺・∪縺吶ゅさ繝・さ繝・盾繧翫∪縺・],
-      ojousama: ['遨阪∩驥阪・縺悟､ｧ蛻・〒縺吶ｏ縲ゆｸ豁ｩ荳豁ｩ縲∝盾繧翫∪縺吶ｏ縺ｭ'],
-      seductive: ['遨阪∩驥阪・縺｣縺ｦ螟ｧ莠九ｈ縺ｭ縲ゅｂ縺｣縺ｨ繧・ｊ縺溘￥縺ｪ縺｣縺｡繧・≧'],
+      _default: ['積み重ねが大事だと思ってます。コツコツやっていきます', '練習って楽しい。もっとやりたいです'],
+      polite: ['積み重ねが大切だと信じています。コツコツ参ります'],
+      ojousama: ['積み重ねが大切ですわ。一歩一歩、参りますわね'],
+      seductive: ['積み重ねって大事よね。もっとやりたくなっちゃう'],
     },
     emotional: {
-      _default: ['縺・ｏ縺やｦ・∫ｷｴ鄙偵′讌ｽ縺励＞窶ｦ・√ｂ縺｣縺ｨ繧・ｊ縺溘＞・・, '菴薙′蜍輔￥繧医≧縺ｫ縺ｪ縺｣縺ｦ縺阪◆窶ｦ螫峨＠縺・ｦ・・],
+      _default: ['うわあ…！練習が楽しい…！もっとやりたい！', '体が動くようになってきた…嬉しい…！'],
     },
   },
-  // N2: 莉ｲ髢捺э隴・  N2: {
+  // N2: 仲間意識
+  N2: {
     normal: {
-      _default: ['縺・＞莉ｲ髢薙′縺ｧ縺阪◆豌励′縺励∪縺・, '荳邱偵↓鬆大ｼｵ繧後ｋ莠ｺ縺後＞繧九→蠢・ｼｷ縺・〒縺吶・'],
-      ojousama: ['濶ｯ縺・♀莉ｲ髢薙↓諱ｵ縺ｾ繧後∪縺励◆繧・],
-      delinquent: ['縺ゅ＞縺､縺ｨ荳邱偵□縺ｨ讌ｽ縺励＞繧薙□繧医↑'],
-      seductive: ['縺・＞莉ｲ髢薙↓諱ｵ縺ｾ繧後◆繧上ょｿ・ｼｷ縺・・'],
+      _default: ['いい仲間ができた気がします', '一緒に頑張れる人がいると心強いですね'],
+      ojousama: ['良いお仲間に恵まれましたわ'],
+      delinquent: ['あいつと一緒だと楽しいんだよな'],
+      seductive: ['いい仲間に恵まれたわ。心強いの'],
     },
     bold: {
-      _default: ['莉ｲ髢薙′縺・ｋ縺九ｉ鬆大ｼｵ繧後ｋ縲ゅメ繝ｼ繝縺｣縺ｦ縲√＞縺・ｈ縺ｪ', '縺ゅ＞縺､縺ｨ荳邱偵□縺ｨ辯・∴繧九ｓ縺'],
-      ojousama: ['莉ｲ髢薙′縺・ｋ縺九ｉ鬆大ｼｵ繧後∪縺吶ｏ'],
-      delinquent: ['縺ゅ＞縺､縺後＞繧九°繧臥㏍縺医ｋ繧薙□繧茨ｼ・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・メ繝ｼ繝縺'],
-      seductive: ['莉ｲ髢薙′縺・ｋ縺｣縺ｦ縲√＞縺・ｂ縺ｮ縺ｭ'],
+      _default: ['仲間がいるから頑張れる。チームって、いいよな', 'あいつと一緒だと燃えるんだ'],
+      ojousama: ['仲間がいるから頑張れますわ'],
+      delinquent: ['あいつがいるから燃えるんだよ！'],
+      cool: ['…悪くないチームだ'],
+      seductive: ['仲間がいるって、いいものね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺・＞莠ｺ縺溘■縺縺ｨ縲∵昴＞縺ｾ縺・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・ｻｲ髢薙□'],
-      polite: ['窶ｦ濶ｯ縺・婿縲・□縺ｨ諤昴＞縺ｾ縺・],
+      _default: ['……いい人たちだと、思います'],
+      cool: ['…悪くない仲間だ'],
+      polite: ['…良い方々だと思います'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ縺ｿ繧薙↑縺ｨ荳邱偵↓縺・ｉ繧後※窶ｦ螫峨＠縺・〒縺吮ｦ'],
+      _default: ['あの…みんなと一緒にいられて…嬉しいです…'],
     },
     easygoing: {
-      _default: ['縺ゅ・莠ｺ縺ｨ荳邱偵□縺ｨ雜・･ｽ縺励＞・∵怙鬮倥・繝代・繝医リ繝ｼ縺繧茨ｼ・],
-      delinquent: ['縺ゅ＞縺､譛鬮假ｼ∽ｸ邱偵□縺ｨ繝・Φ繧ｷ繝ｧ繝ｳ荳翫′繧九ｏ・・],
-      seductive: ['縺ゅ・莠ｺ縺ｨ荳邱偵↓縺・ｋ縺ｨ讌ｽ縺励＞縺ｮ縲よ怙鬮倥・繝代・繝医リ繝ｼ縺ｭ'],
+      _default: ['あの人と一緒だと超楽しい！最高のパートナーだよ！'],
+      delinquent: ['あいつ最高！一緒だとテンション上がるわ！'],
+      seductive: ['あの人と一緒にいると楽しいの。最高のパートナーね'],
     },
     earnest: {
-      _default: ['縺ゅ・莠ｺ縺ｨ邱ｴ鄙偵＠縺ｦ繧九→閾ｪ蛻・ｂ鬆大ｼｵ繧阪≧縺｣縺ｦ諤昴∴繧九ｓ縺ｧ縺・, '縺薙・蝗｣菴薙〒荳邱偵↓繧・ｌ繧倶ｻｲ髢薙′縺・※縲∝ｹｸ縺帙〒縺・],
-      polite: ['荳邱偵↓縺顔ｨｽ蜿､縺励※縺・ｋ縺ｨ縲∬・蛻・ｂ鬆大ｼｵ繧阪≧縺ｨ諤昴∴縺ｾ縺・],
-      ojousama: ['縺薙・蝗｣菴薙〒縺比ｸ邱偵〒縺阪ｋ莉ｲ髢薙′縺・※縲∝ｹｸ縺帙〒縺吶ｏ'],
-      seductive: ['縺ゅ・莠ｺ縺ｨ荳邱偵□縺ｨ縲√ｂ縺｣縺ｨ鬆大ｼｵ繧翫◆縺上↑繧九・'],
+      _default: ['あの人と練習してると自分も頑張ろうって思えるんです', 'この団体で一緒にやれる仲間がいて、幸せです'],
+      polite: ['一緒にお稽古していると、自分も頑張ろうと思えます'],
+      ojousama: ['この団体でご一緒できる仲間がいて、幸せですわ'],
+      seductive: ['あの人と一緒だと、もっと頑張りたくなるの'],
     },
     emotional: {
-      _default: ['縺ｿ繧薙↑縺ｮ縺薙→螟ｧ螂ｽ縺坂ｦ・∽ｸ邱偵↓縺・ｉ繧後※蟷ｸ縺帚ｦ・・],
+      _default: ['みんなのこと大好き…！一緒にいられて幸せ…！'],
     },
   },
-  // N3: 繧ｳ繝ｳ繝・ぅ繧ｷ繝ｧ繝ｳ菴惹ｸ・  N3: {
+  // N3: コンディション低下
+  N3: {
     normal: {
-      _default: ['縺｡繧・▲縺ｨ逍ｲ繧後※繧九□縺代〒縺吶よｬ｡縺ｮ隧ｦ蜷医∪縺ｧ縺ｫ縺ｯ謌ｻ繧翫∪縺・, '蟆代＠莨代ａ縺ｰ螟ｧ荳亥､ｫ縺ｧ縺・],
-      ojousama: ['蟆代・♀逍ｲ繧後′蜃ｺ縺ｾ縺励◆繧医≧縺ｧ窶ｦ谺｡縺ｾ縺ｧ縺ｫ縺ｯ謨ｴ縺医∪縺吶ｏ'],
-      delinquent: ['縺｡繧・▲縺ｨ繝繝ｫ縺・□縺代□縺｣縺ｦ縲ゅ☆縺先綾繧・],
-      seductive: ['蟆代＠逍ｲ繧後◆縺縺代ｈ縲ょｿ・・縺励↑縺・〒'],
+      _default: ['ちょっと疲れてるだけです。次の試合までには戻ります', '少し休めば大丈夫です'],
+      ojousama: ['少々お疲れが出ましたようで…次までには整えますわ'],
+      delinquent: ['ちょっとダルいだけだって。すぐ戻る'],
+      seductive: ['少し疲れただけよ。心配しないで'],
     },
     bold: {
-      _default: ['螟ｧ荳亥､ｫ縺縲√％縺ｮ遞句ｺｦ縲ゅ☆縺先綾繧・, '縺薙ｓ縺ｪ繧薙§繧・ｵゅｏ繧後↑縺・],
-      ojousama: ['縺薙・遞句ｺｦ縲∝撫鬘後≠繧翫∪縺帙ｓ繧・],
-      delinquent: ['縺薙・遞句ｺｦ縺ｧ豁｢縺ｾ縺｣縺ｦ繧峨ｌ繧九°繧・],
-      cool: ['窶ｦ蝠城｡後↑縺・よ綾繧後ｋ'],
-      seductive: ['縺薙・遞句ｺｦ縺ｧ豁｢縺ｾ繧九▽繧ゅｊ縺ｯ縺ｪ縺・ｏ'],
+      _default: ['大丈夫だ、この程度。すぐ戻る', 'こんなんじゃ終われない'],
+      ojousama: ['この程度、問題ありませんわ'],
+      delinquent: ['この程度で止まってられるかよ'],
+      cool: ['…問題ない。戻れる'],
+      seductive: ['この程度で止まるつもりはないわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蟆代＠縲∽ｼ代∩縺ｾ縺・],
-      cool: ['窶ｦ螟ｧ荳亥､ｫ縺縲ゅ☆縺先綾繧後ｋ'],
-      polite: ['窶ｦ蟆代＠莨代∪縺帙※縺・◆縺縺代ｌ縺ｰ窶ｦ'],
+      _default: ['……少し、休みます'],
+      cool: ['…大丈夫だ。すぐ戻れる'],
+      polite: ['…少し休ませていただければ…'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ辟｡逅・・縺励※縺ｪ縺・▽繧ゅｊ縺ｪ繧薙〒縺吶￠縺ｩ窶ｦ窶ｦ蟆代＠莨代ｓ縺譁ｹ縺後＞縺・°繧やｦ'],
+      _default: ['あの…無理はしてないつもりなんですけど……少し休んだ方がいいかも…'],
     },
     easygoing: {
-      _default: ['縺ゅ・縲√■繧・▲縺ｨ逍ｲ繧後■繧・▲縺溘°繧ゅょｰ代＠莨代ａ縺ｰ蟷ｳ豌暦ｼ・],
-      delinquent: ['縺ゅ・逍ｲ繧後◆縲ゅ■繧・＞莨代・繧・],
-      seductive: ['縺｡繧・▲縺ｨ逍ｲ繧後■繧・▲縺溘°縺励ｉ縲ょｰ代＠莨代ａ縺ｰ螟ｧ荳亥､ｫ繧・],
+      _default: ['あー、ちょっと疲れちゃったかも。少し休めば平気！'],
+      delinquent: ['あー疲れた。ちょい休むわ'],
+      seductive: ['ちょっと疲れちゃったかしら。少し休めば大丈夫よ'],
     },
     earnest: {
-      _default: ['縺吶∩縺ｾ縺帙ｓ窶ｦ菴薙′霑ｽ縺・▽縺九↑縺上※縲ょｰ代＠莨代ａ縺ｰ螟ｧ荳亥､ｫ縺ｧ縺・, '遶九※逶ｴ縺励※縺ｿ縺帙∪縺・],
-      polite: ['逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ窶ｦ蟆代＠莨代∪縺帙※縺・◆縺縺代ｌ縺ｰ縲∝ｿ・★謌ｻ繧翫∪縺・],
-      ojousama: ['蟆代＠縺贋ｼ代∩繧偵＞縺溘□縺代ｌ縺ｰ縲∝ｿ・★遶九※逶ｴ縺励∪縺吶ｏ'],
-      seductive: ['縺斐ａ繧薙↑縺輔＞窶ｦ蟆代＠莨代ａ縺ｰ縲√☆縺先綾繧後ｋ繧・],
+      _default: ['すみません…体が追いつかなくて。少し休めば大丈夫です', '立て直してみせます'],
+      polite: ['申し訳ありません…少し休ませていただければ、必ず戻ります'],
+      ojousama: ['少しお休みをいただければ、必ず立て直しますわ'],
+      seductive: ['ごめんなさい…少し休めば、すぐ戻れるわ'],
     },
     emotional: {
-      _default: ['縺・≧窶ｦ菴薙′縺励ｓ縺ｩ縺・ｦ縺ｧ繧ゅ√〒繧る大ｼｵ繧翫◆縺・・縺ｫ窶ｦ・・],
+      _default: ['うう…体がしんどい…でも、でも頑張りたいのに…！'],
     },
   },
-  // N4: 莠ｺ豌嶺ｸ頑・
+  // N4: 人気上昇
   N4: {
     normal: {
-      _default: ['縺薙ｓ縺ｪ縺ｫ縺溘￥縺輔ｓ縺ｮ蠢懈抄繧偵＞縺溘□縺代ｋ縺ｪ繧薙※縲√・縺｣縺上ｊ縺励※縺・∪縺・, '繝輔ぃ繝ｳ縺ｮ螢ｰ縺悟鴨縺ｫ縺ｪ縺｣縺ｦ縺ｾ縺・],
-      ojousama: ['逧・ｧ倥°繧峨％繧後⊇縺ｩ縺ｮ螢ｰ謠ｴ繧偵＞縺溘□縺代ｋ縺ｪ繧薙※縲∝・譬・〒縺吶ｏ'],
-      delinquent: ['蠢懈抄縺励※縺上ｌ繧九ｄ縺､縺後＞繧九▲縺ｦ縺ｮ縺ｯ窶ｦ謔ｪ縺上・縺医↑'],
-      seductive: ['縺薙ｓ縺ｪ縺ｫ蠢懈抄縺励※繧ゅｉ縺医ｋ縺ｪ繧薙※窶ｦ螫峨＠縺・ｏ'],
+      _default: ['こんなにたくさんの応援をいただけるなんて、びっくりしています', 'ファンの声が力になってます'],
+      ojousama: ['皆様からこれほどの声援をいただけるなんて、光栄ですわ'],
+      delinquent: ['応援してくれるやつがいるってのは…悪くねえな'],
+      seductive: ['こんなに応援してもらえるなんて…嬉しいわ'],
     },
     bold: {
-      _default: ['縺薙・莠ｺ豌励ｒ雜ｳ縺後°繧翫↓縲√ｂ縺｣縺ｨ荳翫↓陦後￥', '縺ｾ縺縺ｾ縺縺薙％縺ｧ邨ゅｏ繧九▽繧ゅｊ縺ｯ縺ｪ縺・],
-      ojousama: ['縺薙・螢ｰ謠ｴ繧貞鴨縺ｫ縲√＆繧峨↓荳翫ｒ逶ｮ謖・＠縺ｾ縺吶ｏ'],
-      delinquent: ['縺薙・蜍｢縺・〒遯√▲襍ｰ繧九●・・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・ゅｂ縺｣縺ｨ荳翫ｒ逶ｮ謖・☆'],
-      seductive: ['縺薙・莠ｺ豌励∵ｴｻ縺九＆縺ｪ縺・焔縺ｯ縺ｪ縺・ｏ縺ｭ'],
+      _default: ['この人気を足がかりに、もっと上に行く', 'まだまだここで終わるつもりはない'],
+      ojousama: ['この声援を力に、さらに上を目指しますわ'],
+      delinquent: ['この勢いで突っ走るぜ！'],
+      cool: ['…悪くない。もっと上を目指す'],
+      seductive: ['この人気、活かさない手はないわね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蠢懈抄縲√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      cool: ['窶ｦ繝輔ぃ繝ｳ縺ｮ譛溷ｾ・↓縺ｯ蠢懊∴繧・],
-      polite: ['窶ｦ蠢懈抄縺励※縺上□縺輔▲縺ｦ縲√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
+      _default: ['……応援、ありがとうございます'],
+      cool: ['…ファンの期待には応える'],
+      polite: ['…応援してくださって、ありがとうございます'],
     },
     shy: {
-      _default: ['縺医√≠縺ｮ窶ｦ遘√↑繧薙°繧貞ｿ懈抄縺励※縺上ｌ繧倶ｺｺ縺後＞繧九↑繧薙※窶ｦ'],
+      _default: ['え、あの…私なんかを応援してくれる人がいるなんて…'],
     },
     easygoing: {
-      _default: ['繝輔ぃ繝ｳ縺ｮ逧・＆繧薙′蝟懊ｓ縺ｧ縺上ｌ繧九・縺御ｸ逡ｪ螫峨＠縺・ｼ・, '繧ゅ▲縺ｨ縺ｿ繧薙↑繧呈･ｽ縺励∪縺帙◆縺・ｼ・],
-      delinquent: ['繝輔ぃ繝ｳ縺檎屁繧贋ｸ翫′縺｣縺ｦ繧薙・譛鬮倥§繧・ｓ・・],
-      seductive: ['繝輔ぃ繝ｳ縺ｮ譁ｹ縺悟万繧薙〒縺上ｌ繧九→縲√ｂ縺｣縺ｨ隕九○縺溘￥縺ｪ繧九ｏ'],
+      _default: ['ファンの皆さんが喜んでくれるのが一番嬉しい！', 'もっとみんなを楽しませたい！'],
+      delinquent: ['ファンが盛り上がってんの最高じゃん！'],
+      seductive: ['ファンの方が喜んでくれると、もっと見せたくなるわ'],
     },
     earnest: {
-      _default: ['縺ｿ繧薙↑縺ｫ蠢懈抄縺励※繧ゅｉ縺医ｋ縺｣縺ｦ縲∵悽蠖薙↓蜉帙↓縺ｪ繧翫∪縺吶・', '繝輔ぃ繝ｳ縺ｮ螢ｰ縺悟次蜍募鴨縺ｧ縺・],
-      polite: ['逧・ｧ倥・蠢懈抄縺後∽ｽ輔ｈ繧翫・蜴溷虚蜉帙〒縺・],
-      ojousama: ['繝輔ぃ繝ｳ縺ｮ逧・ｧ倥・縺雁｣ｰ縺悟鴨縺ｫ縺ｪ繧翫∪縺吶ｏ'],
-      seductive: ['蠢懈抄縺励※縺上ｌ繧倶ｺｺ縺後＞繧九▲縺ｦ縲∵悽蠖薙↓蜉帙↓縺ｪ繧九・'],
+      _default: ['みんなに応援してもらえるって、本当に力になりますね', 'ファンの声が原動力です'],
+      polite: ['皆様の応援が、何よりの原動力です'],
+      ojousama: ['ファンの皆様のお声が力になりますわ'],
+      seductive: ['応援してくれる人がいるって、本当に力になるの'],
     },
     emotional: {
-      _default: ['縺ｿ繧薙↑縺悟ｿ懈抄縺励※縺上ｌ縺ｦ繧銀ｦ・∝ｬ峨＠縺上※豕｣縺阪◎縺・ｦ・・],
+      _default: ['みんなが応援してくれてる…！嬉しくて泣きそう…！'],
     },
   },
-  // N5: trust菴惹ｸ玖ｭｦ蜻・  N5_warning: {
+  // N5: trust低下警告
+  N5_warning: {
     normal: {
-      _default: ['・医←縺薙°荳翫・遨ｺ縺ｧ縲∬ｦ也ｷ壹′豕ｳ縺・〒縺・ｋ・・, '窶ｦ窶ｦ縺吶∩縺ｾ縺帙ｓ縲√■繧・▲縺ｨ閠・∴莠九ｒ'],
-      ojousama: ['窶ｦ蟆代＠縲∬・∴莠九′縺斐＊縺・∪縺励※'],
-      delinquent: ['窶ｦ蛻･縺ｫ縲ゆｽ輔〒繧ゅ・繝ｼ繧・],
-      seductive: ['窶ｦ縺斐ａ繧薙↑縺輔＞縲√■繧・▲縺ｨ閠・∴莠九＠縺ｦ縺ｦ'],
+      _default: ['（どこか上の空で、視線が泳いでいる）', '……すみません、ちょっと考え事を'],
+      ojousama: ['…少し、考え事がございまして'],
+      delinquent: ['…別に。何でもねーよ'],
+      seductive: ['…ごめんなさい、ちょっと考え事してて'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺薙・縺ｾ縺ｾ縺ｧ譛ｬ蠖薙↓縺・＞縺ｮ縺九√▲縺ｦ閠・∴縺｡繧・≧縺薙→縺後≠繧・, '譛霑代∽ｽ輔→謌ｦ縺｣縺ｦ繧九・縺句・縺九ｉ縺ｪ縺上↑繧・],
-      ojousama: ['窶ｦ縺薙・縺ｾ縺ｾ縺ｧ譛ｬ蠖薙↓繧医ｍ縺励＞縺ｮ縺九√→閠・∴縺ｦ縺励∪縺・∪縺吶・'],
-      delinquent: ['窶ｦ譛霑代∽ｽ輔・縺溘ａ縺ｫ謌ｦ縺｣縺ｦ繧薙・縺句・縺九ｓ縺ｭ繝ｼ繧薙□'],
-      cool: ['窶ｦ窶ｦ逶ｮ逧・ｒ縲∬ｦ句､ｱ縺・°縺代※縺・ｋ'],
-      seductive: ['窶ｦ縺薙・縺ｾ縺ｾ縺ｧ縺・＞縺ｮ縺九↑縺｣縺ｦ縲√・縺ｨ諤昴≧縺ｮ'],
+      _default: ['……このままで本当にいいのか、って考えちゃうことがある', '最近、何と戦ってるのか分からなくなる'],
+      ojousama: ['…このままで本当によろしいのか、と考えてしまいますの'],
+      delinquent: ['…最近、何のために戦ってんのか分かんねーんだ'],
+      cool: ['……目的を、見失いかけている'],
+      seductive: ['…このままでいいのかなって、ふと思うの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ窶ｦ'],
-      cool: ['窶ｦ窶ｦ'],
-      polite: ['窶ｦ縺ゅ・窶ｦ菴輔〒繧ゅ≠繧翫∪縺帙ｓ窶ｦ'],
+      _default: ['…………'],
+      cool: ['……'],
+      polite: ['…あの…何でもありません…'],
     },
     shy: {
-      _default: ['窶ｦ縺ゅ√≠縺ｮ窶ｦ窶ｦ縺ｪ繧薙〒繧ゅ↑縺・√〒縺吮ｦ'],
+      _default: ['…あ、あの……なんでもない、です…'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ縺・ｄ縲√■繧・▲縺ｨ縺ｭ縲ょ､ｧ荳亥､ｫ縲∝､ｧ荳亥､ｫ'],
-      delinquent: ['縺ゅ・窶ｦ縺・ｄ縲√↑繧薙〒繧ゅ・繝ｼ縲ょｹｳ豌怜ｹｳ豌・],
-      seductive: ['縺ｵ縺ｵ窶ｦ縺ｪ繧薙〒繧ゅ↑縺・ｏ縲よｰ励↓縺励↑縺・〒'],
+      _default: ['あはは…いや、ちょっとね。大丈夫、大丈夫'],
+      delinquent: ['あー…いや、なんでもねー。平気平気'],
+      seductive: ['ふふ…なんでもないわ。気にしないで'],
     },
     earnest: {
-      _default: ['邱ｴ鄙偵＠縺ｦ繧らｷｴ鄙偵＠縺ｦ繧ゅ∽ｽ輔°縺瑚ｶｳ繧翫↑縺・ｰ励′縺励※窶ｦ', '窶ｦ縺薙％縺ｫ縺・◆縺・ｰ玲戟縺｡縺ｯ螟峨ｏ繧峨↑縺・ｓ縺ｧ縺吶￠縺ｩ窶ｦ窶ｦ'],
-      polite: ['邱ｴ鄙偵ｒ驥阪・縺ｦ繧ゅ∽ｽ輔°雜ｳ繧翫↑縺・ｰ励′縺・◆縺励∪縺励※窶ｦ'],
-      ojousama: ['邱ｴ鄙偵ｒ驥阪・縺ｾ縺励※繧ゅ∽ｽ輔°縺瑚ｶｳ繧翫↑縺・ｰ励′縺励∪縺吶・窶ｦ'],
-      seductive: ['縺・￥繧臥ｷｴ鄙偵＠縺ｦ繧ゅ∽ｽ輔°雜ｳ繧翫↑縺・ｰ励′縺励※窶ｦ'],
+      _default: ['練習しても練習しても、何かが足りない気がして…', '…ここにいたい気持ちは変わらないんですけど……'],
+      polite: ['練習を重ねても、何か足りない気がいたしまして…'],
+      ojousama: ['練習を重ねましても、何かが足りない気がしますの…'],
+      seductive: ['いくら練習しても、何か足りない気がして…'],
     },
     emotional: {
-      _default: ['窶ｦ縺ｪ繧薙°縲∵怙霑代★縺｣縺ｨ繝｢繝､繝｢繝､縺励※窶ｦ縺・∪縺剰ｨ縺医↑縺・￠縺ｩ窶ｦ'],
+      _default: ['…なんか、最近ずっとモヤモヤして…うまく言えないけど…'],
     },
   },
-  // N5: trust蜊ｱ髯ｺ蝓・  N5_low: {
+  // N5: trust危険域
+  N5_low: {
     normal: {
-      _default: ['窶ｦ蛻･縺ｫ縲∽ｽ輔〒繧ゅ↑縺・〒縺・, '繧ゅ≧縺・＞縺ｧ縺吶ょ・縺九ｊ縺ｾ縺励◆'],
-      ojousama: ['窶ｦ繧ゅ≧邨先ｧ九〒縺吶ｏ'],
-      delinquent: ['窶ｦ繧ゅ≧縺・＞繧上ょ享謇九↓縺吶ｋ'],
-      seductive: ['窶ｦ繧ゅ≧縺・＞繧上ょ・縺九▲縺溘°繧・],
+      _default: ['…別に、何でもないです', 'もういいです。分かりました'],
+      ojousama: ['…もう結構ですわ'],
+      delinquent: ['…もういいわ。勝手にする'],
+      seductive: ['…もういいわ。分かったから'],
     },
     bold: {
-      _default: ['窶ｦ窶ｦ縺薙・蝗｣菴薙〒縲∬・蛻・・螟｢縺ｯ蜿ｶ縺医ｉ繧後ｋ繧薙□繧阪≧縺・, '蜈医′隕九∴縺ｪ縺上※縲∫┬縺｣縺ｦ繧・],
-      ojousama: ['窶ｦ縺薙・蝗｣菴薙〒縲∝､｢縺ｯ蜿ｶ縺医ｉ繧後∪縺吶・窶ｦ・・],
-      delinquent: ['窶ｦ縺薙％縺ｫ縺・※繧ゅ∝・縺瑚ｦ九∴縺ｭ縺・],
-      cool: ['窶ｦ窶ｦ繧ゅ≧縲∬ｦ句・繧翫ｒ縺､縺代ｋ縺ｹ縺阪↑縺ｮ縺・],
-      seductive: ['窶ｦ縺薙％縺ｫ縺・※縲∫ｧ√・螟｢縺ｯ蜿ｶ縺・・縺九＠繧・],
+      _default: ['……この団体で、自分の夢は叶えられるんだろうか', '先が見えなくて、焦ってる'],
+      ojousama: ['…この団体で、夢は叶えられますの…？'],
+      delinquent: ['…ここにいても、先が見えねえ'],
+      cool: ['……もう、見切りをつけるべきなのか'],
+      seductive: ['…ここにいて、私の夢は叶うのかしら'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ・井ｽ輔ｂ險繧上★縲∫岼繧帝ｸ繧峨☆・・],
-      cool: ['窶ｦ窶ｦ・磯撕縺九↓蜃ｺ蜿｣繧定ｦ九※縺・ｋ・・],
-      polite: ['窶ｦ螟ｱ遉ｼ縺励∪縺呻ｼ磯撕縺九↓遶九■蜴ｻ繧阪≧縺ｨ縺吶ｋ・・],
+      _default: ['………（何も言わず、目を逸らす）'],
+      cool: ['……（静かに出口を見ている）'],
+      polite: ['…失礼します（静かに立ち去ろうとする）'],
     },
     shy: {
-      _default: ['窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ繧ゅ≧窶ｦ繧上°繧翫∪縺帙ｓ窶ｦ'],
+      _default: ['…ごめんなさい…もう…わかりません…'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ繧ゅ≧縲√＞縺・°縺ｪ縺｣縺ｦ縲ゅ■繧・▲縺ｨ閠・∴縺輔○縺ｦ'],
-      delinquent: ['繧ゅ・縺・＞繧上り・∴縺輔○縺ｦ縺上ｌ'],
-      seductive: ['縺ｵ縺ｵ窶ｦ繧ゅ≧縺・＞縺九↑縺｣縺ｦ縲∝ｰ代＠諤昴▲縺｡繧・▲縺・],
+      _default: ['あはは…もう、いいかなって。ちょっと考えさせて'],
+      delinquent: ['もーいいわ。考えさせてくれ'],
+      seductive: ['ふふ…もういいかなって、少し思っちゃった'],
     },
     earnest: {
-      _default: ['陬丞・繧翫◆縺・ｏ縺代§繧・↑縺・ゅ◆縺窶ｦ窶ｦ', '縺薙％縺悟･ｽ縺阪□縺九ｉ縲√□縺九ｉ霎帙＞繧薙〒縺・],
-      polite: ['陬丞・繧九▽繧ゅｊ縺ｯ縺斐＊縺・∪縺帙ｓ縲ゅ◆縺窶ｦ窶ｦ'],
-      ojousama: ['陬丞・繧翫◆縺・ｏ縺代〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ縺ｮ縲ゅ◆縺窶ｦ窶ｦ'],
-      seductive: ['陬丞・繧翫◆縺・ｏ縺代§繧・↑縺・・縲ゅ◆縺窶ｦ窶ｦ縺ｭ'],
+      _default: ['裏切りたいわけじゃない。ただ……', 'ここが好きだから、だから辛いんです'],
+      polite: ['裏切るつもりはございません。ただ……'],
+      ojousama: ['裏切りたいわけではありませんの。ただ……'],
+      seductive: ['裏切りたいわけじゃないの。ただ……ね'],
     },
     emotional: {
-      _default: ['繧ゅ≧窶ｦ繧ゅ≧蛻・°繧薙↑縺・ｦ・√←縺・☆繧後・縺・＞縺ｮ窶ｦ・・],
+      _default: ['もう…もう分かんない…！どうすればいいの…！'],
     },
   },
 };
 
-// ﾂｧ2: 雉・≡謚募・繧｢繧ｯ繧ｷ繝ｧ繝ｳ險ｭ螳夲ｼ・vent-system-spec-v2.md ﾂｧ2・・const CARE_ACTIONS = {
-  // 蛟倶ｺｺ蜷代￠繧｢繧ｯ繧ｷ繝ｧ繝ｳ・・ooldown: 騾ｱ謨ｰ縲ら怐逡･譎・1縲∝酔荳騾ｱ縺ｯ蟶ｸ縺ｫ荳榊庄・・  bonus: {
-    id: 'bonus', label: '繝懊・繝翫せ謾ｯ邨ｦ', emoji: '超', cost: 50, category: 'individual',
-    desc: '菫｡鬆ｼ縺御ｸ翫′繧具ｼ・繧ｹ繝医ャ繧ｯ繝ｻ騾｣邯壻ｽｿ逕ｨ縺ｧ蜉ｹ譫憺捺ｸ幢ｼ・,
+// §2: 資金投入アクション設定（event-system-spec-v2.md §2）
+const CARE_ACTIONS = {
+  // 個人向けアクション（cooldown: 週数。省略時=1、同一週は常に不可）
+  bonus: {
+    id: 'bonus', label: 'ボーナス支給', emoji: '💴', cost: 50, category: 'individual',
+    desc: '信頼が上がる（1ストック・連続使用で効果逓減）',
     effects: { trust: 4.59 }, minOrgPop: 0, cooldown: 1,
   },
   costume: {
-    id: 'costume', label: '繧ｳ繧ｹ繝√Η繝ｼ繝譁ｰ隱ｿ', emoji: '送', cost: 80, category: 'individual',
-    desc: '谺｡縺ｮ隧ｦ蜷医〒豕ｨ逶ｮ蠎ｦUP繝ｻ菫｡鬆ｼ縺御ｸ翫′繧具ｼ・繧ｹ繝医ャ繧ｯ繝ｻ2騾ｱ縺ｫ1蝗橸ｼ・,
+    id: 'costume', label: 'コスチューム新調', emoji: '👗', cost: 80, category: 'individual',
+    desc: '次の試合で注目度UP・信頼が上がる（1ストック・2週に1回）',
     effects: { trust: 5.36 }, minOrgPop: 20, cooldown: 2,
   },
   trainer: {
-    id: 'trainer', label: '蟆ょｱ槭ヨ繝ｬ繝ｼ繝翫・謇矩・', emoji: '暑・・, cost: 160, category: 'individual',
-    desc: '4騾ｱ髢・謌宣聞騾溷ｺｦ+30%縲∽ｿ｡鬆ｼ繧ゆｸ翫′繧具ｼ・繧ｹ繝医ャ繧ｯ・・,
+    id: 'trainer', label: '専属トレーナー手配', emoji: '🏋️', cost: 160, category: 'individual',
+    desc: '4週間 成長速度+30%、信頼も上がる（1ストック）',
     effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 5.97 }, minOrgPop: 0, cooldown: 1,
   },
   media: {
-    id: 'media', label: '繝｡繝・ぅ繧｢髴ｲ蜃ｺ謇矩・', emoji: '銅', cost: 120, category: 'individual',
-    desc: '蝗｣菴薙・遏･蜷榊ｺｦ縺悟ｰ代＠荳翫′繧九・菫｡鬆ｼ繧ゆｸ翫′繧具ｼ・繧ｹ繝医ャ繧ｯ繝ｻ2騾ｱ縺ｫ1蝗橸ｼ・,
+    id: 'media', label: 'メディア露出手配', emoji: '📺', cost: 120, category: 'individual',
+    desc: '団体の知名度が少し上がる・信頼も上がる（1ストック・2週に1回）',
     effects: { trust: 5.36, skip_training: true }, minOrgPop: 20, cooldown: 2,
   },
   special_treatment: {
-    id: 'special_treatment', label: '諤ｪ謌代・迚ｹ蛻･豐ｻ逋・, emoji: '唱', cost: 200, category: 'individual',
-    desc: '諤ｪ謌代・蝗槫ｾｩ繧呈掠繧√ｋ・・繧ｹ繝医ャ繧ｯ繝ｻ諤ｪ謌台ｸｭ縺ｮ縺ｿ・・,
+    id: 'special_treatment', label: '怪我の特別治療', emoji: '🏥', cost: 200, category: 'individual',
+    desc: '怪我の回復を早める（1ストック・怪我中のみ）',
     effects: { injury_reduction: true }, minOrgPop: 40,
     condition: 'injured', cooldown: 1,
   },
   encourage: {
-    id: 'encourage', label: '螢ｰ縺九￠', emoji: '町', cost: 0, category: 'individual',
-    desc: '繧ｹ繝ｩ繝ｳ繝嶺ｸｭ縺ｮ驕ｸ謇九↓螢ｰ繧偵°縺代ｋ・医せ繝医ャ繧ｯ荳崎ｦ√・騾ｱ1蝗橸ｼ・,
+    id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
+    desc: 'スランプ中の選手に声をかける（ストック不要・週1回）',
     effects: { trust: 0.77 }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 1,
   },
   refresh_leave: {
-    id: 'refresh_leave', label: '繝ｪ繝輔Ξ繝・す繝･莨第嚊', emoji: '原', cost: 100, category: 'individual',
-    desc: '莨第嚊縺ｧ繝ｪ繝輔Ξ繝・す繝･・・繧ｹ繝医ャ繧ｯ繝ｻ4騾ｱ縺ｫ1蝗橸ｼ・,
+    id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
+    desc: '休暇でリフレッシュ（1ストック・4週に1回）',
     effects: { condition: 15, trust: 5.36, skip_training: true }, minOrgPop: 0,
     condition: 'slump_or_motivation_loss', cooldown: 4,
   },
-  // 蝗｣菴灘・菴灘髄縺代い繧ｯ繧ｷ繝ｧ繝ｳ・・騾ｱ縺ｫ1蝗槭∪縺ｧ・・  party: {
-    id: 'party', label: '謇薙■荳翫￡繝ｻ諷ｰ蜉ｴ莨・, emoji: '脂', unitCost: 15, category: 'team',
-    desc: '蜈ｨ蜩｡縺ｮ菫｡鬆ｼ縺ｨ髮ｰ蝗ｲ豌励′蟆代＠荳翫′繧具ｼ・繧ｹ繝医ャ繧ｯ・・,
+  // 団体全体向けアクション（1週に1回まで）
+  party: {
+    id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
+    desc: '全員の信頼と雰囲気が少し上がる（1ストック）',
     effects: { trust_all: 1.84, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
   },
   camp: {
-    id: 'camp', label: '蜷亥ｮｿ', emoji: '笵ｺ', unitCost: 40, category: 'team',
-    desc: '蜈ｨ蜩｡縺ｮ謌宣聞+荳ｭ縲∽ｿ｡鬆ｼ繧ょｰ代＠荳翫′繧具ｼ・繧ｹ繝医ャ繧ｯ・・,
+    id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
+    desc: '全員の成長+中、信頼も少し上がる（2ストック）',
     effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 1.84 }, minOrgPop: 0, minHeadcount: 4,
   },
 };
 
-// ﾂｧ2-5: 雉・≡謚募・繝ｪ繧｢繧ｯ繧ｷ繝ｧ繝ｳ繧ｻ繝ｪ繝包ｼ育音諤ｧ蛻･・・// {name} 縺ｯ繝励Ξ繝ｼ繧ｹ繝帙Ν繝
+// §2-5: 資金投入リアクションセリフ（特性別）
+// {name} はプレースホルダ
 const CAMP_FLAVOR_TEXTS = [
-  '{name1}縺ｨ{name2}縺梧悃縺九ｉ豼縺励＞繧ｹ繝代・繝ｪ繝ｳ繧ｰ繧堤ｹｰ繧雁ｺ・￡縺ｦ縺・ｋ窶ｦ・・,
-  '螟懊・閾ｪ荳ｻ邱ｴ縺ｧ{name1}縺碁ｻ吶・→繧ｹ繧ｯ繝ｯ繝・ヨ繧偵＠縺ｦ縺・ｋ窶ｦ',
-  '{name1}縺鶏name2}縺ｫ謚縺ｮ蜿励￠霄ｫ繧呈蕗縺医※縺・ｋ蝣ｴ髱｢縺瑚ｦ九ｉ繧後◆',
-  '蜷亥ｮｿ縺ｮ鬟滉ｺ九・{name1}縺檎紫蜈医＠縺ｦ貅門ｙ縺励※縺・◆',
-  '{name1}縺ｨ{name2}縺悟､暮｣溷ｾ後・繝ｩ繝ｳ繝九Φ繧ｰ縺ｧ遶ｶ縺・粋縺｣縺ｦ縺・ｋ',
-  '譌ｩ譛昴・豬ｷ霎ｺ縺ｧ{name1}縺御ｸ莠ｺ縲∝渕遉守ｷｴ鄙偵↓蜉ｱ繧薙〒縺・◆',
-  '{name1}縺梧眠謚縺ｮ遐皮ｩｶ縺ｫ豐｡鬆ｭ縺励※縺・ｋ蟋ｿ縺悟魂雎｡逧・□縺｣縺・,
-  '豸育・蠕後ｂ{name1}縺ｨ{name2}縺後Μ繝ｳ繧ｰ縺ｧ隱槭ｊ蜷医▲縺ｦ縺・◆',
-  '{name1}縺悟粋螳ｿ縺ｮ險伜ｿｵ蜀咏悄繧呈聴繧阪≧縺ｨ縺ｿ繧薙↑繧帝寔繧√※縺・◆',
-  '蜈ｨ蜩｡縺ｧ豬懆ｾｺ繧定ｵｰ繧九Γ繝九Η繝ｼ縺ｫ{name1}縺御ｸ逡ｪ荵励ｊ縺ｧ繧ｴ繝ｼ繝ｫ縺励◆',
-  '{name1}縺ｮ繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ縺ｶ繧翫〒蜷亥ｮｿ縺ｮ髮ｰ蝗ｲ豌励′縺舌▲縺ｨ譏弱ｋ縺上↑縺｣縺・,
-  '邱ｴ鄙貞ｾ後・螟ｧ豬ｴ蝣ｴ縺ｧ{name1}縺ｨ{name2}縺御ｻ雁ｾ後・謚ｱ雋繧定ｪ槭ｊ蜷医▲縺ｦ縺・◆',
+  '{name1}と{name2}が朝から激しいスパーリングを繰り広げている…！',
+  '夜の自主練で{name1}が黙々とスクワットをしている…',
+  '{name1}が{name2}に技の受け身を教えている場面が見られた',
+  '合宿の食事は{name1}が率先して準備していた',
+  '{name1}と{name2}が夕食後のランニングで競い合っている',
+  '早朝の海辺で{name1}が一人、基礎練習に励んでいた',
+  '{name1}が新技の研究に没頭している姿が印象的だった',
+  '消灯後も{name1}と{name2}がリングで語り合っていた',
+  '{name1}が合宿の記念写真を撮ろうとみんなを集めていた',
+  '全員で浜辺を走るメニューに{name1}が一番乗りでゴールした',
+  '{name1}のムードメーカーぶりで合宿の雰囲気がぐっと明るくなった',
+  '練習後の大浴場で{name1}と{name2}が今後の抱負を語り合っていた',
 ];
 
 const CARE_REACTION_DIALOGUES = {
   bonus: {
     normal: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺呻ｼ・, '縺・◆縺縺阪∪縺吮ｦ・・, '諢溯ｬ昴＠縺ｾ縺・, '蜉ｱ縺ｿ縺ｫ縺ｪ繧翫∪縺呻ｼ・, '螫峨＠縺・〒縺呻ｼ∝､ｧ蛻・↓菴ｿ縺・∪縺・],
-      ojousama: ['縺ｾ縺ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ょ､ｧ蛻・↓菴ｿ繧上○縺ｦ縺・◆縺縺阪∪縺吶ｏ'],
-      delinquent: ['縺翫√・繧ｸ・・縺ゅｊ縺後→縺ｪ・・],
-      seductive: ['縺ゅｉ縲∝ｬ峨＠縺・ゅ≠繧翫′縺ｨ縺・],
+      _default: ['ありがとうございます！', 'いただきます…！', '感謝します', '励みになります！', '嬉しいです！大切に使います'],
+      ojousama: ['まあ、ありがとうございます。大切に使わせていただきますわ'],
+      delinquent: ['お、マジ？ ありがとな！'],
+      seductive: ['あら、嬉しい。ありがとう'],
     },
     bold: {
-      _default: ['縺薙ｌ縺ｧ雋縺代※縺・ｉ繧後↑縺・ｼ・, '繧医▲縺励ｃ・√ｂ縺｣縺ｨ蠑ｷ縺上↑繧翫∪縺呻ｼ・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶らｵ先棡縺ｧ縺願ｿ斐＠縺励∪縺吶ｏ'],
-      delinquent: ['縺翫▲縺励ｃ・√％縺ｮ驥代〒譬・､翫▽縺代※繧ゅ▲縺ｨ蠑ｷ縺上↑繧九●・・],
-      cool: ['窶ｦ諢溯ｬ昴☆繧九らｵ先棡縺ｧ霑斐☆'],
-      seductive: ['螫峨＠縺・ｏ縲ょｮ溷鴨縺ｧ霑斐＆縺帙※繧ゅｉ縺・ｏ縺ｭ'],
+      _default: ['これで負けていられない！', 'よっしゃ！もっと強くなります！'],
+      ojousama: ['ありがとうございます。結果でお返ししますわ'],
+      delinquent: ['おっしゃ！この金で栄養つけてもっと強くなるぜ！'],
+      cool: ['…感謝する。結果で返す'],
+      seductive: ['嬉しいわ。実力で返させてもらうわね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・],
-      cool: ['窶ｦ縺ゅｊ縺後◆縺・],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ょ､ｧ蛻・↓菴ｿ縺・∪縺・],
+      _default: ['……ありがとうございます'],
+      cool: ['…ありがたい'],
+      polite: ['…ありがとうございます。大切に使います'],
     },
     shy: {
-      _default: ['縺遺ｦ縺ゅ・窶ｦ縺ゅｊ縺後→縺・√＃縺悶＞縺ｾ縺吮ｦ・・],
+      _default: ['え…あの…ありがとう、ございます…！'],
     },
     easygoing: {
-      _default: ['繧・▲縺滂ｼ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺呻ｼ・, '縺翫＃縺｣縺ｦ繧ゅｉ縺｣縺｡繧・♀縺・°縺ｪ・・],
-      delinquent: ['繧・▲縺滂ｼ√Λ繝・く繝ｼ・・],
-      seductive: ['縺ゅｉ螫峨＠縺・ゆｽ輔↓菴ｿ縺翫≧縺九＠繧・],
+      _default: ['やった！ありがとうございます！', 'おごってもらっちゃおうかな！'],
+      delinquent: ['やった！ラッキー！'],
+      seductive: ['あら嬉しい。何に使おうかしら'],
     },
     earnest: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺呻ｼ∵ｬ｡縺ｮ隧ｦ蜷医∫ｵｶ蟇ｾ鬆大ｼｵ繧翫∪縺呻ｼ・, '窶ｦ縺・▽繧ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      polite: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ょｿ・★邨先棡縺ｧ縺願ｿ斐＠縺・◆縺励∪縺・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶らｵ先棡縺ｧ縺雁ｿ懊∴縺励∪縺吶ｏ'],
-      seductive: ['縺ゅｊ縺後→縺・ゅ■繧・ｓ縺ｨ邨先棡縺ｧ霑斐☆繧・],
+      _default: ['ありがとうございます！次の試合、絶対頑張ります！', '…いつもありがとうございます'],
+      polite: ['ありがとうございます。必ず結果でお返しいたします'],
+      ojousama: ['ありがとうございます。結果でお応えしますわ'],
+      seductive: ['ありがとう。ちゃんと結果で返すわ'],
     },
     emotional: {
-      _default: ['縺遺ｦ・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ・∝ｬ峨＠縺・ｦ・・, '縺・ｏ縺やｦ螫峨＠縺上※豕｣縺阪◎縺・ｦ・・],
+      _default: ['え…！ありがとうございます…！嬉しい…！', 'うわあ…嬉しくて泣きそう…！'],
     },
   },
   bonus_repeat: {
-    normal: { _default: ['窶ｦ縺ｾ縺滂ｼ・, '縺医▲縺ｨ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・, '・医∪縺溷酔縺倬≡鬘阪°窶ｦ・・] },
-    bold: { _default: ['窶ｦ縺ｾ縺滄≡縺九ゅｂ縺・＞縺・ｈ'] },
-    quiet: { _default: ['窶ｦ窶ｦ窶ｦ窶ｦ'] },
-    shy: { _default: ['縺やｦ縺ゅｊ縺後→縺・√＃縺悶＞縺ｾ縺吮ｦ・医∪縺溪ｦ・滂ｼ・] },
-    easygoing: { _default: ['縺医▲縺ｨ窶ｦ縺ゅｊ縺後→窶ｦ・・] },
-    earnest: { _default: ['縺ゅ・窶ｦ豌玲戟縺｡縺ｯ螫峨＠縺・ｓ縺ｧ縺吶′窶ｦ'] },
-    emotional: { _default: ['窶ｦ縺ｾ縺溪ｦ・滂ｼ亥ｰ代＠蝗ｰ縺｣縺滄｡斐ｒ縺励※縺・ｋ・・] },
+    normal: { _default: ['…また？', 'えっと…ありがとうございます', '（また同じ金額か…）'] },
+    bold: { _default: ['…また金か。もういいよ'] },
+    quiet: { _default: ['…………'] },
+    shy: { _default: ['あ…ありがとう、ございます…（また…？）'] },
+    easygoing: { _default: ['えっと…ありがと…？'] },
+    earnest: { _default: ['あの…気持ちは嬉しいんですが…'] },
+    emotional: { _default: ['…また…？（少し困った顔をしている）'] },
   },
   costume: {
     normal: {
-      _default: ['繧上≠・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺呻ｼ・, '縺・ｌ縺励＞・∝､ｧ蛻・↓縺励∪縺・, '谺｡縺ｮ隧ｦ蜷医′讌ｽ縺励∩縺ｧ縺呻ｼ・],
-      ojousama: ['縺ｾ縺らｴ謨ｵ窶ｦ・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ょ､ｧ蛻・↓縺励∪縺吶ｏ'],
-      delinquent: ['縺翫√＞縺・§繧・ｓ・∵掠縺冗捩縺溘＞・・],
-      seductive: ['邏謨ｵ窶ｦ・√≠繧翫′縺ｨ縺・よ掠縺冗捩縺ｦ縺ｿ縺溘＞繧・],
+      _default: ['わあ！ありがとうございます！', 'うれしい！大切にします', '次の試合が楽しみです！'],
+      ojousama: ['まあ素敵…！ありがとうございます。大切にしますわ'],
+      delinquent: ['お、いいじゃん！早く着たい！'],
+      seductive: ['素敵…！ありがとう。早く着てみたいわ'],
     },
     bold: {
-      _default: ['譁ｰ繧ｳ繧ｹ・√％繧檎捩縺ｦ蜍昴■縺ｾ縺上ｊ縺ｾ縺呻ｼ・, '縺薙ｌ縺ｧ隧ｦ蜷医↓蜍昴※繧区ｰ励′縺吶ｋ・・],
-      ojousama: ['縺ｾ縺ゅ∫ｴ謨ｵ縺ｧ縺吶ｏ・√％繧後〒蜍晏茜繧帝㍾縺ｭ縺ｾ縺吶ｏ繧・],
-      delinquent: ['縺翫♀・√ユ繝ｳ繧ｷ繝ｧ繝ｳ荳翫′繧九ｏ・∝享縺｡縺ｾ縺上ｋ縺懶ｼ・],
-      cool: ['窶ｦ縺・＞繝・じ繧､繝ｳ縺縲ゅ≠繧翫′縺溘＞'],
-      seductive: ['邏謨ｵ縺ｭ縲ゅ％繧後ｒ逹縺ｦ蜍昴■縺ｫ陦後￥繧・],
+      _default: ['新コス！これ着て勝ちまくります！', 'これで試合に勝てる気がする！'],
+      ojousama: ['まあ、素敵ですわ！これで勝利を重ねますわよ'],
+      delinquent: ['おお！テンション上がるわ！勝ちまくるぜ！'],
+      cool: ['…いいデザインだ。ありがたい'],
+      seductive: ['素敵ね。これを着て勝ちに行くわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺呻ｼ亥ｬ峨＠縺昴≧縺ｫ蟶・慍繧呈牒縺ｧ縺ｦ縺・ｋ・・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・ゆｽｿ繧上○縺ｦ繧ゅｉ縺・],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ょ､ｧ蛻・↓縺励∪縺・],
+      _default: ['……ありがとうございます（嬉しそうに布地を撫でている）'],
+      cool: ['…悪くない。使わせてもらう'],
+      polite: ['…ありがとうございます。大切にします'],
     },
     shy: {
-      _default: ['縺遺ｦ縺薙ｓ縺ｪ邏謨ｵ縺ｪ縺ｮ窶ｦ遘√↓窶ｦ・・縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ・・],
+      _default: ['え…こんな素敵なの…私に…？ ありがとうございます…！'],
     },
     easygoing: {
-      _default: ['縺医▲縲√％繧瑚ｶ・°繧上＞縺・ｼ√ユ繝ｳ繧ｷ繝ｧ繝ｳ荳翫′繧九懶ｼ・],
-      delinquent: ['縺・ｏ縲√ａ縺｣縺｡繧・＞縺・ｼ√ユ繝ｳ繧ｷ繝ｧ繝ｳ辷・ｸ翫′繧翫□繧擾ｼ・],
-      seductive: ['縺九ｏ縺・＞・∵掠縺冗捩縺ｦ縺ｿ縺溘＞繧上・],
+      _default: ['えっ、これ超かわいい！テンション上がる〜！'],
+      delinquent: ['うわ、めっちゃいい！テンション爆上がりだわ！'],
+      seductive: ['かわいい！早く着てみたいわ〜'],
     },
     earnest: {
-      _default: ['縺医▲縲∵悽蠖薙〒縺吶°・・ｼ・譌ｩ縺冗捩縺ｦ縺ｿ縺溘＞・・, '縺薙％縺ｾ縺ｧ縺励※繧ゅｉ縺医ｋ縺ｪ繧薙※窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・],
-      polite: ['譛ｬ蠖薙↓縺・＞繧薙〒縺吶°窶ｦ・・螟ｧ蛻・↓逹縺輔○縺ｦ縺・◆縺縺阪∪縺・],
-      ojousama: ['縺ｾ縺やｦ縺薙％縺ｾ縺ｧ縺励※縺・◆縺縺代ｋ縺ｪ繧薙※縲ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ｏ'],
-      seductive: ['譛ｬ蠖薙↓・・螫峨＠縺・ｦ螟ｧ蛻・↓縺吶ｋ繧・],
+      _default: ['えっ、本当ですか！？ 早く着てみたい！', 'ここまでしてもらえるなんて…ありがとうございます'],
+      polite: ['本当にいいんですか…？ 大切に着させていただきます'],
+      ojousama: ['まあ…ここまでしていただけるなんて。ありがとうございますわ'],
+      seductive: ['本当に？ 嬉しい…大切にするわ'],
     },
     emotional: {
-      _default: ['縺・ｏ縺やｦ・√°繧上＞縺・ｦ・∝ｬ峨＠縺・ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ・・],
+      _default: ['うわあ…！かわいい…！嬉しい…ありがとうございます…！'],
     },
   },
   trainer: {
     normal: {
-      _default: ['鬆大ｼｵ繧翫∪縺呻ｼ・, '蜈ｨ蜉帙〒蜿悶ｊ邨・∩縺ｾ縺呻ｼ・, '縺励▲縺九ｊ蜷ｸ蜿弱＠縺ｾ縺呻ｼ・],
-      ojousama: ['邊ｾ荳譚ｯ縲∝ｭｦ縺ｰ縺帙※縺・◆縺縺阪∪縺吶ｏ'],
-      delinquent: ['縺翫▲縺励ｃ縲√ぎ繝ｳ繧ｬ繝ｳ繧・ｋ縺橸ｼ・],
-      seductive: ['縺励▲縺九ｊ蜷ｸ蜿弱＆縺帙※繧ゅｉ縺・ｏ縺ｭ'],
+      _default: ['頑張ります！', '全力で取り組みます！', 'しっかり吸収します！'],
+      ojousama: ['精一杯、学ばせていただきますわ'],
+      delinquent: ['おっしゃ、ガンガンやるぞ！'],
+      seductive: ['しっかり吸収させてもらうわね'],
     },
     bold: {
-      _default: ['縺薙・迺ｰ蠅・ｒ辟｡鬧・↓縺励↑縺・ｼ∫ｵｶ蟇ｾ縺ｫ邨先棡繧貞・縺呻ｼ・, '譛鬮倥・迺ｰ蠅・□・・剞逡後∪縺ｧ霑ｽ縺・ｾｼ繧薙〒繧ゅｉ縺・ｼ・],
-      ojousama: ['縺薙・讖滉ｼ壹∵ｱｺ縺励※辟｡鬧・↓縺励∪縺帙ｓ繧擾ｼ・],
-      delinquent: ['譛鬮倥§繧・ｓ・・剞逡後∪縺ｧ霑ｽ縺・ｾｼ繧薙〒繧ゅｉ縺・●・・],
-      cool: ['窶ｦ縺ゅｊ縺後◆縺・らｵ先棡繧貞・縺・],
-      seductive: ['縺薙・迺ｰ蠅・∫┌鬧・↓縺励↑縺・ｏ縲りｦ九※縺・※縺ｭ'],
+      _default: ['この環境を無駄にしない！絶対に結果を出す！', '最高の環境だ！限界まで追い込んでもらう！'],
+      ojousama: ['この機会、決して無駄にしませんわ！'],
+      delinquent: ['最高じゃん！限界まで追い込んでもらうぜ！'],
+      cool: ['…ありがたい。結果を出す'],
+      seductive: ['この環境、無駄にしないわ。見ていてね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蜈ｨ蜉帙〒縲∝ｭｦ縺ｳ縺ｾ縺・],
-      cool: ['窶ｦ蜷ｸ蜿弱☆繧九りｦ九※縺・※縺上ｌ'],
-      polite: ['窶ｦ邊ｾ荳譚ｯ蟄ｦ縺ｰ縺帙※縺・◆縺縺阪∪縺・],
+      _default: ['……全力で、学びます'],
+      cool: ['…吸収する。見ていてくれ'],
+      polite: ['…精一杯学ばせていただきます'],
     },
     shy: {
-      _default: ['縺帙∝ｰょｱ槭・蜈育函窶ｦ・√′縲・大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['せ、専属の先生…！が、頑張ります…！'],
     },
     easygoing: {
-      _default: ['繝槭Φ繝・・繝槭Φ・・ｼ・繧√■繧・￥縺｡繧・ｴ・ｲ｢縺倥ｃ縺ｪ縺・〒縺吶°・・],
-      delinquent: ['繝槭Φ繝・・繝槭Φ・・ｼ・雜・ｴ・ｲ｢縺倥ｃ繧難ｼ・],
-      seductive: ['繝槭Φ繝・・繝槭Φ縺ｪ繧薙※雍・ｲ｢縺ｭ縲よ･ｽ縺励∩縺繧・],
+      _default: ['マンツーマン！？ めちゃくちゃ贅沢じゃないですか！'],
+      delinquent: ['マンツーマン！？ 超贅沢じゃん！'],
+      seductive: ['マンツーマンなんて贅沢ね。楽しみだわ'],
     },
     earnest: {
-      _default: ['蟆ょｱ槭・蜈育函縺後▽縺上ｓ縺ｧ縺吶°窶ｦ・√ｂ縺｣縺ｨ荳頑焔縺上↑繧後∪縺呻ｼ・, '縺薙ｓ縺ｪ讖滉ｼ壹ｒ縺・◆縺縺代※窶ｦ蜈ｨ蜉帙〒蠢懊∴縺ｾ縺・],
-      polite: ['縺薙ｓ縺ｪ讖滉ｼ壹ｒ縺・◆縺縺代※窶ｦ蜈ｨ蜉帙〒縺雁ｿ懊∴縺・◆縺励∪縺・],
-      ojousama: ['縺薙ｓ縺ｪ讖滉ｼ壹ｒ縺・◆縺縺代∪縺吶↑繧薙※窶ｦ蜈ｨ蜉帙〒縺雁ｿ懊∴縺励∪縺吶ｏ'],
-      seductive: ['縺薙ｓ縺ｪ讖滉ｼ壹ｒ繧ゅｉ縺医ｋ縺ｪ繧薙※窶ｦ蜈ｨ蜉帙〒蠢懊∴繧九ｏ'],
+      _default: ['専属の先生がつくんですか…！もっと上手くなれます！', 'こんな機会をいただけて…全力で応えます'],
+      polite: ['こんな機会をいただけて…全力でお応えいたします'],
+      ojousama: ['こんな機会をいただけますなんて…全力でお応えしますわ'],
+      seductive: ['こんな機会をもらえるなんて…全力で応えるわ'],
     },
     emotional: {
-      _default: ['縺医∴縺｣窶ｦ・∝ｰょｱ槭ヨ繝ｬ繝ｼ繝翫・窶ｦ・・大ｼｵ繧翫∪縺吮ｦ・∝ｬ峨＠縺・ｦ・・],
+      _default: ['ええっ…！専属トレーナー…！頑張ります…！嬉しい…！'],
     },
   },
   media: {
     normal: {
-      _default: ['繧医ｍ縺励￥縺企｡倥＞縺励∪縺呻ｼ・, '縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺呻ｼ・, '邱雁ｼｵ縺吶ｋ縺代←窶ｦ鬆大ｼｵ繧翫∪縺呻ｼ・],
-      ojousama: ['繝｡繝・ぅ繧｢縺ｮ縺贋ｻ穂ｺ九〒縺吶・・・邊ｾ荳譚ｯ蜍吶ａ縺ｾ縺吶ｏ'],
-      delinquent: ['繝・Ξ繝難ｼ・繧・▲縺ｦ繧・ｋ繧茨ｼ・],
-      seductive: ['繝｡繝・ぅ繧｢蜃ｺ貍披ｦ・・讌ｽ縺励∩縺繧・],
+      _default: ['よろしくお願いします！', 'ありがとうございます！', '緊張するけど…頑張ります！'],
+      ojousama: ['メディアのお仕事ですの？ 精一杯務めますわ'],
+      delinquent: ['テレビ？ やってやるよ！'],
+      seductive: ['メディア出演…？ 楽しみだわ'],
     },
     bold: {
-      _default: ['繧ゅ▲縺ｨ蠎・＞闊槫床縺ｫ蜃ｺ縺溘°縺｣縺溘ゅ≠繧翫′縺ｨ縺・ｼ・, '豕ｨ逶ｮ縺輔ｌ繧句ｴ縺ｯ螟ｧ豁楢ｿ趣ｼ∝ｭ伜惠諢溯ｦ九○縺ｦ繧・ｋ・・],
-      ojousama: ['繧医ｊ蠎・＞闊槫床縺ｸ縲ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ｏ'],
-      delinquent: ['豕ｨ逶ｮ縺輔ｌ繧薙・螟ｧ豁楢ｿ趣ｼ√ｄ縺｣縺ｦ繧・ｋ縺懶ｼ・],
-      cool: ['窶ｦ縺・＞讖滉ｼ壹□縲らｵ先棡繧貞・縺・],
-      seductive: ['豕ｨ逶ｮ縺輔ｌ繧句ｴ縺｣縺ｦ螂ｽ縺阪ｈ縲ゆｻｻ縺帙※'],
+      _default: ['もっと広い舞台に出たかった。ありがとう！', '注目される場は大歓迎！存在感見せてやる！'],
+      ojousama: ['より広い舞台へ。ありがとうございますわ'],
+      delinquent: ['注目されんの大歓迎！やってやるぜ！'],
+      cool: ['…いい機会だ。結果を出す'],
+      seductive: ['注目される場って好きよ。任せて'],
     },
     quiet: {
-      _default: ['窶ｦ縺後・大ｼｵ繧翫∪縺・],
-      cool: ['窶ｦ窶ｦ繧・ｋ'],
-      polite: ['窶ｦ邱雁ｼｵ縺励∪縺吶′縲∫ｲｾ荳譚ｯ鬆大ｼｵ繧翫∪縺・],
+      _default: ['…が、頑張ります'],
+      cool: ['……やる'],
+      polite: ['…緊張しますが、精一杯頑張ります'],
     },
     shy: {
-      _default: ['縺遺ｦ繝・Ξ繝凪ｦ・・縺阪∫ｷ雁ｼｵ縺励∪縺吮ｦ縺ｧ縲√〒繧る大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['え…テレビ…？ き、緊張します…で、でも頑張ります…！'],
     },
     easygoing: {
-      _default: ['繝・Ξ繝難ｼ・ｼ・繝輔ぃ繝ｳ縺ｮ縺ｿ繧薙↑隕九※繧九懶ｼ・],
-      delinquent: ['繝・Ξ繝難ｼ・ｼ・縺ｿ繧薙↑隕九※繧九・・・],
-      seductive: ['繝・Ξ繝難ｼ・縺ｿ繧薙↑縺ｫ隕九※繧ゅｉ縺医ｋ縺ｮ縺ｭ縲よ･ｽ縺励∩'],
+      _default: ['テレビ！？ ファンのみんな見てる〜？'],
+      delinquent: ['テレビ！？ みんな見てるー？'],
+      seductive: ['テレビ？ みんなに見てもらえるのね。楽しみ'],
     },
     earnest: {
-      _default: ['縺・ｏ縺ゅ∫ｷ雁ｼｵ縺吶ｋ窶ｦ縺ｧ繧る大ｼｵ繧翫∪縺呻ｼ・, '蝗｣菴薙・逵区攸縺ｨ縺励※諱･縺壹°縺励￥縺ｪ縺・ｈ縺・↓縺励∪縺・],
-      polite: ['邱雁ｼｵ縺・◆縺励∪縺吶′窶ｦ邊ｾ荳譚ｯ蜍吶ａ縺ｾ縺・],
-      ojousama: ['蝗｣菴薙・逵区攸縺ｨ縺励※諱･縺壹°縺励￥縺ｪ縺・ｧｿ繧偵♀隕九○縺励∪縺吶ｏ'],
-      seductive: ['邱雁ｼｵ縺吶ｋ縺代←窶ｦ邊ｾ荳譚ｯ繧・ｋ繧・],
+      _default: ['うわあ、緊張する…でも頑張ります！', '団体の看板として恥ずかしくないようにします'],
+      polite: ['緊張いたしますが…精一杯務めます'],
+      ojousama: ['団体の看板として恥ずかしくない姿をお見せしますわ'],
+      seductive: ['緊張するけど…精一杯やるわ'],
     },
     emotional: {
-      _default: ['繝・Ξ繝凪ｦ・・ｼ・縺・ｏ縺やｦ邱雁ｼｵ縺吶ｋ縺代←螫峨＠縺・ｦ・・大ｼｵ繧銀ｦ・・],
+      _default: ['テレビ…！？ うわあ…緊張するけど嬉しい…！頑張る…！'],
     },
   },
   special_treatment: {
     normal: {
-      _default: ['蜉ｩ縺九ｊ縺ｾ縺吮ｦ', '縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・, '荳譌･縺ｧ繧よ掠縺丞ｾｩ蟶ｰ縺励∪縺呻ｼ・],
-      ojousama: ['縺頑ｰ鈴▲縺・＞縺溘□縺阪√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ｏ縲ょｿ・★謌ｻ繧翫∪縺吶・'],
-      delinquent: ['繧ｵ繝ｳ繧ｭ繝･縲よ掠縺乗ｲｻ縺励※繝ｪ繝ｳ繧ｰ謌ｻ繧九ｏ'],
-      seductive: ['縺ゅｊ縺後→縺・よ掠縺乗綾繧後ｋ繧医≧縺ｫ鬆大ｼｵ繧九ｏ'],
+      _default: ['助かります…', 'ありがとうございます', '一日でも早く復帰します！'],
+      ojousama: ['お気遣いいただき、ありがとうございますわ。必ず戻りますの'],
+      delinquent: ['サンキュ。早く治してリング戻るわ'],
+      seductive: ['ありがとう。早く戻れるように頑張るわ'],
     },
     bold: {
-      _default: ['譌ｩ縺乗ｲｻ縺励※繝ｪ繝ｳ繧ｰ縺ｫ謌ｻ繧翫◆縺・ｦ・∝ｾ・▲縺ｦ繧阪ｈ窶ｦ・・],
-      ojousama: ['蠢・★謌ｻ繧翫∪縺吶ｏ縲ょｾ・▲縺ｦ縺・※縺上□縺輔＞縺ｾ縺・],
-      delinquent: ['縺吶＄豐ｻ縺励※繧・ｋ縲ょｾ・▲縺ｦ繧阪ｈ・・],
-      cool: ['窶ｦ縺吶＄謌ｻ繧九ょｾ・▲縺ｦ縺・※縺上ｌ'],
-      seductive: ['譌ｩ縺乗綾繧翫◆縺・・窶ｦ蠕・▲縺ｦ縺・※縺ｭ'],
+      _default: ['早く治してリングに戻りたい…！待ってろよ…！'],
+      ojousama: ['必ず戻りますわ。待っていてくださいませ'],
+      delinquent: ['すぐ治してやる。待ってろよ！'],
+      cool: ['…すぐ戻る。待っていてくれ'],
+      seductive: ['早く戻りたいの…待っていてね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶よ綾繧翫∪縺・],
-      cool: ['窶ｦ諢溯ｬ昴☆繧九ょｿ・★謌ｻ繧・],
-      polite: ['窶ｦ縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｦ逕ｳ縺苓ｨｳ縺斐＊縺・∪縺帙ｓ縲ょｿ・★謌ｻ繧翫∪縺・],
+      _default: ['……ありがとうございます。戻ります'],
+      cool: ['…感謝する。必ず戻る'],
+      polite: ['…ご迷惑をおかけして申し訳ございません。必ず戻ります'],
     },
     shy: {
-      _default: ['縺吶∩縺ｾ縺帙ｓ窶ｦ縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｦ窶ｦ蠢・★縲∵綾繧翫∪縺吮ｦ'],
+      _default: ['すみません…ご迷惑をおかけして…必ず、戻ります…'],
     },
     easygoing: {
-      _default: ['繧・▲縺溘懶ｼ∵怙譁ｰ縺ｮ豐ｻ逋ゅ▲縺ｦ繧・▽縺ｧ縺吶°・・ｼ・],
-      delinquent: ['縺翫▲縲∵怙譁ｰ縺ｮ豐ｻ逋ゑｼ・繝ｩ繝・く繝ｼ・・],
-      seductive: ['譛譁ｰ縺ｮ豐ｻ逋ゅ・縲よ掠縺剰憶縺上↑繧翫◎縺・□繧・],
+      _default: ['やった〜！最新の治療ってやつですか！？'],
+      delinquent: ['おっ、最新の治療？ ラッキー！'],
+      seductive: ['最新の治療ね。早く良くなりそうだわ'],
     },
     earnest: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ譌ｩ縺剰ｩｦ蜷医↓謌ｻ繧翫◆縺・ｓ縺ｧ縺・, '縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｦ縺吶∩縺ｾ縺帙ｓ窶ｦ蠢・★謌ｻ繧翫∪縺・],
-      polite: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゆｸ譌･繧よ掠縺丞ｾｩ蟶ｰ縺・◆縺励∪縺・],
-      ojousama: ['縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｾ縺励※窶ｦ蠢・★謌ｻ繧翫∪縺吶ｏ'],
-      seductive: ['縺ゅｊ縺後→縺・ｦ譌ｩ縺乗綾繧後ｋ繧医≧縺ｫ鬆大ｼｵ繧九ｏ'],
+      _default: ['ありがとうございます…早く試合に戻りたいんです', 'ご迷惑をおかけしてすみません…必ず戻ります'],
+      polite: ['ありがとうございます。一日も早く復帰いたします'],
+      ojousama: ['ご迷惑をおかけしまして…必ず戻りますわ'],
+      seductive: ['ありがとう…早く戻れるように頑張るわ'],
     },
     emotional: {
-      _default: ['縺・≧窶ｦ豐ｻ逋ゅ＠縺ｦ繧ゅｉ縺医ｋ縺ｪ繧薙※窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ譌ｩ縺乗綾繧翫◆縺・ｦ・・],
+      _default: ['うう…治療してもらえるなんて…ありがとうございます…早く戻りたい…！'],
     },
   },
   encourage: {
     normal: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ', '繧ゅ≧蟆代＠縲・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺・, '縺昴・險闡峨∝ｬ峨＠縺九▲縺溘〒縺・],
-      ojousama: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ゅｂ縺・ｰ代＠縲・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺吶ｏ'],
-      delinquent: ['窶ｦ繧ｵ繝ｳ繧ｭ繝･縲ゅｂ縺・■繧・＞繧・▲縺ｦ縺ｿ繧九ｏ'],
-      seductive: ['窶ｦ縺ゅｊ縺後→縺・ゅｂ縺・ｰ代＠縲・大ｼｵ縺｣縺ｦ縺ｿ繧九ｏ'],
+      _default: ['ありがとうございます…', 'もう少し、頑張ってみます', 'その言葉、嬉しかったです'],
+      ojousama: ['…ありがとうございます。もう少し、頑張ってみますわ'],
+      delinquent: ['…サンキュ。もうちょいやってみるわ'],
+      seductive: ['…ありがとう。もう少し、頑張ってみるわ'],
     },
     bold: {
-      _default: ['縺薙ｓ縺ｪ縺ｨ縺薙ｍ縺ｧ豁｢縺ｾ縺｣縺ｦ繧峨ｌ縺ｪ縺・ｼ∵ｬ｡縺ｯ邨ｶ蟇ｾ繧・ｋ・・, '窶ｦ蛻・°縺｣縺溘ゅ∪縺隲ｦ繧√↑縺・],
-      ojousama: ['縺薙ｓ縺ｪ縺ｨ縺薙ｍ縺ｧ邨ゅｏ繧翫∪縺帙ｓ繧擾ｼ・],
-      delinquent: ['豁｢縺ｾ縺｣縺ｦ繧峨ｌ繧九°繧茨ｼ∵ｬ｡縺ｯ邨ｶ蟇ｾ繧・▲縺ｦ繧・ｋ・・],
-      cool: ['窶ｦ縺ｾ縺邨ゅｏ縺｣縺ｦ縺・↑縺・ゅｄ繧・],
-      seductive: ['豁｢縺ｾ繧九▽繧ゅｊ縺ｯ縺ｪ縺・ｏ縲りｦ九※縺・※縺ｭ'],
+      _default: ['こんなところで止まってられない！次は絶対やる！', '…分かった。まだ諦めない'],
+      ojousama: ['こんなところで終わりませんわ！'],
+      delinquent: ['止まってられるかよ！次は絶対やってやる！'],
+      cool: ['…まだ終わっていない。やる'],
+      seductive: ['止まるつもりはないわ。見ていてね'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ縺ゅｊ縺後→縺・√＃縺悶＞縺ｾ縺・],
-      cool: ['窶ｦ窶ｦ蛻・°縺｣縺・],
-      polite: ['窶ｦ縺願ｨ闡峨√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
+      _default: ['………ありがとう、ございます'],
+      cool: ['……分かった'],
+      polite: ['…お言葉、ありがとうございます'],
     },
     shy: {
-      _default: ['窶ｦ螢ｰ繧偵°縺代※繧ゅｉ縺医※窶ｦ螫峨＠縺九▲縺溘〒縺吮ｦ鬆大ｼｵ繧翫∪縺吮ｦ'],
+      _default: ['…声をかけてもらえて…嬉しかったです…頑張ります…'],
     },
     easygoing: {
-      _default: ['縺・ｏ繝ｼ縲√＠繧薙∩繧翫＠縺滂ｼ√〒繧ょ・豌怜・縺滂ｼ√ｄ縺｣縺ｦ繧・ｋ・・, '繧医＠・√ｄ縺｣縺ｦ繧・ｋ・・],
-      delinquent: ['縺翫▲縺励ｃ・∝・豌怜・縺滂ｼ√ｄ縺｣縺ｦ繧・ｋ繧擾ｼ・],
-      seductive: ['縺ｵ縺ｵ縲∝・豌怜・縺｡繧・▲縺溘ゅｄ縺｣縺ｦ縺ｿ繧九ｏ'],
+      _default: ['うわー、しんみりした！でも元気出た！やってやる！', 'よし！やってやる！'],
+      delinquent: ['おっしゃ！元気出た！やってやるわ！'],
+      seductive: ['ふふ、元気出ちゃった。やってみるわ'],
     },
     earnest: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ繧ゅ≧荳蠎ｦ縲・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺呻ｼ・, '縺昴・險闡峨√☆縺斐￥螫峨＠縺九▲縺溘〒縺吶る大ｼｵ繧翫∪縺呻ｼ・],
-      polite: ['縺願ｨ闡峨√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ゅｂ縺・ｸ蠎ｦ鬆大ｼｵ繧翫∪縺・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ繧ゅ≧荳蠎ｦ縲・大ｼｵ縺｣縺ｦ縺ｿ縺ｾ縺吶ｏ'],
-      seductive: ['縺ゅｊ縺後→縺・ｦ繧ゅ≧荳蠎ｦ縲・大ｼｵ縺｣縺ｦ縺ｿ繧九ｏ'],
+      _default: ['ありがとうございます…もう一度、頑張ってみます！', 'その言葉、すごく嬉しかったです。頑張ります！'],
+      polite: ['お言葉、ありがとうございます。もう一度頑張ります'],
+      ojousama: ['ありがとうございます…もう一度、頑張ってみますわ'],
+      seductive: ['ありがとう…もう一度、頑張ってみるわ'],
     },
     emotional: {
-      _default: ['窶ｦ縺｣・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吮ｦ・√ｂ縺・ｸ蝗樞ｦ繧ゅ≧荳蝗樣大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['…っ！ありがとうございます…！もう一回…もう一回頑張ります…！'],
     },
   },
   encourage_high_trust: {
     normal: {
-      _default: ['縺壹▲縺ｨ隕九※縺上ｌ縺ｦ縺溘ｓ縺ｧ縺吶・窶ｦ鬆大ｼｵ繧翫∪縺呻ｼ・, '縺ゅ↑縺溘↓險繧上ｌ繧九→縲∵悽蠖薙↓蜉帙′蜃ｺ縺ｾ縺呻ｼ・],
-      ojousama: ['縺壹▲縺ｨ隕句ｮ医▲縺ｦ縺上□縺輔▲縺溘ｓ縺ｧ縺吶・縺ｭ窶ｦ縺雁ｿ懊∴縺励∪縺吶ｏ'],
-      delinquent: ['窶ｦ繧｢繝ｳ繧ｿ縺ｫ險繧上ｌ繧九→縲√ｄ繧薙↑縺阪ｃ縺｣縺ｦ諤昴≧繧薙□繧・],
-      seductive: ['縺壹▲縺ｨ隕九※縺上ｌ縺ｦ縺溘・縺ｭ窶ｦ螫峨＠縺・る大ｼｵ繧九ｏ'],
+      _default: ['ずっと見てくれてたんですね…頑張ります！', 'あなたに言われると、本当に力が出ます！'],
+      ojousama: ['ずっと見守ってくださったんですのね…お応えしますわ'],
+      delinquent: ['…アンタに言われると、やんなきゃって思うんだよ'],
+      seductive: ['ずっと見てくれてたのね…嬉しい。頑張るわ'],
     },
     bold: {
-      _default: ['縺ゅ↑縺溘′菫｡縺倥※縺上ｌ繧九↑繧峨∫ｵｶ蟇ｾ繧・ｋ・・, '縺ゅ↑縺溘・譛溷ｾ・↓縺ｯ蠢・★蠢懊∴繧具ｼ・],
-      ojousama: ['縺ゅ↑縺滓ｧ倥′菫｡縺倥※縺上□縺輔ｋ縺ｪ繧峨∝ｿ・★縺雁ｿ懊∴縺励∪縺吶ｏ・・],
-      delinquent: ['繧｢繝ｳ繧ｿ縺御ｿ｡縺倥※縺上ｌ繧薙↑繧峨√ｄ縺｣縺ｦ繧・ｋ繧茨ｼ・],
-      cool: ['窶ｦ菫｡縺倥※縺上ｌ繧九↑繧峨∝ｿ懊∴繧・],
-      seductive: ['縺ゅ↑縺溘′菫｡縺倥※縺上ｌ繧九↑繧俄ｦ邨ｶ蟇ｾ蠢懊∴繧九ｏ'],
+      _default: ['あなたが信じてくれるなら、絶対やる！', 'あなたの期待には必ず応える！'],
+      ojousama: ['あなた様が信じてくださるなら、必ずお応えしますわ！'],
+      delinquent: ['アンタが信じてくれんなら、やってやるよ！'],
+      cool: ['…信じてくれるなら、応える'],
+      seductive: ['あなたが信じてくれるなら…絶対応えるわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺壹▲縺ｨ縲∬ｦ九※縺上ｌ縺ｦ縺溘ｓ縺ｧ縺吶・'],
-      cool: ['窶ｦ蛻・°縺｣縺溘ょｿ懊∴繧・],
-      polite: ['窶ｦ縺壹▲縺ｨ隕句ｮ医▲縺ｦ縺上□縺輔▲縺溘ｓ縺ｧ縺吶・縲ゅ♀蠢懊∴縺励∪縺・],
+      _default: ['……ずっと、見てくれてたんですね'],
+      cool: ['…分かった。応える'],
+      polite: ['…ずっと見守ってくださったんですね。お応えします'],
     },
     shy: {
-      _default: ['縺壹▲縺ｨ窶ｦ隕九※縺上ｌ縺ｦ縺溘ｓ縺ｧ縺吶°窶ｦ・・繧上∫ｧ≫ｦ鬆大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['ずっと…見てくれてたんですか…？ わ、私…頑張ります…！'],
     },
     easygoing: {
-      _default: ['縺医∈縺ｸ窶ｦ隕九※縺上ｌ縺ｦ縺溘ｓ縺縲ゅｂ縺・■繧・▲縺ｨ鬆大ｼｵ繧阪≧縺九↑・・],
-      delinquent: ['隕九※縺上ｌ縺ｦ縺溘ｓ縺・・縺倥ｃ縲√ｂ縺・■繧・＞繧・ｋ縺具ｼ・],
-      seductive: ['隕九※縺上ｌ縺ｦ縺溘・縺ｭ縲ょｬ峨＠縺・ｏ縲ゅｂ縺・ｰ代＠鬆大ｼｵ縺｣縺ｦ縺ｿ繧九ｏ'],
+      _default: ['えへへ…見てくれてたんだ。もうちょっと頑張ろうかな！'],
+      delinquent: ['見てくれてたんだ？ じゃ、もうちょいやるか！'],
+      seductive: ['見てくれてたのね。嬉しいわ。もう少し頑張ってみるわ'],
     },
     earnest: {
-      _default: ['縺ゅ↑縺溘↓險繧上ｌ繧九→縲∵悽蠖薙↓蜉帙′蜃ｺ縺ｾ縺呻ｼ√ｂ縺｣縺ｨ鬆大ｼｵ繧後∪縺呻ｼ・, '縺壹▲縺ｨ隕九※縺上ｌ縺ｦ縺溘ｓ縺ｧ縺吶・窶ｦ邨ｶ蟇ｾ縺ｫ蝣ｱ縺・※縺ｿ縺帙∪縺・],
-      polite: ['縺壹▲縺ｨ隕句ｮ医▲縺ｦ縺上□縺輔▲縺溘ｓ縺ｧ縺吶・窶ｦ蠢・★縺雁ｱ縺・＞縺溘＠縺ｾ縺・],
-      ojousama: ['縺壹▲縺ｨ隕九※縺上□縺輔▲縺溘ｓ縺ｧ縺吶・縺ｭ窶ｦ縺雁ｱ縺・＠縺ｾ縺吶ｏ'],
-      seductive: ['縺壹▲縺ｨ隕九※縺上ｌ縺ｦ縺溘・縺ｭ窶ｦ邨ｶ蟇ｾ縺ｫ蝣ｱ縺・ｋ繧・],
+      _default: ['あなたに言われると、本当に力が出ます！もっと頑張れます！', 'ずっと見てくれてたんですね…絶対に報いてみせます'],
+      polite: ['ずっと見守ってくださったんですね…必ずお報いいたします'],
+      ojousama: ['ずっと見てくださったんですのね…お報いしますわ'],
+      seductive: ['ずっと見てくれてたのね…絶対に報いるわ'],
     },
     emotional: {
-      _default: ['窶ｦ縺｣・√★縺｣縺ｨ隕九※縺上ｌ縺ｦ縺溘ｓ縺ｧ縺吶・窶ｦ・∵ｳ｣縺・■繧・≧窶ｦ縺ｧ繧る大ｼｵ繧銀ｦ・・],
+      _default: ['…っ！ずっと見てくれてたんですね…！泣いちゃう…でも頑張る…！'],
     },
   },
   refresh_leave: {
     normal: {
-      _default: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺呻ｼ∬｡後▲縺ｦ縺阪∪縺呻ｼ・, '繧・▲縺上ｊ莨代ｓ縺ｧ謌ｻ縺｣縺ｦ縺阪∪縺呻ｼ・, '縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ蟆代＠縲∽ｼ代∩縺ｾ縺・],
-      ojousama: ['縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ｏ縲ゅΜ繝輔Ξ繝・す繝･縺励※蜿ゅｊ縺ｾ縺吶・'],
-      delinquent: ['繧ｵ繝ｳ繧ｭ繝･・√■繧・▲縺ｨ莨代ｓ縺ｧ縺上ｋ繧・],
-      seductive: ['縺ゅｊ縺後→縺・ゅΜ繝輔Ξ繝・す繝･縺励※縺上ｋ繧上・'],
+      _default: ['ありがとうございます！行ってきます！', 'ゆっくり休んで戻ってきます！', 'ありがとうございます…少し、休みます'],
+      ojousama: ['ありがとうございますわ。リフレッシュして参りますの'],
+      delinquent: ['サンキュ！ちょっと休んでくるわ'],
+      seductive: ['ありがとう。リフレッシュしてくるわね'],
     },
     bold: {
-      _default: ['繝ｪ繝輔Ξ繝・す繝･縺励※縲√ｂ縺｣縺ｨ荳翫ｒ逶ｮ謖・☆・・, '蜈・崕縺励※縺上ｋ・∫ｵｶ蟇ｾ謌ｻ縺｣縺ｦ縺上ｋ・・],
-      ojousama: ['蜈・崕縺励※蜿ゅｊ縺ｾ縺吶ｏ・∝ｿ・★謌ｻ繧翫∪縺吶ｏ繧茨ｼ・],
-      delinquent: ['蜈・崕縺励※縺上ｋ・∵綾縺｣縺溘ｉ蜈ｨ髢九□縺懶ｼ・],
-      cool: ['窶ｦ蜈・崕縺励※縺上ｋ縲よ綾縺｣縺溘ｉ邨先棡繧貞・縺・],
-      seductive: ['繝ｪ繝輔Ξ繝・す繝･縺励※縺上ｋ繧上よ綾縺｣縺溘ｉ繧ゅ▲縺ｨ霈昴￥縺九ｉ'],
+      _default: ['リフレッシュして、もっと上を目指す！', '充電してくる！絶対戻ってくる！'],
+      ojousama: ['充電して参りますわ！必ず戻りますわよ！'],
+      delinquent: ['充電してくる！戻ったら全開だぜ！'],
+      cool: ['…充電してくる。戻ったら結果を出す'],
+      seductive: ['リフレッシュしてくるわ。戻ったらもっと輝くから'],
     },
     quiet: {
-      _default: ['窶ｦ蟆代＠縲∽ｼ代∩縺ｾ縺吶ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      cool: ['窶ｦ諢溯ｬ昴☆繧九ょｰ代＠莨代・'],
-      polite: ['窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吶ょｰ代＠莨代∪縺帙※縺・◆縺縺阪∪縺・],
+      _default: ['…少し、休みます。ありがとうございます'],
+      cool: ['…感謝する。少し休む'],
+      polite: ['…ありがとうございます。少し休ませていただきます'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ莨代ｓ縺ｧ縺・＞繧薙〒縺吶°窶ｦ・・縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ'],
+      _default: ['あの…休んでいいんですか…？ ありがとうございます…'],
     },
     easygoing: {
-      _default: ['繧・▲縺滂ｼ√ヰ繧ｫ繝ｳ繧ｹ縺・√〒繧よ綾縺｣縺溘ｉ譛ｬ豌怜・縺励∪縺呻ｼ・],
-      delinquent: ['繝舌き繝ｳ繧ｹ縺繝ｼ・∵綾縺｣縺溘ｉ譛ｬ豌怜・縺吶°繧会ｼ・],
-      seductive: ['繝舌き繝ｳ繧ｹ縺ｭ縲ゅΜ繝輔Ξ繝・す繝･縺励※謌ｻ繧九ｏ'],
+      _default: ['やった！バカンスだ！でも戻ったら本気出します！'],
+      delinquent: ['バカンスだー！戻ったら本気出すから！'],
+      seductive: ['バカンスね。リフレッシュして戻るわ'],
     },
     earnest: {
-      _default: ['縺遺ｦ縺ｧ繧らｷｴ鄙偵′窶ｦ縺ｧ繧ゅ√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺呻ｼ・, '窶ｦ縺昴ｓ縺ｪ縺ｫ豌励↓縺九￠縺ｦ繧ゅｉ縺医ｋ縺ｨ縺ｯ縲ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      polite: ['邱ｴ鄙偵′豌励↓縺ｪ繧翫∪縺吶′窶ｦ縺頑ｰ鈴▲縺・≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
-      ojousama: ['邱ｴ鄙偵・縺薙→縺梧ｰ励↓縺ｪ繧翫∪縺吶￠繧後←窶ｦ縺雁ｿ・▲縺・√≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺吶ｏ'],
-      seductive: ['邱ｴ鄙偵′豌励↓縺ｪ繧九￠縺ｩ窶ｦ縺ゅｊ縺後→縺・ゆｼ代ｓ縺ｧ縺上ｋ繧・],
+      _default: ['え…でも練習が…でも、ありがとうございます！', '…そんなに気にかけてもらえるとは。ありがとうございます'],
+      polite: ['練習が気になりますが…お気遣いありがとうございます'],
+      ojousama: ['練習のことが気になりますけれど…お心遣い、ありがとうございますわ'],
+      seductive: ['練習が気になるけど…ありがとう。休んでくるわ'],
     },
     emotional: {
-      _default: ['莨代ｓ縺ｧ縺・＞繧薙〒縺吶°窶ｦ・・縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺吮ｦ繝ｪ繝輔Ξ繝・す繝･縺励※縺阪∪縺吮ｦ・・],
+      _default: ['休んでいいんですか…？ ありがとうございます…リフレッシュしてきます…！'],
     },
   },
   party: {
     normal: {
-      _default: ['縺顔夢繧梧ｧ倥〒縺励◆縲懶ｼ・, '縺ｿ繧薙↑縺ｧ讌ｽ縺励￥驕弱＃縺帙∪縺励◆・・, '縺薙≧縺・≧譎る俣縲√＞縺・〒縺吶・・・, '繝ｪ繝輔Ξ繝・す繝･縺ｧ縺阪∪縺励◆・・],
-      ojousama: ['讌ｽ縺励＞縺頑凾髢薙〒縺励◆繧上ら嚀讒倥√♀逍ｲ繧梧ｧ倥〒縺吶・'],
-      delinquent: ['縺・∴繝ｼ縺・ｼ√き繝ｳ繝代・繧､・・],
-      seductive: ['讌ｽ縺励°縺｣縺溘ｏ縲ゅ％縺・＞縺・凾髢薙ｂ縺・＞繧上・'],
+      _default: ['お疲れ様でした〜！', 'みんなで楽しく過ごせました！', 'こういう時間、いいですね！', 'リフレッシュできました！'],
+      ojousama: ['楽しいお時間でしたわ。皆様、お疲れ様ですの'],
+      delinquent: ['いえーい！カンパーイ！'],
+      seductive: ['楽しかったわ。こういう時間もいいわね'],
     },
     bold: {
-      _default: ['讌ｽ縺励＞縺代←窶ｦ谺｡縺ｮ闊郁｡後〒縺ｯ繧ゅ▲縺ｨ邨先棡繧貞・縺呻ｼ・, '縺・＞髮ｰ蝗ｲ豌励□縲ゅメ繝ｼ繝縺悟ｼｷ縺上↑縺｣縺ｦ繧玖ｨｼ諡縺縺ｪ'],
-      ojousama: ['逧・ｧ倥√ｈ縺城大ｼｵ繧翫∪縺励◆繧上・縲りｪ・ｊ縺ｫ諤昴＞縺ｾ縺吶ｏ'],
-      delinquent: ['繧ｫ繝ｳ繝代・繧､・・ｼ・莉頑律縺ｯ辟｡遉ｼ隰帙□縲懶ｼ・],
-      cool: ['窶ｦ謔ｪ縺上↑縺・凾髢薙□縺｣縺・],
-      seductive: ['縺・＞髮ｰ蝗ｲ豌励・縲ゅメ繝ｼ繝縺梧・髟ｷ縺励※繧玖ｨｼ諡縺繧・],
+      _default: ['楽しいけど…次の興行ではもっと結果を出す！', 'いい雰囲気だ。チームが強くなってる証拠だな'],
+      ojousama: ['皆様、よく頑張りましたわね。誇りに思いますわ'],
+      delinquent: ['カンパーイ！！ 今日は無礼講だ〜！'],
+      cool: ['…悪くない時間だった'],
+      seductive: ['いい雰囲気ね。チームが成長してる証拠だわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ讌ｽ縺励°縺｣縺溘〒縺呻ｼ亥ｰ上＆縺丞ｾｮ隨代ｓ縺ｧ縺・ｋ・・],
-      cool: ['窶ｦ謔ｪ縺上↑縺九▲縺・],
-      polite: ['窶ｦ讌ｽ縺励＞縺頑凾髢薙〒縺励◆縲ゅ≠繧翫′縺ｨ縺・＃縺悶＞縺ｾ縺・],
+      _default: ['……楽しかったです（小さく微笑んでいる）'],
+      cool: ['…悪くなかった'],
+      polite: ['…楽しいお時間でした。ありがとうございます'],
     },
     shy: {
-      _default: ['縺ゅ√≠縺ｮ窶ｦ讌ｽ縺励°縺｣縺溘√〒縺吮ｦ・磯嚆縺ｧ蟆上＆縺冗ｬ代▲縺ｦ縺・ｋ・・],
+      _default: ['あ、あの…楽しかった、です…（隅で小さく笑っている）'],
     },
     easygoing: {
-      _default: ['繧ｫ繝ｳ繝代・繧､・・ｼ・莉頑律縺ｯ辟｡遉ｼ隰帙□縲懶ｼ・, '繧ゅ≧荳霆定｡後″縺ｾ縺励ｇ縺・ｈ縲懶ｼ・],
-      delinquent: ['縺・∞繝ｼ縺・ｼ・｣ｲ繧縺槭懶ｼ・],
-      seductive: ['縺ｵ縺ｵ縲√∩繧薙↑縺・＞鬘斐＠縺ｦ繧九ｏ縺ｭ'],
+      _default: ['カンパーイ！！ 今日は無礼講だ〜！', 'もう一軒行きましょうよ〜！'],
+      delinquent: ['うぇーい！飲むぞ〜！'],
+      seductive: ['ふふ、みんないい顔してるわね'],
     },
     earnest: {
-      _default: ['縺ｿ繧薙↑縺顔夢繧梧ｧ倥〒縺励◆・∵・譌･縺九ｉ縺ｾ縺滄大ｼｵ繧翫∪縺呻ｼ・, '縺薙≧縺励※縺ｿ繧薙↑縺ｧ髮・∪繧後ｋ縺ｮ縺悟ｬ峨＠縺・〒縺・],
-      polite: ['逧・ｧ倥√♀逍ｲ繧梧ｧ倥〒縺励◆縲よ・譌･縺九ｉ縺ｾ縺滄大ｼｵ繧翫∪縺励ｇ縺・],
-      ojousama: ['逧・ｧ倥√♀逍ｲ繧梧ｧ倥〒縺吶ｏ縲よ・譌･縺九ｉ縺ｾ縺滄大ｼｵ繧翫∪縺励ｇ縺・・'],
-      seductive: ['縺顔夢繧梧ｧ倥ゅ∪縺滓・譌･縺九ｉ鬆大ｼｵ繧翫∪縺励ｇ縺・・'],
+      _default: ['みんなお疲れ様でした！明日からまた頑張ります！', 'こうしてみんなで集まれるのが嬉しいです'],
+      polite: ['皆様、お疲れ様でした。明日からまた頑張りましょう'],
+      ojousama: ['皆様、お疲れ様ですわ。明日からまた頑張りましょうね'],
+      seductive: ['お疲れ様。また明日から頑張りましょうね'],
     },
     emotional: {
-      _default: ['縺ｿ繧薙↑縲懶ｼ∵･ｽ縺励＞縲懶ｼ∝､ｧ螂ｽ縺阪懶ｼ・, '縺薙≧縺・≧譎る俣窶ｦ譛鬮倥□繧遺ｦ・・],
+      _default: ['みんな〜！楽しい〜！大好き〜！', 'こういう時間…最高だよ…！'],
     },
   },
   camp: {
     normal: {
-      _default: ['縺励▲縺九ｊ骰帙∴縺ｦ縺阪∪縺呻ｼ・, '鬆大ｼｵ繧翫∪縺呻ｼ・, '濶ｯ縺・粋螳ｿ縺ｫ縺励∪縺励ｇ縺・ｼ・, '讌ｽ縺励∩縺ｧ縺呻ｼ∝・蜉帙〒蜿悶ｊ邨・∩縺ｾ縺呻ｼ・],
-      ojousama: ['蜷亥ｮｿ縺ｧ縺吶・・・邊ｾ荳譚ｯ蜿悶ｊ邨・∩縺ｾ縺吶ｏ'],
-      delinquent: ['蜷亥ｮｿ・・繧ｬ繝ｳ繧ｬ繝ｳ繧・ｋ縺橸ｼ・],
-      seductive: ['蜷亥ｮｿ縺ｭ縲ゅ＠縺｣縺九ｊ骰帙∴繧九ｏ'],
+      _default: ['しっかり鍛えてきます！', '頑張ります！', '良い合宿にしましょう！', '楽しみです！全力で取り組みます！'],
+      ojousama: ['合宿ですの？ 精一杯取り組みますわ'],
+      delinquent: ['合宿！ ガンガンやるぞ！'],
+      seductive: ['合宿ね。しっかり鍛えるわ'],
     },
     bold: {
-      _default: ['繝ｩ繧､繝舌Ν縺ｫ蟾ｮ繧偵▽縺代ｋ繝√Ε繝ｳ繧ｹ縺・・, '蜷亥ｮｿ縺九ｉ蟶ｰ繧矩・↓縺ｯ荳蝗槭ｊ蠑ｷ縺上↑縺｣縺ｦ繧・ｋ・・],
-      ojousama: ['縺薙・蜷亥ｮｿ縺ｧ荳谿ｵ荳翫∈蜿ゅｊ縺ｾ縺吶ｏ・・],
-      delinquent: ['繧・▲縺ｦ繧・ｋ縺懶ｼ∝ｸｰ繧矩・↓縺ｯ蛻･莠ｺ縺・・],
-      cool: ['窶ｦ骰帙∴縺輔○縺ｦ繧ゅｉ縺・らｵ先棡繧貞・縺・],
-      seductive: ['蟶ｰ繧矩・↓縺ｯ荳蝗槭ｊ蠑ｷ縺上↑縺｣縺ｦ繧九ｏ繧・],
+      _default: ['ライバルに差をつけるチャンスだ！', '合宿から帰る頃には一回り強くなってやる！'],
+      ojousama: ['この合宿で一段上へ参りますわ！'],
+      delinquent: ['やってやるぜ！帰る頃には別人だ！'],
+      cool: ['…鍛えさせてもらう。結果を出す'],
+      seductive: ['帰る頃には一回り強くなってるわよ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ鬆大ｼｵ繧翫∪縺・],
-      cool: ['窶ｦ霑ｽ縺・ｾｼ繧'],
-      polite: ['窶ｦ邊ｾ荳譚ｯ縲∝叙繧顔ｵ・∩縺ｾ縺・],
+      _default: ['……頑張ります'],
+      cool: ['…追い込む'],
+      polite: ['…精一杯、取り組みます'],
     },
     shy: {
-      _default: ['縺後∝粋螳ｿ窶ｦ・・縺後・大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['が、合宿…！ が、頑張ります…！'],
     },
     easygoing: {
-      _default: ['縺・♀繝ｼ・・ｼ∝粋螳ｿ縺・∵･ｽ縺励∩・・, '螟懊・譫墓兜縺偵□・≫ｦ蝌倥〒縺吶∫ｷｴ鄙偵＠縺ｾ縺・],
-      delinquent: ['蜷亥ｮｿ縺繝ｼ・・逶帙ｊ荳翫′縺｣縺ｦ縺・￥縺槭・・・],
-      seductive: ['蜷亥ｮｿ讌ｽ縺励∩縲懊ゅ∩繧薙↑縺ｧ鬆大ｼｵ繧翫∪縺励ｇ'],
+      _default: ['うおー！！合宿だ！楽しみ！', '夜は枕投げだ！…嘘です、練習します'],
+      delinquent: ['合宿だー！ 盛り上がっていくぞー！'],
+      seductive: ['合宿楽しみ〜。みんなで頑張りましょ'],
     },
     earnest: {
-      _default: ['繧・▲縺滂ｼ∵昴＞蛻・ｊ邱ｴ鄙偵〒縺阪ｋ・・, '蜷亥ｮｿ縺ｮ髢薙↓邨ｶ蟇ｾ繝ｬ繝吶Ν繧｢繝・・縺励※縺ｿ縺帙∪縺呻ｼ・, '縺ｿ繧薙↑縺ｧ荳邱偵↓蠑ｷ縺上↑繧後ｋ縺ｪ繧薙※窶ｦ譛鬮倥〒縺・],
-      polite: ['蜈ｨ蜉帙〒蜿悶ｊ邨・∪縺帙※縺・◆縺縺阪∪縺吶ゅΞ繝吶Ν繧｢繝・・縺励※縺ｿ縺帙∪縺・],
-      ojousama: ['縺ｿ縺｣縺｡繧企惚縺医※縺・◆縺縺阪∪縺吶ｏ・∫ｵｶ蟇ｾ縺ｫ謌宣聞縺励※縺ｿ縺帙∪縺吶・'],
-      seductive: ['諤昴＞蛻・ｊ骰帙∴繧峨ｌ繧九・縺ｭ縲よ･ｽ縺励∩縺繧・],
+      _default: ['やった！思い切り練習できる！', '合宿の間に絶対レベルアップしてみせます！', 'みんなで一緒に強くなれるなんて…最高です'],
+      polite: ['全力で取り組ませていただきます。レベルアップしてみせます'],
+      ojousama: ['みっちり鍛えていただきますわ！絶対に成長してみせますの'],
+      seductive: ['思い切り鍛えられるのね。楽しみだわ'],
     },
     emotional: {
-      _default: ['蜷亥ｮｿ窶ｦ・√∩繧薙↑縺ｧ蠑ｷ縺上↑繧後ｋ窶ｦ・∵怙鬮倥□繧遺ｦ・・],
+      _default: ['合宿…！みんなで強くなれる…！最高だよ…！'],
     },
   },
 };
 
-// ﾂｧ3-3: 驕ｸ謚槫梛繧､繝吶Φ繝医そ繝ｪ繝包ｼ・1縲彜6, E1縲廢6・俄・personalityﾃ預rchetype
+// §3-3: 選択型イベントセリフ（S1〜S6, E1〜E6）— personality×archetype
 const CHOICE_EVENT_DIALOGUES = {
-  // S1: 繧ｿ繧､繝医Ν謖第姶隕∵ｱ・  S1: {
+  // S1: タイトル挑戦要求
+  S1: {
     normal: {
-      _default: ['繧ｿ繧､繝医Ν繝槭ャ繝√・讖滉ｼ壹ｒ縺・◆縺縺代∪縺帙ｓ縺具ｼ・],
-      ojousama: ['邇句ｺｧ縺ｸ縺ｮ謖第姶繧偵♀險ｱ縺励＞縺溘□縺代∪縺帙ｓ縺薙→・・],
-      delinquent: ['繧ｿ繧､繝医Ν繝槭ャ繝√∫ｵ・ｓ縺ｧ縺上ｌ繧・],
-      seductive: ['繧ｿ繧､繝医Ν繝槭ャ繝√・讖滉ｼ壹√＞縺溘□縺代↑縺・°縺励ｉ'],
+      _default: ['タイトルマッチの機会をいただけませんか？'],
+      ojousama: ['王座への挑戦をお許しいただけませんこと？'],
+      delinquent: ['タイトルマッチ、組んでくれよ'],
+      seductive: ['タイトルマッチの機会、いただけないかしら'],
     },
     bold: {
-      _default: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ蠎ｧ縺梧ｬｲ縺励＞縲ゆｻ翫☆縺千ｵ・ｓ縺ｧ縺上ｌ', '繝吶Ν繝医ｒ雉ｭ縺代◆隧ｦ蜷医′縺励◆縺・ｼ・],
-      ojousama: ['繝√Ε繝ｳ繝斐が繝ｳ縺ｮ蠎ｧ縲√＞縺溘□縺阪↓蜿ゅｊ縺ｾ縺吶ｏ'],
-      delinquent: ['繝吶Ν繝医ｈ縺薙○・∽ｻ翫☆縺千ｵ・ａ・・],
-      cool: ['窶ｦ繝吶Ν繝医′谺ｲ縺励＞縲らｵ・ｓ縺ｧ縺上ｌ'],
-      seductive: ['繝吶Ν繝医′谺ｲ縺励＞縺ｮ縲らｵ・ｓ縺ｧ繧ゅｉ縺医ｋ・・],
+      _default: ['チャンピオンの座が欲しい。今すぐ組んでくれ', 'ベルトを賭けた試合がしたい！'],
+      ojousama: ['チャンピオンの座、いただきに参りますわ'],
+      delinquent: ['ベルトよこせ！今すぐ組め！'],
+      cool: ['…ベルトが欲しい。組んでくれ'],
+      seductive: ['ベルトが欲しいの。組んでもらえる？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ謖第姶縺輔○縺ｦ縺上□縺輔＞'],
-      cool: ['窶ｦ繧ｿ繧､繝医Ν繝槭ャ繝√ｒ縲るｼ繧'],
-      polite: ['窶ｦ繧ｿ繧､繝医Ν繝槭ャ繝√↓謖第姶縺輔○縺ｦ縺・◆縺縺代∪縺吶°'],
+      _default: ['……挑戦させてください'],
+      cool: ['…タイトルマッチを。頼む'],
+      polite: ['…タイトルマッチに挑戦させていただけますか'],
     },
     shy: {
-      _default: ['縺ゅ√≠縺ｮ窶ｦ繧ｿ繧､繝医Ν繝槭ャ繝≫ｦ謖第姶縺輔○縺ｦ繧ゅｉ縺医∪縺帙ｓ縺銀ｦ・・],
+      _default: ['あ、あの…タイトルマッチ…挑戦させてもらえませんか…？'],
     },
     easygoing: {
-      _default: ['縺ｭ縺医・縺医√ち繧､繝医Ν繝槭ャ繝∫ｵ・ｓ縺ｧ繧茨ｼ・, '繝吶Ν繝域ｬｲ縺励＞縺ｪ繝ｼ縲よ倦謌ｦ縺輔○縺ｦ縺上ｌ縺ｪ縺・ｼ・],
-      delinquent: ['繧ｿ繧､繝医Ν繝槭ャ繝∫ｵ・ａ繧茨ｼ√ｄ繧区ｰ励≠繧薙□縺九ｉ縺包ｼ・],
-      seductive: ['繝吶Ν繝医∵ｬｲ縺励￥縺ｪ縺｣縺｡繧・▲縺溘よ倦謌ｦ縺輔○縺ｦ縺上ｌ縺ｪ縺・ｼ・],
+      _default: ['ねえねえ、タイトルマッチ組んでよ！', 'ベルト欲しいなー。挑戦させてくれない？'],
+      delinquent: ['タイトルマッチ組めよ！やる気あんだからさ！'],
+      seductive: ['ベルト、欲しくなっちゃった。挑戦させてくれない？'],
     },
     earnest: {
-      _default: ['縺壹▲縺ｨ貅門ｙ縺励※縺阪∪縺励◆窶ｦ繝√Ε繝ｳ繧ｹ繧偵￥縺縺輔＞', '繧ｿ繧､繝医Ν繝槭ャ繝√↓謖代∪縺帙※縺上□縺輔＞・・],
-      polite: ['縺壹▲縺ｨ貅門ｙ縺励※蜿ゅｊ縺ｾ縺励◆縲ゅメ繝｣繝ｳ繧ｹ繧偵＞縺溘□縺代∪縺帙ｓ縺・],
-      ojousama: ['縺壹▲縺ｨ貅門ｙ縺励※縺ｾ縺・ｊ縺ｾ縺励◆縺ｮ縲ゅメ繝｣繝ｳ繧ｹ繧偵＞縺溘□縺代∪縺帙ｓ縺薙→'],
-      seductive: ['縺壹▲縺ｨ貅門ｙ縺励※縺阪◆縺ｮ縲ゅメ繝｣繝ｳ繧ｹ繧偵■繧・≧縺縺・],
+      _default: ['ずっと準備してきました…チャンスをください', 'タイトルマッチに挑ませてください！'],
+      polite: ['ずっと準備して参りました。チャンスをいただけませんか'],
+      ojousama: ['ずっと準備してまいりましたの。チャンスをいただけませんこと'],
+      seductive: ['ずっと準備してきたの。チャンスをちょうだい'],
     },
     emotional: {
-      _default: ['縺企｡倥＞縺励∪縺吮ｦ・√ち繧､繝医Ν繝槭ャ繝√↓謖代∪縺帙※縺上□縺輔＞窶ｦ・・],
+      _default: ['お願いします…！タイトルマッチに挑ませてください…！'],
     },
   },
-  // S2: 蟇ｾ謌ｦ隕∵ｱゑｼ亥屏邵・ｼ・  S2: {
+  // S2: 対戦要求（因縁）
+  S2: {
     normal: {
-      _default: ['蝗邵√・縺ゅｋ逶ｸ謇九→隧ｦ蜷医ｒ邨・ｓ縺ｧ縺・◆縺縺代∪縺帙ｓ縺・],
-      ojousama: ['縺ゅ・譁ｹ縺ｨ縺ｮ豎ｺ逹繧偵√♀險ｱ縺励＞縺溘□縺代∪縺帙ｓ縺薙→'],
-      delinquent: ['縺ゅ＞縺､縺ｨ縺ｮ隧ｦ蜷医∫ｵ・ｓ縺ｧ縺上ｌ繧・],
-      seductive: ['縺ゅ・莠ｺ縺ｨ縺ｮ隧ｦ蜷医∫ｵ・ｓ縺ｧ繧ゅｉ縺医↑縺・°縺励ｉ'],
+      _default: ['因縁のある相手と試合を組んでいただけませんか'],
+      ojousama: ['あの方との決着を、お許しいただけませんこと'],
+      delinquent: ['あいつとの試合、組んでくれよ'],
+      seductive: ['あの人との試合、組んでもらえないかしら'],
     },
     bold: {
-      _default: ['縺ゅ・莠ｺ縺ｨ謌ｦ繧上★縺ｫ縺ｯ縺・ｉ繧後↑縺・ｼ∫ｵ・ｓ縺ｧ縺上ｌ・・, '豎ｺ逹繧偵▽縺代◆縺・ゅ≠縺・▽縺ｨ謌ｦ縺・ｩ滉ｼ壹ｒ菴懊▲縺ｦ縺上ｌ'],
-      ojousama: ['縺ゅ・譁ｹ縺ｨ豎ｺ逹繧偵▽縺代∪縺帙ｓ縺ｨ・・],
-      delinquent: ['縺ゅ＞縺､縺ｨ豎ｺ逹縺､縺代＆縺帙ｍ・・],
-      cool: ['窶ｦ豎ｺ逹繧偵▽縺代◆縺・らｵ・ｓ縺ｧ縺上ｌ'],
-      seductive: ['縺ゅ・莠ｺ縺ｨ豎ｺ逹繧偵▽縺代◆縺・・縲らｵ・ｓ縺ｧ繧ゅｉ縺医ｋ・・],
+      _default: ['あの人と戦わずにはいられない！組んでくれ！', '決着をつけたい。あいつと戦う機会を作ってくれ'],
+      ojousama: ['あの方と決着をつけませんと！'],
+      delinquent: ['あいつと決着つけさせろ！'],
+      cool: ['…決着をつけたい。組んでくれ'],
+      seductive: ['あの人と決着をつけたいの。組んでもらえる？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺ゅ・莠ｺ縺ｨ縲∵姶繧上○縺ｦ縺上□縺輔＞'],
-      cool: ['窶ｦ縺ゅ＞縺､縺ｨ縺ｮ隧ｦ蜷医ｒ縲るｼ繧'],
-      polite: ['窶ｦ縺ゅ・譁ｹ縺ｨ縺ｮ蟇ｾ謌ｦ繧偵√♀鬘倥＞縺ｧ縺阪∪縺吶°'],
+      _default: ['……あの人と、戦わせてください'],
+      cool: ['…あいつとの試合を。頼む'],
+      polite: ['…あの方との対戦を、お願いできますか'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ縺ゅ・莠ｺ縺ｨ窶ｦ隧ｦ蜷医＆縺帙※繧ゅｉ縺医∪縺帙ｓ縺銀ｦ'],
+      _default: ['あの…あの人と…試合させてもらえませんか…'],
     },
     easygoing: {
-      _default: ['縺ゅ・莠ｺ縺ｨ縺ｮ隧ｦ蜷育ｵ・ｓ縺ｧ繧茨ｼ∵ｱｺ逹縺､縺代◆縺・ｓ縺・・],
-      delinquent: ['縺ゅ＞縺､縺ｨ繧・ｉ縺帙ｍ繧茨ｼ√こ繝ｪ縺､縺代※繧・ｋ・・],
-      seductive: ['縺ゅ・莠ｺ縺ｨ縺ｮ隧ｦ蜷医∫ｵ・ｓ縺ｧ縺上ｌ縺ｪ縺・ｼ・豎ｺ逹縺､縺代◆縺・・'],
+      _default: ['あの人との試合組んでよ！決着つけたいんだ！'],
+      delinquent: ['あいつとやらせろよ！ケリつけてやる！'],
+      seductive: ['あの人との試合、組んでくれない？ 決着つけたいの'],
     },
     earnest: {
-      _default: ['縺ゅ・逶ｸ謇九ｒ雜翫∴縺ｦ縺薙◎縲∵ｬ｡縺ｮ繧ｹ繝・・繧ｸ縺ｫ陦後￠繧九らｵ・ｓ縺ｧ縺上□縺輔＞'],
-      polite: ['縺ゅ・譁ｹ縺ｨ縺ｮ隧ｦ蜷医ｒ邨・ｓ縺ｧ縺・◆縺縺代↑縺・〒縺励ｇ縺・°'],
-      ojousama: ['縺ゅ・譁ｹ繧定ｶ翫∴縺ｦ縺薙◎縺ｧ縺吶ｏ縲らｵ・ｓ縺ｧ縺・◆縺縺代∪縺帙ｓ縺薙→'],
-      seductive: ['縺ゅ・莠ｺ繧定ｶ翫∴縺溘＞縺ｮ縲りｩｦ蜷医ｒ邨・ｓ縺ｧ縺上ｌ縺ｪ縺・ｼ・],
+      _default: ['あの相手を越えてこそ、次のステージに行ける。組んでください'],
+      polite: ['あの方との試合を組んでいただけないでしょうか'],
+      ojousama: ['あの方を越えてこそですわ。組んでいただけませんこと'],
+      seductive: ['あの人を越えたいの。試合を組んでくれない？'],
     },
     emotional: {
-      _default: ['縺ゅ・莠ｺ縺ｨ謌ｦ縺・◆縺・ｦ・√♀鬘倥＞縺励∪縺吮ｦ邨・ｓ縺ｧ縺上□縺輔＞窶ｦ・・],
+      _default: ['あの人と戦いたい…！お願いします…組んでください…！'],
     },
   },
-  // S3: 莨鷹､企｡倥＞
+  // S3: 休養願い
   S3: {
     normal: {
-      _default: ['蟆代＠莨鷹､翫ｒ縺・◆縺縺代∪縺吶°・・],
-      ojousama: ['蟆代＠縺贋ｼ代∩繧偵＞縺溘□縺代∪縺吶°縺励ｉ窶ｦ'],
-      delinquent: ['縺｡繧・▲縺ｨ莨代∪縺帙※縺上ｌ窶ｦ'],
-      seductive: ['蟆代＠莨代∪縺帙※繧ゅｉ縺医↑縺・°縺励ｉ窶ｦ'],
+      _default: ['少し休養をいただけますか？'],
+      ojousama: ['少しお休みをいただけますかしら…'],
+      delinquent: ['ちょっと休ませてくれ…'],
+      seductive: ['少し休ませてもらえないかしら…'],
     },
     bold: {
-      _default: ['窶ｦ謔斐＠縺・￠縺ｩ縲∽ｽ薙′髯千阜縺縲ょｰ代＠莨代∪縺帙※縺上ｌ'],
-      ojousama: ['窶ｦ縺頑▼縺壹°縺励＞縺ｮ縺ｧ縺吶′縲∽ｽ薙′髯千阜縺ｧ縺吶ｏ'],
-      delinquent: ['縺上◎窶ｦ菴薙′繧ゅ≧髯千阜縺縲ゆｼ代∪縺帙※縺上ｌ'],
-      cool: ['窶ｦ髯千阜縺縲ゆｼ代・'],
-      seductive: ['窶ｦ菴薙′髯千阜縺ｪ縺ｮ縲ょｰ代＠莨代∪縺帙※'],
+      _default: ['…悔しいけど、体が限界だ。少し休ませてくれ'],
+      ojousama: ['…お恥ずかしいのですが、体が限界ですわ'],
+      delinquent: ['くそ…体がもう限界だ。休ませてくれ'],
+      cool: ['…限界だ。休む'],
+      seductive: ['…体が限界なの。少し休ませて'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蟆代＠縲∽ｼ代∪縺帙※縺上□縺輔＞'],
-      cool: ['窶ｦ莨代・蠢・ｦ√′縺ゅｋ'],
-      polite: ['窶ｦ逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ縲ょｰ代＠莨代∪縺帙※縺・◆縺縺代∪縺吶°窶ｦ'],
+      _default: ['……少し、休ませてください'],
+      cool: ['…休む必要がある'],
+      polite: ['…申し訳ありません。少し休ませていただけますか…'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ縺吶∩縺ｾ縺帙ｓ窶ｦ菴薙′窶ｦ蟆代＠莨代∪縺帙※繧ゅｉ縺医∪縺吶°窶ｦ'],
+      _default: ['あの…すみません…体が…少し休ませてもらえますか…'],
     },
     easygoing: {
-      _default: ['繧ゅ≧髯千阜・√■繧・▲縺ｨ莨代∪縺ｪ縺・→繝槭ず縺ｧ繧・・縺・ｼ・],
-      delinquent: ['辟｡逅・ｼ・剞逡鯉ｼ∽ｼ代∪縺帙※・・],
-      seductive: ['縺斐ａ繧薙・縲√■繧・▲縺ｨ髯千阜縺ｿ縺溘＞縲ゆｼ代∪縺帙※縺上ｌ繧具ｼ・],
+      _default: ['もう限界！ちょっと休まないとマジでやばい！'],
+      delinquent: ['無理！限界！休ませて！'],
+      seductive: ['ごめんね、ちょっと限界みたい。休ませてくれる？'],
     },
     earnest: {
-      _default: ['霑ｷ諠代ｒ縺九￠縺ｦ縺励∪縺｣縺ｦ逕ｳ縺苓ｨｳ縺ｪ縺・ｓ縺ｧ縺吶′窶ｦ蟆代＠莨代∪縺帙※繧ゅｉ縺医∪縺吶°', '繝√・繝縺ｫ霑ｷ諠代・縺九￠縺溘￥縺ｪ縺・ｓ縺ｧ縺吶′窶ｦ菴薙′髯千阜縺ｧ窶ｦ'],
-      polite: ['縺碑ｿｷ諠代ｒ縺翫°縺代＠縺ｾ縺励※逕ｳ縺苓ｨｳ縺斐＊縺・∪縺帙ｓ窶ｦ蟆代＠縺贋ｼ代∩繧偵＞縺溘□縺代∪縺吶°'],
-      ojousama: ['繝√・繝縺ｫ縺碑ｿｷ諠代・縺九￠縺溘￥縺ゅｊ縺ｾ縺帙ｓ縺ｮ縺ｫ窶ｦ菴薙′髯千阜縺ｧ縺吶ｏ窶ｦ'],
-      seductive: ['霑ｷ諠代°縺代◆縺上↑縺・ｓ縺縺代←窶ｦ菴薙′髯千阜縺ｪ縺ｮ窶ｦ'],
+      _default: ['迷惑をかけてしまって申し訳ないんですが…少し休ませてもらえますか', 'チームに迷惑はかけたくないんですが…体が限界で…'],
+      polite: ['ご迷惑をおかけしまして申し訳ございません…少しお休みをいただけますか'],
+      ojousama: ['チームにご迷惑はかけたくありませんのに…体が限界ですわ…'],
+      seductive: ['迷惑かけたくないんだけど…体が限界なの…'],
     },
     emotional: {
-      _default: ['縺斐ａ繧薙↑縺輔＞窶ｦ菴薙′繧ゅ≧窶ｦ莨代∪縺帙※縺上□縺輔＞窶ｦ・・],
+      _default: ['ごめんなさい…体がもう…休ませてください…！'],
     },
   },
-  // S4: 荳肴ｺ繝ｻ騾蝗｣遉ｺ蜚・ｼ井ｽ師rust・・  S4_direct: {
+  // S4: 不満・退団示唆（低trust）
+  S4_direct: {
     normal: {
-      _default: ['縺薙・縺ｾ縺ｾ縺ｧ縺ｯ髯千阜縺ｧ縺吶ょｾ・∞繧呈隼蝟・＠縺ｦ縺・◆縺縺代∪縺帙ｓ縺・],
-      ojousama: ['縺薙・縺ｾ縺ｾ縺ｧ縺ｯ蝗ｰ繧翫∪縺吶・縲ゅ♀隧ｱ縺怜粋縺・ｒ縺輔○縺ｦ縺・◆縺縺代∪縺帙ｓ縺薙→'],
-      delinquent: ['荳肴ｺ縺縺｣縺､縺｣縺ｦ繧薙・縲ゅ■繧・ｓ縺ｨ隧ｱ縺怜粋縺翫≧縺・],
-      seductive: ['縺薙・縺ｾ縺ｾ縺倥ｃ蝗ｰ繧九ｏ縲ゅ■繧・ｓ縺ｨ閠・∴縺ｦ繧ゅｉ縺医↑縺・°縺励ｉ'],
+      _default: ['このままでは限界です。待遇を改善していただけませんか'],
+      ojousama: ['このままでは困りますの。お話し合いをさせていただけませんこと'],
+      delinquent: ['不満だっつってんの。ちゃんと話し合おうぜ'],
+      seductive: ['このままじゃ困るわ。ちゃんと考えてもらえないかしら'],
     },
     bold: {
-      _default: ['縺薙・縺ｾ縺ｾ縺倥ｃ邏榊ｾ励〒縺阪↑縺・よ隼蝟・＠縺ｦ縺上ｌ縺ｪ縺代ｌ縺ｰ遘ｻ邀阪ｒ閠・∴繧・, '遘√・螳溷鴨繧剃ｽｿ縺・″繧後※縺・↑縺・ゅ％縺薙↓縺・ｋ諢丞袖縺ｯ縺ゅｋ縺ｮ縺・],
-      ojousama: ['縺薙・縺ｾ縺ｾ縺ｧ縺ｯ邏榊ｾ励〒縺阪∪縺帙ｓ繧上ゅ＃讀懆ｨ弱＞縺溘□縺代↑縺代ｌ縺ｰ窶ｦ'],
-      delinquent: ['縺薙ｓ縺ｪ繧薙§繧・ｄ縺｣縺ｦ繧峨ｓ縺ｭ繝ｼ繧茨ｼ∵隼蝟・＠繧搾ｼ・],
-      cool: ['窶ｦ縺薙・縺ｾ縺ｾ縺ｧ縺ｯ蜈医′縺ｪ縺・り・∴縺ｦ縺上ｌ'],
-      seductive: ['縺薙・縺ｾ縺ｾ縺倥ｃ謌第・縺ｮ髯千阜繧医り・∴逶ｴ縺励※繧ゅｉ縺医↑縺・ｼ・],
+      _default: ['このままじゃ納得できない。改善してくれなければ移籍を考える', '私の実力を使いきれていない。ここにいる意味はあるのか'],
+      ojousama: ['このままでは納得できませんわ。ご検討いただけなければ…'],
+      delinquent: ['こんなんじゃやってらんねーよ！改善しろ！'],
+      cool: ['…このままでは先がない。考えてくれ'],
+      seductive: ['このままじゃ我慢の限界よ。考え直してもらえない？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ・磯匱縺励＞逶ｮ縺ｧ縺薙■繧峨ｒ隕九▽繧√※縺・ｋ・・],
-      cool: ['窶ｦ窶ｦ繧ゅ≧縲・剞逡後□・磯撕縺九↓縲√＠縺九＠譁ｭ蝗ｺ縺ｨ縺励※・・],
-      polite: ['窶ｦ逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ縲ゅ◆縺窶ｦ縺薙・縺ｾ縺ｾ縺ｧ縺ｯ窶ｦ'],
+      _default: ['………（険しい目でこちらを見つめている）'],
+      cool: ['……もう、限界だ（静かに、しかし断固として）'],
+      polite: ['…申し訳ありません。ただ…このままでは…'],
     },
     shy: {
-      _default: ['窶ｦ縺ゅ・窶ｦ縺斐ａ繧薙↑縺輔＞窶ｦ縺ｧ繧やｦ縺薙・縺ｾ縺ｾ縺縺ｨ窶ｦ'],
+      _default: ['…あの…ごめんなさい…でも…このままだと…'],
     },
     easygoing: {
-      _default: ['縺ｶ縺｣縺｡繧・￠荳肴ｺ縺ｧ縺呻ｼ√■繧・ｓ縺ｨ隧ｱ縺怜粋縺・∪縺励ｇ縺・ｼ・],
-      delinquent: ['繧ゅ≧辟｡逅・ｼ√■繧・ｓ縺ｨ隧ｱ縺怜粋縺医ｈ・・],
-      seductive: ['縺ｶ縺｣縺｡繧・￠縲∽ｸ肴ｺ縺後≠繧九・縲ゅ■繧・ｓ縺ｨ隧ｱ縺励∪縺励ｇ縺・ｼ・],
+      _default: ['ぶっちゃけ不満です！ちゃんと話し合いましょう！'],
+      delinquent: ['もう無理！ちゃんと話し合えよ！'],
+      seductive: ['ぶっちゃけ、不満があるの。ちゃんと話しましょう？'],
     },
     earnest: {
-      _default: ['窶ｦ縺壹▲縺ｨ謌第・縺励※縺阪∪縺励◆縲ゅ〒繧ゅ√％縺ｮ縺ｾ縺ｾ縺ｧ縺ｯ窶ｦ', '遘√・逶ｮ讓吶ｒ驕疲・縺ｧ縺阪ｋ迺ｰ蠅・′蠢・ｦ√〒縺吶り・∴逶ｴ縺励※繧ゅｉ縺医∪縺帙ｓ縺・],
-      polite: ['縺壹▲縺ｨ謌第・縺励※蜿ゅｊ縺ｾ縺励◆縺娯ｦ縺薙・縺ｾ縺ｾ縺ｧ縺ｯ髯千阜縺ｧ縺・],
-      ojousama: ['縺薙ｌ縺ｾ縺ｧ閠舌∴縺ｦ縺ｾ縺・ｊ縺ｾ縺励◆縺代ｌ縺ｩ窶ｦ繧ゅ≧髯千阜縺ｧ縺吶ｏ'],
-      seductive: ['縺壹▲縺ｨ謌第・縺励※縺阪◆縺ｮ縲ゅ〒繧ゅ√ｂ縺・剞逡後ｈ'],
+      _default: ['…ずっと我慢してきました。でも、このままでは…', '私の目標を達成できる環境が必要です。考え直してもらえませんか'],
+      polite: ['ずっと我慢して参りましたが…このままでは限界です'],
+      ojousama: ['これまで耐えてまいりましたけれど…もう限界ですわ'],
+      seductive: ['ずっと我慢してきたの。でも、もう限界よ'],
     },
     emotional: {
-      _default: ['窶ｦ繧ゅ≧窶ｦ辟｡逅・〒縺吮ｦ・√％縺ｮ縺ｾ縺ｾ縺縺ｨ窶ｦ遘≫ｦ・・],
+      _default: ['…もう…無理です…！このままだと…私…！'],
     },
   },
   S4_silent: {
-    normal: { _default: ['・域ｲ磯ｻ呻ｼ俄ｦ縺・∴縲∽ｽ輔〒繧ゅ↑縺・〒縺・] },
-    bold: { _default: ['窶ｦ窶ｦ窶ｦ窶ｦ・域教繧呈升繧翫＠繧√※縺・ｋ・・] },
+    normal: { _default: ['（沈黙）…いえ、何でもないです'] },
+    bold: { _default: ['…………（拳を握りしめている）'] },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ窶ｦ・亥ｰ上＆縺上◆繧∵・繧偵▽縺阪∬ｦ也ｷ壹ｒ騾ｸ繧峨☆・・],
-      cool: ['窶ｦ窶ｦ・井ｽ輔ｂ險繧上★縲∫ｫ九■蜴ｻ繧阪≧縺ｨ縺吶ｋ・・],
-      polite: ['窶ｦ窶ｦ窶ｦ・育岼繧剃ｼ上○縺ｦ縲∽ｽ輔°繧貞ｪ縺医ｋ繧医≧縺ｫ蜚・ｒ蝎帙・・俄ｦ窶ｦ'],
+      _default: ['…………（小さくため息をつき、視線を逸らす）'],
+      cool: ['……（何も言わず、立ち去ろうとする）'],
+      polite: ['………（目を伏せて、何かを堪えるように唇を噛む）……'],
     },
-    shy: { _default: ['窶ｦ窶ｦ窶ｦ窶ｦ・育岼繧帝ｸ繧峨＠縺ｦ縲∽ｽ輔ｂ險縺医★縺ｫ縺・ｋ・・] },
-    easygoing: { _default: ['縺ゅ・縺ｯ窶ｦ縺・ｄ縲√↑繧薙〒繧やｦ・育ｬ代▲縺ｦ縺・ｋ縺檎岼縺檎ｬ代▲縺ｦ縺・↑縺・ｼ・] },
-    earnest: { _default: ['窶ｦ窶ｦ窶ｦ窶ｦ・井ｽ輔°險縺・◆縺偵↓蜿｣繧帝幕縺阪°縺代∵ｭ｢繧√ｋ・・] },
-    emotional: { _default: ['窶ｦ窶ｦ縺｣・域ｳ｣縺上・繧貞ｪ縺医ｋ繧医≧縺ｫ蜚・ｒ蝎帙ｓ縺ｧ縺・ｋ・・] },
+    shy: { _default: ['…………（目を逸らして、何も言えずにいる）'] },
+    easygoing: { _default: ['あはは…いや、なんでも…（笑っているが目が笑っていない）'] },
+    earnest: { _default: ['…………（何か言いたげに口を開きかけ、止める）'] },
+    emotional: { _default: ['……っ（泣くのを堪えるように唇を噛んでいる）'] },
   },
-  // S5: 迚ｹ險灘ｿ鈴｡假ｼ磯ｫ・rust・・  S5: {
+  // S5: 特訓志願（高trust）
+  S5: {
     normal: {
-      _default: ['迚ｹ險薙☆繧区凾髢薙ｒ縺・◆縺縺代∪縺帙ｓ縺具ｼ・],
-      ojousama: ['迚ｹ險薙・縺頑凾髢薙ｒ縺・◆縺縺代∪縺帙ｓ縺薙→・・],
-      delinquent: ['迚ｹ險薙＆縺帙※縺上ｌ縲ゅｂ縺｣縺ｨ蠑ｷ縺上↑繧翫※縺・],
-      seductive: ['迚ｹ險薙＆縺帙※繧ゅｉ縺医↑縺・°縺励ｉ・・],
+      _default: ['特訓する時間をいただけませんか？'],
+      ojousama: ['特訓のお時間をいただけませんこと？'],
+      delinquent: ['特訓させてくれ。もっと強くなりてえ'],
+      seductive: ['特訓させてもらえないかしら？'],
     },
     bold: {
-      _default: ['繧ゅ▲縺ｨ荳翫ｒ逶ｮ謖・＠縺溘＞縲ら音險薙＆縺帙※縺上ｌ・・, '辯・∴縺ｦ繧具ｼ√→縺薙→繧薙ｄ繧峨○縺ｦ縺上ｌ・・],
-      ojousama: ['繧ゅ▲縺ｨ荳翫ｒ逶ｮ謖・＠縺溘＞縺ｮ縺ｧ縺吶ｏ縲ら音險薙ｒ縺願ｨｱ縺励￥縺縺輔＞縺ｾ縺幢ｼ・],
-      delinquent: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫※縺・ｼ∫音險薙＆縺帙ｍ・・],
-      cool: ['窶ｦ迚ｹ險薙＆縺帙※縺上ｌ縲ゅｂ縺｣縺ｨ蠑ｷ縺上↑繧・],
-      seductive: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・・縲ら音險薙＆縺帙※繧ゅｉ縺医ｋ・・],
+      _default: ['もっと上を目指したい。特訓させてくれ！', '燃えてる！とことんやらせてくれ！'],
+      ojousama: ['もっと上を目指したいのですわ。特訓をお許しくださいませ！'],
+      delinquent: ['もっと強くなりてぇ！特訓させろ！'],
+      cool: ['…特訓させてくれ。もっと強くなる'],
+      seductive: ['もっと強くなりたいの。特訓させてもらえる？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ迚ｹ險薙√＆縺帙※縺上□縺輔＞'],
-      cool: ['窶ｦ骰帙∴縺溘＞縲ょｴ謇繧定ｲｸ縺励※縺上ｌ'],
-      polite: ['窶ｦ迚ｹ險薙ｒ縺輔○縺ｦ縺・◆縺縺代∪縺吶°'],
+      _default: ['……特訓、させてください'],
+      cool: ['…鍛えたい。場所を貸してくれ'],
+      polite: ['…特訓をさせていただけますか'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ迚ｹ險凪ｦ縺輔○縺ｦ繧ゅｉ縺医∪縺帙ｓ縺銀ｦ・・繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・ｓ縺ｧ縺吮ｦ'],
+      _default: ['あの…特訓…させてもらえませんか…？ もっと強くなりたいんです…'],
     },
     easygoing: {
-      _default: ['迚ｹ險薙＠縺溘＞・√ｂ縺｣縺ｨ蠑ｷ縺上↑繧翫◆縺・ｓ縺・・],
-      delinquent: ['迚ｹ險薙☆繧薙◇・√ｂ縺｣縺ｨ蠑ｷ縺上↑繧翫※繝ｼ繧薙□繧茨ｼ・],
-      seductive: ['迚ｹ險薙＠縺溘＞縺ｮ縲ゅｂ縺｣縺ｨ蠑ｷ縺上↑繧翫◆縺上※'],
+      _default: ['特訓したい！もっと強くなりたいんだ！'],
+      delinquent: ['特訓すんぞ！もっと強くなりてーんだよ！'],
+      seductive: ['特訓したいの。もっと強くなりたくて'],
     },
     earnest: {
-      _default: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・ｓ縺ｧ縺吶ら音險薙ｒ險ｱ蜿ｯ縺励※縺上□縺輔＞・・],
-      polite: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・・縺ｧ縺吶ら音險薙ｒ縺願ｨｱ縺励＞縺溘□縺代∪縺吶°'],
-      ojousama: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・〒縺吶・縲ら音險薙・縺願ｨｱ縺励ｒ縺・◆縺縺代∪縺帙ｓ縺薙→'],
-      seductive: ['繧ゅ▲縺ｨ蠑ｷ縺上↑繧翫◆縺・・縲ら音險薙＆縺帙※繧ゅｉ縺医ｋ・・],
+      _default: ['もっと強くなりたいんです。特訓を許可してください！'],
+      polite: ['もっと強くなりたいのです。特訓をお許しいただけますか'],
+      ojousama: ['もっと強くなりたいですの。特訓のお許しをいただけませんこと'],
+      seductive: ['もっと強くなりたいの。特訓させてもらえる？'],
     },
     emotional: {
-      _default: ['縺企｡倥＞縺励∪縺吮ｦ・∫音險薙＆縺帙※縺上□縺輔＞窶ｦ・√ｂ縺｣縺ｨ縲√ｂ縺｣縺ｨ蠑ｷ縺上↑繧翫◆縺・ｦ・・],
+      _default: ['お願いします…！特訓させてください…！もっと、もっと強くなりたい…！'],
     },
   },
-  // S6: 蠕瑚ｼｩ謖・ｰ弱・逕ｳ縺怜・・医・繝・Λ繝ｳ・・  S6: {
+  // S6: 後輩指導の申し出（ベテラン）
+  S6: {
     normal: {
-      _default: ['蠕瑚ｼｩ縺ｮ謖・ｰ弱ｒ諡・ｽ薙＆縺帙※繧ゅｉ縺医∪縺帙ｓ縺具ｼ・],
-      ojousama: ['蠕瑚ｼｩ縺ｮ縺贋ｸ冶ｩｱ繧偵∫ｧ√↓縺贋ｻｻ縺帙＞縺溘□縺代∪縺帙ｓ縺薙→・・],
-      delinquent: ['蠕瑚ｼｩ縺ｮ髱｢蛟偵∬ｦ九＆縺帙※縺上ｌ繧・],
-      seductive: ['蠕瑚ｼｩ縺ｮ謖・ｰ弱∫ｧ√↓繧・ｉ縺帙※繧ゅｉ縺医↑縺・°縺励ｉ'],
+      _default: ['後輩の指導を担当させてもらえませんか？'],
+      ojousama: ['後輩のお世話を、私にお任せいただけませんこと？'],
+      delinquent: ['後輩の面倒、見させてくれよ'],
+      seductive: ['後輩の指導、私にやらせてもらえないかしら'],
     },
     bold: {
-      _default: ['闍･縺・ｭ舌◆縺｡縺ｮ髱｢蛟偵ｒ隕九＆縺帙※縺上ｌ縲ゅ◎繧後′遘√・蠖ｹ逶ｮ縺'],
-      ojousama: ['闍･縺・ｭ舌◆縺｡縺ｮ縺贋ｸ冶ｩｱ縺ｯ遘√・蜍吶ａ縺ｧ縺吶ｏ'],
-      delinquent: ['蠕瑚ｼｩ縺ｮ髱｢蛟偵・莉ｻ縺帙ｍ縲る惚縺医※繧・ｋ'],
-      cool: ['窶ｦ蠕瑚ｼｩ繧定ｦ九ｋ縲ゆｻｻ縺帙※縺上ｌ'],
-      seductive: ['蠕瑚ｼｩ縺ｮ髱｢蛟偵∬ｦ九＆縺帙※繧ゅｉ縺医ｋ縺九＠繧会ｼ・],
+      _default: ['若い子たちの面倒を見させてくれ。それが私の役目だ'],
+      ojousama: ['若い子たちのお世話は私の務めですわ'],
+      delinquent: ['後輩の面倒は任せろ。鍛えてやる'],
+      cool: ['…後輩を見る。任せてくれ'],
+      seductive: ['後輩の面倒、見させてもらえるかしら？'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ蠕瑚ｼｩ縺ｫ縲∽ｼ昴∴縺溘＞縺薙→縺後≠繧九ｓ縺ｧ縺・],
-      cool: ['窶ｦ谺｡縺ｮ荳紋ｻ｣縺ｫ縲∫ｹ九℃縺溘＞繧ゅ・縺後≠繧・],
-      polite: ['窶ｦ蠕瑚ｼｩ縺ｮ縺疲欠蟆弱ｒ縲∵球蠖薙＆縺帙※縺・◆縺縺代∪縺吶°'],
+      _default: ['……後輩に、伝えたいことがあるんです'],
+      cool: ['…次の世代に、繋ぎたいものがある'],
+      polite: ['…後輩のご指導を、担当させていただけますか'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ遘√〒繧医￠繧後・窶ｦ蠕瑚ｼｩ縺ｮ蟄舌◆縺｡縺ｫ窶ｦ菴輔°莨昴∴繧峨ｌ縺溘ｉ窶ｦ'],
+      _default: ['あの…私でよければ…後輩の子たちに…何か伝えられたら…'],
     },
     easygoing: {
-      _default: ['蠕瑚ｼｩ縺ｮ髱｢蛟定ｦ九＆縺帙※繧茨ｼ∵･ｽ縺励◎縺・□縺暦ｼ・],
-      delinquent: ['蠕瑚ｼｩ縺ｮ髱｢蛟定ｦ九ｋ繧擾ｼ∽ｻｻ縺帙→縺托ｼ・],
-      seductive: ['蠕瑚ｼｩ縺ｮ蟄舌◆縺｡縲√°繧上＞縺・ｏ繧医・縲る擇蛟定ｦ九＆縺帙※繧ゅｉ縺医↑縺・ｼ・],
+      _default: ['後輩の面倒見させてよ！楽しそうだし！'],
+      delinquent: ['後輩の面倒見るわ！任せとけ！'],
+      seductive: ['後輩の子たち、かわいいわよね。面倒見させてもらえない？'],
     },
     earnest: {
-      _default: ['遘√′蝓ｹ縺｣縺ｦ縺阪◆繧ゅ・繧偵∝ｾ瑚ｼｩ縺ｫ莨昴∴縺溘＞縺ｨ諤昴▲縺ｦ窶ｦ', '蠕瑚ｼｩ縺ｫ菴輔°繧剃ｼ昴∴縺溘＞繧薙〒縺吶よ欠蟆弱・讖滉ｼ壹ｒ繧ゅｉ縺医∪縺吶°'],
-      polite: ['蝓ｹ縺｣縺ｦ縺阪◆繧ゅ・繧貞ｾ瑚ｼｩ縺ｫ縺贋ｼ昴∴縺励◆縺・・縺ｧ縺・],
-      ojousama: ['遘√′蟄ｦ繧薙〒縺阪◆縺薙→繧偵∝ｾ瑚ｼｩ縺ｫ縺贋ｼ昴∴縺励◆縺・→諤昴＞縺ｾ縺励※窶ｦ'],
-      seductive: ['蝓ｹ縺｣縺ｦ縺阪◆繧ゅ・繧偵∵ｬ｡縺ｮ蟄舌◆縺｡縺ｫ莨昴∴縺溘＞縺ｮ'],
+      _default: ['私が培ってきたものを、後輩に伝えたいと思って…', '後輩に何かを伝えたいんです。指導の機会をもらえますか'],
+      polite: ['培ってきたものを後輩にお伝えしたいのです'],
+      ojousama: ['私が学んできたことを、後輩にお伝えしたいと思いまして…'],
+      seductive: ['培ってきたものを、次の子たちに伝えたいの'],
     },
     emotional: {
-      _default: ['蠕瑚ｼｩ縺ｮ蟄舌◆縺｡縺ｫ窶ｦ遘√↓縺ｧ縺阪ｋ縺薙→縺後≠繧九↑繧俄ｦ繧・ｉ縺帙※縺上□縺輔＞・・],
+      _default: ['後輩の子たちに…私にできることがあるなら…やらせてください！'],
     },
   },
-  // E1: 繝｡繝・ぅ繧｢蜃ｺ貍斐が繝輔ぃ繝ｼ
+  // E1: メディア出演オファー
   E1: {
     normal: {
-      _default: ['繝｡繝・ぅ繧｢縺ｸ縺ｮ蜃ｺ貍斐√＃讀懆ｨ弱＞縺溘□縺代∪縺吶°・・, '蜃ｺ貍斐・縺願ｩｱ繧偵＞縺溘□縺阪∪縺励◆縲ゅｄ縺｣縺ｦ縺ｿ縺溘＞縺ｧ縺・],
-      ojousama: ['繝｡繝・ぅ繧｢縺ｮ縺願ｩｱ縺ｧ縺吶・・・縺懊・縺雁女縺代＠縺溘＞縺ｧ縺吶ｏ'],
-      delinquent: ['繝・Ξ繝灘・繧後ｓ縺ｮ・・繧・ｋ繧・ｋ・・],
-      seductive: ['繝｡繝・ぅ繧｢蜃ｺ貍斐・縺願ｩｱ・・讌ｽ縺励∩縺繧・],
+      _default: ['メディアへの出演、ご検討いただけますか？', '出演のお話をいただきました。やってみたいです'],
+      ojousama: ['メディアのお話ですの？ ぜひお受けしたいですわ'],
+      delinquent: ['テレビ出れんの？ やるやる！'],
+      seductive: ['メディア出演のお話？ 楽しみだわ'],
     },
     bold: {
-      _default: ['縺薙・髴ｲ蜃ｺ繧定ｶｳ縺後°繧翫↓縲√ｂ縺｣縺ｨ螟ｧ縺阪↑闊槫床縺ｸ騾ｲ縺ｿ縺溘＞', '遘√′蜃ｺ繧後・豕ｨ逶ｮ縺輔ｌ繧九・縺ｯ蠖鍋┯縲よ･ｽ縺励∩縺ｫ縺励※繧・],
-      ojousama: ['遘√′蜃ｺ繧後・縺雁ｮ｢讒倥ｂ蝟懊・縺ｾ縺吶ｏ縲よ･ｽ縺励∩縺ｧ縺吶・'],
-      delinquent: ['繧・▲縺ｦ繧・ｋ縺懶ｼ∵ｳｨ逶ｮ縺輔ｌ繧薙・縺ｯ螟ｧ豁楢ｿ弱□・・],
-      cool: ['窶ｦ縺・＞讖滉ｼ壹□縲ょ・繧・],
-      seductive: ['豕ｨ逶ｮ縺輔ｌ繧句ｴ縺ｯ螂ｽ縺阪ｈ縲ゅｂ縺｡繧阪ｓ繧・ｋ繧・],
+      _default: ['この露出を足がかりに、もっと大きな舞台へ進みたい', '私が出れば注目されるのは当然。楽しみにしてる'],
+      ojousama: ['私が出ればお客様も喜びますわ。楽しみですの'],
+      delinquent: ['やってやるぜ！注目されんのは大歓迎だ！'],
+      cool: ['…いい機会だ。出る'],
+      seductive: ['注目される場は好きよ。もちろんやるわ'],
     },
     quiet: {
-      _default: ['窶ｦ蜃ｺ貍斐・縺願ｩｱ縲√〒縺吶°窶ｦ鬆大ｼｵ繧翫∪縺・],
-      cool: ['窶ｦ窶ｦ繧・ｋ'],
-      polite: ['窶ｦ蜃ｺ貍斐・縺願ｩｱ縺ｧ縺励ｇ縺・°縲らｲｾ荳譚ｯ蜉ｪ繧√∪縺・],
+      _default: ['…出演のお話、ですか…頑張ります'],
+      cool: ['……やる'],
+      polite: ['…出演のお話でしょうか。精一杯努めます'],
     },
     shy: {
-      _default: ['縺遺ｦ繝・Ξ繝凪ｦ・・繧上∫ｧ√↑繧薙°縺娯ｦ縺ｧ縲√〒繧ゅｄ縺｣縺ｦ縺ｿ縺溘＞縺ｧ縺吮ｦ'],
+      _default: ['え…テレビ…？ わ、私なんかが…で、でもやってみたいです…'],
     },
     easygoing: {
-      _default: ['繝輔ぃ繝ｳ縺ｮ縺ｿ縺ｪ縺輔ｓ縺ｫ縲√ｂ縺｣縺ｨ霑代￥縺ｧ遘√ｒ隕九※繧ゅｉ縺・◆縺・ｼ・, '繝・Ξ繝難ｼ・ｼ・繧・▲縺滂ｼ∝・縺溘＞・・],
-      delinquent: ['繝・Ξ繝灘・繧薙・・・ｼ・譛鬮倥§繧・ｓ・・],
-      seductive: ['繝輔ぃ繝ｳ縺ｮ縺ｿ繧薙↑縺ｫ繧ゅ▲縺ｨ隕九※繧ゅｉ縺医ｋ縺ｮ縺ｭ縲ょｬ峨＠縺・ｏ'],
+      _default: ['ファンのみなさんに、もっと近くで私を見てもらいたい！', 'テレビ！？ やった！出たい！'],
+      delinquent: ['テレビ出んの！？ 最高じゃん！'],
+      seductive: ['ファンのみんなにもっと見てもらえるのね。嬉しいわ'],
     },
     earnest: {
-      _default: ['繝・Ξ繝薙・邱雁ｼｵ縺励∪縺吶￠縺ｩ窶ｦ邊ｾ荳譚ｯ繧・ｊ縺ｾ縺呻ｼ・],
-      polite: ['邱雁ｼｵ縺・◆縺励∪縺吶′窶ｦ邊ｾ荳譚ｯ蜍吶ａ縺輔○縺ｦ縺・◆縺縺阪∪縺・],
-      ojousama: ['繝・Ξ繝薙・邱雁ｼｵ縺・◆縺励∪縺吶￠繧後←窶ｦ邊ｾ荳譚ｯ繧・ｉ縺帙※縺・◆縺縺阪∪縺吶ｏ'],
-      seductive: ['邱雁ｼｵ縺吶ｋ縺代←窶ｦ邊ｾ荳譚ｯ繧・ｋ繧・],
+      _default: ['テレビは緊張しますけど…精一杯やります！'],
+      polite: ['緊張いたしますが…精一杯務めさせていただきます'],
+      ojousama: ['テレビは緊張いたしますけれど…精一杯やらせていただきますわ'],
+      seductive: ['緊張するけど…精一杯やるわ'],
     },
     emotional: {
-      _default: ['繝・Ξ繝凪ｦ・・ｼ・縺医▲窶ｦ螫峨＠縺・ｦ・・大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['テレビ…！？ えっ…嬉しい…！頑張ります…！'],
     },
   },
-  // E4: 繧ｹ繧ｫ繧ｦ繝域ュ蝣ｱ・亥ｰ・擂諡｡蠑ｵ逕ｨ繝励Ξ繝ｼ繧ｹ繝帙Ν繝・・  E4: {
-    normal: { _default: ['譁ｰ縺溘↑繧ｹ繧ｫ繧ｦ繝域ュ蝣ｱ縺悟ｱ翫″縺ｾ縺励◆'] },
+  // E4: スカウト情報（将来拡張用プレースホルダ）
+  E4: {
+    normal: { _default: ['新たなスカウト情報が届きました'] },
   },
-  // E6: 莉門屮菴薙°繧峨・蠑輔″謚懊″
+  // E6: 他団体からの引き抜き
   E6: {
     normal: {
-      _default: ['莉悶・蝗｣菴薙°繧峨が繝輔ぃ繝ｼ縺梧擂縺ｦ縺・∪縺・],
-      ojousama: ['莉悶・蝗｣菴薙°繧峨♀隧ｱ縺後＃縺悶＞縺ｾ縺励◆縺ｮ窶ｦ'],
-      delinquent: ['莉匁園縺九ｉ隧ｱ譚･縺ｦ繧薙□縺代←'],
-      seductive: ['莉悶・蝗｣菴薙°繧峨♀隱倥＞縺梧擂縺ｦ繧九・'],
+      _default: ['他の団体からオファーが来ています'],
+      ojousama: ['他の団体からお話がございましたの…'],
+      delinquent: ['他所から話来てんだけど'],
+      seductive: ['他の団体からお誘いが来てるの'],
     },
     bold: {
-      _default: ['窶ｦ譛ｬ蠖薙・縺薙→繧定ｨ縺・→縲√＞縺・擅莉ｶ縺縺ｨ諤昴▲縺ｦ繧・, '莉匁園縺九ｉ隧ｱ縺梧擂縺溘り・∴縺ｦ繧ゅ＞縺・□繧・],
-      ojousama: ['窶ｦ豁｣逶ｴ縺ｫ逕ｳ縺励∪縺吶→縲∬憶縺・擅莉ｶ縺ｧ縺吶ｏ'],
-      delinquent: ['莉匁園縺九ｉ縺・＞隧ｱ譚･縺ｦ繧薙□繧医り・∴縺輔○縺ｦ縺上ｌ'],
-      cool: ['窶ｦ莉悶°繧芽ｩｱ縺梧擂縺溘よ擅莉ｶ縺ｯ謔ｪ縺上↑縺・],
-      seductive: ['莉匁園縺九ｉ縺・＞隧ｱ縺梧擂縺ｦ繧九・縲よｭ｣逶ｴ縲∬ｿｷ縺｣縺ｦ繧九ｏ'],
+      _default: ['…本当のことを言うと、いい条件だと思ってる', '他所から話が来た。考えてもいいだろ'],
+      ojousama: ['…正直に申しますと、良い条件ですわ'],
+      delinquent: ['他所からいい話来てんだよ。考えさせてくれ'],
+      cool: ['…他から話が来た。条件は悪くない'],
+      seductive: ['他所からいい話が来てるの。正直、迷ってるわ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ莉悶°繧峨∬ｩｱ縺鯉ｼ亥ｰ上＆縺ｪ螢ｰ縺ｧ・・],
-      cool: ['窶ｦ莉匁園縺九ｉ譚･縺溘ょｱ蜻翫☆繧・],
-      polite: ['窶ｦ莉悶・蝗｣菴捺ｧ倥°繧峨♀隧ｱ縺娯ｦ蝣ｱ蜻翫＠縺ｦ縺翫″縺ｾ縺・],
+      _default: ['………他から、話が（小さな声で）'],
+      cool: ['…他所から来た。報告する'],
+      polite: ['…他の団体様からお話が…報告しておきます'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ莉悶・蝗｣菴薙°繧俄ｦ縺昴・窶ｦ縺ｩ縺・＠縺溘ｉ縺・＞縺句・縺九ｉ縺ｪ縺上※窶ｦ'],
+      _default: ['あの…他の団体から…その…どうしたらいいか分からなくて…'],
     },
     easygoing: {
-      _default: ['繝槭ず縺ｧ・・ｼ・莉悶・蝗｣菴薙′遘√ｒ谺ｲ縺励＞縺｣縺ｦ・・ｼ・縺｡繧・▲縺ｨ螫峨＠縺・°繧やｦ'],
-      delinquent: ['莉匁園縺九ｉ隧ｱ譚･縺溘ｓ縺縺代←・√■繧・▲縺ｨ螫峨＠縺上・・・],
-      seductive: ['莉匁園縺九ｉ縺願ｪ倥＞縺梧擂縺｡繧・▲縺溘ゅ■繧・▲縺ｨ螫峨＠縺・°繧・],
+      _default: ['マジで！？ 他の団体が私を欲しいって！？ ちょっと嬉しいかも…'],
+      delinquent: ['他所から話来たんだけど！ちょっと嬉しくね？'],
+      seductive: ['他所からお誘いが来ちゃった。ちょっと嬉しいかも'],
     },
     earnest: {
-      _default: ['縺薙■繧峨↓鄒ｩ逅・′縺ゅｋ縺ｮ縺ｧ譁ｭ繧翫∪縺励◆縺娯ｦ蝣ｱ蜻翫＠縺ｦ縺翫″縺ｾ縺・, '縺ｿ繧薙↑縺ｨ髮｢繧後◆縺上↑縺・ｰ玲戟縺｡縺ｯ縺ゅｋ縺代←窶ｦ豁｣逶ｴ縲∬ｿｷ縺｣縺ｦ縺ｾ縺・],
-      polite: ['縺薙■繧峨↓鄒ｩ逅・′縺斐＊縺・∪縺吶・縺ｧ窶ｦ縺溘□縲√＃蝣ｱ蜻翫□縺代・'],
-      ojousama: ['縺薙■繧峨∈縺ｮ鄒ｩ逅・′縺斐＊縺・∪縺吶°繧俄ｦ縺ｧ繧ゅ√＃蝣ｱ蜻翫□縺代・縺ｨ諤昴＞縺ｾ縺励※'],
-      seductive: ['鄒ｩ逅・′縺ゅｋ縺九ｉ譁ｭ縺｣縺溘￠縺ｩ窶ｦ蝣ｱ蜻翫・縺励※縺翫￥繧上・'],
+      _default: ['こちらに義理があるので断りましたが…報告しておきます', 'みんなと離れたくない気持ちはあるけど…正直、迷ってます'],
+      polite: ['こちらに義理がございますので…ただ、ご報告だけは'],
+      ojousama: ['こちらへの義理がございますから…でも、ご報告だけはと思いまして'],
+      seductive: ['義理があるから断ったけど…報告はしておくわね'],
     },
     emotional: {
-      _default: ['莉悶・蝗｣菴薙°繧峨が繝輔ぃ繝ｼ縺娯ｦ縺ｩ縺・＠繧医≧窶ｦ霑ｷ縺｣縺ｦ繧銀ｦ'],
+      _default: ['他の団体からオファーが…どうしよう…迷ってる…'],
     },
   },
-  // ﾂｧ13.3: S-邱ｴ鄙偵・繧､繧ｳ繝・ヨ・・rust < 38・・  S_boycott: {
+  // §13.3: S-練習ボイコット（trust < 38）
+  S_boycott: {
     normal: {
-      _default: ['窶ｦ窶ｦ莉頑律縺ｯ邱ｴ鄙偵☆繧区ｰ怜・縺倥ｃ縺ｪ縺・〒縺・, '窶ｦ窶ｦ縺吶∩縺ｾ縺帙ｓ縲∽ｻ頑律縺ｯ蟶ｰ繧翫∪縺・],
-      ojousama: ['莉頑律縺ｯ縺顔ｨｽ蜿､繧偵♀莨代∩縺輔○縺ｦ縺・◆縺縺阪∪縺吶ｏ窶ｦ逅・罰縺ｯ窶ｦ縺疲Φ蜒上↓縺贋ｻｻ縺帙＠縺ｾ縺吶ｏ'],
-      delinquent: ['邱ｴ鄙抵ｼ溘ｄ繧区э蜻ｳ縺ゅｓ縺ｮ・溷・縺励※繧ゅｉ縺医・縺・ｓ縺倥ｃ蜷後§縺繧・],
-      cool: ['窶ｦ窶ｦ窶ｦ窶ｦ・郁差迚ｩ繧偵∪縺ｨ繧√※蟶ｰ繧阪≧縺ｨ縺励※縺・ｋ・・],
-      seductive: ['縺斐ａ繧薙↑縺輔＞縺ｭ窶ｦ莉頑律縺ｯ縺｡繧・▲縺ｨ縲∵ｰ玲戟縺｡縺悟・繧峨↑縺上※'],
+      _default: ['……今日は練習する気分じゃないです', '……すみません、今日は帰ります'],
+      ojousama: ['今日はお稽古をお休みさせていただきますわ…理由は…ご想像にお任せしますわ'],
+      delinquent: ['練習？やる意味あんの？出してもらえねぇんじゃ同じだろ'],
+      cool: ['…………（荷物をまとめて帰ろうとしている）'],
+      seductive: ['ごめんなさいね…今日はちょっと、気持ちが入らなくて'],
     },
     bold: {
-      _default: ['邱ｴ鄙抵ｼ溷・縺励※繧ゅ￥繧後↑縺・・縺ｫ菴輔・諢丞袖縺後≠繧九ｓ縺繧・, '繝ｪ繝ｳ繧ｰ縺ｫ荳翫′繧後↑縺・↑繧臥ｷｴ鄙偵＠縺ｦ繧ゆｻ墓婿縺ｪ縺・□繧・],
-      delinquent: ['縺ｯ縺・ｼ溘ｄ繧区ｰ怜・縺ｪ縺・▲縺､縺ｮ縲よ枚蜿･縺ゅｓ縺ｪ繧芽ｩｦ蜷育ｵ・ａ繧・],
+      _default: ['練習？出してもくれないのに何の意味があるんだよ', 'リングに上がれないなら練習しても仕方ないだろ'],
+      delinquent: ['はぁ？やる気出ないっつの。文句あんなら試合組めよ'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ窶ｦ・磯ｻ吶▲縺ｦ驕灘ｴ繧貞・縺ｦ縺・％縺・→縺励※縺・ｋ・・, '窶ｦ窶ｦ縺吶∩縺ｾ縺帙ｓ窶ｦ莉頑律縺ｯ窶ｦ窶ｦ'],
-      cool: ['窶ｦ窶ｦ窶ｦ・磯撕縺九↓繝・・繝斐Φ繧ｰ繧貞､悶＠縺ｦ縺・ｋ・・],
+      _default: ['…………（黙って道場を出ていこうとしている）', '……すみません…今日は……'],
+      cool: ['………（静かにテーピングを外している）'],
     },
     easygoing: {
-      _default: ['縺ゅ・縺ｯ窶ｦ莉頑律縺ｯ縺｡繧・▲縺ｨ繧ｵ繝懊ｊ縺ｾ繝ｼ縺吮ｦ', '邱ｴ鄙偵・縺・ｦ縺・・繧薙∽ｻ頑律縺ｯ繝代せ縺ｧ'],
+      _default: ['あはは…今日はちょっとサボりまーす…', '練習ねぇ…うーん、今日はパスで'],
     },
     earnest: {
-      _default: ['縺吶∩縺ｾ縺帙ｓ窶ｦ莉頑律縺ｯ縺ｩ縺・＠縺ｦ繧ゆｽ薙′蜍輔°縺ｪ縺上※窶ｦ', '邱ｴ鄙偵↓髮・ｸｭ縺ｧ縺阪↑縺上※窶ｦ逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ'],
-      polite: ['螟ｧ螟臥筏縺苓ｨｳ縺斐＊縺・∪縺帙ｓ窶ｦ莉頑律縺ｯ縺ｩ縺・＠縺ｦ繧やｦ'],
+      _default: ['すみません…今日はどうしても体が動かなくて…', '練習に集中できなくて…申し訳ありません'],
+      polite: ['大変申し訳ございません…今日はどうしても…'],
     },
     emotional: {
-      _default: ['繧ゅ≧辟｡逅・ｦ邱ｴ鄙偵↑繧薙※縺ｧ縺阪↑縺・ｦ', '蜃ｺ縺励※繧ゅｉ縺医↑縺・・縺ｫ邱ｴ鄙偵＠縺ｦ窶ｦ菴輔↓縺ｪ繧九・窶ｦ'],
+      _default: ['もう無理…練習なんてできない…', '出してもらえないのに練習して…何になるの…'],
     },
   },
-  // ﾂｧ13.3: S-繝ｭ繝・き繝ｼ繝ｫ繝ｼ繝諢夂龍・・rust < 35・・  S_grumble: {
+  // §13.3: S-ロッカールーム愚痴（trust < 35）
+  S_grumble: {
     normal: {
-      _default: ['・医Ο繝・き繝ｼ繝ｫ繝ｼ繝縺ｧ荳肴ｺ繧呈ｼ上ｉ縺励※縺・ｋ窶ｦ蜻ｨ蝗ｲ縺ｫ莨晄眺縺怜ｧ九ａ縺滂ｼ・],
-      ojousama: ['・域而螳､縺ｧ縲後≠縺ｮ譁ｹ縺ｮ驥・・縲∝ｰ代＠縺翫°縺励￥縺ｪ縺上※・溘阪→蝗√＞縺ｦ縺・ｋ・・],
-      delinquent: ['・医後・繧ｸ縺ｵ縺悶￠繧薙↑縲阪→繝ｭ繝・き繝ｼ繧定ｹｴ繧矩浹縺瑚◇縺薙∴縺ｦ縺阪◆・・],
-      cool: ['・育┌險縺ｧ菴・ｓ縺ｧ縺・ｋ縺後∝捉蝗ｲ縺梧ｰ励ｒ驕｣縺｣縺ｦ驥阪＞遨ｺ豌励↓縺ｪ縺｣縺ｦ縺・ｋ・・],
-      seductive: ['・医梧怙霑代√％縺薙↓縺・ｋ諢丞袖縺ゅｋ縺ｮ縺九＠繧峨阪→蜷悟・縺ｫ貍上ｉ縺励※縺・ｋ・・],
+      _default: ['（ロッカールームで不満を漏らしている…周囲に伝播し始めた）'],
+      ojousama: ['（控室で「あの方の采配、少しおかしくなくて？」と囁いている）'],
+      delinquent: ['（「マジふざけんな」とロッカーを蹴る音が聞こえてきた）'],
+      cool: ['（無言で佇んでいるが、周囲が気を遣って重い空気になっている）'],
+      seductive: ['（「最近、ここにいる意味あるのかしら」と同僚に漏らしている）'],
     },
     bold: {
-      _default: ['・医後↑繧薙〒菫ｺ縺溘■縺後％繧薙↑謇ｱ縺・女縺代↑縺阪ｃ縺・￠縺ｪ縺・ｓ縺縲阪→螟ｧ螢ｰ縺ｧ險縺｣縺ｦ縺・ｋ・・],
+      _default: ['（「なんで俺たちがこんな扱い受けなきゃいけないんだ」と大声で言っている）'],
     },
     quiet: {
-      _default: ['・磯ｻ吶▲縺ｦ縺・ｋ縺後√◎縺ｮ豐磯ｻ吶′縺九∴縺｣縺ｦ蜻ｨ蝗ｲ繧剃ｸ榊ｮ峨↓縺輔○縺ｦ縺・ｋ・・],
+      _default: ['（黙っているが、その沈黙がかえって周囲を不安にさせている）'],
     },
     easygoing: {
-      _default: ['・医＞縺､繧ゅ・隨鷹｡斐′豸医∴縲√後■繧・▲縺ｨ縺輔＝窶ｦ縲阪→迴阪＠縺乗・逞ｴ繧偵％縺ｼ縺励※縺・ｋ・・],
+      _default: ['（いつもの笑顔が消え、「ちょっとさぁ…」と珍しく愚痴をこぼしている）'],
     },
     earnest: {
-      _default: ['・医瑚・蛻・√％縺ｮ縺ｾ縺ｾ縺ｧ縺・＞繧薙〒縺吶°縺ｭ窶ｦ縲阪→蠕瑚ｼｩ縺ｫ蠑ｱ髻ｳ繧貞瑞縺・※縺・ｋ・・],
+      _default: ['（「自分、このままでいいんですかね…」と後輩に弱音を吐いている）'],
     },
     emotional: {
-      _default: ['・域ｶ吶＄縺ｿ縺ｪ縺後ｉ縲後ｂ縺・剞逡後°繧やｦ縲阪→繝√・繝繝｡繧､繝医↓謇薙■譏弱￠縺ｦ縺・ｋ・・],
+      _default: ['（涙ぐみながら「もう限界かも…」とチームメイトに打ち明けている）'],
     },
   },
-  // ﾂｧ13.3: S-SNS蛹ゅｏ縺幢ｼ・rust < 30, pop 40+・・  S_sns: {
+  // §13.3: S-SNS匂わせ（trust < 30, pop 40+）
+  S_sns: {
     normal: {
-      _default: ['・・NS縺ｫ縲瑚・蛻・・螻・ｴ謇縺ｯ縺ｩ縺薙↑繧薙□繧阪≧縲阪→諢丞袖豺ｱ縺ｪ謚慕ｨｿ・・],
-      ojousama: ['・・NS縺ｫ縲檎ｪｮ螻医↑蝣ｴ謇縺九ｉ縺ｯ縲√＞縺､縺ｧ繧ょ・縺ｦ縺・￠縺ｾ縺吶・縲阪→謚慕ｨｿ・・],
-      delinquent: ['・・NS縺ｫ縲後ｂ縺・・諷｢縺ｮ髯千阜縲阪→荳咲ｩ上↑謚慕ｨｿ・・],
-      cool: ['・・NS縺ｫ鬚ｨ譎ｯ蜀咏悄縺ｨ縲碁□縺上∈縲阪→縺縺第兜遞ｿ縲ゅヵ繧｡繝ｳ縺後＊繧上▽縺・※縺・ｋ・・],
-      seductive: ['・・NS縺ｫ縲梧ｬ｡縺ｮ繧ｹ繝・・繧ｸ縺悟ｾ・▲縺ｦ縺・ｋ縺九ｂ縲阪→蛹ゅｏ縺帶兜遞ｿ・・],
+      _default: ['（SNSに「自分の居場所はどこなんだろう」と意味深な投稿）'],
+      ojousama: ['（SNSに「窮屈な場所からは、いつでも出ていけますの」と投稿）'],
+      delinquent: ['（SNSに「もう我慢の限界」と不穏な投稿）'],
+      cool: ['（SNSに風景写真と「遠くへ」とだけ投稿。ファンがざわついている）'],
+      seductive: ['（SNSに「次のステージが待っているかも」と匂わせ投稿）'],
     },
     bold: {
-      _default: ['・・NS縺ｫ縲後％縺ｮ縺ｾ縺ｾ邨ゅｏ繧九▽繧ゅｊ縺ｯ縺ｪ縺・阪→螳｣險逧・↑謚慕ｨｿ・・],
+      _default: ['（SNSに「このまま終わるつもりはない」と宣言的な投稿）'],
     },
     quiet: {
-      _default: ['・・NS縺ｫ縲娯ｦ縲阪→縺縺第兜遞ｿ縲ゅヵ繧｡繝ｳ縺ｮ髢薙〒諞ｶ貂ｬ縺悟ｺ・′縺｣縺ｦ縺・ｋ・・],
+      _default: ['（SNSに「…」とだけ投稿。ファンの間で憶測が広がっている）'],
     },
     easygoing: {
-      _default: ['・・NS縺ｫ縲梧怙霑代■繧・▲縺ｨ閠・∴繧九％縺ｨ縺後≠縺｣縺ｦ繝ｼ縲阪→迴阪＠縺冗悄髱｢逶ｮ縺ｪ謚慕ｨｿ・・],
+      _default: ['（SNSに「最近ちょっと考えることがあってー」と珍しく真面目な投稿）'],
     },
     earnest: {
-      _default: ['・・NS縺ｫ縲瑚・蛻・・譛ｬ蠖薙↓縺薙％縺ｧ蠢・ｦ√→縺輔ｌ縺ｦ縺・ｋ縺ｮ縺九阪→邇・峩縺ｪ謚慕ｨｿ・・],
+      _default: ['（SNSに「自分は本当にここで必要とされているのか」と率直な投稿）'],
     },
     emotional: {
-      _default: ['・・NS縺ｫ豸吶・邨ｵ譁・ｭ励→縲後ｂ縺・ム繝｡縺九ｂ縺励ｌ縺ｪ縺・阪→謚慕ｨｿ縲らｎ荳翫＠蟋九ａ縺ｦ縺・ｋ・・],
+      _default: ['（SNSに涙の絵文字と「もうダメかもしれない」と投稿。炎上し始めている）'],
     },
   },
 };
 
-// ﾂｧ13.5: P-閾ｪ逋ｺ逧・ｮ狗蕗繧ｻ繝ｪ繝包ｼ・rust 75+縺ｧ螂醍ｴ・ｺ､貂峨せ繧ｭ繝・・・・const VOLUNTARY_STAY_LINES = {
+// §13.5: P-自発的残留セリフ（trust 75+で契約交渉スキップ）
+const VOLUNTARY_STAY_LINES = {
   normal: {
-    _default: ['谿九ｊ縺ｾ縺吶ゅ％縺薙′閾ｪ蛻・・螻・ｴ謇縺ｧ縺吶°繧・],
-    ojousama: ['繧上◆縺上＠縲√％縺｡繧峨↓谿九ｉ縺帙※縺・◆縺縺阪∪縺吶ｏ縲ゅ％縺薙′荳逡ｪ霈昴￠繧句ｴ謇縺ｧ縺吶ｂ縺ｮ'],
-    delinquent: ['縺ｩ縺薙↓繧り｡後°縺ｭ繝ｼ繧医ゅ％縺薙′荳逡ｪ縺翫ｂ縺励ｌ繝ｼ縺九ｉ縺ｪ'],
-    cool: ['・磯撕縺九↓縺・↑縺壹＞縺ｦ縺・ｋ・俄ｦ窶ｦ縺薙％縺ｫ縺・ｋ'],
-    seductive: ['縺ゅｉ縲∽ｻ悶↓陦後￥蝣ｴ謇縺ｪ繧薙※縺ｪ縺・ｏ縲ゅ％縺薙′螂ｽ縺阪↑縺ｮ'],
+    _default: ['残ります。ここが自分の居場所ですから'],
+    ojousama: ['わたくし、こちらに残らせていただきますわ。ここが一番輝ける場所ですもの'],
+    delinquent: ['どこにも行かねーよ。ここが一番おもしれーからな'],
+    cool: ['（静かにうなずいている）……ここにいる'],
+    seductive: ['あら、他に行く場所なんてないわ。ここが好きなの'],
   },
   bold: {
-    _default: ['莉悶↓陦後￥逅・罰縺後↑縺・ゅ％縺薙〒鬆らせ繧堤岼謖・☆'],
-    delinquent: ['陦後￥繧上￠縺ｭ繝ｼ縺繧阪ゅ％縺薙〒荳逡ｪ縺ｫ縺ｪ繧九∪縺ｧ蟶ｰ繧峨・縺・ｈ'],
+    _default: ['他に行く理由がない。ここで頂点を目指す'],
+    delinquent: ['行くわけねーだろ。ここで一番になるまで帰らねぇよ'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ窶ｦ・磯撕縺九↓縺・↑縺壹＞縺ｦ縺・ｋ・・],
-    cool: ['窶ｦ窶ｦ窶ｦ窶ｦ・亥･醍ｴ・嶌縺ｫ繝壹Φ繧定ｵｰ繧峨○縺滂ｼ・],
+    _default: ['………（静かにうなずいている）'],
+    cool: ['…………（契約書にペンを走らせた）'],
   },
   easygoing: {
-    _default: ['縺・ｄ繝ｼ蠖鍋┯谿九ｋ縺ｧ縺励ｇ・√％縺捺･ｽ縺励＞繧ゅｓ・・],
+    _default: ['いやー当然残るでしょ！ここ楽しいもん！'],
   },
   earnest: {
-    _default: ['譚･蟷ｴ繧らｲｾ荳譚ｯ鬆大ｼｵ繧翫∪縺吶ゅｈ繧阪＠縺上♀鬘倥＞縺励∪縺・],
-    polite: ['譚･蟷ｴ繧ゅ←縺・◇繧医ｍ縺励￥縺企｡倥＞縺・◆縺励∪縺吶らｲｾ騾ｲ縺励※縺ｾ縺・ｊ縺ｾ縺・],
+    _default: ['来年も精一杯頑張ります。よろしくお願いします'],
+    polite: ['来年もどうぞよろしくお願いいたします。精進してまいります'],
   },
   emotional: {
-    _default: ['縺薙％縺ｧ謌ｦ縺医ｋ縺薙→縺悟ｹｸ縺帙↑繧薙〒縺吮ｦ・域ｶ呻ｼ・],
+    _default: ['ここで戦えることが幸せなんです…（涙）'],
   },
 };
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// v2.0 Phase1-6: 螟ｧ蝙九う繝吶Φ繝茨ｼ・1縲廝4・峨ユ繧ｭ繧ｹ繝茨ｼ九そ繝ｪ繝・// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0 Phase1-6: 大型イベント（B1〜B4）テキスト＋セリフ
+// ─────────────────────────────────────────────────────────────────────────────
 const LARGE_EVENT_TEXTS = {
   B1: [
-    { text: '笞・・{name}縺檎ｷｴ鄙剃ｸｭ縺ｫ繧｢繧ｯ繧ｷ繝・Φ繝・, detail: '{name}縺檎ｷｴ鄙剃ｸｭ縺ｫ謚繧貞女縺代◆髫帙↓繝舌Λ繝ｳ繧ｹ繧貞ｴｩ縺励∬ｲ蛯ｷ縺励※縺励∪縺｣縺溘・ },
-    { text: '笞・・{name}縺檎ｷｴ鄙偵〒雋蛯ｷ', detail: '繧ｹ繝代・繝ｪ繝ｳ繧ｰ荳ｭ縺ｫ{name}縺檎嶌謇九・謚繧貞女縺第錐縺ｭ縲√・繝・ヨ縺ｫ蜿ｩ縺阪▽縺代ｉ繧後◆縲・ },
-    { text: '笞・・{name}縺ｫ邱ｴ鄙剃ｸｭ縺ｮ繝医Λ繝悶Ν', detail: '{name}縺梧眠謚縺ｮ邱ｴ鄙剃ｸｭ縺ｫ逹蝨ｰ縺ｫ螟ｱ謨励ら李縺ｿ繧定ｨｴ縺医※縺・ｋ縲・ },
-    { text: '笞・・{name}縺後Ο繝ｼ繝励Ρ繝ｼ繧ｯ荳ｭ縺ｫ雋蛯ｷ', detail: '繝ｭ繝ｼ繝励・蜿榊虚繧貞茜逕ｨ縺励◆騾｣邯壽橿縺ｮ邱ｴ鄙剃ｸｭ縲＋name}縺ｮ雜ｳ縺後Ο繝ｼ繝励↓邨｡縺ｾ繧願ｻ｢蛟偵ゅ☆縺舌↓縺ｯ遶九■荳翫′繧後↑縺九▲縺溘・ },
-    { text: '笞・・{name}縺後せ繝代・繝ｪ繝ｳ繧ｰ荳ｭ縺ｫ逞帙∩繧定ｨｴ縺医◆', detail: '邱ｴ鄙偵ヱ繝ｼ繝医リ繝ｼ縺ｨ縺ｮ繧ｹ繝代・繝ｪ繝ｳ繧ｰ縺ｧ{name}縺梧橿繧貞女縺代◆逶ｴ蠕後・｡斐ｒ縺励°繧√※閹昴ｒ縺､縺・◆縲よ悽莠ｺ縺ｯ縲檎ｶ壹￠繧峨ｌ繧九阪→險縺・′窶ｦ' },
-    { text: '笞・・{name}縺檎ｷｴ鄙貞ｾ後↓菴薙・逡ｰ螟峨ｒ蝣ｱ蜻・, detail: '邱ｴ鄙偵ｒ邨ゅ∴縺毬name}縺後悟虚縺九☆縺ｨ逞帙＞邂・園縺後≠繧九阪→逕ｳ蜻翫ら┌逅・ｒ縺励※縺・◆蜿ｯ閭ｽ諤ｧ縺後≠繧九・ },
+    { text: '⚠️ {name}が練習中にアクシデント', detail: '{name}が練習中に技を受けた際にバランスを崩し、負傷してしまった。' },
+    { text: '⚠️ {name}が練習で負傷', detail: 'スパーリング中に{name}が相手の技を受け損ね、マットに叩きつけられた。' },
+    { text: '⚠️ {name}に練習中のトラブル', detail: '{name}が新技の練習中に着地に失敗。痛みを訴えている。' },
+    { text: '⚠️ {name}がロープワーク中に負傷', detail: 'ロープの反動を利用した連続技の練習中、{name}の足がロープに絡まり転倒。すぐには立ち上がれなかった。' },
+    { text: '⚠️ {name}がスパーリング中に痛みを訴えた', detail: '練習パートナーとのスパーリングで{name}が技を受けた直後、顔をしかめて膝をついた。本人は「続けられる」と言うが…' },
+    { text: '⚠️ {name}が練習後に体の異変を報告', detail: '練習を終えた{name}が「動かすと痛い箇所がある」と申告。無理をしていた可能性がある。' },
   ],
   B2: [
-    { text: '徴 {name1}縺ｨ{name2}縺瑚｡晉ｪ・, detail: '謗ｧ螳､縺ｧ{name1}縺ｨ{name2}縺ｮ髢薙↓豼縺励＞蜿｣隲悶′逋ｺ逕溘ょ捉蝗ｲ縺ｮ蛻ｶ豁｢繧り◇縺九★荳隗ｦ蜊ｳ逋ｺ縺ｮ迥ｶ諷九↓縺ｪ縺｣縺ｦ縺・ｋ縲・ },
-    { text: '徴 {name1}縺ｨ{name2}縺ｮ蟇ｾ遶九′豺ｱ蛻ｻ蛹・, detail: '莉･蜑阪°繧我ｸ咲ｩ上↑遨ｺ豌励′縺ゅ▲縺毬name1}縺ｨ{name2}縺ｮ髢｢菫ゅ′縺､縺・↓遐ｴ邯ｻ縲らｷｴ鄙偵↓繧よ髪髫懊′蜃ｺ蟋九ａ縺ｦ縺・ｋ縲・ },
-    { text: '徴 {name1}縺ｨ{name2}縺後せ繝代・繝ｪ繝ｳ繧ｰ縺ｧ繧ｨ繧ｹ繧ｫ繝ｬ繝ｼ繝・, detail: '譛ｬ譚･縺ｯ霆ｽ縺・遠縺｡蜷医＞縺ｮ縺ｯ縺壹′縲＋name1}縺ｨ{name2}縺ｮ繧ｹ繝代・繝ｪ繝ｳ繧ｰ縺梧悽豌励・縺ｶ縺､縺九ｊ蜷医＞縺ｫ逋ｺ螻輔ゅさ繝ｼ繝√′髢薙↓蜑ｲ縺｣縺ｦ蜈･繧倶ｺ区・縺ｨ縺ｪ縺｣縺溘・ },
-    { text: '徴 {name1}縺ｨ{name2}縺ｮ髢薙↓莠陬・, detail: '{name1}縺郡NS縺ｫ諢丞袖豺ｱ縺ｪ謚慕ｨｿ繧偵＠縺溘％縺ｨ縺ｧ{name2}縺梧ｿ諤偵よ而螳､縺ｧ諤帝ｳｴ繧雁粋縺・ｺ御ｺｺ縺ｮ螢ｰ縺悟､悶∪縺ｧ貍上ｌ縺ｦ縺・◆縲・ },
-    { text: '徴 {name1}縺ｨ{name2}縺ｮ髢｢菫ゅ′髯千阜縺ｫ', detail: '蜷亥酔邱ｴ鄙剃ｸｭ縲＋name1}縺鶏name2}縺ｸ縺ｮ荳肴ｺ繧貞・辟ｶ縺ｨ蜿｣縺ｫ縺励◆縲ょ・蜩｡縺ｮ蜑阪〒縺ｮ蜃ｺ譚･莠九↓縲√メ繝ｼ繝蜈ｨ菴薙′蜃阪ｊ縺､縺・◆縲・ },
+    { text: '💥 {name1}と{name2}が衝突', detail: '控室で{name1}と{name2}の間に激しい口論が発生。周囲の制止も聞かず一触即発の状態になっている。' },
+    { text: '💥 {name1}と{name2}の対立が深刻化', detail: '以前から不穏な空気があった{name1}と{name2}の関係がついに破綻。練習にも支障が出始めている。' },
+    { text: '💥 {name1}と{name2}がスパーリングでエスカレート', detail: '本来は軽い打ち合いのはずが、{name1}と{name2}のスパーリングが本気のぶつかり合いに発展。コーチが間に割って入る事態となった。' },
+    { text: '💥 {name1}と{name2}の間に亀裂', detail: '{name1}がSNSに意味深な投稿をしたことで{name2}が激怒。控室で怒鳴り合う二人の声が外まで漏れていた。' },
+    { text: '💥 {name1}と{name2}の関係が限界に', detail: '合同練習中、{name1}が{name2}への不満を公然と口にした。全員の前での出来事に、チーム全体が凍りついた。' },
   ],
   B3: [
-    { text: '笞費ｸ・{orgName}縺九ｉ蟇ｾ謚玲姶縺ｮ逕ｳ縺怜・繧・, detail: '{orgName}縺後悟ｮ溷鴨繧定ｦ九○縺ｦ繧・ｋ縲阪→蟇ｾ謚玲姶繧堤筏縺怜・繧後※縺阪◆縲・ },
-    { text: '笞費ｸ・{orgName}縺悟ｮ｣謌ｦ蟶・相', detail: '{orgName}縺ｮ莉｣陦ｨ縺悟・縺ｮ蝣ｴ縺ｧ縺薙■繧峨・蝗｣菴薙ｒ謖醍匱縲ょｯｾ謚玲姶縺ｧ豎ｺ逹繧偵▽縺代ｈ縺・→霑ｫ縺｣縺ｦ縺阪◆縲・ },
-    { text: '笞費ｸ・{orgName}縺ｮ驕ｸ謇九′險倩・ｼ夊ｦ九〒謖醍匱', detail: '{orgName}縺ｮ驕ｸ謇九′繝｡繝・ぅ繧｢縺ｮ蜑阪〒縺薙■繧峨・蝗｣菴灘錐繧貞・縺励√後＞縺､縺ｧ繧ょ女縺代※遶九▽縲阪→蜈ｬ髢区倦謌ｦ迥ｶ繧貞娼縺阪▽縺代◆縲・ },
-    { text: '笞費ｸ・{orgName}縺九ｉ譫懊◆縺礼憾縺悟ｱ翫＞縺・, detail: '{orgName}縺九ｉ豁｣蠑上↑譖ｸ髱｢縺悟ｱ翫＞縺溘ゅ悟屮菴薙・螽∽ｿ｡繧偵°縺代※蟇ｾ謚玲姶繧定｡後＞縺溘＞縲坂披皮┌隕悶☆繧九ｏ縺代↓縺ｯ縺・°縺ｪ縺・峅蝗ｲ豌励□縲・ },
-    { text: '笞費ｸ・{orgName}縺瑚・陦後↓荵励ｊ霎ｼ繧薙〒縺阪◆', detail: '縺薙■繧峨・闊郁｡御ｼ壼ｴ縺ｫ{orgName}縺ｮ髢｢菫り・′蟋ｿ繧定ｦ九○縲√後Μ繝ｳ繧ｰ縺ｧ隱槭ｊ蜷医♀縺・阪→蟇ｾ謚玲姶繧呈戟縺｡縺九￠縺ｦ縺阪◆縲・ },
+    { text: '⚔️ {orgName}から対抗戦の申し入れ', detail: '{orgName}が「実力を見せてやる」と対抗戦を申し入れてきた。' },
+    { text: '⚔️ {orgName}が宣戦布告', detail: '{orgName}の代表が公の場でこちらの団体を挑発。対抗戦で決着をつけようと迫ってきた。' },
+    { text: '⚔️ {orgName}の選手が記者会見で挑発', detail: '{orgName}の選手がメディアの前でこちらの団体名を出し、「いつでも受けて立つ」と公開挑戦状を叩きつけた。' },
+    { text: '⚔️ {orgName}から果たし状が届いた', detail: '{orgName}から正式な書面が届いた。「団体の威信をかけて対抗戦を行いたい」——無視するわけにはいかない雰囲気だ。' },
+    { text: '⚔️ {orgName}が興行に乗り込んできた', detail: 'こちらの興行会場に{orgName}の関係者が姿を見せ、「リングで語り合おう」と対抗戦を持ちかけてきた。' },
   ],
   B4: [
-    { text: '銅 {outletName}縺九ｉ蟇・捩蜿匁攝縺ｮ逕ｳ縺怜・繧・, detail: '{outletName}縺後梧ｳｨ逶ｮ驕ｸ謇九・蟇・捩繝峨く繝･繝｡繝ｳ繝医ｒ菴懊ｊ縺溘＞縲阪→謇楢ｨｺ縺励※縺阪◆縲・ },
-    { text: '銅 {outletName}縺檎音髮・ｼ∫判繧呈署譯・, detail: '{outletName}縺ｮ繝励Ο繝・Η繝ｼ繧ｵ繝ｼ縺梧擂險ｪ縲ゅ梧ｬ｡荳紋ｻ｣縺ｮ繧ｹ繧ｿ繝ｼ繧定ｿｽ縺・°縺代◆縺・阪→蟇・捩蜿匁攝繧堤筏縺怜・縺ｦ縺・ｋ縲・ },
-    { text: '銅 {outletName}縺後ラ繧ｭ繝･繝｡繝ｳ繧ｿ繝ｪ繝ｼ莨∫判繧呈戟縺｡霎ｼ繧薙□', detail: '{outletName}縺九ｉ縲碁∈謇九・邏鬘斐↓蟇・捩縺吶ｋ莨∫判繧偵ｄ繧翫◆縺・阪→騾｣邨｡縺悟・縺｣縺溘よ焚隧ｦ蜷医↓繧上◆繧矩聞譛溷叙譚舌↓縺ｪ繧九→縺・≧縲・ },
-    { text: '銅 {outletName}縺ｮ蜿匁攝繧ｯ繝ｫ繝ｼ縺梧擂險ｪ', detail: '{outletName}縺ｮ繧ｫ繝｡繝ｩ繝槭Φ縺ｨ繝ｬ繝昴・繧ｿ繝ｼ縺碁％蝣ｴ繧定ｨｪ繧後◆縲ゅ悟屮菴薙・豕ｨ逶ｮ譬ｪ繧堤音髮・＠縺溘＞縲阪→縺ｮ縺薙→縲る∈謇九ｒ荳莠ｺ驕ｸ繧薙〒縺ｻ縺励＞縺昴≧縺縲・ },
-    { text: '銅 {outletName}縺九ｉ蟇・捩繝峨く繝･繝｡繝ｳ繝井ｼ∫判縺ｮ謠先｡・, detail: '{outletName}縺梧眠逡ｪ邨・・逶ｮ邇峨→縺励※縲悟･ｳ蟄舌・繝ｭ繝ｬ繧ｹ縺ｮ莉翫阪ｒ繝・・繝槭↓縺励◆蟇・捩迚ｹ髮・ｒ讀懆ｨ惹ｸｭ縲ゅ≧縺｡縺ｮ蝗｣菴薙°繧我ｸ莠ｺ謗ｨ阮ｦ縺励※縺ｻ縺励＞縺ｨ險縺・・ },
+    { text: '📺 {outletName}から密着取材の申し入れ', detail: '{outletName}が「注目選手の密着ドキュメントを作りたい」と打診してきた。' },
+    { text: '📺 {outletName}が特集企画を提案', detail: '{outletName}のプロデューサーが来訪。「次世代のスターを追いかけたい」と密着取材を申し出ている。' },
+    { text: '📺 {outletName}がドキュメンタリー企画を持ち込んだ', detail: '{outletName}から「選手の素顔に密着する企画をやりたい」と連絡が入った。数試合にわたる長期取材になるという。' },
+    { text: '📺 {outletName}の取材クルーが来訪', detail: '{outletName}のカメラマンとレポーターが道場を訪れた。「団体の注目株を特集したい」とのこと。選手を一人選んでほしいそうだ。' },
+    { text: '📺 {outletName}から密着ドキュメント企画の提案', detail: '{outletName}が新番組の目玉として「女子プロレスの今」をテーマにした密着特集を検討中。うちの団体から一人推薦してほしいと言う。' },
   ],
 };
 
 const LARGE_EVENT_DIALOGUES = {
-  // B1: 邱ｴ鄙剃ｸｭ縺ｮ諤ｪ謌・窶・諤ｪ謌代＠縺滄∈謇九・繧ｻ繝ｪ繝・  B1: {
+  // B1: 練習中の怪我 — 怪我した選手のセリフ
+  B1: {
     normal: {
-      _default: ['窶ｦ逞帙∩縺悟ｼ輔￥縺ｾ縺ｧ蟆代＠譎る俣縺後°縺九ｊ縺昴≧縺ｧ縺・],
-      ojousama: ['蟆代＠縺頑凾髢薙ｒ縺・◆縺縺上％縺ｨ縺ｫ縺ｪ繧翫◎縺・〒縺吶ｏ窶ｦ'],
-      delinquent: ['縺・※縺ｦ窶ｦ繧・▲縺｡縺ｾ縺｣縺溘ゅ☆縺先綾繧九°繧・],
-      seductive: ['窶ｦ蟆代＠譎る俣縺後°縺九ｊ縺昴≧縲ゅ＃繧√ｓ縺ｪ縺輔＞縺ｭ'],
+      _default: ['…痛みが引くまで少し時間がかかりそうです'],
+      ojousama: ['少しお時間をいただくことになりそうですわ…'],
+      delinquent: ['いてて…やっちまった。すぐ戻るから'],
+      seductive: ['…少し時間がかかりそう。ごめんなさいね'],
     },
     bold: {
-      _default: ['縺上◎縺｣窶ｦ縺薙ｓ縺ｪ縺ｨ縺薙ｍ縺ｧ雜ｳ繧呈ｭ｢繧√ｋ繧上￠縺ｫ縺ｯ縺・°縺ｪ縺・・縺ｫ', '螟ｧ荳亥､ｫ縺縲√％縺ｮ遞句ｺｦ窶ｦ縺吶＄謌ｻ繧・],
-      ojousama: ['縺薙ｓ縺ｪ縺ｨ縺薙ｍ縺ｧ豁｢縺ｾ繧九ｏ縺代↓縺ｯ蜿ゅｊ縺ｾ縺帙ｓ繧鞘ｦ・・],
-      delinquent: ['縺上◎縺｣窶ｦ縺薙ｓ縺ｪ縺ｨ縺薙〒豁｢縺ｾ縺｣縺ｦ繧峨ｓ縺ｭ縺茨ｼ・],
-      cool: ['窶ｦ縺吶＄謌ｻ繧九ょ撫鬘後↑縺・],
-      seductive: ['縺薙ｓ縺ｪ縺ｨ縺薙ｍ縺ｧ豁｢縺ｾ繧九▽繧ゅｊ縺ｯ縺ｪ縺・ｏ窶ｦ縺吶＄謌ｻ繧・],
+      _default: ['くそっ…こんなところで足を止めるわけにはいかないのに', '大丈夫だ、この程度…すぐ戻る'],
+      ojousama: ['こんなところで止まるわけには参りませんわ…！'],
+      delinquent: ['くそっ…こんなとこで止まってらんねえ！'],
+      cool: ['…すぐ戻る。問題ない'],
+      seductive: ['こんなところで止まるつもりはないわ…すぐ戻る'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ縺吶∩縺ｾ縺帙ｓ'],
-      cool: ['窶ｦ縺吶＄謌ｻ繧・],
-      polite: ['窶ｦ逕ｳ縺苓ｨｳ縺斐＊縺・∪縺帙ｓ縲ゅ☆縺舌↓謌ｻ繧翫∪縺・],
+      _default: ['……すみません'],
+      cool: ['…すぐ戻る'],
+      polite: ['…申し訳ございません。すぐに戻ります'],
     },
     shy: {
-      _default: ['縺吶√☆縺ｿ縺ｾ縺帙ｓ窶ｦ縺碑ｿｷ諠代ｒ窶ｦ譌ｩ縺乗ｲｻ縺励∪縺吮ｦ'],
+      _default: ['す、すみません…ご迷惑を…早く治します…'],
     },
     easygoing: {
-      _default: ['縺・※縺ｦ窶ｦ繧・▲縺｡繧・＞縺ｾ縺励◆縲ゅ〒繧よｹ諤ｧ縺ｧ豐ｻ縺励∪縺呻ｼ・],
-      delinquent: ['縺・▲縺滂ｼ√ｄ縺｣縺｡縺ｾ縺｣縺溘￠縺ｩ縲√☆縺先ｲｻ縺吶°繧会ｼ・],
-      seductive: ['縺ゅｉ縲√ｄ縺｣縺｡繧・▲縺溪ｦ縺ｧ繧ゅ☆縺先ｲｻ縺吶ｏ'],
+      _default: ['いてて…やっちゃいました。でも根性で治します！'],
+      delinquent: ['いった！やっちまったけど、すぐ治すから！'],
+      seductive: ['あら、やっちゃった…でもすぐ治すわ'],
     },
     earnest: {
-      _default: ['縺吶∩縺ｾ縺帙ｓ窶ｦ繧ゅ▲縺ｨ豕ｨ諢上☆繧九∋縺阪〒縺励◆縲よ掠縺丞ｾｩ蟶ｰ縺ｧ縺阪ｋ繧医≧鬆大ｼｵ繧翫∪縺・],
-      polite: ['逕ｳ縺苓ｨｳ縺斐＊縺・∪縺帙ｓ窶ｦ荳譌･繧よ掠縺丞ｾｩ蟶ｰ縺・◆縺励∪縺・],
-      ojousama: ['繧ゅ▲縺ｨ豌励ｒ縺､縺代ｋ縺ｹ縺阪〒縺励◆繧鞘ｦ譌ｩ縺丞ｾｩ蟶ｰ縺励※隕九○縺ｾ縺吶・'],
-      seductive: ['縺斐ａ繧薙↑縺輔＞窶ｦ譌ｩ縺乗綾繧後ｋ繧医≧縺ｫ鬆大ｼｵ繧九ｏ'],
+      _default: ['すみません…もっと注意するべきでした。早く復帰できるよう頑張ります'],
+      polite: ['申し訳ございません…一日も早く復帰いたします'],
+      ojousama: ['もっと気をつけるべきでしたわ…早く復帰して見せますの'],
+      seductive: ['ごめんなさい…早く戻れるように頑張るわ'],
     },
     emotional: {
-      _default: ['縺斐ａ繧薙↑縺輔＞窶ｦ・∵掠縺乗ｲｻ縺励∪縺吮ｦ譌ｩ縺乗綾繧翫◆縺・ｦ・・],
+      _default: ['ごめんなさい…！早く治します…早く戻りたい…！'],
     },
   },
-  // B2: 蟇ｾ遶・窶・fighter1 縺ｮ繧ｻ繝ｪ繝・  B2_fighter1: {
+  // B2: 対立 — fighter1 のセリフ
+  B2_fighter1: {
     normal: {
-      _default: ['縺薙・縺ｾ縺ｾ縺倥ｃ繝√・繝縺後ｂ縺溘↑縺・ゆｽ輔→縺九＠縺ｦ縺ｻ縺励＞'],
-      ojousama: ['縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ繧ゅ≧髯千阜縺ｧ縺吶ｏ'],
-      delinquent: ['縺ゅ＞縺､縺ｨ縺ｯ繧ゅ≧辟｡逅・□縲ゆｽ輔→縺九＠縺ｦ縺上ｌ'],
-      seductive: ['縺ゅ・莠ｺ縺ｨ縺ｯ繧ゅ≧辟｡逅・ｈ縲ゆｽ輔→縺九＠縺ｦ繧ゅｉ縺医↑縺・°縺励ｉ'],
+      _default: ['このままじゃチームがもたない。何とかしてほしい'],
+      ojousama: ['あの方とは…もう限界ですわ'],
+      delinquent: ['あいつとはもう無理だ。何とかしてくれ'],
+      seductive: ['あの人とはもう無理よ。何とかしてもらえないかしら'],
     },
     bold: {
-      _default: ['縺ゅ＞縺､縺ｮ諷句ｺｦ縺瑚ｨｱ縺帙↑縺・ゅｂ縺・・諷｢縺ｮ髯千阜縺', '繝√・繝縺ｮ縺溘ａ縺ｫ繧ゅ√％縺ｮ蝠城｡後・縺ｯ縺｣縺阪ｊ縺輔○繧九∋縺阪□'],
-      ojousama: ['縺ゅ・譁ｹ縺ｮ諷句ｺｦ縺ｯ險ｱ縺帙∪縺帙ｓ繧上ゅ・縺｣縺阪ｊ縺輔○縺ｾ縺吶ｏ繧・],
-      delinquent: ['縺ゅ＞縺､縺ｮ諷句ｺｦ縺梧ｰ励↓鬟溘ｏ縺ｭ縺茨ｼ・剞逡後□・・],
-      cool: ['窶ｦ縺ゅ＞縺､縺ｨ縺ｯ蜷医ｏ縺ｪ縺・よｱｺ逹繧偵▽縺代ｋ'],
-      seductive: ['縺ゅ・莠ｺ縺ｮ諷句ｺｦ縲√ｂ縺・・諷｢縺ｧ縺阪↑縺・・'],
+      _default: ['あいつの態度が許せない。もう我慢の限界だ', 'チームのためにも、この問題ははっきりさせるべきだ'],
+      ojousama: ['あの方の態度は許せませんわ。はっきりさせますわよ'],
+      delinquent: ['あいつの態度が気に食わねえ！限界だ！'],
+      cool: ['…あいつとは合わない。決着をつける'],
+      seductive: ['あの人の態度、もう我慢できないの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ縺ゅ・莠ｺ縺ｨ縺ｯ縲√ｂ縺・ｦ'],
-      cool: ['窶ｦ縺ゅｌ縺ｨ縺ｯ蜷医ｏ縺ｪ縺・ゅ◎繧後□縺代□'],
-      polite: ['窶ｦ縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ逕ｳ縺苓ｨｳ縺ゅｊ縺ｾ縺帙ｓ縲√ｂ縺・剞逡後〒縺・],
+      _default: ['………あの人とは、もう…'],
+      cool: ['…あれとは合わない。それだけだ'],
+      polite: ['…あの方とは…申し訳ありません、もう限界です'],
     },
     shy: {
-      _default: ['縺ゅ・窶ｦ縺ゅ・莠ｺ縺ｮ縺薙→窶ｦ繧ゅ≧窶ｦ縺ｩ縺・＠縺溘ｉ縺・＞縺銀ｦ'],
+      _default: ['あの…あの人のこと…もう…どうしたらいいか…'],
     },
     easygoing: {
-      _default: ['縺ゅ＞縺､縺ｨ縺ｯ繧ゅ≧辟｡逅・ｼ・｡斐ｂ隕九◆縺上↑縺・ｼ・],
-      delinquent: ['縺ゅ＞縺､繝槭ず辟｡逅・ｼ√ｂ縺・｡斐ｂ隕九◆縺上・縺茨ｼ・],
-      seductive: ['縺ゅ・莠ｺ縺ｨ縺ｯ繧ゅ≧辟｡逅・る｡斐ｂ隕九◆縺上↑縺・ｏ'],
+      _default: ['あいつとはもう無理！顔も見たくない！'],
+      delinquent: ['あいつマジ無理！もう顔も見たくねえ！'],
+      seductive: ['あの人とはもう無理。顔も見たくないわ'],
     },
     earnest: {
-      _default: ['雜ｳ繧貞ｼ輔▲蠑ｵ繧倶ｺｺ髢薙→縺ｯ荳邱偵↓繧・ｌ縺ｪ縺・, '縺薙・縺ｾ縺ｾ縺ｧ縺ｯ蝗｣菴薙・縺溘ａ縺ｫ縺ｪ繧峨↑縺・ゆｽ輔→縺九＠縺ｦ縺ｻ縺励＞'],
-      polite: ['縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ縺薙・縺ｾ縺ｾ縺ｧ縺ｯ繝√・繝縺ｫ蠖ｱ髻ｿ縺悟・縺ｾ縺・],
-      ojousama: ['縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ繝√・繝縺ｮ縺溘ａ縺ｫ繧ゅ・縺｣縺阪ｊ縺輔○繧九∋縺阪〒縺吶ｏ'],
-      seductive: ['縺ゅ・莠ｺ縺ｨ荳邱偵§繧・ｻ穂ｺ九↓縺ｪ繧峨↑縺・・縲ゆｽ輔→縺九＠縺ｦ'],
+      _default: ['足を引っ張る人間とは一緒にやれない', 'このままでは団体のためにならない。何とかしてほしい'],
+      polite: ['あの方とは…このままではチームに影響が出ます'],
+      ojousama: ['あの方とは…チームのためにもはっきりさせるべきですわ'],
+      seductive: ['あの人と一緒じゃ仕事にならないの。何とかして'],
     },
     emotional: {
-      _default: ['繧ゅ≧辟｡逅・ｦ・√≠縺ｮ莠ｺ縺ｨ荳邱偵↓縺・ｋ縺ｨ窶ｦ霎帙＞窶ｦ・・],
+      _default: ['もう無理…！あの人と一緒にいると…辛い…！'],
     },
   },
-  // B2: 蟇ｾ遶・窶・fighter2 縺ｮ繧ｻ繝ｪ繝・  B2_fighter2: {
+  // B2: 対立 — fighter2 のセリフ
+  B2_fighter2: {
     normal: {
-      _default: ['蜷代％縺・↓繧る撼縺後≠繧九・縺ｫ縲∫ｧ√□縺第が縺・∩縺溘＞縺ｫ窶ｦ'],
-      ojousama: ['縺ゅ■繧峨↓繧る撼縺後♀縺ゅｊ縺ｧ縺励ｇ縺・↓窶ｦ'],
-      delinquent: ['蜷代％縺・′謔ｪ縺・ｓ縺繧阪ゅ↑繧薙〒遘√□縺托ｼ・],
-      seductive: ['蜷代％縺・↓繧る撼縺後≠繧九・縺ｫ窶ｦ遘√□縺代′謔ｪ縺・・・・],
+      _default: ['向こうにも非があるのに、私だけ悪いみたいに…'],
+      ojousama: ['あちらにも非がおありでしょうに…'],
+      delinquent: ['向こうが悪いんだろ。なんで私だけ？'],
+      seductive: ['向こうにも非があるのに…私だけが悪いの？'],
     },
     bold: {
-      _default: ['遘√□縺｣縺ｦ鮟吶▲縺ｦ縺ｪ縺・ょ髄縺薙≧縺瑚ｬ昴ｋ縺ｹ縺阪□', '豁｣髱｢縺九ｉ縺ｶ縺､縺九▲縺ｦ豎ｺ逹縺､縺代ｋ縺励°縺ｪ縺・□繧阪≧'],
-      ojousama: ['遘√□縺｣縺ｦ鮟吶▲縺ｦ縺ｯ縺・∪縺帙ｓ繧上ｈ縲ゅ≠縺｡繧峨′髱槭ｒ隱阪ａ繧九∋縺阪〒縺吶ｏ'],
-      delinquent: ['鮟吶▲縺ｦ繧九→諤昴≧縺ｪ繧茨ｼ∝髄縺薙≧縺瑚ｬ昴ｌ・・],
-      cool: ['窶ｦ隰昴ｋ豌励・縺ｪ縺・ょ髄縺薙≧縺碁撼繧定ｪ阪ａ繧九∋縺阪□'],
-      seductive: ['鮟吶▲縺ｦ繧九▽繧ゅｊ縺ｯ縺ｪ縺・ｏ縲ょ髄縺薙≧縺梧が縺・ｓ縺縺九ｉ'],
+      _default: ['私だって黙ってない。向こうが謝るべきだ', '正面からぶつかって決着つけるしかないだろう'],
+      ojousama: ['私だって黙ってはいませんわよ。あちらが非を認めるべきですわ'],
+      delinquent: ['黙ってると思うなよ！向こうが謝れ！'],
+      cool: ['…謝る気はない。向こうが非を認めるべきだ'],
+      seductive: ['黙ってるつもりはないわ。向こうが悪いんだから'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ・磯撕縺九↓菫ｯ縺・※縺・ｋ・・],
-      cool: ['窶ｦ遘√・髢馴＆縺｣縺ｦ縺・↑縺・],
-      polite: ['窶ｦ縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ縺吶∩縺ｾ縺帙ｓ縲√ｂ縺・ｦ'],
+      _default: ['………（静かに俯いている）'],
+      cool: ['…私は間違っていない'],
+      polite: ['…あの方とは…すみません、もう…'],
     },
     shy: {
-      _default: ['窶ｦ遘√′謔ｪ縺・ｓ縺ｧ縺励ｇ縺・°窶ｦ・井ｸ榊ｮ峨◎縺・↓・・],
+      _default: ['…私が悪いんでしょうか…（不安そうに）'],
     },
     easygoing: {
-      _default: ['螢ｲ繧峨ｌ縺溘こ繝ｳ繧ｫ縺ｯ雋ｷ縺・ｈ・∵擂縺・ｈ・・],
-      delinquent: ['繧・ｓ縺ｮ縺具ｼ・ｼ・螢ｲ繧峨ｌ縺溘こ繝ｳ繧ｫ縺ｯ雋ｷ縺・●・・],
-      seductive: ['繧ｱ繝ｳ繧ｫ螢ｲ縺｣縺ｦ縺阪◆縺ｮ縺ｯ蜷代％縺・ｈ・・雋ｷ縺｣縺ｦ縺ゅ￡繧九ｏ'],
+      _default: ['売られたケンカは買うよ！来いよ！'],
+      delinquent: ['やんのか！？ 売られたケンカは買うぜ！'],
+      seductive: ['ケンカ売ってきたのは向こうよ？ 買ってあげるわ'],
     },
     earnest: {
-      _default: ['蝗｣菴薙↓縺ｯ霑ｷ諠代ｒ縺九￠縺溘￥縺ｪ縺・￠縺ｩ窶ｦ縺ゅ・莠ｺ縺ｨ縺ｯ辟｡逅・〒縺・, '遘√・繧・ｊ譁ｹ縺ｫ譁・唱縺後≠繧九↑繧峨√・縺｣縺阪ｊ險縺医・縺・＞'],
-      polite: ['蝗｣菴薙↓縺碑ｿｷ諠代・縺九￠縺溘￥縺ｪ縺・・縺ｧ縺吶′窶ｦ縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ'],
-      ojousama: ['蝗｣菴薙↓縺碑ｿｷ諠代・縺九￠縺溘￥縺ゅｊ縺ｾ縺帙ｓ縺ｮ縺ｫ窶ｦ縺ゅ・譁ｹ縺ｨ縺ｯ窶ｦ'],
-      seductive: ['霑ｷ諠代・縺九￠縺溘￥縺ｪ縺・￠縺ｩ窶ｦ縺ゅ・莠ｺ縺ｨ縺ｯ繧ゅ≧辟｡逅・↑縺ｮ'],
+      _default: ['団体には迷惑をかけたくないけど…あの人とは無理です', '私のやり方に文句があるなら、はっきり言えばいい'],
+      polite: ['団体にご迷惑はかけたくないのですが…あの方とは…'],
+      ojousama: ['団体にご迷惑はかけたくありませんのに…あの方とは…'],
+      seductive: ['迷惑はかけたくないけど…あの人とはもう無理なの'],
     },
     emotional: {
-      _default: ['遘√□縺｣縺ｦ窶ｦ・∫ｧ√□縺｣縺ｦ霎帙＞縺ｮ縺ｫ窶ｦ・・],
+      _default: ['私だって…！私だって辛いのに…！'],
     },
   },
-  // B3: 蟇ｾ謚玲姶 窶・謖第姶閠・・繧ｻ繝ｪ繝包ｼ域・縺溘ｉ縺励＞諷句ｺｦ・俄ｻNPC驟榊・縺ｮ縺ｾ縺ｾ
+  // B3: 対抗戦 — 挑戦者のセリフ（憎たらしい態度）※NPC配列のまま
   B3_challenger: [
-    '縺雁燕縺溘■縺ｮ蝗｣菴薙・繝ｬ繝吶Ν・・縺・■縺ｮ邱ｴ鄙堤函縺ｫ繧ょ所縺ｰ縺ｪ縺・□繧阪≧縺ｭ',
-    '縺九ｏ縺・◎縺・↓縲ゆｺ輔・荳ｭ縺ｮ陋吶▲縺ｦ險闡峨∫衍縺｣縺ｦ繧具ｼ・,
-    '蠑ｱ蟆丞屮菴薙′隱ｿ蟄舌↓荵励▲縺ｦ繧九→閨槭＞縺ｦ縺ｭ縲ら樟螳溘ｒ隕九○縺ｦ縺ゅ￡繧九ｈ',
-    '縺・■縺ｮ繧ｨ繝ｼ繧ｹ縺ｨ蜷後§繝ｪ繝ｳ繧ｰ縺ｫ遶九※繧九□縺大・譬・↓諤昴＞縺ｪ',
-    '豁｣逶ｴ縲∵凾髢薙・辟｡鬧・□縺ｨ諤昴▲縺ｦ繧九￠縺ｩ窶ｦ縺ｾ縺√∽ｻ倥″蜷医▲縺ｦ縺ゅ￡繧九ｈ',
-    '縺昴▲縺｡縺ｮ逵区攸驕ｸ謇具ｼ・縺・■縺ｮ荳ｭ蝣・↓繧ょ享縺ｦ縺ｪ縺・ｓ縺倥ｃ縺ｪ縺・ｼ・,
-    '縺ｩ縺薙・蝗｣菴薙°遏･繧峨↑縺・￠縺ｩ縲√・繝ｭ縺ｮ荳也阜繧呈蕗縺医※繧・ｋ繧・,
-    '繝輔ぃ繝ｳ縺ｮ蜑阪〒諱･繧偵°縺九○縺ｦ縺ゅ￡繧九りｦ壽ぁ縺ｯ縺・＞・・,
-    '譛霑代■繧・▲縺ｨ蜷榊燕繧定◇縺上ｈ縺・↓縺ｪ縺｣縺溘°繧画擂縺ｦ縺ゅ￡縺溘・縺ｫ窶ｦ譛溷ｾ・､悶ｌ縺縺｣縺溘°縺ｪ・・,
-    '縺ゅ↑縺溘◆縺｡縺ｮ闊郁｡後∽ｸ蠎ｦ隕九↓陦後▲縺溘￠縺ｩ窶ｦ縺企♀謌ｯ莨壹∩縺溘＞縺縺｣縺溘ｏ',
-    '蜍昴※繧九→諤昴▲縺ｦ繧九・・・縺昴・閾ｪ菫｡縺後←縺薙°繧画擂繧九・縺倶ｸ肴晁ｭｰ縺繧・,
-    '縺帙▲縺九￥縺ｮ讖滉ｼ壹□縺励√・繝ｭ縺ｮ繝ｬ繧ｹ繝ｪ繝ｳ繧ｰ繧定ｦ九○縺ｦ縺ゅ￡繧九ゅｈ縺剰ｦ九※縺翫″縺ｪ縺輔＞',
-    '隧ｱ鬘御ｽ懊ｊ縺ｫ莉倥″蜷医▲縺ｦ縺ゅ￡繧九よ─隰昴＠縺ｦ縺ｻ縺励＞縺上ｉ縺・□繧・,
+    'お前たちの団体のレベル？ うちの練習生にも及ばないだろうね',
+    'かわいそうに。井の中の蛙って言葉、知ってる？',
+    '弱小団体が調子に乗ってると聞いてね。現実を見せてあげるよ',
+    'うちのエースと同じリングに立てるだけ光栄に思いな',
+    '正直、時間の無駄だと思ってるけど…まぁ、付き合ってあげるよ',
+    'そっちの看板選手？ うちの中堅にも勝てないんじゃない？',
+    'どこの団体か知らないけど、プロの世界を教えてやるよ',
+    'ファンの前で恥をかかせてあげる。覚悟はいい？',
+    '最近ちょっと名前を聞くようになったから来てあげたのに…期待外れだったかな？',
+    'あなたたちの興行、一度見に行ったけど…お遊戯会みたいだったわ',
+    '勝てると思ってるの？ その自信がどこから来るのか不思議だわ',
+    'せっかくの機会だし、プロのレスリングを見せてあげる。よく見ておきなさい',
+    '話題作りに付き合ってあげる。感謝してほしいくらいだよ',
   ],
-  // B3: 譁ｭ縺｣縺溷ｴ蜷医・謖醍匱霑ｽ蜉繧ｻ繝ｪ繝・窶ｻNPC驟榊・縺ｮ縺ｾ縺ｾ
+  // B3: 断った場合の挑発追加セリフ ※NPC配列のまま
   B3_decline: [
-    '繧・▲縺ｱ繧翫↑縲る・￡繧九→諤昴▲縺ｦ縺溘ｈ',
-    '繝√く繝ｳ縺九ゅ∪縺√∬ｳ｢縺・愛譁ｭ縺縺ｪ',
-    '諤悶＞縺ｪ繧我ｻ墓婿縺ｪ縺・ｈ縺ｪ縲よｬ｡縺ｯ縺ｪ縺・→諤昴∴',
-    '縺ｯ縺｣窶ｦ閾ｪ蛻・◆縺｡縺ｮ螳溷鴨繧貞・縺九▲縺ｦ繧九ｓ縺縺ｭ縲ょ♂縺・ｈ',
-    '譁ｭ繧九ｓ縺・・縺ｾ縺√∵▼繧偵°縺上ｈ繧翫・繧ｷ縺・,
-    '縺後▲縺九ｊ縺繧医ょ享雋縺吶ｋ蠎ｦ閭ｸ繧ゅ↑縺・・縺・,
-    '縺ゅ・縺ゅ√▽縺ｾ繧薙↑縺・・縲ゅヵ繧｡繝ｳ繧よｮ句ｿｵ縺後ｋ縺繧阪≧縺ｭ',
+    'やっぱりな。逃げると思ってたよ',
+    'チキンか。まぁ、賢い判断だな',
+    '怖いなら仕方ないよな。次はないと思え',
+    'はっ…自分たちの実力を分かってるんだね。偉いよ',
+    '断るんだ？ まぁ、恥をかくよりマシか',
+    'がっかりだよ。勝負する度胸もないのか',
+    'あーあ、つまんないの。ファンも残念がるだろうね',
   ],
-  // B3: 蜍晏茜譎ゅ・謖第姶閠・そ繝ｪ繝・窶ｻNPC驟榊・縺ｮ縺ｾ縺ｾ
+  // B3: 勝利時の挑戦者セリフ ※NPC配列のまま
   B3_result_lose: [
-    '縺上▲窶ｦ隱阪ａ縺溘￥縺ｪ縺・′縲√ｄ繧九§繧・↑縺・°',
-    '莉雁屓縺ｯ雋縺代ｒ隱阪ａ繧九ゅ□縺梧ｬ｡縺ｯ縺薙≧縺ｯ縺・°縺ｪ縺・,
-    '縺ｾ縺舌ｌ縺窶ｦ谺｡縺ｯ蜿ｩ縺肴ｽｰ縺励※繧・ｋ',
-    '窶ｦ縺｣・・隕壹∴縺ｦ縺ｪ縺輔＞繧医ゅ％繧後〒邨ゅｏ繧翫§繧・↑縺・°繧・,
-    '菫｡縺倥ｉ繧後↑縺・ｦ縺薙ｓ縺ｪ邨先棡縺ｯ隱阪ａ縺ｪ縺・,
-    '繧・ｋ縺ｭ縲りｦ狗峩縺励◆繧遺ｦ縺縺代←縲∵ｬ｡縺ｯ螳ｹ襍ｦ縺励↑縺・,
-    '縺｡繧・▲縺ｨ縺ｯ讌ｽ縺励ａ縺溘ｈ縲ゅ〒繧ゅ％繧後〒隱ｿ蟄舌↓荵励ｉ縺ｪ縺・％縺ｨ縺縺ｭ',
+    'くっ…認めたくないが、やるじゃないか',
+    '今回は負けを認める。だが次はこうはいかない',
+    'まぐれだ…次は叩き潰してやる',
+    '…っ！ 覚えてなさいよ。これで終わりじゃないから',
+    '信じられない…こんな結果は認めない',
+    'やるね。見直したよ…だけど、次は容赦しない',
+    'ちょっとは楽しめたよ。でもこれで調子に乗らないことだね',
   ],
-  // B3: 謨怜圏譎ゅ・謖第姶閠・そ繝ｪ繝・窶ｻNPC驟榊・縺ｮ縺ｾ縺ｾ
+  // B3: 敗北時の挑戦者セリフ ※NPC配列のまま
   B3_result_win: [
-    '險縺｣縺滄壹ｊ縺繧阪≧・・繝ｬ繝吶Ν縺碁＆縺・ｓ縺繧・,
-    '縺薙・遞句ｺｦ縺九よ悄蠕・､悶ｌ縺縺｣縺溘↑',
-    '螳溷鴨縺ｮ蟾ｮ繧呈昴＞遏･縺｣縺溘°・・蜃ｺ逶ｴ縺励※縺阪↑',
-    '縺ゅｉ繧峨√ｂ縺・ｵゅｏ繧奇ｼ・迚ｩ雜ｳ繧翫↑縺九▲縺溘↑縺・,
-    '縺ｾ縺√∵怙蛻昴°繧牙・縺九▲縺ｦ縺溘％縺ｨ縺縺代←縺ｭ縲ゅ♀逍ｲ繧後＆縺ｾ',
-    '繧・▲縺ｱ繧翫％縺ｮ遞句ｺｦ縺九ゅｂ縺・ｰ代＠讌ｽ縺励∪縺帙※縺上ｌ繧九→諤昴▲縺溘・縺ｫ',
-    '迴ｾ螳溘・蜴ｳ縺励＞縺ｧ縺励ｇ・・骰帙∴逶ｴ縺励※縺九ｉ縺ｾ縺溘♀縺・〒',
+    '言った通りだろう？ レベルが違うんだよ',
+    'この程度か。期待外れだったな',
+    '実力の差を思い知ったか？ 出直してきな',
+    'あらら、もう終わり？ 物足りなかったなぁ',
+    'まぁ、最初から分かってたことだけどね。お疲れさま',
+    'やっぱりこの程度か。もう少し楽しませてくれると思ったのに',
+    '現実は厳しいでしょ？ 鍛え直してからまたおいで',
   ],
-  // B4: 蟇・捩蜿匁攝 窶・驕ｸ縺ｰ繧後◆驕ｸ謇九・繧ｻ繝ｪ繝・  B4: {
+  // B4: 密着取材 — 選ばれた選手のセリフ
+  B4: {
     normal: {
-      _default: ['蜿匁攝窶ｦ邱雁ｼｵ縺励∪縺吶′縲√＞縺・ｩｦ蜷医ｒ隕九○繧峨ｌ繧九ｈ縺・大ｼｵ繧翫∪縺・],
-      ojousama: ['蜿匁攝縺ｧ縺吶・・・邊ｾ荳譚ｯ蜍吶ａ縺輔○縺ｦ縺・◆縺縺阪∪縺吶ｏ'],
-      delinquent: ['蜿匁攝・・繧・▲縺ｦ繧・ｋ繧茨ｼ・],
-      seductive: ['蜿匁攝縺ｭ窶ｦ縺・＞蟋ｿ繧定ｦ九○縺ｦ縺ゅ￡繧九ｏ'],
+      _default: ['取材…緊張しますが、いい試合を見せられるよう頑張ります'],
+      ojousama: ['取材ですの？ 精一杯務めさせていただきますわ'],
+      delinquent: ['取材？ やってやるよ！'],
+      seductive: ['取材ね…いい姿を見せてあげるわ'],
     },
     bold: {
-      _default: ['縺・＞讖滉ｼ壹□縲ょ・蝗ｽ縺ｫ遘√・螳溷鴨繧定ｦ九○縺ｦ繧・ｋ', '蝗｣菴薙・莉｣陦ｨ縺ｨ縺励※縲∵▼縺壹°縺励￥縺ｪ縺・ｧｿ繧定ｦ九○繧・],
-      ojousama: ['蜈ｨ蝗ｽ縺ｮ逧・ｧ倥↓縲√％縺ｮ螳溷鴨繧偵♀隕九○縺励∪縺吶ｏ'],
-      delinquent: ['蜈ｨ蝗ｽ縺ｫ隕九○縺ｦ繧・ｋ縺懶ｼ√°縺九▲縺ｦ縺薙＞・・],
-      cool: ['窶ｦ縺・＞讖滉ｼ壹□縲らｵ先棡縺ｧ隱槭ｋ'],
-      seductive: ['蜈ｨ蝗ｽ縺ｫ隕九※繧ゅｉ縺医ｋ縺ｮ縺ｭ縲よ･ｽ縺励∩縺繧・],
+      _default: ['いい機会だ。全国に私の実力を見せてやる', '団体の代表として、恥ずかしくない姿を見せる'],
+      ojousama: ['全国の皆様に、この実力をお見せしますわ'],
+      delinquent: ['全国に見せてやるぜ！かかってこい！'],
+      cool: ['…いい機会だ。結果で語る'],
+      seductive: ['全国に見てもらえるのね。楽しみだわ'],
     },
     quiet: {
-      _default: ['窶ｦ縺後ｓ縺ｰ繧翫∪縺・],
-      cool: ['窶ｦ繧・ｋ縲りｦ九※縺・※縺上ｌ'],
-      polite: ['窶ｦ邊ｾ荳譚ｯ縲・大ｼｵ繧峨○縺ｦ縺・◆縺縺阪∪縺・],
+      _default: ['…がんばります'],
+      cool: ['…やる。見ていてくれ'],
+      polite: ['…精一杯、頑張らせていただきます'],
     },
     shy: {
-      _default: ['縺遺ｦ繧上∫ｧ√↑繧薙°縺ｧ縺・＞繧薙〒縺吶°窶ｦ・・縺後・大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['え…わ、私なんかでいいんですか…？ が、頑張ります…！'],
     },
     easygoing: {
-      _default: ['繝槭ず縺ｧ・・ｼ・繝・Ξ繝薙↓蜃ｺ繧後ｋ縺ｮ・・ｼ・繧・▲縺溘・・・, '繝輔ぃ繝ｳ縺ｮ逧・＆繧薙↓繧ゅ▲縺ｨ霑代＞蟋ｿ繧定ｦ九○繧峨ｌ繧九・・・],
-      delinquent: ['繝・Ξ繝難ｼ・ｼ・繝槭ず・・ｼ・繧・▲縺溘・・・],
-      seductive: ['繝・Ξ繝薙↓蜃ｺ繧後ｋ縺ｮ・・螫峨＠縺・ゅｂ縺｣縺ｨ隕九※繧ゅｉ縺医ｋ繧上・'],
+      _default: ['マジで！？ テレビに出れるの！？ やったー！', 'ファンの皆さんにもっと近い姿を見せられるね！'],
+      delinquent: ['テレビ！？ マジ！？ やったー！'],
+      seductive: ['テレビに出れるの？ 嬉しい。もっと見てもらえるわね'],
     },
     earnest: {
-      _default: ['遘√↑繧薙°縺ｧ縺・＞繧薙〒縺吶°・・窶ｦ邊ｾ荳譚ｯ鬆大ｼｵ繧翫∪縺呻ｼ・],
-      polite: ['遘√〒繧医ｍ縺励＞繧薙〒縺吶°窶ｦ・・邊ｾ荳譚ｯ蜍吶ａ縺輔○縺ｦ縺・◆縺縺阪∪縺・],
-      ojousama: ['遘√〒繧医ｍ縺励＞縺ｮ縺ｧ縺吶°窶ｦ・・邊ｾ荳譚ｯ鬆大ｼｵ繧翫∪縺吶ｏ'],
-      seductive: ['遘√〒縺・＞縺ｮ・・窶ｦ邊ｾ荳譚ｯ鬆大ｼｵ繧九ｏ'],
+      _default: ['私なんかでいいんですか？ …精一杯頑張ります！'],
+      polite: ['私でよろしいんですか…？ 精一杯務めさせていただきます'],
+      ojousama: ['私でよろしいのですか…？ 精一杯頑張りますわ'],
+      seductive: ['私でいいの？ …精一杯頑張るわ'],
     },
     emotional: {
-      _default: ['縺医▲窶ｦ繝・Ξ繝凪ｦ・・ｼ・遘√′窶ｦ・・ｼ・鬆大ｼｵ繧翫∪縺吮ｦ・・大ｼｵ繧翫∪縺吮ｦ・・],
+      _default: ['えっ…テレビ…！？ 私が…！？ 頑張ります…！頑張ります…！'],
     },
   },
 };
 
 const MEDIA_OUTLET_NAMES = [
-  '繝励Ο繝ｬ繧ｹ繝ｻ繧ｸ繝｣繝ｼ繝翫Ν', '繝輔ぃ繧､繝・V', '譬ｼ髣俶橿繧ｦ繧ｩ繝・メ',
-  '繝ｪ繝ｳ繧ｰ繧ｵ繧､繝峨・繝槭ぎ繧ｸ繝ｳ', '繝舌ヨ繝ｫ繧ｹ繝・・繧ｷ繝ｧ繝ｳ',
+  'プロレス・ジャーナル', 'ファイトTV', '格闘技ウォッチ',
+  'リングサイド・マガジン', 'バトルステーション',
 ];
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// v2.1: 繧ｨ繝ｳ繝・ぅ繝ｳ繧ｰ貍泌・繧ｻ繝ｪ繝・窶・ending-gameover-spec-v1.0.md ﾂｧ1.4
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.1: エンディング演出セリフ — ending-gameover-spec-v1.0.md §1.4
+// ─────────────────────────────────────────────────────────────────────────────
 const ENDING_LINES = {
   fighter: {
     normal: {
-      _default: ['縺薙・蝗｣菴薙〒謌ｦ縺医※縲∵悽蠖薙↓濶ｯ縺九▲縺・, '蜈･蝗｣縺励◆譎ゅ・縲√∪縺輔°縺薙％縺ｾ縺ｧ譚･繧後ｋ縺ｪ繧薙※諤昴ｏ縺ｪ縺九▲縺・, '譛鬮倥・莉ｲ髢薙→縲∵怙鬮倥・闊槫床縲よ─隰昴＠縺九↑縺・],
-      ojousama: ['縺薙％縺ｾ縺ｧ譚･繧後∪縺励◆縺ｮ縺ｭ窶ｦ諢溽┌驥上〒縺吶ｏ'],
-      delinquent: ['繧・▲縺ｦ繧・▲縺溘●・∵怙鬮倥□・・],
-      seductive: ['縺薙％縺ｾ縺ｧ譚･繧後◆縺ｮ縺ｭ窶ｦ譛鬮倥・豌怜・縺繧・],
+      _default: ['この団体で戦えて、本当に良かった', '入団した時は、まさかここまで来れるなんて思わなかった', '最高の仲間と、最高の舞台。感謝しかない'],
+      ojousama: ['ここまで来れましたのね…感無量ですわ'],
+      delinquent: ['やってやったぜ！最高だ！'],
+      seductive: ['ここまで来れたのね…最高の気分だわ'],
     },
     bold: {
-      _default: ['縺薙％縺碁らせ窶ｦ縺ｧ繧ゅ∪縺蜈医′縺ゅｋ豌励′縺吶ｋ', '縺薙％縺ｧ邨ゅｏ繧翫§繧・↑縺・ゅｂ縺｣縺ｨ蠑ｷ縺上↑縺｣縺ｦ縲√ｂ縺｣縺ｨ荳翫ｒ逶ｮ謖・☆', '遘√◆縺｡縺ｮ謌ｦ縺・′讌ｭ逡後ｒ螟峨∴縺溘りｪ・ｊ縺ｫ諤昴≧'],
-      ojousama: ['鬆らせ縺ｫ遶九■縺ｾ縺励◆繧上ゅ〒繧ゅ∪縺蜈医′縺ゅｊ縺ｾ縺吶・'],
-      delinquent: ['縺ｦ縺｣縺ｺ繧鍋佐縺｣縺溘●・√〒繧ゅ∪縺縺ｾ縺縺薙ｌ縺九ｉ縺・・],
-      cool: ['窶ｦ鬆らせ縺縲ゅ□縺後√∪縺蜈医′縺ゅｋ'],
-      seductive: ['鬆らせ縺ｫ遶九▲縺溘ｏ縲ゅ〒繧ゅ∪縺蜈医′縺ゅｋ縺ｮ'],
+      _default: ['ここが頂点…でもまだ先がある気がする', 'ここで終わりじゃない。もっと強くなって、もっと上を目指す', '私たちの戦いが業界を変えた。誇りに思う'],
+      ojousama: ['頂点に立ちましたわ。でもまだ先がありますの'],
+      delinquent: ['てっぺん獲ったぜ！でもまだまだこれからだ！'],
+      cool: ['…頂点だ。だが、まだ先がある'],
+      seductive: ['頂点に立ったわ。でもまだ先があるの'],
     },
     quiet: {
-      _default: ['窶ｦ窶ｦ窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺励◆・磯撕縺九↓豸吶ｒ豬√＠縺ｦ縺・ｋ・・],
-      cool: ['窶ｦ縺薙％縺ｾ縺ｧ譚･縺溘ゅ◎繧後□縺代□'],
-      polite: ['窶ｦ縺薙％縺ｾ縺ｧ譚･繧後※窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・],
+      _default: ['………ありがとうございました（静かに涙を流している）'],
+      cool: ['…ここまで来た。それだけだ'],
+      polite: ['…ここまで来れて…ありがとうございます'],
     },
     shy: {
-      _default: ['縺薙√％繧薙↑縺ｫ蟷ｸ縺帙↑縺薙→縺後≠縺｣縺ｦ縺・＞縺ｮ縺九↑窶ｦ'],
+      _default: ['こ、こんなに幸せなことがあっていいのかな…'],
     },
     easygoing: {
-      _default: ['縺ｿ繧薙↑縺ｧ謗ｴ繧薙□鬆らせ縺・∵怙鬮倥・繝√・繝縺繧茨ｼ・, '縺企≡縺後↑縺九▲縺滄・・縺薙→繧呈昴＞蜃ｺ縺吶→窶ｦ繧医￥縺薙％縺ｾ縺ｧ譚･縺溘ｈ縺ｭ'],
-      delinquent: ['譛鬮倥□縺懶ｼ√∩繧薙↑縺ゅｊ縺後→縺ｪ・・],
-      seductive: ['譛鬮倥・譎ｯ濶ｲ縺ｭ縲ゅ∩繧薙↑縺ｮ縺翫°縺偵□繧・],
+      _default: ['みんなで掴んだ頂点だ！最高のチームだよ！', 'お金がなかった頃のことを思い出すと…よくここまで来たよね'],
+      delinquent: ['最高だぜ！みんなありがとな！'],
+      seductive: ['最高の景色ね。みんなのおかげだわ'],
     },
     earnest: {
-      _default: ['邱ｴ鄙偵＠縺ｦ縺阪◆縺薙→縺悟・驛ｨ蝣ｱ繧上ｌ縺溘よｳ｣縺阪◎縺・, '縺ゅ・譎りｾ槭ａ縺ｪ縺上※繧医°縺｣縺溘ゅ％縺ｮ迸ｬ髢薙・縺溘ａ縺ｫ蜈ｨ驛ｨ縺ゅ▲縺溘ｓ縺'],
-      polite: ['遨阪∩驥阪・縺ｦ縺阪◆蜈ｨ縺ｦ縺悟ｱ繧上ｌ縺ｾ縺励◆窶ｦ縺ゅｊ縺後→縺・＃縺悶＞縺ｾ縺・],
-      ojousama: ['蜉ｪ蜉帙′蝣ｱ繧上ｌ縺ｾ縺励◆繧鞘ｦ諢溯ｬ昴＠縺九≠繧翫∪縺帙ｓ縺ｮ'],
-      seductive: ['遨阪∩驥阪・縺ｦ縺阪◆蜈ｨ驛ｨ縺悟ｱ繧上ｌ縺溪ｦ豕｣縺阪◎縺・□繧・],
+      _default: ['練習してきたことが全部報われた。泣きそう', 'あの時辞めなくてよかった。この瞬間のために全部あったんだ'],
+      polite: ['積み重ねてきた全てが報われました…ありがとうございます'],
+      ojousama: ['努力が報われましたわ…感謝しかありませんの'],
+      seductive: ['積み重ねてきた全部が報われた…泣きそうだわ'],
     },
     emotional: {
-      _default: ['豸吶′豁｢縺ｾ繧峨↑縺・ｦ・√％繧薙↑縺ｫ蟷ｸ縺帙↑縺薙→縺後≠縺｣縺ｦ縺・＞縺ｮ縺九↑窶ｦ・・, '縺ｿ繧薙↑縺ゅｊ縺後→縺・ｦ・∵怙鬮倥□繧遺ｦ・・],
+      _default: ['涙が止まらない…！こんなに幸せなことがあっていいのかな…！', 'みんなありがとう…！最高だよ…！'],
     },
   },
   coach: [
-    '繧医￥縺槭％縺薙∪縺ｧ窶ｦ窶ｦ遶区ｴｾ縺ｫ縺ｪ縺｣縺・,
-    '縺ゅ・驕ｸ謇九◆縺｡繧定ｦ九※縺・ｋ縺ｨ縲∵欠蟆手・・蛻ｩ縺ｫ蟆ｽ縺阪ｋ',
-    '遘√・謨吶∴蟄舌◆縺｡縺梧･ｭ逡後・鬆らせ縺ｫ縲ゅ％繧御ｻ･荳翫・蝟懊・縺ｯ縺ｪ縺・,
-    '縺ｾ縺縺ｾ縺莨ｸ縺ｳ繧矩∈謇九・縺九ｊ縺縲よ･ｽ縺励∩縺ｯ蟆ｽ縺阪↑縺・ｈ',
-    '縺薙％縺檎ｵら捩轤ｹ縺倥ｃ縺ｪ縺・ゅ＆繧峨↓荳翫・譎ｯ濶ｲ繧定ｦ九○縺ｦ繧・ｋ',
-    '驕ｸ謇九◆縺｡縺ｮ蜉ｪ蜉帙′螳溘ｒ邨舌ｓ縺縲らｧ√・隕句ｮ医▲縺溘□縺代□',
-    '闍ｦ縺励＞譎よ悄繧剃ｹ励ｊ雜翫∴縺滄∈謇九◆縺｡縺ｮ蟋ｿ縺ｫ窶ｦ窶ｦ豸吶′蜃ｺ縺昴≧縺',
-    '蜈ｨ蜩｡縺梧・髟ｷ縺励◆縲ゆｸ莠ｺ縺ｮ閼ｱ關ｽ閠・ｂ蜃ｺ縺輔↑縺九▲縺溘ゅ◎繧後′隱・ｊ縺',
-    '縺薙・蟄舌◆縺｡縺ｨ縺ｪ繧峨√ｂ縺｣縺ｨ鬮倥＞蝣ｴ謇繧堤岼謖・○繧・,
-    '謖・ｰ手・→縺励※縲√％繧御ｻ･荳翫・蟷ｸ縺帙・縺ｪ縺・ｈ',
+    'よくぞここまで……立派になった',
+    'あの選手たちを見ていると、指導者冥利に尽きる',
+    '私の教え子たちが業界の頂点に。これ以上の喜びはない',
+    'まだまだ伸びる選手ばかりだ。楽しみは尽きないよ',
+    'ここが終着点じゃない。さらに上の景色を見せてやる',
+    '選手たちの努力が実を結んだ。私は見守っただけだ',
+    '苦しい時期を乗り越えた選手たちの姿に……涙が出そうだ',
+    '全員が成長した。一人の脱落者も出さなかった。それが誇りだ',
+    'この子たちとなら、もっと高い場所を目指せる',
+    '指導者として、これ以上の幸せはないよ',
   ],
 };
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// v2.0 Phase1-7: 騾・｢・メ繝ｼ繝繧ｹ繝斐Μ繝・ヨ繝・く繧ｹ繝・// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.0 Phase1-7: 逆境チームスピリットテキスト
+// ─────────────────────────────────────────────────────────────────────────────
 const TEAM_SPIRIT_TEXTS = [
-  { text: '櫨 闍ｦ縺励＞荳ｭ縺ｧ繧ゅメ繝ｼ繝縺ｮ邨先據縺梧ｷｱ縺ｾ縺｣縺・, detail: '雉・≡郢ｰ繧翫・蜴ｳ縺励＞縺後・∈謇九◆縺｡縺ｮ陦ｨ諠・↓霑ｷ縺・・縺ｪ縺・ょ峅髮｣繧貞・縺ｫ縺吶ｋ縺薙→縺ｧ縲∫ｵ・′蠑ｷ縺ｾ縺｣縺ｦ縺・ｋ繧医≧縺縲・ },
-  { text: '潮 騾・｢・′繝√・繝繧貞ｼｷ縺上＠縺ｦ縺・ｋ', detail: '雎ｪ闖ｯ縺ｪ險ｭ蛯吶ｂ貎､豐｢縺ｪ雉・≡繧ゅ↑縺・ゅ□縺九ｉ縺薙◎縲・∈謇句酔螢ｫ縺ｧ謾ｯ縺亥粋縺・枚蛹悶′閾ｪ辟ｶ縺ｫ逕溘∪繧後※縺・ｋ縲・ },
-  { text: '､・蜴ｳ縺励＞譎よ悄縺縺九ｉ縺薙◎莉ｲ髢薙・螟ｧ蛻・＆繧貞ｮ滓─', detail: '豎ｺ縺励※諱ｵ縺ｾ繧後◆迺ｰ蠅・〒縺ｯ縺ｪ縺・ゅ◎繧後〒繧ゅ∬ｪｰ荳莠ｺ縺ｨ縺励※譁・唱繧定ｨ繧上★縺ｫ邱ｴ鄙偵↓謇薙■霎ｼ繧蟋ｿ縺後≠繧九・ },
-  { text: '笨・繝√・繝蜈ｨ蜩｡縺悟酔縺俶婿蜷代ｒ蜷代＞縺ｦ縺・ｋ', detail: '闍ｦ縺励＞迥ｶ豕√ｒ蜈ｨ蜩｡縺ｧ蛻・°縺｡蜷医▲縺ｦ縺・ｋ縲ゅ％縺ｮ邨碁ｨ薙′縲√＞縺､縺九メ繝ｼ繝縺ｮ雋｡逕｣縺ｫ縺ｪ繧九・縺壹□縲・ },
+  { text: '🔥 苦しい中でもチームの結束が深まった', detail: '資金繰りは厳しいが、選手たちの表情に迷いはない。困難を共にすることで、絆が強まっているようだ。' },
+  { text: '💪 逆境がチームを強くしている', detail: '豪華な設備も潤沢な資金もない。だからこそ、選手同士で支え合う文化が自然に生まれている。' },
+  { text: '🤝 厳しい時期だからこそ仲間の大切さを実感', detail: '決して恵まれた環境ではない。それでも、誰一人として文句を言わずに練習に打ち込む姿がある。' },
+  { text: '✊ チーム全員が同じ方向を向いている', detail: '苦しい状況を全員で分かち合っている。この経験が、いつかチームの財産になるはずだ。' },
 ];
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// ﾂｧ3 繝ｭ繝・き繝ｼ繝ｫ繝ｼ繝蜿ｯ隕門喧: 髮ｰ蝗ｲ豌励ユ繧ｭ繧ｹ繝茨ｼ・谿ｵ髫偲・-4繝代ち繝ｼ繝ｳ・・// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// §3 ロッカールーム可視化: 雰囲気テキスト（5段階×3-4パターン）
+// ─────────────────────────────────────────────────────────────────────────────
 const ATMOSPHERE_TEXTS = [
   // Level 1 (displayScore 0-20)
-  [{ emoji:'亳', text:'邱ｴ鄙貞ｴ縺碁撕縺ｾ繧願ｿ斐▲縺ｦ縺・ｋ' }, { emoji:'亳', text:'隱ｰ繧ら岼繧貞粋繧上○繧医≧縺ｨ縺励↑縺・ }, { emoji:'亳', text:'驥阪＞遨ｺ豌励′貍ゅ▲縺ｦ縺・ｋ' }],
+  [{ emoji:'😶', text:'練習場が静まり返っている' }, { emoji:'😶', text:'誰も目を合わせようとしない' }, { emoji:'😶', text:'重い空気が漂っている' }],
   // Level 2 (21-40)
-  [{ emoji:'硯', text:'縺ｩ縺薙°繧医◎繧医◎縺励＞遨ｺ豌励′縺ゅｋ' }, { emoji:'硯', text:'譛菴朱剞縺ｮ繝｡繝九Η繝ｼ縺縺代％縺ｪ縺励※縺・ｋ' }, { emoji:'硯', text:'莨夊ｩｱ縺悟ｰ代↑縺・ }],
+  [{ emoji:'🌥', text:'どこかよそよそしい空気がある' }, { emoji:'🌥', text:'最低限のメニューだけこなしている' }, { emoji:'🌥', text:'会話が少ない' }],
   // Level 3 (41-60)
-  [{ emoji:'笘・, text:'豺｡縲・→繝｡繝九Η繝ｼ繧偵％縺ｪ縺励※縺・ｋ' }, { emoji:'笘・, text:'縺・▽繧る壹ｊ縺ｮ邱ｴ鄙帝｢ｨ譎ｯ' }, { emoji:'笘・, text:'迚ｹ縺ｫ螟峨ｏ縺｣縺滓ｧ伜ｭ舌・縺ｪ縺・ }, { emoji:'笘・, text:'鮟吶・→豎励ｒ豬√＠縺ｦ縺・ｋ' }],
+  [{ emoji:'☁', text:'淡々とメニューをこなしている' }, { emoji:'☁', text:'いつも通りの練習風景' }, { emoji:'☁', text:'特に変わった様子はない' }, { emoji:'☁', text:'黙々と汗を流している' }],
   // Level 4 (61-80)
-  [{ emoji:'研', text:'螢ｰ縺碁｣帙・莠､縺｣縺ｦ縺・ｋ' }, { emoji:'研', text:'邱ｴ鄙偵↓辭ｱ縺悟・縺｣縺ｦ縺・ｋ' }, { emoji:'研', text:'驕ｸ謇句酔螢ｫ縺ｧ繧｢繝峨ヰ繧､繧ｹ縺怜粋縺｣縺ｦ縺・ｋ' }, { emoji:'研', text:'豢ｻ豌励・縺ゅｋ邱ｴ鄙貞ｴ' }],
+  [{ emoji:'🌤', text:'声が飛び交っている' }, { emoji:'🌤', text:'練習に熱が入っている' }, { emoji:'🌤', text:'選手同士でアドバイスし合っている' }, { emoji:'🌤', text:'活気のある練習場' }],
   // Level 5 (81-100)
-  [{ emoji:'櫨', text:'閾ｪ荳ｻ邱ｴ縺吶ｋ驕ｸ謇九′蠅励∴縺ｦ縺・ｋ' }, { emoji:'櫨', text:'邱ｴ鄙貞ｴ縺ｫ隨代＞螢ｰ縺碁涸縺・※縺・ｋ' }, { emoji:'櫨', text:'蜈ｨ蜩｡縺ｮ逶ｮ縺､縺阪′驕輔≧' }, { emoji:'櫨', text:'繝√・繝蜈ｨ菴薙↓蜍｢縺・′縺ゅｋ' }],
+  [{ emoji:'🔥', text:'自主練する選手が増えている' }, { emoji:'🔥', text:'練習場に笑い声が響いている' }, { emoji:'🔥', text:'全員の目つきが違う' }, { emoji:'🔥', text:'チーム全体に勢いがある' }],
 ];
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// ﾂｧ2 隕ｳ蟇溽愍繧ｷ繧ｹ繝・Β: 繧ｳ繝ｼ繝∝ｱ蜻翫ユ繧ｭ繧ｹ繝茨ｼ医Λ繝ｳ繧ｯ蛻･・・// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// §2 観察眼システム: コーチ報告テキスト（ランク別）
+// ─────────────────────────────────────────────────────────────────────────────
 const COACH_REPORT_TEXTS = {
-  // E-D rank: 蜷榊燕縺ｪ縺励・貍辟ｶ縺ｨ縺励◆髮ｰ蝗ｲ豌・  vague: [
-    '譛霑代∫ｷｴ鄙偵↓霄ｫ縺悟・縺｣縺ｦ縺・ｋ驕ｸ謇九′縺・ｋ繧医≧縺ｧ縺・,
-    '縺｡繧・▲縺ｨ蜈・ｰ励・縺ｪ縺・∈謇九′縺・∪縺吶・',
-    '邱ｴ鄙貞ｴ縺ｮ髮ｰ蝗ｲ豌励・謔ｪ縺上↑縺・〒縺吶ｈ',
-    '蜈ｨ菴鍋噪縺ｫ縺ｾ縺壹∪縺壹・莉穂ｸ翫′繧翫〒縺吶・',
-    '譛霑代∝虚縺阪′濶ｯ縺上↑縺｣縺ｦ縺阪◆驕ｸ謇九′縺・∪縺・,
-    '縺｡繧・▲縺ｨ莨ｸ縺ｳ謔ｩ繧薙〒縺・ｋ驕ｸ謇九′縺・ｋ縺九ｂ縺励ｌ縺ｾ縺帙ｓ',
+  // E-D rank: 名前なし・漠然とした雰囲気
+  vague: [
+    '最近、練習に身が入っている選手がいるようです',
+    'ちょっと元気のない選手がいますね',
+    '練習場の雰囲気は悪くないですよ',
+    '全体的にまずまずの仕上がりですね',
+    '最近、動きが良くなってきた選手がいます',
+    'ちょっと伸び悩んでいる選手がいるかもしれません',
   ],
-  // C rank: 驕ｸ謇句錐+繝繝ｼ繝・  named_positive: [
-    '{name}驕ｸ謇九∬ｪｿ蟄舌′濶ｯ縺輔◎縺・〒縺吶・',
-    '{name}驕ｸ謇九∵怙霑代＞縺・─縺倥↓莉穂ｸ翫′縺｣縺ｦ縺阪※縺・∪縺・,
-    '{name}驕ｸ謇九・蜍輔″縺ｫ蜍｢縺・ｒ諢溘§縺ｾ縺・,
+  // C rank: 選手名+ムード
+  named_positive: [
+    '{name}選手、調子が良さそうですね',
+    '{name}選手、最近いい感じに仕上がってきています',
+    '{name}選手の動きに勢いを感じます',
   ],
   named_negative: [
-    '{name}驕ｸ謇九∝ｰ代＠隱ｿ蟄舌′關ｽ縺｡縺ｦ縺・ｋ縺九ｂ縺励ｌ縺ｾ縺帙ｓ',
-    '{name}驕ｸ謇九√■繧・▲縺ｨ邱ｴ鄙偵↓髮・ｸｭ縺ｧ縺阪※縺・↑縺・ｧ伜ｭ舌〒縺・,
-    '{name}驕ｸ謇九∵怙霑大ｰ代＠蜈・ｰ励′縺ｪ縺・〒縺吶・',
+    '{name}選手、少し調子が落ちているかもしれません',
+    '{name}選手、ちょっと練習に集中できていない様子です',
+    '{name}選手、最近少し元気がないですね',
   ],
   named_neutral: [
-    '{name}驕ｸ謇九・螳牙ｮ壹＠縺ｦ縺・∪縺吶ｈ',
-    '{name}驕ｸ謇九∫音縺ｫ蝠城｡後・縺ｪ縺・ｈ縺・〒縺・,
-    '{name}驕ｸ謇九・繝槭う繝壹・繧ｹ縺ｫ繧・▲縺ｦ縺・∪縺・,
+    '{name}選手は安定していますよ',
+    '{name}選手、特に問題はないようです',
+    '{name}選手はマイペースにやっています',
   ],
-  // B rank: 驕ｸ謇句錐+蜈ｷ菴鍋噪繧ｹ繝・・繧ｿ繧ｹ
+  // B rank: 選手名+具体的ステータス
   stat_growing: [
-    '{name}驕ｸ謇九・{stat}縺御ｼｸ縺ｳ縺ｦ縺阪※縺・∪縺・,
-    '{name}驕ｸ謇九＋stat}縺ｮ謌宣聞縺瑚ｦ九ｉ繧後∪縺吶・',
-    '{name}驕ｸ謇九・{stat}縺ｫ謇句ｿ懊∴繧呈─縺倥∪縺・,
+    '{name}選手の{stat}が伸びてきています',
+    '{name}選手、{stat}の成長が見られますね',
+    '{name}選手の{stat}に手応えを感じます',
   ],
   stat_stagnant: [
-    '{name}驕ｸ謇九・{stat}縲∵怙霑台ｼｸ縺ｳ縺梧ｭ｢縺ｾ縺｣縺ｦ縺・ｋ豌励′縺励∪縺・,
-    '{name}驕ｸ謇九＋stat}縺ｯ縺｡繧・▲縺ｨ鬆ｭ謇薙■豌怜袖縺ｧ縺吶°縺ｭ',
-    '{name}驕ｸ謇九・{stat}縲√％縺薙°繧牙・縺ｯ譎る俣縺後°縺九ｋ縺九ｂ縺励ｌ縺ｾ縺帙ｓ',
+    '{name}選手の{stat}、最近伸びが止まっている気がします',
+    '{name}選手、{stat}はちょっと頭打ち気味ですかね',
+    '{name}選手の{stat}、ここから先は時間がかかるかもしれません',
   ],
-  // A rank: 螟ｩ莠墓磁霑代ヲ繝ｳ繝茨ｼ・rainCap・・  near_cap: [
-    '{name}驕ｸ謇九・{stat}縲√◎繧阪◎繧埼ｭ謇薙■縺九ｂ縺励ｌ縺ｾ縺帙ｓ',
-    '{name}驕ｸ謇九・{stat}縺ｯ繧ゅ≧莨ｸ縺ｳ縺励ｍ縺悟ｰ代↑縺・→諤昴＞縺ｾ縺・,
-    '{name}驕ｸ謇九・{stat}縲・剞逡後↓霑代▼縺・※縺・ｋ豌励′縺励∪縺・,
+  // A rank: 天井接近ヒント（trainCap）
+  near_cap: [
+    '{name}選手の{stat}、そろそろ頭打ちかもしれません',
+    '{name}選手の{stat}はもう伸びしろが少ないと思います',
+    '{name}選手の{stat}、限界に近づいている気がします',
   ],
   far_from_cap: [
-    '{name}驕ｸ謇九・{stat}縲√∪縺縺ｾ縺莨ｸ縺ｳ縺ｾ縺吶ｈ',
-    '{name}驕ｸ謇九・{stat}縺ｫ縺ｯ縺ｾ縺菴吝鴨縺後≠繧翫∪縺吶・',
-    '{name}驕ｸ謇九・{stat}縺ｮ謌宣聞菴吝慍縺ｯ蜊∝・縺ｧ縺・,
+    '{name}選手の{stat}、まだまだ伸びますよ',
+    '{name}選手の{stat}にはまだ余力がありますね',
+    '{name}選手の{stat}の成長余地は十分です',
   ],
 };
-const STAT_LABELS_JP = { pw:'繝代Ρ繝ｼ', sp:'繧ｹ繝斐・繝・, te:'繝・け繝九ャ繧ｯ', st:'繧ｹ繧ｿ繝溘リ' };
-const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 肌 逧・､悶ｌ遒ｺ邇・
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// 繧ｹ繝翫ャ繝励す繝ｧ繝・ヨ騾夂衍繝・く繧ｹ繝・窶・snapshot-engine-instruction.md
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
+const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 🔧 的外れ確率
+
+// ─────────────────────────────────────────────────────────────────────────────
+// スナップショット通知テキスト — snapshot-engine-instruction.md
+// ─────────────────────────────────────────────────────────────────────────────
 const SNAPSHOT_TEXTS = {
-  // 笏笏 G1: 邨ｦ荳惹ｸ榊・蟷ｳ 笏笏
+  // ── G1: 給与不公平 ──
   G1: {
     scene: [
-      '邨ｦ譁呎律縲・name}縺梧・邏ｰ繧偵§縺｣縺ｨ隕九▽繧√※縺・◆',
-      '{name}縺碁｣溷ゅ〒蜷悟・縺溘■縺ｮ霈ｪ縺ｫ蜈･繧峨★縲・ｻ吶▲縺ｦ鬟滉ｺ九ｒ縺励※縺・◆',
-      '{name}縺後Ο繝・き繝ｼ繝ｫ繝ｼ繝縺ｧ縲∬ｪｰ縺九・螂醍ｴ・嶌繧偵■繧峨ｊ縺ｨ隕九※縺・◆',
+      '給料日。{name}が明細をじっと見つめていた',
+      '{name}が食堂で同僚たちの輪に入らず、黙って食事をしていた',
+      '{name}がロッカールームで、誰かの契約書をちらりと見ていた',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ縺ｾ縺ゅ√％繧薙↑繧ゅｓ縺・, '窶ｦ鬆大ｼｵ縺｣縺ｦ繧九・縺ｫ縺ｪ'],
-        ojousama: ['窶ｦ縺企≡縺ｮ縺薙→縺ｧ譁・唱繧定ｨ縺・▽繧ゅｊ縺ｯ縺ｪ縺・￠繧後←'],
-        delinquent: ['窶ｦ繝√ャ'],
+        _default: ['…まあ、こんなもんか', '…頑張ってるのにな'],
+        ojousama: ['…お金のことで文句を言うつもりはないけれど'],
+        delinquent: ['…チッ'],
       },
       bold: {
-        _default: ['窶ｦ縺ｪ繧薙〒縺ゅ・蟄舌→蜷後§謇ｱ縺・↑繧上￠・・, '窶ｦ邏榊ｾ励＞縺九↑縺・],
-        ojousama: ['窶ｦ繧上◆縺上＠縺ｮ萓｡蛟､縲√■繧・ｓ縺ｨ隕九※縺上□縺輔▲縺ｦ縺・ｋ縺ｮ縺九＠繧・],
-        delinquent: ['窶ｦ縺ｵ縺悶￠繧薙↑繧・],
+        _default: ['…なんであの子と同じ扱いなわけ？', '…納得いかない'],
+        ojousama: ['…わたくしの価値、ちゃんと見てくださっているのかしら'],
+        delinquent: ['…ふざけんなよ'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ'],
+        _default: ['…'],
+        cool: ['…'],
       },
       earnest: {
-        _default: ['窶ｦ繧ゅ▲縺ｨ邨先棡繧貞・縺帙・縺・＞縺縺代・隧ｱ縲√□繧医・', '窶ｦ閾ｪ蛻・・蜉帑ｸ崎ｶｳ縺九↑'],
-        ojousama: ['窶ｦ蜉ｪ蜉帙′雜ｳ繧翫↑縺・・縺九＠繧峨ゅ〒繧やｦ'],
+        _default: ['…もっと結果を出せばいいだけの話、だよね', '…自分の力不足かな'],
+        ojousama: ['…努力が足りないのかしら。でも…'],
       },
       emotional: {
-        _default: ['窶ｦ縺ｪ繧薙〒窶ｦ縺ｪ繧薙〒縺繧・, '窶ｦ謔斐＠縺・↑'],
-        delinquent: ['窶ｦ繧・▲縺ｦ繧峨ｌ縺｣縺九ｈ'],
+        _default: ['…なんで…なんでだろ', '…悔しいな'],
+        delinquent: ['…やってられっかよ'],
       },
     },
   },
 
-  // 笏笏 G2: 蠕瑚ｼｩ縺ｮ譁ｹ縺檎ｵｦ荳弱′鬮倥＞ 笏笏
+  // ── G2: 後輩の方が給与が高い ──
   G2: {
     scene: [
-      '{name}縺悟ｾ瑚ｼｩ縺ｮ{name2}縺ｮ隧ｦ蜷医ｒ閻輔ｒ邨・ｓ縺ｧ隕九※縺・◆縲り､・尅縺ｪ陦ｨ諠・□',
-      '{name}縺鶏name2}縺ｫ謚繧呈蕗縺医※縺・ｋ縲ゅ□縺後√◎縺ｮ逶ｮ縺ｫ縺ｩ縺薙°鄙ｳ繧翫′縺ゅｋ',
+      '{name}が後輩の{name2}の試合を腕を組んで見ていた。複雑な表情だ',
+      '{name}が{name2}に技を教えている。だが、その目にどこか翳りがある',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ縺ゅ・蟄舌∽ｼｸ縺ｳ縺溘↑', '窶ｦ蜈郁ｼｩ縺ｨ縺励※縺｡繧・ｓ縺ｨ隕九※繧九ｈ縲やｦ縺ｧ繧ゅ・'],
+        _default: ['…あの子、伸びたな', '…先輩としてちゃんと見てるよ。…でもね'],
       },
       bold: {
-        _default: ['窶ｦ蟷ｴ蜉溷ｺ丞・縺ｪ繧薙※蜿､縺・ょ・縺九▲縺ｦ繧九ょ・縺九▲縺ｦ繧九￠縺ｩ', '窶ｦ縺ゅ◆縺励□縺｣縺ｦ雋縺代※縺ｪ縺・],
-        delinquent: ['窶ｦ繧ｬ繧ｭ縺瑚ｪｿ蟄蝉ｹ励▲縺ｦ繧薙§繧・・繝ｼ繧・],
+        _default: ['…年功序列なんて古い。分かってる。分かってるけど', '…あたしだって負けてない'],
+        delinquent: ['…ガキが調子乗ってんじゃねーよ'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ縺昴≧縲ゅ◎繧後□縺代・縺薙→縺'],
+        _default: ['…'],
+        cool: ['…そう。それだけのことだ'],
       },
       earnest: {
-        _default: ['窶ｦ縺ゅ・蟄舌′隧穂ｾ｡縺輔ｌ繧九・縺ｯ豁｣縺励＞縺ｨ諤昴≧縲よ昴≧繧薙□縺代←'],
+        _default: ['…あの子が評価されるのは正しいと思う。思うんだけど'],
       },
       emotional: {
-        _default: ['窶ｦ蜈医↓蟋九ａ縺溘・縺ｯ縺ゅ◆縺励↑縺ｮ縺ｫ', '窶ｦ鄂ｮ縺・※縺・°繧後※繧区ｰ励′縺吶ｋ'],
+        _default: ['…先に始めたのはあたしなのに', '…置いていかれてる気がする'],
       },
     },
   },
 
-  // 笏笏 G3: 繧ｿ繧､繝医Ν縺ｫ邨｡繧√↑縺・笏笏
+  // ── G3: タイトルに絡めない ──
   G3: {
     scene: [
-      '{name}縺後ち繧､繝医Ν繝槭ャ繝√・繝昴せ繧ｿ繝ｼ縺ｮ蜑阪〒雜ｳ繧呈ｭ｢繧√※縺・◆',
-      '{name}縺檎ｷｴ鄙剃ｸｭ縲√＞縺､繧ゅｈ繧頑遠縺｡霎ｼ縺ｿ縺瑚穀縺・ゆｽ輔°繧呈戟縺ｦ菴吶＠縺ｦ縺・ｋ',
-      '繧ｿ繧､繝医Ν謌ｦ縺ｮ隧ｱ鬘後′蜃ｺ縺滓凾縲＋name}縺縺代′鮟吶▲縺ｦ縺・◆',
+      '{name}がタイトルマッチのポスターの前で足を止めていた',
+      '{name}が練習中、いつもより打ち込みが荒い。何かを持て余している',
+      'タイトル戦の話題が出た時、{name}だけが黙っていた',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ縺・▽縺ｫ縺ｪ縺｣縺溘ｉ'],
+        _default: ['…いつになったら'],
       },
       bold: {
-        _default: ['窶ｦ縺・▽縺ｫ縺ｪ縺｣縺溘ｉ縺ゅ◆縺励・逡ｪ縺梧擂繧九・・・, '窶ｦ蠕・▽縺ｮ縺ｯ螂ｽ縺阪§繧・↑縺・],
-        ojousama: ['窶ｦ繧上◆縺上＠縺ｫ縺ｵ縺輔ｏ縺励＞闊槫床縺後∪縺譚･縺ｪ縺・↑繧薙※'],
-        delinquent: ['窶ｦ縺・＞蜉貂帑ｽｿ縺医ｈ縲り・繧九◇'],
+        _default: ['…いつになったらあたしの番が来るの？', '…待つのは好きじゃない'],
+        ojousama: ['…わたくしにふさわしい舞台がまだ来ないなんて'],
+        delinquent: ['…いい加減使えよ。腐るぞ'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ繝√Ε繝ｳ繧ｹ縺ｯ閾ｪ蛻・〒菴懊ｋ繧ゅ・縺縺ｨ諤昴▲縺ｦ縺・ｋ'],
+        _default: ['…'],
+        cool: ['…チャンスは自分で作るものだと思っている'],
       },
       earnest: {
-        _default: ['窶ｦ螳溷鴨縺瑚ｶｳ繧翫↑縺・°繧会ｼ・縺昴ｌ縺ｨ繧やｦ', '窶ｦ繧ゅ≧蟆代＠縲∝ｾ・※縺ｰ縺・＞縺ｮ縺九↑'],
+        _default: ['…実力が足りないから？ それとも…', '…もう少し、待てばいいのかな'],
       },
       emotional: {
-        _default: ['窶ｦ謔斐＠縺上↑縺・▲縺ｦ險縺｣縺溘ｉ蝌倥↓縺ｪ繧・, '窶ｦ縺ゅ◆縺励ｂ縲√≠縺昴％縺ｫ遶九■縺溘＞'],
-        seductive: ['窶ｦ繧ゅ≧蟆代＠逶ｮ遶九◆縺ｪ縺・→繝繝｡縺ｪ縺ｮ縺九＠繧・],
+        _default: ['…悔しくないって言ったら嘘になる', '…あたしも、あそこに立ちたい'],
+        seductive: ['…もう少し目立たないとダメなのかしら'],
       },
     },
   },
 
-  // 笏笏 G4: 繝ｭ繧ｹ繧ｿ繝ｼ驕主ｯ・笏笏
+  // ── G4: ロスター過密 ──
   G4: {
     scene: [
-      '{name}縺瑚ｩｦ蜷医・縺ｪ縺・ｱ譛ｫ繧呈戟縺ｦ菴吶＠縺ｦ縺・ｋ繧医≧縺',
-      '謗ｧ縺亥ｮ､縺ｮ髫・〒縲＋name}縺後せ繝医Ξ繝・メ繧偵＠縺ｦ縺・ｋ縲ょ・逡ｪ繧貞ｾ・▽閭御ｸｭ縺ｫ辟ｦ繧翫′隕九∴繧・,
-      '{name}縺瑚・荳ｻ邱ｴ縺ｮ蠕後∽ｸ莠ｺ縺ｧ繝ｪ繝ｳ繧ｰ繧定ｦ九▽繧√※縺・◆',
+      '{name}が試合のない週末を持て余しているようだ',
+      '控え室の隅で、{name}がストレッチをしている。出番を待つ背中に焦りが見える',
+      '{name}が自主練の後、一人でリングを見つめていた',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ蜃ｺ逡ｪ縲∵擂縺ｪ縺・°縺ｪ'],
+        _default: ['…出番、来ないかな'],
       },
       bold: {
-        _default: ['窶ｦ菴ｿ縺｣縺ｦ縺上ｌ縺ｪ縺阪ｃ諢丞袖縺ｪ縺・§繧・ｓ', '窶ｦ縺ゅ◆縺励・螻・ｴ謇縲√≠繧九・縺九↑'],
+        _default: ['…使ってくれなきゃ意味ないじゃん', '…あたしの居場所、あるのかな'],
       },
       quiet: {
-        _default: ['窶ｦ'],
+        _default: ['…'],
       },
       earnest: {
-        _default: ['窶ｦ貅門ｙ縺ｯ縺ｧ縺阪※繧九ゅ＞縺､縺ｧ繧・],
+        _default: ['…準備はできてる。いつでも'],
       },
       emotional: {
-        _default: ['窶ｦ隕九※縺上ｌ縺ｦ繧九・縺九↑縲√≠縺溘＠縺ｮ縺薙→'],
+        _default: ['…見てくれてるのかな、あたしのこと'],
       },
     },
   },
 
-  // 笏笏 R1: 菴暫ond蜷瑚・陦・笏笏
+  // ── R1: 低bond同興行 ──
   R1: {
     scene: [
-      '{name}縺ｨ{name2}縺梧而縺亥ｮ､縺ｧ逶ｮ繧貞粋繧上○縺ｪ縺九▲縺・,
-      '{name}縺ｨ{name2}縺ｮ髢薙↓縲∬ｦ九∴縺ｪ縺・｣√′縺ゅｋ縲ょ捉繧翫ｂ縺昴ｌ繧呈─縺倥※縺・ｋ',
-      '{name}縺ｨ{name2}縺悟酔縺倥ユ繝ｼ繝悶Ν縺ｫ蠎ｧ繧九％縺ｨ繧帝∩縺代※縺・◆',
+      '{name}と{name2}が控え室で目を合わせなかった',
+      '{name}と{name2}の間に、見えない壁がある。周りもそれを感じている',
+      '{name}と{name2}が同じテーブルに座ることを避けていた',
     ],
     staff: [
-      '繧ｹ繧ｿ繝・ヵ縺九ｉ: {name}縺ｨ{name2}縲∵怙霑代←縺・ｂ遨ｺ豌励′繝斐Μ縺､縺・※縺ｾ縺励※窶ｦ',
+      'スタッフから: {name}と{name2}、最近どうも空気がピリついてまして…',
     ],
   },
 
-  // 笏笏 R2: 蟄､遶・笏笏
+  // ── R2: 孤立 ──
   R2: {
     scene: [
-      '譏ｼ莨代∩縲ゆｻ悶・驕ｸ謇九◆縺｡縺瑚ｫ・ｬ代☆繧倶ｸｭ縲＋name}縺縺代′髮｢繧後◆蝣ｴ謇縺ｫ縺・◆',
-      '{name}縺御ｸ莠ｺ縺ｧ繝ｪ繝ｳ繧ｰ縺ｮ迚・ｻ倥￠繧偵＠縺ｦ縺・ｋ縲よ焔莨昴≧閠・・縺・↑縺・,
-      '邱ｴ鄙貞ｾ後・譖ｴ陦｣螳､縲・name}縺ｮ繝ｭ繝・き繝ｼ縺ｮ蜻ｨ繧翫□縺代∝ｰ代＠遨ｺ髢薙′遨ｺ縺・※縺・ｋ',
+      '昼休み。他の選手たちが談笑する中、{name}だけが離れた場所にいた',
+      '{name}が一人でリングの片付けをしている。手伝う者はいない',
+      '練習後の更衣室。{name}のロッカーの周りだけ、少し空間が空いている',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ縺ｾ縺ゅ∽ｸ莠ｺ縺ｮ縺ｻ縺・′豌玲･ｽ縺縺・],
+        _default: ['…まあ、一人のほうが気楽だし'],
       },
       bold: {
-        _default: ['窶ｦ蛻･縺ｫ縺・＞縺代←縲ゅ≠縺溘＠縺ｯ荳莠ｺ縺ｧ繧・ｌ繧九＠'],
-        delinquent: ['窶ｦ繝上ャ縲∫ｾ､繧後ｋ縺ｮ縺ｯ雜｣蜻ｳ縺倥ｃ縺ｭ繝ｼ繧薙□繧・],
+        _default: ['…別にいいけど。あたしは一人でやれるし'],
+        delinquent: ['…ハッ、群れるのは趣味じゃねーんだよ'],
       },
       quiet: {
-        _default: ['窶ｦ窶ｦ'],
-        cool: ['窶ｦ蟄､迢ｬ縺ｫ縺ｯ諷｣繧後※縺・ｋ'],
+        _default: ['……'],
+        cool: ['…孤独には慣れている'],
       },
       earnest: {
-        _default: ['窶ｦ繧ゅ▲縺ｨ縺ｿ繧薙↑縺ｨ隧ｱ縺励◆譁ｹ縺後＞縺・・縺九↑'],
-        polite: ['窶ｦ菴輔°豌励↓髫懊ｋ縺薙→繧偵＠縺溘・縺ｧ縺励ｇ縺・°'],
+        _default: ['…もっとみんなと話した方がいいのかな'],
+        polite: ['…何か気に障ることをしたのでしょうか'],
       },
       emotional: {
-        _default: ['窶ｦ縺ｿ繧薙↑縲√≠縺溘＠縺ｮ縺薙→雖後＞縺ｪ縺ｮ縺九↑', '窶ｦ縺薙％縺ｫ縺・※縺・＞縺ｮ縺九↑'],
-        ojousama: ['窶ｦ縺薙≧縺・≧蟇ゅ＠縺輔・蛻昴ａ縺ｦ縺ｧ縺吶ｏ'],
+        _default: ['…みんな、あたしのこと嫌いなのかな', '…ここにいていいのかな'],
+        ojousama: ['…こういう寂しさは初めてですわ'],
       },
     },
   },
 
-  // 笏笏 R3: 莉ｲ濶ｯ縺鈴蝗｣/蠑暮 笏笏
+  // ── R3: 仲良し退団/引退 ──
   R3: {
     scene: [
-      '{name}縺ｯ{name2}縺ｮ騾蝗｣繧堤衍繧翫√＠縺ｰ繧峨￥險闡峨ｒ螟ｱ縺｣縺ｦ縺・◆',
-      '{name2}縺後＞縺ｪ縺上↑縺｣縺溘Ο繝・き繝ｼ縺ｮ蜑阪〒縲＋name}縺檎ｫ九■豁｢縺ｾ縺｣縺ｦ縺・◆',
+      '{name}は{name2}の退団を知り、しばらく言葉を失っていた',
+      '{name2}がいなくなったロッカーの前で、{name}が立ち止まっていた',
     ],
     modal: {
       normal: {
-        _default: ['窶ｦ縺・↑縺上↑縺｣縺｡繧・≧繧薙□', '窶ｦ{name2}縺後＞縺ｪ縺・而縺亥ｮ､縺ｪ繧薙※諠ｳ蜒上〒縺阪↑縺・],
+        _default: ['…いなくなっちゃうんだ', '…{name2}がいない控え室なんて想像できない'],
       },
       bold: {
-        _default: ['窶ｦ繝舌き縲ゆｽ輔ｂ險繧上★縺ｫ陦後￥縺ｪ繧・, '窶ｦ縺ゅ＞縺､縺後＞縺ｪ縺・→縲∝ｼｵ繧雁粋縺・′縺ｪ縺・],
-        delinquent: ['窶ｦ繝√ャ縲やｦ蟇ゅ＠縺・↑繧薙※險繧上・繝ｼ縺代←'],
+        _default: ['…バカ。何も言わずに行くなよ', '…あいつがいないと、張り合いがない'],
+        delinquent: ['…チッ。…寂しいなんて言わねーけど'],
       },
       quiet: {
-        _default: ['窶ｦ窶ｦ'],
-        cool: ['窶ｦ縺昴≧縺九やｦ蛻・°縺｣縺・],
+        _default: ['……'],
+        cool: ['…そうか。…分かった'],
       },
       earnest: {
-        _default: ['{name2}縺ｮ縺溘ａ縺ｫ縲√≠縺溘＠縺ｯ縺薙％縺ｧ鬆大ｼｵ繧九°繧・, '窶ｦ縺ゅｊ縺後→縺・ゅ★縺｣縺ｨ謾ｯ縺医※縺上ｌ縺ｦ'],
-        polite: ['{name2}縺輔ｓ縺ｨ縺比ｸ邱偵〒縺阪※蟷ｸ縺帙〒縺励◆縲やｦ縺雁・豌励〒'],
+        _default: ['{name2}のために、あたしはここで頑張るから', '…ありがとう。ずっと支えてくれて'],
+        polite: ['{name2}さんとご一緒できて幸せでした。…お元気で'],
       },
       emotional: {
-        _default: ['窶ｦ繧・□縲ょｫ後□繧医ゅ↑繧薙〒窶ｦ', '窶ｦ{name2}縺後＞縺ｪ縺・↑繧薙※縲√≠縺溘＠窶ｦ'],
-        ojousama: ['窶ｦ{name2}縲やｦ窶ｦ縺ゅ↑縺溘′縺・↑縺上↑繧九↑繧薙※'],
+        _default: ['…やだ。嫌だよ。なんで…', '…{name2}がいないなんて、あたし…'],
+        ojousama: ['…{name2}。……あなたがいなくなるなんて'],
       },
     },
   },
 
-  // 笏笏 R4: 繝ｩ繧､繝舌Ν縺ｫ蜍晏茜 笏笏
+  // ── R4: ライバルに勝利 ──
   R4: {
     scene: [
-      '隧ｦ蜷亥ｾ後＋name}縺ｮ逶ｮ縺ｫ髱吶°縺ｪ轤弱′辯・∴縺ｦ縺・◆',
-      '{name}縺後Μ繝ｳ繧ｰ繧帝剄繧翫ｋ譎ゅ∽ｸ迸ｬ縺縺捜name2}縺ｮ縺ｻ縺・ｒ謖ｯ繧願ｿ斐▲縺溘よｺ雜ｳ縺偵↓',
+      '試合後、{name}の目に静かな炎が燃えていた',
+      '{name}がリングを降りる時、一瞬だけ{name2}のほうを振り返った。満足げに',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ繧・▲縺ｨ縲∬ｿｽ縺・▽縺・◆'],
+        _default: ['…やっと、追いついた'],
       },
       bold: {
-        _default: ['窶ｦ縺ｵ繧薙ゅ∪縺縺ｾ縺縺薙ｓ縺ｪ繧ゅｓ縺倥ｃ縺ｪ縺・￠縺ｩ縺ｭ', '窶ｦ蜍昴▲縺溘ゅ〒繧ゅ√∪縺邨ゅｏ縺｣縺ｦ縺ｪ縺・],
-        delinquent: ['窶ｦ繧ｶ繝槭ぃ隕九ｍ'],
+        _default: ['…ふん。まだまだこんなもんじゃないけどね', '…勝った。でも、まだ終わってない'],
+        delinquent: ['…ザマァ見ろ'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ谺｡繧ょ酔縺倡ｵ先棡縺ｨ縺ｯ髯舌ｉ縺ｪ縺・よｰ励ｒ蠑輔″邱繧√ｍ縲∬・蛻・],
+        _default: ['…'],
+        cool: ['…次も同じ結果とは限らない。気を引き締めろ、自分'],
       },
       earnest: {
-        _default: ['窶ｦ蜉ｪ蜉帙・陬丞・繧峨↑縺・やｦ{name2}縲√≠繧翫′縺ｨ縺・],
+        _default: ['…努力は裏切らない。…{name2}、ありがとう'],
       },
       emotional: {
-        _default: ['窶ｦ蜍昴▲縺溪ｦ蜍昴▲縺溘ｈ窶ｦ・・, '窶ｦ豕｣縺上↑縲√≠縺溘＠縲ゅ∪縺蜈医′縺ゅｋ'],
+        _default: ['…勝った…勝ったよ…！', '…泣くな、あたし。まだ先がある'],
       },
     },
   },
 
-  // 笏笏 R5: 繝ｩ繧､繝舌Ν縺ｫ謨怜圏 笏笏
+  // ── R5: ライバルに敗北 ──
   R5: {
     scene: [
-      '{name}縺ｯ辟｡險縺ｧ繝ｪ繝ｳ繧ｰ繧帝剄繧翫◆縲ゅ◎縺ｮ諡ｳ縺縺代′髴・∴縺ｦ縺・◆',
-      '{name}縺悟ｸｰ繧企圀縲∵険繧願ｿ斐▲縺ｦ{name2}縺ｮ縺ｻ縺・ｒ荳迸ｬ縺縺題ｦ九◆',
-      '隧ｦ蜷亥ｾ後・騾夊ｷｯ縺ｧ縲＋name}縺悟｣√ｒ蜿ｩ縺城浹縺後＠縺・,
+      '{name}は無言でリングを降りた。その拳だけが震えていた',
+      '{name}が帰り際、振り返って{name2}のほうを一瞬だけ見た',
+      '試合後の通路で、{name}が壁を叩く音がした',
     ],
     voice: {
       normal: {
-        _default: ['窶ｦ縺ｾ縺縲∬ｶｳ繧翫↑縺・・縺・, '窶ｦ縺上ｄ縺励＞'],
+        _default: ['…まだ、足りないのか', '…くやしい'],
       },
       bold: {
-        _default: ['窶ｦ谺｡縺ｯ邨ｶ蟇ｾ縺ｫ雋縺代↑縺・, '窶ｦ縺薙・蛟溘ｊ縺ｯ蠢・★霑斐☆'],
-        delinquent: ['窶ｦ繧ｯ繧ｽ繝・ｦ・・],
+        _default: ['…次は絶対に負けない', '…この借りは必ず返す'],
+        delinquent: ['…クソッ…！'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ謨怜屏縺ｯ蛻・°縺｣縺ｦ縺・ｋ縲よｬ｡縺ｾ縺ｧ縺ｫ菫ｮ豁｣縺吶ｋ'],
+        _default: ['…'],
+        cool: ['…敗因は分かっている。次までに修正する'],
       },
       earnest: {
-        _default: ['窶ｦ縺ゅ・莠ｺ縺ｫ縺ｯ縺ｾ縺蜍昴※縺ｪ縺・ゅ〒繧ゅ√□縺九ｉ縺薙◎', '窶ｦ繧ゅ▲縺ｨ邱ｴ鄙偵☆繧九らｵｶ蟇ｾ縺ｫ'],
+        _default: ['…あの人にはまだ勝てない。でも、だからこそ', '…もっと練習する。絶対に'],
       },
       emotional: {
-        _default: ['窶ｦ謔斐＠縺・ｦ謔斐＠縺・ｦ・・, '窶ｦ縺ｪ繧薙〒縺ゅ◆縺励・蜍昴※縺ｪ縺・・'],
-        ojousama: ['窶ｦ縺薙ｓ縺ｪ縺ｯ縺壹〒縺ｯ窶ｦ縺薙ｓ縺ｪ縺ｯ縺壹〒縺ｯ縲√↑縺・・縺ｫ'],
+        _default: ['…悔しい…悔しい…！', '…なんであたしは勝てないの'],
+        ojousama: ['…こんなはずでは…こんなはずでは、ないのに'],
       },
     },
   },
 
-  // 笏笏 諤ｧ譬ｼ荳堺ｸ閾ｴ縺ｮ鞫ｩ謫ｦ・・hase 4邉ｻ・・笏笏
+  // ── 性格不一致の摩擦（Phase 4系） ──
   friction: {
     scene: [
-      '{name}縺ｨ{name2}縺檎ｷｴ鄙偵Γ繝九Η繝ｼ縺ｮ鬆・分縺ｧ謠峨ａ縺ｦ縺・◆縲ゆｺ帷ｴｰ縺ｪ縺薙→縺縺・,
-      '{name}縺鶏name2}縺ｮ邱ｴ鄙呈・蠎ｦ縺ｫ縺､縺・※縲∝ｰ丞｣ｰ縺ｧ菴輔°險縺｣縺ｦ縺・◆',
-      '{name}縺ｨ{name2}縺悟酔譎ゅ↓謗ｧ縺亥ｮ､縺ｫ蜈･縺｣縺溽椪髢薙∫ｩｺ豌励′螟峨ｏ縺｣縺・,
+      '{name}と{name2}が練習メニューの順番で揉めていた。些細なことだが',
+      '{name}が{name2}の練習態度について、小声で何か言っていた',
+      '{name}と{name2}が同時に控え室に入った瞬間、空気が変わった',
     ],
     staff: [
-      '繧ｹ繧ｿ繝・ヵ縺九ｉ: {name}縺ｨ{name2}縲√■繧・▲縺ｨ逶ｸ諤ｧ縺瑚憶縺上↑縺・∩縺溘＞縺ｧ窶ｦ',
+      'スタッフから: {name}と{name2}、ちょっと相性が良くないみたいで…',
     ],
   },
 
-  // 笏笏 荳紋ｻ｣霑第磁縺ｮ繝昴ず繝・ぅ繝厄ｼ・hase 4邉ｻ・・笏笏
+  // ── 世代近接のポジティブ（Phase 4系） ──
   generation: {
     scene: [
-      '{name}縺ｨ{name2}縺御ｸ邱偵↓蟶ｰ縺｣縺ｦ縺・￥蟋ｿ縺瑚ｦ九∴縺溘ょ酔荳紋ｻ｣縺ｮ豌怜ｮ峨＆縺後≠繧・,
-      '{name}縺ｨ{name2}縺瑚・雋ｩ讖溘・蜑阪〒隨代＞蜷医▲縺ｦ縺・◆縲ゆｽ輔′髱｢逋ｽ縺・・縺九√％縺｡繧峨↓縺ｯ蛻・°繧峨↑縺・′',
-      '{name}縺鶏name2}繧定・荳ｻ邱ｴ縺ｫ隱倥▲縺ｦ縺・ｋ縲ゅ＞縺・峅蝗ｲ豌励□',
-      '{name}縺ｨ{name2}縺梧仂鬟溘ｒ荳邱偵↓蜿悶▲縺ｦ縺・ｋ縲ゅ←縺・ｄ繧我ｻｲ縺後＞縺・ｉ縺励＞',
+      '{name}と{name2}が一緒に帰っていく姿が見えた。同世代の気安さがある',
+      '{name}と{name2}が自販機の前で笑い合っていた。何が面白いのか、こちらには分からないが',
+      '{name}が{name2}を自主練に誘っている。いい雰囲気だ',
+      '{name}と{name2}が昼食を一緒に取っている。どうやら仲がいいらしい',
     ],
   },
 
-  // 笏笏 蝗邵∬ｧ｣豸亥ｾ後・縺上☆縺ｶ繧奇ｼ・hase 4邉ｻ・・笏笏
+  // ── 因縁解消後のくすぶり（Phase 4系） ──
   rivalryResolved: {
     scene: [
-      '豎ｺ逹縺ｯ縺､縺・◆縲ゅ□縺鶏name}縺ｨ{name2}縺檎岼繧貞粋繧上○縺滓凾縲√◎縺薙↓縺ｯ縺ｾ縺菴輔°縺後≠縺｣縺・,
-      '蝗邵√・邨ゅｏ縺｣縺溘ゅ・縺壹□縲やｦ縺縺鶏name}縺ｯ{name2}縺ｮ蜍募髄繧呈ｰ励↓縺励※縺・ｋ',
+      '決着はついた。だが{name}と{name2}が目を合わせた時、そこにはまだ何かがあった',
+      '因縁は終わった。はずだ。…だが{name}は{name2}の動向を気にしている',
     ],
   },
 
-  // 笏笏 閾ｪ蟾ｱ繝吶せ繝・Q譖ｴ譁ｰ 笏笏
+  // ── 自己ベストMQ更新 ──
   careerBestMQ: {
     scene: [
-      '{name}縺瑚ｩｦ蜷亥ｾ後∬・蛻・・荳｡謇九ｒ隕九▽繧√※縺・◆縲ゆｽ輔°繧呈雫繧薙□陦ｨ諠・□',
-      '{name}縺ｮ隧ｦ蜷医′邨ゅｏ縺｣縺溷ｾ後∝・霈ｩ縺溘■縺悟ｰ上＆縺城ｷ縺・※縺・◆',
+      '{name}が試合後、自分の両手を見つめていた。何かを掴んだ表情だ',
+      '{name}の試合が終わった後、先輩たちが小さく頷いていた',
     ],
   },
 
-  // 笏笏 繝悶Ξ繧､繧ｯ繧ｹ繝ｫ繝ｼ縺ｧtrust荳頑・・・mbedded: 譌｢蟄俶ｼ泌・縺ｫ1陦瑚ｿｽ蜉・・笏笏
+  // ── ブレイクスルーでtrust上昇（embedded: 既存演出に1行追加） ──
   breakthrough: {
     voice: {
       normal: {
-        _default: ['窶ｦ縺薙％縺ｧ鬆大ｼｵ縺｣縺ｦ縺阪※繧医°縺｣縺・],
+        _default: ['…ここで頑張ってきてよかった'],
       },
       bold: {
-        _default: ['窶ｦ縺ｾ縺縺ｾ縺蠑ｷ縺上↑繧後ｋ・√％縺ｮ蝗｣菴薙〒縺ｪ繧・],
+        _default: ['…まだまだ強くなれる！この団体でなら'],
       },
       quiet: {
-        _default: ['窶ｦ縺薙・蝣ｴ謇縺ｫ諢溯ｬ昴＠縺ｦ縺・ｋ'],
-        cool: ['窶ｦ迺ｰ蠅・↓諱ｵ縺ｾ繧後◆縲ゅ◎繧後・隱阪ａ繧・],
+        _default: ['…この場所に感謝している'],
+        cool: ['…環境に恵まれた。それは認める'],
       },
       earnest: {
-        _default: ['窶ｦ縺ｿ繧薙↑縺ｮ縺翫°縺偵〒縺吶ゅｂ縺｣縺ｨ諱ｩ霑斐＠縺後＠縺溘＞'],
+        _default: ['…みんなのおかげです。もっと恩返しがしたい'],
       },
       emotional: {
-        _default: ['窶ｦ縺・ｌ縺励＞窶ｦ縺薙％縺ｫ縺・※繧医°縺｣縺・],
+        _default: ['…うれしい…ここにいてよかった'],
       },
     },
   },
 
-  // 笏笏 蟇ｾ謚玲姶蜍晏茜・・mbedded: 蟇ｾ謚玲姶邨先棡繝｢繝ｼ繝繝ｫ縺ｫ霑ｽ蜉・・笏笏
+  // ── 対抗戦勝利（embedded: 対抗戦結果モーダルに追加） ──
   warVictory: {
     scene: [
-      '{name}縺ｯ繝√・繝縺ｮ蜍晏茜縺ｫ諡ｳ繧呈升繧翫＠繧√◆縲ゅ％縺ｮ蝗｣菴薙・逵区攸繧定レ雋縺・ｦ壽ぁ縺瑚ｦ九∴縺・,
+      '{name}はチームの勝利に拳を握りしめた。この団体の看板を背負う覚悟が見えた',
     ],
     voice: {
       bold: {
-        _default: ['窶ｦ縺ゅ◆縺励′蜍昴▽繧薙□繧医ゅ％縺ｮ蝗｣菴薙ｒ閭瑚ｲ縺｣縺ｦ繧九ｓ縺縺九ｉ'],
+        _default: ['…あたしが勝つんだよ。この団体を背負ってるんだから'],
       },
       earnest: {
-        _default: ['窶ｦ縺ｿ繧薙↑縺ｮ諠ｳ縺・ｒ閭瑚ｲ縺｣縺ｦ謌ｦ縺医※蜈画・〒縺・],
+        _default: ['…みんなの想いを背負って戦えて光栄です'],
       },
       emotional: {
-        _default: ['窶ｦ蜍昴▲縺溪ｦ・・縺ｿ繧薙↑縺ｮ縺翫°縺偵□繧遺ｦ・・],
+        _default: ['…勝った…！ みんなのおかげだよ…！'],
       },
       quiet: {
-        _default: ['窶ｦ'],
-        cool: ['窶ｦ蠖鍋┯縺ｮ邨先棡縺'],
+        _default: ['…'],
+        cool: ['…当然の結果だ'],
       },
     },
   },
 };
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// PPV GRAND FINAL 險ｭ螳・窶・ppv-grand-final-spec-v2.0.md
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-const PPV_UNLOCK_POP = 30;  // 蜃ｺ蝣ｴ隗｣遖√↓蠢・ｦ√↑ orgPop
-const PPV_SLOTS = { 1: 5, 2: 4, 3: 3, 4: 2 };  // 繝ｩ繝ｳ繧ｯ竊貞・蝣ｴ譫謨ｰ
-const PPV_REWARD = { 1: 300, 2: 200, 3: 150, 4: 100 };  // 繝ｩ繝ｳ繧ｯ竊貞・蝣ｴ蝣ｱ驟ｬ・井ｸ・・・・const PPV_ENTRY_WEEK = 43;  // 繧ｨ繝ｳ繝医Μ繝ｼ蜿嶺ｻ倬ｱ
-const PPV_SHOW_WEEK = 48;   // PPV髢句ぎ騾ｱ
+// ─────────────────────────────────────────────────────────────────────────────
+// PPV GRAND FINAL 設定 — ppv-grand-final-spec-v2.0.md
+// ─────────────────────────────────────────────────────────────────────────────
+const PPV_UNLOCK_POP = 30;  // 出場解禁に必要な orgPop
+const PPV_SLOTS = { 1: 5, 2: 4, 3: 3, 4: 2 };  // ランク→出場枠数
+const PPV_REWARD = { 1: 300, 2: 200, 3: 150, 4: 100 };  // ランク→出場報酬（万円）
+const PPV_ENTRY_WEEK = 43;  // エントリー受付週
+const PPV_SHOW_WEEK = 48;   // PPV開催週
 
 const PPV_NAMES = [
   'GENESIS', 'STARDOM FINAL', 'GRAND CLASH',
@@ -5452,81 +5604,82 @@ const PPV_NAMES = [
 
 const PPV_OPPONENT_LINES = {
   normal: {
-    _default: ['謔ｪ縺・￠縺ｩ縲∽ｻ頑律縺ｯ雋縺代ｋ繧上￠縺ｫ縺ｯ縺・°縺ｪ縺・・', '縺薙・螟ｧ闊槫床縲∵怙鬮倥・豌怜・縺ｭ', '豁｣縲・ゅ・∵怙鬮倥・隧ｦ蜷医↓縺励∪縺励ｇ縺・],
-    ojousama: ['譛ｬ譌･縺ｯ雋縺代ｋ繧上￠縺ｫ縺ｯ縺ｾ縺・ｊ縺ｾ縺帙ｓ繧・],
-    delinquent: ['莉頑律縺ｯ雋縺代・繝ｼ縺槭ゅ°縺九▲縺ｦ縺薙＞'],
-    seductive: ['莉頑律縺ｯ雋縺代ｋ繧上￠縺ｫ縺ｯ縺・°縺ｪ縺・・縲りｦ壽ぁ縺励※縺ｭ'],
+    _default: ['悪いけど、今日は負けるわけにはいかないの', 'この大舞台、最高の気分ね', '正々堂々、最高の試合にしましょう'],
+    ojousama: ['本日は負けるわけにはまいりませんわ'],
+    delinquent: ['今日は負けねーぞ。かかってこい'],
+    seductive: ['今日は負けるわけにはいかないの。覚悟してね'],
   },
   bold: {
-    _default: ['縺ｶ縺｣貎ｰ縺励※繧・ｋ・・, '遘√・螳溷鴨縲∵昴＞遏･繧峨○縺ｦ繧・ｋ', '螳ｹ襍ｦ縺励↑縺・りｦ壽ぁ縺励ｍ'],
-    ojousama: ['螳ｹ襍ｦ縺・◆縺励∪縺帙ｓ繧上ｈ縲りｦ壽ぁ縺ｪ縺輔▲縺ｦ'],
-    delinquent: ['縺ｶ縺｣貎ｰ縺励※繧・ｋ縺懶ｼ∵ｳ｣縺・※繧ら衍繧峨・繝ｼ縺橸ｼ・],
-    cool: ['窶ｦ謇句刈貂帙・縺励↑縺・りｦ壽ぁ縺励ｍ'],
-    seductive: ['螳ｹ襍ｦ縺励↑縺・ｏ繧医りｦ壽ぁ縺励※縺ｭ'],
+    _default: ['ぶっ潰してやる！', '私の実力、思い知らせてやる', '容赦しない。覚悟しろ'],
+    ojousama: ['容赦いたしませんわよ。覚悟なさって'],
+    delinquent: ['ぶっ潰してやるぜ！泣いても知らねーぞ！'],
+    cool: ['…手加減はしない。覚悟しろ'],
+    seductive: ['容赦しないわよ。覚悟してね'],
   },
   quiet: {
-    _default: ['窶ｦ窶ｦ・磯撕縺九↓讒九∴縺ｦ縺・ｋ・・],
-    cool: ['窶ｦ邨先棡縺ｧ隱槭ｋ'],
-    polite: ['窶ｦ蜈ｨ蜉帙〒蜿ゅｊ縺ｾ縺・],
+    _default: ['……（静かに構えている）'],
+    cool: ['…結果で語る'],
+    polite: ['…全力で参ります'],
   },
   shy: {
-    _default: ['縺後・大ｼｵ繧翫∪縺吮ｦ・・],
+    _default: ['が、頑張ります…！'],
   },
   easygoing: {
-    _default: ['縺薙・螟ｧ闊槫床縲∵怙鬮倥・豌怜・・∵･ｽ縺励ｂ縺・●・・, '縺ゅｓ縺溘→謌ｦ縺医ｋ縺ｮ讌ｽ縺励∩縺ｫ縺励※縺滂ｼ・],
-    delinquent: ['譛鬮倥□縺懶ｼ∵･ｽ縺励ｂ縺・ｄ・・],
-    seductive: ['縺ゅ↑縺溘→謌ｦ縺医ｋ縺ｮ縲∵･ｽ縺励∩縺縺｣縺溘ｏ'],
+    _default: ['この大舞台、最高の気分！楽しもうぜ！', 'あんたと戦えるの楽しみにしてた！'],
+    delinquent: ['最高だぜ！楽しもうや！'],
+    seductive: ['あなたと戦えるの、楽しみだったわ'],
   },
   earnest: {
-    _default: ['縺贋ｺ偵＞蜈ｨ蜉帙〒窶ｦ譛鬮倥・闊槫床縺繧ゅ・', '縺薙・蟇ｾ謌ｦ縲√★縺｣縺ｨ蠕・▲縺ｦ縺ｾ縺励◆'],
-    polite: ['縺贋ｺ偵＞蜈ｨ蜉帙〒窶ｦ繧医ｍ縺励￥縺企｡倥＞縺・◆縺励∪縺・],
-    ojousama: ['蜈ｨ蜉帙〒蜿ゅｊ縺ｾ縺吶ｏ縲ゅｈ繧阪＠縺上♀鬘倥＞縺・◆縺励∪縺吶・'],
-    seductive: ['蜈ｨ蜉帙〒縺・￥繧上よ怙鬮倥・隧ｦ蜷医↓縺励∪縺励ｇ縺・],
+    _default: ['お互い全力で…最高の舞台だもの', 'この対戦、ずっと待ってました'],
+    polite: ['お互い全力で…よろしくお願いいたします'],
+    ojousama: ['全力で参りますわ。よろしくお願いいたしますの'],
+    seductive: ['全力でいくわ。最高の試合にしましょう'],
   },
   emotional: {
-    _default: ['邨ｶ蟇ｾ窶ｦ邨ｶ蟇ｾ雋縺代↑縺・ｦ・∝・蜉帙〒縺・￥窶ｦ・・],
+    _default: ['絶対…絶対負けない…！全力でいく…！'],
   },
 };
 
 const PPV_HYPE_TEMPLATES = {
   rivalry: [
-    '蝗邵√・蟇ｾ豎ｺ・＋name1}縺ｨ{name2}縲√％縺ｮ螟ｧ闊槫床縺ｧ豎ｺ逹縺ｪ繧九°・・,
-    '遨阪∩驥阪・縺ｦ縺阪◆蝗邵≫披倍name1}縺ｨ{name2}縺ｮ迚ｩ隱槭′縲√％縺薙〒蜍輔￥・・,
+    '因縁の対決！{name1}と{name2}、この大舞台で決着なるか！',
+    '積み重ねてきた因縁——{name1}と{name2}の物語が、ここで動く！',
   ],
   tierGap: [
-    '{org2}縺ｮ螢・ｼ＋name1}縺ｯ{name2}繧定ｶ翫∴繧峨ｌ繧九°・・,
-    '譬ｼ荳頑倦謌ｦ・＋name1}縺鶏org2}縺ｮ{name2}縺ｫ謖代・・・,
+    '{org2}の壁！{name1}は{name2}を越えられるか！',
+    '格上挑戦！{name1}が{org2}の{name2}に挑む！',
   ],
   closeOVR: [
-    '螳溷鴨莨ｯ莉ｲ・＋name1}縺ｨ{name2}縲√←縺｡繧峨′蜍昴▲縺ｦ繧ゅ♀縺九＠縺上↑縺・ｼ・,
-    '莠定ｧ偵・螳溷鴨窶披泌享謨励ｒ蛻・￠繧九・縺ｯ縲√％縺ｮ荳迸ｬ縺ｮ蛻､譁ｭ・・,
+    '実力伯仲！{name1}と{name2}、どちらが勝ってもおかしくない！',
+    '互角の実力——勝敗を分けるのは、この一瞬の判断！',
   ],
   starMatch: [
-    '繧ｹ繧ｿ繝ｼ蟇ｾ豎ｺ・＋name1}縺ｨ{name2}縲∝､｢縺ｮ繧ｫ繝ｼ繝峨′螳溽樟・・,
-    '莠ｺ豌苓・酔螢ｫ縺ｮ豼遯・ｼ＋name1} vs {name2}縲∽ｼ壼ｴ縺梧ｲｸ縺擾ｼ・,
+    'スター対決！{name1}と{name2}、夢のカードが実現！',
+    '人気者同士の激突！{name1} vs {name2}、会場が沸く！',
   ],
   summit: [
-    '蝗｣菴薙・螽∽ｿ｡繧呈・縺代◆鬆ゆｸ頑ｱｺ謌ｦ・＋name1} vs {name2}・・,
-    '蟷ｴ髢鍋視閠・ｒ豎ｺ繧√ｋ譛邨よｱｺ謌ｦ窶披倍name1}縺ｨ{name2}縲・らせ縺ｫ遶九▽縺ｮ縺ｯ縺ｩ縺｡繧峨□・・,
+    '団体の威信を懸けた頂上決戦！{name1} vs {name2}！',
+    '年間王者を決める最終決戦——{name1}と{name2}、頂点に立つのはどちらだ！',
   ],
 };
 
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
-// v2.1: 繧ｯ繝ｬ繧ｸ繝・ヨ諠・ｱ 窶・ending-gameover-spec-v1.0.md ﾂｧ4.4
-// 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+// ─────────────────────────────────────────────────────────────────────────────
+// v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4
+// ─────────────────────────────────────────────────────────────────────────────
 const CREDITS = {
   music: [
     {
-      title:   '8bit/RPG/繧ｪ繝ｼ繝励ル繝ｳ繧ｰ縲悟ｺ上・蠎乗峇縲・,
-      artist:  'MOMIZizm MUSiC・医Δ繝溘ず繧ｺ繝 繝溘Η繝ｼ繧ｸ繝・け・・,
+      title:   '8bit/RPG/オープニング「序・序曲」',
+      artist:  'MOMIZizm MUSiC（モミジズム ミュージック）',
       source:  'STORY INVENTION',
       url:     'https://music.storyinvention.com/',
-      license: '繝輔Μ繝ｼ髻ｳ讌ｽ邏譚・,
+      license: 'フリー音楽素材',
     },
   ],
 };
 
-// Node.js 繝｢繧ｸ繝･繝ｼ繝ｫ繧ｨ繧ｯ繧ｹ繝昴・繝茨ｼ医ヶ繝ｩ繧ｦ繧ｶ縺ｧ縺ｯ繧ｹ繧ｭ繝・・・・if (typeof module !== 'undefined' && module.exports) {
+// Node.js モジュールエクスポート（ブラウザではスキップ）
+if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ALL_CHARS, CHAR_PROFILES, TRAIT_DEFS, Traits, ROSTER_CFG, CHAR_GROUP,
     PORTRAIT, COACH_PORTRAIT, MAX_T, PHASES, ENG, SALARY_PARAMS, FAN_EXPECT_REACTIONS,
