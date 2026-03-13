@@ -1350,7 +1350,7 @@ function renderRoster() {
   const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
   const sorted = ownFighters;
   // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
-  const rosterCap = G.rosterCap || 6;
+  const rosterCap = G.rosterCap || 8;
   const isFull = ownFighters.length >= rosterCap;
   html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
     <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
@@ -2168,7 +2168,7 @@ function renderScout() {
 
   const discount = 0;
   const _ownCount = G.roster.filter(f => !f.isRental).length;
-  const _rCap = G.rosterCap || 6;
+  const _rCap = G.rosterCap || 8;
   const _capFull = _ownCount >= _rCap;
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">
     所属: <span style="color:var(--text)">${_ownCount}/${_rCap}名${_capFull ? '（上限）' : ''}</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}

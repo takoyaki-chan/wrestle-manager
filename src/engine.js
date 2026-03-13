@@ -5682,7 +5682,7 @@ const Engine = {
         resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
         // roster-cap v1.0: ロスター枠チェック
         const _ownCount = state.roster.filter(f => !f.isRental).length;
-        if (_ownCount >= (state.rosterCap || 6)) {
+        if (_ownCount >= (state.rosterCap || 8)) {
           events.push(`⚠ ${fighter.name}の交渉は成立したが、ロスター枠が上限のため加入を保留した`);
           return {
             state: {
@@ -7720,8 +7720,11 @@ const Engine = {
       matchHistory: [],
       titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
       titleEstablished: false, // v1.0: 団体王座は条件達成後に解禁
-      rosterCap: 6,   // roster-cap-design v1.0: 段階解放（6→8→10→12→16）
-      warWon: false,  // 対抗戦初勝利フラグ
+      rosterCap: 8,   // roster cap progression: 8 -> 10 -> 12 -> 16
+      warWon: false,  // backward compatibility only
+      rosterCapPop25Notified: false,
+      rosterCapPop50Notified: false,
+      rosterCapRank1Notified: false,
       rivalries: {},
       matchupLog: [],  // カード鮮度: 全対戦履歴
       coaches: [],

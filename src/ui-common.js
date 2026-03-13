@@ -1262,7 +1262,7 @@ function _renderEventPopup() {
     <button class="event-popup-ok" onclick="closeEventPopup()">OK</button>
   `;
   document.getElementById('eventPopupOverlay').classList.add('active');
-  Audio.play(o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event');
+  Audio.play(o.sound || (o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event'));
   if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
 }
 
@@ -2374,7 +2374,7 @@ function showFighterPopup(fighterId, source) {
       const canAfford = G.funds >= signingCost;
       // roster-cap v1.0
       const _ownRosterCount = G.roster.filter(f => !f.isRental).length;
-      const _rCap = G.rosterCap || 6;
+      const _rCap = G.rosterCap || 8;
       const _rosterFull = _ownRosterCount >= _rCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
@@ -2407,7 +2407,7 @@ function showFighterPopup(fighterId, source) {
       const slotsLeft = picks.length < maxPicks;
       // roster-cap v1.0
       const _scoutOwnCount = G.roster.filter(f => !f.isRental).length;
-      const _scoutCap = G.rosterCap || 6;
+      const _scoutCap = G.rosterCap || 8;
       const _scoutFull = _scoutOwnCount >= _scoutCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">

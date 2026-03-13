@@ -1684,16 +1684,28 @@ const Storage = {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null };
       }
 
-      // roster-cap v1.0: rosterCap互換性マイグレーション
-      if (G.rosterCap === undefined) {
-        let cap = 6;
-        if (G.titleEstablished) cap = Math.max(cap, 8);
-        if (G.survivalCleared) cap = Math.max(cap, 10);
-        if (G.warWon) cap = Math.max(cap, 12);
-        if ((G.rankings || [])[0]?.orgId === 'player') cap = 16;
-        G = { ...G, rosterCap: cap };
+      // roster-cap v2.0: popularity-based progression (8 -> 10 -> 12 -> 16)
+      if (!G._migrated_roster_cap_pop_v2) {
+        const orgPop = G.orgPop || 0;
+        const rank1 = (G.rankings || [])[0]?.orgId === 'player';
+        let cap = 8;
+        if (orgPop >= 25) cap = 10;
+        if (orgPop >= 50) cap = 12;
+        if (rank1) cap = 16;
+        G = {
+          ...G,
+          rosterCap: cap,
+          rosterCapPop25Notified: orgPop >= 25,
+          rosterCapPop50Notified: orgPop >= 50,
+          rosterCapRank1Notified: rank1,
+          _migrated_roster_cap_pop_v2: true,
+        };
+      } else {
+        if (G.rosterCap === undefined) G = { ...G, rosterCap: 8 };
+        if (G.rosterCapPop25Notified === undefined) G = { ...G, rosterCapPop25Notified: (G.orgPop || 0) >= 25 };
+        if (G.rosterCapPop50Notified === undefined) G = { ...G, rosterCapPop50Notified: (G.orgPop || 0) >= 50 };
+        if (G.rosterCapRank1Notified === undefined) G = { ...G, rosterCapRank1Notified: (G.rankings || [])[0]?.orgId === 'player' };
       }
-      if (G.warWon === undefined) G = { ...G, warWon: false };
 
       // scout-pricing v2: assessedValue再計算（TIERS baseMin/Max引き上げ対応）
       if (!G._migrated_scout_pricing_v2) {
@@ -2189,7 +2201,7 @@ const App = {
     const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
     const finalCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
     if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
-    if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
+    if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
       App._queueRosterOverflowSigning({
         source: 'fa',
         fighterId: fighter.id,
@@ -2496,7 +2508,7 @@ const App = {
 
     if (result.result === 'success') {
       if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
-      if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 6)) {
+      if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
         App._queueRosterOverflowSigning({
           source: 'scout',
           fighterId: cand.id,
@@ -5023,17 +5035,6 @@ const App = {
       // 新聞パネルイベント
       const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
       App._pushNewsEvent({ type: newsType, data: { orgName: event.orgName, fighterName: playerFighter.name, challengerName: challenger.name } });
-      // roster-cap v1.0: 対抗戦初勝利でrosterCap→12
-      if (newsType === 'interPromoWin' && !G.warWon) {
-        const newCap = Math.max(G.rosterCap || 6, 12);
-        G = { ...G, warWon: true, rosterCap: newCap };
-        setTimeout(() => showEventPopup({
-          type: 'generic', emoji: '🏢', name: '契約枠拡大！',
-          message: `${event.orgName}との対抗戦に勝利し、業界での存在感を示しました！`,
-          detail: `さらなる契約枠を確保しました（→${newCap}名）`,
-          tone: 'gold'
-        }), 600);
-      }
 
       // 結果表示モーダル
       setTimeout(() => {
@@ -5160,44 +5161,73 @@ const App = {
     const wasCleared = G.survivalCleared;
     G = sResult.state;
     if (sResult.graduated && !wasCleared) {
-      const newCap = Math.max(G.rosterCap || 6, 10);
-      G = { ...G, rosterCap: newCap };
-      // Show graduation popup!
       setTimeout(() => showEventPopup({
-        type: 'generic', emoji: '🎊', name: '経営安定化達成！',
-        message: '赤字地獄を乗り越え、ついに安定した黒字経営を達成しました！',
-        detail: `💪 これからは成長フェーズです。更なる高みを目指しましょう！\n🏢 経営が安定し、選手との契約枠が拡大しました（→${newCap}名）`,
+        type: 'generic', emoji: '\uD83C\uDF8A', name: '\u7D4C\u55B6\u5B89\u5B9A\u5316\u9054\u6210\uFF01',
+        message: '\u8D64\u5B57\u5730\u7344\u3092\u4E57\u308A\u8D8A\u3048\u3001\u3064\u3044\u306B\u5B89\u5B9A\u3057\u305F\u9ED2\u5B57\u7D4C\u55B6\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01',
+        detail: '\uD83D\uDCAA \u3053\u308C\u304B\u3089\u306F\u6210\u9577\u30D5\u30A7\u30FC\u30BA\u3067\u3059\u3002\u66F4\u306A\u308B\u9AD8\u307F\u3092\u76EE\u6307\u3057\u307E\u3057\u3087\u3046\uFF01',
         tone: 'gold'
       }), 200);
     }
   },
 
-  // roster-cap v1.0: SQ（ランキング1位）でrosterCap→16
-  checkRosterCapMilestones() {
-    if ((G.rosterCap || 6) >= 16) return;
-    const rank1 = (G.rankings || [])[0];
-    if (rank1?.orgId === 'player') {
-      const newCap = 16;
-      G = { ...G, rosterCap: newCap };
+  getRosterCapTarget(state = G) {
+    const orgPop = state.orgPop || 0;
+    const rank1 = (state.rankings || [])[0]?.orgId === 'player';
+    if (rank1) return 16;
+    if (orgPop >= 50) return 12;
+    if (orgPop >= 25) return 10;
+    return 8;
+  },
+
+  _notifyRosterCapUnlock(popups) {
+    popups.forEach((popup, idx) => {
       setTimeout(() => showEventPopup({
-        type: 'generic', emoji: '🏢', name: '契約枠拡大！',
-        message: '業界の頂点を極めた団体に、もはや制限はない！',
-        detail: `選手との契約枠が最大まで拡大しました（→${newCap}名）`,
-        tone: 'gold'
-      }), 400);
+        type: 'generic',
+        emoji: '\uD83C\uDFE2',
+        name: '\u5951\u7D04\u67A0\u62E1\u5927\uFF01',
+        message: popup.message,
+        detail: `\u9078\u624B\u3068\u306E\u5951\u7D04\u67A0\u304C ${popup.cap} \u540D\u306B\u62E1\u5927\u3057\u307E\u3057\u305F\uFF01`,
+        tone: 'gold',
+        sound: 'fanfare'
+      }), 220 + idx * 140);
+    });
+  },
+
+  checkRosterCapMilestones() {
+    const orgPop = G.orgPop || 0;
+    const rank1 = (G.rankings || [])[0]?.orgId === 'player';
+    const nextUpdates = {};
+    const popups = [];
+
+    if (orgPop >= 25 && !G.rosterCapPop25Notified) {
+      nextUpdates.rosterCapPop25Notified = true;
+      popups.push({ cap: 10, message: '\u56E3\u4F53\u4EBA\u6C17\u304C25\u3092\u7A81\u7834\uFF01 \u56E3\u4F53\u898F\u6A21\u306E\u62E1\u5927\u3067\u5951\u7D04\u67A0\u306B\u4F59\u88D5\u304C\u3067\u304D\u307E\u3057\u305F\u3002' });
     }
+    if (orgPop >= 50 && !G.rosterCapPop50Notified) {
+      nextUpdates.rosterCapPop50Notified = true;
+      popups.push({ cap: 12, message: '\u56E3\u4F53\u4EBA\u6C17\u304C50\u3092\u7A81\u7834\uFF01 \u4E3B\u529B\u3068\u82E5\u624B\u3092\u3088\u308A\u539A\u304F\u62B1\u3048\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002' });
+    }
+    if (rank1 && !G.rosterCapRank1Notified) {
+      nextUpdates.rosterCapRank1Notified = true;
+      popups.push({ cap: 16, message: '\u30E9\u30F3\u30AD\u30F3\u30B01\u4F4D\u5230\u9054\uFF01 \u738B\u8005\u306E\u56E3\u4F53\u306B\u3075\u3055\u308F\u3057\u3044\u6700\u5927\u5951\u7D04\u67A0\u304C\u89E3\u653E\u3055\u308C\u307E\u3057\u305F\u3002' });
+    }
+
+    const newCap = App.getRosterCapTarget(G);
+    if ((G.rosterCap || 8) !== newCap) nextUpdates.rosterCap = newCap;
+    if (Object.keys(nextUpdates).length === 0) return;
+    G = { ...G, ...nextUpdates };
+    if (popups.length > 0) App._notifyRosterCapUnlock(popups);
   },
 
   // v1.0: Title establishment check
   checkTitleEstablishment() {
     if (G.titleEstablished) return;
     if (Engine.title.checkTitleEstablishment(G)) {
-      const newCap = Math.max(G.rosterCap || 6, 8);
-      G = { ...G, titleEstablished: true, rosterCap: newCap };
+      G = { ...G, titleEstablished: true };
       setTimeout(() => showEventPopup({
-        type: 'generic', emoji: '🏆', name: '団体王座 設立！',
-        message: '団体の実績が認められ、団体王座を設立できるようになりました！',
-        detail: `🎖️ 興行で「初代王者決定戦」を組んで、初代チャンピオンを決めましょう！\n🏢 選手との契約枠が拡大しました（→${newCap}名）`,
+        type: 'generic', emoji: '\uD83C\uDFC6', name: '\u56E3\u4F53\u738B\u5EA7 \u8A2D\u7ACB\uFF01',
+        message: '\u56E3\u4F53\u306E\u5B9F\u7E3E\u304C\u8A8D\u3081\u3089\u308C\u3001\u56E3\u4F53\u738B\u5EA7\u3092\u8A2D\u7ACB\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\uFF01',
+        detail: '\uD83C\uDF96\uFE0F \u8208\u884C\u3067\u300C\u521D\u4EE3\u738B\u8005\u6C7A\u5B9A\u6226\u300D\u3092\u7D44\u3093\u3067\u3001\u521D\u4EE3\u30C1\u30E3\u30F3\u30D4\u30AA\u30F3\u3092\u6C7A\u3081\u307E\u3057\u3087\u3046\uFF01',
         tone: 'gold'
       }), 300);
     }
@@ -5834,4 +5864,3 @@ App.previewEnding = function() {
 
 // Alias for old UI calls
 // COACH_MAX_ASSIGN already defined in data section
-
