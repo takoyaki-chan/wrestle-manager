@@ -1,12 +1,22 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-10（成長v2.0: baseLearning 4.0 + trainCap修正 + 試合成長ageMultiplier適用）
+> 最終更新: 2026-03-13（S級エース強化 & NPC団体チャンピオン設計完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**S級エース強化 & NPC団体チャンピオン設計完了（2026-03-13）。**
+
+- **trainCap factor 下限引き上げ**: 全員 0.50-0.80 → 0.55-0.80。factor=0.50でcap<notionとなり成長不能になるバグを解消
+- **potTop3 専用 factor**: S級所属のpotTotal上位3名（阿武隈塔子/白銀麗子/高津小春）はfactor 0.75-0.80。trainCap OVR天井 avg 126（通常: avg 108）
+- **S級 trainCapトップ3 練習重視**: getAceConfigでtrainCap OVR上位3名にpracticeRate=0.95を適用。休養をほぼ取らず練習に専念
+- **NPC団体チャンピオンシステム**: AI団体にtitlesフィールド追加、興行後にOVRトップ自動戴冠、試合勝敗による王座移動
+- **Monte Carlo検証 (N=5000)**: S級エースTop3 S5:avg99 / S7:avg100 / S10:avg101。プレイヤー現実的 S10:avg94。S級1位は個人OVRでゲームを通じてトップを維持
+- 設計書: `specs/s-rank-ace-rebalance-spec-v1.0.md`
+- 実装: Claude Code
 
 **成長v2.0チューニング: baseLearning 4.0 + trainCap修正 + 試合成長ageMultiplier適用（2026-03-10）。**
 
@@ -654,6 +664,18 @@ M3（低MQ不満）のみ実装。M1/M2/M4/M5は設計検証の結果廃止（�
 
 実装順の推奨: S_humiliation（自動発火で実装シンプル）→ S_scandal → S_fanrevolt → S_powerstruggle → S_betrayal
 
+### S級エース強化 & NPC団体チャンピオン（設計書: `specs/s-rank-ace-rebalance-spec-v1.0.md`）（★高優先）
+
+> 設計根拠: S級エースがプレイ10年でOVR 80半ば止まり。「業界の頂点に君臨する絶対王者」のボスキャラ感がない。
+> Monte Carlo N=5000で検証済み。S級エースがS5で99、S10で101に到達する設計。
+
+| タスク | 重さ | 状態 |
+|--------|:----:|------|
+| **trainCap factor 下限引き上げ** 全員 0.50-0.80 → 0.55-0.80。cap<notionバグ解消 | 小 | 設計済み |
+| **potTop3 専用 factor** S級所属のpotTotal上位3名は factor 0.75-0.80。trainCap OVR天井 avg 126 | 小 | 設計済み |
+| **S級 trainCapトップ3 練習重視** getAceConfigでtrainCap上位3名にpracticeRate=0.95適用 | 小 | 設計済み |
+| **NPC団体チャンピオンシステム** AI団体にtitlesフィールド追加、興行後にOVRトップ自動戴冠、勝敗による王座移動 | 中 | 設計済み |
+
 ### NPC記録データ完全統一（設計書: `specs/npc-record-unification-spec-v1.0.md`）
 
 | Step | タスク | 重さ | 状態 |
@@ -763,18 +785,6 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - 番狂わせ率（OVR差20）: 21.2%（Tier 1: 24.4%、-3.2pt改善）
 - 決着分布: フォール61.6% / ギブアップ18.1% / TKO10.8% / ピン7.4%（健全）
 - タイムアウト率: 約2%（許容範囲）
-
-### ドラフト改修 v1.0 ✅ 実装済み（2026-03-13）
-
-設計書: `specs/initial-draft-redesign-spec-v1.0.md`
-
-- **startRatio幅拡大**: 18歳以下 0.55-0.65→0.40-0.70、19-20歳 0.65-0.75→0.50-0.75（3箇所同期）
-- **逸材保証**: 候補6名中最低1名はpotTotal≥740。FAプール不在時フォールバック
-- **安価候補保証**: 候補6名中最低2名は契約金120万以下
-- **ドラフト有料化**: `calcAssessedValue`で各候補に契約金算出。fixed2名は無料、候補3名は有料
-- **資金チェック**: toggleDraftPick/confirmDraftで資金不足時選択不可
-- **UI**: 候補カードに契約金表示、チームプレビューに合計/残金、確認ボタンに契約金表示
-- auto-sim 500シーズン ALL CLEAR
 
 ### 拡張候補
 
@@ -968,6 +978,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 | PPV GRAND FINAL 合同興行 v2.0 | ppv-grand-final-spec-v2.0.md |
 | ビッグマッチエンジン v1.0 | bigmatch-engine-spec-v1.0.md |
 | 人間関係システム v0.2 | relationship-system-spec-v0.2.md |
+| S級エース強化 & NPC団体チャンピオン v1.0 | s-rank-ace-rebalance-spec-v1.0.md |
 
 ### docs/（実装ガイド）
 

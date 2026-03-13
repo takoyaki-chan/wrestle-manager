@@ -101,7 +101,10 @@
       "Bash(node test/auto-sim.js 50 42)",
       "Bash(grep -n \"initState\\\\|function initState\" /c/Users/nkmrk/Downloads/wrestle-manager/src/*.js)",
       "WebFetch(domain:www.youtube.com)",
-      "Bash(wc -l \"C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\src\"/*.js)"
+      "Bash(wc -l \"C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\src\"/*.js)",
+      "Bash(node test/test-b3-fix.js)",
+      "Bash(node test/auto-sim.js 50 12345)",
+      "Bash(git status:*)"
     ]
   }
 }

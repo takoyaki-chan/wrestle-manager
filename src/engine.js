@@ -3863,6 +3863,8 @@ const Engine = {
           pendingSlumpEvents.push({ type: 'slump_start', fighterId: c.id, trigger });
           // G-03: スランプ → 心配/興味低下
           pendingRelOps.push({ type: 'sympathy', fighterId: c.id, bondRange: { min: 1, max: 1 } });
+          // N-05: スランプ八つ当たり
+          pendingRelOps.push({ type: 'slumpLashout', fighterId: c.id });
           return newC;
         }
         return c;
@@ -3906,6 +3908,8 @@ const Engine = {
               pendingSlumpEvents.push({ type: 'slump_start', fighterId: nc.id, trigger: 'penalty_end' });
               // G-03: スランプ → 心配/興味低下
               pendingRelOps.push({ type: 'sympathy', fighterId: nc.id, bondRange: { min: 1, max: 1 } });
+              // N-05: スランプ八つ当たり
+              pendingRelOps.push({ type: 'slumpLashout', fighterId: nc.id });
             }
           }
         }
@@ -4092,6 +4096,8 @@ const Engine = {
             const rosterIdsForScandal = roster.filter(c => !c.isRental && c.id !== op.fighterId).map(c => c.id);
             relState = Engine.relationships.applyFromRoster(relState, rosterIdsForScandal, op.fighterId,
               { min: -2, max: 0 }, { min: 0, max: 0 }, relOpRng);
+          } else if (op.type === 'slumpLashout') {
+            relState = Engine.relationships.applySlumpLashout({ ...relState, roster }, op.fighterId, relOpRng);
           }
         }
         G = { ...G, relationships: relState.relationships };
@@ -4535,6 +4541,11 @@ const Engine = {
         else events.push(`${ev.headline}（ヒート+${ev.heatGain}）`);
       });
     }
+    // N-04: 人気逆転チェック（pop更新後、週次decay前）
+    if (s.relationships) {
+      const n04Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6D));
+      s = Engine.relationships.applyPopOvertakeEffects(s, n04Rng);
+    }
     // Phase 1: 人間関係 週次減衰処理（自然減衰/凍結 + 逓減カウンター減衰）
     if (s.relationships && Object.keys(s.relationships).length > 0) {
       const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE1B));
@@ -4871,6 +4882,8 @@ const Engine = {
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          // §2.3: 引退者の関係値を凍結
+          if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
           events.push(`🏁 ${lc.name}(${lc.age}歳)が${retiredMsg}により引退`);
         } else {
@@ -4891,6 +4904,8 @@ const Engine = {
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          // §2.3: 引退者の関係値を凍結
+          if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
           events.push(`🏁 ${rc.name}(${rc.age}歳)が${retiredMsg}により引退`);
         } else {
@@ -6976,6 +6991,10 @@ const Engine = {
             return { fighter: f, route, line, category, summary, canRetain };
           });
           s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
+          // §2.3: 引退者の関係値を凍結
+          if (s.relationships) {
+            allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
+          }
           // Phase 3 R3: 仲の良い選手を失ったtrust影響（シーズン末引退）
           allRetirees.forEach(retiree => {
             const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退' });
@@ -11714,6 +11733,8 @@ Engine.relationships = {
     // 全エントリ走査
     for (const key of Object.keys(rels)) {
       const r = rels[key];
+      // §2.3: 引退者を含むペアは凍結（decay対象外）
+      if (r.frozen) { newRels[key] = r; continue; }
       let bond = r.bond;
       let rivalry = r.rivalry;
 
@@ -11747,7 +11768,13 @@ Engine.relationships = {
         else if (rivalry >= 70) rivalryDecay += 0.28;
         else if (rivalry >= 50) rivalryDecay += 0.14;
         else if (rivalry >= 30) rivalryDecay += 0.06;
+        // §4.1: knownRival なら減衰を1/3に
+        if (r.knownRival) rivalryDecay *= (1 / 3);
         rivalry -= rivalryDecay;
+        // §4.3: 「意識している」マイクロイベント（knownRival + 4週に1回 + rivalry60未満）
+        if (r.knownRival && absWeek % 4 === 0 && rivalry < 60) {
+          rivalry += 0.3 + Engine.rng.float(rng) * 0.2;
+        }
       }
 
       // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
@@ -11816,11 +11843,41 @@ Engine.relationships = {
         }
       }
 
+      // §4.1: knownRival フラグ管理（rivalry40+で付与、10未満で解除）
+      let knownRival = r.knownRival || false;
+      const clampedRivalry = this._clampAxisValue(rivalry, 'rivalry');
+      if (clampedRivalry >= 40) knownRival = true;
+      if (clampedRivalry < 10) knownRival = false;
       newRels[key] = {
         bond: this._clampAxisValue(bond, 'bond'),
-        rivalry: this._clampAxisValue(rivalry, 'rivalry')
+        rivalry: clampedRivalry,
+        ...(knownRival ? { knownRival: true } : {}),
       };
     }
+
+    // N-03: Babyface×Heel 週次衝突（同団体内, 4%/ペア/週）
+    const n03Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xBE6A));
+    const processRoleClash = (orgRoster) => {
+      if (!orgRoster || orgRoster.length === 0) return;
+      const bfIds = orgRoster.filter(c => c.role === 'Babyface' && !c.injury).map(c => c.id);
+      const heelIds = orgRoster.filter(c => c.role === 'Heel' && !c.injury).map(c => c.id);
+      if (bfIds.length === 0 || heelIds.length === 0) return;
+      for (const bfId of bfIds) {
+        for (const heelId of heelIds) {
+          if (Engine.rng.float(n03Rng) >= 0.04) continue;
+          const bondDelta = -(3 + Engine.rng.float(n03Rng) * 3); // -3〜-6
+          const rivalryDelta = 2 + Engine.rng.float(n03Rng) * 2; // +2〜+4
+          const keyAB = this._key(bfId, heelId);
+          const keyBA = this._key(heelId, bfId);
+          const rAB = newRels[keyAB] || { bond: 50, rivalry: 0 };
+          const rBA = newRels[keyBA] || { bond: 50, rivalry: 0 };
+          newRels[keyAB] = { ...rAB, bond: this._clampAxisValue(rAB.bond + bondDelta, 'bond'), rivalry: this._clampAxisValue(rAB.rivalry + rivalryDelta, 'rivalry') };
+          newRels[keyBA] = { ...rBA, bond: this._clampAxisValue(rBA.bond + bondDelta, 'bond'), rivalry: this._clampAxisValue(rBA.rivalry + rivalryDelta, 'rivalry') };
+        }
+      }
+    };
+    processRoleClash(state.roster || []);
+    Object.values(state.aiOrgs || {}).forEach(org => processRoleClash(org.roster || []));
 
     // 逓減カウンター減衰
     const counters = { ...(state.relationshipCounters || {}) };
@@ -12020,6 +12077,18 @@ Engine.relationships = {
       for (const jId of jealousIds) {
         s = Engine.relationships.applyToRoster(s, jId, titleIds, { min: -3, max: -1 }, { min: 2, max: 5 }, rng);
       }
+      // N-01: ポジション競合の嫉妬（OVR差5以内 + 同スタイル → 追加ペナルティ）
+      for (const jId of jealousIds) {
+        const nonTitleChar = roster.find(c => c.id === jId);
+        if (!nonTitleChar) continue;
+        for (const tId of titleIds) {
+          const titleChar = roster.find(c => c.id === tId);
+          if (!titleChar) continue;
+          if (Math.abs(Engine.util.ov(nonTitleChar) - Engine.util.ov(titleChar)) <= 5 && nonTitleChar.style === titleChar.style) {
+            s = Engine.relationships.applyToRoster(s, jId, [tId], { min: -5, max: -3 }, { min: 3, max: 5 }, rng);
+          }
+        }
+      }
     }
 
     // C-05/C-06: 連敗中選手の起用/不起用
@@ -12056,16 +12125,38 @@ Engine.relationships = {
     return s;
   },
 
-  /** G-01: ブレイクスルー達成 — OVR差5以内の全キャラ→本人 rivalry +3~+5 */
+  /** G-01: ブレイクスルー達成 — OVR差5以内の全キャラ→本人 rivalry +3~+5
+   *  N-02: 成長格差の嫉妬 — 同団体+年齢差3以内+OVR低い側→本人 bond -2~-4, rivalry +3~+5 */
   applyBreakthroughEffect(state, fighterId, rng) {
     if (!state.relationships) return state;
     const allChars = [...(state.roster || []), ...Object.values(state.aiOrgs || {}).flatMap(o => o.roster || [])];
     const fighter = allChars.find(c => c.id === fighterId);
     if (!fighter) return state;
     const selfOvr = Engine.util.ov(fighter);
+    // G-01: OVR差5以内の全キャラ→本人 rivalry +3~+5
     const closeIds = allChars.filter(c => c.id !== fighterId && Math.abs(Engine.util.ov(c) - selfOvr) <= 5).map(c => c.id);
-    if (closeIds.length === 0) return state;
-    return Engine.relationships.applyFromRoster(state, closeIds, fighterId, { min: 0, max: 0 }, { min: 3, max: 5 }, rng);
+    let s = state;
+    if (closeIds.length > 0) {
+      s = Engine.relationships.applyFromRoster(s, closeIds, fighterId, { min: 0, max: 0 }, { min: 3, max: 5 }, rng);
+    }
+    // N-02: 同団体の同世代(年齢差3以内)でOVRが低い側→本人 bond -2~-4, rivalry +3~+5
+    const getOrgRoster = (fId) => {
+      if ((state.roster || []).some(c => c.id === fId)) return state.roster || [];
+      for (const org of Object.values(state.aiOrgs || {})) {
+        if ((org.roster || []).some(c => c.id === fId)) return org.roster || [];
+      }
+      return [];
+    };
+    const orgRoster = getOrgRoster(fighterId);
+    const sameOrgLowerOvr = orgRoster.filter(c =>
+      c.id !== fighterId &&
+      Math.abs((c.age || 20) - (fighter.age || 20)) <= 3 &&
+      Engine.util.ov(c) < selfOvr
+    );
+    if (sameOrgLowerOvr.length > 0) {
+      s = Engine.relationships.applyFromRoster(s, sameOrgLowerOvr.map(c => c.id), fighterId, { min: -4, max: -2 }, { min: 3, max: 5 }, rng);
+    }
+    return s;
   },
 
   /** G-03/G-06: スランプ・モチベ喪失 — bond60+→心配, rivalry30+→興味低下 */
@@ -12086,6 +12177,84 @@ Engine.relationships = {
         r.rivalry = Math.max(0, r.rivalry - (3 + Engine.rng.float(rng) * 2));
       }
       newRels[key] = r;
+    }
+    return { ...state, relationships: newRels };
+  },
+
+  /** N-05: スランプの八つ当たり — スランプ突入時、bond最高(50+)の同団体相手に八つ当たり */
+  applySlumpLashout(state, fighterId, rng) {
+    if (!state.relationships) return state;
+    const rels = state.relationships;
+    const getOrgRoster = (fId) => {
+      if ((state.roster || []).some(c => c.id === fId)) return (state.roster || []).filter(c => !c.injury && c.id !== fId);
+      for (const org of Object.values(state.aiOrgs || {})) {
+        if ((org.roster || []).some(c => c.id === fId)) return (org.roster || []).filter(c => !c.injury && c.id !== fId);
+      }
+      return [];
+    };
+    const orgRoster = getOrgRoster(fighterId);
+    let maxBond = 50; // 50未満なら不発
+    let targetId = null;
+    for (const c of orgRoster) {
+      const key = this._key(fighterId, c.id);
+      const r = rels[key];
+      if (r && r.bond > maxBond) { maxBond = r.bond; targetId = c.id; }
+    }
+    if (!targetId) return state;
+    // スランプ者→相手: bond -4~-7, rivalry ±0
+    let s = this.applyToRoster(state, fighterId, [targetId], { min: -7, max: -4 }, { min: 0, max: 0 }, rng);
+    // 相手→スランプ者: bond -1~-3, rivalry ±0
+    s = this.applyFromRoster(s, [targetId], fighterId, { min: -3, max: -1 }, { min: 0, max: 0 }, rng);
+    return s;
+  },
+
+  /** N-04: 人気逆転 — 同団体で若手(年齢差5+)の人気が先輩を初めて超えた瞬間（1回限り） */
+  applyPopOvertakeEffects(state, rng) {
+    if (!state.relationships) return state;
+    const triggered = state.popOvertakeTriggered || {};
+    const newTriggered = { ...triggered };
+    let s = state;
+    const allChars = [...(state.roster || []), ...Object.values(state.aiOrgs || {}).flatMap(o => o.roster || [])];
+    const getOrgId = (charId) => {
+      if ((state.roster || []).some(c => c.id === charId)) return 'player';
+      for (const [oid, org] of Object.entries(state.aiOrgs || {})) {
+        if ((org.roster || []).some(c => c.id === charId)) return oid;
+      }
+      return null;
+    };
+    for (let i = 0; i < allChars.length; i++) {
+      const senior = allChars[i];
+      for (let j = 0; j < allChars.length; j++) {
+        if (i === j) continue;
+        const junior = allChars[j];
+        if (((senior.age || 20) - (junior.age || 20)) < 5) continue;
+        if (getOrgId(senior.id) !== getOrgId(junior.id)) continue;
+        const pairKey = `${senior.id}>${junior.id}`;
+        if (newTriggered[pairKey]) continue;
+        if ((junior.popularity || 0) > (senior.popularity || 0)) {
+          s = this.applyToRoster(s, senior.id, [junior.id], { min: -5, max: -3 }, { min: 2, max: 4 }, rng);
+          newTriggered[pairKey] = true;
+        }
+      }
+    }
+    return { ...s, popOvertakeTriggered: newTriggered };
+  },
+
+  /** §2.3: 引退時の関係値凍結 — 引退者を含む全ペアを凍結（decay対象外） */
+  freezeRelationships(state, retiredFighterId) {
+    if (!state.relationships) return state;
+    const rels = state.relationships;
+    const newRels = {};
+    for (const key of Object.keys(rels)) {
+      const r = rels[key];
+      const sepIdx = key.indexOf('>');
+      const idA = parseInt(key.substring(0, sepIdx), 10);
+      const idB = parseInt(key.substring(sepIdx + 1), 10);
+      if (idA === retiredFighterId || idB === retiredFighterId) {
+        newRels[key] = { ...r, frozen: true };
+      } else {
+        newRels[key] = r;
+      }
     }
     return { ...state, relationships: newRels };
   },
@@ -12307,10 +12476,23 @@ Engine.relationships = {
       apply('BA', 'titleMatch', context.stage, 0, 0, 8, 12, true);
     }
 
-    // ═══ M-10: 因縁決着（Phase 4 G: リセットではなく緩和。高rivalryは維持される） ═══
-    if (context.rivalryResolved) {
-      apply('AB', 'rivalryResolution', context.stage, 5, 10, -8, -5, false);
-      apply('BA', 'rivalryResolution', context.stage, 5, 10, -8, -5, false);
+    // ═══ M-14: 宿命の決着（rivalry80+ AND bond60+ AND mq75+ → rivalry 0〜5にリセット）
+    if (rAB.rivalry >= 80 && rAB.bond >= 60 && rBA.rivalry >= 80 && rBA.bond >= 60 && context.mq >= 75) {
+      const m14Reset = Engine.rng.float(rng) * 5;
+      rAB.rivalry = this._clampAxisValue(m14Reset, 'rivalry');
+      rBA.rivalry = this._clampAxisValue(m14Reset, 'rivalry');
+      apply('AB', 'destinySettled', context.stage, 5, 10, 0, 0, false);
+      apply('BA', 'destinySettled', context.stage, 5, 10, 0, 0, false);
+      context._destinySettled = true;
+    }
+
+    // ═══ M-10: 因縁決着 → rivalryリセット（0〜10）（M-14不成立時のみ）
+    if (context.rivalryResolved && !context._destinySettled) {
+      const m10Reset = Engine.rng.float(rng) * 10;
+      rAB.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
+      rBA.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
+      apply('AB', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+      apply('BA', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
     }
 
     // ═══ M-11: 怪我 ═══
