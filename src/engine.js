@@ -4405,6 +4405,8 @@ const Engine = {
               losingStreakB: 0,
               isProveModeA: false,
               isProveModeB: false,
+              ovrA: r.left ? Engine.util.ov(r.left) : 0,
+              ovrB: r.right ? Engine.util.ov(r.right) : 0,
             };
             s = Engine.relationships.applyMatchResult(s, r.left.id, r.right.id, context, aiRelRng);
           });
@@ -4954,13 +4956,19 @@ const Engine = {
         let stage = 'normal';
         if (r.isTitleMatch) stage = 'title';
 
+        // v2.0: タイトルマッチの王者情報+OVR
+        const isTitleM = !!r.isTitleMatch;
+        const champId = s.titles?.world?.championId;
+
         const context = {
           mq: r.mq,
           winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
           hpA: r.hpLeft, hpB: r.hpRight,
           turns: r.turns,
           stage,
-          isTitleMatch: !!r.isTitleMatch,
+          isTitleMatch: isTitleM,
+          isChampionA: isTitleM ? (charIdA === champId) : undefined,
+          isChampionB: isTitleM ? (charIdB === champId) : undefined,
           rivalryResolved: false, // 通常興行では因縁決着なし
           injuredId: matchInjuredIds[idx],
           isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
@@ -4969,6 +4977,8 @@ const Engine = {
           losingStreakB: fB ? (fB.losingStreak || 0) : 0,
           isProveModeA: fA ? (fA.proveMode || 0) > 0 : false,
           isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
+          ovrA: fA ? Engine.util.ov(fA) : 0,
+          ovrB: fB ? Engine.util.ov(fB) : 0,
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
       });
@@ -6648,6 +6658,8 @@ const Engine = {
             isCareerBestB: r.mq > (fB.careerBestMQ || 0),
             losingStreakA: (roster.find(c => c.id === charIdA) || {}).losingStreak || 0,
             losingStreakB: (roster.find(c => c.id === charIdB) || {}).losingStreak || 0,
+            ovrA: fA ? Engine.util.ov(fA) : 0,
+            ovrB: fB ? Engine.util.ov(fB) : 0,
           };
           relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
         });
@@ -12417,9 +12429,16 @@ Engine.relationships = {
       rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult, 'rivalry');
     };
 
-    // ═══ M-01: ベースライン（全試合, Phase 4 E: rivalry抑制） ═══
-    apply('AB', 'match', context.stage, 0, 1, 0.3, 1.0, true);
-    apply('BA', 'match', context.stage, 0, 1, 0.3, 1.0, true);
+    // ═══ M-01: ベースライン（勝敗非対称 v2.0） ═══
+    if (isDraw) {
+      apply('AB', 'match', context.stage, 0, 0, 0.5, 1.0, true);
+      apply('BA', 'match', context.stage, 0, 0, 0.5, 1.0, true);
+    } else {
+      const winDir = aWon ? 'AB' : 'BA';
+      const loseDir = aWon ? 'BA' : 'AB';
+      apply(winDir, 'match', context.stage, 0, 0, 0.1, 0.5, true);  // 勝者→敗者
+      apply(loseDir, 'match', context.stage, 0, 0, 0.8, 2.0, true); // 敗者→勝者
+    }
 
     // ═══ M-02 / M-03 判定（排他） ═══
     let isCloseMatch = false;
@@ -12441,10 +12460,10 @@ Engine.relationships = {
       }
     }
 
-    // ═══ M-02: 僅差の好勝負 ═══
+    // ═══ M-02: 僅差の好勝負（v2.0: bond抑制） ═══
     if (isCloseMatch) {
-      apply('AB', 'closeMatch', context.stage, 2, 4, 5, 8, true);
-      apply('BA', 'closeMatch', context.stage, 2, 4, 5, 8, true);
+      apply('AB', 'closeMatch', context.stage, 0, 1, 5, 8, true);
+      apply('BA', 'closeMatch', context.stage, 0, 1, 5, 8, true);
     }
 
     // ═══ M-03a/b: 圧勝（非対称） ═══
@@ -12470,10 +12489,26 @@ Engine.relationships = {
       apply('BA', 'ppvMatch', 'ppv', 0, 0, 10, 15, true);
     }
 
-    // ═══ M-06: タイトルマッチ ═══
-    if (context.isTitleMatch) {
-      apply('AB', 'titleMatch', context.stage, 0, 0, 8, 12, true);
-      apply('BA', 'titleMatch', context.stage, 0, 0, 8, 12, true);
+    // ═══ M-06改: タイトルマッチ（勝敗非対称 v2.0） ═══
+    if (context.isTitleMatch && !isDraw) {
+      const winDir = aWon ? 'AB' : 'BA';
+      const loseDir = aWon ? 'BA' : 'AB';
+      if (context.isChampionA !== undefined || context.isChampionB !== undefined) {
+        const champWon = (context.isChampionA && aWon) || (context.isChampionB && bWon);
+        if (champWon) {
+          // 防衛成功: 王者→挑戦者 +4〜+7, 挑戦者→王者 +10〜+15
+          apply(winDir, 'titleMatch', context.stage, 0, 0, 4, 7, true);
+          apply(loseDir, 'titleMatch', context.stage, 0, 0, 10, 15, true);
+        } else {
+          // 王座奪取: 新王者→前王者 +5〜+8, 前王者→新王者 +12〜+18
+          apply(winDir, 'titleMatch', context.stage, 0, 0, 5, 8, true);
+          apply(loseDir, 'titleMatch', context.stage, 0, 0, 12, 18, true);
+        }
+      } else {
+        // 王者情報がない場合は汎用（勝者 +4〜+7, 敗者 +10〜+15）
+        apply(winDir, 'titleMatch', context.stage, 0, 0, 4, 7, true);
+        apply(loseDir, 'titleMatch', context.stage, 0, 0, 10, 15, true);
+      }
     }
 
     // ═══ M-14: 宿命の決着（rivalry80+ AND bond60+ AND mq75+ → rivalry 0〜5にリセット）
@@ -12581,6 +12616,60 @@ Engine.relationships = {
     if (context.isProveModeB) {
       // 対戦相手A → prove mode選手B: bond +1~+3, rivalry +2~+4
       apply('AB', 'proveMode', context.stage, 1, 3, 2, 4, false);
+    }
+
+    // ═══ M-15: 番狂わせ（OVR差10+の格下勝利、M-03と排他） ═══
+    if (!isDraw && !isSquash) {
+      const ovrA = context.ovrA || 0;
+      const ovrB = context.ovrB || 0;
+      const ovrDiff = Math.abs(ovrA - ovrB);
+      if (ovrDiff >= 10) {
+        const underdogIsA = ovrA < ovrB;
+        const underdogWon = (underdogIsA && aWon) || (!underdogIsA && bWon);
+        if (underdogWon) {
+          const winDir = aWon ? 'AB' : 'BA';
+          const loseDir = aWon ? 'BA' : 'AB';
+          apply(winDir, 'upset', context.stage, 0, 0, 3, 5, true);        // 格下→格上
+          apply(loseDir, 'upset', context.stage, -4, -2, 4, 7, true);     // 格上→格下（逆恨み）
+        }
+      }
+    }
+
+    // ═══ M-16: 対戦成績蓄積（h2hベースの連敗判定） ═══
+    if (!isDraw && state.h2h) {
+      const winnerId = aWon ? charIdA : charIdB;
+      const loserId = aWon ? charIdB : charIdA;
+      const winDir = aWon ? 'AB' : 'BA';
+      const loseDir = aWon ? 'BA' : 'AB';
+
+      // 敗者の対勝者への連敗数をh2hから計算
+      const loserRec = Engine.h2h.getRecordFor(state, loserId, winnerId);
+      const loserConsecLosses = loserRec ? loserRec.losses - loserRec.wins : 0;
+      // 3連敗+相当: losses - wins >= 3 を簡易判定（厳密にはmatchupLogだが、h2hで近似）
+      if (loserRec && loserRec.losses >= 3 && loserConsecLosses >= 3) {
+        apply(loseDir, 'h2hFrustration', context.stage, -3, -1, 3, 5, false);
+      }
+
+      // 勝者が以前この相手に大きく負け越していた場合 → 連敗ストップ
+      const winnerRec = Engine.h2h.getRecordFor(state, winnerId, loserId);
+      const winnerPrevDeficit = winnerRec ? winnerRec.losses - winnerRec.wins : 0;
+      if (winnerRec && winnerRec.losses >= 3 && winnerPrevDeficit >= 2) {
+        // 今回勝ったので deficit が 2以上→以前は3以上だった
+        apply(winDir, 'h2hBreakthrough', context.stage, 2, 4, -4, -2, false);
+      }
+    }
+
+    // ═══ M-17: 凡戦ペナルティ（MQ40未満） ═══
+    if (context.mq < 40) {
+      if (isDraw) {
+        apply('AB', 'boringMatch', context.stage, -2, -1, 0, 0, true);
+        apply('BA', 'boringMatch', context.stage, -2, -1, 0, 0, true);
+      } else {
+        const winDir = aWon ? 'AB' : 'BA';
+        const loseDir = aWon ? 'BA' : 'AB';
+        apply(winDir, 'boringMatch', context.stage, -2, -1, 0, 0, true);
+        apply(loseDir, 'boringMatch', context.stage, -4, -2, 0, 0, true);
+      }
     }
 
     // ── 全値クランプ ──

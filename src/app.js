@@ -3483,13 +3483,20 @@ const App = {
         let stage = 'normal';
         if (r.isTitleMatch) stage = 'title';
 
+        // v2.0: タイトルマッチの王者情報
+        const m = validMatches[idx];
+        const champId = s.titles?.world?.championId;
+        const isTitleM = !!r.isTitleMatch;
+
         const context = {
           mq: r.mq,
           winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
           hpA: r.hpLeft, hpB: r.hpRight,
           turns: r.turns,
           stage,
-          isTitleMatch: !!r.isTitleMatch,
+          isTitleMatch: isTitleM,
+          isChampionA: isTitleM ? (charIdA === champId) : undefined,
+          isChampionB: isTitleM ? (charIdB === champId) : undefined,
           rivalryResolved: !!r.rivalryResolved,
           injuredId: matchInjuredIds[idx],
           isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
@@ -3498,6 +3505,8 @@ const App = {
           losingStreakB: fB ? (fB.losingStreak || 0) : 0,
           isProveModeA: fA ? (fA.proveMode || 0) > 0 : false,
           isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
+          ovrA: fA ? Engine.util.ov(fA) : 0,
+          ovrB: fB ? Engine.util.ov(fB) : 0,
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
       });

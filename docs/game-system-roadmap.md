@@ -1,12 +1,24 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-13（Bond/Rivalry バランス改善 v1.0 実装完了）
+> 最終更新: 2026-03-13（Bond/Rivalry バランス改善 v2.0 §3-§4 追加実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**Bond/Rivalry バランス改善 v2.0 §3-§4 追加実装完了（2026-03-13）。** `specs/bond-rivalry-balance-spec-v2.0.md` §3（試合ベースライン修正）+ §4（試合勝敗非対称イベント）を追加実装。auto-sim 350シーズン（5シード）ALL CLEAR。
+
+- **§3.1 M-01 勝敗非対称化**: bond ±0（殴り合いでは仲良くならない）、rivalry 勝者→敗者 +0.1~+0.5 / 敗者→勝者 +0.8~+2.0（「負けた悔しさ」）
+- **§3.2 M-02 bond抑制**: 僅差の好勝負 bond +2~+4 → +0~+1。bond供給過多の主因を解消
+- **§3.3 M-06改 タイトル非対称**: 防衛成功: 王者→挑戦者 +4~+7 / 挑戦者→王者 +10~+15。奪取: 新王者→前王者 +5~+8 / 前王者→新王者 +12~+18。context に isChampionA/isChampionB 追加
+- **§4.1 M-15 番狂わせ**: OVR差10+の格下勝利時（M-03圧勝と排他）。格上→格下: bond -2~-4（逆恨み）+ rivalry +4~+7 / 格下→格上: rivalry +3~+5
+- **§4.2 M-16 対戦成績蓄積**: h2hデータから3連敗+判定。敗者: bond -1~-3, rivalry +3~+5。連敗ストップ時: 勝者 bond +2~+4, rivalry -2~-4
+- **§4.3 M-17 凡戦ペナルティ**: MQ40未満で bond -1~-4（敗者の方が大きい）。つまらない試合は関係を悪化させる
+- context拡張: 全4呼び出し元（app.js finalizeShow / engine.js executeShow / tickWeek AI / applyPPVResults）に ovrA/ovrB/isChampionA/isChampionB 追加
+- 変更: engine.js, app.js
+- §8 スナップショット通知テンプレートは未実装（別途追加予定）
 
 **Bond/Rivalry バランス改善 v1.0 実装完了（2026-03-13）。** `specs/bond-rivalry-balance-spec-v1.0.md` 全10項目を実装。auto-sim 100シーズン（seed 42）ALL CLEAR。
 
