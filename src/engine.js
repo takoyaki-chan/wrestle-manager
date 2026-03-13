@@ -160,8 +160,9 @@ const Engine = {
     selMove(rng, style, turn, _phases) {
       const ph = Engine.battle.phase(turn, _phases);
       const use = Engine.rng.float(rng) * 100 < ph.sCh;
-      const pool = use ? styleMoves[style] : commonMoves;
-      const cat = Engine.rng.weighted(rng, catW[style]);
+      const resolvedStyle = (style && styleMoves[style] && catW[style]) ? style : 'Allround';
+      const pool = use ? styleMoves[resolvedStyle] : commonMoves;
+      const cat = Engine.rng.weighted(rng, catW[resolvedStyle]);
       const cands = pool.filter(m => m.c === cat);
       return cands.length ? Engine.rng.pick(rng, cands) : Engine.rng.pick(rng, pool);
     },
