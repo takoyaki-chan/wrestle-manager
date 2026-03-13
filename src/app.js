@@ -3960,11 +3960,12 @@ const App = {
     fanExpectResults.forEach((r, i) => {
       const isGood = r.mq >= 55;
       const crowd = isGood ? FAN_EXPECT_REACTIONS.goodCrowd : FAN_EXPECT_REACTIONS.badCrowd;
-      const winnerLines = isGood ? FAN_EXPECT_REACTIONS.goodWinner : FAN_EXPECT_REACTIONS.badWinner;
+      const winnerPool = isGood ? FAN_EXPECT_REACTIONS.goodWinner : FAN_EXPECT_REACTIONS.badWinner;
       const crowdText = crowd[Math.floor(Math.random() * crowd.length)];
       const winnerId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : r.left.id;
       const winnerName = r.winner === 'left' ? r.left.name : r.winner === 'right' ? r.right.name : r.left.name;
-      const winnerLine = winnerLines[Math.floor(Math.random() * winnerLines.length)];
+      const winnerFighter = (G.roster || []).find(c => c.id === winnerId) || ALL_CHARS.find(c => c.id === winnerId);
+      const winnerLine = pickDialogueLine(winnerPool, winnerFighter);
       hasEventPopups = true;
       setTimeout(() => showEventPopup({
         type: 'fighter', id: winnerId, name: winnerName,
