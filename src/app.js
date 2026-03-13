@@ -2995,6 +2995,7 @@ const App = {
           intruder: intrusion.intruder,
           fromOrgName: intrusion.fromOrgName,
           champName: intrusion.champName,
+          champId: intrusion.champId,
           originalChallengerId,
           challengerSide
         };
@@ -3323,6 +3324,16 @@ const App = {
         s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
         events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2`);
       }
+      // §4.2: 乱入 rivalry +12〜+18（チャンピオン↔乱入者）
+      if (s.relationships) {
+        const intRivalRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6F));
+        const intruderId = id.intruder.id;
+        const champId = id.champId || (intruderWon ? null : titles.world?.championId);
+        if (champId && champId !== intruderId) {
+          s = Engine.relationships.applyToRoster({ ...s, roster }, intruderId, [champId], { min: 0, max: 0 }, { min: 12, max: 18 }, intRivalRng);
+          s = Engine.relationships.applyToRoster({ ...s, roster }, champId, [intruderId], { min: 0, max: 0 }, { min: 12, max: 18 }, intRivalRng);
+        }
+      }
       // 乱入選手をrosterから除去
       roster = roster.filter(c => !c.isIntrusion);
       // Phase0修正: lastIntrusionWeek更新（クールダウン計算用）
@@ -3629,6 +3640,9 @@ const App = {
             if (s.relationships) {
               const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, charId));
               s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 2 }, symRng);
+              // N-05: スランプ八つ当たり
+              const lashRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6C, charId));
+              s = Engine.relationships.applySlumpLashout({ ...s, roster }, charId, lashRng);
             }
           }
         }
@@ -4366,6 +4380,8 @@ const App = {
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]
         };
+        // §2.3: 引退者の関係値を凍結
+        if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
         const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
         setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
       });
@@ -5660,6 +5676,9 @@ App.finalizePPV = function() {
           if (s.relationships) {
             const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, fId));
             s = Engine.relationships.applySympathyEffect(s, fId, { min: 1, max: 2 }, symRng);
+            // N-05: スランプ八つ当たり
+            const lashRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6E, fId));
+            s = Engine.relationships.applySlumpLashout({ ...s, roster }, fId, lashRng);
           }
         }
       }

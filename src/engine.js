@@ -10040,15 +10040,15 @@ Engine.eventSystem = {
           let relationships = null;
           if (state.relationships) {
             const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE55));
-            // 対戦した2選手間: rivalry +5~+10（対抗戦相手はAIなので、fighterId側のみ更新）
+            // 対戦した2選手間: rivalry +8~+12（§4.2ブースト）
             // ※ AI相手のIDは event.opponentId として存在する場合のみ
             const opponentId = event.opponentId;
             let relState = { ...state };
             if (opponentId) {
               relState = Engine.relationships.applyToRoster(relState, fighterId, [opponentId],
-                { min: 0, max: 0 }, { min: 5, max: 10 }, relRng);
+                { min: 0, max: 0 }, { min: 8, max: 12 }, relRng);
               relState = Engine.relationships.applyToRoster(relState, opponentId, [fighterId],
-                { min: 0, max: 0 }, { min: 5, max: 10 }, relRng);
+                { min: 0, max: 0 }, { min: 8, max: 12 }, relRng);
             }
             // 団体仲間(roster)→代表選手: bond +2
             const teammateIds = roster.filter(f => f.id !== fighterId && !f.injury && !f.isRental).map(f => f.id);
