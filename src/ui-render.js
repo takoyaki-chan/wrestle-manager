@@ -2086,31 +2086,46 @@ function renderRanking() {
       if (!aiData) return;
       const roster = Engine.rival.dedupeRoster(aiData.roster || []);
       const rEntry = rankings.find(re => re.orgId === org.id);
+      const aiTitles = aiData.titles || {};
+      const champId = aiTitles.world?.championId;
+      const champion = champId ? roster.find(f => f.id === champId) : null;
       const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
-      const topFighters = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, topCount);
+      const sortedRoster = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+      let topFighters = sortedRoster.slice(0, topCount);
+      if (champId) {
+        const champIdx = sortedRoster.findIndex(f => f.id === champId);
+        if (champIdx > 0) {
+          topFighters = [sortedRoster[champIdx], ...sortedRoster.filter(f => f.id !== champId)].slice(0, topCount);
+        }
+      }
 
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${champion ? `${champion.name}（${aiTitles.world?.defenses || 0}防衛）` : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
           <span style="color:var(--text-dim)">主力:</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
+          ${topFighters.map(f => {
+            const isChamp = champId === f.id;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
+          }).join('')}
           </div>
         </div>
         <details style="margin-top:10px">
           <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${roster.length}名）</summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-            ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
+            ${sortedRoster.map((f, idx) => {
               const fOvr = Engine.util.ov(f);
               const isTop = idx === 0;
+              const isChampF = champId === f.id;
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}${isChampF ? ' <span style="font-size:10px;color:var(--gold)">👑王者</span>' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
                 </div>
                 <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
@@ -3359,6 +3374,13 @@ function _renderDbOrgCompare() {
   const playerTags = d.playerTags.length ? d.playerTags : [fallbackTag];
   const rivalTags = d.rivalTags.length ? d.rivalTags : [fallbackTag];
   const briefLead = d.actions[0]?.text || d.opportunity || d.summaryText;
+  const playerChampionName = G.titles?.world?.championId
+    ? (G.roster.find(f => f.id === G.titles.world.championId)?.name || '不在')
+    : '不在';
+  const rivalOrgData = G.aiOrgs?.[_dbCompareTarget];
+  const rivalChampionName = rivalOrgData?.titles?.world?.championId
+    ? (rivalOrgData.roster?.find(f => f.id === rivalOrgData.titles.world.championId)?.name || '不在')
+    : '不在';
 
   let html = `<div class="db-cmp-select">
     <label>Compare with</label>
@@ -3440,7 +3462,7 @@ function _renderDbOrgCompare() {
       <p>${a.text}</p>
     </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きく動かすべきアクションはありません。</p></div>`;
 
-  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, styleAttr = '') {
+  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, styleAttr = '') {
     return `<article class="db-cmp-org-summary-card ${sideCls}" ${styleAttr}>
       <div class="db-cmp-org-summary-head">
         <div class="db-cmp-org-summary-name">
@@ -3455,6 +3477,7 @@ function _renderDbOrgCompare() {
         <span>選手層 <strong>${rosterCount}</strong></span>
         <span>団体人気 <strong>${orgPop}</strong></span>
       </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">王者 <strong style="color:var(--text-main)">${championName}</strong></div>
     </article>`;
   }
 
@@ -3525,13 +3548,13 @@ function _renderDbOrgCompare() {
       </div>
       <div class="db-cmp-org-summary">
         <div class="db-cmp-org-summary-row">
-          ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">Player</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores)}
+          ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">Player</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName)}
           <div class="db-cmp-org-summary-grade">
             <span>Matchup</span>
             <strong>${d.grade}</strong>
             <em>${d.gradeDesc}</em>
           </div>
-          ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, `style="--rival-dim:${rivalDim}"`)}
+          ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, `style="--rival-dim:${rivalDim}"`)}
         </div>
         <div class="db-cmp-org-summary-note">
           <strong>団体比較メモ</strong>

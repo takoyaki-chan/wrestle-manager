@@ -2487,10 +2487,12 @@ const Engine = {
   // ── Rival System (IMMUTABLE) ───────────────────────────
   rival: {
     // Generate trainCap for a fighter (training-spec §1.4 v1.2: factor×Pot, 0ベース)
-    generateTrainCap(rng, _notionValue, potential) {
+    generateTrainCap(rng, _notionValue, potential, factorOverride) {
+      const fMin = factorOverride ? factorOverride[0] : 0.55;
+      const fMax = factorOverride ? factorOverride[1] : 0.80;
       const caps = {};
       ['pw','sp','te','st','mn'].forEach(s => {
-        const factor = 0.50 + Engine.rng.float(rng) * 0.30; // 0.50〜0.80
+        const factor = fMin + Engine.rng.float(rng) * (fMax - fMin);
         caps[s] = Math.round(factor * (potential[s] || 0));
       });
       return caps;
@@ -2512,9 +2514,9 @@ const Engine = {
       return vals;
     },
     // Make an AI fighter object from ALL_CHARS template
-    makeAIFighter(template, rng, orgId, age) {
+    makeAIFighter(template, rng, orgId, age, factorOverride) {
       const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
-      const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
+      const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot, factorOverride);
       // AI fighters start closer to their Notion values (established pros)
       const maturity = Math.min(1.0, 0.70 + (age - 17) * 0.04 + Engine.rng.float(rng) * 0.10);
       const current = {};
@@ -2570,6 +2572,31 @@ const Engine = {
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
         orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
       };
+    },
+    getPotTop3Ids() {
+      return new Set(
+        ALL_CHARS.map(c => ({
+          id: c.id,
+          potTotal: (c.pot?.pw || 0) + (c.pot?.sp || 0) + (c.pot?.te || 0) + (c.pot?.st || 0) + (c.pot?.mn || 0),
+        }))
+          .sort((a, b) => b.potTotal - a.potTotal)
+          .slice(0, 3)
+          .map(c => c.id)
+      );
+    },
+    createAITitles(world = {}) {
+      return {
+        world: {
+          championId: null,
+          defenses: 0,
+          wonSeason: 0,
+          wonWeek: 0,
+          ...world,
+        },
+      };
+    },
+    normalizeAITitles(titles) {
+      return Engine.rival.createAITitles(titles && titles.world ? titles.world : {});
     },
     // Initialize all AI org rosters from ORG_ASSIGN
     // ── Roster Randomization: assign ALL_CHARS to S/A/B/FA/dormant ──
@@ -2697,6 +2724,7 @@ const Engine = {
     },
 
     initAIOrgs(rng) {
+      const potTop3Ids = Engine.rival.getPotTop3Ids();
       const nameMap = {};
       RIVAL_ORGS.forEach(org => {
         const pool = RIVAL_ORG_NAME_POOL[org.tier];
@@ -2713,7 +2741,8 @@ const Engine = {
         const roster = ids.map(id => {
           const t = ALL_CHARS.find(c => c.id === id);
           if (!t) return null;
-          return Engine.rival.makeAIFighter(t, rng, org.id, 17 + Engine.rng.int(rng, 0, 11));
+          const factorOverride = (org.tier === 'S' && potTop3Ids.has(id)) ? [0.75, 0.80] : null;
+          return Engine.rival.makeAIFighter(t, rng, org.id, 17 + Engine.rng.int(rng, 0, 11), factorOverride);
         }).filter(Boolean);
         roster.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
         roster.forEach((f, i) => {
@@ -2728,6 +2757,7 @@ const Engine = {
           lockerRoomMorale: 60,
           coaches: [],
           coachAssign: {},
+          titles: Engine.rival.createAITitles(),
         };
       });
       return { aiOrgs: Engine.rival.ensureAICoachStaffing(rng, orgs), rivalOrgNames: nameMap };
@@ -2761,7 +2791,7 @@ const Engine = {
         coaches: data.coaches || [],
         coachAssign: data.coachAssign || {},
         lockerRoomMorale: data.lockerRoomMorale,
-        titles: data.titles || {},
+        titles: Engine.rival.normalizeAITitles(data.titles),
       };
     },
     // Utility: get all AI orgs as array with merged config+state
@@ -2806,7 +2836,7 @@ const Engine = {
       return {
         ...baseState,
         roster: roster || data.roster || [],
-        titles: data.titles || {},
+        titles: Engine.rival.normalizeAITitles(data.titles),
         coaches: Array.isArray(data.coaches) ? [...data.coaches] : [],
         coachAssign: { ...(data.coachAssign || {}) },
         orgPop: data.orgPop != null ? data.orgPop : ({ S: 75, A: 55, B: 35 }[fallbackTier] || 30),
@@ -2989,6 +3019,24 @@ const Engine = {
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
       const rank = roster.findIndex(f => f.id === fighter.id);
       if (rank < 0) return config.general; // 怪我中→general扱い
+
+      if (org.tier === 'S') {
+        const byTrainCap = [...(org.roster || [])]
+          .map(f => ({
+            id: f.id,
+            capOvr: f.trainCap
+              ? Math.round(((f.trainCap.pw || 0) + (f.trainCap.sp || 0) + (f.trainCap.te || 0) + (f.trainCap.st || 0) + (f.trainCap.mn || 0)) / 5)
+              : 0,
+          }))
+          .sort((a, b) => b.capOvr - a.capOvr);
+        const trainCapTop3Ids = new Set(byTrainCap.slice(0, 3).map(f => f.id));
+        if (trainCapTop3Ids.has(fighter.id)) {
+          const baseConfig = rank === 0 ? (config.ace.top1 || config.general)
+            : (rank < config.ace.count && config.ace.top2_3) ? config.ace.top2_3
+            : (rank < config.ace.count ? (config.ace.top1 || config.general) : config.general);
+          return { ...baseConfig, practiceRate: 0.95 };
+        }
+      }
 
       if (rank === 0 && config.ace.top1) {
         return config.ace.top1;
@@ -3187,7 +3235,7 @@ const Engine = {
       const orgData = state.aiOrgs[org.id];
       if (!orgData || !orgData.roster || orgData.roster.length === 0) return orgData;
 
-      let nextOrgData = { ...orgData };
+      let nextOrgData = { ...orgData, titles: Engine.rival.normalizeAITitles(orgData.titles) };
       let roster = orgData.roster.map(f => ({
         ...f,
         seasonGrowth: { ...(f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }) }
@@ -3374,9 +3422,51 @@ const Engine = {
           });
         }
 
-        const aiTitles = nextOrgData.titles || {};
+        const aiTitles = nextOrgData.titles;
         const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, aiTitles, state);
         roster = aiTrustResult.roster;
+
+        const champId = aiTitles.world?.championId;
+        const champAlive = champId && roster.find(f => f.id === champId && !f.injury);
+        if (!champAlive) {
+          const top = roster
+            .filter(f => !f.injury)
+            .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+          if (top) {
+            nextOrgData.titles = Engine.rival.createAITitles({
+              championId: top.id,
+              defenses: 0,
+              wonSeason: state.season,
+              wonWeek: state.week,
+            });
+          }
+        } else {
+          const champResult = matchResults.find(r => r.left?.id === champId || r.right?.id === champId);
+          if (champResult) {
+            const champWon =
+              (champResult.winner === 'left' && champResult.left?.id === champId) ||
+              (champResult.winner === 'right' && champResult.right?.id === champId);
+            if (champWon || champResult.winner === 'draw') {
+              nextOrgData.titles = {
+                ...nextOrgData.titles,
+                world: {
+                  ...nextOrgData.titles.world,
+                  defenses: (nextOrgData.titles.world.defenses || 0) + 1,
+                },
+              };
+            } else {
+              const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
+              if (winnerId != null) {
+                nextOrgData.titles = Engine.rival.createAITitles({
+                  championId: winnerId,
+                  defenses: 0,
+                  wonSeason: state.season,
+                  wonWeek: state.week,
+                });
+              }
+            }
+          }
+        }
 
         nextOrgData._lastMatchResults = matchResults;
         const newEntries = matchCard.map(m => ({ leftId: m.left.id, rightId: m.right.id, showCount: nextOrgData.showCount || 0 }));
