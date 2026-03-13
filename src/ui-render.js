@@ -5,44 +5,44 @@ function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 // Coach-fighter style match helper
 function getCoachStyleMatch(coach, fighter) {
   if (!coach || !fighter) return { type: 'none', bonus: 0, label: '', icon: '', cls: 'none' };
-  if (coach.style === 'Allround') return { type: 'allround', bonus: 0.05, label: '万能', icon: '○', cls: 'allround' };
-  if (coach.style === fighter.style) return { type: 'specialist', bonus: 0.08, label: '一致', icon: '✦', cls: 'specialist' };
-  return { type: 'none', bonus: 0, label: '不一致', icon: '', cls: 'none' };
+  if (coach.style === 'Allround') return { type: 'allround', bonus: 0.05, label: '髣包ｽｳ郢晢ｽｻ郢晢ｽｻ', icon: '髫ｨ・ｳ郢晢ｽｻ, cls: 'allround' };
+  if (coach.style === fighter.style) return { type: 'specialist', bonus: 0.08, label: '髣包ｽｳ・つ鬮｢・ｾ繝ｻ・ｴ', icon: '髫ｨ・ｨ繝ｻ・ｦ', cls: 'specialist' };
+  return { type: 'none', bonus: 0, label: '髣包ｽｳ陜｣・ｺ繝ｻ・ｸ・つ鬮｢・ｾ繝ｻ・ｴ', icon: '', cls: 'none' };
 }
 
 function refreshTopBar() {
   // Audio mute button sync
   const muteBtn = document.getElementById('muteBtn');
-  if (muteBtn) muteBtn.textContent = Audio.muted ? '🔇' : '🔊';
+  if (muteBtn) muteBtn.textContent = Audio.muted ? '・滓ｨ｣ﾂ繝ｻ : '・滓ｨ呈ｴｫ';
   const bgmMuteBtn = document.getElementById('bgmMuteBtn');
-  if (bgmMuteBtn) bgmMuteBtn.textContent = Audio.bgmMuted ? '🎵❌' : '🎵';
+  if (bgmMuteBtn) bgmMuteBtn.textContent = Audio.bgmMuted ? '・滓ｨ費ｽｸ繝ｻ・ｬ・ｶ郢晢ｽｻ : '・滓ｨ費ｽｸ繝ｻ;
   // Hide nav during draft
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (G.weekPhase === 'draft') ? 'none' : '';
   const dateEl = document.getElementById('dispDate');
   if (dateEl) {
     if (G.offSeason) {
-      dateEl.textContent = `${G.season}年目 オフシーズン ${G.offWeek || 0}/4`;
+      dateEl.textContent = `${G.season}髯晢ｽｷ繝ｻ・ｴ鬨ｾ・ｶ繝ｻ・ｮ 驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ ${G.offWeek || 0}/4`;
     } else {
       dateEl.textContent = Engine.util.formatDate(G.season, G.week);
     }
   }
   const fundsEl = document.getElementById('dispFunds');
-  fundsEl.textContent = `${G.funds.toLocaleString()}万`;
+  fundsEl.textContent = `${G.funds.toLocaleString()}髣包ｽｳ郢ｻ繝ｻ
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
   document.getElementById('dispPop').textContent = Engine.util.dispOrgPop(G.orgPop);
-  // v1.5s25b: 補助金カウントダウン
+  // v1.5s25b: 鬮ｯ・ｬ隲幢ｽｷ陷搾ｽｧ鬯ｩ・･闔会ｽ｣邵ｺ蜥ｲ・ｹ・ｧ繝ｻ・ｦ驛｢譎｢・ｽ・ｳ驛｢譎冗樟郢晢｣ｰ驛｢・ｧ繝ｻ・ｦ驛｢譎｢・ｽ・ｳ
   const subsidyEl = document.getElementById('dispSubsidy');
   if (subsidyEl) {
     const popInt = Engine.util.dispOrgPop(G.orgPop);
     if (popInt < 40 && G.difficultyMode !== 'hard') {
       const subsidyAmt = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
       const remaining = 40 - popInt;
-      const tipHtml = `<strong style="color:var(--gold)">🏛️ 地域振興助成金</strong><br>
-現在の支給額: <strong style="color:#2ecc71">+${subsidyAmt}万/週</strong>（自動）<br>
-<span style="color:#aaa">人気があと<strong style="color:#fff">${remaining}pt</strong>上がると打ち切り</span><br><br>
-<span style="color:#aaa;font-size:11px">打ち切り後はスポンサー収入が<br>10万 → <strong style="color:#fff">30万/週</strong>に増えます</span>`;
-      subsidyEl.textContent = `補助金あと${remaining}pt`;
+      const tipHtml = `<strong style="color:var(--gold)">・滓ｨ｣蜈ｱ郢晢ｽｻ郢晢ｽｻ髯懶ｽｨ繝ｻ・ｰ髯懈瑳・ｻ鬥ｴ蛹ｱ鬮｣雍具ｽｺ・･陷搾ｽｧ髫ｰ謔滂ｽｮ・｣遶包ｽ｡</strong><br>
+髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ髫ｰ・ｾ繝ｻ・ｯ鬩搾ｽｨ繝ｻ・ｦ鬯ｯ蛟･繝ｻ <strong style="color:#2ecc71">+${subsidyAmt}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</strong>郢晢ｽｻ鬩帚・繝ｻ髯ｷ讎頑｡√・・ｼ郢晢ｽｻbr>
+<span style="color:#aaa">髣費｣ｰ繝ｻ・ｺ髮取ぁ蟷ｲ遯ｶ・ｲ驍ｵ・ｺ郢ｧ繝ｻ繝ｻ<strong style="color:#fff">${remaining}pt</strong>髣包ｽｳ驗呻ｽｫ遯ｶ・ｲ驛｢・ｧ闕ｵ譏ｶ繝ｻ髫ｰ繝ｻ萓ｭ隨・｣ｰ髯具ｽｻ郢晢ｽｻ繝ｻ繝ｻ/span><br><br>
+<span style="color:#aaa;font-size:11px">髫ｰ繝ｻ萓ｭ隨・｣ｰ髯具ｽｻ郢晢ｽｻ繝ｻ鬘假｣ｰ蜍滂ｽｾ蠕後・驛｢・ｧ繝ｻ・ｹ驛｢譎・ｺ｢・趣ｽｦ驛｢・ｧ繝ｻ・ｵ驛｢譎｢・ｽ・ｼ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ驍ｵ・ｺ郢晢ｽｻbr>10髣包ｽｳ郢晢ｽｻ驕ｶ鄙ｫ繝ｻ<strong style="color:#fff">30髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</strong>驍ｵ・ｺ繝ｻ・ｫ髯溘・蟷ｲ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ/span>`;
+      subsidyEl.textContent = `鬮ｯ・ｬ隲幢ｽｷ陷搾ｽｧ鬯ｩ・･闔会ｽ｣遶包｣ｰ驍ｵ・ｺ繝ｻ・ｨ${remaining}pt`;
       subsidyEl.style.display = '';
       subsidyEl.style.cursor = 'pointer';
       subsidyEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(subsidyEl, tipHtml); };
@@ -60,303 +60,142 @@ function refreshTopBar() {
   const rankEl = document.getElementById('dispRank');
   if (rankEl) {
     const rColor = pRank === 1 ? 'var(--gold)' : pRank === 2 ? '#e74c3c' : pRank === 3 ? '#9b59b6' : '#2ecc71';
-    rankEl.innerHTML = `<span style="color:${rColor}">${pRank}位/${rankings.length}</span>`;
+    rankEl.innerHTML = `<span style="color:${rColor}">${pRank}髣厄ｽｴ郢晢ｽｻ${rankings.length}</span>`;
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
-  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:12px">${portraitImg(champ.id, 80)}<span style="font-size:16px">🏆 ${fLink(champ, {source:'roster', bold:false, size:'16px'})} (${G.titles.world.defenses}防衛)</span></span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:12px">${portraitImg(champ.id, 80)}<span style="font-size:16px">・滓ｨ｣繝ｻ ${fLink(champ, {source:'roster', bold:false, size:'16px'})} (${G.titles.world.defenses}鬯ｮ・ｦ繝ｻ・ｲ鬮ｯ・ｦ郢晢ｽｻ</span></span>` : '<span style="color:var(--text-dim)">・滓ｨ｣繝ｻ 鬩包ｽｨ繝ｻ・ｺ髣厄ｽｴ郢晢ｽｻ/span>';
 }
 
 function renderWeekScreen() {
   const el = document.getElementById('weekContent');
   let html = '';
 
-  // ── DRAFT PHASE ──
+  // 髫ｨ貂可髫ｨ貂可 DRAFT PHASE 髫ｨ貂可髫ｨ貂可
   if (G.weekPhase === 'draft') {
-    document.getElementById('weekTitle').textContent = '📋 初期ドラフト — チームを編成せよ';
-    const fixed = Engine.draft.getFixedInfo();
-    const candidates = Engine.draft.getCandidateInfo();
+    document.getElementById('weekTitle').textContent = '初期ドラフト';
+    const fixed = Engine.draft.getFixedInfo(G.rngSeed, 0);
+    const candidates = Engine.draft.getCandidateInfo(G.rngSeed, 0);
     const picks = G._draftPicks || [];
     const focusId = G._draftFocus || null;
+    const selectedCost = Engine.draft.getSelectionCost(G.rngSeed, picks);
+    const remainingFunds = Math.max(0, (G.funds || 0) - selectedCost);
+    const fmtMoney = (value) => Number(value || 0).toLocaleString('ja-JP') + 'M';
+    const candidateById = new Map(candidates.map(c => [c.id, c]));
 
-    // ── Helpers ──
-    const STYLE_META = {
-      Grappler:   {color:'#bb8fce',icon:'GRP',desc:'投げ技と関節技を軸にした正統派。パワーとテクニックに優れる'},
-      Striker:    {color:'#e74c3c',icon:'STK',desc:'打撃主体のファイター。パワーとスピードで圧倒する'},
-      Submission: {color:'#e67e22',icon:'SUB',desc:'関節技のスペシャリスト。テクニックで相手を仕留める'},
-      Speed:      {color:'#2ecc71',icon:'SPD',desc:'スピードで翻弄する。俊敏な動きで試合をコントロール'},
-      Allround:   {color:'#f1c40f',icon:'ALL',desc:'万能型。突出した弱点がなく安定した試合運びが可能'},
-      Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者'}
-    };
-    const ROLE_META = {
-      Babyface: {color:'#8bc4f0',label:'ベビーフェイス',icon:'BF'},
-      Heel:     {color:'#f08b9e',label:'ヒール',icon:'HL'},
-      Neutral:  {color:'#b0b8c4',label:'ニュートラル',icon:'NT'}
-    };
-
-    function makeAvatar(c, size) {
-      const sm = STYLE_META[c.style] || STYLE_META.Allround;
-      const pUrl = getPortraitUrl(c.id);
-      if (pUrl) {
-        return `<div style="position:relative;flex-shrink:0">
-          <img src="${pUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid ${sm.color}88" alt="${c.name}">
-          <span style="position:absolute;bottom:-2px;right:-2px;font-size:${Math.round(size*0.15)}px;font-weight:700;background:${sm.color};color:#fff;border-radius:3px;padding:1px 3px;line-height:1">${sm.icon}</span>
-        </div>`;
-      }
-      const initial = c.name.charAt(0);
-      return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}88;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
-        <span style="font-size:${Math.round(size*0.45)}px;font-weight:900;color:${sm.color}">${initial}</span>
-        <span style="position:absolute;bottom:-2px;right:-2px;font-size:${Math.round(size*0.15)}px;font-weight:700;background:${sm.color};color:#fff;border-radius:3px;padding:1px 3px;line-height:1">${sm.icon}</span>
-      </div>`;
-    }
-
-    function makeStatBars(c, compact) {
-      const stats = [
-        {key:'pw',label:'パワー',   short:'PW',color:'#e74c3c'},
-        {key:'sp',label:'スピード', short:'SP',color:'#3498db'},
-        {key:'te',label:'テクニック',short:'TE',color:'#2ecc71'},
-        {key:'st',label:'スタミナ', short:'ST',color:'#f39c12'},
-        {key:'mn',label:'マインド', short:'MN',color:'#9b59b6'}
-      ];
-      const h = compact ? 4 : 6;
-      return stats.map(s => {
-        const val = c[s.key];
-        const w = Math.min(100, val);
-        const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text-sub)' : 'var(--text-dim)';
-        return `<div style="display:flex;align-items:center;gap:${compact?4:6}px">
-          <span style="font-size:${compact?9:10}px;color:var(--text-dim);width:${compact?16:52}px;text-align:right">${compact ? s.short : s.label}</span>
-          <div style="flex:1;height:${h}px;background:rgba(255,255,255,0.06);border-radius:${h/2}px;overflow:hidden">
-            <div style="width:${w}%;height:100%;background:${s.color};border-radius:${h/2}px;transition:width 0.3s"></div>
-          </div>
-          <span style="font-size:${compact?10:11}px;color:${valColor};width:24px;text-align:right;font-weight:${val>=75?700:400}">${val}</span>
-        </div>`;
-      }).join('');
-    }
-
-    function analyzeStrengths(c) {
-      const stats = {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
-      const labels = {pw:'パワー',sp:'スピード',te:'テクニック',st:'スタミナ',mn:'マインド'};
-      const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-      const best = sorted.slice(0,2).filter(([,v]) => v >= 50);
-      const worst = sorted.slice(-1).filter(([,v]) => v < 60);
-      let strengths = best.map(([k,v]) => `<span style="color:#2ecc71">${labels[k]}${v}</span>`);
-      let weaknesses = worst.map(([k,v]) => `<span style="color:#e74c3c">${labels[k]}${v}</span>`);
-      return {strengths, weaknesses};
-    }
-
-    // ── Header ──
     html += `<div style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(0,0,0,0));border:1px solid rgba(212,168,67,0.3);border-radius:10px">
-      <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 ${G.orgName || 'プレイヤー団体'} — 初期ドラフト</p>
-      <p style="color:var(--text-sub);font-size:13px;line-height:1.7">
-        あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名の所属選手でシーズンを始めましょう。<br>
-        <span style="font-size:12px;color:var(--text-dim)">能力値は入団時の推定値です。将来性の評価はコーチ不在のため大きくブレる場合があります。</span>
+      <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">${G.orgName || 'プレイヤー団体'} - Initial Draft</p>
+      <p style="color:var(--text-sub);font-size:13px;line-height:1.8">
+        固定メンバー2名に加え、候補6名から3名を選んでシーズンを開始します。<br>
+        <span style="font-size:12px;color:var(--text-dim)">能力値は入団時の推定値です。実際の値とは異なる場合があります。</span><br>
+        <span style="font-size:12px;color:var(--text-dim)">将来性の評価はコーチ不在のため大きくブレる場合があります。</span><br>
+        <span style="font-size:12px;color:var(--gold)">ヒント: 契約金が高い選手には、それだけの理由があるかもしれません。</span>
       </p>
     </div>`;
 
-    // ── Fixed Members ──
-    html += `<h4 style="color:var(--gold);margin-bottom:10px;font-size:13px;display:flex;align-items:center;gap:6px">
-      <span style="background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:700">確定</span>
-      固定メンバー（2名）
-    </h4>`;
-    for (const c of fixed) {
-      const sm = STYLE_META[c.style] || STYLE_META.Allround;
-      const rm = ROLE_META[c.role] || ROLE_META.Neutral;
-      const {strengths, weaknesses} = analyzeStrengths(c);
-      const pUrl = getPortraitUrl(c.id);
-      const profileText = CHAR_PROFILES[c.id] || '';
-      html += `<div style="margin-bottom:10px;padding:14px;background:var(--bg-card);border-radius:8px;border:1px solid rgba(212,168,67,0.2)">
-        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:10px">
-          ${pUrl
-            ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid ${sm.color}66;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.3)" alt="${c.name}">`
-            : makeAvatar(c, 80)}
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-              <span style="font-weight:700;font-size:15px">${c.name}</span>
-              <span style="font-size:22px;font-weight:900;color:var(--gold)">${c.ovr}</span>
-            </div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
-              <span class="badge badge-${c.style}">${c.style}</span>
-              <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}">${rm.label}</span>
-              <span style="font-size:12px;color:var(--text-dim);padding:2px 6px">${c.h}cm</span>
-              <span style="font-size:12px;color:${c.coachEval.color};padding:2px 6px">${c.coachEval.emoji} ${c.coachEval.text}</span>
-            </div>
-            ${profileText ? `<div style="font-size:12px;color:var(--text-sub);line-height:1.6">📝 ${profileText}</div>` : ''}
-          </div>
-        </div>
-        <div style="display:grid;gap:4px;margin-bottom:8px">${makeStatBars(c, false)}</div>
-        <div style="font-size:11px;color:var(--text-dim);line-height:1.5">
-          ${strengths.length ? '💪 強み: ' + strengths.join(', ') : ''}
-          ${weaknesses.length ? (strengths.length ? ' ｜ ' : '') + '⚠️ 課題: ' + weaknesses.join(', ') : ''}
-        </div>
-      </div>`;
-    }
-
-    // ── Candidate Selection ──
-    html += `<h4 style="color:#3498db;margin:20px 0 10px;font-size:13px;display:flex;align-items:center;gap:6px">
-      <span style="background:#3498db;color:var(--bg);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:700">選択</span>
-      候補選手（${picks.length}/${DRAFT_CONFIG.pickCount}名選択済）
-    </h4>`;
-
-    for (const c of candidates) {
-      const picked = picks.includes(c.id);
-      const full = picks.length >= DRAFT_CONFIG.pickCount && !picked;
-      const focused = focusId === c.id;
-      const sm = STYLE_META[c.style] || STYLE_META.Allround;
-      const rm = ROLE_META[c.role] || ROLE_META.Neutral;
-      const {strengths, weaknesses} = analyzeStrengths(c);
-
+    const renderCard = (c, picked, disabled, focused, isFixed) => {
+      const tierCfg = Engine.scout.getTierConfig(c.assessedTier);
       const borderCol = picked ? '#2ecc71' : focused ? '#3498db' : 'var(--border)';
       const bgCol = picked ? 'rgba(46,204,113,0.06)' : focused ? 'rgba(52,152,219,0.04)' : 'var(--bg-card)';
-
-      html += `<div style="margin-bottom:8px;border-radius:8px;border:1px solid ${borderCol};background:${bgCol};overflow:hidden;opacity:${full?0.45:1};transition:all 0.2s">`;
-
+      const priceText = isFixed ? 'FREE' : `${fmtMoney(c.assessedValue)} [${tierCfg.label}]`;
       if (!focused) {
-        // ── Collapsed summary row ──
-        html += `<div style="display:flex;align-items:center;gap:14px;padding:14px;cursor:${full?'not-allowed':'pointer'}"
-          onclick="${full ? '' : `App.focusDraftCandidate(${c.id})`}">
-          ${portraitImg(c.id, 80)}
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="font-weight:700;font-size:17px">${c.name}</span>
-              ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">✓ 選択中</span>' : ''}
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-              <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
-            </div>
-          </div>
-          <div style="text-align:center;min-width:60px">
-            <div style="font-size:24px;font-weight:900;color:${picked?'#2ecc71':'var(--text)'}">${c.ovr}</div>
-            <div style="font-size:11px;color:var(--text-dim)">OVR</div>
-            <div style="font-size:11px;color:${c.coachEval.color};margin-top:2px">${c.coachEval.emoji} ${c.coachEval.text}</div>
-          </div>
-          <div style="font-size:18px;color:var(--text-dim)">▼</div>
-        </div>`;
-      } else {
-        // ── Expanded detail panel (replaces summary row) ──
-        const pUrl = getPortraitUrl(c.id);
-        const profileText = CHAR_PROFILES[c.id] || '';
-        html += `<div style="padding:14px;cursor:pointer" onclick="App.focusDraftCandidate(${c.id})">
-          <!-- 2-column layout: left=profile, right=stats -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-            <!-- Left: Portrait + Profile -->
-            <div>
-              <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px">
-                ${pUrl
-                  ? `<img src="${pUrl}" style="width:100px;height:100px;border-radius:10px;object-fit:cover;border:2px solid ${sm.color}66;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.4)" alt="${c.name}">`
-                  : `<div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}66;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                      <span style="font-size:40px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
-                    </div>`}
-                <div style="min-width:0">
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-                    <span style="font-weight:900;font-size:18px">${c.name}</span>
-                    ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">✓ 選択中</span>' : ''}
-                  </div>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
-                    <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-                    <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
-                  </div>
-                  <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
-                    <div>📏 ${c.h}cm ｜ 📅 ${c.age || 17}歳</div>
-                    <div style="color:${c.coachEval.color}">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
-                  </div>
-                  <div style="margin-top:6px">
-                    <span style="font-size:26px;font-weight:900;color:var(--text)">${c.ovr}</span>
-                    <span style="font-size:12px;color:var(--text-dim);margin-left:2px">OVR</span>
-                  </div>
-                </div>
+        return `<div style="margin-bottom:8px;border-radius:8px;border:1px solid ${borderCol};background:${bgCol};overflow:hidden;opacity:${disabled ? 0.45 : 1};transition:all 0.2s">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px;cursor:${disabled ? 'not-allowed' : 'pointer'}" ${disabled ? '' : `onclick="App.focusDraftCandidate(${c.id})"`}>
+            ${portraitImg(c.id, 80)}
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span style="font-weight:700;font-size:17px">${c.name}</span>
+                ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">Picked</span>' : ''}
+                ${isFixed ? '<span style="color:var(--gold);font-size:12px;font-weight:700">Fixed</span>' : ''}
               </div>
-              ${profileText ? `<div style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${sm.color}44">
-                📝 ${profileText}
-              </div>` : `<div style="font-size:13px;color:var(--text-sub);line-height:1.5;padding:8px 0">
-                ${sm.desc}
-              </div>`}
-            </div>
-            <!-- Right: Stats + Analysis -->
-            <div>
-              <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:700">ABILITY</div>
-              <div style="display:grid;gap:5px;margin-bottom:14px;max-width:240px">${makeStatBars(c, false)}</div>
-              <div style="font-size:13px;line-height:1.7">
-                ${strengths.length ? '💪 <span style="color:var(--text-sub)">強み:</span> ' + strengths.join(', ') : ''}
-                ${weaknesses.length ? '<br>⚠️ <span style="color:var(--text-sub)">課題:</span> ' + weaknesses.join(', ') : ''}
+              <div style="display:flex;gap:8px;flex-wrap:wrap;color:var(--text-sub);font-size:12px">
+                <span>${c.style}</span>
+                <span>${c.role}</span>
+                <span>${c.h}cm</span>
+                <span>${c.age}y</span>
               </div>
             </div>
-          </div>
-          <!-- v1.0: Character speech bubble -->
-          <div style="margin-bottom:12px;padding:12px 16px;background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:10px;position:relative">
-            <div style="position:absolute;top:-6px;left:20px;width:12px;height:12px;background:rgba(52,152,219,0.06);border-top:1px solid rgba(52,152,219,0.2);border-left:1px solid rgba(52,152,219,0.2);transform:rotate(45deg)"></div>
-            <div style="font-size:14px;color:var(--text-main);line-height:1.6;font-style:italic">
-              「${getDraftInterestLine(c)}」
+            <div style="text-align:right;min-width:140px">
+              <div style="font-size:24px;font-weight:900;color:${picked ? '#2ecc71' : 'var(--text)'}">${c.ovr}</div>
+              <div style="font-size:11px;color:var(--text-dim)">OVR</div>
+              <div style="font-size:12px;color:${isFixed ? 'var(--gold)' : tierCfg.color};margin-top:4px;font-weight:700">$ ${priceText}</div>
+              ${!isFixed && disabled && !picked ? '<div style="font-size:11px;color:#e67e22;margin-top:2px">資金不足</div>' : ''}
             </div>
-          </div>
-          <!-- Action buttons -->
-          <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
-            <button class="btn ${picked ? '' : 'btn-gold'}" style="flex:1;padding:10px;font-size:13px;font-weight:700"
-              onclick="App.toggleDraftPick(${c.id})">
-              ${picked ? '✕ 選択を取り消す' : '✓ この選手を獲得する'}
-            </button>
-            <button class="btn" style="padding:10px 16px;font-size:13px" onclick="App.focusDraftCandidate(${c.id})">▲ 閉じる</button>
           </div>
         </div>`;
       }
+      return `<div style="margin-bottom:8px;border-radius:8px;border:1px solid ${borderCol};background:${bgCol};overflow:hidden;opacity:${disabled ? 0.45 : 1};transition:all 0.2s">
+        <div style="padding:14px;cursor:pointer" onclick="App.focusDraftCandidate(${c.id})">
+          <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:12px">
+            ${portraitImg(c.id, 100)}
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span style="font-weight:900;font-size:18px">${c.name}</span>
+                ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">Picked</span>' : ''}
+                ${isFixed ? '<span style="color:var(--gold);font-size:12px;font-weight:700">Fixed</span>' : ''}
+              </div>
+              <div style="font-size:13px;color:var(--text-dim);line-height:1.7">
+                <div>${c.style} / ${c.role}</div>
+                <div>${c.h}cm / ${c.age}y</div>
+                <div style="color:${c.coachEval.color}">${c.coachEval.emoji} ${c.coachEval.text}</div>
+              </div>
+              <div style="margin-top:8px;font-size:26px;font-weight:900;color:var(--text)">${c.ovr}<span style="font-size:12px;color:var(--text-dim);margin-left:4px">OVR</span></div>
+              <div style="margin-top:8px;font-size:13px;font-weight:700;color:${isFixed ? 'var(--gold)' : tierCfg.color}">$ Contract: ${priceText}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:8px;margin-bottom:12px">
+            ${['pw','sp','te','st','mn'].map(key => `<div style="padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;text-align:center"><div style="font-size:10px;color:var(--text-dim)">${key.toUpperCase()}</div><div style="font-size:16px;font-weight:700">${c[key]}</div></div>`).join('')}
+          </div>
+          ${isFixed ? '' : `<div style="display:flex;gap:8px" onclick="event.stopPropagation()">
+            <button class="btn ${picked ? '' : 'btn-gold'}" style="flex:1;padding:10px;font-size:13px;font-weight:700;${disabled && !picked ? 'opacity:0.5;cursor:not-allowed' : ''}" ${disabled && !picked ? 'disabled' : `onclick="App.toggleDraftPick(${c.id})"`}>
+              ${picked ? '選択を解除' : disabled ? '資金不足' : 'この選手を選ぶ'}
+            </button>
+            <button class="btn" style="padding:10px 16px;font-size:13px" onclick="App.focusDraftCandidate(${c.id})">閉じる</button>
+          </div>`}
+        </div>
+      </div>`;
+    };
 
-      html += `</div>`;
-    }
+    html += `<h4 style="color:var(--gold);margin-bottom:10px;font-size:13px">固定メンバー（無料）</h4>`;
+    fixed.forEach(c => { html += renderCard(c, false, false, false, true); });
 
-    // ── Team Preview ──
-    const PREVIEW_RATIO = 0.60;
-    const allIds = [...DRAFT_CONFIG.fixed, ...picks];
-    const allChars = allIds.map(id => {
-      const t = ALL_CHARS.find(c => c.id === id);
-      const entryVals = {pw:Math.round(t.pw*PREVIEW_RATIO),sp:Math.round(t.sp*PREVIEW_RATIO),te:Math.round(t.te*PREVIEW_RATIO),st:Math.round(t.st*PREVIEW_RATIO),mn:t.mn};
-      const ovr = Math.round((entryVals.pw+entryVals.sp+entryVals.te+entryVals.st+entryVals.mn)/5);
-      const sm = STYLE_META[t.style] || STYLE_META.Allround;
-      return { name: t.name, ovr, style: t.style, icon: sm.icon, color: sm.color };
+    html += `<h4 style="color:#3498db;margin:20px 0 10px;font-size:13px">候補選手 (${picks.length}/${DRAFT_CONFIG.pickCount})</h4>`;
+    candidates.forEach(c => {
+      const picked = picks.includes(c.id);
+      const unavailableByFunds = !picked && remainingFunds < (c.assessedValue || 0);
+      const full = picks.length >= DRAFT_CONFIG.pickCount && !picked;
+      const disabled = unavailableByFunds || full;
+      const focused = focusId === c.id;
+      html += renderCard(c, picked, disabled, focused, false);
     });
-    const avgOvr = allChars.length ? Math.round(allChars.reduce((s,c) => s + c.ovr, 0) / allChars.length) : 0;
 
+    const allChars = [...fixed, ...picks.map(id => candidateById.get(id)).filter(Boolean)].map(c => ({ name: c.name, ovr: c.ovr }));
+    const avgOvr = allChars.length ? Math.round(allChars.reduce((sum, c) => sum + c.ovr, 0) / allChars.length) : 0;
     html += `<div style="margin-top:20px;padding:14px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">
-      <h4 style="margin-bottom:10px;font-size:13px">📊 チームプレビュー</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        ${allChars.map(c =>
-          `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,0.04);border:1px solid ${c.color}33;border-radius:5px">
-            <span style="font-size:12px">${c.icon}</span>
-            <span style="font-size:12px">${c.name}</span>
-            <span style="font-size:12px;font-weight:700;color:${c.color}">${c.ovr}</span>
-          </div>`
-        ).join('')}
-        ${picks.length < DRAFT_CONFIG.pickCount ?
-          Array(DRAFT_CONFIG.pickCount - picks.length).fill(0).map(() =>
-            `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:5px">
-              <span style="font-size:12px;color:var(--text-dim)">？ 未選択</span>
-            </div>`
-          ).join('') : ''
-        }
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:13px;color:var(--text-sub)">平均OVR</span>
-        <span style="font-size:20px;font-weight:900;color:var(--gold)">${avgOvr}</span>
-      </div>
+      <h4 style="margin-bottom:10px;font-size:13px">チームプレビュー</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${allChars.map(c => `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:5px"><span style="font-size:12px">${c.name}</span><span style="font-size:12px;font-weight:700;color:var(--gold)">${c.ovr}</span></div>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-sub)">平均OVR</span><span style="font-size:20px;font-weight:900;color:var(--gold)">${avgOvr}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:var(--text-sub)">契約金合計</span><span style="font-size:16px;font-weight:700">${fmtMoney(selectedCost)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span style="font-size:13px;color:var(--text-sub)">残り資金</span><span style="font-size:16px;font-weight:700;color:${remainingFunds > 0 ? 'var(--gold)' : '#e67e22'}">${fmtMoney(remainingFunds)}</span></div>
     </div>`;
 
-    // ── Confirm Button ──
-    const canConfirm = picks.length === DRAFT_CONFIG.pickCount;
-    html += `<button class="btn ${canConfirm ? 'btn-gold' : ''}" style="width:100%;margin-top:16px;padding:16px;font-size:15px;font-weight:700;border-radius:8px;${canConfirm ? '' : 'opacity:0.35;cursor:not-allowed'}"
-      ${canConfirm ? 'onclick="App.completeDraft()"' : 'disabled'}>
-      ${canConfirm ? '✅ この5名でシーズン開始！' : `あと${DRAFT_CONFIG.pickCount - picks.length}名選んでください`}
-    </button>`;
+    const canConfirm = picks.length === DRAFT_CONFIG.pickCount && selectedCost <= (G.funds || 0);
+    const confirmText = picks.length !== DRAFT_CONFIG.pickCount
+      ? `あと${DRAFT_CONFIG.pickCount - picks.length}名選んでください`
+      : selectedCost > (G.funds || 0)
+        ? '資金不足 - より安い候補を選んでください'
+        : `この5名でシーズン開始！（契約金: ${fmtMoney(selectedCost)}）`;
+    html += `<button class="btn ${canConfirm ? 'btn-gold' : ''}" style="width:100%;margin-top:16px;padding:16px;font-size:15px;font-weight:700;border-radius:8px;${canConfirm ? '' : 'opacity:0.35;cursor:not-allowed'}" ${canConfirm ? 'onclick="App.completeDraft()"' : 'disabled'}>${confirmText}</button>`;
 
     el.innerHTML = html;
     return;
   }
-
-  // ── OFFSEASON DISPLAY ──
-  if (G.weekPhase === 'offseason') {
+if (G.weekPhase === 'offseason') {
     const offW = G.offWeek || 0;
-    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '🔍 スカウト活動', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
+    const offLabels = ['・滓ｨ奇ｽｽ・､ 驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬩搾ｽｨ郢ｧ繝ｻ・ｽ・ｺ郢晢ｽｻ, '・滓ｨ雁・ 驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譏ｴ繝ｻ, '・滓ｧｫ鄙・驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎乗ｲｺ繝ｻ・ｴ繝ｻ・ｻ髯ｷ髦ｪ繝ｻ, '・滓ｧｫ・｣・ｲ 鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ邵ｺ閧ｲ・ｹ・ｧ繝ｻ・｣驛｢譎｢・ｽ・ｳ驛｢譎擾ｽｳ・ｨ邵ｺ繝ｻ, '・滓ｨ奇ｽｱ繝ｻ髫ｴ繝ｻ・ｽ・ｰ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ髮九・鞫ｩ繝ｻ繝ｻ];
     document.getElementById('weekTitle').textContent = offW === 0
-      ? `${G.season}年目 オフシーズン突入`
-      : `オフシーズン第${offW}週 — ${offLabels[offW] || ''}`;
+      ? `${G.season}髯晢ｽｷ繝ｻ・ｴ鬨ｾ・ｶ繝ｻ・ｮ 驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬩包ｽｯ遶乗亢繝ｻ`
+      : `驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬮ｫ・ｨ繝ｻ・ｬ${offW}鬯ｨ・ｾ繝ｻ・ｱ 驕ｯ・ｶ郢晢ｽｻ${offLabels[offW] || ''}`;
 
     // Progress bar
     html += `<div style="margin-bottom:16px">
@@ -364,68 +203,68 @@ function renderWeekScreen() {
         ${[1,2,3,4].map(i => `<div style="flex:1;height:6px;border-radius:3px;background:${i <= offW ? 'var(--gold)' : 'var(--bg-card)'};transition:background 0.3s"></div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)">
-        <span>レポート</span><span>スカウト</span><span>移籍</span><span>開幕</span>
+        <span>驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譏ｴ繝ｻ/span><span>驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ/span><span>鬩募∞・ｽ・ｻ鬩債郢晢ｽｻ/span><span>鬯ｮ・｢陷ｿ・･繝ｻ・ｹ郢晢ｽｻ/span>
       </div>
     </div>`;
 
     // v0.95: Season Recap Card (show detailed stats from completed season)
-    // 常に現在のシーズンデータを使う（lastArchiveは前シーズンのもので混同を防ぐ）
+    // 髯晢ｽｶ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｫ髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ陷代・・ｽ・ｽ繝ｻ・ｿ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻastArchive驍ｵ・ｺ繝ｻ・ｯ髯ｷ鮃ｹ莠らｸｺ蜥擾ｽｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ郢ｧ繝ｻ繝ｻ驍ｵ・ｺ繝ｻ・ｧ髮趣ｽｺ繝ｻ・ｷ髯ｷ・ｷ陟暮ｯ会ｽｽ蟶晢ｽｫ・ｦ繝ｻ・ｲ驍ｵ・ｺ隰ｦ・ｰ繝ｻ・ｼ郢晢ｽｻ
     const st = G.seasonStats || {};
     if (offW <= 1) {
       const src = st;
       const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
-      // 現在のランキングを再計算（G.rankingsはシーズン開始時点で更新が止まるため）
+      // 髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ驛｢・ｧ髮区ｧｭ繝ｻ鬮ｫ・ｪ髢ｧ・ｲ繝ｻ・ｮ隴会ｽｦ繝ｻ・ｼ郢晢ｽｻ.rankings驍ｵ・ｺ繝ｻ・ｯ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬯ｮ・｢陷ｿ・･繝ｻ・ｧ陋ｹ・ｺ陷・ｽｾ髴難ｽ､繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｧ髫ｴ蜴・ｽｽ・ｴ髫ｴ繝ｻ・ｽ・ｰ驍ｵ・ｺ隴ｴ・ｧ繝ｻ・ｭ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ闕ｵ譏ｶ陞ｺ驛｢・ｧ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ
       const _recapRankings = Engine.ranking.updateRankings(G);
       const recapRank = Engine.ranking.getPlayerRank(_recapRankings);
       const recapRankColor = recapRank===1?'var(--gold)':recapRank===2?'#e74c3c':recapRank===3?'#9b59b6':'#2ecc71';
       const _recapSeason = G.season;
       html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
-        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${_recapSeason} レポート</h4>
+        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">・滓ｨ雁・ 驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ${_recapSeason} 驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譏ｴ繝ｻ/h4>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
-            <div style="font-size:20px;font-weight:900;color:${recapRankColor}">${recapRank || '-'}位</div>
-            <div style="font-size:12px;color:var(--text-dim)">最終ランキング</div>
+            <div style="font-size:20px;font-weight:900;color:${recapRankColor}">${recapRank || '-'}髣厄ｽｴ郢晢ｽｻ/div>
+            <div style="font-size:12px;color:var(--text-dim)">髫ｴ蟠｢ﾂ鬩搾ｽｨ郢ｧ繝ｻ蟶ｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ</div>
           </div>
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
             <div style="font-size:20px;font-weight:900;color:#2ecc71">${src.showCount || 0}</div>
-            <div style="font-size:12px;color:var(--text-dim)">興行開催数</div>
+            <div style="font-size:12px;color:var(--text-dim)">鬮｣莨√Γ繝ｻ・｡驕停・・ｹ謌雁ｲｷ繝ｻ・ｬ髫ｰ・ｨ繝ｻ・ｰ</div>
           </div>
           <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
             <div style="font-size:20px;font-weight:900;color:#3498db">${src.bestMQ || 0}</div>
-            <div style="font-size:12px;color:var(--text-dim)">最高MQ</div>
+            <div style="font-size:12px;color:var(--text-dim)">髫ｴ蟠｢ﾂ鬯ｯ・ｮ陟岱</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
           <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
-            <span style="color:var(--text-dim)">収支:</span>
-            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${profit.toLocaleString()}万</span>
-            <span style="color:var(--text-dim);font-size:12px">(収${(src.totalRevenue||0).toLocaleString()} / 支${(src.totalExpense||0).toLocaleString()})</span>
+            <span style="color:var(--text-dim)">髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ:</span>
+            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${profit.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span>
+            <span style="color:var(--text-dim);font-size:12px">(髯ｷ・ｿ郢晢ｽｻ{(src.totalRevenue||0).toLocaleString()} / 髫ｰ・ｾ繝ｻ・ｯ${(src.totalExpense||0).toLocaleString()})</span>
           </div>
           <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
-            <span style="color:var(--text-dim)">ピーク資金:</span>
-            <span style="color:var(--gold);font-weight:700">${(src.peakFunds||0).toLocaleString()}万</span>
+            <span style="color:var(--text-dim)">驛｢譎・ｱ堤ｹ晢ｽｻ驛｢・ｧ繝ｻ・ｯ鬮ｮ蟲ｨ繝ｻ遶包ｽ｡:</span>
+            <span style="color:var(--gold);font-weight:700">${(src.peakFunds||0).toLocaleString()}髣包ｽｳ郢晢ｽｻ/span>
           </div>
           ${src.bestMQMatch ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
-            <span style="color:var(--text-dim)">ベストマッチ:</span>
+            <span style="color:var(--text-dim)">驛｢譎冗函邵ｺ蟶ｷ・ｹ譎冗樟郢晢ｽｻ驛｢譏ｴ繝ｻ郢晢ｽ｡:</span>
             <span style="color:var(--text-main)">${src.bestMQMatch}</span>
             <span style="color:#3498db;font-weight:700">MQ${src.bestMQ}</span>
           </div>` : ''}
           ${(src.eventsWon || src.eventsLost) ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
-            <span style="color:var(--text-dim)">団体抗争:</span>
-            <span style="color:#2ecc71">${src.eventsWon||0}勝</span> / <span style="color:#e74c3c">${src.eventsLost||0}敗</span>
+            <span style="color:var(--text-dim)">髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ髣･・ｲ髣費｣ｰ郢晢ｽｻ</span>
+            <span style="color:#2ecc71">${src.eventsWon||0}髯ｷ髦ｪ繝ｻ/span> / <span style="color:#e74c3c">${src.eventsLost||0}髫ｰ・ｨ郢晢ｽｻ/span>
           </div>` : ''}
         </div>
       </div>`;
     }
 
     // Show recent events from game log related to current offseason
-    const recentEvents = G.gameLog.filter(e => e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長'));
+    const recentEvents = G.gameLog.filter(e => e.includes('驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ') || e.includes('驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ') || e.includes('髯溽ｬｬ蝮ｩ・つ・つ') || e.includes('髴托ｽｯ繝ｻ・ｲ髯溯ｼ斐・) || e.includes('鬩募∞・ｽ・ｻ鬩債郢晢ｽｻ) || e.includes('鬮ｯ・ｦ繝ｻ・ｰ鬯ｨ・ｾ・つ') || e.includes('髫ｰ謔滂ｽｮ・｣髢ｨ繝ｻ));
     const offEvents = recentEvents.slice(-15);
     if (offEvents.length > 0) {
       html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
-      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
+      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">・滓ｨ頑帆 驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譏ｴ繝ｻ/h4>';
       offEvents.forEach(ev => {
-        const isHighlight = ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍');
+        const isHighlight = ev.includes('髯溽ｬｬ蝮ｩ・つ・つ') || ev.includes('髴托ｽｯ繝ｻ・ｲ髯溯ｼ斐・) || ev.includes('鬩募∞・ｽ・ｻ鬩債郢晢ｽｻ);
         html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
       });
       html += '</div>';
@@ -434,18 +273,18 @@ function renderWeekScreen() {
     // Rankings summary during offseason
     if (G.rankings && G.rankings.length > 0) {
       html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px">';
-      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 現在のランキング</h4>';
+      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">・滓ｨ｣繝ｻ 髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ</h4>';
       G.rankings.forEach((r, i) => {
         const isPlayer = r.orgId === 'player';
         html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
-          <span>${i+1}位 ${r.name}</span><span>${r.rating}pt</span>
+          <span>${i+1}髣厄ｽｴ郢晢ｽｻ${r.name}</span><span>${r.rating}pt</span>
         </div>`;
       });
       html += '</div>';
     }
 
-    const nextLabels = ['シーズンレポートへ →', 'スカウト活動へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
-    const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
+    const nextLabels = ['驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譎冗樟遶上・驕ｶ鄙ｫ繝ｻ, '驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎乗ｲｺ繝ｻ・ｴ繝ｻ・ｻ髯ｷ蟠趣ｽｼ謚ｫ繝ｻ 驕ｶ鄙ｫ繝ｻ, '鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ邵ｺ閧ｲ・ｹ・ｧ繝ｻ・｣驛｢譎｢・ｽ・ｳ驛｢譎擾ｽｳ・ｨ邵ｺ閧ｲ・ｸ・ｺ繝ｻ・ｸ 驕ｶ鄙ｫ繝ｻ, '髫ｴ繝ｻ・ｽ・ｰ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬯ｮ・｢陷ｿ・･繝ｻ・ｹ郢晢ｽｻ驕ｶ鄙ｫ繝ｻ];
+    const nextLabel = nextLabels[offW] || `驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬮ｫ・ｨ繝ｻ・ｬ${offW + 1}鬯ｨ・ｾ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｸ 驕ｶ鬘伜ｯ・
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
     html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabel}</button></div>`;
 
@@ -453,18 +292,18 @@ function renderWeekScreen() {
     return;
   }
 
-  // ── REGULAR WEEK DISPLAY ──
+  // 髫ｨ貂可髫ｨ貂可 REGULAR WEEK DISPLAY 髫ｨ貂可髫ｨ貂可
   const isShow = isShowWeek(G.week);
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
-  let typeLabel = isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
-  document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4 — ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} — ${typeLabel}`;
+  let typeLabel = isShow ? (ppv ? '・滓ｨ｣繝ｻ PPV' : special ? '驍よ亢繝ｻ髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ : '・滓ｨ呈ｿｫ 鬮｣莨√Γ繝ｻ・｡驕偵・ﾂ繝ｻ・ｱ') : '・滓ｨ頑帆 鬯ｮ・ｱ隶壺・繝ｻ鬮ｯ・ｦ驕偵・ﾂ繝ｻ・ｱ';
+  document.getElementById('weekTitle').textContent = G.offSeason ? `驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ ${G.offWeek}/4 驕ｯ・ｶ郢晢ｽｻ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ${typeLabel}`;
 
   html = '';
 
   if (G.weekPhase === 'manage') {
-    // ── v0.95: Dashboard Panel ──
-    const qtr = QUARTER_LABELS[getQuarter(G.week)] || '🌸 春';
+    // 髫ｨ貂可髫ｨ貂可 v0.95: Dashboard Panel 髫ｨ貂可髫ｨ貂可
+    const qtr = QUARTER_LABELS[getQuarter(G.week)] || '・滓ｨ奇ｽｸ繝ｻ髫ｴ謫ｾ・ｽ・･';
     const weekPct = Math.round((G.week / 48) * 100);
     const pRank = G.rankings && G.rankings.length ? Engine.ranking.getPlayerRank(G.rankings) : '-';
     const stats = G.seasonStats || {};
@@ -480,17 +319,17 @@ function renderWeekScreen() {
     // Upcoming events
     const upcomingItems = [];
     const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (isShowWeek(w)) return w; return null; })();
-    if (nextShow && nextShow > G.week) upcomingItems.push(`🎤 次の興行: 第${nextShow}週`);
-    else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
-    if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
-    else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
+    if (nextShow && nextShow > G.week) upcomingItems.push(`・滓ｨ呈ｿｫ 髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ 鬮ｫ・ｨ繝ｻ・ｬ${nextShow}鬯ｨ・ｾ繝ｻ・ｱ`);
+    else if (nextShow === G.week) upcomingItems.push('・滓ｨ呈ｿｫ 髣疲・・ｼ繝ｻﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｯ鬮｣莨√Γ繝ｻ・｡驕偵・ﾂ繝ｻ・ｱ郢晢ｽｻ郢晢ｽｻ);
+    if (isPPV(G.week)) upcomingItems.push('・滓ｨ｣繝ｻ PPV鬯ｨ・ｾ繝ｻ・ｱ郢晢ｽｻ郢晢ｽｻ);
+    else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`・滓ｨ｣繝ｻ PPV: 鬮ｫ・ｨ繝ｻ・ｬ${ppvW}鬯ｨ・ｾ繝ｻ・ｱ`); }
     if (!isPPV(G.week)) {
-      if (isSpecialShow(G.week)) upcomingItems.push('⭐ 今週は特別興行！（試合枠+1）');
-      else { const spW = (() => { for (let w = G.week+1; w <= 48; w++) if (isSpecialShow(w) && !isPPV(w)) return w; return null; })(); if (spW) upcomingItems.push(`⭐ 特別興行: 第${spW}週`); }
+      if (isSpecialShow(G.week)) upcomingItems.push('驍よ亢繝ｻ髣疲・・ｼ繝ｻﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｯ髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･鬮｣莨√Γ繝ｻ・｡鬲・ｼ夲ｽｽ・ｼ郢晢ｽｻ繝ｻ・ｼ鬩帙・・ｽ・ｩ繝ｻ・ｦ髯ｷ・ｷ陜捺ｻ難ｽ｣・ｧ+1郢晢ｽｻ郢晢ｽｻ);
+      else { const spW = (() => { for (let w = G.week+1; w <= 48; w++) if (isSpecialShow(w) && !isPPV(w)) return w; return null; })(); if (spW) upcomingItems.push(`驍よ亢繝ｻ髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ 鬮ｫ・ｨ繝ｻ・ｬ${spW}鬯ｨ・ｾ繝ｻ・ｱ`); }
     }
     if (G.pendingNegotiation) {
       const remainW = G.pendingNegotiation.resolveWeek - G.week;
-      upcomingItems.push(`🤝 交渉中: ${G.pendingNegotiation.fighterName}（残${remainW}週）`);
+      upcomingItems.push(`・滓ｩｸ・ｽ・､郢晢ｽｻ髣費｣ｰ繝ｻ・､髮九ｈ繝ｻ繝ｻ・ｸ繝ｻ・ｭ: ${G.pendingNegotiation.fighterName}郢晢ｽｻ陜捺ｻゑｽｽ・ｮ郢晢ｽｻ{remainW}鬯ｨ・ｾ繝ｻ・ｱ郢晢ｽｻ髣輔・;
     }
 
     html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
@@ -503,21 +342,21 @@ function renderWeekScreen() {
           <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,var(--gold),#f1c40f);border-radius:2px;transition:width 0.3s"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)">
-          <span style="${G.week<=12?'color:var(--gold)':''}">🌸春</span>
-          <span style="${G.week>12&&G.week<=24?'color:var(--gold)':''}">☀️夏</span>
-          <span style="${G.week>24&&G.week<=36?'color:var(--gold)':''}">🍂秋</span>
-          <span style="${G.week>36?'color:var(--gold)':''}">❄️冬</span>
+          <span style="${G.week<=12?'color:var(--gold)':''}">・滓ｨ奇ｽｸ蟷・ｽｭ謫ｾ・ｽ・･</span>
+          <span style="${G.week>12&&G.week<=24?'color:var(--gold)':''}">髫ｨ莨可郢晢ｽｻ闕ｳ讖ｸ・ｽ・､郢晢ｽｻ/span>
+          <span style="${G.week>24&&G.week<=36?'color:var(--gold)':''}">・滓ｨ｣・ｫ蛟ｬﾂｧ郢晢ｽｻ/span>
+          <span style="${G.week>36?'color:var(--gold)':''}">髫ｨ・ｶ郢晢ｽｻ繝ｻ・ｸ闕ｳ讒ｭ繝ｻ</span>
         </div>
       </div>
       <!-- Mini Ranking + Finance -->
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
-          <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${G.funds.toLocaleString()}万</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">鬮ｮ蟲ｨ繝ｻ遶包ｽ｡ <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/strong></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
           <div style="font-size:12px;color:var(--text-dim)">
-            興行${stats.showCount||0}回 ｜ MQ最高${stats.bestMQ||0}${stats.eventsWon ? ` ｜ 抗争${stats.eventsWon}勝` : ''}
+            鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ{stats.showCount||0}髯懷干繝ｻ郢晢ｽｻ郢晢ｽｻMQ髫ｴ蟠｢ﾂ鬯ｯ・ｮ郢晢ｽｻ{stats.bestMQ||0}${stats.eventsWon ? ` 郢晢ｽｻ郢晢ｽｻ髫ｰ螢ｼ・ｶ・ｺ繝ｻ・ｺ郢晢ｽｻ{stats.eventsWon}髯ｷ閧ｴ莠ｨ : ''}
           </div>
           <svg width="${sparkW}" height="${sparkH}" style="opacity:0.6"><polyline points="${sparkPoints}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/></svg>
         </div>
@@ -535,20 +374,20 @@ function renderWeekScreen() {
       const netColor = mNet >= 0 ? '#2ecc71' : '#e74c3c';
       const weekInMonth = manageBuf.length + 1;
       html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.05);border-radius:5px;font-size:12px">
-        <span style="color:var(--text-dim);flex-shrink:0">月${weekInMonth}週目:</span>
-        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${mNet}万</span>
-        <span style="color:var(--text-dim);font-size:11px">収入${mIncome}万 / 支出${mExpense}万</span>
+        <span style="color:var(--text-dim);flex-shrink:0">髫ｴ蟶吶・{weekInMonth}鬯ｨ・ｾ繝ｻ・ｱ鬨ｾ・ｶ繝ｻ・ｮ:</span>
+        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${mNet}髣包ｽｳ郢晢ｽｻ/span>
+        <span style="color:var(--text-dim);font-size:11px">髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ${mIncome}髣包ｽｳ郢晢ｽｻ/ 髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ${mExpense}髣包ｽｳ郢晢ｽｻ/span>
       </div>`;
     }
 
-    // v1.4w: ティッカー（ニュースバー）
+    // v1.4w: 驛｢譏ｴ繝ｻ邵ｺ繝ｻ・ｹ譏ｴ繝ｻ邵ｺ蜥ｲ・ｹ譎｢・ｽ・ｼ郢晢ｽｻ陋ｹ・ｻ郢晢ｽｫ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ驛｢譎√・郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ
     const tickerItems = G._tickerItems || [];
     if (tickerItems.length > 0) {
-      const tickerText = tickerItems.join('　　');
-      // 2回分繰り返してシームレスにスクロール
+      const tickerText = tickerItems.join('驍ｵ・ｲ・つ驍ｵ・ｲ・つ');
+      // 2髯懃軸・ｧ・ｫ郢晢ｽｻ鬩幢ｽ｢繝ｻ・ｰ驛｢・ｧ鬯伜∞・ｽ・ｿ隴∵腸・ｼ・ｰ驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ驛｢譎｢・ｽ・ｬ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ
       html += `<div class="news-ticker-bar">
         <div class="news-ticker-track">
-          <span class="news-ticker-text">${tickerText}　　${tickerText}</span>
+          <span class="news-ticker-text">${tickerText}驍ｵ・ｲ・つ驍ｵ・ｲ・つ${tickerText}</span>
         </div>
       </div>`;
     }
@@ -558,7 +397,7 @@ function renderWeekScreen() {
       html += `<div style="display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:var(--text-dim);flex-wrap:wrap">${upcomingItems.map(item => `<span style="padding:2px 6px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.12);border-radius:3px">${item}</span>`).join('')}</div>`;
     }
 
-    // ── v0.97: SURVIVAL GAUGE PANEL ──
+    // 髫ｨ貂可髫ｨ貂可 v0.97: SURVIVAL GAUGE PANEL 髫ｨ貂可髫ｨ貂可
     if (!G.survivalCleared) {
       const sPhase = Survival.getPhase(G);
       const sNet = Survival.estimateWeeklyNet(G);
@@ -571,10 +410,10 @@ function renderWeekScreen() {
       html += `<div class="survival-panel ${sPhase ? sPhase.cssClass : 'phase-red'}${isCritical ? ' critical' : ''}">`;
       html += `<div class="survival-header">
         <span class="survival-title" style="color:${sPhase?.color || '#e74c3c'}">
-          <span style="font-size:16px">⛽</span> 経営サバイバル
+          <span style="font-size:16px">髫ｨ・ｵ繝ｻ・ｽ</span> 鬩搾ｽｨ隰疲ｻ・ず驛｢・ｧ繝ｻ・ｵ驛｢譎√・邵ｺ繝ｻ・ｹ譎√・・弱・
         </span>
         <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
-          ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字地獄'}
+          ${sPhase?.emoji || '・滓ｨ｣邂・} ${sPhase?.label || '髫俶誓・ｽ・､髯昴・ﾂ諛医・髴托ｽｯ郢晢ｽｻ}
         </span>
       </div>`;
 
@@ -582,7 +421,7 @@ function renderWeekScreen() {
       html += '<div class="survival-body">';
       html += `<div class="survival-gauge-track">
         <div class="survival-gauge-fill ${gaugeColor}" style="width:${sFuel}%">
-          <span class="survival-gauge-label">${G.funds.toLocaleString()}万</span>
+          <span class="survival-gauge-label">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span>
         </div>
       </div>`;
 
@@ -590,7 +429,7 @@ function renderWeekScreen() {
       html += '<div class="survival-gauge-markers">';
       sMilestones.forEach(m => {
         const cls = m.done ? 'cleared' : (m === sMilestones.find(x => !x.done) ? 'active' : '');
-        html += `<span class="survival-gauge-marker ${cls}" title="${m.desc}">${m.done ? '✅' : '⬜'} ${m.label}</span>`;
+        html += `<span class="survival-gauge-marker ${cls}" title="${m.desc}">${m.done ? '髫ｨ・ｨ郢晢ｽｻ : '驕ｲ・ｮ郢晢ｽｻ} ${m.label}</span>`;
       });
       html += '</div>';
 
@@ -600,20 +439,20 @@ function renderWeekScreen() {
       const netColor = sNet.weeklyNet >= 0 ? '#2ecc71' : '#e74c3c';
       const netSign = sNet.weeklyNet >= 0 ? '+' : '';
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${netColor}">${netSign}${sNet.weeklyNet}万</span>
-        <span class="survival-stat-label">推定週間収支</span>
+        <span class="survival-stat-val" style="color:${netColor}">${netSign}${sNet.weeklyNet}髣包ｽｳ郢晢ｽｻ/span>
+        <span class="survival-stat-label">髫ｰ證ｦ・ｽ・ｨ髯橸ｽｳ陞滄搨ﾂ繝ｻ・ｱ鬯ｮ・｢霓｣莨懶ｽｺ・ｶ髫ｰ・ｾ繝ｻ・ｯ</span>
       </div>`;
       // Weeks until bankrupt
       if (sNet.weeklyNet < 0) {
         const urgency = sWeeks <= 10 ? '#e74c3c' : sWeeks <= 20 ? '#e67e22' : '#f1c40f';
         html += `<div class="survival-stat">
-          <span class="survival-stat-val" style="color:${urgency}">残り${sWeeks}週</span>
-          <span class="survival-stat-label">倒産までの猶予</span>
+          <span class="survival-stat-val" style="color:${urgency}">髫ｹ・ｿ闕ｵ譎｢・ｽ繝ｻ{sWeeks}鬯ｨ・ｾ繝ｻ・ｱ</span>
+          <span class="survival-stat-label">髯区ｺｷ・ｰ・､髢ｧ繝ｻ・ｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｮ髴托ｽｪ繝ｻ・ｶ髣費｣ｰ郢晢ｽｻ/span>
         </div>`;
       } else {
         html += `<div class="survival-stat">
-          <span class="survival-stat-val" style="color:#2ecc71">安全</span>
-          <span class="survival-stat-label">資金状況</span>
+          <span class="survival-stat-val" style="color:#2ecc71">髯橸ｽｳ霑壼生繝ｻ</span>
+          <span class="survival-stat-label">鬮ｮ蟲ｨ繝ｻ遶包ｽ｡髴托ｽ･繝ｻ・ｶ髮手ｼ斐・/span>
         </div>`;
       }
       // Rolling 4-week net (monthly profit indicator)
@@ -621,44 +460,44 @@ function renderWeekScreen() {
       const rollingSum = buf.reduce((a,b) => a+b, 0);
       const r4count = G.rollingNet4Count || 0;
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${rollingSum}万</span>
-        <span class="survival-stat-label">月次収支(4週)</span>
+        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${rollingSum}髣包ｽｳ郢晢ｽｻ/span>
+        <span class="survival-stat-label">髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ(4鬯ｨ・ｾ繝ｻ・ｱ)</span>
       </div>`;
       // Weekly expense
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:#e74c3c">-${sNet.totalExpense}万</span>
-        <span class="survival-stat-label">週間支出</span>
+        <span class="survival-stat-val" style="color:#e74c3c">-${sNet.totalExpense}髣包ｽｳ郢晢ｽｻ/span>
+        <span class="survival-stat-label">鬯ｨ・ｾ繝ｻ・ｱ鬯ｮ・｢隰撰ｽｺ鬯ｮ・ｪ髯ｷ繝ｻ・ｽ・ｺ</span>
       </div>`;
       // Weekly base income
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${sNet.totalBaseIncome}万</span>
-        <span class="survival-stat-label">固定収入</span>
+        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${sNet.totalBaseIncome}髣包ｽｳ郢晢ｽｻ/span>
+        <span class="survival-stat-label">髯懈圜・ｽ・ｺ髯橸ｽｳ陞｢・ｼ陟趣ｽｶ髯ｷ闌ｨ・ｽ・･</span>
       </div>`;
       html += '</div>'; // .survival-stats
 
       // Tip text
       if (sPhase && sPhase.id === 'red') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 <strong style="color:#f1c40f">目標:</strong> 倒産する前に黒字経営に持っていこう！ まずは興行を開催して人気を上げ、スポンサー収入（人気20〜）を獲得するのが第一歩。
+          ・滓ｧｫ・ｺ繝ｻ<strong style="color:#f1c40f">鬨ｾ・ｶ繝ｻ・ｮ髫ｶ阮吶・</strong> 髯区ｺｷ・ｰ・､髢ｧ繝ｻ・ｸ・ｺ陷ｷ・ｶ繝ｻ邇匁≧鬮ｦ・ｪ遶企ｦｴ・ｮ貅ｯ・ｲ讖ｸ・ｽ・ｭ驕会ｽｼ繝ｻ・ｵ隰疲ｻ・ず驍ｵ・ｺ繝ｻ・ｫ髫ｰ蝠上・隨・ｽｲ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ繝ｻ繝ｻ・ｸ・ｺ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陞｢・ｹ郢晢ｽｻ鬮｣莨√Γ繝ｻ・｡陟暮ｯ会ｽｽ蟶晢ｽｫ・｢陷ｿ・･邵ｺ螳茨ｽｸ・ｺ陷会ｽｱ遯ｶ・ｻ髣費｣ｰ繝ｻ・ｺ髮取ぁ蟷ｲ繝ｻ螳壼初驗呻ｽｫ繝ｻ・｡驍ｵ・ｲ遶丞｣ｹ笳矩Δ譎・ｺ｢・趣ｽｦ驛｢・ｧ繝ｻ・ｵ驛｢譎｢・ｽ・ｼ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ郢晢ｽｻ闔蛹・ｽｽ・ｺ繝ｻ・ｺ髮主ｾ後・0驍ｵ・ｲ隲幢ｽｶ繝ｻ・ｼ陝ｲ・ｨ繝ｻ螳夲ｽｿ・ｯ繝ｻ・ｲ髯溷供蟷ｲ隨倥・・ｹ・ｧ闕ｵ譏ｴ繝ｻ驍ｵ・ｺ隶呵ｶ｣・ｽ・ｬ繝ｻ・ｬ髣包ｽｳ・つ髮弱・・ｽ・ｩ驍ｵ・ｲ郢晢ｽｻ
         </div>`;
       } else if (sPhase && sPhase.id === 'orange') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 赤字が縮小しています！ 人気を上げてスポンサー・放映権収入を増やし、損益分岐点を超えよう。
+          ・滓ｧｫ・ｺ繝ｻ髫俶誓・ｽ・､髯昴・蟷ｲ遯ｶ・ｲ鬩搾ｽｵ繝ｻ・ｮ髯昴・・ｸ螂・ｽｼ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻ髣費｣ｰ繝ｻ・ｺ髮取ぁ蟷ｲ繝ｻ螳壼初驗呻ｽｫ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ繝ｻ・ｹ驛｢譎・ｺ｢・趣ｽｦ驛｢・ｧ繝ｻ・ｵ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｻ髫ｰ・ｾ繝ｻ・ｾ髫ｴ謫ｾ・｣・ｰ髫ｶ髮｣・ｽ・ｩ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ驛｢・ｧ髮区ｩｸ・ｽ・｢陷会ｽｱ繝ｻ繝ｻ・ｸ・ｺ陷会ｽｱ・つ遶擾ｽｵ鬪ｭ螳｣ﾂ・ｶ鬮ｮ竏壹・髯晢ｽｯ陷翫・笳矩Δ・ｧ陞ｳ螟ｲ・ｽ・ｶ郢晢ｽｻ遶擾ｽｴ驛｢・ｧ陋ｹ・ｻ遶包ｽｧ驍ｵ・ｲ郢晢ｽｻ
         </div>`;
       } else if (sPhase && sPhase.id === 'yellow') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！
+          ・滓ｧｫ・ｺ繝ｻ驍ｵ・ｺ郢ｧ繝ｻ繝ｻ髯昴・・ｻ・｣繝ｻ・ｰ郢晢ｽｻ郢晢ｽｻ4鬯ｨ・ｾ繝ｻ・ｱ鬯ｨ・ｾ繝ｻ・｣鬩搾ｽｯ陞｢・ｹ邵ｲ蟶晢ｽｮ貅ｯ・ｲ讖ｸ・ｽ・ｭ陷会ｽｱ繝ｻ螳壽弱・・ｺ驍ｵ・ｺ陷会ｽｱ・つ遶擾ｽｬ繝ｻ・ｳ郢晢ｽｻ遶包ｽ｡3,000髣包ｽｳ郢晢ｽｻ繝ｻ・ｻ繝ｻ・･髣包ｽｳ驗呻ｽｫ繝ｻ蟶昴￠繝ｻ・ｭ髫ｰ蝠上・隨倥・・ｹ・ｧ陟募ｾ後・鬩搾ｽｨ隰疲ｻ・ず髯橸ｽｳ霑壼遜・ｽ・ｮ陞｢・ｼ陜滂ｽｧ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢郢晢ｽｻ郢晢ｽｻ
         </div>`;
       } else if (sPhase && sPhase.id === 'green') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 黒字転換達成！ この調子で${4 - (G.survivalProfitStreak || 0)}週間黒字を維持すればクリア！（現在の資金: ${G.funds.toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
+          ・滓ｧｫ・ｺ繝ｻ鬲・ｺｯ・ｲ讖ｸ・ｽ・ｭ髣埼屮・ｽ・ｻ繝ｻ・｢髫ｰ・ｰ陝ｷ繝ｻ・ｼ繝ｻ・ｬ譴ｧ閻ｸ繝ｻ・ｼ郢晢ｽｻ驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ鬮ｫ・ｱ繝ｻ・ｿ髯昴・繝ｻ邵ｲ繝ｻ{4 - (G.survivalProfitStreak || 0)}鬯ｨ・ｾ繝ｻ・ｱ鬯ｮ・｢鬯･・ｴ繝ｻ・ｻ髮区ｩｸ・ｽ・ｭ陷会ｽｱ繝ｻ蟶昴￠繝ｻ・ｭ髫ｰ蝠上・隨倥・・ｹ・ｧ陟募ｾ後・驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢郢晢ｽｻ郢晢ｽｻ繝ｻ・ｼ髢ｧ・ｲ隶捺ｺｯ闊峨・・ｨ驍ｵ・ｺ繝ｻ・ｮ鬮ｮ蟲ｨ繝ｻ遶包ｽ｡: ${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ{G.funds < 3000 ? ` / 鬨ｾ・ｶ繝ｻ・ｮ髫ｶ阮吶・,000髣包ｽｳ郢ｻ繝ｻ: ''}郢晢ｽｻ郢晢ｽｻ
         </div>`;
       }
 
       html += '</div></div>'; // .survival-body, .survival-panel
     }
 
-    // ── v0.96: MISSION PANEL ──
+    // 髫ｨ貂可髫ｨ貂可 v0.96: MISSION PANEL 髫ｨ貂可髫ｨ貂可
     if (G.missionEnabled) {
       const visMissions = Mission.getVisible(G);
       const prog = Mission.progress(G);
@@ -670,8 +509,8 @@ function renderWeekScreen() {
 
       html += '<div class="mission-panel">';
       html += `<div class="mission-panel-header">
-        <span class="mission-panel-title"><span class="mission-icon">🧭</span> ミッション <span style="font-size:12px;font-weight:400;color:var(--text-dim);font-family:'Noto Sans JP',sans-serif">${prog.done}/${prog.total}</span></span>
-        <span class="mission-panel-toggle" onclick="App.toggleMission(false)">✕ 非表示にする</span>
+        <span class="mission-panel-title"><span class="mission-icon">・滓ｩｸ・ｽ・ｧ繝ｻ・ｭ</span> 驛｢譎・ｽｺ蛟･ﾎ暮Δ・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ <span style="font-size:12px;font-weight:400;color:var(--text-dim);font-family:'Noto Sans JP',sans-serif">${prog.done}/${prog.total}</span></span>
+        <span class="mission-panel-toggle" onclick="App.toggleMission(false)">髫ｨ・ｨ郢晢ｽｻ鬯ｮ・ｱ隶壹・・ｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ/span>
       </div>`;
       // Progress bar
       html += `<div class="mission-progress">
@@ -687,12 +526,12 @@ function renderWeekScreen() {
           const itemCls = pendingClear ? 'mission-item new-clear' : 'mission-item';
           const clickHandler = pendingClear ? `onclick="dismissMissionClear('${m.id}',this)"` : '';
           html += `<div class="${itemCls}" ${clickHandler}>
-            <div class="mission-check ${m.done ? 'done' : 'pending'}">${m.done ? '✓' : ''}</div>
+            <div class="mission-check ${m.done ? 'done' : 'pending'}">${m.done ? '髫ｨ・ｨ郢晢ｽｻ : ''}</div>
             <div class="mission-body">
               <div class="mission-name ${m.done ? 'done' : ''}">${m.icon} ${m.name}</div>
               ${!m.done ? `<div class="mission-desc">${m.desc}</div>` : ''}
             </div>
-            ${!m.done && m.screen ? `<span class="mission-goto" onclick="event.stopPropagation();gotoScreen('${m.screen}')">→ 開く</span>` : ''}
+            ${!m.done && m.screen ? `<span class="mission-goto" onclick="event.stopPropagation();gotoScreen('${m.screen}')">驕ｶ鄙ｫ繝ｻ鬯ｮ・｢闕ｵ譎｢・ｿ・･</span>` : ''}
             ${pendingClear ? '<span class="mission-clear-hint">tap!</span>' : ''}
           </div>`;
         }
@@ -700,43 +539,43 @@ function renderWeekScreen() {
       html += '</div></div>';
     } else {
       // Show small re-enable button
-      html += `<div style="margin-bottom:10px;text-align:right"><span class="mission-enable-btn" onclick="App.toggleMission(true)">🧭 ミッション表示</span></div>`;
+      html += `<div style="margin-bottom:10px;text-align:right"><span class="mission-enable-btn" onclick="App.toggleMission(true)">・滓ｩｸ・ｽ・ｧ繝ｻ・ｭ 驛｢譎・ｽｺ蛟･ﾎ暮Δ・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ</span></div>`;
     }
 
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
-      <span>Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（×${heat.mult}）</span></span>
-      ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
-      ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
+      <span>Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}郢晢ｽｻ隴牙干繝ｻ{heat.mult}郢晢ｽｻ郢晢ｽｻ/span></span>
+      ${injuredCount > 0 ? `<span style="color:#e17055">・滓ｧｫ鄂ｰ 鬮ｮ蜈ｷ・｣・ｰ髯具ｽｯ繝ｻ・ｷ鬮｢・ｰ郢晢ｽｻ ${injuredCount}髯ｷ・ｷ郢晢ｽｻ/span>` : ''}
+      ${G.coaches.length > 0 ? `<span style="color:#2ecc71">・滓ｨ｣蟇･ 驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ ${G.coaches.length}髯ｷ・ｷ郢晢ｽｻ/span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ鬯ｨ・ｾ繝ｻ・ｱ鬯ｮ・｢髦ｮ蜷ｶ笳矩Δ・ｧ繝ｻ・ｱ驛｢・ｧ繝ｻ・ｸ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ驛｢・ｧ陜｣・､繝ｻ・｢繝ｻ・ｺ鬮ｫ・ｱ鬮ｦ・ｪ繝ｻ・ｰ驍ｵ・ｲ郢晢ｽｻ{isShow ? '鬮｣莨√Γ繝ｻ・｡隴ｴ・ｧ繝ｻ・ｺ鬮｢ﾂ繝ｻ蜥擾ｽｸ・ｺ繝ｻ・ｫ鬯ｨ・ｾ繝ｻ・ｲ驛｢・ｧ髦ｮ蜷ｶﾂ蝣､・ｸ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ繝ｻ : '鬯ｨ・ｾ繝ｻ・ｱ驛｢・ｧ陝ｶ謨鳴繝ｻ・ｲ驛｢・ｧ遶丞｣ｺﾂ・ｻ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ繝ｻ}驍ｵ・ｲ郢晢ｽｻ/p>`;
 
-    // v1.0: Primary action buttons — top-left, large, prominent
+    // v1.0: Primary action buttons 驕ｯ・ｶ郢晢ｽｻtop-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
     if (isShow) {
-      html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
+      html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">・滓ｨ呈ｿｫ 鬮｣莨√Γ繝ｻ・｡隴ｴ・ｧ繝ｻ・ｺ鬮｢ﾂ繝ｻ蜥擾ｽｸ・ｺ繝ｻ・ｸ 驕ｶ鄙ｫ繝ｻ/button>';
     } else {
-      html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
+      html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">驕ｶ・｢繝ｻ・ｩ 鬯ｨ・ｾ繝ｻ・ｱ驛｢・ｧ髮区ｧｭ繝ｻ鬨ｾ繝ｻ繝ｻ/button>';
     }
-    html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調に応じて強化ON/OFFを最適化し、体調60未満の選手を休養にします。各選手の方針はそのまま維持されます">🤖 おまかせ</button>';
-    html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
+    html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="髣厄ｽｴ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ驍ｵ・ｺ繝ｻ・ｫ髯滂ｽ｢隲帷腸・ｧ驍ｵ・ｺ繝ｻ・ｦ髯滓汚・ｽ・ｷ髯具ｽｹ鬯滂ｽｽN/OFF驛｢・ｧ陷ｻ蝓淞蜥趣ｽｩ蛹・ｽｽ・ｩ髯具ｽｹ隰費ｽｶ繝ｻ・ｰ驍ｵ・ｲ遶擾ｽｽ繝ｻ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ60髫ｴ蟷｢・ｽ・ｪ髮九・ﾂ驍ｵ・ｺ繝ｻ・ｮ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ螳夊ｳ魄・ｽｹ繝ｻ・､驗呻ｽｫ遶企豪・ｸ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ閠ｳ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ髫ｴ繝ｻ・ｽ・ｹ鬯ｩ・･隴擾ｽｴ郢晢ｽｻ驍ｵ・ｺ隴擾ｽｴ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｾ鬩搾ｽｯ繝ｻ・ｭ髫ｰ蝠上・繝ｻ繝ｻ・ｹ・ｧ陟募ｨｯ遨宣し・ｺ郢晢ｽｻ>・滓ｩｸ・ｽ・､郢晢ｽｻ驍ｵ・ｺ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ闕ｵ譏ｶ髮ｷ</button>';
+    html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｮ繝ｻ驍ｵ・ｺ繝ｻ・ｮ鬮ｮ蟲ｨ繝ｻ遶包ｽ｡髫ｰ螢ｼ萓帷ｹ晢ｽｻ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｯ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ">・滓ｧｫ蟷・驛｢・ｧ繝ｻ・ｱ驛｢・ｧ繝ｻ・｢</button>`;
     html += '</div>';
 
     // Roster schedule overview
     const canManageWeek = G.weekPhase === 'manage';
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th><th>⚡</th><th>今週の行動</th></tr>';
+    html += '<table class="data-table"><tr><th>髯ｷ・ｷ隶朱｡披・</th><th>鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ/th><th>髣厄ｽｴ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ</th><th>髴托ｽ･繝ｻ・ｶ髫ｲ・ｷ郢晢ｽｻ/th><th>驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｱ驛｢・ｧ繝ｻ・ｸ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ <span class="info-tip" title="鬮｢・ｧ繝ｻ・ｲ髫ｰ謔溘・陝・ｿ鬯ｩ・･隴擾ｽｴ繝ｻ蟶晢ｽｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ60髫ｴ蟷｢・ｽ・ｪ髮九・ﾂ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ闕ｵ譏ｶ繝ｻ髫ｴ繝ｻ・ｽ・ｹ鬯ｩ・･隴擾ｽｴ遶企ｦｴ・ｫ・｢繝ｻ・｢驛｢・ｧ闕ｳ螂・ｽｽ閾･・ｸ・ｺ陞溽ｿｫ繝ｻ髯ｷ蟠趣ｽｼ譁青螳夊ｳ魄・ｽｹ繝ｻ・､驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ>鬩阪・・ｽ・ｹ郢晢ｽｻ郢晢ｽｻ/span></th><th>髫ｨ讖ｸ・ｽ・｡</th><th>髣疲・・ｼ繝ｻﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｮ鬮ｯ・ｦ隰疲ｺｯ蜉・/th></tr>';
     G.roster.forEach(c => {
       const condPct = c.condition;
       const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
-      const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+      const actionLabels = {practice:'鬩搾ｽｱ繝ｻ・ｴ鬩怜生繝ｻ,promo:'驛｢譎丞ｹｲ・取ｺｽ・ｹ譎｢・ｽ・｢',rest:'髣費ｽｨ魄・ｽｹ繝ｻ・､郢晢ｽｻ,auto_rest:'・滓ｧｫ・｣・ｲ髣費ｽｨ魄・ｽｹ繝ｻ・､郢晢ｽｻ,balance:'驛｢譎√・・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｹ','鬨ｾ荵晢ｽ九・・､郢晢ｽｻ:'鬨ｾ荵晢ｽ九・・､郢晢ｽｻ,intensive:'髫ｨ讖ｸ・ｽ・｡髯滓汚・ｽ・ｷ髯具ｽｹ郢晢ｽｻ};
       const statusHtml = c.injury
-        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
+        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}鬯ｨ・ｾ繝ｻ・ｱ</span>`
         : c.forcedRest
-          ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
-          : '<span style="font-size:12px;color:#2ecc71">健康</span>';
+          ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">・滓ｧｫ・ｯ・･ 髣費ｽｨ魄・ｽｹ繝ｻ・､髮榊・・ｽ・ｸ繝ｻ・ｭ</span>'
+          : '<span style="font-size:12px;color:#2ecc71">髯句ｹ｢・ｽ・･髯溯ｶ｣・ｽ・ｷ</span>';
       const schedDisabled = c.injury ? 'disabled' : '';
-      const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
+      const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">・滓ｫ∬・</span>' : '';
       // Intensive button for week screen
       const isInjured = !!c.injury;
       const isResting = c.condition <= 30;
@@ -745,15 +584,15 @@ function renderWeekScreen() {
       if (isInjured || isResting) {
         intBtnHtml = '<span style="font-size:12px;color:var(--text-dim)">--</span>';
       } else if (!canManageWeek) {
-        intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
+        intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">髫ｨ讖ｸ・ｽ・｡ON</span>' : '';
       } else {
-        const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
-        intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? '' : `disabled title="${warnTitle}"`}>⚡</button>`;
+        const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '鬯ｨ・ｾ繝ｻ・｣鬩搾ｽｯ陞｢・ｻ繝ｻ・ｸ闔ｨ竏晏ｿ・ : c.condition < GROWTH_CONFIG.intensiveMinCond ? '髣厄ｽｴ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ髣包ｽｳ陝雜｣・ｽ・ｶ繝ｻ・ｳ' : '';
+        intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? '' : `disabled title="${warnTitle}"`}>髫ｨ讖ｸ・ｽ・｡</button>`;
       }
       // v1.0: Compute predicted action for initial display
-      // ※ _weekAction は前週の記録なので参照しない。常に現在のスケジュールから算出する
+      // 驕ｯ・ｶ繝ｻ・ｻ _weekAction 驍ｵ・ｺ繝ｻ・ｯ髯ｷ螟ｧ豸ｵ・つ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｮ鬮ｫ・ｪ陋滂ｽｬ魄厄ｽｸ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｧ髯ｷ・ｿ郢ｧ蟲ｨ繝ｻ驍ｵ・ｺ陷会ｽｱ遶企・・ｸ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ・ｽ・ｸ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｫ髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｱ驛｢・ｧ繝ｻ・ｸ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ驍ｵ・ｺ闕ｵ譎｢・ｽ陋ｾ・りｫ､諛翫・驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ
       let previewAction;
-      if (c.injury) previewAction = '療養';
+      if (c.injury) previewAction = '鬨ｾ荵晢ｽ九・・､郢晢ｽｻ;
       else if (c.intensive) previewAction = 'intensive';
       else {
         previewAction = c.schedule || 'balance';
@@ -768,10 +607,10 @@ function renderWeekScreen() {
         <td>${statusHtml}</td>
         <td>
           <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:15px;padding:8px 12px;border-radius:6px;min-width:120px" ${schedDisabled}>
-            <option value="balance" ${c.schedule==='balance'?'selected':''} title="非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します">バランス</option>
-            <option value="practice" ${c.schedule==='practice'?'selected':''} title="毎週練習を行います。ステータス成長に集中したい時に。体調60未満で自動休養します">練習優先</option>
-            <option value="promo" ${c.schedule==='promo'?'selected':''} title="毎週プロモ活動を行います。人気を上げたい時に（上限70）。体調60未満で自動休養します">プロモ優先</option>
-            <option value="rest" ${c.schedule==='rest'?'selected':''} title="強制的に休養させます。体調管理よりも確実に休ませたい時に">休養重視</option>
+            <option value="balance" ${c.schedule==='balance'?'selected':''} title="鬯ｮ・ｱ隶壺・繝ｻ鬮ｯ・ｦ驕偵・ﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｯ鬩搾ｽｱ繝ｻ・ｴ鬩怜雀繝ｻ・つ遶擾ｽｬ郢晢ｽｻ鬮ｯ・ｦ驕偵・ﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｯ驛｢譎丞ｹｲ・取ｺｽ・ｹ譎｢・ｽ・｢驛｢・ｧ陞ｳ螢ｹ繝ｻ髯ｷ閧ｴ蝮ｩ遶城メ・ｬ螢ｽ・ｧ・ｭ・つ郢ｧ螂・ｽｽ・ｿ繝ｻ・ｷ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ雋・∞・ｽ閾･・ｸ・ｺ髦ｮ蜻ｻ・ｽ讙趣ｽｸ・ｲ郢ｧ繝ｻ・ｽ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ60髫ｴ蟷｢・ｽ・ｪ髮九・ﾂ驍ｵ・ｺ繝ｻ・ｧ鬮｢・ｾ繝ｻ・ｪ髯ｷ蜥ｲ・ｩ繧托ｽｽ・ｼ魄・ｽｹ繝ｻ・､驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ>驛｢譎√・・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｹ</option>
+            <option value="practice" ${c.schedule==='practice'?'selected':''} title="髮主沺諢包ｾつ繝ｻ・ｱ鬩搾ｽｱ繝ｻ・ｴ鬩怜雀繝ｻ繝ｻ蟶晏距陟暮ｯ会ｽｼ讓抵ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ笳矩Δ譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・ｹ髫ｰ謔滂ｽｮ・｣髢ｨ讓抵ｽｸ・ｺ繝ｻ・ｫ鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｸ繝ｻ・ｭ驍ｵ・ｺ陷会ｽｱ隨ｳ繝ｻ・ｸ・ｺ郢晢ｽｻ陷・ｽｾ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｲ郢ｧ繝ｻ・ｽ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ60髫ｴ蟷｢・ｽ・ｪ髮九・ﾂ驍ｵ・ｺ繝ｻ・ｧ鬮｢・ｾ繝ｻ・ｪ髯ｷ蜥ｲ・ｩ繧托ｽｽ・ｼ魄・ｽｹ繝ｻ・､驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ>鬩搾ｽｱ繝ｻ・ｴ鬩怜揃・ｲ讓樒・髯ｷ蛹ｻ繝ｻ/option>
+            <option value="promo" ${c.schedule==='promo'?'selected':''} title="髮主沺諢包ｾつ繝ｻ・ｱ驛｢譎丞ｹｲ・取ｺｽ・ｹ譎｢・ｽ・｢髮趣ｽ｢繝ｻ・ｻ髯ｷ蟠趣ｽｼ雋ｻ・ｽ蟶晏距陟暮ｯ会ｽｼ讓抵ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・ｺ繝ｻ・ｺ髮取ぁ蟷ｲ繝ｻ螳壼初驗呻ｽｫ繝ｻ・｡驍ｵ・ｺ雋・∞・ｼ讚・ｽｭ蠑ｱ・・ｫ願侭繝ｻ闔蛹・ｽｽ・ｸ闔ｨ竏晏ｿ・0郢晢ｽｻ陝ｲ・ｨ・つ郢ｧ繝ｻ・ｽ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ60髫ｴ蟷｢・ｽ・ｪ髮九・ﾂ驍ｵ・ｺ繝ｻ・ｧ鬮｢・ｾ繝ｻ・ｪ髯ｷ蜥ｲ・ｩ繧托ｽｽ・ｼ魄・ｽｹ繝ｻ・､驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ>驛｢譎丞ｹｲ・取ｺｽ・ｹ譎｢・ｽ・｢髯ｷ繝ｻ・ｽ・ｪ髯ｷ蛹ｻ繝ｻ/option>
+            <option value="rest" ${c.schedule==='rest'?'selected':''} title="髯滓汚・ｽ・ｷ髯具ｽｻ繝ｻ・ｶ鬨ｾ・ｧ郢晢ｽｻ遶頑･｢閠ｳ魄・ｽｹ繝ｻ・､驗呻ｽｫ繝ｻ繝ｻ・ｸ・ｺ陝ｶ蜷ｮ遨宣し・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・ｽ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ鬩阪ｑ・ｽ・｡鬨ｾ繝ｻ繝ｻ繝ｻ閧ｲ・ｹ・ｧ驗呻ｽｫ繝ｻ繧具ｿ｡繝ｻ・ｺ髯橸ｽｳ雋・ｪ繝ｻ髣費ｽｨ闔会ｽ｣遶擾ｽｪ驍ｵ・ｺ陝ｶ蜷ｮ陞ｺ驍ｵ・ｺ郢晢ｽｻ陷・ｽｾ驍ｵ・ｺ繝ｻ・ｫ">髣費ｽｨ魄・ｽｹ繝ｻ・､闔ｨ竏夊｣滄ｫｫ霈斐・/option>
           </select>
         </td>
         <td>${intBtnHtml}</td>
@@ -781,10 +620,10 @@ function renderWeekScreen() {
     html += '</table>';
   }
   else if (G.weekPhase === 'weekSummary') {
-    // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
-    const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
-    document.getElementById('weekTitle').textContent = `${dateStr} — 完了`;
-    // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
+    // v2.0-C3: Brief weekly summary 驕ｯ・ｶ郢晢ｽｻnon-month-end weeks stop here
+    const dateStr = G.offSeason ? `驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
+    document.getElementById('weekTitle').textContent = `${dateStr} 驕ｯ・ｶ郢晢ｽｻ髯橸ｽｳ陟包ｽ｡繝ｻ・ｺ郢晢ｽｻ;
+    // 鬨ｾ・ｶ繝ｻ・ｴ鬮ｴ莉｣繝ｻ鬯ｨ・ｾ繝ｻ・ｱ驛｢譎√・郢晢ｽ｣驛｢譎・ｽｼ譁撰ｼ憺Δ・ｧ陝ｶ譎擾ｽｯ遘伜搦髣鯉ｽｨ繝ｻ・ｼ郢晢ｽｻtryAutoAdvance 驍ｵ・ｺ繝ｻ・ｧ髯溷､懶ｽｦ・ｴ・つ繝ｻ・ｱ髯具ｽｻ郢晢ｽｻ遯ｶ・ｲ push 髮九ｇ迴ｾ遶擾ｽｩ郢晢ｽｻ郢晢ｽｻ
     const _wsCycleNum = Math.ceil(G.week / 4);
     const _wsMonthStart = (_wsCycleNum - 1) * 4 + 1;
     const wsBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _wsMonthStart && h.week <= G.week);
@@ -794,20 +633,20 @@ function renderWeekScreen() {
     const netColor = wsNet >= 0 ? 'var(--green)' : 'var(--red)';
     const wsWeeks = wsBuf.map(e => e.week).filter(Boolean);
     const wsRange = wsWeeks.length > 1
-      ? `第${Math.min(...wsWeeks)}週〜第${Math.max(...wsWeeks)}週`
-      : `第${wsWeeks[0] || G.week}週`;
+      ? `鬮ｫ・ｨ繝ｻ・ｬ${Math.min(...wsWeeks)}鬯ｨ・ｾ繝ｻ・ｱ驍ｵ・ｲ隲帙・・ｽ・ｬ繝ｻ・ｬ${Math.max(...wsWeeks)}鬯ｨ・ｾ繝ｻ・ｱ`
+      : `鬮ｫ・ｨ繝ｻ・ｬ${wsWeeks[0] || G.week}鬯ｨ・ｾ繝ｻ・ｱ`;
     html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">`;
-    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${dateStr} 完了</div>`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${wsRange} 累計</div>`;
+    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${dateStr} 髯橸ｽｳ陟包ｽ｡繝ｻ・ｺ郢晢ｽｻ/div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${wsRange} 鬩肴得・ｽ・ｯ鬮ｫ・ｪ郢晢ｽｻ/div>`;
     html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
-      <span>収入 <span style="color:var(--green);font-weight:600">+${wsIncome.toLocaleString()}万</span></span>
-      <span>支出 <span style="color:var(--red);font-weight:600">-${wsExpense.toLocaleString()}万</span></span>
-      <span>収支 <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${wsNet.toLocaleString()}万</span></span>
+      <span>髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ <span style="color:var(--green);font-weight:600">+${wsIncome.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></span>
+      <span>髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ <span style="color:var(--red);font-weight:600">-${wsExpense.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></span>
+      <span>髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${wsNet.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></span>
     </div>`;
-    html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+    html += `<div style="font-size:15px">髫ｹ・ｿ驕擾ｽｩ繝ｻ・ｫ郢晢ｽｻ <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/strong></div>`;
     html += `</div>`;
     html += `<div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">次の週へ →</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ鬯ｨ・ｾ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｸ 驕ｶ鄙ｫ繝ｻ/button>
     </div>`;
   }
   else if (G.weekPhase === 'settled') {
@@ -816,10 +655,10 @@ function renderWeekScreen() {
     const _sMonthStart = (_sCycleNum - 1) * 4 + 1;
     const monthBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _sMonthStart && h.week <= G.week);
     const weeksInMonth = monthBuf.length;
-    html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート</h3>`;
-    html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
+    html += `<h3 style="color:var(--gold);margin-bottom:12px">・滓ｨ雁・ 髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ驛｢譎｢・ｽ・ｬ驛｢譎・ｺ｢郢晢ｽｻ驛｢譏ｴ繝ｻ/h3>`;
+    html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}郢晢ｽｻ騾趣ｽｯ陝・｢第･懊・・｢繝ｻ繝ｻ繝ｻ{heat.mult}郢晢ｽｻ郢晢ｽｻ/span></div>`;
     const settleChamp = getWorldChampion();
-    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 団体王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
+    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">・滓ｨ｣繝ｻ 髯懈圜・ｽ・｣髣厄ｽｴ鬪ｰ邇厄ｽｦ蜀ｶ・ｰ雜｣・ｽ・ｧ: ${fLink(settleChamp, {source:'roster'})}郢晢ｽｻ郢晢ｽｻ{G.titles.world.defenses}鬯ｮ・ｦ繝ｻ・ｲ鬮ｯ・ｦ陝ｷ・｢繝ｻ・ｼ郢晢ｽｻ/div>`;
 
     // v1.0: Aggregate monthly finance from financeHistory
     const monthlyDetails = {};
@@ -827,9 +666,9 @@ function renderWeekScreen() {
     monthBuf.forEach(entry => {
       if (!entry.details) return;
       entry.details.forEach(d => {
-        // 興行固有項目（チケット・会場費）は会場/動員が異なるためラベル全体をキーに保持
-        const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
-        const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+        // 鬮｣莨√Γ繝ｻ・｡隰疲ｺｷ・ｴ邇厄ｽｭ蟷・ｴ溘・・ｰ郢晢ｽｻ陝ｯ・ｼ郢晢ｽｻ陋ｹ・ｻ郢晢ｽ｡驛｢・ｧ繝ｻ・ｱ驛｢譏ｴ繝ｻ郢晢ｽｨ驛｢譎｢・ｽ・ｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｮ蜈ｷ・ｽ・ｻ郢晢ｽｻ陝ｲ・ｨ郢晢ｽｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ/髯ｷ讎贋ｾ幃弍・､驍ｵ・ｺ隶吝ｮ医・驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ闕ｵ譏ｶ陞ｺ驛｢・ｧ遶丞｢・ｸｷ・ｹ譎冗函・取凵諤ｦ繝ｻ・ｨ髣厄ｽｴ髦ｮ蜻ｻ・ｽ蝣､・ｹ・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｫ髣厄ｽｫ隴弱・莠・
+        const isShowSpecific = d.label.startsWith('驛｢譏ｶ繝ｻ邵ｺ骰具ｽｹ譏ｴ繝ｻ郢晢ｽｨ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ') || d.label.startsWith('髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｮ蜈ｷ・ｽ・ｻ');
+        const key = isShowSpecific ? d.label : d.label.replace(/郢晢ｽｻ郢晢ｽｻ*?郢晢ｽｻ郢晢ｽｻg, '').replace(/\d+髣費｣ｰ繝ｻ・ｺ/g, '').trim();
         if (!monthlyDetails[key]) monthlyDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
         monthlyDetails[key].val += d.val;
         monthlyDetails[key].count++;
@@ -844,15 +683,15 @@ function renderWeekScreen() {
     const weekNums = monthBuf.map(e => e.week).filter(Boolean);
 
     if (weekNums.length > 1) {
-      html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週</div>`;
+      html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">鬮ｫ・ｨ繝ｻ・ｬ${Math.min(...weekNums)}鬯ｨ・ｾ繝ｻ・ｱ驍ｵ・ｲ隲帙・・ｽ・ｬ繝ｻ・ｬ${Math.max(...weekNums)}鬯ｨ・ｾ繝ｻ・ｱ</div>`;
     }
 
     // Show aggregated details
     Object.values(monthlyDetails).forEach(d => {
-      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` 繝ｻ繝ｻ繝ｻ{d.count}鬯ｨ・ｾ繝ｻ・ｱ` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}髣包ｽｳ郢晢ｽｻ/span></div>`;
     });
-    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${monthNet}万</span></div>`;
-    html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+    html += `<div class="finance-row finance-total"><span>髫ｴ蟶ｷ・｣・ｯ闖ｫ・｣髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${monthNet}髣包ｽｳ郢晢ｽｻ/span></div>`;
+    html += `<div style="margin-top:8px;font-size:13px">髫ｹ・ｿ驕擾ｽｩ繝ｻ・ｫ郢晢ｽｻ <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/strong></div>`;
 
     // v0.97: Survival gauge mini-status in settlement
     const f = G.weeklyFinance;
@@ -863,29 +702,29 @@ function renderWeekScreen() {
       const r4c = G.rollingNet4Count || 0;
       if (monthNet >= 0) {
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);font-size:11px;color:#2ecc71">
-          ⛽ 月間黒字！${rollingNet >= 0 ? ` 月次黒字${r4c}回達成` : ''}${r4c >= 1 ? ' 🔥' : ''}${r4c >= 2 && G.funds >= 3000 ? ' — クリア間近！' : ''}
+          髫ｨ・ｵ繝ｻ・ｽ 髫ｴ蟶ｷ・｣・ｯ闖ｫ・｣鬲・ｺｯ・ｲ讖ｸ・ｽ・ｭ隴会ｽｦ繝ｻ・ｼ郢晢ｽｻ{rollingNet >= 0 ? ` 髫ｴ蟶帶ｲｺ繝ｻ・ｬ繝ｻ・｡鬲・ｺｯ・ｲ讖ｸ・ｽ・ｭ郢晢ｽｻ{r4c}髯懃軸・ｨ・｣繝ｻ繝ｻ・ｬ讙趣ｽｧ・ｦ : ''}${r4c >= 1 ? ' ・滓ｨ奇ｽｫ・ｨ' : ''}${r4c >= 2 && G.funds >= 3000 ? ' 驕ｯ・ｶ郢晢ｽｻ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢鬯ｮ・｢隶鯉ｽ｢繝ｻ・ｿ隰・∞・ｽ・ｼ郢晢ｽｻ : ''}
         </div>`;
       } else {
         const sWeeks = Survival.weeksUntilBankrupt(G);
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);font-size:11px;color:#e74c3c">
-          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字'} — 倒産まで推定${sWeeks === Infinity ? '∞' : sWeeks}週
+          髫ｨ・ｵ繝ｻ・ｽ ${sPhase?.emoji || '・滓ｨ｣邂・} ${sPhase?.label || '髫俶誓・ｽ・､髯昴・繝ｻ} 驕ｯ・ｶ郢晢ｽｻ髯区ｺｷ・ｰ・､髢ｧ繝ｻ・ｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ髫ｰ證ｦ・ｽ・ｨ髯橸ｽｳ郢晢ｽｻ{sWeeks === Infinity ? '驕ｶ荳翫・ : sWeeks}鬯ｨ・ｾ繝ｻ・ｱ
         </div>`;
       }
     }
 
     if (G.funds <= -1000) {
-      html += '<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">💀 GAME OVER — 倒産</strong></div>';
+      html += '<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">・滓ｨ｣ﾂ繝ｻGAME OVER 驕ｯ・ｶ郢晢ｽｻ髯区ｺｷ・ｰ・､髢ｧ繝ｻ/strong></div>';
     } else {
-      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" style="font-size:16px;padding:12px 28px;font-weight:700" onclick="advanceWeek()">次の月へ →</button></div>';
+      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" style="font-size:16px;padding:12px 28px;font-weight:700" onclick="advanceWeek()">髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟶帷樟遶上・驕ｶ鄙ｫ繝ｻ/button></div>';
     }
   }
-  // ── C-4: TRANSFER WINDOW UI ──
+  // 髫ｨ貂可髫ｨ貂可 C-4: TRANSFER WINDOW UI 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'transfer') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🔄 移籍ウィンドウ`;
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ・滓ｧｫ・｣・ｲ 鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ邵ｺ閧ｲ・ｹ・ｧ繝ｻ・｣驛｢譎｢・ｽ・ｳ驛｢譎擾ｽｳ・ｨ邵ｺ繝ｻ;
     const pending = G.pendingPoach || [];
     if (pending.length > 0) {
-      html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
-      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">上位団体から選手への引き抜きオファーが届いています。各選手への対応を選択してください。</p>';
+      html += '<h3 style="color:#e17055;margin-bottom:12px">髫ｨ讖ｸ・｣・ｰ郢晢ｽｻ郢晢ｽｻ髯滄｡鯉ｽｼ謚ｫﾂ・ｳ髫ｰ螢ｽ繹ｱ遯ｶ・ｳ驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁撰ｼ憺Δ譎｢・ｽ・ｼ</h3>';
+      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">髣包ｽｳ髮榊・・ｽ・ｽ隶朱宦・ｱ・ｮ髣厄ｽｴ髦ｮ蜊搾ｽｰ驛｢・ｧ髯具ｽｾ遶城メ・ｬ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ繝ｻ・ｮ髯滄｡鯉ｽｼ謚ｫﾂ・ｳ髫ｰ螢ｽ繹ｱ遯ｶ・ｳ驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁撰ｼ憺Δ譎｢・ｽ・ｼ驍ｵ・ｺ隰疲ｻゑｽｽ・ｱ驗呻ｽｫ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ閠ｳ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ繝ｻ・ｮ髯昴・・ｽ・ｾ髯滂ｽ｢隲帛･・ｽｽ蟶晢ｽｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ讓抵ｽｸ・ｲ郢晢ｽｻ/p>';
       pending.forEach(p => {
         const f = p.fighter;
         const retCost = Engine.transfer.calcRetentionCost(f);
@@ -897,53 +736,53 @@ function renderWeekScreen() {
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                 <div>
                   <strong style="font-size:17px">${f.name}</strong>
-                  ${isChampion ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">👑王者</span>' : ''}
-                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${Engine.util.dispPop(f.popularity)}</span>
+                  ${isChampion ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">・滓ｫ∬・鬩阪・莠具ｾつ郢晢ｽｻ/span>' : ''}
+                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${Engine.util.dispPop(f.popularity)}</span>
                 </div>
-                <div style="font-size:13px;color:var(--text-sub)">← ${p.org.name} (${p.org.tier}級)</div>
+                <div style="font-size:13px;color:var(--text-sub)">驕ｶ鄙ｫ繝ｻ${p.org.name} (${p.org.tier}鬩堺ｸ翫・</div>
               </div>
           <div style="display:flex;gap:10px;font-size:13px;margin-bottom:10px">
-            <span style="color:#2ecc71">💰 移籍金: +${p.fee}万</span>
-            <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isChampion ? ' (確定成功)' : ' (成功率80%)'}</span>
+            <span style="color:#2ecc71">・滓ｫ√・ 鬩募∞・ｽ・ｻ鬩債陜難ｽｼ遶包ｽ｡: +${p.fee}髣包ｽｳ郢晢ｽｻ/span>
+            <span style="color:#e17055">・滓ｧｫ・ｭ・ｱ郢晢ｽｻ郢晢ｽｻ髯滄｡鯉ｽｼ謚ｫﾂ・ｳ鬨ｾ・｡陷ｷ・ｶ繝ｻ繝ｻ蟇槭・・ｻ: -${retCost}髣包ｽｳ郢晢ｽｻ{isChampion ? ' (鬩墓慣・ｽ・ｺ髯橸ｽｳ陞｢・ｽ郢晢ｽｻ髯ｷ蟲ｨ繝ｻ' : ' (髫ｰ蠕｡・ｻ蜥擾ｽｲ・･鬩阪・繝ｻ0%)'}</span>
           </div>
           <div class="btn-row" style="gap:8px">
-            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">🛡️ 引き留める</button>
-            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach(${f.id},true)">💸 移籍を承認</button>
+            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">・滓ｧｫ・ｭ・ｱ郢晢ｽｻ郢晢ｽｻ髯滄｡鯉ｽｼ謚ｫﾂ・ｳ鬨ｾ・｡陷ｷ・ｶ繝ｻ竏ｫ・ｹ・ｧ郢晢ｽｻ/button>
+            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach(${f.id},true)">・滓ｨ｣・ｰ繝ｻ鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ繝ｻ螳夲ｽｬ繝ｻ・ｽ・ｿ鬮ｫ・ｱ郢晢ｽｻ/button>
           </div>
             </div>
           </div>
         </div>`;
       });
     } else {
-      html += '<h3 style="color:var(--gold);margin-bottom:12px">移籍ウィンドウ完了</h3>';
-      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">全ての移籍オファーに対応しました。</p>';
-      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">次へ進む →</button></div>';
+      html += '<h3 style="color:var(--gold);margin-bottom:12px">鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ邵ｺ閧ｲ・ｹ・ｧ繝ｻ・｣驛｢譎｢・ｽ・ｳ驛｢譎擾ｽｳ・ｨ邵ｺ驛∵･懆包ｽ｡繝ｻ・ｺ郢晢ｽｻ/h3>';
+      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">髯ｷ闌ｨ・ｽ・ｨ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｮ鬩募∞・ｽ・ｻ鬩債鬮ｦ・ｪ邵ｺ讙趣ｽｹ譎・ｽｼ譁撰ｼ憺Δ譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｫ髯昴・・ｽ・ｾ髯滂ｽ｢隲帛･・ｽｼ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷会ｽｱ隨ｳ繝ｻ・ｸ・ｲ郢晢ｽｻ/p>';
+      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｸ鬯ｨ・ｾ繝ｻ・ｲ驛｢・ｧ・つ 驕ｶ鄙ｫ繝ｻ/button></div>';
     }
   }
-  // ── EVENT DISPLAY (Phase D) ──
+  // 髫ｨ貂可髫ｨ貂可 EVENT DISPLAY (Phase D) 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'event') {
     const ev = G.pendingEvent;
     if (!ev) {
-      html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
-      html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
+      html += '<h3 style="color:var(--text-sub)">驛｢・ｧ繝ｻ・､驛｢譎冗函・趣ｽｦ驛｢譎冗樟郢晢ｽｧ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ/h3>';
+      html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｻ 驕ｶ鄙ｫ繝ｻ/button></div>';
     } else if (ev.type === 'war') {
-      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — ⚔ 対抗戦`;
+      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ髫ｨ讒ｭ繝ｻ髯昴・・ｽ・ｾ髫ｰ螟りｻｸ陝具ｽｶ`;
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
-        <p style="font-size:12px;color:var(--text-sub)">${ev.matchCount}試合の団体対決</p>
+        <h3 style="color:#e74c3c;margin-bottom:8px">髫ｨ讒ｭ繝ｻ髯昴・・ｽ・ｾ髫ｰ螟りｻｸ陝具ｽｶ驍ｵ・ｺ繝ｻ・ｮ鬨ｾ蛹・ｽｽ・ｳ驍ｵ・ｺ隲､諛翫・驛｢・ｧ郢晢ｽｻ/h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}驍ｵ・ｺ闕ｵ譎｢・ｽ闃ｽ・ｬ荵滂ｽｬ・ｬ陝具ｽｶ髴托ｽ･繝ｻ・ｶ驍ｵ・ｺ隰疲ｻゑｽｽ・ｱ驗呻ｽｫ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ/p>
+        <p style="font-size:12px;color:var(--text-sub)">${ev.matchCount}鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陋ｹ・ｻ郢晢ｽｻ髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛛・ｽｽ・ｯ繝ｻ・ｾ髮手ｶ｣・ｽ・ｺ</p>
       </div>`;
       html += `<div class="btn-row" style="margin-top:16px;justify-content:center">
-        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="showWarChallenge()">⚔ 挑戦状を見る</button>
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="showWarChallenge()">髫ｨ讒ｭ繝ｻ髫ｰ荵滂ｽｬ・ｬ陝具ｽｶ髴托ｽ･繝ｻ・ｶ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｦ闕ｵ譎｢・ｽ繝ｻ/button>
       </div>`;
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
     } else if (ev.type === 'summit') {
-      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏆 頂上決戦`;
+      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ・滓ｨ｣繝ｻ 鬯ｯ繝ｻ・・・・ｸ鬯・汚・ｽ・ｱ繝ｻ・ｺ髫ｰ魃会ｽｽ・ｦ`;
       html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
-        <p style="font-size:12px;color:var(--text-sub)">勝利で団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${BATTLE_POINT_CFG.summit} / 敗北で対戦pt-${BATTLE_POINT_CFG.summit}</p>
+        <h3 style="color:var(--gold);margin-bottom:8px">・滓ｨ｣繝ｻ 鬯ｯ繝ｻ・・・・ｸ鬯・汚・ｽ・ｱ繝ｻ・ｺ髫ｰ魃会ｽｽ・ｦ</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｫ髫ｰ邏具ｽｻ・｣郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ/p>
+        <p style="font-size:12px;color:var(--text-sub)">髯ｷ閧ｴ蜑碁洛諛・ｽｸ・ｺ繝ｻ・ｧ髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・${EVENT_CONFIG.summitPopReward}驍ｵ・ｲ遶乗劼・ｽ・ｯ繝ｻ・ｾ髫ｰ魃会ｽｽ・ｦpt+${BATTLE_POINT_CFG.summit} / 髫ｰ・ｨ隲､諛ｷ諱滄し・ｺ繝ｻ・ｧ髯昴・・ｽ・ｾ髫ｰ魃会ｽｽ・ｦpt-${BATTLE_POINT_CFG.summit}</p>
       </div>`;
       html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
         <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
@@ -951,15 +790,15 @@ function renderWeekScreen() {
         <span><strong style="color:#e74c3c">${ev.aiFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.aiFighter)}</span></span>
       </div>`;
       html += `<div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-gold" onclick="executeEvent()">🏆 挑戦する！</button>
-        <button class="btn btn-blue" onclick="skipEvent()">見送る</button>
+        <button class="btn btn-gold" onclick="executeEvent()">・滓ｨ｣繝ｻ 髫ｰ荵滂ｽｬ・ｬ陝具ｽｶ驍ｵ・ｺ陷ｷ・ｶ繝ｻ荵昴・郢晢ｽｻ/button>
+        <button class="btn btn-blue" onclick="skipEvent()">鬮ｫ諷墓ｴｸ・つ遶丞､ｲ・ｽ繝ｻ/button>
       </div>`;
     }
   }
-  // ── PPV ENTRY PHASE ──
+  // 髫ｨ貂可髫ｨ貂可 PPV ENTRY PHASE 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'ppvEntry') {
     const ppvName = G.ppvName || 'GRAND FINAL';
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻPPV GRAND FINAL`;
     const rankings = G.rankings || [];
     const pRank = Engine.ranking.getPlayerRank(rankings);
     const maxSlots = Engine.ppv.getSlotCount(pRank);
@@ -968,24 +807,24 @@ function renderWeekScreen() {
     const remainingSlots = champAutoEntry ? maxSlots - 1 : maxSlots;
     const picks = G._ppvPicks || [];
 
-    // ヘッダー
+    // 驛｢譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ
     html += `<div style="text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(241,196,15,0.15),rgba(231,76,60,0.08));border:1px solid rgba(241,196,15,0.35);border-radius:10px;margin-bottom:16px">
-      <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">🏟️ PPV GRAND FINAL「${ppvName}」</h2>
-      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">出場枠: <strong>${maxSlots}名</strong>（ランク${pRank}位）</p>
-      <p style="font-size:12px;color:var(--text-dim);margin:0">出場報酬: ${PPV_REWARD[pRank] || 100}万円</p>
+      <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻPPV GRAND FINAL驍ｵ・ｲ郢晢ｽｻ{ppvName}驍ｵ・ｲ郢晢ｽｻ/h2>
+      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">髯ｷ繝ｻ・ｽ・ｺ髯懶ｽ｣繝ｻ・ｴ髫ｴ・ｫ繝ｻ・ｰ: <strong>${maxSlots}髯ｷ・ｷ郢晢ｽｻ/strong>郢晢ｽｻ陋ｹ・ｻ・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｯ${pRank}髣厄ｽｴ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/p>
+      <p style="font-size:12px;color:var(--text-dim);margin:0">髯ｷ繝ｻ・ｽ・ｺ髯懶ｽ｣繝ｻ・ｴ髯懶ｽ｣繝ｻ・ｱ鬯ｩ貊ゑｽｽ・ｬ: ${PPV_REWARD[pRank] || 100}髣包ｽｳ郢晢ｽｻ郢晢ｽｻ</p>
     </div>`;
 
-    // チャンピオン自動エントリー
+    // 驛｢譏ｶ繝ｻ・取・・ｹ譎｢・ｽ・ｳ驛｢譎・ｱ堤ｸｺ讙趣ｽｹ譎｢・ｽ・ｳ鬮｢・ｾ繝ｻ・ｪ髯ｷ蟠趣ｽｼ譁絶凰驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｹ譎｢・ｽ・ｼ
     if (champAutoEntry) {
       html += `<div style="padding:10px 14px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
         ${portraitImg(champ.id, 40)}
-        <span style="font-size:13px;color:var(--text-main)">👑 <strong>${champ.name}</strong> — チャンピオンとして自動エントリー</span>
+        <span style="font-size:13px;color:var(--text-main)">・滓ｫ∬・ <strong>${champ.name}</strong> 驕ｯ・ｶ郢晢ｽｻ驛｢譏ｶ繝ｻ・取・・ｹ譎｢・ｽ・ｳ驛｢譎・ｱ堤ｸｺ讙趣ｽｹ譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ鬮｢・ｾ繝ｻ・ｪ髯ｷ蟠趣ｽｼ譁絶凰驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｹ譎｢・ｽ・ｼ</span>
       </div>`;
     }
 
-    // 残り枠の選択
+    // 髫ｹ・ｿ闕ｵ譎｢・ｽ鬘假ｽｭ・ｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｮ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｹ繝ｻ
     html += `<div style="margin-bottom:12px">
-      <h4 style="color:var(--text-main);margin:0 0 8px 0;font-size:14px">出場選手を選択（残り${remainingSlots - picks.length}枠）</h4>`;
+      <h4 style="color:var(--text-main);margin:0 0 8px 0;font-size:14px">髯ｷ繝ｻ・ｽ・ｺ髯懶ｽ｣繝ｻ・ｴ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ蟶晢ｽｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｩ・ｸ繝ｻ・ｼ陜捺ｻゑｽｽ・ｮ闕ｵ譎｢・ｽ繝ｻ{remainingSlots - picks.length}髫ｴ・ｫ繝ｻ・ｰ郢晢ｽｻ郢晢ｽｻ/h4>`;
 
     const eligible = (G.roster || []).filter(c => {
       if (champAutoEntry && c.id === champ.id) return false;
@@ -1001,59 +840,59 @@ function renderWeekScreen() {
       const disabled = full ? 'opacity:0.4;pointer-events:none;' : '';
       const bg = picked ? 'background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.4);' : '';
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;cursor:pointer;${bg}${disabled}" onclick="togglePPVPick(${c.id})">
-        <span style="font-size:18px;width:24px;text-align:center">${picked ? '✅' : '⬜'}</span>
+        <span style="font-size:18px;width:24px;text-align:center">${picked ? '髫ｨ・ｨ郢晢ｽｻ : '驕ｲ・ｮ郢晢ｽｻ}</span>
         ${portraitImg(c.id, 36)}
         <span style="flex:1;font-size:13px;color:var(--text-main)">${c.name}</span>
         <span style="font-size:11px;color:var(--text-sub)">OVR ${ovr}</span>
-        <span style="font-size:11px;color:var(--text-dim)">人気 ${Math.round(c.popularity || 0)}</span>
+        <span style="font-size:11px;color:var(--text-dim)">髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${Math.round(c.popularity || 0)}</span>
       </div>`;
     });
     html += `</div>`;
 
-    // 注意書き
+    // 髮主桁・ｽ・ｨ髫ｲ・｢闕ｵ諤懶ｽｶ讙趣ｽｸ・ｺ郢晢ｽｻ
     html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
-      ※ エントリー後の変更はできません<br>
-      ※ PPVまでに負傷した場合、自動的に代理選手が出場します<br>
-      ※ レンタル選手はエントリーできません
+      驕ｯ・ｶ繝ｻ・ｻ 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｹ譎｢・ｽ・ｼ髯溷供・ｾ蠕後・髯樊ｺｽ蛻､陝ｲ・ｩ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻbr>
+      驕ｯ・ｶ繝ｻ・ｻ PPV驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｫ鬮ｮ蜈ｷ・｣・ｰ髯具ｽｯ繝ｻ・ｷ驍ｵ・ｺ陷会ｽｱ隨ｳ繝ｻ謦ｻ繝ｻ・ｴ髯ｷ・ｷ陋ｹ・ｻ・つ遶擾ｽｬ郢晢ｽｻ髯ｷ閧ｴ繝ｻ陜趣ｽｪ驍ｵ・ｺ繝ｻ・ｫ髣比ｼ夲ｽｽ・｣鬨ｾ繝ｻ繝ｻ遶城メ・ｬ繝ｻ・ｹ譏ｶﾂ・ｲ髯ｷ繝ｻ・ｽ・ｺ髯懶ｽ｣繝ｻ・ｴ驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻbr>
+      驕ｯ・ｶ繝ｻ・ｻ 驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｹ譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ
     </div>`;
 
-    // 確定ボタン
+    // 鬩墓慣・ｽ・ｺ髯橸ｽｳ陞｢・ｹ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｳ
     const canConfirm = picks.length === remainingSlots;
     const btnStyle = canConfirm ? '' : 'opacity:0.4;pointer-events:none;';
     html += `<div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px;${btnStyle}" onclick="confirmPPVEntry()">🏟️ エントリー確定（${picks.length}/${remainingSlots}名）</button>
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px;${btnStyle}" onclick="confirmPPVEntry()">・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｹ譎｢・ｽ・ｼ鬩墓慣・ｽ・ｺ髯橸ｽｳ陞滂ｽｲ繝ｻ・ｼ郢晢ｽｻ{picks.length}/${remainingSlots}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/button>
     </div>`;
   }
-  // ── PPV SHOW DAY PHASE ──
+  // 髫ｨ貂可髫ｨ貂可 PPV SHOW DAY PHASE 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'ppvShow') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻPPV GRAND FINAL`;
     html += `<div style="text-align:center;padding:24px">
-      <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催日！</div>
-      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ PPV カードを表示</button>
+      <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL驍ｵ・ｲ郢晢ｽｻ{G.ppvName || 'GRAND FINAL'}驍ｵ・ｲ陜難ｽｼ陝ｷ謌雁ｲｷ繝ｻ・ｬ髫ｴ魃会ｽｽ・･郢晢ｽｻ郢晢ｽｻ/div>
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻPPV 驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ蟶晏距繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ</button>
     </div>`;
   }
-  // ── PPV TV PHASE ──
+  // 髫ｨ貂可髫ｨ貂可 PPV TV PHASE 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'ppvTV') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 📺 PPV テレビ中継`;
+    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} 驕ｯ・ｶ郢晢ｽｻ・滓ｨ｣蝟・PPV 驛｢譏ｴ繝ｻ・取ｨ抵ｽｹ譎・ｽｬ雜｣・ｽ・ｸ繝ｻ・ｭ鬩搾ｽｯ陷茨ｽｪ;
     html += `<div style="text-align:center;padding:24px">
-      <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 PPV GRAND FINAL テレビ中継中…</div>
-      <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 テレビ中継を見る</button>
+      <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">・滓ｨ｣蝟・PPV GRAND FINAL 驛｢譏ｴ繝ｻ・取ｨ抵ｽｹ譎・ｽｬ雜｣・ｽ・ｸ繝ｻ・ｭ鬩搾ｽｯ陷ｷ・ｩ繝ｻ・ｸ繝ｻ・ｭ驕ｯ・ｶ繝ｻ・ｦ</div>
+      <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">・滓ｨ｣蝟・驛｢譏ｴ繝ｻ・取ｨ抵ｽｹ譎・ｽｬ雜｣・ｽ・ｸ繝ｻ・ｭ鬩搾ｽｯ陷ｷ・ｶ繝ｻ蟶晏寰闕ｵ譎｢・ｽ繝ｻ/button>
     </div>`;
   }
 
-  // ── SCOUT EVENT PHASE ──
+  // 髫ｨ貂可髫ｨ貂可 SCOUT EVENT PHASE 髫ｨ貂可髫ｨ貂可
   else if (G.weekPhase === 'scoutEvent') {
-    const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
-    const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
-    document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
+    const weekLabel = G.offSeason ? `驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ鬮ｫ・ｨ繝ｻ・ｬ${G.offWeek}鬯ｨ・ｾ繝ｻ・ｱ` : Engine.util.formatDate(G.season, G.week);
+    const eventLabel = G.scoutEventType === 'midseason' ? '鬮ｯ・ｬ隲幢ｽｷ繝ｻ・ｼ繝ｻ・ｷ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ : '驛｢譎｢・ｽ・｡驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ;
+    document.getElementById('weekTitle').textContent = `${weekLabel} 驕ｯ・ｶ郢晢ｽｻ・滓ｧｫ鄙・${eventLabel}`;
     html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
-      <h3 style="color:#2ecc71;margin-bottom:8px">🔍 スカウトレポート到着</h3>
-      <p style="font-size:13px;color:var(--text-sub)">候補者の詳細は「スカウトイベント」画面で確認できます</p>
-      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
+      <h3 style="color:#2ecc71;margin-bottom:8px">・滓ｧｫ鄙・驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎冗樟・取ｨ抵ｽｹ譎・ｺ｢郢晢ｽｻ驛｢譏懶ｽｺ・･髣・ｽｦ鬨ｾ・ｹ・つ</h3>
+      <p style="font-size:13px;color:var(--text-sub)">髯区ｺｷ謠・・・｣隲帙・ﾂ郢晢ｽｻ郢晢ｽｻ鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｲ陟募ｾ娯雷驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎冗樟邵ｺ繝ｻ・ｹ譎冗函・趣ｽｦ驛｢譎冗樟・つ陷･・ｲ陋ｻ・､鬯ｮ・ｱ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｧ鬩墓慣・ｽ・ｺ鬮ｫ・ｱ鬮ｦ・ｪ邵ｲ蝣､・ｸ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ/p>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">髴托ｽｯ繝ｻ・ｲ髯滓・霆ｸ隴ｽ・ｧ: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}髯ｷ・ｷ郢晢ｽｻ/p>
     </div>
     <div class="btn-row">
-      <button class="btn btn-gold" onclick="showScreen('scoutEvent')">🔍 候補者を見る</button>
-      <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
+      <button class="btn btn-gold" onclick="showScreen('scoutEvent')">・滓ｧｫ鄙・髯区ｺｷ謠・・・｣隲帙・ﾂ郢晢ｽｻ繝ｻ蟶晏寰闕ｵ譎｢・ｽ繝ｻ/button>
+      <button class="btn btn-blue" onclick="scoutFinish()">驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎√＃繝ｻ・ｵ郢ｧ繝ｻ・ｽ・ｺ郢晢ｽｻ驕ｶ鄙ｫ繝ｻ/button>
     </div>`;
   }
 
@@ -1065,7 +904,7 @@ function _renderRosterDojoHeader() {
   if (!el) return;
   const hired = getHiredCoaches();
 
-  // --- 雰囲気テキスト生成 ---
+  // --- 鬯ｮ・ｮ繝ｻ・ｰ髯懈圜・ｽ・ｲ髮取ぁ蟷ｲ郢晢ｽｦ驛｢・ｧ繝ｻ・ｭ驛｢・ｧ繝ｻ・ｹ驛｢譎√＃陷・ｽｽ髫ｰ蠕後・---
   const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
   const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
 
@@ -1073,7 +912,7 @@ function _renderRosterDojoHeader() {
   html += '<img src="../image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
   html += '<div class="dojo-header-overlay"></div>';
 
-  // --- コーチ吹き出し（左下） ---
+  // --- 驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ繝ｻ髢ｨ荵滂ｽｸ・ｺ隶守ｿｫ繝ｻ驍ｵ・ｺ隴会ｽｦ繝ｻ・ｼ闔・･繝ｻ・ｷ繝ｻ・ｦ髣包ｽｳ陷茨ｽｷ繝ｻ・ｼ郢晢ｽｻ---
   const report = G.currentCoachReport;
   const coachForBubble = report
     ? ALL_COACHES.find(c => c.id === report.coachId)
@@ -1088,19 +927,19 @@ function _renderRosterDojoHeader() {
     }
     html += '<div class="dojo-scene-bubble">';
     if (report && coachForBubble) {
-      html += `<div class="coach-name">💬 ${report.coachName}</div>`;
-      html += `「${report.reportText}」`;
+      html += `<div class="coach-name">・滓ｨ剃ｼｴ ${report.coachName}</div>`;
+      html += `驍ｵ・ｲ郢晢ｽｻ{report.reportText}驍ｵ・ｲ雋ゑｽｯ;
     } else if (coachForBubble) {
-      html += `<div class="coach-name">💬 ${coachForBubble.name}</div>`;
-      html += `「${atmo.text}」`;
+      html += `<div class="coach-name">・滓ｨ剃ｼｴ ${coachForBubble.name}</div>`;
+      html += `驍ｵ・ｲ郢晢ｽｻ{atmo.text}驍ｵ・ｲ雋ゑｽｯ;
     } else {
-      html += `${atmo.emoji}「${atmo.text}」`;
+      html += `${atmo.emoji}驍ｵ・ｲ郢晢ｽｻ{atmo.text}驍ｵ・ｲ雋ゑｽｯ;
     }
     html += '</div></div>';
   }
 
-  // --- 選手アイコン（右下） ---
-  // 雰囲気レベルに応じた人数: level1=0, level2=0-1, level3=1, level4=1-2, level5=2-3
+  // --- 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ・樣Δ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ郢晢ｽｻ闔・･隰・ｽｿ髣包ｽｳ陷茨ｽｷ繝ｻ・ｼ郢晢ｽｻ---
+  // 鬯ｮ・ｮ繝ｻ・ｰ髯懈圜・ｽ・ｲ髮取ぁ蟷ｲ・取ｨ抵ｽｹ譎冗函・取刮・ｸ・ｺ繝ｻ・ｫ髯滂ｽ｢隲帷腸・ｧ驍ｵ・ｺ雋贋ｼ夲ｽｽ・ｺ繝ｻ・ｺ髫ｰ・ｨ繝ｻ・ｰ: level1=0, level2=0-1, level3=1, level4=1-2, level5=2-3
   const levelMaxMap = [0, 0, 1, 1, 2, 3]; // index = atmo.level (1-5)
   const levelMinMap = [0, 0, 0, 1, 1, 2];
   const maxFighters = levelMaxMap[atmo.level] || 0;
@@ -1109,7 +948,7 @@ function _renderRosterDojoHeader() {
   if (maxFighters > 0 && G.roster && G.roster.length > 0) {
     const fRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 777));
     const available = G.roster.filter(c => !c.injury);
-    // シャッフル
+    // 驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・｣驛｢譏ｴ繝ｻ郢晢ｽｵ驛｢譎｢・ｽ・ｫ
     const shuffled = [...available];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Engine.rng.int(fRng, 0, i);
@@ -1123,7 +962,7 @@ function _renderRosterDojoHeader() {
       picked.forEach((c, idx) => {
         const offsetY = Engine.rng.int(fRng, -5, 5);
         const delay = Engine.rng.int(fRng, 0, 8);
-        const cycle = 13 + Engine.rng.int(fRng, 0, 6); // 13-19sでバラけさせる
+        const cycle = 13 + Engine.rng.int(fRng, 0, 6); // 13-19s驍ｵ・ｺ繝ｻ・ｧ驛｢譎√・・主ｸｷ・ｸ・ｺ闔会ｽ｣繝ｻ繝ｻ・ｸ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ
         html += `<div class="dojo-scene-fighter-wrap" style="margin-bottom:${offsetY}px" title="${c.name}" onclick="showFighterPopup(${c.id},'roster')">`;
         html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
         html += `<div class="dojo-scene-fighter">${portraitImg(c.id, 40)}</div>`;
@@ -1133,20 +972,20 @@ function _renderRosterDojoHeader() {
     }
   }
 
-  html += '</div>'; // .dojo-header 閉じ
+  html += '</div>'; // .dojo-header 鬯ｮ・｢陝ｲ・ｨ・ゑｽｧ
 
-  // コーチ特性（バナー外に残す）
+  // 驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ謔ｪ鬮ｻ・ｳ髫ｲ・､繝ｻ・ｧ郢晢ｽｻ陋ｹ・ｻ郢晢ｽｰ驛｢譎会ｽｿ・ｫ郢晢ｽｻ髯樊ｻ薙§遶頑･｢・ｰ・ｿ闕ｵ譏ｶ繝ｻ郢晢ｽｻ郢晢ｽｻ
   if (hired.length > 0) {
     const traitParts = hired.map(c => c.trait);
-    html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ特性: <strong>${traitParts.join('、')}</strong></div>`;
+    html += `<div class="train-tendency" style="margin-bottom:8px">驕ｶ鄙ｫ繝ｻ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ謔ｪ鬮ｻ・ｳ髫ｲ・､繝ｻ・ｧ: <strong>${traitParts.join('驍ｵ・ｲ郢晢ｽｻ)}</strong></div>`;
   }
   el.innerHTML = html;
 
-  // 吹き出しテキストを毎サイクルでランダム差し替え
+  // 髯ｷ・ｷ繝ｻ・ｹ驍ｵ・ｺ隶守ｿｫ繝ｻ驍ｵ・ｺ陷会ｽｱ郢晢ｽｦ驛｢・ｧ繝ｻ・ｭ驛｢・ｧ繝ｻ・ｹ驛｢譎冗樟繝ｻ螳夲ｽｱ莠･・ｼ・ｱ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｫ驍ｵ・ｺ繝ｻ・ｧ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢謨鳴驛｢譎｢・｣・ｰ髯晢ｽｾ繝ｻ・ｮ驍ｵ・ｺ驍・ｽｲ陝蟶ｷ・ｸ・ｺ郢晢ｽｻ
   const DOJO_SHOUTS = [
-    'はぁっ…!','ふっ!','せいっ!','よいしょ!','もう一本!',
-    'はっ!','くっ…!','たぁっ!','いける…!','まだまだ!',
-    'おりゃ!','よし!','うぅっ…','どりゃ!','そこだ!'
+    '驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ遶丞｣ｺ螟｢驕ｯ・ｶ繝ｻ・ｦ!','驍ｵ・ｺ繝ｻ・ｵ驍ｵ・ｺ繝ｻ・｣!','驍ｵ・ｺ陝ｶ蜻ｻ・ｼ讓抵ｽｸ・ｺ繝ｻ・｣!','驛｢・ｧ陋ｹ・ｻ繝ｻ讓抵ｽｸ・ｺ陷会ｽｱ繝ｻ繝ｻ','驛｢・ｧ郢ｧ繝ｻ魘ｬ髣包ｽｳ・つ髫ｴ蟷｢・ｽ・ｬ!',
+    '驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・｣!','驍ｵ・ｺ闕ｳ蟯ｩ螟｢驕ｯ・ｶ繝ｻ・ｦ!','驍ｵ・ｺ雋・∞・ｼ譎会ｽｸ・ｺ繝ｻ・｣!','驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ驛｢・ｧ鬩ｫﾂ・つ繝ｻ・ｦ!','驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｰ!',
+    '驍ｵ・ｺ驗呻ｽｫ繝ｻ鬘費ｽｹ・ｧ郢晢ｽｻ','驛｢・ｧ陋ｹ・ｻ繝ｻ・ｰ!','驍ｵ・ｺ郢晢ｽｻ遶包ｽｦ驍ｵ・ｺ繝ｻ・｣驕ｯ・ｶ繝ｻ・ｦ','驍ｵ・ｺ繝ｻ・ｩ驛｢・ｧ驗呻ｽｫ繝ｻ繝ｻ','驍ｵ・ｺ隴擾ｽｴ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｰ!'
   ];
   el.querySelectorAll('.dojo-scene-shout').forEach(s => {
     const pick = (prev) => {
@@ -1174,44 +1013,44 @@ function _renderRosterTrainingPanel(c, hired) {
     const sg = Math.round((c.seasonGrowth && c.seasonGrowth[s]) || 0);
     const atCap = current >= cap;
     const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'
-      : pct >= 85 ? '<span style="color:#e74c3c;font-size:11px">残僅か</span>'
-      : pct >= 60 ? '<span style="color:#f39c12;font-size:11px">成長中</span>'
-      : '<span style="color:#2ecc71;font-size:11px">伸びしろ大</span>';
+      : pct >= 85 ? '<span style="color:#e74c3c;font-size:11px">髫ｹ・ｿ陷ｿ・･郢晢ｽ･驍ｵ・ｺ郢晢ｽｻ/span>'
+      : pct >= 60 ? '<span style="color:#f39c12;font-size:11px">髫ｰ謔滂ｽｮ・｣髢ｨ讚∝初繝ｻ・ｭ</span>'
+      : '<span style="color:#2ecc71;font-size:11px">髣費ｽｨ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｳ驍ｵ・ｺ陷会ｽｱ繝ｻ蟠取｣斐・・ｧ</span>';
     html += `<div class="stat-bar-wrap">
       <span class="stat-bar-label">${statLabels[s]}</span>
       <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
-      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}${s === 'mn' ? ' <span class="stat-bar-note" title="メンタルは練習では成長しません。試合経験によって成長します">※試合で成長</span>' : ''}</span>
+      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}${s === 'mn' ? ' <span class="stat-bar-note" title="驛｢譎｢・ｽ・｡驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ驍ｵ・ｺ繝ｻ・ｯ鬩搾ｽｱ繝ｻ・ｴ鬩怜雀繝ｻ邵ｲ蝣､・ｸ・ｺ繝ｻ・ｯ髫ｰ謔滂ｽｮ・｣髢ｨ讓抵ｽｸ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢ｧ螂・ｽｽ・ｩ繝ｻ・ｦ髯ｷ・ｷ髢ｧ・ｲ繝ｻ・ｵ驕偵・・ｽ・ｨ髦ｮ蜷ｮ繝ｻ驛｢・ｧ陋ｹ・ｻ隨・ｽｲ驍ｵ・ｺ繝ｻ・ｦ髫ｰ謔滂ｽｮ・｣髢ｨ讓抵ｽｸ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ>驕ｯ・ｶ繝ｻ・ｻ鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陋ｹ・ｻ邵ｲ螳夲ｽｬ謔滂ｽｮ・｣髢ｨ繝ｻ/span>' : ''}</span>
     </div>`;
   });
   // Coach assign dropdown
   if (canManage) {
     html += `<div style="margin-top:8px;font-size:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <label style="color:var(--text-dim)">担当コーチ: </label>
+      <label style="color:var(--text-dim)">髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ髦ｮ蜷ｶ・・Δ譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ </label>
       <select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px"${isInjured?' disabled':''}>
-        <option value="0"${!coach?' selected':''}>--- なし ---</option>`;
+        <option value="0"${!coach?' selected':''}>--- 驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ---</option>`;
     hired.forEach(h => {
       const aCount = getCoachAssignees(h.id).length;
       const isCurrent = coach && coach.id === h.id;
       const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
-      const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
+      const effShort = `${h.grade}鬩堺ｸ翫・繝ｻ繝ｻ繝ｻ{COACH_RANKS[h.teaching]||1.0}`;
       const sm = getCoachStyleMatch(h, c);
       const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
-      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [髮九・ﾂ]':''}</option>`;
     });
     html += '</select>';
     if (coach) {
-      html += `<span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;font-size:12px;color:var(--text-dim);text-decoration:underline dotted">ℹ️ 詳細</span>`;
+      html += `<span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;font-size:12px;color:var(--text-dim);text-decoration:underline dotted">鬩阪・・ｽ・ｹ郢晢ｽｻ郢晢ｽｻ鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ</span>`;
     }
     html += '</div>';
     if (coach) {
       const mult = COACH_RANKS[coach.teaching] || 1.0;
       const sm = getCoachStyleMatch(coach, c);
-      const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none">不一致</span>';
-      const effDesc = `成長×${mult} <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}`;
-      html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
+      const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none">髣包ｽｳ陜｣・ｺ繝ｻ・ｸ・つ鬮｢・ｾ繝ｻ・ｴ</span>';
+      const effDesc = `髫ｰ謔滂ｽｮ・｣髢ｨ讖ｸ・ｾ繝ｻ繝ｻ{mult} <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}`;
+      html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">髫ｨ荳翫・髯ｷ莨夲ｽｽ・ｹ髫ｴ・ｫ郢晢ｽｻ <span style="color:var(--gold)">${effDesc}</span></div>`;
     }
   } else if (coach) {
-    html += `<div style="margin-top:6px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:4px">担当: <span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted;display:inline-flex;align-items:center;gap:3px">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
+    html += `<div style="margin-top:6px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:4px">髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ <span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted;display:inline-flex;align-items:center;gap:3px">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
   }
   html += '</div>';
   return html;
@@ -1226,7 +1065,7 @@ function _renderRosterGrowthLog() {
   });
   if (growthEntries.length > 0) {
     let html = '<div class="panel" style="margin-top:12px"><div class="train-season-log">';
-    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">📈 今シーズン成長</div>';
+    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">・滓ｧｫ・ｶ繝ｻ髣碑・・ｿ・ｫ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ髫ｰ謔滂ｽｮ・｣髢ｨ繝ｻ/div>';
     growthEntries.forEach(c => {
       const parts = [];
       ['pw','sp','te','st','mn'].forEach(s => {
@@ -1255,7 +1094,7 @@ function renderRoster() {
 
     const coachEffectShort = (c) => {
       const mult = COACH_RANKS[c.teaching] || 1.0;
-      return `${c.grade}級 ×${mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
+      return `${c.grade}鬩堺ｸ翫・繝ｻ繝ｻ繝ｻ{mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
     };
 
     let staffHtml = '';
@@ -1277,16 +1116,16 @@ function renderRoster() {
             staffHtml += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${ch.name.substring(0,4)}${matchIcon}</span>`;
           });
         } else {
-          staffHtml += `<span style="font-size:12px;color:var(--text-dim);font-style:italic">担当なし</span>`;
+          staffHtml += `<span style="font-size:12px;color:var(--text-dim);font-style:italic">髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ髦ｮ蜷ｮ繝ｻ驍ｵ・ｺ郢晢ｽｻ/span>`;
         }
         staffHtml += `</div>
           </div>
-          <span style="font-size:12px;color:var(--text-dim)">ℹ️</span>
+          <span style="font-size:12px;color:var(--text-dim)">鬩阪・・ｽ・ｹ郢晢ｽｻ郢晢ｽｻ/span>
         </div>`;
       });
       staffHtml += '</div>';
     } else {
-      staffHtml += `<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">コーチ未雇用 — <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ募集</span>から雇用できます</div>`;
+      staffHtml += `<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ謇ｱ隰費ｽｴ鬯ｮ・ｮ郢晢ｽｻ騾｡繝ｻ驕ｯ・ｶ郢晢ｽｻ<span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ郢晢ｽｵ髯ｷ閧ｴ・ｻ繝ｻ・ｯ繝ｻ/span>驍ｵ・ｺ闕ｵ譎｢・ｽ陋ｾ・ｫ・ｮ郢晢ｽｻ騾｡驢搾ｽｸ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ/div>`;
     }
     staffEl.innerHTML = staffHtml;
   }
@@ -1298,12 +1137,12 @@ function renderRoster() {
   const hired = getHiredCoaches();
   const sortBtns = [
     {key:'ovr', label:'OVR'},
-    {key:'name', label:'名前'},
-    {key:'cond', label:'体調'},
-    {key:'pop', label:'人気'},
-    {key:'schedule', label:'育成'},
+    {key:'name', label:'髯ｷ・ｷ隶朱｡披・'},
+    {key:'cond', label:'髣厄ｽｴ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ'},
+    {key:'pop', label:'髣費｣ｰ繝ｻ・ｺ髮主ｾ後・},
+    {key:'schedule', label:'鬮｢・ｧ繝ｻ・ｲ髫ｰ蠕後・},
   ].map(s => `<button onclick="setRosterSort('${s.key}')" style="font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid ${_rosterSortKey===s.key ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.08)'};background:${_rosterSortKey===s.key ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.03)'};color:${_rosterSortKey===s.key ? 'var(--gold)' : 'var(--text-dim)'}">${s.label}</button>`).join('');
-  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
+  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">髣包ｽｳ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｳ鬯ｯ繝ｻ繝ｻ</span>${sortBtns}</div>`;
   html += '<div style="display:flex;flex-direction:column;gap:4px">';
   const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
   const _sortFn = (a,b) => {
@@ -1322,42 +1161,42 @@ function renderRoster() {
   const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
   const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
   const sorted = ownFighters;
-  // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
+  // roster-cap v1.0: 髫ｰ繝ｻﾂ髯橸ｽｻ隶馴托ｽ｣・ｧ驛｢譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ驛｢・ｧ隶卍tml驍ｵ・ｺ繝ｻ・ｮ髯ｷ閧ｲ・｣・ｯ繝ｻ・ｰ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｫ鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ
   const rosterCap = G.rosterCap || 6;
   const isFull = ownFighters.length >= rosterCap;
   html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
-    <span style="font-size:15px;font-weight:700;color:var(--text)">${ownFighters.length}/${rosterCap}名</span>
-    ${isFull ? '<span style="font-size:12px;color:var(--text-dim)">（上限）</span>' : ''}
+    <span style="font-size:13px;color:var(--text-sub)">髫ｰ繝ｻﾂ髯橸ｽｻ隶難ｽ｣遶城メ・ｬ繝ｻ繝ｻ/span>
+    <span style="font-size:15px;font-weight:700;color:var(--text)">${ownFighters.length}/${rosterCap}髯ｷ・ｷ郢晢ｽｻ/span>
+    ${isFull ? '<span style="font-size:12px;color:var(--text-dim)">郢晢ｽｻ闔蛹・ｽｽ・ｸ闔ｨ竏晏ｿ懃ｹ晢ｽｻ郢晢ｽｻ/span>' : ''}
   </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = c.condition;
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
-    const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
-    const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
-    const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
-    // v1.3-1: wear状態ラベル (§3)
+    const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">・滓ｧｫ鄂ｰ${c.injury.weeksLeft}鬯ｨ・ｾ繝ｻ・ｱ</span>` : '';
+    const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> ・滓ｫ∬・</span>' : '';
+    const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> ・滓ｩｸ・ｽ・､郢晢ｽｻ/span>' : '';
+    // v1.3-1: wear髴托ｽ･繝ｻ・ｶ髫ｲ・ｷ闕ｵ譁溷ｸｷ・ｹ譎冗函・弱・(繝ｻ繧托ｽｽ・ｧ3)
     const wearBadge = (() => {
       const decline = Engine.retirement.getDeclinePresentation(c);
-      if (decline.stage === 'terminal') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⬇⬇ 限界</span>';
-      if (decline.stage === 'major') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3)">⬇ 衰退期</span>';
-      if (decline.stage === 'early') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">⚠ 衰え</span>';
+      if (decline.stage === 'terminal') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">驕ｲ・ｮ郢晢ｽｻ繝ｻ・ｬ郢晢ｽｻ鬯ｮ・ｯ陷翫・繝ｻ</span>';
+      if (decline.stage === 'major') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3)">驕ｲ・ｮ郢晢ｽｻ鬮ｯ・ｦ繝ｻ・ｰ鬯ｨ・ｾ・つ髫ｴ蟶吶・/span>';
+      if (decline.stage === 'early') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">髫ｨ讖ｸ・｣・ｰ 鬮ｯ・ｦ繝ｻ・ｰ驍ｵ・ｺ郢晢ｽｻ/span>';
       return '';
     })();
-    // v1.3-2: §7.2 growthPenalty中の選手に🩹アイコン表示
+    // v1.3-2: 繝ｻ繧托ｽｽ・ｧ7.2 growthPenalty髣包ｽｳ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｮ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶ繝ｻ・滓ｩｸ・ｽ・ｩ繝ｻ・ｹ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ
     const growthPenaltyBadge = (!c.injury && c.growthPenalty)
-      ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹成長低下</span>'
+      ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">・滓ｩｸ・ｽ・ｩ繝ｻ・ｹ髫ｰ謔滂ｽｮ・｣髢ｨ讚∵割隲・ｹ繝ｻ・ｸ郢晢ｽｻ/span>'
       : '';
-    // v1.8: 成長イベントバッジ
+    // v1.8: 髫ｰ謔滂ｽｮ・｣髢ｨ讓抵ｽｹ・ｧ繝ｻ・､驛｢譎冗函・趣ｽｦ驛｢譎冗樟郢晢ｽｰ驛｢譏ｴ繝ｻ邵ｺ繝ｻ
     const hotStreakBadge = c.hotStreak
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥絶好調</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">・滓ｨ奇ｽｫ・ｨ鬩搾ｽｨ繝ｻ・ｶ髯槭ｑ・ｽ・ｽ鬮ｫ・ｱ繝ｻ・ｿ</span>`
       : '';
     const slumpBadge = c.slump
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉スランプ</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">・滓ｨ翫◇驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢譏ｴ繝ｻ/span>`
       : '';
     const motivLossBadge = c.motivationLoss
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞モチベ喪失</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">・滓ｧｭ繝ｻ驛｢譎｢・ｽ・｢驛｢譏ｶ繝ｻ郢晢ｽｻ髯懈ｻゑｽｽ・ｪ髯樊ｻゑｽｽ・ｱ</span>`
       : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
@@ -1403,35 +1242,35 @@ function renderRoster() {
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-          <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
+          <div>髣費｣ｰ繝ｻ・ｺ髮主ｾ後・<b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
           <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-          <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
-          ${!c.isRental ? `<span style="font-size:10px;color:var(--text-dim);margin-top:2px;display:block">▼ 育成</span>` : ''}
+          <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}髣包ｽｳ郢晢ｽｻ/div>
+          ${!c.isRental ? `<span style="font-size:10px;color:var(--text-dim);margin-top:2px;display:block">髫ｨ繝ｻ・ｽ・ｼ 鬮｢・ｧ繝ｻ・ｲ髫ｰ蠕後・/span>` : ''}
         </div>
       </div>
       ${!c.isRental ? _renderRosterTrainingPanel(c, hired) : ''}
     </div>`;
   });
   html += '</div>';
-  // ── Rental fighters separated section ──
+  // 髫ｨ貂可髫ｨ貂可 Rental fighters separated section 髫ｨ貂可髫ｨ貂可
   if (rentalFighters.length > 0) {
     const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownFighters.length);
-    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#f39c12">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
+    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#f39c12">・滓ｩｸ・ｽ・､郢晢ｽｻ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ髫ｴ・ｫ繝ｻ・ｰ郢晢ｽｻ郢晢ｽｻ{rentalFighters.length}/${maxSlots}郢晢ｽｻ郢晢ｽｻ/div>`;
     html += '<div style="display:flex;flex-direction:column;gap:4px">';
     rentalFighters.forEach(c => {
       const condPct = c.condition;
       const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
-      const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
+      const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">・滓ｧｫ鄂ｰ${c.injury.weeksLeft}鬯ｨ・ｾ繝ｻ・ｱ</span>` : '';
       const contract = (G.rentals || []).find(r => r.fighterId === c.id);
       const srcLabel = contract ? (contract.fromSource === 'rival'
-        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || '他団体')
+        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || '髣碑崟鞫ｩ陞ｻ・ｮ髣厄ｽｴ郢晢ｽｻ)
         : 'FA') : '?';
       html += `<div style="background:var(--bg-card);border:1px solid rgba(243,156,18,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
           ${portraitImg(c.id, 56, '', true)}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-              ${fLink(c, {source:'roster', size:'13px'})}<span style="color:#f39c12;font-size:12px"> 🤝</span>
+              ${fLink(c, {source:'roster', size:'13px'})}<span style="color:#f39c12;font-size:12px"> ・滓ｩｸ・ｽ・､郢晢ｽｻ/span>
               <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
               ${injuryBadge}
             </div>
@@ -1445,9 +1284,9 @@ function renderRoster() {
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-            <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
+            <div>髣費｣ｰ繝ｻ・ｺ髮主ｾ後・<b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
             <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} ｜ 残${contract ? contract.seasonsLeft : '?'}期(${contract ? contract.seasonsLeft * 12 : '?'}週)</div>
+            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} 郢晢ｽｻ郢晢ｽｻ髫ｹ・ｿ郢晢ｽｻ{contract ? contract.seasonsLeft : '?'}髫ｴ蟶吶・${contract ? contract.seasonsLeft * 12 : '?'}鬯ｨ・ｾ繝ｻ・ｱ)</div>
           </div>
         </div>
       </div>`;
@@ -1482,67 +1321,67 @@ function getAvailableForSlot(slotIndex, side) {
 
 function renderShowPrep() {
   const el = document.getElementById('showPrepContent');
-  // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
+  // v2.0: 鬮｣莨√Γ繝ｻ・｡隴ｴ・ｧ繝ｻ・ｺ鬮｢ﾂ繝ｻ蜥擾ｽｸ・ｺ繝ｻ・ｯ manage/showPrep 驛｢譎・ｽｼ譁絶凾驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｿ郢晢ｽｻ郢晢ｽｻettled鬩包ｽｲ陝ｲ・ｨ郢晢ｽｻ鬯ｮ・ｱ隶壺・繝ｻ鬮ｯ・ｦ陟募ｾ湖ｨ驛｢・ｧ繝ｻ・ｧ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｯ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驍ｵ・ｺ陷会ｽｱ遶企・・ｸ・ｺ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ
   if (!isShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
-    el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
+    el.innerHTML = '<p style="color:var(--text-sub)">鬮｣莨√Γ繝ｻ・｡驕偵・ﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢晢ｽｻ/p>';
     return;
   }
 
   let html = '';
 
-  // 興行準備ヘッダーバナー
+  // 鬮｣莨√Γ繝ｻ・｡隴ｴ・ｧ繝ｻ・ｺ鬮｢ﾂ繝ｻ蜥擾ｽｹ譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ驛｢譎√・郢晢ｽｪ驛｢譎｢・ｽ・ｼ
   html += '<div class="arena-header">';
   html += '<img src="../image/arena-header.webp" class="arena-header-img" onerror="this.style.display=\'none\'" alt="">';
   html += '</div>';
 
-  // v2.0 Phase1-6: メディア密着取材バナー
+  // v2.0 Phase1-6: 驛｢譎｢・ｽ・｡驛｢譏ｴ繝ｻ邵ｺ繝ｻ・ｹ・ｧ繝ｻ・｢髯昴・繝ｻ隰撰ｽｩ髯ｷ・ｿ陋ｹ竏ｵ鬧・Δ譎√・郢晢ｽｪ驛｢譎｢・ｽ・ｼ
   if (G.mediaSpotlight) {
     const sp = G.mediaSpotlight;
     const spFighter = G.roster.find(f => f.id === sp.fighterId);
     const spName = spFighter ? spFighter.name : sp.fighterName;
     html += `<div class="media-spotlight-banner">
-      📺 <strong>${spName}</strong>の密着取材中（${sp.outletName}・残り${sp.remainingShows}興行）
-      — この選手にいい試合を組んでください
+      ・滓ｨ｣蝟・<strong>${spName}</strong>驍ｵ・ｺ繝ｻ・ｮ髯昴・繝ｻ隰撰ｽｩ髯ｷ・ｿ陋ｹ竏ｵ鬧・藍・ｳ繝ｻ・ｭ郢晢ｽｻ郢晢ｽｻ{sp.outletName}驛｢譎｢・ｽ・ｻ髫ｹ・ｿ闕ｵ譎｢・ｽ繝ｻ{sp.remainingShows}鬮｣莨√Γ繝ｻ・｡鬲・ｼ夲ｽｽ・ｼ郢晢ｽｻ
+      驕ｯ・ｶ郢晢ｽｻ驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ讓｣蝨ｦ繝ｻ・ｦ髯ｷ・ｷ陋ｹ・ｻ繝ｻ蟶昴♀郢晢ｽｻ繝ｻ骰具ｽｸ・ｺ繝ｻ・ｧ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ繝ｻ
     </div>`;
   }
 
   // Special show / PPV banner
   if (isPPV(G.week)) {
     html += `<div style="background:linear-gradient(135deg,#2d1b00,#4a2c00);border:1px solid #f39c12;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:16px;font-weight:700;color:#f1c40f;letter-spacing:1px">🏆 PPV GRAND FINAL</div>
-      <div style="font-size:12px;color:#e67e22;margin-top:4px">年間最大の舞台！全会場で試合枠+1</div>
+      <div style="font-size:16px;font-weight:700;color:#f1c40f;letter-spacing:1px">・滓ｨ｣繝ｻ PPV GRAND FINAL</div>
+      <div style="font-size:12px;color:#e67e22;margin-top:4px">髯晢ｽｷ繝ｻ・ｴ鬯ｮ・｢隰撰ｽｺ隲､蜻ｵ譽斐・・ｧ驍ｵ・ｺ繝ｻ・ｮ鬮｣鬆托ｽｧ・ｫ陟守ｿｫ繝ｻ遶乗亢繝ｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ驍ｵ・ｺ繝ｻ・ｧ鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陜捺ｻ難ｽ｣・ｧ+1</div>
     </div>`;
   } else if (isSpecialShow(G.week)) {
     html += `<div style="background:linear-gradient(135deg,#1a0033,#2e0055);border:1px solid #9b59b6;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:15px;font-weight:700;color:#d4a8ff;letter-spacing:1px">⭐ 月末特別興行</div>
-      <div style="font-size:12px;color:#a29bfe;margin-top:4px">特別な舞台！全会場で試合枠+1</div>
+      <div style="font-size:15px;font-weight:700;color:#d4a8ff;letter-spacing:1px">驍よ亢繝ｻ髫ｴ蟶帶ｲｺ陟｢・ｰ髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ/div>
+      <div style="font-size:12px;color:#a29bfe;margin-top:4px">髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･驍ｵ・ｺ繝ｻ・ｪ鬮｣鬆托ｽｧ・ｫ陟守ｿｫ繝ｻ遶乗亢繝ｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ驍ｵ・ｺ繝ｻ・ｧ鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陜捺ｻ難ｽ｣・ｧ+1</div>
     </div>`;
   }
 
-  // L1: 会場選択（全会場選択可能・リスク指標付き）
-  html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
+  // L1: 髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｩ・ｸ繝ｻ・ｼ闔・･郢晢ｽｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｫ陟弱・螯吶・・ｽ驛｢譎｢・ｽ・ｻ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｯ髫ｰ謔ｶ繝ｻ繝ｻ・ｨ陷ｷ・ｩ繝ｻ・ｻ陋滂ｽ･遯ｶ・ｳ郢晢ｽｻ郢晢ｽｻ
+  html += '<div class="panel-title" style="margin-top:0">髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｹ繝ｻ/div>';
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
   html += '<div class="venue-grid">';
   VENUES.forEach((v, i) => {
     const selected = G.showVenue === i;
     const fillRate = baseAtt / v.cap;
     let riskClass = '', riskLabel = '';
-    if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '◎ 安全'; }
-    else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = '△ 挑戦'; }
-    else { riskClass = 'venue-danger'; riskLabel = '✕ 危険'; }
+    if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '髫ｨ・ｳ郢晢ｽｻ髯橸ｽｳ霑壼生繝ｻ'; }
+    else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = '髫ｨ繝ｻ・ｽ・ｳ 髫ｰ荵滂ｽｬ・ｬ陝具ｽｶ'; }
+    else { riskClass = 'venue-danger'; riskLabel = '髫ｨ・ｨ郢晢ｽｻ髯ｷ螂・ｽｽ・ｱ鬯ｮ・ｯ繝ｻ・ｺ'; }
     html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}"
       onclick="App.setShowVenue(${i});renderShowPrep()">
       ${v.img ? `<img src="${v.img}" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;opacity:0.8" onerror="this.style.display='none'" alt="">` : ''}
       <div class="venue-name">${v.name}</div>
-      <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
-      <div class="venue-info">コスト: ${v.cost}万</div>
-      <div class="venue-info">試合枠: ${v.maxMatches}試合${(isSpecialShow(G.week) || isPPV(G.week)) ? ' <span style="color:var(--gold)">(+1)</span>' : ''}</div>
+      <div class="venue-info">驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・｣驛｢譏ｴ繝ｻ ${v.cap.toLocaleString()}髣費｣ｰ繝ｻ・ｺ</div>
+      <div class="venue-info">驛｢・ｧ繝ｻ・ｳ驛｢・ｧ繝ｻ・ｹ驛｢譏ｴ繝ｻ ${v.cost}髣包ｽｳ郢晢ｽｻ/div>
+      <div class="venue-info">鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陜捺ｻ難ｽ｣・ｧ: ${v.maxMatches}鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ郢晢ｽｻ{(isSpecialShow(G.week) || isPPV(G.week)) ? ' <span style="color:var(--gold)">(+1)</span>' : ''}</div>
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
   html += '</div>';
 
-  // Match card — 会場規模連動の試合枠
+  // Match card 驕ｯ・ｶ郢晢ｽｻ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｫ遨ゑｽｹ證ｦ・ｽ・ｨ繝ｻ・｡鬯ｨ・ｾ繝ｻ・｣髯ｷ蟠趣ｽｼ譁舌・鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ陜捺ｻ難ｽ｣・ｧ
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
   // pad up OR trim down to match the venue's limit
   {
@@ -1553,7 +1392,7 @@ function renderShowPrep() {
   }
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
-  // forcedRest（S3休養願い承認）の選手も除外
+  // forcedRest郢晢ｽｻ郢晢ｽｻ3髣費ｽｨ魄・ｽｹ繝ｻ・､闔ｨ繝ｻ・ｽ・｡陋滂ｽ･繝ｻ讚・ｽｬ繝ｻ・ｽ・ｿ鬮ｫ・ｱ隰ｳ・ｾ繝ｻ・ｼ陝ｲ・ｨ郢晢ｽｻ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ繧具ｽｫ・ｯ繝ｻ・､髯樊ｺ倥・
   {
     const rosterMap = new Map(G.roster.map(c => [c.id, c]));
     let dirty = false;
@@ -1567,19 +1406,19 @@ function renderShowPrep() {
     });
     if (dirty) G = { ...G, showCard: cleaned };
   }
-  // v2.0: ファン期待度パネル（最大3件表示）
+  // v2.0: 驛｢譎・ｽｼ譁撰ｼ憺Δ譎｢・ｽ・ｳ髫ｴ蟶ｶ・ｺ・ｷ繝ｻ・ｾ郢晢ｽｻ繝ｻ・ｺ繝ｻ・ｦ驛｢譏懶ｽｻ・｣郢晢ｽｭ驛｢譎｢・ｽ・ｫ郢晢ｽｻ陜捺ｻ督蜻ｵ譽斐・・ｧ3髣比ｼ夲ｽｽ・ｶ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ郢晢ｽｻ郢晢ｽｻ
   const fanExpects = Engine.fanExpect.generate(G);
   if (fanExpects.length > 0) {
     const validCurrent = G.showCard.filter(m => m.left > 0 && m.right > 0);
     const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
     html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:6px">`;
-    html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🎤 ファンの声 ${matchedCount > 0 ? `<span style="color:#2ecc71;font-size:11px">（${matchedCount}件反映中 → MQ+5 / 試合）</span>` : ''}</div>`;
+    html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">・滓ｨ呈ｿｫ 驛｢譎・ｽｼ譁撰ｼ憺Δ譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｮ髯橸ｽ｢繝ｻ・ｰ ${matchedCount > 0 ? `<span style="color:#2ecc71;font-size:11px">郢晢ｽｻ郢晢ｽｻ{matchedCount}髣比ｼ夲ｽｽ・ｶ髯ｷ・ｿ髢ｧ・ｴ闕ｳ蜊蜿峨・・ｭ 驕ｶ鄙ｫ繝ｻMQ+5 / 鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ髣鯉ｽｨ繝ｻ・ｼ郢晢ｽｻ/span>` : ''}</div>`;
     fanExpects.forEach(exp => {
       const isOnCard = validCurrent.some(m =>
         (m.left === exp.leftId && m.right === exp.rightId) ||
         (m.left === exp.rightId && m.right === exp.leftId)
       );
-      const checkMark = isOnCard ? '<span style="color:#2ecc71;font-weight:700">✓ </span>' : '• ';
+      const checkMark = isOnCard ? '<span style="color:#2ecc71;font-weight:700">髫ｨ・ｨ郢晢ｽｻ</span>' : '驕ｯ・ｶ繝ｻ・｢ ';
       const color = isOnCard ? 'color:#2ecc71' : 'color:var(--text-sub)';
       html += `<div style="font-size:11px;${color};margin-top:3px">${checkMark}${exp.reason}</div>`;
     });
@@ -1587,9 +1426,9 @@ function renderShowPrep() {
   }
 
   html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
-    <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
-    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
-    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
+    <div class="panel-title" style="margin:0">驛｢譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｶ繝ｻ邵ｺ蜥ｲ・ｹ譎｢・ｽ・ｼ驛｢譏懶ｽｼ螟ｲ・ｽ・ｼ陜捺ｻ督蜻ｵ譽斐・・ｧ${maxMatches}鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ髣鯉ｽｨ繝ｻ・ｼ郢晢ｽｻ/div>
+    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">髫ｨ・ｨ繝ｻ・ｨ 鬮｢・ｾ繝ｻ・ｪ髯ｷ閧ｴ繝ｻ繝ｻ・ｷ繝ｻ・ｨ髫ｰ蠕後・/button>
+    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">・滓ｧｫ蠏ｯ 髯ｷ闌ｨ・ｽ・ｨ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢</button>
   </div>`;
 
   for (let i = 0; i < maxMatches; i++) {
@@ -1601,7 +1440,7 @@ function renderShowPrep() {
     const curR = G.showCard[i].right;
 
     const makeOptions = (avail, curVal) => {
-      let opts = '<option value="0">-- 選手選択 --</option>';
+      let opts = '<option value="0">-- 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ豢ｸ遶城メ・ｬ螢ｹ繝ｻ--</option>';
       const ids = new Set(avail.map(c => c.id));
       if (curVal > 0 && !ids.has(curVal)) {
         const extra = G.roster.find(c => c.id === curVal);
@@ -1610,12 +1449,12 @@ function renderShowPrep() {
       // Sort: available first, then used-in-other-slot; within each group by OVR desc
       avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
       avail.forEach(c => {
-        const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
-        const lastRunMark = c.lastRun ? '🌅 ' : '';
-        const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
-        const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
-        const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})${usedSuffix}${lastRunSuffix}</option>`;
+        const champMark = G.titles.world.championId === c.id ? '・滓ｫ∬・ ' : '';
+        const lastRunMark = c.lastRun ? '・滓ｨ奇ｽ｡繝ｻ' : '';
+        const usedMark = c._usedInOtherSlot ? '・滓ｧｫ・｣・ｲ ' : '';
+        const usedSuffix = c._usedInOtherSlot ? ' [髯ｷ繝ｻ・ｽ・ｺ髯懶ｽ｣繝ｻ・ｴ髣包ｽｳ繝ｻ・ｭ]' : '';
+        const lastRunSuffix = c.lastRun ? ' [驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・ｹ驛｢譎冗樟・主ｸｷ・ｹ譎｢・ｽ・ｳ]' : '';
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ${ov(c)} 髣厄ｽｴ隶鯉ｽ｢繝ｻ・ｪ繝ｻ・ｿ:${c.condition})${usedSuffix}${lastRunSuffix}</option>`;
       });
       return opts;
     };
@@ -1623,28 +1462,28 @@ function renderShowPrep() {
     const champId = G.titles.world.championId;
     const hasChamp = champId && (curL === champId || curR === champId);
     const isVacant = !champId;
-    // v1.2: 12週クールダウンチェック
+    // v1.2: 12鬯ｨ・ｾ繝ｻ・ｱ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｫ驛｢謨鳴驛｢・ｧ繝ｻ・ｦ驛｢譎｢・ｽ・ｳ驛｢譏ｶ繝ｻ邵ｺ閾･・ｹ譏ｴ繝ｻ邵ｺ繝ｻ
     const cdCheck = Engine.title.canTitleMatch(G); // { allowed, weeksLeft }
     const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
-    // Rental restriction: レンタル選手はタイトルマッチ出場不可
+    // Rental restriction: 驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｶ繝ｻ郢晢ｽｻ髯懶ｽ｣繝ｻ・ｴ髣包ｽｳ隶朱宦・ｺ繝ｻ
     const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
     const canTitle = titleEligible && cdCheck.allowed && !slotHasRental;
     const isTitle = G.showCard[i].isTitle || false;
-    const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
+    const titleLabel = isVacant ? '髯具ｽｻ隴乗・・ｽ・ｻ繝ｻ・｣鬩阪・莠具ｾつ郢晢ｽｻ繝ｻ・ｱ繝ｻ・ｺ髯橸ｽｳ陞｢・ｽ陝具ｽｶ' : '驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取凵・ｬ魃会ｽｽ・ｦ';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
 
-    // カード鮮度プレビュー
+    // 驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎∝ｴ溘・・ｮ繝ｻ・ｮ髯溯ｶ｣・ｽ・ｦ驛｢譎丞ｹｲ・取ｨ抵ｽｹ譎∽ｾｭ・守､ｼ・ｹ譎｢・ｽ・ｼ
     const freshnessPreview = (curL > 0 && curR > 0)
       ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0)
       : null;
 
-    // ラストランチェック
+    // 驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・ｹ驛｢譎冗樟・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢譏ｶ繝ｻ邵ｺ閾･・ｹ譏ｴ繝ｻ邵ｺ繝ｻ
     const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
     const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
     const isLastRunMatch = lastRunL || lastRunR;
 
     html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}">
-      <div class="match-slot-num">${isMain ? '★' : i+1}</div>
+      <div class="match-slot-num">${isMain ? '髫ｨ蛟･繝ｻ : i+1}</div>
       <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 80) : ''}</div>
       <div class="match-fighter">
         <select onchange="onCardSelect(${i},'left',this.value)">
@@ -1659,19 +1498,19 @@ function renderShowPrep() {
       </div>
       <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 80) : ''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
-        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
-        ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="タイトルマッチは12週に1回まで">⏳ 次のタイトルマッチまであと${cdCheck.weeksLeft}週</span>` : ''}
-        ${titleEligible && cdCheck.allowed && slotHasRental ? `<span style="color:var(--text-dim);font-size:11px" title="レンタル選手はタイトルマッチに出場できません">🤝 レンタル選手はタイトル戦不可</span>` : ''}
-        ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
-        ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
+        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> ・滓ｨ｣繝ｻ${titleLabel}</label>` : ''}
+        ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｶ繝ｻ郢晢ｽｻ12鬯ｨ・ｾ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｫ1髯懃軸・ｧ・ｭ遶擾ｽｪ驍ｵ・ｺ繝ｻ・ｧ">驕ｶ・｢繝ｻ・ｳ 髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｶ繝ｻ遶擾ｽｪ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ郢ｧ繝ｻ繝ｻ${cdCheck.weeksLeft}鬯ｨ・ｾ繝ｻ・ｱ</span>` : ''}
+        ${titleEligible && cdCheck.allowed && slotHasRental ? `<span style="color:var(--text-dim);font-size:11px" title="驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｶ繝ｻ遶頑･｢諤弱・・ｺ髯懶ｽ｣繝ｻ・ｴ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ>・滓ｩｸ・ｽ・､郢晢ｽｻ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取凵・ｬ魃会ｽｽ・ｦ髣包ｽｳ隶朱宦・ｺ繝ｻ/span>` : ''}
+        ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="髫ｴ・ｬ繝ｻ・ｼ髯晢ｽｾ繝ｻ・ｮ驍ｵ・ｺ隰疲ｻゑｽｽ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ讓抵ｽｹ・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｴ繝ｻOVR髯晢ｽｾ繝ｻ・ｮ${gap})驍ｵ・ｺ繝ｻ・ｯMQ-6">髫ｨ讖ｸ・｣・ｰ郢晢ｽｻ郢晢ｽｻ髫ｴ・ｬ繝ｻ・ｼ髯晢ｽｾ繝ｻ・ｮ髯樊ｻゑｽｽ・ｧ(OVR髯晢ｽｾ繝ｻ・ｮ${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="髫ｴ・ｬ繝ｻ・ｼ髯晢ｽｾ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取刮・ｹ譎・ｽｧ・ｭ郢晢ｽ｣驛｢譏ｴ繝ｻOVR髯晢ｽｾ繝ｻ・ｮ${gap})驍ｵ・ｺ繝ｻ・ｯMQ-3">髫ｨ讖ｸ・｣・ｰ郢晢ｽｻ郢晢ｽｻ髫ｴ・ｬ繝ｻ・ｼ髯晢ｽｾ繝ｻ・ｮ(OVR髯晢ｽｾ繝ｻ・ｮ${gap}) MQ-3</span>`;return'';})()}
+        ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ髯懃軸・ｧ・ｭ郢晢ｽｻ髣費｣ｰ繝ｻ・ｺ髮主ｾ後・5驛｢譎｢・ｽ・ｻ驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｼ5髣費｣ｰ繝ｻ・ｺ驍ｵ・ｺ繝ｻ・ｧ鬮ｫ・ｪ繝ｻ・ｭ鬩包ｽｶ郢晢ｽｻ>・滓ｨ貞項 鬩阪・蜚ｱ繝ｻ・ｺ繝ｻ・ｧ髫ｴ蟷｢・ｽ・ｪ鬮ｫ・ｪ繝ｻ・ｭ鬩包ｽｶ郢晢ｽｻ/span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
-        ${freshnessPreview && freshnessPreview.label ? `<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:11px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>` : ''}
-        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===maxMatches-1?' +メイン+5':''})</span>` : ''}
+        ${freshnessPreview && freshnessPreview.label ? `<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:11px">${freshnessPreview.bonus > 0 ? '髫ｨ・ｨ繝ｻ・ｨ' : '・滓ｧｭ繝ｻ'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>` : ''}
+        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">・滓ｨ奇ｽ｡繝ｻ驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・ｹ驛｢譎冗樟郢晢ｽｻ驛｢譏ｴ繝ｻ郢晢ｽ｡ (MQ+3${i===maxMatches-1?' +驛｢譎｢・ｽ・｡驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ+5':''})</span>` : ''}
       </div>
     </div>`;
   }
 
-  // L1: ざっくり集客予測（正確な数字は非表示）
+  // L1: 驍ｵ・ｺ隰費ｽｶ隨・ｽｲ驍ｵ・ｺ闕ｳ螂・ｽｽ莨・ｽｫ・ｮ郢晢ｽｻ繝ｻ・ｮ繝ｻ・｢髣費｣ｰ陜捺ｻゑｽｽ・ｸ繝ｻ・ｬ郢晢ｽｻ陜捺ｻゑｽｽ・ｭ繝ｻ・｣鬩墓慣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｪ髫ｰ・ｨ繝ｻ・ｰ髯昴・蟷ｲ郢晢ｽｻ鬯ｮ・ｱ隶壹・・ｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ郢晢ｽｻ郢晢ｽｻ
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
   const mainPop = validMatches.length > 0 ?
     Engine.economy.calcCardPop(validMatches.map(m => {
@@ -1685,34 +1524,34 @@ function renderShowPrep() {
   const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, mainPop, hasTitlePreview, hasChampPreview);
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
   const v = VENUES[G.showVenue];
-  const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'
-    : (G.attendanceMomentum || 0) < -0.05 ? '📉 勢い低下' : '';
+  const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '・滓ｧｫ・ｶ繝ｻ髯ｷ謳ｾ・ｽ・｢驍ｵ・ｺ郢晢ｽｻ遶包｣ｰ驛｢・ｧ郢晢ｽｻ
+    : (G.attendanceMomentum || 0) < -0.05 ? '・滓ｨ翫◇ 髯ｷ謳ｾ・ｽ・｢驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｽ隲・ｹ繝ｻ・ｸ郢晢ｽｻ : '';
 
   const heat = getHeatLevel();
   html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
     <div style="margin-bottom:6px;font-size:14px;font-weight:700;color:${prediction.color}">${prediction.text}</div>
-    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場（集客×1.10）</span>' : ''}</div>
-    <div><strong>会場:</strong> ${v.name}（${v.cap.toLocaleString()}席） <strong>会場費:</strong> -${v.cost}万${momentumLabel ? ` &nbsp;| ${momentumLabel}` : ''}</div>
-    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 予想会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
+    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}郢晢ｽｻ騾趣ｽｯ陝・｢第･懊・・｢繝ｻ繝ｻ繝ｻ{heat.mult}郢晢ｽｻ郢晢ｽｻ/span>${hasTitlePreview ? ' <span style="color:var(--gold)">・滓ｨ｣繝ｻ 驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・取凵・ｬ魃会ｽｽ・ｦ郢晢ｽｻ騾趣ｽｯ陝・｢第･懊・・｢繝ｻ繝ｻ繝ｻ.15郢晢ｽｻ郢晢ｽｻ/span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">・滓ｫ∬・ 鬩阪・莠具ｾつ郢晢ｽｻ郢晢ｽｻ髯懶ｽ｣繝ｻ・ｴ郢晢ｽｻ騾趣ｽｯ陝・｢第･懊・・｢繝ｻ繝ｻ繝ｻ.10郢晢ｽｻ郢晢ｽｻ/span>' : ''}</div>
+    <div><strong>髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ:</strong> ${v.name}郢晢ｽｻ郢晢ｽｻ{v.cap.toLocaleString()}髯晢ｽｶ繝ｻ・ｭ郢晢ｽｻ郢晢ｽｻ<strong>髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｮ蜈ｷ・ｽ・ｻ:</strong> -${v.cost}髣包ｽｳ郢晢ｽｻ{momentumLabel ? ` &nbsp;| ${momentumLabel}` : ''}</div>
+    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">・滓ｧｫ莠ｫ郢晢ｽｻ郢晢ｽｻ髣費｣ｰ陜捺ｹｮ・ｦ髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ髴趣ｽｭ繝ｻ・ｱ髮主ｾ後・ MQ髯ｷ闌ｨ・ｽ・ｨ鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ郢晢ｽｻ{estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '郢晢ｽｻ郢晢ｽｻ + estCrowdMQ.crowdLabel + '郢晢ｽｻ郢晢ｽｻ : ''}</div>` : ''}
   </div>`;
 
   html += '<div class="btn-row" style="margin-top:16px">';
-  html += `<button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！ (${validMatches.length}試合)</button>`;
-  html += '<button class="btn btn-blue" onclick="G={...G,weekPhase:\'manage\'};showScreen(\'week\');refreshAll()">戻る</button>';
+  html += `<button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>鬮｣莨√Γ繝ｻ・｡驕停・・ｹ謌雁ｲｷ繝ｻ・ｬ郢晢ｽｻ郢晢ｽｻ(${validMatches.length}鬮ｫ・ｧ繝ｻ・ｦ髯ｷ・ｷ郢晢ｽｻ</button>`;
+  html += '<button class="btn btn-blue" onclick="G={...G,weekPhase:\'manage\'};showScreen(\'week\');refreshAll()">髫ｰ魃会ｽｽ・ｻ驛｢・ｧ郢晢ｽｻ/button>';
   html += '</div>';
 
   el.innerHTML = html;
 }
 
-// 財務タブリデザイン: ラベル正規化ヘルパー
+// 鬮ｮ蜈ｷ・ｽ・｡髯ｷ讎顔函邵ｺ・｡驛｢譎・§・取㏍・ｹ譏ｴ繝ｻ邵ｺ蛟｡・ｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ: 驛｢譎｢・ｽ・ｩ驛｢譎冗函・取凵・ｱ繝ｻ・ｽ・｣鬮ｫ遨ゑｽｸ讒ｫ蟇・Δ譎渉・･・取刮・ｹ譏懶ｽｻ・｣郢晢ｽｻ
 function _normalizeFinanceLabel(label) {
-  if (label.startsWith('チケット収入')) return 'チケット収入';
-  if (label.startsWith('グッズ収入')) return 'グッズ収入';
-  if (label.startsWith('会場費')) return '会場費';
-  return label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+  if (label.startsWith('驛｢譏ｶ繝ｻ邵ｺ骰具ｽｹ譏ｴ繝ｻ郢晢ｽｨ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ')) return '驛｢譏ｶ繝ｻ邵ｺ骰具ｽｹ譏ｴ繝ｻ郢晢ｽｨ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ';
+  if (label.startsWith('驛｢・ｧ繝ｻ・ｰ驛｢譏ｴ繝ｻ邵ｺ諛・╂闕ｳ・ｻ郢晢ｽｻ')) return '驛｢・ｧ繝ｻ・ｰ驛｢譏ｴ繝ｻ邵ｺ諛・╂闕ｳ・ｻ郢晢ｽｻ';
+  if (label.startsWith('髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｮ蜈ｷ・ｽ・ｻ')) return '髣費ｽｨ陞｢・ｼ繝ｻ・ｰ繝ｻ・ｴ鬮ｮ蜈ｷ・ｽ・ｻ';
+  return label.replace(/郢晢ｽｻ郢晢ｽｻ*?郢晢ｽｻ郢晢ｽｻg, '').replace(/\d+髣費｣ｰ繝ｻ・ｺ/g, '').trim();
 }
 
-// 財務タブリデザイン: 期間フィルタ
+// 鬮ｮ蜈ｷ・ｽ・｡髯ｷ讎顔函邵ｺ・｡驛｢譎・§・取㏍・ｹ譏ｴ繝ｻ邵ｺ蛟｡・ｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ: 髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ
 function _getFilteredFinance(period) {
   const history = G.financeHistory || [];
   switch (period) {
@@ -1734,8 +1573,8 @@ function renderFinance() {
   const tab = el.dataset.financeTab || 'summary';
   const filtered = _getFilteredFinance(period);
 
-  // ── 期間フィルタバー ──
-  const periodDefs = [{ k:'month', l:'今月' }, { k:'year', l:'年間' }, { k:'all', l:'全期間' }];
+  // 髫ｨ貂可髫ｨ貂可 髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ驛｢譎√・郢晢ｽｻ 髫ｨ貂可髫ｨ貂可
+  const periodDefs = [{ k:'month', l:'髣碑崟・ｰ隨ｬﾂ・ｦ' }, { k:'year', l:'髯晢ｽｷ繝ｻ・ｴ鬯ｮ・｢郢晢ｽｻ }, { k:'all', l:'髯ｷ闌ｨ・ｽ・ｨ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣' }];
   let html = `<div style="display:flex;gap:6px;margin-bottom:10px">`;
   periodDefs.forEach(p => {
     const a = period === p.k;
@@ -1743,8 +1582,8 @@ function renderFinance() {
   });
   html += `</div>`;
 
-  // ── サブタブバー ──
-  const tabDefs = [{ k:'summary', l:'📊 総合' }, { k:'income', l:'📈 収入' }, { k:'expense', l:'📉 支出' }, { k:'salary', l:'💰 給与' }];
+  // 髫ｨ貂可髫ｨ貂可 驛｢・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ・｡驛｢譎・§郢晢ｽｰ驛｢譎｢・ｽ・ｼ 髫ｨ貂可髫ｨ貂可
+  const tabDefs = [{ k:'summary', l:'・滓ｨ雁・ 鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ }, { k:'income', l:'・滓ｧｫ・ｶ繝ｻ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ' }, { k:'expense', l:'・滓ｨ翫◇ 髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ' }, { k:'salary', l:'・滓ｫ√・ 鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ }];
   html += `<div style="display:flex;gap:4px;margin-bottom:14px">`;
   tabDefs.forEach(t => {
     const a = tab === t.k;
@@ -1752,11 +1591,11 @@ function renderFinance() {
   });
   html += `</div>`;
 
-  // ── 総合タブ ──
+  // 髫ｨ貂可髫ｨ貂可 鬩搾ｽｱ闕ｳ讓抵ｽｲ迢暦ｽｹ・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可
   if (tab === 'summary') {
-    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/div>`;
 
-    // 資金推移チャート
+    // 鬮ｮ蟲ｨ繝ｻ遶包ｽ｡髫ｰ證ｦ・ｽ・ｨ鬩募∞・ｽ・ｻ驛｢譏ｶ繝ｻ・取・・ｹ譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ
     const fh = G.fundsHistory || [];
     if (fh.length > 1) {
       const leftPad = 55, chartH = 120, chartW = 380;
@@ -1784,35 +1623,35 @@ function renderFinance() {
       svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
       const lastX = leftPad + plotW, lastY = toY(fh[fh.length - 1]);
       svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
-      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length-1].toLocaleString()}万</text>`;
+      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length-1].toLocaleString()}髣包ｽｳ郢晢ｽｻ/text>`;
       svg += '</svg>';
-      html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>${svg}</div>`;
+      html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">・滓ｨ｣・ｳ・･ 鬮ｮ蟲ｨ繝ｻ遶包ｽ｡髫ｰ證ｦ・ｽ・ｨ鬩募∞・ｽ・ｻ (${fh.length}鬯ｨ・ｾ繝ｻ・ｱ)</div>${svg}</div>`;
     }
 
-    // 期間サマリ
+    // 髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驛｢・ｧ繝ｻ・ｵ驛｢譎・ｽｧ・ｭ・弱・
     if (filtered.length > 0) {
       let totalIncome = 0, totalExpense = 0;
       filtered.forEach(h => { totalIncome += h.income || 0; totalExpense += h.expense || 0; });
       const totalNet = totalIncome - totalExpense;
-      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
-      html += `<div class="panel-title">期間サマリ — ${periodLabel} <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${filtered.length}週)</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📈 総収入</span><span class="f-val income">+${totalIncome.toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📉 総支出</span><span class="f-val expense">-${totalExpense.toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row finance-total"><span>純利益</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString()}万</span></div>`;
+      const periodLabel = period === 'month' ? '髣碑崟・ｰ隨ｬﾂ・ｦ' : period === 'year' ? '髣碑・・ｿ・ｫ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ' : '髯ｷ闌ｨ・ｽ・ｨ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣';
+      html += `<div class="panel-title">髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驛｢・ｧ繝ｻ・ｵ驛｢譎・ｽｧ・ｭ・弱・驕ｯ・ｶ郢晢ｽｻ${periodLabel} <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${filtered.length}鬯ｨ・ｾ繝ｻ・ｱ)</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">・滓ｧｫ・ｶ繝ｻ鬩搾ｽｱ闕ｳ讒ｫ・ｺ・ｶ髯ｷ闌ｨ・ｽ・･</span><span class="f-val income">+${totalIncome.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
+      html += `<div class="finance-row"><span class="f-label">・滓ｨ翫◇ 鬩搾ｽｱ闕ｵ驤ｴ・ｫ・ｪ髯ｷ繝ｻ・ｽ・ｺ</span><span class="f-val expense">-${totalExpense.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
+      html += `<div class="finance-row finance-total"><span>鬩堺ｹ暦ｽｳ迹壽・鬨ｾ・ｶ郢晢ｽｻ/span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の記録はまだありません</div>`;
-      // 推定週間コスト（初回表示用）
-      html += '<div class="panel-title" style="margin-top:12px">週間コスト内訳（推定）</div>';
-      html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驍ｵ・ｺ繝ｻ・ｮ鬮ｫ・ｪ陋滂ｽｬ魄厄ｽｸ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>`;
+      // 髫ｰ證ｦ・ｽ・ｨ髯橸ｽｳ陞滄搨ﾂ繝ｻ・ｱ鬯ｮ・｢髦ｮ蜷ｶ・・Δ・ｧ繝ｻ・ｹ驛｢譎∬か繝ｻ・ｼ闔・･郢晢ｽｻ髯懃軸・ｫ繝ｻ・ｽ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ鬨ｾ蛹・ｽｽ・ｨ郢晢ｽｻ郢晢ｽｻ
+      html += '<div class="panel-title" style="margin-top:12px">鬯ｨ・ｾ繝ｻ・ｱ鬯ｮ・｢髦ｮ蜷ｶ・・Δ・ｧ繝ｻ・ｹ驛｢譏懶ｽｺ・･郢晢ｽｻ鬮ｫ・ｪ繝ｻ・ｳ郢晢ｽｻ陜捺ｺｯﾂ・ｳ髯橸ｽｳ陞滂ｽｲ繝ｻ・ｼ郢晢ｽｻ/div>';
+      html += `<div class="finance-row"><span class="f-label">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ霍昴・・ｵ繝ｻ・ｦ髣包ｽｳ闕ｳ・ｻ驍顔洸蝮守ｹ晢ｽｻ/span><span class="f-val expense">-${calcWeeklySalary()}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">髣費｣ｰ陷ｿ・･雋阪・・ｩ蜍溷罰鬮ｴ・ｧ鬮ｮ蜈ｷ・ｽ・ｻ</span><span class="f-val expense">-${FIXED_COSTS.admin}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</span></div>`;
       const coachTotal = getCoachSalaryTotal();
-      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">放映権</span><span class="f-val income">+${getBroadcastIncome()}万/週</span></div>`;
+      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ謔ｪ繝ｻ・ｵ繝ｻ・ｦ髣包ｽｳ髮懶ｽ｣繝ｻ・ｼ郢晢ｽｻ{G.coaches.length}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/span><span class="f-val expense">-${coachTotal}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">驛｢・ｧ繝ｻ・ｹ驛｢譎・ｺ｢・趣ｽｦ驛｢・ｧ繝ｻ・ｵ驛｢譎｢・ｽ・ｼ</span><span class="f-val income">+${getSponsorIncome()}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">髫ｰ・ｾ繝ｻ・ｾ髫ｴ謫ｾ・｣・ｰ髫ｶ髮｣・ｽ・ｩ</span><span class="f-val income">+${getBroadcastIncome()}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</span></div>`;
     }
   }
 
-  // ── 収入タブ ──
+  // 髫ｨ貂可髫ｨ貂可 髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可
   else if (tab === 'income') {
     const items = {};
     filtered.forEach(h => {
@@ -1827,16 +1666,16 @@ function renderFinance() {
     const total = sorted.reduce((s, i) => s + i.val, 0);
     if (sorted.length > 0) {
       sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val income">+${d.val.toLocaleString()}万</span></span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">繝ｻ繝ｻ繝ｻ{d.count}</span><span class="f-val income">+${d.val.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${total.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>鬩搾ｽｱ闕ｳ讒ｫ・ｺ・ｶ髯ｷ闌ｨ・ｽ・･</span><span class="f-val income">+${total.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の収入記録はありません</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驍ｵ・ｺ繝ｻ・ｮ髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ鬮ｫ・ｪ陋滂ｽｬ魄厄ｽｸ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>`;
     }
   }
 
-  // ── 支出タブ ──
+  // 髫ｨ貂可髫ｨ貂可 髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ驛｢・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可
   else if (tab === 'expense') {
     const items = {};
     filtered.forEach(h => {
@@ -1851,36 +1690,36 @@ function renderFinance() {
     const total = sorted.reduce((s, i) => s + i.val, 0);
     if (sorted.length > 0) {
       sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${d.val.toLocaleString()}万</span></span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">繝ｻ繝ｻ繝ｻ{d.count}</span><span class="f-val expense">${d.val.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総支出</span><span class="f-val expense">${total.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>鬩搾ｽｱ闕ｵ驤ｴ・ｫ・ｪ髯ｷ繝ｻ・ｽ・ｺ</span><span class="f-val expense">${total.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の支出記録はありません</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣驍ｵ・ｺ繝ｻ・ｮ髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ鬮ｫ・ｪ陋滂ｽｬ魄厄ｽｸ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>`;
     }
   }
 
-  // ── 給与タブ ──
+  // 髫ｨ貂可髫ｨ貂可 鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ陟托ｽｱ邵ｺ・｡驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可
   else if (tab === 'salary') {
-    // 期間中の給与支払い合計
+    // 髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣髣包ｽｳ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｮ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ陷ｿ螟懶ｽｫ・ｪ髫ｰ繝ｻ・ｼ雋ｻ・ｼ讚∵・鬩帙・・ｽ・ｨ郢晢ｽｻ
     let salaryTotal = 0, salaryWeeks = 0;
     filtered.forEach(h => {
-      (h.details || []).filter(d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与').forEach(d => {
+      (h.details || []).filter(d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ霍昴・・ｵ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ).forEach(d => {
         salaryTotal += d.val;
         salaryWeeks++;
       });
     });
     if (salaryWeeks > 0) {
-      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
-      html += `<div class="panel-title">${periodLabel}の給与支払い</div>`;
-      html += `<div class="finance-row finance-total"><span>給与支払い合計 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}週)</span></span><span class="f-val expense">${salaryTotal.toLocaleString()}万</span></div>`;
+      const periodLabel = period === 'month' ? '髣碑崟・ｰ隨ｬﾂ・ｦ' : period === 'year' ? '髣碑・・ｿ・ｫ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ' : '髯ｷ闌ｨ・ｽ・ｨ髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣';
+      html += `<div class="panel-title">${periodLabel}驍ｵ・ｺ繝ｻ・ｮ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ陷ｿ螟懶ｽｫ・ｪ髫ｰ繝ｻ・ｼ雋ｻ・ｼ繝ｻ/div>`;
+      html += `<div class="finance-row finance-total"><span>鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ陷ｿ螟懶ｽｫ・ｪ髫ｰ繝ｻ・ｼ雋ｻ・ｼ讚∵・鬩帙・・ｽ・ｨ郢晢ｽｻ<span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}鬯ｨ・ｾ繝ｻ・ｱ)</span></span><span class="f-val expense">${salaryTotal.toLocaleString()}髣包ｽｳ郢晢ｽｻ/span></div>`;
       html += `<div style="margin-bottom:14px"></div>`;
     }
-    // 選手別給与（現在のスナップショット）
-    html += '<div class="panel-title">選手別給与（現在）</div>';
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
+    // 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ隰厄ｽｨ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ髮懶ｽ｣繝ｻ・ｼ髢ｧ・ｲ隶捺ｺｯ闊峨・・ｨ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｹ驛｢譎会ｽｿ・ｫ郢晢ｽ｣驛｢譎丞ｹｲ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｧ驛｢譏ｴ繝ｻ郢晢ｽｨ郢晢ｽｻ郢晢ｽｻ
+    html += '<div class="panel-title">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ隰厄ｽｨ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ髮懶ｽ｣繝ｻ・ｼ髢ｧ・ｲ隶捺ｺｯ闊峨・・ｨ郢晢ｽｻ郢晢ｽｻ/div>';
+    html += '<table class="data-table"><tr><th>髯ｷ・ｷ隶朱｡披・</th><th>鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ/th><th>鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ/th></tr>';
     [...G.roster].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
-      html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
+      html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}髣包ｽｳ郢晢ｽｻ/td></tr>`;
     });
     html += '</table>';
   }
@@ -1890,23 +1729,23 @@ function renderFinance() {
 
 function renderLog() {
   const el = document.getElementById('logContent');
-  // ゲーム設定バッジ
-  const modeLabel = G.difficultyMode === 'hard' ? '通常モード（補助金なし）' : '補助金モード';
+  // 驛｢・ｧ繝ｻ・ｲ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ鬮ｫ・ｪ繝ｻ・ｭ髯橸ｽｳ陞｢・ｹ郢晢ｽｰ驛｢譏ｴ繝ｻ邵ｺ繝ｻ
+  const modeLabel = G.difficultyMode === 'hard' ? '鬯ｨ・ｾ陞｢・ｼ繝ｻ・ｸ繝ｻ・ｸ驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譏懶ｽｼ螟ｲ・ｽ・ｼ鬩帙・・ｽ・｣隲幢ｽｷ陷搾ｽｧ鬯ｩ・･闔会ｽ｣遶企・・ｸ・ｺ隴会ｽｦ繝ｻ・ｼ郢晢ｽｻ : '鬮ｯ・ｬ隲幢ｽｷ陷搾ｽｧ鬯ｩ・･闔会ｽ｣・守坩・ｹ譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ;
   const modeColor = G.difficultyMode === 'hard' ? '#e74c3c' : '#3498db';
   const survivalBadge = G.survivalCleared
-    ? '<span style="color:#2ecc71;border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:1px 6px;font-weight:700;margin-left:6px">🎊 経営安定化クリア</span>'
+    ? '<span style="color:#2ecc71;border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:1px 6px;font-weight:700;margin-left:6px">・滓ｫ√・ 鬩搾ｽｨ隰疲ｻ・ず髯橸ｽｳ霑壼遜・ｽ・ｮ陞｢・ｼ陜滂ｽｧ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢</span>'
     : '';
   let html = `<div style="margin-bottom:10px;font-size:11px;color:var(--text-dim)">
     <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>${survivalBadge}
-    <span style="margin-left:6px">${G.orgName} — ${Engine.util.formatDate(G.season, G.week)}</span>
+    <span style="margin-left:6px">${G.orgName} 驕ｯ・ｶ郢晢ｽｻ${Engine.util.formatDate(G.season, G.week)}</span>
   </div>`;
   // v0.95: Enhanced log with filter
   const categories = [
-    { key: 'all', label: '全て', icon: '全' },
-    { key: 'show', label: '興行', icon: '興', match: l => l.includes('興行') || l.includes('MQ') || l.includes('勝利') || l.includes('防衛') },
-    { key: 'finance', label: '財務', icon: '金', match: l => l.includes('収入') || l.includes('支出') || l.includes('万') || l.includes('残高') },
-    { key: 'event', label: 'イベント', icon: '戦', match: l => l.includes('対抗') || l.includes('挑戦') || l.includes('頂上') || l.includes('移籍') || l.includes('レンタル') || l.includes('引き抜き') },
-    { key: 'season', label: 'シーズン', icon: '季', match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
+    { key: 'all', label: '髯ｷ闌ｨ・ｽ・ｨ驍ｵ・ｺ繝ｻ・ｦ', icon: '髯ｷ闌ｨ・ｽ・ｨ' },
+    { key: 'show', label: '鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ, icon: '鬮｣鄙ｫ繝ｻ, match: l => l.includes('鬮｣莨√Γ繝ｻ・｡郢晢ｽｻ) || l.includes('MQ') || l.includes('髯ｷ閧ｴ蜑碁洛繝ｻ) || l.includes('鬯ｮ・ｦ繝ｻ・ｲ鬮ｯ・ｦ郢晢ｽｻ) },
+    { key: 'finance', label: '鬮ｮ蜈ｷ・ｽ・｡髯ｷ髦ｪ繝ｻ, icon: '鬯ｩ・･郢晢ｽｻ, match: l => l.includes('髯ｷ・ｿ闕ｳ・ｻ郢晢ｽｻ') || l.includes('髫ｰ・ｾ繝ｻ・ｯ髯ｷ繝ｻ・ｽ・ｺ') || l.includes('髣包ｽｳ郢晢ｽｻ) || l.includes('髫ｹ・ｿ驕擾ｽｩ繝ｻ・ｫ郢晢ｽｻ) },
+    { key: 'event', label: '驛｢・ｧ繝ｻ・､驛｢譎冗函・趣ｽｦ驛｢譏ｴ繝ｻ, icon: '髫ｰ魃会ｽｽ・ｦ', match: l => l.includes('髯昴・・ｽ・ｾ髫ｰ螢ｹ繝ｻ) || l.includes('髫ｰ荵滂ｽｬ・ｬ陝具ｽｶ') || l.includes('鬯ｯ繝ｻ・・・・ｸ郢晢ｽｻ) || l.includes('鬩募∞・ｽ・ｻ鬩債郢晢ｽｻ) || l.includes('驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ') || l.includes('髯滄｡鯉ｽｼ謚ｫﾂ・ｳ髫ｰ螢ｽ繹ｱ遯ｶ・ｳ') },
+    { key: 'season', label: '驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ', icon: '髯昴・・ｽ・｣', match: l => l.includes('驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ') || l.includes('驛｢・ｧ繝ｻ・ｪ驛｢譏ｴ繝ｻ) || l.includes('髯溽ｬｬ蝮ｩ・つ・つ') || l.includes('鬯ｮ・｢陷ｿ・･繝ｻ・ｹ郢晢ｽｻ) || l.includes('驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ') },
   ];
   const currentFilter = el.dataset.filter || 'all';
   html += '<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">';
@@ -1916,17 +1755,17 @@ function renderLog() {
   });
   html += '</div>';
 
-  // ログエントリのテキスト取得ヘルパー（文字列 or オブジェクト両対応）
+  // 驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｰ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｳ驛｢譎冗樟・取㏍・ｸ・ｺ繝ｻ・ｮ驛｢譏ｴ繝ｻ邵ｺ蜀暦ｽｹ・ｧ繝ｻ・ｹ驛｢譏懶ｽｺ・･陷ｿ蜻ｵ・ｰ蜍溷ｹｲ郢晢ｽｻ驛｢譎｢・ｽ・ｫ驛｢譏懶ｽｻ・｣郢晢ｽｻ郢晢ｽｻ陜捺ｻ捺､｢髯昴・ﾂ諛翫・ or 驛｢・ｧ繝ｻ・ｪ驛｢譎・§邵ｺ螟ゑｽｹ・ｧ繝ｻ・ｧ驛｢・ｧ繝ｻ・ｯ驛｢譏懶ｽｺ蛹・ｽｽ・ｸ繝ｻ・｡髯昴・・ｽ・ｾ髯滂ｽ｢隲幢ｽｶ繝ｻ・ｼ郢晢ｽｻ
   const getLogText = (entry) => typeof entry === 'string' ? entry : (entry && entry.text ? entry.text : '');
   const isSnapshot = (entry) => typeof entry === 'object' && entry && entry.type === 'snapshot';
   const matchFilter = (entry, fn) => fn(getLogText(entry));
   const filtered = currentFilter === 'all' ? G.gameLog : G.gameLog.filter(entry => {
-    if (isSnapshot(entry)) return currentFilter === 'all'; // スナップショットは「全て」のみ
+    if (isSnapshot(entry)) return currentFilter === 'all'; // 驛｢・ｧ繝ｻ・ｹ驛｢譎会ｽｿ・ｫ郢晢ｽ｣驛｢譎丞ｹｲ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｧ驛｢譏ｴ繝ｻ郢晢ｽｨ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｲ隰疲ｺ倥・驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｲ鬮ｦ・ｪ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ
     const fn = categories.find(c => c.key === currentFilter)?.match;
     return fn ? matchFilter(entry, fn) : true;
   });
   const display = filtered.slice(-100).reverse();
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}髣比ｼ夲ｽｽ・ｶ髣包ｽｳ繝ｻ・ｭ 髫ｴ蟠｢ﾂ髫ｴ繝ｻ・ｽ・ｰ${Math.min(display.length, 100)}髣比ｼ夲ｽｽ・ｶ</div>`;
   display.forEach(l => {
     if (isSnapshot(l)) {
       html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
@@ -1937,7 +1776,7 @@ function renderLog() {
   el.innerHTML = html;
 }
 
-// ── Ranking Screen (v0.9) ────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 Ranking Screen (v0.9) 髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function renderRanking() {
   const el = document.getElementById('rankingContent');
   // Recalculate live rankings
@@ -1957,31 +1796,31 @@ function renderRanking() {
     const gap = topAI.rating - playerEntry.rating;
     if (gap > 0) {
       html += `<div style="margin-bottom:16px;padding:12px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:6px;font-size:12px">
-        🎯 <strong>勝利条件</strong>: 1位団体 <strong>${topAI.name}</strong>（${topAI.rating}pt）を超えること — あと <strong style="color:var(--gold)">${gap}pt</strong>
+        ・滓ｫ・ｽｭ繝ｻ<strong>髯ｷ閧ｴ蜑碁洛諛・ｽｭ螟ｲ・ｽ・｡髣比ｼ夲ｽｽ・ｶ</strong>: 1髣厄ｽｴ隶朱宦・ｱ・ｮ髣厄ｽｴ郢晢ｽｻ<strong>${topAI.name}</strong>郢晢ｽｻ郢晢ｽｻ{topAI.rating}pt郢晢ｽｻ陝ｲ・ｨ繝ｻ蟶晏ｱ・ｹ晢ｽｻ遶擾ｽｴ驛｢・ｧ闕ｵ譎｢・ｼ繝ｻ・ｸ・ｺ繝ｻ・ｨ 驕ｯ・ｶ郢晢ｽｻ驍ｵ・ｺ郢ｧ繝ｻ繝ｻ <strong style="color:var(--gold)">${gap}pt</strong>
       </div>`;
     } else {
       html += `<div style="margin-bottom:16px;padding:12px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:6px;font-size:12px">
-        👑 <strong style="color:#2ecc71">業界1位！</strong> あなたの団体が頂点に立っています
+        ・滓ｫ∬・ <strong style="color:#2ecc71">髫ｶ魃会ｽｽ・ｭ鬨ｾ・｡郢晢ｽｻ髣厄ｽｴ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/strong> 驍ｵ・ｺ郢ｧ繝ｻ繝ｻ驍ｵ・ｺ雋・･繝ｻ髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｮﾂ・ｲ鬯ｯ繝ｻ・臥ｸｺ蟶ｷ・ｸ・ｺ繝ｻ・ｫ鬩包ｽｶ闕ｵ譏ｶ螟｢驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ
       </div>`;
     }
   }
 
-  // Ranking table — tooltip texts stored in global to avoid HTML-in-attribute issues
+  // Ranking table 驕ｯ・ｶ郢晢ｽｻtooltip texts stored in global to avoid HTML-in-attribute issues
   window._rankTips = {
-    rating: '基礎力 + 対戦ポイントの合計が<br>ランキング評価値',
-    base:   'TOP5平均OVR × 1.5 + TOP5平均人気 × 1.0<br>選手の実力と人気で決まる基礎力',
-    battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
+    rating: '髯憺屮・ｽ・ｺ鬩墓・・ｸ・ｻ鬲假ｽｨ + 髯昴・・ｽ・ｾ髫ｰ魃会ｽｽ・ｦ驛｢譎・ｺ｢邵ｺ繝ｻ・ｹ譎｢・ｽ・ｳ驛｢譎冗樟郢晢ｽｻ髯ｷ・ｷ鬩帙・・ｽ・ｨ陋ｹ・ｻ遯ｶ・ｲ<br>驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ鬮ｫ・ｧ驕ｨ繧托ｽｽ・ｾ繝ｻ・｡髯区ｻゑｽｽ・､',
+    base:   'TOP5髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ遶ｭ・ｯVR 繝ｻ繝ｻ繝ｻ1.5 + TOP5髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ郢晢ｽｻ繝ｻ・ｺ繝ｻ・ｺ髮主ｾ後・繝ｻ繝ｻ繝ｻ1.0<br>鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ髯橸ｽｳ雋・ｽｷ鬲假ｽｨ驍ｵ・ｺ繝ｻ・ｨ髣費｣ｰ繝ｻ・ｺ髮取ぁ蟷ｲ邵ｲ螳夲ｽｱ雜｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ陷ｿ・･雋よ坩笙り叉・ｻ鬲假ｽｨ',
+    battle: '髯昴・・ｽ・ｾ髫ｰ螟りｻｸ陝具ｽｶ驛｢譎｢・ｽ・ｻ鬯ｯ繝ｻ・・・・ｸ鬯・汚・ｽ・ｱ繝ｻ・ｺ髫ｰ魃会ｽｽ・ｦ驛｢譎｢・ｽ・ｻ鬩搾ｽｨ繝ｻ・ｱ髣包ｽｳ・つ驛｢譎冗樟郢晢ｽｻ驛｢譎会ｽｿ・ｫ・朱豪・ｹ譎｢・ｽ・ｳ驛｢譎冗樟郢晢ｽｻ<br>髯ｷ閧ｴ蛻矩ｬ夲ｽｨ驍ｵ・ｺ繝ｻ・ｧ髯溘・霆ｸ繝ｻ・ｸ陝ｶ蜷ｮ繝ｻ驛｢・ｧ陷ｿ・･繝ｻ・ｯ繝ｻ・ｾ髫ｰ魃会ｽｽ・ｦ驛｢譎・ｺ｢邵ｺ繝ｻ・ｹ譎｢・ｽ・ｳ驛｢譏ｴ繝ｻbr>髮惹ｺ･・ｼ・ｱ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・ｻ驛｢譏ｴ繝ｻ郢晢ｽｨ'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
-  html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
-    `<th style="text-align:right">評価値${tt('rating')}</th>` +
-    `<th style="text-align:right">基礎力${tt('base')}</th>` +
-    `<th style="text-align:right">対戦pt${tt('battle')}</th>` +
-    `<th style="text-align:right">人数</th></tr>`;
+  html += `<table class="data-table"><tr><th style="width:40px">#</th><th>髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛟ｬ蛟ｹ</th>` +
+    `<th style="text-align:right">鬮ｫ・ｧ驕ｨ繧托ｽｽ・ｾ繝ｻ・｡髯区ｻゑｽｽ・､${tt('rating')}</th>` +
+    `<th style="text-align:right">髯憺屮・ｽ・ｺ鬩墓・・ｸ・ｻ鬲假ｽｨ${tt('base')}</th>` +
+    `<th style="text-align:right">髯昴・・ｽ・ｾ髫ｰ魃会ｽｽ・ｦpt${tt('battle')}</th>` +
+    `<th style="text-align:right">髣費｣ｰ繝ｻ・ｺ髫ｰ・ｨ繝ｻ・ｰ</th></tr>`;
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const emoji = isPlayer ? '🏠' : (org ? org.emoji : '');
+    const emoji = isPlayer ? '・滓ｧｫ讓ｩ' : (org ? org.emoji : '');
     const rc = getRankColor(r.rank, r.orgId);
     const bgStyle = isPlayer ? `background:${rc}10` : '';
     const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
@@ -1998,7 +1837,7 @@ function renderRanking() {
   });
   html += '</table>';
 
-  // Org detail cards — unified by ranking order
+  // Org detail cards 驕ｯ・ｶ郢晢ｽｻunified by ranking order
   const rankFighterCount = { 1: 5, 2: 4, 3: 3, 4: 2 };
   html += '<div style="margin-top:20px;display:grid;gap:12px">';
   rankings.forEach(r => {
@@ -2021,21 +1860,21 @@ function renderRanking() {
       }
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">・滓ｧｫ讓ｩ ${G.orgName || '驛｢譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}髣厄ｽｴ郢晢ｽｻ/span></span>
+          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt 郢晢ｽｻ郢晢ｽｻ${G.roster.length}髯ｷ・ｷ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ遶ｭ・ｯVR:${avgOvr} 郢晢ｽｻ郢晢ｽｻ髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・${Engine.util.dispOrgPop(G.orgPop)}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">鬩阪・莠具ｾつ郢晢ｽｻ ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || '驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ : '<span style="color:var(--text-dim)">髣包ｽｳ隶朱対・/span>'}</div>
         <div style="font-size:13px;margin-top:10px">
-          <span style="color:var(--text-dim)">主力:</span>
+          <span style="color:var(--text-dim)">髣包ｽｳ繝ｻ・ｻ髯ｷ蟲ｨ繝ｻ</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => {
             const isChamp = G.titles?.world?.championId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' ・滓ｫ∬・鬩阪・莠具ｾつ郢晢ｽｻ : ''}</span></div>`;
           }).join('')}
           </div>
         </div>
         <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${G.roster.length}名）</summary>
+          <summary style="font-size:13px;color:${rc};cursor:pointer">・滓ｧｫ謠ｴ 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ蟶晏寰闕ｵ譎｢・ｽ荵昴・郢晢ｽｻ{G.roster.length}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
             ${[...G.roster].sort((a,b) => ov(b) - ov(a)).map(f => {
               const fOvr = ov(f);
@@ -2043,17 +1882,17 @@ function renderRanking() {
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' 👑' : ''}</div>
-                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' ・滓ｫ∬・' : ''}</div>
+                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} 驛｢譎｢・ｽ・ｻ ${f.style || '?'}</div>
                 </div>
-                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
+                <div style="font-size:11px;color:var(--text-dim)">鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ 驕ｶ鄙ｫ繝ｻ/div>
               </div>`;
             }).join('')}
           </div>
         </details>
       </div>`;
     } else if (org) {
-      // AI org card — use rank color
+      // AI org card 驕ｯ・ｶ郢晢ｽｻuse rank color
       const rc = getRankColor(r.rank, r.orgId);
       const aiData = G.aiOrgs && G.aiOrgs[org.id];
       if (!aiData) return;
@@ -2064,18 +1903,18 @@ function renderRanking() {
 
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}鬩堺ｸ翫・/span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}髣厄ｽｴ郢晢ｽｻ/span></span>
+          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} 郢晢ｽｻ郢晢ｽｻ${roster.length}髯ｷ・ｷ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ遶ｭ・ｯVR:${avgOvr} 郢晢ｽｻ郢晢ｽｻ髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・${Engine.util.dispOrgPop(aiData.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${org.desc}</div>
         <div style="font-size:13px;margin-top:10px">
-          <span style="color:var(--text-dim)">主力:</span>
+          <span style="color:var(--text-dim)">髣包ｽｳ繝ｻ・ｻ髯ｷ蟲ｨ繝ｻ</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}</span></div>`).join('')}
           </div>
         </div>
         <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${roster.length}名）</summary>
+          <summary style="font-size:13px;color:${rc};cursor:pointer">・滓ｧｫ謠ｴ 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ蟶晏寰闕ｵ譎｢・ｽ荵昴・郢晢ｽｻ{roster.length}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
             ${[...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a)).map((f, idx) => {
               const fOvr = Engine.util.ov(f);
@@ -2083,10 +1922,10 @@ function renderRanking() {
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}</div>
-                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">髫ｨ蛟･繝ｻ隲ｱ螟奇ｽｭ螟ｲ・ｽ・ｿ</span>' : ''}</div>
+                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} 驛｢譎｢・ｽ・ｻ ${f.style || '?'}</div>
                 </div>
-                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
+                <div style="font-size:11px;color:var(--text-dim)">鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ 驕ｶ鄙ｫ繝ｻ/div>
               </div>`;
             }).join('')}
           </div>
@@ -2099,17 +1938,17 @@ function renderRanking() {
   // v0.95: Season History
   if (G.seasonHistory && G.seasonHistory.length > 0) {
     html += '<div style="margin-top:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px">';
-    html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📈 シーズン履歴</h4>';
-    html += '<table class="data-table"><tr><th>シーズン</th><th style="text-align:right">順位</th><th style="text-align:right">興行数</th><th style="text-align:right">最高MQ</th><th style="text-align:right">収支</th><th style="text-align:right">最終資金</th><th style="text-align:right">人数</th></tr>';
+    html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">・滓ｧｫ・ｶ繝ｻ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ髯橸ｽｻ繝ｻ・･髮弱・・ｽ・ｴ</h4>';
+    html += '<table class="data-table"><tr><th>驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ</th><th style="text-align:right">鬯ｯ繝ｻ繝ｻ繝ｻ・ｽ郢晢ｽｻ/th><th style="text-align:right">鬮｣莨√Γ繝ｻ・｡隴ｴ・ｧ霎溘・/th><th style="text-align:right">髫ｴ蟠｢ﾂ鬯ｯ・ｮ陟岱</th><th style="text-align:right">髯ｷ・ｿ陷ｿ螟懶ｽｫ・ｪ</th><th style="text-align:right">髫ｴ蟠｢ﾂ鬩搾ｽｨ郢ｧ螂・ｽｽ・ｳ郢晢ｽｻ遶包ｽ｡</th><th style="text-align:right">髣費｣ｰ繝ｻ・ｺ髫ｰ・ｨ繝ｻ・ｰ</th></tr>';
     G.seasonHistory.forEach(h => {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
       html += `<tr>
-        <td>${h.season}年目</td>
-        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank===2?'#e74c3c':h.rank===3?'#9b59b6':'#2ecc71'}">${h.rank}位</td>
+        <td>${h.season}髯晢ｽｷ繝ｻ・ｴ鬨ｾ・ｶ繝ｻ・ｮ</td>
+        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank===2?'#e74c3c':h.rank===3?'#9b59b6':'#2ecc71'}">${h.rank}髣厄ｽｴ郢晢ｽｻ/td>
         <td class="num">${h.showCount || 0}</td>
         <td class="num" style="color:#3498db">${h.bestMQ || 0}</td>
-        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${profit.toLocaleString()}万</td>
-        <td class="num">${(h.funds||0).toLocaleString()}万</td>
+        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${profit.toLocaleString()}髣包ｽｳ郢晢ｽｻ/td>
+        <td class="num">${(h.funds||0).toLocaleString()}髣包ｽｳ郢晢ｽｻ/td>
         <td class="num">${h.rosterSize || '-'}</td>
       </tr>`;
     });
@@ -2129,17 +1968,17 @@ function renderScout() {
   const _rCap = G.rosterCap || 6;
   const _capFull = _ownCount >= _rCap;
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">
-    所属: <span style="color:var(--text)">${_ownCount}/${_rCap}名${_capFull ? '（上限）' : ''}</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
+    髫ｰ繝ｻﾂ髯橸ｽｻ郢晢ｽｻ <span style="color:var(--text)">${_ownCount}/${_rCap}髯ｷ・ｷ郢晢ｽｻ{_capFull ? '郢晢ｽｻ闔蛹・ｽｽ・ｸ闔ｨ竏晏ｿ懃ｹ晢ｽｻ郢晢ｽｻ : ''}</span> 郢晢ｽｻ郢晢ｽｻ驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ: ${G.freeAgents.length}髯ｷ・ｷ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・ ${Engine.util.dispOrgPop(G.orgPop)}
   </div>
-  ${_capFull ? `<div style="padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-sub);margin-bottom:10px">ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
+  ${_capFull ? `<div style="padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-sub);margin-bottom:10px">驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｼ髫ｴ・ｫ繝ｻ・ｰ驍ｵ・ｺ陟包ｽ｡繝ｻ・ｸ闔ｨ竏晏ｿ懃ｹ晢ｽｻ郢晢ｽｻ{_rCap}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ陝ｲ・ｨ遶企ｦｴ・ｩ蠅馴ｱ偵・・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ閧ｲ謔幃ｫｫ遨ゑｽｸ讖ｸ・ｽ・･鬩｢謳ｾ・ｽ・ｴ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢晢ｽｻ/div>` : ''}`;
 
-  // Free agents — compact card list (click name/portrait to open popup with acquire button)
+  // Free agents 驕ｯ・ｶ郢晢ｽｻcompact card list (click name/portrait to open popup with acquire button)
   const visibleFAIds = Engine.util.getVisibleFAIds(G);
   const visibleFA = [...G.freeAgents].filter(c => visibleFAIds.includes(c.id)).sort((a,b) => ov(b) - ov(a));
   const currentQ = getQuarter(G.week);
   const qLabel = QUARTER_LABELS[currentQ] || '';
-  html += `<div class="panel-title" style="font-size:13px">フリーエージェント一覧 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${qLabel}の紹介枠 ${visibleFA.length}/${G.freeAgents.length}名)</span></div>`;
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💡 紹介枠は四半期ごとに入れ替わります</div>`;
+  html += `<div class="panel-title" style="font-size:13px">驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｧ驛｢譎｢・ｽ・ｳ驛｢譏懶ｽｺ蛹・ｽｽ・ｸ・つ鬮ｫ蛹・ｽｽ・ｧ <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${qLabel}驍ｵ・ｺ繝ｻ・ｮ鬩肴得・ｽ・ｹ髣皮甥邇・ｭｽ・ｧ ${visibleFA.length}/${G.freeAgents.length}髯ｷ・ｷ郢晢ｽｻ</span></div>`;
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">・滓ｧｫ・ｺ繝ｻ鬩肴得・ｽ・ｹ髣皮甥邇・ｭｽ・ｧ驍ｵ・ｺ繝ｻ・ｯ髯懈懶ｽｸ蟶ｶ・ｿ・ｰ髫ｴ蟶ｶ・ｺ蛛・ｽｼ繝ｻ・ｸ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｫ髯ｷ闌ｨ・ｽ・･驛｢・ｧ隴ｴ・ｧ陝蟶ｷ・ｹ・ｧ闕ｳ螂・ｽｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ/div>`;
   visibleFA.forEach(c => {
     const STYLE_META = {
       Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
@@ -2158,62 +1997,62 @@ function renderScout() {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
-          <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
+          <span style="font-size:14px;color:var(--text-dim)">${c.age}髮弱・・ｽ・ｳ</span>
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
           <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
-          ${viaTicket ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4);font-weight:600">🎫 特別交渉枠</span>' : ''}
-          ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+          ${viaTicket ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4);font-weight:600">・滓ｫ・ｽｾ繝ｻ髴大､ｲ・ｽ・ｹ髯具ｽｻ繝ｻ・･髣費｣ｰ繝ｻ・､髮九ｉ蛻､隴ｽ・ｧ</span>' : ''}
+          ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">髫ｨ・ｵ郢晢ｽｻ鬩墓得・ｽ・･髯ｷ・ｷ隶主･・ｽｽ・ｺ繝ｻ・ｦ髣包ｽｳ陝雜｣・ｽ・ｶ繝ｻ・ｳ</span>' : ''}
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
         <div style="font-size:28px;font-weight:900;color:var(--gold);line-height:1">${ov(c)}<span style="font-size:10px;font-weight:600;color:var(--text-dim);margin-left:2px">OVR</span></div>
-        <div style="font-size:22px;font-weight:800;color:#e8439f;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
+        <div style="font-size:22px;font-weight:800;color:#e8439f;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">髣包ｽｳ郢晢ｽｻ/span></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ<b style="color:var(--text)">${getSalary(c)}髣包ｽｳ郢晢ｽｻ/b>/鬯ｨ・ｾ繝ｻ・ｱ</div>
       </div>
     </div>`;
   });
   if (visibleFA.length === 0) {
-    html += '<div style="text-align:center;padding:24px;color:var(--text-dim)">この四半期の紹介枠にフリーエージェントはいません</div>';
+    html += '<div style="text-align:center;padding:24px;color:var(--text-dim)">驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ髯懈懶ｽｸ蟶ｶ・ｿ・ｰ髫ｴ蟶ｶ・ｺ蛟･繝ｻ鬩肴得・ｽ・ｹ髣皮甥邇・ｭｽ・ｧ驍ｵ・ｺ繝ｻ・ｫ驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｧ驛｢譎｢・ｽ・ｳ驛｢譎冗樟郢晢ｽｻ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>';
   }
 
-  // ── Phase D: Rental Section ──
+  // 髫ｨ貂可髫ｨ貂可 Phase D: Rental Section 髫ｨ貂可髫ｨ貂可
   const activeRentals = G.rentals || [];
   const ownRoster = G.roster.filter(c => !c.isRental);
   const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
   const remainingSlots = Math.max(0, maxSlots - activeRentals.length);
-  html += `<div class="panel-title" style="font-size:15px;margin-top:18px">🤝 レンタル（${activeRentals.length}/${maxSlots}枠）</div>`;
+  html += `<div class="panel-title" style="font-size:15px;margin-top:18px">・滓ｩｸ・ｽ・､郢晢ｽｻ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ郢晢ｽｻ郢晢ｽｻ{activeRentals.length}/${maxSlots}髫ｴ・ｫ繝ｻ・ｰ郢晢ｽｻ郢晢ｽｻ/div>`;
   // Active rentals display
   if (activeRentals.length > 0) {
     activeRentals.forEach(contract => {
       const rentalF = G.roster.find(c => c.id === contract.fighterId);
       const fromLabel = contract.fromSource === 'rival'
         ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || contract.fromOrgId)
-        : 'フリーエージェント';
+        : '驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｧ驛｢譎｢・ｽ・ｳ驛｢譏ｴ繝ｻ;
       html += `<div style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <span style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '不明'}</span>
-            <span style="font-size:12px;color:var(--text-sub);margin-left:8px">← ${fromLabel}</span>
+            <span style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '髣包ｽｳ髢ｧ・ｴ郢晢ｽｻ'}</span>
+            <span style="font-size:12px;color:var(--text-sub);margin-left:8px">驕ｶ鄙ｫ繝ｻ${fromLabel}</span>
           </div>
-          <div style="font-size:13px;color:var(--gold)">残り${contract.seasonsLeft}期(${contract.seasonsLeft * 12}週)</div>
+          <div style="font-size:13px;color:var(--gold)">髫ｹ・ｿ闕ｵ譎｢・ｽ繝ｻ{contract.seasonsLeft}髫ｴ蟶吶・${contract.seasonsLeft * 12}鬯ｨ・ｾ繝ｻ・ｱ)</div>
         </div>
       </div>`;
     });
   }
   // Rental market
   if (G.offSeason) {
-    html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">オフシーズン中はレンタルできません</div>';
+    html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶・驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｳ髣包ｽｳ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｯ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>';
   } else if (remainingSlots <= 0) {
-    html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">レンタル枠が満員です</div>';
+    html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ髫ｴ・ｫ繝ｻ・ｰ驍ｵ・ｺ隴ｴ・ｧ繝ｻ・ｺ・つ髯ｷ・ｩ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ郢晢ｽｻ/div>';
   } else {
     const rentals = Engine.rental.getAvailableRentals(G);
     const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
     const visibleRentals = rentals.filter(r => visibleRentalIds.includes(r.fighter.id));
     if (visibleRentals.length === 0) {
-      html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">レンタル可能な選手がいません</div>';
+      html += '<div style="font-size:13px;color:var(--text-dim);padding:10px">驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ髯ｷ・ｿ繝ｻ・ｯ鬮｢・ｭ繝ｻ・ｽ驍ｵ・ｺ繝ｻ・ｪ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶﾂ・ｲ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>';
     } else {
       // Sort rental candidates
       const sortKey = window._rentalSortKey || 'fee';
@@ -2226,30 +2065,30 @@ function renderScout() {
         else { va = 0; vb = 0; }
         return sortAsc ? va - vb : vb - va;
       });
-      const arrow = k => sortKey === k ? (sortAsc ? ' ▲' : ' ▼') : '';
+      const arrow = k => sortKey === k ? (sortAsc ? ' 髫ｨ繝ｻ・ｽ・ｲ' : ' 髫ｨ繝ｻ・ｽ・ｼ') : '';
       const thStyle = 'cursor:pointer;user-select:none';
-      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">1〜4期契約（1期=12週） / 前払い一括 / OVR上位${RENTAL_CONFIG.topExclude}名は対象外（団体） ｜ 紹介枠${visibleRentals.length}名（四半期入替）</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">1驍ｵ・ｲ郢晢ｽｻ髫ｴ蟶ｶ・ｺ・ｷ繝ｻ・･鬩｢謳ｾ・ｽ・ｴ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ髫ｴ蟶吶・12鬯ｨ・ｾ繝ｻ・ｱ郢晢ｽｻ郢晢ｽｻ/ 髯ｷ鬘後＊鬲伜ｸｷ・ｸ・ｺ郢晢ｽｻ繝ｻ・ｸ・つ髫ｲ・｡繝ｻ・ｬ / OVR髣包ｽｳ髮榊・・ｽ・ｽ郢晢ｽｻ{RENTAL_CONFIG.topExclude}髯ｷ・ｷ鬮ｦ・ｪ郢晢ｽｻ髯昴・・ｽ・ｾ鬮ｮ雜｣・ｽ・｡髯樊ｺｷ遘√・・ｼ闔・･陞ｻ・ｮ髣厄ｽｴ鬮ｮ・｣繝ｻ・ｼ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ鬩肴得・ｽ・ｹ髣皮甥邇・ｭｽ・ｧ${visibleRentals.length}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ闔・･陞ｻ竏ｬ諤ｺ鬯・ｬｬ・・匚闌ｨ・ｽ・･髫ｴ蜴・ｽｽ・ｿ郢晢ｽｻ郢晢ｽｻ/div>`;
       html += `<div style="overflow-x:auto"><table class="data-table"><tr>
-        <th style="${thStyle}" onclick="sortRentalTable('name')">名前${arrow('name')}</th>
-        <th>供給元</th><th>Style</th>
-        <th style="${thStyle}" onclick="sortRentalTable('ovr')">総合${arrow('ovr')}</th>
-        <th>期間</th>
-        <th style="${thStyle}" onclick="sortRentalTable('fee')">費用${arrow('fee')}</th>
-        <th>交渉</th></tr>`;
+        <th style="${thStyle}" onclick="sortRentalTable('name')">髯ｷ・ｷ隶朱｡披・${arrow('name')}</th>
+        <th>髣懃§・ｸ・ｷ繝ｻ・ｵ繝ｻ・ｦ髯ｷ蛹ｻ繝ｻ/th><th>Style</th>
+        <th style="${thStyle}" onclick="sortRentalTable('ovr')">鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ{arrow('ovr')}</th>
+        <th>髫ｴ蟶ｶ・ｻ繝ｻ・ｿ・｣</th>
+        <th style="${thStyle}" onclick="sortRentalTable('fee')">鬮ｮ蜈ｷ・ｽ・ｻ鬨ｾ蛹・ｽｽ・ｨ${arrow('fee')}</th>
+        <th>髣費｣ｰ繝ｻ・､髮九ｅ繝ｻ/th></tr>`;
       sorted.forEach(r => {
         const srcLabel = r.source === 'rival' ? (r.org?.name || '?') : 'FA';
         const srcLink = r.source === 'rival' ? `ai:${r.org.id}` : 'free';
         const feeFor1 = r.fees[1];
         const selectId = `rentalSeasons_${r.fighter.id}`;
-        const seasonOpts = [1,2,3,4].map(n => `<option value="${n}">${n}期(${n*12}週)</option>`).join('');
+        const seasonOpts = [1,2,3,4].map(n => `<option value="${n}">${n}髫ｴ蟶吶・${n*12}鬯ｨ・ｾ繝ｻ・ｱ)</option>`).join('');
         html += `<tr>
           <td>${fLink(r.fighter, {source:srcLink})}</td>
           <td style="font-size:13px;color:var(--text-sub)">${srcLabel}</td>
           <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
           <td class="num ov">${Engine.util.ov(r.fighter)}</td>
           <td><select id="${selectId}" onchange="updateRentalFee(${r.fighter.id})" style="font-size:12px;padding:2px 4px;background:var(--card-bg);color:var(--text);border:1px solid var(--border)">${seasonOpts}</select></td>
-          <td class="num" style="color:#f39c12"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
-          <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
+          <td class="num" style="color:#f39c12"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>髣包ｽｳ郢晢ｽｻ/td>
+          <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${G.funds >= feeFor1 ? '' : 'disabled'}>驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｫ</button></td>
         </tr>`;
       });
       html += '</table></div>';
@@ -2259,19 +2098,19 @@ function renderScout() {
   el.innerHTML = html;
 }
 
-// ── Scout Event Rendering ─────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 Scout Event Rendering 髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function renderScoutEvent() {
   const el = document.getElementById('scoutEventContent');
   if (!el) return;
-  const candidates = G.scoutCandidates || [];
+  const candidates = G.scout候補選手 || [];
   const picks = G.scoutPicks || [];
   const maxPicks = G.scoutMaxPicks || 3;
   const discount = 0;
   const orgPop = G.orgPop || 0;
-  const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+  const eventLabel = G.scoutEventType === 'midseason' ? '鬮ｯ・ｬ隲幢ｽｷ繝ｻ・ｼ繝ｻ・ｷ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ : '驛｢譎｢・ｽ・｡驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ;
 
   const titleEl = document.getElementById('scoutEventTitle');
-  if (titleEl) titleEl.textContent = `🔍 ${eventLabel} — 候補 ${candidates.length}名`;
+  if (titleEl) titleEl.textContent = `・滓ｧｫ鄙・${eventLabel} 驕ｯ・ｶ郢晢ｽｻ髯区ｺｷ謠・・・｣郢晢ｽｻ${candidates.length}髯ｷ・ｷ雋ゑｽｯ;
 
   const STYLE_META = {
     Grappler:   {color:'#bb8fce',icon:'GRP'}, Striker:    {color:'#e74c3c',icon:'STK'},
@@ -2280,14 +2119,14 @@ function renderScoutEvent() {
   };
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${G.funds.toLocaleString()}万</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">鬮ｮ蟲ｨ繝ｻ遶包ｽ｡: <strong style="color:var(--gold)">${G.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ/strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">髴托ｽｯ繝ｻ・ｲ髯溯ｼ斐・ <strong style="color:#2ecc71">${picks.length} / ${maxPicks}髯ｷ・ｷ郢晢ｽｻ/strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・ <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
     
   </div>`;
 
   if (candidates.length === 0) {
-    html += '<div style="text-align:center;padding:32px;color:var(--text-dim)">全候補の確認が完了しました</div>';
+    html += '<div style="text-align:center;padding:32px;color:var(--text-dim)">髯ｷ闌ｨ・ｽ・ｨ髯区ｺｷ謠・・・｣隲帷ｿｫ繝ｻ鬩墓慣・ｽ・ｺ鬮ｫ・ｱ鬮ｦ・ｪ遯ｶ・ｲ髯橸ｽｳ陟包ｽ｡繝ｻ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷会ｽｱ隨ｳ繝ｻ/div>';
   }
 
   candidates.forEach(c => {
@@ -2303,27 +2142,27 @@ function renderScoutEvent() {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
-          <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
+          <span style="font-size:14px;color:var(--text-dim)">${c.age}髮弱・・ｽ・ｳ</span>
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
           <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
-          ${c._isSeed ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目</span>' : ''}
-          ${c._hasCompetition ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 競合</span>' : ''}
-          ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+          ${c._isSeed ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">驍よ亢繝ｻ髮主桁・ｽ・ｨ鬨ｾ・ｶ繝ｻ・ｮ</span>' : ''}
+          ${c._hasCompetition ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">髫ｨ讒ｭ繝ｻ鬩包ｽｶ繝ｻ・ｶ髯ｷ・ｷ郢晢ｽｻ/span>' : ''}
+          ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">髫ｨ・ｵ郢晢ｽｻ鬩墓得・ｽ・･髯ｷ・ｷ隶主･・ｽｽ・ｺ繝ｻ・ｦ髣包ｽｳ陝雜｣・ｽ・ｶ繝ｻ・ｳ</span>' : ''}
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
         <div style="font-size:28px;font-weight:900;color:var(--gold)">${estAvg}</div>
-        <div style="font-size:12px;color:var(--text-dim)">推定OVR</div>
+        <div style="font-size:12px;color:var(--text-dim)">髫ｰ證ｦ・ｽ・ｨ髯橸ｽｳ陷夲ｽｹVR</div>
       </div>
     </div>`;
   });
 
   html += `<div class="btn-row" style="margin-top:16px">
-    <button class="btn btn-gold" onclick="scoutFinish()">🔍 スカウト活動終了</button>
-    <button class="btn btn-blue" onclick="showScreen('week')">← 週画面に戻る</button>
+    <button class="btn btn-gold" onclick="scoutFinish()">・滓ｧｫ鄙・驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譎乗ｲｺ繝ｻ・ｴ繝ｻ・ｻ髯ｷ閧ｴ繝ｻ繝ｻ・ｵ郢ｧ繝ｻ・ｽ・ｺ郢晢ｽｻ/button>
+    <button class="btn btn-blue" onclick="showScreen('week')">驕ｶ鄙ｫ繝ｻ鬯ｨ・ｾ繝ｻ・ｱ鬨ｾ蛹・ｽｽ・ｻ鬯ｮ・ｱ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｫ髫ｰ魃会ｽｽ・ｻ驛｢・ｧ郢晢ｽｻ/button>
   </div>`;
 
   el.innerHTML = html;
@@ -2338,31 +2177,31 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   modal.id = 'scoutCompModal';
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.2s';
   modal.innerHTML = `<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:360px;width:90%">
-    <h3 style="color:#e74c3c;margin-bottom:12px;text-align:center">⚔ 他団体との競合発生！</h3>
+    <h3 style="color:#e74c3c;margin-bottom:12px;text-align:center">髫ｨ讒ｭ繝ｻ髣碑崟鞫ｩ陞ｻ・ｮ髣厄ｽｴ髦ｮ蜷ｮ繝ｻ驍ｵ・ｺ繝ｻ・ｮ鬩包ｽｶ繝ｻ・ｶ髯ｷ・ｷ髢ｧ・ｲ陋ｹ・ｱ鬨ｾ蠅難ｽｻ繧托ｽｽ・ｼ郢晢ｽｻ/h3>
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:15px;font-weight:700;margin-bottom:4px">${cand.name}</div>
-      <div style="font-size:12px;color:var(--text-dim)">${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
+      <div style="font-size:12px;color:var(--text-dim)">${tierCfg.label} / ${cand.style} / ${cand.age}髮弱・・ｽ・ｳ</div>
     </div>
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;font-size:12px">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span>通常契約金:</span><span style="color:var(--gold)">${baseCost}万</span>
+        <span>鬯ｨ・ｾ陞｢・ｼ繝ｻ・ｸ繝ｻ・ｸ髯槭ｋ繝ｻ繝ｻ・ｴ郢晢ｽｻ遶包ｽ｡:</span><span style="color:var(--gold)">${baseCost}髣包ｽｳ郢晢ｽｻ/span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span>競合上乗せ (×${cand._compMultiplier}):</span><span style="color:#e74c3c;font-weight:700">${compCost}万</span>
+        <span>鬩包ｽｶ繝ｻ・ｶ髯ｷ・ｷ闔蛹・ｽｽ・ｸ髮榊・・ｽ・ｹ陷会ｽｱ隨ｳ繝ｻ(繝ｻ繝ｻ繝ｻ{cand._compMultiplier}):</span><span style="color:#e74c3c;font-weight:700">${compCost}髣包ｽｳ郢晢ｽｻ/span>
       </div>
       <div style="display:flex;justify-content:space-between">
-        <span>通常額での勝率:</span><span style="color:#f39c12">${winRate}%</span>
+        <span>鬯ｨ・ｾ陞｢・ｼ繝ｻ・ｸ繝ｻ・ｸ鬯ｯ蛟ｬ莠らｸｲ蝣､・ｸ・ｺ繝ｻ・ｮ髯ｷ閧ｴ蛻ｮ驍擾ｽｫ:</span><span style="color:#f39c12">${winRate}%</span>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'pay')" class="btn btn-gold" style="width:100%" ${G.funds >= compCost ? '' : 'disabled'}>
-        💰 上乗せ確定獲得 (${compCost}万)
+        ・滓ｫ√・ 髣包ｽｳ髮榊・・ｽ・ｹ陷会ｽｱ隨ｳ遏ｩ・｡繝ｻ・ｺ髯橸ｽｳ陞溘ｆ・ｽ蜊・ｰ霈斐・(${compCost}髣包ｽｳ郢晢ｽｻ
       </button>
       <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'gamble')" class="btn btn-blue" style="width:100%">
-        🎲 通常額で勝負 (${baseCost}万 / 勝率${winRate}%)
+        ・滓ｫ・ｽｻ・ｸ 鬯ｨ・ｾ陞｢・ｼ繝ｻ・ｸ繝ｻ・ｸ鬯ｯ蛟ｬ莠らｸｲ螳壽↑隴弱・・ｽ・ｲ繝ｻ・ｰ (${baseCost}髣包ｽｳ郢晢ｽｻ/ 髯ｷ閧ｴ蛻ｮ驍擾ｽｫ${winRate}%)
       </button>
       <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'skip')" class="btn" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim)">
-        ❌ 諦める
+        髫ｨ・ｶ郢晢ｽｻ鬮ｫ・ｲ繝ｻ・ｦ驛｢・ｧ遶丞､ｲ・ｽ繝ｻ
       </button>
     </div>
   </div>`;
@@ -2372,9 +2211,9 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   document.body.appendChild(modal);
 }
 
-// ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 9B: COACH & SAVE UI (v0.6)                      ║
-// ╚══════════════════════════════════════════════════════════╝
+// 髫ｨ鬆大繭雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ鬯夲ｽｨ
+// 髫ｨ鄙ｫ繝ｻ SECTION 9B: COACH & SAVE UI (v0.6)                      髫ｨ鄙ｫ繝ｻ
+// 髫ｨ髮・ｽ｣・ｺ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ陝ｷ繝ｻ
 function renderCoach() {
   const el = document.getElementById('coachContent');
   if (!el) return;
@@ -2384,8 +2223,8 @@ function renderCoach() {
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const coachEffectHtml = (c) => {
     const mult = COACH_RANKS[c.teaching] || 1.0;
-    return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
-      <span style="font-size:12px;color:var(--gold);font-weight:700">指導×${mult}</span>
+    return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}鬩堺ｸ翫・/span>
+      <span style="font-size:12px;color:var(--gold);font-weight:700">髫ｰ謔ｶ繝ｻ繝ｻ・ｰ陋幢ｽｲ郢晢ｽｻ{mult}</span>
       <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span>
       <span class="coach-trait">${c.trait}</span>`;
   };
@@ -2394,28 +2233,28 @@ function renderCoach() {
   const coachBrief = (c) => (COACH_TRAIT_DEFS[c.trait] || {}).desc || '';
 
   const maxCoaches = Engine.coach.getMaxCoaches(G);
-  const nextSlot = (G.orgPop||0) < 25 ? '次の枠: 知名度25' : (G.orgPop||0) < 50 ? '次の枠: 知名度50' : '全枠解放';
+  const nextSlot = (G.orgPop||0) < 25 ? '髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ髫ｴ・ｫ繝ｻ・ｰ: 鬩墓得・ｽ・･髯ｷ・ｷ隶主･・ｽｽ・ｺ繝ｻ・ｦ25' : (G.orgPop||0) < 50 ? '髫ｹ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｮ髫ｴ・ｫ繝ｻ・ｰ: 鬩墓得・ｽ・･髯ｷ・ｷ隶主･・ｽｽ・ｺ繝ｻ・ｦ50' : '髯ｷ闌ｨ・ｽ・ｨ髫ｴ・ｫ繝ｻ・ｰ鬮ｫ證ｦ・ｽ・｣髫ｰ・ｾ繝ｻ・ｾ';
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    雇用中: ${hired.length}/${maxCoaches}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週 ｜ ${nextSlot}
-    <br><span style="font-size:12px;color:var(--text-dim)">※ 選手のアサインは「🏋️ 育成」画面で行えます ｜ コーチ名タップで詳細</span>
+    鬯ｮ・ｮ郢晢ｽｻ騾｡鬘悟初繝ｻ・ｭ: ${hired.length}/${maxCoaches}髯ｷ・ｷ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ郢晢ｽｵ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ闕ｳ・ｻ驍顔洸蝮守ｹ晢ｽｻ ${getCoachSalaryTotal()}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ 郢晢ｽｻ郢晢ｽｻ${nextSlot}
+    <br><span style="font-size:12px;color:var(--text-dim)">驕ｯ・ｶ繝ｻ・ｻ 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｲ闔・､雎仙ｸ帙・繝ｻ・ｸ郢晢ｽｻ鬮｢・ｧ繝ｻ・ｲ髫ｰ迹壹・・つ陷･・ｲ陋ｻ・､鬯ｮ・ｱ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｧ鬮ｯ・ｦ陟募ｨｯ譁｡驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ繝ｻ鬪ｭ蜊・ｽｹ・ｧ繝ｻ・ｿ驛｢譏ｴ繝ｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｧ鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ</span>
   </div>`;
 
   // Hired coaches
   if (hired.length > 0) {
-    html += '<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px">雇用中のコーチ</div>';
+    html += '<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px">鬯ｮ・ｮ郢晢ｽｻ騾｡鬘悟初繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/div>';
     hired.forEach(c => {
       const assigned = getCoachAssignees(c.id);
       const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
       html += `<div class="coach-card hired">
         <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 48)}</div>
         <div class="coach-info">
-          <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;font-size:15px">${c.name} <span style="font-size:11px;color:var(--text-dim)">ℹ️</span></div>
+          <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;font-size:15px">${c.name} <span style="font-size:11px;color:var(--text-dim)">鬩阪・・ｽ・ｹ郢晢ｽｻ郢晢ｽｻ/span></div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
           <div style="margin-top:6px;font-size:12px;color:var(--text-dim)">
-            給与: ${c.salary}万/週 ｜ 担当: ${assigned.length}/${COACH_MAX_ASSIGN}名
+            鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ ${c.salary}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ 郢晢ｽｻ郢晢ｽｻ髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ ${assigned.length}/${COACH_MAX_ASSIGN}髯ｷ・ｷ郢晢ｽｻ
           </div>`;
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">`;
@@ -2426,10 +2265,10 @@ function renderCoach() {
         });
         html += `</div>`;
       } else {
-        html += `<div style="margin-top:5px;font-size:12px;color:var(--text-dim);font-style:italic">└ 担当選手なし</div>`;
+        html += `<div style="margin-top:5px;font-size:12px;color:var(--text-dim);font-style:italic">髫ｨ荳翫・髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ鬯･・ｴ遶城メ・ｬ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ郢晢ｽｻ/div>`;
       }
       html += `</div>
-        <button class="btn btn-red btn-sm" onclick="showConfirm('${c.name}を解任しますか？\\n担当選手のアサインも解除されます','解任',()=>fireCoach(${c.id}))">解任</button>
+        <button class="btn btn-red btn-sm" onclick="showConfirm('${c.name}驛｢・ｧ陞ｳ螟ｲ・ｽ・ｧ繝ｻ・｣髣比ｼ夲ｽｽ・ｻ驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ雎√たn髫ｲ・｡郢晢ｽｻ繝ｻ・ｽ鬯･・ｴ遶城メ・ｬ繝ｻ・ｹ譏ｴ繝ｻ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驛｢・ｧ郢ｧ螂・ｽｽ・ｧ繝ｻ・｣鬯ｮ・ｯ繝ｻ・､驍ｵ・ｺ髴郁ｲｻ・ｽ讙趣ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ,'鬮ｫ證ｦ・ｽ・｣髣比ｼ夲ｽｽ・ｻ',()=>fireCoach(${c.id}))">鬮ｫ證ｦ・ｽ・｣髣比ｼ夲ｽｽ・ｻ</button>
       </div>`;
     });
   }
@@ -2437,22 +2276,22 @@ function renderCoach() {
   // Available coaches
   const available = G.availableCoaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
   if (available.length > 0) {
-    html += '<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">雇用可能なコーチ</div>';
+    html += '<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">鬯ｮ・ｮ郢晢ｽｻ騾｡鬘梧╂繝ｻ・ｯ鬮｢・ｭ繝ｻ・ｽ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/div>';
     available.forEach(c => {
       const fee = c.hireFee || COACH_HIRE_FEE;
       const canHire = G.coaches.length < maxCoaches && G.funds >= fee;
       html += `<div class="coach-card">
         <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 48)}</div>
         <div class="coach-info">
-          <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;font-size:15px">${c.name} <span style="font-size:11px;color:var(--text-dim)">ℹ️</span></div>
+          <div class="coach-name" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;font-size:15px">${c.name} <span style="font-size:11px;color:var(--text-dim)">鬩阪・・ｽ・ｹ郢晢ｽｻ郢晢ｽｻ/span></div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:var(--text-dim)">雇用費: ${fee}万 ｜ 給与: ${c.salary}万/週</div>
+          <div style="margin-top:5px;font-size:12px;color:var(--text-dim)">鬯ｮ・ｮ郢晢ｽｻ騾｡鮃ｹ蟇槭・・ｻ: ${fee}髣包ｽｳ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ ${c.salary}髣包ｽｳ郢晢ｽｻ鬯ｨ・ｾ繝ｻ・ｱ</div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
-          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= maxCoaches ? '上限' : '資金不足'}</button>
+          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `鬯ｮ・ｮ郢晢ｽｻ騾｡繝ｻ(${fee}髣包ｽｳ郢晢ｽｻ` : G.coaches.length >= maxCoaches ? '髣包ｽｳ闔ｨ竏晏ｿ・ : '鬮ｮ蟲ｨ繝ｻ遶包ｽ｡髣包ｽｳ陝雜｣・ｽ・ｶ繝ｻ・ｳ'}</button>
       </div>`;
     });
   }
@@ -2468,92 +2307,92 @@ function renderSave() {
   // Autosave info
   const autoInfo = getAutoSaveInfo();
   html += '<div style="margin-bottom:16px">';
-  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚡ オートセーブ</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">髫ｨ讖ｸ・ｽ・｡ 驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎冗樟邵ｺ譎会ｽｹ譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/div>';
   if (autoInfo) {
     html += `<div class="save-slot has-data">
       <div>
-        <div class="save-slot-title">オートセーブ</div>
-        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+        <div class="save-slot-title">驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎冗樟邵ｺ譎会ｽｹ譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/div>
+        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} 郢晢ｽｻ郢晢ｽｻ鬮ｮ蟲ｨ繝ｻ遶包ｽ｡${autoInfo.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
-        <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">📥 書出</button>
+        <button class="btn btn-blue btn-sm" onclick="showConfirm('驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎冗樟邵ｺ譎会ｽｹ譎｢・ｽ・ｼ驛｢譎・§・ゑｽｰ驛｢・ｧ陝ｲ・ｨ・取ｺｽ・ｹ譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ雎√たn髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ鬯ｨ・ｾ繝ｻ・ｲ鬮ｯ・ｦ陟募ｾ後・髯樊ｻゑｽｽ・ｱ驛｢・ｧ闕ｳ螂・ｽｽ讙趣ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ,'驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ,()=>{loadAutoSave();refreshAll()})">驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/button>
+        <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">・滓ｫ・ｽｸ繝ｻ髫ｴ蜴・ｽｽ・ｸ髯ｷ繝ｻ・ｽ・ｺ</button>
       </div>
     </div>`;
   } else {
-    html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
+    html += '<div class="save-slot"><div class="save-slot-info">驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎冗樟邵ｺ譎会ｽｹ譎｢・ｽ・ｼ驛｢譎・§郢晢ｽｧ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ隴会ｽｦ繝ｻ・ｼ騾趣ｽｯ・つ繝ｻ・ｱ驛｢・ｧ陝ｶ謨鳴繝ｻ・ｲ驛｢・ｧ遶丞､ｲ・ｽ迢暦ｽｸ・ｺ繝ｻ・ｨ鬮｢・ｾ繝ｻ・ｪ髯ｷ蜥ｲ・ｩ繧托ｽｽ・ｿ隴取得・ｽ・ｭ陋滂ｽ･繝ｻ繝ｻ・ｹ・ｧ陟募ｨｯ遨宣し・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻ/div></div>';
   }
   html += '</div>';
 
   // Manual save slots
-  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">💾 手動セーブスロット</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">・滓ｨ奇ｽｲ繝ｻ髫ｰ繝ｻ蜚ｱ髯悟､ゑｽｹ・ｧ繝ｻ・ｻ驛｢譎｢・ｽ・ｼ驛｢譎・§邵ｺ蟶ｷ・ｹ譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ</div>';
   for (let i = 1; i <= SAVE_SLOTS; i++) {
     const info = getSaveInfo(i);
     if (info) {
       html += `<div class="save-slot has-data">
         <div>
-          <div class="save-slot-title">スロット ${i}</div>
-          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
-          <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
+          <div class="save-slot-title">驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ ${i}</div>
+          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} 郢晢ｽｻ郢晢ｽｻ鬮ｮ蟲ｨ繝ｻ遶包ｽ｡${info.funds.toLocaleString()}髣包ｽｳ郢晢ｽｻ郢晢ｽｻ郢晢ｽｻ髣費｣ｰ繝ｻ・ｺ髮主ｾ後・{Engine.util.dispOrgPop(info.orgPop)} 郢晢ｽｻ郢晢ｽｻ髫ｰ繝ｻﾂ髯橸ｽｻ郢晢ｽｻ{info.rosterSize}髯ｷ・ｷ郢晢ｽｻ/div>
+          <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} 郢晢ｽｻ郢晢ｽｻv${info.version}</div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-gold btn-sm" onclick="showConfirm('スロット${i}に上書きセーブしますか？','セーブ',()=>saveGame(${i}))">セーブ</button>
-          <button class="btn btn-blue btn-sm" onclick="showConfirm('スロット${i}からロードしますか？\\n現在の進行は失われます。','ロード',()=>loadGame(${i}))">ロード</button>
-          <button class="btn btn-red btn-sm" onclick="showConfirm('スロット${i}のデータを削除しますか？','削除',()=>deleteSave(${i}))">削除</button>
-          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">📥 書出</button>
+          <button class="btn btn-gold btn-sm" onclick="showConfirm('驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ${i}驍ｵ・ｺ繝ｻ・ｫ髣包ｽｳ鬯・､ｧ・ｶ讙趣ｽｸ・ｺ鬮ｦ・ｪ邵ｺ譎会ｽｹ譎｢・ｽ・ｼ驛｢譎・§繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ郢晢ｽｻ,'驛｢・ｧ繝ｻ・ｻ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ,()=>saveGame(${i}))">驛｢・ｧ繝ｻ・ｻ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/button>
+          <button class="btn btn-blue btn-sm" onclick="showConfirm('驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ${i}驍ｵ・ｺ闕ｵ譎｢・ｽ閾･・ｹ譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ雎√たn髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ鬯ｨ・ｾ繝ｻ・ｲ鬮ｯ・ｦ陟募ｾ後・髯樊ｻゑｽｽ・ｱ驛｢・ｧ闕ｳ螂・ｽｽ讙趣ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ,'驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ,()=>loadGame(${i}))">驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/button>
+          <button class="btn btn-red btn-sm" onclick="showConfirm('驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ${i}驍ｵ・ｺ繝ｻ・ｮ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ髮区ｨ抵ｽ朱ｬｮ・ｯ繝ｻ・､驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ郢晢ｽｻ,'髯ｷ蜿ｰ・ｼ竏晄ｱ・,()=>deleteSave(${i}))">髯ｷ蜿ｰ・ｼ竏晄ｱ・/button>
+          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">・滓ｫ・ｽｸ繝ｻ髫ｴ蜴・ｽｽ・ｸ髯ｷ繝ｻ・ｽ・ｺ</button>
         </div>
       </div>`;
     } else {
       html += `<div class="save-slot">
         <div>
-          <div class="save-slot-title" style="color:var(--text-dim)">スロット ${i}</div>
-          <div class="save-slot-meta">空きスロット</div>
+          <div class="save-slot-title" style="color:var(--text-dim)">驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ ${i}</div>
+          <div class="save-slot-meta">鬩包ｽｨ繝ｻ・ｺ驍ｵ・ｺ鬮ｦ・ｪ邵ｺ蟶ｷ・ｹ譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ</div>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">セーブ</button>
+        <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">驛｢・ｧ繝ｻ・ｻ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ/button>
       </div>`;
     }
   }
 
   // Data Transfer section
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-  <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">📦 データ移行</div>
+  <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">・滓ｨ｣ﾂ繝ｻ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ鬩募∞・ｽ・ｻ鬮ｯ・ｦ郢晢ｽｻ/div>
   <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
-    セーブデータをファイルとして書き出し、別のデバイスやブラウザに移行できます。<br>
-    上のスロットの「📥 書出」でファイル保存、下の「読み込む」で復元してください。
+    驛｢・ｧ繝ｻ・ｻ驛｢譎｢・ｽ・ｼ驛｢譎・§郢晢ｽｧ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ陋幢ｽｵ郢晢ｽｵ驛｢・ｧ繝ｻ・｡驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ髫ｴ蜴・ｽｽ・ｸ驍ｵ・ｺ隶守ｿｫ繝ｻ驍ｵ・ｺ陷会ｽｱ・つ遶乗刋閧ｩ驍ｵ・ｺ繝ｻ・ｮ驛｢譏ｴ繝ｻ郢晢ｽｰ驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｹ驛｢・ｧ郢晢ｽｻ郢晢ｽｶ驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・ｦ驛｢・ｧ繝ｻ・ｶ驍ｵ・ｺ繝ｻ・ｫ鬩募∞・ｽ・ｻ鬮ｯ・ｦ陟募ｾ個蝣､・ｸ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻbr>
+    髣包ｽｳ驗呻ｽｫ郢晢ｽｻ驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・ｭ驛｢譏ｴ繝ｻ郢晢ｽｨ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｲ闔・､雎先慣・ｽ・･ 髫ｴ蜴・ｽｽ・ｸ髯ｷ繝ｻ・ｽ・ｺ驍ｵ・ｲ鬮ｦ・ｪ邵ｲ蝣､・ｹ譎・ｽｼ譁撰ｼ憺Δ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ髣厄ｽｫ隴取得・ｽ・ｭ陋滂ｽ･・つ遶擾ｽｽ繝ｻ・ｸ闕ｵ譏ｴ繝ｻ驍ｵ・ｲ霑ｹ螟ｲ・ｽ・ｪ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｿ鬮ｴ雜｣・ｽ・ｼ驛｢・ｧ・つ驍ｵ・ｲ鬮ｦ・ｪ邵ｲ螳夲｣ｰ蛹・ｽｽ・ｩ髯ｷ蛹ｻ繝ｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ讓抵ｽｸ・ｲ郢晢ｽｻ
   </div>
   <div class="save-slot" style="border-color:rgba(116,185,255,0.2);background:rgba(116,185,255,0.03)">
     <div>
-      <div class="save-slot-title" style="color:#74b9ff">📤 ファイルから読み込む</div>
-      <div class="save-slot-meta">JSONファイルを選択するとすぐにロードされます</div>
+      <div class="save-slot-title" style="color:#74b9ff">・滓ｫ・ｽｱ繝ｻ驛｢譎・ｽｼ譁撰ｼ憺Δ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ驍ｵ・ｺ闕ｵ譎｢・ｽ陋ｾ蝮｡繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｿ鬮ｴ雜｣・ｽ・ｼ驛｢・ｧ・つ</div>
+      <div class="save-slot-meta">JSON驛｢譎・ｽｼ譁撰ｼ憺Δ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ驛｢・ｧ陝ｶ譏ｶ繝ｻ髫ｰ螢ｽ・ｧ・ｭ隨倥・・ｹ・ｧ闕ｵ譏ｶ繝ｻ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｫ驛｢譎｢・ｽ・ｭ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ繝ｻ・ｹ・ｧ陟募ｨｯ遨宣し・ｺ郢晢ｽｻ/div>
     </div>
-    <button class="btn btn-blue btn-sm" onclick="importSave()">ファイルを選択</button>
+    <button class="btn btn-blue btn-sm" onclick="importSave()">驛｢譎・ｽｼ譁撰ｼ憺Δ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ驛｢・ｧ陝ｶ譏ｶ繝ｻ髫ｰ螢ｹ繝ｻ/button>
   </div>
 </div>`;
 
   // Settings: Org name change
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚙️ 設定</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">髫ｨ讒ｫ驕懊・・ｸ郢晢ｽｻ鬮ｫ・ｪ繝ｻ・ｭ髯橸ｽｳ郢晢ｽｻ/div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🏢 団体名:</label>
-      <input id="settingsOrgName" type="text" value="${G.orgName || 'プレイヤー団体'}" maxlength="20"
+      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">・滓ｧｫ蟆・髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛟ｬ蛟ｹ:</label>
+      <input id="settingsOrgName" type="text" value="${G.orgName || '驛｢譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ}" maxlength="20"
         style="flex:1;max-width:240px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
-        placeholder="団体名を入力">
-      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('stamp')}">変更</button>
+        placeholder="髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛟ｬ蛟ｹ驛｢・ｧ髮区ｧｭ繝ｻ髯ｷ蟲ｨ繝ｻ>
+      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('stamp')}">髯樊ｺｽ蛻､陝ｲ・ｩ</button>
     </div>
   </div>`;
 
   // New game button
   html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-    <button class="btn btn-red" onclick="showConfirm('本当にニューゲームを開始しますか？\\n現在の進行は失われます。','ニューゲーム',()=>{location.reload()})">🔄 ニューゲーム</button>
+    <button class="btn btn-red" onclick="showConfirm('髫ｴ蟷｢・ｽ・ｬ髯溷・萓ｭ遶企豪・ｹ譏懶ｽｹ譁溽､ｼ・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｲ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ驛｢・ｧ陝ｶ譎擾ｽｹ謌頑ｲり嵯譎｢・ｼ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・ゑｽｰ郢晢ｽｻ雎√たn髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ鬯ｨ・ｾ繝ｻ・ｲ鬮ｯ・ｦ陟募ｾ後・髯樊ｻゑｽｽ・ｱ驛｢・ｧ闕ｳ螂・ｽｽ讙趣ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ,'驛｢譏懶ｽｹ譁溽､ｼ・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｲ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ',()=>{location.reload()})">・滓ｧｫ・｣・ｲ 驛｢譏懶ｽｹ譁溽､ｼ・ｹ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｲ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ</button>
   </div>`;
 
   el.innerHTML = html;
 }
 
 
-// ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 9D: TRAINING HELPERS (roster tab integrated)     ║
-// ╚══════════════════════════════════════════════════════════╝
+// 髫ｨ鬆大繭雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ鬯夲ｽｨ
+// 髫ｨ鄙ｫ繝ｻ SECTION 9D: TRAINING HELPERS (roster tab integrated)     髫ｨ鄙ｫ繝ｻ
+// 髫ｨ髮・ｽ｣・ｺ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ陝ｷ繝ｻ
 
 function toggleIntensive(charId) {
   const c = G.roster.find(r => r.id === charId);
@@ -2567,7 +2406,7 @@ function changeCoachAssign(charId, newCoachId) {
   const unassigned = Engine.coach.unassignFromCoach(G, charId);
   if (newCoachId > 0) {
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, newCoachId, charId);
-    if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
+    if (!success) { Audio.play('error'); alert('驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ髫ｴ・ｫ繝ｻ・ｰ驍ｵ・ｺ隴ｴ・ｧ繝ｻ・ｺ・つ髯ｷ・ｩ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ郢晢ｽｻ); return; }
     Audio.play('click');
     G = { ...G, coachAssign };
   } else {
@@ -2586,8 +2425,8 @@ function getGrowthTendency(charId) {
   const coach = getCharCoach(charId);
   const stats = ['pw','sp','te','st','mn'];
   const labels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
-  if (!coach) return {text: '均等', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
-  return {text: `${coach.grade}級コーチ`, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
+  if (!coach) return {text: '髯懶ｽｮ郢晢ｽｻ繝ｻ・ｭ郢晢ｽｻ, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '驕ｶ鄙ｫ繝ｻ}))};
+  return {text: `${coach.grade}鬩堺ｸ橸ｽ｣・ｹ邵ｺ諷包ｽｹ譎｢・ｽ・ｼ驛｢譎｢・ｽ繝ｻ arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '驕ｶ鄙ｫ繝ｻ}))};
 }
 
 function refreshAll() {
@@ -2608,11 +2447,11 @@ function refreshAll() {
   }
 }
 
-// ╔══════════════════════════════════════════════════════════╗
-// ║  DATABASE SCREEN  (v1.0)                                  ║
-// ╚══════════════════════════════════════════════════════════╝
+// 髫ｨ鬆大繭雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ鬯夲ｽｨ
+// 髫ｨ鄙ｫ繝ｻ DATABASE SCREEN  (v1.0)                                  髫ｨ鄙ｫ繝ｻ
+// 髫ｨ髮・ｽ｣・ｺ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ陝ｷ繝ｻ
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞
+let _dbSubTab = 0; // 0=髯ｷ闌ｨ・ｽ・ｨ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ繝ｻ1=髯ｷ闌ｨ・ｽ・ｨ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ2=髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ3=髫ｹ・ｿ繝ｻ・ｿ髯懶ｽ｣郢晢ｽｻ4=鬨ｾ・ｶ繝ｻ・ｸ鬯ｮ・｢繝ｻ・｢髯懈圜・ｽ・ｳ 5=髫ｴ繝ｻ・ｽ・ｰ鬮｢・ｨ郢晢ｽｻ
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
@@ -2622,7 +2461,7 @@ let _dbCoachSortKey = 'grade';
 let _dbCoachSortAsc = false;
 let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
-// Phase 6v2: 相関図 state (force-directed network)
+// Phase 6v2: 鬨ｾ・ｶ繝ｻ・ｸ鬯ｮ・｢繝ｻ・｢髯懈圜・ｽ・ｳ state (force-directed network)
 let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
@@ -2656,7 +2495,7 @@ let _relmapPanX = 0;
 let _relmapPanY = 0;
 let _relmapPanning = false;
 let _relmapOrgCenters = null;
-let _relmapOrgFilter = null; // orgId string or null — show only this org's members
+let _relmapOrgFilter = null; // orgId string or null 驕ｯ・ｶ郢晢ｽｻshow only this org's members
 let _relmapPanStart = { x: 0, y: 0 };
 let _relmapPanStartPan = { x: 0, y: 0 };
 const _RELMAP_FOCUS_MAX_CONN = 12;
@@ -2672,8 +2511,8 @@ function renderDatabase() {
   if (!el) return;
   if (window.IS_TRIAL) {
     el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2">
-      🔒 データベースは製品版で解放されます<br>
-      <span style="font-size:12px">DLsite / BOOTH で製品版をチェックしてください</span></div>`;
+      ・滓ｨ貞項 驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢譎冗函郢晢ｽｻ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｯ鬮ｯ・ｬ繝ｻ・ｽ髯ｷ・ｩ遶擾ｽｫ雎撰ｽｿ驍ｵ・ｺ繝ｻ・ｧ鬮ｫ證ｦ・ｽ・｣髫ｰ・ｾ繝ｻ・ｾ驍ｵ・ｺ髴郁ｲｻ・ｽ讙趣ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻbr>
+      <span style="font-size:12px">DLsite / BOOTH 驍ｵ・ｺ繝ｻ・ｧ鬮ｯ・ｬ繝ｻ・ｽ髯ｷ・ｩ遶擾ｽｫ雎撰ｽｿ驛｢・ｧ陋幢ｽｵ郢晢ｽ｡驛｢・ｧ繝ｻ・ｧ驛｢譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｼ繝ｻ/span></div>`;
     return;
   }
 
@@ -2682,15 +2521,15 @@ function renderDatabase() {
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
 
   const subTabs = [
-    { label: '👤 全選手', idx: 0 },
-    { label: '🏋️ 全コーチ', idx: 1 },
-    { label: '🔗 相関図', idx: 4 },
-    { label: '⚔ 団体比較', idx: 2 },
-    { label: '📰 新聞', idx: 5 },
-    { label: '🏅 殿堂', idx: 3 },
+    { label: '・滓ｧｫ繝ｻ 髯ｷ闌ｨ・ｽ・ｨ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ繝ｻ, idx: 0 },
+    { label: '・滓ｨ雁宦郢晢ｽｻ郢晢ｽｻ髯ｷ闌ｨ・ｽ・ｨ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ, idx: 1 },
+    { label: '・滓ｫ・ｽｿ・ｫ 鬨ｾ・ｶ繝ｻ・ｸ鬯ｮ・｢繝ｻ・｢髯懈圜・ｽ・ｳ', idx: 4 },
+    { label: '髫ｨ讒ｭ繝ｻ髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ, idx: 2 },
+    { label: '・滓ｧｫ・ｰ繝ｻ髫ｴ繝ｻ・ｽ・ｰ鬮｢・ｨ郢晢ｽｻ, idx: 5 },
+    { label: '・滓ｨ｣繝ｻ 髫ｹ・ｿ繝ｻ・ｿ髯懶ｽ｣郢晢ｽｻ, idx: 3 },
   ];
 
-  let html = `<div class="panel-title">📊 データベース</div>`;
+  let html = `<div class="panel-title">・滓ｨ雁・ 驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驛｢譎冗函郢晢ｽｻ驛｢・ｧ繝ｻ・ｹ</div>`;
   html += `<div class="db-subtab-bar">`;
   subTabs.forEach(t => {
     html += `<button class="db-subtab-btn${_dbSubTab === t.idx ? ' active' : ''}" onclick="setDbSubTab(${t.idx})">${t.label}</button>`;
@@ -2707,7 +2546,7 @@ function renderDatabase() {
 
   el.innerHTML = html;
 
-  // 相関図ならマップを描画（DOM挿入後に実行）
+  // 鬨ｾ・ｶ繝ｻ・ｸ鬯ｮ・｢繝ｻ・｢髯懈圜・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ陝ｲ・ｨ郢晢ｽｻ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ陷ｻ閧ｲ・ｷ蟶敖蛹・ｽｽ・ｻ郢晢ｽｻ郢晢ｽｻOM髫ｰ蜴・ｽｽ・ｿ髯ｷ闌ｨ・ｽ・･髯溷供・ｾ螽ｯ繝ｻ髯橸ｽｳ雋・ｽｯ繝ｻ・｡鬲・ｼ夲ｽｽ・ｼ郢晢ｽｻ
   if (_dbSubTab === 4) _drawRelmapAfterRender();
 }
 
@@ -2716,13 +2555,13 @@ function setDbSubTab(idx) {
   renderDatabase();
 }
 
-// ── 📰 新聞サブタブ ──────────────────────────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 ・滓ｧｫ・ｰ繝ｻ髫ｴ繝ｻ・ｽ・ｰ鬮｢・ｨ隶抵ｽｭ邵ｺ遉ｼ・ｹ譎・§邵ｺ・｡驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function _renderDbNewspaper() {
   const d = G.currentNewspaper;
   if (!d) {
     return `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2;">
-      📰 現在の新聞はありません<br>
-      <span style="font-size:12px;color:var(--text-sub);">興行を開催すると、翌週に新聞が届きます</span></div>`;
+      ・滓ｧｫ・ｰ繝ｻ髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ髫ｴ繝ｻ・ｽ・ｰ鬮｢・ｨ隶抵ｽｭ郢晢ｽｻ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻbr>
+      <span style="font-size:12px;color:var(--text-sub);">鬮｣莨√Γ繝ｻ・｡陟暮ｯ会ｽｽ蟶晢ｽｫ・｢陷ｿ・･邵ｺ螳茨ｽｸ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ驍ｵ・ｲ遶擾ｽｫ繝ｻ・ｿ驕偵・ﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｫ髫ｴ繝ｻ・ｽ・ｰ鬮｢・ｨ隶抵ｽｭ遯ｶ・ｲ髯橸ｽｻ驗呻ｽｫ遯ｶ・ｳ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ/span></div>`;
   }
 
   const pLeft = d.left ? getPortraitUrl(d.left.id) : '';
@@ -2791,14 +2630,14 @@ function _statCell(val, color) {
   return `<td class="num" style="font-size:12px;color:${c}">${v}</td>`;
 }
 
-// ── 全選手一覧 ─────────────────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 髯ｷ闌ｨ・ｽ・ｨ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻﾂ・ｶ繝ｻ・ｸ・つ鬮ｫ蛹・ｽｽ・ｧ 髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function _renderDbFighters() {
   const RANK_COLORS = { S: '#d63031', A: '#6c5ce7', B: '#00b894', player: '#d4a843', fa: '#8bc4f0' };
 
-  // 全選手収集
+  // 髯ｷ闌ｨ・ｽ・ｨ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ陟趣ｽｶ鬯ｮ・ｮ郢晢ｽｻ
   const all = Engine.database.getAllFighters(G);
 
-  // フィルタ
+  // 驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ
   let filtered = all;
   if (_dbFilterOrg) {
     filtered = filtered.filter(f => f._orgId === _dbFilterOrg);
@@ -2811,7 +2650,7 @@ function _renderDbFighters() {
     filtered = filtered.filter(f => f.name.toLowerCase().includes(q));
   }
 
-  // ソート
+  // 驛｢・ｧ繝ｻ・ｽ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ
   filtered = [...filtered].sort((a, b) => {
     let va, vb;
     if (_dbSortKey === 'ovr') { va = Engine.util.ov(a); vb = Engine.util.ov(b); }
@@ -2831,10 +2670,10 @@ function _renderDbFighters() {
     return 0;
   });
 
-  // フィルタバー
+  // 驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ驛｢譎√・郢晢ｽｻ
   const orgOptions = [
-    { id: '', label: '全て' },
-    { id: 'player', label: G.orgName || 'プレイヤー団体' },
+    { id: '', label: '髯ｷ闌ｨ・ｽ・ｨ驍ｵ・ｺ繝ｻ・ｦ' },
+    { id: 'player', label: G.orgName || '驛｢譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ },
     ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
     { id: 'fa', label: 'FA' },
   ];
@@ -2845,35 +2684,35 @@ function _renderDbFighters() {
       ${orgOptions.map(o => `<option value="${o.id}" ${_dbFilterOrg === o.id ? 'selected' : ''}>${o.label}</option>`).join('')}
     </select>
     <select onchange="_dbFilterStyle=this.value;renderDatabase()">
-      <option value="" ${_dbFilterStyle === '' ? 'selected' : ''}>スタイル: 全て</option>
+      <option value="" ${_dbFilterStyle === '' ? 'selected' : ''}>驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ: 髯ｷ闌ｨ・ｽ・ｨ驍ｵ・ｺ繝ｻ・ｦ</option>
       ${styles.map(s => `<option value="${s}" ${_dbFilterStyle === s ? 'selected' : ''}>${s}</option>`).join('')}
     </select>
-    <input type="text" placeholder="🔍 名前検索..." value="${_dbFilterName}"
+    <input type="text" placeholder="・滓ｧｫ鄙・髯ｷ・ｷ隶朱｡披・髫ｶﾂ隲帙・・ｽ・ｴ繝ｻ・｢..." value="${_dbFilterName}"
       oninput="_dbFilterName=this.value;renderDatabase()" style="max-width:160px">
-    <span class="db-count">全${all.length}名 / 表示中: ${filtered.length}名</span>
+    <span class="db-count">髯ｷ闌ｨ・ｽ・ｨ${all.length}髯ｷ・ｷ郢晢ｽｻ/ 鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ髣包ｽｳ繝ｻ・ｭ: ${filtered.length}髯ｷ・ｷ郢晢ｽｻ/span>
   </div>`;
 
-  // ソート用ヘッダー生成
+  // 驛｢・ｧ繝ｻ・ｽ驛｢譎｢・ｽ・ｼ驛｢譎√＃騾｡驢搾ｽｹ譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ鬨ｾ蠅難ｽｻ阮吶・
   const th = (key, label, w) => {
     const active = _dbSortKey === key;
-    const ind = active ? (_dbSortAsc ? ' ▲' : ' ▼') : '';
+    const ind = active ? (_dbSortAsc ? ' 髫ｨ繝ｻ・ｽ・ｲ' : ' 髫ｨ繝ｻ・ｽ・ｼ') : '';
     return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbSortKey='${key}';_dbSortAsc=${active ? !_dbSortAsc : false};renderDatabase()">${label}${ind}</th>`;
   };
 
   html += `<table class="db-table">
     <thead><tr>
       <th style="width:40px"></th>
-      ${th('name', '名前')}
-      ${th('org', '団体', '110px')}
-      ${th('style', 'スタイル', '80px')}
+      ${th('name', '髯ｷ・ｷ隶朱｡披・')}
+      ${th('org', '髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ, '110px')}
+      ${th('style', '驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｫ', '80px')}
       ${th('ovr', 'OVR', '50px')}
       ${th('pw', 'PW', '40px')}
       ${th('sp', 'SP', '40px')}
       ${th('te', 'TE', '40px')}
       ${th('st', 'ST', '40px')}
       ${th('mn', 'MN', '40px')}
-      ${th('age', '年齢', '45px')}
-      ${th('pop', '人気', '50px')}
+      ${th('age', '髯晢ｽｷ繝ｻ・ｴ鬲・ｽｨ繝ｻ・｢', '45px')}
+      ${th('pop', '髣費｣ｰ繝ｻ・ｺ髮主ｾ後・, '50px')}
     </tr></thead>
     <tbody>`;
 
@@ -2888,17 +2727,17 @@ function _renderDbFighters() {
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(139,196,240,0.15);color:#8bc4f0;border:1px solid rgba(139,196,240,0.3)">FA</span>`
       : '';
     const playerBadge = f._orgTier === 'player'
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">自</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">鬮｢・ｾ繝ｻ・ｪ</span>`
       : '';
     const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
       <td>${portraitImg(f.id, 36, '', false)}</td>
       <td style="font-weight:600">${f.name}</td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
-      <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
+      <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '驕ｯ・ｶ郢晢ｽｻ}</span></td>
       <td class="num ${ovrCls}" style="font-weight:700;font-size:15px">${ovr}</td>
       ${_statCell(f.pw, '#e74c3c')}${_statCell(f.sp, '#3498db')}${_statCell(f.te, '#2ecc71')}${_statCell(f.st, '#f39c12')}${_statCell(f.mn, '#9b59b6')}
-      <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
+      <td class="num" style="color:var(--text-sub)">${f.age || '驕ｯ・ｶ郢晢ｽｻ}</td>
       <td class="num">${Engine.util.dispPop(f.popularity || 0)}</td>
     </tr>`;
   });
@@ -2907,7 +2746,7 @@ function _renderDbFighters() {
   return html;
 }
 
-// ── 全コーチ一覧 ────────────────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 髯ｷ闌ｨ・ｽ・ｨ驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｼ驛｢譏ｶ謌悶・・ｸ・つ鬮ｫ蛹・ｽｽ・ｧ 髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function _renderDbCoaches() {
   const GRADE_COLORS = { C: '#888', B: '#2ecc71', A: 'var(--gold)' };
   const GRADE_ORDER = { A: 0, B: 1, C: 2 };
@@ -2915,7 +2754,7 @@ function _renderDbCoaches() {
 
   let coaches = [...ALL_COACHES];
 
-  // フィルタ
+  // 驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ
   if (_dbCoachFilterGrade) {
     coaches = coaches.filter(c => c.grade === _dbCoachFilterGrade);
   }
@@ -2924,7 +2763,7 @@ function _renderDbCoaches() {
     coaches = coaches.filter(c => c.name.toLowerCase().includes(q));
   }
 
-  // ソート
+  // 驛｢・ｧ繝ｻ・ｽ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ
   coaches.sort((a, b) => {
     let va, vb;
     if (_dbCoachSortKey === 'grade') { va = GRADE_ORDER[a.grade] ?? 9; vb = GRADE_ORDER[b.grade] ?? 9; }
@@ -2940,38 +2779,38 @@ function _renderDbCoaches() {
     return 0;
   });
 
-  // フィルタバー
+  // 驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ驛｢譎√・郢晢ｽｻ
   let html = `<div class="db-filter-bar">
     <select onchange="_dbCoachFilterGrade=this.value;renderDatabase()">
-      <option value="">グレード: 全て</option>
-      <option value="A" ${_dbCoachFilterGrade === 'A' ? 'selected' : ''}>A級</option>
-      <option value="B" ${_dbCoachFilterGrade === 'B' ? 'selected' : ''}>B級</option>
-      <option value="C" ${_dbCoachFilterGrade === 'C' ? 'selected' : ''}>C級</option>
+      <option value="">驛｢・ｧ繝ｻ・ｰ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ 髯ｷ闌ｨ・ｽ・ｨ驍ｵ・ｺ繝ｻ・ｦ</option>
+      <option value="A" ${_dbCoachFilterGrade === 'A' ? 'selected' : ''}>A鬩堺ｸ翫・/option>
+      <option value="B" ${_dbCoachFilterGrade === 'B' ? 'selected' : ''}>B鬩堺ｸ翫・/option>
+      <option value="C" ${_dbCoachFilterGrade === 'C' ? 'selected' : ''}>C鬩堺ｸ翫・/option>
     </select>
-    <input type="text" placeholder="🔍 名前検索..." value="${_dbCoachFilterName}"
+    <input type="text" placeholder="・滓ｧｫ鄙・髯ｷ・ｷ隶朱｡披・髫ｶﾂ隲帙・・ｽ・ｴ繝ｻ・｢..." value="${_dbCoachFilterName}"
       oninput="_dbCoachFilterName=this.value;renderDatabase()" style="max-width:160px">
-    <span class="db-count">全${ALL_COACHES.length}名 / 表示中: ${coaches.length}名</span>
+    <span class="db-count">髯ｷ闌ｨ・ｽ・ｨ${ALL_COACHES.length}髯ｷ・ｷ郢晢ｽｻ/ 鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ髣包ｽｳ繝ｻ・ｭ: ${coaches.length}髯ｷ・ｷ郢晢ｽｻ/span>
   </div>`;
 
-  // ソート用ヘッダー
+  // 驛｢・ｧ繝ｻ・ｽ驛｢譎｢・ｽ・ｼ驛｢譎√＃騾｡驢搾ｽｹ譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ
   const th = (key, label, w) => {
     const active = _dbCoachSortKey === key;
-    const ind = active ? (_dbCoachSortAsc ? ' ▲' : ' ▼') : '';
+    const ind = active ? (_dbCoachSortAsc ? ' 髫ｨ繝ｻ・ｽ・ｲ' : ' 髫ｨ繝ｻ・ｽ・ｼ') : '';
     return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbCoachSortKey='${key}';_dbCoachSortAsc=${active ? !_dbCoachSortAsc : false};renderDatabase()">${label}${ind}</th>`;
   };
 
   html += `<table class="db-table">
     <thead><tr>
       <th style="width:40px"></th>
-      ${th('name', '名前')}
-      ${th('grade', 'グレード', '80px')}
-      ${th('teaching', '指導力', '65px')}
-      ${th('observation', '観察眼', '65px')}
-      ${th('style', '得意', '90px')}
-      <th style="width:100px">特性</th>
-      ${th('salary', '給与', '70px')}
-      ${th('hireFee', '雇用費', '70px')}
-      <th style="width:55px">状態</th>
+      ${th('name', '髯ｷ・ｷ隶朱｡披・')}
+      ${th('grade', '驛｢・ｧ繝ｻ・ｰ驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ, '80px')}
+      ${th('teaching', '髫ｰ謔ｶ繝ｻ繝ｻ・ｰ闕ｳ・ｻ鬲假ｽｨ', '65px')}
+      ${th('observation', '鬮ｫ蛹・ｽｽ・ｳ髯昴・・ｺ・ｽ隲｢繝ｻ, '65px')}
+      ${th('style', '髯滓・霆ｸ・代・, '90px')}
+      <th style="width:100px">髴大､ｲ・ｽ・ｹ髫ｲ・､繝ｻ・ｧ</th>
+      ${th('salary', '鬩搾ｽｨ繝ｻ・ｦ髣包ｽｳ郢晢ｽｻ, '70px')}
+      ${th('hireFee', '鬯ｮ・ｮ郢晢ｽｻ騾｡鮃ｹ蟇槭・・ｻ', '70px')}
+      <th style="width:55px">髴托ｽ･繝ｻ・ｶ髫ｲ・ｷ郢晢ｽｻ/th>
     </tr></thead>
     <tbody>`;
 
@@ -2981,14 +2820,14 @@ function _renderDbCoaches() {
     html += `<tr class="clickable" onclick="showCoachTooltip(${c.id})">
       <td>${coachPortraitImg(c, 36)}</td>
       <td style="font-weight:600">${c.name}</td>
-      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
+      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}鬩堺ｸ翫・/span></td>
       <td class="num" style="font-weight:700;color:${gc}">${c.teaching}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
       <td style="font-size:11px;color:var(--text-sub)">${c.trait}</td>
-      <td class="num" style="font-size:12px">${c.salary}万</td>
-      <td class="num" style="font-size:12px">${c.hireFee}万</td>
-      <td>${isHired ? '<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">雇用中</span>' : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
+      <td class="num" style="font-size:12px">${c.salary}髣包ｽｳ郢晢ｽｻ/td>
+      <td class="num" style="font-size:12px">${c.hireFee}髣包ｽｳ郢晢ｽｻ/td>
+      <td>${isHired ? '<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">鬯ｮ・ｮ郢晢ｽｻ騾｡鬘悟初繝ｻ・ｭ</span>' : '<span style="font-size:11px;color:var(--text-dim)">驕ｯ・ｶ郢晢ｽｻ/span>'}</td>
     </tr>`;
   });
 
@@ -2996,14 +2835,14 @@ function _renderDbCoaches() {
   return html;
 }
 
-// ── 殿堂一覧 ──────────────────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 髫ｹ・ｿ繝ｻ・ｿ髯懶ｽ｣郢ｧ繝ｻ・ｽ・ｸ・つ鬮ｫ蛹・ｽｽ・ｧ 髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 function _renderDbHallOfFame() {
   const hof = G.hallOfFame || [];
   if (hof.length === 0) {
     return `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
-      <div style="font-size:40px;margin-bottom:12px">🏅</div>
-      <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">獲得＋防衛の合計が13回以上の選手が引退時に殿堂入りします</div>
+      <div style="font-size:40px;margin-bottom:12px">・滓ｨ｣繝ｻ</div>
+      <div style="font-size:15px;margin-bottom:8px">驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｰ髫ｹ・ｿ繝ｻ・ｿ髯懶ｽ｣郢ｧ繝ｻ繝ｻ驛｢・ｧ驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ雋翫・繝ｻ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>
+      <div style="font-size:13px;color:var(--text-dim)">髴托ｽｯ繝ｻ・ｲ髯溷｢灘惧繝ｻ・ｼ驕擾ｽｩ闔貊・距陝ｶ蜷ｶ繝ｻ髯ｷ・ｷ鬩帙・・ｽ・ｨ陋ｹ・ｻ遯ｶ・ｲ13髯懃軸・ｨ雋ｻ・ｽ・ｻ繝ｻ・･髣包ｽｳ驗呻ｽｫ郢晢ｽｻ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶﾂ・ｲ髯溽ｬｬ蝮ｩ・つ・つ髫ｴ蠑ｱ・・ｫ頑･｢・ｰ・ｿ繝ｻ・ｿ髯懶ｽ｣郢ｧ繝ｻ繝ｻ驛｢・ｧ驗呻ｽｫ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢晢ｽｻ/div>
     </div>`;
   }
 
@@ -3012,19 +2851,19 @@ function _renderDbHallOfFame() {
     const pUrl = getPortraitUrl(h.id || 0);
     const imgHtml = pUrl
       ? `<img src="${pUrl}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0" alt="">`
-      : `<div style="width:60px;height:60px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏅</div>`;
+      : `<div style="width:60px;height:60px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">・滓ｨ｣繝ｻ</div>`;
     html += `<div class="db-hof-card">
       ${imgHtml}
       <div class="db-hof-info">
         <div class="db-hof-name">${h.name}</div>
         <div class="db-hof-row">
-          <span class="badge badge-${h.style || 'Allround'}" style="font-size:11px">${h.style || '—'}</span>
-          <span style="margin-left:6px;color:var(--gold);font-weight:700">OVR ${h.ovr || '—'}</span>
+          <span class="badge badge-${h.style || 'Allround'}" style="font-size:11px">${h.style || '驕ｯ・ｶ郢晢ｽｻ}</span>
+          <span style="margin-left:6px;color:var(--gold);font-weight:700">OVR ${h.ovr || '驕ｯ・ｶ郢晢ｽｻ}</span>
         </div>
-        <div class="db-hof-row">活動期間: S${h.debutSeason || '?'}〜S${h.retireSeason || '?'}</div>
-        ${h.totalTitleWins ? `<div class="db-hof-row">タイトル: ${h.totalTitleWins}回獲得 / ${h.totalDefenses || 0}防衛</div>` : ''}
-        ${h.peakOvr ? `<div class="db-hof-row">最高OVR: ${h.peakOvr}</div>` : ''}
-        <div class="db-hof-row" style="color:var(--gold)">殿堂入り: S${h.retireSeason || '?'}</div>
+        <div class="db-hof-row">髮趣ｽ｢繝ｻ・ｻ髯ｷ讎奇ｽ｢謐ｺ・・ｬｮ・｢郢晢ｽｻ S${h.debutSeason || '?'}驍ｵ・ｲ陟悶・{h.retireSeason || '?'}</div>
+        ${h.totalTitleWins ? `<div class="db-hof-row">驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗樟・弱・ ${h.totalTitleWins}髯懃軸・ｨ蜑・ｽｽ蜊・ｰ霈斐・/ ${h.totalDefenses || 0}鬯ｮ・ｦ繝ｻ・ｲ鬮ｯ・ｦ郢晢ｽｻ/div>` : ''}
+        ${h.peakOvr ? `<div class="db-hof-row">髫ｴ蟠｢ﾂ鬯ｯ・ｮ隶鯉ｽｼVR: ${h.peakOvr}</div>` : ''}
+        <div class="db-hof-row" style="color:var(--gold)">髫ｹ・ｿ繝ｻ・ｿ髯懶ｽ｣郢ｧ繝ｻ繝ｻ驛｢・ｧ郢晢ｽｻ S${h.retireSeason || '?'}</div>
       </div>
     </div>`;
   });
@@ -3032,19 +2871,19 @@ function _renderDbHallOfFame() {
   return html;
 }
 
-// ── 団体比較 ──────────────────────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 let _dbCompareTarget = 'org_s';
 
-// ══════════════════════════════════════════════════════════
-// 勢力図サブタブ（A案）— SVGコンテナのみ返す。描画は_buildOrgColumnSvgContent共通関数
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
+// 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ蜥擾ｽｹ・ｧ繝ｻ・ｵ驛｢譎・§邵ｺ・｡驛｢譎冗ｧ√・・ｼ郢晢ｽｻ髫ｴ・ｯ髣鯉ｽｨ繝ｻ・ｼ闖ｫ繝ｻﾂ郢晢ｽｻSVG驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ驛｢譏ｴ繝ｻ郢晢ｽｪ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｿ鬮ｴ隨ｬ魍堤ｬ倥・・ｸ・ｲ郢ｧ閧ｲ・ｷ蟶敖蛹・ｽｽ・ｻ驍ｵ・ｺ繝ｻ・ｯ_buildOrgColumnSvgContent髯ｷ闌ｨ・ｽ・ｱ鬯ｨ・ｾ陞溷・謔ｴ髫ｰ・ｨ繝ｻ・ｰ
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _renderDbOrgCompare() {
   const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
   const rc = d.rivalColor;
-  // CSS custom property で rival 色を動的設定
+  // CSS custom property 驍ｵ・ｺ繝ｻ・ｧ rival 雎ｼ・ｶ繝ｻ・ｲ驛｢・ｧ髮区ｫ∝樺鬨ｾ・ｧ郢晢ｽｻ繝ｻ・ｨ繝ｻ・ｭ髯橸ｽｳ郢晢ｽｻ
   const tierCls = d.rivalTier === 'S' ? 's' : d.rivalTier === 'A' ? 'a' : 'b';
 
-  // --- Helper: hex → rgba ---
+  // --- Helper: hex 驕ｶ鄙ｫ繝ｻrgba ---
   function hexDim(hex, alpha) {
     const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
     return `rgba(${r},${g},${b},${alpha})`;
@@ -3073,12 +2912,12 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-org-name"><strong>${d.playerName}</strong><span>${d.playerSubtitle}</span></div>
           <div class="db-cmp-tier player">Player</div>
         </div>
-        <div class="db-cmp-tags">${(d.playerTags.length ? d.playerTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
+        <div class="db-cmp-tags">${(d.playerTags.length ? d.playerTags : ['驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｨ闔蛹・ｽｽ・ｸ繝ｻ・ｭ']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
         <div class="db-cmp-mini-stats">
-          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.playerScores.ace}</strong></div>
-          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.playerScores.starPower}</strong></div>
-          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.playerRosterCount}</strong></div>
-          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.pOrgPop}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5髯橸ｽｳ雋・ｽｷ鬲假ｽｨ</label><strong>${d.playerScores.ace}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・/label><strong>${d.playerScores.starPower}</strong></div>
+          <div class="db-cmp-mini-stat"><label>鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､</label><strong>${d.playerRosterCount}</strong></div>
+          <div class="db-cmp-mini-stat"><label>髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・/label><strong>${d.pOrgPop}</strong></div>
         </div>
       </article>
       <div class="db-cmp-vs-mark"><div class="db-cmp-vs-ring">VS</div></div>
@@ -3087,12 +2926,12 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-org-name"><strong>${d.rivalName}</strong><span>${d.rivalSubtitle}</span></div>
           <div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>
         </div>
-        <div class="db-cmp-tags">${(d.rivalTags.length ? d.rivalTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
+        <div class="db-cmp-tags">${(d.rivalTags.length ? d.rivalTags : ['驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｨ闔蛹・ｽｽ・ｸ繝ｻ・ｭ']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
         <div class="db-cmp-mini-stats">
-          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.rivalScores.ace}</strong></div>
-          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.rivalScores.starPower}</strong></div>
-          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.rivalRosterCount}</strong></div>
-          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.rOrgPop}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5髯橸ｽｳ雋・ｽｷ鬲假ｽｨ</label><strong>${d.rivalScores.ace}</strong></div>
+          <div class="db-cmp-mini-stat"><label>Top5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・/label><strong>${d.rivalScores.starPower}</strong></div>
+          <div class="db-cmp-mini-stat"><label>鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､</label><strong>${d.rivalRosterCount}</strong></div>
+          <div class="db-cmp-mini-stat"><label>髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・/label><strong>${d.rOrgPop}</strong></div>
         </div>
       </article>
     </div>
@@ -3100,10 +2939,10 @@ function _renderDbOrgCompare() {
 
   // --- Section 2+3: Power Snapshot + GM Summary ---
   const AXES = [
-    { key: 'ace', label: 'TOP5実力' },
-    { key: 'starPower', label: 'TOP5人気' },
-    { key: 'popularity', label: '団体人気' },
-    { key: 'depth', label: '選手層' },
+    { key: 'ace', label: 'TOP5髯橸ｽｳ雋・ｽｷ鬲假ｽｨ' },
+    { key: 'starPower', label: 'TOP5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・ },
+    { key: 'popularity', label: '髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・ },
+    { key: 'depth', label: '鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､' },
   ];
   // SVG radar (diamond: top=ace, right=starPower, bottom=popularity, left=depth)
   const R = 110, cx = 160, cy = 150;
@@ -3125,7 +2964,7 @@ function _renderDbOrgCompare() {
     gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(255,255,255,${0.12 - i * 0.02})"/>`;
   });
 
-  const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体比較レーダー">
+  const svgChart = `<svg viewBox="0 0 320 300" aria-label="髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ・取ｨ抵ｽｹ譎｢・ｽ・ｼ驛｢謨鳴驛｢譎｢・ｽ・ｼ">
     <defs>
       <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f0d078" stop-opacity="0.35"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0.08"/></linearGradient>
       <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
@@ -3142,10 +2981,10 @@ function _renderDbOrgCompare() {
         return `<circle cx="${cx + dirs[i][0]*pv}" cy="${cy + dirs[i][1]*pv}" r="3.5" fill="#f0d078"/>
                 <circle cx="${cx + dirs[i][0]*rv}" cy="${cy + dirs[i][1]*rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
       }).join('')}
-      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5実力</text>
-      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
-      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
-      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
+      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5髯橸ｽｳ雋・ｽｷ鬲假ｽｨ</text>
+      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・/text>
+      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・/text>
+      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､</text>
     </g>
   </svg>`;
 
@@ -3165,18 +3004,18 @@ function _renderDbOrgCompare() {
   });
 
   const briefItems = [
-    { title: '勝ち筋', desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
-    { title: '注意点', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
-    { title: '補強提案', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
+    { title: '髯ｷ閧ｴ莠｢隨・｣ｰ鬩包ｽｲ郢晢ｽｻ, desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
+    { title: '髮主桁・ｽ・ｨ髫ｲ・｢陷蜉ｱ笳・, desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
+    { title: '鬮ｯ・ｬ隲幢ｽｷ繝ｻ・ｼ繝ｻ・ｷ髫ｰ・ｰ陷郁肩・ｽ・｡郢晢ｽｻ, desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
   ];
   const planHtml = d.actions.slice(0, 2).map(a => `<div class="db-cmp-brief-card">
       <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
       <p>${a.text}</p>
-    </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きな追加アクションはありません。</p></div>`;
+    </div>`).join('') || `<div class="db-cmp-brief-card"><p>髴托ｽｴ繝ｻ・ｾ髫ｴ蠑ｱ・臥ｸｺ蟶ｷ・ｸ・ｺ繝ｻ・ｧ髯樊ｻゑｽｽ・ｧ驍ｵ・ｺ鬮ｦ・ｪ遶企ｷｹ諱・・・ｽ髯ｷ莨夲ｽ｣・ｰ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｯ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢晢ｽｻ/p></div>`;
   const roleCopy = {
-    'エース': '看板の勝負所。ここで主導権を取れるかが全体像を左右する。',
-    '主力': '中核カード。興行の温度を押し上げる役目を担う。',
-    '中堅': '層の厚さが見えるポイント。団体力の差が最も出やすい。',
+    '驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ': '鬨ｾ・ｵ陋ｹ・ｺ隰ｾ・ｸ驍ｵ・ｺ繝ｻ・ｮ髯ｷ閧ｴ蜃ｵ繝ｻ・ｲ繝ｻ・ｰ髫ｰ繝ｻﾂ驍ｵ・ｲ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ髦ｮ蜷ｶﾂ螳壼初繝ｻ・ｻ髯昴・蜿吶・・ｨ繝ｻ・ｩ驛｢・ｧ髮区ｧｫ蠕宣Δ・ｧ陟暮ｯ会ｽｽ迢暦ｽｸ・ｺ闕ｵ譏ｶﾂ・ｲ髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ霓｣蛟･ﾎ｡驛｢・ｧ髮区ｩｸ・ｽ・ｷ繝ｻ・ｦ髯ｷ・ｿ繝ｻ・ｳ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ,
+    '髣包ｽｳ繝ｻ・ｻ髯ｷ蟲ｨ繝ｻ: '髣包ｽｳ繝ｻ・ｭ髫ｴ・ｬ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ・つ郢ｧ鄙ｫ繝ｻ鬮ｯ・ｦ陟募ｾ後・髮九ｑ・ｽ・ｩ髯溯ｶ｣・ｽ・ｦ驛｢・ｧ陷ｻ蝓滂ｽｬ・ｾ驍ｵ・ｺ陟搾ｽｺ繝ｻ・ｸ驗呻ｽｫ繝ｻ・｡驛｢・ｧ陷ｿ・･繝ｻ・ｽ繝ｻ・ｹ鬨ｾ・ｶ繝ｻ・ｮ驛｢・ｧ陷ｻ閧ｲ蟶･驍ｵ・ｺ郢晢ｽｻ・つ郢晢ｽｻ,
+    '髣包ｽｳ繝ｻ・ｭ髯懶ｽ｣郢晢ｽｻ: '髯橸ｽｻ繝ｻ・､驍ｵ・ｺ繝ｻ・ｮ髯ｷ・ｴ陞｢・ｹ繝ｻ繝ｻ・ｸ・ｺ霑ｹ螟ｲ・ｽ・ｦ闕ｵ譏ｶ譁｡驛｢・ｧ闕ｵ譏ｴ繝ｻ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驛｢譎冗樟・つ郢ｧ繝ｻ・ｱ・ｮ髣厄ｽｴ霓｣蛟ｬ・ｴ・ｨ驍ｵ・ｺ繝ｻ・ｮ髯晢ｽｾ繝ｻ・ｮ驍ｵ・ｺ隴ｴ・ｧ隲､蜥擾ｽｹ・ｧ郢ｧ繝ｻ繝ｻ驛｢・ｧ郢晢ｽｻ隨倥・・ｸ・ｺ郢晢ｽｻ・つ郢晢ｽｻ,
   };
   function buildMatchupCard(m, featured) {
     const pUrl = getPortraitUrl(m.player.id);
@@ -3186,7 +3025,7 @@ function _renderDbOrgCompare() {
     const ovrDiff = m.player.ovr - m.rival.ovr;
     const popDiff = m.player.pop - m.rival.pop;
     const edgeClass = ovrDiff > 2 ? 'player' : ovrDiff < -2 ? 'rival' : 'even';
-    const edgeText = ovrDiff > 2 ? `${d.playerName}優勢` : ovrDiff < -2 ? `${d.rivalName}優勢` : '互角';
+    const edgeText = ovrDiff > 2 ? `${d.playerName}髯ｷ繝ｻ・ｽ・ｪ髯ｷ謳ｾ・ｽ・｢` : ovrDiff < -2 ? `${d.rivalName}髯ｷ繝ｻ・ｽ・ｪ髯ｷ謳ｾ・ｽ・｢` : '髣費｣ｰ陞ｳ螟ｲ・ｽ・ｧ郢晢ｽｻ;
     const signValue = n => n > 0 ? `+${n}` : `${n}`;
     return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
       <div class="db-cmp-match-top">
@@ -3199,14 +3038,14 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-match-meta">
             <strong>${m.player.name}</strong>
             <span>${d.playerName}</span>
-            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
+            <span>OVR ${m.player.ovr} / 髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${m.player.pop}</span>
           </div>
         </div>
         <div class="db-cmp-match-center">
           <div class="db-cmp-match-vs">${featured ? 'SHOWDOWN' : 'VS'}</div>
           <div class="db-cmp-match-metrics">
             <span>OVR ${signValue(ovrDiff)}</span>
-            <span>人気 ${signValue(popDiff)}</span>
+            <span>髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${signValue(popDiff)}</span>
           </div>
         </div>
         <div class="db-cmp-match-side right">
@@ -3214,11 +3053,11 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-match-meta">
             <strong>${m.rival.name}</strong>
             <span>${d.rivalName}</span>
-            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
+            <span>OVR ${m.rival.ovr} / 髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${m.rival.pop}</span>
           </div>
         </div>
       </div>
-      <p class="db-cmp-match-copy">${roleCopy[m.role] || 'このカードが団体比較の温度を決める。'}</p>
+      <p class="db-cmp-match-copy">${roleCopy[m.role] || '驍ｵ・ｺ髦ｮ蜷ｶ繝ｻ驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ遯ｶ・ｲ髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ郢晢ｽｻ髮九ｑ・ｽ・ｩ髯溯ｶ｣・ｽ・ｦ驛｢・ｧ陷ｻ闌ｨ・ｽ・ｱ繝ｻ・ｺ驛｢・ｧ遶丞､ｲ・ｽ迢暦ｽｸ・ｲ郢晢ｽｻ}</p>
     </article>`;
   }
 
@@ -3232,7 +3071,7 @@ function _renderDbOrgCompare() {
   } else {
     html += `<section class="db-cmp-spotlight-panel">
       <div class="db-cmp-panel-title">Key Matchups</div>
-      <div class="db-cmp-recommend"><p>比較できる主力選手データがまだ不足しています。</p></div>
+      <div class="db-cmp-recommend"><p>髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ邵ｲ蝣､・ｸ・ｺ鬮ｦ・ｪ繝ｻ邇門初繝ｻ・ｻ髯ｷ迚呻ｽｹ繝ｻ繝ｻ髫ｰ繝ｻ・ｹ譏ｴﾎ咎Δ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ驍ｵ・ｺ陟募ｨｯ遨宣し・ｺ繝ｻ・ｰ髣包ｽｳ陝雜｣・ｽ・ｶ繝ｻ・ｳ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ/p></div>
     </section>`;
   }
 
@@ -3246,7 +3085,7 @@ function _renderDbOrgCompare() {
     </div>
     <div class="db-cmp-panel">
       <h2 class="db-cmp-panel-title">GM Brief</h2>
-      <div class="db-cmp-story"><strong>現状総評</strong><p>${d.summaryText}</p></div>
+      <div class="db-cmp-story"><strong>髴托ｽｴ繝ｻ・ｾ髴托ｽ･繝ｻ・ｶ鬩搾ｽｱ陷托ｽｰ繝ｻ・ｩ郢晢ｽｻ/strong><p>${d.summaryText}</p></div>
       <div class="db-cmp-insight-list">
         ${briefItems.map(item => `<div class="db-cmp-insight"><div><strong>${item.title}</strong><div class="desc">${item.desc}</div></div><span class="db-cmp-badge ${item.badgeClass}">${item.badge}</span></div>`).join('')}
       </div>
@@ -3257,9 +3096,9 @@ function _renderDbOrgCompare() {
   return html;
 }
 
-// ╔══════════════════════════════════════════════════════════╗
-// ║  RELATIONSHIP MAP (Phase 6)                              ║
-// ╚══════════════════════════════════════════════════════════╝
+// 髫ｨ鬆大繭雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ鬯夲ｽｨ
+// 髫ｨ鄙ｫ繝ｻ RELATIONSHIP MAP (Phase 6)                              髫ｨ鄙ｫ繝ｻ
+// 髫ｨ髮・ｽ｣・ｺ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ陝ｷ繝ｻ
 
 function _renderDbOrgCompare() {
   const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
@@ -3278,57 +3117,57 @@ function _renderDbOrgCompare() {
   }
 
   function getEdgeState(diff) {
-    if (diff >= 8) return { cls: 'player', text: `${d.playerName}が圧倒` };
-    if (diff >= 4) return { cls: 'player', text: `${d.playerName}が優勢` };
-    if (diff >= 2) return { cls: 'player', text: `${d.playerName}が先行` };
-    if (diff <= -8) return { cls: 'rival', text: `${d.rivalName}に惨敗圏` };
-    if (diff <= -4) return { cls: 'rival', text: `${d.rivalName}が優勢` };
-    if (diff <= -2) return { cls: 'rival', text: `${d.rivalName}が先行` };
-    return { cls: 'even', text: 'ほぼ五分' };
+    if (diff >= 8) return { cls: 'player', text: `${d.playerName}驍ｵ・ｺ隰疲ｻ薙★髯区ｺｯ蟇・};
+    if (diff >= 4) return { cls: 'player', text: `${d.playerName}驍ｵ・ｺ隰疲ｺｪ辣､髯ｷ謳ｾ・ｽ・｢` };
+    if (diff >= 2) return { cls: 'player', text: `${d.playerName}驍ｵ・ｺ隰疲ｺ倥・鬮ｯ・ｦ陟厄ｽ｢ };
+    if (diff <= -8) return { cls: 'rival', text: `${d.rivalName}驍ｵ・ｺ繝ｻ・ｫ髫ｲ・ｰ繝ｻ・ｨ髫ｰ・ｨ隲､諛遺螺` };
+    if (diff <= -4) return { cls: 'rival', text: `${d.rivalName}驍ｵ・ｺ隰疲ｺｪ辣､髯ｷ謳ｾ・ｽ・｢` };
+    if (diff <= -2) return { cls: 'rival', text: `${d.rivalName}驍ｵ・ｺ隰疲ｺ倥・鬮ｯ・ｦ陟厄ｽ｢ };
+    return { cls: 'even', text: '驍ｵ・ｺ繝ｻ・ｻ驍ｵ・ｺ繝ｻ・ｼ髣費｣ｰ雎募ｾ後・' };
   }
 
   function getPopularityTail(popDiff) {
-    if (popDiff >= 8) return '人気面の後押しまでついている。';
-    if (popDiff >= 3) return '集客面でもこちらに追い風がある。';
-    if (popDiff <= -8) return '知名度でも大きく置いていかれている。';
-    if (popDiff <= -3) return '人気面の見劣りも無視できない。';
-    return '人気勝負はほぼ並びで、純粋な格の勝負になる。';
+    if (popDiff >= 8) return '髣費｣ｰ繝ｻ・ｺ髮守｢∵味隰ｫ繝ｻ・ｸ・ｺ繝ｻ・ｮ髯溷｢難ｽ｢・ｧ隹ｺ・ｾ驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・､驍ｵ・ｺ郢晢ｽｻ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ;
+    if (popDiff >= 3) return '鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｮ繝ｻ・｢鬯ｮ・ｱ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｧ驛｢・ｧ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ繝ｻ・｡驛｢・ｧ陝ｲ・ｨ遶企ｦｴ諱・・・ｽ驍ｵ・ｺ郢晢ｽｻ繝ｻ・｢繝ｻ・ｨ驍ｵ・ｺ陟募ｨｯ譌ｺ驛｢・ｧ闕ｵ謨鳴郢晢ｽｻ;
+    if (popDiff <= -8) return '鬩墓得・ｽ・･髯ｷ・ｷ隶主･・ｽｽ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｧ驛｢・ｧ郢ｧ繝ｻ・ｽ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ・･鬩励ｑ・ｽ・ｮ驍ｵ・ｺ郢晢ｽｻ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ・ゑｽｰ驛｢・ｧ陟募ｨｯﾂ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ;
+    if (popDiff <= -3) return '髣費｣ｰ繝ｻ・ｺ髮守｢∵味隰ｫ繝ｻ・ｸ・ｺ繝ｻ・ｮ鬮ｫ蜍溷罰闕ｵ・ｾ驛｢・ｧ驗呻ｽｫ繝ｻ繧奇ｽｾ貊ゑｽｽ・｡鬮ｫ蠅薙§邵ｲ蝣､・ｸ・ｺ鬮ｦ・ｪ遶企・・ｸ・ｺ郢晢ｽｻ・つ郢晢ｽｻ;
+    return '髣費｣ｰ繝ｻ・ｺ髮取｢ｧﾂ諛会ｽｺ・ｫ鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｻ驍ｵ・ｺ繝ｻ・ｼ髣包ｽｳ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｳ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｲ遶擾ｽｫ繝ｻ・ｴ騾ｧ・ｮ繝ｻ・ｲ闕ｵ譏ｶ繝ｻ髫ｴ・ｬ繝ｻ・ｼ驍ｵ・ｺ繝ｻ・ｮ髯ｷ閧ｴ蜃ｵ繝ｻ・ｲ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ闕ｵ謨鳴郢晢ｽｻ;
   }
 
   function getMatchupSlot(index) {
     return [
-      { chip: 'エース比較', center: 'ACE', key: 'ace' },
-      { chip: 'No.2比較', center: 'No.2', key: 'no2' },
-      { chip: 'No.3比較', center: 'No.3', key: 'no3' },
-    ][index] || { chip: '比較', center: 'VS', key: 'generic' };
+      { chip: '驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ, center: 'ACE', key: 'ace' },
+      { chip: 'No.2髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ, center: 'No.2', key: 'no2' },
+      { chip: 'No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ, center: 'No.3', key: 'no3' },
+    ][index] || { chip: '髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ, center: 'VS', key: 'generic' };
   }
 
   function getMatchupCopy(slot, ovrDiff, popDiff) {
     const popTail = getPopularityTail(popDiff);
     if (slot.key === 'ace') {
-      if (ovrDiff <= -8) return `エース比較はかなり厳しい。看板に据えると飲まれて終わる。${popTail}`;
-      if (ovrDiff <= -4) return `エース比較は分が悪い。真っ向から当てると主導権を持っていかれやすい。${popTail}`;
-      if (ovrDiff < 3) return `エース比較は十分勝負になる。ここを五分で持ち帰れれば興行全体が締まる。${popTail}`;
-      if (ovrDiff < 8) return `エース比較はこちらが前に出られる。堂々とメインの顔にして押し切りたい。${popTail}`;
-      return `エース比較は完全にこちらの土俵。相手の看板ごと食うつもりで前面に出していい。${popTail}`;
+      if (ovrDiff <= -8) return `驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ闕ｵ譏ｶ繝ｻ驛｢・ｧ鬮ｮ竏晢ｽｮ蜥ｲ・ｸ・ｺ陷会ｽｱ繝ｻ讓抵ｽｸ・ｲ郢ｧ逕ｻ笘・垓螟ｲ・ｽ・ｿ驍ｵ・ｺ繝ｻ・ｫ髫ｰ謦ｰ・ｽ・ｮ驍ｵ・ｺ陋ｹ・ｻ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ鬯ｯ貊ゑｽｽ・ｲ驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ陟募ｨｯﾂ・ｻ鬩搾ｽｨ郢ｧ繝ｻ・ｽ蜀暦ｽｹ・ｧ闕ｵ謨鳴郢晢ｽｻ{popTail}`;
+      if (ovrDiff <= -4) return `驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ髯具ｽｻ郢晢ｽｻ遯ｶ・ｲ髫ｰ雋ｻ・ｽ・ｪ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ逕ｻ・・し・ｺ繝ｻ・｣髯ｷ・ｷ闔会ｽ｣・ゑｽｰ驛｢・ｧ霑壼遜・ｽ・ｽ髦ｮ蜷ｮﾂ・ｻ驛｢・ｧ闕ｵ譏ｶ繝ｻ髣包ｽｳ繝ｻ・ｻ髯昴・蜿吶・・ｨ繝ｻ・ｩ驛｢・ｧ陷ｻ蝓滉ｺ憺し・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ・ゑｽｰ驛｢・ｧ陟暮ｯ会ｽｽ繝ｻ・ｸ・ｺ陷ｷ・ｶ繝ｻ讓抵ｽｸ・ｲ郢晢ｽｻ{popTail}`;
+      if (ovrDiff < 3) return `驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ髯ｷ蟯ｩ繝ｻ郢晢ｽｻ髯ｷ閧ｴ蜃ｵ繝ｻ・ｲ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ闕ｵ謨鳴郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ髦ｮ蜻ｻ・ｽ螳壽ｻ玖ｱ募ｾ後・驍ｵ・ｺ繝ｻ・ｧ髫ｰ蝠上・隨・｣ｰ髯晢ｽｶ繝ｻ・ｰ驛｢・ｧ陟暮ｯ会ｽｽ讙趣ｽｸ・ｺ繝ｻ・ｰ鬮｣莨√Γ繝ｻ・｡隰疲ｺ倥・髣厄ｽｴ髦ｮ蜷ｮﾂ・ｲ鬩搾ｽｱ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ闕ｵ謨鳴郢晢ｽｻ{popTail}`;
+      if (ovrDiff < 8) return `驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ髦ｮ蜷ｮ阡馴Δ・ｧ陝ｲ・ｨ遯ｶ・ｲ髯ｷ鮃ｹ莠らｫ頑･｢諤弱・・ｺ驛｢・ｧ陝ｲ・ｨ繝ｻ讙趣ｽｹ・ｧ闕ｵ謨鳴郢ｧ繝ｻ・｣・ｰ郢ｧ繝ｻﾂ郢晢ｽｻ遶雁､・ｹ譎｢・ｽ・｡驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｮ鬯ｯ菫ｶ魍堤ｫ企豪・ｸ・ｺ陷会ｽｱ遯ｶ・ｻ髫ｰ螟ｲ・ｽ・ｼ驍ｵ・ｺ隲､諛翫・驛｢・ｧ驗呻ｽｫ隨ｳ繝ｻ・ｸ・ｺ郢晢ｽｻ・つ郢晢ｽｻ{popTail}`;
+      return `驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ髯橸ｽｳ隰疲ｺ倥・驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ髦ｮ蜷ｮ阡馴Δ・ｧ陝ｲ・ｨ郢晢ｽｻ髯懶ｽｨ雋贋ｼ夲ｽｽ・ｿ繝ｻ・ｵ驍ｵ・ｲ郢ｧ迚呻ｽｶ迹夲ｽｬ繝ｻ・ｹ譏ｴ繝ｻ鬨ｾ・ｵ陋ｹ・ｺ隰ｾ・ｸ驍ｵ・ｺ隴∫ｵｶ繝ｻ鬯ｯ貊難ｽｺ蛟ｪ魘ｬ驍ｵ・ｺ繝ｻ・､驛｢・ｧ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｧ髯ｷ螟ｧ豸ｵ隰ｫ繝ｻ・ｸ・ｺ繝ｻ・ｫ髯ｷ繝ｻ・ｽ・ｺ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ讓抵ｽｸ・ｲ郢晢ｽｻ{popTail}`;
     }
     if (slot.key === 'no2') {
-      if (ovrDiff <= -8) return `No.2対決は正直かなり痛い。ここまで崩れると上位カード全体が細く見える。${popTail}`;
-      if (ovrDiff <= -4) return `No.2対決は押され気味。厚み勝負にすると相手の二番手が目立つ。${popTail}`;
-      if (ovrDiff < 3) return `No.2対決は拮抗。ここを取り切れるかで団体の厚み評価が変わる。${popTail}`;
-      if (ovrDiff < 8) return `No.2対決はしっかり優勢。主力層の強さを見せつけるには十分なカードだ。${popTail}`;
-      return `No.2対決まで勝っているならかなり強い。相手の上位陣をまとめて上回れている。${popTail}`;
+      if (ovrDiff <= -8) return `No.2髯昴・・ｽ・ｾ髮手ｶ｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｯ髮弱・・ｽ・｣鬨ｾ・ｶ繝ｻ・ｴ驍ｵ・ｺ闕ｵ譏ｶ繝ｻ驛｢・ｧ鬯倡夢謳ｦ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ髦ｮ蜷ｮ遨宣し・ｺ繝ｻ・ｧ髯晢｣ｰ繝ｻ・ｩ驛｢・ｧ陟暮ｯ会ｽｽ迢暦ｽｸ・ｺ繝ｻ・ｨ髣包ｽｳ髮榊・・ｽ・ｽ鬮ｦ・ｪ邵ｺ蜥ｲ・ｹ譎｢・ｽ・ｼ驛｢譎臥櫨郢晢ｽｻ髣厄ｽｴ髦ｮ蜷ｮﾂ・ｲ鬩肴得・ｽ・ｰ驍ｵ・ｺ陷托ｽｰ繝ｻ・ｦ闕ｵ譏ｶ譁｡驛｢・ｧ闕ｵ謨鳴郢晢ｽｻ{popTail}`;
+      if (ovrDiff <= -4) return `No.2髯昴・・ｽ・ｾ髮手ｶ｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｯ髫ｰ螟ｲ・ｽ・ｼ驍ｵ・ｺ髴郁ｲｻ・ｽ迹夲ｽｱ譴ｧﾂ諛・ｽ｢荵滂ｽｸ・ｲ郢ｧ繝ｻ・ｭ遉ｼ・ｸ・ｺ繝ｻ・ｿ髯ｷ閧ｴ蜃ｵ繝ｻ・ｲ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ鬨ｾ・ｶ繝ｻ・ｸ髫ｰ繝ｻ・ｹ譏ｴ繝ｻ髣費｣ｰ隶吩ｸｻ繝ｻ髫ｰ繝ｻ・ｹ譏ｶﾂ・ｲ鬨ｾ・ｶ繝ｻ・ｮ鬩包ｽｶ闕ｵ譏ｶ蜻ｽ驍ｵ・ｲ郢晢ｽｻ{popTail}`;
+      if (ovrDiff < 3) return `No.2髯昴・・ｽ・ｾ髮手ｶ｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｯ髫ｲ・｡繝ｻ・ｮ髫ｰ螢ｼ蟷ｲ・つ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ髦ｮ蜻ｻ・ｽ螳壽╂隰費ｽｶ繝ｻ鬘伜ｴ慕ｹ晢ｽｻ繝ｻ讙趣ｽｹ・ｧ闕ｵ謨厄ｽｰ驍ｵ・ｺ繝ｻ・ｧ髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｶ繝ｻ髯ｷ・ｴ陞｢・ｹ遶擾ｽｩ鬮ｫ・ｧ驕ｨ繧托ｽｽ・ｾ繝ｻ・｡驍ｵ・ｺ隰疲ｻゑｽｽ・､陝ｲ・ｨ繝ｻ蜀暦ｽｹ・ｧ闕ｵ謨鳴郢晢ｽｻ{popTail}`;
+      if (ovrDiff < 8) return `No.2髯昴・・ｽ・ｾ髮手ｶ｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ陷会ｽｱ隨・ｽｲ驍ｵ・ｺ闕ｵ譎｢・ｽ鬘俶輔・・ｪ髯ｷ謳ｾ・ｽ・｢驍ｵ・ｲ郢ｧ繝ｻ・ｽ・ｸ繝ｻ・ｻ髯ｷ迚呻ｽｸ蟷｢・ｽ・ｱ繝ｻ・､驍ｵ・ｺ繝ｻ・ｮ髯滓汚・ｽ・ｷ驍ｵ・ｺ髴郁ｲｻ・ｽ蟶晏寰闕ｵ譏ｶ髮ｷ驍ｵ・ｺ繝ｻ・､驍ｵ・ｺ闔会ｽ｣繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｯ髯ｷ蟯ｩ繝ｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ繝ｻ・ｫ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ隨・ｽ｡驍ｵ・ｲ郢晢ｽｻ{popTail}`;
+      return `No.2髯昴・・ｽ・ｾ髮手ｶ｣・ｽ・ｺ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｧ髯ｷ閧ｴ莠｢隨・ｽｲ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｪ驛｢・ｧ陝ｲ・ｨ・ゑｽｰ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ鬮ｮ繝ｻ・ｽ・ｼ繝ｻ・ｷ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ迚呻ｽｶ迹夲ｽｬ繝ｻ・ｹ譏ｴ繝ｻ髣包ｽｳ髮榊・・ｽ・ｽ陜難ｽｼ陷会ｽｵ驛｢・ｧ陋幢ｽｵ遶擾ｽｪ驍ｵ・ｺ繝ｻ・ｨ驛｢・ｧ遶丞｣ｺﾂ・ｻ髣包ｽｳ鬮ｮ竏晢ｽｱ骰具ｽｹ・ｧ陟募ｨｯﾂ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ{popTail}`;
     }
-    if (ovrDiff <= -8) return `No.3比較でも惨敗寄り。層の薄さがそのまま露呈するので編成の手当てが必要だ。${popTail}`;
-    if (ovrDiff <= -4) return `No.3比較は明確に不利。中堅勝負にすると団体力の差を見せられる。${popTail}`;
-    if (ovrDiff < 3) return `No.3比較は十分競れる。ここを互角で回せれば全体の見栄えは落ちない。${popTail}`;
-    if (ovrDiff < 8) return `No.3比較はこちらが上。下支えの強さとして素直にアピールできる。${popTail}`;
-    return `No.3比較まで圧倒している。層の厚さでは完全にこちらの勝ちだ。${popTail}`;
+    if (ovrDiff <= -8) return `No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ邵ｲ蝣､・ｹ・ｧ郢ｧ螟ｷ螟奇ｽｬ・ｨ隲､諛ｶ・ｽ・ｯ郢晢ｽｻ繝ｻ鬘費ｽｸ・ｲ郢ｧ繝ｻ・ｽ・ｱ繝ｻ・､驍ｵ・ｺ繝ｻ・ｮ鬮ｦ・ｮ郢晢ｽｻ繝ｻ繝ｻ・ｸ・ｺ陟募ｨｯ關ｽ驍ｵ・ｺ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｾ鬯ｮ・ｴ繝ｻ・ｲ髯ｷ・ｻ陋ｹ・ｻ隨倥・・ｹ・ｧ闕ｵ譏ｴ繝ｻ驍ｵ・ｺ繝ｻ・ｧ鬩搾ｽｱ繝ｻ・ｨ髫ｰ迹壹・郢晢ｽｻ髫ｰ繝ｻ蜚ｱ繝ｻ・ｽ髦ｮ蜷ｮﾂ・ｻ驍ｵ・ｺ隰疲ｻゑｽｽ・ｿ郢晢ｽｻ繝ｻ・ｦ遶丞｣ｺ蜻ｳ驍ｵ・ｲ郢晢ｽｻ{popTail}`;
+    if (ovrDiff <= -4) return `No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ髫ｴ荳橸ｽｮ闌ｨ・ｽ・｢繝ｻ・ｺ驍ｵ・ｺ繝ｻ・ｫ髣包ｽｳ隶朱｡俶・驍ｵ・ｲ郢ｧ繝ｻ・ｽ・ｸ繝ｻ・ｭ髯懶ｽ｣郢晢ｽｻ闔・ｫ鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛟ｬ・ｴ・ｨ驍ｵ・ｺ繝ｻ・ｮ髯晢ｽｾ繝ｻ・ｮ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｦ闕ｵ譏ｶ髮ｷ驛｢・ｧ陝ｲ・ｨ繝ｻ讙趣ｽｹ・ｧ闕ｵ謨鳴郢晢ｽｻ{popTail}`;
+    if (ovrDiff < 3) return `No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ髯ｷ蟯ｩ繝ｻ郢晢ｽｻ鬩包ｽｶ繝ｻ・ｶ驛｢・ｧ陟暮ｯ会ｽｽ迢暦ｽｸ・ｲ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ髦ｮ蜻ｻ・ｽ螳壽ｻ玖楜螟ｲ・ｽ・ｧ陋幢ｽｵ邵ｲ螳壽綜隶抵ｽｭ隨ｳ迢暦ｽｹ・ｧ陟募ｾ後・髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ髦ｮ蜷ｶ繝ｻ鬮ｫ蜍溽私繝ｻ・ｰ郢晢ｽｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｯ鬮｣諛ｶ・ｽ・ｽ驍ｵ・ｺ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ・つ郢晢ｽｻ{popTail}`;
+    if (ovrDiff < 8) return `No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ髦ｮ蜷ｮ阡馴Δ・ｧ陝ｲ・ｨ遯ｶ・ｲ髣包ｽｳ驗呻ｽｫ・つ郢ｧ繝ｻ・ｽ・ｸ陋ｹ・ｺ鬯ｮ・ｪ驍ｵ・ｺ陋ｹ・ｻ郢晢ｽｻ髯滓汚・ｽ・ｷ驍ｵ・ｺ髴域喚繝ｻ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ鬩肴得・｣・ｰ鬨ｾ・ｶ繝ｻ・ｴ驍ｵ・ｺ繝ｻ・ｫ驛｢・ｧ繝ｻ・｢驛｢譎・ｱ堤ｹ晢ｽｻ驛｢譎｢・ｽ・ｫ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ{popTail}`;
+    return `No.3髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ繝ｻ・ｧ髯懶ｽｨ繝ｻ・ｧ髯区ｺｷ繝ｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｲ郢ｧ繝ｻ・ｽ・ｱ繝ｻ・､驍ｵ・ｺ繝ｻ・ｮ髯ｷ・ｴ陞｢・ｹ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｯ髯橸ｽｳ隰疲ｺ倥・驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ髦ｮ蜷ｮ阡馴Δ・ｧ陝ｲ・ｨ郢晢ｽｻ髯ｷ閧ｴ莠｢隨・｣ｰ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｲ郢晢ｽｻ{popTail}`;
   }
 
   const rivalDim = hexDim(rc, 0.12);
   const rivalGrad = `linear-gradient(90deg,${rc},${hexDim(rc, 0.6)})`;
-  const fallbackTag = '分析中';
+  const fallbackTag = '髯具ｽｻ郢晢ｽｻ隴ｴ・ｵ髣包ｽｳ繝ｻ・ｭ';
   const playerTags = d.playerTags.length ? d.playerTags : [fallbackTag];
   const rivalTags = d.rivalTags.length ? d.rivalTags : [fallbackTag];
   const briefLead = d.actions[0]?.text || d.opportunity || d.summaryText;
@@ -3341,10 +3180,10 @@ function _renderDbOrgCompare() {
   </div>`;
 
   const AXES = [
-    { key: 'ace', label: 'TOP5総合' },
-    { key: 'starPower', label: 'TOP5人気' },
-    { key: 'popularity', label: '団体人気' },
-    { key: 'depth', label: '選手層' },
+    { key: 'ace', label: 'TOP5鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ },
+    { key: 'starPower', label: 'TOP5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・ },
+    { key: 'popularity', label: '髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・ },
+    { key: 'depth', label: '鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､' },
   ];
   const R = 110;
   const cx = 160;
@@ -3366,7 +3205,7 @@ function _renderDbOrgCompare() {
     gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(255,255,255,${0.12 - i * 0.02})"/>`;
   });
 
-  const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体パワースナップショット">
+  const svgChart = `<svg viewBox="0 0 320 300" aria-label="髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｶﾎ､驛｢譎｢・ｽ・ｯ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ驛｢譎会ｽｿ・ｫ郢晢ｽ｣驛｢譎丞ｹｲ邵ｺ蜥擾ｽｹ譎｢・ｽ・ｧ驛｢譏ｴ繝ｻ郢晢ｽｨ">
     <defs>
       <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f0d078" stop-opacity="0.35"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0.08"/></linearGradient>
       <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
@@ -3383,10 +3222,10 @@ function _renderDbOrgCompare() {
         return `<circle cx="${cx + dirs[i][0] * pv}" cy="${cy + dirs[i][1] * pv}" r="3.5" fill="#f0d078"/>
                 <circle cx="${cx + dirs[i][0] * rv}" cy="${cy + dirs[i][1] * rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
       }).join('')}
-      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5総合</text>
-      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
-      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
-      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
+      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ/text>
+      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5髣費｣ｰ繝ｻ・ｺ髮主ｾ後・/text>
+      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・/text>
+      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､</text>
     </g>
   </svg>`;
 
@@ -3404,14 +3243,14 @@ function _renderDbOrgCompare() {
   });
 
   const briefItems = [
-    { title: '勝ち筋', desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
-    { title: '危険信号', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
-    { title: 'スカウティング', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
+    { title: '髯ｷ閧ｴ莠｢隨・｣ｰ鬩包ｽｲ郢晢ｽｻ, desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
+    { title: '髯ｷ螂・ｽｽ・ｱ鬯ｮ・ｯ繝ｻ・ｺ髣厄ｽｫ繝ｻ・｡髯ｷ・ｿ繝ｻ・ｷ', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
+    { title: '驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ邵ｺ繝ｻ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
   ];
   const planHtml = d.actions.slice(0, 2).map(a => `<div class="db-cmp-brief-card">
       <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
       <p>${a.text}</p>
-    </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きく動かすべきアクションはありません。</p></div>`;
+    </div>`).join('') || `<div class="db-cmp-brief-card"><p>髴托ｽｴ繝ｻ・ｾ髫ｴ蠑ｱ・臥ｸｺ蟶ｷ・ｸ・ｺ繝ｻ・ｧ髯樊ｻゑｽｽ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ・･髯ｷ蟠趣ｽｼ譚ｿ・ｰ驍ｵ・ｺ陷ｷ・ｶ遶冗距・ｸ・ｺ鬮ｦ・ｪ邵ｺ繝ｻ・ｹ・ｧ繝ｻ・ｯ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢晢ｽｻ/p></div>`;
 
   function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, styleAttr = '') {
     return `<article class="db-cmp-org-summary-card ${sideCls}" ${styleAttr}>
@@ -3424,9 +3263,9 @@ function _renderDbOrgCompare() {
       </div>
       <div class="db-cmp-tags">${tags.slice(0, 2).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
       <div class="db-cmp-org-summary-statline">
-        <span>TOP5総合 <strong>${scores.ace}</strong></span>
-        <span>選手層 <strong>${rosterCount}</strong></span>
-        <span>団体人気 <strong>${orgPop}</strong></span>
+        <span>TOP5鬩搾ｽｱ闕ｳ讓抵ｽｲ繝ｻ<strong>${scores.ace}</strong></span>
+        <span>鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､ <strong>${rosterCount}</strong></span>
+        <span>髯懈圜・ｽ・｣髣厄ｽｴ髫ｰ雜｣・ｽ・ｺ繝ｻ・ｺ髮主ｾ後・<strong>${orgPop}</strong></span>
       </div>
     </article>`;
   }
@@ -3452,14 +3291,14 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-match-meta">
             <strong>${m.player.name}</strong>
             <span>${d.playerName}</span>
-            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
+            <span>OVR ${m.player.ovr} / 髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${m.player.pop}</span>
           </div>
         </div>
         <div class="db-cmp-match-center">
           <div class="db-cmp-match-vs">${slot.center}</div>
           <div class="db-cmp-match-metrics">
-            <span>OVR差 ${signValue(ovrDiff)}</span>
-            <span>人気差 ${signValue(popDiff)}</span>
+            <span>OVR髯晢ｽｾ繝ｻ・ｮ ${signValue(ovrDiff)}</span>
+            <span>髣費｣ｰ繝ｻ・ｺ髮取｢ｧﾂ諛ｶ・ｽ・ｷ繝ｻ・ｮ ${signValue(popDiff)}</span>
           </div>
         </div>
         <div class="db-cmp-match-side right">
@@ -3467,7 +3306,7 @@ function _renderDbOrgCompare() {
           <div class="db-cmp-match-meta">
             <strong>${m.rival.name}</strong>
             <span>${d.rivalName}</span>
-            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
+            <span>OVR ${m.rival.ovr} / 髣費｣ｰ繝ｻ・ｺ髮主ｾ後・${m.rival.pop}</span>
           </div>
         </div>
       </div>
@@ -3485,7 +3324,7 @@ function _renderDbOrgCompare() {
   } else {
     html += `<section class="db-cmp-spotlight-panel">
       <div class="db-cmp-panel-title">Top 3 Matchups</div>
-      <div class="db-cmp-recommend"><p>比較対象になる主力カードがまだ揃っていません。選手層が見え始めた段階で再確認したいです。</p></div>
+      <div class="db-cmp-recommend"><p>髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ繝ｻ・ｯ繝ｻ・ｾ鬮ｮ雜｣・ｽ・｡驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ陋滂ｽｶ繝ｻ・ｸ繝ｻ・ｻ髯ｷ迚呻ｽｸ蜷ｶ窶ｳ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ遯ｶ・ｲ驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ繝ｻ・ｰ髫ｰ・ｰ郢晢ｽｻ隨・ｽｲ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ郢ｧ驫繝ｻ髫ｰ繝ｻ蜚ｱ繝ｻ・ｱ繝ｻ・､驍ｵ・ｺ霑ｹ螟ｲ・ｽ・ｦ闕ｵ譏ｶ譁｡髯晏ｶ・ｹ譎｢・ｽ竏ｫ・ｸ・ｺ雋企屮・ｽ・ｮ繝ｻ・ｵ鬯ｮ・ｫ陟托ｽｱ邵ｲ螳壽呵悋・ｲ繝ｻ・｢繝ｻ・ｺ鬮ｫ・ｱ鬮ｦ・ｪ繝ｻ・ｰ驍ｵ・ｺ雋・∞・ｼ讓抵ｽｸ・ｺ繝ｻ・ｧ驍ｵ・ｺ陷ｷ・ｶ・つ郢晢ｽｻ/p></div>
     </section>`;
   }
 
@@ -3507,14 +3346,14 @@ function _renderDbOrgCompare() {
           ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, `style="--rival-dim:${rivalDim}"`)}
         </div>
         <div class="db-cmp-org-summary-note">
-          <strong>団体比較メモ</strong>
+          <strong>髯懈圜・ｽ・｣髣厄ｽｴ隰撰ｽｺ繝ｻ・ｯ驕呈汚・ｽ・ｼ郢晢ｽｻ・朱豪・ｹ譎｢・ｽ・｢</strong>
           <p>${d.summaryText}</p>
         </div>
       </div>
     </div>
     <div class="db-cmp-panel">
       <h2 class="db-cmp-panel-title">GM Brief</h2>
-      <div class="db-cmp-story"><strong>今週の判断</strong><p>${briefLead}</p></div>
+      <div class="db-cmp-story"><strong>髣疲・・ｼ繝ｻﾂ繝ｻ・ｱ驍ｵ・ｺ繝ｻ・ｮ髯具ｽｻ繝ｻ・､髫ｴ繝ｻ・ｽ・ｭ</strong><p>${briefLead}</p></div>
       <div class="db-cmp-insight-list">
         ${briefItems.map(item => `<div class="db-cmp-insight"><div><strong>${item.title}</strong><div class="desc">${item.desc}</div></div><span class="db-cmp-badge ${item.badgeClass}">${item.badge}</span></div>`).join('')}
       </div>
@@ -3533,87 +3372,87 @@ const _RELMAP_STAT_META = [
   { key: 'mn', label: 'MN', color: '#9b59b6' },
 ];
 
-// ── 感情テキストシステム ──────────────────────────────
+// 髫ｨ貂可髫ｨ貂可 髫ｲ・｢雋願侭ﾎ鈴Δ譏ｴ繝ｻ邵ｺ蜀暦ｽｹ・ｧ繝ｻ・ｹ驛｢譎冗樟邵ｺ蜥擾ｽｹ・ｧ繝ｻ・ｹ驛｢譏ｴ繝ｻ・弱・髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可髫ｨ貂可
 const EMOTION_TEXTS = {
   trust: {
-    normal:    'そばにいてくれるだけで、なんだか安心する',
-    ojousama:  'お隣にいてくださると、心が穏やかになりますの',
-    delinquent:'一緒にいると……なんか、落ち着くんだよな',
-    cool:      '信頼できる数少ない人間。それだけで十分',
-    seductive: '隣にいると、居心地がいいのよね……ふふ',
-    polite:    '本当に感謝しています。大切な存在です',
+    normal:    '驍ｵ・ｺ隴擾ｽｴ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ郢晢ｽｻ遯ｶ・ｻ驍ｵ・ｺ闕ｳ螂・ｽｽ讙趣ｽｹ・ｧ闕ｵ譏ｶ蜻ｳ驍ｵ・ｺ闔会ｽ｣邵ｲ蝣､・ｸ・ｲ遶丞｣ｺ繝ｻ驛｢・ｧ髦ｮ蜷ｮ蜻ｳ驍ｵ・ｺ陷ｿ・･繝ｻ・ｮ霑壼遜・ｽ・ｿ郢晢ｽｻ隨倥・・ｹ・ｧ郢晢ｽｻ,
+    ojousama:  '驍ｵ・ｺ闔ｨ竏晄↓驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ郢晢ｽｻ遯ｶ・ｻ驍ｵ・ｺ闕ｳ蟯ｩ蜻ｳ驍ｵ・ｺ髴郁ｲｻ・ｽ迢暦ｽｸ・ｺ繝ｻ・ｨ驍ｵ・ｲ遶乗劼・ｽ・ｿ郢晢ｽｻ遯ｶ・ｲ鬩包ｽｨ闕ｳ螂・ｽｽ繝ｻ・ｸ・ｺ闕ｵ譏ｶ繝ｻ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ郢晢ｽｻ',
+    delinquent:'髣包ｽｳ・つ鬩搾ｽｱ陋幢ｽｵ遶企豪・ｸ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ髦ｮ蜊搾ｽｰ驍ｵ・ｲ遶擾ｽｬ髫ｱ・ｰ驍ｵ・ｺ繝ｻ・｡鬨ｾ・ｹ・つ驍ｵ・ｺ闕ｳ螂・ｽｽ骰具ｽｸ・ｺ繝ｻ・ｰ驛｢・ｧ陋ｹ・ｻ遶翫・,
+    cool:      '髣厄ｽｫ繝ｻ・｡鬯ｯ繝ｻ・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ邇厄ｽｬ・ｨ繝ｻ・ｰ髯昴・・ｻ・｣遶企・・ｸ・ｺ郢晢ｽｻ繝ｻ・ｺ繝ｻ・ｺ鬯ｮ・｢髦ｮ蜊債郢ｧ繝ｻ關ｽ驛｢・ｧ陟募ｨｯ蜻ｳ驍ｵ・ｺ闔会ｽ｣邵ｲ螳壽ｺ遶乗亢繝ｻ',
+    seductive: '鬯ｮ・ｫ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ驍ｵ・ｲ遶乗劼・ｽ・ｱ郢晢ｽｻ繝ｻ・ｿ郢晢ｽｻ隲ｷ蜥ｲ・ｸ・ｺ陟暮ｯ会ｽｼ讓抵ｽｸ・ｺ郢晢ｽｻ郢晢ｽｻ驛｢・ｧ陋ｹ・ｻ郢晢ｽｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｵ驍ｵ・ｺ繝ｻ・ｵ',
+    polite:    '髫ｴ蟷｢・ｽ・ｬ髯溷・萓ｭ遶頑･｢・ｫ・｢雋・ｽｯ繝ｻ・ｬ隴擾ｽｴ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・､繝ｻ・ｧ髯具ｽｻ郢晢ｽｻ遶企｡梧ｰ幄耳諛夷帝し・ｺ繝ｻ・ｧ驍ｵ・ｺ郢晢ｽｻ,
   },
   rival_friend: {
-    normal:    '負けたくない。でも、おかげで強くなれている気がする',
-    ojousama:  '負けたくありませんけれど……実力は認めざるを得ませんわ',
-    delinquent:'ぜってー負けねえ。でもまあ……いるから燃えんだよ',
-    cool:      '互いに高め合える関係。……悪くない',
-    seductive: '勝ちたい……でも、追いかけてる時間も嫌いじゃないの',
-    polite:    '競い合えることが、自分の力になっています',
+    normal:    '鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻﾂ蝣､・ｹ・ｧ郢ｧ繝ｻﾂ遶丞｣ｺ蜃ｰ驍ｵ・ｺ闕ｵ譎｢・ｿ・｡驍ｵ・ｺ繝ｻ・ｧ髯滓汚・ｽ・ｷ驍ｵ・ｺ闕ｳ蟯ｩ繝ｻ驛｢・ｧ陟募ｨｯﾂ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ邇厄ｽｱ謔溷ｹｲ遯ｶ・ｲ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ,
+    ojousama:  '鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ譌ｺ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｺ闔会ｽ｣繝ｻ讙趣ｽｸ・ｺ繝ｻ・ｩ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髯橸ｽｳ雋・ｽｷ鬲假ｽｨ驍ｵ・ｺ繝ｻ・ｯ鬮ｫ・ｱ鬮ｦ・ｪ繝ｻ竏ｫ・ｸ・ｺ隰費ｽｶ繝ｻ迢暦ｽｹ・ｧ髮区ｩｸ・ｽ・ｾ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｹ・ｧ郢晢ｽｻ,
+    delinquent:'驍ｵ・ｺ隲帛ｲｩ螟｢驍ｵ・ｺ繝ｻ・ｦ驛｢譎｢・ｽ・ｼ鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣郢晢ｽｻ驍ｵ・ｺ陋ｹ・ｻ・つ郢ｧ繝ｻﾂ蝣､・ｹ・ｧ郢ｧ繝ｻ遨宣し・ｺ郢ｧ繝ｻﾂ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ闕ｵ譎｢・ｽ闃ｽ・ｾ・ｯ郢晢ｽｻ遶擾ｽｴ驛｢・ｧ髦ｮ蜷ｮ蜻ｳ驛｢・ｧ郢晢ｽｻ,
+    cool:      '髣費｣ｰ陋幢ｽｵ繝ｻ讓抵ｽｸ・ｺ繝ｻ・ｫ鬯ｯ・ｮ陋滂ｽ･繝ｻ竏ｬ諠ｺ陋ｹ・ｻ遶擾ｽｴ驛｢・ｧ驕擾ｽｩ隴幢ｽｪ髣厄ｽｫ郢ｧ繝ｻﾂ郢ｧ繝ｻﾂ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髫ｰ雋ｻ・ｽ・ｪ驍ｵ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ,
+    seductive: '髯ｷ閧ｴ莠｢隨・｣ｰ驍ｵ・ｺ雋・∞・ｼ讓抵ｽｪ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｧ驛｢・ｧ郢ｧ繝ｻﾂ遶擾ｽｬ繝ｻ・ｿ繝ｻ・ｽ驍ｵ・ｺ郢晢ｽｻ・ゑｽｰ驍ｵ・ｺ闔会ｽ｣遯ｶ・ｻ驛｢・ｧ陋ｹ・ｺ陷・ｽｾ鬯ｮ・｢髦ｮ蜻ｻ・ｽ繧句ｰ陟暮ｯ会ｽｼ讓抵ｽｸ・ｺ陋滂ｽ･繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ郢晢ｽｻ',
+    polite:    '鬩包ｽｶ繝ｻ・ｶ驍ｵ・ｺ郢晢ｽｻ驍顔距・ｸ・ｺ陋ｹ・ｻ繝ｻ迢暦ｽｸ・ｺ髦ｮ蜷ｮ繝ｻ驍ｵ・ｺ陟募仰遶擾ｽｬ郢晢ｽｻ髯具ｽｻ郢晢ｽｻ郢晢ｽｻ髯ｷ迚呻ｽｸ蜷ｮ繝ｻ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ,
   },
   destined_rival: {
-    normal:    '考えない日はない。絶対に、越えなきゃいけない壁',
-    ojousama:  '何があっても……わたくしの手で超えてみせますわ',
-    delinquent:'四六時中頭ん中にいやがる。絶対ぶっ倒す',
-    cool:      '……いなければ、今の自分はいない。だからこそ、倒す',
-    seductive: '頭から離れない……悔しいけど、そういうことなのよね',
-    polite:    'その存在が、私を突き動かしています。必ず、超えてみせます',
+    normal:    '鬮｢・ｰ郢晢ｽｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ陟慕距・ｸ・ｺ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ莨夲ｽｽ・ｵ繝ｻ・ｶ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｲ遶擾ｽｬ繝ｻ・ｶ驗呻ｽｫ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ繝ｻ・ｸ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ繝ｻ・｣郢晢ｽｻ,
+    ojousama:  '髣厄ｽｴ髴域喚ﾂ・ｲ驍ｵ・ｺ郢ｧ繝ｻ螟｢驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ郢ｧ繝ｻﾂ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驛｢・ｧ闕ｳ蟯ｩ陞ｺ驍ｵ・ｺ闕ｳ螂・ｽｼ・ｰ驍ｵ・ｺ繝ｻ・ｮ髫ｰ繝ｻ・ｹ譏ｴﾂ蟶晏ｱ・ｹ晢ｽｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｿ驍ｵ・ｺ陝ｶ蜷ｮ遨宣し・ｺ陷ｷ・ｶ繝ｻ繝ｻ,
+    delinquent:'髯懈懶ｽｸ蟶吶・髫ｴ蠑ｱ・・・・ｸ繝ｻ・ｭ鬯ｯ繝ｻ・ｽ・ｭ驛｢・ｧ髫ｰ雜｣・ｽ・ｸ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ郢晢ｽｻ繝ｻ繝ｻ・ｸ・ｺ陟暮ｯ会ｽｽ迢暦ｽｸ・ｲ郢ｧ莨夲ｽｽ・ｵ繝ｻ・ｶ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｶ驍ｵ・ｺ繝ｻ・｣髯区ｺｷ繝ｻ隨倥・,
+    cool:      '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶企・・ｸ・ｺ闔会ｽ｣繝ｻ讙趣ｽｸ・ｺ繝ｻ・ｰ驍ｵ・ｲ遶擾ｽｽ繝ｻ・ｻ驗呻ｽｫ郢晢ｽｻ鬮｢・ｾ繝ｻ・ｪ髯具ｽｻ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｺ郢晢ｽｻ遶企・・ｸ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ蜻ｳ驍ｵ・ｺ闕ｵ譎｢・ｽ閾･・ｸ・ｺ髦ｮ蜷ｮ關ｽ驍ｵ・ｲ遶乗楓ﾂ陋幢ｽｵ隨倥・,
+    seductive: '鬯ｯ繝ｻ・ｽ・ｭ驍ｵ・ｺ闕ｵ譎｢・ｽ陋ｾ・ｫ・ｮ繝ｻ・｢驛｢・ｧ陟募ｨｯ繝ｻ驍ｵ・ｺ郢晢ｽｻ・つ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髫ｰ逍ｲ魍偵・・ｰ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｲ遶丞｣ｺ關ｽ驍ｵ・ｺ郢晢ｽｻ繝ｻ讓抵ｽｸ・ｺ郢晢ｽｻ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ陋ｹ・ｻ郢晢ｽｻ',
+    polite:    '驍ｵ・ｺ隴擾ｽｴ郢晢ｽｻ髯昴・・ｼ諛夷帝し・ｺ陟募仰遶擾ｽｫ繝ｻ・ｧ遶丞､ｲ・ｽ蟶昴・遶丞｣ｺﾂ・ｳ髯ｷ蟠趣ｽｼ譚ｿ・ｰ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・ｿ郢晢ｽｻ隨倥・・ｸ・ｲ遶擾ｽｬ繝ｻ・ｶ郢晢ｽｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｿ驍ｵ・ｺ陝ｶ蜷ｮ遨宣し・ｺ郢晢ｽｻ,
   },
   acquaintance: {
-    normal:    'まあ、知ってはいるけど……それだけかな',
-    ojousama:  '存じ上げてはおりますけれど、特別な感情はございませんわ',
-    delinquent:'あー、いたな。別にどうでもいいけど',
-    cool:      '認識はしている。それ以上でもそれ以下でもない',
-    seductive: '知ってるわよ、一応ね。……それだけ',
-    polite:    'お名前は存じています。お話する機会は少ないですけれど',
+    normal:    '驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ郢ｧ繝ｻﾂ遶擾ｽｫ髯ｦ蜥ｲ・ｸ・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ闔会ｽ｣遶雁鴻・ｪ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ隴擾ｽｴ繝ｻ讙趣ｽｸ・ｺ繝ｻ・ｰ驍ｵ・ｺ闔会ｽ｣・ゑｽｰ驍ｵ・ｺ繝ｻ・ｪ',
+    ojousama:  '髯昴・ﾂ・･・ゑｽｧ髣包ｽｳ驗呻ｽｫ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ驗呻ｽｫ繝ｻ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ繝ｻ・ｰ驛｢・ｧ陟募ｨｯ繝ｻ驍ｵ・ｲ遶擾ｽｫ鬮ｻ・ｳ髯具ｽｻ繝ｻ・･驍ｵ・ｺ繝ｻ・ｪ髫ｲ・｢雋願侭ﾎ鈴し・ｺ繝ｻ・ｯ驍ｵ・ｺ隴∵腸・ｼ鬘費ｽｸ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｹ・ｧ郢晢ｽｻ,
+    delinquent:'驍ｵ・ｺ郢ｧ繝ｻ繝ｻ驍ｵ・ｲ遶丞､ｲ・ｼ讓抵ｽｸ・ｺ雋・ｪ繝ｻ驍ｵ・ｲ郢ｧ繝ｻ閧ｩ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ郢晢ｽｻ邵ｲ蝣､・ｹ・ｧ郢ｧ繝ｻ・ｼ讓抵ｽｸ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｩ',
+    cool:      '鬮ｫ・ｱ陝雜｣・ｽ・ｭ陋滂ｽ･郢晢ｽｻ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｲ郢ｧ繝ｻ關ｽ驛｢・ｧ陟包ｽ｡繝ｻ・ｻ繝ｻ・･髣包ｽｳ驗呻ｽｫ邵ｲ蝣､・ｹ・ｧ郢ｧ繝ｻ關ｽ驛｢・ｧ陟包ｽ｡繝ｻ・ｻ繝ｻ・･髣包ｽｳ闕ｵ譏ｴﾂ蝣､・ｹ・ｧ郢ｧ繝ｻ繝ｻ驍ｵ・ｺ郢晢ｽｻ,
+    seductive: '鬩墓得・ｽ・･驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ闕ｵ譎｢・ｽ蜀暦ｽｹ・ｧ陋ｹ・ｻ・つ遶擾ｽｽ繝ｻ・ｸ・つ髯滂ｽ｢隲帷ｿｫ繝ｻ驍ｵ・ｲ郢ｧ繝ｻﾂ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ隴擾ｽｴ繝ｻ讙趣ｽｸ・ｺ繝ｻ・ｰ驍ｵ・ｺ郢晢ｽｻ,
+    polite:    '驍ｵ・ｺ鬮ｮ繝ｻ蛟ｹ髯ｷ鮃ｹ莠らｹ晢ｽｻ髯昴・ﾂ・･・ゑｽｧ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ蜃ｰ鬮ｫ・ｧ繝ｻ・ｱ驍ｵ・ｺ陷ｷ・ｶ繝ｻ邇厄ｽｮ蛹・ｽｻ莨夲ｽｽ・ｼ陞｢・ｹ郢晢ｽｻ髯昴・・ｻ・｣遶企・・ｸ・ｺ郢晢ｽｻ邵ｲ蝣､・ｸ・ｺ陷ｷ・ｶ繝ｻ・ｰ驛｢・ｧ陟募ｨｯ繝ｻ',
   },
   intrigued: {
-    normal:    'なんだろう、目で追ってしまう。気にしてないと言えば嘘になる',
-    ojousama:  'なぜかしら……気にかかって仕方がありませんの',
-    delinquent:'……別に気にしてねーし。してねーけど、目に入んだよ',
-    cool:      '気にしていないつもりだった……',
-    seductive: 'ちょっと気になるのよね……何がとは言えないけど',
-    polite:    'つい気にかけてしまいます。理由はよくわかりませんが',
+    normal:    '驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ髦ｮ蜷ｮ蜻ｳ驛｢・ｧ鬮ｦ・ｪ遶包ｽｧ驍ｵ・ｲ遶擾ｽｫ陝ｯ・ｼ驍ｵ・ｺ繝ｻ・ｧ鬮ｴ謇假ｽｽ・ｽ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ闌ｨ・ｽ・ｰ陷会ｽｱ遶企豪・ｸ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ遶雁ｸ晏搦・つ驍ｵ・ｺ陋ｹ・ｻ郢晢ｽｻ髯懈ぁﾂ・･遶企豪・ｸ・ｺ繝ｻ・ｪ驛｢・ｧ郢晢ｽｻ,
+    ojousama:  '驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ隲帷腸・ｰ驍ｵ・ｺ陷会ｽｱ繝ｻ閾･・ｪ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髮取ぁ蟷ｲ遶企豪・ｸ・ｺ闕ｵ謨厄ｽｰ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ繝ｻ・ｦ髣皮甥・｢轣假ｽｩ・ｿ驍ｵ・ｺ陟募ｨｯ譌ｺ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｺ繝ｻ・ｮ',
+    delinquent:'驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髯具ｽｻ繝ｻ・･驍ｵ・ｺ繝ｻ・ｫ髮取ぁ蟷ｲ遶企豪・ｸ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ繝ｻ・ｭ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ陷会ｽｱ・つ郢ｧ繝ｻ・ｼ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｭ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ闔会ｽ｣遶雁鴻・ｸ・ｲ遶擾ｽｫ陝ｯ・ｼ驍ｵ・ｺ繝ｻ・ｫ髯ｷ闌ｨ・ｽ・･驛｢・ｧ髦ｮ蜷ｮ蜻ｳ驛｢・ｧ郢晢ｽｻ,
+    cool:      '髮取ぁ蟷ｲ遶企豪・ｸ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ遶企・・ｸ・ｺ郢晢ｽｻ隨・ｽｽ驛｢・ｧ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ雋・ｽｪ・つ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ',
+    seductive: '驍ｵ・ｺ繝ｻ・｡驛｢・ｧ郢晢ｽｻ隨・ｽｲ驍ｵ・ｺ繝ｻ・ｨ髮取ぁ蟷ｲ遶企豪・ｸ・ｺ繝ｻ・ｪ驛｢・ｧ闕ｵ譏ｴ繝ｻ驛｢・ｧ陋ｹ・ｻ郢晢ｽｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髣厄ｽｴ髴域喚ﾂ・ｲ驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｯ鬮ｫ・ｪ・つ驍ｵ・ｺ陋ｹ・ｻ遶企・・ｸ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｩ',
+    polite:    '驍ｵ・ｺ繝ｻ・､驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ陷会ｽｱ遶企豪・ｸ・ｺ闕ｵ譎｢・ｿ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ陷会ｽｱ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ閾･・企ｨｾ蛹・ｽｽ・ｱ驍ｵ・ｺ繝ｻ・ｯ驛｢・ｧ陋ｹ・ｻ繝ｻ・･驛｢・ｧ闕ｳ迺ｰ・ｰ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｺ郢晢ｽｻ,
   },
   hostile_competitor: {
-    normal:    '負けたくない。それだけは、はっきりしている',
-    ojousama:  '絶対に遅れを取りたくありませんの。それだけですわ',
-    delinquent:'負けねえ。死んでも負けねえ',
-    cool:      '負けるわけにはいかない。理屈じゃない',
-    seductive: '負けたくないの。理由なんて知らないわ',
-    polite:    'どうしても負けたくないんです。強い気持ちがあります',
+    normal:    '鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ關ｽ驛｢・ｧ陟募ｨｯ蜻ｳ驍ｵ・ｺ闔会ｽ｣郢晢ｽｻ驍ｵ・ｲ遶丞｣ｹ繝ｻ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ鬮ｦ・ｪ繝ｻ鬘費ｽｸ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ繝ｻ,
+    ojousama:  '鬩搾ｽｨ繝ｻ・ｶ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｫ鬯ｩ霈斐・繝ｻ讙趣ｽｹ・ｧ髮区ｧｫ蠕宣Δ・ｧ驗呻ｽｫ隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ譌ｺ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｺ繝ｻ・ｮ驍ｵ・ｲ郢ｧ繝ｻ關ｽ驛｢・ｧ陟募ｨｯ蜻ｳ驍ｵ・ｺ闔会ｽ｣邵ｲ蝣､・ｸ・ｺ陷ｷ・ｶ繝ｻ繝ｻ,
+    delinquent:'鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣郢晢ｽｻ驍ｵ・ｺ陋ｹ・ｻ・つ郢ｧ闌ｨ・ｽ・ｭ繝ｻ・ｻ驛｢・ｧ髦ｮ蜷ｶﾂ蝣､・ｹ・ｧ郢ｧ螂・ｽｽ・ｲ繝ｻ・ｰ驍ｵ・ｺ闔会ｽ｣郢晢ｽｻ驍ｵ・ｺ郢晢ｽｻ,
+    cool:      '鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣繝ｻ迢暦ｽｹ・ｧ闕ｳ螂・ｽｿ・ｰ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｺ郢晢ｽｻ・ゑｽｰ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ閾･・企辨・ｻ陋ｹ・ｻ・ゑｽｧ驛｢・ｧ郢晢ｽｻ遶企・・ｸ・ｺ郢晢ｽｻ,
+    seductive: '鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ闔会ｽ｣隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ郢晢ｽｻ驍ｵ・ｲ郢ｧ閾･・企ｨｾ蛹・ｽｽ・ｱ驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ髦ｮ蜷ｮﾂ・ｻ鬩墓得・ｽ・･驛｢・ｧ陝ｲ・ｨ遶企・・ｸ・ｺ郢晢ｽｻ繝ｻ繝ｻ,
+    polite:    '驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ郢ｧ螂・ｽｽ・ｲ繝ｻ・ｰ驍ｵ・ｺ闔会ｽ｣隨ｳ繝ｻ・ｸ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ骰具ｽｸ・ｺ繝ｻ・ｧ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ・ｽ・ｼ繝ｻ・ｷ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ驍・ｽｲ隰梧ｺｽ・ｸ・ｺ繝ｻ・｡驍ｵ・ｺ陟募ｨｯ譌ｺ驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ,
   },
   indifferent: {
-    normal:    '正直、あまり印象がない',
-    ojousama:  'どなたでしたかしら……存じ上げませんわ',
-    delinquent:'誰だっけ。知らね',
-    cool:      '記憶にない',
-    seductive: 'んー……誰だったかしら',
-    polite:    '申し訳ありません、あまり存じ上げなくて……',
+    normal:    '髮弱・・ｽ・｣鬨ｾ・ｶ繝ｻ・ｴ驍ｵ・ｲ遶丞｣ｺ譌ｺ驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ鬮ｮ繝ｻ・ｭ繧句ｯｰ繝ｻ・｡驍ｵ・ｺ陟募ｨｯ繝ｻ驍ｵ・ｺ郢晢ｽｻ,
+    ojousama:  '驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ雋・･ﾂ蝣､・ｸ・ｺ陷会ｽｱ隨ｳ繝ｻ・ｸ・ｺ闕ｵ譎｢・ｼ・ｰ驛｢・ｧ闖ｫ繝ｻﾂ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髯昴・ﾂ・･・ゑｽｧ髣包ｽｳ驗呻ｽｫ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｹ・ｧ郢晢ｽｻ,
+    delinquent:'鬮ｫ・ｱ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ闔会ｽ｣・つ郢ｧ闃ｽ・｡蜥ｲ・ｹ・ｧ陝ｲ・ｨ郢晢ｽｻ',
+    cool:      '鬮ｫ・ｪ闖ｫ・ｶ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ,
+    seductive: '驛｢・ｧ髦ｮ蜷ｶ繝ｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ鬮ｫ・ｱ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・｣驍ｵ・ｺ雋・ｼ会ｽｰ驍ｵ・ｺ陷会ｽｱ繝ｻ繝ｻ,
+    polite:    '鬨ｾ蛹・ｽｽ・ｳ驍ｵ・ｺ髣埼屮・ｽ・ｨ繝ｻ・ｳ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ骰具ｽｸ・ｲ遶丞｣ｺ譌ｺ驍ｵ・ｺ繝ｻ・ｾ驛｢・ｧ鬮ｮ繝ｻ・ｽ・ｭ陋滂ｽ･・ゑｽｧ髣包ｽｳ驗呻ｽｫ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ闕ｳ蟯ｩﾂ・ｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ',
   },
   contempt: {
-    normal:    '……格が違う。同じ土俵とは思えない',
-    ojousama:  'わたくしとでは、住む世界が違いますもの',
-    delinquent:'ハッ、雑魚が視界に入んな',
-    cool:      '実力差は明白。相手にする価値を感じない',
-    seductive: 'あの程度で同じリングに？……可愛いわね',
-    polite:    '……実力の差は、正直感じています',
+    normal:    '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髫ｴ・ｬ繝ｻ・ｼ驍ｵ・ｺ驕偵・・ｼ繝ｻ・ｸ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ繝ｻ驍ｵ・ｺ闔ｨ諛茨ｽ・蘭・ｫ繝ｻ・ｵ驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｯ髫ｲ・､隴擾ｽｴ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ,
+    ojousama:  '驛｢・ｧ闕ｳ蟯ｩ陞ｺ驍ｵ・ｺ闕ｳ螂・ｽｼ・ｰ驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｧ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｲ遶擾ｽｽ繝ｻ・ｽ闕ｳ鄙ｫ繝ｻ髣包ｽｳ闕ｵ貊・・驍ｵ・ｺ驕偵・・ｼ繝ｻ・ｸ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繧会ｽｸ・ｺ繝ｻ・ｮ',
+    delinquent:'驛｢譏懶ｽｸ鄙ｫﾎ暮し・ｲ郢晢ｽｻ陝・・・ｬ・ｲ陞｢・ｹ遯ｶ・ｲ鬮ｫ遨ゑｽｹ貊・・驍ｵ・ｺ繝ｻ・ｫ髯ｷ闌ｨ・ｽ・･驛｢・ｧ髦ｮ蜷ｮ繝ｻ',
+    cool:      '髯橸ｽｳ雋・ｽｷ鬲假ｽｨ髯晢ｽｾ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｯ髫ｴ荳橸ｽｮ莠･鬆・し・ｲ郢ｧ迚呻ｽｶ迹夲ｽｬ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ陷ｷ・ｶ繝ｻ邇門ｵｩ繝ｻ・｡髯区ｻゑｽｽ・､驛｢・ｧ陷ｻ驕ｺ讌ｳ驍ｵ・ｺ陋滂ｽ･遶企・・ｸ・ｺ郢晢ｽｻ,
+    seductive: '驍ｵ・ｺ郢ｧ繝ｻ繝ｻ鬩墓ｧｫ蜚ｱ繝ｻ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｧ髯ｷ・ｷ陟募具ｽｧ驛｢譎｢・ｽ・ｪ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｫ郢晢ｽｻ雋・ｽｪ・つ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髯ｷ・ｿ繝ｻ・ｯ髫ｲ・｢陝ｶ蜻ｻ・ｼ讓抵ｽｹ・ｧ闕ｳ鄙ｫ繝ｻ',
+    polite:    '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髯橸ｽｳ雋・ｽｷ鬲假ｽｨ驍ｵ・ｺ繝ｻ・ｮ髯晢ｽｾ繝ｻ・ｮ驍ｵ・ｺ繝ｻ・ｯ驍ｵ・ｲ遶擾ｽｵ繝ｻ・ｭ繝ｻ・｣鬨ｾ・ｶ繝ｻ・ｴ髫ｲ・｢雋・ｼ会ｽｧ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ郢晢ｽｻ,
   },
   irritation: {
-    normal:    '目障り。視界に入るだけで気が散る',
-    ojousama:  'どうにも、気に障りますの',
-    delinquent:'見るとイライラすんだよ。近寄んな',
-    cool:      '……不快。なるべく視界に入れたくない',
-    seductive: 'なんか癇に障るのよね……嫌な感じ',
-    polite:    '近くにいると、どうも気持ちが落ち着かなくて……',
+    normal:    '鬨ｾ・ｶ繝ｻ・ｮ鬯ｮ・ｫ隲帛･・ｽｽ鬘費ｽｸ・ｲ郢ｧ螂・ｽｽ・ｦ闕ｵ貊・・驍ｵ・ｺ繝ｻ・ｫ髯ｷ闌ｨ・ｽ・･驛｢・ｧ闕ｵ譏ｶ蜻ｳ驍ｵ・ｺ闔会ｽ｣邵ｲ螳夲ｽｱ謔溷ｹｲ遯ｶ・ｲ髫ｰ・ｨ繝ｻ・｣驛｢・ｧ郢晢ｽｻ,
+    ojousama:  '驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ郢晢ｽｻ遶企豪・ｹ・ｧ郢ｧ繝ｻﾂ遶擾ｽｵ繝ｻ・ｰ陷会ｽｱ遶企ｦｴ・ｫ・ｫ隲帛･・ｽｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陷ｷ・ｶ郢晢ｽｻ',
+    delinquent:'鬮ｫ遨ゑｽｹ譎｢・ｽ迢暦ｽｸ・ｺ繝ｻ・ｨ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・ｩ驍ｵ・ｺ陷ｷ・ｶ繝ｻ骰具ｽｸ・ｺ繝ｻ・ｰ驛｢・ｧ陋ｹ・ｻ・つ郢ｧ螂・ｽｽ・ｿ陞滂ｽｧ繝ｻ・ｯ郢晢ｽｻ繝ｻ骰具ｽｸ・ｺ繝ｻ・ｪ',
+    cool:      '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髣包ｽｳ隶主･・ｽｽ・ｿ繝ｻ・ｫ驍ｵ・ｲ郢ｧ繝ｻ繝ｻ驛｢・ｧ闕ｵ譏ｶ繝ｻ驍ｵ・ｺ陷托ｽｰ繝ｻ・ｦ闕ｵ貊・・驍ｵ・ｺ繝ｻ・ｫ髯ｷ闌ｨ・ｽ・･驛｢・ｧ陟募ｨｯ陞ｺ驍ｵ・ｺ闕ｳ蟯ｩ繝ｻ驍ｵ・ｺ郢晢ｽｻ,
+    seductive: '驍ｵ・ｺ繝ｻ・ｪ驛｢・ｧ髦ｮ蜊搾ｽｰ鬨ｾ荵昴・遶企ｦｴ・ｫ・ｫ隲帛･・ｽｽ迢暦ｽｸ・ｺ繝ｻ・ｮ驛｢・ｧ陋ｹ・ｻ郢晢ｽｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ鬮ｮ髢・ｾ螽ｯ繝ｻ髫ｲ・｢雋・ｼ会ｽｧ',
+    polite:    '鬮ｴ蜿ｰ・ｻ・｣繝ｻ・･驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ郢晢ｽｻ繝ｻ迢暦ｽｸ・ｺ繝ｻ・ｨ驍ｵ・ｲ遶丞｣ｺ繝ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ繧奇ｽｱ讙手ｻｸ隰梧ｺｽ・ｸ・ｺ繝ｻ・｡驍ｵ・ｺ霑ｹ螟奇ｽｪ・ｰ驍ｵ・ｺ繝ｻ・｡鬨ｾ・ｹ・つ驍ｵ・ｺ闕ｵ譏ｶ繝ｻ驍ｵ・ｺ闕ｳ蟯ｩﾂ・ｻ驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ',
   },
   hatred: {
-    normal:    '顔を見ると、腹の底が煮えくり返る',
-    ojousama:  '思い出すだけで……はらわたが煮えくりますわ',
-    delinquent:'ぶっ潰す。絶対にぶっ潰す。それしか考えてねえ',
-    cool:      '……殺意に近い感情がある。自覚はしている',
-    seductive: '許せない。この気持ち、絶対に消えない',
-    polite:    '……どうしても、許すことができません',
+    normal:    '鬯ｯ菫ｶ魍偵・蟶晏寰闕ｵ譎｢・ｽ迢暦ｽｸ・ｺ繝ｻ・ｨ驍ｵ・ｲ遶擾ｽｬ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｮ髯滓焔・ｼ謚ｫﾂ・ｲ髴趣ｽ｣繝ｻ・ｮ驍ｵ・ｺ陋ｹ・ｻ繝ｻ・･驛｢・ｧ鬯伜∞・ｽ・ｿ隴∵腸・ｽ繝ｻ,
+    ojousama:  '髫ｲ・､隴擾ｽｴ繝ｻ讚∵弱・・ｺ驍ｵ・ｺ陷ｷ・ｶ隨・ｽ｡驍ｵ・ｺ闔会ｽ｣邵ｲ蝣､・ｪ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｯ驛｢・ｧ陝ｲ・ｨ繝ｻ蜀暦ｽｸ・ｺ雋・ｪﾂ・ｲ髴趣ｽ｣繝ｻ・ｮ驍ｵ・ｺ陋ｹ・ｻ繝ｻ・･驛｢・ｧ驗呻ｽｫ遶擾ｽｪ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ,
+    delinquent:'驍ｵ・ｺ繝ｻ・ｶ驍ｵ・ｺ繝ｻ・｣髮玖ｶ｣・ｽ・ｰ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ莨夲ｽｽ・ｵ繝ｻ・ｶ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｫ驍ｵ・ｺ繝ｻ・ｶ驍ｵ・ｺ繝ｻ・｣髮玖ｶ｣・ｽ・ｰ驍ｵ・ｺ陷ｷ・ｶ・つ郢ｧ繝ｻ關ｽ驛｢・ｧ陟暮ｯ会ｽｼ・ｰ驍ｵ・ｺ驍・ｳｴﾂ郢晢ｽｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｭ驍ｵ・ｺ郢晢ｽｻ,
+    cool:      '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ髫ｹ・ｿ繝ｻ・ｺ髫ｲ・｢闕ｳ蟯ｩ繝ｻ鬮ｴ蜿ｰ・ｻ・｣繝ｻ讚・ｽｫ・｢雋願侭ﾎ鈴し・ｺ陟募ｨｯ譌ｺ驛｢・ｧ闕ｵ謨鳴郢ｧ鄙ｫ繝ｻ鬮ｫ蜍滂ｽ｣・ｹ郢晢ｽｻ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ繝ｻ,
+    seductive: '鬮ｫ・ｪ繝ｻ・ｱ驍ｵ・ｺ陝ｶ蜷ｮ繝ｻ驍ｵ・ｺ郢晢ｽｻ・つ郢ｧ繝ｻ・ｼ繝ｻ・ｸ・ｺ繝ｻ・ｮ髮取ｪ手ｻｸ隰梧ｺｽ・ｸ・ｺ繝ｻ・｡驍ｵ・ｲ遶擾ｽｫ繝ｻ・ｵ繝ｻ・ｶ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｫ髮趣ｽｸ陋ｹ・ｻ遶擾ｽｴ驍ｵ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ,
+    polite:    '驕ｯ・ｶ繝ｻ・ｦ驕ｯ・ｶ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｩ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ驛｢・ｧ郢ｧ繝ｻﾂ遶擾ｽｬ繝ｻ・ｨ繝ｻ・ｱ驍ｵ・ｺ陷ｷ・ｶ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｨ驍ｵ・ｺ陟募ｾ個蝣､・ｸ・ｺ鬮ｦ・ｪ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ,
   },
 };
 
@@ -3628,7 +3467,7 @@ function getEmotionCategory(bond, rivalry, selfOvr, targetOvr) {
   if (bLvl === 'mid' && rLvl === 'high') return 'hostile_competitor';
   if (bLvl === 'low' && rLvl === 'low') return (selfOvr - targetOvr >= 10) ? 'contempt' : 'indifferent';
   if (bLvl === 'low' && rLvl === 'mid') return 'irritation';
-  return 'hatred'; // low × high
+  return 'hatred'; // low 繝ｻ繝ｻ繝ｻhigh
 }
 
 function getEmotionText(bond, rivalry, selfOvr, targetOvr, archetype) {
@@ -3643,8 +3482,8 @@ function _relmapGetAllChars() {
 }
 
 function _relmapGetOrgLabel(f) {
-  if (f._orgId === 'player') return G.orgName || 'プレイヤー団体';
-  if (f._orgId === 'fa') return 'フリー';
+  if (f._orgId === 'player') return G.orgName || '驛｢譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ;
+  if (f._orgId === 'fa') return '驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ';
   const org = RIVAL_ORGS.find(o => o.id === f._orgId);
   return org ? (G.rivalOrgNames?.[f._orgId] || org.name || f._orgId) : f._orgName || '?';
 }
@@ -3838,12 +3677,12 @@ function _relmapBondColor(val) {
   return '#ff7675';
 }
 
-// ══════════════════════════════════════════════════════════
-// _renderDbRelmap — HTML skeleton generation
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
+// _renderDbRelmap 驕ｯ・ｶ郢晢ｽｻHTML skeleton generation
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _renderDbRelmap() {
   const allChars = _relmapGetAllChars();
-  if (!allChars.length) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">選手がいません</div>';
+  if (!allChars.length) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶﾂ・ｲ驍ｵ・ｺ郢晢ｽｻ遶擾ｽｪ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>';
 
   // Default center: first roster member
   if (!_relmapCenterId || !allChars.find(c => c.id === _relmapCenterId)) {
@@ -3854,31 +3693,31 @@ function _renderDbRelmap() {
 
   let html = `<div id="relmapRoot" class="relmap-root">`;
 
-  // ── Header bar ──
+  // 髫ｨ貂可髫ｨ貂可 Header bar 髫ｨ貂可髫ｨ貂可
   html += `<div class="relmap-header">`;
   html += `<span class="rm-title">\uD83D\uDD17 RELATIONSHIP MAP</span>`;
   html += `<div class="rm-header-sep"></div>`;
   // View mode toggle
   html += `<div class="rm-view-toggle">`;
-  html += `<button class="rm-vt-btn${_relmapViewMode==='network'?' active':''}" onclick="_relmapSetViewMode('network')">\uD83C\uDF10 ネットワーク</button>`;
-  html += `<button class="rm-vt-btn${_relmapViewMode==='focus'?' active':''}" onclick="_relmapSetViewMode('focus')">\uD83C\uDFAF フォーカス</button>`;
-  html += `<button class="rm-vt-btn${_relmapViewMode==='power'?' active':''}" onclick="_relmapSetViewMode('power')">\uD83D\uDDFA\uFE0F 勢力図</button>`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='network'?' active':''}" onclick="_relmapSetViewMode('network')">\uD83C\uDF10 驛｢譎樔ｺらｹ晢ｽ｣驛｢譎冗樟・趣ｽ｡驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｯ</button>`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='focus'?' active':''}" onclick="_relmapSetViewMode('focus')">\uD83C\uDFAF 驛｢譎・ｽｼ譁青ｰ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｹ</button>`;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='power'?' active':''}" onclick="_relmapSetViewMode('power')">\uD83D\uDDFA\uFE0F 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ繝ｻ/button>`;
   html += `</div>`;
   // Center indicator
   html += `<div class="rm-center-indicator" id="rmCenterIndicator" style="display:${_relmapCenterId && centerChar?'flex':'none'}">`;
   html += `<span class="ci-label">CENTER</span>`;
   html += `<span class="ci-name" id="rmCenterName">${centerChar ? centerChar.name : ''}</span>`;
-  html += `<span class="ci-clear" onclick="_relmapClearCenter()" title="解除">\u2715</span>`;
+  html += `<span class="ci-clear" onclick="_relmapClearCenter()" title="鬮ｫ證ｦ・ｽ・｣鬯ｮ・ｯ繝ｻ・､">\u2715</span>`;
   html += `</div>`;
   // Link filters
   html += `<div class="rm-header-controls">`;
-  html += `<button class="rm-ctrl-btn${_relmapFilter==='all'?' active':''}" onclick="_relmapSetFilter('all')">全リンク</button>`;
-  html += `<button class="rm-ctrl-btn${_relmapFilter==='rivalry'?' active':''}" onclick="_relmapSetFilter('rivalry')">ライバル</button>`;
-  html += `<button class="rm-ctrl-btn${_relmapFilter==='bond'?' active':''}" onclick="_relmapSetFilter('bond')">親密度</button>`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='all'?' active':''}" onclick="_relmapSetFilter('all')">髯ｷ闌ｨ・ｽ・ｨ驛｢譎｢・ｽ・ｪ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｯ</button>`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='rivalry'?' active':''}" onclick="_relmapSetFilter('rivalry')">驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・､驛｢譎√・・弱・/button>`;
+  html += `<button class="rm-ctrl-btn${_relmapFilter==='bond'?' active':''}" onclick="_relmapSetFilter('bond')">鬮ｫ蛹・ｽｽ・ｪ髯昴・繝ｻ繝ｻ・ｺ繝ｻ・ｦ</button>`;
   html += `</div>`;
   html += `</div>`; // end header
 
-  // ── Main area ──
+  // 髫ｨ貂可髫ｨ貂可 Main area 髫ｨ貂可髫ｨ貂可
   html += `<div class="relmap-main">`;
 
   // Sidebar
@@ -3903,17 +3742,17 @@ function _renderDbRelmap() {
   // Legend
   html += `<div class="relmap-legend">`;
   html += `<div class="rm-legend-title">LEGEND</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#74b9ff"></div> 親密（高）</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#ff7675"></div> 不信（低）</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#e17055"></div> 競争意識</div>`;
-  html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">ノードサイズ＝OVR<br>クリック＝中心切替<br>右クリック＝メニュー</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#74b9ff"></div> 鬮ｫ蛹・ｽｽ・ｪ髯昴・繝ｻ繝ｻ・ｼ騾趣ｽｯ繝ｻ・ｫ陋帙・・ｽ・ｼ郢晢ｽｻ/div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#ff7675"></div> 髣包ｽｳ陜｣・ｺ繝ｻ・ｿ繝ｻ・｡郢晢ｽｻ闔蛹・ｽｽ・ｽ髮懶ｽ｣繝ｻ・ｼ郢晢ｽｻ/div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#e17055"></div> 鬩包ｽｶ繝ｻ・ｶ髣費｣ｰ騾包ｽｻ・大涵蝙鍋ｹ晢ｽｻ/div>`;
+  html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ郢晢ｽｻ隰夲ｼ由<br>驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ莉｣繝ｻ隴乗・・ｽ・ｸ繝ｻ・ｭ髯滂ｽ｢郢晢ｽｻ郢晢ｽｻ髫ｴ蜴・ｽｽ・ｿ<br>髯ｷ・ｿ繝ｻ・ｳ驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ莉｣繝ｻ隴擾ｽｴ・朱豪・ｹ譏懶ｽｹ譁溽､ｼ・ｹ譎｢・ｽ・ｼ</div>`;
   html += `</div>`;
 
   // Zoom controls
   html += `<div class="rm-zoom-controls">`;
-  html += `<button class="rm-zoom-btn" onclick="_relmapZoomIn()" title="拡大">＋</button>`;
-  html += `<button class="rm-zoom-btn" onclick="_relmapZoomOut()" title="縮小">−</button>`;
-  html += `<button class="rm-zoom-btn rm-zoom-fit" onclick="_relmapZoomFit()" title="リセット">⊙</button>`;
+  html += `<button class="rm-zoom-btn" onclick="_relmapZoomIn()" title="髫ｲ・｡繝ｻ・｡髯樊ｻゑｽｽ・ｧ">郢晢ｽｻ郢晢ｽｻ/button>`;
+  html += `<button class="rm-zoom-btn" onclick="_relmapZoomOut()" title="鬩搾ｽｵ繝ｻ・ｮ髯昴・繝ｻ>驕ｶ荳翫・/button>`;
+  html += `<button class="rm-zoom-btn rm-zoom-fit" onclick="_relmapZoomFit()" title="驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・ｻ驛｢譏ｴ繝ｻ郢晢ｽｨ">驕ｶ阮吶・/button>`;
   html += `</div>`;
 
   html += `</div>`; // end main
@@ -3929,10 +3768,10 @@ function _renderDbRelmap() {
 
   // Context menu
   html += `<div class="rm-ctx-menu" id="relmapCtxMenu">`;
-  html += `<div class="rm-ctx-item" id="rmCtxCenter"><span class="rm-ctx-icon">\uD83C\uDFAF</span>中心に設定</div>`;
-  html += `<div class="rm-ctx-item" id="rmCtxDetail"><span class="rm-ctx-icon">\uD83D\uDCCB</span>詳細を見る</div>`;
+  html += `<div class="rm-ctx-item" id="rmCtxCenter"><span class="rm-ctx-icon">\uD83C\uDFAF</span>髣包ｽｳ繝ｻ・ｭ髯滂ｽ｢郢晢ｽｻ遶企ｦｴ蝮弱・・ｭ髯橸ｽｳ郢晢ｽｻ/div>`;
+  html += `<div class="rm-ctx-item" id="rmCtxDetail"><span class="rm-ctx-icon">\uD83D\uDCCB</span>鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｦ闕ｵ譎｢・ｽ繝ｻ/div>`;
   html += `<div class="rm-ctx-sep"></div>`;
-  html += `<div class="rm-ctx-item" id="rmCtxCompare"><span class="rm-ctx-icon">\u2696</span>比較に追加</div>`;
+  html += `<div class="rm-ctx-item" id="rmCtxCompare"><span class="rm-ctx-icon">\u2696</span>髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ遶企ｦｴ諱・・・ｽ髯ｷ莨夲ｽ｣・ｰ</div>`;
   html += `</div>`;
 
   // Compare popup overlay
@@ -3943,10 +3782,10 @@ function _renderDbRelmap() {
   return html;
 }
 
-// ══════════════════════════════════════════════════════════
-// Face pattern helper — defsに<pattern>として顔画像を登録
-// innerHTMLでnodeLayerを書き換えても画像が再読込されない
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
+// Face pattern helper 驕ｯ・ｶ郢晢ｽｻdefs驍ｵ・ｺ繝ｻ・ｫ<pattern>驍ｵ・ｺ繝ｻ・ｨ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ鬯ｯ蛟｡蝮ｩ陋ｻ・､髯ｷ蜑・ｽｸ螂・ｽｽ蟶敖蜈ｷ・ｽ・ｻ鬯ｪ・ｭ繝ｻ・ｲ
+// innerHTML驍ｵ・ｺ繝ｻ・ｧnodeLayer驛｢・ｧ陷ｻ莠･・ｶ讙趣ｽｸ・ｺ髢ｧ・ｴ鬩ｪ・､驍ｵ・ｺ陋ｹ・ｻ遯ｶ・ｻ驛｢・ｧ郢ｧ迚呎・髯ｷ蜑・ｽｸ蟯ｩﾂ・ｲ髯ｷﾂ陝雜｣・ｽ・ｪ繝ｻ・ｭ鬮ｴ雜｣・ｽ・ｼ驍ｵ・ｺ髴郁ｲｻ・ｽ讙趣ｽｸ・ｺ繝ｻ・ｪ驍ｵ・ｺ郢晢ｽｻ
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapBuildFacePatterns(svg) {
   const defs = svg.querySelector('defs');
   if (!defs) return;
@@ -3969,9 +3808,9 @@ function _relmapBuildFacePatterns(svg) {
   });
 }
 
-// ══════════════════════════════════════════════════════════
-// _drawRelmapAfterRender — physics sim + event listeners
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
+// _drawRelmapAfterRender 驕ｯ・ｶ郢晢ｽｻphysics sim + event listeners
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapEscapeAttr(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -4057,7 +3896,7 @@ function _drawRelmapAfterRender() {
   _relmapOrgCenters = orgCenters;
   _relmapStartLoop();
 
-  // ── Event listeners ──
+  // 髫ｨ貂可髫ｨ貂可 Event listeners 髫ｨ貂可髫ｨ貂可
   _relmapSetupInteraction(svg, container);
 
   // Context menu items
@@ -4070,15 +3909,15 @@ function _drawRelmapAfterRender() {
 
   // Popup overlay close
   const popOver = document.getElementById('relmapPopupOverlay');
-  if (popOver) popOver.addEventListener('click', e => { if (e.target === e.currentTarget) _relmapClosePopup(); });
+  if (popOver) popOver.addEventListener('click', e => { if (e.target === e.currentTarget) _relmap閉じるPopup(); });
 
   // Show detail for initial center if set
   if (_relmapCenterId) _relmapShowDetailForNode(_relmapCenterId);
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Physics tick
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapTick(orgCenters) {
   const W = _relmapW, H = _relmapH;
   const nodes = _relmapNodes, links = _relmapVisibleLinks, vel = _relmapVelocities;
@@ -4179,9 +4018,9 @@ function _relmapStartLoop() {
   });
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // SVG Render (innerHTML bulk update)
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapRender(orgCenters) {
   const nodes = _relmapNodes, links = _relmapVisibleLinks;
   const linkLayer = document.getElementById('relmapLinkLayer');
@@ -4200,12 +4039,12 @@ function _relmapRender(orgCenters) {
   const vm = _relmapViewMode;
   const filter = _relmapFilter;
 
-  // ── Links ──
+  // 髫ｨ貂可髫ｨ貂可 Links 髫ｨ貂可髫ｨ貂可
   let lh = '';
   links.forEach(l => {
     const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
     if (!s || !t || s._hidden || t._hidden) return;
-    // Focus mode: only show links to/from center (reduce clutter) — except when org filter shows all intra-org links
+    // Focus mode: only show links to/from center (reduce clutter) 驕ｯ・ｶ郢晢ｽｻexcept when org filter shows all intra-org links
     if (vm === 'focus' && focused && !_relmapOrgFilter && s.id !== focused && t.id !== focused) return;
     const dimmed = focused && vm === 'network' && focused !== s.id && focused !== t.id;
     const highlighted = focused && (focused === s.id || focused === t.id);
@@ -4218,7 +4057,7 @@ function _relmapRender(orgCenters) {
     const sp = s.r + 4, ep = t.r + 4;
     const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
 
-    // Bond A→B / B→A (skip when rivalry-only filter)
+    // Bond A驕ｶ莨・ｼ・/ B驕ｶ雍具ｽｽ繝ｻ(skip when rivalry-only filter)
     if (filter !== 'rivalry') {
       const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
       const wAB = Math.min(1.9, 0.85 + Math.abs(bAB - 50) / 40);
@@ -4275,7 +4114,7 @@ function _relmapRender(orgCenters) {
   });
   linkLayer.innerHTML = lh;
 
-  // ── Nodes ──
+  // 髫ｨ貂可髫ｨ貂可 Nodes 髫ｨ貂可髫ｨ貂可
   let nh = '';
   nodes.forEach(n => {
     if (n._hidden) return;
@@ -4336,9 +4175,9 @@ function _relmapRender(orgCenters) {
   }
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Org zone backgrounds
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapDrawOrgZones(orgCenters) {
   const zoneLayer = document.getElementById('relmapZoneLayer');
   if (!zoneLayer) return;
@@ -4353,15 +4192,15 @@ function _relmapDrawOrgZones(orgCenters) {
 }
 
 function _relmapGetOrgNameById(orgId) {
-  if (orgId === 'player') return G.orgName || 'プレイヤー団体';
-  if (orgId === 'fa') return 'フリー';
+  if (orgId === 'player') return G.orgName || '驛｢譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髯懈圜・ｽ・｣髣厄ｽｴ郢晢ｽｻ;
+  if (orgId === 'fa') return '驛｢譎・ｽｼ驥・㏍・ｹ譎｢・ｽ・ｼ';
   const org = RIVAL_ORGS.find(o => o.id === orgId);
   return org ? (G.rivalOrgNames?.[orgId] || org.name) : orgId;
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Visibility control
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapUpdateVisibility() {
   const nodes = _relmapNodes;
   const links = _relmapLinks;
@@ -4481,17 +4320,17 @@ function _relmapRenderSidebar(orgCenters) {
   const sb = document.getElementById('rmSidebar');
   if (!sb) return;
   let h = '';
-  // 勢力図モードで団体フィルタ中: 全体に戻るボタン
+  // 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ蜥擾ｽｹ譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ邵ｲ螳壽綜繝ｻ・｣髣厄ｽｴ髦ｮ蜷ｶﾎｨ驛｢・ｧ繝ｻ・｣驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ髣包ｽｳ繝ｻ・ｭ: 髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ髦ｮ蜷ｮ繝ｻ髫ｰ魃会ｽｽ・ｻ驛｢・ｧ闕ｵ譏ｴ繝ｻ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｳ
   if (_relmapViewMode === 'power' && _relmapOrgFilter) {
-    h += `<div class="rm-sb-btn rm-sb-back" onclick="_relmapFocusOrg('${_relmapOrgFilter}')" style="border:1px solid rgba(212,168,67,0.5);color:#d4a843;font-weight:bold;margin-bottom:8px">\u2190 全体に戻る</div>`;
+    h += `<div class="rm-sb-btn rm-sb-back" onclick="_relmapFocusOrg('${_relmapOrgFilter}')" style="border:1px solid rgba(212,168,67,0.5);color:#d4a843;font-weight:bold;margin-bottom:8px">\u2190 髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ髦ｮ蜷ｮ繝ｻ髫ｰ魃会ｽｽ・ｻ驛｢・ｧ郢晢ｽｻ/div>`;
   }
   // Reset button
-  h += `<div class="rm-sb-btn" onclick="_relmapResetAll()">\uD83D\uDD04 全体を表示</div>`;
+  h += `<div class="rm-sb-btn" onclick="_relmapResetAll()">\uD83D\uDD04 髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ髦ｮ蜻ｻ・ｽ蟶晏距繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ</div>`;
   // Display filter panel
   h += `<div class="rm-filter-panel">`;
-  h += `<div class="rm-fp-title">\uD83D\uDCCA 表示フィルタ</div>`;
-  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapFilterUserSet=true;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
-  h += `<div class="rm-fp-row"><span style="font-size:10px">強度</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);_relmapFilterUserSet=true;document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
+  h += `<div class="rm-fp-title">\uD83D\uDCCA 鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驛｢譎・ｽｼ譁絶襖驛｢譎｢・ｽ・ｫ驛｢・ｧ繝ｻ・ｿ</div>`;
+  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapFilterUserSet=true;_relmapUpdateVisibility();_relmapReheat()"> 鬯ｮ・｢繝ｻ・｢髣厄ｽｫ郢ｧ繝ｻ譌ｺ驛｢・ｧ驗呻ｽｫ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ</label></div>`;
+  h += `<div class="rm-fp-row"><span style="font-size:10px">髯滓汚・ｽ・ｷ髯溯ｶ｣・ｽ・ｦ</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);_relmapFilterUserSet=true;document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
   h += `</div>`;
   // Org cards
   const orgOrder = ['player', 'org_s', 'org_a', 'org_b', 'fa'];
@@ -4505,7 +4344,7 @@ function _relmapRenderSidebar(orgCenters) {
     const topChars = [...oc].sort((a, b) => b.ovr - a.ovr).slice(0, 6);
     h += `<div class="rm-org-card${_relmapOrgFilter===orgId?' rm-org-active':''}" style="border-left-color:${color}" onclick="_relmapFocusOrg('${orgId}')">`;
     h += `<div class="rm-org-card-name" style="color:${color}">${emoji} ${orgName}</div>`;
-    h += `<div class="rm-org-card-stats">所属 ${oc.length}名 \u2500 平均OVR ${avg}</div>`;
+    h += `<div class="rm-org-card-stats">髫ｰ繝ｻﾂ髯橸ｽｻ郢晢ｽｻ${oc.length}髯ｷ・ｷ郢晢ｽｻ\u2500 髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ遶ｭ・ｯVR ${avg}</div>`;
     h += `<div class="rm-org-card-roster">`;
     topChars.forEach(n => {
       const pUrl = getPortraitUrl(n.id);
@@ -4517,9 +4356,9 @@ function _relmapRenderSidebar(orgCenters) {
   sb.innerHTML = h;
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Interaction (drag, click, context menu, tooltip)
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapSetupInteraction(svg, container) {
   function svgCoords(e) {
     const r = svg.getBoundingClientRect();
@@ -4537,7 +4376,7 @@ function _relmapSetupInteraction(svg, container) {
       const displayPos = _relmapGetDisplayPos(n);
       _relmapDragOffset.x = p.x - displayPos.x; _relmapDragOffset.y = p.y - displayPos.y;
     } else {
-      // Empty space drag → pan
+      // Empty space drag 驕ｶ鄙ｫ繝ｻpan
       _relmapPanning = true; _relmapDragMoved = false;
       _relmapPanStart = { x: e.clientX, y: e.clientY };
       _relmapPanStartPan = { x: _relmapPanX, y: _relmapPanY };
@@ -4578,7 +4417,7 @@ function _relmapSetupInteraction(svg, container) {
       const cl = _relmapGetLinksFor(id), rv = cl.filter(l => l.rivalTitle);
       const orgName = _relmapGetOrgNameById(n.orgId);
       const emoji = _relmapGetOrgEmoji(n.orgId);
-      tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${orgName}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>`;
+      tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${orgName}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">鬯ｮ・｢繝ｻ・｢髣厄ｽｫ郢晢ｽｻ${cl.length}髣比ｼ夲ｽｽ・ｶ${rv.length?` / 驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・､驛｢譎√・・弱・${rv.length}髣比ｼ夲ｽｽ・ｶ`:''}</div>`;
       tt.classList.add('show'); tt.style.left = (e.clientX + 16) + 'px'; tt.style.top = (e.clientY - 10) + 'px';
     } else if (tt && !_relmapDragTarget) { tt.classList.remove('show'); }
   });
@@ -4592,9 +4431,9 @@ function _relmapSetupInteraction(svg, container) {
   svg.addEventListener('click', e => {
     if (_relmapDragMoved) { _relmapDragMoved = false; return; }
     _relmapHideCtxMenu();
-    // Close compare popup if open
+    // 閉じる compare popup if open
     const popOver = document.getElementById('relmapPopupOverlay');
-    if (popOver && popOver.classList.contains('show')) { _relmapClosePopup(); return; }
+    if (popOver && popOver.classList.contains('show')) { _relmap閉じるPopup(); return; }
     const g = e.target.closest('.rm-node-group');
     if (g) {
       const id = parseInt(g.dataset.id);
@@ -4632,7 +4471,7 @@ function _relmapSetupInteraction(svg, container) {
 
   // Global close
   document.addEventListener('click', e => { if (!e.target.closest('.rm-ctx-menu')) _relmapHideCtxMenu(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { _relmapClosePopup(); _relmapHideCtxMenu(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { _relmap閉じるPopup(); _relmapHideCtxMenu(); } });
 }
 
 function _relmapHideCtxMenu() {
@@ -4640,11 +4479,11 @@ function _relmapHideCtxMenu() {
   if (cm) cm.classList.remove('show');
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // View mode / center / filter controls
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 
-// 決定論的ジッター用Knuth乗算ハッシュ（同一IDで常に同じ0.0~1.0を返す）
+// 髮手ｶ｣・ｽ・ｺ髯橸ｽｳ陞溷･・ｽｽ・ｫ闕ｵ貅ｷ鬟ｭ驛｢・ｧ繝ｻ・ｸ驛｢譏ｴ繝ｻ邵ｺ・｡驛｢譎｢・ｽ・ｼ鬨ｾ蛹・ｽｽ・ｨKnuth髣包ｽｵ驕会ｽｼ繝ｻ・ｮ陷会ｽｱ郢晢ｽｯ驛｢譏ｴ繝ｻ邵ｺ蜥擾ｽｹ譎｢・ｽ・･郢晢ｽｻ闔・･鬩溽｢大初・つID驍ｵ・ｺ繝ｻ・ｧ髯晢ｽｶ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｫ髯ｷ・ｷ陟募具ｽｧ0.0~1.0驛｢・ｧ陞ｳ螟ｲ・ｽ・ｿ隴∫ｵｶ繝ｻ郢晢ｽｻ郢晢ｽｻ
 function _relmapIdHash(id) {
   let h = ((id * 2654435761) >>> 0);
   return (h & 0xffff) / 0xffff;
@@ -4712,34 +4551,34 @@ function _relmapDedupPowerRoster(roster, takenIds) {
   return unique;
 }
 
-// 勢力図 viewMode — 散布型階層SVG
-// ══════════════════════════════════════════════════════════
+// 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ繝ｻviewMode 驕ｯ・ｶ郢晢ｽｻ髫ｰ・ｨ繝ｻ・｣髯晢ｽｶ郢晢ｽｻ隴ｴ蟷・ｽｫ・ｫ闕ｳ・ｻ繝ｻ・ｱ繝ｻ・､SVG
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _drawRelmapPowerView(svg) {
   const W = _relmapW, H = _relmapH;
   if (!W || !H) return;
-  // サイドバー幅分オフセット（サイドバーは左に固定200px）
+  // 驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢譎擾ｽｳ・ｨ郢晢ｽｰ驛｢譎｢・ｽ・ｼ髯晢ｽｷ郢晢ｽｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｪ驛｢譎・ｽｼ譁絶落驛｢譏ｴ繝ｻ郢晢ｽｨ郢晢ｽｻ陋ｹ・ｻ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢譎擾ｽｳ・ｨ郢晢ｽｰ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｯ髯晢ｽｾ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｫ髯懈圜・ｽ・ｺ髯橸ｽｳ郢晢ｽｻ00px郢晢ｽｻ郢晢ｽｻ
   const sidebar = document.querySelector('.rm-sidebar, .relmap-sidebar');
   const sidebarW = sidebar ? sidebar.offsetWidth : 200;
   _buildOrgColumnSvgContent(svg, W, H, sidebarW);
 }
 
-// 勢力図 全体表示 — 散布型レイアウト
-// ・4団体を2×2エリアに配置（ランキング順）
-// ・ノードサイズ = OVR比例（強い=大きい）
-// ・IDハッシュで自然な散らばり + 衝突回避
-// ・org filter有効時 = 単体団体ビューに切替
+// 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ繝ｻ髯ｷ闌ｨ・ｽ・ｨ髣厄ｽｴ隶鯉ｽ｢繝ｻ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ 驕ｯ・ｶ郢晢ｽｻ髫ｰ・ｨ繝ｻ・｣髯晢ｽｶ郢晢ｽｻ隴ｴ蟶ｷ・ｹ譎｢・ｽ・ｬ驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・ｦ驛｢譏ｴ繝ｻ
+// 驛｢譎｢・ｽ・ｻ4髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜻ｻ・ｽ繝ｻ繝ｻ繝ｻ繝ｻ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｫ鬯ｩ貅ｷ隱ｿ繝ｻ・ｽ繝ｻ・ｮ郢晢ｽｻ陋ｹ・ｻ・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ鬯ｯ繝ｻ繝ｻ繝ｻ・ｼ郢晢ｽｻ
+// 驛｢譎｢・ｽ・ｻ驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ = OVR髮主沺・ｯ雋ｻ・ｽ・ｾ陷茨ｽｷ繝ｻ・ｼ闔・･繝ｻ・ｼ繝ｻ・ｷ驍ｵ・ｺ郢晢ｽｻ髯樊ｻゑｽｽ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ讒ｭ繝ｻ郢晢ｽｻ
+// 驛｢譎｢・ｽ・ｻID驛｢譏懶ｽｸ鄙ｫﾎ暮Δ・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・･驍ｵ・ｺ繝ｻ・ｧ鬮｢・ｾ繝ｻ・ｪ髴取ｻゑｽｽ・ｶ驍ｵ・ｺ繝ｻ・ｪ髫ｰ・ｨ繝ｻ・｣驛｢・ｧ陝ｲ・ｨ郢晢ｽｻ驛｢・ｧ郢晢ｽｻ+ 鬮ｯ・ｦ隴惹ｼ夲ｽｽ・ｪ遶乗剌・ｱ鬥ｴ・ｩ蛹・ｽｽ・ｿ
+// 驛｢譎｢・ｽ・ｻorg filter髫ｴ蟶ｷ逕･隴滄｡鯉ｽｭ蠑ｱ繝ｻ= 髯ｷ髮・繝ｻ・ｽ・ｽ霓｣莨懶ｽｱ・ｮ髣厄ｽｴ髦ｮ蜷ｶﾎｦ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｫ髯具ｽｻ郢晢ｽｻ陝繝ｻ
 function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   leftOffset = leftOffset || 0;
   const drawW = W - leftOffset;
   const layoutKey = '__overview__';
 
-  // 単体団体ビュー（orgFilter有効時）
+  // 髯ｷ髮・繝ｻ・ｽ・ｽ霓｣莨懶ｽｱ・ｮ髣厄ｽｴ髦ｮ蜷ｶﾎｦ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ郢晢ｽｻ郢晢ｽｻrgFilter髫ｴ蟶ｷ逕･隴滄｡鯉ｽｭ蠑ｱ・代・・ｼ郢晢ｽｻ
   if (_relmapOrgFilter && _relmapOrgFilter !== 'fa') {
     _buildOrgHorizontalView(svg, W, H, leftOffset);
     return;
   }
 
-  // 団体リスト（ランキング順）
+  // 髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜴･諛・ｽｹ・ｧ繝ｻ・ｹ驛｢譎∬か繝ｻ・ｼ陋ｹ・ｻ・主ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ鬯ｯ繝ｻ繝ｻ繝ｻ・ｼ郢晢ｽｻ
   const rankings = Engine.ranking.updateRankings(G);
   const rankOrder = [...rankings].sort((a, b) => a.rank - b.rank);
   const takenIds = new Set();
@@ -4758,19 +4597,19 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   });
 
   const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
-  const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣'];
+  const RANK_EMOJIS = ['・滓ｩｸ・ｽ・･郢晢ｽｻ, '・滓ｩｸ・ｽ・･郢晢ｽｻ, '・滓ｩｸ・ｽ・･郢晢ｽｻ, '4郢晢ｽｻ鬮ｷ菴ｩ繝ｻ];
 
-  // OVRレンジ（全選手）
+  // OVR驛｢譎｢・ｽ・ｬ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｸ郢晢ｽｻ闔・･郢晢ｽｻ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ繝ｻ繝ｻ・ｼ郢晢ｽｻ
   const allFighters = orgList.flatMap(org => org.roster);
   const allOVRs = allFighters.map(f => Engine.util.ov(f));
   const globalOVRMin = allOVRs.length ? Math.min(...allOVRs) : 50;
   const globalOVRMax = allOVRs.length ? Math.max(...allOVRs) : 90;
   const globalOVRRange = Math.max(1, globalOVRMax - globalOVRMin);
 
-  // OVR比例ノードサイズ
+  // OVR髮主沺・ｯ雋ｻ・ｽ・ｾ闕ｵ譏ｴﾎ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ
   const R_MIN = 10, R_MAX = 30;
 
-  // 団体エリア中心（2×2グリッド、ランキング順: 上段→下段、左→右交互）
+  // 髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｶ笙驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢髣包ｽｳ繝ｻ・ｭ髯滂ｽ｢郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ繝ｻ繝ｻ繝ｻ驛｢・ｧ繝ｻ・ｰ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ郢晢ｽｩ驍ｵ・ｲ遶丞｢・ｸｷ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ鬯ｯ繝ｻ繝ｻ 髣包ｽｳ鬯・汚・ｽ・ｮ繝ｻ・ｵ驕ｶ髮∝ｮｴ繝ｻ・ｸ陋ｹ・ｺ繝ｻ・ｮ繝ｻ・ｵ驍ｵ・ｲ遶乗劼・ｽ・ｷ繝ｻ・ｦ驕ｶ鬘假ｽｲ讓贋ｾ｡髣費｣ｰ繝ｻ・､髣費｣ｰ隰夲ｽｵ繝ｻ・ｼ郢晢ｽｻ
   const HEADER_H = 16;
   const areaPositions = [
     { cx: 0.28, cy: 0.24 },
@@ -4781,7 +4620,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   const areaRadiusX = drawW * 0.23;
   const areaRadiusY = H * 0.23;
 
-  // Pass 1: 各選手の初期位置を計算
+  // Pass 1: 髯ｷ・ｷ郢晢ｽｻ遶城メ・ｬ繝ｻ・ｹ譏ｴ繝ｻ髯具ｽｻ隴弱・・・蘭・ｴ陷･・ｲ繝ｻ・ｽ繝ｻ・ｮ驛｢・ｧ陞ｳ螟ｲ・ｽ・ｨ髢ｧ・ｲ繝ｻ・ｮ郢晢ｽｻ
   const allNodes = [];
   const fighterOrgMap = {};
 
@@ -4826,7 +4665,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     });
   });
 
-  // Pass 2: 衝突回避（5パス、水平優先）
+  // Pass 2: 鬮ｯ・ｦ隴惹ｼ夲ｽｽ・ｪ遶乗剌・ｱ鬥ｴ・ｩ蛹・ｽｽ・ｿ郢晢ｽｻ郢晢ｽｻ驛｢譏懶ｽｻ・｣邵ｺ蟶ｷ・ｸ・ｲ遶擾ｽｵ繝ｻ・ｰ繝ｻ・ｴ髯晢ｽｷ繝ｻ・ｳ髯ｷ繝ｻ・ｽ・ｪ髯ｷ驛∬か繝ｻ・ｼ郢晢ｽｻ
   for (let pass = 0; pass < 6; pass++) {
     for (let i = 0; i < allNodes.length; i++) {
       for (let j = i + 1; j < allNodes.length; j++) {
@@ -4844,18 +4683,18 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     }
   }
 
-  // 境界クランプ
+  // 髯溘・繝ｻ鬮ｦ諛・ｽｹ・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢譏ｴ繝ｻ
   allNodes.forEach(n => {
     n.x = Math.max(leftOffset + n.r + 2, Math.min(W - n.r - 2, n.x));
     n.y = Math.max(HEADER_H + n.r + 2, Math.min(H - n.r - 16, n.y));
     _relmapSetPowerPos(_relmapNodeMap[n.id], layoutKey, n.x, n.y);
   });
 
-  // Pass 3: SVG文字列を3層で構築（ライン→背景→ノード）
+  // Pass 3: SVG髫ｴ竏壹・繝ｻ・ｭ隲､諛翫・驛｢・ｧ郢晢ｽｻ髯橸ｽｻ繝ｻ・､驍ｵ・ｺ繝ｻ・ｧ髫ｶ蝣､霍昴・・ｯ闔ｨ螟ｲ・ｽ・ｼ陋ｹ・ｻ・主ｸｷ・ｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驕ｶ髮・ｽｮ螢ｹﾎ樣垓雜｣・ｽ・ｯ驕ｶ髮√・郢晢ｽｮ驛｢譎｢・ｽ・ｼ驛｢譏懶ｽｼ螟ｲ・ｽ・ｼ郢晢ｽｻ
   let defsSvg = '<defs>';
   let linesSvg = '', bgSvg = '', nodeSvg = '';
 
-  // ── 層1: 団体間因縁アーク ──
+  // 髫ｨ貂可髫ｨ貂可 髯橸ｽｻ繝ｻ・､1: 髯懈圜・ｽ・｣髣厄ｽｴ鬯･・ｴ闖ｫ・｣髯懈圜・｣・ｰ鬩搾ｽｵ遶丞｣ｹ・樣Δ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｯ 髫ｨ貂可髫ｨ貂可
   if (G.relationships) {
     const crossPairs = new Set();
     Object.keys(G.relationships).forEach(key => {
@@ -4882,8 +4721,8 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     });
   }
 
-  // ── 層2: 団体エリア背景 + ラベル ──
-  // 各団体の勢力指数を算出（人数+平均OVR）→背景円の大きさに反映
+  // 髫ｨ貂可髫ｨ貂可 髯橸ｽｻ繝ｻ・､2: 髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｶ笙驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢鬮｢・ｭ隴ｴ・ｧ陷搾ｽｹ + 驛｢譎｢・ｽ・ｩ驛｢譎冗函・弱・髫ｨ貂可髫ｨ貂可
+  // 髯ｷ・ｷ郢晢ｽｻ陞ｻ・ｮ髣厄ｽｴ髦ｮ蜷ｶ繝ｻ髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ・ｶ隹ｺ・ｰ髫ｰ・ｨ繝ｻ・ｰ驛｢・ｧ陜｣・､繝ｻ・ｮ隲､諛翫・郢晢ｽｻ闔蛹・ｽｽ・ｺ繝ｻ・ｺ髫ｰ・ｨ繝ｻ・ｰ+髯晢ｽｷ繝ｻ・ｳ髯懶ｽｮ遶ｭ・ｯVR郢晢ｽｻ闖ｫ繝ｻ繝ｻ鬮｢・ｭ隴ｴ・ｧ陷搾ｽｹ髯ｷﾂ郢晢ｽｻ郢晢ｽｻ髯樊ｻゑｽｽ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｫ髯ｷ・ｿ髢ｧ・ｴ闕ｳ繝ｻ
   const orgStrengths = orgList.map(org => {
     const ovrs = org.roster.map(f => Engine.util.ov(f));
     const avgOvr = ovrs.length ? ovrs.reduce((s, v) => s + v, 0) / ovrs.length : 40;
@@ -4897,21 +4736,21 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     const areaCX = leftOffset + drawW * areaPos.cx;
     const areaCY = HEADER_H + (H - HEADER_H) * areaPos.cy;
     const n = org.roster.length;
-    const rankEmoji = RANK_EMOJIS[org.rank - 1] || `${org.rank}位`;
-    // 勢力比例の背景円（弱い団体は小さく、強い団体は大きく）
+    const rankEmoji = RANK_EMOJIS[org.rank - 1] || `${org.rank}髣厄ｽｴ雋ゑｽｯ;
+    // 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ・ｶ繝ｻ・ｯ雎郁ｲｻ・ｽ・ｾ闕ｵ譏ｴ繝ｻ鬮｢・ｭ隴ｴ・ｧ陷搾ｽｹ髯ｷﾂ郢晢ｽｻ繝ｻ・ｼ闔・･繝ｻ・ｼ繝ｻ・ｱ驍ｵ・ｺ郢晢ｽｻ陞ｻ・ｮ髣厄ｽｴ髦ｮ蜷ｶ繝ｻ髯昴・・ｸ螂・ｽｼ繝ｻ・ｸ・ｺ闕ｳ迺ｰﾂ遶乗劼・ｽ・ｼ繝ｻ・ｷ驍ｵ・ｺ郢晢ｽｻ陞ｻ・ｮ髣厄ｽｴ髦ｮ蜷ｶ繝ｻ髯樊ｻゑｽｽ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ・･郢晢ｽｻ郢晢ｽｻ
     const strengthNorm = orgStrengths[ci] / maxStrength; // 0~1
     const bgR = baseAreaR * (0.5 + strengthNorm * 0.7); // 50%~120%
     bgSvg += `<circle cx="${areaCX.toFixed(1)}" cy="${areaCY.toFixed(1)}" r="${bgR.toFixed(1)}" fill="${org.color}" fill-opacity="${(0.02 + strengthNorm * 0.04).toFixed(3)}"/>`;
-    // 団体名ラベル（エリア上部）
+    // 髯懈圜・ｽ・｣髣厄ｽｴ霓｣蛟ｬ蛟ｹ驛｢譎｢・ｽ・ｩ驛｢譎冗函・取亢繝ｻ陋ｹ・ｻ邵ｺ鬘費ｽｹ譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢髣包ｽｳ闔ｨ竏・｣ｹ繝ｻ郢晢ｽｻ
     const labelY = areaCY - areaRadiusY - 8;
     bgSvg += `<text x="${areaCX.toFixed(1)}" y="${Math.max(14, labelY).toFixed(1)}" text-anchor="middle" font-size="13" font-family="sans-serif">${rankEmoji}</text>`;
     const dispName = org.name.length > 9 ? org.name.slice(0, 8) + '...' : org.name;
     bgSvg += `<text x="${areaCX.toFixed(1)}" y="${Math.max(28, labelY + 14).toFixed(1)}" text-anchor="middle" fill="${org.color}" font-size="11" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.55)" stroke-width="2.5" paint-order="stroke">${dispName}</text>`;
-    bgSvg += `<text x="${areaCX.toFixed(1)}" y="${Math.max(40, labelY + 26).toFixed(1)}" text-anchor="middle" fill="${org.color}" font-size="9" fill-opacity="0.45" font-family="sans-serif">${n}名在籍</text>`;
+    bgSvg += `<text x="${areaCX.toFixed(1)}" y="${Math.max(40, labelY + 26).toFixed(1)}" text-anchor="middle" fill="${org.color}" font-size="9" fill-opacity="0.45" font-family="sans-serif">${n}髯ｷ・ｷ隶朱対帝ｩ債郢晢ｽｻ/text>`;
   });
 
-  // ── 層3: 選手ノード ──
-  // OVR昇順で描画（大きいノードが上に来るよう）
+  // 髫ｨ貂可髫ｨ貂可 髯橸ｽｻ繝ｻ・､3: 鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｴﾎ驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ髫ｨ貂可髫ｨ貂可
+  // OVR髫ｴ荳翫・繝ｻ・ｰ郢晢ｽｻ邵ｲ螳夲ｽｬ・ｰ陷諤懈・郢晢ｽｻ闔・･繝ｻ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ讓抵ｽｹ譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ遯ｶ・ｲ髣包ｽｳ驗呻ｽｫ遶頑･｢・ｭ螟ｲ・ｽ・･驛｢・ｧ闕ｵ譎｢・ｽ閧ｲ・ｸ・ｺ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻ
   const drawOrder = [...allNodes].sort((a, b) => a.ovr - b.ovr);
   drawOrder.forEach(node => {
     const { x, y, r, ovr, orgColor, isChamp, isAce, isTop3, fighter: f, inOrgRank } = node;
@@ -4921,17 +4760,17 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
 
     nodeSvg += `<g class="rm-node-group" data-id="${f.id}" style="cursor:pointer">`;
 
-    // エースのオーラ（大きく強調）
+    // 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｩ郢晢ｽｻ闔・･繝ｻ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ・･髯滓汚・ｽ・ｷ鬮ｫ・ｱ繝ｻ・ｿ郢晢ｽｻ郢晢ｽｻ
     if (isAce) {
       nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 7).toFixed(1)}" fill="${orgColor}" fill-opacity="0.15"/>`;
     }
-    // 王者リング + 王冠
+    // 鬩阪・莠具ｾつ郢晢ｽｻ・取㏍・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｰ + 鬩阪・蜚ｱ郢晢ｽｻ
     if (isChamp) {
       nodeSvg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 5).toFixed(1)}" fill="none" stroke="#d4a843" stroke-width="2" stroke-opacity="0.85"/>`;
-      nodeSvg += `<text x="${x.toFixed(1)}" y="${(y - r - 5).toFixed(1)}" text-anchor="middle" font-size="${Math.max(11, r * 0.5).toFixed(0)}" font-family="sans-serif">👑</text>`;
+      nodeSvg += `<text x="${x.toFixed(1)}" y="${(y - r - 5).toFixed(1)}" text-anchor="middle" font-size="${Math.max(11, r * 0.5).toFixed(0)}" font-family="sans-serif">・滓ｫ∬・</text>`;
     }
 
-    // 顔アイコン or 塗り円
+    // 鬯ｯ菫ｶ魍堤ｸｺ繝ｻ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ or 髯懶ｽｪ陷会ｽｱ繝ｻ鬘俶咏ｹ晢ｽｻ
     if (pUrl) {
       const patternId = `pmap-face-${f.id}`;
       defsSvg += _relmapBuildInlineFacePattern(patternId, pUrl);
@@ -4942,14 +4781,14 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
       nodeSvg += `<text x="${x.toFixed(1)}" y="${(y + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.min(12, r * 0.7).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
     }
 
-    // OVRバッジ
+    // OVR驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｸ
     const badgeW = Math.max(22, r * 0.9);
     const badgeH = Math.max(12, r * 0.45);
     const badgeY = y + r + 6;
     nodeSvg += `<rect x="${(x - badgeW / 2).toFixed(1)}" y="${(badgeY - badgeH / 2).toFixed(1)}" width="${badgeW.toFixed(1)}" height="${badgeH.toFixed(1)}" rx="3" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isTop3 ? '0.65' : '0.4'})" stroke-width="1"/>`;
     nodeSvg += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.max(8, r * 0.32).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
 
-    // 名前ラベル（上位5名 or ロスター少ないとき全員）
+    // 髯ｷ・ｷ隶朱｡披・驛｢譎｢・ｽ・ｩ驛｢譎冗函・取亢繝ｻ闔蛹・ｽｽ・ｸ髮榊・・ｽ・ｽ郢晢ｽｻ髯ｷ・ｷ郢晢ｽｻor 驛｢譎｢・ｽ・ｭ驛｢・ｧ繝ｻ・ｹ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｼ髯昴・・ｻ・｣遶企・・ｸ・ｺ郢晢ｽｻ遶雁､・ｸ・ｺ隶守ｿｫ繝ｻ髯ｷ・ｩ繝ｻ・｡郢晢ｽｻ郢晢ｽｻ
     if (inOrgRank < 5 || node.r >= 18) {
       const name = (f.name || '').slice(0, 6);
       const fs = isAce ? 10.5 : isTop3 ? 10 : 9;
@@ -4959,17 +4798,17 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     nodeSvg += `</g>`;
   });
 
-  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  ── 因縁  / クリックで詳細 / サイドバーで団体表示</text>`;
+  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">驕ｶ鄙ｫ繝ｻ髯滓汚・ｽ・ｷ驍ｵ・ｺ郢晢ｽｻ 髫ｨ・ｳ郢晢ｽｻ驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ=OVR  髫ｨ貂可髫ｨ貂可 髯懈圜・｣・ｰ鬩搾ｽｵ郢晢ｽｻ / 驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ繝ｻ・ｧ鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ / 驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢譎擾ｽｳ・ｨ郢晢ｽｰ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｧ髯懈圜・ｽ・｣髣厄ｽｴ隶鯉ｽ｢繝ｻ・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + linesSvg + bgSvg + nodeSvg;
 }
 
-// 単体団体ビュー — 有機的散布型
-// ・Y軸 = OVR（高OVR=上、低OVR=下）
-// ・X軸 = IDハッシュで自然に散らす + 衝突回避
-// ・ノードサイズ = OVR比例（R_MIN=12, R_MAX=35）
-// ・全員に名前ラベル表示
+// 髯ｷ髮・繝ｻ・ｽ・ｽ霓｣莨懶ｽｱ・ｮ髣厄ｽｴ髦ｮ蜷ｶﾎｦ驛｢譎｢・ｽ・･驛｢譎｢・ｽ・ｼ 驕ｯ・ｶ郢晢ｽｻ髫ｴ蟶ｷ蛻､繝ｻ・ｩ雋・ｽｽ陜趣ｽｪ髫ｰ・ｨ繝ｻ・｣髯晢ｽｶ郢晢ｽｻ隴ｴ繝ｻ
+// 驛｢譎｢・ｽ・ｻY鬮ｴ繝ｻ・ｽ・ｸ = OVR郢晢ｽｻ騾趣ｽｯ繝ｻ・ｫ隶鯉ｽｼVR=髣包ｽｳ驗呻ｽｫ・つ遶擾ｽｽ繝ｻ・ｽ闕ｳ魏ｻR=髣包ｽｳ陷茨ｽｷ繝ｻ・ｼ郢晢ｽｻ
+// 驛｢譎｢・ｽ・ｻX鬮ｴ繝ｻ・ｽ・ｸ = ID驛｢譏懶ｽｸ鄙ｫﾎ暮Δ・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・･驍ｵ・ｺ繝ｻ・ｧ鬮｢・ｾ繝ｻ・ｪ髴取ｻゑｽｽ・ｶ驍ｵ・ｺ繝ｻ・ｫ髫ｰ・ｨ繝ｻ・｣驛｢・ｧ陝ｲ・ｨ隨倥・+ 鬮ｯ・ｦ隴惹ｼ夲ｽｽ・ｪ遶乗剌・ｱ鬥ｴ・ｩ蛹・ｽｽ・ｿ
+// 驛｢譎｢・ｽ・ｻ驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ = OVR髮主沺・ｯ雋ｻ・ｽ・ｾ陷茨ｽｷ繝ｻ・ｼ郢晢ｽｻ_MIN=12, R_MAX=35郢晢ｽｻ郢晢ｽｻ
+// 驛｢譎｢・ｽ・ｻ髯ｷ闌ｨ・ｽ・ｨ髯ｷ・ｩ繝ｻ・｡驍ｵ・ｺ繝ｻ・ｫ髯ｷ・ｷ隶朱｡披・驛｢譎｢・ｽ・ｩ驛｢譎冗函・取辨蜍励・・ｨ鬩穂ｼ夲ｽｽ・ｺ
 function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const orgId = _relmapOrgFilter;
   const isPlayer = orgId === 'player';
@@ -4983,7 +4822,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const drawW = W - leftOffset;
 
   if (!n) {
-    svg.innerHTML = `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H / 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="14" font-family="sans-serif">選手なし</text>`;
+    svg.innerHTML = `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H / 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="14" font-family="sans-serif">鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譏ｶ繝ｻ驍ｵ・ｺ郢晢ｽｻ/text>`;
     return;
   }
 
@@ -4998,13 +4837,13 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const contentH = H - PAD_TOP - PAD_BOTTOM;
   const usableW = drawW - PAD_X * 2;
 
-  // OVR比例ノードサイズ（ドラマチックに：最強=かなり大きい）
+  // OVR髮主沺・ｯ雋ｻ・ｽ・ｾ闕ｵ譏ｴﾎ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ邵ｺ遉ｼ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ郢晢ｽｻ陋ｹ・ｻ郢晢ｽｩ驛｢譎｢・ｽ・ｩ驛｢譎・ｽｧ・ｭ郢晢ｽ｡驛｢譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ繝ｻ・ｫ郢晢ｽｻ陞｢・ｽ隲､蜻ｵ・ｰ謇假ｽｽ・ｷ=驍ｵ・ｺ闕ｵ譏ｶ繝ｻ驛｢・ｧ鬮ｮ繝ｻ・ｽ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ讒ｭ繝ｻ郢晢ｽｻ
   const R_MIN = 12, R_MAX = 45;
   const ovrs = sorted.map(f => Engine.util.ov(f));
   const ovrMin = Math.min(...ovrs), ovrMax = Math.max(...ovrs);
   const ovrRange = Math.max(1, ovrMax - ovrMin);
 
-  // 初期位置計算
+  // 髯具ｽｻ隴弱・・・蘭・ｴ陷･・ｲ繝ｻ・ｽ繝ｻ・ｮ鬮ｫ・ｪ髢ｧ・ｲ繝ｻ・ｮ郢晢ｽｻ
   const centerXArea = leftOffset + drawW / 2;
   const nodes = sorted.map((f, i) => {
     const ovr = Engine.util.ov(f);
@@ -5030,7 +4869,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     };
   });
 
-  // 衝突回避（8パス、多めに回して端に溢れないように）
+  // 鬮ｯ・ｦ隴惹ｼ夲ｽｽ・ｪ遶乗剌・ｱ鬥ｴ・ｩ蛹・ｽｽ・ｿ郢晢ｽｻ郢晢ｽｻ驛｢譏懶ｽｻ・｣邵ｺ蟶ｷ・ｸ・ｲ遶乗劼・ｽ・､陞｢・ｹ繝ｻ竏ｫ・ｸ・ｺ繝ｻ・ｫ髯懃軸・ｧ・ｭ繝ｻ・ｰ驍ｵ・ｺ繝ｻ・ｦ鬩包ｽｶ繝ｻ・ｯ驍ｵ・ｺ繝ｻ・ｫ髮九・・ｽ・｢驛｢・ｧ陟募ｨｯ繝ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ閧ｲ・ｸ・ｺ郢晢ｽｻ遶願侭繝ｻ郢晢ｽｻ
   for (let pass = 0; pass < 8; pass++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
@@ -5041,12 +4880,12 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
         if (dist < minDist && dist > 0.01) {
           const push = (minDist - dist) / 2;
           const nx = dx / dist, ny = dy / dist;
-          // 水平優先で押し出し（縦のOVR序列を保つ）
+          // 髮朱ｯ会ｽｽ・ｴ髯晢ｽｷ繝ｻ・ｳ髯ｷ繝ｻ・ｽ・ｪ髯ｷ莠･迴ｾ邵ｲ螳夲ｽｬ螟ｲ・ｽ・ｼ驍ｵ・ｺ隲､諛翫・驍ｵ・ｺ隴会ｽｦ繝ｻ・ｼ髢ｧ・ｲ繝ｻ・ｸ繝ｻ・ｦ驍ｵ・ｺ繝ｻ・ｮOVR髯滓・・ｸ讒ｭ繝ｻ驛｢・ｧ陷代・・ｽ・ｿ隴擾ｽｴ隨・ｽｽ郢晢ｽｻ郢晢ｽｻ
           a.x -= nx * push * 0.85; a.y -= ny * push * 0.35;
           b.x += nx * push * 0.85; b.y += ny * push * 0.35;
         }
       }
-      // 各パスの各ノードで境界を維持（衝突回避で外に出るのを防ぐ）
+      // 髯ｷ・ｷ郢晢ｽｻ郢晢ｽｱ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｮ髯ｷ・ｷ郢晢ｽｻ郢晢ｽｮ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ邵ｲ螳夲｣ｰ繝ｻ繝ｻ鬮ｦ諛・ｽｹ・ｧ陜｣・､繝ｻ・ｶ繝ｻ・ｭ髫ｰ謔ｶ繝ｻ繝ｻ・ｼ鬩帙・・ｽ・｡隴惹ｼ夲ｽｽ・ｪ遶乗剌・ｱ鬥ｴ・ｩ蛹・ｽｽ・ｿ驍ｵ・ｺ繝ｻ・ｧ髯樊ｻ薙§遶頑･｢諤弱・・ｺ驛｢・ｧ闕ｵ譏ｴ繝ｻ驛｢・ｧ陝ｶ譏懶ｽｺ貅ｽ・ｸ・ｺ隰ｦ・ｰ繝ｻ・ｼ郢晢ｽｻ
       const nd = nodes[i];
       const spring = nd.isAce ? 0.045 : nd.isTop3 ? 0.032 : 0.022;
       nd.x += (nd.homeX - nd.x) * spring;
@@ -5056,7 +4895,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     }
   }
 
-  // 最終境界クランプ（名前+バッジ分の余裕を持たせる）
+  // 髫ｴ蟠｢ﾂ鬩搾ｽｨ郢ｧ繝ｻ・ｽ・｢郢晢ｽｻ鬮ｦ諛・ｽｹ・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｳ驛｢譎・惧繝ｻ・ｼ闔・･鬪ｭ蜊諱・ｹ晢ｽｻ驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｸ髯具ｽｻ郢晢ｽｻ郢晢ｽｻ髣厄ｽｴ陷ｻ・ｵ繝ｻ・｣髴郁ｲｻ・ｽ螳夲ｽｬ蝠上・隨ｳ繝ｻ・ｸ・ｺ陝ｶ蜻ｻ・ｽ荵昴・郢晢ｽｻ
   nodes.forEach(nd => {
     nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
     nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
@@ -5066,15 +4905,15 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   let defsSvg = '<defs>';
   let svgHtml = '';
 
-  // ヘッダー
+  // 驛｢譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ
   const centerX = (leftOffset + drawW / 2).toFixed(1);
-  svgHtml += `<text x="${centerX}" y="26" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" paint-order="stroke">${orgName}（${n}名）</text>`;
+  svgHtml += `<text x="${centerX}" y="26" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" paint-order="stroke">${orgName}郢晢ｽｻ郢晢ｽｻ{n}髯ｷ・ｷ隰ｳ・ｾ繝ｻ・ｼ郢晢ｽｻ/text>`;
   svgHtml += `<line x1="${(leftOffset + 20).toFixed(1)}" y1="34" x2="${(leftOffset + drawW - 20).toFixed(1)}" y2="34" stroke="${color}" stroke-width="1" stroke-opacity="0.3"/>`;
 
-  // 薄い団体カラー背景グラデ
+  // 鬮ｦ・ｮ郢晢ｽｻ繝ｻ讚∵綜繝ｻ・｣髣厄ｽｴ髦ｮ蜷ｶ窶ｳ驛｢譎｢・ｽ・ｩ驛｢譎｢・ｽ・ｼ鬮｢・ｭ隴ｴ・ｧ陷搾ｽｹ驛｢・ｧ繝ｻ・ｰ驛｢譎｢・ｽ・ｩ驛｢譏ｴ繝ｻ
   svgHtml += `<circle cx="${(leftOffset + drawW / 2).toFixed(1)}" cy="${(H / 2).toFixed(1)}" r="${(Math.max(drawW, H) * 0.4).toFixed(1)}" fill="${color}" fill-opacity="0.03"/>`;
 
-  // OVR昇順で描画（大きいノードが上に来る）
+  // OVR髫ｴ荳翫・繝ｻ・ｰ郢晢ｽｻ邵ｲ螳夲ｽｬ・ｰ陷諤懈・郢晢ｽｻ闔・･繝ｻ・､繝ｻ・ｧ驍ｵ・ｺ鬮ｦ・ｪ繝ｻ讓抵ｽｹ譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ遯ｶ・ｲ髣包ｽｳ驗呻ｽｫ遶頑･｢・ｭ螟ｲ・ｽ・･驛｢・ｧ陷茨ｽｷ繝ｻ・ｼ郢晢ｽｻ
   const drawOrder = [...nodes].sort((a, b) => a.ovr - b.ovr);
   drawOrder.forEach(node => {
     const { x, y, r, ovr, isChamp, isAce, isTop3, fighter: f, rank } = node;
@@ -5084,18 +4923,18 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 
     svgHtml += `<g class="rm-node-group" data-id="${f.id}" style="cursor:pointer">`;
 
-    // エースのオーラ
+    // 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｹ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・ｼ驛｢譎｢・ｽ・ｩ
     if (isAce) {
       svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 8).toFixed(1)}" fill="${color}" fill-opacity="0.12"/>`;
     }
 
-    // 王冠
+    // 鬩阪・蜚ｱ郢晢ｽｻ
     if (isChamp) {
       svgHtml += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r + 5).toFixed(1)}" fill="none" stroke="#d4a843" stroke-width="2" stroke-opacity="0.85"/>`;
-      svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - 6).toFixed(1)}" text-anchor="middle" font-size="${Math.max(12, r * 0.45).toFixed(0)}" font-family="sans-serif">👑</text>`;
+      svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - 6).toFixed(1)}" text-anchor="middle" font-size="${Math.max(12, r * 0.45).toFixed(0)}" font-family="sans-serif">・滓ｫ∬・</text>`;
     }
 
-    // 顔アイコン or 塗り円
+    // 鬯ｯ菫ｶ魍堤ｸｺ繝ｻ・ｹ・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ or 髯懶ｽｪ陷会ｽｱ繝ｻ鬘俶咏ｹ晢ｽｻ
     if (pUrl) {
       const patternId = `ph-face-${f.id}`;
       defsSvg += _relmapBuildInlineFacePattern(patternId, pUrl);
@@ -5105,31 +4944,31 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
       svgHtml += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${color}" font-size="${(r * 0.6).toFixed(1)}" font-family="sans-serif">${ovr}</text>`;
     }
 
-    // OVRバッジ
+    // OVR驛｢譎√・郢晢ｽ｣驛｢・ｧ繝ｻ・ｸ
     const badgeW = Math.max(24, r * 0.85);
     const badgeH = Math.max(13, r * 0.42);
     const badgeY = y + r + 7;
     svgHtml += `<rect x="${(x - badgeW / 2).toFixed(1)}" y="${(badgeY - badgeH / 2).toFixed(1)}" width="${badgeW.toFixed(1)}" height="${badgeH.toFixed(1)}" rx="3.5" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isAce ? '0.7' : '0.45'})" stroke-width="1"/>`;
     svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.max(8.5, r * 0.3).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
 
-    // 名前（全員表示）
+    // 髯ｷ・ｷ隶朱｡披・郢晢ｽｻ闔・･郢晢ｽｻ髯ｷ・ｩ繝ｻ・｡鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ郢晢ｽｻ郢晢ｽｻ
     const name = (f.name || '').slice(0, 6);
     const fs = isAce ? 11 : isTop3 ? 10.5 : 9.5;
     svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + badgeH / 2 + 12).toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
 
-    // 順位ラベル
+    // 鬯ｯ繝ｻ繝ｻ繝ｻ・ｽ鬮ｦ・ｪ・主ｸｷ・ｹ譎冗函・弱・
     svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - (isChamp ? 18 : 5)).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="sans-serif">#${rank + 1}</text>`;
 
     svgHtml += `</g>`;
   });
 
-  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い（OVR高）  ● サイズ=OVR  クリックで詳細</text>`;
+  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">驕ｶ鄙ｫ繝ｻ髯滓汚・ｽ・ｷ驍ｵ・ｺ郢晢ｽｻ繝ｻ・ｼ郢晢ｽｻVR鬯ｯ・ｮ陋帙・・ｽ・ｼ郢晢ｽｻ 髫ｨ・ｳ郢晢ｽｻ驛｢・ｧ繝ｻ・ｵ驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｺ=OVR  驛｢・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ繝ｻ・ｧ鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + svgHtml;
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapSetViewMode(mode) {
   _relmapViewMode = mode;
   document.querySelectorAll('.rm-view-toggle .rm-vt-btn').forEach(b => b.classList.remove('active'));
@@ -5140,7 +4979,7 @@ function _relmapSetViewMode(mode) {
   if (zoneLayer) zoneLayer.innerHTML = '';
 
   if (mode === 'power') {
-    // 勢力図モード: 物理演算停止・全ノード非表示・SVGに団体ノードを直描画
+    // 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ蜥擾ｽｹ譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ 髴大､ｲ・ｽ・ｩ鬨ｾ繝ｻ繝ｻ繝ｻ・ｼ騾ｧ・ｮ繝ｻ・ｮ隲､諛碁・髮弱・・ｽ・｢驛｢譎｢・ｽ・ｻ髯ｷ闌ｨ・ｽ・ｨ驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎∝ｴ溯ｬｦ・ｼ鬮ｯ・ｦ繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驛｢譎｢・ｽ・ｻSVG驍ｵ・ｺ繝ｻ・ｫ髯懈圜・ｽ・｣髣厄ｽｴ髦ｮ蜷ｶﾎ驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ蟶敖・ｶ繝ｻ・ｴ髫ｰ・ｰ陷諤懈・
     if (_relmapAnimId) { cancelAnimationFrame(_relmapAnimId); _relmapAnimId = null; }
     _relmapNodes.forEach(n => { n._hidden = true; });
     _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
@@ -5149,12 +4988,12 @@ function _relmapSetViewMode(mode) {
   }
 
   if (mode === 'network') {
-    // 勢力図から戻る場合: SVGのdefs+描画レイヤーを完全再構築 + orgFilter解除 + ズームリセット
+    // 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ蜥擾ｽｸ・ｺ闕ｵ譎｢・ｽ闃ｽ・ｬ魃会ｽｽ・ｻ驛｢・ｧ陷ｿ・･繝ｻ・ｰ繝ｻ・ｴ髯ｷ・ｷ郢晢ｽｻ SVG驍ｵ・ｺ繝ｻ・ｮdefs+髫ｰ・ｰ陷諤懈・驛｢譎｢・ｽ・ｬ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ驛｢・ｧ髮区ｩｸ・ｽ・ｮ隰疲ｺ倥・髯ｷﾂ髢ｧ・ｴ繝ｻ・ｧ霑｢證ｦ・ｽ・ｯ郢晢ｽｻ+ orgFilter鬮ｫ證ｦ・ｽ・｣鬯ｮ・ｯ繝ｻ・､ + 驛｢・ｧ繝ｻ・ｺ驛｢譎｢・ｽ・ｼ驛｢譎｢・｣・ｰ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・ｻ驛｢譏ｴ繝ｻ郢晢ｽｨ
     const svg = document.getElementById('relmapSvg');
     if (svg) {
       const existingNodeLayer = document.getElementById('relmapNodeLayer');
       if (!existingNodeLayer) {
-        // power viewがsvg.innerHTMLを上書きしたため、defs+レイヤーを再構築
+        // power view驍ｵ・ｺ髣梧挌.innerHTML驛｢・ｧ陷代・・ｽ・ｸ鬯・､ｧ・ｶ讙趣ｽｸ・ｺ鬮ｦ・ｪ繝ｻ・ｰ驍ｵ・ｺ雋・ｪ陞ｺ驛｢・ｧ遶丞仰遯ｶ・･efs+驛｢譎｢・ｽ・ｬ驛｢・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ驛｢・ｧ髮区ｧｭ繝ｻ髫ｶ蝣､霍昴・・ｯ郢晢ｽｻ
         let defsHtml = '<defs>';
         defsHtml += '<filter id="rm-glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
         defsHtml += '<filter id="rm-glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
@@ -5171,15 +5010,15 @@ function _relmapSetViewMode(mode) {
     }
     _relmapOrgFilter = null;
     _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
-    // 全ノードを表示に戻す（_relmapUpdateVisibilityで正式に処理される）
+    // 髯ｷ闌ｨ・ｽ・ｨ驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎擾ｽｳ・ｨ繝ｻ蟶晏距繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驍ｵ・ｺ繝ｻ・ｫ髫ｰ魃会ｽｽ・ｻ驍ｵ・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻrelmapUpdateVisibility驍ｵ・ｺ繝ｻ・ｧ髮弱・・ｽ・｣髯溷床・ｸ蟯ｩ繝ｻ髯ｷ繝ｻ・ｽ・ｦ鬨ｾ繝ｻ繝ｻ繝ｻ繝ｻ・ｹ・ｧ陟暮ｯ会ｽｽ荵昴・郢晢ｽｻ
     _relmapNodes.forEach(n => { n._hidden = false; });
     const W = _relmapW, H = _relmapH;
     const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
     _relmapDrawOrgZones(orgCenters);
     _relmapRenderSidebar(orgCenters);
   }
-  // フォーカスモードに切り替える際、中心未設定なら自動でプレイヤー最高OVR選手を設定
-  // （全ノード一斉表示によるO(n²)物理演算負荷を防ぐ）
+  // 驛｢譎・ｽｼ譁青ｰ驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｫ驛｢・ｧ繝ｻ・ｹ驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ遶頑･｢蟠慕ｹ晢ｽｻ繝ｻ鬘假ｽｭ蜴・ｽｽ・ｿ驍ｵ・ｺ陋ｹ・ｻ繝ｻ遏ｩ・ｫ・ｫ陝ｶ蜊債遶擾ｽｽ繝ｻ・ｸ繝ｻ・ｭ髯滂ｽ｢郢晢ｽｻ隰費ｽｴ鬮ｫ・ｪ繝ｻ・ｭ髯橸ｽｳ陞｢・ｹ遶企・・ｹ・ｧ髣・ｽｽ郢晢ｽｻ髯ｷ蟠趣ｽｼ譁青蝣､・ｹ譎丞ｹｲ・取ｨ抵ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・､驛｢譎｢・ｽ・ｼ髫ｴ蟠｢ﾂ鬯ｯ・ｮ隶鯉ｽｼVR鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ蟶晏搦繝ｻ・ｭ髯橸ｽｳ郢晢ｽｻ
+  // 郢晢ｽｻ闔・･郢晢ｽｻ驛｢譎擾ｽｼ・ｱ郢晢ｽｻ驛｢譎・・繝ｻ・ｸ・つ髫ｴ竏ｬ豁薙・・｡繝ｻ・ｨ鬩穂ｼ夲ｽｽ・ｺ驍ｵ・ｺ繝ｻ・ｫ驛｢・ｧ陋ｹ・ｻ繝ｻ霆・n繝ｻ繧托ｽｽ・ｲ)髴大､ｲ・ｽ・ｩ鬨ｾ繝ｻ繝ｻ繝ｻ・ｼ騾ｧ・ｮ繝ｻ・ｮ髣埼屮・ｽ・ｲ繝ｻ・ｰ鬮｣蛹・ｽｽ・ｷ驛｢・ｧ陝ｶ譏懶ｽｺ貅ｽ・ｸ・ｺ隰ｦ・ｰ繝ｻ・ｼ郢晢ｽｻ
   if (mode === 'focus' && !_relmapCenterId && _relmapNodes.length > 0) {
     const playerNodes = _relmapNodes.filter(n => n.orgId === 'player');
     const candidates = playerNodes.length ? playerNodes : _relmapNodes;
@@ -5234,7 +5073,7 @@ function _relmapFocusOrg(orgId) {
   } else {
     _relmapOrgFilter = orgId;
   }
-  // 勢力図モード: 直接SVGを再描画
+  // 髯ｷ謳ｾ・ｽ・｢髯ｷ迚呻ｽｸ蟶幢ｽｳ蜥擾ｽｹ譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譏ｴ繝ｻ 鬨ｾ・ｶ繝ｻ・ｴ髫ｰ證ｦ・ｽ・･SVG驛｢・ｧ髮区ｧｭ繝ｻ髫ｰ・ｰ陷諤懈・
   if (_relmapViewMode === 'power') {
     _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
     _relmapRenderPowerView();
@@ -5258,9 +5097,9 @@ function _relmapSetFilter(f) {
   _relmapReheat();
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Detail panel (bottom)
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapShowDetailForNode(nodeId) {
   const panel = document.getElementById('relmapDetailPanel');
   const n = _relmapNodeMap[nodeId];
@@ -5280,14 +5119,14 @@ function _relmapShowDetailForNode(nodeId) {
 
   panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
     <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${other.name}</span>${tb}</div>
-    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:#e17055"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:#e17055"></div></div></div></div></div>
-    <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 比較</span></div>`;
+    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192鬮ｫ蛹・ｽｽ・ｪ</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192鬮ｫ蛹・ｽｽ・ｪ</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192鬩包ｽｶ繝ｻ・ｶ</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:#e17055"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192鬩包ｽｶ繝ｻ・ｶ</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:#e17055"></div></div></div></div></div>
+    <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">髣泌ｳｨ繝ｻ${nl.length-1}髣比ｼ夲ｽｽ・ｶ<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 鬮ｫ・ｧ繝ｻ・ｳ鬩肴得・ｽ・ｰ</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 髮手ご・｢謇假ｽｽ・ｼ郢晢ｽｻ/span></div>`;
   panel.classList.add('show');
 }
 
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 // Compare popup
-// ══════════════════════════════════════════════════════════
+// 髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ髫ｨ鬘費ｽｵ・ｶ雎・ｽｦ
 function _relmapHandleCompareClick(id) {
   if (_relmapCompareA === id) { _relmapCompareA = _relmapCompareB; _relmapCompareB = null; }
   else if (_relmapCompareB === id) { _relmapCompareB = null; }
@@ -5304,7 +5143,7 @@ function _relmapUpdateCompareHint() {
   if (!h) return;
   if (!_relmapCompareA) { h.classList.remove('show'); return; }
   const aN = _relmapNodeMap[_relmapCompareA]?.name || '?';
-  if (!_relmapCompareB) { h.textContent = `\u2696 \u2460 ${aN} を選択 \u2192 \u2461右側の選手をクリック`; h.classList.add('show'); }
+  if (!_relmapCompareB) { h.textContent = `\u2696 \u2460 ${aN} 驛｢・ｧ陝ｶ譏ｶ繝ｻ髫ｰ螢ｹ繝ｻ\u2192 \u2461髯ｷ・ｿ繝ｻ・ｳ髯句ｹ｢・ｽ・ｴ驍ｵ・ｺ繝ｻ・ｮ鬯ｩ蛹・ｽｽ・ｸ髫ｰ繝ｻ・ｹ譎｢・ｽ蝣､・ｹ・ｧ繝ｻ・ｯ驛｢譎｢・ｽ・ｪ驛｢譏ｴ繝ｻ邵ｺ逍・ h.classList.add('show'); }
   else { h.classList.remove('show'); }
 }
 
@@ -5318,30 +5157,30 @@ function _relmapShowComparePopup() {
   const aOrgName = _relmapGetOrgNameById(a.orgId), bOrgName = _relmapGetOrgNameById(b.orgId);
   const aEmoji = _relmapGetOrgEmoji(a.orgId), bEmoji = _relmapGetOrgEmoji(b.orgId);
 
-  // 関係データ事前取得（ヘッダーに埋め込むため）
+  // 鬯ｮ・｢繝ｻ・｢髣厄ｽｫ郢ｧ繝ｻﾎ咎Δ譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ髣費｣ｰ陷ｿ・･霎ｯ謌頑╂鬮｢ﾂ繝ｻ・ｾ隴会ｽｦ繝ｻ・ｼ陋ｹ・ｻ郢晢ｽｻ驛｢譏ｴ繝ｻ郢晢｣ｰ驛｢譎｢・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｫ髯懆ｬ趣ｽｹ譎｢・ｽ繝ｻ諱ｷ繝ｻ・ｼ驛｢・ｧ・つ驍ｵ・ｺ雋・∞・ｽ竏壹・郢晢ｽｻ
   const bAtoB = rel ? (isAS ? rel.bondAB : rel.bondBA) : 0;
   const rAtoB = rel ? (isAS ? rel.rivAB : rel.rivBA) : 0;
   const bBtoA = rel ? (isAS ? rel.bondBA : rel.bondAB) : 0;
   const rBtoA = rel ? (isAS ? rel.rivBA : rel.rivAB) : 0;
   const cAB = bAtoB >= 50 ? '#74b9ff' : '#ff7675', cBA = bBtoA >= 50 ? '#74b9ff' : '#ff7675';
 
-  let h = `<div class="rm-popup-close" onclick="_relmapClosePopup()">\u2715</div>`;
+  let h = `<div class="rm-popup-close" onclick="_relmap閉じるPopup()">\u2715</div>`;
 
-  // ライバル称号バナー（あれば）
+  // 驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・､驛｢譎√・・取辨ﾂｧ繝ｻ・ｰ髯ｷ・ｿ繝ｻ・ｷ驛｢譎√・郢晢ｽｪ驛｢譎｢・ｽ・ｼ郢晢ｽｻ陋ｹ・ｻ遶包｣ｰ驛｢・ｧ陟募ｾ後・郢晢ｽｻ郢晢ｽｻ
   if (rel && rel.rivalTitle) {
     h += `<div style="text-align:center;padding:6px 0 2px;font-size:13px;font-weight:700;color:${rel.titleColor}">${rel.titleEmoji} ${rel.rivalTitle}</div>`;
   }
 
-  // ヘッダー: アイコン+名前+OVR+感情メーターを各キャラの下に配置
+  // 驛｢譎渉・･郢晢ｽ｣驛｢謨鳴驛｢譎｢・ｽ・ｼ: 驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ+髯ｷ・ｷ隶朱｡披・+OVR+髫ｲ・｢雋願侭ﾎ鈴Δ譎｢・ｽ・｡驛｢譎｢・ｽ・ｼ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｼ驛｢・ｧ髮区ｨ願ｳ驛｢・ｧ繝ｻ・ｭ驛｢譎｢・ｽ・｣驛｢譎｢・ｽ・ｩ驍ｵ・ｺ繝ｻ・ｮ髣包ｽｳ闕ｵ譏ｶ繝ｻ鬯ｩ貅ｷ隱ｿ繝ｻ・ｽ繝ｻ・ｮ
   h += `<div class="rm-compare-header"><div class="rm-compare-side">`;
   h += `<div class="rm-compare-upper-img" style="border-color:${aColor}">${aUp?`<img src="${aUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${aUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
   h += `<div class="rm-compare-name">${a.name}</div><div class="rm-compare-org" style="color:${aColor}">${aEmoji} ${aOrgName} \u2500 ${a.style}</div><div class="rm-compare-ovr-badge">OVR ${a.ovr}</div>`;
-  // A→Bへの感情（Aのアイコンの下、右矢印で方向を示す）
+  // A驕ｶ莨・ｼ・し・ｺ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｮ髫ｲ・｢雋願侭ﾎ礼ｹ晢ｽｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｮ髣包ｽｳ闕ｵ謨鳴遶乗刋萓｡鬩墓得・ｽ・｢髯ｷ螂・ｽｽ・ｰ驍ｵ・ｺ繝ｻ・ｧ髫ｴ繝ｻ・ｽ・ｹ髯ｷ・ｷ闔会ｽ｣繝ｻ蟶昶凾繝ｻ・ｺ驍ｵ・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻ
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
-    h += `<div class="rm-cmp-rel-direction" style="color:${bColor}">→ ${b.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-direction" style="color:${bColor}">驕ｶ鄙ｫ繝ｻ${b.name.slice(0,5)} 驍ｵ・ｺ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｮ髫ｲ・｢雋願侭ﾎ・/div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">鬮ｫ蛹・ｽｽ・ｪ髯昴・繝ｻ繝ｻ・ｺ繝ｻ・ｦ</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">鬩包ｽｶ繝ｻ・ｶ髣費｣ｰ騾包ｽｻ・大涵蝙鍋ｹ晢ｽｻ/div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
     const emotionAtoB = getEmotionText(bAtoB, rAtoB, a.ovr, b.ovr, a._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionAtoB}</div>`;
     h += `</div>`;
@@ -5349,12 +5188,12 @@ function _relmapShowComparePopup() {
   h += `</div><div class="rm-compare-divider">\u21C4</div><div class="rm-compare-side">`;
   h += `<div class="rm-compare-upper-img" style="border-color:${bColor}">${bUp?`<img src="${bUp}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-img" ${bUp?'style="display:none"':''}>\uD83D\uDC64</div></div>`;
   h += `<div class="rm-compare-name">${b.name}</div><div class="rm-compare-org" style="color:${bColor}">${bEmoji} ${bOrgName} \u2500 ${b.style}</div><div class="rm-compare-ovr-badge">OVR ${b.ovr}</div>`;
-  // B→Aへの感情（Bのアイコンの下、左矢印で方向を示す）
+  // B驕ｶ雍具ｽｽ繝ｻ・ｸ・ｺ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｮ髫ｲ・｢雋願侭ﾎ礼ｹ晢ｽｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｮ驛｢・ｧ繝ｻ・｢驛｢・ｧ繝ｻ・､驛｢・ｧ繝ｻ・ｳ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｮ髣包ｽｳ闕ｵ謨鳴遶乗劼・ｽ・ｷ繝ｻ・ｦ鬩墓得・ｽ・｢髯ｷ螂・ｽｽ・ｰ驍ｵ・ｺ繝ｻ・ｧ髫ｴ繝ｻ・ｽ・ｹ髯ｷ・ｷ闔会ｽ｣繝ｻ蟶昶凾繝ｻ・ｺ驍ｵ・ｺ陷ｻ・ｻ繝ｻ・ｼ郢晢ｽｻ
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
-    h += `<div class="rm-cmp-rel-direction" style="color:${aColor}">← ${a.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-direction" style="color:${aColor}">驕ｶ鄙ｫ繝ｻ${a.name.slice(0,5)} 驍ｵ・ｺ繝ｻ・ｸ驍ｵ・ｺ繝ｻ・ｮ髫ｲ・｢雋願侭ﾎ・/div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">鬮ｫ蛹・ｽｽ・ｪ髯昴・繝ｻ繝ｻ・ｺ繝ｻ・ｦ</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">鬩包ｽｶ繝ｻ・ｶ髣費｣ｰ騾包ｽｻ・大涵蝙鍋ｹ晢ｽｻ/div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
     const emotionBtoA = getEmotionText(bBtoA, rBtoA, b.ovr, a.ovr, b._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionBtoA}</div>`;
     h += `</div>`;
@@ -5362,23 +5201,23 @@ function _relmapShowComparePopup() {
   h += `</div></div>`;
 
   if (!rel) {
-    h += `<div style="text-align:center;padding:6px 0;color:var(--text-dim);font-size:12px">\uD83D\uDD17 直接の関係はありません</div>`;
+    h += `<div style="text-align:center;padding:6px 0;color:var(--text-dim);font-size:12px">\uD83D\uDD17 鬨ｾ・ｶ繝ｻ・ｴ髫ｰ證ｦ・ｽ・･驍ｵ・ｺ繝ｻ・ｮ鬯ｮ・｢繝ｻ・｢髣厄ｽｫ郢ｧ繝ｻ繝ｻ驍ｵ・ｺ郢ｧ繝ｻ・ｽ鬘費ｽｸ・ｺ繝ｻ・ｾ驍ｵ・ｺ陝ｶ蜻ｻ・ｽ繝ｻ/div>`;
   }
 
-  // 関係性タグ
+  // 鬯ｮ・｢繝ｻ・｢髣厄ｽｫ郢ｧ謖可繝ｻ・ｧ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・ｰ
   const relTags = [];
   const ageA = a._char?.age || 17, ageB = b._char?.age || 17;
   const ageDiff = Math.abs(ageA - ageB);
-  if (ageDiff <= 2) relTags.push('\uD83D\uDC65 同世代');
+  if (ageDiff <= 2) relTags.push('\uD83D\uDC65 髯ｷ・ｷ陟包ｽ｡繝ｻ・ｸ驍丞・・ｽ・ｻ繝ｻ・｣');
   const isColleague = Engine.orgTimeline.wereColleagues(a._char || {}, b._char || {});
-  if (isColleague) relTags.push('\uD83E\uDD1D 元同僚');
+  if (isColleague) relTags.push('\uD83E\uDD1D 髯ｷ蛹ｻ繝ｻ鬩溽｢第″郢晢ｽｻ);
   if (ageDiff >= 3 && (a.orgId === b.orgId || isColleague)) {
     const senior = ageA > ageB ? a.name : b.name;
     const junior = ageA > ageB ? b.name : a.name;
     relTags.push(`\uD83D\uDD30 ${senior}\u2192${junior}`);
   }
   const h2hRec = Engine.h2h.getRecord(G, a.id, b.id);
-  if (h2hRec && h2hRec.bestMQ >= 85) relTags.push('\u2728 名勝負あり');
+  if (h2hRec && h2hRec.bestMQ >= 85) relTags.push('\u2728 髯ｷ・ｷ隶手ｴ具ｽｺ・ｫ鬮ｮ蜈ｷ・｣・ｰ驍ｵ・ｺ郢ｧ繝ｻ・ｽ繝ｻ);
   if (relTags.length > 0) {
     h += `<div class="rm-cmp-tags">${relTags.join('<span class="rm-cmp-tag-sep">\uFF0F</span>')}</div>`;
   }
@@ -5399,7 +5238,7 @@ function _relmapShowComparePopup() {
   if (overlay) overlay.classList.add('show');
 }
 
-function _relmapClosePopup() {
+function _relmap閉じるPopup() {
   const overlay = document.getElementById('relmapPopupOverlay');
   if (overlay) overlay.classList.remove('show');
   _relmapCompareA = null; _relmapCompareB = null;
