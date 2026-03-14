@@ -1785,6 +1785,12 @@ const Storage = {
         G = { ...G, rivalries, relationshipHistory: G.relationshipHistory || [], _migrated_rivalry_tier_v1: true };
       }
 
+      if (!G._migrated_retired_rivalry_cleanup_v1) {
+        (G.retiredFighters || []).forEach(retiree => {
+          G = archiveRetiredRivalryState(G, retiree);
+        });
+        G = { ...G, _migrated_retired_rivalry_cleanup_v1: true };
+      }
       // v3.0: ケアストック制マイグレーション
       if (G.careStock === undefined) {
         G = { ...G,
@@ -1980,6 +1986,87 @@ function getCharCoach(charId) { return Engine.coach.getCharCoach(G, charId); }
 function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
 function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
 
+function archiveRetiredRivalryState(state, fighter) {
+  if (!state || !fighter || fighter.id == null) return state;
+
+  const relationships = { ...(state.relationships || {}) };
+  const rivalries = { ...(state.rivalries || {}) };
+  const history = [...(state.relationshipHistory || [])];
+  const fighterId = fighter.id;
+  const fighterMap = new Map();
+  const register = candidate => {
+    if (candidate && candidate.id != null) fighterMap.set(candidate.id, candidate);
+  };
+
+  (state.roster || []).forEach(register);
+  (state.retiredFighters || []).forEach(register);
+  (state.freeAgents || []).forEach(register);
+  Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(register));
+  register(fighter);
+
+  const pairKeys = new Set();
+  Object.keys(relationships).forEach(key => {
+    const sepIdx = key.indexOf('>');
+    const idA = Number(key.substring(0, sepIdx));
+    const idB = Number(key.substring(sepIdx + 1));
+    if (idA !== fighterId && idB !== fighterId) return;
+    if (Number.isFinite(idA) && Number.isFinite(idB) && idA !== idB) {
+      pairKeys.add(Engine.title.getRivalryKey(idA, idB));
+    }
+    delete relationships[key];
+  });
+
+  Object.keys(rivalries).forEach(pairKey => {
+    const ids = pairKey.split('-').map(Number);
+    const id1 = ids[0];
+    const id2 = ids[1];
+    if (id1 !== fighterId && id2 !== fighterId) return;
+    pairKeys.add(pairKey);
+  });
+
+  pairKeys.forEach(pairKey => {
+    const ids = pairKey.split('-').map(Number);
+    const id1 = ids[0];
+    const id2 = ids[1];
+    if (!Number.isFinite(id1) || !Number.isFinite(id2) || id1 === id2) return;
+
+    const rel12 = (state.relationships || {})[String(id1) + '>' + String(id2)] || null;
+    const rel21 = (state.relationships || {})[String(id2) + '>' + String(id1)] || null;
+    const rivalryEntry = (state.rivalries || {})[pairKey] || null;
+    if (!rel12 && !rel21 && !rivalryEntry) return;
+
+    const fighter1 = fighterMap.get(id1) || null;
+    const fighter2 = fighterMap.get(id2) || null;
+    const archiveEntry = {
+      id1,
+      id2,
+      reason: 'retirement',
+      retiredFighterId: fighterId,
+      season: state.season || 1,
+      week: state.week || 1,
+      age1: fighter1?.age ?? null,
+      age2: fighter2?.age ?? null,
+      bond12: rel12?.bond ?? 50,
+      bond21: rel21?.bond ?? 50,
+      rivalry12: rel12?.rivalry ?? 0,
+      rivalry21: rel21?.rivalry ?? 0,
+      rivalryMeta: rivalryEntry ? { ...rivalryEntry } : null,
+    };
+
+    const existingIdx = history.findIndex(entry =>
+      entry &&
+      entry.reason === 'retirement' &&
+      entry.retiredFighterId === fighterId &&
+      ((entry.id1 === id1 && entry.id2 === id2) || (entry.id1 === id2 && entry.id2 === id1))
+    );
+    if (existingIdx >= 0) history[existingIdx] = archiveEntry;
+    else history.push(archiveEntry);
+
+    delete rivalries[pairKey];
+  });
+
+  return { ...state, relationships, rivalries, relationshipHistory: history };
+}
 // ── App Commands (G mutation ONLY via G = newState) ──
 let _pendingOrgName = '';
 let _selectedDifficulty = 'normal';
@@ -2728,6 +2815,7 @@ const App = {
     const fighter = G.retiredFighters[retiredIdx];
     // 引き留め上限チェック
     if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
+    G = archiveRetiredRivalryState(G, fighter);
     const retainLine = Engine.retirement.selectRetainLine(fighter, G);
     const updatedFighter = {
       ...fighter,
@@ -3965,6 +4053,9 @@ const App = {
       const { _pendingInjuryRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
+    pendingInjuryRetirements.forEach(r => {
+      G = archiveRetiredRivalryState(G, r.fighter || null);
+    });
 
     // R3: ファン期待カード試合後リアクション
     const fanExpectResults = (G.lastShowResults || []).filter(r => r.fanExpectMatch);
@@ -4364,6 +4455,7 @@ const App = {
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]
         };
+        G = archiveRetiredRivalryState(G, retiredF);
         // §2.3: 引退者の関係値を凍結
         if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
         const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
@@ -4587,6 +4679,9 @@ const App = {
       const { pendingRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
+    (pendingRetirements || []).forEach(r => {
+      G = archiveRetiredRivalryState(G, r.fighter || null);
+    });
 
     // v1.4w: AI引退選手の新聞イベント収集（名選手: OVR70以上、年齢30以上）
     if (pendingRetirements) {

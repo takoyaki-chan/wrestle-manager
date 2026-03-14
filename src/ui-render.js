@@ -446,13 +446,13 @@ function renderWeekScreen() {
     }
 
     // Show recent events from game log related to current offseason
-    const recentEvents = G.gameLog.filter(e => e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長'));
+    const recentEvents = (G.gameLog || []).filter(e => typeof e === 'string' && (e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長')));
     const offEvents = recentEvents.slice(-15);
     if (offEvents.length > 0) {
       html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
       html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
       offEvents.forEach(ev => {
-        const isHighlight = ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍');
+        const isHighlight = typeof ev === 'string' && (ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍'));
         html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
       });
       html += '</div>';
