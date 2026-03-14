@@ -1691,24 +1691,24 @@ const Storage = {
       // roster-cap v2.0: popularity-based progression (8 -> 10 -> 12 -> 16)
       if (!G._migrated_roster_cap_pop_v2) {
         const orgPop = G.orgPop || 0;
-        const rank1 = (G.rankings || [])[0]?.orgId === 'player';
+        const rank1Unlocked = App.hasPermanentRosterCap16Unlock(G);
         let cap = 8;
         if (orgPop >= 25) cap = 10;
         if (orgPop >= 50) cap = 12;
-        if (rank1) cap = 16;
+        if (rank1Unlocked) cap = 16;
         G = {
           ...G,
           rosterCap: cap,
           rosterCapPop25Notified: orgPop >= 25,
           rosterCapPop50Notified: orgPop >= 50,
-          rosterCapRank1Notified: rank1,
+          rosterCapRank1Notified: rank1Unlocked,
           _migrated_roster_cap_pop_v2: true,
         };
       } else {
         if (G.rosterCap === undefined) G = { ...G, rosterCap: 8 };
         if (G.rosterCapPop25Notified === undefined) G = { ...G, rosterCapPop25Notified: (G.orgPop || 0) >= 25 };
         if (G.rosterCapPop50Notified === undefined) G = { ...G, rosterCapPop50Notified: (G.orgPop || 0) >= 50 };
-        if (G.rosterCapRank1Notified === undefined) G = { ...G, rosterCapRank1Notified: (G.rankings || [])[0]?.orgId === 'player' };
+        if (G.rosterCapRank1Notified === undefined) G = { ...G, rosterCapRank1Notified: App.hasPermanentRosterCap16Unlock(G) };
       }
 
       // scout-pricing v2: assessedValue再計算（TIERS baseMin/Max引き上げ対応）
@@ -5307,10 +5307,18 @@ const App = {
     }
   },
 
+  hasPermanentRosterCap16Unlock(state = G) {
+    if (!state) return false;
+    if (state.endingCleared) return true;
+    if ((state.rosterCap || 0) >= 16) return true;
+    if (state.rosterCapRank1Notified) return true;
+    if ((state.rankings || [])[0]?.orgId === 'player') return true;
+    return (state.seasonHistory || []).some(season => (season?.rank || 99) === 1);
+  },
+
   getRosterCapTarget(state = G) {
     const orgPop = state.orgPop || 0;
-    const rank1 = (state.rankings || [])[0]?.orgId === 'player';
-    if (rank1) return 16;
+    if (App.hasPermanentRosterCap16Unlock(state)) return 16;
     if (orgPop >= 50) return 12;
     if (orgPop >= 25) return 10;
     return 8;
@@ -5332,7 +5340,7 @@ const App = {
 
   checkRosterCapMilestones() {
     const orgPop = G.orgPop || 0;
-    const rank1 = (G.rankings || [])[0]?.orgId === 'player';
+    const rank1Unlocked = App.hasPermanentRosterCap16Unlock(G);
     const nextUpdates = {};
     const popups = [];
 
@@ -5344,7 +5352,7 @@ const App = {
       nextUpdates.rosterCapPop50Notified = true;
       popups.push({ cap: 12, message: '\u56E3\u4F53\u4EBA\u6C17\u304C50\u3092\u7A81\u7834\uFF01 \u4E3B\u529B\u3068\u82E5\u624B\u3092\u3088\u308A\u539A\u304F\u62B1\u3048\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002' });
     }
-    if (rank1 && !G.rosterCapRank1Notified) {
+    if (rank1Unlocked && !G.rosterCapRank1Notified) {
       nextUpdates.rosterCapRank1Notified = true;
       popups.push({ cap: 16, message: '\u30E9\u30F3\u30AD\u30F3\u30B01\u4F4D\u5230\u9054\uFF01 \u738B\u8005\u306E\u56E3\u4F53\u306B\u3075\u3055\u308F\u3057\u3044\u6700\u5927\u5951\u7D04\u67A0\u304C\u89E3\u653E\u3055\u308C\u307E\u3057\u305F\u3002' });
     }
