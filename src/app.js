@@ -1703,12 +1703,14 @@ const Storage = {
         let cap = 8;
         if (orgPop >= 25) cap = 10;
         if (orgPop >= 50) cap = 12;
+        if (orgPop >= 70) cap = 14;
         if (rank1Unlocked) cap = 16;
         G = {
           ...G,
           rosterCap: cap,
           rosterCapPop25Notified: orgPop >= 25,
           rosterCapPop50Notified: orgPop >= 50,
+          rosterCapPop70Notified: orgPop >= 70,
           rosterCapRank1Notified: rank1Unlocked,
           _migrated_roster_cap_pop_v2: true,
         };
@@ -1716,6 +1718,7 @@ const Storage = {
         if (G.rosterCap === undefined) G = { ...G, rosterCap: 8 };
         if (G.rosterCapPop25Notified === undefined) G = { ...G, rosterCapPop25Notified: (G.orgPop || 0) >= 25 };
         if (G.rosterCapPop50Notified === undefined) G = { ...G, rosterCapPop50Notified: (G.orgPop || 0) >= 50 };
+        if (G.rosterCapPop70Notified === undefined) G = { ...G, rosterCapPop70Notified: (G.orgPop || 0) >= 70 };
         if (G.rosterCapRank1Notified === undefined) G = { ...G, rosterCapRank1Notified: App.hasPermanentRosterCap16Unlock(G) };
       }
 
@@ -5329,6 +5332,7 @@ const App = {
   getRosterCapTarget(state = G) {
     const orgPop = state.orgPop || 0;
     if (App.hasPermanentRosterCap16Unlock(state)) return 16;
+    if (orgPop >= 70) return 14;
     if (orgPop >= 50) return 12;
     if (orgPop >= 25) return 10;
     return 8;
@@ -5361,6 +5365,10 @@ const App = {
     if (orgPop >= 50 && !G.rosterCapPop50Notified) {
       nextUpdates.rosterCapPop50Notified = true;
       popups.push({ cap: 12, message: '\u56E3\u4F53\u4EBA\u6C17\u304C50\u3092\u7A81\u7834\uFF01 \u4E3B\u529B\u3068\u82E5\u624B\u3092\u3088\u308A\u539A\u304F\u62B1\u3048\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002' });
+    }
+    if (orgPop >= 70 && !G.rosterCapPop70Notified) {
+      nextUpdates.rosterCapPop70Notified = true;
+      popups.push({ cap: 14, message: '団体人気が70を突破！ メジャー団体の規模にふさわしい契約枠が確保されました。' });
     }
     if (rank1Unlocked && !G.rosterCapRank1Notified) {
       nextUpdates.rosterCapRank1Notified = true;

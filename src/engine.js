@@ -7865,6 +7865,7 @@ const Engine = {
       warWon: false,  // backward compatibility only
       rosterCapPop25Notified: false,
       rosterCapPop50Notified: false,
+      rosterCapPop70Notified: false,
       rosterCapRank1Notified: false,
       rivalries: {},
       matchupLog: [],  // カード鮮度: 全対戦履歴
