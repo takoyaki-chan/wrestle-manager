@@ -5309,7 +5309,9 @@ const App = {
 
   hasPermanentRosterCap16Unlock(state = G) {
     if (!state) return false;
+    const ownCount = (state.roster || []).filter(f => !f?.isRental).length;
     if (state.endingCleared) return true;
+    if (ownCount > 12) return true;
     if ((state.rosterCap || 0) >= 16) return true;
     if (state.rosterCapRank1Notified) return true;
     if ((state.rankings || [])[0]?.orgId === 'player') return true;
