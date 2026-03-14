@@ -277,6 +277,8 @@ function runSimulation(seed, seasons) {
     ppvEvents: 0,        // weekPhase:'ppvEntry' に遷移した回数
     showCount: 0,        // 実行した興行の総数
     titleMatchCount: 0,  // タイトルマッチの総数
+    orgPopHistory: [],   // シーズン末orgPop記録
+    fundsHistory: [],    // シーズン末funds記録
   };
 
   let G;
@@ -372,6 +374,8 @@ function runSimulation(seed, seasons) {
       if (!G.offSeason && G.week === 1 && G.season > 1) {
         completed++;
         stats.seasons++;
+        stats.orgPopHistory.push(Math.round((G.orgPop || 0) * 10) / 10);
+        stats.fundsHistory.push(Math.round(G.funds || 0));
         if (completed % 50 === 0) {
           process.stdout.write(`  ... ${completed}/${seasons} seasons completed\r`);
         }
@@ -476,6 +480,27 @@ if (s.seasons >= 10) {
 if (freqWarnings.length > 0) {
   console.log('');
   freqWarnings.forEach(w => console.log(`[FREQ WARN] ${w} — ロジック到達不全やバグの可能性`));
+}
+
+// orgPop推移サマリー
+if (s.orgPopHistory && s.orgPopHistory.length >= 5) {
+  console.log('');
+  console.log(`OrgPop推移 (${s.orgPopHistory.length} seasons):`);
+  const step = Math.max(1, Math.floor(s.orgPopHistory.length / 30));
+  for (let i = 0; i < s.orgPopHistory.length; i += step) {
+    const pop = s.orgPopHistory[i];
+    const funds = s.fundsHistory[i];
+    const bar = '#'.repeat(Math.round(pop / 2));
+    console.log(`  S${String(i+1).padStart(3)}: pop=${String(pop).toFixed ? pop.toFixed(1).padStart(5) : String(pop).padStart(5)}  funds=${String(funds).padStart(8)}万  ${bar}`);
+  }
+  // 最終シーズンも必ず表示
+  const last = s.orgPopHistory.length - 1;
+  if (last % step !== 0) {
+    const pop = s.orgPopHistory[last];
+    const funds = s.fundsHistory[last];
+    const bar = '#'.repeat(Math.round(pop / 2));
+    console.log(`  S${String(last+1).padStart(3)}: pop=${pop.toFixed(1).padStart(5)}  funds=${String(funds).padStart(8)}万  ${bar}`);
+  }
 }
 
 console.log('--------------------------------------');

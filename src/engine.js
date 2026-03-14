@@ -635,10 +635,22 @@ const Engine = {
       const scaleBonus = VENUE_SCALE_MQ[venueIdx] || 0;
       return { total: crowdBonus + scaleBonus, crowdBonus, scaleBonus, crowdLabel: crowdEntry.label };
     },
+    // v3.1: チケット単価逓減 — 集客が増えるほど1人あたり単価が下がる
+    calcTieredTicketRevenue(attendance) {
+      let rev = 0, remaining = attendance;
+      for (let i = TICKET_PRICE_TIERS.length - 1; i >= 0; i--) {
+        const tier = TICKET_PRICE_TIERS[i];
+        if (remaining > tier.threshold) {
+          rev += (remaining - tier.threshold) * tier.price;
+          remaining = tier.threshold;
+        }
+      }
+      return Math.round(rev);
+    },
     calcShowRevenue(roster, venueIdx, attendance) {
       const v = VENUES[venueIdx];
-      // v1.0b: Unified ticket price + occupancy bonus
-      const rawTicketRev = Math.round(attendance * TICKET_PRICE);
+      // v3.1: チケット単価逓減適用（旧: attendance * TICKET_PRICE フラット）
+      const rawTicketRev = Engine.economy.calcTieredTicketRevenue(attendance);
       const occupancyRate = attendance / v.cap;
       const occBonus = OCCUPANCY_BONUS.find(b => occupancyRate >= b.min) || OCCUPANCY_BONUS[OCCUPANCY_BONUS.length - 1];
       const ticketRev = Math.round(rawTicketRev * occBonus.ticketMult);
@@ -5055,7 +5067,7 @@ const Engine = {
       events.push(...mqPop.popEvents);
     });
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, s.showVenue);
     roster = popResult.roster;
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
@@ -5396,7 +5408,7 @@ const Engine = {
     });
     return { roster: newRoster, popEvents };
   },
-  applyShowPopularity(roster, results, orgPop, rng) {
+  applyShowPopularity(roster, results, orgPop, rng, venueIdx) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
     // Rental: レンタル選手が参加する試合は団体人気への貢献が50%（重み付き平均）
     let totalWeight = 0, weightedMQ = 0;
@@ -5408,9 +5420,9 @@ const Engine = {
       totalWeight += w;
     });
     const avgMQ = Math.round(totalWeight > 0 ? weightedMQ / totalWeight : 0);
-    // v1.5s26: orgPop帯別MQ閾値シフト（旧フラット+0.2ボーナスを廃止して置き換え）
-    // 低orgPopほど閾値が下がり、同じMQでも上がりやすく・下落ペナルティも軽くなる
-    const mqAdj = Engine.orgPop.getMQAdjust(orgPop);
+    // v3.1: 会場レベル+orgPop帯別MQ閾値シフト
+    // 大きい会場ほど高MQが必要、低orgPopは序盤保護
+    const mqAdj = Engine.orgPop.getMQAdjust(orgPop, venueIdx);
     let rawDelta = avgMQ >= (80 + mqAdj.shift) ? 1.8
                  : avgMQ >= (65 + mqAdj.shift) ? 1.2
                  : avgMQ >= (55 + mqAdj.shift) ? 0.7
@@ -7969,22 +7981,24 @@ Engine.orgPop = {
     return rawDelta;
   },
 
-  // 施策B-1: 年次減衰（orgPop帯に応じて増える）
+  // v3.1: 年次減衰強化（高帯の維持コスト増加）
   calcAnnualDecay(orgPop) {
     if (orgPop < 15) return 0;    // 創設期: 減衰なし（序盤保護）
-    if (orgPop < 30) return 1;    // 弱小: 微減のみ
-    if (orgPop < 50) return 3;    // 中堅
-    if (orgPop < 70) return 5;    // メジャー: 維持が難しくなる
-    if (orgPop < 85) return 7;    // トップ: かなり落ちる
-    return 10;                     // 覇権: 激しく落ちる
+    if (orgPop < 50) return 1;    // 弱小〜中堅: 微減のみ
+    if (orgPop < 65) return 2;    // 中堅上位: 緩やかな減衰
+    if (orgPop < 80) return 4;    // メジャー: 維持に努力が必要
+    if (orgPop < 90) return 7;    // トップ: かなり落ちる
+    return 15;                     // 頂点: 非常に激しく落ちる
   },
 
-  // v1.5s26: orgPop帯別MQ閾値シフト — 低orgPopほどMQ閾値が下がり上がりやすく・下がりにくく
-  getMQAdjust(orgPop) {
-    if (orgPop < 20) return { shift: -10, negMult: 0.4 };   // 創設期: MQ閾値-10、ペナルティ×0.4
-    if (orgPop < 30) return { shift: -7,  negMult: 0.5 };   // 地方団体（強化）: MQ閾値-7、ペナルティ×0.5
-    if (orgPop < 45) return { shift: -3,  negMult: 0.85 };  // 中堅への橋渡し（新設）
-    return { shift: 0, negMult: 1.0 };                       // 中堅以上: 現行通り
+  // v3.1: 会場レベル別MQ閾値シフト
+  // 小会場は緩く（MQ50以下でも成長可能）、大会場ほど厳しく、ドームでガッと上がる
+  getMQAdjust(orgPop, venueIdx) {
+    const venueShift = (venueIdx != null && typeof VENUE_MQ_THRESHOLD[venueIdx] === 'number')
+      ? VENUE_MQ_THRESHOLD[venueIdx] : 0;
+    // 下落ペナルティ倍率: 大会場ほど低MQのダメージが大きい
+    const negMult = venueShift >= 10 ? 1.2 : (venueShift >= 6 ? 1.1 : (venueShift <= -7 ? 0.5 : 1.0));
+    return { shift: venueShift, negMult };
   }
 };
 

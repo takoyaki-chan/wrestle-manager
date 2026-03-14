@@ -740,14 +740,25 @@ const VENUES = [
   {name:'ドーム',    cap:30000, cost:12000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
+// v3.1: 高orgPop帯を圧縮（旧: 70→4000, 80→7000, 90→14000, 100→20000）
 const BASE_ATTENDANCE_CURVE = [
   [0,20],[5,60],[10,130],[15,200],[20,300],[25,420],[30,550],
-  [35,720],[40,900],[45,1150],[50,1500],[55,1900],[60,2500],
-  [65,3200],[70,4000],[75,5200],[80,7000],[85,9500],[90,14000],
-  [95,16000],[100,20000]
+  [35,720],[40,900],[45,1150],[50,1500],[55,1900],[60,2400],
+  [65,2900],[70,3400],[75,4000],[80,4800],[85,5800],[90,7000],
+  [95,8500],[100,10000]
 ];
-const TICKET_PRICE = 0.5; // 万円/人（v1.7: シミュレーション後に要調整）
+// v3.1: チケット単価逓減 — 集客が増えるほど1人あたり単価が下がる（薄利多売）
+const TICKET_PRICE_TIERS = [
+  { threshold: 0,     price: 0.50 },  // ~2000人: フル単価（中小会場は影響なし）
+  { threshold: 2000,  price: 0.40 },  // 2000-5000: やや割安
+  { threshold: 5000,  price: 0.30 },  // 5000-10000: 割安
+  { threshold: 10000, price: 0.20 },  // 10000+: 薄利多売
+];
 const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
+// v3.1: 会場レベル別MQ閾値シフト — 小会場は緩く、大会場ほど厳しい、ドームでガッと上がる
+// 負=MQ閾値が下がり上がりやすい、正=閾値が上がり高MQ必要
+//                 公民 小A  小B  市民 中A  中B  大   arena 大会場 ドーム
+const VENUE_MQ_THRESHOLD = [-20, -15, -12, -8, -5, -3, -1, 6, 8, 15];
 const OCCUPANCY_BONUS = [
   {min:0.95, ticketMult:1.2, label:'🔥 超満員！',    heatDelta:+1},
   {min:0.80, ticketMult:1.1, label:'✨ 大入り！',    heatDelta:+1},
@@ -7156,7 +7167,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ALL_CHARS, CHAR_PROFILES, TRAIT_DEFS, Traits, ROSTER_CFG, CHAR_GROUP,
     PORTRAIT, COACH_PORTRAIT, MAX_T, PHASES, ENG, SALARY_PARAMS, FAN_EXPECT_REACTIONS,
-    VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE, GOODS_PRICE, OCCUPANCY_BONUS,
+    VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE_TIERS, VENUE_MQ_THRESHOLD, GOODS_PRICE, OCCUPANCY_BONUS,
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
     SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_MQ_PER_STACK, PROMO_EVENT_INCOME, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
