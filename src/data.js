@@ -2038,37 +2038,50 @@ const AI_TIER_LIMITS = {
 const AI_COACH_CONFIG = {
   S: {
     ace: {
-      count: 3,                    // OVR上位3名がエース
+      count: 4,
       top1: {
-        coachMul: 1.25,            // 🔧 Aランク相当
-        intensiveRate: 0.30,       // 🔧 強化練習確率 30%
-        practiceRate: 0.85,        // 🔧 練習週になる確率 85%（残りはrest）
+        coachMul: 1.25,
+        intensiveRate: 0.30,
+        practiceRate: 0.85,
       },
-      top2_3: {
-        coachMul: 1.18,            // 🔧 Bランク相当
-        intensiveRate: 0.20,       // 🔧 20%
-        practiceRate: 0.85,        // 🔧 85%
+      top2_4: {
+        coachMul: 1.20,
+        intensiveRate: 0.25,
+        practiceRate: 0.85,
+      },
+    },
+    prospect: {
+      count: 2,
+      config: {
+        coachMul: 1.18,
+        intensiveRate: 0.20,
+        practiceRate: 0.85,
       },
     },
     general: {
-      coachMul: 1.18,              // 🔧 Bランク相当（S級の資金力で一般枠にも良いコーチ）
-      intensiveRate: 0.12,         // 🔧 12%（組織的な強化練習体制）
-      practiceRate: 0.80,          // 🔧 80%（高いプロ意識による練習文化）
+      coachMul: 1.15,
+      intensiveRate: 0.10,
+      practiceRate: 0.75,
     },
   },
   A: {
     ace: {
-      count: 1,                    // OVR上位1名がエース
+      count: 2,
       top1: {
-        coachMul: 1.18,            // 🔧 Bランク相当
-        intensiveRate: 0.20,       // 🔧 20%
-        practiceRate: 0.75,        // 🔧 75%
+        coachMul: 1.20,
+        intensiveRate: 0.20,
+        practiceRate: 0.80,
+      },
+      top2_3: {
+        coachMul: 1.15,
+        intensiveRate: 0.15,
+        practiceRate: 0.75,
       },
     },
     general: {
-      coachMul: 1.12,              // 🔧 Cランク相当
-      intensiveRate: 0.0,          // 強化練習なし
-      practiceRate: 0.60,          // 🔧 60%
+      coachMul: 1.10,
+      intensiveRate: 0.0,
+      practiceRate: 0.55,
     },
   },
   B: {

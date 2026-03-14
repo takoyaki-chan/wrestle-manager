@@ -2640,16 +2640,38 @@ const Engine = {
         orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
       };
     },
-    getPotTop3Ids() {
-      return new Set(
-        ALL_CHARS.map(c => ({
-          id: c.id,
-          potTotal: (c.pot?.pw || 0) + (c.pot?.sp || 0) + (c.pot?.te || 0) + (c.pot?.st || 0) + (c.pot?.mn || 0),
-        }))
-          .sort((a, b) => b.potTotal - a.potTotal)
-          .slice(0, 3)
-          .map(c => c.id)
-      );
+    /** trainCap 5??????? */
+    trainCapOVR(fighter) {
+      if (!fighter || !fighter.trainCap) return 0;
+      const tc = fighter.trainCap;
+      return Math.round(((tc.pw || 0) + (tc.sp || 0) + (tc.te || 0) + (tc.st || 0) + (tc.mn || 0)) / 5);
+    },
+    getSEliteIds(sRoster) {
+      if (sRoster && sRoster.length > 0) {
+        const byPot = [...sRoster]
+          .map(f => ({
+            id: f.id,
+            potTotal: f.pot ? ((f.pot.pw || 0) + (f.pot.sp || 0) + (f.pot.te || 0) + (f.pot.st || 0) + (f.pot.mn || 0)) : 0,
+          }))
+          .sort((a, b) => b.potTotal - a.potTotal);
+        const top4Ids = new Set(byPot.slice(0, 4).map(f => f.id));
+        const rest = sRoster.filter(f => !top4Ids.has(f.id));
+        const byTcOVR = rest
+          .map(f => ({ id: f.id, tcOVR: Engine.rival.trainCapOVR(f) }))
+          .sort((a, b) => b.tcOVR - a.tcOVR);
+        const prospect2Ids = new Set(byTcOVR.slice(0, 2).map(f => f.id));
+        return {
+          top4Ids,
+          prospect2Ids,
+          allIds: new Set([...top4Ids, ...prospect2Ids]),
+        };
+      }
+      const byPot = ALL_CHARS.map(c => ({
+        id: c.id,
+        potTotal: (c.pot?.pw || 0) + (c.pot?.sp || 0) + (c.pot?.te || 0) + (c.pot?.st || 0) + (c.pot?.mn || 0),
+      })).sort((a, b) => b.potTotal - a.potTotal);
+      const top4Ids = new Set(byPot.slice(0, 4).map(c => c.id));
+      return { top4Ids, prospect2Ids: new Set(), allIds: top4Ids };
     },
     createAITitles(world = {}) {
       return {
@@ -2739,7 +2761,7 @@ const Engine = {
       const elitesSorted = shuffled
         .filter(c => c.tierClass === 'elite')
         .sort((a, b) => b.potTotal - a.potTotal);
-      const guaranteedElites = elitesSorted.slice(0, 3);
+      const guaranteedElites = elitesSorted.slice(0, 4);
       const guaranteedIds = new Set(guaranteedElites.map(c => c.id));
 
       const sMembers = [...superElites, ...guaranteedElites];
@@ -2760,15 +2782,16 @@ const Engine = {
       // AI統一成長 §4.3: A級にelite以上1名を保証
       const aMembers = [];
       const eliteInPool = pool.filter(c => c.tierClass === 'elite');
-      if (eliteInPool.length > 0) {
-        // eliteプールから1名をA級に確定配置
-        const eliteIdx = pool.indexOf(eliteInPool[0]);
-        const guaranteed = pool.splice(eliteIdx, 1)[0];
-        aMembers.push(guaranteed);
-      }
+      const guaranteedAElites = eliteInPool.slice(0, 2);
+      guaranteedAElites.forEach(elite => {
+        const eliteIdx = pool.findIndex(c => c.id === elite.id);
+        if (eliteIdx >= 0) {
+          aMembers.push(pool.splice(eliteIdx, 1)[0]);
+        }
+      });
       const aRemaining = cfg.org_a - aMembers.length;
       const aPicked = weightedPick(pool, aMembers, aRemaining, (AI_TIER_LIMITS.A || {}).maxProdigies || 3, 1.0, 640);
-      const aAll = aMembers.map(c => c.id);
+      const aAll = [...aMembers.map(c => c.id), ...aPicked.map(c => c.id)];
 
       // Step 7: Fill B級 (max 1 elite — AI_TIER_LIMITS)
       const bMembers = [];
@@ -2791,7 +2814,7 @@ const Engine = {
     },
 
     initAIOrgs(rng) {
-      const potTop3Ids = Engine.rival.getPotTop3Ids();
+      const sElite = Engine.rival.getSEliteIds();
       const nameMap = {};
       RIVAL_ORGS.forEach(org => {
         const pool = RIVAL_ORG_NAME_POOL[org.tier];
@@ -2801,16 +2824,30 @@ const Engine = {
           nameMap[org.id] = org.name;
         }
       });
-
       const orgs = {};
       RIVAL_ORGS.forEach(org => {
         const ids = ORG_ASSIGN[org.id] || [];
         const roster = ids.map(id => {
           const t = ALL_CHARS.find(c => c.id === id);
           if (!t) return null;
-          const factorOverride = (org.tier === 'S' && potTop3Ids.has(id)) ? [0.75, 0.80] : null;
+          let factorOverride = null;
+          if (org.tier === 'S' && sElite.top4Ids.has(id)) factorOverride = [0.75, 0.80];
           return Engine.rival.makeAIFighter(t, rng, org.id, 17 + Engine.rng.int(rng, 0, 11), factorOverride);
         }).filter(Boolean);
+        if (org.tier === 'S') {
+          const sEliteResult = Engine.rival.getSEliteIds(roster);
+          for (let i = 0; i < roster.length; i++) {
+            const fighter = roster[i];
+            if (!sEliteResult.prospect2Ids.has(fighter.id)) continue;
+            const template = ALL_CHARS.find(c => c.id === fighter.id);
+            if (!template) continue;
+            const prospectRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, fighter.id, 0xE11E));
+            roster[i] = {
+              ...fighter,
+              trainCap: Engine.rival.generateTrainCap(prospectRng, null, template.pot, [0.70, 0.80]),
+            };
+          }
+        }
         roster.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
         roster.forEach((f, i) => {
           const tierBonus = { S: 14, A: 4, B: 1 }[org.tier] || 0;
@@ -3085,24 +3122,35 @@ const Engine = {
         .filter(f => !f.injury)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
       const rank = roster.findIndex(f => f.id === fighter.id);
-      if (rank < 0) return config.general; // 怪我中→general扱い
+      if (rank < 0) return config.general;
 
       if (org.tier === 'S') {
+        const sElite = Engine.rival.getSEliteIds(org.roster);
         const byTrainCap = [...(org.roster || [])]
           .map(f => ({
             id: f.id,
-            capOvr: f.trainCap
-              ? Math.round(((f.trainCap.pw || 0) + (f.trainCap.sp || 0) + (f.trainCap.te || 0) + (f.trainCap.st || 0) + (f.trainCap.mn || 0)) / 5)
-              : 0,
+            capOvr: Engine.rival.trainCapOVR(f),
           }))
           .sort((a, b) => b.capOvr - a.capOvr);
         const trainCapTop3Ids = new Set(byTrainCap.slice(0, 3).map(f => f.id));
-        if (trainCapTop3Ids.has(fighter.id)) {
-          const baseConfig = rank === 0 ? (config.ace.top1 || config.general)
-            : (rank < config.ace.count && config.ace.top2_3) ? config.ace.top2_3
-            : (rank < config.ace.count ? (config.ace.top1 || config.general) : config.general);
-          return { ...baseConfig, practiceRate: 0.95 };
+
+        if (sElite.prospect2Ids.has(fighter.id)) {
+          const baseConfig = (config.prospect && config.prospect.config) || config.general;
+          return trainCapTop3Ids.has(fighter.id)
+            ? { ...baseConfig, practiceRate: 0.95 }
+            : baseConfig;
         }
+
+        if (rank === 0 && config.ace.top1) {
+          const base = config.ace.top1;
+          return trainCapTop3Ids.has(fighter.id) ? { ...base, practiceRate: 0.95 } : base;
+        }
+        if (rank < config.ace.count && config.ace.top2_4) {
+          const base = config.ace.top2_4;
+          return trainCapTop3Ids.has(fighter.id) ? { ...base, practiceRate: 0.95 } : base;
+        }
+
+        return config.general;
       }
 
       if (rank === 0 && config.ace.top1) {
@@ -3112,12 +3160,12 @@ const Engine = {
         return config.ace.top2_3;
       }
       if (rank < config.ace.count) {
-        return config.ace.top1; // A級・B級はtop1設定をエース全員に適用
+        return config.ace.top1;
       }
       return config.general;
     },
 
-    /** AI対戦カード生成: OVR近接ペアリング + matchupLog鮮度考慮 */
+    /** AI試合カード生成: OVR近接ペアリング + matchupLog鮮度考慮 */
     generateAIMatchCard(roster, matchupLog, showCount) {
       const available = roster
         .filter(f => !f.injury && (f.condition || 70) > 20)
@@ -3705,7 +3753,6 @@ const Engine = {
       // Keep original entries for return value (preserves age info), use normalized IDs for logic
       let dormantEntries = [...(state.dormantPool || [])];
       let poolIds = dormantEntries.map(e => typeof e === 'object' ? e.id : e);
-
       RIVAL_ORGS.forEach(org => {
         const aiData = state.aiOrgs[org.id];
         if (!aiData) { newAiOrgs[org.id] = aiData; return; }
@@ -3713,45 +3760,32 @@ const Engine = {
         const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
         let roster = aiData.roster.map(f => ({ ...f }));
         const need = Math.max(0, cfg.idealRoster - roster.length);
-        const maxPicks = Math.min(need, cfg.maxPicks); // roster-cap v1.0: 上限超過を防ぐため need のみ
+        const maxPicks = Math.min(need, cfg.maxPicks);
         let budget = cfg.budget;
         let picked = 0;
-
-        // Generate scout candidates from pool
         const available = poolIds.filter(id => {
-          // Not already in any org
           const inAny = Object.values(state.aiOrgs).some(a => a.roster.some(f => f.id === id));
           const inPlayer = state.roster.some(f => f.id === id);
           const inFree = (state.freeAgents || []).some(f => f.id === id);
           return !inAny && !inPlayer && !inFree;
         });
-
-        // Pick from available pool
         const shuffled = [...available].sort(() => Engine.rng.float(rng) - 0.5);
         for (const candId of shuffled) {
           if (picked >= maxPicks || budget <= 0) break;
           const template = ALL_CHARS.find(c => c.id === candId);
           if (!template) continue;
-
-          // Estimate rank: prodigy/promising/rough based on avg potential
           const avgPot = Math.round(((template.pot?.pw||0)+(template.pot?.sp||0)+(template.pot?.te||0)+(template.pot?.st||0)+(template.pot?.mn||0))/5);
           let rank;
           if (avgPot >= 160) rank = 'prodigy';
           else if (avgPot >= 130) rank = 'promising';
           else rank = 'rough';
-
-          // F1: Tier-based roster quality cap check
           const counts = Engine.rival.countRosterRanks(roster);
           if (rank === 'prodigy' && counts.prodigies >= tierLim.maxProdigies) continue;
           if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
-
           const acquireRate = cfg.rates[rank] || 0.5;
           if (Engine.rng.float(rng) >= acquireRate) continue;
-
-          // Contract cost (simplified)
           const cost = rank === 'prodigy' ? 200 : rank === 'promising' ? 100 : 50;
           if (budget < cost) continue;
-
           const age = 17 + Engine.rng.int(rng, 0, 2);
           const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
           Engine.rival.pushUniqueFighter(roster, newFighter);
@@ -3761,10 +3795,77 @@ const Engine = {
           picked++;
           events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
         }
-
         newAiOrgs[org.id] = { ...aiData, roster };
       });
+      return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
+    },
+    aiSeasonReinforce(rng, state) {
+      const events = [];
+      const TC_THRESHOLD = 110;
+      const TARGET_COUNT = 6;
+      const newAiOrgs = {};
+      Object.keys(state.aiOrgs || {}).forEach(orgId => {
+        newAiOrgs[orgId] = {
+          ...state.aiOrgs[orgId],
+          roster: [...(state.aiOrgs[orgId]?.roster || [])],
+        };
+      });
+      let dormantEntries = [...(state.dormantPool || [])];
+      let poolIds = dormantEntries.map(e => typeof e === 'object' ? e.id : e);
+      const sOrgId = 'org_s';
+      const sOrg = RIVAL_ORGS.find(o => o.id === sOrgId);
+      if (!sOrg || !newAiOrgs[sOrgId]) return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
 
+      let roster = newAiOrgs[sOrgId].roster;
+      const countElite = () => roster.filter(f => Engine.rival.trainCapOVR(f) >= TC_THRESHOLD).length;
+      let iterations = 0;
+      const maxIterations = 5;
+      while (countElite() < TARGET_COUNT && iterations < maxIterations) {
+        iterations++;
+
+        const occupied = new Set();
+        Object.values(newAiOrgs).forEach(a => (a.roster || []).forEach(f => occupied.add(f.id)));
+        (state.roster || []).forEach(f => occupied.add(f.id));
+        (state.freeAgents || []).forEach(f => occupied.add(f.id));
+
+        const available = poolIds.filter(id => !occupied.has(id));
+        if (available.length === 0) break;
+
+        const sorted = available.map(id => {
+          const template = ALL_CHARS.find(c => c.id === id);
+          if (!template) return null;
+          const potTotal = (template.pot.pw || 0) + (template.pot.sp || 0) + (template.pot.te || 0) + (template.pot.st || 0) + (template.pot.mn || 0);
+          return { id, potTotal, template };
+        }).filter(Boolean).sort((a, b) => b.potTotal - a.potTotal);
+
+        const candidate = sorted[0];
+        if (!candidate) break;
+
+        const testRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE11F));
+        const testFighter = Engine.rival.makeAIFighter(candidate.template, testRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
+        if (Engine.rival.trainCapOVR(testFighter) < TC_THRESHOLD) break;
+
+        const weakest = [...roster]
+          .map(f => ({ id: f.id, tcOVR: Engine.rival.trainCapOVR(f) }))
+          .sort((a, b) => a.tcOVR - b.tcOVR)[0];
+        if (!weakest) break;
+
+        const weakFighter = roster.find(f => f.id === weakest.id);
+        roster = roster.filter(f => f.id !== weakest.id);
+        if (weakFighter) {
+          events.push(`${sOrg.emoji} ${sOrg.name}: ${weakFighter.name}(tcOVR ${weakest.tcOVR})を放出`);
+        }
+
+        const recruitRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE120, iterations));
+        const newFighter = Engine.rival.makeAIFighter(candidate.template, recruitRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
+        Engine.rival.pushUniqueFighter(roster, newFighter);
+        poolIds = poolIds.filter(id => id !== candidate.id);
+        dormantEntries = dormantEntries.filter(e => (typeof e === 'object' ? e.id : e) !== candidate.id);
+
+        events.push(`${sOrg.emoji} ${sOrg.name}: ${candidate.template.name}(tcOVR ${Engine.rival.trainCapOVR(newFighter)})を戦略補強`);
+      }
+
+      newAiOrgs[sOrgId] = { ...newAiOrgs[sOrgId], roster };
       return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
     },
 
@@ -7226,6 +7327,10 @@ const Engine = {
         const scoutResult = Engine.rival.aiScout(rng, s);
         s = { ...s, aiOrgs: scoutResult.aiOrgs, dormantPool: scoutResult.dormantPool };
         if (scoutResult.events.length > 0) events.push(...scoutResult.events);
+        const reinforceRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xE11E));
+        const reinforceResult = Engine.rival.aiSeasonReinforce(reinforceRng, s);
+        s = { ...s, aiOrgs: reinforceResult.aiOrgs, dormantPool: reinforceResult.dormantPool };
+        if (reinforceResult.events.length > 0) events.push(...reinforceResult.events);
 
         // Player scout event: generate candidates
         const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
