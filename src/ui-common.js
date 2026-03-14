@@ -4821,6 +4821,17 @@ function closeNotifModal() {
 // ─────────────────────────────────────────────────────────────────────────────
 const _glimpseQueue = [];
 
+// Tier 1（リッチモーダル）か判定: gold/danger tone A層 + rivalry_50_up dramatic → Tier 1
+function _isGlimpseTier1(glimpse) {
+  if (glimpse.layer === 'A') {
+    if (glimpse.tone === 'gold' || glimpse.tone === 'danger') return true;
+    if (glimpse.type === 'rivalry_50_up') return true;
+    return false;
+  }
+  // B層: すべて Tier 2
+  return false;
+}
+
 function showGlimpseAModal(glimpse) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'A' });
   if (_glimpseQueue.length === 1) _renderNextGlimpse();
@@ -4857,8 +4868,9 @@ function _renderGlimpseA(glimpse) {
       }</span>
       ${portraitImg(glimpse.targetId, 100, 'notif-modal-face dual')}
     </div>
-    <div style="display:flex;justify-content:center;gap:40px;margin-bottom:8px">
+    <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:8px">
       <span style="font-size:13px;color:var(--text-sub)">${glimpse.speakerName}</span>
+      <span style="font-size:13px;color:var(--text-dim)">→</span>
       <span style="font-size:13px;color:var(--text-sub)">${glimpse.targetName}</span>
     </div>`;
   } else {
@@ -4912,6 +4924,103 @@ function _renderGlimpseB(glimpse) {
 
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tier 2: バナーログフィードUI
+// ─────────────────────────────────────────────────────────────────────────────
+let _logFeedRotationTimer = null;
+let _logFeedCurrentIndex = 0;
+
+function refreshDojoLogFeed() {
+  const feed = (typeof G !== 'undefined' && G.weekLogFeed) || [];
+  const icon = document.querySelector('.dojo-log-feed-icon');
+  if (!icon) return;
+
+  // バッジ更新
+  const badge = icon.querySelector('.dojo-log-feed-badge');
+  if (badge) {
+    if (feed.length > 0) {
+      badge.textContent = feed.length;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // 吹き出しローテーション
+  if (_logFeedRotationTimer) { clearInterval(_logFeedRotationTimer); _logFeedRotationTimer = null; }
+  const bubble = document.querySelector('.dojo-log-feed-bubble');
+  if (feed.length > 0) {
+    _logFeedCurrentIndex = 0;
+    _showLogFeedBubble(feed[0]);
+    if (feed.length > 1) {
+      _logFeedRotationTimer = setInterval(() => {
+        _logFeedCurrentIndex = (_logFeedCurrentIndex + 1) % feed.length;
+        _showLogFeedBubble(feed[_logFeedCurrentIndex]);
+      }, 5000);
+    }
+  } else if (bubble) {
+    bubble.style.display = 'none';
+  }
+
+  // パネルが開いていれば更新
+  const panel = document.getElementById('logFeedPanel');
+  if (panel && panel.style.display !== 'none') _renderLogFeedPanel();
+}
+
+function _showLogFeedBubble(log) {
+  const bubble = document.querySelector('.dojo-log-feed-bubble');
+  if (!bubble) return;
+  let text = `「${log.dialogue}」`;
+  if (log.targetName) text += ` → ${log.targetName}`;
+  bubble.innerHTML = `${portraitImg(log.speakerId, 24, 'dojo-log-feed-face')}<span class="dojo-log-feed-text">${text}</span>`;
+  bubble.style.display = 'flex';
+  bubble.style.animation = 'none';
+  void bubble.offsetWidth;
+  bubble.style.animation = '';
+}
+
+function toggleLogFeedPanel() {
+  const panel = document.getElementById('logFeedPanel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || !panel.style.display) {
+    _renderLogFeedPanel();
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function _renderLogFeedPanel() {
+  const panel = document.getElementById('logFeedPanel');
+  if (!panel) return;
+  const feed = (typeof G !== 'undefined' && G.weekLogFeed) || [];
+  const header = panel.querySelector('.log-feed-panel-header');
+  const list = panel.querySelector('.log-feed-panel-list');
+  if (header) header.textContent = `📋 今週の声（${feed.length}件）`;
+  if (!list) return;
+
+  if (feed.length === 0) {
+    list.innerHTML = '<div style="padding:12px;color:var(--text-dim);font-size:12px">今週は特に報告なし</div>';
+    return;
+  }
+
+  const toneEmoji = { positive: '💙', negative: '💔', warning: '⚠️', calm: '😌', dramatic: '⚡' };
+  list.innerHTML = feed.map(log => {
+    const emoji = toneEmoji[log.tone] || '💭';
+    const namesHtml = log.targetName
+      ? `${log.speakerName} <span class="log-feed-item-arrow">→</span> ${log.targetName}`
+      : log.speakerName;
+    return `<div class="log-feed-item">
+      <div class="log-feed-item-header">
+        ${portraitImg(log.speakerId, 24, 'log-feed-item-face')}
+        <span class="log-feed-item-names">${namesHtml}</span>
+      </div>
+      <div class="log-feed-item-label">${emoji} ${log.label}</div>
+      <div class="log-feed-item-dialogue">「${log.dialogue}」</div>
+    </div>`;
+  }).join('');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

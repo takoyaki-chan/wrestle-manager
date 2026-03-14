@@ -4284,10 +4284,16 @@ const App = {
       const gB = G._pendingGlimpseB || null;
       if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
       if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
-      setTimeout(() => {
-        if (gA) gA.forEach(g => showGlimpseAModal(g));
-        if (gB) gB.forEach(g => showGlimpseBModal(g));
-      }, 900);
+      const allGlimpses = [...(gA || []), ...(gB || [])];
+      const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+      const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
+      if (tier2.length > 0) {
+        G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
+        refreshDojoLogFeed();
+      }
+      if (tier1.length > 0) {
+        setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 900);
+      }
     }
 
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
@@ -4416,6 +4422,8 @@ const App = {
 
   processWeek() {
     Audio.play('tick');
+    // 今週のログフィードをリセット（前週分クリア）
+    G = { ...G, weekLogFeed: [] };
     const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
     const result = Engine.tickWeek(G);
     const stats = { ...G.seasonStats };
@@ -4614,11 +4622,17 @@ const App = {
       G = cleanGb;
     }
     if (pendingGlimpseA || pendingGlimpseB) {
-      const glimpseDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
-      setTimeout(() => {
-        if (pendingGlimpseA) pendingGlimpseA.forEach(g => showGlimpseAModal(g));
-        if (pendingGlimpseB) pendingGlimpseB.forEach(g => showGlimpseBModal(g));
-      }, glimpseDelay);
+      const allGlimpses = [...(pendingGlimpseA || []), ...(pendingGlimpseB || [])];
+      const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+      const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
+      if (tier2.length > 0) {
+        G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
+        refreshDojoLogFeed();
+      }
+      if (tier1.length > 0) {
+        const glimpseDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
+        setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, glimpseDelay);
+      }
     }
 
     // v1.9: 逸材特別交渉枠アンロック通知
@@ -5962,10 +5976,16 @@ App.closePPVResult = function() {
     const gB = G._pendingGlimpseB || null;
     if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
     if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
-    setTimeout(() => {
-      if (gA) gA.forEach(g => showGlimpseAModal(g));
-      if (gB) gB.forEach(g => showGlimpseBModal(g));
-    }, 500);
+    const allGlimpses = [...(gA || []), ...(gB || [])];
+    const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+    const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
+    if (tier2.length > 0) {
+      G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
+      refreshDojoLogFeed();
+    }
+    if (tier1.length > 0) {
+      setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 500);
+    }
   }
 
   // PPV参加済み→TV中継フェーズをスキップし直接オフシーズンへ
@@ -6011,10 +6031,16 @@ App.closePPVTV = function() {
     const gB = G._pendingGlimpseB || null;
     if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
     if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
-    setTimeout(() => {
-      if (gA) gA.forEach(g => showGlimpseAModal(g));
-      if (gB) gB.forEach(g => showGlimpseBModal(g));
-    }, 500);
+    const allGlimpses = [...(gA || []), ...(gB || [])];
+    const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+    const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
+    if (tier2.length > 0) {
+      G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
+      refreshDojoLogFeed();
+    }
+    if (tier1.length > 0) {
+      setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 500);
+    }
   }
 
   // ppvPhaseクリア→advanceWeek→オフシーズンへ

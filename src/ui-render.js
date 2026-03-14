@@ -1178,7 +1178,19 @@ function _renderRosterDojoHeader() {
     }
   }
 
+  // ログフィードアイコン（バナー右下）
+  html += `<div class="dojo-log-feed">
+    <div class="dojo-log-feed-icon" onclick="toggleLogFeedPanel()">📋<span class="dojo-log-feed-badge" style="display:none">0</span></div>
+    <div class="dojo-log-feed-bubble" style="display:none"></div>
+  </div>`;
+
   html += '</div>'; // .dojo-header 閉じ
+
+  // ログ一覧パネル（バナー直後）
+  html += '<div class="log-feed-panel" id="logFeedPanel" style="display:none">';
+  html += '<div class="log-feed-panel-header" onclick="toggleLogFeedPanel()">📋 今週の声（0件）</div>';
+  html += '<div class="log-feed-panel-list"></div>';
+  html += '</div>';
 
   // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
@@ -1186,6 +1198,9 @@ function _renderRosterDojoHeader() {
     html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ特性: <strong>${traitParts.join('、')}</strong></div>`;
   }
   el.innerHTML = html;
+
+  // ログフィードの状態を反映
+  refreshDojoLogFeed();
 
   // 吹き出しテキストを毎サイクルでランダム差し替え
   const DOJO_SHOUTS = [
