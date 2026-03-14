@@ -911,16 +911,18 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - **年末表彰式** — 新人王・ベストマッチ・MVP・チャンピオン紹介・殿堂入り
 - **集客計算は加算方式** — heat/title/champ/charismaのボーナスを加算し上限2.0倍キャップ
 - **人気の自然減衰** — 毎週-0.5（人気10超の全選手）
-- **orgPop年次減衰** — シーズン末にorgPop比例（-2/-3/-5/-7/-10）
+- **orgPop年次減衰** — シーズン末にorgPop比例（v3.1: 〜49→-1 / 50-64→-2 / 65-79→-4 / 80-89→-7 / 90+→-15）
 - **FA年齢保存方式** — dormantPool退場時に{id, age}で保存。22歳超はFA参入不可
 - **HEAT倍率圧縮** — Warm ×1.1、Hot ×1.2、On Fire ×1.3。興行週にも軽減衰-0.3
-- **baseAttendance係数** — ~~(orgPop/100)² × 10000~~ L1で廃止 → BASE_ATTENDANCE_CURVE（21点区間線形補間、orgPop 0:20人〜100:30000人）
+- **baseAttendance係数** — ~~(orgPop/100)² × 10000~~ L1で廃止 → BASE_ATTENDANCE_CURVE（21点区間線形補間、v3.1: 高帯圧縮 orgPop 0:20人〜60:2400人〜80:4800人〜100:10000人）
+- **チケット単価逓減（v3.1）** — TICKET_PRICE_TIERS（〜2000人:0.50万/2000-5000:0.40万/5000-10000:0.30万/10000+:0.20万）。旧フラット0.50万/人を置換
+- **会場MQ要求（v3.1）** — VENUE_MQ_THRESHOLD（公民館-20〜大ホール-1〜アリーナ+6〜ドーム+15）。大会場ほど高MQがorgPop成長に必要
 - **会場システム（L1）** — 全10段（公民館150〜ドーム30000）、popReq撤廃で全会場選択可能。~~週次揺らぎ±17%~~→L1rで会場スケール揺らぎVENUE_FLUCTUATIONに置換（seed 0xA77E）。勢い補正attendanceMomentum（±15%上限、ガラガラ<30%でorgPop-0.5）。ざっくり予測3段階テキスト。リスク指標（◎安全/△挑戦/✕危険）
 - **給料連続関数** — base=~~0.65~~0.55*exp(~~0.06~~0.062*OVR) + 80*(pop/100)²人気加算 + タイトル保持者+20万。SALARY_TABLE廃止→SALARY_PARAMS（L1rで中間層微調整）
 - **グッズ単価** — 0.15万/人（チケット:グッズ比率 3:1）
 - **育成補助金** — orgPop 40未満に地域振興助成金（0-19:80万/週、20-29:65万/週、30-34:45万/週、35-39:20万/週）。推定週間収支にも反映
 - **orgPop逓減カーブ** — 0→×1.0, 20→×0.70, 40→×0.35, 55→×0.20, 70→×0.12, 85→×0.08
-- **orgPop帯別MQ閾値シフト** — orgPop<20:shift=-10/negMult=0.4、orgPop<30:shift=-7/negMult=0.5、orgPop<45:shift=-3/negMult=0.85、45以上:変更なし（Engine.orgPop.getMQAdjust）
+- **~~orgPop帯別~~会場別MQ閾値シフト（v3.1）** — 旧orgPopベース→会場レベルベースに全面変更。VENUE_MQ_THRESHOLD配列でシフト値決定。大会場ほど高MQ必須（ドーム:MQ95+で最高成長）
 - **ケアシステム2週間隔制限** — costume/mediaは2週に1回/選手/アクション（state.week - _careWeekUsed[actionId] < 2 で管理）。orgPopゲート: costume/media≥20、special_treatment≥40。ロック時はUI上で「知名度XXで解放」表示
 - **Heat維持困難化** — HOT以上（heatScore≥6）で上昇×0.5、冷め速度1.5倍
 - **内部小数化** — popularity/orgPopを小数のまま保持。表示はdispPop/dispOrgPop（Math.round）
