@@ -3919,6 +3919,8 @@ const Engine = {
       const pendingSlumpEvents = [];
       const pendingMotivationEvents = [];
       const pendingMotivationRetirements = [];
+      // P5: 絶好調終了検出用
+      const pendingHotStreakEnds = [];
       // Phase 4: 関係値変更操作キュー（roster.map内から蓄積、map後に一括適用）
       const pendingRelOps = [];
       roster = roster.map(c => {
@@ -3988,7 +3990,11 @@ const Engine = {
           const hadSevere = nc.injury && nc.injury.type === '重傷';
           const hsResult = Engine.growthEvents.tickHotStreak(nc, hadSevere);
           nc = { ...nc, hotStreak: hsResult.fighter.hotStreak };
-          if (hsResult.ended) events.push(`✨ ${nc.name}の絶好調期間が終了した`);
+          if (hsResult.ended) {
+            events.push(`✨ ${nc.name}の絶好調期間が終了した`);
+            // P5: 絶好調終了 Glimpse B層に追加
+            pendingHotStreakEnds.push(nc.id);
+          }
         }
 
         // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
@@ -4268,6 +4274,7 @@ const Engine = {
       if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
       if (pendingCoachReport) result._pendingCoachReport = pendingCoachReport;
       if (promoIncomes.length > 0) result._pendingPromoIncomes = promoIncomes;
+      if (pendingHotStreakEnds.length > 0) result._pendingHotStreakEnds = pendingHotStreakEnds;
       return result;
     },
 
@@ -4417,6 +4424,8 @@ const Engine = {
     if (manage._pendingTeamSpirit) s = { ...s, _pendingTeamSpirit: manage._pendingTeamSpirit };
     if (manage._pendingCoachReport) s = { ...s, _pendingCoachReport: manage._pendingCoachReport };
     if (manage._pendingPromoIncomes) s = { ...s, _pendingPromoIncomes: manage._pendingPromoIncomes };
+    // P5: 絶好調終了検出を state に乗せる
+    if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // v1.0b: Apply occupancy heat delta
@@ -4635,6 +4644,13 @@ const Engine = {
       s = titleResult.state;
       titleResult.events.forEach(e => events.push(e));
     }
+    // ★★★ A層 Glimpse（bond/rivalry/trust閾値跨ぎ）★★★
+    const glimpseARng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE01));
+    const glimpseAResult = Engine.glimpse.checkALayer(s, glimpseARng);
+    s = glimpseAResult.state;
+    if (glimpseAResult.glimpses.length > 0) {
+      s = { ...s, _pendingGlimpseA: glimpseAResult.glimpses };
+    }
     // ── スナップショット生成 ──
     const snapshotRng = Engine.rng.create(
       Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5A30)
@@ -4683,6 +4699,14 @@ const Engine = {
         fighter2Id: snap.fighter2Id || null,
       });
     });
+
+    // ★★★ B層 Glimpse（日常の垣間見え + 絶好調終了）★★★
+    const glimpseBRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE02));
+    const glimpseBResult = Engine.glimpse.checkBLayer(s, glimpseBRng);
+    s = glimpseBResult.state;
+    if (glimpseBResult.glimpses.length > 0) {
+      s = { ...s, _pendingGlimpseB: glimpseBResult.glimpses };
+    }
 
     // v3.0: ケアストック回復（4週ごとに+1、オフシーズン含む）
     const careAbsWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
@@ -13484,6 +13508,368 @@ Engine.orgTimeline = {
       }
     }
     return false;
+  },
+};
+
+// ══════════════════════════════════════════════════════════
+//  Engine.glimpse — P4/P5/P6 Glimpse（心の垣間見え）システム
+// ══════════════════════════════════════════════════════════
+Engine.glimpse = {
+  // ── ヘルパー: AI団体全選手をフラット配列で返す ──
+  _getAllAIChars(state) {
+    const chars = [];
+    if (state.aiOrgs) {
+      Object.values(state.aiOrgs).forEach(org => {
+        (org.roster || []).forEach(f => chars.push(f));
+      });
+    }
+    return chars;
+  },
+
+  // ── ヘルパー: 最もaxis値が高いペアを探す ──
+  _findBestRelPair(fighterId, state, axis, threshold) {
+    const rels = state.relationships || {};
+    let best = null;
+    Object.keys(rels).forEach(key => {
+      if (!key.startsWith(`${fighterId}>`)) return;
+      const val = rels[key][axis] || 0;
+      if (val >= threshold) {
+        if (!best || val > best.value) {
+          best = { targetId: parseInt(key.split('>')[1]), value: val };
+        }
+      }
+    });
+    return best;
+  },
+
+  // ── ヘルパー: 重み付きサンプリング ──
+  _weightedSample(rng, pool, max, usedFighters) {
+    const result = [];
+    const remaining = [...pool];
+    for (let i = 0; i < max && remaining.length > 0; i++) {
+      const totalWeight = remaining.reduce((sum, c) => sum + c.weight, 0);
+      if (totalWeight <= 0) break;
+      let roll = Engine.rng.float(rng) * totalWeight;
+      let picked = null;
+      for (let j = 0; j < remaining.length; j++) {
+        roll -= remaining[j].weight;
+        if (roll <= 0) { picked = j; break; }
+      }
+      if (picked === null) picked = remaining.length - 1;
+      const item = remaining.splice(picked, 1)[0];
+      result.push(item);
+      usedFighters.add(item.fighterId);
+      // 同一選手の残り候補を除去
+      for (let j = remaining.length - 1; j >= 0; j--) {
+        if (remaining[j].fighterId === item.fighterId) remaining.splice(j, 1);
+      }
+    }
+    return result;
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  P4: A層 Glimpse — 重要イベント（bond/rivalry/trust閾値跨ぎ）
+  // ══════════════════════════════════════════════════════════
+  checkALayer(state, rng) {
+    const glimpses = [];
+    const roster = state.roster || [];
+    const relationships = state.relationships || {};
+    const cooldowns = { ...(state._glimpseACooldowns || {}) };
+    const absWeek = ((state.season - 1) * 52) + state.week;
+
+    // 初週初期化: prevスナップショットが無ければ現在値で作成（初回は何も発火しない）
+    let prevSnap = state._glimpseAPrevValues;
+    if (!prevSnap) {
+      prevSnap = {};
+      Object.entries(relationships).forEach(([key, rel]) => {
+        prevSnap[key] = { bond: rel.bond, rivalry: rel.rivalry };
+      });
+    }
+    let prevTrustSnap = state._glimpseAPrevTrust;
+    if (!prevTrustSnap) {
+      prevTrustSnap = {};
+      roster.forEach(f => { prevTrustSnap[f.id] = f.trust || 50; });
+    }
+
+    const newSnap = {};
+    const allAIChars = this._getAllAIChars(state);
+
+    // ── bond / rivalry 閾値チェック ──
+    // プレイヤーロスター選手(speaker)から全キャラ(target)への関係を調べる
+    for (let i = 0; i < roster.length; i++) {
+      const speaker = roster[i];
+      if (speaker.injury) continue;
+      const speakerId = speaker.id;
+
+      // 全キャラIDを集める（ロスター＋AI）
+      const allTargetIds = [];
+      roster.forEach(f => { if (f.id !== speakerId) allTargetIds.push(f.id); });
+      allAIChars.forEach(f => allTargetIds.push(f.id));
+
+      for (let j = 0; j < allTargetIds.length; j++) {
+        const targetId = allTargetIds[j];
+        const key = Engine.relationships._key(speakerId, targetId);
+        const rel = relationships[key];
+        if (!rel) continue;
+
+        const prev = prevSnap[key] || {};
+        const prevBond = prev.bond;
+        const prevRivalry = prev.rivalry;
+        const curBond = rel.bond;
+        const curRivalry = rel.rivalry;
+
+        GLIMPSE_A_THRESHOLDS.forEach(th => {
+          if (th.axis === 'trust') return;
+          const prevVal = th.axis === 'bond' ? prevBond : prevRivalry;
+          const curVal = th.axis === 'bond' ? curBond : curRivalry;
+          if (prevVal === undefined) return;
+
+          let crossed = false;
+          if (th.dir === 'up' && prevVal < th.value && curVal >= th.value) crossed = true;
+          if (th.dir === 'down' && prevVal >= th.value + 1 && curVal <= th.value) crossed = true;
+          if (!crossed) return;
+
+          const cdKey = `${th.id}_${speakerId}_${targetId}`;
+          if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
+          if (Engine.rng.float(rng) >= th.rate) return;
+
+          cooldowns[cdKey] = absWeek;
+          const target = roster.find(f => f.id === targetId) || allAIChars.find(f => f.id === targetId);
+          if (!target) return;
+
+          const line = pickDialogueLine(GLIMPSE_A_LINES[th.id], speaker);
+          glimpses.push({
+            layer: 'A', type: th.id, tone: th.tone, label: th.label,
+            speakerId, speakerName: speaker.name,
+            targetId, targetName: target.name,
+            dialogue: line, axis: th.axis, value: curVal,
+          });
+        });
+
+        newSnap[key] = { bond: curBond, rivalry: curRivalry };
+      }
+    }
+
+    // ── trust 閾値チェック ──
+    roster.forEach(f => {
+      if (f.injury || f.isRental) return;
+      const prevTrust = prevTrustSnap[f.id];
+      const curTrust = f.trust || 50;
+      if (prevTrust === undefined) return;
+
+      GLIMPSE_A_THRESHOLDS.forEach(th => {
+        if (th.axis !== 'trust') return;
+        let crossed = false;
+        if (th.dir === 'down' && prevTrust >= th.value && curTrust < th.value) crossed = true;
+        if (th.dir === 'up' && prevTrust < th.value && curTrust >= th.value) crossed = true;
+        if (!crossed) return;
+
+        const cdKey = `trust_${th.id}_${f.id}`;
+        if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
+        if (Engine.rng.float(rng) >= th.rate) return;
+
+        cooldowns[cdKey] = absWeek;
+        const line = pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
+        glimpses.push({
+          layer: 'A', type: th.id, tone: th.tone, label: th.label,
+          speakerId: f.id, speakerName: f.name,
+          targetId: null, targetName: null,
+          dialogue: line, axis: 'trust', value: curTrust,
+        });
+      });
+    });
+
+    // 新しいスナップショットを記録
+    const newPrevTrust = {};
+    roster.forEach(f => { newPrevTrust[f.id] = f.trust || 50; });
+
+    const newState = {
+      ...state,
+      _glimpseACooldowns: cooldowns,
+      _glimpseAPrevValues: newSnap,
+      _glimpseAPrevTrust: newPrevTrust,
+    };
+
+    return { glimpses, state: newState };
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  P5+P6: B層 Glimpse — 日常の垣間見え
+  // ══════════════════════════════════════════════════════════
+  checkBLayer(state, rng) {
+    const glimpses = [];
+    const roster = (state.roster || []).filter(f => !f.isRental);
+    const cooldowns = { ...(state._glimpseBCooldowns || {}) };
+    const absWeek = ((state.season - 1) * 52) + state.week;
+    const candidates = [];
+    const allAIChars = this._getAllAIChars(state);
+
+    // ── P5: 絶好調終了（guaranteed） ──
+    (state._pendingHotStreakEnds || []).forEach(fighterId => {
+      const f = roster.find(c => c.id === fighterId);
+      if (!f) return;
+      const line = pickDialogueLine(GLIMPSE_HOTSTREAK_END_LINES, f);
+      candidates.push({ type: 'hotstreak_end', weight: 10, fighterId: f.id,
+        fighterName: f.name, dialogue: line, tone: 'calm', label: '絶好調の終わり', guaranteed: true });
+    });
+
+    // ── GL-01〜GL-10 ──
+    roster.forEach(f => {
+      const cdKey = `B_${f.id}`;
+      if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < 4) return; // 4週クールダウン
+
+      // GL-01: 試合後の感情（今週試合に出場）
+      if (f._weekAction === 'match' || f._weekAction === 'show') {
+        if (Engine.rng.float(rng) < 0.15) {
+          const matchResult = f._lastMatchResult || {};
+          let subType = 'win';
+          if (matchResult.won === false) subType = (matchResult.mq || 0) >= 70 ? 'goodLoss' : 'loss';
+          else if (matchResult.won === true && (matchResult.mq || 0) >= 70) subType = 'greatWin';
+          const lineObj = GLIMPSE_B_LINES['GL-01'][subType];
+          if (lineObj) {
+            candidates.push({ type: 'GL-01', subType, weight: 3, fighterId: f.id,
+              fighterName: f.name, dialogue: pickDialogueLine(lineObj, f),
+              tone: subType === 'loss' ? 'negative' : 'positive', label: '試合後の感情' });
+          }
+        }
+      }
+
+      // GL-02: 練習中のひとこと（練習中の非負傷選手）
+      if (!f.injury && (f._weekAction === 'practice' || f._weekAction === 'intensive')) {
+        if (Engine.rng.float(rng) < 0.08) {
+          candidates.push({ type: 'GL-02', weight: 2, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-02'], f),
+            tone: 'calm', label: '練習中のひとこと' });
+        }
+      }
+
+      // GL-03: 信頼度の揺れ（trust変動±3以上）
+      const prevTrust = (state._glimpseAPrevTrust || {})[f.id] || 50;
+      const trustDelta = (f.trust || 50) - prevTrust;
+      if (Math.abs(trustDelta) >= 3) {
+        if (Engine.rng.float(rng) < 0.10) {
+          const sub = trustDelta > 0 ? 'up' : 'down';
+          candidates.push({ type: 'GL-03', subType: sub, weight: 3, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-03'][sub], f),
+            tone: sub === 'up' ? 'positive' : 'negative', label: '信頼の揺れ' });
+        }
+      }
+
+      // GL-04: 仲間への想い（bond 50+のペアが存在）
+      if (state.relationships) {
+        const bestBondPair = this._findBestRelPair(f.id, state, 'bond', 50);
+        if (bestBondPair) {
+          if (Engine.rng.float(rng) < 0.08) {
+            const target = roster.find(c => c.id === bestBondPair.targetId) || allAIChars.find(c => c.id === bestBondPair.targetId);
+            candidates.push({ type: 'GL-04', weight: 2, fighterId: f.id,
+              fighterName: f.name, fighter2Id: bestBondPair.targetId,
+              fighter2Name: target ? target.name : '???',
+              dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-04'], f),
+              tone: 'positive', label: '仲間への想い' });
+          }
+        }
+      }
+
+      // GL-05: ライバルへの意識（rivalry 30+のペアが存在）
+      if (state.relationships) {
+        const bestRivalPair = this._findBestRelPair(f.id, state, 'rivalry', 30);
+        if (bestRivalPair) {
+          if (Engine.rng.float(rng) < 0.10) {
+            const target = roster.find(c => c.id === bestRivalPair.targetId) || allAIChars.find(c => c.id === bestRivalPair.targetId);
+            candidates.push({ type: 'GL-05', weight: 3, fighterId: f.id,
+              fighterName: f.name, fighter2Id: bestRivalPair.targetId,
+              fighter2Name: target ? target.name : '???',
+              dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-05'], f),
+              tone: 'dramatic', label: 'ライバルへの意識' });
+          }
+        }
+      }
+
+      // GL-06: 不出場の鬱憤（興行に出場できなかった選手）
+      if (!f.injury && f._weekAction !== 'match' && f._weekAction !== 'show'
+          && Engine.util.isShowWeek(state.week)) {
+        if (Engine.rng.float(rng) < 0.12) {
+          candidates.push({ type: 'GL-06', weight: 3, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-06'], f),
+            tone: 'negative', label: '不出場の鬱憤' });
+        }
+      }
+
+      // GL-07: コンディション不良（condition < 40）
+      if ((f.condition || 100) < 40 && !f.injury) {
+        if (Engine.rng.float(rng) < 0.10) {
+          candidates.push({ type: 'GL-07', weight: 2, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-07'], f),
+            tone: 'negative', label: 'コンディション不良' });
+        }
+      }
+
+      // GL-08: 連敗のストレス（losingStreak >= 2）
+      if ((f.losingStreak || 0) >= 2) {
+        if (Engine.rng.float(rng) < 0.15) {
+          candidates.push({ type: 'GL-08', weight: 4, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-08'], f),
+            tone: 'negative', label: '連敗のストレス' });
+        }
+      }
+
+      // GL-09: 連勝の自信（winStreak >= 3）
+      if ((f.winStreak || 0) >= 3) {
+        if (Engine.rng.float(rng) < 0.12) {
+          candidates.push({ type: 'GL-09', weight: 2, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-09'], f),
+            tone: 'positive', label: '連勝の自信' });
+        }
+      }
+
+      // GL-10: 怪我中の焦り（負傷中）
+      if (f.injury) {
+        if (Engine.rng.float(rng) < 0.08) {
+          candidates.push({ type: 'GL-10', weight: 2, fighterId: f.id,
+            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-10'], f),
+            tone: 'negative', label: '怪我中の焦り' });
+        }
+      }
+    });
+
+    // ── 抽選: guaranteed は確定、残りから重み付き最大2件 ──
+    const guaranteed = candidates.filter(c => c.guaranteed);
+    const pool = candidates.filter(c => !c.guaranteed);
+
+    // 同一選手は1週1件まで（guaranteedを除く）
+    const usedFighters = new Set(guaranteed.map(g => g.fighterId));
+    const filteredPool = pool.filter(c => !usedFighters.has(c.fighterId));
+
+    const maxSlots = 2;
+    const selected = this._weightedSample(rng, filteredPool, maxSlots, usedFighters);
+
+    const allSelected = [...guaranteed, ...selected];
+
+    // クールダウン更新（guaranteed含む）
+    allSelected.forEach(g => {
+      if (!g.guaranteed) cooldowns[`B_${g.fighterId}`] = absWeek;
+    });
+
+    // glimpse オブジェクト構築
+    allSelected.forEach(g => {
+      glimpses.push({
+        layer: 'B', type: g.type, subType: g.subType || null,
+        tone: g.tone, label: g.label,
+        speakerId: g.fighterId, speakerName: g.fighterName,
+        targetId: g.fighter2Id || null, targetName: g.fighter2Name || null,
+        dialogue: g.dialogue,
+      });
+    });
+
+    // state更新
+    const newState = {
+      ...state,
+      _glimpseBCooldowns: cooldowns,
+    };
+    // transient フラグクリア
+    delete newState._pendingHotStreakEnds;
+
+    return { glimpses, state: newState };
   },
 };
 

@@ -4811,6 +4811,107 @@ function closeNotifModal() {
   const overlay = document.getElementById('notifModalOverlay');
   if (overlay) overlay.classList.remove('active');
   clearTimeout(window._notifModalTimer);
+  // P4-P6: Glimpseキューの次を表示
+  _glimpseQueue.shift();
+  if (_glimpseQueue.length > 0) setTimeout(_renderNextGlimpse, 200);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P4-P6: Glimpse（心の垣間見え）モーダル表示
+// ─────────────────────────────────────────────────────────────────────────────
+const _glimpseQueue = [];
+
+function showGlimpseAModal(glimpse) {
+  _glimpseQueue.push({ ...glimpse, _renderer: 'A' });
+  if (_glimpseQueue.length === 1) _renderNextGlimpse();
+}
+
+function showGlimpseBModal(glimpse) {
+  _glimpseQueue.push({ ...glimpse, _renderer: 'B' });
+  if (_glimpseQueue.length === 1) _renderNextGlimpse();
+}
+
+function _renderNextGlimpse() {
+  if (_glimpseQueue.length === 0) return;
+  const g = _glimpseQueue[0];
+  if (g._renderer === 'A') _renderGlimpseA(g);
+  else _renderGlimpseB(g);
+}
+
+function _renderGlimpseA(glimpse) {
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+
+  const toneClass = glimpse.tone === 'gold' ? 'notif-gold'
+    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? 'notif-warning'
+    : glimpse.tone === 'dramatic' ? 'notif-dramatic' : '';
+
+  let portraitsHtml = '';
+  if (glimpse.targetId) {
+    // 二人表示（bond/rivalry）
+    portraitsHtml = `<div class="notif-modal-portraits">
+      ${portraitImg(glimpse.speakerId, 100, 'notif-modal-face dual')}
+      <span style="font-size:20px;padding:0 8px;align-self:center">${
+        glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙'
+      }</span>
+      ${portraitImg(glimpse.targetId, 100, 'notif-modal-face dual')}
+    </div>
+    <div style="display:flex;justify-content:center;gap:40px;margin-bottom:8px">
+      <span style="font-size:13px;color:var(--text-sub)">${glimpse.speakerName}</span>
+      <span style="font-size:13px;color:var(--text-sub)">${glimpse.targetName}</span>
+    </div>`;
+  } else {
+    // 一人表示（trust）
+    portraitsHtml = `<div class="notif-modal-portraits">
+      ${portraitImg(glimpse.speakerId, 120, 'notif-modal-face')}
+    </div>
+    <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${glimpse.speakerName}</div>`;
+  }
+
+  box.className = 'notif-modal-box' + (toneClass ? ` ${toneClass}` : '');
+  box.innerHTML = `
+    ${portraitsHtml}
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
+    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
+  `;
+  overlay.classList.add('active');
+  Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
+
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
+}
+
+function _renderGlimpseB(glimpse) {
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+
+  let portraitsHtml = '';
+  if (glimpse.targetId) {
+    portraitsHtml = `<div class="notif-modal-portraits">
+      ${portraitImg(glimpse.speakerId, 80, 'notif-modal-face dual')}
+      ${portraitImg(glimpse.targetId, 80, 'notif-modal-face dual')}
+    </div>`;
+  } else {
+    portraitsHtml = `<div class="notif-modal-portraits">
+      ${portraitImg(glimpse.speakerId, 100, 'notif-modal-face')}
+    </div>`;
+  }
+
+  box.className = 'notif-modal-box';
+  box.innerHTML = `
+    ${portraitsHtml}
+    <div style="font-size:13px;color:var(--text-sub);margin-bottom:4px">${glimpse.speakerName}</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
+    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
+  `;
+  overlay.classList.add('active');
+
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

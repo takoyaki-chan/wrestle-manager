@@ -1156,6 +1156,10 @@ const Storage = {
   serialize(G) {
     const state = JSON.parse(JSON.stringify(G));
     state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
+    // P4-P6: transient Glimpse フィールド除外
+    delete state._pendingGlimpseA;
+    delete state._pendingGlimpseB;
+    delete state._pendingHotStreakEnds;
     state._saveVersion = '1.0b';
     state._saveDate = new Date().toISOString();
     state._nextGenCharId = nextGenCharId;
@@ -4263,6 +4267,18 @@ const App = {
       }, 800);
     }
 
+    // P4-P6: Glimpse（心の垣間見え）表示（興行後）
+    if (G._pendingGlimpseA || G._pendingGlimpseB) {
+      const gA = G._pendingGlimpseA || null;
+      const gB = G._pendingGlimpseB || null;
+      if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
+      if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
+      setTimeout(() => {
+        if (gA) gA.forEach(g => showGlimpseAModal(g));
+        if (gB) gB.forEach(g => showGlimpseBModal(g));
+      }, 900);
+    }
+
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -4573,6 +4589,25 @@ const App = {
           line: pendingR3Modal.text,
         });
       }, r3Delay);
+    }
+
+    // P4-P6: Glimpse（心の垣間見え）表示
+    const pendingGlimpseA = G._pendingGlimpseA || null;
+    if (G._pendingGlimpseA) {
+      const { _pendingGlimpseA: _, ...cleanGa } = G;
+      G = cleanGa;
+    }
+    const pendingGlimpseB = G._pendingGlimpseB || null;
+    if (G._pendingGlimpseB) {
+      const { _pendingGlimpseB: _, ...cleanGb } = G;
+      G = cleanGb;
+    }
+    if (pendingGlimpseA || pendingGlimpseB) {
+      const glimpseDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
+      setTimeout(() => {
+        if (pendingGlimpseA) pendingGlimpseA.forEach(g => showGlimpseAModal(g));
+        if (pendingGlimpseB) pendingGlimpseB.forEach(g => showGlimpseBModal(g));
+      }, glimpseDelay);
     }
 
     // v1.9: 逸材特別交渉枠アンロック通知
@@ -5895,6 +5930,18 @@ App.closePPVResult = function() {
     setTimeout(nextAction, 200);
   }
 
+  // P4-P6: PPV後のGlimpse表示
+  if (G._pendingGlimpseA || G._pendingGlimpseB) {
+    const gA = G._pendingGlimpseA || null;
+    const gB = G._pendingGlimpseB || null;
+    if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
+    if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
+    setTimeout(() => {
+      if (gA) gA.forEach(g => showGlimpseAModal(g));
+      if (gB) gB.forEach(g => showGlimpseBModal(g));
+    }, 500);
+  }
+
   // PPV参加済み→TV中継フェーズをスキップし直接オフシーズンへ
   G = { ...G, ppvPhase: null };
   Storage.autoSave();
@@ -5931,6 +5978,18 @@ App.closePPVTV = function() {
   App.checkSurvivalUpdate();
   App._applyWeeklyBuffEffects();
   App._tickMilestoneBuffsWeekly();
+
+  // P4-P6: PPV TV後のGlimpse表示
+  if (G._pendingGlimpseA || G._pendingGlimpseB) {
+    const gA = G._pendingGlimpseA || null;
+    const gB = G._pendingGlimpseB || null;
+    if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
+    if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
+    setTimeout(() => {
+      if (gA) gA.forEach(g => showGlimpseAModal(g));
+      if (gB) gB.forEach(g => showGlimpseBModal(g));
+    }, 500);
+  }
 
   // ppvPhaseクリア→advanceWeek→オフシーズンへ
   G = { ...G, ppvPhase: null };

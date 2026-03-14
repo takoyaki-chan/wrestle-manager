@@ -1,12 +1,33 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-13（E2追加修正: セリフ性格分類の統一 実装完了）
+> 最終更新: 2026-03-14（Glimpseシステム P1〜P6 全実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**Glimpseシステム P4〜P6 実装完了（2026-03-14）。**
+
+- **P4 A層Glimpse**: bond/rivalry/trust閾値超え検知。11種の閾値定義（bond 30/60/80、rivalry 30/60/80、trust 30/50/70/80/90）。全プレイヤーロスター×全キャラ対象。personality×archetypeフルマトリクスセリフ。ペア/個人別クールダウン（bond/rivalry=8週、trust=12週）。前週値スナップショット比較。tickWeek内のライバル称号後・スナップショット前に配置
+- **P5 絶好調終了通知**: processManage内の絶好調解除をフック。B層Glimpseとして保証枠で表示。personality×archetypeセリフ
+- **P6 B層Glimpse**: GL-01〜GL-10の10種日常垣間見え。条件判定+重み付きサンプリング（週最大2件+保証枠）。4週クールダウン。tickWeek内のスナップショット後・ケアストック前に配置
+- **UI**: A層モーダル（トーン別CSS: notif-gold/notif-warning/notif-dramatic、2人顔画像 or 1人、60秒タイムアウト）。B層モーダル（シンプルスタイル、1〜2人顔画像）。キュー式逐次表示（closeNotifModal連鎖）
+- **消費処理**: processWeek/closeShowResult/closePPVResult/closePPVTVの4箇所で`_pendingGlimpseA`/`_pendingGlimpseB`を消費
+- RNGシード: 0xEE01(A層)/0xEE02(B層)
+- 変更: data.js, engine.js, app.js, ui-common.js, index.html
+- auto-sim 500シーズン ALL CLEAR
+
+**Glimpseシステム P1〜P3 実装完了（2026-03-14）。**
+
+- **P1 ポップアップUI統一**: 全通知の表示位置を画面中央に統一、顔画像拡大（A層120px/B層100px）、セリフ15px。クリック/タップ閉じに統一、自動消失廃止
+- **P2 試合決着表記**: Engine.formatFinish()で技名優先フォーマット（「ジャーマンスープレックス → 3カウント」形式）
+- **P3 対戦ポイント追加**: B3チャレンジ勝利+3/敗北-3/辞退-1.0〜-2.0、乱入マッチ防衛+3/敗北-3。battlePointsフィールド+validateGameState検証
+- 設計書: `specs/glimpse-popup-overhaul-spec-v1.2.md`
+- P1実装仕様: `specs/p1-popup-unify-implementation-spec.md`
+- P2+P3実装仕様: `specs/p2p3-finish-format-bp-implementation-spec.md`
+- P4-P6実装仕様: `specs/p4p5p6-glimpse-implementation-spec.md`
 
 **Bond/Rivalry/Trust イベント設計 Phase E-2 演出テキスト実装完了（2026-03-13）。**
 
@@ -1005,6 +1026,9 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 | ビッグマッチエンジン v1.0 | bigmatch-engine-spec-v1.0.md |
 | 人間関係システム v0.2 | relationship-system-spec-v0.2.md |
 | S級エース強化 & NPC団体チャンピオン v1.0 | s-rank-ace-rebalance-spec-v1.0.md |
+| Glimpseシステム＆ポップアップ総合改善 v1.2 | glimpse-popup-overhaul-spec-v1.2.md |
+| P1 ポップアップ統一 実装仕様 | p1-popup-unify-implementation-spec.md |
+| P2+P3 決着表記＆対戦ポイント 実装仕様 | p2p3-finish-format-bp-implementation-spec.md |
 
 ### docs/（実装ガイド）
 
