@@ -893,6 +893,13 @@ const Audio = (() => {
 // ║  Guided progression — pure functions, no DOM              ║
 // ╚══════════════════════════════════════════════════════════╝
 
+function hasPlayerHistoricRank1(state) {
+  if (!state) return false;
+  if ((state.rankings || [])[0]?.orgId === 'player') return true;
+  if (state.endingCleared) return true;
+  if ((state.endingClearedSeason || 0) > 0) return true;
+  return (state.seasonHistory || []).some(season => (season?.rank || 99) === 1);
+}
 const MISSIONS = [
   // ── BEGINNER: 最初の一歩 ──
   { id:'hire_coach',    phase:0, icon:'育', name:'コーチを雇おう',
@@ -948,8 +955,7 @@ const MISSIONS = [
   { id:'rank1',         phase:2, icon:'◇', name:'ランキング1位',
     desc:'業界の頂点に立て！団体ランキング1位を獲得しよう。',
     screen:'ranking', check: G => {
-      const r = G.rankings || [];
-      return r.length > 0 && r[0].orgId === 'player';
+      return hasPlayerHistoricRank1(G);
     }},
   { id:'season2',       phase:2, icon:'季', name:'2年目を迎えよう',
     desc:'最初のシーズンを乗り越えて2年目に突入！',
@@ -1571,7 +1577,9 @@ const Storage = {
 
       // v2.1: endingCleared / endingClearedSeason マイグレーション
       if (!G._migrated_ending) {
-        G = { ...G, endingCleared: G.endingCleared || false, endingClearedSeason: G.endingClearedSeason || null, _migrated_ending: true };
+        const endingCleared = G.endingCleared || hasPlayerHistoricRank1(G);
+        const endingClearedSeason = G.endingClearedSeason || ((G.seasonHistory || []).find(s => (s?.rank || 99) === 1)?.season) || null;
+        G = { ...G, endingCleared, endingClearedSeason, _migrated_ending: true };
       }
       // v2.0 Phase1-6: 大型イベント マイグレーション
       if (!G._migrated_large_events) {
