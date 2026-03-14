@@ -134,9 +134,9 @@ const Engine = {
       return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
     },
     getSalary(c, titles) {
-      const ovr = Engine.util.ov(c);
+      const ovr = c.contractOVR != null ? c.contractOVR : Engine.util.ov(c);
       const base = SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr);
-      const pop = c.popularity || 0;
+      const pop = c.contractPop != null ? c.contractPop : (c.popularity || 0);
       const popBonus = SALARY_PARAMS.popMax * Math.pow(pop / 100, SALARY_PARAMS.popExp);
       const isChamp = titles && titles.world && titles.world.championId === c.id;
       const titleBonus = isChamp ? SALARY_PARAMS.titleBonus : 0;
@@ -5633,6 +5633,9 @@ const Engine = {
       };
       // Phase 3: orgJoinWeek設定
       newFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+      // 契約OVR制: 加入時のOVR/popで契約給を設定
+      newFighter.contractOVR = Engine.util.ov(newFighter);
+      newFighter.contractPop = newFighter.popularity || 0;
       // orgTimeline: 所属変更記録
       newFighter = Engine.orgTimeline.transfer(newFighter, 'player', s.season, s.week);
       // v1.3: Record transfer event
@@ -5818,6 +5821,9 @@ const Engine = {
         let resetFighter = Engine.popularity.applyTransferReset(newFighter);
         // Phase 3: orgJoinWeek設定
         resetFighter.orgJoinWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+        // 契約OVR制: 加入時のOVR/popで契約給を設定
+        resetFighter.contractOVR = Engine.util.ov(resetFighter);
+        resetFighter.contractPop = resetFighter.popularity || 0;
         // v1.3: Record transfer event
         resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
         // roster-cap v1.0: ロスター枠チェック
@@ -7403,6 +7409,15 @@ const Engine = {
             (negResult.voluntaryStays.length > 0 ? `（自発残留 ${negResult.voluntaryStays.length}名）` : ''));
         }
         // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
+        // 契約OVR制: 来シーズンの給与基準をロスター全員に設定
+        s = {
+          ...s,
+          roster: s.roster.map(f => f.isRental ? f : {
+            ...f,
+            contractOVR: Engine.util.ov(f),
+            contractPop: f.popularity || 0,
+          }),
+        };
         events.push('📅 オフシーズン第4週: 契約更新完了');
 
       } else if (offWeek >= 5) {
@@ -7759,7 +7774,10 @@ const Engine = {
       const roster = rosterIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
-        return Engine.makeChar(t, rng, { age });
+        const f = Engine.makeChar(t, rng, { age });
+        f.contractOVR = Engine.util.ov(f);
+        f.contractPop = f.popularity || 0;
+        return f;
       });
       // FA = original free pool - draft used (fixed + candidates) + rejected
       const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
