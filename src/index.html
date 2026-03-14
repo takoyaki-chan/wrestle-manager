@@ -872,7 +872,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .growth-event-box.slump-end{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
 .growth-event-box.motivation-loss{border-color:rgba(149,165,166,0.35)}
 .growth-event-box.motivation-recovery{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
-.growth-event-face{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;
+.growth-event-face{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;
   border:3px solid rgba(255,255,255,0.15);overflow:hidden;background:var(--card-bg)}
 .growth-event-face img{width:100%;height:100%;object-fit:cover}
 .growth-event-category{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;
@@ -884,15 +884,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .growth-event-box.motivation-loss .growth-event-title{color:#7f8c8d}
 .growth-event-box.slump-end .growth-event-title,
 .growth-event-box.motivation-recovery .growth-event-title{color:var(--green)}
-.growth-event-name{font-weight:700;font-size:14px;color:var(--text-main);margin-bottom:10px}
+.growth-event-name{font-weight:700;font-size:16px;color:var(--text-main);margin-bottom:10px}
 .growth-event-hint{font-size:11px;line-height:1.7;color:rgba(255,215,0,0.55);font-style:italic;
   margin-bottom:12px;padding:6px 12px;border-left:2px solid rgba(255,215,0,0.25);
   background:rgba(255,215,0,0.03)}
-.growth-event-msg{font-size:12px;line-height:1.8;color:var(--text-sub);margin-bottom:12px}
+.growth-event-msg{font-size:15px;line-height:1.8;color:var(--text-sub);margin-bottom:14px}
 .growth-event-msg::before{content:'「';color:var(--text-dim)}
 .growth-event-msg::after{content:'」';color:var(--text-dim)}
-.growth-event-detail{font-size:12px;color:var(--green);background:rgba(46,204,113,0.06);
-  border-radius:6px;padding:8px 14px;margin-bottom:16px;line-height:1.7}
+.growth-event-detail{font-size:13px;color:var(--green);background:rgba(46,204,113,0.06);
+  border-radius:6px;padding:10px 14px;margin-bottom:16px;line-height:1.7}
 .growth-event-box.slump-start .growth-event-detail,
 .growth-event-box.motivation-loss .growth-event-detail{color:#7f8c8d;background:rgba(127,140,141,0.06)}
 .growth-event-btn{font-size:12px;padding:9px 28px;border-radius:7px;cursor:pointer;
@@ -906,7 +906,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding:7px 18px;font-size:13px;color:var(--text-main);pointer-events:none;
   opacity:0;transition:opacity .25s,transform .25s;z-index:260;white-space:nowrap;
   font-family:'Noto Sans JP',sans-serif}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;cursor:pointer}
+.toast.dismissable{border-color:rgba(255,255,255,0.25)}
 
 /* v2.0: 通知型イベント トースト（選手顔＋テキスト＋セリフ） */
 .notif-event-toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-8px);
@@ -949,6 +950,59 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   border:1px solid rgba(46,204,113,0.15);border-radius:8px}
 .care-expect-label{font-size:11px;color:var(--text-dim);margin-bottom:6px;font-weight:600}
 .care-expect-item{font-size:12px;color:#2ecc71;padding:2px 0}
+
+/* P1: ケアリアクション モーダル */
+.care-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:264;align-items:center;justify-content:center}
+.care-modal-overlay.active{display:flex}
+.care-modal-box{background:var(--panel-bg);border-radius:14px;max-width:440px;width:92%;
+  padding:32px 28px;text-align:center;border:1px solid rgba(255,255,255,0.08);
+  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+.care-modal-box.care-premium{border-color:rgba(232,67,147,0.3);
+  box-shadow:0 8px 32px rgba(232,67,147,0.15)}
+.care-modal-face{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;
+  border:3px solid rgba(255,255,255,0.15);overflow:hidden;background:var(--card-bg)}
+.care-modal-face img{width:100%;height:100%;object-fit:cover}
+.care-modal-name{font-weight:700;font-size:16px;color:var(--text-main);margin-bottom:10px}
+.care-modal-speech{font-size:15px;line-height:1.7;font-style:italic;color:var(--text-main);
+  padding:12px 16px;background:rgba(0,0,0,0.25);border-radius:8px;
+  border-left:3px solid rgba(232,67,147,0.5);text-align:left;margin-bottom:14px}
+.care-modal-changes{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;
+  padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:8px}
+.care-modal-change{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.care-modal-change-label{color:var(--text-sub)}
+.care-modal-change-value{font-weight:700}
+.care-modal-change-up{color:#2ecc71}
+.care-modal-change-down{color:#e74c3c}
+.care-modal-cost{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.care-modal-btn{font-size:13px;padding:10px 32px;border-radius:7px;cursor:pointer;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);
+  color:var(--text-sub);transition:all .2s}
+.care-modal-btn:hover{background:rgba(255,255,255,0.1);color:var(--text-main)}
+
+/* P1: 通知イベント モーダル */
+.notif-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:264;align-items:center;justify-content:center}
+.notif-modal-overlay.active{display:flex}
+.notif-modal-box{background:var(--panel-bg);border-radius:14px;max-width:440px;width:92%;
+  padding:32px 28px;text-align:center;border:1px solid rgba(255,255,255,0.08);
+  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+.notif-modal-box.notif-warning{border-color:rgba(231,76,60,0.4);
+  box-shadow:0 0 24px rgba(231,76,60,0.12)}
+.notif-modal-portraits{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
+.notif-modal-face{width:120px;height:120px;border-radius:50%;overflow:hidden;
+  border:3px solid rgba(255,255,255,0.15);background:var(--card-bg)}
+.notif-modal-face img{width:100%;height:100%;object-fit:cover}
+.notif-modal-face.dual{width:100px;height:100px}
+.notif-modal-text{font-size:14px;color:var(--text-main);line-height:1.5;margin-bottom:8px}
+.notif-modal-detail{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:6px}
+.notif-modal-dialogue{font-size:15px;line-height:1.7;font-style:italic;color:var(--text-main);
+  padding:12px 16px;background:rgba(0,0,0,0.25);border-radius:8px;
+  border-left:3px solid rgba(180,200,255,0.4);text-align:left;margin-bottom:14px}
+.notif-modal-btn{font-size:13px;padding:10px 32px;border-radius:7px;cursor:pointer;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);
+  color:var(--text-sub);transition:all .2s}
+.notif-modal-btn:hover{background:rgba(255,255,255,0.1);color:var(--text-main)}
 
 /* v2.0: ケアアクション モーダル */
 .care-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;
@@ -1842,6 +1896,16 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <!-- v2.0: 通知型イベント トースト -->
 <div class="notif-event-toast" id="notifEventToast"></div>
 
+<!-- P1: ケアリアクション モーダル -->
+<div class="care-modal-overlay" id="careModalOverlay" onclick="closeCareModal()">
+  <div class="care-modal-box" id="careModalBox" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- P1: 通知イベント モーダル -->
+<div class="notif-modal-overlay" id="notifModalOverlay" onclick="closeNotifModal()">
+  <div class="notif-modal-box" id="notifModalBox" onclick="event.stopPropagation()"></div>
+</div>
+
 <!-- v2.0: ケアアクション モーダル -->
 <div class="care-overlay" id="careOverlay" onclick="document.getElementById('careOverlay').classList.remove('active')">
   <div class="care-box" id="careBox" onclick="event.stopPropagation()"></div>
@@ -1913,3 +1977,4 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 </script>
 </body>
 </html>
+

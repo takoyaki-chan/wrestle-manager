@@ -3569,14 +3569,18 @@ function showScreen(id, evt) {
   if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
   Audio.play('click');
   // Safety: 残存オーバーレイがタブ操作をブロックしないよう強制解除
-  ['careOverlay','confirmOverlay','growthEventOverlay','milestoneOverlay',
-   'newspaperOverlay','seasonFanfareOverlay','eventPopupOverlay'].forEach(oid => {
+  ['careOverlay','careModalOverlay','notifModalOverlay','confirmOverlay','growthEventOverlay',
+   'milestoneOverlay','newspaperOverlay','seasonFanfareOverlay','eventPopupOverlay'].forEach(oid => {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
   });
   // v2.0 fix: 通知トーストの残存ブロック防止
   const _toastEl = document.getElementById('notifEventToast');
-  if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; clearTimeout(window._notifTimer); }
+  if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; }
+  clearTimeout(window._notifTimer);
+  clearTimeout(window._notifSafetyTimer);
+  clearTimeout(window._notifModalTimer);
+  clearTimeout(window._careModalTimer);
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const screenEl = document.getElementById(`screen-${id}`);
   if (screenEl) screenEl.classList.add('active');
@@ -3805,8 +3809,25 @@ function showToast(msg, duration) {
   if (!el) return;
   el.textContent = msg;
   el.classList.add('show');
+  el.classList.remove('dismissable');
+  el.onclick = null;
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => el.classList.remove('show'), duration || 1800);
+  clearTimeout(window._toastDismissTimer);
+
+  window._toastDismissTimer = setTimeout(() => {
+    el.classList.add('dismissable');
+    el.onclick = () => {
+      clearTimeout(window._toastTimer);
+      clearTimeout(window._toastDismissTimer);
+      el.classList.remove('show', 'dismissable');
+      el.onclick = null;
+    };
+  }, 4000);
+
+  window._toastTimer = setTimeout(() => {
+    el.classList.remove('show', 'dismissable');
+    el.onclick = null;
+  }, 30000);
 }
 
 // 新シーズン開幕ファンファーレ演出
@@ -3829,9 +3850,9 @@ function showSeasonFanfare(season, onDone) {
     window._sfDismiss = null;
     if (onDone) setTimeout(onDone, 100);
   };
-  // 4秒後に自動クローズ
+  // 安全策: 通常はタップで閉じるが、万が一に備えて長めのフォールバックを残す
   clearTimeout(window._sfTimer);
-  window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 4000);
+  window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 60000);
 }
 
 // ══════════════════════════════════════════════
@@ -4702,99 +4723,94 @@ function _buildB4Modal(event, state, roster) {
 // ─────────────────────────────────────────────────────────────────────────────
 function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds = 0) {
   if (!fighter || !text) return;
-  const el = document.getElementById('notifEventToast');
-  if (!el) { showToast(text); return; }
+  const overlay = document.getElementById('careModalOverlay');
+  const box = document.getElementById('careModalBox');
+  if (!overlay || !box) { showToast(text); return; }
 
   const isPremium = cost >= 100;
-  const face = portraitImg(fighter.id, isPremium ? 140 : 120, 'notif-face');
-  el.className = `notif-event-toast care-reaction-toast${isPremium ? ' care-premium' : ''}`;
+  const face = portraitImg(fighter.id, 120, 'care-modal-face');
 
-  // before/after changes 表示（changesがあれば常に表示）
   let changesHtml = '';
   if (changes && changes.length > 0) {
-    changesHtml = '<div class="care-r-changes">';
+    changesHtml = '<div class="care-modal-changes">';
     changes.forEach(c => {
       if (c.text !== undefined) {
-        changesHtml += `<div class="care-r-change"><span class="care-r-change-label">${c.emoji || ''} ${c.label}</span><span class="care-r-change-value care-r-change-up">${c.text}</span></div>`;
+        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value care-modal-change-up">${c.text}</span></div>`;
       } else {
         const diff = c.after - c.before;
-        const cls = diff >= 0 ? 'care-r-change-up' : 'care-r-change-down';
-        changesHtml += `<div class="care-r-change"><span class="care-r-change-label">${c.emoji || ''} ${c.label}</span><span class="care-r-change-value ${cls}">${c.before} → ${c.after}</span></div>`;
+        const cls = diff >= 0 ? 'care-modal-change-up' : 'care-modal-change-down';
+        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value ${cls}">${c.before} → ${c.after}</span></div>`;
       }
     });
     changesHtml += '</div>';
   }
 
-  const costHtml = cost > 0 ? `<div class="care-r-cost">-${cost}万（残金: ${remainingFunds.toLocaleString()}万）</div>` : '';
+  const costHtml = cost > 0 ? `<div class="care-modal-cost">-${cost}万（残金: ${remainingFunds.toLocaleString()}万）</div>` : '';
 
-  el.innerHTML = `
-    <div class="notif-inner">
-      ${face}
-      <div class="care-r-name">${fighter.name}</div>
-      <div class="care-r-speech">「${text}」</div>
-      ${changesHtml}
-      ${costHtml}
-    </div>
+  box.className = `care-modal-box${isPremium ? ' care-premium' : ''}`;
+  box.innerHTML = `
+    ${face}
+    <div class="care-modal-name">${fighter.name}</div>
+    <div class="care-modal-speech">「${text}」</div>
+    ${changesHtml}
+    ${costHtml}
+    <button class="care-modal-btn" onclick="closeCareModal()">OK</button>
   `;
-  el.classList.add('show');
+  overlay.classList.add('active');
 
-  // 表示時間: 高額ほど長く
-  const duration = cost >= 160 ? 5500 : cost >= 80 ? 4500 : 3500;
-  clearTimeout(window._notifTimer);
-  window._notifTimer = setTimeout(() => el.classList.remove('show'), duration);
+  clearTimeout(window._careModalTimer);
+  window._careModalTimer = setTimeout(closeCareModal, 30000);
+}
+
+function closeCareModal() {
+  const overlay = document.getElementById('careModalOverlay');
+  if (overlay) overlay.classList.remove('active');
+  clearTimeout(window._careModalTimer);
 }
 
 function showNotifEventToast(event) {
   if (!event) return;
-  const el = document.getElementById('notifEventToast');
-  if (!el) { showToast(event.text || ''); return; }  // fallback
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { showToast(event.text || ''); return; }
 
-  const isWarning = event.type === 'N5' || event.type === 'N_isolation' || event.type === 'N_coach_report' || event.type === 'N_sudden_departure';
+  const isWarning = event.type === 'N5'
+    || event.type === 'N_isolation'
+    || event.type === 'N_coach_report'
+    || event.type === 'N_sudden_departure';
 
-  // 顔画像: 2人(N2)は80px×2、1人は120px
   const f1Id = event.fighter;
   const f2Id = event.fighter2;
   let portraitsHtml = '';
   if (f1Id != null && f2Id != null) {
-    portraitsHtml = `<div class="notif-portraits">${portraitImg(f1Id, 80, 'notif-face')}${portraitImg(f2Id, 80, 'notif-face')}</div>`;
+    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 100, 'notif-modal-face dual')}${portraitImg(f2Id, 100, 'notif-modal-face dual')}</div>`;
   } else if (f1Id != null) {
-    portraitsHtml = `<div class="notif-portraits">${portraitImg(f1Id, 120, 'notif-face')}</div>`;
+    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 120, 'notif-modal-face')}</div>`;
   }
 
-  const detailHtml = event.detail ? `<div class="notif-detail">${event.detail}</div>` : '';
-  const dialogueHtml = event.dialogue ? `<div class="notif-dialogue">「${event.dialogue}」</div>` : '';
+  const textHtml = event.text ? `<div class="notif-modal-text">${event.text}</div>` : '';
+  const detailHtml = event.detail ? `<div class="notif-modal-detail">${event.detail}</div>` : '';
+  const dialogueHtml = event.dialogue ? `<div class="notif-modal-dialogue">「${event.dialogue}」</div>` : '';
 
-  el.className = 'notif-event-toast' + (isWarning ? ' notif-warning' : '');
-  el.innerHTML = `
-    <div class="notif-inner">
-      ${portraitsHtml}
-      <div class="notif-body">
-        <div class="notif-text">${event.text || ''}</div>
-        ${detailHtml}
-        ${dialogueHtml}
-      </div>
-    </div>
+  box.className = 'notif-modal-box' + (isWarning ? ' notif-warning' : '');
+  box.innerHTML = `
+    ${portraitsHtml}
+    ${textHtml}
+    ${detailHtml}
+    ${dialogueHtml}
+    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
   `;
-  el.classList.add('show');
+  overlay.classList.add('active');
   Audio.play('event');
 
-  // クリックで早期クローズ
-  el.onclick = () => {
-    clearTimeout(window._notifTimer);
-    el.classList.remove('show');
-    el.onclick = null;
-  };
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
+}
 
-  clearTimeout(window._notifTimer);
-  clearTimeout(window._notifSafetyTimer);
-  // テキスト量に応じて表示時間を動的調整（最低8秒、セリフ付きは10秒〜）
-  const textLen = (event.text || '').length + (event.detail || '').length + (event.dialogue || '').length;
-  const baseDuration = isWarning ? 8000 : 9000;
-  const duration = Math.min(baseDuration + Math.max(0, textLen - 40) * 40, 15000);
-  const dismiss = () => { el.classList.remove('show'); el.onclick = null; };
-  window._notifTimer = setTimeout(dismiss, duration);
-  // Safety: 万が一メインタイマーが発火しなかった場合のバックアップ（2倍の時間後に強制クリア）
-  window._notifSafetyTimer = setTimeout(dismiss, duration * 2);
+function closeNotifModal() {
+  const overlay = document.getElementById('notifModalOverlay');
+  if (overlay) overlay.classList.remove('active');
+  clearTimeout(window._notifModalTimer);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5361,3 +5377,4 @@ function showContractResultModal(results, onDone) {
   });
   overlay.classList.add('active');
 }
+
