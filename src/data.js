@@ -1904,6 +1904,9 @@ const RIVAL_ORGS = [
 const BATTLE_POINT_CFG = {
   war: 9,
   summit: 7,
+  b3: 3,
+  b3draw: 1,
+  intrusion: 3,
   tournament: { champion: 20, runnerUp: 8, semiFinal: 0, firstRound: -14 },
   tournamentWeek: 24,
 };
@@ -6342,4 +6345,3 @@ if (typeof module !== 'undefined' && module.exports) {
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,
   };
 }
-

@@ -3418,11 +3418,17 @@ const App = {
         const penalty = -(7 + Engine.rng.int(intRng, 0, 13));
         titles = { ...titles, world: { ...titles.world, championId: null, defenses: 0 } };
         s = { ...s, heatScore: Math.max(0, (s.heatScore || 50) + penalty) };
-        events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}`);
+        const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+        bpIntrusion.player = (bpIntrusion.player || 0) - BATTLE_POINT_CFG.intrusion;
+        s = { ...s, battlePoints: bpIntrusion };
+        events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}、対戦pt-${BATTLE_POINT_CFG.intrusion}`);
       } else {
         // チャンピオン勝利 → 団体人気+2
         s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
-        events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2`);
+        const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+        bpIntrusion.player = (bpIntrusion.player || 0) + BATTLE_POINT_CFG.intrusion;
+        s = { ...s, battlePoints: bpIntrusion };
+        events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2、対戦pt+${BATTLE_POINT_CFG.intrusion}`);
       }
       // §4.2: 乱入 rivalry +12〜+18（チャンピオン↔乱入者）
       if (s.relationships) {
@@ -3966,7 +3972,7 @@ const App = {
     const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
     const attendance = G.lastShowAttendance || 0;
     const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `定期興行 #${G.totalShows}`);
-    const finishLabel = [main.finType, main.finMove].filter(Boolean).join(' / ') || '激闘決着';
+    const finishLabel = Engine.formatFinish(main.finType, main.finMove);
     const turns = main.turns || 0;
     const mq = main.mq || avgMQ;
     const hpL = main.hpLeft || { final: 0, max: 100 };
@@ -5150,6 +5156,7 @@ const App = {
     if (result.mediaSpotlight !== undefined) updates.mediaSpotlight = result.mediaSpotlight;
     if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
     if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
+    if (result.battlePoints) updates.battlePoints = result.battlePoints;
     // Phase 4: E-02/E-03 大型イベントの関係値反映
     if (result.relationships) updates.relationships = result.relationships;
     if (result.events && result.events.length > 0) {

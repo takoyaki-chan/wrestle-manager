@@ -13487,7 +13487,64 @@ Engine.orgTimeline = {
   },
 };
 
+Engine.formatFinish = function(finType, finMove, isFinisher) {
+  if (!finMove) return finType || '激闘決着';
+  const prefix = isFinisher ? '★ ' : '';
+  switch (finType) {
+    case 'フォール':
+    case 'ピン':
+      return `${prefix}${finMove} → 3カウント`;
+    case 'ギブアップ':
+      return `${prefix}${finMove} → ギブアップ`;
+    case 'TKO':
+      return `${prefix}${finMove} → レフェリーストップ`;
+    case '丸め込み':
+      return `${prefix}${finMove} → 丸め込み`;
+    default:
+      return finType || '激闘決着';
+  }
+};
+
+const _applyLargeEventEffect = Engine.eventSystem.applyLargeEventEffect;
+Engine.eventSystem.applyLargeEventEffect = function(event, step, choiceIdx, state, rng) {
+  const result = _applyLargeEventEffect.call(this, event, step, choiceIdx, state, rng);
+  if (!event || event.type !== 'B3') return result;
+
+  if (step === 0 && choiceIdx !== 0) {
+    const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+    const bpPenalty = -(1 + Math.round(Engine.rng.float(rng) * 10) / 10);
+    bp.player = Math.round((((bp.player || 0) + bpPenalty) + Number.EPSILON) * 10) / 10;
+    const events = [...(result.events || [])];
+    if (events.length > 0) {
+      events[events.length - 1] = events[events.length - 1].replace(/）$/, `、対戦pt${bpPenalty.toFixed(1)}）`);
+    }
+    return { ...result, events, battlePoints: bp };
+  }
+
+  if (step === 2 && event.matchResult) {
+    const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+    const opponentOrgId = event.orgId;
+    const events = [...(result.events || [])];
+
+    if (event.matchResult.winner === 'left') {
+      bp.player = (bp.player || 0) + BATTLE_POINT_CFG.b3;
+      if (opponentOrgId && bp[opponentOrgId] !== undefined) bp[opponentOrgId] = (bp[opponentOrgId] || 0) - BATTLE_POINT_CFG.b3;
+      if (events.length > 0) events[events.length - 1] = events[events.length - 1].replace(/）$/, `、対戦pt+${BATTLE_POINT_CFG.b3}）`);
+    } else if (event.matchResult.winner === 'right') {
+      bp.player = (bp.player || 0) - BATTLE_POINT_CFG.b3;
+      if (opponentOrgId && bp[opponentOrgId] !== undefined) bp[opponentOrgId] = (bp[opponentOrgId] || 0) + BATTLE_POINT_CFG.b3;
+      if (events.length > 0) events[events.length - 1] = events[events.length - 1].replace(/）$/, `、対戦pt-${BATTLE_POINT_CFG.b3}）`);
+    } else {
+      bp.player = (bp.player || 0) + BATTLE_POINT_CFG.b3draw;
+      if (events.length > 0) events[events.length - 1] = events[events.length - 1].replace(/）$/, `、対戦pt+${BATTLE_POINT_CFG.b3draw}）`);
+    }
+
+    return { ...result, events, battlePoints: bp };
+  }
+
+  return result;
+};
 // Node.js モジュールエクスポート（ブラウザではスキップ）
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { Engine };
+  module.exports = { Engine, formatFinish: Engine.formatFinish };
 }

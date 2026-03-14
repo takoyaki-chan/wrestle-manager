@@ -207,7 +207,7 @@ function renderWarMatchPreview() {
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
       const winIcon = result.playerWon ? '🔵' : '🔴';
       html += `<div style="display:flex;align-items:center;gap:12px;font-size:11px">`;
-      html += `<span style="color:${result.playerWon ? 'var(--blue)' : orgCfg.color}">${winIcon} ${wName}${result.finType ? ' (' + result.finType + ')' : ''}</span>`;
+      html += `<span style="color:${result.playerWon ? 'var(--blue)' : orgCfg.color}">${winIcon} ${wName}${(result.finType || result.finMove) ? ' (' + Engine.formatFinish(result.finType, result.finMove) + ')' : ''}</span>`;
       html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
       html += `</div>`;
     } else {
@@ -2849,7 +2849,7 @@ function renderMatchPreview() {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? charL.name : charR.name;
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
       html += `<div style="display:flex;justify-content:center;gap:16px;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)">
-        <span style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${result.finType ? ` (${result.finType})` : ''}</span>
+        <span style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">${wName}</strong>${(result.finType || result.finMove) ? ` (${Engine.formatFinish(result.finType, result.finMove)})` : ''}</span>
         <span style="font-size:12px;color:${mqColor};font-weight:700">MQ ${result.mq}</span>
       </div>`;
     } else if (isNext) {
@@ -2945,7 +2945,7 @@ function renderShowResult(results, injuryResults) {
           <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster'})}</div>
         </div>
       </div>
-      <div style="margin-top:2px;font-size:13px;color:var(--text-sub)">${r.finType} / ${r.turns}ターン</div>
+      <div style="margin-top:2px;font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>
       <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>` : ''}</span></div>`;
     } else {
       const winnerF = leftIsWinner ? r.left : r.right;
@@ -2963,7 +2963,7 @@ function renderShowResult(results, injuryResults) {
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px">
         <span style="display:inline-block;padding:4px 14px;border-radius:4px;font-size:14px;font-weight:700;
           background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winnerF.name} 勝利</span>
-        <span style="font-size:13px;color:var(--text-sub)">${r.finType}${r.finMove ? `（${r.finMove}）` : ''} / ${r.turns}ターン</span>
+        <span style="font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</span>
       </div>
       <div style="margin-top:4px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${r.isTitleMatch ? ' <span style="color:var(--gold)">(王座+5)</span>' : ''}${r.titleGapPenalty ? ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>` : ''}${r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>` : ''}${r.coachMQBonus ? ' <span style="color:#e67e22">(コーチ+' + r.coachMQBonus + ')</span>' : ''}${r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>` : ''}</span></div>`;
     }
@@ -3287,7 +3287,7 @@ function renderPPVMatchPreview() {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? match.left.name : match.right.name;
       const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
       html += `<div style="display:flex;align-items:center;gap:12px;font-size:12px;justify-content:center">`;
-      html += `<span style="color:var(--green)">✔ ${wName}${result.finType ? ' (' + result.finType + ')' : ''}</span>`;
+      html += `<span style="color:var(--green)">✔ ${wName}${(result.finType || result.finMove) ? ' (' + Engine.formatFinish(result.finType, result.finMove) + ')' : ''}</span>`;
       html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
       html += `</div>`;
     } else if (isNext) {
@@ -3372,7 +3372,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     html += `<span style="color:var(--text-dim)">vs</span>`;
     html += `<span style="color:var(--text-sub);opacity:0.7">× ${lName}</span>`;
     html += `</div>`;
-    html += `<div style="font-size:12px;color:var(--text-sub)">${r.finType || ''}${r.finMove ? '（' + r.finMove + '）' : ''} MQ: <span style="color:${mqColor};font-weight:600">${r.mq}</span>${bonusTags}</div>`;
+    html += `<div style="font-size:12px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} MQ: <span style="color:${mqColor};font-weight:600">${r.mq}</span>${bonusTags}</div>`;
     html += `</div>`;
   }
 
@@ -5377,4 +5377,3 @@ function showContractResultModal(results, onDone) {
   });
   overlay.classList.add('active');
 }
-
