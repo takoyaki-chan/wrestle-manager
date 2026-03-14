@@ -4191,7 +4191,10 @@ const Engine = {
         }
 
         let action = nc.schedule;
-        if (action === 'balance') {
+        // レンタル選手はプロモ不可（自団体のプロモは本人の仕事ではない）
+        if (nc.isRental) {
+          action = 'practice';
+        } else if (action === 'balance') {
           if (Engine.util.isShowWeek(G.week)) {
             // 興行週: pop上限未達 or promoStack未満3なら promo、それ以外は practice
             const popBenefit = nc.popularity < PROMO_POP_CAP;

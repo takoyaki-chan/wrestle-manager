@@ -762,8 +762,26 @@ function renderWeekScreen() {
         : c.forcedRest
           ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
           : '<span style="font-size:12px;color:#2ecc71">健康</span>';
-      const schedDisabled = c.injury ? 'disabled' : '';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
+
+      // レンタル選手は操作不可（自律行動）
+      if (c.isRental) {
+        const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
+        const weeksLeft = rentalContract ? rentalContract.seasonsLeft * 12 : '?';
+        const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
+        html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
+          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${weeksLeft}週</span></td>
+          <td class="num">${ov(c)}</td>
+          <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
+          <td>${statusHtml}</td>
+          <td><span style="font-size:12px;color:var(--text-dim)" title="レンタル選手は自律行動します">🤝自律</span></td>
+          <td><span style="font-size:12px;color:var(--text-dim)">--</span></td>
+          <td><span class="sched-tag practice">${rentalAction}</span></td>
+        </tr>`;
+        return;
+      }
+
+      const schedDisabled = c.injury ? 'disabled' : '';
       // Intensive button for week screen
       const isInjured = !!c.injury;
       const isResting = c.condition <= 30;
@@ -1904,12 +1922,17 @@ function renderFinance() {
       html += `<div style="margin-bottom:14px"></div>`;
     }
     // 選手別給与（現在のスナップショット）
+    const ownFightersForSalary = G.roster.filter(c => !c.isRental);
+    const rentalFightersForSalary = G.roster.filter(c => c.isRental);
     html += '<div class="panel-title">選手別給与（現在）</div>';
     html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
-    [...G.roster].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
+    [...ownFightersForSalary].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
       html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
     });
     html += '</table>';
+    if (rentalFightersForSalary.length > 0) {
+      html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">🤝 レンタル選手（${rentalFightersForSalary.map(c => c.name).join('、')}）は前払い契約のため給与なし</div>`;
+    }
   }
 
   el.innerHTML = html;
