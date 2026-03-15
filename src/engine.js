@@ -511,10 +511,11 @@ const Engine = {
       return { ...fighter, preInjuryPop: null };
     },
     // §B-4: Main event poor match penalty
-    checkMainEventPenalty(mq) {
-      if (mq < 25) return -5;
-      if (mq < 35) return -3;
-      if (mq < 45) return -1;
+    checkMainEventPenalty(mq, orgPop) {
+      const shift = Engine.orgPop.getPopMQShift(orgPop || 0);
+      if (mq < 25 + shift) return -5;
+      if (mq < 35 + shift) return -3;
+      if (mq < 45 + shift) return -1;
       return 0;
     },
     // §B-5: Transfer popularity reset (×0.75)
@@ -5065,7 +5066,7 @@ const Engine = {
     const mainEventIdx = results.length - 1; // last match is main event
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
-      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent);
+      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0);
       roster = mqPop.roster;
       events.push(...mqPop.popEvents);
     });
@@ -5369,7 +5370,7 @@ const Engine = {
   },
 
   // MQ/Show popularity helpers (pure functions)
-  applyMQPopularity(roster, result, isMainEvent) {
+  applyMQPopularity(roster, result, isMainEvent, orgPop) {
     const popEvents = [];
     const newRoster = roster.map(c => {
       const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
@@ -5390,7 +5391,7 @@ const Engine = {
 
       // v1.0b §B-4: Main event poor match penalty (both fighters)
       if (isMainEvent) {
-        let mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq);
+        let mainPenalty = Engine.popularity.checkMainEventPenalty(result.mq, orgPop);
         // 闘志: 負けても心を打つファイター — メインイベント低MQペナルティ半減
         if (mainPenalty < 0 && Traits.has(c, '闘志')) mainPenalty = Math.round(mainPenalty / 2);
         if (mainPenalty < 0) {
@@ -6732,7 +6733,7 @@ const Engine = {
         const mqPop = Engine.applyMQPopularity(roster, {
           left: match.left, right: match.right,
           winner: r.winner, mq: r.mq
-        }, isMainEvent);
+        }, isMainEvent, s.orgPop || 0);
         roster = mqPop.roster;
 
         // 因縁カウンタ更新（保留ペア以外）— Phase 5: matchMQ渡し
@@ -8015,6 +8016,17 @@ Engine.orgPop = {
 
   // v3.1: 会場レベル別MQ閾値シフト
   // 小会場は緩く（MQ50以下でも成長可能）、大会場ほど厳しく、ドームでガッと上がる
+  // orgPop別MQ閾値シフト: 信頼ペナルティ用（上位帯で急上昇）
+  getTrustMQShift(orgPop) {
+    if (orgPop < 50) return -Math.round((50 - orgPop) * 0.3);
+    return Math.round((orgPop - 50) * 0.50);
+  },
+  // orgPop別MQ閾値シフト: 人気ペナルティ用（上位帯でマイルド上昇）
+  getPopMQShift(orgPop) {
+    if (orgPop < 50) return -Math.round((50 - orgPop) * 0.3);
+    return Math.round((orgPop - 50) * 0.30);
+  },
+
   getMQAdjust(orgPop, venueIdx) {
     const venueShift = (venueIdx != null && typeof VENUE_MQ_THRESHOLD[venueIdx] === 'number')
       ? VENUE_MQ_THRESHOLD[venueIdx] : 0;
@@ -8984,9 +8996,11 @@ Engine.trust = {
         // §2.3B: 出場したのでストリークリセット
         updated.noAppearStreak = 0;
 
-        // v3.0 M3: 低MQ不満（出場試合のMQ < 40 で -0.46）
+        // v3.0 M3: 低MQ不満（出場試合のMQ < 閾値 で -0.46）
+        // v3.2: orgPopベースで閾値シフト（低人気帯は緩く、高人気帯は厳しく）
         const fighterMatch = results.find(r => r.left.id === fighter.id || r.right.id === fighter.id);
-        if (fighterMatch && (fighterMatch.mq || 0) < 40) {
+        const m3Threshold = 40 + Engine.orgPop.getTrustMQShift(state ? (state.orgPop || 0) : 0);
+        if (fighterMatch && (fighterMatch.mq || 0) < m3Threshold) {
           delta -= 0.46;
         }
       } else {

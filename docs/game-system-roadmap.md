@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-15（宣戦布告ポップアップ刷新 / レンタルUI修正 / BGMバグ修正）
+> 最終更新: 2026-03-15（orgPopベースMQ閾値シフト / 宣戦布告ポップアップ刷新 / レンタルUI修正 / BGMバグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
