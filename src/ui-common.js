@@ -2765,7 +2765,7 @@ function renderMatchPreview() {
   const box = document.getElementById('showResultBox');
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
-  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `定期興行 #${G.totalShows + 1}`;
+  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows + 1}回 定期興行`;
   const resolved = sp.results.filter(r => r !== null).length;
   const total = sp.validMatches.length;
 
@@ -2914,7 +2914,7 @@ function renderShowResult(results, injuryResults) {
   const box = document.getElementById('showResultBox');
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
-  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `定期興行 #${G.totalShows}`;
+  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows}回 定期興行`;
 
   let html = `<div class="show-result-title">${showName}</div>`;
   const avgMQ = Math.round(results.reduce((s,r) => s + r.mq, 0) / results.length);
@@ -4410,14 +4410,70 @@ function showChoiceEventModal(event, state, onChoice) {
 
   box.querySelectorAll('.btn[data-choice]').forEach(btn => {
     btn.addEventListener('click', function() {
-      overlay.classList.remove('active');
       const idx = parseInt(this.dataset.choice);
       Audio.play('click');
       if (onChoice) onChoice(idx);
+      // 結果ポップアップが表示されなかった場合のみ閉じる
+      if (!overlay.classList.contains('active')) return;
+      if (!box.querySelector('.choice-result-close-btn')) overlay.classList.remove('active');
     });
   });
 
   overlay.classList.add('active');
+}
+
+/** 選択型イベント結果ポップアップ（careOverlay/careBox 再利用）*/
+function showChoiceEventResult(event, resultTexts, state) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) return;
+
+  const roster = state ? (state.roster || []) : [];
+  const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
+  const typeLabels = {
+    S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
+    S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
+    E1: '📺 メディア出演オファー', E2: '💼 スポンサー提案',
+    E3: '🤝 合同練習の誘い',  E4: '🔍 スカウト情報',
+    E5: '💴 営業試合依頼',   E6: '🚨 他団体からの引き抜き',
+    S_boycott: '🚫 練習ボイコット', S_grumble: '😤 ロッカールームの愚痴',
+    S_sns: '📱 SNS匂わせ',
+  };
+  const title = typeLabels[event.type] || event.type;
+
+  let html = `<div class="care-result-header" style="border-color:rgba(232,67,147,0.3)">`;
+  html += `<span class="care-result-action-emoji">${(title.match(/^./) || [''])[0]}</span>`;
+  html += `<span class="care-result-action-label">${title.replace(/^.\s*/, '')}</span>`;
+  html += `</div>`;
+
+  if (fighter) {
+    const upperUrl = getUpperUrl(fighter.id);
+    if (upperUrl) {
+      html += `<div style="text-align:center;margin:8px 0 4px">`;
+      html += `<img src="${upperUrl}" style="max-height:200px;width:auto;object-fit:cover;object-position:top center;border-radius:8px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6))" onerror="this.style.display='none'" alt="">`;
+      html += `</div>`;
+    } else {
+      html += portraitImg(fighter.id, 120, 'care-result-portrait');
+    }
+    html += `<div class="care-result-name">${fighter.name}</div>`;
+  }
+
+  if (resultTexts && resultTexts.length > 0) {
+    html += `<div style="margin:10px 0 14px">`;
+    resultTexts.forEach(t => {
+      html += `<div style="font-size:13px;line-height:1.7;color:var(--text);padding:8px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:6px;text-align:center">${t}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<button class="btn choice-result-close-btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;border:1px solid rgba(232,67,147,0.3);color:#e8439f">閉じる ✓</button>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+
+  box.querySelector('.choice-result-close-btn').addEventListener('click', () => {
+    overlay.classList.remove('active');
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

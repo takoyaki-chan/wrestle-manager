@@ -3978,7 +3978,7 @@ const App = {
     const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
     const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
     const attendance = G.lastShowAttendance || 0;
-    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `定期興行 #${G.totalShows}`);
+    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `第${G.totalShows}回 定期興行`);
     const finishLabel = Engine.formatFinish(main.finType, main.finMove);
     const turns = main.turns || 0;
     const mq = main.mq || avgMQ;
@@ -5063,11 +5063,12 @@ const App = {
       gameLog: [...(G.gameLog || []), ...displayEvents]
     };
     Storage.autoSave();
-    if (displayEvents.length > 0) {
-      showToast(displayEvents[displayEvents.length - 1]);
-    }
     Audio.play('event');
     renderWeekScreen();
+    // 結果をモーダルで表示（toastではなく）
+    if (displayEvents.length > 0) {
+      showChoiceEventResult(event, displayEvents, G);
+    }
   },
 
   // v2.0 Phase1-6: 大型イベントUIフロー制御
