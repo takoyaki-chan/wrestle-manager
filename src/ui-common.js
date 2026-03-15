@@ -1494,7 +1494,7 @@ function _renderRivalryPopup() {
         </div>
       </div>
       <div class="rivalry-popup-btn-row">
-        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
+        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">閉じる</button>
       </div>
     `;
     const overlay = document.getElementById('rivalryPopupOverlay');
