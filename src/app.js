@@ -3155,22 +3155,12 @@ const App = {
       currentWatching: -1,
       stateSnapshot: JSON.parse(JSON.stringify(G)),
       confrontationPairs: confrontations.map(c => c.idx),
+      confrontationMap: Object.fromEntries(confrontations.map(c => [c.idx, c])),
+      _shownConfrontations: new Set(),
     };
 
-    const startMatchPreview = () => renderMatchPreview();
-
-    if (confrontations.length > 0) {
-      // 乱入ポップアップがある場合はそれが終わってから宣戦布告→プレビュー
-      if (intrusion) {
-        _onEventPopupQueueEmpty = () => {
-          showRivalryPopups(confrontations, startMatchPreview);
-        };
-      } else {
-        showRivalryPopups(confrontations, startMatchPreview);
-      }
-    } else {
-      renderMatchPreview();
-    }
+    // 宣戦布告ポップアップは各試合がフォーカスされた瞬間に表示（renderMatchPreview内で制御）
+    renderMatchPreview();
   },
 
   // Skip a single match (instant calculation)

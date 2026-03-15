@@ -1419,11 +1419,19 @@ function showRivalryPopups(items, onAllDone) {
   _renderRivalryPopup();
 }
 
-function _rivalryFaceHtml(id) {
+function _rivalryUpperHtml(id, mirrorClass) {
+  const upper = getUpperUrl(id);
+  if (upper) return `<img src="${upper}" class="rivalry-popup-upper${mirrorClass ? ' ' + mirrorClass : ''}" alt="" onerror="this.parentElement.innerHTML=_rivalryFallbackHtml(${id})">`;
+  return `<div class="rivalry-popup-upper-fallback">${_rivalryFaceInnerHtml(id)}</div>`;
+}
+function _rivalryFaceInnerHtml(id) {
   const url = getPortraitUrl(id);
   if (url) return `<img src="${url}" alt="">`;
   const ch = ALL_CHARS.find(c => c.id === id);
   return `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
+}
+function _rivalryFallbackHtml(id) {
+  return `<div class="rivalry-popup-upper-fallback">${_rivalryFaceInnerHtml(id)}</div>`;
 }
 
 function _renderRivalryPopup() {
@@ -1462,24 +1470,32 @@ function _renderRivalryPopup() {
     box.className = `rivalry-popup${o.isFate ? ' fate' : ''}`;
     box.innerHTML = `
       <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-vs">
-        <div class="rivalry-popup-fighter">
-          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.leftId)}</div>
-          <div class="rivalry-popup-name">${o.leftName}</div>
+      <div class="rivalry-popup-stage">
+        <div class="rivalry-popup-fighter-l">
+          ${_rivalryUpperHtml(o.leftId, null)}
+          <div class="rivalry-popup-fighter-name">${o.leftName}</div>
         </div>
-        <div class="rivalry-popup-vs-icon">VS</div>
-        <div class="rivalry-popup-fighter">
-          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.rightId)}</div>
-          <div class="rivalry-popup-name">${o.rightName}</div>
+        <div class="rivalry-popup-vs-col">
+          <div class="rivalry-popup-vs-icon">VS</div>
+        </div>
+        <div class="rivalry-popup-fighter-r">
+          ${_rivalryUpperHtml(o.rightId, 'rivalry-popup-upper-r')}
+          <div class="rivalry-popup-fighter-name">${o.rightName}</div>
         </div>
       </div>
-      <div class="rivalry-popup-lines">
-        <div class="rivalry-popup-line-name">${o.leftName}</div>
-        <div class="rivalry-popup-line">${leftLine}</div>
-        <div class="rivalry-popup-line-name">${o.rightName}</div>
-        <div class="rivalry-popup-line">${rightLine}</div>
+      <div class="rivalry-popup-dialogue">
+        <div class="rivalry-popup-bubble">
+          <div class="rivalry-popup-bubble-speaker">${o.leftName}</div>
+          <div class="rivalry-popup-bubble-text">${leftLine}</div>
+        </div>
+        <div class="rivalry-popup-bubble">
+          <div class="rivalry-popup-bubble-speaker">${o.rightName}</div>
+          <div class="rivalry-popup-bubble-text">${rightLine}</div>
+        </div>
       </div>
-      <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
+      <div class="rivalry-popup-btn-row">
+        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">開戦</button>
+      </div>
     `;
     const overlay = document.getElementById('rivalryPopupOverlay');
     box.style.opacity = '0';
@@ -1510,6 +1526,7 @@ function _renderRivalryPopup() {
     const headerEmoji = isBitter ? '💀' : isGoodRival ? '🤝' : (o.isFate ? '💥' : '⚡');
     const headerText = isBitter ? '宿怨決着！' : isGoodRival ? '好敵手誕生！' : (o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！'));
 
+    const useFateLines = o.isFate;
     box.className = `rivalry-popup resolution${useFateLines ? ' fate' : ''}`;
     const goodRivalMsg = isGoodRival
       ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>`
@@ -1518,28 +1535,36 @@ function _renderRivalryPopup() {
         : '';
     box.innerHTML = `
       <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-vs">
-        <div class="rivalry-popup-fighter">
-          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.winnerId)}</div>
-          <div class="rivalry-popup-name">${o.winnerName}</div>
+      <div class="rivalry-popup-stage">
+        <div class="rivalry-popup-fighter-l">
+          ${_rivalryUpperHtml(o.winnerId, null)}
+          <div class="rivalry-popup-fighter-name">${o.winnerName}</div>
         </div>
-        <div class="rivalry-popup-vs-icon">VS</div>
-        <div class="rivalry-popup-fighter">
-          <div class="rivalry-popup-face">${_rivalryFaceHtml(o.loserId)}</div>
-          <div class="rivalry-popup-name">${o.loserName}</div>
+        <div class="rivalry-popup-vs-col">
+          <div class="rivalry-popup-vs-icon">VS</div>
+        </div>
+        <div class="rivalry-popup-fighter-r">
+          ${_rivalryUpperHtml(o.loserId, 'rivalry-popup-upper-r')}
+          <div class="rivalry-popup-fighter-name">${o.loserName}</div>
         </div>
       </div>
-      <div class="rivalry-popup-lines">
-        <div class="rivalry-popup-line-name">${o.winnerName}</div>
-        <div class="rivalry-popup-line">${winLine}</div>
-        <div class="rivalry-popup-line-name">${o.loserName}</div>
-        <div class="rivalry-popup-line">${loseLine}</div>
+      <div class="rivalry-popup-dialogue">
+        <div class="rivalry-popup-bubble">
+          <div class="rivalry-popup-bubble-speaker">${o.winnerName}</div>
+          <div class="rivalry-popup-bubble-text">${winLine}</div>
+        </div>
+        <div class="rivalry-popup-bubble">
+          <div class="rivalry-popup-bubble-speaker">${o.loserName}</div>
+          <div class="rivalry-popup-bubble-text">${loseLine}</div>
+        </div>
       </div>
       <div class="rivalry-popup-bonus">
         📈 両選手の人気 +${o.popBonus}　　🏢 団体人気 +${o.orgPopBonus}
       </div>
       ${goodRivalMsg}
-      <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
+      <div class="rivalry-popup-btn-row">
+        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
+      </div>
     `;
     const overlay = document.getElementById('rivalryPopupOverlay');
     box.style.opacity = '0';
@@ -2875,6 +2900,12 @@ function renderMatchPreview() {
   if (nextIdx >= 0) {
     const nextEl = box.querySelector('[data-match-next="true"]');
     if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    // フォーカス試合に宣戦布告ポップアップが未表示なら自動表示
+    const cMap = sp.confrontationMap;
+    if (cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx)) {
+      sp._shownConfrontations.add(nextIdx);
+      setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {}), 400);
+    }
   }
 }
 // ── Show Result Renderer ────────────────────────────────
