@@ -4437,6 +4437,7 @@ const Engine = {
       if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
 
       let roster = G.roster.map(c => ({ ...c }));
+      let newLockerRoomMorale = null; // 興行週のみ更新、null の場合は tickWeek で既存値を維持
 
       if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
         // v1.0c: 積み上げ方式（平均→calcCardPop）
@@ -4494,6 +4495,12 @@ const Engine = {
           const condRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, c.id));
           return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))) };
         });
+
+        // v2.1: trust 月次更新（出場+1.53/不出場-2.64、自然減衰、grievance、_trustBonus消費）
+        // Engine.executeShow（auto-sim用）と同一ロジックをプレイヤーゲームパスでも適用
+        const trustResult = Engine.trust.applyShowTrust(roster, G.lastShowResults, G.titles, G);
+        roster = trustResult.roster;
+        newLockerRoomMorale = Engine.trust.updateLockerRoomMorale(G, trustResult);
       }
 
       // Natural condition recovery (+ mental coach bonus)
@@ -4510,7 +4517,7 @@ const Engine = {
       const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
       const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
 
-      return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta, momentumDelta, orgPopPenalty };
+      return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta, momentumDelta, orgPopPenalty, lockerRoomMorale: newLockerRoomMorale };
     }
   },
 
@@ -4545,6 +4552,10 @@ const Engine = {
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+    // v2.1: 興行週の trust 更新に伴う lockerRoomMorale 反映（非興行週は null = 変更なし）
+    if (settle.lockerRoomMorale != null) {
+      s = { ...s, lockerRoomMorale: settle.lockerRoomMorale };
+    }
     // v1.0b: Apply occupancy heat delta
     if (settle.occHeatDelta !== 0) {
       s = { ...s, heatScore: s.heatScore + settle.occHeatDelta };

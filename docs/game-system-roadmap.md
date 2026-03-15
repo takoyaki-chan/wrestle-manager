@@ -1,12 +1,20 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-15（orgPopベースMQ閾値シフト / 宣戦布告ポップアップ刷新 / レンタルUI修正 / BGMバグ修正）
+> 最終更新: 2026-03-16（trust欠落バグ修正: applyShowTrust をプレイヤーゲームパスに追加）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**trust欠落バグ修正（2026-03-16）完了。**
+
+- **根本原因**: `applyShowTrust`（出場+1.53/不出場-2.64・自然減衰・grievance・`_trustBonus`消費・lockerRoomMorale更新）がプレイヤーゲームパス（`processSettlement`）で一度も呼ばれていなかった。auto-sim（`Engine.executeShow`）のみで呼ばれており、実ゲームではtrustが一切変動しなかった
+- **影響**: trust が backstory 初期値（35-65）から動かないため、trust < 40 の選手が生まれずオフシーズン契約交渉が発生しなかった。`_trustBonus`（ブレークスルー/自己ベストMQ等）も消費されず蓄積し続けていた
+- **修正**: `processSettlement` の show 週処理ブロック末尾に `Engine.trust.applyShowTrust` 呼び出しを追加。`lockerRoomMorale` を戻り値に追加し `tickWeek` で反映
+- 変更: engine.js のみ（3箇所）
+- auto-sim 150シーズン（3シード）ALL CLEAR
 
 **UI修正バッチ（2026-03-15）完了。**
 
