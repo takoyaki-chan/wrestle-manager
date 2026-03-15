@@ -3287,6 +3287,8 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    // ビッグマッチBGM停止（タイトル戦中断時）
+    try { Audio.fileBgm.stop(); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     // Auto-skip the stuck match
     const sp = App._showPreview;
