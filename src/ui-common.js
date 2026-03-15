@@ -2917,6 +2917,8 @@ function renderShowResult(results, injuryResults) {
   const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows}回 定期興行`;
 
   let html = `<div class="show-result-title">${showName}</div>`;
+  // 上部にも確認ボタン
+  html += `<div style="text-align:right;margin:-8px 0 10px"><button class="btn btn-gold" onclick="closeShowResult()" style="font-size:12px;padding:6px 18px;opacity:0.85">結果を確認 →</button></div>`;
   const avgMQ = Math.round(results.reduce((s,r) => s + r.mq, 0) / results.length);
   const heat = getHeatLevel();
 
@@ -4947,18 +4949,21 @@ function _renderGlimpseA(glimpse) {
 
   let portraitsHtml = '';
   if (glimpse.targetId) {
-    // 二人表示（bond/rivalry）
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 100, 'notif-modal-face dual')}
-      <span style="font-size:20px;padding:0 8px;align-self:center">${
-        glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙'
-      }</span>
-      ${portraitImg(glimpse.targetId, 100, 'notif-modal-face dual')}
+    // 二人表示（bond/rivalry）— 発信者を大きく強調
+    const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
+    const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
+    portraitsHtml = `<div class="notif-modal-portraits" style="gap:6px;align-items:flex-end">
+      ${portraitImg(glimpse.speakerId, 140, 'notif-modal-face dual')}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:24px">
+        <span style="font-size:32px;filter:drop-shadow(0 0 8px ${axisColor})">${axisIcon}</span>
+        <span style="font-size:22px;font-weight:900;color:${axisColor};letter-spacing:2px;text-shadow:0 0 12px ${axisColor}">→</span>
+      </div>
+      ${portraitImg(glimpse.targetId, 90, 'notif-modal-face dual')}
     </div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="font-size:13px;color:var(--text-sub)">${glimpse.speakerName}</span>
-      <span style="font-size:13px;color:var(--text-dim)">→</span>
-      <span style="font-size:13px;color:var(--text-sub)">${glimpse.targetName}</span>
+    <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:16px;font-weight:700;color:var(--text-main)">${glimpse.speakerName}</span>
+      <span style="font-size:14px;color:${axisColor};font-weight:700">→</span>
+      <span style="font-size:13px;color:var(--text-dim)">${glimpse.targetName}</span>
     </div>`;
   } else {
     // 一人表示（trust）
@@ -4989,9 +4994,15 @@ function _renderGlimpseB(glimpse) {
 
   let portraitsHtml = '';
   if (glimpse.targetId) {
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 80, 'notif-modal-face dual')}
-      ${portraitImg(glimpse.targetId, 80, 'notif-modal-face dual')}
+    const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
+    const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
+    portraitsHtml = `<div class="notif-modal-portraits" style="gap:4px;align-items:flex-end">
+      ${portraitImg(glimpse.speakerId, 110, 'notif-modal-face dual')}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:16px">
+        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
+        <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
+      </div>
+      ${portraitImg(glimpse.targetId, 70, 'notif-modal-face dual')}
     </div>`;
   } else {
     portraitsHtml = `<div class="notif-modal-portraits">
