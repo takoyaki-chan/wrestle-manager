@@ -752,8 +752,9 @@ function renderWeekScreen() {
 
     // Roster schedule overview
     const canManageWeek = G.weekPhase === 'manage';
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th><th>⚡</th><th>今週の行動</th></tr>';
-    G.roster.forEach(c => {
+    const _ownRosterWk = G.roster.filter(c => !c.isRental);
+    const _rentalRosterWk = G.roster.filter(c => c.isRental);
+    const _renderWeekRow = c => {
       const condPct = c.condition;
       const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
       const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
@@ -767,7 +768,10 @@ function renderWeekScreen() {
       // レンタル選手は操作不可（自律行動）
       if (c.isRental) {
         const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
-        const weeksLeft = rentalContract ? rentalContract.seasonsLeft * 12 : '?';
+        // 実際の残週数 = (残シーズン-1)*12 + 今シーズンの残週
+        const weeksLeft = rentalContract
+          ? (rentalContract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))
+          : '?';
         const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
         html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
           <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${weeksLeft}週</span></td>
@@ -822,7 +826,14 @@ function renderWeekScreen() {
         <td>${intBtnHtml}</td>
         <td id="action-${c.id}"><span class="sched-tag ${previewAction}">${previewLabel}</span></td>
       </tr>`;
-    });
+    };
+    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th><th>⚡</th><th>今週の行動</th></tr>';
+    _ownRosterWk.forEach(_renderWeekRow);
+    if (_rentalRosterWk.length > 0) {
+      const _rSlots = RENTAL_CONFIG.getMaxConcurrent(_ownRosterWk.length);
+      html += `<tr><td colspan="7" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
+      _rentalRosterWk.forEach(_renderWeekRow);
+    }
     html += '</table>';
   }
   else if (G.weekPhase === 'weekSummary') {
