@@ -1274,9 +1274,20 @@ const Storage = {
 
       G = { ...G, version: '0.9' };
 
+      // Sync master-backed fields from ALL_CHARS so save data follows spec updates.
+      const syncMasterCharMeta = c => {
+        const master = ALL_CHARS.find(t => t.id === c.id);
+        if (!master) return c;
+        return {
+          ...c,
+          personality: master.personality || c.personality || 'normal',
+          archetype: master.archetype || c.archetype || 'normal',
+        };
+      };
+
       // Fix character data (immutable)
       const fixChar = c => {
-        const nc = { ...c };
+        const nc = syncMasterCharMeta({ ...c });
         if (!nc.seasonGrowth) nc.seasonGrowth = {pw:0, sp:0, te:0, st:0, mn:0};
         if (nc.careerSeasons === undefined) nc.careerSeasons = 0;
         if (!nc.pot) { const t = ALL_CHARS.find(t => t.id === nc.id); if (t) nc.pot = {...t.pot}; }
@@ -1296,6 +1307,14 @@ const Storage = {
         return nc;
       };
       G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
+      if (G.aiOrgs) {
+        const syncedAi = {};
+        Object.keys(G.aiOrgs).forEach(orgId => {
+          const od = G.aiOrgs[orgId];
+          syncedAi[orgId] = { ...od, roster: (od.roster || []).map(fixChar) };
+        });
+        G = { ...G, aiOrgs: syncedAi };
+      }
 
       // v1.0 migration: fix freeAgents that were created with useNotion:true bug
       // Detect: all 4 physical stats exactly match notionValue (statistically impossible from generateStartValues)
