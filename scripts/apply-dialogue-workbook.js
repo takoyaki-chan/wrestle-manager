@@ -33,6 +33,7 @@ const ARCHETYPE_BY_LABEL = {
   '\u30af\u30fc\u30eb': 'cool',
   '\u8831\u60d1': 'seductive',
   '\u4e01\u5be7': 'polite',
+  '\u30c7\u30d5\u30a9\u30eb\u30c8': '_default',
   '\u5171\u901a': '_default',
 };
 
@@ -116,6 +117,8 @@ function readZipEntries(filePath) {
 
 function decodeXmlText(text) {
   return String(text)
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
@@ -216,8 +219,8 @@ function extractRevisions(workbookPath) {
 
     const sourceCol = headerIndex[JP.source] || 'B';
     const pathCol = headerIndex[JP.path] || 'C';
-    const archetypeCol = headerIndex[JP.archetype] || 'E';
-    const personalityCol = headerIndex[JP.personality] || 'D';
+    const archetypeCol = headerIndex[JP.archetype] || 'F';
+    const personalityCol = headerIndex[JP.personality] || 'G';
     const currentCol = headerIndex[JP.current] || 'H';
     const revisedCol = headerIndex[JP.revised] || 'I';
 
@@ -359,6 +362,21 @@ function findRevisionTarget(lookup, revision) {
   return candidates.length === 1 ? candidates[0] : null;
 }
 
+function isAlreadyApplied(lookup, revision) {
+  const source = normalizeKeyPart(revision.source);
+  const pathText = normalizeKeyPart(revision.pathText);
+  const personality = normalizeKeyPart(revision.personality || '');
+  const archetype = normalizeKeyPart(revision.archetype || '');
+  const revised = String(revision.revised).normalize('NFC');
+  return lookup.some(node => (
+    node.source === source &&
+    node.pathText === pathText &&
+    node.personality === personality &&
+    node.archetype === archetype &&
+    node.current === revised
+  ));
+}
+
 function jsString(value) {
   return `'${String(value)
     .replace(/\\/g, '\\\\')
@@ -477,6 +495,7 @@ function main() {
   const lookupCache = new Map();
   const touchedDataConsts = new Set();
   const touchedVictoryConsts = new Set();
+  let skippedAlready = 0;
 
   for (const revision of revisions) {
     if (revision.source === 'SCOUT_SIGNING_LINES') {
@@ -484,7 +503,10 @@ function main() {
         lookupCache.set(revision.source, buildRevisionLookup(victoryData.SCOUT_SIGNING_LINES, revision.source));
       }
       const target = findRevisionTarget(lookupCache.get(revision.source), revision);
-      if (!target) throw new Error(`Revision target not found: ${revision.source} -> ${revision.pathText}`);
+      if (!target) {
+        if (isAlreadyApplied(lookupCache.get(revision.source), revision)) { skippedAlready += 1; continue; }
+        throw new Error(`Revision target not found: ${revision.source} -> ${revision.pathText}`);
+      }
       target.holder[target.key] = revision.revised;
       touchedVictoryConsts.add('SCOUT_SIGNING_LINES');
       continue;
@@ -497,7 +519,10 @@ function main() {
       lookupCache.set(revision.source, buildRevisionLookup(dataModule[revision.source], revision.source));
     }
     const target = findRevisionTarget(lookupCache.get(revision.source), revision);
-    if (!target) throw new Error(`Revision target not found: ${revision.source} -> ${revision.pathText}`);
+    if (!target) {
+      if (isAlreadyApplied(lookupCache.get(revision.source), revision)) { skippedAlready += 1; continue; }
+      throw new Error(`Revision target not found: ${revision.source} -> ${revision.pathText} (pers=${revision.personality}, arch=${revision.archetype}, current=${revision.current})`);
+    }
     target.holder[target.key] = revision.revised;
     touchedDataConsts.add(revision.source);
   }
@@ -517,6 +542,7 @@ function main() {
   console.log(JSON.stringify({
     workbookPath,
     revisionCount: revisions.length,
+    skippedAlreadyApplied: skippedAlready,
     conflictCount: conflicts.length,
     touchedDataConsts: [...touchedDataConsts],
     touchedVictoryConsts: [...touchedVictoryConsts],

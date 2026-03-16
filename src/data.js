@@ -41,7 +41,7 @@ const ALL_CHARS = [
   {id:38,name:'芝彩音',h:168,pw:88,sp:64,te:67,st:78,mn:76,style:'Grappler',role:'Babyface',pot:{pw:174,sp:143,te:147,st:161,mn:159},traits:['華','闘志'],personality:'normal',archetype:'ojousama'},
   {id:39,name:'神谷沙奈絵',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Striker',role:'Neutral',pot:{pw:138,sp:159,te:143,st:144,mn:128},traits:['忠誠心'],personality:'quiet',archetype:'cool'},
   {id:40,name:'高輪まみ',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Allround',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:['頑丈さ'],personality:'earnest',archetype:'normal'},
-  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['ヒール適性','早熟'],personality:'easygoing',archetype:'seductive'},
+  {id:41,name:'根岸亞里亞',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['ヒール適性','早熟'],personality:'normal',archetype:'seductive'},
   {id:42,name:'本郷真理子',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Grappler',role:'Heel',pot:{pw:174,sp:147,te:124,st:146,mn:152},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent'},
   {id:43,name:'金沢文',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:137,te:122,st:135,mn:141},traits:['頑丈さ'],personality:'normal',archetype:'delinquent'},
   {id:44,name:'福浦理乃',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:129,te:124,st:117,mn:116},traits:[],personality:'normal',archetype:'normal'},
@@ -50,7 +50,7 @@ const ALL_CHARS = [
   {id:47,name:'斎藤麻衣',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Striker',role:'Neutral',pot:{pw:143,sp:141,te:146,st:150,mn:155},traits:['早熟'],personality:'bold',archetype:'normal'},
   {id:48,name:'菊池璃子',h:162,pw:73,sp:69,te:53,st:65,mn:78,style:'Striker',role:'Neutral',pot:{pw:155,sp:150,te:142,st:144,mn:161},traits:['負けず嫌い','適応力','闘志'],personality:'bold',archetype:'normal'},
   {id:49,name:'高橋まゆみ',h:161,pw:65,sp:60,te:57,st:73,mn:79,style:'Allround',role:'Babyface',pot:{pw:144,sp:144,te:145,st:155,mn:163},traits:['努力家','忠誠心','遅咲き'],personality:'earnest',archetype:'polite'},
-  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'easygoing',archetype:'normal'},
+  {id:50,name:'相田萌',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'easygoing',archetype:'seductive'},
   {id:51,name:'三橋ふみえ',h:172,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['ヒール適性','ファンサービス'],personality:'easygoing',archetype:'seductive'},
   {id:52,name:'西川ちあき',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Striker',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:135},traits:[],personality:'normal',archetype:'normal'},
   {id:53,name:'小森さなえ',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー'],personality:'normal',archetype:'normal'},
@@ -65,7 +65,7 @@ const ALL_CHARS = [
   {id:62,name:'宮ケ瀬千夏',h:169,pw:70,sp:66,te:40,st:66,mn:50,style:'Brawler',role:'Heel',pot:{pw:151,sp:146,te:112,st:146,mn:125},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent'},
   {id:63,name:'伊勢原文奈',h:158,pw:53,sp:58,te:56,st:55,mn:55,style:'Allround',role:'Babyface',pot:{pw:129,sp:135,te:133,st:132,mn:132},traits:['忠誠心'],personality:'earnest',archetype:'polite'},
   {id:64,name:'湯本ほたる',h:160,pw:52,sp:58,te:51,st:54,mn:48,style:'Allround',role:'Neutral',pot:{pw:128,sp:135,te:126,st:130,mn:122},traits:[],personality:'normal',archetype:'polite'},
-  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169},traits:['ファンサービス','名勝負製造機'],personality:'normal',archetype:'normal'},
+  {id:65,name:'倉見菜々',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:154,sp:155,te:160,st:163,mn:169},traits:['ファンサービス','名勝負製造機'],personality:'easygoing',archetype:'seductive'},
   {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161},traits:['人望','引き出し上手'],personality:'normal',archetype:'seductive'},
   {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168},traits:['ファンサービス','華','野心'],personality:'normal',archetype:'polite'},
   {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:148,sp:160,te:128,st:151,mn:159},traits:['負けず嫌い'],personality:'bold',archetype:'normal'},
@@ -4167,7 +4167,7 @@ const RETIREMENT_LINES = {
         'いやー最高だったね！ ベルト持てて幸せだったよ'
       ],
       delinquent: [
-        '最高だったぜ！ ベルト持てて幸せだったよ'
+        '最高だったよ！ ベルト持てて幸せだったよ'
       ],
       seductive: [
         '最高だったわ。ベルト持てて幸せだった'
@@ -4247,7 +4247,7 @@ const RETIREMENT_LINES = {
         'ベルトは無理だったけどさ、楽しかったよ！'
       ],
       delinquent: [
-        'ベルトは無理だったけどよ、楽しかったぜ！'
+        'ベルトは無理だったけどよ、楽しかったわ！じゃーな！'
       ],
       seductive: [
         'ベルトは無理だったけど…楽しかったわ'
@@ -4407,7 +4407,7 @@ const RETIREMENT_LINES = {
         'いやー長かった！ でもあっという間だったね'
       ],
       delinquent: [
-        '長かったなー！ でもあっという間だったぜ'
+        '長かったなー！ でもあっという間だったかもね'
       ],
       seductive: [
         '長かったわ…でもあっという間だった'
@@ -4647,7 +4647,7 @@ const RETIREMENT_LINES = {
         'まぁ、十分やったよね。いい人生だった！'
       ],
       delinquent: [
-        '十分やったぜ。いい人生だったよ！'
+        '十分やったぜ。いいキャリアを送れたよ！'
       ],
       seductive: [
         '十分やったわ。いい人生だった'
@@ -4727,7 +4727,7 @@ const RETIREMENT_LINES = {
         'あちゃー…ベルト持ったまま終わりかぁ…'
       ],
       delinquent: [
-        'まじかよ…ベルト持ったまま終わりかよ…'
+        'まじかよ…ベルト持ったままケガで終了かよ…'
       ],
       seductive: [
         'あら…ベルト持ったまま終わりなの…'
@@ -5294,7 +5294,7 @@ const RETIRE_REFUSE_LINES = {
         'えぇ…あたし邪魔なの？ ちょっとひどくない？'
       ],
       delinquent: [
-        'おいおい…邪魔だってのか？ ひでーな'
+        'おいおい…邪魔だっての？さすがに ひどくない？'
       ],
       seductive: [
         'あら…私が邪魔なの？ ひどいわね'
@@ -5374,7 +5374,7 @@ const RETIRE_REFUSE_LINES = {
         'まだまだ暴れ足りないよ～'
       ],
       delinquent: [
-        'まだまだ暴れ足りねーぜ！'
+        'まだまだ暴れ足りねーっ！'
       ],
       seductive: [
         'まだまだ暴れ足りないわ'
@@ -5694,7 +5694,7 @@ const RETAIN_LINES = {
         'へぇ、まだ使ってくれるんだ。ま、いいけどね'
       ],
       delinquent: [
-        'まだ使ってくれんのか。ま、いいけどよ'
+        'まだ使ってくれんのか。へへっ、嬉しいね'
       ],
       seductive: [
         'まだ使ってくれるの。ま、いいけど'
@@ -6095,7 +6095,7 @@ const AWARD_LINES = {
         'いやーこの一年楽しかったなー。楽しんでたらMVPになってた！'
       ],
       delinquent: [
-        'うおお！ MVP！ 一番いい響きだぜこれ！'
+        'うおお！ MVP！ いい響きじゃん！'
       ],
       seductive: [
         '最優秀選手ですって。…似合うと思わない？'
@@ -6189,7 +6189,7 @@ const AWARD_LINES = {
         'チャンピオンって肩書き、なんかくすぐったいけど最高だね！'
       ],
       delinquent: [
-        'チャンピオンの響き、たまんねえな！ もっと楽しむぜ！'
+        'チャンピオンの響き、たまんねえ！ もっと楽しむぜ！'
       ],
       seductive: [
         'チャンピオン。いい響きね。似合うでしょう？'
@@ -6284,7 +6284,7 @@ const AWARD_LINES = {
         'プロレスに出会えてよかった！ 毎日が冒険みたいだったよ！'
       ],
       delinquent: [
-        '最っ高に楽しい人生だったぜ！ みんなありがとな！ プロレス最高！'
+        '最っ高に楽しい選手人生だったぜ！ みんなありがとな！ プロレス最高！'
       ],
       seductive: [
         '楽しい日々だったわ。全部、宝物。…ありがとう'
