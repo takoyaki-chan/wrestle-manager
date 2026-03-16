@@ -4,6 +4,53 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+// ── Popup Queue System ──────────────────────────────────────────────────
+// ポップアップの重複表示を防止する。1つのポップアップが表示中は、
+// 新しいポップアップをキューに入れて順番待ちさせる。
+const _POPUP_OVERLAY_IDS = [
+  'growthEventOverlay', 'eventPopupOverlay', 'retirementPopupOverlay',
+  'rivalryPopupOverlay', 'newspaperOverlay', 'seasonFanfareOverlay',
+  'milestoneOverlay', 'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
+  'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay'
+];
+let _popupQueue = [];
+
+function _isPopupActive() {
+  return _POPUP_OVERLAY_IDS.some(id => {
+    const el = document.getElementById(id);
+    return el && (el.classList.contains('active') || el.classList.contains('show'));
+  });
+}
+
+function _enqueuePopup(fn) {
+  if (_isPopupActive()) {
+    _popupQueue.push(fn);
+  } else {
+    fn();
+  }
+}
+
+function _drainPopupQueue() {
+  if (_popupQueue.length === 0) return;
+  setTimeout(() => {
+    if (!_isPopupActive() && _popupQueue.length > 0) {
+      const next = _popupQueue.shift();
+      next();
+    }
+  }, 200);
+}
+
+// MutationObserverで全オーバーレイのclass変更を監視し、閉じたら自動でキュー処理
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new MutationObserver(() => {
+    if (!_isPopupActive() && _popupQueue.length > 0) _drainPopupQueue();
+  });
+  _POPUP_OVERLAY_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+});
+
 // ── Custom Tooltip (PC hover + mobile tap) ───────────────
 function showCustomTooltip(el, html) {
   const tip = document.getElementById('customTooltip');
@@ -747,6 +794,7 @@ function confirmSigning(charId) {
 function showCoachTooltip(coachId) {
   const c = ALL_COACHES.find(co => co.id === coachId);
   if (!c) return;
+  if (_isPopupActive()) { _popupQueue.push(() => showCoachTooltip(coachId)); return; }
   Audio.play('hover');
 
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
@@ -860,6 +908,7 @@ function showCoachTooltip(coachId) {
 
 function closeCoachTooltip() {
   document.getElementById('coachTooltipOverlay').classList.remove('active');
+  _drainPopupQueue();
 }
 
 // ── Event Popup System (v0.96) ──
@@ -1223,7 +1272,9 @@ let _autoCloseTimer = null;
 function showEventPopup(opts) {
   // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold' }
   _eventPopupQueue.push(opts);
-  if (_eventPopupQueue.length === 1) _renderEventPopup();
+  if (_eventPopupQueue.length === 1) {
+    _enqueuePopup(() => _renderEventPopup());
+  }
 }
 
 function _renderEventPopup() {
@@ -1273,6 +1324,8 @@ function closeEventPopup() {
     const cb = _onEventPopupQueueEmpty;
     _onEventPopupQueueEmpty = null;
     setTimeout(cb, 200);
+  } else {
+    _drainPopupQueue();
   }
 }
 let _onEventPopupQueueEmpty = null;
@@ -1290,7 +1343,7 @@ function showRetirementPopups(retirements, onAllDone) {
   if (!retirements || retirements.length === 0) { if (onAllDone) onAllDone(); return; }
   _retirementPopupQueue = [...retirements];
   _retirementPopupCallback = onAllDone || null;
-  _renderRetirementPopup();
+  _enqueuePopup(() => _renderRetirementPopup());
 }
 
 function _renderRetirementPopup() {
@@ -1370,8 +1423,11 @@ function closeRetirementPopup() {
   _retirementPopupQueue.shift();
   if (_retirementPopupQueue.length > 0) {
     setTimeout(_renderRetirementPopup, 300);
+  } else if (_retirementPopupCallback) {
+    const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
+    _drainPopupQueue();
   } else {
-    if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
+    _drainPopupQueue();
   }
 }
 
@@ -1413,7 +1469,7 @@ function showRivalryPopups(items, onAllDone) {
   if (!items || items.length === 0) { if (onAllDone) onAllDone(); return; }
   _rivalryPopupQueue = [...items];
   _rivalryPopupCallback = onAllDone || null;
-  _renderRivalryPopup();
+  _enqueuePopup(() => _renderRivalryPopup());
 }
 
 function _rivalryUpperHtml(id, mirrorClass) {
@@ -1585,6 +1641,9 @@ function closeRivalryPopup() {
     const cb = _rivalryPopupCallback;
     _rivalryPopupCallback = null;
     setTimeout(cb, 200);
+    _drainPopupQueue();
+  } else {
+    _drainPopupQueue();
   }
 }
 
@@ -1597,6 +1656,7 @@ function closeRivalryPopup() {
  */
 function showAwardsCeremony(awards, onDone) {
   if (!awards) { if (onDone) onDone(); return; }
+  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone)); return; }
 
   const steps = [];
 
@@ -1638,6 +1698,7 @@ function showAwardsCeremony(awards, onDone) {
     } else {
       window._awardsNext = null;
       if (onDone) onDone();
+      _drainPopupQueue();
     }
   };
 
@@ -1927,6 +1988,8 @@ function findFighter(fighterId, source) {
 function showFighterPopup(fighterId, source) {
   const c = findFighter(fighterId, source);
   if (!c) return;
+  // 他のポップアップが表示中ならキューに入れる
+  if (_isPopupActive()) { _popupQueue.push(() => showFighterPopup(fighterId, source)); return; }
   Audio.play('hover');
 
   const STYLE_META = {
@@ -2478,6 +2541,7 @@ function showFighterPopup(fighterId, source) {
 function closeFighterPopup() {
   window._fpTab = 0; // Reset to first tab
   document.getElementById('fighterPopupOverlay').classList.remove('active');
+  _drainPopupQueue();
 }
 
 // Phase 6: 相関図画面を開く
@@ -3604,6 +3668,7 @@ function showScreen(id, evt) {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
   });
+  _popupQueue = []; // タブ切替時にキューもクリア
   // v2.0 fix: 通知トーストの残存ブロック防止
   const _toastEl = document.getElementById('notifEventToast');
   if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; }
@@ -3664,7 +3729,7 @@ function showGrowthEventPopups(events, onDone) {
   if (!events || events.length === 0) { if (onDone) onDone(); return; }
   _growthPopupQueue = [...events];
   _growthPopupCallback = onDone || null;
-  _renderNextGrowthPopup();
+  _enqueuePopup(() => _renderNextGrowthPopup());
 }
 
 function _renderNextGrowthPopup() {
@@ -3769,6 +3834,9 @@ function closeGrowthEventPopup() {
     const cb = _growthPopupCallback;
     _growthPopupCallback = null;
     setTimeout(cb, 250);
+    _drainPopupQueue();
+  } else {
+    _drainPopupQueue();
   }
 }
 
@@ -3862,6 +3930,7 @@ function showToast(msg, duration) {
 
 // 新シーズン開幕ファンファーレ演出
 function showSeasonFanfare(season, onDone) {
+  if (_isPopupActive()) { _popupQueue.push(() => showSeasonFanfare(season, onDone)); return; }
   const overlay = document.getElementById('seasonFanfareOverlay');
   const box = document.getElementById('seasonFanfareBox');
   if (!overlay || !box) { if (onDone) onDone(); return; }
@@ -3879,6 +3948,7 @@ function showSeasonFanfare(season, onDone) {
     overlay.classList.remove('show');
     window._sfDismiss = null;
     if (onDone) setTimeout(onDone, 100);
+    _drainPopupQueue();
   };
   // 安全策: 通常はタップで閉じるが、万が一に備えて長めのフォールバックを残す
   clearTimeout(window._sfTimer);
@@ -3889,6 +3959,7 @@ function showSeasonFanfare(season, onDone) {
 //  v1.4w: 新聞パネル（業界ニュース）
 // ══════════════════════════════════════════════
 function showNewspaperPanel(articles, onDone) {
+  if (_isPopupActive()) { _popupQueue.push(() => showNewspaperPanel(articles, onDone)); return; }
   const overlay = document.getElementById('newspaperOverlay');
   const box = document.getElementById('newspaperBox');
   if (!overlay || !box || articles.length === 0) { if (onDone) onDone(); return; }
@@ -3931,6 +4002,7 @@ function showNewspaperPanel(articles, onDone) {
     window._newsNav = null;
     window._newsClose = null;
     if (onDone) setTimeout(onDone, 100);
+    _drainPopupQueue();
   };
 
   Audio.play('reveal');
@@ -3945,6 +4017,7 @@ function showNewspaperPanel(articles, onDone) {
 // v1.5s25b: Milestone Event Popup — ナレーション形式の3択イベント
 // ─────────────────────────────────────────────────────────────────────────────
 function showMilestoneEvent(evt, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showMilestoneEvent(evt, onChoice)); return; }
   const overlay = document.getElementById('milestoneOverlay');
   const box = document.getElementById('milestoneBox');
   if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
@@ -3970,6 +4043,7 @@ function showMilestoneEvent(evt, onChoice) {
       document.getElementById('milestoneClose').addEventListener('click', function() {
         overlay.classList.remove('active');
         if (onChoice) onChoice(idx);
+        _drainPopupQueue();
       });
     });
   });
@@ -3986,6 +4060,7 @@ function showMilestoneEvent(evt, onChoice) {
 // 選手/団体への資金投入UIを提供。アクション選択 → 選手選択 → フィードバック表示
 // ─────────────────────────────────────────────────────────────────────────────
 function showCareActionModal(state, onConfirm) {
+  if (_isPopupActive()) { _popupQueue.push(() => showCareActionModal(state, onConfirm)); return; }
   const overlay = document.getElementById('careOverlay');
   const box = document.getElementById('careBox');
   if (!overlay || !box) return;
@@ -4852,6 +4927,7 @@ function closeCareModal() {
   const overlay = document.getElementById('careModalOverlay');
   if (overlay) overlay.classList.remove('active');
   clearTimeout(window._careModalTimer);
+  _drainPopupQueue();
 }
 
 function showNotifEventToast(event) {
@@ -4899,7 +4975,11 @@ function closeNotifModal() {
   clearTimeout(window._notifModalTimer);
   // P4-P6: Glimpseキューの次を表示
   _glimpseQueue.shift();
-  if (_glimpseQueue.length > 0) setTimeout(_renderNextGlimpse, 200);
+  if (_glimpseQueue.length > 0) {
+    setTimeout(_renderNextGlimpse, 200);
+  } else {
+    _drainPopupQueue();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
