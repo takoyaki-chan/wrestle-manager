@@ -1099,3 +1099,5 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - 2026-03-10: Deduplicated relationship-map power-view rosters by fighter id so the same portrait cannot appear multiple times when a fighter remains referenced in more than one org roster.
 
 - 2026-03-16: 序盤orgPop保護 — getMQAdjustにearlyProtectシフト+超創設期negMult=0追加。earlyProtect = -round((30 - orgPop) * 0.4)でMQ閾値を下げ、さらにorgPop < 15ではnegMult=0（下落なし）で死のスパイラルを防止。orgPop 15-29はearlyProtect+negMult 0.5、30+は変更なし。auto-sim 100シーズンALL CLEAR。
+
+- 2026-03-16: **重大バグ修正** — app.js finalizeShowのapplyShowPopularity呼び出しにvenueIdx引数が欠落していた。実ゲームで公民館の閾値シフト(-20)が適用されず、序盤orgPopが上がらない致命的な問題の根本原因。engine.js(auto-sim用)は正しく渡していたため自動テストでは検出不可だった。
