@@ -4844,6 +4844,9 @@ const Engine = {
       s = { ...s, careStock: newCareStock, careStockLastRecovery: careAbsWeek };
     }
 
+    // 浮動小数点サニタイズ: 蓄積する計算誤差を除去（tickWeek統合パイプライン末尾）
+    s = Engine.sanitizeFloats(s);
+
     // validateGameState: 不変条件チェック（tickWeek末尾で常時実行）
     s = Engine.validateGameState(s);
     return { state: s, events };
@@ -10938,6 +10941,64 @@ Engine.database = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+//  sanitizeFloats: 浮動小数点誤差の蓄積を除去（tickWeek末尾で毎週実行）
+//  condition, trust, popularity, lockerRoomMorale, orgPop など繰り返し加減算される
+//  フィールドに IEEE754 の丸め誤差が蓄積する。小数第2位で丸めて表示上の
+//  「69.80000000000001」問題を根本解決する。計算精度への影響は無視できる。
+// ══════════════════════════════════════════════════════════════════════════════
+Engine.sanitizeFloats = function(G) {
+  if (!G) return G;
+  const r2 = v => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 100) / 100 : v;
+
+  // トップレベルフィールド
+  G = { ...G,
+    orgPop: r2(G.orgPop),
+    lockerRoomMorale: r2(G.lockerRoomMorale),
+    attendanceMomentum: r2(G.attendanceMomentum),
+  };
+
+  // ロスター全選手
+  if (G.roster) {
+    G = { ...G, roster: G.roster.map(c => ({
+      ...c,
+      condition: r2(c.condition),
+      trust: r2(c.trust),
+      popularity: r2(c.popularity),
+    })) };
+  }
+
+  // FA選手
+  if (G.freeAgents) {
+    G = { ...G, freeAgents: G.freeAgents.map(c => ({
+      ...c,
+      condition: r2(c.condition),
+      trust: r2(c.trust),
+      popularity: r2(c.popularity),
+    })) };
+  }
+
+  // AI団体ロスター
+  if (G.aiOrgs) {
+    const sanitizedAI = {};
+    for (const [key, org] of Object.entries(G.aiOrgs)) {
+      sanitizedAI[key] = { ...org,
+        orgPop: r2(org.orgPop),
+        lockerRoomMorale: r2(org.lockerRoomMorale),
+        roster: org.roster ? org.roster.map(c => ({
+          ...c,
+          condition: r2(c.condition),
+          trust: r2(c.trust),
+          popularity: r2(c.popularity),
+        })) : org.roster,
+      };
+    }
+    G = { ...G, aiOrgs: sanitizedAI };
+  }
+
+  return G;
+};
+
 //  validateGameState: ランタイム不変条件チェック（常時オン）
 //  違反検出時はconsole.warnに出力し、G.debugLogに記録する。ゲーム進行は止めない。
 // ══════════════════════════════════════════════════════════════════════════════
