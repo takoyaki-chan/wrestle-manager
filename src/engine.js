@@ -8043,7 +8043,9 @@ Engine.orgPop = {
       ? VENUE_MQ_THRESHOLD[venueIdx] : 0;
     // 下落ペナルティ倍率: 大会場ほど低MQのダメージが大きい
     const negMult = venueShift >= 10 ? 1.2 : (venueShift >= 6 ? 1.1 : (venueShift <= -7 ? 0.5 : 1.0));
-    return { shift: venueShift, negMult };
+    // 序盤保護: orgPop < 30 の弱小団体はファン期待値が低く、低MQでもペナルティが入りにくい
+    const earlyProtect = orgPop < 30 ? -Math.round((30 - orgPop) * 0.4) : 0;
+    return { shift: venueShift + earlyProtect, negMult };
   }
 };
 
