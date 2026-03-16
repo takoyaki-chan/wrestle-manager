@@ -16,10 +16,14 @@ const _POPUP_OVERLAY_IDS = [
 let _popupQueue = [];
 
 function _isPopupActive() {
-  return _POPUP_OVERLAY_IDS.some(id => {
+  // 静的オーバーレイ（index.htmlで定義済み）
+  const staticActive = _POPUP_OVERLAY_IDS.some(id => {
     const el = document.getElementById(id);
     return el && (el.classList.contains('active') || el.classList.contains('show'));
   });
+  if (staticActive) return true;
+  // 動的オーバーレイ（R3Modalなど、DOMに直接追加されるもの）
+  return !!document.querySelector('.r3-modal-overlay');
 }
 
 function _enqueuePopup(fn) {
@@ -446,6 +450,7 @@ function closeWarFinalResult(eventWon) {
 
 // ── R3 モーダル: 仲良し退団/引退演出 ──
 function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
+  if (_isPopupActive()) { _popupQueue.push(() => showR3Modal({ fighterName, fighterFace, departedName, reason, line })); return; }
   const overlay = document.createElement('div');
   overlay.className = 'r3-modal-overlay';
 
@@ -470,6 +475,7 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
 
   overlay.querySelector('.r3-modal-close').addEventListener('click', () => {
     overlay.remove();
+    _drainPopupQueue();
   });
 
   document.body.appendChild(overlay);
@@ -3847,6 +3853,7 @@ let _aiAlertCallback = null;
 
 function showAIGrowthAlerts(alerts, onDone) {
   if (!alerts || alerts.length === 0) { if (onDone) onDone(); return; }
+  if (_isPopupActive()) { _popupQueue.push(() => showAIGrowthAlerts(alerts, onDone)); return; }
   // major な脅威のみポップアップ、それ以外はスキップ
   const notable = alerts.filter(a =>
     (a.type === 'threat' && a.isMajor) ||
@@ -4427,6 +4434,7 @@ function showCareActionModal(state, onConfirm) {
 // 選手顔アイコン＋セリフ＋2〜3択のモーダルダイアログ
 // ─────────────────────────────────────────────────────────────────────────────
 function showChoiceEventModal(event, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showChoiceEventModal(event, state, onChoice)); return; }
   const overlay = document.getElementById('careOverlay');
   const box = document.getElementById('careBox');
   if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
@@ -4555,6 +4563,7 @@ function showChoiceEventResult(event, resultTexts, state) {
 // careOverlay/careBox を再利用。多段階対応（step パラメータ）
 // ─────────────────────────────────────────────────────────────────────────────
 function showLargeEventModal(event, state, step, onChoice) {
+  if (step === 0 && _isPopupActive()) { _popupQueue.push(() => showLargeEventModal(event, state, step, onChoice)); return; }
   const overlay = document.getElementById('careOverlay');
   const box = document.getElementById('careBox');
   if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
@@ -4932,6 +4941,7 @@ function closeCareModal() {
 
 function showNotifEventToast(event) {
   if (!event) return;
+  if (_isPopupActive()) { _popupQueue.push(() => showNotifEventToast(event)); return; }
   const overlay = document.getElementById('notifModalOverlay');
   const box = document.getElementById('notifModalBox');
   if (!overlay || !box) { showToast(event.text || ''); return; }
@@ -5000,12 +5010,16 @@ function _isGlimpseTier1(glimpse) {
 
 function showGlimpseAModal(glimpse) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'A' });
-  if (_glimpseQueue.length === 1) _renderNextGlimpse();
+  if (_glimpseQueue.length === 1) {
+    _enqueuePopup(() => _renderNextGlimpse());
+  }
 }
 
 function showGlimpseBModal(glimpse) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'B' });
-  if (_glimpseQueue.length === 1) _renderNextGlimpse();
+  if (_glimpseQueue.length === 1) {
+    _enqueuePopup(() => _renderNextGlimpse());
+  }
 }
 
 function _renderNextGlimpse() {
