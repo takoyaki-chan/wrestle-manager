@@ -4927,6 +4927,8 @@ function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds
     <button class="care-modal-btn" onclick="closeCareModal()">OK</button>
   `;
   overlay.classList.add('active');
+  clearTimeout(window._careModalTimer);
+  window._careModalTimer = setTimeout(closeCareModal, 60000);
 }
 
 function closeCareModal() {
@@ -4971,6 +4973,8 @@ function showNotifEventToast(event) {
   `;
   overlay.classList.add('active');
   Audio.play('event');
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function closeNotifModal() {
@@ -5067,6 +5071,8 @@ function _renderGlimpseA(glimpse) {
   `;
   overlay.classList.add('active');
   Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function _renderGlimpseB(glimpse) {
@@ -5101,6 +5107,8 @@ function _renderGlimpseB(glimpse) {
     <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
   `;
   overlay.classList.add('active');
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
