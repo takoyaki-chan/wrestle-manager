@@ -2976,7 +2976,10 @@ function renderMatchPreview() {
   }
 }
 // ── Show Result Renderer ────────────────────────────────
+let _pendingMatchDialogues = [];
+
 function renderShowResult(results, injuryResults) {
+  _pendingMatchDialogues = [];
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const special = isSpecialShow(G.week);
@@ -3084,7 +3087,7 @@ function renderShowResult(results, injuryResults) {
       </div>
     </div>`;
 
-    // 高rivalryペアの試合後リアクション
+    // 高rivalryペアの試合後リアクション → ポップアップ用データ収集
     if (!isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 40) {
       const winF = leftIsWinner ? r.left : r.right;
       const loseF = leftIsWinner ? r.right : r.left;
@@ -3098,10 +3101,12 @@ function renderShowResult(results, injuryResults) {
       const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
       const winLine = pickDialogueLine(winPool, winChar);
       const loseLine = pickDialogueLine(losePool, loseChar);
-      html += `<div style="margin-top:10px;padding:8px 12px;background:rgba(231,76,60,0.08);border-left:3px solid ${r.rivalryBonus.color || '#e17055'};border-radius:4px;font-size:12px">
-        <div style="color:var(--text-sub);margin-bottom:4px"><b>${winF.name}</b>: 「${winLine}」</div>
-        <div style="color:var(--text-sub)"><b>${loseF.name}</b>: 「${loseLine}」</div>
-      </div>`;
+      _pendingMatchDialogues.push({
+        winnerId: winF.id, winnerName: winF.name, winLine,
+        loserId: loseF.id, loserName: loseF.name, loseLine,
+        rivalryBonus: r.rivalryBonus, mq: r.mq, matchLabel,
+      });
+      html += `<div style="margin-top:10px;padding:6px 12px;background:rgba(231,76,60,0.06);border-left:3px solid ${r.rivalryBonus.color || '#e17055'};border-radius:4px;font-size:12px;color:var(--text-dim)">💬 試合後コメントあり</div>`;
     }
 
     html += `<details style="margin-top:8px"><summary style="font-size:12px;color:var(--text-dim);cursor:pointer">試合ログを見る</summary>
@@ -4985,6 +4990,76 @@ function closeNotifModal() {
   _glimpseQueue.shift();
   if (_glimpseQueue.length > 0) {
     setTimeout(_renderNextGlimpse, 200);
+  } else if (_matchDialogueQueue.length > 0) {
+    setTimeout(_renderNextMatchDialogue, 200);
+  } else {
+    _drainPopupQueue();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 試合後コメントポップアップ（因縁マッチ）
+// ─────────────────────────────────────────────────────────────────────────────
+const _matchDialogueQueue = [];
+
+function showPostMatchDialogues(dialogues) {
+  if (!dialogues || dialogues.length === 0) return;
+  dialogues.forEach(d => _matchDialogueQueue.push(d));
+  if (_matchDialogueQueue.length === dialogues.length) {
+    _enqueuePopup(() => _renderNextMatchDialogue());
+  }
+}
+
+function _renderNextMatchDialogue() {
+  if (_matchDialogueQueue.length === 0) return;
+  const d = _matchDialogueQueue[0];
+
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _matchDialogueQueue.shift(); return; }
+
+  const rb = d.rivalryBonus || {};
+  const rivalryColor = rb.color || '#e17055';
+
+  box.className = 'notif-modal-box notif-dramatic';
+  box.innerHTML = `
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;letter-spacing:1px">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:16px">
+      <div style="text-align:center">
+        ${portraitImg(d.winnerId, 130, 'notif-modal-face')}
+        <div style="margin-top:6px;font-size:14px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:30px">
+        <span style="font-size:28px;filter:drop-shadow(0 0 8px ${rivalryColor})">⚔️</span>
+      </div>
+      <div style="text-align:center">
+        ${portraitImg(d.loserId, 100, 'notif-modal-face')}
+        <div style="margin-top:6px;font-size:13px;color:var(--text-sub)">${d.loserName}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px;padding:12px 16px;background:rgba(212,168,67,0.08);border-left:3px solid var(--gold);border-radius:4px">
+      <div style="font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700">WINNER</div>
+      <div style="font-size:15px;color:var(--text-main);line-height:1.6">${d.winnerName}:「${d.winLine}」</div>
+    </div>
+    <div style="margin-bottom:16px;padding:12px 16px;background:rgba(231,76,60,0.06);border-left:3px solid ${rivalryColor};border-radius:4px">
+      <div style="font-size:11px;color:${rivalryColor};margin-bottom:4px;font-weight:700">LOSER</div>
+      <div style="font-size:15px;color:var(--text-sub);line-height:1.6">${d.loserName}:「${d.loseLine}」</div>
+    </div>
+    <button class="notif-modal-btn" onclick="closeMatchDialogue()">OK</button>
+  `;
+  overlay.classList.add('active');
+  Audio.play('event');
+  clearTimeout(window._notifModalTimer);
+  window._notifModalTimer = setTimeout(closeMatchDialogue, 60000);
+}
+
+function closeMatchDialogue() {
+  const overlay = document.getElementById('notifModalOverlay');
+  if (overlay) overlay.classList.remove('active');
+  clearTimeout(window._notifModalTimer);
+  _matchDialogueQueue.shift();
+  if (_matchDialogueQueue.length > 0) {
+    setTimeout(_renderNextMatchDialogue, 200);
   } else {
     _drainPopupQueue();
   }

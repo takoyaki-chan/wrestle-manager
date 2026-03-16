@@ -4079,6 +4079,13 @@ const App = {
       Audio.bgm.play('management');
       resultOverlay.classList.remove('active');
 
+    // 試合後コメントポップアップ（因縁マッチ）
+    const matchDialogues = [..._pendingMatchDialogues];
+    _pendingMatchDialogues = [];
+    if (matchDialogues.length > 0) {
+      showPostMatchDialogues(matchDialogues);
+    }
+
     // v1.3-3: Extract pending injury retirements before state changes
     const pendingInjuryRetirements = G._pendingInjuryRetirements || [];
     if (G._pendingInjuryRetirements) {
