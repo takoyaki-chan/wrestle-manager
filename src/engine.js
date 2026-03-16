@@ -10595,7 +10595,8 @@ Engine.fanExpect = {
     });
 
     // Priority 2: チャンピオンへの挑戦（人気3位以内のノンチャンプ）
-    if (champId) {
+    // タイトルマッチが可能な時のみ表示（クールダウン中は出さない）
+    if (champId && Engine.title.canTitleMatch(state).allowed) {
       const champ = roster.find(f => f.id === champId);
       if (champ) {
         const challengers = [...roster]
