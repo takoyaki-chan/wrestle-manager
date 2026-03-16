@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-16（trust欠落バグ修正: applyShowTrust をプレイヤーゲームパスに追加）
+> 最終更新: 2026-03-17（シーズンファンファーレ クリックハンドラ追加 + 契約交渉シーズン1解禁）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 

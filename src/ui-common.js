@@ -3958,10 +3958,12 @@ function showSeasonFanfare(season, onDone) {
   Audio.play('fanfare');
   window._sfDismiss = () => {
     overlay.classList.remove('show');
+    overlay.removeEventListener('click', window._sfDismiss);
     window._sfDismiss = null;
     if (onDone) setTimeout(onDone, 100);
     _drainPopupQueue();
   };
+  overlay.addEventListener('click', window._sfDismiss);
   // 安全策: 通常はタップで閉じるが、万が一に備えて長めのフォールバックを残す
   clearTimeout(window._sfTimer);
   window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 60000);

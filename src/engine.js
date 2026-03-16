@@ -7401,7 +7401,7 @@ const Engine = {
 
       } else if (offWeek === 4) {
         // OffWeek 4 (NEW): 契約更新交渉 — シーズン開幕前に低trust選手との1対1交渉
-        if (s.season >= 2 && !s.pendingContractNegotiations) {
+        if (s.season >= 1 && !s.pendingContractNegotiations) {
           const contractRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0E7));
           const negResult = Engine.contract.generateNegotiations(contractRng, s);
           // §13.5: P-自発的残留の通知
