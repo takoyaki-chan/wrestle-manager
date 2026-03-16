@@ -8042,9 +8042,11 @@ Engine.orgPop = {
     const venueShift = (venueIdx != null && typeof VENUE_MQ_THRESHOLD[venueIdx] === 'number')
       ? VENUE_MQ_THRESHOLD[venueIdx] : 0;
     // 下落ペナルティ倍率: 大会場ほど低MQのダメージが大きい
-    const negMult = venueShift >= 10 ? 1.2 : (venueShift >= 6 ? 1.1 : (venueShift <= -7 ? 0.5 : 1.0));
+    let negMult = venueShift >= 10 ? 1.2 : (venueShift >= 6 ? 1.1 : (venueShift <= -7 ? 0.5 : 1.0));
     // 序盤保護: orgPop < 30 の弱小団体はファン期待値が低く、低MQでもペナルティが入りにくい
     const earlyProtect = orgPop < 30 ? -Math.round((30 - orgPop) * 0.4) : 0;
+    // 超創設期: orgPop < 15 はファンがほぼいないので失うものがない → 下落なし
+    if (orgPop < 15) negMult = 0;
     return { shift: venueShift + earlyProtect, negMult };
   }
 };
