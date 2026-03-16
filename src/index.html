@@ -1898,17 +1898,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 </div>
 
 <!-- Coach Tooltip Overlay -->
-<div class="coach-tooltip-overlay" id="coachTooltipOverlay" onclick="closeCoachTooltip()">
-  <div class="coach-tooltip-box" id="coachTooltipBox" onclick="event.stopPropagation()"></div>
+<div class="coach-tooltip-overlay" id="coachTooltipOverlay">
+  <div class="coach-tooltip-box" id="coachTooltipBox"></div>
 </div>
 
 <!-- Fighter Detail Popup -->
-<div class="fighter-popup-overlay" id="fighterPopupOverlay" onclick="closeFighterPopup()">
-  <div class="fighter-popup-box" id="fighterPopupBox" onclick="event.stopPropagation()"></div>
+<div class="fighter-popup-overlay" id="fighterPopupOverlay">
+  <div class="fighter-popup-box" id="fighterPopupBox"></div>
 </div>
 
-<div class="event-popup-overlay" id="eventPopupOverlay" onclick="closeEventPopup()">
-  <div class="event-popup" id="eventPopupBox" onclick="event.stopPropagation()"></div>
+<div class="event-popup-overlay" id="eventPopupOverlay">
+  <div class="event-popup" id="eventPopupBox"></div>
 </div>
 
 <div class="rivalry-popup-overlay" id="rivalryPopupOverlay">
@@ -1944,22 +1944,22 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <div class="notif-event-toast" id="notifEventToast"></div>
 
 <!-- P1: ケアリアクション モーダル -->
-<div class="care-modal-overlay" id="careModalOverlay" onclick="closeCareModal()">
-  <div class="care-modal-box" id="careModalBox" onclick="event.stopPropagation()"></div>
+<div class="care-modal-overlay" id="careModalOverlay">
+  <div class="care-modal-box" id="careModalBox"></div>
 </div>
 
 <!-- P1: 通知イベント モーダル -->
-<div class="notif-modal-overlay" id="notifModalOverlay" onclick="closeNotifModal()">
-  <div class="notif-modal-box" id="notifModalBox" onclick="event.stopPropagation()"></div>
+<div class="notif-modal-overlay" id="notifModalOverlay">
+  <div class="notif-modal-box" id="notifModalBox"></div>
 </div>
 
 <!-- v2.0: ケアアクション モーダル -->
-<div class="care-overlay" id="careOverlay" onclick="document.getElementById('careOverlay').classList.remove('active')">
-  <div class="care-box" id="careBox" onclick="event.stopPropagation()"></div>
+<div class="care-overlay" id="careOverlay">
+  <div class="care-box" id="careBox"></div>
 </div>
 
 <!-- v1.9: Season Fanfare -->
-<div class="season-fanfare-overlay" id="seasonFanfareOverlay" onclick="window._sfDismiss&&window._sfDismiss()">
+<div class="season-fanfare-overlay" id="seasonFanfareOverlay">
   <div class="season-fanfare-box" id="seasonFanfareBox"></div>
 </div>
 
@@ -1969,8 +1969,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 </div>
 
 <!-- v2.1: クレジット画面 -->
-<div class="credits-overlay" id="creditsOverlay" onclick="App.closeCredits()">
-  <div class="credits-box" onclick="event.stopPropagation()">
+<div class="credits-overlay" id="creditsOverlay">
+  <div class="credits-box">
     <div class="credits-title">CREDITS</div>
     <div class="credits-section">
       <div class="credits-heading">ゲームデザイン・開発</div>

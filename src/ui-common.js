@@ -424,9 +424,6 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
   overlay.querySelector('.r3-modal-close').addEventListener('click', () => {
     overlay.remove();
   });
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.remove();
-  });
 
   document.body.appendChild(overlay);
 }

@@ -4167,9 +4167,7 @@ function _drawRelmapAfterRender() {
   if (ctxDetail) ctxDetail.onclick = () => { if (_relmapCtxTarget) showFighterPopup(_relmapCtxTarget); _relmapHideCtxMenu(); };
   if (ctxCompare) ctxCompare.onclick = () => { if (_relmapCtxTarget) _relmapHandleCompareClick(_relmapCtxTarget); _relmapHideCtxMenu(); };
 
-  // Popup overlay close
-  const popOver = document.getElementById('relmapPopupOverlay');
-  if (popOver) popOver.addEventListener('click', e => { if (e.target === e.currentTarget) _relmapClosePopup(); });
+  // Popup overlay: ボタンでのみ閉じる（外部クリック無効）
 
   // Show detail for initial center if set
   if (_relmapCenterId) _relmapShowDetailForNode(_relmapCenterId);
