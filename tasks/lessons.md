@@ -8,23 +8,15 @@ HTML文字列内で描画は不可能。`showFighterPopup` では `buildPopup()`
 `let _dbSubTab = 0` のようにファイルスコープ変数で状態管理。
 onclick で `setDbSubTab(idx)` を呼び `renderDatabase()` を再呼び出しするパターン。
 
-## `overlay.classList.add('active')` は複数箇所にあるため replace_all=false 時は一意な文脈が必要
-ui-common.js の末尾追記では周囲のコードを十分含めて一意にすること。
-
 ## refreshAll() には新しいレンダラを追加すること
 新しい画面を追加した場合は `refreshAll()` に `renderDatabase()` 等を追加。ただし常時呼ばれるため軽量に保つこと。
 
 ## Engine.database の getAllFighters は dormantPool 除外が必須
 仕様書「dormantPool（出現待ち）は絶対に非表示」に従い、`state.dormantPool` は収集対象外。
 
-## NPC の orgPop は state.aiOrgs[id].orgPop で取得（なければティアデフォルト値）
-AI団体の orgPop は `state.aiOrgs?.[orgId]?.orgPop` に格納されている場合とない場合がある。
-ない場合は tier に応じたデフォルト値（S=75, A=50, B=30）で代替。
-
-## プレビュー検証時のセーブデータ運用
-ユーザーのセーブデータの保全は不要（ユーザー了承済み）。
-検証効率を優先し、必要に応じて検証用セーブデータを作成してよい。
-例: 特定の状態（シーズン中盤・高orgPop・因縁成立済みなど）を再現するセーブを作り、バグ確認に使う。
+## getAllFighters の AI団体データ取得
+- orgPop は `state.aiOrgs?.[orgId]?.orgPop` から取得。ない場合は tier デフォルト値（S=75, A=50, B=30）で代替。
+- 団体名は `state.rivalOrgNames` から取得。`RIVAL_ORGS[id].name` は '' で初期化されており使えない。`state.rivalOrgNames?.[org.id] || org.name || org.id` を使うこと。
 
 ## processWeek と advanceWeek は交互呼び出しが必要
 `processWeek()` は `weekPhase === 'manage'` のときのみ動作し、実行後 weekPhase が変わる。
@@ -40,29 +32,18 @@ processManage で `result._pendingXxx` を設定しても、tickWeek で `manage
 FIXED_COSTS.facility を削除したが renderFinance() の `${FIXED_COSTS.facility}万/週` 参照が残り "undefined万/週" 表示になった。
 定数削除・システム廃止時は grep で全参照を確認し、UI表示コードを含め全箇所を同時に修正すること。
 
-## Engine.database.getAllFighters の AI団体名は rivalOrgNames から取得すること
-RIVAL_ORGS[id].name は '' で初期化されており実際の団体名は state.rivalOrgNames に格納される。
-getAllFighters で `_orgName` を設定する際は `state.rivalOrgNames?.[org.id] || org.name || org.id` を使うこと。
-
 ## セーブデータ互換: AI団体選手が freeAgents に混入する問題
 旧セーブデータで aiOrgs が未初期化だった場合、本来AI団体に所属すべき選手が freeAgents に残ったまま移行されることがある。
 対処: app.js の Storage.load() 内でセーブ読込後に `f.orgId && aiOrgIds.has(f.orgId)` な FA 選手を AI 団体ロスターに移動する整合性チェックを追加。
 またプレイヤーロスターと FA の重複も同様にチェック・除去すること。
 
-## 月次収支レポートの集計キーは興行固有ラベルを別扱いにすること
-`d.label.replace(/（.*?）/g, '')` で全括弧を除去すると、異なる会場の「チケット収入（...）」と「会場費（...）」が同一キーにマージされ最後の会場名で上書きされる。
-対策: `チケット収入` と `会場費` で始まるラベルはフルラベルをそのままキーに使い、会場・動員単位で別行表示する。
-
 ## 設計書に定義済みの仕様は実装完了を必ず確認すること
-B-4マンネリペナルティ（difficulty-rebalance-design-v1.0.md §3 B-4）が設計書で優先度★★★と定義されていたにもかかわらず、実装されていなかった。
-設計書に記載されたメカニクスは、他の仕組み（レンタル、因縁）と連動して初めてバランスが取れる場合がある。実装漏れは単体の機能欠落ではなく、ゲームバランス全体の破綻に繋がる。
+設計書に記載されたメカニクスは、他の仕組みと連動して初めてバランスが取れる場合がある。実装漏れは単体の機能欠落ではなく、ゲームバランス全体の破綻に繋がる。
 新機能の実装時は、関連する設計済みメカニクスが全て実装済みかを横断的に確認すること。
 
 ## ロードマップ・開発計画はリポジトリ内で管理すること（Notion禁止）
-ロードマップや開発タスクをNotionページに書き込んではならない。
 管理場所は `docs/game-system-roadmap.md` および `tasks/` ディレクトリ内のファイルに限定する。
 Notionはゲーム設計書や世界観設定の参照元であり、開発管理ツールとして使わない。
-発生事例: 古いv0.1設計書にフィードバック整理セクションを追記してしまった（2026-03-02）。
 
 ## specs/ ファイルの命名規則と運用ルール
 ### 命名規則
@@ -78,3 +59,8 @@ Notionはゲーム設計書や世界観設定の参照元であり、開発管�
 - **新バージョンを作ったら旧バージョンは即archive移動**。同一specの複数バージョンをアクティブに残さない
 - **[OUTDATED]注記は一時措置**。最終的にはarchive移動かmaster-specへの統合で解消する
 - **docs/ との役割分離**: specs/ = 個別機能の詳細仕様、docs/ = 横断的な設計文書・ロードマップ・分析
+
+## キャラクター生成パスではフィールドセットを統一すること
+`makeAIFighter` に condition フィールドが無く、FA選手加入時に `condition: undefined` → NaN伝播が発生した。
+`makeChar`（プレイヤー用）にはあったが `makeAIFighter`（AI/FA用）に無かった。
+新しいキャラクター生成パスを追加する際は、makeChar と同じフィールドセットを持つか必ず確認する。

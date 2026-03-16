@@ -108,8 +108,3 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - **大きなリバランスや数値変更の後** → 手動で大規模テスト（100×100）を推奨
 - **app.js や UI のみの変更** → 不要
 
-### 教訓: makeAIFighter condition未設定バグ（2026-03-05検出）
-- `makeAIFighter` にconditionフィールドが無く、FA選手がロスター加入時に `condition: undefined` → NaN伝播
-- `makeChar`（プレイヤー用）にはあったが `makeAIFighter`（AI/FA用）に無かった
-- **教訓: 新しいキャラクター生成パスを追加する際は、makeCharと同じフィールドセットを持つか必ず確認する**
-- auto-sim 10,000シーズンで61%のシードで再現 → 修正後100%クリア
