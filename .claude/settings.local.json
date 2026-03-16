@@ -104,7 +104,18 @@
       "Bash(wc -l \"C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\src\"/*.js)",
       "Bash(node test/test-b3-fix.js)",
       "Bash(node test/auto-sim.js 50 12345)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(node test/auto-sim.js 1 31337)",
+      "Bash(node test/auto-sim.js 50 31337)",
+      "Bash(node tests/relationship-balance-test.js)",
+      "Bash(node test/auto-sim.js 100)",
+      "Bash(sed -n '4110,4120p' src/app.js)",
+      "Bash(sed -n '4255,4265p' src/app.js)",
+      "Bash(sed -n '4308,4318p' src/app.js)",
+      "Bash(sed -n '4564,4574p' src/app.js)",
+      "Bash(node test/auto-sim.js 100 42)",
+      "Bash(node test/auto-sim.js 500 42)",
+      "Bash(awk 'NR>=4517 && NR<=4700 && /trust/' /c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)"
     ]
   }
 }

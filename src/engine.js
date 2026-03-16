@@ -13551,6 +13551,12 @@ Engine.snapshot = {
   _resolveVoice(rng, voiceData, fighter) {
     if (!voiceData) return '…';
 
+    const v = fighter?.voice;
+    if (v && voiceData._voice?.[v]) {
+      const vc = voiceData._voice[v];
+      return vc[Engine.rng.int(rng, 0, vc.length - 1)];
+    }
+
     const personality = (fighter && fighter.personality) || 'normal';
     const archetype = (fighter && fighter.archetype) || 'normal';
 
