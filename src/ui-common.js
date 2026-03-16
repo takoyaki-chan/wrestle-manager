@@ -2088,7 +2088,7 @@ function showFighterPopup(fighterId, source) {
       if (isRoster || isFree) {
         const potPct = getPotentialPct(c);
         const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
-        const condPct = c.condition || 0;
+        const condPct = Math.round(c.condition || 0);
         const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
         html += `<div class="fighter-popup-section" style="display:flex;gap:16px;font-size:13px;margin-bottom:12px">
           <div style="flex:1">

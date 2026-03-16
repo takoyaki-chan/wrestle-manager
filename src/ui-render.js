@@ -755,7 +755,7 @@ function renderWeekScreen() {
     const _ownRosterWk = G.roster.filter(c => !c.isRental);
     const _rentalRosterWk = G.roster.filter(c => c.isRental);
     const _renderWeekRow = c => {
-      const condPct = c.condition;
+      const condPct = Math.round(c.condition);
       const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
       const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
       const statusHtml = c.injury
@@ -1403,7 +1403,7 @@ function renderRoster() {
   </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
-    const condPct = c.condition;
+    const condPct = Math.round(c.condition);
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
     const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
@@ -1490,7 +1490,7 @@ function renderRoster() {
     html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#f39c12">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:4px">';
     rentalFighters.forEach(c => {
-      const condPct = c.condition;
+      const condPct = Math.round(c.condition);
       const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
       const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
       const contract = (G.rentals || []).find(r => r.fighterId === c.id);
@@ -1686,7 +1686,7 @@ function renderShowPrep() {
         const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
         const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
         const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${c.condition})${usedSuffix}${lastRunSuffix}</option>`;
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${Math.round(c.condition)})${usedSuffix}${lastRunSuffix}</option>`;
       });
       return opts;
     };
