@@ -3525,7 +3525,7 @@ const App = {
       roster = mqPop.roster;
     });
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, s.showVenue);
     roster = popResult.roster;
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
