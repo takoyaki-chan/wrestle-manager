@@ -115,7 +115,8 @@
       "Bash(sed -n '4564,4574p' src/app.js)",
       "Bash(node test/auto-sim.js 100 42)",
       "Bash(node test/auto-sim.js 500 42)",
-      "Bash(awk 'NR>=4517 && NR<=4700 && /trust/' /c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)"
+      "Bash(awk 'NR>=4517 && NR<=4700 && /trust/' /c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)",
+      "Bash(node test/auto-sim.js 10 42)"
     ]
   }
 }
