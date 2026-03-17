@@ -11272,6 +11272,17 @@ Engine.contract = {
   // ── 金銭計算 ─────────────────────────────────────────────────────────────
   calcRaiseAmount(fighter, state) {
     const currentSalary = Engine.util.getSalary(fighter, state.titles);
+    const fairSalary = Engine.util.getSalary(
+      { ...fighter, contractOVR: Engine.util.ov(fighter), contractPop: fighter.popularity || 0 },
+      state.titles
+    );
+    const gap = fairSalary - currentSalary;
+    if (gap > 3) {
+      // 給料ギャップがある場合: ギャップの60-80%を要求
+      const gapRaise = Math.round(gap * 0.7);
+      return Engine.util.clamp(gapRaise, 3, 50);
+    }
+    // ギャップが小さい場合: 従来の割合ベース計算
     const ovr = Engine.util.ov(fighter);
     const pop = fighter.popularity || 1;
     const ovrFactor = Math.pow(ovr / 60, 1.5);
@@ -11300,17 +11311,31 @@ Engine.contract = {
 
     for (const f of roster) {
       const trust = f.trust != null ? f.trust : 50;
-      // §13.5: P-自発的残留（trust 75+で交渉スキップ）
-      if (trust >= 75) {
+
+      // 給料ギャップ判定: 現在の契約給 vs 実力相応の給料
+      const currentSalary = Engine.util.getSalary(f, state.titles);
+      const fairSalary = Engine.util.getSalary(
+        { ...f, contractOVR: Engine.util.ov(f), contractPop: f.popularity || 0 },
+        state.titles
+      );
+      const salaryRatio = currentSalary > 0 ? fairSalary / currentSalary : 1;
+      const hasUnderpay = salaryRatio >= 1.5; // 実力の2/3以下の給料
+
+      if (trust >= 75 && !hasUnderpay) {
+        // §13.5: P-自発的残留（trust 75+かつ給料に不満なし）
         const line = Engine.contract.getVoluntaryStayLine(rng, f);
         voluntaryStays.push({ fighterId: f.id, fighterName: f.name, line });
         continue;
       }
-      if (trust >= 40) continue; // 自動残留
+      if (trust >= 40 && !hasUnderpay) continue; // 自動残留
 
       // 態度と基本確率の決定
       let attitude, baseProb;
-      if (trust >= 25) {
+      if (hasUnderpay && trust >= 40) {
+        // 信頼は高いが給料が見合っていない → 昇給交渉（確定発生）
+        attitude = 'raise';
+        baseProb = 1.0;
+      } else if (trust >= 25) {
         attitude = 'raise';
         baseProb = trust >= 30 ? (0.60 + (40 - trust) * 0.03) : 0.90;
       } else {
@@ -11318,12 +11343,14 @@ Engine.contract = {
         baseProb = trust >= 15 ? (0.50 + (25 - trust) * 0.05) : 1.0;
       }
 
-      // 特性補正
-      if (Traits.has(f, '忠誠心')) baseProb *= 0.5;
-      if (Traits.has(f, '反骨心')) baseProb += 0.20;
-      if (Traits.has(f, '野心') && f.id !== isChampId) baseProb += 0.15;
-      if (f.id === isChampId) baseProb -= 0.30;
-      baseProb = Engine.util.clamp(baseProb, 0.05, 1.0);
+      // 特性補正（給料ギャップ確定発生の場合は抽選なし）
+      if (!(hasUnderpay && trust >= 40)) {
+        if (Traits.has(f, '忠誠心')) baseProb *= 0.5;
+        if (Traits.has(f, '反骨心')) baseProb += 0.20;
+        if (Traits.has(f, '野心') && f.id !== isChampId) baseProb += 0.15;
+        if (f.id === isChampId) baseProb -= 0.30;
+        baseProb = Engine.util.clamp(baseProb, 0.05, 1.0);
+      }
 
       if (Engine.rng.float(rng) >= baseProb) continue;
 
@@ -11344,8 +11371,14 @@ Engine.contract = {
       });
     }
 
-    // 上限4名: trust低い順に選出
-    negotiations.sort((a, b) => a.trust - b.trust);
+    // 上限4名: 給料ギャップ交渉を優先、次にtrust低い順
+    negotiations.sort((a, b) => {
+      // 給料ギャップ交渉は優先度高
+      const aUnderpay = a.trust >= 40 ? 1 : 0;
+      const bUnderpay = b.trust >= 40 ? 1 : 0;
+      if (aUnderpay !== bUnderpay) return bUnderpay - aUnderpay;
+      return a.trust - b.trust;
+    });
     const capped = negotiations.slice(0, 4);
     return {
       negotiations: capped,
