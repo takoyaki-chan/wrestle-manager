@@ -1991,11 +1991,11 @@ function findFighter(fighterId, source) {
   return null;
 }
 
-function showFighterPopup(fighterId, source) {
+function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const c = findFighter(fighterId, source);
   if (!c) return;
-  // 他のポップアップが表示中ならキューに入れる
-  if (_isPopupActive()) { _popupQueue.push(() => showFighterPopup(fighterId, source)); return; }
+  // 他のポップアップが表示中ならキューに入れる（自分自身のタブ切り替え時はスキップ）
+  if (!_skipQueueCheck && _isPopupActive()) { _popupQueue.push(() => showFighterPopup(fighterId, source)); return; }
   Audio.play('hover');
 
   const STYLE_META = {
@@ -2126,7 +2126,7 @@ function showFighterPopup(fighterId, source) {
     if (isRoster) tabs.push('⚙️ 管理');
     if (tabIdx >= tabs.length) tabIdx = 0;
     html += `<div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15)">
-      ${tabs.map((t, i) => `<button onclick="event.stopPropagation();window._fpTab=${i};showFighterPopup(${c.id},'${source||''}')"
+      ${tabs.map((t, i) => `<button onclick="event.stopPropagation();_switchFighterTab(${c.id},'${source||''}',${i})"
         style="flex:1;padding:10px 6px;font-size:13px;background:${i===tabIdx?'rgba(255,255,255,0.05)':'none'};border:none;border-bottom:2px solid ${i===tabIdx?'var(--gold)':'transparent'};color:${i===tabIdx?'var(--text)':'var(--text-dim)'};cursor:pointer;transition:all 0.2s">${t}</button>`).join('')}
     </div>`;
 
@@ -2548,6 +2548,12 @@ function closeFighterPopup() {
   window._fpTab = 0; // Reset to first tab
   document.getElementById('fighterPopupOverlay').classList.remove('active');
   _drainPopupQueue();
+}
+
+// タブ切り替え専用関数：キュー判定をスキップして直接再描画
+function _switchFighterTab(fighterId, source, tabIdx) {
+  window._fpTab = tabIdx;
+  showFighterPopup(fighterId, source, true); // true = キュー判定スキップ
 }
 
 // Phase 6: 相関図画面を開く
