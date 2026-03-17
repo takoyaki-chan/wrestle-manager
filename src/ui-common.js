@@ -3372,20 +3372,14 @@ function renderPPVMatchPreview() {
     if (match.hype && isNext && !isResolved) {
       html += `<div style="text-align:center;font-size:12px;color:var(--gold);font-style:italic;margin-bottom:4px;line-height:1.4">${match.hype}</div>`;
     }
-    // セリフ演出（未解決の次の試合のみ — 自団体選手がいる場合は両者のセリフ表示）
+    // セリフ演出（未解決の次の試合のみ — 両者のセリフを名前付きで表示）
     if (isNext && !isResolved) {
-      const hasPlayerFighter = match.left._ppvOrgId === 'player' || match.right._ppvOrgId === 'player';
-      if (hasPlayerFighter) {
-        // 自団体選手がいる試合: 両者のキャラセリフを表示
-        const lineL = _getPPVPreMatchLine(match.left);
-        const lineR = _getPPVPreMatchLine(match.right);
-        html += `<div style="margin:6px 0;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">`;
-        html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:4px"><span style="color:${orgColorL};font-weight:600">${match.left.name}</span>「${lineL}」</div>`;
-        html += `<div style="font-size:12px;color:var(--text-main)"><span style="color:${orgColorR};font-weight:600">${match.right.name}</span>「${lineR}」</div>`;
-        html += `</div>`;
-      } else if (match.opponentLineRight) {
-        html += `<div style="text-align:center;font-size:11px;color:var(--text-sub);margin-bottom:6px">「${match.opponentLineRight}」</div>`;
-      }
+      const lineL = _getPPVPreMatchLine(match.left);
+      const lineR = _getPPVPreMatchLine(match.right);
+      html += `<div style="margin:6px 0;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">`;
+      html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:4px"><span style="color:${orgColorL};font-weight:600">${match.left.name}</span>「${lineL}」</div>`;
+      html += `<div style="font-size:12px;color:var(--text-main)"><span style="color:${orgColorR};font-weight:600">${match.right.name}</span>「${lineR}」</div>`;
+      html += `</div>`;
     }
 
     if (isResolved) {
@@ -3419,15 +3413,8 @@ function renderPPVMatchPreview() {
   overlay.classList.add('active');
 }
 
-/** PPV試合前のキャラセリフ取得（VICTORY_LINESベース or PPV_OPPONENT_LINES フォールバック） */
+/** PPV試合前のキャラセリフ取得（personality×archetypeベースの汎用セリフ） */
 function _getPPVPreMatchLine(fighter) {
-  // VICTORY_LINESからキャラ固有セリフがあればPPV風にアレンジ
-  const vl = (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]) || null;
-  if (vl && vl.length > 0) {
-    // 勝利セリフの一部をそのまま使う（PPV前の意気込みとして自然）
-    return vl[Math.floor(Math.random() * vl.length)];
-  }
-  // フォールバック: personality×archetypeベースの汎用セリフ
   return pickDialogueLine(PPV_OPPONENT_LINES, fighter);
 }
 
