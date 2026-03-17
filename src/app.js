@@ -3055,7 +3055,14 @@ const App = {
 
   // Toggle title match
   toggleTitleMatch(slotIndex) {
-    G = { ...G, showCard: G.showCard.map((slot, i) => i === slotIndex ? { ...slot, isTitle: !slot.isTitle } : slot) };
+    const newVal = !G.showCard[slotIndex].isTitle;
+    // 空位時は王者決定戦を1枠に制限（ONにしたスロット以外はOFF）
+    const isVacant = G.titleEstablished && !G.titles?.world?.championId;
+    G = { ...G, showCard: G.showCard.map((slot, i) => {
+      if (i === slotIndex) return { ...slot, isTitle: newVal };
+      if (isVacant && newVal) return { ...slot, isTitle: false };
+      return slot;
+    }) };
     renderShowPrep();
   },
 
