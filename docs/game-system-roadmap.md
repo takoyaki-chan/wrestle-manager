@@ -1,12 +1,30 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-17（シーズンファンファーレ クリックハンドラ追加 + 契約交渉シーズン1解禁）
+> 最終更新: 2026-03-17（契約更新交渉 v2.0: trust×給与ギャップ2軸マトリクス + 突発退団）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
 ---
 
 ## 現在の状態
+
+**契約更新交渉 v2.0 実装完了（2026-03-17）。** trust単軸の発火条件をtrust×給与ギャップ2軸マトリクスに全面刷新。突発退団（新態度）追加。金銭計算を適正給ベースに改善。
+
+- **trust×ギャップ2軸マトリクス（§4）**: trust 5帯域(75+/40-74/30-39/15-29/<15) × ギャップ3段階(なし<1.1/あり1.1-1.3/大≥1.3)の15セル判定。trust 40+でもギャップ≥1.1なら確定発火。自発的残留はtrust 75+かつギャップなしのみ
+- **calcGapRatio新設（§3）**: fairSalary(現在OVR/pop) / currentSalary(contractOVR/contractPop)で給与ギャップ比率を算出
+- **突発退団（§5.3）**: trust < 15 かつ gapRatio ≥ 1.1 で30-50%の確率で交渉不可の即退団。personality×archetype別セリフ（7性格×6口調）。UI:「……わかった」ボタンのみの専用画面
+- **深刻度スコアソート（§4.6）**: `(100-trust) + (gapRatio-1.0)*100` で交渉優先度を決定。上位4名を選出
+- **calcRaiseAmount改善（§14-A.1）**: 契約給ベース→適正給差額ベース。ギャップあり: 差額の50-80%を要求（pop依存）。ギャップなし: 契約給の10-15%
+- **calcRetentionBonus改善（§14-A.2）**: 契約給ベース→適正給ベース。実力相応の引き留めコスト
+- **交渉B成功率改善（§14-B.2）**: ベース50%→60%、trust寄与2倍、ギャップ補正(なし+10%/大-10%)
+- **引き留め成功率ギャップ補正（§7.5）**: ギャップあり-10%、ギャップ大-20%
+- **残留成功時モラール上昇（§14-A.3）**: 通常+2、初期メンバー+4
+- **tone属性追加**: negotiationオブジェクトにtone(polite/normal/firm/angry/ultimatum/final)を追加
+- **gapRatio属性追加**: negotiationオブジェクトにgapRatioを追加（UI表示・ロジック参照用）
+- **CONFIG更新**: trustThresholds 2段階→5段階、gapThresholds新設、minSeason 2→1、raiseLimits max 30→50
+- 変更: engine.js, data.js, ui-common.js, app.js, test/auto-sim.js
+- 設計書: specs/contract-negotiation-event-spec-v2.0.md
+- auto-sim 100シーズン ALL CLEAR
 
 **trust欠落バグ修正（2026-03-16）完了。**
 

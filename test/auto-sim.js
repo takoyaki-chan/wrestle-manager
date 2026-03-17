@@ -164,6 +164,13 @@ function autoHandleContractNegotiation(G, simRng) {
   const negotiations = G.pendingContractNegotiations || [];
   let state = { ...G };
   for (const neg of negotiations) {
+    const resolveRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId));
+    // v2.0: 突発退団は選択肢なし — 即退団
+    if (neg.attitude === 'sudden_departure') {
+      const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, 0);
+      state = result.state;
+      continue;
+    }
     const roll = Engine.rng.float(simRng);
     let choiceIdx, subChoice;
     if (neg.attitude === 'raise') {
@@ -175,7 +182,6 @@ function autoHandleContractNegotiation(G, simRng) {
       else if (roll < 0.8) { choiceIdx = 1; subChoice = 'retain'; }
       else { choiceIdx = 2; }
     }
-    const resolveRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId));
     const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, choiceIdx, subChoice);
     state = result.state;
     // 昇給拒否→移籍志願に発展した場合、引き留めを試みる

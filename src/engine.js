@@ -11269,7 +11269,18 @@ Engine.contract = {
     return { careerSeasons: seasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
   },
 
-  // ── 金銭計算 ─────────────────────────────────────────────────────────────
+  // ── 給与ギャップ算出（v2.0 §3）──────────────────────────────────────────
+  calcGapRatio(fighter, state) {
+    const currentSalary = Engine.util.getSalary(fighter, state.titles);
+    if (currentSalary <= 0) return 1.0;
+    const fairSalary = Engine.util.getSalary(
+      { ...fighter, contractOVR: Engine.util.ov(fighter), contractPop: fighter.popularity || 0 },
+      state.titles
+    );
+    return fairSalary / currentSalary;
+  },
+
+  // ── 金銭計算（v2.0 §7 + §14-A）──────────────────────────────────────────
   calcRaiseAmount(fighter, state) {
     const currentSalary = Engine.util.getSalary(fighter, state.titles);
     const fairSalary = Engine.util.getSalary(
@@ -11277,32 +11288,33 @@ Engine.contract = {
       state.titles
     );
     const gap = fairSalary - currentSalary;
-    if (gap > 3) {
-      // 給料ギャップがある場合: ギャップの60-80%を要求
-      const gapRaise = Math.round(gap * 0.7);
-      return Engine.util.clamp(gapRaise, 3, 50);
-    }
-    // ギャップが小さい場合: 従来の割合ベース計算
-    const ovr = Engine.util.ov(fighter);
     const pop = fighter.popularity || 1;
-    const ovrFactor = Math.pow(ovr / 60, 1.5);
-    const baseRaisePct = 0.15 + (pop / 100) * 0.10;
-    const raw = Math.round(currentSalary * baseRaisePct * ovrFactor);
-    return Engine.util.clamp(raw, 3, 30);
+    if (gap <= 0) {
+      // ギャップなし — trustベースの昇給要求（小額）
+      const baseRaisePct = 0.10 + (pop / 100) * 0.05;
+      return Engine.util.clamp(Math.round(currentSalary * baseRaisePct), 2, 15);
+    }
+    // ギャップあり — 差額の50〜80%を要求（人気が高いほど要求も高い）
+    const demandPct = 0.50 + (pop / 100) * 0.30;
+    return Engine.util.clamp(Math.round(gap * demandPct), 3, 50);
   },
 
   calcCounterOffer(raiseAmount) {
     return Math.max(2, Math.round(raiseAmount * 0.5));
   },
 
+  // §14-A.2: 引き留めボーナスを適正給ベースに
   calcRetentionBonus(fighter, state) {
-    const currentSalary = Engine.util.getSalary(fighter, state.titles);
+    const fairSalary = Engine.util.getSalary(
+      { ...fighter, contractOVR: Engine.util.ov(fighter), contractPop: fighter.popularity || 0 },
+      state.titles
+    );
     const ovr = Engine.util.ov(fighter);
     const weeksFactor = 8 + Math.floor(ovr / 20);
-    return Math.round(currentSalary * weeksFactor);
+    return Math.round(fairSalary * weeksFactor);
   },
 
-  // ── 交渉対象の生成 ───────────────────────────────────────────────────────
+  // ── 交渉対象の生成（v2.0 §4 trust×ギャップ2軸マトリクス）─────────────
   generateNegotiations(rng, state) {
     const roster = (state.roster || []).filter(c => !c.isRental);
     const negotiations = [];
@@ -11311,40 +11323,69 @@ Engine.contract = {
 
     for (const f of roster) {
       const trust = f.trust != null ? f.trust : 50;
+      const gapRatio = Engine.contract.calcGapRatio(f, state);
+      // §3.2: ギャップ3段階
+      const gapLevel = gapRatio >= 1.3 ? 'large' : (gapRatio >= 1.1 ? 'mid' : 'none');
 
-      // 給料ギャップ判定: 現在の契約給 vs 実力相応の給料
-      const currentSalary = Engine.util.getSalary(f, state.titles);
-      const fairSalary = Engine.util.getSalary(
-        { ...f, contractOVR: Engine.util.ov(f), contractPop: f.popularity || 0 },
-        state.titles
-      );
-      const salaryRatio = currentSalary > 0 ? fairSalary / currentSalary : 1;
-      const hasUnderpay = salaryRatio >= 1.5; // 実力の2/3以下の給料
-
-      if (trust >= 75 && !hasUnderpay) {
-        // §13.5: P-自発的残留（trust 75+かつ給料に不満なし）
+      // §4.1: 自発的残留 — trust 75+ かつギャップなし
+      if (trust >= 75 && gapLevel === 'none') {
         const line = Engine.contract.getVoluntaryStayLine(rng, f);
         voluntaryStays.push({ fighterId: f.id, fighterName: f.name, line });
         continue;
       }
-      if (trust >= 40 && !hasUnderpay) continue; // 自動残留
+      // §4.1: 自動残留 — trust 40〜74 かつギャップなし
+      if (trust >= 40 && gapLevel === 'none') continue;
 
-      // 態度と基本確率の決定
-      let attitude, baseProb;
-      if (hasUnderpay && trust >= 40) {
-        // 信頼は高いが給料が見合っていない → 昇給交渉（確定発生）
+      // ── trust × ギャップ マトリクスで態度・確率を決定 ──
+      let attitude, baseProb, tone;
+
+      if (trust >= 75) {
+        // §4.3: trust 75+ でギャップあり → 丁寧な昇給相談/昇給要求
         attitude = 'raise';
-        baseProb = 1.0;
-      } else if (trust >= 25) {
+        tone = gapLevel === 'mid' ? 'polite' : 'normal';
+        baseProb = 1.0; // ギャップ起因は確定発火（§4.5）
+      } else if (trust >= 40) {
+        // §4.3: trust 40〜74 でギャップあり → 昇給要求/強めの昇給要求
         attitude = 'raise';
-        baseProb = trust >= 30 ? (0.60 + (40 - trust) * 0.03) : 0.90;
-      } else {
+        tone = gapLevel === 'mid' ? 'normal' : 'firm';
+        baseProb = 1.0; // ギャップ起因は確定発火
+      } else if (trust >= 30) {
+        // §4.4: trust 30〜39 — 不満蓄積ゾーン
+        attitude = 'raise';
+        tone = gapLevel === 'none' ? 'normal' : (gapLevel === 'mid' ? 'firm' : 'angry');
+        baseProb = 0.60 + (40 - trust) * 0.03;
+      } else if (trust >= 15) {
+        // §4.4: trust 15〜29 — 危険ゾーン
         attitude = 'transfer';
-        baseProb = trust >= 15 ? (0.50 + (25 - trust) * 0.05) : 1.0;
+        tone = gapLevel === 'none' ? 'normal' : (gapLevel === 'mid' ? 'firm' : 'angry');
+        baseProb = trust >= 25 ? (0.50 + (25 - trust) * 0.05) : (0.50 + (25 - trust) * 0.05);
+      } else {
+        // §4.4: trust < 15 — 決裂ゾーン
+        // §5.3: 突発退団判定（gap ≥ 1.1 の場合のみ）
+        if (gapLevel !== 'none') {
+          const suddenProb = gapLevel === 'large' ? 0.50 : 0.30;
+          if (Engine.rng.float(rng) < suddenProb) {
+            // 突発退団確定
+            const context = Engine.contract.extractContext(f, state);
+            negotiations.push({
+              fighterId: f.id, fighterName: f.name,
+              attitude: 'sudden_departure', tone: 'final',
+              personality: f.personality || 'normal', archetype: f.archetype || 'normal',
+              raiseAmount: 0, counterOffer: 0,
+              retentionBonus: Engine.contract.calcRetentionBonus(f, state),
+              context, trust, gapRatio,
+            });
+            continue;
+          }
+        }
+        // 突発退団不発 or ギャップなし → 移籍志願（最後通告）
+        attitude = 'transfer';
+        tone = 'ultimatum';
+        baseProb = 1.0;
       }
 
-      // 特性補正（給料ギャップ確定発生の場合は抽選なし）
-      if (!(hasUnderpay && trust >= 40)) {
+      // §4.5: 特性補正（trust 40+ のギャップ起因は確定発火なのでスキップ）
+      if (trust < 40) {
         if (Traits.has(f, '忠誠心')) baseProb *= 0.5;
         if (Traits.has(f, '反骨心')) baseProb += 0.20;
         if (Traits.has(f, '野心') && f.id !== isChampId) baseProb += 0.15;
@@ -11358,26 +11399,21 @@ Engine.contract = {
       const raiseAmount = Engine.contract.calcRaiseAmount(f, state);
 
       negotiations.push({
-        fighterId: f.id,
-        fighterName: f.name,
-        attitude,
-        personality: f.personality || 'normal',
-        archetype: f.archetype || 'normal',
+        fighterId: f.id, fighterName: f.name,
+        attitude, tone,
+        personality: f.personality || 'normal', archetype: f.archetype || 'normal',
         raiseAmount,
         counterOffer: Engine.contract.calcCounterOffer(raiseAmount),
         retentionBonus: Engine.contract.calcRetentionBonus(f, state),
-        context,
-        trust,
+        context, trust, gapRatio,
       });
     }
 
-    // 上限4名: 給料ギャップ交渉を優先、次にtrust低い順
+    // §4.6: 深刻度スコア順にソートし上位4名を選出
     negotiations.sort((a, b) => {
-      // 給料ギャップ交渉は優先度高
-      const aUnderpay = a.trust >= 40 ? 1 : 0;
-      const bUnderpay = b.trust >= 40 ? 1 : 0;
-      if (aUnderpay !== bUnderpay) return bUnderpay - aUnderpay;
-      return a.trust - b.trust;
+      const scoreA = (100 - a.trust) + ((a.gapRatio || 1) - 1.0) * 100;
+      const scoreB = (100 - b.trust) + ((b.gapRatio || 1) - 1.0) * 100;
+      return scoreB - scoreA;
     });
     const capped = negotiations.slice(0, 4);
     return {
@@ -11454,22 +11490,49 @@ Engine.contract = {
     return text.replace(/\{tenure_farewell\}/g, insert);
   },
 
-  // ── 交渉解決 ─────────────────────────────────────────────────────────────
+  // ── 交渉解決（v2.0 §6）──────────────────────────────────────────────────
   // choiceIdx: 0=A(受ける/引留), 1=B(交渉/理由を聞く), 2=C(拒否/送り出す)
   // subChoice: 'retain'|'release' (Bの理由を聞く後のサブ選択, 移籍志願のみ)
   resolveNegotiation(rng, state, neg, choiceIdx, subChoice) {
     let s = { ...state };
+
+    // §6.3: 突発退団 — 選択肢なし、即退団
+    if (neg.attitude === 'sudden_departure') {
+      const fi = s.roster.findIndex(c => c.id === neg.fighterId);
+      if (fi < 0) return { state: s, result: { type: 'error' }, reactionDialogue: '' };
+      const f = { ...s.roster[fi] };
+      const ctx = neg.context;
+      const depResult = Engine.contract.processDeparture(rng, f, s);
+      s = depResult.state;
+      const seasons = f.careerSeasons || 0;
+      let moraleDelta = ctx.isFounder ? -8 : (seasons >= 4 ? -5 : -3);
+      if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) moraleDelta = Math.ceil(moraleDelta / 2);
+      s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100) };
+      const reactionDialogue = Engine.contract.selectDialogue(rng, neg, 'sudden_departure', ctx);
+      return {
+        state: s,
+        result: {
+          type: 'depart', fighterId: neg.fighterId, fighterName: neg.fighterName,
+          attitude: 'sudden_departure', trustDelta: 0, salaryDelta: 0, fundsCost: 0,
+          moraleDelta, escalated: false, departureInfo: depResult.info,
+        },
+        reactionDialogue,
+      };
+    }
+
     const fi = s.roster.findIndex(c => c.id === neg.fighterId);
     if (fi < 0) return { state: s, result: { type: 'error' }, reactionDialogue: '' };
     let f = { ...s.roster[fi] };
     const ctx = neg.context;
+    const gapRatio = neg.gapRatio || 1.0;
+    const gapLevel = gapRatio >= 1.3 ? 'large' : (gapRatio >= 1.1 ? 'mid' : 'none');
     let resultType = 'stay';
     let reactionPhase = '';
     let trustDelta = 0;
     let salaryDelta = 0;
     let fundsCost = 0;
     let moraleDelta = 0;
-    let escalated = false; // 移籍志願に発展したか
+    let escalated = false;
 
     if (neg.attitude === 'raise') {
       if (choiceIdx === 0) {
@@ -11478,10 +11541,13 @@ Engine.contract = {
         trustDelta = 12;
         reactionPhase = 'raise_accept';
       } else if (choiceIdx === 1) {
-        // B: 交渉する
-        let successRate = 0.50;
-        successRate += ((f.trust || 50) - 30) * 0.01;
+        // B: 交渉する（§14-B.2: ギャップ反映の成功率）
+        let successRate = 0.60;
+        successRate += ((f.trust || 50) - 30) * 0.02;
         successRate += ((f.mn || 50) - 50) * 0.005;
+        // ギャップ補正
+        if (gapLevel === 'none') successRate += 0.10;
+        else if (gapLevel === 'large') successRate -= 0.10;
         if (Traits.has(f, '忠誠心')) successRate += 0.15;
         if (Traits.has(f, '野心')) successRate -= 0.10;
         if (Traits.has(f, '反骨心')) successRate -= 0.15;
@@ -11494,14 +11560,12 @@ Engine.contract = {
         } else {
           trustDelta = -8;
           reactionPhase = 'raise_negotiate_refuse';
-          // 失敗後の展開
           const roll = Engine.rng.float(rng);
           if (roll < 0.20 && (f.trust || 50) < 20) {
-            resultType = 'depart'; // 即退団
+            resultType = 'depart';
           } else if (roll < 0.50) {
-            escalated = true; // 移籍志願に発展（UI側で表示）
+            escalated = true;
           }
-          // 残り50%: 不満を抱えたまま残留（trustDelta-8のみ）
         }
       } else {
         // C: 拒否する
@@ -11522,22 +11586,24 @@ Engine.contract = {
         if (Traits.has(f, '忠誠心')) retainRate += 0.20;
         if (Traits.has(f, '反骨心')) retainRate -= 0.15;
         if (ctx.isFounder) retainRate += 0.10;
+        // §7.5: ギャップ補正（引き留め成功率ペナルティ）
+        if (gapLevel === 'mid') retainRate -= 0.10;
+        else if (gapLevel === 'large') retainRate -= 0.20;
         retainRate = Engine.util.clamp(retainRate, 0.10, 0.80);
 
         if (Engine.rng.float(rng) < retainRate) {
           trustDelta = 8;
-          moraleDelta = 2;
+          // §14-A.3: 残留成功時のモラール上昇
+          moraleDelta = ctx.isFounder ? 4 : 2;
           reactionPhase = 'transfer_retain_success';
         } else {
           resultType = 'depart';
           reactionPhase = 'transfer_retain_fail';
         }
       } else if (choiceIdx === 1 && !subChoice) {
-        // B: 理由を聞く（サブ選択待ち — UIが再度resolveを呼ぶ）
         reactionPhase = 'transfer_listen';
-        resultType = 'listen'; // UI側でサブ選択を表示するための特別な結果
+        resultType = 'listen';
       } else {
-        // C: 送り出す / B→送り出す
         resultType = 'depart';
         reactionPhase = 'transfer_release';
       }
@@ -11570,12 +11636,10 @@ Engine.contract = {
       const depResult = Engine.contract.processDeparture(rng, f, s);
       s = depResult.state;
       departureInfo = depResult.info;
-      // モラール低下
       const seasons = f.careerSeasons || 0;
       if (ctx.isFounder) moraleDelta = -8;
       else if (seasons >= 4) moraleDelta = -5;
       else moraleDelta = -3;
-      // 人望持ちがいればペナルティ半減
       if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) {
         moraleDelta = Math.ceil(moraleDelta / 2);
       }
@@ -11599,7 +11663,7 @@ Engine.contract = {
     return {
       state: s,
       result: {
-        type: resultType, // 'stay', 'depart', 'listen', 'error'
+        type: resultType,
         fighterId: neg.fighterId,
         fighterName: neg.fighterName,
         attitude: neg.attitude,

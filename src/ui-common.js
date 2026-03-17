@@ -5600,9 +5600,11 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
   if (!overlay || !box) { if (onStart) onStart(); return; }
 
   let facesHtml = negotiations.map(n => {
-    const attBadge = n.attitude === 'raise'
-      ? '<span style="font-size:10px;color:#f39c12">💰 昇給要求</span>'
-      : '<span style="font-size:10px;color:#e74c3c">🚪 移籍志願</span>';
+    const attBadge = n.attitude === 'sudden_departure'
+      ? '<span style="font-size:10px;color:#8e44ad">⚡ 突発退団</span>'
+      : n.attitude === 'raise'
+        ? '<span style="font-size:10px;color:#f39c12">💰 昇給要求</span>'
+        : '<span style="font-size:10px;color:#e74c3c">🚪 移籍志願</span>';
     return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:4px 8px">
       ${portraitImg(n.fighterId, 52)}
       <span style="font-size:11px">${n.fighterName}</span>
@@ -5776,6 +5778,42 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
       Audio.play('click');
       if (onSubChoice) onSubChoice(this.dataset.sub);
     });
+  });
+  overlay.classList.add('active');
+}
+
+// v2.0 §12.3: 突発退団画面 — 選択肢なし、[……わかった]ボタンのみ
+function showContractSuddenDepartureModal(neg, state, onDone) {
+  const overlay = document.getElementById('careOverlay');
+  const box = document.getElementById('careBox');
+  if (!overlay || !box) { if (onDone) onDone(); return; }
+
+  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context);
+
+  box.innerHTML = `
+    <div class="care-title" style="border-bottom:1px solid #8e44ad;padding-bottom:10px;margin-bottom:12px">
+      ⚡ 突発退団
+    </div>
+    <div class="care-reaction" style="border-color:#8e44ad">
+      ${face}
+      <div class="care-reaction-bubble" style="border-color:#8e44ad">
+        <strong style="font-size:12px;color:var(--text-dim)">${neg.fighterName}</strong><br>
+        「${dialogue}」
+      </div>
+    </div>
+    <div style="font-size:12px;color:#8e44ad;margin:12px 0;padding:10px;background:rgba(142,68,173,0.08);border-radius:6px;text-align:center">
+      交渉の余地なし — ${neg.fighterName}は退団を決意しています
+    </div>
+    <button class="btn" id="contractSuddenOk" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#8e44ad;border-color:#8e44ad">
+      ……わかった
+    </button>`;
+
+  document.getElementById('contractSuddenOk').addEventListener('click', () => {
+    overlay.classList.remove('active');
+    Audio.play('click');
+    if (onDone) onDone();
   });
   overlay.classList.add('active');
 }

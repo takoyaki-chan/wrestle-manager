@@ -2783,6 +2783,18 @@ const App = {
       }
 
       const neg = negotiations[idx];
+      // v2.0 §6.3: 突発退団 — 選択肢なし、即退団
+      if (neg.attitude === 'sudden_departure') {
+        showContractSuddenDepartureModal(neg, G, () => {
+          const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
+          const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, 0);
+          G = result.state;
+          results.push(result.result);
+          idx++;
+          processNext();
+        });
+        return;
+      }
       showContractNegotiationModal(neg, idx, negotiations.length, G, (choiceIdx) => {
         App._resolveContractChoice(neg, choiceIdx, results, () => {
           idx++;
