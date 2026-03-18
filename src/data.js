@@ -438,7 +438,9 @@ const PORTRAIT = {
   96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
 };
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
+function getStandUrl(id) { return PORTRAIT[id] ? `../image/stand/stand_${PORTRAIT[id]}.webp` : ''; }
 function getUpperUrl(id) { return PORTRAIT[id] ? `../image/upper/upper_${PORTRAIT[id]}.webp` : ''; }
+function getFullUrl(id) { return PORTRAIT[id] ? `../image/full/full_${PORTRAIT[id]}.webp` : ''; }
 
 // Coach portrait mapping (add image files as face_coach_{key}.png)
 const COACH_PORTRAIT = {
