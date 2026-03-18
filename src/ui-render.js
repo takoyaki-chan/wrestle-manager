@@ -2075,6 +2075,7 @@ function renderRanking() {
       + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
       + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
       + `<div style="margin-top:4px">レガシー: <strong>${r.legacyScore}</strong>pt</div>`
+      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
       + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</strong>pt</div>`
       + `<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:6px 0">`
       + `<div style="font-weight:700">合計: ${r.rating}pt</div>`
