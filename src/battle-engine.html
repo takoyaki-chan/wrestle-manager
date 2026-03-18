@@ -2066,8 +2066,11 @@ function nextTurn(){
     }
     const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
     showSp(ds,pk(CMT.defR[rl]),'t-def');
-    // ダメージボイス: Climaxのクリティカルヒット時に短い悲鳴カットイン
-    if(ph.name==='Climax'&&isCrit)showDamageVoice(ds,def);
+    // ダメージセリフ/ボイス: End/Climaxのクリティカルヒット時
+    if((ph.name==='End'||ph.name==='Climax')&&isCrit){
+      if(Math.random()<0.4){showDamageSpeech(ds,def);}
+      else if(ph.name==='Climax'){showDamageVoice(ds,def);}
+    }
     if(ap)ap.classList.remove('flash-atk');
   },t(0.45));
 
