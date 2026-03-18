@@ -3246,8 +3246,8 @@ const App = {
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
-      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
-      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
       matchInfo: {
         header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
         subHeader: `${charL.name} vs ${charR.name}`,
@@ -5497,12 +5497,12 @@ const App = {
       type: 'START_MATCH',
       left: {
         ...pf, condition: 80,
-        portraitUrl: getPortraitUrl(pf.id),
+        portraitUrl: getPortraitUrl(pf.id), profile: CHAR_PROFILES[pf.id] || '',
         vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['…！']
       },
       right: {
         ...af, condition: 80,
-        portraitUrl: getPortraitUrl(af.id),
+        portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
         vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
       },
       matchInfo: {
@@ -5755,12 +5755,12 @@ App.ppvWatchMatch = function(idx) {
     type: 'START_MATCH',
     left: {
       ...match.left, condition: 80,
-      portraitUrl: getPortraitUrl(match.left.id),
+      portraitUrl: getPortraitUrl(match.left.id), profile: CHAR_PROFILES[match.left.id] || '',
       vl: match.left.voiceLines || match.left.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.left.id]) || ['…！']
     },
     right: {
       ...match.right, condition: 80,
-      portraitUrl: getPortraitUrl(match.right.id),
+      portraitUrl: getPortraitUrl(match.right.id), profile: CHAR_PROFILES[match.right.id] || '',
       vl: match.right.voiceLines || match.right.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.right.id]) || ['…！']
     },
     matchInfo: {
