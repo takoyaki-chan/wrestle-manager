@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バトルUI全演出モックアップ v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--card:#0e0e15;--gold:#d4a843;--gold-l:#f0d078;--gold-d:rgba(212,168,67,0.5);--blue:#1a3a6b;--red:#c41e3a;--txt:#e7e9ee;--txt2:rgba(255,255,255,0.5);--txt3:rgba(255,255,255,0.25)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.app{max-width:1400px;width:100%;margin:0 auto;padding:20px}
+
+/* ═══ HUD ═══ */
+.hud{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:10px 16px;margin-bottom:10px}
+.hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hud-side{display:flex;align-items:center;gap:8px}
+.hud-face{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0}
+.hud-face img{width:100%;height:100%;object-fit:cover}
+.hud-face.blue{border:2px solid rgba(74,143,212,0.5)}.hud-face.red{border:2px solid rgba(196,30,58,0.5)}
+.hud-name{font-weight:900;font-size:14px}.hud-style{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase}
+.hud-center{text-align:center}
+.hud-turn{font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;color:rgba(212,168,67,0.5);letter-spacing:2px}
+.hud-phase{font-family:'Oswald',sans-serif;font-size:10px;color:var(--gold-l);letter-spacing:2px}
+.hp-row{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.hp-bar{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.hp-fill{height:100%;border-radius:4px;transition:width 0.5s}
+.hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}.hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}.hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}.hp-fill.rev{float:right}
+.hp-label{font-family:'Oswald',sans-serif;font-size:8px;color:var(--txt3);letter-spacing:2px;min-width:18px;text-align:center}
+.hp-pct{font-family:'Oswald',sans-serif;font-size:10px;min-width:32px}.hp-pct.blue{color:#5dd9ca;text-align:right}.hp-pct.red{color:#5dd9ca;text-align:left}
+.mom-bar{display:flex;height:5px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
+.mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width 0.4s}
+.mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width 0.4s}
+
+/* ═══ 3カラム ═══ */
+.match-grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px}
+
+/* ═══ 選手パネル ═══ */
+.fighter-panel{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative;transition:border-color 0.15s}
+.fighter-panel.left{border-color:rgba(74,143,212,0.2)}.fighter-panel.right{border-color:rgba(196,30,58,0.2)}
+.portrait-area{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;background:#0a0a10;display:flex;align-items:flex-end;justify-content:center}
+.portrait-area .img-stand,.portrait-area .img-full{position:absolute;left:0;right:0;bottom:0;z-index:1;transition:opacity 0.4s}
+.portrait-area .img-stand{height:105%;width:100%;object-fit:contain;object-position:center bottom;filter:brightness(0.92) contrast(1.05)}
+.portrait-area .img-full{width:100%;height:105%;object-fit:contain;object-position:center bottom;filter:brightness(0.92) contrast(1.05);opacity:0;position:absolute;left:0;right:0;bottom:0;z-index:1;transform-origin:center center}
+.fighter-panel.left .portrait-area .img-stand,.fighter-panel.left .portrait-area .img-full{transform:scaleX(-1)}
+.portrait-area::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);mix-blend-mode:multiply}
+.portrait-area::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,0.4) 100%)}
+.fighter-panel.left .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset 2px 0 6px rgba(74,143,212,0.1)}
+.fighter-panel.right .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset -2px 0 6px rgba(196,30,58,0.1)}
+.portrait-area .corner-frame{position:absolute;inset:0;z-index:5;pointer-events:none;border:1px solid rgba(212,168,67,0.06)}
+.portrait-area .corner-frame::before{content:'';position:absolute;top:0;left:0;width:14px;height:14px;border-top:2px solid rgba(212,168,67,0.2);border-left:2px solid rgba(212,168,67,0.2)}
+.portrait-area .corner-frame::after{content:'';position:absolute;bottom:0;right:0;width:14px;height:14px;border-bottom:2px solid rgba(212,168,67,0.2);border-right:2px solid rgba(212,168,67,0.2)}
+
+@keyframes shakePanel{0%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+.fighter-panel.shake{animation:shakePanel 0.25s ease-out}
+@keyframes shakeHard{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.fighter-panel.shake-hard{animation:shakeHard 0.3s ease-out}
+
+.dmg-number{position:absolute;z-index:9;font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#e85d75;text-shadow:0 2px 8px rgba(196,30,58,0.5);pointer-events:none;opacity:0;left:50%;top:25%}
+@keyframes dmgNumPop{0%{opacity:0;transform:translate(-50%,0) scale(1.5)}15%{opacity:1;transform:translate(-50%,-6px) scale(1)}75%{opacity:1;transform:translate(-50%,-22px) scale(1)}100%{opacity:0;transform:translate(-50%,-32px) scale(0.8)}}
+.dmg-number.show{animation:dmgNumPop 0.85s ease-out forwards}
+.dmg-number.crit{font-size:52px;color:var(--gold-l);text-shadow:0 2px 16px rgba(212,168,67,0.6),0 0 40px rgba(212,168,67,0.3)}
+
+/* ═══ 足元赤脈動 — 広め・強め ═══ */
+.danger-glow{position:absolute;bottom:0;left:0;right:0;height:45%;z-index:6;pointer-events:none;opacity:0;transition:opacity 0.5s}
+.danger-glow.show{opacity:1}
+.danger-glow-inner{width:100%;height:100%;background:radial-gradient(ellipse 130% 100% at 50% 100%,rgba(196,30,58,0.45) 0%,rgba(196,30,58,0.18) 40%,transparent 70%)}
+@keyframes dangerPulse{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
+.danger-glow.show .danger-glow-inner{animation:dangerPulse 1.8s ease-in-out infinite}
+
+@keyframes flashScreen{0%{opacity:0.15}100%{opacity:0}}
+.flash-overlay{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+.flash-overlay.flash{animation:flashScreen 0.25s ease-out}
+
+/* ═══ ビッグムーブ — 通過型 1.5s ═══ */
+/* ═══ ビッグムーブ技名 ═══ */
+.bigmove-name{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:55;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold-l);letter-spacing:6px;text-shadow:0 0 40px rgba(212,168,67,0.5),0 4px 20px rgba(0,0,0,0.8);opacity:0;transition:all 0.15s}
+.bigmove-name.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.bigmove-name.fade{opacity:0;transform:translate(-50%,-50%) scale(1.2);transition:all 0.4s}
+/* 技名が吹き飛ばされる方向 */
+.bigmove-name.blown-right{opacity:0;transform:translate(120%,-50%) scale(0.7) rotate(8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
+.bigmove-name.blown-left{opacity:0;transform:translate(-220%,-50%) scale(0.7) rotate(-8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
+
+/* ═══ カウンター文字 — 防御側の方向からスライドして蹴散らす ═══ */
+.counter-big{position:fixed;top:50%;left:50%;z-index:57;pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:80px;color:#5dd9ca;letter-spacing:8px;
+  text-shadow:0 0 40px rgba(42,157,143,0.6),0 4px 16px rgba(0,0,0,0.9);
+  opacity:0;transition:none}
+.counter-big.start-left{transform:translate(-250%,-50%)}
+.counter-big.start-right{transform:translate(150%,-50%)}
+.counter-big.slide-in{opacity:1;transform:translate(-50%,-50%);transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
+.counter-big.fade-out{opacity:0;transform:translate(-50%,-60%) scale(1.1);transition:all 0.4s}
+
+/* ═══ カウンター パネルフラッシュ ═══ */
+.fighter-panel.counter-flash{animation:counterFlash 0.3s ease-out}
+@keyframes counterFlash{0%{filter:brightness(1);transform:scale(1)}30%{filter:brightness(2.5);transform:scale(1.05)}100%{filter:brightness(1);transform:scale(1)}}
+.counter-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:10;font-family:'Bebas Neue',sans-serif;font-size:32px;color:#5dd9ca;letter-spacing:4px;text-shadow:0 0 20px rgba(42,157,143,0.6),0 2px 8px rgba(0,0,0,0.8);pointer-events:none;opacity:0}
+@keyframes counterPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}40%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.counter-text.show{animation:counterPop 0.8s ease-out forwards}
+
+/* ═══ カットイン共通 — クリックで消す ═══ */
+.cutin-overlay{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s}
+.cutin-overlay.show{opacity:1;pointer-events:auto;cursor:pointer}
+.cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-d);border-radius:6px;padding:16px 28px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:680px;transform:translateX(-50px);animation:cutinSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
+.cutin-box.right{flex-direction:row-reverse;transform:translateX(50px);animation:cutinSlideInR 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
+@keyframes cutinSlideIn{from{transform:translateX(-50px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes cutinSlideInR{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
+.cutin-portrait{width:100px;height:150px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
+.cutin-info{flex:1;min-width:0}
+.cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+.cutin-text{font-size:20px;line-height:1.5;color:var(--txt);font-weight:900;text-shadow:0 0 12px rgba(212,168,67,0.2)}
+.cutin-dismiss{font-family:'Oswald',sans-serif;font-size:9px;color:var(--txt3);letter-spacing:2px;margin-top:6px}
+
+.cutin-box.damage-serif{border-color:rgba(196,30,58,0.5);box-shadow:0 0 40px rgba(196,30,58,0.2),0 0 80px rgba(0,0,0,0.7)}
+.cutin-box.damage-serif .cutin-portrait{border-color:rgba(196,30,58,0.6);box-shadow:0 0 20px rgba(196,30,58,0.3);filter:brightness(0.9) contrast(1.1)}
+.cutin-box.damage-serif .cutin-name{color:#e85d75}
+.cutin-box.damage-serif .cutin-text{color:#f0a0b0;text-shadow:0 0 12px rgba(196,30,58,0.3)}
+
+.cutin-box.damage-voice{border-color:rgba(196,30,58,0.7);background:linear-gradient(135deg,rgba(30,8,13,0.96),rgba(21,10,14,0.94));box-shadow:0 0 50px rgba(196,30,58,0.3),0 0 80px rgba(0,0,0,0.8)}
+.cutin-box.damage-voice .cutin-portrait{border-color:rgba(196,30,58,0.8);box-shadow:0 0 25px rgba(196,30,58,0.4);filter:brightness(0.8) contrast(1.15) saturate(0.8)}
+.cutin-box.damage-voice .cutin-name{color:#e85d75}
+.cutin-box.damage-voice .cutin-text{color:#ff8a9e;font-size:28px;text-shadow:0 0 16px rgba(196,30,58,0.5)}
+
+/* ═══ 選手情報 ═══ */
+.fighter-info{padding:8px 10px}
+.f-name-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.f-name{font-weight:900;font-size:14px;cursor:pointer;transition:color 0.15s}.f-name:hover{color:var(--gold-l)}
+.f-role-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600}
+.f-role-tag.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0}.f-role-tag.heel{background:rgba(196,30,58,0.15);color:#f08b9e}
+.f-style{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);margin-bottom:3px}
+.f-rival-badge{display:inline-block;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25);margin-bottom:4px}
+.ability-bars{display:flex;flex-direction:column;gap:3px}
+.ab-row{display:flex;align-items:center;gap:5px}
+.ab-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--txt3);min-width:36px}
+.ab-track{flex:1;height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
+.ab-fill{height:100%;border-radius:2px}
+.ab-fill.pow{background:#c41e3a88}.ab-fill.spd{background:#2a6bd488}.ab-fill.tec{background:#2a9d8f88}.ab-fill.sta{background:#d4a84388}.ab-fill.mn{background:#8b5cf688}
+
+/* ═══ 中央パネル — 全中央寄せ ═══ */
+.center-panel{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:min(1100px,82vh);text-align:center}
+.top-line{display:flex;justify-content:center;align-items:center;gap:12px}
+.turn-lbl{font-family:'Noto Sans JP',sans-serif;font-size:20px;font-weight:900;color:var(--gold)}
+.phase-pill{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(212,168,67,0.25);border-radius:2px;color:var(--gold-l)}
+.nar-box{min-height:56px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:3px;text-align:center}
+.nar-move{font-size:16px;font-weight:900;margin-bottom:4px}
+.nar-text{font-size:16px;font-weight:700;color:var(--txt);margin-bottom:3px;line-height:1.5}
+.nar-dmg{font-size:14px;color:#e85d75;font-weight:700}
+.move-box{text-align:center;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:3px}
+.move-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
+.move-name{font-size:18px;font-weight:900;min-height:22px}
+.mom-section{text-align:center}
+.mom-header{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:3px}
+.mom-bar-c{display:flex;height:7px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden}
+.mom-lc{width:50%;background:linear-gradient(90deg,rgba(74,143,212,0.4),rgba(74,143,212,0.8))}
+.mom-rc{width:50%;background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.4))}
+.mom-names{display:flex;justify-content:space-between;font-size:9px;color:var(--txt3);margin-top:2px}
+.log-section{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.log-hdr{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:4px;text-align:center}
+.log-list{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
+.log-entry{padding:2px 6px;background:rgba(0,0,0,0.15);border-radius:2px;font-size:9px;color:var(--txt3);line-height:1.3;text-align:center}
+.log-turn{font-family:'Oswald',sans-serif;font-size:8px;margin-right:3px}
+
+/* ═══ デモコントロール ═══ */
+.demo-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(14,14,21,0.95);border-top:1px solid rgba(212,168,67,0.2);padding:10px 20px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.demo-bar .dbtn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;padding:6px 14px;border:1px solid rgba(212,168,67,0.25);border-radius:3px;cursor:pointer;background:rgba(212,168,67,0.06);color:var(--gold-l);transition:all 0.15s;white-space:nowrap}
+.demo-bar .dbtn:hover{background:rgba(212,168,67,0.18);box-shadow:0 0 12px rgba(212,168,67,0.15)}
+.demo-bar .dbtn.red{border-color:rgba(196,30,58,0.3);color:#f08b9e;background:rgba(196,30,58,0.06)}.demo-bar .dbtn.red:hover{background:rgba(196,30,58,0.18)}
+.demo-bar .dbtn.green{border-color:rgba(42,157,143,0.3);color:#5dd9ca;background:rgba(42,157,143,0.06)}.demo-bar .dbtn.green:hover{background:rgba(42,157,143,0.18)}
+.demo-bar .dbtn.purple{border-color:rgba(139,92,246,0.3);color:#b89cf6;background:rgba(139,92,246,0.06)}.demo-bar .dbtn.purple:hover{background:rgba(139,92,246,0.18)}
+.demo-bar .sep{width:1px;background:rgba(255,255,255,0.08);margin:0 4px}
+.demo-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;color:var(--txt3);align-self:center}
+</style>
+</head>
+<body>
+<div class="flash-overlay" id="flash"></div>
+<div class="bigmove-name" id="bigmoveName">パワーボム</div>
+<div class="counter-big" id="counterBig">COUNTER!</div>
+<div class="cutin-overlay" id="cutinOverlay" onclick="dismissCutin()"></div>
+<div class="app">
+  <div class="hud">
+    <div class="hud-top">
+      <div class="hud-side"><div class="hud-face blue"><img src="../../image/face_takatsu_k.png"></div><div><div class="hud-name">高津 カナ</div><div class="hud-style">Grappler</div></div></div>
+      <div class="hud-center"><div class="hud-turn">ターン 8</div><div class="hud-phase">PHASE 2</div></div>
+      <div class="hud-side"><div style="text-align:right"><div class="hud-name">橘 リナ</div><div class="hud-style">Striker</div></div><div class="hud-face red"><img src="../../image/face_tachibana_r.png"></div></div>
+    </div>
+    <div class="hp-row"><span class="hp-pct blue">72%</span><div class="hp-bar"><div class="hp-fill high rev" style="width:72%"></div></div><span class="hp-label">HP</span><div class="hp-bar"><div class="hp-fill high" style="width:58%"></div></div><span class="hp-pct red">58%</span></div>
+    <div class="mom-bar"><div class="mom-l" style="width:55%"></div><div class="mom-r" style="width:45%"></div></div>
+  </div>
+  <div class="match-grid">
+    <div class="fighter-panel left" id="pL">
+      <div class="portrait-area" id="portL"><img class="img-stand" src="../../image/stand/stand_takatsu_k.webp"><img class="img-full" src="../../image/full/full_takatsu_k.webp"><div class="corner-frame"></div><div class="dmg-number" id="dmgL"></div><div class="danger-glow" id="dangerL"><div class="danger-glow-inner"></div></div><div class="counter-text" id="counterL">COUNTER!</div></div>
+      <div class="fighter-info"><div class="f-name-row"><span class="f-name">高津 カナ</span><span class="f-role-tag babyface">FACE</span></div><div class="f-style">Grappler</div><div class="f-rival-badge">🔥 RIVAL</div><div class="ability-bars"><div class="ab-row"><span class="ab-name">POW</span><div class="ab-track"><div class="ab-fill pow" style="width:82%"></div></div></div><div class="ab-row"><span class="ab-name">SPD</span><div class="ab-track"><div class="ab-fill spd" style="width:48%"></div></div></div><div class="ab-row"><span class="ab-name">TEC</span><div class="ab-track"><div class="ab-fill tec" style="width:62%"></div></div></div><div class="ab-row"><span class="ab-name">STA</span><div class="ab-track"><div class="ab-fill sta" style="width:71%"></div></div></div><div class="ab-row"><span class="ab-name">MN</span><div class="ab-track"><div class="ab-fill mn" style="width:55%"></div></div></div></div></div>
+    </div>
+    <div class="center-panel">
+      <div class="top-line"><span class="turn-lbl">ターン 8</span><span class="phase-pill">PHASE 2</span></div>
+      <div class="nar-box"><div class="nar-move">高津の攻撃</div><div class="nar-text">高津のエルボーが橘の胸板を撃ち抜く！</div><div class="nar-dmg">ダメージ 18</div></div>
+      <div class="move-box"><div class="move-label">current move</div><div class="move-name">エルボースマッシュ</div></div>
+      <div class="mom-section"><div class="mom-header">Momentum</div><div class="mom-bar-c"><div class="mom-lc" style="width:55%"></div><div class="mom-rc" style="width:45%"></div></div><div class="mom-names"><span>高津</span><span>橘</span></div></div>
+      <div class="log-section"><div class="log-hdr">Battle Log</div><div class="log-list" id="logList"><div class="log-entry"><span class="log-turn">ターン7</span> 橘→ドロップキック <span style="color:#e85d75">15</span></div><div class="log-entry"><span class="log-turn">ターン6</span> 高津→ラリアット <span style="color:#e85d75">20</span></div></div></div>
+    </div>
+    <div class="fighter-panel right" id="pR">
+      <div class="portrait-area" id="portR"><img class="img-stand" src="../../image/stand/stand_tachibana_r.webp"><img class="img-full" src="../../image/full/full_tachibana_r.webp"><div class="corner-frame"></div><div class="dmg-number" id="dmgR"></div><div class="danger-glow" id="dangerR"><div class="danger-glow-inner"></div></div><div class="counter-text" id="counterR">COUNTER!</div></div>
+      <div class="fighter-info"><div class="f-name-row"><span class="f-name">橘 リナ</span><span class="f-role-tag heel">HEEL</span></div><div class="f-style">Striker</div><div class="f-rival-badge">🔥 RIVAL</div><div class="ability-bars"><div class="ab-row"><span class="ab-name">POW</span><div class="ab-track"><div class="ab-fill pow" style="width:52%"></div></div></div><div class="ab-row"><span class="ab-name">SPD</span><div class="ab-track"><div class="ab-fill spd" style="width:85%"></div></div></div><div class="ab-row"><span class="ab-name">TEC</span><div class="ab-track"><div class="ab-fill tec" style="width:70%"></div></div></div><div class="ab-row"><span class="ab-name">STA</span><div class="ab-track"><div class="ab-fill sta" style="width:47%"></div></div></div><div class="ab-row"><span class="ab-name">MN</span><div class="ab-track"><div class="ab-fill mn" style="width:68%"></div></div></div></div></div>
+    </div>
+  </div>
+</div>
+<div class="demo-bar">
+  <span class="demo-label">ダメージ</span>
+  <button class="dbtn" onclick="demoNormalDmg('R')">通常（→右）</button>
+  <button class="dbtn" onclick="demoNormalDmg('L')">通常（→左）</button>
+  <button class="dbtn red" onclick="demoCritDmg('R')">クリティカル</button>
+  <div class="sep"></div>
+  <span class="demo-label">HP</span>
+  <button class="dbtn red" onclick="demoDanger('R')">HP25%以下</button>
+  <button class="dbtn" onclick="demoDangerOff('R')">解除</button>
+  <div class="sep"></div>
+  <span class="demo-label">大技</span>
+  <button class="dbtn" onclick="demoBigMove('L')">ビッグムーブ（左攻撃）</button>
+  <button class="dbtn green" onclick="demoCounter('L')">カウンター（右が返す）</button>
+  <div class="sep"></div>
+  <span class="demo-label">カットイン</span>
+  <button class="dbtn" onclick="demoCutinSerif('L')">セリフ（左）</button>
+  <button class="dbtn" onclick="demoCutinSerif('R')">セリフ（右）</button>
+  <button class="dbtn red" onclick="demoCutinDmgSerif('R')">ダメージセリフ</button>
+  <button class="dbtn purple" onclick="demoCutinDmgVoice('R')">ダメージボイス（右）</button>
+  <button class="dbtn purple" onclick="demoCutinDmgVoice('L')">ダメージボイス（左）</button>
+</div>
+<script>
+let ac=null;
+function ctx(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac}
+function mkNoise(d,g){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*d,c.sampleRate),ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);s.connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+d)}catch(e){}}
+function mkNoiseHP(d,g,f){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*d,c.sampleRate),ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=f;s.connect(hp).connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+d)}catch(e){}}
+function mkNoiseLP(d,g,f){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*d,c.sampleRate),ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=f;s.connect(lp).connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+d)}catch(e){}}
+function osc(t,f,fe,d,g){try{const c=ctx(),o=c.createOscillator(),gn=c.createGain();o.type=t;o.frequency.setValueAtTime(f,c.currentTime);if(fe)o.frequency.exponentialRampToValueAtTime(fe,c.currentTime+d);gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(gn).connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(e){}}
+const sfx={
+  hitStrike(r){const g=.12*r,d=.08*(.8+r*.4);mkNoise(d,g);osc('sine',2000,800,.05*d/.08,.1*r)},
+  hitAerial(r){const g=.08*r,d=.15*(.8+r*.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(.15*r,.12*r);osc('sine',100,50,.2,.12*r)},150)},
+  counterSE(){try{mkNoise(.12,.3);osc('sine',150,40,.2,.2);mkNoiseLP(.15,.2,500);osc('square',800,200,.08,.12);setTimeout(()=>{mkNoiseHP(.08,.15,3000);osc('sine',60,30,.15,.1)},60)}catch(e){}},
+  heartbeatSE(){try{osc('sine',50,30,.3,.12);setTimeout(()=>osc('sine',50,30,.3,.12),400)}catch(e){}},
+  bigmoveCharge(){try{osc('sine',60,200,1.6,.08);osc('sawtooth',60,180,1.6,.03);setTimeout(()=>mkNoiseHP(.3,.04,3000),800);setTimeout(()=>osc('sine',150,400,.3,.06),1200)}catch(e){}},
+  bigmoveImpact(){try{osc('sine',100,25,.4,.25);mkNoise(.15,.25);mkNoiseLP(.25,.15,300);osc('triangle',60,20,.3,.12);setTimeout(()=>mkNoiseHP(.05,.08,5000),50)}catch(e){}},
+  cutinSlide(){try{osc('sine',300,800,.08,.06);mkNoiseHP(.03,.04,4000)}catch(e){}},
+  dmgVoice(){try{osc('sine',200,80,.2,.06);mkNoiseLP(.08,.05,800)}catch(e){}}
+};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function showDmgNum(s,v,c){const e=document.getElementById(s==='L'?'dmgL':'dmgR');e.textContent=v;e.className='dmg-number'+(c?' crit':'');void e.offsetWidth;e.classList.add('show');setTimeout(()=>{e.classList.remove('show');e.className='dmg-number'},850)}
+function demoNormalDmg(s){const p=document.getElementById(s==='L'?'pL':'pR');p.classList.remove('shake');void p.offsetWidth;p.classList.add('shake');const d=15+Math.floor(Math.random()*8);showDmgNum(s,d,false);sfx.hitStrike(clamp(d/20,.3,1.5));setTimeout(()=>p.classList.remove('shake'),300)}
+function demoCritDmg(s){const p=document.getElementById(s==='L'?'pL':'pR'),f=document.getElementById('flash');f.classList.remove('flash');void f.offsetWidth;f.classList.add('flash');sfx.hitAerial(1.3);setTimeout(()=>f.classList.remove('flash'),300);p.classList.remove('shake-hard');void p.offsetWidth;p.classList.add('shake-hard');showDmgNum(s,28+Math.floor(Math.random()*6),true);setTimeout(()=>p.classList.remove('shake-hard'),350)}
+function demoDanger(s){document.getElementById(s==='L'?'dangerL':'dangerR').classList.add('show');sfx.heartbeatSE()}
+function demoDangerOff(s){document.getElementById(s==='L'?'dangerL':'dangerR').classList.remove('show')}
+
+// ═══ ビッグムーブ = セリフカットイン+ビッグムーブ音+技名 ═══
+function demoBigMove(a){
+  const d=a==='L'?'R':'L', c=CHARS[a], bn=document.getElementById('bigmoveName');
+  const dir=a==='R'?' right':'', ov=document.getElementById('cutinOverlay');
+  const lines=['ここで…決める！！','全力で…いくよ！！','終わりだああ！！'];
+  const text=lines[Math.floor(Math.random()*lines.length)];
+  // 0s: セリフカットイン + 溜め音
+  ov.innerHTML=`<div class="cutin-box${dir}"><img class="cutin-portrait" src="${c.upper}"><div class="cutin-info"><div class="cutin-name">${c.name}（${c.personality}・${c.attribute}）</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div></div>`;
+  ov.classList.add('show');
+  sfx.cutinSlide();
+  sfx.bigmoveCharge();
+  // 1.5s: セリフ消去
+  setTimeout(()=>{ov.classList.remove('show');setTimeout(()=>ov.innerHTML='',300)},1500);
+  // 1.8s: 技名表示
+  setTimeout(()=>{bn.textContent='パワーボム';bn.className='bigmove-name show'},1800);
+  // 2.3s: ダメージ
+  setTimeout(()=>{bn.className='bigmove-name fade';sfx.bigmoveImpact();demoCritDmg(d)},2300);
+  // 3.0s: クリーンアップ
+  setTimeout(()=>{bn.className='bigmove-name'},3000);
+}
+
+// ═══ カウンター = ビッグムーブ→技名→COUNTER!が吹き飛ばす ═══
+function demoCounter(a){
+  const d=a==='L'?'R':'L', c=CHARS[a], bn=document.getElementById('bigmoveName'), cb=document.getElementById('counterBig');
+  const dp=document.getElementById(d==='L'?'pL':'pR');
+  const dir=a==='R'?' right':'', ov=document.getElementById('cutinOverlay');
+  const lines=['ここで…決める！！','全力で…いくよ！！'];
+  const text=lines[Math.floor(Math.random()*lines.length)];
+  // 0s: セリフカットイン + 溜め音（ビッグムーブと同じ導入）
+  ov.innerHTML=`<div class="cutin-box${dir}"><img class="cutin-portrait" src="${c.upper}"><div class="cutin-info"><div class="cutin-name">${c.name}（${c.personality}・${c.attribute}）</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div></div>`;
+  ov.classList.add('show');
+  sfx.cutinSlide();
+  sfx.bigmoveCharge();
+  // 1.5s: セリフ消去
+  setTimeout(()=>{ov.classList.remove('show');setTimeout(()=>ov.innerHTML='',300)},1500);
+  // 1.8s: 技名表示
+  setTimeout(()=>{bn.textContent='パワーボム';bn.className='bigmove-name show'},1800);
+  // 2.3s: COUNTER!が防御側の方向からスライドイン → 技名を反対側に吹き飛ばす
+  setTimeout(()=>{
+    // 防御側がd: d='R'なら右からスライド、d='L'なら左からスライド
+    const fromRight = (d==='R');
+    // 技名を反対側に吹き飛ばす
+    bn.className = 'bigmove-name ' + (fromRight ? 'blown-left' : 'blown-right');
+    // COUNTER!を防御側の方向からスライドイン
+    cb.className = 'counter-big ' + (fromRight ? 'start-right' : 'start-left');
+    void cb.offsetWidth;
+    cb.classList.add('slide-in');
+    sfx.counterSE();
+    // 防御側フラッシュ
+    dp.classList.add('counter-flash');
+  },2300);
+  // 2.8s: 防御側フラッシュ解除
+  setTimeout(()=>{dp.classList.remove('counter-flash')},2800);
+  // 3.2s: COUNTER!フェードアウト + 反撃ダメージ
+  setTimeout(()=>{
+    cb.classList.remove('slide-in');
+    cb.classList.add('fade-out');
+    demoNormalDmg(a);
+  },3200);
+  // 3.8s: クリーンアップ
+  setTimeout(()=>{bn.className='bigmove-name';cb.className='counter-big'},3800);
+}
+
+function dismissCutin(){const o=document.getElementById('cutinOverlay');o.classList.remove('show');setTimeout(()=>o.innerHTML='',300)}
+
+const CHARS={
+  L:{name:'高津 カナ',personality:'熱血',attribute:'Grappler',upper:'../../image/upper/upper_takatsu_k.webp'},
+  R:{name:'橘 リナ',personality:'冷徹',attribute:'Striker',upper:'../../image/upper/upper_tachibana_r.webp'}
+};
+
+// セリフ（性格×属性）
+const SERIF={
+  '熱血×Grappler':['まだまだ…ここからが本番だよ！','この拳に…全てを乗せる！','あんたの強さ…認めてるからこそ！'],
+  '冷徹×Striker':['…その程度？ 期待外れね','痛みを知りなさい','終わりにしてあげる']
+};
+function demoCutinSerif(s){
+  const c=CHARS[s],k=c.personality+'×'+c.attribute,ls=SERIF[k]||Object.values(SERIF)[0];
+  const t=ls[Math.floor(Math.random()*ls.length)],dir=s==='R'?' right':'',ov=document.getElementById('cutinOverlay');
+  ov.innerHTML=`<div class="cutin-box${dir}"><img class="cutin-portrait" src="${c.upper}"><div class="cutin-info"><div class="cutin-name">${c.name}（${c.personality}・${c.attribute}）</div><div class="cutin-text">「${t}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div></div>`;
+  ov.classList.add('show');sfx.cutinSlide();
+}
+
+// ダメージセリフ（性格×属性）
+const DMG_SERIF={
+  '熱血×Grappler':['ぐっ…！ まだ…立てる…！','くぅ…っ！ 効いた…けど…！','はぁ…はぁ…負けるもんか…！'],
+  '冷徹×Striker':['…っ！ …こんなの…','くっ……計算外ね…','…痛い、わね…認めてあげる'],
+  '天然×Striker':['ひゃあっ！？ い、痛い…！','うぅ…おなかに来た…','えっ…えっ…もう終わり…？'],
+  '女王×Grappler':['っ…！ この私に…よくも…！','ぐ…っ…無様ね、私としたことが…','は…っ…跪くのは、あなたの方よ…']
+};
+function demoCutinDmgSerif(s){
+  const c=CHARS[s],k=c.personality+'×'+c.attribute,ls=DMG_SERIF[k]||Object.values(DMG_SERIF)[0];
+  const t=ls[Math.floor(Math.random()*ls.length)],dir=s==='R'?' right':'',ov=document.getElementById('cutinOverlay');
+  ov.innerHTML=`<div class="cutin-box damage-serif${dir}"><img class="cutin-portrait" src="${c.upper}"><div class="cutin-info"><div class="cutin-name">${c.name}（${c.personality}・${c.attribute}）</div><div class="cutin-text">「${t}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div></div>`;
+  ov.classList.add('show');sfx.cutinSlide();sfx.dmgVoice();
+}
+
+// ダメージボイス（短い悲鳴・属性のみ分岐、クライマックス用）
+const DMG_VOICE={
+  Grappler:['ぐぅっ…！','がはっ…！','くっ…あぁ…！','う…ぐ…っ！'],
+  Striker:['きゃあっ！','っ…！ あぁ…！','ひっ…！','うわっ…！'],
+  Technician:['くぅ…！','あ…ぁ…っ！','うぅ…っ！','は…ぁっ…！'],
+  Aerial:['きゃっ！','あぁっ！','ひゃ…っ！','うっ…！']
+};
+function demoCutinDmgVoice(s){
+  const c=CHARS[s],ls=DMG_VOICE[c.attribute]||DMG_VOICE['Striker'];
+  const t=ls[Math.floor(Math.random()*ls.length)],dir=s==='R'?' right':'',ov=document.getElementById('cutinOverlay');
+  ov.innerHTML=`<div class="cutin-box damage-voice${dir}"><img class="cutin-portrait" src="${c.upper}"><div class="cutin-info"><div class="cutin-name">${c.name}</div><div class="cutin-text">「${t}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div></div>`;
+  ov.classList.add('show');sfx.cutinSlide();sfx.dmgVoice();
+}
+</script>
+</body>
+</html>

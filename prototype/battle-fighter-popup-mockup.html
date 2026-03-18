@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試合中簡易詳細ポップアップ モックアップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--card:#0e0e15;--gold:#d4a843;--gold-l:#f0d078;--gold-d:rgba(212,168,67,0.5);--txt:#e7e9ee;--txt2:rgba(255,255,255,0.5);--txt3:rgba(255,255,255,0.25)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+/* ═══ ポップアップオーバーレイ ═══ */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:70;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.popup-overlay.show{opacity:1;pointer-events:auto}
+
+/* ═══ ポップアップ本体 ═══ */
+.fighter-popup{display:flex;gap:0;max-width:720px;width:90vw;max-height:85vh;background:var(--card);border:1px solid rgba(212,168,67,0.2);border-radius:6px;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 30px rgba(212,168,67,0.1);
+  transform:scale(0.95);transition:transform 0.25s}
+.popup-overlay.show .fighter-popup{transform:scale(1)}
+
+/* ═══ 左: full画像エリア ═══ */
+.popup-image{width:260px;flex-shrink:0;position:relative;background:#0a0a10;overflow:hidden}
+.popup-image img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.88) contrast(1.08)}
+/* スキャンライン */
+.popup-image::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
+/* 右端グラデ（情報パネルとの境界をなじませる） */
+.popup-image::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40px;z-index:3;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(14,14,21,0.8))}
+
+/* ═══ 右: 情報パネル ═══ */
+.popup-info{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+
+/* 名前ヘッダー */
+.popup-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.popup-name{font-weight:900;font-size:22px}
+.popup-role{font-size:10px;padding:3px 8px;border-radius:2px;font-weight:600;letter-spacing:1px}
+.popup-role.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0}
+.popup-role.heel{background:rgba(196,30,58,0.15);color:#f08b9e}
+.popup-role.neutral{background:rgba(255,255,255,0.08);color:var(--txt2)}
+
+/* スタイル・基本情報 */
+.popup-basics{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.popup-style{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--gold-l)}
+.popup-meta{font-size:11px;color:var(--txt2)}
+.popup-meta span{margin-right:12px}
+
+/* OVR */
+.popup-ovr{display:inline-flex;align-items:center;gap:6px}
+.popup-ovr-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--txt3)}
+.popup-ovr-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold-l);line-height:1}
+
+/* 能力値バー */
+.popup-stats{display:flex;flex-direction:column;gap:5px}
+.stat-row{display:flex;align-items:center;gap:8px}
+.stat-name{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--txt3);min-width:36px}
+.stat-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.stat-fill{height:100%;border-radius:3px;transition:width 0.4s}
+.stat-fill.pow{background:linear-gradient(90deg,#c41e3a88,#c41e3a)}.stat-fill.spd{background:linear-gradient(90deg,#2a6bd488,#2a6bd4)}
+.stat-fill.tec{background:linear-gradient(90deg,#2a9d8f88,#2a9d8f)}.stat-fill.sta{background:linear-gradient(90deg,#d4a84388,#d4a843)}
+.stat-fill.mn{background:linear-gradient(90deg,#8b5cf688,#8b5cf6)}
+.stat-val{font-family:'Oswald',sans-serif;font-size:11px;color:var(--txt2);min-width:24px;text-align:right}
+
+/* セクション区切り */
+.popup-divider{height:1px;background:rgba(255,255,255,0.06)}
+
+/* 詳細情報（2カラム） */
+.popup-details{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.detail-item{display:flex;flex-direction:column;gap:1px}
+.detail-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;color:var(--txt3);text-transform:uppercase}
+.detail-value{font-size:12px;font-weight:700}
+
+/* プロフィール */
+.popup-profile{padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px}
+.profile-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:4px}
+.profile-text{font-size:12px;line-height:1.7;color:var(--txt2)}
+
+/* バッジ（ライバル、タイトル） */
+.popup-badges{display:flex;gap:6px;flex-wrap:wrap}
+.popup-badge{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:2px}
+.popup-badge.rival{background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25)}
+.popup-badge.title{background:rgba(212,168,67,0.12);color:var(--gold-l);border:1px solid rgba(212,168,67,0.3)}
+
+/* 閉じるボタン */
+.popup-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.5);color:var(--txt2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;z-index:5}
+.popup-close:hover{background:rgba(212,168,67,0.2);color:var(--gold-l);border-color:rgba(212,168,67,0.3)}
+
+/* ═══ デモ用 ═══ */
+.demo-buttons{position:fixed;bottom:20px;display:flex;gap:8px;z-index:100}
+.dbtn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;padding:8px 20px;border:1px solid rgba(212,168,67,0.25);border-radius:3px;cursor:pointer;background:rgba(212,168,67,0.06);color:var(--gold-l)}
+.dbtn:hover{background:rgba(212,168,67,0.18)}
+.demo-label{font-family:'Oswald',sans-serif;font-size:10px;color:var(--txt3);position:fixed;top:12px;left:50%;transform:translateX(-50%);letter-spacing:3px}
+</style>
+</head>
+<body>
+
+<div class="demo-label">試合中簡易詳細ポップアップ — CLICK TO PREVIEW</div>
+
+<!-- ポップアップ -->
+<div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
+  <div class="fighter-popup" id="fighterPopup" style="position:relative">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-image" id="popupImg">
+      <img src="../../image/full/full_takatsu_k.webp" id="popupFullImg">
+    </div>
+    <div class="popup-info">
+      <div class="popup-header">
+        <span class="popup-name" id="popupName">高津 カナ</span>
+        <span class="popup-role babyface" id="popupRole">FACE</span>
+      </div>
+      <div class="popup-basics">
+        <span class="popup-style" id="popupStyle">Grappler</span>
+        <div class="popup-meta">
+          <span id="popupAge">19歳</span>
+          <span id="popupHeight">161cm</span>
+        </div>
+      </div>
+      <div class="popup-ovr">
+        <span class="popup-ovr-label">OVR</span>
+        <span class="popup-ovr-val" id="popupOvr">78</span>
+      </div>
+      <div class="popup-stats">
+        <div class="stat-row"><span class="stat-name">POW</span><div class="stat-track"><div class="stat-fill pow" id="barPow" style="width:82%"></div></div><span class="stat-val" id="valPow">82</span></div>
+        <div class="stat-row"><span class="stat-name">SPD</span><div class="stat-track"><div class="stat-fill spd" id="barSpd" style="width:48%"></div></div><span class="stat-val" id="valSpd">48</span></div>
+        <div class="stat-row"><span class="stat-name">TEC</span><div class="stat-track"><div class="stat-fill tec" id="barTec" style="width:62%"></div></div><span class="stat-val" id="valTec">62</span></div>
+        <div class="stat-row"><span class="stat-name">STA</span><div class="stat-track"><div class="stat-fill sta" id="barSta" style="width:71%"></div></div><span class="stat-val" id="valSta">71</span></div>
+        <div class="stat-row"><span class="stat-name">MN</span><div class="stat-track"><div class="stat-fill mn" id="barMn" style="width:55%"></div></div><span class="stat-val" id="valMn">55</span></div>
+      </div>
+      <div class="popup-divider"></div>
+      <div class="popup-details">
+        <div class="detail-item"><span class="detail-label">戦績</span><span class="detail-value" id="popupRecord">12勝 5敗</span></div>
+        <div class="detail-item"><span class="detail-label">コンディション</span><span class="detail-value" id="popupCond">87%</span></div>
+        <div class="detail-item"><span class="detail-label">現在HP</span><span class="detail-value" id="popupHp">72 / 100</span></div>
+        <div class="detail-item"><span class="detail-label">モメンタム</span><span class="detail-value" id="popupMom">優勢</span></div>
+      </div>
+      <div class="popup-divider"></div>
+      <div class="popup-profile">
+        <div class="profile-label">PROFILE</div>
+        <div class="profile-text" id="popupProfile">抜きん出た体格とパワーで粕田市内最強と謳われた伝説のレスラー。面倒見が良く人望も厚い。パワーボムと強烈なラリアットを武器に圧倒的な存在感で対戦相手を飲み込む。</div>
+      </div>
+      <div class="popup-badges" id="popupBadges">
+        <span class="popup-badge rival">🔥 RIVAL</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-buttons">
+  <button class="dbtn" onclick="showDemo('L')">高津 カナ（左）</button>
+  <button class="dbtn" onclick="showDemo('R')">橘 リナ（右）</button>
+</div>
+
+<script>
+const DEMO_DATA = {
+  L: {
+    name: '高津 カナ', role: 'babyface', roleLabel: 'FACE', style: 'Grappler',
+    age: 19, height: 161, ovr: 78,
+    pow: 82, spd: 48, tec: 62, sta: 71, mn: 55,
+    record: '12勝 5敗', cond: '87%', hp: '72 / 100', mom: '優勢',
+    profile: '剣道仕込みの闘志で格上にも決して引かない負けず嫌い。技術は粗削りだがメンタルの強さは粕田随一。試合終盤に底力を発揮するタイプで、何度打ちのめされても立ち上がる不屈の精神は観客の心を掴む。',
+    fullImg: '../../image/full/full_takatsu_k.webp',
+    badges: ['rival']
+  },
+  R: {
+    name: '橘 リナ', role: 'heel', roleLabel: 'HEEL', style: 'Striker',
+    age: 18, height: 165, ovr: 71,
+    pow: 52, spd: 85, tec: 70, sta: 47, mn: 68,
+    record: '9勝 8敗', cond: '74%', hp: '58 / 100', mom: '劣勢',
+    profile: '高校生としては大人びた印象の女子高生。嗜虐的な一面を持ち、関節技と絞め技で相手を追い詰めるスタイルを好む危険な実力者。一度捕まれば脱出は至難の業。',
+    fullImg: '../../image/full/full_tachibana_r.webp',
+    badges: ['rival']
+  }
+};
+
+function showDemo(side) {
+  const d = DEMO_DATA[side];
+  document.getElementById('popupName').textContent = d.name;
+  const roleEl = document.getElementById('popupRole');
+  roleEl.textContent = d.roleLabel;
+  roleEl.className = 'popup-role ' + d.role;
+  document.getElementById('popupStyle').textContent = d.style;
+  document.getElementById('popupAge').textContent = d.age + '歳';
+  document.getElementById('popupHeight').textContent = d.height + 'cm';
+  document.getElementById('popupOvr').textContent = d.ovr;
+  ['pow','spd','tec','sta','mn'].forEach(s => {
+    document.getElementById('bar' + s.charAt(0).toUpperCase() + s.slice(1)).style.width = d[s] + '%';
+    document.getElementById('val' + s.charAt(0).toUpperCase() + s.slice(1)).textContent = d[s];
+  });
+  document.getElementById('popupRecord').textContent = d.record;
+  document.getElementById('popupCond').textContent = d.cond;
+  document.getElementById('popupHp').textContent = d.hp;
+  document.getElementById('popupMom').textContent = d.mom;
+  document.getElementById('popupProfile').textContent = d.profile;
+  document.getElementById('popupFullImg').src = d.fullImg;
+  // Badges
+  let badgeHtml = '';
+  if (d.badges.includes('rival')) badgeHtml += '<span class="popup-badge rival">🔥 RIVAL</span>';
+  if (d.badges.includes('title')) badgeHtml += '<span class="popup-badge title">🏆 CHAMPION</span>';
+  document.getElementById('popupBadges').innerHTML = badgeHtml;
+
+  document.getElementById('popupOverlay').classList.add('show');
+}
+
+function closePopup() {
+  document.getElementById('popupOverlay').classList.remove('show');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+</script>
+</body>
+</html>

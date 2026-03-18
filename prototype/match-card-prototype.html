@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>対戦カード紹介 → 試合画面 プロトタイプ</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--card:#0e0e15;--gold:#d4a843;--gold-l:#f0d078;--gold-d:rgba(212,168,67,0.5);--blue:#1a3a6b;--red:#c41e3a;--txt:#e7e9ee;--txt2:rgba(255,255,255,0.5);--txt3:rgba(255,255,255,0.25)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+
+/* ═══ 共通 ═══ */
+.app{max-width:1400px;width:100%;margin:0 auto;padding:20px;display:flex;flex-direction:column;height:100vh}
+
+/* ═══ HUD（常時表示） ═══ */
+.hud{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:10px 16px;margin-bottom:10px;flex-shrink:0;z-index:20}
+.hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hud-side{display:flex;align-items:center;gap:8px}
+.hud-face{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hud-face.blue{border:2px solid rgba(74,143,212,0.5);background:rgba(74,143,212,0.1)}
+.hud-face.red{border:2px solid rgba(196,30,58,0.5);background:rgba(196,30,58,0.1)}
+.hud-name{font-weight:900;font-size:14px}.hud-style{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase}
+.hud-center{text-align:center}
+.hud-turn{font-family:'Bebas Neue',sans-serif;font-size:11px;color:rgba(212,168,67,0.35);letter-spacing:4px}
+.hud-phase{font-family:'Oswald',sans-serif;font-size:10px;color:var(--gold-l);letter-spacing:2px}
+.hp-row{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.hp-bar{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.hp-fill{height:100%;border-radius:4px;transition:width 0.5s}
+.hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}.hp-fill.rev{float:right}
+.hp-label{font-family:'Oswald',sans-serif;font-size:8px;color:var(--txt3);letter-spacing:2px;min-width:18px;text-align:center}
+.hp-pct{font-family:'Oswald',sans-serif;font-size:10px;min-width:32px;color:#5dd9ca}
+.hp-pct.blue{text-align:right}.hp-pct.red{text-align:left}
+.mom-bar{display:flex;height:5px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
+.mom-l{width:50%;background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8))}
+.mom-r{width:50%;background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3))}
+
+/* ═══ メインエリア（カード画面 & バトル画面を重ねる） ═══ */
+.main-area{flex:1;position:relative;margin-top:10px;overflow:hidden;border-radius:4px}
+
+/* ═══ Phase A: 対戦カード画面 ═══ */
+.match-card{position:absolute;inset:0;z-index:10;overflow:hidden;transition:opacity 0.8s}
+.match-card.hidden{opacity:0;pointer-events:none}
+
+/* 会場背景 */
+.venue-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 60%, rgba(30,20,50,0.3) 0%, rgba(8,8,13,0.95) 100%),
+    radial-gradient(ellipse 60% 40% at 50% 70%, rgba(212,168,67,0.04) 0%, transparent 70%),
+    linear-gradient(180deg, #0a0812 0%, #151020 40%, #0d0a18 100%);
+  overflow:hidden}
+/* 会場ライト演出 */
+.venue-bg::before{content:'';position:absolute;top:-10%;left:30%;width:40%;height:50%;
+  background:radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.06) 0%, transparent 70%);pointer-events:none}
+/* 中央の暗幕（テキスト可読性用） */
+.venue-bg .center-darken{position:absolute;inset:0;z-index:1;
+  background:radial-gradient(ellipse 35% 60% at 50% 50%, rgba(8,8,13,0.7) 0%, transparent 100%);pointer-events:none}
+.venue-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:15%;
+  background:linear-gradient(0deg, rgba(8,8,13,0.7) 0%, transparent 100%);pointer-events:none}
+/* リング床のライン */
+.ring-floor{position:absolute;bottom:5%;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg, transparent 0%, rgba(212,168,67,0.15) 20%, rgba(212,168,67,0.25) 50%, rgba(212,168,67,0.15) 80%, transparent 100%)}
+.ring-floor::before{content:'';position:absolute;top:-20px;left:0;right:0;height:20px;
+  background:linear-gradient(0deg, rgba(212,168,67,0.03) 0%, transparent 100%)}
+
+/* full画像 — 左右にテキストを挟む配置 */
+.card-fighters{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:space-between;z-index:2;pointer-events:none}
+.card-fighter{width:50%;position:relative;overflow:hidden}
+.card-fighter .silhouette{width:100%;height:100%;position:relative;overflow:hidden;border:none;background:none}
+.card-fighter .silhouette img{width:100%;height:100%;object-fit:cover;object-position:center 95%;filter:brightness(0.82) contrast(1.1)}
+.card-fighter.left .silhouette{transform:scaleX(-1)}
+
+/* 中央テキストブロック — 中央に配置、キャラに挟まれる */
+.card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;pointer-events:none}
+.card-event{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:5px;color:var(--gold-d);text-transform:uppercase;margin-bottom:2px;text-shadow:0 1px 8px rgba(0,0,0,0.8)}
+.card-match-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px;text-shadow:0 1px 6px rgba(0,0,0,0.8)}
+.card-vs-block{text-align:center;margin-bottom:6px}
+.card-name{font-weight:900;font-size:28px;letter-spacing:2px;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,0.9)}
+.card-name .style-tag{font-family:'Oswald',sans-serif;font-size:11px;font-weight:400;letter-spacing:3px;color:var(--txt2);text-transform:uppercase;display:block;margin-top:1px}
+.card-vs{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--gold);line-height:1;margin:6px 0;
+  text-shadow:0 0 30px rgba(212,168,67,0.2),0 2px 12px rgba(0,0,0,0.9)}
+.card-record{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--txt2);margin-bottom:4px;text-align:center}
+.card-record-label{font-size:10px;letter-spacing:3px;color:var(--txt3);margin-bottom:2px}
+.card-record .wins{color:var(--gold-l);font-weight:600}
+.card-first-meeting{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;color:var(--gold-d);text-transform:uppercase;margin-bottom:8px}
+.card-badges{display:flex;gap:8px;margin-bottom:4px}
+.badge{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px}
+.badge.rival{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
+.badge.title{background:rgba(212,168,67,0.12);color:var(--gold-l);border:1px solid rgba(212,168,67,0.3)}
+.card-match-type{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:4px;color:var(--gold-l);text-transform:uppercase;margin-bottom:4px;
+  padding:5px 18px;border:1px solid rgba(212,168,67,0.2);border-radius:2px;background:rgba(8,8,13,0.5);text-shadow:0 1px 6px rgba(0,0,0,0.8)}
+
+/* スキャンライン */
+.scanlines{position:absolute;inset:0;pointer-events:none;z-index:8;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
+/* コーナーフレーム */
+.card-corner-frame{position:absolute;inset:12px;pointer-events:none;z-index:8}
+.card-corner-frame::before{content:'';position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid rgba(212,168,67,0.15);border-left:2px solid rgba(212,168,67,0.15)}
+.card-corner-frame::after{content:'';position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid rgba(212,168,67,0.15);border-right:2px solid rgba(212,168,67,0.15)}
+.card-corner-frame-extra::before{content:'';position:absolute;top:0;right:0;width:24px;height:24px;border-top:2px solid rgba(212,168,67,0.15);border-right:2px solid rgba(212,168,67,0.15)}
+.card-corner-frame-extra::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:2px solid rgba(212,168,67,0.15);border-left:2px solid rgba(212,168,67,0.15)}
+
+/* ═══ Phase C: バトル画面（Concept Fベース） ═══ */
+.battle-screen{position:absolute;inset:0;z-index:5;opacity:0;pointer-events:none;transition:opacity 0.6s;
+  display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;padding:0}
+.battle-screen.active{opacity:1;pointer-events:auto}
+
+/* 選手パネル */
+.fighter-panel{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative}
+.fighter-panel.left{border-color:rgba(74,143,212,0.2)}
+.fighter-panel.right{border-color:rgba(196,30,58,0.2)}
+/* スライドインアニメーション */
+.fighter-panel.left{transform:translateX(-110%);transition:transform 0.6s cubic-bezier(0.22,1,0.36,1)}
+.fighter-panel.right{transform:translateX(110%);transition:transform 0.6s cubic-bezier(0.22,1,0.36,1)}
+.battle-screen.active .fighter-panel.left,
+.battle-screen.active .fighter-panel.right{transform:translateX(0)}
+
+.portrait-area{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;background:#0a0a10;display:flex;align-items:flex-end;justify-content:center}
+.portrait-area .img-stand{position:absolute;left:0;right:0;bottom:0;height:105%;width:100%;object-fit:contain;object-position:center bottom;z-index:1}
+.fighter-panel.left .portrait-area .img-stand{transform:scaleX(-1)}
+.portrait-area::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);mix-blend-mode:multiply}
+.portrait-area::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,0.4) 100%)}
+.portrait-area .corner-frame{position:absolute;inset:0;z-index:5;pointer-events:none;border:1px solid rgba(212,168,67,0.06)}
+.portrait-area .corner-frame::before{content:'';position:absolute;top:0;left:0;width:14px;height:14px;border-top:2px solid rgba(212,168,67,0.2);border-left:2px solid rgba(212,168,67,0.2)}
+.portrait-area .corner-frame::after{content:'';position:absolute;bottom:0;right:0;width:14px;height:14px;border-bottom:2px solid rgba(212,168,67,0.2);border-right:2px solid rgba(212,168,67,0.2)}
+.fighter-panel.left .portrait-area{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset 2px 0 6px rgba(74,143,212,0.1)}
+.fighter-panel.right .portrait-area{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset -2px 0 6px rgba(196,30,58,0.1)}
+
+.fighter-info{padding:8px 10px}
+.f-name-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.f-name{font-weight:900;font-size:14px;cursor:pointer;transition:color 0.15s}
+.f-name:hover{color:var(--gold-l)}
+.f-role-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600}
+.f-role-tag.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0}
+.f-role-tag.heel{background:rgba(196,30,58,0.15);color:#f08b9e}
+.f-style{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);margin-bottom:3px}
+.f-rival-badge{display:inline-block;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25);margin-bottom:4px}
+.ability-bars{display:flex;flex-direction:column;gap:3px}
+.ab-row{display:flex;align-items:center;gap:5px}
+.ab-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--txt3);min-width:36px}
+.ab-track{flex:1;height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
+.ab-fill{height:100%;border-radius:2px}
+.ab-fill.pow{background:#c41e3a88}.ab-fill.spd{background:#2a6bd488}.ab-fill.tec{background:#2a9d8f88}.ab-fill.sta{background:#d4a84388}.ab-fill.mn{background:#8b5cf688}
+
+/* 中央パネル */
+.center-panel{background:var(--card);border:1px solid rgba(255,255,255,0.05);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;
+  transform:translateY(30px);opacity:0;transition:transform 0.5s 0.3s,opacity 0.5s 0.3s}
+.battle-screen.active .center-panel{transform:translateY(0);opacity:1}
+.top-line{display:flex;justify-content:space-between;align-items:center}
+.turn-lbl{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold)}
+.phase-pill{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(212,168,67,0.25);border-radius:2px;color:var(--gold-l)}
+.nar-box{min-height:48px;padding:8px;background:rgba(0,0,0,0.3);border-radius:3px;border-left:3px solid rgba(212,168,67,0.25)}
+.nar-move{font-size:14px;font-weight:900;margin-bottom:2px}.nar-text{font-size:11px;color:var(--txt2)}.nar-dmg{font-size:11px;color:#e85d75}
+.move-box{text-align:center;padding:4px 6px;background:rgba(0,0,0,0.2);border-radius:3px}
+.move-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
+.move-name{font-size:14px;font-weight:900;min-height:18px}
+.mom-section{text-align:center}
+.mom-header{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:3px}
+.mom-bar-c{display:flex;height:7px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden}
+.mom-lc{width:50%;background:linear-gradient(90deg,rgba(74,143,212,0.4),rgba(74,143,212,0.8))}
+.mom-rc{width:50%;background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.4))}
+.mom-names{display:flex;justify-content:space-between;font-size:9px;color:var(--txt3);margin-top:2px}
+.log-section{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.log-hdr{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:4px}
+.log-list{display:flex;flex-direction:column;gap:3px;overflow-y:auto;flex:1}
+
+/* ═══ ボタン ═══ */
+.btn-bar{position:fixed;bottom:16px;display:flex;gap:8px;z-index:100}
+.btn{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;padding:10px 28px;border:1px solid var(--gold-d);border-radius:3px;cursor:pointer;background:rgba(212,168,67,0.08);color:var(--gold-l);transition:all 0.2s}
+.btn:hover{background:rgba(212,168,67,0.18);box-shadow:0 0 16px rgba(212,168,67,0.15)}
+
+/* ═══ ゴングフラッシュ ═══ */
+.gong-flash{position:fixed;inset:0;background:rgba(255,255,255,0.15);opacity:0;pointer-events:none;z-index:50;transition:opacity 0.1s}
+.gong-flash.show{opacity:1}
+
+/* ═══ ゴングテキスト ═══ */
+.gong-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.5);z-index:55;pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--gold-l);letter-spacing:8px;
+  text-shadow:0 0 40px rgba(212,168,67,0.4);opacity:0;transition:all 0.3s}
+.gong-text.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.gong-text.fade{opacity:0;transform:translate(-50%,-50%) scale(1.3)}
+
+/* ═══ 状態ラベル ═══ */
+.state-label{position:fixed;top:12px;left:50%;transform:translateX(-50%);font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;color:var(--gold);opacity:0.3;z-index:100}
+</style>
+</head>
+<body>
+
+<div class="state-label" id="stateLabel">MATCH CARD</div>
+<div class="gong-flash" id="gongFlash"></div>
+<div class="gong-text" id="gongText">FIGHT!</div>
+
+<div class="app">
+  <!-- HUD（常時表示） -->
+  <div class="hud">
+    <div class="hud-top">
+      <div class="hud-side">
+        <div class="hud-face blue"><img src="../../image/face_takatsu_k.png" style="width:100%;height:100%;object-fit:cover"></div>
+        <div><div class="hud-name">高津 カナ</div><div class="hud-style">Grappler</div></div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-turn">TURN —</div>
+        <div class="hud-phase">READY</div>
+      </div>
+      <div class="hud-side">
+        <div style="text-align:right"><div class="hud-name">橘 リナ</div><div class="hud-style">Striker</div></div>
+        <div class="hud-face red"><img src="../../image/face_tachibana_r.png" style="width:100%;height:100%;object-fit:cover"></div>
+      </div>
+    </div>
+    <div class="hp-row">
+      <span class="hp-pct blue">100%</span>
+      <div class="hp-bar"><div class="hp-fill high rev" style="width:100%"></div></div>
+      <span class="hp-label">HP</span>
+      <div class="hp-bar"><div class="hp-fill high" style="width:100%"></div></div>
+      <span class="hp-pct red">100%</span>
+    </div>
+    <div class="mom-bar"><div class="mom-l"></div><div class="mom-r"></div></div>
+  </div>
+
+  <!-- メインエリア -->
+  <div class="main-area">
+
+    <!-- Phase A: 対戦カード -->
+    <div class="match-card" id="matchCard">
+      <div class="venue-bg">
+        <div class="center-darken"></div>
+        <div class="ring-floor"></div>
+      </div>
+
+      <div class="card-fighters">
+        <div class="card-fighter left">
+          <div class="silhouette"><img src="../../image/full/full_takatsu_k.webp" alt="高津カナ"></div>
+        </div>
+        <div class="card-fighter right">
+          <div class="silhouette"><img src="../../image/full/full_tachibana_r.webp" alt="橘リナ"></div>
+        </div>
+      </div>
+
+      <div class="card-info">
+        <div class="card-event">WRESTLE MANAGER GRAND PRIX 2026</div>
+        <div class="card-match-num">第3試合</div>
+        <div class="card-match-type">Singles Match</div>
+        <div class="card-vs-block">
+          <div class="card-name">高津 カナ<span class="style-tag">Grappler</span></div>
+          <div class="card-vs">VS</div>
+          <div class="card-name">橘 リナ<span class="style-tag">Striker</span></div>
+        </div>
+        <div class="card-record">
+          <div class="card-record-label">対戦成績</div>
+          <div>高津 <span class="wins">3</span> 勝 ／ 橘 <span class="wins">2</span> 勝</div>
+        </div>
+        <!-- 初顔合わせの場合はこちら: -->
+        <!-- <div class="card-first-meeting">— 初 顔 合 わ せ —</div> -->
+        <div class="card-badges">
+          <span class="badge rival">🔥 RIVAL</span>
+          <!-- タイトルマッチの場合: -->
+          <!-- <span class="badge title">🏆 TITLE MATCH</span> -->
+        </div>
+      </div>
+
+      <div class="scanlines"></div>
+      <div class="card-corner-frame"></div>
+      <div class="card-corner-frame card-corner-frame-extra"></div>
+    </div>
+
+    <!-- Phase C: バトル画面 -->
+    <div class="battle-screen" id="battleScreen">
+      <!-- 左パネル -->
+      <div class="fighter-panel left">
+        <div class="portrait-area">
+          <img class="img-stand" src="../../image/stand/stand_takatsu_k.webp" alt="高津カナ">
+          <div class="corner-frame"></div>
+        </div>
+        <div class="fighter-info">
+          <div class="f-name-row">
+            <span class="f-name" title="クリックで詳細">高津 カナ</span>
+            <span class="f-role-tag babyface">FACE</span>
+          </div>
+          <div class="f-style">Grappler</div>
+          <div class="f-rival-badge">🔥 RIVAL</div>
+          <div class="ability-bars">
+            <div class="ab-row"><span class="ab-name">POW</span><div class="ab-track"><div class="ab-fill pow" style="width:82%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">SPD</span><div class="ab-track"><div class="ab-fill spd" style="width:48%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">TEC</span><div class="ab-track"><div class="ab-fill tec" style="width:62%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">STA</span><div class="ab-track"><div class="ab-fill sta" style="width:71%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">MN</span><div class="ab-track"><div class="ab-fill mn" style="width:55%"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央パネル -->
+      <div class="center-panel">
+        <div class="top-line">
+          <span class="turn-lbl">T1</span>
+          <span class="phase-pill">PHASE 1</span>
+        </div>
+        <div class="nar-box">
+          <div class="nar-move">—</div>
+          <div class="nar-text">試合開始！</div>
+          <div class="nar-dmg"></div>
+        </div>
+        <div class="move-box">
+          <div class="move-label">current move</div>
+          <div class="move-name">—</div>
+        </div>
+        <div class="mom-section">
+          <div class="mom-header">Momentum</div>
+          <div class="mom-bar-c"><div class="mom-lc"></div><div class="mom-rc"></div></div>
+          <div class="mom-names"><span>高津</span><span>橘</span></div>
+        </div>
+        <div class="log-section">
+          <div class="log-hdr">Battle Log</div>
+          <div class="log-list"></div>
+        </div>
+      </div>
+
+      <!-- 右パネル -->
+      <div class="fighter-panel right">
+        <div class="portrait-area">
+          <img class="img-stand" src="../../image/stand/stand_tachibana_r.webp" alt="橘リナ">
+          <div class="corner-frame"></div>
+        </div>
+        <div class="fighter-info">
+          <div class="f-name-row">
+            <span class="f-name" title="クリックで詳細">橘 リナ</span>
+            <span class="f-role-tag heel">HEEL</span>
+          </div>
+          <div class="f-style">Striker</div>
+          <div class="f-rival-badge">🔥 RIVAL</div>
+          <div class="ability-bars">
+            <div class="ab-row"><span class="ab-name">POW</span><div class="ab-track"><div class="ab-fill pow" style="width:52%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">SPD</span><div class="ab-track"><div class="ab-fill spd" style="width:85%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">TEC</span><div class="ab-track"><div class="ab-fill tec" style="width:70%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">STA</span><div class="ab-track"><div class="ab-fill sta" style="width:47%"></div></div></div>
+            <div class="ab-row"><span class="ab-name">MN</span><div class="ab-track"><div class="ab-fill mn" style="width:68%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="btn-bar">
+  <button class="btn" id="btnNext" onclick="handleNext()">NEXT</button>
+</div>
+
+<script>
+let phase = 'card'; // 'card' | 'transition' | 'battle'
+
+function handleNext() {
+  if (phase === 'card') {
+    startTransition();
+  }
+}
+
+function startTransition() {
+  phase = 'transition';
+  const btn = document.getElementById('btnNext');
+  btn.style.pointerEvents = 'none';
+  btn.style.opacity = '0.3';
+
+  // Step 1: ゴングフラッシュ (0ms)
+  const flash = document.getElementById('gongFlash');
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 150);
+
+  // Step 2: 「FIGHT!」テキスト (200ms)
+  const gongText = document.getElementById('gongText');
+  setTimeout(() => {
+    gongText.classList.add('show');
+  }, 200);
+
+  // Step 3: テキスト消去 (800ms)
+  setTimeout(() => {
+    gongText.classList.remove('show');
+    gongText.classList.add('fade');
+  }, 800);
+
+  // Step 4: 対戦カード画面をフェードアウト (1000ms)
+  setTimeout(() => {
+    document.getElementById('matchCard').classList.add('hidden');
+  }, 1000);
+
+  // Step 5: バトル画面をアクティブに → パネルがスライドイン (1200ms)
+  setTimeout(() => {
+    document.getElementById('battleScreen').classList.add('active');
+    document.getElementById('stateLabel').textContent = 'BATTLE';
+  }, 1200);
+
+  // Step 6: 操作可能に (2200ms)
+  setTimeout(() => {
+    phase = 'battle';
+    btn.style.pointerEvents = '';
+    btn.style.opacity = '';
+    btn.textContent = 'NEXT (BATTLE)';
+    btn.onclick = () => { /* ここからバトルロジック */ };
+  }, 2200);
+}
+</script>
+</body>
+</html>
