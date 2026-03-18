@@ -2803,6 +2803,9 @@ window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'MATCH_RESULT') {
     App.receiveBattleResult(e.data);
   }
+  if (e.data && e.data.type === 'SHOW_POPUP' && e.data.id) {
+    showFighterPopup(e.data.id);
+  }
 });
 
 // ═══ Match Preview Renderer (v0.86) ═══
