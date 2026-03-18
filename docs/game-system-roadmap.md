@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-18
+> 最終更新: 2026-03-18（勝利演出リニューアル + PPVマッチカード画面 + getUpperUrlリファクタ 全完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,12 +9,13 @@
 
 ## 現在の状態
 
-**試合画面UI刷新 Phase 0〜7 全完了（2026-03-18）。** HUD刷新・ダメージ表現・カットイン3種・ビッグムーブ/カウンター演出・対戦カード紹介画面。battle-engine.htmlのみ変更、engine.js変更なし。
+**試合画面UI刷新 全完了（2026-03-18）。** HUD刷新・ダメージ表現・カットイン3種・ビッグムーブ/カウンター演出・対戦カード紹介画面・勝利演出リニューアル・PPVマッチカード画面。auto-sim 100シーズン ALL CLEAR。
 
 ### 直近の完了セッション
 
 | 日付 | 内容 |
 |------|------|
+| 03-18 | 勝利演出リニューアル（upper画像+セリフ+MQ/ターン数+敗者face）、PPVマッチカード紹介画面新設（Layout A ミニポスター縦並び）、getUpperUrlリファクタ確認（既実装済み） |
 | 03-18 | 試合画面UI刷新 Phase 0〜7 全完了 |
 | 03-16 | 契約交渉v2.0（trust×ギャップ2軸マトリクス/突発退団）、trust欠落バグ修正、序盤orgPop保護 |
 | 03-14 | Glimpse P1〜P6全完了、ポップアップUI統一 |
@@ -155,6 +156,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 | 設計決定ログ | design-decisions.md |
 | マスタースペック（現行仕様） | master-spec.md |
 | 世界観設定 | world-setting.md |
+| 勝利演出+PPVマッチカード+リファクタ 実装指示書 | victory-ppv-implementation-guide.md |
 
 ### specs/（現行リファレンス仕様書）
 
@@ -175,7 +177,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 |---|---|
 | docs/archive/ | セッション履歴・完了タスク・旧設計書・分析レポート |
 | specs/archive/ | 実装完了済み仕様書・旧バージョン（80+ファイル） |
-| archive/prototype/ | HTMLプロトタイプ・UIモックアップ（12ファイル） |
+| archive/prototype/ | HTMLプロトタイプ・UIモックアップ（14ファイル。victory-popup-prototype.html, ppv-matchcard-prototype.html 追加） |
 | archive/scripts/ | セリフ変換スクリプト群 |
 | archive/exports/ | Notion/セリフエクスポートデータ |
 | archive/tasks/ | 旧タスクメモ |

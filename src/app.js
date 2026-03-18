@@ -5729,9 +5729,9 @@ App.initPPVShow = function() {
         setTimeout(resolve, 1500);
       }));
     });
-    popupChain.then(() => renderPPVMatchPreview());
+    popupChain.then(() => showPPVMatchCardIntro(() => renderPPVMatchPreview()));
   } else {
-    renderPPVMatchPreview();
+    showPPVMatchCardIntro(() => renderPPVMatchPreview());
   }
 };
 

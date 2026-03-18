@@ -289,6 +289,49 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .btn-end.visible{opacity:1}
 .btn-end:hover{background:var(--gold);color:var(--bg-dark);font-weight:700}
 
+/* ═══ VICTORY BOX (win演出) ═══ */
+.victory-box{width:min(520px,90vw);display:flex;flex-direction:column;align-items:center;
+  opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
+.victory-box.visible{opacity:1;transform:scale(1)}
+.winner-portrait{width:160px;height:240px;object-fit:contain;object-position:top center;
+  filter:drop-shadow(0 0 24px rgba(233,69,96,0.35));margin-bottom:8px;
+  opacity:0;transition:opacity .4s}
+.winner-portrait.visible{opacity:1}
+.winner-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;
+  color:#e94560;margin-bottom:2px}
+.winner-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;
+  background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;text-align:center;
+  line-height:1.1;margin-bottom:6px;opacity:0;transition:opacity .4s}
+.winner-name.visible{opacity:1}
+.vic-finish{font-size:14px;color:#aaa;margin-bottom:16px;text-align:center;
+  opacity:0;transition:opacity .4s}
+.vic-finish.visible{opacity:1}
+.vic-speech{width:100%;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));
+  border-left:3px solid #daa520;border-radius:0 6px 6px 0;padding:14px 18px;margin-bottom:18px;
+  opacity:0;transition:opacity .4s}
+.vic-speech.visible{opacity:1}
+.vic-speech-text{font-size:17px;line-height:1.65;color:#f0e6d0;text-align:left}
+.vic-speech-text::before{content:'「';color:#daa520}
+.vic-speech-text::after{content:'」';color:#daa520}
+.vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:0 4px;margin-bottom:18px;opacity:0;transition:opacity .4s}
+.vic-bottom.visible{opacity:1}
+.vic-loser{display:flex;align-items:center;gap:8px}
+.vic-loser-face{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #555}
+.vic-loser-name{font-size:13px;color:#888}
+.vic-loser-tag{font-size:10px;color:#666}
+.vic-stats{display:flex;gap:16px}
+.vic-stat{text-align:center}
+.vic-stat-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px}
+.vic-stat-value{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#e8e8e8}
+.vic-stat-value.mq-gold{color:#ffd700}
+.vic-close{background:transparent;border:1px solid #555;color:#aaa;padding:8px 40px;
+  border-radius:4px;font-size:13px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;
+  cursor:pointer;opacity:0;transition:opacity .4s,border-color .2s,color .2s}
+.vic-close.visible{opacity:1}
+.vic-close:hover{border-color:#daa520;color:#daa520}
+
 /* ═══ FINISH CLICK SYSTEM ═══ */
 .finish-click-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:40;pointer-events:none;
   opacity:0;transition:opacity .3s}
@@ -1623,13 +1666,16 @@ function sendResult() {
   const isDraw = S.winner === 'draw';
   const winnerId = isDraw ? null : (S.winner === 'left' ? L.id : R.id);
   const loserId = isDraw ? null : (S.winner === 'left' ? R.id : L.id);
-  // Calculate MQ (match quality) from battle stats
+  // Calculate MQ (match quality) — reuse S.mq if pre-calculated by showResult()
   const totalTurns = S.turn;
-  const leadChanges = S.log.filter(l => l.includes('カウンター')).length;
-  const kickouts = S.log.filter(l => l.includes('キックアウト') || l.includes('返した') || l.includes('ロープ')).length;
-  const bigMoves = S.log.filter(l => l.includes('大ダメージ')).length;
-  const baseMQ = 30 + Math.min(totalTurns * 2, 20) + leadChanges * 5 + kickouts * 8 + bigMoves * 3;
-  const mq = Math.min(100, Math.max(10, Math.round(baseMQ + (Math.random() * 10 - 5))));
+  let mq = S.mq;
+  if (!mq) {
+    const leadChanges = S.log.filter(l => l.includes('カウンター')).length;
+    const kickouts = S.log.filter(l => l.includes('キックアウト') || l.includes('返した') || l.includes('ロープ')).length;
+    const bigMoves = S.log.filter(l => l.includes('大ダメージ')).length;
+    const baseMQ = 30 + Math.min(totalTurns * 2, 20) + leadChanges * 5 + kickouts * 8 + bigMoves * 3;
+    mq = Math.min(100, Math.max(10, Math.round(baseMQ + (Math.random() * 10 - 5))));
+  }
   const result = {
     type: 'MATCH_RESULT',
     winner: isDraw ? 'draw' : (S.winner === 'left' ? 'left' : 'right'),
@@ -2346,8 +2392,26 @@ function updLog(){
     return `<div class="${c}">${e}</div>`}).join('');
 }
 
+function localFormatFinish(finType,finMove){
+  if(!finMove)return finType||'激闘決着';
+  switch(finType){
+    case 'フォール':case 'ピン':return `${finMove} → 3カウント`;
+    case 'ギブアップ':return `${finMove} → ギブアップ`;
+    case 'TKO':return `${finMove} → レフェリーストップ`;
+    case '丸め込み':return `${finMove} → 丸め込み`;
+    default:return `${finMove} (${finType||'決着'})`;
+  }
+}
+
 function showResult(){
   S.anim=false;
+  // MQを事前計算してS.mqに保存（renderResultとsendResultで共用）
+  const totalTurns=S.turn;
+  const leadChanges=S.log.filter(l=>l.includes('カウンター')).length;
+  const kickouts=S.log.filter(l=>l.includes('キックアウト')||l.includes('返した')||l.includes('ロープ')).length;
+  const bigMoves=S.log.filter(l=>l.includes('大ダメージ')).length;
+  const baseMQ=30+Math.min(totalTurns*2,20)+leadChanges*5+kickouts*8+bigMoves*3;
+  S.mq=Math.min(100,Math.max(10,Math.round(baseMQ+(Math.random()*10-5))));
   const btn=document.getElementById('nBtn');
   if(btn){btn.disabled=true;btn.textContent=S.winner==='draw'?'DRAW!':`${(S.winner==='left'?S.L:S.R).name} WIN!`}
   updLog();renderResult();
@@ -2357,32 +2421,50 @@ function renderResult(){
   const el=document.getElementById('resultOverlay'),L=S.L,R=S.R;
   const isDraw=S.winner==='draw';
   const winner=isDraw?null:(S.winner==='left'?L:R);
-  const wName=isDraw?'DRAW':winner.name;
-  const wType=isDraw?'タイムアップ — 引き分け':`${S.finType}勝ち！`;
+  const loser=isDraw?null:(S.winner==='left'?R:L);
   const vLine=winner?pk(winner.vl):'';
+  const mqVal=S.mq||0;
 
   if(isDraw){
     el.innerHTML=`<div class="result-box" id="rBox">
       <div class="result-draw-content">
         <div class="result-winner" id="rWinner">DRAW</div>
-        <div class="result-type" id="rType">${wType}</div>
+        <div class="result-type" id="rType">タイムアップ — 引き分け</div>
       </div>
       <button class="btn-end" id="eBtn">CLOSE</button></div>`;
   }else{
-    el.innerHTML=`<div class="result-box" id="rBox">
-      <div class="result-content">
-        <div class="result-image" id="rImg">
-          <img src="${getFaceUrl(winner)}" alt="${winner.name}"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="result-image-placeholder" style="display:none">${silSVG}</div>
+    const finLabel=localFormatFinish(S.finType,S.finMove);
+    const mqClass=mqVal>=75?'mq-gold':'';
+    el.style.background='radial-gradient(ellipse at center,rgba(10,10,30,0.88) 0%,rgba(0,0,0,0.95) 100%)';
+    el.innerHTML=`<div class="victory-box" id="rBox">
+      <img id="rImg" class="winner-portrait" src="${getUpperUrl(winner)}" alt="${winner.name}" onerror="this.style.display='none'">
+      <div class="winner-label">W I N N E R</div>
+      <div class="winner-name" id="rWinner">${winner.name}</div>
+      <div class="vic-finish" id="rType">${finLabel}</div>
+      <div class="vic-speech" id="rQuote">
+        <div class="vic-speech-text" id="rSpeech"></div>
+      </div>
+      <div class="vic-bottom" id="rBottom">
+        <div class="vic-loser">
+          <img class="vic-loser-face" src="${getFaceUrl(loser)}" alt="${loser.name}" onerror="this.style.display='none'">
+          <div>
+            <div class="vic-loser-name">${loser.name}</div>
+            <div class="vic-loser-tag">LOSER</div>
+          </div>
         </div>
-        <div class="result-text">
-          <div class="result-winner" id="rWinner">${wName}</div>
-          <div class="result-type" id="rType">${wType}</div>
-          <div class="result-quote" id="rQuote"></div>
+        <div class="vic-stats">
+          <div class="vic-stat">
+            <div class="vic-stat-label">MQ</div>
+            <div class="vic-stat-value ${mqClass}">${mqVal}</div>
+          </div>
+          <div class="vic-stat">
+            <div class="vic-stat-label">Turns</div>
+            <div class="vic-stat-value">${S.turn}</div>
+          </div>
         </div>
       </div>
-      <button class="btn-end" id="eBtn">CLOSE</button></div>`;
+      <button class="vic-close" id="eBtn">C L O S E</button>
+    </div>`;
   }
   el.classList.add('show');
   sfx.finChime();
@@ -2398,17 +2480,20 @@ function renderResult(){
   },1500);
   if(!isDraw){
     setTimeout(()=>{
+      const rBottom=document.getElementById('rBottom');if(rBottom)rBottom.classList.add('visible');
+    },1800);
+    setTimeout(()=>{
       const rQ=document.getElementById('rQuote');if(!rQ)return;
       rQ.classList.add('visible');
-      const fullText=`「${vLine}」`;let idx=0;
-      const tw=setInterval(()=>{idx++;rQ.textContent=fullText.slice(0,idx);if(idx>=fullText.length)clearInterval(tw)},40);
+      const rS=document.getElementById('rSpeech');
+      if(rS){let idx=0;const tw=setInterval(()=>{idx++;rS.textContent=vLine.slice(0,idx);if(idx>=vLine.length)clearInterval(tw)},40);}
     },2200);
   }
   setTimeout(()=>{
     const eBtn=document.getElementById('eBtn');if(eBtn){eBtn.classList.add('visible');eBtn.addEventListener('click',closeAndSendResult)}
   },3500);
 }
-function hideResult(){const el=document.getElementById('resultOverlay');el.classList.remove('show','visible');el.innerHTML=''}
+function hideResult(){const el=document.getElementById('resultOverlay');el.classList.remove('show','visible');el.style.background='';el.innerHTML=''}
 
 function closeAndSendResult(){
   sendResult();

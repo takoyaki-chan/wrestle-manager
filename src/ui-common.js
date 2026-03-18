@@ -3294,6 +3294,77 @@ function confirmPPVEntry() {
   refreshAll();
 }
 
+// ── PPV マッチカード紹介画面（興行開始前の全カード一覧）──
+function showPPVMatchCardIntro(onStart) {
+  const pp = App._ppvPreview;
+  if (!pp || pp.card.length === 0) { onStart(); return; }
+
+  const ppvName = G.ppvName || 'GRAND FINAL';
+  const total = pp.card.length;
+  const season = G.season || 1;
+
+  // カード表示: メインイベント(最後のcard)を上、前座(最初のcard)を下に並べる
+  let cardsHtml = '';
+  const cards = pp.card;
+  for (let di = total - 1; di >= 0; di--) {
+    const match = cards[di];
+    const isMain = !!(match.isSummit) || di === total - 1;
+    const mainClass = isMain ? ' is-main' : '';
+
+    // 試合種別ラベル
+    const typeLabel = isMain ? 'MAIN EVENT' : `MATCH ${di + 1}`;
+
+    // バッジ
+    let badge = '';
+    if (match.isRivalry) badge = `<div class="ppvmc-badge">🔥 ライバル対決</div>`;
+
+    // h2h通算成績
+    let h2hText = 'FIRST MEETING';
+    const recForLeft = Engine.h2h.getRecordFor(G, match.left.id, match.right.id);
+    if (recForLeft && recForLeft.matches > 0) {
+      h2hText = `通算: ${match.left.name} ${recForLeft.wins}勝 - ${recForLeft.losses}勝 ${match.right.name}`;
+    }
+
+    // z-index: 下の段(前座)ほど高い（上のカードの画像が下のカードの裏に隠れる）
+    const zIdx = total - di;
+
+    cardsHtml += `
+      <div class="ppvmc-card${mainClass}" style="z-index:${zIdx}">
+        <div class="ppvmc-fighter left">
+          <img src="${getFullUrl(match.left.id)}" alt="${match.left.name}" onerror="this.style.display='none'">
+        </div>
+        <div class="ppvmc-center">
+          <div class="ppvmc-type">${typeLabel}</div>
+          <div class="ppvmc-cname">${match.left.name}</div>
+          <div class="ppvmc-vs">V S</div>
+          <div class="ppvmc-cname">${match.right.name}</div>
+          ${badge}
+          <div class="ppvmc-h2h">${h2hText}</div>
+        </div>
+        <div class="ppvmc-fighter right">
+          <img src="${getFullUrl(match.right.id)}" alt="${match.right.name}" onerror="this.style.display='none'">
+        </div>
+      </div>`;
+  }
+
+  const el = document.getElementById('ppvMatchCardOverlay');
+  el.innerHTML = `<div class="ppvmc-inner">
+    <div class="ppvmc-title">
+      <div class="ppvmc-label">Special Event</div>
+      <div class="ppvmc-bigname">${ppvName}</div>
+      <div class="ppvmc-sub">Season ${season} ─ 全${total}試合</div>
+    </div>
+    <div class="ppvmc-list">${cardsHtml}</div>
+    <div class="ppvmc-start"><button id="ppvmcStartBtn">S T A R T</button></div>
+  </div>`;
+
+  el.classList.add('active');
+  document.getElementById('ppvmcStartBtn').addEventListener('click', () => {
+    el.classList.remove('active');
+    onStart();
+  });
+}
+
 // ── PPV GRAND FINAL: Match Preview / Result / TV ──
 function renderPPVMatchPreview() {
   const pp = App._ppvPreview;
