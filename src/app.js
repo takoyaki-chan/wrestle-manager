@@ -521,6 +521,7 @@ const Audio = (() => {
     play(trackName) {
       if (_bgmMuted) return; // BGM muted — skip looping tracks
       if (trackName === BGM._current && BGM._playing) return; // Already playing
+      if (FileBGM._audio) FileBGM.stop(); // チップチューン再生時はFileBGMを必ず停止
       BGM.stop();
       const c = ensure();
       if (c.state === 'suspended') c.resume();

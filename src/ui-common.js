@@ -3461,6 +3461,11 @@ function renderPPVMatchPreview() {
 
     html += `<div class="ppvprog-mc${mainClass}">
       <div class="ppvprog-mn">${typeLabel}</div>
+      ${match.hype ? `<div class="ppvprog-hype">${match.hype}</div>` : ''}
+      <div class="ppvprog-dl">
+        <div class="ppvprog-dlc left"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${L.name}</div>「${lineL}」</div></div>
+        <div class="ppvprog-dlc right"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${R.name}</div>「${lineR}」</div></div>
+      </div>
       <div class="ppvprog-va">
         <div class="ppvprog-fc left">
           <div class="ppvprog-fi">
@@ -3496,11 +3501,6 @@ function renderPPVMatchPreview() {
           <div class="ppvprog-tdiv"></div>
           <div class="ppvprog-ts right">${traitsR.length ? traitsR.map(t=>`<span class="ppvprog-tt">${t}</span>`).join('') : '<span class="ppvprog-tt" style="opacity:0.3">─</span>'}</div>
         </div>
-      </div>
-      ${match.hype ? `<div class="ppvprog-hype">${match.hype}</div>` : ''}
-      <div class="ppvprog-dl">
-        <div class="ppvprog-dlc left"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${L.name}</div>「${lineL}」</div></div>
-        <div class="ppvprog-dlc right"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${R.name}</div>「${lineR}」</div></div>
       </div>
       <div class="ppvprog-act">
         <button class="ppvprog-bw" onclick="App.ppvWatchMatch(${idx})">🎬 試合を観る</button>
