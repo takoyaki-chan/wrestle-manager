@@ -3381,115 +3381,140 @@ function renderPPVMatchPreview() {
   const resolved = pp.results.filter(r => r !== null).length;
   const ppvName = G.ppvName || 'GRAND FINAL';
 
-  let html = '';
-  // グランドヘッダー
-  html += `<div style="text-align:center;padding:16px 12px;background:linear-gradient(135deg,rgba(241,196,15,0.18),rgba(231,76,60,0.10));border-radius:10px;margin-bottom:16px">`;
-  html += `<div class="show-result-title" style="color:var(--gold);font-size:20px">🏟️ PPV GRAND FINAL「${ppvName}」</div>`;
-  html += `<div style="font-size:13px;color:var(--text-sub)">全${total}試合 — ${resolved}/${total} 完了</div>`;
-  html += `</div>`;
-
   // 次の未解決試合を特定（前座=card[0]から順にメイン=card[total-1]へ）
   let nextIdx = -1;
   for (let i = 0; i < total; i++) {
     if (pp.results[i] === null) { nextIdx = i; break; }
   }
 
+  // stat比較行ヘルパー
+  function _statRow(label, lv, rv, cls) {
+    const bwL = Math.max(4, Math.round(lv / 100 * 100));
+    const bwR = Math.max(4, Math.round(rv / 100 * 100));
+    return `<div class="ppvprog-sr">
+      <div class="ppvprog-sbl"><span class="ppvprog-sv${lv>rv?' hi':''}">${lv}</span><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwL}%"></div></div></div>
+      <div class="ppvprog-sl">${label}</div>
+      <div class="ppvprog-sbr"><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwR}%"></div></div><span class="ppvprog-sv${rv>lv?' hi':''}">${rv}</span></div>
+    </div>`;
+  }
+
+  let html = `<div class="ppvprog-header">
+    <div class="ppvprog-label">Special Event</div>
+    <div class="ppvprog-name">${ppvName}</div>
+    <div class="ppvprog-progress">全${total}試合 ─ ${resolved}/${total} 完了</div>
+  </div><div class="ppvprog-wrap">`;
+
   // カード表示: card[0]=前座(下), card[total-1]=メイン(上)
-  // 表示はメインイベントから上→前座を下へ
+  // 表示はメインイベント(上)→前座(下)
   for (let di = total - 1; di >= 0; di--) {
     const idx = di;
     const match = pp.card[idx];
     const result = pp.results[idx];
     const isResolved = result !== null;
     const isNext = idx === nextIdx;
-    // nextIdx以下は公開済み or 次の試合。nextIdxより大きいidxは未到達（メイン側は霧）
     const isRevealed = isResolved || (nextIdx >= 0 && idx <= nextIdx);
     const matchNum = idx + 1;
-    const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
+    const isMain = !!match.isSummit;
+    const typeLabel = isMain ? 'MAIN EVENT' : `第${matchNum}試合`;
 
     if (!isRevealed) {
-      // 霧表示（未到達カード）
-      html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:8px;opacity:0.3;text-align:center">`;
-      html += `<div style="font-size:12px;color:var(--text-dim)">${matchLabel}</div>`;
-      html += `<div style="font-size:14px;color:var(--text-dim);margin-top:4px">??? vs ???</div>`;
-      html += `</div>`;
+      // 未到達（霧）
+      html += `<div class="ppvprog-mw">
+        <div class="ppvprog-mwh">${typeLabel}</div>
+        <div class="ppvprog-mwn">${match.left.name} vs ${match.right.name}</div>
+      </div>`;
       continue;
     }
 
-    // 公開カード
-    const borderColor = match.isSummit ? 'var(--gold)' : isNext ? 'var(--blue)' : 'var(--border)';
-    const bgExtra = match.isSummit ? 'background:rgba(241,196,15,0.06);' : '';
-    html += `<div style="${bgExtra}border:1px solid ${borderColor};border-radius:6px;padding:12px;margin-bottom:8px;${isResolved && !isNext ? 'opacity:0.6;' : ''}">`;
-
-    // ラベル + 因縁タグ
-    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">`;
-    html += `<div style="font-size:12px;color:${match.isSummit ? 'var(--gold)' : 'var(--text-dim)'};font-weight:${match.isSummit ? '700' : '400'}">${matchLabel}</div>`;
-    if (match.isRivalry) html += `<span style="font-size:11px;color:#e74c3c;border:1px solid rgba(231,76,60,0.3);padding:1px 6px;border-radius:3px">🔥 因縁</span>`;
-    html += `</div>`;
-
-    // VS画面: 選手情報（名前クリックで詳細ポップアップ）
-    const orgColorL = match.left._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === match.left._ppvOrgId)?.color || 'var(--text-main)');
-    const orgColorR = match.right._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === match.right._ppvOrgId)?.color || 'var(--text-main)');
-    html += `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">`;
-    // 左選手
-    html += `<div style="text-align:center;cursor:pointer" onclick="showFighterPopup(${match.left.id})">`;
-    const urlL = getPortraitUrl(match.left.id);
-    if (urlL) html += `<img src="${urlL}" style="width:64px;height:64px;border-radius:50%;border:2px solid ${orgColorL}44;object-fit:cover" alt="">`;
-    else html += portraitImg(match.left.id, 64);
-    html += `<div style="font-size:13px;color:${orgColorL};font-weight:600;margin-top:4px;text-decoration:underline dotted;text-underline-offset:2px">${match.left.name}</div>`;
-    html += `<div style="font-size:10px;color:var(--text-dim)">${match.left._ppvOrgName || ''} / OVR ${Engine.util.ov(match.left)}</div>`;
-    html += `</div>`;
-    // VS
-    html += `<div style="font-size:16px;font-weight:700;color:var(--text-dim);padding:0 8px">VS</div>`;
-    // 右選手
-    html += `<div style="text-align:center;cursor:pointer" onclick="showFighterPopup(${match.right.id})">`;
-    const urlR = getPortraitUrl(match.right.id);
-    if (urlR) html += `<img src="${urlR}" style="width:64px;height:64px;border-radius:50%;border:2px solid ${orgColorR}44;object-fit:cover" alt="">`;
-    else html += portraitImg(match.right.id, 64);
-    html += `<div style="font-size:13px;color:${orgColorR};font-weight:600;margin-top:4px;text-decoration:underline dotted;text-underline-offset:2px">${match.right.name}</div>`;
-    html += `<div style="font-size:10px;color:var(--text-dim)">${match.right._ppvOrgName || ''} / OVR ${Engine.util.ov(match.right)}</div>`;
-    html += `</div>`;
-    html += `</div>`;
-
-    // 煽り文（未解決の次の試合のみ表示）
-    if (match.hype && isNext && !isResolved) {
-      html += `<div style="text-align:center;font-size:12px;color:var(--gold);font-style:italic;margin-bottom:4px;line-height:1.4">${match.hype}</div>`;
-    }
-    // セリフ演出（未解決の次の試合のみ — 両者のセリフを名前付きで表示）
-    if (isNext && !isResolved) {
-      const lineL = _getPPVPreMatchLine(match.left);
-      const lineR = _getPPVPreMatchLine(match.right);
-      html += `<div style="margin:6px 0;padding:8px;background:rgba(255,255,255,0.03);border-radius:4px">`;
-      html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:4px"><span style="color:${orgColorL};font-weight:600">${match.left.name}</span>「${lineL}」</div>`;
-      html += `<div style="font-size:12px;color:var(--text-main)"><span style="color:${orgColorR};font-weight:600">${match.right.name}</span>「${lineR}」</div>`;
-      html += `</div>`;
-    }
-
     if (isResolved) {
+      // 終了済み: コンパクト行
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? match.left.name : match.right.name;
-      const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-      html += `<div style="display:flex;align-items:center;gap:12px;font-size:12px;justify-content:center">`;
-      html += `<span style="color:var(--green)">✔ ${wName}${(result.finType || result.finMove) ? ' (' + Engine.formatFinish(result.finType, result.finMove) + ')' : ''}</span>`;
-      html += `<span style="color:${mqColor}">MQ: ${result.mq}</span>`;
-      html += `</div>`;
-    } else if (isNext) {
-      html += `<div style="text-align:center;margin-top:4px;margin-bottom:4px">`;
-      html += `<button class="btn" style="font-size:11px;padding:4px 14px;background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid var(--border)" onclick="showPPVVSDetail(${idx})">📊 両選手の詳細を見る</button>`;
-      html += `</div>`;
-      html += `<div style="display:flex;gap:8px;margin-top:6px">`;
-      html += `<button class="btn btn-blue" style="flex:1;font-size:13px;padding:8px 0" onclick="App.ppvWatchMatch(${idx})">🎬 試合を観る</button>`;
-      html += `<button class="btn" style="flex:1;font-size:13px;padding:8px 0;background:var(--bg-mid);color:var(--text-sub)" onclick="App.ppvSkipMatch(${idx})">⏭ スキップ</button>`;
-      html += `</div>`;
+      const loser = result.winner === 'left' ? match.right.name : result.winner === 'right' ? match.left.name : '';
+      const fin = (result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : '';
+      const mqCls = result.mq >= 75 ? 'h' : 'm';
+      html += `<div class="ppvprog-md">
+        <div class="ppvprog-mdn">${typeLabel}</div>
+        <div class="ppvprog-mdc">
+          <div>
+            <div class="ppvprog-mdw"><span class="w">✓ ${wName}</span>${loser ? ` <span style="color:#555">def.</span> ${loser}` : ''}</div>
+            ${fin ? `<div class="ppvprog-mdr">${fin}</div>` : ''}
+          </div>
+          <div class="ppvprog-mdmq ${mqCls}">MQ ${result.mq}</div>
+        </div>
+      </div>`;
+      continue;
     }
-    html += `</div>`;
+
+    // 現在の試合: 大カード
+    const L = match.left, R = match.right;
+    const ovrL = Engine.util.ov(L), ovrR = Engine.util.ov(R);
+    const upperL = getUpperUrl(L.id);
+    const upperR = getUpperUrl(R.id);
+    const orgL = L._ppvOrgName || '';
+    const orgR = R._ppvOrgName || '';
+    const traitsL = (L.traits || []).slice(0, 3);
+    const traitsR = (R.traits || []).slice(0, 3);
+    const lineL = _getPPVPreMatchLine(L);
+    const lineR = _getPPVPreMatchLine(R);
+    const badge = match.isRivalry ? `<div class="ppvprog-vsb">🔥 因縁対決</div>` : '';
+    const mainClass = isMain ? ' is-main' : '';
+
+    html += `<div class="ppvprog-mc${mainClass}">
+      <div class="ppvprog-mn">${typeLabel}</div>
+      <div class="ppvprog-va">
+        <div class="ppvprog-fc left">
+          <div class="ppvprog-fi">
+            <div class="ppvprog-fn">${L.name}</div>
+            <div class="ppvprog-fo">${orgL}</div>
+            <div class="ppvprog-fol">OVR</div>
+            <div class="ppvprog-fov">${ovrL}</div>
+          </div>
+          <div class="ppvprog-fp">${upperL ? `<img src="${upperL}" alt="${L.name}" onerror="this.style.display='none'">` : ''}</div>
+        </div>
+        <div class="ppvprog-vsf">
+          <div class="ppvprog-vst">VS</div>
+          ${badge}
+        </div>
+        <div class="ppvprog-fc right">
+          <div class="ppvprog-fp">${upperR ? `<img src="${upperR}" alt="${R.name}" onerror="this.style.display='none'">` : ''}</div>
+          <div class="ppvprog-fi">
+            <div class="ppvprog-fn">${R.name}</div>
+            <div class="ppvprog-fo">${orgR}</div>
+            <div class="ppvprog-fol">OVR</div>
+            <div class="ppvprog-fov">${ovrR}</div>
+          </div>
+        </div>
+      </div>
+      <div class="ppvprog-stats">
+        ${_statRow('PW', L.pw||0, R.pw||0, 'pw')}
+        ${_statRow('SP', L.sp||0, R.sp||0, 'sp')}
+        ${_statRow('TE', L.te||0, R.te||0, 'te')}
+        ${_statRow('ST', L.st||0, R.st||0, 'st')}
+        ${_statRow('MN', L.mn||0, R.mn||0, 'mn')}
+        <div class="ppvprog-traits">
+          <div class="ppvprog-ts left">${traitsL.length ? traitsL.map(t=>`<span class="ppvprog-tt">${t}</span>`).join('') : '<span class="ppvprog-tt" style="opacity:0.3">─</span>'}</div>
+          <div class="ppvprog-tdiv"></div>
+          <div class="ppvprog-ts right">${traitsR.length ? traitsR.map(t=>`<span class="ppvprog-tt">${t}</span>`).join('') : '<span class="ppvprog-tt" style="opacity:0.3">─</span>'}</div>
+        </div>
+      </div>
+      ${match.hype ? `<div class="ppvprog-hype">${match.hype}</div>` : ''}
+      <div class="ppvprog-dl">
+        <div class="ppvprog-dlc left"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${L.name}</div>「${lineL}」</div></div>
+        <div class="ppvprog-dlc right"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${R.name}</div>「${lineR}」</div></div>
+      </div>
+      <div class="ppvprog-act">
+        <button class="ppvprog-bw" onclick="App.ppvWatchMatch(${idx})">🎬 試合を観る</button>
+        <button class="ppvprog-bs" onclick="App.ppvSkipMatch(${idx})">⏭ スキップ</button>
+      </div>
+    </div>`;
   }
+
+  html += '</div>';
 
   // 全スキップ
   const remaining = pp.results.filter(r => r === null).length;
   if (remaining > 0) {
-    html += `<div style="margin-top:16px;text-align:center">`;
-    html += `<button class="btn btn-gold" style="width:100%;padding:12px 0;font-size:14px" onclick="App.ppvSkipAll()">⏩ 全試合スキップ（残り${remaining}試合）</button>`;
-    html += `</div>`;
+    html += `<div class="ppvprog-sa"><button onclick="App.ppvSkipAll()">残り全試合をスキップ（${remaining}試合）</button></div>`;
   }
 
   box.innerHTML = html;

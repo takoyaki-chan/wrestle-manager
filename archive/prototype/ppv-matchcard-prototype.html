@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPVマッチカード プロトタイプ — Wrestle Manager</title>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  Claude Code 向け指示                                       ║
+  ║                                                              ║
+  ║  このファイルをゲームに組み込む際:                           ║
+  ║  1. image/full/ フォルダをスキャンして全ファイル名を取得     ║
+  ║  2. image/face_ ファイルも同様にスキャン                     ║
+  ║  3. 下記 MATCH_DATA 配列のslugフィールドを実ファイル名に     ║
+  ║     置換すること                                             ║
+  ║                                                              ║
+  ║  スキャンコマンド例:                                         ║
+  ║    ls src/image/full/ | sed 's/full_//;s/.webp//'            ║
+  ║    ls src/image/upper/ | sed 's/upper_//;s/.webp//'          ║
+  ║    ls src/image/ | grep face_ | sed 's/face_//;s/.png//'    ║
+  ║                                                              ║
+  ║  portrait-map.js からID→slug対応表も取得可能                ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a14;
+    color: #e8e8e8;
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── コントロール ── */
+  .controls {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(16,16,32,0.95);
+    border-bottom: 1px solid #334;
+    padding: 10px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    z-index: 100;
+    font-size: 13px;
+  }
+  .controls label { color: #999; }
+  .controls button {
+    padding: 6px 18px;
+    border: 1px solid #555;
+    background: transparent;
+    color: #e8e8e8;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .controls button:hover { border-color: #daa520; color: #daa520; }
+  .controls button.active {
+    background: linear-gradient(135deg, #e94560, #c23152);
+    border-color: #e94560;
+    color: #fff;
+  }
+
+  /* ── 共通 ── */
+  .page {
+    width: 900px;
+    max-width: 95vw;
+    margin: 70px auto 40px;
+    min-height: 80vh;
+  }
+
+  .ppv-title-area {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 20px 0;
+  }
+  .ppv-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 8px;
+    color: #e94560;
+    text-transform: uppercase;
+  }
+  .ppv-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 4px;
+    background: linear-gradient(180deg, #ffd700 0%, #daa520 50%, #b8860b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .ppv-sub {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* ─────────────────────────────────────
+     Layout A: ミニポスター縦並び
+     ───────────────────────────────────── */
+  .layout-a .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+
+  .layout-a .match-card {
+    display: flex;
+    align-items: stretch;
+    background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,25,0.98));
+    border: 1px solid #2a2a45;
+    border-radius: 8px;
+    overflow: visible;
+    height: 180px;
+    cursor: pointer;
+    transition: border-color 0.3s, transform 0.15s;
+    position: relative;
+  }
+  .layout-a .match-card:hover {
+    border-color: #daa520;
+    transform: scale(1.01);
+  }
+  .layout-a .match-card.main-event {
+    border-color: #daa520;
+    height: 220px;
+    box-shadow: 0 0 20px rgba(218,165,32,0.15);
+  }
+
+  .layout-a .card-fighter {
+    flex: 0 0 200px;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+  }
+  .layout-a .match-card.main-event .card-fighter {
+    flex: 0 0 240px;
+  }
+  .layout-a .card-fighter img {
+    position: absolute;
+    bottom: 0;
+    height: 280px;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+  }
+  .layout-a .match-card.main-event .card-fighter img {
+    height: 340px;
+  }
+  /* 左キャラ: 左向き（外を向く） */
+  .layout-a .card-fighter.left img {
+    transform: scaleX(-1);
+    right: 0;
+  }
+  /* 右キャラ: 右向き（外を向く、デフォルト向き） */
+  .layout-a .card-fighter.right img {
+    left: 0;
+  }
+  .layout-a .card-fighter .no-img {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a3a, #111128);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    font-size: 11px;
+  }
+
+  /* カード背景（画像の上にはみ出した部分の背後を隠す用） */
+  .layout-a .card-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,25,0.98));
+    border-radius: 8px;
+    z-index: 0;
+  }
+
+  .layout-a .card-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 12px 8px;
+    gap: 4px;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(14,14,30,0.85) 15%, 
+      rgba(14,14,30,0.95) 50%, 
+      rgba(14,14,30,0.85) 85%, 
+      transparent 100%);
+  }
+
+  .layout-a .card-match-type {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #e94560;
+    text-transform: uppercase;
+  }
+  .layout-a .match-card.main-event .card-match-type {
+    color: #ffd700;
+    font-size: 11px;
+  }
+
+  .layout-a .card-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: #e8e8e8;
+    line-height: 1.1;
+  }
+  .layout-a .match-card.main-event .card-name {
+    font-size: 28px;
+  }
+
+  .layout-a .card-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: #e94560;
+    letter-spacing: 4px;
+    margin: 2px 0;
+  }
+
+  .layout-a .card-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(218,165,32,0.15);
+    color: #daa520;
+    border: 1px solid rgba(218,165,32,0.3);
+    margin-top: 4px;
+  }
+
+  .layout-a .card-h2h {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  /* ─────────────────────────────────────
+     Layout B: 1枚ポスター
+     ───────────────────────────────────── */
+  .layout-b .poster {
+    background: linear-gradient(180deg, #0c0c1a 0%, #14142a 40%, #0a0a14 100%);
+    border: 2px solid #2a2a45;
+    border-radius: 12px;
+    padding: 20px 24px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .layout-b .poster::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 20%, rgba(218,165,32,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .layout-b .poster-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .layout-b .poster-card {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .layout-b .poster-card:last-child { border-bottom: none; }
+  .layout-b .poster-card:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .layout-b .poster-card.main-event {
+    padding: 22px 0;
+    margin-bottom: 4px;
+  }
+  .layout-b .poster-card.main-event::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #daa520, transparent);
+  }
+
+  .layout-b .poster-fighter {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+  .layout-b .poster-fighter.left { justify-content: flex-end; text-align: right; }
+  .layout-b .poster-fighter.right { justify-content: flex-start; text-align: left; }
+
+  .layout-b .poster-face {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #333;
+    flex-shrink: 0;
+  }
+  .layout-b .main-event .poster-face {
+    width: 68px;
+    height: 68px;
+    border-color: #daa520;
+  }
+  .layout-b .poster-face.no-img {
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 9px;
+  }
+
+  .layout-b .poster-fighter-info {
+    padding: 0 12px;
+  }
+
+  .layout-b .poster-fighter-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: #e8e8e8;
+    line-height: 1.1;
+  }
+  .layout-b .main-event .poster-fighter-name {
+    font-size: 30px;
+    background: linear-gradient(180deg, #ffd700, #daa520);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .layout-b .poster-fighter-style {
+    font-size: 11px;
+    color: #777;
+  }
+
+  .layout-b .poster-vs-area {
+    flex: 0 0 80px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .layout-b .poster-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: #e94560;
+    letter-spacing: 4px;
+  }
+  .layout-b .poster-match-type {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #888;
+    text-transform: uppercase;
+  }
+  .layout-b .main-event .poster-match-type {
+    color: #daa520;
+    font-size: 10px;
+  }
+  .layout-b .poster-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    background: rgba(218,165,32,0.15);
+    color: #daa520;
+    border: 1px solid rgba(218,165,32,0.25);
+  }
+
+  .layout-b .poster-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 2px;
+  }
+
+  /* ── 非表示切り替え ── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <label>レイアウト:</label>
+  <button id="btnA" class="active" onclick="showLayout('a')">A: ミニポスター縦並び</button>
+  <button id="btnB" onclick="showLayout('b')">B: 1枚ポスター</button>
+</div>
+
+<!-- ========== Layout A ========== -->
+<div class="page layout-a" id="layoutA">
+  <div class="ppv-title-area">
+    <div class="ppv-label">Grand Final</div>
+    <div class="ppv-name">GRAND FINAL 2027</div>
+    <div class="ppv-sub">Season 5 ─ Week 48 ─ 全4試合</div>
+  </div>
+  <div class="card-list" id="cardListA"></div>
+</div>
+
+<!-- ========== Layout B ========== -->
+<div class="page layout-b hidden" id="layoutB">
+  <div class="ppv-title-area">
+    <div class="ppv-label">Grand Final</div>
+    <div class="ppv-name">GRAND FINAL 2027</div>
+    <div class="ppv-sub">Season 5 ─ Week 48 ─ 全4試合</div>
+  </div>
+  <div class="poster">
+    <div class="poster-cards" id="cardListB"></div>
+    <div class="poster-footer">TAP A MATCH TO VIEW DETAILS</div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// マッチデータ（Claude Code: portrait-map.js から実slugに置換すること）
+// ──────────────────────────────────────────
+const MATCH_DATA = [
+  {
+    type: 'MAIN EVENT — TITLE MATCH',
+    isMain: true,
+    left:  { name: '阿武隈塔子',  slug: 'abukuma_t',   style: 'Grappler',    record: '82勝31敗' },
+    right: { name: '白銀麗子',    slug: 'shirogane_r',  style: 'Submission',  record: '78勝35敗' },
+    badge: '👑 世界王座戦',
+    h2h: '通算: 阿武隈 5勝 - 3勝 白銀'
+  },
+  {
+    type: 'SEMI FINAL',
+    isMain: false,
+    left:  { name: '高津小春',    slug: 'takatsu_k',   style: 'Speed',       record: '65勝28敗' },
+    right: { name: '東金沙織',    slug: 'togane_s',    style: 'Striker',     record: '71勝33敗' },
+    badge: '🔥 宿命の相手',
+    h2h: '通算: 高津 4勝 - 6勝 東金'
+  },
+  {
+    type: 'SPECIAL MATCH',
+    isMain: false,
+    left:  { name: '園部梨花',    slug: 'sonobe_r',    style: 'Allround',    record: '55勝22敗' },
+    right: { name: '富岡加奈子',  slug: 'tomioka_k',   style: 'Brawler',     record: '48勝30敗' },
+    badge: null,
+    h2h: '通算: 園部 3勝 - 2勝 富岡'
+  },
+  {
+    type: 'OPENING MATCH',
+    isMain: false,
+    left:  { name: '高島さや',    slug: 'takashima_s', style: 'Speed',       record: '12勝8敗' },
+    right: { name: '生駒エリカ',  slug: 'ikoma_e',     style: 'Striker',     record: '35勝19敗' },
+    badge: null,
+    h2h: 'FIRST MEETING'
+  }
+];
+
+// ── 画像パス解決（複数パターンを試す） ──
+function fullPath(slug) {
+  return [
+    `image/full/full_${slug}.webp`,
+    `src/image/full/full_${slug}.webp`,
+    `../image/full/full_${slug}.webp`,
+    `../src/image/full/full_${slug}.webp`,
+  ];
+}
+function facePath(slug) {
+  return [
+    `image/face_${slug}.png`,
+    `src/image/face_${slug}.png`,
+    `../image/face_${slug}.png`,
+    `../src/image/face_${slug}.png`,
+  ];
+}
+
+function tryLoad(img, paths) {
+  let i = 0;
+  img.onerror = () => {
+    i++;
+    if (i < paths.length) { img.src = paths[i]; }
+    else {
+      img.style.display = 'none';
+      const ph = document.createElement('div');
+      ph.className = img.className + ' no-img';
+      ph.textContent = 'No Img';
+      img.parentNode.insertBefore(ph, img);
+    }
+  };
+  img.src = paths[0];
+}
+
+// ── Layout A: ミニポスター縦並び ──
+function renderLayoutA() {
+  const container = document.getElementById('cardListA');
+  container.innerHTML = '';
+  const total = MATCH_DATA.length;
+  MATCH_DATA.forEach((m, idx) => {
+    const card = document.createElement('div');
+    card.className = 'match-card' + (m.isMain ? ' main-event' : '');
+    // 下の段ほど手前に来る
+    card.style.zIndex = idx + 1;
+
+    card.innerHTML = `
+      <div class="card-fighter left">
+        <img class="card-full-img" data-paths="${fullPath(m.left.slug).join('|')}" alt="${m.left.name}">
+      </div>
+      <div class="card-center">
+        <div class="card-match-type">${m.type}</div>
+        <div class="card-name">${m.left.name}</div>
+        <div class="card-vs">V S</div>
+        <div class="card-name">${m.right.name}</div>
+        ${m.badge ? `<div class="card-badge">${m.badge}</div>` : ''}
+        <div class="card-h2h">${m.h2h}</div>
+      </div>
+      <div class="card-fighter right">
+        <img class="card-full-img" data-paths="${fullPath(m.right.slug).join('|')}" alt="${m.right.name}">
+      </div>
+    `;
+    container.appendChild(card);
+
+    // 画像ロード
+    card.querySelectorAll('.card-full-img').forEach(img => {
+      const paths = img.dataset.paths.split('|');
+      tryLoad(img, paths);
+    });
+  });
+}
+
+// ── Layout B: 1枚ポスター ──
+function renderLayoutB() {
+  const container = document.getElementById('cardListB');
+  container.innerHTML = '';
+  MATCH_DATA.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'poster-card' + (m.isMain ? ' main-event' : '');
+
+    row.innerHTML = `
+      <div class="poster-fighter left">
+        <div class="poster-fighter-info">
+          <div class="poster-fighter-name">${m.left.name}</div>
+          <div class="poster-fighter-style">${m.left.style} ─ ${m.left.record}</div>
+        </div>
+        <img class="poster-face" data-paths="${facePath(m.left.slug).join('|')}" alt="${m.left.name}">
+      </div>
+      <div class="poster-vs-area">
+        <div class="poster-match-type">${m.type}</div>
+        <div class="poster-vs">VS</div>
+        ${m.badge ? `<div class="poster-badge">${m.badge}</div>` : ''}
+      </div>
+      <div class="poster-fighter right">
+        <img class="poster-face" data-paths="${facePath(m.right.slug).join('|')}" alt="${m.right.name}">
+        <div class="poster-fighter-info">
+          <div class="poster-fighter-name">${m.right.name}</div>
+          <div class="poster-fighter-style">${m.right.style} ─ ${m.right.record}</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+
+    row.querySelectorAll('.poster-face').forEach(img => {
+      const paths = img.dataset.paths.split('|');
+      tryLoad(img, paths);
+    });
+  });
+}
+
+// ── レイアウト切り替え ──
+function showLayout(which) {
+  document.getElementById('layoutA').classList.toggle('hidden', which !== 'a');
+  document.getElementById('layoutB').classList.toggle('hidden', which !== 'b');
+  document.getElementById('btnA').classList.toggle('active', which === 'a');
+  document.getElementById('btnB').classList.toggle('active', which === 'b');
+}
+
+// ── 初期描画 ──
+renderLayoutA();
+renderLayoutB();
+</script>
+</body>
+</html>

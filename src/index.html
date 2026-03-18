@@ -1310,6 +1310,86 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   background:rgba(218,165,32,0.1);color:#daa520;cursor:pointer;transition:all 0.2s}
 .ppvmc-start button:hover{background:#daa520;color:#0a0a14}
 
+/* PPV 試合進行画面 v6 */
+.ppvprog-header{text-align:center;padding:14px 0 10px;border-bottom:1px solid #1a1a30;margin-bottom:4px}
+.ppvprog-label{font-size:11px;letter-spacing:6px;color:#e94560;text-transform:uppercase}
+.ppvprog-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;background:linear-gradient(180deg,#ffd700,#daa520,#b8860b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.ppvprog-progress{font-size:11px;color:#666;margin-top:3px}
+.ppvprog-wrap{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.ppvprog-mc{background:linear-gradient(180deg,rgba(16,16,36,0.98),rgba(10,10,25,0.99));border:2px solid #e94560;border-radius:10px;overflow:hidden}
+.ppvprog-mc.is-main{border-color:#ffd700}
+.ppvprog-mn{text-align:center;padding:10px 0 2px;font-size:10px;letter-spacing:4px;color:#888;text-transform:uppercase}
+.ppvprog-mc.is-main .ppvprog-mn{color:#ffd700}
+.ppvprog-va{display:flex;align-items:flex-end;justify-content:center;padding:0 8px;position:relative;min-height:200px}
+.ppvprog-fc{display:flex;align-items:flex-end}
+.ppvprog-fp{width:120px;height:190px;flex-shrink:0}
+.ppvprog-fp img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
+.ppvprog-fi{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;gap:1px;min-width:80px}
+.ppvprog-fc.left .ppvprog-fi{align-items:flex-start;padding-right:8px}
+.ppvprog-fc.right .ppvprog-fi{align-items:flex-end;padding-left:8px}
+.ppvprog-fn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:#e8e8e8;line-height:1.1}
+.ppvprog-fo{font-size:9px;color:#777}
+.ppvprog-fol{font-size:8px;color:#888;letter-spacing:2px;margin-top:4px}
+.ppvprog-fov{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ppvprog-vsf{position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ppvprog-vst{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:6px;background:linear-gradient(180deg,#e94560,#c23152);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(233,69,96,0.35))}
+.ppvprog-mc.is-main .ppvprog-vst{font-size:62px;background:linear-gradient(180deg,#ffd700,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ppvprog-vsb{font-size:10px;padding:2px 10px;border-radius:3px;background:rgba(218,165,32,0.12);color:#daa520;border:1px solid rgba(218,165,32,0.3);white-space:nowrap}
+.ppvprog-stats{padding:10px 24px 6px}
+.ppvprog-sr{display:flex;align-items:center;height:22px;margin-bottom:3px}
+.ppvprog-sbl{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:4px}
+.ppvprog-sbr{flex:1;display:flex;justify-content:flex-start;align-items:center;padding-left:4px}
+.ppvprog-sl{width:36px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#999;flex-shrink:0}
+.ppvprog-sv{font-family:'Bebas Neue',sans-serif;font-size:14px;min-width:26px;flex-shrink:0;color:#ccc}
+.ppvprog-sbl .ppvprog-sv{text-align:right;padding-right:6px}
+.ppvprog-sbr .ppvprog-sv{text-align:left;padding-left:6px}
+.ppvprog-sv.hi{color:#ffd700}
+.ppvprog-bt{height:10px;border-radius:3px;background:rgba(255,255,255,0.06);flex:1;max-width:180px;overflow:hidden}
+.ppvprog-sbl .ppvprog-bt{direction:rtl}
+.ppvprog-bf{height:100%;border-radius:3px}
+.ppvprog-bf.pw{background:linear-gradient(90deg,#e94560,#ff6b6b)}
+.ppvprog-bf.sp{background:linear-gradient(90deg,#4caf50,#66bb6a)}
+.ppvprog-bf.te{background:linear-gradient(90deg,#2196f3,#42a5f5)}
+.ppvprog-bf.st{background:linear-gradient(90deg,#ff9800,#ffb74d)}
+.ppvprog-bf.mn{background:linear-gradient(90deg,#9c27b0,#ba68c8)}
+.ppvprog-traits{display:flex;justify-content:center;align-items:center;margin-top:5px}
+.ppvprog-ts{flex:1;display:flex;gap:4px;flex-wrap:wrap}
+.ppvprog-ts.left{justify-content:flex-end;padding-right:18px}
+.ppvprog-ts.right{justify-content:flex-start;padding-left:18px}
+.ppvprog-tt{font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,0.05);color:#bbb;border:1px solid #2a2a45}
+.ppvprog-tdiv{width:36px;flex-shrink:0}
+.ppvprog-hype{text-align:center;padding:8px 36px 4px;font-size:13px;color:#e94560;font-weight:700;line-height:1.5}
+.ppvprog-mc.is-main .ppvprog-hype{color:#ffd700}
+.ppvprog-dl{display:flex;gap:14px;padding:4px 44px 12px;justify-content:center}
+.ppvprog-dlc{flex:0 1 auto;max-width:44%}
+.ppvprog-dlb{position:relative;background:#f0f0f0;color:#1a1a1a;border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.5;text-align:center}
+.ppvprog-dlc.left .ppvprog-dlb::after{content:'';position:absolute;left:-8px;top:12px;border:5px solid transparent;border-right-color:#f0f0f0}
+.ppvprog-dlc.right .ppvprog-dlb::after{content:'';position:absolute;right:-8px;top:12px;border:5px solid transparent;border-left-color:#f0f0f0}
+.ppvprog-dlsp{font-size:9px;font-weight:700;margin-bottom:2px;letter-spacing:1px}
+.ppvprog-dlc.left .ppvprog-dlsp{color:#c23152}
+.ppvprog-dlc.right .ppvprog-dlsp{color:#3a7cbd}
+.ppvprog-act{display:flex;flex-direction:column;align-items:center;padding:8px 16px 18px;gap:6px}
+.ppvprog-bw{padding:12px 0;border:2px solid #e94560;background:linear-gradient(135deg,rgba(233,69,96,0.12),rgba(233,69,96,0.04));color:#fff;border-radius:8px;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:2px;width:100%;max-width:300px}
+.ppvprog-bw:hover{background:linear-gradient(135deg,#e94560,#c23152)}
+.ppvprog-mc.is-main .ppvprog-bw{border-color:#ffd700;color:#ffd700}
+.ppvprog-bs{padding:4px 16px;border:none;background:0;color:#555;font-size:11px;cursor:pointer;font-family:inherit}
+.ppvprog-bs:hover{color:#888}
+.ppvprog-md{background:rgba(14,14,28,0.6);border:1px solid #1a1a30;border-radius:6px;padding:8px 16px}
+.ppvprog-mdn{text-align:center;font-size:10px;letter-spacing:3px;color:#444;margin-bottom:2px;text-transform:uppercase}
+.ppvprog-mdc{display:flex;align-items:center;gap:12px;justify-content:center}
+.ppvprog-mdw{font-size:12px;color:#666}
+.ppvprog-mdw .w{color:#daa520;font-weight:700}
+.ppvprog-mdr{font-size:10px;color:#555}
+.ppvprog-mdmq{font-family:'Bebas Neue',sans-serif;font-size:22px}
+.ppvprog-mdmq.h{color:rgba(255,215,0,0.6)}
+.ppvprog-mdmq.m{color:rgba(200,200,200,0.35)}
+.ppvprog-mw{background:rgba(14,14,28,0.4);border:1px solid #161630;border-radius:6px;padding:7px 16px}
+.ppvprog-mwh{text-align:center;font-size:10px;letter-spacing:3px;color:#333;margin-bottom:2px;text-transform:uppercase}
+.ppvprog-mwn{text-align:center;font-size:11px;color:#2a2a45}
+.ppvprog-sa{margin-top:8px;text-align:center;padding-bottom:8px}
+.ppvprog-sa button{padding:6px 20px;border:1px solid #333;background:0;color:#555;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit}
+.ppvprog-sa button:hover{border-color:#666;color:#999}
+
 /* Phase 6v2: 人物相関図 UI (force-directed network) */
 #databasePanel.relmap-active{padding:0}
 #databasePanel.relmap-active .panel-title{display:none}

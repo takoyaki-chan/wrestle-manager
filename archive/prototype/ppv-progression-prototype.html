@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPV試合進行画面 v6 — Wrestle Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#e8e8e8;font-family:'Noto Sans JP',sans-serif;min-height:100vh}
+.ctrl{position:fixed;top:0;left:0;right:0;background:rgba(16,16,32,0.95);border-bottom:1px solid #334;padding:8px 20px;display:flex;gap:12px;align-items:center;z-index:100;font-size:12px}
+.ctrl button{padding:5px 14px;border:1px solid #555;background:0;color:#e8e8e8;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px}
+.ctrl button:hover{border-color:#daa520;color:#daa520}
+.page{width:960px;max-width:98vw;margin:56px auto 40px;padding:0 12px}
+.ppv-header{text-align:center;padding:16px 0 12px;border-bottom:1px solid #1a1a30;margin-bottom:14px}
+.ppv-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:8px;color:#e94560}
+.ppv-name{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:4px;background:linear-gradient(180deg,#ffd700,#daa520,#b8860b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.ppv-progress{font-size:12px;color:#666;margin-top:3px}
+.match-block{margin-bottom:10px;border-radius:10px;overflow:hidden}
+
+/* ═══ 現在の試合 ═══ */
+.mc{background:linear-gradient(180deg,rgba(16,16,36,0.98),rgba(10,10,25,0.99));border:2px solid #e94560;box-shadow:0 0 30px rgba(233,69,96,0.12)}
+.mc.main-event{border-color:#ffd700;box-shadow:0 0 40px rgba(255,215,0,0.12)}
+.mn{text-align:center;padding:16px 0 2px;font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:6px;color:#aaa}
+.mtl{text-align:center;font-size:12px;letter-spacing:3px;color:#e94560;padding-bottom:8px}
+.mc.main-event .mn{color:#ffd700;font-size:38px}
+.mc.main-event .mtl{color:#ffd700;font-size:13px}
+
+/* ── 対戦エリア ── */
+.va{display:flex;align-items:flex-end;justify-content:center;padding:0 12px;position:relative;min-height:280px}
+.fc{display:flex;align-items:flex-end}
+.fc.left{flex-direction:row}
+.fc.right{flex-direction:row}
+.fp{width:165px;height:255px;flex-shrink:0}
+.fp img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
+.fp .no-img{width:100%;height:100%;background:linear-gradient(135deg,#1a1a3a,#111128);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#444;font-size:11px}
+.fi{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:20px;gap:2px;min-width:110px}
+.fc.left .fi{align-items:flex-start;text-align:left;padding-right:14px}
+.fc.right .fi{align-items:flex-end;text-align:right;padding-left:14px}
+.fn{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:#e8e8e8;line-height:1.1}
+.fo{font-size:10px;color:#777;margin-bottom:6px}
+.fol{font-size:9px;color:#888;letter-spacing:2px}
+.fov{font-family:'Bebas Neue',sans-serif;font-size:54px;line-height:1;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.vsf{position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:4px}
+.vst{font-family:'Bebas Neue',sans-serif;font-size:62px;letter-spacing:8px;background:linear-gradient(180deg,#e94560,#c23152);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(233,69,96,0.4))}
+.mc.main-event .vst{font-size:70px;background:linear-gradient(180deg,#ffd700,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,215,0,0.3))}
+.vsb{font-size:10px;padding:3px 12px;border-radius:3px;background:rgba(218,165,32,0.12);color:#daa520;border:1px solid rgba(218,165,32,0.3);white-space:nowrap}
+
+/* ── 能力比較 ── */
+.stats-area{padding:12px 40px 8px}
+
+.style-row{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:10px}
+.style-side{flex:1;display:flex;gap:6px;align-items:center}
+.style-side.left{justify-content:flex-end;padding-right:24px}
+.style-side.right{justify-content:flex-start;padding-left:24px}
+.style-badge{font-size:10px;padding:3px 10px;border-radius:3px;border:1px solid #555;color:#ccc;background:rgba(255,255,255,0.05)}
+.style-badge.heel{border-color:#e94560;color:#e94560}
+.style-badge.face{border-color:#5ba4d9;color:#5ba4d9}
+.style-pop{font-size:11px;color:#888}
+.style-divider{width:44px;text-align:center;color:#333;font-size:10px}
+
+.stat-row{display:flex;align-items:center;height:26px;margin-bottom:4px}
+.stat-bar-left{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:4px}
+.stat-bar-right{flex:1;display:flex;justify-content:flex-start;align-items:center;padding-left:4px}
+.stat-label{width:44px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:#999;flex-shrink:0}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:16px;min-width:32px;flex-shrink:0}
+.stat-bar-left .stat-val{text-align:right;padding-right:8px;color:#ccc}
+.stat-bar-right .stat-val{text-align:left;padding-left:8px;color:#ccc}
+.bar-track{height:12px;border-radius:3px;background:rgba(255,255,255,0.06);flex:1;max-width:240px;position:relative;overflow:hidden}
+.stat-bar-left .bar-track{direction:rtl}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.bar-pw{background:linear-gradient(90deg,#e94560,#ff6b6b)}
+.bar-sp{background:linear-gradient(90deg,#4caf50,#66bb6a)}
+.bar-te{background:linear-gradient(90deg,#2196f3,#42a5f5)}
+.bar-st{background:linear-gradient(90deg,#ff9800,#ffb74d)}
+.bar-mn{background:linear-gradient(90deg,#9c27b0,#ba68c8)}
+.stat-val.higher{color:#ffd700}
+
+.traits-row{display:flex;justify-content:center;align-items:center;margin-top:8px;margin-bottom:4px}
+.traits-side{flex:1;display:flex;gap:5px;flex-wrap:wrap}
+.traits-side.left{justify-content:flex-end;padding-right:24px}
+.traits-side.right{justify-content:flex-start;padding-left:24px}
+.trait-tag{font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(255,255,255,0.06);color:#bbb;border:1px solid #2a2a45}
+.traits-divider{width:44px;flex-shrink:0}
+
+/* ── 煽り ── */
+.hype{text-align:center;padding:10px 48px;font-size:15px;color:#e94560;font-weight:700;line-height:1.6}
+.mc.main-event .hype{color:#ffd700;font-size:16px}
+
+/* ── セリフ ── */
+.dl-area{display:flex;gap:20px;padding:6px 60px 14px;align-items:flex-start;justify-content:center}
+.dl-cell{flex:0 1 auto;max-width:45%}
+.dl-bubble{position:relative;background:#f0f0f0;color:#1a1a1a;border-radius:10px;padding:10px 16px;font-size:13px;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,0.3);text-align:center}
+.dl-cell.left .dl-bubble::after{content:'';position:absolute;left:-10px;top:16px;border:6px solid transparent;border-right-color:#f0f0f0}
+.dl-cell.right .dl-bubble::after{content:'';position:absolute;right:-10px;top:16px;border:6px solid transparent;border-left-color:#f0f0f0}
+.dl-speaker{font-size:10px;font-weight:700;margin-bottom:3px;letter-spacing:1px}
+.dl-cell.left .dl-speaker{color:#c23152}
+.dl-cell.right .dl-speaker{color:#3a7cbd}
+
+/* ── ボタン ── */
+.act{display:flex;flex-direction:column;align-items:center;padding:10px 20px 24px;gap:8px}
+.bw{padding:14px 80px;border:2px solid #e94560;background:linear-gradient(135deg,rgba(233,69,96,0.12),rgba(233,69,96,0.04));color:#fff;border-radius:8px;font-size:17px;font-family:'Noto Sans JP',sans-serif;font-weight:900;cursor:pointer;transition:all 0.2s;letter-spacing:2px}
+.bw:hover{background:linear-gradient(135deg,#e94560,#c23152);box-shadow:0 0 24px rgba(233,69,96,0.4)}
+.mc.main-event .bw{border-color:#ffd700;color:#ffd700}
+.mc.main-event .bw:hover{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(218,165,32,0.1));box-shadow:0 0 24px rgba(255,215,0,0.3)}
+.bs2{padding:5px 20px;border:none;background:0;color:#444;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+.bs2:hover{color:#888}
+
+/* ═══ 完了 ═══ */
+.md{background:rgba(14,14,28,0.6);border:1px solid #1a1a30;padding:10px 20px}
+.dh{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:#444;margin-bottom:3px}
+.dc{display:flex;align-items:center;gap:14px;justify-content:center}
+.dn{font-size:13px;color:#666}.dn .w{color:#daa520;font-weight:700}
+.dr{font-size:11px;color:#555}
+.dm{font-family:'Bebas Neue',sans-serif;font-size:24px}
+.dm.h{color:rgba(255,215,0,0.6)}.dm.m{color:rgba(200,200,200,0.4)}
+
+/* ═══ 待機 ═══ */
+.mw{background:rgba(14,14,28,0.4);border:1px solid #161630;padding:8px 20px}
+.wh{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:#333;margin-bottom:2px}
+.wn{text-align:center;font-size:12px;color:#2a2a45}
+
+.sa{text-align:center;margin-top:10px;padding-bottom:40px}
+.sa button{padding:7px 22px;border:1px solid #333;background:0;color:#555;border-radius:4px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+.sa button:hover{border-color:#666;color:#999}
+</style>
+</head>
+<body>
+<div class="ctrl">
+  <span style="color:#999">PPV試合進行 v6</span>
+  <button onclick="resetAll()">最初に戻す</button>
+  <button onclick="doWatch()">「観る」</button>
+  <button onclick="doSkip()">「スキップ」</button>
+</div>
+<div class="page">
+  <div class="ppv-header">
+    <div class="ppv-label">Special Event</div>
+    <div class="ppv-name">FIGHTING DESTINY</div>
+    <div class="ppv-progress" id="progress"></div>
+  </div>
+  <div id="list"></div>
+  <div class="sa" id="skipArea"><button onclick="skipAll()">残り全試合をスキップ</button></div>
+</div>
+<script>
+const M=[
+  {num:'第7試合',type:'メインイベント ─ 頂上決戦',isMain:true,
+    l:{name:'阿武隈塔子',slug:'abukuma_t',org:'グランエンプレス',ovr:92,pw:88,sp:72,te:95,st:90,mn:85,style:'Grappler',align:'Babyface',pop:78,traits:['頑丈さ','カリスマ','闘志']},
+    r:{name:'白銀麗子',slug:'shirogane_r',org:'ノヴァインパクト',ovr:89,pw:70,sp:80,te:92,st:85,mn:90,style:'Submission',align:'Heel',pop:82,traits:['引き出し上手','威圧感','野心']},
+    badge:'👑 世界王座戦',hype:'今夜、すべてが決まる──女王の座を懸けた最終決戦！',
+    dL:'……今日で終わらせる。',dR:'望むところよ。全力で来なさい。',
+    res:{w:'阿武隈塔子',m:'ジャーマンスープレックス → 3カウント',mq:92}},
+  {num:'第6試合',type:'セミファイナル',isMain:false,
+    l:{name:'高津小春',slug:'takatsu_k',org:'グランエンプレス',ovr:84,pw:75,sp:88,te:80,st:78,mn:82,style:'Speed',align:'Babyface',pop:65,traits:['早熟','負けず嫌い']},
+    r:{name:'東金沙織',slug:'togane_s',org:'ノヴァインパクト',ovr:86,pw:85,sp:70,te:82,st:88,mn:75,style:'Striker',align:'Neutral',pop:71,traits:['闘志','名勝負製造機']},
+    badge:'🔥 宿命の相手',hype:'何度倒されても立ち上がる──終わらない因縁の決着戦',
+    dL:'沙織さん……今日こそ、超えてみせます！',dR:'小春。あなたの覚悟、受けて立つわ。',
+    res:{w:'東金沙織',m:'ラリアット → 3カウント',mq:81}},
+  {num:'第5試合',type:'スペシャルマッチ',isMain:false,
+    l:{name:'園部梨花',slug:'sonobe_r',org:'グランエンプレス',ovr:78,pw:72,sp:70,te:82,st:76,mn:80,style:'Allround',align:'Babyface',pop:60,traits:['適応力','ムードメーカー']},
+    r:{name:'富岡加奈子',slug:'tomioka_k',org:'春日野プロレス',ovr:75,pw:80,sp:65,te:70,st:78,mn:72,style:'Brawler',align:'Heel',pop:55,traits:['闘志','反骨心']},
+    badge:null,hype:'ベテラン同士の意地とプライドがぶつかり合う一戦！',
+    dL:'まだまだ若い子には負けないわよ。',dR:'こっちこそ。舐めないでくれる？',
+    res:{w:'園部梨花',m:'アームロック → ギブアップ',mq:68}},
+  {num:'第4試合',type:'',isMain:false,
+    l:{name:'北畠吉乃',slug:'kitabatake_y',org:'グランエンプレス',ovr:71,pw:70,sp:74,te:90,st:80,mn:69,style:'Submission',align:'Babyface',pop:56,traits:['破天荒','早熟','努力家']},
+    r:{name:'新見ゆり',slug:'niimi_y',org:'ノヴァインパクト',ovr:71,pw:81,sp:74,te:81,st:71,mn:48,style:'Allround',align:'Neutral',pop:43,traits:['引き出し上手']},
+    badge:null,hype:'互角の実力──勝敗を分けるのは、この一瞬の判断！',
+    dL:'……（静かに構えている）',dR:'今日は負けるわけにはいかないの。覚悟してね。',
+    res:{w:'北畠吉乃',m:'DDT → 3カウント',mq:58}},
+  {num:'第3試合',type:'',isMain:false,
+    l:{name:'生駒エリカ',slug:'ikoma_e',org:'グランエンプレス',ovr:80,pw:78,sp:75,te:85,st:80,mn:72,style:'Striker',align:'Heel',pop:62,traits:['反骨心','威圧感']},
+    r:{name:'金沢文',slug:'kanazawa_a',org:'春日野プロレス',ovr:68,pw:60,sp:72,te:70,st:65,mn:68,style:'Speed',align:'Babyface',pop:38,traits:['努力家']},
+    badge:null,hype:'実力差を覆せるか──挑戦者の意地を見せろ！',
+    dL:'格下だと思って油断してると痛い目見るわよ。',dR:'……やるしかない。',
+    res:{w:'生駒エリカ',m:'DDT → 3カウント',mq:35}},
+  {num:'第2試合',type:'',isMain:false,
+    l:{name:'黒江舞',slug:'kuroe_m',org:'プレイヤー団体',ovr:54,pw:50,sp:55,te:52,st:48,mn:60,style:'Allround',align:'Babyface',pop:28,traits:['努力家']},
+    r:{name:'相沢未来',slug:'aizawa_m',org:'春日野プロレス',ovr:74,pw:72,sp:68,te:78,st:75,mn:70,style:'Submission',align:'Neutral',pop:52,traits:['引き出し上手','適応力']},
+    badge:null,hype:'格上への挑戦──この一戦が成長の糧となる',
+    dL:'負けたくない……絶対に！',dR:'いい気持ちで帰れると思わないで。',
+    res:{w:'相沢未来',m:'スリーパー・ホールド → ギブアップ',mq:54}},
+  {num:'第1試合',type:'オープニングマッチ',isMain:false,
+    l:{name:'高島さや',slug:'takashima_s',org:'プレイヤー団体',ovr:48,pw:42,sp:55,te:45,st:40,mn:50,style:'Speed',align:'Babyface',pop:18,traits:[]},
+    r:{name:'椿山みさき',slug:'tsubakiyama_m',org:'春日野プロレス',ovr:62,pw:58,sp:60,te:65,st:62,mn:58,style:'Allround',align:'Neutral',pop:35,traits:['適応力']},
+    badge:null,hype:'開幕を飾るフレッシュな一戦！',
+    dL:'先輩、胸を借ります！',dR:'かかってきなさい。',
+    res:{w:'椿山みさき',m:'ドロップキック → 3カウント',mq:45}},
+];
+let ci=3;
+function up(s){return[`image/upper/upper_${s}.webp`,`../image/upper/upper_${s}.webp`]}
+function tl(img,p){let i=0;img.onerror=()=>{i++;if(i<p.length)img.src=p[i];else{img.style.display='none';const d=document.createElement('div');d.className='no-img';d.textContent='No Img';img.parentNode.insertBefore(d,img)}};img.src=p[0]}
+function ac(a){return a==='Heel'?'heel':a==='Babyface'?'face':''}
+function bw(v){return Math.max(4,Math.round(v/100*100))+'%'}
+function sr(label,lv,rv,cls){
+  return `<div class="stat-row">
+    <div class="stat-bar-left"><span class="stat-val ${lv>rv?'higher':''}">${lv}</span><div class="bar-track"><div class="bar-fill bar-${cls}" style="width:${bw(lv)}"></div></div></div>
+    <div class="stat-label">${label}</div>
+    <div class="stat-bar-right"><div class="bar-track"><div class="bar-fill bar-${cls}" style="width:${bw(rv)}"></div></div><span class="stat-val ${rv>lv?'higher':''}">${rv}</span></div>
+  </div>`}
+
+function render(){
+  const el=document.getElementById('list');el.innerHTML='';
+  const total=M.length,done=total-ci;
+  document.getElementById('progress').textContent=`全${total}試合 ─ ${done}/${total} 完了`;
+  document.getElementById('skipArea').style.display=ci<=0?'none':'';
+  M.forEach((m,idx)=>{
+    if(idx===ci){
+      const L=m.l,R=m.r,b=document.createElement('div');
+      b.className='match-block mc'+(m.isMain?' main-event':'');
+      b.innerHTML=`
+<div class="mn">${m.num}</div>
+${m.type?`<div class="mtl">${m.type}</div>`:''}
+<div class="va">
+  <div class="fc left">
+    <div class="fi"><div class="fn">${L.name}</div><div class="fo">${L.org}</div><div class="fol">OVR</div><div class="fov">${L.ovr}</div></div>
+    <div class="fp"><img data-s="${L.slug}"></div>
+  </div>
+  <div class="vsf"><div class="vst">VS</div>${m.badge?`<div class="vsb">${m.badge}</div>`:''}</div>
+  <div class="fc right">
+    <div class="fp"><img data-s="${R.slug}"></div>
+    <div class="fi"><div class="fn">${R.name}</div><div class="fo">${R.org}</div><div class="fol">OVR</div><div class="fov">${R.ovr}</div></div>
+  </div>
+</div>
+<div class="stats-area">
+  <div class="style-row">
+    <div class="style-side left"><span class="style-pop">人気 ${L.pop}</span><span class="style-badge ${ac(L.align)}">${L.align}</span><span class="style-badge">${L.style}</span></div>
+    <div class="style-divider">─</div>
+    <div class="style-side right"><span class="style-badge">${R.style}</span><span class="style-badge ${ac(R.align)}">${R.align}</span><span class="style-pop">人気 ${R.pop}</span></div>
+  </div>
+  ${sr('PW',L.pw,R.pw,'pw')}${sr('SP',L.sp,R.sp,'sp')}${sr('TE',L.te,R.te,'te')}${sr('ST',L.st,R.st,'st')}${sr('MN',L.mn,R.mn,'mn')}
+  <div class="traits-row">
+    <div class="traits-side left">${L.traits.map(t=>`<span class="trait-tag">${t}</span>`).join('')||'<span class="trait-tag" style="opacity:0.3">─</span>'}</div>
+    <div class="traits-divider"></div>
+    <div class="traits-side right">${R.traits.map(t=>`<span class="trait-tag">${t}</span>`).join('')||'<span class="trait-tag" style="opacity:0.3">─</span>'}</div>
+  </div>
+</div>
+<div class="hype">${m.hype}</div>
+<div class="dl-area">
+  <div class="dl-cell left"><div class="dl-bubble"><div class="dl-speaker">${L.name}</div>「${m.dL}」</div></div>
+  <div class="dl-cell right"><div class="dl-bubble"><div class="dl-speaker">${R.name}</div>「${m.dR}」</div></div>
+</div>
+<div class="act"><button class="bw" onclick="doWatch()">🎬 試合を観る</button><button class="bs2" onclick="doSkip()">⏭ スキップ</button></div>`;
+      el.appendChild(b);
+      b.querySelectorAll('img[data-s]').forEach(img=>tl(img,up(img.dataset.s)));
+    }else if(idx>ci){
+      const b=document.createElement('div');b.className='match-block mw';
+      b.innerHTML=`<div class="wh">${m.num}${m.type?' ─ '+m.type:''}</div><div class="wn">${m.l.name} vs ${m.r.name}</div>`;
+      el.appendChild(b);
+    }else{
+      const b=document.createElement('div');b.className='match-block md';
+      const loser=m.res.w===m.l.name?m.r.name:m.l.name;
+      b.innerHTML=`<div class="dh">${m.num}</div><div class="dc"><div><div class="dn"><span class="w">✓ ${m.res.w}</span> <span style="color:#555">def.</span> ${loser}</div><div class="dr">${m.res.m}</div></div><div class="dm ${m.res.mq>=75?'h':'m'}">MQ ${m.res.mq}</div></div>`;
+      el.appendChild(b);
+    }
+  });
+}
+function doWatch(){if(ci>0){ci--;render()}}
+function doSkip(){if(ci>0){ci--;render()}}
+function skipAll(){ci=0;render()}
+function resetAll(){ci=3;render()}
+render();
+</script>
+</body>
+</html>

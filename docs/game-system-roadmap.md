@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-18（試合画面UI刷新 残り4件 全完了: getUpperUrlリファクタ+勝利演出+PPVマッチカード+BGM/SE音量）
+> 最終更新: 2026-03-18（PPV試合進行画面リデザイン完了: upper画像+能力比較バー+白吹き出しセリフ）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,13 +9,13 @@
 
 ## 現在の状態
 
-**試合画面UI刷新 Phase 0〜7 + 実装指示書§1〜§4 全完了（2026-03-18）。** HUD刷新・ダメージ表現・カットイン3種・ビッグムーブ/カウンター演出・対戦カード紹介画面・勝利演出リニューアル・PPVマッチカード画面・BGM/SE全音量設定。変更ファイル: data.js, battle-engine.html, app.js, ui-common.js, index.html。auto-sim 100シーズン ALL CLEAR。
+**試合画面UI刷新 Phase 0〜7 + 実装指示書§1〜§4 + PPV試合進行画面リデザイン 全完了（2026-03-18）。** HUD刷新・ダメージ表現・カットイン3種・ビッグムーブ/カウンター演出・対戦カード紹介画面・勝利演出リニューアル・PPVマッチカード画面・BGM/SE全音量設定・PPV試合進行画面（upper画像+能力比較バー+白吹き出し）。変更ファイル: data.js, battle-engine.html, app.js, ui-common.js, index.html。auto-sim 100シーズン ALL CLEAR。
 
 ### 直近の完了セッション
 
 | 日付 | 内容 |
 |------|------|
-| 03-18 | 試合画面UI刷新 Phase 0〜7 全完了 + §1〜§4完了（勝利演出/PPVマッチカード/BGM/SE） |
+| 03-18 | 試合画面UI刷新 Phase 0〜7 全完了 + §1〜§4完了（勝利演出/PPVマッチカード/BGM/SE） + PPV試合進行画面リデザイン |
 | 03-16 | 契約交渉v2.0（trust×ギャップ2軸マトリクス/突発退団）、trust欠落バグ修正、序盤orgPop保護 |
 | 03-14 | Glimpse P1〜P6全完了、ポップアップUI統一 |
 | 03-13 | Bond/Rivalryイベント設計spec + Phase A-E2演出テキスト、S級エース強化 |
@@ -24,12 +24,6 @@
 ---
 
 ## 次の実装予定
-
-### PPV試合進行画面リデザイン（設計確定、未着手）
-
-| タスク | 対象ファイル | 重さ |
-|--------|-------------|:----:|
-| **PPV試合進行画面リデザイン**: renderPPVMatchPreviewをupper画像+能力対比バー+白吹き出しセリフに全面刷新 | app.js, ui-render.js/ui-common.js, index.html | 中 |
 
 ### Trust Phase T4: 単発ガツン系イベント（未着手）
 
@@ -83,6 +77,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 | システム | 実装日 | 設計書 |
 |---------|--------|--------|
+| PPV試合進行画面リデザイン（upper画像+能力比較バー+白吹き出し） | 03-18 | — |
 | 勝利演出+PPVマッチカード+BGM/SE音量（§1〜§4） | 03-18 | `docs/victory-ppv-implementation-guide.md` |
 | 試合画面UI刷新 Phase 0〜7 | 03-18 | `specs/archive/battle-ui-spec-v1.0.md` |
 | 契約交渉v2.0（trust×ギャップ2軸） | 03-16 | `specs/archive/contract-negotiation-event-spec-v2.0.md` |

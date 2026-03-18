@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勝利画面プロトタイプ — Wrestle Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #e8e8e8;
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── コントロールパネル ── */
+  .controls {
+    background: #16213e;
+    border: 1px solid #334;
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: end;
+    max-width: 900px;
+    width: 95%;
+  }
+  .controls label {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .controls input, .controls select {
+    background: #0f3460;
+    border: 1px solid #445;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 180px;
+  }
+  .controls textarea {
+    background: #0f3460;
+    border: 1px solid #445;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 320px;
+    height: 48px;
+    resize: vertical;
+  }
+  .controls button {
+    background: linear-gradient(135deg, #e94560, #c23152);
+    border: none;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .controls button:hover { filter: brightness(1.15); }
+  .note {
+    font-size: 11px;
+    color: #777;
+    width: 100%;
+    margin-top: -8px;
+  }
+
+  /* ── バトル画面背景（試合中のイメージ） ── */
+  .battle-bg {
+    width: 900px;
+    max-width: 95vw;
+    height: 540px;
+    background: #111;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+  .battle-bg::before {
+    content: '試合画面（バトル中のイメージ）';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #333;
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  /* ── 勝利オーバーレイ ── */
+  .victory-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.88) 0%, rgba(0,0,0,0.95) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .victory-box {
+    width: 520px;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* 勝者upper画像 */
+  .winner-portrait {
+    width: 160px;
+    height: 240px;
+    object-fit: contain;
+    object-position: top center;
+    filter: drop-shadow(0 0 24px rgba(233, 69, 96, 0.35));
+    margin-bottom: 8px;
+  }
+  .winner-portrait.no-img {
+    background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+    border: 2px dashed #555;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+  }
+
+  /* WINNER ラベル */
+  .winner-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 6px;
+    color: #e94560;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  /* 勝者名 */
+  .winner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    background: linear-gradient(180deg, #ffd700, #daa520);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  /* 決まり手 */
+  .finish-text {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* セリフ枠 */
+  .speech-area {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,215,0,0.02));
+    border-left: 3px solid #daa520;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .speech-text {
+    font-size: 17px;
+    line-height: 1.65;
+    color: #f0e6d0;
+    font-weight: 400;
+    text-align: left;
+  }
+  .speech-text::before {
+    content: '「';
+    color: #daa520;
+  }
+  .speech-text::after {
+    content: '」';
+    color: #daa520;
+  }
+
+  /* 下部情報バー */
+  .bottom-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    margin-bottom: 18px;
+  }
+
+  .loser-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .loser-face {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #555;
+  }
+  .loser-face.no-img {
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 9px;
+  }
+  .loser-name {
+    font-size: 13px;
+    color: #888;
+  }
+  .loser-tag {
+    font-size: 10px;
+    color: #666;
+  }
+
+  .match-stats {
+    display: flex;
+    gap: 16px;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: #e8e8e8;
+  }
+  .stat-value.mq-high {
+    color: #ffd700;
+  }
+  .stat-value.mq-mid {
+    color: #e8e8e8;
+  }
+
+  /* CLOSEボタン */
+  .close-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    padding: 8px 40px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .close-btn:hover {
+    border-color: #daa520;
+    color: #daa520;
+  }
+
+  /* ── 引き分け版 ── */
+  .draw-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 6px;
+    color: #888;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<!-- コントロールパネル -->
+<div class="controls">
+  <label>
+    勝者名
+    <input type="text" id="winnerName" value="阿武隈塔子">
+  </label>
+  <label>
+    勝者upper画像ファイル名（拡張子なし）
+    <input type="text" id="winnerSlug" value="abukuma_t" placeholder="例: abukuma_t">
+  </label>
+  <label>
+    敗者名
+    <input type="text" id="loserName" value="園部梨花">
+  </label>
+  <label>
+    敗者faceファイル名（拡張子なし）
+    <input type="text" id="loserSlug" value="sonobe_r" placeholder="例: sonobe_r">
+  </label>
+  <label>
+    決まり手
+    <input type="text" id="finishText" value="ジャーマンスープレックス → 3カウント">
+  </label>
+  <label>
+    勝利セリフ
+    <textarea id="speechText">これが私の全力。まだまだ、もっと強くなれる。</textarea>
+  </label>
+  <label>
+    MQスコア
+    <input type="number" id="mqScore" value="82" min="0" max="100">
+  </label>
+  <label>
+    ターン数
+    <input type="number" id="turnCount" value="28" min="1" max="99">
+  </label>
+  <button onclick="updateVictory()">更新</button>
+  <p class="note">※ このファイルをゲームのルートフォルダ（src/と同階層）か src/ 内に置くと、upper/face画像が読み込まれます。ファイル名はupper_{slug}.webp / face_{slug}.png の{slug}部分を入力してください。</p>
+</div>
+
+<!-- バトル画面エリア -->
+<div class="battle-bg">
+  <div class="victory-overlay" id="victoryOverlay">
+    <div class="victory-box">
+
+      <!-- 勝者upper画像 -->
+      <img id="winnerImg" class="winner-portrait" src="" alt="">
+
+      <!-- WINNER ラベル -->
+      <div class="winner-label">W I N N E R</div>
+
+      <!-- 勝者名 -->
+      <div class="winner-name" id="dispWinnerName">阿武隈塔子</div>
+
+      <!-- 決まり手 -->
+      <div class="finish-text" id="dispFinish">ジャーマンスープレックス → 3カウント</div>
+
+      <!-- セリフ -->
+      <div class="speech-area">
+        <div class="speech-text" id="dispSpeech">これが私の全力。まだまだ、もっと強くなれる。</div>
+      </div>
+
+      <!-- 下部：敗者情報 + 試合スタッツ -->
+      <div class="bottom-bar">
+        <div class="loser-info">
+          <img id="loserImg" class="loser-face" src="" alt="">
+          <div>
+            <div class="loser-name" id="dispLoserName">園部梨花</div>
+            <div class="loser-tag">LOSER</div>
+          </div>
+        </div>
+        <div class="match-stats">
+          <div class="stat-item">
+            <div class="stat-label">MQ</div>
+            <div class="stat-value mq-high" id="dispMQ">82</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Turns</div>
+            <div class="stat-value" id="dispTurns">28</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="close-btn">C L O S E</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getUpperPath(slug) {
+    return [
+      `image/upper/upper_${slug}.webp`,
+      `src/image/upper/upper_${slug}.webp`,
+      `../image/upper/upper_${slug}.webp`,
+      `../src/image/upper/upper_${slug}.webp`,
+    ];
+  }
+
+  function getFacePath(slug) {
+    return [
+      `image/face_${slug}.png`,
+      `src/image/face_${slug}.png`,
+      `../image/face_${slug}.png`,
+      `../src/image/face_${slug}.png`,
+    ];
+  }
+
+  function tryLoadImage(imgEl, paths, fallbackClass) {
+    let idx = 0;
+    function tryNext() {
+      if (idx >= paths.length) {
+        imgEl.style.display = 'none';
+        const placeholder = document.createElement('div');
+        placeholder.className = fallbackClass + ' no-img';
+        placeholder.textContent = 'No Image';
+        if (fallbackClass === 'winner-portrait') {
+          placeholder.style.width = '160px';
+          placeholder.style.height = '240px';
+        } else {
+          placeholder.style.width = '36px';
+          placeholder.style.height = '36px';
+          placeholder.style.borderRadius = '50%';
+        }
+        imgEl.parentNode.insertBefore(placeholder, imgEl);
+        return;
+      }
+      imgEl.src = paths[idx];
+      idx++;
+    }
+    imgEl.onerror = tryNext;
+    const prev = imgEl.parentNode.querySelector('.no-img');
+    if (prev) prev.remove();
+    imgEl.style.display = '';
+    tryNext();
+  }
+
+  function updateVictory() {
+    const wSlug = document.getElementById('winnerSlug').value;
+    const lSlug = document.getElementById('loserSlug').value;
+    const wName = document.getElementById('winnerName').value;
+    const lName = document.getElementById('loserName').value;
+    const finish = document.getElementById('finishText').value;
+    const speech = document.getElementById('speechText').value;
+    const mq = parseInt(document.getElementById('mqScore').value);
+    const turns = document.getElementById('turnCount').value;
+
+    document.getElementById('dispWinnerName').textContent = wName;
+    document.getElementById('dispLoserName').textContent = lName;
+    document.getElementById('dispFinish').textContent = finish;
+    document.getElementById('dispSpeech').textContent = speech;
+    document.getElementById('dispMQ').textContent = mq;
+    document.getElementById('dispTurns').textContent = turns;
+
+    // MQスコアの色分け
+    const mqEl = document.getElementById('dispMQ');
+    mqEl.className = 'stat-value ' + (mq >= 75 ? 'mq-high' : 'mq-mid');
+
+    // 画像ロード
+    tryLoadImage(
+      document.getElementById('winnerImg'),
+      getUpperPath(wSlug),
+      'winner-portrait'
+    );
+    tryLoadImage(
+      document.getElementById('loserImg'),
+      getFacePath(lSlug),
+      'loser-face'
+    );
+  }
+
+  // 初期表示
+  updateVictory();
+</script>
+</body>
+</html>
