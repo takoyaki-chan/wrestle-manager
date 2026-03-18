@@ -3268,9 +3268,9 @@ const App = {
         rightArchetype: charR.archetype || 'normal'
       }
     };
-    // ビッグマッチBGM: タイトル戦で bigmatch.mp3 を再生
+    // ビッグマッチBGM: タイトル戦で再生
     if (m.isTitle) {
-      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+      try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     }
     let sent = false;
     const sendOnce = () => {
@@ -5527,8 +5527,8 @@ const App = {
         rightArchetype: af.archetype || 'normal'
       }
     };
-    // ビッグマッチBGM
-    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+    // ビッグマッチBGM（対抗戦）
+    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -5791,8 +5791,8 @@ App.ppvWatchMatch = function(idx) {
       rightArchetype: match.right.archetype || 'normal'
     }
   };
-  // ビッグマッチBGM
-  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  // ビッグマッチBGM（PPV）
+  try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
