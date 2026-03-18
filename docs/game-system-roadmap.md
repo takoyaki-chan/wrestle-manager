@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-17（契約更新交渉 v2.0: trust×給与ギャップ2軸マトリクス + 突発退団）
+> 最終更新: 2026-03-18（試合画面UI刷新 Phase 0〜2 実装完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 
@@ -8,7 +8,23 @@
 
 ## 現在の状態
 
-**契約更新交渉 v2.0 実装完了（2026-03-17）。** trust単軸の発火条件をtrust×給与ギャップ2軸マトリクスに全面刷新。突発退団（新態度）追加。金銭計算を適正給ベースに改善。
+**試合画面UI刷新 Phase 0〜2 実装完了（2026-03-18）。** Phase 0（画像URL関数整備）、Phase 1（レイアウト刷新）、Phase 2（ダメージ表現刷新）を実装。Phase 3〜7は次セッション以降。
+
+- **仕様書**: `battle-ui-spec-v1.0.md`（全11セクション）
+- **実装計画**: `battle-ui-implementation-plan.md`（Phase 0〜7）
+- **未決定事項アジェンダ**: `battle-ui-next-agenda.md`（7項目、優先度付き）
+- **プロトタイプ**: `match-card-prototype.html`（対戦カード紹介画面）、`battle-effects-mockup.html`（全演出デモ）
+- **確定した主要変更点**:
+  - full画像は対戦カード紹介・PPVマッチカード・練習画面詳細の3箇所のみ。バトル中は使用しない
+  - 対戦カード紹介: ポスター構図（左右50%幅にfull画像、中央にテキスト）→ゴングフラッシュ→パネルスライドインでバトル画面に遷移
+  - HUD刷新: Concept Fベース。ターン表記「ターン N」カタカナ化
+  - 中央パネル全中央寄せ: 実況16px/技名18px/ログ9pxのメリハリ
+  - ダメージ表現: 画像暗転系3種を廃止。shake+数字ポップアップ+HP25%足元赤グロー（45%幅・高彩度）
+  - ビッグムーブ: full画像パン方式は没→セリフカットイン（upper画像）+溜め音+技名表示方式に確定
+  - カウンター: ビッグムーブと同じ導入→技名表示→「COUNTER!」が防御側方向からスライドインして技名を吹き飛ばす。SE「バケッ！」重衝撃音
+  - カットイン3種: セリフ（性格×属性、ゴールド枠）/ ダメージセリフ（性格×属性、赤枠）/ ダメージボイス（属性のみ、濃い赤、28px短叫び）。全てupper画像100×150+クリック消去
+  - 選手パネル: スタイル正式名称化、ライバルバッジ両パネル、名前クリック→詳細ポップアップ
+  - `.app` サイズ: `max-width:1400px; padding:20px`（現行と同一を維持）
 
 - **trust×ギャップ2軸マトリクス（§4）**: trust 5帯域(75+/40-74/30-39/15-29/<15) × ギャップ3段階(なし<1.1/あり1.1-1.3/大≥1.3)の15セル判定。trust 40+でもギャップ≥1.1なら確定発火。自発的残留はtrust 75+かつギャップなしのみ
 - **calcGapRatio新設（§3）**: fairSalary(現在OVR/pop) / currentSalary(contractOVR/contractPop)で給与ギャップ比率を算出
@@ -694,6 +710,34 @@
 
 ## 次の実装予定
 
+### 試合画面UI刷新（★最優先、仕様確定済み）
+
+> 仕様書: `battle-ui-spec-v1.0.md` / 実装指示書: `battle-ui-implementation-guide.md` / 実装計画: `battle-ui-implementation-plan.md` / 未決定事項: `battle-ui-next-agenda.md`
+> プロトタイプ: `src/prototype/match-card-prototype.html`, `src/prototype/battle-effects-mockup.html`
+
+| Phase | タスク | 重さ | 状態 |
+|---|--------|:----:|------|
+| 0 | **下準備** `getFullUrl(id)` 追加、`getUpperUrl` リファクタ（stand画像パスとの名称ミスマッチ解消）、upper画像パス関数整備 | 小 | 未着手 |
+| 1 | **レイアウト刷新** HUDバーConcept F化、中央パネル全中央寄せ（ターン表記カタカナ化/実況16px/技名18px/ログ9px）、選手パネル情報（スタイル正式名称/ライバルバッジ/名前クリック→ポップアップ/ベルト表示） | 大 | 未着手 |
+| 2 | **ダメージ表現刷新** 旧演出3種廃止（exhausted/critical暗転/flash-hit）。shake+数字ポップアップ。クリティカル（画面フラッシュ+強shake+金色52px）。HP25%足元赤グロー（45%幅、130%楕円、高彩度脈動） | 中 | 未着手 |
+| 3 | **カットインシステム刷新** cutin-overlay→upper画像100×150化。セリフ（性格×属性、ゴールド枠）/ダメージセリフ（性格×属性、赤枠）/ダメージボイス（属性のみ、濃い赤28px短叫び）の3種。全クリック消去化。セリフデータの分岐テーブル整備 | 大 | 未着手 |
+| 4 | **ビッグムーブ演出** セリフカットイン+bigmoveCharge SE→技名表示→bigmoveImpact+ダメージ。発動条件ロジック（ダメージ閾値、1試合0〜3回制限）。決め技系セリフデータ追加 | 中 | 未着手 |
+| 5 | **カウンター演出** ビッグムーブ同導入→技名→COUNTER!防御側方向からスライドイン→技名吹き飛ばし（blown-right/left）。counterSE差替（重衝撃音「バケッ！」）。カウンター判定ロジック連携 | 中 | 未着手 |
+| 6 | **対戦カード紹介画面** battle-engine内に試合前画面新設。full画像ポスター構図（幅50%、cover、95%）。中央テキスト（興行名/第N試合/VS/対戦成績/バッジ）。NEXTボタン→ゴングフラッシュ→FIGHT!→パネルスライドイン遷移 | 大 | 未着手 |
+| 7 | **統合テスト・調整** 演出連続発動テスト、SE音量バランス、対戦カード→バトル→決着の通しフロー確認 | 中 | 未着手 |
+
+#### 未決定事項（次回打ち合わせで策定予定）
+
+| 優先度 | 項目 | 概要 |
+|:---:|---|---|
+| **高** | フェーズ遷移演出 | Opening→Mid→End→Climaxの視覚的区別。現行はpillフラッシュのみで気付きにくい。HUD色調変化 or Climax特別演出 or 控えめ改善の3案。Phase 1と同時に決める必要あり |
+| **高** | ピンフォール/ギブアップ演出 | 現行FINISH CLICK SYSTEM（暗転+サスペンスドローン+カウントポップ+フォールボタン）の視覚デザインを新UIに統合。ダメージボイスとの連携。キックアウト演出とカウンターフラッシュの流用可否 |
+| **中** | 勝利演出 | 現行: face丸アイコン+名前+決まり手+セリフのオーバーレイ。upper画像に差替え＋画面構成の検討。bellx3（ギブアップ時カンカンカン）の使い分け維持 |
+| **中** | getUpperUrlリファクタ方針 | A: リネーム（getUpperUrl→getStandUrl + 新getUpperUrl）vs B: 別名追加。Phase 0で実施。grep全箇所確認で機械的に対応可 |
+| **低** | PPVマッチカード | full画像活用2箇所目。3〜5試合のポスター風一覧。レイアウト・情報量・スクロール要否。対戦カード紹介画面の縮小版縦並びが自然か |
+| **低** | 練習画面の選手詳細（馬体確認） | full画像活用3箇所目。ウィニングポスト馬体確認イメージ。コンディション/疲労/wear/trainCap距離/怪我リスクを表示。showFighterPopupとは別画面 |
+| **低** | BGM/SE詳細調整 | 新規SE5種（bigmoveCharge/Impact、counterSE差替、cutinSlide、dmgVoice）の通し確認。既存SEとの音量バランス。Phase 7統合テスト時に実施 |
+
 ### Trust総合リバランス + ケアストック制 + マイナスイベント群（設計: 2026-03-09チャット）
 
 > シミュレーション検証ファイル: `trust-catalog-sim.js` / `trust-param-search.js`（チャットで作成）
@@ -1059,6 +1103,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 | フィニッシャーシステム v1.0 | finisher-system-spec-v1.0.md |
 | PPV GRAND FINAL 合同興行 v2.0 | ppv-grand-final-spec-v2.0.md |
 | ビッグマッチエンジン v1.0 | bigmatch-engine-spec-v1.0.md |
+| **試合画面UI刷新 v1.0** | **battle-ui-spec-v1.0.md** |
 | 人間関係システム v0.2 | relationship-system-spec-v0.2.md |
 | S級エース強化 & NPC団体チャンピオン v1.0 | s-rank-ace-rebalance-spec-v1.0.md |
 | Glimpseシステム＆ポップアップ総合改善 v1.2 | glimpse-popup-overhaul-spec-v1.2.md |
@@ -1070,6 +1115,9 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 | ドキュメント | ファイル |
 |---|---|
 | PPV実装指示書 | ppv-implementation-guide.md |
+| 試合画面UI刷新 実装指示書 | battle-ui-implementation-guide.md |
+| 試合画面UI刷新 実装計画 | battle-ui-implementation-plan.md |
+| 試合画面UI刷新 未決定事項アジェンダ | battle-ui-next-agenda.md |
 
 ### docs/archive/（旧版・完了済み）
 
@@ -1106,7 +1154,7 @@ PPV・タイトル戦・トーナメント・対抗戦で使用する長期戦�
 - README.mdの「120名以上のキャラクター」は固有キャラ98名＋スカウト生成＋コーチ35名の合算
 - セッション17のバランスシミュレーション結果: `tests/balance-sim.js` で再現可能
 - 会場ロック判定は `Math.round(G.orgPop)` で比較すること（内部小数化対応）
-- **立ち絵画像**: `image/stand/stand_{charId}.webp`（512×768, 2:3）に98枚プレースホルダー配置済み。本番画像で上書きするだけで差し替え可能。観戦モードのCSS `aspect-ratio:2/3` をそのまま利用可能
+- **立ち絵画像**: `image/stand/stand_{charId}.webp`（256×384, 2:3）98枚。`image/full/full_{charId}.webp`（512×768, 2:3 RGBA透過）98枚作成済み。`image/upper/upper_{charId}.webp`（256×384, 2:3 RGBA透過）。`image/face_{charId}.png`（256×256）。バトル中はstand、対戦カード/PPV/練習詳細ではfull、カットインではupperを使用
 
 - 2026-03-10: Fixed missing faction-map portraits in the relationship map by switching power-view SVG portraits from direct <image>+clipPath rendering to inline face patterns.
 
