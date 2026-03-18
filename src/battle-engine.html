@@ -2066,6 +2066,8 @@ function nextTurn(){
     }
     const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
     showSp(ds,pk(CMT.defR[rl]),'t-def');
+    // ダメージボイス: Climaxのクリティカルヒット時に短い悲鳴カットイン
+    if(ph.name==='Climax'&&isCrit)showDamageVoice(ds,def);
     if(ap)ap.classList.remove('flash-atk');
   },t(0.45));
 
