@@ -52,7 +52,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px}
 .hp-pct.blue{color:#5dd9ca;text-align:right}.hp-pct.red{color:#5dd9ca;text-align:left}
 .hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-dim);min-width:20px;text-align:center}
-.hud-mom{display:flex;height:14px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.hud-mom{display:flex;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-bottom:6px}
 .hud-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width 0.4s}
 .hud-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width 0.4s}
 
@@ -335,9 +335,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .miss-text{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(2);z-index:55;pointer-events:none;
   font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:rgba(255,255,255,0.7);
   text-shadow:0 0 20px rgba(100,100,255,0.4);opacity:0}
-@keyframes missTextPop{0%{opacity:0;transform:translate(-50%,-50%) scale(2)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  70%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}}
-.miss-text.show{animation:missTextPop 0.8s ease-out forwards}
+@keyframes missTextPop{0%{opacity:0;transform:translate(-50%,-50%) scale(2)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}}
+.miss-text.show{animation:missTextPop 1.5s ease-out forwards}
 
 /* ═══ BATTLE DETAIL POPUP ═══ */
 .bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:70;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
@@ -1542,7 +1542,7 @@ function nextTurn(){
       // MISS! flash + text
       const mf=document.createElement('div');mf.className='miss-flash';document.body.appendChild(mf);setTimeout(()=>mf.remove(),400);
       const mt=document.createElement('div');mt.className='miss-text';mt.textContent='MISS!';document.body.appendChild(mt);
-      void mt.offsetWidth;mt.classList.add('show');setTimeout(()=>mt.remove(),900);
+      void mt.offsetWidth;mt.classList.add('show');setTimeout(()=>mt.remove(),1600);
       const box=document.getElementById('narBox');
       if(box){box.innerHTML=`<div class="nar-line nar-miss show">${tpl(pk(CMT.miss),v)}</div>`}
       if(ap)ap.classList.remove('flash-atk');
@@ -1586,7 +1586,8 @@ function nextTurn(){
       updMom();
       showSp(ds,'切り返し！','t-counter');
       const box=document.getElementById('narBox');
-      if(box){box.innerHTML=`<div class="nar-line nar-counter show">${tpl(pk(CMT.counter),v)}</div>
+      if(box){box.innerHTML=`<div class="nar-line nar-main show">${atk.name}の${mv.n}！</div>
+        <div class="nar-line nar-counter show">${tpl(pk(CMT.counter),v)}</div>
         <div class="nar-line nar-dmg show">${atk.name}に${counterDmg}ダメージ！</div>`}
       let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${counterDmg}dmg`;
       updPanelState(as,atk);
