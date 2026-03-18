@@ -2490,8 +2490,10 @@ function renderMatchWithIntro(){
   const btn=document.getElementById('nBtn');if(btn)btn.disabled=true;
   const box=document.getElementById('narBox');
   const v={l:S.L.name,r:S.R.name};
-  // 対戦カード紹介→試合開始シーケンス
-  showMatchCard(()=>{
+  // 対戦カード紹介は特別な試合のみ（タイトル/対抗戦/PPV = matchTier >= 2）
+  const mi=matchData&&matchData.matchInfo;
+  const showCard=mi&&mi.matchTier>=2;
+  const startBattle=()=>{
     setTimeout(()=>{sfx.fightStart();
       if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.main),v)}</div>`;
     },600);
@@ -2509,7 +2511,8 @@ function renderMatchWithIntro(){
       if(btn2){btn2.disabled=false;btn2.onclick=nextTurn;
         btn2.style.animation='btnPulse 1.5s ease-in-out infinite';}
     },4500);
-  });
+  };
+  if(showCard){showMatchCard(startBattle);}else{startBattle();}
 }
 
 function render(){if(S.screen==='WAITING'){renderWaiting();hideResult()}
