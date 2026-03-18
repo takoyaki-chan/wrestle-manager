@@ -2047,8 +2047,8 @@ function renderRanking() {
 
   // Ranking table — tooltip texts stored in global to avoid HTML-in-attribute issues
   window._rankTips = {
-    rating: '基礎力 + 対戦ポイントの合計が<br>ランキング評価値',
-    base:   'TOP5平均OVR × 1.5 + TOP5平均人気 × 1.0<br>選手の実力と人気で決まる基礎力',
+    rating: '基礎値 + レガシー + 対戦ptの合計<br>各団体の評価値セルにカーソルを合わせると内訳表示',
+    base:   'TOP10加重OVR平均 × 1.2 + TOP10加重人気平均 × 0.9<br>上位選手ほど重みが大きい（1位:2.4 → 10位:0.18）',
     battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
@@ -2066,10 +2066,27 @@ function renderRanking() {
     const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
     const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${rc}20;color:${rc};border:1px solid ${rc}40;margin-left:6px">${org.tier}</span>` : '';
     const bpColor = r.battlePt > 0 ? '#2ecc71' : r.battlePt < 0 ? '#e74c3c' : 'var(--text-dim)';
+    // 評価値ツールチップ内訳
+    const ovrPart = Math.round(r.weightedOVR * 12) / 10;
+    const popPart = Math.round(r.weightedPop * 9) / 10;
+    const tipHtml = `<div style="text-align:left;font-size:12px;line-height:1.7">`
+      + `<div style="font-weight:700;margin-bottom:4px;font-size:13px">評価値の内訳</div>`
+      + `<div>基礎値: <strong>${r.baseScore}</strong>pt</div>`
+      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
+      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
+      + `<div style="margin-top:4px">レガシー: <strong>${r.legacyScore}</strong>pt</div>`
+      + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</strong>pt</div>`
+      + `<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:6px 0">`
+      + `<div style="font-weight:700">合計: ${r.rating}pt</div>`
+      + `</div>`;
+    window['_rankTip_' + r.orgId] = tipHtml;
     html += `<tr style="${bgStyle}">
       <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
       <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
-      <td class="num" style="font-size:16px;font-weight:700">${r.rating}</td>
+      <td class="num" style="font-size:16px;font-weight:700;cursor:help"
+          onmouseenter="showCustomTooltip(this,_rankTip_${r.orgId})"
+          onmouseleave="hideCustomTooltip()"
+          onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${r.rating}</td>
       <td class="num">${r.baseScore}</td>
       <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</td>
       <td class="num">${r.rosterSize}</td>

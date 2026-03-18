@@ -751,10 +751,10 @@ const BASE_ATTENDANCE_CURVE = [
 ];
 // v3.1: チケット単価逓減 — 集客が増えるほど1人あたり単価が下がる（薄利多売）
 const TICKET_PRICE_TIERS = [
-  { threshold: 0,     price: 0.50 },  // ~2000人: フル単価（中小会場は影響なし）
-  { threshold: 2000,  price: 0.40 },  // 2000-5000: やや割安
-  { threshold: 5000,  price: 0.30 },  // 5000-10000: 割安
-  { threshold: 10000, price: 0.20 },  // 10000+: 薄利多売
+  { threshold: 0,     price: 0.55 },  // ~2000人: フル単価（中小会場は影響なし）
+  { threshold: 2000,  price: 0.45 },  // 2000-5000: やや割安
+  { threshold: 5000,  price: 0.35 },  // 5000-10000: 割安
+  { threshold: 10000, price: 0.25 },  // 10000+: 薄利多売
 ];
 const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
 // v3.1: 会場レベル別MQ閾値シフト — 小会場は緩く、大会場ほど厳しい、ドームでガッと上がる
