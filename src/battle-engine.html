@@ -2580,7 +2580,7 @@ function startMatchTransition(cb){
   // Step 3: テキスト消去
   setTimeout(()=>{if(gt){gt.classList.remove('show');gt.classList.add('fade');}},800);
   // Step 4: カード画面フェードアウト
-  setTimeout(()=>{if(mc){mc.classList.add('hidden');}},1000);
+  setTimeout(()=>{if(mc){mc.classList.add('hidden');mc.style.pointerEvents='none';}},1000);
   // Step 5: バトル開始コールバック
   setTimeout(()=>{if(gt)gt.className='gong-text';if(cb)cb();},1800);
 }
