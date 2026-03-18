@@ -8,13 +8,14 @@
 
 ## 現在の状態
 
-**試合画面UI刷新 Phase 3〜7 実装完了（2026-03-18）。** Phase 3（カットインシステム刷新）、Phase 4（ビッグムーブ演出）、Phase 5（カウンター演出）、Phase 6（対戦カード紹介画面）、Phase 7（検証・完了）を実装。
+**試合画面UI刷新 Phase 0〜7 全完了（2026-03-18）。** Phase 3〜7を本セッションで実装+微調整4件。試合画面UI刷新は全Phase完了。
 
 - **Phase 3 カットインシステム刷新**: cutin-portrait を56px丸→100×150px矩形upper画像に変更。click-to-close（auto-dismiss廃止）。CSS3種（ノーマル/ダメージセリフ赤枠/ダメージボイス濃い赤+28px文字）。`DAMAGE_SERIF_LINES`（7性格×6口調）・`DAMAGE_VOICE_LINES`（6口調）を新設。`sfx.cutinSlide` + `sfx.dmgVoice` 追加。`showDamageSpeech()` / `showDamageVoice()` 追加
-- **Phase 4 ビッグムーブ演出**: `CUTIN_LINES.bigmove`（7性格×6口調の2D table）をExcelデータから実装。`sfx.bigmoveCharge` + `sfx.bigmoveImpact` 追加。`isBigmoveAnim = big && S.bigmoveCount < 3` で発動制限（試合3回まで）。タイムライン: 0s カットイン+溜め / 1.5s 消去 / 1.8s 技名表示 / 2.3s ダメージ+ビッグインパクト / 3.0s クリーンアップ。End/Climaxフェーズのみ `showDamageSpeech` 発火
+- **Phase 4 ビッグムーブ演出**: `CUTIN_LINES.bigmove`（7性格×6口調の2D table）をExcelデータから実装。`sfx.bigmoveCharge` + `sfx.bigmoveImpact` 追加。`S.bigmoveCount < 3`（試合3回まで）+ `BIGMOVE_ANIM_RATE`フェーズ別発動確率（Opening 10%/Mid 30%/End 65%/Climax 100%）。タイムライン: 0s カットイン+溜め / 1.5s 消去 / 1.8s 技名表示 / 2.3s ダメージ+ビッグインパクト / 3.0s クリーンアップ。End/Climaxフェーズのみ `showDamageSpeech` 発火
 - **Phase 5 カウンター演出**: `counterSE` を新SE（重衝撃系）に置換。`.counter-big` / `.bigmove-name.blown-*` CSS追加。bigmove+counter（`isBigmoveCounter`）時のみ演出発動: 技名表示→防御側方向からCOUNTER!スライドイン→技名吹き飛ばし。通常counter（!big）は従来動作を維持
-- **Phase 6 対戦カード紹介画面**: `showMatchCard()` + `startMatchTransition()` 追加。full画像左右50%配置、中央テキスト（VS/選手名/通算成績/バッジ）、会場背景。ゴングフラッシュ→FIGHT!→カードフェードアウト→バトル画面へ遷移。h2h対戦履歴を表示（初対決はFIRST MEETINGバッジ）
+- **Phase 6 対戦カード紹介画面**: `showMatchCard()` + `startMatchTransition()` 追加。full画像左右50%配置（object-fit:contain引き構図）、中央テキスト（VS/選手名/通算成績/バッジ）、会場背景。ゴングフラッシュ→FIGHT!(上方配置)→カードフェードアウト→バトル画面へ遷移。h2h対戦履歴を表示（初対決はFIRST MEETINGバッジ）。**matchTier>=2の特別試合のみ表示**（タイトル/対抗戦/PPV）、通常試合はスキップ
 - **Phase 7 検証**: auto-sim 100シーズン×2シード ALL CLEAR ✓。battle-engine.htmlのみ変更（engine.js変更なし）
+- **微調整**: match-card空divのクリックブロック修正（display:none+pointer-events:none デフォルト化）
 
 **試合画面UI刷新 Phase 0〜2 実装完了（2026-03-18）。** Phase 0（画像URL関数整備）、Phase 1（レイアウト刷新）、Phase 2（ダメージ表現刷新）を実装。
 
