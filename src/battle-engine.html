@@ -44,15 +44,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .hud-center{text-align:center}
 .hud-turn{font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--gold-dim);letter-spacing:2px}
 .hud-phase{font-family:'Oswald',sans-serif;font-size:11px;color:var(--gold-light);letter-spacing:2px}
-.hp-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-.hp-bar{height:14px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
+.hp-row{display:flex;gap:8px;align-items:center}
+.hp-bar{height:18px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
 .hp-fill{height:100%;border-radius:4px;transition:width .5s}
 .hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}.hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}.hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}
 .hp-fill.rev{float:right}
 .hp-pct{font-family:'Bebas Neue',sans-serif;font-size:22px;min-width:48px;letter-spacing:1px}
 .hp-pct.blue{color:#5dd9ca;text-align:right}.hp-pct.red{color:#5dd9ca;text-align:left}
 .hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-dim);min-width:20px;text-align:center}
-.hud-mom{display:flex;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-top:2px}
+.hud-mom{display:flex;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-bottom:6px}
 .hud-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width 0.4s}
 .hud-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width 0.4s}
 
@@ -1321,8 +1321,8 @@ function renderMatch(){
       <div class="hud-center"><div class="hud-turn" id="hudTurn">ターン ${S.turn}</div><div class="hud-phase" id="hudPhase">${ph.name}</div></div>
       <div class="hud-side"><div style="text-align:right"><div class="hud-name">${R.name}</div><div class="hud-style">${R.style}</div></div><div class="hud-face red"><img src="${getFaceUrl(R)}" onerror="this.style.display='none'"></div></div>
     </div>
-    <div class="hp-row"><span class="hp-pct blue" id="hudHpPctL">${lHpPct}%</span><div class="hp-bar"><div class="hp-fill ${lHc} rev" id="hudHpL" style="width:${lHpPct}%"></div></div><span class="hp-label">HP</span><div class="hp-bar"><div class="hp-fill ${rHc}" id="hudHpR" style="width:${rHpPct}%"></div></div><span class="hp-pct red" id="hudHpPctR">${rHpPct}%</span></div>
     <div class="hud-mom"><div class="hud-mom-l" id="hudMomL" style="width:${mPct}%"></div><div class="hud-mom-r" id="hudMomR" style="width:${100-mPct}%"></div></div>
+    <div class="hp-row"><span class="hp-pct blue" id="hudHpPctL">${lHpPct}%</span><div class="hp-bar"><div class="hp-fill ${lHc} rev" id="hudHpL" style="width:${lHpPct}%"></div></div><span class="hp-label">HP</span><div class="hp-bar"><div class="hp-fill ${rHc}" id="hudHpR" style="width:${rHpPct}%"></div></div><span class="hp-pct red" id="hudHpPctR">${rHpPct}%</span></div>
   </div>`;
   function panelCls(f,side){
     const pct=f.hp/f.mhp*100;let cls='fighter-panel '+side;

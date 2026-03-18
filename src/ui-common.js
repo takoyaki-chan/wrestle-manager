@@ -2806,14 +2806,11 @@ window.addEventListener('message', function(e) {
     App.receiveBattleResult(e.data);
   }
   if (e.data && e.data.type === 'SHOW_POPUP' && e.data.id) {
-    console.log('[WM Debug] SHOW_POPUP received, id:', e.data.id, 'type:', typeof e.data.id);
-    const fighter = findFighter(e.data.id);
-    console.log('[WM Debug] findFighter result:', fighter ? fighter.name : 'NOT FOUND');
-    if (!fighter) return;
     // Raise popup z-index above battle overlay (z-index:9999)
     const popOv = document.getElementById('fighterPopupOverlay');
     if (popOv) popOv.style.zIndex = '10001';
-    showFighterPopup(e.data.id);
+    // Skip queue check — battle overlay blocks normal popup queue drain
+    showFighterPopup(e.data.id, undefined, true);
   }
 });
 
