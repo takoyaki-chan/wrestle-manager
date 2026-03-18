@@ -2071,7 +2071,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
             ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
-            ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル${ct ? `（残${ct.seasonsLeft}期/${ct.seasonsLeft * 12}週）` : ''}</span>`; })() : ''}
+            ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); const wl = ct ? ((ct.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))) : '?'; const rs = ct ? ((G.season || 1) + (ct.seasonsLeft - 1)) : '?'; return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${wl}週／${rs}年目末帰還）</span>`; })() : ''}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
             const td = TRAIT_DEFS[t]; if (!td) return '';

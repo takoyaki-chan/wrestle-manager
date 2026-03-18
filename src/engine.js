@@ -5001,7 +5001,7 @@ const Engine = {
       const lastRunFighter = lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null);
       if (lastRunFighter) {
         externalMQ += 3;  // ラストラン基本 +3
-        if (matchIdx === rawResults.length - 1) externalMQ += 5;  // メインイベント +5
+        if (matchIdx === 0) externalMQ += 5;  // メインイベント +5（showCard[0]がメイン）
         r.isLastRunMatch = true;
         r.lastRunFighterId = lastRunFighter.id;
         // 因縁相手との引退試合ボーナス (§2.6)
@@ -5077,7 +5077,7 @@ const Engine = {
     });
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
-    const mainEventIdx = results.length - 1; // last match is main event
+    const mainEventIdx = 0; // first match (showCard[0]) is main event
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
       const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0);
@@ -8922,10 +8922,10 @@ Engine.trust = {
       titleFighters.add(r.left.id); titleFighters.add(r.right.id);
     });
 
-    // メインイベント出場選手（最後の試合）
+    // メインイベント出場選手（最初の試合 = showCard[0]）
     const mainFighters = new Set();
     if (results.length > 0) {
-      const main = results[results.length - 1];
+      const main = results[0];
       mainFighters.add(main.left.id); mainFighters.add(main.right.id);
     }
 
@@ -9063,7 +9063,7 @@ Engine.trust = {
           ovrRank: ovrRankMap[fighter.id] || 99,
           activeRosterSize: activeRoster.length,
         };
-        const grievanceResult = Engine.trust.calcGrievanceDelta(fighter, rosterContext, titles, state);
+        const grievanceResult = Engine.trust.calcGrievanceDelta(updated, rosterContext, titles, state);
         delta += grievanceResult.delta;
         // Phase 5: スナップショット用フラグを選手オブジェクトに転写
         if (Object.keys(grievanceResult.flags).length > 0) {
@@ -9691,10 +9691,35 @@ Engine.eventSystem = {
       return { type: 'E6', fighter: f.id, name: f.name };
     }
 
-    // S1: タイトル挑戦要求（trust 30〜55、人気30+、タイトル未保持）
-    const s1Pool = roster.filter(f =>
-      (f.trust != null ? f.trust : 50) <= 55 && (f.popularity || 0) >= 30 && f.id !== champId
-    );
+    // S1: タイトル挑戦要求（trust 30〜55、人気30+、タイトル未保持 + OVR差8以内 + rivalry50+）
+    // 5回に1回は条件を緩和（ランダム性の担保）
+    const s1Relaxed = Engine.rng.float(rng) < 0.20;  // 20%で緩和
+    const champFighter = champId ? roster.find(c => c.id === champId) : null;
+    const champOVR = champFighter ? Engine.util.ov(champFighter) : 999;
+    const s1Pool = roster.filter(f => {
+      if (f.id === champId) return false;
+      if ((f.trust != null ? f.trust : 50) > 55) return false;
+      if ((f.popularity || 0) < 30) return false;
+      if (s1Relaxed) return true;  // 緩和時は上記条件のみ
+      // 通常時: OVR差8以内 + rivalry50以上
+      const ovrDiff = champOVR - Engine.util.ov(f);
+      if (ovrDiff > 8) return false;
+      // rivalry判定（relationships or rivalries）
+      if (champId && state.relationships) {
+        const keyAB = Engine.relationships._key(f.id, champId);
+        const keyBA = Engine.relationships._key(champId, f.id);
+        const relAB = state.relationships[keyAB];
+        const relBA = state.relationships[keyBA];
+        const rivalryVal = Math.max(relAB?.rivalry || 0, relBA?.rivalry || 0);
+        if (rivalryVal < 50) return false;
+      } else if (champId && state.rivalries) {
+        const rivalry = state.rivalries.find(r =>
+          (r.fighter1 === f.id && r.fighter2 === champId) || (r.fighter1 === champId && r.fighter2 === f.id)
+        );
+        if (!rivalry || (rivalry.rivalry || 0) < 50) return false;
+      }
+      return true;
+    });
     if (s1Pool.length > 0 && Engine.rng.float(rng) < 0.40) {
       const f = Engine.rng.pick(rng, s1Pool);
       return { type: 'S1', fighter: f.id, name: f.name };

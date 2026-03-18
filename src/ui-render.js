@@ -772,9 +772,10 @@ function renderWeekScreen() {
         const weeksLeft = rentalContract
           ? (rentalContract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))
           : '?';
+        const returnSeason = rentalContract ? (G.season || 1) + (rentalContract.seasonsLeft - 1) : '?';
         const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
         html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
-          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${weeksLeft}週</span></td>
+          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12" title="${returnSeason}年目シーズン末に帰還">🤝残${weeksLeft}週(${returnSeason}年目末)</span></td>
           <td class="num">${ov(c)}</td>
           <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
           <td>${statusHtml}</td>
@@ -810,8 +811,9 @@ function renderWeekScreen() {
         if (c.condition < 60) previewAction = 'auto_rest';
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
+      const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
       html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
-        <td><strong>${c.name}</strong>${wkChampBadge}</td>
+        <td><strong>${c.name}</strong>${wkChampBadge}${trainerBadge}</td>
         <td class="num">${ov(c)}</td>
         <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
         <td>${statusHtml}</td>
@@ -1461,6 +1463,7 @@ function renderRoster() {
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachBadgeHtml}
+            ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
@@ -1518,7 +1521,7 @@ function renderRoster() {
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
             <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
             <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} ｜ 残${contract ? contract.seasonsLeft : '?'}期(${contract ? contract.seasonsLeft * 12 : '?'}週)</div>
+            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} ｜ 残${contract ? ((contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))) : '?'}週(${contract ? ((G.season || 1) + (contract.seasonsLeft - 1)) : '?'}年目末帰還)</div>
           </div>
         </div>
       </div>`;
@@ -1737,7 +1740,7 @@ function renderShowPrep() {
         ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
         ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
         ${freshnessPreview && freshnessPreview.label ? `<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:11px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>` : ''}
-        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===maxMatches-1?' +メイン+5':''})</span>` : ''}
+        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===0?' +メイン+5':''})</span>` : ''}
       </div>
     </div>`;
   }
@@ -2289,7 +2292,7 @@ function renderScout() {
             <span style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '不明'}</span>
             <span style="font-size:12px;color:var(--text-sub);margin-left:8px">← ${fromLabel}</span>
           </div>
-          <div style="font-size:13px;color:var(--gold)">残り${contract.seasonsLeft}期(${contract.seasonsLeft * 12}週)</div>
+          <div style="font-size:13px;color:var(--gold)">残り${(contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))}週(${(G.season || 1) + (contract.seasonsLeft - 1)}年目末帰還)</div>
         </div>
       </div>`;
     });
@@ -4854,7 +4857,12 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     };
   });
 
-  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  const playerChampId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  // 各団体の王者IDマップを構築（プレイヤー+NPC）
+  const orgChampMap = { player: playerChampId };
+  Object.entries(G.aiOrgs || {}).forEach(([orgId, orgData]) => {
+    orgChampMap[orgId] = orgData.titles?.world?.championId || null;
+  });
   const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣'];
 
   // OVRレンジ（全選手）
@@ -4915,7 +4923,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
         id: f.id, fighter: f, orgId: org.id, orgColor: org.color,
         orgName: org.name, orgRank: org.rank, inOrgRank: rank,
         x: savedPos.x, y: savedPos.y,
-        r, ovr, isChamp: !!champId && f.id === champId,
+        r, ovr, isChamp: !!orgChampMap[org.id] && f.id === orgChampMap[org.id],
         isAce: rank === 0, isTop3: rank < 3,
         homeX, homeY,
       });
@@ -5086,7 +5094,10 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 
   const color = _RELMAP_ORG_COLORS[orgId] || '#888';
   const orgName = _relmapGetOrgNameById(orgId);
-  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  // 該当団体の王者ID取得
+  const orgChampId = isPlayer
+    ? (G.titles?.world?.championId || null)
+    : (aiData.titles?.world?.championId || null);
 
   const HEADER_H = 40;
   const PAD_TOP = HEADER_H + 20;
@@ -5121,7 +5132,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     const savedPos = _relmapGetPowerPos(mapNode, orgId, x, homeY);
     return {
       id: f.id, fighter: f, x: savedPos.x, y: savedPos.y, r, ovr, ovrNorm,
-      isChamp: !!champId && f.id === champId,
+      isChamp: !!orgChampId && f.id === orgChampId,
       isAce: i === 0, isTop3: i < 3, rank: i,
       homeX, homeY,
     };

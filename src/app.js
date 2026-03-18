@@ -3268,9 +3268,11 @@ const App = {
         rightArchetype: charR.archetype || 'normal'
       }
     };
-    // ビッグマッチBGM: タイトル戦で再生
+    // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
     if (m.isTitle) {
       try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    } else {
+      try { Audio.bgm.play('battle'); } catch(e) {}
     }
     let sent = false;
     const sendOnce = () => {
@@ -3325,8 +3327,9 @@ const App = {
       hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
-    // ビッグマッチBGMフェードアウト
+    // BGM: FileBGMフェードアウト + チップチューンをmanagementに戻す
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+    try { Audio.bgm.play('management'); } catch(e) {}
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     sp.currentWatching = -1;
