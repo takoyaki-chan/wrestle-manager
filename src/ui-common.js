@@ -3299,6 +3299,10 @@ function showPPVMatchCardIntro(onStart) {
   const pp = App._ppvPreview;
   if (!pp || pp.card.length === 0) { onStart(); return; }
 
+  // 前回の表示状態をリセット
+  const elReset = document.getElementById('ppvMatchCardOverlay');
+  if (elReset) { elReset.style.display = ''; elReset.style.pointerEvents = ''; }
+
   const ppvName = G.ppvName || 'GRAND FINAL';
   const total = pp.card.length;
   const season = G.season || 1;
@@ -3361,6 +3365,8 @@ function showPPVMatchCardIntro(onStart) {
   el.classList.add('active');
   document.getElementById('ppvmcStartBtn').addEventListener('click', () => {
     el.classList.remove('active');
+    el.style.display = 'none';
+    el.style.pointerEvents = 'none';
     onStart();
   });
 }
