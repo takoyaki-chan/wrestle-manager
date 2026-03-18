@@ -3391,10 +3391,11 @@ function renderPPVMatchPreview() {
   function _statRow(label, lv, rv, cls) {
     const bwL = Math.max(4, Math.round(lv / 100 * 100));
     const bwR = Math.max(4, Math.round(rv / 100 * 100));
+    const dlv = Math.round(lv), drv = Math.round(rv);
     return `<div class="ppvprog-sr">
-      <div class="ppvprog-sbl"><span class="ppvprog-sv${lv>rv?' hi':''}">${lv}</span><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwL}%"></div></div></div>
+      <div class="ppvprog-sbl"><span class="ppvprog-sv${lv>rv?' hi':''}">${dlv}</span><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwL}%"></div></div></div>
       <div class="ppvprog-sl">${label}</div>
-      <div class="ppvprog-sbr"><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwR}%"></div></div><span class="ppvprog-sv${rv>lv?' hi':''}">${rv}</span></div>
+      <div class="ppvprog-sbr"><div class="ppvprog-bt"><div class="ppvprog-bf ${cls}" style="width:${bwR}%"></div></div><span class="ppvprog-sv${rv>lv?' hi':''}">${drv}</span></div>
     </div>`;
   }
 
