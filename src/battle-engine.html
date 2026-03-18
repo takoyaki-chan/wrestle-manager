@@ -1330,10 +1330,11 @@ function openFighterPopup(id){
   let badges = '';
   if(hasRivalry) badges += '<span class="bp-badge rival">🔥 RIVAL</span>';
   if(isTitle) badges += '<span class="bp-badge title">🏆 TITLE MATCH</span>';
+  const mirrorStyle = side==='left' ? 'transform:scaleX(-1)' : '';
   const ov = document.getElementById('bpOverlay');
   ov.innerHTML = `<div class="bp-box">
     <button class="bp-close" onclick="closeBattlePopup()">✕</button>
-    <div class="bp-img"><img src="${getFullUrl(f)}" onerror="this.style.display='none'"></div>
+    <div class="bp-img"><img src="${getFullUrl(f)}" style="${mirrorStyle}" onerror="this.style.display='none'"></div>
     <div class="bp-info">
       <div class="bp-header"><span class="bp-name">${f.name}</span><span class="bp-role ${rc}">${f.role}</span></div>
       <div class="bp-basics"><span class="bp-style">${f.style}</span><div class="bp-meta">${age?'<span>'+age+'</span>':''}<span>${f.h}cm</span></div></div>
@@ -1343,7 +1344,6 @@ function openFighterPopup(id){
       <div class="bp-details">
         <div class="bp-detail-item"><span class="bp-detail-label">現在HP</span><span class="bp-detail-value">${Math.max(0,f.hp)} / ${f.mhp} (${hpPct}%)</span></div>
         <div class="bp-detail-item"><span class="bp-detail-label">モメンタム</span><span class="bp-detail-value">${momVal}</span></div>
-        <div class="bp-detail-item"><span class="bp-detail-label">闘志</span><span class="bp-detail-value">${f.gritTurns>0?'⚡ 発動中 (残'+f.gritTurns+'ターン)':'通常'}</span></div>
       </div>
       ${profile?'<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">'+profile+'</div></div>':''}
       ${badges?'<div class="bp-badges">'+badges+'</div>':''}
