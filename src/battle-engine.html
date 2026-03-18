@@ -45,14 +45,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .hud-turn{font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--gold-dim);letter-spacing:2px}
 .hud-phase{font-family:'Oswald',sans-serif;font-size:11px;color:var(--gold-light);letter-spacing:2px}
 .hp-row{display:flex;gap:8px;align-items:center}
-.hp-bar{height:18px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
+.hp-bar{height:28px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
 .hp-fill{height:100%;border-radius:4px;transition:width .5s}
 .hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}.hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}.hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}
 .hp-fill.rev{float:right}
-.hp-pct{font-family:'Bebas Neue',sans-serif;font-size:22px;min-width:48px;letter-spacing:1px}
+.hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px}
 .hp-pct.blue{color:#5dd9ca;text-align:right}.hp-pct.red{color:#5dd9ca;text-align:left}
 .hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-dim);min-width:20px;text-align:center}
-.hud-mom{display:flex;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.hud-mom{display:flex;height:14px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-bottom:6px}
 .hud-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width 0.4s}
 .hud-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width 0.4s}
 
@@ -202,7 +202,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .log-header{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;
   text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;text-align:center}
 .log-box{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
-.log-entry{padding:2px 6px;border-radius:2px;background:rgba(0,0,0,0.15);font-size:9px;color:var(--text-dim);line-height:1.3;text-align:center}
+.log-entry{padding:3px 6px;border-radius:2px;background:rgba(0,0,0,0.15);font-size:11px;color:var(--text-sub);line-height:1.4;text-align:center}
 .log-entry .log-turn{font-family:'Oswald',sans-serif;font-size:8px;margin-right:3px}
 .log-entry.finish{color:#f0d078;font-weight:700;background:rgba(212,168,67,0.1)}
 .log-entry.system{color:rgba(42,157,143,0.9)}
@@ -327,6 +327,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   text-shadow:0 0 8px rgba(212,168,67,0.3)}
 .cutin-name{font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:2px}
 @keyframes cutinSlide{to{transform:translateX(0)}}
+
+/* ═══ MISS/COUNTER EMPHASIS ═══ */
+.nar-line.nar-miss{color:rgba(255,255,255,0.6);font-size:16px;font-weight:900}
+.miss-flash{position:fixed;inset:0;background:rgba(100,100,255,0.08);z-index:50;pointer-events:none;animation:missFlashAnim 0.3s ease-out forwards}
+@keyframes missFlashAnim{0%{opacity:1}100%{opacity:0}}
+.miss-text{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(2);z-index:55;pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:rgba(255,255,255,0.7);
+  text-shadow:0 0 20px rgba(100,100,255,0.4);opacity:0}
+@keyframes missTextPop{0%{opacity:0;transform:translate(-50%,-50%) scale(2)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  70%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}}
+.miss-text.show{animation:missTextPop 0.8s ease-out forwards}
 
 /* ═══ BATTLE DETAIL POPUP ═══ */
 .bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:70;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
@@ -914,6 +925,7 @@ const sfx={
   }catch(e){}},
   // NEW: ready
   ready(){osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
+  missWhiff(){osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
   // OLD: battle hits (kept)
   hitStrike(dr){const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
   hitThrow(dr){const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
@@ -1331,8 +1343,7 @@ function openFighterPopup(id){
       <div class="bp-details">
         <div class="bp-detail-item"><span class="bp-detail-label">現在HP</span><span class="bp-detail-value">${Math.max(0,f.hp)} / ${f.mhp} (${hpPct}%)</span></div>
         <div class="bp-detail-item"><span class="bp-detail-label">モメンタム</span><span class="bp-detail-value">${momVal}</span></div>
-        <div class="bp-detail-item"><span class="bp-detail-label">コンディション</span><span class="bp-detail-value">${f.condition||'---'}%</span></div>
-        <div class="bp-detail-item"><span class="bp-detail-label">GRIT</span><span class="bp-detail-value">${f.gritTurns>0?'⚡ ACTIVE ('+f.gritTurns+')':'---'}</span></div>
+        <div class="bp-detail-item"><span class="bp-detail-label">闘志</span><span class="bp-detail-value">${f.gritTurns>0?'⚡ 発動中 (残'+f.gritTurns+'ターン)':'通常'}</span></div>
       </div>
       ${profile?'<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">'+profile+'</div></div>':''}
       ${badges?'<div class="bp-badges">'+badges+'</div>':''}
@@ -1437,7 +1448,7 @@ function renderMatch(){
         <div class="ability-bars">${stats.map(s=>`<div class="ab-row"><span class="ab-name">${s.l}</span>
           <div class="ab-track"><div class="ab-fill ${s.k}" style="width:${s.v}%"></div></div>
           <span class="ab-val">${s.v}</span></div>`).join('')}</div>
-        <div class="grit-indicator${f.gritTurns>0?' active':''}" id="grit-${side}">⚡ GRIT (${f.gritTurns})</div>
+        <div class="grit-indicator${f.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${f.gritTurns})</div>
       </div></div>`}
   const logH=S.log.map(e=>{let c='log-entry';
     if(e.includes('★')||e.includes('⏰'))c+=' finish';
@@ -1473,8 +1484,8 @@ function nextTurn(){
   // Tick grit buffs
   tickGrit(L,'left');tickGrit(R,'right');
   // Update grit display
-  const giL=document.getElementById('grit-left');if(giL){giL.textContent=`⚡ GRIT (${L.gritTurns})`;if(L.gritTurns<=0)giL.classList.remove('active')}
-  const giR=document.getElementById('grit-right');if(giR){giR.textContent=`⚡ GRIT (${R.gritTurns})`;if(R.gritTurns<=0)giR.classList.remove('active')}
+  const giL=document.getElementById('grit-left');if(giL){giL.textContent=`⚡ 闘志 (${L.gritTurns})`;if(L.gritTurns<=0)giL.classList.remove('active')}
+  const giR=document.getElementById('grit-right');if(giR){giR.textContent=`⚡ 闘志 (${R.gritTurns})`;if(R.gritTurns<=0)giR.classList.remove('active')}
 
   // Attacker selection (v3.5 formula preserved + MN influence)
   let lCh=50+(S.mom*0.3)+((eff(L.sp)-eff(R.sp))*0.15);
@@ -1527,7 +1538,11 @@ function nextTurn(){
     setTimeout(()=>{
       const mv2=document.getElementById('moveV');
       if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-      sfx.missSE();
+      sfx.missWhiff();
+      // MISS! flash + text
+      const mf=document.createElement('div');mf.className='miss-flash';document.body.appendChild(mf);setTimeout(()=>mf.remove(),400);
+      const mt=document.createElement('div');mt.className='miss-text';mt.textContent='MISS!';document.body.appendChild(mt);
+      void mt.offsetWidth;mt.classList.add('show');setTimeout(()=>mt.remove(),900);
       const box=document.getElementById('narBox');
       if(box){box.innerHTML=`<div class="nar-line nar-miss show">${tpl(pk(CMT.miss),v)}</div>`}
       if(ap)ap.classList.remove('flash-atk');
