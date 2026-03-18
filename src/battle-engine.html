@@ -353,7 +353,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .fighter-panel.counter-flash{animation:counterFlash 0.3s ease-out}
 @keyframes counterFlash{0%{filter:brightness(1);transform:scale(1)}30%{filter:brightness(2.5);transform:scale(1.05)}100%{filter:brightness(1);transform:scale(1)}}
 /* ═══ MATCH CARD ═══ */
-.match-card{position:fixed;inset:0;z-index:80;overflow:hidden;transition:opacity 0.8s}
+.match-card{position:fixed;inset:0;z-index:80;overflow:hidden;transition:opacity 0.8s;pointer-events:none;display:none}
 .match-card.hidden{opacity:0;pointer-events:none}
 .venue-bg{position:absolute;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 60%,rgba(30,20,50,0.3) 0%,rgba(8,8,13,0.95) 100%),radial-gradient(ellipse 60% 40% at 50% 70%,rgba(212,168,67,0.04) 0%,transparent 70%),linear-gradient(180deg,#0a0812 0%,#151020 40%,#0d0a18 100%);overflow:hidden}
 .venue-bg::before{content:'';position:absolute;top:-10%;left:30%;width:40%;height:50%;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,0.06) 0%,transparent 70%);pointer-events:none}
@@ -2430,6 +2430,7 @@ function showMatchCard(cb){
   const mi=matchData&&matchData.matchInfo;
   const mc=document.getElementById('matchCard');
   if(!mc||!mi){if(cb)cb();return;}
+  mc.style.display='block';mc.style.pointerEvents='auto';
   // h2h records
   const h2h=mi.h2h||null;
   let recordHtml='';
