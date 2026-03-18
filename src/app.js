@@ -3055,6 +3055,16 @@ const App = {
     if (newCard[slotIndex].isTitle && (!newCard[slotIndex].left || !newCard[slotIndex].right)) {
       newCard[slotIndex].isTitle = false;
     }
+    // タイトルスロットにチャンピオンがいなくなった場合はisTitleをクリア
+    // （スワップ等でチャンピオンが移動した後にゴーストisTitleが残るバグを防ぐ）
+    const champIdForTitleCheck = G.titles?.world?.championId;
+    if (champIdForTitleCheck) {
+      for (let i = 0; i < newCard.length; i++) {
+        if (newCard[i].isTitle && newCard[i].left !== champIdForTitleCheck && newCard[i].right !== champIdForTitleCheck) {
+          newCard[i] = { ...newCard[i], isTitle: false };
+        }
+      }
+    }
     G = { ...G, showCard: newCard };
     renderShowPrep();
   },
@@ -3068,11 +3078,10 @@ const App = {
   // Toggle title match
   toggleTitleMatch(slotIndex) {
     const newVal = !G.showCard[slotIndex].isTitle;
-    // 空位時は王者決定戦を1枠に制限（ONにしたスロット以外はOFF）
-    const isVacant = G.titleEstablished && !G.titles?.world?.championId;
+    // ONにするときは必ず他スロットのisTitleをクリア（チャンピオン在籍/空位どちらも）
     G = { ...G, showCard: G.showCard.map((slot, i) => {
       if (i === slotIndex) return { ...slot, isTitle: newVal };
-      if (isVacant && newVal) return { ...slot, isTitle: false };
+      if (newVal) return { ...slot, isTitle: false };
       return slot;
     }) };
     renderShowPrep();
