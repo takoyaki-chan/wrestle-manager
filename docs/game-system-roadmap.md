@@ -77,41 +77,41 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 | システム | 実装日 | 設計書 |
 |---------|--------|--------|
-| 試合画面UI刷新 Phase 0〜7 | 03-18 | `specs/battle-ui-spec-v1.0.md` |
-| 契約交渉v2.0（trust×ギャップ2軸） | 03-16 | `specs/contract-negotiation-event-spec-v2.0.md` |
-| Glimpse P1〜P6 | 03-14 | `specs/glimpse-popup-overhaul-spec-v1.2.md` |
+| 試合画面UI刷新 Phase 0〜7 | 03-18 | `specs/archive/battle-ui-spec-v1.0.md` |
+| 契約交渉v2.0（trust×ギャップ2軸） | 03-16 | `specs/archive/contract-negotiation-event-spec-v2.0.md` |
+| Glimpse P1〜P6 | 03-14 | `specs/archive/glimpse-popup-overhaul-spec-v1.2.md` |
 | Bond/Rivalryイベント設計 Phase A-E2 | 03-13 | `specs/archive/relationship-event-design-spec-v1.0.md` |
 | S級エース強化 & NPC団体チャンピオン | 03-13 | `specs/archive/s-rank-ace-rebalance-spec-v1.0.md` |
-| 成長システムリデザイン v2.0 | 03-10 | `specs/growth-system-redesign-v2.0.md` |
+| 成長システムリデザイン v2.0 | 03-10 | `specs/archive/growth-system-redesign-v2.0.md` |
 | h2hデータ蓄積・orgTimeline・感情テキスト | 03-10 | — |
-| Trust総合リバランス T1-T3 | 03-10 | `specs/trust-redesign-v2.1.md` |
+| Trust総合リバランス T1-T3 | 03-10 | `specs/archive/trust-redesign-v2.1.md` |
 | スナップショット通知 | 03-09 | — |
 | 相関図リニューアル Phase 6v2 + UX改善 | 03-09 | `specs/archive/relmap-redesign-spec-v1.0.md` |
-| 施設システム廃止 | 03-09 | `docs/coach-lockerroom-redesign-v1.0.md` §4 |
-| Trust/Bond/Rivalry包括リバランス Phase 2-5 | 03-08 | `specs/bond-rivalry-balance-spec-v2.0.md` |
-| 人間関係データ基盤 Phase 1〜5 + ライバル称号統合 | 03-07 | `specs/relationship-system-spec-v0.2.md` |
+| 施設システム廃止 | 03-09 | `docs/archive/coach-lockerroom-redesign-v1.0.md` §4 |
+| Trust/Bond/Rivalry包括リバランス Phase 2-5 | 03-08 | `specs/archive/bond-rivalry-balance-spec-v2.0.md` |
+| 人間関係データ基盤 Phase 1〜5 + ライバル称号統合 | 03-07 | `specs/archive/relationship-system-spec-v0.2.md` |
 | ライフサイクルリデザイン Phase 4 | 03-07 | — |
 | NPC記録データ完全統一 v1.0 | 03-06 | `specs/archive/npc-record-unification-spec-v1.0.md` |
-| 信頼度リデザイン v2.1 | 03-06 | `specs/trust-redesign-v2.1.md` |
+| 信頼度リデザイン v2.1 | 03-06 | `specs/archive/trust-redesign-v2.1.md` |
 | AI統一成長モデル v1.0 | 03-06 | `specs/archive/ai-unified-growth-spec-v1.0.md` |
 | プロモ改修 v1.0 | 03-06 | `specs/archive/promo-redesign-spec-v1.0.md` |
-| 契約更新交渉イベント + 性格属性追加 | 03-05 | `specs/contract-negotiation-event-spec-v2.0.md` |
+| 契約更新交渉イベント + 性格属性追加 | 03-05 | `specs/archive/contract-negotiation-event-spec-v2.0.md` |
 | セリフ personality×archetype 構造化 | 03-05 | — |
 | 個別特性リバランス v1.0 + 反骨心 | 03-05 | — |
 | コーチスタイル統一 + マッチ演出 | 03-05 | — |
 | 成長バランスリバランス v2 | 03-05 | — |
 | デバッグ検証システム（auto-sim） | 03-05 | — |
-| PPV GRAND FINAL Step 1-6 | 03-04 | `specs/ppv-grand-final-spec-v2.0.md` |
+| PPV GRAND FINAL Step 1-6 | 03-04 | `specs/archive/ppv-grand-final-spec-v2.0.md` |
 | フィニッシャー設計 + CLAUDE.md策定 | 03-04 | `specs/finisher-system-spec-v1.0.md` |
-| 因縁決着システム + MQボーナス半減 | 03-03 | `specs/rivalry-resolution-spec.md` |
-| MQスコア減点制 v2.0 | 03-03 | `specs/mq-deduction-redesign-v2.0.md` |
+| 因縁決着システム + MQボーナス半減 | 03-03 | `specs/archive/rivalry-resolution-spec.md` |
+| MQスコア減点制 v2.0 | 03-03 | `specs/archive/mq-deduction-redesign-v2.0.md` |
 | ランキング計算刷新 + ロスター枠制限 | 03-03 | — |
 | ビッグマッチエンジン Tier 2 | 03-08 | — |
-| コーチ+ロッカールーム Phase A〜E | 03-01 | `docs/coach-lockerroom-redesign-v1.0.md` |
+| コーチ+ロッカールーム Phase A〜E | 03-01 | `docs/archive/coach-lockerroom-redesign-v1.0.md` |
 | L1 会場システム全面再設計 | 03-02 | — |
 | レンタルシステム全面リニューアル | 03-02 | — |
-| v2.0 イベントシステム Phase 1-7 | 02-28 | `specs/event-system-spec-v2.md` |
-| v2.1 エンディング/ゲームオーバー/BGM | 03-02 | `specs/ending-gameover-spec-v1.0.md` |
+| v2.0 イベントシステム Phase 1-7 | 02-28 | `specs/archive/event-system-spec-v2.md` |
+| v2.1 エンディング/ゲームオーバー/BGM | 03-02 | `specs/archive/ending-gameover-spec-v1.0.md` |
 | データベースタブ + 選手ポップアップ刷新 | 03-02 | — |
 
 ---
@@ -153,60 +153,32 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 | ロードマップ（本ファイル） | game-system-roadmap.md |
 | ゲームの魂・開発ルール | CLAUDE.md（リポジトリルート） |
 | 設計決定ログ | design-decisions.md |
-| コーチ＋ロッカールーム統合リデザイン | coach-lockerroom-redesign-v1.0.md |
 | マスタースペック（現行仕様） | master-spec.md |
 | 世界観設定 | world-setting.md |
 
-### specs/（現行仕様書）
+### specs/（現行リファレンス仕様書）
 
 | ドキュメント | ファイル |
 |---|---|
 | バトルエンジン | battle-engine-spec-v4.1b.md |
-| 試合画面UI刷新 v1.0 | battle-ui-spec-v1.0.md |
-| Bond/Rivalryバランス v2.0 | bond-rivalry-balance-spec-v2.0.md |
 | キャラクターデータ（98名） | character-data-spec-v1.4.md |
-| 契約更新交渉 v2.0 | contract-negotiation-event-spec-v2.0.md |
-| 契約OVR給与 | contract-ovr-salary-spec-v1.0.md |
-| エンディング/ゲームオーバー | ending-gameover-spec-v1.0.md |
-| イベントシステム v2 | event-system-spec-v2.md |
-| イベントトリガー監査 | event-trigger-audit-v0.1.md |
 | フィニッシャーシステム（**未実装**） | finisher-system-spec-v1.0.md |
-| Glimpseシステム v1.2 | glimpse-popup-overhaul-spec-v1.2.md |
-| 成長イベント | growth-event-spec-v1.0.md |
-| 成長システムリデザイン v2.0 | growth-system-redesign-v2.0.md |
-| MQスコア減点制 v2.0 | mq-deduction-redesign-v2.0.md |
-| PPV GRAND FINAL v2.0 | ppv-grand-final-spec-v2.0.md |
-| 人間関係システム v0.2 | relationship-system-spec-v0.2.md |
-| 引退勧告 v1.1 | retirement-advisory-spec-v1_1.md |
 | ライバル団体AI | rival-org-spec-v1.0.md |
-| 因縁決着 | rivalry-resolution-spec.md |
-| セーブデータ転送 | save-data-transfer-spec-v1.0.md |
-| スケジュールリデザイン | schedule-redesign-spec-v1.0.md |
 | スカウト | scout-system-spec-v1.0.md |
 | タイトル/ベルト | title-system-spec-v1.0.md |
-| Trust リデザイン v2.1 | trust-redesign-v2.1.md |
-| バランス調整 v1.9 | balance-adjustment-spec-v1.9.md |
 | 週間ゲームループ | weekly-gameloop-spec-v1_0.md |
 | 技テーブル（160技） | 技テーブル_全160技_v3_5.md |
 
-### prototype/（HTMLプロトタイプ・モックアップ）
+### archive/（過去資料）
 
-全12ファイル。試合画面/対戦カード/フィニッシャー/タブレイアウト/ランキング/相関図等のUI検証用。
-
-### docs/archive/（旧版・完了済み）
-
-| ファイル | 内容 |
+| ディレクトリ | 内容 |
 |---|---|
-| session-history.md | 全セッション（1〜63）の開発記録 |
-| completed-tasks.md | v1.0〜v2.0の完了済みタスク・マイグレーション一覧 |
-| battle-ui-implementation-guide.md | 試合画面UI刷新 実装指示書（実装完了） |
-| battle-ui-implementation-plan.md | 試合画面UI刷新 実装計画（実装完了） |
-| battle-ui-next-agenda.md | 試合画面UI刷新 未決定事項（実装完了） |
-| その他設計書・分析レポート | 14ファイル |
-
-### specs/archive/（完了済み実装仕様・旧版）
-
-実装完了済みの仕様書・旧バージョン仕様書 61ファイル。
+| docs/archive/ | セッション履歴・完了タスク・旧設計書・分析レポート |
+| specs/archive/ | 実装完了済み仕様書・旧バージョン（80+ファイル） |
+| archive/prototype/ | HTMLプロトタイプ・UIモックアップ（12ファイル） |
+| archive/scripts/ | セリフ変換スクリプト群 |
+| archive/exports/ | Notion/セリフエクスポートデータ |
+| archive/tasks/ | 旧タスクメモ |
 
 ---
 
