@@ -172,7 +172,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .phase-pill.flash{background:rgba(212,168,67,0.2);box-shadow:0 0 15px rgba(212,168,67,0.3)}
 .phase-pill.bigmatch{border-color:rgba(255,215,0,0.5);color:#ffd700;text-shadow:0 0 6px rgba(255,215,0,0.3)}
 .phase-pill.bigmatch.flash{background:rgba(255,215,0,0.25);box-shadow:0 0 25px rgba(255,215,0,0.4),0 0 50px rgba(255,215,0,0.15)}
-.narration-box{min-height:56px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:3px;text-align:center}
+.narration-box{min-height:72px;padding:14px 16px;background:rgba(0,0,0,0.3);border-radius:3px;text-align:center}
 .nar-line{opacity:0;transform:translateY(5px);transition:all .3s;font-size:16px;line-height:1.5;margin-bottom:4px}
 .nar-line.show{opacity:1;transform:translateY(0)}
 .nar-line.nar-main{font-weight:700;font-size:16px}
@@ -182,20 +182,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .nar-line.nar-counter{color:#5dd9ca;font-weight:700;font-size:16px}
 .nar-line.nar-miss{color:rgba(255,255,255,0.4);font-size:14px}
 .nar-empty{color:var(--text-dim);font-size:12px;text-align:center;padding:8px 0}
-.move-box{text-align:center;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:3px}
+.move-box{text-align:center;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:3px;border:1px solid rgba(212,168,67,0.08)}
 .move-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;
-  color:var(--text-dim);margin-bottom:1px}
+  color:var(--text-dim);margin-bottom:2px}
 .move-value{font-family:'Noto Sans JP',sans-serif;font-size:18px;font-weight:900;min-height:22px;
-  transition:all .2s}
+  transition:all .2s;color:var(--gold-light)}
 @keyframes movePop{0%{transform:scale(1.2);opacity:0}100%{transform:scale(1);opacity:1}}
 .move-pop{animation:movePop .3s ease-out}
-.momentum-section{text-align:center}
-.momentum-header{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--text-dim);margin-bottom:3px}
-.momentum-bar{display:flex;height:8px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden}
-.m-left{background:linear-gradient(90deg,rgba(74,143,212,0.4),rgba(74,143,212,0.8));transition:width .3s}
-.m-right{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.4));transition:width .3s}
-.momentum-names{display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);margin-top:2px}
+/* momentum section removed — consolidated into HUD */
 .log-section{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .log-header{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;
   text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;text-align:center}
@@ -1360,10 +1354,6 @@ function renderMatch(){
       <div class="narration-box" id="narBox"><div class="nar-empty">試合開始 — NEXT TURNを押してください</div></div>
       <div class="move-box"><div class="move-label">Current Move</div>
         <div class="move-value" id="moveV">---</div></div>
-      <div class="momentum-section"><div class="momentum-header">Momentum</div>
-        <div class="momentum-bar"><div class="m-left" id="mL" style="width:${mPct}%"></div>
-          <div class="m-right" id="mR" style="width:${100-mPct}%"></div></div>
-        <div class="momentum-names"><span>${L.name}</span><span>${R.name}</span></div></div>
       <div class="log-section"><div class="log-header">Battle Log</div>
         <div class="log-box" id="logBox">${logH}</div></div>
     </div>${fHTML(R,'right')}</div>
@@ -1782,8 +1772,6 @@ function updHP(side,f){
 }
 function updMom(){
   const mPct=clamp(50+S.mom*0.5,5,95);
-  const mL=document.getElementById('mL');if(mL)mL.style.width=mPct+'%';
-  const mR=document.getElementById('mR');if(mR)mR.style.width=(100-mPct)+'%';
   const hL=document.getElementById('hudMomL');if(hL)hL.style.width=mPct+'%';
   const hR=document.getElementById('hudMomR');if(hR)hR.style.width=(100-mPct)+'%';
 }

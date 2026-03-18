@@ -2546,7 +2546,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
 function closeFighterPopup() {
   window._fpTab = 0; // Reset to first tab
-  document.getElementById('fighterPopupOverlay').classList.remove('active');
+  const ov = document.getElementById('fighterPopupOverlay');
+  ov.classList.remove('active');
+  ov.style.zIndex = ''; // Reset z-index (battle overlay override)
   _drainPopupQueue();
 }
 
@@ -2804,6 +2806,9 @@ window.addEventListener('message', function(e) {
     App.receiveBattleResult(e.data);
   }
   if (e.data && e.data.type === 'SHOW_POPUP' && e.data.id) {
+    // Raise popup z-index above battle overlay (z-index:9999)
+    const popOv = document.querySelector('.fighter-popup-overlay');
+    if (popOv) popOv.style.zIndex = '10001';
     showFighterPopup(e.data.id);
   }
 });
