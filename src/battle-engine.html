@@ -320,20 +320,72 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   70%{opacity:1}100%{transform:translate(-50%,-50%) scale(0.9);opacity:0}}
 .finish-count-text.show{animation:countPop 0.8s ease-out forwards}
 /* ═══ RIVALRY CUTIN ═══ */
-.cutin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;pointer-events:none;
-  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
-.cutin-overlay.show{opacity:1}
-.cutin-box{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(8,8,13,0.95),rgba(14,14,21,0.92));
-  border:2px solid var(--gold-dim);border-radius:8px;padding:12px 20px;
-  box-shadow:0 0 30px rgba(212,168,67,0.3),0 0 60px rgba(0,0,0,0.6);
-  transform:translateX(-40px);animation:cutinSlide .4s ease-out forwards;max-width:85%}
-.cutin-box.right{flex-direction:row-reverse;transform:translateX(40px)}
-.cutin-portrait{width:56px;height:56px;border-radius:50%;border:2px solid var(--gold);
-  object-fit:cover;flex-shrink:0}
-.cutin-text{font-size:15px;line-height:1.5;color:var(--text-main);font-weight:700;
-  text-shadow:0 0 8px rgba(212,168,67,0.3)}
-.cutin-name{font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:2px}
-@keyframes cutinSlide{to{transform:translateX(0)}}
+.cutin-overlay{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s}
+.cutin-overlay.show{opacity:1;pointer-events:auto;cursor:pointer}
+.cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-dim);border-radius:6px;padding:16px 28px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:680px;transform:translateX(-50px);animation:cutinSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
+.cutin-box.right{flex-direction:row-reverse;transform:translateX(50px);animation:cutinSlideInR 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
+@keyframes cutinSlideIn{from{transform:translateX(-50px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes cutinSlideInR{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
+.cutin-portrait{width:100px;height:150px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
+.cutin-info{flex:1;min-width:0}
+.cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+.cutin-text{font-size:20px;line-height:1.5;color:var(--text-main);font-weight:900;text-shadow:0 0 12px rgba(212,168,67,0.2)}
+.cutin-dismiss{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-top:6px}
+.cutin-box.damage-serif{border-color:rgba(196,30,58,0.5);box-shadow:0 0 40px rgba(196,30,58,0.2),0 0 80px rgba(0,0,0,0.7)}
+.cutin-box.damage-serif .cutin-portrait{border-color:rgba(196,30,58,0.6);box-shadow:0 0 20px rgba(196,30,58,0.3);filter:brightness(0.9) contrast(1.1)}
+.cutin-box.damage-serif .cutin-name{color:#e85d75}
+.cutin-box.damage-serif .cutin-text{color:#f0a0b0;text-shadow:0 0 12px rgba(196,30,58,0.3)}
+.cutin-box.damage-voice{border-color:rgba(196,30,58,0.7);background:linear-gradient(135deg,rgba(30,8,13,0.96),rgba(21,10,14,0.94));box-shadow:0 0 50px rgba(196,30,58,0.3),0 0 80px rgba(0,0,0,0.8)}
+.cutin-box.damage-voice .cutin-portrait{border-color:rgba(196,30,58,0.8);box-shadow:0 0 25px rgba(196,30,58,0.4);filter:brightness(0.8) contrast(1.15) saturate(0.8)}
+.cutin-box.damage-voice .cutin-name{color:#e85d75}
+.cutin-box.damage-voice .cutin-text{color:#ff8a9e;font-size:28px;text-shadow:0 0 16px rgba(196,30,58,0.5)}
+/* ═══ BIGMOVE / COUNTER ═══ */
+.bigmove-name{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:55;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold-light);letter-spacing:6px;text-shadow:0 0 40px rgba(212,168,67,0.5),0 4px 20px rgba(0,0,0,0.8);opacity:0;transition:all 0.15s}
+.bigmove-name.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.bigmove-name.fade{opacity:0;transform:translate(-50%,-50%) scale(1.2);transition:all 0.4s}
+.bigmove-name.blown-right{opacity:0;transform:translate(120%,-50%) scale(0.7) rotate(8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
+.bigmove-name.blown-left{opacity:0;transform:translate(-220%,-50%) scale(0.7) rotate(-8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
+.counter-big{position:fixed;top:50%;left:50%;z-index:57;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:80px;color:#5dd9ca;letter-spacing:8px;text-shadow:0 0 40px rgba(42,157,143,0.6),0 4px 16px rgba(0,0,0,0.9);opacity:0;transition:none}
+.counter-big.start-left{transform:translate(-250%,-50%)}
+.counter-big.start-right{transform:translate(150%,-50%)}
+.counter-big.slide-in{opacity:1;transform:translate(-50%,-50%);transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
+.counter-big.fade-out{opacity:0;transform:translate(-50%,-60%) scale(1.1);transition:all 0.4s}
+.fighter-panel.counter-flash{animation:counterFlash 0.3s ease-out}
+@keyframes counterFlash{0%{filter:brightness(1);transform:scale(1)}30%{filter:brightness(2.5);transform:scale(1.05)}100%{filter:brightness(1);transform:scale(1)}}
+/* ═══ MATCH CARD ═══ */
+.match-card{position:fixed;inset:0;z-index:80;overflow:hidden;transition:opacity 0.8s}
+.match-card.hidden{opacity:0;pointer-events:none}
+.venue-bg{position:absolute;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 60%,rgba(30,20,50,0.3) 0%,rgba(8,8,13,0.95) 100%),radial-gradient(ellipse 60% 40% at 50% 70%,rgba(212,168,67,0.04) 0%,transparent 70%),linear-gradient(180deg,#0a0812 0%,#151020 40%,#0d0a18 100%);overflow:hidden}
+.venue-bg::before{content:'';position:absolute;top:-10%;left:30%;width:40%;height:50%;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,0.06) 0%,transparent 70%);pointer-events:none}
+.venue-bg .center-darken{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 35% 60% at 50% 50%,rgba(8,8,13,0.7) 0%,transparent 100%);pointer-events:none}
+.venue-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:15%;background:linear-gradient(0deg,rgba(8,8,13,0.7) 0%,transparent 100%);pointer-events:none}
+.ring-floor{position:absolute;bottom:5%;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,0.15) 20%,rgba(212,168,67,0.25) 50%,rgba(212,168,67,0.15) 80%,transparent 100%)}
+.card-fighters{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:space-between;z-index:2;pointer-events:none}
+.card-fighter{width:50%;position:relative;overflow:hidden}
+.card-fighter .silhouette{width:100%;height:100%;position:relative;overflow:hidden;background:none}
+.card-fighter .silhouette img{width:100%;height:100%;object-fit:cover;object-position:center 95%;filter:brightness(0.82) contrast(1.1)}
+.card-fighter.left .silhouette{transform:scaleX(-1)}
+.card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;pointer-events:none}
+.card-event{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:5px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:2px;text-shadow:0 1px 8px rgba(0,0,0,0.8)}
+.card-match-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
+.card-vs-block{text-align:center;margin-bottom:6px}
+.card-name{font-weight:900;font-size:28px;letter-spacing:2px;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,0.9)}
+.card-vs{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--gold);line-height:1;margin:6px 0;text-shadow:0 0 30px rgba(212,168,67,0.2),0 2px 12px rgba(0,0,0,0.9)}
+.card-record{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--text-sub);margin-bottom:4px;text-align:center}
+.card-badges{display:flex;gap:8px;margin-bottom:4px}
+.card-badge{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px}
+.card-badge.rival{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
+.card-badge.title{background:rgba(212,168,67,0.12);color:var(--gold-light);border:1px solid rgba(212,168,67,0.3)}
+.card-match-type{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:4px;color:var(--gold-light);text-transform:uppercase;padding:5px 18px;border:1px solid rgba(212,168,67,0.2);border-radius:2px;background:rgba(8,8,13,0.5);margin-bottom:4px}
+.scanlines{position:absolute;inset:0;pointer-events:none;z-index:8;background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
+.card-corner-frame{position:absolute;inset:12px;pointer-events:none;z-index:8}
+.card-corner-frame::before{content:'';position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid rgba(212,168,67,0.15);border-left:2px solid rgba(212,168,67,0.15)}
+.card-corner-frame::after{content:'';position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid rgba(212,168,67,0.15);border-right:2px solid rgba(212,168,67,0.15)}
+.gong-flash{position:fixed;inset:0;background:rgba(255,255,255,0.15);opacity:0;pointer-events:none;z-index:85;transition:opacity 0.1s}
+.gong-flash.show{opacity:1}
+.gong-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.5);z-index:90;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--gold-light);letter-spacing:8px;text-shadow:0 0 40px rgba(212,168,67,0.4);opacity:0;transition:all 0.3s}
+.gong-text.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.gong-text.fade{opacity:0;transform:translate(-50%,-50%) scale(1.3)}
 
 /* ═══ MISS/COUNTER EMPHASIS ═══ */
 .nar-line.nar-miss{color:rgba(255,255,255,0.6);font-size:16px;font-weight:900}
@@ -399,7 +451,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   <div id="screenContainer"></div>
   <div class="result-overlay" id="resultOverlay"></div>
   <div class="finish-click-overlay" id="finishOverlay"></div>
-  <div class="cutin-overlay" id="cutinOverlay"></div>
+  <div class="cutin-overlay" id="cutinOverlay" onclick="dismissCutin()"></div>
+  <div class="bigmove-name" id="bigmoveName"></div>
+  <div class="counter-big" id="counterBig">COUNTER!</div>
+  <div class="match-card" id="matchCard"></div>
+  <div class="gong-flash" id="gongFlash"></div>
+  <div class="gong-text" id="gongText">FIGHT!</div>
   <div class="finish-click-btn" id="finishBtn"></div>
   <div class="bp-overlay" id="bpOverlay" onclick="if(event.target===this)closeBattlePopup()"></div>
   <div class="flash-overlay" id="flashOv"></div>
@@ -623,30 +680,219 @@ const CUTIN_LINES = {
     earnest: ["（ここまで来た…あとは、出し切るだけ）","（全部…全部出し切る）"],
     emotional: ["（胸が苦しい…でも、この痛みが、生きてる証だから）","（お願い、身体…もう少しだけ動いて）"],
     normal: ["（…ここからだ）","（負けない…！）"]
+  },
+  // ビッグムーブ発動時（personality × archetype 2D）
+  bigmove: {
+    normal: {
+      normal:     ["いくよ…これで決める！","ここで…終わりだ！","全部出し切る…！"],
+      polite:     ["いきます…これで、決めさせてもらいます！","ここで…終わらせます！","全力で…行きます！"],
+      seductive:  ["ふふ…もう逃がさないわよ？","これで終わりよ…覚悟しなさい","さあ…これでフィナーレよ"],
+      delinquent: ["おらぁっ！ これで終わりだ！","ぶっ飛ばしてやる！","オマエの負けだ…くらえ！"],
+      ojousama:   ["これでお仕舞い…覚悟なさい","…最後の一撃！","これで終幕よ…！"],
+      cool:       ["…決める","…これで、終わり","…いく"]
+    },
+    earnest: {
+      normal:     ["絶対に…ここで決める！","全力で…いきます！","負けたくない…だから…！"],
+      polite:     ["お願いします…この一撃に全てを…！","ここで…決めさせてください！","全身全霊で…行きますっ！"],
+      seductive:  ["ふふ…本気で抱きしめてあげる","逃さないわ…最後まで","あなたの全部…もらうわよ"],
+      delinquent: ["根性見せてやる…いくぞぉ！","ここで決めなきゃ意味ねえ！","全部ぶつけてやる…！"],
+      ojousama:   ["この一撃に…全てを懸けますわ！","真剣勝負ですわ…参りますわよ！","覚悟はよろしくて？ いきますわ！"],
+      cool:       ["…全部、出す","…ここで決める。必ず","…負けない。絶対に"]
+    },
+    bold: {
+      normal:     ["さあ…終わらせてやるよ！","見せてやる…わたしの全力！","覚悟しな…最高の一発だ！"],
+      polite:     ["さあ…決めさせていただきます！","見ていてください…最高の一撃を！","覚悟してくださいね…いきますよ！"],
+      seductive:  ["うふ…壊れちゃっても知らないわよ？","最後よ…たっぷり味わいなさい","さあ…身体で教えてあげる"],
+      delinquent: ["ぶちかます！","もう終わりだ…沈めてやる！","これで最後だ…覚悟しろよ！"],
+      ojousama:   ["仕上げですわ…最高の一撃を！","さあ…幕引きにしてさしあげますわ！","覚悟なさいまし…！"],
+      cool:       ["…終わりだ","…沈め","…これが、あたしの全部"]
+    },
+    easygoing: {
+      normal:     ["よーし、ここで決めちゃおう！","いっくよー！ 最後の大技！","えへへ…全力いくよー！"],
+      polite:     ["えへへ…ここで決めちゃいますね！","いきますよー！ 最後です！","全力でいかせてもらいます！"],
+      seductive:  ["ふふ…そろそろ大詰めよ♪","最後のプレゼント…受け取って？","ねえ…もう諦めちゃいなさい♪"],
+      delinquent: ["それじゃ！ トドメってやつだ！","っへ！ これでシメだ！","悪いけど…終わりだよっ！"],
+      ojousama:   ["さーて！ 仕上げですわ〜！","うふふ、締めにいきますわよ！","楽しかったですわ…でもここまでですわ！"],
+      cool:       ["…ん、いくよ","…そろそろ終わりかな","…決めちゃう"]
+    },
+    quiet: {
+      normal:     ["……いく","……これで","……終わりだ"],
+      polite:     ["……いきます","……これで、終わりです","……決めます"],
+      seductive:  ["……もう、逃げられないわよ","……最後よ","……終わりにしてあげる"],
+      delinquent: ["……沈め","……終わりだ","……いくぞ"],
+      ojousama:   ["……参りますわ","……終わりですわ","……覚悟なさい"],
+      cool:       ["……","…………いく","……終わる"]
+    },
+    shy: {
+      normal:     ["あ、あの…いきます…！","こ、ここで…決めます…！","が、頑張ります…！"],
+      polite:     ["す、すみません…全力でいきます…！","こ、ここで…決めさせてください…！","お、思いっきり…やります…！"],
+      seductive:  ["あの…もう…逃がさない、から…","ごめんね…でも…終わりにするね…","わ、私だって…本気なんだから…"],
+      delinquent: ["い、いくぞ…こ、この野郎…！","て、てめえ…覚悟しろ…！","ぶ、ぶっ飛ばしてやる…！"],
+      ojousama:   ["あ、あの…仕舞いにさせていただきますわ…！","し、失礼しますわ…全力で…！","お、お覚悟を…！"],
+      cool:       ["…い、いく","…こ、ここで","…が、頑張る…"]
+    },
+    emotional: {
+      normal:     ["うぅっ…絶対に…決めるんだ…！","泣かない…泣かないから…いくよ！","ここで…ここでっ…！"],
+      polite:     ["うぅ…お願いです…決めさせてください…！","ここで…ここで終わらせますっ…！","泣いてる場合じゃ…いきます…！"],
+      seductive:  ["もう…我慢できない…壊しちゃうわよ…！","あぁ…最後よ…感じなさい…！","キャハハッ！…終わらせるわよっ…！"],
+      delinquent: ["くそぉ…絶対ぶっ飛ばす…！","うぅっ…こんちくしょう…いくぞ！","泣いてねえ…泣いてねえよ…！"],
+      ojousama:   ["うぅ…ここで…ここで決めますわ…！","泣いてなど…いきますわよ…！","お覚悟を…っ…！"],
+      cool:       ["…っ…いく","…泣かない…決める","…っ…これで…終わり"]
+    }
   }
 };
 
-// カットイン表示関数
+// ═══ DAMAGE SERIF LINES（終盤大技被弾時・受け手のセリフ） ═══
+const DAMAGE_SERIF_LINES = {
+  normal: {
+    normal:     ["くっ…まだ…まだだ…！","効いた…けど…負けない…！","はぁ…はぁ…立てる…まだ…"],
+    polite:     ["くっ…まだ…大丈夫です…！","効きました…でも…まだです…！","はぁ…はぁ…立てます…まだ…"],
+    seductive:  ["っ…やるじゃない…","くっ…いい攻撃ね…でもまだよ","はぁ…少し本気になったわ…"],
+    delinquent: ["くそっ…足にくるぜ…！","てめえ…やるじゃねえか…","はぁ…はぁ…なめんなよ…"],
+    ojousama:   ["くっ…なかなかやるわね…","効いたわ…でもこの程度で…！","はぁ…はぁ…まだ立てますわ…"],
+    cool:       ["…っ…まだ","…効いた…けど","…はぁ…まだ…立てる"]
+  },
+  earnest: {
+    normal:     ["ぐっ…！ まだ…立てる…！","くぅ…っ！ 効いた…けど…！","はぁ…はぁ…負けるもんか…！"],
+    polite:     ["ぐっ…！ まだ…立てます…！","くぅ…っ！ でも…まだです…！","はぁ…はぁ…負けません…！"],
+    seductive:  ["んっ…痛い…けど…気持ちいいかも…","くっ…まだまだ…よ？","はぁ…身体が熱くなってきたわ…"],
+    delinquent: ["ぐっ…！ やるじゃねえか…！","くそ…効いたぜ…でもな…！","はぁ…はぁ…舐めんなよ…！"],
+    ojousama:   ["ぐっ…！ やりますわね…！","くぅ…っ！ でもまだですわ…！","はぁ…はぁ…ここからですわ…！"],
+    cool:       ["…っ…まだ、立てる","…効いた…でも","…はぁ…負けない"]
+  },
+  bold: {
+    normal:     ["はっ…やるじゃん…でもまだだよ！","この程度じゃ…倒れないよ！","あはは…痛い痛い…でもね！"],
+    polite:     ["はっ…効きますね…でもまだですよ！","この程度では…倒れませんよ！","痛い…ですけど…まだです！"],
+    seductive:  ["あら…乱暴ね…でも嫌いじゃないわ","くっ…いいわよ…もっと来なさい","はぁ…痛い…でもまだ足りないわ"],
+    delinquent: ["はっ…その程度かよ！","効くじゃねえか…でもまだだ！","痛てぇ…けどな…舐めんな！"],
+    ojousama:   ["おほほ…やりますわね！ でもまだですわ！","この程度では…倒れませんわよ！","痛い…ですけど…まだまだですわ！"],
+    cool:       ["…ふん…その程度","…まだ…足りない","…効くね…でも"]
+  },
+  easygoing: {
+    normal:     ["あたた…でもまだ大丈夫！","う〜ん…効いたかも…でもへーきへーき！","いたた…ちょっと休憩…なんてね！"],
+    polite:     ["あたた…でもまだ大丈夫ですよ！","う〜ん…効きましたけど…平気です！","いたた…でもまだいけます！"],
+    seductive:  ["あらら…やるじゃない♪ でもまだよ？","くふふ…やるわね…楽しいわ","んー…効いたかも…でもまだよ♪"],
+    delinquent: ["おっと…やるなぁ！ でもまだだ！","がはっ…効いた効いた…けどな！","いてて…でもこの程度でっ！"],
+    ojousama:   ["あらら…効きますわね〜！ でもまだですわ！","うふふ…やりますわね…でも平気ですわ！","いたた…でもまだまだですわよ〜！"],
+    cool:       ["…ん…効いた…けど平気","…あー…痛い。でもまだ","…大丈夫…まだいける"]
+  },
+  quiet: {
+    normal:     ["……まだ","……これくらい","……立てる"],
+    polite:     ["……まだ、です","……これくらいでは","……立てます"],
+    seductive:  ["……ふふ…まだよ","……その程度…？","……もっと…来なさい"],
+    delinquent: ["……なめんな","……その程度か","……まだだ"],
+    ojousama:   ["……まだですわ","……この程度では","……立てますわ"],
+    cool:       ["……この程度で！","……まだ","……………"]
+  },
+  shy: {
+    normal:     ["い、痛い…でも…まだ…","う、うぅ…でも…立てる…から…","ひっ…で、でも…負けたくない…"],
+    polite:     ["い、痛いです…でも…まだ…","う、うぅ…でも…立てます…","ひっ…で、でも…負けたくないです…"],
+    seductive:  ["あっ…痛い…でも…まだよ…","う、うぅん…負けない…から…","ひっ…で、でも…まだ立てるわ…"],
+    delinquent: ["い、痛え…でも…まだだ…","う、うるせえ…まだ立てる…","ひっ…な、なめんな…"],
+    ojousama:   ["い、痛い…ですけど…まだですわ…","う、うぅ…でも…立てますわ…","ひっ…で、でも…負けませんわ…"],
+    cool:       ["…っ…ま、まだ…","…い、痛い…けど…","…た、立てる…"]
+  },
+  emotional: {
+    normal:     ["痛いっ…！ でも…でもっ…！","うぅっ…こんなので…負けないっ…！","泣かない…泣かないよ…まだ…！"],
+    polite:     ["痛いです…っ！ でも…でもっ…！","うぅっ…こんなでは…負けませんっ…！","泣いてません…まだ…立てます…！"],
+    seductive:  ["あぁ…っ…痛い…でも…まだよ…！","くぅ…っ…こんなので…終わらないわ…！","涙…？ 違うわ…汗よ…！"],
+    delinquent: ["くそぉ…っ！ 効きやがった…！","うぅっ…てめえ…覚えてろ…！","泣いてねえっ…泣いてねえよ…！"],
+    ojousama:   ["痛い…ですわ…っ！ でもっ…！","うぅっ…こんなでは…負けませんわっ…！","泣いてなど…まだ立てますわ…！"],
+    cool:       ["…っ…痛い…でも…","…っ…泣かない…","…まだ…立てる…っ"]
+  }
+};
+
+// ═══ DAMAGE VOICE LINES（短い悲鳴・archetype別） ═══
+const DAMAGE_VOICE_LINES = {
+  normal:     ["くっ…！","あっ…！","うぅっ…！","はぁっ…！"],
+  polite:     ["きゃっ…！","あっ…！","うぅっ…！","ひっ…！"],
+  seductive:  ["あぁんっ…！","んっ…！","くぅ…っ！","はぁ…っ！"],
+  delinquent: ["ぐはっ…！","がっ…！","くそっ…！","うあっ…！"],
+  ojousama:   ["きゃあっ…！","あっ…！","うぅっ…！","ああっ…！"],
+  cool:       ["…っ！","……っ","…くっ","…っ…"]
+};
+
+// カットイン共通ヘルパー
+function _getCutinLines(lineType, personality, archetype) {
+  const section = CUTIN_LINES[lineType];
+  if (!section) return null;
+  const byPersonality = section[personality] || section['normal'];
+  if (!byPersonality) return null;
+  if (Array.isArray(byPersonality)) return byPersonality;
+  // bigmove: 2D lookup
+  return byPersonality[archetype] || byPersonality['normal'] || null;
+}
+
+function dismissCutin() {
+  const ov = document.getElementById('cutinOverlay');
+  if (!ov) return;
+  ov.classList.remove('show');
+  setTimeout(() => { ov.innerHTML = ''; }, 350);
+}
+
+// カットイン表示関数（upper画像使用、click-to-close）
 function showCutin(side, charData, lineType) {
   const mi = matchData && matchData.matchInfo;
   if (!mi) return;
-  const personality = side === 'left'
-    ? (mi.leftPersonality || 'normal')
-    : (mi.rightPersonality || 'normal');
-  const lines = CUTIN_LINES[lineType] && CUTIN_LINES[lineType][personality];
+  const personality = side === 'left' ? (mi.leftPersonality || 'normal') : (mi.rightPersonality || 'normal');
+  const archetype   = side === 'left' ? (mi.leftArchetype  || 'normal') : (mi.rightArchetype  || 'normal');
+  const lines = _getCutinLines(lineType, personality, archetype);
   if (!lines || !lines.length) return;
   const text = lines[Math.floor(Math.random() * lines.length)];
   const overlay = document.getElementById('cutinOverlay');
   if (!overlay) return;
-  const portraitUrl = charData.portraitUrl || '';
+  const portraitUrl = getUpperUrl(charData);
   const dirClass = side === 'right' ? ' right' : '';
   overlay.innerHTML = `<div class="cutin-box${dirClass}">
-    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="">` : ''}
-    <div><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div></div>
+    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
+    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
   </div>`;
   overlay.classList.add('show');
-  setTimeout(() => { overlay.classList.remove('show'); }, 2200);
-  setTimeout(() => { overlay.innerHTML = ''; }, 2600);
+  sfx.cutinSlide();
+  // no auto-dismiss: click-to-close only
+}
+
+// ダメージセリフカットイン（防御側・終盤大技被弾時）
+function showDamageSpeech(side, charData) {
+  const mi = matchData && matchData.matchInfo;
+  if (!mi) return;
+  const personality = side === 'left' ? (mi.leftPersonality || 'normal') : (mi.rightPersonality || 'normal');
+  const archetype   = side === 'left' ? (mi.leftArchetype  || 'normal') : (mi.rightArchetype  || 'normal');
+  const byP = DAMAGE_SERIF_LINES[personality] || DAMAGE_SERIF_LINES['normal'];
+  if (!byP) return;
+  const lines = byP[archetype] || byP['normal'];
+  if (!lines || !lines.length) return;
+  const text = lines[Math.floor(Math.random() * lines.length)];
+  const overlay = document.getElementById('cutinOverlay');
+  if (!overlay) return;
+  const portraitUrl = getUpperUrl(charData);
+  const dirClass = side === 'right' ? ' right' : '';
+  overlay.innerHTML = `<div class="cutin-box damage-serif${dirClass}">
+    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
+    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
+  </div>`;
+  overlay.classList.add('show');
+  sfx.cutinSlide();
+}
+
+// ダメージボイスカットイン（短い悲鳴、archetype別）
+function showDamageVoice(side, charData) {
+  const mi = matchData && matchData.matchInfo;
+  if (!mi) return;
+  const archetype = side === 'left' ? (mi.leftArchetype || 'normal') : (mi.rightArchetype || 'normal');
+  const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES['normal'];
+  if (!lines || !lines.length) return;
+  const text = lines[Math.floor(Math.random() * lines.length)];
+  const overlay = document.getElementById('cutinOverlay');
+  if (!overlay) return;
+  const portraitUrl = getUpperUrl(charData);
+  const dirClass = side === 'right' ? ' right' : '';
+  overlay.innerHTML = `<div class="cutin-box damage-voice${dirClass}">
+    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
+    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">${text}</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
+  </div>`;
+  overlay.classList.add('show');
+  sfx.dmgVoice();
 }
 
 // フェーズ切り替え時のカットイン判定
@@ -943,8 +1189,14 @@ const sfx={
   hitAerial(dr){const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
   hitGround(dr){const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
   hitRollup(dr){osc('triangle',2000,600,0.06,0.08*dr)},
-  // OLD: battle reactions (kept)
-  counterSE(){try{osc('sine',800,1600,0.15,0.1);mkNoiseHP(0.2,0.08,2000);setTimeout(()=>osc('sine',1200,600,0.1,0.06),100)}catch(e){}},
+  // NEW: cutin slide + damage voice
+  cutinSlide(){try{osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
+  dmgVoice(){try{osc('sine',200,80,0.2,0.06);mkNoiseLP(0.08,0.05,800)}catch(e){}},
+  // NEW: bigmove charge + impact
+  bigmoveCharge(){try{osc('sine',60,200,1.6,0.08);osc('sawtooth',60,180,1.6,0.03);setTimeout(()=>mkNoiseHP(0.3,0.04,3000),800);setTimeout(()=>osc('sine',150,400,0.3,0.06),1200)}catch(e){}},
+  bigmoveImpact(){try{osc('sine',100,25,0.4,0.25);mkNoise(0.15,0.25);mkNoiseLP(0.25,0.15,300);osc('triangle',60,20,0.3,0.12);setTimeout(()=>mkNoiseHP(0.05,0.08,5000),50)}catch(e){}},
+  // OLD: battle reactions (kept, counterSE replaced)
+  counterSE(){try{mkNoise(0.12,0.3);osc('sine',150,40,0.2,0.2);mkNoiseLP(0.15,0.2,500);osc('square',800,200,0.08,0.12);setTimeout(()=>{mkNoiseHP(0.08,0.15,3000);osc('sine',60,30,0.15,0.1)},60)}catch(e){}},
   missSE(){osc('sine',400,200,0.1,0.04)},
   kickout(){osc('square',200,800,0.1,0.1);mkNoise(0.15,0.08)},
   kickoutSE(){try{mkNoise(0.2,0.12);osc('sine',100,60,0.15,0.1);setTimeout(()=>mkNoiseHP(0.3,0.06,2000),100)}catch(e){}},
@@ -1409,6 +1661,7 @@ function startMatchFromData(left, right){
   S.halfTrig={l:false,r:false};S.qtrTrig={l:false,r:false};S.dangerTrig={l:false,r:false};
   S.awaitingFinishClick=false;S.pendingFinishResult=null;stopDrone();
   S.consecutiveHits={left:0,right:0};
+  S.bigmoveCount=0;
   S.cutinShown={opening:false,mid:false,end:false,climax:false,finish:false};
   S.screen='MATCH';renderMatchWithIntro();
 }
@@ -1573,6 +1826,70 @@ function nextTurn(){
 
   // === COUNTER ===
   if(isCounter){
+    const isBigmoveCounter = big && S.bigmoveCount < 3;
+    if(isBigmoveCounter){
+      // ビッグムーブ→カウンター演出
+      S.bigmoveCount++;
+      sfx.ready();
+      const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
+      const bn=document.getElementById('bigmoveName');
+      const cb=document.getElementById('counterBig');
+      const dp=document.getElementById(`panel-${ds}`);
+      // 0s: セリフカットイン + 溜め音
+      showCutin(as, atk, 'bigmove');
+      sfx.bigmoveCharge();
+      // 1.5s: セリフ消去
+      setTimeout(()=>dismissCutin(), 1500);
+      // 1.8s: 技名表示
+      setTimeout(()=>{
+        if(ap)ap.classList.remove('flash-atk');
+        const mv2=document.getElementById('moveV');
+        if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
+        if(bn){bn.textContent=mv.n;bn.className='bigmove-name show';}
+      },1800);
+      // 2.3s: COUNTER!スライドイン + 技名吹き飛ばし
+      setTimeout(()=>{
+        // 防御側の方向からスライドイン
+        const fromRight=(ds==='right');
+        if(bn)bn.className='bigmove-name '+(fromRight?'blown-left':'blown-right');
+        if(cb){cb.className='counter-big '+(fromRight?'start-right':'start-left');void cb.offsetWidth;cb.classList.add('slide-in');}
+        sfx.counterSE();
+        if(dp){dp.classList.add('counter-flash');}
+      },2300);
+      // 2.8s: パネルフラッシュ解除
+      setTimeout(()=>{if(dp)dp.classList.remove('counter-flash');},2800);
+      // 3.2s: COUNTER!フェードアウト + 反撃ダメージ適用
+      setTimeout(()=>{
+        if(cb){cb.classList.remove('slide-in');cb.classList.add('fade-out');}
+        const counterDmg=Math.max(ENG.dmgFloor,Math.round(mv.d*ENG.counterDmgMult));
+        atk.hp=Math.max(0,atk.hp-counterDmg);
+        updHP(as,atk);
+        shakePanel(as,false);
+        showDmgNum(as,counterDmg,false);
+        if(ap){ap.classList.remove('flash-atk');ap.classList.add('flash-hit');setTimeout(()=>ap.classList.remove('flash-hit'),150)}
+        const dir=as==='left'?-1:1;
+        S.mom=clamp(S.mom+(ENG.counterMomShift*dir),-100,100);updMom();
+        showSp(ds,'切り返し！','t-counter');
+        const box=document.getElementById('narBox');
+        if(box){box.innerHTML=`<div class="nar-line nar-main show">${atk.name}の${mv.n}！</div>
+          <div class="nar-line nar-counter show">${tpl(pk(CMT.counter),v)}</div>
+          <div class="nar-line nar-dmg show">${atk.name}に${counterDmg}ダメージ！</div>`}
+        let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → ビッグカウンター！ ${atk.name}に${counterDmg}dmg`;
+        updPanelState(as,atk);
+        if(atk.hp<=0){
+          const ft=determineFinishType(mv,def,atk);v.a=def.name;v.d=atk.name;v.w=def.name;
+          if(ft==='tko'){S.pendingFinishResult={type:'TKO',isKickout:false,def:atk,atk:def,moveName:'カウンター',defSide:as,atkSide:ds,log};S.awaitingFinishClick=true;setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}
+          log+=` ★ カウンターKO！`;S.log.unshift(log);S.log=S.log.slice(0,15);
+          doFinish(def,atk,ds,as,mv,log,{a:def.name,d:atk.name,m:'カウンター',w:def.name});return;
+        }
+        S.log.unshift(log);S.log=S.log.slice(0,15);S.turn++;
+        if(S.turn>_maxT){doTimeout();return}
+      },3200);
+      // 3.8s: クリーンアップ + 次ターン
+      setTimeout(()=>{if(bn)bn.className='bigmove-name';if(cb)cb.className='counter-big';endAnim();},3800);
+      return;
+    }
+    // 通常カウンター（ビッグムーブなし）
     sfx.ready();
     const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
     setTimeout(()=>{
@@ -1627,13 +1944,79 @@ function nextTurn(){
   // === NORMAL HIT ===
   const dmg=calcDamage(mv,atk,def,S.mom,as,ph);
   v.v=dmg;
+  const isBigmoveAnim = big && S.bigmoveCount < 3;
   const atkLine=big?tpl(pk(CMT.atk.big),v):tpl(pk(CMT.atk[ph.name]),v);
   const dLvl=dmg<=8?'light':dmg<=14?'medium':'heavy';
   const dmgLine=tpl(pk(CMT.dmg[dLvl]),v);
   const hpAfter=def.hp-dmg;
   if(hpAfter>0&&hpAfter/def.mhp<=0.25)tempo+=300;
 
-  // Step 1: Attacker flash
+  if(isBigmoveAnim){
+    // ビッグムーブ演出フロー
+    S.bigmoveCount++;
+    const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
+    const bn=document.getElementById('bigmoveName');
+    // 0s: セリフカットイン + 溜め音
+    showCutin(as, atk, 'bigmove');
+    sfx.bigmoveCharge();
+    // 1.5s: セリフ消去
+    setTimeout(()=>dismissCutin(), 1500);
+    // 1.8s: 技名表示 + ナレーション
+    setTimeout(()=>{
+      if(ap)ap.classList.remove('flash-atk');
+      const mv2=document.getElementById('moveV');
+      if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
+      if(bn){bn.textContent=mv.n;bn.className='bigmove-name show';}
+      const box=document.getElementById('narBox');
+      if(box){box.innerHTML=`<div class="nar-line nar-main show" id="nM">${atkLine}</div><div class="nar-line nar-dmg" id="nD"></div><div class="nar-line nar-react" id="nR"></div>`;}
+    },1800);
+    // 2.3s: ヒット + ダメージ演出
+    setTimeout(()=>{
+      if(bn)bn.className='bigmove-name fade';
+      sfx.bigmoveImpact();
+      def.hp=Math.max(0,def.hp-dmg);
+      const isCrit=dmg>=15;
+      shakePanel(ds,isCrit);showDmgNum(ds,dmg,true);flashScreen();
+      const img=document.getElementById(`img-${ds}`);
+      if(img&&img.style.display!=='none'){const flip=ds==='left';img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');void img.offsetWidth;img.classList.add(`shake-l${flip?'-flip':''}`);}
+      updHP(ds,def);updPanelState(ds,def);
+      // ダメージセリフカットイン（終盤・クライマックスのみ）
+      if(ph.name==='End'||ph.name==='Climax')showDamageSpeech(ds,def);
+      const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
+      showSp(ds,pk(CMT.defR[rl]),'t-def');
+      if(ap)ap.classList.remove('flash-atk');
+      const nD=document.getElementById('nD');if(nD){nD.textContent=dmgLine;nD.classList.add('show');}
+      S.prevMom=S.mom;const dir=as==='left'?1:-1;
+      S.mom=clamp(S.mom+(dmg*0.5)*dir,-100,100);updMom();
+      let sit='';const skk=ds==='left'?'l':'r';
+      if(hr<=0.25&&!S.qtrTrig[skk]){S.qtrTrig[skk]=true;sit=tpl(pk(CMT.sit.quarter),v)}
+      else if(hr<=0.5&&!S.halfTrig[skk]){S.halfTrig[skk]=true;sit=tpl(pk(CMT.sit.half),v)}
+      else if(Math.abs(S.mom)>=80)sit=tpl(pk(CMT.sit.dominant),v);
+      else if((S.prevMom>0&&S.mom<0)||(S.prevMom<0&&S.mom>0))sit=tpl(pk(CMT.sit.reversal),v);
+      if(sit){const nR=document.getElementById('nR');if(nR){nR.textContent=sit;nR.classList.add('show')}}
+      let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → ${def.name}に${dmg}dmg [BIG]`;
+      if(mv.c==='rollup'&&def.hp>0&&(def.hp/def.mhp)<=ENG.rollupHpThreshold){doRollup(def,atk,ds,as,mv,log,v);return;}
+      if(def.hp>0&&(def.hp/def.mhp)<=ENG.tkoHpThreshold&&S.consecutiveHits[as]>=ENG.tkoConsecutiveThreshold){
+        const tkoRate=ENG.tkoBaseRate+(def.mhp-def.hp)*0.1-(def.mn*0.15);
+        if(Math.random()*100<clamp(tkoRate,5,40)){log+=' → TKO判定へ！';S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};S.awaitingFinishClick=true;sfx.finImpact();setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}}
+      if(def.hp>0&&checkPinAttempt(mv,atk,def,dmg,S.mom,as,ph)){
+        const isSubmission=mv.c==='submission',finType=isSubmission?'ギブアップ':'ピン',successRate=calcPinAttemptSuccess(atk,def,dmg,ph),isSuccess=Math.random()*100<successRate;
+        log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
+        const box=document.getElementById('narBox');
+        if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra);}
+        setTimeout(()=>{S.awaitingFinishClick=true;S.pendingFinishResult={type:finType,isKickout:!isSuccess,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};showFinishClickBtn(finType,v);},1200);
+        return;
+      }
+      if(def.hp<=0){doFinish(atk,def,as,ds,mv,log,v);return;}
+      S.log.unshift(log);S.log=S.log.slice(0,15);S.turn++;
+      if(S.turn>_maxT){doTimeout();return;}
+    },2300);
+    // 3.0s: クリーンアップ + 次ターン
+    setTimeout(()=>{if(bn)bn.className='bigmove-name';endAnim();},3000);
+    return;
+  }
+
+  // Step 1: Attacker flash (通常ヒット)
   sfx.ready();
   const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
   if(Math.random()<0.3){const ct2=big?pk(CMT.atkC.big):pk(CMT.atkC.normal);showSp(as,ct2,'t-atk')}
@@ -2041,28 +2424,90 @@ const INTRO_LINES={
   extra:["両者、リング中央で向かい合う！ さあ、どんな展開になるか！","まずはお互いの出方を探る展開か！","序盤からどう攻めるか、注目だ！"]
 };
 
+function showMatchCard(cb){
+  const mi=matchData&&matchData.matchInfo;
+  const mc=document.getElementById('matchCard');
+  if(!mc||!mi){if(cb)cb();return;}
+  // h2h records
+  const h2h=mi.h2h||null;
+  let recordHtml='';
+  if(h2h&&h2h.matches>0){
+    recordHtml=`<div class="card-record"><span class="card-record-label">SERIES</span> ${h2h.matches}試合 — <span class="wins">${S.L.name} ${h2h.winsA}勝</span> / <span class="wins">${S.R.name} ${h2h.winsB}勝</span></div>`;
+  }else{
+    recordHtml=`<div class="card-first-meeting">FIRST MEETING</div>`;
+  }
+  // badges
+  let badges='';
+  if(mi.rivalryTier>=1)badges+=`<div class="card-badge rival">🔥 RIVALRY</div>`;
+  if(mi.isTitle)badges+=`<div class="card-badge title">TITLE MATCH</div>`;
+  const matchTypeText=mi.isTitle?'TITLE MATCH':mi.matchTier>=2?'BIG MATCH':'REGULAR MATCH';
+  const matchNumText=mi.matchNum&&mi.totalMatches?`MATCH ${mi.matchNum} / ${mi.totalMatches}`:'';
+  mc.innerHTML=`
+    <div class="venue-bg"><div class="center-darken"></div></div>
+    <div class="ring-floor"></div>
+    <div class="card-fighters">
+      <div class="card-fighter left"><div class="silhouette"><img src="${getFullUrl(S.L)}" alt="${S.L.name}" onerror="this.style.display='none'"></div></div>
+      <div class="card-fighter right"><div class="silhouette"><img src="${getFullUrl(S.R)}" alt="${S.R.name}" onerror="this.style.display='none'"></div></div>
+    </div>
+    <div class="card-info">
+      ${matchNumText?`<div class="card-match-num">${matchNumText}</div>`:''}
+      <div class="card-match-type">${matchTypeText}</div>
+      <div class="card-vs-block">
+        <div class="card-name">${S.L.name}</div>
+        <div class="card-vs">VS</div>
+        <div class="card-name">${S.R.name}</div>
+      </div>
+      ${recordHtml}
+      ${badges?`<div class="card-badges">${badges}</div>`:''}
+    </div>
+    <div class="scanlines"></div>
+    <div class="card-corner-frame"></div>`;
+  // show card — then transition to battle after 2.5s
+  setTimeout(()=>startMatchTransition(cb), 2500);
+}
+
+function startMatchTransition(cb){
+  const mc=document.getElementById('matchCard');
+  const gf=document.getElementById('gongFlash');
+  const gt=document.getElementById('gongText');
+  // Step 1: ゴングフラッシュ
+  if(gf){gf.classList.add('show');setTimeout(()=>gf.classList.remove('show'),150);}
+  sfx.gongStart();
+  // Step 2: FIGHT!テキスト
+  setTimeout(()=>{if(gt){gt.classList.add('show');}},200);
+  // Step 3: テキスト消去
+  setTimeout(()=>{if(gt){gt.classList.remove('show');gt.classList.add('fade');}},800);
+  // Step 4: カード画面フェードアウト
+  setTimeout(()=>{if(mc){mc.classList.add('hidden');}},1000);
+  // Step 5: バトル開始コールバック
+  setTimeout(()=>{if(gt)gt.className='gong-text';if(cb)cb();},1800);
+}
+
 function renderMatchWithIntro(){
   renderMatch();
   const btn=document.getElementById('nBtn');if(btn)btn.disabled=true;
   const box=document.getElementById('narBox');
   const v={l:S.L.name,r:S.R.name};
-  setTimeout(()=>{sfx.fightStart();
-    if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.main),v)}</div>`;
-  },600);
-  setTimeout(()=>{sfx.gongStart();
-    if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.gong),v)}</div>`;
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-  },2200);
-  setTimeout(()=>{
-    if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.extra),v)}</div>`;
-  },3500);
-  setTimeout(()=>{
-    if(box)box.innerHTML=`<div class="nar-empty">NEXT TURNを押して試合開始</div>`;
-    const btn2=document.getElementById('nBtn');
-    if(btn2){btn2.disabled=false;btn2.onclick=nextTurn;
-      btn2.style.animation='btnPulse 1.5s ease-in-out infinite';}
-  },4500);
+  // 対戦カード紹介→試合開始シーケンス
+  showMatchCard(()=>{
+    setTimeout(()=>{sfx.fightStart();
+      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.main),v)}</div>`;
+    },600);
+    setTimeout(()=>{
+      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.gong),v)}</div>`;
+      const flash=document.createElement('div');flash.className='finish-flash';
+      document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
+    },2200);
+    setTimeout(()=>{
+      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.extra),v)}</div>`;
+    },3500);
+    setTimeout(()=>{
+      if(box)box.innerHTML=`<div class="nar-empty">NEXT TURNを押して試合開始</div>`;
+      const btn2=document.getElementById('nBtn');
+      if(btn2){btn2.disabled=false;btn2.onclick=nextTurn;
+        btn2.style.animation='btnPulse 1.5s ease-in-out infinite';}
+    },4500);
+  });
 }
 
 function render(){if(S.screen==='WAITING'){renderWaiting();hideResult()}
