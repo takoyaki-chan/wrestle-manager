@@ -363,7 +363,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .card-fighters{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:space-between;z-index:2;pointer-events:none}
 .card-fighter{width:50%;position:relative;overflow:hidden}
 .card-fighter .silhouette{width:100%;height:100%;position:relative;overflow:hidden;background:none}
-.card-fighter .silhouette img{width:100%;height:100%;object-fit:cover;object-position:center 95%;filter:brightness(0.82) contrast(1.1)}
+.card-fighter .silhouette img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:brightness(0.82) contrast(1.1)}
 .card-fighter.left .silhouette{transform:scaleX(-1)}
 .card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;pointer-events:none}
 .card-event{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:5px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:2px;text-shadow:0 1px 8px rgba(0,0,0,0.8)}
@@ -933,6 +933,8 @@ const BIGMATCH_PHASES=[
 ];
 // Active tier state (set in startMatchFromData)
 let _maxT=MAX_T, _phases=PHASES, _isBigMatch=false;
+// ビッグムーブ演出のフェーズ別発動確率（Opening序盤は出さない、試合が深まるにつれ重みが出る）
+const BIGMOVE_ANIM_RATE = {Opening:0, Mid:0.15, End:0.70, Climax:1.0};
 
 // ═══ v4.1 ENGINE CONFIG ═══
 const ENG = {
@@ -1826,7 +1828,7 @@ function nextTurn(){
 
   // === COUNTER ===
   if(isCounter){
-    const isBigmoveCounter = big && S.bigmoveCount < 3;
+    const isBigmoveCounter = big && S.bigmoveCount < 3 && Math.random() < (BIGMOVE_ANIM_RATE[ph.name]||0);
     if(isBigmoveCounter){
       // ビッグムーブ→カウンター演出
       S.bigmoveCount++;
@@ -1944,7 +1946,7 @@ function nextTurn(){
   // === NORMAL HIT ===
   const dmg=calcDamage(mv,atk,def,S.mom,as,ph);
   v.v=dmg;
-  const isBigmoveAnim = big && S.bigmoveCount < 3;
+  const isBigmoveAnim = big && S.bigmoveCount < 3 && Math.random() < (BIGMOVE_ANIM_RATE[ph.name]||0);
   const atkLine=big?tpl(pk(CMT.atk.big),v):tpl(pk(CMT.atk[ph.name]),v);
   const dLvl=dmg<=8?'light':dmg<=14?'medium':'heavy';
   const dmgLine=tpl(pk(CMT.dmg[dLvl]),v);
