@@ -74,15 +74,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .fighter-panel.left{border-color:rgba(74,143,212,0.2)}
 .fighter-panel.right{border-color:rgba(196,30,58,0.2)}
 .fighter-panel.flash-atk{border-color:rgba(255,255,255,0.6);box-shadow:0 0 18px rgba(255,255,255,0.15)}
-.fighter-panel.flash-hit{border-color:rgba(255,60,60,0.6) !important}
-.fighter-panel.exhausted .portrait-area img{filter:brightness(0.78) saturate(0.8) contrast(1.05)}
-.fighter-panel.critical .portrait-area img{filter:brightness(0.6) saturate(0.5) contrast(1.1)}
-@keyframes damagePulse{
-  0%{box-shadow:0 0 15px rgba(196,30,58,0.3)}
-  50%{box-shadow:0 0 5px rgba(196,30,58,0.08)}
-  100%{box-shadow:0 0 15px rgba(196,30,58,0.3)}
-}
-.fighter-panel.critical{animation:damagePulse 1.5s ease-in-out infinite;border-color:rgba(196,30,58,0.3)}
+/* ═══ NEW DAMAGE FX ═══ */
+@keyframes shakePanel{0%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+.fighter-panel.shake{animation:shakePanel 0.25s ease-out}
+@keyframes shakeHard{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.fighter-panel.shake-hard{animation:shakeHard 0.3s ease-out}
+.dmg-number{position:absolute;z-index:9;font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#e85d75;text-shadow:0 2px 8px rgba(196,30,58,0.5);pointer-events:none;opacity:0;left:50%;top:25%}
+@keyframes dmgNumPop{0%{opacity:0;transform:translate(-50%,0) scale(1.5)}15%{opacity:1;transform:translate(-50%,-6px) scale(1)}75%{opacity:1;transform:translate(-50%,-22px) scale(1)}100%{opacity:0;transform:translate(-50%,-32px) scale(0.8)}}
+.dmg-number.show{animation:dmgNumPop 0.85s ease-out forwards}
+.dmg-number.crit{font-size:52px;color:var(--gold-light);text-shadow:0 2px 16px rgba(212,168,67,0.6),0 0 40px rgba(212,168,67,0.3)}
+.danger-glow{position:absolute;bottom:0;left:0;right:0;height:45%;z-index:6;pointer-events:none;opacity:0;transition:opacity 0.5s}
+.danger-glow.show{opacity:1}
+.danger-glow-inner{width:100%;height:100%;background:radial-gradient(ellipse 130% 100% at 50% 100%,rgba(196,30,58,0.45) 0%,rgba(196,30,58,0.18) 40%,transparent 70%)}
+@keyframes dangerPulseGlow{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
+.danger-glow.show .danger-glow-inner{animation:dangerPulseGlow 1.8s ease-in-out infinite}
+@keyframes flashScreen{0%{opacity:0.15}100%{opacity:0}}
+.flash-overlay{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+.flash-overlay.flash{animation:flashScreen 0.25s ease-out}
 /* Grit buff glow */
 .fighter-panel.grit-active{border-color:rgba(212,168,67,0.5) !important;
   box-shadow:0 0 20px rgba(212,168,67,0.15) !important}
@@ -145,8 +153,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
 .hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}
 .hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}
-@keyframes hpGlow{0%{box-shadow:0 0 8px rgba(212,168,67,0.4)}50%{box-shadow:0 0 3px rgba(212,168,67,0.15)}100%{box-shadow:0 0 8px rgba(212,168,67,0.4)}}
-.hp-bar.exhausted-glow{animation:hpGlow 1.5s ease-in-out infinite}
+/* exhausted-glow removed — replaced by danger-glow */
 .ability-bars{display:flex;flex-direction:column;gap:3px}
 .ab-row{display:flex;align-items:center;gap:5px}
 .ab-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim);min-width:44px}
@@ -395,6 +402,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   <div class="cutin-overlay" id="cutinOverlay"></div>
   <div class="finish-click-btn" id="finishBtn"></div>
   <div class="bp-overlay" id="bpOverlay" onclick="if(event.target===this)closeBattlePopup()"></div>
+  <div class="flash-overlay" id="flashOv"></div>
 </div>
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1422,8 +1430,7 @@ function renderMatch(){
     <div class="hp-row"><span class="hp-pct blue" id="hudHpPctL">${lHpPct}%</span><div class="hp-bar"><div class="hp-fill ${lHc} rev" id="hudHpL" style="width:${lHpPct}%"></div></div><span class="hp-label">HP</span><div class="hp-bar"><div class="hp-fill ${rHc}" id="hudHpR" style="width:${rHpPct}%"></div></div><span class="hp-pct red" id="hudHpPctR">${rHpPct}%</span></div>
   </div>`;
   function panelCls(f,side){
-    const pct=f.hp/f.mhp*100;let cls='fighter-panel '+side;
-    if(pct<=33)cls+=' critical';else if(pct<=66)cls+=' exhausted';
+    let cls='fighter-panel '+side;
     if(f.gritTurns>0)cls+=' grit-active';
     return cls;
   }
@@ -1439,6 +1446,8 @@ function renderMatch(){
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="portrait-placeholder" style="display:none">${silSVG}<span>${f.name}</span></div>
         <div class="monitor-frame"></div>
+        <div class="dmg-number" id="dmg-${side}"></div>
+        <div class="danger-glow" id="dangerGlow-${side}"><div class="danger-glow-inner"></div></div>
         <div class="speech-bubble" id="sp-${side}"></div>
       </div><div class="fighter-info">
         <div class="f-name-row"><span class="f-name" onclick="openFighterPopup(${f.id})">${f.name}</span>
@@ -1636,11 +1645,17 @@ function nextTurn(){
       setTimeout(()=>{const e=document.getElementById('nM');if(e)e.classList.add('show')},30)}
   },t(0.2));
 
-  // Step 3: Hit
+  // Step 3: Hit — new damage FX
   setTimeout(()=>{
     hitSE(mv.c,dmg);
     if(big)setTimeout(()=>{mkNoise(0.3,0.1);osc('sine',80,40,0.4,0.06)},100);
     def.hp=Math.max(0,def.hp-dmg);
+    // Panel shake + dmg number
+    const isCrit = dmg >= 15;
+    shakePanel(ds, isCrit);
+    showDmgNum(ds, dmg, isCrit);
+    if(isCrit) flashScreen();
+    // Legacy image shake (kept for portrait wobble)
     const img=document.getElementById(`img-${ds}`);
     if(img&&img.style.display!=='none'){
       const tier=dmg<=8?'s':dmg<=14?'m':'l';
@@ -1649,15 +1664,9 @@ function nextTurn(){
       img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');
       void img.offsetWidth;img.classList.add(cls);
     }
-    if(dmg>=15){
+    if(isCrit){
       const mg=document.getElementById('matchGrid');
       if(mg){mg.classList.remove('screen-shake');void mg.offsetWidth;mg.classList.add('screen-shake')}
-      const hpbar=document.getElementById(`hpbar-${ds}`);
-      if(hpbar){hpbar.style.background='rgba(255,255,255,0.4)';setTimeout(()=>{hpbar.style.background=''},100)}
-    }
-    if(dmg>=9){
-      const dp=document.getElementById(`panel-${ds}`);
-      if(dp){dp.classList.add('flash-hit');setTimeout(()=>dp.classList.remove('flash-hit'),150)}
     }
     updHP(ds,def);
     updPanelState(ds,def);
@@ -1890,10 +1899,27 @@ function updMom(){
   const hR=document.getElementById('hudMomR');if(hR)hR.style.width=(100-mPct)+'%';
 }
 function updPanelState(side,f){
-  const panel=document.getElementById(`panel-${side}`);if(!panel)return;
+  // danger-glow: HP ≤ 25%
   const pct=f.hp/f.mhp*100;
-  panel.classList.remove('exhausted','critical');
-  if(pct<=33)panel.classList.add('critical');else if(pct<=66)panel.classList.add('exhausted');
+  const glow=document.getElementById(`dangerGlow-${side}`);
+  if(glow){if(pct<=25)glow.classList.add('show');else glow.classList.remove('show')}
+}
+function showDmgNum(side,val,isCrit){
+  const el=document.getElementById(`dmg-${side}`);if(!el)return;
+  el.textContent=val;el.className='dmg-number'+(isCrit?' crit':'');
+  void el.offsetWidth;el.classList.add('show');
+  setTimeout(()=>{el.classList.remove('show');el.className='dmg-number'},900);
+}
+function flashScreen(){
+  const f=document.getElementById('flashOv');if(!f)return;
+  f.classList.remove('flash');void f.offsetWidth;f.classList.add('flash');
+  setTimeout(()=>f.classList.remove('flash'),300);
+}
+function shakePanel(side,hard){
+  const p=document.getElementById(`panel-${side}`);if(!p)return;
+  const cls=hard?'shake-hard':'shake';
+  p.classList.remove('shake','shake-hard');void p.offsetWidth;p.classList.add(cls);
+  setTimeout(()=>p.classList.remove(cls),hard?350:300);
 }
 function showSp(side,text,cls){
   const el=document.getElementById(`sp-${side}`);if(!el)return;
