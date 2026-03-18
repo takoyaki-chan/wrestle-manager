@@ -170,9 +170,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   color:var(--gold-light);margin-top:4px;opacity:0;transition:opacity .3s}
 .grit-indicator.active{opacity:1}
 /* Speech */
-.speech-bubble{position:absolute;top:35%;padding:8px 16px;border-radius:12px;font-size:13px;
+.speech-bubble{position:absolute;top:12%;padding:8px 16px;border-radius:12px;font-size:13px;
   font-weight:700;z-index:8;max-width:90%;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;
-  left:50%;transform:translate(-50%,-50%)}
+  left:50%;transform:translate(-50%,0)}
 .speech-bubble.visible{opacity:1}
 .speech-bubble.t-atk{background:rgba(212,168,67,0.85);color:#1a1a22}
 .speech-bubble.t-def{background:rgba(196,30,58,0.8);color:#fff}
@@ -938,9 +938,8 @@ const sfx={
   hitStrike(dr){const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
   hitThrow(dr){const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
   hitSub(dr){const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
-    // 持続するギューギュー音（関節・絞め技の圧迫感）
-    osc('sine',120,80,0.6,0.04*dr);osc('sawtooth',90,130,0.5,0.03*dr);
-    setTimeout(()=>{osc('sine',100,70,0.4,0.03*dr);osc('sawtooth',80,120,0.3,0.02*dr)},300)},
+    // 持続するギリギリ音（関節・絞め技の圧迫感）
+    for(let i=0;i<5;i++){setTimeout(()=>{osc('sawtooth',80+i*10,120+i*8,0.25,0.03*dr);osc('sine',60+i*5,90+i*5,0.2,0.02*dr)},i*200)}},
   hitAerial(dr){const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
   hitGround(dr){const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
   hitRollup(dr){osc('triangle',2000,600,0.06,0.08*dr)},
