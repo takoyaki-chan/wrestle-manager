@@ -1161,39 +1161,48 @@ function calcPinAttemptSuccess(atk, def, dmg, ph) {
 // ═══ AUDIO (v3.5 + v0.97 sound redesign) ═══
 let ac=null;
 function ctx(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac}
+// ─── SE master gain (per-sound volume control) ───
+let _sfxGain=null;
+function getSfxGain(){if(!_sfxGain){const c=ctx();_sfxGain=c.createGain();_sfxGain.gain.value=1;_sfxGain.connect(c.destination);}return _sfxGain;}
+const SE_MIX={
+  hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.50,hitGround:.50,hitRollup:.50,
+  missWhiff:.40,counterSE:.60,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.55,bigmoveImpact:.65,
+  count:.60,kickoutSE:.55,guEscapeSE:.55,heartbeatSE:.40,finImpact:.65,finChime:.50,
+  gong:.55,gongStart:.55,phaseChg:.35,victoryFanfare:.50,ready:.40,fightStart:.45,lockIn:.35,
+};
 function mkNoise(dur,g){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
   ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
   const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();
   gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-  s.connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+dur)}catch(e){}}
+  s.connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
 function mkNoiseHP(dur,g,hpFreq){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
   ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
   const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();
   gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
   const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=hpFreq;
-  s.connect(hp).connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+dur)}catch(e){}}
+  s.connect(hp).connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
 function mkNoiseLP(dur,g,lpFreq){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
   ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
   const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();
   gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
   const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=lpFreq;
-  s.connect(lp).connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+dur)}catch(e){}}
+  s.connect(lp).connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
 function mkNoiseBP(dur,g,freq,q){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
   ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
   const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();
   gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
   const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=q||1;
-  s.connect(bp).connect(gn).connect(c.destination);s.start();s.stop(c.currentTime+dur)}catch(e){}}
+  s.connect(bp).connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
 function osc(type,freq,freqEnd,dur,gain){try{const c=ctx(),o=c.createOscillator(),g=c.createGain();
   o.type=type;o.frequency.setValueAtTime(freq,c.currentTime);
   if(freqEnd)o.frequency.exponentialRampToValueAtTime(freqEnd,c.currentTime+dur);
   g.gain.setValueAtTime(gain,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-  o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+dur)}catch(e){}}
+  o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+dur)}catch(e){}}
 // Bell partial: slow-decay metallic overtone (low partials short, high long → rising "カーン")
 function bellP(freq,dur,gain){try{const c=ctx(),o=c.createOscillator(),g=c.createGain();
   o.type='sine';o.frequency.setValueAtTime(freq,c.currentTime);
   g.gain.setValueAtTime(gain,c.currentTime);g.gain.setTargetAtTime(0.001,c.currentTime,dur*0.35);
-  o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+dur*1.2)}catch(e){}}
+  o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+dur*1.2)}catch(e){}}
 const sfx={
   hover(){osc('sine',1200,1800,0.06,0.05)},
   select(){try{const c=ctx();[1047,1319,1568,2093,2637].forEach((f,i)=>{setTimeout(()=>{
@@ -1202,73 +1211,73 @@ const sfx={
     const vib=c.createOscillator();vib.type='sine';vib.frequency.value=6;
     const vibG=c.createGain();vibG.gain.value=3;vib.connect(vibG).connect(o.frequency);vib.start();
     g.gain.setValueAtTime(0.07,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);
-    o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+0.3);vib.stop(c.currentTime+0.3)
+    o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.3);vib.stop(c.currentTime+0.3)
   },i*20)})}catch(e){}},
   // NEW: lockIn
-  lockIn(){try{const c=ctx();osc('sine',100,50,0.08,0.08);
+  lockIn(){try{getSfxGain().gain.value=SE_MIX.lockIn;const c=ctx();osc('sine',100,50,0.08,0.08);
     setTimeout(()=>{[523,659,784,988,1047,1319,1568].forEach((f,i)=>{setTimeout(()=>{
       const o=c.createOscillator(),g=c.createGain();o.type='sine';
       o.frequency.setValueAtTime(f,c.currentTime);
       const vib=c.createOscillator();vib.type='sine';vib.frequency.value=5;
       const vibG=c.createGain();vibG.gain.value=4;vib.connect(vibG).connect(o.frequency);vib.start();
       g.gain.setValueAtTime(0.06,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.6);
-      o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
+      o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
     },i*30)})},50);setTimeout(()=>mkNoiseHP(0.5,0.04,3000),300);setTimeout(()=>osc('sine',80,40,0.4,0.03),500);
   }catch(e){}},
   deselect(){osc('sine',900,400,0.12,0.05)},
   // NEW: fightStart
-  fightStart(){try{[0,30,60,90,120,150].forEach((t,i)=>setTimeout(()=>osc('sine',60,30,0.04,0.08+i*0.014),t));
+  fightStart(){try{getSfxGain().gain.value=SE_MIX.fightStart;[0,30,60,90,120,150].forEach((t,i)=>setTimeout(()=>osc('sine',60,30,0.04,0.08+i*0.014),t));
     setTimeout(()=>osc('sine',150,3000,0.4,0.12),200);
     setTimeout(()=>{mkNoise(0.2,0.2);[262,330,392,523,659,784,1047].forEach(f=>{osc('sine',f,null,0.6,0.15);osc('sine',f*2,null,0.3,0.03)})},650);
     setTimeout(()=>osc('sine',50,25,0.8,0.06),850);
   }catch(e){}},
   // NEW: ready
-  ready(){osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
-  missWhiff(){osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
+  ready(){getSfxGain().gain.value=SE_MIX.ready;osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
+  missWhiff(){getSfxGain().gain.value=SE_MIX.missWhiff;osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
   // OLD: battle hits (kept)
-  hitStrike(dr){const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
-  hitThrow(dr){const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
-  hitSub(dr){const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
+  hitStrike(dr){getSfxGain().gain.value=SE_MIX.hitStrike;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
+  hitThrow(dr){getSfxGain().gain.value=SE_MIX.hitThrow;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
+  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
     // 持続するギリギリ音（関節・絞め技の圧迫感）
     for(let i=0;i<5;i++){setTimeout(()=>{osc('sawtooth',80+i*10,120+i*8,0.25,0.03*dr);osc('sine',60+i*5,90+i*5,0.2,0.02*dr)},i*200)}},
-  hitAerial(dr){const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
-  hitGround(dr){const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
-  hitRollup(dr){osc('triangle',2000,600,0.06,0.08*dr)},
+  hitAerial(dr){getSfxGain().gain.value=SE_MIX.hitAerial;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
+  hitGround(dr){getSfxGain().gain.value=SE_MIX.hitGround;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
+  hitRollup(dr){getSfxGain().gain.value=SE_MIX.hitRollup;osc('triangle',2000,600,0.06,0.08*dr)},
   // NEW: cutin slide + damage voice
-  cutinSlide(){try{osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
-  dmgVoice(){try{osc('sine',200,80,0.2,0.06);mkNoiseLP(0.08,0.05,800)}catch(e){}},
+  cutinSlide(){try{getSfxGain().gain.value=SE_MIX.cutinSlide;osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
+  dmgVoice(){try{getSfxGain().gain.value=SE_MIX.dmgVoice;osc('sine',200,80,0.2,0.06);mkNoiseLP(0.08,0.05,800)}catch(e){}},
   // NEW: bigmove charge + impact
-  bigmoveCharge(){try{osc('sine',60,200,1.6,0.08);osc('sawtooth',60,180,1.6,0.03);setTimeout(()=>mkNoiseHP(0.3,0.04,3000),800);setTimeout(()=>osc('sine',150,400,0.3,0.06),1200)}catch(e){}},
-  bigmoveImpact(){try{osc('sine',100,25,0.4,0.25);mkNoise(0.15,0.25);mkNoiseLP(0.25,0.15,300);osc('triangle',60,20,0.3,0.12);setTimeout(()=>mkNoiseHP(0.05,0.08,5000),50)}catch(e){}},
+  bigmoveCharge(){try{getSfxGain().gain.value=SE_MIX.bigmoveCharge;osc('sine',60,200,1.6,0.08);osc('sawtooth',60,180,1.6,0.03);setTimeout(()=>mkNoiseHP(0.3,0.04,3000),800);setTimeout(()=>osc('sine',150,400,0.3,0.06),1200)}catch(e){}},
+  bigmoveImpact(){try{getSfxGain().gain.value=SE_MIX.bigmoveImpact;osc('sine',100,25,0.4,0.25);mkNoise(0.15,0.25);mkNoiseLP(0.25,0.15,300);osc('triangle',60,20,0.3,0.12);setTimeout(()=>mkNoiseHP(0.05,0.08,5000),50)}catch(e){}},
   // OLD: battle reactions (kept, counterSE replaced)
-  counterSE(){try{mkNoise(0.12,0.3);osc('sine',150,40,0.2,0.2);mkNoiseLP(0.15,0.2,500);osc('square',800,200,0.08,0.12);setTimeout(()=>{mkNoiseHP(0.08,0.15,3000);osc('sine',60,30,0.15,0.1)},60)}catch(e){}},
+  counterSE(){try{getSfxGain().gain.value=SE_MIX.counterSE;mkNoise(0.12,0.3);osc('sine',150,40,0.2,0.2);mkNoiseLP(0.15,0.2,500);osc('square',800,200,0.08,0.12);setTimeout(()=>{mkNoiseHP(0.08,0.15,3000);osc('sine',60,30,0.15,0.1)},60)}catch(e){}},
   missSE(){osc('sine',400,200,0.1,0.04)},
   kickout(){osc('square',200,800,0.1,0.1);mkNoise(0.15,0.08)},
-  kickoutSE(){try{mkNoise(0.2,0.12);osc('sine',100,60,0.15,0.1);setTimeout(()=>mkNoiseHP(0.3,0.06,2000),100)}catch(e){}},
-  guEscapeSE(){try{osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
-  heartbeatSE(){try{osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
+  kickoutSE(){try{getSfxGain().gain.value=SE_MIX.kickoutSE;mkNoise(0.2,0.12);osc('sine',100,60,0.15,0.1);setTimeout(()=>mkNoiseHP(0.3,0.06,2000),100)}catch(e){}},
+  guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
+  heartbeatSE(){try{getSfxGain().gain.value=SE_MIX.heartbeatSE;osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
   // NEW: count — mat slap
-  count(){try{osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
+  count(){try{getSfxGain().gain.value=SE_MIX.count;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
   // NEW: finImpact — ground rumble + shockwave
-  finImpact(){try{osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
+  finImpact(){try{getSfxGain().gain.value=SE_MIX.finImpact;osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
   // NEW: finChime — with vibrato
-  finChime(){try{const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
+  finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,c.currentTime);
     const vib=c.createOscillator(),vibG=c.createGain();vib.type='sine';vib.frequency.value=5;vibG.gain.value=3;
     vib.connect(vibG).connect(o.frequency);vib.start();
     g.gain.setValueAtTime(0.1,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.6);
-    o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
+    o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
   },i*100)})}catch(e){}},
   // NEW: gong — metallic bell with rising tail
-  gong(){try{const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
+  gong(){try{getSfxGain().gain.value=SE_MIX.gong;const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
   // NEW: gongStart — louder version of gong
-  gongStart(){try{const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
+  gongStart(){try{getSfxGain().gain.value=SE_MIX.gongStart;const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
   // NEW: bellx3 — match-end triple gong (カンカンカン)
   bellx3(){[0,380,760].forEach(d=>setTimeout(()=>{try{sfx.gong()}catch(e){}},d))},
   // NEW: phaseChg — gear shift
-  phaseChg(){try{osc('triangle',400,800,0.08,0.06);setTimeout(()=>{osc('sine',1000,null,0.12,0.06);mkNoiseHP(0.02,0.03,6000)},100)}catch(e){}},
+  phaseChg(){try{getSfxGain().gain.value=SE_MIX.phaseChg;osc('triangle',400,800,0.08,0.06);setTimeout(()=>{osc('sine',1000,null,0.12,0.06);mkNoiseHP(0.02,0.03,6000)},100)}catch(e){}},
   // NEW: victoryFanfare — brass section
-  victoryFanfare(){try{const c=ctx();
+  victoryFanfare(){try{getSfxGain().gain.value=SE_MIX.victoryFanfare;const c=ctx();
     [0,60,120,180].forEach(t=>setTimeout(()=>osc('sine',60,30,0.08,0.15),t));
     setTimeout(()=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>{
       osc('sawtooth',f,null,0.12,0.05);osc('sine',f,null,0.15,0.13);osc('sine',f*2,null,0.1,0.03)},i*80))},400);
@@ -1277,7 +1286,7 @@ const sfx={
       o2.frequency.setValueAtTime(f,c.currentTime);
       g2.gain.setValueAtTime(0.16,c.currentTime);
       g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+1.2);
-      o2.connect(g2).connect(c.destination);o2.start();o2.stop(c.currentTime+1.2)});mkNoise(0.3,0.03)},900);
+      o2.connect(g2).connect(getSfxGain());o2.start();o2.stop(c.currentTime+1.2)});mkNoise(0.3,0.03)},900);
     setTimeout(()=>{[2093,2637,3136].forEach((f,i)=>setTimeout(()=>osc('sine',f,null,0.25,0.07),i*100))},1500);
     setTimeout(()=>osc('sine',131,null,0.6,0.08),1800);
   }catch(e){}}

@@ -13,6 +13,9 @@ const Audio = (() => {
   let _sfxVol = 0.5;
   let _bgmVol = 0.04; // ≈ demo preview 15%
   let _bgmMuted = false; // BGM-only mute (jingles/SFX still play)
+  // ── Per-track volume targets (bgmGain.gain.value at default _bgmVol=0.04) ──
+  const CHIPTUNE_BGM_MIX = { kaimaku:0.21, management:0.53, battle:0.40, season_end:0.43, tension:0.36 };
+  const JINGLE_MIX = { victory:0.38, championship:0.33 };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
   function ensure() {
@@ -525,6 +528,7 @@ const Audio = (() => {
       BGM._playing = true;
       BGM._current = trackName;
       const fn = BGM._tracks[trackName];
+      if (bgmGain) bgmGain.gain.value = CHIPTUNE_BGM_MIX[trackName] ?? _bgmVol;
       if (fn) fn();
     },
 
@@ -536,6 +540,7 @@ const Audio = (() => {
       BGM._playing = true;
       BGM._current = 'jingle_' + name;
       const fn = BGM._jingles[name];
+      if (bgmGain) bgmGain.gain.value = JINGLE_MIX[name] ?? _bgmVol;
       if (fn) fn();
     },
 
@@ -3264,7 +3269,7 @@ const App = {
     };
     // ビッグマッチBGM: タイトル戦で bigmatch.mp3 を再生
     if (m.isTitle) {
-      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
+      try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
     }
     let sent = false;
     const sendOnce = () => {
@@ -4970,7 +4975,9 @@ const App = {
       });
     }
     // 表彰式ポップアップ開始
+    try { Audio.fileBgm.play('../bgm/8bit-ending-theme_Loop.ogg', { loop: true, volume: 0.07 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
+      try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
       if (pendingAwards.hallOfFame.length > 0) {
         G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
@@ -5470,7 +5477,7 @@ const App = {
       results: card.map(() => null), // null = unresolved
       currentWatching: -1
     };
-    Audio.bgm.play('battle');
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
     renderWarMatchPreview();
   },
 
@@ -5520,7 +5527,7 @@ const App = {
       }
     };
     // ビッグマッチBGM
-    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
+    try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -5596,13 +5603,19 @@ const App = {
     wp.currentWatching = -1;
     Audio.play('coin');
     renderWarMatchPreview();
-    if (wp.results.every(r => r !== null)) App.finalizeWar();
+    if (wp.results.every(r => r !== null)) {
+      App.finalizeWar();
+    } else {
+      // まだ試合が残っている → 対抗戦BGMを再開
+      setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 1600);
+    }
   },
 
   // Finalize war: apply outcome to game state, show result
   finalizeWar() {
     const wp = App._warPreview;
     if (!wp) return;
+    try { Audio.fileBgm.stop(); } catch(e) {}
     const ev = wp.ev;
     let playerWins = 0, aiWins = 0;
     wp.results.forEach(r => { if (r.playerWon) playerWins++; else aiWins++; });
@@ -5701,7 +5714,7 @@ App.initPPVShow = function() {
     results: new Array(ppvDay.card.length).fill(null),
     currentWatching: -1,
   };
-  Audio.bgm.play('battle');
+  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
 
   // カードが空の場合は即座にfinalize（スタック防止）
   if (ppvDay.card.length === 0) {
@@ -5778,7 +5791,7 @@ App.ppvWatchMatch = function(idx) {
     }
   };
   // ビッグマッチBGM
-  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, mix: 0.2 }); } catch(e) {}
+  try { Audio.fileBgm.play('../bgm/bigmatch.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
@@ -5834,7 +5847,12 @@ App._receivePPVBattleResult = function(data) {
   pp.currentWatching = -1;
   try { Audio.play('coin'); } catch(e) {}
   renderPPVMatchPreview();
-  if (pp.results.every(r => r !== null)) App.finalizePPV();
+  if (pp.results.every(r => r !== null)) {
+    App.finalizePPV();
+  } else {
+    // まだ試合が残っている → PPV BGMを再開
+    setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+  }
 };
 
 App.finalizePPV = function() {
@@ -5964,6 +5982,7 @@ App.finalizePPV = function() {
   const savedMQBonuses = result.mqBonuses;
   App._ppvPreview = null;
 
+  try { Audio.fileBgm.stop(); } catch(e) {}
   Audio.bgm.playJingle('victory');
   renderPPVResult(savedCard, savedResults, savedSummitPair, savedHeatChange, savedMQBonuses);
 };

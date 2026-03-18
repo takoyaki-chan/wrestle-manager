@@ -5483,7 +5483,7 @@ function showEndingCeremony(data, onDone) {
     }
     // スライド1の「開始▶」クリック時にBGM開始（ユーザー操作内で呼ぶ必要があるため）
     if (idx === 0 && Audio && Audio.fileBgm) {
-      Audio.fileBgm.play('../bgm/ending.mp3', { loop: true });
+      Audio.fileBgm.play('../bgm/8bit-jo-jokyoku.mp3', { loop: true, volume: 0.05 });
     }
     document.getElementById('awardsOverlay').classList.remove('active');
     idx++;
@@ -5534,6 +5534,7 @@ function showGameOverScreen(summary) {
     ">タイトルに戻る</button>
   `;
   overlay.classList.add('active');
+  try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { volume: 0.08 }); } catch(e) {}
 }
 
 // ╔══════════════════════════════════════════════════════════╗
