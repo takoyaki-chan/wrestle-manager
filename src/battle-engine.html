@@ -2068,7 +2068,7 @@ function nextTurn(){
     showSp(ds,pk(CMT.defR[rl]),'t-def');
     // ダメージセリフ/ボイス: End/Climaxのクリティカルヒット時
     if((ph.name==='End'||ph.name==='Climax')&&isCrit){
-      if(Math.random()<0.4){showDamageSpeech(ds,def);}
+      if(Math.random()<0.28){showDamageSpeech(ds,def);}
       else if(ph.name==='Climax'){showDamageVoice(ds,def);}
     }
     if(ap)ap.classList.remove('flash-atk');
