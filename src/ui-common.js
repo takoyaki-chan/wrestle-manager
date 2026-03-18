@@ -3537,48 +3537,159 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   const avgMQ = results.length > 0 ? Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length) : 0;
 
   let html = '';
-  // ヘッダー
-  html += `<div style="text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(241,196,15,0.18),rgba(231,76,60,0.10));border-radius:10px;margin-bottom:16px">`;
-  html += `<div class="show-result-title" style="color:var(--gold);font-size:22px">🏟️ PPV GRAND FINAL「${ppvName}」結果</div>`;
-  html += `<div style="margin-top:8px">${mqStars(avgMQ)} <span style="font-size:14px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>`;
+  // ═══ ヘッダー ═══
+  html += `<div style="text-align:center;padding:28px 20px 22px;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(180,80,40,0.12));border:1px solid rgba(212,168,67,0.3);border-radius:12px;margin-bottom:18px">`;
+  html += `<div style="font-size:12px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:4px">PPV GRAND FINAL</div>`;
+  html += `<div class="show-result-title" style="font-size:24px;font-weight:900;background:linear-gradient(180deg,#fff 20%,#f0d078);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">「${ppvName}」結果</div>`;
+  html += `<div>${mqStars(avgMQ)} <span style="font-size:14px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>`;
+  if (heatChange && heatChange.oldId !== heatChange.newId) {
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-top:6px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客×${heatChange.newMult}）</div>`;
+  }
+  html += `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.2);border-radius:16px;font-size:11px;color:var(--text-sub);margin-top:10px">🏆 特設リング</div>`;
   html += `</div>`;
 
-  // 各試合結果（メインイベント→前座の順）
+  // ═══ 各試合結果（メインイベント→前座の順） ═══
   const total = card.length;
+  let shownMainLabel = false;
   for (let di = total - 1; di >= 0; di--) {
     const match = card[di];
     const r = results[di];
     if (!r) continue;
     const matchNum = di + 1;
-    const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
-    const wName = r.winner === 'draw' ? '引き分け' : r.winner === 'left' ? match.left.name : match.right.name;
-    const lName = r.winner === 'left' ? match.right.name : match.left.name;
-    const mqColor = r.mq >= 70 ? 'var(--gold)' : r.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-    const summitBorder = match.isSummit ? 'border-left:3px solid var(--gold);' : '';
+    const isMain = match.isSummit;
+    const isDraw = r.winner === 'draw';
+    const leftIsWinner = r.winner === 'left';
+    const rightIsWinner = r.winner === 'right';
 
-    // MQボーナス内訳テキスト
-    const bonus = mqBonuses ? mqBonuses[di] : null;
-    let bonusTags = '';
-    if (bonus) {
-      if (bonus.rivalry > 0) bonusTags += ` <span style="color:#e74c3c;font-size:10px">🔥因縁+${bonus.rivalry}</span>`;
-      if (bonus.coach > 0) bonusTags += ` <span style="color:#3498db;font-size:10px">📋+${bonus.coach}</span>`;
+    // セクションラベル
+    if (isMain && !shownMainLabel) {
+      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">🏆 MAIN EVENT — 頂上決戦</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && shownMainLabel && di === total - 2) {
+      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">UNDERCARD</div>`;
     }
-    // 因縁決着バッジ
-    const resolutionBadge = r.rivalryResolved ? ' <span style="color:#d63031;font-weight:700;font-size:11px">⚡決着！</span>' : '';
 
-    html += `<div style="padding:10px 14px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;${summitBorder}">`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${matchLabel}${match.isRivalry ? ' <span style="color:#e74c3c">🔥因縁</span>' : ''}${resolutionBadge}</div>`;
-    html += `<div style="display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:4px">`;
-    html += `<span style="color:var(--green);font-weight:600">○ ${wName}</span>`;
-    html += `<span style="color:var(--text-dim)">vs</span>`;
-    html += `<span style="color:var(--text-sub);opacity:0.7">× ${lName}</span>`;
-    html += `</div>`;
-    html += `<div style="font-size:12px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} MQ: <span style="color:${mqColor};font-weight:600">${r.mq}</span>${bonusTags}</div>`;
+    // カード外枠スタイル
+    const cardBorder = isMain
+      ? 'border:1.5px solid rgba(212,168,67,0.4);background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))'
+      : 'border:1px solid var(--border)';
+
+    // ラベル行
+    const matchLabel = isMain ? '<span style="color:var(--gold);font-weight:600">🏆 頂上決戦</span>' : `第${matchNum}試合`;
+    const rivalryTag = match.isRivalry ? ' <span style="color:#e74c3c">🔥因縁</span>' : '';
+    const resolutionTag = r.rivalryResolved ? ' <span style="color:#d63031;font-weight:700">⚡決着！</span>' : '';
+    const rivalBonusTag = r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : '';
+    const freshTag = r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">${r.freshnessBonus > 0 ? '✨' : '😐'}${r.freshnessLabel}</span>` : '';
+    const titleTag = r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : '';
+
+    html += `<div style="padding:16px;margin-bottom:10px;border-radius:10px;${cardBorder}">`;
+    html += `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:10px">${matchLabel}${titleTag}${rivalryTag}${resolutionTag}${rivalBonusTag}${freshTag}</div>`;
+
+    if (isDraw) {
+      // ─── 引き分け ───
+      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          ${portraitImg(r.left.id, isMain ? 180 : 140, 'portrait-match')}
+          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster'})}</div>
+        </div>
+        <div style="font-size:16px;font-weight:700;padding:4px 14px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;border-radius:4px;flex-shrink:0;align-self:center">DRAW</div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          ${portraitImg(r.right.id, isMain ? 180 : 140, 'portrait-match')}
+          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster'})}</div>
+        </div>
+      </div>`;
+      html += `<div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
+      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
+    } else {
+      // ─── 勝敗あり ───
+      const winF = leftIsWinner ? r.left : r.right;
+      const loseF = leftIsWinner ? r.right : r.left;
+      const winnerId = winF.id;
+      const loserId = loseF.id;
+      // ポートレイトサイズ
+      const winSize = isMain ? 180 : 140;
+      const loseSize = isMain ? 110 : 80;
+
+      // 吹き出し判定
+      let winBubble = '';
+      let loseBubble = '';
+      // 因縁リアクション（rivalry≥40）
+      if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 40) {
+        const winChar = ALL_CHARS.find(c => c.id === winnerId);
+        const loseChar = ALL_CHARS.find(c => c.id === loserId);
+        const ovrW = Engine.util.ov(winF);
+        const ovrL = Engine.util.ov(loseF);
+        const isUpsetRivalry = ovrW < ovrL - 8;
+        const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
+        const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
+        const winLine = pickDialogueLine(winPool, winChar);
+        const loseLine = pickDialogueLine(losePool, loseChar);
+        winBubble = _ppvBubble(winF.name, winLine, true);
+        loseBubble = _ppvBubble(loseF.name, loseLine, false);
+      }
+      // TODO: 高MQ(≥65)勝者コメント — セリフプール新規作成が必要
+      // TODO: PPVデビュー（初出場）勝者コメント — セリフプール新規作成が必要
+
+      // 勝者ポートレイト枠スタイル
+      const winPortraitStyle = isMain
+        ? `border:2px solid rgba(212,168,67,0.5);box-shadow:0 0 24px rgba(212,168,67,0.15);border-radius:7px`
+        : `border:1.5px solid rgba(46,204,113,0.25);border-radius:7px`;
+      const losePortraitStyle = `border:1px solid rgba(255,255,255,0.08);border-radius:7px;opacity:0.65`;
+      const winNameColor = isMain ? 'color:var(--gold);' : '';
+
+      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
+      // 勝者列
+      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:55%">`;
+      if (winBubble) html += winBubble;
+      html += `<div style="${winPortraitStyle};overflow:hidden">${portraitImg(winnerId, winSize, 'portrait-match winner')}</div>`;
+      html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster'})}</div>`;
+      html += `</div>`;
+      // VS
+      html += `<div style="font-size:14px;color:rgba(255,255,255,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
+      // 敗者列
+      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:38%">`;
+      if (loseBubble) html += loseBubble;
+      html += `<div style="${losePortraitStyle};overflow:hidden">${portraitImg(loserId, loseSize, 'portrait-match loser')}</div>`;
+      html += `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">${fLink(loseF, {source:'roster', bold:false})}</div>`;
+      html += `</div>`;
+      html += `</div>`;
+
+      // 勝利バッジ
+      html += `<div style="text-align:center;margin-bottom:8px"><span style="display:inline-block;padding:4px 14px;border-radius:4px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winF.name} 勝利</span></div>`;
+      // 決まり手
+      html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:6px">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
+      // MQ行
+      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
+    }
+
+    // HPバー
+    const lPct = Math.round(r.hpLeft.final / r.hpLeft.max * 100);
+    const rPct = Math.round(r.hpRight.final / r.hpRight.max * 100);
+    html += `<div style="display:flex;gap:12px;font-size:10px;color:rgba(255,255,255,0.35)">
+      <div style="flex:1">${fLink(r.left, {source:'roster', bold:false, size:'10px'})}: HP ${r.hpLeft.final}/${r.hpLeft.max}
+        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:2px;overflow:hidden">
+          <div style="width:${lPct}%;height:100%;background:${lPct>30?'#2ecc71':lPct>10?'#f39c12':'#e74c3c'};border-radius:2px"></div>
+        </div>
+      </div>
+      <div style="flex:1">${fLink(r.right, {source:'roster', bold:false, size:'10px'})}: HP ${r.hpRight.final}/${r.hpRight.max}
+        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:2px;overflow:hidden">
+          <div style="width:${rPct}%;height:100%;background:${rPct>30?'#2ecc71':rPct>10?'#f39c12':'#e74c3c'};border-radius:2px"></div>
+        </div>
+      </div>
+    </div>`;
+
+    // 試合ログ
+    html += `<details style="margin-top:8px"><summary style="font-size:10px;color:rgba(255,255,255,0.18);cursor:pointer">試合ログを見る</summary>
+      <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:4px;padding:6px 8px;background:rgba(0,0,0,0.25);border-radius:4px;max-height:160px;overflow-y:auto;line-height:1.6">
+        ${r.log.map(l => `<div>${l}</div>`).join('')}
+      </div>
+    </details>`;
+
     html += `</div>`;
   }
 
-  // 報酬 & 対戦pt & ヒート
-  html += `<div style="text-align:center;margin-top:16px;padding:12px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px">`;
+  // ═══ 報酬 & 対戦pt & ヒート ═══
+  html += `<div style="text-align:center;padding:14px 16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:8px;margin:18px 0 16px">`;
   html += `<div style="font-size:14px;color:var(--gold);font-weight:600">💰 出場報酬: ${reward}万円</div>`;
   const summitIdx = card.findIndex(m => m.isSummit);
   if (summitIdx >= 0 && results[summitIdx]) {
@@ -3587,12 +3698,11 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     const playerInSummit = card[summitIdx].left._ppvOrgId === 'player' || card[summitIdx].right._ppvOrgId === 'player';
     if (playerInSummit) {
       const playerWon = winnerOrgId === 'player';
-      html += `<div style="font-size:13px;color:var(--text-sub);margin-top:6px">対戦pt: ${playerWon ? '+' : '-'}${BATTLE_POINT_CFG.summit}（頂上決戦${playerWon ? '勝利' : '敗北'}）</div>`;
+      html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">対戦pt: ${playerWon ? '+' : '-'}${BATTLE_POINT_CFG.summit}（頂上決戦${playerWon ? '勝利' : '敗北'}）</div>`;
     }
   }
-  // ヒート変動表示
   if (heatChange && heatChange.oldId !== heatChange.newId) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-top:6px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客倍率 ×${heatChange.newMult}）</div>`;
+    html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客倍率 ×${heatChange.newMult}）</div>`;
   }
   html += `</div>`;
 
@@ -3602,6 +3712,31 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
 
   box.innerHTML = html;
   overlay.classList.add('active');
+}
+
+/** PPV結果画面: 吹き出しHTML生成 */
+function _ppvBubble(name, line, isWinner) {
+  const nameColor = isWinner ? 'color:var(--gold)' : 'color:#e17055';
+  const namePrefix = isWinner ? '🏆 ' : '';
+  return `<div style="margin-bottom:8px;width:100%">
+    <div style="font-size:9px;font-weight:600;${nameColor};text-align:center;margin-bottom:3px">${namePrefix}${name}</div>
+    <div style="background:#f0f0f0;color:#222;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative">
+      ${line}
+      <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #f0f0f0"></div>
+    </div>
+  </div>`;
+}
+
+/** PPV結果画面: MQボーナスタグ群生成 */
+function _ppvBonusTags(r, mqBonuses, di) {
+  let tags = '';
+  if (r.isTitleMatch) tags += ' <span style="color:var(--gold)">(王座+5)</span>';
+  if (r.titleGapPenalty) tags += ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>`;
+  if (r.rivalryBonus) tags += ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>`;
+  if (r.coachMQBonus) tags += ` <span style="color:#e67e22">(コーチ+${r.coachMQBonus})</span>`;
+  if (r.freshnessBonus) tags += ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`;
+  if (r.friendshipBonus) tags += ` <span style="color:#74b9ff">(相性+${r.friendshipBonus})</span>`;
+  return tags;
 }
 
 function renderPPVTVResult(card, results, ppvName) {
