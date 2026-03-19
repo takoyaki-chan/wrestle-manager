@@ -15,6 +15,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-19 | 他団体戦ライバリーブースト + knownRival自動付与: isCrossOrgでrivalry×2.0(cap+35)、MQ65+/僅差でknownRival付与、PPV/B3/War全パス対応、B3バグ修正 |
 | 03-19 | オフシーズンBGM: 表彰式終了まで（offWeek0-1）はmanagement BGM、offWeek2以降でseason_end BGM再生 |
 | 03-18 | バグ修正バッチ: メインイベントボーナス逆転修正、不出場不満バグ、NPC王者王冠、タイトル挑戦条件強化、通常試合BGM、レンタル期日表示、効果残り時間表示 |
 | 03-18 | 試合画面UI刷新 Phase 0〜7 全完了 + §1〜§4完了（勝利演出/PPVマッチカード/BGM/SE） + PPV試合進行画面リデザイン |
@@ -79,6 +80,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 | システム | 実装日 | 設計書 |
 |---------|--------|--------|
+| 他団体戦ライバリーブースト + knownRival自動付与 | 03-19 | — |
 | PPV試合進行画面リデザイン（upper画像+能力比較バー+白吹き出し） | 03-18 | — |
 | 勝利演出+PPVマッチカード+BGM/SE音量（§1〜§4） | 03-18 | `docs/victory-ppv-implementation-guide.md` |
 | 試合画面UI刷新 Phase 0〜7 | 03-18 | `specs/archive/battle-ui-spec-v1.0.md` |

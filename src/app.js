@@ -5217,6 +5217,29 @@ const App = {
       const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
       App._applyLargeEventResult(result3);
 
+      // B3: 他団体戦 applyMatchResult（isCrossOrg=true でrivalryブースト）
+      if (G.relationships) {
+        const b3RelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE5C));
+        const b3Context = {
+          mq: matchResult.mq,
+          winner: matchResult.winner === 'left' ? 'win' : (matchResult.winner === 'right' ? 'lose' : 'draw'),
+          hpA: matchResult.hpLeft, hpB: matchResult.hpRight,
+          turns: matchResult.turns,
+          stage: 'normal',
+          isTitleMatch: false,
+          rivalryResolved: false,
+          injuredId: null,
+          isCareerBestA: matchResult.mq > (playerFighter.careerBestMQ || 0),
+          isCareerBestB: false,
+          losingStreakA: playerFighter.losingStreak || 0,
+          losingStreakB: 0,
+          ovrA: Engine.util.ov(playerFighter),
+          ovrB: Engine.util.ov(challenger),
+          isCrossOrg: true,
+        };
+        G = Engine.relationships.applyMatchResult(G, fighterId, challenger.id, b3Context, b3RelRng);
+      }
+
       // B3 ブレークスルー判定（対抗戦は isWarMatch=true）
       const btRngB3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB3B8));
       const won = matchResult.winner === 'left';
@@ -5277,6 +5300,7 @@ const App = {
     if (result.battlePoints) updates.battlePoints = result.battlePoints;
     // Phase 4: E-02/E-03 大型イベントの関係値反映
     if (result.relationships) updates.relationships = result.relationships;
+    if (result.relationshipCounters) updates.relationshipCounters = result.relationshipCounters;
     if (result.events && result.events.length > 0) {
       updates.gameLog = [...(G.gameLog || []), ...result.events];
     }
@@ -5672,19 +5696,32 @@ const App = {
     });
     G = { ...G, h2h: warH2h };
 
-    // Phase 4 E-01: 対抗戦の関係値反映
+    // Phase 4 E-01: 対抗戦の関係値反映 + applyMatchResult（isCrossOrg=true）
     if (G.relationships) {
       const warRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE5A));
       let relState = { ...G };
-      // 対戦した選手間: bond 0~+2, rivalry +5~+8
+      // 対戦した選手間: applyMatchResult で全イベント判定（他団体戦ブースト付き）
       wp.results.forEach(r => {
         const playerId = r.playerFighter.id;
         const aiId = r.aiFighter.id;
-        // applyToRoster(state, sourceId, targetIds[], ...) — sourceは単体, targetは配列
-        relState = Engine.relationships.applyToRoster(relState, playerId, [aiId],
-          { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
-        relState = Engine.relationships.applyToRoster(relState, aiId, [playerId],
-          { min: 0, max: 2 }, { min: 5, max: 8 }, warRelRng);
+        const warContext = {
+          mq: r.mq,
+          winner: r.playerWon ? 'win' : 'lose',
+          hpA: r.hpLeft || { final: 50, max: 100 }, hpB: r.hpRight || { final: 50, max: 100 },
+          turns: r.turns || 10,
+          stage: 'normal',
+          isTitleMatch: false,
+          rivalryResolved: false,
+          injuredId: null,
+          isCareerBestA: r.mq > (r.playerFighter.careerBestMQ || 0),
+          isCareerBestB: false,
+          losingStreakA: r.playerFighter.losingStreak || 0,
+          losingStreakB: 0,
+          ovrA: Engine.util.ov(r.playerFighter),
+          ovrB: Engine.util.ov(r.aiFighter),
+          isCrossOrg: true,
+        };
+        relState = Engine.relationships.applyMatchResult(relState, playerId, aiId, warContext, warRelRng);
       });
       // チームメイト間: bond +2~+4
       const participantIds = [...warFighterIds];

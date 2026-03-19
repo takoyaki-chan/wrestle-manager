@@ -6929,7 +6929,12 @@ const Engine = {
           const fA = roster.find(c => c.id === charIdA) || match.left;
           const fB = roster.find(c => c.id === charIdB) || match.right;
 
-          const context = {
+          // PPVは他団体選手が混在する合同大会 → _ppvOrgIdで所属判定
+        const aOrgPpv = (fA._ppvOrgId || fA.orgId);
+        const bOrgPpv = (fB._ppvOrgId || fB.orgId);
+        const ppvCrossOrg = aOrgPpv !== undefined && bOrgPpv !== undefined && aOrgPpv !== bOrgPpv;
+
+        const context = {
             mq: r.mq,
             winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
             hpA: r.hpLeft, hpB: r.hpRight,
@@ -6944,6 +6949,7 @@ const Engine = {
             losingStreakB: (roster.find(c => c.id === charIdB) || {}).losingStreak || 0,
             ovrA: fA ? Engine.util.ov(fA) : 0,
             ovrB: fB ? Engine.util.ov(fB) : 0,
+            isCrossOrg: ppvCrossOrg,
           };
           relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
         });
@@ -10407,11 +10413,12 @@ Engine.eventSystem = {
           }
           // Phase 4 E-03: 対抗戦の関係値反映
           let relationships = null;
+          let relationshipCounters = null;
           if (state.relationships) {
             const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE55));
             // 対戦した2選手間: rivalry +8~+12（§4.2ブースト）
-            // ※ AI相手のIDは event.opponentId として存在する場合のみ
-            const opponentId = event.opponentId;
+            // ※ AI相手のIDは event.challenger?.id（旧: event.opponentId はバグ）
+            const opponentId = event.challenger?.id;
             let relState = { ...state };
             if (opponentId) {
               relState = Engine.relationships.applyToRoster(relState, fighterId, [opponentId],
@@ -10425,9 +10432,33 @@ Engine.eventSystem = {
               relState = Engine.relationships.applyFromRoster(relState, teammateIds, fighterId,
                 { min: 2, max: 2 }, { min: 0, max: 0 }, relRng);
             }
+            // B3: applyMatchResult（isCrossOrg=true）で他団体戦rivalryブースト
+            if (opponentId && result) {
+              const fighter = roster.find(f => f.id === fighterId);
+              const b3Ctx = {
+                mq: result.mq || 50,
+                winner: result.winner === 'left' ? 'win' : (result.winner === 'right' ? 'lose' : 'draw'),
+                hpA: result.hpLeft || { final: 50, max: 100 },
+                hpB: result.hpRight || { final: 50, max: 100 },
+                turns: result.turns || 10,
+                stage: 'normal',
+                isTitleMatch: false,
+                rivalryResolved: false,
+                injuredId: null,
+                isCareerBestA: fighter ? result.mq > (fighter.careerBestMQ || 0) : false,
+                isCareerBestB: false,
+                losingStreakA: fighter ? (fighter.losingStreak || 0) : 0,
+                losingStreakB: 0,
+                ovrA: fighter ? Engine.util.ov(fighter) : 0,
+                ovrB: event.challenger ? Engine.util.ov(event.challenger) : 0,
+                isCrossOrg: true,
+              };
+              relState = Engine.relationships.applyMatchResult(relState, fighterId, opponentId, b3Ctx, relRng);
+            }
             relationships = relState.relationships;
+            relationshipCounters = relState.relationshipCounters;
           }
-          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta, relationships };
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta, relationships, ...(relationshipCounters ? { relationshipCounters } : {}) };
         }
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
@@ -13105,7 +13136,8 @@ Engine.relationships = {
     //   isTitleMatch, rivalryResolved,
     //   injuredId, isCareerBestA, isCareerBestB,
     //   losingStreakA, losingStreakB,
-    //   isProveModeA, isProveModeB
+    //   isProveModeA, isProveModeB,
+    //   isCrossOrg  // 他団体戦フラグ（PPV/B3/War）
     // }
     if (!state.relationships) return state;
 
@@ -13122,6 +13154,12 @@ Engine.relationships = {
     const aWon = context.winner === 'win';
     const bWon = context.winner === 'lose';
     const isDraw = context.winner === 'draw';
+    const isCrossOrg = !!context.isCrossOrg;
+
+    // 他団体戦キャップ用: 初期rivalry記録
+    const rivalryStartAB = rAB.rivalry;
+    const rivalryStartBA = rBA.rivalry;
+    const CROSS_ORG_RIVALRY_CAP = 35; // 1試合あたりのrivalry増加上限
 
     // ── ヘルパー: レンジ内ランダム値（整数レンジはint、小数レンジは10倍スケール） ──
     const roll = (min, max) => {
@@ -13143,8 +13181,11 @@ Engine.relationships = {
         counters[cKey] = { count: counter.count + 1, lastWeek: absWeek };
       }
 
+      // 他団体戦: rivalry変動を×2.0ブースト
+      const rivalryMult = isCrossOrg ? 2.0 : 1.0;
+
       rel.bond = this._applyAxisDelta(rel.bond, roll(bondMin, bondMax) * mult, 'bond');
-      rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult, 'rivalry');
+      rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult * rivalryMult, 'rivalry');
     };
 
     // ═══ M-01: ベースライン（勝敗非対称 v2.0） ═══
@@ -13388,6 +13429,20 @@ Engine.relationships = {
         apply(winDir, 'boringMatch', context.stage, -2, -1, 0, 0, true);
         apply(loseDir, 'boringMatch', context.stage, -4, -2, 0, 0, true);
       }
+    }
+
+    // ── 他団体戦キャップ: 1試合あたりのrivalry増加を+35に制限 ──
+    if (isCrossOrg) {
+      const deltaAB = rAB.rivalry - rivalryStartAB;
+      if (deltaAB > CROSS_ORG_RIVALRY_CAP) rAB.rivalry = rivalryStartAB + CROSS_ORG_RIVALRY_CAP;
+      const deltaBA = rBA.rivalry - rivalryStartBA;
+      if (deltaBA > CROSS_ORG_RIVALRY_CAP) rBA.rivalry = rivalryStartBA + CROSS_ORG_RIVALRY_CAP;
+    }
+
+    // ── knownRival自動付与: MQ65+ OR 僅差の好勝負 → decay 1/3で持続 ──
+    if (context.mq >= 65 || isCloseMatch) {
+      if (!rAB.knownRival) rAB.knownRival = true;
+      if (!rBA.knownRival) rBA.knownRival = true;
     }
 
     // ── 全値クランプ ──
