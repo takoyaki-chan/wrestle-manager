@@ -248,23 +248,27 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .btn-intensive:hover{background:rgba(255,165,0,0.2)}
 .btn-intensive.active{background:rgba(255,165,0,0.25);border-color:#ffa500;box-shadow:0 0 6px rgba(255,165,0,0.2)}
 .btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
-/* G1 Cream Theme — 本拠地系画面パネル */
-.cream-screen>.panel,.cream-screen>.panel-title,
-#screen-roster>.panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
-.cream-screen>.panel .panel-title,
-#screen-roster>.panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
-.cream-screen>.panel .btn-sm,.cream-screen>.panel .btn.btn-sm,
-#screen-roster>.panel .btn-sm,#screen-roster>.panel .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
-.cream-screen .panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
-.cream-screen .panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
-.cream-screen .panel .btn-sm,.cream-screen .panel .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
-.cream-screen table{color:#1e1c16}
+/* G1 Cream Theme — 本拠地系画面（団体/コーチ/スカウト） */
+.cream-screen,#screen-roster{
+  --bg-card:#ede8dc;--card-bg:#ede8dc;--panel-bg:#d4ccb8;--bg-main:#d4ccb8;
+  --border:rgba(100,85,50,0.14);--gold:#7a6530;--gold-light:#5c4a1e;
+  --text-main:#1e1c16;--text:#1e1c16;--text-sub:#4a4638;--text-dim:#7a7466;
+}
+.cream-screen .panel,#screen-roster>.panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
+.cream-screen .panel-title,#screen-roster>.panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
+.cream-screen .btn-sm,.cream-screen .btn.btn-sm,
+#screen-roster .btn-sm,#screen-roster .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
+.cream-screen .btn{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
+.cream-screen table,.cream-screen .data-table{color:#1e1c16}
 .cream-screen th{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
-.cream-screen td{border-bottom-color:rgba(100,85,50,0.08)}
-.cream-screen a,.cream-screen .name-link{color:#5c4a1e}
+.cream-screen td{border-bottom-color:rgba(100,85,50,0.08);color:#1e1c16}
+.cream-screen .data-table tr:hover{background:rgba(122,101,48,0.08)}
+.cream-screen a,.cream-screen .name-link,.cream-screen .flink{color:#5c4a1e}
 .cream-screen select{background:#d8d2c2;color:#1e1c16;border:1px solid rgba(100,85,50,0.2);border-radius:3px}
 .cream-screen input{background:#d8d2c2;color:#1e1c16;border:1px solid rgba(100,85,50,0.2)}
 .cream-screen .badge{color:#1e1c16}
+.cream-screen .num{color:#1e1c16}
+.cream-screen .num.ov{color:#5c4a1e;font-weight:900}
 .rd-card{background:#ede8dc;border:1px solid rgba(100,85,50,0.14);border-radius:8px;cursor:pointer;transition:border-color .2s}
 .rd-card:hover{border-color:rgba(122,101,48,0.35)}
 .rd-card.expanded{border-color:rgba(122,101,48,0.35)}
@@ -1940,7 +1944,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Ranking (v0.9) -->
-  <div class="screen cream-screen" id="screen-ranking">
+  <div class="screen" id="screen-ranking">
     <div class="panel">
       <div class="panel-title">🏆 団体ランキング</div>
       <div id="rankingContent"></div>
@@ -1948,7 +1952,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Database (v1.0) -->
-  <div class="screen cream-screen" id="screen-database">
+  <div class="screen" id="screen-database">
     <div class="panel" id="databasePanel">
       <div id="databaseContent"></div>
     </div>
@@ -1995,7 +1999,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Finance -->
-  <div class="screen cream-screen" id="screen-finance">
+  <div class="screen" id="screen-finance">
     <div class="panel">
       <div class="panel-title">収支レポート</div>
       <div id="financeContent"></div>
