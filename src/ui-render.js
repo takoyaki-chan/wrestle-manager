@@ -2506,10 +2506,10 @@ function renderScout() {
           <td>${fLink(r.fighter, {source:srcLink})}</td>
           <td style="font-size:13px;color:var(--text-sub)">${srcLabel}</td>
           <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
-          <td class="num ov">${Engine.util.ov(r.fighter)}</td>
+          <td style="font-size:18px;font-weight:900;color:var(--gold);font-family:'Bebas Neue',sans-serif;text-align:center">${Engine.util.ov(r.fighter)}</td>
           <td><select id="${selectId}" onchange="updateRentalFee(${r.fighter.id})" style="font-size:12px;padding:2px 4px;background:var(--card-bg);color:var(--text);border:1px solid var(--border)">${seasonOpts}</select></td>
-          <td class="num" style="color:#f39c12"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
-          <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);color:#f39c12" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
+          <td class="num" style="color:#c44e8a;font-weight:700"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
+          <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:#5c4a1e;border:1px solid #7a6530;color:#ede8dc" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
         </tr>`;
       });
       html += '</table></div>';
