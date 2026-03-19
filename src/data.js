@@ -210,12 +210,12 @@ const TRAIT_DEFS = {
   '華':           {cat:'pop',    icon:'華', color:'#e91e9c', en:'Charisma',         desc:'集客力にボーナス。グッズ売上の重みも増加'},
   'ファンサービス':{cat:'pop',    icon:'奉', color:'#f39c12', en:'Fan Service',      desc:'グッズ売上にボーナス。興行出場で人気が上がりやすい'},
   'ヒール適性':   {cat:'pop',    icon:'悪', color:'#9b59b6', en:'Heel Aptitude',    desc:'悪役ムーブで人気を稼ぎ、因縁も生みやすい'},
-  '名勝負製造機': {cat:'match',  icon:'名', color:'#f1c40f', en:'Match Maker',      desc:'試合品質にわずかなボーナス'},
+  '名勝負製造機': {cat:'match',  icon:'名', color:'#f1c40f', en:'Match Maker',      desc:'試合がたまに大化けする（MQ+1〜5）'},
   '引き出し上手': {cat:'match',  icon:'引', color:'#2ecc71', en:'Best Bringer',     desc:'格下との試合でも質が下がりにくい'},
   'ライバル体質': {cat:'match',  icon:'闘', color:'#e74c3c', en:'Rivalry Prone',    desc:'ライバル因縁が生まれやすい'},
-  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'若手期の成長が速い。全盛期短め', excl:'A'},
-  '晩成':         {cat:'growth', icon:'晩', color:'#16a085', en:'Late Bloomer',     desc:'若手期は遅いが全盛期が長い', excl:'A'},
-  '遅咲き':       {cat:'growth', icon:'遅', color:'#1abc9c', en:'Late Starter',     desc:'25歳以降に急成長する', excl:'A'},
+  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'10代から即戦力。20歳で完成するが、伸びしろは少ない', excl:'A'},
+  '晩成':         {cat:'growth', icon:'晩', color:'#16a085', en:'Late Bloomer',     desc:'序盤は遅いが、21〜22歳でピークに成長する', excl:'A'},
+  '遅咲き':       {cat:'growth', icon:'遅', color:'#1abc9c', en:'Late Starter',     desc:'序盤は全く伸びないが、23歳で突然覚醒する', excl:'A'},
   '努力家':       {cat:'growth', icon:'努', color:'#3498db', en:'Hard Worker',      desc:'成長が安定しやすく、練習で体を壊しにくい'},
   '破天荒':       {cat:'growth', icon:'破', color:'#e67e22', en:'Maverick',         desc:'成長にムラあり。爆発的か停滞'},
   '適応力':       {cat:'growth', icon:'適', color:'#1abc9c', en:'Adaptability',     desc:'怪我中でも成長が落ちにくく、追い込み練習にも強い'},
@@ -226,13 +226,13 @@ const TRAIT_DEFS = {
   'ムードメーカー':{cat:'org',   icon:'和', color:'#f39c12', en:'Mood Maker',       desc:'明るさでロッカールームの空気を持ち上げる'},
   '人望':         {cat:'org',    icon:'望', color:'#3498db', en:'Respect',           desc:'在籍中はロッカールーム士気が毎週+3'},
   '負けず嫌い':   {cat:'org',    icon:'負', color:'#e74c3c', en:'Competitive',      desc:'負けた翌週の練習成長にボーナス'},
-  'リーダー気質': {cat:'org',    icon:'将', color:'#f1c40f', en:'Leadership',        desc:'若手の成長率にボーナス'},
+  'リーダー気質': {cat:'org',    icon:'将', color:'#f1c40f', en:'Leadership',        desc:'チームの不満を抑え、チャンピオン時は団体の顔として人気UP'},
   '忠誠心':       {cat:'org',    icon:'忠', color:'#2ecc71', en:'Loyalty',           desc:'引き抜きオファーが来る確率が大幅に低下'},
   '野心':         {cat:'org',    icon:'野', color:'#9b59b6', en:'Ambition',          desc:'タイトル挑戦時に試合が盛り上がり、覚醒しやすい'},
   '番狂わせ体質': {cat:'special',icon:'番', color:'#e74c3c', en:'Upset Specialist', desc:'格上相手に丸め込み率UP'},
   '闘志':         {cat:'special',icon:'志', color:'#c0392b', en:'Fighting Spirit',  desc:'瀕死から粘る力が強く、負けても人気が落ちにくい'},
   '威圧感':       {cat:'special',icon:'威', color:'#8e44ad', en:'Intimidation',     desc:'対戦相手の序盤モメンタムが不利'},
-  '反骨心':       {cat:'special',icon:'反', color:'#c0392b', en:'Rebellious',       desc:'扱いにくいが逆境に強い。信頼低下時に成長UP'}
+  '反骨心':       {cat:'special',icon:'反', color:'#c0392b', en:'Rebellious',       desc:'移籍願望が出やすいが、信頼が低いと成長する'}
 };
 
 // Trait utility functions
@@ -2864,20 +2864,39 @@ function ageMultiplier(age, traits) {
 
   if (!Array.isArray(traits)) return mul;
 
-  // 早熟: ≤18で+30%、≥23で-30%
+  // 成長トレイト: 専用テーブル上書き方式（growth-trait-rebalance v1.0）
+  // 個性なしベース: ≤17:0.70 / 18:1.00 / 19-20:1.15 / 21-22:1.00 / 23-24:0.50 / 25-26:0.10 / 27+:0
   if (traits.includes('早熟')) {
-    if (age <= 18) mul *= 1.3;
-    else if (age >= 23) mul *= 0.7;
-  }
-  // 晩成: ≤18で-20%、21-27で+40%
-  if (traits.includes('晩成')) {
-    if (age <= 18) mul *= 0.8;
-    else if (age >= 21 && age <= 27) mul *= 1.4;
-  }
-  // 遅咲き: ≤20で-20%、21-29で爆発的成長
-  if (traits.includes('遅咲き')) {
-    if (age <= 20) mul *= 0.8;
-    else if (age <= 29) mul = Math.max(mul, 0.9);
+    // ピーク17-19歳、20歳から鈍化、23歳で完全停止。累計5.95（通常比-17%）
+    if      (age <= 17) mul = 1.00;
+    else if (age <= 18) mul = 1.30;
+    else if (age <= 19) mul = 1.15;
+    else if (age <= 20) mul = 0.80;
+    else if (age <= 21) mul = 0.50;
+    else if (age <= 22) mul = 0.20;
+    else                mul = 0;
+  } else if (traits.includes('晩成')) {
+    // ピーク21-22歳、序盤は鈍い、23歳でまだ伸びる。累計7.40（通常比+3%）
+    if      (age <= 17) mul = 0.50;
+    else if (age <= 18) mul = 0.70;
+    else if (age <= 19) mul = 0.90;
+    else if (age <= 20) mul = 1.00;
+    else if (age <= 22) mul = 1.15;
+    else if (age <= 23) mul = 0.70;
+    else if (age <= 24) mul = 0.30;
+    else                mul = 0;
+  } else if (traits.includes('遅咲き')) {
+    // ピーク22-23歳、序盤は非常に鈍い、23歳で突然覚醒。累計7.25（通常比+1%）
+    if      (age <= 17) mul = 0.40;
+    else if (age <= 18) mul = 0.50;
+    else if (age <= 19) mul = 0.60;
+    else if (age <= 20) mul = 0.70;
+    else if (age <= 21) mul = 0.80;
+    else if (age <= 22) mul = 1.00;
+    else if (age <= 23) mul = 1.15;
+    else if (age <= 24) mul = 0.80;
+    else if (age <= 25) mul = 0.30;
+    else                mul = 0;
   }
   return mul;
 }

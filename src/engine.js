@@ -447,7 +447,7 @@ const Engine = {
       // §5 最終MQ
       let mq = ceiling - dramaPenalty - pacingPenalty - finishPenalty;
       // 特性ボーナス（天井を超える加点として機能）
-      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 3;
+      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 1 + Engine.rng.int(rng, 0, 4);  // +1〜5ランダム
       const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
       if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(4, ovDiff * 0.15);
       mq = Math.round(Engine.util.clamp(mq, 5, 100));
@@ -2370,7 +2370,6 @@ const Engine = {
 
       // 特性ボーナス
       let bonus = 1.0;
-      if ((char.age || 99) <= 19 && G.roster && G.roster.some(c => c.id !== char.id && Traits.has(c, 'リーダー気質') && !c.injury)) bonus *= 1.10;
       if (Traits.has(char, '負けず嫌い') && char.lastMatchResult === 'loss') bonus *= 1.10;
       if (Traits.has(char, '反骨心') && (char.trust != null ? char.trust : 50) <= 30) bonus *= 1.15;
 
@@ -4850,6 +4849,15 @@ const Engine = {
     if (careAbsWeek - careLastRecovery >= 4) {
       const newCareStock = Math.min((s.careStock || 0) + 1, s.careStockMax || 5);
       s = { ...s, careStock: newCareStock, careStockLastRecovery: careAbsWeek };
+    }
+
+    // リーダー気質: チャンピオン時orgPop+1/週
+    if (s.titles && s.titles.world && s.titles.world.championId) {
+      const champId = s.titles.world.championId;
+      const champHasLeader = (s.roster || []).some(c => c.id === champId && Traits.has(c, 'リーダー気質') && !c.injury);
+      if (champHasLeader) {
+        s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + 1, 0, 100) };
+      }
     }
 
     // 浮動小数点サニタイズ: 蓄積する計算誤差を除去（tickWeek統合パイプライン末尾）
@@ -9021,9 +9029,6 @@ Engine.trust = {
         // §10: メンタル係数
         gainDelta = Engine.trust.applyCoeff(gainDelta, mental);
 
-        // §11: 反骨心
-        if (Traits.has(fighter, '反骨心')) gainDelta *= 1.3;
-
         // §4.2: 高信頼帯の上昇逓減（正方向のみ）
         if (gainDelta > 0) gainDelta *= Engine.trust.gainMult(oldTrust);
 
@@ -9055,9 +9060,6 @@ Engine.trust = {
         // §10: メンタル係数
         lossDelta = Engine.trust.applyCoeff(lossDelta, mental);
 
-        // §11: 反骨心
-        if (Traits.has(fighter, '反骨心')) lossDelta *= 1.3;
-
         // §4.3: 負方向は逓減なし
         delta += lossDelta;
 
@@ -9087,7 +9089,12 @@ Engine.trust = {
           activeRosterSize: activeRoster.length,
         };
         const grievanceResult = Engine.trust.calcGrievanceDelta(updated, rosterContext, titles, state);
-        delta += grievanceResult.delta;
+        let grievanceDelta = grievanceResult.delta;
+        // リーダー気質: grievance軽減（-30%）
+        if (grievanceDelta < 0 && (state.roster || []).some(c => c.id !== updated.id && Traits.has(c, 'リーダー気質') && !c.injury)) {
+          grievanceDelta *= 0.7;
+        }
+        delta += grievanceDelta;
         // Phase 5: スナップショット用フラグを選手オブジェクトに転写
         if (Object.keys(grievanceResult.flags).length > 0) {
           updated._grievanceFlags = grievanceResult.flags;
@@ -9655,7 +9662,6 @@ Engine.eventSystem = {
           const newPop = Engine.util.clamp((f.popularity || 1) + 1, 1, 100);
           const oldTrust = f.trust != null ? f.trust : 50;
           let trustDelta = Engine.trust.applyCoeff(2, f.mn || 50);
-          if (Traits.has(f, '反骨心')) trustDelta *= 1.3;
           if (trustDelta > 0) trustDelta *= Engine.trust.gainMult(oldTrust);
           const newTrust = Engine.util.clamp(oldTrust + trustDelta, 0, 100);
           return { ...f, popularity: newPop, trust: newTrust };
@@ -9873,7 +9879,6 @@ Engine.eventSystem = {
         if (f.id !== fighterId) return f;
         const oldTrust = f.trust != null ? f.trust : 50;
         let adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
-        if (Traits.has(f, '反骨心')) adjusted *= 1.3;
         if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
         return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
       });
@@ -10251,7 +10256,6 @@ Engine.eventSystem = {
         if (f.id !== fighterId) return f;
         const oldTrust = f.trust != null ? f.trust : 50;
         let adjusted = Engine.trust.applyCoeff(delta, f.mn || 50);
-        if (Traits.has(f, '反骨心')) adjusted *= 1.3;
         if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
         return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
       });
@@ -10529,10 +10533,9 @@ Engine.eventSystem = {
         roster = roster.map(f => {
           if (f.id !== fId) return f;
           const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
-          // Phase0修正: trust直接加算→applyCoeff+gainMult経由（反骨心×1.3も適用）
+          // Phase0修正: trust直接加算→applyCoeff+gainMult経由
           const oldTrust = f.trust != null ? f.trust : 50;
           let trustDelta = Engine.trust.applyCoeff(3, f.mn || 50);
-          if (Traits.has(f, '反骨心')) trustDelta *= 1.3;
           if (trustDelta > 0) trustDelta *= Engine.trust.gainMult(oldTrust);
           const newTrust = Engine.util.clamp(oldTrust + trustDelta, 0, 100);
           return { ...f, popularity: newPop, trust: newTrust };
@@ -11623,7 +11626,6 @@ Engine.contract = {
         else if (gapLevel === 'large') successRate -= 0.10;
         if (Traits.has(f, '忠誠心')) successRate += 0.15;
         if (Traits.has(f, '野心')) successRate -= 0.10;
-        if (Traits.has(f, '反骨心')) successRate -= 0.15;
         successRate = Engine.util.clamp(successRate, 0.15, 0.85);
 
         if (Engine.rng.float(rng) < successRate) {
@@ -11657,7 +11659,6 @@ Engine.contract = {
         retainRate += ((f.trust || 50) - 15) * 0.015;
         retainRate += (f.careerSeasons || 0) * 0.03;
         if (Traits.has(f, '忠誠心')) retainRate += 0.20;
-        if (Traits.has(f, '反骨心')) retainRate -= 0.15;
         if (ctx.isFounder) retainRate += 0.10;
         // §7.5: ギャップ補正（引き留め成功率ペナルティ）
         if (gapLevel === 'mid') retainRate -= 0.10;
