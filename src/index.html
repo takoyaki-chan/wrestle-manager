@@ -143,12 +143,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 
 /* Select dropdown */
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:22px}
 
-/* Portrait images */
-.portrait{border-radius:10px;object-fit:cover;flex-shrink:0;border:2.5px solid rgba(200,190,170,0.18);vertical-align:middle;box-shadow:0 2px 8px rgba(0,0,0,0.35),0 0 0 1px rgba(200,190,170,0.08)}
-.portrait-champ{border-color:#d4a843 !important;box-shadow:0 2px 8px rgba(0,0,0,0.3),0 0 10px rgba(212,168,67,0.4) !important}
-.portrait-popup{border-radius:14px;width:228px;height:228px;object-fit:cover;border:3px solid rgba(200,190,170,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
-.portrait-match{border-radius:10px;width:48px;height:48px;object-fit:cover;border:2.5px solid rgba(200,190,170,0.12)}
+/* Portrait images — Mockup v9 準拠 角丸四角 */
+.portrait{border-radius:10px;object-fit:cover;flex-shrink:0;border:2px solid rgba(100,85,50,0.12);vertical-align:middle;overflow:hidden}
+.portrait-champ{border-color:#d4a843 !important;box-shadow:0 0 8px rgba(212,168,67,0.35)}
+.portrait-popup{border-radius:14px;width:228px;height:228px;object-fit:cover;border:3px solid rgba(100,85,50,0.15)}
+.portrait-match{border-radius:10px;width:48px;height:48px;object-fit:cover;border:2px solid rgba(100,85,50,0.12)}
 .portrait-match.winner{border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,0.65),0 0 30px rgba(212,168,67,0.3)}
 .portrait-match.loser{opacity:0.6;filter:grayscale(0.3)}
 /* Monitor/noise effect wrapper for portraits */
