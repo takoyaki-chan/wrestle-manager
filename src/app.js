@@ -1163,7 +1163,7 @@ const Mission = {
 const SAVE_KEY = 'wrestle_manager_save_';
 const SAVE_SLOTS = 3;
 const AUTOSAVE_KEY = 'wrestle_manager_autosave';
-const SAVE_COMPRESS_MARKER = 'WM_LZ\x00';
+const SAVE_COMPRESS_MARKER = 'WM_LZ|';
 
 // ─── セーブデータ トリミング定数 ───
 const SAVE_TRIM = {
@@ -1246,8 +1246,11 @@ const Storage = {
 
   // ─── 圧縮/非圧縮セーブの自動判定ヘルパー ───
   _parseRaw(raw) {
-    if (raw.startsWith(SAVE_COMPRESS_MARKER)) {
-      const json = LZString.decompressFromUTF16(raw.slice(SAVE_COMPRESS_MARKER.length));
+    // 新マーカー(WM_LZ|) or 旧マーカー(WM_LZ\x00) 両対応
+    if (raw.startsWith(SAVE_COMPRESS_MARKER) || raw.startsWith('WM_LZ\x00')) {
+      const markerLen = raw.startsWith(SAVE_COMPRESS_MARKER) ? SAVE_COMPRESS_MARKER.length : 6;
+      const json = LZString.decompressFromUTF16(raw.slice(markerLen));
+      if (!json) throw new Error('LZ decompression returned null');
       return JSON.parse(json);
     }
     return JSON.parse(raw);
@@ -1951,14 +1954,14 @@ const Storage = {
           const a = Math.min(e.leftId, e.rightId), b = Math.max(e.leftId, e.rightId);
           return `${a}>${b}`;
         }));
-        const補完 = G._everFoughtPairs
+        const restored = G._everFoughtPairs
           .filter(p => !existing.has(p))
           .map(p => {
             const [a, b] = p.split('>').map(Number);
             return { leftId: a, rightId: b, showCount: 0 }; // showCount=0: 鮮度窓外
           });
-        if (補完.length > 0) {
-          G = { ...G, matchupLog: [...補完, ...(G.matchupLog || [])] };
+        if (restored.length > 0) {
+          G = { ...G, matchupLog: [...restored, ...(G.matchupLog || [])] };
         }
         delete G._everFoughtPairs;
       }
@@ -1993,6 +1996,7 @@ const Storage = {
       else if (G.weekPhase === 'ppvTV') App.initPPVTV();
       return true;
     }
+    alert('セーブデータの読み込みに失敗しました。コンソールを確認してください。');
     return false;
   },
 
