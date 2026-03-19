@@ -119,6 +119,8 @@ const Engine = {
       (state.freeAgents || []).forEach(c => occupied.add(c.id));
       // スカウト候補一覧（イベント中のみ存在）
       (state.scoutCandidates || []).forEach(c => occupied.add(c.id));
+      // 引退済みID（再登場防止）
+      (state.retiredIds || []).forEach(id => occupied.add(id));
       return occupied;
     },
     isSpecialShow(w) { return w % 12 === 0; },
@@ -4708,12 +4710,13 @@ const Engine = {
       {
         const curFA = s.freeAgents || [];
         const curPool = s.dormantPool || [];
-        // 占有済みID収集（ロスター＋AI団体＋現FA＋dormant全エントリ）
+        // 占有済みID収集（ロスター＋AI団体＋現FA＋dormant全エントリ＋引退済みID）
         const emergOccupied = new Set();
         (s.roster || []).forEach(c => emergOccupied.add(c.id));
         Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => emergOccupied.add(c.id)));
         curFA.forEach(c => emergOccupied.add(c.id));
         curPool.forEach(e => emergOccupied.add(typeof e === 'object' ? e.id : e));
+        (s.retiredIds || []).forEach(id => emergOccupied.add(id));
         // pool内で実際に有効なエントリ数（21歳未満かつ未占有）
         const eligibleInPool = curPool.filter(e => {
           const age = typeof e === 'object' ? e.age : null;
@@ -5132,7 +5135,7 @@ const Engine = {
           let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${li.injuryInfo.injury.type}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
           roster = roster.filter(c => c.id !== lc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id] };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
@@ -5154,7 +5157,7 @@ const Engine = {
           let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${ri.injuryInfo.injury.type}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
           roster = roster.filter(c => c.id !== rc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF] };
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id] };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
@@ -7292,7 +7295,8 @@ const Engine = {
             const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
             return { fighter: f, route, line, category, summary, canRetain };
           });
-          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], pendingRetirements };
+          const _newRetiredIds = [...(s.retiredIds || []), ...allRetirees.map(c => c.id).filter(id => !(s.retiredIds || []).includes(id))];
+          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, pendingRetirements };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) {
             allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
@@ -7334,7 +7338,8 @@ const Engine = {
             Engine.career.ensure(f),
             { type: 'retire', reason: 'fa_aged_out', season: s.season, age: f.age }
           ));
-          s = { ...s, freeAgents: youngFA, retiredFighters: [...(s.retiredFighters || []), ...retiredFA] };
+          const _faRetiredIds = [...(s.retiredIds || []), ...agedOutFA.map(f => f.id).filter(id => !(s.retiredIds || []).includes(id))];
+          s = { ...s, freeAgents: youngFA, retiredFighters: [...(s.retiredFighters || []), ...retiredFA], retiredIds: _faRetiredIds };
           agedOutFA.forEach(f => events.push(`💭 ${f.name}(${f.age}歳)がプロ入りの夢を諦めた`));
         } else {
           s = { ...s, freeAgents: youngFA };
@@ -7500,6 +7505,7 @@ const Engine = {
             Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupiedIds.add(c.id)));
             (s.freeAgents || []).forEach(c => occupiedIds.add(c.id));
             currentPool.forEach(e => occupiedIds.add(typeof e === 'object' ? e.id : e));
+            (s.retiredIds || []).forEach(id => occupiedIds.add(id));
             const available = ALL_CHARS.filter(c => !occupiedIds.has(c.id));
             if (available.length > 0) {
               const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
@@ -7945,6 +7951,7 @@ const Engine = {
       // v1.3: Career record system
       retiredFighters: [],  // temporary — cleared after year-end awards
       hallOfFame: [],       // permanent — hall of fame inductees
+      retiredIds: [],       // permanent — all retired character IDs (prevents premature reappearance)
       lastAwards: null,     // v1.4: last year-end awards result
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
@@ -8328,7 +8335,12 @@ Engine.awards = {
    */
   applyHallOfFame(state, inductees) {
     const newHallOfFame = [...(state.hallOfFame || []), ...inductees];
-    return { ...state, hallOfFame: newHallOfFame, retiredFighters: [] };
+    // retiredFightersクリア前に全IDをretiredIdsに永続保存（再登場防止）
+    const newRetiredIds = [...(state.retiredIds || [])];
+    (state.retiredFighters || []).forEach(f => {
+      if (f.id && !newRetiredIds.includes(f.id)) newRetiredIds.push(f.id);
+    });
+    return { ...state, hallOfFame: newHallOfFame, retiredFighters: [], retiredIds: newRetiredIds };
   }
 };
 
@@ -11762,7 +11774,7 @@ Engine.contract = {
     const info = Engine.contract.determineDeparture(rng, fighter, s);
 
     if (info.type === 'retire') {
-      s = { ...s, retiredFighters: [...(s.retiredFighters || []), fighter] };
+      s = { ...s, retiredFighters: [...(s.retiredFighters || []), fighter], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id] };
     } else if (info.type === 'rival') {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {

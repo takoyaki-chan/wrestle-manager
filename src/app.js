@@ -1840,6 +1840,14 @@ const Storage = {
         };
       }
 
+      // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
+      if (!G._migrated_retiredIds_v1) {
+        const ids = new Set(G.retiredIds || []);
+        (G.hallOfFame || []).forEach(f => { if (f.id) ids.add(f.id); });
+        (G.retiredFighters || []).forEach(f => { if (f.id) ids.add(f.id); });
+        G = { ...G, retiredIds: [...ids], _migrated_retiredIds_v1: true };
+      }
+
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
         // 全ファイターにorgTimeline初期エントリを生成
@@ -3848,6 +3856,53 @@ const App = {
       }
     }
 
+    // ラストラン試合を行った選手を即座に引退処理（4週待ちバグ修正）
+    const lastRunRetirees = [];
+    results.forEach(r => {
+      if (r.isLastRunMatch && r.lastRunFighterId) {
+        const fighter = G.roster.find(c => c.id === r.lastRunFighterId);
+        if (fighter) lastRunRetirees.push(fighter);
+      }
+    });
+    if (lastRunRetirees.length > 0) {
+      const lrLineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3));
+      const retiredWithRecords = lastRunRetirees.map(c => {
+        let f = Engine.career.ensure({ ...c, lastRun: false, lastRunWeek: null });
+        f = Engine.career.addEvent(f, { type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: f.age });
+        return f;
+      });
+      const lastRunRetiredIds = new Set(lastRunRetirees.map(c => c.id));
+      const survivingRoster = G.roster.filter(c => !lastRunRetiredIds.has(c.id));
+      // 関係値凍結 + trust影響 + retiredIds永続記録
+      const newRetiredIds = [...(G.retiredIds || []), ...lastRunRetirees.map(c => c.id).filter(id => !(G.retiredIds || []).includes(id))];
+      let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds };
+      if (updState.relationships) {
+        lastRunRetirees.forEach(retiree => {
+          updState = Engine.relationships.freezeRelationships(updState, retiree.id);
+          updState = { ...updState, roster: Engine.trust.applyDepartureTrustImpact(updState.roster, retiree.id, updState.relationships, { name: retiree.name, reason: '引退試合' }) };
+        });
+      }
+      // O-04: bond 60+の相手→引退者に bond -5〜-10
+      const retRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE3B, G.season, G.week));
+      for (const retiree of lastRunRetirees) {
+        const highBondIds = updState.roster.map(c => c.id).filter(cid => {
+          const key = Engine.relationships._key(cid, retiree.id);
+          const rel = updState.relationships?.[key];
+          return rel && Engine.relationships.isPositiveBond(rel.bond);
+        });
+        if (highBondIds.length > 0) {
+          updState = Engine.relationships.applyFromRoster(updState, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+        }
+      }
+      // 引退演出データを保持（pendingRetirements形式）
+      const pendingLastRunRetirements = retiredWithRecords.map(f => {
+        const { line, category } = Engine.retirement.selectLine(f, 'lastrun', updState, lrLineRng);
+        const summary = Engine.retirement.buildCareerSummary(f);
+        return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
+      });
+      G = { ...updState, _pendingLastRunRetirements: pendingLastRunRetirements };
+    }
+
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
     App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
@@ -4133,6 +4188,16 @@ const App = {
       G = archiveRetiredRivalryState(G, r.fighter || null);
     });
 
+    // ラストラン引退（引退試合完了後の即引退）
+    const pendingLastRunRetirements = G._pendingLastRunRetirements || [];
+    if (G._pendingLastRunRetirements) {
+      const { _pendingLastRunRetirements: _, ...cleanG } = G;
+      G = cleanG;
+    }
+    pendingLastRunRetirements.forEach(r => {
+      G = archiveRetiredRivalryState(G, r.fighter || null);
+    });
+
     // R3: ファン期待カード試合後リアクション
     const fanExpectResults = (G.lastShowResults || []).filter(r => r.fanExpectMatch);
     let hasEventPopups = false;
@@ -4299,6 +4364,10 @@ const App = {
     let nextAction = null;
     if (pendingInjuryRetirements.length > 0) {
       nextAction = () => showRetirementPopups(pendingInjuryRetirements);
+    }
+    if (pendingLastRunRetirements.length > 0) {
+      const afterLastRun = nextAction;
+      nextAction = () => showRetirementPopups(pendingLastRunRetirements, afterLastRun || (() => {}));
     }
     if (pendingGrowthEventsShow.length > 0) {
       const after = nextAction;

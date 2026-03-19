@@ -2052,9 +2052,11 @@ function renderRanking() {
     battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
+  window._rankTips.legacy = '殿堂入り選手の数に応じた団体の格<br>殿堂入り1名ごとに+10pt（上限50pt）<br>AI団体はティアに応じた固定値';
   html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
     `<th style="text-align:right">評価値${tt('rating')}</th>` +
     `<th style="text-align:right">基礎力${tt('base')}</th>` +
+    `<th style="text-align:right;font-size:11px;color:var(--text-sub)">レガシー${tt('legacy')}</th>` +
     `<th style="text-align:right">対戦pt${tt('battle')}</th>` +
     `<th style="text-align:right">人数</th></tr>`;
   rankings.forEach(r => {
@@ -2089,6 +2091,7 @@ function renderRanking() {
           onmouseleave="hideCustomTooltip()"
           onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${r.rating}</td>
       <td class="num">${r.baseScore}</td>
+      <td class="num" style="font-size:12px;color:var(--text-sub)">${r.legacyScore}</td>
       <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</td>
       <td class="num">${r.rosterSize}</td>
     </tr>`;
