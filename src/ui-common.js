@@ -3627,8 +3627,22 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
         winBubble = _ppvBubble(winF.name, winLine, true);
         loseBubble = _ppvBubble(loseF.name, loseLine, false);
       }
-      // TODO: 高MQ(≥65)勝者コメント — セリフプール新規作成が必要
-      // TODO: PPVデビュー（初出場）勝者コメント — セリフプール新規作成が必要
+      // PPVメインイベント勝利演出（自団体選手が頂上決戦に勝った場合）
+      let coachPraiseBubble = '';
+      if (isMain && !winBubble) {
+        const winOrgId = winF._ppvOrgId || null;
+        if (winOrgId === 'player') {
+          const winChar = ALL_CHARS.find(c => c.id === winnerId);
+          const victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
+          winBubble = _ppvBubble(winF.name, victoryLine, true);
+          // コーチ称賛コメント
+          const coach = Engine.coach.getCharCoach(G, winnerId);
+          if (coach) {
+            const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
+            coachPraiseBubble = _ppvCoachBubble(coach.name, PPV_COACH_PRAISE_LINES[praiseIdx]);
+          }
+        }
+      }
 
       // 勝者ポートレイト枠スタイル
       const winPortraitStyle = isMain
@@ -3660,6 +3674,10 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:6px">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
       // MQ行
       html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
+      // コーチ称賛（メインイベント勝利時のみ）
+      if (coachPraiseBubble) {
+        html += `<div style="margin-top:12px;max-width:320px;margin-left:auto;margin-right:auto">${coachPraiseBubble}</div>`;
+      }
     }
 
     // HPバー
@@ -3723,6 +3741,17 @@ function _ppvBubble(name, line, isWinner) {
     <div style="background:#f0f0f0;color:#222;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative">
       ${line}
       <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #f0f0f0"></div>
+    </div>
+  </div>`;
+}
+
+/** PPV結果画面: コーチ称賛吹き出しHTML生成 */
+function _ppvCoachBubble(coachName, line) {
+  return `<div style="margin-bottom:8px;width:100%">
+    <div style="font-size:9px;font-weight:600;color:#7ec8e3;text-align:center;margin-bottom:3px">🎓 ${coachName}コーチ</div>
+    <div style="background:rgba(126,200,227,0.12);color:#c8dce4;padding:7px 10px;border:1px solid rgba(126,200,227,0.2);border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative">
+      「${line}」
+      <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(126,200,227,0.12)"></div>
     </div>
   </div>`;
 }
