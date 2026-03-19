@@ -461,12 +461,13 @@ function coachPortraitImg(coach, size = 48) {
   const upperUrl = getCoachUpperUrl(coach.id);
   const primaryUrl = upperUrl || faceUrl;
   const fallbackUrl = upperUrl && faceUrl && upperUrl !== faceUrl ? faceUrl : '';
+  const br = size >= 32 ? '10px' : '5px';
   if (primaryUrl) {
     const fallbackAttr = fallbackUrl ? ` data-fallback-src="${fallbackUrl}"` : '';
-    return `<img src="${primaryUrl}"${fallbackAttr} style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:top center;border:2px solid rgba(255,255,255,0.1);flex-shrink:0" alt="${coach.name}" loading="lazy" onerror="const fb=this.dataset.fallbackSrc;if(fb){this.dataset.fallbackSrc='';this.src=fb;return;}this.style.display='none';this.nextElementSibling.style.display='flex'">` +
-      `<div style="display:none;width:${size}px;height:${size}px;border-radius:50%;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));border:2px solid rgba(212,168,67,0.2)">${coach.emoji}</div>`;
+    return `<img src="${primaryUrl}"${fallbackAttr} style="width:${size}px;height:${size}px;border-radius:${br};object-fit:cover;object-position:top center;border:1px solid rgba(100,85,50,0.12);flex-shrink:0;overflow:hidden" alt="${coach.name}" loading="lazy" onerror="const fb=this.dataset.fallbackSrc;if(fb){this.dataset.fallbackSrc='';this.src=fb;return;}this.style.display='none';this.nextElementSibling.style.display='flex'">` +
+      `<div style="display:none;width:${size}px;height:${size}px;border-radius:${br};align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(122,101,48,0.2),rgba(122,101,48,0.05));border:1px solid rgba(100,85,50,0.12)">${coach.emoji}</div>`;
   }
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));border:2px solid rgba(212,168,67,0.2)">${coach.emoji}</div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:${br};display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(122,101,48,0.2),rgba(122,101,48,0.05));border:1px solid rgba(100,85,50,0.12)">${coach.emoji}</div>`;
 }
 function portraitImg(id, size = 80, cls = '', clickable = false) {
   const url = getPortraitUrl(id);

@@ -1473,7 +1473,7 @@ function renderRoster() {
         const assigned = getCoachAssignees(c.id);
         const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
         staffHtml += `<div onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;background:#ede8dc;border:1px solid rgba(100,85,50,0.14);border-radius:8px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#7a6530'" onmouseleave="this.style.borderColor='rgba(100,85,50,0.14)'">
-          ${coachPortraitImg(c, 48)}
+          ${coachPortraitImg(c, 64)}
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:15px;margin-bottom:3px;color:#1e1c16">${c.name}</div>
             <div style="font-size:13px;color:#7a6530;margin-bottom:4px">${coachEffectShort(c)}</div>
@@ -2275,7 +2275,7 @@ function renderRanking() {
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => {
             const isChamp = G.titles?.world?.championId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 80)}<span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
           }).join('')}
           </div>
         </div>
@@ -2286,7 +2286,7 @@ function renderRanking() {
               const fOvr = ov(f);
               const isChampF = G.titles?.world?.championId === f.id;
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
-                <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
+                ${portraitImg(f.id, 44)}
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' 👑' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
@@ -2329,7 +2329,7 @@ function renderRanking() {
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
           ${topFighters.map(f => {
             const isChamp = champId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center"><div class="monitor-wrap">${portraitImg(f.id, 100)}</div><span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 80)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
           }).join('')}
           </div>
         </div>
@@ -2341,7 +2341,7 @@ function renderRanking() {
               const isTop = idx === 0;
               const isChampF = champId === f.id;
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
-                <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
+                ${portraitImg(f.id, 44)}
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}${isChampF ? ' <span style="font-size:10px;color:var(--gold)">👑王者</span>' : ''}</div>
                   <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
@@ -2429,8 +2429,8 @@ function renderScout() {
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:28px;font-weight:900;color:var(--gold);line-height:1">${ov(c)}<span style="font-size:10px;font-weight:600;color:var(--text-dim);margin-left:2px">OVR</span></div>
-        <div style="font-size:22px;font-weight:800;color:#e8439f;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
+        <div style="font-size:32px;font-weight:900;color:#e8439f;line-height:1;font-family:'Bebas Neue',sans-serif">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px">OVR</span></div>
+        <div style="font-size:22px;font-weight:800;color:#c44e8a;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
       </div>
     </div>`;
@@ -2506,7 +2506,7 @@ function renderScout() {
           <td>${fLink(r.fighter, {source:srcLink})}</td>
           <td style="font-size:13px;color:var(--text-sub)">${srcLabel}</td>
           <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
-          <td style="font-size:18px;font-weight:900;color:var(--gold);font-family:'Bebas Neue',sans-serif;text-align:center">${Engine.util.ov(r.fighter)}</td>
+          <td style="font-size:20px;font-weight:900;color:#e8439f;font-family:'Bebas Neue',sans-serif;text-align:center">${Engine.util.ov(r.fighter)}</td>
           <td><select id="${selectId}" onchange="updateRentalFee(${r.fighter.id})" style="font-size:12px;padding:2px 4px;background:var(--card-bg);color:var(--text);border:1px solid var(--border)">${seasonOpts}</select></td>
           <td class="num" style="color:#c44e8a;font-weight:700"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
           <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:#5c4a1e;border:1px solid #7a6530;color:#ede8dc" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
