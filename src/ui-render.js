@@ -1246,7 +1246,7 @@ function _renderRosterDetailPanel(c, hired) {
   const isInjured = !!c.injury;
   const canManage = G.weekPhase === 'manage';
   const tabIdx = _rosterDetailTab[c.id] || 0;
-  const fullUrl = PORTRAIT[c.id] ? `image/full/full_${PORTRAIT[c.id]}.webp` : '';
+  const fullUrl = getFullUrl(c.id);
   const tenure = (c.careerSeasons || 0) + 1;
   const stats = ['pw','sp','te','st','mn'];
   const STAT_COLORS = {pw:'#c03030',sp:'#1a8a4a',te:'#2060a0',st:'#b06010',mn:'#7040a0'};
@@ -1370,8 +1370,8 @@ function _renderRosterDetailPanel(c, hired) {
 
   // === Tab 3: 育成 ===
   let tab3 = '<div style="display:flex;flex-direction:column;gap:8px">';
-  // Coach assign
-  if (canManage) {
+  // Coach assign — 常にドロップダウン表示（負傷中はdisabled）
+  if (hired.length > 0) {
     let opts = `<option value="0"${!coach?' selected':''}>--- なし ---</option>`;
     hired.forEach(h => {
       const aCount = getCoachAssignees(h.id).length;
@@ -1383,10 +1383,8 @@ function _renderRosterDetailPanel(c, hired) {
       opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
     });
     tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val"><select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px 6px"${isInjured?' disabled':''}>${opts}</select></span></div>`;
-  } else if (coach) {
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
   } else {
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a7466">なし</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a7466">未雇用</span></div>`;
   }
   // Coach effect
   if (coach) {
