@@ -1481,15 +1481,26 @@ function renderRoster() {
         if (assignedChars.length > 0) {
           assignedChars.forEach(ch => {
             const sm = getCoachStyleMatch(c, ch);
-            const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'}">${sm.icon}</span>` : '';
-            staffHtml += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${ch.name.substring(0,4)}${matchIcon}</span>`;
+            const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#1a8a4a':'#a07010'}">${sm.icon}</span>` : '';
+            staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 18, '', false)} ${ch.name.substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="担当解除">✕</span></span>`;
           });
         } else {
           staffHtml += `<span style="font-size:12px;color:#7a7466;font-style:italic">担当なし</span>`;
         }
+        // ＋ボタン: 未割当の選手をこのコーチに追加
+        const unassignedFighters = G.roster.filter(f => !f.isRental && !f.injury && !getCharCoach(f.id));
+        const canAddMore = assigned.length < COACH_MAX_ASSIGN;
+        if (canAddMore && unassignedFighters.length > 0) {
+          let addOpts = '<option value="">＋ 追加</option>';
+          unassignedFighters.forEach(f => {
+            const fSm = getCoachStyleMatch(c, f);
+            addOpts += `<option value="${f.id}">${f.name} ${fSm.icon||''}</option>`;
+          });
+          staffHtml += `<select onclick="event.stopPropagation()" onchange="event.stopPropagation();if(this.value)changeCoachAssign(Number(this.value),${c.id});this.value=''" style="font-size:10px;padding:2px 4px;border-radius:4px;background:rgba(122,101,48,0.08);border:1px solid rgba(122,101,48,0.2);color:#7a6530;cursor:pointer">${addOpts}</select>`;
+        }
         staffHtml += `</div>
           </div>
-          <span style="font-size:12px;color:#7a7466">ℹ️</span>
+          <span onclick="event.stopPropagation();showCoachTooltip(${c.id})" style="font-size:12px;color:#7a7466;cursor:pointer">ℹ️</span>
         </div>`;
       });
       staffHtml += '</div>';
@@ -1571,13 +1582,22 @@ function renderRoster() {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
       return g > 0 ? `<span style="color:#1a8a4a;font-size:12px;font-weight:700">+${g}</span>` : '';
     };
-    // Coach badge in card (with style match indicator)
+    // Coach mini-select in card row (inline, 1-click assign)
     const coachOfChar = c.isRental ? null : getCharCoach(c.id);
-    let coachBadgeHtml = '';
-    if (coachOfChar) {
-      const sm = getCoachStyleMatch(coachOfChar, c);
-      const matchIcon = sm.icon ? `<span style="font-weight:700">${sm.icon}</span>` : '';
-      coachBadgeHtml = `<span class="coach-match-badge ${sm.cls}" style="display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}${matchIcon}</span>`;
+    let coachInlineHtml = '';
+    if (!c.isRental && hired.length > 0) {
+      const sm = coachOfChar ? getCoachStyleMatch(coachOfChar, c) : null;
+      const smCls = sm ? sm.cls : '';
+      let miniOpts = `<option value="0"${!coachOfChar?' selected':''}>コーチ: なし</option>`;
+      hired.forEach(h => {
+        const aC = getCoachAssignees(h.id).length;
+        const isCur = coachOfChar && coachOfChar.id === h.id;
+        const isFull = aC >= COACH_MAX_ASSIGN && !isCur;
+        const hSm = getCoachStyleMatch(h, c);
+        const mTag = hSm.icon || '';
+        miniOpts += `<option value="${h.id}"${isCur?' selected':''}${isFull?' disabled':''}>${h.name.split(' ')[0]}${mTag} (${aC}/${COACH_MAX_ASSIGN})${isFull?' 満':''}</option>`;
+      });
+      coachInlineHtml = `<select class="rd-coach-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeCoachAssign(${c.id}, Number(this.value))"${c.injury?' disabled':''}>${miniOpts}</select>`;
     }
     html += `<div class="rd-card${document.getElementById('roster-detail-'+c.id)?.classList.contains('open')?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
       <div class="rd-card-inner">
@@ -1589,7 +1609,7 @@ function renderRoster() {
             <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
-            ${coachBadgeHtml}
+            ${coachInlineHtml}
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
           </div>
