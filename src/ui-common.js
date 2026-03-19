@@ -239,7 +239,7 @@ function _warHeader(orgCfg, playerOrgName, enemyOrgName, playerScore, enemyScore
           ${statusCfg.playerSub ? `<div class="sb-org-sub">${statusCfg.playerSub}</div>` : ''}
         </div>
         <div class="sb-center">
-          <div class="sb-ring" style="border:3px solid rgba(255,255,255,0.1);box-shadow:0 0 40px ${_rgba(eColor,0.2)},inset 0 0 30px rgba(0,0,0,0.5);background:radial-gradient(circle,rgba(16,16,30,0.95),rgba(10,10,20,0.98))">
+          <div class="sb-ring" style="border:3px solid rgba(200,190,170,0.1);box-shadow:0 0 40px ${_rgba(eColor,0.2)},inset 0 0 30px rgba(0,0,0,0.5);background:radial-gradient(circle,rgba(16,16,30,0.95),rgba(10,10,20,0.98))">
             ${statusCfg.scoreHtml || `<div class="sb-score"><span class="s-left" style="color:#74b9ff">${playerScore}</span><span class="s-dash">—</span><span class="s-right" style="color:${eLight}">${enemyScore}</span></div>`}
             ${statusCfg.statusLabel || ''}
           </div>
@@ -360,7 +360,7 @@ function renderWarMatchPreview() {
           <div class="mc-fp">${standL ? `<img src="${standL}" alt="" onerror="this.style.display='none'">` : ''}</div>
         </div>
         <div class="mc-vsf">
-          <div class="mc-vst" style="background:linear-gradient(180deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,255,255,0.15))">VS</div>
+          <div class="mc-vst" style="background:linear-gradient(180deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(200,190,170,0.15))">VS</div>
         </div>
         <div class="mc-fc right">
           <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
@@ -676,7 +676,7 @@ function showRosterOverflowSigningModal(pending) {
     html += `<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">解雇する選手を選んでください</div>`;
     html += `<div style="display:grid;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:12px">`;
     releaseCandidates.forEach(c => {
-      html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08)">`;
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(200,190,170,0.03);border:1px solid rgba(200,190,170,0.08)">`;
       html += `<div><div style="font-size:14px;font-weight:700;color:var(--text)">${c.name}</div><div style="font-size:12px;color:var(--text-sub)">OVR ${ov(c)} ｜ ${c.age || '?'}歳</div></div>`;
       html += `<button class="btn btn-gold" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="confirmRosterOverflowSigning(${c.id})">解雇して契約</button>`;
       html += `</div>`;
@@ -1053,7 +1053,7 @@ function showCoachTooltip(coachId) {
 
   // Profile
   if (c.profile) {
-    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
+    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
       <div class="coach-tooltip-label">プロフィール</div>
       <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">
         ${c.age ? c.age + '歳' : ''} ${c.gender ? '｜ ' + c.gender + '性' : ''} ${c.origin ? '｜ ' + c.origin + '出身' : ''}
@@ -1061,7 +1061,7 @@ function showCoachTooltip(coachId) {
       <div style="font-size:12px;color:var(--text);line-height:1.7">${c.profile}</div>
     </div>`;
   } else if (c.desc) {
-    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
+    html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
       <div class="coach-tooltip-label">紹介</div>
       <div style="font-size:12px;color:var(--text);line-height:1.7">${c.desc}</div>
     </div>`;
@@ -1603,7 +1603,7 @@ function showRetireAdviseResultPopup(accepted, fighter, line) {
   const url = getPortraitUrl(fighter.id);
   const faceHtml = url
     ? `<img src="${url}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${accepted ? 'var(--gold)' : '#e74c3c'}">`
-    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:32px">${fighter.name.charAt(0)}</div>`;
+    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(200,190,170,0.08);display:flex;align-items:center;justify-content:center;font-size:32px">${fighter.name.charAt(0)}</div>`;
   const box = document.getElementById('retirementPopupBox');
   const headerColor = accepted ? 'var(--gold)' : '#e74c3c';
   const headerText  = accepted ? '🌅 引退を受諾' : '💢 引退を拒否';
@@ -1614,7 +1614,7 @@ function showRetireAdviseResultPopup(accepted, fighter, line) {
     <div style="text-align:center;margin-bottom:12px">${faceHtml}</div>
     <div style="text-align:center;font-size:18px;font-weight:700;color:${headerColor};margin-bottom:4px">${headerText}</div>
     <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">${subText}</div>
-    <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--text);line-height:1.7;text-align:center;border-left:3px solid ${headerColor};margin-bottom:14px">「${line}」</div>
+    <div style="background:rgba(200,190,170,0.04);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--text);line-height:1.7;text-align:center;border-left:3px solid ${headerColor};margin-bottom:14px">「${line}」</div>
     <button class="retirement-popup-btn" onclick="document.getElementById('retirementPopupOverlay').classList.remove('active')">閉じる</button>
   `;
   document.getElementById('retirementPopupOverlay').classList.add('active');
@@ -2206,7 +2206,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     const uUrl = getUpperUrl(c.id);
 
     // ── Header（左: 上半身画像、右: 情報）──
-    const popBorderColor = isChamp ? '#d4a843' : 'rgba(255,255,255,0.15)';
+    const popBorderColor = isChamp ? '#d4a843' : 'rgba(200,190,170,0.15)';
     const popShadow = isChamp ? '0 4px 20px rgba(0,0,0,0.5),0 0 16px rgba(212,168,67,0.5)' : '0 4px 20px rgba(0,0,0,0.5)';
 
     // 上半身画像（onerror時はface画像にフォールバック）
@@ -2216,7 +2216,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       ? `<img src="${pUrl}" style="width:140px;height:140px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
       : `<div style="width:140px;height:140px;border-radius:14px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:3px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:48px;font-weight:900;color:${sm.color}">${initial}</span></div>`;
 
-    html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(255,255,255,0.06);padding:20px;text-align:center">
+    html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(200,190,170,0.08);padding:20px;text-align:center">
       <div style="display:flex;align-items:flex-start;gap:20px">
         <div style="flex-shrink:0;position:relative">
           ${imgHtml}
@@ -2267,7 +2267,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         : G.pendingNegotiation
           ? (G.pendingNegotiation.fighterId === c.id ? '⏳ 交渉中' : '— 他の選手と交渉中')
           : (G.negotiatedThisSeason || []).includes(c.id) ? '✓ 今季交渉済' : null;
-      html += `<div style="padding:8px 16px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px">`;
+      html += `<div style="padding:8px 16px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:10px">`;
       if (canNeg) {
         html += `<button onclick="closeFighterPopup();showNegotiatePopup('${negotiateOrgId}',${c.id})" style="font-size:13px;padding:6px 18px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.4);border-radius:4px;cursor:pointer;font-weight:700">🤝 選手を引き抜く</button>`;
       } else {
@@ -2277,7 +2277,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     }
 
     // ── 相関図ボタン（全キャラ共通）──
-    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px">
+    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px">
       <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
     </div>`;
 
@@ -2286,9 +2286,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     tabs.push('📋 戦績・経歴');
     if (isRoster) tabs.push('⚙️ 管理');
     if (tabIdx >= tabs.length) tabIdx = 0;
-    html += `<div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15)">
+    html += `<div style="display:flex;border-bottom:1px solid rgba(200,190,170,0.08);background:rgba(0,0,0,0.15)">
       ${tabs.map((t, i) => `<button onclick="event.stopPropagation();_switchFighterTab(${c.id},'${source||''}',${i})"
-        style="flex:1;padding:10px 6px;font-size:13px;background:${i===tabIdx?'rgba(255,255,255,0.05)':'none'};border:none;border-bottom:2px solid ${i===tabIdx?'var(--gold)':'transparent'};color:${i===tabIdx?'var(--text)':'var(--text-dim)'};cursor:pointer;transition:all 0.2s">${t}</button>`).join('')}
+        style="flex:1;padding:10px 6px;font-size:13px;background:${i===tabIdx?'rgba(200,190,170,0.05)':'none'};border:none;border-bottom:2px solid ${i===tabIdx?'var(--gold)':'transparent'};color:${i===tabIdx?'var(--text)':'var(--text-dim)'};cursor:pointer;transition:all 0.2s">${t}</button>`).join('')}
     </div>`;
 
     html += `<div class="fighter-popup-body" style="padding:12px 16px 16px">`;
@@ -2324,7 +2324,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           <div style="flex:1">
             <span style="color:var(--text-dim)">開発率</span>
             <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
-              <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
+              <div style="flex:1;height:5px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">
                 <div style="width:${potPct}%;height:100%;background:${potColor};border-radius:3px"></div>
               </div>
               <span style="color:${potColor};font-weight:700">${potPct}%</span>
@@ -2333,7 +2333,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           <div style="flex:1">
             <span style="color:var(--text-dim)">体調</span>
             <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
-              <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
+              <div style="flex:1;height:5px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">
                 <div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div>
               </div>
               <span style="font-weight:700">${condPct}</span>
@@ -2345,11 +2345,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Popularity & Salary
       if (isRoster) {
         html += `<div class="fighter-popup-section" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:10px">
-          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
+          <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">人気</span><br>
             <strong style="color:var(--text);font-size:16px">${Engine.util.dispPop(c.popularity)}</strong>
           </div>
-          <div style="padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
+          <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">給与</span><br>
             <strong style="color:var(--text);font-size:13px">${getSalary(c)}万/週</strong>
           </div>
@@ -2381,7 +2381,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const sm = getCoachStyleMatch(coach, c);
           const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}" style="margin-left:4px">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none" style="margin-left:4px">不一致</span>';
           const styleBadgeCls = sm.type === 'none' ? 'style="font-size:10px;padding:1px 5px;margin-left:4px;border-radius:3px;background:rgba(136,136,136,0.08);color:#888;border:1px solid rgba(136,136,136,0.2);opacity:0.7"' : `class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px"`;
-          html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px">
+          html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
             <span ${styleBadgeCls}>${coach.style}</span>
@@ -2389,7 +2389,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span style="color:var(--text-dim);font-size:12px;margin-left:4px">指導力${coach.teaching} / ${coach.trait}</span>
           </div>`;
         } else {
-          html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:4px">
+          html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.02);border-radius:4px">
             🎓 担当コーチ: なし
           </div>`;
         }
@@ -2412,7 +2412,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         : [];
 
       if (myRivalries.length > 0 || myExpects.length > 0 || isRoster) {
-        html += `<div class="fighter-popup-section" style="padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:10px">
+        html += `<div class="fighter-popup-section" style="padding:10px 12px;background:rgba(200,190,170,0.02);border:1px solid rgba(200,190,170,0.08);border-radius:6px;margin-bottom:10px">
           <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">⚔ 試合情報</div>`;
         if (myRivalries.length > 0) {
           myRivalries.forEach(r => {
@@ -2454,7 +2454,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Profile text
       const profileText = CHAR_PROFILES[c.id];
       if (profileText) {
-        html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${sm.color}44;margin-top:4px">
+        html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(200,190,170,0.03);border-radius:6px;border-left:3px solid ${sm.color}44;margin-top:4px">
           📝 ${profileText}
         </div>`;
       }
@@ -2478,7 +2478,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       {
         const summary = Engine.career.buildSummary(c);
         const bestMQ = summary.bestMQ || c.bestMQ || (c.careerBestMQ || 0);
-        html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px">
+        html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
             <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
             <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
@@ -2519,12 +2519,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const isCurrentSeason = s === G.season;
 
           html += `<details ${isCurrentSeason ? 'open' : ''} style="margin-bottom:10px">
-            <summary style="font-size:13px;cursor:pointer;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;user-select:none;display:flex;align-items:center;gap:8px">
+            <summary style="font-size:13px;cursor:pointer;padding:8px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px;user-select:none;display:flex;align-items:center;gap:8px">
               <span style="font-weight:900;color:var(--text);font-size:14px">[${s}年目]</span>
               ${summary ? `<span style="font-size:12px;color:var(--text-sub)">${summary.detail}</span>` :
                 isCurrentSeason ? `<span style="font-size:12px;color:var(--blue)">シーズン進行中</span>` : ''}
             </summary>
-            <div style="padding:6px 0 2px 8px;border-left:2px solid rgba(255,255,255,0.06);margin-left:6px;margin-top:6px">`;
+            <div style="padding:6px 0 2px 8px;border-left:2px solid rgba(200,190,170,0.08);margin-left:6px;margin-top:6px">`;
 
           nonSummary.forEach(m => {
             const typeStyle = Engine.milestone._typeStyle(m.type);
@@ -2543,7 +2543,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
         html += `</div>`;
       } else {
-        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(255,255,255,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
+        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(200,190,170,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
       }
 
       // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPC記録統一: 全選手に表示）
@@ -2590,12 +2590,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.2);border-radius:6px;margin-bottom:10px">
             <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px;border-bottom:1px solid rgba(212,168,67,0.15);padding-bottom:4px">─── 引退 ───</div>`;
           if (advice.text) {
-            html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;border-left:2px solid rgba(212,168,67,0.4)">
+            html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px;border-left:2px solid rgba(212,168,67,0.4)">
               💬 <span style="color:var(--text-dim)">${advice.coachName}</span>「${advice.text}」
             </div>`;
           }
           if (cooldown > 0) {
-            html += `<button disabled style="font-size:13px;padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);border-radius:6px;width:100%;cursor:not-allowed">🌅 引退を勧める（クールダウン ${cooldown}週）</button>`;
+            html += `<button disabled style="font-size:13px;padding:8px 14px;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.1);color:var(--text-dim);border-radius:6px;width:100%;cursor:not-allowed">🌅 引退を勧める（クールダウン ${cooldown}週）</button>`;
           } else {
             html += `<button onclick="closeFighterPopup();doRetireAdvise(${c.id})" style="font-size:13px;padding:8px 14px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:var(--gold);border-radius:6px;width:100%;cursor:pointer;font-weight:700">🌅 引退を勧める</button>`;
           }
@@ -2680,7 +2680,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">獲得枠上限に達しています</div>`
             : `<div style="display:flex;gap:8px">
                 <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ 獲得指名</button>
-                <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
+                <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
               </div>
               ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
         }
@@ -2771,7 +2771,7 @@ function showPPVVSDetail(matchIdx) {
       const val = f[s.key] || 0;
       html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;font-size:10px">`;
       html += `<span style="width:20px;text-align:right;color:var(--text-dim)">${s.label}</span>`;
-      html += `<div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">`;
+      html += `<div style="flex:1;height:6px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">`;
       html += `<div style="width:${val}%;height:100%;background:${s.color};border-radius:3px"></div>`;
       html += `</div>`;
       html += `<span style="width:22px;color:var(--text-sub);font-weight:600">${val}</span>`;
@@ -2783,7 +2783,7 @@ function showPPVVSDetail(matchIdx) {
       html += `<div style="margin-top:6px;font-size:10px;color:var(--text-sub)">`;
       html += traits.map(t => {
         const td = typeof TRAIT_DATA !== 'undefined' ? TRAIT_DATA[t] : null;
-        return `<span style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;margin:1px">${td?.label || t}</span>`;
+        return `<span style="background:rgba(200,190,170,0.08);padding:1px 5px;border-radius:3px;margin:1px">${td?.label || t}</span>`;
       }).join(' ');
       html += `</div>`;
     }
@@ -2889,7 +2889,7 @@ function mqStars(mq) {
   let s = '';
   for (let i = 0; i < full; i++) s += '★';
   if (half) s += '☆';
-  const color = stars >= 4.5 ? '#f0d078' : stars >= 3.5 ? '#2ecc71' : stars >= 2.5 ? '#e7e9ee' : '#999';
+  const color = stars >= 4.5 ? '#f0d078' : stars >= 3.5 ? '#2ecc71' : stars >= 2.5 ? '#e8e6e0' : '#999';
   return `<span style="color:${color};font-size:13px;letter-spacing:1px">${s}</span>`;
 }
 
@@ -3038,7 +3038,7 @@ function renderMatchPreview() {
     const matchLabel = isMain ? '★ メインイベント' : `第${order}試合`;
     const cardClass = isMain ? 'card-main' : 'card-sub';
 
-    const borderColor = isMain ? 'rgba(212,168,67,0.25)' : isNext ? 'rgba(74,143,212,0.3)' : 'rgba(255,255,255,0.06)';
+    const borderColor = isMain ? 'rgba(212,168,67,0.25)' : isNext ? 'rgba(74,143,212,0.3)' : 'rgba(200,190,170,0.08)';
     const cardBg = isMain ? 'rgba(212,168,67,0.04)' : isNext ? 'rgba(74,143,212,0.05)' : 'rgba(0,0,0,0.25)';
     const statusBadge = isResolved
       ? '<span class="smc-badge done">完了</span>'
@@ -3192,7 +3192,7 @@ function renderShowResult(results, injuryResults) {
   // サマリーバー
   html += `<div class="show-summary-bar">
     <span style="font-size:13px">
-      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${avgMQ >= s*20 ? 'var(--gold)' : 'rgba(255,255,255,0.15)'}">★</span>`).join('')}</span>
+      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${avgMQ >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
       <span style="color:var(--text-sub)">平均MQ: ${avgMQ}</span>
     </span>
     <span style="margin-left:16px;font-size:13px;color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>
@@ -3208,7 +3208,7 @@ function renderShowResult(results, injuryResults) {
   const isSellout = occRate >= 0.95;
   const isGoodCrowd = occRate >= 0.80;
   const attendBorder = isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : occRate >= 0.60 ? 'var(--border)' : '#e74c3c';
-  const attendBg = isSellout ? 'rgba(212,168,67,0.08)' : isGoodCrowd ? 'rgba(46,204,113,0.08)' : occRate >= 0.60 ? 'rgba(255,255,255,0.03)' : 'rgba(231,76,60,0.08)';
+  const attendBg = isSellout ? 'rgba(212,168,67,0.08)' : isGoodCrowd ? 'rgba(46,204,113,0.08)' : occRate >= 0.60 ? 'rgba(200,190,170,0.03)' : 'rgba(231,76,60,0.08)';
   const barColor = isSellout ? 'linear-gradient(90deg,var(--gold),#f1c40f)' : isGoodCrowd ? 'linear-gradient(90deg,#2ecc71,#27ae60)' : occRate >= 0.60 ? '#3498db' : occRate >= 0.40 ? '#e67e22' : '#e74c3c';
 
   html += `<div class="show-attend-banner" style="border:1px solid ${attendBorder};background:${attendBg}">
@@ -3230,7 +3230,7 @@ function renderShowResult(results, injuryResults) {
     const rightIsWinner = r.winner === 'right';
     const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
     const cardClass = isMain ? 'card-main' : 'card-sub';
-    const cardBorder = isMain ? '1.5px solid rgba(212,168,67,0.4)' : '1px solid rgba(255,255,255,0.06)';
+    const cardBorder = isMain ? '1.5px solid rgba(212,168,67,0.4)' : '1px solid rgba(200,190,170,0.08)';
     const cardBg = isMain ? 'linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))' : 'rgba(0,0,0,0.25)';
 
     const spotlightInMatch = G.mediaSpotlight && (G.mediaSpotlight.fighterId === r.left.id || G.mediaSpotlight.fighterId === r.right.id);
@@ -3336,7 +3336,7 @@ function renderShowResult(results, injuryResults) {
     if (r.freshnessBonus) mqBonusTags.push(`<span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`);
 
     html += `<div class="sr-mq-row">
-      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${r.mq >= s*20 ? 'var(--gold)' : 'rgba(255,255,255,0.15)'}">★</span>`).join('')}</span>
+      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${r.mq >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
       <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}</span>
       ${mqBonusTags.map(t => `<span style="font-size:11px">${t}</span>`).join(' ')}
     </div>`;
@@ -3887,7 +3887,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       const winPortraitStyle = isMain
         ? `border:2px solid rgba(212,168,67,0.5);box-shadow:0 0 24px rgba(212,168,67,0.15);border-radius:7px`
         : `border:1.5px solid rgba(46,204,113,0.25);border-radius:7px`;
-      const losePortraitStyle = `border:1px solid rgba(255,255,255,0.08);border-radius:7px;opacity:0.65`;
+      const losePortraitStyle = `border:1px solid rgba(200,190,170,0.08);border-radius:7px;opacity:0.65`;
       const winNameColor = isMain ? 'color:var(--gold);' : '';
 
       html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
@@ -3898,7 +3898,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster'})}</div>`;
       html += `</div>`;
       // VS
-      html += `<div style="font-size:14px;color:rgba(255,255,255,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
+      html += `<div style="font-size:14px;color:rgba(200,190,170,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
       // 敗者列
       html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:38%">`;
       if (loseBubble) html += loseBubble;
@@ -4805,7 +4805,7 @@ function showCareActionModal(state, onConfirm) {
     const headcount = roster.filter(f => !f.injury).length;
     const effectiveHead = Math.max(headcount, cfg.minHeadcount || 4);
     let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${cfg.desc}</div>`;
     html += _buildExpectHtml(cfg);
     html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${teamCost}万</strong><span style="font-size:11px;color:var(--text-dim)">（${cfg.unitCost}万×${effectiveHead}人）</span> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
     html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careTeamConfirmBtn">実行する</button>`;
@@ -4832,7 +4832,7 @@ function showCareActionModal(state, onConfirm) {
     html += portraitImg(fighter.id, 88, '');
     html += `<div style="font-weight:700;margin-top:6px">${fighter.name}</div>`;
     html += `</div>`;
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${cfg.desc}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${cfg.desc}</div>`;
     html += _buildExpectHtml(cfg);
     html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
     html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careIndivConfirmBtn">実行する</button>`;
@@ -4984,7 +4984,7 @@ function showChoiceEventModal(event, state, onChoice) {
       </div>
     </div>`;
   } else if (event.type === 'E5') {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">
       📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。
     </div>`;
   }
@@ -5057,7 +5057,7 @@ function showChoiceEventResult(event, resultTexts, state) {
   if (resultTexts && resultTexts.length > 0) {
     html += `<div style="margin:10px 0 14px">`;
     resultTexts.forEach(t => {
-      html += `<div style="font-size:13px;line-height:1.7;color:var(--text);padding:8px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:6px;text-align:center">${t}</div>`;
+      html += `<div style="font-size:13px;line-height:1.7;color:var(--text);padding:8px 14px;background:rgba(200,190,170,0.05);border:1px solid rgba(200,190,170,0.08);border-radius:8px;margin-bottom:6px;text-align:center">${t}</div>`;
     });
     html += `</div>`;
   }
@@ -5137,7 +5137,7 @@ function _buildB1Modal(event, state, roster) {
   let html = `<div class="care-title" style="border-bottom:1px solid #e67e22;padding-bottom:10px;margin-bottom:12px">⚠️ 練習中のアクシデント${severityLabel}</div>`;
 
   if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
   }
 
   if (fighter) {
@@ -5178,7 +5178,7 @@ function _buildB2Step1(event, state, roster) {
   let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">💥 選手間の深刻な対立</div>`;
 
   if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
   }
 
   // 2人の選手のセリフを並べる
@@ -5218,7 +5218,7 @@ function _buildB2Step2(event, state, roster) {
   const f2 = roster.find(f => f.id === event.fighter2);
 
   let html = `<div class="care-title" style="border-bottom:1px solid #9b59b6;padding-bottom:10px;margin-bottom:12px">🤫 試合前の介入</div>`;
-  html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">
+  html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">
     試合の前に、どちらかに声をかけますか？<br>
     <span style="font-size:11px;color:var(--text-dim)">激励された選手は試合でわずかに有利になります</span>
   </div>`;
@@ -5279,7 +5279,7 @@ function _buildB3Step1(event, state) {
   let html = `<div class="care-title" style="border-bottom:2px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">⚔️ ${orgName}からの対抗戦オファー</div>`;
 
   if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
   }
 
   // 挑戦者の挑発的なセリフ
@@ -5380,7 +5380,7 @@ function _buildB4Modal(event, state, roster) {
   let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${outletName}からの密着取材オファー</div>`;
 
   if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(255,255,255,0.04);border-radius:6px">${event.detail}</div>`;
+    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
   }
 
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
@@ -6027,7 +6027,7 @@ function drawRadarChart(canvas, stats, options = {}) {
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.closePath();
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.strokeStyle = 'rgba(200,190,170,0.12)';
     ctx.lineWidth = 1;
     ctx.stroke();
   });
@@ -6140,7 +6140,7 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
     <div style="font-size:13px;color:var(--text-sub);margin-bottom:14px">
       自動更新: <strong>${autoCount}名</strong>　／　意見あり: <strong style="color:#e74c3c">${negotiations.length}名</strong>
     </div>
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:16px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:16px;padding:10px;background:rgba(200,190,170,0.03);border-radius:8px">
       ${facesHtml}
     </div>
     <button class="btn btn-gold" id="contractStartBtn" style="width:100%;padding:12px;font-size:14px;font-weight:700">

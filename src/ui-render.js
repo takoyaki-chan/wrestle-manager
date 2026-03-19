@@ -125,7 +125,7 @@ function renderWeekScreen() {
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text-sub)' : 'var(--text-dim)';
         return `<div style="display:flex;align-items:center;gap:${compact?4:6}px">
           <span style="font-size:${compact?9:10}px;color:var(--text-dim);width:${compact?16:52}px;text-align:right">${compact ? s.short : s.label}</span>
-          <div style="flex:1;height:${h}px;background:rgba(255,255,255,0.06);border-radius:${h/2}px;overflow:hidden">
+          <div style="flex:1;height:${h}px;background:rgba(200,190,170,0.08);border-radius:${h/2}px;overflow:hidden">
             <div style="width:${w}%;height:100%;background:${s.color};border-radius:${h/2}px;transition:width 0.3s"></div>
           </div>
           <span style="font-size:${compact?10:11}px;color:${valColor};width:24px;text-align:right;font-weight:${val>=75?700:400}">${val}</span>
@@ -281,7 +281,7 @@ function renderWeekScreen() {
                   </div>
                 </div>
               </div>
-              ${profileText ? `<div style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${sm.color}44">
+              ${profileText ? `<div style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(200,190,170,0.03);border-radius:6px;border-left:3px solid ${sm.color}44">
                 📝 ${profileText}
               </div>` : `<div style="font-size:13px;color:var(--text-sub);line-height:1.5;padding:8px 0">
                 ${sm.desc}
@@ -334,7 +334,7 @@ function renderWeekScreen() {
       <h4 style="margin-bottom:10px;font-size:13px">📊 チームプレビュー</h4>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         ${allChars.map(c =>
-          `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,0.04);border:1px solid ${c.color}33;border-radius:5px">
+          `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(200,190,170,0.04);border:1px solid ${c.color}33;border-radius:5px">
             <span style="font-size:12px">${c.icon}</span>
             <span style="font-size:12px">${c.name}</span>
             <span style="font-size:12px;font-weight:700;color:${c.color}">${c.ovr}</span>
@@ -342,7 +342,7 @@ function renderWeekScreen() {
         ).join('')}
         ${picks.length < DRAFT_CONFIG.pickCount ?
           Array(DRAFT_CONFIG.pickCount - picks.length).fill(0).map(() =>
-            `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:5px">
+            `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(200,190,170,0.02);border:1px dashed var(--border);border-radius:5px">
               <span style="font-size:12px;color:var(--text-dim)">？ 未選択</span>
             </div>`
           ).join('') : ''
@@ -526,7 +526,7 @@ function renderWeekScreen() {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--gold);font-weight:700">${Engine.util.formatDate(G.season, G.week)}</span>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px">
+        <div style="height:4px;background:rgba(200,190,170,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px">
           <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,var(--gold),#f1c40f);border-radius:2px;transition:width 0.3s"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)">
@@ -561,7 +561,7 @@ function renderWeekScreen() {
       const mNet = mIncome - mExpense;
       const netColor = mNet >= 0 ? '#2ecc71' : '#e74c3c';
       const weekInMonth = manageBuf.length + 1;
-      html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.05);border-radius:5px;font-size:12px">
+      html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(200,190,170,0.025);border:1px solid rgba(200,190,170,0.05);border-radius:5px;font-size:12px">
         <span style="color:var(--text-dim);flex-shrink:0">月${weekInMonth}週目:</span>
         <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${mNet}万</span>
         <span style="color:var(--text-dim);font-size:11px">収入${mIncome}万 / 支出${mExpense}万</span>
@@ -1996,8 +1996,8 @@ function renderFinance() {
       gridLines.forEach(val => {
         const y = toY(val);
         const isZero = val === 0;
-        svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(255,255,255,${isZero?0.2:0.06})" stroke-width="${isZero?1:0.5}"${isZero?' stroke-dasharray="4"':''}/>`;
-        svg += `<text x="${leftPad-6}" y="${y+3}" text-anchor="end" fill="rgba(255,255,255,${isZero?0.4:0.2})" font-size="10">${val.toLocaleString()}</text>`;
+        svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(200,190,170,${isZero?0.2:0.06})" stroke-width="${isZero?1:0.5}"${isZero?' stroke-dasharray="4"':''}/>`;
+        svg += `<text x="${leftPad-6}" y="${y+3}" text-anchor="end" fill="rgba(200,190,170,${isZero?0.4:0.2})" font-size="10">${val.toLocaleString()}</text>`;
       });
       const lineColor = G.funds >= 0 ? '#2ecc71' : '#e74c3c';
       svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
@@ -2153,9 +2153,9 @@ function renderLog() {
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
   display.forEach(l => {
     if (isSnapshot(l)) {
-      html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
+      html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
     } else {
-      html += `<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;color:var(--text-sub)">${getLogText(l)}</div>`;
+      html += `<div style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px;color:var(--text-sub)">${getLogText(l)}</div>`;
     }
   });
   el.innerHTML = html;
@@ -2219,12 +2219,12 @@ function renderRanking() {
     const tipHtml = `<div style="text-align:left;font-size:12px;line-height:1.7">`
       + `<div style="font-weight:700;margin-bottom:4px;font-size:13px">評価値の内訳</div>`
       + `<div>基礎値: <strong>${r.baseScore}</strong>pt</div>`
-      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
-      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
+      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
+      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
       + `<div style="margin-top:4px">レガシー: <strong>${r.legacyScore}</strong>pt</div>`
-      + `<div style="padding-left:10px;color:rgba(255,255,255,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
+      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
       + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</strong>pt</div>`
-      + `<hr style="border:none;border-top:1px solid rgba(255,255,255,0.15);margin:6px 0">`
+      + `<hr style="border:none;border-top:1px solid rgba(200,190,170,0.15);margin:6px 0">`
       + `<div style="font-weight:700">合計: ${r.rating}pt</div>`
       + `</div>`;
     window['_rankTip_' + r.orgId] = tipHtml;
@@ -2285,7 +2285,7 @@ function renderRanking() {
             ${[...G.roster].sort((a,b) => ov(b) - ov(a)).map(f => {
               const fOvr = ov(f);
               const isChampF = G.titles?.world?.championId === f.id;
-              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' 👑' : ''}</div>
@@ -2340,7 +2340,7 @@ function renderRanking() {
               const fOvr = Engine.util.ov(f);
               const isTop = idx === 0;
               const isChampF = champId === f.id;
-              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
                 <div class="monitor-wrap monitor-wrap-sm">${portraitImg(f.id, 48)}</div>
                 <div style="flex:1;min-width:0">
                   <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}${isChampF ? ' <span style="font-size:10px;color:var(--gold)">👑王者</span>' : ''}</div>
@@ -2391,7 +2391,7 @@ function renderScout() {
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">
     所属: <span style="color:var(--text)">${_ownCount}/${_rCap}名${_capFull ? '（上限）' : ''}</span> ｜ フリー: ${G.freeAgents.length}名 ｜ 団体人気: ${Engine.util.dispOrgPop(G.orgPop)}
   </div>
-  ${_capFull ? `<div style="padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-sub);margin-bottom:10px">ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
+  ${_capFull ? `<div style="padding:8px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-sub);margin-bottom:10px">ロスター枠が上限（${_rCap}名）に達しています。新規契約はできません。</div>` : ''}`;
 
   // Free agents — compact card list (click name/portrait to open popup with acquire button)
   const visibleFAIds = Engine.util.getVisibleFAIds(G);
@@ -2621,7 +2621,7 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
       <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'gamble')" class="btn btn-blue" style="width:100%">
         🎲 通常額で勝負 (${baseCost}万 / 勝率${winRate}%)
       </button>
-      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'skip')" class="btn" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim)">
+      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'skip')" class="btn" style="width:100%;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.1);color:var(--text-dim)">
         ❌ 諦める
       </button>
     </div>
@@ -2775,7 +2775,7 @@ function renderSave() {
   }
 
   // Data Transfer section
-  html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+  html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
   <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">📦 データ移行</div>
   <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
     セーブデータをファイルとして書き出し、別のデバイスやブラウザに移行できます。<br>
@@ -2791,19 +2791,19 @@ function renderSave() {
 </div>`;
 
   // Settings: Org name change
-  html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+  html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
     <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚙️ 設定</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🏢 団体名:</label>
       <input id="settingsOrgName" type="text" value="${G.orgName || 'プレイヤー団体'}" maxlength="20"
-        style="flex:1;max-width:240px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
+        style="flex:1;max-width:240px;background:rgba(200,190,170,0.08);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
         placeholder="団体名を入力">
       <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('stamp')}">変更</button>
     </div>
   </div>`;
 
   // New game button
-  html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+  html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
     <button class="btn btn-red" onclick="showConfirm('本当にニューゲームを開始しますか？\\n現在の進行は失われます。','ニューゲーム',()=>{location.reload()})">🔄 ニューゲーム</button>
   </div>`;
 
@@ -3034,18 +3034,18 @@ function _renderDbNewspaper() {
           <div style="font-size:15px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.right.name}</div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.22);">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(200,190,170,0.22);">
         <div style="font-size:14px;font-weight:900;">${d.isDraw ? 'Time-limit draw' : `${d.winner.name} wins`}</div>
         <div style="font-size:12px;color:#5b4b34;">${d.finishLabel}${d.turns ? ` / ${d.turns}T` : ''}</div>
         <div style="font-size:13px;color:#5b4b34;">MQ <strong style="font-size:20px;color:#15120d;">${d.mq}</strong></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(200,190,170,0.18);">
           <label style="font-size:11px;color:#6a5e4c;">${d.left.name}</label>
           <strong style="font-size:12px;">HP ${d.hpLeft.final}/${d.hpLeft.max}</strong>
           <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
         </div>
-        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(255,255,255,0.18);">
+        <div style="display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(200,190,170,0.18);">
           <label style="font-size:11px;color:#6a5e4c;">${d.right.name}</label>
           <strong style="font-size:12px;">HP ${d.hpRight.final}/${d.hpRight.max}</strong>
           <div style="height:6px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
@@ -3393,7 +3393,7 @@ function _renderDbOrgCompare() {
   let gridSvg = '';
   [1, 0.75, 0.5, 0.25].forEach((s, i) => {
     const a = [0, -R*s, R*s, 0, 0, R*s, -R*s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
-    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(255,255,255,${0.12 - i * 0.02})"/>`;
+    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(200,190,170,${0.12 - i * 0.02})"/>`;
   });
 
   const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体比較レーダー">
@@ -3641,7 +3641,7 @@ function _renderDbOrgCompare() {
   let gridSvg = '';
   [1, 0.75, 0.5, 0.25].forEach((s, i) => {
     const a = [0, -R * s, R * s, 0, 0, R * s, -R * s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
-    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(255,255,255,${0.12 - i * 0.02})"/>`;
+    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(200,190,170,${0.12 - i * 0.02})"/>`;
   });
 
   const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体パワースナップショット">
@@ -5241,7 +5241,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     nodeSvg += `</g>`;
   });
 
-  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  ── 因縁  / クリックで詳細 / サイドバーで団体表示</text>`;
+  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  ── 因縁  / クリックで詳細 / サイドバーで団体表示</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + linesSvg + bgSvg + nodeSvg;
@@ -5408,7 +5408,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     svgHtml += `</g>`;
   });
 
-  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い（OVR高）  ● サイズ=OVR  クリックで詳細</text>`;
+  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い（OVR高）  ● サイズ=OVR  クリックで詳細</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + svgHtml;
@@ -5674,7 +5674,7 @@ function _relmapShowComparePopup() {
     const va = a[s.key] || 0, vb = b[s.key] || 0;
     const displayVa = Math.round(va), displayVb = Math.round(vb);
     const aW = va > vb, bW = vb > va;
-    h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${displayVa}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(255,255,255,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(255,255,255,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${displayVb}</div></div></div>`;
+    h += `<div class="rm-cmp-stat-row"><div class="rm-cmp-bar-left"><div class="rm-cmp-val" style="color:${aW?s.color:'var(--text-sub)'}">${displayVa}</div><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${va}%;background:${aW?s.color:'rgba(200,190,170,0.15)'}"></div></div></div><div class="rm-cmp-label">${s.label}</div><div class="rm-cmp-bar-right"><div class="rm-cmp-bar-track"><div class="rm-cmp-bar-fill" style="width:${vb}%;background:${bW?s.color:'rgba(200,190,170,0.15)'}"></div></div><div class="rm-cmp-val" style="color:${bW?s.color:'var(--text-sub)'}">${displayVb}</div></div></div>`;
   });
   h += `</div>`;
 
