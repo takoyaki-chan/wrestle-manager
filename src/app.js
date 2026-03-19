@@ -805,7 +805,7 @@ const Audio = (() => {
     playForState() {
       if (!G) return;
       if (G.weekPhase === 'draft') { BGM.play('kaimaku'); return; }
-      if (G.offSeason || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
+      if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
       if (G.weekPhase === 'event') { BGM.play('tension'); return; }
       BGM.play('management'); // management + showPrep both use this
