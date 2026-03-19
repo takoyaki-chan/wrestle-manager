@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>対抗戦 カラーバリエーション比較</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif;padding:24px}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--bg-dark:#0f0f1a;--bg-card:rgba(0,0,0,0.3);--bg-mid:#1a1a30;--border:rgba(255,255,255,0.08);--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666}
+
+/* Variation label */
+.var-label{text-align:center;margin:40px 0 12px;font-size:18px;font-weight:700;letter-spacing:2px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.var-label:first-child{margin-top:0}
+.var-desc{text-align:center;font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.6}
+
+/* ===== Shared base ===== */
+.popup-box{background:#16162a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;max-width:780px;margin:0 auto 32px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,0.4)}
+
+/* Header */
+.war-header{text-align:center;padding:14px 0 10px;margin-bottom:4px}
+.war-label{font-size:11px;letter-spacing:6px;text-transform:uppercase}
+.war-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;color:#fff;line-height:1.1;margin:2px 0}
+.war-progress{font-size:11px;color:#666;margin-top:3px}
+
+/* Score */
+.score-track{display:flex;align-items:center;justify-content:center;padding:10px 24px;gap:20px}
+.score-org{text-align:center;flex:1}
+.score-org .name{font-size:15px;font-weight:700;letter-spacing:1px}
+.score-org .sub{font-size:10px;color:var(--text-dim);margin-top:1px}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;color:#fff;min-width:80px;text-align:center}
+.score-num .dash{font-size:24px;color:#444;margin:0 6px}
+.score-status{font-size:10px;color:#666;text-align:center;margin-top:-2px}
+
+/* Match list */
+.match-wrap{display:flex;flex-direction:column;gap:8px;padding:8px 16px 4px}
+
+/* ===== Current match card ===== */
+.mc{border-radius:10px;overflow:hidden}
+.mc-mn{text-align:center;padding:10px 0 2px;font-size:10px;letter-spacing:4px;color:#888;text-transform:uppercase}
+.mc-hype{text-align:center;padding:8px 36px 4px;font-size:13px;font-weight:700;line-height:1.5}
+
+/* Dialogue */
+.mc-dl{display:flex;gap:14px;padding:4px 44px 12px;justify-content:center}
+.mc-dlc{flex:0 1 auto;max-width:44%}
+.mc-dlb{position:relative;background:#f0f0f0;color:#1a1a1a;border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.5;text-align:center}
+.mc-dlc.left .mc-dlb::after{content:'';position:absolute;left:-8px;top:12px;border:5px solid transparent;border-right-color:#f0f0f0}
+.mc-dlc.right .mc-dlb::after{content:'';position:absolute;right:-8px;top:12px;border:5px solid transparent;border-left-color:#f0f0f0}
+.mc-dlsp{font-size:9px;font-weight:700;margin-bottom:2px;letter-spacing:1px}
+
+/* Fighter area */
+.mc-va{display:flex;align-items:flex-end;justify-content:center;padding:0 8px;min-height:200px}
+.mc-fc{display:flex;align-items:flex-end;flex:1}
+.mc-fc.left{justify-content:flex-end}
+.mc-fc.right{justify-content:flex-start}
+.mc-fp{width:120px;height:190px;flex-shrink:0;overflow:hidden}
+.mc-fp img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
+.mc-fc.right .mc-fp img{transform:scaleX(-1)}
+.mc-fi{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;gap:1px;min-width:80px}
+.mc-fc.left .mc-fi{align-items:flex-start;padding-right:8px}
+.mc-fc.right .mc-fi{align-items:flex-end;padding-left:8px}
+.mc-fn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:#e8e8e8;line-height:1.1}
+.mc-fo{font-size:9px}
+.mc-fol{font-size:8px;color:#888;letter-spacing:2px;margin-top:4px}
+.mc-fov{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1}
+.mc-vsf{flex:0 0 70px;display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:4px}
+.mc-vst{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px}
+
+/* Stats */
+.mc-stats{padding:10px 24px 6px}
+.sr{display:flex;align-items:center;height:22px;margin-bottom:3px}
+.sbl{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:4px}
+.sbr{flex:1;display:flex;justify-content:flex-start;align-items:center;padding-left:4px}
+.sl{width:36px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#999;flex-shrink:0}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:14px;min-width:26px;flex-shrink:0;color:#ccc}
+.sbl .sv{text-align:right;padding-right:6px}
+.sbr .sv{text-align:left;padding-left:6px}
+.sv.hi{color:#ffd700}
+.bt{height:10px;border-radius:3px;background:rgba(255,255,255,0.06);flex:1;max-width:180px;overflow:hidden}
+.sbl .bt{direction:rtl}
+.bf{height:100%;border-radius:3px}
+.bf.pw{background:linear-gradient(90deg,#e94560,#ff6b6b)}
+.bf.sp{background:linear-gradient(90deg,#4caf50,#66bb6a)}
+.bf.te{background:linear-gradient(90deg,#2196f3,#42a5f5)}
+.bf.st{background:linear-gradient(90deg,#ff9800,#ffb74d)}
+.bf.mn{background:linear-gradient(90deg,#9c27b0,#ba68c8)}
+
+/* Traits */
+.mc-traits{display:flex;align-items:center;padding:4px 24px 8px}
+.mc-ts{flex:1;display:flex;gap:4px;flex-wrap:wrap}
+.mc-ts.left{justify-content:flex-end;padding-right:18px}
+.mc-ts.right{justify-content:flex-start;padding-left:18px}
+.mc-tt{font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,0.05);color:#bbb;border:1px solid #2a2a45}
+.mc-tdiv{width:36px;flex-shrink:0}
+
+/* Actions */
+.mc-act{display:flex;flex-direction:column;align-items:center;padding:8px 16px 18px;gap:6px}
+.mc-bw{padding:12px 0;border-radius:8px;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:2px;width:100%;max-width:300px;font-family:inherit;color:#fff}
+.mc-bs{padding:4px 16px;border:none;background:0;color:#555;font-size:11px;cursor:pointer;font-family:inherit}
+
+/* ===== Resolved: CENTERED ===== */
+.md{background:rgba(14,14,28,0.6);border:1px solid #1a1a30;border-radius:6px;padding:8px 16px}
+.md-n{text-align:center;font-size:10px;letter-spacing:3px;color:#444;margin-bottom:4px;text-transform:uppercase}
+.md-c{display:flex;align-items:center;justify-content:center;gap:16px}
+.md-main{text-align:center}
+.md-w{font-size:12px;color:#666}
+.md-w .w{font-weight:700}
+.md-r{font-size:10px;color:#555;margin-top:1px}
+.md-mq{font-family:'Bebas Neue',sans-serif;font-size:15px}
+
+/* Fog */
+.mw{background:rgba(14,14,28,0.3);border:1px solid rgba(255,255,255,0.03);border-radius:6px;padding:10px 16px;opacity:0.4}
+.mw-h{text-align:center;font-size:10px;letter-spacing:3px;color:#333;text-transform:uppercase;margin-bottom:2px}
+.mw-n{text-align:center;font-size:12px;color:#444}
+
+/* Skip all */
+.skip-all{padding:8px 16px 18px;text-align:center}
+.skip-all button{padding:10px 0;border:1px solid #333;background:rgba(255,255,255,0.03);color:#777;border-radius:6px;font-size:13px;cursor:pointer;width:100%;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!--  PATTERN A: 紅（くれない）— 赤黒メイン、闘争感重視           -->
+<!-- ============================================================ -->
+<div class="var-label" style="color:#e94560">PATTERN A — 紅（くれない）</div>
+<div class="var-desc">メインカラー: <span style="color:#e94560">#e94560</span> 赤系。闘争心・緊張感。PPVに近いが対抗戦の「戦争」感を強調</div>
+
+<div class="popup-box">
+  <div class="war-header" style="border-bottom:1px solid #2a1020">
+    <div class="war-label" style="color:#e94560">⚔ Interpromotional War</div>
+    <div class="war-title">対 抗 戦</div>
+    <div class="war-progress">全3試合 ─ 1/3 完了</div>
+  </div>
+  <div class="score-track" style="border-bottom:1px solid #2a1020">
+    <div class="score-org"><div class="name" style="color:#74b9ff">プレイヤー団体</div><div class="sub">人気 42</div></div>
+    <div><div class="score-num">1 <span class="dash">—</span> 0</div></div>
+    <div class="score-org"><div class="name" style="color:#e94560">烈風プロレス</div><div class="sub">人気 38</div></div>
+  </div>
+  <div class="match-wrap">
+    <div class="mw"><div class="mw-h">第3試合</div><div class="mw-n">相田 萌 vs 黒瀬 まこと</div></div>
+
+    <div class="mc" style="background:linear-gradient(180deg,rgba(16,16,36,0.98),rgba(10,10,25,0.99));border:2px solid #e94560">
+      <div class="mc-mn">第 2 試 合</div>
+      <div class="mc-hype" style="color:#e94560">烈風のエース嵐山凛が立ちはだかる！</div>
+      <div class="mc-dl">
+        <div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#3498db">松下 真理亜</div>「団体の誇りを懸けて…」</div></div>
+        <div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:#e94560">嵐山 凛</div>「ぶっ潰してやるわ！」</div></div>
+      </div>
+      <div class="mc-va">
+        <div class="mc-fc left">
+          <div class="mc-fi"><div class="mc-fn">松下 真理亜</div><div class="mc-fo" style="color:#74b9ff">プレイヤー団体</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent">60</div></div>
+          <div class="mc-fp"><img src="../../image/upper/upper_matsushita_m.webp" alt="" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="mc-vsf"><div class="mc-vst" style="background:linear-gradient(180deg,#e94560,#c23152);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(233,69,96,0.35))">VS</div></div>
+        <div class="mc-fc right">
+          <div class="mc-fp"><img src="../../image/upper/upper_hayakawa_m.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="mc-fi"><div class="mc-fn">嵐山 凛</div><div class="mc-fo" style="color:#e94560">烈風プロレス</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent">69</div></div>
+        </div>
+      </div>
+      <div class="mc-stats">
+        <div class="sr"><div class="sbl"><span class="sv">55</span><div class="bt"><div class="bf pw" style="width:55%"></div></div></div><div class="sl">PW</div><div class="sbr"><div class="bt"><div class="bf pw" style="width:72%"></div></div><span class="sv hi">72</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">61</span><div class="bt"><div class="bf sp" style="width:61%"></div></div></div><div class="sl">SP</div><div class="sbr"><div class="bt"><div class="bf sp" style="width:82%"></div></div><span class="sv hi">82</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">34</span><div class="bt"><div class="bf te" style="width:34%"></div></div></div><div class="sl">TE</div><div class="sbr"><div class="bt"><div class="bf te" style="width:71%"></div></div><span class="sv hi">71</span></div></div>
+        <div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px"><div class="mc-ts left"><span class="mc-tt">負けず嫌い</span></div><div class="mc-tdiv"></div><div class="mc-ts right"><span class="mc-tt">威圧感</span></div></div>
+      </div>
+      <div class="mc-act">
+        <button class="mc-bw" style="border:2px solid #e94560;background:linear-gradient(135deg,rgba(233,69,96,0.12),rgba(233,69,96,0.04))">🎬 試合を観る</button>
+        <button class="mc-bs">≫ スキップ</button>
+      </div>
+    </div>
+
+    <div class="md">
+      <div class="md-n">第1試合</div>
+      <div class="md-c"><div class="md-main"><div class="md-w"><span class="w" style="color:#daa520">✓ 海老名 沙織</span> <span style="color:#555">def.</span> 鳳凰 はるか</div><div class="md-r">逆エビ固め</div></div><div class="md-mq" style="color:#daa520">MQ 72</div></div>
+    </div>
+  </div>
+  <div class="skip-all"><button>残り全試合をスキップ（2試合）</button></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  PATTERN B: 蒼鋼（そうこう）— ブルースチール、冷徹な対決感   -->
+<!-- ============================================================ -->
+<div class="var-label" style="color:#4fc3f7">PATTERN B — 蒼鋼（そうこう）</div>
+<div class="var-desc">メインカラー: <span style="color:#4fc3f7">#4fc3f7</span> 青鉄系。冷たい緊張感。PPVの赤熱とは対照的にクールな対抗戦</div>
+
+<div class="popup-box">
+  <div class="war-header" style="border-bottom:1px solid #102030">
+    <div class="war-label" style="color:#4fc3f7">⚔ Interpromotional War</div>
+    <div class="war-title">対 抗 戦</div>
+    <div class="war-progress">全3試合 ─ 1/3 完了</div>
+  </div>
+  <div class="score-track" style="border-bottom:1px solid #102030">
+    <div class="score-org"><div class="name" style="color:#81d4fa">プレイヤー団体</div><div class="sub">人気 42</div></div>
+    <div><div class="score-num">1 <span class="dash">—</span> 0</div></div>
+    <div class="score-org"><div class="name" style="color:#ef5350">烈風プロレス</div><div class="sub">人気 38</div></div>
+  </div>
+  <div class="match-wrap">
+    <div class="mw"><div class="mw-h">第3試合</div><div class="mw-n">相田 萌 vs 黒瀬 まこと</div></div>
+
+    <div class="mc" style="background:linear-gradient(180deg,rgba(10,18,32,0.98),rgba(8,12,24,0.99));border:2px solid #4fc3f7">
+      <div class="mc-mn">第 2 試 合</div>
+      <div class="mc-hype" style="color:#4fc3f7">烈風のエース嵐山凛が立ちはだかる！</div>
+      <div class="mc-dl">
+        <div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#42a5f5">松下 真理亜</div>「団体の誇りを懸けて…」</div></div>
+        <div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:#ef5350">嵐山 凛</div>「ぶっ潰してやるわ！」</div></div>
+      </div>
+      <div class="mc-va">
+        <div class="mc-fc left">
+          <div class="mc-fi"><div class="mc-fn">松下 真理亜</div><div class="mc-fo" style="color:#81d4fa">プレイヤー団体</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#81d4fa,#4fc3f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">60</div></div>
+          <div class="mc-fp"><img src="../../image/upper/upper_matsushita_m.webp" alt="" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="mc-vsf"><div class="mc-vst" style="background:linear-gradient(180deg,#4fc3f7,#0288d1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(79,195,247,0.35))">VS</div></div>
+        <div class="mc-fc right">
+          <div class="mc-fp"><img src="../../image/upper/upper_hayakawa_m.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="mc-fi"><div class="mc-fn">嵐山 凛</div><div class="mc-fo" style="color:#ef5350">烈風プロレス</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ef5350,#c62828);-webkit-background-clip:text;-webkit-text-fill-color:transparent">69</div></div>
+        </div>
+      </div>
+      <div class="mc-stats">
+        <div class="sr"><div class="sbl"><span class="sv">55</span><div class="bt"><div class="bf pw" style="width:55%"></div></div></div><div class="sl">PW</div><div class="sbr"><div class="bt"><div class="bf pw" style="width:72%"></div></div><span class="sv" style="color:#81d4fa">72</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">61</span><div class="bt"><div class="bf sp" style="width:61%"></div></div></div><div class="sl">SP</div><div class="sbr"><div class="bt"><div class="bf sp" style="width:82%"></div></div><span class="sv" style="color:#81d4fa">82</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">34</span><div class="bt"><div class="bf te" style="width:34%"></div></div></div><div class="sl">TE</div><div class="sbr"><div class="bt"><div class="bf te" style="width:71%"></div></div><span class="sv" style="color:#81d4fa">71</span></div></div>
+        <div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px"><div class="mc-ts left"><span class="mc-tt">負けず嫌い</span></div><div class="mc-tdiv"></div><div class="mc-ts right"><span class="mc-tt">威圧感</span></div></div>
+      </div>
+      <div class="mc-act">
+        <button class="mc-bw" style="border:2px solid #4fc3f7;background:linear-gradient(135deg,rgba(79,195,247,0.12),rgba(79,195,247,0.04))">🎬 試合を観る</button>
+        <button class="mc-bs">≫ スキップ</button>
+      </div>
+    </div>
+
+    <div class="md">
+      <div class="md-n">第1試合</div>
+      <div class="md-c"><div class="md-main"><div class="md-w"><span class="w" style="color:#81d4fa">✓ 海老名 沙織</span> <span style="color:#555">def.</span> 鳳凰 はるか</div><div class="md-r">逆エビ固め</div></div><div class="md-mq" style="color:#81d4fa">MQ 72</div></div>
+    </div>
+  </div>
+  <div class="skip-all"><button>残り全試合をスキップ（2試合）</button></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  PATTERN C: 翠嵐（すいらん）— 緑＋暗め、異種格闘技的な不穏さ -->
+<!-- ============================================================ -->
+<div class="var-label" style="color:#66bb6a">PATTERN C — 翠嵐（すいらん）</div>
+<div class="var-desc">メインカラー: <span style="color:#66bb6a">#66bb6a</span> 深緑系。PPVの赤・金とは全く異なる毒気のある対決感</div>
+
+<div class="popup-box">
+  <div class="war-header" style="border-bottom:1px solid #0a2010">
+    <div class="war-label" style="color:#66bb6a">⚔ Interpromotional War</div>
+    <div class="war-title">対 抗 戦</div>
+    <div class="war-progress">全3試合 ─ 1/3 完了</div>
+  </div>
+  <div class="score-track" style="border-bottom:1px solid #0a2010">
+    <div class="score-org"><div class="name" style="color:#a5d6a7">プレイヤー団体</div><div class="sub">人気 42</div></div>
+    <div><div class="score-num">1 <span class="dash">—</span> 0</div></div>
+    <div class="score-org"><div class="name" style="color:#ef5350">烈風プロレス</div><div class="sub">人気 38</div></div>
+  </div>
+  <div class="match-wrap">
+    <div class="mw"><div class="mw-h">第3試合</div><div class="mw-n">相田 萌 vs 黒瀬 まこと</div></div>
+
+    <div class="mc" style="background:linear-gradient(180deg,rgba(8,20,12,0.98),rgba(6,14,10,0.99));border:2px solid #66bb6a">
+      <div class="mc-mn">第 2 試 合</div>
+      <div class="mc-hype" style="color:#66bb6a">烈風のエース嵐山凛が立ちはだかる！</div>
+      <div class="mc-dl">
+        <div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#66bb6a">松下 真理亜</div>「団体の誇りを懸けて…」</div></div>
+        <div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:#ef5350">嵐山 凛</div>「ぶっ潰してやるわ！」</div></div>
+      </div>
+      <div class="mc-va">
+        <div class="mc-fc left">
+          <div class="mc-fi"><div class="mc-fn">松下 真理亜</div><div class="mc-fo" style="color:#a5d6a7">プレイヤー団体</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#a5d6a7,#66bb6a);-webkit-background-clip:text;-webkit-text-fill-color:transparent">60</div></div>
+          <div class="mc-fp"><img src="../../image/upper/upper_matsushita_m.webp" alt="" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="mc-vsf"><div class="mc-vst" style="background:linear-gradient(180deg,#66bb6a,#2e7d32);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(102,187,106,0.35))">VS</div></div>
+        <div class="mc-fc right">
+          <div class="mc-fp"><img src="../../image/upper/upper_hayakawa_m.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="mc-fi"><div class="mc-fn">嵐山 凛</div><div class="mc-fo" style="color:#ef5350">烈風プロレス</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ef5350,#c62828);-webkit-background-clip:text;-webkit-text-fill-color:transparent">69</div></div>
+        </div>
+      </div>
+      <div class="mc-stats">
+        <div class="sr"><div class="sbl"><span class="sv">55</span><div class="bt"><div class="bf pw" style="width:55%"></div></div></div><div class="sl">PW</div><div class="sbr"><div class="bt"><div class="bf pw" style="width:72%"></div></div><span class="sv" style="color:#a5d6a7">72</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">61</span><div class="bt"><div class="bf sp" style="width:61%"></div></div></div><div class="sl">SP</div><div class="sbr"><div class="bt"><div class="bf sp" style="width:82%"></div></div><span class="sv" style="color:#a5d6a7">82</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">34</span><div class="bt"><div class="bf te" style="width:34%"></div></div></div><div class="sl">TE</div><div class="sbr"><div class="bt"><div class="bf te" style="width:71%"></div></div><span class="sv" style="color:#a5d6a7">71</span></div></div>
+        <div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px"><div class="mc-ts left"><span class="mc-tt">負けず嫌い</span></div><div class="mc-tdiv"></div><div class="mc-ts right"><span class="mc-tt">威圧感</span></div></div>
+      </div>
+      <div class="mc-act">
+        <button class="mc-bw" style="border:2px solid #66bb6a;background:linear-gradient(135deg,rgba(102,187,106,0.12),rgba(102,187,106,0.04))">🎬 試合を観る</button>
+        <button class="mc-bs">≫ スキップ</button>
+      </div>
+    </div>
+
+    <div class="md">
+      <div class="md-n">第1試合</div>
+      <div class="md-c"><div class="md-main"><div class="md-w"><span class="w" style="color:#a5d6a7">✓ 海老名 沙織</span> <span style="color:#555">def.</span> 鳳凰 はるか</div><div class="md-r">逆エビ固め</div></div><div class="md-mq" style="color:#a5d6a7">MQ 72</div></div>
+    </div>
+  </div>
+  <div class="skip-all"><button>残り全試合をスキップ（2試合）</button></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  PATTERN D: 橙炎（とうえん）— オレンジ炎、熱量ある団体闘争   -->
+<!-- ============================================================ -->
+<div class="var-label" style="color:#ff9800">PATTERN D — 橙炎（とうえん）</div>
+<div class="var-desc">メインカラー: <span style="color:#ff9800">#ff9800</span> オレンジ系。PPVの金赤とは異なる暖色で「団体の炎」を表現</div>
+
+<div class="popup-box">
+  <div class="war-header" style="border-bottom:1px solid #2a1800">
+    <div class="war-label" style="color:#ff9800">⚔ Interpromotional War</div>
+    <div class="war-title">対 抗 戦</div>
+    <div class="war-progress">全3試合 ─ 1/3 完了</div>
+  </div>
+  <div class="score-track" style="border-bottom:1px solid #2a1800">
+    <div class="score-org"><div class="name" style="color:#ffcc80">プレイヤー団体</div><div class="sub">人気 42</div></div>
+    <div><div class="score-num">1 <span class="dash">—</span> 0</div></div>
+    <div class="score-org"><div class="name" style="color:#ef5350">烈風プロレス</div><div class="sub">人気 38</div></div>
+  </div>
+  <div class="match-wrap">
+    <div class="mw"><div class="mw-h">第3試合</div><div class="mw-n">相田 萌 vs 黒瀬 まこと</div></div>
+
+    <div class="mc" style="background:linear-gradient(180deg,rgba(24,14,6,0.98),rgba(14,10,6,0.99));border:2px solid #ff9800">
+      <div class="mc-mn">第 2 試 合</div>
+      <div class="mc-hype" style="color:#ff9800">烈風のエース嵐山凛が立ちはだかる！</div>
+      <div class="mc-dl">
+        <div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#ff9800">松下 真理亜</div>「団体の誇りを懸けて…」</div></div>
+        <div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:#ef5350">嵐山 凛</div>「ぶっ潰してやるわ！」</div></div>
+      </div>
+      <div class="mc-va">
+        <div class="mc-fc left">
+          <div class="mc-fi"><div class="mc-fn">松下 真理亜</div><div class="mc-fo" style="color:#ffcc80">プレイヤー団体</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ffcc80,#ff9800);-webkit-background-clip:text;-webkit-text-fill-color:transparent">60</div></div>
+          <div class="mc-fp"><img src="../../image/upper/upper_matsushita_m.webp" alt="" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="mc-vsf"><div class="mc-vst" style="background:linear-gradient(180deg,#ff9800,#e65100);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(255,152,0,0.35))">VS</div></div>
+        <div class="mc-fc right">
+          <div class="mc-fp"><img src="../../image/upper/upper_hayakawa_m.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="mc-fi"><div class="mc-fn">嵐山 凛</div><div class="mc-fo" style="color:#ef5350">烈風プロレス</div><div class="mc-fol">OVR</div><div class="mc-fov" style="background:linear-gradient(180deg,#ef5350,#c62828);-webkit-background-clip:text;-webkit-text-fill-color:transparent">69</div></div>
+        </div>
+      </div>
+      <div class="mc-stats">
+        <div class="sr"><div class="sbl"><span class="sv">55</span><div class="bt"><div class="bf pw" style="width:55%"></div></div></div><div class="sl">PW</div><div class="sbr"><div class="bt"><div class="bf pw" style="width:72%"></div></div><span class="sv" style="color:#ffcc80">72</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">61</span><div class="bt"><div class="bf sp" style="width:61%"></div></div></div><div class="sl">SP</div><div class="sbr"><div class="bt"><div class="bf sp" style="width:82%"></div></div><span class="sv" style="color:#ffcc80">82</span></div></div>
+        <div class="sr"><div class="sbl"><span class="sv">34</span><div class="bt"><div class="bf te" style="width:34%"></div></div></div><div class="sl">TE</div><div class="sbr"><div class="bt"><div class="bf te" style="width:71%"></div></div><span class="sv" style="color:#ffcc80">71</span></div></div>
+        <div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px"><div class="mc-ts left"><span class="mc-tt">負けず嫌い</span></div><div class="mc-tdiv"></div><div class="mc-ts right"><span class="mc-tt">威圧感</span></div></div>
+      </div>
+      <div class="mc-act">
+        <button class="mc-bw" style="border:2px solid #ff9800;background:linear-gradient(135deg,rgba(255,152,0,0.12),rgba(255,152,0,0.04))">🎬 試合を観る</button>
+        <button class="mc-bs">≫ スキップ</button>
+      </div>
+    </div>
+
+    <div class="md">
+      <div class="md-n">第1試合</div>
+      <div class="md-c"><div class="md-main"><div class="md-w"><span class="w" style="color:#ffcc80">✓ 海老名 沙織</span> <span style="color:#555">def.</span> 鳳凰 はるか</div><div class="md-r">逆エビ固め</div></div><div class="md-mq" style="color:#ffcc80">MQ 72</div></div>
+    </div>
+  </div>
+  <div class="skip-all"><button>残り全試合をスキップ（2試合）</button></div>
+</div>
+
+</body>
+</html>

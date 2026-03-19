@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>【現状】対抗戦 試合進行ポップアップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--bg-dark:#0f0f1a;--bg-card:rgba(0,0,0,0.3);--bg-mid:#1a1a30;--border:rgba(255,255,255,0.08);--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666;--enemy-color:#e74c3c}
+
+/* Overlay */
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100}
+.popup-box{background:#16162a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;max-width:780px;width:90%;max-height:90vh;overflow-y:auto;padding:20px 24px;box-shadow:0 20px 80px rgba(0,0,0,0.6)}
+
+/* Title */
+.show-result-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;text-align:center;margin-bottom:4px}
+
+/* Match row */
+.war-match{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px}
+
+/* Portrait */
+.portrait{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0}
+
+/* Buttons */
+.btn{border:none;border-radius:4px;cursor:pointer;font-family:inherit}
+.btn-blue{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.4);color:#74b9ff}
+.btn-gold{background:linear-gradient(135deg,#b8912e,#f1c40f);color:#1a1a2e;font-weight:700;border:none;cursor:pointer;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="overlay-bg">
+<div class="popup-box">
+
+  <!-- Title -->
+  <div class="show-result-title" style="color:var(--enemy-color)">⚔ 対抗戦</div>
+  <div style="text-align:center;margin-bottom:16px;color:var(--text-sub);font-size:12px">
+    プレイヤー団体 vs 烈風プロレス — 1/3 完了
+  </div>
+
+  <!-- ===== 第1試合 (resolved — player WIN) ===== -->
+  <div class="war-match" style="opacity:0.6">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">
+        <img src="../../image/face_ebina_s.png" class="portrait" style="border:2px solid rgba(52,152,219,0.5)" alt="">
+        <span style="color:var(--blue)">海老名 沙織</span>
+        <span style="color:var(--text-dim);margin:0 4px;font-size:12px">vs</span>
+        <span style="color:var(--enemy-color)">鳳凰 はるか</span>
+        <img src="../../image/face_hasegawa_r.png" class="portrait" style="border:2px solid rgba(231,76,60,0.4)" alt="">
+      </div>
+      <div style="font-size:11px;color:var(--text-dim)">第1試合</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;font-size:11px">
+      <span style="color:var(--blue)">🔵 海老名 沙織 (逆エビ固め)</span>
+      <span style="color:var(--gold)">MQ: 72</span>
+    </div>
+  </div>
+
+  <!-- ===== 第2試合 (unresolved — active) ===== -->
+  <div class="war-match">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">
+        <img src="../../image/face_matsushita_m.png" class="portrait" style="border:2px solid rgba(52,152,219,0.5)" alt="">
+        <span style="color:var(--blue)">松下 真理亜</span>
+        <span style="color:var(--text-dim);margin:0 4px;font-size:12px">vs</span>
+        <span style="color:var(--enemy-color)">嵐山 凛</span>
+        <img src="../../image/face_hayakawa_m.png" class="portrait" style="border:2px solid rgba(231,76,60,0.4)" alt="">
+      </div>
+      <div style="font-size:11px;color:var(--text-dim)">第2試合</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;padding:6px 0">🎬 この試合を観る</button>
+      <button class="btn" style="flex:1;font-size:12px;padding:6px 0;background:var(--bg-mid);color:var(--text-sub)">⏭ スキップ</button>
+    </div>
+  </div>
+
+  <!-- ===== 第3試合 (unresolved — waiting) ===== -->
+  <div class="war-match">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600">
+        <img src="../../image/face_aida_m.png" class="portrait" style="border:2px solid rgba(52,152,219,0.5)" alt="">
+        <span style="color:var(--blue)">相田 萌</span>
+        <span style="color:var(--text-dim);margin:0 4px;font-size:12px">vs</span>
+        <span style="color:var(--enemy-color)">黒瀬 まこと</span>
+        <img src="../../image/face_akabane_a.png" class="portrait" style="border:2px solid rgba(231,76,60,0.4)" alt="">
+      </div>
+      <div style="font-size:11px;color:var(--text-dim)">第3試合</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;padding:6px 0">🎬 この試合を観る</button>
+      <button class="btn" style="flex:1;font-size:12px;padding:6px 0;background:var(--bg-mid);color:var(--text-sub)">⏭ スキップ</button>
+    </div>
+  </div>
+
+  <!-- Skip all -->
+  <div style="margin-top:16px;text-align:center">
+    <button class="btn-gold" style="width:100%;padding:12px 0;font-size:14px">⏩ 全試合スキップ（2試合）</button>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>

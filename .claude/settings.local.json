@@ -116,7 +116,22 @@
       "Bash(node test/auto-sim.js 100 42)",
       "Bash(node test/auto-sim.js 500 42)",
       "Bash(awk 'NR>=4517 && NR<=4700 && /trust/' /c/Users/nkmrk/Downloads/wrestle-manager/src/engine.js)",
-      "Bash(node test/auto-sim.js 10 42)"
+      "Bash(node test/auto-sim.js 10 42)",
+      "Bash(node test/auto-sim.js 100 7919)",
+      "Bash(mv src/prototype/* prototype/)",
+      "Bash(mv docs/mockups/* prototype/)",
+      "Bash(git mv:*)",
+      "Bash(for f:*)",
+      "Bash(do mv:*)",
+      "Bash(echo \"moved $f\")",
+      "Bash(ls docs/*.md)",
+      "Bash(node test/auto-sim.js 100 1)",
+      "Bash(grep -n \"function portraitImg\\\\|const portraitImg\" src/*.js)",
+      "Bash(grep -n \"_pendingMatchDialogues\\\\|pickDialogueLine\" src/*.js)",
+      "Bash(grep -n \"function pickDialogueLine\" src/*.js)",
+      "Bash(grep -n \"var _pendingMatchDialogues\\\\|let _pendingMatchDialogues\\\\|const _pendingMatchDialogues\" src/*.js)",
+      "Bash(grep -n \"function showPostMatchDialogues\" src/*.js)",
+      "Bash(grep -n \"Engine.formatFinish\" src/*.js)"
     ]
   }
 }

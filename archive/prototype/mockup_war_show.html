@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>対抗戦画面 ブラッシュアップ Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f0f1a;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif;padding:20px 30px}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--bg-dark:#0f0f1a;--bg-card:rgba(0,0,0,0.3);--bg-mid:#1a1a30;--border:rgba(255,255,255,0.08);--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666;--enemy-color:#e94560}
+
+/* ===== Design Note ===== */
+.design-note{background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.3);border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#e94560;line-height:1.7}
+.design-note strong{color:#ff6b81}
+.change-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:3px;margin-right:6px;font-weight:700;vertical-align:middle}
+.change-tag.new{background:rgba(46,204,113,0.2);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.change-tag.mod{background:rgba(52,152,219,0.2);color:#74b9ff;border:1px solid rgba(52,152,219,0.3)}
+.change-tag.keep{background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)}
+
+/* ===== War Header ===== */
+.war-header{position:relative;background:linear-gradient(180deg,#1a0010 0%,#0f0f1a 100%);border-radius:10px;overflow:hidden;margin-bottom:0}
+.war-header-inner{position:relative;z-index:1;text-align:center;padding:20px 0 14px}
+.war-header-bg{position:absolute;inset:0;opacity:0.3}
+.war-header-bg .left{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg,rgba(52,152,219,0.15),transparent)}
+.war-header-bg .right{position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(-90deg,rgba(233,69,96,0.15),transparent)}
+.war-title-label{font-size:11px;letter-spacing:6px;color:var(--enemy-color);text-transform:uppercase}
+.war-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;color:#fff;margin:4px 0}
+.war-subtitle{font-size:12px;color:var(--text-dim)}
+
+/* ===== Score Tracker (NEW) ===== */
+.score-tracker{display:flex;align-items:center;justify-content:center;padding:14px 30px;background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(255,255,255,0.06);gap:24px;margin-bottom:16px;border-radius:0 0 10px 10px}
+.score-org{text-align:center;flex:1}
+.score-org .name{font-size:16px;font-weight:700;letter-spacing:1px}
+.score-org .pop{font-size:10px;color:var(--text-dim);margin-top:2px}
+.score-org.player .name{color:#74b9ff}
+.score-org.enemy .name{color:var(--enemy-color)}
+.score-center{text-align:center}
+.score-numbers{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:#fff}
+.score-numbers .dash{font-size:28px;color:var(--text-dim);margin:0 8px}
+.score-status{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* ===== Match Card Container ===== */
+.match-list{display:flex;flex-direction:column;gap:8px}
+
+/* ===== Resolved Match (compact) ===== */
+.match-resolved{background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px 14px;opacity:0.6;transition:opacity 0.2s}
+.match-resolved:hover{opacity:0.85}
+.match-resolved .mr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.match-resolved .mr-label{font-size:10px;color:var(--text-dim);letter-spacing:1px}
+.match-resolved .mr-result{text-align:right}
+.match-resolved .mr-result .win{font-size:12px;font-weight:700}
+.match-resolved .mr-result .mq{font-size:10px;margin-top:1px}
+.match-resolved .mr-fighters{display:flex;align-items:center;gap:8px}
+.match-resolved .mr-fighters .portrait{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.match-resolved .mr-fighters .name{font-size:13px;font-weight:600}
+.match-resolved .mr-finish{font-size:10px;color:var(--text-dim);margin-top:4px}
+.mr-border-win{border-left:3px solid var(--blue)}
+.mr-border-lose{border-left:3px solid var(--red)}
+
+/* ===== Current Match: PPV-style big card ===== */
+.match-current{background:linear-gradient(180deg,rgba(16,16,36,0.98),rgba(10,10,25,0.99));border:2px solid var(--enemy-color);border-radius:10px;overflow:hidden}
+.match-current .mc-now{text-align:center;padding:6px 0 0;font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:700}
+.match-current .mc-label{text-align:center;padding:6px 0 2px;font-size:10px;letter-spacing:4px;color:#888;text-transform:uppercase}
+
+/* Fighter face-off */
+.mc-fighters{display:flex;align-items:flex-end;justify-content:center;padding:0 16px;min-height:200px}
+.mc-side{display:flex;align-items:flex-end;flex:1}
+.mc-side.left{justify-content:flex-end}
+.mc-side.right{justify-content:flex-start}
+.mc-upper{width:130px;height:200px;flex-shrink:0}
+.mc-upper img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
+.mc-info{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;gap:1px;min-width:100px}
+.mc-side.left .mc-info{align-items:flex-start;padding-right:12px}
+.mc-side.right .mc-info{align-items:flex-end;padding-left:12px}
+.mc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8e8e8;line-height:1.1}
+.mc-org{font-size:10px;color:#777;margin-top:1px}
+.mc-ovr-label{font-size:8px;color:#888;letter-spacing:2px;margin-top:4px}
+.mc-ovr{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;background:linear-gradient(180deg,#ffd700,#daa520,#b8860b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mc-vs{flex:0 0 70px;display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:6px}
+.mc-vs-text{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;background:linear-gradient(180deg,var(--enemy-color),#c23152);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(233,69,96,0.35))}
+
+/* Stat bars */
+.mc-stats{padding:10px 24px 6px}
+.stat-row{display:flex;align-items:center;height:22px;margin-bottom:3px}
+.stat-bar-left{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:4px}
+.stat-bar-right{flex:1;display:flex;justify-content:flex-start;align-items:center;padding-left:4px}
+.stat-label{width:30px;text-align:center;font-size:10px;color:#888;flex-shrink:0}
+.stat-val{min-width:28px;font-family:'Bebas Neue',sans-serif;font-size:14px}
+.stat-val.hi{color:#fff}
+.stat-bar-track{flex:1;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.stat-bar-left .stat-bar-track{direction:rtl}
+.stat-bar-fill{height:100%;border-radius:3px}
+.stat-bar-left .stat-bar-fill{background:var(--blue)}
+.stat-bar-right .stat-bar-fill{background:var(--enemy-color)}
+
+/* Traits */
+.mc-traits{display:flex;justify-content:space-between;padding:0 24px 8px;font-size:10px}
+.mc-traits .tag{padding:2px 6px;border-radius:3px;margin:0 2px}
+.mc-traits .left .tag{background:rgba(52,152,219,0.12);color:#74b9ff}
+.mc-traits .right .tag{background:rgba(233,69,96,0.12);color:#e94560}
+
+/* Dialogue (UI共通ルール② 白吹き出し) */
+.mc-dialogue{display:flex;gap:10px;padding:6px 20px 12px}
+.mc-dialogue .bubble{flex:1;background:#f0f0f0;border-radius:10px;padding:8px 12px;text-align:center}
+.mc-dialogue .speaker{font-size:10px;margin-bottom:2px;font-weight:700}
+.mc-dialogue .line{font-size:12px;color:#222;line-height:1.5}
+
+/* Action buttons */
+.mc-actions{display:flex;gap:8px;padding:8px 20px 14px}
+.mc-actions .btn{flex:1;text-align:center;padding:12px 0;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:none}
+.mc-actions .btn-watch{background:var(--blue);color:#fff}
+.mc-actions .btn-skip{background:var(--bg-mid);color:var(--text-sub);border:1px solid var(--border)}
+
+/* ===== Upcoming match (fog) ===== */
+.match-fog{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px 14px;opacity:0.35}
+.match-fog .fog-label{font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:4px}
+.match-fog .fog-names{font-size:13px;color:#555;text-align:center}
+
+/* ===== Skip All / Battle Points ===== */
+.skip-all{text-align:center;margin-top:12px}
+.skip-all button{background:linear-gradient(135deg,#b8912e,#f1c40f);color:#1a1a2e;font-weight:700;padding:12px 32px;font-size:14px;border-radius:6px;border:none;cursor:pointer;width:100%}
+.battle-info{padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:6px;margin-top:12px;font-size:11px;color:var(--text-dim)}
+</style>
+</head>
+<body>
+
+<!-- ===== DESIGN NOTE ===== -->
+<div class="design-note">
+  <strong>🎨 対抗戦画面 ブラッシュアップ案（PPV参考）</strong><br>
+  <span class="change-tag new">NEW</span> ヘッダーバナー + スコアトラッカー常時表示<br>
+  <span class="change-tag mod">MOD</span> 現在の試合 → PPV風の大カード表示（上半身画像＋ステータス対比バー＋セリフ）<br>
+  <span class="change-tag mod">MOD</span> 完了試合 → コンパクト行（PPVの resolved 形式）<br>
+  <span class="change-tag new">NEW</span> 未到達試合 → 霧表示（PPVの fog 形式）<br>
+  <span class="change-tag keep">KEEP</span> 挑戦状ポップアップ / 結果オーバーレイ → 既存で良好
+</div>
+
+<!-- ===== WAR HEADER BANNER (NEW) ===== -->
+<div class="war-header">
+  <div class="war-header-bg">
+    <div class="left"></div>
+    <div class="right"></div>
+  </div>
+  <div class="war-header-inner">
+    <div class="war-title-label">⚔ Interpromotional War</div>
+    <div class="war-title">対 抗 戦</div>
+    <div class="war-subtitle">Season 2 — 春 第6週</div>
+  </div>
+</div>
+
+<!-- ===== SCORE TRACKER (NEW) ===== -->
+<div class="score-tracker">
+  <div class="score-org player">
+    <div class="name">プレイヤー団体</div>
+    <div class="pop">人気: 42 | 対戦pt: 8</div>
+  </div>
+  <div class="score-center">
+    <div class="score-numbers">1 <span class="dash">—</span> 0</div>
+    <div class="score-status">2 / 3 完了</div>
+  </div>
+  <div class="score-org enemy">
+    <div class="name">烈風プロレス</div>
+    <div class="pop">人気: 38 | 対戦pt: 5</div>
+  </div>
+</div>
+
+<div class="match-list">
+
+  <!-- ===== MATCH 1: Resolved (MOD → compact PPV style) ===== -->
+  <div style="position:relative">
+    <div style="position:absolute;top:4px;right:12px;z-index:1">
+      <span class="change-tag mod" style="font-size:9px">MOD</span>
+    </div>
+  </div>
+  <div class="match-resolved mr-border-win">
+    <div class="mr-head">
+      <div class="mr-label">第1試合</div>
+      <div class="mr-result">
+        <div class="win" style="color:var(--blue)">🔵 WIN</div>
+        <div class="mq" style="color:var(--gold)">MQ 72</div>
+      </div>
+    </div>
+    <div class="mr-fighters">
+      <img src="../../image/face_ebina_s.png" class="portrait" style="border:2px solid rgba(52,152,219,0.5)" alt="">
+      <span class="name" style="color:#74b9ff">✓ 海老名 沙織</span>
+      <span style="color:var(--text-dim);font-size:11px;margin:0 6px">def.</span>
+      <span class="name" style="color:var(--enemy-color)">鳳凰 はるか</span>
+      <img src="../../image/face_hasegawa_r.png" class="portrait" style="border:2px solid rgba(233,69,96,0.5)" alt="">
+    </div>
+    <div class="mr-finish">逆エビ固め — 10ターン</div>
+  </div>
+
+  <!-- ===== MATCH 2: Current (MOD → PPV-style big card) ===== -->
+  <div style="position:relative">
+    <div style="position:absolute;top:4px;right:12px;z-index:2">
+      <span class="change-tag mod" style="font-size:9px">MOD: PPV大カード化</span>
+    </div>
+  </div>
+  <div class="match-current">
+    <div class="mc-now">▶ NOW PLAYING</div>
+    <div class="mc-label">第2試合</div>
+
+    <!-- Pre-match dialogue (UI共通ルール② 白吹き出し) -->
+    <div class="mc-dialogue">
+      <div class="bubble">
+        <div class="speaker" style="color:var(--blue)">松下</div>
+        <div class="line">「団体の誇りを懸けて…負けられない」</div>
+      </div>
+      <div class="bubble">
+        <div class="speaker" style="color:var(--enemy-color)">嵐山</div>
+        <div class="line">「ぶっ潰してやるわ！」</div>
+      </div>
+    </div>
+
+    <!-- Fighter face-off -->
+    <div class="mc-fighters">
+      <div class="mc-side left">
+        <div class="mc-info">
+          <div class="mc-name">松下 真理亜</div>
+          <div class="mc-org" style="color:#74b9ff">プレイヤー団体</div>
+          <div class="mc-ovr-label">OVR</div>
+          <div class="mc-ovr">60</div>
+        </div>
+        <div class="mc-upper">
+          <img src="../../image/upper/upper_matsushita_m.webp" alt="松下真理亜" onerror="this.parentElement.innerHTML='<div style=\'width:130px;height:200px;background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:48px;color:#444\'>松</div>'">
+        </div>
+      </div>
+
+      <div class="mc-vs">
+        <div class="mc-vs-text">V S</div>
+      </div>
+
+      <div class="mc-side right">
+        <div class="mc-upper">
+          <img src="../../image/upper/upper_hayakawa_m.webp" alt="嵐山凛" onerror="this.parentElement.innerHTML='<div style=\'width:130px;height:200px;background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:48px;color:#444\'>嵐</div>'">
+        </div>
+        <div class="mc-info">
+          <div class="mc-name">嵐山 凛</div>
+          <div class="mc-org" style="color:var(--enemy-color)">烈風プロレス — エース</div>
+          <div class="mc-ovr-label">OVR</div>
+          <div class="mc-ovr">69</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat comparison bars (UI共通ルール① 左右対称レイアウト) -->
+    <div class="mc-stats">
+      <div class="stat-row">
+        <div class="stat-bar-left"><span class="stat-val hi" style="color:#74b9ff">68</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:68%"></div></div></div>
+        <div class="stat-label">PW</div>
+        <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:72%"></div></div><span class="stat-val hi" style="color:var(--enemy-color)">72</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-bar-left"><span class="stat-val" style="color:#74b9ff">55</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:55%"></div></div></div>
+        <div class="stat-label">SP</div>
+        <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:65%"></div></div><span class="stat-val hi" style="color:var(--enemy-color)">65</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-bar-left"><span class="stat-val hi" style="color:#74b9ff">62</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:62%"></div></div></div>
+        <div class="stat-label">TE</div>
+        <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:58%"></div></div><span class="stat-val" style="color:var(--enemy-color)">58</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-bar-left"><span class="stat-val" style="color:#74b9ff">50</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:50%"></div></div></div>
+        <div class="stat-label">ST</div>
+        <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:70%"></div></div><span class="stat-val hi" style="color:var(--enemy-color)">70</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-bar-left"><span class="stat-val" style="color:#74b9ff">48</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:48%"></div></div></div>
+        <div class="stat-label">MN</div>
+        <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:62%"></div></div><span class="stat-val hi" style="color:var(--enemy-color)">62</span></div>
+      </div>
+    </div>
+
+    <!-- Traits -->
+    <div class="mc-traits">
+      <div class="left">
+        <span class="tag">負けず嫌い</span>
+        <span class="tag">リーダー気質</span>
+      </div>
+      <div class="right">
+        <span class="tag">威圧感</span>
+        <span class="tag">反骨心</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mc-actions">
+      <button class="btn btn-watch">🎬 この試合を観る</button>
+      <button class="btn btn-skip">⏭ スキップ</button>
+    </div>
+  </div>
+
+  <!-- ===== MATCH 3: Upcoming (NEW → fog) ===== -->
+  <div style="position:relative">
+    <div style="position:absolute;top:4px;right:12px;z-index:1">
+      <span class="change-tag new" style="font-size:9px">NEW: 霧表示</span>
+    </div>
+  </div>
+  <div class="match-fog">
+    <div class="fog-label">第3試合</div>
+    <div class="fog-names">赤羽 あかり vs ??? — 未到達</div>
+  </div>
+
+</div><!-- /match-list -->
+
+<!-- ===== SKIP ALL ===== -->
+<div class="skip-all">
+  <button>⏩ 残り全試合スキップ（2試合）</button>
+</div>
+
+<!-- ===== BATTLE POINTS INFO ===== -->
+<div class="battle-info">
+  <span style="color:var(--gold)">⚔</span> 勝利時: 対戦pt +3 / 団体人気 +2 &nbsp;&nbsp;
+  <span style="color:var(--red)">✕</span> 敗北時: 対戦pt -3 &nbsp;&nbsp;
+  <span style="color:var(--text-sub)">|</span> &nbsp;
+  引き分け: 対戦pt ±0
+</div>
+
+<!-- ===== COMPARISON: Current vs Proposed ===== -->
+<div style="margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)">
+  <div class="design-note" style="background:rgba(52,152,219,0.1);border-color:rgba(52,152,219,0.3);color:#74b9ff">
+    <strong style="color:#74b9ff">📝 現状との差分まとめ</strong><br><br>
+    <strong>現状の対抗戦 renderWarMatchPreview:</strong><br>
+    • 56pxポートレート＋テキスト名前＋vsテキストのフラットな行表示<br>
+    • 完了/未完了の区別はあるが、視覚的な段階差が弱い（opacity:0.6 のみ）<br>
+    • ステータス対比バー・セリフ・トレイト表示なし<br>
+    • スコアは別の場所（ヘッダーテキスト内）<br><br>
+
+    <strong>ブラッシュアップ後:</strong><br>
+    • スコアトラッカーを画面上部に大きく常時表示（団体名＋対戦pt＋進行状況）<br>
+    • 現在の試合 → PPVの ppvprog-mc と同じ構造（上半身画像＋OVR＋対比バー＋セリフ＋トレイト）<br>
+    • 完了試合 → PPVの ppvprog-md 形式（コンパクト＋勝敗色分けボーダー）<br>
+    • 未到達 → PPVの ppvprog-mw 形式（opacity下げ＋霧）<br>
+    • 敵団体カラーをテーマカラーとして border / VS / accent に適用
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPV GRAND FINAL 結果画面 — Mockup v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #08080d;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --green: #2ecc71;
+  --text-main: #e7e9ee;
+  --text-sub: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.25);
+  --border: rgba(255,255,255,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 20px 12px;
+}
+.container { max-width: 520px; width: 100%; }
+
+/* ─── Header ─── */
+.ppv-header {
+  text-align: center; padding: 28px 20px 22px;
+  background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(180,80,40,0.12));
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 12px; margin-bottom: 18px;
+}
+.ppv-header .sub { font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:3px; color:rgba(255,255,255,0.3); margin-bottom:4px; }
+.ppv-header .title {
+  font-size:24px; font-weight:900;
+  background:linear-gradient(180deg,#fff 20%,var(--gold-light));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:8px;
+}
+.ppv-header .stars { color:var(--gold); font-size:16px; }
+.ppv-header .avg-mq { font-size:14px; color:var(--text-sub); }
+.ppv-header .heat { font-size:13px; color:var(--text-sub); margin-top:6px; }
+.venue-pill {
+  display:inline-flex; align-items:center; gap:6px; padding:5px 14px;
+  background:rgba(212,168,67,0.1); border:1px solid rgba(212,168,67,0.2);
+  border-radius:16px; font-size:11px; color:var(--text-sub); margin-top:10px;
+}
+.top-btn { text-align:right; margin-bottom:14px; }
+.top-btn span {
+  display:inline-block; padding:6px 18px; border-radius:4px;
+  font-size:12px; background:rgba(212,168,67,0.12); color:var(--gold);
+  cursor:pointer; opacity:0.85;
+}
+.section-label {
+  text-align:center; font-family:'Oswald',sans-serif;
+  font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.2);
+  margin:16px 0 10px;
+}
+
+/* ─── Match Card ─── */
+.match-card {
+  border:1px solid var(--border); border-radius:10px;
+  padding:16px; margin-bottom:10px;
+}
+.match-card.main-event {
+  border:1.5px solid rgba(212,168,67,0.4);
+  background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02));
+}
+.match-label { font-size:11px; color:var(--text-dim); margin-bottom:10px; }
+.match-label .gold { color:var(--gold); font-weight:600; }
+.match-label .rivalry { color:#e74c3c; }
+.match-label .resolution { color:#d63031; font-weight:700; }
+.match-label .fresh { color:#74b9ff; }
+
+/* ─── Versus with bubbles above portraits ─── */
+.versus-block {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.fighter-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* Winner column gets more space */
+.fighter-col.winner-col { max-width: 55%; }
+.fighter-col.loser-col { max-width: 38%; }
+
+/* ─── Speech bubble above portrait ─── */
+.speech-above {
+  margin-bottom: 8px;
+  width: 100%;
+  position: relative;
+}
+.speech-above .bubble {
+  background: #f0f0f0;
+  color: #222;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.5;
+  position: relative;
+}
+/* Triangle pointing down to portrait */
+.speech-above .bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #f0f0f0;
+}
+.speech-above .speaker {
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 3px;
+}
+.speech-above .speaker.w { color: var(--gold); }
+.speech-above .speaker.l { color: #e17055; }
+
+.vs-divider {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  color: rgba(255,255,255,0.12);
+  padding-bottom: 56px;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+/* ─── Portrait ─── */
+.portrait {
+  border-radius: 7px; overflow: hidden; background: #111;
+  display: flex; align-items: center; justify-content: center;
+}
+.portrait img { width:100%; height:100%; object-fit:cover; object-position:center top; }
+.portrait.main-winner {
+  width:130px; height:170px;
+  border:2px solid rgba(212,168,67,0.5);
+  box-shadow:0 0 24px rgba(212,168,67,0.15);
+}
+.portrait.main-loser {
+  width:80px; height:104px;
+  border:1px solid rgba(255,255,255,0.08); opacity:0.55;
+}
+.portrait.sub-winner {
+  width:100px; height:130px;
+  border:1.5px solid rgba(46,204,113,0.25);
+}
+.portrait.sub-loser {
+  width:62px; height:81px;
+  border:1px solid rgba(255,255,255,0.06); opacity:0.55;
+}
+.f-name { margin-top:6px; }
+.f-name.winner { font-size:15px; font-weight:700; }
+.f-name.winner.gold-name { color:var(--gold); }
+.f-name.loser { font-size:12px; color:rgba(255,255,255,0.4); }
+
+/* ─── Single-speaker bubble (centered, full width) ─── */
+.speech-solo {
+  margin-bottom: 8px;
+  position: relative;
+}
+.speech-solo .bubble {
+  background: #f0f0f0;
+  color: #222;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.5;
+  position: relative;
+}
+.speech-solo .bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: var(--arrow-pos, 35%);
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #f0f0f0;
+}
+.speech-solo .speaker {
+  font-size: 9px; font-weight: 600;
+  text-align: center; margin-bottom: 3px;
+}
+.speech-solo .speaker.w { color: var(--gold); }
+
+/* ─── Result rows ─── */
+.win-badge { text-align:center; margin-bottom:8px; }
+.win-badge span {
+  display:inline-block; padding:4px 14px; border-radius:4px;
+  font-size:13px; font-weight:700;
+  background:linear-gradient(135deg,var(--gold),#b8912e);
+  color:var(--bg-dark);
+}
+.finish-row { text-align:center; font-size:12px; color:var(--text-sub); margin-bottom:6px; }
+.mq-row { text-align:center; margin-bottom:10px; }
+.mq-row .stars { color:var(--gold); font-size:13px; }
+.mq-row .mq-val { font-size:13px; color:var(--text-sub); margin-left:4px; }
+.mq-high { color:var(--gold)!important; font-weight:600; }
+.mq-mid { color:var(--green)!important; font-weight:600; }
+.mq-low { color:var(--text-sub); }
+.bonus-tag { font-size:10px; margin-left:4px; }
+.tag-rivalry { color:#e74c3c; }
+.tag-coach { color:#3498db; }
+.tag-fresh { color:#74b9ff; }
+.hp-row { display:flex; gap:12px; font-size:10px; color:rgba(255,255,255,0.35); }
+.hp-row > div { flex:1; }
+.hp-bar { height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:2px; overflow:hidden; }
+.hp-fill { height:100%; border-radius:2px; }
+.hp-green { background:#2ecc71; }
+.hp-yellow { background:#f39c12; }
+.hp-red { background:#e74c3c; }
+details { margin-top:8px; }
+summary { font-size:10px; color:rgba(255,255,255,0.18); cursor:pointer; }
+.log-content {
+  font-size:10px; color:rgba(255,255,255,0.22); margin-top:4px;
+  padding:6px 8px; background:rgba(0,0,0,0.25); border-radius:4px;
+  max-height:160px; overflow-y:auto; line-height:1.6;
+}
+.reward-box {
+  text-align:center; padding:14px 16px;
+  background:rgba(212,168,67,0.08); border:1px solid rgba(212,168,67,0.2);
+  border-radius:8px; margin:18px 0 16px;
+}
+.reward-main { font-size:14px; color:var(--gold); font-weight:600; }
+.reward-sub { font-size:12px; color:var(--text-sub); margin-top:4px; }
+.btn-gold {
+  display:inline-block; padding:12px 36px; border-radius:6px;
+  font-size:15px; font-weight:700;
+  background:linear-gradient(135deg,var(--gold),#b8912e);
+  color:var(--bg-dark); cursor:pointer; border:none;
+}
+.mock-note {
+  text-align:center; margin-top:24px; padding-top:16px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  font-size:10px; color:rgba(255,255,255,0.12); line-height:1.8;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="ppv-header">
+    <div class="sub">PPV GRAND FINAL</div>
+    <div class="title">FIGHTING DESTINY</div>
+    <div><span class="stars">★★★☆☆</span> <span class="avg-mq">平均MQ: 54</span></div>
+    <div class="heat">🔥 Heat: C → C+（集客×1.15）</div>
+    <div class="venue-pill">🏆 特設リング ｜ 観客 12,800人</div>
+  </div>
+  <div class="top-btn"><span>結果を確認 →</span></div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MAIN EVENT — 両者コメント（左右に吹き出し分割）         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-label">🏆 MAIN EVENT — 頂上決戦</div>
+  <div class="match-card main-event">
+    <div class="match-label"><span class="gold">🏆 頂上決戦</span> <span class="rivalry">🔥因縁</span></div>
+
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="speech-above">
+          <div class="speaker w">🏆 梅ヶ丘みのり</div>
+          <div class="bubble">やっと…やっと決着がついた。これで私が上だって証明できた。</div>
+        </div>
+        <div class="portrait main-winner"><img src="../image/face_umegaoka_m.png" alt="梅ヶ丘みのり"></div>
+        <div class="f-name winner gold-name">梅ヶ丘みのり</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="speech-above">
+          <div class="speaker l">倉見菜々</div>
+          <div class="bubble">……悔しい。でも、今日の試合は最高だった。次は絶対負けない。</div>
+        </div>
+        <div class="portrait main-loser"><img src="../image/face_kurami_n.png" alt="倉見菜々"></div>
+        <div class="f-name loser">倉見菜々</div>
+      </div>
+    </div>
+
+    <div class="win-badge"><span>🏆 梅ヶ丘みのり 勝利</span></div>
+    <div class="finish-row">スウィンギング・ネックブリーカー → 3カウント / 22ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★★☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-mid">63</span></span>
+      <span class="bonus-tag tag-rivalry">🔥因縁+8</span>
+      <span class="bonus-tag tag-coach">📋+3</span>
+    </div>
+    <div class="hp-row">
+      <div>梅ヶ丘みのり: HP 24/180<div class="hp-bar"><div class="hp-fill hp-red" style="width:13%"></div></div></div>
+      <div>倉見菜々: HP 0/165<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary>
+      <div class="log-content">T1: 梅ヶ丘→ドロップキック (12dmg)<br>T2: 倉見→エルボー (9dmg)<br>…<br>T22: 梅ヶ丘→ネックブリーカー→3カウント！</div>
+    </details>
+  </div>
+
+  <!-- ═══ UNDERCARD ═══ -->
+  <div class="section-label">UNDERCARD</div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第6試合 — 勝者のみコメント（高MQ）      -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第6試合 <span class="fresh">✨初顔合わせ</span></div>
+
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="speech-above">
+          <div class="speaker w">🏆 井沢遥</div>
+          <div class="bubble">PPVの舞台で最高の試合ができた。ファンのみんな、ありがとう！</div>
+        </div>
+        <div class="portrait sub-winner"><img src="../image/face_izawa_h.png" alt="井沢遥"></div>
+        <div class="f-name winner">井沢遥</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="portrait sub-loser"><img src="../image/face_shirogane_r.png" alt="白銀麗子"></div>
+        <div class="f-name loser">白銀麗子</div>
+      </div>
+    </div>
+
+    <div class="win-badge"><span>🏆 井沢遥 勝利</span></div>
+    <div class="finish-row">フェイスウォッシュ → 3カウント / 18ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★★★☆</span>
+      <span class="mq-val">MQ: <span class="mq-high">72</span></span>
+      <span class="bonus-tag tag-fresh">✨初顔+5</span>
+    </div>
+    <div class="hp-row">
+      <div>井沢遥: HP 45/170<div class="hp-bar"><div class="hp-fill hp-yellow" style="width:26%"></div></div></div>
+      <div>白銀麗子: HP 0/155<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第5試合 — コメントなし                    -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第5試合</div>
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="portrait sub-winner"><img src="../image/face_konishi_y.png" alt="小西ゆきえ"></div>
+        <div class="f-name winner">小西ゆきえ</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="portrait sub-loser"><img src="../image/face_uenohara_y.png" alt="上野原弥生"></div>
+        <div class="f-name loser">上野原弥生</div>
+      </div>
+    </div>
+    <div class="win-badge"><span>🏆 小西ゆきえ 勝利</span></div>
+    <div class="finish-row">ヒップトス → 3カウント / 14ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★★☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-low">54</span></span>
+    </div>
+    <div class="hp-row">
+      <div>小西ゆきえ: HP 58/150<div class="hp-bar"><div class="hp-fill hp-yellow" style="width:39%"></div></div></div>
+      <div>上野原弥生: HP 0/140<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第4試合 — 因縁決着（両者コメント）        -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第4試合 <span class="rivalry">🔥因縁</span> <span class="resolution">⚡決着！</span></div>
+
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="speech-above">
+          <div class="speaker w">🏆 北畠吉乃</div>
+          <div class="bubble">これで終わりだ。もうお前に負ける気はない。</div>
+        </div>
+        <div class="portrait sub-winner"><img src="../image/face_kitabatake_y.png" alt="北畠吉乃"></div>
+        <div class="f-name winner">北畠吉乃</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="speech-above">
+          <div class="speaker l">新見ゆり</div>
+          <div class="bubble">……くっ……認めたくないけど、今日は完敗だった……</div>
+        </div>
+        <div class="portrait sub-loser"><img src="../image/face_niimi_y.png" alt="新見ゆり"></div>
+        <div class="f-name loser">新見ゆり</div>
+      </div>
+    </div>
+
+    <div class="win-badge"><span>🏆 北畠吉乃 勝利</span></div>
+    <div class="finish-row">ナックルパンチ → レフェリーストップ / 16ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★★☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-mid">64</span></span>
+      <span class="bonus-tag tag-rivalry">🔥因縁+6</span>
+    </div>
+    <div class="hp-row">
+      <div>北畠吉乃: HP 62/160<div class="hp-bar"><div class="hp-fill hp-yellow" style="width:39%"></div></div></div>
+      <div>新見ゆり: HP 0/145<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第3試合 — コメントなし                    -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第3試合</div>
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="portrait sub-winner"><img src="../image/face_ikoma_e.png" alt="生駒エリカ"></div>
+        <div class="f-name winner">生駒エリカ</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="portrait sub-loser"><img src="../image/face_kanazawa_f.png" alt="金沢文"></div>
+        <div class="f-name loser">金沢文</div>
+      </div>
+    </div>
+    <div class="win-badge"><span>🏆 生駒エリカ 勝利</span></div>
+    <div class="finish-row">DDT → 3カウント / 10ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★☆☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-low">35</span></span>
+    </div>
+    <div class="hp-row">
+      <div>生駒エリカ: HP 72/130<div class="hp-bar"><div class="hp-fill hp-green" style="width:55%"></div></div></div>
+      <div>金沢文: HP 0/120<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第2試合 — コメントなし                    -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第2試合</div>
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="portrait sub-winner"><img src="../image/face_aizawa_m.png" alt="相沢未来"></div>
+        <div class="f-name winner">相沢未来</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="portrait sub-loser"><img src="../image/face_kuroe_m.png" alt="黒江舞"></div>
+        <div class="f-name loser">黒江舞</div>
+      </div>
+    </div>
+    <div class="win-badge"><span>🏆 相沢未来 勝利</span></div>
+    <div class="finish-row">スリーパー・ホールド → ギブアップ / 12ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★★☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-low">54</span></span>
+    </div>
+    <div class="hp-row">
+      <div>相沢未来: HP 50/145<div class="hp-bar"><div class="hp-fill hp-yellow" style="width:34%"></div></div></div>
+      <div>黒江舞: HP 18/135<div class="hp-bar"><div class="hp-fill hp-red" style="width:13%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ─────────────────────────────────────── -->
+  <!-- 第1試合 — 勝者のみコメント（PPVデビュー） -->
+  <!-- ─────────────────────────────────────── -->
+  <div class="match-card">
+    <div class="match-label">第1試合 <span class="fresh">✨初顔合わせ</span></div>
+
+    <div class="versus-block">
+      <div class="fighter-col winner-col">
+        <div class="speech-above">
+          <div class="speaker w">🏆 坂本莉衣奈</div>
+          <div class="bubble">PPVデビュー戦で勝てた……！嬉しい！</div>
+        </div>
+        <div class="portrait sub-winner"><img src="../image/face_sakamoto_r.png" alt="坂本莉衣奈"></div>
+        <div class="f-name winner">坂本莉衣奈</div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="fighter-col loser-col">
+        <div class="portrait sub-loser"><img src="../image/face_steinfeld_l.png" alt="レオナ・O・シュタインフェルト"></div>
+        <div class="f-name loser" style="font-size:10px">レオナ・O・シュタインフェルト</div>
+      </div>
+    </div>
+
+    <div class="win-badge"><span>🏆 坂本莉衣奈 勝利</span></div>
+    <div class="finish-row">スーパーキック → 3カウント / 8ターン</div>
+    <div class="mq-row">
+      <span class="stars">★★☆☆☆</span>
+      <span class="mq-val">MQ: <span class="mq-low">38</span></span>
+    </div>
+    <div class="hp-row">
+      <div>坂本莉衣奈: HP 80/120<div class="hp-bar"><div class="hp-fill hp-green" style="width:67%"></div></div></div>
+      <div>レオナ: HP 0/115<div class="hp-bar"><div class="hp-fill hp-red" style="width:0%"></div></div></div>
+    </div>
+    <details><summary>試合ログを見る</summary></details>
+  </div>
+
+  <!-- ═══ REWARD ═══ -->
+  <div class="reward-box">
+    <div class="reward-main">💰 出場報酬: 100万円</div>
+    <div class="reward-sub">対戦pt: +3（頂上決戦勝利）</div>
+    <div class="reward-sub">🔥 Heat: C → C+（集客倍率 ×1.15）</div>
+  </div>
+
+  <div style="text-align:center">
+    <button class="btn-gold">オフシーズンへ →</button>
+  </div>
+
+  <div class="mock-note">
+    MOCKUP v3 — PPV結果画面（吹き出しをキャラ画像の上に配置）<br><br>
+    <strong>吹き出しレイアウト:</strong><br>
+    ・両者コメント → 左右のキャラ画像の上にそれぞれ吹き出し配置<br>
+    ・勝者のみコメント → 勝者側の画像上に吹き出し配置<br>
+    ・コメントなし → 吹き出しなし、画像から直接表示<br>
+    ・吹き出しは三角形の矢印でキャラ画像を指す<br><br>
+    <strong>コメント表示条件:</strong><br>
+    ① 因縁(rivalry≥40) → 勝者＋敗者 ② 高MQ(≥65) → 勝者のみ ③ PPVデビュー → 勝者のみ<br><br>
+    UI共通ルール準拠: 吹き出し=#f0f0f0背景+黒文字+中央寄せ
+  </div>
+
+</div>
+</body>
+</html>

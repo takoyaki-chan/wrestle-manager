@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>対抗戦 結果画面 — 対抗戦カラーリング適用</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
+
+/* --- Enemy color as CSS variables (runtime swap per opponent) --- */
+:root{
+  --player:#3498db;--player-light:#74b9ff;
+  --enemy:#d63031;--enemy-light:#ff6b6b;
+  --gold:#f1c40f;--green:#2ecc71;--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666
+}
+
+/* Overlay */
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100}
+.popup-box{background:#10101e;border-radius:12px;max-width:780px;width:92%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 80px rgba(0,0,0,0.5)}
+
+/* ===== HEADER — battle bg + split + scoreboard ===== */
+.war-header{position:relative;overflow:hidden}
+.war-header-bg{position:absolute;inset:0;z-index:0}
+.war-header-bg img{width:100%;height:100%;object-fit:cover;opacity:0.2;filter:blur(1px)}
+.war-header-bg .split-left{position:absolute;left:0;top:0;bottom:0;width:52%;z-index:1;background:linear-gradient(90deg,rgba(52,152,219,0.2) 0%,transparent 100%)}
+.war-header-bg .split-right{position:absolute;right:0;top:0;bottom:0;width:52%;z-index:1;background:linear-gradient(-90deg,color-mix(in srgb,var(--enemy) 25%,transparent) 0%,transparent 100%)}
+.war-header-bg .vignette{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse at center,transparent 30%,rgba(10,10,20,0.7) 100%)}
+.war-header-content{position:relative;z-index:3;padding:16px 0 0}
+
+.war-title-area{text-align:center;margin-bottom:6px}
+.war-sup{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--enemy)}
+.war-main-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:6px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,0.8)}
+
+/* Scoreboard */
+.scoreboard{display:flex;align-items:center;justify-content:center;padding:8px 20px 16px;gap:0}
+.sb-side{flex:1;display:flex;flex-direction:column;padding:0 16px}
+.sb-side.left{align-items:flex-end;text-align:right}
+.sb-side.right{align-items:flex-start;text-align:left}
+.sb-org-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6)}
+.sb-org-sub{font-size:10px;opacity:0.5;margin-top:2px}
+.sb-center{flex:0 0 auto;text-align:center;padding:0 8px}
+.sb-ring{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid rgba(255,255,255,0.1);background:radial-gradient(circle,rgba(16,16,30,0.95),rgba(10,10,20,0.98))}
+.sb-score{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:1;letter-spacing:4px}
+.sb-score .s-dash{font-size:32px;color:#444;margin:0 4px;vertical-align:middle}
+.sb-result-label{font-size:12px;font-weight:700;letter-spacing:3px;margin-top:2px}
+
+/* Progress bar */
+.progress-bar{height:3px;background:rgba(255,255,255,0.06);overflow:hidden}
+.progress-fill{height:100%}
+
+/* ===== MATCH RESULT ROWS ===== */
+.results-area{padding:12px 16px}
+.result-row{display:flex;align-items:center;padding:10px 12px;margin-bottom:6px;border-radius:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04)}
+.result-row.win{border-left:3px solid var(--player)}
+.result-row.lose{border-left:3px solid var(--enemy)}
+.rr-num{font-size:11px;color:var(--text-dim);min-width:50px}
+.rr-fighters{display:flex;align-items:center;gap:6px;flex:1}
+.rr-portrait{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.rr-name{font-size:12px;font-weight:600}
+.rr-vs{color:var(--text-dim);font-size:10px;margin:0 2px}
+.rr-right{text-align:right;min-width:70px}
+.rr-wl{font-size:12px;font-weight:700}
+.rr-mq{font-size:10px;margin-top:1px}
+.rr-finish{font-size:10px;color:var(--text-dim);margin-left:8px;flex-shrink:0}
+
+/* ===== OVERALL RESULT — big banner ===== */
+.overall-result{margin:4px 16px 12px;padding:16px;border-radius:10px;text-align:center;position:relative;overflow:hidden}
+.overall-result .bg-glow{position:absolute;inset:0;z-index:0}
+.overall-result .content{position:relative;z-index:1}
+.or-big-score{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:6px;line-height:1}
+.or-big-score .s-dash{font-size:28px;color:rgba(255,255,255,0.3);margin:0 8px;vertical-align:middle}
+.or-label{font-size:18px;font-weight:700;letter-spacing:3px;margin-top:4px}
+.or-detail{font-size:11px;color:var(--text-sub);margin-top:6px}
+
+/* ===== POST-MATCH DIALOGUE (white bubble UI共通ルール②) ===== */
+.dialogue-area{margin:0 16px 12px;display:flex;align-items:flex-start;gap:12px;padding:14px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);border-radius:10px}
+.dia-portrait{flex-shrink:0;text-align:center}
+.dia-portrait img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--enemy)}
+.dia-portrait .name{font-size:10px;font-weight:700;color:var(--enemy);margin-top:4px}
+.dia-bubble{flex:1;background:#f0f0f0;border-radius:10px;padding:12px 16px;position:relative;margin-top:8px}
+.dia-bubble::before{content:'';position:absolute;left:-8px;top:20px;border:6px solid transparent;border-right-color:#f0f0f0}
+.dia-bubble p{font-size:13px;line-height:1.7;color:#222;margin:0}
+
+/* ===== REWARDS ===== */
+.rewards{margin:0 16px 12px;padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:6px;font-size:11px;color:var(--text-sub);display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.reward-item{display:flex;align-items:center;gap:4px}
+
+/* Close button */
+.close-area{padding:0 16px 18px;text-align:center}
+.btn-close{padding:12px 32px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:inherit;letter-spacing:2px;color:#1a1a2e}
+</style>
+</head>
+<body>
+
+<div class="overlay-bg">
+<div class="popup-box">
+
+  <!-- ===== HEADER with battle bg + split + scoreboard ===== -->
+  <div class="war-header">
+    <div class="war-header-bg">
+      <img src="../../image/battle-bg_venue_4.webp" alt="" onerror="this.style.display='none'">
+      <div class="split-left"></div>
+      <div class="split-right"></div>
+      <div class="vignette"></div>
+    </div>
+    <div class="war-header-content">
+      <div class="war-title-area">
+        <div class="war-sup">⚔ Interpromotional War — Result</div>
+        <div class="war-main-title">対 抗 戦 結 果</div>
+      </div>
+      <div class="scoreboard">
+        <div class="sb-side left">
+          <div class="sb-org-name" style="color:var(--player-light)">プレイヤー団体</div>
+          <div class="sb-org-sub">人気 42</div>
+        </div>
+        <div class="sb-center">
+          <div class="sb-ring" style="box-shadow:0 0 40px rgba(212,168,67,0.25),inset 0 0 30px rgba(0,0,0,0.5)">
+            <div class="sb-score">
+              <span class="s-left" style="color:var(--player-light)">2</span>
+              <span class="s-dash">—</span>
+              <span class="s-right" style="color:var(--enemy-light)">1</span>
+            </div>
+            <div class="sb-result-label" style="color:var(--gold)">勝ち越し！</div>
+          </div>
+        </div>
+        <div class="sb-side right">
+          <div class="sb-org-name" style="color:var(--enemy-light)">👑 皇武館</div>
+          <div class="sb-org-sub">人気 65</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress (complete) -->
+  <div class="progress-bar">
+    <div class="progress-fill" style="width:100%;background:linear-gradient(90deg,var(--player),var(--gold))"></div>
+  </div>
+
+  <!-- ===== MATCH RESULTS ===== -->
+  <div class="results-area">
+
+    <!-- 第1試合: WIN -->
+    <div class="result-row win">
+      <div class="rr-num">第1試合</div>
+      <div class="rr-fighters">
+        <img src="../../image/face_ebina_s.png" class="rr-portrait" style="border:2px solid var(--player)" alt="">
+        <span class="rr-name" style="color:var(--player-light)">海老名 沙織</span>
+        <span class="rr-vs">vs</span>
+        <span class="rr-name" style="color:var(--enemy-light)">鳳凰 はるか</span>
+        <img src="../../image/face_hasegawa_r.png" class="rr-portrait" style="border:2px solid var(--enemy)" alt="">
+      </div>
+      <div class="rr-finish">逆エビ固め</div>
+      <div class="rr-right">
+        <div class="rr-wl" style="color:var(--player-light)">WIN</div>
+        <div class="rr-mq" style="color:var(--gold)">MQ 72</div>
+      </div>
+    </div>
+
+    <!-- 第2試合: LOSE -->
+    <div class="result-row lose">
+      <div class="rr-num">第2試合</div>
+      <div class="rr-fighters">
+        <img src="../../image/face_matsushita_m.png" class="rr-portrait" style="border:2px solid var(--player)" alt="">
+        <span class="rr-name" style="color:var(--player-light)">松下 真理亜</span>
+        <span class="rr-vs">vs</span>
+        <span class="rr-name" style="color:var(--enemy-light)">嵐山 凛</span>
+        <img src="../../image/face_hayakawa_m.png" class="rr-portrait" style="border:2px solid var(--enemy)" alt="">
+      </div>
+      <div class="rr-finish">ジャーマンSP</div>
+      <div class="rr-right">
+        <div class="rr-wl" style="color:var(--enemy-light)">LOSE</div>
+        <div class="rr-mq" style="color:var(--green)">MQ 65</div>
+      </div>
+    </div>
+
+    <!-- 第3試合: WIN -->
+    <div class="result-row win">
+      <div class="rr-num">第3試合</div>
+      <div class="rr-fighters">
+        <img src="../../image/face_aida_m.png" class="rr-portrait" style="border:2px solid var(--player)" alt="">
+        <span class="rr-name" style="color:var(--player-light)">相田 萌</span>
+        <span class="rr-vs">vs</span>
+        <span class="rr-name" style="color:var(--enemy-light)">黒瀬 まこと</span>
+        <img src="../../image/face_akabane_a.png" class="rr-portrait" style="border:2px solid var(--enemy)" alt="">
+      </div>
+      <div class="rr-finish">丸め込み</div>
+      <div class="rr-right">
+        <div class="rr-wl" style="color:var(--player-light)">WIN</div>
+        <div class="rr-mq" style="color:var(--text-sub)">MQ 48</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== OVERALL RESULT BANNER ===== -->
+  <div class="overall-result" style="border:1px solid rgba(212,168,67,0.3)">
+    <div class="bg-glow" style="background:linear-gradient(135deg,rgba(52,152,219,0.1),rgba(212,168,67,0.12),rgba(214,48,49,0.05))"></div>
+    <div class="content">
+      <div class="or-big-score">
+        <span style="color:var(--player-light)">2</span>
+        <span class="s-dash">—</span>
+        <span style="color:var(--enemy-light)">1</span>
+      </div>
+      <div class="or-label" style="color:var(--gold)">🏆 勝 ち 越 し ！</div>
+      <div class="or-detail">Sランク王者・皇武館に勝利！ 団体の格が上がった！</div>
+    </div>
+  </div>
+
+  <!-- ===== REWARDS ===== -->
+  <div class="rewards">
+    <div class="reward-item"><span style="color:var(--gold)">⬆</span> 団体人気 +2</div>
+    <div class="reward-item"><span style="color:var(--gold)">⚔</span> 対戦pt +3</div>
+    <div class="reward-item"><span style="color:var(--green)">📈</span> Heat上昇</div>
+  </div>
+
+  <!-- ===== POST-MATCH DIALOGUE (enemy ace, UI共通ルール② white bubble) ===== -->
+  <div class="dialogue-area">
+    <div class="dia-portrait">
+      <img src="../../image/face_hayakawa_m.png" alt="嵐山凛" onerror="this.style.display='none'">
+      <div class="name">嵐山 凛</div>
+    </div>
+    <div class="dia-bubble">
+      <p>「…馬鹿な。この私が負けるだと…？<br>覚えてなさい。次は必ず潰す。」</p>
+    </div>
+  </div>
+
+  <!-- ===== CLOSE ===== -->
+  <div class="close-area">
+    <button class="btn-close" style="background:linear-gradient(135deg,#b8912e,var(--gold))">閉じる</button>
+  </div>
+
+</div><!-- /popup-box -->
+</div><!-- /overlay-bg -->
+
+</body>
+</html>

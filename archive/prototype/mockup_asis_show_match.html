@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>【現状】通常興行 試合進行ポップアップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--bg-dark:#0f0f1a;--bg-card:rgba(0,0,0,0.3);--bg-mid:#1a1a30;--border:rgba(255,255,255,0.08);--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666}
+
+/* Overlay background */
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100}
+
+/* Popup box */
+.popup-box{background:#16162a;border:1px solid rgba(255,255,255,0.1);border-radius:12px;max-width:780px;width:90%;max-height:90vh;overflow-y:auto;padding:20px 24px;box-shadow:0 20px 80px rgba(0,0,0,0.6)}
+
+/* Title */
+.show-result-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;text-align:center;color:var(--text-main);margin-bottom:16px}
+
+/* Match card */
+.match-card{border-radius:6px;overflow:hidden;margin-bottom:8px}
+.match-header{text-align:center;padding:10px 12px 6px}
+.match-label{font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
+.badge{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;display:inline-block;margin-left:6px}
+.badge-done{background:rgba(46,204,113,0.15);color:var(--green)}
+.badge-next{background:rgba(74,143,212,0.15);color:var(--blue)}
+.badge-wait{background:rgba(255,255,255,0.06);color:var(--text-dim)}
+.badge-title{color:var(--gold);font-size:11px;margin-left:4px}
+
+/* Fighter grid: name+OVR | upper | VS | upper | name+OVR */
+.fighter-grid{display:grid;grid-template-columns:auto auto 44px auto auto;gap:0;align-items:center;justify-content:center;padding:4px 12px 10px}
+.fighter-info-l{text-align:right;padding-right:8px}
+.fighter-info-r{text-align:left;padding-left:8px}
+.fighter-name{font-weight:700;margin-bottom:2px}
+.fighter-name.blue{color:var(--blue)}
+.fighter-name.red{color:var(--red)}
+.fighter-ovr{font-weight:700;color:var(--text-main)}
+.fighter-ovr-label{font-size:9px;color:var(--text-dim);letter-spacing:1px}
+.upper-img{object-fit:cover;object-position:top center;border-radius:6px}
+.upper-main{width:120px;height:150px;border:2px solid rgba(212,168,67,0.6);box-shadow:0 0 12px rgba(212,168,67,0.3)}
+.upper-sub{width:100px;height:125px;border:2px solid rgba(255,255,255,0.15)}
+.vs-center{text-align:center;padding:0 2px}
+.vs-text{font-family:'Bebas Neue',sans-serif;font-weight:700;color:#c41e3a;text-shadow:0 0 8px rgba(196,30,58,0.4);letter-spacing:2px}
+
+/* Relation strip */
+.rel-strip{text-align:center;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:var(--text-dim)}
+.rel-strip .sep{color:rgba(255,255,255,0.15);margin:0 6px}
+
+/* Result strip (resolved) */
+.result-strip{display:flex;justify-content:center;gap:16px;align-items:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)}
+
+/* Action strip (next) */
+.action-strip{display:flex;gap:8px;align-items:center;justify-content:center;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)}
+.btn{border:none;border-radius:4px;cursor:pointer;font-family:inherit}
+.btn-blue{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.4);color:#74b9ff;font-size:13px;padding:8px 24px}
+.btn-skip-sm{font-size:11px;padding:6px 10px;background:rgba(255,255,255,0.06);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
+.btn-gold{background:linear-gradient(135deg,#b8912e,#f1c40f);color:#1a1a2e;font-weight:700;padding:10px 0;font-size:13px;border-radius:6px;border:none;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+
+<div class="overlay-bg">
+<div class="popup-box">
+
+  <!-- Show title -->
+  <div class="show-result-title">第31回 定期興行</div>
+
+  <div style="display:grid;gap:8px">
+
+    <!-- ===== ★ MAIN EVENT (idx=0, resolved) ===== -->
+    <div class="match-card" style="background:rgba(212,168,67,0.04);border:1px solid rgba(212,168,67,0.3);opacity:0.7">
+      <div class="match-header">
+        <span class="match-label" style="font-size:20px;color:var(--gold)">★ メインイベント</span>
+        <span class="badge badge-done">完了</span>
+      </div>
+      <div class="fighter-grid">
+        <!-- Left: name + OVR -->
+        <div class="fighter-info-l">
+          <div class="fighter-name blue" style="font-size:14px">松下真理亜</div>
+          <div class="fighter-ovr" style="font-size:18px">60</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+        <!-- Left: upper image -->
+        <div>
+          <img src="../../image/upper/upper_matsushita_m.webp" class="upper-img upper-main" alt="松下真理亜" onerror="this.style.display='none'">
+        </div>
+        <!-- VS -->
+        <div class="vs-center">
+          <div class="vs-text" style="font-size:32px">VS</div>
+        </div>
+        <!-- Right: upper image -->
+        <div>
+          <img src="../../image/upper/upper_hiramatsu_k.webp" class="upper-img upper-main" alt="平松かなみ" onerror="this.style.display='none'">
+        </div>
+        <!-- Right: name + OVR -->
+        <div class="fighter-info-r">
+          <div class="fighter-name red" style="font-size:14px">平松かなみ</div>
+          <div class="fighter-ovr" style="font-size:18px">56</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+      </div>
+      <!-- Relationship -->
+      <div class="rel-strip">
+        <span style="color:#e67e22;font-weight:700">⚡ 因縁（MQ+1）</span>
+        <span class="sep">|</span>
+        <span style="color:var(--text-dim)">🤝 友好 54</span>
+      </div>
+      <!-- Result (resolved) -->
+      <div class="result-strip">
+        <span style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">松下真理亜</strong> (逆エビ固め)</span>
+        <span style="font-size:12px;color:var(--gold);font-weight:700">MQ 72</span>
+      </div>
+    </div>
+
+    <!-- ===== 第2試合 (idx=1, resolved) ===== -->
+    <div class="match-card" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);opacity:0.7">
+      <div class="match-header">
+        <span class="match-label" style="font-size:16px;color:var(--text-sub)">第2試合</span>
+        <span class="badge badge-done">完了</span>
+      </div>
+      <div class="fighter-grid">
+        <div class="fighter-info-l">
+          <div class="fighter-name blue" style="font-size:12px">宮ケ瀬千夏</div>
+          <div class="fighter-ovr" style="font-size:15px">50</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+        <div>
+          <img src="../../image/upper/upper_miyagase_c.webp" class="upper-img upper-sub" alt="宮ケ瀬千夏" onerror="this.style.display='none'">
+        </div>
+        <div class="vs-center">
+          <div class="vs-text" style="font-size:26px">VS</div>
+        </div>
+        <div>
+          <img src="../../image/upper/upper_matsukubo_i.webp" class="upper-img upper-sub" alt="松久保伊織" onerror="this.style.display='none'">
+        </div>
+        <div class="fighter-info-r">
+          <div class="fighter-name red" style="font-size:12px">松久保伊織</div>
+          <div class="fighter-ovr" style="font-size:15px">46</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+      </div>
+      <div class="rel-strip">
+        <span style="color:#e67e22">⚡ 因縁 20</span>
+        <span class="sep">|</span>
+        <span style="color:var(--text-dim)">🤝 友好 50</span>
+      </div>
+      <div class="result-strip">
+        <span style="font-size:12px;color:var(--text-sub)">勝利: <strong style="color:var(--text-main)">宮ケ瀬千夏</strong> (丸め込み)</span>
+        <span style="font-size:12px;color:var(--green);font-weight:700">MQ 58</span>
+      </div>
+    </div>
+
+    <!-- ===== 第1試合 (idx=2, NEXT — current/active) ===== -->
+    <div class="match-card" style="background:rgba(74,143,212,0.05);border:1px solid rgba(74,143,212,0.35);opacity:1">
+      <div class="match-header">
+        <span class="match-label" style="font-size:16px;color:var(--text-sub)">第1試合</span>
+        <span class="badge badge-next">次戦</span>
+      </div>
+      <div class="fighter-grid">
+        <div class="fighter-info-l">
+          <div class="fighter-name blue" style="font-size:12px">相田萌</div>
+          <div class="fighter-ovr" style="font-size:15px">46</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+        <div>
+          <img src="../../image/upper/upper_aida_m.webp" class="upper-img upper-sub" alt="相田萌" onerror="this.style.display='none'">
+        </div>
+        <div class="vs-center">
+          <div class="vs-text" style="font-size:26px">VS</div>
+        </div>
+        <div>
+          <!-- 高輪まみの画像がないのでface使用 -->
+          <img src="../../image/upper/upper_akabane_a.webp" class="upper-img upper-sub" alt="高輪まみ" onerror="this.style.display='none'">
+        </div>
+        <div class="fighter-info-r">
+          <div class="fighter-name red" style="font-size:12px">高輪まみ</div>
+          <div class="fighter-ovr" style="font-size:15px">44</div>
+          <div class="fighter-ovr-label">OVR</div>
+        </div>
+      </div>
+      <div class="rel-strip">
+        <span style="color:#e74c3c;font-weight:700">🔥 因縁 39</span>
+        <span class="sep">|</span>
+        <span style="color:var(--text-dim)">🤝 友好 51</span>
+      </div>
+      <!-- Action buttons (next match) -->
+      <div class="action-strip">
+        <button class="btn btn-blue">🎬 この試合を観る</button>
+        <button class="btn btn-skip-sm">⏭</button>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- Skip all -->
+  <div style="margin-top:14px;text-align:center">
+    <button class="btn-gold">⏩ 全試合スキップ（3試合）</button>
+  </div>
+
+</div><!-- /popup-box -->
+</div><!-- /overlay-bg -->
+
+</body>
+</html>

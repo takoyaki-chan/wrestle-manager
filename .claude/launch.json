@@ -1,18 +1,1 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "dev",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["-e", "const http=require('http'),fs=require('fs'),path=require('path');const root='C:/Users/nkmrk/Downloads/wrestle-manager/src';http.createServer((req,res)=>{let u=req.url.split('?')[0];let f=path.join(root,u==='/'?'index.html':u);if(!fs.existsSync(f)){f=path.join(root,'..',u)}try{const d=fs.readFileSync(f);const ext=path.extname(f);const m={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg','.json':'application/json'};res.writeHead(200,{'Content-Type':m[ext]||'application/octet-stream','Cache-Control':'no-store'});res.end(d)}catch(e){res.writeHead(404);res.end('404: '+u)}}).listen(5173,()=>console.log('serving on 5173'))"],
-      "port": 5173
-    }
-    ,
-    {
-      "name": "mockup",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["-e", "const http=require('http'),fs=require('fs'),path=require('path');const root='C:/Users/nkmrk/Downloads/wrestle-manager/docs/mockups';http.createServer((req,res)=>{let u=req.url.split('?')[0];if(u==='/')u='/org-comparison-v2.html';let f=path.join(root,u);try{const d=fs.readFileSync(f);const ext=path.extname(f);const m={'.html':'text/html','.js':'text/javascript','.css':'text/css'};res.writeHead(200,{'Content-Type':m[ext]||'application/octet-stream','Cache-Control':'no-store'});res.end(d)}catch(e){res.writeHead(404);res.end('404: '+u)}}).listen(3456,()=>console.log('mockup serving on 3456'))"],
-      "port": 3456
-    }
-  ]
-}
+{"version":"0.0.1","configurations":[{"name":"dev","runtimeExecutable":"node","runtimeArgs":["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js","serve","src","-l","3000","--no-clipboard"],"port":3000}]}

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>通常興行 試合結果画面 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666}
+
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100}
+.popup-box{background:#10101e;border-radius:12px;max-width:820px;width:94%;max-height:92vh;overflow-y:auto;padding:0;box-shadow:0 20px 80px rgba(0,0,0,0.6);scrollbar-width:none;-ms-overflow-style:none}
+.popup-box::-webkit-scrollbar{display:none}
+
+/* Header */
+.show-header{text-align:center;padding:16px 0 14px;border-bottom:2px solid #1a1a30;background:linear-gradient(180deg,rgba(20,20,40,1),rgba(16,16,32,0.95))}
+.show-label{font-size:11px;letter-spacing:6px;color:var(--text-dim);text-transform:uppercase}
+.show-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#fff;line-height:1.1;margin:2px 0}
+
+/* Summary */
+.summary-bar{text-align:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
+
+/* Attendance */
+.attend-banner{text-align:center;padding:12px 16px;margin:12px 16px 0;border-radius:8px}
+.attend-num{font-size:24px;font-weight:900;letter-spacing:1px}
+.attend-bar-wrap{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;max-width:280px;margin:6px auto 0}
+.attend-bar-fill{height:100%;border-radius:3px}
+.attend-pct{font-size:12px;font-weight:700;margin-top:4px}
+
+/* Results area */
+.results-area{padding:12px 16px 4px;display:flex;flex-direction:column;gap:12px}
+.mr-card{border-radius:10px;overflow:hidden;padding:16px}
+
+/* Match label */
+.mr-label-row{text-align:center;margin-bottom:10px;line-height:1.8;color:rgba(255,255,255,0.25);font-size:11px}
+.mr-label-row span{font-size:11px}
+.mr-match-num{display:block;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:rgba(255,255,255,0.4);margin-bottom:2px}
+
+/* ===== Fighters: equal size, centered, bubble area fixed height ===== */
+.mr-fighters{display:flex;align-items:flex-end;justify-content:center;gap:0;margin-bottom:12px}
+
+.mr-char{display:flex;flex-direction:column;align-items:center;width:200px;flex-shrink:0}
+/* Bubble area: always takes fixed height so images align even without bubble */
+.mr-char .bubble-slot{min-height:60px;display:flex;flex-direction:column;justify-content:flex-end;width:100%}
+.mr-char .bubble-slot.empty{min-height:60px}
+/* Portrait — slightly rounded square like PPV */
+.mr-char .portrait-wrap{overflow:hidden;border-radius:7px}
+.mr-char .portrait-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.mr-char .fname{font-size:13px;font-weight:700;margin-top:6px;text-align:center}
+/* Winner accent */
+.mr-char.winner .portrait-wrap{border:3px solid rgba(212,168,67,0.6);box-shadow:0 0 16px rgba(212,168,67,0.2)}
+.mr-char.winner .fname{color:var(--gold)}
+/* Loser — smaller, dimmer border */
+.mr-char.loser .portrait-wrap{border:2px solid rgba(255,255,255,0.12)}
+.mr-char.loser .fname{color:var(--text-sub)}
+
+/* Main event sizing */
+.card-main .mr-char.winner .portrait-wrap{width:140px;height:140px}
+.card-main .mr-char.loser .portrait-wrap{width:100px;height:100px}
+.card-main .mr-char{width:200px}
+/* Sub match sizing */
+.card-sub .mr-char.winner .portrait-wrap{width:110px;height:110px}
+.card-sub .mr-char.loser .portrait-wrap{width:80px;height:80px}
+.card-sub .mr-char{width:170px}
+
+/* VS */
+.mr-vs{display:flex;align-items:center;justify-content:center;min-width:44px;padding:0 4px;align-self:flex-end;padding-bottom:50px}
+.mr-vs-text{font-family:'Bebas Neue',sans-serif;font-weight:700;color:rgba(255,255,255,0.12);letter-spacing:2px}
+.card-main .mr-vs-text{font-size:28px}
+.card-sub .mr-vs-text{font-size:22px}
+
+/* Speech bubble (UI共通ルール② white bubble) */
+.mr-bubble{margin-bottom:8px;width:100%}
+.mr-bubble .bname{font-size:9px;font-weight:600;text-align:center;margin-bottom:3px}
+.mr-bubble .bname.win{color:var(--gold)}
+.mr-bubble .bname.lose{color:#e17055}
+.mr-bubble .btext{background:#f0f0f0;color:#222;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative}
+.mr-bubble .btail{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:#f0f0f0}
+
+/* Winner badge */
+.mr-win-badge{text-align:center;margin-bottom:8px}
+.mr-win-badge span{display:inline-block;padding:4px 14px;border-radius:4px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold),#b8912e);color:#1a1a2e}
+
+/* Finish + MQ */
+.mr-finish{text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:4px}
+.mr-mq-row{text-align:center;margin-bottom:8px}
+
+/* ===== HP — center-out symmetric (UI共通ルール①) ===== */
+.mr-hp{padding:8px 24px 4px}
+.mr-hp-row{display:flex;align-items:center;gap:0;height:22px}
+.mr-hp-half{flex:1;display:flex;align-items:center;gap:5px}
+.mr-hp-half.left{flex-direction:row-reverse}
+.mr-hp-center{font-family:'Bebas Neue',sans-serif;font-size:11px;color:#555;letter-spacing:1px;width:30px;text-align:center;flex-shrink:0}
+.mr-hp-name{font-size:10px;color:rgba(255,255,255,0.4);white-space:nowrap}
+.mr-hp-val{font-size:10px;color:rgba(255,255,255,0.3);white-space:nowrap;min-width:40px}
+.mr-hp-half.left .mr-hp-val{text-align:left}
+.mr-hp-half.right .mr-hp-val{text-align:right}
+.mr-hp-track{flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;max-width:160px}
+.mr-hp-half.left .mr-hp-track{direction:rtl}
+.mr-hp-bar-fill{height:100%;border-radius:3px}
+
+/* Stars */
+.mq-stars{display:inline-flex;gap:1px;margin-right:4px}
+.mq-star{font-size:12px}
+
+/* Bottom */
+.heat-info{text-align:center;padding:8px 16px;font-size:13px}
+.close-area{padding:8px 16px 18px;text-align:center}
+.btn-close{padding:10px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;letter-spacing:1px;color:#1a1a2e;background:linear-gradient(135deg,#b8912e,var(--gold))}
+</style>
+</head>
+<body>
+
+<div class="overlay-bg">
+<div class="popup-box">
+
+  <div class="show-header">
+    <div class="show-label">Weekly Show</div>
+    <div class="show-title">第12回 定期興行</div>
+  </div>
+
+  <div class="summary-bar">
+    <span style="font-size:13px">
+      <span class="mq-stars"><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span></span>
+      <span style="color:var(--text-sub)">平均MQ: 63</span>
+    </span>
+    <span style="margin-left:16px;font-size:13px;color:var(--green)">🔥 Heat: 好調（集客×1.10）</span>
+  </div>
+
+  <div class="attend-banner" style="border:1px solid var(--gold);background:rgba(212,168,67,0.08)">
+    <div style="font-size:12px;color:var(--text-sub)">小ホールB</div>
+    <div class="attend-num" style="color:var(--gold)">🎉 487人 🎉</div>
+    <div style="font-size:11px;color:var(--text-dim)">/ 500席</div>
+    <div class="attend-bar-wrap"><div class="attend-bar-fill" style="width:97%;background:linear-gradient(90deg,var(--gold),#f1c40f)"></div></div>
+    <div class="attend-pct" style="color:var(--gold)">超満員御礼（97%）</div>
+  </div>
+
+  <div class="results-area">
+
+    <!-- ★ メインイベント — 因縁ペアのでセリフあり -->
+    <div class="mr-card card-main" style="border:1.5px solid rgba(212,168,67,0.4);background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))">
+      <div class="mr-label-row">
+        <span class="mr-match-num" style="color:var(--gold);font-size:16px">★ メインイベント</span><br>
+        <span style="color:var(--gold)">🏆 タイトルマッチ</span>
+        <span style="color:#e74c3c">🔥 因縁</span>
+      </div>
+
+      <div class="mr-fighters">
+        <div class="mr-char winner">
+          <div class="bubble-slot">
+            <div class="mr-bubble">
+              <div class="bname win">🏆 松下 真理亜</div>
+              <div class="btext">「負けない…！チャンピオンの意地を見せてやる！」<div class="btail"></div></div>
+            </div>
+          </div>
+          <div class="portrait-wrap"><img src="../../image/face_matsushita_m.png" alt="松下真理亜"></div>
+          <div class="fname">松下 真理亜</div>
+        </div>
+
+        <div class="mr-vs"><div class="mr-vs-text">VS</div></div>
+
+        <div class="mr-char loser">
+          <div class="bubble-slot">
+            <div class="mr-bubble">
+              <div class="bname lose">平松 かなみ</div>
+              <div class="btext">「くっ…まだ終わってない…！」<div class="btail"></div></div>
+            </div>
+          </div>
+          <div class="portrait-wrap"><img src="../../image/face_hiramatsu_k.png" alt="平松かなみ"></div>
+          <div class="fname">平松 かなみ</div>
+        </div>
+      </div>
+
+      <div class="mr-win-badge"><span>🏆 松下 真理亜 勝利</span></div>
+      <div class="mr-finish">逆エビ固め / 8ターン</div>
+      <div class="mr-mq-row">
+        <span class="mq-stars"><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span></span>
+        <span style="font-size:13px;color:var(--text-sub)">MQ: 72</span>
+        <span style="font-size:11px;color:var(--gold)">(王座+5)</span>
+        <span style="font-size:11px;color:#e74c3c">(因縁+3)</span>
+      </div>
+
+      <div class="mr-hp">
+        <div class="mr-hp-row">
+          <div class="mr-hp-half left">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:27%;background:#f39c12"></div></div>
+            <span class="mr-hp-val">32/120</span>
+            <span class="mr-hp-name">松下</span>
+          </div>
+          <div class="mr-hp-center">HP</div>
+          <div class="mr-hp-half right">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:0%;background:#e74c3c"></div></div>
+            <span class="mr-hp-val">0/95</span>
+            <span class="mr-hp-name">平松</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第2試合 — セリフなし -->
+    <div class="mr-card card-sub" style="border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.25)">
+      <div class="mr-label-row">
+        <span class="mr-match-num">第2試合</span><br>
+        <span style="color:#74b9ff">✨ 初顔合わせ(MQ+2)</span>
+      </div>
+
+      <div class="mr-fighters">
+        <div class="mr-char winner">
+          <div class="bubble-slot empty"></div>
+          <div class="portrait-wrap"><img src="../../image/face_miyagase_c.png" alt="宮ケ瀬千夏"></div>
+          <div class="fname">宮ケ瀬 千夏</div>
+        </div>
+
+        <div class="mr-vs"><div class="mr-vs-text">VS</div></div>
+
+        <div class="mr-char loser">
+          <div class="bubble-slot empty"></div>
+          <div class="portrait-wrap"><img src="../../image/face_matsukubo_i.png" alt="松久保伊織"></div>
+          <div class="fname">松久保 伊織</div>
+        </div>
+      </div>
+
+      <div class="mr-win-badge"><span>🏆 宮ケ瀬 千夏 勝利</span></div>
+      <div class="mr-finish">丸め込み / 12ターン</div>
+      <div class="mr-mq-row">
+        <span class="mq-stars"><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span></span>
+        <span style="font-size:13px;color:var(--text-sub)">MQ: 58</span>
+        <span style="font-size:11px;color:#74b9ff">(初顔+2)</span>
+      </div>
+
+      <div class="mr-hp">
+        <div class="mr-hp-row">
+          <div class="mr-hp-half left">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:50%;background:#2ecc71"></div></div>
+            <span class="mr-hp-val">45/90</span>
+            <span class="mr-hp-name">宮ケ瀬</span>
+          </div>
+          <div class="mr-hp-center">HP</div>
+          <div class="mr-hp-half right">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:0%;background:#e74c3c"></div></div>
+            <span class="mr-hp-val">0/85</span>
+            <span class="mr-hp-name">松久保</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第1試合 — 因縁ありでセリフあり -->
+    <div class="mr-card card-sub" style="border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.25)">
+      <div class="mr-label-row">
+        <span class="mr-match-num">第1試合</span><br>
+        <span style="color:#e74c3c">🔥 因縁</span>
+      </div>
+
+      <div class="mr-fighters">
+        <div class="mr-char loser">
+          <div class="bubble-slot">
+            <div class="mr-bubble">
+              <div class="bname lose">相田 萌</div>
+              <div class="btext">「…悔しい。次は絶対負けない」<div class="btail"></div></div>
+            </div>
+          </div>
+          <div class="portrait-wrap"><img src="../../image/face_aida_m.png" alt="相田萌"></div>
+          <div class="fname">相田 萌</div>
+        </div>
+
+        <div class="mr-vs"><div class="mr-vs-text">VS</div></div>
+
+        <div class="mr-char winner">
+          <div class="bubble-slot">
+            <div class="mr-bubble">
+              <div class="bname win">🏆 高輪 まみ</div>
+              <div class="btext">「あんたの負けよ。もっと強くなりなさい」<div class="btail"></div></div>
+            </div>
+          </div>
+          <div class="portrait-wrap"><img src="../../image/face_akabane_a.png" alt="高輪まみ"></div>
+          <div class="fname">高輪 まみ</div>
+        </div>
+      </div>
+
+      <div class="mr-win-badge"><span>🏆 高輪 まみ 勝利</span></div>
+      <div class="mr-finish">ボストンクラブ / 10ターン</div>
+      <div class="mr-mq-row">
+        <span class="mq-stars"><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:var(--gold)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span><span class="mq-star" style="color:rgba(255,255,255,0.15)">★</span></span>
+        <span style="font-size:13px;color:var(--text-sub)">MQ: 59</span>
+        <span style="font-size:11px;color:#e74c3c">(因縁+1)</span>
+      </div>
+
+      <div class="mr-hp">
+        <div class="mr-hp-row">
+          <div class="mr-hp-half left">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:0%;background:#e74c3c"></div></div>
+            <span class="mr-hp-val">0/80</span>
+            <span class="mr-hp-name">相田</span>
+          </div>
+          <div class="mr-hp-center">HP</div>
+          <div class="mr-hp-half right">
+            <div class="mr-hp-track"><div class="mr-hp-bar-fill" style="width:34%;background:#f39c12"></div></div>
+            <span class="mr-hp-val">28/82</span>
+            <span class="mr-hp-name">高輪</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="heat-info">
+    <span style="color:var(--green)">🔥 Heat: 好調（集客×1.10）</span>
+  </div>
+
+  <div class="close-area">
+    <button class="btn-close">結果を確認 →</button>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>

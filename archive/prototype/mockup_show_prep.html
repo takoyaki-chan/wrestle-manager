@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>通常興行画面 ブラッシュアップ Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f0f1a;color:#ccc;font-family:'Segoe UI','Hiragino Sans',sans-serif;padding:20px 30px}
+:root{--gold:#f1c40f;--blue:#3498db;--red:#e74c3c;--green:#2ecc71;--bg-dark:#0f0f1a;--bg-card:rgba(0,0,0,0.3);--bg-mid:#1a1a30;--border:rgba(255,255,255,0.08);--text-main:#e0e0e0;--text-sub:#aaa;--text-dim:#666}
+
+/* ===== Design Note Banner ===== */
+.design-note{background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.3);border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#e94560;line-height:1.7}
+.design-note strong{color:#ff6b81}
+.change-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:3px;margin-right:6px;font-weight:700;vertical-align:middle}
+.change-tag.new{background:rgba(46,204,113,0.2);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.change-tag.mod{background:rgba(52,152,219,0.2);color:#74b9ff;border:1px solid rgba(52,152,219,0.3)}
+.change-tag.keep{background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)}
+
+/* ===== Arena Header ===== */
+.arena-header{position:relative;height:120px;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.arena-header img{width:100%;height:100%;object-fit:cover;opacity:0.6}
+
+/* ===== Media Spotlight ===== */
+.media-spotlight{padding:8px 14px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.3);border-radius:6px;margin-bottom:14px;font-size:12px;color:#d4a8ff}
+
+/* ===== Venue Grid ===== */
+.panel-title{font-size:13px;font-weight:700;color:var(--text-sub);letter-spacing:2px;margin-bottom:8px}
+.venue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:16px}
+.venue-card{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;overflow:hidden;transition:border-color 0.2s}
+.venue-card:hover{border-color:rgba(212,168,67,0.3)}
+.venue-card.selected{border-color:var(--gold);background:rgba(212,168,67,0.08)}
+.venue-card.venue-safe{border-left:3px solid var(--green)}
+.venue-card.venue-risky{border-left:3px solid #f39c12}
+.venue-card.venue-danger{border-left:3px solid var(--red)}
+.venue-card img{width:100%;height:80px;object-fit:cover;opacity:0.8}
+.venue-card .v-name{font-weight:700;font-size:13px;padding:8px 10px 4px}
+.venue-card .v-info{font-size:11px;color:var(--text-sub);padding:0 10px}
+.venue-card .v-risk{font-size:10px;font-weight:700;padding:4px 10px 8px}
+.venue-safe .v-risk{color:var(--green)}
+.venue-risky .v-risk{color:#f39c12}
+.venue-danger .v-risk{color:var(--red)}
+
+/* ===== Fan Expectations ===== */
+.fan-expect{padding:10px 14px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:6px;margin-bottom:16px}
+.fan-expect .label{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px}
+
+/* ===== Match Card Header ===== */
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.card-header .title{font-size:14px;font-weight:700;color:var(--text-sub);letter-spacing:1px}
+.btn{padding:6px 14px;border-radius:4px;font-size:12px;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:4px}
+.btn-blue{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.4);color:#74b9ff}
+.btn-red{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c}
+.btn-gold{background:linear-gradient(135deg,#b8912e,#f1c40f);color:#1a1a2e;font-weight:700;padding:10px 28px;font-size:14px;border-radius:6px}
+
+/* ===== MATCH SLOT: Current (unchanged) ===== */
+.match-slot{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;margin-bottom:8px}
+.match-slot.main-event{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.04)}
+.match-slot-num{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);min-width:30px}
+.match-slot-vs{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text-dim);margin:0 8px}
+.match-slot select{background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;width:280px}
+.portrait-thumb{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+
+/* ===== NEW: Main Event Enhanced Card ===== */
+.main-card{background:linear-gradient(180deg,rgba(16,16,36,0.98),rgba(10,10,25,0.99));border:2px solid var(--gold);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.main-card .mc-label{text-align:center;padding:10px 0 4px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:var(--gold)}
+.main-card .mc-fighters{display:flex;align-items:flex-end;justify-content:center;padding:0 16px;min-height:180px}
+.mc-side{display:flex;align-items:flex-end;flex:1}
+.mc-side.left{justify-content:flex-end}
+.mc-side.right{justify-content:flex-start}
+.mc-upper{width:120px;height:180px;flex-shrink:0}
+.mc-upper img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
+.mc-info{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;gap:1px;min-width:100px}
+.mc-side.left .mc-info{align-items:flex-start;padding-right:12px}
+.mc-side.right .mc-info{align-items:flex-end;padding-left:12px}
+.mc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8e8e8;line-height:1.1}
+.mc-org{font-size:10px;color:#777}
+.mc-ovr-label{font-size:8px;color:#888;letter-spacing:2px;margin-top:4px}
+.mc-ovr{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;background:linear-gradient(180deg,#ffd700,#daa520,#b8860b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mc-vs{flex:0 0 70px;display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:6px}
+.mc-vs-text{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;background:linear-gradient(180deg,#ffd700,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.mc-badge{font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap;text-align:center}
+
+/* Stat comparison bars (symmetrical — UI共通ルール①) */
+.mc-stats{padding:10px 24px 6px}
+.stat-row{display:flex;align-items:center;height:22px;margin-bottom:3px}
+.stat-bar-left{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:4px}
+.stat-bar-right{flex:1;display:flex;justify-content:flex-start;align-items:center;padding-left:4px}
+.stat-label{width:30px;text-align:center;font-size:10px;color:#888;flex-shrink:0}
+.stat-val{min-width:28px;font-family:'Bebas Neue',sans-serif;font-size:14px}
+.stat-val.hi{color:#fff}
+.stat-bar-track{flex:1;height:5px;background:#1a1a30;border-radius:3px;overflow:hidden}
+.stat-bar-left .stat-bar-track{direction:rtl}
+.stat-bar-fill{height:100%;border-radius:3px}
+.stat-bar-left .stat-bar-fill{background:var(--blue)}
+.stat-bar-right .stat-bar-fill{background:var(--red)}
+
+/* Traits */
+.mc-traits{display:flex;justify-content:space-between;padding:0 24px 8px;font-size:10px}
+.mc-traits .tag{padding:2px 6px;border-radius:3px;margin:0 2px}
+.mc-traits .left .tag{background:rgba(52,152,219,0.12);color:#74b9ff}
+.mc-traits .right .tag{background:rgba(231,76,60,0.12);color:#e07070}
+
+/* Dialogue bubbles (UI共通ルール② 白吹き出し) */
+.mc-dialogue{display:flex;gap:10px;padding:6px 20px 12px}
+.mc-dialogue .bubble{flex:1;background:#f0f0f0;border-radius:10px;padding:8px 12px;text-align:center}
+.mc-dialogue .speaker{font-size:10px;margin-bottom:2px;font-weight:700}
+.mc-dialogue .line{font-size:12px;color:#222;line-height:1.5}
+
+/* Match actions in main card */
+.mc-actions{display:flex;gap:6px;padding:0 20px 12px}
+.mc-actions .info-tag{font-size:11px;padding:3px 8px;border-radius:4px}
+
+/* ===== Attendance Prediction ===== */
+.prediction{padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:6px;margin:12px 0;font-size:12px}
+.prediction .headline{font-size:14px;font-weight:700;margin-bottom:6px}
+
+/* ===== Buttons row ===== */
+.btn-row{display:flex;gap:8px;margin-top:16px;padding-bottom:8px}
+
+/* ===== SELECT DROP DOWN (enhanced) ===== */
+.match-slot select{appearance:none;-webkit-appearance:none;background:var(--bg-mid) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="%23666"/></svg>') no-repeat right 10px center;padding-right:28px}
+</style>
+</head>
+<body>
+
+<!-- ===== DESIGN NOTE ===== -->
+<div class="design-note">
+  <strong>🎨 通常興行画面 ブラッシュアップ案（PPV参考）</strong><br>
+  <span class="change-tag keep">KEEP</span> 会場選択グリッド・ファンの声・集客予測 → 既存のままでOK<br>
+  <span class="change-tag mod">MOD</span> メインイベントスロット → PPV風の大カードに拡張<br>
+  <span class="change-tag new">NEW</span> ステータス対比バー・トレイト表示・試合前セリフ吹き出し追加<br>
+  <span class="change-tag keep">KEEP</span> 第2試合以降 → 現行の select + ポートレート形式を維持
+</div>
+
+<!-- ===== ARENA HEADER (KEEP) ===== -->
+<div class="arena-header">
+  <img src="../../image/arena-header.webp" alt="">
+</div>
+
+<!-- ===== MEDIA SPOTLIGHT (KEEP) ===== -->
+<div class="media-spotlight">
+  📺 <strong>松下真理亜</strong>の密着取材中（スポナビ・残り2興行） — この選手にいい試合を組んでください
+</div>
+
+<!-- ===== VENUE GRID (KEEP) ===== -->
+<div class="panel-title">会 場 選 択</div>
+<div class="venue-grid">
+  <div class="venue-card venue-safe">
+    <img src="../../image/venue_0_kominkan.webp" alt="">
+    <div class="v-name">公民館</div>
+    <div class="v-info">キャパ: 150人</div>
+    <div class="v-info">コスト: 5万</div>
+    <div class="v-info">試合枠: 3試合</div>
+    <div class="v-risk">◎ 安全</div>
+  </div>
+  <div class="venue-card venue-safe">
+    <img src="../../image/venue_1_small_hall_a.webp" alt="">
+    <div class="v-name">小ホールA</div>
+    <div class="v-info">キャパ: 300人</div>
+    <div class="v-info">コスト: 25万</div>
+    <div class="v-info">試合枠: 3試合</div>
+    <div class="v-risk">◎ 安全</div>
+  </div>
+  <div class="venue-card selected venue-risky">
+    <img src="../../image/venue_2_small_hall_b.webp" alt="">
+    <div class="v-name">小ホールB</div>
+    <div class="v-info">キャパ: 500人</div>
+    <div class="v-info">コスト: 50万</div>
+    <div class="v-info">試合枠: 3試合</div>
+    <div class="v-risk">△ 挑戦</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_3_civic_hall.webp" alt="">
+    <div class="v-name">市民会館</div>
+    <div class="v-info">キャパ: 800人</div>
+    <div class="v-info">コスト: 100万</div>
+    <div class="v-info">試合枠: 4試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_4_mid_hall_a.webp" alt="">
+    <div class="v-name">中ホールA</div>
+    <div class="v-info">キャパ: 1,200人</div>
+    <div class="v-info">コスト: 200万</div>
+    <div class="v-info">試合枠: 4試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_5_mid_hall_b.webp" alt="">
+    <div class="v-name">中ホールB</div>
+    <div class="v-info">キャパ: 2,000人</div>
+    <div class="v-info">コスト: 400万</div>
+    <div class="v-info">試合枠: 5試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_6_large_hall.webp" alt="">
+    <div class="v-name">大ホール</div>
+    <div class="v-info">キャパ: 3,500人</div>
+    <div class="v-info">コスト: 800万</div>
+    <div class="v-info">試合枠: 5試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_7_arena.webp" alt="">
+    <div class="v-name">アリーナ</div>
+    <div class="v-info">キャパ: 6,000人</div>
+    <div class="v-info">コスト: 1600万</div>
+    <div class="v-info">試合枠: 6試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_8_grand_venue.webp" alt="">
+    <div class="v-name">大会場</div>
+    <div class="v-info">キャパ: 12,000人</div>
+    <div class="v-info">コスト: 3200万</div>
+    <div class="v-info">試合枠: 7試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+  <div class="venue-card venue-danger">
+    <img src="../../image/venue_9_dome.webp" alt="">
+    <div class="v-name">ドーム</div>
+    <div class="v-info">キャパ: 30,000人</div>
+    <div class="v-info">コスト: 12000万</div>
+    <div class="v-info">試合枠: 8試合</div>
+    <div class="v-risk">✕ 危険</div>
+  </div>
+</div>
+
+<!-- ===== FAN EXPECTATIONS (KEEP) ===== -->
+<div class="fan-expect">
+  <div class="label">🎤 ファンの声 <span style="color:#2ecc71;font-size:11px;">(1件反映中 → MQ+5 / 試合)</span></div>
+  <div style="font-size:11px;color:#2ecc71;margin-top:3px">✓ 相田萌 vs 松久保伊織の決着を望む声が高まっています！</div>
+  <div style="font-size:11px;color:var(--text-sub);margin-top:3px">• 高輪まみ vs 松久保伊織の決着を望む声が高まっています！</div>
+  <div style="font-size:11px;color:var(--text-sub);margin-top:3px">• 平松かなみ vs 宮ケ瀬千夏の決着を望む声が高まっています！</div>
+</div>
+
+<!-- ===== MATCH CARD HEADER ===== -->
+<div class="card-header">
+  <div class="title">マッチカード（最大3試合）</div>
+  <button class="btn btn-blue">✨ 自動編成</button>
+  <button class="btn btn-red">🗑 全クリア</button>
+</div>
+
+<!-- ===== ★ MAIN EVENT: PPV-STYLE ENHANCED CARD (NEW) ===== -->
+<div style="position:relative">
+  <div style="position:absolute;top:-8px;left:12px;z-index:1">
+    <span class="change-tag new" style="font-size:11px;padding:3px 10px">NEW: PPV風 大カード表示</span>
+  </div>
+</div>
+<div class="main-card">
+  <div class="mc-label">★ MAIN EVENT</div>
+
+  <!-- Fighter face-off with upper body images -->
+  <div class="mc-fighters">
+    <div class="mc-side left">
+      <div class="mc-info">
+        <div class="mc-name">松下 真理亜</div>
+        <div class="mc-org">👑 チャンピオン</div>
+        <div class="mc-ovr-label">OVR</div>
+        <div class="mc-ovr">60</div>
+      </div>
+      <div class="mc-upper">
+        <img src="../../image/upper/upper_matsushita_m.webp" alt="松下真理亜" onerror="this.parentElement.innerHTML='<div style=\'width:120px;height:180px;background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:40px;color:#444\'>松</div>'">
+      </div>
+    </div>
+
+    <div class="mc-vs">
+      <div class="mc-vs-text">V S</div>
+      <div class="mc-badge" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">🔥 因縁 (MQ+1)</div>
+    </div>
+
+    <div class="mc-side right">
+      <div class="mc-upper">
+        <img src="../../image/upper/upper_hiramatsu_k.webp" alt="平松かなみ" onerror="this.parentElement.innerHTML='<div style=\'width:120px;height:180px;background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:40px;color:#444\'>平</div>'">
+      </div>
+      <div class="mc-info">
+        <div class="mc-name">平松 かなみ</div>
+        <div class="mc-org">&nbsp;</div>
+        <div class="mc-ovr-label">OVR</div>
+        <div class="mc-ovr">56</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat comparison bars (UI共通ルール① 左右対称レイアウト) -->
+  <div class="mc-stats">
+    <div class="stat-row">
+      <div class="stat-bar-left"><span class="stat-val hi" style="color:#74b9ff">68</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:68%"></div></div></div>
+      <div class="stat-label">PW</div>
+      <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:52%"></div></div><span class="stat-val" style="color:#e07070">52</span></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-bar-left"><span class="stat-val" style="color:#74b9ff">55</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:55%"></div></div></div>
+      <div class="stat-label">SP</div>
+      <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:60%"></div></div><span class="stat-val hi" style="color:#e07070">60</span></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-bar-left"><span class="stat-val hi" style="color:#74b9ff">62</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:62%"></div></div></div>
+      <div class="stat-label">TE</div>
+      <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:48%"></div></div><span class="stat-val" style="color:#e07070">48</span></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-bar-left"><span class="stat-val" style="color:#74b9ff">50</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:50%"></div></div></div>
+      <div class="stat-label">ST</div>
+      <div class="stat-bar-right"><div class="stat-bar-track"><div class="stat-bar-fill" style="width:58%"></div></div><span class="stat-val hi" style="color:#e07070">58</span></div>
+    </div>
+  </div>
+
+  <!-- Traits -->
+  <div class="mc-traits">
+    <div class="left">
+      <span class="tag">負けず嫌い</span>
+      <span class="tag">リーダー気質</span>
+    </div>
+    <div class="right">
+      <span class="tag">闘志</span>
+      <span class="tag">努力家</span>
+    </div>
+  </div>
+
+  <!-- Pre-match dialogue (UI共通ルール② 白吹き出し) -->
+  <div class="mc-dialogue">
+    <div class="bubble">
+      <div class="speaker" style="color:#3498db">松下</div>
+      <div class="line">「チャンピオンの意地、見せてやる」</div>
+    </div>
+    <div class="bubble">
+      <div class="speaker" style="color:#e74c3c">平松</div>
+      <div class="line">「今日こそベルトを奪う！」</div>
+    </div>
+  </div>
+
+  <!-- Match info tags -->
+  <div class="mc-actions">
+    <span class="info-tag" style="background:rgba(212,168,67,0.12);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">⏳ 次のタイトルマッチまであと4週</span>
+    <span class="info-tag" style="background:rgba(116,185,255,0.1);color:#74b9ff;border:1px solid rgba(116,185,255,0.3)">✨ 初顔合わせ (MQ+2)</span>
+  </div>
+
+  <!-- Select dropdowns still available inside main card for changing fighters -->
+  <div style="display:flex;gap:8px;padding:4px 20px 14px;align-items:center">
+    <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:11px;flex:1;appearance:none;-webkit-appearance:none">
+      <option selected>👑 松下真理亜 (総合:60 体調:64)</option>
+      <option>相田萌 (総合:46 体調:63)</option>
+      <option>宮ケ瀬千夏 (総合:50 体調:69)</option>
+    </select>
+    <span style="color:var(--text-dim);font-size:11px">VS</span>
+    <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:11px;flex:1;appearance:none;-webkit-appearance:none">
+      <option selected>平松かなみ (総合:56 体調:65)</option>
+      <option>高輪まみ (総合:44 体調:66)</option>
+      <option>松久保伊織 (総合:46 体調:69)</option>
+    </select>
+  </div>
+</div>
+
+<!-- ===== MATCH 2: EXISTING FORMAT (KEEP) ===== -->
+<div style="position:relative">
+  <div style="position:absolute;top:-4px;left:12px;z-index:1">
+    <span class="change-tag keep" style="font-size:10px">KEEP: 既存形式のまま</span>
+  </div>
+</div>
+<div class="match-slot" style="margin-top:4px">
+  <div class="match-slot-num">2</div>
+  <img src="../../image/face_miyagase_c.png" class="portrait-thumb" style="border-color:rgba(52,152,219,0.4)" alt="">
+  <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;width:280px">
+    <option selected>宮ケ瀬千夏 (総合:50 体調:69)</option>
+  </select>
+  <div class="match-slot-vs">VS</div>
+  <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;width:280px">
+    <option selected>松久保伊織 (総合:46 体調:69)</option>
+  </select>
+  <img src="../../image/face_matsukubo_i.png" class="portrait-thumb" style="border-color:rgba(231,76,60,0.4)" alt="">
+  <span style="font-size:11px;color:#74b9ff">✨ 初顔合わせ(MQ+2)</span>
+</div>
+
+<!-- ===== MATCH 3: EXISTING FORMAT (KEEP) ===== -->
+<div class="match-slot">
+  <div class="match-slot-num" style="color:var(--text-dim)">3</div>
+  <img src="../../image/face_aida_m.png" class="portrait-thumb" style="border-color:rgba(52,152,219,0.4)" alt="">
+  <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;width:280px">
+    <option selected>相田萌 (総合:46 体調:63)</option>
+  </select>
+  <div class="match-slot-vs">VS</div>
+  <select style="background:var(--bg-mid);color:var(--text-main);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;width:280px">
+    <option selected>高輪まみ (総合:44 体調:66)</option>
+  </select>
+  <img src="../../image/face_hiramatsu_k.png" class="portrait-thumb" style="border-color:rgba(231,76,60,0.4)" alt="">
+</div>
+
+<!-- ===== ATTENDANCE PREDICTION (KEEP) ===== -->
+<div class="prediction">
+  <div class="headline" style="color:var(--green)">🔥 今週は盛り上がりそうだ</div>
+  <div style="color:var(--text-sub);margin-bottom:4px">— Heat: Neutral（集客×1） &nbsp; 👑 王者出場（集客×1.10）</div>
+  <div style="color:var(--text-sub)"><strong>会場:</strong> 小ホールB（500席） <strong>会場費:</strong> -50万 | 📈 勢いあり</div>
+  <div style="margin-top:4px;color:var(--green)">🏟️ 予想会場熱気: MQ全試合+4（超満員の熱気）</div>
+</div>
+
+<!-- ===== ACTION BUTTONS (KEEP) ===== -->
+<div class="btn-row">
+  <button class="btn-gold">興行開催！ (3試合)</button>
+  <button class="btn btn-blue" style="padding:10px 24px;font-size:14px">戻る</button>
+</div>
+
+</body>
+</html>

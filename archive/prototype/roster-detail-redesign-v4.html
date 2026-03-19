@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>団体画面 — v4 カラーバリエーション</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #08080d;
+  --card-bg: #0e0e15;
+  --panel-bg: #121220;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --blue: #4a8fd4;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --text-main: #e7e9ee;
+  --text-sub: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.25);
+  --bg-card: #0e0e15;
+  --border: rgba(255,255,255,0.1);
+  color-scheme: dark;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
+.app{max-width:900px;margin:0 auto;padding:12px}
+
+/* ===== THEME SWITCHER ===== */
+.theme-bar{display:flex;gap:8px;margin-bottom:16px;padding:10px 14px;background:var(--panel-bg);border:1px solid rgba(255,255,255,0.06);border-radius:6px;flex-wrap:wrap;align-items:center}
+.theme-bar-label{font-size:12px;color:var(--text-dim);margin-right:8px}
+.theme-btn{font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-sub);transition:all 0.2s;font-family:'Noto Sans JP',sans-serif}
+.theme-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.1)}
+.theme-btn:hover{border-color:rgba(255,255,255,0.3)}
+
+/* ===== PANEL (theme-aware) ===== */
+.panel{border-radius:6px;padding:16px;margin-bottom:12px;transition:all 0.3s}
+.panel-title{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:12px;padding-bottom:8px;display:flex;align-items:center;transition:all 0.3s}
+
+/* Theme: Dark (default) */
+[data-theme="dark"] .panel{background:var(--panel-bg);border:1px solid rgba(255,255,255,0.06)}
+[data-theme="dark"] .panel-title{color:var(--gold);border-bottom:1px solid rgba(255,255,255,0.06)}
+[data-theme="dark"] .roster-card{background:var(--bg-card);border:1px solid var(--border)}
+[data-theme="dark"] .coach-card{background:var(--bg-card);border:1px solid var(--border)}
+[data-theme="dark"] .detail-portrait{background:linear-gradient(180deg, rgba(20,20,35,1), rgba(10,10,18,1))}
+
+/* Theme: Warm White */
+[data-theme="warm"] .panel{background:#faf8f4;border:1px solid rgba(180,160,120,0.2)}
+[data-theme="warm"] .panel-title{color:#8b7340;border-bottom:1px solid rgba(180,160,120,0.15)}
+[data-theme="warm"] .roster-card{background:#f5f2ec;border:1px solid rgba(180,160,120,0.15)}
+[data-theme="warm"] .roster-card:hover{border-color:rgba(180,160,120,0.4)}
+[data-theme="warm"] .roster-card.expanded{border-color:rgba(180,160,120,0.4)}
+[data-theme="warm"] .coach-card{background:#f5f2ec;border:1px solid rgba(180,160,120,0.15)}
+[data-theme="warm"] .coach-card:hover{border-color:#8b7340}
+[data-theme="warm"] .detail-portrait{background:linear-gradient(180deg, #ede9e0, #d8d2c4)}
+[data-theme="warm"] .detail-portrait-overlay{background:linear-gradient(transparent 0%, rgba(250,248,244,0.85) 70%, rgba(250,248,244,1) 100%) !important}
+[data-theme="warm"] .detail-portrait-name{background:linear-gradient(180deg,#3a3020,#8b7340) !important;-webkit-background-clip:text;background-clip:text}
+[data-theme="warm"] .detail-portrait-sub{color:rgba(0,0,0,0.45) !important}
+[data-theme="warm"] .detail-portrait-record{color:rgba(0,0,0,0.5) !important}
+[data-theme="warm"] .detail-info{background:#faf8f4}
+[data-theme="warm"] .detail-tab{color:rgba(0,0,0,0.3)}
+[data-theme="warm"] .detail-tab:hover{color:rgba(0,0,0,0.5)}
+[data-theme="warm"] .detail-tab.active{color:#8b7340;border-bottom-color:#8b7340}
+[data-theme="warm"] .detail-tabs{border-bottom-color:rgba(180,160,120,0.15)}
+[data-theme="warm"] .wp-stat-bar-outer{background:rgba(0,0,0,0.05)}
+[data-theme="warm"] .name-link{color:#8b7340}
+[data-theme="warm"] .text-on-light{color:#2c2c2a !important}
+[data-theme="warm"] .sub-on-light{color:rgba(0,0,0,0.45) !important}
+[data-theme="warm"] .dim-on-light{color:rgba(0,0,0,0.25) !important}
+[data-theme="warm"] .detail-meta-label{color:rgba(0,0,0,0.35) !important}
+[data-theme="warm"] .detail-meta-val{color:#2c2c2a !important}
+[data-theme="warm"] .note-box{background:rgba(0,0,0,0.03);color:rgba(0,0,0,0.35)}
+[data-theme="warm"] .growth-week{border-bottom-color:rgba(0,0,0,0.05)}
+[data-theme="warm"] .growth-week-event{color:rgba(0,0,0,0.5) !important}
+[data-theme="warm"] .growth-week-label{color:rgba(0,0,0,0.3) !important}
+[data-theme="warm"] .fuzzy-bar{background:rgba(0,0,0,0.06)}
+[data-theme="warm"] .sort-btn{border-color:rgba(0,0,0,0.1);background:rgba(0,0,0,0.03);color:rgba(0,0,0,0.35)}
+[data-theme="warm"] .sort-btn.active{border-color:rgba(139,115,64,0.5);background:rgba(139,115,64,0.1);color:#8b7340}
+[data-theme="warm"] .cap-bar{background:#ede9e0;border-color:rgba(180,160,120,0.15)}
+[data-theme="warm"] .cap-bar span{color:#2c2c2a !important}
+[data-theme="warm"] .cap-bar .cap-label{color:rgba(0,0,0,0.45) !important}
+[data-theme="warm"] select{background:#f5f2ec !important;color:#2c2c2a !important;border-color:rgba(180,160,120,0.2) !important}
+[data-theme="warm"] .cond-bar{background:rgba(0,0,0,0.06)}
+
+/* Theme: Cool Gray */
+[data-theme="cool"] .panel{background:#f0f2f5;border:1px solid rgba(100,120,150,0.15)}
+[data-theme="cool"] .panel-title{color:#4a6080;border-bottom:1px solid rgba(100,120,150,0.12)}
+[data-theme="cool"] .roster-card{background:#e8ecf1;border:1px solid rgba(100,120,150,0.12)}
+[data-theme="cool"] .roster-card:hover{border-color:rgba(100,120,150,0.35)}
+[data-theme="cool"] .roster-card.expanded{border-color:rgba(100,120,150,0.35)}
+[data-theme="cool"] .coach-card{background:#e8ecf1;border:1px solid rgba(100,120,150,0.12)}
+[data-theme="cool"] .coach-card:hover{border-color:#4a6080}
+[data-theme="cool"] .detail-portrait{background:linear-gradient(180deg, #dfe4eb, #c8ced8)}
+[data-theme="cool"] .detail-portrait-overlay{background:linear-gradient(transparent 0%, rgba(240,242,245,0.85) 70%, rgba(240,242,245,1) 100%) !important}
+[data-theme="cool"] .detail-portrait-name{background:linear-gradient(180deg,#1a2a3e,#4a6080) !important;-webkit-background-clip:text;background-clip:text}
+[data-theme="cool"] .detail-portrait-sub{color:rgba(0,0,0,0.4) !important}
+[data-theme="cool"] .detail-portrait-record{color:rgba(0,0,0,0.45) !important}
+[data-theme="cool"] .detail-info{background:#f0f2f5}
+[data-theme="cool"] .detail-tab{color:rgba(0,0,0,0.3)}
+[data-theme="cool"] .detail-tab:hover{color:rgba(0,0,0,0.5)}
+[data-theme="cool"] .detail-tab.active{color:#4a6080;border-bottom-color:#4a6080}
+[data-theme="cool"] .detail-tabs{border-bottom-color:rgba(100,120,150,0.12)}
+[data-theme="cool"] .wp-stat-bar-outer{background:rgba(0,0,0,0.05)}
+[data-theme="cool"] .name-link{color:#4a6080}
+[data-theme="cool"] .detail-meta-label{color:rgba(0,0,0,0.35) !important}
+[data-theme="cool"] .detail-meta-val{color:#1a2a3e !important}
+[data-theme="cool"] .note-box{background:rgba(0,0,0,0.03);color:rgba(0,0,0,0.35)}
+[data-theme="cool"] .growth-week{border-bottom-color:rgba(0,0,0,0.05)}
+[data-theme="cool"] .growth-week-event{color:rgba(0,0,0,0.5) !important}
+[data-theme="cool"] .growth-week-label{color:rgba(0,0,0,0.3) !important}
+[data-theme="cool"] .fuzzy-bar{background:rgba(0,0,0,0.06)}
+[data-theme="cool"] .sort-btn{border-color:rgba(0,0,0,0.1);background:rgba(0,0,0,0.03);color:rgba(0,0,0,0.35)}
+[data-theme="cool"] .sort-btn.active{border-color:rgba(74,96,128,0.5);background:rgba(74,96,128,0.1);color:#4a6080}
+[data-theme="cool"] .cap-bar{background:#e0e4ea;border-color:rgba(100,120,150,0.12)}
+[data-theme="cool"] .cap-bar span{color:#1a2a3e !important}
+[data-theme="cool"] .cap-bar .cap-label{color:rgba(0,0,0,0.4) !important}
+[data-theme="cool"] select{background:#e8ecf1 !important;color:#1a2a3e !important;border-color:rgba(100,120,150,0.15) !important}
+[data-theme="cool"] .cond-bar{background:rgba(0,0,0,0.06)}
+
+/* Theme: Soft Cream */
+[data-theme="cream"] .panel{background:#fdfcf8;border:1px solid rgba(200,185,150,0.2)}
+[data-theme="cream"] .panel-title{color:#a08850;border-bottom:1px solid rgba(200,185,150,0.15)}
+[data-theme="cream"] .roster-card{background:#f9f7f0;border:1px solid rgba(200,185,150,0.15)}
+[data-theme="cream"] .roster-card:hover{border-color:rgba(200,185,150,0.4)}
+[data-theme="cream"] .roster-card.expanded{border-color:rgba(200,185,150,0.4)}
+[data-theme="cream"] .coach-card{background:#f9f7f0;border:1px solid rgba(200,185,150,0.15)}
+[data-theme="cream"] .coach-card:hover{border-color:#a08850}
+[data-theme="cream"] .detail-portrait{background:linear-gradient(180deg, #f2efe6, #e0dcd0)}
+[data-theme="cream"] .detail-portrait-overlay{background:linear-gradient(transparent 0%, rgba(253,252,248,0.85) 70%, rgba(253,252,248,1) 100%) !important}
+[data-theme="cream"] .detail-portrait-name{background:linear-gradient(180deg,#3a3020,#a08850) !important;-webkit-background-clip:text;background-clip:text}
+[data-theme="cream"] .detail-portrait-sub{color:rgba(0,0,0,0.4) !important}
+[data-theme="cream"] .detail-portrait-record{color:rgba(0,0,0,0.45) !important}
+[data-theme="cream"] .detail-info{background:#fdfcf8}
+[data-theme="cream"] .detail-tab{color:rgba(0,0,0,0.25)}
+[data-theme="cream"] .detail-tab:hover{color:rgba(0,0,0,0.5)}
+[data-theme="cream"] .detail-tab.active{color:#a08850;border-bottom-color:#a08850}
+[data-theme="cream"] .detail-tabs{border-bottom-color:rgba(200,185,150,0.15)}
+[data-theme="cream"] .wp-stat-bar-outer{background:rgba(0,0,0,0.04)}
+[data-theme="cream"] .name-link{color:#a08850}
+[data-theme="cream"] .detail-meta-label{color:rgba(0,0,0,0.3) !important}
+[data-theme="cream"] .detail-meta-val{color:#2c2c2a !important}
+[data-theme="cream"] .note-box{background:rgba(0,0,0,0.02);color:rgba(0,0,0,0.3)}
+[data-theme="cream"] .growth-week{border-bottom-color:rgba(0,0,0,0.04)}
+[data-theme="cream"] .growth-week-event{color:rgba(0,0,0,0.45) !important}
+[data-theme="cream"] .growth-week-label{color:rgba(0,0,0,0.25) !important}
+[data-theme="cream"] .fuzzy-bar{background:rgba(0,0,0,0.05)}
+[data-theme="cream"] .sort-btn{border-color:rgba(0,0,0,0.08);background:rgba(0,0,0,0.02);color:rgba(0,0,0,0.3)}
+[data-theme="cream"] .sort-btn.active{border-color:rgba(160,136,80,0.5);background:rgba(160,136,80,0.08);color:#a08850}
+[data-theme="cream"] .cap-bar{background:#f2efe6;border-color:rgba(200,185,150,0.15)}
+[data-theme="cream"] .cap-bar span{color:#2c2c2a !important}
+[data-theme="cream"] .cap-bar .cap-label{color:rgba(0,0,0,0.4) !important}
+[data-theme="cream"] select{background:#f9f7f0 !important;color:#2c2c2a !important;border-color:rgba(200,185,150,0.2) !important}
+[data-theme="cream"] .cond-bar{background:rgba(0,0,0,0.06)}
+
+/* ===== Shared Component Styles ===== */
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Oswald',sans-serif}
+.badge-Grappler{background:rgba(155,89,182,0.15);color:#bb8fce;border:1px solid rgba(155,89,182,0.3)}
+.badge-Speed{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.badge-Submission{background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.3)}
+.badge-bf{background:rgba(74,143,212,0.15);color:#8bc4f0;border:1px solid rgba(74,143,212,0.3)}
+.badge-heel{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
+.growth-up{color:#2ecc71;font-size:12px;font-weight:700}
+.train-growth-arrow{font-size:13px;font-weight:700;letter-spacing:-1px}
+.train-growth-arrow.up2{color:#2ecc71}.train-growth-arrow.up1{color:rgba(46,204,113,0.55)}.train-growth-arrow.eq{color:rgba(150,150,150,0.4)}
+.coach-match-badge{font-size:10px;padding:1px 5px;border-radius:3px;display:inline-flex;align-items:center;gap:2px}
+.coach-match-badge.specialist{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.35)}
+.btn-sm{font-size:12px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid rgba(212,168,67,0.3);background:rgba(212,168,67,0.1);color:var(--gold);font-family:'Noto Sans JP',sans-serif}
+
+/* Coach card */
+.coach-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;cursor:pointer;transition:border-color 0.2s}
+.coach-avatar{width:64px;height:64px;border-radius:10px;overflow:hidden;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)}
+.coach-avatar img{width:100%;height:100%;object-fit:cover}
+.coach-chip-face{width:22px;height:22px;border-radius:5px;overflow:hidden;display:inline-flex}
+.coach-chip-face img{width:100%;height:100%;object-fit:cover}
+.coach-match-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:4px}
+.coach-match-chip.specialist{background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.35)}
+.coach-match-chip.none{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);opacity:0.6}
+
+/* Roster card — SQUARE ROUNDED ICON (matching coach) */
+.roster-card{border-radius:8px;cursor:pointer;transition:border-color 0.2s}
+.roster-card-inner{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.portrait{width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,0.1);background:var(--bg-card)}
+.portrait img{width:100%;height:100%;object-fit:cover}
+.cond-bar{width:40px;height:4px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,0.06)}
+.cond-fill{height:100%;border-radius:3px}
+
+/* Detail panel */
+.detail-panel{max-height:0;overflow:hidden;transition:max-height 0.4s ease;border-top:0 solid rgba(255,255,255,0.06)}
+.detail-panel.open{max-height:900px;border-top-width:1px}
+.detail-layout{display:flex;gap:0;min-height:360px}
+.detail-portrait{width:220px;flex-shrink:0;position:relative;overflow:hidden;transition:background 0.3s}
+.detail-portrait-img{width:100%;height:360px;object-fit:cover;object-position:center top;display:block}
+.detail-portrait-overlay{position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(transparent 0%, rgba(8,8,13,0.85) 70%, rgba(8,8,13,1) 100%);pointer-events:none;transition:background 0.3s}
+.detail-portrait-info{position:absolute;bottom:0;left:0;right:0;padding:10px 12px;z-index:2}
+.detail-portrait-name{font-weight:900;font-size:18px;background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;transition:all 0.3s}
+.detail-portrait-sub{font-size:11px;color:var(--text-sub);margin-top:2px}
+.detail-portrait-badges{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.detail-portrait-record{margin-top:6px;font-size:11px;color:var(--text-sub)}
+.detail-portrait-status{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.detail-info{flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;gap:8px;transition:background 0.3s}
+.detail-tabs{display:flex;gap:0;margin-bottom:2px;transition:border-color 0.3s}
+.detail-tab{padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Oswald',sans-serif;letter-spacing:1px}
+.detail-tab-content{display:none}
+.detail-tab-content.active{display:block}
+
+/* Stat bars */
+.wp-stat-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.wp-stat-label{width:26px;font-size:12px;font-weight:900;font-family:'Oswald',sans-serif;letter-spacing:1px}
+.wp-stat-bar-outer{flex:1;height:12px;border-radius:6px;overflow:hidden;position:relative;transition:background 0.3s}
+.wp-stat-bar-cap{height:100%;border-radius:6px;position:absolute;left:0;top:0;opacity:0.2}
+.wp-stat-bar-current{height:100%;border-radius:6px;position:relative;z-index:1}
+.wp-stat-val{width:32px;text-align:right;font-size:15px;font-weight:900;font-family:'Oswald',sans-serif}
+.wp-stat-growth{width:36px;text-align:left;font-size:12px;font-weight:700}
+.wp-stat-room{font-size:10px;width:56px;text-align:right}
+
+/* Growth log scrollable */
+.growth-scroll{max-height:220px;overflow-y:auto;padding-right:4px}
+.growth-scroll::-webkit-scrollbar{width:4px}
+.growth-scroll::-webkit-scrollbar-track{background:rgba(128,128,128,0.05);border-radius:2px}
+.growth-scroll::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.15);border-radius:2px}
+.growth-week{display:flex;align-items:center;gap:8px;font-size:11px;padding:5px 0}
+.growth-week-label{width:48px;font-family:'Oswald',sans-serif;font-size:11px;flex-shrink:0}
+.growth-week-event{flex:1}
+.growth-week-delta{font-weight:700;flex-shrink:0;text-align:right}
+.growth-week-delta.positive{color:#2ecc71}
+
+/* Fuzzy gauge */
+.fuzzy-gauge{display:flex;align-items:center;gap:8px}
+.fuzzy-bar{width:100px;height:8px;border-radius:4px;overflow:hidden;position:relative;transition:background 0.3s}
+.fuzzy-fill{height:100%;border-radius:4px}
+.fuzzy-label{font-size:12px;font-weight:700}
+
+.detail-meta-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0}
+.detail-meta-label{width:80px;flex-shrink:0;transition:color 0.3s}
+.detail-meta-val{flex:1;transition:color 0.3s}
+.note-box{font-size:11px;padding:6px 10px;border-radius:4px;border-left:3px solid var(--gold);margin-top:4px;transition:all 0.3s}
+.section-label{font-size:11px;color:var(--text-dim)}
+
+@media (max-width: 640px) {
+  .detail-layout{flex-direction:column}
+  .detail-portrait{width:100%;height:200px}
+  .detail-portrait-img{height:200px}
+}
+</style>
+</head>
+<body>
+<div class="app" data-theme="dark">
+
+<!-- THEME SWITCHER -->
+<div class="theme-bar">
+  <span class="theme-bar-label">背景テーマ:</span>
+  <button class="theme-btn active" onclick="setTheme('dark')">A: ダーク（現行）</button>
+  <button class="theme-btn" onclick="setTheme('warm')">B: ウォームホワイト</button>
+  <button class="theme-btn" onclick="setTheme('cool')">C: クールグレー</button>
+  <button class="theme-btn" onclick="setTheme('cream')">D: ソフトクリーム</button>
+</div>
+
+<!-- ===== STAFF ===== -->
+<div class="panel">
+  <div class="panel-title">🎓 所属スタッフ (<span>2</span>/<span>3</span>)
+    <button class="btn-sm" style="margin-left:auto">スタッフ募集 →</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">
+    <div class="coach-card">
+      <div class="coach-avatar"><img src="image/coach/face_coach_onizuka.png" alt="鬼塚 剛志"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px">鬼塚 剛志</div>
+        <div style="font-size:13px;color:var(--gold);margin-bottom:4px">B級 ×1.1 <span class="badge badge-Grappler" style="font-size:10px;padding:1px 5px">Grappler</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <span class="coach-match-chip specialist"><span class="coach-chip-face"><img src="image/face_abukuma_t.png" alt=""></span>阿武隈<span style="font-weight:700;color:#2ecc71">◎</span></span>
+          <span class="coach-match-chip none"><span class="coach-chip-face"><img src="image/face_fukamachi_m.png" alt=""></span>深町</span>
+          <span class="coach-match-chip none"><span class="coach-chip-face"><img src="image/face_tachibana_r.png" alt=""></span>橘</span>
+        </div>
+      </div>
+      <span style="font-size:12px;color:var(--text-dim)">ℹ️</span>
+    </div>
+    <div class="coach-card">
+      <div class="coach-avatar"><img src="image/coach/face_coach_asuka.png" alt="飛鳥 真琴"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px">飛鳥 真琴</div>
+        <div style="font-size:13px;color:var(--gold);margin-bottom:4px">B級 ×1.1 <span class="badge badge-Speed" style="font-size:10px;padding:1px 5px">Speed</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px"><span style="font-size:12px;color:var(--text-dim);font-style:italic">担当なし</span></div>
+      </div>
+      <span style="font-size:12px;color:var(--text-dim)">ℹ️</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ROSTER ===== -->
+<div class="panel" style="margin-top:12px">
+  <div class="panel-title">👥 所属選手 (<span>3</span>名)</div>
+
+  <div class="cap-bar" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;border-radius:6px;border:1px solid var(--border)">
+    <span class="cap-label" style="font-size:13px;color:var(--text-sub)">所属選手</span>
+    <span style="font-size:15px;font-weight:700">3/8名</span>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+    <span class="section-label">並び順:</span>
+    <button class="sort-btn active">OVR</button>
+    <button class="sort-btn">名前</button>
+    <button class="sort-btn">体調</button>
+    <button class="sort-btn">人気</button>
+    <button class="sort-btn">育成</button>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:4px">
+
+    <!-- 阿武隈塔子 (EXPANDED) -->
+    <div class="roster-card expanded" id="card1">
+      <div class="roster-card-inner" onclick="toggleDetail('card1')">
+        <div class="portrait" style="border-color:var(--gold)"><img src="image/face_abukuma_t.png" alt="阿武隈塔子"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            <span class="name-link">阿武隈塔子</span><span style="color:var(--gold);font-size:12px">👑⭐</span>
+            <span class="badge badge-Grappler" style="font-size:10px;padding:1px 5px">Grappler</span>
+            <span class="badge badge-bf" style="font-size:10px;padding:1px 5px">Babyface</span>
+            <span class="coach-match-badge specialist"><span class="coach-chip-face" style="width:16px;height:16px;border-radius:4px"><img src="image/coach/face_coach_onizuka.png" alt=""></span>鬼塚◎</span>
+            <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥絶好調</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
+            <span style="font-size:17px;font-weight:900;color:var(--gold)">84</span>
+            <span>PW<b style="color:var(--text-main)">95</b><span class="growth-up">+3</span></span>
+            <span>SP<b style="color:var(--text-main)">73</b><span class="growth-up">+1</span></span>
+            <span>TE<b style="color:var(--text-main)">71</b><span class="growth-up">+2</span></span>
+            <span>ST<b style="color:var(--text-main)">81</b></span>
+            <span>MN<b style="color:var(--text-main)">80</b><span class="growth-up">+1</span></span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
+          <div>人気 <b style="color:var(--text-main)">85</b></div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:88%;background:#2ecc71"></div></div><span style="font-size:10px">88</span></div>
+          <div style="margin-top:2px;color:var(--text-dim)">320万</div>
+        </div>
+      </div>
+
+      <div class="detail-panel open">
+        <div class="detail-layout">
+          <div class="detail-portrait">
+            <img class="detail-portrait-img" src="image/full/full_abukuma_t.webp" alt="">
+            <div class="detail-portrait-overlay"></div>
+            <div class="detail-portrait-info">
+              <div class="detail-portrait-name">阿武隈塔子</div>
+              <div class="detail-portrait-sub">173cm ｜ 3年目</div>
+              <div class="detail-portrait-badges"><span class="badge badge-Grappler" style="font-size:10px">Grappler</span><span class="badge badge-bf" style="font-size:10px">Babyface</span></div>
+              <div class="detail-portrait-record"><span style="color:#2ecc71">42○</span> <span style="color:#e74c3c">12×</span> <span style="color:#b0b8c4">3△</span> <span style="margin-left:8px;color:var(--gold)">👑王者</span></div>
+              <div class="detail-portrait-status"><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥 絶好調</span></div>
+            </div>
+          </div>
+
+          <div class="detail-info">
+            <div class="detail-tabs">
+              <div class="detail-tab active" onclick="switchTab(this,'t-ab-1')">能力</div>
+              <div class="detail-tab" onclick="switchTab(this,'t-gr-1')">成長経過</div>
+              <div class="detail-tab" onclick="switchTab(this,'t-co-1')">育成</div>
+            </div>
+
+            <!-- 能力 -->
+            <div class="detail-tab-content active" id="t-ab-1">
+              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1">84</span>
+                <span style="font-size:12px;color:var(--text-dim)">OVR</span>
+                <span style="margin-left:auto;font-size:11px;color:var(--text-dim)">リーダー気質 / 人望 / 威圧感</span>
+              </div>
+              <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e74c3c">PW</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:100%;background:#e74c3c"></div><div class="wp-stat-bar-current" style="width:52%;background:#e74c3c"></div></div><span class="wp-stat-val" style="color:#e74c3c">95</span><span class="wp-stat-growth" style="color:#2ecc71">+3</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+              <div class="wp-stat-row"><span class="wp-stat-label" style="color:#2ecc71">SP</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:84%;background:#2ecc71"></div><div class="wp-stat-bar-current" style="width:47%;background:#2ecc71"></div></div><span class="wp-stat-val" style="color:#2ecc71">73</span><span class="wp-stat-growth" style="color:#2ecc71">+1</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+              <div class="wp-stat-row"><span class="wp-stat-label" style="color:#3498db">TE</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:82%;background:#3498db"></div><div class="wp-stat-bar-current" style="width:47%;background:#3498db"></div></div><span class="wp-stat-val" style="color:#3498db">71</span><span class="wp-stat-growth" style="color:#2ecc71">+2</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+              <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e67e22">ST</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:89%;background:#e67e22"></div><div class="wp-stat-bar-current" style="width:49%;background:#e67e22"></div></div><span class="wp-stat-val" style="color:#e67e22">81</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+              <div class="wp-stat-row"><span class="wp-stat-label" style="color:#9b59b6">MN</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:88%;background:#9b59b6"></div><div class="wp-stat-bar-current" style="width:49%;background:#9b59b6"></div></div><span class="wp-stat-val" style="color:#9b59b6">80</span><span class="wp-stat-growth" style="color:#2ecc71">+1</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+              <div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:var(--text-sub);flex-wrap:wrap">
+                <div>人気 <b>85</b></div><div>体調 <b style="color:#2ecc71">88</b></div><div>給与 <b>320万</b>/シーズン</div>
+              </div>
+            </div>
+
+            <!-- 成長経過 -->
+            <div class="detail-tab-content" id="t-gr-1">
+              <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:6px">📈 シーズン2 成長ログ</div>
+              <div class="growth-scroll">
+                <div class="growth-week"><span class="growth-week-label">W12</span><span class="growth-week-event">練習（パワー重点）</span><span class="growth-week-delta positive">PW +0.8</span></div>
+                <div class="growth-week"><span class="growth-week-label">W11</span><span class="growth-week-event">🏆 vs 深町真琴 — <b style="color:var(--gold)">勝利</b></span><span class="growth-week-delta positive">MN +0.5 PW +0.3</span></div>
+                <div class="growth-week"><span class="growth-week-label">W10</span><span class="growth-week-event">練習（バランス）</span><span class="growth-week-delta positive">TE +0.6 SP +0.4</span></div>
+                <div class="growth-week"><span class="growth-week-label">W9</span><span class="growth-week-event">練習（パワー重点）</span><span class="growth-week-delta positive">PW +0.9</span></div>
+                <div class="growth-week"><span class="growth-week-label">W8</span><span class="growth-week-event">🏆 vs 外部選手 — <b style="color:var(--gold)">勝利</b></span><span class="growth-week-delta positive">MN +0.6 TE +0.4</span></div>
+                <div class="growth-week"><span class="growth-week-label">W7</span><span class="growth-week-event">休養</span><span class="growth-week-delta" style="color:rgba(150,150,150,0.4)">—</span></div>
+                <div class="growth-week"><span class="growth-week-label">W6</span><span class="growth-week-event">練習 + <span style="color:#2ecc71">🔥絶好調発動</span></span><span class="growth-week-delta positive">PW +1.2</span></div>
+                <div class="growth-week"><span class="growth-week-label">W5</span><span class="growth-week-event">🏆 vs 橘玲美 — <b style="color:#e74c3c">敗北</b></span><span class="growth-week-delta positive">MN +0.3</span></div>
+                <div class="growth-week"><span class="growth-week-label">W4</span><span class="growth-week-event">練習（バランス）</span><span class="growth-week-delta positive">SP +0.5 TE +0.3</span></div>
+                <div class="growth-week"><span class="growth-week-label">W3</span><span class="growth-week-event">練習（パワー重点）</span><span class="growth-week-delta positive">PW +0.7</span></div>
+                <div class="growth-week"><span class="growth-week-label">W2</span><span class="growth-week-event">🏆 vs 外部選手 — <b style="color:var(--gold)">勝利</b></span><span class="growth-week-delta positive">MN +0.4 ST +0.2</span></div>
+                <div class="growth-week"><span class="growth-week-label">W1</span><span class="growth-week-event">練習（パワー重点）</span><span class="growth-week-delta positive">PW +0.6</span></div>
+                <div class="growth-week" style="border-top:1px solid rgba(212,168,67,0.2);padding-top:8px;margin-top:4px"><span class="growth-week-label" style="color:var(--gold) !important">S1 末</span><span class="growth-week-event" style="opacity:0.4">— シーズン1終了 —</span><span class="growth-week-delta"></span></div>
+                <div class="growth-week"><span class="growth-week-label">W12</span><span class="growth-week-event">🏆 PPV決勝 vs 橘玲美 — <b style="color:var(--gold)">勝利</b> 🏅</span><span class="growth-week-delta positive">MN +0.8 PW +0.5</span></div>
+                <div class="growth-week"><span class="growth-week-label">W11</span><span class="growth-week-event">練習（パワー重点）</span><span class="growth-week-delta positive">PW +0.6</span></div>
+              </div>
+              <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(128,128,128,0.1);font-size:11px;display:flex;gap:10px;flex-wrap:wrap">
+                <span style="color:var(--text-sub)">今シーズン累計:</span>
+                <span style="color:#e74c3c;font-weight:700">PW +3.2</span>
+                <span style="color:#2ecc71;font-weight:700">SP +0.9</span>
+                <span style="color:#3498db;font-weight:700">TE +1.3</span>
+                <span style="color:#9b59b6;font-weight:700">MN +1.4</span>
+              </div>
+            </div>
+
+            <!-- 育成 (コーチアサインUI復活 + 開花率は数値 + 信頼は曖昧) -->
+            <div class="detail-tab-content" id="t-co-1">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">担当コーチ</span>
+                  <span class="detail-meta-val">
+                    <select style="font-size:11px;padding:3px 6px;border-radius:3px">
+                      <option selected>💪 鬼塚 剛志 [B級 ×1.1] ◎専門 (3/4)</option>
+                      <option>💨 飛鳥 真琴 [B級 ×1.1] (0/4)</option>
+                      <option>--- なし ---</option>
+                    </select>
+                  </span>
+                </div>
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">コーチ効果</span>
+                  <span class="detail-meta-val" style="font-size:12px">
+                    成長×1.1 <span class="badge badge-Grappler" style="font-size:9px;padding:1px 5px">Grappler</span>
+                    <span class="coach-match-badge specialist">◎専門一致+0.2</span> 新人育成
+                  </span>
+                </div>
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">成長傾向</span>
+                  <span class="detail-meta-val">
+                    <span class="train-growth-arrow up2">↑</span>PW <span class="train-growth-arrow up1">↑</span>SP <span class="train-growth-arrow up1">↑</span>TE <span class="train-growth-arrow eq">→</span>ST <span class="train-growth-arrow eq">→</span>MN
+                  </span>
+                </div>
+                <!-- 開花率: 数値でOK -->
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">開花率</span>
+                  <span class="detail-meta-val">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <div style="width:100px;height:6px;background:rgba(128,128,128,0.15);border-radius:3px;overflow:hidden"><div style="width:75%;height:100%;background:var(--gold);border-radius:3px"></div></div>
+                      <span style="font-size:12px;color:var(--gold);font-weight:700">75%</span>
+                    </div>
+                  </span>
+                </div>
+                <!-- 信頼: 曖昧 -->
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">信頼関係</span>
+                  <span class="detail-meta-val">
+                    <div class="fuzzy-gauge">
+                      <div class="fuzzy-bar"><div class="fuzzy-fill" style="width:72%;background:linear-gradient(90deg, rgba(74,143,212,0.3), rgba(74,143,212,0.7))"></div></div>
+                      <span class="fuzzy-label" style="color:#4a8fd4">信頼している</span>
+                    </div>
+                  </span>
+                </div>
+                <!-- やる気: 曖昧 -->
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">やる気</span>
+                  <span class="detail-meta-val">
+                    <div class="fuzzy-gauge">
+                      <div class="fuzzy-bar"><div class="fuzzy-fill" style="width:90%;background:linear-gradient(90deg, rgba(46,204,113,0.3), rgba(46,204,113,0.7))"></div></div>
+                      <span class="fuzzy-label" style="color:#2ecc71">非常に高い</span>
+                    </div>
+                  </span>
+                </div>
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">フィジカル</span>
+                  <span class="detail-meta-val"><span style="font-size:12px;color:#2ecc71">良好 — 衰えの兆候なし</span></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 深町真琴 (COLLAPSED) -->
+    <div class="roster-card" id="card2">
+      <div class="roster-card-inner" onclick="toggleDetail('card2')">
+        <div class="portrait"><img src="image/face_fukamachi_m.png" alt="深町真琴"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            <span class="name-link">深町真琴</span>
+            <span class="badge badge-Speed" style="font-size:10px;padding:1px 5px">Speed</span>
+            <span class="badge badge-bf" style="font-size:10px;padding:1px 5px">Babyface</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
+            <span style="font-size:17px;font-weight:900;color:var(--gold)">76</span>
+            <span>PW<b style="color:var(--text-main)">58</b></span>
+            <span>SP<b style="color:var(--text-main)">91</b><span class="growth-up">+2</span></span>
+            <span>TE<b style="color:var(--text-main)">62</b></span>
+            <span>ST<b style="color:var(--text-main)">85</b></span>
+            <span>MN<b style="color:var(--text-main)">63</b></span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
+          <div>人気 <b style="color:var(--text-main)">62</b></div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:75%;background:#2ecc71"></div></div><span style="font-size:10px">75</span></div>
+          <div style="margin-top:2px;color:var(--text-dim)">180万</div>
+        </div>
+      </div>
+      <div class="detail-panel"><div class="detail-layout">
+        <div class="detail-portrait"><img class="detail-portrait-img" src="image/full/full_fukamachi_m.webp" alt=""><div class="detail-portrait-overlay"></div><div class="detail-portrait-info"><div class="detail-portrait-name">深町真琴</div><div class="detail-portrait-sub">160cm ｜ 2年目</div><div class="detail-portrait-badges"><span class="badge badge-Speed" style="font-size:10px">Speed</span><span class="badge badge-bf" style="font-size:10px">Babyface</span></div><div class="detail-portrait-record"><span style="color:#2ecc71">28○</span> <span style="color:#e74c3c">18×</span> <span style="color:#b0b8c4">5△</span></div></div></div>
+        <div class="detail-info"><div class="detail-tabs"><div class="detail-tab active" onclick="switchTab(this,'t-ab-2')">能力</div><div class="detail-tab" onclick="switchTab(this,'t-co-2')">育成</div></div>
+          <div class="detail-tab-content active" id="t-ab-2">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1">76</span><span style="font-size:12px;color:var(--text-dim)">OVR</span><span style="margin-left:auto;font-size:11px;color:var(--text-dim)">努力家 / 華 / 鉄人</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e74c3c">PW</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:73%;background:#e74c3c"></div><div class="wp-stat-bar-current" style="width:43%;background:#e74c3c"></div></div><span class="wp-stat-val" style="color:#e74c3c">58</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#2ecc71">SP</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:100%;background:#2ecc71"></div><div class="wp-stat-bar-current" style="width:49%;background:#2ecc71"></div></div><span class="wp-stat-val" style="color:#2ecc71">91</span><span class="wp-stat-growth" style="color:#2ecc71">+2</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#3498db">TE</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:76%;background:#3498db"></div><div class="wp-stat-bar-current" style="width:44%;background:#3498db"></div></div><span class="wp-stat-val" style="color:#3498db">62</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e67e22">ST</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:92%;background:#e67e22"></div><div class="wp-stat-bar-current" style="width:50%;background:#e67e22"></div></div><span class="wp-stat-val" style="color:#e67e22">85</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#9b59b6">MN</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:77%;background:#9b59b6"></div><div class="wp-stat-bar-current" style="width:47%;background:#9b59b6"></div></div><span class="wp-stat-val" style="color:#9b59b6">63</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+          </div>
+          <div class="detail-tab-content" id="t-co-2">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="detail-meta-row"><span class="detail-meta-label">担当コーチ</span><span class="detail-meta-val"><select style="font-size:11px;padding:3px 6px;border-radius:3px"><option>--- なし ---</option><option>💪 鬼塚 剛志 [B級 ×1.1] (3/4)</option><option>💨 飛鳥 真琴 [B級 ×1.1] ◎専門 (0/4)</option></select></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">開花率</span><span class="detail-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(128,128,128,0.15);border-radius:3px;overflow:hidden"><div style="width:58%;height:100%;background:var(--gold);border-radius:3px"></div></div><span style="font-size:12px;color:var(--gold);font-weight:700">58%</span></div></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">信頼関係</span><span class="detail-meta-val"><div class="fuzzy-gauge"><div class="fuzzy-bar"><div class="fuzzy-fill" style="width:45%;background:linear-gradient(90deg, rgba(74,143,212,0.3), rgba(74,143,212,0.7))"></div></div><span class="fuzzy-label" style="color:#4a8fd4">普通</span></div></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">やる気</span><span class="detail-meta-val"><div class="fuzzy-gauge"><div class="fuzzy-bar"><div class="fuzzy-fill" style="width:65%;background:linear-gradient(90deg, rgba(46,204,113,0.3), rgba(46,204,113,0.7))"></div></div><span class="fuzzy-label" style="color:#2ecc71">高い</span></div></span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 橘玲美 (COLLAPSED) -->
+    <div class="roster-card" id="card3">
+      <div class="roster-card-inner" onclick="toggleDetail('card3')">
+        <div class="portrait"><img src="image/face_tachibana_r.png" alt="橘玲美"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            <span class="name-link">橘玲美</span>
+            <span class="badge badge-Submission" style="font-size:10px;padding:1px 5px">Submission</span>
+            <span class="badge badge-heel" style="font-size:10px;padding:1px 5px">Heel</span>
+            <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉スランプ</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
+            <span style="font-size:17px;font-weight:900;color:var(--gold)">77</span>
+            <span>PW<b style="color:var(--text-main)">71</b></span>
+            <span>SP<b style="color:var(--text-main)">73</b></span>
+            <span>TE<b style="color:var(--text-main)">91</b></span>
+            <span>ST<b style="color:var(--text-main)">75</b></span>
+            <span>MN<b style="color:var(--text-main)">74</b></span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
+          <div>人気 <b style="color:var(--text-main)">70</b></div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:60%;background:#f39c12"></div></div><span style="font-size:10px">60</span></div>
+          <div style="margin-top:2px;color:var(--text-dim)">200万</div>
+        </div>
+      </div>
+      <div class="detail-panel"><div class="detail-layout">
+        <div class="detail-portrait"><img class="detail-portrait-img" src="image/full/full_tachibana_r.webp" alt=""><div class="detail-portrait-overlay"></div><div class="detail-portrait-info"><div class="detail-portrait-name">橘玲美</div><div class="detail-portrait-sub">171cm ｜ 3年目</div><div class="detail-portrait-badges"><span class="badge badge-Submission" style="font-size:10px">Submission</span><span class="badge badge-heel" style="font-size:10px">Heel</span></div><div class="detail-portrait-record"><span style="color:#2ecc71">35○</span> <span style="color:#e74c3c">15×</span> <span style="color:#b0b8c4">2△</span></div><div class="detail-portrait-status"><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉 スランプ中</span></div></div></div>
+        <div class="detail-info"><div class="detail-tabs"><div class="detail-tab active" onclick="switchTab(this,'t-ab-3')">能力</div><div class="detail-tab" onclick="switchTab(this,'t-co-3')">育成</div></div>
+          <div class="detail-tab-content active" id="t-ab-3">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1">77</span><span style="font-size:12px;color:var(--text-dim)">OVR</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e74c3c">PW</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:82%;background:#e74c3c"></div><div class="wp-stat-bar-current" style="width:47%;background:#e74c3c"></div></div><span class="wp-stat-val" style="color:#e74c3c">71</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#2ecc71">SP</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:84%;background:#2ecc71"></div><div class="wp-stat-bar-current" style="width:47%;background:#2ecc71"></div></div><span class="wp-stat-val" style="color:#2ecc71">73</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#3498db">TE</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:96%;background:#3498db"></div><div class="wp-stat-bar-current" style="width:51%;background:#3498db"></div></div><span class="wp-stat-val" style="color:#3498db">91</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#f39c12">成長中</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#e67e22">ST</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:85%;background:#e67e22"></div><div class="wp-stat-bar-current" style="width:47%;background:#e67e22"></div></div><span class="wp-stat-val" style="color:#e67e22">75</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+            <div class="wp-stat-row"><span class="wp-stat-label" style="color:#9b59b6">MN</span><div class="wp-stat-bar-outer"><div class="wp-stat-bar-cap" style="width:84%;background:#9b59b6"></div><div class="wp-stat-bar-current" style="width:47%;background:#9b59b6"></div></div><span class="wp-stat-val" style="color:#9b59b6">74</span><span class="wp-stat-growth" style="color:rgba(150,150,150,0.4)">—</span><span class="wp-stat-room" style="color:#2ecc71">伸びしろ大</span></div>
+          </div>
+          <div class="detail-tab-content" id="t-co-3">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="detail-meta-row"><span class="detail-meta-label">担当コーチ</span><span class="detail-meta-val"><select style="font-size:11px;padding:3px 6px;border-radius:3px"><option>--- なし ---</option><option>💪 鬼塚 剛志 [B級 ×1.1] (3/4)</option><option>💨 飛鳥 真琴 [B級 ×1.1] (0/4)</option></select></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">開花率</span><span class="detail-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(128,128,128,0.15);border-radius:3px;overflow:hidden"><div style="width:68%;height:100%;background:var(--gold);border-radius:3px"></div></div><span style="font-size:12px;color:var(--gold);font-weight:700">68%</span></div></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">信頼関係</span><span class="detail-meta-val"><div class="fuzzy-gauge"><div class="fuzzy-bar"><div class="fuzzy-fill" style="width:30%;background:linear-gradient(90deg, rgba(231,76,60,0.3), rgba(231,76,60,0.5))"></div></div><span class="fuzzy-label" style="color:rgba(231,76,60,0.7)">やや不信</span></div></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">やる気</span><span class="detail-meta-val"><div class="fuzzy-gauge"><div class="fuzzy-bar"><div class="fuzzy-fill" style="width:25%;background:linear-gradient(90deg, rgba(231,76,60,0.3), rgba(231,76,60,0.5))"></div></div><span class="fuzzy-label" style="color:rgba(231,76,60,0.7)">低い</span></div></span></div>
+              <div class="detail-meta-row"><span class="detail-meta-label">フィジカル</span><span class="detail-meta-val"><span style="font-size:12px;color:#f1c40f">⚠ わずかに衰えの兆候</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+function setTheme(t) {
+  document.querySelector('.app').setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function toggleDetail(id) {
+  const card = document.getElementById(id);
+  const panel = card.querySelector('.detail-panel');
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.detail-panel.open').forEach(p => { p.classList.remove('open'); p.closest('.roster-card').classList.remove('expanded'); });
+  if (!isOpen) { panel.classList.add('open'); card.classList.add('expanded'); }
+}
+function switchTab(el, id) {
+  const info = el.closest('.detail-info');
+  info.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  info.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
