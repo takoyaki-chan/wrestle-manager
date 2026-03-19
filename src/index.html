@@ -7,22 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-dark: #08080d;
-  --card-bg: #0e0e15;
-  --panel-bg: #121220;
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
   --gold: #d4a843;
   --gold-light: #f0d078;
   --blue: #4a8fd4;
   --red: #c41e3a;
   --green: #2ecc71;
-  --text-main: #e7e9ee;
-  --text-sub: rgba(255,255,255,0.5);
-  --text-dim: rgba(255,255,255,0.25);
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
   color-scheme: dark;
-  /* A-1: 参照側との整合性確保（--bg-card/--bg-main/--border は care-box 等で使用） */
-  --bg-card: #0e0e15;
-  --bg-main: #121220;
-  --border: rgba(255,255,255,0.1);
+  --bg-card: #12110e;
+  --bg-main: #181614;
+  --border: rgba(200,190,170,0.08);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -249,10 +248,23 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .btn-intensive:hover{background:rgba(255,165,0,0.2)}
 .btn-intensive.active{background:rgba(255,165,0,0.25);border-color:#ffa500;box-shadow:0 0 6px rgba(255,165,0,0.2)}
 .btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
-/* G1 Cream Theme — roster screen panels only */
+/* G1 Cream Theme — 本拠地系画面パネル */
+.cream-screen>.panel,.cream-screen>.panel-title,
 #screen-roster>.panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
+.cream-screen>.panel .panel-title,
 #screen-roster>.panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
+.cream-screen>.panel .btn-sm,.cream-screen>.panel .btn.btn-sm,
 #screen-roster>.panel .btn-sm,#screen-roster>.panel .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
+.cream-screen .panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
+.cream-screen .panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
+.cream-screen .panel .btn-sm,.cream-screen .panel .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
+.cream-screen table{color:#1e1c16}
+.cream-screen th{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
+.cream-screen td{border-bottom-color:rgba(100,85,50,0.08)}
+.cream-screen a,.cream-screen .name-link{color:#5c4a1e}
+.cream-screen select{background:#d8d2c2;color:#1e1c16;border:1px solid rgba(100,85,50,0.2);border-radius:3px}
+.cream-screen input{background:#d8d2c2;color:#1e1c16;border:1px solid rgba(100,85,50,0.2)}
+.cream-screen .badge{color:#1e1c16}
 .rd-card{background:#ede8dc;border:1px solid rgba(100,85,50,0.14);border-radius:8px;cursor:pointer;transition:border-color .2s}
 .rd-card:hover{border-color:rgba(122,101,48,0.35)}
 .rd-card.expanded{border-color:rgba(122,101,48,0.35)}
@@ -1928,7 +1940,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Ranking (v0.9) -->
-  <div class="screen" id="screen-ranking">
+  <div class="screen cream-screen" id="screen-ranking">
     <div class="panel">
       <div class="panel-title">🏆 団体ランキング</div>
       <div id="rankingContent"></div>
@@ -1936,7 +1948,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Database (v1.0) -->
-  <div class="screen" id="screen-database">
+  <div class="screen cream-screen" id="screen-database">
     <div class="panel" id="databasePanel">
       <div id="databaseContent"></div>
     </div>
@@ -1959,7 +1971,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Scout -->
-  <div class="screen" id="screen-scout">
+  <div class="screen cream-screen" id="screen-scout">
     <div class="panel">
       <div class="panel-title">スカウト / フリーエージェント (<span id="faCount">0</span>名)</div>
       <div id="scoutContent"></div>
@@ -1967,7 +1979,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Scout Event -->
-  <div class="screen" id="screen-scoutEvent">
+  <div class="screen cream-screen" id="screen-scoutEvent">
     <div class="panel">
       <div class="panel-title" id="scoutEventTitle">🔍 スカウトイベント</div>
       <div id="scoutEventContent"></div>
@@ -1983,7 +1995,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Finance -->
-  <div class="screen" id="screen-finance">
+  <div class="screen cream-screen" id="screen-finance">
     <div class="panel">
       <div class="panel-title">収支レポート</div>
       <div id="financeContent"></div>
@@ -1999,7 +2011,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   </div>
 
   <!-- SCREEN: Staff Room (Coach Management) -->
-  <div class="screen" id="screen-coach">
+  <div class="screen cream-screen" id="screen-coach">
     <div class="panel">
       <div class="panel-title">🎓 スタッフ募集
         <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)">← 団体に戻る</button>
