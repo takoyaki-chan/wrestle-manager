@@ -2429,7 +2429,7 @@ function renderScout() {
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:32px;font-weight:900;color:#e8439f;line-height:1;font-family:'Bebas Neue',sans-serif">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px">OVR</span></div>
+        <div style="font-size:32px;font-weight:900;color:#f0d048;line-height:1;font-family:'Bebas Neue',sans-serif;text-shadow:0 0 1px #000,1px 1px 0 rgba(0,0,0,0.6),-1px -1px 0 rgba(0,0,0,0.3)">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px;text-shadow:none">OVR</span></div>
         <div style="font-size:22px;font-weight:800;color:#c44e8a;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
       </div>
@@ -2506,7 +2506,7 @@ function renderScout() {
           <td>${fLink(r.fighter, {source:srcLink})}</td>
           <td style="font-size:13px;color:var(--text-sub)">${srcLabel}</td>
           <td><span class="badge badge-${r.fighter.style}">${r.fighter.style}</span></td>
-          <td style="font-size:20px;font-weight:900;color:#e8439f;font-family:'Bebas Neue',sans-serif;text-align:center">${Engine.util.ov(r.fighter)}</td>
+          <td style="font-size:20px;font-weight:900;color:#f0d048;font-family:'Bebas Neue',sans-serif;text-align:center;text-shadow:0 0 1px #000,1px 1px 0 rgba(0,0,0,0.6)">${Engine.util.ov(r.fighter)}</td>
           <td><select id="${selectId}" onchange="updateRentalFee(${r.fighter.id})" style="font-size:12px;padding:2px 4px;background:var(--card-bg);color:var(--text);border:1px solid var(--border)">${seasonOpts}</select></td>
           <td class="num" style="color:#c44e8a;font-weight:700"><span id="rentalFee_${r.fighter.id}">${feeFor1}</span>万</td>
           <td><button id="rentalBtn_${r.fighter.id}" onclick="requestRental(${r.fighter.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" class="btn btn-sm" style="font-size:12px;padding:4px 10px;background:#5c4a1e;border:1px solid #7a6530;color:#ede8dc" ${G.funds >= feeFor1 ? '' : 'disabled'}>レンタル</button></td>
