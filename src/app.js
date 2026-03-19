@@ -1163,26 +1163,101 @@ const Mission = {
 const SAVE_KEY = 'wrestle_manager_save_';
 const SAVE_SLOTS = 3;
 const AUTOSAVE_KEY = 'wrestle_manager_autosave';
+const SAVE_COMPRESS_MARKER = 'WM_LZ\x00';
+
+// ─── セーブデータ トリミング定数 ───
+const SAVE_TRIM = {
+  gameLogMax: 200,       // gameLog上限
+  growthLogMax: 100,     // キャラ毎growthLog上限
+  financeKeepSeasons: 2, // financeHistory保持シーズン数
+  matchupLogMax: 60,     // matchupLog上限（12show窓 + 余裕）
+  aiMatchupLogMax: 40,   // AI団体matchupLog上限
+};
 
 const Storage = {
+  // ─── セーブデータ圧縮: トリミング + LZ-UTF16 ───
   serialize(G) {
     const state = JSON.parse(JSON.stringify(G));
-    state.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
+    state.roster.forEach(c => {
+      delete c._weekAction; c.intensive = false;
+      // growthLog トリミング
+      if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
+        c.growthLog = c.growthLog.slice(-SAVE_TRIM.growthLogMax);
+      }
+    });
     // P4-P6: transient Glimpse フィールド除外
     delete state._pendingGlimpseA;
     delete state._pendingGlimpseB;
     delete state._pendingHotStreakEnds;
+    // gameLog トリミング
+    if (state.gameLog && state.gameLog.length > SAVE_TRIM.gameLogMax) {
+      state.gameLog = state.gameLog.slice(-SAVE_TRIM.gameLogMax);
+    }
+    // debugLog は保存不要
+    state.debugLog = [];
+    // financeHistory: 直近N シーズンのみ
+    if (state.financeHistory && state.financeHistory.length > 0) {
+      const minSeason = state.season - SAVE_TRIM.financeKeepSeasons + 1;
+      state.financeHistory = state.financeHistory.filter(h => h.season >= minSeason);
+    }
+    // matchupLog トリミング（鮮度計算は直近12showのみ使用、hasEverFoughtはペアSetで代替）
+    if (state.matchupLog && state.matchupLog.length > SAVE_TRIM.matchupLogMax) {
+      // hasEverFought用のペアセットを構築（全履歴から）
+      const everFoughtSet = new Set();
+      state.matchupLog.forEach(e => {
+        const a = Math.min(e.leftId, e.rightId), b = Math.max(e.leftId, e.rightId);
+        everFoughtSet.add(`${a}>${b}`);
+      });
+      state._everFoughtPairs = [...everFoughtSet];
+      state.matchupLog = state.matchupLog.slice(-SAVE_TRIM.matchupLogMax);
+    }
+    // AI団体 matchupLog トリミング
+    if (state.aiOrgs) {
+      for (const orgId in state.aiOrgs) {
+        const org = state.aiOrgs[orgId];
+        if (org.matchupLog && org.matchupLog.length > SAVE_TRIM.aiMatchupLogMax) {
+          org.matchupLog = org.matchupLog.slice(-SAVE_TRIM.aiMatchupLogMax);
+        }
+        // AI選手のgrowthLog トリミング
+        if (org.roster) {
+          org.roster.forEach(c => {
+            if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
+              c.growthLog = c.growthLog.slice(-SAVE_TRIM.growthLogMax);
+            }
+          });
+        }
+      }
+    }
+    // freeAgentsのgrowthLog トリミング
+    if (state.freeAgents) {
+      state.freeAgents.forEach(c => {
+        if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
+          c.growthLog = c.growthLog.slice(-SAVE_TRIM.growthLogMax);
+        }
+      });
+    }
     state._saveVersion = '1.0b';
     state._saveDate = new Date().toISOString();
     state._nextGenCharId = nextGenCharId;
-    return JSON.stringify(state);
+    // LZ圧縮 + マーカー
+    const json = JSON.stringify(state);
+    return SAVE_COMPRESS_MARKER + LZString.compressToUTF16(json);
+  },
+
+  // ─── 圧縮/非圧縮セーブの自動判定ヘルパー ───
+  _parseRaw(raw) {
+    if (raw.startsWith(SAVE_COMPRESS_MARKER)) {
+      const json = LZString.decompressFromUTF16(raw.slice(SAVE_COMPRESS_MARKER.length));
+      return JSON.parse(json);
+    }
+    return JSON.parse(raw);
   },
 
   deserialize(json) {
     const prevG = G;
     const prevNextGenCharId = nextGenCharId;
     try {
-      const state = JSON.parse(json);
+      const state = Storage._parseRaw(json);
       // Replace G entirely with saved state, preserving any missing defaults
       const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
       G = { ...base, ...state };
@@ -1870,6 +1945,24 @@ const Storage = {
         G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
       }
 
+      // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
+      if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
+        const existing = new Set((G.matchupLog || []).map(e => {
+          const a = Math.min(e.leftId, e.rightId), b = Math.max(e.leftId, e.rightId);
+          return `${a}>${b}`;
+        }));
+        const補完 = G._everFoughtPairs
+          .filter(p => !existing.has(p))
+          .map(p => {
+            const [a, b] = p.split('>').map(Number);
+            return { leftId: a, rightId: b, showCount: 0 }; // showCount=0: 鮮度窓外
+          });
+        if (補完.length > 0) {
+          G = { ...G, matchupLog: [...補完, ...(G.matchupLog || [])] };
+        }
+        delete G._everFoughtPairs;
+      }
+
       return true;
     } catch(e) {
       G = prevG;
@@ -1905,7 +1998,7 @@ const Storage = {
 
   autoSave() {
     if (G.weekPhase === 'gameover') return; // ゲームオーバー時は上書きしない
-    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { /* silent */ }
+    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { console.warn('[WM] オートセーブ失敗:', e.message); }
   },
 
   loadAutoSave() {
@@ -1925,7 +2018,7 @@ const Storage = {
     try {
       const raw = localStorage.getItem(AUTOSAVE_KEY);
       if (!raw) return null;
-      const s = JSON.parse(raw);
+      const s = Storage._parseRaw(raw);
       return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate };
     } catch { return null; }
   },
@@ -1934,7 +2027,7 @@ const Storage = {
     try {
       const raw = localStorage.getItem(SAVE_KEY + slot);
       if (!raw) return null;
-      const s = JSON.parse(raw);
+      const s = Storage._parseRaw(raw);
       return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion, orgPop: s.orgPop || 0, rosterSize: s.roster ? s.roster.length : 0 };
     } catch { return null; }
   },
@@ -1948,13 +2041,14 @@ const Storage = {
     const raw = localStorage.getItem(key);
     if (!raw) { alert('セーブデータがありません'); return; }
 
-    const parsed = JSON.parse(raw);
+    const parsed = Storage._parseRaw(raw);
     const datePart = new Date().toISOString().slice(0, 10);
     const seasonPart = `S${parsed.season || 1}W${parsed.week || 1}`;
     const slotLabel = slotOrAuto === 'auto' ? 'auto' : `slot${slotOrAuto}`;
     const filename = `wm_save_${slotLabel}_${seasonPart}_${datePart}.json`;
 
-    const blob = new Blob([raw], { type: 'application/json' });
+    const jsonStr = JSON.stringify(parsed);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
