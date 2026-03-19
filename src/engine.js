@@ -135,7 +135,12 @@ const Engine = {
     },
     getSalary(c, titles) {
       const ovr = c.contractOVR != null ? c.contractOVR : Engine.util.ov(c);
-      const base = SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr);
+      let base = SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr);
+      // v3.2: 給与ソフトキャップ — OVR80超で指数カーブの伸びを抑制（k=0.07）
+      if (ovr > 80) {
+        const base80 = SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * 80);
+        base = base80 + (base - base80) / (1 + 0.07 * (ovr - 80));
+      }
       const pop = c.contractPop != null ? c.contractPop : (c.popularity || 0);
       const popBonus = SALARY_PARAMS.popMax * Math.pow(pop / 100, SALARY_PARAMS.popExp);
       const isChamp = titles && titles.world && titles.world.championId === c.id;
