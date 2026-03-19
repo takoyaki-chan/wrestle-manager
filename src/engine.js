@@ -4082,6 +4082,7 @@ const Engine = {
 
       roster = roster.map(c => {
         let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+        const _gl = c.growthLog || []; // growthLog参照（週末に追記用）
 
         // 引退勧告クールダウン減算・見返しモード減算
         if ((nc.retireAdviceCooldown || 0) > 0) nc = { ...nc, retireAdviceCooldown: nc.retireAdviceCooldown - 1 };
@@ -4164,7 +4165,7 @@ const Engine = {
 
         if (nc.injury) {
           const indomitableBonus = Traits.has(nc, '不屈') ? 3 : 0;
-          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false };
+          return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false, growthLog: [..._gl, { season: G.season, week: G.week, type: 'injury', detail: nc.injury.type }] };
         }
 
         if (nc.intensive) {
@@ -4194,6 +4195,7 @@ const Engine = {
           nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
           nc._weekAction = 'intensive';
           nc.intensive = false;
+          { const _d = {}; if (trainGrowth > 0) _d[growStat] = trainGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
           return nc;
         }
 
@@ -4223,6 +4225,7 @@ const Engine = {
             nc._weekAction = 'practice';
             nc.intensiveWeeks = 0;
             delete nc._boycottZeroGrowth;
+            nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'rest', detail: 'ボイコット' }];
             return nc;
           }
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
@@ -4269,6 +4272,19 @@ const Engine = {
           nc.intensiveWeeks = 0;
         }
         nc._weekAction = autoRested ? 'auto_rest' : action;
+        // growthLog記録（練習/プロモ/休養）
+        {
+          const _gld = {};
+          ['pw','sp','te','st','mn'].forEach(s => { const d = Math.round(((nc[s]||0) - (c[s]||0)) * 10) / 10; if (d > 0) _gld[s] = d; });
+          let _glt, _gldt;
+          if (action === 'practice') { _glt = 'practice'; _gldt = ({balance:'バランス',pw:'パワー重点',sp:'スピード重点',te:'テクニック重点',st:'スタミナ重点'})[nc.schedule] || 'バランス'; }
+          else if (action === 'promo') { _glt = 'practice'; _gldt = 'プロモ活動'; }
+          else { _glt = 'rest'; _gldt = autoRested ? '自動休養' : '休養'; }
+          const _gle = { season: G.season, week: G.week, type: _glt, detail: _gldt };
+          if (Object.keys(_gld).length > 0) _gle.deltas = _gld;
+          if (nc.hotStreak) _gle.eventTag = '🔥絶好調';
+          nc.growthLog = [..._gl, _gle];
+        }
         return nc;
       });
 
@@ -5142,6 +5158,7 @@ const Engine = {
           // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
           let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${li.injuryInfo.injury.type}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
+          delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id] };
           // §2.3: 引退者の関係値を凍結
@@ -5164,6 +5181,7 @@ const Engine = {
           // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
           let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${ri.injuryInfo.injury.type}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
+          delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id] };
           // §2.3: 引退者の関係値を凍結
@@ -5293,17 +5311,26 @@ const Engine = {
         }
         const growthPerStat = matchGrowth / numStats;
 
+        const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
+        const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
         roster = roster.map(c => {
           if (c.id !== charId) return c;
           let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+          const _mD = {};
           chosen.forEach(stat => {
             const cap = nc.trainCap?.[stat] || 100;
             const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
             if (gain > 0) {
               nc[stat] = nc[stat] + gain;
               nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+              _mD[stat] = gain;
             }
           });
+          if (nc.growthLog && !nc.isRental) {
+            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes };
+            if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+            nc.growthLog = [...nc.growthLog, _me];
+          }
           return nc;
         });
       });
@@ -7292,6 +7319,7 @@ const Engine = {
           const retiredWithRecords = allRetirees.map(c => {
             let f = Engine.career.ensure(c);
             f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
+            delete f.growthLog;
             return f;
           });
           // v1.3-3: Build pending retirement presentation data
@@ -7718,6 +7746,7 @@ const Engine = {
       lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
       orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
       orgTimeline: [{ orgId: template._orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
+      growthLog: [],  // 成長経過ログ（全週分、引退時削除）
     };
   },
 
@@ -11775,7 +11804,8 @@ Engine.contract = {
     const info = Engine.contract.determineDeparture(rng, fighter, s);
 
     if (info.type === 'retire') {
-      s = { ...s, retiredFighters: [...(s.retiredFighters || []), fighter], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id] };
+      const _retF = { ...fighter }; delete _retF.growthLog;
+      s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id] };
     } else if (info.type === 'rival') {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {

@@ -1866,6 +1866,9 @@ const Storage = {
         }
         G = { ...G, _migrated_h2h_orgTimeline_v1: true };
       }
+      if (!G._migrated_growthLog) {
+        G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
+      }
 
       return true;
     } catch(e) {
@@ -3700,16 +3703,25 @@ const App = {
         }
         const growthPerStat = matchGrowth / numStats;
 
+        const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
+        const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
         roster = roster.map(c => {
           if (c.id !== charId) return c;
           let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+          const _mD = {};
           chosen.forEach(stat => {
             const gain = Math.max(0, Math.round(growthPerStat));
             if (gain > 0) {
               nc[stat] = Math.min(100, nc[stat] + gain);
               nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+              _mD[stat] = gain;
             }
           });
+          if (nc.growthLog && !nc.isRental) {
+            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes };
+            if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+            nc.growthLog = [...nc.growthLog, _me];
+          }
           return nc;
         });
       });
@@ -3869,6 +3881,7 @@ const App = {
       const retiredWithRecords = lastRunRetirees.map(c => {
         let f = Engine.career.ensure({ ...c, lastRun: false, lastRunWeek: null });
         f = Engine.career.addEvent(f, { type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: f.age });
+        delete f.growthLog;
         return f;
       });
       const lastRunRetiredIds = new Set(lastRunRetirees.map(c => c.id));
@@ -4616,6 +4629,7 @@ const App = {
         const { line } = Engine.retirement.selectLine(f, 'motivation', G, lineRng);
         const summary = Engine.retirement.buildCareerSummary(f);
         const retiredF = Engine.career.addEvent(Engine.career.ensure(f), { type: 'retire', reason: 'motivation', season: G.season, age: f.age });
+        delete retiredF.growthLog;
         G = { ...G,
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]

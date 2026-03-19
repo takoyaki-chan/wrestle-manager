@@ -249,18 +249,61 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .btn-intensive:hover{background:rgba(255,165,0,0.2)}
 .btn-intensive.active{background:rgba(255,165,0,0.25);border-color:#ffa500;box-shadow:0 0 6px rgba(255,165,0,0.2)}
 .btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
-.roster-expand-btn{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;margin-top:3px;transition:all .2s}
-.roster-expand-btn:hover{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.3);color:var(--gold)}
-.detail-panel{overflow:hidden;max-height:0;transition:max-height .3s ease;padding:0 8px}
-.detail-panel.open{max-height:400px;padding:10px 8px}
-.stat-bar-wrap{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:11px}
-.stat-bar-label{width:28px;font-weight:700;color:var(--text-sub);text-transform:uppercase;font-size:12px}
-.stat-bar-bg{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative}
-.stat-bar-fill{height:100%;border-radius:4px;transition:width .3s}
-.stat-bar-fill.pw{background:#e74c3c}.stat-bar-fill.sp{background:#2ecc71}.stat-bar-fill.te{background:#3498db}
-.stat-bar-fill.st{background:#e67e22}.stat-bar-fill.mn{background:#9b59b6}
-.stat-bar-val{width:60px;font-size:12px;color:var(--text-dim);text-align:right}
-.stat-bar-note{font-size:10px;color:var(--text-dim);margin-left:4px;cursor:help}
+/* G1 Cream Theme — roster screen panels only */
+#screen-roster>.panel{background:#d4ccb8;border-color:rgba(100,85,50,0.18);color:#1e1c16}
+#screen-roster>.panel .panel-title{color:#7a6530;border-bottom-color:rgba(100,85,50,0.18)}
+#screen-roster>.panel .btn-sm,#screen-roster>.panel .btn.btn-sm{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#7a6530}
+.rd-card{background:#ede8dc;border:1px solid rgba(100,85,50,0.14);border-radius:8px;cursor:pointer;transition:border-color .2s}
+.rd-card:hover{border-color:rgba(122,101,48,0.35)}
+.rd-card.expanded{border-color:rgba(122,101,48,0.35)}
+.rd-card-inner{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.rd-name{color:#5c4a1e;text-decoration:underline dotted;cursor:pointer;font-weight:700;font-size:13px}
+.rd-sort-btn{font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid rgba(100,85,50,0.14);background:transparent;color:#7a7466}
+.rd-sort-btn.active{border-color:rgba(122,101,48,0.35);background:rgba(122,101,48,0.08);color:#5c4a1e}
+.rd-cap-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;border-radius:6px;background:#ede8dc;border:1px solid rgba(100,85,50,0.14)}
+.rd-detail{max-height:0;overflow:hidden;transition:max-height .4s ease;border-top:0 solid rgba(100,85,50,0.18)}
+.rd-detail.open{max-height:900px;border-top-width:1px}
+.rd-layout{display:flex;gap:0;min-height:360px}
+.rd-portrait{width:220px;flex-shrink:0;position:relative;overflow:hidden;background:#beb6a4}
+.rd-portrait-img{width:100%;height:360px;object-fit:cover;object-position:center top;display:block}
+.rd-portrait-overlay{position:absolute;bottom:0;left:0;right:0;height:50%;pointer-events:none;background:linear-gradient(transparent,rgba(190,182,164,0.85) 70%,#beb6a4)}
+.rd-portrait-info{position:absolute;bottom:0;left:0;right:0;padding:10px 12px;z-index:2}
+.rd-portrait-name{font-weight:900;font-size:18px;line-height:1.2;color:#3a3220}
+.rd-portrait-sub{font-size:11px;margin-top:2px;color:#5a5040}
+.rd-portrait-record{font-size:11px;margin-top:6px;color:#5a5040}
+.rd-portrait-badges{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.rd-portrait-status{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.rd-info{flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:#e0daca}
+.rd-tabs{display:flex;gap:0;margin-bottom:2px;border-bottom:1px solid rgba(100,85,50,0.18)}
+.rd-tab{padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:'Oswald',sans-serif;letter-spacing:1px;color:#7a7466;transition:all .2s}
+.rd-tab:hover{color:#4a4638}
+.rd-tab.active{color:#5c4a1e;border-bottom-color:#7a6530}
+.rd-tab-content{display:none}.rd-tab-content.active{display:block}
+.rd-stat-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.rd-stat-label{width:26px;font-size:12px;font-weight:900;font-family:'Oswald',sans-serif;letter-spacing:1px}
+.rd-stat-bar-outer{flex:1;height:12px;background:rgba(0,0,0,0.08);border-radius:6px;overflow:hidden;position:relative}
+.rd-stat-bar-current{height:100%;border-radius:6px;position:relative;z-index:1}
+.rd-stat-val{width:32px;text-align:right;font-size:15px;font-weight:900;font-family:'Oswald',sans-serif}
+.rd-stat-growth{width:36px;text-align:left;font-size:12px;font-weight:700}
+.rd-stat-room{font-size:10px;width:56px;text-align:right}
+.rd-growth-scroll{max-height:220px;overflow-y:auto;padding-right:4px}
+.rd-growth-scroll::-webkit-scrollbar{width:4px}.rd-growth-scroll::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:2px}
+.rd-growth-week{display:flex;align-items:center;gap:8px;font-size:11px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.rd-growth-label{width:48px;font-family:'Oswald',sans-serif;font-size:11px;flex-shrink:0;color:#7a7466}
+.rd-growth-event{flex:1;color:#4a4638}
+.rd-growth-delta{font-weight:700;flex-shrink:0;text-align:right}
+.rd-growth-delta.positive{color:#1a8a4a}
+.rd-meta-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0}
+.rd-meta-label{width:80px;flex-shrink:0;color:#7a7466}
+.rd-meta-val{flex:1;color:#1e1c16}
+.rd-note{font-size:11px;padding:6px 10px;border-radius:4px;margin-top:4px;background:rgba(0,0,0,0.04);color:#5a5444;border-left:3px solid #7a6530}
+.rd-fuzzy-bar{width:100px;height:8px;background:rgba(0,0,0,0.08);border-radius:4px;overflow:hidden}
+.rd-fuzzy-fill{height:100%;border-radius:4px}
+#screen-roster select{background:#d8d2c2;color:#1e1c16;border:1px solid rgba(100,85,50,0.2);border-radius:3px}
+#screen-roster .cond-bar{width:40px;height:4px;background:rgba(0,0,0,0.08)}
+#screen-roster .badge{color:#1e1c16}
+@media(max-width:640px){.rd-layout{flex-direction:column}.rd-portrait{width:100%;height:200px}.rd-portrait-img{height:200px}}
+/* Legacy (kept for non-roster usage) */
 .train-season-log{padding:10px;background:rgba(212,168,67,0.04);border:1px solid rgba(212,168,67,0.1);border-radius:6px;margin-top:12px;font-size:11px;color:var(--text-sub);max-height:150px;overflow-y:auto}
 
 /* Show result overlay */

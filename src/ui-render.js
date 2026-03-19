@@ -1232,36 +1232,147 @@ function _renderRosterDojoHeader() {
   });
 }
 
-function _renderRosterTrainingPanel(c, hired) {
+let _rosterDetailTab = {}; // { charId: tabIndex (0=能力, 1=成長経過, 2=育成) }
+function switchRosterDetailTab(charId, tabIdx) {
+  _rosterDetailTab[charId] = tabIdx;
+  const ct = document.getElementById(`roster-detail-${charId}`);
+  if (!ct) return;
+  ct.querySelectorAll('.rd-tab').forEach((t, i) => t.classList.toggle('active', i === tabIdx));
+  ct.querySelectorAll('.rd-tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIdx));
+}
+
+function _renderRosterDetailPanel(c, hired) {
   const coach = getCharCoach(c.id);
   const isInjured = !!c.injury;
   const canManage = G.weekPhase === 'manage';
+  const tabIdx = _rosterDetailTab[c.id] || 0;
+  const fullUrl = PORTRAIT[c.id] ? `image/full/full_${PORTRAIT[c.id]}.webp` : '';
+  const tenure = (c.careerSeasons || 0) + 1;
   const stats = ['pw','sp','te','st','mn'];
-  const statLabels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
-  let html = `<div class="detail-panel" id="roster-detail-${c.id}">`;
-  // Stat bars
+  const STAT_COLORS = {pw:'#c03030',sp:'#1a8a4a',te:'#2060a0',st:'#b06010',mn:'#7040a0'};
+  const STAT_LABELS = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
+
+  // === Left Column: Portrait ===
+  const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
+  const isChamp = G.titles?.world?.championId === c.id;
+  const statusBadges = [];
+  if (c.hotStreak) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 絶好調</span>');
+  if (c.slump) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 スランプ</span>');
+  if (c.motivationLoss) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(44,62,80,0.15);color:#6a7880;border:1px solid rgba(149,165,166,0.3)">😞 モチベ喪失</span>');
+  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${c.injury.type} ${c.injury.weeksLeft}週</span>`);
+  const decline = Engine.retirement.getDeclinePresentation(c);
+  if (decline.stage === 'terminal') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">⬇⬇ 限界</span>');
+  else if (decline.stage === 'major') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,100,20,0.12);color:#a06000;border:1px solid rgba(180,100,20,0.3)">⬇ 衰退期</span>');
+  else if (decline.stage === 'early') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(160,130,20,0.12);color:#806010;border:1px solid rgba(160,130,20,0.3)">⚠ 衰え</span>');
+
+  let leftCol = `<div class="rd-portrait">`;
+  if (fullUrl) leftCol += `<img class="rd-portrait-img" src="${fullUrl}" alt="${c.name}" onerror="this.style.display='none'">`;
+  leftCol += `<div class="rd-portrait-overlay"></div>
+    <div class="rd-portrait-info">
+      <div class="rd-portrait-name">${c.name}</div>
+      <div class="rd-portrait-sub">${c.height || '?'}cm ｜ ${tenure}年目</div>
+      <div class="rd-portrait-badges">
+        <span class="badge badge-${c.style}" style="font-size:10px">${c.style}</span>
+        <span class="badge badge-${roleCls}" style="font-size:10px">${c.role}</span>
+      </div>
+      <div class="rd-portrait-record">
+        <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span> <span style="color:#7a7468">${c.draws||0}△</span>
+        ${isChamp ? '<span style="margin-left:8px;color:#7a6530">👑王者</span>' : ''}
+      </div>
+      ${statusBadges.length > 0 ? `<div class="rd-portrait-status">${statusBadges.join('')}</div>` : ''}
+    </div>
+  </div>`;
+
+  // === Tab 1: 能力 ===
+  const traitsText = (c.traits || []).join(' / ');
+  let tab1 = `<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#5c4a1e;line-height:1">${ov(c)}</span>
+    <span style="font-size:12px;color:#7a7466">OVR</span>
+    <span style="margin-left:auto;font-size:11px;color:#7a7466">${traitsText}</span>
+  </div>`;
   stats.forEach(s => {
     const current = Math.round(c[s]);
-    const cap = c.trainCap ? c.trainCap[s] : c.pot[s];
-    const pct = Math.round(current / cap * 100);
-    const sg = Math.round((c.seasonGrowth && c.seasonGrowth[s]) || 0);
+    const cap = c.trainCap ? c.trainCap[s] : 100;
+    const pct = Math.min(100, Math.round(current / cap * 100));
+    const sg = Math.round((c.seasonGrowth?.[s] || 0));
     const atCap = current >= cap;
-    const roomLabel = atCap ? '<span style="color:var(--gold);font-size:11px">MAX</span>'
-      : pct >= 85 ? '<span style="color:#e74c3c;font-size:11px">残僅か</span>'
-      : pct >= 60 ? '<span style="color:#f39c12;font-size:11px">成長中</span>'
-      : '<span style="color:#2ecc71;font-size:11px">伸びしろ大</span>';
-    html += `<div class="stat-bar-wrap">
-      <span class="stat-bar-label">${statLabels[s]}</span>
-      <div class="stat-bar-bg"><div class="stat-bar-fill ${s}" style="width:${Math.min(100,pct)}%"></div></div>
-      <span class="stat-bar-val">${current} ${roomLabel}${sg > 0 ? ` <span style="color:#2ecc71;font-weight:700">+${sg}</span>` : ''}${s === 'mn' ? ' <span class="stat-bar-note" title="メンタルは練習では成長しません。試合経験によって成長します">※試合で成長</span>' : ''}</span>
+    const roomLabel = atCap ? '<span style="color:#7a6530">MAX</span>'
+      : pct >= 85 ? '<span style="color:#a03030">残僅か</span>'
+      : pct >= 60 ? '<span style="color:#a07010">成長中</span>'
+      : '<span style="color:#1a8a4a">伸びしろ大</span>';
+    const col = STAT_COLORS[s];
+    tab1 += `<div class="rd-stat-row">
+      <span class="rd-stat-label" style="color:${col}">${STAT_LABELS[s]}</span>
+      <div class="rd-stat-bar-outer"><div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
+      <span class="rd-stat-val" style="color:${col}">${current}</span>
+      <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : '—'}</span>
+      <span class="rd-stat-room">${roomLabel}</span>
     </div>`;
   });
-  // Coach assign dropdown
+  tab1 += `<div class="rd-note">MNは試合経験で成長します</div>`;
+  tab1 += `<div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:#4a4638">
+    <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
+    <div>体調 <b style="color:${Math.round(c.condition) > 66 ? '#1a8a4a' : Math.round(c.condition) > 33 ? '#a07010' : '#a03030'}">${Math.round(c.condition)}</b></div>
+    <div>給与 <b style="color:#1e1c16">${getSalary(c)}万</b>/シーズン</div>
+  </div>`;
+
+  // === Tab 2: 成長経過 ===
+  const log = (c.growthLog || []).slice().reverse();
+  let tab2 = `<div style="font-size:12px;color:#7a6530;font-weight:700;margin-bottom:6px">📈 シーズン${G.season} 成長ログ</div>`;
+  tab2 += '<div class="rd-growth-scroll">';
+  let prevSeason = G.season;
+  log.forEach(entry => {
+    if (entry.season !== prevSeason) {
+      tab2 += `<div class="rd-growth-week" style="border-top:1px solid rgba(122,101,48,0.35);padding-top:8px;margin-top:4px">
+        <span class="rd-growth-label" style="color:#7a6530 !important">S${entry.season} 末</span>
+        <span class="rd-growth-event" style="color:#7a7466">— シーズン${entry.season}終了 —</span>
+      </div>`;
+      prevSeason = entry.season;
+    }
+    let eventText = '';
+    if (entry.type === 'match') {
+      const resColor = entry.result === 'win' ? '#5c4a1e' : entry.result === 'lose' ? '#b03030' : '#7a7466';
+      const resLabel = entry.result === 'win' ? '勝利' : entry.result === 'lose' ? '敗北' : '引分';
+      eventText = `🏆 ${entry.detail} — <b style="color:${resColor}">${resLabel}</b>`;
+    } else if (entry.type === 'practice') {
+      eventText = `練習（${entry.detail}）`;
+      if (entry.eventTag) eventText += ` <span style="color:#1a8a4a">${entry.eventTag}</span>`;
+    } else if (entry.type === 'rest') {
+      eventText = entry.detail;
+    } else if (entry.type === 'injury') {
+      eventText = `🏥 療養（${entry.detail}）`;
+    } else {
+      eventText = entry.detail || '—';
+    }
+    let deltaText = '—';
+    if (entry.deltas && Object.keys(entry.deltas).length > 0) {
+      deltaText = Object.entries(entry.deltas).map(([k,v]) => `${STAT_LABELS[k]||k.toUpperCase()} +${Math.round(v*10)/10}`).join(' ');
+    }
+    const hasDelta = entry.deltas && Object.keys(entry.deltas).length > 0;
+    tab2 += `<div class="rd-growth-week">
+      <span class="rd-growth-label">W${entry.week}</span>
+      <span class="rd-growth-event">${eventText}</span>
+      <span class="rd-growth-delta${hasDelta ? ' positive' : ''}" ${!hasDelta ? 'style="color:#7a7466"' : ''}>${deltaText}</span>
+    </div>`;
+  });
+  if (log.length === 0) {
+    tab2 += '<div style="font-size:11px;color:#7a7466;padding:12px 0;text-align:center">まだ記録がありません</div>';
+  }
+  tab2 += '</div>';
+  // Season summary
+  const sg = c.seasonGrowth || {};
+  const summaryParts = stats.map(s => { const v = Math.round((sg[s]||0)*10)/10; return v > 0 ? `<span style="color:${STAT_COLORS[s]};font-weight:700">${STAT_LABELS[s]} +${v}</span>` : ''; }).filter(Boolean);
+  if (summaryParts.length > 0) {
+    tab2 += `<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.06);font-size:11px;display:flex;gap:10px;flex-wrap:wrap">
+      <span style="color:#4a4638">今シーズン累計:</span>${summaryParts.join('')}
+    </div>`;
+  }
+
+  // === Tab 3: 育成 ===
+  let tab3 = '<div style="display:flex;flex-direction:column;gap:8px">';
+  // Coach assign
   if (canManage) {
-    html += `<div style="margin-top:8px;font-size:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <label style="color:var(--text-dim)">担当コーチ: </label>
-      <select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px"${isInjured?' disabled':''}>
-        <option value="0"${!coach?' selected':''}>--- なし ---</option>`;
+    let opts = `<option value="0"${!coach?' selected':''}>--- なし ---</option>`;
     hired.forEach(h => {
       const aCount = getCoachAssignees(h.id).length;
       const isCurrent = coach && coach.id === h.id;
@@ -1269,24 +1380,50 @@ function _renderRosterTrainingPanel(c, hired) {
       const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
       const sm = getCoachStyleMatch(h, c);
       const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
-      html += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+      opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
     });
-    html += '</select>';
-    if (coach) {
-      html += `<span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;font-size:12px;color:var(--text-dim);text-decoration:underline dotted">ℹ️ 詳細</span>`;
-    }
-    html += '</div>';
-    if (coach) {
-      const mult = COACH_RANKS[coach.teaching] || 1.0;
-      const sm = getCoachStyleMatch(coach, c);
-      const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none">不一致</span>';
-      const effDesc = `成長×${mult} <span class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}`;
-      html += `<div style="margin-top:3px;font-size:12px;color:var(--text-dim)">└ 効果: <span style="color:var(--gold)">${effDesc}</span></div>`;
-    }
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val"><select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px 6px"${isInjured?' disabled':''}>${opts}</select></span></div>`;
   } else if (coach) {
-    html += `<div style="margin-top:6px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:4px">担当: <span onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted;display:inline-flex;align-items:center;gap:3px">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" onclick="event.stopPropagation();showCoachTooltip(${coach.id})" style="cursor:pointer;text-decoration:underline dotted">${coachPortraitImg(coach, 16)} ${coach.name}</span></div>`;
+  } else {
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a7466">なし</span></div>`;
   }
-  html += '</div>';
+  // Coach effect
+  if (coach) {
+    const mult = COACH_RANKS[coach.teaching] || 1.0;
+    const sm = getCoachStyleMatch(coach, c);
+    const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span style="color:#7a7466">不一致</span>';
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">コーチ効果</span><span class="rd-meta-val" style="font-size:12px">成長×${mult} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}</span></div>`;
+  }
+  // Growth tendency
+  const tendency = getGrowthTendency(c.id);
+  if (tendency && !isInjured) {
+    const arrowsHtml = tendency.arrows.map(a => `<span class="train-growth-arrow ${a.cls}">${a.arrow}</span>${a.label.replace(/[A-Z]+/,'')}`).join(' ');
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">成長傾向</span><span class="rd-meta-val">${tendency.arrows.map(a => `<span class="train-growth-arrow ${a.cls}">${a.arrow}</span>${STAT_LABELS[a.stat] || a.label}`).join(' ')}</span></div>`;
+  }
+  // Development rate
+  const potPct = getPotentialPct(c);
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">開発率</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:#7a6530;border-radius:3px"></div></div><span style="font-size:12px;color:#5c4a1e;font-weight:700">${potPct}%</span></div></span></div>`;
+  // Physical decline
+  const stageLabel = {none:'良好',early:'わずかに衰えの兆候',major:'衰退期',terminal:'限界'};
+  const stageColor = {none:'#1a8a4a',early:'#a07010',major:'#a06000',terminal:'#a03030'};
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">フィジカル</span><span class="rd-meta-val"><span style="font-size:12px;color:${stageColor[decline.stage]||'#1a8a4a'}">${stageLabel[decline.stage]||'良好'}</span></span></div>`;
+  tab3 += '</div>';
+
+  // === Assemble ===
+  let html = `<div class="rd-detail" id="roster-detail-${c.id}"><div class="rd-layout">
+    ${leftCol}
+    <div class="rd-info">
+      <div class="rd-tabs">
+        <div class="rd-tab${tabIdx===0?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},0)">能力</div>
+        <div class="rd-tab${tabIdx===1?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},1)">成長経過</div>
+        <div class="rd-tab${tabIdx===2?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},2)">育成</div>
+      </div>
+      <div class="rd-tab-content${tabIdx===0?' active':''}">${tab1}</div>
+      <div class="rd-tab-content${tabIdx===1?' active':''}">${tab2}</div>
+      <div class="rd-tab-content${tabIdx===2?' active':''}">${tab3}</div>
+    </div>
+  </div></div>`;
   return html;
 }
 
@@ -1298,15 +1435,15 @@ function _renderRosterGrowthLog() {
     return sg && Object.values(sg).some(v => v > 0);
   });
   if (growthEntries.length > 0) {
-    let html = '<div class="panel" style="margin-top:12px"><div class="train-season-log">';
-    html += '<div style="font-weight:700;color:var(--gold);margin-bottom:4px">📈 今シーズン成長</div>';
+    let html = '<div class="panel" style="margin-top:12px;background:#d4ccb8;border-color:rgba(100,85,50,0.18)"><div class="train-season-log" style="background:rgba(122,101,48,0.06);border-color:rgba(122,101,48,0.15);color:#4a4638">';
+    html += '<div style="font-weight:700;color:#7a6530;margin-bottom:4px">📈 今シーズン成長</div>';
     growthEntries.forEach(c => {
       const parts = [];
       ['pw','sp','te','st','mn'].forEach(s => {
         const v = Math.round(((c.seasonGrowth && c.seasonGrowth[s]) || 0) * 10) / 10;
-        if (v > 0) parts.push(`<span style="color:#2ecc71">${s.toUpperCase()}+${v}</span>`);
+        if (v > 0) parts.push(`<span style="color:#1a8a4a">${s.toUpperCase()}+${v}</span>`);
       });
-      if (parts.length > 0) html += `<div>${fLink(c, {source:'roster', size:'11px'})}: ${parts.join(' ')}</div>`;
+      if (parts.length > 0) html += `<div><span style="color:#5c4a1e;font-weight:700;font-size:11px">${c.name}</span>: ${parts.join(' ')}</div>`;
     });
     html += '</div></div>';
     el.innerHTML = html;
@@ -1337,11 +1474,11 @@ function renderRoster() {
       hired.forEach(c => {
         const assigned = getCoachAssignees(c.id);
         const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
-        staffHtml += `<div onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
+        staffHtml += `<div onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;background:#ede8dc;border:1px solid rgba(100,85,50,0.14);border-radius:8px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#7a6530'" onmouseleave="this.style.borderColor='rgba(100,85,50,0.14)'">
           ${coachPortraitImg(c, 48)}
           <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:15px;margin-bottom:3px">${c.name}</div>
-            <div style="font-size:13px;color:var(--gold);margin-bottom:4px">${coachEffectShort(c)}</div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:3px;color:#1e1c16">${c.name}</div>
+            <div style="font-size:13px;color:#7a6530;margin-bottom:4px">${coachEffectShort(c)}</div>
             <div style="display:flex;flex-wrap:wrap;gap:4px">`;
         if (assignedChars.length > 0) {
           assignedChars.forEach(ch => {
@@ -1350,16 +1487,16 @@ function renderRoster() {
             staffHtml += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${ch.name.substring(0,4)}${matchIcon}</span>`;
           });
         } else {
-          staffHtml += `<span style="font-size:12px;color:var(--text-dim);font-style:italic">担当なし</span>`;
+          staffHtml += `<span style="font-size:12px;color:#7a7466;font-style:italic">担当なし</span>`;
         }
         staffHtml += `</div>
           </div>
-          <span style="font-size:12px;color:var(--text-dim)">ℹ️</span>
+          <span style="font-size:12px;color:#7a7466">ℹ️</span>
         </div>`;
       });
       staffHtml += '</div>';
     } else {
-      staffHtml += `<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">コーチ未雇用 — <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ募集</span>から雇用できます</div>`;
+      staffHtml += `<div style="text-align:center;padding:16px;color:#7a7466;font-size:12px">コーチ未雇用 — <span style="color:#7a6530;cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ募集</span>から雇用できます</div>`;
     }
     staffEl.innerHTML = staffHtml;
   }
@@ -1375,8 +1512,8 @@ function renderRoster() {
     {key:'cond', label:'体調'},
     {key:'pop', label:'人気'},
     {key:'schedule', label:'育成'},
-  ].map(s => `<button onclick="setRosterSort('${s.key}')" style="font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid ${_rosterSortKey===s.key ? 'rgba(212,168,67,0.5)' : 'rgba(255,255,255,0.08)'};background:${_rosterSortKey===s.key ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.03)'};color:${_rosterSortKey===s.key ? 'var(--gold)' : 'var(--text-dim)'}">${s.label}</button>`).join('');
-  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:var(--text-dim)">並び順:</span>${sortBtns}</div>`;
+  ].map(s => `<button class="rd-sort-btn${_rosterSortKey===s.key?' active':''}" onclick="setRosterSort('${s.key}')">${s.label}</button>`).join('');
+  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:#7a7466">並び順:</span>${sortBtns}</div>`;
   html += '<div style="display:flex;flex-direction:column;gap:4px">';
   const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
   const _sortFn = (a,b) => {
@@ -1398,10 +1535,10 @@ function renderRoster() {
   // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
   const rosterCap = G.rosterCap || 8;
   const isFull = ownFighters.length >= rosterCap;
-  html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:13px;color:var(--text-sub)">所属選手</span>
-    <span style="font-size:15px;font-weight:700;color:var(--text)">${ownFighters.length}/${rosterCap}名</span>
-    ${isFull ? '<span style="font-size:12px;color:var(--text-dim)">（上限）</span>' : ''}
+  html = `<div class="rd-cap-bar">
+    <span style="font-size:13px;color:#4a4638">所属選手</span>
+    <span style="font-size:15px;font-weight:700;color:#1e1c16">${ownFighters.length}/${rosterCap}名</span>
+    ${isFull ? '<span style="font-size:12px;color:#7a7466">（上限）</span>' : ''}
   </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
@@ -1434,63 +1571,53 @@ function renderRoster() {
       : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
-      return g > 0 ? `<span class="growth-up">+${g}</span>` : '';
+      return g > 0 ? `<span style="color:#1a8a4a;font-size:12px;font-weight:700">+${g}</span>` : '';
     };
-    // Growth tendency arrows (inline in card)
-    const tendency = c.isRental ? null : getGrowthTendency(c.id);
-    const coachOfChar = c.isRental ? null : getCharCoach(c.id);
-    let tendencyHtml = '';
-    if (tendency && !c.injury) {
-      tendencyHtml = `<span style="font-size:11px;margin-left:4px;letter-spacing:-1px">${tendency.arrows.map(a =>
-        `<span class="train-growth-arrow ${a.cls}" title="${a.label}">${a.arrow}</span>`
-      ).join('')}</span>`;
-    }
     // Coach badge in card (with style match indicator)
+    const coachOfChar = c.isRental ? null : getCharCoach(c.id);
     let coachBadgeHtml = '';
     if (coachOfChar) {
       const sm = getCoachStyleMatch(coachOfChar, c);
       const matchIcon = sm.icon ? `<span style="font-weight:700">${sm.icon}</span>` : '';
       coachBadgeHtml = `<span class="coach-match-badge ${sm.cls}" style="display:inline-flex;align-items:center;gap:2px">${coachPortraitImg(coachOfChar, 12)}${coachOfChar.name.split(' ')[0]}${matchIcon}</span>`;
     }
-    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px${c.injury ? ';opacity:0.75' : ''}${!c.isRental ? ';cursor:pointer' : ''}" ${!c.isRental ? `onclick="toggleRosterDetail(${c.id})"` : ''}>
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px">
+    html += `<div class="rd-card${document.getElementById('roster-detail-'+c.id)?.classList.contains('open')?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
+      <div class="rd-card-inner">
         <div onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')" style="cursor:pointer;flex-shrink:0">
-          ${portraitImg(c.id, 56, '', true)}
+          ${portraitImg(c.id, 52, '', true)}
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-            <span onclick="event.stopPropagation()">${fLink(c, {source:'roster', size:'13px'})}</span>${champBadge}${rentalBadge}
+            <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachBadgeHtml}
-            ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
+            ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
           </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
-            <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
-            <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b>${statG('pw')}</span>
-            <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b>${statG('sp')}</span>
-            <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b>${statG('te')}</span>
-            <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b>${statG('st')}</span>
-            <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b>${statG('mn')}</span>
-            ${tendencyHtml}
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
+            <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
+            <span>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
+            <span>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
+            <span>TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
+            <span>ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
+            <span>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
           </div>
         </div>
-        <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-          <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
-          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-          <div style="margin-top:2px;color:var(--text-dim)">${getSalary(c)}万</div>
-          ${!c.isRental ? `<span style="font-size:10px;color:var(--text-dim);margin-top:2px;display:block">▼ 育成</span>` : ''}
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
+          <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
+          <div style="margin-top:2px;color:#7a7466">${getSalary(c)}万</div>
         </div>
       </div>
-      ${!c.isRental ? _renderRosterTrainingPanel(c, hired) : ''}
+      ${_renderRosterDetailPanel(c, hired)}
     </div>`;
   });
   html += '</div>';
   // ── Rental fighters separated section ──
   if (rentalFighters.length > 0) {
     const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownFighters.length);
-    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#f39c12">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
+    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#a06000">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:4px">';
     rentalFighters.forEach(c => {
       const condPct = Math.round(c.condition);
@@ -1500,28 +1627,28 @@ function renderRoster() {
       const srcLabel = contract ? (contract.fromSource === 'rival'
         ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || '他団体')
         : 'FA') : '?';
-      html += `<div style="background:var(--bg-card);border:1px solid rgba(243,156,18,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
+      html += `<div style="background:#ede8dc;border:1px solid rgba(180,120,30,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
-          ${portraitImg(c.id, 56, '', true)}
+          ${portraitImg(c.id, 52, '', true)}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-              ${fLink(c, {source:'roster', size:'13px'})}<span style="color:#f39c12;font-size:12px"> 🤝</span>
+              <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span><span style="color:#a06000;font-size:12px"> 🤝</span>
               <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
               ${injuryBadge}
             </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)">
-              <span style="font-size:17px;font-weight:900;color:var(--gold)">${ov(c)}</span>
-              <span>PW<b style="color:var(--text)">${Math.round(c.pw)}</b></span>
-              <span>SP<b style="color:var(--text)">${Math.round(c.sp)}</b></span>
-              <span>TE<b style="color:var(--text)">${Math.round(c.te)}</b></span>
-              <span>ST<b style="color:var(--text)">${Math.round(c.st)}</b></span>
-              <span>MN<b style="color:var(--text)">${Math.round(c.mn)}</b></span>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
+              <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
+              <span>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
+              <span>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
+              <span>TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
+              <span>ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
+              <span>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
             </div>
           </div>
-          <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-sub)">
-            <div>人気 <b style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</b></div>
-            <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:40px;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div></div><span style="font-size:10px">${condPct}</span></div>
-            <div style="margin-top:2px;color:#f39c12;font-size:11px">${srcLabel} ｜ 残${contract ? ((contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))) : '?'}週(${contract ? ((G.season || 1) + (contract.seasonsLeft - 1)) : '?'}年目末帰還)</div>
+          <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
+            <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
+            <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
+            <div style="margin-top:2px;color:#a06000;font-size:11px">${srcLabel} ｜ 残${contract ? ((contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))) : '?'}週(${contract ? ((G.season || 1) + (contract.seasonsLeft - 1)) : '?'}年目末帰還)</div>
           </div>
         </div>
       </div>`;
@@ -2694,7 +2821,18 @@ function changeCoachAssign(charId, newCoachId) {
 function toggleRosterDetail(charId) {
   const panel = document.getElementById(`roster-detail-${charId}`);
   if (!panel) return;
-  panel.classList.toggle('open');
+  const isOpen = panel.classList.contains('open');
+  // Close all other panels first
+  document.querySelectorAll('.rd-detail.open').forEach(p => {
+    p.classList.remove('open');
+    const card = p.closest('.rd-card');
+    if (card) card.classList.remove('expanded');
+  });
+  if (!isOpen) {
+    panel.classList.add('open');
+    const card = panel.closest('.rd-card');
+    if (card) card.classList.add('expanded');
+  }
 }
 
 function getGrowthTendency(charId) {
