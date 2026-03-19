@@ -3094,7 +3094,7 @@ function renderShowResult(results, injuryResults) {
     </div>`;
 
     // 高rivalryペアの試合後リアクション → ポップアップ用データ収集
-    if (!isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 40) {
+    if (!isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30) {
       const winF = leftIsWinner ? r.left : r.right;
       const loseF = leftIsWinner ? r.right : r.left;
       const winChar = ALL_CHARS.find(c => c.id === winF.id);
@@ -3614,7 +3614,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       let winBubble = '';
       let loseBubble = '';
       // 因縁リアクション（rivalry≥40）
-      if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 40) {
+      if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30) {
         const winChar = ALL_CHARS.find(c => c.id === winnerId);
         const loseChar = ALL_CHARS.find(c => c.id === loserId);
         const ovrW = Engine.util.ov(winF);
