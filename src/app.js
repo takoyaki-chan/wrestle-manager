@@ -6286,8 +6286,8 @@ App.initPPVTV = function() {
   const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
   const tvResult = Engine.ppv.simulateTVResults(G, tvRng);
 
-  // battlePoints反映
-  G = { ...G, battlePoints: tvResult.battlePoints, gameLog: [...G.gameLog, ...tvResult.events] };
+  // battlePoints + orgWarRecord 反映
+  G = { ...G, battlePoints: tvResult.battlePoints, orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord, gameLog: [...G.gameLog, ...tvResult.events] };
 
   renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
 };

@@ -7004,7 +7004,8 @@ const Engine = {
         }
       });
 
-      // サミット: battlePoints ±10
+      // サミット: battlePoints ±10 + orgWarRecord
+      let owr = { ...(s.orgWarRecord || {}) };
       const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       if (summitPair) {
         const summitIdx = card.findIndex(m => m.isSummit);
@@ -7012,6 +7013,10 @@ const Engine = {
           const sr = results[summitIdx];
           const winnerOrgId = sr.winner === 'left' ? card[summitIdx].left._ppvOrgId : card[summitIdx].right._ppvOrgId;
           const loserOrgId = sr.winner === 'left' ? card[summitIdx].right._ppvOrgId : card[summitIdx].left._ppvOrgId;
+          // orgWarRecord: サミット記録
+          if (sr.winner !== 'draw') {
+            owr = Engine.orgWar.recordSummit(owr, winnerOrgId, loserOrgId, s.season, s.week);
+          }
           const ptTransfer = BATTLE_POINT_CFG.summit;
           const winKey = winnerOrgId === 'player' ? 'player' : winnerOrgId;
           const loseKey = loserOrgId === 'player' ? 'player' : loserOrgId;
@@ -7032,8 +7037,21 @@ const Engine = {
       const reward = PPV_REWARD[pRank] || PPV_REWARD[4];
       events.push(`💰 PPV出場報酬: ${reward}万円`);
 
+      // orgWarRecord: PPVクロス対戦記録（サミット以外）
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        const leftOrg = match.left._ppvOrgId;
+        const rightOrg = match.right._ppvOrgId;
+        if (!leftOrg || !rightOrg || leftOrg === rightOrg) return;
+        if (match.isSummit) return; // サミットは別途記録済み
+        if (r.winner === 'draw') return;
+        const winnerOrg = r.winner === 'left' ? leftOrg : rightOrg;
+        const loserOrg = r.winner === 'left' ? rightOrg : leftOrg;
+        owr = Engine.orgWar.recordPPVMatch(owr, winnerOrg, loserOrg, s.season, s.week);
+      });
+
       s = { ...s, roster, rivalries, battlePoints: bp, heatScore: newHeatScore,
-            funds: (s.funds || 0) + reward,
+            funds: (s.funds || 0) + reward, orgWarRecord: owr,
             matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
       return { state: s, events, rivalryResolutions, heatChange, mqBonuses };
     },
@@ -7064,7 +7082,8 @@ const Engine = {
         return Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
       });
 
-      // サミットbattlePoints更新
+      // サミットbattlePoints更新 + orgWarRecord
+      let owr = { ...(state.orgWarRecord || {}) };
       const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       const events = [];
       if (summitPair) {
@@ -7078,10 +7097,26 @@ const Engine = {
           if (bp[loserOrgId] !== undefined) bp[loserOrgId] = Math.max(-50, (bp[loserOrgId] || 0) - ptTransfer);
           const winName = sr.winner === 'left' ? card[summitIdx].left.name : card[summitIdx].right.name;
           events.push(`🏆 頂上決戦: ${winName}勝利！`);
+          // orgWarRecord: サミット記録
+          if (sr.winner !== 'draw') {
+            owr = Engine.orgWar.recordSummit(owr, winnerOrgId, loserOrgId, state.season, state.week);
+          }
         }
       }
+      // orgWarRecord: PPVクロス対戦記録（サミット以外）
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        const leftOrg = match.left._ppvOrgId;
+        const rightOrg = match.right._ppvOrgId;
+        if (!leftOrg || !rightOrg || leftOrg === rightOrg) return;
+        if (match.isSummit) return;
+        if (r.winner === 'draw') return;
+        const winnerOrg = r.winner === 'left' ? leftOrg : rightOrg;
+        const loserOrg = r.winner === 'left' ? rightOrg : leftOrg;
+        owr = Engine.orgWar.recordPPVMatch(owr, winnerOrg, loserOrg, state.season, state.week);
+      });
 
-      return { card, results, battlePoints: bp, events };
+      return { card, results, battlePoints: bp, orgWarRecord: owr, events };
     },
   },
 
@@ -7174,9 +7209,14 @@ const Engine = {
         if (opponentOrgId && bp[opponentOrgId] !== undefined) bp[opponentOrgId] = (bp[opponentOrgId] || 0) + BATTLE_POINT_CFG.war;
         bpMsg = `、対戦pt-${BATTLE_POINT_CFG.war}`;
       }
+      // orgWarRecord 更新
+      const updOwr = Engine.orgWar.recordWar(
+        state.orgWarRecord, 'player', opponentOrgId,
+        playerWins, aiWins, state.season, state.week
+      );
       events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}${bpMsg}）`);
       const newOrgPop = Math.max(0, Math.min(100, state.orgPop + popDelta));
-      const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null };
+      const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null, orgWarRecord: updOwr };
       if (!warState.ppvUnlocked && Engine.ppv.checkUnlock(newOrgPop)) {
         warState.ppvUnlocked = true;
         events.push('🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます');
@@ -7556,6 +7596,20 @@ const Engine = {
 
         // v2.0: シーズン末にボーナス逓減カウンタをリセット
         s = { ...s, roster: Engine.careActions.resetSeasonalCounters(s.roster) };
+
+        // orgPopHistory: 新シーズン開幕時の団体人気を記録
+        const oph = { ...(s.orgPopHistory || {}) };
+        const pHist = [...(oph.player || [])];
+        pHist.push({ season: s.season + 1, start: Math.round(s.orgPop) });
+        oph.player = pHist;
+        for (const org of RIVAL_ORGS) {
+          const aiOrg = s.aiOrgs?.[org.id];
+          if (!aiOrg) continue;
+          const aHist = [...(oph[org.id] || [])];
+          aHist.push({ season: s.season + 1, start: Math.round(aiOrg.orgPop) });
+          oph[org.id] = aHist;
+        }
+        s = { ...s, orgPopHistory: oph };
 
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
@@ -8043,10 +8097,160 @@ const Engine = {
       relationshipCounters: {},
       // h2h: ペア別対戦履歴
       h2h: {},
+      // 団体間直接対決記録
+      orgWarRecord: {},
+      // 団体人気推移（シーズン開幕時スナップショット）
+      orgPopHistory: {},
     };
+    // orgPopHistory: シーズン1開幕時の初期値を記録
+    const initOph = { player: [{ season: 1, start: 10 }] };
+    for (const org of RIVAL_ORGS) {
+      const aiOrgData = initState.aiOrgs?.[org.id];
+      if (aiOrgData) {
+        initOph[org.id] = [{ season: 1, start: Math.round(aiOrgData.orgPop) }];
+      }
+    }
+    initState.orgPopHistory = initOph;
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
   }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 団体間直接対決記録 (orgWarRecord)
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.orgWar = {
+  // ペアキー生成（小さいほうがsideA）
+  getKey(org1, org2) {
+    const a = org1 < org2 ? org1 : org2;
+    const b = org1 < org2 ? org2 : org1;
+    return `${a}>${b}`;
+  },
+
+  // 空レコード
+  getEmpty() {
+    return {
+      wars: 0, warsWonA: 0, warsWonB: 0, warsDraw: 0,
+      warMatchesWonA: 0, warMatchesWonB: 0,
+      summits: 0, summitsWonA: 0, summitsWonB: 0,
+      ppvMatches: 0, ppvWonA: 0, ppvWonB: 0,
+      streakA: 0,
+      lastResult: null,
+    };
+  },
+
+  // 安全取得
+  get(state, org1, org2) {
+    const key = this.getKey(org1, org2);
+    return (state.orgWarRecord || {})[key] || this.getEmpty();
+  },
+
+  // 自分視点の勝敗を返す
+  getFor(state, selfOrg, opponentOrg) {
+    const key = this.getKey(selfOrg, opponentOrg);
+    const rec = (state.orgWarRecord || {})[key] || this.getEmpty();
+    const isA = selfOrg < opponentOrg;
+    return {
+      wars: rec.wars,
+      warsWon: isA ? rec.warsWonA : rec.warsWonB,
+      warsLost: isA ? rec.warsWonB : rec.warsWonA,
+      warsDraw: rec.warsDraw,
+      warMatchesWon: isA ? rec.warMatchesWonA : rec.warMatchesWonB,
+      warMatchesLost: isA ? rec.warMatchesWonB : rec.warMatchesWonA,
+      summits: rec.summits,
+      summitsWon: isA ? rec.summitsWonA : rec.summitsWonB,
+      summitsLost: isA ? rec.summitsWonB : rec.summitsWonA,
+      ppvMatches: rec.ppvMatches,
+      ppvWon: isA ? rec.ppvWonA : rec.ppvWonB,
+      ppvLost: isA ? rec.ppvWonB : rec.ppvWonA,
+      streak: isA ? rec.streakA : -rec.streakA,
+      lastResult: rec.lastResult,
+    };
+  },
+
+  // 対抗戦結果を記録。新しいorgWarRecordを返す
+  recordWar(orgWarRecord, org1, org2, org1Wins, org2Wins, season, week) {
+    const key = this.getKey(org1, org2);
+    const owr = { ...(orgWarRecord || {}) };
+    const entry = { ...(owr[key] || this.getEmpty()) };
+    const isA = org1 < org2;
+
+    entry.wars += 1;
+    if (org1Wins > org2Wins) {
+      if (isA) entry.warsWonA += 1; else entry.warsWonB += 1;
+    } else if (org1Wins < org2Wins) {
+      if (isA) entry.warsWonB += 1; else entry.warsWonA += 1;
+    } else {
+      entry.warsDraw += 1;
+    }
+    if (isA) {
+      entry.warMatchesWonA += org1Wins;
+      entry.warMatchesWonB += org2Wins;
+    } else {
+      entry.warMatchesWonA += org2Wins;
+      entry.warMatchesWonB += org1Wins;
+    }
+
+    // streak更新（イベント単位、sideA視点）
+    if (org1Wins > org2Wins) {
+      entry.streakA = isA ? Math.max(1, entry.streakA + 1) : Math.min(-1, entry.streakA - 1);
+      if (isA && entry.streakA < 0) entry.streakA = 1;
+      if (!isA && entry.streakA > 0) entry.streakA = -1;
+    } else if (org1Wins < org2Wins) {
+      entry.streakA = isA ? Math.min(-1, entry.streakA - 1) : Math.max(1, entry.streakA + 1);
+      if (isA && entry.streakA > 0) entry.streakA = -1;
+      if (!isA && entry.streakA < 0) entry.streakA = 1;
+    } else {
+      entry.streakA = 0; // 引き分けはstreak切れ
+    }
+
+    const winnerSide = org1Wins > org2Wins ? (isA ? 'A' : 'B') :
+                       org1Wins < org2Wins ? (isA ? 'B' : 'A') : 'draw';
+    entry.lastResult = { type: 'war', winnerSide, season, week };
+
+    owr[key] = entry;
+    return owr;
+  },
+
+  // サミット結果を記録
+  recordSummit(orgWarRecord, winnerOrg, loserOrg, season, week) {
+    const key = this.getKey(winnerOrg, loserOrg);
+    const owr = { ...(orgWarRecord || {}) };
+    const entry = { ...(owr[key] || this.getEmpty()) };
+    const isWinnerA = winnerOrg < loserOrg;
+
+    entry.summits += 1;
+    if (isWinnerA) entry.summitsWonA += 1;
+    else entry.summitsWonB += 1;
+
+    // streak更新
+    if (isWinnerA) {
+      entry.streakA = entry.streakA >= 0 ? entry.streakA + 1 : 1;
+    } else {
+      entry.streakA = entry.streakA <= 0 ? entry.streakA - 1 : -1;
+    }
+
+    entry.lastResult = { type: 'summit', winnerSide: isWinnerA ? 'A' : 'B', season, week };
+    owr[key] = entry;
+    return owr;
+  },
+
+  // PPVクロス対戦結果を記録（サミット以外）
+  recordPPVMatch(orgWarRecord, winnerOrg, loserOrg, season, week) {
+    const key = this.getKey(winnerOrg, loserOrg);
+    const owr = { ...(orgWarRecord || {}) };
+    const entry = { ...(owr[key] || this.getEmpty()) };
+    const isWinnerA = winnerOrg < loserOrg;
+
+    entry.ppvMatches += 1;
+    if (isWinnerA) entry.ppvWonA += 1;
+    else entry.ppvWonB += 1;
+
+    // PPV個別試合はstreak変動なし（イベント単位ではないため）
+
+    owr[key] = entry;
+    return owr;
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
