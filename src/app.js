@@ -4262,11 +4262,94 @@ const App = {
       otherHighMQ, totalMatches, orgName: G.orgName
     });
 
+    // ── allMatches: メイン以外の全試合ダイジェスト ──
+    const allMatches = results.slice(1).map(r => {
+      if (!r || !r.left || !r.right) return null;
+      const isMatchDraw = r.winner === 'draw';
+      const matchWinner = isMatchDraw ? null : (r.winner === 'left' ? r.left : r.right);
+      const matchLoser = isMatchDraw ? null : (r.winner === 'left' ? r.right : r.left);
+      const ovrL = Engine.util.ov(r.left);
+      const ovrR = Engine.util.ov(r.right);
+      return {
+        left: { id: r.left.id, name: r.left.name, ovr: ovrL },
+        right: { id: r.right.id, name: r.right.name, ovr: ovrR },
+        winner: r.winner,
+        winnerName: matchWinner?.name || null,
+        loserName: matchLoser?.name || null,
+        mq: r.mq || 0,
+        turns: r.turns || 0,
+        finishLabel: Engine.formatFinish(r.finType, r.finMove),
+        isDraw: isMatchDraw,
+        isUpset: !isMatchDraw && matchWinner && (
+          (matchWinner.id === r.left.id && ovrL < ovrR - 8) ||
+          (matchWinner.id === r.right.id && ovrR < ovrL - 8)
+        ),
+        isDominant: !isMatchDraw && (r.turns || 99) <= 6,
+        isTitleMatch: !!r.isTitleMatch,
+      };
+    }).filter(Boolean);
+
+    // ── showRating: 興行総合評価 ──
+    const expectedMQ = Math.round(25 + (G.orgPop || 0) * 0.6);
+    const mqDiff = avgMQ - expectedMQ;
+    let stars;
+    if (mqDiff >= 20) stars = 5;
+    else if (mqDiff >= 10) stars = 4;
+    else if (mqDiff >= 0) stars = 3;
+    else if (mqDiff >= -10) stars = 2;
+    else if (mqDiff >= -20) stars = 1;
+    else stars = 0;
+    const showRating = { stars, expected: expectedMQ, actual: avgMQ, diff: mqDiff };
+
+    // ── preview: 次回展望データ ──
+    const preview = { fanExpect: [], rivalry: null, title: null };
+    // ファン期待カード
+    if (G.fanExpectation) {
+      G.fanExpectation.slice(0, 2).forEach(fe => {
+        const feLeft = G.roster.find(f => f.id === fe.leftId) || ALL_CHARS.find(c => c.id === fe.leftId);
+        const feRight = G.roster.find(f => f.id === fe.rightId) || ALL_CHARS.find(c => c.id === fe.rightId);
+        if (feLeft && feRight) {
+          preview.fanExpect.push({ leftId: feLeft.id, leftName: feLeft.name, rightId: feRight.id, rightName: feRight.name });
+        }
+      });
+    }
+    // 因縁ペア（tierが最大のもの）
+    if (G.rivalries) {
+      let maxTier = 0, hotPair = null;
+      Object.entries(G.rivalries).forEach(([key, riv]) => {
+        const tier = riv.tier || 0;
+        const matches = riv.matches || 0;
+        if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
+          maxTier = tier;
+          const ids = key.split('>');
+          const rLeft = G.roster.find(f => f.id === ids[0]);
+          const rRight = G.roster.find(f => f.id === ids[1]);
+          if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
+        }
+      });
+      if (hotPair && maxTier >= 1) {
+        preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
+      }
+    }
+    // タイトル戦展望
+    const champId = G.titles?.world?.championId;
+    if (champId) {
+      const champ = G.roster.find(f => f.id === champId);
+      const challenger = [...G.roster]
+        .filter(f => f.id !== champId)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+      if (champ && challenger) {
+        preview.title = { championName: champ.name, challengerName: challenger.name };
+      }
+    }
+
     return {
       showName, venueName: venue.name, attendance, avgMQ,
       headline: np.headline, subheadline: np.subheadline, article: np.article,
       winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
-      turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch
+      turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
+      allMatches, showRating, preview,
+      generatedWeek: G.week, generatedSeason: G.season,
     };
   },
 

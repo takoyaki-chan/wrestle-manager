@@ -4710,7 +4710,7 @@ function showCareActionModal(state, onConfirm) {
     if (e.growth_boost) items.push(`📈 成長速度 +${Math.round((e.growth_boost.mult - 1) * 100)}%（${e.growth_boost.weeks}週間）`);
     if (e.growth_all) items.push(`📈 全員の成長速度 +${Math.round((e.growth_all.mult - 1) * 100)}%（${e.growth_all.weeks}週間）`);
     if (cfg.id === 'media') items.push('💪 状態 少し回復');
-    if (cfg.id === 'special_treatment') items.push('🏥 離脱期間を半分に短縮');
+    if (cfg.id === 'special_treatment') items.push('🏥 離脱期間を1〜3週短縮（長期怪我はさらに+1週）');
     if (items.length === 0) return '';
     return `<div class="care-expect"><div class="care-expect-label">期待される効果</div>${items.map(i => `<div class="care-expect-item">${i}</div>`).join('')}</div>`;
   }

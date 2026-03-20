@@ -437,6 +437,9 @@ const PORTRAIT = {
   91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',
   96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
 };
+const NPC_PORTRAIT = { reporter: 'kuroda_s' };
+function getNpcPortraitUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/face_${NPC_PORTRAIT[key]}.png` : ''; }
+function getNpcUpperUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/upper_${NPC_PORTRAIT[key]}.webp` : ''; }
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 function getStandUrl(id) { return PORTRAIT[id] ? `../image/stand/stand_${PORTRAIT[id]}.webp` : ''; }
 function getUpperUrl(id) { return PORTRAIT[id] ? `../image/upper/upper_${PORTRAIT[id]}.webp` : ''; }

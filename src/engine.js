@@ -14638,14 +14638,8 @@ Engine.eventSystem.applyLargeEventEffect = function(event, step, choiceIdx, stat
   if (!event || event.type !== 'B3') return result;
 
   if (step === 0 && choiceIdx !== 0) {
-    const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
-    const bpPenalty = -(1 + Math.round(Engine.rng.float(rng) * 10) / 10);
-    bp.player = Math.round((((bp.player || 0) + bpPenalty) + Number.EPSILON) * 10) / 10;
-    const events = [...(result.events || [])];
-    if (events.length > 0) {
-      events[events.length - 1] = events[events.length - 1].replace(/）$/, `、対戦pt${bpPenalty.toFixed(1)}）`);
-    }
-    return { ...result, events, battlePoints: bp };
+    // B3辞退: ペナルティなし（UIの表記通り）
+    return result;
   }
 
   if (step === 2 && event.matchResult) {

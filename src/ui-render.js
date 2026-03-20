@@ -2178,10 +2178,10 @@ function renderRanking() {
   const topAI = rankings.find(r => r.orgId !== 'player');
   const playerEntry = rankings.find(r => r.orgId === 'player');
   if (topAI && playerEntry) {
-    const gap = topAI.rating - playerEntry.rating;
+    const gap = Math.round(topAI.rating - playerEntry.rating);
     if (gap > 0) {
       html += `<div style="margin-bottom:16px;padding:12px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:6px;font-size:12px">
-        🎯 <strong>勝利条件</strong>: 1位団体 <strong>${topAI.name}</strong>（${topAI.rating}pt）を超えること — あと <strong style="color:var(--gold)">${gap}pt</strong>
+        🎯 <strong>勝利条件</strong>: 1位団体 <strong>${topAI.name}</strong>（${Math.round(topAI.rating)}pt）を超えること — あと <strong style="color:var(--gold)">${gap}pt</strong>
       </div>`;
     } else {
       html += `<div style="margin-bottom:16px;padding:12px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:6px;font-size:12px">
