@@ -7371,6 +7371,11 @@ const NEWS_TICKER_TEMPLATES = {
     '◆ {name}の安定感が際立つ。王者として{defenses}回の防衛を重ねた風格',
     '◆ 「{name}時代」と呼ぶ声も。{defenses}回防衛の偉業は続く',
   ],
+  juniorTournament: [
+    '◆ 🏆 ジュニアトーナメント優勝は{name}（{orgName}）！ 若き才能が頂点に立った',
+    '◆ 🏆 {name}がジュニアトーナメントを制覇。{orgName}の未来を担うエースの誕生だ',
+    '◆ 🏆 U-20の頂点に{name}（{orgName}）。鮮烈な勝利で全団体を沸かせた',
+  ],
   general: [
     '◆ 今週末の大会に向けてSNSでの話題が盛り上がりを見せている',
     '◆ レスリング関連グッズの売上が堅調。推し選手のタオルが人気',
@@ -7380,6 +7385,66 @@ const NEWS_TICKER_TEMPLATES = {
     '◆ レスリング保険の加入者数が前年比で増加。安全意識の高まりか',
   ],
 };
+
+// ══════════════════════════════════════════════════════════
+//  U-20 ジュニアトーナメント セリフ定数
+//  personality × archetype テンプレート方式
+//  タイミング: summon(召集), preMatch(試合前), postMatchWin(勝者), preFinal(決勝前), champion(優勝)
+// ══════════════════════════════════════════════════════════
+const JUNIOR_TOURNAMENT_LINES = {
+  summon: {
+    bold:     { _default: ['当然。呼ばれなかったら怒ってたわ', 'ふん、やっと正当な評価をしてくれたわけね'], ojousama: ['わたくしが選ばれるのは自明ですわ', 'お呼びとあらば、参上いたしますわ'], delinquent: ['あァ？ まあいいけど。暴れる場所が増えるだけだ', 'うっせーな、勝手に呼びやがって。……まあ出るけど'], seductive: ['あら、指名してくれたの？ 嬉しいわ', 'わたしの舞台が増えるのね。楽しみ'], polite: ['ご指名いただき光栄です。必ず結果を出してみせます', '選出いただきありがとうございます。全力を尽くします'], cool: ['……そう。わかった', '選ばれた以上、やることは一つ'] },
+    earnest:  { _default: ['精一杯、やらせていただきます…！', '選ばれたからには…絶対に恥ずかしくない試合を'], ojousama: ['光栄ですわ…！ 全身全霊で臨みます'], delinquent: ['マジか…やべぇ、緊張してきた。でもやるしかねぇ'], seductive: ['嬉しい…この機会を無駄にはしないわ'], polite: ['身に余る光栄です。一生懸命頑張ります'], cool: ['……精一杯やるだけだ'] },
+    easygoing:{ _default: ['お、選ばれちゃった。ラッキー', 'へー、いいじゃん。楽しそう'], ojousama: ['あら、わたくしも呼ばれましたの？ 面白そうですわね'], delinquent: ['マジ？ ウケる。まあ出てやるよ'], seductive: ['あら〜、ラッキー。いい舞台じゃない'], polite: ['ありがたいですね。楽しんできます'], cool: ['ふーん。まあ、いいか'] },
+    quiet:    { _default: ['……わかった', '……出る'], ojousama: ['……承知しましたわ'], delinquent: ['……チッ。やるよ'], seductive: ['……ええ'], polite: ['……はい'], cool: ['……'] },
+    shy:      { _default: ['え、私が…？ …頑張らなきゃ', 'う、嘘…？ わ、私でいいんですか…？'], ojousama: ['わ、わたくしが…？ で、できるかしら…'], delinquent: ['は？ マジ？ …い、いや別にビビってねぇし'], seductive: ['え…わたしが…？ …うん、頑張る'], polite: ['え…わ、私が…？ あ、ありがとうございます…'], cool: ['…え。……わかった'] },
+    normal:   { _default: ['選ばれたからには、全力で戦う', 'この舞台に立てることを誇りに思う'], ojousama: ['選出されましたわ。しっかりやりますわよ'], delinquent: ['おう、出てやるよ。覚悟しとけ'], seductive: ['出場が決まったわ。見ていてね'], polite: ['選ばれました。精一杯戦います'], cool: ['……出る。それだけだ'] },
+  },
+  preMatch: {
+    bold:     { _default: ['目の前の相手を叩き潰す。それだけよ', '勝つのは私。最初から決まってることよ'] },
+    earnest:  { _default: ['どんな相手でも、やることは変わりません', '一戦一戦を大切に…全力で行きます'] },
+    easygoing:{ _default: ['楽しんでいこう。でも、負けないけどね', 'よーし、いっちょやりますか'] },
+    quiet:    { _default: ['……やる', '……'] },
+    shy:      { _default: ['緊張する…でも、逃げない', 'が、頑張ります…！'] },
+    normal:   { _default: ['相手がどうとかじゃない。自分の試合をする', '集中。一つずつ勝っていく'] },
+  },
+  postMatchWin: {
+    bold:     { _default: ['当然の結果よ。次も同じ', 'ふん。この程度じゃ止まらないわよ'] },
+    earnest:  { _default: ['勝てた…！ でもまだ終わりじゃない', '一歩ずつ…次も全力で'] },
+    easygoing:{ _default: ['よっし、勝った！ 次もこの調子で', 'いい感じいい感じ〜'] },
+    quiet:    { _default: ['……次', '……勝った'] },
+    shy:      { _default: ['か、勝てた…よかった…', 'まだ…終わりじゃないんだ…頑張る'] },
+    normal:   { _default: ['一つクリア。次に集中する', '勝った。でも気を抜かない'] },
+  },
+  preFinal: {
+    bold:     { _default: ['ここまで来て負けるわけないでしょ。最後も私が獲る', 'さあ、最後の獲物ね。楽しませてもらうわ'] },
+    earnest:  { _default: ['この舞台に立てることが…嬉しい。だから全部出し切ります', '決勝…夢みたいです。でも、勝ちたい…！'] },
+    easygoing:{ _default: ['決勝かー。ま、ここまで来たらやるしかないっしょ', '最後の一戦！ 楽しむよ〜'] },
+    quiet:    { _default: ['……最後の一試合', '……全部、出す'] },
+    shy:      { _default: ['震えてるのは…きっと、嬉しいからだと思う', 'ここまで来れたのが信じられない…でも、負けたくない'] },
+    normal:   { _default: ['あと一つ。勝てば優勝。それだけ考える', '決勝。全てを懸ける'] },
+  },
+  champion: {
+    bold:     { _default: ['言ったでしょ？ 私が最強だって', 'はい優勝。当然の結果ね'] },
+    earnest:  { _default: ['支えてくれたみんなのおかげです…！', '優勝…できた…。ありがとうございます…！'] },
+    easygoing:{ _default: ['いやー、ほんとに勝っちゃった。最高！', 'うっひょー！ 優勝！ 信じられない！'] },
+    quiet:    { _default: ['……勝った', '………………ありがとう'] },
+    shy:      { _default: ['信じられない…。でも…嬉しい…！', 'わ、わたしが優勝…？ 夢じゃないよね…'] },
+    normal:   { _default: ['この優勝を、次のステップにする', '優勝。嬉しい。でも、これで終わりじゃない'] },
+  },
+};
+
+/** personality×archetypeでジュニアトーナメントセリフを取得 */
+function getJuniorTournamentLine(timing, personality, archetype, rng) {
+  const timingData = JUNIOR_TOURNAMENT_LINES[timing];
+  if (!timingData) return '';
+  const pData = timingData[personality] || timingData.normal;
+  if (!pData) return '';
+  const lines = pData[archetype] || pData._default || [];
+  if (lines.length === 0) return '';
+  if (rng) return lines[Engine.rng.int(rng, 0, lines.length - 1)];
+  return lines[Math.floor(Math.random() * lines.length)];
+}
 
 // §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
 const NEWS_HEADLINE_TEMPLATES = {

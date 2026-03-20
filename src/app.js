@@ -1947,6 +1947,33 @@ const Storage = {
       if (!G._migrated_growthLog) {
         G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
       }
+      if (!G._migrated_junior_hof_v1) {
+        // careerRecord に juniorTournamentWins/juniorTournamentAppearances/ppvMainEventWins を補完
+        const _addHofFields = (fighters) => (fighters || []).map(f => {
+          if (!f.careerRecord) return f;
+          const rec = { ...f.careerRecord };
+          if (rec.juniorTournamentWins === undefined) rec.juniorTournamentWins = 0;
+          if (rec.juniorTournamentAppearances === undefined) rec.juniorTournamentAppearances = 0;
+          if (rec.ppvMainEventWins === undefined) rec.ppvMainEventWins = 0;
+          return { ...f, careerRecord: rec };
+        });
+        G = {
+          ...G,
+          roster: _addHofFields(G.roster),
+          freeAgents: _addHofFields(G.freeAgents),
+          retiredFighters: _addHofFields(G.retiredFighters),
+          _migrated_junior_hof_v1: true,
+        };
+        // AI団体のrosterにも適用
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: _addHofFields(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+      }
 
       // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
@@ -3403,6 +3430,12 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    // Junior Tournament context: route to JT handler
+    const jtPre = App._jtPreview;
+    if (jtPre && jtPre.phase === 'watching') {
+      App._receiveJTBattleResult(data);
+      return;
+    }
     // PPV context: route to PPV handler
     const pp = App._ppvPreview;
     if (pp && pp.currentWatching >= 0) {
@@ -5036,6 +5069,12 @@ const App = {
       App.initPPVTV();
       return;
     }
+    // ジュニアトーナメント Week 25
+    if (G.weekPhase === 'juniorTournament') {
+      Storage.autoSave();
+      App.initJuniorTournament();
+      return;
+    }
     // v0.96: Update mission completions
     if (G.missionEnabled) {
       const mResult = Mission.updateCompleted(G);
@@ -6418,6 +6457,141 @@ App.closePPVTV = function() {
   G = { ...G, ppvPhase: null };
   Storage.autoSave();
   App.advanceWeek();
+};
+
+// ══════════════════════════════════════════════════════════
+//  U-20 ジュニアトーナメント UI フロー
+// ══════════════════════════════════════════════════════════
+App._jtPreview = null; // トーナメント進行データ
+
+App.initJuniorTournament = function() {
+  const sel = G._juniorTournamentSelection;
+  if (!sel || sel.cancelled) {
+    // 不開催 → 通常週に戻す
+    G = { ...G, weekPhase: 'manage' };
+    delete G._juniorTournamentSelection;
+    showScreen('week');
+    return;
+  }
+  const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
+  const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
+
+  App._jtPreview = {
+    selection: sel,
+    result: jtResult,
+    currentRound: 0,
+    currentMatch: 0,
+    phase: 'bracket', // 'bracket' | 'matchCard' | 'watching' | 'roundResult' | 'finalResult'
+  };
+  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  renderJuniorTournamentBracket();
+};
+
+App.jtWatchMatch = function(roundIdx, matchIdx) {
+  const jt = App._jtPreview;
+  if (!jt) return;
+  jt.currentRound = roundIdx;
+  jt.currentMatch = matchIdx;
+  jt.phase = 'watching';
+
+  const round = jt.result.rounds[roundIdx];
+  const match = round.matches[matchIdx];
+  const isFinal = roundIdx === jt.result.rounds.length - 1;
+
+  // battle-engine iframe に試合データを送る
+  const iframe = document.getElementById('battleFrame');
+  if (!iframe || !iframe.contentWindow) return;
+
+  const leftF = (G.roster || []).find(f => f.id === match.left.id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === match.left.id)
+    || match.left;
+  const rightF = (G.roster || []).find(f => f.id === match.right.id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === match.right.id)
+    || match.right;
+
+  const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+  const msg = {
+    type: 'START_MATCH',
+    left: {
+      ...leftF,
+      portraitUrl: typeof getStandUrl === 'function' ? getStandUrl(leftF.id || leftF.portrait) : '',
+    },
+    right: {
+      ...rightF,
+      portraitUrl: typeof getStandUrl === 'function' ? getStandUrl(rightF.id || rightF.portrait) : '',
+    },
+    matchInfo: {
+      header: `ジュニアトーナメント ${roundLabel}`,
+      subHeader: `${match.left.name} vs ${match.right.name}`,
+      matchNum: matchIdx + 1,
+      totalMatches: round.matches.length,
+      matchTier: isFinal ? 2 : 1,
+    },
+  };
+  iframe.contentWindow.postMessage(msg, '*');
+  showScreen('battle');
+};
+
+App.jtSkipMatch = function(roundIdx, matchIdx) {
+  // 試合結果は既に計算済み — 次へ進む
+  App.jtAdvanceAfterMatch(roundIdx, matchIdx);
+};
+
+App.jtSkipAll = function() {
+  // 全試合スキップ → 最終結果へ
+  App._jtPreview.phase = 'finalResult';
+  renderJuniorTournamentResult();
+};
+
+App._receiveJTBattleResult = function(data) {
+  const jt = App._jtPreview;
+  if (!jt || jt.phase !== 'watching') return;
+  App.jtAdvanceAfterMatch(jt.currentRound, jt.currentMatch);
+};
+
+App.jtAdvanceAfterMatch = function(roundIdx, matchIdx) {
+  const jt = App._jtPreview;
+  if (!jt) return;
+  const round = jt.result.rounds[roundIdx];
+  if (matchIdx + 1 < round.matches.length) {
+    // 同ラウンドの次の試合へ
+    jt.currentMatch = matchIdx + 1;
+    jt.phase = 'bracket';
+    renderJuniorTournamentBracket();
+  } else if (roundIdx + 1 < jt.result.rounds.length) {
+    // 次のラウンドへ
+    jt.currentRound = roundIdx + 1;
+    jt.currentMatch = 0;
+    jt.phase = 'bracket';
+    renderJuniorTournamentBracket();
+  } else {
+    // 全試合完了 → 最終結果
+    jt.phase = 'finalResult';
+    renderJuniorTournamentResult();
+  }
+};
+
+App.finalizeJuniorTournament = function() {
+  const jt = App._jtPreview;
+  if (!jt) return;
+
+  // Engine.juniorTournament.apply で state 反映
+  const applied = Engine.juniorTournament.apply(G, jt.result);
+  G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
+
+  // transientクリア（_juniorTournamentResultはtickWeekで新聞が読むので残す）
+  delete G._juniorTournamentSelection;
+  App._jtPreview = null;
+
+  try { Audio.fileBgm.stop(); } catch(e) {}
+  Audio.play('coin');
+  Audio.bgm.play('management');
+
+  // 通常週に戻す
+  G = { ...G, weekPhase: 'manage' };
+  Storage.autoSave();
+  showScreen('week');
+  refreshAll();
 };
 
 // v2.1: クレジット画面

@@ -2886,6 +2886,7 @@ function refreshAll() {
 // ╚══════════════════════════════════════════════════════════╝
 
 let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞
+let _newspaperPage = 0; // 新聞ページ番号（0=通常面, 1+=特集面）
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
@@ -2986,6 +2987,11 @@ function renderDatabase() {
 
 function setDbSubTab(idx) {
   _dbSubTab = idx;
+  _newspaperPage = 0; // タブ切替時はページリセット
+  renderDatabase();
+}
+function setNewspaperPage(page) {
+  _newspaperPage = page;
   renderDatabase();
 }
 
@@ -3003,6 +3009,28 @@ function _renderDbNewspaper() {
 
   // フォールバック: 旧セーブで weeklyNewspaper がない場合は旧形式
   if (!wp && d) return _renderDbNewspaperLegacy(d);
+
+  // ページ送りナビ（複数ページ時）
+  const hasPages = wp.pages && wp.pages.length > 0 && wp.pages.some(Boolean);
+  let pageNav = '';
+  if (hasPages) {
+    const totalExtra = wp.pages.filter(Boolean).length;
+    pageNav += `<div style="display:flex;justify-content:center;gap:8px;margin:12px auto;max-width:560px">`;
+    pageNav += `<button class="btn${_newspaperPage === 0 ? ' btn-gold' : ''}" style="padding:6px 14px;font-size:12px" onclick="setNewspaperPage(0)">1面</button>`;
+    wp.pages.forEach((pg, idx) => {
+      if (!pg) return;
+      pageNav += `<button class="btn${_newspaperPage === idx + 1 ? ' btn-gold' : ''}" style="padding:6px 14px;font-size:12px" onclick="setNewspaperPage(${idx + 1})">${pg.title || (idx + 2) + '面'}</button>`;
+    });
+    pageNav += `</div>`;
+  }
+
+  // 特集ページ表示時は1面をスキップ
+  if (hasPages && _newspaperPage > 0) {
+    const pageData = wp.pages[_newspaperPage - 1];
+    if (pageData && pageData.stories) {
+      return pageNav + _renderNewspaperExtraPage(wp, pageData);
+    }
+  }
 
   const kurodaFace = typeof getNpcPortraitUrl === 'function' ? getNpcPortraitUrl('reporter') : '';
   const kurodaIcon = kurodaFace ? `<img src="${kurodaFace}" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : '';
@@ -3077,7 +3105,7 @@ function _renderDbNewspaper() {
   }
 
   html += `</div>`;
-  return html;
+  return pageNav + html;
 }
 
 // ── 自団体興行結果セクション（新聞v2内部用） ──
@@ -3374,6 +3402,57 @@ function _renderNewspaperPreview(d) {
     </div>`;
 }
 
+// ── 新聞特集ページ描画 ──
+function _renderNewspaperExtraPage(wp, pageData) {
+  let html = `<div style="max-width:560px;margin:0 auto 12px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
+  html += `<div style="padding:12px 20px 8px;border-bottom:3px double rgba(95,69,35,0.45);">
+    <div style="display:flex;justify-content:space-between;align-items:end;">
+      <div style="font-size:18px;font-weight:1000;letter-spacing:0.06em;color:#4a3518;">WEEKLY GRAPPLE</div>
+      <div style="font-size:11px;color:#7a5b32;font-weight:700;">S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
+    </div></div>`;
+
+  pageData.stories.forEach(story => {
+    html += `<div style="padding:12px 20px;border-bottom:1px solid rgba(95,69,35,0.12);">`;
+    html += `<div style="font-size:16px;font-weight:900;line-height:1.3;margin-bottom:6px;">${story.headline}</div>`;
+
+    // 出場選手テーブル（プレビュー用）
+    if (story.type === 'juniorTournamentPreviewRoster' && story.participants) {
+      html += `<div style="font-size:13px;line-height:1.6;color:#3a2e1c;margin-bottom:8px">${story.body}</div>`;
+      html += `<table style="width:100%;font-size:12px;border-collapse:collapse">`;
+      html += `<tr style="border-bottom:1px solid rgba(95,69,35,0.25)"><th style="text-align:left;padding:4px">選手名</th><th>所属</th><th>OVR</th><th>年齢</th><th>スタイル</th></tr>`;
+      story.participants.forEach((p, i) => {
+        const bg = i % 2 === 0 ? 'rgba(200,190,170,0.15)' : '';
+        html += `<tr style="background:${bg}"><td style="padding:3px 4px;font-weight:600">${p.name}</td><td style="text-align:center">${p.orgName}</td><td style="text-align:center">${p.ovr}</td><td style="text-align:center">${p.age}</td><td style="text-align:center">${p.style || '-'}</td></tr>`;
+      });
+      html += `</table>`;
+    }
+    // 全試合結果テーブル
+    else if (story.type === 'juniorTournamentMatchResults' && story.matches) {
+      html += `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:4px">`;
+      story.matches.forEach((m, i) => {
+        const bg = i % 2 === 0 ? 'rgba(200,190,170,0.15)' : '';
+        const mqColor = m.mq >= 80 ? '#b8860b' : m.mq >= 60 ? '#4a3518' : '#7a5b32';
+        html += `<tr style="background:${bg}">`;
+        html += `<td style="padding:4px;color:#7a5b32;min-width:50px">${m.round}</td>`;
+        html += `<td style="padding:4px;font-weight:700;color:#2d5e1e">${m.winner}</td>`;
+        html += `<td style="padding:4px;color:#7a5b32;font-size:10px">def.</td>`;
+        html += `<td style="padding:4px">${m.loser}</td>`;
+        html += `<td style="padding:4px;text-align:right;color:${mqColor};font-weight:600">MQ${m.mq}</td>`;
+        html += `</tr>`;
+      });
+      html += `</table>`;
+    }
+    // 通常テキスト記事
+    else {
+      html += `<div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${story.body}</div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 const _STAT_COLORS = { pw: '#e74c3c', sp: '#2ecc71', te: '#3498db', st: '#f39c12', mn: '#9b59b6' };
 function _statCell(val, color) {
   const v = Math.round(val || 0);
@@ -3593,7 +3672,7 @@ function _renderDbHallOfFame() {
     return `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
       <div style="font-size:40px;margin-bottom:12px">🏅</div>
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">獲得＋防衛の合計が13回以上の選手が引退時に殿堂入りします</div>
+      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント12pt以上の選手が引退時に殿堂入りします<br>タイトル獲得/防衛=各1pt、ジュニア優勝=7pt、PPV優勝=9pt</div>
     </div>`;
   }
 
@@ -3613,8 +3692,10 @@ function _renderDbHallOfFame() {
         </div>
         <div class="db-hof-row">活動期間: S${h.debutSeason || '?'}〜S${h.retireSeason || '?'}</div>
         ${h.totalTitleWins ? `<div class="db-hof-row">タイトル: ${h.totalTitleWins}回獲得 / ${h.totalDefenses || 0}防衛</div>` : ''}
+        ${h.juniorTournamentWins ? `<div class="db-hof-row">ジュニア優勝: ${h.juniorTournamentWins}回</div>` : ''}
+        ${h.ppvMainEventWins ? `<div class="db-hof-row">PPV優勝: ${h.ppvMainEventWins}回</div>` : ''}
         ${h.peakOvr ? `<div class="db-hof-row">最高OVR: ${h.peakOvr}</div>` : ''}
-        <div class="db-hof-row" style="color:var(--gold)">殿堂入り: S${h.retireSeason || '?'}</div>
+        <div class="db-hof-row" style="color:var(--gold)">${h.hofLevel >= 3 ? '★★★ レジェンド' : h.hofLevel >= 2 ? '★★ ゴールド' : '★ 殿堂入り'}${h.hofPoints ? ` (${h.hofPoints}pt)` : ''} — S${h.retireSeason || '?'}</div>
       </div>
     </div>`;
   });

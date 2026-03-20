@@ -225,6 +225,7 @@ const TRANSIENT_KEYS = [
   '_pendingChoiceEvent', '_pendingNotifEvent', '_pendingLargeEvent',
   '_pendingTeamSpirit', '_pendingGrowthEvents', '_pendingMotivationRetirements',
   '_pendingCoachReport', '_flavorEvents', '_pendingEliteTicket',
+  '_juniorTournamentSelection', '_juniorTournamentResult',
 ];
 function clearTransients(G) {
   let s = G;
@@ -321,6 +322,19 @@ function runSimulation(seed, seasons) {
       }
       if (G.weekPhase === 'ppvTV') {
         G = { ...G, ppvPhase: null };
+      }
+      if (G.weekPhase === 'juniorTournament') {
+        // ジュニアトーナメント: エンジンで全試合処理
+        const sel = G._juniorTournamentSelection;
+        if (sel && !sel.cancelled) {
+          const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
+          const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
+          const applied = Engine.juniorTournament.apply(G, jtResult);
+          G = { ...applied.state, weekPhase: 'manage' };
+        } else {
+          G = { ...G, weekPhase: 'manage' };
+        }
+        delete G._juniorTournamentSelection;
       }
       if (G.weekPhase === 'event' || G.weekPhase === 'transfer' || G.weekPhase === 'scoutEvent') {
         // スカウトでFA獲得を試みる
