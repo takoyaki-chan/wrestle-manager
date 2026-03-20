@@ -9676,10 +9676,10 @@ Engine.careActions = {
       } else if (actionId === 'special_treatment') {
         if (!f.injury) return { error: 'not_injured' };
         const cur = f.injury.weeksLeft || 0;
-        // v3.0: 確率ベース短縮（50%:1週 / 35%:2週 / 15%:3週、8週以上で+1週）
+        // 確率ベース短縮（30%:1週 / 30%:2週 / 25%:3週 / 15%:4週、8週以上で+1週）
         const healRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId));
         const roll = Engine.rng.float(healRng);
-        let reduction = roll < 0.50 ? 1 : roll < 0.85 ? 2 : 3;
+        let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
         if (cur >= 8) reduction += 1;
         const reduced = Math.max(1, cur - reduction);
         f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
