@@ -1247,7 +1247,9 @@ function _renderRosterDetailPanel(c, hired) {
   const canManage = G.weekPhase === 'manage';
   const tabIdx = _rosterDetailTab[c.id] || 0;
   const fullUrl = getFullUrl(c.id);
-  const tenure = (c.careerSeasons || 0) + 1;
+  // 自団体での在籍年数を算出（orgTimelineからplayer所属の開始シーズンを取得）
+  const orgEntry = (c.orgTimeline || []).filter(e => e.orgId === 'player').pop();
+  const tenure = orgEntry ? (G.season - orgEntry.fromSeason + 1) : 1;
   const stats = ['pw','sp','te','st','mn'];
   const STAT_COLORS = {pw:'#c03030',sp:'#1a8a4a',te:'#2060a0',st:'#b06010',mn:'#7040a0'};
   const STAT_LABELS = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
