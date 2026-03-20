@@ -2534,11 +2534,14 @@ const Engine = {
     },
     // Returns updated rankings array: [{orgId, name, rating, baseScore, legacyScore, weightedOVR, weightedPop, battlePt, rosterSize}]
     updateRankings(state) {
-      const bp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
+      // battlePointsは整数に正規化（浮動小数点混入防止）
+      const rawBp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
+      const bp = {};
+      for (const k in rawBp) bp[k] = Math.round(rawBp[k] || 0);
       const playerBreakdown = Engine.ranking.calcOrgRating(state, 'player', state.roster || [], bp.player);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
-        rating: playerBreakdown.rating,
+        rating: Math.round(playerBreakdown.rating),
         baseScore: playerBreakdown.baseScore,
         legacyScore: playerBreakdown.legacyScore,
         weightedOVR: playerBreakdown.weightedOVR,
@@ -2551,7 +2554,7 @@ const Engine = {
         const breakdown = Engine.ranking.calcOrgRating(state, org.id, aiRoster, bp[org.id]);
         entries.push({
           orgId: org.id, name: org.name,
-          rating: breakdown.rating,
+          rating: Math.round(breakdown.rating),
           baseScore: breakdown.baseScore,
           legacyScore: breakdown.legacyScore,
           weightedOVR: breakdown.weightedOVR,
