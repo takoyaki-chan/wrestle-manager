@@ -2989,13 +2989,155 @@ function setDbSubTab(idx) {
 
 // ── 📰 新聞サブタブ ──────────────────────────────────────────────────────
 function _renderDbNewspaper() {
-  const d = G.currentNewspaper;
-  if (!d) {
+  const wp = G.weeklyNewspaper;
+  const d = G.currentNewspaper; // フォールバック用
+
+  // weeklyNewspaper もなく currentNewspaper もない場合
+  if (!wp && !d) {
     return `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2;">
       📰 現在の新聞はありません<br>
-      <span style="font-size:12px;color:var(--text-sub);">興行を開催すると、翌週に新聞が届きます</span></div>`;
+      <span style="font-size:12px;color:var(--text-sub);">次の週に進むと新聞が届きます</span></div>`;
   }
 
+  // フォールバック: 旧セーブで weeklyNewspaper がない場合は旧形式
+  if (!wp && d) return _renderDbNewspaperLegacy(d);
+
+  const kurodaFace = typeof getNpcPortraitUrl === 'function' ? getNpcPortraitUrl('reporter') : '';
+  const kurodaIcon = kurodaFace ? `<img src="${kurodaFace}" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : '';
+
+  // ── ヘッダー ──
+  let html = `<div style="max-width:560px;margin:12px auto;display:grid;gap:0;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
+  html += `<div style="padding:14px 20px 10px;border-bottom:3px double rgba(95,69,35,0.45);">
+    <div style="display:flex;justify-content:space-between;align-items:end;">
+      <div style="font-size:18px;font-weight:1000;letter-spacing:0.06em;color:#4a3518;">WEEKLY GRAPPLE</div>
+      <div style="font-size:11px;color:#7a5b32;font-weight:700;">S${wp.season || '?'} W${wp.week || '?'}</div>
+    </div></div>`;
+
+  // ── 一面記事 ──
+  if (wp.topStory) {
+    const ts = wp.topStory;
+    const isPlayerStory = ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal';
+    const charPort = ts.characterId && typeof getPortraitUrl === 'function' ? getPortraitUrl(ts.characterId) : '';
+
+    html += `<div style="padding:16px 20px 12px;border-bottom:1px solid rgba(95,69,35,0.18);">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:4px;">TOP STORY</div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        ${charPort ? `<img src="${charPort}" alt="" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:2px solid rgba(82,53,23,0.25);flex-shrink:0;">` : ''}
+        <div style="flex:1;">
+          <div style="font-size:20px;line-height:1.2;font-weight:1000;margin-bottom:6px;">${ts.headline}</div>
+          <div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${ts.body}</div>
+        </div>
+      </div>`;
+    // 一面が他団体ニュースのとき黒田コメント
+    if (!isPlayerStory && kurodaIcon) {
+      const newsRng = Engine.rng.create(Engine.rng.derive(wp.season || 1, wp.week || 1, 0xC0DA));
+      const commentPool = _getKurodaNewsComment(ts.type);
+      if (commentPool.length > 0) {
+        const fn = Engine.rng.pick(newsRng, commentPool);
+        let commentText = '';
+        try { commentText = fn({ headline: ts.headline, orgName: '' }); } catch(e) {}
+        if (commentText) {
+          html += `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(200,190,170,0.22);">
+            ${kurodaIcon}
+            <div style="font-size:12px;line-height:1.7;color:#4a3518;">「${commentText}」<span style="font-size:10px;color:#7a5b32;">——黒田幸子</span></div>
+          </div>`;
+        }
+      }
+    }
+    html += `</div>`;
+  }
+
+  // ── 自団体興行結果（playerShowData がある場合のみ） ──
+  if (wp.playerShowData) {
+    html += _renderNewspaperPlayerShow(wp.playerShowData);
+  }
+
+  // ── 他団体動向（subStories） ──
+  if (wp.subStories && wp.subStories.length > 0) {
+    html += `<div style="padding:12px 20px;border-top:1px solid rgba(95,69,35,0.15);">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:8px;">OTHER NEWS</div>`;
+    wp.subStories.forEach(ss => {
+      const ssPort = ss.characterId && typeof getPortraitUrl === 'function' ? getPortraitUrl(ss.characterId) : '';
+      html += `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(95,69,35,0.08);">
+        ${ssPort ? `<img src="${ssPort}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;">` : ''}
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:800;line-height:1.3;">${ss.headline}</div>
+          <div style="font-size:12px;line-height:1.6;color:#5b4b34;margin-top:2px;">${ss.body}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── 次回展望 ──
+  if (wp.preview) {
+    html += _renderNewspaperPreview({ preview: wp.preview, generatedSeason: wp.season, generatedWeek: wp.week });
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── 自団体興行結果セクション（新聞v2内部用） ──
+function _renderNewspaperPlayerShow(d) {
+  if (!d || !d.left || !d.right) return '';
+  const pLeft = getPortraitUrl(d.left.id);
+  const pRight = getPortraitUrl(d.right.id);
+  const leftWin = !d.isDraw && d.winner && d.winner.id === d.left.id;
+  const rightWin = !d.isDraw && d.winner && d.winner.id === d.right.id;
+  const lPct = Math.max(0, Math.min(100, Math.round(((d.hpLeft?.final || 0) / Math.max(1, d.hpLeft?.max || 1)) * 100)));
+  const rPct = Math.max(0, Math.min(100, Math.round(((d.hpRight?.final || 0) / Math.max(1, d.hpRight?.max || 1)) * 100)));
+  const portrait = (url, fallback, extra='') => url
+    ? `<img src="${url}" alt="" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid rgba(82,53,23,0.25);${extra}">`
+    : `<div style="width:80px;height:80px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff;${extra}">${fallback?.name || '?'}</div>`;
+
+  const articleHtml = d.article
+    ? `<div style="font-size:12.5px;line-height:1.8;color:#3a2e1c;padding:8px 0 4px;text-indent:1em;">${d.article}</div>`
+    : '';
+
+  let html = `<div style="padding:14px 20px 12px;border-top:1px solid rgba(95,69,35,0.15);">
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:8px;">自団体 興行結果</div>
+    <div style="font-size:16px;font-weight:1000;margin-bottom:8px;">${d.headline || '定期興行'}</div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="display:grid;justify-items:center;gap:4px;">
+        ${portrait(pLeft, d.left, leftWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
+        <div style="font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.left.name}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:24px;font-weight:1000;color:#9b1212;">${d.isDraw ? 'DRAW' : 'VS'}</div>
+        <div style="font-size:9px;font-weight:900;color:#b9892a;letter-spacing:0.1em;margin-top:2px;">${d.isDraw ? 'TIME LIMIT' : 'WINNER'}</div>
+      </div>
+      <div style="display:grid;justify-items:center;gap:4px;">
+        ${portrait(pRight, d.right, rightWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
+        <div style="font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.right.name}</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 8px;border:1px solid rgba(125,95,50,0.20);border-radius:8px;background:rgba(200,190,170,0.18);font-size:12px;">
+      <div style="font-weight:900;">${d.isDraw ? 'Time-limit draw' : `${d.winner.name} wins`}</div>
+      <div style="color:#5b4b34;">${d.finishLabel}${d.turns ? ` / ${d.turns}T` : ''}</div>
+      <div style="color:#5b4b34;">MQ <strong style="font-size:16px;color:#15120d;">${d.mq}</strong></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+      <div style="padding:6px 8px;border:1px solid rgba(125,95,50,0.20);border-radius:8px;background:rgba(200,190,170,0.14);">
+        <label style="font-size:10px;color:#6a5e4c;">${d.left.name}</label>
+        <div style="font-size:11px;font-weight:700;">HP ${d.hpLeft.final}/${d.hpLeft.max}</div>
+        <div style="height:5px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden;margin-top:2px;"><span style="display:block;height:100%;width:${lPct}%;background:${lPct > 30 ? '#44d18e' : lPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+      </div>
+      <div style="padding:6px 8px;border:1px solid rgba(125,95,50,0.20);border-radius:8px;background:rgba(200,190,170,0.14);">
+        <label style="font-size:10px;color:#6a5e4c;">${d.right.name}</label>
+        <div style="font-size:11px;font-weight:700;">HP ${d.hpRight.final}/${d.hpRight.max}</div>
+        <div style="height:5px;border-radius:999px;background:rgba(38,31,20,0.12);overflow:hidden;margin-top:2px;"><span style="display:block;height:100%;width:${rPct}%;background:${rPct > 30 ? '#44d18e' : rPct > 10 ? '#d9ab45' : '#ef6277'}"></span></div>
+      </div>
+    </div>
+    ${articleHtml}
+    ${_renderNewspaperShowRating(d)}
+    ${_renderNewspaperDigest(d)}
+  </div>`;
+  return html;
+}
+
+// ── 旧形式新聞（フォールバック用） ──
+function _renderDbNewspaperLegacy(d) {
   const pLeft = d.left ? getPortraitUrl(d.left.id) : '';
   const pRight = d.right ? getPortraitUrl(d.right.id) : '';
   const leftWin = !d.isDraw && d.winner && d.winner.id === d.left.id;
@@ -3005,11 +3147,9 @@ function _renderDbNewspaper() {
   const portrait = (url, fallback, extra='') => url
     ? `<img src="${url}" alt="" style="width:110px;height:110px;border-radius:14px;object-fit:cover;border:3px solid rgba(82,53,23,0.28);box-shadow:0 10px 24px rgba(0,0,0,0.15);${extra}">`
     : `<div style="width:110px;height:110px;border-radius:14px;display:grid;place-items:center;font-size:14px;font-weight:900;color:#fff;box-shadow:0 10px 24px rgba(0,0,0,0.15);${extra}">${fallback?.name || '?'}</div>`;
-
   const articleHtml = d.article
     ? `<div style="font-size:13.5px;line-height:1.85;color:#3a2e1c;padding:12px 4px 4px;text-indent:1em;border-top:1px solid rgba(95,69,35,0.15);">${d.article}</div>`
     : '';
-
   return `
     <div style="max-width:520px;margin:12px auto;display:grid;gap:12px;padding:20px 22px 18px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
       <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:3px double rgba(95,69,35,0.45);padding-bottom:10px;">
@@ -3052,6 +3192,183 @@ function _renderDbNewspaper() {
         </div>
       </div>
       ${articleHtml}
+      ${_renderNewspaperShowRating(d)}
+      ${_renderNewspaperDigest(d)}
+      ${_renderNewspaperPreview(d)}
+    </div>`;
+}
+
+// ── 黒田ニュースコメント取得（他団体ニュース用） ──
+function _getKurodaNewsComment(storyType) {
+  // KURODA_NEWS_COMMENT が定義されていればそれを使う、なければ汎用コメント
+  if (typeof KURODA_NEWS_COMMENT !== 'undefined' && KURODA_NEWS_COMMENT[storyType]) {
+    return KURODA_NEWS_COMMENT[storyType];
+  }
+  // フォールバック: インライン汎用コメント
+  return [
+    () => '業界の動きは速い。目を離す暇はない',
+    () => '他団体の動向は、回り回って我々にも影響する',
+    () => '注視すべきニュースだ',
+  ];
+}
+
+// ── 興行総合評価セクション ──
+function _renderNewspaperShowRating(d) {
+  if (!d.showRating) return '';
+  const { stars } = d.showRating;
+  const starHtml = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+
+  // seeded pick from KURODA_SHOW_RATING
+  const ratingKey = `stars${stars}`;
+  const pool = (typeof KURODA_SHOW_RATING !== 'undefined' && KURODA_SHOW_RATING[ratingKey]) || [];
+  let commentText = '';
+  if (pool.length > 0) {
+    const seed = Engine.rng.derive(d.generatedSeason || 1, d.generatedWeek || 1, 0xC5A1);
+    const rng = Engine.rng.create(seed);
+    const fn = Engine.rng.pick(rng, pool);
+    try { commentText = fn({ playerName: G.orgName || '我が団体', avgMQ: d.avgMQ || 0 }); } catch(e) { commentText = ''; }
+  }
+  const kurodaFace = typeof getNpcPortraitUrl === 'function' ? getNpcPortraitUrl('reporter') : '';
+
+  return `
+    <div class="news-show-rating">
+      <div class="news-rating-stars">${starHtml}</div>
+      ${commentText ? `<div class="news-rating-comment">
+        ${kurodaFace ? `<img src="${kurodaFace}" class="news-kuroda-face" alt="">` : ''}
+        <p>「${commentText}」</p>
+      </div>` : ''}
+    </div>`;
+}
+
+// ── 全試合ダイジェストセクション ──
+function _renderNewspaperDigest(d) {
+  if (!d.allMatches || d.allMatches.length === 0) return '';
+  const expectedMQ = d.showRating?.expected || Math.round(25 + (G.orgPop || 0) * 0.6);
+
+  const matchesHtml = d.allMatches.map((m, idx) => {
+    // ダイジェストコメント選択
+    let commentText = '';
+    if (typeof NEWSPAPER_DIGEST_COMMENTS !== 'undefined') {
+      const seed = Engine.rng.derive(d.generatedSeason || 1, d.generatedWeek || 1, idx, 0xD1C0);
+      const rng = Engine.rng.create(seed);
+      let pool;
+      if (m.isDraw) pool = NEWSPAPER_DIGEST_COMMENTS.draw;
+      else if (m.isUpset) pool = NEWSPAPER_DIGEST_COMMENTS.upset;
+      else if (m.isDominant) pool = NEWSPAPER_DIGEST_COMMENTS.dominant;
+      else if (m.isTitleMatch) pool = NEWSPAPER_DIGEST_COMMENTS.titleMatch;
+      else {
+        const diff = m.mq - expectedMQ;
+        let rating;
+        if (diff >= 15) rating = 'great';
+        else if (diff >= 5) rating = 'good';
+        else if (diff >= -4) rating = 'average';
+        else if (diff >= -15) rating = 'poor';
+        else rating = 'bad';
+        pool = NEWSPAPER_DIGEST_COMMENTS[rating];
+      }
+      if (pool && pool.length > 0) {
+        const fn = Engine.rng.pick(rng, pool);
+        try { commentText = fn({ winnerName: m.winnerName || '?', loserName: m.loserName || '?', mq: m.mq, turns: m.turns }); } catch(e) {}
+      }
+    }
+
+    const smallPort = (id) => {
+      const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '';
+      if (url) return `<img src="${url}" alt="" class="news-digest-portrait">`;
+      const name = (ALL_CHARS.find(c => c.id === id)?.name || '?');
+      return `<div class="news-digest-portrait-fb">${name.charAt(0)}</div>`;
+    };
+
+    const badges = [
+      m.isTitleMatch ? '<span class="news-digest-badge title">TITLE</span>' : '',
+      m.isUpset ? '<span class="news-digest-badge upset">UPSET</span>' : '',
+    ].filter(Boolean).join('');
+
+    return `
+      <div class="news-digest-match">
+        <div class="news-digest-header">
+          <span class="news-digest-num">第${idx + 2}試合</span>
+          ${badges}
+        </div>
+        <div class="news-digest-faceoff">
+          <div class="news-digest-fighter ${m.winner === 'left' ? 'winner' : ''}">
+            ${smallPort(m.left.id)}
+            <span>${m.left.name}</span>
+          </div>
+          <div class="news-digest-result">${m.isDraw ? 'DRAW' : 'def.'}</div>
+          <div class="news-digest-fighter ${m.winner === 'right' ? 'winner' : ''} right">
+            <span>${m.right.name}</span>
+            ${smallPort(m.right.id)}
+          </div>
+        </div>
+        <div class="news-digest-stats">MQ ${m.mq} / ${m.turns}T / ${m.finishLabel}</div>
+        ${commentText ? `<div class="news-digest-comment">「${commentText}」</div>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="news-digest">
+      <div class="news-digest-title">全試合ダイジェスト</div>
+      ${matchesHtml}
+    </div>`;
+}
+
+// ── 次回展望セクション ──
+function _renderNewspaperPreview(d) {
+  if (!d.preview) return '';
+  const pv = d.preview;
+  const hasFanExpect = pv.fanExpect && pv.fanExpect.length > 0;
+  const hasRivalry = !!pv.rivalry;
+  const hasTitle = !!pv.title;
+  if (!hasFanExpect && !hasRivalry && !hasTitle && (typeof KURODA_PREVIEW === 'undefined' || !KURODA_PREVIEW.generic)) return '';
+
+  const seed = Engine.rng.derive(d.generatedSeason || 1, d.generatedWeek || 1, 0xF0CA);
+  const rng = Engine.rng.create(seed);
+  const items = [];
+
+  if (typeof KURODA_PREVIEW !== 'undefined') {
+    // ファン期待
+    if (hasFanExpect) {
+      pv.fanExpect.forEach(fe => {
+        const pool = KURODA_PREVIEW.fanExpect || [];
+        if (pool.length > 0) {
+          const fn = Engine.rng.pick(rng, pool);
+          try { items.push(fn({ leftName: fe.leftName, rightName: fe.rightName })); } catch(e) {}
+        }
+      });
+    }
+    // 因縁
+    if (hasRivalry) {
+      const pool = KURODA_PREVIEW.rivalry || [];
+      if (pool.length > 0) {
+        const fn = Engine.rng.pick(rng, pool);
+        try { items.push(fn({ leftName: pv.rivalry.leftName, rightName: pv.rivalry.rightName })); } catch(e) {}
+      }
+    }
+    // タイトル
+    if (hasTitle) {
+      const pool = KURODA_PREVIEW.titleOutlook || [];
+      if (pool.length > 0) {
+        const fn = Engine.rng.pick(rng, pool);
+        try { items.push(fn({ championName: pv.title.championName, challengerName: pv.title.challengerName })); } catch(e) {}
+      }
+    }
+    // いずれもなければgeneric
+    if (items.length === 0) {
+      const pool = KURODA_PREVIEW.generic || [];
+      if (pool.length > 0) {
+        const fn = Engine.rng.pick(rng, pool);
+        try { items.push(fn({})); } catch(e) {}
+      }
+    }
+  }
+
+  if (items.length === 0) return '';
+
+  return `
+    <div class="news-preview">
+      <div class="news-preview-title">次回展望</div>
+      ${items.map(t => `<div class="news-preview-item">${t}</div>`).join('')}
     </div>`;
 }
 
@@ -3304,266 +3621,57 @@ function _renderDbHallOfFame() {
 }
 
 // ── 団体比較 ──────────────────────────────────────────────
-let _dbCompareTarget = 'org_s';
+let _dbCompareTarget = null; // null=自動選択（ランキングでプレイヤーのすぐ上の団体）
 
-// ══════════════════════════════════════════════════════════
-// 勢力図サブタブ（A案）— SVGコンテナのみ返す。描画は_buildOrgColumnSvgContent共通関数
-// ══════════════════════════════════════════════════════════
-function _renderDbOrgCompare() {
-  const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
-  const rc = d.rivalColor;
-  // CSS custom property で rival 色を動的設定
-  const tierCls = d.rivalTier === 'S' ? 's' : d.rivalTier === 'A' ? 'a' : 'b';
-
-  // --- Helper: hex → rgba ---
-  function hexDim(hex, alpha) {
-    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
-  const rivalDim = hexDim(rc, 0.12);
-  const rivalGlow = hexDim(rc, 0.06);
-  const rivalGrad = `linear-gradient(90deg,${rc},${hexDim(rc, 0.6)})`;
-
-  // --- Section 1: Hero ---
-  let html = `<div class="db-cmp-select">
-    <label>Compare with</label>
-    <select onchange="_dbCompareTarget=this.value;renderDatabase()">
-      ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${G.rivalOrgNames?.[o.id] || o.name || o.id} (Tier ${o.tier})</option>`).join('')}
-    </select>
-  </div>`;
-
-  html += `<section class="db-cmp-hero" style="--rival-glow:${rivalGlow}">
-    <div class="db-cmp-grade">
-      <div class="grade-label">Matchup Difficulty</div>
-      <div class="grade-value">${d.grade}</div>
-      <div class="grade-desc">${d.gradeDesc}</div>
-    </div>
-    <div class="db-cmp-versus">
-      <article class="db-cmp-org-card player">
-        <div class="db-cmp-org-head">
-          <div class="db-cmp-org-name"><strong>${d.playerName}</strong><span>${d.playerSubtitle}</span></div>
-          <div class="db-cmp-tier player">Player</div>
-        </div>
-        <div class="db-cmp-tags">${(d.playerTags.length ? d.playerTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
-        <div class="db-cmp-mini-stats">
-          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.playerScores.ace}</strong></div>
-          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.playerScores.starPower}</strong></div>
-          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.playerRosterCount}</strong></div>
-          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.pOrgPop}</strong></div>
-        </div>
-      </article>
-      <div class="db-cmp-vs-mark"><div class="db-cmp-vs-ring">VS</div></div>
-      <article class="db-cmp-org-card rival" style="--rival-dim:${rivalDim}">
-        <div class="db-cmp-org-head">
-          <div class="db-cmp-org-name"><strong>${d.rivalName}</strong><span>${d.rivalSubtitle}</span></div>
-          <div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>
-        </div>
-        <div class="db-cmp-tags">${(d.rivalTags.length ? d.rivalTags : ['データ集計中']).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
-        <div class="db-cmp-mini-stats">
-          <div class="db-cmp-mini-stat"><label>Top5実力</label><strong>${d.rivalScores.ace}</strong></div>
-          <div class="db-cmp-mini-stat"><label>Top5人気</label><strong>${d.rivalScores.starPower}</strong></div>
-          <div class="db-cmp-mini-stat"><label>選手層</label><strong>${d.rivalRosterCount}</strong></div>
-          <div class="db-cmp-mini-stat"><label>団体人気</label><strong>${d.rOrgPop}</strong></div>
-        </div>
-      </article>
-    </div>
-  </section>`;
-
-  // --- Section 2+3: Power Snapshot + GM Summary ---
-  const AXES = [
-    { key: 'ace', label: 'TOP5実力' },
-    { key: 'starPower', label: 'TOP5人気' },
-    { key: 'popularity', label: '団体人気' },
-    { key: 'depth', label: '選手層' },
-  ];
-  // SVG radar (diamond: top=ace, right=starPower, bottom=popularity, left=depth)
-  const R = 110, cx = 160, cy = 150;
-  const dirs = [[0,-1],[1,0],[0,1],[-1,0]]; // top, right, bottom, left
-  function radarPt(scores, keys) {
-    return keys.map((k, i) => {
-      const v = scores[k] / 100 * R;
-      return `${cx + dirs[i][0] * v},${cy + dirs[i][1] * v}`;
-    }).join(' ');
-  }
-  const axisKeys = ['ace','starPower','popularity','depth'];
-  const pPts = radarPt(d.playerScores, axisKeys);
-  const rPts = radarPt(d.rivalScores, axisKeys);
-
-  // Grid rings
-  let gridSvg = '';
-  [1, 0.75, 0.5, 0.25].forEach((s, i) => {
-    const a = [0, -R*s, R*s, 0, 0, R*s, -R*s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
-    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(200,190,170,${0.12 - i * 0.02})"/>`;
-  });
-
-  const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体比較レーダー">
-    <defs>
-      <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f0d078" stop-opacity="0.35"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0.08"/></linearGradient>
-      <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
-    </defs>
-    <g>
-      ${gridSvg}
-      <line x1="${cx}" y1="${cy - R - 8}" x2="${cx}" y2="${cy + R + 8}" stroke="rgba(255,255,255,0.08)"/>
-      <line x1="${cx - R - 8}" y1="${cy}" x2="${cx + R + 8}" y2="${cy}" stroke="rgba(255,255,255,0.08)"/>
-      <polygon points="${pPts}" fill="url(#gP)" stroke="#d4a843" stroke-width="2"/>
-      <polygon points="${rPts}" fill="url(#gR)" stroke="${rc}" stroke-width="2" opacity="0.7"/>
-      ${axisKeys.map((k, i) => {
-        const pv = d.playerScores[k] / 100 * R;
-        const rv = d.rivalScores[k] / 100 * R;
-        return `<circle cx="${cx + dirs[i][0]*pv}" cy="${cy + dirs[i][1]*pv}" r="3.5" fill="#f0d078"/>
-                <circle cx="${cx + dirs[i][0]*rv}" cy="${cy + dirs[i][1]*rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
-      }).join('')}
-      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5実力</text>
-      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
-      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
-      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
-    </g>
-  </svg>`;
-
-  // Axis bars
-  let axisBars = '';
-  AXES.forEach(ax => {
-    const diff = d.diffs[ax.key];
-    const cls = diff > 0 ? 'good' : diff < 0 ? 'bad' : '';
-    const sign = diff > 0 ? '+' : '';
-    axisBars += `<div class="db-cmp-axis-row">
-      <header><strong>${ax.label}</strong><span class="db-cmp-diff ${cls}">${sign}${diff}</span></header>
-      <div class="db-cmp-meter">
-        <span class="bar-player" style="width:${d.playerScores[ax.key]}%"></span>
-        <span class="bar-rival" style="width:${d.rivalScores[ax.key]}%;background:${rivalGrad}"></span>
-      </div>
-    </div>`;
-  });
-
-  const briefItems = [
-    { title: '勝ち筋', desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
-    { title: '注意点', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
-    { title: '補強提案', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
-  ];
-  const planHtml = d.actions.slice(0, 2).map(a => `<div class="db-cmp-brief-card">
-      <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
-      <p>${a.text}</p>
-    </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きな追加アクションはありません。</p></div>`;
-  const roleCopy = {
-    'エース': '看板の勝負所。ここで主導権を取れるかが全体像を左右する。',
-    '主力': '中核カード。興行の温度を押し上げる役目を担う。',
-    '中堅': '層の厚さが見えるポイント。団体力の差が最も出やすい。',
-  };
-  function buildMatchupCard(m, featured) {
-    const pUrl = getPortraitUrl(m.player.id);
-    const rUrl = getPortraitUrl(m.rival.id);
-    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
-    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
-    const ovrDiff = m.player.ovr - m.rival.ovr;
-    const popDiff = m.player.pop - m.rival.pop;
-    const edgeClass = ovrDiff > 2 ? 'player' : ovrDiff < -2 ? 'rival' : 'even';
-    const edgeText = ovrDiff > 2 ? `${d.playerName}優勢` : ovrDiff < -2 ? `${d.rivalName}優勢` : '互角';
-    const signValue = n => n > 0 ? `+${n}` : `${n}`;
-    return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
-      <div class="db-cmp-match-top">
-        <span class="db-cmp-role-chip">${m.role}</span>
-        <span class="db-cmp-edge ${edgeClass}">${edgeText}</span>
-      </div>
-      <div class="db-cmp-match-faceoff">
-        <div class="db-cmp-match-side">
-          <div class="db-cmp-match-avatar player ${featured ? 'lg' : ''}">${pAvatar}</div>
-          <div class="db-cmp-match-meta">
-            <strong>${m.player.name}</strong>
-            <span>${d.playerName}</span>
-            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
-          </div>
-        </div>
-        <div class="db-cmp-match-center">
-          <div class="db-cmp-match-vs">${featured ? 'SHOWDOWN' : 'VS'}</div>
-          <div class="db-cmp-match-metrics">
-            <span>OVR ${signValue(ovrDiff)}</span>
-            <span>人気 ${signValue(popDiff)}</span>
-          </div>
-        </div>
-        <div class="db-cmp-match-side right">
-          <div class="db-cmp-match-avatar rival ${featured ? 'lg' : ''}" style="background:linear-gradient(180deg,${rc},${hexDim(rc,0.4)})">${rAvatar}</div>
-          <div class="db-cmp-match-meta">
-            <strong>${m.rival.name}</strong>
-            <span>${d.rivalName}</span>
-            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
-          </div>
-        </div>
-      </div>
-      <p class="db-cmp-match-copy">${roleCopy[m.role] || 'このカードが団体比較の温度を決める。'}</p>
-    </article>`;
-  }
-
-  if (d.matchups.length) {
-    const [featured, ...rest] = d.matchups;
-    html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Key Matchups</div>
-      ${buildMatchupCard(featured, true)}
-      ${rest.length ? `<div class="db-cmp-match-grid">${rest.map(m => buildMatchupCard(m, false)).join('')}</div>` : ''}
-    </section>`;
-  } else {
-    html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Key Matchups</div>
-      <div class="db-cmp-recommend"><p>比較できる主力選手データがまだ不足しています。</p></div>
-    </section>`;
-  }
-
-  html += `<section class="db-cmp-main-grid">
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">Power Snapshot</h2>
-      <div class="db-cmp-analysis">
-        <div class="db-cmp-chart-box">${svgChart}</div>
-        <div class="db-cmp-axis-table">${axisBars}</div>
-      </div>
-    </div>
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">GM Brief</h2>
-      <div class="db-cmp-story"><strong>現状総評</strong><p>${d.summaryText}</p></div>
-      <div class="db-cmp-insight-list">
-        ${briefItems.map(item => `<div class="db-cmp-insight"><div><strong>${item.title}</strong><div class="desc">${item.desc}</div></div><span class="db-cmp-badge ${item.badgeClass}">${item.badge}</span></div>`).join('')}
-      </div>
-      <div class="db-cmp-brief-grid">${planHtml}</div>
-    </div>
-  </section>`;
-
-  return html;
+function _getDefaultCompareTarget() {
+  const rankings = G.rankings || [];
+  const playerRank = Engine.ranking.getPlayerRank(rankings);
+  // プレイヤーの1つ上のランクの団体を探す
+  const above = rankings.find(r => r.rank === playerRank - 1 && r.orgId !== 'player');
+  if (above) return above.orgId;
+  // 1位なら1つ下を見る
+  const below = rankings.find(r => r.rank === playerRank + 1 && r.orgId !== 'player');
+  if (below) return below.orgId;
+  // フォールバック: 最初のAI団体
+  return RIVAL_ORGS[0].id;
 }
 
 // ╔══════════════════════════════════════════════════════════╗
-// ║  RELATIONSHIP MAP (Phase 6)                              ║
+// ║  ORG COMPARE — 黒田幸子リニューアル版                      ║
 // ╚══════════════════════════════════════════════════════════╝
 
 function _renderDbOrgCompare() {
+  // 初回表示時にデフォルト比較対象を自動選択
+  if (!_dbCompareTarget) _dbCompareTarget = _getDefaultCompareTarget();
   const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
   const rc = d.rivalColor;
   const tierCls = d.rivalTier === 'S' ? 's' : d.rivalTier === 'A' ? 'a' : 'b';
 
+  // ── ヘルパー ──
   function hexDim(hex, alpha) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r},${g},${b},${alpha})`;
   }
-
-  function signValue(n) {
-    return n > 0 ? `+${n}` : `${n}`;
-  }
+  function signValue(n) { return n > 0 ? `+${n}` : `${n}`; }
 
   function getEdgeState(diff) {
     if (diff >= 8) return { cls: 'player', text: `${d.playerName}が圧倒` };
     if (diff >= 4) return { cls: 'player', text: `${d.playerName}が優勢` };
     if (diff >= 2) return { cls: 'player', text: `${d.playerName}が先行` };
-    if (diff <= -8) return { cls: 'rival', text: `${d.rivalName}に惨敗圏` };
+    if (diff <= -8) return { cls: 'rival', text: `${d.rivalName}が圧倒` };
     if (diff <= -4) return { cls: 'rival', text: `${d.rivalName}が優勢` };
     if (diff <= -2) return { cls: 'rival', text: `${d.rivalName}が先行` };
     return { cls: 'even', text: 'ほぼ五分' };
   }
 
   function getPopularityTail(popDiff) {
-    if (popDiff >= 8) return '人気面の後押しまでついている。';
-    if (popDiff >= 3) return '集客面でもこちらに追い風がある。';
-    if (popDiff <= -8) return '知名度でも大きく置いていかれている。';
-    if (popDiff <= -3) return '人気面の見劣りも無視できない。';
-    return '人気勝負はほぼ並びで、純粋な格の勝負になる。';
+    if (popDiff >= 8) return 'しかも人気面でも圧倒している。全方位で優位。';
+    if (popDiff >= 3) return '集客力でも上回っており、興行の空気はこちらが作れる。';
+    if (popDiff <= -8) return 'おまけに人気でも大差。集客面での不利は、そのまま興行の空気に直結する。';
+    if (popDiff <= -3) return '人気面の差もボディブローのように効いてくる。';
+    return '人気は互角。純粋な実力勝負に持ち込める。';
   }
 
   function getMatchupSlot(index) {
@@ -3577,32 +3685,52 @@ function _renderDbOrgCompare() {
   function getMatchupCopy(slot, ovrDiff, popDiff) {
     const popTail = getPopularityTail(popDiff);
     if (slot.key === 'ace') {
-      if (ovrDiff <= -8) return `エース比較はかなり厳しい。看板に据えると飲まれて終わる。${popTail}`;
-      if (ovrDiff <= -4) return `エース比較は分が悪い。真っ向から当てると主導権を持っていかれやすい。${popTail}`;
-      if (ovrDiff < 3) return `エース比較は十分勝負になる。ここを五分で持ち帰れれば興行全体が締まる。${popTail}`;
-      if (ovrDiff < 8) return `エース比較はこちらが前に出られる。堂々とメインの顔にして押し切りたい。${popTail}`;
-      return `エース比較は完全にこちらの土俵。相手の看板ごと食うつもりで前面に出していい。${popTail}`;
+      if (ovrDiff <= -8) return `エース比較？ 話にならない。看板に据えたら向こうのサンドバッグにされるだけだ。${popTail}`;
+      if (ovrDiff <= -4) return `エース比較は正直キツい。真っ向勝負を挑んでも、主導権を握られる展開が目に見えている。${popTail}`;
+      if (ovrDiff < 3) return `エース比較は互角。ここを五分で返せるなら、興行の格がまるで違ってくる。${popTail}`;
+      if (ovrDiff < 8) return `エース比較は明確にこちらが上。メインの看板に据えて、堂々と押し切ればいい。${popTail}`;
+      return `エース比較は圧勝。相手の看板ごと食い潰すつもりで前に出していい。遠慮は要らない。${popTail}`;
     }
     if (slot.key === 'no2') {
-      if (ovrDiff <= -8) return `No.2対決は正直かなり痛い。ここまで崩れると上位カード全体が細く見える。${popTail}`;
-      if (ovrDiff <= -4) return `No.2対決は押され気味。厚み勝負にすると相手の二番手が目立つ。${popTail}`;
-      if (ovrDiff < 3) return `No.2対決は拮抗。ここを取り切れるかで団体の厚み評価が変わる。${popTail}`;
-      if (ovrDiff < 8) return `No.2対決はしっかり優勢。主力層の強さを見せつけるには十分なカードだ。${popTail}`;
-      return `No.2対決まで勝っているならかなり強い。相手の上位陣をまとめて上回れている。${popTail}`;
+      if (ovrDiff <= -8) return `No.2対決でこの差は致命傷だ。二番手がこれでは、上位カードを組む意味すら危うい。${popTail}`;
+      if (ovrDiff <= -4) return `No.2対決で押されている。戦力の厚みで勝負すると、こちらの薄さが余計に目立つ。${popTail}`;
+      if (ovrDiff < 3) return `No.2対決は互角。ここで勝ち切れるかどうかが、団体の「層の厚さ」の証明になる。${popTail}`;
+      if (ovrDiff < 8) return `No.2対決もこちらが上。主力層の充実を見せつけるには十分すぎるカードだ。${popTail}`;
+      return `No.2対決まで圧倒している。相手の上位陣をまとめて凌駕しているのは、圧倒的な戦力の証だ。${popTail}`;
     }
-    if (ovrDiff <= -8) return `No.3比較でも惨敗寄り。層の薄さがそのまま露呈するので編成の手当てが必要だ。${popTail}`;
-    if (ovrDiff <= -4) return `No.3比較は明確に不利。中堅勝負にすると団体力の差を見せられる。${popTail}`;
-    if (ovrDiff < 3) return `No.3比較は十分競れる。ここを互角で回せれば全体の見栄えは落ちない。${popTail}`;
-    if (ovrDiff < 8) return `No.3比較はこちらが上。下支えの強さとして素直にアピールできる。${popTail}`;
-    return `No.3比較まで圧倒している。層の厚さでは完全にこちらの勝ちだ。${popTail}`;
+    if (ovrDiff <= -8) return `三番手比較ですら負けている。もう個人の問題じゃなく、団体として戦力が足りていない。${popTail}`;
+    if (ovrDiff <= -4) return `三番手で不利ということは、中堅以下は全滅に近い。団体力の差がモロに出る。${popTail}`;
+    if (ovrDiff < 3) return `三番手は互角。ここを互角で回せれば、興行全体の見栄えを保てる。${popTail}`;
+    if (ovrDiff < 8) return `三番手でも勝っている。層の厚さを示す意味で、一番分かりやすい優位だ。${popTail}`;
+    return `三番手まで圧倒。どこを切っても勝てる戦力を揃えている。これが本物の団体力だ。${popTail}`;
   }
+
+  // ── 黒田テキスト選択用seed ──
+  const kurodaSeed = Engine.rng.derive(G.rngSeed, G.season, G.week, (_dbCompareTarget || '').charCodeAt(0) || 0, 0xCDA1);
+  const kurodaRng = Engine.rng.create(kurodaSeed);
+  function pickText(pool) {
+    if (!pool || !pool.length) return '';
+    return Engine.rng.pick(kurodaRng, pool);
+  }
+
+  // ── 黒田tier判定 ──
+  function getKurodaTier(totalDiff) {
+    if (totalDiff <= -60) return 'devastating';
+    if (totalDiff <= -25) return 'behind';
+    if (totalDiff <= 10) return 'even';
+    if (totalDiff <= 40) return 'ahead';
+    return 'dominant';
+  }
+
+  const totalDiff = d.totalDiff || 0;
+  const kurodaTier = getKurodaTier(totalDiff);
+  const textData = { playerName: d.playerName, rivalName: d.rivalName, chaseAxisLabel: d.chaseAxisLabel, leadAxisLabel: d.leadAxisLabel };
 
   const rivalDim = hexDim(rc, 0.12);
   const rivalGrad = `linear-gradient(90deg,${rc},${hexDim(rc, 0.6)})`;
   const fallbackTag = '分析中';
   const playerTags = d.playerTags.length ? d.playerTags : [fallbackTag];
   const rivalTags = d.rivalTags.length ? d.rivalTags : [fallbackTag];
-  const briefLead = d.actions[0]?.text || d.opportunity || d.summaryText;
   const playerChampionName = G.titles?.world?.championId
     ? (G.roster.find(f => f.id === G.titles.world.championId)?.name || '不在')
     : '不在';
@@ -3611,6 +3739,7 @@ function _renderDbOrgCompare() {
     ? (rivalOrgData.roster?.find(f => f.id === rivalOrgData.titles.world.championId)?.name || '不在')
     : '不在';
 
+  // ═══ [SELECT] 比較対象選択 ═══
   let html = `<div class="db-cmp-select">
     <label>Compare with</label>
     <select onchange="_dbCompareTarget=this.value;renderDatabase()">
@@ -3618,15 +3747,247 @@ function _renderDbOrgCompare() {
     </select>
   </div>`;
 
+  // ═══ ① 特集ヘッダー ═══
+  const headlineText = pickText(KURODA_HEADLINES[kurodaTier]);
+  const headlineStr = typeof headlineText === 'function' ? headlineText(textData) : (headlineText || '');
+  html += `<section class="db-cmp-headline">
+    <div class="db-cmp-headline-reporter">
+      <img src="${getNpcPortraitUrl('reporter')}" class="db-cmp-kuroda-face" alt="">
+      <div class="db-cmp-headline-text">
+        <div class="db-cmp-headline-quote">「${headlineStr}」</div>
+        <div class="db-cmp-headline-byline">——黒田幸子 <span>週刊グラップル</span></div>
+      </div>
+    </div>
+    <div class="db-cmp-headline-grade">
+      <div class="grade-label">Matchup</div>
+      <div class="grade-value">${d.grade}</div>
+      <div class="grade-desc">${d.gradeDesc}</div>
+    </div>
+  </section>`;
+
+  // ═══ ② 団体カードVS ═══
+  function getPopTrend(side) {
+    const hist = G.orgPopHistory?.[side] || [];
+    const s1Pop = hist[0]?.start || 0;
+    const currentPop = side === 'player' ? d.pOrgPop : d.rOrgPop;
+    const delta = currentPop - s1Pop;
+    if (s1Pop === 0 && delta === 0) return '';
+    const cls = delta > 0 ? 'growth-up' : delta < 0 ? 'growth-down' : '';
+    return `<div style="margin-top:6px;font-size:11px;color:var(--text-sub)">S1: ${s1Pop} → 現在: ${currentPop} <span class="${cls}">${delta > 0 ? '+' : ''}${delta}</span></div>`;
+  }
+
+  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, popTrend, styleAttr = '') {
+    return `<article class="db-cmp-org-summary-card ${sideCls}" ${styleAttr}>
+      <div class="db-cmp-org-summary-head">
+        <div class="db-cmp-org-summary-name">
+          <strong>${name}</strong>
+          <span>${subtitle}</span>
+        </div>
+        ${tierHtml}
+      </div>
+      <div class="db-cmp-tags">${tags.slice(0, 2).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
+      <div class="db-cmp-org-summary-statline">
+        <span>TOP5総合 <strong>${scores.ace}</strong></span>
+        <span>選手層 <strong>${rosterCount}</strong></span>
+        <span>団体人気 <strong>${orgPop}</strong></span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">王者 <strong style="color:var(--text-main)">${championName}</strong></div>
+      ${popTrend}
+    </article>`;
+  }
+
+  html += `<div class="db-cmp-org-summary">
+    <div class="db-cmp-org-summary-row">
+      ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">Player</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'))}
+      <div class="db-cmp-org-summary-grade">
+        <span>VS</span>
+        <strong>${d.rivalEmoji || 'VS'}</strong>
+      </div>
+      ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`)}
+    </div>
+  </div>`;
+
+  // ═══ ③ 戦績サマリー ═══
+  const rec = Engine.orgWar ? Engine.orgWar.getFor(G, 'player', _dbCompareTarget) : null;
+  if (rec) {
+    const totalW = rec.warsWon + rec.summitsWon + rec.ppvWon;
+    const totalL = rec.warsLost + rec.summitsLost + rec.ppvLost;
+    const totalD = rec.warsDraw || 0;
+    const totalGames = totalW + totalL + totalD;
+    let recordTier;
+    if (totalGames === 0) recordTier = 'noRecord';
+    else if (totalW === totalL) recordTier = 'evenRecord';
+    else if (totalGames > 0 && totalW / totalGames >= 0.67) recordTier = 'heavyWinning';
+    else if (totalW > totalL) recordTier = 'slightWinning';
+    else if (totalGames > 0 && totalL / totalGames >= 0.67) recordTier = 'heavyLosing';
+    else recordTier = 'slightLosing';
+
+    const recTextData = { ...textData, wins: totalW, losses: totalL, streak: rec.streak };
+    const warComment = pickText(KURODA_WAR_RECORD[recordTier]);
+    const warCommentStr = typeof warComment === 'function' ? warComment(recTextData) : (warComment || '');
+    let streakComment = '';
+    if (rec.streak >= 3) {
+      const sc = pickText(KURODA_WAR_RECORD.winStreak);
+      streakComment = typeof sc === 'function' ? sc({ ...recTextData, streak: rec.streak }) : (sc || '');
+    } else if (rec.streak <= -3) {
+      const sc = pickText(KURODA_WAR_RECORD.loseStreak);
+      streakComment = typeof sc === 'function' ? sc({ ...recTextData, streak: rec.streak }) : (sc || '');
+    }
+
+    let streakHtml = '';
+    if (rec.streak >= 2) streakHtml = `<div class="db-cmp-war-streak win">${rec.streak}連勝中</div>`;
+    else if (rec.streak <= -2) streakHtml = `<div class="db-cmp-war-streak lose">${Math.abs(rec.streak)}連敗中</div>`;
+
+    html += `<section class="db-cmp-panel db-cmp-war-record">
+      <h2 class="db-cmp-panel-title">Head to Head</h2>
+      <div class="db-cmp-war-overall">
+        <span class="db-cmp-war-label">通算</span>
+        <strong class="db-cmp-war-wl">${totalW}勝${totalL}敗${totalD > 0 ? totalD + '分' : ''}</strong>
+      </div>
+      <div class="db-cmp-war-breakdown">
+        <div class="db-cmp-war-item"><label>対抗戦</label><span>${rec.warsWon}勝${rec.warsLost}敗</span></div>
+        <div class="db-cmp-war-item"><label>PPV</label><span>${rec.ppvWon}勝${rec.ppvLost}敗</span></div>
+        <div class="db-cmp-war-item"><label>サミット</label><span>${rec.summitsWon}勝${rec.summitsLost}敗</span></div>
+      </div>
+      ${streakHtml}
+      <div class="db-cmp-war-comment">
+        <img src="${getNpcPortraitUrl('reporter')}" class="db-cmp-kuroda-face-sm" alt="">
+        <p>「${warCommentStr}${streakComment ? ' ' + streakComment : ''}」</p>
+      </div>
+    </section>`;
+  }
+
+  // ═══ ④ Top 3 Matchups ═══
+  // マッチアップフレーバーヘルパー
+  function getStyleCategory(style) {
+    const map = { Grappler: 'power', Striker: 'power', Brawler: 'power', Speed: 'speed', Submission: 'tech', Allround: null };
+    return map[style] || null;
+  }
+  function getStyleMatchupKey(s1, s2) {
+    const a = getStyleCategory(s1), b = getStyleCategory(s2);
+    if (!a || !b) return 'defaultStyle';
+    if (a === b) return `${a}Vs${a.charAt(0).toUpperCase() + a.slice(1)}`;
+    const sorted = [a, b].sort();
+    return `${sorted[0]}Vs${sorted[1].charAt(0).toUpperCase() + sorted[1].slice(1)}`;
+  }
+  function getAgeFlavorKey(age1, age2) {
+    const diff = Math.abs(age1 - age2);
+    if (diff <= 2) {
+      if (age1 <= 22 && age2 <= 22) return 'youngVsYoung';
+      if (age1 >= 30 && age2 >= 30) return 'veteranVsVeteran';
+      return 'sameGeneration';
+    }
+    const younger = Math.min(age1, age2);
+    const older = Math.max(age1, age2);
+    if (older >= 28 && younger <= 23) return 'veteranVsYoung';
+    return null;
+  }
+
+  function buildMatchupCard(m, index) {
+    const featured = index === 0;
+    const slot = getMatchupSlot(index);
+    const pUrl = getPortraitUrl(m.player.id);
+    const rUrl = getPortraitUrl(m.rival.id);
+    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
+    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
+    const ovrDiff = m.player.ovr - m.rival.ovr;
+    const popDiff = m.player.pop - m.rival.pop;
+    const edge = getEdgeState(ovrDiff);
+    let fullCopy = getMatchupCopy(slot, ovrDiff, popDiff);
+
+    // 黒田フレーバー追加
+    const flavors = [];
+    // スタイル
+    const pChar = ALL_CHARS.find(c => c.id === m.player.id);
+    const rChar = ALL_CHARS.find(c => c.id === m.rival.id);
+    if (pChar && rChar) {
+      const styleKey = getStyleMatchupKey(pChar.style, rChar.style);
+      const stylePick = pickText(KURODA_MATCHUP_FLAVOR.style[styleKey] || KURODA_MATCHUP_FLAVOR.style.defaultStyle);
+      if (stylePick) flavors.push(typeof stylePick === 'function' ? stylePick(textData) : stylePick);
+      // 年齢
+      const pAge = pChar.age || (G.season + 17);
+      const rAge = rChar.age || (G.season + 17);
+      const ageKey = getAgeFlavorKey(pAge, rAge);
+      if (ageKey) {
+        const agePick = pickText(KURODA_MATCHUP_FLAVOR.age[ageKey] || []);
+        if (agePick) flavors.push(typeof agePick === 'function' ? agePick(textData) : agePick);
+      }
+    }
+    // h2h
+    if (Engine.h2h) {
+      const h2hRec = Engine.h2h.getRecordFor(G, m.player.id, m.rival.id);
+      if (h2hRec && h2hRec.matches > 0) {
+        const h2hData = { ...textData, selfWins: h2hRec.winsA, selfLosses: h2hRec.winsB };
+        let h2hKey = 'evenRecord';
+        if (h2hRec.winsA > h2hRec.winsB) h2hKey = 'winningRecord';
+        else if (h2hRec.winsA < h2hRec.winsB) h2hKey = 'losingRecord';
+        const h2hPick = pickText(KURODA_MATCHUP_FLAVOR.h2h[h2hKey] || []);
+        if (h2hPick) flavors.push(typeof h2hPick === 'function' ? h2hPick(h2hData) : h2hPick);
+      } else {
+        const h2hPick = pickText(KURODA_MATCHUP_FLAVOR.h2h.firstMeeting || []);
+        if (h2hPick) flavors.push(typeof h2hPick === 'function' ? h2hPick(textData) : h2hPick);
+      }
+    }
+    // 最大2件を追記
+    const selectedFlavors = flavors.slice(0, 2);
+    if (selectedFlavors.length) fullCopy += ' ' + selectedFlavors.join(' ');
+
+    return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
+      <div class="db-cmp-match-top">
+        <span class="db-cmp-role-chip">${slot.chip}</span>
+        <span class="db-cmp-edge ${edge.cls}">${edge.text}</span>
+      </div>
+      <div class="db-cmp-match-faceoff">
+        <div class="db-cmp-match-side">
+          <div class="db-cmp-match-avatar player ${featured ? 'lg' : ''}">${pAvatar}</div>
+          <div class="db-cmp-match-meta">
+            <strong>${m.player.name}</strong>
+            <span>${d.playerName}</span>
+            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
+          </div>
+        </div>
+        <div class="db-cmp-match-center">
+          <div class="db-cmp-match-vs">${slot.center}</div>
+          <div class="db-cmp-match-metrics">
+            <span>OVR差 ${signValue(ovrDiff)}</span>
+            <span>人気差 ${signValue(popDiff)}</span>
+          </div>
+        </div>
+        <div class="db-cmp-match-side right">
+          <div class="db-cmp-match-avatar rival ${featured ? 'lg' : ''}" style="background:linear-gradient(180deg,${rc},${hexDim(rc, 0.4)})">${rAvatar}</div>
+          <div class="db-cmp-match-meta">
+            <strong>${m.rival.name}</strong>
+            <span>${d.rivalName}</span>
+            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
+          </div>
+        </div>
+      </div>
+      <p class="db-cmp-match-copy">${fullCopy}</p>
+    </article>`;
+  }
+
+  const topMatchups = d.matchups.slice(0, 3);
+  if (topMatchups.length) {
+    html += `<section class="db-cmp-spotlight-panel">
+      <div class="db-cmp-panel-title">Top 3 Matchups</div>
+      ${buildMatchupCard(topMatchups[0], 0)}
+      ${topMatchups.length > 1 ? `<div class="db-cmp-match-grid">${topMatchups.slice(1).map((m, idx) => buildMatchupCard(m, idx + 1)).join('')}</div>` : ''}
+    </section>`;
+  } else {
+    html += `<section class="db-cmp-spotlight-panel">
+      <div class="db-cmp-panel-title">Top 3 Matchups</div>
+      <div class="db-cmp-recommend"><p>比較対象になる主力カードがまだ揃っていません。</p></div>
+    </section>`;
+  }
+
+  // ═══ ⑤ Power Snapshot ═══
   const AXES = [
     { key: 'ace', label: 'TOP5総合' },
     { key: 'starPower', label: 'TOP5人気' },
     { key: 'popularity', label: '団体人気' },
     { key: 'depth', label: '選手層' },
   ];
-  const R = 110;
-  const cx = 160;
-  const cy = 150;
+  const R = 110, cx = 160, cy = 150;
   const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
   function radarPt(scores, keys) {
     return keys.map((k, i) => {
@@ -3681,125 +4042,128 @@ function _renderDbOrgCompare() {
     </div>`;
   });
 
-  const briefItems = [
-    { title: '勝ち筋', desc: d.opportunity, badge: 'Opportunity', badgeClass: 'good' },
-    { title: '危険信号', desc: d.risk, badge: 'Risk', badgeClass: 'bad' },
-    { title: 'スカウティング', desc: d.scout, badge: 'Scout', badgeClass: 'warn' },
-  ];
+  html += `<section class="db-cmp-panel">
+    <h2 class="db-cmp-panel-title">Power Snapshot</h2>
+    <div class="db-cmp-analysis">
+      <div class="db-cmp-chart-box">${svgChart}</div>
+      <div class="db-cmp-axis-table">${axisBars}</div>
+    </div>
+  </section>`;
+
+  // ═══ ⑥ 記者の総評コラム（GM Brief置換）═══
+  const editorialPick = pickText(KURODA_EDITORIAL[kurodaTier]);
+  const editorialStr = typeof editorialPick === 'function' ? editorialPick(textData) : (editorialPick || '');
   const planHtml = d.actions.slice(0, 2).map(a => `<div class="db-cmp-brief-card">
       <header><strong>${a.title}</strong><span class="db-cmp-badge ${a.badgeClass}">${a.badge}</span></header>
       <p>${a.text}</p>
     </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きく動かすべきアクションはありません。</p></div>`;
 
-  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, styleAttr = '') {
-    return `<article class="db-cmp-org-summary-card ${sideCls}" ${styleAttr}>
-      <div class="db-cmp-org-summary-head">
-        <div class="db-cmp-org-summary-name">
-          <strong>${name}</strong>
-          <span>${subtitle}</span>
-        </div>
-        ${tierHtml}
-      </div>
-      <div class="db-cmp-tags">${tags.slice(0, 2).map(t => `<span class="db-cmp-tag">${t}</span>`).join('')}</div>
-      <div class="db-cmp-org-summary-statline">
-        <span>TOP5総合 <strong>${scores.ace}</strong></span>
-        <span>選手層 <strong>${rosterCount}</strong></span>
-        <span>団体人気 <strong>${orgPop}</strong></span>
-      </div>
-      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">王者 <strong style="color:var(--text-main)">${championName}</strong></div>
-    </article>`;
-  }
-
-  function buildMatchupCard(m, index) {
-    const featured = index === 0;
-    const slot = getMatchupSlot(index);
-    const pUrl = getPortraitUrl(m.player.id);
-    const rUrl = getPortraitUrl(m.rival.id);
-    const pAvatar = pUrl ? `<img src="${pUrl}" alt="">` : m.player.name.charAt(0);
-    const rAvatar = rUrl ? `<img src="${rUrl}" alt="">` : m.rival.name.charAt(0);
-    const ovrDiff = m.player.ovr - m.rival.ovr;
-    const popDiff = m.player.pop - m.rival.pop;
-    const edge = getEdgeState(ovrDiff);
-    return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
-      <div class="db-cmp-match-top">
-        <span class="db-cmp-role-chip">${slot.chip}</span>
-        <span class="db-cmp-edge ${edge.cls}">${edge.text}</span>
-      </div>
-      <div class="db-cmp-match-faceoff">
-        <div class="db-cmp-match-side">
-          <div class="db-cmp-match-avatar player ${featured ? 'lg' : ''}">${pAvatar}</div>
-          <div class="db-cmp-match-meta">
-            <strong>${m.player.name}</strong>
-            <span>${d.playerName}</span>
-            <span>OVR ${m.player.ovr} / 人気 ${m.player.pop}</span>
-          </div>
-        </div>
-        <div class="db-cmp-match-center">
-          <div class="db-cmp-match-vs">${slot.center}</div>
-          <div class="db-cmp-match-metrics">
-            <span>OVR差 ${signValue(ovrDiff)}</span>
-            <span>人気差 ${signValue(popDiff)}</span>
-          </div>
-        </div>
-        <div class="db-cmp-match-side right">
-          <div class="db-cmp-match-avatar rival ${featured ? 'lg' : ''}" style="background:linear-gradient(180deg,${rc},${hexDim(rc, 0.4)})">${rAvatar}</div>
-          <div class="db-cmp-match-meta">
-            <strong>${m.rival.name}</strong>
-            <span>${d.rivalName}</span>
-            <span>OVR ${m.rival.ovr} / 人気 ${m.rival.pop}</span>
-          </div>
-        </div>
-      </div>
-      <p class="db-cmp-match-copy">${getMatchupCopy(slot, ovrDiff, popDiff)}</p>
-    </article>`;
-  }
-
-  const topMatchups = d.matchups.slice(0, 3);
-  if (topMatchups.length) {
-    html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Top 3 Matchups</div>
-      ${buildMatchupCard(topMatchups[0], 0)}
-      ${topMatchups.length > 1 ? `<div class="db-cmp-match-grid">${topMatchups.slice(1).map((m, idx) => buildMatchupCard(m, idx + 1)).join('')}</div>` : ''}
-    </section>`;
-  } else {
-    html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Top 3 Matchups</div>
-      <div class="db-cmp-recommend"><p>比較対象になる主力カードがまだ揃っていません。選手層が見え始めた段階で再確認したいです。</p></div>
-    </section>`;
-  }
-
-  html += `<section class="db-cmp-main-grid">
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">Power Snapshot</h2>
-      <div class="db-cmp-analysis">
-        <div class="db-cmp-chart-box">${svgChart}</div>
-        <div class="db-cmp-axis-table">${axisBars}</div>
-      </div>
-      <div class="db-cmp-org-summary">
-        <div class="db-cmp-org-summary-row">
-          ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">Player</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName)}
-          <div class="db-cmp-org-summary-grade">
-            <span>Matchup</span>
-            <strong>${d.grade}</strong>
-            <em>${d.gradeDesc}</em>
-          </div>
-          ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, `style="--rival-dim:${rivalDim}"`)}
-        </div>
-        <div class="db-cmp-org-summary-note">
-          <strong>団体比較メモ</strong>
-          <p>${d.summaryText}</p>
-        </div>
+  html += `<div class="db-cmp-panel">
+    <h2 class="db-cmp-panel-title">Column</h2>
+    <div class="db-cmp-editorial">
+      <img src="${getNpcPortraitUrl('reporter')}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px;" alt="">
+      <div class="db-cmp-editorial-body">
+        <p>${editorialStr}</p>
+        <div class="db-cmp-editorial-byline">——黒田幸子</div>
       </div>
     </div>
-    <div class="db-cmp-panel">
-      <h2 class="db-cmp-panel-title">GM Brief</h2>
-      <div class="db-cmp-story"><strong>今週の判断</strong><p>${briefLead}</p></div>
-      <div class="db-cmp-insight-list">
-        ${briefItems.map(item => `<div class="db-cmp-insight"><div><strong>${item.title}</strong><div class="desc">${item.desc}</div></div><span class="db-cmp-badge ${item.badgeClass}">${item.badge}</span></div>`).join('')}
-      </div>
+    <div class="db-cmp-editorial-actions">
+      <strong>補強ポイント</strong>
       <div class="db-cmp-brief-grid">${planHtml}</div>
     </div>
-  </section>`;
+  </div>`;
+
+  // ═══ ⑦ 注目選手ピックアップ ═══
+  const rivalRoster = rivalOrgData?.roster || [];
+  const rivalOrgName = d.rivalName;
+  if (rivalRoster.length > 0) {
+    const picks = [];
+    // 1. 最も成長した選手
+    // ovrGainThisSeason: seasonStartOvrから算出（ない場合はgain=0）
+    const rosterWithGain = rivalRoster.map(f => ({ ...f, ovrGainThisSeason: f.seasonStartOvr != null ? Engine.util.ov(f) - f.seasonStartOvr : 0 }));
+    const growthSorted = [...rosterWithGain].sort((a, b) => (b.ovrGainThisSeason || 0) - (a.ovrGainThisSeason || 0));
+    if (growthSorted[0] && (growthSorted[0].ovrGainThisSeason || 0) >= 3) {
+      picks.push({ ...growthSorted[0], category: 'growth', ovrGain: growthSorted[0].ovrGainThisSeason });
+    }
+    // 2. 人気TOP
+    const popSorted = [...rivalRoster].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    if (popSorted[0] && !picks.find(p => p.id === popSorted[0].id)) {
+      picks.push({ ...popSorted[0], category: 'star', pop: Math.round(popSorted[0].popularity || 0) });
+    }
+    // 3. 若手脅威
+    const young = rivalRoster.filter(f => (G.season - (f.debutSeason || 1)) <= 2);
+    if (young.length) {
+      const youngBest = young.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+      if (youngBest && !picks.find(p => p.id === youngBest.id)) {
+        picks.push({ ...youngBest, category: 'youngThreat' });
+      }
+    }
+    // フォールバック: OVR最高
+    if (picks.length < 2) {
+      const ovrSorted = [...rivalRoster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      for (const f of ovrSorted) {
+        if (!picks.find(p => p.id === f.id)) { picks.push({ ...f, category: 'star', pop: Math.round(f.popularity || 0) }); break; }
+      }
+    }
+    const spotPicks = picks.slice(0, 3);
+    if (spotPicks.length > 0) {
+      const categoryLabels = { growth: '要警戒', star: 'スター候補', youngThreat: '若手脅威' };
+      html += `<section class="db-cmp-panel db-cmp-spotlight">
+        <h2 class="db-cmp-panel-title">Scouting Report</h2>
+        ${spotPicks.map(p => {
+          const pUrl = getPortraitUrl(p.id);
+          const pOvr = Engine.util.ov(p);
+          const spotData = { name: p.name, orgName: rivalOrgName, ovrGain: p.ovrGain || 0, pop: p.pop || Math.round(p.popularity || 0) };
+          const spotComment = pickText(KURODA_SPOTLIGHT[p.category] || []);
+          const spotStr = typeof spotComment === 'function' ? spotComment(spotData) : (spotComment || '');
+          const faceHtml = pUrl
+            ? `<div class="db-cmp-spotlight-face"><img src="${pUrl}" alt=""></div>`
+            : `<div class="db-cmp-spotlight-face" style="background:${hexDim(rc, 0.3)};display:grid;place-items:center;font-size:16px;font-weight:900;color:#fff">${p.name.charAt(0)}</div>`;
+          return `<div class="db-cmp-spotlight-pick">
+            ${faceHtml}
+            <div class="db-cmp-spotlight-info">
+              <div class="db-cmp-spotlight-name">${p.name} <span style="font-size:12px;color:var(--text-dim);font-weight:400">OVR ${pOvr}${p.category === 'star' ? ' / 人気' + (p.pop || '') : p.category === 'growth' ? ' / +' + p.ovrGain : ''}</span></div>
+              <span class="db-cmp-spotlight-tag ${p.category}">${categoryLabels[p.category] || ''}</span>
+              <div class="db-cmp-spotlight-comment">「${spotStr}」</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </section>`;
+    }
+  }
+
+  // ═══ ⑧ ファン世論 ═══
+  const fanSeed = Engine.rng.derive(G.rngSeed, G.season, G.week, (_dbCompareTarget || '').charCodeAt(0) || 0, 0xFAC1);
+  const fanRng = Engine.rng.create(fanSeed);
+  const tierFanTypes = {
+    devastating: ['troll', 'hardcore', 'hopeful'],
+    behind: ['hardcore', 'hopeful', 'neutral'],
+    even: ['neutral', 'hardcore', 'hopeful'],
+    ahead: ['neutral', 'hopeful', 'hardcore'],
+    dominant: ['troll', 'neutral', 'hopeful'],
+  };
+  const fanTypes = tierFanTypes[kurodaTier] || ['neutral', 'hardcore', 'hopeful'];
+  const fanPool = FAN_OPINIONS[kurodaTier] || {};
+  const fanComments = fanTypes.map(type => {
+    const pool = fanPool[type] || [];
+    if (!pool.length) return null;
+    const text = Engine.rng.pick(fanRng, pool);
+    const textStr = typeof text === 'function' ? text(textData) : (text || '');
+    const handlePool = FAN_HANDLES[type] || FAN_HANDLES.neutral;
+    const handle = Engine.rng.pick(fanRng, handlePool);
+    const suffix = Engine.rng.int(fanRng, 100, 9999);
+    return { text: textStr, handle: `@${handle}_${suffix}` };
+  }).filter(Boolean);
+
+  if (fanComments.length > 0) {
+    html += `<section class="db-cmp-panel db-cmp-fan-opinions">
+      <h2 class="db-cmp-panel-title">Fan Voice</h2>
+      ${fanComments.map(fc => `<div class="db-cmp-fan-comment">
+        <div class="db-cmp-fan-text">「${fc.text}」</div>
+        <div class="db-cmp-fan-handle">${fc.handle}</div>
+      </div>`).join('')}
+    </section>`;
+  }
 
   return html;
 }

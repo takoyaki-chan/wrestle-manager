@@ -3516,6 +3516,10 @@ const Engine = {
                 stat: btResult.stat,
                 gain: btResult.gain,
               }];
+              // 新聞v2: ブレイクスルー記録
+              nextOrgData._newsBreakthroughs = [...(nextOrgData._newsBreakthroughs || []), {
+                orgName: org.name, id: nc.id, name: nc.name, stat: btResult.stat,
+              }];
             }
 
             const prevBestMQ = nc.careerBestMQ || 0;
@@ -3558,11 +3562,25 @@ const Engine = {
           });
         }
 
+        // 新聞v2: 高MQ試合をハイライトとして記録
+        const bestAiMatch = matchResults.reduce((best, r) => (!best || r.mq > best.mq) ? r : best, null);
+        if (bestAiMatch && bestAiMatch.mq >= 75) {
+          const hlWId = bestAiMatch.winner === 'left' ? bestAiMatch.left?.id : bestAiMatch.right?.id;
+          const hlLId = bestAiMatch.winner === 'left' ? bestAiMatch.right?.id : bestAiMatch.left?.id;
+          nextOrgData._newsShowHighlight = {
+            orgName: org.name,
+            winnerName: roster.find(f => f.id === hlWId)?.name || '?', winnerId: hlWId,
+            loserName: roster.find(f => f.id === hlLId)?.name || '?', loserId: hlLId,
+            mq: bestAiMatch.mq,
+          };
+        }
+
         const aiTitles = nextOrgData.titles;
         const aiTrustResult = Engine.trust.applyShowTrust(roster, matchResults, aiTitles, state);
         roster = aiTrustResult.roster;
 
-        const champId = aiTitles.world?.championId;
+        const oldChampId = aiTitles.world?.championId; // 新聞v2: 王者交代検出用
+        const champId = oldChampId;
         const champAlive = champId && roster.find(f => f.id === champId && !f.injury);
         if (!champAlive) {
           const top = roster
@@ -3602,6 +3620,19 @@ const Engine = {
               }
             }
           }
+        }
+
+        // 新聞v2: 王者交代検出
+        const newChampId = nextOrgData.titles.world?.championId;
+        if (newChampId && newChampId !== oldChampId) {
+          const newChamp = roster.find(f => f.id === newChampId);
+          const prevChamp = oldChampId ? roster.find(f => f.id === oldChampId) : null;
+          nextOrgData._newsChampionChange = {
+            orgName: org.name,
+            newChampId, newChampName: newChamp?.name || '?',
+            prevChampName: prevChamp?.name || null,
+            ovr: newChamp ? Engine.util.ov(newChamp) : 0,
+          };
         }
 
         nextOrgData._lastMatchResults = matchResults;
@@ -3700,11 +3731,18 @@ const Engine = {
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
         events.push(`${org.emoji} ${org.name}: ���X�^�[${roster.length}�� (����OVR ${avgOvr})`);
 
+        // 新聞v2: AI引退記録（次シーズン初週の新聞で表示）
+        const newsRetirements = aiRetirees.map(f => ({
+          orgName: org.name, id: f.id, name: f.name, age: f.age,
+          ovr: Engine.util.ov(f), seasons: f.careerSeasons || 1,
+        }));
+
         // seasonBreakthroughs�͋��Вʒm�Q�ƌ�Ƀ��Z�b�g�i���V�[�Y���p�j
         const seasonBT = aiData.seasonBreakthroughs || [];
         newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop,
           _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
-          seasonBreakthroughs: [] };
+          seasonBreakthroughs: [],
+          _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined };
       });
 
       return { aiOrgs: newAiOrgs, events };
@@ -4873,6 +4911,17 @@ const Engine = {
       const champHasLeader = (s.roster || []).some(c => c.id === champId && Traits.has(c, 'リーダー気質') && !c.injury);
       if (champHasLeader) {
         s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + 1, 0, 100) };
+      }
+    }
+
+    // 新聞v2: 毎週の新聞生成（オフシーズン以外）
+    if (!s.offSeason) {
+      const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
+      const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
+      s = { ...s, weeklyNewspaper };
+      // AIニュース一時フィールドをクリア
+      if (s.aiOrgs) {
+        s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
       }
     }
 
@@ -7611,6 +7660,19 @@ const Engine = {
         }
         s = { ...s, orgPopHistory: oph };
 
+        // seasonStartOvr: 新シーズン開幕時のOVRを記録（ovrGainThisSeason算出用）
+        s = { ...s, roster: s.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        const updatedAiOrgs = { ...(s.aiOrgs || {}) };
+        for (const org of RIVAL_ORGS) {
+          const aiOrg = updatedAiOrgs[org.id];
+          if (!aiOrg?.roster) continue;
+          updatedAiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        }
+        s = { ...s, aiOrgs: updatedAiOrgs };
+        if (s.freeAgents) {
+          s = { ...s, freeAgents: s.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        }
+
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
@@ -8111,6 +8173,17 @@ const Engine = {
       }
     }
     initState.orgPopHistory = initOph;
+    // seasonStartOvr: シーズン1開幕時のOVRを記録
+    initState.roster = initState.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
+    for (const org of RIVAL_ORGS) {
+      const aiOrg = initState.aiOrgs?.[org.id];
+      if (aiOrg?.roster) {
+        initState.aiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+      }
+    }
+    if (initState.freeAgents) {
+      initState.freeAgents = initState.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
+    }
     initState.rankings = Engine.ranking.updateRankings(initState);
     return initState;
   }
@@ -11089,11 +11162,11 @@ Engine.database = {
     // --- グレード ---
     const totalDiff = KEYS.reduce((s, k) => s + diffs[k], 0);
     let grade, gradeDesc;
-    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面的に劣勢。長期戦略での巻き返しが必要。'; }
-    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で差がある。弱点の補強が急務。'; }
-    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角の勝負。戦略次第で十分勝てる。'; }
-    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。強みを活かせば安定して上回れる。'; }
-    else { grade = 'A'; gradeDesc = '圧倒的優位。この差を維持したい。'; }
+    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面劣勢。正面から勝てる要素がない。'; }
+    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で後手。課題が多い。'; }
+    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角。戦略次第で勝てる。'; }
+    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。リードを活かし切れるか。'; }
+    else { grade = 'A'; gradeDesc = '圧倒的優位。死角なし。'; }
 
     // --- サマリーテキスト ---
     const AXIS_META = [
@@ -11238,7 +11311,8 @@ Engine.database = {
       rOrgPop: Math.round(Engine.util.dispOrgPop(rOrgPop)),
       playerTags: computeTags(pRoster, pOrgPop, true),
       rivalTags: computeTags(rRoster, rOrgPop, false),
-      grade, gradeDesc,
+      grade, gradeDesc, totalDiff,
+      leadAxisLabel: leadAxis.label, chaseAxisLabel: chaseAxis.label,
       summaryText,
       opportunity: positiveAxes.length > 0 ? opportunityTexts[leadAxis.key] : pivotTexts[leadAxis.key],
       risk: negativeAxes.length > 0 ? riskTexts[chaseAxis.key] : guardTexts[chaseAxis.key],
@@ -14597,6 +14671,182 @@ Engine.eventSystem.applyLargeEventEffect = function(event, step, choiceIdx, stat
 
   return result;
 };
+// ══════════════════════════════════════════════════════════
+//  Engine.newspaper — 新聞v2 毎週生成システム
+//  Pure functions only — no DOM references
+// ══════════════════════════════════════════════════════════
+Engine.newspaper = {
+  PRIORITY: {
+    ppvSummitResult:     200,
+    playerTitleChange:   180,
+    aiAceRetirement:     160,
+    crossWarResult:      140,
+    aiChampionChange:    130,
+    playerShowTitle:     120,
+    aiShowHighlight:      80,
+    playerShowNormal:     90,
+    aiRetirement:        100,
+    aiBreakthrough:       60,
+    transfer:             50,
+    general:              30,
+  },
+
+  /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
+  generate(state, rng) {
+    const P = Engine.newspaper.PRIORITY;
+    const stories = [];
+
+    // === 自団体の興行結果（興行週のみ）===
+    if (state.currentNewspaper) {
+      const cn = state.currentNewspaper;
+      const isTitleShow = !!cn.isTitleMatch;
+      stories.push({
+        type: isTitleShow ? 'playerShowTitle' : 'playerShowNormal',
+        priority: isTitleShow ? P.playerShowTitle : P.playerShowNormal,
+        headline: cn.headline || '定期興行開催',
+        body: cn.article || cn.subheadline || '',
+        characterId: cn.winner?.id || cn.left?.id || null,
+      });
+    }
+
+    // === AI団体のイベント（processAIWeek で蓄積されたもの）===
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const aiData = state.aiOrgs[orgId];
+        if (!aiData) return;
+
+        // AI王者交代
+        if (aiData._newsChampionChange) {
+          const ev = aiData._newsChampionChange;
+          const isAce = ev.ovr >= 75;
+          stories.push({
+            type: 'aiChampionChange',
+            priority: P.aiChampionChange + (isAce ? 20 : 0),
+            headline: `${ev.orgName}——新王者${ev.newChampName}が誕生`,
+            body: `${ev.orgName}の王座が動いた。${ev.newChampName}（OVR ${ev.ovr}）が${ev.prevChampName || '前王者'}を下し、新たな頂点に立った。`,
+            characterId: ev.newChampId,
+          });
+        }
+
+        // AI引退（シーズン末にprocessSeasonEndで蓄積）
+        if (aiData._newsRetirements) {
+          aiData._newsRetirements.forEach(ev => {
+            const isAce = ev.ovr >= 70;
+            stories.push({
+              type: isAce ? 'aiAceRetirement' : 'aiRetirement',
+              priority: isAce ? P.aiAceRetirement : P.aiRetirement,
+              headline: `${ev.orgName}の${ev.name}が現役引退を表明`,
+              body: `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。${isAce ? '看板選手の退団は団体にとって大きな痛手だ。' : '長い現役生活に幕を下ろした。'}`,
+              characterId: ev.id,
+            });
+          });
+        }
+
+        // AI興行ハイライト（高MQ試合）
+        if (aiData._newsShowHighlight) {
+          const ev = aiData._newsShowHighlight;
+          stories.push({
+            type: 'aiShowHighlight',
+            priority: P.aiShowHighlight,
+            headline: `${ev.orgName}定期興行——${ev.winnerName}が${ev.loserName}を下す`,
+            body: `${ev.orgName}の興行で${ev.winnerName}が${ev.loserName}に勝利。MQ ${ev.mq}を記録した。`,
+            characterId: ev.winnerId,
+          });
+        }
+
+        // AIブレイクスルー
+        if (aiData._newsBreakthroughs) {
+          aiData._newsBreakthroughs.forEach(ev => {
+            stories.push({
+              type: 'aiBreakthrough',
+              priority: P.aiBreakthrough,
+              headline: `${ev.orgName}の${ev.name}が急成長——注目の存在に`,
+              body: `${ev.orgName}所属の${ev.name}がブレイクスルーを達成。${ev.stat}が大幅に向上し、今後の活躍が期待される。`,
+              characterId: ev.id,
+            });
+          });
+        }
+      });
+    }
+
+    // priority でソート
+    stories.sort((a, b) => b.priority - a.priority);
+
+    // 一面 + サブ記事（最大3件）
+    const topStory = stories[0] || null;
+    const subStories = stories.slice(1, 4);
+
+    // 次回展望
+    const preview = Engine.newspaper.buildPreview(state);
+
+    return {
+      season: state.season, week: state.week,
+      topStory, subStories,
+      playerShowData: state.currentNewspaper || null,
+      preview,
+    };
+  },
+
+  /** 次回展望データを構築 */
+  buildPreview(state) {
+    const preview = { fanExpect: [], rivalry: null, title: null };
+    // ファン期待カード
+    if (state.fanExpectation) {
+      state.fanExpectation.slice(0, 2).forEach(fe => {
+        const feLeft = (state.roster || []).find(f => f.id === fe.leftId);
+        const feRight = (state.roster || []).find(f => f.id === fe.rightId);
+        if (feLeft && feRight) {
+          preview.fanExpect.push({ leftName: feLeft.name, rightName: feRight.name });
+        }
+      });
+    }
+    // 因縁ペア（tierが最大のもの）
+    if (state.rivalries) {
+      let maxTier = 0, hotPair = null;
+      Object.entries(state.rivalries).forEach(([key, riv]) => {
+        const tier = riv.tier || 0;
+        const matches = riv.matches || 0;
+        if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
+          maxTier = tier;
+          const ids = key.split('>');
+          const rLeft = (state.roster || []).find(f => f.id === ids[0]);
+          const rRight = (state.roster || []).find(f => f.id === ids[1]);
+          if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
+        }
+      });
+      if (hotPair && maxTier >= 1) {
+        preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
+      }
+    }
+    // タイトル戦展望
+    const champId = state.titles?.world?.championId;
+    if (champId) {
+      const champ = (state.roster || []).find(f => f.id === champId);
+      const challenger = [...(state.roster || [])]
+        .filter(f => f.id !== champId)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+      if (champ && challenger) {
+        preview.title = { championName: champ.name, challengerName: challenger.name };
+      }
+    }
+    return preview;
+  },
+
+  /** AI団体のニュース一時フィールドをクリア */
+  clearAINewsFlags(aiOrgs) {
+    const cleaned = {};
+    Object.keys(aiOrgs).forEach(orgId => {
+      const org = { ...aiOrgs[orgId] };
+      delete org._newsChampionChange;
+      delete org._newsRetirements;
+      delete org._newsShowHighlight;
+      delete org._newsBreakthroughs;
+      cleaned[orgId] = org;
+    });
+    return cleaned;
+  },
+};
+
 // Node.js モジュールエクスポート（ブラウザではスキップ）
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { Engine, formatFinish: Engine.formatFinish };

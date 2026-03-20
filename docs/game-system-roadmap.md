@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-20（orgWarRecord + orgPopHistory データ基盤実装）
+> 最終更新: 2026-03-20（黒田幸子レポーターシステム + 新聞タブ豪華化 + 団体比較リニューアル）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,12 +9,14 @@
 
 ## 現在の状態
 
-**試合画面UI刷新 Phase 0〜7 + 実装指示書§1〜§4 + PPV試合進行画面リデザイン 全完了（2026-03-18）。** HUD刷新・ダメージ表現・カットイン3種・ビッグムーブ/カウンター演出・対戦カード紹介画面・勝利演出リニューアル・PPVマッチカード画面・BGM/SE全音量設定・PPV試合進行画面（upper画像+能力比較バー+白吹き出し）。変更ファイル: data.js, battle-engine.html, app.js, ui-common.js, index.html。auto-sim 100シーズン ALL CLEAR。
+**統一修正パッチ v1.0 全完了（2026-03-20）。** 4項目: (1)黒田上半身画像廃止→顔アイコン(28px丸)統一、(2)デフォルト比較対象をランキング上位団体に自動切替、(3)黒田テキスト全文体を記事調(〜だ/〜である)に統一変換(KURODA_HEADLINES/EDITORIAL/WAR_RECORD/MATCHUP_FLAVOR/SHOW_RATING/PREVIEW/SPOTLIGHT)、(4)新聞システムv2(Engine.newspaper.generate+weeklyNewspaper+AIイベント蓄積+優先度ベーストップ記事選定+レガシー互換)。変更ファイル: engine.js, ui-render.js, kuroda-text.js, index.html。auto-sim 100シーズン ALL CLEAR。
 
 ### 直近の完了セッション
 
 | 日付 | 内容 |
 |------|------|
+| 03-20 | 統一修正パッチv1.0: (1)黒田上半身画像廃止→28px顔アイコン統一(index.html CSS削除+ui-render.js getNpcPortraitUrl化)、(2)デフォルト比較対象→ランキング上位自動選択(_getDefaultCompareTarget+Engine.ranking.getPlayerRank)、(3)黒田テキスト全文体を記事調に統一(KURODA_HEADLINES/EDITORIAL/WAR_RECORD/MATCHUP_FLAVOR/SHOW_RATING/PREVIEW/SPOTLIGHT 全7定数)、(4)新聞v2(Engine.newspaper.generate/buildPreview/clearAINewsFlags+weeklyNewspaper+AIイベント蓄積4種+優先度ベーストップ記事+レガシー互換_renderDbNewspaperLegacy)。auto-sim 100シーズンALL CLEAR |
+| 03-20 | 黒田幸子レポーターシステム Phase 2-3: NPC画像システム(getNpcPortraitUrl/getNpcUpperUrl)、kuroda-text.js新規作成(KURODA_HEADLINES/EDITORIAL/WAR_RECORD/MATCHUP_FLAVOR/SPOTLIGHT/FAN_OPINIONS/NEWSPAPER_DIGEST_COMMENTS/SHOW_RATING/PREVIEW 600+行)、既存テキスト修正(getMatchupCopy/getPopularityTail/getEdgeState/gradeDesc)、団体比較_renderDbOrgCompare()全面リニューアル8セクション、新聞タブ_renderDbNewspaper()拡張3セクション(興行評価★+全試合ダイジェスト+次回展望)、seasonStartOvrフィールド追加(ovrGainThisSeason算出用)、デッドコード削除。auto-sim 100シーズンALL CLEAR |
 | 03-20 | orgWarRecord + orgPopHistory データ基盤: Engine.orgWarユーティリティ(getKey/get/getFor/recordWar/recordSummit/recordPPVMatch)、applyWarOutcome/applyPPVResults/simulateTVResultsの3箇所にフック、orgPopHistoryシーズン開幕時スナップショット、initialState初期値設定。auto-sim 500シーズンALL CLEAR |
 | 03-19 | 団体画面ブラッシュアップ設計: 選手詳細WP風リデザイン（full画像+3タブ）、G1クリームカラーテーマ決定→本拠地系4画面に展開（団体/スカウト/ランキング/DB）、アイコン角丸四角統一、growthLogデータ構造設計、Mockup v1-v9作成 |
 | 03-19 | バグ修正3件: ランキング画面レガシーpt列追加、引退試合後即引退（4週待ちバグ修正）、retiredIds永続化で引退選手の早期再登場防止 |
@@ -100,6 +102,7 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 
 | システム | 実装日 | 設計書 |
 |---------|--------|--------|
+| 黒田幸子レポーターシステム（NPC画像+テキスト定数+団体比較8セクション+新聞タブ3セクション+seasonStartOvr） | 03-20 | `docs/impl-orgcompare-ui-restructure.md`, `docs/impl-newspaper-enhance.md`, `docs/kuroda-style-guide.md` |
 | セーブデータ圧縮+トリミング（LZ-UTF16圧縮+データ刈り込みでlocalStorage容量超過対策） | 03-20 | — |
 | 興行画面ブラッシュアップ（HP対比バー共通化+対抗戦/通常興行UI刷新） | 03-19 | `docs/show-ui-brushup-spec.md` |
 | 他団体戦ライバリーブースト + knownRival自動付与 | 03-19 | — |
@@ -148,17 +151,18 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 
 | ファイル | 行数 | 役割 |
 |---------|-----:|------|
-| index.html | ~1,320 | HTML+CSS+起動処理 |
-| data.js | ~2,000 | 全データ定数（キャラ98名・コーチ35名・技160種） |
-| engine.js | ~10,500 | ゲームロジック全体 |
-| app.js | ~3,530 | Audio+Storage+Mission+App統合 |
-| ui-common.js | ~3,200 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
-| ui-render.js | ~3,960 | 全render関数+データベースタブ+相関図v2 |
-| victory-lines.js | 501 | 勝利台詞データ |
-| battle-engine.html | ~1,800 | ビジュアル観戦モード（iframe） |
-| **合計** | **~20,800** | |
+| index.html | ~2,590 | HTML+CSS+起動処理 |
+| data.js | ~13,820 | 全データ定数（キャラ98名・コーチ35名・技160種） |
+| engine.js | ~14,630 | ゲームロジック全体 |
+| app.js | ~6,450 | Audio+Storage+Mission+App統合 |
+| ui-common.js | ~6,400 | ヘルパー+ポップアップ+各種UI+レーダーチャート |
+| ui-render.js | ~5,910 | 全render関数+データベースタブ+相関図v2 |
+| kuroda-text.js | ~780 | 黒田幸子レポーターテキスト定数 |
+| victory-lines.js | ~830 | 勝利台詞データ |
+| battle-engine.html | ~2,620 | ビジュアル観戦モード（iframe） |
+| **合計** | **~54,030** | |
 
-その他: `portrait-map.js`（ルート）、選手顔画像107枚＋表彰式フレーム7枚（`image/`）、コーチ肖像画35枚（`image/coach/`）、build-zip.sh
+その他: `portrait-map.js`（ルート）、選手顔画像107枚＋表彰式フレーム7枚（`image/`）、コーチ肖像画35枚（`image/coach/`）、NPC画像（`image/npc/`）、build-zip.sh
 
 ---
 

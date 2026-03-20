@@ -669,8 +669,61 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-cmp-brief-card header{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
 .db-cmp-brief-card strong{font-size:12px}
 .db-cmp-brief-card p{margin:0;color:var(--text-sub);font-size:11px;line-height:1.8}
-@media(max-width:900px){.db-cmp-versus,.db-cmp-main-grid,.db-cmp-analysis,.db-cmp-lower-grid,.db-cmp-match-grid,.db-cmp-org-summary-row{grid-template-columns:1fr}.db-cmp-vs-mark{order:-1;padding:0}.db-cmp-grade{position:static;margin-bottom:12px;text-align:left}.db-cmp-grade .grade-desc{max-width:none}.db-cmp-match-faceoff{grid-template-columns:1fr;justify-items:center}.db-cmp-match-side,.db-cmp-match-side.right{width:100%;justify-content:flex-start;text-align:left}.db-cmp-match-center{order:-1}}
-@media(max-width:600px){.db-cmp-mini-stats{grid-template-columns:repeat(2,1fr)}.db-cmp-fighter-row{grid-template-columns:1fr;gap:6px}.db-cmp-fighter.right{flex-direction:row;text-align:left}.db-cmp-match-avatar{width:60px;height:60px}.db-cmp-match-avatar.lg{width:96px;height:96px}.db-cmp-match-meta strong{font-size:16px}.db-cmp-match-card .db-cmp-match-meta strong{font-size:14px}.db-cmp-org-summary-grade{min-width:0}}
+/* ── 黒田ヘッドライン ── */
+.db-cmp-headline{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px;border-radius:8px;border:1px solid rgba(212,168,67,0.18);background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02));margin-bottom:14px}
+.db-cmp-headline-reporter{display:flex;gap:14px;align-items:flex-start;flex:1;min-width:0}
+.db-cmp-kuroda-face{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,190,170,0.2);flex-shrink:0}
+.db-cmp-headline-text{min-width:0}
+.db-cmp-headline-quote{font-size:15px;line-height:1.7;color:var(--text-main);font-weight:600}
+.db-cmp-headline-byline{font-size:11px;color:var(--text-dim);margin-top:6px}
+.db-cmp-headline-byline span{margin-left:4px;color:var(--text-sub);font-style:italic}
+.db-cmp-headline-grade{text-align:center;flex-shrink:0}
+.db-cmp-headline-grade .grade-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.db-cmp-headline-grade .grade-value{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.db-cmp-headline-grade .grade-desc{font-size:11px;color:var(--text-sub);max-width:180px;line-height:1.5;margin-top:4px}
+/* ── 戦績サマリー ── */
+.db-cmp-war-record{margin-bottom:14px}
+.db-cmp-war-overall{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:6px;background:rgba(0,0,0,0.15);margin-bottom:10px}
+.db-cmp-war-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.db-cmp-war-wl{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.db-cmp-war-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.db-cmp-war-item{padding:8px 10px;border-radius:6px;border:1px solid rgba(200,190,170,0.06);background:rgba(200,190,170,0.02);text-align:center}
+.db-cmp-war-item label{display:block;font-size:10px;color:var(--text-dim);font-family:'Oswald',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.db-cmp-war-item span{font-size:14px;font-weight:700;color:var(--text-main)}
+.db-cmp-war-streak{padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;text-align:center;margin-bottom:10px}
+.db-cmp-war-streak.win{background:rgba(46,204,113,0.1);color:#7ce8a8;border:1px solid rgba(46,204,113,0.2)}
+.db-cmp-war-streak.lose{background:rgba(231,76,60,0.1);color:#f09e93;border:1px solid rgba(231,76,60,0.2)}
+.db-cmp-war-comment{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:6px;border:1px solid rgba(200,190,170,0.06);background:rgba(200,190,170,0.02);margin-top:8px}
+.db-cmp-kuroda-face-sm{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.db-cmp-war-comment p{margin:0;font-size:12px;line-height:1.8;color:var(--text-sub)}
+/* ── 記者コラム ── */
+.db-cmp-editorial{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.db-cmp-editorial-body{flex:1;min-width:0}
+.db-cmp-editorial-body p{margin:0;font-size:13px;line-height:2;color:var(--text-sub)}
+.db-cmp-editorial-byline{margin-top:10px;font-size:11px;color:var(--text-dim);text-align:right}
+.db-cmp-editorial-actions{padding-top:12px;border-top:1px solid rgba(200,190,170,0.08)}
+.db-cmp-editorial-actions strong{display:block;font-size:12px;margin-bottom:8px;color:var(--gold-light);font-family:'Oswald',sans-serif;letter-spacing:1px;text-transform:uppercase}
+/* ── 注目選手ピックアップ ── */
+.db-cmp-spotlight{margin-bottom:14px}
+.db-cmp-spotlight-pick{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:8px;border:1px solid rgba(200,190,170,0.06);background:rgba(200,190,170,0.02);margin-bottom:8px}
+.db-cmp-spotlight-face{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;overflow:hidden}
+.db-cmp-spotlight-face img{width:100%;height:100%;object-fit:cover}
+.db-cmp-spotlight-info{flex:1;min-width:0}
+.db-cmp-spotlight-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.db-cmp-spotlight-tag{display:inline-block;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:700;margin-bottom:6px}
+.db-cmp-spotlight-tag.growth{background:rgba(231,76,60,0.15);color:#f09e93;border:1px solid rgba(231,76,60,0.2)}
+.db-cmp-spotlight-tag.star{background:rgba(212,168,67,0.15);color:var(--gold-light);border:1px solid rgba(212,168,67,0.2)}
+.db-cmp-spotlight-tag.youngThreat{background:rgba(46,204,113,0.15);color:#7ce8a8;border:1px solid rgba(46,204,113,0.2)}
+.db-cmp-spotlight-comment{font-size:12px;line-height:1.8;color:var(--text-sub)}
+/* ── ファン世論 ── */
+.db-cmp-fan-opinions{margin-bottom:14px}
+.db-cmp-fan-comment{padding:10px 12px;border-radius:8px;border:1px solid rgba(200,190,170,0.04);background:rgba(200,190,170,0.02);margin-bottom:8px}
+.db-cmp-fan-comment:last-child{margin-bottom:0}
+.db-cmp-fan-text{font-size:13px;line-height:1.7;color:var(--text-main)}
+.db-cmp-fan-handle{font-size:11px;color:var(--text-dim);margin-top:4px}
+/* ── responsive追加 ── */
+@media(max-width:900px){.db-cmp-versus,.db-cmp-main-grid,.db-cmp-analysis,.db-cmp-lower-grid,.db-cmp-match-grid,.db-cmp-org-summary-row{grid-template-columns:1fr}.db-cmp-vs-mark{order:-1;padding:0}.db-cmp-match-faceoff{grid-template-columns:1fr;justify-items:center}.db-cmp-match-side,.db-cmp-match-side.right{width:100%;justify-content:flex-start;text-align:left}.db-cmp-match-center{order:-1}.db-cmp-headline{flex-direction:column;text-align:center}.db-cmp-headline-reporter{flex-direction:column;align-items:center}.db-cmp-headline-grade{margin-top:8px}.db-cmp-editorial{flex-direction:column;align-items:center}.db-cmp-war-breakdown{grid-template-columns:1fr}}
+@media(max-width:600px){.db-cmp-mini-stats{grid-template-columns:repeat(2,1fr)}.db-cmp-fighter-row{grid-template-columns:1fr;gap:6px}.db-cmp-fighter.right{flex-direction:row;text-align:left}.db-cmp-match-avatar{width:60px;height:60px}.db-cmp-match-avatar.lg{width:96px;height:96px}.db-cmp-match-meta strong{font-size:16px}.db-cmp-match-card .db-cmp-match-meta strong{font-size:14px}.db-cmp-org-summary-grade{min-width:0}.db-cmp-kuroda-face{width:40px;height:40px}.db-cmp-headline-quote{font-size:13px}.db-cmp-spotlight-pick{flex-direction:column;align-items:center;text-align:center}}
 /* v0.6: Growth indicators */
 .growth-up{color:#2ecc71;font-size:12px;font-weight:700}
 .growth-down{color:#e74c3c;font-size:12px;font-weight:700}
@@ -1261,6 +1314,37 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background:rgba(80,50,20,0.06);border:1px solid rgba(139,90,43,0.2);color:#5a3a1a;
   font-family:'Noto Sans JP',sans-serif;transition:all .2s}
 .newspaper-nav:hover:not(:disabled){background:rgba(80,50,20,0.12)}
+/* ── 興行総合評価 ── */
+.news-show-rating{padding:14px;border-top:2px double rgba(95,69,35,0.35);border-bottom:1px solid rgba(95,69,35,0.15);margin:4px 0}
+.news-rating-stars{font-size:24px;letter-spacing:4px;color:#b8892a;text-align:center;margin-bottom:10px}
+.news-rating-comment{display:flex;gap:10px;align-items:flex-start}
+.news-kuroda-face{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(82,53,23,0.3)}
+.news-rating-comment p{margin:0;font-size:12.5px;line-height:1.8;color:#3a2e1c}
+/* ── 全試合ダイジェスト ── */
+.news-digest{padding:12px 0}
+.news-digest-title{font-size:14px;font-weight:900;color:#2a1f0e;border-bottom:2px solid rgba(95,69,35,0.3);padding-bottom:6px;margin-bottom:12px}
+.news-digest-match{padding:10px 0;border-bottom:1px solid rgba(95,69,35,0.1)}
+.news-digest-match:last-child{border-bottom:none}
+.news-digest-header{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.news-digest-num{font-size:11px;font-weight:700;color:#5b4b34}
+.news-digest-badge{padding:2px 6px;border-radius:3px;font-size:10px;font-weight:900;letter-spacing:1px}
+.news-digest-badge.title{background:#b8892a;color:#fff}
+.news-digest-badge.upset{background:#9b1212;color:#fff}
+.news-digest-faceoff{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.news-digest-fighter{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.news-digest-fighter.right{flex-direction:row-reverse;text-align:right;justify-content:flex-start}
+.news-digest-fighter.winner span{font-weight:900;color:#2a1f0e}
+.news-digest-fighter span{font-size:13px;color:#5b4b34;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.news-digest-portrait{width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.news-digest-portrait-fb{width:32px;height:32px;border-radius:6px;background:#b8892a;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0}
+.news-digest-result{font-size:11px;font-weight:700;color:#7a5b32;white-space:nowrap;min-width:30px;text-align:center}
+.news-digest-stats{font-size:11px;color:#7a5b32;margin-bottom:3px}
+.news-digest-comment{font-size:12px;color:#5b4b34;line-height:1.6;font-style:italic}
+/* ── 次回展望 ── */
+.news-preview{padding:14px 0;border-top:2px double rgba(95,69,35,0.35)}
+.news-preview-title{font-size:14px;font-weight:900;color:#2a1f0e;margin-bottom:10px}
+.news-preview-item{padding:8px 0;border-bottom:1px solid rgba(95,69,35,0.08);font-size:12.5px;line-height:1.8;color:#3a2e1c}
+.news-preview-item:last-child{border-bottom:none}
 /* v1.5s25b: 補助金カウントダウンバッジ */
 .subsidy-badge{font-size:10px;color:#f39c12;background:rgba(243,156,18,0.12);padding:1px 6px;border-radius:3px;margin-left:4px}
 /* v1.5s25b: 節目イベントオーバーレイ */
@@ -2467,6 +2551,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <script src="data.js"></script>
 <!-- ② エンジン（Dataに依存） -->
 <script src="engine.js"></script>
+<!-- ②b テキスト定数（Engine+Dataに依存） -->
+<script src="kuroda-text.js"></script>
 <!-- ③ アプリ（Engine+Dataに依存） -->
 <script src="app.js"></script>
 <!-- ④ UI（全部に依存） -->
