@@ -1270,7 +1270,7 @@ function _renderRosterDetailPanel(c, hired) {
   leftCol += `<div class="rd-portrait-overlay"></div>
     <div class="rd-portrait-info">
       <div class="rd-portrait-name">${c.name}</div>
-      <div class="rd-portrait-sub">${c.height || '?'}cm ｜ ${tenure}年目</div>
+      <div class="rd-portrait-sub">${c.h || '?'}cm ｜ ${c.age || '?'}歳 ｜ ${tenure}年目</div>
       <div class="rd-portrait-badges">
         <span class="badge badge-${c.style}" style="font-size:10px">${c.style}</span>
         <span class="badge badge-${roleCls}" style="font-size:10px">${c.role}</span>

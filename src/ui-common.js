@@ -5374,10 +5374,38 @@ function _buildB3Step3(event, state, roster) {
 
 // ── B4: メディア密着取材 ───────────────────────────────────────────────────
 function _buildB4Modal(event, state, roster) {
-  const available = roster.filter(f => !f.injury);
-  const outletName = event.outletName || 'メディア';
+  const subType = event.subType || 'youngStar';
+  const champId = state.titles?.world?.championId;
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${outletName}からの密着取材オファー</div>`;
+  // 基本フィルタ: 怪我なし ＆ レンタルでない
+  let available = roster.filter(f => !f.injury && !f.isRental);
+
+  // サブタイプ別フィルタ
+  switch (subType) {
+    case 'youngStar':
+      available = available.filter(f => (f.age || 17) <= 22);
+      break;
+    case 'ace': {
+      const ovrSorted = available.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
+      available = available.filter(f => f.id === champId || top3Ids.has(f.id));
+      break;
+    }
+    case 'veteran':
+      available = available.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
+      break;
+  }
+
+  // フォールバック: 候補0人なら全員（レンタル除外のみ）
+  if (available.length === 0) {
+    available = roster.filter(f => !f.injury && !f.isRental);
+  }
+
+  const outletName = event.outletName || 'メディア';
+  const subTypeLabels = { youngStar: '若手特集', ace: 'エース密着', veteran: 'ベテラン特集' };
+  const subLabel = subTypeLabels[subType] || '密着取材';
+
+  let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${outletName}からの${subLabel}オファー</div>`;
 
   if (event.detail) {
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;

@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-20（黒田幸子レポーターシステム + 新聞タブ豪華化 + 団体比較リニューアル）
+> 最終更新: 2026-03-20（U-20ジュニアトーナメント + 殿堂ポイント制 設計完了、world-setting.md 国家主催リーグ追記）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -15,6 +15,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-20 | 3件修正: (1)選手カード身長c.height→c.h+年齢追加、(2)B4密着取材サブタイプ化(youngStar/ace/veteran、候補フィルタ+テキスト分岐+レンタル除外)、(3)オフシーズン処理順変更(契約更新→スカウト→移籍) |
 | 03-20 | バグ修正: プレイヤー練習成長(追い込み+通常)にtrainCapクランプ追加。外部乗数適用後のtrainGrowthがtrainCapを超過しうるバグを修正(AI版は既にクランプ済み) |
 | 03-20 | バグ修正4件: 特別治療説明文を実ロジックに合わせ修正、B3辞退時の隠しペナルティ削除（UI表記と一致）、勝利条件/ランキング表示の浮動小数点をMath.round整数化、B3挑戦者選択をランキング隣接±1に変更（S級→3位挑戦の不自然さ解消） |
 | 03-20 | 統一修正パッチv1.0: (1)黒田上半身画像廃止→28px顔アイコン統一(index.html CSS削除+ui-render.js getNpcPortraitUrl化)、(2)デフォルト比較対象→ランキング上位自動選択(_getDefaultCompareTarget+Engine.ranking.getPlayerRank)、(3)黒田テキスト全文体を記事調に統一(KURODA_HEADLINES/EDITORIAL/WAR_RECORD/MATCHUP_FLAVOR/SHOW_RATING/PREVIEW/SPOTLIGHT 全7定数)、(4)新聞v2(Engine.newspaper.generate/buildPreview/clearAINewsFlags+weeklyNewspaper+AIイベント蓄積4種+優先度ベーストップ記事+レガシー互換_renderDbNewspaperLegacy)。auto-sim 100シーズンALL CLEAR |
@@ -47,12 +48,37 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 | S_betrayal | 裏切り退団 | trust20-35 & 対抗戦敗北（低確率） | 即退団、全員trust-3〜-5 | 中 |
 | S_fanrevolt | ファン離反 | 3興行連続平均MQ50未満 | 全選手trust-3〜-5、orgPop-2〜-4。3択 | 中 |
 
-### 統一トーナメント（未着手）
+### U-20ジュニアトーナメント + 殿堂ポイント制（未着手、設計完了）
 
-ランキング・ロスター・団体間対戦リデザイン Phase 4。
+設計書: `docs/junior-tournament-hof-points-spec.md`
 
-- Engine.tournament新規実装、第24週開催、8名シングルエリミネーション、代表選手選択UI
-- BATTLE_POINT_CFG: tournament:{champion:20, runnerUp:8, semiFinal:0, firstRound:-14}
+**ジュニアトーナメント（秋 Week 1 = Week 25）**
+- 国家主催・1日トーナメント。全団体U-20（age≤20）からOVR上位8名選出（不足時4名、3名以下は不開催）
+- 参加強制（国家召集）。準々決勝・準決勝=通常エンジン、決勝=ビッグマッチエンジン
+- コンディション持ち越し + ラウンド間25%固定回復
+- 賞金（国庫支出）: 優勝¥1,000万 / 準優勝¥500万 / 3-4位¥250万
+- 演出: ブラケットUI、専用マッチカード、ニュース記事、召集通知
+
+**PPV Grand Final 賞金（新設）**
+- 既存出場報酬とは別に国庫から支出: 優勝¥2,000万 / 準優勝¥1,000万 / 3-4位¥500万
+
+**殿堂ポイント制（HoF Points）**
+- 旧条件（タイトル獲得+防衛≥13）をポイント制に移行
+- タイトル獲得/防衛=各1pt、ジュニア優勝=7pt、PPV優勝=9pt
+- 殿堂入り: 12pt以上。★殿堂(12-17) / ★★ゴールド(18-24) / ★★★レジェンド(25+)
+
+| Step | タスク | 重さ |
+|------|--------|:----:|
+| 1 | Engine.juniorTournament: 選出ロジック + トーナメント処理 + コンディション持ち越し | 大 |
+| 2 | careerRecord拡張（juniorTournamentWins/ppvMainEventWins等） | 小 |
+| 3 | checkHallOfFame()をポイント制に移行 + hofLevel付与 | 中 |
+| 4 | PPV賞金ロジック追加（finalizePPV拡張） | 小 |
+| 5 | ジュニアトーナメントUI（ブラケット表示 + マッチカード + 結果画面） | 大 |
+| 6 | 選手セリフ演出（全5タイミング: 召集/試合前/試合後/決勝前/優勝後。personality×archetype） | 大 |
+| 7 | 新聞複数ページ化（weeklyNewspaper構造拡張 + ページ送りUI） | 中 |
+| 8 | 新聞トーナメント記事（前週展望 + 当週速報/全試合詳報/総括。競馬新聞スタイル） | 大 |
+| 9 | 殿堂UI更新（★レベル表示） | 小 |
+| 10 | ティッカーへのトーナメント結果反映 | 小 |
 
 ### フィニッシャーシステム（未着手、設計完了）
 

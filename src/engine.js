@@ -4404,7 +4404,8 @@ const Engine = {
             const dialogue2 = rawEvent.type === 'B2' ? Engine.eventSystem.getLargeEventDialogue2(evtRng, rawEvent, G.roster) : '';
             const textKey = rawEvent.type;
             const vars = { name: rawEvent.name || '', name1: rawEvent.name1 || '', name2: rawEvent.name2 || '',
-                           orgName: rawEvent.orgName || '', outletName: rawEvent.outletName || '' };
+                           orgName: rawEvent.orgName || '', outletName: rawEvent.outletName || '',
+                           subType: rawEvent.subType || '' };
             const textData = Engine.eventSystem.pickText(evtRng, textKey, vars);
             pendingLargeEvent = { ...rawEvent, ...textData, dialogue, dialogue2 };
           } else if (evtPrefix === 'S' || evtPrefix === 'E') {
@@ -7511,49 +7512,7 @@ const Engine = {
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
       } else if (offWeek === 2) {
-        // OffWeek 2: Scout Event (player + AI)
-        // AI scouting first
-        const scoutResult = Engine.rival.aiScout(rng, s);
-        s = { ...s, aiOrgs: scoutResult.aiOrgs, dormantPool: scoutResult.dormantPool };
-        if (scoutResult.events.length > 0) events.push(...scoutResult.events);
-        const reinforceRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xE11E));
-        const reinforceResult = Engine.rival.aiSeasonReinforce(reinforceRng, s);
-        s = { ...s, aiOrgs: reinforceResult.aiOrgs, dormantPool: reinforceResult.dormantPool };
-        if (reinforceResult.events.length > 0) events.push(...reinforceResult.events);
-
-        // Player scout event: generate candidates
-        const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
-        const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
-        // Remove used pool IDs
-        const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
-        s = {
-          ...s,
-          dormantPool: remainingPool,
-          scoutCandidates: report.candidates,
-          scoutPicks: [],
-          scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
-          scoutEventType: 'offseason',
-          scoutsThisSeason: (s.scoutsThisSeason || 0),
-        };
-        events.push('📅 オフシーズン第2週: スカウトレポート到着！');
-        events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
-        return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
-
-      } else if (offWeek === 3) {
-        // OffWeek 3: AI inter-org transfers + FA acquisition
-        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
-        s = { ...s, aiOrgs: transferResult.aiOrgs };
-        if (transferResult.events.length > 0) events.push(...transferResult.events);
-
-        // F1: AI grabs free agents
-        const faResult = Engine.rival.aiFAAcquire(rng, s);
-        s = { ...s, aiOrgs: faResult.aiOrgs, freeAgents: faResult.freeAgents };
-        if (faResult.events.length > 0) events.push(...faResult.events);
-
-        events.push('📅 オフシーズン第3週: 移籍ウィンドウ');
-
-      } else if (offWeek === 4) {
-        // OffWeek 4 (NEW): 契約更新交渉 — シーズン開幕前に低trust選手との1対1交渉
+        // OffWeek 2: 契約更新交渉 — シーズン開幕前に低trust選手との1対1交渉
         if (s.season >= 1 && !s.pendingContractNegotiations) {
           const contractRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0E7));
           const negResult = Engine.contract.generateNegotiations(contractRng, s);
@@ -7586,7 +7545,49 @@ const Engine = {
             contractPop: f.popularity || 0,
           }),
         };
-        events.push('📅 オフシーズン第4週: 契約更新完了');
+        events.push('📅 オフシーズン第2週: 契約更新完了');
+
+      } else if (offWeek === 3) {
+        // OffWeek 3: Scout Event (player + AI)
+        // AI scouting first
+        const scoutResult = Engine.rival.aiScout(rng, s);
+        s = { ...s, aiOrgs: scoutResult.aiOrgs, dormantPool: scoutResult.dormantPool };
+        if (scoutResult.events.length > 0) events.push(...scoutResult.events);
+        const reinforceRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xE11E));
+        const reinforceResult = Engine.rival.aiSeasonReinforce(reinforceRng, s);
+        s = { ...s, aiOrgs: reinforceResult.aiOrgs, dormantPool: reinforceResult.dormantPool };
+        if (reinforceResult.events.length > 0) events.push(...reinforceResult.events);
+
+        // Player scout event: generate candidates
+        const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
+        const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
+        // Remove used pool IDs
+        const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
+        s = {
+          ...s,
+          dormantPool: remainingPool,
+          scoutCandidates: report.candidates,
+          scoutPicks: [],
+          scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
+          scoutEventType: 'offseason',
+          scoutsThisSeason: (s.scoutsThisSeason || 0),
+        };
+        events.push('📅 オフシーズン第3週: スカウトレポート到着！');
+        events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
+        return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
+
+      } else if (offWeek === 4) {
+        // OffWeek 4: AI inter-org transfers + FA acquisition
+        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
+        s = { ...s, aiOrgs: transferResult.aiOrgs };
+        if (transferResult.events.length > 0) events.push(...transferResult.events);
+
+        // F1: AI grabs free agents
+        const faResult = Engine.rival.aiFAAcquire(rng, s);
+        s = { ...s, aiOrgs: faResult.aiOrgs, freeAgents: faResult.freeAgents };
+        if (faResult.events.length > 0) events.push(...faResult.events);
+
+        events.push('📅 オフシーズン第4週: 移籍ウィンドウ');
 
       } else if (offWeek >= 5) {
         // OffWeek 5: New season preparation — advance to next season
@@ -10436,6 +10437,10 @@ Engine.eventSystem = {
     let pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
     // B型イベントテキストもチェック
     if (pool.length === 0 && typeof LARGE_EVENT_TEXTS !== 'undefined') pool = LARGE_EVENT_TEXTS[key] || [];
+    // B4のサブタイプ対応: poolがオブジェクト（配列でない）ならサブタイプで取得
+    if (pool && typeof pool === 'object' && !Array.isArray(pool) && vars.subType) {
+      pool = pool[vars.subType] || pool.youngStar || [];
+    }
     if (pool.length === 0) return { text: key, detail: '' };
     const tmpl = Engine.rng.pick(rng, pool);
     const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name1\}/g, vars.name1 || '')
@@ -10533,7 +10538,28 @@ Engine.eventSystem = {
       case 'B4': {
         const outlets = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア'];
         const outletName = outlets[Engine.rng.int(rng, 0, outlets.length - 1)];
-        return { type: 'B4', outletName };
+
+        // サブタイプ候補を判定（ロスターは state.roster）
+        const r = (state.roster || []).filter(f => !f.injury && !f.isRental);
+        const champId = state.titles?.world?.championId;
+        const ovrSorted = r.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
+
+        const subCandidates = [];
+        const youngPool = r.filter(f => (f.age || 17) <= 22);
+        const acePool = r.filter(f => f.id === champId || top3Ids.has(f.id));
+        const vetPool = r.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
+
+        if (youngPool.length > 0) subCandidates.push('youngStar');
+        if (acePool.length > 0) subCandidates.push('ace');
+        if (vetPool.length > 0) subCandidates.push('veteran');
+
+        // 候補がなければデフォルト
+        const subType = subCandidates.length > 0
+          ? subCandidates[Engine.rng.int(rng, 0, subCandidates.length - 1)]
+          : 'youngStar';
+
+        return { type: 'B4', outletName, subType };
       }
       default: return null;
     }

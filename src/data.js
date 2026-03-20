@@ -9990,13 +9990,23 @@ const LARGE_EVENT_TEXTS = {
     { text: '⚔️ {orgName}から果たし状が届いた', detail: '{orgName}から正式な書面が届いた。「団体の威信をかけて対抗戦を行いたい」——無視するわけにはいかない雰囲気だ。' },
     { text: '⚔️ {orgName}が興行に乗り込んできた', detail: 'こちらの興行会場に{orgName}の関係者が姿を見せ、「リングで語り合おう」と対抗戦を持ちかけてきた。' },
   ],
-  B4: [
-    { text: '📺 {outletName}から密着取材の申し入れ', detail: '{outletName}が「注目選手の密着ドキュメントを作りたい」と打診してきた。' },
-    { text: '📺 {outletName}が特集企画を提案', detail: '{outletName}のプロデューサーが来訪。「次世代のスターを追いかけたい」と密着取材を申し出ている。' },
-    { text: '📺 {outletName}がドキュメンタリー企画を持ち込んだ', detail: '{outletName}から「選手の素顔に密着する企画をやりたい」と連絡が入った。数試合にわたる長期取材になるという。' },
-    { text: '📺 {outletName}の取材クルーが来訪', detail: '{outletName}のカメラマンとレポーターが道場を訪れた。「団体の注目株を特集したい」とのこと。選手を一人選んでほしいそうだ。' },
-    { text: '📺 {outletName}から密着ドキュメント企画の提案', detail: '{outletName}が新番組の目玉として「女子プロレスの今」をテーマにした密着特集を検討中。うちの団体から一人推薦してほしいと言う。' },
-  ],
+  B4: {
+    youngStar: [
+      { text: '📺 {outletName}から若手特集の申し入れ', detail: '{outletName}が「次世代のスターを追いかけたい」と密着取材を申し出ている。' },
+      { text: '📺 {outletName}が注目の新星を追いたいと打診', detail: '{outletName}のディレクターが「若い才能に密着したい」と話を持ちかけてきた。' },
+      { text: '📺 {outletName}の「若手発掘」企画にうちの選手が候補に', detail: '「プロレス界の未来を担う若手を追う」——{outletName}からそんな企画の依頼が来た。' },
+    ],
+    ace: [
+      { text: '📺 {outletName}がエース密着企画を提案', detail: '{outletName}が「団体の顔に密着したい」とドキュメンタリー企画を持ち込んできた。' },
+      { text: '📺 {outletName}から「頂点の景色」取材オファー', detail: '{outletName}が「頂点に立つ選手の日常を追いたい」と密着取材を打診してきた。' },
+      { text: '📺 {outletName}がトップ選手の特集を企画中', detail: '「団体を背負うエースに迫る」——{outletName}からそんなオファーが届いた。推薦する選手を選んでほしいという。' },
+    ],
+    veteran: [
+      { text: '📺 {outletName}がベテラン特集を企画', detail: '{outletName}が「長く戦い続ける選手の矜持に迫りたい」と密着取材を申し出ている。' },
+      { text: '📺 {outletName}から「キャリアの深み」取材依頼', detail: '{outletName}のプロデューサーが来訪。「経験豊富な選手の素顔を追いたい」とのこと。' },
+      { text: '📺 {outletName}が「円熟の技」ドキュメントを提案', detail: '「ベテランだからこそ見える景色がある」——{outletName}からそんなテーマの企画が持ち込まれた。' },
+    ],
+  },
 };
 
 const LARGE_EVENT_DIALOGUES = {
