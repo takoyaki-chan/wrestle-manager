@@ -4222,7 +4222,12 @@ const Engine = {
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
-          if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
+          let actualGrowth = 0;
+          if (trainGrowth > 0) {
+            const _cap = nc.trainCap?.[growStat] ?? 100;
+            actualGrowth = Math.min(trainGrowth, Math.max(0, _cap - nc[growStat]));
+            if (actualGrowth > 0) { nc[growStat] += actualGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + actualGrowth; }
+          }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
           nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
@@ -4233,7 +4238,7 @@ const Engine = {
           nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
           nc._weekAction = 'intensive';
           nc.intensive = false;
-          { const _d = {}; if (trainGrowth > 0) _d[growStat] = trainGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
+          { const _d = {}; if (actualGrowth > 0) _d[growStat] = actualGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
           return nc;
         }
 
@@ -4281,7 +4286,11 @@ const Engine = {
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
-          if (trainGrowth > 0) { nc[growStat] += trainGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth; }
+          if (trainGrowth > 0) {
+            const _cap = nc.trainCap?.[growStat] ?? 100;
+            const _clamped = Math.min(trainGrowth, Math.max(0, _cap - nc[growStat]));
+            if (_clamped > 0) { nc[growStat] += _clamped; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _clamped; }
+          }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
