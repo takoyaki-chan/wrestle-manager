@@ -2223,9 +2223,9 @@ function renderRanking() {
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
       + `<div style="margin-top:4px">レガシー: <strong>${r.legacyScore}</strong>pt</div>`
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
-      + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</strong>pt</div>`
+      + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</strong>pt</div>`
       + `<hr style="border:none;border-top:1px solid rgba(200,190,170,0.15);margin:6px 0">`
-      + `<div style="font-weight:700">合計: ${r.rating}pt</div>`
+      + `<div style="font-weight:700">合計: ${Math.round(r.rating)}pt</div>`
       + `</div>`;
     window['_rankTip_' + r.orgId] = tipHtml;
     html += `<tr style="${bgStyle}">
@@ -2234,10 +2234,10 @@ function renderRanking() {
       <td class="num" style="font-size:16px;font-weight:700;cursor:help"
           onmouseenter="showCustomTooltip(this,_rankTip_${r.orgId})"
           onmouseleave="hideCustomTooltip()"
-          onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${r.rating}</td>
+          onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${Math.round(r.rating)}</td>
       <td class="num">${r.baseScore}</td>
       <td class="num" style="font-size:12px;color:var(--text-sub)">${r.legacyScore}</td>
-      <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${r.battlePt}</td>
+      <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</td>
       <td class="num">${r.rosterSize}</td>
     </tr>`;
   });

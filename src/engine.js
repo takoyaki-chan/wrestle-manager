@@ -10492,13 +10492,17 @@ Engine.eventSystem = {
                  fighter2: sorted[1].id, name2: sorted[1].name };
       }
       case 'B3': {
-        // プレイヤーのorgPopに近い団体を選択
-        const allOrgs = Engine.rival.getAllOrgs(state.aiOrgs);
-        if (allOrgs.length === 0) return null;
-        const pPop = state.orgPop || 10;
-        // orgPop差が小さい順にソート → 上位から選択
-        const sorted = allOrgs.slice().sort((a, b) => Math.abs(a.orgPop - pPop) - Math.abs(b.orgPop - pPop));
-        const org = sorted[0];
+        // ランキング隣接±1の団体から選択（対抗戦と同じ基準）
+        const rankings = state.rankings || [];
+        const pIdx = rankings.findIndex(r => r.orgId === 'player');
+        if (pIdx < 0) return null;
+        const b3Candidates = [];
+        if (pIdx > 0) b3Candidates.push(rankings[pIdx - 1]);
+        if (pIdx < rankings.length - 1) b3Candidates.push(rankings[pIdx + 1]);
+        if (b3Candidates.length === 0) return null;
+        const b3Pick = b3Candidates[Engine.rng.int(rng, 0, b3Candidates.length - 1)];
+        const org = Engine.rival.getOrgInfo(state.aiOrgs, b3Pick.orgId);
+        if (!org) return null;
         if (!org.roster || org.roster.length === 0) return null;
         // 上位3人からランダム
         const topFighters = org.roster.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
