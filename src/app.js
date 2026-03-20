@@ -4717,6 +4717,7 @@ const App = {
   // v2.0-C3: Manual advance from weekly summary
   advanceFromWeekSummary() {
     Audio.play('tick');
+    dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     // 契約更新交渉フェーズ
@@ -4773,6 +4774,7 @@ const App = {
 
   processWeek() {
     Audio.play('tick');
+    dismissAllPopups(); // 前週の残存ポップアップを強制クリア
     // 今週のログフィードをリセット（前週分クリア）
     G = { ...G, weekLogFeed: [] };
     const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
@@ -5050,6 +5052,7 @@ const App = {
 
   advanceWeek() {
     Audio.play('tick');
+    dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     // 契約更新交渉フェーズ

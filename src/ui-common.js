@@ -4182,23 +4182,32 @@ function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); 
 function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
 function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard, null); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
-function showScreen(id, evt) {
-  if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
-  Audio.play('click');
-  // Safety: 残存オーバーレイがタブ操作をブロックしないよう強制解除
-  ['careOverlay','careModalOverlay','notifModalOverlay','confirmOverlay','growthEventOverlay',
-   'milestoneOverlay','newspaperOverlay','seasonFanfareOverlay','eventPopupOverlay'].forEach(oid => {
+// 全ポップアップ・トースト・キューを強制クリア（タブ切替・週送り時に使用）
+function dismissAllPopups() {
+  _POPUP_OVERLAY_IDS.forEach(oid => {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
   });
-  _popupQueue = []; // タブ切替時にキューもクリア
-  // v2.0 fix: 通知トーストの残存ブロック防止
+  // confirmOverlayは_POPUP_OVERLAY_IDSに含まれないため個別処理
+  const confirmEl = document.getElementById('confirmOverlay');
+  if (confirmEl) { confirmEl.classList.remove('active'); confirmEl.classList.remove('show'); }
+  // 動的R3Modalがあれば除去
+  document.querySelectorAll('.r3-modal-overlay').forEach(el => el.remove());
+  _popupQueue = [];
+  _growthPopupQueue = [];
+  // 通知トースト
   const _toastEl = document.getElementById('notifEventToast');
   if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; }
   clearTimeout(window._notifTimer);
   clearTimeout(window._notifSafetyTimer);
   clearTimeout(window._notifModalTimer);
   clearTimeout(window._careModalTimer);
+}
+
+function showScreen(id, evt) {
+  if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
+  Audio.play('click');
+  dismissAllPopups();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const screenEl = document.getElementById(`screen-${id}`);
   if (screenEl) screenEl.classList.add('active');

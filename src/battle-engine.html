@@ -1798,6 +1798,7 @@ function renderMatch(){
 // ═══ v4.1 TURN LOGIC (complete rewrite) ═══
 function nextTurn(){
   clearTimeout(autoTimer); // 自動送りタイマーをキャンセル
+  closeBattlePopup(); // 残存ポップアップを閉じる
   if(S.winner||S.anim)return;S.anim=true;
   const btn=document.getElementById('nBtn');if(btn){btn.disabled=true;btn.style.animation='none';}
   const L=S.L,R=S.R,ph=phase(S.turn),prevPh=S.turn>1?phase(S.turn-1).name:ph.name;
