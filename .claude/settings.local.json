@@ -131,7 +131,10 @@
       "Bash(grep -n \"function pickDialogueLine\" src/*.js)",
       "Bash(grep -n \"var _pendingMatchDialogues\\\\|let _pendingMatchDialogues\\\\|const _pendingMatchDialogues\" src/*.js)",
       "Bash(grep -n \"function showPostMatchDialogues\" src/*.js)",
-      "Bash(grep -n \"Engine.formatFinish\" src/*.js)"
+      "Bash(grep -n \"Engine.formatFinish\" src/*.js)",
+      "Bash(node test/sim-coach-abilities.js 7 10 10)",
+      "Bash(node test/sim-coach-abilities.js 8 10 30)",
+      "Bash(node test/sim-coach-abilities.js 5 10 30)"
     ]
   }
 }
