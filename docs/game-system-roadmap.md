@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-20（U-20ジュニアトーナメント + 殿堂ポイント制 実装完了）
+> 最終更新: 2026-03-21（WAR系3種+VICTORY+JTセリフ personality×archetype化）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,12 +9,14 @@
 
 ## 現在の状態
 
-**U-20ジュニアトーナメント + 殿堂ポイント制 全完了（2026-03-20）。** Engine.juniorTournament(select/run/apply)、Week25ブラケットUI+観戦+結果画面、personality×archetypeセリフ5タイミング、HoFポイント制(タイトル1pt/JT優勝7pt/PPV優勝9pt、12pt殿堂入り/★★★レジェンド25pt+)、PPV賞金(国庫支出)、新聞複数ページ化(Week24プレビュー+Week25全試合詳報)、ティッカー統合。auto-sim 200シーズン ALL CLEAR。
+**WAR系3種+VICTORY+JTセリフ personality×archetype化（2026-03-21）。** WAR_CHALLENGER_DIALOGUE(50行)/WAR_DECLINE_DIALOGUE(50行)/WAR_POST_DIALOGUE(100行)新設。旧trait/roleベースのgetWarChallengeDialogue+getWarPostDialogueをpersonality×archetypeデータ駆動に全面置換。WAR_VICTORY_LINES 47→93行に増量。JUNIOR_TOURNAMENT_LINES全5タイミング×7性格×属性バリアント(250行)に拡張。旧LARGE_EVENT_DIALOGUES.B3_challenger/decline/result_lose/result_win(34行)廃止。_buildB3Step3もpickDialogueLine化。auto-sim 50シーズン ALL CLEAR。
 
 ### 直近の完了セッション
 
 | 日付 | 内容 |
 |------|------|
+| 03-21 | WAR系3種+VICTORY+JTセリフ personality×archetype化: WAR_CHALLENGER/DECLINE/POST_DIALOGUE新設(200行)、WAR_VICTORY_LINES 47→93行増量、JUNIOR_TOURNAMENT_LINES 250行全属性拡張、旧trait/roleベースダイアログ全廃止、LARGE_EVENT_DIALOGUES.B3系4定数廃止 |
+| 03-21 | 対抗戦勝利セリフポップアップ: WAR_VICTORY_LINES新設(personality×archetype 47パターン)+closeWarFinalResult後ポップアップチェーン(顔画像+セリフ)+CSS(.war-victory-overlay/modal)。セリフExcel管理拡張: 対抗戦4カテゴリ+JT全5タイミングの属性別枠497行追加、旧B3行統合、不要タブ削除 |
 | 03-20 | U-20ジュニアトーナメント+殿堂ポイント制 全実装: Engine.juniorTournament(select/run/apply)+ブラケットUI+観戦+結果画面+セリフ5タイミング(personality×archetype)+HoFポイント制(12pt殿堂/★★★レジェンド)+PPV賞金+新聞複数ページ化(Week24プレビュー+Week25詳報)+ティッカー統合+auto-sim200シーズンALL CLEAR |
 | 03-20 | 3件修正: (1)選手カード身長c.height→c.h+年齢追加、(2)B4密着取材サブタイプ化(youngStar/ace/veteran、候補フィルタ+テキスト分岐+レンタル除外)、(3)オフシーズン処理順変更(契約更新→スカウト→移籍) |
 | 03-20 | バグ修正: プレイヤー練習成長(追い込み+通常)にtrainCapクランプ追加。外部乗数適用後のtrainGrowthがtrainCapを超過しうるバグを修正(AI版は既にクランプ済み) |
@@ -112,6 +114,7 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 
 | システム | 実装日 | 設計書 |
 |---------|--------|--------|
+| 対抗戦勝利セリフポップアップ（WAR_VICTORY_LINES + ポップアップチェーン） | 03-21 | — |
 | 黒田幸子レポーターシステム（NPC画像+テキスト定数+団体比較8セクション+新聞タブ3セクション+seasonStartOvr） | 03-20 | `docs/impl-orgcompare-ui-restructure.md`, `docs/impl-newspaper-enhance.md`, `docs/kuroda-style-guide.md` |
 | セーブデータ圧縮+トリミング（LZ-UTF16圧縮+データ刈り込みでlocalStorage容量超過対策） | 03-20 | — |
 | 興行画面ブラッシュアップ（HP対比バー共通化+対抗戦/通常興行UI刷新） | 03-19 | `docs/show-ui-brushup-spec.md` |

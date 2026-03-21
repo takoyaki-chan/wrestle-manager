@@ -7270,7 +7270,7 @@ const Engine = {
       return { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount };
     },
 
-    /** Make war card: auto-match by OVR rank */
+    /** Make war card: auto-match by OVR rank, 弱い順→メインイベントが最後 */
     makeWarCard(state, opponentOrgId) {
       const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponentOrgId);
       if (!aiOrg) return [];
@@ -7281,6 +7281,8 @@ const Engine = {
       for (let i = 0; i < count; i++) {
         card.push({ playerFighter: playerSorted[i], aiFighter: aiSorted[i] });
       }
+      // 弱い順に並べ替え（メインイベント＝最強対決が最後）
+      card.reverse();
       return card;
     },
 
@@ -10622,8 +10624,9 @@ Engine.eventSystem = {
         // 上位3人からランダム
         const topFighters = org.roster.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
         const challenger = Engine.rng.pick(rng, topFighters);
-        const dialogues = typeof LARGE_EVENT_DIALOGUES !== 'undefined' ? LARGE_EVENT_DIALOGUES.B3_challenger : [];
-        const dialogue = dialogues.length > 0 ? dialogues[Engine.rng.int(rng, 0, dialogues.length - 1)] : '';
+        const dialogue = typeof WAR_CHALLENGER_DIALOGUE !== 'undefined'
+          ? pickDialogueLine(WAR_CHALLENGER_DIALOGUE, challenger)
+          : '';
         return { type: 'B3', orgId: org.id, orgName: org.name || '他団体',
                  challenger: { id: challenger.id, name: challenger.name,
                    pw: challenger.pw, sp: challenger.sp, te: challenger.te,

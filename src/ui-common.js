@@ -23,7 +23,7 @@ function _isPopupActive() {
   });
   if (staticActive) return true;
   // 動的オーバーレイ（R3Modalなど、DOMに直接追加されるもの）
-  return !!document.querySelector('.r3-modal-overlay');
+  return !!document.querySelector('.r3-modal-overlay') || !!document.querySelector('.war-victory-overlay');
 }
 
 function _enqueuePopup(fn) {
@@ -77,63 +77,12 @@ function hideCustomTooltip() {
 // Global tap-outside hides tooltip
 document.addEventListener('click', hideCustomTooltip);
 
-// ── War Challenge Dialogue Generator (traits-based) ──
+// ── War Challenge Dialogue Generator (personality×archetype) ──
 function getWarChallengeDialogue(fighter, orgName) {
-  const ch = ALL_CHARS.find(c => c.id === fighter.id);
-  const role = ch ? ch.role : 'Neutral';
-  const traits = ch ? (ch.traits || []) : [];
-  const style = ch ? ch.style : 'Allround';
-  const name = fighter.name;
-
-  // Heel lines
-  const heelLines = [
-    `フン…${orgName}如きが調子に乗りすぎよ。\n格の違い、教えてあげる。`,
-    `あなたたちの団体、潰させてもらうわ。\n覚悟はいいかしら？`,
-    `弱小団体が目障りなのよ。\nこの${name}が直々に始末してあげる。`,
-    `せいぜい足掻いてみなさい。\n結果は最初から決まってるけどね。`,
-  ];
-  // Babyface lines
-  const babyfaceLines = [
-    `${orgName}の皆さん、勝負しませんか？\n全力でぶつかり合いましょう！`,
-    `うちの選手たちは負けません！\n正々堂々、受けて立ちます！`,
-    `いい試合がしたいんです。\nお互い全力で戦いましょう！`,
-    `${orgName}の強さ、この目で確かめたい。\n対抗戦、申し込みます！`,
-  ];
-  // Neutral lines
-  const neutralLines = [
-    `…対抗戦、やりましょう。\nどちらが上か、はっきりさせたい。`,
-    `あなたたちの実力、試させてもらう。\n逃げないでよね。`,
-    `団体の看板背負って戦う…\nそういうのも、悪くないわ。`,
-    `興味があるの。\n${orgName}がどこまでやれるか。`,
-  ];
-
-  // Trait-specific overrides
-  if (traits.includes('威圧感')) {
-    return `…来い。\n${name}が相手だ。逃げ場はないぞ。`;
+  if (typeof WAR_CHALLENGER_DIALOGUE !== 'undefined') {
+    return pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter);
   }
-  if (traits.includes('破天荒')) {
-    return `やっほー！対抗戦だって！\n面白そうじゃん、やろうやろう！`;
-  }
-  if (traits.includes('リーダー気質')) {
-    return `うちの選手たちを信じてる。\n団体の誇りを懸けて、勝負よ。`;
-  }
-  if (traits.includes('負けず嫌い')) {
-    return `負けるわけにはいかない。\nこの対抗戦、絶対に勝つ！`;
-  }
-  if (traits.includes('闘志')) {
-    return `燃えてきた…！\n全力で叩き潰してやる！`;
-  }
-  if (traits.includes('ファンサービス')) {
-    return `ファンの皆さんに最高の試合を見せたい！\n対抗戦、楽しみましょう！`;
-  }
-  if (traits.includes('反骨心')) {
-    return `…売られた喧嘩は買うわよ。\nむしろ望むところ。`;
-  }
-
-  // Fall back to role-based
-  const pool = role === 'Heel' ? heelLines : role === 'Babyface' ? babyfaceLines : neutralLines;
-  const seed = (fighter.id * 7 + (G.season || 1) * 13) % pool.length;
-  return pool[seed];
+  return '…対抗戦を申し込む';
 }
 
 // ── War Challenge Popup (F3: president delivers the challenge) ──
@@ -417,88 +366,24 @@ function renderWarMatchPreview() {
   overlay.classList.add('active');
 }
 
-// ── Post-War Dialogue Generator ──
+// ── Post-War Dialogue Generator (personality×archetype) ──
 function getWarPostDialogue(fighter, orgName, eventWon, playerWins, aiWins) {
-  const ch = ALL_CHARS.find(c => c.id === fighter.id);
-  const role = ch ? ch.role : 'Neutral';
-  const traits = ch ? (ch.traits || []) : [];
-  const name = fighter.name;
-
-  if (eventWon) {
-    // Player won — enemy is frustrated/defeated
-    if (traits.includes('威圧感')) return `…馬鹿な。この${name}が負けるだと…？\n覚えてなさい。次は必ず潰す。`;
-    if (traits.includes('破天荒')) return `えぇ〜！負けちゃったぁ？\nまぁいいや、次は絶対勝つから！`;
-    if (traits.includes('負けず嫌い')) return `くっ…！こんなの認めない…！\n絶対にリベンジしてやるから！`;
-    if (traits.includes('闘志')) return `…悔しい。でも、この悔しさは忘れない。\n次こそ叩き潰す…！`;
-    if (traits.includes('リーダー気質')) return `完敗ね…。でも、うちの子たちは一生懸命やった。\n次はもっと強くなって戻ってくるわ。`;
-    if (traits.includes('ファンサービス')) return `今日は負けちゃいました…。\nでも次は絶対ファンの皆に勝利を届けます！`;
-    if (traits.includes('努力家')) return `…まだまだ足りないんだ。\nもっと練習して、もっと強くならなきゃ。`;
-    if (traits.includes('反骨心')) return `…ちっ。まさかウチに負けるとは。\n…いい気になってろ。次は潰す。`;
-    // Role fallback — loss
-    if (role === 'Heel') {
-      const pool = [
-        `フン…今回は見逃してあげるわ。\n次会った時が、あなたの最後よ。`,
-        `こんな結果…認めない。\n必ずこの屈辱は返す！`,
-        `たまたまよ、たまたま…！\n調子に乗らないことね。`,
-      ];
-      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
-    }
-    if (role === 'Babyface') {
-      const pool = [
-        `負けちゃった…悔しいです。\nでも、この経験を次に活かします！`,
-        `あなたたちの団体…強かった。\n認めます。でも、次こそは！`,
-        `いい試合でした…本当に。\nまたいつか、勝負してください！`,
-      ];
-      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
-    }
-    // Neutral loss
-    const pool = [
-      `…やるじゃない。今日は負けを認めるわ。\nでも、次は分からないわよ？`,
-      `ふぅん…。悔しくないって言ったら嘘になるわね。\n…次は覚悟しなさい。`,
-      `この結果は受け止める。\n…でも、借りは必ず返す。`,
-    ];
-    return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
-  } else {
-    // Player lost — enemy is victorious/triumphant
-    if (traits.includes('威圧感')) return `…当然の結果だ。\n身の程を知りなさい。`;
-    if (traits.includes('破天荒')) return `やったぁ！勝っちゃった〜！\nほらほら、${orgName}さんもっと頑張って！`;
-    if (traits.includes('負けず嫌い')) return `勝った…！この勝利、絶対に手放さない！\nもっともっと強くなってやる！`;
-    if (traits.includes('闘志')) return `燃え尽きた…でも、最高の気分だ。\nこの勝利は団体の誇りだ！`;
-    if (traits.includes('リーダー気質')) return `みんな、よく戦ったわ。\nこの勝利はチーム全員のものよ！`;
-    if (traits.includes('ファンサービス')) return `ファンの皆さん、勝ちましたよー！\n応援ありがとうございます！`;
-    if (traits.includes('努力家')) return `努力は報われるんだ…！\nみんなの練習の成果が出た…嬉しい！`;
-    if (traits.includes('反骨心')) return `…当たり前よ。\n舐めた連中には相応の結果を見せてやっただけ。`;
-    // Role fallback — win
-    if (role === 'Heel') {
-      const pool = [
-        `ふふふ…予想通りの結果ね。\n${orgName}なんて、この程度よ。`,
-        `圧倒的だったでしょ？\nまた挑戦する勇気があるなら、いつでもどうぞ？`,
-        `弱い。弱すぎるわ。\nもう二度と歯向かわないことね。`,
-      ];
-      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
-    }
-    if (role === 'Babyface') {
-      const pool = [
-        `勝てて嬉しいです！\nでも${orgName}のみなさんも、すごく強かった！`,
-        `いい対抗戦でした！\nまたいつか、全力でぶつかり合いましょう！`,
-        `この勝利を、応援してくれた皆に捧げます！\n本当にありがとう！`,
-      ];
-      return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
-    }
-    // Neutral win
-    const pool = [
-      `…まぁ、こんなものね。\n力の差は歴然だったわ。`,
-      `いい勝負だった…と言いたいところだけど。\nもう少し頑張ってほしかったわね。`,
-      `勝ちは勝ち。\n…次はもっと本気を出させてくれる？`,
-    ];
-    return pool[(fighter.id * 11 + (G.season || 1) * 3) % pool.length];
+  if (typeof WAR_POST_DIALOGUE !== 'undefined') {
+    const sub = eventWon ? WAR_POST_DIALOGUE.result_lose : WAR_POST_DIALOGUE.result_win;
+    return pickDialogueLine(sub, fighter);
   }
+  return eventWon ? '…次はこうはいかない' : '…当然の結果だ';
 }
 
 // ── War Final Result Overlay (with post-match dialogue) ──
 function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
+
+  // 勝利したプレイヤー選手を記録（結果画面クローズ後のポップアップ用）
+  _warVictoryWinners = eventWon
+    ? results.filter(r => r.playerWon).map(r => r.playerFighter)
+    : [];
 
   const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c', emoji:''};
   const eColor = orgCfg.color;
@@ -602,11 +487,56 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   overlay.classList.add('active');
 }
 
+let _warVictoryWinners = [];
+
+function _getWarVictoryLine(fighter) {
+  const p = fighter.personality || 'normal';
+  const a = fighter.archetype || '_default';
+  const table = WAR_VICTORY_LINES[p] || WAR_VICTORY_LINES.normal;
+  const lines = table[a] || table._default || WAR_VICTORY_LINES.normal._default;
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
+function _showWarVictoryChain(list, idx, onDone) {
+  if (idx >= list.length) { if (onDone) onDone(); return; }
+  const w = list[idx];
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay';
+  const faceUrl = getUpperUrl(w.id) || getPortraitUrl(w.id);
+  const line = _getWarVictoryLine(w);
+  overlay.innerHTML = `
+    <div class="war-victory-modal">
+      <div class="war-victory-img-wrap">
+        ${faceUrl ? `<img src="${faceUrl}" alt="${w.name}" class="war-victory-img" onerror="this.style.display='none'">` : ''}
+      </div>
+      <div class="war-victory-name">${w.name}</div>
+      <div class="war-victory-line">「${line}」</div>
+      <button class="war-victory-close">▶</button>
+    </div>
+  `;
+  overlay.querySelector('.war-victory-close').addEventListener('click', () => {
+    overlay.remove();
+    _showWarVictoryChain(list, idx + 1, onDone);
+  });
+  document.body.appendChild(overlay);
+  Audio.play('notify');
+}
+
 function closeWarFinalResult(eventWon) {
   document.getElementById('showResultOverlay').classList.remove('active');
   if (eventWon) { Audio.bgm.playJingle('victory'); }
   else { Audio.play('defeat'); }
-  setTimeout(() => { Audio.bgm.play('management'); refreshAll(); }, eventWon ? 2000 : 500);
+
+  // 勝利選手のセリフポップアップチェーン
+  if (eventWon && _warVictoryWinners.length > 0) {
+    setTimeout(() => {
+      _showWarVictoryChain(_warVictoryWinners, 0, function() {
+        Audio.bgm.play('management'); refreshAll();
+      });
+    }, eventWon ? 2000 : 500);
+  } else {
+    setTimeout(() => { Audio.bgm.play('management'); refreshAll(); }, eventWon ? 2000 : 500);
+  }
 }
 
 // ── R3 モーダル: 仲良し退団/引退演出 ──
@@ -5348,18 +5278,17 @@ function _buildB3Step3(event, state, roster) {
   const pName = playerFighter ? playerFighter.name : '代表選手';
 
   let resultText = '', emoji = '', challengerLine = '';
-  const dialogues = typeof LARGE_EVENT_DIALOGUES !== 'undefined' ? LARGE_EVENT_DIALOGUES : {};
 
   if (result.winner === 'left') {
     resultText = `${pName}が${challenger.name || '???'}に勝利！ ${orgName}を返り討ちにした！`;
     emoji = '🎉';
-    const lines = dialogues.B3_result_lose || ['…'];
-    challengerLine = lines[Math.floor(Math.random() * lines.length)];
+    challengerLine = typeof WAR_POST_DIALOGUE !== 'undefined'
+      ? pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger) : '…';
   } else if (result.winner === 'right') {
     resultText = `${pName}が${challenger.name || '???'}に敗北… ${orgName}の前に屈した。`;
     emoji = '😞';
-    const lines = dialogues.B3_result_win || ['…'];
-    challengerLine = lines[Math.floor(Math.random() * lines.length)];
+    challengerLine = typeof WAR_POST_DIALOGUE !== 'undefined'
+      ? pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) : '…';
   } else {
     resultText = `${pName}と${challenger.name || '???'}は引き分け。互角の戦いを見せた。`;
     emoji = '🤼';
