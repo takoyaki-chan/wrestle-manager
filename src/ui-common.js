@@ -6450,7 +6450,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || '_default');
   if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
 
-  const faceUrl = getUpperUrl(f.id) || getPortraitUrl(f.id);
+  const portraitUrl = getPortraitUrl(f.id);
   const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
   const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? '#2ecc71' : 'var(--text-sub)';
 
@@ -6458,8 +6458,8 @@ function _showJTImpressionChain(list, idx, onDone) {
   overlay.className = 'war-victory-overlay';
   overlay.innerHTML = `
     <div class="war-victory-modal">
-      <div class="war-victory-img-wrap">
-        ${faceUrl ? `<img src="${faceUrl}" alt="${f.name}" class="war-victory-img" onerror="this.style.display='none'">` : ''}
+      <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid ${resultColor};margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
+        ${portraitUrl ? `<img src="${portraitUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : ''}
       </div>
       <div style="font-size:11px;color:${resultColor};letter-spacing:2px;margin-bottom:4px">${resultLabel}</div>
       <div class="war-victory-name">${f.name}</div>

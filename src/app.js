@@ -6682,6 +6682,10 @@ App.finalizeJuniorTournament = function() {
   const applied = Engine.juniorTournament.apply(G, jt.result);
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
 
+  // 新聞を再生成（JT結果を反映させる）
+  const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
+  G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng) };
+
   // 自団体出場選手の感想チェーンを構築
   const playerIds = new Set((G.roster || []).map(f => f.id));
   const { champion, runnerUp, semiFinalists, rounds } = jt.result;
