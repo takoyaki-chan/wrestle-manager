@@ -3485,9 +3485,11 @@ const App = {
       hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
-    // BGM: FileBGMフェードアウト + チップチューンをmanagementに戻す
+    // BGM: FileBGMフェードアウト + 全試合完了時のみチップチューンをmanagementに戻す
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
-    try { Audio.bgm.play('management'); } catch(e) {}
+    if (sp.results.every(r => r !== null)) {
+      try { Audio.bgm.play('management'); } catch(e) {}
+    }
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     sp.currentWatching = -1;
@@ -6829,10 +6831,98 @@ App._receiveJTBattleResult = function(data) {
   try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
   // iframeを閉じる
   document.getElementById('battleOverlay').style.display = 'none';
+
+  // iframe結果でmatch dataを上書き（iframe独自シミュレーションの結果を正とする）
+  const ri = jt.currentRound;
+  const mi = jt.currentMatch;
+  const match = jt.result.rounds[ri].matches[mi];
+  const iframeWinner = data.winner || 'left';
+  match.winner = iframeWinner;
+  match.winnerId = data.winnerId != null ? data.winnerId : (iframeWinner === 'right' ? match.right.id : match.left.id);
+  match.loserId = match.winnerId === match.left.id ? match.right.id : match.left.id;
+  match.mq = data.mq || match.mq;
+  match.turns = data.turns || match.turns;
+  match.finType = data.finType || match.finType;
+  match.finMove = data.finMove || match.finMove;
+  // iframeは {current,max}、エンジンは {final,max} 形式
+  if (data.hpLeft) match.hpLeft = { final: data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final, max: data.hpLeft.max };
+  if (data.hpRight) match.hpRight = { final: data.hpRight.current != null ? data.hpRight.current : data.hpRight.final, max: data.hpRight.max };
+  if (data.log) match.log = data.log;
+
+  // 後続ラウンドの再計算（勝者が変わった場合、次ラウンド以降の対戦カード・結果も更新）
+  App._jtRecomputeSubsequentRounds(jt, ri);
+
   // 観戦後 → 試合結果画面を表示
   jt.phase = 'matchResult';
   Audio.play('coin');
-  renderJuniorTournamentMatchResult(jt.currentRound, jt.currentMatch);
+  renderJuniorTournamentMatchResult(ri, mi);
+};
+
+// JT後続ラウンド再計算: 観戦した試合の結果が変わった場合に、以降のラウンドを再シミュレーション
+App._jtRecomputeSubsequentRounds = function(jt, fromRoundIdx) {
+  const rounds = jt.result.rounds;
+  if (fromRoundIdx + 1 >= rounds.length) {
+    // 最終ラウンドだった場合、champion/runnerUpだけ更新
+    App._jtUpdateFinalResults(jt);
+    return;
+  }
+
+  for (let ri = fromRoundIdx + 1; ri < rounds.length; ri++) {
+    const prevRound = rounds[ri - 1];
+    const winners = prevRound.matches.map(m => m.winnerId === m.left.id ? m.left : m.right);
+
+    const newMatches = [];
+    for (let i = 0; i < winners.length; i += 2) {
+      if (i + 1 >= winners.length) break;
+      const left = winners[i];
+      const right = winners[i + 1];
+
+      // フル選手データを取得してシミュレーション
+      const leftF = App._jtLookupFighter(left.id) || left;
+      const rightF = App._jtLookupFighter(right.id) || right;
+      const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB00 + ri * 10 + i));
+      const isFinal = ri === rounds.length - 1;
+      const matchTier = isFinal ? 2 : 1;
+      const result = Engine.battle.simulateMatch(
+        { ...leftF, condition: 80 }, { ...rightF, condition: 80 }, matchRng, matchTier
+      );
+
+      const winnerId = result.winner === 'right' ? right.id : left.id;
+      const loserId = winnerId === left.id ? right.id : left.id;
+      newMatches.push({
+        left, right, winnerId, loserId,
+        mq: result.mq, turns: result.turns,
+        finType: result.finType || '', finMove: result.finMove || '',
+        hpLeft: result.hpLeft, hpRight: result.hpRight,
+        log: result.log || [], winner: result.winner,
+      });
+    }
+    rounds[ri] = { ...rounds[ri], matches: newMatches };
+  }
+  App._jtUpdateFinalResults(jt);
+};
+
+App._jtUpdateFinalResults = function(jt) {
+  const rounds = jt.result.rounds;
+  const allParticipants = rounds[0].matches.flatMap(m => [m.left, m.right]);
+  const finalMatch = rounds[rounds.length - 1].matches[0];
+  if (!finalMatch) return;
+  jt.result.champion = allParticipants.find(p => p.id === finalMatch.winnerId)
+    || (finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right);
+  jt.result.runnerUp = allParticipants.find(p => p.id === finalMatch.loserId)
+    || (finalMatch.loserId === finalMatch.left.id ? finalMatch.left : finalMatch.right);
+  if (rounds.length >= 2) {
+    const sfRound = rounds[rounds.length - 2];
+    jt.result.semiFinalists = sfRound.matches
+      .map(m => allParticipants.find(p => p.id === m.loserId) || (m.loserId === m.left.id ? m.left : m.right))
+      .filter(Boolean);
+  }
+};
+
+App._jtLookupFighter = function(id) {
+  return (G.roster || []).find(f => f.id === id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === id)
+    || null;
 };
 
 App.jtAdvanceAfterMatch = function(roundIdx, matchIdx) {

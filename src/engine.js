@@ -1165,6 +1165,17 @@ const Engine = {
       return G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5;
     },
 
+    // タイトルマッチ挑戦資格判定
+    // OVR上位5位以内 or ロスター最高OVRとの差8以内
+    getEligibleChallengers(roster, champId) {
+      const available = roster.filter(f => f.id !== champId && !f.injury && !f.isRental);
+      if (available.length === 0) return [];
+      const sorted = [...available].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const top5Ids = new Set(sorted.slice(0, 5).map(f => f.id));
+      const maxOvr = Math.max(...roster.filter(f => !f.injury && !f.isRental).map(f => Engine.util.ov(f)));
+      return available.filter(f => top5Ids.has(f.id) || maxOvr - Engine.util.ov(f) <= 8).map(f => f.id);
+    },
+
     // v1.2: タイトルマッチ12週クールダウン
     // シーズンをまたいで正確に計算するため絶対週数（ゲーム開始から累計）を使う
     getAbsWeek(state) {
@@ -3587,6 +3598,8 @@ const Engine = {
         const oldChampId = aiTitles.world?.championId; // 新聞v2: 王者交代検出用
         const champId = oldChampId;
         const champAlive = champId && roster.find(f => f.id === champId && !f.injury);
+        // 挑戦資格判定: チャンプの対戦相手が資格ありの場合のみタイトルマッチ扱い
+        const eligibleIds = champId ? new Set(Engine.title.getEligibleChallengers(roster, champId)) : new Set();
         if (!champAlive) {
           const top = roster
             .filter(f => !f.injury)
@@ -3601,7 +3614,9 @@ const Engine = {
           }
         } else {
           const champResult = matchResults.find(r => r.left?.id === champId || r.right?.id === champId);
-          if (champResult) {
+          // 対戦相手に挑戦資格がある場合のみタイトルマッチ扱い
+          const oppId = champResult ? (champResult.left?.id === champId ? champResult.right?.id : champResult.left?.id) : null;
+          if (champResult && oppId != null && eligibleIds.has(oppId)) {
             const champWon =
               (champResult.winner === 'left' && champResult.left?.id === champId) ||
               (champResult.winner === 'right' && champResult.right?.id === champId);
@@ -4933,7 +4948,7 @@ const Engine = {
     if (!s.offSeason) {
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      s = { ...s, weeklyNewspaper };
+      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -10141,20 +10156,17 @@ Engine.eventSystem = {
       return { type: 'E6', fighter: f.id, name: f.name };
     }
 
-    // S1: タイトル挑戦要求（trust 30〜55、人気30+、タイトル未保持 + OVR差8以内 + rivalry50+）
-    // 5回に1回は条件を緩和（ランダム性の担保）
-    const s1Relaxed = Engine.rng.float(rng) < 0.20;  // 20%で緩和
-    const champFighter = champId ? roster.find(c => c.id === champId) : null;
-    const champOVR = champFighter ? Engine.util.ov(champFighter) : 999;
+    // S1: タイトル挑戦要求（挑戦資格 + trust 30〜55 + 人気30+）
+    // 20%で緩和（挑戦資格 + trust + 人気のみ）
+    const s1Relaxed = Engine.rng.float(rng) < 0.20;
+    const s1EligibleIds = champId ? new Set(Engine.title.getEligibleChallengers(roster, champId)) : new Set();
     const s1Pool = roster.filter(f => {
-      if (f.id === champId) return false;
-      if ((f.trust != null ? f.trust : 50) > 55) return false;
+      if (!s1EligibleIds.has(f.id)) return false;
+      const trust = f.trust != null ? f.trust : 50;
+      if (trust < 30 || trust > 55) return false;
       if ((f.popularity || 0) < 30) return false;
-      if (s1Relaxed) return true;  // 緩和時は上記条件のみ
-      // 通常時: OVR差8以内 + rivalry50以上
-      const ovrDiff = champOVR - Engine.util.ov(f);
-      if (ovrDiff > 8) return false;
-      // rivalry判定（relationships or rivalries）
+      if (s1Relaxed) return true;  // 緩和時は挑戦資格+trust+人気のみ
+      // 通常時: rivalry50以上を追加要求
       if (champId && state.relationships) {
         const keyAB = Engine.relationships._key(f.id, champId);
         const keyBA = Engine.relationships._key(champId, f.id);
@@ -10162,11 +10174,6 @@ Engine.eventSystem = {
         const relBA = state.relationships[keyBA];
         const rivalryVal = Math.max(relAB?.rivalry || 0, relBA?.rivalry || 0);
         if (rivalryVal < 50) return false;
-      } else if (champId && state.rivalries) {
-        const rivalry = state.rivalries.find(r =>
-          (r.fighter1 === f.id && r.fighter2 === champId) || (r.fighter1 === champId && r.fighter2 === f.id)
-        );
-        if (!rivalry || (rivalry.rivalry || 0) < 50) return false;
       }
       return true;
     });
@@ -10878,7 +10885,7 @@ Engine.eventSystem = {
             applyTrust(fighterId, 2);
             events.push(`🤼 挑戦状は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           }
-          // Phase 4 E-03: 対抗戦の関係値反映
+          // Phase 4 E-03: 挑戦状の関係値反映
           let relationships = null;
           let relationshipCounters = null;
           if (state.relationships) {
@@ -11129,8 +11136,9 @@ Engine.fanExpect = {
     if (champId && Engine.title.canTitleMatch(state).allowed) {
       const champ = roster.find(f => f.id === champId);
       if (champ) {
+        const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, champId));
         const challengers = [...roster]
-          .filter(f => f.id !== champId)
+          .filter(f => eligibleIds.has(f.id))
           .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
         if (challengers.length > 0) {
           const chal = challengers[0];

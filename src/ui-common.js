@@ -2820,6 +2820,18 @@ function toggleTitle(slotIndex) {
     if (!(m.left > 0 && m.right > 0)) { alert('両選手を選んでください'); return; }
   } else if (champId) {
     if (m.left !== champId && m.right !== champId) { alert('タイトルマッチはチャンピオンを含む必要があります'); return; }
+    // 挑戦資格チェック（タイトルON時のみ）
+    if (!m.isTitle) {
+      const challengerId = m.left === champId ? m.right : m.left;
+      if (challengerId > 0) {
+        const eligibleIds = Engine.title.getEligibleChallengers(G.roster, champId);
+        if (!eligibleIds.includes(challengerId)) {
+          const chal = G.roster.find(c => c.id === challengerId);
+          alert(`${chal?.name || '選手'}はタイトル挑戦資格がありません（OVR上位5位以内 or 最高OVRとの差8以内）`);
+          return;
+        }
+      }
+    }
   }
   App.toggleTitleMatch(slotIndex);
 }
@@ -5224,7 +5236,7 @@ function _buildB2Step3(event, state, roster) {
   return html;
 }
 
-// ── B3 Step 1: 対抗戦オファー ──────────────────────────────────────────────
+// ── B3 Step 1: 挑戦状オファー ──────────────────────────────────────────────
 function _buildB3Step1(event, state) {
   const challenger = event.challenger || {};
   const orgName = event.orgName || '他団体';
@@ -5278,7 +5290,7 @@ function _buildB3Step2(event, state, roster) {
   return html;
 }
 
-// ── B3 Step 3: 対抗戦結果 ──────────────────────────────────────────────────
+// ── B3 Step 3: 挑戦状結果 ──────────────────────────────────────────────────
 function _buildB3Step3(event, state, roster) {
   const result = event.matchResult;
   if (!result) return '<div class="care-title">挑戦状 結果</div><button class="btn" data-choice="0">閉じる</button>';
