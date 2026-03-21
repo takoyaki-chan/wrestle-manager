@@ -6479,15 +6479,39 @@ App.initJuniorTournament = function() {
   const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
   const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
 
+  // 自団体の出場選手を抽出
+  const playerIds = new Set((G.roster || []).map(f => f.id));
+  const myParticipants = jtResult.rounds[0].matches
+    .flatMap(m => [m.left, m.right])
+    .filter(p => playerIds.has(p.id));
+
   App._jtPreview = {
     selection: sel,
     result: jtResult,
     currentRound: 0,
     currentMatch: 0,
-    phase: 'bracket', // 'bracket' | 'matchCard' | 'watching' | 'roundResult' | 'finalResult'
+    phase: myParticipants.length > 0 ? 'summon' : 'bracket',
+    summonIndex: 0,
+    myParticipants,
   };
   try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
-  renderJuniorTournamentBracket();
+  if (myParticipants.length > 0) {
+    renderJuniorTournamentSummon();
+  } else {
+    renderJuniorTournamentBracket();
+  }
+};
+
+App.jtNextSummon = function() {
+  const jt = App._jtPreview;
+  if (!jt) return;
+  jt.summonIndex++;
+  if (jt.summonIndex >= jt.myParticipants.length) {
+    jt.phase = 'bracket';
+    renderJuniorTournamentBracket();
+  } else {
+    renderJuniorTournamentSummon();
+  }
 };
 
 App.jtWatchMatch = function(roundIdx, matchIdx) {
@@ -6536,8 +6560,9 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
 };
 
 App.jtSkipMatch = function(roundIdx, matchIdx) {
-  // 試合結果は既に計算済み — 次へ進む
-  App.jtAdvanceAfterMatch(roundIdx, matchIdx);
+  // 試合結果画面を表示
+  App._jtPreview.phase = 'matchResult';
+  renderJuniorTournamentMatchResult(roundIdx, matchIdx);
 };
 
 App.jtSkipAll = function() {
@@ -6549,26 +6574,35 @@ App.jtSkipAll = function() {
 App._receiveJTBattleResult = function(data) {
   const jt = App._jtPreview;
   if (!jt || jt.phase !== 'watching') return;
-  App.jtAdvanceAfterMatch(jt.currentRound, jt.currentMatch);
+  // 観戦後 → 試合結果画面を表示
+  jt.phase = 'matchResult';
+  renderJuniorTournamentMatchResult(jt.currentRound, jt.currentMatch);
 };
 
 App.jtAdvanceAfterMatch = function(roundIdx, matchIdx) {
+  // 旧互換: 直接ブラケットに戻る場合（内部用）
+  App._jtAdvanceInternal(roundIdx, matchIdx);
+};
+
+App.jtAdvanceAfterResult = function(roundIdx, matchIdx) {
+  // 試合結果画面から次へ進む
+  App._jtAdvanceInternal(roundIdx, matchIdx);
+};
+
+App._jtAdvanceInternal = function(roundIdx, matchIdx) {
   const jt = App._jtPreview;
   if (!jt) return;
   const round = jt.result.rounds[roundIdx];
   if (matchIdx + 1 < round.matches.length) {
-    // 同ラウンドの次の試合へ
     jt.currentMatch = matchIdx + 1;
     jt.phase = 'bracket';
     renderJuniorTournamentBracket();
   } else if (roundIdx + 1 < jt.result.rounds.length) {
-    // 次のラウンドへ
     jt.currentRound = roundIdx + 1;
     jt.currentMatch = 0;
     jt.phase = 'bracket';
     renderJuniorTournamentBracket();
   } else {
-    // 全試合完了 → 最終結果
     jt.phase = 'finalResult';
     renderJuniorTournamentResult();
   }
@@ -6585,6 +6619,10 @@ App.finalizeJuniorTournament = function() {
   // transientクリア（_juniorTournamentResultはtickWeekで新聞が読むので残す）
   delete G._juniorTournamentSelection;
   App._jtPreview = null;
+
+  // V6 summon で変更した box スタイルをリセット
+  const box = document.getElementById('showResultBox');
+  if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; }
 
   try { Audio.fileBgm.stop(); } catch(e) {}
   Audio.play('coin');
