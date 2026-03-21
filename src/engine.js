@@ -10847,7 +10847,7 @@ Engine.eventSystem = {
           } else {
             // Phase0修正: 辞退ペナルティ追加 orgPop -1（逓減適用）
             const declineOrgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, null);
-            events.push(`🚫 ${event.orgName || '他団体'}からの対抗戦オファーを断った（団体人気${Math.round(declineOrgPopDelta * 10) / 10}）`);
+            events.push(`🚫 ${event.orgName || '他団体'}からの挑戦状を断った（団体人気${Math.round(declineOrgPopDelta * 10) / 10}）`);
             return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta: declineOrgPopDelta };
           }
         }
@@ -10868,15 +10868,15 @@ Engine.eventSystem = {
             applyTrust(fighterId, 5);
             roster = roster.map(f => f.id === fighterId
               ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 3, 1, 100) } : f);
-            events.push(`🎉 対抗戦で${orgName}を返り討ち！（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+            events.push(`🎉 挑戦状で${orgName}を返り討ち！（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           } else if (result.winner === 'right') {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, rng);
             applyTrust(fighterId, -3);
-            events.push(`😞 対抗戦で${orgName}に敗北…（人気${Math.round(orgPopDelta * 10) / 10}）`);
+            events.push(`😞 挑戦状で${orgName}に敗北…（人気${Math.round(orgPopDelta * 10) / 10}）`);
           } else {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
             applyTrust(fighterId, 2);
-            events.push(`🤼 対抗戦は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+            events.push(`🤼 挑戦状は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           }
           // Phase 4 E-03: 対抗戦の関係値反映
           let relationships = null;
