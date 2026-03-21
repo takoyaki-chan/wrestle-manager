@@ -2807,7 +2807,7 @@ const RANKING_CONFIG = {
   weightsTop10: [2.4, 1.9, 1.55, 1.25, 1.05, 0.75, 0.55, 0.4, 0.28, 0.18],
   ovrMultiplier: 1.2,
   popMultiplier: 0.9,
-  legacyCapByTier: { S: 50, A: 30, B: 15, player: 50 },
+  legacyCapByTier: { S: 50, A: 50, B: 50, player: 50 },
   hallOfFameLegacyPerInductee: 10,
 };
 // ── Scout Event Name Generation & Config (scout-spec §3) ──────

@@ -1958,22 +1958,54 @@ function _buildChampionsAward(champions) {
   <div style="margin-top:16px"><button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button></div>`;
 }
 
+function _awardsShieldImg(level, id) {
+  const lv = Math.max(1, Math.min(3, level || 1));
+  const variants = { 1: 3, 2: 4, 3: 4 };
+  const v = String.fromCharCode(97 + ((id || 0) % (variants[lv] || 3)));
+  const url = `../image/shield/shield_${lv}_${v}.webp`;
+  const emoji = lv >= 3 ? '🏆' : lv >= 2 ? '🥇' : '🛡️';
+  return `<img src="${url}" style="width:100px;height:auto;display:block;margin:0 auto 4px" alt="" onerror="this.outerHTML='<div style=font-size:48px;text-align:center>${emoji}</div>'">`;
+}
+
 function _buildHallOfFame(d) {
   const line = _awardLine('hallOfFame', d.id);
   const hofLevel = d.hofLevel || 1;
   const hofPoints = d.hofPoints || 0;
   const starText = hofLevel >= 3 ? '★★★ レジェンド' : hofLevel >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り';
   const starColor = hofLevel >= 3 ? '#f39c12' : hofLevel >= 2 ? '#f1c40f' : '#bdc3c7';
-  let detailLines = `現役期間: ${d.activeYears}<br>`;
-  detailLines += `🏆 王座獲得 ${d.titleReigns}回 &nbsp;|&nbsp; 🛡️ 通算防衛 ${d.totalDefenses}回<br>`;
-  if (d.juniorTournamentWins > 0) detailLines += `🏟️ ジュニアトーナメント優勝 ${d.juniorTournamentWins}回<br>`;
-  if (d.ppvMainEventWins > 0) detailLines += `🏆 PPV GRAND FINAL 優勝 ${d.ppvMainEventWins}回<br>`;
-  detailLines += `📈 最高OVR ${d.peakOVR}（S${d.peakOVRSeason}） &nbsp;|&nbsp; 殿堂pt: ${hofPoints}`;
-  return `<div class="awards-category" style="color:${starColor}">🏛️ ${starText} 🏛️</div>
+
+  // キャリアハイライト年表
+  const highlights = d.careerHighlights || [];
+  let hlHtml = '';
+  if (highlights.length > 0) {
+    const hlIcons = { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆' };
+    hlHtml = `<div style="text-align:left;margin:8px auto;max-width:280px;font-size:12px;line-height:1.8">`;
+    hlHtml += `<div style="color:${starColor};font-weight:700;margin-bottom:4px;text-align:center;font-size:11px;letter-spacing:1px">── キャリアハイライト ──</div>`;
+    highlights.forEach(hl => {
+      const icon = hlIcons[hl.type] || '📌';
+      hlHtml += `<div><span style="color:rgba(255,255,255,0.4);margin-right:6px">S${hl.season}</span>${icon} ${hl.text}</div>`;
+    });
+    hlHtml += `</div>`;
+  }
+
+  // 通算実績サマリー
+  const statsLine = [];
+  if (d.titleReigns > 0) statsLine.push(`王座${d.titleReigns}回獲得`);
+  if (d.totalDefenses > 0) statsLine.push(`通算${d.totalDefenses}防衛`);
+  if (d.juniorTournamentWins > 0) statsLine.push(`JT優勝${d.juniorTournamentWins}回`);
+  if (d.ppvMainEventWins > 0) statsLine.push(`PPV優勝${d.ppvMainEventWins}回`);
+
+  const ageText = d.retireAge ? `（${d.retireAge}歳引退）` : '';
+  const ovrText = d.peakOVR ? ` / 最高OVR ${d.peakOVR}（S${d.peakOVRSeason}）` : '';
+
+  return `${_awardsShieldImg(hofLevel, d.id)}
+  <div class="awards-category" style="color:${starColor}">🏛️ ${starText} 🏛️</div>
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 130)}</div>
   <div class="awards-name gold">✦ ${d.name} ✦</div>
   <div class="awards-org">${d.orgName} / ${_styleJa(d.style)}</div>
-  <div class="awards-plaque">${detailLines}</div>
+  <div class="awards-plaque" style="font-size:12px">${d.activeYears}${ageText}${ovrText}</div>
+  ${hlHtml}
+  <div class="awards-plaque" style="font-size:12px">${statsLine.join(' / ')}<br><span style="color:${starColor}">${starText}（${hofPoints}pt）</span></div>
   ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">拍手 👏</button>`;
 }
@@ -1982,8 +2014,18 @@ function _buildAwardsSummary(a) {
   const row = (icon, lbl, val) => val
     ? `<div class="awards-summary-row"><span class="awards-summary-label">${icon} ${lbl}</span><span>${val}</span></div>`
     : '';
-  const hofText = a.hallOfFame && a.hallOfFame.length > 0
-    ? a.hallOfFame.map(h => h.name).join('、') : '該当なし';
+  // NPC殿堂入りも含めた殿堂テキスト
+  const allInductees = [];
+  if (a.hallOfFame && a.hallOfFame.length > 0) {
+    a.hallOfFame.forEach(h => allInductees.push(`${h.name}（${h.orgName || 'あなたの団体'}）`));
+  }
+  if (a.npcInductees && a.npcInductees.length > 0) {
+    a.npcInductees.forEach(h => {
+      const star = h.hofLevel >= 3 ? '★★★' : h.hofLevel >= 2 ? '★★' : '★';
+      allInductees.push(`${h.name}（${h.orgName}）${star}`);
+    });
+  }
+  const hofText = allInductees.length > 0 ? allInductees.join('、') : '該当なし';
   const playerChamp = a.champions && a.champions.find(c => c.isPlayer);
   const topChamp = playerChamp || (a.champions && a.champions[0]);
   const champText = topChamp

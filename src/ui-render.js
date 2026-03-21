@@ -2911,6 +2911,8 @@ function refreshAll() {
 // ╚══════════════════════════════════════════════════════════╝
 
 let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞
+let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
+let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
 let _newspaperPage = 0; // 新聞ページ番号（0=通常面, 1+=特集面）
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
@@ -3690,43 +3692,200 @@ function _renderDbCoaches() {
   return html;
 }
 
-// ── 殿堂一覧 ──────────────────────────────────────────────
+// ── 殿堂一覧 v2.0 ──────────────────────────────────────────────
+function _getHofStarText(level) { return level >= 3 ? '★★★ レジェンド' : level >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り'; }
+function _getHofBorderColor(level) { return level >= 3 ? '#f39c12' : level >= 2 ? '#d4a843' : '#bdc3c7'; }
+function _getHofShieldEmoji(level) { return level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️'; }
+const _SHIELD_VARIANTS = { 1: 3, 2: 4, 3: 4 }; // variants per level (a/b/c or a/b/c/d)
+function _getHofShieldUrl(level, id) {
+  const lv = Math.max(1, Math.min(3, level || 1));
+  const variants = _SHIELD_VARIANTS[lv] || 3;
+  const variant = String.fromCharCode(97 + ((id || 0) % variants)); // a/b/c/d based on id
+  return `../image/shield/shield_${lv}_${variant}.webp`;
+}
+function _hofShieldImg(level, id, size) {
+  const url = _getHofShieldUrl(level, id);
+  return `<img src="${url}" style="width:${size}px;height:auto;display:block;margin:0 auto" alt="${_getHofStarText(level)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:${Math.round(size*0.6)}px;text-align:center">${_getHofShieldEmoji(level)}</span>`;
+}
+function _getHighlightIcon(type) {
+  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆' }[type] || '📌';
+}
+
+function _getAllHofEntries() {
+  const allHof = G.allHallOfFame || {};
+  const entries = [];
+  ['player', 'org_s', 'org_a', 'org_b'].forEach(key => {
+    (allHof[key] || []).forEach(h => entries.push(h));
+  });
+  // 後方互換: allHallOfFameが空でhallOfFameがある場合
+  if (entries.length === 0 && G.hallOfFame && G.hallOfFame.length > 0) {
+    G.hallOfFame.forEach(h => entries.push({ ...h, orgId: h.orgId || 'player' }));
+  }
+  return entries;
+}
+
+function _getHofOrgName(orgId) {
+  if (orgId === 'player') return G.orgName || 'あなたの団体';
+  const org = RIVAL_ORGS.find(o => o.id === orgId);
+  const aiData = G.aiOrgs && G.aiOrgs[orgId];
+  return (aiData && aiData.orgName) || (org && org.name) || orgId;
+}
+
 function _renderDbHallOfFame() {
-  const hof = G.hallOfFame || [];
-  if (hof.length === 0) {
-    return `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
+  const allEntries = _getAllHofEntries();
+
+  // フィルタタブ
+  const orgKeys = ['all', 'player', 'org_s', 'org_a', 'org_b'];
+  const orgCounts = {};
+  orgKeys.forEach(k => { orgCounts[k] = k === 'all' ? allEntries.length : allEntries.filter(h => h.orgId === k).length; });
+
+  let html = `<div class="db-hof-filter-bar">`;
+  orgKeys.forEach(k => {
+    const label = k === 'all' ? '全団体' : _getHofOrgName(k);
+    const active = _dbHofFilter === k ? ' active' : '';
+    html += `<button class="db-hof-filter-btn${active}" onclick="_dbHofFilter='${k}';renderDatabase()">${label}(${orgCounts[k]})</button>`;
+  });
+  html += `</div>`;
+
+  // ソート
+  html += `<div class="db-hof-sort-bar"><span style="color:var(--text-dim);font-size:11px">並び替え:</span>`;
+  [['season_desc','殿堂入り順'],['points_desc','ポイント順'],['name','名前順']].forEach(([k,label]) => {
+    const active = _dbHofSort === k ? ' active' : '';
+    html += `<button class="db-hof-sort-btn${active}" onclick="_dbHofSort='${k}';renderDatabase()">${label}</button>`;
+  });
+  html += `</div>`;
+
+  // フィルタ適用
+  let filtered = _dbHofFilter === 'all' ? allEntries : allEntries.filter(h => h.orgId === _dbHofFilter);
+
+  // ソート適用
+  if (_dbHofSort === 'season_desc') filtered.sort((a, b) => (b.inductionSeason || 0) - (a.inductionSeason || 0));
+  else if (_dbHofSort === 'points_desc') filtered.sort((a, b) => (b.hofPoints || 0) - (a.hofPoints || 0));
+  else if (_dbHofSort === 'name') filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  if (filtered.length === 0) {
+    html += `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
       <div style="font-size:40px;margin-bottom:12px">🏅</div>
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント12pt以上の選手が引退時に殿堂入りします<br>タイトル獲得/防衛=各1pt、ジュニア優勝=7pt、PPV優勝=9pt</div>
+      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント12pt以上の選手が引退時に殿堂入りします。<br>
+      <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
+      タイトル獲得 = 各1pt ／ タイトル防衛 = 各1pt<br>
+      ジュニア優勝 = 7pt ／ PPV GRAND FINAL = 9pt<br><br>
+      12pt = ★ 殿堂入り ／ 18pt = ★★ ゴールド殿堂 ／ 25pt = ★★★ レジェンド
+      </span></div>
     </div>`;
+    return html;
   }
 
-  let html = `<div class="db-hof-grid">`;
-  hof.forEach(h => {
+  // 盾グリッド（2列）
+  html += `<div class="db-hof-grid">`;
+  filtered.forEach((h, idx) => {
+    const level = h.hofLevel || 1;
+    const borderColor = _getHofBorderColor(level);
     const pUrl = getPortraitUrl(h.id || 0);
+    const starText = _getHofStarText(level);
     const imgHtml = pUrl
-      ? `<img src="${pUrl}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0" alt="">`
-      : `<div style="width:60px;height:60px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏅</div>`;
-    html += `<div class="db-hof-card">
-      ${imgHtml}
-      <div class="db-hof-info">
-        <div class="db-hof-name">${h.name}</div>
-        <div class="db-hof-row">
-          <span class="badge badge-${h.style || 'Allround'}" style="font-size:11px">${h.style || '—'}</span>
-          <span style="margin-left:6px;color:var(--gold);font-weight:700">OVR ${h.ovr || '—'}</span>
-        </div>
-        <div class="db-hof-row">活動期間: S${h.debutSeason || '?'}〜S${h.retireSeason || '?'}</div>
-        ${h.totalTitleWins ? `<div class="db-hof-row">タイトル: ${h.totalTitleWins}回獲得 / ${h.totalDefenses || 0}防衛</div>` : ''}
-        ${h.juniorTournamentWins ? `<div class="db-hof-row">ジュニア優勝: ${h.juniorTournamentWins}回</div>` : ''}
-        ${h.ppvMainEventWins ? `<div class="db-hof-row">PPV優勝: ${h.ppvMainEventWins}回</div>` : ''}
-        ${h.peakOvr ? `<div class="db-hof-row">最高OVR: ${h.peakOvr}</div>` : ''}
-        <div class="db-hof-row" style="color:var(--gold)">${h.hofLevel >= 3 ? '★★★ レジェンド' : h.hofLevel >= 2 ? '★★ ゴールド' : '★ 殿堂入り'}${h.hofPoints ? ` (${h.hofPoints}pt)` : ''} — S${h.retireSeason || '?'}</div>
+      ? `<img src="${pUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${borderColor};flex-shrink:0" alt="">`
+      : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏅</div>`;
+
+    html += `<div class="db-hof-card" style="border-color:${borderColor}" onclick="showHofDetail(${idx})" data-hof-idx="${idx}">
+      <div style="text-align:center;margin-bottom:6px">
+        ${_hofShieldImg(level, h.id, 80)}
+        <div style="font-size:11px;color:${borderColor};font-weight:700;margin-top:2px">${starText}</div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        ${imgHtml}
+        <div style="flex:1;min-width:0">
+          <div class="db-hof-name">${h.name}</div>
+          <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)} / ${h.style || 'Allround'}</div>
+        </div>
+      </div>
+      <div class="db-hof-row">${h.activeYears || `S${h.activeSeasonsStart || '?'}〜S${h.activeSeasonsEnd || '?'}`}</div>
+      <div class="db-hof-row">王座${h.titleReigns || 0}回 / 防衛${h.totalDefenses || 0}回</div>
+      <div class="db-hof-row" style="color:${borderColor}">殿堂pt: ${h.hofPoints || 0}</div>
     </div>`;
   });
   html += `</div>`;
+
+  // 詳細ポップアップ用データを window に保持
+  window._hofFilteredList = filtered;
+
   return html;
 }
+
+/** 殿堂詳細ポップアップ */
+function showHofDetail(idx) {
+  const list = window._hofFilteredList || [];
+  const h = list[idx];
+  if (!h) return;
+
+  const level = h.hofLevel || 1;
+  const borderColor = _getHofBorderColor(level);
+  const starText = _getHofStarText(level);
+  const pUrl = getPortraitUrl(h.id || 0);
+  const upperUrl = getUpperUrl(h.id || 0);
+
+  const portraitHtml = pUrl
+    ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${borderColor}" alt="">`
+    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:32px">🏅</div>`;
+
+  const upperHtml = upperUrl
+    ? `<div style="text-align:center;margin:8px 0"><img src="${upperUrl}" style="height:150px;object-fit:contain;border-radius:8px;opacity:0.9" alt="" onerror="this.style.display='none'"></div>`
+    : '';
+
+  // キャリアハイライト
+  const highlights = h.careerHighlights || [];
+  let highlightsHtml = '';
+  if (highlights.length > 0) {
+    highlightsHtml = `<div class="db-hof-detail-section">━━ キャリアハイライト ━━</div><div class="db-hof-highlights">`;
+    highlights.forEach(hl => {
+      highlightsHtml += `<div class="db-hof-hl-row"><span class="db-hof-hl-season">S${hl.season}</span><span>${_getHighlightIcon(hl.type)} ${hl.text}</span></div>`;
+    });
+    highlightsHtml += `</div>`;
+  }
+
+  // 通算実績
+  const statsHtml = `<div class="db-hof-detail-section">━━ 通算実績 ━━</div>
+    <div class="db-hof-stats-grid">
+      <div>王座獲得 <strong>${h.titleReigns || 0}</strong>回</div>
+      <div>通算防衛 <strong>${h.totalDefenses || 0}</strong>回</div>
+      ${h.juniorTournamentWins ? `<div>JT優勝 <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
+      ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
+    </div>`;
+
+  const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
+
+  const modal = document.createElement('div');
+  modal.className = 'db-hof-detail-overlay';
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `<div class="db-hof-detail-modal" style="${legendGlow}">
+    <button class="db-hof-detail-close" onclick="this.closest('.db-hof-detail-overlay').remove()">×</button>
+    <div style="text-align:center;margin-bottom:12px">
+      ${_hofShieldImg(level, h.id, 120)}
+      <div style="font-size:14px;color:${borderColor};font-weight:700;margin-top:4px">${starText}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+      ${portraitHtml}
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--text-main)">${h.name}</div>
+        <div style="font-size:13px;color:var(--text-sub)">${h.orgName || _getHofOrgName(h.orgId)} / ${h.style || 'Allround'}</div>
+        <div style="font-size:12px;color:var(--text-dim)">${h.activeYears || ''}${h.retireAge ? `（${h.retireAge}歳引退）` : ''}</div>
+        <div style="font-size:12px;color:var(--text-dim)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）${h.retireOVR ? ` / 引退時OVR ${h.retireOVR}` : ''}</div>
+      </div>
+    </div>
+    ${upperHtml}
+    ${highlightsHtml}
+    ${statsHtml}
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:${borderColor}">
+      殿堂pt: ${h.hofPoints || 0} ／ 殿堂入り: S${h.inductionSeason || '?'}
+    </div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove()">閉じる</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+window.showHofDetail = showHofDetail;
 
 // ── 団体比較 ──────────────────────────────────────────────
 let _dbCompareTarget = null; // null=自動選択（ランキングでプレイヤーのすぐ上の団体）

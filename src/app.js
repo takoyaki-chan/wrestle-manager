@@ -1979,6 +1979,25 @@ const Storage = {
         }
       }
 
+      // v2.0 HOF拡張: allHallOfFame マイグレーション
+      if (!G._migrated_allHallOfFame_v1) {
+        const existingHof = G.hallOfFame || [];
+        const playerHof = existingHof.map(h => ({
+          ...h,
+          orgId: 'player',
+          orgName: h.orgName || G.orgName || 'あなたの団体',
+          careerHighlights: h.careerHighlights || Engine.awards.buildCareerHighlights(h, h.orgName || G.orgName || 'あなたの団体'),
+          retireOVR: h.retireOVR || h.ovr || 0,
+          retireAge: h.retireAge || 0,
+        }));
+        G = {
+          ...G,
+          allHallOfFame: { player: playerHof, org_s: [], org_a: [], org_b: [] },
+          hallOfFame: playerHof,
+          _migrated_allHallOfFame_v1: true,
+        };
+      }
+
       // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
         const existing = new Set((G.matchupLog || []).map(e => {

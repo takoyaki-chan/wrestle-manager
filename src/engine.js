@@ -2508,16 +2508,13 @@ const Engine = {
       return totalWeight > 0 ? total / totalWeight : 0;
     },
     calcLegacyScore(state, orgId) {
-      const caps = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.legacyCapByTier) || {};
-      if (orgId === 'player') {
-        const cap = caps.player || 50;
-        const hofCount = (state.hallOfFame || []).length;
-        const per = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.hallOfFameLegacyPerInductee) || 10;
-        return Math.min(cap, hofCount * per);
-      }
-      const org = RIVAL_ORGS.find(o => o.id === orgId);
-      if (!org) return 0;
-      return caps[org.tier] || 0;
+      const allHof = state.allHallOfFame || {};
+      const hofList = orgId === 'player'
+        ? (allHof.player || state.hallOfFame || [])
+        : (allHof[orgId] || []);
+      const per = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.hallOfFameLegacyPerInductee) || 10;
+      const cap = 50;
+      return Math.min(cap, hofList.length * per);
     },
     calcRosterPower(roster) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
@@ -3751,6 +3748,12 @@ const Engine = {
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
         events.push(`${org.emoji} ${org.name}: ���X�^�[${roster.length}�� (����OVR ${avgOvr})`);
 
+        // v2.0 HOF拡張: NPC殿堂入り判定
+        const npcInductees = Engine.awards.checkNpcHallOfFame(aiRetirees, org.id, org.name, state);
+        if (npcInductees.length > 0) {
+          events.push(`🏛️ ${org.name}: ${npcInductees.map(h => h.name).join('、')} が殿堂入り`);
+        }
+
         // 新聞v2: AI引退記録（次シーズン初週の新聞で表示）
         const newsRetirements = aiRetirees.map(f => ({
           orgName: org.name, id: f.id, name: f.name, age: f.age,
@@ -3762,7 +3765,8 @@ const Engine = {
         newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop,
           _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
           seasonBreakthroughs: [],
-          _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined };
+          _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined,
+          _npcInductees: npcInductees.length > 0 ? npcInductees : undefined };
       });
 
       return { aiOrgs: newAiOrgs, events };
@@ -7528,7 +7532,16 @@ const Engine = {
 
         // AI season end processing (steps 1-5)
         const aiResult = Engine.rival.processSeasonEnd(rng, s);
-        s = { ...s, aiOrgs: aiResult.aiOrgs };
+        // v2.0 HOF拡張: NPC殿堂入り回収
+        const allHof = { ...(s.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
+        RIVAL_ORGS.forEach(org => {
+          const inductees = aiResult.aiOrgs[org.id]?._npcInductees || [];
+          if (inductees.length > 0) {
+            allHof[org.id] = [...(allHof[org.id] || []), ...inductees];
+          }
+          if (aiResult.aiOrgs[org.id]) delete aiResult.aiOrgs[org.id]._npcInductees;
+        });
+        s = { ...s, allHallOfFame: allHof, aiOrgs: aiResult.aiOrgs };
         events.push(...aiResult.events);
 
         // NPC記録統一: 脅威通知は seasonBreakthroughs から生成
@@ -8208,7 +8221,8 @@ const Engine = {
       warVictories: [],
       // v1.3: Career record system
       retiredFighters: [],  // temporary — cleared after year-end awards
-      hallOfFame: [],       // permanent — hall of fame inductees
+      hallOfFame: [],       // permanent — hall of fame inductees (alias for allHallOfFame.player)
+      allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
       retiredIds: [],       // permanent — all retired character IDs (prevents premature reappearance)
       lastAwards: null,     // v1.4: last year-end awards result
       // v0.95: Season statistics & history
@@ -8509,7 +8523,7 @@ Engine.ending = {
       peakOrgPop:      Math.max(...allOrgPop, 0),
       totalShows:      allShows.reduce((a, b) => a + b, 0),
       bestMQ:          Math.max(...allBestMQ, 0),
-      hallOfFameCount: (state.hallOfFame || []).length,
+      hallOfFameCount: ((state.allHallOfFame || {}).player || state.hallOfFame || []).length,
       top3Fighters:    sortedRoster.slice(0, 3),
       coaches:         state.coaches || [],
     };
@@ -8535,7 +8549,7 @@ Engine.ending = {
       totalShows:      allShows.reduce((a, b) => a + b, 0) + (state.seasonStats?.showCount || 0),
       bestMQ:          overallBestMQ,
       bestMQMatch,
-      hallOfFameCount: (state.hallOfFame || []).length,
+      hallOfFameCount: ((state.allHallOfFame || {}).player || state.hallOfFame || []).length,
     };
   }
 };
@@ -8558,13 +8572,22 @@ Engine.awards = {
    * @returns {Object} pendingAwards データ
    */
   generate(rng, state) {
+    // v2.0: NPC殿堂入り者を allHallOfFame から収集（今シーズン inductionSeason のもの）
+    const allHof = state.allHallOfFame || {};
+    const npcInductees = [];
+    ['org_s', 'org_a', 'org_b'].forEach(key => {
+      (allHof[key] || []).forEach(h => {
+        if (h.inductionSeason === state.season) npcInductees.push(h);
+      });
+    });
     return {
       season: state.season,
       rookieOfYear: Engine.awards.selectRookie(state),
       bestMatch:    Engine.awards.selectBestMatch(rng, state),
       mvp:          Engine.awards.selectMVP(rng, state),
       champions:    Engine.awards.getChampions(state),
-      hallOfFame:   Engine.awards.checkHallOfFame(state)
+      hallOfFame:   Engine.awards.checkHallOfFame(state),
+      npcInductees: npcInductees,
     };
   },
 
@@ -8732,6 +8755,85 @@ Engine.awards = {
     if (points >= 12) return 1; // ★ 殿堂入り
     return 0;
   },
+
+  /** v2.0 HOF拡張: careerRecord.history → 固有名詞テキストの実績リスト */
+  buildCareerHighlights(rec, orgName) {
+    const history = (rec && rec.history) || [];
+    const highlights = [];
+    let reignCount = 0;
+    history.forEach(ev => {
+      switch (ev.type) {
+        case 'titleWin':
+          reignCount++;
+          highlights.push({
+            type: 'titleWin', season: ev.season,
+            text: `${ev.orgName || orgName}王座 ${reignCount === 1 ? '初戴冠' : reignCount + '度目の戴冠'}`
+          });
+          break;
+        case 'titleDefense':
+          if ((ev.count || 0) >= 3) {
+            highlights.push({
+              type: 'titleDefense', season: ev.season,
+              text: `${ev.orgName || orgName}王座 ${ev.count}度防衛`
+            });
+          }
+          break;
+        case 'titleLoss':
+          highlights.push({
+            type: 'titleLoss', season: ev.season,
+            text: `${ev.orgName || orgName}王座 陥落（${ev.defenses || 0}度防衛の末に）`
+          });
+          break;
+        case 'juniorTournament':
+          if (ev.result === 'champion') {
+            highlights.push({
+              type: 'juniorTournament', season: ev.season,
+              text: 'ジュニアトーナメント 優勝'
+            });
+          }
+          break;
+        case 'ppvMainEvent':
+          if (ev.result === 'champion' || ev.result === 'win') {
+            highlights.push({
+              type: 'ppvMainEvent', season: ev.season,
+              text: 'PPV GRAND FINAL 優勝'
+            });
+          }
+          break;
+      }
+    });
+    highlights.sort((a, b) => a.season - b.season);
+    return highlights;
+  },
+
+  /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応） */
+  _buildHofEntry(fighter, orgId, orgName, state) {
+    const rec = fighter.careerRecord || {};
+    const hist = rec.history || [];
+    const debut = hist.find(e => e.type === 'debut');
+    const retire = hist.find(e => e.type === 'retire');
+    const hofPoints = Engine.awards.calcHofPoints(rec);
+    const hofLevel = Engine.awards.getHofLevel(hofPoints);
+    return {
+      id: fighter.id, name: fighter.name, portrait: fighter.portrait,
+      orgId: orgId,
+      orgName: orgName,
+      style: fighter.style || 'Allround',
+      activeSeasonsStart: debut ? debut.season : 1,
+      activeSeasonsEnd: retire ? retire.season : state.season,
+      activeYears: `S${debut ? debut.season : 1}〜S${retire ? retire.season : state.season}`,
+      titleReigns: rec.totalTitleWins || 0, totalDefenses: rec.totalDefenses || 0,
+      juniorTournamentWins: rec.juniorTournamentWins || 0,
+      ppvMainEventWins: rec.ppvMainEventWins || 0,
+      peakOVR: rec.peakOVR || 0, peakOVRSeason: rec.peakOVRSeason || 0,
+      hofPoints, hofLevel,
+      inductionSeason: state.season,
+      careerHighlights: Engine.awards.buildCareerHighlights(rec, orgName),
+      retireOVR: Engine.util.ov(fighter),
+      retireAge: fighter.age || 0,
+    };
+  },
+
   checkHallOfFame(state) {
     return (state.retiredFighters || [])
       .filter(f => {
@@ -8739,44 +8841,36 @@ Engine.awards = {
         if (!rec) return false;
         return Engine.awards.calcHofPoints(rec) >= 12;
       })
-      .map(f => {
-        const rec = f.careerRecord || {};
-        const hist = rec.history || [];
-        const debut = hist.find(e => e.type === 'debut');
-        const retire = hist.find(e => e.type === 'retire');
-        const hofPoints = Engine.awards.calcHofPoints(rec);
-        const hofLevel = Engine.awards.getHofLevel(hofPoints);
-        return {
-          id: f.id, name: f.name, portrait: f.portrait,
-          orgName: state.orgName || 'あなたの団体',
-          style: f.style || 'Allround',
-          activeSeasonsStart: debut ? debut.season : 1,
-          activeSeasonsEnd: retire ? retire.season : state.season,
-          activeYears: `S${debut ? debut.season : 1}〜S${retire ? retire.season : state.season}`,
-          titleReigns: rec.totalTitleWins || 0, totalDefenses: rec.totalDefenses || 0,
-          juniorTournamentWins: rec.juniorTournamentWins || 0,
-          ppvMainEventWins: rec.ppvMainEventWins || 0,
-          peakOVR: rec.peakOVR || 0, peakOVRSeason: rec.peakOVRSeason || 0,
-          hofPoints, hofLevel,
-          inductionSeason: state.season
-        };
-      });
+      .map(f => Engine.awards._buildHofEntry(f, 'player', state.orgName || 'あなたの団体', state));
+  },
+
+  /** NPC殿堂入り判定: AI引退者からHOF候補を抽出 */
+  checkNpcHallOfFame(aiRetirees, orgId, orgName, state) {
+    return aiRetirees
+      .filter(f => {
+        const rec = f.careerRecord;
+        if (!rec) return false;
+        return Engine.awards.calcHofPoints(rec) >= 12;
+      })
+      .map(f => Engine.awards._buildHofEntry(f, orgId, orgName, state));
   },
 
   /**
-   * 殿堂入り確定処理: retiredFighters → hallOfFame 移動
+   * 殿堂入り確定処理: retiredFighters → allHallOfFame.player 移動
    * @param {Object} state
    * @param {Array} inductees - checkHallOfFame の結果
    * @returns {Object} 新しい state
    */
   applyHallOfFame(state, inductees) {
-    const newHallOfFame = [...(state.hallOfFame || []), ...inductees];
+    const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
+    allHof.player = [...(allHof.player || []), ...inductees];
+    const newHallOfFame = allHof.player;
     // retiredFightersクリア前に全IDをretiredIdsに永続保存（再登場防止）
     const newRetiredIds = [...(state.retiredIds || [])];
     (state.retiredFighters || []).forEach(f => {
       if (f.id && !newRetiredIds.includes(f.id)) newRetiredIds.push(f.id);
     });
-    return { ...state, hallOfFame: newHallOfFame, retiredFighters: [], retiredIds: newRetiredIds };
+    return { ...state, hallOfFame: newHallOfFame, allHallOfFame: allHof, retiredFighters: [], retiredIds: newRetiredIds };
   }
 };
 
@@ -15086,6 +15180,7 @@ Engine.newspaper = {
     crossWarResult:      140,
     aiChampionChange:    130,
     playerShowTitle:     120,
+    npcHallOfFame:       170,
     aiShowHighlight:      80,
     playerShowNormal:     90,
     aiRetirement:        100,
@@ -15158,6 +15253,24 @@ Engine.newspaper = {
               headline: `${ev.orgName}の${ev.name}が現役引退を表明`,
               body: `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。${isAce ? '看板選手の退団は団体にとって大きな痛手だ。' : '長い現役生活に幕を下ろした。'}`,
               characterId: ev.id,
+            });
+          });
+        }
+
+        // NPC殿堂入り（シーズン末にprocessSeasonEndで蓄積）
+        if (aiData._npcInductees) {
+          aiData._npcInductees.forEach(h => {
+            const starText = h.hofLevel >= 3 ? '★★★レジェンド' : h.hofLevel >= 2 ? '★★ゴールド殿堂' : '殿堂入り';
+            const statsText = [];
+            if (h.titleReigns > 0) statsText.push(`通算${h.titleReigns}度戴冠`);
+            if (h.totalDefenses > 0) statsText.push(`${h.totalDefenses}度防衛`);
+            const careerDesc = statsText.length > 0 ? statsText.join('・') + 'の伝説的キャリア' : '数々の名勝負を残した';
+            stories.push({
+              type: 'npcHallOfFame',
+              priority: P.npcHallOfFame,
+              headline: `${h.orgName}の${h.name}（${h.retireAge}歳）が${starText}`,
+              body: `${h.orgName}で${h.activeYears}を戦った${h.name}が殿堂入り。${careerDesc}。殿堂ポイント${h.hofPoints}ptを獲得。`,
+              characterId: h.id,
             });
           });
         }
@@ -15333,6 +15446,7 @@ Engine.newspaper = {
       const org = { ...aiOrgs[orgId] };
       delete org._newsChampionChange;
       delete org._newsRetirements;
+      delete org._npcInductees;
       delete org._newsShowHighlight;
       delete org._newsBreakthroughs;
       cleaned[orgId] = org;
