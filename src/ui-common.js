@@ -505,12 +505,12 @@ function _showWarVictoryChain(list, idx, onDone) {
   const w = list[idx];
   const overlay = document.createElement('div');
   overlay.className = 'war-victory-overlay';
-  const faceUrl = getUpperUrl(w.id) || getPortraitUrl(w.id);
+  const portraitUrl = getPortraitUrl(w.id);
   const line = _getWarVictoryLine(w);
   overlay.innerHTML = `
     <div class="war-victory-modal">
-      <div class="war-victory-img-wrap">
-        ${faceUrl ? `<img src="${faceUrl}" alt="${w.name}" class="war-victory-img" onerror="this.style.display='none'">` : ''}
+      <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
+        ${portraitUrl ? `<img src="${portraitUrl}" alt="${w.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : ''}
       </div>
       <div class="war-victory-name">${w.name}</div>
       <div class="war-victory-line">「${line}」</div>
