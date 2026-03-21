@@ -2508,12 +2508,16 @@ const Engine = {
       return totalWeight > 0 ? total / totalWeight : 0;
     },
     calcLegacyScore(state, orgId) {
-      const allHof = state.allHallOfFame || {};
-      const hofList = orgId === 'player'
-        ? (allHof.player || state.hallOfFame || [])
-        : (allHof[orgId] || []);
-      const per = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG.hallOfFameLegacyPerInductee) || 10;
-      const cap = 50;
+      const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
+      const caps = cfg.legacyCapByTier || { S: 30, A: 20, B: 10, player: 50 };
+      if (orgId !== 'player') {
+        // NPC団体: ティア別固定値
+        return caps[orgId] || caps.B || 10;
+      }
+      // プレイヤー団体: hallOfFameベース
+      const hofList = state.hallOfFame || [];
+      const per = cfg.hallOfFameLegacyPerInductee || 10;
+      const cap = caps.player || 50;
       return Math.min(cap, hofList.length * per);
     },
     calcRosterPower(roster) {
@@ -8806,6 +8810,17 @@ Engine.awards = {
     return highlights;
   },
 
+  /** 盾バリアント割り当て（ID由来ハッシュで安定選択） */
+  assignShieldVariant(hofLevel, fighterId) {
+    const lv = Math.max(1, Math.min(3, hofLevel || 1));
+    const variants = SHIELD_VARIANTS[lv] || ['a'];
+    return `${lv}_${variants[(fighterId || 0) % variants.length]}`;
+  },
+  /** 盾画像URL */
+  getShieldUrl(variant) {
+    return `../image/shield/shield_${variant}.webp`;
+  },
+
   /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応） */
   _buildHofEntry(fighter, orgId, orgName, state) {
     const rec = fighter.careerRecord || {};
@@ -8827,6 +8842,7 @@ Engine.awards = {
       ppvMainEventWins: rec.ppvMainEventWins || 0,
       peakOVR: rec.peakOVR || 0, peakOVRSeason: rec.peakOVRSeason || 0,
       hofPoints, hofLevel,
+      shieldVariant: Engine.awards.assignShieldVariant(hofLevel, fighter.id),
       inductionSeason: state.season,
       careerHighlights: Engine.awards.buildCareerHighlights(rec, orgName),
       retireOVR: Engine.util.ov(fighter),

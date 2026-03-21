@@ -2276,7 +2276,7 @@ function renderRanking() {
     battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
-  window._rankTips.legacy = '殿堂入り選手の数に応じた団体の格<br>全団体共通: 殿堂入り1名ごとに+10pt（上限50pt）';
+  window._rankTips.legacy = '殿堂入り選手の数に応じた団体の格<br>AI団体はティアに応じた固定値（S:30/A:20/B:10）<br>プレイヤー: 殿堂入り1名ごとに+10pt（上限50pt）';
   html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
     `<th style="text-align:right">評価値${tt('rating')}</th>` +
     `<th style="text-align:right">基礎力${tt('base')}</th>` +
@@ -3765,15 +3765,9 @@ function _renderDbCoaches() {
 function _getHofStarText(level) { return level >= 3 ? '★★★ レジェンド' : level >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り'; }
 function _getHofBorderColor(level) { return level >= 3 ? '#f39c12' : level >= 2 ? '#d4a843' : '#bdc3c7'; }
 function _getHofShieldEmoji(level) { return level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️'; }
-const _SHIELD_VARIANTS = { 1: 3, 2: 4, 3: 4 }; // variants per level (a/b/c or a/b/c/d)
-function _getHofShieldUrl(level, id) {
-  const lv = Math.max(1, Math.min(3, level || 1));
-  const variants = _SHIELD_VARIANTS[lv] || 3;
-  const variant = String.fromCharCode(97 + ((id || 0) % variants)); // a/b/c/d based on id
-  return `../image/shield/shield_${lv}_${variant}.webp`;
-}
 function _hofShieldImg(level, id, size) {
-  const url = _getHofShieldUrl(level, id);
+  const variant = Engine.awards.assignShieldVariant(level, id);
+  const url = Engine.awards.getShieldUrl(variant);
   return `<img src="${url}" style="width:${size}px;height:auto;display:block;margin:0 auto" alt="${_getHofStarText(level)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:${Math.round(size*0.6)}px;text-align:center">${_getHofShieldEmoji(level)}</span>`;
 }
 function _getHighlightIcon(type) {
@@ -3858,9 +3852,9 @@ function _renderDbHallOfFame() {
       : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏅</div>`;
 
     html += `<div class="db-hof-card" style="border-color:${borderColor}" onclick="showHofDetail(${idx})" data-hof-idx="${idx}">
-      <div style="text-align:center;margin-bottom:6px">
-        ${_hofShieldImg(level, h.id, 80)}
-        <div style="font-size:11px;color:${borderColor};font-weight:700;margin-top:2px">${starText}</div>
+      <div style="text-align:center;margin-bottom:4px">
+        ${_hofShieldImg(level, h.id, 60)}
+        <div style="font-size:10px;color:${borderColor};font-weight:700;margin-top:2px">${starText}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         ${imgHtml}
@@ -3902,8 +3896,11 @@ function showHofDetail(idx) {
     ? `<div style="text-align:center;margin:8px 0"><img src="${upperUrl}" style="height:150px;object-fit:contain;border-radius:8px;opacity:0.9" alt="" onerror="this.style.display='none'"></div>`
     : '';
 
-  // キャリアハイライト
-  const highlights = h.careerHighlights || [];
+  // キャリアハイライト（フォールバック: careerRecord.historyから動的構築）
+  let highlights = h.careerHighlights || [];
+  if (highlights.length === 0 && h.careerRecord && h.careerRecord.history) {
+    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, h.orgName || _getHofOrgName(h.orgId));
+  }
   let highlightsHtml = '';
   if (highlights.length > 0) {
     highlightsHtml = `<div class="db-hof-detail-section">━━ キャリアハイライト ━━</div><div class="db-hof-highlights">`;

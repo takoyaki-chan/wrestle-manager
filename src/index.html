@@ -542,15 +542,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-hof-sort-bar{display:flex;gap:6px;align-items:center;margin-bottom:12px}
 .db-hof-sort-btn{background:none;border:1px solid rgba(200,190,170,0.08);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--text-dim);cursor:pointer}
 .db-hof-sort-btn.active{border-color:var(--text-sub);color:var(--text-sub)}
-.db-hof-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.db-hof-card{background:rgba(200,190,170,0.03);border:1px solid rgba(200,190,170,0.08);border-radius:8px;padding:14px;cursor:pointer;transition:transform .15s,box-shadow .15s}
-.db-hof-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.db-hof-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.db-hof-card{background:rgba(200,190,170,0.03);border:2px solid rgba(200,190,170,0.08);border-radius:8px;padding:10px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.db-hof-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3);border-color:rgba(200,190,170,0.25)}
 .db-hof-info{flex:1;min-width:0}
 .db-hof-name{font-weight:700;font-size:14px;margin-bottom:2px}
-.db-hof-row{font-size:12px;color:var(--text-sub);line-height:1.7}
+.db-hof-row{font-size:11px;color:var(--text-sub);line-height:1.6}
 /* 詳細ポップアップ */
 .db-hof-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
-.db-hof-detail-modal{background:var(--bg-card,#1e1e1e);border:1px solid rgba(200,190,170,0.15);border-radius:12px;padding:24px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
+.db-hof-detail-modal{background:var(--bg-card,#1e1e1e);border:1px solid rgba(200,190,170,0.15);border-radius:12px;padding:24px;max-width:500px;width:80%;max-height:85vh;overflow-y:auto;position:relative}
 .db-hof-detail-close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer}
 .db-hof-detail-section{font-size:12px;color:var(--gold);font-weight:700;margin:16px 0 8px;letter-spacing:1px}
 .db-hof-highlights{display:flex;flex-direction:column;gap:4px}

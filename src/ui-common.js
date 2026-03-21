@@ -1959,11 +1959,9 @@ function _buildChampionsAward(champions) {
 }
 
 function _awardsShieldImg(level, id) {
-  const lv = Math.max(1, Math.min(3, level || 1));
-  const variants = { 1: 3, 2: 4, 3: 4 };
-  const v = String.fromCharCode(97 + ((id || 0) % (variants[lv] || 3)));
-  const url = `../image/shield/shield_${lv}_${v}.webp`;
-  const emoji = lv >= 3 ? '🏆' : lv >= 2 ? '🥇' : '🛡️';
+  const variant = Engine.awards.assignShieldVariant(level, id);
+  const url = Engine.awards.getShieldUrl(variant);
+  const emoji = level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️';
   return `<img src="${url}" style="width:100px;height:auto;display:block;margin:0 auto 4px" alt="" onerror="this.outerHTML='<div style=font-size:48px;text-align:center>${emoji}</div>'">`;
 }
 
