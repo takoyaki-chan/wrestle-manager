@@ -2510,9 +2510,11 @@ const Engine = {
     calcLegacyScore(state, orgId) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
       const caps = cfg.legacyCapByTier || { S: 30, A: 20, B: 10, player: 50 };
+      const tierMap = { org_s: 'S', org_a: 'A', org_b: 'B' };
       if (orgId !== 'player') {
         // NPC団体: ティア別固定値
-        return caps[orgId] || caps.B || 10;
+        const tier = tierMap[orgId] || 'B';
+        return caps[tier] || 10;
       }
       // プレイヤー団体: hallOfFameベース
       const hofList = state.hallOfFame || [];
