@@ -91,8 +91,8 @@ function showWarChallenge() {
   if (!ev || ev.type !== 'war') return;
   Audio.play('war');
 
-  // Switch to tension BGM
-  Audio.bgm.play('tension');
+  // Switch to war BGM (file-based) at challenge arrival
+  try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
 
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
   if (!aiOrg) { skipEvent(); return; }
@@ -264,14 +264,16 @@ function renderWarMatchPreview() {
     const matchNum = idx + 1;
 
     if (isResolved) {
-      // 完了: コンパクト1行
+      // 完了: コンパクト1行 + 勝利台詞
       const wName = result.playerWon ? pf.name : af.name;
       const lName = result.playerWon ? af.name : pf.name;
       const wColor = result.playerWon ? pColor : eLight;
       const mqColor = result.mq >= 70 ? '#daa520' : result.mq >= 50 ? '#888' : '#555';
+      const wFace = getPortraitUrl(result.winnerId || (result.playerWon ? pf.id : af.id));
       html += `<div class="war-md">
         <div class="war-md-n">第${matchNum}試合</div>
         <div class="war-md-c"><div class="war-md-main"><div class="war-md-w"><span class="w" style="color:${wColor}">✓ ${wName}</span> <span style="color:#555">def.</span> ${lName}</div><div class="war-md-r">${Engine.formatFinish(result.finType, result.finMove)}</div></div><div class="war-md-mq" style="color:${mqColor}">MQ ${result.mq}</div></div>
+        ${result.victoryLine ? `<div class="war-md-vl"><div class="war-md-vl-face">${wFace ? `<img src="${wFace}" alt="">` : ''}</div><div class="war-md-vl-text"><span class="war-md-vl-name" style="color:${wColor}">${result.winnerName || wName}</span>「${result.victoryLine}」</div></div>` : ''}
       </div>`;
     } else if (isNext) {
       // 現在の試合: 大カード
@@ -443,6 +445,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
         <span class="mr-mq" style="color:${mqColor}">MQ ${r.mq}</span>
         <span class="mr-finish">${Engine.formatFinish(r.finType, r.finMove)}</span>
       </div>
+      ${r.victoryLine ? `<div class="mr-victory-line"><span class="mr-vl-name">${r.winnerName || (r.playerWon ? r.playerFighter.name : r.aiFighter.name)}</span>「${r.victoryLine}」</div>` : ''}
     </div>`;
   });
   html += `</div>`;
@@ -523,19 +526,25 @@ function _showWarVictoryChain(list, idx, onDone) {
 }
 
 function closeWarFinalResult(eventWon) {
-  document.getElementById('showResultOverlay').classList.remove('active');
   if (eventWon) { Audio.bgm.playJingle('victory'); }
   else { Audio.play('defeat'); }
+
+  // Refresh underlying page BEFORE closing overlay to prevent event screen flash
+  refreshAll();
 
   // 勝利選手のセリフポップアップチェーン
   if (eventWon && _warVictoryWinners.length > 0) {
     setTimeout(() => {
+      document.getElementById('showResultOverlay').classList.remove('active');
       _showWarVictoryChain(_warVictoryWinners, 0, function() {
-        Audio.bgm.play('management'); refreshAll();
+        Audio.bgm.play('management');
       });
-    }, eventWon ? 2000 : 500);
+    }, 2000);
   } else {
-    setTimeout(() => { Audio.bgm.play('management'); refreshAll(); }, eventWon ? 2000 : 500);
+    setTimeout(() => {
+      document.getElementById('showResultOverlay').classList.remove('active');
+      Audio.bgm.play('management');
+    }, eventWon ? 2000 : 500);
   }
 }
 
@@ -3392,6 +3401,8 @@ function executeEvent() {
 
 function skipEvent() {
   Audio.play('deselect');
+  Audio.fileBgm.stop();
+  Audio.bgm.playForState();
   const ev = G.pendingEvent;
   const events = [];
   if (ev) {
@@ -6431,6 +6442,39 @@ function renderJuniorTournamentSummon() {
   overlay.classList.add('active');
 }
 
+// ===== JT IMPRESSION CHAIN (post-tournament fighter comments) =====
+function _showJTImpressionChain(list, idx, onDone) {
+  if (idx >= list.length) { if (onDone) onDone(); return; }
+  const f = list[idx];
+  const timing = f._jtTiming || 'postLose';
+  const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || '_default');
+  if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
+
+  const faceUrl = getUpperUrl(f.id) || getPortraitUrl(f.id);
+  const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
+  const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? '#2ecc71' : 'var(--text-sub)';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay';
+  overlay.innerHTML = `
+    <div class="war-victory-modal">
+      <div class="war-victory-img-wrap">
+        ${faceUrl ? `<img src="${faceUrl}" alt="${f.name}" class="war-victory-img" onerror="this.style.display='none'">` : ''}
+      </div>
+      <div style="font-size:11px;color:${resultColor};letter-spacing:2px;margin-bottom:4px">${resultLabel}</div>
+      <div class="war-victory-name">${f.name}</div>
+      <div class="war-victory-line">「${line}」</div>
+      <button class="war-victory-close">▶</button>
+    </div>
+  `;
+  overlay.querySelector('.war-victory-close').addEventListener('click', () => {
+    overlay.remove();
+    _showJTImpressionChain(list, idx + 1, onDone);
+  });
+  document.body.appendChild(overlay);
+  Audio.play('notify');
+}
+
 // ===== BRACKET (V6 horizontal with SVG connectors) =====
 function renderJuniorTournamentBracket() {
   const jt = App._jtPreview;
@@ -6440,11 +6484,11 @@ function renderJuniorTournamentBracket() {
   const { result, currentRound, currentMatch } = jt;
   const { rounds, bracketSize } = result;
 
-  // summonフェーズから来た場合、box styleを元に戻す
-  box.style.maxWidth = '';
-  box.style.padding = '';
-  box.style.background = '';
-  box.style.border = '';
+  // ブラケット表示用にboxを広げる（8名トーナメントは700pxに収まらない）
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
 
   // 「現在の試合」かどうかを判定するヘルパー
   const isMatchDone = (ri, mi) => ri < currentRound || (ri === currentRound && mi < currentMatch);
@@ -6775,6 +6819,39 @@ function renderJuniorTournamentResult() {
     });
   });
   html += `</div>`;
+
+  // 自団体の獲得賞金サマリー
+  const PRIZE = Engine.juniorTournament.PRIZE;
+  const playerIds = new Set((G.roster || []).map(f => f.id));
+  let totalPrize = 0;
+  const prizeDetails = [];
+  if (champion && playerIds.has(champion.id)) {
+    totalPrize += PRIZE.champion;
+    prizeDetails.push(`${champion.name}（優勝）¥${PRIZE.champion}万`);
+  }
+  if (runnerUp && playerIds.has(runnerUp.id)) {
+    totalPrize += PRIZE.runnerUp;
+    prizeDetails.push(`${runnerUp.name}（準優勝）¥${PRIZE.runnerUp}万`);
+  }
+  if (semiFinalists) {
+    semiFinalists.forEach(sf => {
+      if (sf && playerIds.has(sf.id)) {
+        totalPrize += PRIZE.semiFinal;
+        prizeDetails.push(`${sf.name}（3-4位）¥${PRIZE.semiFinal}万`);
+      }
+    });
+  }
+  if (totalPrize > 0) {
+    html += `<div style="max-width:420px;margin:14px auto;padding:14px 16px;background:rgba(212,168,83,0.08);border:1px solid rgba(212,168,83,0.25);border-radius:10px;text-align:center">`;
+    html += `<div style="font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:8px">💰 自団体の獲得賞金</div>`;
+    prizeDetails.forEach(d => {
+      html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:3px">${d}</div>`;
+    });
+    html += `<div style="font-size:18px;font-weight:900;color:var(--gold);margin-top:8px;font-family:'Oswald',sans-serif">合計 ¥${totalPrize}万</div>`;
+    html += `</div>`;
+  } else {
+    html += `<div style="max-width:420px;margin:14px auto;text-align:center;font-size:12px;color:var(--text-dim)">自団体からの入賞者はいませんでした</div>`;
+  }
 
   // 閉じるボタン
   html += `<div class="jt-bt" style="max-width:420px;margin:18px auto">`;
