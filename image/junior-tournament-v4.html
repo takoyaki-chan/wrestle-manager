@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Junior Tournament v4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600;700;900&family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0b10;--pn:#12141c;--cd:#181a24;--cd2:#1e2030;
+  --gd:#d4a853;--gl:#f0d088;--gdd:#8a7235;
+  --bl:#4a90d9;--bll:#74b9ff;--rd:#e74c3c;--gn:#2ecc71;
+  --tx:#e8e6e3;--sb:#8a8d93;--dm:#4a4d55;--bd:#2a2d38;
+}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans JP',sans-serif;overflow-x:hidden;}
+
+/* ===== SUMMON ===== */
+.SO{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+.SO-top{position:absolute;top:24px;left:0;right:0;text-align:center;opacity:0;animation:fd .5s ease forwards;}
+.SO-top .tg{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:6px;color:var(--gd);}
+.SO-top h2{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;color:var(--sb);margin-top:3px;}
+
+.SO-body{width:340px;text-align:center;opacity:0;animation:pop .7s cubic-bezier(.16,1,.3,1) .2s forwards;}
+
+.SO-img{
+  width:220px;height:220px;border-radius:50%;margin:0 auto 14px;position:relative;
+  border:3px solid var(--gdd);box-shadow:0 0 50px rgba(212,168,83,.1);overflow:visible;
+}
+.SO-img img{width:100%;height:100%;object-fit:cover;object-position:center 20%;border-radius:50%;display:block;}
+.SO-img .rg{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--gdd);animation:pulse 2s ease infinite;pointer-events:none;}
+
+.SO-nm{font-size:24px;font-weight:900;margin-bottom:2px;}
+.SO-inf{font-size:12px;color:var(--sb);margin-bottom:16px;}
+.SO-bub{
+  background:#f0f0f0;color:#1a1a1a;border-radius:14px;padding:14px 20px;font-size:14px;line-height:1.6;
+  text-align:center;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.3);
+  opacity:0;animation:fu .4s ease .65s forwards;
+}
+.SO-bub::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid #f0f0f0;}
+.SO-bub .sp{font-size:10px;font-weight:700;color:var(--bl);margin-bottom:2px;}
+
+.SO-dots{position:absolute;bottom:48px;left:0;right:0;display:flex;gap:10px;justify-content:center;}
+.SO-dots .d{width:8px;height:8px;border-radius:50%;background:var(--dm);transition:.3s;}
+.SO-dots .d.on{background:var(--gd);box-shadow:0 0 8px rgba(212,168,83,.5);}
+.SO-dots .d.dn{background:var(--gdd);}
+.SO-hint{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:11px;color:var(--dm);animation:blink 1.5s ease infinite;}
+
+/* ===== WRAP ===== */
+.W{max-width:480px;margin:0 auto;padding:12px 14px 80px;}
+.HD{text-align:center;padding:24px 12px 16px;position:relative;}
+.HD::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gd),transparent);}
+.HD .sp{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:7px;color:var(--gd);}
+.HD h1{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;margin:3px 0 2px;}
+.HD .sb{font-size:11px;color:var(--sb);}
+
+/* ===== ROUND LABEL ===== */
+.RL{
+  text-align:center;padding:10px 0 8px;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:var(--gd);
+  position:relative;
+}
+.RL::after{content:'';display:block;width:60px;height:1px;background:var(--gdd);margin:6px auto 0;}
+
+/* ===== MATCH CARD (big / active) ===== */
+.MC{
+  background:var(--pn);border:1px solid var(--bd);border-radius:12px;
+  padding:16px;margin:10px 0;position:relative;overflow:hidden;
+  transition:all .5s ease;
+}
+.MC.act{border-color:rgba(212,168,83,.3);box-shadow:0 0 24px rgba(212,168,83,.06);}
+.MC.act::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(212,168,83,.03),transparent 70%);pointer-events:none;}
+
+/* match card: done & shrunk */
+.MC.done{
+  padding:8px 12px;margin:4px 0;border-color:var(--bd);
+  opacity:.7;
+}
+.MC.done .MC-imgs{height:0;overflow:hidden;margin:0;padding:0;}
+.MC.done .MC-meta{margin-top:0;}
+
+/* Fighter face-off with upper images */
+.MC-imgs{
+  display:flex;align-items:flex-end;justify-content:center;gap:0;
+  height:160px;margin:-8px -16px 12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,transparent 0%,rgba(18,20,28,.9) 85%,var(--pn) 100%);
+}
+.MC-imgs .fi{
+  flex:0 0 48%;height:100%;position:relative;overflow:hidden;
+}
+.MC-imgs .fi img{
+  width:100%;height:100%;object-fit:cover;object-position:center 15%;
+}
+.MC-imgs .fi.left img{transform:scaleX(1);}
+.MC-imgs .fi.right img{transform:scaleX(-1);}
+.MC-imgs .vs{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:28px;color:rgba(255,255,255,.15);
+  letter-spacing:6px;z-index:2;text-shadow:0 0 30px rgba(0,0,0,.8);
+}
+
+/* names row */
+.MC-names{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.MC-nm{text-align:center;flex:1;}
+.MC-nm .n{font-size:15px;font-weight:800;}
+.MC-nm .o{font-size:10px;color:var(--sb);}
+.MC-nm .c{font-size:10px;margin-top:2px;}
+
+/* done mode: compact names row */
+.MC.done .MC-names{margin-bottom:0;}
+.MC.done .MC-nm .n{font-size:12px;}
+.MC.done .MC-nm .o{display:none;}
+.MC.done .MC-nm .c{display:none;}
+
+.MC-vslabel{font-family:'Bebas Neue',sans-serif;font-size:12px;color:var(--dm);letter-spacing:3px;padding:0 8px;flex-shrink:0;align-self:center;}
+
+/* result badge */
+.MC-result{
+  text-align:center;padding:6px 0;margin-top:4px;
+  font-size:10px;color:var(--sb);
+}
+.MC-result .w{color:var(--gn);font-weight:700;font-size:12px;}
+
+/* ===== BUBBLES ===== */
+.bub{
+  background:#f0f0f0;color:#1a1a1a;border-radius:11px;padding:9px 14px;
+  font-size:12px;line-height:1.5;text-align:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.2);margin:6px 0;
+}
+.bub .sp{font-size:9px;font-weight:700;margin-bottom:1px;}
+.bub .sp.bl{color:var(--bl);}
+.bub .sp.gd{color:#b8860b;}
+.bub-pair{display:flex;gap:8px;margin:8px 0;}
+.bub-pair .bub{flex:1;min-width:0;}
+
+/* ===== HP ===== */
+.HP{
+  max-width:360px;margin:14px auto;padding:14px 16px;
+  background:var(--cd);border:1px solid var(--bd);border-radius:10px;
+}
+.HP-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.HP-av{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--gn);flex-shrink:0;}
+.HP-av img{width:100%;height:100%;object-fit:cover;}
+.HP-nm{font-size:13px;font-weight:700;flex:1;}
+.HP-pct{font-size:16px;font-weight:900;font-family:'Oswald',sans-serif;min-width:48px;text-align:right;}
+.HP-bar{height:12px;background:var(--cd2);border-radius:6px;overflow:hidden;position:relative;}
+.HP-fill{height:100%;border-radius:6px;position:absolute;left:0;top:0;}
+.HP-lbl{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--dm);}
+
+/* ===== CHAMPION ===== */
+.CH{text-align:center;padding:40px 14px;position:relative;}
+.CH::before{content:'🏆';font-size:48px;display:block;margin-bottom:12px;animation:bounce 1s ease infinite;}
+.CH .cl{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:6px;color:var(--gd);}
+.CH .cn{font-size:28px;font-weight:900;color:var(--gl);margin:6px 0;text-shadow:0 0 30px rgba(212,168,83,.2);}
+.CH-bub{background:#f0f0f0;color:#1a1a1a;border-radius:14px;padding:14px 20px;font-size:14px;max-width:300px;margin:16px auto 0;box-shadow:0 6px 24px rgba(0,0,0,.3);}
+
+/* ===== BUTTONS ===== */
+.BT{display:flex;gap:10px;justify-content:center;margin-top:18px;}
+.bt{padding:11px 24px;border:none;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;}
+.bg{background:linear-gradient(135deg,var(--gd),#c49a3c);color:#1a1200;box-shadow:0 3px 12px rgba(212,168,83,.2);}
+.bg:hover{transform:translateY(-1px);}
+.bs{background:var(--cd);color:var(--sb);border:1px solid var(--bd);}
+
+.ph{position:fixed;top:8px;right:10px;background:rgba(212,168,83,.12);color:var(--gd);font-size:9px;font-weight:600;padding:4px 10px;border-radius:14px;z-index:200;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;}
+
+@keyframes fd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.7}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.su{animation:su .5s cubic-bezier(.16,1,.3,1) forwards;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const I='./image/';
+
+const FS=[
+  {id:0,nm:'松川杏樹',org:'新タコヤキ社',ovr:65,fc:'face_matsukawa_a.png',up:'upper_matsukawa_a.webp',mine:true,
+   summon:'お、選ばれちゃった。ラッキー'},
+  {id:1,nm:'生駒エリカ',org:'天頂プロレス',ovr:66,fc:'face_ikoma_e.png',up:'upper_ikoma_e.webp',mine:false},
+  {id:2,nm:'松下真理亜',org:'新タコヤキ社',ovr:63,fc:'face_matsushita_m.png',up:'upper_matsushita_m.webp',mine:true,
+   summon:'選ばれたからには、全力で戦う'},
+  {id:3,nm:'長谷川レオナ',org:'ふたば女子プロレス',ovr:61,fc:'face_hasegawa_r.png',up:'upper_hasegawa_r.webp',mine:false},
+  {id:4,nm:'片桐ありさ',org:'ノヴァインパクト',ovr:60,fc:'face_katagiri_a.png',up:'upper_katagiri_a.webp',mine:false},
+  {id:5,nm:'平松かなみ',org:'新タコヤキ社',ovr:59,fc:'face_hiramatsu_k.png',up:'upper_hiramatsu_k.webp',mine:true,
+   summon:'選ばれました。精一杯戦います'},
+  {id:6,nm:'堂前ユキ',org:'ふたば女子プロレス',ovr:56,fc:'face_domae_y.png',up:'upper_domae_y.webp',mine:false},
+  {id:7,nm:'宮ケ瀬千夏',org:'新タコヤキ社',ovr:50,fc:'face_miyagase_c.png',up:'upper_miyagase_c.webp',mine:true,
+   summon:'うっせーな、勝手に呼びやがって。……まあ出るけど'},
+];
+const myF=FS.filter(f=>f.mine);
+
+const QF=[
+  {p1:0,p2:1,w:1,met:'レッグロック 12:34',dmg:28,rec:12},
+  {p1:2,p2:3,w:2,met:'パワーボム 8:45',dmg:22,rec:10},
+  {p1:4,p2:5,w:4,met:'DDT 15:22',dmg:35,rec:15},
+  {p1:6,p2:7,w:6,met:'チョークスリーパー 10:11',dmg:18,rec:8},
+];
+const SF=[
+  {p1:1,p2:2,w:1,met:'ジャーマンスープレックス 18:05',dmg:32,rec:14},
+  {p1:4,p2:6,w:4,met:'ドラゴンスープレックス 14:33',dmg:30,rec:12},
+];
+const FN=[{p1:1,p2:4,w:1,met:'フィニッシャー 22:17',dmg:40,rec:0}];
+
+const DIA={
+  'qf0':{pre1:'楽しんでいこう。でも、負けないけどね',pre2:'マジ？ 面白えじゃん。かかってこいよ',post:'よっし、一丁上がり〜'},
+  'qf1':{pre1:'自分の試合をする。それだけ',pre2:'あら、楽しめそうね',post:'一つクリア。次に集中する'},
+  'qf2':{pre1:'次の相手…楽しみね',pre2:'精一杯、やらせていただきます',post:'ふふ、まずは一勝ね'},
+  'qf3':{pre1:'………',pre2:'ぶっ潰す。それだけだ',post:'……次'},
+  'sf0':{pre1:'いい感じに温まってきたじゃん',pre2:'ここからが本番。負けたくない',post:'いい感じいい感じ〜'},
+  'sf1':{pre1:'さてと、楽しませてもらうわね',pre2:'………やる',post:'あら、もう終わり？'},
+  'fn0':{pre1:'決勝かー。ここまで来たらやるしかないっしょ',pre2:'あと一つ。全てを懸けるわ',post:'いやー、ほんとに勝っちゃった。最高！'},
+};
+
+const RDS=[QF,SF,FN];
+const RNM=['準々決勝','準決勝','🏆 決勝'];
+const RK=['qf','sf','fn'];
+
+let phase='summon',si=0,ri=0,mi=0,mphase='pre';
+let done=new Set();
+let hp={};FS.forEach(f=>{hp[f.id]=100;});
+
+const $=id=>document.getElementById(id);
+const F=id=>FS[id];
+const fI=(f,t)=>I+(t==='up'?f.up:f.fc);
+
+function go(){
+  const a=$('app');
+  if(phase==='summon')a.innerHTML=rSum();
+  else if(phase==='bracket')a.innerHTML=rBrk();
+  else if(phase==='play')a.innerHTML=rPlay();
+  else if(phase==='champ')a.innerHTML=rChamp();
+}
+
+// ========== SUMMON ==========
+function rSum(){
+  const f=myF[si];
+  return `<div class="ph">召集通知</div>
+  <div class="SO" onclick="nxS()">
+    <div class="SO-top"><div class="tg">🔔 NATIONAL U-20 召集通知</div><h2>第2回 ジュニアトーナメント</h2></div>
+    <div class="SO-body" key="${si}">
+      <div class="SO-img">
+        <div class="rg"></div>
+        <img src="${fI(f,'up')}" alt="${f.nm}">
+      </div>
+      <div class="SO-nm">${f.nm}</div>
+      <div class="SO-inf">${f.org} ・ OVR ${f.ovr}</div>
+      <div class="SO-bub"><div class="sp">${f.nm}</div>「${f.summon}」</div>
+    </div>
+    <div class="SO-dots">${myF.map((_,j)=>`<div class="d ${j<si?'dn':''} ${j===si?'on':''}"></div>`).join('')}</div>
+    <div class="SO-hint">タップして次へ</div>
+  </div>`;
+}
+function nxS(){si++;if(si>=myF.length){phase='bracket';}go();}
+
+// ========== HEADER ==========
+function hdr(){
+  return '<div class="HD"><div class="sp">NATIONAL U-20</div><h1>第2回 ジュニアトーナメント</h1><div class="sb">8名トーナメント</div></div>';
+}
+
+// ========== MATCH CARD ==========
+// big=true: show upper images face-off. big=false: compact done card.
+function matchCard(r,idx,big,showBubble){
+  const m=RDS[r][idx];
+  const k=`${r},${idx}`;
+  const fin=done.has(k);
+  const cur=(phase==='play'&&ri===r&&mi===idx);
+  const f1=F(m.p1),f2=F(m.p2),wn=F(m.w);
+  
+  const condDot=(id)=>{
+    const c=hp[id];
+    if(c>=100)return '';
+    const cl=c>=80?'var(--gn)':c>=60?'#f39c12':c>=40?'var(--rd)':'#8e44ad';
+    return `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${cl};margin-left:4px;vertical-align:middle" title="体調${c}%"></span>`;
+  };
+
+  let cls='MC';
+  if(cur)cls+=' act';
+  if(fin&&!big)cls+=' done';
+
+  let html=`<div class="${cls}">`;
+
+  // Big mode: upper body face-off
+  if(big&&!fin){
+    html+=`<div class="MC-imgs">
+      <div class="fi left"><img src="${fI(f1,'up')}" alt="${f1.nm}" onerror="this.style.opacity=0"></div>
+      <div class="vs">VS</div>
+      <div class="fi right"><img src="${fI(f2,'up')}" alt="${f2.nm}" onerror="this.style.opacity=0"></div>
+    </div>`;
+  }
+  if(big&&fin){
+    html+=`<div class="MC-imgs" style="height:100px;opacity:.5">
+      <div class="fi left"><img src="${fI(f1,'up')}" alt="${f1.nm}" onerror="this.style.opacity=0"></div>
+      <div class="vs">VS</div>
+      <div class="fi right"><img src="${fI(f2,'up')}" alt="${f2.nm}" onerror="this.style.opacity=0"></div>
+    </div>`;
+  }
+
+  // Names row
+  const w1=fin&&m.w===m.p1, w2=fin&&m.w===m.p2;
+  html+=`<div class="MC-names">
+    <div class="MC-nm"><div class="n" style="${w1?'color:var(--gn)':w2?'opacity:.4':''}">${f1.nm}</div><div class="o">${f1.org} OVR${f1.ovr}${condDot(f1.id)}</div></div>
+    <div class="MC-vslabel">${fin?'':'VS'}</div>
+    <div class="MC-nm"><div class="n" style="${w2?'color:var(--gn)':w1?'opacity:.4':''}">${f2.nm}</div><div class="o">${f2.org} OVR${f2.ovr}${condDot(f2.id)}</div></div>
+  </div>`;
+
+  if(fin){
+    html+=`<div class="MC-result"><span class="w">WIN: ${wn.nm}</span> — ${m.met}</div>`;
+  }
+
+  html+=`</div>`;
+  return html;
+}
+
+// TBD card for future rounds
+function tbdCard(){
+  return `<div class="MC done" style="opacity:.2;text-align:center;padding:12px">
+    <div style="font-size:12px;color:var(--dm);font-style:italic">— 次ラウンド —</div>
+  </div>`;
+}
+
+// ========== BRACKET VIEW ==========
+function rBrk(){
+  return `<div class="ph">対戦表公開</div><div class="W">${hdr()}
+    <div class="RL">準々決勝</div>
+    ${matchCard(0,0,true,false)}
+    ${matchCard(0,1,true,false)}
+    ${matchCard(0,2,true,false)}
+    ${matchCard(0,3,true,false)}
+    <div class="BT su"><button class="bt bg" onclick="startP()">⚔ 準々決勝 開始</button></div>
+  </div>`;
+}
+
+// ========== PLAY ==========
+function startP(){phase='play';ri=0;mi=0;mphase='pre';go();}
+
+function rPlay(){
+  const m=RDS[ri][mi];
+  const dk=RK[ri]+mi;
+  const d=DIA[dk];
+  const f1=F(m.p1),f2=F(m.p2),wn=F(m.w);
+
+  let html=`<div class="ph">${RNM[ri]}</div><div class="W">${hdr()}`;
+
+  // Show completed rounds (shrunk)
+  for(let pr=0;pr<ri;pr++){
+    html+=`<div class="RL" style="opacity:.5;font-size:11px">${RNM[pr]} — 終了</div>`;
+    for(let pm=0;pm<RDS[pr].length;pm++){
+      html+=matchCard(pr,pm,false,false);
+    }
+  }
+
+  // Current round label
+  html+=`<div class="RL">${RNM[ri]}</div>`;
+
+  // Completed matches in current round (shrunk, no bubble)
+  for(let pm=0;pm<mi;pm++){
+    html+=matchCard(ri,pm,false,false);
+  }
+
+  // Active match
+  if(mphase==='pre'){
+    // Big card
+    html+=matchCard(ri,mi,true,false);
+    // Both fighters speak
+    html+=`<div class="bub-pair su">
+      <div class="bub"><div class="sp bl">${f1.nm}</div>「${d?d.pre1:f1.nm}」</div>
+      <div class="bub"><div class="sp bl">${f2.nm}</div>「${d?d.pre2:f2.nm}」</div>
+    </div>`;
+    html+=`<div class="BT"><button class="bt bg" onclick="doM()">🔔 観戦する</button><button class="bt bs" onclick="doM()">スキップ</button></div>`;
+  } else {
+    // Result: show done card (big with faded images)
+    html+=matchCard(ri,mi,true,false);
+
+    // Winner dialogue
+    if(d){
+      html+=`<div class="bub su" style="max-width:280px;margin:8px auto"><div class="sp gd">${wn.nm}</div>「${d.post}」</div>`;
+    }
+
+    // HP animation
+    const before=hp[wn.id];
+    const after1=Math.max(0,before-m.dmg);
+    const after2=Math.min(100,after1+m.rec);
+    const barC=v=>v>=80?'var(--gn)':v>=60?'#f39c12':v>=40?'var(--rd)':'#8e44ad';
+    const pctC=v=>v>=70?'var(--gn)':v>=50?'#f39c12':'var(--rd)';
+
+    html+=`<div class="HP su" style="animation-delay:.3s" id="hpBox">
+      <div class="HP-h">
+        <div class="HP-av"><img src="${fI(wn,'fc')}" alt=""></div>
+        <div class="HP-nm">${wn.nm} の体調</div>
+        <div class="HP-pct" id="hpPct" style="color:${pctC(before)}">${before}%</div>
+      </div>
+      <div class="HP-bar">
+        <div class="HP-fill" id="hpFill" style="width:${before}%;background:${barC(before)};transition:width 1.2s cubic-bezier(.4,0,.2,1),background .3s"></div>
+      </div>
+      <div class="HP-lbl"><span>💥 ダメージ -${m.dmg}%</span><span>💊 回復 +${m.rec}%</span></div>
+    </div>`;
+
+    html+=`<div class="BT su" style="animation-delay:.6s"><button class="bt bg" onclick="nxM()">次へ →</button></div>`;
+
+    // Animate HP: drain → pause → recover (slower, with gap)
+    setTimeout(()=>{
+      const fl=$('hpFill'),pt=$('hpPct');
+      if(!fl)return;
+      // Phase 1: DRAIN (1.2s)
+      fl.style.width=after1+'%';
+      fl.style.background=barC(after1);
+      animP(before,after1,1200,pt,pctC);
+      // Phase 2: PAUSE 800ms, then RECOVER (1s)
+      setTimeout(()=>{
+        fl.style.transition='width 1s cubic-bezier(.16,1,.3,1),background .3s';
+        fl.style.width=after2+'%';
+        fl.style.background=barC(after2);
+        animP(after1,after2,1000,pt,pctC);
+        hp[wn.id]=after2;
+      },2200); // 1200 drain + 1000 pause
+    },600);
+  }
+
+  // Upcoming matches in current round (big, not started)
+  for(let pm=mi+1;pm<RDS[ri].length;pm++){
+    html+=matchCard(ri,pm,true,false);
+  }
+
+  html+=`</div>`;
+  return html;
+}
+
+function animP(from,to,dur,el,cFn){
+  const st=performance.now();
+  function tick(now){
+    const p=Math.min(1,(now-st)/dur);
+    const v=Math.round(from+(to-from)*p);
+    el.textContent=v+'%';
+    el.style.color=cFn(v);
+    if(p<1)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function doM(){
+  done.add(`${ri},${mi}`);
+  mphase='result';
+  go();
+}
+function nxM(){
+  mi++;
+  if(mi>=RDS[ri].length){ri++;mi=0;if(ri>=RDS.length){phase='champ';go();return;}}
+  mphase='pre';
+  go();
+}
+
+// ========== CHAMPION ==========
+function rChamp(){
+  const wn=F(FN[0].w);
+  let html=`<div class="ph">優勝</div><div class="W">${hdr()}`;
+
+  // All rounds shrunk
+  for(let pr=0;pr<RDS.length;pr++){
+    html+=`<div class="RL" style="opacity:.5;font-size:11px">${RNM[pr]}</div>`;
+    for(let pm=0;pm<RDS[pr].length;pm++){
+      html+=matchCard(pr,pm,false,false);
+    }
+  }
+
+  html+=`<div class="CH su">
+    <div class="cl">CHAMPION</div>
+    <div class="cn">${wn.nm}</div>
+    <div style="font-size:12px;color:var(--sb)">${wn.org}</div>
+    <div class="CH-bub">「${DIA.fn0.post}」</div>
+  </div>
+  <div class="BT su" style="animation-delay:.3s"><button class="bt bg" onclick="rst()">🔄 デモリセット</button></div>
+  </div>`;
+  return html;
+}
+
+function rst(){phase='summon';si=0;ri=0;mi=0;mphase='pre';done.clear();FS.forEach(f=>{hp[f.id]=100;});go();}
+
+go();
+</script>
+</body>
+</html>

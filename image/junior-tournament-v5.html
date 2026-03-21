@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Junior Tournament v5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600;700;900&family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0b10;--pn:#12141c;--cd:#181a24;--cd2:#1e2030;
+  --gd:#d4a853;--gl:#f0d088;--gdd:#8a7235;
+  --bl:#4a90d9;--bll:#74b9ff;--rd:#e74c3c;--gn:#2ecc71;
+  --tx:#e8e6e3;--sb:#8a8d93;--dm:#4a4d55;--bd:#2a2d38;
+}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans JP',sans-serif;overflow-x:hidden;}
+
+/* ===== SUMMON ===== */
+.SO{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+.SO-top{position:absolute;top:24px;left:0;right:0;text-align:center;opacity:0;animation:fd .5s ease forwards;}
+.SO-top .tg{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:6px;color:var(--gd);}
+.SO-top h2{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;color:var(--sb);margin-top:3px;}
+.SO-body{width:340px;text-align:center;opacity:0;animation:pop .7s cubic-bezier(.16,1,.3,1) .2s forwards;}
+.SO-img{width:220px;height:220px;border-radius:50%;margin:0 auto 14px;position:relative;border:3px solid var(--gdd);box-shadow:0 0 50px rgba(212,168,83,.1);overflow:visible;}
+.SO-img img{width:100%;height:100%;object-fit:cover;object-position:center 20%;border-radius:50%;display:block;}
+.SO-img .rg{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--gdd);animation:pulse 2s ease infinite;pointer-events:none;}
+.SO-nm{font-size:24px;font-weight:900;margin-bottom:2px;}
+.SO-inf{font-size:12px;color:var(--sb);margin-bottom:16px;}
+.SO-bub{background:#f0f0f0;color:#1a1a1a;border-radius:14px;padding:14px 20px;font-size:14px;line-height:1.6;text-align:center;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.3);opacity:0;animation:fu .4s ease .65s forwards;}
+.SO-bub::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid #f0f0f0;}
+.SO-bub .sp{font-size:10px;font-weight:700;color:var(--bl);margin-bottom:2px;}
+.SO-dots{position:absolute;bottom:48px;left:0;right:0;display:flex;gap:10px;justify-content:center;}
+.SO-dots .d{width:8px;height:8px;border-radius:50%;background:var(--dm);transition:.3s;}
+.SO-dots .d.on{background:var(--gd);box-shadow:0 0 8px rgba(212,168,83,.5);}
+.SO-dots .d.dn{background:var(--gdd);}
+.SO-hint{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:11px;color:var(--dm);animation:blink 1.5s ease infinite;}
+
+/* ===== WRAP ===== */
+.W{max-width:520px;margin:0 auto;padding:12px 14px 80px;}
+.HD{text-align:center;padding:24px 12px 12px;position:relative;}
+.HD::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gd),transparent);}
+.HD .sp{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:7px;color:var(--gd);}
+.HD h1{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;margin:3px 0 2px;}
+.HD .sb{font-size:11px;color:var(--sb);}
+
+/* ===== BRACKET (horizontal tree) ===== */
+.BK{display:flex;align-items:stretch;justify-content:center;padding:12px 0;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.RD{display:flex;flex-direction:column;justify-content:center;}
+.RL{text-align:center;padding:3px 0 6px;font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:var(--gdd);}
+
+/* bracket match cell */
+.BM{margin:3px 0;position:relative;}
+.BM.act .BF:first-child{border-color:var(--gdd);background:rgba(212,168,83,.04);}
+.BM.act .BF:last-child{border-color:var(--gdd);background:rgba(212,168,83,.04);}
+
+.BF{
+  display:flex;align-items:center;gap:5px;padding:4px 6px;
+  background:var(--cd);min-width:130px;border:1px solid var(--bd);transition:.3s;
+}
+.BF:first-child{border-radius:5px 5px 0 0;border-bottom:none;}
+.BF:last-child{border-radius:0 0 5px 5px;}
+.BF.w{background:rgba(46,204,113,.06);}
+.BF.w .fn{color:var(--gn);font-weight:700;}
+.BF.w .av{border-color:rgba(46,204,113,.5);}
+.BF.l{opacity:.3;}
+.BF.tbd{opacity:.15;}
+.BF.tbd .fn{color:var(--dm);font-style:italic;}
+
+.av{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--cd2);border:1.5px solid var(--bd);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.av img{width:100%;height:100%;object-fit:cover;}
+.av .ini{font-size:9px;font-weight:700;color:var(--gd);}
+.fn{font-size:10px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fo{font-size:8px;color:var(--dm);font-family:'Oswald',sans-serif;}
+.BVS{text-align:center;font-size:7px;color:var(--dm);font-family:'Bebas Neue',sans-serif;letter-spacing:2px;background:var(--cd);border-left:1px solid var(--bd);border-right:1px solid var(--bd);padding:1px 0;}
+
+/* connectors */
+.CN{width:16px;position:relative;}
+.CN svg{position:absolute;top:0;left:0;width:100%;height:100%;}
+.gap2{height:16px;}
+
+/* ===== MATCH FOCUS CARD (big, below bracket) ===== */
+.MF{
+  background:var(--pn);border:1px solid rgba(212,168,83,.2);border-radius:12px;
+  margin:16px 0;overflow:hidden;position:relative;
+}
+.MF::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(212,168,83,.03),transparent 70%);pointer-events:none;}
+.MF-lb{text-align:center;padding:10px 0 0;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:var(--gd);position:relative;z-index:1;}
+/* upper images face-off */
+.MF-imgs{display:flex;align-items:flex-end;justify-content:center;height:180px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,transparent 0%,rgba(18,20,28,.85) 80%,var(--pn) 100%);}
+.MF-imgs .fi{flex:0 0 48%;height:100%;overflow:hidden;}
+.MF-imgs .fi img{width:100%;height:100%;object-fit:cover;object-position:center 15%;}
+.MF-imgs .fi.right img{transform:scaleX(-1);}
+.MF-imgs .vs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:32px;color:rgba(255,255,255,.12);letter-spacing:8px;z-index:2;text-shadow:0 0 40px rgba(0,0,0,.8);}
+
+.MF-names{display:flex;justify-content:space-between;padding:8px 16px;position:relative;z-index:1;}
+.MF-nm{text-align:center;flex:1;}
+.MF-nm .n{font-size:15px;font-weight:800;}
+.MF-nm .o{font-size:10px;color:var(--sb);}
+.MF-nm .c{font-size:10px;margin-top:1px;}
+.MF-vl{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--dm);letter-spacing:3px;align-self:center;flex-shrink:0;padding:0 6px;}
+
+/* result inside focus card */
+.MF-res{text-align:center;padding:6px 16px 10px;font-size:11px;color:var(--sb);}
+.MF-res .w{color:var(--gn);font-weight:700;font-size:13px;}
+
+/* ===== DIALOGUE BUBBLES ===== */
+.bub{background:#f0f0f0;color:#1a1a1a;border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);margin:6px 0;}
+.bub .sp{font-size:9px;font-weight:700;margin-bottom:1px;}
+.bub .sp.bl{color:var(--bl);}
+.bub .sp.gd{color:#b8860b;}
+.bub-pair{display:flex;gap:8px;margin:8px 14px;}
+.bub-pair .bub{flex:1;min-width:0;}
+
+/* ===== HP BAR ===== */
+.HP{max-width:380px;margin:14px auto;padding:14px 16px;background:var(--cd);border:1px solid var(--bd);border-radius:10px;}
+.HP-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.HP-av{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--gn);flex-shrink:0;}
+.HP-av img{width:100%;height:100%;object-fit:cover;}
+.HP-nm{font-size:13px;font-weight:700;flex:1;}
+.HP-pct{font-size:16px;font-weight:900;font-family:'Oswald',sans-serif;min-width:48px;text-align:right;}
+.HP-bar{height:12px;background:var(--cd2);border-radius:6px;overflow:hidden;position:relative;}
+.HP-fill{height:100%;border-radius:6px;position:absolute;left:0;top:0;}
+.HP-lbl{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--dm);}
+
+/* ===== CHAMPION ===== */
+.CH{text-align:center;padding:0 0 20px;position:relative;overflow:hidden;border-radius:16px;margin-top:20px;background:var(--pn);border:1px solid rgba(212,168,83,.25);}
+.CH-hero{position:relative;width:100%;height:320px;overflow:hidden;background:radial-gradient(ellipse at center bottom,rgba(212,168,83,.12),transparent 70%);}
+.CH-hero img{width:100%;height:100%;object-fit:cover;object-position:center 15%;mask-image:linear-gradient(to bottom,black 60%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 60%,transparent 100%);}
+.CH-hero .glow{position:absolute;inset:0;background:radial-gradient(ellipse at center 70%,rgba(212,168,83,.15) 0%,transparent 60%);pointer-events:none;}
+.CH-hero .trophy{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-size:40px;animation:bounce 1s ease infinite;filter:drop-shadow(0 0 20px rgba(212,168,83,.4));}
+.CH-info{position:relative;padding:0 20px 20px;margin-top:-40px;z-index:2;}
+.CH .cl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:8px;color:var(--gd);text-shadow:0 0 20px rgba(212,168,83,.3);}
+.CH .cn{font-size:32px;font-weight:900;color:var(--gl);margin:6px 0;text-shadow:0 0 40px rgba(212,168,83,.25);}
+.CH .co{font-size:13px;color:var(--sb);margin-bottom:16px;}
+.CH-bub{background:#f0f0f0;color:#1a1a1a;border-radius:16px;padding:18px 24px;font-size:16px;line-height:1.7;max-width:340px;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,.35);position:relative;}
+.CH-bub::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid #f0f0f0;}
+.CH-bub .sp{font-size:11px;font-weight:700;color:#b8860b;margin-bottom:3px;}
+
+/* ===== BUTTONS ===== */
+.BT{display:flex;gap:10px;justify-content:center;margin-top:18px;}
+.bt{padding:11px 24px;border:none;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;}
+.bg{background:linear-gradient(135deg,var(--gd),#c49a3c);color:#1a1200;box-shadow:0 3px 12px rgba(212,168,83,.2);}
+.bg:hover{transform:translateY(-1px);}
+.bs{background:var(--cd);color:var(--sb);border:1px solid var(--bd);}
+
+.ph{position:fixed;top:8px;right:10px;background:rgba(212,168,83,.12);color:var(--gd);font-size:9px;font-weight:600;padding:4px 10px;border-radius:14px;z-index:200;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;}
+
+@keyframes fd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.7}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.su{animation:su .5s cubic-bezier(.16,1,.3,1) forwards;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const I='./image/';
+const FS=[
+  {id:0,nm:'松川杏樹',org:'新タコヤキ社',ovr:65,fc:'face_matsukawa_a.png',up:'upper_matsukawa_a.webp',mine:true,summon:'お、選ばれちゃった。ラッキー'},
+  {id:1,nm:'生駒エリカ',org:'天頂プロレス',ovr:66,fc:'face_ikoma_e.png',up:'upper_ikoma_e.webp',mine:false},
+  {id:2,nm:'松下真理亜',org:'新タコヤキ社',ovr:63,fc:'face_matsushita_m.png',up:'upper_matsushita_m.webp',mine:true,summon:'選ばれたからには、全力で戦う'},
+  {id:3,nm:'長谷川レオナ',org:'ふたば女子プロレス',ovr:61,fc:'face_hasegawa_r.png',up:'upper_hasegawa_r.webp',mine:false},
+  {id:4,nm:'片桐ありさ',org:'ノヴァインパクト',ovr:60,fc:'face_katagiri_a.png',up:'upper_katagiri_a.webp',mine:false},
+  {id:5,nm:'平松かなみ',org:'新タコヤキ社',ovr:59,fc:'face_hiramatsu_k.png',up:'upper_hiramatsu_k.webp',mine:true,summon:'選ばれました。精一杯戦います'},
+  {id:6,nm:'堂前ユキ',org:'ふたば女子プロレス',ovr:56,fc:'face_domae_y.png',up:'upper_domae_y.webp',mine:false},
+  {id:7,nm:'宮ケ瀬千夏',org:'新タコヤキ社',ovr:50,fc:'face_miyagase_c.png',up:'upper_miyagase_c.webp',mine:true,summon:'うっせーな、勝手に呼びやがって。……まあ出るけど'},
+];
+const myF=FS.filter(f=>f.mine);
+
+const QF=[
+  {p1:0,p2:1,w:1,met:'レッグロック 12:34',dmg:28,rec:12},
+  {p1:2,p2:3,w:2,met:'パワーボム 8:45',dmg:22,rec:10},
+  {p1:4,p2:5,w:4,met:'DDT 15:22',dmg:35,rec:15},
+  {p1:6,p2:7,w:6,met:'チョークスリーパー 10:11',dmg:18,rec:8},
+];
+const SF=[
+  {p1:1,p2:2,w:1,met:'ジャーマンスープレックス 18:05',dmg:32,rec:14},
+  {p1:4,p2:6,w:4,met:'ドラゴンスープレックス 14:33',dmg:30,rec:12},
+];
+const FN=[{p1:1,p2:4,w:1,met:'フィニッシャー 22:17',dmg:40,rec:0}];
+
+const DIA={
+  'qf0':{pre1:'楽しんでいこう。でも、負けないけどね',pre2:'マジ？ 面白えじゃん。かかってこいよ',post:'よっし、一丁上がり〜'},
+  'qf1':{pre1:'自分の試合をする。それだけ',pre2:'あら、楽しめそうね',post:'一つクリア。次に集中する'},
+  'qf2':{pre1:'次の相手…楽しみね',pre2:'精一杯、やらせていただきます',post:'ふふ、まずは一勝ね'},
+  'qf3':{pre1:'………',pre2:'ぶっ潰す。それだけだ',post:'……次'},
+  'sf0':{pre1:'いい感じに温まってきたじゃん',pre2:'ここからが本番。負けたくない',post:'いい感じいい感じ〜'},
+  'sf1':{pre1:'さてと、楽しませてもらうわね',pre2:'………やる',post:'あら、もう終わり？'},
+  'fn0':{pre1:'決勝かー。ここまで来たらやるしかないっしょ',pre2:'あと一つ。全てを懸けるわ',post:'いやー、ほんとに勝っちゃった。最高！'},
+};
+
+const RDS=[QF,SF,FN];const RNM=['準々決勝','準決勝','🏆 決勝'];const RK=['qf','sf','fn'];
+
+let phase='summon',si=0,ri=0,mi=0,mphase='pre';
+let done=new Set();
+let hp={};FS.forEach(f=>{hp[f.id]=100;});
+
+const $=id=>document.getElementById(id);
+const F=id=>FS[id];
+const fI=(f,t)=>I+(t==='up'?f.up:f.fc);
+
+function go(){
+  const a=$('app');
+  if(phase==='summon')a.innerHTML=rSum();
+  else if(phase==='bracket')a.innerHTML=rBrk();
+  else if(phase==='play')a.innerHTML=rPlay();
+  else if(phase==='champ')a.innerHTML=rChamp();
+}
+
+// ===== SUMMON =====
+function rSum(){
+  const f=myF[si];
+  return `<div class="ph">召集通知</div>
+  <div class="SO" onclick="nxS()">
+    <div class="SO-top"><div class="tg">🔔 NATIONAL U-20 召集通知</div><h2>第2回 ジュニアトーナメント</h2></div>
+    <div class="SO-body" key="${si}">
+      <div class="SO-img"><div class="rg"></div><img src="${fI(f,'up')}" alt="${f.nm}"></div>
+      <div class="SO-nm">${f.nm}</div>
+      <div class="SO-inf">${f.org} ・ OVR ${f.ovr}</div>
+      <div class="SO-bub"><div class="sp">${f.nm}</div>「${f.summon}」</div>
+    </div>
+    <div class="SO-dots">${myF.map((_,j)=>`<div class="d ${j<si?'dn':''} ${j===si?'on':''}"></div>`).join('')}</div>
+    <div class="SO-hint">タップして次へ</div>
+  </div>`;
+}
+function nxS(){si++;if(si>=myF.length){phase='bracket';}go();}
+
+// ===== HEADER =====
+function hdr(){return '<div class="HD"><div class="sp">NATIONAL U-20</div><h1>第2回 ジュニアトーナメント</h1><div class="sb">8名トーナメント</div></div>';}
+
+// ===== BRACKET TREE (v2 style) =====
+function bkFCell(id,isW,isL,isTbd){
+  if(isTbd)return `<div class="BF tbd"><div class="av"><span class="ini">?</span></div><div class="fn">— TBD —</div></div>`;
+  const f=F(id);const cls=isW?'BF w':isL?'BF l':'BF';
+  const cd=hp[id];let dot='';
+  if(cd<100){const c=cd>=80?'var(--gn)':cd>=60?'#f39c12':cd>=40?'var(--rd)':'#8e44ad';dot=`<div style="width:5px;height:5px;border-radius:50%;background:${c};flex-shrink:0" title="${cd}%"></div>`;}
+  return `<div class="${cls}">
+    <div class="av"><img src="${fI(f,'fc')}" alt="" onerror="this.outerHTML='<span class=ini>${f.nm[0]}</span>'"></div>
+    <div style="flex:1;min-width:0"><div class="fn">${f.nm}</div></div>${dot}
+    <div class="fo">OVR${f.ovr}</div>${isW?'<div style="color:var(--gn);font-size:8px;font-weight:700;margin-left:2px">WIN</div>':''}
+  </div>`;
+}
+function bkMatch(r,idx){
+  const m=RDS[r][idx];const k=`${r},${idx}`;const fin=done.has(k);const cur=(phase==='play'&&ri===r&&mi===idx);
+  let f1=m.p1,f2=m.p2,f1k=true,f2k=true;
+  if(r===1){if(!done.has(`0,${idx*2}`))f1k=false;if(!done.has(`0,${idx*2+1}`))f2k=false;}
+  if(r===2){if(!done.has('1,0'))f1k=false;if(!done.has('1,1'))f2k=false;}
+  const w1=fin&&m.w===m.p1,w2=fin&&m.w===m.p2;
+  let h=`<div class="BM${cur?' act':''}">`;
+  h+=f1k?bkFCell(f1,w1,fin&&!w1,false):bkFCell(null,false,false,true);
+  h+=`<div class="BVS">VS</div>`;
+  h+=f2k?bkFCell(f2,w2,fin&&!w2,false):bkFCell(null,false,false,true);
+  h+=`</div>`;
+  return h;
+}
+function bracket(){
+  let h='<div class="BK">';
+  h+='<div class="RD"><div class="RL">準々決勝</div>'+bkMatch(0,0)+'<div class="gap2"></div>'+bkMatch(0,1)+'</div>';
+  h+='<div class="CN" style="width:16px;min-height:180px"><svg width="16" height="100%" preserveAspectRatio="none" viewBox="0 0 16 200"><line x1="0" y1="38" x2="16" y2="72" stroke="var(--bd)" stroke-width="1.5"/><line x1="0" y1="152" x2="16" y2="118" stroke="var(--bd)" stroke-width="1.5"/></svg></div>';
+  h+='<div class="RD"><div class="RL">準決勝</div><div style="height:42px"></div>'+bkMatch(1,0)+'<div style="height:42px"></div></div>';
+  h+='<div class="CN" style="width:16px;min-height:180px"><svg width="16" height="100%" preserveAspectRatio="none" viewBox="0 0 16 200"><line x1="0" y1="95" x2="16" y2="100" stroke="var(--bd)" stroke-width="1.5"/></svg></div>';
+  h+='<div class="RD" style="min-width:140px"><div class="RL">🏆 決勝</div><div style="height:34px"></div>'+bkMatch(2,0)+'<div style="height:34px"></div></div>';
+  h+='<div class="CN" style="width:16px;min-height:180px"><svg width="16" height="100%" preserveAspectRatio="none" viewBox="0 0 16 200"><line x1="16" y1="95" x2="0" y2="100" stroke="var(--bd)" stroke-width="1.5"/></svg></div>';
+  h+='<div class="RD"><div class="RL">準決勝</div><div style="height:42px"></div>'+bkMatch(1,1)+'<div style="height:42px"></div></div>';
+  h+='<div class="CN" style="width:16px;min-height:180px"><svg width="16" height="100%" preserveAspectRatio="none" viewBox="0 0 16 200"><line x1="16" y1="38" x2="0" y2="72" stroke="var(--bd)" stroke-width="1.5"/><line x1="16" y1="152" x2="0" y2="118" stroke="var(--bd)" stroke-width="1.5"/></svg></div>';
+  h+='<div class="RD"><div class="RL">準々決勝</div>'+bkMatch(0,2)+'<div class="gap2"></div>'+bkMatch(0,3)+'</div>';
+  h+='</div>';
+  return h;
+}
+
+// ===== BRACKET SCREEN =====
+function rBrk(){
+  return `<div class="ph">対戦表公開</div><div class="W">${hdr()}${bracket()}
+  <div class="BT su"><button class="bt bg" onclick="startP()">⚔ 準々決勝 開始</button></div></div>`;
+}
+
+// ===== FOCUS CARD (big match display below bracket) =====
+function focusCard(m,mode){
+  // mode: 'pre' or 'result'
+  const f1=F(m.p1),f2=F(m.p2),wn=F(m.w);
+  const fin=mode==='result';
+  const w1=fin&&m.w===m.p1,w2=fin&&m.w===m.p2;
+  let h=`<div class="MF su">`;
+  h+=`<div class="MF-lb">${RNM[ri]} — 第${mi+1}試合</div>`;
+  h+=`<div class="MF-imgs">
+    <div class="fi left"><img src="${fI(f1,'up')}" alt="${f1.nm}" onerror="this.style.opacity=0"></div>
+    <div class="vs">VS</div>
+    <div class="fi right"><img src="${fI(f2,'up')}" alt="${f2.nm}" onerror="this.style.opacity=0"></div>
+  </div>`;
+  h+=`<div class="MF-names">
+    <div class="MF-nm"><div class="n" style="${w1?'color:var(--gn)':w2?'opacity:.35':''}">${f1.nm}</div><div class="o">${f1.org} OVR${f1.ovr}</div><div class="c">体調 ${hp[f1.id]}%</div></div>
+    <div class="MF-vl">${fin?'':'VS'}</div>
+    <div class="MF-nm"><div class="n" style="${w2?'color:var(--gn)':w1?'opacity:.35':''}">${f2.nm}</div><div class="o">${f2.org} OVR${f2.ovr}</div><div class="c">体調 ${hp[f2.id]}%</div></div>
+  </div>`;
+  if(fin) h+=`<div class="MF-res"><span class="w">WIN: ${wn.nm}</span> — ${m.met}</div>`;
+  h+=`</div>`;
+  return h;
+}
+
+// ===== PLAY =====
+function startP(){phase='play';ri=0;mi=0;mphase='pre';go();}
+
+function rPlay(){
+  const m=RDS[ri][mi];const dk=RK[ri]+mi;const d=DIA[dk];
+  const f1=F(m.p1),f2=F(m.p2),wn=F(m.w);
+
+  let html=`<div class="ph">${RNM[ri]}</div><div class="W">${hdr()}${bracket()}`;
+
+  if(mphase==='pre'){
+    html+=focusCard(m,'pre');
+    html+=`<div class="bub-pair su">
+      <div class="bub"><div class="sp bl">${f1.nm}</div>「${d?d.pre1:''}」</div>
+      <div class="bub"><div class="sp bl">${f2.nm}</div>「${d?d.pre2:''}」</div>
+    </div>`;
+    html+=`<div class="BT"><button class="bt bg" onclick="doM()">🔔 観戦する</button><button class="bt bs" onclick="doM()">スキップ</button></div>`;
+  } else {
+    html+=focusCard(m,'result');
+    if(d) html+=`<div class="bub su" style="max-width:280px;margin:8px auto"><div class="sp gd">${wn.nm}</div>「${d.post}」</div>`;
+    
+    const before=hp[wn.id];const a1=Math.max(0,before-m.dmg);const a2=Math.min(100,a1+m.rec);
+    const barC=v=>v>=80?'var(--gn)':v>=60?'#f39c12':v>=40?'var(--rd)':'#8e44ad';
+    const pctC=v=>v>=70?'var(--gn)':v>=50?'#f39c12':'var(--rd)';
+
+    html+=`<div class="HP su" style="animation-delay:.3s" id="hpBox">
+      <div class="HP-h"><div class="HP-av"><img src="${fI(wn,'fc')}" alt=""></div><div class="HP-nm">${wn.nm} の体調</div><div class="HP-pct" id="hpPct" style="color:${pctC(before)}">${before}%</div></div>
+      <div class="HP-bar"><div class="HP-fill" id="hpFill" style="width:${before}%;background:${barC(before)};transition:width 1.2s cubic-bezier(.4,0,.2,1),background .3s"></div></div>
+      <div class="HP-lbl"><span>💥 ダメージ -${m.dmg}%</span><span>💊 回復 +${m.rec}%</span></div>
+    </div>`;
+    html+=`<div class="BT su" style="animation-delay:.6s"><button class="bt bg" onclick="nxM()">次へ →</button></div>`;
+
+    setTimeout(()=>{
+      const fl=$('hpFill'),pt=$('hpPct');if(!fl)return;
+      fl.style.width=a1+'%';fl.style.background=barC(a1);
+      animP(before,a1,1200,pt,pctC);
+      setTimeout(()=>{
+        fl.style.transition='width 1s cubic-bezier(.16,1,.3,1),background .3s';
+        fl.style.width=a2+'%';fl.style.background=barC(a2);
+        animP(a1,a2,1000,pt,pctC);hp[wn.id]=a2;
+      },2200);
+    },600);
+  }
+  html+=`</div>`;return html;
+}
+
+function animP(from,to,dur,el,cFn){
+  const st=performance.now();
+  function tick(now){const p=Math.min(1,(now-st)/dur);const v=Math.round(from+(to-from)*p);el.textContent=v+'%';el.style.color=cFn(v);if(p<1)requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
+}
+function doM(){done.add(`${ri},${mi}`);mphase='result';go();}
+function nxM(){mi++;if(mi>=RDS[ri].length){ri++;mi=0;if(ri>=RDS.length){phase='champ';go();return;}}mphase='pre';go();}
+
+// ===== CHAMPION =====
+function rChamp(){
+  const wn=F(FN[0].w);
+  return `<div class="ph">優勝</div><div class="W">${hdr()}${bracket()}
+  <div class="CH su">
+    <div class="CH-hero"><img src="${fI(wn,'up')}" alt="${wn.nm}"><div class="glow"></div><div class="trophy">🏆</div></div>
+    <div class="CH-info">
+      <div class="cl">CHAMPION</div><div class="cn">${wn.nm}</div><div class="co">${wn.org}</div>
+      <div class="CH-bub"><div class="sp">${wn.nm}</div>「${DIA.fn0.post}」</div>
+    </div>
+  </div>
+  <div class="BT su" style="animation-delay:.3s"><button class="bt bg" onclick="rst()">🔄 デモリセット</button></div></div>`;
+}
+function rst(){phase='summon';si=0;ri=0;mi=0;mphase='pre';done.clear();FS.forEach(f=>{hp[f.id]=100;});go();}
+
+go();
+</script>
+</body>
+</html>
