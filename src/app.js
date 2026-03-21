@@ -6201,6 +6201,24 @@ const App = {
     const eventWon = playerWins > aiWins;
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
 
+    // 新聞用: 対抗戦結果を保存（次週の新聞生成で使用）
+    G._newsWarResult = {
+      opponentName: ev.opponentName,
+      opponentOrgId: ev.opponentOrgId,
+      playerWins,
+      aiWins,
+      won: playerWins > aiWins,
+      draw: playerWins === aiWins,
+      matches: wp.results.map(r => ({
+        playerName: r.playerFighter.name,
+        playerId: r.playerFighter.id,
+        aiName: r.aiFighter.name,
+        aiId: r.aiFighter.id,
+        playerWon: r.playerWon,
+        mq: r.mq,
+      })),
+    };
+
     // Phase 2: 対抗戦勝利選手のtrust bonus
     const winnerPlayerIds = wp.results.filter(r => r.playerWon).map(r => r.playerFighter.id);
     if (winnerPlayerIds.length > 0) {
@@ -6534,6 +6552,27 @@ App.finalizePPV = function() {
   });
 
   s = { ...s, roster };
+
+  // 新聞用: 頂上決戦結果を保存（次週の新聞生成で使用）
+  if (pp.summitPair) {
+    const summitIdx = pp.card.findIndex(m => m.isSummit);
+    if (summitIdx >= 0) {
+      const sr = pp.results[summitIdx];
+      const sm = pp.card[summitIdx];
+      const playerF = sm.left._ppvOrgId === 'player' ? sm.left : sm.right._ppvOrgId === 'player' ? sm.right : sm.left;
+      const aiF = playerF === sm.left ? sm.right : sm.left;
+      const playerWon = (sr.winner === 'left' && playerF === sm.left) || (sr.winner === 'right' && playerF === sm.right);
+      s._newsSummitResult = {
+        opponentName: pp.summitPair.org1Id === 'player' ? (G.aiOrgs[pp.summitPair.org2Id]?.name || '相手団体') : (G.aiOrgs[pp.summitPair.org1Id]?.name || '相手団体'),
+        playerName: playerF.name,
+        playerId: playerF.id,
+        aiName: aiF.name,
+        aiId: aiF.id,
+        won: playerWon,
+        mq: sr.mq,
+      };
+    }
+  }
 
   // h2h記録: PPV
   let ppvH2h = { ...(s.h2h || {}) };

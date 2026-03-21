@@ -4952,7 +4952,7 @@ const Engine = {
     if (!s.offSeason) {
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null };
+      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -15224,6 +15224,34 @@ Engine.newspaper = {
       }
     }
 
+    // === 対抗戦結果 ===
+    if (state._newsWarResult) {
+      const wr = state._newsWarResult;
+      const resultLabel = wr.won ? '勝ち越し' : wr.draw ? '引き分け' : '敗北';
+      const bestMatch = wr.matches.reduce((best, m) => m.mq > (best?.mq || 0) ? m : best, null);
+      stories.push({
+        type: 'crossWarResult',
+        priority: P.crossWarResult,
+        headline: `⚔ 対抗戦 vs ${wr.opponentName} — ${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}`,
+        body: `${wr.opponentName}との対抗戦が行われ、${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}。${bestMatch ? `ベストバウトは${bestMatch.playerName} vs ${bestMatch.aiName}（MQ${bestMatch.mq}）。` : ''}`,
+        characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
+        warData: wr,
+      });
+    }
+
+    // === 頂上決戦結果 ===
+    if (state._newsSummitResult) {
+      const sr = state._newsSummitResult;
+      stories.push({
+        type: 'ppvSummitResult',
+        priority: P.ppvSummitResult,
+        headline: `⚔ 頂上決戦 vs ${sr.opponentName} — ${sr.won ? '勝利！' : '敗北…'}`,
+        body: `${sr.playerName} vs ${sr.aiName}の頂上決戦は${sr.won ? sr.playerName : sr.aiName}の勝利に終わった。MQ${sr.mq}。`,
+        characterId: sr.won ? sr.playerId : sr.aiId,
+        summitData: sr,
+      });
+    }
+
     // === AI団体のイベント（processAIWeek で蓄積されたもの）===
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
@@ -15333,8 +15361,8 @@ Engine.newspaper = {
           round.matches.forEach(m => {
             const w = m.winnerId === m.left.id ? m.left : m.right;
             const l = m.winnerId === m.left.id ? m.right : m.left;
-            allMatches.push({ round: rl, winner: w.name, winnerOrg: w._orgName, loser: l.name, loserOrg: l._orgName, mq: m.mq });
-            if (m.mq > bestMQ) { bestMQ = m.mq; bestMatch = { round: rl, winner: w.name, loser: l.name, mq: m.mq }; }
+            allMatches.push({ round: rl, winner: w.name, winnerId: w.id, winnerOrg: w._orgName, loser: l.name, loserId: l.id, loserOrg: l._orgName, mq: m.mq });
+            if (m.mq > bestMQ) { bestMQ = m.mq; bestMatch = { round: rl, winner: w.name, winnerId: w.id, loser: l.name, loserId: l.id, mq: m.mq }; }
           });
         });
         page2Stories.push({
@@ -15375,7 +15403,7 @@ Engine.newspaper = {
           type: 'juniorTournamentPreviewRoster',
           headline: `第${state.season + 1}回ジュニアトーナメント 出場選手決定！`,
           body: `来週開催のU-20ジュニアトーナメントに${pList.length}名が選出された。`,
-          participants: pList.map(p => ({ name: p.name, orgName: p._orgName, ovr: Engine.util.ov(p), age: p.age, style: p.style })),
+          participants: pList.map(p => ({ name: p.name, id: p.id, orgName: p._orgName, ovr: Engine.util.ov(p), age: p.age, style: p.style })),
         });
         // 展望コメント
         const darkHorse = pList.length >= 4 ? pList[Math.min(2, pList.length - 1)] : null;
@@ -15403,7 +15431,7 @@ Engine.newspaper = {
         const feLeft = (state.roster || []).find(f => f.id === fe.leftId);
         const feRight = (state.roster || []).find(f => f.id === fe.rightId);
         if (feLeft && feRight) {
-          preview.fanExpect.push({ leftName: feLeft.name, rightName: feRight.name });
+          preview.fanExpect.push({ leftName: feLeft.name, leftId: feLeft.id, rightName: feRight.name, rightId: feRight.id });
         }
       });
     }
@@ -15418,11 +15446,11 @@ Engine.newspaper = {
           const ids = key.split('>');
           const rLeft = (state.roster || []).find(f => f.id === ids[0]);
           const rRight = (state.roster || []).find(f => f.id === ids[1]);
-          if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
+          if (rLeft && rRight) hotPair = { leftName: rLeft.name, leftId: rLeft.id, rightName: rRight.name, rightId: rRight.id, _matches: matches };
         }
       });
       if (hotPair && maxTier >= 1) {
-        preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
+        preview.rivalry = { leftName: hotPair.leftName, leftId: hotPair.leftId, rightName: hotPair.rightName, rightId: hotPair.rightId };
       }
     }
     // タイトル戦展望
@@ -15433,7 +15461,7 @@ Engine.newspaper = {
         .filter(f => f.id !== champId)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
       if (champ && challenger) {
-        preview.title = { championName: champ.name, challengerName: challenger.name };
+        preview.title = { championName: champ.name, championId: champ.id, challengerName: challenger.name, challengerId: challenger.id };
       }
     }
     return preview;
