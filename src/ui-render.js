@@ -1949,6 +1949,54 @@ function _getFilteredFinance(period) {
   }
 }
 
+/**
+ * 収支チャートSVG生成
+ * @param {Array<number>} values - 週ごとの値の配列
+ * @param {Object} options - { color, negColor, label, showZeroLine, height, width }
+ * @returns {string} SVG HTML文字列 or 空文字（データ不足時）
+ */
+function _financeChart(values, options = {}) {
+  if (!values || values.length < 2) return '';
+  const { color = '#2ecc71', negColor = null, label = '', showZeroLine = false, height = 120, width = 380 } = options;
+  const leftPad = 55;
+  const plotW = width - leftPad;
+  const vMin = Math.min(...values, showZeroLine ? 0 : Infinity);
+  const vMax = Math.max(...values, showZeroLine ? 0 : -Infinity);
+  const range = vMax - vMin || 1;
+  const rawStep = range / 4;
+  const niceSteps = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+  const step = niceSteps.find(s => s >= rawStep) || Math.ceil(rawStep / 1000) * 1000;
+  const gridLines = [];
+  for (let v = Math.ceil(vMin / step) * step; v <= vMax; v += step) gridLines.push(v);
+  if (showZeroLine && vMin <= 0 && vMax >= 0 && !gridLines.includes(0)) gridLines.push(0);
+  gridLines.sort((a, b) => a - b);
+  const toY = v => height - Math.round(((v - vMin) / range) * height);
+  const points = values.map((v, i) => `${leftPad + Math.round(i * plotW / Math.max(values.length - 1, 1))},${toY(v)}`).join(' ');
+  const lastVal = values[values.length - 1];
+  const lineColor = negColor && lastVal < 0 ? negColor : color;
+  let svg = `<svg width="${width}" height="${height + 16}" style="display:block;overflow:visible">`;
+  gridLines.forEach(val => {
+    const y = toY(val);
+    const isZero = val === 0;
+    svg += `<line x1="${leftPad}" y1="${y}" x2="${width}" y2="${y}" stroke="rgba(200,190,170,${isZero?0.2:0.06})" stroke-width="${isZero?1:0.5}"${isZero?' stroke-dasharray="4"':''}/>`;
+    svg += `<text x="${leftPad-6}" y="${y+3}" text-anchor="end" fill="rgba(200,190,170,${isZero?0.4:0.2})" font-size="10">${val.toLocaleString()}</text>`;
+  });
+  svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
+  const lastX = leftPad + plotW, lastY = toY(lastVal);
+  svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
+  svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${Math.round(lastVal).toLocaleString()}万</text>`;
+  svg += '</svg>';
+  return `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">${label ? `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">${label}</div>` : ''}${svg}</div>`;
+}
+
+/** filteredFinanceHistory から週ごとに値を集計する */
+function _weeklyFinanceValues(filtered, extractFn) {
+  return filtered.map(h => {
+    const details = h.details || [];
+    return details.filter(extractFn).reduce((sum, d) => sum + d.val, 0);
+  });
+}
+
 function renderFinance() {
   const el = document.getElementById('financeContent');
   const period = el.dataset.financePeriod || 'month';
@@ -1979,36 +2027,7 @@ function renderFinance() {
 
     // 資金推移チャート
     const fh = G.fundsHistory || [];
-    if (fh.length > 1) {
-      const leftPad = 55, chartH = 120, chartW = 380;
-      const plotW = chartW - leftPad;
-      const fMin = Math.min(...fh, 0);
-      const fMax = Math.max(...fh, 1);
-      const range = fMax - fMin || 1;
-      const rawStep = range / 4;
-      const niceSteps = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
-      const step = niceSteps.find(s => s >= rawStep) || Math.ceil(rawStep / 1000) * 1000;
-      const gridLines = [];
-      for (let v = Math.ceil(fMin / step) * step; v <= fMax; v += step) gridLines.push(v);
-      if (fMin <= 0 && fMax >= 0 && !gridLines.includes(0)) gridLines.push(0);
-      gridLines.sort((a, b) => a - b);
-      const toY = v => chartH - Math.round(((v - fMin) / range) * chartH);
-      const points = fh.map((v, i) => `${leftPad + Math.round(i * plotW / Math.max(fh.length - 1, 1))},${toY(v)}`).join(' ');
-      let svg = `<svg width="${chartW}" height="${chartH + 16}" style="display:block;overflow:visible">`;
-      gridLines.forEach(val => {
-        const y = toY(val);
-        const isZero = val === 0;
-        svg += `<line x1="${leftPad}" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(200,190,170,${isZero?0.2:0.06})" stroke-width="${isZero?1:0.5}"${isZero?' stroke-dasharray="4"':''}/>`;
-        svg += `<text x="${leftPad-6}" y="${y+3}" text-anchor="end" fill="rgba(200,190,170,${isZero?0.4:0.2})" font-size="10">${val.toLocaleString()}</text>`;
-      });
-      const lineColor = G.funds >= 0 ? '#2ecc71' : '#e74c3c';
-      svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
-      const lastX = leftPad + plotW, lastY = toY(fh[fh.length - 1]);
-      svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
-      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${Math.round(fh[fh.length-1]).toLocaleString()}万</text>`;
-      svg += '</svg>';
-      html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>${svg}</div>`;
-    }
+    html += _financeChart(fh, { color: '#2ecc71', negColor: '#e74c3c', label: `💹 資金推移 (${fh.length}週)`, showZeroLine: true });
 
     // 期間サマリ
     if (filtered.length > 0) {
@@ -2035,6 +2054,8 @@ function renderFinance() {
 
   // ── 収入タブ ──
   else if (tab === 'income') {
+    const incomeValues = _weeklyFinanceValues(filtered, d => d.type === 'income');
+    html += _financeChart(incomeValues, { color: '#2ecc71', label: `📈 週間収入推移 (${filtered.length}週)` });
     const items = {};
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'income').forEach(d => {
@@ -2059,6 +2080,8 @@ function renderFinance() {
 
   // ── 支出タブ ──
   else if (tab === 'expense') {
+    const expenseValues = _weeklyFinanceValues(filtered, d => d.type === 'expense');
+    html += _financeChart(expenseValues, { color: '#e74c3c', label: `📉 週間支出推移 (${filtered.length}週)` });
     const items = {};
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'expense').forEach(d => {
@@ -2083,6 +2106,8 @@ function renderFinance() {
 
   // ── 給与タブ ──
   else if (tab === 'salary') {
+    const salaryValues = _weeklyFinanceValues(filtered, d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与');
+    html += _financeChart(salaryValues, { color: '#e67e22', label: `💰 週間給与推移 (${filtered.length}週)` });
     // 期間中の給与支払い合計
     let salaryTotal = 0, salaryWeeks = 0;
     filtered.forEach(h => {
