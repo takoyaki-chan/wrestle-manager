@@ -854,7 +854,7 @@ function showSigningCeremony(charId) {
   html += `<div style="margin:0 8px 12px;padding:12px;background:var(--bg-card);border:1px solid rgba(212,168,67,0.2);border-radius:8px">`;
   html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px">`;
   html += `<span style="color:var(--text-sub)">契約金</span>`;
-  html += `<span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>`;
+  html += `<span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>`;
   html += `</div>`;
   html += `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-dim)">`;
   html += `<span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>`;
@@ -2575,7 +2575,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
           <span style="color:var(--text-sub)">契約金</span>
-          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>
+          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-dim)">
           <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
@@ -2608,7 +2608,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
           <span style="color:var(--text-sub)">契約金</span>
-          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${signingCost.toLocaleString()}万</span>
+          <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;color:var(--text-dim)">
           <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
@@ -4039,7 +4039,7 @@ function requestRental(fighterId, fromSource, fromOrgId) {
     <div><b>供給元:</b> ${srcLabel}</div>
     <div><b>期間:</b> ${seasons}期（${seasons * 12}週）</div>
     <div><b>費用:</b> <span style="color:#f39c12;font-weight:700">${fee}万</span>（前払い一括）</div>
-    <div style="margin-top:6px;font-size:12px;color:var(--text-sub)">残り資金: ${Math.floor(G.funds)}万 → ${Math.floor(G.funds - parseInt(fee))}万</div>
+    <div style="margin-top:6px;font-size:12px;color:var(--text-sub)">残り資金: ${Math.round(G.funds)}万 → ${Math.round(G.funds - parseInt(fee))}万</div>
   </div>`;
 
   showConfirm(msg, 'レンタルする', () => _executeRental(fighterId, fromSource, fromOrgId, seasons));
@@ -4555,7 +4555,7 @@ function showCareActionModal(state, onConfirm) {
 
     const careStock = state.careStock != null ? state.careStock : 5;
     const careStockMax = state.careStockMax || 5;
-    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">⚡ <strong style="color:${careStock <= 1 ? '#e74c3c' : '#f1c40f'}">${careStock}/${careStockMax}</strong>&nbsp;&nbsp;資金: <strong style="color:#2ecc71">${funds.toLocaleString()}万</strong></span></div>`;
+    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">⚡ <strong style="color:${careStock <= 1 ? '#e74c3c' : '#f1c40f'}">${careStock}/${careStockMax}</strong>&nbsp;&nbsp;資金: <strong style="color:#2ecc71">${Math.round(funds).toLocaleString()}万</strong></span></div>`;
 
     html += '<div class="care-section-label">👤 個人向け</div>';
     const orgPop = state.orgPop || 0;
@@ -4740,7 +4740,7 @@ function showCareActionModal(state, onConfirm) {
 
     if (cost > 0) {
       const fc = remainingFunds < 200 ? '#e74c3c' : 'var(--text-dim)';
-      html += `<div class="care-result-cost">費用 <strong style="color:#e8439f">-${cost}万</strong>｜残金 <strong style="color:${fc}">${remainingFunds.toLocaleString()}万</strong></div>`;
+      html += `<div class="care-result-cost">費用 <strong style="color:#e8439f">-${cost}万</strong>｜残金 <strong style="color:${fc}">${Math.round(remainingFunds).toLocaleString()}万</strong></div>`;
     }
 
     html += `<button class="btn care-result-close-btn" id="careResultCloseBtn" style="border-color:${color};color:${color}">閉じる ✓</button>`;
@@ -5411,7 +5411,7 @@ function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds
     changesHtml += '</div>';
   }
 
-  const costHtml = cost > 0 ? `<div class="care-modal-cost">-${cost}万（残金: ${remainingFunds.toLocaleString()}万）</div>` : '';
+  const costHtml = cost > 0 ? `<div class="care-modal-cost">-${cost}万（残金: ${Math.round(remainingFunds).toLocaleString()}万）</div>` : '';
 
   box.className = `care-modal-box${isPremium ? ' care-premium' : ''}`;
   box.innerHTML = `

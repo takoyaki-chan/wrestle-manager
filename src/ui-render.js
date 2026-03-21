@@ -28,7 +28,7 @@ function refreshTopBar() {
     }
   }
   const fundsEl = document.getElementById('dispFunds');
-  fundsEl.textContent = `${G.funds.toLocaleString()}万`;
+  fundsEl.textContent = `${Math.round(G.funds).toLocaleString()}万`;
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
   document.getElementById('dispPop').textContent = Engine.util.dispOrgPop(G.orgPop);
   // v1.5s25b: 補助金カウントダウン
@@ -425,12 +425,12 @@ function renderWeekScreen() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
           <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
             <span style="color:var(--text-dim)">収支:</span>
-            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${profit.toLocaleString()}万</span>
-            <span style="color:var(--text-dim);font-size:12px">(収${(src.totalRevenue||0).toLocaleString()} / 支${(src.totalExpense||0).toLocaleString()})</span>
+            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${Math.round(profit).toLocaleString()}万</span>
+            <span style="color:var(--text-dim);font-size:12px">(収${Math.round(src.totalRevenue||0).toLocaleString()} / 支${Math.round(src.totalExpense||0).toLocaleString()})</span>
           </div>
           <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
             <span style="color:var(--text-dim)">ピーク資金:</span>
-            <span style="color:var(--gold);font-weight:700">${(src.peakFunds||0).toLocaleString()}万</span>
+            <span style="color:var(--gold);font-weight:700">${Math.round(src.peakFunds||0).toLocaleString()}万</span>
           </div>
           ${src.bestMQMatch ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
             <span style="color:var(--text-dim)">ベストマッチ:</span>
@@ -465,7 +465,7 @@ function renderWeekScreen() {
       G.rankings.forEach((r, i) => {
         const isPlayer = r.orgId === 'player';
         html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
-          <span>${i+1}位 ${r.name}</span><span>${r.rating}pt</span>
+          <span>${i+1}位 ${r.name}</span><span>${Math.round(r.rating)}pt</span>
         </div>`;
       });
       html += '</div>';
@@ -540,7 +540,7 @@ function renderWeekScreen() {
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
-          <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${G.funds.toLocaleString()}万</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${Math.round(G.funds).toLocaleString()}万</strong></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
           <div style="font-size:12px;color:var(--text-dim)">
@@ -563,8 +563,8 @@ function renderWeekScreen() {
       const weekInMonth = manageBuf.length + 1;
       html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(200,190,170,0.025);border:1px solid rgba(200,190,170,0.05);border-radius:5px;font-size:12px">
         <span style="color:var(--text-dim);flex-shrink:0">月${weekInMonth}週目:</span>
-        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${mNet}万</span>
-        <span style="color:var(--text-dim);font-size:11px">収入${mIncome}万 / 支出${mExpense}万</span>
+        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${Math.round(mNet)}万</span>
+        <span style="color:var(--text-dim);font-size:11px">収入${Math.round(mIncome)}万 / 支出${Math.round(mExpense)}万</span>
       </div>`;
     }
 
@@ -609,7 +609,7 @@ function renderWeekScreen() {
       html += '<div class="survival-body">';
       html += `<div class="survival-gauge-track">
         <div class="survival-gauge-fill ${gaugeColor}" style="width:${sFuel}%">
-          <span class="survival-gauge-label">${G.funds.toLocaleString()}万</span>
+          <span class="survival-gauge-label">${Math.round(G.funds).toLocaleString()}万</span>
         </div>
       </div>`;
 
@@ -627,7 +627,7 @@ function renderWeekScreen() {
       const netColor = sNet.weeklyNet >= 0 ? '#2ecc71' : '#e74c3c';
       const netSign = sNet.weeklyNet >= 0 ? '+' : '';
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${netColor}">${netSign}${sNet.weeklyNet}万</span>
+        <span class="survival-stat-val" style="color:${netColor}">${netSign}${Math.round(sNet.weeklyNet)}万</span>
         <span class="survival-stat-label">推定週間収支</span>
       </div>`;
       // Weeks until bankrupt
@@ -648,17 +648,17 @@ function renderWeekScreen() {
       const rollingSum = buf.reduce((a,b) => a+b, 0);
       const r4count = G.rollingNet4Count || 0;
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${rollingSum}万</span>
+        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${Math.round(rollingSum)}万</span>
         <span class="survival-stat-label">月次収支(4週)</span>
       </div>`;
       // Weekly expense
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:#e74c3c">-${sNet.totalExpense}万</span>
+        <span class="survival-stat-val" style="color:#e74c3c">-${Math.round(sNet.totalExpense)}万</span>
         <span class="survival-stat-label">週間支出</span>
       </div>`;
       // Weekly base income
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${sNet.totalBaseIncome}万</span>
+        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${Math.round(sNet.totalBaseIncome)}万</span>
         <span class="survival-stat-label">固定収入</span>
       </div>`;
       html += '</div>'; // .survival-stats
@@ -678,7 +678,7 @@ function renderWeekScreen() {
         </div>`;
       } else if (sPhase && sPhase.id === 'green') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 黒字転換達成！ この調子で${4 - (G.survivalProfitStreak || 0)}週間黒字を維持すればクリア！（現在の資金: ${G.funds.toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
+          💡 黒字転換達成！ この調子で${4 - (G.survivalProfitStreak || 0)}週間黒字を維持すればクリア！（現在の資金: ${Math.round(G.funds).toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
         </div>`;
       }
 
@@ -858,11 +858,11 @@ function renderWeekScreen() {
     html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${dateStr} 完了</div>`;
     html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${wsRange} 累計</div>`;
     html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
-      <span>収入 <span style="color:var(--green);font-weight:600">+${wsIncome.toLocaleString()}万</span></span>
-      <span>支出 <span style="color:var(--red);font-weight:600">-${wsExpense.toLocaleString()}万</span></span>
-      <span>収支 <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${wsNet.toLocaleString()}万</span></span>
+      <span>収入 <span style="color:var(--green);font-weight:600">+${Math.round(wsIncome).toLocaleString()}万</span></span>
+      <span>支出 <span style="color:var(--red);font-weight:600">-${Math.round(wsExpense).toLocaleString()}万</span></span>
+      <span>収支 <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${Math.round(wsNet).toLocaleString()}万</span></span>
     </div>`;
-    html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+    html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</strong></div>`;
     html += `</div>`;
     html += `<div class="btn-row" style="justify-content:center">
       <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">次の週へ →</button>
@@ -907,10 +907,10 @@ function renderWeekScreen() {
 
     // Show aggregated details
     Object.values(monthlyDetails).forEach(d => {
-      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${d.val}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${Math.round(d.val)}万</span></div>`;
     });
-    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${monthNet}万</span></div>`;
-    html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</strong></div>`;
+    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${Math.round(monthNet)}万</span></div>`;
+    html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</strong></div>`;
 
     // v0.97: Survival gauge mini-status in settlement
     const f = G.weeklyFinance;
@@ -1975,7 +1975,7 @@ function renderFinance() {
 
   // ── 総合タブ ──
   if (tab === 'summary') {
-    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${G.funds.toLocaleString()}万</div>`;
+    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</div>`;
 
     // 資金推移チャート
     const fh = G.fundsHistory || [];
@@ -2005,7 +2005,7 @@ function renderFinance() {
       svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
       const lastX = leftPad + plotW, lastY = toY(fh[fh.length - 1]);
       svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
-      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${fh[fh.length-1].toLocaleString()}万</text>`;
+      svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${Math.round(fh[fh.length-1]).toLocaleString()}万</text>`;
       svg += '</svg>';
       html += `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">💹 資金推移 (${fh.length}週)</div>${svg}</div>`;
     }
@@ -2017,9 +2017,9 @@ function renderFinance() {
       const totalNet = totalIncome - totalExpense;
       const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
       html += `<div class="panel-title">期間サマリ — ${periodLabel} <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${filtered.length}週)</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📈 総収入</span><span class="f-val income">+${totalIncome.toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📉 総支出</span><span class="f-val expense">-${totalExpense.toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row finance-total"><span>純利益</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">📈 総収入</span><span class="f-val income">+${Math.round(totalIncome).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">📉 総支出</span><span class="f-val expense">-${Math.round(totalExpense).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>純利益</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${Math.round(totalNet).toLocaleString()}万</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の記録はまだありません</div>`;
       // 推定週間コスト（初回表示用）
@@ -2048,10 +2048,10 @@ function renderFinance() {
     const total = sorted.reduce((s, i) => s + i.val, 0);
     if (sorted.length > 0) {
       sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val income">+${d.val.toLocaleString()}万</span></span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${total.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${Math.round(total).toLocaleString()}万</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の収入記録はありません</div>`;
     }
@@ -2072,10 +2072,10 @@ function renderFinance() {
     const total = sorted.reduce((s, i) => s + i.val, 0);
     if (sorted.length > 0) {
       sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${d.val.toLocaleString()}万</span></span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${Math.round(d.val).toLocaleString()}万</span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総支出</span><span class="f-val expense">${total.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>総支出</span><span class="f-val expense">${Math.round(total).toLocaleString()}万</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の支出記録はありません</div>`;
     }
@@ -2094,7 +2094,7 @@ function renderFinance() {
     if (salaryWeeks > 0) {
       const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
       html += `<div class="panel-title">${periodLabel}の給与支払い</div>`;
-      html += `<div class="finance-row finance-total"><span>給与支払い合計 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}週)</span></span><span class="f-val expense">${salaryTotal.toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>給与支払い合計 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}週)</span></span><span class="f-val expense">${Math.round(salaryTotal).toLocaleString()}万</span></div>`;
       html += `<div style="margin-bottom:14px"></div>`;
     }
     // 選手別給与（現在のスナップショット）
@@ -2220,10 +2220,10 @@ function renderRanking() {
     const popPart = Math.round(r.weightedPop * 9) / 10;
     const tipHtml = `<div style="text-align:left;font-size:12px;line-height:1.7">`
       + `<div style="font-weight:700;margin-bottom:4px;font-size:13px">評価値の内訳</div>`
-      + `<div>基礎値: <strong>${r.baseScore}</strong>pt</div>`
+      + `<div>基礎値: <strong>${Math.round(r.baseScore)}</strong>pt</div>`
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
-      + `<div style="margin-top:4px">レガシー: <strong>${r.legacyScore}</strong>pt</div>`
+      + `<div style="margin-top:4px">レガシー: <strong>${Math.round(r.legacyScore)}</strong>pt</div>`
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
       + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</strong>pt</div>`
       + `<hr style="border:none;border-top:1px solid rgba(200,190,170,0.15);margin:6px 0">`
@@ -2237,8 +2237,8 @@ function renderRanking() {
           onmouseenter="showCustomTooltip(this,_rankTip_${r.orgId})"
           onmouseleave="hideCustomTooltip()"
           onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${Math.round(r.rating)}</td>
-      <td class="num">${r.baseScore}</td>
-      <td class="num" style="font-size:12px;color:var(--text-sub)">${r.legacyScore}</td>
+      <td class="num">${Math.round(r.baseScore)}</td>
+      <td class="num" style="font-size:12px;color:var(--text-sub)">${Math.round(r.legacyScore)}</td>
       <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</td>
       <td class="num">${r.rosterSize}</td>
     </tr>`;
@@ -2269,7 +2269,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${r.rating}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
@@ -2322,7 +2322,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? rEntry.rating + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? Math.round(rEntry.rating) + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${champion ? `${champion.name}（${aiTitles.world?.defenses || 0}防衛）` : '<span style="color:var(--text-dim)">不在</span>'}</div>
@@ -2370,8 +2370,8 @@ function renderRanking() {
         <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank===2?'#e74c3c':h.rank===3?'#9b59b6':'#2ecc71'}">${h.rank}位</td>
         <td class="num">${h.showCount || 0}</td>
         <td class="num" style="color:#3498db">${h.bestMQ || 0}</td>
-        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${profit.toLocaleString()}万</td>
-        <td class="num">${(h.funds||0).toLocaleString()}万</td>
+        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${Math.round(profit).toLocaleString()}万</td>
+        <td class="num">${Math.round(h.funds||0).toLocaleString()}万</td>
         <td class="num">${h.rosterSize || '-'}</td>
       </tr>`;
     });
@@ -2432,7 +2432,7 @@ function renderScout() {
       </div>
       <div style="flex-shrink:0;text-align:right">
         <div style="font-size:32px;font-weight:900;color:#f0d048;line-height:1;font-family:'Bebas Neue',sans-serif;text-shadow:0 0 1px #000,1px 1px 0 rgba(0,0,0,0.6),-1px -1px 0 rgba(0,0,0,0.3)">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px;text-shadow:none">OVR</span></div>
-        <div style="font-size:22px;font-weight:800;color:#c44e8a;margin-top:6px;line-height:1">${Engine.scout.getSigningCost(c, G.orgPop || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
+        <div style="font-size:22px;font-weight:800;color:#c44e8a;margin-top:6px;line-height:1">${Math.round(Engine.scout.getSigningCost(c, G.orgPop || 0)).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
       </div>
     </div>`;
@@ -2542,7 +2542,7 @@ function renderScoutEvent() {
   };
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${G.funds.toLocaleString()}万</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${Math.round(G.funds).toLocaleString()}万</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
     
@@ -2735,7 +2735,7 @@ function renderSave() {
     html += `<div class="save-slot has-data">
       <div>
         <div class="save-slot-title">オートセーブ</div>
-        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${autoInfo.funds.toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${Math.round(autoInfo.funds).toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
       </div>
       <div class="btn-row">
         <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
@@ -2755,7 +2755,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">スロット ${i}</div>
-          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${info.funds.toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
+          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${Math.round(info.funds).toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">

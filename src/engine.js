@@ -78,6 +78,8 @@ const Engine = {
     dispOrgPop(v) { return Math.round(v || 0); },
     // v2.1: trust内部float→表示整数ヘルパー
     dispTrust(v) { return Math.round(v != null ? v : 50); },
+    // 汎用表示整数化ヘルパー — プレイヤーに見える数値は全てこれを通す
+    dispInt(v) { return Math.round(v || 0); },
     /** Pick N items from array using seeded shuffle (deterministic per season+quarter) */
     seededPick(arr, n, seed) {
       if (arr.length <= n) return [...arr];
@@ -2542,8 +2544,8 @@ const Engine = {
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
         rating: Math.round(playerBreakdown.rating),
-        baseScore: playerBreakdown.baseScore,
-        legacyScore: playerBreakdown.legacyScore,
+        baseScore: Math.round(playerBreakdown.baseScore),
+        legacyScore: Math.round(playerBreakdown.legacyScore),
         weightedOVR: playerBreakdown.weightedOVR,
         weightedPop: playerBreakdown.weightedPop,
         battlePt: bp.player,
@@ -2555,8 +2557,8 @@ const Engine = {
         entries.push({
           orgId: org.id, name: org.name,
           rating: Math.round(breakdown.rating),
-          baseScore: breakdown.baseScore,
-          legacyScore: breakdown.legacyScore,
+          baseScore: Math.round(breakdown.baseScore),
+          legacyScore: Math.round(breakdown.legacyScore),
           weightedOVR: breakdown.weightedOVR,
           weightedPop: breakdown.weightedPop,
           battlePt: bp[org.id],
@@ -4588,7 +4590,7 @@ const Engine = {
       const net = totalIncome - totalExpense;
       const newFunds = G.funds + net;
       const weeklyFinance = { income: totalIncome, expense: totalExpense, details, net };
-      const summary = `第${G.week}週: 収入${totalIncome}万 / 支出${totalExpense}万 = ${net >= 0 ? '+' : ''}${net}万 (残高: ${newFunds}万)`;
+      const summary = `第${G.week}週: 収入${Math.round(totalIncome)}万 / 支出${Math.round(totalExpense)}万 = ${net >= 0 ? '+' : ''}${Math.round(net)}万 (残高: ${Math.round(newFunds)}万)`;
 
       return { funds: newFunds, weeklyFinance, roster, summary, occHeatDelta, momentumDelta, orgPopPenalty, lockerRoomMorale: newLockerRoomMorale };
     }
@@ -5736,7 +5738,7 @@ const Engine = {
 
       const fee = Engine.transfer.calcFee(fighter, orgCfg);
       if (s.funds < fee) {
-        events.push(`❌ 資金不足（必要: ${fee}万, 残高: ${s.funds}万）`);
+        events.push(`❌ 資金不足（必要: ${fee}万, 残高: ${Math.round(s.funds)}万）`);
         return { state: s, events };
       }
 
@@ -5879,7 +5881,7 @@ const Engine = {
 
       // Check funds
       if (state.funds < totalCost) {
-        return { state, events: [`❌ 資金不足（必要: ${totalCost}万, 残高: ${state.funds}万）`] };
+        return { state, events: [`❌ 資金不足（必要: ${totalCost}万, 残高: ${Math.round(state.funds)}万）`] };
       }
 
       // Pre-determine result
@@ -6076,7 +6078,7 @@ const Engine = {
       }
 
       if (state.funds < fee) {
-        return { success: false, state, events: [`⚠ 資金不足（必要: ${fee}万、所持: ${Math.floor(state.funds)}万）`] };
+        return { success: false, state, events: [`⚠ 資金不足（必要: ${fee}万、所持: ${Math.round(state.funds)}万）`] };
       }
 
       // Create rental fighter on player roster
@@ -8079,9 +8081,9 @@ const Engine = {
         weekPhase: 'manage',
         draftComplete: true,
         gameLog: [
-          `🎉 新団体設立！ 初期資金${state.funds || 0}万でスタート。`,
-          `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。（契約金合計: ${totalCost}万）`,
-          `💰 残り資金: ${remainingFunds}万`,
+          `🎉 新団体設立！ 初期資金${Math.round(state.funds || 0)}万でスタート。`,
+          `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。（契約金合計: ${Math.round(totalCost)}万）`,
+          `💰 残り資金: ${Math.round(remainingFunds)}万`,
           `🏢 フリーエージェント${freeAgents.length}名がスカウト可能。`,
           `📊 業界${pRank}位からの挑戦が始まる。`,
           `👑 ${RIVAL_ORGS.find(o=>o.id==='org_s')?.name||'S級'} (S級) / 💫 ${RIVAL_ORGS.find(o=>o.id==='org_a')?.name||'A級'} (A級) / 🌙 ${RIVAL_ORGS.find(o=>o.id==='org_b')?.name||'B級'} (B級)`,
@@ -10582,7 +10584,7 @@ Engine.eventSystem = {
     const b2Pool = roster.filter(f => (f.trust != null ? f.trust : 50) < 40);
     if (b2Pool.length >= 2) candidates.push({ type: 'B2', w: 2, pool: b2Pool });
 
-    // B3: 他団体からの対抗戦 — orgPop > 20
+    // B3: 他団体からの挑戦状 — orgPop > 20
     if ((state.orgPop || 0) > 20) candidates.push({ type: 'B3', w: 2 });
 
     // B4: メディア密着取材 — orgPop > 25、取材中でない
@@ -10836,7 +10838,7 @@ Engine.eventSystem = {
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
 
-      // ── B3: 他団体からの対抗戦 ──────────────────────────────────────────
+      // ── B3: 挑戦状 ──────────────────────────────────────────
       case 'B3': {
         if (step === 0) {
           if (choiceIdx === 0) {
@@ -11469,9 +11471,9 @@ Engine.database = {
 // ══════════════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════════════
 //  sanitizeFloats: 浮動小数点誤差の蓄積を除去（tickWeek末尾で毎週実行）
-//  condition, trust, popularity, lockerRoomMorale, orgPop など繰り返し加減算される
-//  フィールドに IEEE754 の丸め誤差が蓄積する。小数第2位で丸めて表示上の
-//  「69.80000000000001」問題を根本解決する。計算精度への影響は無視できる。
+//  原則: 内部は浮動小数点OK、プレイヤーに見える数値は全て整数表示。
+//  funds/battlePointsは整数化、condition/trust/popularity等は小数第2位丸め。
+//  表示側でも防御的にMath.roundを適用し、二重ガードで浮動小数点漏れを根絶する。
 // ══════════════════════════════════════════════════════════════════════════════
 Engine.sanitizeFloats = function(G) {
   if (!G) return G;
@@ -11479,10 +11481,18 @@ Engine.sanitizeFloats = function(G) {
 
   // トップレベルフィールド
   G = { ...G,
+    funds: Math.round(G.funds || 0),
     orgPop: r2(G.orgPop),
     lockerRoomMorale: r2(G.lockerRoomMorale),
     attendanceMomentum: r2(G.attendanceMomentum),
   };
+
+  // battlePoints整数化
+  if (G.battlePoints) {
+    const bp = {};
+    for (const k in G.battlePoints) bp[k] = Math.round(G.battlePoints[k] || 0);
+    G = { ...G, battlePoints: bp };
+  }
 
   // ロスター全選手
   if (G.roster) {
