@@ -6611,7 +6611,11 @@ App.jtSkipMatch = function(roundIdx, matchIdx) {
 App.jtSkipAll = function() {
   // 全試合スキップ → 最終結果へ
   App._jtPreview.phase = 'finalResult';
-  Audio.bgm.playJingle('victory');
+  try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+  setTimeout(() => {
+    try { Audio.fileBgm.stop(); } catch(e) {}
+    Audio.bgm.playJingle('championship');
+  }, 900);
   renderJuniorTournamentResult();
 };
 
@@ -6660,7 +6664,12 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
     renderJuniorTournamentBracket();
   } else {
     jt.phase = 'finalResult';
-    Audio.bgm.playJingle('victory');
+    // 決勝後: BGMを止めてチャンピオンジングルを鳴らす
+    try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+    setTimeout(() => {
+      try { Audio.fileBgm.stop(); } catch(e) {}
+      Audio.bgm.playJingle('championship');
+    }, 900);
     renderJuniorTournamentResult();
   }
 };

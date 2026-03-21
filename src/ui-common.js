@@ -6732,12 +6732,65 @@ function renderJuniorTournamentMatchResult(ri, mi) {
     html += `</div>`;
   }
 
+  // 体力バー（決勝以外：勝者のコンディション推移を表示）
+  const isFinal = ri === jt.result.rounds.length - 1;
+  if (!isFinal) {
+    const winnerHp = match.winner === 'left' ? match.hpLeft : match.hpRight;
+    const hpCur = winnerHp ? winnerHp.final : 50;
+    const hpMax = winnerHp ? winnerHp.max : 100;
+    const beforePct = 100; // 試合前は100%
+    const afterDmgPct = Math.max(0, Math.round(hpCur / Math.max(1, hpMax) * 100));
+    const postCond = Math.max(20, Math.round(hpCur / Math.max(1, hpMax) * 80));
+    const recovery = Engine.juniorTournament.CONDITION_RECOVERY;
+    const afterRecPct = Math.min(100, postCond + recovery);
+    const dmgAmt = beforePct - afterDmgPct;
+    const barColor = v => v >= 80 ? '#2ecc71' : v >= 60 ? '#f39c12' : v >= 40 ? '#e74c3c' : '#8e44ad';
+    const pctColor = v => v >= 70 ? '#2ecc71' : v >= 50 ? '#f39c12' : '#e74c3c';
+    html += `<div class="jt-hp jt-su" style="animation-delay:.3s" id="jtHpBox">`;
+    html += `<div class="jt-hp-h"><div class="jt-hp-av"><img src="${getPortraitUrl(winner.id)}" alt="" onerror="this.style.opacity=0"></div>`;
+    html += `<div class="jt-hp-nm">${winner.name} の体調</div>`;
+    html += `<div class="jt-hp-pct" id="jtHpPct" style="color:${pctColor(beforePct)}">${beforePct}%</div></div>`;
+    html += `<div class="jt-hp-bar"><div class="jt-hp-fill" id="jtHpFill" style="width:${beforePct}%;background:${barColor(beforePct)};transition:width 1.2s cubic-bezier(.4,0,.2,1),background .3s"></div></div>`;
+    html += `<div class="jt-hp-lbl"><span>💥 ダメージ -${dmgAmt}%</span><span>💊 回復 +${recovery}%</span></div>`;
+    html += `</div>`;
+    // HP アニメーション: 減少 → 回復
+    setTimeout(() => {
+      const fill = document.getElementById('jtHpFill');
+      const pct = document.getElementById('jtHpPct');
+      if (!fill || !pct) return;
+      // Phase 1: ダメージ（減少）
+      fill.style.width = afterDmgPct + '%';
+      fill.style.background = barColor(afterDmgPct);
+      _jtAnimateCounter(beforePct, afterDmgPct, 1200, pct, pctColor);
+      // Phase 2: 回復
+      setTimeout(() => {
+        fill.style.transition = 'width 1s cubic-bezier(.16,1,.3,1),background .3s';
+        fill.style.width = afterRecPct + '%';
+        fill.style.background = barColor(afterRecPct);
+        _jtAnimateCounter(afterDmgPct, afterRecPct, 1000, pct, pctColor);
+      }, 2200);
+    }, 600);
+  }
+
   // ボタン
   html += `<div class="jt-bt jt-su" style="animation-delay:.4s"><button class="btn btn-gold" onclick="App.jtAdvanceAfterResult(${ri},${mi})">次へ →</button></div>`;
   html += `</div>`;
 
   box.innerHTML = html;
   overlay.classList.add('active');
+}
+
+// HP バーカウンターアニメーション
+function _jtAnimateCounter(from, to, dur, el, colorFn) {
+  const st = performance.now();
+  function tick(now) {
+    const p = Math.min(1, (now - st) / dur);
+    const v = Math.round(from + (to - from) * p);
+    el.textContent = v + '%';
+    el.style.color = colorFn(v);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 // ===== CHAMPION (V6: trophy → upper → CHAMPION → name → org → speech) =====
