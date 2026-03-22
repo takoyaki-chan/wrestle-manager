@@ -4575,13 +4575,20 @@ function _renderDbOrgCompare() {
     }
     const spotPicks = picks.slice(0, 3);
     if (spotPicks.length > 0) {
-      const categoryLabels = { growth: '要警戒', star: 'スター候補', youngThreat: '若手脅威' };
+      function getCategoryLabel(category, ovr) {
+        if (category === 'star') {
+          if (ovr >= 90) return 'エース級';
+          if (ovr >= 75) return '主力級';
+          return '人気先行';
+        }
+        return { growth: '要警戒', youngThreat: '若手脅威' }[category] || '';
+      }
       html += `<section class="db-cmp-panel db-cmp-spotlight">
         <h2 class="db-cmp-panel-title rival-accent">${rivalOrgName} 注目選手</h2>
         ${spotPicks.map(p => {
           const pUrl = getPortraitUrl(p.id);
           const pOvr = Engine.util.ov(p);
-          const spotData = { name: p.name, orgName: rivalOrgName, ovrGain: p.ovrGain || 0, pop: p.pop || Math.round(p.popularity || 0) };
+          const spotData = { name: p.name, orgName: rivalOrgName, ovrGain: p.ovrGain || 0, pop: p.pop || Math.round(p.popularity || 0), ovr: pOvr };
           const spotComment = pickText(KURODA_SPOTLIGHT[p.category] || []);
           const spotStr = typeof spotComment === 'function' ? spotComment(spotData) : (spotComment || '');
           const _scoutOnclick = `onclick="event.stopPropagation();showFighterPopup(${p.id},'ai:${_dbCompareTarget}')"`;
@@ -4593,7 +4600,7 @@ function _renderDbOrgCompare() {
             ${faceHtml}
             <div class="db-cmp-spotlight-info">
               <div class="db-cmp-spotlight-name">${_scoutName} <span style="font-size:12px;color:rgba(80,50,20,0.5);font-weight:400">OVR ${pOvr}${p.category === 'star' ? ' / 人気' + (p.pop || '') : p.category === 'growth' ? ' / +' + p.ovrGain : ''}</span></div>
-              <span class="db-cmp-spotlight-tag ${p.category}">${categoryLabels[p.category] || ''}</span>
+              <span class="db-cmp-spotlight-tag ${p.category}">${getCategoryLabel(p.category, pOvr)}</span>
               <div class="db-cmp-spotlight-comment">「${spotStr}」</div>
             </div>
           </div>`;
