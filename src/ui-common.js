@@ -6566,6 +6566,40 @@ function showTrialLimitMessage(featureName) {
   return true;
 }
 
+// ── 体験版終了メッセージ ─────────────────────────────────────────────────────
+function showTrialEndMessage() {
+  const overlay = document.getElementById('confirmOverlay');
+  const box = document.getElementById('confirmBox');
+  if (!overlay || !box) return;
+  box.innerHTML = `
+    <div style="text-align:center;padding:20px 10px">
+      <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:16px;letter-spacing:1px">
+        🎬 体験版をプレイいただき<br>ありがとうございました！
+      </div>
+      <div style="line-height:2;margin-bottom:20px;font-size:14px;color:var(--text-main)">
+        あなたの団体の物語は<br>まだ始まったばかりです。<br><br>
+        製品版ではシーズン4以降を<br>無制限にプレイできます。<br>
+        <span style="color:var(--gold)">セーブデータはそのまま引き継げます。</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+        <a href="https://booth.pm/" target="_blank" rel="noopener"
+           class="btn btn-gold" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center">
+          🛒 BOOTH で購入</a>
+        <a href="https://www.dlsite.com/" target="_blank" rel="noopener"
+           class="btn btn-gold" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center">
+          🛒 DLsite で購入</a>
+        <button class="btn" style="min-width:200px;margin-top:8px;background:rgba(200,190,170,0.08);color:var(--text-sub)"
+          onclick="document.getElementById('confirmOverlay').classList.remove('active')">
+          閉じる（引き続き閲覧可能）</button>
+      </div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6">
+        ※ 閉じた後もロスター閲覧・関係性マップ等は確認できます。<br>
+        ※ 週送り（次シーズン進行）はできません。
+      </div>
+    </div>`;
+  overlay.classList.add('active');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 契約更新交渉UI (contract-negotiation-event-spec v1.0)
 // careOverlay/careBox を再利用する3画面構成

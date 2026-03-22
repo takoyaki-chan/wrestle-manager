@@ -7823,6 +7823,11 @@ const Engine = {
         events.push('📅 オフシーズン第4週: 移籍ウィンドウ');
 
       } else if (offWeek >= 5) {
+        // ── 体験版シーズンゲート ──
+        if (typeof window !== 'undefined' && window.IS_TRIAL && s.season >= (window.TRIAL_MAX_SEASON || 3)) {
+          s = { ...s, offWeek, _trialEnd: true };
+          return { state: s, events: ['🎬 体験版の最終シーズンが終了しました。'] };
+        }
         // OffWeek 5: New season preparation — advance to next season
         // v0.95: Archive season stats before transition
         const oldSeason = s.season;
@@ -14712,15 +14717,43 @@ Engine.h2h = {
 
 // ── Engine.orgTimeline: ファイター所属団体履歴 ──────────
 Engine.orgTimeline = {
+  /** 履歴の連続重複を圧縮し、開始時点を保持する */
+  normalize(timeline = []) {
+    const normalized = [];
+    timeline.forEach(entry => {
+      if (!entry || !entry.orgId) return;
+      const clean = {
+        ...entry,
+        fromSeason: entry.fromSeason || 1,
+        fromWeek: entry.fromWeek || 1,
+      };
+      const last = normalized[normalized.length - 1];
+      if (last && last.orgId === clean.orgId) {
+        if (clean.toSeason != null) {
+          last.toSeason = clean.toSeason;
+          last.toWeek = clean.toWeek || 1;
+        } else {
+          delete last.toSeason;
+          delete last.toWeek;
+        }
+        return;
+      }
+      normalized.push(clean);
+    });
+    return normalized;
+  },
   /** 所属変更を記録（ファイターの新コピーを返す） */
   transfer(fighter, newOrgId, season, week) {
-    const timeline = [...(fighter.orgTimeline || [])];
-    if (timeline.length > 0) {
-      const last = { ...timeline[timeline.length - 1], toSeason: season, toWeek: week };
-      timeline[timeline.length - 1] = last;
+    const timeline = this.normalize(fighter.orgTimeline || []);
+    const last = timeline[timeline.length - 1];
+    if (last && last.orgId === newOrgId && !last.toSeason) {
+      return { ...fighter, orgTimeline: timeline };
+    }
+    if (last && !last.toSeason) {
+      timeline[timeline.length - 1] = { ...last, toSeason: season, toWeek: week };
     }
     timeline.push({ orgId: newOrgId, fromSeason: season, fromWeek: week });
-    return { ...fighter, orgTimeline: timeline };
+    return { ...fighter, orgTimeline: this.normalize(timeline) };
   },
   /** 2人が同時期に同じ団体にいたかを判定（現在同団体は除外） */
   wereColleagues(fighterA, fighterB) {

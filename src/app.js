@@ -1948,6 +1948,27 @@ const Storage = {
         }
         G = { ...G, _migrated_h2h_orgTimeline_v1: true };
       }
+      if (!G._migrated_orgTimeline_v2) {
+        const normalizeTimeline = fighters => (fighters || []).map(f =>
+          f?.orgTimeline ? { ...f, orgTimeline: Engine.orgTimeline.normalize(f.orgTimeline) } : f
+        );
+        G = {
+          ...G,
+          roster: normalizeTimeline(G.roster || []),
+          freeAgents: normalizeTimeline(G.freeAgents || []),
+          retiredFighters: normalizeTimeline(G.retiredFighters || []),
+          hallOfFame: normalizeTimeline(G.hallOfFame || []),
+          _migrated_orgTimeline_v2: true,
+        };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: normalizeTimeline(od.roster || []) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+      }
       if (!G._migrated_growthLog) {
         G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
       }
@@ -2078,6 +2099,7 @@ const Storage = {
   },
 
   autoSave() {
+    if (window.IS_TRIAL) return; // 体験版: オートセーブ無効（手動1スロットのみ）
     if (G.weekPhase === 'gameover') return; // ゲームオーバー時は上書きしない
     try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { console.warn('[WM] オートセーブ失敗:', e.message); }
   },
@@ -2315,8 +2337,8 @@ const App = {
       .map(id => { const url = getPortraitUrl(id); return url ? `<img src="${url}" alt="">` : ''; })
       .join('');
 
-    // Show CONTINUE button if autosave exists
-    const autoInfo = Storage.getAutoSaveInfo();
+    // Show CONTINUE button if autosave exists (体験版ではオートセーブ無効)
+    const autoInfo = window.IS_TRIAL ? null : Storage.getAutoSaveInfo();
     const contBtn = document.getElementById('titleContinueBtn');
     if (autoInfo) {
       contBtn.style.display = '';
@@ -4826,6 +4848,15 @@ const App = {
     dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // ── 体験版シーズンゲート ──
+    if (G._trialEnd) {
+      const { _trialEnd: _, ...cleanG } = G;
+      G = cleanG;
+      Storage.autoSave();
+      showTrialEndMessage();
+      refreshAll();
+      return;
+    }
     // 契約更新交渉フェーズ
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
@@ -5161,6 +5192,15 @@ const App = {
     dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // ── 体験版シーズンゲート ──
+    if (G._trialEnd) {
+      const { _trialEnd: _, ...cleanG } = G;
+      G = cleanG;
+      Storage.autoSave();
+      showTrialEndMessage();
+      refreshAll();
+      return;
+    }
     // 契約更新交渉フェーズ
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
@@ -5319,7 +5359,6 @@ const App = {
 
   // v2.1: エンディング演出チェック（初クリア時のみ、1回限り）
   _checkAndShowEnding(onDone) {
-    if (window.IS_TRIAL) { onDone(); return; } // 体験版: エンディングをスキップ
     if (G.endingCleared && G.endingClearedSeason === G.season - 1 && !G.endingShown) {
       G = { ...G, endingShown: true };
       const data = Engine.ending.buildClearData(G);
@@ -5331,10 +5370,6 @@ const App = {
 
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
-    if (window.IS_TRIAL) { // 体験版: 表彰式・殿堂入りをスキップ
-      App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll()));
-      return;
-    }
     const pendingAwards = G.pendingAwards;
     if (!pendingAwards) { App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())); return; }
     // pendingAwards は transient field — 保存前にクリーン

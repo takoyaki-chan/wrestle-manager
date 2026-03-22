@@ -2812,28 +2812,31 @@ function renderSave() {
   let html = '';
 
   // Autosave info
-  const autoInfo = getAutoSaveInfo();
-  html += '<div style="margin-bottom:16px">';
-  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚡ オートセーブ</div>';
-  if (autoInfo) {
-    html += `<div class="save-slot has-data">
-      <div>
-        <div class="save-slot-title">オートセーブ</div>
-        <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${Math.round(autoInfo.funds).toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
-        <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">📥 書出</button>
-      </div>
-    </div>`;
-  } else {
-    html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
+  if (!window.IS_TRIAL) {
+    const autoInfo = getAutoSaveInfo();
+    html += '<div style="margin-bottom:16px">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚡ オートセーブ</div>';
+    if (autoInfo) {
+      html += `<div class="save-slot has-data">
+        <div>
+          <div class="save-slot-title">オートセーブ</div>
+          <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${Math.round(autoInfo.funds).toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
+          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">📥 書出</button>
+        </div>
+      </div>`;
+    } else {
+      html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
+    }
+    html += '</div>';
   }
-  html += '</div>';
 
   // Manual save slots
+  const maxSlots = window.IS_TRIAL ? 1 : SAVE_SLOTS;
   html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">💾 手動セーブスロット</div>';
-  for (let i = 1; i <= SAVE_SLOTS; i++) {
+  for (let i = 1; i <= maxSlots; i++) {
     const info = getSaveInfo(i);
     if (info) {
       html += `<div class="save-slot has-data">
@@ -2856,6 +2859,17 @@ function renderSave() {
           <div class="save-slot-meta">空きスロット</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">セーブ</button>
+      </div>`;
+    }
+  }
+  // 体験版: ロックされたスロット表示
+  if (window.IS_TRIAL) {
+    for (let i = maxSlots + 1; i <= SAVE_SLOTS; i++) {
+      html += `<div class="save-slot" style="opacity:0.5">
+        <div>
+          <div class="save-slot-title" style="color:var(--text-dim)">🔒 スロット ${i}</div>
+          <div class="save-slot-meta">製品版で解放されます</div>
+        </div>
       </div>`;
     }
   }
@@ -3030,13 +3044,6 @@ function renderDatabase() {
 
   const el = document.getElementById('databaseContent');
   if (!el) return;
-  if (window.IS_TRIAL) {
-    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2">
-      🔒 データベースは製品版で解放されます<br>
-      <span style="font-size:12px">DLsite / BOOTH で製品版をチェックしてください</span></div>`;
-    return;
-  }
-
   // Toggle relmap-active class on panel
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);

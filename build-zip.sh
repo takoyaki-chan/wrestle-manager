@@ -7,7 +7,8 @@
 
 set -e
 
-VERSION="v1.0"
+VERSION="1.0"
+TRIAL_VERSION="v2"
 
 # ── フラグ解析 ──────────────────────────────────────────────────────────────
 IS_TRIAL_MODE=false
@@ -15,12 +16,12 @@ ZIP_SUFFIX=""
 
 for arg in "$@"; do
   case $arg in
-    --trial)   IS_TRIAL_MODE=true;  ZIP_SUFFIX="_Trial" ;;
+    --trial)   IS_TRIAL_MODE=true;  ZIP_SUFFIX="_Trial_${TRIAL_VERSION}" ;;
     --release) IS_TRIAL_MODE=false; ZIP_SUFFIX="" ;;
   esac
 done
 
-DIST_NAME="wrestle-manager-${VERSION}${ZIP_SUFFIX}"
+DIST_NAME="WrestleManager_${VERSION}${ZIP_SUFFIX}"
 DIST_DIR="dist/${DIST_NAME}"
 ZIP_NAME="${DIST_NAME}.zip"
 
@@ -40,7 +41,7 @@ mkdir -p "${DIST_DIR}/src" "${DIST_DIR}/image" "${DIST_DIR}/bgm"
 echo "📦 ゲームファイルをコピー中..."
 cp src/index.html src/data.js src/engine.js src/app.js \
    src/ui-common.js src/ui-render.js src/victory-lines.js \
-   src/battle-engine.html \
+   src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
    "${DIST_DIR}/src/"
 cp portrait-map.js "${DIST_DIR}/"
 
@@ -68,7 +69,7 @@ cp bgm/* "${DIST_DIR}/bgm/" 2>/dev/null || true
 
 # ── ゲーム起動用ショートカット＋README ─────────────────────────────────────────
 echo "📝 起動ファイル・README を生成中..."
-cat > "${DIST_DIR}/ゲームスタート.html" << 'REDIRECT_EOF'
+cat > "${DIST_DIR}/START.html" << 'REDIRECT_EOF'
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=src/index.html"><title>Wrestle Manager</title></head>
 <body style="background:#1a1a2e;color:#eee;font-family:sans-serif;text-align:center;padding-top:100px">
@@ -76,13 +77,24 @@ cat > "${DIST_DIR}/ゲームスタート.html" << 'REDIRECT_EOF'
 </body></html>
 REDIRECT_EOF
 
+# スタートガイドをコピー
+if [ -f "../WMポートレート/wm-guide.html" ]; then
+  cp "../WMポートレート/wm-guide.html" "${DIST_DIR}/GUIDE.html"
+  echo "📖 スタートガイドを追加しました"
+elif [ -f "wm-guide.html" ]; then
+  cp "wm-guide.html" "${DIST_DIR}/GUIDE.html"
+  echo "📖 スタートガイドを追加しました"
+else
+  echo "⚠️  wm-guide.html が見つかりません（スキップ）"
+fi
+
 cat > "${DIST_DIR}/README.txt" << 'README_EOF'
 ========================================
   Wrestle Manager — 遊び方
 ========================================
 
 ■ 起動方法
-  「ゲームスタート.html」をダブルクリックしてください。
+  「START.html」をダブルクリックしてください。
   ブラウザが開いてゲームが始まります。
 
   うまく開かない場合は、src フォルダ内の
