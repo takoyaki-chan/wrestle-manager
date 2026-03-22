@@ -766,6 +766,35 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ace-name-bar .ace-side.right{text-align:right}
 /* ── VS区切り線 ── */
 .db-cmp-vs-divider{height:1px;width:60%;margin:4px auto;background:linear-gradient(90deg, transparent, #8b1a1a, transparent)}
+/* ── 見せ場パッチ: ダーク＋発光演出 ── */
+/* §1 エース対決アリーナ — ダーク背景＋赤照明＋VS発光 */
+.db-cmp-match-featured .ace-arena{background:linear-gradient(180deg, #2a1008 0%, #1a0a00 60%, #0a0400 100%)}
+.db-cmp-match-featured .ace-arena::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 80%, rgba(200,40,40,0.15) 0%, transparent 60%);z-index:1}
+.db-cmp-match-featured .ace-arena::after{height:4px;background:linear-gradient(90deg, #d4a843, #c22020, #d4a843);z-index:2}
+.db-cmp-match-featured .ace-vs-center{background:radial-gradient(ellipse, rgba(10,4,0,0.6) 0%, transparent 70%)}
+.db-cmp-match-featured .ace-vs-text{font-size:48px;color:#c22020;letter-spacing:4px;text-shadow:0 0 30px rgba(200,40,40,0.6),0 0 60px rgba(200,40,40,0.3),2px 2px 0 rgba(0,0,0,0.5)}
+.db-cmp-match-featured .ace-vs-metrics{color:rgba(255,255,255,0.6);text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+.db-cmp-match-featured .ace-char-fallback{color:rgba(255,255,255,0.25)}
+.ace-name-bar{background:linear-gradient(90deg,rgba(154,112,32,0.15),rgba(139,26,26,0.1),rgba(90,40,128,0.12))}
+/* §2 相性グレードボックス — 赤ベタ塗り白文字 */
+.db-cmp-headline-grade{background:#8b1a1a;border-radius:8px;padding:12px 18px}
+.db-cmp-headline-grade .grade-label{color:rgba(255,255,255,0.7)}
+.db-cmp-headline-grade .grade-value{font-size:42px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.db-cmp-headline-grade .grade-desc{color:rgba(255,255,255,0.8)}
+/* §3 No.2・No.3 アバター — ダーク＋グロウ */
+.db-cmp-match-avatar.player{background:linear-gradient(135deg, #5a4020, #3a2810);border:2px solid #9a7020;box-shadow:0 0 8px rgba(154,112,32,0.3)}
+.db-cmp-match-avatar.rival{border:2px solid rgba(255,255,255,0.25);box-shadow:0 0 8px rgba(106,56,144,0.3)}
+/* §4 注目選手アバター — ダーク＋グロウ＋拡大 */
+.db-cmp-spotlight-face{width:52px;height:52px;border:2px solid #6a3890;box-shadow:0 0 10px rgba(106,56,144,0.25)}
+/* §5 バッジ・タグ — ベタ塗り白文字 */
+.db-cmp-spotlight-tag.growth,.db-cmp-spotlight-tag.youngThreat{background:#8b1a1a;color:#fff;border-color:#8b1a1a}
+.db-cmp-spotlight-tag.star{background:#9a7020;color:#fff;border-color:#9a7020}
+.db-cmp-badge.bad{background:#8b1a1a;color:#fff;border-color:#8b1a1a}
+.db-cmp-badge.good{background:#1a7a50;color:#fff;border-color:#1a7a50}
+.db-cmp-badge.warn{background:#9a7020;color:#fff;border-color:#9a7020}
+.db-cmp-role-chip{background:#8b1a1a;color:#fff;font-weight:900;letter-spacing:1px;border-color:#8b1a1a}
+/* §6 通算成績 — 赤太字 */
+.db-cmp-war-wl{font-weight:900;color:#8b1a1a}
 /* ── responsive追加 ── */
 @media(max-width:900px){.db-cmp-versus,.db-cmp-main-grid,.db-cmp-analysis,.db-cmp-lower-grid,.db-cmp-match-grid,.db-cmp-org-summary-row{grid-template-columns:1fr}.db-cmp-vs-mark{order:-1;padding:0}.db-cmp-match-faceoff{grid-template-columns:1fr;justify-items:center}.db-cmp-match-side,.db-cmp-match-side.right{width:100%;justify-content:flex-start;text-align:left}.db-cmp-match-center{order:-1}.db-cmp-headline{flex-direction:column;text-align:center}.db-cmp-headline-reporter{flex-direction:column;align-items:center}.db-cmp-headline-grade{margin-top:8px}.db-cmp-editorial{flex-direction:column;align-items:center}.db-cmp-war-breakdown{grid-template-columns:1fr}.ace-arena{height:180px}.ace-char{width:120px;height:180px}}
 @media(max-width:600px){.db-cmp-mini-stats{grid-template-columns:repeat(2,1fr)}.db-cmp-fighter-row{grid-template-columns:1fr;gap:6px}.db-cmp-fighter.right{flex-direction:row;text-align:left}.db-cmp-match-avatar{width:60px;height:60px}.db-cmp-match-avatar.lg{width:96px;height:96px}.db-cmp-match-meta strong{font-size:16px}.db-cmp-match-card .db-cmp-match-meta strong{font-size:14px}.db-cmp-org-summary-grade{min-width:0}.db-cmp-kuroda-face{width:40px;height:40px}.db-cmp-headline-quote{font-size:13px}.db-cmp-spotlight-pick{flex-direction:column;align-items:center;text-align:center}.ace-arena{height:150px}.ace-char{width:100px;height:150px}.ace-vs-text{font-size:24px}.db-cmp-newspaper-header h1{font-size:16px}}

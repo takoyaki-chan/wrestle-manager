@@ -4391,7 +4391,7 @@ function _renderDbOrgCompare() {
           </div>
         </div>
         <div class="db-cmp-match-side right">
-          <div class="db-cmp-match-avatar rival" style="background:linear-gradient(180deg,${rc},${hexDim(rc, 0.4)});cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${rAvatar}</div>
+          <div class="db-cmp-match-avatar rival" style="background:linear-gradient(135deg,${hexDim(rc, 0.5)},${hexDim(rc, 0.25)});cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${rAvatar}</div>
           <div class="db-cmp-match-meta">
             <strong style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${m.rival.name}</strong>
             <span>${d.rivalName}</span>
@@ -4556,7 +4556,7 @@ function _renderDbOrgCompare() {
           const _scoutOnclick = `onclick="event.stopPropagation();showFighterPopup(${p.id},'ai:${_dbCompareTarget}')"`;
           const faceHtml = pUrl
             ? `<div class="db-cmp-spotlight-face" ${_scoutOnclick} style="cursor:pointer"><img src="${pUrl}" alt=""></div>`
-            : `<div class="db-cmp-spotlight-face" ${_scoutOnclick} style="cursor:pointer;background:${hexDim(rc, 0.3)};display:grid;place-items:center;font-size:16px;font-weight:900;color:#fff">${p.name.charAt(0)}</div>`;
+            : `<div class="db-cmp-spotlight-face" ${_scoutOnclick} style="cursor:pointer;background:linear-gradient(135deg,${hexDim(rc, 0.35)},${hexDim(rc, 0.18)});display:grid;place-items:center;font-size:16px;font-weight:900;color:#fff">${p.name.charAt(0)}</div>`;
           const _scoutName = `<span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${p.id},'ai:${_dbCompareTarget}')">${p.name}</span>`;
           return `<div class="db-cmp-spotlight-pick">
             ${faceHtml}
