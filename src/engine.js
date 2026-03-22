@@ -2141,7 +2141,7 @@ const Engine = {
         Grappler:   [0.28, 0.22, 0.28, 0.22], // PW/TEほんのり
         Striker:    [0.25, 0.27, 0.25, 0.23], // SP/TEちょい高め
         Submission: [0.22, 0.22, 0.30, 0.26], // TEやや得意
-        Speed:      [0.22, 0.30, 0.22, 0.26], // SPやや得意
+        Aerial:     [0.22, 0.30, 0.22, 0.26], // SPやや得意
         Allround:   [0.25, 0.25, 0.25, 0.25], // 完全均等
         Brawler:    [0.28, 0.22, 0.22, 0.28], // PW/STほんのり
       };
@@ -8712,14 +8712,14 @@ Engine.awards = {
   /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制） */
   calcHofPoints(rec) {
     const titlePt = (rec.totalTitleWins || 0) + (rec.totalDefenses || 0);
-    const juniorPt = (rec.juniorTournamentWins || 0) * 7;
-    const ppvPt = (rec.ppvMainEventWins || 0) * 9;
+    const juniorPt = (rec.juniorTournamentWins || 0) * 6;
+    const ppvPt = (rec.ppvMainEventWins || 0) * 7;
     return titlePt + juniorPt + ppvPt;
   },
   getHofLevel(points) {
-    if (points >= 25) return 3; // ★★★ レジェンド
-    if (points >= 18) return 2; // ★★ ゴールド殿堂
-    if (points >= 12) return 1; // ★ 殿堂入り
+    if (points >= 35) return 3; // ★★★ レジェンド
+    if (points >= 22) return 2; // ★★ ゴールド殿堂
+    if (points >= 15) return 1; // ★ 殿堂入り
     return 0;
   },
 
@@ -8790,7 +8790,7 @@ Engine.awards = {
     const wins = rec.totalTitleWins || 0;
     const jt = rec.juniorTournamentWins || 0;
     const ppv = rec.ppvMainEventWins || 0;
-    const pts = (wins) + defs + jt * 7 + ppv * 9;
+    const pts = (wins) + defs + jt * 6 + ppv * 7;
     const level = Engine.awards.getHofLevel(pts);
     // 1度の獲得で最大防衛数を推定（history があれば正確に）
     let maxSingleReign = 0;
@@ -8890,7 +8890,7 @@ Engine.awards = {
       .filter(f => {
         const rec = f.careerRecord;
         if (!rec) return false;
-        return Engine.awards.calcHofPoints(rec) >= 12;
+        return Engine.awards.calcHofPoints(rec) >= 15;
       })
       .map(f => Engine.awards._buildHofEntry(f, 'player', state.orgName || 'あなたの団体', state));
   },
@@ -8901,7 +8901,7 @@ Engine.awards = {
       .filter(f => {
         const rec = f.careerRecord;
         if (!rec) return false;
-        return Engine.awards.calcHofPoints(rec) >= 12;
+        return Engine.awards.calcHofPoints(rec) >= 15;
       })
       .map(f => Engine.awards._buildHofEntry(f, orgId, orgName, state));
   },
@@ -8917,7 +8917,7 @@ Engine.awards = {
     const safeInductees = inductees.map(h => {
       if (h.hofPoints != null && h.hofLevel != null) return h;
       const pts = h.hofPoints != null ? h.hofPoints
-        : (h.titleReigns || 0) + (h.totalDefenses || 0) + (h.juniorTournamentWins || 0) * 7 + (h.ppvMainEventWins || 0) * 9;
+        : (h.titleReigns || 0) + (h.totalDefenses || 0) + (h.juniorTournamentWins || 0) * 6 + (h.ppvMainEventWins || 0) * 7;
       return { ...h, hofPoints: pts, hofLevel: Engine.awards.getHofLevel(pts) };
     });
     const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };

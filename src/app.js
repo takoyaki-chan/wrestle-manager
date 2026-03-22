@@ -2002,8 +2002,8 @@ const Storage = {
       if (!G._migrated_allHallOfFame_v2) {
         const _recalcHof = entry => {
           const pts = (entry.titleReigns || 0) + (entry.totalDefenses || 0)
-            + (entry.juniorTournamentWins || 0) * 7 + (entry.ppvMainEventWins || 0) * 9;
-          const lv = pts >= 25 ? 3 : pts >= 18 ? 2 : pts >= 12 ? 1 : 0;
+            + (entry.juniorTournamentWins || 0) * 6 + (entry.ppvMainEventWins || 0) * 7;
+          const lv = pts >= 35 ? 3 : pts >= 22 ? 2 : pts >= 15 ? 1 : 0;
           return { ...entry, hofPoints: pts, hofLevel: lv };
         };
         const allHof = G.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] };

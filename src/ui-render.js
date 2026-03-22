@@ -3835,11 +3835,10 @@ function _renderDbHallOfFame() {
     html += `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
       <div style="font-size:40px;margin-bottom:12px">🏅</div>
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント12pt以上の選手が引退時に殿堂入りします。<br>
+      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
       タイトル獲得 = 各1pt ／ タイトル防衛 = 各1pt<br>
-      ジュニア優勝 = 7pt ／ PPV GRAND FINAL = 9pt<br><br>
-      12pt = ★ 殿堂入り ／ 18pt = ★★ ゴールド殿堂 ／ 25pt = ★★★ レジェンド
+      ジュニア優勝 = 6pt ／ PPV GRAND FINAL = 7pt
       </span></div>
     </div>`;
     return html;
