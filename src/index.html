@@ -542,11 +542,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-hof-sort-bar{display:flex;gap:6px;align-items:center;margin-bottom:12px}
 .db-hof-sort-btn{background:none;border:1px solid rgba(200,190,170,0.08);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--text-dim);cursor:pointer}
 .db-hof-sort-btn.active{border-color:var(--text-sub);color:var(--text-sub)}
-.db-hof-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.db-hof-card{background:rgba(200,190,170,0.03);border:2px solid rgba(200,190,170,0.08);border-radius:8px;padding:10px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.db-hof-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
+.db-hof-card{width:130px;background:rgba(200,190,170,0.03);border:2px solid rgba(200,190,170,0.08);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
 .db-hof-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3);border-color:rgba(200,190,170,0.25)}
+.db-hof-card.legend-glow{box-shadow:0 0 12px rgba(243,156,18,0.25)}
 .db-hof-info{flex:1;min-width:0}
-.db-hof-name{font-weight:700;font-size:14px;margin-bottom:2px}
+.db-hof-name{font-weight:700;font-size:13px;margin-bottom:2px}
 .db-hof-row{font-size:11px;color:var(--text-sub);line-height:1.6}
 /* 詳細ポップアップ */
 .db-hof-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}

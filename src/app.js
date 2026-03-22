@@ -2014,6 +2014,11 @@ const Storage = {
         G = { ...G, allHallOfFame: fixedHof, hallOfFame: fixedHof.player, _migrated_allHallOfFame_v2: true };
       }
 
+      // 修正D: battleWinsTotal 初期化マイグレーション
+      if (!G.battleWinsTotal) {
+        G = { ...G, battleWinsTotal: { player: 0, org_s: 0, org_a: 0, org_b: 0 } };
+      }
+
       // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
         const existing = new Set((G.matchupLog || []).map(e => {
@@ -6260,9 +6265,18 @@ const App = {
       // F2: Track war victories for negotiation bonus
       const wv = [...(G.warVictories || [])];
       if (!wv.includes(ev.opponentOrgId)) wv.push(ev.opponentOrgId);
-      G = { ...G, warVictories: wv };
+      // 修正D: 対抗戦通算勝利を記録（レガシーpt計算用）
+      const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      bwt.player = (bwt.player || 0) + 1;
+      G = { ...G, warVictories: wv, battleWinsTotal: bwt };
     }
-    else { evStats.eventsLost = (evStats.eventsLost || 0) + 1; }
+    else {
+      evStats.eventsLost = (evStats.eventsLost || 0) + 1;
+      // 修正D: AI勝利側も記録
+      const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+      bwt[ev.opponentOrgId] = (bwt[ev.opponentOrgId] || 0) + 1;
+      G = { ...G, battleWinsTotal: bwt };
+    }
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
 
     // h2h記録: 対抗戦

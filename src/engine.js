@@ -2118,7 +2118,7 @@ const Engine = {
     getCharGrowthMult(G, charId, stat) {
       const coach = Engine.coach.getCharCoach(G, charId);
       if (!coach) return 1.0;
-      let mult = COACH_RANKS[coach.teaching] || 1.0;
+      let mult = coach.gMult || 1.0;
       // Style match bonus (specialist +0.08 / allround +0.05)
       const char = G.roster.find(c => c.id === charId);
       if (char) {
@@ -2128,11 +2128,7 @@ const Engine = {
           mult += COACH_STYLE_BONUS.specialist;
         }
       }
-      // Trait: 新人育成 — OVR≤60 で追加倍率
-      const traitDef = COACH_TRAIT_DEFS[coach.trait];
-      if (traitDef && traitDef.growthMult && char && Engine.util.ov(char) <= (traitDef.ovrThreshold || 60)) {
-        mult *= traitDef.growthMult;
-      }
+      // v0.2: 特殊能力の成長効果は Phase 2 で実装
       return mult;
     },
     // Stat selection (MN は試合経験で成長するため練習対象から除外)
@@ -2142,12 +2138,12 @@ const Engine = {
         || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === charId);
       const style = char ? char.style : 'Allround';
       const STYLE_WEIGHTS = {
-        Striker:    [0.35, 0.35, 0.15, 0.15], // pw sp te st
-        Grappler:   [0.35, 0.15, 0.35, 0.15],
-        Speed:      [0.10, 0.50, 0.15, 0.25],
-        Submission: [0.10, 0.15, 0.40, 0.35],
-        Brawler:    [0.40, 0.10, 0.15, 0.35],
-        Allround:   [0.25, 0.25, 0.25, 0.25],
+        Grappler:   [0.28, 0.22, 0.28, 0.22], // PW/TEほんのり
+        Striker:    [0.25, 0.27, 0.25, 0.23], // SP/TEちょい高め
+        Submission: [0.22, 0.22, 0.30, 0.26], // TEやや得意
+        Speed:      [0.22, 0.30, 0.22, 0.26], // SPやや得意
+        Allround:   [0.25, 0.25, 0.25, 0.25], // 完全均等
+        Brawler:    [0.28, 0.22, 0.22, 0.28], // PW/STほんのり
       };
       const weights = STYLE_WEIGHTS[style] || STYLE_WEIGHTS.Allround;
       const stats = ['pw','sp','te','st'];
@@ -2159,59 +2155,14 @@ const Engine = {
       }
       return stats[3];
     },
-    // §1.5 引き出し上手: MQ bonus
-    getMQBonusForMatch(G, leftId, rightId) {
-      let bonus = 0;
-      Engine.coach.getHiredCoaches(G).forEach(c => {
-        const td = COACH_TRAIT_DEFS[c.trait];
-        if (!td || !td.mqBonus) return;
-        const assigned = Engine.coach.getCoachAssignees(G, c.id);
-        if (assigned.includes(leftId) || assigned.includes(rightId)) bonus += td.mqBonus;
-      });
-      return bonus;
-    },
-    // Legacy stub (no pop specialty in new system)
+    // v0.2: 旧trait関数はスタブ化（Phase 2 で新能力システムとして再実装）
+    getMQBonusForMatch(G, leftId, rightId) { return 0; },
     getPopBonusForChar(G, charId) { return 0; },
-    // §1.5 コンディショニング: condition recovery bonus
-    getCondBonus(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach) return 0;
-      const td = COACH_TRAIT_DEFS[coach.trait];
-      return (td && td.condDrain) ? Math.abs(td.condDrain) : 0;
-    },
-    // §1.5 コンディショニング: injury chance multiplier
-    getInjuryMult(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach) return 1.0;
-      const td = COACH_TRAIT_DEFS[coach.trait];
-      return (td && td.injuryMult) ? td.injuryMult : 1.0;
-    },
-    // §1.5 実戦主義: match growth bonus
-    getMatchGrowthBonus(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach) return 0;
-      const td = COACH_TRAIT_DEFS[coach.trait];
-      return (td && td.matchGrowthBonus) || 0;
-    },
-    // §1.5 ベテラン調整: decay reduction for OVR≥80
-    getDecayReduction(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
-      if (!coach) return 0;
-      const td = COACH_TRAIT_DEFS[coach.trait];
-      if (!td || !td.decayReduction) return 0;
-      const char = G.roster.find(c => c.id === charId);
-      if (!char || Engine.util.ov(char) < (td.ovrThreshold || 80)) return 0;
-      return td.decayReduction;
-    },
-    // §1.5 人脈持ち: scout candidate bonus
-    getScoutBonus(G) {
-      let bonus = 0;
-      Engine.coach.getHiredCoaches(G).forEach(c => {
-        const td = COACH_TRAIT_DEFS[c.trait];
-        if (td && td.scoutBonus) bonus += td.scoutBonus;
-      });
-      return bonus;
-    },
+    getCondBonus(G, charId) { return 0; },
+    getInjuryMult(G, charId) { return 1.0; },
+    getMatchGrowthBonus(G, charId) { return 0; },
+    getDecayReduction(G, charId) { return 0; },
+    getScoutBonus(G) { return 0; },
     // §1.6 orgPop-linked coach slots
     getMaxCoaches(G) {
       const orgPop = G.orgPop || 0;
@@ -2508,19 +2459,30 @@ const Engine = {
       return totalWeight > 0 ? total / totalWeight : 0;
     },
     calcLegacyScore(state, orgId) {
-      const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
-      const caps = cfg.legacyCapByTier || { S: 30, A: 20, B: 10, player: 50 };
-      const tierMap = { org_s: 'S', org_a: 'A', org_b: 'B' };
-      if (orgId !== 'player') {
-        // NPC団体: ティア別固定値
-        const tier = tierMap[orgId] || 'B';
-        return caps[tier] || 10;
-      }
-      // プレイヤー団体: hallOfFameベース
-      const hofList = state.hallOfFame || [];
-      const per = cfg.hallOfFameLegacyPerInductee || 10;
-      const cap = caps.player || 50;
-      return Math.min(cap, hofList.length * per);
+      const allHof = state.allHallOfFame || {};
+      const hofList = orgId === 'player'
+        ? (allHof.player || state.hallOfFame || [])
+        : (allHof[orgId] || []);
+
+      // 初期値（団体の既存の格）
+      const BASE_LEGACY = { player: 0, org_s: 50, org_a: 30, org_b: 15 };
+      const base = BASE_LEGACY[orgId] || 0;
+
+      // 殿堂入りポイント（ランク別重み付け）
+      let hofPt = 0;
+      hofList.forEach(h => {
+        const level = h.hofLevel || 1;
+        if (level >= 3) hofPt += 13;      // ★★★ レジェンド
+        else if (level >= 2) hofPt += 10;  // ★★ ゴールド
+        else hofPt += 8;                   // ★ 殿堂入り
+      });
+
+      // 対抗戦通算勝利ポイント（5勝ごとに1pt）
+      const battleWins = (state.battleWinsTotal || {})[orgId] || 0;
+      const battlePt = Math.floor(battleWins / 5);
+
+      const cap = 50;
+      return Math.min(cap, base + hofPt + battlePt);
     },
     calcRosterPower(roster) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
@@ -3007,17 +2969,18 @@ const Engine = {
           if (coach.grade !== grade) return false;
           return (orgPop || 0) >= (coach.minOrgPop || 0);
         }).forEach(coach => {
-          const traitDef = COACH_TRAIT_DEFS[coach.trait] || {};
           let score = 100 - (idx * 18);
-          score += (COACH_RANKS[coach.teaching] || 1) * 10;
+          score += (coach.gMult || 1.0) * 10;
           if (coach.style === 'Allround') score += 2;
-          if (traitDef.growthMult) score += 6;
-          if (traitDef.matchGrowthBonus) score += 5;
-          if ((traitDef.condDrain || 0) < 0) score += 4;
-          if ((traitDef.injuryMult || 1) < 1) score += 3;
-          if (traitDef.mqBonus) score += 4;
-          if (traitDef.decayReduction) score += 2;
-          if (traitDef.scoutBonus) score -= 8;
+          // v0.2: abilities ベースのスコアリング
+          const abs = coach.abilities || [];
+          if (abs.some(a => a === '新人育成')) score += 4;
+          if (abs.some(a => a.startsWith('ステ特化'))) score += 3;
+          if (abs.some(a => a === '怪我耐性')) score += 3;
+          if (abs.some(a => a === '人心掌握' || a === '闘志注入')) score += 2;
+          if (abs.some(a => a === 'スター製造')) score += 2;
+          if (abs.some(a => a === '限界突破' || a === '弱点克服')) score += 5;
+          if (abs.some(a => a === '延命術' || a === '才能開花')) score += 3;
           score += Engine.rng.float(rng);
           if (!best || score > best.score) best = { id: coach.id, score };
         });
@@ -3034,7 +2997,6 @@ const Engine = {
 
     _getAIFighterCoachFit(fighter, coach) {
       if (!fighter || !coach) return -Infinity;
-      const traitDef = COACH_TRAIT_DEFS[coach.trait] || {};
       const capSource = fighter.trainCap || fighter.pot || {};
       const remaining = ['pw', 'sp', 'te', 'st'].reduce((sum, stat) => {
         const cap = capSource[stat] || fighter[stat] || 0;
@@ -3043,14 +3005,13 @@ const Engine = {
       let score = Engine.rival._getAIFighterDevelopmentScore(fighter);
       if (coach.style === fighter.style) score += 8;
       else if (coach.style === 'Allround') score += 4;
-      if (traitDef.growthMult) score += (fighter.age || 99) <= 21 ? 6 : 2;
-      if (traitDef.matchGrowthBonus) score += Engine.util.ov(fighter) >= 55 ? 5 : 2;
-      if ((traitDef.condDrain || 0) < 0 || (traitDef.injuryMult || 1) < 1) {
-        score += Math.max(0, 80 - (fighter.condition || 70)) * 0.08;
-      }
-      if (traitDef.mqBonus) score += (fighter.popularity || 0) >= 40 ? 3 : 1;
-      if (traitDef.decayReduction) score += (fighter.age || 17) >= 27 ? 5 : 0;
-      if (traitDef.scoutBonus) score -= 6;
+      // v0.2: abilities ベースのフィット判定
+      const abs = coach.abilities || [];
+      if (abs.some(a => a === '新人育成')) score += (fighter.age || 99) <= 21 ? 6 : 2;
+      if (abs.some(a => a === '怪我耐性')) score += Math.max(0, 80 - (fighter.condition || 70)) * 0.08;
+      if (abs.some(a => a === '延命術')) score += (fighter.age || 17) >= 27 ? 5 : 0;
+      if (abs.some(a => a === 'スター製造')) score += (fighter.popularity || 0) >= 40 ? 3 : 1;
+      if (abs.some(a => a === '限界突破' || a === '弱点克服')) score += 4;
       score += remaining * 0.08;
       return score;
     },
@@ -8823,6 +8784,75 @@ Engine.awards = {
     return `../image/shield/shield_${variant}.webp`;
   },
 
+  /** C-0: 異名の自動生成 — 条件優先度順に判定し最初にマッチしたものを返す */
+  generateEpithet(rec) {
+    const defs = rec.totalDefenses || 0;
+    const wins = rec.totalTitleWins || 0;
+    const jt = rec.juniorTournamentWins || 0;
+    const ppv = rec.ppvMainEventWins || 0;
+    const pts = (wins) + defs + jt * 7 + ppv * 9;
+    const level = Engine.awards.getHofLevel(pts);
+    // 1度の獲得で最大防衛数を推定（history があれば正確に）
+    let maxSingleReign = 0;
+    const history = (rec && rec.history) || [];
+    let currentDefenses = 0;
+    history.forEach(ev => {
+      if (ev.type === 'titleWin') currentDefenses = 0;
+      else if (ev.type === 'titleDefense') currentDefenses = ev.count || 0;
+      else if (ev.type === 'titleLoss') { maxSingleReign = Math.max(maxSingleReign, ev.defenses || currentDefenses); currentDefenses = 0; }
+    });
+    if (currentDefenses > 0) maxSingleReign = Math.max(maxSingleReign, currentDefenses);
+    if (maxSingleReign === 0 && wins > 0) maxSingleReign = Math.floor(defs / Math.max(1, wins));
+
+    if (defs >= 20)                       return '絶対王者';
+    if (maxSingleReign >= 15)             return '無敵の長期政権';
+    if (level >= 3)                       return '生ける伝説';
+    if (wins >= 3)                        return '不死鳥';
+    if (defs >= 10)                       return '鉄壁の女王';
+    if (jt >= 1 && wins >= 1)             return '二冠の覇者';
+    if (ppv >= 2)                         return '大舞台の主';
+    if (wins >= 1 && defs >= 5)           return '名王者';
+    if (jt >= 1 && wins === 0)            return '若き日の輝き';
+    return '殿堂の誇り';
+  },
+
+  /** C-0b: 経歴に基づく語り文の自動生成 */
+  generateBiography(entry) {
+    const orgName = entry.orgName || '団体';
+    const epithet = entry.epithet || Engine.awards.generateEpithet(entry);
+    const seasons = (entry.activeSeasonsEnd || 1) - (entry.activeSeasonsStart || 1) + 1;
+    const titleWins = entry.titleReigns || 0;
+    const defenses = entry.totalDefenses || 0;
+    const style = entry.style || 'Allround';
+
+    // 導入文
+    let intro;
+    if (seasons >= 10)     intro = `${orgName}に${seasons}シーズンの歳月を刻んだ${epithet}。`;
+    else if (seasons >= 5) intro = `${orgName}の歴史に名を刻む${epithet}。`;
+    else                   intro = `短くも鮮烈なキャリアを駆け抜けた${epithet}。`;
+
+    // 実績文
+    let achievement;
+    if (titleWins >= 3)                          achievement = `${titleWins}度の戴冠、通算${defenses}度の防衛はいずれも団体史に燦然と輝く金字塔である。`;
+    else if (titleWins >= 1 && defenses >= 10)   achievement = `通算${defenses}度の防衛は、その圧倒的な強さの証明であった。`;
+    else if (titleWins >= 1 && defenses >= 5)    achievement = `${titleWins}度の王座獲得と${defenses}度の防衛で団体を支えた。`;
+    else if (titleWins >= 1)                     achievement = `王座に${titleWins}度就き、その名を歴史に刻んだ。`;
+    else                                         achievement = 'タイトルこそ手にしなかったが、大舞台での輝きは誰もが認めるものだった。';
+
+    // 締め文
+    const closingMap = {
+      Grappler:   'その重厚なグラップリングの前に、挑戦者たちは次々と膝を屈した。',
+      Striker:    '鋭い打撃で幾多の名勝負を生み出した闘士であった。',
+      Submission: '極めの技術は芸術の域に達し、対戦相手に恐れられた。',
+      Speed:      '誰にも捉えられないスピードで、観客を魅了し続けた。',
+      Allround:   'あらゆる局面に対応する万能さが、長きにわたる活躍を支えた。',
+      Brawler:    '荒々しくも力強いファイトで、会場を沸かせ続けた。',
+    };
+    const closing = closingMap[style] || closingMap.Allround;
+
+    return `${intro}${achievement}${closing}`;
+  },
+
   /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応） */
   _buildHofEntry(fighter, orgId, orgName, state) {
     const rec = fighter.careerRecord || {};
@@ -8831,7 +8861,7 @@ Engine.awards = {
     const retire = hist.find(e => e.type === 'retire');
     const hofPoints = Engine.awards.calcHofPoints(rec);
     const hofLevel = Engine.awards.getHofLevel(hofPoints);
-    return {
+    const entry = {
       id: fighter.id, name: fighter.name, portrait: fighter.portrait,
       orgId: orgId,
       orgName: orgName,
@@ -8850,6 +8880,9 @@ Engine.awards = {
       retireOVR: Engine.util.ov(fighter),
       retireAge: fighter.age || 0,
     };
+    entry.epithet = Engine.awards.generateEpithet(rec);
+    entry.biography = Engine.awards.generateBiography(entry);
+    return entry;
   },
 
   checkHallOfFame(state) {
@@ -8880,8 +8913,15 @@ Engine.awards = {
    * @returns {Object} 新しい state
    */
   applyHallOfFame(state, inductees) {
+    // 修正A: hofPoints/hofLevel が欠落している場合は再計算して補完
+    const safeInductees = inductees.map(h => {
+      if (h.hofPoints != null && h.hofLevel != null) return h;
+      const pts = h.hofPoints != null ? h.hofPoints
+        : (h.titleReigns || 0) + (h.totalDefenses || 0) + (h.juniorTournamentWins || 0) * 7 + (h.ppvMainEventWins || 0) * 9;
+      return { ...h, hofPoints: pts, hofLevel: Engine.awards.getHofLevel(pts) };
+    });
     const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
-    allHof.player = [...(allHof.player || []), ...inductees];
+    allHof.player = [...(allHof.player || []), ...safeInductees];
     const newHallOfFame = allHof.player;
     // retiredFightersクリア前に全IDをretiredIdsに永続保存（再登場防止）
     const newRetiredIds = [...(state.retiredIds || [])];

@@ -1259,8 +1259,8 @@ function _renderRosterDojoHeader() {
 
   // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
-    const traitParts = hired.map(c => c.trait);
-    html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ特性: <strong>${traitParts.join('、')}</strong></div>`;
+    const abilityParts = hired.flatMap(c => c.abilities || []);
+    html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ能力: <strong>${abilityParts.join('、')}</strong></div>`;
   }
   el.innerHTML = html;
 
@@ -1431,7 +1431,7 @@ function _renderRosterDetailPanel(c, hired) {
       const aCount = getCoachAssignees(h.id).length;
       const isCurrent = coach && coach.id === h.id;
       const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
-      const effShort = `${h.grade}級 ×${COACH_RANKS[h.teaching]||1.0}`;
+      const effShort = `${h.grade}級 ×${h.gMult||1.0}`;
       const sm = getCoachStyleMatch(h, c);
       const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
       opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
@@ -1442,10 +1442,11 @@ function _renderRosterDetailPanel(c, hired) {
   }
   // Coach effect
   if (coach) {
-    const mult = COACH_RANKS[coach.teaching] || 1.0;
+    const mult = coach.gMult || 1.0;
     const sm = getCoachStyleMatch(coach, c);
     const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span style="color:#7a7466">不一致</span>';
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">コーチ効果</span><span class="rd-meta-val" style="font-size:12px">成長×${mult} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${coach.trait}</span></div>`;
+    const abilitiesText = (coach.abilities||[]).join('・');
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">コーチ効果</span><span class="rd-meta-val" style="font-size:12px">成長×${mult} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${abilitiesText}</span></div>`;
   }
   // Growth tendency
   const tendency = getGrowthTendency(c.id);
@@ -1516,7 +1517,7 @@ function renderRoster() {
     if (staffMaxEl) staffMaxEl.textContent = Engine.coach.getMaxCoaches(G);
 
     const coachEffectShort = (c) => {
-      const mult = COACH_RANKS[c.teaching] || 1.0;
+      const mult = c.gMult || 1.0;
       return `${c.grade}級 ×${mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
     };
 
@@ -2276,7 +2277,7 @@ function renderRanking() {
     battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
   };
   const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
-  window._rankTips.legacy = '殿堂入り選手の数に応じた団体の格<br>AI団体はティアに応じた固定値（S:30/A:20/B:10）<br>プレイヤー: 殿堂入り1名ごとに+10pt（上限50pt）';
+  window._rankTips.legacy = '団体の歴史の重み（上限50pt）<br>初期値: S級50 / A級30 / B級15 / プレイヤー0<br>殿堂入り: ★8pt / ★★10pt / ★★★13pt<br>対抗戦: 通算5勝ごとに1pt';
   html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
     `<th style="text-align:right">評価値${tt('rating')}</th>` +
     `<th style="text-align:right">基礎力${tt('base')}</th>` +
@@ -2301,7 +2302,7 @@ function renderRanking() {
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
       + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
       + `<div style="margin-top:4px">レガシー: <strong>${Math.round(r.legacyScore)}</strong>pt</div>`
-      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の格。殿堂入りを増やすと上がる</div>`
+      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の歴史。殿堂入り＋対抗戦勝利で成長</div>`
       + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</strong>pt</div>`
       + `<hr style="border:none;border-top:1px solid rgba(200,190,170,0.15);margin:6px 0">`
       + `<div style="font-weight:700">合計: ${Math.round(r.rating)}pt</div>`
@@ -2722,15 +2723,19 @@ function renderCoach() {
   // Effect label helper
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const coachEffectHtml = (c) => {
-    const mult = COACH_RANKS[c.teaching] || 1.0;
+    const mult = c.gMult || 1.0;
+    const abText = (c.abilities||[]).map(a => {
+      const cat = COACH_ABILITY_CATALOG[a];
+      return cat ? `<span class="coach-trait">${a}</span>` : `<span class="coach-trait">${a}</span>`;
+    }).join(' ');
     return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
-      <span style="font-size:12px;color:var(--gold);font-weight:700">指導×${mult}</span>
+      <span style="font-size:12px;color:var(--gold);font-weight:700">成長×${mult}</span>
       <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span>
-      <span class="coach-trait">${c.trait}</span>`;
+      ${abText}`;
   };
 
   // Brief effect explanation
-  const coachBrief = (c) => (COACH_TRAIT_DEFS[c.trait] || {}).desc || '';
+  const coachBrief = (c) => (c.abilities||[]).map(a => (COACH_ABILITY_CATALOG[a]||{}).desc||a).join(' / ');
 
   const maxCoaches = Engine.coach.getMaxCoaches(G);
   const nextSlot = (G.orgPop||0) < 25 ? '次の枠: 知名度25' : (G.orgPop||0) < 50 ? '次の枠: 知名度50' : '全枠解放';
@@ -3694,7 +3699,7 @@ function _renderDbCoaches() {
     let va, vb;
     if (_dbCoachSortKey === 'grade') { va = GRADE_ORDER[a.grade] ?? 9; vb = GRADE_ORDER[b.grade] ?? 9; }
     else if (_dbCoachSortKey === 'name') { va = a.name; vb = b.name; }
-    else if (_dbCoachSortKey === 'teaching') { va = RANK_ORDER[a.teaching] ?? 9; vb = RANK_ORDER[b.teaching] ?? 9; }
+    else if (_dbCoachSortKey === 'gMult') { va = a.gMult || 1; vb = b.gMult || 1; }
     else if (_dbCoachSortKey === 'observation') { va = RANK_ORDER[a.observation] ?? 9; vb = RANK_ORDER[b.observation] ?? 9; }
     else if (_dbCoachSortKey === 'style') { va = a.style || ''; vb = b.style || ''; }
     else if (_dbCoachSortKey === 'salary') { va = a.salary || 0; vb = b.salary || 0; }
@@ -3730,10 +3735,10 @@ function _renderDbCoaches() {
       <th style="width:40px"></th>
       ${th('name', '名前')}
       ${th('grade', 'グレード', '80px')}
-      ${th('teaching', '指導力', '65px')}
+      ${th('gMult', '成長倍率', '70px')}
       ${th('observation', '観察眼', '65px')}
       ${th('style', '得意', '90px')}
-      <th style="width:100px">特性</th>
+      <th style="width:140px">能力</th>
       ${th('salary', '給与', '70px')}
       ${th('hireFee', '雇用費', '70px')}
       <th style="width:55px">状態</th>
@@ -3747,10 +3752,10 @@ function _renderDbCoaches() {
       <td>${coachPortraitImg(c, 36)}</td>
       <td style="font-weight:600">${c.name}</td>
       <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
-      <td class="num" style="font-weight:700;color:${gc}">${c.teaching}</td>
+      <td class="num" style="font-weight:700;color:${gc}">×${c.gMult||1.0}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
-      <td style="font-size:11px;color:var(--text-sub)">${c.trait}</td>
+      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${c.flavor}]</span>` : ''}</td>
       <td class="num" style="font-size:12px">${c.salary}万</td>
       <td class="num" style="font-size:12px">${c.hireFee}万</td>
       <td>${isHired ? '<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">雇用中</span>' : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
@@ -3840,32 +3845,25 @@ function _renderDbHallOfFame() {
     return html;
   }
 
-  // 盾グリッド（2列）
+  // 盾グリッド（flex-wrap コンパクトカード）
   html += `<div class="db-hof-grid">`;
   filtered.forEach((h, idx) => {
     const level = h.hofLevel || 1;
     const borderColor = _getHofBorderColor(level);
     const pUrl = getPortraitUrl(h.id || 0);
     const starText = _getHofStarText(level);
+    const legendClass = level >= 3 ? ' legend-glow' : '';
     const imgHtml = pUrl
-      ? `<img src="${pUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid ${borderColor};flex-shrink:0" alt="">`
-      : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏅</div>`;
+      ? `<img src="${pUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${borderColor}" alt="">`
+      : `<div style="width:32px;height:32px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:inline-flex;align-items:center;justify-content:center;font-size:14px">🏅</div>`;
 
-    html += `<div class="db-hof-card" style="border-color:${borderColor}" onclick="showHofDetail(${idx})" data-hof-idx="${idx}">
-      <div style="text-align:center;margin-bottom:4px">
-        ${_hofShieldImg(level, h.id, 60)}
-        <div style="font-size:10px;color:${borderColor};font-weight:700;margin-top:2px">${starText}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        ${imgHtml}
-        <div style="flex:1;min-width:0">
-          <div class="db-hof-name">${h.name}</div>
-          <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)} / ${h.style || 'Allround'}</div>
-        </div>
-      </div>
-      <div class="db-hof-row">${h.activeYears || `S${h.activeSeasonsStart || '?'}〜S${h.activeSeasonsEnd || '?'}`}</div>
-      <div class="db-hof-row">王座${h.titleReigns || 0}回 / 防衛${h.totalDefenses || 0}回</div>
-      <div class="db-hof-row" style="color:${borderColor}">殿堂pt: ${h.hofPoints || 0}</div>
+    html += `<div class="db-hof-card${legendClass}" style="border-color:${borderColor}" onclick="showHofDetail(${idx})" data-hof-idx="${idx}">
+      ${_hofShieldImg(level, h.id, 50)}
+      <div style="font-size:10px;color:${borderColor};font-weight:700;margin:2px 0">${starText}</div>
+      <div style="margin:4px 0">${imgHtml}</div>
+      <div class="db-hof-name">${h.name}</div>
+      <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)}</div>
+      <div class="db-hof-row">王座${h.titleReigns || 0}/防衛${h.totalDefenses || 0}</div>
     </div>`;
   });
   html += `</div>`;
@@ -3876,7 +3874,7 @@ function _renderDbHallOfFame() {
   return html;
 }
 
-/** 殿堂詳細ポップアップ */
+/** 殿堂詳細ポップアップ（C-4/C-5 情報密度強化版） */
 function showHofDetail(idx) {
   const list = window._hofFilteredList || [];
   const h = list[idx];
@@ -3886,20 +3884,33 @@ function showHofDetail(idx) {
   const borderColor = _getHofBorderColor(level);
   const starText = _getHofStarText(level);
   const pUrl = getPortraitUrl(h.id || 0);
-  const upperUrl = getUpperUrl(h.id || 0);
+  const orgName = h.orgName || _getHofOrgName(h.orgId);
 
+  // 異名（フォールバック: 動的生成）
+  const epithet = h.epithet || Engine.awards.generateEpithet(h);
+  // 語り文（フォールバック: 動的生成）
+  const biography = h.biography || Engine.awards.generateBiography({ ...h, epithet, orgName });
+
+  // 顔画像
   const portraitHtml = pUrl
     ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${borderColor}" alt="">`
     : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:32px">🏅</div>`;
 
-  const upperHtml = upperUrl
-    ? `<div style="text-align:center;margin:8px 0"><img src="${upperUrl}" style="height:150px;object-fit:contain;border-radius:8px;opacity:0.9" alt="" onerror="this.style.display='none'"></div>`
+  // 全身画像（ある場合のみ）
+  const fullUrl = typeof getFullUrl === 'function' ? getFullUrl(h.id || 0) : '';
+  const fullHtml = fullUrl
+    ? `<div style="text-align:center;margin:8px 0"><img src="${fullUrl}" style="height:200px;object-fit:contain;border-radius:8px;opacity:0.9" alt="" onerror="this.parentElement.style.display='none'"></div>`
+    : '';
+
+  // 語り文HTML
+  const bioHtml = biography
+    ? `<div style="font-style:italic;color:var(--text-dim);font-size:12px;line-height:1.7;padding:10px 8px;border-top:1px solid rgba(200,190,170,0.1);border-bottom:1px solid rgba(200,190,170,0.1);margin:8px 0">${biography}</div>`
     : '';
 
   // キャリアハイライト（フォールバック: careerRecord.historyから動的構築）
   let highlights = h.careerHighlights || [];
   if (highlights.length === 0 && h.careerRecord && h.careerRecord.history) {
-    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, h.orgName || _getHofOrgName(h.orgId));
+    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName);
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {
@@ -3919,14 +3930,20 @@ function showHofDetail(idx) {
       ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
     </div>`;
 
+  // 引退時情報
+  const retireInfo = h.retireOVR
+    ? `<div style="font-size:12px;color:var(--text-dim)">引退時OVR ${h.retireOVR}${h.retireAge ? `（${h.retireAge}歳）` : ''}</div>`
+    : '';
+
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
+  const shieldGlow = level >= 3 ? 'filter:drop-shadow(0 0 8px rgba(243,156,18,0.5));' : '';
 
   const modal = document.createElement('div');
   modal.className = 'db-hof-detail-overlay';
   modal.onclick = e => { if (e.target === modal) modal.remove(); };
   modal.innerHTML = `<div class="db-hof-detail-modal" style="${legendGlow}">
     <button class="db-hof-detail-close" onclick="this.closest('.db-hof-detail-overlay').remove()">×</button>
-    <div style="text-align:center;margin-bottom:12px">
+    <div style="text-align:center;margin-bottom:12px;${shieldGlow ? 'filter:' + shieldGlow.split(':')[1] : ''}">
       ${_hofShieldImg(level, h.id, 120)}
       <div style="font-size:14px;color:${borderColor};font-weight:700;margin-top:4px">${starText}</div>
     </div>
@@ -3934,12 +3951,15 @@ function showHofDetail(idx) {
       ${portraitHtml}
       <div>
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${h.name}</div>
-        <div style="font-size:13px;color:var(--text-sub)">${h.orgName || _getHofOrgName(h.orgId)} / ${h.style || 'Allround'}</div>
-        <div style="font-size:12px;color:var(--text-dim)">${h.activeYears || ''}${h.retireAge ? `（${h.retireAge}歳引退）` : ''}</div>
-        <div style="font-size:12px;color:var(--text-dim)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）${h.retireOVR ? ` / 引退時OVR ${h.retireOVR}` : ''}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin:2px 0">「${epithet}」</div>
+        <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
+        <div style="font-size:12px;color:var(--text-dim)">${h.activeYears || ''}（${(h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1}シーズン）</div>
+        <div style="font-size:12px;color:var(--text-dim)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）</div>
+        ${retireInfo}
       </div>
     </div>
-    ${upperHtml}
+    ${fullHtml}
+    ${bioHtml}
     ${highlightsHtml}
     ${statsHtml}
     <div style="text-align:center;margin-top:14px;font-size:13px;color:${borderColor}">
