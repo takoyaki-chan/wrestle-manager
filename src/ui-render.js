@@ -3873,7 +3873,7 @@ function _renderDbHallOfFame() {
   return html;
 }
 
-/** 殿堂詳細ポップアップ（C-4/C-5 情報密度強化版） */
+/** 殿堂詳細ポップアップ */
 function showHofDetail(idx) {
   const list = window._hofFilteredList || [];
   const h = list[idx];
@@ -3884,6 +3884,7 @@ function showHofDetail(idx) {
   const starText = _getHofStarText(level);
   const pUrl = getPortraitUrl(h.id || 0);
   const orgName = h.orgName || _getHofOrgName(h.orgId);
+  const sep = '<div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0"></div>';
 
   // 異名（フォールバック: 動的生成）
   const epithet = h.epithet || Engine.awards.generateEpithet(h);
@@ -3895,76 +3896,78 @@ function showHofDetail(idx) {
     ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${borderColor}" alt="">`
     : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:32px">🏅</div>`;
 
-  // 全身画像（ある場合のみ）
+  // §3 全身画像（グラデーション背景付き）
   const fullUrl = typeof getFullUrl === 'function' ? getFullUrl(h.id || 0) : '';
   const fullHtml = fullUrl
-    ? `<div style="text-align:center;margin:8px 0"><img src="${fullUrl}" style="height:200px;object-fit:contain;border-radius:8px;opacity:0.9" alt="" onerror="this.parentElement.style.display='none'"></div>`
+    ? `<div style="text-align:center;margin:8px 0;padding:12px 0;background:radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);border-radius:8px"><img src="${fullUrl}" style="height:200px;object-fit:contain;border-radius:8px" alt="" onerror="this.parentElement.style.display='none'"></div>`
     : '';
 
-  // 語り文HTML
+  // §2 語り文（明るい白系）
   const bioHtml = biography
-    ? `<div style="font-style:italic;color:var(--text-dim);font-size:12px;line-height:1.7;padding:10px 8px;border-top:1px solid rgba(200,190,170,0.1);border-bottom:1px solid rgba(200,190,170,0.1);margin:8px 0">${biography}</div>`
+    ? `<div style="font-style:italic;color:rgba(232,230,224,0.85);font-size:12px;line-height:1.7;padding:10px 8px;text-align:center">${biography}</div>`
     : '';
 
-  // キャリアハイライト（フォールバック: careerRecord.historyから動的構築）
+  // §6 キャリアハイライト年表
   let highlights = h.careerHighlights || [];
   if (highlights.length === 0 && h.careerRecord && h.careerRecord.history) {
     highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName);
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {
-    highlightsHtml = `<div class="db-hof-detail-section">━━ キャリアハイライト ━━</div><div class="db-hof-highlights">`;
+    highlightsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ キャリアハイライト ━━</div><div class="db-hof-highlights" style="display:inline-block;text-align:left">`;
     highlights.forEach(hl => {
-      highlightsHtml += `<div class="db-hof-hl-row"><span class="db-hof-hl-season">S${hl.season}</span><span>${_getHighlightIcon(hl.type)} ${hl.text}</span></div>`;
+      highlightsHtml += `<div class="db-hof-hl-row"><span class="db-hof-hl-season" style="font-family:monospace">S${hl.season}</span><span>${_getHighlightIcon(hl.type)} ${hl.text}</span></div>`;
     });
     highlightsHtml += `</div>`;
   }
 
   // 通算実績
-  const statsHtml = `<div class="db-hof-detail-section">━━ 通算実績 ━━</div>
-    <div class="db-hof-stats-grid">
+  const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ 通算実績 ━━</div>
+    <div class="db-hof-stats-grid" style="max-width:280px;margin:0 auto">
       <div>王座獲得 <strong>${h.titleReigns || 0}</strong>回</div>
       <div>通算防衛 <strong>${h.totalDefenses || 0}</strong>回</div>
       ${h.juniorTournamentWins ? `<div>JT優勝 <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
       ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
     </div>`;
 
-  // 引退時情報
+  // §4 引退時OVR
   const retireInfo = h.retireOVR
-    ? `<div style="font-size:12px;color:var(--text-dim)">引退時OVR ${h.retireOVR}${h.retireAge ? `（${h.retireAge}歳）` : ''}</div>`
+    ? `<div style="font-size:12px;color:var(--text-sub)">引退時OVR ${h.retireOVR}${h.retireAge ? `（${h.retireAge}歳）` : ''}</div>`
     : '';
 
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
-  const shieldGlow = level >= 3 ? 'filter:drop-shadow(0 0 8px rgba(243,156,18,0.5));' : '';
+  const shieldGlow = level >= 3 ? 'filter:drop-shadow(0 0 8px rgba(243,156,18,0.5))' : '';
 
   const modal = document.createElement('div');
   modal.className = 'db-hof-detail-overlay';
   modal.onclick = e => { if (e.target === modal) modal.remove(); };
-  modal.innerHTML = `<div class="db-hof-detail-modal" style="${legendGlow}">
+  modal.innerHTML = `<div class="db-hof-detail-modal" style="text-align:center;${legendGlow}">
     <button class="db-hof-detail-close" onclick="this.closest('.db-hof-detail-overlay').remove()">×</button>
-    <div style="text-align:center;margin-bottom:12px;${shieldGlow ? 'filter:' + shieldGlow.split(':')[1] : ''}">
+    <div style="margin-bottom:12px;${shieldGlow}">
       ${_hofShieldImg(level, h.id, 120)}
       <div style="font-size:14px;color:${borderColor};font-weight:700;margin-top:4px">${starText}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+    ${sep}
+    <div style="display:inline-flex;align-items:center;gap:14px;text-align:left;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
       ${portraitHtml}
       <div>
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${h.name}</div>
-        <div style="font-size:12px;color:var(--text-dim);margin:2px 0">「${epithet}」</div>
+        <div style="font-size:15px;color:var(--gold);margin:4px 0">── 「${epithet}」──</div>
         <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
-        <div style="font-size:12px;color:var(--text-dim)">${h.activeYears || ''}（${(h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1}シーズン）</div>
-        <div style="font-size:12px;color:var(--text-dim)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）</div>
+        <div style="font-size:12px;color:var(--text-sub)">${h.activeYears || ''}（${(h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1}シーズン）</div>
+        <div style="font-size:12px;color:var(--text-sub)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）</div>
         ${retireInfo}
       </div>
     </div>
-    ${fullHtml}
-    ${bioHtml}
-    ${highlightsHtml}
+    ${fullHtml ? sep + fullHtml : ''}
+    ${bioHtml ? sep + bioHtml : ''}
+    ${highlightsHtml ? sep + highlightsHtml : ''}
+    ${sep}
     ${statsHtml}
-    <div style="text-align:center;margin-top:14px;font-size:13px;color:${borderColor}">
+    <div style="margin-top:14px;font-size:13px;color:${borderColor}">
       殿堂pt: ${h.hofPoints || 0} ／ 殿堂入り: S${h.inductionSeason || '?'}
     </div>
-    <div style="text-align:center;margin-top:14px">
+    <div style="margin-top:14px">
       <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove()">閉じる</button>
     </div>
   </div>`;
