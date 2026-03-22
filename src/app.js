@@ -3946,10 +3946,12 @@ const App = {
           const _mD = {};
           chosen.forEach(stat => {
             const gain = Math.max(0, Math.round(growthPerStat));
-            if (gain > 0) {
-              nc[stat] = Math.min(100, nc[stat] + gain);
-              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
-              _mD[stat] = gain;
+            const cap = nc.trainCap?.[stat] || 100;
+            const actualGain = Math.max(0, Math.min(gain, cap - (nc[stat] || 0)));
+            if (actualGain > 0) {
+              nc[stat] = (nc[stat] || 0) + actualGain;
+              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + actualGain;
+              _mD[stat] = actualGain;
             }
           });
           if (nc.growthLog && !nc.isRental) {
