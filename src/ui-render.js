@@ -3123,11 +3123,10 @@ function _renderDbNewspaper() {
 
   // ── ヘッダー ──
   let html = `<div style="max-width:560px;margin:12px auto;display:grid;gap:0;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
-  html += `<div style="padding:14px 20px 10px;border-bottom:3px double rgba(95,69,35,0.45);">
-    <div style="display:flex;justify-content:space-between;align-items:end;">
-      <div style="font-size:18px;font-weight:1000;letter-spacing:0.06em;color:#4a3518;">WEEKLY GRAPPLE</div>
-      <div style="font-size:11px;color:#7a5b32;font-weight:700;">S${wp.season || '?'} W${wp.week || '?'}</div>
-    </div></div>`;
+  html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">S${wp.season || '?'} W${wp.week || '?'}</div>
+  </div>`;
 
   // ── 一面記事 ──
   if (wp.topStory) {
@@ -3137,9 +3136,9 @@ function _renderDbNewspaper() {
 
     const tsC = _newsStoryClickable(ts);
     html += `<div style="padding:16px 20px 12px;border-bottom:1px solid rgba(95,69,35,0.18);">
-      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:4px;">TOP STORY</div>
+      <div class="news-sec-label">一面記事</div>
       <div style="display:flex;gap:12px;align-items:flex-start;">
-        ${charPort ? `<img src="${charPort}" alt="" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:2px solid rgba(82,53,23,0.25);flex-shrink:0;">` : ''}
+        ${charPort ? `<img src="${charPort}" alt="" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);flex-shrink:0;">` : ''}
         <div style="flex:1;">
           <div style="font-size:20px;line-height:1.2;font-weight:1000;margin-bottom:6px;">${tsC.headline}</div>
           <div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${tsC.body}</div>
@@ -3183,12 +3182,16 @@ function _renderDbNewspaper() {
   // ── 他団体動向（subStories） ──
   if (wp.subStories && wp.subStories.length > 0) {
     html += `<div style="padding:12px 20px;border-top:1px solid rgba(95,69,35,0.15);">
-      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:8px;">OTHER NEWS</div>`;
+      <div class="news-sec-label-gold">他団体ニュース</div>`;
     wp.subStories.forEach(ss => {
       const ssPort = ss.characterId && typeof getPortraitUrl === 'function' ? getPortraitUrl(ss.characterId) : '';
+      const ssName = ss.characterId ? (ALL_CHARS.find(c => c.id === ss.characterId)?.name || '?') : '?';
       const ssC = _newsStoryClickable(ss);
+      const ssPortHtml = ssPort
+        ? `<img src="${ssPort}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);">`
+        : `<div style="width:32px;height:32px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:900;background:linear-gradient(135deg,#3a2050,#2a1440);color:#b088d0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);flex-shrink:0;">${ssName.charAt(0)}</div>`;
       html += `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(95,69,35,0.08);">
-        ${ssPort ? `<img src="${ssPort}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;">` : ''}
+        ${ssPortHtml}
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:800;line-height:1.3;">${ssC.headline}</div>
           <div style="font-size:12px;line-height:1.6;color:#5b4b34;margin-top:2px;">${ssC.body}</div>
@@ -3229,7 +3232,7 @@ function _renderNewspaperPlayerShow(d) {
   const winnerLink = d.winner ? _newsClickableName(d.winner.name, d.winner.id) : '';
 
   let html = `<div style="padding:14px 20px 12px;border-top:1px solid rgba(95,69,35,0.15);">
-    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9b7a42;font-weight:900;margin-bottom:8px;">自団体 興行結果</div>
+    <div class="news-sec-label">興行結果</div>
     <div style="font-size:16px;font-weight:1000;margin-bottom:8px;">${d.headline || '定期興行'}</div>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px;">
       <div style="display:grid;justify-items:center;gap:4px;">
@@ -3365,20 +3368,23 @@ function _renderNewspaperShowRating(d) {
 
   return `
     <div class="news-show-rating">
-      <div class="news-rating-stars">${starHtml}</div>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px;">
+        <div class="news-rating-stars" style="margin-bottom:0">${starHtml}</div>
+        <div style="font-size:12px;font-weight:900;color:#5b4b34;">観客満足度 ${(stars).toFixed(1)}</div>
+      </div>
       ${commentText ? `<div class="news-rating-comment">
-        ${kurodaFace ? `<img src="${kurodaFace}" class="news-kuroda-face" alt="">` : ''}
+        ${kurodaFace ? `<img src="${kurodaFace}" class="news-kuroda-face" style="background:linear-gradient(135deg,#3a1a1a,#2a0a0a);border:2px solid rgba(139,26,26,0.5);box-shadow:0 0 6px rgba(139,26,26,0.2);" alt="">` : ''}
         <p>「${commentText}」</p>
       </div>` : ''}
     </div>`;
 }
 
-// ── 全試合ダイジェストセクション ──
+// ── 全試合ダイジェストセクション（テーブル形式） ──
 function _renderNewspaperDigest(d) {
   if (!d.allMatches || d.allMatches.length === 0) return '';
   const expectedMQ = d.showRating?.expected || Math.round(25 + (G.orgPop || 0) * 0.6);
 
-  const matchesHtml = d.allMatches.map((m, idx) => {
+  const rowsHtml = d.allMatches.map((m, idx) => {
     // ダイジェストコメント選択
     let commentText = '';
     if (typeof NEWSPAPER_DIGEST_COMMENTS !== 'undefined') {
@@ -3405,44 +3411,70 @@ function _renderNewspaperDigest(d) {
       }
     }
 
-    const smallPort = (id) => {
+    // 勝者/敗者判定
+    const leftWon = m.winner === 'left';
+    const rightWon = m.winner === 'right';
+    const winnerId = leftWon ? m.left.id : (rightWon ? m.right.id : null);
+    const loserId = leftWon ? m.right.id : (rightWon ? m.left.id : null);
+    const winnerName = leftWon ? m.left.name : (rightWon ? m.right.name : '');
+    const loserName = leftWon ? m.right.name : (rightWon ? m.left.name : '');
+
+    const ndtPort = (id, isWinner) => {
       const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '';
-      if (url) return `<img src="${url}" alt="" class="news-digest-portrait">`;
+      const cls = isWinner ? 'ndt-port w' : 'ndt-port l';
+      if (url) return `<div class="${cls}"><img src="${url}" alt=""></div>`;
       const name = (ALL_CHARS.find(c => c.id === id)?.name || '?');
-      return `<div class="news-digest-portrait-fb">${name.charAt(0)}</div>`;
+      return `<div class="${cls}">${name.charAt(0)}</div>`;
     };
 
-    const badges = [
-      m.isTitleMatch ? '<span class="news-digest-badge title">TITLE</span>' : '',
-      m.isUpset ? '<span class="news-digest-badge upset">UPSET</span>' : '',
-    ].filter(Boolean).join('');
+    // バッジ
+    const badge = m.isTitleMatch ? '<span class="ndt-badge-tag title">王座戦</span>'
+      : m.isUpset ? '<span class="ndt-badge-tag upset">番狂わせ</span>' : '';
 
-    return `
-      <div class="news-digest-match">
-        <div class="news-digest-header">
-          <span class="news-digest-num">第${idx + 2}試合</span>
-          ${badges}
-        </div>
-        <div class="news-digest-faceoff">
-          <div class="news-digest-fighter ${m.winner === 'left' ? 'winner' : ''}">
-            ${smallPort(m.left.id)}
-            <span>${m.left.name}</span>
-          </div>
-          <div class="news-digest-result">${m.isDraw ? 'DRAW' : 'def.'}</div>
-          <div class="news-digest-fighter ${m.winner === 'right' ? 'winner' : ''} right">
-            <span>${m.right.name}</span>
-            ${smallPort(m.right.id)}
-          </div>
-        </div>
-        <div class="news-digest-stats">MQ ${m.mq} / ${m.turns}T / ${m.finishLabel}</div>
-        ${commentText ? `<div class="news-digest-comment">「${commentText}」</div>` : ''}
+    // MQ色クラス
+    const mqClass = m.mq >= 75 ? 'high' : m.mq >= 55 ? 'mid' : 'low';
+
+    // 対戦行
+    let html = `<tr>
+      <td class="ndt-num">${idx + 2}</td>
+      <td class="ndt-badge">${badge}</td>
+      <td class="ndt-card">`;
+    if (m.isDraw) {
+      html += `<div class="ndt-ff">
+        ${ndtPort(m.left.id, false)}
+        <span class="ndt-name">${m.left.name}</span>
+        <span class="ndt-vs">DRAW</span>
+        <span class="ndt-name">${m.right.name}</span>
+        ${ndtPort(m.right.id, false)}
       </div>`;
+    } else {
+      html += `<div class="ndt-ff">
+        ${ndtPort(winnerId, true)}
+        <span class="ndt-name w">${winnerName}</span>
+        <span class="ndt-vs">vs</span>
+        <span class="ndt-name">${loserName}</span>
+        ${ndtPort(loserId, false)}
+      </div>`;
+    }
+    html += `</td>
+      <td class="ndt-mq ${mqClass}">MQ${m.mq}</td>
+    </tr>`;
+
+    // コメント行
+    if (commentText) {
+      html += `<tr>
+        <td colspan="2"></td>
+        <td colspan="2" class="ndt-comment">「${commentText}」</td>
+      </tr>`;
+    }
+
+    return html;
   }).join('');
 
   return `
     <div class="news-digest">
-      <div class="news-digest-title">全試合ダイジェスト</div>
-      ${matchesHtml}
+      <div class="news-sec-label" style="margin-bottom:10px;">興行ダイジェスト</div>
+      <table class="news-digest-table">${rowsHtml}</table>
     </div>`;
 }
 
@@ -3500,7 +3532,7 @@ function _renderNewspaperPreview(d) {
 
   return `
     <div class="news-preview">
-      <div class="news-preview-title">次回展望</div>
+      <div class="news-sec-label-gold" style="margin-bottom:10px;">次回展望</div>
       ${items.map(t => `<div class="news-preview-item">${t}</div>`).join('')}
     </div>`;
 }
@@ -3508,11 +3540,10 @@ function _renderNewspaperPreview(d) {
 // ── 新聞特集ページ描画 ──
 function _renderNewspaperExtraPage(wp, pageData) {
   let html = `<div style="max-width:560px;margin:0 auto 12px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
-  html += `<div style="padding:12px 20px 8px;border-bottom:3px double rgba(95,69,35,0.45);">
-    <div style="display:flex;justify-content:space-between;align-items:end;">
-      <div style="font-size:18px;font-weight:1000;letter-spacing:0.06em;color:#4a3518;">WEEKLY GRAPPLE</div>
-      <div style="font-size:11px;color:#7a5b32;font-weight:700;">S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
-    </div></div>`;
+  html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
+  </div>`;
 
   pageData.stories.forEach(story => {
     html += `<div style="padding:12px 20px;border-bottom:1px solid rgba(95,69,35,0.12);">`;
