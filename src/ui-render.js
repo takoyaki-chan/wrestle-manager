@@ -2738,9 +2738,11 @@ function renderCoach() {
   const coachBrief = (c) => (c.abilities||[]).map(a => (COACH_ABILITY_CATALOG[a]||{}).desc||a).join(' / ');
 
   const maxCoaches = Engine.coach.getMaxCoaches(G);
-  const nextSlot = (G.orgPop||0) < 25 ? '次の枠: 知名度25' : (G.orgPop||0) < 50 ? '次の枠: 知名度50' : '全枠解放';
+  const nextCost = Engine.coach.getNextSlotCost(G);
+  const slotText = nextCost != null ? `次の枠拡張: ${nextCost}万` : '全枠解放済み';
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    雇用中: ${hired.length}/${maxCoaches}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週 ｜ ${nextSlot}
+    雇用中: ${hired.length}/${maxCoaches}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週 ｜ ${slotText}
+    ${nextCost != null ? `<button onclick="expandCoachSlot()" style="font-size:11px;padding:2px 8px;margin-left:8px;background:var(--gold);color:#1a1a1a;border:none;border-radius:4px;cursor:pointer;font-weight:700">＋ 枠拡張 (${nextCost}万)</button>` : ''}
     <br><span style="font-size:12px;color:var(--text-dim)">※ 選手のアサインは「🏋️ 育成」画面で行えます ｜ コーチ名タップで詳細</span>
   </div>`;
 

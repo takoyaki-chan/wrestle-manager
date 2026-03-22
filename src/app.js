@@ -2019,6 +2019,12 @@ const Storage = {
         G = { ...G, battleWinsTotal: { player: 0, org_s: 0, org_a: 0, org_b: 0 } };
       }
 
+      // v0.2: coachSlots マイグレーション（既存セーブは雇用済みコーチ数に合わせて枠を初期化）
+      if (!G._migrated_coachSlots_v1) {
+        const hiredCount = (G.coaches || []).length;
+        G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };
+      }
+
       // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
         const existing = new Set((G.matchupLog || []).map(e => {
@@ -3142,7 +3148,9 @@ const App = {
     const coach = ALL_COACHES.find(c => c.id === coachId);
     if (!coach) return;
     const maxCoaches = Engine.coach.getMaxCoaches(G);
-    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（知名度上昇で枠増加）`); return; }
+    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（枠拡張で増加）`); return; }
+    // A級雇用条件: 4枠目開放済み
+    if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert('A級コーチの雇用には4枠目の開放が必要です'); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
     if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
     G = {
@@ -3156,6 +3164,30 @@ const App = {
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
       message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万）` });
+  },
+
+  // Expand coach slot
+  expandCoachSlot() {
+    const result = Engine.coach.expandSlot(G);
+    if (result.error === 'max_slots') { Audio.play('error'); alert('すでに全枠を開放しています'); return; }
+    if (result.error === 'funds_insufficient') { Audio.play('error'); alert(`資金が足りません（必要: ${result.cost}万）`); return; }
+    G = {
+      ...G,
+      coachSlots: result.coachSlots,
+      funds: result.funds,
+      gameLog: [...G.gameLog, `🎓 コーチ枠を${result.coachSlots}枠に拡張（投資: ${result.cost}万）`]
+    };
+    Audio.play('coin');
+    refreshAll();
+    const slotNum = result.coachSlots;
+    const msgs = {
+      2: '道場に新しいトレーニングスペースを増設した。',
+      3: '専用のコーチルームを設置。複数のコーチが同時に指導できる環境が整った。',
+      4: '最高級のトレーニング施設を完備。伝説級のコーチを招聘する準備が整った。'
+    };
+    showEventPopup({ type:'system', tone:'positive',
+      message: msgs[slotNum] || 'コーチ枠を拡張しました。',
+      detail: `🎓 コーチ枠が${slotNum}枠に拡張されました！（投資: ${result.cost}万）${slotNum >= 4 ? '\n⭐ A級コーチの雇用が解禁されました！' : ''}` });
   },
 
   // Fire coach
@@ -3772,7 +3804,7 @@ const App = {
     const mainEventIdx = 0; // index 0 = main event in showCard order
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
-      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent);
+      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
       roster = mqPop.roster;
     });
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
@@ -3803,13 +3835,13 @@ const App = {
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-        const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id));
+        const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
         if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-        const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id));
+        const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
         if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
       }
     });
@@ -3959,7 +3991,7 @@ const App = {
         // ブレークスルー判定（careerBestMQ更新前に実施 — mq > prevBest 判定のため）
         const btContext = { isTitle, won, isPPV: isPPV(s.week), isRivalryResolution: !!r.rivalryResolved, isWarMatch: false };
         const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
-          btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
+          btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week, Engine.coach.getFlavorBreakthroughMult(s, fighter.id)
         );
         if (btResult) {
           const btFighter = {
@@ -5696,7 +5728,7 @@ const App = {
     const oppOvr = Engine.util.ov(challenger);
     const btCtx = { isTitle: false, won, isPPV: false, isRivalryResolution: false, isWarMatch: true };
     const btResultB3 = Engine.growthEvents.checkAndApplyBreakthrough(
-      btRngB3, playerFighter, matchResult.mq, oppOvr, btCtx, G.season, G.week
+      btRngB3, playerFighter, matchResult.mq, oppOvr, btCtx, G.season, G.week, Engine.coach.getFlavorBreakthroughMult(G, playerFighter.id)
     );
     if (btResultB3) {
       G = { ...G, roster: G.roster.map(c => c.id === fighterId ? btResultB3.fighter : c) };
@@ -6515,7 +6547,7 @@ App.finalizePPV = function() {
       // ブレークスルー判定
       const btContext = { isTitle: false, won, isPPV: true, isRivalryResolution, isWarMatch: false };
       const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
-        btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week
+        btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week, Engine.coach.getFlavorBreakthroughMult(s, fighter.id)
       );
       if (btResult) {
         roster = roster.map(c => c.id === fId ? btResult.fighter : c);

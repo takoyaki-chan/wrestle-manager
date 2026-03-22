@@ -2509,12 +2509,8 @@ const COACH_STYLE_MAP = {
 // スタイルマッチボーナス（専門一致+0.08 / オールラウンド万能+0.05）
 const COACH_STYLE_BONUS = { specialist: 0.08, allround: 0.05 };
 
-// コーチ枠（v0.2: 資金投資ベース。Phase 2で実装予定。暫定orgPop連動）
-const COACH_SLOT_THRESHOLDS = [
-  { slots:1, minOrgPop:0 },
-  { slots:2, minOrgPop:25 },
-  { slots:3, minOrgPop:50 }
-];
+// コーチ枠（v0.2: 資金投資ベース、永続）
+const COACH_SLOT_COSTS = [0, 500, 1000, 5000]; // [1枠目:無料, 2枠目:500万, 3枠目:1000万, 4枠目:5000万]
 
 // シーズンプール設定
 const COACH_POOL_CFG = { candidatesMin:5, candidatesMax:8 };
@@ -14313,7 +14309,7 @@ if (typeof module !== 'undefined' && module.exports) {
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,
     WEEKLY_STORY_TICKER, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,
     FRESHNESS_CONFIG, COACH_STYLE_MAP, COACH_STYLE_BONUS,
-    COACH_SLOT_THRESHOLDS, COACH_POOL_CFG, COACH_ABILITY_CATALOG, COACH_FLAVOR_DEFS, ALL_COACHES,
+    COACH_SLOT_COSTS, COACH_POOL_CFG, COACH_ABILITY_CATALOG, COACH_FLAVOR_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, SHIELD_VARIANTS,

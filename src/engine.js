@@ -697,22 +697,31 @@ const Engine = {
 
   // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
   injury: {
-    check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0) {
+    check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0, coachSeverityDowngrade = 0, flavorOpts = {}) {
       if (!fighter) return null;
       const isLeft = matchResult.left.id === fighter.id;
       const hpData = isLeft ? matchResult.hpLeft : matchResult.hpRight;
       const hpRatio = hpData.final / hpData.max;
       const condFactor = (100 - fighter.condition) / 100;
       let injuryChance = Math.min(0.15, 0.025 + condFactor * 0.05 + (1 - hpRatio) * 0.04 + matchResult.turns * 0.0015);
-      injuryChance *= coachInjuryMult;  // mental coach reduction
+      injuryChance *= coachInjuryMult;  // 怪我耐性
+      injuryChance *= (flavorOpts.injuryMult || 1.0);  // リングの目フレーバー
       // 頑丈さ: 怪我確率×0.7
       if (Traits.has(fighter, '頑丈さ')) injuryChance *= 0.7;
       // ガラスの身体: 怪我確率×1.4
       if (Traits.has(fighter, 'ガラスの身体')) injuryChance *= 1.4;
       if (Engine.rng.float(rng) > injuryChance) return null;
       const roll = Engine.rng.float(rng);
-      const injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
+      let injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
+      // v0.2: 怪我耐性 — 重傷→中傷格下げ (能力40% + 頑健指導フレーバー15%)
+      const totalDowngrade = coachSeverityDowngrade + (flavorOpts.severityDowngrade || 0);
+      if (injury.type === '重傷' && totalDowngrade > 0 && Engine.rng.float(rng) < totalDowngrade) {
+        injury = INJURY_TABLE[1]; // 中傷に格下げ
+      }
       let weeks = injury.minWeeks + Engine.rng.int(rng, 0, injury.maxWeeks - injury.minWeeks);
+      // v0.2: 理学療法フレーバー — 怪我期間 -1週（最低2週）
+      const flavorWeeksReduction = flavorOpts.weeksReduction || 0;
+      if (flavorWeeksReduction > 0) weeks = Math.max(2, weeks - flavorWeeksReduction);
       // 不屈: 復帰期間-1週（最低1）
       if (Traits.has(fighter, '不屈')) weeks = Math.max(1, weeks - 1);
       // 鉄人: 復帰期間-1週（最低1）
@@ -2145,8 +2154,17 @@ const Engine = {
         Allround:   [0.25, 0.25, 0.25, 0.25], // 完全均等
         Brawler:    [0.28, 0.22, 0.22, 0.28], // PW/STほんのり
       };
-      const weights = STYLE_WEIGHTS[style] || STYLE_WEIGHTS.Allround;
+      const weights = [...(STYLE_WEIGHTS[style] || STYLE_WEIGHTS.Allround)];
       const stats = ['pw','sp','te','st'];
+      // v0.2: ステ特化 — 対象ステの選択率 ×1.40
+      const specStat = Engine.coach.getStatSpecBoost(G, charId);
+      if (specStat) {
+        const idx = stats.indexOf(specStat);
+        if (idx >= 0) weights[idx] *= 1.40;
+        // 正規化
+        const total = weights.reduce((a, b) => a + b, 0);
+        for (let i = 0; i < weights.length; i++) weights[i] /= total;
+      }
       const r = Engine.rng.float(rng);
       let cumulative = 0;
       for (let i = 0; i < stats.length; i++) {
@@ -2155,27 +2173,165 @@ const Engine = {
       }
       return stats[3];
     },
-    // v0.2: 旧trait関数はスタブ化（Phase 2 で新能力システムとして再実装）
+    // v0.2: 能力システム — ヘルパー
+    _charHasAbility(G, charId, abilityName) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      return coach && (coach.abilities || []).includes(abilityName);
+    },
+    _charHasFlavor(G, charId, flavorName) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      return coach && coach.flavor === flavorName;
+    },
+    // v0.2: 旧互換スタブ（直接呼び出し元がなくなるまで維持）
     getMQBonusForMatch(G, leftId, rightId) { return 0; },
     getPopBonusForChar(G, charId) { return 0; },
-    getCondBonus(G, charId) { return 0; },
-    getInjuryMult(G, charId) { return 1.0; },
-    getMatchGrowthBonus(G, charId) { return 0; },
-    getDecayReduction(G, charId) { return 0; },
-    getScoutBonus(G) { return 0; },
-    // §1.6 orgPop-linked coach slots
-    getMaxCoaches(G) {
-      const orgPop = G.orgPop || 0;
-      for (let i = COACH_SLOT_THRESHOLDS.length - 1; i >= 0; i--) {
-        if (orgPop >= COACH_SLOT_THRESHOLDS[i].minOrgPop) return COACH_SLOT_THRESHOLDS[i].slots;
-      }
-      return 1;
+    // v0.2: フレーバー — 栄養管理/癒しのオーラ: cond回復+1/週
+    getCondBonus(G, charId) {
+      return (Engine.coach._charHasFlavor(G, charId, '栄養管理') || Engine.coach._charHasFlavor(G, charId, '癒しのオーラ')) ? 1 : 0;
     },
-    // §1.8 Seasonal pool generation (5-8 candidates)
+    getMatchGrowthBonus(G, charId) { return 0; },
+    getScoutBonus(G) { return 0; },
+    // v0.2: 怪我耐性 ×0.6 + リングの目 ×0.90
+    getInjuryMult(G, charId) {
+      let mult = Engine.coach._charHasAbility(G, charId, '怪我耐性') ? 0.6 : 1.0;
+      mult *= Engine.coach.getFlavorInjuryMult(G, charId);
+      return mult;
+    },
+    // v0.2: 延命術 — wear蓄積 ×0.50
+    getWearMult(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '延命術') ? 0.50 : 1.0;
+    },
+    // v0.2: スター製造 — 人気rawGain ×1.2
+    getPopGainMult(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, 'スター製造') ? 1.2 : 1.0;
+    },
+    // v0.2: 人心掌握 — trust低下 ×0.90
+    getTrustDecayMult(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '人心掌握') ? 0.90 : 1.0;
+    },
+    // v0.2: 闘志注入 — スランプ脱出確率 ×2.0
+    getSlumpRecoveryMult(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '闘志注入') ? 2.0 : 1.0;
+    },
+    // v0.2: 限界突破 — trainCap +4（装着中のみ）
+    getTrainCapBonus(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '限界突破') ? 4 : 0;
+    },
+    // v0.2: 弱点克服 — 最低ステの trainCap +5
+    getWeakStatCapBonus(G, charId, stat) {
+      if (!Engine.coach._charHasAbility(G, charId, '弱点克服')) return 0;
+      const char = (G.roster || []).find(c => c.id === charId);
+      if (!char) return 0;
+      const stats = ['pw','sp','te','st'];
+      const capSource = char.trainCap || char.pot || {};
+      let minCap = Infinity, minStat = '';
+      stats.forEach(s => { const v = capSource[s] || char[s] || 0; if (v < minCap) { minCap = v; minStat = s; } });
+      return stat === minStat ? 5 : 0;
+    },
+    // v0.2: 才能開花 — ペナルティ期ageMul下限 0.90
+    getAgeMulFloor(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '才能開花') ? 0.90 : 0;
+    },
+    // v0.2: 新人育成 — OVR≤50の成長 ×1.5
+    getRookieMult(G, charId) {
+      if (!Engine.coach._charHasAbility(G, charId, '新人育成')) return 1.0;
+      const char = (G.roster || []).find(c => c.id === charId);
+      return (char && Engine.util.ov(char) <= 50) ? 1.5 : 1.0;
+    },
+    // v0.2: ステ特化 — 対象ステの練習選択率 ×1.40
+    getStatSpecBoost(G, charId) {
+      const coach = Engine.coach.getCharCoach(G, charId);
+      if (!coach) return null;
+      const specAbility = (coach.abilities || []).find(a => a.startsWith('ステ特化'));
+      if (!specAbility) return null;
+      const statMap = { 'ステ特化PW':'pw', 'ステ特化SP':'sp', 'ステ特化TE':'te', 'ステ特化ST':'st' };
+      return statMap[specAbility] || null;
+    },
+    // v0.2: 怪我耐性 — 重傷→中傷格下げ 40%
+    getInjurySeverityDowngrade(G, charId) {
+      return Engine.coach._charHasAbility(G, charId, '怪我耐性') ? 0.40 : 0;
+    },
+    getDecayReduction(G, charId) { return 0; },
+    // v0.2: フレーバー能力ヘルパー群
+    // 頑健指導: 重傷→中傷格下げ率+15%
+    getFlavorSeverityDowngrade(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '頑健指導') ? 0.15 : 0;
+    },
+    // 冷静な分析: スランプ突入確率 ×0.85
+    getFlavorSlumpEntryMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '冷静な分析') ? 0.85 : 1.0;
+    },
+    // リングの目: 試合後怪我確率 ×0.90
+    getFlavorInjuryMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, 'リングの目') ? 0.90 : 1.0;
+    },
+    // 根性練習: cond消費+2/週、成長 ×1.05
+    getFlavorGritGrowthMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '根性練習') ? 1.05 : 1.0;
+    },
+    getFlavorGritCondDrain(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '根性練習') ? 2 : 0;
+    },
+    // 動作解析: breakthrough確率 ×1.15
+    getFlavorBreakthroughMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '動作解析') ? 1.15 : 1.0;
+    },
+    // 話術: 担当選手trust低下 ×0.95
+    getFlavorTrustDecayMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '話術') ? 0.95 : 1.0;
+    },
+    // 心の観察: モチベ喪失回復momentum +0.2/週
+    getFlavorMotivationRecovery(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '心の観察') ? 0.2 : 0;
+    },
+    // 飲みニケーション: 担当選手間bond上昇速度微増 +10%
+    getFlavorBondBoost(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '飲みニケーション') ? 0.10 : 0;
+    },
+    // 気の調整: スランプ脱出確率 ×1.3
+    getFlavorSlumpRecoveryMult(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '気の調整') ? 1.3 : 1.0;
+    },
+    // 理学療法: 怪我期間 -1週（最低2週）
+    getFlavorInjuryWeeksReduction(G, charId) {
+      return Engine.coach._charHasFlavor(G, charId, '理学療法') ? 1 : 0;
+    },
+    // 怪我チェック用フレーバーオプション一括取得
+    buildInjuryFlavorOpts(G, charId) {
+      return {
+        injuryMult: Engine.coach.getFlavorInjuryMult(G, charId),
+        severityDowngrade: Engine.coach.getFlavorSeverityDowngrade(G, charId),
+        weeksReduction: Engine.coach.getFlavorInjuryWeeksReduction(G, charId),
+      };
+    },
+    // v0.2: 資金投資ベースのコーチ枠
+    getMaxCoaches(G) {
+      return G.coachSlots || 1;
+    },
+    // 次の枠拡張コスト（null=全枠開放済み）
+    getNextSlotCost(G) {
+      const current = G.coachSlots || 1;
+      return current < COACH_SLOT_COSTS.length ? COACH_SLOT_COSTS[current] : null;
+    },
+    // 枠拡張実行（純粋関数）
+    expandSlot(G) {
+      const current = G.coachSlots || 1;
+      if (current >= COACH_SLOT_COSTS.length) return { error: 'max_slots' };
+      const cost = COACH_SLOT_COSTS[current];
+      if ((G.funds || 0) < cost) return { error: 'funds_insufficient', cost };
+      return { coachSlots: current + 1, funds: G.funds - cost, cost };
+    },
+    // v0.2: Seasonal pool generation (5-8 candidates, grade-gated)
     generateSeasonalPool(rng, G) {
       const hired = new Set(G.coaches || []);
       const orgPop = G.orgPop || 0;
-      const eligible = ALL_COACHES.filter(c => !hired.has(c.id) && orgPop >= (c.minOrgPop || 0));
+      const slots = G.coachSlots || 1;
+      const eligible = ALL_COACHES.filter(c => {
+        if (hired.has(c.id)) return false;
+        if (c.grade === 'B' && orgPop < 30) return false;
+        if (c.grade === 'A' && slots < 4) return false;
+        return true;
+      });
       const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
       const count = COACH_POOL_CFG.candidatesMin + Engine.rng.int(rng, 0, COACH_POOL_CFG.candidatesMax - COACH_POOL_CFG.candidatesMin);
       return shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
@@ -2317,20 +2473,34 @@ const Engine = {
       if (stat === 'mn') return 0; // MNT is innate, no training growth
 
       const current = char[stat];
-      const trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
+      let trainCap = char.trainCap ? char.trainCap[stat] : (char.pot[stat] || current);
+      // v0.2: 限界突破 — trainCap +4（装着中のみ）
+      if (!overrideCoachMul) trainCap += Engine.coach.getTrainCapBonus(G, char.id);
+      // v0.2: 弱点克服 — 最低ステの trainCap +5
+      if (!overrideCoachMul) trainCap += Engine.coach.getWeakStatCapBonus(G, char.id, stat);
       if (current >= trainCap) return 0;
 
       const remaining = trainCap - current;
       const ratio = remaining / trainCap; // 距離比率: 天井から遠いほど1.0に近い
 
       const age = char.age || (17 + (char.careerSeasons || 0));
-      const ageMul = ageMultiplier(age, char.traits);
+      let ageMul = ageMultiplier(age, char.traits);
       if (ageMul <= 0) return 0;
+      // v0.2: 才能開花 — ペナルティ期ageMul下限 0.90
+      if (!overrideCoachMul) {
+        const floor = Engine.coach.getAgeMulFloor(G, char.id);
+        if (floor > 0 && ageMul < floor) ageMul = floor;
+      }
 
       const coachMul = overrideCoachMul ?? Engine.coach.getCharGrowthMult(G, char.id, stat);
+      // v0.2: 新人育成 — OVR≤50の成長 ×1.5
+      const rookieMul = overrideCoachMul ? 1.0 : Engine.coach.getRookieMult(G, char.id);
 
-      // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ
-      const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul;
+      // v0.2: 根性練習フレーバー — 成長 ×1.05
+      const gritMul = overrideCoachMul ? 1.0 : Engine.coach.getFlavorGritGrowthMult(G, char.id);
+
+      // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ × 新人育成 × 根性練習
+      const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul * rookieMul * gritMul;
 
       // 特性ボーナス
       let bonus = 1.0;
@@ -2393,7 +2563,9 @@ const Engine = {
           // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
           // durability補正（耐久値が高いほどwear増加が遅い）
           wearBonus -= (nc.durability || 0);
-          const finalWear = Math.max(1, baseWear + wearBonus);
+          let finalWear = Math.max(1, baseWear + wearBonus);
+          // v0.2: 延命術 — wear蓄積 ×0.50
+          finalWear = Math.max(1, Math.round(finalWear * Engine.coach.getWearMult(G, nc.id)));
           nc = { ...nc, wear: (nc.wear || 0) + finalWear };
         }
         const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
@@ -2960,14 +3132,14 @@ const Engine = {
       return ['C', 'B', 'A'];
     },
 
-    _pickAICoachId(rng, targetGrade, usedCoachIds, orgPop) {
+    _pickAICoachId(rng, targetGrade, usedCoachIds, _orgPop) {
       const gradeOrder = Engine.rival._getAICoachGradeOrder(targetGrade);
       let best = null;
       gradeOrder.forEach((grade, idx) => {
         ALL_COACHES.filter(coach => {
           if (usedCoachIds.has(coach.id)) return false;
           if (coach.grade !== grade) return false;
-          return (orgPop || 0) >= (coach.minOrgPop || 0);
+          return true; // AI団体はグレード制限なし
         }).forEach(coach => {
           let score = 100 - (idx * 18);
           score += (coach.gMult || 1.0) * 10;
@@ -4078,7 +4250,7 @@ const Engine = {
         const severity = prev.injury.type;
         const trigger = severity === '重傷' ? 'injury_severe_recovery' : '中傷' ? 'injury_moderate_recovery' : null;
         if (!trigger) return c;
-        if (Engine.growthEvents.checkSlump(geSlumpRng, c, trigger)) {
+        if (Engine.growthEvents.checkSlump(geSlumpRng, c, trigger, Engine.coach.getFlavorSlumpEntryMult(G, c.id))) {
           const newC = Engine.growthEvents.applySlump(c, trigger, G.season, G.week);
           pendingSlumpEvents.push({ type: 'slump_start', fighterId: c.id, trigger });
           // G-03: スランプ → 心配/興味低下
@@ -4124,7 +4296,7 @@ const Engine = {
           if (nc.growthPenalty.remainingWeeks <= 0) {
             nc.growthPenalty = null;
             // v1.8: §4.2 growthPenalty解除時スランプ判定
-            if (Engine.growthEvents.checkSlump(geSlumpRng, nc, 'penalty_end')) {
+            if (Engine.growthEvents.checkSlump(geSlumpRng, nc, 'penalty_end', Engine.coach.getFlavorSlumpEntryMult(G, nc.id))) {
               nc = Engine.growthEvents.applySlump(nc, 'penalty_end', G.season, G.week);
               pendingSlumpEvents.push({ type: 'slump_start', fighterId: nc.id, trigger: 'penalty_end' });
               // G-03: スランプ → 心配/興味低下
@@ -4150,7 +4322,7 @@ const Engine = {
         // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
         if (nc.slump && !nc.injury) {
           const slumpTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C2, nc.id));
-          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week);
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id));
           nc = slumpResult.fighter;
           if (slumpResult.recovered) {
             pendingSlumpEvents.push({ type: 'slump_end', fighterId: nc.id, duration: slumpResult.duration });
@@ -5162,7 +5334,7 @@ const Engine = {
     const mainEventIdx = 0; // first match (showCard[0]) is main event
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
-      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0);
+      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
       roster = mqPop.roster;
       events.push(...mqPop.popEvents);
     });
@@ -5199,7 +5371,7 @@ const Engine = {
     results.forEach((r, idx) => {
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season);
+      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -5222,7 +5394,7 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season);
+      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -5477,7 +5649,7 @@ const Engine = {
   },
 
   // MQ/Show popularity helpers (pure functions)
-  applyMQPopularity(roster, result, isMainEvent, orgPop) {
+  applyMQPopularity(roster, result, isMainEvent, orgPop, state = null) {
     const popEvents = [];
     const newRoster = roster.map(c => {
       const isLeft = c.id === result.left.id, isRight = c.id === result.right.id;
@@ -5493,6 +5665,8 @@ const Engine = {
       // ヒール適性 + Heel: 試合後の人気上昇ボーナス
       if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty') && result.mq >= 40) rawGain += 1;
 
+      // v0.2: スター製造 — 人気rawGain ×1.2
+      if (state) rawGain *= Engine.coach.getPopGainMult(state, c.id);
       // v1.0b: Apply diminishing returns
       let popDelta = Engine.popularity.applyDiminishing(rawGain, c.popularity);
 
@@ -6840,7 +7014,7 @@ const Engine = {
         const mqPop = Engine.applyMQPopularity(roster, {
           left: match.left, right: match.right,
           winner: r.winner, mq: r.mq
-        }, isMainEvent, s.orgPop || 0);
+        }, isMainEvent, s.orgPop || 0, s);
         roster = mqPop.roster;
 
         // 因縁カウンタ更新（保留ペア以外）— Phase 5: matchMQ渡し
@@ -8161,7 +8335,8 @@ const Engine = {
       rivalries: {},
       matchupLog: [],  // カード鮮度: 全対戦履歴
       coaches: [],
-      availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [] }),
+      coachSlots: 1,
+      availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [], coachSlots: 1 }),
       seasonGrowth: {},
       coachAssign: {},
       // v0.9: Rival system
@@ -9147,10 +9322,10 @@ Engine.growthEvents = {
 
   /** §2 ブレークスルー判定・効果適用（純粋関数）
    * @returns {{ fighter, stat, gain, hotStreak }} or null */
-  checkAndApplyBreakthrough(rng, fighter, mq, oppOvr, context, season, week) {
+  checkAndApplyBreakthrough(rng, fighter, mq, oppOvr, context, season, week, breakthroughMult = 1.0) {
     // スランプ/モチベ喪失中はブレークスルー判定なし
     if (fighter.slump || fighter.motivationLoss) return null;
-    const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, context);
+    const prob = Engine.growthEvents.calcBreakthroughProb(fighter, mq, oppOvr, context) * breakthroughMult;
     if (prob <= 0 || Engine.rng.float(rng) >= prob) return null;
 
     // §2.4 ジャンプ量 +2〜4、5ステ均等 — growth-rebalance v2: 3-6→2-4に適正化
@@ -9197,7 +9372,7 @@ Engine.growthEvents = {
 
   /** §4.2 スランプ発生判定
    * trigger: 'injury_moderate_recovery' | 'injury_severe_recovery' | 'defeat' | 'penalty_end' */
-  checkSlump(rng, fighter, trigger) {
+  checkSlump(rng, fighter, trigger, slumpEntryMult = 1.0) {
     if (fighter.hotStreak || fighter.slump || fighter.motivationLoss) return false;
     const probTable = {
       injury_moderate_recovery: 0.03,
@@ -9205,7 +9380,7 @@ Engine.growthEvents = {
       defeat:                   0.008,
       penalty_end:              0.02,
     };
-    const prob = probTable[trigger] || 0;
+    const prob = (probTable[trigger] || 0) * slumpEntryMult;
     return prob > 0 && Engine.rng.float(rng) < prob;
   },
 
@@ -9220,13 +9395,14 @@ Engine.growthEvents = {
 
   /** §4.4 スランプ毎週処理（時間経過 momentum +0.3 + 回復判定）
    * @returns {{ fighter, recovered: bool, duration?: number }} */
-  tickSlumpPassive(fighter, rng, season, week) {
+  tickSlumpPassive(fighter, rng, season, week, slumpRecoveryMult = 1.0) {
     if (!fighter.slump) return { fighter, recovered: false };
     let slump = { ...fighter.slump,
       weeksSinceStart: (fighter.slump.weeksSinceStart || 0) + 1,
       recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 0.3
     };
-    const recoveryProb = (2 + slump.recoveryMomentum) / 100;
+    // v0.2: 闘志注入 — スランプ脱出確率 ×2.0
+    const recoveryProb = ((2 + slump.recoveryMomentum) / 100) * slumpRecoveryMult;
     if (Engine.rng.float(rng) < recoveryProb) {
       const duration = slump.weeksSinceStart;
       let nf = { ...fighter, slump: null };
@@ -9437,6 +9613,11 @@ Engine.trust = {
     if (rosterSize >= 10 && streak >= 2) {
       delta -= 0.35;
       flags.G4 = true;
+    }
+
+    // v0.2: 人心掌握 — trust低下(負のdelta) ×0.90 + 話術フレーバー ×0.95
+    if (delta < 0 && state) {
+      delta *= Engine.coach.getTrustDecayMult(state, fighter.id) * Engine.coach.getFlavorTrustDecayMult(state, fighter.id);
     }
 
     return { delta, flags };
