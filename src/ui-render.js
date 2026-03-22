@@ -4023,24 +4023,52 @@ function _renderDbOrgCompare() {
     return { cls: 'even', text: 'ほぼ五分' };
   }
 
-  function getPopularityTail(popDiff) {
-    if (popDiff >= 8) return 'しかも人気面でも圧倒している。全方位で優位。';
-    if (popDiff >= 3) return '集客力でも上回っており、興行の空気はこちらが作れる。';
-    if (popDiff <= -8) return 'おまけに人気でも大差。集客面での不利は、そのまま興行の空気に直結する。';
-    if (popDiff <= -3) return '人気面の差もボディブローのように効いてくる。';
-    return '人気は互角。純粋な実力勝負に持ち込める。';
+  function getPopularityTail(popDiff, slotIndex) {
+    if (popDiff >= 8) {
+      return [
+        '人気でもこちらが大きくリードしており、興行の主導権は完全にこちらにある。',
+        '人気面でも圧倒。集客力を含めた総合力でねじ伏せられる。',
+        '人気でも完勝。ここまで差があれば興行の空気は自在に作れる。',
+      ][slotIndex] || '人気でもこちらが大きくリード。';
+    }
+    if (popDiff >= 3) {
+      return [
+        '集客力でもこちらが上。興行の空気を作れるのは大きい。',
+        '人気面でも先行しており、会場の後押しが期待できる。',
+        '集客面の優位が下支えになる。地力の差が出る場面だ。',
+      ][slotIndex] || '集客力でも上回っている。';
+    }
+    if (popDiff <= -8) {
+      return [
+        'ただし人気では大きく水をあけられている。集客面の不利は、そのまま興行の空気に直結する。',
+        '一方で人気面では相手に大きく分がある。会場の温度差がそのまま試合の空気になる。',
+        '集客面の弱さは団体の地力に響く。人気差がこれだけ開くと、興行全体の勢いが違ってくる。',
+      ][slotIndex] || 'ただし人気では大きく水をあけられている。';
+    }
+    if (popDiff <= -3) {
+      return [
+        '一方、人気面では相手に分がある。集客への影響がボディブローのように効いてくる。',
+        '人気差は無視できない。ファンの声援が試合の流れを変えることもある。',
+        '人気で後手を踏んでいるのが気がかりだ。数字以上の壁を感じるかもしれない。',
+      ][slotIndex] || '人気面では相手に分がある。';
+    }
+    return [
+      '人気は互角。純粋な実力勝負の構図だ。',
+      '人気差はほぼなし。勝負は地力で決まる。',
+      '集客面は五分。ここは内容で差をつけたい。',
+    ][slotIndex] || '人気は互角。';
   }
 
   function getMatchupSlot(index) {
     return [
-      { chip: 'エース比較', center: 'ACE', key: 'ace' },
-      { chip: 'No.2比較', center: 'No.2', key: 'no2' },
-      { chip: 'No.3比較', center: 'No.3', key: 'no3' },
+      { chip: 'エース比較', center: 'エース対決', key: 'ace' },
+      { chip: 'No.2比較', center: 'No.2対決', key: 'no2' },
+      { chip: 'No.3比較', center: 'No.3対決', key: 'no3' },
     ][index] || { chip: '比較', center: 'VS', key: 'generic' };
   }
 
-  function getMatchupCopy(slot, ovrDiff, popDiff) {
-    const popTail = getPopularityTail(popDiff);
+  function getMatchupCopy(slot, ovrDiff, popDiff, slotIndex) {
+    const popTail = getPopularityTail(popDiff, slotIndex);
     if (slot.key === 'ace') {
       if (ovrDiff <= -8) return `エース比較？ 話にならない。看板に据えたら向こうのサンドバッグにされるだけだ。${popTail}`;
       if (ovrDiff <= -4) return `エース比較は正直キツい。真っ向勝負を挑んでも、主導権を握られる展開が目に見えている。${popTail}`;
@@ -4100,11 +4128,19 @@ function _renderDbOrgCompare() {
     ? _newsClickableName(_rivalChampF.name, _rivalChampF.id)
     : '不在';
 
+  // ═══ 赤帯ヘッダー ═══
+  const rivalDisplayName = G.rivalOrgNames?.[_dbCompareTarget] || d.rivalName;
+  let html = `<div class="db-cmp-newspaper-header">
+    <h1>週刊グラップル ── 団体比較</h1>
+    <span>比較対象: ${rivalDisplayName} (ティア${d.rivalTier})</span>
+  </div>
+  <div class="db-cmp-wrap">`;
+
   // ═══ [SELECT] 比較対象選択 ═══
-  let html = `<div class="db-cmp-select">
-    <label>Compare with</label>
+  html += `<div class="db-cmp-select">
+    <label>比較対象</label>
     <select onchange="_dbCompareTarget=this.value;renderDatabase()">
-      ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${G.rivalOrgNames?.[o.id] || o.name || o.id} (Tier ${o.tier})</option>`).join('')}
+      ${RIVAL_ORGS.map(o => `<option value="${o.id}" ${_dbCompareTarget === o.id ? 'selected' : ''}>${o.emoji} ${G.rivalOrgNames?.[o.id] || o.name || o.id} (ティア${o.tier})</option>`).join('')}
     </select>
   </div>`;
 
@@ -4120,7 +4156,7 @@ function _renderDbOrgCompare() {
       </div>
     </div>
     <div class="db-cmp-headline-grade">
-      <div class="grade-label">Matchup</div>
+      <div class="grade-label">相性</div>
       <div class="grade-value">${d.grade}</div>
       <div class="grade-desc">${d.gradeDesc}</div>
     </div>
@@ -4134,7 +4170,7 @@ function _renderDbOrgCompare() {
     const delta = currentPop - s1Pop;
     if (s1Pop === 0 && delta === 0) return '';
     const cls = delta > 0 ? 'growth-up' : delta < 0 ? 'growth-down' : '';
-    return `<div style="margin-top:6px;font-size:11px;color:var(--text-sub)">S1: ${s1Pop} → 現在: ${currentPop} <span class="${cls}">${delta > 0 ? '+' : ''}${delta}</span></div>`;
+    return `<div style="margin-top:6px;font-size:11px;color:#3a2a1a">S1: ${s1Pop} → 現在: ${currentPop} <span class="${cls}">${delta > 0 ? '+' : ''}${delta}</span></div>`;
   }
 
   function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, popTrend, styleAttr = '') {
@@ -4152,19 +4188,20 @@ function _renderDbOrgCompare() {
         <span>選手層 <strong>${rosterCount}</strong></span>
         <span>団体人気 <strong>${orgPop}</strong></span>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">王者 <strong style="color:var(--text-main)">${championName}</strong></div>
+      <div style="margin-top:8px;font-size:12px;color:#3a2a1a">王者 <strong style="color:#1a0a00">${championName}</strong></div>
       ${popTrend}
     </article>`;
   }
 
   html += `<div class="db-cmp-org-summary">
     <div class="db-cmp-org-summary-row">
-      ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">Player</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'))}
+      ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">プレイヤー</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'))}
       <div class="db-cmp-org-summary-grade">
-        <span>VS</span>
-        <strong>${d.rivalEmoji || 'VS'}</strong>
+        <div class="db-cmp-vs-divider"></div>
+        <strong style="font-size:36px;font-weight:900;color:#8b1a1a;font-family:'Oswald',sans-serif;letter-spacing:3px">VS</strong>
+        <div class="db-cmp-vs-divider"></div>
       </div>
-      ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">Tier ${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`)}
+      ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">ティア${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`)}
     </div>
   </div>`;
 
@@ -4200,7 +4237,7 @@ function _renderDbOrgCompare() {
     else if (rec.streak <= -2) streakHtml = `<div class="db-cmp-war-streak lose">${Math.abs(rec.streak)}連敗中</div>`;
 
     html += `<section class="db-cmp-panel db-cmp-war-record">
-      <h2 class="db-cmp-panel-title">Head to Head</h2>
+      <h2 class="db-cmp-panel-title">対戦成績</h2>
       <div class="db-cmp-war-overall">
         <span class="db-cmp-war-label">通算</span>
         <strong class="db-cmp-war-wl">${totalW}勝${totalL}敗${totalD > 0 ? totalD + '分' : ''}</strong>
@@ -4254,7 +4291,7 @@ function _renderDbOrgCompare() {
     const ovrDiff = m.player.ovr - m.rival.ovr;
     const popDiff = m.player.pop - m.rival.pop;
     const edge = getEdgeState(ovrDiff);
-    let fullCopy = getMatchupCopy(slot, ovrDiff, popDiff);
+    let fullCopy = getMatchupCopy(slot, ovrDiff, popDiff, index);
 
     // 黒田フレーバー追加
     const flavors = [];
@@ -4293,14 +4330,53 @@ function _renderDbOrgCompare() {
     const selectedFlavors = flavors.slice(0, 2);
     if (selectedFlavors.length) fullCopy += ' ' + selectedFlavors.join(' ');
 
-    return `<article class="${featured ? 'db-cmp-match-featured' : 'db-cmp-match-card'}">
+    // ── エース対決（index===0）: アリーナレイアウト ──
+    if (featured) {
+      const pStandUrl = getStandUrl(m.player.id);
+      const rStandUrl = getStandUrl(m.rival.id);
+      const pStandHtml = pStandUrl
+        ? `<img src="${pStandUrl}" alt="" onerror="this.parentNode.innerHTML='<div class=ace-char-fallback>${m.player.name.charAt(0)}</div>'">`
+        : `<div class="ace-char-fallback">${m.player.name.charAt(0)}</div>`;
+      const rStandHtml = rStandUrl
+        ? `<img src="${rStandUrl}" alt="" onerror="this.parentNode.innerHTML='<div class=ace-char-fallback>${m.rival.name.charAt(0)}</div>'">`
+        : `<div class="ace-char-fallback">${m.rival.name.charAt(0)}</div>`;
+
+      return `<article class="db-cmp-match-featured">
+        <div class="db-cmp-match-top">
+          <span class="db-cmp-role-chip">${slot.chip}</span>
+          <span class="db-cmp-edge ${edge.cls}">${edge.text}</span>
+        </div>
+        <div class="ace-arena">
+          <div class="ace-char left">${pStandHtml}</div>
+          <div class="ace-vs-center">
+            <div class="ace-vs-text">VS</div>
+            <div class="ace-vs-metrics">OVR差 ${signValue(ovrDiff)} / 人気差 ${signValue(popDiff)}</div>
+          </div>
+          <div class="ace-char right">${rStandHtml}</div>
+        </div>
+        <div class="ace-name-bar">
+          <div class="ace-side">
+            <strong onclick="event.stopPropagation();showFighterPopup(${m.player.id},'roster')">${m.player.name}</strong>
+            <span>${d.playerName}/OVR${m.player.ovr}</span>
+          </div>
+          <div class="ace-side right">
+            <span>${d.rivalName}/OVR${m.rival.ovr}</span>
+            <strong onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${m.rival.name}</strong>
+          </div>
+        </div>
+        <p class="db-cmp-match-copy">${fullCopy}</p>
+      </article>`;
+    }
+
+    // ── No.2/No.3: 従来の丸アバター+テキスト形式 ──
+    return `<article class="db-cmp-match-card">
       <div class="db-cmp-match-top">
         <span class="db-cmp-role-chip">${slot.chip}</span>
         <span class="db-cmp-edge ${edge.cls}">${edge.text}</span>
       </div>
       <div class="db-cmp-match-faceoff">
         <div class="db-cmp-match-side">
-          <div class="db-cmp-match-avatar player ${featured ? 'lg' : ''}" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.player.id},'roster')">${pAvatar}</div>
+          <div class="db-cmp-match-avatar player" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.player.id},'roster')">${pAvatar}</div>
           <div class="db-cmp-match-meta">
             <strong style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${m.player.id},'roster')">${m.player.name}</strong>
             <span>${d.playerName}</span>
@@ -4315,7 +4391,7 @@ function _renderDbOrgCompare() {
           </div>
         </div>
         <div class="db-cmp-match-side right">
-          <div class="db-cmp-match-avatar rival ${featured ? 'lg' : ''}" style="background:linear-gradient(180deg,${rc},${hexDim(rc, 0.4)});cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${rAvatar}</div>
+          <div class="db-cmp-match-avatar rival" style="background:linear-gradient(180deg,${rc},${hexDim(rc, 0.4)});cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${rAvatar}</div>
           <div class="db-cmp-match-meta">
             <strong style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${m.rival.id},'ai:${_dbCompareTarget}')">${m.rival.name}</strong>
             <span>${d.rivalName}</span>
@@ -4330,13 +4406,13 @@ function _renderDbOrgCompare() {
   const topMatchups = d.matchups.slice(0, 3);
   if (topMatchups.length) {
     html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Top 3 Matchups</div>
+      <div class="db-cmp-panel-title rival-accent">主力対決</div>
       ${buildMatchupCard(topMatchups[0], 0)}
       ${topMatchups.length > 1 ? `<div class="db-cmp-match-grid">${topMatchups.slice(1).map((m, idx) => buildMatchupCard(m, idx + 1)).join('')}</div>` : ''}
     </section>`;
   } else {
     html += `<section class="db-cmp-spotlight-panel">
-      <div class="db-cmp-panel-title">Top 3 Matchups</div>
+      <div class="db-cmp-panel-title rival-accent">主力対決</div>
       <div class="db-cmp-recommend"><p>比較対象になる主力カードがまだ揃っていません。</p></div>
     </section>`;
   }
@@ -4363,30 +4439,30 @@ function _renderDbOrgCompare() {
   let gridSvg = '';
   [1, 0.75, 0.5, 0.25].forEach((s, i) => {
     const a = [0, -R * s, R * s, 0, 0, R * s, -R * s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
-    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(200,190,170,${0.12 - i * 0.02})"/>`;
+    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(80,50,20,${0.12 - i * 0.02})"/>`;
   });
 
   const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体パワースナップショット">
     <defs>
-      <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f0d078" stop-opacity="0.35"/><stop offset="100%" stop-color="#d4a843" stop-opacity="0.08"/></linearGradient>
+      <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#9a7020" stop-opacity="0.35"/><stop offset="100%" stop-color="#6a4a10" stop-opacity="0.08"/></linearGradient>
       <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
     </defs>
     <g>
       ${gridSvg}
-      <line x1="${cx}" y1="${cy - R - 8}" x2="${cx}" y2="${cy + R + 8}" stroke="rgba(255,255,255,0.08)"/>
-      <line x1="${cx - R - 8}" y1="${cy}" x2="${cx + R + 8}" y2="${cy}" stroke="rgba(255,255,255,0.08)"/>
-      <polygon points="${pPts}" fill="url(#gP)" stroke="#d4a843" stroke-width="2"/>
+      <line x1="${cx}" y1="${cy - R - 8}" x2="${cx}" y2="${cy + R + 8}" stroke="rgba(80,50,20,0.1)"/>
+      <line x1="${cx - R - 8}" y1="${cy}" x2="${cx + R + 8}" y2="${cy}" stroke="rgba(80,50,20,0.1)"/>
+      <polygon points="${pPts}" fill="url(#gP)" stroke="#9a7020" stroke-width="2"/>
       <polygon points="${rPts}" fill="url(#gR)" stroke="${rc}" stroke-width="2" opacity="0.7"/>
       ${axisKeys.map((k, i) => {
         const pv = d.playerScores[k] / 100 * R;
         const rv = d.rivalScores[k] / 100 * R;
-        return `<circle cx="${cx + dirs[i][0] * pv}" cy="${cy + dirs[i][1] * pv}" r="3.5" fill="#f0d078"/>
+        return `<circle cx="${cx + dirs[i][0] * pv}" cy="${cy + dirs[i][1] * pv}" r="3.5" fill="#9a7020"/>
                 <circle cx="${cx + dirs[i][0] * rv}" cy="${cy + dirs[i][1] * rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
       }).join('')}
-      <text x="${cx}" y="${cy - R - 14}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5総合</text>
-      <text x="${cx + R + 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
-      <text x="${cx}" y="${cy + R + 20}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
-      <text x="${cx - R - 14}" y="${cy + 4}" fill="var(--text-sub)" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
+      <text x="${cx}" y="${cy - R - 14}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5総合</text>
+      <text x="${cx + R + 14}" y="${cy + 4}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
+      <text x="${cx}" y="${cy + R + 20}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
+      <text x="${cx - R - 14}" y="${cy + 4}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
     </g>
   </svg>`;
 
@@ -4404,7 +4480,7 @@ function _renderDbOrgCompare() {
   });
 
   html += `<section class="db-cmp-panel">
-    <h2 class="db-cmp-panel-title">Power Snapshot</h2>
+    <h2 class="db-cmp-panel-title">戦力レーダー</h2>
     <div class="db-cmp-analysis">
       <div class="db-cmp-chart-box">${svgChart}</div>
       <div class="db-cmp-axis-table">${axisBars}</div>
@@ -4420,7 +4496,7 @@ function _renderDbOrgCompare() {
     </div>`).join('') || `<div class="db-cmp-brief-card"><p>現時点で大きく動かすべきアクションはありません。</p></div>`;
 
   html += `<div class="db-cmp-panel">
-    <h2 class="db-cmp-panel-title">Column</h2>
+    <h2 class="db-cmp-panel-title">記者コラム</h2>
     <div class="db-cmp-editorial">
       <img src="${getNpcPortraitUrl('reporter')}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px;" alt="">
       <div class="db-cmp-editorial-body">
@@ -4470,7 +4546,7 @@ function _renderDbOrgCompare() {
     if (spotPicks.length > 0) {
       const categoryLabels = { growth: '要警戒', star: 'スター候補', youngThreat: '若手脅威' };
       html += `<section class="db-cmp-panel db-cmp-spotlight">
-        <h2 class="db-cmp-panel-title">Scouting Report</h2>
+        <h2 class="db-cmp-panel-title rival-accent">${rivalOrgName} 注目選手</h2>
         ${spotPicks.map(p => {
           const pUrl = getPortraitUrl(p.id);
           const pOvr = Engine.util.ov(p);
@@ -4485,7 +4561,7 @@ function _renderDbOrgCompare() {
           return `<div class="db-cmp-spotlight-pick">
             ${faceHtml}
             <div class="db-cmp-spotlight-info">
-              <div class="db-cmp-spotlight-name">${_scoutName} <span style="font-size:12px;color:var(--text-dim);font-weight:400">OVR ${pOvr}${p.category === 'star' ? ' / 人気' + (p.pop || '') : p.category === 'growth' ? ' / +' + p.ovrGain : ''}</span></div>
+              <div class="db-cmp-spotlight-name">${_scoutName} <span style="font-size:12px;color:rgba(80,50,20,0.5);font-weight:400">OVR ${pOvr}${p.category === 'star' ? ' / 人気' + (p.pop || '') : p.category === 'growth' ? ' / +' + p.ovrGain : ''}</span></div>
               <span class="db-cmp-spotlight-tag ${p.category}">${categoryLabels[p.category] || ''}</span>
               <div class="db-cmp-spotlight-comment">「${spotStr}」</div>
             </div>
@@ -4520,7 +4596,7 @@ function _renderDbOrgCompare() {
 
   if (fanComments.length > 0) {
     html += `<section class="db-cmp-panel db-cmp-fan-opinions">
-      <h2 class="db-cmp-panel-title">Fan Voice</h2>
+      <h2 class="db-cmp-panel-title">ファンの声</h2>
       ${fanComments.map(fc => `<div class="db-cmp-fan-comment">
         <div class="db-cmp-fan-text">「${fc.text}」</div>
         <div class="db-cmp-fan-handle">${fc.handle}</div>
@@ -4528,6 +4604,7 @@ function _renderDbOrgCompare() {
     </section>`;
   }
 
+  html += `</div>`; // close .db-cmp-wrap
   return html;
 }
 const _RELMAP_ORG_COLORS = { player: '#d4a843', org_s: '#d63031', org_a: '#6c5ce7', org_b: '#00b894', fa: '#8bc4f0' };
