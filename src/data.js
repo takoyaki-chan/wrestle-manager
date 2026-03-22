@@ -6,18 +6,18 @@ const ALL_CHARS = [
   {id:2,name:'富岡加奈子',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168},traits:['努力家','頑丈さ','闘志','負けず嫌い'],personality:'normal',archetype:'ojousama'},
   {id:3,name:'澤出みずき',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154},traits:['引き出し上手','早熟','適応力'],personality:'normal',archetype:'polite'},
   {id:4,name:'高津小春',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Striker',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志','反骨心'],personality:'bold',archetype:'normal'},
-  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Speed',role:'Babyface',pot:{pw:135,sp:185,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'normal',archetype:'normal'},
+  {id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Aerial',role:'Babyface',pot:{pw:135,sp:185,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'normal',archetype:'normal'},
   {id:6,name:'副沢たまき',h:161,pw:71,sp:68,te:74,st:68,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:148,te:156,st:148,mn:148},traits:['ムードメーカー','早熟','破天荒'],personality:'easygoing',archetype:'normal'},
   {id:7,name:'高階まさみ',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心'],personality:'earnest',archetype:'polite'},
   {id:8,name:'林真尋',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い'],personality:'normal',archetype:'normal'},
-  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Speed',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'normal'},
+  {id:9,name:'宇田川里奈',h:167,pw:51,sp:62,te:54,st:63,mn:41,style:'Aerial',role:'Neutral',pot:{pw:126,sp:141,te:130,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'normal'},
   {id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:178,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華'],personality:'normal',archetype:'seductive'},
   {id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Grappler',role:'Heel',pot:{pw:161,sp:152,te:156,st:167,mn:167},traits:['負けず嫌い','闘志','鉄人','人望','反骨心'],personality:'easygoing',archetype:'delinquent'},
   {id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:128,st:143,mn:155},traits:['破天荒'],personality:'quiet',archetype:'cool'},
   {id:14,name:'黒江舞',h:159,pw:48,sp:52,te:76,st:58,mn:67,style:'Submission',role:'Heel',pot:{pw:122,sp:128,te:159,st:135,mn:147},traits:['ヒール適性','早熟'],personality:'shy',archetype:'polite'},
   {id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',pot:{pw:163,sp:144,te:121,st:146,mn:141},traits:['威圧感'],personality:'normal',archetype:'normal'},
   {id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',role:'Heel',pot:{pw:181,sp:159,te:146,st:150,mn:160},traits:['リーダー気質','威圧感','華','野心'],personality:'normal',archetype:'ojousama'},
-  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Speed',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'polite'},
+  {id:17,name:'川野辺菜穂子',h:168,pw:66,sp:80,te:69,st:71,mn:76,style:'Aerial',role:'Babyface',pot:{pw:146,sp:164,te:150,st:152,mn:159},traits:['ライバル体質','名勝負製造機','華','負けず嫌い'],personality:'earnest',archetype:'polite'},
   {id:18,name:'出羽鷹子',h:184,pw:85,sp:54,te:75,st:66,mn:62,style:'Grappler',role:'Heel',pot:{pw:170,sp:130,te:158,st:146,mn:141},traits:['適応力'],personality:'bold',archetype:'delinquent'},
   {id:19,name:'四条あずさ',h:163,pw:64,sp:68,te:62,st:67,mn:62,style:'Allround',role:'Neutral',pot:{pw:143,sp:148,te:141,st:147,mn:141},traits:['忠誠心','適応力'],personality:'earnest',archetype:'polite'},
   {id:20,name:'岸ゆみえ',h:155,pw:48,sp:53,te:78,st:64,mn:78,style:'Submission',role:'Babyface',pot:{pw:122,sp:149,te:161,st:155,mn:161},traits:['努力家','遅咲き'],personality:'normal',archetype:'normal'},
@@ -69,7 +69,7 @@ const ALL_CHARS = [
   {id:66,name:'長谷川レオナ',h:164,pw:78,sp:70,te:78,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:161,sp:151,te:161,st:150,mn:161},traits:['人望','引き出し上手'],personality:'normal',archetype:'seductive'},
   {id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:168,sp:139,te:148,st:155,mn:168},traits:['ファンサービス','華','野心'],personality:'normal',archetype:'polite'},
   {id:68,name:'大庭愛菜',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:148,sp:160,te:128,st:151,mn:159},traits:['負けず嫌い'],personality:'bold',archetype:'normal'},
-  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Speed',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い'],personality:'normal',archetype:'normal'},
+  {id:69,name:'早川モナ',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Aerial',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い'],personality:'normal',archetype:'normal'},
   {id:70,name:'浜竹美咲',h:167,pw:80,sp:57,te:63,st:68,mn:68,style:'Grappler',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['引き出し上手','忠誠心'],personality:'normal',archetype:'normal'},
   {id:71,name:'東金沙織',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:145,sp:134,te:150,st:141,mn:147},traits:['ファンサービス'],personality:'emotional',archetype:'seductive'},
   {id:72,name:'穴澤ほのか',h:168,pw:74,sp:58,te:65,st:63,mn:70,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['ファンサービス','引き出し上手','野心'],personality:'normal',archetype:'polite'},
@@ -82,15 +82,15 @@ const ALL_CHARS = [
   {id:79,name:'久堂梨々花',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:133},traits:['ヒール適性'],personality:'bold',archetype:'delinquent'},
   {id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:129,sp:164,te:166,st:132,mn:85},traits:['ファンサービス','ムードメーカー'],personality:'shy',archetype:'polite'},
   // ── 新規キャラクター（v1.4 GameID 81〜99）──
-  {id:81,name:'坂本莉衣奈',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Speed',role:'Neutral',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['ムードメーカー'],personality:'easygoing',archetype:'normal'},
+  {id:81,name:'坂本莉衣奈',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Aerial',role:'Neutral',pot:{pw:148,sp:159,te:144,st:161,mn:160},traits:['ムードメーカー'],personality:'easygoing',archetype:'normal'},
   {id:82,name:'近藤ゆりか',h:166,pw:84,sp:55,te:67,st:80,mn:69,style:'Grappler',role:'Neutral',pot:{pw:169,sp:132,te:147,st:164,mn:150},traits:['番狂わせ体質'],personality:'earnest',archetype:'normal'},
   {id:83,name:'佐久間ひより',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:84,name:'南谷杏',h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
   {id:85,name:'鴨志田ルーシー',h:172,pw:74,sp:58,te:43,st:69,mn:73,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:116,st:150,mn:155},traits:['頑丈さ'],personality:'earnest',archetype:'normal'},
   {id:86,name:'芹沢亜里紗',h:166,pw:70,sp:70,te:53,st:58,mn:61,style:'Allround',role:'Heel',pot:{pw:151,sp:151,te:129,st:135,mn:139},traits:['ファンサービス'],personality:'emotional',archetype:'seductive'},
-  {id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Speed',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'normal'},
+  {id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Aerial',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'normal'},
   {id:88,name:'愛川明日香',h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[],personality:'easygoing',archetype:'seductive'},
-  {id:89,name:'赤羽あんな',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Speed',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
+  {id:89,name:'赤羽あんな',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Aerial',role:'Neutral',pot:{pw:155,sp:158,te:143,st:150,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'normal'},
   {id:90,name:'玉手すみれ',h:161,pw:69,sp:58,te:56,st:81,mn:81,style:'Grappler',role:'Neutral',pot:{pw:150,sp:135,te:133,st:165,mn:165},traits:['努力家'],personality:'normal',archetype:'polite'},
   {id:91,name:'等々力あかね',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:152,sp:154,te:148,st:156,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:92,name:'飯島冴子',h:170,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:137,st:120,mn:117},traits:['忠誠心'],personality:'normal',archetype:'seductive'},
@@ -486,7 +486,7 @@ function portraitImg(id, size = 80, cls = '', clickable = false) {
   // Fallback: rounded square with initial
   const ch = ALL_CHARS.find(c => c.id === id);
   const initial = ch ? ch.name.charAt(0) : '?';
-  const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Speed:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+  const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
   const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
   const clickStyle = clickable ? 'cursor:pointer;' : '';
   const clickEv = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'roster')"` : '';
@@ -538,7 +538,7 @@ Grappler:[{n:'パワーボム',d:14,c:'throw'},{n:'シットアウト・パワ�
 {n:'ラストライド',d:16,c:'throw'},{n:'垂直落下式ブレーンバスター',d:14,c:'throw'},
 {n:'力強いラリアット',d:12,c:'strike'},{n:'頭突き',d:11,c:'strike'},
 {n:'カナディアン・バックブリーカー',d:10,c:'submission'},{n:'アルゼンチン・バックブリーカー',d:11,c:'submission'}],
-Speed:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネードDDT',d:13,c:'throw'},
+Aerial:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネードDDT',d:13,c:'throw'},
 {n:'シャイニング・ウィザード',d:12,c:'strike'},{n:'ムーンサルト・プレス',d:15,c:'aerial'},
 {n:'シューティング・スター・プレス',d:16,c:'aerial'},{n:'450スプラッシュ',d:15,c:'aerial'},
 {n:'フロッグ・スプラッシュ',d:13,c:'aerial'},{n:'スワントン・ボム',d:14,c:'aerial'},
@@ -578,7 +578,7 @@ Brawler:[{n:'エルボースマッシュ',d:12,c:'strike'},{n:'バックハン�
 };
 const catW={
 Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15,rollup:5},
-Speed:{strike:20,throw:15,submission:10,aerial:35,ground:5,rollup:10},
+Aerial:{strike:20,throw:15,submission:10,aerial:35,ground:5,rollup:10},
 Technique:{strike:15,throw:20,submission:30,aerial:5,ground:10,rollup:15},
 Allround:{strike:25,throw:25,submission:15,aerial:15,ground:10,rollup:10},
 Striker:{strike:45,throw:15,submission:5,aerial:10,ground:15,rollup:5},
@@ -2502,7 +2502,7 @@ const FRESHNESS_CONFIG = {
 
 // 得意スタイル表示名（選手スタイルと統一）
 const COACH_STYLE_MAP = {
-  Grappler:'グラップラー', Striker:'ストライカー', Speed:'スピード',
+  Grappler:'グラップラー', Striker:'ストライカー', Aerial:'エアリアル',
   Submission:'サブミッション', Brawler:'ブローラー', Allround:'オールラウンド'
 };
 
@@ -2563,7 +2563,7 @@ const ALL_COACHES = [
    desc:'パワー育成の鬼。若手選手を力強く鍛え上げる。',
    profile:'元柔道全日本代表。引退後は独自のパワートレーニング理論を確立し、多くの格闘家を育て上げた。「力なき技は無力」が口癖。厳しいが、弟子想いの熱血指導者。'},
   {id:2, name:'飛鳥 真琴',          emoji:'💨', hasPortrait:true,
-   grade:'C', gMult:1.13, observation:'C', style:'Speed', abilities:['新人育成','ステ特化SP'], flavor:null,
+   grade:'C', gMult:1.13, observation:'C', style:'Aerial', abilities:['新人育成','ステ特化SP'], flavor:null,
    salary:48, hireFee:384, minOrgPop:0,
    age:34, gender:'女', origin:'大阪',
    desc:'スピード強化の専門家。試合で使えるスピードを徹底的に叩き込む。',
@@ -2613,7 +2613,7 @@ const ALL_COACHES = [
    desc:'元ボディビルダーのトレーナー。地道にフィジカルの土台を作る。',
    profile:'元アマチュアボディビル入賞者。筋肉づくりの知識は確かだが、プロレス指導の経験はまだ浅い。地道なフィジカルトレーニングで選手の土台をコツコツ作り上げる。口下手だが、黙々と付き合ってくれる信頼感がある。'},
   {id:10, name:'宮本 花菜',   emoji:'🌱', hasPortrait:false,
-   grade:'C', gMult:1.09, observation:'D', style:'Speed', abilities:['新人育成'], flavor:null,
+   grade:'C', gMult:1.09, observation:'D', style:'Aerial', abilities:['新人育成'], flavor:null,
    salary:30, hireFee:240, minOrgPop:0,
    age:26, gender:'女', origin:'神奈川',
    desc:'元体操選手の若手コーチ。新人の素質を見抜く直感が鋭い。',
@@ -2673,7 +2673,7 @@ const ALL_COACHES = [
    desc:'バイオメカニクス研究者。科学的分析で選手の技術を最適化する。',
    profile:'身体の動きを科学的に分析するスペシャリスト。映像分析やデータを駆使して選手の技術を最適化する。プロレスの現場経験は少ないが、理論に基づいた的確な改善提案で信頼を得つつある。話し始めると止まらないマニアックな一面も。'},
   {id:20, name:'藤原 千春',   emoji:'🧘', hasPortrait:false,
-   grade:'C', gMult:1.08, observation:'C', style:'Speed', abilities:['人心掌握'], flavor:'癒しのオーラ',
+   grade:'C', gMult:1.08, observation:'C', style:'Aerial', abilities:['人心掌握'], flavor:'癒しのオーラ',
    salary:34, hireFee:272, minOrgPop:0,
    age:47, gender:'女', origin:'石川',
    desc:'元メンタルトレーナー。ベテラン選手の心を支え闘志を再点火する。',
@@ -2699,7 +2699,7 @@ const ALL_COACHES = [
    desc:'元レスリングナショナルコーチ。選手の隠れた才能を見逃さない名伯楽。',
    profile:'レスリング指導の世界で長年培った観察眼は、選手の隠れた才能を見逃さない。派手な指導はしないが、一人ひとりの特性に合わせた技術指導で着実に選手を伸ばす。「答えは選手の中にある。それを引き出すのが俺の仕事だ」と語る。'},
   {id:24, name:'中村 紗弓',   emoji:'🏆', hasPortrait:false,
-   grade:'B', gMult:1.15, observation:'C', style:'Speed', abilities:['弱点克服'], flavor:null,
+   grade:'B', gMult:1.15, observation:'C', style:'Aerial', abilities:['弱点克服'], flavor:null,
    salary:61, hireFee:488, minOrgPop:30,
    age:35, gender:'女', origin:'千葉',
    desc:'元新体操日本代表。基礎の美しさから強い選手を育てる万能型。',
@@ -2723,7 +2723,7 @@ const ALL_COACHES = [
    desc:'元グレコローマン全日本王者。若手のパワーを短期間で開花させる。',
    profile:'グレコローマンで鍛え上げた圧倒的なパワーと、若手を一人前に育てる手腕を兼ね備えた実力派コーチ。基礎体力の徹底と実戦練習を組み合わせた指導で、新人のパワーを短期間で開花させる。「強くなりたいなら、まず自分に負けるな」が口癖。'},
   {id:28, name:'羽田 小百合',   emoji:'⚖️', hasPortrait:false,
-   grade:'B', gMult:1.12, observation:'C', style:'Speed', abilities:['才能開花','ステ特化SP'], flavor:null,
+   grade:'B', gMult:1.12, observation:'C', style:'Aerial', abilities:['才能開花','ステ特化SP'], flavor:null,
    salary:54, hireFee:432, minOrgPop:30,
    age:44, gender:'女', origin:'東京',
    desc:'元プロダンサー。ベテランの動きのキレとしなやかさを維持させる。',
@@ -2755,7 +2755,7 @@ const ALL_COACHES = [
    desc:'元大相撲力士のパワー系最高峰。実戦で通用する力を最短で身につけさせる。',
    profile:'角界で鍛え上げた圧倒的なパワー理論と、格闘技指導で磨いた実戦メソッドを持つ最高峰のパワー系コーチ。その指導を受けた選手は例外なくパワーで試合を支配するようになると言われる。威圧的な風貌だが、弟子思いの人情家。「力とは、覚悟の結晶だ」と説く。'},
   {id:33, name:'葉月 レナ', emoji:'🌸', hasPortrait:false,
-   grade:'A', gMult:1.22, observation:'B', style:'Speed', abilities:['スター製造','才能開花'], flavor:null,
+   grade:'A', gMult:1.22, observation:'B', style:'Aerial', abilities:['スター製造','才能開花'], flavor:null,
    salary:135, hireFee:1080, minOrgPop:55,
    age:45, gender:'女', origin:'福岡',
    desc:'元ショートトラックスピードスケート五輪銀メダリスト。女子プロレスでも一時代を築いた異色の経歴を持つ。',
@@ -2860,7 +2860,7 @@ const STYLE_GROWTH = {
   Grappler:   {pw:1.0,sp:0.4,te:0.8,st:0.8},
   Striker:    {pw:0.8,sp:0.8,te:0.4,st:1.0},
   Submission: {pw:0.3,sp:0.4,te:1.0,st:0.8},
-  Speed:      {pw:0.3,sp:1.0,te:0.7,st:0.5},
+  Aerial:     {pw:0.3,sp:1.0,te:0.7,st:0.5},
   Allround:   {pw:0.7,sp:0.7,te:0.7,st:0.7},
   Brawler:    {pw:1.0,sp:0.5,te:0.2,st:1.0}
 };

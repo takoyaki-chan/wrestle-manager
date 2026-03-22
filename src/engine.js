@@ -6344,9 +6344,9 @@ const Engine = {
       }
 
       // §3.4 Style
-      const weights = { Allround:25, Striker:14, Submission:14, Grappler:12, Brawler:9, Speed:6 };
+      const weights = { Allround:25, Striker:14, Submission:14, Grappler:12, Brawler:9, Aerial:6 };
       if (notion.pw >= notion.sp + 10 && notion.pw >= notion.te + 10) { weights.Grappler += 10; weights.Brawler += 8; }
-      if (notion.sp >= notion.pw + 10 && notion.sp >= notion.te + 5)  { weights.Speed += 10; weights.Striker += 5; }
+      if (notion.sp >= notion.pw + 10 && notion.sp >= notion.te + 5)  { weights.Aerial += 10; weights.Striker += 5; }
       if (notion.te >= notion.pw + 10 && notion.te >= notion.sp + 5)  { weights.Submission += 10; }
       const totalW = Object.values(weights).reduce((a, b) => a + b, 0);
       let styleRoll = Engine.rng.float(rng) * totalW;
@@ -8844,7 +8844,7 @@ Engine.awards = {
       Grappler:   'その重厚なグラップリングの前に、挑戦者たちは次々と膝を屈した。',
       Striker:    '鋭い打撃で幾多の名勝負を生み出した闘士であった。',
       Submission: '極めの技術は芸術の域に達し、対戦相手に恐れられた。',
-      Speed:      '誰にも捉えられないスピードで、観客を魅了し続けた。',
+      Aerial:     '誰にも捉えられないスピードで、観客を魅了し続けた。',
       Allround:   'あらゆる局面に対応する万能さが、長きにわたる活躍を支えた。',
       Brawler:    '荒々しくも力強いファイトで、会場を沸かせ続けた。',
     };

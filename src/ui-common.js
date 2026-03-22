@@ -905,8 +905,7 @@ function showCoachTooltip(coachId) {
 
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const color = gradeColors[c.grade] || '#888';
-  const teachingMult = COACH_RANKS[c.teaching] || 1.0;
-  const traitDef = COACH_TRAIT_DEFS[c.trait] || {};
+  const gMult = c.gMult || 1.0;
   const isHired = G.coaches.includes(c.id);
   const assigned = getCoachAssignees(c.id);
   const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
@@ -938,16 +937,15 @@ function showCoachTooltip(coachId) {
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
-        <span class="coach-trait">${c.trait}</span>
+        ${(c.abilities||[]).map(a => `<span class="coach-trait">${a}</span>`).join(' ')}
         ${isHired ? '<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">雇用中</span>' : ''}
       </div>
       <div style="font-size:13px;color:var(--text);line-height:1.8">
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <span style="color:var(--text-sub)">指導力 <strong style="color:${color}">${c.teaching}</strong></span>
+          <span style="color:var(--text-sub)">成長倍率 <strong style="color:var(--gold)">×${gMult}</strong></span>
           <span style="color:var(--text-sub)">観察眼 <strong style="color:${color}">${c.observation}</strong></span>
           <span style="color:var(--text-sub)">得意 <span class="badge badge-${c.style}" style="font-size:12px;padding:1px 6px">${c.style}</span></span>
         </div>
-        <div style="margin-top:4px;color:var(--text-sub);font-size:12px">成長倍率 <strong style="color:var(--gold)">×${teachingMult}</strong></div>
       </div>
     </div>`;
 
@@ -956,10 +954,13 @@ function showCoachTooltip(coachId) {
   // Body
   html += '<div class="coach-tooltip-body">';
 
-  // Trait
+  // Abilities
   html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">特性: ${c.trait}</div>
-    <div style="font-size:13px;color:var(--text);line-height:1.6">${traitDef.desc || ''}</div>
+    <div class="coach-tooltip-label">特殊能力</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6">${(c.abilities||[]).map(a => {
+      const cat = COACH_ABILITY_CATALOG[a];
+      return cat ? `<div><strong>${a}</strong> <span style="font-size:11px;color:var(--text-sub)">(${cat.grade}級)</span> — ${cat.desc}</div>` : `<div>${a}</div>`;
+    }).join('')}${c.flavor ? `<div style="margin-top:4px;color:var(--text-sub);font-size:12px">🌿 ${c.flavor}: ${(COACH_FLAVOR_DEFS[c.flavor]||{}).desc||''}</div>` : ''}</div>
   </div>`;
 
   // Cost
@@ -1840,7 +1841,7 @@ function _bestMatchFlavor(mq) {
 // スタイル日本語変換
 function _styleJa(style) {
   return { Grappler:'グラップラー', Striker:'ストライカー', Submission:'サブミッション',
-           Speed:'スピード', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style;
+           Aerial:'エアリアル', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style;
 }
 
 function _awardsPortrait(id, size) {
@@ -2147,7 +2148,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     Grappler:   {color:'#bb8fce',icon:'GRP'},
     Striker:    {color:'#e74c3c',icon:'STK'},
     Submission: {color:'#e67e22',icon:'SUB'},
-    Speed:      {color:'#2ecc71',icon:'SPD'},
+    Aerial:     {color:'#2ecc71',icon:'AER'},
     Allround:   {color:'#f1c40f',icon:'ALL'},
     Brawler:    {color:'#e88a82',icon:'BRW'}
   };
@@ -2370,7 +2371,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
             <span ${styleBadgeCls}>${coach.style}</span>
             ${matchHtml}
-            <span style="color:var(--text-dim);font-size:12px;margin-left:4px">指導力${coach.teaching} / ${coach.trait}</span>
+            <span style="color:var(--text-dim);font-size:12px;margin-left:4px">×${coach.gMult||1.0} / ${(coach.abilities||[]).join('・')}</span>
           </div>`;
         } else {
           html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.02);border-radius:4px">
@@ -2722,7 +2723,7 @@ function showPPVVSDetail(matchIdx) {
 
   const STYLE_META = {
     Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
-    Submission:{color:'#e67e22',icon:'SUB'}, Speed:{color:'#2ecc71',icon:'SPD'},
+    Submission:{color:'#e67e22',icon:'SUB'}, Aerial:{color:'#2ecc71',icon:'AER'},
     Allround:{color:'#f1c40f',icon:'ALL'}, Brawler:{color:'#e88a82',icon:'BRW'}
   };
   const STATS = [

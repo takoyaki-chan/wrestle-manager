@@ -136,7 +136,7 @@ function renderWeekScreen() {
       Grappler:   {color:'#bb8fce',icon:'GRP',desc:'投げ技と関節技を軸にした正統派。パワーとテクニックに優れる'},
       Striker:    {color:'#e74c3c',icon:'STK',desc:'打撃主体のファイター。パワーとスピードで圧倒する'},
       Submission: {color:'#e67e22',icon:'SUB',desc:'関節技のスペシャリスト。テクニックで相手を仕留める'},
-      Speed:      {color:'#2ecc71',icon:'SPD',desc:'スピードで翻弄する。俊敏な動きで試合をコントロール'},
+      Aerial:     {color:'#2ecc71',icon:'AER',desc:'空中殺法と俊敏な動きで試合をコントロール'},
       Allround:   {color:'#f1c40f',icon:'ALL',desc:'万能型。突出した弱点がなく安定した試合運びが可能'},
       Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者'}
     };
@@ -2483,7 +2483,7 @@ function renderScout() {
   visibleFA.forEach(c => {
     const STYLE_META = {
       Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
-      Submission:{color:'#e67e22',icon:'SUB'}, Speed:{color:'#2ecc71',icon:'SPD'},
+      Submission:{color:'#e67e22',icon:'SUB'}, Aerial:{color:'#2ecc71',icon:'AER'},
       Allround:{color:'#f1c40f',icon:'ALL'}, Brawler:{color:'#e88a82',icon:'BRW'}
     };
     const sm = STYLE_META[c.style] || STYLE_META.Allround;
@@ -2615,7 +2615,7 @@ function renderScoutEvent() {
 
   const STYLE_META = {
     Grappler:   {color:'#bb8fce',icon:'GRP'}, Striker:    {color:'#e74c3c',icon:'STK'},
-    Submission: {color:'#e67e22',icon:'SUB'}, Speed:      {color:'#2ecc71',icon:'SPD'},
+    Submission: {color:'#e67e22',icon:'SUB'}, Aerial:     {color:'#2ecc71',icon:'AER'},
     Allround:   {color:'#f1c40f',icon:'ALL'}, Brawler:    {color:'#e88a82',icon:'BRW'}
   };
 
@@ -3608,7 +3608,7 @@ function _renderDbFighters() {
     ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
     { id: 'fa', label: 'FA' },
   ];
-  const styles = ['Grappler', 'Striker', 'Submission', 'Speed', 'Allround', 'Brawler'];
+  const styles = ['Grappler', 'Striker', 'Submission', 'Aerial', 'Allround', 'Brawler'];
 
   let html = `<div class="db-filter-bar">
     <select onchange="_dbFilterOrg=this.value;renderDatabase()">
@@ -4216,7 +4216,7 @@ function _renderDbOrgCompare() {
   // ═══ ④ Top 3 Matchups ═══
   // マッチアップフレーバーヘルパー
   function getStyleCategory(style) {
-    const map = { Grappler: 'power', Striker: 'power', Brawler: 'power', Speed: 'speed', Submission: 'tech', Allround: null };
+    const map = { Grappler: 'power', Striker: 'power', Brawler: 'power', Aerial: 'speed', Submission: 'tech', Allround: null };
     return map[style] || null;
   }
   function getStyleMatchupKey(s1, s2) {
