@@ -114,12 +114,12 @@ const Engine = {
       const pool = RIVAL_ORG_NAME_POOL[tier.toUpperCase()];
       const idx = pool ? pool.indexOf(orgName) : -1;
       if (idx === -1) return null;
-      return `img/org/org-${tier}-${idx}.png`;
+      return `../image/org/org-${tier}-${idx}.png`;
     },
     /** プレイヤー団体アイコンパス取得 */
     getPlayerOrgIconPath(state) {
       const idx = state.playerOrgIcon ?? 0;
-      return `img/org/org-player-${idx}.png`;
+      return `../image/org/org-player-${idx}.png`;
     },
     /** Compute visible Rental IDs for this quarter (20 slots) */
     getVisibleRentalIds(state) {
