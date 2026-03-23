@@ -2045,6 +2045,36 @@ function _weeklyFinanceValues(filtered, extractFn) {
   });
 }
 
+/**
+ * 週次データを月平均（4週ごと）に集約する
+ * 今月タブ以外で使用。週ごとの大幅な浮き沈みを平滑化する
+ */
+function _monthlyAverageValues(weeklyValues) {
+  if (weeklyValues.length <= 4) return weeklyValues;
+  const months = [];
+  for (let i = 0; i < weeklyValues.length; i += 4) {
+    const chunk = weeklyValues.slice(i, i + 4);
+    months.push(chunk.reduce((s, v) => s + v, 0) / chunk.length);
+  }
+  return months;
+}
+
+/**
+ * ランニングトータル（資金残高等）を月末スナップショット（4週ごとの末尾値）に集約する
+ */
+function _monthlySnapshotValues(weeklyValues) {
+  if (weeklyValues.length <= 4) return weeklyValues;
+  const months = [];
+  for (let i = 3; i < weeklyValues.length; i += 4) {
+    months.push(weeklyValues[i]);
+  }
+  // 端数（最後の月が4週未満の場合、最終値を含める）
+  if (weeklyValues.length % 4 !== 0) {
+    months.push(weeklyValues[weeklyValues.length - 1]);
+  }
+  return months;
+}
+
 function renderFinance() {
   const el = document.getElementById('financeContent');
   const period = el.dataset.financePeriod || 'month';
@@ -2073,9 +2103,14 @@ function renderFinance() {
   if (tab === 'summary') {
     html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</div>`;
 
-    // 資金推移チャート
-    const fh = G.fundsHistory || [];
-    html += _financeChart(fh, { color: '#2ecc71', negColor: '#e74c3c', label: `💹 資金推移 (${fh.length}週)`, showZeroLine: true });
+    // 資金推移チャート（今月以外は月末スナップショットに集約）
+    const fhRaw = G.fundsHistory || [];
+    const isMonthlyF = period !== 'month';
+    const fh = isMonthlyF ? _monthlySnapshotValues(fhRaw) : fhRaw;
+    const fhLabel = isMonthlyF
+      ? `💹 資金推移 (${fh.length}ヶ月)`
+      : `💹 資金推移 (${fhRaw.length}週)`;
+    html += _financeChart(fh, { color: '#2ecc71', negColor: '#e74c3c', label: fhLabel, showZeroLine: true });
 
     // 期間サマリ
     if (filtered.length > 0) {
@@ -2102,8 +2137,13 @@ function renderFinance() {
 
   // ── 収入タブ ──
   else if (tab === 'income') {
-    const incomeValues = _weeklyFinanceValues(filtered, d => d.type === 'income');
-    html += _financeChart(incomeValues, { color: '#2ecc71', label: `📈 週間収入推移 (${filtered.length}週)` });
+    const incomeRaw = _weeklyFinanceValues(filtered, d => d.type === 'income');
+    const isMonthlyI = period !== 'month';
+    const incomeChart = isMonthlyI ? _monthlyAverageValues(incomeRaw) : incomeRaw;
+    const incomeChartLabel = isMonthlyI
+      ? `📈 月間平均収入推移 (${incomeChart.length}ヶ月)`
+      : `📈 週間収入推移 (${filtered.length}週)`;
+    html += _financeChart(incomeChart, { color: '#2ecc71', label: incomeChartLabel });
     const items = {};
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'income').forEach(d => {
@@ -2128,8 +2168,13 @@ function renderFinance() {
 
   // ── 支出タブ ──
   else if (tab === 'expense') {
-    const expenseValues = _weeklyFinanceValues(filtered, d => d.type === 'expense');
-    html += _financeChart(expenseValues, { color: '#e74c3c', label: `📉 週間支出推移 (${filtered.length}週)` });
+    const expenseRaw = _weeklyFinanceValues(filtered, d => d.type === 'expense');
+    const isMonthlyE = period !== 'month';
+    const expenseChart = isMonthlyE ? _monthlyAverageValues(expenseRaw) : expenseRaw;
+    const expenseChartLabel = isMonthlyE
+      ? `📉 月間平均支出推移 (${expenseChart.length}ヶ月)`
+      : `📉 週間支出推移 (${filtered.length}週)`;
+    html += _financeChart(expenseChart, { color: '#e74c3c', label: expenseChartLabel });
     const items = {};
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'expense').forEach(d => {
@@ -2154,8 +2199,15 @@ function renderFinance() {
 
   // ── 給与タブ ──
   else if (tab === 'salary') {
-    const salaryValues = _weeklyFinanceValues(filtered, d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与');
-    html += _financeChart(salaryValues, { color: '#e67e22', label: `💰 週間給与推移 (${filtered.length}週)` });
+    const salaryRaw = _weeklyFinanceValues(filtered, d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与');
+    // 給与は負数で記録されているが、上=高給のグラフにするため絶対値化
+    const salaryAbs = salaryRaw.map(v => Math.abs(v));
+    const isMonthlyS = period !== 'month';
+    const salaryChart = isMonthlyS ? _monthlyAverageValues(salaryAbs) : salaryAbs;
+    const salaryChartLabel = isMonthlyS
+      ? `💰 月間平均給与推移 (${salaryChart.length}ヶ月)`
+      : `💰 週間給与推移 (${filtered.length}週)`;
+    html += _financeChart(salaryChart, { color: '#e67e22', label: salaryChartLabel });
     // 期間中の給与支払い合計
     let salaryTotal = 0, salaryWeeks = 0;
     filtered.forEach(h => {
