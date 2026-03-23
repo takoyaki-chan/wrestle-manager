@@ -66,6 +66,8 @@ const Engine = {
 
   // ── Utilities ──────────────────────────────────────────
   util: {
+    /** 絶対週番号（48週制）。シーズン・週をまたいだクールダウン比較に使う */
+    absWeek(season, week) { return ((season || 1) - 1) * 48 + (week || 1); },
     clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
@@ -1082,7 +1084,7 @@ const Engine = {
     },
 
     getNeglectedRivalryPenalty(state) {
-      const absWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+      const absWeek = Engine.util.absWeek(state.season, state.week);
       let raw = 0;
       Object.entries(state.rivalries || {}).forEach(([key, entry]) => {
         const ids = key.split('-').map(Number);
@@ -1188,7 +1190,7 @@ const Engine = {
     // v1.2: タイトルマッチ12週クールダウン
     // シーズンをまたいで正確に計算するため絶対週数（ゲーム開始から累計）を使う
     getAbsWeek(state) {
-      return ((state.season || 1) - 1) * 48 + (state.week || 1);
+      return Engine.util.absWeek(state.season, state.week);
     },
     // Returns { allowed: boolean, weeksLeft: number }
     canTitleMatch(state) {
@@ -1225,7 +1227,7 @@ const Engine = {
       if (!hasTitle) return null;
 
       // Phase0修正: 乱入クールダウン28週（既存セーブ互換: || 0でフォールバック）
-      const absWeek = ((state.season - 1) * 52) + state.week;
+      const absWeek = Engine.util.absWeek(state.season, state.week);
       if (absWeek - (state.lastIntrusionWeek || 0) < 28) return null;
 
       // 確率判定
@@ -4822,6 +4824,15 @@ const Engine = {
     if (settle.orgPopPenalty) {
       s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100) };
     }
+    // レンタル契約: 毎週 weeksLeft を1減算、満了で返却
+    if (!s.offSeason) {
+      const rentalResult = Engine.rental.processWeeklyRental(s);
+      s = rentalResult.state;
+      // 満了イベントは gameLog に記録
+      if (rentalResult.events.length > 0) {
+        s = { ...s, gameLog: [...(s.gameLog || []), ...rentalResult.events] };
+      }
+    }
     // AI統一成長 Phase3: AI団体の週次処理（練習+興行）
     if (s.aiOrgs && !s.offSeason) {
       const AI_WEEK_SEEDS = { org_s: 0xA101, org_a: 0xA102, org_b: 0xA103 };
@@ -6119,7 +6130,7 @@ const Engine = {
         // v1.0b: Transfer popularity reset
         let resetFighter = Engine.popularity.applyTransferReset(newFighter);
         // Phase 3: orgJoinWeek設定
-        resetFighter.orgJoinWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+        resetFighter.orgJoinWeek = Engine.util.absWeek(state.season, state.week);
         // 契約OVR制: 加入時のOVR/popで契約給を設定
         resetFighter.contractOVR = Engine.util.ov(resetFighter);
         resetFighter.contractPop = resetFighter.popularity || 0;
@@ -6259,14 +6270,15 @@ const Engine = {
       }
 
       // Create rental fighter on player roster
+      const weeksLeft = seasons * 12; // 1期=12週
       const rentalFighter = {
         ...fighter,
         isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
-        rentalSeasonsLeft: seasons,
+        rentalWeeksLeft: weeksLeft,
         condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
-        orgJoinWeek: ((state.season || 1) - 1) * 48 + (state.week || 1),
+        orgJoinWeek: Engine.util.absWeek(state.season, state.week),
       };
-      const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, seasonsLeft: seasons, fee };
+      const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, weeksLeft, fee };
       let s = { ...state,
         roster: [...state.roster, rentalFighter],
         rentals: [...rentals, rentalContract],
@@ -6294,8 +6306,8 @@ const Engine = {
       return { success: true, state: s, events };
     },
 
-    /** Season-end rental processing: decrement seasonsLeft, return expired fighters */
-    processSeasonEnd(state) {
+    /** 週次レンタル処理: weeksLeft を毎週1減算し、0になったら返却 */
+    processWeeklyRental(state) {
       const rentals = state.rentals || [];
       if (rentals.length === 0) return { state, events: [] };
       const events = [];
@@ -6305,10 +6317,10 @@ const Engine = {
       let aiOrgs = { ...s.aiOrgs };
       let freeAgents = [...(s.freeAgents || [])];
 
-      const rentalRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3E, s.season));
+      const rentalRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3E, s.season, s.week));
       for (const contract of rentals) {
-        const newSeasonsLeft = contract.seasonsLeft - 1;
-        if (newSeasonsLeft <= 0) {
+        const newWeeksLeft = contract.weeksLeft - 1;
+        if (newWeeksLeft <= 0) {
           // O-11: レンタル帰団 — 同僚全員→帰団者 bond -3〜-6（roster除外前に処理）
           if (s.relationships) {
             const colleagueIds = roster.filter(c => c.id !== contract.fighterId && !c.isRental).map(c => c.id);
@@ -6330,15 +6342,15 @@ const Engine = {
           } else {
             // Return to free agent pool
             if (rentalF) {
-              const { isRental, rentalFromOrg, rentalSource, rentalSeasonsLeft, ...cleanF } = rentalF;
+              const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
               freeAgents = [...freeAgents, cleanF];
             }
           }
           events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
         } else {
-          remaining.push({ ...contract, seasonsLeft: newSeasonsLeft });
-          // Update rentalSeasonsLeft on the roster fighter too
-          roster = roster.map(c => c.id === contract.fighterId ? { ...c, rentalSeasonsLeft: newSeasonsLeft } : c);
+          remaining.push({ ...contract, weeksLeft: newWeeksLeft });
+          // Update rentalWeeksLeft on the roster fighter too
+          roster = roster.map(c => c.id === contract.fighterId ? { ...c, rentalWeeksLeft: newWeeksLeft } : c);
         }
       }
       return { state: { ...s, roster, rentals: remaining, aiOrgs, freeAgents }, events };
@@ -7604,10 +7616,7 @@ const Engine = {
         events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
         report.forEach(r => events.push(`  ${r}`));
 
-        // Rental season-end: decrement seasonsLeft, return expired rentals
-        const rentalEnd = Engine.rental.processSeasonEnd(s);
-        s = rentalEnd.state;
-        events.push(...rentalEnd.events);
+        // レンタル: 週次減算に移行済み（tickWeek内で処理）。オフシーズン突入時の残存契約はそのまま維持
 
         // ラストラン期限切れチェック（最終週を過ぎても試合なし → 自動引退）
         const lastRunExpiredList = [];
@@ -9671,7 +9680,7 @@ Engine.trust = {
     // ── R2: ロッカールーム内で孤立 ──
     // 条件: 同団体在籍8週以上、アクティブロスター内でbond50+の相手が1人以下
     const orgJoinWeek = fighter.orgJoinWeek || 0;
-    const currentAbsWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+    const currentAbsWeek = Engine.util.absWeek(state.season, state.week);
     if (currentAbsWeek - orgJoinWeek >= 8) {
       const sameOrgRoster = matchContext.sameOrgActiveRoster;
       let bondFriends = 0;
@@ -10931,7 +10940,7 @@ Engine.eventSystem = {
   // クールダウン8週。条件を満たすB型から重み付き抽選
   generateLargeEvent(rng, state, roster) {
     // クールダウンチェック
-    const absWeek = ((state.season - 1) * 52) + state.week;
+    const absWeek = Engine.util.absWeek(state.season, state.week);
     const lastLarge = state.lastLargeEventWeek || 0;
     // Phase0修正: クールダウン短縮 8週→4週（実効レート2.5%→10%/週）
     if (absWeek - lastLarge < 4) return null;
@@ -11061,7 +11070,7 @@ Engine.eventSystem = {
     let funds = state.funds || 0;
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let mediaSpotlight = state.mediaSpotlight || null;
-    const absWeek = ((state.season - 1) * 52) + state.week;
+    const absWeek = Engine.util.absWeek(state.season, state.week);
     const events = [];
 
     const applyTrust = (fighterId, delta) => {
@@ -11469,7 +11478,7 @@ Engine.fanExpect = {
 
       if (pairState.resolvedType === 'goodRival') {
         const lastFightWeek = rv.lastAbsWeek || 0;
-        if (lastFightWeek && ((((state.season || 1) - 1) * 48 + (state.week || 1)) - lastFightWeek) < 4) return;
+        if (lastFightWeek && ((Engine.util.absWeek(state.season, state.week)) - lastFightWeek) < 4) return;
         addCandidate(f1, f2, `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声`, 1);
         return;
       }
@@ -13119,7 +13128,7 @@ Engine.relationships = {
     });
 
     const newRels = {};
-    const absWeek = ((state.season || 1) - 1) * 48 + (state.week || 1);
+    const absWeek = Engine.util.absWeek(state.season, state.week);
 
     // 全エントリ走査
     for (const key of Object.keys(rels)) {
@@ -14908,7 +14917,7 @@ Engine.glimpse = {
     const roster = state.roster || [];
     const relationships = state.relationships || {};
     const cooldowns = { ...(state._glimpseACooldowns || {}) };
-    const absWeek = ((state.season - 1) * 52) + state.week;
+    const absWeek = Engine.util.absWeek(state.season, state.week);
 
     // 初週初期化: prevスナップショットが無ければ現在値で作成（初回は何も発火しない）
     let prevSnap = state._glimpseAPrevValues;
@@ -15033,7 +15042,7 @@ Engine.glimpse = {
     const glimpses = [];
     const roster = (state.roster || []).filter(f => !f.isRental);
     const cooldowns = { ...(state._glimpseBCooldowns || {}) };
-    const absWeek = ((state.season - 1) * 52) + state.week;
+    const absWeek = Engine.util.absWeek(state.season, state.week);
     const candidates = [];
     const allAIChars = this._getAllAIChars(state);
 

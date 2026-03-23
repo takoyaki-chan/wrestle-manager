@@ -1728,6 +1728,25 @@ const Storage = {
         G = { ...G, rentals, rental: undefined, _migrated_rental_v2: true };
       }
 
+      // Rental v3: seasonsLeft → weeksLeft (1期=12週の週次減算に移行)
+      if (!G._migrated_rental_v3) {
+        const rentals = (G.rentals || []).map(r => {
+          if (r.weeksLeft != null) return r; // 既に移行済み
+          // 旧 seasonsLeft を weeksLeft に変換: seasonsLeft * 12
+          const wl = (r.seasonsLeft || 1) * 12;
+          const { seasonsLeft, ...rest } = r;
+          return { ...rest, weeksLeft: wl };
+        });
+        // roster上の rentalSeasonsLeft → rentalWeeksLeft
+        const roster = (G.roster || []).map(c => {
+          if (!c.isRental) return c;
+          const ct = rentals.find(r => r.fighterId === c.id);
+          const { rentalSeasonsLeft, ...rest } = c;
+          return { ...rest, rentalWeeksLeft: ct ? ct.weeksLeft : (rentalSeasonsLeft || 1) * 12 };
+        });
+        G = { ...G, rentals, roster, _migrated_rental_v3: true };
+      }
+
       // ranking-roster-redesign v1.0 Phase 1: battlePoints + summitBonus廃止
       if (!G._migrated_ranking_v2) {
         const bp = { player: 0, org_s: 0, org_a: 0, org_b: 0 };
@@ -3789,7 +3808,7 @@ const App = {
       // 乱入選手をrosterから除去
       roster = roster.filter(c => !c.isIntrusion);
       // Phase0修正: lastIntrusionWeek更新（クールダウン計算用）
-      const intAbsWeek = ((s.season - 1) * 52) + s.week;
+      const intAbsWeek = Engine.util.absWeek(s.season, s.week);
       s = { ...s, lastIntrusionWeek: intAbsWeek };
     }
 

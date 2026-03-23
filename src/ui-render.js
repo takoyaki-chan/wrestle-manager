@@ -820,14 +820,10 @@ function renderWeekScreen() {
       // レンタル選手は操作不可（自律行動）
       if (c.isRental) {
         const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
-        // 実際の残週数 = (残シーズン-1)*12 + 今シーズンの残週
-        const weeksLeft = rentalContract
-          ? (rentalContract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))
-          : '?';
-        const returnSeason = rentalContract ? (G.season || 1) + (rentalContract.seasonsLeft - 1) : '?';
+        const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
         const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
         html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
-          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12" title="${returnSeason}年目シーズン末に帰還">🤝残${weeksLeft}週(${returnSeason}年目末)</span></td>
+          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${rentalWL}週</span></td>
           <td class="num">${ov(c)}</td>
           <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
           <td>${statusHtml}</td>
@@ -1720,7 +1716,7 @@ function renderRoster() {
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
             <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
             <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
-            <div style="margin-top:2px;color:#a06000;font-size:11px">${srcLabel} ｜ 残${contract ? ((contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))) : '?'}週(${contract ? ((G.season || 1) + (contract.seasonsLeft - 1)) : '?'}年目末帰還)</div>
+            <div style="margin-top:2px;color:#a06000;font-size:11px">${srcLabel} ｜ 残${contract ? contract.weeksLeft : '?'}週</div>
           </div>
         </div>
       </div>`;
@@ -2537,7 +2533,7 @@ function renderScout() {
             <span style="font-size:14px;color:var(--text-main)">${rentalF ? fLink(rentalF, {source:'roster'}) : '不明'}</span>
             <span style="font-size:12px;color:var(--text-sub);margin-left:8px">← ${fromLabel}</span>
           </div>
-          <div style="font-size:13px;color:var(--gold)">残り${(contract.seasonsLeft - 1) * 12 + Math.max(1, 13 - (G.week || 1))}週(${(G.season || 1) + (contract.seasonsLeft - 1)}年目末帰還)</div>
+          <div style="font-size:13px;color:var(--gold)">残り${contract.weeksLeft}週</div>
         </div>
       </div>`;
     });
