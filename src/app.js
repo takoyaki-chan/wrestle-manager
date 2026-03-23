@@ -4937,6 +4937,7 @@ const App = {
       stats.totalExpense += result.state.weeklyFinance.expense || 0;
     }
     if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+    if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     // v2.1: ゲームオーバー判定（autoSave せず専用画面へ）
@@ -6818,6 +6819,8 @@ App.closePPVTV = function() {
     stats.totalRevenue += result.state.weeklyFinance.income || 0;
     stats.totalExpense += result.state.weeklyFinance.expense || 0;
   }
+  if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+  if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
   const fh = [...(G.fundsHistory || []), result.state.funds];
   G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
 
