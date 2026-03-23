@@ -1180,7 +1180,7 @@ const _SE_FILES={
   hitSub:'../bgm/b03_joint_v3.mp3',
   hitAerial:'../bgm/b04_aerial_v2.mp3',
   hitGround:'../bgm/b05_ground_v2.mp3',
-  hitRollup:'../bgm/b06_rollup_swoosh_v2.mp3',
+  hitRollup:'../bgm/b06_rollup_v1.mp3',
   missWhiff:'../bgm/b07_whiff_v4.mp3',
   counterSE:'../bgm/b08_counter_v1.mp3',
   cutinSlide:'../bgm/b09_cutin_slide_v5.mp3',
@@ -1211,10 +1211,10 @@ function _playSample(name,gainVal){
   catch(e){return false}
 }
 const SE_MIX={
-  hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.50,hitGround:.50,hitRollup:.50,
-  missWhiff:.40,counterSE:.60,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.55,bigmoveImpact:.65,
-  count:1.00,kickoutSE:.55,guEscapeSE:.55,heartbeatSE:.40,finImpact:.65,finChime:.50,
-  gong:.55,gongStart:.55,phaseChg:.73,victoryFanfare:.50,ready:.40,fightStart:.45,lockIn:.35,
+  hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.40,hitGround:.42,hitRollup:.50,
+  missWhiff:.24,counterSE:.15,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.21,bigmoveImpact:.41,
+  count:1.00,kickoutSE:.39,guEscapeSE:.22,heartbeatSE:.55,finImpact:.36,finChime:.50,
+  gong:.55,gongStart:.55,phaseChg:.73,victoryFanfare:.50,ready:.29,fightStart:.10,lockIn:.35,
 };
 function mkNoise(dur,g){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
   ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;

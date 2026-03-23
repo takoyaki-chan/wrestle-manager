@@ -24,7 +24,7 @@ const Audio = (() => {
   const SE_MIX = {
     click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
     tick:.50, event:.50, reveal:.50, paper:.50,
-    fanfare:.74, crowd:.55, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
+    fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
     coin:.40, spend:.40, stamp:.40,
@@ -284,11 +284,18 @@ const Audio = (() => {
       noise(t + 0.35, 0.15, 0.04);
     },
     crowd() {
-      const t = ensure().currentTime;
-      noiseLP(t, 0.8, 0.08, 400);
-      noiseBP(t + 0.05, 0.7, 0.06, 1200, 0.5);
-      noiseHP(t + 0.1, 0.5, 0.03, 3000);
-      oscSweep(180, 140, 'sawtooth', t, 0.4, 0.02);
+      try {
+        const a = new window.Audio('../bgm/e02_crowd_v2.mp3');
+        a.volume = Math.min(1, _sfxMasterVol * SE_MIX.crowd);
+        a.play().catch(() => {});
+      } catch(e) {
+        // fallback: Web Audio synth
+        const t = ensure().currentTime;
+        noiseLP(t, 0.8, 0.08, 400);
+        noiseBP(t + 0.05, 0.7, 0.06, 1200, 0.5);
+        noiseHP(t + 0.1, 0.5, 0.03, 3000);
+        oscSweep(180, 140, 'sawtooth', t, 0.4, 0.02);
+      }
     },
     // Bell: metallic gong with rising tail (low partials short, high partials long)
     bell() {
