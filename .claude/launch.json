@@ -1,1 +1,1 @@
-{"version":"0.0.1","configurations":[{"name":"dev","runtimeExecutable":"node","runtimeArgs":["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js","serve","src","--no-clipboard"],"port":3000,"autoPort":true}]}
+{"version":"0.0.1","configurations":[{"name":"dev","runtimeExecutable":"node","runtimeArgs":["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js","serve",".","--no-clipboard"],"port":3000,"autoPort":true}]}

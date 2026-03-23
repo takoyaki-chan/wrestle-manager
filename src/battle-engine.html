@@ -1172,8 +1172,7 @@ function _ensureMasterGains(){
   }
 }
 function getSfxGain(){if(!_sfxGain){_ensureMasterGains();const c=ctx();_sfxGain=c.createGain();_sfxGain.gain.value=1;_sfxGain.connect(_sfxMasterGain);}return _sfxGain;}
-// ─── MP3 SE preload system ───
-const _seBuffers={};
+// ─── MP3 SE system (HTMLAudioElement) ───
 const _SE_FILES={
   hitStrike:'../bgm/b01_strike_hit_v4.mp3',
   hitThrow:'../bgm/b02_throw_hit_v1.mp3',
@@ -1194,21 +1193,15 @@ const _SE_FILES={
   fightStart:'../bgm/f12_fight_start_v3.mp3',
   lockIn:'../bgm/f13_lockup_v4.mp3',
 };
-let _sePreloaded=false;
-async function _preloadSEBuffers(){
-  if(_sePreloaded)return;_sePreloaded=true;
-  const c=ctx();
-  for(const[name,url]of Object.entries(_SE_FILES)){
-    try{const r=await fetch(url);const ab=await r.arrayBuffer();_seBuffers[name]=await c.decodeAudioData(ab)}
-    catch(e){console.warn('[SE] preload failed:',name,e)}
-  }
-}
-function _playSample(name,gainVal){
-  const buf=_seBuffers[name];if(!buf)return false;
-  try{const c=ctx(),src=c.createBufferSource();src.buffer=buf;
-    const g=c.createGain();g.gain.value=gainVal||1;
-    src.connect(g).connect(getSfxGain());src.start();return true}
-  catch(e){return false}
+function _playSample(name,scale){
+  const url=_SE_FILES[name];if(!url)return false;
+  try{
+    const a=new Audio(url);
+    const smv=_sfxMasterGain?_sfxMasterGain.gain.value:1;
+    const mix=SE_MIX[name]||0.5;
+    a.volume=Math.min(1,smv*mix*(scale||1));
+    a.play().catch(()=>{});return true;
+  }catch(e){return false}
 }
 const SE_MIX={
   hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.40,hitGround:.42,hitRollup:.50,
@@ -1687,7 +1680,6 @@ window.addEventListener('message', function(e) {
   _ensureMasterGains();
   if (mi.sfxMasterVol !== undefined) _sfxMasterGain.gain.value = mi.sfxMasterVol;
   if (mi.bgmMasterVol !== undefined) _bgmMasterGain.gain.value = mi.bgmMasterVol;
-  _preloadSEBuffers(); // MP3 SE非同期プリロード開始
   startMatchFromData(e.data.left, e.data.right);
 });
 
