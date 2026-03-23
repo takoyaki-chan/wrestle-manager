@@ -6566,14 +6566,16 @@ function showTrialLimitMessage(featureName) {
   const overlay = document.getElementById('confirmOverlay');
   const box = document.getElementById('confirmBox');
   if (!overlay || !box) {
-    alert(`【${featureName}】は製品版で遊べます！\nDLsite / BOOTH で製品版をチェックしてください。`);
+    // TODO: DLsite公開後に「DLsite / BOOTH」に戻す
+    alert(`【${featureName}】は製品版で遊べます！\nBOOTH で製品版をチェックしてください。`);
     return true;
   }
   box.innerHTML = `
     <div class="panel-title" style="color:var(--gold);margin-bottom:12px">🔒 製品版限定機能</div>
     <p style="line-height:1.8;margin-bottom:20px">
       【${featureName}】は製品版で解放されます！<br>
-      DLsite / BOOTH で製品版をチェックしてください。
+      <!-- TODO: DLsite公開後に「DLsite / BOOTH」に戻す -->
+      BOOTH で製品版をチェックしてください。
     </p>
     <button class="btn btn-gold" style="min-width:120px"
       onclick="document.getElementById('confirmOverlay').classList.remove('active')">閉じる</button>`;
@@ -6597,15 +6599,37 @@ function showTrialEndMessage() {
         <span style="color:var(--gold)">セーブデータはそのまま引き継げます。</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
-        <a href="https://booth.pm/" target="_blank" rel="noopener"
+        <a href="https://takoyakichan.booth.pm/" target="_blank" rel="noopener"
            class="btn btn-gold" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center">
           🛒 BOOTH で購入</a>
-        <a href="https://www.dlsite.com/" target="_blank" rel="noopener"
-           class="btn btn-gold" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center">
-          🛒 DLsite で購入</a>
+        <!-- TODO: DLsite商品ページ公開後にボタンを追加する -->
         <button class="btn" style="min-width:200px;margin-top:8px;background:rgba(200,190,170,0.08);color:var(--text-sub)"
           onclick="document.getElementById('confirmOverlay').classList.remove('active')">
           閉じる（引き続き閲覧可能）</button>
+      </div>
+      <div style="border-top:1px solid rgba(200,190,170,0.12);margin:20px 0 16px;width:80%;margin-left:auto;margin-right:auto"></div>
+      <div style="text-align:center">
+        <div style="font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;font-weight:600">
+          ✦ この選手たちの作品をもっと見る ✦</div>
+        <a href="https://takoyaki.fanbox.cc/" target="_blank" rel="noopener"
+           class="btn" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center;
+             background:rgba(200,190,170,0.08);color:var(--text-main);border:1px solid rgba(200,190,170,0.15)">
+          📖 無料作品を読む（FANBOX）</a>
+      </div>
+      <div style="border-top:1px solid rgba(200,190,170,0.12);margin:20px 0 16px;width:80%;margin-left:auto;margin-right:auto"></div>
+      <div style="display:flex;gap:20px;justify-content:center;align-items:center">
+        <a href="https://x.com/tkykchan" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--text-sub);font-size:12px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+            border-radius:50%;background:rgba(200,190,170,0.1);font-size:13px">𝕏</span>X</a>
+        <a href="https://www.patreon.com/takoyakichan" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--text-sub);font-size:12px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+            border-radius:50%;background:rgba(200,190,170,0.1);font-size:13px">P</span>Patreon</a>
+        <a href="https://takoyaki.fanbox.cc/" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--text-sub);font-size:12px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+            border-radius:50%;background:rgba(200,190,170,0.1);font-size:13px">F</span>FANBOX</a>
       </div>
       <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6">
         ※ 閉じた後もロスター閲覧・関係性マップ等は確認できます。<br>
