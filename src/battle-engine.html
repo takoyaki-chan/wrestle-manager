@@ -1158,7 +1158,7 @@ function calcPinAttemptSuccess(atk, def, dmg, ph) {
   return clamp(rate, 8, 55);
 }
 
-// ═══ AUDIO (v3.5 + v0.97 sound redesign) ═══
+// ═══ AUDIO (v3.5 + v0.97 sound redesign + MP3 SE priority) ═══
 let ac=null;
 function ctx(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac}
 // ─── SE/BGM master gain (parent frame volume control) ───
@@ -1172,6 +1172,44 @@ function _ensureMasterGains(){
   }
 }
 function getSfxGain(){if(!_sfxGain){_ensureMasterGains();const c=ctx();_sfxGain=c.createGain();_sfxGain.gain.value=1;_sfxGain.connect(_sfxMasterGain);}return _sfxGain;}
+// ─── MP3 SE preload system ───
+const _seBuffers={};
+const _SE_FILES={
+  hitStrike:'../bgm/b01_strike_hit_v4.mp3',
+  hitThrow:'../bgm/b02_throw_hit_v1.mp3',
+  hitSub:'../bgm/b03_joint_v3.mp3',
+  hitAerial:'../bgm/b04_aerial_v2.mp3',
+  hitGround:'../bgm/b05_ground_v2.mp3',
+  hitRollup:'../bgm/b06_rollup_swoosh_v2.mp3',
+  missWhiff:'../bgm/b07_whiff_v4.mp3',
+  counterSE:'../bgm/b08_counter_v1.mp3',
+  cutinSlide:'../bgm/b09_cutin_slide_v5.mp3',
+  bigmoveCharge:'../bgm/b11_charge_v2.mp3',
+  bigmoveImpact:'../bgm/b12_bigmove_hit_v2.mp3',
+  kickoutSE:'../bgm/f02_kickout_v2.mp3',
+  guEscapeSE:'../bgm/f03_escape_v2.mp3',
+  heartbeatSE:'../bgm/f04_heartbeat_v1.mp3',
+  finImpact:'../bgm/f05_finish_impact_v2.mp3',
+  ready:'../bgm/f11_ready_v1.mp3',
+  fightStart:'../bgm/f12_fight_start_v3.mp3',
+  lockIn:'../bgm/f13_lockup_v4.mp3',
+};
+let _sePreloaded=false;
+async function _preloadSEBuffers(){
+  if(_sePreloaded)return;_sePreloaded=true;
+  const c=ctx();
+  for(const[name,url]of Object.entries(_SE_FILES)){
+    try{const r=await fetch(url);const ab=await r.arrayBuffer();_seBuffers[name]=await c.decodeAudioData(ab)}
+    catch(e){console.warn('[SE] preload failed:',name,e)}
+  }
+}
+function _playSample(name,gainVal){
+  const buf=_seBuffers[name];if(!buf)return false;
+  try{const c=ctx(),src=c.createBufferSource();src.buffer=buf;
+    const g=c.createGain();g.gain.value=gainVal||1;
+    src.connect(g).connect(getSfxGain());src.start();return true}
+  catch(e){return false}
+}
 const SE_MIX={
   hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.50,hitGround:.50,hitRollup:.50,
   missWhiff:.40,counterSE:.60,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.55,bigmoveImpact:.65,
@@ -1222,7 +1260,7 @@ const sfx={
     o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.3);vib.stop(c.currentTime+0.3)
   },i*20)})}catch(e){}},
   // NEW: lockIn
-  lockIn(){try{getSfxGain().gain.value=SE_MIX.lockIn;const c=ctx();osc('sine',100,50,0.08,0.08);
+  lockIn(){try{getSfxGain().gain.value=SE_MIX.lockIn;if(_playSample('lockIn',1))return;const c=ctx();osc('sine',100,50,0.08,0.08);
     setTimeout(()=>{[523,659,784,988,1047,1319,1568].forEach((f,i)=>{setTimeout(()=>{
       const o=c.createOscillator(),g=c.createGain();o.type='sine';
       o.frequency.setValueAtTime(f,c.currentTime);
@@ -1234,40 +1272,40 @@ const sfx={
   }catch(e){}},
   deselect(){osc('sine',900,400,0.12,0.05)},
   // NEW: fightStart
-  fightStart(){try{getSfxGain().gain.value=SE_MIX.fightStart;[0,30,60,90,120,150].forEach((t,i)=>setTimeout(()=>osc('sine',60,30,0.04,0.08+i*0.014),t));
+  fightStart(){try{getSfxGain().gain.value=SE_MIX.fightStart;if(_playSample('fightStart',1))return;[0,30,60,90,120,150].forEach((t,i)=>setTimeout(()=>osc('sine',60,30,0.04,0.08+i*0.014),t));
     setTimeout(()=>osc('sine',150,3000,0.4,0.12),200);
     setTimeout(()=>{mkNoise(0.2,0.2);[262,330,392,523,659,784,1047].forEach(f=>{osc('sine',f,null,0.6,0.15);osc('sine',f*2,null,0.3,0.03)})},650);
     setTimeout(()=>osc('sine',50,25,0.8,0.06),850);
   }catch(e){}},
   // NEW: ready
-  ready(){getSfxGain().gain.value=SE_MIX.ready;osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
-  missWhiff(){getSfxGain().gain.value=SE_MIX.missWhiff;osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
+  ready(){getSfxGain().gain.value=SE_MIX.ready;if(_playSample('ready',1))return;osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
+  missWhiff(){getSfxGain().gain.value=SE_MIX.missWhiff;if(_playSample('missWhiff',1))return;osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
   // OLD: battle hits (kept)
-  hitStrike(dr){getSfxGain().gain.value=SE_MIX.hitStrike;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
-  hitThrow(dr){getSfxGain().gain.value=SE_MIX.hitThrow;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
-  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
+  hitStrike(dr){getSfxGain().gain.value=SE_MIX.hitStrike;if(_playSample('hitStrike',Math.min(1.5,dr)))return;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
+  hitThrow(dr){getSfxGain().gain.value=SE_MIX.hitThrow;if(_playSample('hitThrow',Math.min(1.5,dr)))return;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
+  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;if(_playSample('hitSub',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
     // 持続するギリギリ音（関節・絞め技の圧迫感）
     for(let i=0;i<5;i++){setTimeout(()=>{osc('sawtooth',80+i*10,120+i*8,0.25,0.03*dr);osc('sine',60+i*5,90+i*5,0.2,0.02*dr)},i*200)}},
-  hitAerial(dr){getSfxGain().gain.value=SE_MIX.hitAerial;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
-  hitGround(dr){getSfxGain().gain.value=SE_MIX.hitGround;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
-  hitRollup(dr){getSfxGain().gain.value=SE_MIX.hitRollup;osc('triangle',2000,600,0.06,0.08*dr)},
+  hitAerial(dr){getSfxGain().gain.value=SE_MIX.hitAerial;if(_playSample('hitAerial',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
+  hitGround(dr){getSfxGain().gain.value=SE_MIX.hitGround;if(_playSample('hitGround',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
+  hitRollup(dr){getSfxGain().gain.value=SE_MIX.hitRollup;if(_playSample('hitRollup',Math.min(1.5,0.5*dr)))return;osc('triangle',2000,600,0.06,0.08*dr)},
   // NEW: cutin slide + damage voice
-  cutinSlide(){try{getSfxGain().gain.value=SE_MIX.cutinSlide;osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
+  cutinSlide(){try{getSfxGain().gain.value=SE_MIX.cutinSlide;if(_playSample('cutinSlide',1))return;osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
   dmgVoice(){try{getSfxGain().gain.value=SE_MIX.dmgVoice;osc('sine',200,80,0.2,0.06);mkNoiseLP(0.08,0.05,800)}catch(e){}},
   // NEW: bigmove charge + impact
-  bigmoveCharge(){try{getSfxGain().gain.value=SE_MIX.bigmoveCharge;osc('sine',60,200,1.6,0.08);osc('sawtooth',60,180,1.6,0.03);setTimeout(()=>mkNoiseHP(0.3,0.04,3000),800);setTimeout(()=>osc('sine',150,400,0.3,0.06),1200)}catch(e){}},
-  bigmoveImpact(){try{getSfxGain().gain.value=SE_MIX.bigmoveImpact;osc('sine',100,25,0.4,0.25);mkNoise(0.15,0.25);mkNoiseLP(0.25,0.15,300);osc('triangle',60,20,0.3,0.12);setTimeout(()=>mkNoiseHP(0.05,0.08,5000),50)}catch(e){}},
+  bigmoveCharge(){try{getSfxGain().gain.value=SE_MIX.bigmoveCharge;if(_playSample('bigmoveCharge',1))return;osc('sine',60,200,1.6,0.08);osc('sawtooth',60,180,1.6,0.03);setTimeout(()=>mkNoiseHP(0.3,0.04,3000),800);setTimeout(()=>osc('sine',150,400,0.3,0.06),1200)}catch(e){}},
+  bigmoveImpact(){try{getSfxGain().gain.value=SE_MIX.bigmoveImpact;if(_playSample('bigmoveImpact',1))return;osc('sine',100,25,0.4,0.25);mkNoise(0.15,0.25);mkNoiseLP(0.25,0.15,300);osc('triangle',60,20,0.3,0.12);setTimeout(()=>mkNoiseHP(0.05,0.08,5000),50)}catch(e){}},
   // OLD: battle reactions (kept, counterSE replaced)
-  counterSE(){try{getSfxGain().gain.value=SE_MIX.counterSE;mkNoise(0.12,0.3);osc('sine',150,40,0.2,0.2);mkNoiseLP(0.15,0.2,500);osc('square',800,200,0.08,0.12);setTimeout(()=>{mkNoiseHP(0.08,0.15,3000);osc('sine',60,30,0.15,0.1)},60)}catch(e){}},
+  counterSE(){try{getSfxGain().gain.value=SE_MIX.counterSE;if(_playSample('counterSE',1))return;mkNoise(0.12,0.3);osc('sine',150,40,0.2,0.2);mkNoiseLP(0.15,0.2,500);osc('square',800,200,0.08,0.12);setTimeout(()=>{mkNoiseHP(0.08,0.15,3000);osc('sine',60,30,0.15,0.1)},60)}catch(e){}},
   missSE(){osc('sine',400,200,0.1,0.04)},
   kickout(){osc('square',200,800,0.1,0.1);mkNoise(0.15,0.08)},
-  kickoutSE(){try{getSfxGain().gain.value=SE_MIX.kickoutSE;mkNoise(0.2,0.12);osc('sine',100,60,0.15,0.1);setTimeout(()=>mkNoiseHP(0.3,0.06,2000),100)}catch(e){}},
-  guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
-  heartbeatSE(){try{getSfxGain().gain.value=SE_MIX.heartbeatSE;osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
+  kickoutSE(){try{getSfxGain().gain.value=SE_MIX.kickoutSE;if(_playSample('kickoutSE',1))return;mkNoise(0.2,0.12);osc('sine',100,60,0.15,0.1);setTimeout(()=>mkNoiseHP(0.3,0.06,2000),100)}catch(e){}},
+  guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;if(_playSample('guEscapeSE',1))return;osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
+  heartbeatSE(){try{getSfxGain().gain.value=SE_MIX.heartbeatSE;if(_playSample('heartbeatSE',1))return;osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
   // NEW: count — mat slap
   count(){try{getSfxGain().gain.value=SE_MIX.count;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
   // NEW: finImpact — ground rumble + shockwave
-  finImpact(){try{getSfxGain().gain.value=SE_MIX.finImpact;osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
+  finImpact(){try{getSfxGain().gain.value=SE_MIX.finImpact;if(_playSample('finImpact',1))return;osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
   // NEW: finChime — with vibrato
   finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,c.currentTime);
@@ -1317,22 +1355,24 @@ function hitSE(cat,dmg){
 // ═══ SUSPENSE DRONE (v0.97 redesign) ═══
 function startDrone(withHeartbeat){
   stopDrone();try{_ensureMasterGains();const c=ctx(),now=c.currentTime;
+    // d01=50%(base), d02=42% → scale=0.84
+    const dMix=withHeartbeat?0.84:1.0;
     const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.value=75;
     const lfo1=c.createOscillator(),lfoG1=c.createGain();lfo1.type='sine';lfo1.frequency.value=0.25;lfoG1.gain.value=10;
     lfo1.connect(lfoG1).connect(o1.frequency);lfo1.start(now);
-    g1.gain.value=0.04;o1.connect(g1).connect(_bgmMasterGain);o1.start(now);
+    g1.gain.value=0.04*dMix;o1.connect(g1).connect(_bgmMasterGain);o1.start(now);
     const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.value=113;
     const lfo2=c.createOscillator(),lfoG2=c.createGain();lfo2.type='sine';lfo2.frequency.value=0.4;lfoG2.gain.value=12;
     lfo2.connect(lfoG2).connect(o2.frequency);lfo2.start(now);
-    g2.gain.value=0.03;o2.connect(g2).connect(_bgmMasterGain);o2.start(now);
+    g2.gain.value=0.03*dMix;o2.connect(g2).connect(_bgmMasterGain);o2.start(now);
     // Tritone dissonance layer
     const o3=c.createOscillator(),g3=c.createGain();o3.type='sine';o3.frequency.value=106;
-    g3.gain.value=0.015;o3.connect(g3).connect(_bgmMasterGain);o3.start(now);
+    g3.gain.value=0.015*dMix;o3.connect(g3).connect(_bgmMasterGain);o3.start(now);
     const nodes={o1,g1,lfo1,o2,g2,lfo2,o3,g3,hb:null,hbG:null};
     if(withHeartbeat){const hb=c.createOscillator(),hbG=c.createGain();
       hb.type='sine';hb.frequency.value=45;hbG.gain.value=0;
       const hbLFO=c.createOscillator(),hbLFOG=c.createGain();
-      hbLFO.type='square';hbLFO.frequency.value=0.85;hbLFOG.gain.value=0.05;
+      hbLFO.type='square';hbLFO.frequency.value=0.85;hbLFOG.gain.value=0.05*dMix;
       hbLFO.connect(hbLFOG).connect(hbG.gain);hbLFO.start(now);
       hb.connect(hbG).connect(_bgmMasterGain);hb.start(now);
       nodes.hb=hb;nodes.hbG=hbG;nodes.hbLFO=hbLFO;}
@@ -1647,6 +1687,7 @@ window.addEventListener('message', function(e) {
   _ensureMasterGains();
   if (mi.sfxMasterVol !== undefined) _sfxMasterGain.gain.value = mi.sfxMasterVol;
   if (mi.bgmMasterVol !== undefined) _bgmMasterGain.gain.value = mi.bgmMasterVol;
+  _preloadSEBuffers(); // MP3 SE非同期プリロード開始
   startMatchFromData(e.data.left, e.data.right);
 });
 

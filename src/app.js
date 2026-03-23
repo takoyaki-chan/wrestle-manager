@@ -20,6 +20,15 @@ const Audio = (() => {
   // ── Per-track volume targets (bgmGain.gain.value) ──
   const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
   const JINGLE_MIX = { victory:0.38, championship:0.33 };
+  // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
+  const SE_MIX = {
+    click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
+    tick:.50, event:.50, reveal:.50, paper:.50,
+    fanfare:.74, crowd:.55, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
+    war:.60, transfer:.52, award:.72, tension_hit:.66,
+    rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
+    coin:.40, spend:.40, stamp:.40,
+  };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
   function ensure() {
@@ -884,7 +893,7 @@ const Audio = (() => {
   // ║  PUBLIC API                                      ║
   // ╚══════════════════════════════════════════════════╝
   return {
-    play(name) { if (!_muted && SFX[name]) { try { ensure(); SFX[name](); } catch(e) {} } },
+    play(name) { if (!_muted && SFX[name]) { try { ensure(); if (SE_MIX[name] !== undefined) sfxGain.gain.value = SE_MIX[name]; SFX[name](); } catch(e) {} } },
     bgm: BGM,
     fileBgm: FileBGM,
     get muted() { return _muted; },
