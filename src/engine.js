@@ -5099,7 +5099,7 @@ const Engine = {
     }
 
     // v3.0: ケアストック回復（4週ごとに+1、オフシーズン含む）
-    const careAbsWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+    const careAbsWeek = Engine.util.absWeek(s.season, s.week);
     const careLastRecovery = s.careStockLastRecovery || 0;
     if (careAbsWeek - careLastRecovery >= 4) {
       const newCareStock = Math.min((s.careStock || 0) + 1, s.careStockMax || 5);
@@ -5630,7 +5630,7 @@ const Engine = {
           const aiOrgs = Object.entries(s.aiOrgs || {});
           if (aiOrgs.length > 0) {
             const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
-            const absWeekNow = ((s.season || 1) - 1) * 48 + (s.week || 1);
+            const absWeekNow = Engine.util.absWeek(s.season, s.week);
             let transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
             transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
             delete transferred.trustCap; delete transferred.s4Count;
@@ -5855,7 +5855,7 @@ const Engine = {
           // v1.0b: Transfer popularity reset
           let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
           // Phase 3: orgJoinWeek設定
-          resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+          resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
           // orgTimeline: 所属変更記録
           resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
           // v1.3: Record transfer event
@@ -5895,7 +5895,7 @@ const Engine = {
             // v1.0b: Transfer popularity reset
             let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
             // Phase 3: orgJoinWeek設定
-            resetFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+            resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
             // orgTimeline: 所属変更記録
             resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
             // v1.3: Record forced transfer
@@ -5942,7 +5942,7 @@ const Engine = {
         intensive: false, intensiveWeeks: 0
       };
       // Phase 3: orgJoinWeek設定
-      newFighter.orgJoinWeek = ((s.season || 1) - 1) * 48 + (s.week || 1);
+      newFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
       // 契約OVR制: 加入時のOVR/popで契約給を設定
       newFighter.contractOVR = Engine.util.ov(newFighter);
       newFighter.contractPop = newFighter.popularity || 0;
@@ -7071,7 +7071,7 @@ const Engine = {
             ...rivalries[key],
             matches: 0,
             lastWeek: s.week,
-            lastAbsWeek: ((s.season || 1) - 1) * 48 + (s.week || 1),
+            lastAbsWeek: Engine.util.absWeek(s.season, s.week),
             lastResolvedWeek: s.week,
             resolutionCount: resolution.newResolutionCount,
             lastBand: 0,
@@ -9630,7 +9630,7 @@ Engine.trust = {
       const isChamp = titles?.world?.championId === fighter.id;
       if (!isChamp) {
         const lastTitle = fighter.lastTitleShowWeek || 0;
-        const currentAbsWeek = (state.season || 1) * 48 + (state.week || 1);
+        const currentAbsWeek = Engine.util.absWeek(state.season, state.week);
         if (currentAbsWeek - lastTitle >= 8) {
           delta -= 0.5;
           flags.G3 = true;
@@ -9836,7 +9836,7 @@ Engine.trust = {
 
         // Phase 2: タイトル戦出場週の追跡
         if (titleFighters.has(fighter.id)) {
-          updated.lastTitleShowWeek = (state.season || 1) * 48 + (state.week || 1);
+          updated.lastTitleShowWeek = Engine.util.absWeek(state.season, state.week);
         }
 
         // §2.3B: 出場したのでストリークリセット
@@ -13991,8 +13991,7 @@ Engine.relationships = {
 
     const rels = { ...state.relationships };
     const counters = { ...(state.relationshipCounters || {}) };
-    const week = state.week || 0;
-    const absWeek = ((state.season || 1) - 1) * 48 + week;
+    const absWeek = Engine.util.absWeek(state.season, state.week);
 
     const keyAB = this._key(charIdA, charIdB);
     const keyBA = this._key(charIdB, charIdA);
@@ -14483,7 +14482,7 @@ Engine.snapshot = {
     const cooldowns = state._snapshotCooldowns || {};
     const lastWeek = cooldowns[key];
     if (lastWeek == null) return false;
-    const currentAbsWeek = (state.season - 1) * 48 + state.week;
+    const currentAbsWeek = Engine.util.absWeek(state.season, state.week);
     return (currentAbsWeek - lastWeek) < 6;
   },
 
@@ -14532,7 +14531,7 @@ Engine.snapshot = {
 
   // ═══ クールダウン更新 ═══
   _updateCooldowns(selected, state) {
-    const currentAbsWeek = (state.season - 1) * 48 + state.week;
+    const currentAbsWeek = Engine.util.absWeek(state.season, state.week);
     const cooldowns = { ...(state._snapshotCooldowns || {}) };
 
     selected.forEach(c => {
@@ -14746,7 +14745,7 @@ Engine.h2h = {
 // ── Engine.orgTimeline: ファイター所属団体履歴 ──────────
 Engine.orgTimeline = {
   absWeek(season, week) {
-    return Math.max(1, (((season || 1) - 1) * 48) + (week || 1));
+    return Math.max(1, Engine.util.absWeek(season, week));
   },
   /** 履歴の連続重複を圧縮し、開始時点を保持する */
   normalize(timeline = []) {

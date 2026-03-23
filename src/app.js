@@ -1937,7 +1937,7 @@ const Storage = {
         G = { ...G,
           careStock: 5,
           careStockMax: 5,
-          careStockLastRecovery: ((G.season || 1) - 1) * 48 + (G.week || 1),
+          careStockLastRecovery: Engine.util.absWeek(G.season, G.week),
         };
       }
 
@@ -2069,6 +2069,30 @@ const Storage = {
       }
 
       // Speed → Aerial スタイル名マイグレーション
+      // 絶対週計算を52週基準→48週基準に統一
+      // 旧値の正確な逆算は不可能なため、CD系フィールドをリセットして安全に移行
+      if (!G._migrated_absweek48_v1) {
+        // GameState直下のCDフィールド: リセット(CDが早く切れる方向=無害)
+        const patchState = {};
+        if (G.lastIntrusionWeek) patchState.lastIntrusionWeek = 0;
+        if (G.lastLargeEventWeek) patchState.lastLargeEventWeek = 0;
+        // _snapshotCooldowns: 全リセット(6週CDなので即回復)
+        patchState._snapshotCooldowns = {};
+        // lastTitleShowWeek: 旧式(season*48)のバグ値→0リセット
+        // careStockLastRecovery: 元から48基準だが念のためリセット
+        const fixFighter = c => {
+          const patch = {};
+          if (c.lastTitleShowWeek) patch.lastTitleShowWeek = 0;
+          return Object.keys(patch).length ? { ...c, ...patch } : c;
+        };
+        G = {
+          ...G,
+          ...patchState,
+          roster: G.roster.map(fixFighter),
+          _migrated_absweek48_v1: true
+        };
+      }
+
       if (!G._migrated_style_aerial_v1) {
         const fixStyle = c => c.style === 'Speed' ? { ...c, style: 'Aerial' } : c;
         G = {
@@ -2600,7 +2624,7 @@ const App = {
     };
     let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
     // Phase 3: orgJoinWeek設定
-    c.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+    c.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
     // v1.3: Record debut event
     c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
@@ -2748,7 +2772,7 @@ const App = {
       const fighter = G.freeAgents[idx];
       const usedEliteTicket = !!pending.meta?.usedEliteTicket;
       let normalized = App._normalizeFighterForRoster({ ...fighter, orgId: 'player' });
-      normalized.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      normalized.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
       const tierCfg = Engine.scout.getTierConfig(normalized.assessedTier || 'material');
       const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
@@ -2769,7 +2793,7 @@ const App = {
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       let normalizedSigned = App._normalizeFighterForRoster(signed);
-      normalizedSigned.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       const candidates = (G.scoutCandidates || []).filter(c => c.id !== pending.fighterId);
@@ -2789,7 +2813,7 @@ const App = {
       const orgData = G.aiOrgs[fromOrgId];
       const fighter = orgData.roster.find(f => f.id === pending.fighterId);
       let resetFighter = Engine.popularity.applyTransferReset({ ...fighter, orgId: 'player', trust: 50, salaryBonus: 0 });
-      resetFighter.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      resetFighter.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       resetFighter = Engine.orgTimeline.transfer(resetFighter, 'player', G.season, G.week);
       resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: G.season, week: G.week, fromOrg: fromOrgName, toOrg: 'player', via: 'negotiate' });
       const newAiOrgs = { ...G.aiOrgs, [fromOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== pending.fighterId) } };
@@ -2895,7 +2919,7 @@ const App = {
       // v1.3: Record debut event
       let normalizedSigned = normalizeFighterForRoster(signed);
       // Phase 3: orgJoinWeek設定
-      normalizedSigned.orgJoinWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+      normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       // orgTimeline: スカウト獲得で所属変更
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
