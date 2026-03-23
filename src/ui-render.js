@@ -1299,9 +1299,8 @@ function _renderRosterDetailPanel(c, hired) {
   const canManage = G.weekPhase === 'manage';
   const tabIdx = _rosterDetailTab[c.id] || 0;
   const fullUrl = getFullUrl(c.id);
-  // 自団体での在籍年数を算出（orgTimelineからplayer所属の開始シーズンを取得）
-  const orgEntry = (c.orgTimeline || []).filter(e => e.orgId === 'player').pop();
-  const tenure = orgEntry ? (G.season - orgEntry.fromSeason + 1) : 1;
+  // 自団体での在籍年数を算出（所属年数基準を Engine.orgTimeline に統一）
+  const tenure = Engine.orgTimeline.getTenureYears(c, G.season, G.week, 'player');
   const stats = ['pw','sp','te','st','mn'];
   const STAT_COLORS = {pw:'#c03030',sp:'#1a8a4a',te:'#2060a0',st:'#b06010',mn:'#7040a0'};
   const STAT_LABELS = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
@@ -6565,4 +6564,3 @@ function _relmapZoomFit() {
   _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
   _relmapReheat();
 }
-

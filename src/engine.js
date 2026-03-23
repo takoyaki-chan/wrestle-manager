@@ -12124,10 +12124,12 @@ Engine.contract = {
   // ── コンテキスト変数抽出 ──────────────────────────────────────────────────
   extractContext(fighter, state) {
     const seasons = fighter.careerSeasons || 0;
+    const tenureSeasons = Engine.orgTimeline.getTenureYears(fighter, state.season, state.week, 'player');
+    const joinAbsWeek = Engine.orgTimeline.getJoinAbsWeek(fighter, 'player', state.season, state.week);
     const wins = fighter.wins || 0;
     const losses = fighter.losses || 0;
     const total = wins + losses + (fighter.draws || 0);
-    const isFounder = seasons >= (state.season - 1);
+    const isFounder = joinAbsWeek <= 1;
     // 出場頻度: 今シーズンの試合数相当（wins+losses+draws で近似）
     const showCount = (state.seasonStats || {}).showCount || 0;
     const fewMatches = showCount > 0 && total < showCount * 0.3;
@@ -12148,7 +12150,7 @@ Engine.contract = {
         if (lvl && ((lvl.rivalry || 0) >= 40 || lvl.isGoodRival || lvl.isBitterRival)) { rivalName = other.name; break; }
       }
     }
-    return { careerSeasons: seasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
+    return { careerSeasons: seasons, tenureSeasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
   },
 
   // ── 給与ギャップ算出（v2.0 §3）──────────────────────────────────────────
@@ -12319,7 +12321,7 @@ Engine.contract = {
     text = Engine.contract._insertTenureFarewell(text, context);
     text = text.replace(/\{wins\}/g, String(context.wins || 0));
     text = text.replace(/\{losses\}/g, String(context.losses || 0));
-    text = text.replace(/\{n\}/g, String(context.careerSeasons || 1));
+    text = text.replace(/\{n\}/g, String(context.tenureSeasons || 1));
     text = text.replace(/\{rivalName\}/g, context.rivalName || '');
     return text;
   },
@@ -12335,7 +12337,7 @@ Engine.contract = {
     if (!text.includes('{tenure}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure;
-    const n = ctx.careerSeasons || 1;
+    const n = ctx.tenureSeasons || 1;
     let insert = '';
     if (ctx.isFounder && t.founder) insert = t.founder;
     else if (n <= 1 && t['1']) insert = t['1'];
@@ -12364,7 +12366,7 @@ Engine.contract = {
     if (!text.includes('{tenure_farewell}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure_farewell\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure_farewell;
-    const n = ctx.careerSeasons || 1;
+    const n = ctx.tenureSeasons || 1;
     let insert = '';
     if (ctx.isFounder && t.founder) insert = t.founder;
     else if (n >= 4 && t.long) insert = t.long.replace(/\{n\}/g, String(n));
@@ -14717,6 +14719,9 @@ Engine.h2h = {
 
 // ── Engine.orgTimeline: ファイター所属団体履歴 ──────────
 Engine.orgTimeline = {
+  absWeek(season, week) {
+    return Math.max(1, (((season || 1) - 1) * 48) + (week || 1));
+  },
   /** 履歴の連続重複を圧縮し、開始時点を保持する */
   normalize(timeline = []) {
     const normalized = [];
@@ -14741,6 +14746,49 @@ Engine.orgTimeline = {
       normalized.push(clean);
     });
     return normalized;
+  },
+  getCurrentEntry(fighter, orgId) {
+    const timeline = this.normalize(fighter?.orgTimeline || []);
+    return [...timeline].reverse().find(e => e.orgId === orgId && !e.toSeason)
+      || [...timeline].reverse().find(e => e.orgId === orgId)
+      || null;
+  },
+  getJoinAbsWeek(fighter, orgId, currentSeason, currentWeek) {
+    const currentAbsWeek = this.absWeek(currentSeason, currentWeek);
+    if ((fighter?.orgId || fighter?._orgId) === orgId && typeof fighter?.orgJoinWeek === 'number' && fighter.orgJoinWeek > 0) {
+      return Math.min(fighter.orgJoinWeek, currentAbsWeek);
+    }
+    const entry = this.getCurrentEntry(fighter, orgId);
+    if (entry) return this.absWeek(entry.fromSeason, entry.fromWeek);
+    return currentAbsWeek;
+  },
+  getTenureYears(fighter, currentSeason, currentWeek, orgId = 'player') {
+    const currentAbsWeek = this.absWeek(currentSeason, currentWeek);
+    const joinAbsWeek = this.getJoinAbsWeek(fighter, orgId, currentSeason, currentWeek);
+    return Math.max(1, Math.floor(Math.max(0, currentAbsWeek - joinAbsWeek) / 48) + 1);
+  },
+  syncCurrentEntry(fighter, orgId, currentSeason, currentWeek) {
+    if (!fighter || !orgId) return fighter;
+    const timeline = this.normalize(fighter.orgTimeline || []);
+    const joinAbsWeek = this.getJoinAbsWeek(fighter, orgId, currentSeason, currentWeek);
+    const joinSeason = Math.max(1, Math.floor((joinAbsWeek - 1) / 48) + 1);
+    const joinWeek = ((joinAbsWeek - 1) % 48) + 1;
+    const currentIdx = timeline.findIndex(e => e.orgId === orgId && !e.toSeason);
+
+    if (currentIdx >= 0) {
+      timeline[currentIdx] = { ...timeline[currentIdx], fromSeason: joinSeason, fromWeek: joinWeek };
+      return { ...fighter, orgTimeline: this.normalize(timeline) };
+    }
+
+    if (timeline.length > 0) {
+      const lastIdx = timeline.length - 1;
+      const last = timeline[lastIdx];
+      if (!last.toSeason && last.orgId !== orgId) {
+        timeline[lastIdx] = { ...last, toSeason: joinSeason, toWeek: joinWeek };
+      }
+    }
+    timeline.push({ orgId, fromSeason: joinSeason, fromWeek: joinWeek });
+    return { ...fighter, orgTimeline: this.normalize(timeline) };
   },
   /** 所属変更を記録（ファイターの新コピーを返す） */
   transfer(fighter, newOrgId, season, week) {

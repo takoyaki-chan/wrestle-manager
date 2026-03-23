@@ -1948,23 +1948,26 @@ const Storage = {
         }
         G = { ...G, _migrated_h2h_orgTimeline_v1: true };
       }
-      if (!G._migrated_orgTimeline_v2) {
-        const normalizeTimeline = fighters => (fighters || []).map(f =>
-          f?.orgTimeline ? { ...f, orgTimeline: Engine.orgTimeline.normalize(f.orgTimeline) } : f
-        );
+      if (!G._migrated_orgTimeline_v3) {
+        const normalizeTimeline = (fighters, orgIdResolver) => (fighters || []).map(f => {
+          if (!f) return f;
+          const orgId = typeof orgIdResolver === 'function' ? orgIdResolver(f) : orgIdResolver;
+          if (orgId) return Engine.orgTimeline.syncCurrentEntry(f, orgId, G.season || 1, G.week || 1);
+          return f?.orgTimeline ? { ...f, orgTimeline: Engine.orgTimeline.normalize(f.orgTimeline) } : f;
+        });
         G = {
           ...G,
-          roster: normalizeTimeline(G.roster || []),
-          freeAgents: normalizeTimeline(G.freeAgents || []),
-          retiredFighters: normalizeTimeline(G.retiredFighters || []),
-          hallOfFame: normalizeTimeline(G.hallOfFame || []),
-          _migrated_orgTimeline_v2: true,
+          roster: normalizeTimeline(G.roster || [], 'player'),
+          freeAgents: normalizeTimeline(G.freeAgents || [], 'fa'),
+          retiredFighters: normalizeTimeline(G.retiredFighters || [], null),
+          hallOfFame: normalizeTimeline(G.hallOfFame || [], null),
+          _migrated_orgTimeline_v3: true,
         };
         if (G.aiOrgs) {
           const migAi = {};
           Object.keys(G.aiOrgs).forEach(orgId => {
             const od = G.aiOrgs[orgId];
-            migAi[orgId] = { ...od, roster: normalizeTimeline(od.roster || []) };
+            migAi[orgId] = { ...od, roster: normalizeTimeline(od.roster || [], orgId) };
           });
           G = { ...G, aiOrgs: migAi };
         }
