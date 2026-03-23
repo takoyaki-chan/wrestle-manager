@@ -1449,7 +1449,9 @@ const Engine = {
           titleSummary = `タイトル${totalTitleWins}回獲得（通算${totalDefenses}度防衛）`;
         }
       }
-      return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, totalTitleWins, totalDefenses };
+      const juniorTournamentWins = cr.juniorTournamentWins || 0;
+      const ppvMainEventWins = cr.ppvMainEventWins || 0;
+      return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, totalTitleWins, totalDefenses, juniorTournamentWins, ppvMainEventWins };
     },
 
     /** Generate durability: normal distribution N(0,2), clamped to -4..+4 (v1.3-1 §1.1) */
