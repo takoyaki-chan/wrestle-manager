@@ -2259,6 +2259,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   <!-- Top Bar -->
   <div class="top-bar">
     <div style="display:flex;align-items:center;gap:8px">
+      <span id="dispOrgIcon"></span>
       <div class="top-bar-title">WRESTLE MANAGER</div>
       <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;opacity:0.6" title="サウンド ON/OFF">🔊</button>
       <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" style="background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
@@ -2645,6 +2646,10 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <input class="org-setup-input" id="orgSetupNameInput" type="text" maxlength="20"
         placeholder="団体名を入力" value="" onkeydown="if(event.key==='Enter')App.confirmOrgSetup()">
       <div class="org-setup-hint">※ あとから変更できます</div>
+    </div>
+    <div class="org-setup-input-wrap" style="margin-top:16px">
+      <div class="org-setup-label">PROMOTION ICON</div>
+      <div id="orgIconGrid" style="display:grid;grid-template-columns:repeat(5,64px);gap:8px;justify-content:center;margin:12px 0"></div>
     </div>
     <button class="title-btn primary" onclick="App.confirmOrgSetup()" style="font-size:20px;padding:12px 48px">
       旗揚げする

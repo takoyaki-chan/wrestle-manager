@@ -68,6 +68,9 @@ function refreshTopBar() {
   if (muteBtn) muteBtn.textContent = Audio.muted ? '🔇' : '🔊';
   const bgmMuteBtn = document.getElementById('bgmMuteBtn');
   if (bgmMuteBtn) bgmMuteBtn.textContent = Audio.bgmMuted ? '🎵❌' : '🎵';
+  // Org icon in top bar
+  const orgIconEl = document.getElementById('dispOrgIcon');
+  if (orgIconEl) orgIconEl.innerHTML = orgIconHtml('player', 24);
   // Hide nav during draft
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (G.weekPhase === 'draft') ? 'none' : '';
@@ -2357,7 +2360,7 @@ function renderRanking() {
     window['_rankTip_' + r.orgId] = tipHtml;
     html += `<tr style="${bgStyle}">
       <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
-      <td>${emoji} <span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
+      <td style="white-space:nowrap">${orgIconHtml(r.orgId, 28)}<span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
       <td class="num" style="font-size:16px;font-weight:700;cursor:help"
           onmouseenter="showCustomTooltip(this,_rankTip_${r.orgId})"
           onmouseleave="hideCustomTooltip()"
@@ -2393,7 +2396,7 @@ function renderRanking() {
       }
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">🏠 ${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml('player', 40)}${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
@@ -2446,7 +2449,7 @@ function renderRanking() {
 
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">${org.emoji} ${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
+          <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml(org.id, 40)}${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
           <span style="font-size:13px;color:var(--text-sub)">${rEntry ? Math.round(rEntry.rating) + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
@@ -3734,6 +3737,11 @@ function _renderDbFighters() {
     </tr></thead>
     <tbody>`;
 
+  // 王者IDマップ構築（プレイヤー+全AI団体）
+  const _champIds = new Set();
+  if (G.titles?.world?.championId) _champIds.add(G.titles.world.championId);
+  if (G.aiOrgs) { for (const oData of Object.values(G.aiOrgs)) { if (oData.titles?.world?.championId) _champIds.add(oData.titles.world.championId); } }
+
   filtered.forEach(f => {
     const ovr = Engine.util.ov(f);
     const ovrCls = ovr >= 75 ? 'db-ovr-gold' : ovr >= 60 ? 'db-ovr-white' : '';
@@ -3747,10 +3755,13 @@ function _renderDbFighters() {
     const playerBadge = f._orgTier === 'player'
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">自</span>`
       : '';
+    const champBadge = _champIds.has(f.id)
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.2);color:var(--gold);border:1px solid rgba(212,168,67,0.4);margin-left:4px">👑</span>`
+      : '';
     const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
       <td>${portraitImg(f.id, 36, '', false)}</td>
-      <td style="font-weight:600">${f.name}</td>
+      <td style="font-weight:600">${f.name}${champBadge}</td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
       <td class="num ${ovrCls}" style="font-weight:700;font-size:15px">${ovr}</td>

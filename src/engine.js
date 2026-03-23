@@ -68,6 +68,10 @@ const Engine = {
   util: {
     /** 絶対週番号（48週制）。シーズン・週をまたいだクールダウン比較に使う */
     absWeek(season, week) { return ((season || 1) - 1) * 48 + (week || 1); },
+    /** オフシーズン込み絶対週番号（53週/シーズン: 通常48週+オフ5週）。ラストラン期限など、オフ中も進行する計算に使う */
+    absWeekTotal(season, week, offSeason, offWeek) {
+      return ((season || 1) - 1) * 53 + (week || 1) + (offSeason ? (offWeek || 0) : 0);
+    },
     clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
@@ -99,6 +103,23 @@ const Engine = {
       if (fa.length <= 6) return fa.map(c => c.id);
       const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xFA);
       return Engine.util.seededPick(fa.map(c => c.id), 6, seed);
+    },
+    /** NPC団体アイコンパス取得 (orgId='org_s'|'org_a'|'org_b') */
+    getOrgIconPath(state, orgId) {
+      const tierMap = { org_s: 's', org_a: 'a', org_b: 'b' };
+      const tier = tierMap[orgId];
+      if (!tier) return null;
+      const orgName = state.rivalOrgNames?.[orgId];
+      if (!orgName) return null;
+      const pool = RIVAL_ORG_NAME_POOL[tier.toUpperCase()];
+      const idx = pool ? pool.indexOf(orgName) : -1;
+      if (idx === -1) return null;
+      return `img/org/org-${tier}-${idx}.png`;
+    },
+    /** プレイヤー団体アイコンパス取得 */
+    getPlayerOrgIconPath(state) {
+      const idx = state.playerOrgIcon ?? 0;
+      return `img/org/org-player-${idx}.png`;
     },
     /** Compute visible Rental IDs for this quarter (20 slots) */
     getVisibleRentalIds(state) {
@@ -2026,7 +2047,7 @@ const Engine = {
 
       if (accepted) {
         const line = Engine.retirement.selectAdviseLine(fighter, G, true, rng);
-        let updated = Engine.career.ensure({ ...fighter, lastRun: true, lastRunWeek: G.season * 12 + G.week });
+        let updated = Engine.career.ensure({ ...fighter, lastRun: true, lastRunWeek: Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek) });
         updated = Engine.career.addEvent(updated, { type: 'retain', reason: 'player_retire', season: G.season, week: G.week, age: fighter.age });
         return {
           ...G,
@@ -7623,9 +7644,9 @@ const Engine = {
         const lastRunActive = [];
         s.roster.forEach(c => {
           if (c.lastRun) {
-            // lastRunWeek はシーズン*12+週で保存。現在より4週以上前なら期限切れ
+            // lastRunWeek はオフ込み絶対週（53週/シーズン）で保存。現在より4週以上前なら期限切れ
             const startAbsWeek = c.lastRunWeek || 0;
-            const currentAbsWeek = s.season * 12 + s.week;
+            const currentAbsWeek = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
             if (currentAbsWeek - startAbsWeek >= 4) {
               lastRunExpiredList.push(c);
             } else {
@@ -8342,6 +8363,7 @@ const Engine = {
       funds: 5000,
       orgPop: 10,
       orgName: 'プレイヤー団体',
+      playerOrgIcon: 0,
       roster,
       freeAgents,
       gameLog: [],

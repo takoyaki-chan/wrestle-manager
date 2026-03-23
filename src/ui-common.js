@@ -4,6 +4,14 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+/** 団体アイコン <img> タグ生成ヘルパー */
+function orgIconHtml(orgId, size = 40) {
+  const isPlayer = (orgId === 'player');
+  const path = isPlayer ? Engine.util.getPlayerOrgIconPath(G) : Engine.util.getOrgIconPath(G, orgId);
+  if (!path) return '';
+  return `<img src="${path}" width="${size}" height="${size}" style="vertical-align:middle;margin-right:6px;border-radius:4px" alt="" loading="lazy">`;
+}
+
 // ── Popup Queue System ──────────────────────────────────────────────────
 // ポップアップの重複表示を防止する。1つのポップアップが表示中は、
 // 新しいポップアップをキューに入れて順番待ちさせる。
@@ -114,7 +122,7 @@ function showWarChallenge() {
   // Dark gradient header with "挑戦状" badge
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:20px 20px 16px;background:linear-gradient(180deg,${orgCfg.color}30,transparent);border-radius:12px 12px 0 0">`;
   html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${orgCfg.color};margin-bottom:8px;text-transform:uppercase">📜 挑 戦 状 📜</div>`;
-  html += `<div style="font-size:18px;font-weight:900;color:var(--text-main)">${ev.opponentName}</div>`;
+  html += `<div style="font-size:18px;font-weight:900;color:var(--text-main)">${orgIconHtml(ev.opponentOrgId, 48)}${ev.opponentName}</div>`;
   html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${ev.matchCount}試合の団体対決</div>`;
   html += `</div>`;
 
@@ -184,7 +192,7 @@ function _warHeader(orgCfg, playerOrgName, enemyOrgName, playerScore, enemyScore
       </div>
       <div class="scoreboard">
         <div class="sb-side left">
-          <div class="sb-org-name" style="color:#74b9ff">${playerOrgName}</div>
+          <div class="sb-org-name" style="color:#74b9ff">${orgIconHtml('player', 36)}${playerOrgName}</div>
           ${statusCfg.playerSub ? `<div class="sb-org-sub">${statusCfg.playerSub}</div>` : ''}
         </div>
         <div class="sb-center">
@@ -194,7 +202,7 @@ function _warHeader(orgCfg, playerOrgName, enemyOrgName, playerScore, enemyScore
           </div>
         </div>
         <div class="sb-side right">
-          <div class="sb-org-name" style="color:${eLight}">${orgCfg.emoji || ''} ${enemyOrgName}</div>
+          <div class="sb-org-name" style="color:${eLight}">${orgIconHtml(orgCfg.id || '', 36)}${enemyOrgName}</div>
           ${statusCfg.enemySub ? `<div class="sb-org-sub">${statusCfg.enemySub}</div>` : ''}
         </div>
       </div>
@@ -2171,7 +2179,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
   const initial = c.name.charAt(0);
   const ovrVal = Engine.util.ov(c);
-  const isChamp = G.titles?.world?.championId === c.id;
+  // プレイヤー団体 or AI団体の王者判定
+  const _playerChamp = G.titles?.world?.championId === c.id;
+  const _npcChampOrgData = negotiateOrgId ? G.aiOrgs[negotiateOrgId] : null;
+  const _npcChamp = _npcChampOrgData?.titles?.world?.championId === c.id;
+  const isChamp = _playerChamp || _npcChamp;
+  const _champDefenses = _playerChamp ? G.titles.world.defenses : (_npcChamp ? (_npcChampOrgData.titles.world.defenses || 0) : 0);
 
   // Stats
   const STATS = [
@@ -2472,7 +2485,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
             ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${bestMQ}</span>` : ''}
-            ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${G.titles.world.defenses}防衛）</span>` : ''}
+            ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
             ${summary.peakOVR > 0 && !isChamp ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="color:#f39c12;font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${summary.titleSummary ? `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${summary.titleSummary}</div>` : ''}
@@ -2563,7 +2576,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         if (c.lastRun) {
           // ラストラン中
           const lastRunStart = c.lastRunWeek || 0;
-          const currentAbsWeek = G.season * 12 + G.week;
+          const currentAbsWeek = Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek);
           const weeksLeft = Math.max(0, 4 - (currentAbsWeek - lastRunStart));
           html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.3);border-radius:6px;margin-bottom:10px">
             <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">🌅 ラストラン中</div>

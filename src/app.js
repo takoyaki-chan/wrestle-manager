@@ -2122,6 +2122,11 @@ const Storage = {
         delete G._everFoughtPairs;
       }
 
+      // 団体アイコン: playerOrgIcon 未定義時はデフォルト0
+      if (G.playerOrgIcon == null) {
+        G = { ...G, playerOrgIcon: 0 };
+      }
+
       return true;
     } catch(e) {
       G = prevG;
@@ -2375,6 +2380,7 @@ function archiveRetiredRivalryState(state, fighter) {
 }
 // ── App Commands (G mutation ONLY via G = newState) ──
 let _pendingOrgName = '';
+let _pendingOrgIcon = 0;
 let _selectedDifficulty = 'normal';
 const App = {
   // ═══ Title Screen (v1.0) ═══
@@ -2420,6 +2426,17 @@ const App = {
     Audio.play('select');
     document.getElementById('titleScreen').style.display = 'none';
     document.getElementById('orgSetupScreen').style.display = 'flex';
+    // Populate icon grid
+    _pendingOrgIcon = 0;
+    const grid = document.getElementById('orgIconGrid');
+    if (grid) {
+      let gh = '';
+      for (let i = 0; i < 10; i++) {
+        const sel = i === 0 ? 'border:3px solid var(--gold);box-shadow:0 0 12px rgba(212,168,67,0.4)' : 'border:3px solid transparent';
+        gh += `<img src="img/org/org-player-${i}.png" width="64" height="64" data-idx="${i}" style="cursor:pointer;border-radius:8px;${sel};transition:border 0.2s,box-shadow 0.2s" onclick="App.selectOrgIcon(${i})" alt="">`;
+      }
+      grid.innerHTML = gh;
+    }
     // Focus the input
     setTimeout(() => {
       const input = document.getElementById('orgSetupNameInput');
@@ -2456,6 +2473,20 @@ const App = {
     Audio.bgm.play('management');
   },
 
+  // Select org icon (called from icon grid)
+  selectOrgIcon(idx) {
+    _pendingOrgIcon = idx;
+    Audio.play('click');
+    const grid = document.getElementById('orgIconGrid');
+    if (grid) {
+      grid.querySelectorAll('img').forEach(img => {
+        const isSelected = parseInt(img.dataset.idx) === idx;
+        img.style.border = isSelected ? '3px solid var(--gold)' : '3px solid transparent';
+        img.style.boxShadow = isSelected ? '0 0 12px rgba(212,168,67,0.4)' : 'none';
+      });
+    }
+  },
+
   // Confirm org setup → proceed to difficulty selection
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
@@ -2485,7 +2516,7 @@ const App = {
     document.getElementById('difficultyScreen').style.display = 'none';
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, orgName: _pendingOrgName, difficultyMode: _selectedDifficulty, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    G = { ...G, orgName: _pendingOrgName, playerOrgIcon: _pendingOrgIcon, difficultyMode: _selectedDifficulty, _draftPicks: [], _draftFocus: null, gameLog: [] };
     Audio.bgm.play('kaimaku');
     refreshAll();
   },
