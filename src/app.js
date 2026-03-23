@@ -2049,6 +2049,18 @@ const Storage = {
         G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };
       }
 
+      // Speed → Aerial スタイル名マイグレーション
+      if (!G._migrated_style_aerial_v1) {
+        const fixStyle = c => c.style === 'Speed' ? { ...c, style: 'Aerial' } : c;
+        G = {
+          ...G,
+          roster: G.roster.map(fixStyle),
+          freeAgents: (G.freeAgents || []).map(fixStyle),
+          aiOrgs: Object.fromEntries(Object.entries(G.aiOrgs || {}).map(([k, org]) => [k, { ...org, roster: (org.roster || []).map(fixStyle) }])),
+          _migrated_style_aerial_v1: true
+        };
+      }
+
       // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
         const existing = new Set((G.matchupLog || []).map(e => {
