@@ -2950,23 +2950,25 @@ function renderSave() {
         placeholder="団体名を入力">
       <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('stamp')}">変更</button>
     </div>
-    <div style="margin-top:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🛡️ エンブレム:</label>
-      <div id="settingsOrgIconGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-        ${(() => {
-          const cur = G.playerOrgIcon ?? 0;
-          let g = '';
-          for (let i = 0; i < 10; i++) {
-            const sel = i === cur;
-            const border = sel ? '3px solid var(--gold)' : '3px solid transparent';
-            const shadow = sel ? '0 0 10px rgba(212,168,67,0.4)' : 'none';
-            g += '<img src="../image/org/org-player-' + i + '.png" width="48" height="48" data-idx="' + i + '"' +
-              ' style="cursor:pointer;border-radius:6px;border:' + border + ';box-shadow:' + shadow + ';transition:border 0.2s,box-shadow 0.2s"' +
-              ' onclick="G={...G,playerOrgIcon:' + i + '};refreshAll();Audio.play(\'stamp\')" alt="">';
-          }
-          return g;
-        })()}
-      </div>
+      <img src="../image/org/org-player-${G.playerOrgIcon ?? 0}.png" width="32" height="32" style="border-radius:4px;vertical-align:middle" alt="">
+      <button class="btn btn-sm" style="font-size:11px" onclick="document.getElementById('settingsOrgIconGrid').style.display=document.getElementById('settingsOrgIconGrid').style.display==='none'?'flex':'none';Audio.play('click')">変更</button>
+    </div>
+    <div id="settingsOrgIconGrid" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;margin-left:2px">
+      ${(() => {
+        const cur = G.playerOrgIcon ?? 0;
+        let g = '';
+        for (let i = 0; i < 10; i++) {
+          const sel = i === cur;
+          const border = sel ? '3px solid var(--gold)' : '3px solid transparent';
+          const shadow = sel ? '0 0 10px rgba(212,168,67,0.4)' : 'none';
+          g += '<img src="../image/org/org-player-' + i + '.png" width="48" height="48" data-idx="' + i + '"' +
+            ' style="cursor:pointer;border-radius:6px;border:' + border + ';box-shadow:' + shadow + ';transition:border 0.2s,box-shadow 0.2s"' +
+            ' onclick="G={...G,playerOrgIcon:' + i + '};refreshAll();Audio.play(\'stamp\')" alt="">';
+        }
+        return g;
+      })()}
     </div>
   </div>`;
 
