@@ -2972,6 +2972,27 @@ function renderSave() {
     </div>
   </div>`;
 
+  // Volume controls: BGM / SE master (10-step sliders)
+  const bgmMv = Math.round(Audio.bgmMasterVol * 100);
+  const sfxMv = Math.round(Audio.sfxMasterVol * 100);
+  html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
+    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px">🔊 音量設定</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap;min-width:56px">🎵 BGM</label>
+      <input type="range" min="0" max="100" step="10" value="${bgmMv}" id="settingsBgmVol"
+        style="flex:1;max-width:200px;accent-color:var(--gold)"
+        oninput="Audio.setBgmMasterVol(this.value/100);document.getElementById('settingsBgmVal').textContent=this.value+'%'">
+      <span id="settingsBgmVal" style="color:var(--gold);font-size:12px;min-width:36px;text-align:right">${bgmMv}%</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap;min-width:56px">🔊 SE</label>
+      <input type="range" min="0" max="100" step="10" value="${sfxMv}" id="settingsSfxVol"
+        style="flex:1;max-width:200px;accent-color:var(--gold)"
+        oninput="Audio.setSfxMasterVol(this.value/100);document.getElementById('settingsSfxVal').textContent=this.value+'%'">
+      <span id="settingsSfxVal" style="color:var(--gold);font-size:12px;min-width:36px;text-align:right">${sfxMv}%</span>
+    </div>
+  </div>`;
+
   // New game button
   html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
     <button class="btn btn-red" onclick="showConfirm('本当にニューゲームを開始しますか？\\n現在の進行は失われます。','ニューゲーム',()=>{location.reload()})">🔄 ニューゲーム</button>

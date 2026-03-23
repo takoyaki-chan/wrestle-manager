@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-22（新聞タブ見た目パッチ 実装完了）
+> 最終更新: 2026-03-23（サウンドシステム実装 — BGM/SEマスター音量+ミキサー確定値反映+特別試合ファンファーレ）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`

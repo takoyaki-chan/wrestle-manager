@@ -6,6 +6,8 @@
 const Audio = (() => {
   let ctx = null;
   let masterGain = null;
+  let bgmMasterGain = null; // BGMカテゴリ全体のマスター
+  let sfxMasterGain = null; // SEカテゴリ全体のマスター
   let sfxGain = null;
   let bgmGain = null;
   let bgmNodes = null;  // active BGM oscillator nodes
@@ -13,8 +15,10 @@ const Audio = (() => {
   let _sfxVol = 0.5;
   let _bgmVol = 0.04; // ≈ demo preview 15%
   let _bgmMuted = false; // BGM-only mute (jingles/SFX still play)
-  // ── Per-track volume targets (bgmGain.gain.value at default _bgmVol=0.04) ──
-  const CHIPTUNE_BGM_MIX = { kaimaku:0.21, management:0.53, battle:0.40, season_end:0.43, tension:0.36 };
+  let _bgmMasterVol = 0.7;  // BGMマスター（デフォルト70%）
+  let _sfxMasterVol = 1.0;  // SEマスター（デフォルト100%）
+  // ── Per-track volume targets (bgmGain.gain.value) ──
+  const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
   const JINGLE_MIX = { victory:0.38, championship:0.33 };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
@@ -24,17 +28,25 @@ const Audio = (() => {
     masterGain = ctx.createGain();
     masterGain.gain.value = 1.0;
     masterGain.connect(ctx.destination);
+    bgmMasterGain = ctx.createGain();
+    bgmMasterGain.gain.value = _bgmMasterVol;
+    bgmMasterGain.connect(masterGain);
+    sfxMasterGain = ctx.createGain();
+    sfxMasterGain.gain.value = _sfxMasterVol;
+    sfxMasterGain.connect(masterGain);
     sfxGain = ctx.createGain();
     sfxGain.gain.value = _sfxVol;
-    sfxGain.connect(masterGain);
+    sfxGain.connect(sfxMasterGain);
     bgmGain = ctx.createGain();
     bgmGain.gain.value = _bgmVol;
-    bgmGain.connect(masterGain);
+    bgmGain.connect(bgmMasterGain);
     // Load saved prefs
     try {
       const prefs = JSON.parse(localStorage.getItem('wm_audio') || '{}');
       if (prefs.sfxVol !== undefined) { _sfxVol = prefs.sfxVol; sfxGain.gain.value = _sfxVol; }
       if (prefs.bgmVol !== undefined) { _bgmVol = prefs.bgmVol; bgmGain.gain.value = _bgmVol; }
+      if (prefs.bgmMasterVol !== undefined) { _bgmMasterVol = prefs.bgmMasterVol; bgmMasterGain.gain.value = _bgmMasterVol; }
+      if (prefs.sfxMasterVol !== undefined) { _sfxMasterVol = prefs.sfxMasterVol; sfxMasterGain.gain.value = _sfxMasterVol; }
       if (prefs.muted) { _muted = true; masterGain.gain.value = 0; }
       if (prefs.bgmMuted) { _bgmMuted = true; }
     } catch(e) {}
@@ -42,7 +54,7 @@ const Audio = (() => {
   }
 
   function savePrefs() {
-    try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted, bgmMuted:_bgmMuted})); } catch(e) {}
+    try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted, bgmMuted:_bgmMuted, bgmMasterVol:_bgmMasterVol, sfxMasterVol:_sfxMasterVol})); } catch(e) {}
   }
 
   // ── Utility: create a quick envelope oscillator ──
@@ -824,8 +836,8 @@ const Audio = (() => {
     _fadeTimer: null,
     _mix: 1,
     _resolveVolume(volume = null, mix = 1) {
-      if (volume !== null) return volume;
-      return Math.min(1.0, _bgmVol * 8 * mix);
+      if (volume !== null) return Math.min(1.0, _bgmMasterVol * volume);
+      return Math.min(1.0, _bgmMasterVol * _bgmVol * 8 * mix);
     },
     play(src, { loop = false, volume = null, mix = 1 } = {}) {
       if (_bgmMuted) return;
@@ -887,6 +899,11 @@ const Audio = (() => {
     setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; FileBGM.updateVolume(); savePrefs(); },
     get sfxVol() { return _sfxVol; },
     get bgmVol() { return _bgmVol; },
+    // BGM/SE マスター音量
+    setBgmMasterVol(v) { _bgmMasterVol = v; if (bgmMasterGain) bgmMasterGain.gain.value = v; FileBGM.updateVolume(); savePrefs(); },
+    setSfxMasterVol(v) { _sfxMasterVol = v; if (sfxMasterGain) sfxMasterGain.gain.value = v; savePrefs(); },
+    get bgmMasterVol() { return _bgmMasterVol; },
+    get sfxMasterVol() { return _sfxMasterVol; },
     // BGM-only mute (looping tracks off, jingles/SFX still play)
     get bgmMuted() { return _bgmMuted; },
     toggleBgmMute() {
@@ -3583,12 +3600,15 @@ const App = {
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         isTitle: !!m.isTitle,
+        isSpecialMatch: !!m.isTitle,
         matchTier: m.isTitle ? 2 : 1,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
         leftPersonality: charL.personality || 'normal',
         leftArchetype: charL.archetype || 'normal',
         rightPersonality: charR.personality || 'normal',
-        rightArchetype: charR.archetype || 'normal'
+        rightArchetype: charR.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol,
+        bgmMasterVol: Audio.bgmMasterVol,
       }
     };
     // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
@@ -5772,10 +5792,11 @@ const App = {
         header: '⚔ 挑戦状',
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: 1, totalMatches: 1,
-        isTitle: false, matchTier: 2,
+        isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
         leftPersonality: pf.personality || 'normal', leftArchetype: pf.archetype || 'normal',
-        rightPersonality: af.personality || 'normal', rightArchetype: af.archetype || 'normal'
+        rightPersonality: af.personality || 'normal', rightArchetype: af.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       }
     };
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
@@ -5928,10 +5949,11 @@ const App = {
         header: '💥 決着の試合',
         subHeader: `${f1.name} vs ${f2.name}`,
         matchNum: 1, totalMatches: 1,
-        isTitle: false, matchTier: 2,
+        isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, f1.id, f2.id); return rl ? rl.tier : 0; })(),
         leftPersonality: f1.personality || 'normal', leftArchetype: f1.archetype || 'normal',
-        rightPersonality: f2.personality || 'normal', rightArchetype: f2.archetype || 'normal'
+        rightPersonality: f2.personality || 'normal', rightArchetype: f2.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       }
     };
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
@@ -6257,12 +6279,14 @@ const App = {
         matchNum: idx + 1,
         totalMatches: wp.card.length,
         isTitle: false,
+        isSpecialMatch: idx + 1 === wp.card.length,
         matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
         leftPersonality: pf.personality || 'normal',
         leftArchetype: pf.archetype || 'normal',
         rightPersonality: af.personality || 'normal',
-        rightArchetype: af.archetype || 'normal'
+        rightArchetype: af.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       }
     };
     // ビッグマッチBGM（対抗戦）
@@ -6572,12 +6596,14 @@ App.ppvWatchMatch = function(idx) {
       matchNum,
       totalMatches: total,
       isTitle: false,
+      isSpecialMatch: matchNum === total,
       matchTier: 2,
       rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, match.left.id, match.right.id); return rl ? rl.tier : 0; })(),
       leftPersonality: match.left.personality || 'normal',
       leftArchetype: match.left.archetype || 'normal',
       rightPersonality: match.right.personality || 'normal',
-      rightArchetype: match.right.archetype || 'normal'
+      rightArchetype: match.right.archetype || 'normal',
+      sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     }
   };
   // ビッグマッチBGM（PPV）
@@ -7030,11 +7056,13 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
+      isSpecialMatch: !!isFinal,
       matchTier: isFinal ? 2 : 1,
       leftPersonality: leftF.personality || 'normal',
       leftArchetype: leftF.archetype || 'normal',
       rightPersonality: rightF.personality || 'normal',
-      rightArchetype: rightF.archetype || 'normal'
+      rightArchetype: rightF.archetype || 'normal',
+      sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
   };
   // ビッグマッチBGM（決勝のみ）
