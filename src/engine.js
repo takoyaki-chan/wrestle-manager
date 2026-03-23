@@ -3798,6 +3798,21 @@ const Engine = {
         nextOrgData.matchupLog = [...(nextOrgData.matchupLog || []), ...newEntries];
         nextOrgData.showCount = (nextOrgData.showCount || 0) + 1;
 
+        // AI団体 wins/losses/draws/streak 更新（プレイヤー団体processSettlementと同等）
+        matchResults.forEach(r => {
+          const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
+          if (wId) {
+            const lId = wId === r.left.id ? r.right.id : r.left.id;
+            roster = roster.map(c => {
+              if (c.id === wId) return { ...c, wins: (c.wins || 0) + 1, streak: ((c.streak || 0) > 0 ? (c.streak || 0) : 0) + 1 };
+              if (c.id === lId) return { ...c, losses: (c.losses || 0) + 1, streak: ((c.streak || 0) < 0 ? (c.streak || 0) : 0) - 1 };
+              return c;
+            });
+          } else {
+            roster = roster.map(c => (c.id === r.left.id || c.id === r.right.id) ? { ...c, draws: (c.draws || 0) + 1 } : c);
+          }
+        });
+
         roster = roster.map(f => {
           const condBonus = Engine.coach.getCondBonus(aiShowState, f.id);
           return { ...f, condition: Math.min(100, (f.condition || 70) + 3 + condBonus) };
