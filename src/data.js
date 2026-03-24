@@ -1,4 +1,9 @@
 // ╔══════════════════════════════════════════════════════════╗
+// ║  EXTERNAL LINKS                                          ║
+// ╚══════════════════════════════════════════════════════════╝
+const FEEDBACK_FORM_URL = 'https://forms.gle/73biRkZ9c23EgRuP7';
+
+// ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 1: CHARACTER DATA                               ║
 // ╚══════════════════════════════════════════════════════════╝
 const ALL_CHARS = [
@@ -478,6 +483,11 @@ function portraitImg(id, size = 80, cls = '', clickable = false) {
   let statusCls = '';
   if (typeof G !== 'undefined') {
     if (G.titles?.world?.championId === id) statusCls = ' portrait-champ';
+    else if (G.aiOrgs) {
+      for (const oData of Object.values(G.aiOrgs)) {
+        if (oData.titles?.world?.championId === id) { statusCls = ' portrait-champ'; break; }
+      }
+    }
   }
   const clickAttr = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'roster')" style="width:${size}px;height:${size}px;cursor:pointer"` : ` style="width:${size}px;height:${size}px"`;
   if (url) {
