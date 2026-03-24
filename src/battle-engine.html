@@ -918,6 +918,23 @@ function showDamageSpeech(side, charData) {
   sfx.cutinSlide();
 }
 
+// ダメージセリフ/ボイス: HP残量ベース発動判定
+// クリティカルヒット（dmg>=15）時に呼び出す
+function tryDamageCutin(side, charData, hpRatio) {
+  const r = Math.random();
+  if (hpRatio > 0.66) {
+    // 余裕あり: セリフ40%
+    if (r < 0.40) showDamageSpeech(side, charData);
+  } else if (hpRatio > 0.33) {
+    // 効いてきた: セリフ15%, ボイス50%
+    if (r < 0.15) showDamageSpeech(side, charData);
+    else if (r < 0.65) showDamageVoice(side, charData);
+  } else {
+    // 限界: ボイス60%のみ
+    if (r < 0.60) showDamageVoice(side, charData);
+  }
+}
+
 // ダメージボイスカットイン（短い悲鳴、archetype別）
 function showDamageVoice(side, charData) {
   const mi = matchData && matchData.matchInfo;
@@ -1175,9 +1192,9 @@ function getSfxGain(){if(!_sfxGain){_ensureMasterGains();const c=ctx();_sfxGain=
 const _SE_FILES={
   hitStrike:'../bgm/b01_strike_hit_v4.mp3',
   hitThrow:'../bgm/b02_throw_hit_v1.mp3',
-  hitSub:'../bgm/b03_joint_v5.mp3',
-  hitAerial:'../bgm/b04_aerial_v1.mp3',
-  hitGround:'../bgm/b05_ground_v2.mp3',
+  hitSub:'../bgm/b03_joint_v4.mp3',
+  hitAerial:'../bgm/b12_bigmove_hit_v3.mp3',
+  hitGround:'../bgm/b03_joint_v5.mp3',
   hitRollup:'../bgm/b06_rollup_v1.mp3',
   missWhiff:'../bgm/b07_whiff_v4.mp3',
   counterSE:'../bgm/b08_counter_v1.mp3',
@@ -1211,7 +1228,7 @@ function _playSample(name,scale,rawVol){
   }catch(e){return false}
 }
 const SE_MIX={
-  hitStrike:.50,hitThrow:.50,hitSub:.13,hitAerial:.35,hitGround:.47,hitRollup:.50,
+  hitStrike:.50,hitThrow:.53,hitSub:.20,hitAerial:.10,hitGround:.13,hitRollup:.50,
   missWhiff:.24,counterSE:.15,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.21,bigmoveImpact:.41,
   count:1.00,kickoutSE:.39,guEscapeSE:.22,heartbeatSE:.55,finImpact:.36,finChime:.50,
   gong:.55,gongStart:.55,phaseChg:.73,victoryFanfare:.50,ready:.29,fightStart:.10,lockIn:.35,
@@ -2094,16 +2111,8 @@ function nextTurn(){
       const img=document.getElementById(`img-${ds}`);
       if(img&&img.style.display!=='none'){const flip=ds==='left';img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');void img.offsetWidth;img.classList.add(`shake-l${flip?'-flip':''}`);}
       updHP(ds,def);updPanelState(ds,def);
-      // ダメージセリフ/ボイス: フェーズ別発動（ビッグムーブもクリティカル扱い）
-      if(ph.name==='Mid'){
-        if(Math.random()<0.40)showDamageSpeech(ds,def);
-      }else if(ph.name==='End'){
-        const r=Math.random();
-        if(r<0.15)showDamageSpeech(ds,def);
-        else if(r<0.65)showDamageVoice(ds,def);
-      }else if(ph.name==='Climax'){
-        if(Math.random()<0.60)showDamageVoice(ds,def);
-      }
+      // ダメージセリフ/ボイス: HP残量ベース発動（ビッグムーブもクリティカル扱い）
+      tryDamageCutin(ds, def, def.hp / def.mhp);
       const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
       showSp(ds,pk(CMT.defR[rl]),'t-def');
       if(ap)ap.classList.remove('flash-atk');
@@ -2186,18 +2195,8 @@ function nextTurn(){
     }
     const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
     showSp(ds,pk(CMT.defR[rl]),'t-def');
-    // ダメージセリフ/ボイス: フェーズ別発動（クリティカルヒット時のみ）
-    if(isCrit){
-      if(ph.name==='Mid'){
-        if(Math.random()<0.40)showDamageSpeech(ds,def);
-      }else if(ph.name==='End'){
-        const r=Math.random();
-        if(r<0.15)showDamageSpeech(ds,def);
-        else if(r<0.65)showDamageVoice(ds,def);
-      }else if(ph.name==='Climax'){
-        if(Math.random()<0.60)showDamageVoice(ds,def);
-      }
-    }
+    // ダメージセリフ/ボイス: HP残量ベース発動（クリティカルヒット時のみ）
+    if(isCrit) tryDamageCutin(ds, def, def.hp / def.mhp);
     if(ap)ap.classList.remove('flash-atk');
   },t(0.45));
 
