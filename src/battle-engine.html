@@ -1281,12 +1281,12 @@ const sfx={
   ready(){getSfxGain().gain.value=SE_MIX.ready;if(_playSample('ready',1))return;osc('sine',200,500,0.12,0.06);setTimeout(()=>osc('triangle',500,null,0.06,0.03),80)},
   missWhiff(){getSfxGain().gain.value=SE_MIX.missWhiff;if(_playSample('missWhiff',1))return;osc('sine',400,100,0.15,0.1);mkNoiseHP(0.08,0.06,3000);setTimeout(()=>osc('triangle',200,80,0.1,0.05),100)},
   // OLD: battle hits (kept)
-  hitStrike(dr){getSfxGain().gain.value=SE_MIX.hitStrike;if(_playSample('hitStrike',Math.min(1.5,dr)))return;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
-  hitThrow(dr){getSfxGain().gain.value=SE_MIX.hitThrow;if(_playSample('hitThrow',Math.min(1.5,dr)))return;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
-  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;_playSample('hitSub',Math.min(1.5,dr))},
-  hitAerial(dr){getSfxGain().gain.value=SE_MIX.hitAerial;if(_playSample('hitAerial',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
-  hitGround(dr){getSfxGain().gain.value=SE_MIX.hitGround;if(_playSample('hitGround',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
-  hitRollup(dr){getSfxGain().gain.value=SE_MIX.hitRollup;if(_playSample('hitRollup',Math.min(1.5,0.5*dr)))return;osc('triangle',2000,600,0.06,0.08*dr)},
+  hitStrike(dr,vm){const m=SE_MIX.hitStrike*(vm||1);getSfxGain().gain.value=m;if(_playSample('hitStrike',Math.min(1.5,dr),vm?m:undefined))return;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
+  hitThrow(dr,vm){const m=SE_MIX.hitThrow*(vm||1);getSfxGain().gain.value=m;if(_playSample('hitThrow',Math.min(1.5,dr),vm?m:undefined))return;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
+  hitSub(dr,vm){const m=SE_MIX.hitSub*(vm||1);getSfxGain().gain.value=m;_playSample('hitSub',Math.min(1.5,dr),vm?m:undefined)},
+  hitAerial(dr,vm){const m=SE_MIX.hitAerial*(vm||1);getSfxGain().gain.value=m;if(_playSample('hitAerial',Math.min(1.5,dr),vm?m:undefined))return;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
+  hitGround(dr,vm){const m=SE_MIX.hitGround*(vm||1);getSfxGain().gain.value=m;if(_playSample('hitGround',Math.min(1.5,dr),vm?m:undefined))return;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
+  hitRollup(dr,vm){const m=SE_MIX.hitRollup*(vm||1);getSfxGain().gain.value=m;if(_playSample('hitRollup',Math.min(1.5,0.5*dr),vm?m:undefined))return;osc('triangle',2000,600,0.06,0.08*dr)},
   // NEW: cutin slide + damage voice
   cutinSlide(){try{getSfxGain().gain.value=SE_MIX.cutinSlide;if(_playSample('cutinSlide',1))return;osc('sine',300,800,0.08,0.06);mkNoiseHP(0.03,0.04,4000)}catch(e){}},
   dmgVoice(){try{getSfxGain().gain.value=SE_MIX.dmgVoice;osc('sine',200,80,0.2,0.06);mkNoiseLP(0.08,0.05,800)}catch(e){}},
@@ -1343,11 +1343,11 @@ const sfx={
     setTimeout(()=>osc('sine',131,null,0.6,0.08),1800);
   }catch(e){}}
 };
-function hitSE(cat,dmg){
+function hitSE(cat,dmg,volMul){
   const dr=clamp(dmg/20,0.3,1.5);
   const fn={strike:sfx.hitStrike,throw:sfx.hitThrow,submission:sfx.hitSub,
     aerial:sfx.hitAerial,ground:sfx.hitGround,rollup:sfx.hitRollup}[cat];
-  if(fn)fn(dr);
+  if(fn)fn(dr,volMul);
 }
 
 // ═══ SUSPENSE DRONE (v0.97 redesign) ═══
@@ -1963,7 +1963,7 @@ function nextTurn(){
         if(cb){cb.className='counter-big '+(fromRight?'start-right':'start-left');void cb.offsetWidth;cb.classList.add('slide-in');}
         _playSample('counterSE',null,0.05); // カウンター発動音（直接5%音量）
         // 1.4秒後に技種別のヒット音（大きめ: dmg=30固定で最大級の音）
-        setTimeout(()=>hitSE(mv.c,30),1400);
+        setTimeout(()=>hitSE(mv.c,30,1.3),1400);
         if(dp){dp.classList.add('counter-flash');}
       },2300);
       // 2.8s: パネルフラッシュ解除
@@ -2007,7 +2007,7 @@ function nextTurn(){
       if(mv2){mv2.textContent=`カウンター！`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
       getSfxGain().gain.value=SE_MIX.counterSE*0.5;_playSample('counterSE',0.5); // カウンター発動音（半分の音量）
       // 3.5秒後に技種別のヒット音（1.6倍音量）
-      setTimeout(()=>hitSE(mv.c,mv.d*1.6),3500);
+      setTimeout(()=>hitSE(mv.c,mv.d,1.3),3500);
       const counterDmg=Math.max(ENG.dmgFloor,Math.round(mv.d*ENG.counterDmgMult));
       atk.hp=Math.max(0,atk.hp-counterDmg);
       updHP(as,atk);
@@ -2085,7 +2085,7 @@ function nextTurn(){
     // 2.3s: ヒット + ダメージ演出
     setTimeout(()=>{
       if(bn)bn.className='bigmove-name fade';
-      hitSE(mv.c,dmg*1.3); // ビッグムーブ：技カテゴリ別ヒット音を少し大きめに
+      hitSE(mv.c,dmg,1.3); // ビッグムーブ：技カテゴリ別ヒット音を1.3倍音量
       def.hp=Math.max(0,def.hp-dmg);
       const isCrit=dmg>=15;
       shakePanel(ds,isCrit);showDmgNum(ds,dmg,true);flashScreen();
@@ -2146,7 +2146,7 @@ function nextTurn(){
   // Step 3: Hit — new damage FX
   setTimeout(()=>{
     hitSE(mv.c,dmg);
-    if(big)setTimeout(()=>{mkNoise(0.3,0.1);osc('sine',80,40,0.4,0.06)},100);
+    if(big&&mv.c!=='submission')setTimeout(()=>{mkNoise(0.3,0.1);osc('sine',80,40,0.4,0.06)},100);
     def.hp=Math.max(0,def.hp-dmg);
     // Panel shake + dmg number
     const isCrit = dmg >= 15;
