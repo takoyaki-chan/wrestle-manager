@@ -935,7 +935,6 @@ function showDamageVoice(side, charData) {
     <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">${text}</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
   </div>`;
   overlay.classList.add('show');
-  sfx.dmgVoice();
 }
 
 // フェーズ切り替え時のカットイン判定
@@ -1189,17 +1188,29 @@ const _SE_FILES={
   guEscapeSE:'../bgm/f03_escape_v2.mp3',
   heartbeatSE:'../bgm/f04_heartbeat_v1.mp3',
   finImpact:'../bgm/f05_finish_impact_v2.mp3',
+  count:'../bgm/f01_count_v1.mp3',
+  finChime:'../bgm/f06_fin_chime_v1.mp3',
+  gong:'../bgm/f07_gong_v1.mp3',
+  gongStart:'../bgm/f08_gong_start_v1.mp3',
   ready:'../bgm/f11_ready_v1.mp3',
   fightStart:'../bgm/f12_fight_start_v3.mp3',
   lockIn:'../bgm/f13_lockup_v4.mp3',
 };
-function _playSample(name,scale){
+function _playSample(name,scale,rawVol){
   const url=_SE_FILES[name];if(!url)return false;
   try{
     const a=new Audio(url);
     const smv=_sfxMasterGain?_sfxMasterGain.gain.value:1;
-    const mix=SE_MIX[name]||0.5;
-    a.volume=Math.min(1,smv*mix*(scale||1));
+    let vol;
+    if(rawVol!=null){
+      // rawVol: 0-1の直接音量指定（圧縮なし）
+      vol=smv*rawVol;
+    } else {
+      const mix=SE_MIX[name]||0.5;
+      const s=scale!=null?Math.max(0.6,Math.min(1.15,0.4+scale*0.5)):1;
+      vol=smv*mix*s;
+    }
+    a.volume=Math.min(1,vol);
     a.play().catch(()=>{});return true;
   }catch(e){return false}
 }
@@ -1276,9 +1287,7 @@ const sfx={
   // OLD: battle hits (kept)
   hitStrike(dr){getSfxGain().gain.value=SE_MIX.hitStrike;if(_playSample('hitStrike',Math.min(1.5,dr)))return;const g=0.12*dr,d=0.08*(0.8+dr*0.4);mkNoise(d,g);osc('sine',2000,800,0.05*d/0.08,0.1*dr)},
   hitThrow(dr){getSfxGain().gain.value=SE_MIX.hitThrow;if(_playSample('hitThrow',Math.min(1.5,dr)))return;const g=0.1*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sine',120,60,0.15*d/0.12,0.12*dr)},
-  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;if(_playSample('hitSub',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.2*(0.8+dr*0.4);osc('sawtooth',150,250,d,g);
-    // 持続するギリギリ音（関節・絞め技の圧迫感）
-    for(let i=0;i<5;i++){setTimeout(()=>{osc('sawtooth',80+i*10,120+i*8,0.25,0.03*dr);osc('sine',60+i*5,90+i*5,0.2,0.02*dr)},i*200)}},
+  hitSub(dr){getSfxGain().gain.value=SE_MIX.hitSub;_playSample('hitSub',Math.min(1.5,dr))},
   hitAerial(dr){getSfxGain().gain.value=SE_MIX.hitAerial;if(_playSample('hitAerial',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.15*(0.8+dr*0.4);osc('sine',1500,300,d,g);setTimeout(()=>{mkNoise(0.15*dr,0.12*dr);osc('sine',100,50,0.2,0.12*dr)},150)},
   hitGround(dr){getSfxGain().gain.value=SE_MIX.hitGround;if(_playSample('hitGround',Math.min(1.5,dr)))return;const g=0.08*dr,d=0.12*(0.8+dr*0.4);mkNoise(d,g);osc('sawtooth',180,80,d,0.09*dr)},
   hitRollup(dr){getSfxGain().gain.value=SE_MIX.hitRollup;if(_playSample('hitRollup',Math.min(1.5,0.5*dr)))return;osc('triangle',2000,600,0.06,0.08*dr)},
@@ -1296,11 +1305,11 @@ const sfx={
   guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;if(_playSample('guEscapeSE',1))return;osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
   heartbeatSE(){try{getSfxGain().gain.value=SE_MIX.heartbeatSE;if(_playSample('heartbeatSE',1))return;osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
   // NEW: count — mat slap
-  count(){try{getSfxGain().gain.value=SE_MIX.count;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
+  count(){try{getSfxGain().gain.value=SE_MIX.count;if(_playSample('count',1))return;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
   // NEW: finImpact — ground rumble + shockwave
   finImpact(){try{getSfxGain().gain.value=SE_MIX.finImpact;if(_playSample('finImpact',1))return;osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
   // NEW: finChime — with vibrato
-  finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
+  finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;if(_playSample('finChime',1))return;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,c.currentTime);
     const vib=c.createOscillator(),vibG=c.createGain();vib.type='sine';vib.frequency.value=5;vibG.gain.value=3;
     vib.connect(vibG).connect(o.frequency);vib.start();
@@ -1308,9 +1317,9 @@ const sfx={
     o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
   },i*100)})}catch(e){}},
   // NEW: gong — metallic bell with rising tail
-  gong(){try{getSfxGain().gain.value=SE_MIX.gong;const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
+  gong(){try{getSfxGain().gain.value=SE_MIX.gong;if(_playSample('gong',1))return;const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
   // NEW: gongStart — louder version of gong
-  gongStart(){try{getSfxGain().gain.value=SE_MIX.gongStart;const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
+  gongStart(){try{getSfxGain().gain.value=SE_MIX.gongStart;if(_playSample('gongStart',1))return;const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
   // NEW: bellx3 — match-end triple gong (カンカンカン)
   bellx3(){[0,380,760].forEach(d=>setTimeout(()=>{try{sfx.gong()}catch(e){}},d))},
   // NEW: phaseChg — gear shift
@@ -1346,34 +1355,25 @@ function hitSE(cat,dmg){
 }
 
 // ═══ SUSPENSE DRONE (v0.97 redesign) ═══
-function startDrone(withHeartbeat){
+function startDrone(){
   stopDrone();try{_ensureMasterGains();const c=ctx(),now=c.currentTime;
-    // d01=50%(base), d02=42% → scale=0.84
-    const dMix=withHeartbeat?0.84:1.0;
     const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.value=75;
     const lfo1=c.createOscillator(),lfoG1=c.createGain();lfo1.type='sine';lfo1.frequency.value=0.25;lfoG1.gain.value=10;
     lfo1.connect(lfoG1).connect(o1.frequency);lfo1.start(now);
-    g1.gain.value=0.04*dMix;o1.connect(g1).connect(_bgmMasterGain);o1.start(now);
+    g1.gain.value=0.04;o1.connect(g1).connect(_bgmMasterGain);o1.start(now);
     const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.value=113;
     const lfo2=c.createOscillator(),lfoG2=c.createGain();lfo2.type='sine';lfo2.frequency.value=0.4;lfoG2.gain.value=12;
     lfo2.connect(lfoG2).connect(o2.frequency);lfo2.start(now);
-    g2.gain.value=0.03*dMix;o2.connect(g2).connect(_bgmMasterGain);o2.start(now);
+    g2.gain.value=0.03;o2.connect(g2).connect(_bgmMasterGain);o2.start(now);
     // Tritone dissonance layer
     const o3=c.createOscillator(),g3=c.createGain();o3.type='sine';o3.frequency.value=106;
-    g3.gain.value=0.015*dMix;o3.connect(g3).connect(_bgmMasterGain);o3.start(now);
-    const nodes={o1,g1,lfo1,o2,g2,lfo2,o3,g3,hb:null,hbG:null};
-    if(withHeartbeat){const hb=c.createOscillator(),hbG=c.createGain();
-      hb.type='sine';hb.frequency.value=45;hbG.gain.value=0;
-      const hbLFO=c.createOscillator(),hbLFOG=c.createGain();
-      hbLFO.type='square';hbLFO.frequency.value=0.85;hbLFOG.gain.value=0.05*dMix;
-      hbLFO.connect(hbLFOG).connect(hbG.gain);hbLFO.start(now);
-      hb.connect(hbG).connect(_bgmMasterGain);hb.start(now);
-      nodes.hb=hb;nodes.hbG=hbG;nodes.hbLFO=hbLFO;}
+    g3.gain.value=0.015;o3.connect(g3).connect(_bgmMasterGain);o3.start(now);
+    const nodes={o1,g1,lfo1,o2,g2,lfo2,o3,g3};
     S.droneNodes=nodes;
   }catch(e){}}
 function stopDrone(){if(!S.droneNodes)return;try{const c=ctx(),now=c.currentTime,n=S.droneNodes;
-    [n.g1,n.g2,n.g3,n.hbG].forEach(g=>{if(g){g.gain.setValueAtTime(g.gain.value,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.2)}});
-    setTimeout(()=>{try{[n.o1,n.lfo1,n.o2,n.lfo2,n.o3,n.hb,n.hbLFO].forEach(o=>{if(o)try{o.stop()}catch(e){}})}catch(e){}},250);
+    [n.g1,n.g2,n.g3].forEach(g=>{if(g){g.gain.setValueAtTime(g.gain.value,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.2)}});
+    setTimeout(()=>{try{[n.o1,n.lfo1,n.o2,n.lfo2,n.o3].forEach(o=>{if(o)try{o.stop()}catch(e){}})}catch(e){}},250);
     S.droneNodes=null;}catch(e){S.droneNodes=null}}
 
 // ═══ FINISH CLICK SYSTEM ═══
@@ -1418,7 +1418,8 @@ function showFinishClickBtn(type,v){
   const tKey=type==='ギブアップ'?'gu':type==='丸め込み'?'rollup':type==='ピン'?'pin':'fall';
   const suspText=tpl(pk(FINISH_SUSPENSE[tKey]),v);
   if(box)box.innerHTML=`<div class="nar-line nar-finish show">${suspText}</div>`;
-  startDrone(type==='ギブアップ');
+  startDrone(false); // ドローンのみ（ハートビートなし）
+  if(type==='ギブアップ'){sfx.heartbeatSE();} // ギブアップ時はハートビートSE(MP3)を単独再生
   setTimeout(()=>{btn.classList.add('show')},100);
   let autoFinishTimer=null;
   const handler=()=>{
@@ -1898,7 +1899,6 @@ function nextTurn(){
   if(ph.name!==prevPh){
     const pill=document.getElementById('pill');
     if(pill){pill.textContent=ph.name;pill.classList.add('flash');setTimeout(()=>pill.classList.remove('flash'),600)}
-    sfx.phaseChg();
     // ライバリーカットイン
     tryRivalryCutin(ph.name);
     // ビッグマッチClimaxフェーズ → 親にBGM切替通知
@@ -1965,7 +1965,9 @@ function nextTurn(){
         const fromRight=(ds==='right');
         if(bn)bn.className='bigmove-name '+(fromRight?'blown-left':'blown-right');
         if(cb){cb.className='counter-big '+(fromRight?'start-right':'start-left');void cb.offsetWidth;cb.classList.add('slide-in');}
-        sfx.counterSE();
+        _playSample('counterSE',null,0.05); // カウンター発動音（直接5%音量）
+        // 1.4秒後に技種別のヒット音（大きめ: dmg=30固定で最大級の音）
+        setTimeout(()=>hitSE(mv.c,30),1400);
         if(dp){dp.classList.add('counter-flash');}
       },2300);
       // 2.8s: パネルフラッシュ解除
@@ -2007,7 +2009,9 @@ function nextTurn(){
     setTimeout(()=>{
       const mv2=document.getElementById('moveV');
       if(mv2){mv2.textContent=`カウンター！`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-      sfx.counterSE();
+      getSfxGain().gain.value=SE_MIX.counterSE*0.5;_playSample('counterSE',0.5); // カウンター発動音（半分の音量）
+      // 3.5秒後に技種別のヒット音（1.6倍音量）
+      setTimeout(()=>hitSE(mv.c,mv.d*1.6),3500);
       const counterDmg=Math.max(ENG.dmgFloor,Math.round(mv.d*ENG.counterDmgMult));
       atk.hp=Math.max(0,atk.hp-counterDmg);
       updHP(as,atk);
@@ -2085,7 +2089,7 @@ function nextTurn(){
     // 2.3s: ヒット + ダメージ演出
     setTimeout(()=>{
       if(bn)bn.className='bigmove-name fade';
-      sfx.bigmoveImpact();
+      hitSE(mv.c,dmg*1.3); // ビッグムーブ：技カテゴリ別ヒット音を少し大きめに
       def.hp=Math.max(0,def.hp-dmg);
       const isCrit=dmg>=15;
       shakePanel(ds,isCrit);showDmgNum(ds,dmg,true);flashScreen();
@@ -2649,10 +2653,11 @@ function renderMatchWithIntro(){
   const mi=matchData&&matchData.matchInfo;
   const showCard=mi&&mi.matchTier>=2;
   const startBattle=()=>{
-    setTimeout(()=>{sfx.fightStart();
+    setTimeout(()=>{sfx.gong();
       if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.main),v)}</div>`;
     },600);
     setTimeout(()=>{
+      sfx.gongStart();
       if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.gong),v)}</div>`;
       const flash=document.createElement('div');flash.className='finish-flash';
       document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);

@@ -563,6 +563,15 @@ const Audio = (() => {
 
     playJingle(name) {
       BGM.stop(); // Stop looping BGM, then play jingle (always plays regardless of bgmMuted)
+      // タイトル戴冠: MP3ファイル版を使用（bgmMuted無視で必ず再生）
+      if (name === 'championship') {
+        FileBGM.stop();
+        const a = new window.Audio('bgm/fanfare_brass_v1.mp3');
+        a.volume = Math.min(1.0, JINGLE_MIX.championship);
+        a.play().catch(() => {});
+        FileBGM._audio = a;
+        return;
+      }
       const c = ensure();
       if (c.state === 'suspended') c.resume();
       bgmNodes = [];
