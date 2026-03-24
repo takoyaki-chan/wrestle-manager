@@ -4766,7 +4766,7 @@ const Engine = {
         roster = roster.map(c => {
           if (!usedIds.has(c.id)) return c;
           const condRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, c.id));
-          return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))) };
+          return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))), _weekAction: 'show' };
         });
 
         // v2.1: trust 月次更新（出場+1.53/不出場-2.64、自然減衰、grievance、_trustBonus消費）
