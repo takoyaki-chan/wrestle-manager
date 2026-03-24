@@ -1175,23 +1175,19 @@ function getSfxGain(){if(!_sfxGain){_ensureMasterGains();const c=ctx();_sfxGain=
 const _SE_FILES={
   hitStrike:'../bgm/b01_strike_hit_v4.mp3',
   hitThrow:'../bgm/b02_throw_hit_v1.mp3',
-  hitSub:'../bgm/b03_joint_v3.mp3',
-  hitAerial:'../bgm/b04_aerial_v2.mp3',
+  hitSub:'../bgm/b03_joint_v5.mp3',
+  hitAerial:'../bgm/b04_aerial_v1.mp3',
   hitGround:'../bgm/b05_ground_v2.mp3',
   hitRollup:'../bgm/b06_rollup_v1.mp3',
   missWhiff:'../bgm/b07_whiff_v4.mp3',
   counterSE:'../bgm/b08_counter_v1.mp3',
-  cutinSlide:'../bgm/b09_cutin_slide_v5.mp3',
+  cutinSlide:'../bgm/b09_cutin_slide_v6.mp3',
   bigmoveCharge:'../bgm/b11_charge_v2.mp3',
   bigmoveImpact:'../bgm/b12_bigmove_hit_v2.mp3',
   kickoutSE:'../bgm/f02_kickout_v2.mp3',
   guEscapeSE:'../bgm/f03_escape_v2.mp3',
   heartbeatSE:'../bgm/f04_heartbeat_v1.mp3',
   finImpact:'../bgm/f05_finish_impact_v2.mp3',
-  count:'../bgm/f01_count_v1.mp3',
-  finChime:'../bgm/f06_fin_chime_v1.mp3',
-  gong:'../bgm/f07_gong_v1.mp3',
-  gongStart:'../bgm/f08_gong_start_v1.mp3',
   ready:'../bgm/f11_ready_v1.mp3',
   fightStart:'../bgm/f12_fight_start_v3.mp3',
   lockIn:'../bgm/f13_lockup_v4.mp3',
@@ -1215,7 +1211,7 @@ function _playSample(name,scale,rawVol){
   }catch(e){return false}
 }
 const SE_MIX={
-  hitStrike:.50,hitThrow:.50,hitSub:.50,hitAerial:.40,hitGround:.42,hitRollup:.50,
+  hitStrike:.50,hitThrow:.50,hitSub:.13,hitAerial:.35,hitGround:.47,hitRollup:.50,
   missWhiff:.24,counterSE:.15,cutinSlide:.40,dmgVoice:.45,bigmoveCharge:.21,bigmoveImpact:.41,
   count:1.00,kickoutSE:.39,guEscapeSE:.22,heartbeatSE:.55,finImpact:.36,finChime:.50,
   gong:.55,gongStart:.55,phaseChg:.73,victoryFanfare:.50,ready:.29,fightStart:.10,lockIn:.35,
@@ -1305,11 +1301,11 @@ const sfx={
   guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;if(_playSample('guEscapeSE',1))return;osc('sawtooth',80,200,0.2,0.1);mkNoiseHP(0.3,0.08,1500);setTimeout(()=>mkNoiseHP(0.4,0.05,2500),150)}catch(e){}},
   heartbeatSE(){try{getSfxGain().gain.value=SE_MIX.heartbeatSE;if(_playSample('heartbeatSE',1))return;osc('sine',50,30,0.3,0.12);setTimeout(()=>osc('sine',50,30,0.3,0.12),400)}catch(e){}},
   // NEW: count — mat slap
-  count(){try{getSfxGain().gain.value=SE_MIX.count;if(_playSample('count',1))return;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
+  count(){try{getSfxGain().gain.value=SE_MIX.count;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
   // NEW: finImpact — ground rumble + shockwave
   finImpact(){try{getSfxGain().gain.value=SE_MIX.finImpact;if(_playSample('finImpact',1))return;osc('sine',120,25,0.5,0.2);osc('triangle',80,20,0.4,0.1);mkNoise(0.1,0.2);mkNoiseLP(0.2,0.12,300);setTimeout(()=>osc('sine',40,null,0.5,0.08),100);mkNoiseHP(0.03,0.06,5000)}catch(e){}},
   // NEW: finChime — with vibrato
-  finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;if(_playSample('finChime',1))return;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
+  finChime(){try{getSfxGain().gain.value=SE_MIX.finChime;const c=ctx();[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{
     const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f,c.currentTime);
     const vib=c.createOscillator(),vibG=c.createGain();vib.type='sine';vib.frequency.value=5;vibG.gain.value=3;
     vib.connect(vibG).connect(o.frequency);vib.start();
@@ -1317,9 +1313,9 @@ const sfx={
     o.connect(g).connect(getSfxGain());o.start();o.stop(c.currentTime+0.6);vib.stop(c.currentTime+0.6)
   },i*100)})}catch(e){}},
   // NEW: gong — metallic bell with rising tail
-  gong(){try{getSfxGain().gain.value=SE_MIX.gong;if(_playSample('gong',1))return;const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
+  gong(){try{getSfxGain().gain.value=SE_MIX.gong;const base=440;bellP(base*1.0,0.3,0.14);bellP(base*2.32,0.5,0.09);bellP(base*3.8,0.7,0.05);mkNoiseHP(0.02,0.06,5000)}catch(e){}},
   // NEW: gongStart — louder version of gong
-  gongStart(){try{getSfxGain().gain.value=SE_MIX.gongStart;if(_playSample('gongStart',1))return;const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
+  gongStart(){try{getSfxGain().gain.value=SE_MIX.gongStart;const base=440;bellP(base*1.0,0.5,0.2);bellP(base*2.32,0.7,0.13);bellP(base*3.8,0.9,0.07);mkNoiseHP(0.03,0.09,5000)}catch(e){}},
   // NEW: bellx3 — match-end triple gong (カンカンカン)
   bellx3(){[0,380,760].forEach(d=>setTimeout(()=>{try{sfx.gong()}catch(e){}},d))},
   // NEW: phaseChg — gear shift
