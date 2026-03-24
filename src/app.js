@@ -19,7 +19,15 @@ const Audio = (() => {
   let _sfxMasterVol = 1.0;  // SEマスター（デフォルト100%）
   // ── Per-track volume targets (bgmGain.gain.value) ──
   const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
-  const JINGLE_MIX = { victory:0.38, championship:0.33 };
+  // ── SUNO BGM file mapping (replaces chiptune for 5 main tracks) ──
+  const SUNO_BGM = {
+    kaimaku:    { file: 'bgm/bgm_kaimaku_v1.mp3',     vol: 0.17 },
+    management: { file: 'bgm/bgm_management_v1.mp3',  vol: 0.12 },
+    battle:     { file: 'bgm/bgm_battle_v1.mp3',      vol: 0.12 },
+    season_end: { file: 'bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
+    tension:    { file: 'bgm/bgm_tension_v1.mp3',     vol: 0.17 },
+  };
+  const JINGLE_MIX = { victory:0.38, championship:0.20 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
   const SE_MIX = {
     click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
@@ -549,7 +557,17 @@ const Audio = (() => {
     play(trackName) {
       if (_bgmMuted) return; // BGM muted — skip looping tracks
       if (trackName === BGM._current && BGM._playing) return; // Already playing
-      if (FileBGM._audio) FileBGM.stop(); // チップチューン再生時はFileBGMを必ず停止
+      // SUNO MP3がある曲はFileBGMで再生
+      const suno = SUNO_BGM[trackName];
+      if (suno) {
+        BGM.stop();
+        BGM._playing = true;
+        BGM._current = trackName;
+        FileBGM.play(suno.file, { loop: true, volume: suno.vol });
+        return;
+      }
+      // フォールバック: チップチューン
+      if (FileBGM._audio) FileBGM.stop();
       BGM.stop();
       const c = ensure();
       if (c.state === 'suspended') c.resume();
@@ -583,6 +601,7 @@ const Audio = (() => {
     },
 
     stop() {
+      const wasSuno = BGM._current && SUNO_BGM[BGM._current];
       BGM._playing = false;
       BGM._current = null;
       if (BGM._interval) { clearInterval(BGM._interval); BGM._interval = null; }
@@ -590,6 +609,7 @@ const Audio = (() => {
         bgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
         bgmNodes = [];
       }
+      if (wasSuno && FileBGM._audio) FileBGM.stop();
     },
 
     // ── Track implementations ──
@@ -845,8 +865,8 @@ const Audio = (() => {
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
       if (G.weekPhase === 'event') {
-        // War challenge uses FileBGM — don't override with chiptune
-        if (G.pendingEvent && G.pendingEvent.type === 'war' && FileBGM._audio) return;
+        // War challenge uses its own FileBGM — don't override
+        if (G.pendingEvent && G.pendingEvent.type === 'war' && FileBGM._audio && BGM._current !== 'tension') return;
         BGM.play('tension'); return;
       }
       BGM.play('management'); // management + showPrep both use this
