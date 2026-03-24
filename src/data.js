@@ -7786,6 +7786,14 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '{toOrg}が{name}を獲得！ 補強の目玉に',
       body: '{toOrg}が{fromOrg}の{name}を引き抜きに成功。即戦力としてチームを底上げする見込み。「この移籍は大きい」と業界紙が一様に報じた。' },
   ],
+  warMilestone: [
+    { headline: '金字塔！{orgName}、対抗戦通算{milestone}達成',
+      body: '{orgName}が対抗戦通算{wins}勝目を記録。他団体との激闘を重ね、団体の威信を着実に積み上げている。選手たちの士気も大いに高まっているようだ。' },
+    { headline: '{orgName}の誇り――対抗戦通算{milestone}の偉業',
+      body: '対抗戦通算{wins}勝。{orgName}が団体の歴史に新たな金字塔を刻んだ。選手たちは「みんなで勝ち取った記録」と胸を張る。' },
+    { headline: '止まらない{orgName}！ 対抗戦{milestone}突破',
+      body: '{orgName}が対抗戦通算{wins}勝の節目を突破した。他団体にとって脅威となるその強さは、ロッカールームの結束の賜物だろう。' },
+  ],
 };
 
 // v1.4: ベストマッチ フレーバーテキスト（MQ帯別）

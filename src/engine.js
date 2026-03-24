@@ -5140,7 +5140,7 @@ const Engine = {
     if (!s.offSeason) {
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null };
+      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsWarMilestone: null };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -8942,7 +8942,10 @@ Engine.awards = {
     const titlePt = (rec.totalTitleWins || 0) + (rec.totalDefenses || 0);
     const juniorPt = (rec.juniorTournamentWins || 0) * 6;
     const ppvPt = (rec.ppvMainEventWins || 0) * 7;
-    return titlePt + juniorPt + ppvPt;
+    // 対抗戦勝利ポイント: 1勝=2pt
+    const warWins = ((rec.history || []).filter(e => e.type === 'war' && e.won)).length;
+    const warPt = warWins * 2;
+    return titlePt + juniorPt + ppvPt + warPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -8997,6 +9000,15 @@ Engine.awards = {
           break;
       }
     });
+    // 対抗戦: 個別ではなく通算で集約（2勝以上でハイライト化）
+    const warWinsAll = history.filter(e => e.type === 'war' && e.won);
+    if (warWinsAll.length >= 2) {
+      const lastWarWin = warWinsAll[warWinsAll.length - 1];
+      highlights.push({
+        type: 'war', season: lastWarWin.season,
+        text: `対抗戦通算${warWinsAll.length}勝`
+      });
+    }
     highlights.sort((a, b) => a.season - b.season);
     return highlights;
   },
@@ -15548,6 +15560,7 @@ Engine.newspaper = {
     ppvSummitResult:     200,
     playerTitleChange:   180,
     aiAceRetirement:     160,
+    warMilestone:         145,
     crossWarResult:      140,
     aiChampionChange:    130,
     playerShowTitle:     120,
@@ -15608,6 +15621,24 @@ Engine.newspaper = {
         characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
         warData: wr,
       });
+    }
+
+    // === 対抗戦マイルストーン（5勝ごと） ===
+    if (state._newsWarMilestone) {
+      const wm = state._newsWarMilestone;
+      const milestone = `${wm.wins}勝`;
+      const templates = typeof NEWS_HEADLINE_TEMPLATES !== 'undefined' ? (NEWS_HEADLINE_TEMPLATES.warMilestone || []) : [];
+      if (templates.length > 0) {
+        const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
+        const rep = (s) => s.replace(/\{orgName\}/g, wm.orgName).replace(/\{wins\}/g, wm.wins).replace(/\{milestone\}/g, milestone);
+        stories.push({
+          type: 'warMilestone',
+          priority: P.warMilestone,
+          headline: rep(tpl.headline),
+          body: rep(tpl.body),
+          characterId: null,
+        });
+      }
     }
 
     // === 頂上決戦結果 ===

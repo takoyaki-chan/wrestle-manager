@@ -6502,6 +6502,14 @@ const App = {
       const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       bwt.player = (bwt.player || 0) + 1;
       G = { ...G, warVictories: wv, battleWinsTotal: bwt };
+      // 対抗戦マイルストーン: 5勝ごとに新聞記事+士気ブースト
+      if (bwt.player % 5 === 0) {
+        const mBoost = 3 + Math.min(2, Math.floor(bwt.player / 10)); // +3〜+5
+        G = { ...G,
+          _newsWarMilestone: { orgId: 'player', orgName: G.orgName || 'プレイヤー団体', wins: bwt.player },
+          lockerRoomMorale: Math.min(100, (G.lockerRoomMorale || 60) + mBoost),
+        };
+      }
     }
     else {
       evStats.eventsLost = (evStats.eventsLost || 0) + 1;
@@ -6509,6 +6517,12 @@ const App = {
       const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       bwt[ev.opponentOrgId] = (bwt[ev.opponentOrgId] || 0) + 1;
       G = { ...G, battleWinsTotal: bwt };
+      // AI側の対抗戦マイルストーン: 5勝ごとに新聞記事
+      if (bwt[ev.opponentOrgId] % 5 === 0) {
+        G = { ...G,
+          _newsWarMilestone: { orgId: ev.opponentOrgId, orgName: ev.opponentName, wins: bwt[ev.opponentOrgId] },
+        };
+      }
     }
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
 
