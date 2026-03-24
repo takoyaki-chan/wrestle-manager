@@ -5982,7 +5982,7 @@ const Engine = {
         const ppRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE40, s.season, fighterId));
         const existingIds = state.roster.map(c => c.id);
         s = Engine.relationships.applyFromRoster(s, existingIds, fighterId, { min: -3, max: 3 }, { min: 0, max: 0 }, ppRelRng);
-        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds);
+        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state);
         if (recontactEvents.length > 0) {
           s = Engine.relationships.applyRecontactEvents(s, recontactEvents);
         }
@@ -6319,7 +6319,7 @@ const Engine = {
         const existingIds = state.roster.map(c => c.id);
         s = Engine.relationships.applyFromRoster(s, existingIds, fighterId, { min: -2, max: 2 }, { min: 0, max: 0 }, rentalRelRng);
         // 再接触チェック
-        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds);
+        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state);
         if (recontactEvents.length > 0) {
           s = Engine.relationships.applyRecontactEvents(s, recontactEvents);
         }
@@ -13912,20 +13912,24 @@ Engine.relationships = {
   //  Phase 3: 再接触イベント (spec §2.2)
   //  凍結されていた関係が再接触時に発火
   // ══════════════════════════════════════════════════════════
-  checkRecontact(state, newCharId, rosterIds) {
+  checkRecontact(state, newCharId, rosterIds, previousState = state) {
     if (!state.relationships) return [];
     const events = [];
+    const previousRelationships = previousState.relationships || {};
     for (const rid of rosterIds) {
       if (rid === newCharId) continue;
-      // 双方向チェック
       const keyAB = this._key(newCharId, rid);
       const keyBA = this._key(rid, newCharId);
+      if (!previousRelationships[keyAB] && !previousRelationships[keyBA]) continue;
       const rAB = state.relationships[keyAB];
       const rBA = state.relationships[keyBA];
       if (!rAB && !rBA) continue;
-      const bondMax = Math.max(rAB?.bond || 0, rBA?.bond || 0);
-      const bondMin = Math.min(rAB?.bond ?? 0, rBA?.bond ?? 0);
-      const rivalryMax = Math.max(rAB?.rivalry || 0, rBA?.rivalry || 0);
+      const bondValues = [rAB?.bond, rBA?.bond].filter(v => v != null);
+      const rivalryValues = [rAB?.rivalry, rBA?.rivalry].filter(v => v != null);
+      if (bondValues.length === 0) continue;
+      const bondMax = Math.max(...bondValues);
+      const bondMin = Math.min(...bondValues);
+      const rivalryMax = rivalryValues.length > 0 ? Math.max(...rivalryValues) : 0;
 
       if (this.getBondBand(bondMax) === 'devoted') {
         events.push({ type: 'reunion', charA: newCharId, charB: rid, effect: { conditionBonus: 5 + Math.floor(Math.random() * 6) } });

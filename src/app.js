@@ -21,11 +21,11 @@ const Audio = (() => {
   const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
   // ── SUNO BGM file mapping (replaces chiptune for 5 main tracks) ──
   const SUNO_BGM = {
-    kaimaku:    { file: 'bgm/bgm_kaimaku_v1.mp3',     vol: 0.17 },
-    management: { file: 'bgm/bgm_management_v1.mp3',  vol: 0.12 },
-    battle:     { file: 'bgm/bgm_battle_v1.mp3',      vol: 0.12 },
-    season_end: { file: 'bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
-    tension:    { file: 'bgm/bgm_tension_v1.mp3',     vol: 0.17 },
+    kaimaku:    { file: '../bgm/bgm_kaimaku_v1.mp3',     vol: 0.17 },
+    management: { file: '../bgm/bgm_management_v1.mp3',  vol: 0.12 },
+    battle:     { file: '../bgm/bgm_battle_v1.mp3',      vol: 0.12 },
+    season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
+    tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
   };
   const JINGLE_MIX = { victory:0.38, championship:0.20 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
@@ -561,9 +561,10 @@ const Audio = (() => {
       const suno = SUNO_BGM[trackName];
       if (suno) {
         BGM.stop();
+        FileBGM.play(suno.file, { loop: true, volume: suno.vol });
+        // FileBGM.play()内部でBGM.stop()が呼ばれるため、状態セットはその後に行う
         BGM._playing = true;
         BGM._current = trackName;
-        FileBGM.play(suno.file, { loop: true, volume: suno.vol });
         return;
       }
       // フォールバック: チップチューン
@@ -880,6 +881,7 @@ const Audio = (() => {
     _audio: null,
     _fadeTimer: null,
     _mix: 1,
+    _vol: null, // 明示的volume保持（updateVolumeで使用）
     _resolveVolume(volume = null, mix = 1) {
       if (volume !== null) return Math.min(1.0, _bgmMasterVol * volume);
       return Math.min(1.0, _bgmMasterVol * _bgmVol * 8 * mix);
@@ -891,6 +893,7 @@ const Audio = (() => {
       const a = new window.Audio(src);
       a.loop = loop;
       FileBGM._mix = mix;
+      FileBGM._vol = volume;
       a.volume = FileBGM._resolveVolume(volume, mix);
       a.play().catch(() => {});
       FileBGM._audio = a;
@@ -899,6 +902,7 @@ const Audio = (() => {
       if (FileBGM._fadeTimer) { clearInterval(FileBGM._fadeTimer); FileBGM._fadeTimer = null; }
       if (FileBGM._audio) { FileBGM._audio.pause(); FileBGM._audio.currentTime = 0; FileBGM._audio = null; }
       FileBGM._mix = 1;
+      FileBGM._vol = null;
     },
     fadeOut(durationMs = 2000) {
       if (!FileBGM._audio) return Promise.resolve();
@@ -921,7 +925,7 @@ const Audio = (() => {
       });
     },
     updateVolume() {
-      if (FileBGM._audio) FileBGM._audio.volume = FileBGM._resolveVolume(null, FileBGM._mix);
+      if (FileBGM._audio) FileBGM._audio.volume = FileBGM._resolveVolume(FileBGM._vol, FileBGM._mix);
     }
   };
 
@@ -3073,10 +3077,11 @@ const App = {
     };
     // O-02: FA/スカウトで入団 — 既存メンバー全員→新入選手 bond -3〜+3 + 再接触チェック
     if (result.result === 'success' && G.relationships) {
+      const previousRelationshipState = { relationships: G.relationships };
       const scoutRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE44, G.season, candidateId));
       const existingIds = G.roster.filter(c => c.id !== candidateId).map(c => c.id);
       G = Engine.relationships.applyFromRoster(G, existingIds, candidateId, { min: -3, max: 3 }, { min: 0, max: 0 }, scoutRelRng);
-      const recontactEvents = Engine.relationships.checkRecontact(G, candidateId, existingIds);
+      const recontactEvents = Engine.relationships.checkRecontact(G, candidateId, existingIds, previousRelationshipState);
       if (recontactEvents.length > 0) {
         G = Engine.relationships.applyRecontactEvents(G, recontactEvents);
       }

@@ -165,6 +165,27 @@ function testLowBondVendettaStillWorksInsideZeroToHundredScale() {
   assert.ok(next.relationships['1>2'].bond <= 3, 'vendetta should push bond closer to zero');
 }
 
+function testNewSigningDoesNotTriggerRecontactFromFreshNeutralLinks() {
+  const previousState = makeState({
+    roster: [makeFighter(1), makeFighter(2), makeFighter(3)],
+    relationships: {
+      '1>2': { bond: 50, rivalry: 0 },
+      '2>1': { bond: 50, rivalry: 0 },
+    },
+  });
+  const currentState = {
+    ...previousState,
+    relationships: {
+      ...previousState.relationships,
+      '1>3': { bond: 47, rivalry: 0 },
+      '2>3': { bond: 52, rivalry: 0 },
+    },
+  };
+
+  const events = Engine.relationships.checkRecontact(currentState, 3, [1, 2], previousState);
+  assert.deepStrictEqual(events, [], 'freshly created signing links should not count as recontact');
+}
+
 
 function testRivalryLevelUsesRelationshipValues() {
   const state = makeState({
@@ -230,5 +251,6 @@ testRivalryLevelUsesRelationshipValues();
 testResolutionRequiresPPVAndBranchesByBond();
 testNeglectedRivalryPenaltyUsesWeeksNotMatches();
 testLowBondVendettaStillWorksInsideZeroToHundredScale();
+testNewSigningDoesNotTriggerRecontactFromFreshNeutralLinks();
 
 console.log('relationship-balance-test: ok');
