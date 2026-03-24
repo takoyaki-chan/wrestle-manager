@@ -1418,7 +1418,9 @@ function showFinishClickBtn(type,v){
   if(type==='ギブアップ'){sfx.heartbeatSE();} // ギブアップ時はハートビートSE(MP3)を単独再生
   setTimeout(()=>{btn.classList.add('show')},100);
   let autoFinishTimer=null;
+  let finishHandled=false;
   const handler=()=>{
+    if(finishHandled)return;finishHandled=true;
     clearTimeout(autoFinishTimer);
     btn.disabled=true;btn.classList.remove('show');
     ov.classList.remove('show');stopDrone();
