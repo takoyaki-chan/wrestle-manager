@@ -3633,6 +3633,58 @@ const Engine = {
           return retVal;
         }
       }
+      // B4（メディア密着）はAI団体でも処理する
+      if (event.type === 'B4') {
+        // 既にmediaSpotlightが稼働中なら通常イベントにフォールバック
+        if (orgData.mediaSpotlight) {
+          event = Engine.eventSystem.generateNotifEvent(rng, aiState, roster)
+            || Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
+          if (!event) return null;
+        } else {
+          // 対象選出: tier別サブタイプ傾向
+          const r = roster.filter(f => !f.injury && !f.isRental);
+          const champId = orgData.titles?.world?.championId;
+          const ovrSorted = r.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+          const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
+
+          const youngPool = r.filter(f => (f.age || 17) <= 22);
+          const acePool = r.filter(f => f.id === champId || top3Ids.has(f.id));
+          const vetPool = r.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
+
+          const org = RIVAL_ORGS.find(o => o.id === orgId);
+          const tier = org ? org.tier : 'B';
+          let subRoll = Engine.rng.float(rng);
+          let subType, pool;
+          if (tier === 'S') {
+            subType = subRoll < 0.50 ? 'youngStar' : (subRoll < 0.80 ? 'ace' : 'veteran');
+          } else if (tier === 'A') {
+            subType = subRoll < 0.30 ? 'youngStar' : (subRoll < 0.80 ? 'ace' : 'veteran');
+          } else {
+            subType = subRoll < 0.20 ? 'youngStar' : (subRoll < 0.50 ? 'ace' : 'veteran');
+          }
+          pool = subType === 'youngStar' ? youngPool : subType === 'ace' ? acePool : vetPool;
+          if (pool.length === 0) pool = r;
+          if (pool.length === 0) return null;
+
+          const target = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+          const outlets = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア'];
+          const outletName = outlets[Engine.rng.int(rng, 0, outlets.length - 1)];
+
+          return {
+            roster,
+            lockerRoomMorale: aiState.lockerRoomMorale,
+            orgPopDelta: 0,
+            _startMediaSpotlight: {
+              fighterId: target.id, fighterName: target.name,
+              remainingShows: 3, totalMQ: 0, matchCount: 0, outletName,
+            },
+            _newsMediaStart: {
+              orgName: org ? org.name : '', fighterName: target.name,
+              fighterId: target.id, outletName, subType,
+            },
+          };
+        }
+      }
       if ((event.type || '').charAt(0) === 'B') {
         event = Engine.eventSystem.generateNotifEvent(rng, aiState, roster)
           || Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
@@ -4104,6 +4156,83 @@ const Engine = {
           const condBonus = Engine.coach.getCondBonus(aiShowState, f.id);
           return { ...f, condition: Math.min(100, (f.condition || 70) + 3 + condBonus) };
         });
+
+        // メディア密着追跡: 対象選手の試合MQを蓄積
+        if (nextOrgData.mediaSpotlight) {
+          const ms = { ...nextOrgData.mediaSpotlight };
+          const fId = ms.fighterId;
+          let matchMQ = null;
+          for (const r of matchResults) {
+            if (r.left?.id === fId || r.right?.id === fId) {
+              matchMQ = r.mq || 0;
+              break;
+            }
+          }
+          if (matchMQ !== null) {
+            ms.totalMQ += matchMQ;
+            ms.matchCount++;
+          }
+          ms.remainingShows--;
+
+          if (ms.remainingShows <= 0) {
+            // 密着完了: 報酬計算
+            const avgMQ = ms.matchCount > 0 ? ms.totalMQ / ms.matchCount : 0;
+            if (avgMQ >= 60) {
+              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + 3, 0, 100);
+              roster = roster.map(f => {
+                if (f.id !== fId) return f;
+                const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
+                const oldTrust = f.trust != null ? f.trust : 50;
+                let trustDelta = Engine.trust.applyCoeff ? Engine.trust.applyCoeff(3, f.mn || 50) : 3;
+                if (trustDelta > 0 && Engine.trust.gainMult) trustDelta *= Engine.trust.gainMult(oldTrust);
+                return { ...f, popularity: newPop, trust: Engine.util.clamp(oldTrust + trustDelta, 0, 100) };
+              });
+              // 関係性効果（E-04相当の簡易版）
+              if (state.relationships) {
+                const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE56, org.id.charCodeAt(4) || 0));
+                const rosterIds = roster.filter(f => f.id !== fId && !f.injury && !f.isRental).map(f => f.id);
+                if (rosterIds.length > 0) {
+                  const relState = Engine.relationships.applyToRoster(
+                    { ...state, relationships: nextOrgData._mediaRelationships || state.relationships },
+                    fId, rosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng
+                  );
+                  if (relState.relationships) nextOrgData._mediaRelationships = relState.relationships;
+                }
+                // OVR近接者→対象 rivalry
+                const targetOvr = roster.find(f => f.id === fId)?.ovr || 50;
+                const closeIds = roster.filter(f => f.id !== fId && !f.isRental && Math.abs((f.ovr || 50) - targetOvr) <= 5).map(f => f.id);
+                if (closeIds.length > 0) {
+                  const relState2 = Engine.relationships.applyFromRoster(
+                    { ...state, relationships: nextOrgData._mediaRelationships || state.relationships },
+                    closeIds, fId, { min: 0, max: 0 }, { min: 1, max: 3 }, relRng
+                  );
+                  if (relState2.relationships) nextOrgData._mediaRelationships = relState2.relationships;
+                }
+              }
+              // 成功ニュース
+              nextOrgData._newsMediaResult = {
+                orgName: org.name, fighterName: ms.fighterName,
+                fighterId: fId, outletName: ms.outletName,
+                avgMQ: Math.round(avgMQ), success: true,
+              };
+            } else if (avgMQ >= 45) {
+              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + 1, 0, 100);
+              roster = roster.map(f => {
+                if (f.id !== fId) return f;
+                return { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) };
+              });
+              nextOrgData._newsMediaResult = {
+                orgName: org.name, fighterName: ms.fighterName,
+                fighterId: fId, outletName: ms.outletName,
+                avgMQ: Math.round(avgMQ), success: true,
+              };
+            }
+            // 密着終了: フィールドクリア
+            nextOrgData.mediaSpotlight = null;
+          } else {
+            nextOrgData.mediaSpotlight = ms;
+          }
+        }
       } else {
         const aiEventRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xAE01, org.id.charCodeAt(4) || 0));
         const aiEventResult = Engine.rival.processAIWeeklyEvent(aiEventRng, state, org.id, roster, nextOrgData);
@@ -4126,6 +4255,13 @@ const Engine = {
           // B2関係性変動マージ
           if (aiEventResult._b2Relationships && state.relationships) {
             nextOrgData._b2Relationships = aiEventResult._b2Relationships;
+          }
+          // B4メディア密着開始
+          if (aiEventResult._startMediaSpotlight) {
+            nextOrgData.mediaSpotlight = aiEventResult._startMediaSpotlight;
+          }
+          if (aiEventResult._newsMediaStart) {
+            nextOrgData._newsMediaStart = aiEventResult._newsMediaStart;
           }
         }
 
@@ -5211,6 +5347,15 @@ const Engine = {
           });
           s = { ...s, relationships: merged };
           delete aiOrgData._b2Relationships;
+        }
+        // B4メディア密着の関係値更新をマージ
+        if (aiOrgData._mediaRelationships && s.relationships) {
+          const merged = { ...s.relationships };
+          Object.keys(aiOrgData._mediaRelationships).forEach(key => {
+            merged[key] = aiOrgData._mediaRelationships[key];
+          });
+          s = { ...s, relationships: merged };
+          delete aiOrgData._mediaRelationships;
         }
       });
     }
@@ -15873,8 +16018,10 @@ Engine.newspaper = {
     aiShowHighlight:      80,
     playerShowNormal:     90,
     aiRetirement:        100,
+    aiMediaSpotlight:     65,
     aiBreakthrough:       60,
     aiPracticeInjury:     55,
+    aiMediaStart:         45,
     transfer:             50,
     general:              30,
   },
@@ -16094,6 +16241,32 @@ Engine.newspaper = {
             });
           });
         }
+
+        // AIメディア密着開始
+        if (aiData._newsMediaStart) {
+          const ev = aiData._newsMediaStart;
+          stories.push({
+            type: 'aiMediaStart',
+            priority: P.aiMediaStart,
+            headline: `${ev.outletName}が${ev.orgName}の${ev.fighterName}に密着取材開始`,
+            body: `${ev.outletName}が${ev.orgName}所属の${ev.fighterName}への密着取材を開始。今後3興行の活躍に注目が集まる。`,
+            characterId: ev.fighterId,
+          });
+        }
+
+        // AIメディア密着結果（成功時のみ）
+        if (aiData._newsMediaResult) {
+          const ev = aiData._newsMediaResult;
+          if (ev.success) {
+            stories.push({
+              type: 'aiMediaSpotlight',
+              priority: P.aiMediaSpotlight,
+              headline: `${ev.orgName}の${ev.fighterName}、密着取材で好評——人気急上昇`,
+              body: `${ev.outletName}の密着取材を受けた${ev.fighterName}が好成績を収め、人気が急上昇した。平均MQ${ev.avgMQ}。`,
+              characterId: ev.fighterId,
+            });
+          }
+        }
       });
     }
 
@@ -16247,6 +16420,8 @@ Engine.newspaper = {
       delete org._newsPracticeInjury;
       delete org._newsTeamConflict;
       delete org._newsInjuryRetirement;
+      delete org._newsMediaStart;
+      delete org._newsMediaResult;
       cleaned[orgId] = org;
     });
     return cleaned;
