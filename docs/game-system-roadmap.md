@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-25（AI団体ケアアクション統一）
+> 最終更新: 2026-03-25（AI練習怪我B1パリティ）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。旧: trust加算のみ（bond/rivalry/condition変動なし）→ 新: 状況ベース4種ケア自動選択（休暇/メディア/激励/合宿）+OVR傾斜+Phase4 C系関係性効果簡易版（encourage/media→対象→全体bond+0.3〜0.7、camp→対象↔全体bond+0.5〜1.0、teamCare→全ペアbond+0.1〜0.5）。関係性変更はtickWeekループでstate.relationshipsにマージ。設計書: `docs/ai-parity-06-care-unification.md`。auto-sim 500シーズンALL CLEAR。
+**AI練習怪我B1パリティ（2026-03-25）。** processAIWeeklyEventでB1（練習怪我）をAI団体にも許可。tier別自動選択（S:80%特別治療/A:40%特別+50%通常+10%無理/B:10%特別+60%通常+30%無理）。applyLargeEventEffectで怪我期間・成長ペナルティ適用。新聞にAI練習怪我記事追加（aiPracticeInjury priority55、エース級+20）。設計書: `docs/ai-parity-01-practice-injury.md`。auto-sim 50シーズンALL CLEAR。
+
+前回: **AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。状況ベース4種ケア自動選択+OVR傾斜+C系関係性効果簡易版。設計書: `docs/ai-parity-06-care-unification.md`。
 
 前回: **サウンドシステム実装完了（2026-03-23）。** ■SE_MIX(app.js): 演出系SE個別音量ミキシング追加(bell56%/impact61%/tension_hit66%/rivalry系64-57%/war60%/transfer52%)、play()でsfxGain.gain.value自動設定。■MP3 SE優先再生(battle-engine.html): AudioBufferプリロードシステム新設(_SE_FILES 17ファイル定義/postMessage受信時_preloadSEBuffers開始/_playSample+getSfxGain経由再生)。試合SE11種(b01-b09,b11-b12)+フィニッシュSE7種(f02-f05,f11-f13)をMP3優先+Web Audioフォールバック。■ドローンd02音量42%(dMix=0.84スケーリング)。■セーブ画面BGM/SE音量スライダー10段階(前回実装済み反映)。
 
@@ -35,6 +37,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-25 | AI練習怪我B1パリティ: processAIWeeklyEventでB1許可。tier別自動選択+applyLargeEventEffect+新聞記事(aiPracticeInjury:55)。auto-sim 50シーズンALL CLEAR |
 | 03-25 | AI団体ケアアクション統一: processAICare全面改修。状況ベース4種ケア自動選択(休暇/メディア/激励/合宿)+OVR傾斜+C系関係性効果簡易版(bond変動)。tickWeekでrelationshipsマージ。auto-sim 500シーズンALL CLEAR |
 | 03-24 | ダメージセリフ/ボイス HP残量ベース発動ルール修正: フェーズ→HP残量基準に変更。tryDamageCutin関数追加(HP66%超:セリフ40%/HP34-66%:セリフ15%+ボイス50%/HP33%以下:ボイス60%のみ)。defenderReactionと同一閾値。battle-engine.html 3箇所修正+CLAUDE.mdルール追記。auto-sim 100シーズンALL CLEAR |
 | 03-24 | タイトル画面SNSリンク追加(X/Patreon/FANBOX)+体験版終了画面改修(BOOTH URL修正/DLsiteボタン削除/FANBOX導線追加/SNSリンク追加)+showTrialLimitMessageテキスト修正(DLsite一時削除) |

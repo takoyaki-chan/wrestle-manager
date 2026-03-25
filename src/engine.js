@@ -3522,6 +3522,36 @@ const Engine = {
       let event = Engine.eventSystem.generateWeeklyEvent(rng, aiState);
       if (!event) return null;
 
+      // B1（練習怪我）はAI団体でも処理する。それ以外のBイベントはフォールバック
+      if (event.type === 'B1') {
+        const choiceIdx = this._pickAIChoice(rng, event, org.tier, aiState);
+        const aiFunds = this._estimateAIFunds(org.tier);
+        const largeState = {
+          roster, funds: aiFunds,
+          lockerRoomMorale: aiState.lockerRoomMorale,
+          mediaSpotlight: null,
+          season: state.season, week: state.week,
+        };
+        const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, largeState, rng);
+        // 新聞用フラグ: 怪我した選手の情報を蓄積
+        const fighter = roster.find(f => f.id === event.fighter);
+        const injuredF = result.roster.find(f => f.id === event.fighter);
+        const treatmentNames = ['特別治療', '通常治療', '無理させる'];
+        const newsEntry = {
+          orgName: org.name, fighterId: event.fighter,
+          fighterName: event.name,
+          injuryType: event.severity === 'moderate' ? '中傷' : '軽傷',
+          weeksOut: injuredF && injuredF.injury ? injuredF.injury.weeksLeft : 3,
+          treatmentType: treatmentNames[choiceIdx === 2 ? 2 : choiceIdx === 0 && aiFunds >= 200 ? 0 : 1],
+          ovr: fighter ? (fighter.ovr || 50) : 50,
+        };
+        return {
+          roster: result.roster,
+          lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : aiState.lockerRoomMorale,
+          orgPopDelta: 0,
+          _newsPracticeInjury: newsEntry,
+        };
+      }
       if ((event.type || '').charAt(0) === 'B') {
         event = Engine.eventSystem.generateNotifEvent(rng, aiState, roster)
           || Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
@@ -3564,6 +3594,12 @@ const Engine = {
       const roll = Engine.rng.float(rng);
 
       switch (event.type) {
+        case 'B1':
+          // 0=特別治療, 1=通常治療, 2=無理させる
+          if (tier === 'S') return roll < 0.80 ? 0 : 1;
+          if (tier === 'A') return roll < 0.40 ? 0 : (roll < 0.90 ? 1 : 2);
+          return roll < 0.10 ? 0 : (roll < 0.70 ? 1 : 2);
+
         case 'S1':
           if (tier === 'S') return roll < 0.80 ? 0 : (roll < 0.95 ? 1 : 2);
           if (tier === 'A') return roll < 0.60 ? 0 : (roll < 0.85 ? 1 : 2);
@@ -3916,6 +3952,11 @@ const Engine = {
           if (aiEventResult.lockerRoomMorale != null) nextOrgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
           if (typeof aiEventResult.orgPopDelta === 'number') {
             nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
+          }
+          // AI練習怪我ニュースフラグ蓄積
+          if (aiEventResult._newsPracticeInjury) {
+            if (!nextOrgData._newsPracticeInjury) nextOrgData._newsPracticeInjury = [];
+            nextOrgData._newsPracticeInjury.push(aiEventResult._newsPracticeInjury);
           }
         }
 
@@ -15650,6 +15691,7 @@ Engine.newspaper = {
     playerShowNormal:     90,
     aiRetirement:        100,
     aiBreakthrough:       60,
+    aiPracticeInjury:     55,
     transfer:             50,
     general:              30,
   },
@@ -15810,6 +15852,20 @@ Engine.newspaper = {
             });
           });
         }
+
+        // AI練習怪我
+        if (aiData._newsPracticeInjury) {
+          aiData._newsPracticeInjury.forEach(ev => {
+            const isAce = ev.ovr >= 75;
+            stories.push({
+              type: 'aiPracticeInjury',
+              priority: P.aiPracticeInjury + (isAce ? 20 : 0),
+              headline: `${ev.orgName}の${ev.fighterName}、練習中に${ev.injuryType}で${ev.weeksOut}週離脱`,
+              body: `${ev.orgName}の練習中に${ev.fighterName}が負傷。${ev.weeksOut}週間の離脱を余儀なくされる。`,
+              characterId: ev.fighterId,
+            });
+          });
+        }
       });
     }
 
@@ -15960,6 +16016,7 @@ Engine.newspaper = {
       delete org._npcInductees;
       delete org._newsShowHighlight;
       delete org._newsBreakthroughs;
+      delete org._newsPracticeInjury;
       cleaned[orgId] = org;
     });
     return cleaned;
