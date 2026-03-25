@@ -9954,12 +9954,13 @@ Engine.news = {
       }
     });
 
-    // AI団体: エース級選手の動向フレーバー
+    // AI団体: エース級選手の動向フレーバー（怪我中は除外）
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const org = RIVAL_ORGS.find(o => o.id === orgId);
         if (!org || !state.aiOrgs[orgId].roster) return;
-        const top = [...state.aiOrgs[orgId].roster].sort((a, b) => ov(b) - ov(a));
+        const healthy = state.aiOrgs[orgId].roster.filter(f => !f.injury);
+        const top = [...healthy].sort((a, b) => ov(b) - ov(a));
         if (top.length > 0 && Engine.rng.float(rng) < 0.25) {
           items.push({ cat: 'aiAce', data: { name: top[0].name, org: org.name } });
         }
@@ -9977,33 +9978,41 @@ Engine.news = {
       items.push({ cat: 'flavor', data: { name: f1.name, name2: f2 ? f2.name : '???' } });
     }
 
-    // AI団体の負傷情報
+    // AI団体の負傷情報（実際にinjuryフラグが立っている選手のみ）
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const org = RIVAL_ORGS.find(o => o.id === orgId);
         if (!org) return;
         const roster = state.aiOrgs[orgId].roster || [];
-        if (roster.length > 0 && Engine.rng.float(rng) < 0.15) {
-          const f = Engine.rng.pick(rng, roster);
-          items.push({ cat: 'injury', data: { org: org.name, name: f.name } });
-        }
+        const injured = roster.filter(f => f.injury);
+        injured.forEach(f => {
+          if (Engine.rng.float(rng) < 0.3) {
+            items.push({ cat: 'injury', data: { org: org.name, name: f.name } });
+          }
+        });
       });
     }
 
-    // スカウト動向
-    if (Engine.rng.float(rng) < 0.12) {
+    // スカウト動向（FA市場に選手がいる場合のみ）
+    if ((state.freeAgents || []).length > 0 && Engine.rng.float(rng) < 0.2) {
       items.push({ cat: 'scout', data: {} });
     }
 
-    // 経済（AI団体のtierで分岐）
+    // 経済（AI団体のorgPop/fundsを参照し、なければtierフォールバック）
     if (state.aiOrgs) {
       const orgIds = Object.keys(state.aiOrgs);
       if (orgIds.length > 0 && Engine.rng.float(rng) < 0.15) {
         const orgId = Engine.rng.pick(rng, orgIds);
         const org = RIVAL_ORGS.find(o => o.id === orgId);
         if (org) {
-          const tier = org.tier || 'B';
-          const cat = (tier === 'S' || tier === 'A') ? 'economyGood' : 'economyStruggle';
+          const aiData = state.aiOrgs[orgId];
+          let cat;
+          if (aiData.orgPop != null) {
+            cat = aiData.orgPop >= 40 ? 'economyGood' : 'economyStruggle';
+          } else {
+            const tier = org.tier || 'B';
+            cat = (tier === 'S' || tier === 'A') ? 'economyGood' : 'economyStruggle';
+          }
           items.push({ cat, data: { org: org.name } });
         }
       }
