@@ -3921,13 +3921,86 @@ const Engine = {
             nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
             const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id) * (nc._relationshipInjuryMult || 1.0);
             if (Engine.rng.float(matchRng) < injuryChance) {
-              const weeks = 2 + Engine.rng.int(matchRng, 0, 3);
-              nc.injury = { type: 'match injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              // 怪我重傷度判定（プレイヤーと同等のINJURY_TABLE分布）
+              const sevRoll = Engine.rng.float(matchRng);
+              const isSevere = sevRoll >= 0.90; // 10%重傷
+              const isModerate = !isSevere && sevRoll >= 0.65; // 25%中傷
+              const weeks = isSevere ? (4 + Engine.rng.int(matchRng, 0, 4)) : isModerate ? (3 + Engine.rng.int(matchRng, 0, 2)) : (2 + Engine.rng.int(matchRng, 0, 3));
+              const injType = isSevere ? '重傷' : isModerate ? '中傷' : '軽傷';
+              const injColor = isSevere ? '#e74c3c' : isModerate ? '#e67e22' : '#f39c12';
+              nc.injury = { type: injType, weeksLeft: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
+
+              // 重傷時の引退チェック（Engine.injury.checkと同等ロジック）
+              if (isSevere) {
+                const wear = nc.wear || 0;
+                let retireType = null;
+                if (wear + 25 > 80) {
+                  retireType = 'wearInjury';
+                }
+                if (!retireType) {
+                  const ceChance = wear >= 40 ? 0.065 : 0.025;
+                  const ceRng = Engine.rng.create(Engine.rng.derive(matchRng.state || 42, nc.id, 777));
+                  if (Engine.rng.float(ceRng) < ceChance) retireType = 'careerEnding';
+                }
+                if (retireType && roster.filter(f => !f._pendingInjuryRetire).length > 4) {
+                  nc._pendingInjuryRetire = retireType;
+                }
+              }
             }
 
             roster[fi] = nc;
           });
+        }
+
+        // AI怪我引退処理: _pendingInjuryRetireフラグのある選手を引退させる
+        const injuryRetirees = roster.filter(f => f._pendingInjuryRetire);
+        if (injuryRetirees.length > 0) {
+          for (const retiree of injuryRetirees) {
+            // 最低ロスター数ガード（引退処理後に4名未満にならないように）
+            const activeCount = roster.filter(f => !f._pendingInjuryRetire || f.id === retiree.id).length;
+            if (roster.length <= 4) { delete retiree._pendingInjuryRetire; continue; }
+
+            const retireType = retiree._pendingInjuryRetire;
+            delete retiree._pendingInjuryRetire;
+
+            // careerHistory記録
+            retiree.careerHistory = [...(retiree.careerHistory || []), {
+              type: 'injury_retirement', week: state.week, season: state.season,
+              detail: `${retiree.injury?.type || '重傷'}により引退`,
+            }];
+
+            // orgTimeline close
+            if (retiree.orgTimeline) {
+              const lastEntry = retiree.orgTimeline[retiree.orgTimeline.length - 1];
+              if (lastEntry && !lastEntry.toSeason) {
+                lastEntry.toSeason = state.season;
+                lastEntry.toWeek = state.week;
+              }
+            }
+
+            // ロスターから除去
+            roster = roster.filter(f => f.id !== retiree.id);
+
+            // 残留メンバーへのtrust影響
+            roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI怪我引退' });
+
+            // midSeasonRetirees蓄積（シーズン末HOF判定用）
+            if (!nextOrgData._midSeasonRetirees) nextOrgData._midSeasonRetirees = [];
+            nextOrgData._midSeasonRetirees.push(retiree);
+
+            // 新聞フラグ蓄積
+            if (!nextOrgData._newsInjuryRetirement) nextOrgData._newsInjuryRetirement = [];
+            const titleReigns = (retiree.careerHistory || []).filter(e => e.type === 'titleWin').length;
+            nextOrgData._newsInjuryRetirement.push({
+              orgName: org.name, fighterId: retiree.id, fighterName: retiree.name,
+              age: retiree.age || 17, ovr: Engine.util.ov(retiree),
+              injuryType: retireType,
+              careerSeasons: retiree.careerSeasons || 1, titleReigns,
+            });
+          }
+          // 残りの選手から_pendingInjuryRetireフラグをクリア
+          roster = roster.map(f => { if (f._pendingInjuryRetire) { const nf = { ...f }; delete nf._pendingInjuryRetire; return nf; } return f; });
         }
 
         // 新聞v2: 高MQ試合をハイライトとして記録
@@ -4134,8 +4207,10 @@ const Engine = {
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
         events.push(`${org.emoji} ${org.name}: ���X�^�[${roster.length}�� (����OVR ${avgOvr})`);
 
-        // v2.0 HOF拡張: NPC殿堂入り判定
-        const npcInductees = Engine.awards.checkNpcHallOfFame(aiRetirees, org.id, org.name, state);
+        // v2.0 HOF拡張: NPC殿堂入り判定（シーズン末引退+シーズン中怪我引退）
+        const midSeasonRetirees = aiData._midSeasonRetirees || [];
+        const allRetirees = [...aiRetirees, ...midSeasonRetirees];
+        const npcInductees = Engine.awards.checkNpcHallOfFame(allRetirees, org.id, org.name, state);
         if (npcInductees.length > 0) {
           events.push(`🏛️ ${org.name}: ${npcInductees.map(h => h.name).join('、')} が殿堂入り`);
         }
@@ -4152,7 +4227,8 @@ const Engine = {
           _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
           seasonBreakthroughs: [],
           _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined,
-          _npcInductees: npcInductees.length > 0 ? npcInductees : undefined };
+          _npcInductees: npcInductees.length > 0 ? npcInductees : undefined,
+          _midSeasonRetirees: undefined };
       });
 
       return { aiOrgs: newAiOrgs, events };
@@ -15787,6 +15863,7 @@ Engine.newspaper = {
     ppvSummitResult:     200,
     playerTitleChange:   180,
     aiAceRetirement:     160,
+    aiInjuryRetirement:  150,
     warMilestone:         145,
     crossWarResult:      140,
     aiChampionChange:    130,
@@ -15912,6 +15989,27 @@ Engine.newspaper = {
               headline: `${ev.orgName}の${ev.name}が現役引退を表明`,
               body: `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。${isAce ? '看板選手の退団は団体にとって大きな痛手だ。' : '長い現役生活に幕を下ろした。'}`,
               characterId: ev.id,
+            });
+          });
+        }
+
+        // AI怪我引退（processAIWeek興行中に発生）
+        if (aiData._newsInjuryRetirement) {
+          aiData._newsInjuryRetirement.forEach(ev => {
+            const isAce = ev.ovr >= 75;
+            let headline, body;
+            if (ev.injuryType === 'careerEnding') {
+              headline = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）、壊滅的な怪我で緊急引退——リング上で悲劇`;
+              body = `${ev.orgName}の${ev.fighterName}が試合中の壊滅的な怪我により緊急引退を発表。${ev.careerSeasons}シーズンのキャリアが予期せぬ形で幕を閉じた。${isAce ? 'エース級の突然の退場は団体に激震を走らせた。' : 'リング上での悲劇に関係者は言葉を失った。'}`;
+            } else {
+              headline = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）、度重なる怪我で引退——${ev.careerSeasons}シーズンの現役生活に幕`;
+              body = `${ev.orgName}の${ev.fighterName}が蓄積されたダメージにより引退を決断。${ev.careerSeasons}シーズンにわたる現役生活にピリオドを打った。${ev.titleReigns > 0 ? `通算${ev.titleReigns}度の戴冠を誇る。` : ''}`;
+            }
+            stories.push({
+              type: 'aiInjuryRetirement',
+              priority: P.aiInjuryRetirement + (isAce ? 20 : 0),
+              headline, body,
+              characterId: ev.fighterId,
             });
           });
         }
@@ -16148,6 +16246,7 @@ Engine.newspaper = {
       delete org._newsBreakthroughs;
       delete org._newsPracticeInjury;
       delete org._newsTeamConflict;
+      delete org._newsInjuryRetirement;
       cleaned[orgId] = org;
     });
     return cleaned;
