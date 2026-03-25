@@ -4259,6 +4259,12 @@ const App = {
     });
     s = { ...s, h2h };
 
+    // recentMatches記録（直近5戦FIFO）
+    results.forEach((r, idx) => {
+      const m = validMatches[idx];
+      roster = Engine.pushRecentMatch(roster, m.left, m.right, r.winner, s.season, s.week);
+    });
+
     // matchupLog 記録（鮮度計算の後、最終更新の前）
     const newMatchupEntries = validMatches.map(m => ({
       leftId: m.left, rightId: m.right, showCount: s.totalShows,
@@ -6539,6 +6545,14 @@ const App = {
     }
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
 
+    // recentMatches記録（対抗戦）
+    let warRoster = [...G.roster];
+    wp.results.forEach(r => {
+      const winner = r.playerWon ? 'left' : 'right';
+      warRoster = Engine.pushRecentMatch(warRoster, r.playerFighter.id, r.aiFighter.id, winner, G.season, G.week);
+    });
+    G = { ...G, roster: warRoster };
+
     // h2h記録: 対抗戦
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
@@ -6865,6 +6879,14 @@ App.finalizePPV = function() {
       };
     }
   }
+
+  // recentMatches記録（PPV）
+  let ppvRoster = [...(s.roster || G.roster)];
+  pp.results.forEach((r, idx) => {
+    const match = pp.card[idx];
+    ppvRoster = Engine.pushRecentMatch(ppvRoster, match.left.id, match.right.id, r.winner, s.season, s.week);
+  });
+  s = { ...s, roster: ppvRoster };
 
   // h2h記録: PPV
   let ppvH2h = { ...(s.h2h || {}) };

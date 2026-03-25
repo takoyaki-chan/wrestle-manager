@@ -49,7 +49,8 @@
 
 | 日付 | 内容 |
 |------|------|
-| 03-25 | 新聞バックナンバー: G.newspaperArchive(最大24週分)蓄積+バックナンバーナビUI(◀前の号/次の号▶/最新号)+日付表示大型化(シーズンN 第M週)。engine.js+ui-render.js |
+| 03-25 | 直近5戦表示: recentMatches配列(FIFO max5)をプレイヤー興行/AI興行/PPV/対抗戦の全4パスで記録。Engine.pushRecentMatch新設。選手ポップアップ通算戦績の下に「直近: ○山田 ×鈴木...」横1列表示。auto-sim 100シーズンALL CLEAR |
+| 03-25 | 新聞バックナンバー: G.newspaperArchive(最大24週分)蓄積+バックナンバーナビUI(◀次の号/前の号▶/最新号)+日付表示大型化(シーズンN 第M週)。engine.js+ui-render.js |
 | 03-25 | 開発率ラベル化: getPotentialPct数値→5段階ファジーラベル(未開花/成長期/開花中/充実期/完成形)+devLabelOffset(-7~+7)+stage別バー色。UIのみ |
 | 03-25 | タスクキュー6件一括実装: BUG-02ティッカー虚偽修正+TASK-03ファン希望カードfreshness+TASK-01 JTシード配置+BUG-01 showSp堅牢化+TASK-02今週画面ソート&一括+TASK-04給料交渉勝率撤去。auto-sim 100シーズンALL CLEAR |
 | 03-25 | AI契約交渉パリティ: processAIContracts新設。trust<40退団判定+特性/tier補正+退団先3種(移籍/FA/引退)+O-02 bond変動+新聞(aiContractDeparture:95)。auto-sim 50シーズンALL CLEAR |

@@ -4165,6 +4165,11 @@ const Engine = {
           }
         });
 
+        // recentMatches記録（AI団体）
+        matchResults.forEach(r => {
+          roster = Engine.pushRecentMatch(roster, r.left.id, r.right.id, r.winner, state.season, state.week);
+        });
+
         roster = roster.map(f => {
           const condBonus = Engine.coach.getCondBonus(aiShowState, f.id);
           return { ...f, condition: Math.min(100, (f.condition || 70) + 3 + condBonus) };
@@ -6385,6 +6390,12 @@ const Engine = {
       exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
     });
     s = { ...s, h2h: exH2h };
+
+    // recentMatches記録（直近5戦FIFO）
+    results.forEach((r, idx) => {
+      const m = validMatches[idx];
+      roster = Engine.pushRecentMatch(roster, m.left, m.right, r.winner, s.season, s.week);
+    });
 
     // v2.0: matchupLog にカード鮮度用の対戦記録を追加
     const newMatchupEntries = validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows }));
@@ -15573,6 +15584,21 @@ Engine.h2h = {
     newH2h[key] = entry;
     return newH2h;
   },
+};
+
+// ── recentMatches ヘルパー: 直近5戦FIFO ──────────
+/** rosterの対象2選手にrecentMatchesエントリを追加し、新rosterを返す */
+Engine.pushRecentMatch = function(roster, leftId, rightId, winner, season, week) {
+  const result = (side, id) => winner === 'draw' ? 'draw' : (winner === side ? 'win' : 'loss');
+  return roster.map(c => {
+    if (c.id !== leftId && c.id !== rightId) return c;
+    const isLeft = c.id === leftId;
+    const opponentId = isLeft ? rightId : leftId;
+    const res = isLeft ? result('left', c.id) : result('right', c.id);
+    const rm = [...(c.recentMatches || []), { opponentId, result: res, season, week }];
+    if (rm.length > 5) rm.shift();
+    return { ...c, recentMatches: rm };
+  });
 };
 
 // ── Engine.orgTimeline: ファイター所属団体履歴 ──────────

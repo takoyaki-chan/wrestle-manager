@@ -2433,6 +2433,22 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const tot = w + l + d;
           const rate = tot > 0 ? Math.round(w / tot * 100) : 0;
           html += `<div style="font-size:12px;color:var(--text-sub);margin-top:${(myRivalries.length > 0 || myExpects.length > 0) ? 4 : 0}px">📊 通算: <span style="color:#2ecc71">${w}勝</span> <span style="color:#e74c3c">${l}敗</span>${d > 0 ? ` <span>${d}分</span>` : ''} <span style="color:var(--text-dim)">(勝率${rate}%)</span></div>`;
+          // 直近5戦表示
+          const rm = c.recentMatches || [];
+          if (rm.length > 0) {
+            const allChars = [...(G.roster || []), ...(G.freeAgents || []), ...(G.dormantPool || [])];
+            const aiRosters = G.aiOrgs ? Object.values(G.aiOrgs).flatMap(o => o.roster || []) : [];
+            const lookup = [...allChars, ...aiRosters];
+            const items = rm.map(m => {
+              const opp = lookup.find(f => f.id === m.opponentId);
+              const name = opp ? opp.name : '???';
+              const shortName = name.length > 4 ? name.substring(0, 4) : name;
+              const mark = m.result === 'win' ? '○' : m.result === 'loss' ? '×' : '△';
+              const color = m.result === 'win' ? '#2ecc71' : m.result === 'loss' ? '#e74c3c' : '#999';
+              return `<span style="color:${color};white-space:nowrap">${mark}${shortName}</span>`;
+            });
+            html += `<div style="font-size:11px;color:var(--text-sub);margin-top:2px">直近: ${items.join(' ')}</div>`;
+          }
         }
         html += `</div>`;
       }
