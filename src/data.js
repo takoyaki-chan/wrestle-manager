@@ -661,8 +661,9 @@ const BIGMATCH_ENG = {
 // ╚══════════════════════════════════════════════════════════╝
 // 給与連続関数パラメータ（R4: テーブル廃止→指数関数）
 const SALARY_PARAMS = {
-  baseA: 0.55,       // 指数カーブ係数A（L1r: 0.65→0.55 中間層給与微調整）
-  baseB: 0.062,      // 指数カーブ係数B — base = A * exp(B * OVR)（L1r: 0.06→0.062 高OVR維持）
+  baseA: 2.40,       // 指数カーブ係数A
+  baseB: 0.043,      // 指数カーブ係数B — base = A * exp(B * OVR) + offset
+  offset: -8,        // 低OVR帯の給与を抑えるオフセット（万）
   popMax: 80,        // 人気加算の最大値（万）
   popExp: 2,         // 人気カーブ指数 — popBonus = popMax * (pop/100)^popExp
   titleBonus: 20,    // タイトル保持者固定加算（万）
