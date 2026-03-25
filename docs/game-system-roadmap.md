@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-25（AI練習怪我B1パリティ）
+> 最終更新: 2026-03-25（AI選手間対立B2パリティ）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,9 +9,11 @@
 
 ## 現在の状態
 
-**AI練習怪我B1パリティ（2026-03-25）。** processAIWeeklyEventでB1（練習怪我）をAI団体にも許可。tier別自動選択（S:80%特別治療/A:40%特別+50%通常+10%無理/B:10%特別+60%通常+30%無理）。applyLargeEventEffectで怪我期間・成長ペナルティ適用。新聞にAI練習怪我記事追加（aiPracticeInjury priority55、エース級+20）。設計書: `docs/ai-parity-01-practice-injury.md`。auto-sim 500シーズンALL CLEAR。
+**AI選手間対立B2パリティ（2026-03-25）。** processAIWeeklyEventのB2処理にニュース連携を完成。_pickAIChoiceにB2 tier別自動選択（S:60%話し合い/35%試合/5%放置、A:40%/45%/15%、B:20%/40%/40%）追加。processAIWeekで_newsTeamConflict蓄積+_b2Relationships関係値マージ。新聞にAI選手間対立記事追加（aiTeamConflict priority110、名勝負MQ70+で+15）。設計書: `docs/ai-parity-02-team-conflict.md`。auto-sim 50シーズンALL CLEAR。
 
-前回: **AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。状況ベース4種ケア自動選択+OVR傾斜+C系関係性効果簡易版。設計書: `docs/ai-parity-06-care-unification.md`。
+前回: **AI練習怪我B1パリティ（2026-03-25）。** processAIWeeklyEventでB1（練習怪我）をAI団体にも許可。設計書: `docs/ai-parity-01-practice-injury.md`。
+
+前回: **AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。設計書: `docs/ai-parity-06-care-unification.md`。
 
 前回: **サウンドシステム実装完了（2026-03-23）。** ■SE_MIX(app.js): 演出系SE個別音量ミキシング追加(bell56%/impact61%/tension_hit66%/rivalry系64-57%/war60%/transfer52%)、play()でsfxGain.gain.value自動設定。■MP3 SE優先再生(battle-engine.html): AudioBufferプリロードシステム新設(_SE_FILES 17ファイル定義/postMessage受信時_preloadSEBuffers開始/_playSample+getSfxGain経由再生)。試合SE11種(b01-b09,b11-b12)+フィニッシュSE7種(f02-f05,f11-f13)をMP3優先+Web Audioフォールバック。■ドローンd02音量42%(dMix=0.84スケーリング)。■セーブ画面BGM/SE音量スライダー10段階(前回実装済み反映)。
 
@@ -37,6 +39,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-25 | AI選手間対立B2パリティ: processAIWeeklyEvent B2ニュース連携完成。_pickAIChoice B2追加+_newsTeamConflict蓄積+_b2Relマージ+新聞記事(aiTeamConflict:110)。auto-sim 50シーズンALL CLEAR |
 | 03-25 | AI練習怪我B1パリティ: processAIWeeklyEventでB1許可。tier別自動選択+applyLargeEventEffect+新聞記事(aiPracticeInjury:55)。auto-sim 50シーズンALL CLEAR |
 | 03-25 | AI団体ケアアクション統一: processAICare全面改修。状況ベース4種ケア自動選択(休暇/メディア/激励/合宿)+OVR傾斜+C系関係性効果簡易版(bond変動)。tickWeekでrelationshipsマージ。auto-sim 500シーズンALL CLEAR |
 | 03-24 | ダメージセリフ/ボイス HP残量ベース発動ルール修正: フェーズ→HP残量基準に変更。tryDamageCutin関数追加(HP66%超:セリフ40%/HP34-66%:セリフ15%+ボイス50%/HP33%以下:ボイス60%のみ)。defenderReactionと同一閾値。battle-engine.html 3箇所修正+CLAUDE.mdルール追記。auto-sim 100シーズンALL CLEAR |

@@ -3681,6 +3681,12 @@ const Engine = {
           if (tier === 'A') return roll < 0.40 ? 0 : (roll < 0.90 ? 1 : 2);
           return roll < 0.10 ? 0 : (roll < 0.70 ? 1 : 2);
 
+        case 'B2':
+          // 0=話し合い, 1=試合, 2=放置
+          if (tier === 'S') return roll < 0.60 ? 0 : (roll < 0.95 ? 1 : 2);
+          if (tier === 'A') return roll < 0.40 ? 0 : (roll < 0.85 ? 1 : 2);
+          return roll < 0.20 ? 0 : (roll < 0.60 ? 1 : 2);
+
         case 'S1':
           if (tier === 'S') return roll < 0.80 ? 0 : (roll < 0.95 ? 1 : 2);
           if (tier === 'A') return roll < 0.60 ? 0 : (roll < 0.85 ? 1 : 2);
@@ -4038,6 +4044,15 @@ const Engine = {
           if (aiEventResult._newsPracticeInjury) {
             if (!nextOrgData._newsPracticeInjury) nextOrgData._newsPracticeInjury = [];
             nextOrgData._newsPracticeInjury.push(aiEventResult._newsPracticeInjury);
+          }
+          // AI選手間対立ニュースフラグ蓄積
+          if (aiEventResult._newsTeamConflict) {
+            if (!nextOrgData._newsTeamConflict) nextOrgData._newsTeamConflict = [];
+            nextOrgData._newsTeamConflict.push(aiEventResult._newsTeamConflict);
+          }
+          // B2関係性変動マージ
+          if (aiEventResult._b2Relationships && state.relationships) {
+            nextOrgData._b2Relationships = aiEventResult._b2Relationships;
           }
         }
 
@@ -5111,6 +5126,15 @@ const Engine = {
           });
           s = { ...s, relationships: merged };
           delete aiOrgData._careRelationships;
+        }
+        // B2対立試合の関係値更新をマージ
+        if (aiOrgData._b2Relationships && s.relationships) {
+          const merged = { ...s.relationships };
+          Object.keys(aiOrgData._b2Relationships).forEach(key => {
+            merged[key] = aiOrgData._b2Relationships[key];
+          });
+          s = { ...s, relationships: merged };
+          delete aiOrgData._b2Relationships;
         }
       });
     }
@@ -15768,6 +15792,7 @@ Engine.newspaper = {
     aiChampionChange:    130,
     playerShowTitle:     120,
     npcHallOfFame:       170,
+    aiTeamConflict:      110,
     aiShowHighlight:      80,
     playerShowNormal:     90,
     aiRetirement:        100,
@@ -15930,6 +15955,30 @@ Engine.newspaper = {
               headline: `${ev.orgName}の${ev.name}が急成長——注目の存在に`,
               body: `${ev.orgName}所属の${ev.name}がブレイクスルーを達成。${ev.stat}が大幅に向上し、今後の活躍が期待される。`,
               characterId: ev.id,
+            });
+          });
+        }
+
+        // AI選手間対立
+        if (aiData._newsTeamConflict) {
+          aiData._newsTeamConflict.forEach(ev => {
+            let headline, body;
+            if (ev.resolution === 'talk') {
+              headline = `${ev.orgName}で${ev.fighter1Name}と${ev.fighter2Name}の確執が浮上——話し合いで収束`;
+              body = `${ev.orgName}内で${ev.fighter1Name}と${ev.fighter2Name}の間に緊張が走ったが、話し合いにより事態は収束した。`;
+            } else if (ev.resolution === 'match') {
+              const mqTone = ev.matchMQ >= 70 ? '名勝負となった一戦は' : '';
+              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}、リング上で決着！ ${ev.matchWinner || ''}が勝利（MQ${ev.matchMQ || 0}）`;
+              body = `${ev.orgName}で${ev.fighter1Name}と${ev.fighter2Name}の対立がリング上で決着。${mqTone}${ev.matchWinner || '勝者'}が勝利を収めた。`;
+            } else {
+              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}に亀裂——団体側は静観の構え`;
+              body = `${ev.orgName}内で${ev.fighter1Name}と${ev.fighter2Name}の関係が悪化。団体側は介入せず静観を決め込んでいる。`;
+            }
+            stories.push({
+              type: 'aiTeamConflict',
+              priority: P.aiTeamConflict + (ev.resolution === 'match' && ev.matchMQ >= 70 ? 15 : 0),
+              headline, body,
+              characterId: ev.fighter1Id,
             });
           });
         }
@@ -16098,6 +16147,7 @@ Engine.newspaper = {
       delete org._newsShowHighlight;
       delete org._newsBreakthroughs;
       delete org._newsPracticeInjury;
+      delete org._newsTeamConflict;
       cleaned[orgId] = org;
     });
     return cleaned;
