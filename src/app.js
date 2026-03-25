@@ -3739,10 +3739,13 @@ const App = {
       hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
-    // BGM: FileBGMフェードアウト + 全試合完了時のみチップチューンをmanagementに戻す
+    // BGM: FileBGMフェードアウト + 全試合完了ならmanagement復帰、残試合ありなら遅延復帰
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     if (sp.results.every(r => r !== null)) {
       try { Audio.bgm.play('management'); } catch(e) {}
+    } else {
+      // まだ試合が残っている → managementBGMを再開
+      setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('management'); } catch(e) {} } }, 1600);
     }
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
