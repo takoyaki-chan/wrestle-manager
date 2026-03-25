@@ -5895,6 +5895,13 @@ const Engine = {
 
     // 新聞v2: 毎週の新聞生成（オフシーズン以外）
     if (!s.offSeason) {
+      // バックナンバー蓄積（最大24週分）
+      if (s.weeklyNewspaper) {
+        const archive = [...(s.newspaperArchive || [])];
+        archive.unshift(s.weeklyNewspaper);
+        if (archive.length > 24) archive.length = 24;
+        s = { ...s, newspaperArchive: archive };
+      }
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
       s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsWarMilestone: null };

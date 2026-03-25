@@ -3166,6 +3166,7 @@ let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相�
 let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
 let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
 let _newspaperPage = 0; // 新聞ページ番号（0=通常面, 1+=特集面）
+let _newspaperArchiveIdx = -1; // -1=最新号, 0=アーカイブ[0](1つ前), ...
 let _dbSortKey = 'ovr';
 let _dbSortAsc = false;
 let _dbFilterOrg = '';
@@ -3260,27 +3261,67 @@ function renderDatabase() {
 function setDbSubTab(idx) {
   _dbSubTab = idx;
   _newspaperPage = 0; // タブ切替時はページリセット
+  _newspaperArchiveIdx = -1; // 最新号にリセット
   renderDatabase();
 }
 function setNewspaperPage(page) {
   _newspaperPage = page;
   renderDatabase();
 }
+function setNewspaperArchiveIdx(idx) {
+  _newspaperArchiveIdx = idx;
+  _newspaperPage = 0; // ページリセット
+  renderDatabase();
+}
 
 // ── 📰 新聞サブタブ ──────────────────────────────────────────────────────
 function _renderDbNewspaper() {
-  const wp = G.weeklyNewspaper;
+  const archive = G.newspaperArchive || [];
+  const archiveTotal = archive.length;
+
+  // アーカイブインデックスの範囲補正
+  if (_newspaperArchiveIdx >= archiveTotal) _newspaperArchiveIdx = archiveTotal - 1;
+
+  // 表示対象の新聞を決定
+  let wp;
+  if (_newspaperArchiveIdx < 0) {
+    wp = G.weeklyNewspaper; // 最新号
+  } else {
+    wp = archive[_newspaperArchiveIdx];
+  }
   const d = G.currentNewspaper; // フォールバック用
 
   // weeklyNewspaper もなく currentNewspaper もない場合
-  if (!wp && !d) {
+  if (!wp && !d && _newspaperArchiveIdx < 0) {
     return `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2;">
       📰 現在の新聞はありません<br>
       <span style="font-size:12px;color:var(--text-sub);">次の週に進むと新聞が届きます</span></div>`;
   }
 
   // フォールバック: 旧セーブで weeklyNewspaper がない場合は旧形式
-  if (!wp && d) return _renderDbNewspaperLegacy(d);
+  if (!wp && d && _newspaperArchiveIdx < 0) return _renderDbNewspaperLegacy(d);
+
+  // アーカイブの新聞がnullの場合（境界）
+  if (!wp) {
+    _newspaperArchiveIdx = -1;
+    wp = G.weeklyNewspaper;
+    if (!wp) return `<div style="text-align:center;padding:60px 20px;color:var(--text-dim);line-height:2;">📰 新聞がありません</div>`;
+  }
+
+  // ── バックナンバーナビ ──
+  const isLatest = _newspaperArchiveIdx < 0;
+  const canOlder = _newspaperArchiveIdx < archiveTotal - 1;
+  const canNewer = !isLatest;
+  let archiveNav = '';
+  if (archiveTotal > 0) {
+    const label = isLatest ? '最新号' : `バックナンバー ${_newspaperArchiveIdx + 1}/${archiveTotal}`;
+    archiveNav = `<div style="display:flex;justify-content:center;align-items:center;gap:10px;margin:10px auto 4px;max-width:560px;">
+      ${canNewer ? `<button class="btn" style="padding:5px 12px;font-size:12px;" onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">◀ 次の号</button>` : ''}
+      <span style="font-size:12px;color:var(--text-dim);min-width:120px;text-align:center;">${label}</span>
+      ${canOlder ? `<button class="btn" style="padding:5px 12px;font-size:12px;" onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">前の号 ▶</button>` : ''}
+      ${!isLatest ? `<button class="btn btn-gold" style="padding:5px 12px;font-size:12px;" onclick="setNewspaperArchiveIdx(-1)">最新号</button>` : ''}
+    </div>`;
+  }
 
   // ページ送りナビ（複数ページ時）
   const hasPages = wp.pages && wp.pages.length > 0 && wp.pages.some(Boolean);
@@ -3300,7 +3341,7 @@ function _renderDbNewspaper() {
   if (hasPages && _newspaperPage > 0) {
     const pageData = wp.pages[_newspaperPage - 1];
     if (pageData && pageData.stories) {
-      return pageNav + _renderNewspaperExtraPage(wp, pageData);
+      return archiveNav + pageNav + _renderNewspaperExtraPage(wp, pageData);
     }
   }
 
@@ -3311,7 +3352,7 @@ function _renderDbNewspaper() {
   let html = `<div style="max-width:560px;margin:12px auto;display:grid;gap:0;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">S${wp.season || '?'} W${wp.week || '?'}</div>
+    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">シーズン${wp.season || '?'} 第${wp.week || '?'}週</div>
   </div>`;
 
   // ── 一面記事 ──
@@ -3393,7 +3434,7 @@ function _renderDbNewspaper() {
   }
 
   html += `</div>`;
-  return pageNav + html;
+  return archiveNav + pageNav + html;
 }
 
 // ── 自団体興行結果セクション（新聞v2内部用） ──
