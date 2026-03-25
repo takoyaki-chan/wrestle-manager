@@ -2142,6 +2142,8 @@ function findFighter(fighterId, source) {
       if (f) return f;
     }
   }
+  f = (G.retiredFighters || []).find(c => c.id === fighterId);
+  if (f) return f;
   return null;
 }
 
@@ -2315,7 +2317,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Potential & Condition
       if (isRoster || isFree) {
         const potPct = getPotentialPct(c);
-        const potColor = potPct >= 90 ? '#e74c3c' : potPct >= 70 ? '#f39c12' : '#2ecc71';
+        const potLabel = getPotentialLabel(c);
         const condPct = Math.round(c.condition || 0);
         const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
         html += `<div class="fighter-popup-section" style="display:flex;gap:16px;font-size:13px;margin-bottom:12px">
@@ -2323,9 +2325,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span style="color:var(--text-dim)">開発率</span>
             <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
               <div style="flex:1;height:5px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">
-                <div style="width:${potPct}%;height:100%;background:${potColor};border-radius:3px"></div>
+                <div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div>
               </div>
-              <span style="color:${potColor};font-weight:700">${potPct}%</span>
+              <span style="color:${potLabel.color};font-weight:700;font-size:12px">${potLabel.label}</span>
             </div>
           </div>
           <div style="flex:1">

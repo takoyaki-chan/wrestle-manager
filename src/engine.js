@@ -180,6 +180,23 @@ const Engine = {
       const current = stats.reduce((s, k) => s + char[k], 0);
       const cap = stats.reduce((s, k) => s + (char.trainCap ? char.trainCap[k] : (char.pot ? char.pot[k] : char[k])), 0);
       return cap > 0 ? Math.round(current / cap * 100) : 100;
+    },
+    /** devLabelOffset を選手IDから決定論的に生成（既存セーブ互換） */
+    calcDevLabelOffset(id) {
+      return ((id * 2654435761) >>> 0) % 15 - 7; // -7〜+7
+    },
+    /** 開発率ラベル（5段階ファジー） */
+    getPotentialLabel(char) {
+      const potPct = Engine.util.getPotentialPct(char);
+      const offset = char.devLabelOffset != null ? char.devLabelOffset : Engine.util.calcDevLabelOffset(char.id);
+      const DEV_LABEL_COLORS = ['#2ecc71','#27ae60','#f39c12','#e67e22','#e74c3c'];
+      // clamp offset so thresholds stay reasonable (lowest boundary 25+offset >= 18)
+      const o = Engine.util.clamp(offset, -7, 7);
+      if (potPct >= Math.min(100, Math.max(78, 85 + o))) return { label: '完成形', stage: 4, color: DEV_LABEL_COLORS[4] };
+      if (potPct >= Math.max(55, 65 + o)) return { label: '充実期', stage: 3, color: DEV_LABEL_COLORS[3] };
+      if (potPct >= Math.max(35, 45 + o)) return { label: '開花中', stage: 2, color: DEV_LABEL_COLORS[2] };
+      if (potPct >= Math.max(18, 25 + o)) return { label: '成長期', stage: 1, color: DEV_LABEL_COLORS[1] };
+      return { label: '未開花', stage: 0, color: DEV_LABEL_COLORS[0] };
     }
   },
 
@@ -2835,6 +2852,7 @@ const Engine = {
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
         orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
+        devLabelOffset: Engine.rng.int(rng, -7, 7),
       };
     },
     /** trainCap 5??????? */
@@ -7354,6 +7372,7 @@ const Engine = {
         popularity: 0, wins: 0, losses: 0, draws: 0,
         condition: 100, fatigue: 0, injuries: [], afterEffects: [],
         schedule: 'balance', titleDefenses: 0, matchesThisSeason: 0,
+        devLabelOffset: Engine.rng.int(rng, -7, 7),
         _notion: notion, // internal: for scout display estimate
         _isSeed: !!isSeed,
       };

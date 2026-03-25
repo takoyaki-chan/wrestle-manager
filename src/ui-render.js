@@ -1541,7 +1541,8 @@ function _renderRosterDetailPanel(c, hired) {
   }
   // Development rate
   const potPct = getPotentialPct(c);
-  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">開発率</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:#7a6530;border-radius:3px"></div></div><span style="font-size:12px;color:#5c4a1e;font-weight:700">${potPct}%</span></div></span></div>`;
+  const potLabel = getPotentialLabel(c);
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">開発率</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${potLabel.label}</span></div></span></div>`;
   // Physical decline
   const stageLabel = {none:'良好',early:'わずかに衰えの兆候',major:'衰退期',terminal:'限界'};
   const stageColor = {none:'#1a8a4a',early:'#a07010',major:'#a06000',terminal:'#a03030'};

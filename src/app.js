@@ -2361,6 +2361,7 @@ function getWorldChampion() { return Engine.title.getWorldChampion(G); }
 function getHiredCoaches() { return Engine.coach.getHiredCoaches(G); }
 function getCharCoach(charId) { return Engine.coach.getCharCoach(G, charId); }
 function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
+function getPotentialLabel(c) { return Engine.util.getPotentialLabel(c); }
 function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
 
 function archiveRetiredRivalryState(state, fighter) {
@@ -6491,6 +6492,18 @@ const App = {
       const matchResult = wp.results.find(r => r.playerFighter.id === c.id);
       return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: ev.opponentName, won: matchResult ? matchResult.playerWon : false });
     }) };
+
+    // AI側の対抗戦出場選手にもcareer event記録
+    const aiOrgId = ev.opponentOrgId;
+    if (G.aiOrgs && G.aiOrgs[aiOrgId]) {
+      const aiWarIds = new Set(wp.card.map(m => m.aiFighter.id));
+      const updatedAiRoster = G.aiOrgs[aiOrgId].roster.map(c => {
+        if (!aiWarIds.has(c.id)) return c;
+        const matchResult = wp.results.find(r => r.aiFighter.id === c.id);
+        return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: G.orgName || 'プレイヤー団体', won: matchResult ? !matchResult.playerWon : false });
+      });
+      G = { ...G, aiOrgs: { ...G.aiOrgs, [aiOrgId]: { ...G.aiOrgs[aiOrgId], roster: updatedAiRoster } } };
+    }
 
     const evStats = { ...(G.seasonStats || {}) };
     if (eventWon) {
