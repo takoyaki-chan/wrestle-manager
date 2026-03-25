@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-25（開発率ラベル化）
+> 最終更新: 2026-03-26（AI団体タイトルマッチ適正化）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**開発率ラベル化（2026-03-25）。** getPotentialPct数値%表示を5段階ファジーラベル（未開花/成長期/開花中/充実期/完成形）に置換。選手固定devLabelOffset(-7〜+7)でファジーバウンダリ実現。既存セーブはIDハッシュで互換。バー色はstage別5色。ロスターポップアップ(ui-common.js)+詳細画面育成タブ(ui-render.js)の2箇所を変更。UIのみ(engine.js変更はutil関数追加+新規選手生成時offset付与のみ)。
+**AI団体タイトルマッチ適正化（2026-03-26）。** 弱い選手が王者に居座る問題を修正。Fix1:AI団体に12週タイトルマッチクールダウン導入(createAITitles.lastTitleMatchWeek+processAIWeek判定)。Fix2:挑戦資格厳格化(Top5→Top3,OVR差8→5)。Fix3:AIマッチカード生成時にトップ挑戦者を王者の対戦相手に優先配置。Fix4:AI選手にrecordTitleWin/Loss/Defense経歴記録追加。診断結果:タイトル変動20.7→7.88回/シーズン(-62%),OVRギャップ>5割合46.2%→25.5%(-45%),奪取時ギャップ>5率50%→23%(-54%)。auto-sim 100シーズンALL CLEAR。
+
+前回: **開発率ラベル化（2026-03-25）。** getPotentialPct数値%表示を5段階ファジーラベル（未開花/成長期/開花中/充実期/完成形）に置換。選手固定devLabelOffset(-7〜+7)でファジーバウンダリ実現。既存セーブはIDハッシュで互換。バー色はstage別5色。ロスターポップアップ(ui-common.js)+詳細画面育成タブ(ui-render.js)の2箇所を変更。UIのみ(engine.js変更はutil関数追加+新規選手生成時offset付与のみ)。
 
 前回: **タスクキュー6件一括実装（2026-03-25）。** BUG-02:ティッカー虚偽情報修正(AI負傷→実データ/フレーバー無害化/スカウトFA連動/経済orgPop参照)。TASK-03:ファン希望カードにfreshnessチェック(MQ-5以上除外/MQ-3以上priority降格)。TASK-01:ジュニアトーナメントシード配置(_seedBracket新設/1位2位決勝まで非対戦/5-8位ランダム)。BUG-01:showSp堅牢化(タイマー管理+勝者決定時強制消去/予防的修正)。TASK-02:今週画面ソート&一括操作(thクリックソート/全選択チェック/プリセット一括適用/強化一括ON/OFF)。TASK-04:給料交渉から勝率撤去(record判定をOVR/人気/タイトル歴ベースに/セリフテンプレート刷新)。auto-sim 100シーズンALL CLEAR。
 

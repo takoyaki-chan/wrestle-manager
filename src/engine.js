@@ -1210,14 +1210,14 @@ const Engine = {
     },
 
     // タイトルマッチ挑戦資格判定
-    // OVR上位5位以内 or ロスター最高OVRとの差8以内
+    // OVR上位3位以内 or ロスター最高OVRとの差5以内
     getEligibleChallengers(roster, champId) {
       const available = roster.filter(f => f.id !== champId && !f.injury && !f.isRental);
       if (available.length === 0) return [];
       const sorted = [...available].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const top5Ids = new Set(sorted.slice(0, 5).map(f => f.id));
+      const top3Ids = new Set(sorted.slice(0, 3).map(f => f.id));
       const maxOvr = Math.max(...roster.filter(f => !f.injury && !f.isRental).map(f => Engine.util.ov(f)));
-      return available.filter(f => top5Ids.has(f.id) || maxOvr - Engine.util.ov(f) <= 8).map(f => f.id);
+      return available.filter(f => top3Ids.has(f.id) || maxOvr - Engine.util.ov(f) <= 5).map(f => f.id);
     },
 
     // v1.2: タイトルマッチ12週クールダウン
@@ -2890,6 +2890,7 @@ const Engine = {
           defenses: 0,
           wonSeason: 0,
           wonWeek: 0,
+          lastTitleMatchWeek: null,
           ...world,
         },
       };
@@ -3876,7 +3877,54 @@ const Engine = {
 
       if (isShow) {
         const aiShowState = tierState();
-        const matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount);
+        let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount);
+
+        // Fix 3: タイトルマッチ時、王者の対戦相手にトップ挑戦者を優先配置
+        const aiChampId = nextOrgData.titles?.world?.championId;
+        const aiLastTMW = nextOrgData.titles?.world?.lastTitleMatchWeek;
+        const aiAbsWeek = Engine.title.getAbsWeek(state);
+        const aiCdOk = aiLastTMW == null ? true : (aiAbsWeek - aiLastTMW) >= 12;
+        if (aiChampId && aiCdOk && matchCard.length > 0) {
+          const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, aiChampId));
+          // 王者がカードにいるか確認
+          const champCardIdx = matchCard.findIndex(m => m.left.id === aiChampId || m.right.id === aiChampId);
+          if (champCardIdx >= 0 && eligibleIds.size > 0) {
+            const champCard = matchCard[champCardIdx];
+            const champOppId = champCard.left.id === aiChampId ? champCard.right.id : champCard.left.id;
+            // 対戦相手がeligibleでない場合、eligible中の最高OVRと差し替え
+            if (!eligibleIds.has(champOppId)) {
+              const usedIds = new Set(matchCard.flatMap(m => [m.left.id, m.right.id]));
+              const topChallenger = roster
+                .filter(f => eligibleIds.has(f.id) && f.id !== aiChampId)
+                .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+              if (topChallenger) {
+                // カード内で使われている場合はスワップ
+                const challCardIdx = matchCard.findIndex(m => m.left.id === topChallenger.id || m.right.id === topChallenger.id);
+                if (challCardIdx >= 0 && challCardIdx !== champCardIdx) {
+                  // スワップ: 挑戦者を王者カードに、元対戦相手を挑戦者カードに
+                  const challCard = matchCard[challCardIdx];
+                  const challOppId = challCard.left.id === topChallenger.id ? challCard.right.id : challCard.left.id;
+                  const challOpp = roster.find(f => f.id === challOppId);
+                  const champOpp = roster.find(f => f.id === champOppId);
+                  if (challOpp && champOpp) {
+                    // 王者カード: 王者 vs トップ挑戦者
+                    matchCard[champCardIdx] = champCard.left.id === aiChampId
+                      ? { left: champCard.left, right: topChallenger }
+                      : { left: topChallenger, right: champCard.right };
+                    // 挑戦者カード: 元対戦相手同士
+                    matchCard[challCardIdx] = { left: champOpp, right: challOpp };
+                  }
+                } else if (challCardIdx < 0) {
+                  // 挑戦者がカードにいない場合、直接差し替え
+                  matchCard[champCardIdx] = champCard.left.id === aiChampId
+                    ? { left: champCard.left, right: topChallenger }
+                    : { left: topChallenger, right: champCard.right };
+                }
+              }
+            }
+          }
+        }
+
         const matchResults = [];
 
         for (const card of matchCard) {
@@ -4088,9 +4136,9 @@ const Engine = {
         const oldChampId = aiTitles.world?.championId; // 新聞v2: 王者交代検出用
         const champId = oldChampId;
         const champAlive = champId && roster.find(f => f.id === champId && !f.injury);
-        // 挑戦資格判定: チャンプの対戦相手が資格ありの場合のみタイトルマッチ扱い
-        const eligibleIds = champId ? new Set(Engine.title.getEligibleChallengers(roster, champId)) : new Set();
+        const beltId = `${org.id}_world`;
         if (!champAlive) {
+          // 王者不在: トップOVR選手を新王者に
           const top = roster
             .filter(f => !f.injury)
             .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
@@ -4101,32 +4149,62 @@ const Engine = {
               wonSeason: state.season,
               wonWeek: state.week,
             });
+            // 経歴記録: 新王者
+            const topIdx = roster.findIndex(f => f.id === top.id);
+            if (topIdx >= 0) roster[topIdx] = Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week);
           }
         } else {
-          const champResult = matchResults.find(r => r.left?.id === champId || r.right?.id === champId);
-          // 対戦相手に挑戦資格がある場合のみタイトルマッチ扱い
-          const oppId = champResult ? (champResult.left?.id === champId ? champResult.right?.id : champResult.left?.id) : null;
-          if (champResult && oppId != null && eligibleIds.has(oppId)) {
-            const champWon =
-              (champResult.winner === 'left' && champResult.left?.id === champId) ||
-              (champResult.winner === 'right' && champResult.right?.id === champId);
-            if (champWon || champResult.winner === 'draw') {
+          // 12週クールダウン判定（プレイヤーと同等）
+          const lastTMW = nextOrgData.titles.world?.lastTitleMatchWeek;
+          const absWeek = Engine.title.getAbsWeek(state);
+          const cdElapsed = lastTMW == null ? 999 : absWeek - lastTMW;
+          const cdOk = cdElapsed >= 12;
+
+          if (cdOk) {
+            // 挑戦資格判定
+            const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, champId));
+            // 王者の対戦相手を確認
+            const champResult = matchResults.find(r => r.left?.id === champId || r.right?.id === champId);
+            const oppId = champResult ? (champResult.left?.id === champId ? champResult.right?.id : champResult.left?.id) : null;
+
+            if (champResult && oppId != null && eligibleIds.has(oppId)) {
+              // タイトルマッチ成立: クールダウン更新
               nextOrgData.titles = {
                 ...nextOrgData.titles,
-                world: {
-                  ...nextOrgData.titles.world,
-                  defenses: (nextOrgData.titles.world.defenses || 0) + 1,
-                },
+                world: { ...nextOrgData.titles.world, lastTitleMatchWeek: absWeek },
               };
-            } else {
-              const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
-              if (winnerId != null) {
-                nextOrgData.titles = Engine.rival.createAITitles({
-                  championId: winnerId,
-                  defenses: 0,
-                  wonSeason: state.season,
-                  wonWeek: state.week,
-                });
+
+              const champWon =
+                (champResult.winner === 'left' && champResult.left?.id === champId) ||
+                (champResult.winner === 'right' && champResult.right?.id === champId);
+              if (champWon || champResult.winner === 'draw') {
+                // 防衛成功
+                const newDefenses = (nextOrgData.titles.world.defenses || 0) + 1;
+                nextOrgData.titles = {
+                  ...nextOrgData.titles,
+                  world: { ...nextOrgData.titles.world, defenses: newDefenses },
+                };
+                // 経歴記録: 防衛
+                const champIdx = roster.findIndex(f => f.id === champId);
+                if (champIdx >= 0) roster[champIdx] = Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses);
+              } else {
+                // 王座交代
+                const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
+                if (winnerId != null) {
+                  const prevDefenses = nextOrgData.titles.world.defenses || 0;
+                  nextOrgData.titles = Engine.rival.createAITitles({
+                    championId: winnerId,
+                    defenses: 0,
+                    wonSeason: state.season,
+                    wonWeek: state.week,
+                    lastTitleMatchWeek: absWeek,
+                  });
+                  // 経歴記録: 新王者 + 旧王者
+                  const winnerIdx = roster.findIndex(f => f.id === winnerId);
+                  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week);
+                  const loserIdx = roster.findIndex(f => f.id === champId);
+                  if (loserIdx >= 0) roster[loserIdx] = Engine.career.recordTitleLoss(roster[loserIdx], beltId, state.season, state.week, prevDefenses);
+                }
               }
             }
           }
