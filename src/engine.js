@@ -4333,6 +4333,18 @@ const Engine = {
           roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI����' });
         });
 
+        // Step 5b: AI契約退団（trust不満ベース）
+        const contractResult = Engine.rival.processAIContracts(rng, roster, org.id, org.tier, state);
+        roster = contractResult.roster;
+        if (contractResult.departures.length > 0) {
+          contractResult.departures.forEach(d => {
+            retiredNames.push(`${d.fighterName}(${d.destination === 'retire' ? '引退' : '退団'})`);
+          });
+        }
+        // 契約退団でのHOF対象蓄積
+        const contractRetirees = contractResult.departures.filter(d => d.destination === 'retire').map(d => d._fighter).filter(Boolean);
+        if (contractRetirees.length > 0) aiRetirees.push(...contractRetirees);
+
         // Step 6: AI�X�J�E�g �� handled separately in offseason week 2
         // Step 7: AI�Ԉڐ� �� handled separately
         // Step 8: org-rating �� recalculated after all processing
@@ -4364,10 +4376,128 @@ const Engine = {
           seasonBreakthroughs: [],
           _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined,
           _npcInductees: npcInductees.length > 0 ? npcInductees : undefined,
+          _newsContractDepartures: contractResult.departures.length > 0 ? contractResult.departures : undefined,
           _midSeasonRetirees: undefined };
       });
 
       return { aiOrgs: newAiOrgs, events };
+    },
+
+    /** AI契約退団: trust不満ベースの退団判定（processSeasonEnd内で呼び出し） */
+    processAIContracts(rng, roster, orgId, tier, state) {
+      const departures = [];
+      const minRoster = 5;
+
+      for (let i = roster.length - 1; i >= 0; i--) {
+        const f = roster[i];
+        if (f.injury || f.isRental) continue;
+        if (roster.length <= minRoster) break;
+
+        const trust = f.trust != null ? f.trust : 50;
+        let departChance = 0;
+
+        if (trust >= 40) continue; // trust 40+: 残留
+        if (trust >= 30) departChance = 0.15;
+        else if (trust >= 15) departChance = 0.40;
+        else departChance = 0.70;
+
+        // 特性補正
+        if (Traits.has(f, '忠誠心')) departChance *= 0.5;
+        if (Traits.has(f, '反骨心')) departChance += 0.20;
+        if (Traits.has(f, '野心')) {
+          const isChamp = state.aiOrgs[orgId]?.titles?.world?.championId === f.id;
+          departChance += isChamp ? -0.15 : 0.15;
+        }
+
+        // tier補正
+        if (tier === 'S') departChance -= 0.05;
+        else if (tier === 'B') departChance += 0.05;
+
+        departChance = Math.max(0, Math.min(1, departChance));
+        if (Engine.rng.float(rng) >= departChance) continue;
+
+        // 退団確定
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+
+        // 退団先決定
+        const destRoll = Engine.rng.float(rng);
+        let destination, destOrgName = null;
+
+        if (destRoll < 0.50) {
+          // 他AI団体へ移籍
+          const otherOrgs = RIVAL_ORGS.filter(o => o.id !== orgId && state.aiOrgs[o.id] && state.aiOrgs[o.id].roster && state.aiOrgs[o.id].roster.length < 12);
+          if (otherOrgs.length > 0) {
+            const destOrg = otherOrgs[Engine.rng.int(rng, 0, otherOrgs.length - 1)];
+            destination = 'transfer';
+            destOrgName = destOrg.name;
+
+            // 移籍先ロスターに追加
+            const transferF = { ...f, trust: 50, orgJoinWeek: Engine.util.absWeek(state.season + 1, 1) };
+            // orgTimeline: close old, open new
+            if (transferF.orgTimeline) {
+              const lastEntry = transferF.orgTimeline[transferF.orgTimeline.length - 1];
+              if (lastEntry && !lastEntry.toSeason) {
+                lastEntry.toSeason = state.season;
+                lastEntry.toWeek = 48;
+              }
+              transferF.orgTimeline = [...transferF.orgTimeline, { orgId: destOrg.id, fromSeason: state.season + 1, fromWeek: 1 }];
+            }
+            state.aiOrgs[destOrg.id].roster.push(transferF);
+
+            // 移籍先での入団bond変動（O-02相当）
+            if (state.relationships) {
+              const destRosterIds = state.aiOrgs[destOrg.id].roster.filter(rf => rf.id !== f.id).map(rf => rf.id);
+              if (destRosterIds.length > 0) {
+                const relRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, f.id, 0xC07));
+                const relState = Engine.relationships.applyFromRoster(
+                  state, destRosterIds, f.id, { min: -3, max: 3 }, { min: 0, max: 0 }, relRng
+                );
+                if (relState.relationships) state.relationships = relState.relationships;
+              }
+            }
+          } else {
+            destination = 'fa';
+          }
+        } else if (destRoll < 0.80) {
+          destination = 'fa';
+        } else {
+          destination = (f.age || 17) >= 28 ? 'retire' : 'fa';
+        }
+
+        // orgTimeline close（FA/引退の場合）
+        if (destination !== 'transfer' && f.orgTimeline) {
+          const lastEntry = f.orgTimeline[f.orgTimeline.length - 1];
+          if (lastEntry && !lastEntry.toSeason) {
+            lastEntry.toSeason = state.season;
+            lastEntry.toWeek = 48;
+          }
+        }
+
+        // FA化
+        if (destination === 'fa') {
+          if (f.orgTimeline) {
+            f.orgTimeline = [...(f.orgTimeline || []), { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
+          }
+          if (!state.freeAgents) state.freeAgents = [];
+          state.freeAgents.push({ ...f, trust: 50 });
+        }
+
+        // ロスターから除去
+        roster.splice(i, 1);
+
+        // 残留メンバーへのtrust影響
+        roster = Engine.trust.applyDepartureTrustImpact(roster, f.id, state.relationships, { name: f.name, reason: 'AI契約不満退団' });
+
+        departures.push({
+          orgName: org ? org.name : '',
+          fighterId: f.id, fighterName: f.name,
+          age: f.age || 17, ovr: Engine.util.ov(f),
+          destination, destOrgName,
+          _fighter: destination === 'retire' ? f : undefined,
+        });
+      }
+
+      return { roster, departures };
     },
 
     // AI season popularity (rival-spec ��4.2)
@@ -16018,6 +16148,7 @@ Engine.newspaper = {
     aiShowHighlight:      80,
     playerShowNormal:     90,
     aiRetirement:        100,
+    aiContractDeparture:  95,
     aiMediaSpotlight:     65,
     aiBreakthrough:       60,
     aiPracticeInjury:     55,
@@ -16159,6 +16290,43 @@ Engine.newspaper = {
               characterId: ev.fighterId,
             });
           });
+        }
+
+        // AI契約退団（シーズン末にprocessSeasonEndで蓄積）
+        if (aiData._newsContractDepartures) {
+          const deps = aiData._newsContractDepartures;
+          // 同一団体で複数退団の場合はまとめ記事
+          if (deps.length >= 3) {
+            const orgName = deps[0].orgName;
+            stories.push({
+              type: 'aiContractDeparture',
+              priority: P.aiContractDeparture + 30,
+              headline: `${orgName}で大量退団——${deps.length}名が離脱`,
+              body: `${orgName}から${deps.map(d => d.fighterName).join('、')}の${deps.length}名が退団。団体の先行きに不安が広がる。`,
+              characterId: deps[0].fighterId,
+            });
+          } else {
+            deps.forEach(ev => {
+              const isAce = ev.ovr >= 75;
+              let headline, body;
+              if (ev.destination === 'transfer') {
+                headline = `${ev.orgName}の${ev.fighterName}が契約満了——${ev.destOrgName}に移籍`;
+                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が新天地を求めて${ev.destOrgName}に移籍。`;
+              } else if (ev.destination === 'fa') {
+                headline = `${ev.orgName}の${ev.fighterName}が退団、フリーエージェントに`;
+                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が退団しフリーエージェントとなった。`;
+              } else {
+                headline = `${ev.orgName}の${ev.fighterName}が現役引退を決断`;
+                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が現役引退。リングに別れを告げた。`;
+              }
+              stories.push({
+                type: 'aiContractDeparture',
+                priority: P.aiContractDeparture + (isAce ? 20 : 0),
+                headline, body,
+                characterId: ev.fighterId,
+              });
+            });
+          }
         }
 
         // NPC殿堂入り（シーズン末にprocessSeasonEndで蓄積）
@@ -16422,6 +16590,7 @@ Engine.newspaper = {
       delete org._newsInjuryRetirement;
       delete org._newsMediaStart;
       delete org._newsMediaResult;
+      delete org._newsContractDepartures;
       cleaned[orgId] = org;
     });
     return cleaned;
