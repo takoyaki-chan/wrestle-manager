@@ -2440,10 +2440,12 @@ function shakePanel(side,hard){
   p.classList.remove('shake','shake-hard');void p.offsetWidth;p.classList.add(cls);
   setTimeout(()=>p.classList.remove(cls),hard?350:300);
 }
+const _spTimers={};
 function showSp(side,text,cls){
   const el=document.getElementById(`sp-${side}`);if(!el)return;
+  if(_spTimers[side])clearTimeout(_spTimers[side]);
   el.textContent=text;el.className=`speech-bubble ${cls} visible`;
-  setTimeout(()=>el.classList.remove('visible'),1800);
+  _spTimers[side]=setTimeout(()=>{el.classList.remove('visible');_spTimers[side]=null;},1800);
 }
 function endAnim(){
   S.anim=false;
@@ -2485,6 +2487,9 @@ function localFormatFinish(finType,finMove){
 
 function showResult(){
   S.anim=false;
+  // 全セリフバブルを強制消去（勝者決定後に残らないように）
+  document.querySelectorAll('.speech-bubble').forEach(el=>el.classList.remove('visible'));
+  Object.keys(_spTimers).forEach(k=>{if(_spTimers[k])clearTimeout(_spTimers[k]);_spTimers[k]=null;});
   // MQを事前計算してS.mqに保存（renderResultとsendResultで共用）
   const totalTurns=S.turn;
   const leadChanges=S.log.filter(l=>l.includes('カウンター')).length;
