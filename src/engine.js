@@ -12244,6 +12244,8 @@ Engine.fanExpect = {
 
     const champId = state.titles?.world?.championId;
     const rivalries = state.rivalries || {};
+    const matchupLog = state.matchupLog || [];
+    const totalShows = state.totalShows || 0;
     const candidates = [];
     const seen = new Set();
 
@@ -12252,7 +12254,15 @@ Engine.fanExpect = {
       const key = [f1.id, f2.id].sort().join('-');
       if (seen.has(key)) return;
       seen.add(key);
-      candidates.push({ leftId: f1.id, rightId: f2.id, leftName: f1.name, rightName: f2.name, reason, priority });
+      // freshnessチェック: 深刻なマンネリ以上は除外、マンネリはpriority降格
+      const freshness = Engine.freshness.calc(matchupLog, f1.id, f2.id, totalShows);
+      if (freshness.bonus <= -5) return; // 深刻なマンネリ以上（countInWindow >= 4）は完全除外
+      let adjustedPriority = priority;
+      if (freshness.bonus < 0) {
+        adjustedPriority = Math.max(0, priority - 1);
+        reason = reason.replace('期待の声', '根強い人気はあるが新鮮味も求める声');
+      }
+      candidates.push({ leftId: f1.id, rightId: f2.id, leftName: f1.name, rightName: f2.name, reason, priority: adjustedPriority });
     };
 
     // Priority 3: rivalry値の高いペアを優先
