@@ -4228,9 +4228,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     founder: '旗揚げからここにいるんですよ、私。'
   },
   record: {
-    good: '去年は{wins}勝{losses}敗。結果は出してたと思うんですけど。',
-    average: '成績は{wins}勝{losses}敗。悪くはなかったはずです。',
-    bad: '成績が{wins}勝{losses}敗で……自分でもわかってます。でも……',
+    ace: 'この団体で一番やれてる自信はあります。それは数字にも出てるはずです。',
+    good: '自分なりに結果は出してきたつもりです。',
+    developing: 'まだ発展途上なのはわかってます。でも、ちゃんと見てほしいんです。',
     few_matches: 'あんまり試合に出してもらえなかった……。'
   },
   rivalry: {

@@ -12958,14 +12958,19 @@ Engine.contract = {
     // 出場頻度: 今シーズンの試合数相当（wins+losses+draws で近似）
     const showCount = (state.seasonStats || {}).showCount || 0;
     const fewMatches = showCount > 0 && total < showCount * 0.3;
-    // 成績評価
-    let record = 'average';
-    if (total > 0) {
-      const winRate = wins / total;
-      if (winRate >= 0.6) record = 'good';
-      else if (winRate < 0.35) record = 'bad';
+    // 成績評価（OVR・人気・タイトル歴ベース）
+    let record = 'developing';
+    const _ovr = Engine.util.ov(fighter);
+    const _pop = fighter.popularity || 0;
+    const _hasTitleHistory = (fighter.careerRecord?.totalTitleWins || 0) > 0;
+    const _isChampion = state.titles?.world?.championId === fighter.id;
+    if (_isChampion || (_ovr >= 70 && _pop >= 50)) {
+      record = 'ace';
+    } else if (_ovr >= 60 || _pop >= 40 || _hasTitleHistory) {
+      record = 'good';
+    } else if (fewMatches) {
+      record = 'few_matches';
     }
-    if (fewMatches) record = 'few_matches';
     // ライバル検索
     let rivalName = '';
     if (state.rivalries) {
@@ -12975,7 +12980,11 @@ Engine.contract = {
         if (lvl && ((lvl.rivalry || 0) >= 40 || lvl.isGoodRival || lvl.isBitterRival)) { rivalName = other.name; break; }
       }
     }
-    return { careerSeasons: seasons, tenureSeasons, wins, losses, total, isFounder, fewMatches, record, rivalName };
+    return {
+      careerSeasons: seasons, tenureSeasons, wins, losses, total,
+      isFounder, fewMatches, record, rivalName,
+      ovr: _ovr, popularity: _pop, isChampion: _isChampion, hasTitleHistory: _hasTitleHistory,
+    };
   },
 
   // ── 給与ギャップ算出（v2.0 §3）──────────────────────────────────────────
@@ -13175,7 +13184,7 @@ Engine.contract = {
     if (!text.includes('{record}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{record\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.record;
-    let insert = (r[ctx.record] || r.average || '').replace(/\{wins\}/g, String(ctx.wins || 0)).replace(/\{losses\}/g, String(ctx.losses || 0));
+    let insert = r[ctx.record] || r.developing || r.good || '';
     return text.replace(/\{record\}/g, insert);
   },
 
