@@ -3397,16 +3397,30 @@ const Engine = {
     },
 
     // ── Phase 5: AIケアアクション自動処理 ──────────────────────────────────
-    // 練習週に実行。ティア依存で頻度・効果を決定。
-    // 返り値: 更新後の roster
-    processAICare(rng, roster, tier) {
+    // 練習週に実行。状況ベースでケア種別を自動選択し、関係性効果も適用。
+    // 返り値: { roster, relationships } （relationshipsは変更があった場合のみ）
+    processAICare(rng, roster, tier, relationships) {
       const cfg = {
-        S: { careChance: 0.35, careStrength: 4.5, teamCareChance: 0.15, teamCareStrength: 1.5 },
-        A: { careChance: 0.20, careStrength: 3.5, teamCareChance: 0.08, teamCareStrength: 1.2 },
-        B: { careChance: 0.10, careStrength: 2.5, teamCareChance: 0.04, teamCareStrength: 0.8 },
-      }[tier] || { careChance: 0.10, careStrength: 2.5, teamCareChance: 0.04, teamCareStrength: 0.8 };
+        S: { careChance: 0.35, teamCareChance: 0.15, teamCareStrength: 1.5 },
+        A: { careChance: 0.20, teamCareChance: 0.08, teamCareStrength: 1.2 },
+        B: { careChance: 0.10, teamCareChance: 0.04, teamCareStrength: 0.8 },
+      }[tier] || { careChance: 0.10, teamCareChance: 0.04, teamCareStrength: 0.8 };
 
-      // ── 個人ケア: trust低い順にソートし、確率でケア ──
+      // OVR傾斜係数（careActions.executeと同等）
+      const careOvrMult = (fighter) => Math.max(0.7, 1.2 - Engine.util.ov(fighter) / 200);
+
+      const applyTrust = (fighter, delta) => {
+        let adjusted = delta * careOvrMult(fighter);
+        const oldTrust = fighter.trust != null ? fighter.trust : 50;
+        if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+        return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+      };
+
+      // 関係性操作用の状態（変更があった場合のみ返す）
+      let relState = relationships ? { relationships: { ...relationships } } : null;
+      const rosterIds = roster.filter(f => !f.isRental && !f.injury).map(f => f.id);
+
+      // ── 個人ケア: trust<55の選手、最大2名 ──
       const careTargets = roster
         .filter(f => !f.injury && !f.isRental)
         .map(f => ({ id: f.id, trust: f.trust != null ? f.trust : 50 }))
@@ -3414,33 +3428,87 @@ const Engine = {
 
       let careCount = 0;
       for (const target of careTargets) {
-        if (target.trust >= 60) break;
+        if (target.trust >= 55) break;
         if (careCount >= 2) break;
         if (Engine.rng.float(rng) >= cfg.careChance) continue;
 
-        const urgency = target.trust < 30 ? 1.3 : (target.trust < 45 ? 1.1 : 1.0);
-        const trustDelta = cfg.careStrength * urgency;
+        const fighter = roster.find(f => f.id === target.id);
+        if (!fighter) continue;
+
+        // 状況ベースでケア種別を自動選択
+        const condition = fighter.condition || 70;
+        const popularity = fighter.popularity || 0;
+        const losses = fighter.losses || 0;
+        const streak = fighter.streak || 0;
+
+        let trustDelta, condDelta = 0, relEffect = null;
+        if (condition < 50) {
+          // 休暇効果: condition回復重視
+          trustDelta = 2;
+          condDelta = 15;
+          relEffect = null; // 休暇は関係性効果なし
+        } else if (popularity > 70) {
+          // メディア効果: popularity高い選手の露出
+          trustDelta = 1.5;
+          condDelta = 0;
+          relEffect = 'media'; // 対象→全体 bond微増
+        } else if (streak <= -3) {
+          // 激励効果: 連敗中の選手をケア
+          trustDelta = 3;
+          condDelta = 5;
+          relEffect = 'encourage'; // 対象→全体 bond +0.5
+        } else {
+          // 合宿効果（デフォルト）: バランス型
+          trustDelta = 2.5;
+          condDelta = 8;
+          relEffect = 'camp'; // 対象↔全体 bond +1
+        }
 
         roster = roster.map(f => {
           if (f.id !== target.id) return f;
-          const oldTrust = f.trust != null ? f.trust : 50;
-          const adjusted = trustDelta * Engine.trust.gainMult(oldTrust);
-          return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+          let nf = applyTrust(f, trustDelta);
+          if (condDelta > 0) nf = { ...nf, condition: Math.min(100, (nf.condition || 70) + condDelta) };
+          return nf;
         });
+
+        // 関係性効果（簡易版）
+        if (relState && relEffect) {
+          if (relEffect === 'encourage' || relEffect === 'media') {
+            // C-01相当: 対象→全体 bond +0.5（プレイヤー版の1/3程度）
+            relState = Engine.relationships.applyToRoster(
+              relState, target.id, rosterIds,
+              { min: 0.3, max: 0.7 }, { min: 0, max: 0 }, rng
+            );
+          } else if (relEffect === 'camp') {
+            // C-03相当: 対象↔ロスター bond +1（プレイヤー版の1/3程度）
+            relState = Engine.relationships.applyToRoster(
+              relState, target.id, rosterIds,
+              { min: 0.5, max: 1.0 }, { min: 0, max: 0 }, rng
+            );
+          }
+        }
+
         careCount++;
       }
 
-      // ── 団体全体ケア（打ち上げ/合宿相当）: 確率で全員のtrust微増 ──
+      // ── 団体全体ケア（パーティ相当）: 確率で全員のtrust微増+bond微増 ──
       if (Engine.rng.float(rng) < cfg.teamCareChance) {
         roster = roster.map(f => {
           if (f.injury || f.isRental) return f;
-          const oldTrust = f.trust != null ? f.trust : 50;
-          const adjusted = cfg.teamCareStrength * Engine.trust.gainMult(oldTrust);
-          return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+          return applyTrust(f, cfg.teamCareStrength);
         });
+        // C-04相当: 全員間 bond +0.3（プレイヤー版の1/8程度）
+        if (relState && rosterIds.length >= 2) {
+          relState = Engine.relationships.applyAllPairs(
+            relState, rosterIds,
+            { min: 0.1, max: 0.5 }, { min: 0, max: 0 }, rng
+          );
+        }
       }
 
-      return roster;
+      const result = { roster };
+      if (relState) result.relationships = relState.relationships;
+      return result;
     },
 
     // ── Phase 5: AI選択型イベント処理 ──────────────────────────────────
@@ -3852,7 +3920,9 @@ const Engine = {
         }
 
         const aiCareRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xAC01, org.id.charCodeAt(4) || 0));
-        roster = Engine.rival.processAICare(aiCareRng, roster, org.tier);
+        const careResult = Engine.rival.processAICare(aiCareRng, roster, org.tier, state.relationships);
+        roster = careResult.roster;
+        if (careResult.relationships) nextOrgData._careRelationships = careResult.relationships;
       }
 
       return {
@@ -4910,6 +4980,15 @@ const Engine = {
           s = { ...s, h2h: aiH2h };
           // 消費済みフラグをクリア
           delete aiOrgData._lastMatchResults;
+        }
+        // Phase 6: AIケアの関係値更新をマージ
+        if (aiOrgData._careRelationships && s.relationships) {
+          const merged = { ...s.relationships };
+          Object.keys(aiOrgData._careRelationships).forEach(key => {
+            merged[key] = aiOrgData._careRelationships[key];
+          });
+          s = { ...s, relationships: merged };
+          delete aiOrgData._careRelationships;
         }
       });
     }
@@ -9119,6 +9198,8 @@ Engine.awards = {
       careerHighlights: Engine.awards.buildCareerHighlights(rec, orgName),
       retireOVR: Engine.util.ov(fighter),
       retireAge: fighter.age || 0,
+      warWins: hist.filter(e => e.type === 'war' && e.won).length,
+      warLosses: hist.filter(e => e.type === 'war' && !e.won).length,
     };
     entry.epithet = Engine.awards.generateEpithet(rec);
     entry.biography = Engine.awards.generateBiography(entry);
