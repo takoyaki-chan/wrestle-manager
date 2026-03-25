@@ -16106,7 +16106,55 @@ Engine.juniorTournament = {
     const total = candidates.length;
     if (total < 4) return { participants: [], bracketSize: 0, cancelled: true };
     const bracketSize = total >= 8 ? 8 : 4;
-    return { participants: candidates.slice(0, bracketSize), bracketSize, cancelled: false };
+    const selected = candidates.slice(0, bracketSize);
+    // シード配置を適用（上位を分散配置）
+    const seeded = Engine.juniorTournament._seedBracket(selected, state);
+    return { participants: seeded, bracketSize, cancelled: false };
+  },
+
+  /** シード配置: OVR上位を各ブロックに分散配置する（純粋関数）
+   * @param {Array} sorted - OVR降順の参加者配列
+   * @param {object} state - GameState（rngSeed参照用）
+   * @returns {Array} シード配置済みの参加者配列 */
+  _seedBracket(sorted, state) {
+    const n = sorted.length;
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0x5EED));
+
+    if (n === 8) {
+      // 標準シード方式:
+      // スロット: [1位, ?, ?, 4位, 3位, ?, ?, 2位]
+      // 1位vs2位は決勝まで当たらない、3位vs4位も決勝まで当たらない
+      const bracket = new Array(8).fill(null);
+      bracket[0] = sorted[0]; // 1シード: 上半山の端
+      bracket[7] = sorted[1]; // 2シード: 下半山の端
+      bracket[4] = sorted[2]; // 3シード: 下半山の上端（2シードと別の準決勝ブロック）
+      bracket[3] = sorted[3]; // 4シード: 上半山の下端（1シードと別の準決勝ブロック）
+      // 残り4名をランダムに空きスロットに配置
+      const remaining = sorted.slice(4);
+      const emptySlots = [1, 2, 5, 6];
+      for (let i = emptySlots.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(rng, 0, i);
+        [emptySlots[i], emptySlots[j]] = [emptySlots[j], emptySlots[i]];
+      }
+      remaining.forEach((p, i) => { bracket[emptySlots[i]] = p; });
+      return bracket;
+    }
+
+    if (n === 4) {
+      // 4人制: 1位 vs 非シード、2位 vs 非シード（反対の半山）
+      const bracket = new Array(4).fill(null);
+      bracket[0] = sorted[0]; // 1シード
+      bracket[3] = sorted[1]; // 2シード（反対の半山の端）
+      const remaining = [sorted[2], sorted[3]];
+      if (Engine.rng.float(rng) < 0.5) {
+        bracket[1] = remaining[0]; bracket[2] = remaining[1];
+      } else {
+        bracket[1] = remaining[1]; bracket[2] = remaining[0];
+      }
+      return bracket;
+    }
+
+    return sorted; // フォールバック
   },
 
   /** トーナメント全試合を実行する（純粋関数）
