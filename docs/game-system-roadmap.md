@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**AI契約交渉パリティ（2026-03-25）。** processAIContracts新設。trust<40で退団判定（30-39:15%/15-29:40%/<15:70%）。特性補正（忠誠心×0.5/反骨心+20%/野心±15%）+tier補正。退団先: 50%他AI団体移籍/30%FA/20%引退(28歳+)。移籍先でO-02 bond変動+orgTimeline更新。最低5名ガード。新聞にaiContractDeparture(priority95、大量退団+30、エース級+20)。設計書: `docs/ai-parity-07-contract-negotiation.md`。auto-sim 50シーズンALL CLEAR。
+**AI団体間対抗戦B3パリティ（2026-03-25）。** processAIWar既存実装に新聞記事生成(aiWarResult priority135、MQ90+で+20格上げ)とclearAINewsFlags(_newsAIWarResult)を追加。勝利/引き分け/名勝負トーン分岐。設計書: `docs/ai-parity-03-inter-org-war.md`。
+
+前回: **AI契約交渉パリティ（2026-03-25）。** processAIContracts新設。trust<40で退団判定（30-39:15%/15-29:40%/<15:70%）。特性補正（忠誠心×0.5/反骨心+20%/野心±15%）+tier補正。退団先: 50%他AI団体移籍/30%FA/20%引退(28歳+)。移籍先でO-02 bond変動+orgTimeline更新。最低5名ガード。新聞にaiContractDeparture(priority95、大量退団+30、エース級+20)。設計書: `docs/ai-parity-07-contract-negotiation.md`。auto-sim 50シーズンALL CLEAR。
 
 前回: **AIメディア密着B4パリティ（2026-03-25）。** processAIWeeklyEventでB4許可。tier別対象選出（S:50%若手/30%エース/20%ベテラン等）。aiData.mediaSpotlight新設で3興行MQ追跡→avgMQ≥60:orgPop+3/popularity+5/trust+3、≥45:orgPop+1/popularity+2。E-04関係性効果（bond+1~2/rivalry+1~3）。新聞に密着開始(aiMediaStart:45)+結果記事(aiMediaSpotlight:65)。設計書: `docs/ai-parity-04-media-spotlight.md`。auto-sim 50シーズンALL CLEAR。
 
@@ -55,6 +57,7 @@
 | 03-24 | タイトル画面SNSリンク追加(X/Patreon/FANBOX)+体験版終了画面改修(BOOTH URL修正/DLsiteボタン削除/FANBOX導線追加/SNSリンク追加)+showTrialLimitMessageテキスト修正(DLsite一時削除) |
 | 03-22 | 新聞タブ見た目パッチ: 赤帯ヘッダー(週刊グラップル)、セクションラベル日本語化(一面記事/興行結果/他団体ニュース/次回展望+赤金縦線)、画像アイコン派手化(一面金枠+金グロウ/他団体紫ダーク+紫枠)、ダイジェストテーブル形式化(table1行/試合+勝者金グロウ/敗者グレー+MQ3色+バッジ日本語化)、星評価1行化+黒田アイコンダーク赤。UIのみ |
 | 03-22 | 団体比較 見せ場パッチ: エース対決アリーナ(ダーク背景+赤照明+VS発光48px+名前バーグラデ)、相性グレード(赤ベタ白文字)、No.2/No.3アバター(金/紫ダーク+枠+グロウ)、注目選手アバター(52px+紫枠+グロウ)、バッジ/タグ全種ベタ塗り白文字、通算成績赤太字。UIのみ(engine.js変更なし) |
+| 03-25 | AI団体間対抗戦B3パリティ: processAIWar既存実装(4週クールダウン/orgPop>20/2.5%発生率/OVRトップ3代表選出/simulateMatch matchTier2/勝者orgPop+2 trust+3 battleWins+1/敗者orgPop-0.5 trust-1/関係性rivalry/ニュースフラグ蓄積)に新聞記事生成(aiWarResult priority135、MQ90+で+20格上げ、勝利/引分テキスト分岐)+clearAINewsFlags(_newsAIWarResult削除)を追加。設計書: `docs/ai-parity-03-inter-org-war.md` |
 | 03-25 | 対抗戦勝利報酬体感化: 5勝マイルストーンで新聞記事(warMilestone priority145)+士気ブースト(+3〜+5)。選手ポップアップTAB1に対抗戦個人戦績(🏴 N勝M敗)表示。殿堂ポイントにwarPt(1勝=2pt)加算+buildCareerHighlightsに「対抗戦通算N勝」。auto-sim 500シーズンALL CLEAR |
 | 03-22 | 団体比較スポーツ新聞風リデザイン: カラースキームをダーク→セピア紙風に全面変更(.db-cmp-wrapコンテナ+新聞タブ同系統パレット)。英語ラベル全14箇所を日本語化。getPopularityTail slotIndex別バリエーション化(15パターン、OVR優勢+人気劣勢時の逆接表現)。VS表示強調(36px赤色+グラデーション区切り線)。エース対決アリーナレイアウト(スタンド画像向かい合わせ+名前バー)。赤帯ヘッダー追加。セクションタイトル縦線色分け(金=自陣営・中立/赤=相手情報)。UIのみ(engine.js変更なし)。auto-sim 50シーズンALL CLEAR |
 | 03-21 | 6件バグ修正・改善: ■2興行中BGM漏れ修正(全試合完了時のみmanagement復帰)、■3タイトル挑戦資格(Engine.title.getEligibleChallengers新設+toggleTitle/AI団体/S1イベント/期待カード5箇所適用)、■5JT勝敗逆転修正(_receiveJTBattleResult→iframe結果でmatch上書き+_jtRecomputeSubsequentRoundsで後続ラウンド再シミュレーション)、■6コーチ画面視認性(未雇用背景rgba(0,0,0,0.3)→rgba(200,190,170,0.07)+グレード/特性バッジコントラスト向上)。auto-sim 100シーズンALL CLEAR |

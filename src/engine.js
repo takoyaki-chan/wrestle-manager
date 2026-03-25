@@ -4500,6 +4500,168 @@ const Engine = {
       return { roster, departures };
     },
 
+    /** AI団体間対抗戦: AI同士の対抗戦を処理（tickWeekから呼び出し） */
+    processAIWar(rng, state) {
+      if (!state.aiOrgs) return state;
+      let s = { ...state };
+
+      // 4週に1回の判定
+      if (s.week % 4 !== 0) return s;
+
+      // 各AI団体について対抗戦判定
+      const orgIds = Object.keys(s.aiOrgs);
+      for (const orgId of orgIds) {
+        const aiData = s.aiOrgs[orgId];
+        if (!aiData || !aiData.roster || aiData.roster.length < 3) continue;
+        const org = RIVAL_ORGS.find(o => o.id === orgId);
+        if (!org) continue;
+
+        // orgPop > 20 条件
+        if ((aiData.orgPop || 0) <= 20) continue;
+
+        // クールダウン: lastWarWeekから4週以上
+        const lastWar = aiData.lastWarWeek || 0;
+        const currentAbsWeek = Engine.util.absWeek(s.season, s.week);
+        if (currentAbsWeek - lastWar < 4) continue;
+
+        // 2.5%発生率
+        if (Engine.rng.float(rng) >= 0.025) continue;
+
+        // 対戦相手選定: ランキング±1位のAI団体（プレイヤー除外）
+        const rankings = RIVAL_ORGS.map(o => ({
+          id: o.id,
+          orgPop: s.aiOrgs[o.id]?.orgPop || 0,
+        })).sort((a, b) => b.orgPop - a.orgPop);
+
+        const myIdx = rankings.findIndex(r => r.id === orgId);
+        const candidates = [];
+        if (myIdx > 0) candidates.push(rankings[myIdx - 1]);
+        if (myIdx < rankings.length - 1) candidates.push(rankings[myIdx + 1]);
+
+        // 相手もクールダウンを満たしていること
+        const validCandidates = candidates.filter(c => {
+          const cData = s.aiOrgs[c.id];
+          if (!cData || !cData.roster || cData.roster.length < 3) return false;
+          const cLastWar = cData.lastWarWeek || 0;
+          return currentAbsWeek - cLastWar >= 4;
+        });
+
+        if (validCandidates.length === 0) continue;
+        const opponent = validCandidates[Engine.rng.int(rng, 0, validCandidates.length - 1)];
+        const oppOrg = RIVAL_ORGS.find(o => o.id === opponent.id);
+        if (!oppOrg) continue;
+        const oppData = s.aiOrgs[opponent.id];
+
+        // 代表選出: OVRトップ3から1名
+        const pickRep = (roster, champId) => {
+          const healthy = roster.filter(f => !f.injury);
+          if (healthy.length === 0) return null;
+          const sorted = healthy.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+          const top3 = sorted.slice(0, 3);
+          // チャンピオンなら50%で選出
+          const champ = top3.find(f => f.id === champId);
+          if (champ && Engine.rng.float(rng) < 0.5) return champ;
+          return top3[Engine.rng.int(rng, 0, top3.length - 1)];
+        };
+
+        const rep1 = pickRep(aiData.roster, aiData.titles?.world?.championId);
+        const rep2 = pickRep(oppData.roster, oppData.titles?.world?.championId);
+        if (!rep1 || !rep2) continue;
+
+        // 試合実行
+        const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3A1, orgId.charCodeAt(0) || 0));
+        const matchResult = Engine.battle.simulateMatch(rep1, rep2, matchRng, 2);
+
+        const winner = matchResult.winner; // 'left' or 'right' or 'draw'
+        const isDraw = winner === 'draw';
+        const winnerOrgId = winner === 'left' ? orgId : winner === 'right' ? opponent.id : null;
+        const loserOrgId = winner === 'left' ? opponent.id : winner === 'right' ? orgId : null;
+
+        // 結果適用
+        const newAiOrgs = { ...s.aiOrgs };
+
+        // orgPop変動
+        if (winnerOrgId) {
+          const winData = { ...newAiOrgs[winnerOrgId] };
+          winData.orgPop = Engine.util.clamp((winData.orgPop || 50) + 2, 0, 100);
+          // battleWinsTotal
+          if (!s.battleWinsTotal) s = { ...s, battleWinsTotal: {} };
+          const bwt = { ...s.battleWinsTotal };
+          bwt[winnerOrgId] = (bwt[winnerOrgId] || 0) + 1;
+          s = { ...s, battleWinsTotal: bwt };
+          // 代表trust +3
+          const winRepId = winnerOrgId === orgId ? rep1.id : rep2.id;
+          winData.roster = winData.roster.map(f => {
+            if (f.id !== winRepId) return f;
+            return { ...f, trust: Engine.util.clamp((f.trust != null ? f.trust : 50) + 3, 0, 100) };
+          });
+          winData.lastWarWeek = currentAbsWeek;
+          newAiOrgs[winnerOrgId] = winData;
+
+          const loseData = { ...newAiOrgs[loserOrgId] };
+          loseData.orgPop = Engine.util.clamp((loseData.orgPop || 50) - 0.5, 0, 100);
+          const loseRepId = loserOrgId === orgId ? rep1.id : rep2.id;
+          loseData.roster = loseData.roster.map(f => {
+            if (f.id !== loseRepId) return f;
+            return { ...f, trust: Engine.util.clamp((f.trust != null ? f.trust : 50) - 1, 0, 100) };
+          });
+          loseData.lastWarWeek = currentAbsWeek;
+          newAiOrgs[loserOrgId] = loseData;
+        } else {
+          // 引き分け
+          const d1 = { ...newAiOrgs[orgId] };
+          d1.orgPop = Engine.util.clamp((d1.orgPop || 50) + 0.5, 0, 100);
+          d1.lastWarWeek = currentAbsWeek;
+          newAiOrgs[orgId] = d1;
+          const d2 = { ...newAiOrgs[opponent.id] };
+          d2.orgPop = Engine.util.clamp((d2.orgPop || 50) + 0.5, 0, 100);
+          d2.lastWarWeek = currentAbsWeek;
+          newAiOrgs[opponent.id] = d2;
+        }
+
+        // 関係性効果: rivalry +8~12（両方向）、チームメイト→代表 bond +2
+        if (s.relationships) {
+          const warRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE3D, orgId.charCodeAt(0) || 0));
+          // 代表同士 rivalry
+          s = Engine.relationships.applyMatchResult(s, rep1.id, rep2.id, {
+            mq: matchResult.mq,
+            winner: winner === 'left' ? 'win' : winner === 'right' ? 'lose' : 'draw',
+            hpA: matchResult.hpLeft || { final: 50, max: 100 },
+            hpB: matchResult.hpRight || { final: 50, max: 100 },
+            turns: matchResult.turns || 10,
+            stage: 'normal',
+            isTitleMatch: false, rivalryResolved: false,
+            injuredId: null, isCareerBestA: false, isCareerBestB: false,
+            losingStreakA: 0, losingStreakB: 0,
+            isProveModeA: false, isProveModeB: false,
+            isCrossOrg: true,
+            ovrA: Engine.util.ov(rep1), ovrB: Engine.util.ov(rep2),
+          }, warRelRng);
+        }
+
+        // ニュースフラグ: 勝利側に付与（引き分けは挑戦側に付与）
+        const newsOrgId = winnerOrgId || orgId;
+        const newsData = { ...newAiOrgs[newsOrgId] };
+        if (!newsData._newsAIWarResult) newsData._newsAIWarResult = [];
+        const winnerName = winner === 'left' ? rep1.name : winner === 'right' ? rep2.name : null;
+        newsData._newsAIWarResult.push({
+          challengerOrg: org.name, defenderOrg: oppOrg.name,
+          challengerName: rep1.name, defenderName: rep2.name,
+          challengerId: rep1.id, defenderId: rep2.id,
+          winnerOrg: winnerOrgId ? (RIVAL_ORGS.find(o => o.id === winnerOrgId)?.name || '') : null,
+          loserOrg: loserOrgId ? (RIVAL_ORGS.find(o => o.id === loserOrgId)?.name || '') : null,
+          winnerName,
+          mq: matchResult.mq, isDraw,
+        });
+        newAiOrgs[newsOrgId] = newsData;
+
+        s = { ...s, aiOrgs: newAiOrgs };
+        break; // 1週に1試合まで
+      }
+
+      return s;
+    },
+
     // AI season popularity (rival-spec ��4.2)
     aiSeasonPopularity(rng, fighter, org) {
       const f = { ...fighter };
@@ -5489,6 +5651,12 @@ const Engine = {
         }
       });
     }
+    // AI団体間対抗戦
+    if (s.aiOrgs && !s.offSeason) {
+      const warRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xAA03));
+      s = Engine.rival.processAIWar(warRng, s);
+    }
+
     // PPV解禁チェック（orgPop変動後）
     let ppvUnlockEvent = null;
     if (!s.ppvUnlocked && Engine.ppv.checkUnlock(s.orgPop)) {
@@ -16141,6 +16309,7 @@ Engine.newspaper = {
     aiInjuryRetirement:  150,
     warMilestone:         145,
     crossWarResult:      140,
+    aiWarResult:         135,
     aiChampionChange:    130,
     playerShowTitle:     120,
     npcHallOfFame:       170,
@@ -16422,6 +16591,31 @@ Engine.newspaper = {
           });
         }
 
+        // AI団体間対抗戦結果
+        if (aiData._newsAIWarResult) {
+          aiData._newsAIWarResult.forEach(ev => {
+            const basePriority = P.aiWarResult;
+            // MQ90+なら最高priority級に格上げ、MQ80+なら名勝負トーン
+            const finalPriority = ev.mq >= 90 ? basePriority + 20 : basePriority;
+            const mqTone = ev.mq >= 90 ? '歴史に残る名勝負！' : ev.mq >= 80 ? '好勝負を展開。' : '';
+            if (ev.isDraw) {
+              stories.push({
+                type: 'aiWarResult',
+                priority: finalPriority,
+                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は痛み分け`,
+                body: `${ev.challengerName}と${ev.defenderName}の代表対決は引き分けに終わった。MQ${ev.mq}。${mqTone}`,
+              });
+            } else {
+              stories.push({
+                type: 'aiWarResult',
+                priority: finalPriority,
+                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦——${ev.winnerOrg}の${ev.winnerName}が勝利`,
+                body: `${ev.challengerOrg}と${ev.defenderOrg}の対抗戦で、${ev.winnerOrg}の${ev.winnerName}が勝利を収めた。MQ${ev.mq}。${mqTone}`,
+              });
+            }
+          });
+        }
+
         // AIメディア密着結果（成功時のみ）
         if (aiData._newsMediaResult) {
           const ev = aiData._newsMediaResult;
@@ -16591,6 +16785,7 @@ Engine.newspaper = {
       delete org._newsMediaStart;
       delete org._newsMediaResult;
       delete org._newsContractDepartures;
+      delete org._newsAIWarResult;
       cleaned[orgId] = org;
     });
     return cleaned;
