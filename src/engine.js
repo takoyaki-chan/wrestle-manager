@@ -3552,6 +3552,87 @@ const Engine = {
           _newsPracticeInjury: newsEntry,
         };
       }
+      // B2（選手間対立）はAI団体でも処理する
+      if (event.type === 'B2') {
+        const f1 = roster.find(f => f.id === event.fighter1);
+        const f2 = roster.find(f => f.id === event.fighter2);
+        if (!f1 || !f2) return null;
+
+        // Step 0: 話し合い/試合/放置
+        const step0Choice = this._pickAIChoice(rng, event, org.tier, aiState);
+        const aiFunds = this._estimateAIFunds(org.tier);
+        const largeState = {
+          roster, funds: aiFunds,
+          lockerRoomMorale: aiState.lockerRoomMorale,
+          mediaSpotlight: null,
+          season: state.season, week: state.week,
+          rngSeed: state.rngSeed,
+          relationships: state.relationships,
+        };
+
+        let newsEntry = {
+          orgName: org.name, fighter1Id: event.fighter1, fighter1Name: event.name1,
+          fighter2Id: event.fighter2, fighter2Name: event.name2,
+          resolution: step0Choice === 0 ? 'talk' : (step0Choice === 1 ? 'match' : 'ignore'),
+          matchWinner: null, matchMQ: null,
+        };
+
+        if (step0Choice === 0) {
+          // 話し合いで解決
+          const result = Engine.eventSystem.applyLargeEventEffect(event, 0, 0, largeState, rng);
+          return {
+            roster: result.roster,
+            lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : aiState.lockerRoomMorale,
+            orgPopDelta: 0,
+            _newsTeamConflict: newsEntry,
+          };
+        } else if (step0Choice === 2) {
+          // 放置
+          const result = Engine.eventSystem.applyLargeEventEffect(event, 0, 2, largeState, rng);
+          return {
+            roster: result.roster,
+            lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : aiState.lockerRoomMorale,
+            orgPopDelta: 0,
+            _newsTeamConflict: newsEntry,
+          };
+        } else {
+          // 試合で決着
+          // Step 1: 介入選択（50%中立、25%/25%でどちらか支持）
+          const intRoll = Engine.rng.float(rng);
+          const interventionChoice = intRoll < 0.25 ? 0 : (intRoll < 0.50 ? 1 : 2);
+
+          // OVR+5バフ適用
+          let matchF1 = { ...f1 };
+          let matchF2 = { ...f2 };
+          if (interventionChoice === 0) matchF1 = { ...matchF1, pw: matchF1.pw + 5 };
+          else if (interventionChoice === 1) matchF2 = { ...matchF2, pw: matchF2.pw + 5 };
+
+          // 試合シミュレーション
+          const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xB2A1, event.fighter1 ^ event.fighter2));
+          const matchResult = Engine.battle.simulateMatch(matchF1, matchF2, matchRng, 1);
+
+          // 試合結果判定
+          const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
+
+          // Step 2: 結果適用
+          const step2Event = { ...event, matchResult: { winner }, interventionChoice };
+          const step2State = { ...largeState };
+          const result = Engine.eventSystem.applyLargeEventEffect(step2Event, 2, 0, step2State, rng);
+
+          const winnerName = winner === 'fighter1' ? event.name1 : (winner === 'fighter2' ? event.name2 : null);
+          newsEntry.matchWinner = winnerName;
+          newsEntry.matchMQ = matchResult.mq;
+
+          const retVal = {
+            roster: result.roster,
+            lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : aiState.lockerRoomMorale,
+            orgPopDelta: 0,
+            _newsTeamConflict: newsEntry,
+          };
+          if (result.relationships) retVal._b2Relationships = result.relationships;
+          return retVal;
+        }
+      }
       if ((event.type || '').charAt(0) === 'B') {
         event = Engine.eventSystem.generateNotifEvent(rng, aiState, roster)
           || Engine.eventSystem.generateChoiceEvent(rng, aiState, roster);
