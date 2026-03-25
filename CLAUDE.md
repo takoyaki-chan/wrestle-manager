@@ -99,7 +99,7 @@ v0.85bで確立。すべての実装はこの原則に従う。
 - **`test/auto-sim.js`**: UIなし高速シミュレーション。プレイヤー判断をランダム自動化して数千シーズンを数十秒で回し、validateGameStateの違反を収集・報告する
 
 ### 自動実行（Claude Codeフック）
-- **engine.js / data.js / victory-lines.js を編集すると自動で500シーズン（10シード×50シーズン）のチェックが走る**
+- **engine.js / data.js / victory-lines.js を編集すると自動で100シーズン（5シード×20シーズン）のチェックが走る**
 - 違反検出時はフィードバックが返り、その場で修正に入る
 - フック実体: `.claude/hooks/auto-sim-check.sh`、設定: `.claude/settings.json`
 

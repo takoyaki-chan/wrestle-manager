@@ -51,17 +51,15 @@ if [ "$IS_TRIAL_MODE" = "true" ]; then
   sed -i 's/window\.IS_TRIAL = false/window.IS_TRIAL = true/' "${DIST_DIR}/src/index.html"
 fi
 
-# Copy images
+# Copy images (全サブディレクトリを一括コピー)
 echo "🖼️  画像ファイルをコピー中..."
 cp image/*.png image/*.webp "${DIST_DIR}/image/" 2>/dev/null || true
-if [ -d image/coach ]; then
-  mkdir -p "${DIST_DIR}/image/coach"
-  cp image/coach/* "${DIST_DIR}/image/coach/"
-fi
-if [ -d image/upper ]; then
-  mkdir -p "${DIST_DIR}/image/upper"
-  cp image/upper/* "${DIST_DIR}/image/upper/"
-fi
+for subdir in image/*/; do
+  [ -d "$subdir" ] || continue
+  dirname=$(basename "$subdir")
+  mkdir -p "${DIST_DIR}/image/${dirname}"
+  cp "$subdir"* "${DIST_DIR}/image/${dirname}/" 2>/dev/null || true
+done
 
 # Copy BGM files
 echo "🎵 BGMファイルをコピー中..."
@@ -78,43 +76,29 @@ cat > "${DIST_DIR}/START.html" << 'REDIRECT_EOF'
 REDIRECT_EOF
 
 # スタートガイドをコピー
-if [ -f "../WMポートレート/wm-guide.html" ]; then
-  cp "../WMポートレート/wm-guide.html" "${DIST_DIR}/GUIDE.html"
+if [ -f "wm-guide.html" ]; then
+  cp "wm-guide.html" "${DIST_DIR}/wm-guide.html"
   echo "📖 スタートガイドを追加しました"
-elif [ -f "wm-guide.html" ]; then
-  cp "wm-guide.html" "${DIST_DIR}/GUIDE.html"
+elif [ -f "../WMポートレート/wm-guide.html" ]; then
+  cp "../WMポートレート/wm-guide.html" "${DIST_DIR}/wm-guide.html"
   echo "📖 スタートガイドを追加しました"
 else
   echo "⚠️  wm-guide.html が見つかりません（スキップ）"
 fi
 
 cat > "${DIST_DIR}/README.txt" << 'README_EOF'
-========================================
-  Wrestle Manager — 遊び方
-========================================
+Wrestle Manager
 
-■ 起動方法
-  「START.html」をダブルクリックしてください。
-  ブラウザが開いてゲームが始まります。
+【遊び方】
+index.html をブラウザ（Chrome/Edge推奨）で開いてください。
+インストール不要です。
 
-  うまく開かない場合は、src フォルダ内の
-  index.html を直接ブラウザで開いてください。
+※ うまく開かない場合は START.html をダブルクリックしてください。
 
-■ 推奨環境
-  ・PC（Chrome / Edge / Firefox）
-  ・インストール不要
-  ・インターネット接続不要
+【ガイド】
+wm-guide.html を開くと、初心者向けのガイドが読めます。
 
-■ セーブデータ
-  セーブデータはブラウザ内に保存されます。
-  ゲームのフォルダを移動・削除してもセーブは消えません。
-  ※ ブラウザのデータを削除するとセーブも消えます。
-
-■ 注意事項
-  本ソフトは開発中のプロトタイプです。
-  バグや未完成の要素が含まれる場合があります。
-
-========================================
+© takoyaki-chan
 README_EOF
 
 # Count files

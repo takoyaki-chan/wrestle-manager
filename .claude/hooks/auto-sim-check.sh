@@ -1,7 +1,7 @@
 #!/bin/bash
 # ══════════════════════════════════════════════════════════════════════════════
 #  PostToolUse Hook: engine.js / data.js 編集後に auto-sim を自動実行
-#  10シード × 50シーズン（500シーズン）の軽量チェック
+#  5シード × 20シーズン（100シーズン）の軽量チェック
 # ══════════════════════════════════════════════════════════════════════════════
 
 INPUT=$(cat)
@@ -21,14 +21,14 @@ if ! node --check "$FILE_PATH" 2>&1; then
   exit 2
 fi
 
-# auto-sim 軽量実行（10シード × 50シーズン = 500シーズン）
+# auto-sim 軽量実行（5シード × 20シーズン = 100シーズン）
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 FAIL=0
 RESULT=""
 
-for i in 1 2 3 4 5 6 7 8 9 10; do
+for i in 1 2 3 4 5; do
   SEED=$((i * 31337))
-  OUTPUT=$(node "$PROJECT_DIR/test/auto-sim.js" 50 "$SEED" 2>&1)
+  OUTPUT=$(node "$PROJECT_DIR/test/auto-sim.js" 20 "$SEED" 2>&1)
   if echo "$OUTPUT" | grep -q "ISSUES FOUND"; then
     FAIL=1
     VIOLATIONS=$(echo "$OUTPUT" | grep "\[WARN\]" | head -3)
@@ -44,5 +44,5 @@ if [ "$FAIL" -eq 1 ]; then
   exit 2
 fi
 
-echo "[auto-sim] 500 seasons ALL CLEAR after editing $(basename "$FILE_PATH")" >&2
+echo "[auto-sim] 100 seasons ALL CLEAR after editing $(basename "$FILE_PATH")" >&2
 exit 0

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Match Prototype Codex</title>
+  <style>
+    :root {
+      --bg: #120f0d;
+      --panel: rgba(26, 19, 15, 0.9);
+      --panel-strong: rgba(37, 26, 20, 0.96);
+      --line: rgba(255, 221, 184, 0.12);
+      --text: #f7f0e5;
+      --sub: rgba(247, 240, 229, 0.72);
+      --muted: rgba(247, 240, 229, 0.44);
+      --gold: #f3b64a;
+      --amber: #ff7b2f;
+      --teal: #6ad2c6;
+      --red: #ef5d4d;
+      --green: #7bd97b;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(239, 93, 77, 0.2), transparent 34%),
+        radial-gradient(circle at top right, rgba(106, 210, 198, 0.16), transparent 28%),
+        linear-gradient(180deg, #17110d 0%, #0f0b09 60%, #0a0907 100%);
+      color: var(--text);
+      font-family: "Yu Gothic", "Hiragino Sans", Meiryo, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 6px),
+        linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.025) 48%, transparent 54%);
+      mix-blend-mode: screen;
+      opacity: 0.2;
+    }
+
+    .app {
+      width: min(1440px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      background:
+        linear-gradient(120deg, rgba(243, 182, 74, 0.12), rgba(239, 93, 77, 0.08) 45%, rgba(106, 210, 198, 0.06)),
+        rgba(19, 13, 10, 0.9);
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -32% auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(243, 182, 74, 0.18), transparent 70%);
+      transform: rotate(18deg);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 72px);
+      line-height: 0.96;
+      letter-spacing: 0.02em;
+      font-family: "Arial Black", Impact, sans-serif;
+      text-transform: uppercase;
+      max-width: 10ch;
+    }
+
+    .hero p {
+      position: relative;
+      z-index: 1;
+      max-width: 72ch;
+      margin: 16px 0 0;
+      color: var(--sub);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(10, 8, 7, 0.36);
+      backdrop-filter: blur(10px);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 6px;
+      font-size: 28px;
+      font-family: "Arial Black", Impact, sans-serif;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid rgba(255, 221, 184, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .panel-body {
+      padding: 16px 18px 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .team-builder {
+      display: grid;
+      gap: 14px;
+    }
+
+    .team-card {
+      border: 1px solid rgba(255, 221, 184, 0.1);
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent);
+      padding: 16px;
+    }
+
+    .team-card h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .select-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      border: 1px solid rgba(255, 221, 184, 0.14);
+      border-radius: 14px;
+      background: var(--panel-strong);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .seed-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(120deg, var(--gold), #ff9249);
+      color: #1a130f;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 140ms ease, filter 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 221, 184, 0.12);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .named-team,
+    .recommendation,
+    .segment-card,
+    .log-line,
+    .stat-card,
+    .batch-card {
+      border: 1px solid rgba(255, 221, 184, 0.1);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.022);
+    }
+
+    .named-team,
+    .recommendation {
+      padding: 12px 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .named-team strong,
+    .recommendation strong {
+      font-size: 14px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      background: rgba(243, 182, 74, 0.12);
+      color: var(--gold);
+    }
+
+    .chip.alt {
+      background: rgba(106, 210, 198, 0.12);
+      color: var(--teal);
+    }
+
+    .chip.bad {
+      background: rgba(239, 93, 77, 0.12);
+      color: #ff9689;
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .content-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .chemistry-grid,
+    .summary-grid,
+    .batch-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stat-card,
+    .batch-card {
+      padding: 16px;
+    }
+
+    .stat-card h3,
+    .batch-card h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .big-value {
+      font-family: "Arial Black", Impact, sans-serif;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .value-sub {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .chemistry-panel {
+      padding: 16px;
+      min-height: 180px;
+    }
+
+    .chemistry-panel h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .fighter-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .fighter-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .fighter-row small,
+    .muted {
+      color: var(--muted);
+    }
+
+    .segment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .segment-card {
+      padding: 14px;
+    }
+
+    .segment-card strong {
+      display: block;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .log-feed {
+      display: grid;
+      gap: 8px;
+      max-height: 560px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .log-line {
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .log-line[data-type="dramatic"],
+    .log-line[data-type="finish"] {
+      border-color: rgba(243, 182, 74, 0.28);
+      background: rgba(243, 182, 74, 0.08);
+    }
+
+    .log-line[data-type="bad"] {
+      border-color: rgba(239, 93, 77, 0.24);
+      background: rgba(239, 93, 77, 0.08);
+    }
+
+    .log-line[data-type="good"] {
+      border-color: rgba(106, 210, 198, 0.24);
+      background: rgba(106, 210, 198, 0.08);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1120px) {
+      .hero-grid,
+      .layout,
+      .chemistry-grid,
+      .summary-grid,
+      .batch-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100% - 20px, 1440px);
+        padding-top: 18px;
+      }
+
+      .hero,
+      .panel-head,
+      .panel-body {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Tag Engine Prototype</div>
+          <h1>Tag Match Prototype Codex</h1>
+          <p>
+            Wrestle Manager 本体は読み取り専用のままにして、タッグ専用の進行層を外出しで試す独立プロトタイプです。
+            タッチ攻防、孤立、ホットタグ、カットイン、ダブルチーム、タッグMQまでを一枚で検証できます。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="metric">
+            <span class="metric-label">Core</span>
+            <span class="metric-value">Segments</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Logic</span>
+            <span class="metric-value">4 Auto Roles</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Validation</span>
+            <span class="metric-value">10 x 10</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Team Builder</h2>
+            <p>左右2チームを編成して、単発シミュレーションか安定性バッチを回します。</p>
+          </div>
+          <div class="panel-body stack">
+            <div class="team-builder">
+              <div class="team-card">
+                <h3>Red Corner</h3>
+                <div class="select-row">
+                  <select id="left-a"></select>
+                  <select id="left-b"></select>
+                </div>
+              </div>
+              <div class="team-card">
+                <h3>Blue Corner</h3>
+                <div class="select-row">
+                  <select id="right-a"></select>
+                  <select id="right-b"></select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="muted" for="seed-input">Seed</label>
+              <div class="seed-row">
+                <input id="seed-input" type="number" value="240324" min="1" step="1">
+                <button class="secondary" id="random-seed">Random</button>
+              </div>
+            </div>
+
+            <div class="button-grid">
+              <button id="simulate-btn">Simulate Match</button>
+              <button class="secondary" id="batch-btn">Run Batch 10x10</button>
+              <button class="secondary" id="best-vs-best-btn">Best vs Best</button>
+              <button class="secondary" id="mirror-rival-btn">Load Story Rivalry</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Named Teams</h2>
+            <p>あらかじめ chemistry と経験値が乗っているサンプルタッグ。クリックで片側へ読み込みます。</p>
+          </div>
+          <div class="panel-body">
+            <div class="stack" id="named-teams"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Recommendations</h2>
+            <p>現在の静的コピー内で chemistry と総合力が高い組み合わせです。</p>
+          </div>
+          <div class="panel-body">
+            <div class="stack" id="recommendations"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="content-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Chemistry</h2>
+            <p>bond、タッグ経験、スタイル相性の内訳を左右チームで並べて確認できます。</p>
+          </div>
+          <div class="panel-body">
+            <div class="chemistry-grid">
+              <div class="chemistry-panel named-team" id="left-chemistry"></div>
+              <div class="chemistry-panel named-team" id="matchup-chemistry"></div>
+              <div class="chemistry-panel named-team" id="right-chemistry"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Match Summary</h2>
+            <p>単発シミュレーションの結果。セグメント、勝敗帰属、イベント密度、タッグMQをまとめて表示します。</p>
+          </div>
+          <div class="panel-body stack">
+            <div class="summary-grid" id="summary-grid"></div>
+            <div class="segment-grid" id="segments"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Batch Report</h2>
+            <p>10 seeds x 10 matches の自動検証。偏りやイベント頻度のざっくり確認用です。</p>
+          </div>
+          <div class="panel-body">
+            <div class="batch-grid" id="batch-grid"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Play-by-Play</h2>
+            <p>ターンごとの試合ログ。ホットタグやカットインなどは強調表示します。</p>
+          </div>
+          <div class="panel-body">
+            <div class="log-feed" id="log-feed"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Prototype Notes</h2>
+            <p>このプロトタイプの前提と、Wrestle Manager 本体から切り離している範囲です。</p>
+          </div>
+          <div class="panel-body footer-note" id="footer-note"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/tag-ui.js"></script>
+</body>
+</html>

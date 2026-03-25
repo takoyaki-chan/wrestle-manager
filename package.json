@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "bug:audit": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1",
+    "bug:audit:full": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1 -Mode Full"
+  },
   "dependencies": {
     "lz-string": "^1.5.0",
     "notion-client": "^7.8.3"
