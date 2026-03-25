@@ -54,6 +54,62 @@ function _newsStoryClickable(story) {
 let _rosterSortKey = 'ovr';
 function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 
+// v2.1: Week screen sort state
+let _weekSortKey = 'ovr';
+let _weekSortDir = 'desc';
+function setWeekSort(key) {
+  if (_weekSortKey === key) _weekSortDir = _weekSortDir === 'desc' ? 'asc' : 'desc';
+  else { _weekSortKey = key; _weekSortDir = 'desc'; }
+  renderWeekScreen();
+}
+function _weekSortIndicator(key) {
+  if (_weekSortKey !== key) return '';
+  return _weekSortDir === 'desc' ? ' ▼' : ' ▲';
+}
+function _getWeekSortValue(c, key) {
+  switch (key) {
+    case 'ovr': return Engine.util.ov(c);
+    case 'cond': return c.condition || 0;
+    case 'pop': return c.popularity || 0;
+    case 'name': return c.name || '';
+    case 'trust': return c.trust || 0;
+    case 'schedule': return c.schedule || 'balance';
+    default: return 0;
+  }
+}
+function toggleWeekCheckAll(checked) {
+  document.querySelectorAll('.week-check:not(:disabled)').forEach(cb => { cb.checked = checked; });
+}
+function getCheckedFighterIds() {
+  return [...document.querySelectorAll('.week-check:checked')].map(cb => parseInt(cb.dataset.id));
+}
+function applyWeekPreset(schedule) {
+  const ids = getCheckedFighterIds();
+  if (ids.length === 0) return;
+  ids.forEach(id => {
+    const fighter = G.roster.find(c => c.id === id);
+    if (!fighter || fighter.injury || fighter.isRental) return;
+    fighter.schedule = schedule;
+  });
+  renderWeekScreen();
+}
+function batchIntensive(on) {
+  const ids = getCheckedFighterIds();
+  if (ids.length === 0) return;
+  ids.forEach(id => {
+    const c = G.roster.find(r => r.id === id);
+    if (!c || c.injury || c.isRental) return;
+    if (on) {
+      if (c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec) {
+        c.intensive = true;
+      }
+    } else {
+      c.intensive = false;
+    }
+  });
+  renderWeekScreen();
+}
+
 // Coach-fighter style match helper
 function getCoachStyleMatch(coach, fighter) {
   if (!coach || !fighter) return { type: 'none', bonus: 0, label: '', icon: '', cls: 'none' };
@@ -826,6 +882,7 @@ function renderWeekScreen() {
         const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
         const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
         html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
+          <td><input type="checkbox" class="week-check" data-id="${c.id}" disabled></td>
           <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${rentalWL}週</span></td>
           <td class="num">${ov(c)}</td>
           <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
@@ -864,6 +921,7 @@ function renderWeekScreen() {
       const previewLabel = actionLabels[previewAction] || previewAction;
       const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
       html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
+        <td><input type="checkbox" class="week-check" data-id="${c.id}" ${c.injury ? 'disabled' : ''}></td>
         <td><strong>${c.name}</strong>${wkChampBadge}${trainerBadge}</td>
         <td class="num">${ov(c)}</td>
         <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
@@ -880,11 +938,40 @@ function renderWeekScreen() {
         <td id="action-${c.id}"><span class="sched-tag ${previewAction}">${previewLabel}</span></td>
       </tr>`;
     };
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>体調</th><th>状態</th><th>スケジュール <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th><th>⚡</th><th>今週の行動</th></tr>';
-    _ownRosterWk.forEach(_renderWeekRow);
+    // 一括操作パネル
+    html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--text-dim)">選択中の選手に一括適用:</span>
+      <button class="btn" onclick="applyWeekPreset('practice')" style="font-size:11px;padding:4px 10px">練習優先</button>
+      <button class="btn" onclick="applyWeekPreset('promo')" style="font-size:11px;padding:4px 10px">プロモ優先</button>
+      <button class="btn" onclick="applyWeekPreset('balance')" style="font-size:11px;padding:4px 10px">バランス</button>
+      <button class="btn" onclick="applyWeekPreset('rest')" style="font-size:11px;padding:4px 10px">休養重視</button>
+      <span style="border-left:1px solid var(--text-dim);height:16px;margin:0 4px"></span>
+      <button class="btn" onclick="batchIntensive(true)" style="font-size:11px;padding:4px 10px">⚡全ON</button>
+      <button class="btn" onclick="batchIntensive(false)" style="font-size:11px;padding:4px 10px">⚡全OFF</button>
+    </div>`;
+
+    // ソート適用
+    const sortedOwn = [..._ownRosterWk].sort((a, b) => {
+      const va = _getWeekSortValue(a, _weekSortKey);
+      const vb = _getWeekSortValue(b, _weekSortKey);
+      const cmp = typeof va === 'string' ? va.localeCompare(vb, 'ja') : vb - va;
+      return _weekSortDir === 'asc' ? -cmp : cmp;
+    });
+
+    html += `<table class="data-table"><tr>
+      <th style="width:30px"><input type="checkbox" id="weekCheckAll" onchange="toggleWeekCheckAll(this.checked)"></th>
+      <th onclick="setWeekSort('name')" style="cursor:pointer">名前${_weekSortIndicator('name')}</th>
+      <th onclick="setWeekSort('ovr')" style="cursor:pointer">総合${_weekSortIndicator('ovr')}</th>
+      <th onclick="setWeekSort('cond')" style="cursor:pointer">体調${_weekSortIndicator('cond')}</th>
+      <th>状態</th>
+      <th onclick="setWeekSort('schedule')" style="cursor:pointer">スケジュール${_weekSortIndicator('schedule')} <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th>
+      <th>⚡</th>
+      <th>今週の行動</th>
+    </tr>`;
+    sortedOwn.forEach(_renderWeekRow);
     if (_rentalRosterWk.length > 0) {
       const _rSlots = RENTAL_CONFIG.getMaxConcurrent(_ownRosterWk.length);
-      html += `<tr><td colspan="7" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
+      html += `<tr><td colspan="8" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
       _rentalRosterWk.forEach(_renderWeekRow);
     }
     html += '</table>';
@@ -4060,6 +4147,17 @@ function showHofDetail(idx) {
     highlightsHtml += `</div>`;
   }
 
+  // 対抗戦戦績（既存エントリはwarWins未保存→retiredFightersからフォールバック）
+  let _warW = h.warWins || 0, _warL = h.warLosses || 0;
+  if (_warW === 0 && _warL === 0) {
+    const _rf = (G.retiredFighters || []).find(f => f.id === h.id);
+    if (_rf) {
+      const _wh = ((_rf.careerRecord || {}).history || []).filter(e => e.type === 'war');
+      _warW = _wh.filter(e => e.won).length;
+      _warL = _wh.length - _warW;
+    }
+  }
+
   // 通算実績
   const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ 通算実績 ━━</div>
     <div class="db-hof-stats-grid" style="max-width:280px;margin:0 auto">
@@ -4067,6 +4165,7 @@ function showHofDetail(idx) {
       <div>通算防衛 <strong>${h.totalDefenses || 0}</strong>回</div>
       ${h.juniorTournamentWins ? `<div>JT優勝 <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
       ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
+      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 対抗戦 <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
     </div>`;
 
   // §4 引退時OVR
