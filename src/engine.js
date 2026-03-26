@@ -3715,6 +3715,35 @@ const Engine = {
           if (pool.length === 0) return null;
 
           const target = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+
+          // B4タレント活動: activityType抽選（AI団体でも同じロジック）
+          const AI_ACTIVITY_TYPES = [null, 'cm', 'gravure', 'variety', 'brand', 'fashion', 'fan'];
+          const aiActivityType = AI_ACTIVITY_TYPES[Engine.rng.int(rng, 0, AI_ACTIVITY_TYPES.length - 1)];
+
+          if (aiActivityType) {
+            // 新タレント活動: バフ適用
+            const mult = Engine.eventSystem.calcTalentMultiplier(target, aiActivityType);
+            const durationWeeks = aiActivityType === 'brand' ? 2 : 1;
+            let updatedRoster = roster;
+            if (aiActivityType === 'fashion') {
+              const popGain = mult >= 1.4 ? 3 : mult >= 0.8 ? 2 : 1;
+              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, popularity: Engine.util.clamp((f.popularity || 1) + popGain, 1, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult } });
+            } else if (aiActivityType === 'fan') {
+              const trustGain = mult >= 1.4 ? 6 : mult >= 0.8 ? 4 : 2;
+              updatedRoster = roster.map(f => {
+                if (f.id !== target.id) return f;
+                const oldTrust = f.trust != null ? f.trust : 50;
+                let adjusted = Engine.trust.applyCoeff(trustGain, f.mn || 50);
+                if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+                return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult } };
+              });
+            } else {
+              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, talentActivityBuff: { type: aiActivityType, remainingWeeks: durationWeeks, multiplier: mult } });
+            }
+            return { roster: updatedRoster, lockerRoomMorale: aiState.lockerRoomMorale, orgPopDelta: 0 };
+          }
+
+          // 既存spotlight
           const outlets = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア'];
           const outletName = outlets[Engine.rng.int(rng, 0, outlets.length - 1)];
 
@@ -5449,7 +5478,7 @@ const Engine = {
             const textKey = rawEvent.type;
             const vars = { name: rawEvent.name || '', name1: rawEvent.name1 || '', name2: rawEvent.name2 || '',
                            orgName: rawEvent.orgName || '', outletName: rawEvent.outletName || '',
-                           subType: rawEvent.subType || '' };
+                           subType: rawEvent.subType || '', activityType: rawEvent.activityType || '' };
             const textData = Engine.eventSystem.pickText(evtRng, textKey, vars);
             pendingLargeEvent = { ...rawEvent, ...textData, dialogue, dialogue2 };
           } else if (evtPrefix === 'S' || evtPrefix === 'E') {
@@ -5577,6 +5606,30 @@ const Engine = {
         totalIncome += pm.amount;
         details.push({ label: `メディア収入（${pm.label}）`, val: pm.amount, type: 'income', category: 'media' });
       });
+
+      // B4タレント活動: 週次収入バフ（cm/variety→メディア、gravure/brand→グッズ）
+      let talentMediaRev = 0, talentGoodsRev = 0;
+      (G.roster || []).forEach(f => {
+        const buff = f.talentActivityBuff;
+        if (!buff || buff.remainingWeeks <= 0) return;
+        const multiplier = buff.multiplier || 1.0;
+        if (buff.type === 'cm' || buff.type === 'variety') {
+          talentMediaRev += (f.popularity || 1) * 0.6 * multiplier;
+        }
+        if (buff.type === 'gravure' || buff.type === 'brand') {
+          talentGoodsRev += (f.popularity || 1) * 0.6 * multiplier;
+        }
+      });
+      talentMediaRev = Math.round(talentMediaRev);
+      talentGoodsRev = Math.round(talentGoodsRev);
+      if (talentMediaRev > 0) {
+        totalIncome += talentMediaRev;
+        details.push({ label: 'メディア収入（タレント活動）', val: talentMediaRev, type: 'income', category: 'media' });
+      }
+      if (talentGoodsRev > 0) {
+        totalIncome += talentGoodsRev;
+        details.push({ label: 'グッズ収入（タレント活動）', val: talentGoodsRev, type: 'income', category: 'goods' });
+      }
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給、通常モードは対象外）
       const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
@@ -5714,6 +5767,14 @@ const Engine = {
         const trust = c.trust != null ? c.trust : 50;
         const recovery = trust < 45 ? baseRecovery * 0.8 : baseRecovery;
         return { ...c, condition: Math.min(100, c.condition + recovery) };
+      });
+
+      // B4タレント活動: バフのカウントダウン
+      roster = roster.map(f => {
+        if (!f.talentActivityBuff || f.talentActivityBuff.remainingWeeks <= 0) return f;
+        const newRemaining = f.talentActivityBuff.remainingWeeks - 1;
+        if (newRemaining <= 0) return { ...f, talentActivityBuff: null };
+        return { ...f, talentActivityBuff: { ...f.talentActivityBuff, remainingWeeks: newRemaining } };
       });
 
       const net = totalIncome - totalExpense;
@@ -6644,7 +6705,25 @@ const Engine = {
         const { line, category } = Engine.retirement.selectLine(retiredF, route, state, lineRng);
         const summary = Engine.retirement.buildCareerSummary(retiredF);
         const wasChampion = state.titles?.world?.championId === retiredF.id;
-        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion };
+        // B4タレント活動§13: チャンピオン怪我引退時の社長への一言
+        let championWorryLine = null;
+        if (category === 'B4_champion_injury') {
+          const trust = retiredF.trust ?? 50;
+          if (trust >= 85 && Engine.rng.float(lineRng) < 0.30) {
+            const a = retiredF.archetype || 'normal';
+            const p = retiredF.personality || 'normal';
+            const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
+            const personalityLines = typeof RETIREMENT_CHAMPION_WORRY_LINES !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES : {};
+            let worryPool = null;
+            if ((a === 'ojousama' || a === 'seductive' || a === 'polite') && archetypeLines[a]) {
+              worryPool = archetypeLines[a];
+            } else {
+              worryPool = personalityLines[p] || personalityLines.normal || ['…'];
+            }
+            championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
+          }
+        }
+        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine };
       }).filter(Boolean);
       if (pendingInjuryRetirements.length > 0) {
         s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
@@ -11913,7 +11992,13 @@ Engine.eventSystem = {
   pickText(rng, key, vars) {
     let pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
     // B型イベントテキストもチェック
-    if (pool.length === 0 && typeof LARGE_EVENT_TEXTS !== 'undefined') pool = LARGE_EVENT_TEXTS[key] || [];
+    if (pool.length === 0 && typeof LARGE_EVENT_TEXTS !== 'undefined') {
+      // B4タレント活動: activityTypeがある場合は B4_{activityType} からランダム選択
+      if (key === 'B4' && vars.activityType) {
+        pool = LARGE_EVENT_TEXTS[`B4_${vars.activityType}`] || [];
+      }
+      if (!pool || pool.length === 0) pool = LARGE_EVENT_TEXTS[key] || [];
+    }
     // B4のサブタイプ対応: poolがオブジェクト（配列でない）ならサブタイプで取得
     if (pool && typeof pool === 'object' && !Array.isArray(pool) && vars.subType) {
       pool = pool[vars.subType] || pool.youngStar || [];
@@ -12014,10 +12099,24 @@ Engine.eventSystem = {
                  challengerDialogue: dialogue };
       }
       case 'B4': {
-        const outlets = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア'];
-        const outletName = outlets[Engine.rng.int(rng, 0, outlets.length - 1)];
+        // activityType の抽選（7択均等: null=既存spotlight, 6種=新タレント活動）
+        const ACTIVITY_TYPES = [null, 'cm', 'gravure', 'variety', 'brand', 'fashion', 'fan'];
+        const activityType = ACTIVITY_TYPES[Engine.rng.int(rng, 0, ACTIVITY_TYPES.length - 1)];
 
-        // サブタイプ候補を判定（ロスターは state.roster）
+        // activityType ごとに outletName の名前プールを切り替える
+        let namePool;
+        switch (activityType) {
+          case 'cm':      namePool = typeof CM_ADVERTISER_NAMES !== 'undefined' ? CM_ADVERTISER_NAMES : ['スポンサー']; break;
+          case 'gravure': namePool = typeof MAGAZINE_NAMES !== 'undefined' ? MAGAZINE_NAMES : ['雑誌社']; break;
+          case 'variety': namePool = typeof VARIETY_SHOW_NAMES !== 'undefined' ? VARIETY_SHOW_NAMES : ['テレビ局']; break;
+          case 'brand':   namePool = typeof COLLAB_BRAND_NAMES !== 'undefined' ? COLLAB_BRAND_NAMES : ['ブランド']; break;
+          case 'fashion': namePool = typeof FASHION_BRAND_NAMES !== 'undefined' ? FASHION_BRAND_NAMES : ['ブランド']; break;
+          case 'fan':     namePool = typeof FAN_EVENT_ORGANIZER_NAMES !== 'undefined' ? FAN_EVENT_ORGANIZER_NAMES : ['主催者']; break;
+          default:        namePool = typeof MEDIA_OUTLET_NAMES !== 'undefined' ? MEDIA_OUTLET_NAMES : ['メディア']; break;
+        }
+        const outletName = namePool[Engine.rng.int(rng, 0, namePool.length - 1)];
+
+        // サブタイプ候補を判定（既存spotlight用、activityType=nullの場合に使用）
         const r = (state.roster || []).filter(f => !f.injury && !f.isRental);
         const champId = state.titles?.world?.championId;
         const ovrSorted = r.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -12032,12 +12131,11 @@ Engine.eventSystem = {
         if (acePool.length > 0) subCandidates.push('ace');
         if (vetPool.length > 0) subCandidates.push('veteran');
 
-        // 候補がなければデフォルト
         const subType = subCandidates.length > 0
           ? subCandidates[Engine.rng.int(rng, 0, subCandidates.length - 1)]
           : 'youngStar';
 
-        return { type: 'B4', outletName, subType };
+        return { type: 'B4', outletName, subType, activityType: activityType || undefined };
       }
       default: return null;
     }
@@ -12046,11 +12144,15 @@ Engine.eventSystem = {
   // ── Phase1-6: 大型イベントのセリフ取得 ───────────────────────────────────
   getLargeEventDialogue(rng, event, roster) {
     if (typeof LARGE_EVENT_DIALOGUES === 'undefined') return '';
-    const key = event.type;
+    // B4タレント活動: activityTypeがある場合は B4_{activityType} キーを使用
+    let key = event.type;
+    if (key === 'B4' && event.activityType) {
+      key = `B4_${event.activityType}`;
+    }
     const dialogues = LARGE_EVENT_DIALOGUES[key];
     if (!dialogues) return '';
     // B3_challenger は配列なので別処理（生成時にセット済み）
-    if (key === 'B3') return '';
+    if (event.type === 'B3') return '';
     const fId = event.fighter || event.fighter1;
     const f = roster ? roster.find(f => f.id === fId) : null;
     const pool = getDialoguePool(dialogues, f);
@@ -12065,6 +12167,35 @@ Engine.eventSystem = {
     const f = roster ? roster.find(f => f.id === event.fighter2) : null;
     const pool = getDialoguePool(dialogues, f);
     return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+  },
+
+  // ── B4タレント活動: personality × activityType 相性テーブル ──────────────
+  // 1.5=得意 / 1.0=普通 / 0.5=苦手
+  _TALENT_ACTIVITY_COMPAT: {
+    cm:      { bold: 1.5, earnest: 1.0, normal: 1.0, easygoing: 1.0, quiet: 0.5, emotional: 1.0, shy: 0.5 },
+    gravure: { bold: 1.0, earnest: 0.5, normal: 1.0, easygoing: 1.5, quiet: 1.0, emotional: 1.5, shy: 0.5 },
+    variety: { bold: 1.0, earnest: 1.0, normal: 1.0, easygoing: 1.5, quiet: 0.5, emotional: 1.5, shy: 0.5 },
+    brand:   { bold: 1.0, earnest: 1.0, normal: 1.0, easygoing: 1.0, quiet: 1.5, emotional: 0.5, shy: 1.0 },
+    fashion: { bold: 1.0, earnest: 0.5, normal: 1.0, easygoing: 1.0, quiet: 0.5, emotional: 1.5, shy: 0.5 },
+    fan:     { bold: 0.5, earnest: 1.5, normal: 1.0, easygoing: 1.0, quiet: 1.0, emotional: 1.5, shy: 1.0 },
+  },
+  // archetype × activityType 追加補正（該当なら +0.2）
+  _TALENT_ARCHETYPE_BONUS: {
+    gravure:  ['seductive'],
+    fashion:  ['seductive', 'ojousama'],
+    brand:    ['ojousama', 'cool'],
+    cm:       ['cool'],
+    variety:  ['delinquent'],
+    fan:      ['polite'],
+  },
+  calcTalentMultiplier(fighter, activityType) {
+    const p = fighter.personality || 'normal';
+    const a = fighter.archetype || 'normal';
+    const baseTable = Engine.eventSystem._TALENT_ACTIVITY_COMPAT[activityType] || {};
+    const base = baseTable[p] !== undefined ? baseTable[p] : 1.0;
+    const bonusList = Engine.eventSystem._TALENT_ARCHETYPE_BONUS[activityType] || [];
+    const bonus = bonusList.includes(a) ? 0.2 : 0.0;
+    return base + bonus;
   },
 
   // ── Phase1-6: 大型イベント効果適用（純粋関数） ──────────────────────────
@@ -12305,14 +12436,50 @@ Engine.eventSystem = {
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
 
-      // ── B4: メディア密着取材 ─────────────────────────────────────────────
+      // ── B4: メディア密着取材 / タレント活動 ────────────────────────────────
       case 'B4': {
         // choiceIdx = 選ばれた選手のID
         const f = roster.find(f => f.id === choiceIdx);
         if (!f) return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
-        mediaSpotlight = { fighterId: f.id, fighterName: f.name, remainingShows: 3,
-                           totalMQ: 0, matchCount: 0, outletName: event.outletName || 'メディア' };
-        events.push(`📺 ${f.name}の密着取材が開始（${mediaSpotlight.outletName}、3興行）`);
+
+        // activityType がない場合 = 既存 spotlight 動作
+        if (!event.activityType) {
+          mediaSpotlight = { fighterId: f.id, fighterName: f.name, remainingShows: 3,
+                             totalMQ: 0, matchCount: 0, outletName: event.outletName || 'メディア' };
+          events.push(`📺 ${f.name}の密着取材が開始（${mediaSpotlight.outletName}、3興行）`);
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
+        }
+
+        // 新タレント活動
+        const ACTIVITY_MULTIPLIER = Engine.eventSystem.calcTalentMultiplier(f, event.activityType);
+        const durationWeeks = event.activityType === 'brand' ? 2 : 1;
+        const ICON = (typeof TALENT_ACTIVITY_ICONS !== 'undefined' ? TALENT_ACTIVITY_ICONS[event.activityType] : null) || '🎤';
+        const LABEL = (typeof TALENT_ACTIVITY_LABELS !== 'undefined' ? TALENT_ACTIVITY_LABELS[event.activityType] : null) || 'タレント活動';
+
+        roster = roster.map(fighter => {
+          if (fighter.id !== f.id) return fighter;
+
+          // fashion と fan は即時効果
+          if (event.activityType === 'fashion') {
+            const popGain = ACTIVITY_MULTIPLIER >= 1.4 ? 3 : ACTIVITY_MULTIPLIER >= 0.8 ? 2 : 1;
+            return { ...fighter, popularity: Engine.util.clamp((fighter.popularity || 1) + popGain, 1, 100),
+                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER } };
+          }
+          if (event.activityType === 'fan') {
+            const trustGain = ACTIVITY_MULTIPLIER >= 1.4 ? 6 : ACTIVITY_MULTIPLIER >= 0.8 ? 4 : 2;
+            const oldTrust = fighter.trust != null ? fighter.trust : 50;
+            let adjusted = Engine.trust.applyCoeff(trustGain, fighter.mn || 50);
+            if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+            return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100),
+                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER } };
+          }
+
+          // その他（cm/gravure/variety/brand）は週次収入バフ
+          return { ...fighter,
+                   talentActivityBuff: { type: event.activityType, remainingWeeks: durationWeeks, multiplier: ACTIVITY_MULTIPLIER } };
+        });
+
+        events.push(`${ICON} ${f.name}の${LABEL}が決定！`);
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
 

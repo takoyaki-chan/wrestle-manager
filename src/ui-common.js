@@ -1534,8 +1534,26 @@ function _renderRetirementPopup() {
 }
 
 function closeRetirementPopup() {
+  // B4タレント活動§13: チャンピオン怪我引退後の社長への一言
+  const justClosed = _retirementPopupQueue[0];
   document.getElementById('retirementPopupOverlay').classList.remove('active');
   _retirementPopupQueue.shift();
+
+  if (justClosed && justClosed.championWorryLine) {
+    // Glimpse B形式の小さい吹き出しを表示（クリックで閉じる）
+    _showChampionWorryBubble(justClosed.fighter, justClosed.championWorryLine, () => {
+      if (_retirementPopupQueue.length > 0) {
+        setTimeout(_renderRetirementPopup, 300);
+      } else if (_retirementPopupCallback) {
+        const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
+        _drainPopupQueue();
+      } else {
+        _drainPopupQueue();
+      }
+    });
+    return;
+  }
+
   if (_retirementPopupQueue.length > 0) {
     setTimeout(_renderRetirementPopup, 300);
   } else if (_retirementPopupCallback) {
@@ -1544,6 +1562,26 @@ function closeRetirementPopup() {
   } else {
     _drainPopupQueue();
   }
+}
+
+// B4タレント活動§13: チャンピオン怪我引退時の社長への一言（Glimpse B形式吹き出し）
+function _showChampionWorryBubble(fighter, line, onClose) {
+  const face = portraitImg(fighter.id, 56, '');
+  const bubble = document.createElement('div');
+  bubble.style.cssText = 'position:fixed;bottom:20%;left:50%;transform:translateX(-50%);z-index:10001;display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(30,28,25,0.95);border:1px solid rgba(200,190,170,0.2);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;max-width:380px;animation:fadeInUp 0.4s ease';
+  bubble.innerHTML = `
+    <div style="flex-shrink:0;width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid rgba(200,190,170,0.3)">${face}</div>
+    <div>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">${fighter.name}</div>
+      <div style="font-size:13px;color:var(--text-main);line-height:1.5">${line}</div>
+    </div>
+  `;
+  bubble.addEventListener('click', () => {
+    bubble.style.opacity = '0';
+    bubble.style.transition = 'opacity 0.3s';
+    setTimeout(() => { bubble.remove(); if (onClose) onClose(); }, 300);
+  });
+  document.body.appendChild(bubble);
 }
 
 // ── 引退勧告結果ポップアップ ────────────────
@@ -5834,28 +5872,31 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   overlay.classList.add('active');
 }
 
-// ── B4: メディア密着取材 ───────────────────────────────────────────────────
+// ── B4: メディア密着取材 / タレント活動 ────────────────────────────────────
 function _buildB4Modal(event, state, roster) {
+  const activityType = event.activityType;
   const subType = event.subType || 'youngStar';
   const champId = state.titles?.world?.championId;
 
   // 基本フィルタ: 怪我なし ＆ レンタルでない
   let available = roster.filter(f => !f.injury && !f.isRental);
 
-  // サブタイプ別フィルタ
-  switch (subType) {
-    case 'youngStar':
-      available = available.filter(f => (f.age || 17) <= 22);
-      break;
-    case 'ace': {
-      const ovrSorted = available.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
-      available = available.filter(f => f.id === champId || top3Ids.has(f.id));
-      break;
+  // 既存spotlight: サブタイプ別フィルタ
+  if (!activityType) {
+    switch (subType) {
+      case 'youngStar':
+        available = available.filter(f => (f.age || 17) <= 22);
+        break;
+      case 'ace': {
+        const ovrSorted = available.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
+        available = available.filter(f => f.id === champId || top3Ids.has(f.id));
+        break;
+      }
+      case 'veteran':
+        available = available.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
+        break;
     }
-    case 'veteran':
-      available = available.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
-      break;
   }
 
   // フォールバック: 候補0人なら全員（レンタル除外のみ）
@@ -5864,6 +5905,64 @@ function _buildB4Modal(event, state, roster) {
   }
 
   const outletName = event.outletName || 'メディア';
+
+  if (activityType && typeof TALENT_ACTIVITY_LABELS !== 'undefined') {
+    // 新タレント活動モーダル
+    const icon = TALENT_ACTIVITY_ICONS[activityType] || '🎤';
+    const label = TALENT_ACTIVITY_LABELS[activityType] || 'タレント活動';
+
+    let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">${icon} ${outletName}からの${label}オファー</div>`;
+
+    if (event.detail) {
+      html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
+    }
+
+    // 効果説明
+    const effectDesc = {
+      cm: 'メディア収入がアップします',
+      gravure: 'グッズ収入がアップします',
+      variety: 'メディア収入がアップします',
+      brand: 'グッズ収入がアップします（2週間）',
+      fashion: '人気が即座にアップします',
+      fan: '信頼度が即座にアップします',
+    };
+    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">
+      参加する選手を選んでください。${effectDesc[activityType] || ''}
+    </div>`;
+
+    // 推薦ヒント（相性○の選手を最大2名表示）
+    const recommendations = available
+      .map(f => ({ f, mult: Engine.eventSystem.calcTalentMultiplier(f, activityType) }))
+      .filter(x => x.mult >= 1.4)
+      .sort((a, b) => (b.f.popularity || 1) - (a.f.popularity || 1))
+      .slice(0, 2)
+      .map(x => x.f.name);
+
+    if (recommendations.length > 0) {
+      html += `<div style="font-size:11px;color:#f1c40f;margin-bottom:10px;padding:6px 8px;background:rgba(241,196,15,0.08);border-radius:4px;border:1px solid rgba(241,196,15,0.2)">
+        💡 おすすめ：${recommendations.join('、')}
+      </div>`;
+    }
+
+    html += '<div class="large-evt-roster-grid">';
+    available.forEach(f => {
+      const ovr = Engine.util.ov(f);
+      const pop = Math.round(f.popularity || 0);
+      const face = portraitImg(f.id, 40, '');
+      const mult = Engine.eventSystem.calcTalentMultiplier(f, activityType);
+      const compatTag = mult >= 1.4 ? '<span style="color:#f1c40f;font-size:9px"> ★適性◎</span>'
+        : mult <= 0.6 ? '<span style="color:#e74c3c;font-size:9px"> △苦手</span>' : '';
+      html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
+        ${face}
+        <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}${compatTag}</div>
+        <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / 人気 ${pop}</div>
+      </div>`;
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // 既存spotlight表示
   const subTypeLabels = { youngStar: '若手特集', ace: 'エース密着', veteran: 'ベテラン特集' };
   const subLabel = subTypeLabels[subType] || '密着取材';
 

@@ -5776,6 +5776,23 @@ const App = {
       const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, G, rng);
       App._applyLargeEventResult(result);
 
+      // B4タレント活動: 選手選択後にセリフポップアップ表示
+      if (event.type === 'B4' && choiceIdx > 0) {
+        const selectedFighter = G.roster.find(f => f.id === choiceIdx);
+        if (selectedFighter) {
+          const dlgRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4D1));
+          // activityType がある場合は B4_{activityType} キーでセリフ取得
+          const dlgEvent = event.activityType ? { ...event, type: `B4_${event.activityType}`, fighter: choiceIdx } : { ...event, fighter: choiceIdx };
+          const dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, dlgEvent, G.roster);
+          if (dialogue) {
+            setTimeout(() => showEventPopup({
+              type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
+              tone: 'neutral', message: dialogue, autoCloseMs: 3000,
+            }), 200);
+          }
+        }
+      }
+
       if (result.nextStep === 1) {
         // B2: 介入選択 / B3: 代表選手選択
         setTimeout(() => {

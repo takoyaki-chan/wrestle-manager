@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（旧収入関数参照修正 hotfix）
+> 最終更新: 2026-03-26（B4タレント活動イベント拡充）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**旧収入関数参照修正 hotfix（2026-03-26）。** 金銭バランス改善で削除されたgetSponsorIncome/getBroadcastIncomeがapp.js(Survival.estimateWeeklyNet)とui-render.js(収支画面推定コスト)で残参照→calcWeeklyGoodsRev/calcWeeklyMediaRevに置換。titleLoadGameでcreateInitialState(skipDraft=true)に修正しドラフト画面誤表示も解消。data.jsのexportから削除済みSPONSOR_TABLE/BROADCAST_TABLE除去。auto-sim 100シーズンALL CLEAR。
+**B4タレント活動イベント拡充（2026-03-26）。** 既存B4メディア密着取材に6種の新タレント活動サブタイプ追加(CM出演/グラビア撮影/バラエティ出演/ブランドコラボ/ファッションショー/ファンイベント)。B4発生時7択均等抽選(null=既存spotlight,6種=新活動)。名前プール6配列。personality×activityType相性テーブル(得意1.5/普通1.0/苦手0.5)+archetype追加補正(+0.2)。効果:cm/variety→メディア週次収入(pop×0.6万×mult,1週),gravure/brand→グッズ週次収入(brand2週),fashion→即時人気+1~3,fan→即時trust+2~6。talentActivityBuffフィールド+processSettlementカウントダウン。LARGE_EVENT_TEXTS/DIALOGUES各6種追加。UI:モーダルにactivityType別ヘッダ/適性タグ/おすすめ推薦。AI団体B4同等処理。§13:チャンピオン怪我引退時trust85+30%で社長への一言ポップアップ。auto-sim 100シーズンALL CLEAR。
+
+前回: **旧収入関数参照修正 hotfix（2026-03-26）。** 金銭バランス改善で削除されたgetSponsorIncome/getBroadcastIncomeがapp.js(Survival.estimateWeeklyNet)とui-render.js(収支画面推定コスト)で残参照→calcWeeklyGoodsRev/calcWeeklyMediaRevに置換。titleLoadGameでcreateInitialState(skipDraft=true)に修正しドラフト画面誤表示も解消。data.jsのexportから削除済みSPONSOR_TABLE/BROADCAST_TABLE除去。auto-sim 100シーズンALL CLEAR。
 
 前回: **金銭バランス改善 TASK1-4（2026-03-26）。** 収入を興行収入(チケット)+ブランド収入(グッズ+メディア+プロモ)の2軸に再編。TASK-1:グッズ収入再設計(GOODS_PRICE廃止→GOODS_CONFIG/週次ベース全選手pop×0.2万+興行ブースト出場者pop×0.25万×占有率+プロモ連動pop×0.6万)。calcRosterPopScore廃止。TASK-2:メディア収入新設(SPONSOR_TABLE/BROADCAST_TABLE廃止→MEDIA_CONFIG/MEDIA_ORGPOP_CURVE区間線形補間/7発生源:①週次orgPop×1.5万②興行放映avgMQ×1.1万×VENUE_MEDIA_MULT×タイトル1.5×orgPopMult③PPV出演pop×0.9万×PPV_CARD_MULT④JT出演pop×0.9万⑤対抗戦MQ×1.1万×venueMult×1.5⑥プロモ連動pop×0.6万⑦ファン期待priority×30万×(MQ/70)×orgPopMult⑧ライバル抗争rivalry×MQ×0.016万×orgPopMult)。processSettlement全面改修。app.jsにPPV/JT/War/B3メディア収入フック(_pendingMediaIncomes)。TASK-3:月次報告UI再設計(収入タブをカテゴリ別グルーピング表示:興行収入/ブランド収入(グッズ▼折畳/メディア▼折畳/プロモ)/その他、内訳デフォルト折畳)。TASK-4:trustによる昇給要求減額(trust40→0%,trust100→8%線形補間)。auto-sim 100シーズンALL CLEAR。
 

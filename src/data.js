@@ -4988,6 +4988,22 @@ const RETIREMENT_LINES = {
   }
 };
 
+// B4タレント活動: 怪我引退チャンピオンの社長への一言（§13）
+const RETIREMENT_CHAMPION_WORRY_LINES = {
+  normal:    ['…社長、ベルトのこと迷惑かけちゃうね。ごめんね'],
+  bold:      ['…ベルト、空けちゃうな。社長に悪いことしたか'],
+  earnest:   ['…ベルトが空白になってしまいます。社長、申し訳ないです'],
+  easygoing: ['あ、でも社長大丈夫かな。ベルト空けちゃうじゃん'],
+  emotional: ['…社長…大丈夫かな…迷惑かけてないかな…'],
+  quiet:     ['…社長、すまない'],
+  shy:       ['…社長…ご迷惑じゃないですか…？'],
+};
+const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
+  ojousama:  ['…社長に、ご迷惑をおかけしますわね'],
+  seductive: ['…社長のこと、少し心配ね'],
+  polite:    ['…社長、本当に申し訳ございません'],
+};
+
 // ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
 const RETIRE_ACCEPT_LINES = {
   accept_terminal: {
@@ -10372,6 +10388,37 @@ const LARGE_EVENT_TEXTS = {
       { text: '📺 {outletName}が「円熟の技」ドキュメントを提案', detail: '「ベテランだからこそ見える景色がある」——{outletName}からそんなテーマの企画が持ち込まれた。' },
     ],
   },
+  // B4タレント活動: activityType別テキスト
+  B4_cm: [
+    { text: '📸 {outletName}からCM出演の打診', detail: '{outletName}から「選手をCMの顔として起用したい」と打診が来た。' },
+    { text: '📸 {outletName}がCMキャストを探している', detail: '「プロレスラーのカッコよさをCMで表現したい」——{outletName}からそんな依頼が届いた。' },
+    { text: '📸 {outletName}のCM出演オファー', detail: '{outletName}のプロデューサーが来訪。「うちの団体の選手を広告塔に使いたい」とのこと。' },
+  ],
+  B4_gravure: [
+    { text: '📷 {outletName}からグラビア撮影の依頼', detail: '{outletName}が「プロレスラーの魅力をグラビアで届けたい」と申し出てきた。' },
+    { text: '📷 {outletName}がグラビア特集企画を検討', detail: '「女子プロレスラーの素顔に迫りたい」——{outletName}からそんな企画の打診が来た。' },
+    { text: '📷 {outletName}からグラビア出演のオファー', detail: '{outletName}の編集長から直接連絡が入った。「ぜひ選手を誌面に起用したい」とのこと。' },
+  ],
+  B4_variety: [
+    { text: '📺 {outletName}からバラエティ出演のオファー', detail: '{outletName}が「プロレスラーがゲスト出演するコーナーを作りたい」と打診してきた。' },
+    { text: '📺 {outletName}がゲスト出演の候補を探している', detail: '「面白いキャラクターのプロレスラーを探している」——{outletName}からそんな依頼が届いた。' },
+    { text: '📺 {outletName}のトーク番組に出演依頼', detail: '{outletName}のディレクターが来訪。「選手のキャラクターを全国に届けたい」とのこと。' },
+  ],
+  B4_brand: [
+    { text: '🤝 {outletName}からコラボ商品の提案', detail: '{outletName}が「選手とのコラボ商品を作りたい」と申し出てきた。' },
+    { text: '🤝 {outletName}がコラボパートナーを探している', detail: '「プロレスのパワーとブランドのスタイルを組み合わせたい」——{outletName}からそんな話が来た。' },
+    { text: '🤝 {outletName}とのコラボ企画の打診', detail: '{outletName}の担当者が来訪。「選手のイメージを商品に落とし込みたい」とのこと。' },
+  ],
+  B4_fashion: [
+    { text: '👗 {outletName}のランウェイ出演オファー', detail: '{outletName}が「アスリートのランウェイ参加を企画している」と打診してきた。' },
+    { text: '👗 {outletName}がファッションショー出演者を募集', detail: '「プロレスラーの迫力をランウェイで表現したい」——{outletName}からそんな話が届いた。' },
+    { text: '👗 {outletName}のコレクションへの参加依頼', detail: '{outletName}のデザイナーが来訪。「ぜひ選手にランウェイを歩いてほしい」とのこと。' },
+  ],
+  B4_fan: [
+    { text: '🎤 ファンイベント開催の打診', detail: '主催者から「選手とファンが直接交流できるイベントを開きたい」と相談が来た。' },
+    { text: '🎤 サイン会・トークショーの開催依頼', detail: '「ファンと選手が触れ合える機会を作りたい」——イベント会社からそんな提案が届いた。' },
+    { text: '🎤 ファンミーティングの企画提案', detail: '「選手の素顔をファンに見せる場を作りたい」と主催者から打診があった。' },
+  ],
 };
 
 const LARGE_EVENT_DIALOGUES = {
@@ -10698,13 +10745,274 @@ const LARGE_EVENT_DIALOGUES = {
         'えっ…テレビ…！？ 私が…！？ 頑張ります…！頑張ります…！'
       ]
     }
-  }
+  },
+  // B4タレント活動: activityType別セリフ
+  B4_cm: {
+    normal: {
+      _default: ['CMか…ちゃんとできるかな。頑張ってみます'],
+      ojousama: ['CMですか。しっかりお役目を果たしますわ'],
+      delinquent: ['CM！？ なんか恥ずかしいけど、やってやるよ'],
+      seductive: ['カメラの前ね…いい絵、撮らせてあげる♡'],
+    },
+    bold: {
+      _default: ['CMで私の顔を全国に売り込む。完璧にやってみせる', 'このチャンス、最大限に使ってやる'],
+      ojousama: ['全国の皆様に、この実力と品格をお見せしますわ'],
+      delinquent: ['CM？ 全国にこの顔を売りつけてやる！'],
+      cool: ['…カメラに映るか。悪くない'],
+      seductive: ['全国に私を見てもらえるのね。楽しみだわ♡'],
+    },
+    quiet: {
+      _default: ['…やります'],
+      cool: ['…カメラか。まぁ、やる'],
+      polite: ['…精一杯、頑張らせていただきます'],
+    },
+    shy: {
+      _default: ['わ、私がCMに…？ ほ、本当に大丈夫ですか…？'],
+    },
+    easygoing: {
+      _default: ['CM！？ 私ってもしかして売れっ子？♪', 'どんなCMになるんだろ〜楽しみ♪'],
+      delinquent: ['CM撮影！？ 楽しそうじゃん！'],
+      seductive: ['CM出演か…どんな自分が映るか楽しみ♡'],
+    },
+    earnest: {
+      _default: ['CM出演、しっかり準備します。恥ずかしくない姿を'],
+      polite: ['大切なお仕事ですね。精一杯務めさせていただきます'],
+      ojousama: ['しっかり準備してお役目を果たしますわ'],
+      seductive: ['ちゃんと準備して、いい姿を見せるわ'],
+    },
+    emotional: {
+      _default: ['CMに出るの…！？ うわあああ緊張する！でもやる！'],
+    },
+  },
+  B4_gravure: {
+    normal: {
+      _default: ['グラビアか…ちょっと恥ずかしいけど、頑張ります'],
+      ojousama: ['撮影ですか。美しく仕上げていただけるよう努めますわ'],
+      delinquent: ['グラビア…？ まぁ、やってやるか'],
+      seductive: ['グラビアね…全部見せてあげるわ♡'],
+    },
+    bold: {
+      _default: ['私の強さと魅力、カメラに焼き付けてやる', 'これで一気に知名度上げてやる'],
+      ojousama: ['プロレスラーとしての品格を、写真で表現してみせますわ'],
+      delinquent: ['グラビアも勝負事だ。全力でいくよ'],
+      cool: ['…写真か。余計なことはしないが、手は抜かない'],
+      seductive: ['私の本気の魅力、たっぷり撮ってもらうわ♡'],
+    },
+    quiet: {
+      _default: ['…撮るだけですよね。わかりました'],
+      cool: ['…写真か。余計なことはしないでくれ'],
+      polite: ['…恥ずかしいですが、精一杯頑張ります'],
+    },
+    shy: {
+      _default: ['え…グラビア…？ は、恥ずかしいです…でも、やります…'],
+    },
+    easygoing: {
+      _default: ['グラビアか〜！ どんな感じになるんだろ♪', 'かわいく撮ってもらえるかな♪'],
+      delinquent: ['グラビアか。まぁ、派手にやってやる'],
+      seductive: ['グラビア？ 任せておいてよ♡'],
+    },
+    earnest: {
+      _default: ['しっかり準備して臨みます。でも…少し恥ずかしいですね'],
+      polite: ['精一杯きれいに撮っていただけるよう頑張ります…'],
+      ojousama: ['プロとして恥ずかしくない撮影ができるよう、準備します'],
+      seductive: ['きちんと準備して、いい仕上がりにするわ'],
+    },
+    emotional: {
+      _default: ['グラビア！？ えっ、私ほんとに！？ うわ〜〜！'],
+    },
+  },
+  B4_variety: {
+    normal: {
+      _default: ['バラエティか…うまく喋れるかな。頑張ります'],
+      ojousama: ['バラエティ番組ですか。品よくふるまえるよう努めますわ'],
+      delinquent: ['バラエティ？ 面白いことしてやるよ'],
+      seductive: ['バラエティか。じゃあ、素の私を少し見せてあげようかな'],
+    },
+    bold: {
+      _default: ['番組ジャックしてやる。全部持っていく', 'トーク番組だろうと、私が主役に決まってる'],
+      ojousama: ['トーク番組でも、品格は忘れませんわ'],
+      delinquent: ['テレビで暴れてやる！ 絶対爪痕残す！'],
+      cool: ['…余計なことは言わない。でも、印象には残る'],
+      seductive: ['バラエティでも私のペースで話すわ♡'],
+    },
+    quiet: {
+      _default: ['…喋るんですか。少し、緊張します'],
+      cool: ['…無駄なことは言わない。それだけだ'],
+      polite: ['…うまく喋れるか不安ですが、精一杯やります'],
+    },
+    shy: {
+      _default: ['バ、バラエティ…しゃべるの…？ が、頑張ります…'],
+    },
+    easygoing: {
+      _default: ['バラエティ！ 笑わせにいくよ♪', 'テレビって楽しそう！ 全力でいく♪'],
+      delinquent: ['テレビで暴れてやる！ 楽しみ！'],
+      seductive: ['バラエティか〜。楽しそう！ 見ててよ♡'],
+    },
+    earnest: {
+      _default: ['うまく喋れるか不安ですが…精一杯やります'],
+      polite: ['トーク番組は緊張しますが…誠実に対応いたします'],
+      ojousama: ['言葉遣いには気をつけて、丁寧に対応しますわ'],
+      seductive: ['ちゃんと準備して、面白い話ができるよう頑張るわ'],
+    },
+    emotional: {
+      _default: ['バラエティ出る！？ テンション上がってきた〜！！'],
+    },
+  },
+  B4_brand: {
+    normal: {
+      _default: ['ブランドとのコラボか。ちゃんとイメージに合わせられるかな'],
+      ojousama: ['まあ、コラボのお話ですの。嬉しい限りですわ'],
+      delinquent: ['ブランドとコラボ…？ なんか柄じゃないな。でもやる'],
+      seductive: ['私のイメージに合うブランドね。いい選択だわ♡'],
+    },
+    bold: {
+      _default: ['そのブランドのイメージ、私が底上げしてやる', '私が使ったら絶対売れる。任せて'],
+      ojousama: ['私の品格とブランドイメージが合わされば、最高の結果になりますわ'],
+      delinquent: ['コラボ商品、派手にやってやる！'],
+      cool: ['…ブランドには口数の少なさが向いている。悪くない'],
+      seductive: ['私とブランドの組み合わせ…最高じゃない♡'],
+    },
+    quiet: {
+      _default: ['…わかりました。やります'],
+      cool: ['…無駄口は叩かない。それがブランドには向いているかもな'],
+      polite: ['…コラボですね。しっかり務めさせていただきます'],
+    },
+    shy: {
+      _default: ['わ、私がコラボ…？ 本当に私でいいんですか…'],
+    },
+    easygoing: {
+      _default: ['コラボ！？ 商品もらえたりする？♪', 'どんな商品になるんだろ〜楽しみ♪'],
+      delinquent: ['コラボか。なんか面白そうじゃん'],
+      seductive: ['コラボ商品か…どんなのになるかな♡'],
+    },
+    earnest: {
+      _default: ['ブランドさんのイメージを大切に。しっかり務めます'],
+      polite: ['ブランド様のご期待に添えるよう、精一杯取り組みます'],
+      ojousama: ['品格を忘れず、ブランドのイメージを大切にしますわ'],
+      seductive: ['ちゃんとブランドのイメージに合わせて取り組むわ'],
+    },
+    emotional: {
+      _default: ['えっブランドコラボ！？ すごい！どんな商品になるの！？'],
+    },
+  },
+  B4_fashion: {
+    normal: {
+      _default: ['ファッションショーか…歩けるかな。頑張ります'],
+      ojousama: ['ランウェイですか。精一杯美しく歩いてみせますわ'],
+      delinquent: ['ファッションショー…？ 歩くだけ？ まぁいいけど'],
+      seductive: ['ランウェイか…私の本領発揮ね♡'],
+    },
+    bold: {
+      _default: ['ランウェイも私のステージ。全部持っていく', 'プロレスもファッションも、どっちも私のもの'],
+      ojousama: ['ランウェイでは誰にも負けませんわ'],
+      delinquent: ['歩くだけなら怖くない。ど派手にやってやる'],
+      cool: ['…ランウェイか。静かにやる。でも存在感は出す'],
+      seductive: ['ランウェイ、私のためにあるようなものよ♡'],
+    },
+    quiet: {
+      _default: ['…歩けばいいんですね。やります'],
+      cool: ['…余計なことはしない。ただ歩く。それだけだ'],
+      polite: ['…練習して、ちゃんと歩けるよう準備します'],
+    },
+    shy: {
+      _default: ['フ、ファッションショー…みんなに見られるんですよね…！'],
+    },
+    easygoing: {
+      _default: ['ファッションショー！ なんかキラキラしてそう♪', '衣装とかかわいいのかな〜♪'],
+      delinquent: ['ランウェイか。めっちゃ目立てそうじゃん！'],
+      seductive: ['ランウェイ！ 絶対楽しい！ 見ててよ♡'],
+    },
+    earnest: {
+      _default: ['練習して、ちゃんと歩けるよう準備します'],
+      polite: ['ご期待に沿えるよう、歩き方から練習いたします'],
+      ojousama: ['ランウェイには自信がありますわ。しっかり務めます'],
+      seductive: ['きちんと練習して、完璧に歩いてみせるわ'],
+    },
+    emotional: {
+      _default: ['ランウェイ歩くの！？ わあああどうしよう緊張するやつだ！'],
+    },
+  },
+  B4_fan: {
+    normal: {
+      _default: ['ファンの皆さんと直接話せるのか。楽しみです'],
+      ojousama: ['ファンの方々に直接お礼を申し上げる機会ですわね'],
+      delinquent: ['ファンイベ！ 直接会えるのいいな'],
+      seductive: ['ファンと直接会える機会ね…喜ばせてあげるわ♡'],
+    },
+    bold: {
+      _default: ['ファンに最高の思い出を作らせてやる', '全員を笑顔にして帰らせる。それが私の仕事'],
+      ojousama: ['ファンの方々に最高の時間をお届けしますわ'],
+      delinquent: ['ファンイベ、盛り上げてやるよ！'],
+      cool: ['…ファンの前では、少し気を緩めてもいいかもな'],
+      seductive: ['ファンを喜ばせるのは得意よ。任せて♡'],
+    },
+    quiet: {
+      _default: ['…ファンの人たちと話す。ちゃんとやります'],
+      cool: ['…来てくれた人には、ちゃんと応えたい'],
+      polite: ['…緊張しますが、来てくださった方に感謝を伝えます'],
+    },
+    shy: {
+      _default: ['フ、ファンの方に直接会うんですか…！ 緊張しますが頑張ります'],
+    },
+    easygoing: {
+      _default: ['ファンのみんなに会えるの！ テンション上がる♪', 'みんなの笑顔が見れるかな♪'],
+      delinquent: ['ファンと直接会えるのいいじゃん！ 楽しみ！'],
+      seductive: ['ファンに会いに行くの？ 嬉しいな♡'],
+    },
+    earnest: {
+      _default: ['ファンの皆さん一人ひとりに、誠実に向き合います'],
+      polite: ['来てくださった方全員に、心から感謝を伝えたいです'],
+      ojousama: ['ファンの方々に誠実に向き合うことが私の務めですわ'],
+      seductive: ['一人ひとりにちゃんと向き合う。それが大事だと思うわ'],
+    },
+    emotional: {
+      _default: ['ファンに会える！！ 絶対みんなを笑顔にしてみせる！！'],
+    },
+  },
 };
 
 const MEDIA_OUTLET_NAMES = [
   'プロレス・ジャーナル', 'ファイトTV', '格闘技ウォッチ',
   'リングサイド・マガジン', 'バトルステーション',
 ];
+
+// B4タレント活動: 名前配列6種
+const CM_ADVERTISER_NAMES = [
+  'アクティブスポーツ', 'ビタミン工房', 'スポーツドリンクX', 'フレッシュマート', 'ハーモニーコスメ',
+];
+const MAGAZINE_NAMES = [
+  'スポーツグラフィア', 'ファイトマガジン', 'アクティブガール', 'Gスポーツ', 'リング&ビューティー',
+];
+const VARIETY_SHOW_NAMES = [
+  'ナイトエンタメ！', 'ウィークエンドNOW', 'ぐるぐるスター', 'トーキングバトル', '週刊おもしろ倶楽部',
+];
+const COLLAB_BRAND_NAMES = [
+  'クロスフィットギア', 'ファイターズコスメ', 'ボールドウェア', 'アイアンクラフト', 'ルーキースポーツ',
+];
+const FASHION_BRAND_NAMES = [
+  'アスルコレクション', 'ストロングムード', 'リングスタイル', 'パワーモード', 'ディナミコ',
+];
+const FAN_EVENT_ORGANIZER_NAMES = [
+  'ファンズユナイテッド', '地元プロレス愛好会', 'リングサポーターズ', 'プロレスコミュニティ', 'ファンクラブ実行委員会',
+];
+
+// B4タレント活動: ラベル・アイコン定数
+const TALENT_ACTIVITY_LABELS = {
+  cm:      'CM出演',
+  gravure: 'グラビア撮影',
+  variety: 'バラエティ出演',
+  brand:   'ブランドコラボ',
+  fashion: 'ファッションショー',
+  fan:     'ファンイベント',
+};
+const TALENT_ACTIVITY_ICONS = {
+  cm:      '📸',
+  gravure: '📷',
+  variety: '📺',
+  brand:   '🤝',
+  fashion: '👗',
+  fan:     '🎤',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.1: エンディング演出セリフ — ending-gameover-spec-v1.0.md §1.4
@@ -14400,7 +14708,12 @@ if (typeof module !== 'undefined' && module.exports) {
     MILESTONE_EVENTS, NOTIF_EVENT_TEXTS, NOTIF_DIALOGUES,
     CARE_ACTIONS, CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
     CHOICE_EVENT_DIALOGUES, LARGE_EVENT_TEXTS, LARGE_EVENT_DIALOGUES,
-    MEDIA_OUTLET_NAMES, ENDING_LINES, TEAM_SPIRIT_TEXTS, ATMOSPHERE_TEXTS,
+    MEDIA_OUTLET_NAMES,
+    CM_ADVERTISER_NAMES, MAGAZINE_NAMES, VARIETY_SHOW_NAMES,
+    COLLAB_BRAND_NAMES, FASHION_BRAND_NAMES, FAN_EVENT_ORGANIZER_NAMES,
+    TALENT_ACTIVITY_LABELS, TALENT_ACTIVITY_ICONS,
+    RETIREMENT_CHAMPION_WORRY_LINES, RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE,
+    ENDING_LINES, TEAM_SPIRIT_TEXTS, ATMOSPHERE_TEXTS,
     COACH_REPORT_TEXTS, STAT_LABELS_JP, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
     PPV_UNLOCK_POP, PPV_SLOTS, PPV_REWARD, PPV_ENTRY_WEEK, PPV_SHOW_WEEK,
     PPV_NAMES, PPV_OPPONENT_LINES, WAR_VICTORY_LINES, PPV_HYPE_TEMPLATES,
