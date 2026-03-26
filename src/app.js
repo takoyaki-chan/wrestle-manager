@@ -5975,6 +5975,16 @@ const App = {
       }
     }
 
+    // 金銭バランス改善: 挑戦状メディア収入
+    const b3VenueIdx = G.showVenue || 0;
+    const b3VenueMult = VENUE_MEDIA_MULT[b3VenueIdx] || 1.0;
+    const b3MediaRev = Math.round(matchResult.mq * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
+    if (b3MediaRev > 0) {
+      const b3MediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
+      b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${event.orgName}` });
+      G = { ...G, _pendingMediaIncomes: b3MediaIncomes };
+    }
+
     // 新聞パネルイベント
     const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
     App._pushNewsEvent({ type: newsType, data: { orgName: event.orgName, fighterName: playerFighter.name, challengerName: challenger.name } });
@@ -6560,6 +6570,25 @@ const App = {
         };
       }
     }
+    // 金銭バランス改善: 対抗戦メディア収入
+    const warMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
+    let warMediaTotal = 0;
+    wp.results.forEach(r => {
+      const venueIdx = G.showVenue || 0;
+      const venueMult = VENUE_MEDIA_MULT[venueIdx] || 1.0;
+      warMediaTotal += Math.round(r.mq * MEDIA_CONFIG.eventPerMQ * venueMult * 1.5);
+    });
+    // JT出演料: 出場選手の人気×出場試合数
+    let jtMediaTotal = 0;
+    wp.results.forEach(r => {
+      if (r.playerFighter) jtMediaTotal += Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+    });
+    if (warMediaTotal + jtMediaTotal > 0) {
+      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${ev.opponentName}` });
+      if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: '対抗戦出演料' });
+      G = { ...G, _pendingMediaIncomes: warMediaIncomes };
+    }
+
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
 
     // recentMatches記録（対抗戦）
@@ -6875,6 +6904,28 @@ App.finalizePPV = function() {
   });
 
   s = { ...s, roster };
+
+  // 金銭バランス改善: PPVメディア収入（出演料）
+  const ppvMediaIncomes = s._pendingMediaIncomes ? [...s._pendingMediaIncomes] : [];
+  let ppvMediaTotal = 0;
+  pp.results.forEach((r, idx) => {
+    const match = pp.card[idx];
+    // カード位置判定: summitならmain、最後から2番目ならsemi、それ以外は試合数で判定
+    let position = 'mid';
+    if (match.isSummit) position = 'main';
+    else if (idx === pp.results.length - 2) position = 'semi';
+    else if (idx < Math.floor(pp.results.length / 2)) position = 'under';
+    const cardMult = PPV_CARD_MULT[position] || PPV_CARD_MULT.mid;
+    [match.left, match.right].forEach(f => {
+      if (f && f._ppvOrgId === 'player') {
+        ppvMediaTotal += Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
+      }
+    });
+  });
+  if (ppvMediaTotal > 0) {
+    ppvMediaIncomes.push({ amount: ppvMediaTotal, label: 'PPV出演料' });
+    s = { ...s, _pendingMediaIncomes: ppvMediaIncomes };
+  }
 
   // 新聞用: 頂上決戦結果を保存（次週の新聞生成で使用）
   if (pp.summitPair) {
@@ -7364,6 +7415,24 @@ App.finalizeJuniorTournament = function() {
   // Engine.juniorTournament.apply で state 反映
   const applied = Engine.juniorTournament.apply(G, jt.result);
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
+
+  // 金銭バランス改善: JTメディア収入（出演料）
+  const jtMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
+  const jtPlayerIds = new Set((G.roster || []).map(f => f.id));
+  let jtMediaTotal = 0;
+  jt.result.rounds.forEach(round => {
+    round.matches.forEach(m => {
+      [m.left, m.right].forEach(f => {
+        if (f && jtPlayerIds.has(f.id)) {
+          jtMediaTotal += Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        }
+      });
+    });
+  });
+  if (jtMediaTotal > 0) {
+    jtMediaIncomes.push({ amount: jtMediaTotal, label: 'JT出演料' });
+    G = { ...G, _pendingMediaIncomes: jtMediaIncomes };
+  }
 
   // 新聞を再生成（JT結果を反映させる）
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));

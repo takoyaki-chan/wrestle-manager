@@ -2070,6 +2070,8 @@ function renderShowPrep() {
 function _normalizeFinanceLabel(label) {
   if (label.startsWith('チケット収入')) return 'チケット収入';
   if (label.startsWith('グッズ収入')) return 'グッズ収入';
+  if (label.startsWith('メディア収入')) return 'メディア収入';
+  if (label.startsWith('プロモ収入')) return 'プロモ収入';
   if (label.startsWith('会場費')) return '会場費';
   return label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
 }
@@ -2228,7 +2230,7 @@ function renderFinance() {
     }
   }
 
-  // ── 収入タブ ──
+  // ── 収入タブ（金銭バランス改善: カテゴリ別グルーピング）──
   else if (tab === 'income') {
     const incomeRaw = _weeklyFinanceValues(filtered, d => d.type === 'income');
     const isMonthlyI = period !== 'month';
@@ -2237,23 +2239,79 @@ function renderFinance() {
       ? `📈 月間平均収入推移 (${incomeChart.length}ヶ月)`
       : `📈 週間収入推移 (${filtered.length}週)`;
     html += _financeChart(incomeChart, { color: '#2ecc71', label: incomeChartLabel });
-    const items = {};
+
+    // カテゴリ別集計
+    const catDefs = [
+      { key: 'ticket', label: '興行収入', items: {} },
+      { key: 'goods',  label: 'グッズ収入', items: {} },
+      { key: 'media',  label: 'メディア収入', items: {} },
+      { key: 'promo',  label: 'プロモ収入', items: {} },
+      { key: 'other',  label: 'その他', items: {} },
+    ];
+    const catMap = {};
+    catDefs.forEach(c => { catMap[c.key] = c; });
+    let grandTotal = 0;
+
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'income').forEach(d => {
-        const key = _normalizeFinanceLabel(d.label);
-        if (!items[key]) items[key] = { label: key, val: 0, count: 0 };
-        items[key].val += d.val;
-        items[key].count++;
+        const cat = d.category || 'other';
+        const target = catMap[cat] || catMap.other;
+        const sub = d.label;
+        if (!target.items[sub]) target.items[sub] = { label: sub, val: 0, count: 0 };
+        target.items[sub].val += d.val;
+        target.items[sub].count++;
+        grandTotal += d.val;
       });
     });
-    const sorted = Object.values(items).sort((a, b) => b.val - a.val);
-    const total = sorted.reduce((s, i) => s + i.val, 0);
-    if (sorted.length > 0) {
-      sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></span></div>`;
-      });
-      html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${Math.round(total).toLocaleString()}万</span></div>`;
+
+    if (grandTotal > 0) {
+      // 興行収入セクション
+      const ticketCat = catMap.ticket;
+      const ticketTotal = Object.values(ticketCat.items).reduce((s, i) => s + i.val, 0);
+      if (ticketTotal > 0) {
+        html += `<div class="panel-title" style="margin-top:6px">■ 興行収入</div>`;
+        Object.values(ticketCat.items).sort((a, b) => b.val - a.val).forEach(d => {
+          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+        });
+        html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>小計</span><span class="f-val income">+${Math.round(ticketTotal).toLocaleString()}万</span></div>`;
+      }
+
+      // ブランド収入セクション
+      const brandCats = ['goods', 'media', 'promo'];
+      const brandTotal = brandCats.reduce((s, k) => s + Object.values(catMap[k].items).reduce((ss, i) => ss + i.val, 0), 0);
+      const otherTotal = Object.values(catMap.other.items).reduce((s, i) => s + i.val, 0);
+      if (brandTotal + otherTotal > 0) {
+        html += `<div class="panel-title" style="margin-top:10px">■ ブランド収入</div>`;
+        brandCats.forEach(catKey => {
+          const cat = catMap[catKey];
+          const catTotal = Object.values(cat.items).reduce((s, i) => s + i.val, 0);
+          if (catTotal <= 0) return;
+          const subs = Object.values(cat.items).sort((a, b) => b.val - a.val);
+          const detailId = `_finDetail_${catKey}`;
+          // 折りたたみ可能なカテゴリヘッダ
+          html += `<div class="finance-row" style="cursor:pointer" onclick="var el=document.getElementById('${detailId}');el.style.display=el.style.display==='none'?'block':'none'">`;
+          html += `<span class="f-label" style="font-weight:600">▼ ${cat.label}</span>`;
+          html += `<span class="f-val income">+${Math.round(catTotal).toLocaleString()}万</span></div>`;
+          html += `<div id="${detailId}" style="display:none;padding-left:16px">`;
+          subs.forEach(d => {
+            const subLabel = d.label.replace(/^(グッズ収入|メディア収入|プロモ収入)/, '').replace(/^（/, '').replace(/）$/, '') || d.label;
+            html += `<div class="finance-row"><span class="f-label" style="font-size:11px;color:var(--text-dim)">└ ${subLabel}</span><span style="font-size:11px" class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+          });
+          html += `</div>`;
+        });
+        // その他（助成金等）
+        if (otherTotal > 0) {
+          Object.values(catMap.other.items).sort((a, b) => b.val - a.val).forEach(d => {
+            html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+          });
+        }
+        html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>小計</span><span class="f-val income">+${Math.round(brandTotal + otherTotal).toLocaleString()}万</span></div>`;
+      }
+
+      html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
+      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${Math.round(grandTotal).toLocaleString()}万</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の収入記録はありません</div>`;
     }

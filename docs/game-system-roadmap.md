@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（MQ改修 Phase 1-3）
+> 最終更新: 2026-03-26（金銭バランス改善 TASK1-4完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**MQ改修 Phase 1-3（2026-03-26）。** MQシステム全面リバランス。Phase 1: キックアウトバグ修正(fall/tkoでtotalKickouts++漏れ)、ペーシング「長すぎ」ペナルティ撤廃(短すぎのみ維持)、外部MQソース値変更(タイトル+10→+5/ファン期待+5→+2.5/宿怨+3→+2/ライバルカーブ圧縮)、外部MQソース6件削除(一方的因縁MQ/ケミストリー/ラストラン因縁相手/見返しモード/コスチュームデビュー/野心)。Phase 2: タイトルマッチ集客+0.15→+0.20、ファン期待カード集客+0.08/件新設、マンネリペナルティ固定値→ランダム幅(-8max→-5max)、マンネリウィンドウロスターサイズ連動(≤8:8興行/9-12:10興行/13+:12興行)。Phase 3: OV帯別MQ分布検証(全帯目標範囲内)、ドラマ減点パラメータ据置(初期値30が適正)。auto-sim 100シーズンALL CLEAR。
+**金銭バランス改善 TASK1-4（2026-03-26）。** 収入を興行収入(チケット)+ブランド収入(グッズ+メディア+プロモ)の2軸に再編。TASK-1:グッズ収入再設計(GOODS_PRICE廃止→GOODS_CONFIG/週次ベース全選手pop×0.2万+興行ブースト出場者pop×0.25万×占有率+プロモ連動pop×0.6万)。calcRosterPopScore廃止。TASK-2:メディア収入新設(SPONSOR_TABLE/BROADCAST_TABLE廃止→MEDIA_CONFIG/MEDIA_ORGPOP_CURVE区間線形補間/7発生源:①週次orgPop×1.5万②興行放映avgMQ×1.1万×VENUE_MEDIA_MULT×タイトル1.5×orgPopMult③PPV出演pop×0.9万×PPV_CARD_MULT④JT出演pop×0.9万⑤対抗戦MQ×1.1万×venueMult×1.5⑥プロモ連動pop×0.6万⑦ファン期待priority×30万×(MQ/70)×orgPopMult⑧ライバル抗争rivalry×MQ×0.016万×orgPopMult)。processSettlement全面改修。app.jsにPPV/JT/War/B3メディア収入フック(_pendingMediaIncomes)。TASK-3:月次報告UI再設計(収入タブをカテゴリ別グルーピング表示:興行収入/ブランド収入(グッズ▼折畳/メディア▼折畳/プロモ)/その他、内訳デフォルト折畳)。TASK-4:trustによる昇給要求減額(trust40→0%,trust100→8%線形補間)。auto-sim 100シーズンALL CLEAR。
+
+前回: **MQ改修 Phase 1-3（2026-03-26）。** MQシステム全面リバランス。Phase 1: キックアウトバグ修正(fall/tkoでtotalKickouts++漏れ)、ペーシング「長すぎ」ペナルティ撤廃(短すぎのみ維持)、外部MQソース値変更(タイトル+10→+5/ファン期待+5→+2.5/宿怨+3→+2/ライバルカーブ圧縮)、外部MQソース6件削除(一方的因縁MQ/ケミストリー/ラストラン因縁相手/見返しモード/コスチュームデビュー/野心)。Phase 2: タイトルマッチ集客+0.15→+0.20、ファン期待カード集客+0.08/件新設、マンネリペナルティ固定値→ランダム幅(-8max→-5max)、マンネリウィンドウロスターサイズ連動(≤8:8興行/9-12:10興行/13+:12興行)。Phase 3: OV帯別MQ分布検証(全帯目標範囲内)、ドラマ減点パラメータ据置(初期値30が適正)。auto-sim 100シーズンALL CLEAR。
 
 前回: **AI団体タイトルマッチ適正化（2026-03-26）。** 弱い選手が王者に居座る問題を修正。Fix1:AI団体に12週タイトルマッチクールダウン導入(createAITitles.lastTitleMatchWeek+processAIWeek判定)。Fix2:挑戦資格厳格化(Top5→Top3,OVR差8→5)。Fix3:AIマッチカード生成時にトップ挑戦者を王者の対戦相手に優先配置。Fix4:AI選手にrecordTitleWin/Loss/Defense経歴記録追加。診断結果:タイトル変動20.7→7.88回/シーズン(-62%),OVRギャップ>5割合46.2%→25.5%(-45%),奪取時ギャップ>5率50%→23%(-54%)。auto-sim 100シーズンALL CLEAR。
 
@@ -53,6 +55,10 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-26 | B4タレント活動拡充設計: 6種サブタイプ(cm/gravure/variety/brand/fashion/fan)+personality相性倍率+archetype追加補正+名前配列6種+LARGE_EVENT_TEXTS/DIALOGUES全セリフ+週次収入組み込み+推薦ヒントUI。実装依頼書: docs/b4-talent-activity-impl.md |
+| 03-26 | 引退セリフ修正設計: B4_champion_injury全パターンをネガティブ→誇り・優秀の美ベースに書き直し。trust≥85+30%抽選で社長気遣い追加ポップアップ（クリックで閉じる）。セリフ管理: dialogue-rewrite-master_5.xlsx |
+| 03-26 | 表彰式タレント活動賞「メディア功労賞」名称確定。B4実装完了後に設計予定（売上基準/表彰人数/スライド挿入位置/セリフ） |
+| 03-26 | 団体画面ブラッシュアップ完了済み確認 |
 | 03-26 | MQ改修Phase1-3: キックアウトバグ修正+ペーシング長すぎ撤廃+外部MQ6件削除+値圧縮+集客ボーナス変更+マンネリ緩和(ランダム幅+ロスターサイズ連動ウィンドウ)+OV帯別分布検証ALL CLEAR |
 | 03-25 | 直近5戦表示: recentMatches配列(FIFO max5)をプレイヤー興行/AI興行/PPV/対抗戦の全4パスで記録。Engine.pushRecentMatch新設。選手ポップアップ通算戦績の下に「直近: ○山田 ×鈴木...」横1列表示。auto-sim 100シーズンALL CLEAR |
 | 03-25 | 新聞バックナンバー: G.newspaperArchive(最大24週分)蓄積+バックナンバーナビUI(◀次の号/前の号▶/最新号)+日付表示大型化(シーズンN 第M週)。engine.js+ui-render.js |

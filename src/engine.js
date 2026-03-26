@@ -5494,6 +5494,7 @@ const Engine = {
       if (pendingLargeEvent) result._pendingLargeEvent = pendingLargeEvent;
       if (pendingCoachReport) result._pendingCoachReport = pendingCoachReport;
       if (promoIncomes.length > 0) result._pendingPromoIncomes = promoIncomes;
+      if (promoGoods.length > 0) result._pendingPromoGoods = promoGoods;
       if (pendingHotStreakEnds.length > 0) result._pendingHotStreakEnds = pendingHotStreakEnds;
       return result;
     },
@@ -5566,7 +5567,7 @@ const Engine = {
       // v1.7: 育成補助金（orgPop 40未満の団体に支給、通常モードは対象外）
       const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
       totalIncome += subsidy;
-      if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income' });
+      if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income', category: 'other' });
 
       let roster = G.roster.map(c => ({ ...c }));
       let newLockerRoomMorale = null; // 興行週のみ更新、null の場合は tickWeek で既存値を維持
@@ -5737,6 +5738,7 @@ const Engine = {
     if (manage._pendingTeamSpirit) s = { ...s, _pendingTeamSpirit: manage._pendingTeamSpirit };
     if (manage._pendingCoachReport) s = { ...s, _pendingCoachReport: manage._pendingCoachReport };
     if (manage._pendingPromoIncomes) s = { ...s, _pendingPromoIncomes: manage._pendingPromoIncomes };
+    if (manage._pendingPromoGoods) s = { ...s, _pendingPromoGoods: manage._pendingPromoGoods };
     // P5: 絶好調終了検出を state に乗せる
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     const settle = Engine.season.processSettlement(s);
@@ -13224,11 +13226,21 @@ Engine.contract = {
     if (gap <= 0) {
       // ギャップなし — trustベースの昇給要求（小額）
       const baseRaisePct = 0.10 + (pop / 100) * 0.05;
-      return Engine.util.clamp(Math.round(currentSalary * baseRaisePct), 2, 15);
+      const baseRaise = Engine.util.clamp(Math.round(currentSalary * baseRaisePct), 2, 15);
+      // 金銭バランス改善 TASK-4: trustによる昇給要求減額
+      const trust0 = fighter.trust ?? 50;
+      const disc0 = trust0 <= TRUST_RAISE_DISCOUNT.threshold ? 0
+        : (trust0 - TRUST_RAISE_DISCOUNT.threshold) / (100 - TRUST_RAISE_DISCOUNT.threshold) * TRUST_RAISE_DISCOUNT.maxDiscount;
+      return Math.round(baseRaise * (1 - disc0));
     }
     // ギャップあり — 差額の50〜80%を要求（人気が高いほど要求も高い）
     const demandPct = 0.50 + (pop / 100) * 0.30;
-    return Engine.util.clamp(Math.round(gap * demandPct), 3, 50);
+    const raiseAmount = Engine.util.clamp(Math.round(gap * demandPct), 3, 50);
+    // 金銭バランス改善 TASK-4: trustによる昇給要求減額（trust40→0%, trust100→maxDiscount%）
+    const trust = fighter.trust ?? 50;
+    const trustDiscount = trust <= TRUST_RAISE_DISCOUNT.threshold ? 0
+      : (trust - TRUST_RAISE_DISCOUNT.threshold) / (100 - TRUST_RAISE_DISCOUNT.threshold) * TRUST_RAISE_DISCOUNT.maxDiscount;
+    return Math.round(raiseAmount * (1 - trustDiscount));
   },
 
   calcCounterOffer(raiseAmount) {
