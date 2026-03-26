@@ -1017,37 +1017,79 @@ function renderWeekScreen() {
     const settleChamp = getWorldChampion();
     if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 団体王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
 
-    // v1.0: Aggregate monthly finance from financeHistory
-    const monthlyDetails = {};
+    // 金銭バランス改善: カテゴリ別グルーピング月次決算
     let monthIncome = 0, monthExpense = 0;
+    const mCats = { ticket: {}, goods: {}, media: {}, promo: {}, other: {} };
+    const mExpenses = {};
     monthBuf.forEach(entry => {
       if (!entry.details) return;
       entry.details.forEach(d => {
-        // 興行固有項目（チケット・会場費）は会場/動員が異なるためラベル全体をキーに保持
-        const isShowSpecific = d.label.startsWith('チケット収入') || d.label.startsWith('会場費');
-        const key = isShowSpecific ? d.label : d.label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
-        if (!monthlyDetails[key]) monthlyDetails[key] = { label: d.label, val: 0, type: d.type, count: 0 };
-        monthlyDetails[key].val += d.val;
-        monthlyDetails[key].count++;
-        monthlyDetails[key].label = d.label;
+        if (d.type === 'income') {
+          const cat = d.category || 'other';
+          const target = mCats[cat] || mCats.other;
+          const key = d.label;
+          if (!target[key]) target[key] = { label: d.label, val: 0, count: 0 };
+          target[key].val += d.val;
+          target[key].count++;
+        } else {
+          const key = _normalizeFinanceLabel(d.label);
+          if (!mExpenses[key]) mExpenses[key] = { label: d.label, val: 0, count: 0 };
+          mExpenses[key].val += d.val;
+          mExpenses[key].count++;
+          mExpenses[key].label = d.label;
+        }
       });
       monthIncome += (entry.income || 0);
       monthExpense += (entry.expense || 0);
     });
     const monthNet = monthIncome - monthExpense;
 
-    // Show week range
+    // 週範囲
     const weekNums = monthBuf.map(e => e.week).filter(Boolean);
-
     if (weekNums.length > 1) {
       html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週</div>`;
     }
 
-    // Show aggregated details
-    Object.values(monthlyDetails).forEach(d => {
-      html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val ${d.type}">${d.val >= 0 ? '+' : ''}${Math.round(d.val)}万</span></div>`;
-    });
-    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${Math.round(monthNet)}万</span></div>`;
+    // ■ 興行収入
+    const mTicketTotal = Object.values(mCats.ticket).reduce((s, i) => s + i.val, 0);
+    if (mTicketTotal > 0) {
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:6px 0 4px">■ 興行収入</div>`;
+      Object.values(mCats.ticket).forEach(d => {
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+      });
+    }
+
+    // ■ ブランド収入
+    const brandKeys = ['goods', 'media', 'promo'];
+    const mBrandTotal = brandKeys.reduce((s, k) => s + Object.values(mCats[k]).reduce((ss, i) => ss + i.val, 0), 0);
+    const mOtherTotal = Object.values(mCats.other).reduce((s, i) => s + i.val, 0);
+    if (mBrandTotal + mOtherTotal > 0) {
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ ブランド収入</div>`;
+      const catLabels = { goods: 'グッズ', media: 'メディア', promo: 'プロモ' };
+      brandKeys.forEach(catKey => {
+        const items = Object.values(mCats[catKey]);
+        const catTotal = items.reduce((s, i) => s + i.val, 0);
+        if (catTotal <= 0) return;
+        html += `<div class="finance-row"><span class="f-label" style="font-weight:600">${catLabels[catKey]}収入</span><span class="f-val income">+${Math.round(catTotal).toLocaleString()}万</span></div>`;
+      });
+      if (mOtherTotal > 0) {
+        Object.values(mCats.other).forEach(d => {
+          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+        });
+      }
+    }
+
+    // ■ 支出
+    const expenseItems = Object.values(mExpenses).sort((a, b) => a.val - b.val);
+    if (expenseItems.length > 0) {
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ 支出</div>`;
+      expenseItems.forEach(d => {
+        html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val expense">${Math.round(d.val).toLocaleString()}万</span></div>`;
+      });
+    }
+
+    html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
+    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${Math.round(monthNet).toLocaleString()}万</span></div>`;
     html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</strong></div>`;
 
     // v0.97: Survival gauge mini-status in settlement
