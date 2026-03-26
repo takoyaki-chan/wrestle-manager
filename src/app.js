@@ -4647,9 +4647,10 @@ const App = {
 
     // ── preview: 次回展望データ ──
     const preview = { fanExpect: [], rivalry: null, title: null };
-    // ファン期待カード
-    if (G.fanExpectation) {
-      G.fanExpectation.slice(0, 2).forEach(fe => {
+    // ファン期待カード（動的生成）
+    const pvFanExpects = Engine.fanExpect.generate(G);
+    if (pvFanExpects && pvFanExpects.length > 0) {
+      pvFanExpects.slice(0, 2).forEach(fe => {
         const feLeft = G.roster.find(f => f.id === fe.leftId) || ALL_CHARS.find(c => c.id === fe.leftId);
         const feRight = G.roster.find(f => f.id === fe.rightId) || ALL_CHARS.find(c => c.id === fe.rightId);
         if (feLeft && feRight) {

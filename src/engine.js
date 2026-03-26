@@ -5858,6 +5858,8 @@ const Engine = {
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+    // transient: _pendingMediaIncomes は settlement で消費済み — 次週への重複計上を防止
+    delete s._pendingMediaIncomes;
     // v2.1: 興行週の trust 更新に伴う lockerRoomMorale 反映（非興行週は null = 変更なし）
     if (settle.lockerRoomMorale != null) {
       s = { ...s, lockerRoomMorale: settle.lockerRoomMorale };
@@ -8708,6 +8710,11 @@ const Engine = {
       const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 900 + offWeek));
 
       if (offWeek === 1) {
+        // v1.4: 年末表彰式データ生成（applySeasonEnd でカウンタがリセットされる前に生成）
+        const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));
+        const pendingAwards = Engine.awards.generate(awardsRng, s);
+        s = { ...s, pendingAwards };
+
         // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
         const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
         s = { ...s, roster };
@@ -8860,11 +8867,6 @@ const Engine = {
           return entry; // legacy string ID — age unknown, leave as-is
         });
         s = { ...s, dormantPool: agedPool };
-
-        // v1.4: 年末表彰式データ生成（純粋関数 — HOF適用はApp側コールバックで行う）
-        const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));
-        const pendingAwards = Engine.awards.generate(awardsRng, s);
-        s = { ...s, pendingAwards };
 
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
@@ -17316,9 +17318,10 @@ Engine.newspaper = {
   /** 次回展望データを構築 */
   buildPreview(state) {
     const preview = { fanExpect: [], rivalry: null, title: null };
-    // ファン期待カード
-    if (state.fanExpectation) {
-      state.fanExpectation.slice(0, 2).forEach(fe => {
+    // ファン期待カード（動的生成）
+    const fanExpects = Engine.fanExpect.generate(state);
+    if (fanExpects && fanExpects.length > 0) {
+      fanExpects.slice(0, 2).forEach(fe => {
         const feLeft = (state.roster || []).find(f => f.id === fe.leftId);
         const feRight = (state.roster || []).find(f => f.id === fe.rightId);
         if (feLeft && feRight) {

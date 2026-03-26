@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（受賞歴キャリア記録追加）
+> 最終更新: 2026-03-26（バグ修正3件: メディア功労賞/メディア収入重複/新聞プレビュー）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**受賞歴キャリア記録追加（2026-03-26）。** 年間表彰式の受賞結果を個人のcareerRecord.historyに永続記録。対象4賞:新人王(awardRookie)/MVP(awardMVP)/メディア功労賞(awardMedia)/ベストマッチ賞(awardBestMatch)。_checkAndShowAwardsでEngine.career.addEvent呼び出し(プレイヤー団体受賞者のみ)。milestone.getに4case追加→キャリア年表に受賞歴表示。_typeStyleに4スタイル追加(アイコン+カラー)。buildCareerHighlightsに4case追加→殿堂入り時のハイライトにも反映。auto-sim 100シーズンALL CLEAR。
+**バグ修正3件（2026-03-26）。** ①メディア功労賞が選出されない: applySeasonEndがmediaRevSeason等を先にリセットしていたため、awards.generate()をapplySeasonEndの前に移動。②_pendingMediaIncomes毎週重複計上: processSettlement後にtickWeek内でdelete実行し1回限りの消費に。③新聞プレビューのファン期待カードが空: buildPreview/app.jsのstate.fanExpectation参照をEngine.fanExpect.generate()動的生成に置換。auto-sim 200シーズンALL CLEAR。
+
+前回: **受賞歴キャリア記録追加（2026-03-26）。** 年間表彰式の受賞結果を個人のcareerRecord.historyに永続記録。対象4賞:新人王(awardRookie)/MVP(awardMVP)/メディア功労賞(awardMedia)/ベストマッチ賞(awardBestMatch)。_checkAndShowAwardsでEngine.career.addEvent呼び出し(プレイヤー団体受賞者のみ)。milestone.getに4case追加→キャリア年表に受賞歴表示。_typeStyleに4スタイル追加(アイコン+カラー)。buildCareerHighlightsに4case追加→殿堂入り時のハイライトにも反映。auto-sim 100シーズンALL CLEAR。
 
 前回: **メディア功労賞実装（2026-03-26）。** 年間表彰式にメディア功労賞を追加。選考基準:mediaRevSeason+talentRevSeasonの合計最大のプレイヤー団体選手。TASK-1:選手フィールド追加(mediaRevSeason/talentRevSeason/talentCountSeason)+resetSeasonalCountersでリセット。TASK-2:収入発生時の個人別累計加算(processSettlement内プロモ連動+タレント活動バフ→Map蓄積+roster反映、app.js PPV出演料/JT出演料/対抗戦JT出演料→s.roster/G.roster反映、B4全6activityTypeでtalentCountSeason+1)。TASK-3:Engine.awards.selectMediaAward新設(score>0の候補をソート、タイブレーカー=talentCountSeason)。TASK-4:表彰式UIにMVP直後スライド追加(_buildMediaAward:顔写真+名前+年間メディア貢献額+出演料/タレント活動内訳+活動回数)+AWARD_LINES mediaAwardセリフ(5personality×archetype)。auto-sim 100シーズンALL CLEAR。
 
