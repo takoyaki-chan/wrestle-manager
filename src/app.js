@@ -6598,7 +6598,14 @@ const App = {
     // JT出演料: 出場選手の人気×出場試合数
     let jtMediaTotal = 0;
     wp.results.forEach(r => {
-      if (r.playerFighter) jtMediaTotal += Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+      if (r.playerFighter) {
+        const rev = Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        jtMediaTotal += rev;
+        // メディア功労賞: 個人別メディア収入累計に加算
+        G = { ...G, roster: G.roster.map(c =>
+          c.id === r.playerFighter.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
+        )};
+      }
     });
     if (warMediaTotal + jtMediaTotal > 0) {
       if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${ev.opponentName}` });
@@ -6935,7 +6942,12 @@ App.finalizePPV = function() {
     const cardMult = PPV_CARD_MULT[position] || PPV_CARD_MULT.mid;
     [match.left, match.right].forEach(f => {
       if (f && f._ppvOrgId === 'player') {
-        ppvMediaTotal += Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
+        const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
+        ppvMediaTotal += rev;
+        // メディア功労賞: 個人別メディア収入累計に加算
+        s = { ...s, roster: s.roster.map(c =>
+          c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
+        )};
       }
     });
   });
@@ -7441,7 +7453,12 @@ App.finalizeJuniorTournament = function() {
     round.matches.forEach(m => {
       [m.left, m.right].forEach(f => {
         if (f && jtPlayerIds.has(f.id)) {
-          jtMediaTotal += Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+          const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+          jtMediaTotal += rev;
+          // メディア功労賞: 個人別メディア収入累計に加算
+          G = { ...G, roster: G.roster.map(c =>
+            c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
+          )};
         }
       });
     });

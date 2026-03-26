@@ -2882,6 +2882,9 @@ const Engine = {
         contractPop: 0,  // 契約時人気（給与固定用、initAIOrgsで正式セット）
         orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
         devLabelOffset: Engine.rng.int(rng, -7, 7),
+        mediaRevSeason: 0,    // 年間メディア収入個人貢献累計（PPV/JT/プロモ連動）
+        talentRevSeason: 0,   // 年間タレント活動収入累計（cm/variety/gravure/brand バフ分）
+        talentCountSeason: 0, // 年間タレント活動参加回数
       };
     },
     /** trainCap 5??????? */
@@ -5590,10 +5593,15 @@ const Engine = {
       if (weeklyMedia > 0) details.push({ label: 'メディア収入（週次）', val: weeklyMedia, type: 'income', category: 'media' });
 
       // 金銭バランス改善: プロモ連動メディア
+      const _mediaRevAccum = new Map(); // メディア功労賞: 個人別メディア収入累計
+      const _talentRevAccum = new Map(); // メディア功労賞: 個人別タレント活動収入累計
       let promoMediaTotal = 0;
       promoIncomes.forEach(pi => {
         const fighter = G.roster.find(c => c.name === pi.name);
-        if (fighter) promoMediaTotal += Math.round(fighter.popularity * MEDIA_CONFIG.promoPerPop);
+        if (!fighter) return;
+        const rev = Math.round(fighter.popularity * MEDIA_CONFIG.promoPerPop);
+        promoMediaTotal += rev;
+        _mediaRevAccum.set(fighter.id, (_mediaRevAccum.get(fighter.id) || 0) + rev);
       });
       if (promoMediaTotal > 0) {
         totalIncome += promoMediaTotal;
@@ -5613,11 +5621,14 @@ const Engine = {
         const buff = f.talentActivityBuff;
         if (!buff || buff.remainingWeeks <= 0) return;
         const multiplier = buff.multiplier || 1.0;
+        const rev = Math.round((f.popularity || 1) * 0.6 * multiplier);
         if (buff.type === 'cm' || buff.type === 'variety') {
-          talentMediaRev += (f.popularity || 1) * 0.6 * multiplier;
+          talentMediaRev += rev;
+          _talentRevAccum.set(f.id, (_talentRevAccum.get(f.id) || 0) + rev);
         }
         if (buff.type === 'gravure' || buff.type === 'brand') {
-          talentGoodsRev += (f.popularity || 1) * 0.6 * multiplier;
+          talentGoodsRev += rev;
+          _talentRevAccum.set(f.id, (_talentRevAccum.get(f.id) || 0) + rev);
         }
       });
       talentMediaRev = Math.round(talentMediaRev);
@@ -5636,7 +5647,16 @@ const Engine = {
       totalIncome += subsidy;
       if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income', category: 'other' });
 
-      let roster = G.roster.map(c => ({ ...c }));
+      // メディア功労賞: 個人別収入累計をrosterに反映
+      let roster = G.roster.map(c => {
+        const mRev = _mediaRevAccum.get(c.id) || 0;
+        const tRev = _talentRevAccum.get(c.id) || 0;
+        if (mRev === 0 && tRev === 0) return { ...c };
+        return { ...c,
+          mediaRevSeason: (c.mediaRevSeason || 0) + mRev,
+          talentRevSeason: (c.talentRevSeason || 0) + tRev,
+        };
+      });
       let newLockerRoomMorale = null; // 興行週のみ更新、null の場合は tickWeek で既存値を維持
 
       if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
@@ -9818,6 +9838,7 @@ Engine.awards = {
       rookieOfYear: Engine.awards.selectRookie(state),
       bestMatch:    Engine.awards.selectBestMatch(rng, state),
       mvp:          Engine.awards.selectMVP(rng, state),
+      mediaAward:   Engine.awards.selectMediaAward(state),
       champions:    Engine.awards.getChampions(state),
       hallOfFame:   Engine.awards.checkHallOfFame(state),
       npcInductees: npcInductees,
@@ -9929,6 +9950,37 @@ Engine.awards = {
       orgName: winner.orgName, ovr: ov(winner.fighter), popularity: winner.fighter.popularity,
       age: winner.fighter.age, style: winner.fighter.style || 'Allround',
       isPlayerOrg: winner.isPlayerOrg
+    };
+  },
+
+  /** メディア功労賞: mediaRevSeason + talentRevSeason が最大のプレイヤー団体選手 */
+  selectMediaAward(state) {
+    const ov = Engine.util.ov;
+    const candidates = [...(state.roster || [])].filter(f => {
+      const score = (f.mediaRevSeason || 0) + (f.talentRevSeason || 0);
+      return score > 0;
+    });
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => {
+      const sa = (a.mediaRevSeason || 0) + (a.talentRevSeason || 0);
+      const sb = (b.mediaRevSeason || 0) + (b.talentRevSeason || 0);
+      if (sb !== sa) return sb - sa;
+      return (b.talentCountSeason || 0) - (a.talentCountSeason || 0);
+    });
+    const winner = candidates[0];
+    const totalRev = (winner.mediaRevSeason || 0) + (winner.talentRevSeason || 0);
+    return {
+      id: winner.id,
+      name: winner.name,
+      portrait: winner.portrait,
+      ovr: ov(winner),
+      popularity: winner.popularity,
+      age: winner.age,
+      style: winner.style || 'Allround',
+      mediaRevSeason: winner.mediaRevSeason || 0,
+      talentRevSeason: winner.talentRevSeason || 0,
+      talentCountSeason: winner.talentCountSeason || 0,
+      totalRev,
     };
   },
 
@@ -11390,9 +11442,13 @@ Engine.careActions = {
   // ── シーズン末にボーナス逓減カウンタ＋ケア使用記録をリセット ─────────────
   resetSeasonalCounters(roster) {
     return roster.map(f => {
-      if (!f._bonusRepeat && !f._careWeekUsed) return f;
       const { _bonusRepeat: _br, _careWeekUsed: _cw, ...rest } = f;
-      return rest;
+      return {
+        ...rest,
+        mediaRevSeason: 0,
+        talentRevSeason: 0,
+        talentCountSeason: 0,
+      };
     });
   },
 
@@ -12463,7 +12519,8 @@ Engine.eventSystem = {
           if (event.activityType === 'fashion') {
             const popGain = ACTIVITY_MULTIPLIER >= 1.4 ? 3 : ACTIVITY_MULTIPLIER >= 0.8 ? 2 : 1;
             return { ...fighter, popularity: Engine.util.clamp((fighter.popularity || 1) + popGain, 1, 100),
-                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER } };
+                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER },
+                     talentCountSeason: (fighter.talentCountSeason || 0) + 1 };
           }
           if (event.activityType === 'fan') {
             const trustGain = ACTIVITY_MULTIPLIER >= 1.4 ? 6 : ACTIVITY_MULTIPLIER >= 0.8 ? 4 : 2;
@@ -12471,12 +12528,14 @@ Engine.eventSystem = {
             let adjusted = Engine.trust.applyCoeff(trustGain, fighter.mn || 50);
             if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
             return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100),
-                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER } };
+                     talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER },
+                     talentCountSeason: (fighter.talentCountSeason || 0) + 1 };
           }
 
           // その他（cm/gravure/variety/brand）は週次収入バフ
           return { ...fighter,
-                   talentActivityBuff: { type: event.activityType, remainingWeeks: durationWeeks, multiplier: ACTIVITY_MULTIPLIER } };
+                   talentActivityBuff: { type: event.activityType, remainingWeeks: durationWeeks, multiplier: ACTIVITY_MULTIPLIER },
+                   talentCountSeason: (fighter.talentCountSeason || 0) + 1 };
         });
 
         events.push(`${ICON} ${f.name}の${LABEL}が決定！`);

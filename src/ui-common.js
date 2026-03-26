@@ -1827,6 +1827,10 @@ function showAwardsCeremony(awards, onDone) {
   if (awards.mvp)
     steps.push(() => _renderAwardsSlide(_buildMVPAward(awards.mvp), 'd'));
 
+  // 3.5. メディア功労賞
+  if (awards.mediaAward)
+    steps.push(() => _renderAwardsSlide(_buildMediaAward(awards.mediaAward), 'd'));
+
   // 4. チャンピオン紹介
   if (awards.champions && awards.champions.length > 0)
     steps.push(() => _renderAwardsSlide(_buildChampionsAward(awards.champions), 'e'));
@@ -1963,6 +1967,23 @@ function _buildMVPAward(d) {
   <div class="awards-name">${d.name}</div>
   <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
   <div class="awards-detail">OVR ${d.ovr} / 人気 ${Engine.util.dispPop(d.popularity)} / ${_styleJa(d.style)}</div>
+  ${line ? `<div class="awards-quote">${line}</div>` : ''}
+  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+}
+
+function _buildMediaAward(d) {
+  const line = _awardLine('mediaAward', d.id);
+  const totalRevDisp = (d.totalRev / 10000).toFixed(0);
+  const mediaRevDisp = (d.mediaRevSeason / 10000).toFixed(0);
+  const talentRevDisp = (d.talentRevSeason / 10000).toFixed(0);
+  return `<div class="awards-category">📺 メディア功労賞 📺</div>
+  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
+  <div class="awards-name">${d.name}</div>
+  <div class="awards-detail">年間メディア貢献 ${totalRevDisp}万円</div>
+  <div style="font-size:11px;color:var(--text-sub);margin:4px 0">
+    出演料等 ${mediaRevDisp}万 ／ タレント活動 ${talentRevDisp}万
+    ${d.talentCountSeason > 0 ? `（活動${d.talentCountSeason}回）` : ''}
+  </div>
   ${line ? `<div class="awards-quote">${line}</div>` : ''}
   <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
