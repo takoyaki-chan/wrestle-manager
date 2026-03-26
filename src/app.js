@@ -6635,6 +6635,18 @@ const App = {
           c.id === r.playerFighter.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
         )};
       }
+      // AI団体選手のメディア収入個人トラッキング（対抗戦出場）
+      if (r.aiFighter && ev.opponentOrgId && G.aiOrgs && G.aiOrgs[ev.opponentOrgId]) {
+        const aiRev = Math.round((r.aiFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        if (aiRev > 0) {
+          const aiOrg = G.aiOrgs[ev.opponentOrgId];
+          G = { ...G, aiOrgs: { ...G.aiOrgs, [ev.opponentOrgId]: {
+            ...aiOrg, roster: aiOrg.roster.map(c =>
+              c.id === r.aiFighter.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + aiRev } : c
+            )
+          }}};
+        }
+      }
     });
     if (warMediaTotal + jtMediaTotal > 0) {
       if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${ev.opponentName}` });
@@ -6970,13 +6982,23 @@ App.finalizePPV = function() {
     else if (idx < Math.floor(pp.results.length / 2)) position = 'under';
     const cardMult = PPV_CARD_MULT[position] || PPV_CARD_MULT.mid;
     [match.left, match.right].forEach(f => {
-      if (f && f._ppvOrgId === 'player') {
-        const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
+      if (!f) return;
+      const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
+      if (rev <= 0) return;
+      if (f._ppvOrgId === 'player') {
         ppvMediaTotal += rev;
         // メディア功労賞: 個人別メディア収入累計に加算
         s = { ...s, roster: s.roster.map(c =>
           c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
         )};
+      } else if (f._ppvOrgId && s.aiOrgs && s.aiOrgs[f._ppvOrgId]) {
+        // AI団体選手のメディア収入個人トラッキング
+        const aiOrg = s.aiOrgs[f._ppvOrgId];
+        s = { ...s, aiOrgs: { ...s.aiOrgs, [f._ppvOrgId]: {
+          ...aiOrg, roster: aiOrg.roster.map(c =>
+            c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
+          )
+        }}};
       }
     });
   });
@@ -7481,13 +7503,26 @@ App.finalizeJuniorTournament = function() {
   jt.result.rounds.forEach(round => {
     round.matches.forEach(m => {
       [m.left, m.right].forEach(f => {
-        if (f && jtPlayerIds.has(f.id)) {
-          const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        if (!f) return;
+        const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        if (rev <= 0) return;
+        if (jtPlayerIds.has(f.id)) {
           jtMediaTotal += rev;
           // メディア功労賞: 個人別メディア収入累計に加算
           G = { ...G, roster: G.roster.map(c =>
             c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
           )};
+        } else {
+          // AI団体選手のメディア収入個人トラッキング
+          const fOrgId = f._jtOrgId || Object.keys(G.aiOrgs || {}).find(oid => G.aiOrgs[oid]?.roster?.some(r => r.id === f.id));
+          if (fOrgId && G.aiOrgs && G.aiOrgs[fOrgId]) {
+            const aiOrg = G.aiOrgs[fOrgId];
+            G = { ...G, aiOrgs: { ...G.aiOrgs, [fOrgId]: {
+              ...aiOrg, roster: aiOrg.roster.map(c =>
+                c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
+              )
+            }}};
+          }
         }
       });
     });

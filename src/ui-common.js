@@ -1807,73 +1807,12 @@ function closeRivalryPopup() {
  * @param {Object} awards - Engine.awards.generate() の結果
  * @param {Function} onDone - 全表示完了後のコールバック
  */
-function showAwardsCeremony(awards, onDone) {
-  if (!awards) { if (onDone) onDone(); return; }
-  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone)); return; }
+// ═══════════════════════════════════════════════════════════════════
+//  Awards Ceremony v2 — mockup-final-v2 準拠
+// ═══════════════════════════════════════════════════════════════════
 
-  const steps = [];
+// ── ヘルパー ──────────────────────────────────────────────────────
 
-  // 0. タイトル画面
-  steps.push(() => _renderAwardsSlide(_buildAwardsTitle(awards.season), 'a'));
-
-  // 1. 新人王（該当者なしでも常に表示）
-  steps.push(() => _renderAwardsSlide(_buildRookieAward(awards.rookieOfYear), 'b'));
-
-  // 2. ベストマッチ
-  if (awards.bestMatch)
-    steps.push(() => _renderAwardsSlide(_buildBestMatchAward(awards.bestMatch), 'c'));
-
-  // 3. MVP
-  if (awards.mvp)
-    steps.push(() => _renderAwardsSlide(_buildMVPAward(awards.mvp), 'd'));
-
-  // 3.5. メディア功労賞
-  if (awards.mediaAward)
-    steps.push(() => _renderAwardsSlide(_buildMediaAward(awards.mediaAward), 'd'));
-
-  // 4. チャンピオン紹介
-  if (awards.champions && awards.champions.length > 0)
-    steps.push(() => _renderAwardsSlide(_buildChampionsAward(awards.champions), 'e'));
-
-  // 5. 殿堂入り（該当者ごとに1画面）
-  if (awards.hallOfFame && awards.hallOfFame.length > 0) {
-    awards.hallOfFame.forEach(inductee => {
-      steps.push(() => { _renderAwardsSlide(_buildHallOfFame(inductee), 'f'); Audio.play('fanfare'); });
-    });
-  }
-
-  // 6. 全受賞者一覧
-  steps.push(() => _renderAwardsSlide(_buildAwardsSummary(awards), 'g'));
-
-  // キュー実行
-  let idx = 0;
-  window._awardsNext = () => {
-    document.getElementById('awardsOverlay').classList.remove('active');
-    idx++;
-    if (idx < steps.length) {
-      setTimeout(() => { steps[idx](); document.getElementById('awardsOverlay').classList.add('active'); Audio.play('reveal'); }, 280);
-    } else {
-      window._awardsNext = null;
-      if (onDone) onDone();
-      _drainPopupQueue();
-    }
-  };
-
-  // 開始
-  steps[0]();
-  document.getElementById('awardsOverlay').classList.add('active');
-  Audio.play('award');
-}
-
-function _renderAwardsSlide(html, frame) {
-  const box = document.getElementById('awardsBox');
-  box.innerHTML = html;
-  box.dataset.frame = frame || '';
-  if (html.includes('awards-plaque')) box.classList.add('hall-of-fame');
-  else box.classList.remove('hall-of-fame');
-}
-
-// セリフをランダム選出（AWARD_LINES[key]からpersonality×archetypeで1つ）
 function _awardLine(key, charId) {
   const lineObj = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES[key]);
   if (!lineObj) return '';
@@ -1881,238 +1820,563 @@ function _awardLine(key, charId) {
   return pickDialogueLine(lineObj, ch);
 }
 
-// ベストマッチ用フレーバーテキスト
-function _bestMatchFlavor(mq) {
-  if (typeof BESTMATCH_FLAVOR === 'undefined') return '';
-  const pool = mq >= 80 ? BESTMATCH_FLAVOR.high : mq >= 60 ? BESTMATCH_FLAVOR.mid : BESTMATCH_FLAVOR.low;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-// スタイル日本語変換
 function _styleJa(style) {
   return { Grappler:'グラップラー', Striker:'ストライカー', Submission:'サブミッション',
            Aerial:'エアリアル', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style;
 }
 
-function _awardsPortrait(id, size) {
-  size = size || 80;
+function _awPortrait(id, cssClass) {
   const url = getPortraitUrl(id);
-  if (url) return `<img src="${url}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:3px solid rgba(212,168,67,0.4)">`;
+  if (url) return `<img src="${url}" alt="">`;
   const ch = ALL_CHARS.find(c => c.id === id);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size/2)}px;border:3px solid rgba(212,168,67,0.3)">${ch ? ch.name.charAt(0) : '?'}</div>`;
+  return ch ? ch.name.charAt(0) : '?';
 }
 
-function _buildAwardsTitle(season) {
-  return `<div class="awards-title">━━ シーズン${season} ━━</div>
-  <div style="font-size:36px;margin:12px 0">🏆</div>
-  <div class="awards-title" style="font-size:16px;letter-spacing:4px;color:var(--gold)">年末表彰式</div>
-  <div class="awards-detail" style="margin:14px 0 22px;font-size:13px">受賞者を発表します</div>
-  <button class="awards-btn" onclick="window._awardsNext()">開始 ▶</button>`;
+function _awSpeech(name, line) {
+  if (!line) return '';
+  return `<div class="speech-bubble"><div class="speech-speaker">${name}</div><div class="speech-text">「${line}」</div></div>`;
 }
 
-function _buildRookieAward(d) {
-  if (!d) {
-    return `<div class="awards-category">🌟 新人王 🌟</div>
-  <div style="font-size:48px;margin:20px 0">—</div>
-  <div class="awards-name" style="color:var(--text-sub)">今年は該当者なし</div>
-  <div class="awards-detail" style="margin-top:8px">キャリア1年目の選手が見つかりませんでした</div>
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+function _mqStars(mq) {
+  if (mq >= 90) return '★★★★★';
+  if (mq >= 80) return '★★★★';
+  if (mq >= 70) return '★★★';
+  if (mq >= 60) return '★★';
+  return '★';
+}
+
+// ── SE (Web Audio) ──────────────────────────────────────────────
+
+let _awAudioCtx = null;
+function _awEnsureCtx() { if (!_awAudioCtx) _awAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (_awAudioCtx.state === 'suspended') _awAudioCtx.resume(); }
+
+function _awPlayChime() {
+  _awEnsureCtx(); const t = _awAudioCtx.currentTime;
+  [523.25, 659.25, 783.99].forEach((f, i) => {
+    const o = _awAudioCtx.createOscillator(), g = _awAudioCtx.createGain();
+    o.connect(g); g.connect(_awAudioCtx.destination);
+    o.frequency.value = f; o.type = 'sine';
+    g.gain.setValueAtTime(0, t+i*.08);
+    g.gain.linearRampToValueAtTime(0.18, t+i*.08+.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t+i*.08+.5);
+    o.start(t+i*.08); o.stop(t+i*.08+.6);
+  });
+}
+function _awPlayMvpFanfare() {
+  _awEnsureCtx(); const t = _awAudioCtx.currentTime;
+  const n=[523,659,784,1047,784,1047], tm=[0,.12,.24,.36,.5,.6];
+  n.forEach((f,i) => {
+    const o=_awAudioCtx.createOscillator(),g=_awAudioCtx.createGain();
+    o.connect(g);g.connect(_awAudioCtx.destination);
+    o.type=i===n.length-1?'sine':'triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+tm[i]);
+    g.gain.linearRampToValueAtTime(0.2,t+tm[i]+.02);
+    g.gain.exponentialRampToValueAtTime(0.001,t+tm[i]+(i===n.length-1?1.2:.18));
+    o.start(t+tm[i]);o.stop(t+tm[i]+1.5);
+  });
+}
+function _awPlayHofChime() {
+  _awEnsureCtx(); const t = _awAudioCtx.currentTime;
+  [[130,0],[196,.05],[261,.1],[392,.15],[523,.22]].forEach(([f,d]) => {
+    const o=_awAudioCtx.createOscillator(),g=_awAudioCtx.createGain();
+    o.connect(g);g.connect(_awAudioCtx.destination);
+    o.type='sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+d);
+    g.gain.linearRampToValueAtTime(0.15,t+d+.04);
+    g.gain.exponentialRampToValueAtTime(0.001,t+d+1.8);
+    o.start(t+d);o.stop(t+d+2);
+  });
+}
+function _awPlayFanfare() {
+  _awEnsureCtx(); const t = _awAudioCtx.currentTime;
+  [261,329,392,523,659,784].forEach((f,i) => {
+    const o=_awAudioCtx.createOscillator(),g=_awAudioCtx.createGain();
+    o.connect(g);g.connect(_awAudioCtx.destination);
+    o.type='triangle';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*.09);
+    g.gain.linearRampToValueAtTime(0.14,t+i*.09+.03);
+    g.gain.exponentialRampToValueAtTime(0.001,t+i*.09+.5);
+    o.start(t+i*.09);o.stop(t+i*.09+.8);
+  });
+}
+function _awPlaySE(type) {
+  if (type === 'hof') _awPlayHofChime();
+  else if (type === 'mvp') _awPlayMvpFanfare();
+  else _awPlayChime();
+}
+
+// ── パーティクル ──────────────────────────────────────────────────
+
+function _awSpawnParticles() {
+  const el = document.getElementById('aw-particles');
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div'); p.className = 'aw-particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    const sz = (2 + Math.random() * 3) + 'px'; p.style.width = p.style.height = sz;
+    el.appendChild(p);
   }
-  const line = _awardLine('rookie', d.id);
-  return `<div class="awards-category">🌟 新人王 🌟</div>
-  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 150)}</div>
-  <div class="awards-name">${d.name}</div>
-  <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
-  <div class="awards-detail">OVR ${d.ovr} / ${d.age}歳 / ${_styleJa(d.style)}</div>
-  ${line ? `<div class="awards-quote">${line}</div>` : ''}
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
 }
 
-function _buildBestMatchAward(d) {
-  // fighter1/fighter2 は {id, name, ovr, style} オブジェクト
-  const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
-  const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
-  const flavor = _bestMatchFlavor(d.mq);
-  // 各選手のpersonality×archetypeでセリフ選出
-  const line1 = _awardLine('bestMatch', f1.id);
-  const line2 = _awardLine('bestMatch', f2.id);
-  return `<div class="awards-category">🎬 ベストマッチ 🎬</div>
-  <div style="display:flex;justify-content:center;align-items:flex-start;gap:10px;margin:6px 0 8px">
-    <div style="flex:1;text-align:center">
-      <div style="display:flex;justify-content:center">${_awardsPortrait(f1.id, 100)}</div>
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-top:5px">${f1.name}</div>
-      <div style="font-size:10px;color:var(--text-dim)">OVR ${f1.ovr} / ${_styleJa(f1.style)}</div>
-      ${line1 ? `<div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${line1}」</div>` : ''}
-    </div>
-    <div style="flex-shrink:0;text-align:center;padding-top:46px">
-      <div style="font-size:11px;color:var(--text-dim);font-weight:700">VS</div>
-    </div>
-    <div style="flex:1;text-align:center">
-      <div style="display:flex;justify-content:center">${_awardsPortrait(f2.id, 100)}</div>
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-top:5px">${f2.name}</div>
-      <div style="font-size:10px;color:var(--text-dim)">OVR ${f2.ovr} / ${_styleJa(f2.style)}</div>
-      ${line2 ? `<div style="font-size:10px;color:var(--text-sub);font-style:italic;margin-top:5px;line-height:1.5">「${line2}」</div>` : ''}
-    </div>
-  </div>
-  <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${d.orgName}</div>
-  <div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:2px">MQ ${d.mq}</div>
-  ${flavor ? `<div style="font-size:11px;color:var(--text-sub);font-style:italic;margin-bottom:14px">${flavor}</div>` : '<div style="margin-bottom:14px"></div>'}
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+function _awClearParticles() {
+  const el = document.getElementById('aw-particles');
+  if (el) el.innerHTML = '';
 }
 
-function _buildMVPAward(d) {
-  const line = _awardLine('mvp', d.id);
-  return `<div class="awards-category">👑 MVP 👑</div>
-  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
-  <div class="awards-name">${d.name}</div>
-  <div class="awards-org ${d.isPlayerOrg ? 'player' : ''}">${d.orgName}</div>
-  <div class="awards-detail">OVR ${d.ovr} / 人気 ${Engine.util.dispPop(d.popularity)} / ${_styleJa(d.style)}</div>
-  ${line ? `<div class="awards-quote">${line}</div>` : ''}
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+// ── 紙吹雪 ──────────────────────────────────────────────────────
+
+function _awSpawnConfetti() {
+  const colors = ['#d4a843','#f0cc6e','#ffffff','#8b1a2a','#c92042'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div'); c.className = 'confetti-piece';
+      c.style.left = (10 + Math.random() * 80) + 'vw'; c.style.top = '-10px';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const sz = (5 + Math.random() * 8) + 'px'; c.style.width = sz; c.style.height = sz;
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      c.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4500);
+    }, i * 25);
+  }
 }
+
+// ── スライドビルダー (TASK-3) ────────────────────────────────────
 
 function _buildMediaAward(d) {
   const line = _awardLine('mediaAward', d.id);
   const totalRevDisp = Math.round(d.totalRev).toLocaleString();
   const mediaRevDisp = Math.round(d.mediaRevSeason).toLocaleString();
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
-  return `<div class="awards-category">📺 メディア功労賞 📺</div>
-  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
-  <div class="awards-name">${d.name}</div>
-  <div class="awards-detail">年間メディア貢献 ${totalRevDisp}万円</div>
-  <div style="font-size:11px;color:var(--text-sub);margin:4px 0">
-    出演料等 ${mediaRevDisp}万 ／ タレント活動 ${talentRevDisp}万
-    ${d.talentCountSeason > 0 ? `（活動${d.talentCountSeason}回）` : ''}
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">メディア功労賞</span></div>
+  <div class="media-layout">
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div class="media-stats">
+      <div class="winner-name" style="font-size:28px">${d.name}</div>
+      <div class="winner-sub">${d.orgName || ''} · ${_styleJa(d.style)}</div>
+      <div class="media-total">${totalRevDisp}万円</div>
+      <div class="media-total-label">年間メディア貢献</div>
+      <div class="media-breakdown">
+        <div class="media-breakdown-item"><div class="media-breakdown-val">${mediaRevDisp}万</div><div class="media-breakdown-label">出演料等</div></div>
+        <div class="media-breakdown-item"><div class="media-breakdown-val">${talentRevDisp}万</div><div class="media-breakdown-label">タレント活動</div></div>
+      </div>
+      ${d.talentCountSeason > 0 ? `<div class="media-activity-count">📋 タレント活動 ${d.talentCountSeason}回</div>` : ''}
+      ${_awSpeech(d.name, line)}
+    </div>
+  </div></div>`;
+}
+
+function _buildRookieAward(d) {
+  if (!d) return null; // スキップ
+  const line = _awardLine('rookie', d.id);
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌟</span><span class="badge-jp">新人王</span></div>
+  <div class="rookie-layout">
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div>
+      <div class="winner-name">${d.name}</div>
+      <div class="winner-sub">${d.orgName || ''} · ${d.age}歳</div>
+      <div class="winner-tags">
+        <span class="aw-tag">${_styleJa(d.style)}</span>
+        <span class="aw-tag neutral">OVR ${d.ovr}</span>
+        <span class="aw-tag">デビュー1年目</span>
+      </div>
+      ${_awSpeech(d.name, line)}
+    </div>
+  </div></div>`;
+}
+
+function _buildBestMatchAward(d) {
+  const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
+  const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
+  const line1 = _awardLine('bestMatch', f1.id);
+  const line2 = _awardLine('bestMatch', f2.id);
+  const f1OrgName = d.fighter1OrgName || d.orgName || '';
+  const f2OrgName = d.fighter2OrgName || d.orgName || '';
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
+  <div class="bestmatch-fighters">
+    <div class="fighter-side">
+      <div class="portrait-sm">${_awPortrait(f1.id)}</div>
+      <div class="fighter-name">${f1.name}</div>
+      <div class="fighter-org">${f1OrgName}</div>
+    </div>
+    <div class="vs-center">
+      <div class="mq-display">
+        <div class="mq-value">${d.mq}</div>
+        <div class="mq-label">MATCH QUALITY</div>
+        <div class="mq-stars">${_mqStars(d.mq)}</div>
+      </div>
+      <div class="vs-text">vs</div>
+    </div>
+    <div class="fighter-side">
+      <div class="portrait-sm">${_awPortrait(f2.id)}</div>
+      <div class="fighter-name">${f2.name}</div>
+      <div class="fighter-org">${f2OrgName}</div>
+    </div>
   </div>
-  ${line ? `<div class="awards-quote">${line}</div>` : ''}
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
+  <div class="bestmatch-quotes">
+    ${_awSpeech(f1.name, line1)}
+    ${_awSpeech(f2.name, line2)}
+  </div></div>`;
 }
 
 function _buildChampionsAward(champions) {
-  if (!champions || champions.length === 0) {
-    return `<div class="awards-category">🏆 チャンピオン 🏆</div>
-  <div class="awards-detail" style="margin:20px 0">チャンピオン情報なし</div>
-  <button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button>`;
-  }
-  // 各チャンピオンのpersonality×archetypeでセリフ選出
-  const lines = champions.map(ch => _awardLine('champion', ch.id));
-  const [c1, c2, c3] = champions;
-  // 1位（大）
-  const defText1 = c1.isPlayer && c1.defenses != null ? `<br>防衛 ${c1.defenses}回` : '';
-  const first = `<div style="margin-bottom:14px">
-    <div style="display:flex;justify-content:center">${_awardsPortrait(c1.id, 160)}</div>
-    <div class="awards-name" style="margin-top:8px">${c1.name}</div>
-    <div class="awards-org ${c1.isPlayer ? 'player' : ''}">${c1.orgName}</div>
-    <div style="font-size:11px;color:var(--text-sub)">OVR ${c1.ovr} / 人気 ${Engine.util.dispPop(c1.popularity)}${defText1}</div>
-    ${lines[0] ? `<div style="font-size:12px;color:var(--text-sub);font-style:italic;margin-top:6px">「${lines[0]}」</div>` : ''}
-  </div>`;
-  // 2位3位（小）
-  const makeSmall = (c, lineIdx) => {
-    if (!c) return '<div style="flex:1"></div>';
-    const defText = c.isPlayer && c.defenses != null ? ` / 防衛${c.defenses}回` : '';
-    return `<div style="flex:1;text-align:center">
-      <div style="display:flex;justify-content:center">${_awardsPortrait(c.id, 75)}</div>
-      <div style="font-size:11px;font-weight:700;color:var(--text);margin-top:5px">${c.name}</div>
-      <div style="font-size:9px;color:var(--text-dim)">${c.orgName}</div>
-      <div style="font-size:9px;color:var(--text-sub)">OVR ${c.ovr} / 人気 ${Engine.util.dispPop(c.popularity)}${defText}</div>
-      ${lines[lineIdx] ? `<div style="font-size:9px;color:var(--text-sub);font-style:italic;margin-top:4px">「${lines[lineIdx]}」</div>` : ''}
+  if (!champions || champions.length === 0) return null;
+  // 団体順位順: 1位中央、2位左、3位右
+  const c1 = champions[0]; // rank 1
+  const c2 = champions[1]; // rank 2
+  const c3 = champions[2]; // rank 3
+
+  const buildCol = (c, rank) => {
+    if (!c) return '';
+    const line = _awardLine('champion', c.id);
+    const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
+    const isPlayer = c.isPlayer;
+    return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
+      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-org" ${isPlayer ? 'style="color:var(--gold-light)"' : ''}>${c.orgName}</div>
+      ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
+      <div class="champ-quote">${_awSpeech(c.name, line)}</div>
     </div>`;
   };
-  const rest = (c2 || c3) ? `<div style="display:flex;gap:10px;justify-content:center;padding-top:4px">
-    ${makeSmall(c2, 1)}${makeSmall(c3, 2)}
-  </div>` : '';
-  return `<div class="awards-category">🏆 チャンピオン 🏆</div>
-  ${first}${rest}
-  <div style="margin-top:16px"><button class="awards-btn" onclick="window._awardsNext()">次へ ▶</button></div>`;
+
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏆</span><span class="badge-jp">タイトル王者</span></div>
+  <div class="champions-layout" id="aw-champions-layout">
+    ${buildCol(c2, 2)}
+    ${buildCol(c1, 1)}
+    ${buildCol(c3, 3)}
+  </div></div>`;
 }
 
-function _awardsShieldImg(level, id) {
-  const variant = Engine.awards.assignShieldVariant(level, id);
-  const url = Engine.awards.getShieldUrl(variant);
-  const emoji = level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️';
-  return `<img src="${url}" style="width:100px;height:auto;display:block;margin:0 auto 4px" alt="" onerror="this.outerHTML='<div style=font-size:48px;text-align:center>${emoji}</div>'">`;
+function _buildMVPAward(d) {
+  const line = _awardLine('mvp', d.id);
+  const winRate = d.winRate || 0;
+  const defenses = d.defenses || 0;
+  const ovrPct = Math.min(100, d.ovr);
+  const popPct = Math.min(100, d.popularity);
+  const defPct = Math.min(100, defenses * 10);
+
+  let statsHtml = `
+    <div class="stat-row"><div class="stat-label">OVR</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${ovrPct}"></div></div><div class="stat-val">${d.ovr}</div></div>
+    <div class="stat-row"><div class="stat-label">人気</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${popPct}"></div></div><div class="stat-val">${Engine.util.dispPop(d.popularity)}</div></div>
+    <div class="stat-row"><div class="stat-label">勝率</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${winRate}"></div></div><div class="stat-val">${winRate}%</div></div>`;
+  if (defenses > 0) {
+    statsHtml += `<div class="stat-row" style="margin-bottom:16px"><div class="stat-label">防衛</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${defPct}"></div></div><div class="stat-val">${defenses}回</div></div>`;
+  } else {
+    statsHtml += `<div style="margin-bottom:16px"></div>`;
+  }
+
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">👑</span><span class="badge-jp">MVP</span></div>
+  <div class="mvp-layout">
+    <div class="portrait-mvp"><div class="mvp-crown">👑</div>${_awPortrait(d.id)}</div>
+    <div style="flex:1">
+      <div class="winner-name" style="font-size:28px;margin-bottom:4px">${d.name}</div>
+      <div class="winner-sub" style="margin-bottom:18px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
+      ${statsHtml}
+      ${_awSpeech(d.name, line)}
+    </div>
+  </div></div>`;
 }
 
 function _buildHallOfFame(d) {
   const line = _awardLine('hallOfFame', d.id);
   const hofLevel = d.hofLevel || 1;
-  const hofPoints = d.hofPoints || 0;
-  const starText = hofLevel >= 3 ? '★★★ レジェンド' : hofLevel >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り';
-  const starColor = hofLevel >= 3 ? '#f39c12' : hofLevel >= 2 ? '#f1c40f' : '#bdc3c7';
+  const starCount = Math.min(hofLevel, 3);
+  const stars = Array(starCount).fill('✦').join(' ');
 
-  // キャリアハイライト年表
-  const highlights = d.careerHighlights || [];
-  let hlHtml = '';
-  if (highlights.length > 0) {
-    const hlIcons = { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆' };
-    hlHtml = `<div style="text-align:left;margin:8px auto;max-width:280px;font-size:12px;line-height:1.8">`;
-    hlHtml += `<div style="color:${starColor};font-weight:700;margin-bottom:4px;text-align:center;font-size:11px;letter-spacing:1px">── キャリアハイライト ──</div>`;
-    highlights.forEach(hl => {
-      const icon = hlIcons[hl.type] || '📌';
-      hlHtml += `<div><span style="color:rgba(255,255,255,0.4);margin-right:6px">S${hl.season}</span>${icon} ${hl.text}</div>`;
-    });
-    hlHtml += `</div>`;
-  }
-
-  // 通算実績サマリー
   const statsLine = [];
+  if (d.totalDefenses > 0) statsLine.push(`通算防衛 ${d.totalDefenses}回`);
   if (d.titleReigns > 0) statsLine.push(`王座${d.titleReigns}回獲得`);
-  if (d.totalDefenses > 0) statsLine.push(`通算${d.totalDefenses}防衛`);
   if (d.juniorTournamentWins > 0) statsLine.push(`JT優勝${d.juniorTournamentWins}回`);
   if (d.ppvMainEventWins > 0) statsLine.push(`PPV優勝${d.ppvMainEventWins}回`);
+  const plaqueText = statsLine.join(' · ') || `${d.activeYears || ''}`;
 
-  const ageText = d.retireAge ? `（${d.retireAge}歳引退）` : '';
-  const ovrText = d.peakOVR ? ` / 最高OVR ${d.peakOVR}（S${d.peakOVRSeason}）` : '';
-
-  return `${_awardsShieldImg(hofLevel, d.id)}
-  <div class="awards-category" style="color:${starColor}">🏛️ ${starText} 🏛️</div>
-  <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 130)}</div>
-  <div class="awards-name gold">✦ ${d.name} ✦</div>
-  <div class="awards-org">${d.orgName} / ${_styleJa(d.style)}</div>
-  <div class="awards-plaque" style="font-size:12px">${d.activeYears}${ageText}${ovrText}</div>
-  ${hlHtml}
-  <div class="awards-plaque" style="font-size:12px">${statsLine.join(' / ')}<br><span style="color:${starColor}">${starText}（${hofPoints}pt）</span></div>
-  ${line ? `<div class="awards-quote">${line}</div>` : ''}
-  <button class="awards-btn" onclick="window._awardsNext()">拍手 👏</button>`;
+  return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
+  <div class="hof-layout">
+    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
+    <div class="hof-stars">${stars}</div>
+    <div class="hof-name">${d.name}</div>
+    <div class="hof-plaque">${plaqueText}</div>
+    ${_awSpeech(d.name, line)}
+  </div></div>`;
 }
 
 function _buildAwardsSummary(a) {
-  const row = (icon, lbl, val) => val
-    ? `<div class="awards-summary-row"><span class="awards-summary-label">${icon} ${lbl}</span><span>${val}</span></div>`
-    : '';
-  // NPC殿堂入りも含めた殿堂テキスト
-  const allInductees = [];
-  if (a.hallOfFame && a.hallOfFame.length > 0) {
-    a.hallOfFame.forEach(h => allInductees.push(`${h.name}（${h.orgName || 'あなたの団体'}）`));
+  const item = (icon, label, winner, detail, fullWidth) =>
+    `<div class="summary-item${fullWidth ? ' full-width' : ''}">
+      <div class="summary-icon">${icon}</div>
+      <div><div class="summary-award">${label}</div>
+      <div class="summary-winner" ${fullWidth ? 'style="color:var(--gold-light);font-size:18px"' : ''}>${winner}</div>
+      ${detail ? `<div class="summary-org">${detail}</div>` : ''}
+      </div></div>`;
+
+  let html = '<div class="award-card"><div class="award-badge"><span class="badge-icon">📜</span><span class="badge-jp">全受賞者一覧</span></div><div class="summary-grid">';
+
+  if (a.mediaAward)
+    html += item('📺', 'メディア功労賞', a.mediaAward.name, `貢献 ${Math.round(a.mediaAward.totalRev).toLocaleString()}万円`);
+  if (a.rookieOfYear)
+    html += item('🌟', '新人王', a.rookieOfYear.name, a.rookieOfYear.orgName);
+  if (a.bestMatch) {
+    const bm1 = typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1;
+    const bm2 = typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2;
+    html += item('🎬', 'ベストマッチ', `${bm1} vs ${bm2}`, `MQ ${a.bestMatch.mq}`);
   }
-  if (a.npcInductees && a.npcInductees.length > 0) {
-    a.npcInductees.forEach(h => {
-      const star = h.hofLevel >= 3 ? '★★★' : h.hofLevel >= 2 ? '★★' : '★';
-      allInductees.push(`${h.name}（${h.orgName}）${star}`);
+  if (a.champions && a.champions.length > 0) {
+    const c1 = a.champions[0];
+    const defText = c1.defenses != null ? `防衛 ${c1.defenses}回` : c1.orgName;
+    html += item('🏆', 'タイトル王者 1位', c1.name, defText);
+  }
+  if (a.mvp)
+    html += item('👑', 'MVP', a.mvp.name, a.mvp.orgName);
+
+  // 殿堂入り
+  const allInductees = [];
+  if (a.hallOfFame && a.hallOfFame.length > 0)
+    a.hallOfFame.forEach(h => allInductees.push(h));
+  if (a.npcInductees && a.npcInductees.length > 0)
+    a.npcInductees.forEach(h => allInductees.push(h));
+
+  if (allInductees.length > 0) {
+    const names = allInductees.map(h => h.name).join(' / ');
+    const details = allInductees.map(h => h.orgName || '').filter(Boolean).join(' / ');
+    html += item('🏛️', '殿堂入り', names, details, true);
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+// ── メインフロー (TASK-4) ────────────────────────────────────────
+
+function showAwardsCeremony(awards, onDone) {
+  if (!awards) { if (onDone) onDone(); return; }
+  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone)); return; }
+
+  // スライド構築（動的: 該当なしスキップ）
+  const slideInfo = []; // { html, label, se, isChampions, isMvp, isHof, hofData }
+
+  if (awards.mediaAward)
+    slideInfo.push({ html: _buildMediaAward(awards.mediaAward), label: 'メディア功労賞', se: 'normal' });
+  const rookieHtml = _buildRookieAward(awards.rookieOfYear);
+  if (rookieHtml)
+    slideInfo.push({ html: rookieHtml, label: '新人王', se: 'normal' });
+  if (awards.bestMatch)
+    slideInfo.push({ html: _buildBestMatchAward(awards.bestMatch), label: 'ベストマッチ', se: 'normal' });
+  const champHtml = _buildChampionsAward(awards.champions);
+  if (champHtml)
+    slideInfo.push({ html: champHtml, label: 'タイトル王者', se: 'normal', isChampions: true });
+  if (awards.mvp)
+    slideInfo.push({ html: _buildMVPAward(awards.mvp), label: 'MVP', se: 'mvp', isMvp: true });
+  if (awards.hallOfFame && awards.hallOfFame.length > 0) {
+    awards.hallOfFame.forEach(inductee => {
+      slideInfo.push({ html: _buildHallOfFame(inductee), label: '殿堂入り', se: 'hof', isHof: true, hofData: inductee });
     });
   }
-  const hofText = allInductees.length > 0 ? allInductees.join('、') : '該当なし';
-  const playerChamp = a.champions && a.champions.find(c => c.isPlayer);
-  const topChamp = playerChamp || (a.champions && a.champions[0]);
-  const champText = topChamp
-    ? (topChamp.isPlayer && topChamp.defenses != null
-        ? `${topChamp.name}（防衛${topChamp.defenses}回、${topChamp.orgName}）`
-        : `${topChamp.name}（${topChamp.orgName}）`)
-    : '（未設立）';
-  const mvpText  = a.mvp          ? `${a.mvp.name}（${a.mvp.orgName}）`              : null;
-  const rookText = a.rookieOfYear ? `${a.rookieOfYear.name}（${a.rookieOfYear.orgName}）` : null;
-  const bm1 = a.bestMatch ? (typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1) : null;
-  const bm2 = a.bestMatch ? (typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2) : null;
-  const bmText   = a.bestMatch    ? `${bm1} vs ${bm2}（MQ ${a.bestMatch.mq}）` : null;
-  return `<div class="awards-title" style="font-size:13px;margin-bottom:14px">シーズン${a.season} 表彰式 結果</div>
-  <div class="awards-summary">
-    ${row('🌟','新人王', rookText)}
-    ${row('🎬','ベストマッチ', bmText)}
-    ${row('👑','MVP', mvpText)}
-    ${row('🏆','王者', champText)}
-    ${row('🏛️','殿堂入り', hofText)}
-  </div>
-  <button class="awards-btn" onclick="window._awardsNext()">新シーズンへ ▶</button>`;
+  // 全受賞者一覧は常に表示
+  slideInfo.push({ html: _buildAwardsSummary(awards), label: '全受賞者一覧', se: 'normal' });
+
+  if (slideInfo.length === 0) { if (onDone) onDone(); return; }
+
+  const overlay = document.getElementById('awardsOverlay');
+  const slideWrap = document.getElementById('aw-slide-wrap');
+  const headerLabel = document.getElementById('aw-header-award-name');
+  const dotsEl = document.getElementById('aw-slide-dots');
+  const btnNext = document.getElementById('aw-btn-next');
+  const fanfareEl = document.getElementById('aw-fanfare-overlay');
+  const coachFg = document.getElementById('hof-coach-fg');
+
+  // スライドDOM生成
+  slideWrap.innerHTML = '';
+  slideInfo.forEach((si, i) => {
+    const div = document.createElement('div');
+    div.className = 'aw-slide' + (i === 0 ? ' active' : '');
+    div.id = 'aw-slide-' + i;
+    div.innerHTML = si.html;
+    slideWrap.appendChild(div);
+  });
+
+  // ドット生成
+  dotsEl.innerHTML = '';
+  slideInfo.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'aw-dot' + (i === 0 ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+
+  // ファンファーレ
+  fanfareEl.innerHTML = `
+    <div class="fanfare-line-1">シーズン ${awards.season}</div>
+    <div class="fanfare-line-2">年間表彰式</div>
+    <div class="fanfare-divider"></div>
+    <div class="fanfare-sub">全受賞者発表</div>`;
+  fanfareEl.style.animation = 'none';
+  requestAnimationFrame(() => { fanfareEl.style.animation = ''; });
+
+  // パーティクル
+  _awSpawnParticles();
+
+  // コーチFG初期化
+  coachFg.innerHTML = '';
+  coachFg.classList.remove('revealed');
+
+  let current = 0;
+  const TOTAL = slideInfo.length;
+
+  function goToSlide(idx) {
+    const slides = slideWrap.querySelectorAll('.aw-slide');
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    slides[current].style.animation = 'none';
+    requestAnimationFrame(() => { slides[current].style.animation = ''; });
+
+    headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[current].label;
+    dotsEl.querySelectorAll('.aw-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    btnNext.textContent = current === TOTAL - 1 ? '✕ 閉じる' : '次へ　→';
+
+    setTimeout(() => _awPlaySE(slideInfo[current].se), 50);
+
+    // タイトル王者 順番登場
+    if (slideInfo[current].isChampions) {
+      ['aw-champ-rank1','aw-champ-rank2','aw-champ-rank3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('revealed');
+      });
+      setTimeout(() => {
+        ['aw-champ-rank3','aw-champ-rank2','aw-champ-rank1'].forEach((id, i) => {
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('revealed');
+            if (i < 2) _awPlayChime(); else _awPlayMvpFanfare();
+          }, 400 + i * 700);
+        });
+      }, 200);
+    }
+
+    // MVPバーアニメーション
+    if (slideInfo[current].isMvp) {
+      const bars = slides[current].querySelectorAll('.stat-bar');
+      bars.forEach(b => { b.style.width = '0%'; });
+      bars.forEach((bar, i) => {
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200 + i * 150);
+      });
+    }
+
+    // 殿堂入り紙吹雪 + コーチFG
+    if (slideInfo[current].isHof) {
+      setTimeout(_awSpawnConfetti, 300);
+      // コーチFG演出（TASK-5で詳細実装、ここでは基盤のみ）
+      _awShowCoachFg(slideInfo[current].hofData, awards);
+    } else {
+      coachFg.classList.remove('revealed');
+    }
+  }
+
+  function nextSlide() {
+    if (current >= TOTAL - 1) {
+      // 閉じる
+      overlay.classList.remove('active');
+      _awClearParticles();
+      coachFg.classList.remove('revealed');
+      coachFg.innerHTML = '';
+      window._awardsNext = null;
+      if (onDone) onDone();
+      _drainPopupQueue();
+      return;
+    }
+    goToSlide(current + 1);
+  }
+
+  window._awardsNext = nextSlide;
+  btnNext.onclick = nextSlide;
+
+  // 表示開始
+  overlay.classList.add('active');
+  headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[0].label;
+
+  // 冒頭ファンファーレSE
+  setTimeout(() => _awPlayFanfare(), 1000);
+
+  // 3秒後にファンファーレ消えた後、最初のスライドSE
+  setTimeout(() => {
+    _awPlaySE(slideInfo[0].se);
+    // タイトル王者が最初のスライドの場合
+    if (slideInfo[0].isChampions) {
+      setTimeout(() => {
+        ['aw-champ-rank3','aw-champ-rank2','aw-champ-rank1'].forEach((id, i) => {
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('revealed');
+            if (i < 2) _awPlayChime(); else _awPlayMvpFanfare();
+          }, 400 + i * 700);
+        });
+      }, 200);
+    }
+    if (slideInfo[0].isMvp) {
+      const bars = slideWrap.querySelectorAll('#aw-slide-0 .stat-bar');
+      bars.forEach((bar, i) => {
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200 + i * 150);
+      });
+    }
+  }, 3200);
+
+  // BGM
+  if (typeof Audio !== 'undefined' && Audio.fileBgm) {
+    Audio.fileBgm('8bit-ending-theme', 0.07, true);
+  }
+}
+
+// ── コーチFG演出 (TASK-5) ────────────────────────────────────────
+// プレイヤー自団体の殿堂入り選手の場合のみ発動
+function _awShowCoachFg(hofData, awards) {
+  const coachFg = document.getElementById('hof-coach-fg');
+  if (!coachFg) return;
+  coachFg.classList.remove('revealed');
+  coachFg.innerHTML = '';
+
+  // 自団体選手でない場合はコーチ演出なし
+  if (!hofData || hofData.orgId !== 'player') return;
+
+  // 担当コーチを逆引き（coachAssign = { coachId: [fighterId, ...] }）
+  const coachAssign = (typeof G !== 'undefined' && G.coachAssign) || {};
+  let assignedCoachId = null;
+  for (const [cId, fighters] of Object.entries(coachAssign)) {
+    if (fighters && fighters.includes(hofData.id)) { assignedCoachId = parseInt(cId); break; }
+  }
+  if (assignedCoachId == null) return; // コーチ未割り当て
+
+  const coach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(c => c.id === assignedCoachId) : null;
+  if (!coach) return;
+
+  // セリフ選出
+  const lines = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES.hofCoach && AWARD_LINES.hofCoach._default) || [];
+  const line = lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)] : '';
+  if (!line) return;
+
+  // コーチポートレート
+  const coachPortUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl('coach_' + coach.id) : null;
+  const coachPortHtml = coachPortUrl
+    ? `<img src="${coachPortUrl}" alt="">`
+    : (coach.emoji || '👩‍🏫');
+
+  coachFg.innerHTML = `
+    <div class="coach-fg-bubble">
+      <div class="speech-speaker">${coach.name} コーチ</div>
+      <div class="speech-text">「${line}」</div>
+    </div>
+    <div class="coach-fg-portrait">
+      <div class="coach-fg-badge">COACH</div>
+      ${coachPortHtml}
+    </div>`;
+
+  // 1.4秒後にスライドイン
+  setTimeout(() => {
+    coachFg.classList.add('revealed');
+    _awPlayChime();
+  }, 1400);
 }
 
 

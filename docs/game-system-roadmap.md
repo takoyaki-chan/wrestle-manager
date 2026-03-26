@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（バグ修正追補: プロモ収入重複/メディア功労賞表示/fanExpect統一）
+> 最終更新: 2026-03-26（年間表彰式全面リファクタ: モックアップ準拠UI書換+メディア功労賞全団体拡張+コーチFG演出）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**バグ修正追補（2026-03-26）。** ④_pendingPromoIncomes/_pendingPromoGoods毎週重複計上: _pendingMediaIncomesと同様にtickWeek内processSettlement後にdelete。⑤メディア功労賞の金額表示が/10000で極小値: 値はすでに万単位のため除算を削除しtoLocaleString()整形に変更。⑥fanExpectation参照は前回修正で全箇所解消済み(grep確認)。auto-sim 100シーズンALL CLEAR（funds正常化: プロモ重複解消で約40%減）。
+**年間表彰式全面リファクタ（2026-03-26）。** モックアップ(awards-mockup-final-v2.html)準拠で表彰式UIを全面書き換え。TASK-1:メディア功労賞を全団体対象に拡張(AI団体processAIWeek内で興行出場選手のmediaRevSeasonトラッキング追加+PPV/JT/対抗戦でAI選手のmediaRevSeason加算+processSeasonEndに3フィールドリセット追加+selectMediaAward候補を全団体に拡張+返り値にorgName追加)。TASK-2:CSS全面置換(ステージ背景+スポットライト3灯+パーティクル+ファンファーレオーバーレイ+セレモニーヘッダー+スライド制御+award-card+各賞固有レイアウト+ナビゲーション+コーチFG+紙吹雪、枠画像フレームa-g完全廃止)+Google Fonts追加(Noto Serif JP)+HTML構造書換(#stage/#aw-particles/#aw-fanfare-overlay/#aw-ceremony/#hof-coach-fg)。TASK-3:全7スライドビルダー関数をモックアップ準拠で書換(メディア功労賞→新人王→ベストマッチ→タイトル王者→MVP→殿堂→一覧、該当なしスキップ)。TASK-4:スライド制御(goToSlide/nextSlide+ドットインジケータ動的生成+ファンファーレ冒頭3秒演出)+タイトル王者順番登場(3位→2位→1位各700ms)+MVPスタッツバーアニメーション(data-width→style.width遅延適用)+殿堂紙吹雪(80個5色)+SE4種(Web Audio: playChime/playMvpFanfare/playHofChime/playFanfare)+パーティクル30個動的生成。TASK-5:殿堂入りコーチFG演出(自団体殿堂入り時のみ+coachAssign逆引きで担当コーチ特定+1.4秒後スライドイン+AWARD_LINES.hofCoach5パターン+他スライド移動で非表示)。auto-sim 200シーズン(2 seeds)ALL CLEAR。
+
+前回: **バグ修正追補（2026-03-26）。** ④_pendingPromoIncomes/_pendingPromoGoods毎週重複計上: _pendingMediaIncomesと同様にtickWeek内processSettlement後にdelete。⑤メディア功労賞の金額表示が/10000で極小値: 値はすでに万単位のため除算を削除しtoLocaleString()整形に変更。⑥fanExpectation参照は前回修正で全箇所解消済み(grep確認)。auto-sim 100シーズンALL CLEAR（funds正常化: プロモ重複解消で約40%減）。
 
 前回: **バグ修正3件（2026-03-26）。** ①メディア功労賞が選出されない: applySeasonEndがmediaRevSeason等を先にリセットしていたため、awards.generate()をapplySeasonEndの前に移動。②_pendingMediaIncomes毎週重複計上: processSettlement後にtickWeek内でdelete実行し1回限りの消費に。③新聞プレビューのファン期待カードが空: buildPreview/app.jsのstate.fanExpectation参照をEngine.fanExpect.generate()動的生成に置換。auto-sim 200シーズンALL CLEAR。
 

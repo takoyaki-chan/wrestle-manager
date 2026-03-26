@@ -4329,6 +4329,19 @@ const Engine = {
           }
         });
 
+        // メディア功労賞: AI団体興行出場選手のメディア収入個人トラッキング
+        const participantIds = new Set();
+        matchResults.forEach(r => {
+          if (r.left?.id != null) participantIds.add(r.left.id);
+          if (r.right?.id != null) participantIds.add(r.right.id);
+        });
+        roster = roster.map(f => {
+          if (!participantIds.has(f.id)) return f;
+          const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.showPerMQ * 0.15);
+          if (rev <= 0) return f;
+          return { ...f, mediaRevSeason: (f.mediaRevSeason || 0) + rev };
+        });
+
         // recentMatches記録（AI団体）
         matchResults.forEach(r => {
           roster = Engine.pushRecentMatch(roster, r.left.id, r.right.id, r.winner, state.season, state.week);
@@ -4495,6 +4508,10 @@ const Engine = {
           f.wins = 0; f.losses = 0; f.draws = 0;
           f.lastMatchResult = null;
           f.seasonInjuries = 0;
+          // メディア功労賞: シーズン累計リセット
+          f.mediaRevSeason = 0;
+          f.talentRevSeason = 0;
+          f.talentCountSeason = 0;
         });
 
         // Step 5: ���ޔ��� (scout-spec ��7)
@@ -9977,21 +9994,30 @@ Engine.awards = {
     };
   },
 
-  /** メディア功労賞: mediaRevSeason + talentRevSeason が最大のプレイヤー団体選手 */
+  /** メディア功労賞: mediaRevSeason + talentRevSeason が最大の全団体選手 */
   selectMediaAward(state) {
     const ov = Engine.util.ov;
-    const candidates = [...(state.roster || [])].filter(f => {
+    // 全団体の選手を候補にする
+    const allWrestlers = [];
+    (state.roster || []).forEach(f => allWrestlers.push({ f, orgId: 'player' }));
+    Object.keys(state.aiOrgs || {}).forEach(orgId => {
+      const orgData = state.aiOrgs[orgId];
+      if (orgData && orgData.roster) {
+        orgData.roster.forEach(f => allWrestlers.push({ f, orgId }));
+      }
+    });
+    const candidates = allWrestlers.filter(({ f }) => {
       const score = (f.mediaRevSeason || 0) + (f.talentRevSeason || 0);
       return score > 0;
     });
     if (candidates.length === 0) return null;
     candidates.sort((a, b) => {
-      const sa = (a.mediaRevSeason || 0) + (a.talentRevSeason || 0);
-      const sb = (b.mediaRevSeason || 0) + (b.talentRevSeason || 0);
+      const sa = (a.f.mediaRevSeason || 0) + (a.f.talentRevSeason || 0);
+      const sb = (b.f.mediaRevSeason || 0) + (b.f.talentRevSeason || 0);
       if (sb !== sa) return sb - sa;
-      return (b.talentCountSeason || 0) - (a.talentCountSeason || 0);
+      return (b.f.talentCountSeason || 0) - (a.f.talentCountSeason || 0);
     });
-    const winner = candidates[0];
+    const { f: winner, orgId: winnerOrgId } = candidates[0];
     const totalRev = (winner.mediaRevSeason || 0) + (winner.talentRevSeason || 0);
     return {
       id: winner.id,
@@ -10005,6 +10031,8 @@ Engine.awards = {
       talentRevSeason: winner.talentRevSeason || 0,
       talentCountSeason: winner.talentCountSeason || 0,
       totalRev,
+      orgName: Engine.awards._orgName(state, winnerOrgId),
+      isPlayerOrg: winnerOrgId === 'player',
     };
   },
 
