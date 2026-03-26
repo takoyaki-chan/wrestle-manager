@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（バグ修正3件: メディア功労賞/メディア収入重複/新聞プレビュー）
+> 最終更新: 2026-03-26（バグ修正追補: プロモ収入重複/メディア功労賞表示/fanExpect統一）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**バグ修正3件（2026-03-26）。** ①メディア功労賞が選出されない: applySeasonEndがmediaRevSeason等を先にリセットしていたため、awards.generate()をapplySeasonEndの前に移動。②_pendingMediaIncomes毎週重複計上: processSettlement後にtickWeek内でdelete実行し1回限りの消費に。③新聞プレビューのファン期待カードが空: buildPreview/app.jsのstate.fanExpectation参照をEngine.fanExpect.generate()動的生成に置換。auto-sim 200シーズンALL CLEAR。
+**バグ修正追補（2026-03-26）。** ④_pendingPromoIncomes/_pendingPromoGoods毎週重複計上: _pendingMediaIncomesと同様にtickWeek内processSettlement後にdelete。⑤メディア功労賞の金額表示が/10000で極小値: 値はすでに万単位のため除算を削除しtoLocaleString()整形に変更。⑥fanExpectation参照は前回修正で全箇所解消済み(grep確認)。auto-sim 100シーズンALL CLEAR（funds正常化: プロモ重複解消で約40%減）。
+
+前回: **バグ修正3件（2026-03-26）。** ①メディア功労賞が選出されない: applySeasonEndがmediaRevSeason等を先にリセットしていたため、awards.generate()をapplySeasonEndの前に移動。②_pendingMediaIncomes毎週重複計上: processSettlement後にtickWeek内でdelete実行し1回限りの消費に。③新聞プレビューのファン期待カードが空: buildPreview/app.jsのstate.fanExpectation参照をEngine.fanExpect.generate()動的生成に置換。auto-sim 200シーズンALL CLEAR。
 
 前回: **受賞歴キャリア記録追加（2026-03-26）。** 年間表彰式の受賞結果を個人のcareerRecord.historyに永続記録。対象4賞:新人王(awardRookie)/MVP(awardMVP)/メディア功労賞(awardMedia)/ベストマッチ賞(awardBestMatch)。_checkAndShowAwardsでEngine.career.addEvent呼び出し(プレイヤー団体受賞者のみ)。milestone.getに4case追加→キャリア年表に受賞歴表示。_typeStyleに4スタイル追加(アイコン+カラー)。buildCareerHighlightsに4case追加→殿堂入り時のハイライトにも反映。auto-sim 100シーズンALL CLEAR。
 

@@ -1973,9 +1973,9 @@ function _buildMVPAward(d) {
 
 function _buildMediaAward(d) {
   const line = _awardLine('mediaAward', d.id);
-  const totalRevDisp = (d.totalRev / 10000).toFixed(0);
-  const mediaRevDisp = (d.mediaRevSeason / 10000).toFixed(0);
-  const talentRevDisp = (d.talentRevSeason / 10000).toFixed(0);
+  const totalRevDisp = Math.round(d.totalRev).toLocaleString();
+  const mediaRevDisp = Math.round(d.mediaRevSeason).toLocaleString();
+  const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
   return `<div class="awards-category">📺 メディア功労賞 📺</div>
   <div style="margin:4px auto 10px">${_awardsPortrait(d.id, 170)}</div>
   <div class="awards-name">${d.name}</div>

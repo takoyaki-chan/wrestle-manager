@@ -5858,8 +5858,10 @@ const Engine = {
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
-    // transient: _pendingMediaIncomes は settlement で消費済み — 次週への重複計上を防止
+    // transient: pending収入は settlement で消費済み — 次週への重複計上を防止
     delete s._pendingMediaIncomes;
+    delete s._pendingPromoIncomes;
+    delete s._pendingPromoGoods;
     // v2.1: 興行週の trust 更新に伴う lockerRoomMorale 反映（非興行週は null = 変更なし）
     if (settle.lockerRoomMorale != null) {
       s = { ...s, lockerRoomMorale: settle.lockerRoomMorale };
