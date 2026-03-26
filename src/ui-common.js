@@ -3210,7 +3210,9 @@ function fLink(c, opts = {}) {
   const cls = opts.bold !== false ? 'font-weight:700;' : '';
   const size = opts.size || '';
   const sizeStyle = size ? `font-size:${size};` : '';
-  return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}')">${c.name}</span>${extra}`;
+  // skipQueue: オーバーレイ上から呼ぶ場合にキューチェックをスキップ
+  const skipArg = opts.skipQueue ? ',true' : '';
+  return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}'${skipArg})">${c.name}</span>${extra}`;
 }
 
 function autoFillCard() {
@@ -3652,7 +3654,7 @@ function renderShowResult(results, injuryResults) {
           <div class="portrait-wrap" style="width:110px;height:110px;border:2px solid rgba(243,156,18,0.4)">
             ${faceL ? `<img src="${faceL}" alt="" onerror="this.style.display='none'">` : portraitImg(r.left.id, 110)}
           </div>
-          <div class="fname">${fLink(r.left, {source:'roster'})}</div>
+          <div class="fname">${fLink(r.left, {source:'roster', skipQueue:true})}</div>
         </div>
         <div class="sr-vs"><div class="sr-vs-text">VS</div></div>
         <div class="sr-char" style="width:170px">
@@ -3660,7 +3662,7 @@ function renderShowResult(results, injuryResults) {
           <div class="portrait-wrap" style="width:110px;height:110px;border:2px solid rgba(243,156,18,0.4)">
             ${faceR ? `<img src="${faceR}" alt="" onerror="this.style.display='none'">` : portraitImg(r.right.id, 110)}
           </div>
-          <div class="fname">${fLink(r.right, {source:'roster'})}</div>
+          <div class="fname">${fLink(r.right, {source:'roster', skipQueue:true})}</div>
         </div>
       </div>
       <div class="sr-win-badge"><span style="background:rgba(243,156,18,0.2);color:#f39c12">DRAW</span></div>`;
@@ -3703,7 +3705,7 @@ function renderShowResult(results, injuryResults) {
           <div class="portrait-wrap">
             ${faceUrl ? `<img src="${faceUrl}" alt="" onerror="this.style.display='none'">` : portraitImg(fighter.id, 110)}
           </div>
-          <div class="fname">${fLink(fighter, {source:'roster', bold:isWinner})}</div>
+          <div class="fname">${fLink(fighter, {source:'roster', bold:isWinner, skipQueue:true})}</div>
         </div>`;
       };
 
@@ -4221,15 +4223,33 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
 
     if (isDraw) {
       // ─── 引き分け ───
+      const drawSize = isMain ? 160 : 120;
+      const drawOvrL = Engine.util.ov(r.left);
+      const drawOvrR = Engine.util.ov(r.right);
+      const _drawStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
+      const _drawStatBar = (f) => `<div style="display:flex;flex-direction:column;gap:3px;width:130px">${['PW','SP','TE','ST','MN'].map((lb,i) => {
+        const k = ['pw','sp','te','st','mn'][i]; const v = f[k]||0; const pct = Math.min(100, v);
+        return `<div style="display:flex;align-items:center;gap:4px;font-size:10px">
+          <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${lb}</span>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
+            <div style="width:${pct}%;height:100%;background:${_drawStatColors[i]};border-radius:3px"></div>
+          </div>
+          <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
+        </div>`;
+      }).join('')}</div>`;
       html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          ${portraitImg(r.left.id, isMain ? 180 : 140, 'portrait-match')}
-          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster'})}</div>
+          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.left.id, drawSize, 'portrait-match')}</div>
+          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster', skipQueue:true})}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrL}</div>
+          <div style="margin-top:3px">${_drawStatBar(r.left)}</div>
         </div>
         <div style="font-size:16px;font-weight:700;padding:4px 14px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;border-radius:4px;flex-shrink:0;align-self:center">DRAW</div>
         <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          ${portraitImg(r.right.id, isMain ? 180 : 140, 'portrait-match')}
-          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster'})}</div>
+          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.right.id, drawSize, 'portrait-match')}</div>
+          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster', skipQueue:true})}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrR}</div>
+          <div style="margin-top:3px">${_drawStatBar(r.right)}</div>
         </div>
       </div>`;
       html += `<div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
@@ -4241,8 +4261,8 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       const winnerId = winF.id;
       const loserId = loseF.id;
       // ポートレイトサイズ
-      const winSize = isMain ? 180 : 140;
-      const loseSize = isMain ? 110 : 80;
+      const winSize = isMain ? 160 : 120;
+      const loseSize = isMain ? 100 : 80;
 
       // 吹き出し判定
       let winBubble = '';
@@ -4285,20 +4305,44 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       const losePortraitStyle = `border:1px solid rgba(200,190,170,0.08);border-radius:7px;opacity:0.65`;
       const winNameColor = isMain ? 'color:var(--gold);' : '';
 
+      // OVR/パラメータ取得
+      const ovrW = Engine.util.ov(winF);
+      const ovrLose = Engine.util.ov(loseF);
+      const _ppvStatLabels = ['PW','SP','TE','ST','MN'];
+      const _ppvStatKeys = ['pw','sp','te','st','mn'];
+      const _ppvStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
+      const _ppvStatBar = (f, compact) => {
+        const mw = compact ? 110 : 140;
+        return `<div style="display:flex;flex-direction:column;gap:3px;width:${mw}px">${_ppvStatKeys.map((k,i) => {
+          const v = f[k]||0; const pct = Math.min(100, v);
+          return `<div style="display:flex;align-items:center;gap:4px;font-size:${compact?9:10}px">
+            <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${_ppvStatLabels[i]}</span>
+            <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
+              <div style="width:${pct}%;height:100%;background:${_ppvStatColors[i]};border-radius:3px"></div>
+            </div>
+            <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
+          </div>`;
+        }).join('')}</div>`;
+      };
+
       html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
       // 勝者列
       html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:55%">`;
       if (winBubble) html += winBubble;
-      html += `<div style="${winPortraitStyle};overflow:hidden">${portraitImg(winnerId, winSize, 'portrait-match winner')}</div>`;
-      html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster'})}</div>`;
+      html += `<div style="${winPortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(winnerId, winSize, 'portrait-match winner')}</div>`;
+      html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster', skipQueue:true})}</div>`;
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-top:2px">OVR ${ovrW}</div>`;
+      html += `<div style="margin-top:3px">${_ppvStatBar(winF, false)}</div>`;
       html += `</div>`;
       // VS
       html += `<div style="font-size:14px;color:rgba(200,190,170,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
       // 敗者列
       html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:38%">`;
       if (loseBubble) html += loseBubble;
-      html += `<div style="${losePortraitStyle};overflow:hidden">${portraitImg(loserId, loseSize, 'portrait-match loser')}</div>`;
-      html += `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">${fLink(loseF, {source:'roster', bold:false})}</div>`;
+      html += `<div style="${losePortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(loserId, loseSize, 'portrait-match loser')}</div>`;
+      html += `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">${fLink(loseF, {source:'roster', bold:false, skipQueue:true})}</div>`;
+      html += `<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">OVR ${ovrLose}</div>`;
+      html += `<div style="margin-top:3px">${_ppvStatBar(loseF, true)}</div>`;
       html += `</div>`;
       html += `</div>`;
 
@@ -4327,9 +4371,8 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     html += `</div>`;
   }
 
-  // ═══ 報酬 & 対戦pt & ヒート ═══
+  // ═══ 対戦pt & ヒート ═══
   html += `<div style="text-align:center;padding:14px 16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:8px;margin:18px 0 16px">`;
-  html += `<div style="font-size:14px;color:var(--gold);font-weight:600">💰 出場報酬: ${reward}万円</div>`;
   const summitIdx = card.findIndex(m => m.isSummit);
   if (summitIdx >= 0 && results[summitIdx]) {
     const sr = results[summitIdx];
@@ -5377,7 +5420,7 @@ function showChoiceEventModal(event, state, onChoice) {
 
   // 選手の顔 + セリフ
   if (fighter) {
-    const face = portraitImg(fighter.id, 88, 'care-reaction-portrait');
+    const face = portraitImg(fighter.id, 72, 'care-reaction-portrait');
     const dialogue = event.dialogue || '';
     html += `<div class="care-reaction" style="border-color:${borderColor}">
       ${face}
@@ -5533,7 +5576,7 @@ function showLargeEventModal(event, state, step, onChoice) {
 // ── B1: 練習中の怪我 ──────────────────────────────────────────────────────
 function _buildB1Modal(event, state, roster) {
   const fighter = roster.find(f => f.id === event.fighter);
-  const face = fighter ? portraitImg(fighter.id, 88, 'care-reaction-portrait') : '';
+  const face = fighter ? portraitImg(fighter.id, 72, 'care-reaction-portrait') : '';
   const severityLabel = event.severity === 'moderate' ? '（重め）' : '（軽め）';
   const funds = state.funds || 0;
 
@@ -5575,8 +5618,8 @@ function _buildB1Modal(event, state, roster) {
 function _buildB2Step1(event, state, roster) {
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
-  const face1 = f1 ? portraitImg(f1.id, 88, 'care-reaction-portrait') : '';
-  const face2 = f2 ? portraitImg(f2.id, 88, 'care-reaction-portrait') : '';
+  const face1 = f1 ? portraitImg(f1.id, 72, 'care-reaction-portrait') : '';
+  const face2 = f2 ? portraitImg(f2.id, 72, 'care-reaction-portrait') : '';
 
   let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">💥 選手間の深刻な対立</div>`;
 
@@ -5677,7 +5720,7 @@ function _buildB3Step1(event, state) {
   const challenger = event.challenger || {};
   const orgName = event.orgName || '他団体';
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
-  const face = portraitImg(challenger.id, 88, 'care-reaction-portrait');
+  const face = portraitImg(challenger.id, 72, 'care-reaction-portrait');
 
   let html = `<div class="care-title" style="border-bottom:2px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">⚔️ ${orgName}からの挑戦状</div>`;
 
@@ -5715,7 +5758,7 @@ function _buildB3Step2(event, state, roster) {
   html += '<div class="large-evt-roster-grid">';
   available.forEach(f => {
     const ovr = Engine.util.ov(f);
-    const face = portraitImg(f.id, 40, '');
+    const face = portraitImg(f.id, 72, '');
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
       <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
@@ -6272,7 +6315,7 @@ function _buildB4Modal(event, state, roster) {
     available.forEach(f => {
       const ovr = Engine.util.ov(f);
       const pop = Math.round(f.popularity || 0);
-      const face = portraitImg(f.id, 40, '');
+      const face = portraitImg(f.id, 72, '');
       const mult = Engine.eventSystem.calcTalentMultiplier(f, activityType);
       const compatTag = mult >= 1.4 ? '<span style="color:#f1c40f;font-size:9px"> ★適性◎</span>'
         : mult <= 0.6 ? '<span style="color:#e74c3c;font-size:9px"> △苦手</span>' : '';
@@ -6304,7 +6347,7 @@ function _buildB4Modal(event, state, roster) {
   available.forEach(f => {
     const ovr = Engine.util.ov(f);
     const pop = Math.round(f.popularity || 0);
-    const face = portraitImg(f.id, 40, '');
+    const face = portraitImg(f.id, 72, '');
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
       <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
@@ -7098,7 +7141,7 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
         ? '<span style="font-size:10px;color:#f39c12">💰 昇給要求</span>'
         : '<span style="font-size:10px;color:#e74c3c">🚪 移籍志願</span>';
     return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:4px 8px">
-      ${portraitImg(n.fighterId, 52)}
+      <div style="border-radius:12px;overflow:hidden">${portraitImg(n.fighterId, 72)}</div>
       <span style="font-size:11px">${n.fighterName}</span>
       ${attBadge}
     </div>`;
@@ -7120,9 +7163,10 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
 
   document.getElementById('contractStartBtn').addEventListener('click', () => {
     overlay.classList.remove('active');
-    Audio.play('click');
+    Audio.play('tension_hit');
     if (onStart) onStart();
   });
+  Audio.play('paper');
   overlay.classList.add('active');
 }
 
@@ -7133,7 +7177,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   if (!overlay || !box) { if (onChoice) onChoice(0); return; }
 
   const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
-  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const face = portraitImg(neg.fighterId, 72, 'care-reaction-portrait');
   const isTransfer = neg.attitude === 'transfer';
   const borderColor = isTransfer ? '#e74c3c' : '#f39c12';
   const attLabel = isTransfer ? '🚪 移籍志願' : '💰 昇給要求';
@@ -7200,10 +7244,17 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     btn.addEventListener('click', function() {
       if (this.disabled) return;
       overlay.classList.remove('active');
-      Audio.play('click');
-      if (onChoice) onChoice(parseInt(this.dataset.choice));
+      const ci = parseInt(this.dataset.choice);
+      // 選択肢別SE: trust↑=fanfare, trust↓=defeat
+      // 昇給: 受ける(0)=trust↑↑, 交渉(1)=中立, 拒否(2)=trust↓↓
+      // 移籍: 引き留め(0)=trust↑+出費, 理由を聞く(1)=中立, 送り出す(2)=退団
+      if (ci === 0) Audio.play(isTransfer ? 'coin' : 'fanfare');
+      else if (ci === 2) Audio.play('defeat');
+      else Audio.play('select');
+      if (onChoice) onChoice(ci);
     });
   });
+  Audio.play('event');
   overlay.classList.add('active');
 }
 
@@ -7229,6 +7280,7 @@ function showContractReactionModal(neg, reactionText, onDone) {
     Audio.play('click');
     if (onDone) onDone();
   });
+  Audio.play('notify');
   overlay.classList.add('active');
 }
 
@@ -7238,7 +7290,7 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   const box = document.getElementById('careBox');
   if (!overlay || !box) { if (onSubChoice) onSubChoice('release'); return; }
 
-  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const face = portraitImg(neg.fighterId, 72, 'care-reaction-portrait');
   const canAfford = (state.funds || 0) >= neg.retentionBonus;
 
   box.innerHTML = `
@@ -7267,10 +7319,12 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
     btn.addEventListener('click', function() {
       if (this.disabled) return;
       overlay.classList.remove('active');
-      Audio.play('click');
-      if (onSubChoice) onSubChoice(this.dataset.sub);
+      const sub = this.dataset.sub;
+      Audio.play(sub === 'retain' ? 'coin' : 'defeat');
+      if (onSubChoice) onSubChoice(sub);
     });
   });
+  Audio.play('event');
   overlay.classList.add('active');
 }
 
@@ -7280,7 +7334,7 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
   const box = document.getElementById('careBox');
   if (!overlay || !box) { if (onDone) onDone(); return; }
 
-  const face = portraitImg(neg.fighterId, 88, 'care-reaction-portrait');
+  const face = portraitImg(neg.fighterId, 72, 'care-reaction-portrait');
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context);
 
@@ -7304,9 +7358,10 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
 
   document.getElementById('contractSuddenOk').addEventListener('click', () => {
     overlay.classList.remove('active');
-    Audio.play('click');
+    Audio.play('defeat');
     if (onDone) onDone();
   });
+  Audio.play('transfer');
   overlay.classList.add('active');
 }
 
@@ -7361,9 +7416,10 @@ function showContractResultModal(results, onDone) {
   box.innerHTML = html;
   document.getElementById('contractResultOk').addEventListener('click', () => {
     overlay.classList.remove('active');
-    Audio.play('click');
+    Audio.play('stamp');
     if (onDone) onDone();
   });
+  Audio.play(departed.length > 0 ? 'transfer' : 'save');
   overlay.classList.add('active');
 }
 

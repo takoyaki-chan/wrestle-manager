@@ -3030,12 +3030,11 @@ const App = {
         : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
         : 'direct';
       const signingLine = getSigningLine(cand, signingContext);
-      showEventPopup({ type:'fighter', id: cand.id, name: cand.name,
+      // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
+      var _scoutSigningPopup = { type:'fighter', id: cand.id, name: cand.name,
         tone:'positive', message: signingLine,
-        detail:`📝 契約金: ${result.cost}万 [${tierCfg.label}]` });
-      if (signingContext === 'competition_won') {
-        Audio.play('fanfare');
-      }
+        detail:`📝 契約金: ${result.cost}万 [${tierCfg.label}]` };
+      var _scoutSigningFanfare = (signingContext === 'competition_won');
     } else if (result.result === 'lost') {
       Audio.play('error');
       // Lost candidate goes to AI org or freeAgent
@@ -3063,8 +3062,9 @@ const App = {
         }
       }
       candidates = candidates.filter(c => c.id !== candidateId);
-      showEventPopup({ type:'scout', tone:'negative',
-        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' });
+      // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
+      var _scoutSigningPopup = { type:'scout', tone:'negative',
+        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' };
     } else if (result.result === 'skipped') {
       // v1.7: 見送り時はリストから削除しない（再検討可能にする）
       log.push(`🔍 スカウト見送り: ${cand.name}`);
@@ -3089,6 +3089,11 @@ const App = {
     }
     refreshAll();
     showScreen('scoutEvent');
+    // showScreen が dismissAllPopups を呼ぶ後にポップアップ表示
+    if (typeof _scoutSigningPopup !== 'undefined' && _scoutSigningPopup) {
+      showEventPopup(_scoutSigningPopup);
+      if (_scoutSigningFanfare) Audio.play('fanfare');
+    }
   },
 
   /** Finish scout event and continue game flow */
@@ -3190,6 +3195,8 @@ const App = {
         const subResult = Engine.contract.resolveNegotiation(subRng, G, neg, 1, subChoice);
         G = subResult.state;
         results.push(subResult.result);
+        if (subResult.result.type === 'stay') Audio.play('fanfare');
+        else if (subResult.result.type === 'depart') Audio.play('defeat');
         showContractReactionModal(neg, subResult.reactionDialogue, onDone);
       });
       return;
@@ -3197,8 +3204,13 @@ const App = {
 
     results.push(result.result);
 
+    // 結果に応じたSE
+    if (result.result.type === 'stay') Audio.play('fanfare');
+    else if (result.result.type === 'depart') Audio.play('defeat');
+
     // 移籍志願に発展した場合 → 移籍志願として再交渉
     if (result.result.escalated) {
+      Audio.play('tension_hit');
       const escNeg = { ...neg, attitude: 'transfer' };
       showContractReactionModal(neg, result.reactionDialogue, () => {
         showContractNegotiationModal(escNeg, results.length - 1, results.length, G, (escChoice) => {

@@ -1436,7 +1436,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color:var(--text-dim);background:rgba(0,0,0,0.5);border-radius:3px;padding:1px 3px}
 .care-reaction{display:flex;align-items:flex-start;gap:12px;padding:14px;
   background:rgba(232,67,147,0.07);border:1px solid rgba(232,67,147,0.2);border-radius:8px;margin-top:12px}
-.care-reaction-portrait{border-radius:50%;flex-shrink:0}
+.care-reaction-portrait{border-radius:12px;flex-shrink:0}
 .care-reaction-bubble{font-size:13px;color:var(--text-main);line-height:1.5;
   border-left:2px solid #e8439f;padding-left:10px}
 .care-close-btn{display:block;width:100%;margin-top:16px;padding:10px;
@@ -1491,11 +1491,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .care-result-team-row.camp-team .care-result-team-name{font-size:11px;max-width:76px}
 
 /* v2.0 Phase1-6: 大型イベント 選手選択グリッド */
-.large-evt-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;
-  max-height:320px;overflow-y:auto;padding:4px}
+.large-evt-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;
+  max-height:400px;overflow-y:auto;padding:4px}
 .large-evt-fighter-pick{display:flex;flex-direction:column;align-items:center;padding:8px 4px;
   border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s,background .15s;
   text-align:center}
+.large-evt-fighter-pick .portrait{border-radius:12px}
 .large-evt-fighter-pick:hover{border-color:#e8439f;background:rgba(232,67,147,0.08)}
 /* メディアスポットライト バナー */
 .media-spotlight-banner{display:flex;align-items:center;gap:8px;padding:8px 14px;
@@ -2902,8 +2903,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 </div>
 
 <!-- Fighter Detail Popup -->
-<div class="fighter-popup-overlay" id="fighterPopupOverlay">
-  <div class="fighter-popup-box" id="fighterPopupBox"></div>
+<div class="fighter-popup-overlay" id="fighterPopupOverlay" onclick="if(event.target===this)closeFighterPopup()">
+  <div class="fighter-popup-box" id="fighterPopupBox" onclick="event.stopPropagation()"></div>
 </div>
 
 <div class="event-popup-overlay" id="eventPopupOverlay">
