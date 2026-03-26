@@ -3739,13 +3739,14 @@ const App = {
       hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
-    // BGM: FileBGMフェードアウト + 全試合完了ならmanagement復帰、残試合ありなら遅延復帰
+    // BGM: FileBGMフェードアウト + 残試合ありならbattle復帰、全完了ならmanagement
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     if (sp.results.every(r => r !== null)) {
       try { Audio.bgm.play('management'); } catch(e) {}
     } else {
-      // まだ試合が残っている → managementBGMを再開
-      setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('management'); } catch(e) {} } }, 1600);
+      // まだ試合が残っている → battleBGMを再開（興行中）
+      // fadeOut後にBGM._current='battle'が残るため、stop()でリセットしてから再生
+      setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 1600);
     }
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
@@ -3760,7 +3761,7 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-    // ビッグマッチBGM停止（タイトル戦中断時）
+    // BGM停止 + 復帰
     try { Audio.fileBgm.stop(); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     // Auto-skip the stuck match
@@ -3771,15 +3772,27 @@ const App = {
       const idx = ppvPrev.currentWatching;
       ppvPrev.currentWatching = -1;
       if (!ppvPrev.results[idx]) App.ppvSkipMatch(idx);
+      // PPV BGM復帰
+      if (!ppvPrev.results.every(r => r !== null)) {
+        setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 300);
+      }
     } else if (sp && sp.currentWatching >= 0) {
       const idx = sp.currentWatching;
       sp.currentWatching = -1;
       if (!sp.results[idx]) App.skipMatch(idx);
       else { renderMatchPreview(); if (sp.results.every(r => r !== null)) App.finalizeShow(); }
+      // 興行BGM復帰（興行中はbattle）— stop()でBGM状態リセット後に再生
+      if (!sp.results.every(r => r !== null)) {
+        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 300);
+      }
     } else if (wp && wp.currentWatching >= 0) {
       const idx = wp.currentWatching;
       wp.currentWatching = -1;
       if (!wp.results[idx]) App._skipWarMatch(idx);
+      // 対抗戦BGM復帰
+      if (!wp.results.every(r => r !== null)) {
+        setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
+      }
     }
     // B3
     const b3 = App._b3Preview;
@@ -3971,7 +3984,8 @@ const App = {
     // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない）
     results.forEach((r, i) => {
       const m = validMatches[i];
-      const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows);
+      const appFreshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, i));
+      const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, appFreshnessRng);
       if (fr.bonus > 0) {
         r.mq = Math.min(100, r.mq + fr.bonus);
         r.freshnessBonus = fr.bonus; r.freshnessLabel = fr.label;

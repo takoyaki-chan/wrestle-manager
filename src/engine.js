@@ -357,6 +357,7 @@ const Engine = {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
                   def.kickoutCount++;
+                  totalKickouts++;
                   def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
                 }
@@ -455,16 +456,15 @@ const Engine = {
       // §3 ペーシング減点（Tier別適正ターン帯）
       let pacingPenalty = 0;
       if (tier >= 2) {
-        // Tier 2: 長期戦は13-21ターンが適正
-        if (matchTurns >= 13 && matchTurns <= 21) pacingPenalty = 0;
-        else if (matchTurns >= 10 && matchTurns <= 23) pacingPenalty = 3;
-        else if (matchTurns < 10) pacingPenalty = 12;
-        else pacingPenalty = 6;
+        // Tier 2: 13ターン以上は全て理想、「長すぎ」ペナルティ撤廃
+        if (matchTurns >= 13) pacingPenalty = 0;
+        else if (matchTurns >= 10) pacingPenalty = 3;
+        else pacingPenalty = 12;
       } else {
-        if (matchTurns >= 7 && matchTurns <= 14) pacingPenalty = 0;
-        else if (matchTurns >= 5 && matchTurns <= 16) pacingPenalty = 3;
-        else if (matchTurns < 5) pacingPenalty = 12;
-        else pacingPenalty = 6;
+        // Tier 1: 7ターン以上は全て理想、「長すぎ」ペナルティ撤廃
+        if (matchTurns >= 7) pacingPenalty = 0;
+        else if (matchTurns >= 5) pacingPenalty = 3;
+        else pacingPenalty = 12;
       }
 
       // §4 決着減点
@@ -631,19 +631,20 @@ const Engine = {
       return curve[curve.length - 1][1];
     },
     // L1: 集客計算（rng=nullでプレビュー用＝揺らぎなし）
-    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, rng) {
+    calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, rng, fanExpectCount) {
       const v = VENUES[venueIdx];
       // Step 1: 基礎集客（orgPopカーブ、キャパ非依存）
       const baseAttendance = Engine.economy.calcBaseAttendance(G.orgPop);
       // Step 2: カードボーナス
       const cardBonus = Math.round(mainCardPop * CARD_POP_CONFIG.CARD_MULT);
-      // Step 3: 乗算ボーナス（Heat/タイトル/王者/華）
+      // Step 3: 乗算ボーナス（Heat/タイトル/王者/華/ファン期待）
       const heatMult = Engine.heat.getMult(G);
-      const titleBonus = hasTitleMatch ? 0.15 : 0.0;
+      const titleBonus = hasTitleMatch ? 0.20 : 0.0;
       const champBonus = hasChampOnCard ? 0.10 : 0.0;
       const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
       const rivalryAttendanceBonus = Engine.title.getAttendanceBonusPct(G, G.showCard || []);
-      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus + rivalryAttendanceBonus, 2.0);
+      const fanExpectBonus = (fanExpectCount || 0) * 0.08;
+      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus + rivalryAttendanceBonus + fanExpectBonus, 2.0);
       // Step 4: 週次揺らぎ（会場スケール — 大会場ほどハイリスク）
       const fluctRange = VENUE_FLUCTUATION[venueIdx] || 0.17;
       const fluctuation = rng
@@ -665,9 +666,9 @@ const Engine = {
       return MOMENTUM_CONFIG.EMPTY_DELTA;
     },
     // L1: ざっくり集客予測（3段階テキスト）
-    getAttendancePrediction(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard) {
+    getAttendancePrediction(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, fanExpectCount) {
       const v = VENUES[venueIdx];
-      const estAttend = Engine.economy.calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, null);
+      const estAttend = Engine.economy.calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, null, fanExpectCount);
       const estOccRate = estAttend / v.cap;
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
@@ -867,13 +868,11 @@ const Engine = {
       return best ? { ...best } : null;
     },
     getRivalryMQBonus(rivalry) {
-      if (rivalry == null || rivalry < 30) return 0;
-      if (rivalry < 50) return 1;
-      if (rivalry < 60) return 2;
-      if (rivalry < 70) return 3;
-      if (rivalry < 80) return 4;
-      if (rivalry < 90) return 5;
-      return 6;
+      if (rivalry == null || rivalry < 45) return 0;
+      if (rivalry < 55) return 1;
+      if (rivalry < 65) return 2;
+      if (rivalry < 80) return 3;
+      return 4;
     },
     getRivalryPairState(G, id1, id2) {
       const entry = Engine.title.getRivalry(G, id1, id2) || null;
@@ -1099,8 +1098,6 @@ const Engine = {
     },
 
     getMatchChemistryBonus(pairState) {
-      if (!pairState || pairState.resolvedType || pairState.isOneSided) return 0;
-      if (pairState.minBond >= 70 && pairState.maxRivalry < 40) return 1;
       return 0;
     },
 
@@ -5533,7 +5530,9 @@ const Engine = {
         const hasChampOnCard = champId ? G.showCard.some(m => m.left === champId || m.right === champId) : false;
         // L1: 集客計算（seed 0xA77E で週次揺らぎ付き）
         const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
-        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard, attendRng);
+        const settleFanExpects = Engine.fanExpect.generate(G);
+        const settleFanExpectCount = Engine.fanExpect.countMatched(G.showCard, settleFanExpects);
+        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard, attendRng, settleFanExpectCount);
         // v1.5s25b: attendance_boost バフ（マイルストーン）
         const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
         if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
@@ -6098,7 +6097,9 @@ const Engine = {
     const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
     // L1: 集客計算（seed 0xA77E で週次揺らぎ付き — processSettlementと同一結果）
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
-    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng);
+    const execFanExpects = Engine.fanExpect.generate(s);
+    const execFanExpectCount = Engine.fanExpect.countMatched(validMatches, execFanExpects);
+    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng, execFanExpectCount);
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
@@ -6120,7 +6121,7 @@ const Engine = {
     const results = rawResults.map((r, matchIdx) => {
       let externalMQ = 0;
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
-      if (r.friendshipBonus) externalMQ += r.friendshipBonus;
+      // ケミストリー（友情）MQ削除済み — r.friendshipBonus は加算しない
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
       if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
       if (r.promoStackBonus > 0) externalMQ += r.promoStackBonus;
@@ -6139,46 +6140,23 @@ const Engine = {
       const fanMQBonus = Engine.fanExpect.getMQBonus(r.left.id, r.right.id, fanExpects);
       externalMQ += fanMQBonus;
       if (fanMQBonus > 0) r.fanExpectMatch = true;
-      // 野心: タイトルマッチで挑戦者側が野心持ちなら MQ+2（キャップ対象）
-      if (r.isTitleMatch) {
-        const champId = s.titles?.world?.championId;
-        const challenger = champId === r.left.id ? r.right : (champId === r.right.id ? r.left : null);
-        if (challenger && Traits.has(challenger, '野心')) externalMQ += 1;
-      }
+      // 野心MQ削除済み
       // ラストランMQボーナス (§2.2)
       const lrLeft  = s.roster.find(c => c.id === r.left.id);
       const lrRight = s.roster.find(c => c.id === r.right.id);
       const lastRunFighter = lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null);
       if (lastRunFighter) {
-        externalMQ += 3;  // ラストラン基本 +3
-        if (matchIdx === 0) externalMQ += 5;  // メインイベント +5（showCard[0]がメイン）
+        externalMQ += 2;  // ラストラン基本 +2
+        if (matchIdx === 0) externalMQ += 3;  // メインイベント +3
         r.isLastRunMatch = true;
         r.lastRunFighterId = lastRunFighter.id;
-        // 因縁相手との引退試合ボーナス (§2.6)
-        const opponentId = lastRunFighter.id === r.left.id ? r.right.id : r.left.id;
-        const rivalLevel = Engine.title.getRivalryLevel(s, lastRunFighter.id, opponentId);
-        if (rivalLevel && ((rivalLevel.rivalry || 0) >= 50 || rivalLevel.isGoodRival || rivalLevel.isBitterRival)) {
-          if ((rivalLevel.rivalry || 0) >= 70 || rivalLevel.isGoodRival || rivalLevel.isBitterRival) {
-            externalMQ += 5;  // 宿命/宿怨クラス +5
-            r.lastRunRivalBonus = 5;
-          } else {
-            externalMQ += 3;  // 宿敵 +3
-            r.lastRunRivalBonus = 3;
-          }
-        }
+        // ラストラン因縁相手ボーナス削除済み
       }
-      // 見返しモード MQボーナス +2 (§1.7)
-      if ((lrLeft?.proveMode || 0) > 0 || (lrRight?.proveMode || 0) > 0) {
-        externalMQ += 2;
-        r.proveModeBonus = 2;
-      }
-      // v3.0: コスチュームデビュー（MQ+2一時バフ、キャップ対象）
-      if (lrLeft?._costumeDebut || lrRight?._costumeDebut) {
-        externalMQ += 2;
-        r.costumeDebutBonus = 2;
-      }
+      // 見返しモードMQ削除済み
+      // コスチュームデビューMQ削除済み
       // v2.0: カード鮮度（初顔合わせボーナスはキャップ対象、マンネリペナルティはキャップ対象外）
-      const freshnessResult = Engine.freshness.calc(s.matchupLog || [], r.left.id, r.right.id, s.totalShows);
+      const freshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, matchIdx));
+      const freshnessResult = Engine.freshness.calc(s.matchupLog || [], r.left.id, r.right.id, s.totalShows, s.roster.length, freshnessRng);
       if (freshnessResult.bonus !== 0) {
         r.freshnessBonus = freshnessResult.bonus;
         r.freshnessLabel = freshnessResult.label;
@@ -12311,7 +12289,7 @@ Engine.freshness = {
    * @param {number} currentShowCount - G.totalShows（興行通し番号）
    * @returns {{ bonus: number, label: string|null }}
    */
-  calc(matchupLog, id1, id2, currentShowCount) {
+  calc(matchupLog, id1, id2, currentShowCount, rosterSize, rng) {
     const key1 = Math.min(id1, id2);
     const key2 = Math.max(id1, id2);
     if (!matchupLog || matchupLog.length === 0) {
@@ -12324,18 +12302,30 @@ Engine.freshness = {
     if (!hasEverFought) {
       return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ' };
     }
-    // 12興行ウィンドウ内の対戦回数
-    const windowStart = currentShowCount - FRESHNESS_CONFIG.windowShows;
+    // ロスターサイズ連動ウィンドウ
+    let windowShows;
+    if (rosterSize != null && rosterSize <= 8) {
+      windowShows = FRESHNESS_CONFIG.windowShowsSmall;
+    } else if (rosterSize != null && rosterSize <= 12) {
+      windowShows = FRESHNESS_CONFIG.windowShowsMedium;
+    } else {
+      windowShows = FRESHNESS_CONFIG.windowShows;
+    }
+    const windowStart = currentShowCount - windowShows;
     const countInWindow = matchupLog.filter(e =>
       e.showCount > windowStart &&
       Math.min(e.leftId, e.rightId) === key1 && Math.max(e.leftId, e.rightId) === key2
     ).length;
-    // ペナルティ判定（最も重いものを適用）
+    // ペナルティ判定（ランダム幅、最も重いものを適用）
     for (let i = FRESHNESS_CONFIG.penalties.length - 1; i >= 0; i--) {
       const p = FRESHNESS_CONFIG.penalties[i];
       if (countInWindow >= p.minCount) {
+        const range = Math.abs(p.mqPenaltyMax) - Math.abs(p.mqPenaltyMin);
+        const penalty = rng
+          ? -(Math.abs(p.mqPenaltyMin) + Engine.rng.int(rng, 0, range))
+          : p.mqPenaltyMax;
         const label = countInWindow >= 5 ? '完全なマンネリ' : countInWindow >= 4 ? '深刻なマンネリ' : 'マンネリ';
-        return { bonus: p.mqPenalty, label };
+        return { bonus: penalty, label };
       }
     }
     return { bonus: 0, label: null };
@@ -12365,8 +12355,8 @@ Engine.fanExpect = {
       if (seen.has(key)) return;
       seen.add(key);
       // freshnessチェック: 深刻なマンネリ以上は除外、マンネリはpriority降格
-      const freshness = Engine.freshness.calc(matchupLog, f1.id, f2.id, totalShows);
-      if (freshness.bonus <= -5) return; // 深刻なマンネリ以上（countInWindow >= 4）は完全除外
+      const freshness = Engine.freshness.calc(matchupLog, f1.id, f2.id, totalShows, roster.length, null);
+      if (freshness.bonus <= -4) return; // 深刻なマンネリ以上（countInWindow >= 4）は完全除外
       let adjustedPriority = priority;
       if (freshness.bonus < 0) {
         adjustedPriority = Math.max(0, priority - 1);
@@ -12439,7 +12429,7 @@ Engine.fanExpect = {
       (exp.leftId === fId1 && exp.rightId === fId2) ||
       (exp.leftId === fId2 && exp.rightId === fId1)
     );
-    return matched ? 5 : 0;
+    return matched ? 2.5 : 0;
   },
 
   // ── 現在のカードに期待カードが何件含まれているか ──────────────────────────

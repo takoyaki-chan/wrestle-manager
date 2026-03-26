@@ -1995,7 +1995,7 @@ function renderShowPrep() {
 
     // カード鮮度プレビュー
     const freshnessPreview = (curL > 0 && curR > 0)
-      ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0)
+      ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
       : null;
 
     // ラストランチェック
@@ -2042,7 +2042,9 @@ function renderShowPrep() {
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const champIdPreview = G.titles?.world?.championId;
   const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
-  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, mainPop, hasTitlePreview, hasChampPreview);
+  const previewFanExpects = Engine.fanExpect.generate(G);
+  const previewFanExpectCount = Engine.fanExpect.countMatched(G.showCard, previewFanExpects);
+  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, mainPop, hasTitlePreview, hasChampPreview, previewFanExpectCount);
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
   const v = VENUES[G.showVenue];
   const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'

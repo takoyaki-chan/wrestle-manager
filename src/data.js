@@ -906,7 +906,7 @@ const INJURY_DEBUFF_TABLE = {
 
 // Title System
 const TITLES = [
-  {id:'world', name:'団体王座', mqBonus:10, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+  {id:'world', name:'団体王座', mqBonus:5, popBonus:3, attendBonus:1.15, emoji:'🏆'}
 ];
 
 // Rivalry System
@@ -918,7 +918,7 @@ const RIVALRY_THRESHOLDS = [
 ];
 
 // Phase 5: 片側因縁（一方的にライバル視している状態）
-const ONESIDED_RIVALRY_MQ_BONUS = 1;
+const ONESIDED_RIVALRY_MQ_BONUS = 0;
 const ONESIDED_RIVALRY_LABEL = '片側因縁';
 const ONESIDED_RIVALRY_EMOJI = '⚡';
 const ONESIDED_RIVALRY_COLOR = '#ffeaa7';
@@ -1471,7 +1471,7 @@ const GOODRIVAL_MQ_BONUS = 2;
 const GOODRIVAL_LABEL = '好敵手';
 const GOODRIVAL_EMOJI = '🤝';
 const GOODRIVAL_COLOR = '#74b9ff';
-const BITTER_RIVAL_MQ_BONUS = 3;
+const BITTER_RIVAL_MQ_BONUS = 2;
 const BITTER_RIVAL_LABEL = '宿怨';
 const BITTER_RIVAL_EMOJI = '💀';
 const BITTER_RIVAL_COLOR = '#636e72';
@@ -2496,12 +2496,14 @@ const PPV_COACH_PRAISE_LINES = [
 
 // カード鮮度システム
 const FRESHNESS_CONFIG = {
-  windowShows: 12,        // 直近12興行を対象
-  firstMeetBonus: 2,      // 初顔合わせボーナス
+  windowShows: 12,           // デフォルト（ロスター13人以上）
+  windowShowsSmall: 8,       // ロスター8人以下
+  windowShowsMedium: 10,     // ロスター9〜12人
+  firstMeetBonus: 2,         // 初顔合わせボーナス
   penalties: [
-    { minCount: 3, mqPenalty: -3 },   // マンネリ
-    { minCount: 4, mqPenalty: -5 },   // 深刻なマンネリ
-    { minCount: 5, mqPenalty: -8 },   // 完全なマンネリ
+    { minCount: 3, mqPenaltyMin: -1, mqPenaltyMax: -3 },   // マンネリ
+    { minCount: 4, mqPenaltyMin: -2, mqPenaltyMax: -4 },   // 深刻なマンネリ
+    { minCount: 5, mqPenaltyMin: -3, mqPenaltyMax: -5 },   // 完全なマンネリ
   ],
 };
 
