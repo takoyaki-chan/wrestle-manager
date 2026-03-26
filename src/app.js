@@ -5642,6 +5642,8 @@ const App = {
     try { Audio.fileBgm.play('../bgm/8bit-ending-theme_Loop.ogg', { loop: true, volume: 0.07 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+      // 表彰式BGMフェードアウト後に通常BGMを再開
+      setTimeout(() => { try { Audio.bgm.play('management'); } catch(e) {} }, 1600);
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
       if (pendingAwards.hallOfFame.length > 0) {
         G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);

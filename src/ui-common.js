@@ -1826,8 +1826,8 @@ function _styleJa(style) {
 }
 
 function _awPortrait(id, cssClass) {
-  const url = getPortraitUrl(id);
-  if (url) return `<img src="${url}" alt="">`;
+  const url = typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
+  if (url) return `<img src="${url}" alt="" onerror="this.style.display='none'">`;
   const ch = ALL_CHARS.find(c => c.id === id);
   return ch ? ch.name.charAt(0) : '?';
 }
@@ -1988,6 +1988,25 @@ function _buildRookieAward(d) {
   </div></div>`;
 }
 
+function _buildJTChampionAward(d) {
+  const line = _awardLine('rookie', d.id); // JT専用セリフがないのでrookieカテゴリを流用
+  const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント優勝</span></div>
+  <div class="rookie-layout">
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div>
+      <div class="winner-name">${d.name}</div>
+      <div class="winner-sub">${d.orgName || ''}</div>
+      <div class="winner-tags">
+        <span class="aw-tag">${_styleJa(d.style)}</span>
+        <span class="aw-tag neutral">OVR ${d.ovr}</span>
+      </div>
+      ${runnerUpText ? `<div style="font-size:11px;color:#7a7060;letter-spacing:1px;margin-bottom:14px">${runnerUpText}</div>` : ''}
+      ${_awSpeech(d.name, line)}
+    </div>
+  </div></div>`;
+}
+
 function _buildBestMatchAward(d) {
   const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
   const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
@@ -2071,7 +2090,7 @@ function _buildMVPAward(d) {
 
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">👑</span><span class="badge-jp">MVP</span></div>
   <div class="mvp-layout">
-    <div class="portrait-mvp"><div class="mvp-crown">👑</div>${_awPortrait(d.id)}</div>
+    <div class="portrait-mvp">${_awPortrait(d.id)}</div>
     <div style="flex:1">
       <div class="winner-name" style="font-size:28px;margin-bottom:4px">${d.name}</div>
       <div class="winner-sub" style="margin-bottom:18px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
@@ -2119,6 +2138,8 @@ function _buildAwardsSummary(a) {
     html += item('📺', 'メディア功労賞', a.mediaAward.name, `貢献 ${Math.round(a.mediaAward.totalRev).toLocaleString()}万円`);
   if (a.rookieOfYear)
     html += item('🌟', '新人王', a.rookieOfYear.name, a.rookieOfYear.orgName);
+  if (a.jtChampion)
+    html += item('🏟️', 'JT優勝', a.jtChampion.name, a.jtChampion.orgName);
   if (a.bestMatch) {
     const bm1 = typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1;
     const bm2 = typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2;
@@ -2163,6 +2184,8 @@ function showAwardsCeremony(awards, onDone) {
   const rookieHtml = _buildRookieAward(awards.rookieOfYear);
   if (rookieHtml)
     slideInfo.push({ html: rookieHtml, label: '新人王', se: 'normal' });
+  if (awards.jtChampion)
+    slideInfo.push({ html: _buildJTChampionAward(awards.jtChampion), label: 'JT優勝', se: 'normal' });
   if (awards.bestMatch)
     slideInfo.push({ html: _buildBestMatchAward(awards.bestMatch), label: 'ベストマッチ', se: 'normal' });
   const champHtml = _buildChampionsAward(awards.champions);
@@ -2198,13 +2221,8 @@ function showAwardsCeremony(awards, onDone) {
     slideWrap.appendChild(div);
   });
 
-  // ドット生成
+  // ドット非表示（削除）
   dotsEl.innerHTML = '';
-  slideInfo.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'aw-dot' + (i === 0 ? ' active' : '');
-    dotsEl.appendChild(d);
-  });
 
   // ファンファーレ
   fanfareEl.innerHTML = `
@@ -2234,7 +2252,6 @@ function showAwardsCeremony(awards, onDone) {
     requestAnimationFrame(() => { slides[current].style.animation = ''; });
 
     headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[current].label;
-    dotsEl.querySelectorAll('.aw-dot').forEach((d, i) => d.classList.toggle('active', i === current));
     btnNext.textContent = current === TOTAL - 1 ? '✕ 閉じる' : '次へ　→';
 
     setTimeout(() => _awPlaySE(slideInfo[current].se), 50);
@@ -2323,10 +2340,7 @@ function showAwardsCeremony(awards, onDone) {
     }
   }, 3200);
 
-  // BGM
-  if (typeof Audio !== 'undefined' && Audio.fileBgm) {
-    Audio.fileBgm('8bit-ending-theme', 0.07, true);
-  }
+  // BGMはapp.js側で管理（_checkAndShowAwards内で再生開始済み）
 }
 
 // ── コーチFG演出 (TASK-5) ────────────────────────────────────────
