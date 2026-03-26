@@ -853,13 +853,9 @@ const LOSING_STREAK_PENALTIES = [
 ];
 const PROMO_POP_CAP = 70; // プロモのみで到達可能な人気上限（旧55→70）
 const PROMO_MQ_PER_STACK = 1.3; // promoStack 1回あたりのMQボーナス（最大3スタック×1.3=+3.9）
-const PROMO_EVENT_INCOME = [
-  { min:  0, max: 14, val:  15 },  // 地元の小イベント
-  { min: 15, max: 29, val:  25 },  // 地域イベント常連
-  { min: 30, max: 44, val:  40 },  // ファンミ・握手会
-  { min: 45, max: 59, val:  55 },  // 単独イベント成立
-  { min: 60, max: 74, val:  70 },  // メディア出演含む
-  { min: 75, max:100, val:  85 },  // 大型イベント
+// 金銭バランス改善: テーブル引き→区間線形補間（pop差がそのまま金額差に反映）
+const PROMO_EVENT_INCOME_CURVE = [
+  [0, 10], [15, 20], [30, 40], [45, 55], [60, 70], [75, 85], [100, 95],
 ];
 const PROMO_EVENT_NAMES = {
   low:  ['地域イベント出演', '商店街キャンペーン', 'SNS配信', '地元FM出演'],
@@ -14375,7 +14371,7 @@ if (typeof module !== 'undefined' && module.exports) {
     VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE_TIERS, VENUE_MQ_THRESHOLD, GOODS_CONFIG, OCCUPANCY_BONUS,
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
-    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_MQ_PER_STACK, PROMO_EVENT_INCOME, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
+    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_MQ_PER_STACK, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,

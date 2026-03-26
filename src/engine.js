@@ -591,6 +591,20 @@ const Engine = {
       }
       return curve[curve.length - 1][1];
     },
+    // 金銭バランス改善: プロモイベント収入（区間線形補間）
+    calcPromoEventIncome(popularity) {
+      const curve = PROMO_EVENT_INCOME_CURVE;
+      const pop = Engine.util.clamp(popularity, 0, 100);
+      for (let i = 1; i < curve.length; i++) {
+        if (pop <= curve[i][0]) {
+          const [x0, y0] = curve[i - 1];
+          const [x1, y1] = curve[i];
+          const t = (pop - x0) / (x1 - x0);
+          return Math.round(y0 + t * (y1 - y0));
+        }
+      }
+      return curve[curve.length - 1][1];
+    },
     // 金銭バランス改善: 週次グッズ収入（全選手・毎週発生）
     calcWeeklyGoodsRev(roster) {
       let total = 0;
@@ -5336,13 +5350,13 @@ const Engine = {
           nc.intensiveWeeks = 0;
           // プロモ改修 v1.0: promoStack蓄積（最大3）
           nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
-          // イベント収入計算（RNGを独立シードで分離して再現性を保つ）
-          const piEntry = PROMO_EVENT_INCOME.find(e => nc.popularity >= e.min && nc.popularity <= e.max);
-          if (piEntry) {
+          // イベント収入計算（区間線形補間 — pop差がそのまま金額差に反映）
+          const promoEventIncome = Engine.economy.calcPromoEventIncome(nc.popularity);
+          if (promoEventIncome > 0) {
             const namePool = nc.popularity < 30 ? PROMO_EVENT_NAMES.low : nc.popularity < 60 ? PROMO_EVENT_NAMES.mid : PROMO_EVENT_NAMES.high;
             const nameRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, nc.id ^ 0xFEA5));
             const eventName = namePool[Engine.rng.int(nameRng, 0, namePool.length - 1)];
-            promoIncomes.push({ name: nc.name, income: piEntry.val, eventName });
+            promoIncomes.push({ name: nc.name, income: promoEventIncome, eventName });
           }
           // 金銭バランス改善: プロモ連動グッズ収入
           promoGoods.push({ name: nc.name, amount: Math.round(nc.popularity * GOODS_CONFIG.promoPerPop) });
