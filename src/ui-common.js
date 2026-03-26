@@ -1832,6 +1832,17 @@ function _awPortrait(id, cssClass) {
   return ch ? ch.name.charAt(0) : '?';
 }
 
+// 団体エンブレムバッジ（ポートレート上部に配置）
+function _awOrgEmblem(orgName, isPlayerOrg) {
+  let emoji = '⭐';
+  let color = 'var(--gold)';
+  if (!isPlayerOrg && typeof RIVAL_ORGS !== 'undefined') {
+    const org = RIVAL_ORGS.find(o => o.name === orgName);
+    if (org) { emoji = org.emoji; color = org.color; }
+  }
+  return `<span class="aw-org-emblem" style="color:${color}">${emoji}</span>`;
+}
+
 function _awSpeech(name, line) {
   if (!line) return '';
   return `<div class="speech-bubble"><div class="speech-speaker">${name}</div><div class="speech-text">「${line}」</div></div>`;
@@ -1953,7 +1964,7 @@ function _buildMediaAward(d) {
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">メディア功労賞</span></div>
   <div class="media-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
     <div class="media-stats">
       <div class="winner-name" style="font-size:28px">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''} · ${_styleJa(d.style)}</div>
@@ -1974,7 +1985,7 @@ function _buildRookieAward(d) {
   const line = _awardLine('rookie', d.id);
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌟</span><span class="badge-jp">新人王</span></div>
   <div class="rookie-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
     <div>
       <div class="winner-name">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''} · ${d.age}歳</div>
@@ -1993,7 +2004,7 @@ function _buildJTChampionAward(d) {
   const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント優勝</span></div>
   <div class="rookie-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div>
+    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
     <div>
       <div class="winner-name">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''}</div>
@@ -2017,7 +2028,7 @@ function _buildBestMatchAward(d) {
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
   <div class="bestmatch-fighters">
     <div class="fighter-side">
-      <div class="portrait-sm">${_awPortrait(f1.id)}</div>
+      <div class="portrait-sm">${_awOrgEmblem(f1OrgName, d.isPlayerOrg)}${_awPortrait(f1.id)}</div>
       <div class="fighter-name">${f1.name}</div>
       <div class="fighter-org">${f1OrgName}</div>
     </div>
@@ -2030,7 +2041,7 @@ function _buildBestMatchAward(d) {
       <div class="vs-text">vs</div>
     </div>
     <div class="fighter-side">
-      <div class="portrait-sm">${_awPortrait(f2.id)}</div>
+      <div class="portrait-sm">${_awOrgEmblem(f2OrgName, false)}${_awPortrait(f2.id)}</div>
       <div class="fighter-name">${f2.name}</div>
       <div class="fighter-org">${f2OrgName}</div>
     </div>
@@ -2054,7 +2065,7 @@ function _buildChampionsAward(champions) {
     const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
     const isPlayer = c.isPlayer;
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
-      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
+      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awOrgEmblem(c.orgName, c.isPlayer)}${_awPortrait(c.id)}</div>
       <div class="champ-name">${c.name}</div>
       <div class="champ-org" ${isPlayer ? 'style="color:var(--gold-light)"' : ''}>${c.orgName}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
@@ -2090,7 +2101,7 @@ function _buildMVPAward(d) {
 
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">👑</span><span class="badge-jp">MVP</span></div>
   <div class="mvp-layout">
-    <div class="portrait-mvp">${_awPortrait(d.id)}</div>
+    <div class="portrait-mvp">${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
     <div style="flex:1">
       <div class="winner-name" style="font-size:28px;margin-bottom:4px">${d.name}</div>
       <div class="winner-sub" style="margin-bottom:18px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
@@ -2115,7 +2126,7 @@ function _buildHallOfFame(d) {
 
   return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
   <div class="hof-layout">
-    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
+    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awOrgEmblem(d.orgName, d.orgId === 'player')}${_awPortrait(d.id)}</div>
     <div class="hof-stars">${stars}</div>
     <div class="hof-name">${d.name}</div>
     <div class="hof-plaque">${plaqueText}</div>

@@ -9998,33 +9998,81 @@ Engine.awards = {
     return candidates[0];
   },
 
-  /** ③ MVP: 各団体エース1名 → MVPスコア比較 (±15 random) */
+  /** ③ MVP: 各団体トップ5名 → 実績ベーススコア（ランダムなし） */
   selectMVP(rng, state) {
     const ov = Engine.util.ov;
-    const champId = state.titles && state.titles.world && state.titles.world.championId;
-    const candidates = [];
-    if (state.roster.length > 0) {
-      const sorted = [...state.roster].sort((a, b) => {
-        const sa = ov(a) + a.popularity * 0.5 + (a.id === champId ? 20 : 0);
-        const sb = ov(b) + b.popularity * 0.5 + (b.id === champId ? 20 : 0);
-        return sb - sa;
+    const rankings = state.rankings || [];
+    const getRank = orgId => { const r = rankings.find(x => x.orgId === orgId); return r ? (r.rank || 99) : 99; };
+    const rankBonus = rank => rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+
+    // careerRecord.historyから当シーズンの実績を集計
+    const countSeasonEvents = (fighter, season) => {
+      const hist = (fighter.careerRecord && fighter.careerRecord.history) || [];
+      let ppvWins = 0, titleDefenses = 0, titleWins = 0;
+      hist.forEach(ev => {
+        if (ev.season !== season) return;
+        if (ev.type === 'ppvMainEvent' && ev.won) ppvWins++;
+        if (ev.type === 'titleDefense') titleDefenses++;
+        if (ev.type === 'titleWin') titleWins++;
       });
-      const ace = sorted[0];
-      const score = ov(ace) + ace.popularity * 0.5 + (ace.id === champId ? 20 : 0) + Engine.rng.int(rng, -15, 15);
-      candidates.push({ fighter: ace, orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), score, isPlayerOrg: true });
+      return { ppvWins, titleDefenses, titleWins };
+    };
+
+    const calcScore = (fighter, orgId) => {
+      const ovr = ov(fighter);
+      const pop = fighter.popularity || 0;
+      const bestMQ = fighter.careerBestMQ || 0; // シーズンベストMQとして使用
+      const wins = fighter.wins || 0, losses = fighter.losses || 0, draws = fighter.draws || 0;
+      const total = wins + losses + draws;
+      const winRate = total > 0 ? Math.round(wins / total * 100) : 0;
+
+      const events = countSeasonEvents(fighter, state.season);
+
+      // 王者判定
+      let isChamp = false;
+      if (orgId === 'player' && state.titles?.world?.championId === fighter.id) isChamp = true;
+      else if (orgId !== 'player' && state.aiOrgs?.[orgId]?.titles?.world?.championId === fighter.id) isChamp = true;
+
+      const score = ovr
+        + bestMQ * 0.3
+        + pop * 0.4
+        + winRate * 0.15
+        + events.ppvWins * 5
+        + events.titleDefenses * 4
+        + events.titleWins * 3
+        + (isChamp ? 5 : 0)
+        + rankBonus(getRank(orgId));
+
+      return { score, winRate, events, isChamp };
+    };
+
+    const candidates = [];
+    const TOP_N = 5;
+
+    // プレイヤー団体: トップ5
+    if (state.roster && state.roster.length > 0) {
+      const scored = state.roster.map(f => {
+        const { score, winRate, events, isChamp } = calcScore(f, 'player');
+        return { fighter: f, orgId: 'player', score, winRate, events, isChamp };
+      });
+      scored.sort((a, b) => b.score - a.score);
+      scored.slice(0, TOP_N).forEach(c => candidates.push(c));
     }
+
+    // AI団体: 各トップ5
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const orgData = state.aiOrgs[orgId];
         if (!orgData || !orgData.roster || orgData.roster.length === 0) return;
-        const sorted = [...orgData.roster].sort((a, b) =>
-          (ov(b) + b.popularity * 0.5) - (ov(a) + a.popularity * 0.5)
-        );
-        const ace = sorted[0];
-        const score = ov(ace) + ace.popularity * 0.5 + Engine.rng.int(rng, -15, 15);
-        candidates.push({ fighter: ace, orgId, orgName: Engine.awards._orgName(state, orgId), score, isPlayerOrg: false });
+        const scored = orgData.roster.map(f => {
+          const { score, winRate, events, isChamp } = calcScore(f, orgId);
+          return { fighter: f, orgId, score, winRate, events, isChamp };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        scored.slice(0, TOP_N).forEach(c => candidates.push(c));
       });
     }
+
     if (candidates.length === 0) return null;
     candidates.sort((a, b) => b.score - a.score);
     const winner = candidates[0];
@@ -10032,21 +10080,24 @@ Engine.awards = {
     const wins = wf.wins || 0, losses = wf.losses || 0, draws = wf.draws || 0;
     const totalMatches = wins + losses + draws;
     const winRate = totalMatches > 0 ? Math.round(wins / totalMatches * 100) : 0;
-    // 防衛回数: プレイヤー王者の場合のみ
+
+    // 防衛回数
     let defenses = 0;
-    if (winner.orgId === 'player' && state.titles && state.titles.world && state.titles.world.championId === wf.id) {
-      defenses = state.titles.world.defenses || 0;
-    } else if (winner.orgId !== 'player' && state.aiOrgs && state.aiOrgs[winner.orgId]) {
+    if (winner.orgId === 'player' && state.titles?.world?.championId === wf.id) {
+      defenses = state.titles?.world?.defenses || 0;
+    } else if (winner.orgId !== 'player' && state.aiOrgs?.[winner.orgId]) {
       const aiTitles = state.aiOrgs[winner.orgId].titles;
-      if (aiTitles && aiTitles.world && aiTitles.world.championId === wf.id) defenses = aiTitles.world.defenses || 0;
+      if (aiTitles?.world?.championId === wf.id) defenses = aiTitles.world.defenses || 0;
     }
+
     return {
       id: wf.id, name: wf.name, portrait: wf.portrait,
-      orgName: winner.orgName, ovr: ov(wf), popularity: wf.popularity,
+      orgName: Engine.awards._orgName(state, winner.orgId), ovr: ov(wf), popularity: wf.popularity,
       age: wf.age, style: wf.style || 'Allround',
-      isPlayerOrg: winner.isPlayerOrg,
+      isPlayerOrg: winner.orgId === 'player',
       winRate, defenses, wins, losses, draws,
-      isChampion: defenses > 0 || (winner.orgId === 'player' && state.titles?.world?.championId === wf.id),
+      isChampion: winner.isChamp,
+      mvpScore: Math.round(winner.score * 10) / 10,
     };
   },
 
