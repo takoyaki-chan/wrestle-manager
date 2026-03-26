@@ -1447,7 +1447,19 @@ function _renderRosterDetailPanel(c, hired) {
   else if (decline.stage === 'early') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(160,130,20,0.12);color:#806010;border:1px solid rgba(160,130,20,0.3)">⚠ 衰え</span>');
 
   let leftCol = `<div class="rd-portrait">`;
-  if (fullUrl) leftCol += `<img class="rd-portrait-img" src="${fullUrl}" alt="${c.name}" onerror="this.style.display='none'">`;
+  if (fullUrl) {
+    const _ch = ALL_CHARS.find(x => x.id === c.id);
+    const _ini = _ch ? _ch.name.charAt(0) : '?';
+    const _SC = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+    const _co = _ch ? (_SC[_ch.style] || '#888') : '#888';
+    leftCol += `<img class="rd-portrait-img" src="${fullUrl}" alt="${c.name}" onerror="this.outerHTML='<div class=\\'rd-portrait-img\\' style=\\'display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${_co}22,${_co}08);font-size:72px;font-weight:900;color:${_co}\\'>${_ini}</div>'">`;
+  } else {
+    const _ch = ALL_CHARS.find(x => x.id === c.id);
+    const _ini = _ch ? _ch.name.charAt(0) : '?';
+    const _SC = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+    const _co = _ch ? (_SC[_ch.style] || '#888') : '#888';
+    leftCol += `<div class="rd-portrait-img" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${_co}22,${_co}08);font-size:72px;font-weight:900;color:${_co}">${_ini}</div>`;
+  }
   leftCol += `<div class="rd-portrait-overlay"></div>
     <div class="rd-portrait-info">
       <div class="rd-portrait-name">${c.name}</div>

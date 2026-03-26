@@ -4,6 +4,17 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+/** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
+function _imgOrInitial(url, charId, size, extraStyle = '') {
+  const ch = ALL_CHARS.find(c => c.id === charId);
+  const initial = ch ? ch.name.charAt(0) : '?';
+  const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+  const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
+  const fallback = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};border-radius:8px;${extraStyle}">${initial}</div>`;
+  if (!url) return fallback;
+  return `<img src="${url}" alt="" style="width:${size}px;height:${size}px;object-fit:cover;${extraStyle}" onerror="this.outerHTML=this.dataset.fb" data-fb='${fallback.replace(/'/g, "&#39;")}'>`;
+}
+
 /** 団体アイコン <img> タグ生成ヘルパー */
 function orgIconHtml(orgId, size = 40) {
   const isPlayer = (orgId === 'player');
@@ -518,7 +529,7 @@ function _showWarVictoryChain(list, idx, onDone) {
   overlay.innerHTML = `
     <div class="war-victory-modal">
       <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
-        ${portraitUrl ? `<img src="${portraitUrl}" alt="${w.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : ''}
+        ${_imgOrInitial(portraitUrl, w.id, 80, 'border-radius:50%;')}
       </div>
       <div class="war-victory-name">${w.name}</div>
       <div class="war-victory-line">「${line}」</div>
@@ -3971,7 +3982,7 @@ function showPPVMatchCardIntro(onStart) {
     cardsHtml += `
       <div class="ppvmc-card${mainClass}" style="z-index:${zIdx}">
         <div class="ppvmc-fighter left">
-          <img src="${getFullUrl(match.left.id)}" alt="${match.left.name}" onerror="this.style.display='none'">
+          ${_imgOrInitial(getFullUrl(match.left.id), match.left.id, 160)}
         </div>
         <div class="ppvmc-center">
           <div class="ppvmc-type">${typeLabel}</div>
@@ -3982,7 +3993,7 @@ function showPPVMatchCardIntro(onStart) {
           <div class="ppvmc-h2h">${h2hText}</div>
         </div>
         <div class="ppvmc-fighter right">
-          <img src="${getFullUrl(match.right.id)}" alt="${match.right.name}" onerror="this.style.display='none'">
+          ${_imgOrInitial(getFullUrl(match.right.id), match.right.id, 160)}
         </div>
       </div>`;
   }
@@ -7504,7 +7515,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   overlay.innerHTML = `
     <div class="war-victory-modal">
       <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid ${resultColor};margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
-        ${portraitUrl ? `<img src="${portraitUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : ''}
+        ${_imgOrInitial(portraitUrl, f.id, 80, 'border-radius:50%;')}
       </div>
       <div style="font-size:11px;color:${resultColor};letter-spacing:2px;margin-bottom:4px">${resultLabel}</div>
       <div class="war-victory-name">${f.name}</div>

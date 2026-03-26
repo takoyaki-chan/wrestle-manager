@@ -3934,8 +3934,8 @@ const Engine = {
           const trainGrowth = Math.round(growth * statusMult * intensiveMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
-            nc[growStat] = Math.min(nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100, nc[growStat] + trainGrowth);
-            nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + trainGrowth;
+            const _gain = Math.round(Math.min(trainGrowth, Math.max(0, (nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100) - nc[growStat])));
+            if (_gain > 0) { nc[growStat] += _gain; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _gain; }
           }
 
           if (isIntensive) {
@@ -5355,7 +5355,7 @@ const Engine = {
           let actualGrowth = 0;
           if (trainGrowth > 0) {
             const _cap = nc.trainCap?.[growStat] ?? 100;
-            actualGrowth = Math.min(trainGrowth, Math.max(0, _cap - nc[growStat]));
+            actualGrowth = Math.round(Math.min(trainGrowth, Math.max(0, _cap - nc[growStat])));
             if (actualGrowth > 0) { nc[growStat] += actualGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + actualGrowth; }
           }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
@@ -5418,7 +5418,7 @@ const Engine = {
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           if (trainGrowth > 0) {
             const _cap = nc.trainCap?.[growStat] ?? 100;
-            const _clamped = Math.min(trainGrowth, Math.max(0, _cap - nc[growStat]));
+            const _clamped = Math.round(Math.min(trainGrowth, Math.max(0, _cap - nc[growStat])));
             if (_clamped > 0) { nc[growStat] += _clamped; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _clamped; }
           }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
@@ -13366,6 +13366,9 @@ Engine.validateGameState = function(G) {
           warn(`キャラ "${c.name}" (id:${c.id}) の${stat}が不正値: ${c[stat]}`);
         } else if (c[stat] < 0 || c[stat] > 200) {
           warn(`キャラ "${c.name}" (id:${c.id}) の${stat}が範囲外: ${c[stat]}（範囲: 0-200）`);
+        } else if (!Number.isInteger(c[stat])) {
+          warn(`キャラ "${c.name}" (id:${c.id}) の${stat}が非整数: ${c[stat]}→自動修正`);
+          c[stat] = Math.round(c[stat]);
         }
       });
       if (c.popularity !== undefined && !isValidNum(c.popularity)) {

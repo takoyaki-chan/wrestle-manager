@@ -2188,6 +2188,24 @@ const Storage = {
         delete G._everFoughtPairs;
       }
 
+      // stat非整数修正: 練習成長の浮動小数点蓄積を一括修正
+      if (!G._migrated_stat_round_v1) {
+        const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+        const roundStats = c => {
+          let changed = false;
+          const nc = { ...c };
+          STATS.forEach(s => { if (typeof nc[s] === 'number' && !Number.isInteger(nc[s])) { nc[s] = Math.round(nc[s]); changed = true; } });
+          return changed ? nc : c;
+        };
+        G = {
+          ...G,
+          roster: G.roster.map(roundStats),
+          freeAgents: (G.freeAgents || []).map(roundStats),
+          aiOrgs: Object.fromEntries(Object.entries(G.aiOrgs || {}).map(([k, org]) => [k, { ...org, roster: (org.roster || []).map(roundStats) }])),
+          _migrated_stat_round_v1: true
+        };
+      }
+
       // 団体アイコン: playerOrgIcon 未定義時はデフォルト0
       if (G.playerOrgIcon == null) {
         G = { ...G, playerOrgIcon: 0 };
