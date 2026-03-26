@@ -3891,7 +3891,7 @@ const App = {
 
     // Rivalry & coach bonuses
     const confrontationPairs = sp.confrontationPairs || [];
-    const deferredRivalryPairs = []; // 宿敵+ペアの recordRivalry を MQ確定後まで保留
+    const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
@@ -3900,10 +3900,16 @@ const App = {
       const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
       if (chemistryBonus > 0) { result.mq = Math.min(100, result.mq + chemistryBonus); result.friendshipBonus = chemistryBonus; }
       if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
-      // 通常興行では因縁決着は起こさず、PPVに向けて積み上げる
-      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, result.mq);
-      rivalries = rivalResult.rivalries;
-      if (rivalResult.msg) events.push(rivalResult.msg);
+      // 因縁決着候補（minRivalry>=60 or resolutionCount>=1）は recordRivalry をMQ確定後まで保留
+      const isResolutionCandidate = pairState && !pairState.resolvedType && pairState.minRivalry >= 60;
+      const hasPartialResolution = pairState && !pairState.resolvedType && (rivalries[Engine.title.getRivalryKey(m.left, m.right)]?.resolutionCount || 0) >= 1 && pairState.minRivalry >= 80;
+      if (isResolutionCandidate || hasPartialResolution) {
+        deferredRivalryIdxs.push(i);
+      } else {
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, result.mq);
+        rivalries = rivalResult.rivalries;
+        if (rivalResult.msg) events.push(rivalResult.msg);
+      }
       const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
       if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
     });
@@ -4025,8 +4031,81 @@ const App = {
       }
     });
 
-    // 因縁決着はPPV限定。通常興行では次戦への蓄積のみ行う
+    // 因縁決着判定（MQ確定後、保留ペアのみ）
     const rivalryResolutions = [];
+    deferredRivalryIdxs.forEach(idx => {
+      const r = results[idx];
+      const m = validMatches[idx];
+      if (!r || !m) return;
+      const charL = roster.find(c => c.id === m.left);
+      const charR = roster.find(c => c.id === m.right);
+      if (!charL || !charR) return;
+      const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
+      const key = Engine.title.getRivalryKey(m.left, m.right);
+      const currentEntry = rivalries[key] || {};
+      const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
+      const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
+      if (resolution) {
+        const isFinalResolution = resolution.newResolutionCount >= 2;
+        const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77));
+        const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(resRng, 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
+        const updatedEntry = {
+          ...rivalries[key],
+          matches: 0,
+          lastWeek: s.week,
+          lastAbsWeek: Engine.util.absWeek(s.season, s.week),
+          lastResolvedWeek: s.week,
+          resolutionCount: resolution.newResolutionCount,
+          lastBand: 0,
+          oneSided: null,
+          pendingClashBonus: 0,
+          ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
+        };
+        rivalries = { ...rivalries, [key]: updatedEntry };
+        if (s.relationships) {
+          const rels = { ...(s.relationships || {}) };
+          const keyAB = `${m.left}>${m.right}`;
+          const keyBA = `${m.right}>${m.left}`;
+          const relAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
+          const relBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
+          relAB.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+          relBA.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+          rels[keyAB] = relAB;
+          rels[keyBA] = relBA;
+          s = { ...s, relationships: rels };
+        }
+        roster = roster.map(c => {
+          if (c.id === m.left || c.id === m.right) {
+            return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
+          }
+          return c;
+        });
+        const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(resolution.orgPopBonus, s.orgPop, null);
+        s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + rivalOrgPopDelta, 0, 100) };
+        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
+        const loserId = winnerId === m.left ? m.right : m.left;
+        const winnerName = charL.id === winnerId ? charL.name : charR.name;
+        const loserName = charL.id === loserId ? charL.name : charR.name;
+        rivalryResolutions.push({
+          phase: 'resolution', winnerId, loserId, winnerName, loserName,
+          resolutionType: resolution.resolved || 'first',
+          isFate: pairState.minRivalry >= 70,
+          isSecondResolution: isFinalResolution,
+          popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
+        });
+        r.rivalryResolved = true;
+        if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
+        s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
+        const emoji = resolution.emoji || '⚡';
+        const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+        events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
+      } else {
+        // 決着不成立: 通常通り recordRivalry
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
+        rivalries = rivalResult.rivalries;
+        if (rivalResult.msg) events.push(rivalResult.msg);
+      }
+    });
     App._pendingRivalryResolutions = rivalryResolutions;
 
     // MQ popularity

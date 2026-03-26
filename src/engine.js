@@ -1000,11 +1000,10 @@ const Engine = {
         emoji: pair.band.emoji,
       };
     },
-    checkResolution(pairState, mq, avgOV, resolutionCount, isPPV) {
+    checkResolution(pairState, mq, avgOV, resolutionCount) {
       resolutionCount = resolutionCount || 0;
       if (!pairState || pairState.resolvedType) return null;
       if (resolutionCount >= 2) return null;
-      if (!isPPV) return null;
 
       let ceiling;
       if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
@@ -6453,12 +6452,84 @@ const Engine = {
       s = { ...s, milestoneBuffs: cleanedBuffs };
     }
 
-    // Phase 5: Pass 2完了後に因縁更新（MQ確定値を渡す）
+    // Phase 5: Pass 2完了後に因縁更新+決着判定（MQ確定値を渡す）
+    const showRivalryResolutions = [];
     validMatches.forEach((m, i) => {
-      if (!results[i]) return;
-      const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, results[i].mq);
-      rivalries = rivalResult.rivalries;
-      if (rivalResult.msg) events.push(rivalResult.msg);
+      const r = results[i];
+      if (!r) return;
+      // 因縁決着判定（通常興行でも発生）
+      const charL = roster.find(c => c.id === m.left);
+      const charR = roster.find(c => c.id === m.right);
+      if (charL && charR) {
+        const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
+        const key = Engine.title.getRivalryKey(m.left, m.right);
+        const currentEntry = rivalries[key] || {};
+        const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
+        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
+        if (resolution) {
+          const isFinalResolution = resolution.newResolutionCount >= 2;
+          const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
+          const updatedEntry = {
+            ...rivalries[key],
+            matches: 0,
+            lastWeek: s.week,
+            lastAbsWeek: Engine.util.absWeek(s.season, s.week),
+            lastResolvedWeek: s.week,
+            resolutionCount: resolution.newResolutionCount,
+            lastBand: 0,
+            oneSided: null,
+            pendingClashBonus: 0,
+            ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
+          };
+          rivalries = { ...rivalries, [key]: updatedEntry };
+          if (s.relationships) {
+            const rels = { ...(s.relationships || {}) };
+            const keyAB = `${m.left}>${m.right}`;
+            const keyBA = `${m.right}>${m.left}`;
+            const relAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
+            const relBA = { ...(rels[keyBA] || { bond: 50, rivalry: 0 }) };
+            relAB.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+            relBA.rivalry = Engine.relationships._clampAxisValue(nextRivalry, 'rivalry');
+            rels[keyAB] = relAB;
+            rels[keyBA] = relBA;
+            s = { ...s, relationships: rels };
+          }
+          roster = roster.map(c => {
+            if (c.id === m.left || c.id === m.right) {
+              return { ...c, popularity: Math.min(100, (c.popularity || 0) + resolution.popBonus) };
+            }
+            return c;
+          });
+          const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(resolution.orgPopBonus, s.orgPop, null);
+          s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + rivalOrgPopDelta, 0, 100) };
+          const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
+          const loserId = winnerId === m.left ? m.right : m.left;
+          const winnerName = charL.id === winnerId ? charL.name : charR.name;
+          const loserName = charL.id === loserId ? charL.name : charR.name;
+          showRivalryResolutions.push({
+            phase: 'resolution', winnerId, loserId, winnerName, loserName,
+            resolutionType: resolution.resolved || 'first',
+            isFate: pairState.minRivalry >= 70,
+            isSecondResolution: isFinalResolution,
+            popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
+          });
+          r.rivalryResolved = true;
+          if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
+          s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
+          const emoji = resolution.emoji || '⚡';
+          const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+          events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
+        } else {
+          // 決着不成立: 通常通り recordRivalry
+          const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
+          rivalries = rivalResult.rivalries;
+          if (rivalResult.msg) events.push(rivalResult.msg);
+        }
+      } else {
+        const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
+        rivalries = rivalResult.rivalries;
+        if (rivalResult.msg) events.push(rivalResult.msg);
+      }
     });
 
     // v2.1: 格差タイトルマッチのログ
@@ -6607,7 +6678,7 @@ const Engine = {
           isTitleMatch: isTitleM,
           isChampionA: isTitleM ? (charIdA === champId) : undefined,
           isChampionB: isTitleM ? (charIdB === champId) : undefined,
-          rivalryResolved: false, // 通常興行では因縁決着なし
+          rivalryResolved: false, // Phase 5の因縁決着判定後にresults[idx].rivalryResolvedが更新される
           injuredId: matchInjuredIds[idx],
           isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
           isCareerBestB: fB ? r.mq > (fB.careerBestMQ || 0) : false,
@@ -6807,7 +6878,7 @@ const Engine = {
       }
     }
 
-    return { state: s, results, injuryResults, events };
+    return { state: s, results, injuryResults, events, showRivalryResolutions };
   },
 
   // MQ/Show popularity helpers (pure functions)
@@ -8198,7 +8269,7 @@ const Engine = {
         const key = Engine.title.getRivalryKey(match.left.id, match.right.id);
         const currentEntry = rivalries[key] || {};
         const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
-        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0, true);
+        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
         if (resolution) {
           const isFinalResolution = resolution.newResolutionCount >= 2;
           const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, match.left.id, match.right.id, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
