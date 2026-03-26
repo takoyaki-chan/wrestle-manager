@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（金銭バランス改善 TASK1-4完了）
+> 最終更新: 2026-03-26（旧収入関数参照修正 hotfix）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**金銭バランス改善 TASK1-4（2026-03-26）。** 収入を興行収入(チケット)+ブランド収入(グッズ+メディア+プロモ)の2軸に再編。TASK-1:グッズ収入再設計(GOODS_PRICE廃止→GOODS_CONFIG/週次ベース全選手pop×0.2万+興行ブースト出場者pop×0.25万×占有率+プロモ連動pop×0.6万)。calcRosterPopScore廃止。TASK-2:メディア収入新設(SPONSOR_TABLE/BROADCAST_TABLE廃止→MEDIA_CONFIG/MEDIA_ORGPOP_CURVE区間線形補間/7発生源:①週次orgPop×1.5万②興行放映avgMQ×1.1万×VENUE_MEDIA_MULT×タイトル1.5×orgPopMult③PPV出演pop×0.9万×PPV_CARD_MULT④JT出演pop×0.9万⑤対抗戦MQ×1.1万×venueMult×1.5⑥プロモ連動pop×0.6万⑦ファン期待priority×30万×(MQ/70)×orgPopMult⑧ライバル抗争rivalry×MQ×0.016万×orgPopMult)。processSettlement全面改修。app.jsにPPV/JT/War/B3メディア収入フック(_pendingMediaIncomes)。TASK-3:月次報告UI再設計(収入タブをカテゴリ別グルーピング表示:興行収入/ブランド収入(グッズ▼折畳/メディア▼折畳/プロモ)/その他、内訳デフォルト折畳)。TASK-4:trustによる昇給要求減額(trust40→0%,trust100→8%線形補間)。auto-sim 100シーズンALL CLEAR。
+**旧収入関数参照修正 hotfix（2026-03-26）。** 金銭バランス改善で削除されたgetSponsorIncome/getBroadcastIncomeがapp.js(Survival.estimateWeeklyNet)とui-render.js(収支画面推定コスト)で残参照→calcWeeklyGoodsRev/calcWeeklyMediaRevに置換。titleLoadGameでcreateInitialState(skipDraft=true)に修正しドラフト画面誤表示も解消。data.jsのexportから削除済みSPONSOR_TABLE/BROADCAST_TABLE除去。auto-sim 100シーズンALL CLEAR。
+
+前回: **金銭バランス改善 TASK1-4（2026-03-26）。** 収入を興行収入(チケット)+ブランド収入(グッズ+メディア+プロモ)の2軸に再編。TASK-1:グッズ収入再設計(GOODS_PRICE廃止→GOODS_CONFIG/週次ベース全選手pop×0.2万+興行ブースト出場者pop×0.25万×占有率+プロモ連動pop×0.6万)。calcRosterPopScore廃止。TASK-2:メディア収入新設(SPONSOR_TABLE/BROADCAST_TABLE廃止→MEDIA_CONFIG/MEDIA_ORGPOP_CURVE区間線形補間/7発生源:①週次orgPop×1.5万②興行放映avgMQ×1.1万×VENUE_MEDIA_MULT×タイトル1.5×orgPopMult③PPV出演pop×0.9万×PPV_CARD_MULT④JT出演pop×0.9万⑤対抗戦MQ×1.1万×venueMult×1.5⑥プロモ連動pop×0.6万⑦ファン期待priority×30万×(MQ/70)×orgPopMult⑧ライバル抗争rivalry×MQ×0.016万×orgPopMult)。processSettlement全面改修。app.jsにPPV/JT/War/B3メディア収入フック(_pendingMediaIncomes)。TASK-3:月次報告UI再設計(収入タブをカテゴリ別グルーピング表示:興行収入/ブランド収入(グッズ▼折畳/メディア▼折畳/プロモ)/その他、内訳デフォルト折畳)。TASK-4:trustによる昇給要求減額(trust40→0%,trust100→8%線形補間)。auto-sim 100シーズンALL CLEAR。
 
 前回: **MQ改修 Phase 1-3（2026-03-26）。** MQシステム全面リバランス。Phase 1: キックアウトバグ修正(fall/tkoでtotalKickouts++漏れ)、ペーシング「長すぎ」ペナルティ撤廃(短すぎのみ維持)、外部MQソース値変更(タイトル+10→+5/ファン期待+5→+2.5/宿怨+3→+2/ライバルカーブ圧縮)、外部MQソース6件削除(一方的因縁MQ/ケミストリー/ラストラン因縁相手/見返しモード/コスチュームデビュー/野心)。Phase 2: タイトルマッチ集客+0.15→+0.20、ファン期待カード集客+0.08/件新設、マンネリペナルティ固定値→ランダム幅(-8max→-5max)、マンネリウィンドウロスターサイズ連動(≤8:8興行/9-12:10興行/13+:12興行)。Phase 3: OV帯別MQ分布検証(全帯目標範囲内)、ドラマ減点パラメータ据置(初期値30が適正)。auto-sim 100シーズンALL CLEAR。
 
@@ -168,7 +170,7 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 
 | 項目 | 優先度 | 備考 |
 |---|---|---|
-| 金銭バランス改善（グッズ再設計+メディア収入+trust給与効果） | 高 | 設計完了。`docs/finance-rebalance-brainstorm.md` |
+| ~~金銭バランス改善（グッズ再設計+メディア収入+trust給与効果）~~ | ~~高~~ | **実装済み（2026-03-26）** |
 | フィニッシャー（キャラ固有必殺技） | 高 | 設計完了。SE素材＋初期キャラリスト待ち |
 | ライバルストーリー自動生成 | 高 | 未設計 |
 | ストーリーアーク（数ヶ月にわたる抗争管理） | 高 | 未設計 |
@@ -179,7 +181,7 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 | マインド依存の成長イベント | 中 | mnの存在感を強化 |
 | トレーニング施設アップグレード（C/B/Aランク＋老朽化メンテ） | 低 | 金銭バランス改善B-1として将来構想。お金が余った時の投資先 |
 
-### 金銭バランス改善（設計完了・実装待ち）
+### 金銭バランス改善（実装済み 2026-03-26）
 
 設計書: `docs/finance-rebalance-brainstorm.md`
 
