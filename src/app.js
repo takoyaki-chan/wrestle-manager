@@ -5559,6 +5559,34 @@ const App = {
     // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
+
+    // 受賞歴をキャリア記録に追加
+    {
+      let ar = G.roster;
+      const aSeason = pendingAwards.season || G.season;
+      const aWeek = 49; // オフシーズン表彰式
+      if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
+        ar = ar.map(f => f.id === pendingAwards.rookieOfYear.id
+          ? Engine.career.addEvent(f, { type: 'awardRookie', season: aSeason, week: aWeek }) : f);
+      }
+      if (pendingAwards.mvp && pendingAwards.mvp.isPlayerOrg) {
+        ar = ar.map(f => f.id === pendingAwards.mvp.id
+          ? Engine.career.addEvent(f, { type: 'awardMVP', season: aSeason, week: aWeek }) : f);
+      }
+      if (pendingAwards.mediaAward) {
+        ar = ar.map(f => f.id === pendingAwards.mediaAward.id
+          ? Engine.career.addEvent(f, { type: 'awardMedia', season: aSeason, week: aWeek }) : f);
+      }
+      if (pendingAwards.bestMatch && pendingAwards.bestMatch.isPlayerOrg) {
+        const bmIds = new Set();
+        if (pendingAwards.bestMatch.fighter1 && pendingAwards.bestMatch.fighter1.id) bmIds.add(pendingAwards.bestMatch.fighter1.id);
+        if (pendingAwards.bestMatch.fighter2 && pendingAwards.bestMatch.fighter2.id) bmIds.add(pendingAwards.bestMatch.fighter2.id);
+        ar = ar.map(f => bmIds.has(f.id)
+          ? Engine.career.addEvent(f, { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: pendingAwards.bestMatch.mq }) : f);
+      }
+      G = { ...G, roster: ar };
+    }
+
     // Phase 4 E-05: 表彰式の関係値反映
     if (G.relationships) {
       const awardRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBE5B));

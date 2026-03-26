@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（メディア功労賞実装）
+> 最終更新: 2026-03-26（受賞歴キャリア記録追加）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**メディア功労賞実装（2026-03-26）。** 年間表彰式にメディア功労賞を追加。選考基準:mediaRevSeason+talentRevSeasonの合計最大のプレイヤー団体選手。TASK-1:選手フィールド追加(mediaRevSeason/talentRevSeason/talentCountSeason)+resetSeasonalCountersでリセット。TASK-2:収入発生時の個人別累計加算(processSettlement内プロモ連動+タレント活動バフ→Map蓄積+roster反映、app.js PPV出演料/JT出演料/対抗戦JT出演料→s.roster/G.roster反映、B4全6activityTypeでtalentCountSeason+1)。TASK-3:Engine.awards.selectMediaAward新設(score>0の候補をソート、タイブレーカー=talentCountSeason)。TASK-4:表彰式UIにMVP直後スライド追加(_buildMediaAward:顔写真+名前+年間メディア貢献額+出演料/タレント活動内訳+活動回数)+AWARD_LINES mediaAwardセリフ(5personality×archetype)。auto-sim 100シーズンALL CLEAR。
+**受賞歴キャリア記録追加（2026-03-26）。** 年間表彰式の受賞結果を個人のcareerRecord.historyに永続記録。対象4賞:新人王(awardRookie)/MVP(awardMVP)/メディア功労賞(awardMedia)/ベストマッチ賞(awardBestMatch)。_checkAndShowAwardsでEngine.career.addEvent呼び出し(プレイヤー団体受賞者のみ)。milestone.getに4case追加→キャリア年表に受賞歴表示。_typeStyleに4スタイル追加(アイコン+カラー)。buildCareerHighlightsに4case追加→殿堂入り時のハイライトにも反映。auto-sim 100シーズンALL CLEAR。
+
+前回: **メディア功労賞実装（2026-03-26）。** 年間表彰式にメディア功労賞を追加。選考基準:mediaRevSeason+talentRevSeasonの合計最大のプレイヤー団体選手。TASK-1:選手フィールド追加(mediaRevSeason/talentRevSeason/talentCountSeason)+resetSeasonalCountersでリセット。TASK-2:収入発生時の個人別累計加算(processSettlement内プロモ連動+タレント活動バフ→Map蓄積+roster反映、app.js PPV出演料/JT出演料/対抗戦JT出演料→s.roster/G.roster反映、B4全6activityTypeでtalentCountSeason+1)。TASK-3:Engine.awards.selectMediaAward新設(score>0の候補をソート、タイブレーカー=talentCountSeason)。TASK-4:表彰式UIにMVP直後スライド追加(_buildMediaAward:顔写真+名前+年間メディア貢献額+出演料/タレント活動内訳+活動回数)+AWARD_LINES mediaAwardセリフ(5personality×archetype)。auto-sim 100シーズンALL CLEAR。
 
 前回: **B4タレント活動イベント拡充（2026-03-26）。** 既存B4メディア密着取材に6種の新タレント活動サブタイプ追加(CM出演/グラビア撮影/バラエティ出演/ブランドコラボ/ファッションショー/ファンイベント)。B4発生時7択均等抽選(null=既存spotlight,6種=新活動)。名前プール6配列。personality×activityType相性テーブル(得意1.5/普通1.0/苦手0.5)+archetype追加補正(+0.2)。効果:cm/variety→メディア週次収入(pop×0.6万×mult,1週),gravure/brand→グッズ週次収入(brand2週),fashion→即時人気+1~3,fan→即時trust+2~6。talentActivityBuffフィールド+processSettlementカウントダウン。LARGE_EVENT_TEXTS/DIALOGUES各6種追加。UI:モーダルにactivityType別ヘッダ/適性タグ/おすすめ推薦。AI団体B4同等処理。§13:チャンピオン怪我引退時trust85+30%で社長への一言ポップアップ。auto-sim 100シーズンALL CLEAR。
 

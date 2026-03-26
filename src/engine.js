@@ -1817,6 +1817,22 @@ const Engine = {
             milestones.push({ season: ev.season, week: ev.week || 0, type: 'peak',
               text: `全盛期 OVR ${ev.ovr}` });
             break;
+          case 'awardRookie':
+            milestones.push({ season: ev.season, week: ev.week, type: 'award_rookie',
+              text: '🌟 新人王 受賞' });
+            break;
+          case 'awardMVP':
+            milestones.push({ season: ev.season, week: ev.week, type: 'award_mvp',
+              text: '👑 MVP 受賞' });
+            break;
+          case 'awardMedia':
+            milestones.push({ season: ev.season, week: ev.week, type: 'award_media',
+              text: '📺 メディア功労賞 受賞' });
+            break;
+          case 'awardBestMatch':
+            milestones.push({ season: ev.season, week: ev.week, type: 'award_bestmatch',
+              text: `🎬 ベストマッチ賞（MQ ${ev.mq || '?'}）` });
+            break;
           default:
             milestones.push({ season: ev.season || 1, week: ev.week || 0, type: ev.type,
               text: ev.detail || ev.type });
@@ -1865,6 +1881,10 @@ const Engine = {
         war:           { icon: '🏴', color: '#2c3e50' },
         peak:          { icon: '📈', color: '#1abc9c' },
         injury:        { icon: '🏥', color: '#e74c3c' },
+        award_rookie:    { icon: '🌟', color: '#f1c40f' },
+        award_mvp:       { icon: '👑', color: '#f1c40f' },
+        award_media:     { icon: '📺', color: '#3498db' },
+        award_bestmatch: { icon: '🎬', color: '#e67e22' },
         season_end:    { icon: '📅', color: '#95a5a6' },
         note:          { icon: '📝', color: '#bdc3c7' },
       };
@@ -10087,6 +10107,18 @@ Engine.awards = {
               text: 'PPV GRAND FINAL 優勝'
             });
           }
+          break;
+        case 'awardRookie':
+          highlights.push({ type: 'awardRookie', season: ev.season, text: '新人王 受賞' });
+          break;
+        case 'awardMVP':
+          highlights.push({ type: 'awardMVP', season: ev.season, text: 'MVP 受賞' });
+          break;
+        case 'awardMedia':
+          highlights.push({ type: 'awardMedia', season: ev.season, text: 'メディア功労賞 受賞' });
+          break;
+        case 'awardBestMatch':
+          highlights.push({ type: 'awardBestMatch', season: ev.season, text: `ベストマッチ賞（MQ ${ev.mq || '?'}）` });
           break;
       }
     });
