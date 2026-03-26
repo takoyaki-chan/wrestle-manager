@@ -2223,8 +2223,8 @@ function renderFinance() {
       html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
       const coachTotal = getCoachSalaryTotal();
       if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">スポンサー</span><span class="f-val income">+${getSponsorIncome()}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">放映権</span><span class="f-val income">+${getBroadcastIncome()}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">グッズ収入</span><span class="f-val income">+${Engine.economy.calcWeeklyGoodsRev(G.roster)}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">メディア収入</span><span class="f-val income">+${Engine.economy.calcWeeklyMediaRev(G.orgPop)}万/週</span></div>`;
     }
   }
 

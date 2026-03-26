@@ -1076,10 +1076,10 @@ const Survival = {
     const coachSalary = Engine.coach.getSalaryTotal(G);
     const totalExpense = salary + fixed + coachSalary;
 
-    const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
-    const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
+    const weeklyGoods = Engine.economy.calcWeeklyGoodsRev(G.roster);
+    const weeklyMedia = Engine.economy.calcWeeklyMediaRev(G.orgPop);
     const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
-    const totalBaseIncome = sponsor + broadcast + subsidy;
+    const totalBaseIncome = weeklyGoods + weeklyMedia + subsidy;
 
     // Estimate average show income per week (shows happen ~every 4 weeks)
     // Use last show's revenue if available, or estimate from orgPop
@@ -2531,8 +2531,8 @@ const App = {
   titleLoadGame() {
     Audio.play('select');
     document.getElementById('titleScreen').style.display = 'none';
-    // Initialize minimal state so save screen can render
-    G = Engine.createInitialState();
+    // Initialize minimal state so save screen can render (skipDraft=true to avoid draft screen)
+    G = Engine.createInitialState(undefined, true);
     sessionRng = Engine.rng.create(G.rngSeed);
     G = { ...G, _draftPicks: [], _draftFocus: null, gameLog: [] };
     refreshAll();
