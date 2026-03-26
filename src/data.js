@@ -771,7 +771,13 @@ const TICKET_PRICE_TIERS = [
   { threshold: 5000,  price: 0.35 },  // 5000-10000: 割安
   { threshold: 10000, price: 0.25 },  // 10000+: 薄利多売
 ];
-const GOODS_PRICE = 0.15; // 万円/人（v1.7: 0.08→0.15 グッズ収入底上げ）
+// 金銭バランス改善: グッズ収入を選手個別・週次ベースに再設計
+const GOODS_CONFIG = {
+  weeklyPerPop: 0.2,      // 万円/pop/週（全選手に毎週発生）
+  injuryMult: 0.3,         // 怪我中の週次倍率（×0.3）
+  showBoostPerPop: 0.25,   // 万円/pop/興行（出場選手のみ）
+  promoPerPop: 0.6,        // 万円/pop/プロモ実施
+};
 // v3.1: 会場レベル別MQ閾値シフト — 小会場は緩く、大会場ほど厳しい、ドームでガッと上がる
 // 負=MQ閾値が下がり上がりやすい、正=閾値が上がり高MQ必要
 //                 公民 小A  小B  市民 中A  中B  大   arena 大会場 ドーム
@@ -861,13 +867,26 @@ const PROMO_EVENT_NAMES = {
   high: ['大型イベント出演', 'TV番組出演', '雑誌撮影会', 'スペシャルショー'],
 };
 const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
-const SPONSOR_TABLE = [
-  {min:0,max:19,val:0},{min:20,max:39,val:10},{min:40,max:59,val:30},
-  {min:60,max:79,val:60},{min:80,max:94,val:120},{min:95,max:100,val:200}
+// 金銭バランス改善: メディア収入（スポンサー/放映権を統合再設計）
+const MEDIA_ORGPOP_CURVE = [
+  [0, 0.05], [30, 0.40], [50, 0.70], [70, 1.00], [85, 1.30], [100, 1.50]
 ];
-const BROADCAST_TABLE = [
-  {min:70,max:84,val:50},{min:85,max:94,val:100},{min:95,max:100,val:200}
-];
+const MEDIA_CONFIG = {
+  weeklyPerOrgPop: 1.5,    // 万円/orgPop/週
+  showPerMQ: 1.1,           // 万円/avgMQ/興行
+  ppvPerPop: 0.9,           // 万円/pop/PPV出演
+  jtPerPop: 0.9,            // 万円/pop/JT出演
+  eventPerMQ: 1.1,          // 万円/MQ/挑戦状or対抗戦
+  promoPerPop: 0.6,         // 万円/pop/プロモ連動
+  fanExpectPerPriority: 30, // 万円/priority/カード
+  rivalryCoeff: 0.016,      // 万円/rivalry×MQ
+};
+// 会場規模別メディア補正（インデックス0-9: 公民館→ドーム）
+const VENUE_MEDIA_MULT = [0.3, 0.5, 0.6, 0.8, 0.9, 1.0, 1.2, 1.5, 1.8, 2.5];
+// PPV/JTカード位置別メディア倍率
+const PPV_CARD_MULT = { main: 8.0, semi: 4.0, mid: 3.0, under: 2.0 };
+// 昇給要求のtrust減額
+const TRUST_RAISE_DISCOUNT = { threshold: 40, maxDiscount: 0.08 };
 const FIXED_COSTS = {admin:30};
 // v1.7: 育成補助金 — 序盤の団体運営を支援（orgPop 40以上で打ち切り）
 const SUBSIDY_TABLE = [

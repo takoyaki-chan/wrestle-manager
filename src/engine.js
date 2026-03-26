@@ -163,7 +163,7 @@ const Engine = {
     getSalary(c, titles) {
       const ovr = c.contractOVR != null ? c.contractOVR : Engine.util.ov(c);
       const base = Math.max(0, SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr) + SALARY_PARAMS.offset);
-      const pop = c.contractPop != null ? c.contractPop : (c.popularity || 0);
+      const pop = c.contractPop ?? 0;
       const popBonus = SALARY_PARAMS.popMax * Math.pow(pop / 100, SALARY_PARAMS.popExp);
       const isChamp = titles && titles.world && titles.world.championId === c.id;
       const titleBonus = isChamp ? SALARY_PARAMS.titleBonus : 0;
@@ -567,20 +567,6 @@ const Engine = {
       const newPop = Math.max(1, fighter.popularity * TRANSFER_POP_MULT);
       return { ...fighter, popularity: newPop };
     },
-    // §D: Roster popularity score for goods revenue
-    calcRosterPopScore(roster) {
-      const sorted = [...roster].filter(c => !c.injury).sort((a, b) => b.popularity - a.popularity);
-      let totalWeight = 0, weightedPop = 0;
-      sorted.forEach((c, i) => {
-        let weight = i === 0 ? 3 : i < 3 ? 2 : 1;
-        if (Traits.has(c, '華')) weight *= 1.3;
-        if (Traits.has(c, 'ファンサービス')) weight *= 1.2;
-        if (Traits.has(c, 'ヒール適性') && (c.role === 'Heel' || c.role === 'Dirty')) weight *= 1.2;
-        totalWeight += weight;
-        weightedPop += c.popularity * weight;
-      });
-      return totalWeight > 0 ? weightedPop / totalWeight : 0;
-    }
   },
 
   // ── Economy (DOM-free) ─────────────────────────────────
@@ -591,13 +577,52 @@ const Engine = {
     calcFixedCosts() {
       return FIXED_COSTS.admin;
     },
-    getSponsorIncome(orgPop) {
-      for (const s of SPONSOR_TABLE) if (orgPop >= s.min && orgPop <= s.max) return s.val;
-      return 0;
+    // 金銭バランス改善: orgPop→メディア補正カーブ（区間線形補間）
+    calcMediaOrgPopMult(orgPop) {
+      const curve = MEDIA_ORGPOP_CURVE;
+      const pop = Engine.util.clamp(orgPop, 0, 100);
+      for (let i = 1; i < curve.length; i++) {
+        if (pop <= curve[i][0]) {
+          const [x0, y0] = curve[i - 1];
+          const [x1, y1] = curve[i];
+          const t = (pop - x0) / (x1 - x0);
+          return y0 + t * (y1 - y0);
+        }
+      }
+      return curve[curve.length - 1][1];
     },
-    getBroadcastIncome(orgPop) {
-      for (const b of BROADCAST_TABLE) if (orgPop >= b.min && orgPop <= b.max) return b.val;
-      return 0;
+    // 金銭バランス改善: 週次グッズ収入（全選手・毎週発生）
+    calcWeeklyGoodsRev(roster) {
+      let total = 0;
+      roster.forEach(c => {
+        if (c.isRental) return;
+        const mult = c.injury ? GOODS_CONFIG.injuryMult : 1.0;
+        total += c.popularity * GOODS_CONFIG.weeklyPerPop * mult;
+      });
+      return Math.round(total);
+    },
+    // 金銭バランス改善: 興行グッズブースト（出場選手のみ）
+    calcShowGoodsBoost(roster, showResults, attendance, venueCap) {
+      let total = 0;
+      const usedIds = new Set();
+      showResults.forEach(r => { usedIds.add(r.left.id); usedIds.add(r.right.id); });
+      const occRate = venueCap > 0 ? attendance / venueCap : 0;
+      roster.forEach(c => {
+        if (!usedIds.has(c.id)) return;
+        total += c.popularity * GOODS_CONFIG.showBoostPerPop * occRate;
+      });
+      return Math.round(total);
+    },
+    // 金銭バランス改善: 週次メディア収入（毎週発生）
+    calcWeeklyMediaRev(orgPop) {
+      return Math.round(orgPop * MEDIA_CONFIG.weeklyPerOrgPop);
+    },
+    // 金銭バランス改善: 興行放映収入
+    calcShowMediaRev(avgMQ, venueIdx, hasTitleMatch, orgPop) {
+      const venueMult = VENUE_MEDIA_MULT[venueIdx] || 1.0;
+      const titleMult = hasTitleMatch ? 1.5 : 1.0;
+      const orgPopMult = Engine.economy.calcMediaOrgPopMult(orgPop);
+      return Math.round(avgMQ * MEDIA_CONFIG.showPerMQ * venueMult * titleMult * orgPopMult);
     },
     // v1.7: 育成補助金（地域振興助成金）— orgPop 40未満の小団体を支援
     getSubsidy(orgPop) {
@@ -693,17 +718,14 @@ const Engine = {
       }
       return Math.round(rev);
     },
-    calcShowRevenue(roster, venueIdx, attendance) {
+    calcShowRevenue(venueIdx, attendance) {
       const v = VENUES[venueIdx];
       // v3.1: チケット単価逓減適用（旧: attendance * TICKET_PRICE フラット）
       const rawTicketRev = Engine.economy.calcTieredTicketRevenue(attendance);
       const occupancyRate = attendance / v.cap;
       const occBonus = OCCUPANCY_BONUS.find(b => occupancyRate >= b.min) || OCCUPANCY_BONUS[OCCUPANCY_BONUS.length - 1];
       const ticketRev = Math.round(rawTicketRev * occBonus.ticketMult);
-      // v1.0b: Goods revenue = attendance × GOODS_PRICE × rosterPopScore / 100
-      const popScore = Engine.popularity.calcRosterPopScore(roster);
-      const goodsRev = Math.round(attendance * GOODS_PRICE * popScore / 100);
-      return { ticketRev, goodsRev, venueCost: v.cost, occupancyRate, occLabel: occBonus.label, occHeatDelta: occBonus.heatDelta };
+      return { ticketRev, venueCost: v.cost, occupancyRate, occLabel: occBonus.label, occHeatDelta: occBonus.heatDelta };
     }
   },
 
@@ -2843,6 +2865,7 @@ const Engine = {
         promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
+        contractPop: 0,  // 契約時人気（給与固定用、initAIOrgsで正式セット）
         orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
         devLabelOffset: Engine.rng.int(rng, -7, 7),
       };
@@ -5124,6 +5147,7 @@ const Engine = {
       const promoBoostBuff = mBuffs.find(b => b.type === 'promo_boost');
       const promoBoostAmount = promoBoostBuff ? promoBoostBuff.amount : 0;
       const promoIncomes = []; // プロモ収入蓄積（processSettlement で使用）
+      const promoGoods = [];   // 金銭バランス改善: プロモ連動グッズ蓄積
 
       roster = roster.map(c => {
         let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
@@ -5320,6 +5344,8 @@ const Engine = {
             const eventName = namePool[Engine.rng.int(nameRng, 0, namePool.length - 1)];
             promoIncomes.push({ name: nc.name, income: piEntry.val, eventName });
           }
+          // 金銭バランス改善: プロモ連動グッズ収入
+          promoGoods.push({ name: nc.name, amount: Math.round(nc.popularity * GOODS_CONFIG.promoPerPop) });
         } else {
           const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
           nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + mentalBonus + restIronBonus);
@@ -5497,16 +5523,45 @@ const Engine = {
       const promoIncomes = G._pendingPromoIncomes || [];
       promoIncomes.forEach(pi => {
         totalIncome += pi.income;
-        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}）`, val: pi.income, type: 'income' });
+        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}）`, val: pi.income, type: 'income', category: 'promo' });
       });
 
-      const sponsor = Engine.economy.getSponsorIncome(G.orgPop);
-      totalIncome += sponsor;
-      if (sponsor > 0) details.push({ label: 'スポンサー収入', val: sponsor, type: 'income' });
+      // 金銭バランス改善: 週次グッズ収入（全選手・毎週）
+      const weeklyGoods = Engine.economy.calcWeeklyGoodsRev(G.roster);
+      totalIncome += weeklyGoods;
+      if (weeklyGoods > 0) details.push({ label: 'グッズ収入（週次）', val: weeklyGoods, type: 'income', category: 'goods' });
 
-      const broadcast = Engine.economy.getBroadcastIncome(G.orgPop);
-      totalIncome += broadcast;
-      if (broadcast > 0) details.push({ label: '放映権収入', val: broadcast, type: 'income' });
+      // 金銭バランス改善: プロモ連動グッズ
+      const promoGoods = G._pendingPromoGoods || [];
+      let promoGoodsTotal = 0;
+      promoGoods.forEach(pg => { promoGoodsTotal += pg.amount; });
+      if (promoGoodsTotal > 0) {
+        totalIncome += promoGoodsTotal;
+        details.push({ label: 'グッズ収入（プロモ連動）', val: promoGoodsTotal, type: 'income', category: 'goods' });
+      }
+
+      // 金銭バランス改善: 週次メディア収入（毎週発生）
+      const weeklyMedia = Engine.economy.calcWeeklyMediaRev(G.orgPop);
+      totalIncome += weeklyMedia;
+      if (weeklyMedia > 0) details.push({ label: 'メディア収入（週次）', val: weeklyMedia, type: 'income', category: 'media' });
+
+      // 金銭バランス改善: プロモ連動メディア
+      let promoMediaTotal = 0;
+      promoIncomes.forEach(pi => {
+        const fighter = G.roster.find(c => c.name === pi.name);
+        if (fighter) promoMediaTotal += Math.round(fighter.popularity * MEDIA_CONFIG.promoPerPop);
+      });
+      if (promoMediaTotal > 0) {
+        totalIncome += promoMediaTotal;
+        details.push({ label: 'メディア収入（プロモ連動）', val: promoMediaTotal, type: 'income', category: 'media' });
+      }
+
+      // 金銭バランス改善: PPV/JT/対抗戦メディア収入（前週イベントからの繰越）
+      const pendingMedia = G._pendingMediaIncomes || [];
+      pendingMedia.forEach(pm => {
+        totalIncome += pm.amount;
+        details.push({ label: `メディア収入（${pm.label}）`, val: pm.amount, type: 'income', category: 'media' });
+      });
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給、通常モードは対象外）
       const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
@@ -5536,16 +5591,71 @@ const Engine = {
         // v1.5s25b: attendance_boost バフ（マイルストーン）
         const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
         if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
-        const rev = Engine.economy.calcShowRevenue(roster, G.showVenue, attendance);
+        const rev = Engine.economy.calcShowRevenue(G.showVenue, attendance);
 
         totalIncome += rev.ticketRev;
-        totalIncome += rev.goodsRev;
         totalExpense += rev.venueCost;
 
         const occPct = Math.round(rev.occupancyRate * 100);
-        details.push({ label: `チケット収入（${attendance}人 / ${VENUES[G.showVenue].cap}席 ${occPct}% ${rev.occLabel}）`, val: rev.ticketRev, type: 'income' });
-        details.push({ label: 'グッズ収入', val: rev.goodsRev, type: 'income' });
+        details.push({ label: `チケット収入（${attendance}人 / ${VENUES[G.showVenue].cap}席 ${occPct}% ${rev.occLabel}）`, val: rev.ticketRev, type: 'income', category: 'ticket' });
         details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
+
+        // 金銭バランス改善: 興行グッズブースト（出場選手のみ）
+        const showGoods = Engine.economy.calcShowGoodsBoost(roster, G.lastShowResults, attendance, VENUES[G.showVenue].cap);
+        if (showGoods > 0) {
+          totalIncome += showGoods;
+          details.push({ label: 'グッズ収入（興行ブースト）', val: showGoods, type: 'income', category: 'goods' });
+        }
+
+        // 金銭バランス改善: 興行放映メディア収入
+        const avgMQ = G.lastShowResults.length > 0
+          ? G.lastShowResults.reduce((s, r) => s + (r.matchQuality || 0), 0) / G.lastShowResults.length
+          : 0;
+        const showMedia = Engine.economy.calcShowMediaRev(avgMQ, G.showVenue, hasTitleMatch, G.orgPop);
+        if (showMedia > 0) {
+          totalIncome += showMedia;
+          details.push({ label: 'メディア収入（興行放映）', val: showMedia, type: 'income', category: 'media' });
+        }
+
+        // 金銭バランス改善: ファン期待カード実現メディア
+        const orgPopMult = Engine.economy.calcMediaOrgPopMult(G.orgPop);
+        if (settleFanExpects && settleFanExpects.length > 0) {
+          let fanExpectMedia = 0;
+          settleFanExpects.forEach(fe => {
+            const matched = G.showCard && G.showCard.some(m =>
+              (m.left === fe.leftId && m.right === fe.rightId) ||
+              (m.left === fe.rightId && m.right === fe.leftId)
+            );
+            if (matched) {
+              fanExpectMedia += Math.round(fe.priority * MEDIA_CONFIG.fanExpectPerPriority * (avgMQ / 70) * orgPopMult);
+            }
+          });
+          if (fanExpectMedia > 0) {
+            totalIncome += fanExpectMedia;
+            details.push({ label: 'メディア収入（期待カード）', val: fanExpectMedia, type: 'income', category: 'media' });
+          }
+        }
+
+        // 金銭バランス改善: ライバル抗争カードメディア
+        if (G.showCard && G.relationships) {
+          let rivalryMedia = 0;
+          G.showCard.forEach(m => {
+            if (m.left > 0 && m.right > 0) {
+              const keyAB = `${m.left}>${m.right}`;
+              const keyBA = `${m.right}>${m.left}`;
+              const rivalryAB = G.relationships[keyAB]?.rivalry || 0;
+              const rivalryBA = G.relationships[keyBA]?.rivalry || 0;
+              const rivalryVal = Math.max(rivalryAB, rivalryBA);
+              if (rivalryVal > 20) { // 最低閾値: rivalry20+でメディア収入発生
+                rivalryMedia += Math.round(rivalryVal * avgMQ * MEDIA_CONFIG.rivalryCoeff * orgPopMult);
+              }
+            }
+          });
+          if (rivalryMedia > 0) {
+            totalIncome += rivalryMedia;
+            details.push({ label: 'メディア収入（ライバル抗争）', val: rivalryMedia, type: 'income', category: 'media' });
+          }
+        }
         occHeatDelta = rev.occHeatDelta;
         // L1: 勢い補正差分計算
         momentumDelta = Engine.economy.calcMomentumDelta(rev.occupancyRate);
@@ -9004,6 +9114,7 @@ const Engine = {
       promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
       lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
       orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
+      contractPop: 0,  // 契約時人気（給与固定用、初期は0）
       orgTimeline: [{ orgId: template._orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
       growthLog: [],  // 成長経過ログ（全週分、引退時削除）
     };
@@ -12862,6 +12973,9 @@ Engine.validateGameState = function(G) {
       }
       if (c.age !== undefined && (!isValidNum(c.age) || c.age < 10 || c.age > 40)) {
         warn(`キャラ "${c.name}" (id:${c.id}) のageが不正値: ${c.age}`);
+      }
+      if (c.contractPop == null) {
+        warn(`キャラ "${c.name}" (id:${c.id}) のcontractPopが未設定`);
       }
     });
   }

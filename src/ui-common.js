@@ -4206,10 +4206,9 @@ function assignToCoach(coachId, charId) {
 function getCoachAssignees(coachId) { return Engine.coach.getCoachAssignees(G, coachId); }
 function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster, G.titles); }
 function calcFixedCosts() { return Engine.economy.calcFixedCosts(); }
-function getSponsorIncome() { return Engine.economy.getSponsorIncome(G.orgPop); }
-function getBroadcastIncome() { return Engine.economy.getBroadcastIncome(G.orgPop); }
+function getWeeklyMediaRev() { return Engine.economy.calcWeeklyMediaRev(G.orgPop); }
 function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard, null); }
-function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(G.roster, venueIdx, attendance); }
+function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(venueIdx, attendance); }
 // 全ポップアップ・トースト・キューを強制クリア（タブ切替・週送り時に使用）
 function dismissAllPopups() {
   _POPUP_OVERLAY_IDS.forEach(oid => {
