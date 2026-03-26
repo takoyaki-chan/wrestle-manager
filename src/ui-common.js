@@ -1832,15 +1832,16 @@ function _awPortrait(id, cssClass) {
   return ch ? ch.name.charAt(0) : '?';
 }
 
-// 団体エンブレムバッジ（ポートレート上部に配置）
-function _awOrgEmblem(orgName, isPlayerOrg) {
-  let emoji = '⭐';
-  let color = 'var(--gold)';
+// 団体エンブレム（ポートレート外、上部に配置）
+function _awOrgEmblem(orgName, isPlayerOrg, size) {
+  size = size || 28;
+  // orgIdを逆引き
+  let orgId = 'player';
   if (!isPlayerOrg && typeof RIVAL_ORGS !== 'undefined') {
     const org = RIVAL_ORGS.find(o => o.name === orgName);
-    if (org) { emoji = org.emoji; color = org.color; }
+    if (org) orgId = org.id;
   }
-  return `<span class="aw-org-emblem" style="color:${color}">${emoji}</span>`;
+  return `<div class="aw-org-emblem">${orgIconHtml(orgId, size)}</div>`;
 }
 
 function _awSpeech(name, line) {
@@ -1964,7 +1965,7 @@ function _buildMediaAward(d) {
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">メディア功労賞</span></div>
   <div class="media-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
+    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}<div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div></div>
     <div class="media-stats">
       <div class="winner-name" style="font-size:28px">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''} · ${_styleJa(d.style)}</div>
@@ -1985,7 +1986,7 @@ function _buildRookieAward(d) {
   const line = _awardLine('rookie', d.id);
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌟</span><span class="badge-jp">新人王</span></div>
   <div class="rookie-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
+    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}<div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div></div>
     <div>
       <div class="winner-name">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''} · ${d.age}歳</div>
@@ -2004,7 +2005,7 @@ function _buildJTChampionAward(d) {
   const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント優勝</span></div>
   <div class="rookie-layout">
-    <div class="portrait-main"><div class="portrait-glow"></div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
+    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}<div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div></div>
     <div>
       <div class="winner-name">${d.name}</div>
       <div class="winner-sub">${d.orgName || ''}</div>
@@ -2028,7 +2029,7 @@ function _buildBestMatchAward(d) {
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
   <div class="bestmatch-fighters">
     <div class="fighter-side">
-      <div class="portrait-sm">${_awOrgEmblem(f1OrgName, d.isPlayerOrg)}${_awPortrait(f1.id)}</div>
+      ${_awOrgEmblem(f1OrgName, d.isPlayerOrg, 22)}<div class="portrait-sm">${_awPortrait(f1.id)}</div>
       <div class="fighter-name">${f1.name}</div>
       <div class="fighter-org">${f1OrgName}</div>
     </div>
@@ -2041,7 +2042,7 @@ function _buildBestMatchAward(d) {
       <div class="vs-text">vs</div>
     </div>
     <div class="fighter-side">
-      <div class="portrait-sm">${_awOrgEmblem(f2OrgName, false)}${_awPortrait(f2.id)}</div>
+      ${_awOrgEmblem(f2OrgName, false, 22)}<div class="portrait-sm">${_awPortrait(f2.id)}</div>
       <div class="fighter-name">${f2.name}</div>
       <div class="fighter-org">${f2OrgName}</div>
     </div>
@@ -2065,7 +2066,8 @@ function _buildChampionsAward(champions) {
     const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
     const isPlayer = c.isPlayer;
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
-      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awOrgEmblem(c.orgName, c.isPlayer)}${_awPortrait(c.id)}</div>
+      ${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}
+      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
       <div class="champ-name">${c.name}</div>
       <div class="champ-org" ${isPlayer ? 'style="color:var(--gold-light)"' : ''}>${c.orgName}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
@@ -2083,29 +2085,55 @@ function _buildChampionsAward(champions) {
 
 function _buildMVPAward(d) {
   const line = _awardLine('mvp', d.id);
-  const winRate = d.winRate || 0;
   const defenses = d.defenses || 0;
-  const ovrPct = Math.min(100, d.ovr);
-  const popPct = Math.min(100, d.popularity);
-  const defPct = Math.min(100, defenses * 10);
+  const wins = d.wins || 0, losses = d.losses || 0;
 
-  let statsHtml = `
-    <div class="stat-row"><div class="stat-label">OVR</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${ovrPct}"></div></div><div class="stat-val">${d.ovr}</div></div>
-    <div class="stat-row"><div class="stat-label">人気</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${popPct}"></div></div><div class="stat-val">${Engine.util.dispPop(d.popularity)}</div></div>
-    <div class="stat-row"><div class="stat-label">勝率</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${winRate}"></div></div><div class="stat-val">${winRate}%</div></div>`;
-  if (defenses > 0) {
-    statsHtml += `<div class="stat-row" style="margin-bottom:16px"><div class="stat-label">防衛</div><div class="stat-bar-wrap"><div class="stat-bar" data-width="${defPct}"></div></div><div class="stat-val">${defenses}回</div></div>`;
-  } else {
-    statsHtml += `<div style="margin-bottom:16px"></div>`;
+  // 実績リスト構築
+  const achievements = [];
+  achievements.push({ icon: '💪', text: `OVR ${d.ovr}`, sub: _styleJa(d.style) });
+  achievements.push({ icon: '🌟', text: `人気 ${Engine.util.dispPop(d.popularity)}`, sub: `${wins}勝${losses}敗` });
+  if (d.isChampion) achievements.push({ icon: '🏆', text: '現王者', sub: defenses > 0 ? `防衛 ${defenses}回` : '王座保持中' });
+  // careerRecordから当シーズン実績を表示
+  const hist = [];
+  if (typeof G !== 'undefined') {
+    const fighter = (G.roster || []).find(f => f.id === d.id);
+    const allFighters = fighter ? [fighter] : [];
+    if (!fighter && G.aiOrgs) {
+      Object.values(G.aiOrgs).forEach(org => {
+        const f = (org.roster || []).find(f => f.id === d.id);
+        if (f) allFighters.push(f);
+      });
+    }
+    const f = allFighters[0];
+    if (f && f.careerRecord && f.careerRecord.history) {
+      f.careerRecord.history.forEach(ev => {
+        if (ev.season !== G.season) return;
+        if (ev.type === 'titleWin') hist.push({ icon: '👑', text: '王座獲得' });
+        if (ev.type === 'titleDefense') hist.push({ icon: '🛡️', text: `王座防衛（${ev.defenseCount || ''}回目）` });
+        if (ev.type === 'ppvMainEvent' && ev.won) hist.push({ icon: '🏟️', text: 'PPV優勝' });
+        if (ev.type === 'juniorTournament' && ev.result === 'champion') hist.push({ icon: '🏅', text: 'JT優勝' });
+      });
+    }
   }
+  if (hist.length > 0) {
+    hist.forEach(h => achievements.push(h));
+  }
+
+  const achHtml = achievements.map(a =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(212,168,67,0.08)">
+      <span style="font-size:16px;flex-shrink:0">${a.icon}</span>
+      <span style="font-size:13px;font-weight:700;color:#f0ead8;flex:1">${a.text}</span>
+      ${a.sub ? `<span style="font-size:11px;color:#7a7060">${a.sub}</span>` : ''}
+    </div>`
+  ).join('');
 
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">👑</span><span class="badge-jp">MVP</span></div>
   <div class="mvp-layout">
-    <div class="portrait-mvp">${_awOrgEmblem(d.orgName, d.isPlayerOrg)}${_awPortrait(d.id)}</div>
+    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg, 32)}<div class="portrait-mvp">${_awPortrait(d.id)}</div></div>
     <div style="flex:1">
       <div class="winner-name" style="font-size:28px;margin-bottom:4px">${d.name}</div>
-      <div class="winner-sub" style="margin-bottom:18px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
-      ${statsHtml}
+      <div class="winner-sub" style="margin-bottom:12px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
+      <div style="margin-bottom:14px">${achHtml}</div>
       ${_awSpeech(d.name, line)}
     </div>
   </div></div>`;
@@ -2126,7 +2154,8 @@ function _buildHallOfFame(d) {
 
   return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
   <div class="hof-layout">
-    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awOrgEmblem(d.orgName, d.orgId === 'player')}${_awPortrait(d.id)}</div>
+    ${_awOrgEmblem(d.orgName, d.orgId === 'player', 32)}
+    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
     <div class="hof-stars">${stars}</div>
     <div class="hof-name">${d.name}</div>
     <div class="hof-plaque">${plaqueText}</div>
@@ -2203,7 +2232,7 @@ function showAwardsCeremony(awards, onDone) {
   if (champHtml)
     slideInfo.push({ html: champHtml, label: 'タイトル王者', se: 'normal', isChampions: true });
   if (awards.mvp)
-    slideInfo.push({ html: _buildMVPAward(awards.mvp), label: 'MVP', se: 'mvp', isMvp: true });
+    slideInfo.push({ html: _buildMVPAward(awards.mvp), label: 'MVP', se: 'mvp' });
   if (awards.hallOfFame && awards.hallOfFame.length > 0) {
     awards.hallOfFame.forEach(inductee => {
       slideInfo.push({ html: _buildHallOfFame(inductee), label: '殿堂入り', se: 'hof', isHof: true, hofData: inductee });
@@ -2284,15 +2313,6 @@ function showAwardsCeremony(awards, onDone) {
       }, 200);
     }
 
-    // MVPバーアニメーション
-    if (slideInfo[current].isMvp) {
-      const bars = slides[current].querySelectorAll('.stat-bar');
-      bars.forEach(b => { b.style.width = '0%'; });
-      bars.forEach((bar, i) => {
-        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200 + i * 150);
-      });
-    }
-
     // 殿堂入り紙吹雪 + コーチFG
     if (slideInfo[current].isHof) {
       setTimeout(_awSpawnConfetti, 300);
@@ -2342,12 +2362,6 @@ function showAwardsCeremony(awards, onDone) {
           }, 400 + i * 700);
         });
       }, 200);
-    }
-    if (slideInfo[0].isMvp) {
-      const bars = slideWrap.querySelectorAll('#aw-slide-0 .stat-bar');
-      bars.forEach((bar, i) => {
-        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200 + i * 150);
-      });
     }
   }, 3200);
 
