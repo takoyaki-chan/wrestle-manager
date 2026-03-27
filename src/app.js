@@ -7333,8 +7333,8 @@ App.initJuniorTournament = function() {
   const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
   const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
 
-  // 自団体の出場選手を抽出
-  const playerIds = new Set((G.roster || []).map(f => f.id));
+  // 自団体の出場選手を抽出（レンタル選手は元所属団体枠で出場するため除外）
+  const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   const myParticipants = jtResult.rounds[0].matches
     .flatMap(m => [m.left, m.right])
     .filter(p => playerIds.has(p.id));
