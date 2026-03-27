@@ -5891,6 +5891,10 @@ const App = {
         displayEvents.push(e);
       }
     });
+    // orgPop変動があればログに記録（__orgPop:はdisplayEventsから除外されるため、ログにも残らなかった）
+    if (orgPopDelta !== 0) {
+      displayEvents.push(`📉 団体人気${orgPopDelta >= 0 ? '+' : ''}${Math.round(orgPopDelta * 100) / 100}`);
+    }
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
