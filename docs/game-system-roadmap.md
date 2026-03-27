@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-26（年間表彰式全面リファクタ: モックアップ準拠UI書換+メディア功労賞全団体拡張+コーチFG演出）
+> 最終更新: 2026-03-27（因縁放置ペナルティ修正: 暦週→興行ベース化+上位2ペア限定+recordRivalryにlastAbsWeek更新追加）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**stat小数点バグ根本修正+画像フォールバック（2026-03-26）。** 練習成長3箇所(追い込み/通常練習/AI週次)でtrainGrowthがMath.round(…*10)/10の小数値のままstatに加算されfloat蓄積していたバグを修正。statに加算する直前にMath.round()を適用し整数を保証。validateGameStateに非整数検出+自動修正チェック追加。既存セーブデータ向けマイグレーション(_migrated_stat_round_v1)で全キャラstat一括丸め。画像フォールバック: _imgOrInitialヘルパー新設(onerror時にスタイル色イニシャル表示)、PPVカード対戦画像/対抗戦勝利演出/JT結果ポップアップ/選手詳細ポートレートの4箇所に適用。auto-sim 100シーズンALL CLEAR。
+**因縁放置ペナルティ修正（2026-03-27）。** orgPopが中盤以降0に向かって不可逆的に下落するバグを修正。原因: getNeglectedRivalryPenaltyが①暦週ベース(3週)で判定されるため非興行週にもペナルティ発生、②recordRivalryでlastAbsWeekが更新されず通常対戦でペナルティがリセットされない、③全因縁ペア対象で上限-1.0/週と過大。修正: ①興行週のみ判定+興行回数ベース(3興行未対戦)に変更、②recordRivalryにlastAbsWeek/lastShowNumber更新追加、③上位2ペア限定+ペナ-0.15/ペア+上限-0.3に軽減。auto-sim 20シーズン×5シード ALL CLEAR、orgPop 40-55帯で安定推移。
+
+前回: **stat小数点バグ根本修正+画像フォールバック（2026-03-26）。** 練習成長3箇所(追い込み/通常練習/AI週次)でtrainGrowthがMath.round(…*10)/10の小数値のままstatに加算されfloat蓄積していたバグを修正。statに加算する直前にMath.round()を適用し整数を保証。validateGameStateに非整数検出+自動修正チェック追加。既存セーブデータ向けマイグレーション(_migrated_stat_round_v1)で全キャラstat一括丸め。画像フォールバック: _imgOrInitialヘルパー新設(onerror時にスタイル色イニシャル表示)、PPVカード対戦画像/対抗戦勝利演出/JT結果ポップアップ/選手詳細ポートレートの4箇所に適用。auto-sim 100シーズンALL CLEAR。
 
 前回: **年間表彰式全面リファクタ（2026-03-26）。** モックアップ(awards-mockup-final-v2.html)準拠で表彰式UIを全面書き換え。TASK-1:メディア功労賞を全団体対象に拡張(AI団体processAIWeek内で興行出場選手のmediaRevSeasonトラッキング追加+PPV/JT/対抗戦でAI選手のmediaRevSeason加算+processSeasonEndに3フィールドリセット追加+selectMediaAward候補を全団体に拡張+返り値にorgName追加)。TASK-2:CSS全面置換(ステージ背景+スポットライト3灯+パーティクル+ファンファーレオーバーレイ+セレモニーヘッダー+スライド制御+award-card+各賞固有レイアウト+ナビゲーション+コーチFG+紙吹雪、枠画像フレームa-g完全廃止)+Google Fonts追加(Noto Serif JP)+HTML構造書換(#stage/#aw-particles/#aw-fanfare-overlay/#aw-ceremony/#hof-coach-fg)。TASK-3:全7スライドビルダー関数をモックアップ準拠で書換(メディア功労賞→新人王→ベストマッチ→タイトル王者→MVP→殿堂→一覧、該当なしスキップ)。TASK-4:スライド制御(goToSlide/nextSlide+ドットインジケータ動的生成+ファンファーレ冒頭3秒演出)+タイトル王者順番登場(3位→2位→1位各700ms)+MVPスタッツバーアニメーション(data-width→style.width遅延適用)+殿堂紙吹雪(80個5色)+SE4種(Web Audio: playChime/playMvpFanfare/playHofChime/playFanfare)+パーティクル30個動的生成。TASK-5:殿堂入りコーチFG演出(自団体殿堂入り時のみ+coachAssign逆引きで担当コーチ特定+1.4秒後スライドイン+AWARD_LINES.hofCoach5パターン+他スライド移動で非表示)。auto-sim 200シーズン(2 seeds)ALL CLEAR。
 

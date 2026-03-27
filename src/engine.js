@@ -1080,6 +1080,8 @@ const Engine = {
         ...oldEntry,
         matches: (oldEntry.matches || 0) + rivalryBonus,
         lastWeek: G.week,
+        lastAbsWeek: Engine.util.absWeek(G.season, G.week),
+        lastShowNumber: G.totalShows || 0,
       };
       return { rivalries: { ...G.rivalries, [key]: newEntry }, msg: null };
     },
@@ -1149,16 +1151,29 @@ const Engine = {
     },
 
     getNeglectedRivalryPenalty(state) {
-      const absWeek = Engine.util.absWeek(state.season, state.week);
-      let raw = 0;
+      // 興行週のみ判定（非興行週はスキップ）
+      if (!Engine.util.isShowWeek(state.week)) return 0;
+      const currentShows = state.totalShows || 0;
+      // 因縁ペアを放置度でソートし、上位2ペアのみ対象
+      const candidates = [];
       Object.entries(state.rivalries || {}).forEach(([key, entry]) => {
         const ids = key.split('-').map(Number);
         const pairState = Engine.title.getRivalryPairState(state, ids[0], ids[1]);
         if (pairState.resolvedType || pairState.minRivalry < 60) return;
-        if (!entry.lastAbsWeek) return;
-        if ((absWeek - entry.lastAbsWeek) >= 3) raw -= 0.2;
+        const lastShow = entry.lastShowNumber || 0;
+        if (!lastShow) return;
+        const showGap = currentShows - lastShow;
+        if (showGap >= 3) candidates.push({ showGap, minRivalry: pairState.minRivalry });
       });
-      return Math.max(raw, -1.0);
+      if (candidates.length === 0) return 0;
+      // rivalry強度が高いペアを優先（ファンの期待が高い）
+      candidates.sort((a, b) => b.minRivalry - a.minRivalry);
+      let raw = 0;
+      const maxPairs = 2;
+      for (let i = 0; i < Math.min(candidates.length, maxPairs); i++) {
+        raw -= 0.15;
+      }
+      return Math.max(raw, -0.3);
     },
 
     getAttendanceBonusPct(state, showCard) {
@@ -6474,6 +6489,7 @@ const Engine = {
             matches: 0,
             lastWeek: s.week,
             lastAbsWeek: Engine.util.absWeek(s.season, s.week),
+            lastShowNumber: s.totalShows || 0,
             lastResolvedWeek: s.week,
             resolutionCount: resolution.newResolutionCount,
             lastBand: 0,
@@ -8278,6 +8294,7 @@ const Engine = {
             matches: 0,
             lastWeek: s.week,
             lastAbsWeek: Engine.util.absWeek(s.season, s.week),
+            lastShowNumber: s.totalShows || 0,
             lastResolvedWeek: s.week,
             resolutionCount: resolution.newResolutionCount,
             lastBand: 0,
