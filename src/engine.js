@@ -14844,6 +14844,7 @@ Engine.relationships = {
       delete clean._relationshipGrowthMult;
       delete clean._relationshipInjuryMult;
       delete clean._warningTrustDebuff;
+      delete clean._isolationDebuff;
       return clean;
     });
     let rivalries = { ...(state.rivalries || {}) };
