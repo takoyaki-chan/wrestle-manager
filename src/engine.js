@@ -8925,6 +8925,11 @@ const Engine = {
           allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
         }
 
+        // 殿堂入り判定: 引退処理完了後に再計算（generate時点ではretiredFightersが空のため）
+        if (s.pendingAwards) {
+          s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
+        }
+
         // AI season end processing (steps 1-5)
         const aiResult = Engine.rival.processSeasonEnd(rng, s);
         // v2.0 HOF拡張: NPC殿堂入り回収
