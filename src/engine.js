@@ -2266,8 +2266,19 @@ const Engine = {
       if (specStat) {
         const idx = stats.indexOf(specStat);
         if (idx >= 0) weights[idx] *= 1.40;
-        // 正規化
-        const total = weights.reduce((a, b) => a + b, 0);
+      }
+      // trainCap到達済みステのウェイトを0にする（成長機会の空振り防止）
+      if (char) {
+        const tcbAll = Engine.coach.getTrainCapBonus(G, charId);
+        for (let i = 0; i < stats.length; i++) {
+          let cap = char.trainCap ? char.trainCap[stats[i]] : (char.pot ? char.pot[stats[i]] : 100);
+          cap += tcbAll + Engine.coach.getWeakStatCapBonus(G, charId, stats[i]);
+          if (char[stats[i]] >= cap) weights[i] = 0;
+        }
+      }
+      // 正規化
+      const total = weights.reduce((a, b) => a + b, 0);
+      if (total > 0) {
         for (let i = 0; i < weights.length; i++) weights[i] /= total;
       }
       const r = Engine.rng.float(rng);

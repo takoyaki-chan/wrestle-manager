@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-27（因縁放置ペナルティ修正: 暦週→興行ベース化+上位2ペア限定+recordRivalryにlastAbsWeek更新追加）
+> 最終更新: 2026-03-29（ステ特化コーチのcap到達済みステ空振りバグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**因縁放置ペナルティ修正（2026-03-27）。** orgPopが中盤以降0に向かって不可逆的に下落するバグを修正。原因: getNeglectedRivalryPenaltyが①暦週ベース(3週)で判定されるため非興行週にもペナルティ発生、②recordRivalryでlastAbsWeekが更新されず通常対戦でペナルティがリセットされない、③全因縁ペア対象で上限-1.0/週と過大。修正: ①興行週のみ判定+興行回数ベース(3興行未対戦)に変更、②recordRivalryにlastAbsWeek/lastShowNumber更新追加、③上位2ペア限定+ペナ-0.15/ペア+上限-0.3に軽減。auto-sim 20シーズン×5シード ALL CLEAR、orgPop 40-55帯で安定推移。
+**ステ特化コーチのcap到達済みステ空振りバグ修正（2026-03-29）。** pickGrowthStatがtrainCap到達済みステのウェイトを0にせず、ステ特化コーチの×1.40ウェイトによりcap到達済みステが高確率で選ばれてcalcGrowthが0を返し、他ステの成長機会が最大35%失われていたバグを修正。ステ選択時にtrainCap（限界突破・弱点克服ボーナス含む）をチェックしcap到達済みステのウェイトを0にして再分配。auto-sim 100シーズン×2シードALL CLEAR。
+
+前回: **因縁放置ペナルティ修正（2026-03-27）。** orgPopが中盤以降0に向かって不可逆的に下落するバグを修正。原因: getNeglectedRivalryPenaltyが①暦週ベース(3週)で判定されるため非興行週にもペナルティ発生、②recordRivalryでlastAbsWeekが更新されず通常対戦でペナルティがリセットされない、③全因縁ペア対象で上限-1.0/週と過大。修正: ①興行週のみ判定+興行回数ベース(3興行未対戦)に変更、②recordRivalryにlastAbsWeek/lastShowNumber更新追加、③上位2ペア限定+ペナ-0.15/ペア+上限-0.3に軽減。auto-sim 20シーズン×5シード ALL CLEAR、orgPop 40-55帯で安定推移。
 
 前回: **stat小数点バグ根本修正+画像フォールバック（2026-03-26）。** 練習成長3箇所(追い込み/通常練習/AI週次)でtrainGrowthがMath.round(…*10)/10の小数値のままstatに加算されfloat蓄積していたバグを修正。statに加算する直前にMath.round()を適用し整数を保証。validateGameStateに非整数検出+自動修正チェック追加。既存セーブデータ向けマイグレーション(_migrated_stat_round_v1)で全キャラstat一括丸め。画像フォールバック: _imgOrInitialヘルパー新設(onerror時にスタイル色イニシャル表示)、PPVカード対戦画像/対抗戦勝利演出/JT結果ポップアップ/選手詳細ポートレートの4箇所に適用。auto-sim 100シーズンALL CLEAR。
 
