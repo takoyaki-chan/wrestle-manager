@@ -608,7 +608,7 @@ const PHASES = [
 ];
 const ENG = {
   hpBase: 50, hpScale: 0.90,
-  effPivot: 100, effSlopeAfterPivot: 0.60,
+  effPivot: 100, effSlopeAfterPivot: 1.0,
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
   tecHitBonus: 0.17, spdDodgeBonus: 0.18, hitMin: 42, hitMax: 98,
   counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 22,
