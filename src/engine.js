@@ -383,11 +383,12 @@ const Engine = {
             else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
               const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
               if (Engine.rng.float(rng) * 100 < successRate) {
+                const isSubPin = mv.c === 'submission';
                 winner = atkSide;
-                finType = 'ピン';
+                finType = isSubPin ? 'ギブアップ' : 'ピン';
                 finishPhase = ph.name;
                 finMove = mv.n;
-                log.push(`★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
+                log.push(isSubPin ? `★ ${atk.name}、${mv.n}でギブアップ！` : `★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
               } else {
                 def.gritTurns = eng.gritDuration;
                 log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
