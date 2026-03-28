@@ -7613,7 +7613,7 @@ App.finalizeJuniorTournament = function() {
 
   // 金銭バランス改善: JTメディア収入（出演料）
   const jtMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
-  const jtPlayerIds = new Set((G.roster || []).map(f => f.id));
+  const jtPlayerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   let jtMediaTotal = 0;
   jt.result.rounds.forEach(round => {
     round.matches.forEach(m => {
@@ -7651,8 +7651,8 @@ App.finalizeJuniorTournament = function() {
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
   G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng) };
 
-  // 自団体出場選手の感想チェーンを構築
-  const playerIds = new Set((G.roster || []).map(f => f.id));
+  // 自団体出場選手の感想チェーンを構築（レンタル選手は元所属団体枠で出場）
+  const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   const { champion, runnerUp, semiFinalists, rounds } = jt.result;
   const allParticipants = rounds[0].matches.flatMap(m => [m.left, m.right]);
   const myParticipants = allParticipants.filter(p => playerIds.has(p.id));
