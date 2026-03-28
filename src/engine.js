@@ -5374,7 +5374,9 @@ const Engine = {
             if (actualGrowth > 0) { nc[growStat] += actualGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + actualGrowth; }
           }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
-          nc.condition = Math.max(0, nc.condition - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
+          const ironBonusI = Traits.has(nc, '鉄人') ? 2 : 0;
+          const hardWorkerBonusI = Traits.has(nc, '努力家') ? 1 : 0;
+          nc.condition = Math.max(0, nc.condition - Math.round(5 + Engine.rng.int(rng, 0, 5)) + adaptBonus + ironBonusI + hardWorkerBonusI);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
             nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };

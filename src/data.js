@@ -2809,9 +2809,9 @@ const GROWTH_CONFIG = {
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
   // v0.8: Intensive training
-  intensiveMult: 1.5,     // growth multiplier for intensive training
-  intensiveCondDrain: 2.0, // condition drain multiplier
-  intensiveInjuryChance: 0.05, // 5% chance of minor injury
+  intensiveMult: 1.8,     // growth multiplier for intensive training (v0.2b: 1.5→1.8)
+  intensiveCondDrain: 2.0, // condition drain multiplier (legacy, actual drain is hardcoded)
+  intensiveInjuryChance: 0.03, // 3% chance of minor injury (v0.2b: 5%→3%)
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
   intensiveMinCond: 50,    // min condition to allow intensive
   matchGrowthBase: 0.5    // 🔧 試合1回あたりの基本成長（旧: 0.7）
