@@ -1209,7 +1209,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;
   padding:11px 36px;cursor:pointer;border-radius:2px;
   box-shadow:0 4px 20px rgba(212,168,67,0.25);transition:all .2s}
-.aw-btn-next:hover{box-shadow:0 6px 30px rgba(212,168,67,0.4);transform:translateY(-1px)}
+.aw-btn-next:hover:not(.disabled){box-shadow:0 6px 30px rgba(212,168,67,0.4);transform:translateY(-1px)}
+.aw-btn-next.disabled{opacity:0.35;cursor:not-allowed;pointer-events:none}
+/* -- HoF speech timing -- */
+.hof-player-speech{transition:opacity .3s ease}
+.hof-player-speech.fade-out{opacity:0;pointer-events:none}
+.hof-tap-hint{font-size:11px;color:rgba(212,168,67,0.55);margin-top:8px;letter-spacing:1px;
+  animation:aw-tapPulse 2s ease-in-out infinite}
+@keyframes aw-tapPulse{0%,100%{opacity:.45}50%{opacity:.85}}
+.hof-player-speech.fade-out .hof-tap-hint{display:none}
 .aw-slide-dots{display:flex;gap:8px;align-items:center}
 .aw-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,168,67,0.25);transition:all .3s;cursor:default}
 .aw-dot.active{background:var(--gold);width:20px;border-radius:3px}

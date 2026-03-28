@@ -73,6 +73,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-28 | 殿堂入りスライド修正: セリフタイミング制御(選手セリフ→タップでコーチセリフに切替、次へボタン無効化)+コーチ画像パス修正(getPortraitUrl→getCoachPortraitUrl)+タップヒントUI追加 |
 | 03-26 | B4タレント活動拡充設計: 6種サブタイプ(cm/gravure/variety/brand/fashion/fan)+personality相性倍率+archetype追加補正+名前配列6種+LARGE_EVENT_TEXTS/DIALOGUES全セリフ+週次収入組み込み+推薦ヒントUI。実装依頼書: docs/b4-talent-activity-impl.md |
 | 03-26 | 引退セリフ修正設計: B4_champion_injury全パターンをネガティブ→誇り・優秀の美ベースに書き直し。trust≥85+30%抽選で社長気遣い追加ポップアップ（クリックで閉じる）。セリフ管理: dialogue-rewrite-master_5.xlsx |
 | 03-26 | メディア功労賞実装完了。mediaRevSeason+talentRevSeason合計最大の選手を選出。表彰式MVP直後にスライド表示。AWARD_LINESにmediaAwardセリフ追加 |

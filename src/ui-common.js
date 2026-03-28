@@ -2170,7 +2170,7 @@ function _buildHallOfFame(d) {
     <div class="hof-stars">${stars}</div>
     <div class="hof-name">${d.name}</div>
     <div class="hof-plaque">${plaqueText}</div>
-    ${_awSpeech(d.name, line)}
+    <div class="hof-player-speech">${_awSpeech(d.name, line)}<div class="hof-tap-hint">タップして続きを見る</div></div>
   </div></div>`;
 }
 
@@ -2325,12 +2325,24 @@ function showAwardsCeremony(awards, onDone) {
     }
 
     // 殿堂入り紙吹雪 + コーチFG
+    window._hofCoachReady = false;
+    window._hofCoachRevealed = false;
     if (slideInfo[current].isHof) {
       setTimeout(_awSpawnConfetti, 300);
-      // コーチFG演出（TASK-5で詳細実装、ここでは基盤のみ）
       _awShowCoachFg(slideInfo[current].hofData, awards);
+      // コーチ演出がある場合、次へボタンを無効化 + タップヒント表示
+      if (window._hofCoachReady) {
+        btnNext.disabled = true;
+        btnNext.classList.add('disabled');
+      } else {
+        // コーチ不在時はタップヒントを非表示
+        const hint = slideWrap.querySelector('.aw-slide.active .hof-tap-hint');
+        if (hint) hint.style.display = 'none';
+      }
     } else {
       coachFg.classList.remove('revealed');
+      btnNext.disabled = false;
+      btnNext.classList.remove('disabled');
     }
   }
 
@@ -2350,7 +2362,35 @@ function showAwardsCeremony(awards, onDone) {
   }
 
   window._awardsNext = nextSlide;
-  btnNext.onclick = nextSlide;
+  btnNext.onclick = function() { if (!btnNext.disabled) nextSlide(); };
+
+  // 殿堂入りスライドのタップ→コーチセリフ切り替え
+  slideWrap.addEventListener('click', function(e) {
+    // 次へボタン領域は除外
+    if (e.target.closest('.aw-btn-next') || e.target.closest('#aw-nav-area')) return;
+    if (!window._hofCoachReady || window._hofCoachRevealed) return;
+    if (!slideInfo[current].isHof) return;
+
+    window._hofCoachRevealed = true;
+
+    // 選手セリフをフェードアウト
+    const playerSpeech = slideWrap.querySelector('.aw-slide.active .hof-player-speech');
+    if (playerSpeech) {
+      playerSpeech.classList.add('fade-out');
+    }
+
+    // 300ms後にコーチFGをフェードイン
+    setTimeout(() => {
+      coachFg.classList.add('revealed');
+      _awPlayChime();
+    }, 300);
+
+    // コーチフェードイン完了後（700ms transition）に次へボタンを有効化
+    setTimeout(() => {
+      btnNext.disabled = false;
+      btnNext.classList.remove('disabled');
+    }, 1000);
+  });
 
   // 表示開始
   overlay.classList.add('active');
@@ -2407,7 +2447,7 @@ function _awShowCoachFg(hofData, awards) {
   if (!line) return;
 
   // コーチポートレート
-  const coachPortUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl('coach_' + coach.id) : null;
+  const coachPortUrl = typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
   const coachPortHtml = coachPortUrl
     ? `<img src="${coachPortUrl}" alt="">`
     : (coach.emoji || '👩‍🏫');
@@ -2422,11 +2462,9 @@ function _awShowCoachFg(hofData, awards) {
       ${coachPortHtml}
     </div>`;
 
-  // 1.4秒後にスライドイン
-  setTimeout(() => {
-    coachFg.classList.add('revealed');
-    _awPlayChime();
-  }, 1400);
+  // コーチFGは非表示のまま待機（タップで表示する）
+  // _hofCoachReady フラグを立てて goToSlide 内のクリックハンドラで使う
+  window._hofCoachReady = true;
 }
 
 
