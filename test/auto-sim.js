@@ -286,6 +286,8 @@ function runSimulation(seed, seasons) {
     titleMatchCount: 0,  // タイトルマッチの総数
     orgPopHistory: [],   // シーズン末orgPop記録
     fundsHistory: [],    // シーズン末funds記録
+    // 新集客v2計測
+    v2Samples: [],       // {orgPop, oldAtt, newAtt, reach, draw, showDraw, stars, mqScore, occScore, bonusScore}
   };
 
   let G;
@@ -355,6 +357,41 @@ function runSimulation(seed, seasons) {
           stats.titleMatchCount += G.showCard.filter(m => m.isTitle).length;
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
+            // ── 新集客v2計測（既存ロジック非接続・横で計算するだけ） ──
+            if (typeof Engine.attendanceV2 !== 'undefined' && showResult.results) {
+              try {
+                const preShowState = G; // executeShow前のstate（showCard/showVenue付き）
+                const venueIdx = preShowState.showVenue || 0;
+                // 旧集客（processSettlement相当の概算）
+                const matchPops = preShowState.showCard.filter(m => m.left > 0 && m.right > 0).map(m => {
+                  const l = preShowState.roster.find(c => c.id === m.left);
+                  const r = preShowState.roster.find(c => c.id === m.right);
+                  return ((l ? l.popularity : 0) + (r ? r.popularity : 0)) / 2;
+                });
+                const oldCardPop = Engine.economy.calcCardPop(matchPops);
+                const hasTitleMatch = preShowState.showCard.some(m => m.isTitle);
+                const champId = preShowState.titles?.world?.championId;
+                const hasChamp = preShowState.showCard.some(m => m.left === champId || m.right === champId);
+                const oldAtt = Engine.economy.calcAttendance(preShowState, venueIdx, oldCardPop, hasTitleMatch, hasChamp, null, 0);
+                // 新集客v2計測（attendanceは旧値を渡してoccupancy計算に使う）
+                const v2m = Engine.attendanceV2.measureShow(
+                  preShowState, preShowState.showCard, showResult.results, oldAtt, venueIdx
+                );
+                stats.v2Samples.push({
+                  orgPop: Math.round(preShowState.orgPop * 10) / 10,
+                  oldAtt,
+                  newAtt: v2m.attendV2.attendance,
+                  reach: v2m.attendV2.reach,
+                  draw: v2m.attendV2.draw,
+                  showDraw: v2m.attendV2.showDraw,
+                  stars: v2m.rating.stars,
+                  mqScore: v2m.rating.mqScore,
+                  occScore: v2m.rating.occScore,
+                  bonusScore: v2m.rating.bonusScore,
+                  totalScore: v2m.rating.totalScore,
+                });
+              } catch (_e) { /* 計測エラーはゲームに影響させない */ }
+            }
             G = showResult.state;
           }
         }
@@ -521,6 +558,32 @@ if (s.orgPopHistory && s.orgPopHistory.length >= 5) {
     const bar = '#'.repeat(Math.round(pop / 2));
     console.log(`  S${String(last+1).padStart(3)}: pop=${pop.toFixed(1).padStart(5)}  funds=${String(funds).padStart(8)}万  ${bar}`);
   }
+}
+
+// ─��� 新集客v2計測レポート ──
+if (result.stats.v2Samples && result.stats.v2Samples.length > 0) {
+  const samples = result.stats.v2Samples;
+  console.log('');
+  console.log(`=== 新集客v2 計測レポート (${samples.length} shows) ===`);
+
+  // orgPop帯別に集計
+  const bands = [[0,20,'0-20'],[20,40,'20-40'],[40,60,'40-60'],[60,80,'60-80'],[80,101,'80+']];
+  for (const [lo, hi, label] of bands) {
+    const band = samples.filter(s => s.orgPop >= lo && s.orgPop < hi);
+    if (band.length === 0) continue;
+    const avg = (arr, key) => Math.round(arr.reduce((s, x) => s + x[key], 0) / arr.length);
+    const avgF = (arr, key) => (arr.reduce((s, x) => s + x[key], 0) / arr.length).toFixed(2);
+    console.log(`  orgPop ${label} (n=${band.length}):`);
+    console.log(`    旧集客: avg=${avg(band,'oldAtt')}  新集客: avg=${avg(band,'newAtt')}  reach: avg=${avg(band,'reach')}  draw: avg=${avgF(band,'draw')}`);
+    console.log(`    showDraw: avg=${avgF(band,'showDraw')}  ★分布: ${[1,2,3,4,5].map(st => `★${st}=${band.filter(s=>s.stars===st).length}`).join(' ')}`);
+    console.log(`    rating内訳: mq=${avgF(band,'mqScore')} occ=${avgF(band,'occScore')} bonus=${avgF(band,'bonusScore')} total=${avgF(band,'totalScore')}`);
+  }
+
+  // 全体サマリー
+  const allDraw = samples.map(s => s.draw);
+  const allStars = samples.map(s => s.stars);
+  console.log(`  全体: draw min=${Math.min(...allDraw).toFixed(2)} avg=${(allDraw.reduce((a,b)=>a+b,0)/allDraw.length).toFixed(2)} max=${Math.max(...allDraw).toFixed(2)}`);
+  console.log(`  全体: ★ avg=${(allStars.reduce((a,b)=>a+b,0)/allStars.length).toFixed(2)} 分布: ${[1,2,3,4,5].map(st => `★${st}=${samples.filter(s=>s.stars===st).length}`).join(' ')}`);
 }
 
 console.log('--------------------------------------');

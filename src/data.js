@@ -902,6 +902,131 @@ const HEAT_LEVELS = [
   {id:'on_fire',  label:'On Fire!', emoji:'🔥🔥🔥', color:'#d63031', mult:1.3, min:10, max:999, anim:'heat-blaze'}
 ];
 
+// ══════════════════════════════════════════════════════════
+//  新集客システム v2 定数（Phase 1: 計測用・既存ロジック非接続）
+// ══════════════════════════════════════════════════════════
+
+// A系: drawPower（個人集客力）
+const DRAW_POWER_CONFIG = {
+  popExponent: 1.3,          // popのべき乗指数（高popほど効率上がる）
+  popScale: 100,             // popDrawのスケール
+  ovrBonusScale: 100,        // ovrBonus = (ovr - 50) / ovrBonusScale
+  ovrBonusMin: -0.1,         // ovrBonus下限
+  ovrBonusMax: 0.3,          // ovrBonus上限
+  ovrBaseThreshold: 60,      // OVR単体効果の発動閾値
+  ovrBasePerPoint: 0.3,      // 閾値超過1ポイントあたりの加算
+  traitFlat: 8,              // 華/ファンサの固定加算
+  traitMult: 0.05,           // 華/ファンサのpopDraw乗算
+  champBonus: 12,            // 王者固定加算
+  btBonus: 5,                // BT直後(4週)
+  winStreakBonus: 3,          // 連勝5+
+  slumpPenalty: -5,           // スランプ中
+  injuryReturnBonus: 6,      // 怪我復帰(2興行)
+  tenureStart: 3,            // 所属年数ボーナス発動(年)
+  tenurePerYear: 1.0,        // 所属年数1年あたり加算
+  tenureCap: 5,              // 所属年数ボーナス上限
+};
+
+// B系: matchAppeal（カード魅力）
+const MATCH_APPEAL_CONFIG = {
+  // OVR拮抗ボーナス
+  parityBonus: [
+    { maxDiff: 0,  bonus: 10 },
+    { maxDiff: 3,  bonus: 7 },
+    { maxDiff: 7,  bonus: 3 },
+    { maxDiff: 14, bonus: 0 },
+  ],
+  parityPenalty: -5,          // OVR差15+のペナルティ
+  rivalryScale: 0.3,          // rivalry値 → appeal変換係数
+  titleAppeal: 20,            // タイトル戦加算
+  fanExpectAppeal: 12,         // ファン期待カード加算
+  heelFaceAppeal: 6,           // ヒールvsベビー構図加算
+  junkThreshold: 15,           // totalAppealがこれ以下→ゴミ試合扱い
+};
+
+// C系: 興行集客力の積み上げ
+const SHOW_DRAW_CONFIG = {
+  positionWeights: [1.0, 0.7, 0.5, 0.35, 0.35, 0.35, 0.35, 0.35], // カード順重み
+  junkWeightMult: 0.5,        // ゴミ試合の重み倍率
+  promoStackPerMatch: 8,      // 出場選手promoStack→試合appeal加算
+  promoStackGlobal: 2,        // 非出場選手promoStack→全体加算
+  // 会場規模別の適正試合数
+  minMatchesByVenue: [2, 2, 2, 3, 3, 3, 4, 4, 5, 5],
+  shortPenalty1: 0.85,         // 適正-1試合
+  shortPenalty2: 0.70,         // 適正-2試合以上
+};
+
+// D系: reach（orgPopベース）+ コンバージョン
+const ATTENDANCE_V2_CONFIG = {
+  // orgPop → reach（区間線形補間）
+  reachCurve: [
+    [0, 30], [10, 120], [20, 280], [30, 500], [40, 800],
+    [50, 1200], [60, 1800], [70, 2800], [80, 4200],
+    [90, 6000], [100, 8000],
+  ],
+  // orgPop → expectedDraw（「普通のカード」の集客力基準）
+  // ※auto-sim実測: orgPop20-40帯showDraw≈180, 40-60帯≈240
+  expectedDrawCurve: [
+    [0, 20], [10, 60], [20, 120], [30, 180], [40, 240],
+    [50, 300], [60, 380], [70, 460], [80, 540],
+    [90, 620], [100, 700],
+  ],
+  drawFloor: 0.3,             // draw下限（惰性で来る層）
+  drawScale: 0.7,             // draw = floor + (ratio × scale)
+  drawCap: 2.0,               // draw上限
+  // ソフトキャップ: reach超過分の減衰
+  softCapBands: [
+    { threshold: 1.0, efficiency: 0.7 },   // reach×1.0〜1.5: 超過分×0.7
+    { threshold: 1.5, efficiency: 0.4 },   // reach×1.5〜2.0: 超過分×0.4
+    { threshold: 2.0, efficiency: 0.2 },   // reach×2.0超: 超過分×0.2
+  ],
+};
+
+// ショーレーティング（★1〜5）
+const SHOW_RATING_CONFIG = {
+  // MQスコア（max 60点）
+  mqScoreMax: 60,
+  mqPositionWeights: [1.0, 0.7, 0.5, 0.35, 0.35, 0.35, 0.35, 0.35],
+  mqJunkThreshold: 30,         // MQ30以下は重み半減
+  mqJunkWeightMult: 0.5,
+  // ※auto-sim実測: orgPop40+帯のmqScore≈58/60(cap付近)→基準が甘すぎた
+  expectedMQTotal: [0, 0, 110, 150, 180, 200, 220, 240, 260], // 試合数別基準（index=試合数）
+  // 占有率スコア（max 15点）
+  occupancyScoreTable: [
+    { min: 0.95, score: 15 },
+    { min: 0.80, score: 12 },
+    { min: 0.60, score: 8 },
+    { min: 0.40, score: 4 },
+    { min: 0.25, score: 1 },
+    { min: 0.00, score: -5 },
+  ],
+  // ボーナススコア（max 25点）
+  bonusCap: 25,
+  titleGreatMQThreshold: 70,
+  titleGreatBonus: 8,
+  titleAnyBonus: 3,
+  rivalryResolvedBonus: 6,
+  rivalryCardBonus: 2,
+  fanExpectBonus: 4,            // 1件あたり
+  matchCountFullBonus: 3,
+  matchCountShortPenalty: -5,
+  // ★変換
+  // ※auto-sim実測: orgPop40-60帯でtotal≈71→★4が75%を占めた。閾値を引き上げ
+  starThresholds: [
+    { min: 82, stars: 5 },
+    { min: 70, stars: 4 },
+    { min: 50, stars: 3 },
+    { min: 30, stars: 2 },
+    { min: 0,  stars: 1 },
+  ],
+  // ★ → heat変動
+  heatDeltaByStars: { 5: 2.5, 4: 1.5, 3: 0, 2: -1.0, 1: -2.0 },
+  // ★ → orgPop変動（逓減適用前の生値）
+  orgPopDeltaByStars: { 5: 2.0, 4: 1.0, 3: 0, 2: -0.5, 1: -1.0 },
+  // ★ → メディア放映収入倍率
+  mediaMult: { 5: 2.0, 4: 1.4, 3: 1.0, 2: 0.6, 1: 0.3 },
+};
+
 // Quarter / Season display labels
 const QUARTER_LABELS = {1:'🌸 春', 2:'☀️ 夏', 3:'🍂 秋', 4:'❄️ 冬'};
 

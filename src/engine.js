@@ -768,6 +768,313 @@ const Engine = {
     }
   },
 
+  // ══════════════════════════════════════════════════════════
+  //  新集客システム v2（Phase 1: 計測用・既存ロジック非接続）
+  //  既存の calcAttendance 等には一切影響しない。
+  //  auto-sim で新旧比較ログを出すための純粋関数群。
+  // ══════════════════════════════════════════════════════════
+  attendanceV2: {
+    // ── 区間線形補間ヘルパー ──
+    _interpolate(curve, x) {
+      const clamped = Engine.util.clamp(x, curve[0][0], curve[curve.length - 1][0]);
+      for (let i = 1; i < curve.length; i++) {
+        if (clamped <= curve[i][0]) {
+          const [x0, y0] = curve[i - 1];
+          const [x1, y1] = curve[i];
+          const t = (clamped - x0) / (x1 - x0);
+          return y0 + t * (y1 - y0);
+        }
+      }
+      return curve[curve.length - 1][1];
+    },
+
+    // ── A系: drawPower（個人集客力） ──
+    calcDrawPower(fighter, G) {
+      const cfg = DRAW_POWER_CONFIG;
+      const pop = fighter.popularity || 0;
+      const ovr = Engine.util.ov(fighter);
+
+      // A1: popDraw（べき乗型）
+      const popDraw = Math.pow(pop / 100, cfg.popExponent) * cfg.popScale;
+
+      // A2: ovrDraw（混合型）
+      const ovrBonus = Engine.util.clamp((ovr - 50) / cfg.ovrBonusScale, cfg.ovrBonusMin, cfg.ovrBonusMax);
+      const ovrBase = Math.max(0, (ovr - cfg.ovrBaseThreshold) * cfg.ovrBasePerPoint);
+      const ovrDraw = popDraw * ovrBonus + ovrBase;
+
+      // A3-A4: 華/ファンサ
+      let traitDraw = 0;
+      if (Traits.has(fighter, '華'))    traitDraw += cfg.traitFlat + popDraw * cfg.traitMult;
+      if (Traits.has(fighter, 'ファンサ')) traitDraw += cfg.traitFlat + popDraw * cfg.traitMult;
+
+      // A8: 王者
+      let situational = 0;
+      if (G.titles && G.titles.world && G.titles.world.holderId === fighter.id) {
+        situational += cfg.champBonus;
+      }
+
+      // A9: 勢い（BT直後 / 連勝 / スランプ）
+      if (fighter.breakthroughWeeksLeft > 0) situational += cfg.btBonus;
+      if ((fighter.wins - fighter.losses) >= 5 && fighter.losingStreak === 0) situational += cfg.winStreakBonus;
+      if (fighter.slump) situational += cfg.slumpPenalty;
+
+      // A10: 怪我復帰（preInjuryPopが設定されている=復帰直後）
+      if (fighter.preInjuryPop && !fighter.injury) situational += cfg.injuryReturnBonus;
+
+      // A11: 所属年数
+      const tenure = (fighter.careerSeasons || 1);
+      if (tenure >= cfg.tenureStart) {
+        situational += Math.min(tenure - cfg.tenureStart + 1, cfg.tenureCap) * cfg.tenurePerYear;
+      }
+
+      return Math.max(0, popDraw + ovrDraw + traitDraw + situational);
+    },
+
+    // ── B系: matchAppeal（カード魅力） ──
+    calcMatchAppeal(fighterA, fighterB, context, G) {
+      const cfg = MATCH_APPEAL_CONFIG;
+      const ovrA = Engine.util.ov(fighterA);
+      const ovrB = Engine.util.ov(fighterB);
+
+      // B1: OVR拮抗
+      const ovrDiff = Math.abs(ovrA - ovrB);
+      let parityBonus = cfg.parityPenalty; // default: diff15+
+      for (const band of cfg.parityBonus) {
+        if (ovrDiff <= band.maxDiff) { parityBonus = band.bonus; break; }
+      }
+
+      // B2: 因縁（rivalry値、低い方採用）
+      let rivalryAppeal = 0;
+      if (G.relationships) {
+        const keyAB = `${fighterA.id}>${fighterB.id}`;
+        const keyBA = `${fighterB.id}>${fighterA.id}`;
+        const rivAB = G.relationships[keyAB]?.rivalry || 0;
+        const rivBA = G.relationships[keyBA]?.rivalry || 0;
+        rivalryAppeal = Math.min(rivAB, rivBA) * cfg.rivalryScale;
+      }
+
+      // B7: タイトル戦
+      const titleBonus = context.isTitle ? cfg.titleAppeal : 0;
+
+      // B6: ファン期待カード
+      const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
+
+      // ヒールvsベビー
+      let heelFaceBonus = 0;
+      const aIsHeel = Traits.has(fighterA, 'ヒール');
+      const bIsHeel = Traits.has(fighterB, 'ヒール');
+      if ((aIsHeel && !bIsHeel) || (!aIsHeel && bIsHeel)) heelFaceBonus = cfg.heelFaceAppeal;
+
+      return parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus;
+    },
+
+    // ── C系: 興行集客力の積み上げ ──
+    calcShowDraw(matchAppeals, nonMatchPromoStacks, venueIdx) {
+      const cfg = SHOW_DRAW_CONFIG;
+      // matchAppeals: [{totalAppeal, promoBonus}] appeal降順ソート済み
+      const sorted = [...matchAppeals].sort((a, b) => b.totalAppeal - a.totalAppeal);
+
+      let showDraw = 0;
+      for (let i = 0; i < sorted.length; i++) {
+        const weight = cfg.positionWeights[Math.min(i, cfg.positionWeights.length - 1)];
+        const appeal = sorted[i].totalAppeal;
+        // ゴミ試合は重みを半減
+        const effectiveWeight = appeal <= MATCH_APPEAL_CONFIG.junkThreshold ? weight * cfg.junkWeightMult : weight;
+        showDraw += appeal * effectiveWeight;
+      }
+
+      // 非出場選手のpromoStack合計 → 全体に微量加算
+      showDraw += (nonMatchPromoStacks || 0) * cfg.promoStackGlobal;
+
+      // 試合数不足ペナルティ
+      const minMatches = cfg.minMatchesByVenue[venueIdx] || 2;
+      const shortage = minMatches - sorted.length;
+      if (shortage >= 2) showDraw *= cfg.shortPenalty2;
+      else if (shortage === 1) showDraw *= cfg.shortPenalty1;
+
+      return showDraw;
+    },
+
+    // ── D系: 最終集客数 ──
+    calcAttendanceV2(G, venueIdx, showDraw, rng) {
+      const v = VENUES[venueIdx];
+      const cfg = ATTENDANCE_V2_CONFIG;
+
+      // reach（orgPopベース）
+      const reach = this._interpolate(cfg.reachCurve, G.orgPop);
+
+      // expectedDraw（「普通のカード」の基準値）
+      const expected = this._interpolate(cfg.expectedDrawCurve, G.orgPop);
+
+      // draw倍率（カード内容）
+      const ratio = expected > 0 ? showDraw / expected : 0;
+      const draw = Engine.util.clamp(cfg.drawFloor + ratio * cfg.drawScale, cfg.drawFloor, cfg.drawCap);
+
+      // rawAttendance = reach × draw
+      let rawAttendance = reach * draw;
+
+      // heat補正
+      const heatMult = Engine.heat.getMult(G);
+      rawAttendance *= heatMult;
+
+      // 揺らぎ
+      const fluctRange = VENUE_FLUCTUATION[venueIdx] || 0.17;
+      const fluctuation = rng
+        ? (1.0 - fluctRange) + Engine.rng.float(rng) * (2 * fluctRange)
+        : 1.0;
+      rawAttendance *= fluctuation;
+
+      // momentum補正
+      rawAttendance *= 1.0 + (G.attendanceMomentum || 0);
+
+      // ソフトキャップ適用
+      const attendance = this._applySoftCap(rawAttendance, reach);
+
+      // 会場キャップ + 最低保証
+      const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
+      return {
+        attendance: Engine.util.clamp(Math.round(attendance), minAttendance, v.cap),
+        reach: Math.round(reach),
+        draw: Math.round(draw * 100) / 100,
+        rawAttendance: Math.round(rawAttendance),
+        heatMult,
+        showDraw: Math.round(showDraw * 10) / 10,
+      };
+    },
+
+    // ── ソフトキャップ ──
+    _applySoftCap(raw, reach) {
+      if (raw <= reach) return raw;
+      const bands = ATTENDANCE_V2_CONFIG.softCapBands;
+      let result = reach;
+      let remaining = raw - reach;
+      for (let i = 0; i < bands.length; i++) {
+        const bandStart = reach * bands[i].threshold;
+        const bandEnd = (i + 1 < bands.length) ? reach * bands[i + 1].threshold : Infinity;
+        const bandSize = bandEnd - bandStart;
+        const take = Math.min(remaining, bandSize);
+        result += take * bands[i].efficiency;
+        remaining -= take;
+        if (remaining <= 0) break;
+      }
+      return result;
+    },
+
+    // ── ショーレーティング（★1〜5） ──
+    calcShowRating(matchResults, attendance, venueCap, venueIdx, context) {
+      const cfg = SHOW_RATING_CONFIG;
+      const matchCount = matchResults.length;
+      if (matchCount === 0) return { totalScore: 0, stars: 1, mqScore: 0, occScore: 0, bonusScore: 0 };
+
+      // --- mqScore ---
+      const mqSorted = [...matchResults].map(r => r.mq || 0).sort((a, b) => b - a);
+      let weightedMQ = 0;
+      for (let i = 0; i < mqSorted.length; i++) {
+        const w = cfg.mqPositionWeights[Math.min(i, cfg.mqPositionWeights.length - 1)];
+        const effectiveW = mqSorted[i] <= cfg.mqJunkThreshold ? w * cfg.mqJunkWeightMult : w;
+        weightedMQ += mqSorted[i] * effectiveW;
+      }
+      const expectedIdx = Math.min(matchCount, cfg.expectedMQTotal.length - 1);
+      const expectedMQ = cfg.expectedMQTotal[expectedIdx] || 120;
+      const mqScore = Math.min(cfg.mqScoreMax, (weightedMQ / expectedMQ) * cfg.mqScoreMax);
+
+      // --- occupancyScore ---
+      const occupancy = venueCap > 0 ? attendance / venueCap : 0;
+      const occEntry = cfg.occupancyScoreTable.find(e => occupancy >= e.min) || cfg.occupancyScoreTable[cfg.occupancyScoreTable.length - 1];
+      const occScore = occEntry.score;
+
+      // --- bonusScore ---
+      let bonusScore = 0;
+      // タイトル戦
+      const titleMatches = matchResults.filter(r => r.isTitleMatch);
+      if (titleMatches.length > 0) {
+        const bestTitleMQ = Math.max(...titleMatches.map(r => r.mq || 0));
+        bonusScore += bestTitleMQ >= cfg.titleGreatMQThreshold ? cfg.titleGreatBonus : cfg.titleAnyBonus;
+      }
+      // 因縁決着
+      if (context.hasRivalryResolution) bonusScore += cfg.rivalryResolvedBonus;
+      else if (context.hasRivalryCard) bonusScore += cfg.rivalryCardBonus;
+      // ファン期待カード
+      bonusScore += (context.fanExpectCount || 0) * cfg.fanExpectBonus;
+      // 試合数充実度
+      const minMatches = SHOW_DRAW_CONFIG.minMatchesByVenue[venueIdx] || 2;
+      if (matchCount >= minMatches) bonusScore += cfg.matchCountFullBonus;
+      else if (matchCount <= minMatches - 2) bonusScore += cfg.matchCountShortPenalty;
+      bonusScore = Math.min(bonusScore, cfg.bonusCap);
+
+      // --- 合計 → ★変換 ---
+      const totalScore = Math.round((mqScore + occScore + bonusScore) * 10) / 10;
+      const starEntry = cfg.starThresholds.find(e => totalScore >= e.min) || cfg.starThresholds[cfg.starThresholds.length - 1];
+
+      return {
+        totalScore,
+        stars: starEntry.stars,
+        mqScore: Math.round(mqScore * 10) / 10,
+        occScore,
+        bonusScore: Math.min(bonusScore, cfg.bonusCap),
+        occupancy: Math.round(occupancy * 100),
+        matchCount,
+      };
+    },
+
+    // ── 興行全体の計測（auto-sim用ワンショット） ──
+    measureShow(G, showCard, matchResults, attendance, venueIdx) {
+      const v = VENUES[venueIdx];
+      const roster = G.roster || [];
+
+      // 出場選手IDセット
+      const participantIds = new Set();
+      showCard.forEach(m => { if (m.left > 0) participantIds.add(m.left); if (m.right > 0) participantIds.add(m.right); });
+
+      // 各試合のappeal算出
+      const matchAppeals = showCard.filter(m => m.left > 0 && m.right > 0).map(m => {
+        const fA = roster.find(c => c.id === m.left);
+        const fB = roster.find(c => c.id === m.right);
+        if (!fA || !fB) return { totalAppeal: 0, promoBonus: 0 };
+        const drawA = this.calcDrawPower(fA, G);
+        const drawB = this.calcDrawPower(fB, G);
+        const context = {
+          isTitle: !!m.isTitle,
+          isFanExpect: !!(m.isFanExpect || m.fanExpectMatched),
+        };
+        const matchAppeal = this.calcMatchAppeal(fA, fB, context, G);
+        const promoBonus = Math.max(fA.promoStack || 0, fB.promoStack || 0) * SHOW_DRAW_CONFIG.promoStackPerMatch;
+        return { totalAppeal: drawA + drawB + matchAppeal + promoBonus, promoBonus };
+      });
+
+      // 非出場選手のpromoStack合計
+      let nonMatchPromo = 0;
+      roster.forEach(c => {
+        if (!participantIds.has(c.id) && !c.injury) {
+          nonMatchPromo += (c.promoStack || 0);
+        }
+      });
+
+      // 興行集客力
+      const showDraw = this.calcShowDraw(matchAppeals, nonMatchPromo, venueIdx);
+
+      // 新集客数
+      const attendResult = this.calcAttendanceV2(G, venueIdx, showDraw, null); // rng=null(確定値)
+
+      // ショーレーティング
+      const hasRivalryResolution = matchResults.some(r => r.rivalryResolved);
+      const hasRivalryCard = matchResults.some(r => r.rivalryBonus);
+      const fanExpectCount = matchResults.filter(r => r.fanExpectMatched).length;
+      const ratingResult = this.calcShowRating(matchResults, attendance, v.cap, venueIdx, {
+        hasRivalryResolution,
+        hasRivalryCard,
+        fanExpectCount,
+      });
+
+      return {
+        showDraw,
+        attendV2: attendResult,
+        rating: ratingResult,
+        matchAppeals: matchAppeals.map(a => Math.round(a.totalAppeal * 10) / 10),
+      };
+    },
+  },
+
   // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
   injury: {
     check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0, coachSeverityDowngrade = 0, flavorOpts = {}) {
