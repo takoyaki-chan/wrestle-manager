@@ -2285,15 +2285,25 @@ function renderShowPrep() {
       pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">✕ 閉じる</span></div><div class="sp-picker-list">${rows}</div>`;
     }
 
+    // カード魅力の内訳ボーナス
+    const appealParts = [];
+    if (slotBD) {
+      if (slotBD.parityBonus !== 0) appealParts.push(`🤝拮抗${slotBD.parityBonus > 0 ? '+' : ''}${slotBD.parityBonus}`);
+      if (slotBD.rivalryAppeal > 0) appealParts.push(`⚡因縁+${slotBD.rivalryAppeal}`);
+      if (slotBD.titleBonus > 0) appealParts.push(`🏆タイトル+${slotBD.titleBonus}`);
+      if (slotBD.fanExpectBonus > 0) appealParts.push(`📣期待+${slotBD.fanExpectBonus}`);
+      if (slotBD.heelFaceBonus > 0) appealParts.push(`😈善悪+${slotBD.heelFaceBonus}`);
+    }
+
     const cardBorder = isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
-    html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}
-      onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
+    html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         ${_spFighterInfo(fl, 'left', i, slotBD?.drawA)}
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
           ${slotBD ? `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score">${slotBD.total}</div>` : ''}
+          ${appealParts.length > 0 ? `<div class="sp-appeal-bonuses">${appealParts.join('  ')}</div>` : ''}
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}

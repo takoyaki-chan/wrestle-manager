@@ -109,7 +109,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .sp-venue-info{font-size:10px;color:var(--text-dim)}.sp-action-row{display:flex;justify-content:center;gap:10px;margin-top:14px}
 /* card structure */
 .sp-match-card{position:relative;margin-bottom:4px;border-radius:6px;border:1px solid rgba(200,190,170,.05);background:var(--card-bg);overflow:visible}
-.sp-match-card-inner{display:grid;grid-template-columns:1fr auto 140px auto 1fr;align-items:center;padding:8px 10px;position:relative}
+.sp-match-card-inner{display:grid;grid-template-columns:1fr auto 160px auto 1fr;align-items:center;padding:12px 14px;position:relative}
 .sp-match-card-inner::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent 5%,rgba(232,230,224,.04) 30%,rgba(232,230,224,.07) 50%,rgba(232,230,224,.04) 70%,transparent 95%);transform:skewX(-15deg);pointer-events:none}
 /* fighter info (5-col: info-L portrait-L center portrait-R info-R) */
 .sp-fighter-info{min-width:0}.sp-fighter-info.left{text-align:right;padding-right:10px}.sp-fighter-info.right{text-align:left;padding-left:10px}
@@ -130,6 +130,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* appeal score */
 .sp-appeal-label{font-family:'Oswald',sans-serif;font-size:8px;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
 .sp-appeal-score{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:var(--text-main)}
+.sp-appeal-bonuses{font-size:9px;color:var(--text-sub);margin-top:2px;white-space:nowrap}
 /* center */
 .sp-match-center{text-align:center;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
 .sp-match-num{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;line-height:1;font-size:10px;color:var(--text-sub)}
@@ -147,7 +148,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* tiers */
 .sp-match-card.main-event{margin-bottom:8px;border-color:rgba(212,168,67,.15);background:radial-gradient(ellipse at 12% 50%,rgba(212,168,67,.05) 0%,transparent 50%),var(--card-bg)}
 .sp-match-card.main-event::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 5%,rgba(212,168,67,.3) 25%,var(--gold) 50%,rgba(212,168,67,.3) 75%,transparent 95%);z-index:1;border-radius:6px 6px 0 0;pointer-events:none}
-.sp-match-card.main-event .sp-match-card-inner{padding:16px 10px}
+.sp-match-card.main-event .sp-match-card-inner{padding:18px 14px}
 .sp-match-card.main-event .sp-match-num{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:2px}
 .sp-match-card.main-event .sp-match-vs{font-size:16px;color:rgba(212,168,67,.3)}
 .sp-match-card.main-event .sp-appeal-score{font-size:40px;color:var(--gold-light)}
