@@ -815,9 +815,12 @@ const VENUE_FLUCTUATION = [
   0.40,  // 9: ドーム    ±40% — 超ハイリスク
 ];
 const ATTENDANCE_PREDICTION = [
-  { min: 0.85, text: '🔥 今週は盛り上がりそうだ', color: 'var(--green)' },
-  { min: 0.55, text: '🤔 まずまずの手応えだ',     color: 'var(--text-sub)' },
-  { min: 0.00, text: '😟 少し客足が心配だ',        color: 'var(--red)' },
+  { min: 1.20, text: '🔥🔥 チケットが飛ぶように売れている！',  color: 'var(--gold)' },
+  { min: 0.90, text: '🔥 今週は盛り上がりそうだ',               color: 'var(--green)' },
+  { min: 0.70, text: '😊 なかなかの手応えだ',                    color: '#74b9ff' },
+  { min: 0.50, text: '🤔 まずまずといったところか',              color: 'var(--text-sub)' },
+  { min: 0.30, text: '😟 少し客足が心配だ',                      color: '#e17055' },
+  { min: 0.00, text: '😰 かなり厳しい集客になりそうだ',          color: 'var(--red)' },
 ];
 // ── Card Pop & Crowd MQ Constants (v1.0c) ──
 const CARD_POP_CONFIG = {

@@ -832,10 +832,16 @@ const Engine = {
     },
 
     // ── B系: matchAppeal（カード魅力） ──
+    // 個人集客力(drawPower) + カード構造ボーナスの合算
     calcMatchAppeal(fighterA, fighterB, context, G) {
       const cfg = MATCH_APPEAL_CONFIG;
       const ovrA = Engine.util.ov(fighterA);
       const ovrB = Engine.util.ov(fighterB);
+
+      // B0: 個人集客力の平均（誰が出るかが集客に直結）
+      const drawA = Engine.attendanceV2.calcDrawPower(fighterA, G);
+      const drawB = Engine.attendanceV2.calcDrawPower(fighterB, G);
+      const avgDraw = (drawA + drawB) / 2;
 
       // B1: OVR拮抗
       const ovrDiff = Math.abs(ovrA - ovrB);
@@ -866,7 +872,8 @@ const Engine = {
       const bIsHeel = Traits.has(fighterB, 'ヒール');
       if ((aIsHeel && !bIsHeel) || (!aIsHeel && bIsHeel)) heelFaceBonus = cfg.heelFaceAppeal;
 
-      return parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus;
+      const totalAppeal = avgDraw + parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus;
+      return totalAppeal;
     },
 
     // ── C系: 興行集客力の積み上げ ──
