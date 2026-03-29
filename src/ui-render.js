@@ -2087,6 +2087,9 @@ function renderShowPrep() {
 
   // 集客v2: ざっくり集客予測（matchAppeals→showDraw→v2予測）
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
+  const hasTitlePreview = validMatches.some(m => m.isTitle);
+  const champIdPreview = G.titles?.world?.championId;
+  const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
   const previewFanExpects = Engine.fanExpect.generate(G);
   const previewMatchAppeals = validMatches.map(m => {
     const fA = G.roster.find(c => c.id === m.left);
