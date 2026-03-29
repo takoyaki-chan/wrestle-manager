@@ -3690,6 +3690,7 @@ const App = {
         rightArchetype: charR.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
+        rngSeed: Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right),
       }
     };
     // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
@@ -6560,6 +6561,7 @@ const App = {
         rightPersonality: af.personality || 'normal',
         rightArchetype: af.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
+        rngSeed: Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx),
       }
     };
     // ビッグマッチBGM（対抗戦）
@@ -6949,6 +6951,7 @@ App.ppvWatchMatch = function(idx) {
       rightPersonality: match.right.personality || 'normal',
       rightArchetype: match.right.archetype || 'normal',
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
+      rngSeed: Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id),
     }
   };
   // ビッグマッチBGM（PPV）

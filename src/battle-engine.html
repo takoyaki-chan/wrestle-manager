@@ -881,7 +881,7 @@ function showCutin(side, charData, lineType) {
   const archetype   = side === 'left' ? (mi.leftArchetype  || 'normal') : (mi.rightArchetype  || 'normal');
   const lines = _getCutinLines(lineType, personality, archetype);
   if (!lines || !lines.length) return;
-  const text = lines[Math.floor(Math.random() * lines.length)];
+  const text = lines[Math.floor(RNG.float() * lines.length)];
   const overlay = document.getElementById('cutinOverlay');
   if (!overlay) return;
   const portraitUrl = getUpperUrl(charData);
@@ -905,7 +905,7 @@ function showDamageSpeech(side, charData) {
   if (!byP) return;
   const lines = byP[archetype] || byP['normal'];
   if (!lines || !lines.length) return;
-  const text = lines[Math.floor(Math.random() * lines.length)];
+  const text = lines[Math.floor(RNG.float() * lines.length)];
   const overlay = document.getElementById('cutinOverlay');
   if (!overlay) return;
   const portraitUrl = getUpperUrl(charData);
@@ -921,7 +921,7 @@ function showDamageSpeech(side, charData) {
 // ダメージセリフ/ボイス: HP残量ベース発動判定
 // クリティカルヒット（dmg>=15）時に呼び出す
 function tryDamageCutin(side, charData, hpRatio) {
-  const r = Math.random();
+  const r = RNG.float();
   if (hpRatio > 0.66) {
     // 余裕あり: セリフ40%
     if (r < 0.40) showDamageSpeech(side, charData);
@@ -942,7 +942,7 @@ function showDamageVoice(side, charData) {
   const archetype = side === 'left' ? (mi.leftArchetype || 'normal') : (mi.rightArchetype || 'normal');
   const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES['normal'];
   if (!lines || !lines.length) return;
-  const text = lines[Math.floor(Math.random() * lines.length)];
+  const text = lines[Math.floor(RNG.float() * lines.length)];
   const overlay = document.getElementById('cutinOverlay');
   if (!overlay) return;
   const portraitUrl = getUpperUrl(charData);
@@ -965,7 +965,7 @@ function tryRivalryCutin(phaseName) {
   // 発動率: tier1=30%, tier2=50%, tier3=80%
   const rates = [0, 0.30, 0.50, 0.80];
   const rate = rates[Math.min(mi.rivalryTier, 3)] || 0;
-  if (Math.random() > rate) return;
+  if (RNG.float() > rate) return;
   // モメンタム優位側がatk、劣位側がdef
   const isLeftLeading = S.mom > 0;
   const side = isLeftLeading ? 'left' : 'right';
@@ -1076,22 +1076,27 @@ function eff(x){
 
 function phase(t){return _phases.find(p=>t>=p.min&&t<=p.max)||_phases[_phases.length-1]}
 function ov(c){return Math.round((c.pw+c.sp+c.te+c.st+c.mn)/5)}
-function pk(a){return a[Math.floor(Math.random()*a.length)]}
+// ═══ Seeded RNG (xorshift128+) — engine.jsと同一アルゴリズム ═══
+const RNG={s0:0,s1:0,
+  seed(s){s=s|0;if(s===0)s=1;let s0=s;s0=((s0>>>16)^s0)*0x45d9f3b|0;s0=((s0>>>16)^s0)*0x45d9f3b|0;s0=(s0>>>16)^s0;let s1=s*1812433253+1;s1=((s1>>>16)^s1)*0x45d9f3b|0;s1=((s1>>>16)^s1)*0x45d9f3b|0;s1=(s1>>>16)^s1;if(s0===0&&s1===0)s0=1;RNG.s0=s0;RNG.s1=s1},
+  float(){let s1=RNG.s0;const s0=RNG.s1;RNG.s0=s0;s1^=s1<<23;s1^=s1>>>17;s1^=s0;s1^=s0>>>26;RNG.s1=s1;return((RNG.s0+RNG.s1)>>>0)/4294967296}
+};
+function pk(a){return a[Math.floor(RNG.float()*a.length)]}
 function tpl(t,v){return t.replace(/\{(\w)\}/g,(_,k)=>v[k]||'')}
-function wRand(w){const e=Object.entries(w),t=e.reduce((s,[,v])=>s+v,0);let r=Math.random()*t;
+function wRand(w){const e=Object.entries(w),t=e.reduce((s,[,v])=>s+v,0);let r=RNG.float()*t;
   for(const[k,v]of e){r-=v;if(r<=0)return k}return e[e.length-1][0]}
 function selMove(style,turn,defHpRatio,atkHpRatio){
   const rs=(style&&styleMoves[style]&&catW[style])?style:'Allround';
-  const ph=phase(turn),use=Math.random()*100<ph.sCh,pool=use?styleMoves[rs]:commonMoves;
+  const ph=phase(turn),use=RNG.float()*100<ph.sCh,pool=use?styleMoves[rs]:commonMoves;
   // 相手HP<30%: 65%の確率でフィニッシャー(d>=12)を狙う
-  if(defHpRatio!==undefined&&defHpRatio<0.30&&Math.random()<0.65){
+  if(defHpRatio!==undefined&&defHpRatio<0.30&&RNG.float()<0.65){
     const finPool=pool.filter(m=>m.d>=12);
     if(finPool.length)return pk(finPool);
     const finStyle=styleMoves[rs].filter(m=>m.d>=12);
     if(finStyle.length)return pk(finStyle);
   }
   // 自分HP<25%: 40%の確率で逃げ技（rollup/弱サブミッション）を試みる
-  else if(atkHpRatio!==undefined&&atkHpRatio<0.25&&Math.random()<0.40){
+  else if(atkHpRatio!==undefined&&atkHpRatio<0.25&&RNG.float()<0.40){
     const escPool=pool.filter(m=>m.c==='rollup'||(m.c==='submission'&&m.d<=7));
     if(escPool.length)return pk(escPool);
   }
@@ -1121,7 +1126,7 @@ function calcDamage(mv, atk, def, mom, atkSide, ph) {
   const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
   const mAdv = atkSide === 'left' ? mom : -mom;
   const mMod = 1 + (mAdv * ENG.momDmgScale);
-  const rF = ENG.dmgRandMin + (Math.random() * ENG.dmgRandRange);
+  const rF = ENG.dmgRandMin + (RNG.float() * ENG.dmgRandRange);
   let raw = (base - defense) * mMod * rF * ph.mult;
   // Grit buff: reduce damage taken
   if (def.gritTurns > 0) raw *= (1 - ENG.gritDmgReduction);
@@ -1157,7 +1162,7 @@ function checkPinAttempt(mv, atk, def, dmg, mom, atkSide, ph) {
   if (dmg < ENG.pinAttemptMinDmg) return false;
   if (ph.name === 'Opening') return false;
   // End/Climaxで低d技: d値が小さいほどフォール試行しにくくなる（傾向、ハードゲートではない）
-  if((ph.name==='End'||ph.name==='Climax')&&mv.d<10&&Math.random()>(mv.d/10))return false;
+  if((ph.name==='End'||ph.name==='Climax')&&mv.d<10&&RNG.float()>(mv.d/10))return false;
   // Rate check: should we attempt a pin?
   let attemptRate = ENG.pinAttemptBaseRate;
   const mAdv = atkSide === 'left' ? mom : -mom;
@@ -1165,7 +1170,7 @@ function checkPinAttempt(mv, atk, def, dmg, mom, atkSide, ph) {
   if (ph.name === 'Climax') attemptRate += 15;
   if (ph.name === 'End') attemptRate += 8;
   attemptRate = clamp(attemptRate, 10, 60);
-  return Math.random() * 100 < attemptRate;
+  return RNG.float() * 100 < attemptRate;
 }
 function calcPinAttemptSuccess(atk, def, dmg, ph) {
   let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
@@ -1693,6 +1698,8 @@ window.addEventListener('message', function(e) {
   matchData = e.data;
   // Apply parent frame master volume settings
   const mi = e.data.matchInfo || {};
+  // シードRNG初期化（セーブ&ロード厳選封じ）
+  RNG.seed(mi.rngSeed || (Date.now() ^ 0x5A30));
   _ensureMasterGains();
   if (mi.sfxMasterVol !== undefined) _sfxMasterGain.gain.value = mi.sfxMasterVol;
   if (mi.bgmMasterVol !== undefined) _bgmMasterGain.gain.value = mi.bgmMasterVol;
@@ -1753,7 +1760,7 @@ function sendResult() {
     const kickouts = S.log.filter(l => l.includes('キックアウト') || l.includes('返した') || l.includes('ロープ')).length;
     const bigMoves = S.log.filter(l => l.includes('大ダメージ')).length;
     const baseMQ = 30 + Math.min(totalTurns * 2, 20) + leadChanges * 5 + kickouts * 8 + bigMoves * 3;
-    mq = Math.min(100, Math.max(10, Math.round(baseMQ + (Math.random() * 10 - 5))));
+    mq = Math.min(100, Math.max(10, Math.round(baseMQ + (RNG.float() * 10 - 5))));
   }
   const result = {
     type: 'MATCH_RESULT',
@@ -1882,19 +1889,19 @@ function nextTurn(){
   // Attacker selection (v3.5 formula preserved + MN influence)
   let lCh=50+(S.mom*0.3)+((eff(L.sp)-eff(R.sp))*0.15);
   lCh=clamp(lCh,20,80);
-  const as=Math.random()*100<lCh?'left':'right',ds=as==='left'?'right':'left';
+  const as=RNG.float()*100<lCh?'left':'right',ds=as==='left'?'right':'left';
   const atk=as==='left'?L:R,def=ds==='left'?L:R;
   const mv=selMove(atk.style,S.turn,def.hp/def.mhp,atk.hp/atk.mhp),big=mv.d>=14;
 
   // v4.1: HIT CHECK
   const hitRate=calcHitRate(mv,atk,def);
-  const isHit=Math.random()*100<hitRate;
+  const isHit=RNG.float()*100<hitRate;
 
   // v4.1: COUNTER CHECK (only if hit)
   let isCounter=false;
   if(isHit){
     const counterRate=calcCounterRate(atk,def,ph);
-    isCounter=Math.random()*100<counterRate;
+    isCounter=RNG.float()*100<counterRate;
   }
 
   const v={a:atk.name,d:def.name,m:mv.n,v:0,w:''};
@@ -1953,7 +1960,7 @@ function nextTurn(){
 
   // === COUNTER ===
   if(isCounter){
-    const isBigmoveCounter = big && S.bigmoveCount < 3 && Math.random() < (BIGMOVE_ANIM_RATE[ph.name]||0);
+    const isBigmoveCounter = big && S.bigmoveCount < 3 && RNG.float() < (BIGMOVE_ANIM_RATE[ph.name]||0);
     if(isBigmoveCounter){
       // ビッグムーブ→カウンター演出
       S.bigmoveCount++;
@@ -2075,7 +2082,7 @@ function nextTurn(){
   // === NORMAL HIT ===
   const dmg=calcDamage(mv,atk,def,S.mom,as,ph);
   v.v=dmg;
-  const isBigmoveAnim = big && S.bigmoveCount < 3 && Math.random() < (BIGMOVE_ANIM_RATE[ph.name]||0);
+  const isBigmoveAnim = big && S.bigmoveCount < 3 && RNG.float() < (BIGMOVE_ANIM_RATE[ph.name]||0);
   const atkLine=big?tpl(pk(CMT.atk.big),v):tpl(pk(CMT.atk[ph.name]),v);
   const dLvl=dmg<=8?'light':dmg<=14?'medium':'heavy';
   const dmgLine=tpl(pk(CMT.dmg[dLvl]),v);
@@ -2129,9 +2136,9 @@ function nextTurn(){
       if(mv.c==='rollup'&&def.hp>0&&(def.hp/def.mhp)<=ENG.rollupHpThreshold){doRollup(def,atk,ds,as,mv,log,v);return;}
       if(def.hp>0&&(def.hp/def.mhp)<=ENG.tkoHpThreshold&&S.consecutiveHits[as]>=ENG.tkoConsecutiveThreshold){
         const tkoRate=ENG.tkoBaseRate+(def.mhp-def.hp)*0.1-(def.mn*0.15);
-        if(Math.random()*100<clamp(tkoRate,5,40)){log+=' → TKO判定へ！';S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};S.awaitingFinishClick=true;sfx.finImpact();setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}}
+        if(RNG.float()*100<clamp(tkoRate,5,40)){log+=' → TKO判定へ！';S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};S.awaitingFinishClick=true;sfx.finImpact();setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}}
       if(def.hp>0&&checkPinAttempt(mv,atk,def,dmg,S.mom,as,ph)){
-        const isSubmission=mv.c==='submission',finType=isSubmission?'ギブアップ':'ピン',successRate=calcPinAttemptSuccess(atk,def,dmg,ph),isSuccess=Math.random()*100<successRate;
+        const isSubmission=mv.c==='submission',finType=isSubmission?'ギブアップ':'ピン',successRate=calcPinAttemptSuccess(atk,def,dmg,ph),isSuccess=RNG.float()*100<successRate;
         log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
         const box=document.getElementById('narBox');
         if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra);}
@@ -2150,7 +2157,7 @@ function nextTurn(){
   // Step 1: Attacker flash (通常ヒット)
   sfx.ready();
   const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-  if(Math.random()<0.3){const ct2=big?pk(CMT.atkC.big):pk(CMT.atkC.normal);showSp(as,ct2,'t-atk')}
+  if(RNG.float()<0.3){const ct2=big?pk(CMT.atkC.big):pk(CMT.atkC.normal);showSp(as,ct2,'t-atk')}
 
   // Step 2: Move name
   setTimeout(()=>{
@@ -2222,7 +2229,7 @@ function nextTurn(){
     // v4.1: TKO check
     if(def.hp>0&&(def.hp/def.mhp)<=ENG.tkoHpThreshold&&S.consecutiveHits[as]>=ENG.tkoConsecutiveThreshold){
       const tkoRate=ENG.tkoBaseRate+(def.mhp-def.hp)*0.1-(def.mn*0.15);
-      if(Math.random()*100<clamp(tkoRate,5,40)){
+      if(RNG.float()*100<clamp(tkoRate,5,40)){
         log+=' → TKO判定へ！';
         S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
         S.awaitingFinishClick=true;
@@ -2237,7 +2244,7 @@ function nextTurn(){
       const isSubmission=mv.c==='submission';
       const finType=isSubmission?'ギブアップ':'ピン';
       const successRate=calcPinAttemptSuccess(atk,def,dmg,ph);
-      const isSuccess=Math.random()*100<successRate;
+      const isSuccess=RNG.float()*100<successRate;
       log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
       const box=document.getElementById('narBox');
       if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';
@@ -2265,7 +2272,7 @@ function doRollup(def,atk,ds,as,mv,log,v){
   let successRate=ENG.rollupBaseSuccess+(eff(atk.te)*ENG.rollupTecBonus)-(eff(def.te)*0.08);
   if(phase(S.turn).name==='Climax')successRate+=8;
   successRate=clamp(successRate,5,30);
-  const isSuccess=Math.random()*100<successRate;
+  const isSuccess=RNG.float()*100<successRate;
   sfx.count();showCountText('ワン！','gold');
   setTimeout(()=>{
     sfx.count();showCountText('ツー！','red-gold');
@@ -2319,10 +2326,10 @@ function doFinish(atk,def,as,ds,mv,log,v){
   let isKickout=false;
   if(ft==='fall'){
     const kickoutChance=calcKickoutChance(def,phase(S.turn));
-    isKickout=Math.random()<kickoutChance;
+    isKickout=RNG.float()<kickoutChance;
   }else{
     const escapeChance=calcGuEscapeChance(def,phase(S.turn));
-    isKickout=Math.random()<escapeChance;
+    isKickout=RNG.float()<escapeChance;
   }
 
   const pending={type:ft==='fall'?'フォール':'ギブアップ',isKickout,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
@@ -2496,7 +2503,7 @@ function showResult(){
   const kickouts=S.log.filter(l=>l.includes('キックアウト')||l.includes('返した')||l.includes('ロープ')).length;
   const bigMoves=S.log.filter(l=>l.includes('大ダメージ')).length;
   const baseMQ=30+Math.min(totalTurns*2,20)+leadChanges*5+kickouts*8+bigMoves*3;
-  S.mq=Math.min(100,Math.max(10,Math.round(baseMQ+(Math.random()*10-5))));
+  S.mq=Math.min(100,Math.max(10,Math.round(baseMQ+(RNG.float()*10-5))));
   const btn=document.getElementById('nBtn');
   if(btn){btn.disabled=true;btn.textContent=S.winner==='draw'?'DRAW!':`${(S.winner==='left'?S.L:S.R).name} WIN!`}
   updLog();renderResult();
