@@ -84,8 +84,8 @@ function showCustomTooltip(el, html) {
   let left = rect.left;
   if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
   if (left < 8) left = 8;
-  let top = rect.bottom + 6;
-  if (top + 140 > window.innerHeight) top = rect.top - 6 - tip.offsetHeight;
+  let top = rect.top + rect.height / 2 - tip.offsetHeight / 2;
+  if (top + tip.offsetHeight > window.innerHeight - 8) top = window.innerHeight - 8 - tip.offsetHeight;
   tip.style.left = left + 'px';
   tip.style.top = Math.max(8, top) + 'px';
 }
