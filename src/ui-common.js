@@ -3773,9 +3773,9 @@ function renderShowResult(results, injuryResults) {
     // MQ行
     const mqBonusTags = [];
     if (r.isTitleMatch) mqBonusTags.push(`<span style="color:var(--gold)">(王座+5)</span>`);
-    if (r.titleGapPenalty) mqBonusTags.push(`<span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>`);
+    // titleGapPenalty — MQ外部ボーナス整理で廃止
     if (r.rivalryBonus) mqBonusTags.push(`<span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>`);
-    if (r.coachMQBonus) mqBonusTags.push(`<span style="color:#e67e22">(コーチ+${r.coachMQBonus})</span>`);
+    // coachMQBonus — MQ外部ボーナス整理で廃止
     if (r.freshnessBonus) mqBonusTags.push(`<span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`);
 
     html += `<div class="sr-mq-row">
@@ -4494,9 +4494,9 @@ function _ppvCoachBubble(coachName, line) {
 function _ppvBonusTags(r, mqBonuses, di) {
   let tags = '';
   if (r.isTitleMatch) tags += ' <span style="color:var(--gold)">(王座+5)</span>';
-  if (r.titleGapPenalty) tags += ` <span style="color:#e74c3c">(格差${r.titleGapPenalty})</span>`;
+  // titleGapPenalty — MQ外部ボーナス整理で廃止
   if (r.rivalryBonus) tags += ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>`;
-  if (r.coachMQBonus) tags += ` <span style="color:#e67e22">(コーチ+${r.coachMQBonus})</span>`;
+  // coachMQBonus — MQ外部ボーナス整理で廃止
   if (r.freshnessBonus) tags += ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`;
   if (r.friendshipBonus) tags += ` <span style="color:#74b9ff">(相性+${r.friendshipBonus})</span>`;
   return tags;

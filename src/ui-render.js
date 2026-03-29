@@ -1951,7 +1951,11 @@ function showMatchAppealTooltip(event, slotIdx) {
   const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
   const isFanExpect = fanExpects && fanExpects.some(fe =>
     (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
-  const context = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect };
+  const bdRivalryLevel = Engine.title.getRivalryLevel(G, m.left, m.right);
+  const bdPendingClash = bdRivalryLevel?.pendingClashBonus || 0;
+  const bdFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
+  const context = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+    pendingClashBonus: bdPendingClash, isFirstMeet: bdFr.isFirstMeet, freshnessCount: bdFr.countInWindow };
   const bd = Engine.attendanceV2.calcMatchAppealBreakdown(fA, fB, context, G);
 
   const _drawLine = (d) => {
@@ -1968,6 +1972,9 @@ function showMatchAppealTooltip(event, slotIdx) {
   if (bd.titleBonus > 0) bonuses.push(`🏆タイトル+${bd.titleBonus}`);
   if (bd.fanExpectBonus > 0) bonuses.push(`📣期待+${bd.fanExpectBonus}`);
   if (bd.heelFaceBonus > 0) bonuses.push(`😈善悪+${bd.heelFaceBonus}`);
+  if (bd.clashAppeal > 0) bonuses.push(`🥊乱闘蓄積+${bd.clashAppeal}`);
+  if (bd.firstMeetBonus > 0) bonuses.push(`🆕初顔合わせ+${bd.firstMeetBonus}`);
+  if (bd.stalePenalty < 0) bonuses.push(`😴マンネリ${bd.stalePenalty}`);
 
   const html = `
     <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px">
@@ -2094,8 +2101,12 @@ function renderShowPrep() {
     const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
     const isFE = fanExpects && fanExpects.some(fe =>
       (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+    const uiRivalryLevel = Engine.title.getRivalryLevel(G, m.left, m.right);
+    const uiPendingClash = uiRivalryLevel?.pendingClashBonus || 0;
+    const uiFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
     return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
       rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect: isFE,
+      pendingClashBonus: uiPendingClash, isFirstMeet: uiFr.isFirstMeet, freshnessCount: uiFr.countInWindow,
     }, G);
   });
   const previewNonMatchPromo = G.roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
@@ -2242,22 +2253,18 @@ function renderShowPrep() {
     }
     if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">📣ファン期待</span>`);
     if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">🌅ラストマッチ</span>`);
-    if (isTitle && champId && fl && fr) {
-      const cf = G.roster.find(c => c.id === champId);
-      const chf = G.roster.find(c => c.id === (champId === curL ? curR : curL));
-      if (cf && chf) {
-        const gap = Engine.util.ov(cf) - Engine.util.ov(chf);
-        if (gap > 20) tagParts.push(`<span class="sp-match-tag sp-tag-stale">⚠️格差大 MQ-6</span>`);
-        else if (gap > 10) tagParts.push(`<span class="sp-match-tag sp-tag-stale">⚠️格差 MQ-3</span>`);
-      }
-    }
+    // タイトル格差ペナルティ表示は MQ外部ボーナス整理で廃止
 
     // 集客力内訳
     let slotBD = null;
     if (isFilled && Engine.attendanceV2?.calcMatchAppealBreakdown) {
       const rivalryAB = G.relationships ? (G.relationships[`${curL}>${curR}`]?.rivalry || 0) : 0;
       const rivalryBA = G.relationships ? (G.relationships[`${curR}>${curL}`]?.rivalry || 0) : 0;
-      const ctx = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!G.showCard[i].isTitle, isFanExpect };
+      const slotRivalryLevel = Engine.title.getRivalryLevel(G, curL, curR);
+      const slotPendingClash = slotRivalryLevel?.pendingClashBonus || 0;
+      const slotFr = Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows, G.roster.length, null);
+      const ctx = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!G.showCard[i].isTitle, isFanExpect,
+        pendingClashBonus: slotPendingClash, isFirstMeet: slotFr.isFirstMeet, freshnessCount: slotFr.countInWindow };
       try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G); } catch(e) {}
     }
 

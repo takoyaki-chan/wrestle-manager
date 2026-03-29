@@ -3911,19 +3911,18 @@ const App = {
         rivalries = rivalResult.rivalries;
         if (rivalResult.msg) events.push(rivalResult.msg);
       }
-      const coachMQ = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
-      if (coachMQ > 0) { result.mq = Math.min(100, result.mq + coachMQ); result.coachMQBonus = coachMQ; }
+      // coachMQBonus — MQ外部ボーナス整理で廃止
     });
 
-    // Fan expectation MQ bonus (mirrors Engine.executeShow)
+    // Fan expectation MQ bonus — MQ外部ボーナス整理で廃止。フラグのみ残す
     const fanExpects = Engine.fanExpect.generate(s);
     validMatches.forEach((m, i) => {
       const result = results[i]; if (!result) return;
-      const fanMQ = Engine.fanExpect.getMQBonus(result.left.id, result.right.id, fanExpects);
-      if (fanMQ > 0) {
-        result.mq = Math.min(100, result.mq + fanMQ);
-        result.fanExpectMatch = true;
-      }
+      const isFanExpectMatch = fanExpects.some(exp =>
+        (exp.leftId === result.left.id && exp.rightId === result.right.id) ||
+        (exp.leftId === result.right.id && exp.rightId === result.left.id)
+      );
+      if (isFanExpectMatch) result.fanExpectMatch = true;
     });
 
     // Title outcomes
@@ -4001,8 +4000,12 @@ const App = {
       const rivalryBA = s.relationships ? (s.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
       const isFanExpect = appFanExpects && appFanExpects.some(fe =>
         (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+      const appRivalryLevel = Engine.title.getRivalryLevel(s, m.left, m.right);
+      const appPendingClash = appRivalryLevel?.pendingClashBonus || 0;
+      const appFr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, null);
       return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+        pendingClashBonus: appPendingClash, isFirstMeet: appFr.isFirstMeet, freshnessCount: appFr.countInWindow,
       }, s);
     });
     const appNonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);

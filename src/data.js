@@ -855,7 +855,7 @@ const LOSING_STREAK_PENALTIES = [
   {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
 ];
 const PROMO_POP_CAP = 70; // プロモのみで到達可能な人気上限（旧55→70）
-const PROMO_MQ_PER_STACK = 1.3; // promoStack 1回あたりのMQボーナス（最大3スタック×1.3=+3.9）
+// PROMO_MQ_PER_STACK — MQ外部ボーナス整理で廃止（drawPowerのみで集客に反映）
 // 金銭バランス改善: テーブル引き→区間線形補間（pop差がそのまま金額差に反映）
 const PROMO_EVENT_INCOME_CURVE = [
   [0, 10], [15, 20], [30, 40], [45, 55], [60, 70], [75, 85], [100, 95],
@@ -944,6 +944,10 @@ const MATCH_APPEAL_CONFIG = {
   titleAppeal: 20,            // タイトル戦加算
   fanExpectAppeal: 12,         // ファン期待カード加算
   heelFaceAppeal: 6,           // ヒールvsベビー構図加算
+  pendingClashAppeal: 15,      // 乱闘蓄積1あたり（話題性大）
+  firstMeetAppeal: 8,          // 初顔合わせ（未知のカードへの興味）
+  stalePenaltyPerCount: -8,    // マンネリ段階あたりのappeal減算
+  stalePenaltyMax: -30,        // マンネリappeal減算の下限
   junkThreshold: 15,           // totalAppealがこれ以下→ゴミ試合扱い
 };
 
@@ -1612,8 +1616,8 @@ const RIVALRY_RESOLUTION_LINES = {
   }
 };
 
-// v1.5s25: MQ外部ボーナス合計の上限（因縁+タイトル+コーチ+観客の合計キャップ）
-const MQ_EXTERNAL_CAP = 15;
+// MQ外部ボーナス合計の上限（因縁+タイトル+観客の合計キャップ。外部ボーナス整理で15→12）
+const MQ_EXTERNAL_CAP = 12;
 
 // 好敵手（決着2回完了後の永続ステータス）
 const GOODRIVAL_MQ_BONUS = 2;
@@ -14861,7 +14865,7 @@ if (typeof module !== 'undefined' && module.exports) {
     VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE_TIERS, VENUE_MQ_THRESHOLD, GOODS_CONFIG, OCCUPANCY_BONUS,
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
-    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_MQ_PER_STACK, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
+    SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,

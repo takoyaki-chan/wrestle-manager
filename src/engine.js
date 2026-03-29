@@ -875,8 +875,14 @@ const Engine = {
       const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
       let heelFaceBonus = 0;
       if ((Traits.has(fighterA, 'ヒール') && !Traits.has(fighterB, 'ヒール')) || (!Traits.has(fighterA, 'ヒール') && Traits.has(fighterB, 'ヒール'))) heelFaceBonus = cfg.heelFaceAppeal;
+      const clashAppeal = (context.pendingClashBonus || 0) * cfg.pendingClashAppeal;
+      const firstMeetBonus = context.isFirstMeet ? cfg.firstMeetAppeal : 0;
+      let stalePenalty = 0;
+      if (context.freshnessCount >= 3) {
+        stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
+      }
       const total = Math.round(Engine.attendanceV2.calcMatchAppeal(fighterA, fighterB, context, G));
-      return { total, drawA, drawB, parityBonus, rivalryAppeal, titleBonus, fanExpectBonus, heelFaceBonus };
+      return { total, drawA, drawB, parityBonus, rivalryAppeal, titleBonus, fanExpectBonus, heelFaceBonus, clashAppeal, firstMeetBonus, stalePenalty };
     },
 
     // ── B系: matchAppeal（カード魅力） ──
@@ -920,7 +926,19 @@ const Engine = {
       const bIsHeel = Traits.has(fighterB, 'ヒール');
       if ((aIsHeel && !bIsHeel) || (!aIsHeel && bIsHeel)) heelFaceBonus = cfg.heelFaceAppeal;
 
-      const totalAppeal = avgDraw + parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus;
+      // 乱闘蓄積（週中衝突の話題性）
+      const clashAppeal = (context.pendingClashBonus || 0) * cfg.pendingClashAppeal;
+
+      // 初顔合わせ（未知の対決への期待感）
+      const firstMeetBonus = context.isFirstMeet ? cfg.firstMeetAppeal : 0;
+
+      // マンネリ（見飽きたカードは客が来ない）
+      let stalePenalty = 0;
+      if (context.freshnessCount >= 3) {
+        stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
+      }
+
+      const totalAppeal = avgDraw + parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
       return totalAppeal;
     },
 
@@ -1091,9 +1109,13 @@ const Engine = {
         if (!fA || !fB) return { totalAppeal: 0, promoBonus: 0 };
         const drawA = this.calcDrawPower(fA, G);
         const drawB = this.calcDrawPower(fB, G);
+        const prvRivalryLevel = Engine.title.getRivalryLevel(G, m.left, m.right);
+        const prvPendingClash = prvRivalryLevel?.pendingClashBonus || 0;
+        const prvFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
         const context = {
           isTitle: !!m.isTitle,
           isFanExpect: !!(m.isFanExpect || m.fanExpectMatched),
+          pendingClashBonus: prvPendingClash, isFirstMeet: prvFr.isFirstMeet, freshnessCount: prvFr.countInWindow,
         };
         const matchAppeal = this.calcMatchAppeal(fA, fB, context, G);
         const promoBonus = Math.max(fA.promoStack || 0, fB.promoStack || 0) * SHOW_DRAW_CONFIG.promoStackPerMatch;
@@ -1322,7 +1344,8 @@ const Engine = {
           tier: 3,
           rivalry: 5,
           label: GOODRIVAL_LABEL,
-          mqBonus: GOODRIVAL_MQ_BONUS + pendingClashBonus,
+          mqBonus: GOODRIVAL_MQ_BONUS,
+          pendingClashBonus,
           color: GOODRIVAL_COLOR,
           emoji: GOODRIVAL_EMOJI,
           isGoodRival: true,
@@ -1335,7 +1358,8 @@ const Engine = {
           tier: 3,
           rivalry: 35,
           label: BITTER_RIVAL_LABEL,
-          mqBonus: BITTER_RIVAL_MQ_BONUS + pendingClashBonus,
+          mqBonus: BITTER_RIVAL_MQ_BONUS,
+          pendingClashBonus,
           color: BITTER_RIVAL_COLOR,
           emoji: BITTER_RIVAL_EMOJI,
           isBitterRival: true,
@@ -1348,7 +1372,8 @@ const Engine = {
           tier: 0,
           rivalry: pair.maxRivalry,
           label: ONESIDED_RIVALRY_LABEL,
-          mqBonus: ONESIDED_RIVALRY_MQ_BONUS + pendingClashBonus,
+          mqBonus: ONESIDED_RIVALRY_MQ_BONUS,
+          pendingClashBonus,
           color: ONESIDED_RIVALRY_COLOR,
           emoji: ONESIDED_RIVALRY_EMOJI,
           isOneSided: true,
@@ -1361,7 +1386,8 @@ const Engine = {
         tier: pair.band.tier,
         rivalry: pair.minRivalry,
         label: pair.band.label,
-        mqBonus: Engine.title.getRivalryMQBonus(pair.minRivalry) + (pair.minBond >= 50 && pair.minRivalry >= 40 ? 1 : 0) + pendingClashBonus,
+        mqBonus: Engine.title.getRivalryMQBonus(pair.minRivalry) + (pair.minBond >= 50 && pair.minRivalry >= 40 ? 1 : 0),
+        pendingClashBonus,
         color: pair.band.color,
         emoji: pair.band.emoji,
       };
@@ -2663,8 +2689,7 @@ const Engine = {
       const coach = Engine.coach.getCharCoach(G, charId);
       return coach && coach.flavor === flavorName;
     },
-    // v0.2: 旧互換スタブ（直接呼び出し元がなくなるまで維持）
-    getMQBonusForMatch(G, leftId, rightId) { return 0; },
+    // getMQBonusForMatch — MQ外部ボーナス整理で廃止
     getPopBonusForChar(G, charId) { return 0; },
     // v0.2: フレーバー — 栄養管理/癒しのオーラ: cond回復+1/週
     getCondBonus(G, charId) {
@@ -4411,10 +4436,7 @@ const Engine = {
 
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
           let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
-          const coachMQBonus = Engine.coach.getMQBonusForMatch(aiShowState, card.left.id, card.right.id);
-          if (coachMQBonus > 0) {
-            result = { ...result, coachMQBonus, mq: Engine.util.clamp(result.mq + coachMQBonus, 0, 100) };
-          }
+          // coachMQBonus は MQ外部ボーナス整理で廃止
           matchResults.push(result);
 
           [leftIdx, rightIdx].forEach((fi, side) => {
@@ -6126,8 +6148,12 @@ const Engine = {
           const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
           const isFanExpect = settleFanExpects && settleFanExpects.some(fe =>
             (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+          const sRivalryLevel = Engine.title.getRivalryLevel(G, m.left, m.right);
+          const sPendingClash = sRivalryLevel?.pendingClashBonus || 0;
+          const sFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
           return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
             rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+            pendingClashBonus: sPendingClash, isFirstMeet: sFr.isFirstMeet, freshnessCount: sFr.countInWindow,
           }, G);
         });
         const settleNonMatchPromo = roster.filter(c => !settleValidMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
@@ -6744,11 +6770,7 @@ const Engine = {
           if (champF && chalF) result.titleOVRGap = Engine.util.ov(champF) - Engine.util.ov(chalF);
         }
       }
-      result.coachMQBonus = Engine.coach.getMQBonusForMatch(s, m.left, m.right);
-      // プロモ改修 v1.0: promoStackボーナス（両者の高い方を採用）
-      const promoLeft  = charL ? ((charL.promoStack || 0) * PROMO_MQ_PER_STACK) : 0;
-      const promoRight = charR ? ((charR.promoStack || 0) * PROMO_MQ_PER_STACK) : 0;
-      result.promoStackBonus = Math.max(promoLeft, promoRight);
+      // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
       return result;
     }).filter(Boolean);
 
@@ -6780,8 +6802,13 @@ const Engine = {
       const rivalryBA = s.relationships ? (s.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
       const isFanExpect = execFanExpects && execFanExpects.some(fe =>
         (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+      // MQ外部ボーナス整理: 乱闘蓄積・初顔合わせ・マンネリを集客側に
+      const rivalryLevel = Engine.title.getRivalryLevel(s, m.left, m.right);
+      const pendingClashBonus = rivalryLevel?.pendingClashBonus || 0;
+      const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, null);
       return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+        pendingClashBonus, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
       }, s);
     });
     const nonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
@@ -6812,8 +6839,7 @@ const Engine = {
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
       // ケミストリー（友情）MQ削除済み — r.friendshipBonus は加算しない
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
-      if (r.coachMQBonus > 0) externalMQ += r.coachMQBonus;
-      if (r.promoStackBonus > 0) externalMQ += r.promoStackBonus;
+      // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
       externalMQ += crowdMQ.total;
       // v1.5s25b: mq_boost（キャップ対象）
       externalMQ += mqBoostAmount;
@@ -6825,10 +6851,12 @@ const Engine = {
           nextMatchMqConsumed = true;
         }
       }
-      // v2.0: ファン期待カード MQボーナス（キャップ対象）
-      const fanMQBonus = Engine.fanExpect.getMQBonus(r.left.id, r.right.id, fanExpects);
-      externalMQ += fanMQBonus;
-      if (fanMQBonus > 0) r.fanExpectMatch = true;
+      // ファン期待カード MQボーナス廃止（集客側で効かせる）。フラグは集客・メディア判定に必要なので残す
+      const isFanExpectMatch = fanExpects.some(exp =>
+        (exp.leftId === r.left.id && exp.rightId === r.right.id) ||
+        (exp.leftId === r.right.id && exp.rightId === r.left.id)
+      );
+      if (isFanExpectMatch) r.fanExpectMatch = true;
       // 野心MQ削除済み
       // ラストランMQボーナス (§2.2)
       const lrLeft  = s.roster.find(c => c.id === r.left.id);
@@ -6843,31 +6871,26 @@ const Engine = {
       }
       // 見返しモードMQ削除済み
       // コスチュームデビューMQ削除済み
-      // v2.0: カード鮮度（初顔合わせボーナスはキャップ対象、マンネリペナルティはキャップ対象外）
+      // カード鮮度: MQへの影響は廃止（集客側で効かせる）。ラベル情報のみ記録
       const freshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, matchIdx));
       const freshnessResult = Engine.freshness.calc(s.matchupLog || [], r.left.id, r.right.id, s.totalShows, s.roster.length, freshnessRng);
       if (freshnessResult.bonus !== 0) {
         r.freshnessBonus = freshnessResult.bonus;
         r.freshnessLabel = freshnessResult.label;
       }
-      if (freshnessResult.bonus > 0) externalMQ += freshnessResult.bonus;
-      const freshnessPenalty = freshnessResult.bonus < 0 ? freshnessResult.bonus : 0;
+      // 初顔合わせ・マンネリともにMQ加減算しない
       const positiveExternal = Math.max(0, externalMQ);
       const negativeExternal = Math.min(0, externalMQ);
       const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
-      // v2.1: タイトルマッチ格差ペナルティ（キャップ後に別途減算。タイトルボーナスは享受できる）
-      let titleGapPenalty = 0;
-      if (r.isTitleMatch && r.titleOVRGap > 20) titleGapPenalty = -6;
-      else if (r.isTitleMatch && r.titleOVRGap > 10) titleGapPenalty = -3;
+      // タイトルマッチ格差ペナルティ廃止（試合結果で自明に反映される）
       // §13.2: trust < 35 → MQ -1.53（意欲低下ペナルティ、キャップ対象外）
       let trustMQPenalty = 0;
       const leftTrust = lrLeft ? (lrLeft.trust != null ? lrLeft.trust : 50) : 50;
       const rightTrust = lrRight ? (lrRight.trust != null ? lrRight.trust : 50) : 50;
       if (leftTrust < 35) trustMQPenalty -= 1.53;
       if (rightTrust < 35) trustMQPenalty -= 1.53;
-      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty + trustMQPenalty, 5, 100);
-      r.externalMQBonus = cappedPositive + negativeExternal + titleGapPenalty + freshnessPenalty + trustMQPenalty;
-      if (titleGapPenalty < 0) r.titleGapPenalty = titleGapPenalty;
+      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + trustMQPenalty, 5, 100);
+      r.externalMQBonus = cappedPositive + negativeExternal + trustMQPenalty;
       if (trustMQPenalty < 0) r.trustMQPenalty = trustMQPenalty;
       return r;
     });
@@ -6959,12 +6982,7 @@ const Engine = {
       }
     });
 
-    // v2.1: 格差タイトルマッチのログ
-    results.forEach(r => {
-      if (r.titleGapPenalty) {
-        events.push(`⚠️ 格差タイトルマッチ: OVR差+${r.titleOVRGap} → MQ${r.titleGapPenalty}`);
-      }
-    });
+    // タイトル格差ペナルティログ — MQ外部ボーナス整理で廃止
 
     // MQ popularity (immutable) — v1.0b: includes diminishing returns, losing streak, main event penalty
     const mainEventIdx = 0; // first match (showCard[0]) is main event
@@ -8670,13 +8688,7 @@ const Engine = {
             r.mq = Math.min(100, r.mq + chemistryBonus);
             r.friendshipBonus = chemistryBonus;
           }
-          // Step 5-6: コーチMQボーナス
-          const coachMQ = Engine.coach.getMQBonusForMatch(s, match.left.id, match.right.id);
-          if (coachMQ > 0) {
-            r.mq = Math.min(100, r.mq + coachMQ);
-            r.coachMQBonus = coachMQ;
-            bonusInfo.coach = coachMQ;
-          }
+          // coachMQBonus は MQ外部ボーナス整理で廃止
         }
         mqBonuses.push(bonusInfo);
 
@@ -13335,14 +13347,14 @@ Engine.freshness = {
     const key1 = Math.min(id1, id2);
     const key2 = Math.max(id1, id2);
     if (!matchupLog || matchupLog.length === 0) {
-      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ' };
+      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ', isFirstMeet: true, countInWindow: 0 };
     }
     // 初顔合わせ判定: 全履歴に存在しないペア
     const hasEverFought = matchupLog.some(e =>
       Math.min(e.leftId, e.rightId) === key1 && Math.max(e.leftId, e.rightId) === key2
     );
     if (!hasEverFought) {
-      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ' };
+      return { bonus: FRESHNESS_CONFIG.firstMeetBonus, label: '初顔合わせ', isFirstMeet: true, countInWindow: 0 };
     }
     // ロスターサイズ連動ウィンドウ
     let windowShows;
@@ -13367,10 +13379,10 @@ Engine.freshness = {
           ? -(Math.abs(p.mqPenaltyMin) + Engine.rng.int(rng, 0, range))
           : p.mqPenaltyMax;
         const label = countInWindow >= 5 ? '完全なマンネリ' : countInWindow >= 4 ? '深刻なマンネリ' : 'マンネリ';
-        return { bonus: penalty, label };
+        return { bonus: penalty, label, isFirstMeet: false, countInWindow };
       }
     }
-    return { bonus: 0, label: null };
+    return { bonus: 0, label: null, isFirstMeet: false, countInWindow };
   },
 };
 
@@ -13464,15 +13476,8 @@ Engine.fanExpect = {
     return candidates.sort((a, b) => b.priority - a.priority).slice(0, 3);
   },
 
-  // ── 期待カードに一致するMQボーナス ──────────────────────────────────────
-  // 一致する場合 +5 MQ（MQ_EXTERNAL_CAP の内数として扱う）
-  getMQBonus(fId1, fId2, expects) {
-    const matched = expects.some(exp =>
-      (exp.leftId === fId1 && exp.rightId === fId2) ||
-      (exp.leftId === fId2 && exp.rightId === fId1)
-    );
-    return matched ? 2.5 : 0;
-  },
+  // getMQBonus — MQ外部ボーナス整理で廃止（集客側で既に効いている）
+  getMQBonus(fId1, fId2, expects) { return 0; },
 
   // ── 現在のカードに期待カードが何件含まれているか ──────────────────────────
   countMatched(showCard, expects) {
