@@ -2157,21 +2157,18 @@ function renderShowPrep() {
   </div>`;
 
   // マッチスロット v7
-  const _spParamStats = [
-    { key: 'pw', label: 'PWR', color: '#e74c3c' },
-    { key: 'sp', label: 'SPD', color: '#f39c12' },
-    { key: 'te', label: 'TEC', color: '#2ecc71' },
-    { key: 'st', label: 'STM', color: '#9b59b6' },
-    { key: 'mn', label: 'MNT', color: '#3498db' },
-  ];
-  const _spBuildParams = (f, side) => {
-    if (!f) return '';
-    return _spParamStats.map(s => {
-      const pct = Math.min(100, Math.max(0, f[s.key] || 0)) + '%';
-      return side === 'left'
-        ? `<div class="sp-param-row"><span class="sp-param-label">${s.label}</span><div class="sp-param-bar-bg"><div class="sp-param-bar" style="width:${pct};background:${s.color}"></div></div></div>`
-        : `<div class="sp-param-row"><div class="sp-param-bar-bg"><div class="sp-param-bar" style="width:${pct};background:${s.color}"></div></div><span class="sp-param-label">${s.label}</span></div>`;
-    }).join('');
+  const _spBuildDrawInfo = (d, side) => {
+    if (!d) return `<div class="sp-draw-info ${side}"></div>`;
+    const subParts = [`pop${d.popDraw}`];
+    if (d.ovrDraw !== 0) subParts.push(`ovr${d.ovrDraw >= 0 ? '+' : ''}${d.ovrDraw}`);
+    const detHtml = (d.details || []).slice(0, 3).map(det =>
+      `<div class="sp-draw-detail">${det.label}+${det.value}</div>`).join('');
+    return `<div class="sp-draw-info ${side}">
+      <div class="sp-draw-label">集客力</div>
+      <div class="sp-draw-total">${d.total}</div>
+      <div class="sp-draw-sub">${subParts.join(' ')}</div>
+      ${detHtml ? `<div class="sp-draw-details">${detHtml}</div>` : ''}
+    </div>`;
   };
   const _spFighterInfo = (f, side, slotIdx) => {
     if (!f) {
@@ -2206,7 +2203,6 @@ function renderShowPrep() {
     else if (maxMatches >= 3 && i >= maxMatches - 2) { tier = 'undercard'; }
     else { tier = 'mid-card'; }
 
-    const showParams = (tier === 'main-event' || tier === 'mid-card') && isFilled;
     const ps = tier === 'main-event' ? 72 : tier === 'mid-card' ? 52 : 40;
 
     // 試合番号（成立試合のみカウント）
@@ -2263,6 +2259,15 @@ function renderShowPrep() {
       }
     }
 
+    // 集客力内訳
+    let slotBD = null;
+    if (isFilled && Engine.attendanceV2?.calcMatchAppealBreakdown) {
+      const rivalryAB = G.relationships ? (G.relationships[`${curL}>${curR}`]?.rivalry || 0) : 0;
+      const rivalryBA = G.relationships ? (G.relationships[`${curR}>${curL}`]?.rivalry || 0) : 0;
+      const ctx = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!G.showCard[i].isTitle, isFanExpect };
+      try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G); } catch(e) {}
+    }
+
     // ピッカーコンテンツ
     const isPickerOpen = _spActivePicker && _spActivePicker.slotIdx === i;
     const pickerSide = isPickerOpen ? _spActivePicker.side : null;
@@ -2289,18 +2294,19 @@ function renderShowPrep() {
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}
       onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
       <div class="sp-match-card-inner">
-        <div class="sp-params left">${showParams ? _spBuildParams(fl, 'left') : ''}</div>
+        ${slotBD ? _spBuildDrawInfo(slotBD.drawA, 'left') : '<div class="sp-draw-info left"></div>'}
         ${_spFighterInfo(fl, 'left', i)}
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
+          ${slotBD ? `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score">${slotBD.total}</div>` : ''}
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i)}
-        <div class="sp-params right">${showParams ? _spBuildParams(fr, 'right') : ''}</div>
+        ${slotBD ? _spBuildDrawInfo(slotBD.drawB, 'right') : '<div class="sp-draw-info right"></div>'}
       </div>
       <div class="sp-picker" id="sp-picker-${i}">${pickerInner}</div>
     </div>`;
