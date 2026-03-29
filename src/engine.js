@@ -1542,32 +1542,6 @@ const Engine = {
       return Engine.orgPop.applyOrgPopChange(Math.min(raw, 1.0), state.orgPop || 0, null);
     },
 
-    getNeglectedRivalryPenalty(state) {
-      // 興行週のみ判定（非興行週はスキップ）
-      if (!Engine.util.isShowWeek(state.week)) return 0;
-      const currentShows = state.totalShows || 0;
-      // 因縁ペアを放置度でソートし、上位2ペアのみ対象
-      const candidates = [];
-      Object.entries(state.rivalries || {}).forEach(([key, entry]) => {
-        const ids = key.split('-').map(Number);
-        const pairState = Engine.title.getRivalryPairState(state, ids[0], ids[1]);
-        if (pairState.resolvedType || pairState.minRivalry < 60) return;
-        const lastShow = entry.lastShowNumber || 0;
-        if (!lastShow) return;
-        const showGap = currentShows - lastShow;
-        if (showGap >= 3) candidates.push({ showGap, minRivalry: pairState.minRivalry });
-      });
-      if (candidates.length === 0) return 0;
-      // rivalry強度が高いペアを優先（ファンの期待が高い）
-      candidates.sort((a, b) => b.minRivalry - a.minRivalry);
-      let raw = 0;
-      const maxPairs = 2;
-      for (let i = 0; i < Math.min(candidates.length, maxPairs); i++) {
-        raw -= 0.15;
-      }
-      return Math.max(raw, -0.3);
-    },
-
     getAttendanceBonusPct(state, showCard) {
       if (!showCard || showCard.length === 0) return 0;
       let total = 0;
@@ -15458,20 +15432,6 @@ Engine.relationships = {
     }
     if (pairEventNames.length > 0) {
       pairEventNames.slice(0, 2).forEach(text => events.push(`[rivalry-clash] ${text}`));
-    }
-
-    // ── 因縁放置ペナルティ ──
-    const neglectPenalty = Engine.title.getNeglectedRivalryPenalty({ ...state, roster, rivalries });
-    if (neglectPenalty < 0) {
-      orgPop = Engine.util.clamp(orgPop + neglectPenalty, 0, 100);
-      // neglectedRivalryのペア名を取得してテキスト生成
-      const neglectPairs = Engine.title.getNeglectedRivalryPairs ? Engine.title.getNeglectedRivalryPairs({ ...state, roster, rivalries }) : null;
-      if (neglectPairs && neglectPairs.length > 0) {
-        const np = neglectPairs[0];
-        events.push(`[neglected-rivalry] ${_pick(WEEKLY_STORY_TICKER.neglectedRivalry, np.nameA || '', np.nameB || '')}`);
-      } else {
-        events.push(`[neglected-rivalry] ファンが因縁カードの実現を待ち望んでいる`);
-      }
     }
 
     return {

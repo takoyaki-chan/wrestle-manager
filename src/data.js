@@ -2249,11 +2249,6 @@ const WEEKLY_STORY_TICKER = {
     '{name}の笑顔が減った——周囲もそれに気づいている',
   ],
   // 因縁カード放置テキスト
-  neglectedRivalry: [
-    'ファンが{nameA}と{nameB}の対戦を待ち望んでいる',
-    '「{nameA}vs{nameB}はいつ実現するんだ」——SNSで声が上がっている',
-    '因縁のカードが宙に浮いたまま——ファンの不満が募っている',
-  ],
   // 覚醒イベント（クロス非対称: A高riv低bond / B低riv高bond → Bがキレる）
   // nameBのpersonality×archetypeで選出する
   awakening: {
