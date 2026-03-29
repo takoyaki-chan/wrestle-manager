@@ -831,6 +831,50 @@ const Engine = {
       return Math.max(0, popDraw + ovrDraw + traitDraw + situational);
     },
 
+    // ── A系: drawPower内訳（ツールチップ用） ──
+    calcDrawPowerBreakdown(fighter, G) {
+      const cfg = DRAW_POWER_CONFIG;
+      const pop = fighter.popularity || 0;
+      const ovr = Engine.util.ov(fighter);
+      const popDraw = Math.round(Math.pow(pop / 100, cfg.popExponent) * cfg.popScale);
+      const ovrBonus = Engine.util.clamp((ovr - 50) / cfg.ovrBonusScale, cfg.ovrBonusMin, cfg.ovrBonusMax);
+      const ovrBase = Math.max(0, (ovr - cfg.ovrBaseThreshold) * cfg.ovrBasePerPoint);
+      const ovrDraw = Math.round(popDraw * ovrBonus + ovrBase);
+      let traitDraw = 0;
+      const traits = [];
+      if (Traits.has(fighter, '華'))    { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: '✨華', value: v }); }
+      if (Traits.has(fighter, 'ファンサ')) { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: '🤝ファンサ', value: v }); }
+      const details = [];
+      if (G.titles?.world?.championId === fighter.id) details.push({ label: '👑王者', value: cfg.champBonus });
+      if (fighter.breakthroughWeeksLeft > 0) details.push({ label: '🔥BT', value: cfg.btBonus });
+      if ((fighter.wins - fighter.losses) >= 5 && fighter.losingStreak === 0) details.push({ label: '📈連勝', value: cfg.winStreakBonus });
+      if (fighter.slump) details.push({ label: '📉スランプ', value: cfg.slumpPenalty });
+      const total = Engine.attendanceV2.calcDrawPower(fighter, G);
+      return { total: Math.round(total), popDraw, ovrDraw, traitDraw, traits, details, name: fighter.name };
+    },
+
+    // ── B系: matchAppeal内訳（ツールチップ用） ──
+    calcMatchAppealBreakdown(fighterA, fighterB, context, G) {
+      const drawA = Engine.attendanceV2.calcDrawPowerBreakdown(fighterA, G);
+      const drawB = Engine.attendanceV2.calcDrawPowerBreakdown(fighterB, G);
+      const cfg = MATCH_APPEAL_CONFIG;
+      const ovrDiff = Math.abs(Engine.util.ov(fighterA) - Engine.util.ov(fighterB));
+      let parityBonus = cfg.parityPenalty;
+      for (const band of cfg.parityBonus) { if (ovrDiff <= band.maxDiff) { parityBonus = band.bonus; break; } }
+      let rivalryAppeal = 0;
+      if (G.relationships) {
+        const rivAB = G.relationships[`${fighterA.id}>${fighterB.id}`]?.rivalry || 0;
+        const rivBA = G.relationships[`${fighterB.id}>${fighterA.id}`]?.rivalry || 0;
+        rivalryAppeal = Math.round(Math.min(rivAB, rivBA) * cfg.rivalryScale);
+      }
+      const titleBonus = context.isTitle ? cfg.titleAppeal : 0;
+      const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
+      let heelFaceBonus = 0;
+      if ((Traits.has(fighterA, 'ヒール') && !Traits.has(fighterB, 'ヒール')) || (!Traits.has(fighterA, 'ヒール') && Traits.has(fighterB, 'ヒール'))) heelFaceBonus = cfg.heelFaceAppeal;
+      const total = Math.round(Engine.attendanceV2.calcMatchAppeal(fighterA, fighterB, context, G));
+      return { total, drawA, drawB, parityBonus, rivalryAppeal, titleBonus, fanExpectBonus, heelFaceBonus };
+    },
+
     // ── B系: matchAppeal（カード魅力） ──
     // 個人集客力(drawPower) + カード構造ボーナスの合算
     calcMatchAppeal(fighterA, fighterB, context, G) {

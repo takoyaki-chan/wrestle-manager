@@ -1894,6 +1894,60 @@ function getAvailableForSlot(slotIndex, side) {
   }));
 }
 
+// 集客v2: カード評価ツールチップ
+function showMatchAppealTooltip(event, slotIdx) {
+  if (!G.showCard || !G.showCard[slotIdx]) return;
+  const m = G.showCard[slotIdx];
+  if (!m.left || m.left <= 0 || !m.right || m.right <= 0) return;
+  const fA = G.roster.find(c => c.id === m.left);
+  const fB = G.roster.find(c => c.id === m.right);
+  if (!fA || !fB) return;
+
+  const fanExpects = Engine.fanExpect.generate(G);
+  const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
+  const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
+  const isFanExpect = fanExpects && fanExpects.some(fe =>
+    (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+  const context = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect };
+  const bd = Engine.attendanceV2.calcMatchAppealBreakdown(fA, fB, context, G);
+
+  const _drawLine = (d) => {
+    const parts = [`pop${d.popDraw}`];
+    if (d.ovrDraw !== 0) parts.push(`ovr${d.ovrDraw > 0 ? '+' : ''}${d.ovrDraw}`);
+    d.traits.forEach(t => parts.push(`${t.label}+${t.value}`));
+    d.details.forEach(t => parts.push(`${t.label}${t.value > 0 ? '+' : ''}${t.value}`));
+    return `<span style="color:var(--text-dim);font-size:10px">${parts.join(' ')}</span>`;
+  };
+
+  const bonuses = [];
+  if (bd.parityBonus !== 0) bonuses.push(`🤝拮抗${bd.parityBonus > 0 ? '+' : ''}${bd.parityBonus}`);
+  if (bd.rivalryAppeal > 0) bonuses.push(`⚡因縁+${bd.rivalryAppeal}`);
+  if (bd.titleBonus > 0) bonuses.push(`🏆タイトル+${bd.titleBonus}`);
+  if (bd.fanExpectBonus > 0) bonuses.push(`📣期待+${bd.fanExpectBonus}`);
+  if (bd.heelFaceBonus > 0) bonuses.push(`😈善悪+${bd.heelFaceBonus}`);
+
+  const html = `
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:6px">
+      <div style="text-align:center">
+        ${portraitImg(fA.id, 32)}
+        <div style="font-size:11px;font-weight:700;margin-top:2px">${fA.name.slice(0,4)}</div>
+        <div style="font-size:13px;color:#74b9ff;font-weight:900">★${bd.drawA.total}</div>
+        ${_drawLine(bd.drawA)}
+      </div>
+      <div style="text-align:center">
+        ${portraitImg(fB.id, 32)}
+        <div style="font-size:11px;font-weight:700;margin-top:2px">${fB.name.slice(0,4)}</div>
+        <div style="font-size:13px;color:#74b9ff;font-weight:900">★${bd.drawB.total}</div>
+        ${_drawLine(bd.drawB)}
+      </div>
+    </div>
+    ${bonuses.length > 0 ? `<div style="border-top:1px solid rgba(200,190,170,0.15);padding-top:4px;margin-bottom:4px;font-size:11px;color:#ddd">${bonuses.join('  ')}</div>` : ''}
+    <div style="border-top:1px solid rgba(200,190,170,0.15);padding-top:4px;font-size:13px;font-weight:900;color:var(--gold)">カード魅力 ${bd.total}</div>
+  `;
+
+  showCustomTooltip(event.currentTarget, html);
+}
+
 function renderShowPrep() {
   const el = document.getElementById('showPrepContent');
   // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
@@ -2057,7 +2111,8 @@ function renderShowPrep() {
     const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
     const isLastRunMatch = lastRunL || lastRunR;
 
-    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}">
+    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}"
+      onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
       <div class="match-slot-num">${isMain ? '★' : i+1}</div>
       <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 80) : ''}</div>
       <div class="match-fighter">
