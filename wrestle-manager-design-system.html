@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wrestle Manager — Design System v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM FOUNDATIONS — CSS Variables (Design Tokens)
+   ============================================================ */
+:root {
+  /* ── Theme: DARK（ダーク）── メイン画面・興行系 */
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --blue: #4a8fd4;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --orange: #f39c12;
+  --purple: #9b59b6;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  --border-hover: rgba(212,168,67,0.3);
+  --border-active: var(--gold);
+
+  /* ── Theme: CREAM（クリーム）── 本拠地系・ロスター */
+  --cream-bg-card: #ede8dc;
+  --cream-panel-bg: #d4ccb8;
+  --cream-gold: #7a6530;
+  --cream-gold-dark: #5c4a1e;
+  --cream-text-main: #1e1c16;
+  --cream-text-sub: #4a4638;
+  --cream-text-dim: #7a7466;
+  --cream-border: rgba(100,85,50,0.14);
+  --cream-border-hover: rgba(122,101,48,0.35);
+
+  /* ── Theme: BLACK（ブラック）── 興行演出系 */
+  --black-bg: #060606;
+  --black-border: rgba(200,190,170,0.05);
+
+  /* ── Semantic Colors ── */
+  --color-positive: #2ecc71;
+  --color-negative: #e74c3c;
+  --color-warning: #f39c12;
+  --color-info: #4a8fd4;
+  --color-bond: #74b9ff;
+  --color-rivalry: #e17055;
+  --color-dramatic: #9b59b6;
+  --color-gold-glow: rgba(212,168,67,0.35);
+
+  /* ── Typography Scale ── */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label: 'Oswald', sans-serif;
+  --font-body: 'Noto Sans JP', sans-serif;
+
+  /* ── Border Radius Scale ── */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 14px;
+  --radius-full: 50%;
+
+  /* ── Spacing Scale ── */
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 6px;
+  --space-md: 8px;
+  --space-lg: 10px;
+  --space-xl: 12px;
+  --space-2xl: 14px;
+  --space-3xl: 16px;
+  --space-4xl: 20px;
+  --space-5xl: 24px;
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   DOC LAYOUT
+   ============================================================ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font-body); background: #0a0a08; color: var(--text-main); line-height: 1.6; }
+.ds { max-width: 1100px; margin: 0 auto; padding: 24px 16px 120px; }
+
+/* Section headers */
+.ds-section { margin-top: 56px; }
+.ds-section:first-child { margin-top: 0; }
+.ds-h1 {
+  font-family: var(--font-display);
+  font-size: 48px; letter-spacing: 6px;
+  background: linear-gradient(180deg, #fff 20%, var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 8px;
+}
+.ds-h2 {
+  font-family: var(--font-label); font-size: 18px; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 20px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.ds-h3 {
+  font-family: var(--font-label); font-size: 13px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--text-sub); margin: 24px 0 12px;
+}
+.ds-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; line-height: 1.7; }
+.ds-token-name {
+  font-family: var(--font-label); font-size: 11px; letter-spacing: 1px;
+  color: var(--text-dim); margin-top: 4px; text-align: center;
+}
+.ds-code {
+  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+  background: rgba(200,190,170,0.06); padding: 2px 6px; border-radius: 3px;
+  color: var(--gold-light);
+}
+
+/* Grid helpers */
+.ds-grid { display: grid; gap: 12px; }
+.ds-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.ds-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.ds-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.ds-grid-5 { grid-template-columns: repeat(5, 1fr); }
+.ds-grid-6 { grid-template-columns: repeat(6, 1fr); }
+.ds-flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.ds-flex-center { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* Specimen cards */
+.ds-card {
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px; position: relative;
+}
+.ds-card-cream {
+  background: var(--cream-panel-bg); border: 1px solid var(--cream-border);
+  border-radius: var(--radius-lg); padding: 14px;
+  color: var(--cream-text-main);
+}
+
+/* ============================================================
+   1. COLOR PALETTE
+   ============================================================ */
+.color-swatch {
+  width: 100%; aspect-ratio: 1; border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.06); position: relative;
+}
+.color-swatch::after {
+  content: attr(data-hex); position: absolute; bottom: 6px; left: 0; right: 0;
+  text-align: center; font-size: 10px; font-family: var(--font-label);
+  color: rgba(255,255,255,0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  letter-spacing: 1px;
+}
+.color-swatch.dark-text::after { color: rgba(0,0,0,0.6); text-shadow: none; }
+
+/* ============================================================
+   2. TYPOGRAPHY
+   ============================================================ */
+.type-specimen { margin-bottom: 16px; }
+.type-row { display: flex; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(200,190,170,0.04); }
+.type-meta { width: 160px; flex-shrink: 0; }
+.type-meta-name { font-family: var(--font-label); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+.type-meta-spec { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.type-sample { flex: 1; }
+
+/* ============================================================
+   3. COMPONENT SHOWCASE — actual WM styles
+   ============================================================ */
+
+/* --- Panel (from WM) --- */
+.wm-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; }
+.wm-panel-title {
+  font-family: var(--font-label); font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* --- Buttons --- */
+.wm-btn {
+  font-family: var(--font-label); font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 8px 20px; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all .2s;
+  display: inline-block;
+}
+.wm-btn-gold { background: linear-gradient(135deg, var(--gold), #b8912e); color: var(--bg-dark); }
+.wm-btn-gold:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.wm-btn-blue { background: rgba(74,143,212,0.15); border: 1px solid rgba(74,143,212,0.3); color: var(--blue); }
+.wm-btn-blue:hover { background: rgba(74,143,212,0.25); }
+.wm-btn-red { background: rgba(196,30,58,0.15); border: 1px solid rgba(196,30,58,0.3); color: #f08b9e; }
+.wm-btn-red:hover { background: rgba(196,30,58,0.25); }
+.wm-btn-ghost { background: transparent; border: 1px solid rgba(200,190,170,0.12); color: var(--text-sub); }
+.wm-btn-ghost:hover { border-color: var(--border-hover); color: var(--text-main); }
+.wm-btn-sm { padding: 4px 12px; font-size: 11px; }
+.wm-btn-disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* --- Badges --- */
+.wm-badge {
+  display: inline-block; padding: 2px 7px; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; font-family: var(--font-label);
+}
+.wm-badge-bf { background: rgba(74,143,212,0.18); color: #2874a6; border: 1px solid rgba(74,143,212,0.4); }
+.wm-badge-heel { background: rgba(196,30,58,0.18); color: #b03052; border: 1px solid rgba(196,30,58,0.4); }
+.wm-badge-neutral { background: rgba(120,130,145,0.15); color: #626d7a; border: 1px solid rgba(120,130,145,0.35); }
+.wm-badge-striker { background: rgba(231,76,60,0.18); color: #c0392b; border: 1px solid rgba(231,76,60,0.4); }
+.wm-badge-grappler { background: rgba(155,89,182,0.18); color: #8e44ad; border: 1px solid rgba(155,89,182,0.4); }
+.wm-badge-aerial { background: rgba(46,204,113,0.18); color: #1e8449; border: 1px solid rgba(46,204,113,0.4); }
+.wm-badge-technique { background: rgba(52,152,219,0.18); color: #2471a3; border: 1px solid rgba(52,152,219,0.4); }
+.wm-badge-allround { background: rgba(200,160,10,0.20); color: #9a7d0a; border: 1px solid rgba(200,160,10,0.45); }
+.wm-badge-submission { background: rgba(230,126,34,0.18); color: #b9570d; border: 1px solid rgba(230,126,34,0.4); }
+.wm-badge-brawler { background: rgba(192,57,43,0.18); color: #a93226; border: 1px solid rgba(192,57,43,0.4); }
+
+/* --- Schedule Tags --- */
+.wm-sched-tag {
+  display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+}
+.wm-sched-practice { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.wm-sched-promo { background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+.wm-sched-rest { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+.wm-sched-medical { background: rgba(214,48,49,0.15); color: #e17055; border: 1px solid rgba(214,48,49,0.3); }
+.wm-sched-intensive { background: rgba(255,165,0,0.2); color: #ffa500; border: 1px solid rgba(255,165,0,0.4); }
+
+/* --- Coach Grade Badges --- */
+.wm-grade-c { background: rgba(136,136,136,0.25); color: #aaa; border: 1px solid rgba(136,136,136,0.4); }
+.wm-grade-b { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.wm-grade-a { background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); }
+
+/* --- Tier Badges (cream theme) --- */
+.wm-tier { padding: 4px 10px; border-radius: var(--radius-sm); font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; display: inline-block; }
+.wm-tier-player { background: rgba(154,112,32,0.15); color: #6a4a10; border: 1px solid rgba(154,112,32,0.3); }
+.wm-tier-s { background: rgba(139,26,26,0.12); color: #8b1a1a; border: 1px solid rgba(139,26,26,0.3); }
+.wm-tier-a { background: rgba(90,40,128,0.12); color: #5a2880; border: 1px solid rgba(90,40,128,0.3); }
+.wm-tier-b { background: rgba(26,122,80,0.12); color: #1a7a50; border: 1px solid rgba(26,122,80,0.3); }
+
+/* --- Status Badges (cream) --- */
+.wm-status-good { padding: 3px 8px; border-radius: var(--radius-sm); font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 1px; background: rgba(26,122,80,0.12); color: #1a7a50; border: 1px solid rgba(26,122,80,0.25); display: inline-block; }
+.wm-status-warn { padding: 3px 8px; border-radius: var(--radius-sm); font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 1px; background: rgba(154,112,32,0.12); color: #6a4a10; border: 1px solid rgba(154,112,32,0.25); display: inline-block; }
+.wm-status-bad { padding: 3px 8px; border-radius: var(--radius-sm); font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 1px; background: rgba(139,26,26,0.12); color: #8b1a1a; border: 1px solid rgba(139,26,26,0.25); display: inline-block; }
+
+/* --- Portraits --- */
+.wm-portrait {
+  border-radius: var(--radius-2xl); object-fit: cover; flex-shrink: 0;
+  border: 2px solid rgba(100,85,50,0.12); vertical-align: middle; overflow: hidden;
+  background: var(--card-bg); display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-dim); font-size: 24px;
+}
+.wm-portrait-champ { border-color: #d4a843 !important; box-shadow: 0 0 8px rgba(212,168,67,0.35); }
+.wm-portrait-circle { border-radius: var(--radius-full); }
+.wm-portrait-winner { border-color: var(--gold); box-shadow: 0 0 14px rgba(212,168,67,0.65), 0 0 30px rgba(212,168,67,0.3); }
+.wm-portrait-loser { opacity: 0.6; filter: grayscale(0.3); }
+
+/* --- Monitor Effect --- */
+.wm-monitor-wrap {
+  position: relative; display: inline-block; overflow: hidden;
+  border-radius: var(--radius-2xl);
+}
+.wm-monitor-wrap::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 5px);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.25);
+}
+
+/* --- Stat Bar --- */
+.wm-stat-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+.wm-stat-label { width: 26px; font-size: 12px; font-weight: 900; font-family: var(--font-label); letter-spacing: 1px; }
+.wm-stat-bar-outer { flex: 1; height: 12px; background: rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; }
+.wm-stat-bar-fill { height: 100%; border-radius: 6px; }
+.wm-stat-val { width: 32px; text-align: right; font-size: 15px; font-weight: 900; font-family: var(--font-label); }
+
+/* --- Condition Bar --- */
+.wm-cond-bar { width: 60px; height: 6px; background: rgba(200,190,170,0.08); border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; }
+.wm-cond-fill { height: 100%; border-radius: 3px; }
+.wm-cond-fill.high { background: #2ecc71; }
+.wm-cond-fill.mid { background: #f39c12; }
+.wm-cond-fill.low { background: #e74c3c; }
+
+/* --- Navigation --- */
+.wm-nav-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+.wm-nav-btn {
+  font-family: var(--font-label); font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 8px 16px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--radius-md);
+  color: var(--text-sub); cursor: pointer; white-space: nowrap; transition: all .2s;
+}
+.wm-nav-btn:hover { border-color: var(--border-hover); color: var(--text-main); }
+.wm-nav-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
+
+/* --- OVR Display --- */
+.wm-ovr {
+  font-family: var(--font-display); font-size: 18px;
+  background: linear-gradient(180deg, #fff, var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.wm-ovr-lg { font-size: 38px; }
+.wm-ovr-xl { font-size: 48px; }
+
+/* --- Tooltip --- */
+.wm-tooltip-box {
+  background: rgba(10,10,20,0.97); border: 1px solid rgba(200,190,170,0.18);
+  border-radius: var(--radius-lg); padding: 10px 14px; font-size: 12px; color: #ddd;
+  line-height: 1.7; max-width: 250px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+.wm-tt-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: var(--radius-full);
+  background: rgba(200,190,170,0.12); color: var(--text-dim); font-size: 10px;
+  cursor: pointer; user-select: none;
+}
+.wm-tt-icon:hover { background: rgba(200,190,170,0.22); color: var(--text-main); }
+
+/* --- Match Result --- */
+.wm-match-result {
+  padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-md);
+  border-left: 3px solid var(--gold);
+}
+.wm-match-result .winner { font-weight: 900; color: var(--gold-light); }
+.wm-match-result .detail { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+
+/* --- Venue Card --- */
+.wm-venue-card {
+  padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all .2s;
+}
+.wm-venue-card:hover { border-color: var(--border-hover); }
+.wm-venue-card.selected { border-color: var(--gold); background: rgba(212,168,67,0.08); }
+.wm-venue-safe { border-left: 3px solid var(--green); }
+.wm-venue-risky { border-left: 3px solid var(--orange); }
+.wm-venue-danger { border-left: 3px solid var(--red); }
+
+/* --- Notification Toast --- */
+.wm-notif-toast {
+  background: rgba(18,17,14,0.97); border: 1px solid rgba(200,190,170,0.15);
+  border-radius: var(--radius-xl); padding: 14px 18px; max-width: 420px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.wm-notif-toast.warning { border-color: rgba(231,76,60,0.5); background: rgba(30,10,10,0.97); }
+
+/* --- Notification Modal --- */
+.wm-notif-modal {
+  background: var(--panel-bg); border-radius: var(--radius-3xl); max-width: 440px; width: 100%;
+  padding: 28px 24px; text-align: center;
+  border: 1px solid rgba(200,190,170,0.15); box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.wm-notif-modal.warning { border-color: rgba(231,76,60,0.4); box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(231,76,60,0.2); }
+.wm-notif-modal.gold { border-color: rgba(241,196,15,0.4); box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(241,196,15,0.2); }
+.wm-notif-modal.dramatic { border-color: rgba(155,89,182,0.4); box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(155,89,182,0.2); }
+.wm-modal-btn {
+  font-size: 13px; padding: 10px 32px; border-radius: 7px; cursor: pointer;
+  border: 1px solid rgba(200,190,170,0.2); background: rgba(200,190,170,0.06);
+  color: var(--text-sub); margin-top: 16px; font-family: var(--font-label); letter-spacing: 2px;
+}
+.wm-modal-btn:hover { background: rgba(200,190,170,0.1); color: var(--text-main); }
+
+/* --- Speech Bubble (Unified Rule) --- */
+.wm-speech-bubble {
+  background: #f0f0f0; border-radius: var(--radius-xl); padding: 10px 14px;
+  color: #1a1a1a; font-size: 13px; line-height: 1.6; text-align: center;
+  position: relative;
+}
+.wm-speech-speaker {
+  font-size: 10px; font-weight: 700; margin-bottom: 4px;
+}
+
+/* --- Dialogue Display --- */
+.wm-dialogue {
+  font-size: 15px; line-height: 1.7; font-style: italic; color: var(--text-main);
+  background: rgba(200,190,170,0.04); border-radius: var(--radius-xl);
+  padding: 12px 18px; border: 1px solid rgba(200,190,170,0.08);
+}
+.wm-dialogue::before { content: '「'; color: rgba(255,255,255,0.4); }
+.wm-dialogue::after { content: '」'; color: rgba(255,255,255,0.4); }
+
+/* --- Table --- */
+.wm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.wm-table th {
+  font-family: var(--font-label); font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.wm-table td { padding: 8px 10px; border-bottom: 1px solid rgba(200,190,170,0.04); }
+.wm-table tr:hover { background: rgba(200,190,170,0.02); }
+
+/* --- Finance Row --- */
+.wm-finance-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(200,190,170,0.04); }
+.wm-finance-label { color: var(--text-sub); }
+.wm-finance-income { font-weight: 700; color: var(--green); }
+.wm-finance-expense { font-weight: 700; color: var(--red); }
+.wm-finance-total { font-size: 14px; font-weight: 900; padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--gold); }
+
+/* --- Coach Report Bubble --- */
+.wm-coach-bubble {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+  background: rgba(212,168,67,0.05); border: 1px solid rgba(212,168,67,0.15); border-radius: var(--radius-xl);
+}
+
+/* --- Rivalry Popup --- */
+.wm-rivalry-popup {
+  background: linear-gradient(160deg, rgba(12,8,20,0.99) 0%, rgba(22,16,34,0.99) 100%);
+  border-radius: 16px; max-width: 480px; width: 100%; overflow: hidden;
+  border: 1px solid rgba(200,190,170,0.12);
+}
+.wm-rivalry-popup.fate { border-color: rgba(196,30,58,0.4); box-shadow: 0 24px 80px rgba(196,30,58,0.25); }
+.wm-rivalry-popup.resolution { border-color: rgba(212,168,67,0.35); box-shadow: 0 24px 80px rgba(212,168,67,0.2); }
+
+/* --- Dojo Atmosphere --- */
+.wm-atmosphere {
+  padding: 10px 14px; border-radius: var(--radius-lg); font-size: 14px;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(200,190,170,0.03); border: 1px solid rgba(200,190,170,0.08);
+}
+.wm-atmo-emoji { font-size: 20px; flex-shrink: 0; }
+.wm-atmo-text { color: var(--text-sub); font-style: italic; }
+.wm-atmo-calm { border-color: rgba(149,165,166,0.2); background: rgba(149,165,166,0.04); }
+.wm-atmo-high { border-color: rgba(46,204,113,0.15); background: rgba(46,204,113,0.03); }
+.wm-atmo-tense { border-color: rgba(231,76,60,0.2); background: rgba(231,76,60,0.04); }
+
+/* --- Coach Match Chip --- */
+.wm-coach-chip {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+  padding: 3px 8px; border-radius: var(--radius-md);
+}
+.wm-chip-specialist { background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.35); color: #2ecc71; }
+.wm-chip-allround { background: rgba(241,196,15,0.06); border: 1px solid rgba(241,196,15,0.25); color: #f1c40f; }
+.wm-chip-none { background: rgba(200,190,170,0.03); border: 1px solid rgba(200,190,170,0.08); color: var(--text-dim); opacity: 0.6; }
+
+/* --- Note Block --- */
+.wm-note {
+  font-size: 11px; padding: 6px 10px; border-radius: var(--radius-md);
+  background: rgba(0,0,0,0.04); color: #5a5444; border-left: 3px solid var(--cream-gold);
+}
+
+/* ============================================================
+   PORTRAIT SIZE CHART
+   ============================================================ */
+.portrait-size-grid { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.portrait-size-item { text-align: center; }
+
+/* ============================================================
+   GRADIENT SPECIMENS
+   ============================================================ */
+.gradient-specimen {
+  height: 48px; border-radius: var(--radius-lg); display: flex;
+  align-items: center; justify-content: center; font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 2px;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes heat-pulse{0%,100%{text-shadow:0 0 4px currentColor}50%{text-shadow:0 0 12px currentColor,0 0 20px rgba(225,112,85,0.4)}}
+@keyframes heat-blaze{0%,100%{text-shadow:0 0 8px currentColor,0 0 20px rgba(214,48,49,0.5);transform:scale(1)}50%{text-shadow:0 0 16px currentColor,0 0 30px rgba(214,48,49,0.7);transform:scale(1.05)}}
+.wm-heat-pulse{animation:heat-pulse 2s ease-in-out infinite}
+.wm-heat-blaze{animation:heat-blaze 1.2s ease-in-out infinite}
+
+@media(max-width: 700px) {
+  .ds-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .ds-grid-5 { grid-template-columns: repeat(3, 1fr); }
+  .ds-grid-6 { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="ds">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h1">WRESTLE MANAGER</div>
+  <div style="font-family:var(--font-label);font-size:14px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:4px">DESIGN SYSTEM v1.0</div>
+  <p class="ds-desc">
+    ゲーム全体のUI統一性を保つためのデザイントークン＆コンポーネントカタログ。<br>
+    各要素には <strong>トークン名</strong> が振られており、実装時はこのトークン名で参照する。
+  </p>
+</div>
+
+
+<!-- ============================================================
+     1. COLOR PALETTE
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">1. Color Palette — カラーパレット</div>
+
+  <div class="ds-h3">1-A. Core Colors（基本色）</div>
+  <div class="ds-grid ds-grid-6" style="gap:8px">
+    <div>
+      <div class="color-swatch" style="background:#d4a843" data-hex="#d4a843"></div>
+      <div class="ds-token-name">gold</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#f0d078" data-hex="#f0d078"></div>
+      <div class="ds-token-name">gold-light</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#4a8fd4" data-hex="#4a8fd4"></div>
+      <div class="ds-token-name">blue</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#c41e3a" data-hex="#c41e3a"></div>
+      <div class="ds-token-name">red</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#2ecc71" data-hex="#2ecc71"></div>
+      <div class="ds-token-name">green</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#9b59b6" data-hex="#9b59b6"></div>
+      <div class="ds-token-name">purple</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">1-B. Semantic Colors（意味カラー）</div>
+  <div class="ds-grid ds-grid-5" style="gap:8px">
+    <div>
+      <div class="color-swatch" style="background:#2ecc71" data-hex="#2ecc71"></div>
+      <div class="ds-token-name">positive</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#e74c3c" data-hex="#e74c3c"></div>
+      <div class="ds-token-name">negative</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#f39c12" data-hex="#f39c12"></div>
+      <div class="ds-token-name">warning</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#74b9ff" data-hex="#74b9ff"></div>
+      <div class="ds-token-name">bond</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#e17055" data-hex="#e17055"></div>
+      <div class="ds-token-name">rivalry</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">1-C. Dark Theme Backgrounds（ダークテーマ背景）</div>
+  <div class="ds-grid ds-grid-4" style="gap:8px">
+    <div>
+      <div class="color-swatch" style="background:#24221e;border-color:rgba(255,255,255,0.15)" data-hex="#24221e"></div>
+      <div class="ds-token-name">bg-dark</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#181614;border-color:rgba(255,255,255,0.12)" data-hex="#181614"></div>
+      <div class="ds-token-name">panel-bg</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#12110e;border-color:rgba(255,255,255,0.1)" data-hex="#12110e"></div>
+      <div class="ds-token-name">card-bg</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:#060606;border-color:rgba(255,255,255,0.08)" data-hex="#060606"></div>
+      <div class="ds-token-name">black-bg</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">1-D. Cream Theme Backgrounds（クリームテーマ背景）</div>
+  <div class="ds-grid ds-grid-4" style="gap:8px">
+    <div>
+      <div class="color-swatch dark-text" style="background:#ede8dc" data-hex="#ede8dc"></div>
+      <div class="ds-token-name">cream-bg-card</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#d4ccb8" data-hex="#d4ccb8"></div>
+      <div class="ds-token-name">cream-panel-bg</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#e0daca" data-hex="#e0daca"></div>
+      <div class="ds-token-name">cream-info-bg</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#beb6a4" data-hex="#beb6a4"></div>
+      <div class="ds-token-name">cream-portrait-bg</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">1-E. Text Colors（テキスト色）</div>
+  <div class="ds-grid ds-grid-6" style="gap:8px">
+    <div>
+      <div class="color-swatch" style="background:#e8e6e0" data-hex="#e8e6e0"></div>
+      <div class="ds-token-name">text-main</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:rgba(232,230,224,0.5);border-color:rgba(255,255,255,0.12)" data-hex="50%"></div>
+      <div class="ds-token-name">text-sub</div>
+    </div>
+    <div>
+      <div class="color-swatch" style="background:rgba(232,230,224,0.25);border-color:rgba(255,255,255,0.1)" data-hex="25%"></div>
+      <div class="ds-token-name">text-dim</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#1e1c16" data-hex="#1e1c16"></div>
+      <div class="ds-token-name">cream-text-main</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#4a4638" data-hex="#4a4638"></div>
+      <div class="ds-token-name">cream-text-sub</div>
+    </div>
+    <div>
+      <div class="color-swatch dark-text" style="background:#7a7466" data-hex="#7a7466"></div>
+      <div class="ds-token-name">cream-text-dim</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     2. TYPOGRAPHY
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">2. Typography — タイポグラフィ</div>
+
+  <div class="ds-h3">2-A. Font Families（フォントファミリー）</div>
+  <div class="ds-card" style="margin-bottom:16px">
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-meta-name">Display</div>
+        <div class="type-meta-spec">Bebas Neue</div>
+      </div>
+      <div class="type-sample" style="font-family:var(--font-display);font-size:36px;letter-spacing:4px">
+        WRESTLE MANAGER 2026
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-meta-name">Label</div>
+        <div class="type-meta-spec">Oswald 400/600/700</div>
+      </div>
+      <div class="type-sample" style="font-family:var(--font-label);font-size:16px;letter-spacing:3px;text-transform:uppercase">
+        Roster · Schedule · Finance · Battle
+      </div>
+    </div>
+    <div class="type-row" style="border-bottom:none">
+      <div class="type-meta">
+        <div class="type-meta-name">Body</div>
+        <div class="type-meta-spec">Noto Sans JP 400/700/900</div>
+      </div>
+      <div class="type-sample" style="font-family:var(--font-body);font-size:14px">
+        選手の成長を見守り、団体を大きく育てよう。日本語テキストの基本フォント。
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-h3">2-B. Type Scale（文字サイズスケール）</div>
+  <p class="ds-desc">統一すべきサイズ階層。現行で30種以上のサイズが散在 → 以下の12段階に収束させる。</p>
+  <div class="ds-card">
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-HERO</div><div class="type-meta-spec">Bebas 48px / ls:6px</div></div>
+      <div class="type-sample" style="font-family:var(--font-display);font-size:48px;letter-spacing:6px">GRAND CHAMPION</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-TITLE</div><div class="type-meta-spec">Bebas 32px / ls:4px</div></div>
+      <div class="type-sample" style="font-family:var(--font-display);font-size:32px;letter-spacing:4px">SHOW RESULT</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-HEADLINE</div><div class="type-meta-spec">Bebas 22px / ls:3px</div></div>
+      <div class="type-sample" style="font-family:var(--font-display);font-size:22px;letter-spacing:3px">WRESTLE MANAGER</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-OVR-XL</div><div class="type-meta-spec">Bebas 38px</div></div>
+      <div class="type-sample"><span class="wm-ovr-lg" style="font-family:var(--font-display);font-size:38px;background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent">87</span></div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-OVR</div><div class="type-meta-spec">Bebas 18px / gradient</div></div>
+      <div class="type-sample"><span class="wm-ovr">72</span></div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-SECTION</div><div class="type-meta-spec">Oswald 13px / ls:3px / UPPER</div></div>
+      <div class="type-sample" style="font-family:var(--font-label);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">Panel Title</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-NAV</div><div class="type-meta-spec">Oswald 12px / ls:2px / UPPER</div></div>
+      <div class="type-sample" style="font-family:var(--font-label);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-sub)">Navigation Button</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-BODY</div><div class="type-meta-spec">NotoSansJP 14px</div></div>
+      <div class="type-sample" style="font-size:14px">通常の本文テキスト。一般的な説明や選手データの表示に使う。</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-BODY-SM</div><div class="type-meta-spec">NotoSansJP 13px</div></div>
+      <div class="type-sample" style="font-size:13px">やや小さい本文。ダイアログやコーチ報告など。</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-DETAIL</div><div class="type-meta-spec">12px</div></div>
+      <div class="type-sample" style="font-size:12px;color:var(--text-sub)">補足情報・サブテキスト・表のラベルなど</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">T-CAPTION</div><div class="type-meta-spec">11px</div></div>
+      <div class="type-sample" style="font-size:11px;color:var(--text-dim)">キャプション、バッジ内テキスト、ログフィード</div>
+    </div>
+    <div class="type-row" style="border-bottom:none">
+      <div class="type-meta"><div class="type-meta-name">T-MICRO</div><div class="type-meta-spec">9-10px</div></div>
+      <div class="type-sample" style="font-size:10px;color:var(--text-dim)">極小ラベル・ツールチップ・バッジ上部名前</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     3. SPACING & RADIUS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">3. Spacing & Radius — 間隔と角丸</div>
+
+  <div class="ds-h3">3-A. Border Radius Scale（角丸スケール）</div>
+  <p class="ds-desc">統一すべき角丸階層。現行13種類 → 以下の8段階に収束。</p>
+  <div class="ds-flex-center" style="gap:20px">
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:2px"></div>
+      <div class="ds-token-name">R-XS<br>2px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:3px"></div>
+      <div class="ds-token-name">R-SM<br>3px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:4px"></div>
+      <div class="ds-token-name">R-MD<br>4px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:6px"></div>
+      <div class="ds-token-name">R-LG<br>6px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:8px"></div>
+      <div class="ds-token-name">R-XL<br>8px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:10px"></div>
+      <div class="ds-token-name">R-2XL<br>10px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:14px"></div>
+      <div class="ds-token-name">R-3XL<br>14px</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:50%"></div>
+      <div class="ds-token-name">R-FULL<br>50%</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">3-B. 用途マッピング</div>
+  <div class="ds-card">
+    <table class="wm-table">
+      <thead><tr><th>Token</th><th>Size</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>R-SM</td><td>3px</td><td>バッジ、スケジュールタグ、ティアラベル</td></tr>
+        <tr><td>R-MD</td><td>4px</td><td>ボタン、ナビボタン、マッチスロット、会場カード</td></tr>
+        <tr><td>R-LG</td><td>6px</td><td>パネル、テーブル、ステータスバー、ツールチップ</td></tr>
+        <tr><td>R-XL</td><td>8px</td><td>コーチバブル、ダイアログ、トースト通知</td></tr>
+        <tr><td>R-2XL</td><td>10px</td><td>ポートレート（角丸四角）、ポップアップ</td></tr>
+        <tr><td>R-3XL</td><td>14px</td><td>モーダル、ポートレート（大）</td></tr>
+        <tr><td>R-FULL</td><td>50%</td><td>アバター円形、ツールチップアイコン、バッジカウント</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     4. PORTRAITS & IMAGES — 人物画像の全カタログ
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">4. Portraits & Images — 人物画像カタログ</div>
+  <p class="ds-desc">
+    ゲーム内で使う人物画像の全素材と表示サイズを一覧化。<br>
+    <strong>下の比較ボードはすべて実寸表示。</strong>ブラウザ上で実際のゲーム内サイズ感をそのまま確認できる。
+  </p>
+
+  <!-- ─── 4-A. 素材ファイル原寸 ─── -->
+  <div class="ds-h3">4-A. Image Assets（素材ファイル4種）</div>
+  <div class="ds-card" style="margin-bottom:20px">
+    <table class="wm-table" style="font-size:12px">
+      <thead><tr><th>素材</th><th>ファイル名</th><th>原寸</th><th>比率</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--gold)">Face</td><td class="ds-code">face_*.png</td><td>256×256</td><td>1:1</td><td>顔アップ。インライン〜モーダルまで</td></tr>
+        <tr><td style="color:var(--gold)">Upper</td><td class="ds-code">upper_*.webp</td><td>256×384</td><td>2:3</td><td>バストアップ。詳細・対面・カットイン</td></tr>
+        <tr><td style="color:var(--blue)">Stand</td><td class="ds-code">stand_*.webp</td><td>256×384</td><td>2:3</td><td>全身立ち絵（透過BG）。バトル・トーナメント</td></tr>
+        <tr><td style="color:var(--purple)">Full</td><td class="ds-code">full_*.webp</td><td>512×768</td><td>2:3</td><td>全身高解像度。将来用リザーブ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ─── 4-B. 実寸比較ボード ─── -->
+  <div class="ds-h3">4-B. 実寸比較ボード（全サイズ横並べ）</div>
+  <p class="ds-desc">ゲーム内で表示される実際のピクセルサイズ。左から小さい順。Face=暗背景、Upper=やや明るい背景、Stand=点線枠。</p>
+
+  <!-- Row 1: Face portraits — 全サイズ -->
+  <div style="margin-bottom:8px;font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase">Face — 顔画像</div>
+  <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:20px 16px;background:rgba(200,190,170,0.02);border:1px solid var(--border);border-radius:8px;margin-bottom:20px">
+    <div style="text-align:center">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-XS<br>24 円</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-SM<br>32 円</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-MD<br>40 円</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-LG<br>48 円</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-XL<br>56 円</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:72px;height:72px;border-radius:10px;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-2XL<br>72 角丸</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:100px;height:100px;border-radius:10px;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-3XL<br>100 角丸</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:120px;height:120px;border-radius:14px;background:var(--card-bg);border:2px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-4XL<br>120 角丸</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:140px;height:140px;border-radius:14px;background:var(--card-bg);border:3px solid rgba(100,85,50,0.12);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--text-dim);overflow:hidden">F</div>
+      <div class="ds-token-name">P-5XL<br>140 角丸</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Upper + Stand — 全サイズ -->
+  <div style="margin-bottom:8px;font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase">Upper — バストアップ &amp; Stand — 立ち絵</div>
+  <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:20px 16px;background:rgba(200,190,170,0.02);border:1px solid var(--border);border-radius:8px;margin-bottom:20px">
+    <!-- Upper images -->
+    <div style="text-align:center">
+      <div style="width:100px;height:125px;border-radius:6px;background:rgba(30,28,22,0.8);border:2px solid rgba(100,85,50,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>100×125</div>
+      <div class="ds-token-name">U-CARD-SUB<br>前座カード</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:100px;height:150px;border-radius:4px;background:rgba(30,28,22,0.8);border:2px solid rgba(212,168,67,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>100×150</div>
+      <div class="ds-token-name">U-CUTIN<br>カットイン</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:120px;height:150px;border-radius:6px;background:rgba(30,28,22,0.8);border:2px solid rgba(100,85,50,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>120×150</div>
+      <div class="ds-token-name">U-CARD-MAIN<br>メインカード</div>
+    </div>
+    <!-- Stand - tournament -->
+    <div style="text-align:center">
+      <div style="width:106px;height:170px;border-radius:4px;background:rgba(0,0,0,0.4);border:1px dashed rgba(74,143,212,0.3);display:flex;align-items:flex-end;justify-content:center;font-size:11px;color:var(--blue);overflow:hidden;padding-bottom:6px;line-height:1.3">S<br>~×170</div>
+      <div class="ds-token-name">S-TOURNAMENT<br>トーナメント</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:160px;height:240px;border-radius:12px;background:rgba(30,28,22,0.8);border:3px solid rgba(212,168,67,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>160×240</div>
+      <div class="ds-token-name">U-DETAIL<br>コーチ・勝利</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:200px;height:260px;border-radius:8px;background:rgba(30,28,22,0.8);border:2px solid rgba(100,85,50,0.15);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>200×260</div>
+      <div class="ds-token-name">U-COMPARE<br>対戦比較</div>
+    </div>
+    <div style="text-align:center">
+      <div style="width:210px;height:210px;border-radius:8px;background:rgba(30,28,22,0.8);border:2px solid rgba(196,30,58,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-dim);overflow:hidden;line-height:1.3">U<br>210×210<br>(crop)</div>
+      <div class="ds-token-name">U-RIVALRY<br>ライバル</div>
+    </div>
+    <!-- Stand - matchcard -->
+    <div style="text-align:center">
+      <div style="width:140px;height:260px;border-radius:4px;background:rgba(0,0,0,0.4);border:1px dashed rgba(74,143,212,0.3);display:flex;align-items:flex-end;justify-content:center;font-size:11px;color:var(--blue);overflow:hidden;padding-bottom:6px;line-height:1.3">S<br>140×260</div>
+      <div class="ds-token-name">S-MATCHCARD<br>マッチカード対面</div>
+    </div>
+  </div>
+
+  <!-- ─── 4-C. 用途マッピングテーブル ─── -->
+  <div class="ds-h3">4-C. 全サイズ用途マッピング</div>
+  <div class="ds-card" style="margin-bottom:8px">
+    <table class="wm-table" style="font-size:12px">
+      <thead><tr><th>Token</th><th>素材</th><th>表示サイズ</th><th>形状</th><th>使用箇所</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(200,190,170,0.08)"><td colspan="5" style="color:var(--gold);font-family:var(--font-label);font-size:10px;letter-spacing:2px;padding:8px 0 4px">FACE — 正方形</td></tr>
+        <tr><td>P-XS</td><td>Face</td><td>24×24</td><td>円</td><td>ログフィード顔、フィードバブル顔</td></tr>
+        <tr><td>P-SM</td><td>Face</td><td>32×32</td><td>円</td><td>ログフィードアイコン</td></tr>
+        <tr><td>P-MD</td><td>Face</td><td>40×40</td><td>円</td><td>道場シーン選手、バトルHUD、トースト通知</td></tr>
+        <tr><td>P-LG</td><td>Face</td><td>48×48</td><td>円</td><td>コーチアバター、道場コーチ</td></tr>
+        <tr><td>P-XL</td><td>Face</td><td>56×56</td><td>円</td><td>ファイターポップアップアバター</td></tr>
+        <tr><td>P-2XL</td><td>Face</td><td>72×72</td><td>角丸 R-2XL</td><td>試合結果カード、マッチスロット表示</td></tr>
+        <tr><td>P-3XL</td><td>Face</td><td>100×100</td><td>角丸 R-2XL</td><td>Glimpse Bモーダル、セリフ系ポップアップ</td></tr>
+        <tr><td>P-4XL</td><td>Face</td><td>120×120</td><td>角丸 R-3XL</td><td>Glimpse Aモーダル（一人表示）</td></tr>
+        <tr><td>P-5XL</td><td>Face</td><td>140×140</td><td>角丸 R-3XL</td><td>Glimpse Aモーダル（二人表示・主役側）</td></tr>
+        <tr style="border-bottom:1px solid rgba(200,190,170,0.08)"><td colspan="5" style="color:var(--gold);font-family:var(--font-label);font-size:10px;letter-spacing:2px;padding:8px 0 4px">UPPER — バストアップ (2:3)</td></tr>
+        <tr><td>U-CARD-SUB</td><td>Upper</td><td>100×125</td><td>R-LG (6px)</td><td>興行結果カード（前座）</td></tr>
+        <tr><td>U-CUTIN</td><td>Upper</td><td>100×150</td><td>R-MD (4px)</td><td>バトルカットイン（フィニッシャー/ダメージ）</td></tr>
+        <tr><td>U-CARD-MAIN</td><td>Upper</td><td>120×150</td><td>R-LG (6px)</td><td>興行結果カード（メインイベント）</td></tr>
+        <tr><td>U-DETAIL</td><td>Upper</td><td>160×240</td><td>12px</td><td>コーチ詳細、バトル勝利画面</td></tr>
+        <tr><td>U-COMPARE</td><td>Upper</td><td>200×260</td><td>R-XL (8px)</td><td>対戦比較画面（左右並べ）</td></tr>
+        <tr><td>U-RIVALRY</td><td>Upper</td><td>max210×210</td><td>R-XL (8px)</td><td>ライバルポップアップ（正方形crop）</td></tr>
+        <tr style="border-bottom:1px solid rgba(200,190,170,0.08)"><td colspan="5" style="color:var(--blue);font-family:var(--font-label);font-size:10px;letter-spacing:2px;padding:8px 0 4px">STAND — 立ち絵 (透過BG, contain)</td></tr>
+        <tr><td>S-TOURNAMENT</td><td>Stand</td><td>auto×170</td><td>R-MD</td><td>トーナメント表立ち絵</td></tr>
+        <tr><td>S-MATCHCARD</td><td>Stand</td><td>140×260</td><td>R-MD</td><td>マッチカード対面表示</td></tr>
+        <tr><td>S-BATTLE</td><td>Stand</td><td>2:3比・大</td><td>—</td><td>バトル画面メインパネル（実寸省略）</td></tr>
+        <tr style="border-bottom:1px solid rgba(200,190,170,0.08)"><td colspan="5" style="color:var(--cream-gold);font-family:var(--font-label);font-size:10px;letter-spacing:2px;padding:8px 0 4px">特殊 — ロスター詳細</td></tr>
+        <tr><td>RD-PORTRAIT</td><td>Upper</td><td>220×360</td><td>角丸なし</td><td>ロスター展開・左ペイン（実寸省略）</td></tr>
+        <tr><td>RD-PORTRAIT-SP</td><td>Upper</td><td>100%×200</td><td>角丸なし</td><td>モバイル時ロスター詳細</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:8px 12px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.15);border-radius:6px;font-size:12px;color:var(--text-sub);margin-bottom:20px">
+    <strong style="color:var(--gold)">統合候補メモ:</strong><br>
+    ・U-CARD-SUB(100×125) と U-CUTIN(100×150): 幅同じ100px、高さ25px差 → 統合して100×150に揃える？<br>
+    ・U-DETAIL(160×240): コーチ詳細とバトル勝利で共用。ACE遭遇(旧160×250)もここに統合済み<br>
+    ・U-RIVALRY(210×210): 正方形crop特殊。2:3のまま210×315にする案あり
+  </div>
+
+  <!-- ─── 4-D. Portrait States ─── -->
+  <div class="ds-h3">4-D. Portrait States（画像の状態変化）</div>
+  <div class="ds-flex-center" style="gap:20px">
+    <div style="text-align:center">
+      <div class="wm-portrait" style="width:72px;height:72px;font-size:24px;border-radius:10px">👤</div>
+      <div class="ds-token-name">Default</div>
+    </div>
+    <div style="text-align:center">
+      <div class="wm-portrait wm-portrait-champ" style="width:72px;height:72px;font-size:24px;border-radius:10px">👑</div>
+      <div class="ds-token-name">Champ<br><span style="font-size:9px">border:gold<br>shadow:gold 0.35α</span></div>
+    </div>
+    <div style="text-align:center">
+      <div class="wm-portrait wm-portrait-winner" style="width:72px;height:72px;font-size:24px;border-radius:10px">🏆</div>
+      <div class="ds-token-name">Winner<br><span style="font-size:9px">shadow:gold 0.65α<br>+ outer 0.3α</span></div>
+    </div>
+    <div style="text-align:center">
+      <div class="wm-portrait wm-portrait-loser" style="width:72px;height:72px;font-size:24px;border-radius:10px">👤</div>
+      <div class="ds-token-name">Loser<br><span style="font-size:9px">opacity:0.6<br>grayscale(0.3)</span></div>
+    </div>
+    <div style="text-align:center">
+      <div class="wm-monitor-wrap" style="border-radius:10px">
+        <div class="wm-portrait" style="width:72px;height:72px;font-size:24px;border:none;border-radius:10px">📺</div>
+      </div>
+      <div class="ds-token-name">Monitor FX<br><span style="font-size:9px">走査線+内影</span></div>
+    </div>
+  </div>
+
+  <!-- ─── 4-E. Shape Rule ─── -->
+  <div class="ds-h3">4-E. Shape Rule（形状ルール）</div>
+  <div class="ds-card">
+    <table class="wm-table" style="font-size:12px">
+      <thead><tr><th>条件</th><th>形状</th><th>Radius</th></tr></thead>
+      <tbody>
+        <tr><td>Face ≤56px</td><td>円形</td><td>50%</td></tr>
+        <tr><td>Face 72px (P-2XL)</td><td>角丸四角</td><td>R-2XL (10px)</td></tr>
+        <tr><td>Face 100〜140px (P-3XL〜P-5XL)</td><td>角丸四角</td><td>R-2XL〜R-3XL (10〜14px)</td></tr>
+        <tr><td>Upper 全サイズ</td><td>角丸四角</td><td>R-MD〜12px（用途による）</td></tr>
+        <tr><td>Stand 全サイズ</td><td>角丸四角 or 枠なし</td><td>R-MD (4px)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ─── 4-F. Header Images ─── -->
+  <div class="ds-h3">4-F. Header Images（ヘッダー画像）</div>
+  <div class="ds-card">
+    <table class="wm-table">
+      <thead><tr><th>Token</th><th>Size</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>H-DOJO</td><td>W:100% / maxH:200px / R-XL</td><td>道場ヘッダー（GRAD-OVERLAYオーバーレイ付き）</td></tr>
+        <tr><td>H-ARENA</td><td>W:100% / maxH:180px / R-XL</td><td>興行画面アリーナヘッダー</td></tr>
+        <tr><td>H-VENUE</td><td>W:100% / R-MD</td><td>会場カード内サムネイル</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ─── 4-G. 画像選択ガイド ─── -->
+  <div class="ds-h3">4-G. 画像選択ガイド — いつどの素材を使うか</div>
+  <div class="ds-card">
+    <table class="wm-table" style="font-size:12px">
+      <thead><tr><th>場面</th><th>素材</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td>インライン表示（テーブル行、ログ、HUD）</td><td style="color:var(--gold)">Face</td><td>小サイズで視認性が必要。正方形が効率的</td></tr>
+        <tr><td>ポップアップ / モーダル（Glimpse、通知）</td><td style="color:var(--gold)">Face</td><td>正方形レイアウトに収まる。表情が主役</td></tr>
+        <tr><td>詳細表示（ロスター展開、コーチ詳細）</td><td style="color:var(--gold)">Upper</td><td>体格・衣装・キャラ性を伝える場面</td></tr>
+        <tr><td>対面演出（ライバル、対戦比較、マッチカード）</td><td style="color:var(--gold)">Upper</td><td>二人を並べた時の迫力・構図</td></tr>
+        <tr><td>バトル画面メイン</td><td style="color:var(--blue)">Stand</td><td>全身シルエットの動的演出</td></tr>
+        <tr><td>カットイン演出</td><td style="color:var(--gold)">Upper</td><td>迫力のあるクロップ表示</td></tr>
+        <tr><td>トーナメント表・立ち絵並べ</td><td style="color:var(--blue)">Stand</td><td>透過背景を活かした配置</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     5. BUTTONS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">5. Buttons — ボタン</div>
+
+  <div class="ds-h3">5-A. Button Variants（バリエーション）</div>
+  <div class="ds-flex-center" style="gap:12px;margin-bottom:24px">
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-gold">BTN-GOLD</button>
+      <div class="ds-token-name">Primary Action</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-blue">BTN-BLUE</button>
+      <div class="ds-token-name">Secondary Action</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-red">BTN-RED</button>
+      <div class="ds-token-name">Danger / Cancel</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-ghost">BTN-GHOST</button>
+      <div class="ds-token-name">Ghost / Tertiary</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-gold wm-btn-disabled">DISABLED</button>
+      <div class="ds-token-name">Disabled State</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">5-B. Button Sizes（サイズ）</div>
+  <div class="ds-flex-center">
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-gold">STANDARD</button>
+      <div class="ds-token-name">BTN / 8px 20px / 13px</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-btn wm-btn-gold wm-btn-sm">SMALL</button>
+      <div class="ds-token-name">BTN-SM / 4px 12px / 11px</div>
+    </div>
+    <div style="text-align:center">
+      <button class="wm-modal-btn">MODAL BTN</button>
+      <div class="ds-token-name">MODAL / 10px 32px / R:7px</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     6. BADGES & TAGS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">6. Badges & Tags — バッジ＆タグ</div>
+
+  <div class="ds-h3">6-A. Role Badges（ロールバッジ）— ダークテーマ</div>
+  <div class="ds-flex-center">
+    <span class="wm-badge wm-badge-bf">BABY FACE</span>
+    <span class="wm-badge wm-badge-heel">HEEL</span>
+    <span class="wm-badge wm-badge-neutral">NEUTRAL</span>
+  </div>
+
+  <div class="ds-h3">6-B. Style Badges（スタイルバッジ）— ダークテーマ</div>
+  <div class="ds-flex-center">
+    <span class="wm-badge wm-badge-striker">STRIKER</span>
+    <span class="wm-badge wm-badge-grappler">GRAPPLER</span>
+    <span class="wm-badge wm-badge-aerial">AERIAL</span>
+    <span class="wm-badge wm-badge-technique">TECHNIQUE</span>
+    <span class="wm-badge wm-badge-allround">ALLROUND</span>
+    <span class="wm-badge wm-badge-submission">SUBMISSION</span>
+    <span class="wm-badge wm-badge-brawler">BRAWLER</span>
+  </div>
+
+  <div class="ds-h3">6-C. Schedule Tags（スケジュールタグ）</div>
+  <div class="ds-flex-center">
+    <span class="wm-sched-tag wm-sched-practice">練習</span>
+    <span class="wm-sched-tag wm-sched-promo">営業</span>
+    <span class="wm-sched-tag wm-sched-rest">休養</span>
+    <span class="wm-sched-tag wm-sched-medical">療養</span>
+    <span class="wm-sched-tag wm-sched-intensive">強化</span>
+  </div>
+
+  <div class="ds-h3">6-D. Coach Grade Badges（コーチグレード）</div>
+  <div class="ds-flex-center">
+    <span class="wm-badge wm-grade-c" style="padding:3px 10px">GRADE C</span>
+    <span class="wm-badge wm-grade-b" style="padding:3px 10px">GRADE B</span>
+    <span class="wm-badge wm-grade-a" style="padding:3px 10px">GRADE A</span>
+  </div>
+
+  <div class="ds-h3">6-E. Tier Badges（ティアバッジ）— クリームテーマ用</div>
+  <div class="ds-card-cream">
+    <div class="ds-flex-center">
+      <span class="wm-tier wm-tier-player">PLAYER</span>
+      <span class="wm-tier wm-tier-s">S-RANK</span>
+      <span class="wm-tier wm-tier-a">A-RANK</span>
+      <span class="wm-tier wm-tier-b">B-RANK</span>
+    </div>
+  </div>
+
+  <div class="ds-h3">6-F. Status Badges（ステータスバッジ）— クリームテーマ用</div>
+  <div class="ds-card-cream">
+    <div class="ds-flex-center">
+      <span class="wm-status-good">GOOD</span>
+      <span class="wm-status-warn">WARNING</span>
+      <span class="wm-status-bad">BAD</span>
+    </div>
+  </div>
+
+  <div class="ds-h3">6-G. Coach Match Chips（コーチ適性チップ）</div>
+  <div class="ds-flex-center">
+    <span class="wm-coach-chip wm-chip-specialist">✦ SPECIALIST</span>
+    <span class="wm-coach-chip wm-chip-allround">● ALLROUND</span>
+    <span class="wm-coach-chip wm-chip-none">— NONE</span>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     7. PANELS & CARDS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">7. Panels & Cards — パネル＆カード</div>
+
+  <div class="ds-h3">7-A. Panel — Dark Theme</div>
+  <div class="wm-panel">
+    <div class="wm-panel-title">📋 PANEL TITLE — セクション見出し</div>
+    <p style="font-size:14px;color:var(--text-sub)">パネルの基本形。背景 <span class="ds-code">panel-bg</span>、border <span class="ds-code">1px solid border</span>、radius <span class="ds-code">R-LG (6px)</span>、padding <span class="ds-code">16px</span></p>
+  </div>
+
+  <div class="ds-h3">7-B. Panel — Cream Theme</div>
+  <div class="ds-card-cream">
+    <div style="font-family:var(--font-label);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--cream-gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--cream-border)">
+      PANEL TITLE — クリームテーマ
+    </div>
+    <p style="font-size:14px;color:var(--cream-text-sub)">本拠地系画面で使用。背景 <span style="background:rgba(100,85,50,0.1);padding:1px 4px;border-radius:2px;font-size:11px">cream-panel-bg</span></p>
+  </div>
+
+  <div class="ds-h3">7-C. Match Result Card</div>
+  <div class="wm-match-result" style="max-width:500px">
+    <span class="winner">鉄崎 あおい</span> def. 白銀 リン — ジャーマンスープレックス
+    <div class="detail">★★★★☆ | MQ 0.82 | 15:32</div>
+  </div>
+
+  <div class="ds-h3">7-D. Venue Cards</div>
+  <div class="ds-grid ds-grid-4" style="max-width:640px">
+    <div class="wm-venue-card wm-venue-safe">
+      <div style="font-weight:700;font-size:13px">公民館</div>
+      <div style="font-size:11px;color:var(--text-sub)">100席</div>
+      <div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">安全</div>
+    </div>
+    <div class="wm-venue-card wm-venue-risky">
+      <div style="font-weight:700;font-size:13px">中ホール</div>
+      <div style="font-size:11px;color:var(--text-sub)">800席</div>
+      <div style="font-size:10px;font-weight:700;color:var(--orange);margin-top:4px">挑戦</div>
+    </div>
+    <div class="wm-venue-card wm-venue-danger">
+      <div style="font-weight:700;font-size:13px">アリーナ</div>
+      <div style="font-size:11px;color:var(--text-sub)">5000席</div>
+      <div style="font-size:10px;font-weight:700;color:var(--red);margin-top:4px">危険</div>
+    </div>
+    <div class="wm-venue-card selected">
+      <div style="font-weight:700;font-size:13px">選択中</div>
+      <div style="font-size:11px;color:var(--text-sub)">.selected</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     8. STAT BARS & CONDITION
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">8. Stat Bars & Condition — ステータスバー</div>
+
+  <div class="ds-h3">8-A. Stat Bar（能力値バー）— クリームテーマ</div>
+  <div class="ds-card-cream" style="max-width:400px">
+    <div class="wm-stat-row">
+      <div class="wm-stat-label" style="color:var(--cream-gold)">STR</div>
+      <div class="wm-stat-bar-outer">
+        <div class="wm-stat-bar-fill" style="width:78%;background:#c0392b"></div>
+      </div>
+      <div class="wm-stat-val" style="color:var(--cream-text-main)">78</div>
+    </div>
+    <div class="wm-stat-row">
+      <div class="wm-stat-label" style="color:var(--cream-gold)">TEC</div>
+      <div class="wm-stat-bar-outer">
+        <div class="wm-stat-bar-fill" style="width:65%;background:#2471a3"></div>
+      </div>
+      <div class="wm-stat-val" style="color:var(--cream-text-main)">65</div>
+    </div>
+    <div class="wm-stat-row">
+      <div class="wm-stat-label" style="color:var(--cream-gold)">SPD</div>
+      <div class="wm-stat-bar-outer">
+        <div class="wm-stat-bar-fill" style="width:82%;background:#1e8449"></div>
+      </div>
+      <div class="wm-stat-val" style="color:var(--cream-text-main)">82</div>
+    </div>
+    <div class="wm-stat-row">
+      <div class="wm-stat-label" style="color:var(--cream-gold)">DEF</div>
+      <div class="wm-stat-bar-outer">
+        <div class="wm-stat-bar-fill" style="width:58%;background:#8e44ad"></div>
+      </div>
+      <div class="wm-stat-val" style="color:var(--cream-text-main)">58</div>
+    </div>
+    <div class="wm-stat-row">
+      <div class="wm-stat-label" style="color:var(--cream-gold)">CHA</div>
+      <div class="wm-stat-bar-outer">
+        <div class="wm-stat-bar-fill" style="width:71%;background:#d4a843"></div>
+      </div>
+      <div class="wm-stat-val" style="color:var(--cream-text-main)">71</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">8-B. Condition Bar（コンディションバー）</div>
+  <div class="ds-flex-center" style="gap:32px">
+    <div>
+      <div class="wm-cond-bar"><div class="wm-cond-fill high" style="width:85%"></div></div>
+      <div class="ds-token-name">High (≥70)</div>
+    </div>
+    <div>
+      <div class="wm-cond-bar"><div class="wm-cond-fill mid" style="width:50%"></div></div>
+      <div class="ds-token-name">Mid (40-69)</div>
+    </div>
+    <div>
+      <div class="wm-cond-bar"><div class="wm-cond-fill low" style="width:22%"></div></div>
+      <div class="ds-token-name">Low (&lt;40)</div>
+    </div>
+  </div>
+  <p class="ds-desc" style="margin-top:12px">サイズ: W:60px H:6px / R:3px / 背景: <span class="ds-code">rgba(200,190,170,0.08)</span></p>
+</div>
+
+
+<!-- ============================================================
+     9. NAVIGATION
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">9. Navigation — ナビゲーション</div>
+
+  <div class="wm-nav-bar">
+    <div class="wm-nav-btn active">ROSTER</div>
+    <div class="wm-nav-btn">SCHEDULE</div>
+    <div class="wm-nav-btn">DOJO</div>
+    <div class="wm-nav-btn">SHOW</div>
+    <div class="wm-nav-btn">FINANCE</div>
+    <div class="wm-nav-btn">DATABASE</div>
+  </div>
+  <p class="ds-desc">Font: <span class="ds-code">T-NAV (Oswald 12px ls:2px UPPER)</span> / Padding: <span class="ds-code">8px 16px</span> / Radius: <span class="ds-code">R-MD (4px)</span></p>
+</div>
+
+
+<!-- ============================================================
+     10. NOTIFICATIONS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">10. Notifications — 通知システム</div>
+
+  <div class="ds-h3">10-A. Toast Banner（トーストバナー = Tier 2）</div>
+  <div style="position:relative;margin-bottom:24px">
+    <div class="wm-notif-toast" style="position:relative">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div class="wm-portrait wm-portrait-circle" style="width:40px;height:40px;font-size:16px;flex-shrink:0">👤</div>
+        <div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.4">橋本 まいが練習で成長しました</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">STR +1 → 67</div>
+          <div style="font-size:11px;color:rgba(180,200,255,0.75);font-style:italic;margin-top:4px">「もっと強くなりたい」</div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-token-name" style="text-align:left">NOTIF-TOAST / R-XL / max-W:420px</div>
+  </div>
+  <div style="position:relative">
+    <div class="wm-notif-toast warning" style="position:relative">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div class="wm-portrait wm-portrait-circle" style="width:40px;height:40px;font-size:16px;flex-shrink:0">⚠️</div>
+        <div>
+          <div style="font-size:13px;color:#e57373;line-height:1.4">選手の不満が高まっています</div>
+          <div style="font-size:12px;color:rgba(229,115,115,0.65);margin-top:2px">信頼度が低下中</div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-token-name" style="text-align:left">NOTIF-TOAST-WARNING / border: red 0.5α</div>
+  </div>
+
+  <div class="ds-h3">10-B. Modal Popup（モーダル = Tier 1）</div>
+  <div class="ds-grid ds-grid-3" style="gap:16px">
+    <div>
+      <div class="wm-notif-modal" style="padding:20px 16px">
+        <div class="wm-portrait" style="width:100px;height:100px;border-radius:10px;font-size:32px;margin:0 auto 12px">👤</div>
+        <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">田中 あかり</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:10px">信頼の芽生え</div>
+        <div class="wm-dialogue" style="font-size:13px;padding:8px 12px">この団体、居心地がいいな</div>
+        <button class="wm-modal-btn" style="margin-top:12px">OK</button>
+      </div>
+      <div class="ds-token-name">MODAL-DEFAULT</div>
+    </div>
+    <div>
+      <div class="wm-notif-modal gold" style="padding:20px 16px">
+        <div class="wm-portrait" style="width:100px;height:100px;border-radius:10px;font-size:32px;margin:0 auto 12px">🏆</div>
+        <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">鉄崎 あおい</div>
+        <div style="font-size:13px;color:var(--gold);margin-bottom:10px">タイトル挑戦表明</div>
+        <div class="wm-dialogue" style="font-size:13px;padding:8px 12px">チャンピオンの座、いただくよ</div>
+        <button class="wm-modal-btn" style="margin-top:12px;border-color:rgba(241,196,15,0.4);color:var(--gold)">OK</button>
+      </div>
+      <div class="ds-token-name">MODAL-GOLD</div>
+    </div>
+    <div>
+      <div class="wm-notif-modal warning" style="padding:20px 16px">
+        <div class="wm-portrait" style="width:100px;height:100px;border-radius:10px;font-size:32px;margin:0 auto 12px">💢</div>
+        <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">白銀 リン</div>
+        <div style="font-size:13px;color:#e74c3c;margin-bottom:10px">不満爆発</div>
+        <div class="wm-dialogue" style="font-size:13px;padding:8px 12px">もう我慢できない…</div>
+        <button class="wm-modal-btn" style="margin-top:12px;border-color:rgba(231,76,60,0.4);color:#f08b9e">OK</button>
+      </div>
+      <div class="ds-token-name">MODAL-WARNING</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     11. SPEECH BUBBLES & DIALOGUE
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">11. Speech & Dialogue — セリフ表示</div>
+  <p class="ds-desc">共通仕様: セリフ/ボイス表示は <strong>白い吹き出し（#f0f0f0背景）+ 黒文字</strong> に統一。吹き出し内テキストは中央寄せ、話者名は上部に小さく色付き表示。</p>
+
+  <div class="ds-h3">11-A. Speech Bubble（統一吹き出し）</div>
+  <div style="max-width:320px">
+    <div class="wm-speech-bubble">
+      <div class="wm-speech-speaker" style="color:var(--gold)">黒田コーチ</div>
+      今週の練習、なかなかいい雰囲気だったぞ！
+    </div>
+  </div>
+
+  <div class="ds-h3" style="margin-top:20px">11-B. Dialogue Box（ダイアログ — ダークテーマ内）</div>
+  <div style="max-width:400px">
+    <div class="wm-dialogue">チャンピオンの座は渡さない</div>
+  </div>
+
+  <div class="ds-h3">11-C. Coach Report Bubble（コーチレポートバブル）</div>
+  <div style="max-width:500px">
+    <div class="wm-coach-bubble">
+      <div class="wm-portrait wm-portrait-circle" style="width:40px;height:40px;font-size:16px;flex-shrink:0">🧑‍🏫</div>
+      <div>
+        <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:3px">黒田コーチ</div>
+        <div style="font-size:13px;color:var(--text-main);line-height:1.5;font-style:italic">今週のトレーニングでは橋本の打撃に大きな伸びが見られた。素質を感じるな。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     12. DOJO ATMOSPHERE
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">12. Atmosphere — 道場の雰囲気</div>
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:500px">
+    <div class="wm-atmosphere wm-atmo-calm">
+      <span class="wm-atmo-emoji">😐</span>
+      <span class="wm-atmo-text">まだまだ、これからだ…</span>
+    </div>
+    <div class="wm-atmosphere wm-atmo-high">
+      <span class="wm-atmo-emoji">😊</span>
+      <span class="wm-atmo-text" style="color:var(--text-main)">活気に満ちている！</span>
+    </div>
+    <div class="wm-atmosphere wm-atmo-tense">
+      <span class="wm-atmo-emoji">😰</span>
+      <span class="wm-atmo-text" style="color:#e8a87c;font-weight:600">張り詰めた空気が漂っている…</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     13. GRADIENTS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">13. Gradients & Effects — グラデーション＆エフェクト</div>
+
+  <div class="ds-h3">13-A. Named Gradients</div>
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:500px">
+    <div>
+      <div class="gradient-specimen" style="background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">GRAD-GOLD — Primary Button</div>
+      <div class="ds-token-name" style="text-align:left">linear-gradient(135deg, gold, #b8912e)</div>
+    </div>
+    <div>
+      <div class="gradient-specimen" style="background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--font-display);font-size:28px;letter-spacing:4px">GRAD-TITLE — Gold Text Gradient</div>
+      <div class="ds-token-name" style="text-align:left">linear-gradient(180deg, #fff 20%, gold-light) — text clip</div>
+    </div>
+    <div>
+      <div class="gradient-specimen" style="background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--font-display);font-size:28px">GRAD-OVR — OVR Number Gradient</div>
+      <div class="ds-token-name" style="text-align:left">linear-gradient(180deg, #fff, gold-light) — text clip</div>
+    </div>
+    <div>
+      <div class="gradient-specimen" style="background:linear-gradient(transparent 0%, rgba(0,0,0,0.7) 100%);border:1px solid var(--border)">GRAD-OVERLAY — Header Image Overlay</div>
+      <div class="ds-token-name" style="text-align:left">linear-gradient(transparent 0%, rgba(0,0,0,0.7) 100%)</div>
+    </div>
+    <div>
+      <div class="gradient-specimen" style="background:linear-gradient(160deg,rgba(12,8,20,0.99),rgba(22,16,34,0.99));border:1px solid rgba(155,89,182,0.3)">GRAD-RIVALRY — Rivalry Popup BG</div>
+      <div class="ds-token-name" style="text-align:left">linear-gradient(160deg, rgba(12,8,20,.99), rgba(22,16,34,.99))</div>
+    </div>
+  </div>
+
+  <div class="ds-h3">13-B. Heat Animations（ヒートアニメーション）</div>
+  <div class="ds-flex-center" style="gap:32px">
+    <div style="text-align:center">
+      <span class="wm-heat-pulse" style="font-size:24px;color:#e17055;font-weight:900">HOT!</span>
+      <div class="ds-token-name">HEAT-PULSE<br>2s ease-in-out ∞</div>
+    </div>
+    <div style="text-align:center">
+      <span class="wm-heat-blaze" style="font-size:24px;color:#d63031;font-weight:900;display:inline-block">BLAZE!</span>
+      <div class="ds-token-name">HEAT-BLAZE<br>1.2s ease-in-out ∞</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     14. TABLE
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">14. Tables — テーブル</div>
+
+  <div class="ds-h3">14-A. Data Table（データテーブル — ダークテーマ）</div>
+  <div class="wm-panel" style="max-width:600px">
+    <table class="wm-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Style</th>
+          <th style="text-align:right">OVR</th>
+          <th style="text-align:right">W-L</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700">鉄崎 あおい</td>
+          <td><span class="wm-badge wm-badge-striker">STRIKER</span></td>
+          <td style="text-align:right"><span class="wm-ovr">87</span></td>
+          <td style="text-align:right;font-family:var(--font-label);font-weight:600">12-3</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700">白銀 リン</td>
+          <td><span class="wm-badge wm-badge-technique">TECHNIQUE</span></td>
+          <td style="text-align:right"><span class="wm-ovr">82</span></td>
+          <td style="text-align:right;font-family:var(--font-label);font-weight:600">9-6</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700">橋本 まい</td>
+          <td><span class="wm-badge wm-badge-aerial">AERIAL</span></td>
+          <td style="text-align:right"><span class="wm-ovr">68</span></td>
+          <td style="text-align:right;font-family:var(--font-label);font-weight:600">5-8</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     15. FINANCE
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">15. Finance Rows — 財務表示</div>
+  <div class="wm-panel" style="max-width:400px">
+    <div class="wm-finance-row">
+      <span class="wm-finance-label">チケット収入</span>
+      <span class="wm-finance-income">+¥450,000</span>
+    </div>
+    <div class="wm-finance-row">
+      <span class="wm-finance-label">グッズ収入</span>
+      <span class="wm-finance-income">+¥120,000</span>
+    </div>
+    <div class="wm-finance-row">
+      <span class="wm-finance-label">会場レンタル</span>
+      <span class="wm-finance-expense">-¥200,000</span>
+    </div>
+    <div class="wm-finance-row">
+      <span class="wm-finance-label">選手給与</span>
+      <span class="wm-finance-expense">-¥180,000</span>
+    </div>
+    <div class="wm-finance-total" style="display:flex;justify-content:space-between">
+      <span>収支合計</span>
+      <span style="color:var(--green)">+¥190,000</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     16. TOOLTIP
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">16. Tooltips — ツールチップ</div>
+  <div class="ds-flex-center">
+    <div>
+      <span class="wm-tt-icon">?</span>
+      <div class="ds-token-name">TT-ICON / 15×15 / R-FULL</div>
+    </div>
+    <div class="wm-tooltip-box" style="display:inline-block">
+      <strong style="color:var(--gold)">STR（筋力）</strong><br>
+      打撃系技のダメージに影響。パワー技の威力を左右する重要な能力値。
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     17. BORDER PATTERNS
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">17. Border Patterns — ボーダーパターン</div>
+  <p class="ds-desc">ボーダーの共通パターン。色・太さ・用途をセットで定義。</p>
+  <div class="ds-card">
+    <table class="wm-table">
+      <thead><tr><th>Token</th><th>Style</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>BDR-DEFAULT</td><td><span style="display:inline-block;width:60px;height:24px;border:1px solid rgba(200,190,170,0.08);border-radius:3px;vertical-align:middle"></span> 1px solid border</td><td>パネル・カード・テーブル</td></tr>
+        <tr><td>BDR-HOVER</td><td><span style="display:inline-block;width:60px;height:24px;border:1px solid rgba(212,168,67,0.3);border-radius:3px;vertical-align:middle"></span> gold 0.3α</td><td>ホバー時のハイライト</td></tr>
+        <tr><td>BDR-ACTIVE</td><td><span style="display:inline-block;width:60px;height:24px;border:1px solid var(--gold);border-radius:3px;vertical-align:middle"></span> gold solid</td><td>選択中・アクティブ</td></tr>
+        <tr><td>BDR-GOLD-ACCENT</td><td><span style="display:inline-block;width:60px;height:24px;border-left:3px solid var(--gold);background:rgba(0,0,0,0.3);border-radius:3px;vertical-align:middle"></span> left 3px gold</td><td>試合結果カード</td></tr>
+        <tr><td>BDR-SAFE</td><td><span style="display:inline-block;width:60px;height:24px;border-left:3px solid var(--green);background:rgba(0,0,0,0.3);border-radius:3px;vertical-align:middle"></span> left 3px green</td><td>安全な会場</td></tr>
+        <tr><td>BDR-RISKY</td><td><span style="display:inline-block;width:60px;height:24px;border-left:3px solid var(--orange);background:rgba(0,0,0,0.3);border-radius:3px;vertical-align:middle"></span> left 3px orange</td><td>挑戦的な会場</td></tr>
+        <tr><td>BDR-DANGER</td><td><span style="display:inline-block;width:60px;height:24px;border-left:3px solid var(--red);background:rgba(0,0,0,0.3);border-radius:3px;vertical-align:middle"></span> left 3px red</td><td>危険な会場 / 注意バッジ</td></tr>
+        <tr><td>BDR-CREAM</td><td><span style="display:inline-block;width:60px;height:24px;border:1px solid rgba(100,85,50,0.18);background:var(--cream-panel-bg);border-radius:3px;vertical-align:middle"></span> cream-border</td><td>クリームテーマのパネル</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     18. THEME MAP
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">18. Theme Map — テーマ適用マップ</div>
+  <p class="ds-desc">各画面がどのテーマを使うかの一覧。統一のために必ずこれに従う。</p>
+  <div class="ds-card">
+    <table class="wm-table">
+      <thead><tr><th>Screen</th><th>Theme</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>トップバー</td><td>DARK</td><td>全画面共通ヘッダー</td></tr>
+        <tr><td>ナビバー</td><td>DARK</td><td>全画面共通ナビ</td></tr>
+        <tr><td>ロスター</td><td>CREAM</td><td>選手一覧・選手詳細カード</td></tr>
+        <tr><td>道場（Dojo）</td><td>DARK</td><td>ヘッダー画像＋雰囲気バー</td></tr>
+        <tr><td>スケジュール</td><td>DARK</td><td>週間スケジュール管理</td></tr>
+        <tr><td>興行設定</td><td>DARK</td><td>会場選択・マッチカード組み</td></tr>
+        <tr><td>興行結果</td><td>BLACK</td><td>bg:#060606 / 演出強化</td></tr>
+        <tr><td>財務</td><td>DARK</td><td>収支・プロモ</td></tr>
+        <tr><td>団体設定</td><td>CREAM</td><td>コーチ・スカウト管理</td></tr>
+        <tr><td>データベース</td><td>CREAM</td><td>対戦比較・殿堂</td></tr>
+        <tr><td>モーダル/ポップアップ</td><td>DARK</td><td>通知・Glimpse・Rivalry</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     19. TOKEN SUMMARY
+     ============================================================ -->
+<div class="ds-section">
+  <div class="ds-h2">19. Token Quick Reference — トークン早見表</div>
+  <div class="ds-card" style="overflow-x:auto">
+    <table class="wm-table" style="font-size:12px">
+      <thead><tr><th>Category</th><th>Token</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3" style="vertical-align:top;color:var(--gold)">Fonts</td><td>FONT-DISPLAY</td><td>Bebas Neue</td></tr>
+        <tr><td>FONT-LABEL</td><td>Oswald 400/600/700</td></tr>
+        <tr><td>FONT-BODY</td><td>Noto Sans JP 400/700/900</td></tr>
+        <tr><td rowspan="8" style="vertical-align:top;color:var(--gold)">Radius</td><td>R-XS</td><td>2px</td></tr>
+        <tr><td>R-SM</td><td>3px（バッジ・タグ）</td></tr>
+        <tr><td>R-MD</td><td>4px（ボタン・ナビ）</td></tr>
+        <tr><td>R-LG</td><td>6px（パネル・ツールチップ）</td></tr>
+        <tr><td>R-XL</td><td>8px（バブル・ヘッダー画像）</td></tr>
+        <tr><td>R-2XL</td><td>10px（ポートレート角丸）</td></tr>
+        <tr><td>R-3XL</td><td>14px（モーダル）</td></tr>
+        <tr><td>R-FULL</td><td>50%（円形アバター）</td></tr>
+        <tr><td rowspan="17" style="vertical-align:top;color:var(--gold)">Portraits</td><td colspan="2" style="color:var(--text-dim);font-style:italic">— Face (正方形) —</td></tr>
+        <tr><td>P-XS</td><td>24×24 円（ログフィード）</td></tr>
+        <tr><td>P-SM</td><td>32×32 円（アイコン）</td></tr>
+        <tr><td>P-MD</td><td>40×40 円（道場・HUD・トースト）</td></tr>
+        <tr><td>P-LG</td><td>48×48 円（コーチアバター）</td></tr>
+        <tr><td>P-XL</td><td>56×56 円（ポップアップアバター）</td></tr>
+        <tr><td>P-2XL</td><td>72×72 角丸R-2XL（試合結果）</td></tr>
+        <tr><td>P-3XL</td><td>100×100 角丸R-2XL（Glimpse B）</td></tr>
+        <tr><td>P-4XL</td><td>120×120 角丸R-3XL（Glimpse A 一人）</td></tr>
+        <tr><td>P-5XL</td><td>140×140 角丸R-3XL（Glimpse A 二人・主役）</td></tr>
+        <tr><td colspan="2" style="color:var(--text-dim);font-style:italic">— Upper (2:3 バストアップ) —</td></tr>
+        <tr><td>U-CUTIN</td><td>100×150 R-MD（バトルカットイン）</td></tr>
+        <tr><td>U-CARD</td><td>120×150 / 100×125 R-LG（マッチカード）</td></tr>
+        <tr><td>U-DETAIL</td><td>160×240 R:12px（コーチ・勝利）</td></tr>
+        <tr><td>U-COMPARE</td><td>200×260 R-XL（対戦比較）</td></tr>
+        <tr><td>U-RIVALRY</td><td>max210×210 R-XL（ライバル）</td></tr>
+        <tr><td colspan="2" style="color:var(--text-dim);font-style:italic">Stand: S-TOURNAMENT / S-MATCHCARD / S-BATTLE</td></tr>
+        <tr><td rowspan="12" style="vertical-align:top;color:var(--gold)">Type</td><td>T-HERO</td><td>Bebas 48px ls:6px</td></tr>
+        <tr><td>T-TITLE</td><td>Bebas 32px ls:4px</td></tr>
+        <tr><td>T-HEADLINE</td><td>Bebas 22px ls:3px</td></tr>
+        <tr><td>T-OVR-XL</td><td>Bebas 38px gradient</td></tr>
+        <tr><td>T-OVR</td><td>Bebas 18px gradient</td></tr>
+        <tr><td>T-SECTION</td><td>Oswald 13px ls:3px UPPER</td></tr>
+        <tr><td>T-NAV</td><td>Oswald 12px ls:2px UPPER</td></tr>
+        <tr><td>T-BODY</td><td>NotoSansJP 14px</td></tr>
+        <tr><td>T-BODY-SM</td><td>NotoSansJP 13px</td></tr>
+        <tr><td>T-DETAIL</td><td>12px</td></tr>
+        <tr><td>T-CAPTION</td><td>11px</td></tr>
+        <tr><td>T-MICRO</td><td>9-10px</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center;margin-top:56px;padding-top:24px;border-top:1px solid var(--border)">
+  <div style="font-family:var(--font-label);font-size:11px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase">
+    Wrestle Manager Design System v1.0 — Generated 2026-03-26
+  </div>
+</div>
+
+</div><!-- /.ds -->
+</body>
+</html>

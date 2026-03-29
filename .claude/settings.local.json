@@ -134,7 +134,15 @@
       "Bash(grep -n \"Engine.formatFinish\" src/*.js)",
       "Bash(node test/sim-coach-abilities.js 7 10 10)",
       "Bash(node test/sim-coach-abilities.js 8 10 30)",
-      "Bash(node test/sim-coach-abilities.js 5 10 30)"
+      "Bash(node test/sim-coach-abilities.js 5 10 30)",
+      "Bash(node test/auto-sim.js 100 12345)",
+      "Bash(bash build-zip.sh --release)",
+      "Bash(node test/auto-sim.js 20 42)",
+      "Bash(for seed:*)",
+      "Bash(do node:*)",
+      "Bash(ls C:UsersnkmrkDownloadswrestle-managerwm-guide*.html)",
+      "Bash(ls /c/Users/nkmrk/Downloads/wrestle-manager/wm-guide*.html)",
+      "Bash(grep -l \"intensive\" /c/Users/nkmrk/Downloads/wrestle-manager/test/*.js)"
     ]
   }
 }

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wrestle Manager パラメータ解説</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@400;700;900&family=Kosugi+Maru&display=swap');
+
+  :root {
+    --bg-cream: #FFF8E7;
+    --bg-page: #FFFDF5;
+    --ink: #2C2416;
+    --ink-sub: #5C4D3C;
+    --red: #D63031;
+    --red-bg: #FFF0F0;
+    --blue: #2E6BA4;
+    --blue-bg: #EBF3FA;
+    --gold: #D4A020;
+    --gold-bg: #FFF8E0;
+    --green: #27AE60;
+    --green-bg: #EAFAF1;
+    --purple: #8E44AD;
+    --purple-bg: #F5EEF8;
+    --border: #D4C5A9;
+    --border-dark: #8B7D6B;
+    --section-num: #C0392B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-cream);
+    color: var(--ink);
+    font-family: 'Zen Maru Gothic', 'Kosugi Maru', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === COVER === */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    text-align: center;
+    padding: 60px 24px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px);
+    pointer-events: none;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: #1a1a2e;
+    font-family: 'DotGothic16', monospace;
+    font-size: 12px;
+    padding: 4px 16px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-weight: 900;
+    font-size: clamp(28px, 6vw, 48px);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 20px rgba(212,160,32,0.3);
+  }
+  .cover h1 em { font-style: normal; color: var(--gold); }
+  .cover-sub { font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 30px; }
+  .cover-meta { font-family: 'DotGothic16', monospace; font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+  .cover-ring { font-size: 64px; margin: 16px 0; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+
+  /* === PAGE === */
+  .page { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+
+  /* === INTRO === */
+  .intro {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin: 32px 0;
+    position: relative;
+  }
+  .intro::before {
+    content: 'このページについて';
+    position: absolute; top: -12px; left: 20px;
+    background: var(--bg-cream);
+    padding: 0 12px;
+    font-weight: 700; font-size: 13px; color: var(--ink-sub); letter-spacing: 2px;
+  }
+  .intro p { margin-bottom: 12px; }
+  .intro p:last-child { margin-bottom: 0; }
+
+  /* === SECTION === */
+  .section { margin: 40px 0; padding-bottom: 32px; border-bottom: 1px dashed var(--border); }
+  .section:last-of-type { border-bottom: none; }
+  .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .section-num { font-family: 'DotGothic16', monospace; font-size: 28px; font-weight: 700; color: var(--section-num); min-width: 48px; text-align: center; line-height: 1; }
+  .section-title { font-weight: 900; font-size: 20px; line-height: 1.3; }
+  .section-title small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-sub); margin-top: 2px; }
+  .section p { margin-bottom: 14px; }
+
+  /* === CALLOUT === */
+  .callout { border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-size: 14px; line-height: 1.7; }
+  .callout-label { font-weight: 700; font-size: 12px; letter-spacing: 1px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .callout.tip { background: var(--gold-bg); border-left: 4px solid var(--gold); }
+  .callout.tip .callout-label { color: #9A7611; }
+  .callout.warn { background: var(--red-bg); border-left: 4px solid var(--red); }
+  .callout.warn .callout-label { color: var(--red); }
+  .callout.info { background: var(--blue-bg); border-left: 4px solid var(--blue); }
+  .callout.info .callout-label { color: var(--blue); }
+  .callout.trivia { background: var(--green-bg); border-left: 4px solid var(--green); }
+  .callout.trivia .callout-label { color: #1E8449; }
+  .callout.purple { background: var(--purple-bg); border-left: 4px solid var(--purple); }
+  .callout.purple .callout-label { color: var(--purple); }
+
+  /* === STAT CARDS === */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+  @media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 16px;
+  }
+  .stat-card.pw { border-top: 4px solid #E74C3C; }
+  .stat-card.sp { border-top: 4px solid #3498DB; }
+  .stat-card.te { border-top: 4px solid #27AE60; }
+  .stat-card.st { border-top: 4px solid #F39C12; }
+  .stat-card.mn { border-top: 4px solid #9B59B6; }
+
+  .stat-name { font-family: 'DotGothic16', monospace; font-size: 22px; font-weight: 700; letter-spacing: 2px; line-height: 1; margin-bottom: 2px; }
+  .stat-card.pw .stat-name { color: #C0392B; }
+  .stat-card.sp .stat-name { color: #2980B9; }
+  .stat-card.te .stat-name { color: #1E8449; }
+  .stat-card.st .stat-name { color: #D35400; }
+  .stat-card.mn .stat-name { color: #7D3C98; }
+
+  .stat-jp { font-size: 12px; color: var(--ink-sub); margin-bottom: 10px; letter-spacing: 1px; }
+
+  .stat-desc { font-size: 14px; line-height: 1.75; color: var(--ink); }
+  .stat-sub { font-size: 13px; color: var(--ink-sub); margin-top: 6px; line-height: 1.6; }
+
+  /* === TWO COL === */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+
+  .param-block { background: var(--bg-page); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .param-block-name { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+  .param-block-name span { font-family: 'DotGothic16', monospace; font-size: 11px; color: var(--ink-sub); font-weight: 400; margin-left: 6px; }
+  .param-block-body { font-size: 13px; color: var(--ink-sub); line-height: 1.75; }
+
+  /* === WEAR TIMELINE === */
+  .timeline { display: flex; gap: 0; margin: 16px 0; border-radius: 6px; overflow: hidden; font-size: 12px; }
+  .timeline-seg { flex: 1; padding: 10px 8px; text-align: center; line-height: 1.5; }
+  .timeline-seg .tl-label { font-weight: 700; font-size: 11px; }
+  .timeline-seg .tl-body { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .tl-green  { background: #D5F5E3; color: #1A5E35; }
+  .tl-yellow { background: #FEF9E7; color: #7D6608; }
+  .tl-orange { background: #FDEBD0; color: #784212; }
+  .tl-red    { background: #FADBD8; color: #922B21; }
+
+  /* === TRUST FLOW === */
+  .trust-flow { display: flex; gap: 0; margin: 16px 0; border-radius: 6px; overflow: hidden; font-size: 13px; }
+  .trust-seg { flex: 1; padding: 12px 10px; text-align: center; line-height: 1.5; }
+  .trust-seg .ts-range { font-family: 'DotGothic16', monospace; font-size: 16px; font-weight: 700; }
+  .trust-seg .ts-label { font-size: 11px; margin-top: 2px; }
+  .ts-hi    { background: #D5F5E3; color: #1A5E35; }
+  .ts-mid   { background: #FFF8E7; color: #7D6608; }
+  .ts-lo    { background: #FDEBD0; color: #784212; }
+  .ts-crit  { background: #FADBD8; color: #922B21; }
+
+  /* === MISC === */
+  b, strong { color: var(--ink); }
+  .hl { color: var(--red); font-weight: 700; }
+  .gold-text { color: #9A7611; font-weight: 700; }
+  .divider { text-align: center; margin: 28px 0; color: var(--border); font-size: 20px; letter-spacing: 8px; }
+
+  .footer { text-align: center; padding: 32px 20px; font-size: 12px; color: var(--ink-sub); border-top: 1px solid var(--border); margin-top: 20px; }
+
+  @media (max-width: 480px) {
+    .page { padding: 0 14px; }
+    .section-num { font-size: 22px; min-width: 36px; }
+    .section-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="cover-badge">REFERENCE GUIDE</div>
+  <div class="cover-ring">📊</div>
+  <h1>Wrestle Manager<br><em>パラメータ解説</em></h1>
+  <div class="cover-sub">数値が持つ意味と役割</div>
+  <div class="cover-meta">PRODUCED BY TAKOYAKI-CHAN</div>
+</div>
+
+<div class="page">
+
+<!-- ===== INTRO ===== -->
+<div class="intro">
+  <p>このゲームのキャラクターたちは、たくさんの数値を持っています。でも数値を見て最適化するゲームではありません。</p>
+  <p>このページは「この数字って何のためにあるの？」という疑問に答えるためのリファレンスです。細かい計算式よりも、<strong>それぞれの数値が何を意味し、どんなことに使われるのか</strong>を知ってほしくて作りました。</p>
+</div>
+
+<!-- ===== 01 BATTLE STATS ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title">試合で使われる5能力値<small>BATTLE STATS — PW / SP / TE / ST / MN</small></div>
+  </div>
+
+  <p>選手には5つの能力値があります。試合エンジンが毎ターン参照する「戦い方の言語」です。どれを伸ばすかで、その選手の試合の色が決まります。</p>
+
+  <div class="stat-grid">
+
+    <div class="stat-card pw">
+      <div class="stat-name">PW</div>
+      <div class="stat-jp">パワー</div>
+      <div class="stat-desc">技の<strong>破壊力</strong>。高いほど一撃のダメージが大きく、相手を早く追い込める。</div>
+      <div class="stat-sub">ダメージに最も大きく影響する値。ただし SP・TE も技のダメージに関与するため、PW だけが火力を決めるわけではない。</div>
+    </div>
+
+    <div class="stat-card sp">
+      <div class="stat-name">SP</div>
+      <div class="stat-jp">スピード</div>
+      <div class="stat-desc">相手の技を<strong>かわす力</strong>。高いほど相手の技がミスになりやすく、カウンターも防ぎやすい。</div>
+      <div class="stat-sub">「当てさせない」ことが仕事の能力値。攻撃が当たらなければダメージを受けない。また SP は技のダメージにも少し寄与する。</div>
+    </div>
+
+    <div class="stat-card te">
+      <div class="stat-name">TE</div>
+      <div class="stat-jp">テクニック</div>
+      <div class="stat-desc">技を<strong>確実に当てる精度</strong>と、<strong>カウンターを仕掛ける技術</strong>。</div>
+      <div class="stat-sub">高い選手は「空振りが少ない」「一瞬の隙をカウンターで返す」。試合のうまさそのもの。TE も技のダメージに少し寄与するため、テクニシャンは当てる回数で差をつける。</div>
+    </div>
+
+    <div class="stat-card st">
+      <div class="stat-name">ST</div>
+      <div class="stat-jp">スタミナ</div>
+      <div class="stat-desc">試合中の<strong>体力の総量と打たれ強さ</strong>。高いほど試合が長くなり、受けるダメージも軽くなる。</div>
+      <div class="stat-sub">この値が低いと、相手より先にHPが尽きてしまう。地味だが全体を底上げする基礎体力。</div>
+    </div>
+
+    <div class="stat-card mn" style="grid-column: 1 / -1;">
+      <div class="stat-name">MN</div>
+      <div class="stat-jp">マインド</div>
+      <div class="stat-desc"><strong>精神的な強さ</strong>。フォールを返したり、関節技から逃げ出す力の源。追い詰められた場面での粘り強さ。</div>
+      <div class="stat-sub">MN が高い選手はHPが少なくなってもすぐには負けない。試合終盤の「最後の抵抗」を支える値。試合中の被ダメージもわずかに抑える。</div>
+    </div>
+
+  </div>
+
+  <div class="callout info">
+    <div class="callout-label">ℹ️ OVR（総合値）とは</div>
+    5つの能力値を平均したものが OVR です。試合の「天井の高さ」を決める最重要指標で、給与・ランキング・MQのほぼすべての基準になります。<strong>5つのどれが高くても OVR は上がります</strong>が、弱点があると試合で穴を突かれます。
+  </div>
+
+</div>
+
+<!-- ===== 02 COMBAT ROLES ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title">能力値が決める「戦い方」<small>ROLE ARCHETYPES</small></div>
+  </div>
+
+  <p>育て方によって選手の戦い方ははっきり変わります。コーチのスタイルと合わせて育てると成長効率も上がります。</p>
+
+  <div class="two-col">
+    <div class="param-block">
+      <div class="param-block-name">💪 パワーファイター</div>
+      <div class="param-block-body"><strong>PW・ST</strong> 型。一発が重く体力も豊富。ただし技を外しやすく、試合が長引くと相手に流れを渡しやすい。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">⚡ スピードファイター</div>
+      <div class="param-block-body"><strong>SP・TE</strong> 型。相手の技をかわしてカウンターを狙う。体力は薄いので、一発もらうと危険な紙一重の戦い方。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">🔒 テクニシャン</div>
+      <div class="param-block-body"><strong>TE・MN</strong> 型。カウンターと関節技が強烈で、追い詰めても粘り返してくる。試合を「組み立てる」タイプ。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">👑 エース（万能型）</div>
+      <div class="param-block-body">全体的に高い値。穴がなく誰とでも試合になる。育成コストは高い分、どんな相手にも対応できる。</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 03 CONDITION ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title">体調<small>CONDITION</small></div>
+  </div>
+
+  <p>選手の今この瞬間のコンディションです。試合・練習・プロモ活動をこなすたびに下がり、休養すると回復します。</p>
+
+  <p>体調が低下すると、2つのことが起きます。</p>
+
+  <div class="two-col">
+    <div class="param-block">
+      <div class="param-block-name">🦴 怪我リスクが上がる</div>
+      <div class="param-block-body">体調が低いまま試合に出ると怪我の確率が上がります。怪我をすると数週間離脱し、その間は成長も止まります。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">🛌 自動的に休養に切り替わる</div>
+      <div class="param-block-body">体調がある程度以下になると、練習やプロモの設定をしていても<strong>自動的に休養に切り替わります</strong>。無理に動けない状態になる、ということです。</div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 試合の実力には直接関係しない</div>
+    体調は MQ（試合品質）や能力値には直接影響しません。「なんとなく調子悪そう」ではなく、「限界まで使い続けた結果、ついに動けなくなる」というイメージです。
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-label">⚠️ 信頼度が低いと回復も遅くなる</div>
+    trust（信頼度）が低い選手は、体調の自然回復も鈍くなります。心身はつながっています。
+  </div>
+
+</div>
+
+<!-- ===== 04 WEAR ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title">摩耗と耐久性<small>WEAR / DURABILITY</small></div>
+  </div>
+
+  <p>プロレスは身体を削る職業です。長くリングに立ち続けるほど、少しずつ肉体は限界に近づいていきます。</p>
+
+  <p><strong>摩耗（wear）</strong>はシーズンをまたいで蓄積する疲弊の記録です。一定を超えると能力値が自然に低下し始め、いずれ引退が避けられない段階へ向かいます。</p>
+
+  <div class="timeline">
+    <div class="timeline-seg tl-green">
+      <div class="tl-label">全盛期</div>
+      <div class="tl-body">衰退なし<br>成長が続く</div>
+    </div>
+    <div class="timeline-seg tl-yellow">
+      <div class="tl-label">軽度衰退</div>
+      <div class="tl-body">能力値が<br>じわじわ落ちる</div>
+    </div>
+    <div class="timeline-seg tl-orange">
+      <div class="tl-label">本格衰退</div>
+      <div class="tl-body">低下が<br>目に見えてくる</div>
+    </div>
+    <div class="timeline-seg tl-red">
+      <div class="tl-label">末期→引退</div>
+      <div class="tl-body">やがて<br>引退へ</div>
+    </div>
+  </div>
+
+  <p>摩耗を加速させるのは、<strong>怪我の回数・試合の詰め込みすぎ・追い込み練習のやりすぎ</strong>です。逆に、<strong>耐久性（durability）</strong>が高い選手はキャリアが長く続きます。</p>
+
+  <p>耐久性はキャラ固有の体質で、変えることはできません。耐久性が高い選手は全盛期が長く、ベテランになっても衰えにくいのが特徴です。</p>
+
+  <div class="callout trivia">
+    <div class="callout-label">💡 選手ごとに「旬」がある</div>
+    耐久性が低い選手は若いうちに伸ばして活躍させる必要があります。耐久性が高い選手は息の長いキャリアを歩みます。このゲームでは「誰かが引退していく」ことも自然なドラマです。
+  </div>
+
+</div>
+
+<!-- ===== 05 TRUST ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title">信頼度<small>TRUST</small></div>
+  </div>
+
+  <p>信頼度とは、「この社長（あなた）についていっていいのか」という選手の気持ちです。</p>
+
+  <p>試合に出て、ちゃんとスポットライトを当ててもらえれば信頼は上がります。逆に、出番もなく放置され続けると信頼は削れていきます。給与が不公平だったり、タイトルに近づけない状況が続いても同じです。</p>
+
+  <div class="trust-flow">
+    <div class="trust-seg ts-hi">
+      <div class="ts-range">高</div>
+      <div class="ts-label">安心して<br>ついてくる</div>
+    </div>
+    <div class="trust-seg ts-mid">
+      <div class="ts-range">中</div>
+      <div class="ts-label">様子を<br>うかがっている</div>
+    </div>
+    <div class="trust-seg ts-lo">
+      <div class="ts-range">低</div>
+      <div class="ts-label">ロッカーの<br>空気も悪化</div>
+    </div>
+    <div class="trust-seg ts-crit">
+      <div class="ts-range">危険</div>
+      <div class="ts-label">シーズン末に<br>去っていく</div>
+    </div>
+  </div>
+
+  <p>信頼度が高ければ、シーズン末の契約更新は自動的に結ばれます。低くなると昇給要求や移籍交渉が発生し、危険域まで下がると引き留める手段がほとんどなくなります。</p>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 信頼度はケアだけでは上がらない</div>
+    一番確実に信頼を積むのは「試合に出してあげること」です。ケアアクションは補助手段であり、出場機会の代わりにはなりません。
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-label">⚠️ 信頼度は全選手それぞれ独立している</div>
+    ロスターの誰かひとりの信頼度が危険域に入っても、他の選手には直接の影響はありません。ただし、そのまま誰かが離脱すれば<strong>ロッカールームの雰囲気が悪化</strong>し、それが全体の士気に波及します。
+  </div>
+
+</div>
+
+<!-- ===== 06 POPULARITY ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-title">人気度<small>POPULARITY</small></div>
+  </div>
+
+  <p>選手個人のファン人気です。良い試合を重ねるほど上がり、長く欠場が続くと忘れられていきます。</p>
+
+  <p>人気はほとんど<strong>試合品質（MQ）との連動</strong>で決まります。面白い試合をした選手は人気が上がり、低調な試合が続くと伸び悩みます。</p>
+
+  <div class="callout info">
+    <div class="callout-label">ℹ️ 人気度が使われる場面</div>
+    給与の基準になるほか、グッズ収入・メディア収入・集客にも影響します。また「人気者同士のカード」はファンが期待するカードとしてMQにボーナスが乗ります。人気が上がると経営的にもうれしいことが増えますが、給与要求も上がります。
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 怪我が人気を止める</div>
+    長期欠場中は試合ができないため、人気の回復が止まります。怪我明けの選手はひとつの再スタートとして、丁寧に試合を積ませてあげてください。
+  </div>
+
+</div>
+
+<!-- ===== 07 ORG PARAMS ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-title">団体のパラメータ<small>ORG STATS</small></div>
+  </div>
+
+  <p>選手個人ではなく、あなたの団体全体の数値です。</p>
+
+  <div class="two-col">
+    <div class="param-block">
+      <div class="param-block-name">📣 団体人気 <span>orgPop</span></div>
+      <div class="param-block-body">
+        あなたの団体の世間的な知名度と人気。集客・メディア収入・スポンサー収入のすべての基準です。大会で良い試合を続けると上がっていきます。上がれば上がるほど伸びにくくなります。
+      </div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">🎭 ロッカー雰囲気 <span>morale</span></div>
+      <div class="param-block-body">
+        バックステージの空気感。退団・解雇が起きると大きく下がります。信頼度が低い選手が多いとじわじわ悪化し続けます。ケアや大会での盛り上がりで回復します。
+      </div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">📈 興行の勢い</div>
+      <div class="param-block-body">
+        直近の集客成績に基づく「流れ」の指標。満員が続くと次の興行も入りやすくなり、ガラガラが続くと悪循環に陥ります。
+      </div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">💰 資金</div>
+      <div class="param-block-body">
+        毎週、選手の給与と会場費が引かれ、興行収入・メディア収入・グッズ収入が加算されます。資金が底をつくとゲームオーバーです。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 08 GROWTH ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-title">成長の仕組み<small>GROWTH</small></div>
+  </div>
+
+  <p>能力値の成長は「今の値が上限（伸びしろ）にどれだけ近いか」で変わります。伸びしろが残っていれば伸び、上限に近づくほど成長は鈍化します。</p>
+
+  <p>この「上限」は選手ごとに異なり、潜在能力で決まっています。コーチの腕によって伸びやすくなりますが、潜在能力の天井を大きく超えることはできません。</p>
+
+  <div class="callout purple">
+    <div class="callout-label">🔢 成長に影響する主な要素</div>
+    <strong>伸びしろの大きさ</strong>（今の値と上限の距離）・<strong>コーチの指導力</strong>・<strong>スタイルの一致</strong>・<strong>年齢</strong>（若いほど成長率が高い）・<strong>追い込みの有無</strong>。これらが組み合わさって毎週の成長量が決まります。
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 伸びしろのある選手にコーチを集中させよう</div>
+    上限近くまで育った選手にいくらコーチを投資しても効果は薄いです。伸びしろが大きい若手や、まだ成長途上の選手に優秀なコーチをつけると効果が大きくなります。
+  </div>
+
+</div>
+
+<!-- ===== 09 MQ ===== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <div class="section-title">試合品質（MQ）<small>MATCH QUALITY</small></div>
+  </div>
+
+  <p>MQ はその試合が「どれだけ面白かったか」を表す数値です。団体人気・選手人気・メディア収入・集客のほぼすべてに直結する、このゲームの中心指標です。</p>
+
+  <p>MQ は<strong>選手の OVR が天井</strong>を決め、その上に様々な要素が上乗せされます。OVR が高い選手同士だと良い試合になりやすいのは当然ですが、それだけではありません。</p>
+
+  <div class="two-col">
+    <div class="param-block">
+      <div class="param-block-name">✨ MQ を高める要素</div>
+      <div class="param-block-body">
+        因縁のある相手との試合・タイトルがかかった試合・ファンが期待しているカード・ライバル関係の激化……。
+        <strong>ドラマのある試合ほど面白くなる</strong>という設計です。
+      </div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">📉 MQ を下げる要素</div>
+      <div class="param-block-body">
+        同じ2人を何度も対戦させると「マンネリ」ペナルティが蓄積します。ロスターが小さいほどカードが回りにくく、マンネリになりやすいです。
+      </div>
+    </div>
+  </div>
+
+  <div class="callout trivia">
+    <div class="callout-label">💡 MQ が示す「本物の奇跡」</div>
+    このゲームは数値を操作してドラマを作りません。MQ はシミュレーションが弾き出した事実です。だから OVR が低い選手が格上相手に予想外の名勝負を作ることも起きます。それが本当に起きたとき、演出は「数字の奇跡」ではなく「本物の奇跡」として輝きます。
+  </div>
+
+</div>
+
+</div><!-- .page -->
+
+<div class="footer">
+  Wrestle Manager パラメータ解説 ／ PRODUCED BY TAKOYAKI-CHAN<br>
+  ゲームバージョン: v1.0　　最終更新: 2026-03-28
+</div>
+
+</body>
+</html>
