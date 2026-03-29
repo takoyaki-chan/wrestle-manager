@@ -1931,13 +1931,13 @@ function showMatchAppealTooltip(event, slotIdx) {
       <div style="text-align:center">
         ${portraitImg(fA.id, 32)}
         <div style="font-size:11px;font-weight:700;margin-top:2px">${fA.name.slice(0,4)}</div>
-        <div style="font-size:13px;color:#74b9ff;font-weight:900">★${bd.drawA.total}</div>
+        <div style="font-size:12px;color:#74b9ff;font-weight:900">集客力 ${bd.drawA.total}</div>
         ${_drawLine(bd.drawA)}
       </div>
       <div style="text-align:center">
         ${portraitImg(fB.id, 32)}
         <div style="font-size:11px;font-weight:700;margin-top:2px">${fB.name.slice(0,4)}</div>
-        <div style="font-size:13px;color:#74b9ff;font-weight:900">★${bd.drawB.total}</div>
+        <div style="font-size:12px;color:#74b9ff;font-weight:900">集客力 ${bd.drawB.total}</div>
         ${_drawLine(bd.drawB)}
       </div>
     </div>
@@ -2054,93 +2054,7 @@ function renderShowPrep() {
     html += '</div>';
   }
 
-  html += `<div style="display:flex;align-items:center;gap:12px;margin-top:16px">
-    <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
-    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
-    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
-  </div>`;
-
-  for (let i = 0; i < maxMatches; i++) {
-    const isMain = i === 0;
-    const availL = getAvailableForSlot(i, 'left');
-    const availR = getAvailableForSlot(i, 'right');
-    // Include currently selected fighter in their own dropdown even if "used"
-    const curL = G.showCard[i].left;
-    const curR = G.showCard[i].right;
-
-    const makeOptions = (avail, curVal) => {
-      let opts = '<option value="0">-- 選手選択 --</option>';
-      const ids = new Set(avail.map(c => c.id));
-      if (curVal > 0 && !ids.has(curVal)) {
-        const extra = G.roster.find(c => c.id === curVal);
-        if (extra) avail = [{ ...extra, _usedInOtherSlot: false }, ...avail];
-      }
-      // Sort: available first, then used-in-other-slot; within each group by OVR desc
-      avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
-      avail.forEach(c => {
-        const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
-        const lastRunMark = c.lastRun ? '🌅 ' : '';
-        const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
-        const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
-        const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${Math.round(c.condition)})${usedSuffix}${lastRunSuffix}</option>`;
-      });
-      return opts;
-    };
-
-    const champId = G.titles.world.championId;
-    const hasChamp = champId && (curL === champId || curR === champId);
-    const isVacant = !champId;
-    // v1.2: 12週クールダウンチェック
-    const cdCheck = Engine.title.canTitleMatch(G); // { allowed, weeksLeft }
-    const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
-    // Rental restriction: レンタル選手はタイトルマッチ出場不可
-    const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
-    const canTitle = titleEligible && cdCheck.allowed && !slotHasRental;
-    const isTitle = G.showCard[i].isTitle || false;
-    const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
-    const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
-
-    // カード鮮度プレビュー
-    const freshnessPreview = (curL > 0 && curR > 0)
-      ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
-      : null;
-
-    // ラストランチェック
-    const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
-    const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
-    const isLastRunMatch = lastRunL || lastRunR;
-
-    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:8px${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}"
-      onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
-      <div class="match-slot-num">${isMain ? '★' : i+1}</div>
-      <div style="display:flex;align-items:center;gap:4px">${curL > 0 ? portraitImg(curL, 80) : ''}</div>
-      <div class="match-fighter">
-        <select onchange="onCardSelect(${i},'left',this.value)">
-          ${makeOptions(availL, curL)}
-        </select>
-      </div>
-      <div class="match-slot-vs">VS</div>
-      <div class="match-fighter">
-        <select onchange="onCardSelect(${i},'right',this.value)">
-          ${makeOptions(availR, curR)}
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:4px">${curR > 0 ? portraitImg(curR, 80) : ''}</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-left:8px;font-size:12px">
-        ${canTitle ? `<label style="color:var(--gold);cursor:pointer"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>` : ''}
-        ${titleEligible && !cdCheck.allowed ? `<span style="color:var(--text-dim);font-size:11px" title="タイトルマッチは12週に1回まで">⏳ 次のタイトルマッチまであと${cdCheck.weeksLeft}週</span>` : ''}
-        ${titleEligible && cdCheck.allowed && slotHasRental ? `<span style="color:var(--text-dim);font-size:11px" title="レンタル選手はタイトルマッチに出場できません">🤝 レンタル選手はタイトル戦不可</span>` : ''}
-        ${(()=>{if(!isTitle||!champId||curL<=0||curR<=0)return'';const cf=champId===curL?G.roster.find(c=>c.id===curL):G.roster.find(c=>c.id===curR);const chf=champId===curL?G.roster.find(c=>c.id===curR):G.roster.find(c=>c.id===curL);if(!cf||!chf)return'';const gap=Engine.util.ov(cf)-Engine.util.ov(chf);if(gap>20)return`<span style="color:#e74c3c;font-size:11px" title="格差が大きいタイトルマッチ(OVR差${gap})はMQ-6">⚠️ 格差大(OVR差${gap}) MQ-6</span>`;if(gap>10)return`<span style="color:#e67e22;font-size:11px" title="格差タイトルマッチ(OVR差${gap})はMQ-3">⚠️ 格差(OVR差${gap}) MQ-3</span>`;return'';})()}
-        ${!G.titleEstablished && curL > 0 && curR > 0 ? `<span style="color:var(--text-dim);font-size:11px" title="興行3回・人気15・ロスター5人で設立">🔒 王座未設立</span>` : ''}
-        ${rivalLvl ? `<span style="color:${rivalLvl.color}">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>` : ''}
-        ${freshnessPreview && freshnessPreview.label ? `<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:11px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>` : ''}
-        ${isLastRunMatch ? `<span style="color:var(--gold);font-weight:700">🌅 ラストマッチ (MQ+3${i===0?' +メイン+5':''})</span>` : ''}
-      </div>
-    </div>`;
-  }
-
-  // 集客v2: ざっくり集客予測（matchAppeals→showDraw→v2予測）
+  // ── 集客予測（マッチカードの上に配置 — ファンの声と見比べやすく） ──
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const champIdPreview = G.titles?.world?.championId;
@@ -2149,7 +2063,7 @@ function renderShowPrep() {
   const previewMatchAppeals = validMatches.map(m => {
     const fA = G.roster.find(c => c.id === m.left);
     const fB = G.roster.find(c => c.id === m.right);
-    if (!fA || !fB) return { totalAppeal: 0 };
+    if (!fA || !fB) return 0;
     const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
     const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
     const isFanExpect = previewFanExpects && previewFanExpects.some(fe =>
@@ -2165,14 +2079,120 @@ function renderShowPrep() {
   const v = VENUES[G.showVenue];
   const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'
     : (G.attendanceMomentum || 0) < -0.05 ? '📉 勢い低下' : '';
-
   const heat = getHeatLevel();
-  html += `<div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px">
+
+  html += `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px;margin-bottom:14px">
     <div style="margin-bottom:6px;font-size:14px;font-weight:700;color:${prediction.color}">${prediction.text}</div>
-    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦（集客×1.15）</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場（集客×1.10）</span>' : ''}</div>
+    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場</span>' : ''}</div>
     <div><strong>会場:</strong> ${v.name}（${v.cap.toLocaleString()}席） <strong>会場費:</strong> -${v.cost}万${momentumLabel ? ` &nbsp;| ${momentumLabel}` : ''}</div>
     ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 予想会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
   </div>`;
+
+  // ── マッチカード ──
+  html += `<div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+    <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
+    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
+    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
+  </div>`;
+
+  for (let i = 0; i < maxMatches; i++) {
+    const isMain = i === 0;
+    const availL = getAvailableForSlot(i, 'left');
+    const availR = getAvailableForSlot(i, 'right');
+    const curL = G.showCard[i].left;
+    const curR = G.showCard[i].right;
+
+    const makeOptions = (avail, curVal) => {
+      let opts = '<option value="0">-- 選手選択 --</option>';
+      const ids = new Set(avail.map(c => c.id));
+      if (curVal > 0 && !ids.has(curVal)) {
+        const extra = G.roster.find(c => c.id === curVal);
+        if (extra) avail = [{ ...extra, _usedInOtherSlot: false }, ...avail];
+      }
+      avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
+      avail.forEach(c => {
+        const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
+        const lastRunMark = c.lastRun ? '🌅 ' : '';
+        const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
+        const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
+        const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
+        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${Math.round(c.condition)})${usedSuffix}${lastRunSuffix}</option>`;
+      });
+      return opts;
+    };
+
+    const champId = G.titles.world.championId;
+    const hasChamp = champId && (curL === champId || curR === champId);
+    const isVacant = !champId;
+    const cdCheck = Engine.title.canTitleMatch(G);
+    const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
+    const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
+    const canTitle = titleEligible && cdCheck.allowed && !slotHasRental;
+    const isTitle = G.showCard[i].isTitle || false;
+    const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
+    const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
+    const freshnessPreview = (curL > 0 && curR > 0)
+      ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
+      : null;
+    const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
+    const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
+    const isLastRunMatch = lastRunL || lastRunR;
+
+    // 試合番号: 興行順（下→前座、上→メイン）
+    const matchNum = maxMatches - i;
+    const matchLabel = isMain ? 'メインイベント' : `第${matchNum}試合`;
+    const matchLabelStyle = isMain
+      ? 'font-size:13px;font-weight:900;color:var(--gold);letter-spacing:1px'
+      : `font-size:11px;font-weight:700;color:${matchNum <= 2 ? 'var(--text-dim)' : 'var(--text-sub)'}`;
+
+    // 中央情報（マンネリ/因縁/タイトル等）
+    const centerInfoParts = [];
+    if (canTitle) centerInfoParts.push(`<label style="color:var(--gold);cursor:pointer;font-size:12px"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>`);
+    if (titleEligible && !cdCheck.allowed) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">⏳ タイトルまであと${cdCheck.weeksLeft}週</span>`);
+    if (titleEligible && cdCheck.allowed && slotHasRental) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">🤝 レンタル不可</span>`);
+    // 格差チェック
+    if (isTitle && champId && curL > 0 && curR > 0) {
+      const cf = champId === curL ? G.roster.find(c => c.id === curL) : G.roster.find(c => c.id === curR);
+      const chf = champId === curL ? G.roster.find(c => c.id === curR) : G.roster.find(c => c.id === curL);
+      if (cf && chf) {
+        const gap = Engine.util.ov(cf) - Engine.util.ov(chf);
+        if (gap > 20) centerInfoParts.push(`<span style="color:#e74c3c;font-size:10px">⚠️ 格差大 MQ-6</span>`);
+        else if (gap > 10) centerInfoParts.push(`<span style="color:#e67e22;font-size:10px">⚠️ 格差 MQ-3</span>`);
+      }
+    }
+    if (!G.titleEstablished && curL > 0 && curR > 0) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">🔒 王座未設立</span>`);
+    if (rivalLvl) centerInfoParts.push(`<span style="color:${rivalLvl.color};font-size:12px">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>`);
+    if (freshnessPreview && freshnessPreview.label) centerInfoParts.push(`<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:10px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>`);
+    if (isLastRunMatch) centerInfoParts.push(`<span style="color:var(--gold);font-weight:700;font-size:11px">🌅 ラストマッチ</span>`);
+
+    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:${isMain ? '12' : '6'}px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}"
+      onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
+      <!-- 左選手 -->
+      <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+        <div class="match-fighter" style="flex:1;text-align:right">
+          <select onchange="onCardSelect(${i},'left',this.value)" style="text-align-last:right">
+            ${makeOptions(availL, curL)}
+          </select>
+        </div>
+        ${curL > 0 ? portraitImg(curL, isMain ? 80 : 56) : '<div style="width:56px"></div>'}
+      </div>
+      <!-- 中央: 試合番号 + 情報 -->
+      <div style="text-align:center;min-width:120px">
+        <div style="${matchLabelStyle}">${matchLabel}</div>
+        <div style="font-size:16px;font-weight:900;color:var(--text-main);margin:2px 0">VS</div>
+        ${centerInfoParts.length > 0 ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px">${centerInfoParts.join('')}</div>` : ''}
+      </div>
+      <!-- 右選手 -->
+      <div style="display:flex;align-items:center;gap:6px">
+        ${curR > 0 ? portraitImg(curR, isMain ? 80 : 56) : '<div style="width:56px"></div>'}
+        <div class="match-fighter" style="flex:1">
+          <select onchange="onCardSelect(${i},'right',this.value)">
+            ${makeOptions(availR, curR)}
+          </select>
+        </div>
+      </div>
+    </div>`;
+  }
 
   html += '<div class="btn-row" style="margin-top:16px">';
   html += `<button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！ (${validMatches.length}試合)</button>`;
