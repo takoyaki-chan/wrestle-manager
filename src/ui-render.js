@@ -2095,6 +2095,9 @@ function renderShowPrep() {
     <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
   </div>`;
 
+  // 成立試合数を事前カウント（空スロットを試合番号に数えない）
+  const filledSlots = G.showCard.filter(m => m.left > 0 && m.right > 0).length;
+
   for (let i = 0; i < maxMatches; i++) {
     const isMain = i === 0;
     const availL = getAvailableForSlot(i, 'left');
@@ -2138,10 +2141,19 @@ function renderShowPrep() {
     const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
     const isLastRunMatch = lastRunL || lastRunR;
 
-    // 試合番号: 興行順（下→前座、上→メイン）
-    const matchNum = maxMatches - i;
-    const matchLabel = isMain ? 'メインイベント' : `第${matchNum}試合`;
-    const matchLabelStyle = isMain
+    // 試合番号: 成立試合のみカウント（空スロットは番号なし）
+    const isFilled = curL > 0 && curR > 0;
+    // 自分より下にある成立試合数 + 1 = 自分の試合番号
+    let matchNum = 0;
+    if (isFilled) {
+      matchNum = 1;
+      for (let j = i + 1; j < maxMatches; j++) {
+        if (G.showCard[j].left > 0 && G.showCard[j].right > 0) matchNum++;
+      }
+    }
+    const matchLabel = isMain && isFilled ? 'メインイベント'
+      : isFilled ? `第${matchNum}試合` : '';
+    const matchLabelStyle = isMain && isFilled
       ? 'font-size:13px;font-weight:900;color:var(--gold);letter-spacing:1px'
       : `font-size:11px;font-weight:700;color:${matchNum <= 2 ? 'var(--text-dim)' : 'var(--text-sub)'}`;
 
