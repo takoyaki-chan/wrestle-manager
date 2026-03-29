@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>興行準備画面 モックアップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --blue: #4a8fd4;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  color-scheme: dark;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container { max-width: 960px; margin: 0 auto; }
+
+/* ── 集客予測パネル ── */
+.attendance-forecast {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.25));
+  border: 1px solid rgba(200,190,170,0.1);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.forecast-main {
+  font-size: 15px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.forecast-details {
+  font-size: 11px;
+  color: var(--text-sub);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.forecast-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ── ファンの声 ── */
+.fan-voice {
+  padding: 10px 14px;
+  background: rgba(212,168,67,0.06);
+  border: 1px solid rgba(212,168,67,0.15);
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.fan-voice-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.fan-voice-item {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 3px;
+}
+.fan-voice-item.matched { color: #2ecc71; }
+
+/* ── マッチカードヘッダー ── */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.card-header-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+.btn-sm {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid;
+}
+.btn-auto { background: rgba(74,143,212,0.15); border-color: rgba(74,143,212,0.4); color: var(--blue); }
+.btn-clear { background: rgba(231,76,60,0.1); border-color: rgba(231,76,60,0.3); color: #e74c3c; }
+
+/* ── マッチカード（各試合） ── */
+.match-card {
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  transition: border-color 0.2s;
+  position: relative;
+}
+.match-card:hover {
+  border-color: rgba(200,190,170,0.2);
+}
+.match-card.main-event {
+  border-color: rgba(212,168,67,0.3);
+  background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(0,0,0,0.3));
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.match-card.undercard {
+  padding: 8px 14px;
+  opacity: 0.85;
+}
+
+/* 左選手 */
+.fighter-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.fighter-left .fighter-select { text-align-last: right; }
+
+/* 右選手 */
+.fighter-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 選手プルダウン */
+.fighter-select {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  background: var(--card-bg);
+  border: 1px solid rgba(200,190,170,0.1);
+  border-radius: 3px;
+  color: var(--text-main);
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* 顔アイコン */
+.portrait {
+  border-radius: 4px;
+  border: 1px solid rgba(200,190,170,0.15);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.portrait-placeholder {
+  border-radius: 4px;
+  background: rgba(200,190,170,0.05);
+  flex-shrink: 0;
+}
+
+/* 中央カラム */
+.match-center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.match-label {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.match-label.main {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.match-label.semi {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+.match-label.opener {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+.match-vs {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--text-dim);
+  line-height: 1;
+}
+.match-card.main-event .match-vs {
+  font-size: 26px;
+  color: rgba(212,168,67,0.5);
+}
+.match-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 6px;
+  margin-top: 2px;
+}
+.match-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.tag-rivalry { color: #e74c3c; background: rgba(231,76,60,0.12); }
+.tag-title { color: var(--gold); background: rgba(212,168,67,0.12); }
+.tag-stale { color: #e17055; background: rgba(225,112,85,0.1); }
+.tag-fresh { color: #74b9ff; background: rgba(116,185,255,0.1); }
+.tag-lastrun { color: var(--gold-light); background: rgba(240,208,120,0.1); }
+.tag-fanexpect { color: #2ecc71; background: rgba(46,204,113,0.1); }
+
+/* ── 開催ボタン ── */
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.btn-execute {
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid rgba(212,168,67,0.5);
+  background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(212,168,67,0.08));
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.btn-back {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(74,143,212,0.3);
+  background: rgba(74,143,212,0.1);
+  color: var(--blue);
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- 集客予測パネル -->
+<div class="attendance-forecast">
+  <div class="forecast-main" style="color: #74b9ff">😊 なかなかの手応えだ</div>
+  <div class="forecast-details">
+    <span>🔥 Heat: Warm（×1.1）</span>
+    <span>🏆 タイトル戦</span>
+    <span>👑 王者出場</span>
+    <span>📈 勢いあり</span>
+    <span>🏟️ 予想MQ+2</span>
+  </div>
+</div>
+
+<!-- ファンの声 -->
+<div class="fan-voice">
+  <div class="fan-voice-title">🎤 ファンの声 <span style="color:#2ecc71;font-size:11px">（1件反映中 → MQ+5）</span></div>
+  <div class="fan-voice-item matched">✓ 富岡加奈子 vs 菊池瑠子の決着を望む声が高まっています！</div>
+  <div class="fan-voice-item">• 宇田川里奈 vs 梅ヶ丘みのりの決着を望む声が高まっています！</div>
+  <div class="fan-voice-item">• 北畠吉乃 vs 菊池瑠子の再戦を望むファンの声がSNSで増加中！</div>
+</div>
+
+<!-- マッチカードヘッダー -->
+<div class="card-header">
+  <div class="card-header-title">マッチカード（最大6試合）</div>
+  <button class="btn-sm btn-auto">✨ 自動編成</button>
+  <button class="btn-sm btn-clear">🗑 全クリア</button>
+  <span style="font-size:11px;color:var(--text-dim);margin-left:auto">会場: アリーナ（6,000席）会場費: -1600万</span>
+</div>
+
+<!-- メインイベント -->
+<div class="match-card main-event">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>👑 富岡加奈子 (総合:98 体調:85)</option>
+    </select>
+    <div class="portrait" style="width:72px;height:72px;background:#3a2a1a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label main">MAIN EVENT</div>
+    <div class="match-vs">VS</div>
+    <div class="match-info">
+      <span class="match-tag tag-title">🏆 タイトル戦</span>
+      <span class="match-tag tag-rivalry">🔥 宿命(MQ+3)</span>
+    </div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:72px;height:72px;background:#2a1a3a"></div>
+    <select class="fighter-select">
+      <option>菊池瑠子 (総合:97 体調:100)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 第5試合（セミファイナル） -->
+<div class="match-card">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>宇田川里奈 (総合:94 体調:85)</option>
+    </select>
+    <div class="portrait" style="width:56px;height:56px;background:#2a3a1a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label semi">第5試合</div>
+    <div class="match-vs">VS</div>
+    <div class="match-info">
+      <span class="match-tag tag-fanexpect">📣 ファン期待</span>
+    </div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:56px;height:56px;background:#1a2a3a"></div>
+    <select class="fighter-select">
+      <option>大河内紗代子 (総合:94 体調:100)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 第4試合 -->
+<div class="match-card">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>北畠吉乃 (総合:94 体調:100)</option>
+    </select>
+    <div class="portrait" style="width:56px;height:56px;background:#3a1a2a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label semi">第4試合</div>
+    <div class="match-vs">VS</div>
+    <div class="match-info">
+      <span class="match-tag tag-stale">😐 深刻なマンネリ(MQ-4)</span>
+    </div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:56px;height:56px;background:#2a2a1a"></div>
+    <select class="fighter-select">
+      <option>梅ヶ丘みのり (総合:94 体調:52)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 第3試合 -->
+<div class="match-card">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>生駒エリカ (総合:93 体調:80)</option>
+    </select>
+    <div class="portrait" style="width:48px;height:48px;background:#1a3a2a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label semi">第3試合</div>
+    <div class="match-vs">VS</div>
+    <div class="match-info">
+      <span class="match-tag tag-stale">😐 マンネリ(MQ-3)</span>
+    </div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:48px;height:48px;background:#3a2a2a"></div>
+    <select class="fighter-select">
+      <option>三浦早紀 (総合:92 体調:100)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 第2試合（前座） -->
+<div class="match-card undercard">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>近藤ゆりか (総合:88 体調:100)</option>
+    </select>
+    <div class="portrait" style="width:40px;height:40px;background:#2a1a1a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label opener">第2試合</div>
+    <div class="match-vs" style="font-size:16px">VS</div>
+    <div class="match-info">
+      <span class="match-tag tag-rivalry">⚡ 因縁(MQ+0)</span>
+      <span class="match-tag tag-stale">😐 マンネリ(MQ-3)</span>
+    </div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:40px;height:40px;background:#1a1a3a"></div>
+    <select class="fighter-select">
+      <option>米山杏里 (総合:85 体調:100)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 第1試合（オープニング） -->
+<div class="match-card undercard">
+  <div class="fighter-left">
+    <select class="fighter-select">
+      <option>橘玲美 (総合:71 体調:100)</option>
+    </select>
+    <div class="portrait" style="width:40px;height:40px;background:#2a2a2a"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-label opener">第1試合</div>
+    <div class="match-vs" style="font-size:16px">VS</div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait" style="width:40px;height:40px;background:#1a2a2a"></div>
+    <select class="fighter-select">
+      <option>澤出みずき (総合:67 体調:100)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 空スロット -->
+<div class="match-card undercard" style="opacity:0.4;border-style:dashed">
+  <div class="fighter-left">
+    <select class="fighter-select" style="color:var(--text-dim)">
+      <option>-- 選手選択 --</option>
+    </select>
+    <div class="portrait-placeholder" style="width:40px;height:40px"></div>
+  </div>
+  <div class="match-center">
+    <div class="match-vs" style="font-size:14px;color:var(--text-dim)">VS</div>
+  </div>
+  <div class="fighter-right">
+    <div class="portrait-placeholder" style="width:40px;height:40px"></div>
+    <select class="fighter-select" style="color:var(--text-dim)">
+      <option>-- 選手選択 --</option>
+    </select>
+  </div>
+</div>
+
+<!-- 開催ボタン -->
+<div class="action-row">
+  <button class="btn-execute">興行開催！（6試合）</button>
+  <button class="btn-back">戻る</button>
+</div>
+
+</div>
+</body>
+</html>
