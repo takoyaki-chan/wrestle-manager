@@ -113,31 +113,31 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .sp-match-card-inner::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent 5%,rgba(232,230,224,.04) 30%,rgba(232,230,224,.07) 50%,rgba(232,230,224,.04) 70%,transparent 95%);transform:skewX(-15deg);pointer-events:none}
 /* fighter info (5-col: info-L portrait-L center portrait-R info-R) */
 .sp-fighter-info{min-width:0}.sp-fighter-info.left{text-align:right;padding-right:10px}.sp-fighter-info.right{text-align:left;padding-left:10px}
-.sp-fighter-name{font-weight:900;font-size:13px;line-height:1.2;cursor:pointer;transition:color .15s;display:inline-block}
-.sp-fighter-name:hover{color:var(--gold-light)}.sp-fighter-name.empty{color:var(--text-dim);font-weight:400;font-size:11px}
-.sp-ovr-row{display:inline-flex;align-items:baseline;gap:3px;margin-top:2px}
-.sp-ovr-label{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:.5px}
-.sp-ovr-val{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--text-main)}
+.sp-fighter-name{font-weight:900;font-size:14px;line-height:1.2;cursor:pointer;transition:color .15s;display:inline-block}
+.sp-fighter-name:hover{color:var(--gold-light)}.sp-fighter-name.empty{color:var(--text-dim);font-weight:400;font-size:12px}
+.sp-ovr-row{display:inline-flex;align-items:baseline;gap:3px;margin-top:3px}
+.sp-ovr-label{font-family:'Oswald',sans-serif;font-size:10px;color:var(--text-dim);letter-spacing:.5px}
+.sp-ovr-val{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--text-main)}
 .sp-fighter-info.left .sp-ovr-row{justify-content:flex-end}.sp-fighter-info.right .sp-ovr-row{justify-content:flex-start}
-.sp-fighter-cond{font-size:9px;color:var(--text-dim)}.sp-champ{font-size:10px;color:var(--gold);font-weight:700}
-.sp-match-card-inner .portrait{border-radius:4px!important;border-width:1px!important;box-shadow:none!important}
+.sp-fighter-cond{font-size:10px;color:var(--text-dim)}.sp-champ{font-size:11px;color:var(--gold);font-weight:700}
+.sp-match-card-inner .portrait{border-radius:8px!important;border-width:1px!important;box-shadow:none!important}
 /* draw (integrated in fighter-info) */
-.sp-draw-block{margin-top:3px;padding-top:3px;border-top:1px solid rgba(200,190,170,.06)}
-.sp-draw-head{font-size:9px;color:var(--text-dim)}
-.sp-draw-val{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;color:var(--text-sub)}
-.sp-draw-sub{font-size:8px;color:var(--text-dim);line-height:1.3}
-.sp-draw-detail{font-size:8px;color:var(--text-dim);white-space:nowrap}
+.sp-draw-block{margin-top:4px;padding-top:4px;border-top:1px solid rgba(200,190,170,.06)}
+.sp-draw-head{font-size:10px;color:var(--text-dim)}
+.sp-draw-val{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--text-sub)}
+.sp-draw-sub{font-size:9px;color:var(--text-dim);line-height:1.3}
+.sp-draw-detail{font-size:9px;color:var(--text-dim);white-space:nowrap}
 /* appeal score */
-.sp-appeal-label{font-family:'Oswald',sans-serif;font-size:8px;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
-.sp-appeal-score{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:var(--text-main)}
-.sp-appeal-bonuses{font-size:9px;color:var(--text-sub);margin-top:2px;white-space:nowrap}
+.sp-appeal-label{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
+.sp-appeal-score{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;color:var(--text-main)}
+.sp-appeal-bonuses{font-size:10px;color:var(--text-sub);margin-top:2px;white-space:nowrap}
 /* center */
 .sp-match-center{text-align:center;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
-.sp-match-num{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;line-height:1;font-size:10px;color:var(--text-sub)}
-.sp-match-vs{font-family:'Bebas Neue',sans-serif;color:var(--text-dim);line-height:1;font-size:14px}
-.sp-match-rule{font-size:9px;color:var(--text-dim);margin-top:1px}
+.sp-match-num{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;line-height:1;font-size:11px;color:var(--text-sub)}
+.sp-match-vs{font-family:'Bebas Neue',sans-serif;color:var(--text-dim);line-height:1;font-size:16px}
+.sp-match-rule{font-size:10px;color:var(--text-dim);margin-top:2px}
 .sp-match-tags{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:3px}
-.sp-match-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;white-space:nowrap;border:none;background:none;font-family:inherit}
+.sp-match-tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;border:none;background:none;font-family:inherit}
 .sp-tag-rivalry{color:#e74c3c;background:rgba(231,76,60,.12)!important}
 .sp-tag-title{color:var(--gold);background:rgba(212,168,67,.12)!important;cursor:pointer}
 .sp-tag-stale{color:#e17055;background:rgba(225,112,85,.1)!important}
@@ -148,12 +148,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* tiers */
 .sp-match-card.main-event{margin-bottom:8px;border-color:rgba(212,168,67,.15);background:radial-gradient(ellipse at 12% 50%,rgba(212,168,67,.05) 0%,transparent 50%),var(--card-bg)}
 .sp-match-card.main-event::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 5%,rgba(212,168,67,.3) 25%,var(--gold) 50%,rgba(212,168,67,.3) 75%,transparent 95%);z-index:1;border-radius:6px 6px 0 0;pointer-events:none}
-.sp-match-card.main-event .sp-match-card-inner{padding:18px 14px}
-.sp-match-card.main-event .sp-match-num{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:2px}
-.sp-match-card.main-event .sp-match-vs{font-size:16px;color:rgba(212,168,67,.3)}
-.sp-match-card.main-event .sp-appeal-score{font-size:40px;color:var(--gold-light)}
-.sp-match-card.main-event .sp-fighter-name{font-size:17px}.sp-match-card.main-event .sp-ovr-val{font-size:26px}
-.sp-match-card.main-event .sp-draw-val{font-size:22px;color:var(--gold-light)}
+.sp-match-card.main-event .sp-match-card-inner{padding:20px 16px}
+.sp-match-card.main-event .sp-match-num{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2px}
+.sp-match-card.main-event .sp-match-vs{font-size:18px;color:rgba(212,168,67,.3)}
+.sp-match-card.main-event .sp-appeal-score{font-size:44px;color:var(--gold-light)}
+.sp-match-card.main-event .sp-fighter-name{font-size:18px}.sp-match-card.main-event .sp-ovr-val{font-size:28px}
+.sp-match-card.main-event .sp-draw-val{font-size:24px;color:var(--gold-light)}
 .sp-match-card.mid-card .sp-appeal-score{font-size:28px}
 .sp-match-card.undercard{opacity:.8;background:rgba(18,17,14,.6)}
 .sp-match-card.undercard .sp-draw-block{display:none}.sp-match-card.undercard .sp-appeal-score,.sp-match-card.undercard .sp-appeal-label{display:none}

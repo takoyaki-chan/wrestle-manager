@@ -2198,7 +2198,7 @@ function renderShowPrep() {
     else if (maxMatches >= 3 && i >= maxMatches - 2) { tier = 'undercard'; }
     else { tier = 'mid-card'; }
 
-    const ps = tier === 'main-event' ? 72 : 48;
+    const ps = tier === 'main-event' ? 100 : 72;
 
     // 試合番号（成立試合のみカウント）
     let matchNum = 0;
