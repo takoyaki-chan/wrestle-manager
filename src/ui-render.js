@@ -57,6 +57,7 @@ function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 // v2.1: Week screen sort state
 let _weekSortKey = 'ovr';
 let _weekSortDir = 'desc';
+let _spActivePicker = null; // showprep v7 picker state: { slotIdx, side } | null
 function setWeekSort(key) {
   if (_weekSortKey === key) _weekSortDir = _weekSortDir === 'desc' ? 'asc' : 'desc';
   else { _weekSortKey = key; _weekSortDir = 'desc'; }
@@ -1894,6 +1895,48 @@ function getAvailableForSlot(slotIndex, side) {
   }));
 }
 
+// ── showprep v7 picker ──────────────────────────────────────────────────────
+function _spOpenPicker(slotIdx, side) {
+  if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.side === side) {
+    _spActivePicker = null;
+  } else {
+    _spActivePicker = { slotIdx, side };
+  }
+  renderShowPrep();
+}
+function _spClosePicker() {
+  _spActivePicker = null;
+  renderShowPrep();
+}
+function _spSelectFighter(slotIdx, side, newId) {
+  _spClearHighlight();
+  App.setShowCardSlot(slotIdx, side, newId);
+  _spActivePicker = null;
+  renderShowPrep();
+}
+function _spHighlightSwap(fighterId) {
+  _spClearHighlight();
+  for (let i = 0; i < G.showCard.length; i++) {
+    if (G.showCard[i].left === fighterId || G.showCard[i].right === fighterId) {
+      const el = document.getElementById('sp-slot-' + i);
+      if (el) el.classList.add('swap-highlight');
+      break;
+    }
+  }
+}
+function _spClearHighlight() {
+  document.querySelectorAll('.sp-match-card.swap-highlight').forEach(el => el.classList.remove('swap-highlight'));
+}
+function _spAfterRender() {
+  if (_spActivePicker !== null) {
+    const el = document.getElementById('sp-picker-' + _spActivePicker.slotIdx);
+    if (el && el.innerHTML.trim()) {
+      requestAnimationFrame(() => { requestAnimationFrame(() => { el.classList.add('open'); }); });
+    }
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // 集客v2: カード評価ツールチップ
 function showMatchAppealTooltip(event, slotIdx) {
   if (!G.showCard || !G.showCard[slotIdx]) return;
@@ -2035,41 +2078,24 @@ function renderShowPrep() {
     });
     if (dirty) G = { ...G, showCard: cleaned };
   }
-  // v2.0: ファン期待度パネル（最大3件表示）
-  const fanExpects = Engine.fanExpect.generate(G);
-  if (fanExpects.length > 0) {
-    const validCurrent = G.showCard.filter(m => m.left > 0 && m.right > 0);
-    const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
-    html += `<div style="margin-bottom:14px;padding:10px 12px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:6px">`;
-    html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🎤 ファンの声 ${matchedCount > 0 ? `<span style="color:#2ecc71;font-size:11px">（${matchedCount}件反映中 → MQ+5 / 試合）</span>` : ''}</div>`;
-    fanExpects.forEach(exp => {
-      const isOnCard = validCurrent.some(m =>
-        (m.left === exp.leftId && m.right === exp.rightId) ||
-        (m.left === exp.rightId && m.right === exp.leftId)
-      );
-      const checkMark = isOnCard ? '<span style="color:#2ecc71;font-weight:700">✓ </span>' : '• ';
-      const color = isOnCard ? 'color:#2ecc71' : 'color:var(--text-sub)';
-      html += `<div style="font-size:11px;${color};margin-top:3px">${checkMark}${exp.reason}</div>`;
-    });
-    html += '</div>';
-  }
+  // ── 集客予測 + ファンの声 + マッチカード v7 ──────────────────────────────
 
-  // ── 集客予測（マッチカードの上に配置 — ファンの声と見比べやすく） ──
+  // 集客予測計算（v2）
+  const fanExpects = Engine.fanExpect.generate(G);
+  const validCurrent = G.showCard.filter(m => m.left > 0 && m.right > 0);
+  const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
   const hasTitlePreview = validMatches.some(m => m.isTitle);
-  const champIdPreview = G.titles?.world?.championId;
-  const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
-  const previewFanExpects = Engine.fanExpect.generate(G);
   const previewMatchAppeals = validMatches.map(m => {
     const fA = G.roster.find(c => c.id === m.left);
     const fB = G.roster.find(c => c.id === m.right);
     if (!fA || !fB) return 0;
     const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
     const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
-    const isFanExpect = previewFanExpects && previewFanExpects.some(fe =>
+    const isFE = fanExpects && fanExpects.some(fe =>
       (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
     return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
-      rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+      rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect: isFE,
     }, G);
   });
   const previewNonMatchPromo = G.roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
@@ -2077,53 +2103,124 @@ function renderShowPrep() {
   const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw);
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
   const v = VENUES[G.showVenue];
-  const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'
-    : (G.attendanceMomentum || 0) < -0.05 ? '📉 勢い低下' : '';
   const heat = getHeatLevel();
 
-  html += `<div style="padding:10px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:12px;margin-bottom:14px">
-    <div style="margin-bottom:6px;font-size:14px;font-weight:700;color:${prediction.color}">${prediction.text}</div>
-    <div style="margin-bottom:4px"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>${hasTitlePreview ? ' <span style="color:var(--gold)">🏆 タイトル戦</span>' : ''}${hasChampPreview ? ' <span style="color:var(--gold)">👑 王者出場</span>' : ''}</div>
-    <div><strong>会場:</strong> ${v.name}（${v.cap.toLocaleString()}席） <strong>会場費:</strong> -${v.cost}万${momentumLabel ? ` &nbsp;| ${momentumLabel}` : ''}</div>
-    ${estCrowdMQ.total !== 0 ? `<div style="margin-top:4px;color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">🏟️ 予想会場熱気: MQ全試合${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}${estCrowdMQ.crowdLabel ? '（' + estCrowdMQ.crowdLabel + '）' : ''}</div>` : ''}
+  // 予測レベル → ムードアイコン + ドット数
+  const _spPredMeta = [
+    { icon: '🔥', dots: 5 }, { icon: '🔥', dots: 5 },
+    { icon: '😊', dots: 4 }, { icon: '🤔', dots: 3 },
+    { icon: '😟', dots: 2 }, { icon: '😰', dots: 1 },
+  ];
+  const _spPredIdx = ATTENDANCE_PREDICTION.findIndex(p => prediction.estOccRate >= p.min);
+  const _spPred = _spPredIdx >= 0 ? _spPredMeta[_spPredIdx] : _spPredMeta[_spPredMeta.length - 1];
+  const _spMoodText = prediction.text.replace(/^[\S]+\s*/, '');
+  const _spDots = Array(5).fill(0).map((_, di) =>
+    `<div class="sp-mood-dot" style="${di < _spPred.dots ? 'background:' + prediction.color : ''}"></div>`
+  ).join('');
+
+  // 集客予測パネル v7
+  html += `<div class="sp-forecast">
+    <div class="sp-mood-row">
+      <div class="sp-mood-icon">${_spPred.icon}</div>
+      <div class="sp-mood-label" style="color:${prediction.color}">${_spMoodText}</div>
+      <div class="sp-mood-dots">${_spDots}</div>
+    </div>
+    <div class="sp-metrics">
+      <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
+      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}</div><div class="sp-metric-label">予想MQ</div></div>` : ''}
+      ${hasTitlePreview ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>` : ''}
+      <div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-sub)">${v.cap.toLocaleString()}</div><div class="sp-metric-label">会場席数</div></div>
+      <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">-${v.cost}万</div><div class="sp-metric-label">会場費</div></div>
+    </div>
   </div>`;
 
-  // ── マッチカード ──
-  html += `<div style="display:flex;align-items:center;gap:12px;margin-top:8px">
-    <div class="panel-title" style="margin:0">マッチカード（最大${maxMatches}試合）</div>
-    <button class="btn btn-blue btn-sm" onclick="autoFillCard();renderShowPrep()">✨ 自動編成</button>
-    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="App.clearShowCard()">🗑 全クリア</button>
+  // ファンの声 v7
+  if (fanExpects.length > 0) {
+    html += `<div class="sp-fan-voices">
+      <div class="sp-fan-voices-title">🎤 ファンの声${matchedCount > 0 ? ` <span style="color:var(--green);font-size:9px">（${matchedCount}件反映中 → MQ+5/試合）</span>` : ''}</div>
+      <div class="sp-fan-items">`;
+    fanExpects.forEach(exp => {
+      const isOnCard = validCurrent.some(m =>
+        (m.left === exp.leftId && m.right === exp.rightId) ||
+        (m.left === exp.rightId && m.right === exp.leftId));
+      html += `<div class="sp-fan-item${isOnCard ? ' matched' : ''}">${isOnCard ? '✓ ' : '• '}${exp.reason}</div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // カードヘッダー v7
+  html += `<div class="sp-card-header">
+    <span class="sp-card-header-title">Match Card</span>
+    <button class="btn btn-blue btn-sm" onclick="_spActivePicker=null;autoFillCard();renderShowPrep()">✨ 自動編成</button>
+    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">🗑 全クリア</button>
+    <span class="sp-venue-info">${v.name}（${v.cap.toLocaleString()}席）</span>
   </div>`;
 
-  // 成立試合数を事前カウント（空スロットを試合番号に数えない）
-  const filledSlots = G.showCard.filter(m => m.left > 0 && m.right > 0).length;
+  // マッチスロット v7
+  const _spParamStats = [
+    { key: 'pw', label: 'PWR', color: '#e74c3c' },
+    { key: 'sp', label: 'SPD', color: '#f39c12' },
+    { key: 'te', label: 'TEC', color: '#2ecc71' },
+    { key: 'st', label: 'STM', color: '#9b59b6' },
+    { key: 'mn', label: 'MNT', color: '#3498db' },
+  ];
+  const _spBuildParams = (f, side) => {
+    if (!f) return '';
+    return _spParamStats.map(s => {
+      const pct = Math.min(100, Math.max(0, f[s.key] || 0)) + '%';
+      return side === 'left'
+        ? `<div class="sp-param-row"><span class="sp-param-label">${s.label}</span><div class="sp-param-bar-bg"><div class="sp-param-bar" style="width:${pct};background:${s.color}"></div></div></div>`
+        : `<div class="sp-param-row"><div class="sp-param-bar-bg"><div class="sp-param-bar" style="width:${pct};background:${s.color}"></div></div><span class="sp-param-label">${s.label}</span></div>`;
+    }).join('');
+  };
+  const _spFighterInfo = (f, side, slotIdx) => {
+    if (!f) {
+      return `<div class="sp-fighter-info ${side}"><div class="sp-fighter-name empty" onclick="_spOpenPicker(${slotIdx},'${side}')">— 選手選択 —</div></div>`;
+    }
+    const isChamp = G.titles?.world?.championId === f.id;
+    const condOk = (f.condition || 100) >= 60;
+    return `<div class="sp-fighter-info ${side}">
+      ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
+      <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span></div>
+      <div class="sp-fighter-cond">体調 <span style="${condOk ? '' : 'color:var(--red)'}">${Math.round(f.condition || 100)}</span></div>
+    </div>`;
+  };
+  const _spPortrait = (f, size) => {
+    if (f) return portraitImg(f.id, size);
+    return `<div style="width:${size}px;height:${size}px;border-radius:4px;border:1px dashed rgba(200,190,170,.08);flex-shrink:0"></div>`;
+  };
 
   for (let i = 0; i < maxMatches; i++) {
-    const isMain = i === 0;
-    const availL = getAvailableForSlot(i, 'left');
-    const availR = getAvailableForSlot(i, 'right');
     const curL = G.showCard[i].left;
     const curR = G.showCard[i].right;
+    const fl = curL > 0 ? G.roster.find(c => c.id === curL) : null;
+    const fr = curR > 0 ? G.roster.find(c => c.id === curR) : null;
+    const isFilled = !!fl && !!fr;
+    const isEmpty = !fl && !fr;
 
-    const makeOptions = (avail, curVal) => {
-      let opts = '<option value="0">-- 選手選択 --</option>';
-      const ids = new Set(avail.map(c => c.id));
-      if (curVal > 0 && !ids.has(curVal)) {
-        const extra = G.roster.find(c => c.id === curVal);
-        if (extra) avail = [{ ...extra, _usedInOtherSlot: false }, ...avail];
+    // ティア判定
+    let tier;
+    if (isEmpty) { tier = 'empty-slot'; }
+    else if (i === 0) { tier = 'main-event'; }
+    else if (maxMatches >= 3 && i >= maxMatches - 2) { tier = 'undercard'; }
+    else { tier = 'mid-card'; }
+
+    const showParams = (tier === 'main-event' || tier === 'mid-card') && isFilled;
+    const ps = tier === 'main-event' ? 72 : tier === 'mid-card' ? 52 : 40;
+
+    // 試合番号（成立試合のみカウント）
+    let matchNum = 0;
+    if (isFilled) {
+      matchNum = 1;
+      for (let j = i + 1; j < maxMatches; j++) {
+        if (G.showCard[j].left > 0 && G.showCard[j].right > 0) matchNum++;
       }
-      avail.sort((a, b) => (a._usedInOtherSlot ? 1 : 0) - (b._usedInOtherSlot ? 1 : 0) || ov(b) - ov(a));
-      avail.forEach(c => {
-        const champMark = G.titles.world.championId === c.id ? '👑 ' : '';
-        const lastRunMark = c.lastRun ? '🌅 ' : '';
-        const usedMark = c._usedInOtherSlot ? '🔄 ' : '';
-        const usedSuffix = c._usedInOtherSlot ? ' [出場中]' : '';
-        const lastRunSuffix = c.lastRun ? ' [ラストラン]' : '';
-        opts += `<option value="${c.id}" ${curVal===c.id?'selected':''}>${usedMark}${lastRunMark}${champMark}${c.name} (総合:${ov(c)} 体調:${Math.round(c.condition)})${usedSuffix}${lastRunSuffix}</option>`;
-      });
-      return opts;
-    };
+    }
+    const matchLabel = (i === 0 && isFilled) ? 'MAIN EVENT' : isFilled ? `第${matchNum}試合` : '';
+    const matchRule = isFilled ? (i === 0 ? '30分1本勝負' : (maxMatches >= 3 && i >= maxMatches - 2) ? '15分1本勝負' : '20分1本勝負') : '';
 
+    // タグ計算
     const champId = G.titles.world.championId;
     const hasChamp = champId && (curL === champId || curR === champId);
     const isVacant = !champId;
@@ -2137,81 +2234,86 @@ function renderShowPrep() {
     const freshnessPreview = (curL > 0 && curR > 0)
       ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
       : null;
-    const lastRunL = curL > 0 ? G.roster.find(c => c.id === curL)?.lastRun : false;
-    const lastRunR = curR > 0 ? G.roster.find(c => c.id === curR)?.lastRun : false;
-    const isLastRunMatch = lastRunL || lastRunR;
+    const isLastRunMatch = (curL > 0 && G.roster.find(c => c.id === curL)?.lastRun) ||
+                           (curR > 0 && G.roster.find(c => c.id === curR)?.lastRun);
+    const isFanExpect = fanExpects && fanExpects.some(fe =>
+      (fe.leftId === curL && fe.rightId === curR) || (fe.leftId === curR && fe.rightId === curL));
 
-    // 試合番号: 成立試合のみカウント（空スロットは番号なし）
-    const isFilled = curL > 0 && curR > 0;
-    // 自分より下にある成立試合数 + 1 = 自分の試合番号
-    let matchNum = 0;
-    if (isFilled) {
-      matchNum = 1;
-      for (let j = i + 1; j < maxMatches; j++) {
-        if (G.showCard[j].left > 0 && G.showCard[j].right > 0) matchNum++;
-      }
+    const tagParts = [];
+    if (canTitle) {
+      tagParts.push(`<label class="sp-match-tag sp-tag-title"><input type="checkbox" ${isTitle ? 'checked' : ''} onchange="toggleTitle(${i});renderShowPrep()" style="margin-right:3px;vertical-align:middle"> 🏆${titleLabel}</label>`);
     }
-    const matchLabel = isMain && isFilled ? 'メインイベント'
-      : isFilled ? `第${matchNum}試合` : '';
-    const matchLabelStyle = isMain && isFilled
-      ? 'font-size:13px;font-weight:900;color:var(--gold);letter-spacing:1px'
-      : `font-size:11px;font-weight:700;color:${matchNum <= 2 ? 'var(--text-dim)' : 'var(--text-sub)'}`;
-
-    // 中央情報（マンネリ/因縁/タイトル等）
-    const centerInfoParts = [];
-    if (canTitle) centerInfoParts.push(`<label style="color:var(--gold);cursor:pointer;font-size:12px"><input type="checkbox" ${isTitle?'checked':''} onchange="toggleTitle(${i});renderShowPrep()"> 🏆${titleLabel}</label>`);
-    if (titleEligible && !cdCheck.allowed) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">⏳ タイトルまであと${cdCheck.weeksLeft}週</span>`);
-    if (titleEligible && cdCheck.allowed && slotHasRental) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">🤝 レンタル不可</span>`);
-    // 格差チェック
-    if (isTitle && champId && curL > 0 && curR > 0) {
-      const cf = champId === curL ? G.roster.find(c => c.id === curL) : G.roster.find(c => c.id === curR);
-      const chf = champId === curL ? G.roster.find(c => c.id === curR) : G.roster.find(c => c.id === curL);
+    if (titleEligible && !cdCheck.allowed) tagParts.push(`<span class="sp-match-tag sp-tag-dim">⏳${cdCheck.weeksLeft}週後</span>`);
+    if (titleEligible && cdCheck.allowed && slotHasRental) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🤝レンタル不可</span>`);
+    if (!G.titleEstablished && curL > 0 && curR > 0) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🔒王座未設立</span>`);
+    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
+    if (freshnessPreview && freshnessPreview.label) {
+      const isFresh = freshnessPreview.bonus > 0;
+      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} MQ${freshnessPreview.bonus >= 0 ? '+' : ''}${freshnessPreview.bonus}</span>`);
+    }
+    if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">📣ファン期待</span>`);
+    if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">🌅ラストマッチ</span>`);
+    if (isTitle && champId && fl && fr) {
+      const cf = G.roster.find(c => c.id === champId);
+      const chf = G.roster.find(c => c.id === (champId === curL ? curR : curL));
       if (cf && chf) {
         const gap = Engine.util.ov(cf) - Engine.util.ov(chf);
-        if (gap > 20) centerInfoParts.push(`<span style="color:#e74c3c;font-size:10px">⚠️ 格差大 MQ-6</span>`);
-        else if (gap > 10) centerInfoParts.push(`<span style="color:#e67e22;font-size:10px">⚠️ 格差 MQ-3</span>`);
+        if (gap > 20) tagParts.push(`<span class="sp-match-tag sp-tag-stale">⚠️格差大 MQ-6</span>`);
+        else if (gap > 10) tagParts.push(`<span class="sp-match-tag sp-tag-stale">⚠️格差 MQ-3</span>`);
       }
     }
-    if (!G.titleEstablished && curL > 0 && curR > 0) centerInfoParts.push(`<span style="color:var(--text-dim);font-size:10px">🔒 王座未設立</span>`);
-    if (rivalLvl) centerInfoParts.push(`<span style="color:${rivalLvl.color};font-size:12px">${rivalLvl.emoji}${rivalLvl.label}(MQ+${rivalLvl.mqBonus})</span>`);
-    if (freshnessPreview && freshnessPreview.label) centerInfoParts.push(`<span style="color:${freshnessPreview.bonus > 0 ? '#74b9ff' : '#e17055'};font-size:10px">${freshnessPreview.bonus > 0 ? '✨' : '😐'} ${freshnessPreview.label}(MQ${freshnessPreview.bonus > 0 ? '+' : ''}${freshnessPreview.bonus})</span>`);
-    if (isLastRunMatch) centerInfoParts.push(`<span style="color:var(--gold);font-weight:700;font-size:11px">🌅 ラストマッチ</span>`);
 
-    html += `<div class="match-slot ${isMain ? 'main-event' : ''}" style="margin-top:${isMain ? '12' : '6'}px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center${isLastRunMatch ? ';border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.03)' : ''}"
+    // ピッカーコンテンツ
+    const isPickerOpen = _spActivePicker && _spActivePicker.slotIdx === i;
+    const pickerSide = isPickerOpen ? _spActivePicker.side : null;
+    let pickerInner = '';
+    if (isPickerOpen) {
+      const otherSideCur = G.showCard[i][pickerSide === 'left' ? 'right' : 'left'];
+      const usedInOther = getUsedFighterIds(i);
+      const curInSide = G.showCard[i][pickerSide];
+      const pickerFighters = G.roster
+        .filter(c => !c.injury && !c.forcedRest && c.id !== curInSide && c.id !== otherSideCur)
+        .sort((a, b) => ov(b) - ov(a));
+      const rows = pickerFighters.map(c => {
+        const isAssigned = usedInOther.has(c.id);
+        const cls = isAssigned ? 'sp-picker-row assigned' : 'sp-picker-row';
+        const champBadge = G.titles?.world?.championId === c.id ? ' <span style="color:var(--gold);font-size:9px">👑</span>' : '';
+        const hoverEvts = isAssigned
+          ? ` onmouseenter="_spHighlightSwap(${c.id})" onmouseleave="_spClearHighlight()"` : '';
+        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text-sub);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+      }).join('');
+      pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">✕ 閉じる</span></div><div class="sp-picker-list">${rows}</div>`;
+    }
+
+    const cardBorder = isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
+    html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}
       onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
-      <!-- 左選手 -->
-      <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
-        <div class="match-fighter" style="flex:1;text-align:right">
-          <select onchange="onCardSelect(${i},'left',this.value)" style="text-align-last:right">
-            ${makeOptions(availL, curL)}
-          </select>
+      <div class="sp-match-card-inner">
+        <div class="sp-params left">${showParams ? _spBuildParams(fl, 'left') : ''}</div>
+        ${_spFighterInfo(fl, 'left', i)}
+        ${_spPortrait(fl, ps)}
+        <div class="sp-match-center">
+          ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
+          <div class="sp-match-vs">VS</div>
+          ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
+          ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
         </div>
-        ${curL > 0 ? portraitImg(curL, isMain ? 80 : 56) : '<div style="width:56px"></div>'}
+        ${_spPortrait(fr, ps)}
+        ${_spFighterInfo(fr, 'right', i)}
+        <div class="sp-params right">${showParams ? _spBuildParams(fr, 'right') : ''}</div>
       </div>
-      <!-- 中央: 試合番号 + 情報 -->
-      <div style="text-align:center;min-width:120px">
-        <div style="${matchLabelStyle}">${matchLabel}</div>
-        <div style="font-size:16px;font-weight:900;color:var(--text-main);margin:2px 0">VS</div>
-        ${centerInfoParts.length > 0 ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px">${centerInfoParts.join('')}</div>` : ''}
-      </div>
-      <!-- 右選手 -->
-      <div style="display:flex;align-items:center;gap:6px">
-        ${curR > 0 ? portraitImg(curR, isMain ? 80 : 56) : '<div style="width:56px"></div>'}
-        <div class="match-fighter" style="flex:1">
-          <select onchange="onCardSelect(${i},'right',this.value)">
-            ${makeOptions(availR, curR)}
-          </select>
-        </div>
-      </div>
+      <div class="sp-picker" id="sp-picker-${i}">${pickerInner}</div>
     </div>`;
   }
 
-  html += '<div class="btn-row" style="margin-top:16px">';
-  html += `<button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！ (${validMatches.length}試合)</button>`;
-  html += '<button class="btn btn-blue" onclick="G={...G,weekPhase:\'manage\'};showScreen(\'week\');refreshAll()">戻る</button>';
-  html += '</div>';
+  // 開催ボタン v7
+  html += `<div class="sp-action-row">
+    <button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！（${validMatches.length}試合）</button>
+    <button class="btn btn-blue" onclick="G={...G,weekPhase:'manage'};showScreen('week');refreshAll()">← 戻る</button>
+  </div>`;
 
   el.innerHTML = html;
+  _spAfterRender();
 }
 
 // 財務タブリデザイン: ラベル正規化ヘルパー
