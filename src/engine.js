@@ -822,6 +822,9 @@ const Engine = {
       // A10: 怪我復帰（preInjuryPopが設定されている=復帰直後）
       if (fighter.preInjuryPop && !fighter.injury) situational += cfg.injuryReturnBonus;
 
+      // A12: プロモ蓄積（プロモをやった選手は話題性が上がって集客に直結）
+      if (fighter.promoStack > 0) situational += fighter.promoStack * SHOW_DRAW_CONFIG.promoStackPerMatch;
+
       // A11: 所属年数
       const tenure = (fighter.careerSeasons || 1);
       if (tenure >= cfg.tenureStart) {
@@ -849,6 +852,7 @@ const Engine = {
       if (fighter.breakthroughWeeksLeft > 0) details.push({ label: '🔥BT', value: cfg.btBonus });
       if ((fighter.wins - fighter.losses) >= 5 && fighter.losingStreak === 0) details.push({ label: '📈連勝', value: cfg.winStreakBonus });
       if (fighter.slump) details.push({ label: '📉スランプ', value: cfg.slumpPenalty });
+      if (fighter.promoStack > 0) details.push({ label: '📢プロモ', value: fighter.promoStack * SHOW_DRAW_CONFIG.promoStackPerMatch });
       const total = Engine.attendanceV2.calcDrawPower(fighter, G);
       return { total: Math.round(total), popDraw, ovrDraw, traitDraw, traits, details, name: fighter.name };
     },
