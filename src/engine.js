@@ -10228,13 +10228,17 @@ Engine.orgPop = {
     return 0.08;                    // 覇権級: ほとんど上がらない
   },
 
-  // 施策A: 逓減適用 — 正方向のみ逓減、小数のまま返す（v1.5s25: 確率的丸め廃止）
+  // 施策A: 逓減適用 — 正方向は逓減フル、負方向はorgPop40+で軽い逓減
   applyOrgPopChange(rawDelta, orgPop, rng) {
     if (rawDelta > 0) {
       const mult = Engine.orgPop.getDiminishingMultiplier(orgPop);
-      return rawDelta * mult;  // 小数のまま返す
+      return rawDelta * mult;
     }
-    // 下落には逓減を適用しない（高人気ほど落ちやすいまま）
+    // 負方向: orgPop40+で軽い逓減（高orgPop帯の崩落を緩和）
+    if (orgPop >= 40) {
+      const negMult = orgPop >= 60 ? 0.5 : 0.7;
+      return rawDelta * negMult;
+    }
     return rawDelta;
   },
 
