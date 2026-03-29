@@ -979,10 +979,11 @@ const Engine = {
       const expectedMQ = cfg.expectedMQTotal[expectedIdx] || 120;
       const mqScore = Math.min(cfg.mqScoreMax, (weightedMQ / expectedMQ) * cfg.mqScoreMax);
 
-      // --- occupancyScore ---
+      // --- occupancyScore（会場階層で下限調整） ---
       const occupancy = venueCap > 0 ? attendance / venueCap : 0;
       const occEntry = cfg.occupancyScoreTable.find(e => occupancy >= e.min) || cfg.occupancyScoreTable[cfg.occupancyScoreTable.length - 1];
-      const occScore = occEntry.score;
+      const occPenaltyFloor = (cfg.venueOccPenaltyFloor && cfg.venueOccPenaltyFloor[venueIdx] != null) ? cfg.venueOccPenaltyFloor[venueIdx] : -5;
+      const occScore = Math.max(occEntry.score, occPenaltyFloor);
 
       // --- bonusScore ---
       let bonusScore = 0;
@@ -1003,9 +1004,10 @@ const Engine = {
       else if (matchCount <= minMatches - 2) bonusScore += cfg.matchCountShortPenalty;
       bonusScore = Math.min(bonusScore, cfg.bonusCap);
 
-      // --- 合計 → ★変換 ---
+      // --- 合計 → ★変換（会場階層オフセット適用） ---
       const totalScore = Math.round((mqScore + occScore + bonusScore) * 10) / 10;
-      const starEntry = cfg.starThresholds.find(e => totalScore >= e.min) || cfg.starThresholds[cfg.starThresholds.length - 1];
+      const tierOffset = (cfg.venueTierOffset && cfg.venueTierOffset[venueIdx] != null) ? cfg.venueTierOffset[venueIdx] : 0;
+      const starEntry = cfg.starThresholds.find(e => totalScore >= (e.min + tierOffset)) || cfg.starThresholds[cfg.starThresholds.length - 1];
 
       return {
         totalScore,

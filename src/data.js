@@ -1010,8 +1010,7 @@ const SHOW_RATING_CONFIG = {
   fanExpectBonus: 4,            // 1件あたり
   matchCountFullBonus: 3,
   matchCountShortPenalty: -5,
-  // ★変換
-  // ※auto-sim実測: orgPop40-60帯でtotal≈71→★4が75%を占めた。閾値を引き上げ
+  // ★変換（基準閾値 — 会場階層オフセットが加算される）
   starThresholds: [
     { min: 82, stars: 5 },
     { min: 70, stars: 4 },
@@ -1019,6 +1018,11 @@ const SHOW_RATING_CONFIG = {
     { min: 30, stars: 2 },
     { min: 0,  stars: 1 },
   ],
+  // 会場階層: 小規模ほど★基準が甘い。公民館の★3とアリーナの★3は別基準
+  // venue 0-2(小規模-18) / 3-5(中規模-8) / 6-8(大規模±0) / 9(ドーム+3)
+  venueTierOffset: [-18, -18, -18, -8, -8, -8, 0, 0, 0, 3],
+  // 小規模会場(0-2)では占有率ペナルティを免除（cap小さすぎて不公平）
+  venueOccPenaltyFloor: [0, 0, 0, -5, -5, -5, -5, -5, -5, -5],
   // ★ → heat変動
   heatDeltaByStars: { 5: 2.5, 4: 1.5, 3: 0, 2: -1.0, 1: -2.0 },
   // ★ → orgPop変動（逓減適用前の生値）
