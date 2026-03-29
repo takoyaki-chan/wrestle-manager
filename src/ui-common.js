@@ -80,8 +80,8 @@ function showCustomTooltip(el, html) {
   tip.innerHTML = html;
   tip.style.display = 'block';
   const rect = el.getBoundingClientRect();
-  const tipW = 250;
-  let left = rect.left;
+  const tipW = tip.offsetWidth || 250;
+  let left = rect.left + rect.width / 2 - tipW / 2;
   if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
   if (left < 8) left = 8;
   let top = rect.top + rect.height / 2 - tip.offsetHeight / 2;

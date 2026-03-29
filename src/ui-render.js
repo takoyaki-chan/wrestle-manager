@@ -2157,30 +2157,25 @@ function renderShowPrep() {
   </div>`;
 
   // マッチスロット v7
-  const _spBuildDrawInfo = (d, side) => {
-    if (!d) return `<div class="sp-draw-info ${side}"></div>`;
-    const subParts = [`pop${d.popDraw}`];
-    if (d.ovrDraw !== 0) subParts.push(`ovr${d.ovrDraw >= 0 ? '+' : ''}${d.ovrDraw}`);
-    const detHtml = (d.details || []).slice(0, 3).map(det =>
-      `<div class="sp-draw-detail">${det.label}+${det.value}</div>`).join('');
-    return `<div class="sp-draw-info ${side}">
-      <div class="sp-draw-label">集客力</div>
-      <div class="sp-draw-total">${d.total}</div>
-      <div class="sp-draw-sub">${subParts.join(' ')}</div>
-      ${detHtml ? `<div class="sp-draw-details">${detHtml}</div>` : ''}
-    </div>`;
-  };
-  const _spFighterInfo = (f, side, slotIdx) => {
+  const _spFighterInfo = (f, side, slotIdx, drawData) => {
     if (!f) {
       return `<div class="sp-fighter-info ${side}"><div class="sp-fighter-name empty" onclick="_spOpenPicker(${slotIdx},'${side}')">— 選手選択 —</div></div>`;
     }
     const isChamp = G.titles?.world?.championId === f.id;
     const condOk = (f.condition || 100) >= 60;
+    let drawHtml = '';
+    if (drawData) {
+      const sub = [`pop${drawData.popDraw}`];
+      if (drawData.ovrDraw !== 0) sub.push(`ovr${drawData.ovrDraw >= 0 ? '+' : ''}${drawData.ovrDraw}`);
+      const dets = [...(drawData.traits || []), ...(drawData.details || [])].slice(0, 3)
+        .map(d => `<span class="sp-draw-detail">${d.label}+${d.value}</span>`).join(' ');
+      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val">${drawData.total}</span><div class="sp-draw-sub">${sub.join(' ')}${dets ? ' ' + dets : ''}</div></div>`;
+    }
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
-      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span></div>
-      <div class="sp-fighter-cond">体調 <span style="${condOk ? '' : 'color:var(--red)'}">${Math.round(f.condition || 100)}</span></div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${condOk ? '' : 'color:var(--red)'}">${Math.round(f.condition || 100)}</span></span></div>
+      ${drawHtml}
     </div>`;
   };
   const _spPortrait = (f, size) => {
@@ -2294,8 +2289,7 @@ function renderShowPrep() {
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}
       onmouseenter="showMatchAppealTooltip(event,${i})" onmouseleave="hideCustomTooltip()">
       <div class="sp-match-card-inner">
-        ${slotBD ? _spBuildDrawInfo(slotBD.drawA, 'left') : '<div class="sp-draw-info left"></div>'}
-        ${_spFighterInfo(fl, 'left', i)}
+        ${_spFighterInfo(fl, 'left', i, slotBD?.drawA)}
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
@@ -2305,8 +2299,7 @@ function renderShowPrep() {
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
-        ${_spFighterInfo(fr, 'right', i)}
-        ${slotBD ? _spBuildDrawInfo(slotBD.drawB, 'right') : '<div class="sp-draw-info right"></div>'}
+        ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}
       </div>
       <div class="sp-picker" id="sp-picker-${i}">${pickerInner}</div>
     </div>`;
