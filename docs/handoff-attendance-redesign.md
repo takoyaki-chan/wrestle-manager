@@ -68,54 +68,40 @@ totalScore = mqScore(max60) + occScore(max15) + bonusScore(max25)
 | 20-40 | 465 | 455 | 1.01 | ★2:8 ★3:46 ★4:8 |
 | 40-60 | 1,106 | 1,089 | 0.90 | ★3:371 ★4:629 ★5:26 |
 
-## 次のセッションでやること: Phase 4（本切り替え）
+## Phase 4 完了（2026-03-29）
 
-### 差し替え対象（影響範囲大・慎重に）
+### 実装内容
+全差し替え完了。以下が★ベースに移行済み:
+1. 集客計算: calcAttendance → calcAttendanceV2（全3箇所: executeShow/processSettlement/finalizeShow）
+2. heat更新: calcUpdate(G, avgMQ) → calcUpdate(G, stars)（全3箇所: executeShow/finalizeShow/applyPPVResults）
+3. orgPop変動: applyShowPopularity → ★ベース + 序盤保護（orgPop<15: ペナなし+★3で+1.0、orgPop<30: ペナ半減+★3で+0.5）
+4. メディア放映収入: avgMQ×showPerMQ → baseBroadcast(55万)×mediaMult[stars]
+5. AI団体: 簡易★(avgMQ→stars変換)でorgPop変動追加
+6. 興行準備予測: getAttendancePrediction → showDrawベースv2
+7. 新聞showRating: 旧avgMQ-expected方式 → engine側calcShowRating統一
 
-1. **集客計算の差し替え**
-   - `processSettlement`（engine.js L5759付近）: 旧`calcAttendance` → `Engine.attendanceV2`系に
-   - `executeShow`内のattendance関連処理
-   - `getAttendancePrediction`: 興行準備画面のプレビュー更新
-   - app.js `finalizeShow` のattendance呼び出し
-
-2. **heat更新の差し替え**
-   - `Engine.heat.calcUpdate(G, avgMQ)` → ショーレーティング★ベースに
-   - 呼び出し元: `processSettlement` 内
-   - avgMQ直接参照を完全廃止
-
-3. **orgPop変動の差し替え**
-   - `VENUE_MQ_THRESHOLD` 依存のMQ閾値ロジック → ★ベースに
-   - `Engine.orgPop.getMQAdjust` → 廃止
-   - ★5で+2.0, ★1で-1.0（getDiminishingMultiplier適用はそのまま）
-
-4. **メディア放映収入の差し替え**
-   - `MEDIA_CONFIG.showPerMQ × avgMQ` → `SHOW_RATING_CONFIG.mediaMult[stars] × baseBroadcast`
-   - baseBroadcastは現行avgMQ50想定時の収入から逆算
-
-5. **AI団体の処理**
-   - AI興行でもショーレーティングを算出（simulateMatchのMQ使用）
-   - AI団体のheat/orgPop変動も★ベースに統一
-
-### 切り替え後の検証
-- auto-sim 100シーズンで `ALL CLEAR` 確認
-- orgPop推移が現行と大きく乖離しないことを確認
-- 財務バランス（funds推移）が破綻しないことを確認
-- 大規模テスト（100×100）推奨
+### auto-sim計測結果（100シード×100シーズン）
+- ALL CLEAR（violation 0, error 0）
+- ★分布: ★3が最頻、★4/5が稀少 — 設計意図通り
+- orgPop: 15-30帯で安定（旧より低め — チューニング余地あり）
+- 新旧集客差: 0-20帯で約7%減、20-40帯で約3%減 — 許容範囲
 
 ### Phase 5（後続・別セッション）
-- 新聞に★表示追加
-- 集客内訳の可視化（「なぜ今日これだけ入ったか」）
-- 個人の収益貢献の見える化
-- プロモ効果の演出
+- 新聞に★表示追加（★マーク+コメント）
+- 集客内訳の可視化（「なぜ今日これだけ入ったか」）— reach/draw/heatの内訳表示
+- 個人の収益貢献の見える化（drawPower順表示）
+- プロモ効果の演出（promoStack→showDrawへの影響を見せる）
 - ファン期待カード決定ロジック見直し
+- orgPop成長曲線のチューニング（現在15-30帯で頭打ち、旧システムでは40-60まで到達可能だった）
+- VENUE_MQ_THRESHOLD / getMQAdjust の廃止（参照なし確認後）
+- 旧calcAttendance関数の廃止（auto-sim比較用に残存）
 
 ## 注意事項
 
-- **影響範囲が非常に大きい改修**。集客→チケット→グッズ→メディア→会場選択→orgPop全てに波及
-- 切り替えはprocessSettlementを中心に。executeShowの中は試合MQ算出がメインなので比較的安全
-- avgMQ自体は統計値として残してもいいが、ゲームメカニクスからは完全に切り離す
-- 「演出がないと気づかない」がテスターの共通意見。Phase 5で見せ方も作る
-- 低orgPop帯（0-20）で新集客が旧より20%低い。序盤がきつくなりすぎないか要注意
+- avgMQは統計値として残存（新聞表示・ブレイクスルー判定・auto-simレポート）
+- ゲームメカニクスからはavgMQ完全分離済み（heat/orgPop/メディアは全て★経由）
+- 旧calcAttendance/getMQAdjust/VENUE_MQ_THRESHOLDは未削除（auto-sim比較用）
+- 低orgPop帯の成長が旧より遅い — Phase 5でチューニング検討
 
 ## 関連ファイル
 - 設計書: `docs/attendance-redesign-v1.md`

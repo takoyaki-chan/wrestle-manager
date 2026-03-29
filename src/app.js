@@ -3990,19 +3990,25 @@ const App = {
       s = { ...s, lastIntrusionWeek: intAbsWeek };
     }
 
-    // v1.0c: 会場熱気MQボーナス — 満員率＋会場規模が全試合のMQを補正
-    const showMatchPops = validMatches.map(m => {
-      const lc = roster.find(c => c.id === m.left);
-      const rc = roster.find(c => c.id === m.right);
-      return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
+    // 集客v2: matchAppeals→showDraw→attendance算出
+    const appFanExpects = Engine.fanExpect.generate(s);
+    const appMatchAppeals = validMatches.map(m => {
+      const fA = roster.find(c => c.id === m.left);
+      const fB = roster.find(c => c.id === m.right);
+      if (!fA || !fB) return { totalAppeal: 0 };
+      const rivalryAB = s.relationships ? (s.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
+      const rivalryBA = s.relationships ? (s.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
+      const isFanExpect = appFanExpects && appFanExpects.some(fe =>
+        (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+      return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+        rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+      }, s);
     });
-    const showCardPop = Engine.economy.calcCardPop(showMatchPops);
-    const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
-    const champIdForAttend = s.titles?.world?.championId;
-    const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    // L1: 集客計算（seed 0xA77E で週次揺らぎ付き — Engine.executeShow/processSettlementと同一結果）
+    const appNonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+    const appShowDraw = Engine.attendanceV2.calcShowDraw(appMatchAppeals, appNonMatchPromo, s.showVenue);
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
-    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng);
+    const appV2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, appShowDraw, attendRng);
+    let preAttendance = appV2Result.attendance;
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
@@ -4115,8 +4121,25 @@ const App = {
       const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
       roster = mqPop.roster;
     });
+    // 集客v2: ★算出
+    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const appRatingCtx = {
+      hasTitleMatch: validMatches.some(m => m.isTitle),
+      titleGreatMQ: validMatches.some(m => m.isTitle) ? results.find((r, i) => validMatches[i]?.isTitle)?.mq || 0 : 0,
+      rivalryResolved: results.some(r => r.rivalryResolved),
+      rivalryCards: validMatches.filter(m => {
+        if (!s.relationships) return false;
+        const rAB = s.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
+        const rBA = s.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
+        return Math.max(rAB, rBA) >= 30;
+      }).length,
+      fanExpectMatches: appFanExpects ? Engine.fanExpect.countMatched(validMatches, appFanExpects) : 0,
+    };
+    const appRating = Engine.attendanceV2.calcShowRating(results, preAttendance, VENUES[s.showVenue].cap, s.showVenue, appRatingCtx);
+    const appStars = appRating.stars;
+
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, s.showVenue);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, appStars);
     roster = popResult.roster;
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
@@ -4127,12 +4150,11 @@ const App = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${appStars} (MQ avg ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
-    // Heat
-    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeatScore = Engine.heat.calcUpdate(s, appStars);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
@@ -4742,17 +4764,23 @@ const App = {
       };
     }).filter(Boolean);
 
-    // ── showRating: 興行総合評価 ──
-    const expectedMQ = Math.round(25 + (G.orgPop || 0) * 0.6);
-    const mqDiff = avgMQ - expectedMQ;
-    let stars;
-    if (mqDiff >= 20) stars = 5;
-    else if (mqDiff >= 10) stars = 4;
-    else if (mqDiff >= 0) stars = 3;
-    else if (mqDiff >= -10) stars = 2;
-    else if (mqDiff >= -20) stars = 1;
-    else stars = 0;
-    const showRating = { stars, expected: expectedMQ, actual: avgMQ, diff: mqDiff };
+    // 集客v2: ★評価をv2 calcShowRating で算出
+    const npValidMatches = (G.showCard || []).filter(m => m.left > 0 && m.right > 0);
+    const npFanExpects = Engine.fanExpect.generate(G);
+    const npRatingCtx = {
+      hasTitleMatch: npValidMatches.some(m => m.isTitle),
+      titleGreatMQ: npValidMatches.some(m => m.isTitle) ? results.find((r, i) => npValidMatches[i]?.isTitle)?.mq || 0 : 0,
+      rivalryResolved: results.some(r => r.rivalryResolved),
+      rivalryCards: npValidMatches.filter(m => {
+        if (!G.relationships) return false;
+        const rAB = G.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
+        const rBA = G.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
+        return Math.max(rAB, rBA) >= 30;
+      }).length,
+      fanExpectMatches: npFanExpects ? Engine.fanExpect.countMatched(npValidMatches, npFanExpects) : 0,
+    };
+    const npRating = Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
+    const showRating = { stars: npRating.stars, totalScore: npRating.totalScore, mqScore: npRating.mqScore, occScore: npRating.occScore, bonusScore: npRating.bonusScore, actual: avgMQ };
 
     // ── preview: 次回展望データ ──
     const preview = { fanExpect: [], rivalry: null, title: null };

@@ -2085,20 +2085,24 @@ function renderShowPrep() {
     </div>`;
   }
 
-  // L1: ざっくり集客予測（正確な数字は非表示）
+  // 集客v2: ざっくり集客予測（matchAppeals→showDraw→v2予測）
   const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
-  const mainPop = validMatches.length > 0 ?
-    Engine.economy.calcCardPop(validMatches.map(m => {
-      const l = G.roster.find(c => c.id === m.left);
-      const r = G.roster.find(c => c.id === m.right);
-      return (l ? l.popularity : 0) + (r ? r.popularity : 0);
-    })) : 0;
-  const hasTitlePreview = validMatches.some(m => m.isTitle);
-  const champIdPreview = G.titles?.world?.championId;
-  const hasChampPreview = champIdPreview ? validMatches.some(m => m.left === champIdPreview || m.right === champIdPreview) : false;
   const previewFanExpects = Engine.fanExpect.generate(G);
-  const previewFanExpectCount = Engine.fanExpect.countMatched(G.showCard, previewFanExpects);
-  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, mainPop, hasTitlePreview, hasChampPreview, previewFanExpectCount);
+  const previewMatchAppeals = validMatches.map(m => {
+    const fA = G.roster.find(c => c.id === m.left);
+    const fB = G.roster.find(c => c.id === m.right);
+    if (!fA || !fB) return { totalAppeal: 0 };
+    const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
+    const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
+    const isFanExpect = previewFanExpects && previewFanExpects.some(fe =>
+      (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+    return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+      rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+    }, G);
+  });
+  const previewNonMatchPromo = G.roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+  const previewShowDraw = Engine.attendanceV2.calcShowDraw(previewMatchAppeals, previewNonMatchPromo, G.showVenue);
+  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw);
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
   const v = VENUES[G.showVenue];
   const momentumLabel = (G.attendanceMomentum || 0) > 0.05 ? '📈 勢いあり'

@@ -632,12 +632,13 @@ const Engine = {
     calcWeeklyMediaRev(orgPop) {
       return Math.round(orgPop * MEDIA_CONFIG.weeklyPerOrgPop);
     },
-    // 金銭バランス改善: 興行放映収入
-    calcShowMediaRev(avgMQ, venueIdx, hasTitleMatch, orgPop) {
+    // 集客v2: 興行放映収入（★ベース）
+    calcShowMediaRev(stars, venueIdx, orgPop) {
+      const baseBroadcast = 55; // 旧avgMQ50想定時: 50×1.1=55万円
+      const mediaMult = SHOW_RATING_CONFIG.mediaMult[stars] || 1.0;
       const venueMult = VENUE_MEDIA_MULT[venueIdx] || 1.0;
-      const titleMult = hasTitleMatch ? 1.5 : 1.0;
       const orgPopMult = Engine.economy.calcMediaOrgPopMult(orgPop);
-      return Math.round(avgMQ * MEDIA_CONFIG.showPerMQ * venueMult * titleMult * orgPopMult);
+      return Math.round(baseBroadcast * mediaMult * venueMult * orgPopMult);
     },
     // v1.7: 育成補助金（地域振興助成金）— orgPop 40未満の小団体を支援
     getSubsidy(orgPop) {
@@ -705,11 +706,11 @@ const Engine = {
       if (occupancyRate >= 0.30) return MOMENTUM_CONFIG.WEAK_DELTA;
       return MOMENTUM_CONFIG.EMPTY_DELTA;
     },
-    // L1: ざっくり集客予測（3段階テキスト）
-    getAttendancePrediction(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, fanExpectCount) {
+    // 集客v2: ざっくり集客予測（3段階テキスト）— showDraw使用
+    getAttendancePrediction(G, venueIdx, showDraw) {
       const v = VENUES[venueIdx];
-      const estAttend = Engine.economy.calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, null, fanExpectCount);
-      const estOccRate = estAttend / v.cap;
+      const v2Result = Engine.attendanceV2.calcAttendanceV2(G, venueIdx, showDraw || 0, null);
+      const estOccRate = v2Result.attendance / v.cap;
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
     },
@@ -750,8 +751,8 @@ const Engine = {
       return HEAT_LEVELS.find(h => G.heatScore >= h.min && G.heatScore <= h.max) || HEAT_LEVELS[2];
     },
     getMult(G) { return Engine.heat.getLevel(G).mult; },
-    calcUpdate(G, avgMQ) {
-      let delta = avgMQ >= 75 ? 2 : avgMQ >= 60 ? 1 : avgMQ >= 40 ? 0 : avgMQ >= 25 ? -1 : -2;
+    calcUpdate(G, stars) {
+      let delta = SHOW_RATING_CONFIG.heatDeltaByStars[stars] || 0;
       // v1.5: 施策E — Heat上限帯の減衰（HOT以上では上昇量半減）
       if (delta > 0 && G.heatScore >= 6) delta *= 0.5;
       if (G.heatScore > 0 && delta <= 0) delta -= 0.5;
@@ -4661,6 +4662,15 @@ const Engine = {
         nextOrgData.matchupLog = [...(nextOrgData.matchupLog || []), ...newEntries];
         nextOrgData.showCount = (nextOrgData.showCount || 0) + 1;
 
+        // 集客v2: AI団体も★ベースorgPop変動（簡易★算出 — avgMQベース）
+        if (matchResults.length > 0) {
+          const aiAvgMQ = Math.round(matchResults.reduce((a, r) => a + (r.mq || 0), 0) / matchResults.length);
+          const aiStars = aiAvgMQ >= 80 ? 5 : aiAvgMQ >= 65 ? 4 : aiAvgMQ >= 50 ? 3 : aiAvgMQ >= 35 ? 2 : 1;
+          const aiRawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[aiStars] || 0;
+          const aiPopDelta = Engine.orgPop.applyOrgPopChange(aiRawDelta, nextOrgData.orgPop || 50, null);
+          nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiPopDelta, 0, 100);
+        }
+
         // AI団体 wins/losses/draws/streak 更新（プレイヤー団体processSettlementと同等）
         matchResults.forEach(r => {
           const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
@@ -6048,25 +6058,45 @@ const Engine = {
       let newLockerRoomMorale = null; // 興行週のみ更新、null の場合は tickWeek で既存値を維持
 
       if (Engine.util.isShowWeek(G.week) && G.lastShowResults.length > 0) {
-        // v1.0c: 積み上げ方式（平均→calcCardPop）
-        const matchPops = G.lastShowResults.map(r => {
-          const lc = roster.find(c => c.id === r.left.id);
-          const rc = roster.find(c => c.id === r.right.id);
-          return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
-        });
-        const mainPop = Engine.economy.calcCardPop(matchPops);
-
-        const hasTitleMatch = G.showCard.some(m => m.isTitle && m.left > 0 && m.right > 0);
-        const champId = G.titles?.world?.championId;
-        const hasChampOnCard = champId ? G.showCard.some(m => m.left === champId || m.right === champId) : false;
-        // L1: 集客計算（seed 0xA77E で週次揺らぎ付き）
-        const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
+        // 集客v2: matchAppeals→showDraw→attendance算出
         const settleFanExpects = Engine.fanExpect.generate(G);
-        const settleFanExpectCount = Engine.fanExpect.countMatched(G.showCard, settleFanExpects);
-        let attendance = Engine.economy.calcAttendance(G, G.showVenue, mainPop, hasTitleMatch, hasChampOnCard, attendRng, settleFanExpectCount);
+        const settleValidMatches = (G.showCard || []).filter(m => m.left > 0 && m.right > 0);
+        const settleMatchAppeals = settleValidMatches.map(m => {
+          const fA = roster.find(c => c.id === m.left);
+          const fB = roster.find(c => c.id === m.right);
+          if (!fA || !fB) return { totalAppeal: 0 };
+          const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
+          const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
+          const isFanExpect = settleFanExpects && settleFanExpects.some(fe =>
+            (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+          return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+            rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+          }, G);
+        });
+        const settleNonMatchPromo = roster.filter(c => !settleValidMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+        const settleShowDraw = Engine.attendanceV2.calcShowDraw(settleMatchAppeals, settleNonMatchPromo, G.showVenue);
+        const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
+        const settleV2 = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, settleShowDraw, attendRng);
+        let attendance = settleV2.attendance;
         // v1.5s25b: attendance_boost バフ（マイルストーン）
         const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
         if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
+        // 集客v2: ★算出（メディア収入計算用）
+        const hasTitleMatch = settleValidMatches.some(m => m.isTitle);
+        const settleRatingCtx = {
+          hasTitleMatch,
+          titleGreatMQ: hasTitleMatch ? (G.lastShowResults.find((r, i) => settleValidMatches[i]?.isTitle)?.mq || 0) : 0,
+          rivalryResolved: G.lastShowResults.some(r => r.rivalryResolved),
+          rivalryCards: settleValidMatches.filter(m => {
+            if (!G.relationships) return false;
+            const rAB = G.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
+            const rBA = G.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
+            return Math.max(rAB, rBA) >= 30;
+          }).length,
+          fanExpectMatches: settleFanExpects ? Engine.fanExpect.countMatched(settleValidMatches, settleFanExpects) : 0,
+        };
+        const settleRating = Engine.attendanceV2.calcShowRating(G.lastShowResults, attendance, VENUES[G.showVenue].cap, G.showVenue, settleRatingCtx);
+        const settleStars = settleRating.stars;
         const rev = Engine.economy.calcShowRevenue(G.showVenue, attendance);
 
         totalIncome += rev.ticketRev;
@@ -6083,18 +6113,16 @@ const Engine = {
           details.push({ label: 'グッズ収入（興行ブースト）', val: showGoods, type: 'income', category: 'goods' });
         }
 
-        // 金銭バランス改善: 興行放映メディア収入
-        const avgMQ = G.lastShowResults.length > 0
-          ? G.lastShowResults.reduce((s, r) => s + (r.matchQuality || 0), 0) / G.lastShowResults.length
-          : 0;
-        const showMedia = Engine.economy.calcShowMediaRev(avgMQ, G.showVenue, hasTitleMatch, G.orgPop);
+        // 集客v2: 興行放映メディア収入（★ベース）
+        const showMedia = Engine.economy.calcShowMediaRev(settleStars, G.showVenue, G.orgPop);
         if (showMedia > 0) {
           totalIncome += showMedia;
           details.push({ label: 'メディア収入（興行放映）', val: showMedia, type: 'income', category: 'media' });
         }
 
-        // 金銭バランス改善: ファン期待カード実現メディア
+        // 集客v2: ファン期待カード実現メディア（★ベース）
         const orgPopMult = Engine.economy.calcMediaOrgPopMult(G.orgPop);
+        const settleMediaMult = SHOW_RATING_CONFIG.mediaMult[settleStars] || 1.0;
         if (settleFanExpects && settleFanExpects.length > 0) {
           let fanExpectMedia = 0;
           settleFanExpects.forEach(fe => {
@@ -6103,7 +6131,7 @@ const Engine = {
               (m.left === fe.rightId && m.right === fe.leftId)
             );
             if (matched) {
-              fanExpectMedia += Math.round(fe.priority * MEDIA_CONFIG.fanExpectPerPriority * (avgMQ / 70) * orgPopMult);
+              fanExpectMedia += Math.round(fe.priority * MEDIA_CONFIG.fanExpectPerPriority * settleMediaMult * orgPopMult);
             }
           });
           if (fanExpectMedia > 0) {
@@ -6112,9 +6140,10 @@ const Engine = {
           }
         }
 
-        // 金銭バランス改善: ライバル抗争カードメディア
+        // 集客v2: ライバル抗争カードメディア（★ベース）
         if (G.showCard && G.relationships) {
           let rivalryMedia = 0;
+          const baseBroadcast = 55;
           G.showCard.forEach(m => {
             if (m.left > 0 && m.right > 0) {
               const keyAB = `${m.left}>${m.right}`;
@@ -6122,8 +6151,8 @@ const Engine = {
               const rivalryAB = G.relationships[keyAB]?.rivalry || 0;
               const rivalryBA = G.relationships[keyBA]?.rivalry || 0;
               const rivalryVal = Math.max(rivalryAB, rivalryBA);
-              if (rivalryVal > 20) { // 最低閾値: rivalry20+でメディア収入発生
-                rivalryMedia += Math.round(rivalryVal * avgMQ * MEDIA_CONFIG.rivalryCoeff * orgPopMult);
+              if (rivalryVal > 20) {
+                rivalryMedia += Math.round(rivalryVal * baseBroadcast * settleMediaMult * MEDIA_CONFIG.rivalryCoeff * orgPopMult);
               }
             }
           });
@@ -6684,21 +6713,25 @@ const Engine = {
       }
     });
 
-    // v1.0c: 会場熱気MQボーナス算出（満員率＋会場規模）
-    const showMatchPops = validMatches.map(m => {
-      const lc = roster.find(c => c.id === m.left);
-      const rc = roster.find(c => c.id === m.right);
-      return (lc ? lc.popularity : 0) + (rc ? rc.popularity : 0);
-    });
-    const showCardPop = Engine.economy.calcCardPop(showMatchPops);
-    const hasTitleMatchForAttend = validMatches.some(m => m.isTitle);
-    const champIdForAttend = s.titles?.world?.championId;
-    const hasChampOnCardForAttend = champIdForAttend ? validMatches.some(m => m.left === champIdForAttend || m.right === champIdForAttend) : false;
-    // L1: 集客計算（seed 0xA77E で週次揺らぎ付き — processSettlementと同一結果）
-    const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
+    // 集客v2: matchAppeals→showDraw→attendance算出
     const execFanExpects = Engine.fanExpect.generate(s);
-    const execFanExpectCount = Engine.fanExpect.countMatched(validMatches, execFanExpects);
-    let preAttendance = Engine.economy.calcAttendance(s, s.showVenue, showCardPop, hasTitleMatchForAttend, hasChampOnCardForAttend, attendRng, execFanExpectCount);
+    const v2MatchAppeals = validMatches.map(m => {
+      const fA = roster.find(c => c.id === m.left);
+      const fB = roster.find(c => c.id === m.right);
+      if (!fA || !fB) return { totalAppeal: 0 };
+      const rivalryAB = s.relationships ? (s.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
+      const rivalryBA = s.relationships ? (s.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
+      const isFanExpect = execFanExpects && execFanExpects.some(fe =>
+        (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+      return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+        rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+      }, s);
+    });
+    const nonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+    const v2ShowDraw = Engine.attendanceV2.calcShowDraw(v2MatchAppeals, nonMatchPromo, s.showVenue);
+    const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
+    const v2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, v2ShowDraw, attendRng);
+    let preAttendance = v2Result.attendance;
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
@@ -6884,8 +6917,25 @@ const Engine = {
       roster = mqPop.roster;
       events.push(...mqPop.popEvents);
     });
+    // 集客v2: ★算出
+    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    const v2RatingContext = {
+      hasTitleMatch: validMatches.some(m => m.isTitle),
+      titleGreatMQ: validMatches.some(m => m.isTitle) ? results.find((r, i) => validMatches[i]?.isTitle)?.mq || 0 : 0,
+      rivalryResolved: results.some(r => r.rivalryResolved),
+      rivalryCards: validMatches.filter(m => {
+        if (!s.relationships) return false;
+        const rAB = s.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
+        const rBA = s.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
+        return Math.max(rAB, rBA) >= 30;
+      }).length,
+      fanExpectMatches: execFanExpects ? Engine.fanExpect.countMatched(validMatches, execFanExpects) : 0,
+    };
+    const v2Rating = Engine.attendanceV2.calcShowRating(results, preAttendance, VENUES[s.showVenue].cap, s.showVenue, v2RatingContext);
+    const showStars = v2Rating.stars;
+
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, s.showVenue);
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, showStars);
     roster = popResult.roster;
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
@@ -6896,7 +6946,7 @@ const Engine = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 興行平均MQ: ${Math.round(results.reduce((a,r) => a + r.mq, 0) / results.length)} → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${showStars} (MQ avg ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
     const matchParticipantIds = new Set(results.flatMap(r => [r.left.id, r.right.id]));
@@ -6904,10 +6954,9 @@ const Engine = {
     // v3.0: _costumeDebut フラグ消費（試合出場した選手のみ。MQ+2は Pass2 で適用済み）
     roster = roster.map(c => (c._costumeDebut && matchParticipantIds.has(c.id)) ? (({ _costumeDebut, ...rest }) => rest)(c) : c);
 
-    // Heat (immutable)
-    const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
+    // Heat (immutable) — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
-    const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+    const newHeatScore = Engine.heat.calcUpdate(s, showStars);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
@@ -7263,28 +7312,21 @@ const Engine = {
     });
     return { roster: newRoster, popEvents };
   },
-  applyShowPopularity(roster, results, orgPop, rng, venueIdx) {
+  applyShowPopularity(roster, results, orgPop, rng, stars) {
     if (results.length === 0) return { roster, orgPop, popDelta: 0 };
-    // Rental: レンタル選手が参加する試合は団体人気への貢献が50%（重み付き平均）
-    let totalWeight = 0, weightedMQ = 0;
-    results.forEach(r => {
-      const lRental = roster.find(c => c.id === r.left.id)?.isRental;
-      const rRental = roster.find(c => c.id === r.right.id)?.isRental;
-      const w = (lRental || rRental) ? 0.5 : 1.0;
-      weightedMQ += r.mq * w;
-      totalWeight += w;
-    });
-    const avgMQ = Math.round(totalWeight > 0 ? weightedMQ / totalWeight : 0);
-    // v3.1: 会場レベル+orgPop帯別MQ閾値シフト
-    // 大きい会場ほど高MQが必要、低orgPopは序盤保護
-    const mqAdj = Engine.orgPop.getMQAdjust(orgPop, venueIdx);
-    let rawDelta = avgMQ >= (80 + mqAdj.shift) ? 1.8
-                 : avgMQ >= (65 + mqAdj.shift) ? 1.2
-                 : avgMQ >= (55 + mqAdj.shift) ? 0.7
-                 : avgMQ >= (45 + mqAdj.shift) ? 0.3
-                 : avgMQ >= (35 + mqAdj.shift) ? -0.3
-                 :                               -0.5;
-    if (rawDelta < 0) rawDelta *= mqAdj.negMult;
+    // v2: ★ベースorgPop変動
+    let rawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[stars] || 0;
+    // 序盤保護（旧getMQAdjust互換）: 低orgPopでは興行実施自体が成長機会
+    // 旧システムはvenue shift + earlyProtectで閾値を-24まで下げていた
+    if (orgPop < 15) {
+      if (rawDelta < 0) rawDelta = 0;           // ペナルティなし
+      if (stars >= 3) rawDelta += 1.0;           // 平均的な興行で+1.0
+      else if (stars >= 2) rawDelta += 0.5;      // 低調でも+0.5
+    } else if (orgPop < 30) {
+      if (rawDelta < 0) rawDelta *= 0.5;         // ペナルティ半減
+      if (stars >= 3) rawDelta += 0.5;            // 平均的な興行で+0.5
+      else if (stars >= 2) rawDelta += 0.3;       // 低調でも+0.3
+    }
     // v1.5: 施策A — orgPop逓減カーブ適用
     const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
     return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
@@ -8675,10 +8717,11 @@ const Engine = {
         events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
       }
 
-      // Step 5-6: ヒート更新
+      // Step 5-6: ヒート更新（★ベース — 対抗戦用簡易★変換）
       const avgMQ = results.length > 0 ? Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length) : 0;
+      const warStars = avgMQ >= 80 ? 5 : avgMQ >= 65 ? 4 : avgMQ >= 50 ? 3 : avgMQ >= 35 ? 2 : 1;
       const oldHeat = Engine.heat.getLevel(s);
-      const newHeatScore = Engine.heat.calcUpdate(s, avgMQ);
+      const newHeatScore = Engine.heat.calcUpdate(s, warStars);
       const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
       const heatChange = { oldLabel: oldHeat.label, newLabel: newHeat.label, oldId: oldHeat.id, newId: newHeat.id, newEmoji: newHeat.emoji, newMult: newHeat.mult };
       if (oldHeat.id !== newHeat.id) {

@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-29（ステ特化コーチのcap到達済みステ空振りバグ修正）
+> 最終更新: 2026-03-29（集客システムv2 Phase 4 本切り替え）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**ステ特化コーチのcap到達済みステ空振りバグ修正（2026-03-29）。** pickGrowthStatがtrainCap到達済みステのウェイトを0にせず、ステ特化コーチの×1.40ウェイトによりcap到達済みステが高確率で選ばれてcalcGrowthが0を返し、他ステの成長機会が最大35%失われていたバグを修正。ステ選択時にtrainCap（限界突破・弱点克服ボーナス含む）をチェックしcap到達済みステのウェイトを0にして再分配。auto-sim 100シーズン×2シードALL CLEAR。
+**集客システムv2 Phase 4 本切り替え（2026-03-29）。** Phase 1-3で仮実装済みの新集客モデル（両輪モデル＋ソフトキャップ）を本接続。変更の核心: (1)集客計算を旧calcAttendance（orgPopベース）→calcAttendanceV2（reach×draw×heat×揺らぎ→softCap）に差し替え、カード内容（drawPower/matchAppeal）が集客に直結。(2)heat更新をavgMQ閾値→★ベース（heatDeltaByStars）に変更。(3)orgPop変動をavgMQ+VENUE_MQ_THRESHOLD→★ベース（orgPopDeltaByStars）に変更、序盤保護（orgPop<15ペナルティなし、<30半減+成長ブースト）追加。(4)メディア放映収入をavgMQ×showPerMQ→baseBroadcast×mediaMult[stars]に変更。(5)showRating（★1-5）をengine側calcShowRating（mqScore+occScore+bonusScore）で統一算出。(6)AI団体にも★ベースorgPop変動追加。(7)PPV/対抗戦のheat更新も★ベースに統一。影響範囲: engine.js(heat.calcUpdate/applyShowPopularity/calcShowMediaRev/executeShow/processSettlement/getAttendancePrediction/applyPPVResults/processAIWeek)、app.js(finalizeShow/generateShowNewspaper)、ui-render.js(showPrep予測)。auto-sim 100シード×100シーズン ALL CLEAR。
+
+前回: **ステ特化コーチのcap到達済みステ空振りバグ修正（2026-03-29）。** pickGrowthStatがtrainCap到達済みステのウェイトを0にせず、ステ特化コーチの×1.40ウェイトによりcap到達済みステが高確率で選ばれてcalcGrowthが0を返し、他ステの成長機会が最大35%失われていたバグを修正。ステ選択時にtrainCap（限界突破・弱点克服ボーナス含む）をチェックしcap到達済みステのウェイトを0にして再分配。auto-sim 100シーズン×2シードALL CLEAR。
 
 前回: **因縁放置ペナルティ修正（2026-03-27）。** orgPopが中盤以降0に向かって不可逆的に下落するバグを修正。原因: getNeglectedRivalryPenaltyが①暦週ベース(3週)で判定されるため非興行週にもペナルティ発生、②recordRivalryでlastAbsWeekが更新されず通常対戦でペナルティがリセットされない、③全因縁ペア対象で上限-1.0/週と過大。修正: ①興行週のみ判定+興行回数ベース(3興行未対戦)に変更、②recordRivalryにlastAbsWeek/lastShowNumber更新追加、③上位2ペア限定+ペナ-0.15/ペア+上限-0.3に軽減。auto-sim 20シーズン×5シード ALL CLEAR、orgPop 40-55帯で安定推移。
 
@@ -199,6 +201,7 @@ body背景: `#24221e`（セピアグレー）に全画面統一。ダークパ�
 | 敵AI団体専用キャラクター | 中 | 固有キャラで世界観を深める |
 | マネージャー的存在（説明キャラ） | 中 | チュートリアル・イベントの語り手 |
 | マインド依存の成長イベント | 中 | mnの存在感を強化 |
+| **ケアシステム全面改修** | **高** | 専属トレーナーがバフ4週=ストック回復4週の完全同期で100%稼働（実質ストック制限なし）。1920万/シーズンで常時成長+30%は強すぎる。合宿は2ストック消費でトレードオフ機能中。改修案: バフ期間3週化/同一選手再使用CD/逓減など。他ケアとのバランスも含めた包括見直し |
 | トレーニング施設アップグレード（C/B/Aランク＋老朽化メンテ） | 低 | 金銭バランス改善B-1として将来構想。お金が余った時の投資先 |
 
 ### 金銭バランス改善（実装済み 2026-03-26）
