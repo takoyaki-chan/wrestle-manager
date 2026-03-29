@@ -2280,7 +2280,8 @@ function renderShowPrep() {
           ? ` onmouseenter="_spHighlightSwap(${c.id})" onmouseleave="_spClearHighlight()"` : '';
         return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text-sub);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
       }).join('');
-      pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">✕ 閉じる</span></div><div class="sp-picker-list">${rows}</div>`;
+      const removeBtn = curInSide > 0 ? `<span class="sp-picker-close" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="color:#e74c3c">✕ 外す</span>` : '';
+      pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span>${removeBtn}<span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${rows}</div>`;
     }
 
     // カード魅力の内訳ボーナス
