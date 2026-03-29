@@ -2165,11 +2165,9 @@ function renderShowPrep() {
     const condOk = (f.condition || 100) >= 60;
     let drawHtml = '';
     if (drawData) {
-      const sub = [`pop${drawData.popDraw}`];
-      if (drawData.ovrDraw !== 0) sub.push(`ovr${drawData.ovrDraw >= 0 ? '+' : ''}${drawData.ovrDraw}`);
-      const dets = [...(drawData.traits || []), ...(drawData.details || [])].slice(0, 3)
+      const dets = [...(drawData.traits || []), ...(drawData.details || [])]
         .map(d => `<span class="sp-draw-detail">${d.label}+${d.value}</span>`).join(' ');
-      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val">${drawData.total}</span><div class="sp-draw-sub">${sub.join(' ')}${dets ? ' ' + dets : ''}</div></div>`;
+      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val">${drawData.total}</span>${dets ? `<div class="sp-draw-sub">${dets}</div>` : ''}</div>`;
     }
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
