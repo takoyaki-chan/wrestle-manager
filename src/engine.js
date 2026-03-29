@@ -879,13 +879,13 @@ const Engine = {
     // ── C系: 興行集客力の積み上げ ──
     calcShowDraw(matchAppeals, nonMatchPromoStacks, venueIdx) {
       const cfg = SHOW_DRAW_CONFIG;
-      // matchAppeals: [{totalAppeal, promoBonus}] appeal降順ソート済み
-      const sorted = [...matchAppeals].sort((a, b) => b.totalAppeal - a.totalAppeal);
+      // matchAppeals: 数値配列（各試合のtotalAppeal）— 降順ソート
+      const sorted = [...matchAppeals].map(a => typeof a === 'number' ? a : (a.totalAppeal || 0)).sort((a, b) => b - a);
 
       let showDraw = 0;
       for (let i = 0; i < sorted.length; i++) {
         const weight = cfg.positionWeights[Math.min(i, cfg.positionWeights.length - 1)];
-        const appeal = sorted[i].totalAppeal;
+        const appeal = sorted[i];
         // ゴミ試合は重みを半減
         const effectiveWeight = appeal <= MATCH_APPEAL_CONFIG.junkThreshold ? weight * cfg.junkWeightMult : weight;
         showDraw += appeal * effectiveWeight;
