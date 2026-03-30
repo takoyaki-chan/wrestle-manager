@@ -6556,7 +6556,7 @@ const Engine = {
       const rightTrust = lrRight ? (lrRight.trust != null ? lrRight.trust : 50) : 50;
       if (leftTrust < 35) trustMQPenalty -= 1.53;
       if (rightTrust < 35) trustMQPenalty -= 1.53;
-      r.mq = Engine.util.clamp(r.mq + cappedPositive + negativeExternal + trustMQPenalty, 5, 100);
+      r.mq = Math.max(5, r.mq + cappedPositive + negativeExternal + trustMQPenalty);
       r.externalMQBonus = cappedPositive + negativeExternal + trustMQPenalty;
       if (trustMQPenalty < 0) r.trustMQPenalty = trustMQPenalty;
       return r;
@@ -8346,13 +8346,13 @@ const Engine = {
           const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
           const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
           if (rivalLvl) {
-            r.mq = Math.min(100, r.mq + rivalLvl.mqBonus);
+            r.mq = r.mq + rivalLvl.mqBonus;
             r.rivalryBonus = rivalLvl;
             bonusInfo.rivalry = rivalLvl.mqBonus;
           }
           const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
           if (chemistryBonus > 0) {
-            r.mq = Math.min(100, r.mq + chemistryBonus);
+            r.mq = r.mq + chemistryBonus;
             r.friendshipBonus = chemistryBonus;
           }
           // coachMQBonus は MQ外部ボーナス整理で廃止
@@ -8808,7 +8808,7 @@ const Engine = {
       const af = { ...aiFighter, condition: 80 };
       // Use battle engine
       const result = Engine.battle.simulateMatch(pf, af, rng, 2);
-      result.mq = Math.min(100, result.mq + mqBonus);
+      result.mq = result.mq + (mqBonus || 0);
       return result;
     },
 

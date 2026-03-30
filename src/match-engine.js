@@ -114,6 +114,10 @@ Engine.battle = {
       if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 3;
       if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 3;
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
+      // 名勝負製造機: ドラマ素材（キックアウト・カウンター）の発生率UP
+      const hasMeishoubu = Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機');
+      // 引き出し上手: 格下戦でのペーシング減点緩和
+      const hasHikidashi = Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手');
 
       while (turn <= maxT && !winner) {
         const ph = B.phase(turn, phases);
@@ -131,7 +135,8 @@ Engine.battle = {
           log.push(`T${turn}: ${atk.name}の${mv.n} → MISS`);
           mom += isLeftAtk ? -5 : 5;
         } else {
-          const counterRate = B.calcCounterRate(atk, def, ph);
+          let counterRate = B.calcCounterRate(atk, def, ph);
+          if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
           if (Engine.rng.float(rng) * 100 < counterRate) {
             const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
             atk.hp -= cDmg;
@@ -160,7 +165,8 @@ Engine.battle = {
               const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
               let escaped = false;
               if (fType === 'fall' || fType === 'tko') {
-                const koChance = B.calcKickoutChance(def, ph, eng);
+                let koChance = B.calcKickoutChance(def, ph, eng);
+                if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -170,7 +176,8 @@ Engine.battle = {
                   log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
                 }
               } else if (fType === 'gu') {
-                const escChance = B.calcGuEscapeChance(def, ph, eng);
+                let escChance = B.calcGuEscapeChance(def, ph, eng);
+                if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -262,17 +269,19 @@ Engine.battle = {
       dramaPenalty -= Math.min(bigMoves, 6) * 0.4;
       dramaPenalty = Math.max(0, Math.round(dramaPenalty));
 
-      // §3 ペーシング減点（Tier別適正ターン帯）
+      // §3 ペーシング減点（Tier別適正ターン帯、引き出し上手で緩和）
       let pacingPenalty = 0;
       if (tier >= 2) {
-        // Tier 2: 13ターン以上は全て理想、「長すぎ」ペナルティ撤廃
-        if (matchTurns >= 13) pacingPenalty = 0;
-        else if (matchTurns >= 10) pacingPenalty = 3;
+        const idealMin = hasHikidashi ? 10 : 13;
+        const okMin = hasHikidashi ? 7 : 10;
+        if (matchTurns >= idealMin) pacingPenalty = 0;
+        else if (matchTurns >= okMin) pacingPenalty = 3;
         else pacingPenalty = 12;
       } else {
-        // Tier 1: 7ターン以上は全て理想、「長すぎ」ペナルティ撤廃
-        if (matchTurns >= 7) pacingPenalty = 0;
-        else if (matchTurns >= 5) pacingPenalty = 3;
+        const idealMin = hasHikidashi ? 5 : 7;
+        const okMin = hasHikidashi ? 3 : 5;
+        if (matchTurns >= idealMin) pacingPenalty = 0;
+        else if (matchTurns >= okMin) pacingPenalty = 3;
         else pacingPenalty = 12;
       }
 
@@ -292,11 +301,7 @@ Engine.battle = {
 
       // §5 最終MQ
       let mq = ceiling - dramaPenalty - pacingPenalty - finishPenalty;
-      // 特性ボーナス（天井を超える加点として機能）
-      if (Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機')) mq += 1 + Engine.rng.int(rng, 0, 4);  // +1〜5ランダム
-      const ovDiff = Math.abs(Engine.util.ov(charL) - Engine.util.ov(charR));
-      if (ovDiff > 15 && (Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'))) mq += Math.min(4, ovDiff * 0.15);
-      mq = Math.round(Engine.util.clamp(mq, 5, 100));
+      mq = Math.max(5, Math.round(mq));
 
       return {
         left: charL, right: charR,

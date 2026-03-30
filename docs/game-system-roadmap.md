@@ -85,6 +85,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 03-30 | MQ上限撤廃&特性MQリデザイン: MQ clamp上限100を5箇所で撤廃(match-engine.js×1+management.js×4)。名勝負製造機:MQ直接+1~5廃止→キックアウト+0.15/ギブアップ脱出+0.15/カウンター+5%の間接効果に。引き出し上手:MQ直接+max4廃止→ペーシング減点の適正ターン閾値緩和(Tier2:13→10/10→7、Tier1:7→5/5→3)に。auto-sim 100シーズンALL CLEAR |
 | 03-28 | 関節技決着の勝利方法表示修正: checkPinAttempt成功時にmv.c==='submission'でfinType='ギブアップ'に分岐（従来はすべて'ピン'→3カウント表示になっていた）。auto-sim 100シーズンALL CLEAR |
 | 03-28 | 殿堂入りスライド修正: セリフタイミング制御(選手セリフ→タップでコーチセリフに切替、次へボタン無効化)+コーチ画像パス修正(getPortraitUrl→getCoachPortraitUrl)+タップヒントUI追加 |
 | 03-26 | B4タレント活動拡充設計: 6種サブタイプ(cm/gravure/variety/brand/fashion/fan)+personality相性倍率+archetype追加補正+名前配列6種+LARGE_EVENT_TEXTS/DIALOGUES全セリフ+週次収入組み込み+推薦ヒントUI。実装依頼書: docs/b4-talent-activity-impl.md |
