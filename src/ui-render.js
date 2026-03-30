@@ -2309,6 +2309,7 @@ function renderShowPrep() {
     const moveDnBtn = i < maxMatches - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
+        <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
         ${_spFighterInfo(fl, 'left', i, slotBD?.drawA)}
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
