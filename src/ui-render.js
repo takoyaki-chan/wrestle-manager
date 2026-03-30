@@ -4480,7 +4480,7 @@ function showHofDetail(idx) {
   const sep = '<div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0"></div>';
 
   // 異名（フォールバック: 動的生成）
-  const epithet = h.epithet || Engine.awards.generateEpithet(h);
+  const epithet = h.epithet || Engine.awards.generateEpithet(h, null, null);
   // 語り文（フォールバック: 動的生成）
   const biography = h.biography || Engine.awards.generateBiography({ ...h, epithet, orgName });
 

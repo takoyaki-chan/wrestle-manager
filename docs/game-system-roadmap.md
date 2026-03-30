@@ -53,6 +53,8 @@
 
 前回: **AI練習怪我B1パリティ（2026-03-25）。** processAIWeeklyEventでB1（練習怪我）をAI団体にも許可。設計書: `docs/ai-parity-01-practice-injury.md`。
 
+前回: **殿堂異名（エピテット）システム v2.0 実装完了（2026-03-30）。** 固定10パターン→実績タグ30種×重み付きランダム選出（全104テンプレート）に改修。buildEpithetContext(連覇/MVP/ベストマッチ等コンテキスト算出)、EPITHET_TAGS(rarity10-100の30タグ)、EPITHET_TEMPLATES(104異名)、resolvePlaceholders({n}防衛数等)。generateEpithet(rec,fighter,rng)に署名変更、最高rarityタグ群のみからプール構築+均等ランダム選出。_buildHofEntryにepithetRng(seed:0xEF17)+careerBestMQ/trustフィールド追加。仕様書: `docs/epithet-system-spec-v2.0.md`。auto-sim 100シーズンALL CLEAR。
+
 前回: **AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。設計書: `docs/ai-parity-06-care-unification.md`。
 
 前回: **サウンドシステム実装完了（2026-03-23）。** ■SE_MIX(app.js): 演出系SE個別音量ミキシング追加(bell56%/impact61%/tension_hit66%/rivalry系64-57%/war60%/transfer52%)、play()でsfxGain.gain.value自動設定。■MP3 SE優先再生(battle-engine.html): AudioBufferプリロードシステム新設(_SE_FILES 17ファイル定義/postMessage受信時_preloadSEBuffers開始/_playSample+getSfxGain経由再生)。試合SE11種(b01-b09,b11-b12)+フィニッシュSE7種(f02-f05,f11-f13)をMP3優先+Web Audioフォールバック。■ドローンd02音量42%(dMix=0.84スケーリング)。■セーブ画面BGM/SE音量スライダー10段階(前回実装済み反映)。

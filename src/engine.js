@@ -10789,42 +10789,200 @@ Engine.awards = {
     return `../image/shield/shield_${variant}.webp`;
   },
 
-  /** C-0: 異名の自動生成 — 条件優先度順に判定し最初にマッチしたものを返す */
-  generateEpithet(rec) {
-    const defs = rec.totalDefenses || 0;
-    const wins = rec.totalTitleWins || 0;
-    const jt = rec.juniorTournamentWins || 0;
-    const ppv = rec.ppvMainEventWins || 0;
-    const pts = (wins) + defs + jt * 6 + ppv * 7;
-    const level = Engine.awards.getHofLevel(pts);
-    // 1度の獲得で最大防衛数を推定（history があれば正確に）
-    let maxSingleReign = 0;
-    const history = (rec && rec.history) || [];
-    let currentDefenses = 0;
+  // ── エピテットシステム v2.0 定数 ──
+
+  _EPITHET_TAGS: [
+    // 難易度6 (rarity: 100)
+    { id: 'undefeatedReign', rarity: 100,
+      test: (r, h, f, ctx) => ctx.maxSingleReign >= 10 && ctx.retiredAsChamp },
+    { id: '20Defense', rarity: 100,
+      test: (r) => (r.totalDefenses || 0) >= 20 },
+    // 難易度5 (rarity: 80)
+    { id: 'grandSlam', rarity: 80,
+      test: (r) => (r.totalTitleWins || 0) >= 1
+        && (r.juniorTournamentWins || 0) >= 1
+        && (r.ppvMainEventWins || 0) >= 1 },
+    { id: 'juniorConsecutive3', rarity: 80,
+      test: (r, h, f, ctx) => ctx.maxConsecutiveJT >= 3 },
+    { id: 'ppvConsecutive2', rarity: 80,
+      test: (r, h, f, ctx) => ctx.maxConsecutivePPV >= 2 },
+    { id: 'mvp3plus', rarity: 80,
+      test: (r, h, f, ctx) => ctx.mvpCount >= 3 },
+    { id: '15Defense', rarity: 80,
+      test: (r, h, f, ctx) => ctx.maxSingleReign >= 15 },
+    { id: 'tripleChamp', rarity: 80,
+      test: (r) => (r.totalTitleWins || 0) >= 3 },
+    // 難易度4 (rarity: 60)
+    { id: 'juniorConsecutive2', rarity: 60,
+      test: (r, h, f, ctx) => ctx.maxConsecutiveJT >= 2 },
+    { id: 'ppvDouble', rarity: 60,
+      test: (r) => (r.ppvMainEventWins || 0) >= 2 },
+    { id: '10Defense', rarity: 60,
+      test: (r) => (r.totalDefenses || 0) >= 10 },
+    { id: 'mvp2', rarity: 60,
+      test: (r, h, f, ctx) => ctx.mvpCount >= 2 },
+    { id: 'bestMatch3plus', rarity: 60,
+      test: (r, h, f, ctx) => ctx.bestMatchCount >= 3 },
+    { id: 'warAce', rarity: 60,
+      test: (r, h, f, ctx) => ctx.warWins >= 5 },
+    // 難易度3 (rarity: 40)
+    { id: 'titleDefender', rarity: 40,
+      test: (r) => (r.totalTitleWins || 0) >= 1 && (r.totalDefenses || 0) >= 5 },
+    { id: 'juniorChamp', rarity: 40,
+      test: (r) => (r.juniorTournamentWins || 0) >= 1 },
+    { id: 'ppvChamp', rarity: 40,
+      test: (r) => (r.ppvMainEventWins || 0) >= 1 },
+    { id: 'mvp1', rarity: 40,
+      test: (r, h, f, ctx) => ctx.mvpCount >= 1 },
+    { id: 'doubleChamp', rarity: 40,
+      test: (r) => (r.totalTitleWins || 0) >= 2 },
+    { id: 'bestMatch1', rarity: 40,
+      test: (r, h, f, ctx) => ctx.bestMatchCount >= 1 },
+    // 難易度2 (rarity: 20)
+    { id: 'titleHolder', rarity: 20,
+      test: (r) => (r.totalTitleWins || 0) >= 1 && (r.totalDefenses || 0) < 5 },
+    { id: 'rookieOfYear', rarity: 20,
+      test: (r, h, f, ctx) => ctx.hasRookie },
+    { id: 'peakOvr90', rarity: 20,
+      test: (r) => (r.peakOVR || 0) >= 90 },
+    { id: 'warHero', rarity: 20,
+      test: (r, h, f, ctx) => ctx.warWins >= 3 },
+    { id: 'mediaAward', rarity: 20,
+      test: (r, h, f, ctx) => ctx.mediaCount >= 1 },
+    { id: 'ironwoman', rarity: 20,
+      test: (r, h, f, ctx) => ctx.careerSeasons >= 10 },
+    // 難易度1 (rarity: 10)
+    { id: 'peakOvr80', rarity: 10,
+      test: (r) => (r.peakOVR || 0) >= 80 },
+    { id: 'bestMQ70', rarity: 10,
+      test: (r, h, f) => (f.careerBestMQ || 0) >= 70 },
+    { id: 'highTrust', rarity: 10,
+      test: (r, h, f) => (f.trust ?? 50) >= 80 },
+    { id: 'solidCareer', rarity: 10,
+      test: () => true },
+  ],
+
+  _EPITHET_TEMPLATES: {
+    undefeatedReign: ['無敗の女王', '不敗伝説', '無傷の戴冠者', '負け知らずの王者'],
+    '20Defense': ['絶対王者', '防衛ロードの怪物', '{n}人切り', '生ける要塞', '不落の王座'],
+    grandSlam: ['完全制覇の女帝', '全冠の覇者', 'グランドスラム・クイーン', '歴史を塗り替えた女'],
+    juniorConsecutive3: ['世代の悪夢', '三年王朝', 'ジュニアの独裁者', '三連覇の怪物'],
+    ppvConsecutive2: ['大舞台の女王', '連覇の記憶', 'グランドファイナルの支配者', 'ファイナルの主役'],
+    mvp3plus: ['殿堂級MVP', '三度の栄冠', '時代の主人公', '永遠のMVP', '栄光の常連'],
+    '15Defense': ['無敵の長期政権', '鉄壁の女王', '終わらない治世', '防衛街道の果てに'],
+    tripleChamp: ['不死鳥', '返り咲きの女王', '三度の頂', '不滅の王者'],
+    juniorConsecutive2: ['ジュニアの覇者', '二連覇の衝撃', '連覇を刻んだ新星', '世代を二度制した女'],
+    ppvDouble: ['大舞台の主', 'PPVの申し子', '決戦のスペシャリスト'],
+    '10Defense': ['堅牢なる王者', '王座の番人', '鉄の防衛線'],
+    mvp2: ['団体の顔', '二度の最優秀', 'MVP二冠', '時代のエース'],
+    bestMatch3plus: ['試合の天才', '名勝負の女神', '黄金のカード', '好勝負請負人'],
+    warAce: ['対抗戦の英雄', '団体の切り札', '対抗戦の鬼', 'エースキラー'],
+    titleDefender: ['名王者', '堅実なる戴冠者', '守りの女王', '実力派チャンピオン'],
+    juniorChamp: ['ジュニアの星', '登竜門の覇者', 'トーナメント・ウィナー'],
+    ppvChamp: ['大舞台の勝者', '年末の主人公', 'PPVの記憶', 'グランドファイナリスト'],
+    mvp1: ['MVP', '年間最優秀選手', 'その年の顔', '一年の主役'],
+    doubleChamp: ['二度の戴冠', '復活王者', 'リターン・クイーン', '捲土重来'],
+    bestMatch1: ['ベストバウトの主役', '一戦の輝き', 'ベストバウト・アーティスト'],
+    titleHolder: ['戴冠の記憶', '流星のチャンピオン', 'ワンチャンス・クイーン'],
+    rookieOfYear: ['新人王', 'デビューイヤーの主役'],
+    peakOvr90: ['超一流の証', '天賦の才', '覚醒者'],
+    warHero: ['対抗戦の功労者', '団体間抗争の主役', '抗争の立役者'],
+    mediaAward: ['メディアのチャンピオン', '広報の星', 'リング外のMVP', 'メディアの寵児', '話題の中心'],
+    ironwoman: ['鉄人', '生涯現役', '10年選手'],
+    peakOvr80: ['実力者', '隠れた実力派', 'いぶし銀'],
+    bestMQ70: ['試合巧者', '技巧派'],
+    highTrust: ['愛された女', 'ファンの心'],
+    solidCareer: ['殿堂の誇り', '確かな足跡', '静かなる功労者', '忘れてはならない選手', '名脇役の勲章', 'リングに生きた女', '縁の下の力持ち', '無冠の実力者'],
+  },
+
+  _buildEpithetContext(rec, history, fighter) {
+    function maxConsecutive(type, resultField) {
+      const seasons = history
+        .filter(e => e.type === type && e.result === resultField)
+        .map(e => e.season).sort((a, b) => a - b);
+      let max = seasons.length > 0 ? 1 : 0, cur = 1;
+      for (let i = 1; i < seasons.length; i++) {
+        if (seasons[i] === seasons[i - 1] + 1) { cur++; max = Math.max(max, cur); }
+        else cur = 1;
+      }
+      return max;
+    }
+    let maxSingleReign = 0, currentDefenses = 0;
     history.forEach(ev => {
       if (ev.type === 'titleWin') currentDefenses = 0;
       else if (ev.type === 'titleDefense') currentDefenses = ev.count || 0;
-      else if (ev.type === 'titleLoss') { maxSingleReign = Math.max(maxSingleReign, ev.defenses || currentDefenses); currentDefenses = 0; }
+      else if (ev.type === 'titleLoss') {
+        maxSingleReign = Math.max(maxSingleReign, ev.defenses || currentDefenses);
+        currentDefenses = 0;
+      }
     });
     if (currentDefenses > 0) maxSingleReign = Math.max(maxSingleReign, currentDefenses);
-    if (maxSingleReign === 0 && wins > 0) maxSingleReign = Math.floor(defs / Math.max(1, wins));
+    const lastTitleEvent = [...history].reverse().find(e =>
+      e.type === 'titleWin' || e.type === 'titleDefense' || e.type === 'titleLoss');
+    const retiredAsChamp = lastTitleEvent && lastTitleEvent.type !== 'titleLoss';
+    const mvpCount = history.filter(e => e.type === 'awardMVP').length;
+    const bestMatchCount = history.filter(e => e.type === 'awardBestMatch').length;
+    const hasRookie = history.some(e => e.type === 'awardRookie');
+    const mediaCount = history.filter(e => e.type === 'awardMedia').length;
+    const warWins = history.filter(e => e.type === 'war' && e.won).length;
+    const debut = history.find(e => e.type === 'debut');
+    const retire = history.find(e => e.type === 'retire');
+    const careerSeasons = debut && retire ? (retire.season - debut.season + 1) : 1;
+    return {
+      maxConsecutiveJT: maxConsecutive('juniorTournament', 'champion'),
+      maxConsecutivePPV: maxConsecutive('ppvMainEvent', 'champion'),
+      maxSingleReign, retiredAsChamp,
+      mvpCount, bestMatchCount, hasRookie, mediaCount, warWins,
+      careerSeasons,
+    };
+  },
 
-    if (defs >= 20)                       return '絶対王者';
-    if (maxSingleReign >= 15)             return '無敵の長期政権';
-    if (level >= 3)                       return '生ける伝説';
-    if (wins >= 3)                        return '不死鳥';
-    if (defs >= 10)                       return '鉄壁の女王';
-    if (jt >= 1 && wins >= 1)             return '二冠の覇者';
-    if (ppv >= 2)                         return '大舞台の主';
-    if (wins >= 1 && defs >= 5)           return '名王者';
-    if (jt >= 1 && wins === 0)            return '若き日の輝き';
-    return '殿堂の誇り';
+  _resolvePlaceholders(text, rec, fighter) {
+    return text
+      .replace('{n}', String(rec.totalDefenses || 0))
+      .replace('{name}', (fighter && fighter.name) || '');
+  },
+
+  /** C-0: 異名の自動生成 — 実績タグ×重み付きランダム選出 (v2.0) */
+  generateEpithet(rec, fighter, rng) {
+    const history = (rec && rec.history) || [];
+    const f = fighter || {};
+    const ctx = Engine.awards._buildEpithetContext(rec, history, f);
+    const TAGS = Engine.awards._EPITHET_TAGS;
+    const TEMPLATES = Engine.awards._EPITHET_TEMPLATES;
+
+    const matchedTags = TAGS.filter(tag => tag.test(rec, history, f, ctx));
+    if (matchedTags.length === 0) return '殿堂の誇り';
+
+    const maxRarity = Math.max(...matchedTags.map(t => t.rarity));
+    const topTier = matchedTags.filter(t => t.rarity === maxRarity);
+
+    const pool = [];
+    for (const tag of topTier) {
+      const templates = TEMPLATES[tag.id] || [];
+      for (const tmpl of templates) {
+        pool.push(Engine.awards._resolvePlaceholders(tmpl, rec, f));
+      }
+    }
+
+    // 低難度のときだけ汎用プール混入（25%確率）
+    if (rng && maxRarity <= 20 && Engine.rng.float(rng) < 0.25) {
+      pool.push(...TEMPLATES.solidCareer);
+    }
+
+    if (pool.length === 0) {
+      pool.push(...TEMPLATES.solidCareer);
+    }
+
+    // rngがない場合（レガシー呼び出し）はプール先頭を返す
+    if (!rng) return pool[0];
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
   /** C-0b: 経歴に基づく語り文の自動生成 */
   generateBiography(entry) {
     const orgName = entry.orgName || '団体';
-    const epithet = entry.epithet || Engine.awards.generateEpithet(entry);
+    const epithet = entry.epithet || Engine.awards.generateEpithet(entry, null, null);
     const seasons = (entry.activeSeasonsEnd || 1) - (entry.activeSeasonsStart || 1) + 1;
     const titleWins = entry.titleReigns || 0;
     const defenses = entry.totalDefenses || 0;
@@ -10886,8 +11044,14 @@ Engine.awards = {
       retireAge: fighter.age || 0,
       warWins: hist.filter(e => e.type === 'war' && e.won).length,
       warLosses: hist.filter(e => e.type === 'war' && !e.won).length,
+      careerBestMQ: fighter.careerBestMQ || 0,
+      trust: fighter.trust ?? 50,
     };
-    entry.epithet = Engine.awards.generateEpithet(rec);
+    // epithet生成にrngとfighterを渡す
+    const epithetRng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed, fighter.id, 0xEF17
+    ));
+    entry.epithet = Engine.awards.generateEpithet(rec, fighter, epithetRng);
     entry.biography = Engine.awards.generateBiography(entry);
     return entry;
   },
