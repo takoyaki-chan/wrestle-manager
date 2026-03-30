@@ -11378,6 +11378,13 @@ const COACH_REPORT_TEXTS = {
   ],
 };
 const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
+const STAT_TIPS = {
+  pw:'パワー：技の威力に影響',
+  sp:'スピード：回避率に影響',
+  te:'テクニック：命中率に影響',
+  st:'スタミナ：HPの総量に影響',
+  mn:'メンタル：被ダメ軽減・試合の流れに影響'
+};
 const COACH_OBS_INACCURACY = { E:0, D:0, C:0.20, B:0.20, A:0.08 }; // 🔧 的外れ確率
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -14895,7 +14902,7 @@ if (typeof module !== 'undefined' && module.exports) {
     TALENT_ACTIVITY_LABELS, TALENT_ACTIVITY_ICONS,
     RETIREMENT_CHAMPION_WORRY_LINES, RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE,
     ENDING_LINES, TEAM_SPIRIT_TEXTS, ATMOSPHERE_TEXTS,
-    COACH_REPORT_TEXTS, STAT_LABELS_JP, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
+    COACH_REPORT_TEXTS, STAT_LABELS_JP, STAT_TIPS, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
     PPV_UNLOCK_POP, PPV_SLOTS, PPV_REWARD, PPV_ENTRY_WEEK, PPV_SHOW_WEEK,
     PPV_NAMES, PPV_OPPONENT_LINES, WAR_VICTORY_LINES, PPV_HYPE_TEMPLATES,
     WAR_CHALLENGER_DIALOGUE, WAR_DECLINE_DIALOGUE, WAR_POST_DIALOGUE, CREDITS,

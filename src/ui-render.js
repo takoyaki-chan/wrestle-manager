@@ -1496,7 +1496,7 @@ function _renderRosterDetailPanel(c, hired) {
       : '<span style="color:#1a8a4a">伸びしろ大</span>';
     const col = STAT_COLORS[s];
     tab1 += `<div class="rd-stat-row">
-      <span class="rd-stat-label" style="color:${col}">${STAT_LABELS[s]}</span>
+      <span class="rd-stat-label" style="color:${col}" title="${STAT_TIPS[s]}">${STAT_LABELS[s]}</span>
       <div class="rd-stat-bar-outer"><div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
       <span class="rd-stat-val" style="color:${col}">${current}</span>
       <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : '—'}</span>
@@ -1811,11 +1811,11 @@ function renderRoster() {
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-            <span>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
-            <span>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
-            <span>TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
-            <span>ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
-            <span>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
+            <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
+            <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
+            <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
+            <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
+            <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
@@ -1852,11 +1852,11 @@ function renderRoster() {
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
               <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-              <span>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
-              <span>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
-              <span>TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
-              <span>ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
-              <span>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
+              <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
+              <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
+              <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
+              <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
+              <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">

@@ -1719,6 +1719,7 @@ function openFighterPopup(id){
   const isTitle = mi && mi.isTitle;
   const profile = f.profile || '';
   const age = f.age ? f.age+'歳' : '';
+  const _ST={pow:'パワー：技の威力に影響',spd:'スピード：回避率に影響',tec:'テクニック：命中率に影響',sta:'スタミナ：HPの総量に影響',mn:'メンタル：被ダメ軽減・試合の流れに影響'};
   const stats = [{k:'pow',l:'POW',v:Math.round(f.pw)},{k:'spd',l:'SPD',v:Math.round(f.sp)},{k:'tec',l:'TEC',v:Math.round(f.te)},{k:'sta',l:'STA',v:Math.round(f.st)},{k:'mn',l:'MN',v:Math.round(f.mn)}];
   let badges = '';
   if(hasRivalry) badges += '<span class="bp-badge rival">🔥 RIVAL</span>';
@@ -1732,7 +1733,7 @@ function openFighterPopup(id){
       <div class="bp-header"><span class="bp-name">${f.name}</span><span class="bp-role ${rc}">${f.role}</span></div>
       <div class="bp-basics"><span class="bp-style">${f.style}</span><div class="bp-meta">${age?'<span>'+age+'</span>':''}<span>${f.h}cm</span></div></div>
       <div class="bp-ovr"><span class="bp-ovr-label">OVR</span><span class="bp-ovr-val">${ovr}</span></div>
-      <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row"><span class="bp-stat-name">${s.l}</span><div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div><span class="bp-stat-val">${s.v}</span></div>`).join('')}</div>
+      <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row"><span class="bp-stat-name" title="${_ST[s.k]}">${s.l}</span><div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div><span class="bp-stat-val">${s.v}</span></div>`).join('')}</div>
       <div class="bp-divider"></div>
       <div class="bp-details">
         <div class="bp-detail-item"><span class="bp-detail-label">現在HP</span><span class="bp-detail-value">${Math.max(0,f.hp)} / ${f.mhp} (${hpPct}%)</span></div>
@@ -1825,6 +1826,7 @@ function renderMatch(){
   }
   function fHTML(f,side){
     const rc=f.role.toLowerCase();
+    const _HT={power:'パワー：技の威力に影響',speed:'スピード：回避率に影響',technique:'テクニック：命中率に影響',stamina:'スタミナ：HPの総量に影響',mental:'メンタル：被ダメ軽減・試合の流れに影響'};
     const stats=[{k:'power',l:'PWR',v:Math.round(f.pw)},{k:'speed',l:'SPD',v:Math.round(f.sp)},
       {k:'technique',l:'TEC',v:Math.round(f.te)},{k:'stamina',l:'STA',v:Math.round(f.st)},{k:'mental',l:'MNT',v:Math.round(f.mn)}];
     const rivalBadge=hasRivalry?`<div class="f-rival-badge">🔥 RIVAL</div>`:'';
@@ -1843,7 +1845,7 @@ function renderMatch(){
           <span class="f-role-tag ${rc}">${f.role}</span></div>
         <div class="f-style">${f.style}</div>
         ${rivalBadge}
-        <div class="ability-bars">${stats.map(s=>`<div class="ab-row"><span class="ab-name">${s.l}</span>
+        <div class="ability-bars">${stats.map(s=>`<div class="ab-row"><span class="ab-name" title="${_HT[s.k]}">${s.l}</span>
           <div class="ab-track"><div class="ab-fill ${s.k}" style="width:${s.v}%"></div></div>
           <span class="ab-val">${s.v}</span></div>`).join('')}</div>
         <div class="grit-indicator${f.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${f.gritTurns})</div>

@@ -2718,7 +2718,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const w = Math.min(100, val);
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
         html += `<div class="fighter-popup-stat-row">
-          <span class="fighter-popup-stat-label" title="${s.name}">${s.label}</span>
+          <span class="fighter-popup-stat-label" title="${STAT_TIPS[s.key]}">${s.label}</span>
           <div class="fighter-popup-stat-bar"><div class="fighter-popup-stat-fill" style="width:${w}%;background:${s.color}"></div></div>
           <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : ''}</span>
         </div>`;
