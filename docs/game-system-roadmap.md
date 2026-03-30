@@ -55,6 +55,8 @@
 
 前回: **AI練習怪我B1パリティ（2026-03-25）。** processAIWeeklyEventでB1（練習怪我）をAI団体にも許可。設計書: `docs/ai-parity-01-practice-injury.md`。
 
+前回: **殿堂語り文（biography）リデザイン 実装完了（2026-03-30）。** 固定3文テンプレート→導入文×核心文×余韻文の3プール構成に全書き換え。導入文6分岐(無敗退場/長期政権/長キャリア/複数戴冠/短命/通常)、核心文19分岐(防衛数20+/グランドスラム/MVP3回/JT三連覇/PPV連覇等を優先度順で選出)、余韻文3系統(trust80+ファン信頼バリアント/メディア受賞/スタイル別3候補)。ID×シーズン数ハッシュで安定選出(ロード後も同文)。_buildHofEntryにコンテキスト8フィールド追加(mvpCount/bestMatchCount/hasRookie/mediaCount/maxSingleReign/retiredAsChamp/maxConsecutiveJT/maxConsecutivePPV)。変更:management.jsのみ。auto-sim 100シーズンALL CLEAR。
+
 前回: **殿堂異名（エピテット）システム v2.0 実装完了（2026-03-30）。** 固定10パターン→実績タグ30種×重み付きランダム選出（全104テンプレート）に改修。buildEpithetContext(連覇/MVP/ベストマッチ等コンテキスト算出)、EPITHET_TAGS(rarity10-100の30タグ)、EPITHET_TEMPLATES(104異名)、resolvePlaceholders({n}防衛数等)。generateEpithet(rec,fighter,rng)に署名変更、最高rarityタグ群のみからプール構築+均等ランダム選出。_buildHofEntryにepithetRng(seed:0xEF17)+careerBestMQ/trustフィールド追加。仕様書: `docs/epithet-system-spec-v2.0.md`。auto-sim 100シーズンALL CLEAR。
 
 前回: **AI団体ケアアクション統一（2026-03-25）。** processAICare全面改修。設計書: `docs/ai-parity-06-care-unification.md`。
