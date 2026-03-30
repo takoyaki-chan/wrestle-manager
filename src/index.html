@@ -418,6 +418,37 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .show-result-box{background:var(--panel-bg);border:1px solid rgba(212,168,67,0.3);border-radius:8px;
   max-width:700px;width:100%;padding:24px;margin:auto}
 .show-result-box .btn{touch-action:manipulation}
+/* ── PPV TV観戦画面 ── */
+.ppvtv-banner{position:relative;background:linear-gradient(180deg,rgba(212,168,67,0.10) 0%,transparent 100%);padding:22px 20px 18px;text-align:center;border-bottom:1px solid rgba(212,168,67,0.15);margin:-24px -24px 0}
+.ppvtv-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.ppvtv-live-badge{display:inline-block;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);color:var(--gold);font-size:10px;font-weight:800;letter-spacing:3px;padding:3px 12px;border-radius:20px;margin-bottom:8px}
+.ppvtv-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,0.3);margin-bottom:4px}
+.ppvtv-sub{font-size:12px;color:var(--text-sub);line-height:1.6}
+.ppvtv-summary{display:flex;border-bottom:1px solid rgba(200,190,170,0.08)}
+.ppvtv-summary-item{flex:1;text-align:center;padding:11px 8px;border-right:1px solid rgba(200,190,170,0.08)}
+.ppvtv-summary-item:last-child{border-right:none}
+.ppvtv-summary-val{font-size:20px;font-weight:800;color:var(--gold)}
+.ppvtv-summary-lbl{font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-top:2px}
+.ppvtv-divider{text-align:center;font-size:9px;font-weight:800;letter-spacing:3px;color:var(--text-dim);padding:6px 0 5px;background:rgba(200,190,170,0.02);border-bottom:1px solid rgba(200,190,170,0.08)}
+.ppvtv-divider-main{color:rgba(212,168,67,0.6);background:rgba(212,168,67,0.04);border-bottom:1px solid rgba(212,168,67,0.10)}
+.ppvtv-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(200,190,170,0.06);gap:6px}
+.ppvtv-row-main{background:linear-gradient(90deg,rgba(212,168,67,0.04),transparent,rgba(212,168,67,0.04));border-bottom:1px solid rgba(212,168,67,0.10);padding:13px 0}
+.ppvtv-fighter{display:flex;flex-direction:column;align-items:center;width:80px;flex-shrink:0;gap:4px}
+.ppvtv-fighter-lose{opacity:0.32;filter:grayscale(0.55)}
+.ppvtv-portrait{border-radius:4px!important;width:48px!important;height:48px!important;object-fit:cover}
+.ppvtv-portrait-win{border:2px solid rgba(212,168,67,0.5)!important;box-shadow:0 0 8px rgba(212,168,67,0.15)}
+.ppvtv-fighter-name{font-size:11px;font-weight:700;text-align:center;line-height:1.3;color:var(--text-main);word-break:keep-all}
+.ppvtv-fighter-lose .ppvtv-fighter-name{color:var(--text-dim)}
+.ppvtv-win-mark{font-size:9px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.ppvtv-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ppvtv-mq{font-size:26px;font-weight:900;line-height:1}
+.ppvtv-mq-lbl{font-size:9px;color:var(--text-dim);letter-spacing:2px}
+.ppvtv-bar{width:72px;height:3px;background:rgba(200,190,170,0.06);border-radius:2px;overflow:hidden}
+.ppvtv-bar-fill{height:100%;border-radius:2px}
+.ppvtv-finish{font-size:10px;color:var(--text-dim);text-align:center;line-height:1.4}
+.ppvtv-emotion{padding:14px 16px;text-align:center;border-top:1px solid rgba(200,190,170,0.06);background:rgba(200,190,170,0.015)}
+.ppvtv-emotion-quote{font-size:13px;font-style:italic;color:var(--text-sub);line-height:1.8}
+.ppvtv-btn-row{text-align:center;padding:16px 0 0}
 .show-result-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;text-align:center;
   background:linear-gradient(180deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px}
 

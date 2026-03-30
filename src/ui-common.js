@@ -4505,42 +4505,114 @@ function _ppvBonusTags(r, mqBonuses, di) {
 function renderPPVTVResult(card, results, ppvName) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
-  const avgMQ = results.length > 0 ? Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length) : 0;
+
+  const validMQs = results.filter((r, i) => card[i] && r).map(r => r.mq);
+  const avgMQ = validMQs.length > 0 ? Math.round(validMQs.reduce((s, v) => s + v, 0) / validMQs.length) : 0;
+  const bestMQ = validMQs.length > 0 ? Math.max(...validMQs) : 0;
+  const total = card.length;
+
+  // MQカラースケール（6段階: 冷灰→輝く金）
+  function _mqCol(mq) {
+    if (mq >= 80) return '#f0d078';
+    if (mq >= 70) return '#d4a843';
+    if (mq >= 60) return '#c4853a';
+    if (mq >= 50) return '#b89870';
+    if (mq >= 40) return '#8090a8';
+    return '#607080';
+  }
+  function _mqGlow(mq) { return mq >= 80 ? 'text-shadow:0 0 14px rgba(240,208,120,0.45)' : ''; }
+
+  // 表示順: サミット→残りを逆順
+  const summitIdx = card.findIndex(m => m.isSummit);
+  const sortedIdx = [];
+  if (summitIdx >= 0) sortedIdx.push(summitIdx);
+  for (let i = total - 1; i >= 0; i--) { if (i !== summitIdx) sortedIdx.push(i); }
+
+  // セクション判定
+  function _section(pos) {
+    if (pos === 0) return 'main';
+    if (pos === 1) return 'semi';
+    return 'under';
+  }
+  const SECTION_LABEL = { main: '✦ MAIN EVENT ✦', semi: 'SEMI FINAL', under: 'UNDERCARD' };
+
+  // 感情テキスト（bestMQ帯で分岐）
+  const emotionText =
+    bestMQ >= 80 ? '「……すごい試合だった。来年こそ、あの舞台で戦う」' :
+    bestMQ >= 70 ? '「いい大会だった。来年は、絶対にあの舞台に立つ」' :
+    bestMQ >= 55 ? '「まだ差がある。でも来年は必ず——」' :
+                   '「来年こそは、この舞台に……」';
 
   let html = '';
-  html += `<div style="text-align:center;padding:16px;margin-bottom:16px">`;
-  html += `<div class="show-result-title" style="color:var(--text-sub);font-size:18px">📺 PPV GRAND FINAL「${ppvName || 'GRAND FINAL'}」テレビ中継</div>`;
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-top:4px">今年は出場できなかった…テレビの前で大会を見届ける</div>`;
-  html += `</div>`;
 
-  const total = card.length;
-  // メインイベント(末尾)→前座(先頭)の順に表示
-  for (let di = total - 1; di >= 0; di--) {
+  // バナー
+  html += `<div class="ppvtv-banner">
+    <div class="ppvtv-live-badge">LIVE ON TV</div>
+    <div class="ppvtv-name">${ppvName || 'GRAND FINAL'}</div>
+    <div class="ppvtv-sub">今年は出場枠に届かなかった——テレビの前で、大会を見届ける</div>
+  </div>`;
+
+  // サマリー行
+  html += `<div class="ppvtv-summary">
+    <div class="ppvtv-summary-item">
+      <div class="ppvtv-summary-val">${total}</div>
+      <div class="ppvtv-summary-lbl">MATCHES</div>
+    </div>
+    <div class="ppvtv-summary-item">
+      <div class="ppvtv-summary-val" style="color:${_mqCol(avgMQ)}">${avgMQ}</div>
+      <div class="ppvtv-summary-lbl">AVG MQ</div>
+    </div>
+    <div class="ppvtv-summary-item">
+      <div class="ppvtv-summary-val" style="color:${_mqCol(bestMQ)};${_mqGlow(bestMQ)}">${bestMQ}</div>
+      <div class="ppvtv-summary-lbl">BEST MQ</div>
+    </div>
+  </div>`;
+
+  // 試合リスト
+  let lastSection = null;
+  sortedIdx.forEach((di, pos) => {
     const match = card[di];
     const r = results[di];
-    if (!r) continue;
-    const matchNum = di + 1;
-    const matchLabel = match.isSummit ? '🏆 頂上決戦' : `第${matchNum}試合`;
-    const wName = r.winner === 'draw' ? '引き分け' : r.winner === 'left' ? match.left.name : match.right.name;
-    const lName = r.winner === 'left' ? match.right.name : match.left.name;
-    const mqColor = r.mq >= 70 ? 'var(--gold)' : r.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
+    if (!r) return;
 
-    html += `<div style="padding:8px 12px;border-bottom:1px solid var(--border)">`;
-    html += `<span style="font-size:11px;color:var(--text-dim)">${matchLabel}</span> `;
-    html += `<span style="font-size:13px;color:var(--text-main)">○${wName}</span> `;
-    html += `<span style="font-size:12px;color:var(--text-dim)">vs</span> `;
-    html += `<span style="font-size:13px;color:var(--text-sub);opacity:0.6">×${lName}</span> `;
-    html += `<span style="font-size:11px;color:${mqColor}">(MQ ${r.mq})</span>`;
-    html += `</div>`;
-  }
+    const section = _section(pos);
+    if (section !== lastSection) {
+      html += `<div class="ppvtv-divider${section === 'main' ? ' ppvtv-divider-main' : ''}">${SECTION_LABEL[section]}</div>`;
+      lastSection = section;
+    }
 
-  html += `<div style="text-align:center;margin-top:16px;padding:12px;font-size:13px;color:var(--text-dim);font-style:italic">`;
-  html += `来年こそは、この舞台に…！`;
-  html += `</div>`;
+    const isDraw = r.winner === 'draw';
+    const wFighter = isDraw ? match.left : (r.winner === 'left' ? match.left : match.right);
+    const lFighter = isDraw ? match.right : (r.winner === 'left' ? match.right : match.left);
+    const col = _mqCol(r.mq);
+    const glow = _mqGlow(r.mq);
+    const finishText = Engine.formatFinish(r.finType, r.finMove);
 
-  html += `<div class="btn-row" style="margin-top:12px;justify-content:center">`;
-  html += `<button class="btn btn-gold" onclick="App.closePPVTV()">オフシーズンへ →</button>`;
-  html += `</div>`;
+    html += `<div class="ppvtv-row${section === 'main' ? ' ppvtv-row-main' : ''}">
+      <div class="ppvtv-fighter">
+        ${portraitImg(wFighter.id, 48, 'ppvtv-portrait ppvtv-portrait-win')}
+        <div class="ppvtv-fighter-name">${wFighter.name}</div>
+        <div class="ppvtv-win-mark">${isDraw ? 'DRAW' : 'WIN'}</div>
+      </div>
+      <div class="ppvtv-center">
+        <div class="ppvtv-mq" style="color:${col};${glow}">${r.mq}</div>
+        <div class="ppvtv-mq-lbl">MQ</div>
+        <div class="ppvtv-bar"><div class="ppvtv-bar-fill" style="width:${r.mq}%;background:${col}"></div></div>
+        <div class="ppvtv-finish">${finishText}</div>
+      </div>
+      <div class="ppvtv-fighter ppvtv-fighter-lose">
+        ${portraitImg(lFighter.id, 48, 'ppvtv-portrait')}
+        <div class="ppvtv-fighter-name">${lFighter.name}</div>
+        <div class="ppvtv-win-mark" style="visibility:hidden">—</div>
+      </div>
+    </div>`;
+  });
+
+  // 感情テキスト
+  html += `<div class="ppvtv-emotion"><div class="ppvtv-emotion-quote">${emotionText}</div></div>`;
+
+  // ボタン
+  html += `<div class="ppvtv-btn-row"><button class="btn btn-gold" onclick="App.closePPVTV()">オフシーズンへ →</button></div>`;
 
   box.innerHTML = html;
   overlay.classList.add('active');
