@@ -231,6 +231,27 @@ function _lightenColor(hex) {
   const b = Math.min(255, parseInt(hex.slice(5,7),16) + 60);
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
 }
+// ── 6段階カラースケール ──
+const _SCALE6 = ['#f0d078','#d4a843','#c4853a','#b89870','#8090a8','#607080'];
+const _SCALE6_RIVALRY = ['#c44040','#c46040','#c48040','#b89870','#8090a8','#607080'];
+function _scale6(v, thresholds, palette) {
+  const p = palette || _SCALE6;
+  for (let i = 0; i < thresholds.length; i++) {
+    if (v >= thresholds[i]) return { color: p[i], glow: i === 0 };
+  }
+  return { color: p[5], glow: false };
+}
+function _scale6Style(sc) {
+  return `color:${sc.color}${sc.glow ? ';text-shadow:0 0 6px #f0d07880' : ''}`;
+}
+function _mqColor(v)      { return _scale6(v, [80,70,60,50,40]); }
+function _ovrColor(v)     { return _scale6(v, [85,75,65,55,45]); }
+function _trustColor(v)   { return _scale6(v, [80,65,50,35,20]); }
+function _condColor(v)    { return _scale6(v, [90,75,60,45,30]); }
+function _popColor(v)     { return _scale6(v, [70,55,40,28,15]); }
+function _bondColor(v)    { return _scale6(v, [80,65,50,35,20]); }
+function _rivalryColor(v) { return _scale6(v, [70,50,35,20,5], _SCALE6_RIVALRY); }
+function _orgPopColor(v)  { return _scale6(v, [70,55,40,25,12]); }
 /** 対抗戦ステータスバー行 */
 function _warStatRow(label, lv, rv, cls, pColor, eColor) {
   const bwL = Math.max(4, Math.round(lv));
@@ -287,11 +308,10 @@ function renderWarMatchPreview() {
       const wName = result.playerWon ? pf.name : af.name;
       const lName = result.playerWon ? af.name : pf.name;
       const wColor = result.playerWon ? pColor : eLight;
-      const mqColor = result.mq >= 70 ? '#daa520' : result.mq >= 50 ? '#888' : '#555';
       const wFace = getPortraitUrl(result.winnerId || (result.playerWon ? pf.id : af.id));
       html += `<div class="war-md">
         <div class="war-md-n">第${matchNum}試合</div>
-        <div class="war-md-c"><div class="war-md-main"><div class="war-md-w"><span class="w" style="color:${wColor}">✓ ${wName}</span> <span style="color:#555">def.</span> ${lName}</div><div class="war-md-r">${Engine.formatFinish(result.finType, result.finMove)}</div></div><div class="war-md-mq" style="color:${mqColor}">MQ ${result.mq}</div></div>
+        <div class="war-md-c"><div class="war-md-main"><div class="war-md-w"><span class="w" style="color:${wColor}">✓ ${wName}</span> <span style="color:#555">def.</span> ${lName}</div><div class="war-md-r">${Engine.formatFinish(result.finType, result.finMove)}</div></div><div class="war-md-mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</div></div>
         ${result.victoryLine ? `<div class="war-md-vl"><div class="war-md-vl-face">${wFace ? `<img src="${wFace}" alt="">` : ''}</div><div class="war-md-vl-text"><span class="war-md-vl-name" style="color:${wColor}">${result.winnerName || wName}</span>「${result.victoryLine}」</div></div>` : ''}
       </div>`;
     } else if (isNext) {
@@ -444,8 +464,6 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   results.forEach((r, i) => {
     const pFace = getPortraitUrl(r.playerFighter.id);
     const aFace = getPortraitUrl(r.aiFighter.id);
-    const mqColor = r.mq >= 70 ? 'var(--gold)' : r.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
-
     html += `<div class="match-result-card">
       <div class="mr-label">第 ${i+1} 試 合</div>
       <div class="mr-fighters">
@@ -461,7 +479,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
       </div>
       <div class="mr-result-info">
         <span class="mr-result-tag ${r.playerWon ? 'win' : 'lose'}">${r.playerWon ? 'WIN' : 'LOSE'}</span>
-        <span class="mr-mq" style="color:${mqColor}">MQ ${r.mq}</span>
+        <span class="mr-mq" style="${_scale6Style(_mqColor(r.mq))}">MQ ${r.mq}</span>
         <span class="mr-finish">${Engine.formatFinish(r.finType, r.finMove)}</span>
       </div>
       ${r.victoryLine ? `<div class="mr-victory-line"><span class="mr-vl-name">${r.winnerName || (r.playerWon ? r.playerFighter.name : r.aiFighter.name)}</span>「${r.victoryLine}」</div>` : ''}
@@ -2758,7 +2776,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         html += `<div class="fighter-popup-section" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:10px">
           <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">人気</span><br>
-            <strong style="color:var(--text);font-size:16px">${Engine.util.dispPop(c.popularity)}</strong>
+            <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))};font-size:16px">${Engine.util.dispPop(c.popularity)}</strong>
           </div>
           <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             <span style="color:var(--text-dim)">給与</span><br>
@@ -2768,13 +2786,13 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       }
       if (isFree) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</strong></span>
+          <span>人気: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
           <span style="margin-left:12px">給与見込: <strong style="color:var(--text)">${getSalary(c)}万/週</strong></span>
         </div>`;
       }
       if (!isRoster && !isFree && c.popularity !== undefined) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="color:var(--text)">${Engine.util.dispPop(c.popularity)}</strong></span>
+          <span>人気: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
         </div>`;
       }
 
@@ -2913,9 +2931,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
             <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
-            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="color:#4a8fd4;font-weight:700">${bestMQ}</span>` : ''}
+            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
-            ${summary.peakOVR > 0 && !isChamp ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="color:#f39c12;font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
+            ${summary.peakOVR > 0 && !isChamp ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${summary.titleSummary ? `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${summary.titleSummary}</div>` : ''}
           ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 JT優勝 <strong>${summary.juniorTournamentWins}</strong>回</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 PPV優勝 <strong>${summary.ppvMainEventWins}</strong>回</span>` : ''}</div>` : ''}
@@ -3500,7 +3518,7 @@ function renderMatchPreview() {
     const relBA = (G.relationships || {})[`${charR.id}>${charL.id}`] || { bond: 50, rivalry: 0 };
     const bondAvg = Math.round((relAB.bond + relBA.bond) / 2);
     const rivMax = Math.max(relAB.rivalry, relBA.rivalry);
-    const bondColor = bondAvg >= 60 ? 'var(--blue)' : bondAvg <= 35 ? '#e74c3c' : 'var(--text-dim)';
+    const bondColor = _bondColor(bondAvg).color;
     const rivalLvl = getRivalryLevel(charL.id, charR.id);
     const relParts = [];
     if (rivalLvl) {
@@ -3578,11 +3596,10 @@ function renderMatchPreview() {
     // ステータス別ボトム
     if (isResolved) {
       const wName = result.winner === 'draw' ? '引き分け' : result.winner === 'left' ? charL.name : charR.name;
-      const mqColor = result.mq >= 70 ? 'var(--gold)' : result.mq >= 50 ? 'var(--green)' : 'var(--text-sub)';
       html += `<div class="smc-result">
         <span class="winner-tag">🏆 ${wName} 勝利</span>
         <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
-        <span class="mq" style="color:${mqColor}">MQ ${result.mq}</span>
+        <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</span>
       </div>`;
     } else if (isNext) {
       html += `<div class="smc-action">
@@ -6103,10 +6120,10 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   </div>`;
 
   // MQ
-  const mqColor = matchResult.mq >= 70 ? '#daa520' : matchResult.mq >= 50 ? '#888' : '#555';
+  const _mqSc = _mqColor(matchResult.mq || 0);
   const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;color:${mqColor};margin-bottom:8px">
-    ${mqStars ? `<span style="color:#daa520">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
+  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
+    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
   </div>`;
 
   // HPバー
@@ -6316,10 +6333,10 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   </div>`;
 
   // MQ
-  const mqColor = matchResult.mq >= 70 ? '#daa520' : matchResult.mq >= 50 ? '#888' : '#555';
+  const _mqSc = _mqColor(matchResult.mq || 0);
   const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;color:${mqColor};margin-bottom:8px">
-    ${mqStars ? `<span style="color:#daa520">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
+  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
+    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
   </div>`;
 
   // HPバー

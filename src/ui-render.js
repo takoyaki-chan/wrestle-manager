@@ -142,7 +142,10 @@ function refreshTopBar() {
   const fundsEl = document.getElementById('dispFunds');
   fundsEl.textContent = `${Math.round(G.funds).toLocaleString()}万`;
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
-  document.getElementById('dispPop').textContent = Engine.util.dispOrgPop(G.orgPop);
+  const _dispPopEl = document.getElementById('dispPop');
+  const _dispPopVal = Engine.util.dispOrgPop(G.orgPop);
+  _dispPopEl.textContent = _dispPopVal;
+  _dispPopEl.style.color = _orgPopColor(_dispPopVal).color;
   // v1.5s25b: 補助金カウントダウン
   const subsidyEl = document.getElementById('dispSubsidy');
   if (subsidyEl) {
@@ -1505,8 +1508,8 @@ function _renderRosterDetailPanel(c, hired) {
   });
   tab1 += `<div class="rd-note">MNは試合経験で成長します</div>`;
   tab1 += `<div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:#4a4638">
-    <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
-    <div>体調 <b style="color:${Math.round(c.condition) > 66 ? '#1a8a4a' : Math.round(c.condition) > 33 ? '#a07010' : '#a03030'}">${Math.round(c.condition)}</b></div>
+    <div>人気 <b style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</b></div>
+    <div>体調 <b style="${_scale6Style(_condColor(Math.round(c.condition)))}">${Math.round(c.condition)}</b></div>
     <div>給与 <b style="color:#1e1c16">${getSalary(c)}万</b>/シーズン</div>
   </div>`;
 
@@ -1819,7 +1822,7 @@ function renderRoster() {
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-          <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
+          <div>人気 <b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></div>
           <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
           <div style="margin-top:2px;color:#7a7466">${getSalary(c)}万</div>
         </div>
@@ -1860,7 +1863,7 @@ function renderRoster() {
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-            <div>人気 <b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></div>
+            <div>人気 <b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></div>
             <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
             <div style="margin-top:2px;color:#a06000;font-size:11px">${srcLabel} ｜ 残${contract ? contract.weeksLeft : '?'}週</div>
           </div>
@@ -2183,7 +2186,7 @@ function renderShowPrep() {
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
-      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${condOk ? '' : 'color:var(--red)'}">${Math.round(f.condition || 100)}</span></span></div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
     </div>`;
   };
@@ -2810,7 +2813,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml('player', 40)}${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(G.orgPop)}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(G.orgPop)).color}">${Engine.util.dispOrgPop(G.orgPop)}</span></span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
@@ -2863,7 +2866,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml(org.id, 40)}${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? Math.round(rEntry.rating) + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:${Engine.util.dispOrgPop(aiData.orgPop)}</span>
+          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? Math.round(rEntry.rating) + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(aiData.orgPop)).color}">${Engine.util.dispOrgPop(aiData.orgPop)}</span></span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${champion ? `${champion.name}（${aiTitles.world?.defenses || 0}防衛）` : '<span style="color:var(--text-dim)">不在</span>'}</div>
@@ -2972,7 +2975,7 @@ function renderScout() {
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:32px;font-weight:900;color:#f0d048;line-height:1;font-family:'Bebas Neue',sans-serif;text-shadow:0 0 1px #000,1px 1px 0 rgba(0,0,0,0.6),-1px -1px 0 rgba(0,0,0,0.3)">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px;text-shadow:none">OVR</span></div>
+        <div style="font-size:32px;font-weight:900;color:${_ovrColor(ov(c)).color};line-height:1;font-family:'Bebas Neue',sans-serif;text-shadow:0 0 1px #000,1px 1px 0 rgba(0,0,0,0.6),-1px -1px 0 rgba(0,0,0,0.3)">${ov(c)}<span style="font-size:11px;font-weight:600;color:var(--text-dim);margin-left:2px;text-shadow:none">OVR</span></div>
         <div style="font-size:22px;font-weight:800;color:#c44e8a;margin-top:6px;line-height:1">${Math.round(Engine.scout.getSigningCost(c, G.orgPop || 0)).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-dim)">万</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:4px">給与 <b style="color:var(--text)">${getSalary(c)}万</b>/週</div>
       </div>
@@ -3085,7 +3088,7 @@ function renderScoutEvent() {
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
     <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${Math.round(G.funds).toLocaleString()}万</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong>${Engine.util.dispOrgPop(orgPop)}</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong style="${_scale6Style(_orgPopColor(Engine.util.dispOrgPop(orgPop)))}">${Engine.util.dispOrgPop(orgPop)}</strong></span>
     
   </div>`;
 
@@ -4117,13 +4120,12 @@ function _renderNewspaperExtraPage(wp, pageData) {
       html += `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:4px">`;
       story.matches.forEach((m, i) => {
         const bg = i % 2 === 0 ? 'rgba(200,190,170,0.15)' : '';
-        const mqColor = m.mq >= 80 ? '#b8860b' : m.mq >= 60 ? '#4a3518' : '#7a5b32';
         html += `<tr style="background:${bg}">`;
         html += `<td style="padding:4px;color:#7a5b32;min-width:50px">${m.round}</td>`;
         html += `<td style="padding:4px;font-weight:700;color:#2d5e1e">${_newsClickableName(m.winner, m.winnerId)}</td>`;
         html += `<td style="padding:4px;color:#7a5b32;font-size:10px">def.</td>`;
         html += `<td style="padding:4px">${_newsClickableName(m.loser, m.loserId)}</td>`;
-        html += `<td style="padding:4px;text-align:right;color:${mqColor};font-weight:600">MQ${m.mq}</td>`;
+        html += `<td style="padding:4px;text-align:right;color:${_mqColor(m.mq).color};font-weight:600">MQ${m.mq}</td>`;
         html += `</tr>`;
       });
       html += `</table>`;
@@ -4239,7 +4241,7 @@ function _renderDbFighters() {
 
   filtered.forEach(f => {
     const ovr = Engine.util.ov(f);
-    const ovrCls = ovr >= 75 ? 'db-ovr-gold' : ovr >= 60 ? 'db-ovr-white' : '';
+    const _ovrSc = _ovrColor(ovr);
     const rc = RANK_COLORS[f._orgTier] || '#888';
     const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa'
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:${rc}22;color:${rc};border:1px solid ${rc}44;margin-left:4px">${f._orgTier}</span>`
@@ -4259,10 +4261,10 @@ function _renderDbFighters() {
       <td style="font-weight:600">${f.name}${champBadge}</td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
-      <td class="num ${ovrCls}" style="font-weight:700;font-size:15px">${ovr}</td>
+      <td class="num" style="${_scale6Style(_ovrSc)};font-weight:700;font-size:15px">${ovr}</td>
       ${_statCell(f.pw, '#e74c3c')}${_statCell(f.sp, '#3498db')}${_statCell(f.te, '#2ecc71')}${_statCell(f.st, '#f39c12')}${_statCell(f.mn, '#9b59b6')}
       <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
-      <td class="num">${Engine.util.dispPop(f.popularity || 0)}</td>
+      <td class="num" style="color:${_popColor(Engine.util.dispPop(f.popularity || 0)).color}">${Engine.util.dispPop(f.popularity || 0)}</td>
     </tr>`;
   });
 
@@ -6972,14 +6974,15 @@ function _relmapShowDetailForNode(nodeId) {
   const isS = top.a === nodeId;
   const bf = isS ? top.bondAB : top.bondBA, br = isS ? top.bondBA : top.bondAB;
   const rf = isS ? top.rivAB : top.rivBA, rr = isS ? top.rivBA : top.rivAB;
-  const bfc = bf >= 50 ? '#74b9ff' : '#ff7675', brc = br >= 50 ? '#74b9ff' : '#ff7675';
+  const bfc = _bondColor(bf).color, brc = _bondColor(br).color;
+  const rfc = _rivalryColor(rf).color, rrc = _rivalryColor(rr).color;
 
   let tb = '';
   if (top.rivalTitle) tb = `<span class="rm-detail-rivalry-badge" style="background:${top.titleColor}22;color:${top.titleColor};border:1px solid ${top.titleColor}44">${top.titleEmoji} ${top.rivalTitle}</span>`;
 
   panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
     <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${other.name}</span>${tb}</div>
-    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:#e17055"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:#e17055">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:#e17055"></div></div></div></div></div>
+    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rfc}">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:${rfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rrc}">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:${rrc}"></div></div></div></div></div>
     <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 比較</span></div>`;
   panel.classList.add('show');
 }

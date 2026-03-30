@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-29（興行準備画面 v7 デザイン全面実装）
+> 最終更新: 2026-03-30（数値カラースケール再設計）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**興行準備画面 v7 デザイン全面実装（2026-03-29）。** showprep-v7.htmlモックアップ準拠で興行準備画面を全面書き換え。(1)集客予測パネル: ムードアイコン+テキスト+5ドットゲージ+メトリクス行(Heat/予想MQ/タイトル/会場席数/会場費)。(2)ファンの声: コンパクト中央揃えパネル。(3)マッチカード: 7列グリッド(80px params | 1fr fighter | auto portrait | 110px center | auto portrait | 1fr fighter | 80px params)。ティア別スタイル(main-event金ボーダー+上ライン/mid-card/undercard薄め/empty-slot破線)。(4)ピッカーUI: `<select>`廃止→選手名クリックで下展開パネル、配置済み選手ホバーでスワップハイライト、クリックでスワップ自動処理。(5)中央タグ: 因縁/マンネリ/新鮮/タイトル/ファン期待/ラストマッチをsp-match-tagクラスで統一表示。変更: src/index.html(sp-*CSS追加)、src/ui-render.js(_spActivePicker状態+ピッカー関数群+renderShowPrep全面書換)。
+**数値カラースケール再設計（2026-03-30）。** 全パラメーター統一6段階カラースケール導入。_scale6ヘルパー+8パラメーター別ラッパー関数をui-common.jsに追加。S帯(金+glow)→A帯(金)→B帯(琥珀)→C帯(くすんだ暖色)→D帯(スチールブルー)→E帯(冷灰)の色温度スケール。適用: MQ(6箇所)/OVR(3箇所)/Condition(2箇所)/Bond(2箇所)/Rivalry(1箇所)/Popularity(8箇所新規)/orgPop(4箇所新規)。Rivalryのみ赤系専用パレット。新聞パネル(ライト背景)・Trust(隠しパラメータ)・HPバー・スタイルバッジ等は除外。変更: ui-common.js/ui-render.js。
+
+前回: **興行準備画面 v7 デザイン全面実装（2026-03-29）。** showprep-v7.htmlモックアップ準拠で興行準備画面を全面書き換え。(1)集客予測パネル: ムードアイコン+テキスト+5ドットゲージ+メトリクス行(Heat/予想MQ/タイトル/会場席数/会場費)。(2)ファンの声: コンパクト中央揃えパネル。(3)マッチカード: 7列グリッド(80px params | 1fr fighter | auto portrait | 110px center | auto portrait | 1fr fighter | 80px params)。ティア別スタイル(main-event金ボーダー+上ライン/mid-card/undercard薄め/empty-slot破線)。(4)ピッカーUI: `<select>`廃止→選手名クリックで下展開パネル、配置済み選手ホバーでスワップハイライト、クリックでスワップ自動処理。(5)中央タグ: 因縁/マンネリ/新鮮/タイトル/ファン期待/ラストマッチをsp-match-tagクラスで統一表示。変更: src/index.html(sp-*CSS追加)、src/ui-render.js(_spActivePicker状態+ピッカー関数群+renderShowPrep全面書換)。
 
 前回: **集客v2 Phase 4完了 + チューニング + UI改修（2026-03-29）。** 新集客モデル本接続+バランスチューニング+興行準備画面UI改修。(A)Phase4本切り替え: (1)集客計算を旧calcAttendance（orgPopベース）→calcAttendanceV2（reach×draw×heat×揺らぎ→softCap）に差し替え、カード内容（drawPower/matchAppeal）が集客に直結。(2)heat更新をavgMQ閾値→★ベース（heatDeltaByStars）に変更。(3)orgPop変動をavgMQ+VENUE_MQ_THRESHOLD→★ベース（orgPopDeltaByStars）に変更、序盤保護（orgPop<15ペナルティなし、<30半減+成長ブースト）追加。(4)メディア放映収入をavgMQ×showPerMQ→baseBroadcast×mediaMult[stars]に変更。(5)showRating（★1-5）をengine側calcShowRating（mqScore+occScore+bonusScore）で統一算出。(6)AI団体にも★ベースorgPop変動追加。(7)PPV/対抗戦のheat更新も★ベースに統一。影響範囲: engine.js/app.js/ui-render.js全面。(B)チューニング: 会場階層別★評価基準(小規模-18/中規模-8/大規模±0/ドーム+3)、★3微正デルタ(+0.3)、負方向逓減(orgPop40+で×0.7)、reachカーブ大幅引き上げ(旧集客同等)、expectedDrawCurve再キャリブレーション、drawPowerをmatchAppealに統合、promoStackをdrawPowerに反映。(C)UI改修: 集客予測6段階化、カード評価ツールチップ(drawPowerBreakdown/matchAppealBreakdown)、興行準備画面レイアウト全面改修(集客予測上部移動/左右対称レイアウト/興行順番号)。(D)次ステップ: 興行準備画面デザインのモックアップ詰め(docs/showprep-mockup.html)→本体反映。auto-sim 3シード×20シーズン ALL CLEAR。
 
