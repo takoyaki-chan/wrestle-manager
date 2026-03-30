@@ -2181,12 +2181,12 @@ function renderShowPrep() {
     if (drawData) {
       const dets = [...(drawData.traits || []), ...(drawData.details || [])]
         .map(d => `<span class="sp-draw-detail">${d.label}+${d.value}</span>`).join(' ');
-      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val">${drawData.total}</span>${dets ? `<div class="sp-draw-sub">${dets}</div>` : ''}</div>`;
+      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val" style="${_scale6Style(_popColor(drawData.total))}">${drawData.total}</span>${dets ? `<div class="sp-draw-sub">${dets}</div>` : ''}</div>`;
     }
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
-      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val" style="${_scale6Style(_ovrColor(ov(f)))}">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
     </div>`;
   };
@@ -2288,7 +2288,7 @@ function renderShowPrep() {
         const champBadge = G.titles?.world?.championId === c.id ? ' <span style="color:var(--gold);font-size:9px">👑</span>' : '';
         const hoverEvts = isAssigned
           ? ` onmouseenter="_spHighlightSwap(${c.id})" onmouseleave="_spClearHighlight()"` : '';
-        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;${_scale6Style(_ovrColor(ov(c)))};flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
       }).join('');
       const removeRow = curInSide > 0 ? `<div class="sp-picker-row" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
       pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
