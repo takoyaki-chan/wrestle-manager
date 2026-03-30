@@ -638,8 +638,8 @@ const Engine = {
     // ── C系: 興行集客力の積み上げ ──
     calcShowDraw(matchAppeals, nonMatchPromoStacks, venueIdx) {
       const cfg = SHOW_DRAW_CONFIG;
-      // matchAppeals: 数値配列（各試合のtotalAppeal）— 降順ソート
-      const sorted = [...matchAppeals].map(a => typeof a === 'number' ? a : (a.totalAppeal || 0)).sort((a, b) => b - a);
+      // matchAppeals: showCard順の配列（index 0 = メインイベント）— 並び順に重みを適用
+      const sorted = [...matchAppeals].map(a => typeof a === 'number' ? a : (a.totalAppeal || 0));
 
       let showDraw = 0;
       for (let i = 0; i < sorted.length; i++) {
