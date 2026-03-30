@@ -3282,6 +3282,15 @@ function fLink(c, opts = {}) {
   return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}'${skipArg})">${c.name}</span>${extra}`;
 }
 
+function moveShowCard(idx, dir) {
+  const target = idx + dir;
+  if (target < 0 || target >= G.showCard.length) return;
+  const card = [...G.showCard];
+  [card[idx], card[target]] = [card[target], card[idx]];
+  G = { ...G, showCard: card };
+  renderShowPrep();
+}
+
 function autoFillCard() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
   const card = [];

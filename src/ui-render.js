@@ -2305,6 +2305,8 @@ function renderShowPrep() {
     }
 
     const cardBorder = isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
+    const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveDnBtn = i < maxMatches - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         ${_spFighterInfo(fl, 'left', i, slotBD?.drawA)}
@@ -2319,6 +2321,7 @@ function renderShowPrep() {
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}
+        <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
       </div>
       <div class="sp-picker" id="sp-picker-${i}">${pickerInner}</div>
     </div>`;
