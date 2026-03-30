@@ -2311,7 +2311,7 @@ function renderShowPrep() {
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
-          ${slotBD ? `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score">${slotBD.total}</div>` : ''}
+          ${slotBD ? `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(slotBD.total))}">${slotBD.total}</div>` : ''}
           ${appealParts.length > 0 ? `<div class="sp-appeal-bonuses">${appealParts.join('  ')}</div>` : ''}
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
