@@ -11,7 +11,7 @@ FILE_PATH=$(echo "$INPUT" | node -e "let d='';process.stdin.on('data',c=>d+=c);p
 
 # engine.js / data.js / victory-lines.js 以外はスキップ
 case "$FILE_PATH" in
-  *engine.js|*data.js|*victory-lines.js) ;;
+  *management.js|*match-engine.js|*relationships.js|*data.js|*victory-lines.js) ;;
   *) exit 0 ;;
 esac
 
