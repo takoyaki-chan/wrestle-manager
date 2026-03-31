@@ -52,6 +52,7 @@ function _newsStoryClickable(story) {
 
 // v1.9: Roster sort state
 let _rosterSortKey = 'ovr';
+let _rosterDetailOpenId = null; // 現在展開中のカードID
 function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 
 // v2.1: Week screen sort state
@@ -1608,7 +1609,8 @@ function _renderRosterDetailPanel(c, hired) {
   tab3 += '</div>';
 
   // === Assemble ===
-  let html = `<div class="rd-detail" id="roster-detail-${c.id}"><div class="rd-layout">
+  const _isOpen = _rosterDetailOpenId === c.id;
+  let html = `<div class="rd-detail${_isOpen?' open':''}" id="roster-detail-${c.id}" onclick="event.stopPropagation()"><div class="rd-layout">
     ${leftCol}
     <div class="rd-info">
       <div class="rd-tabs">
@@ -1798,7 +1800,7 @@ function renderRoster() {
       });
       coachInlineHtml = `<select class="rd-coach-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeCoachAssign(${c.id}, Number(this.value))"${c.injury?' disabled':''}>${miniOpts}</select>`;
     }
-    html += `<div class="rd-card${document.getElementById('roster-detail-'+c.id)?.classList.contains('open')?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
+    html += `<div class="rd-card${_rosterDetailOpenId===c.id?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
       <div class="rd-card-inner">
         <div onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')" style="cursor:pointer;flex-shrink:0">
           ${portraitImg(c.id, 52, '', true)}
@@ -3450,14 +3452,15 @@ function changeCoachAssign(charId, newCoachId) {
 function toggleRosterDetail(charId) {
   const panel = document.getElementById(`roster-detail-${charId}`);
   if (!panel) return;
-  const isOpen = panel.classList.contains('open');
-  // Close all other panels first
-  document.querySelectorAll('.rd-detail.open').forEach(p => {
-    p.classList.remove('open');
-    const card = p.closest('.rd-card');
-    if (card) card.classList.remove('expanded');
-  });
+  const isOpen = _rosterDetailOpenId === charId;
+  // Close currently open panel
+  if (_rosterDetailOpenId !== null) {
+    const prev = document.getElementById(`roster-detail-${_rosterDetailOpenId}`);
+    if (prev) { prev.classList.remove('open'); const pc = prev.closest('.rd-card'); if (pc) pc.classList.remove('expanded'); }
+    _rosterDetailOpenId = null;
+  }
   if (!isOpen) {
+    _rosterDetailOpenId = charId;
     panel.classList.add('open');
     const card = panel.closest('.rd-card');
     if (card) card.classList.add('expanded');
