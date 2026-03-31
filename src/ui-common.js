@@ -1794,7 +1794,7 @@ function _renderRivalryPopup() {
         </div>
       </div>
       <div class="rivalry-popup-bonus">
-        📈 両選手の人気 +${o.popBonus}　　🏢 団体人気 +${o.orgPopBonus}
+        📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}
       </div>
       ${goodRivalMsg}
       <div class="rivalry-popup-btn-row">

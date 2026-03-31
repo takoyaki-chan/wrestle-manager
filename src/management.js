@@ -82,6 +82,12 @@ const Engine = {
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },
+    formatSignedStatDelta(v, digits = 1) {
+      const num = Number(v || 0);
+      const scale = 10 ** digits;
+      const rounded = Math.round((num + Number.EPSILON) * scale) / scale;
+      return `${rounded >= 0 ? '+' : ''}${rounded.toFixed(digits).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1')}`;
+    },
     // v2.1: trust内部float→表示整数ヘルパー
     dispTrust(v) { return Math.round(v != null ? v : 50); },
     // 汎用表示整数化ヘルパー — プレイヤーに見える数値は全てこれを通す
