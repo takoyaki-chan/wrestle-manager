@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-30（数値カラースケール再設計）
+> 最終更新: 2026-03-31（プロモシステム再設計 v2.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**数値カラースケール再設計（2026-03-30）。** 全パラメーター統一6段階カラースケール導入。_scale6ヘルパー+8パラメーター別ラッパー関数をui-common.jsに追加。S帯(金+glow)→A帯(金)→B帯(琥珀)→C帯(くすんだ暖色)→D帯(スチールブルー)→E帯(冷灰)の色温度スケール。適用: MQ(6箇所)/OVR(3箇所)/Condition(2箇所)/Bond(2箇所)/Rivalry(1箇所)/Popularity(8箇所新規)/orgPop(4箇所新規)。Rivalryのみ赤系専用パレット。新聞パネル(ライト背景)・Trust(隠しパラメータ)・HPバー・スタイルバッジ等は除外。変更: ui-common.js/ui-render.js。
+**プロモシステム再設計 v2.0（2026-03-31）。** プロモ活動による人気成長を全面見直し。(1)PROMO_POP_CAP 70→100（実質撤廃、diminishingで自然鈍化）。(2)getDiminishingMultiplierカーブ緩和（pop20-34:0.60→0.75/pop35-49:0.35→0.55/pop50-64:0.18→0.35/pop65-79:0.13→0.22/pop90+:0.05新追加）。(3)balanceスケジュールのpopBenefit条件削除（stackBenefitのみで判定）。(4)プロモrawGainをMNT連動に変更（mnRawGain=1.0+(mn-40)/40）+スター製造コーチ(getPopGainMult)をプロモにも適用。変更: data.js/management.js。auto-sim 100シーズン×2シード ALL CLEAR。
+
+前回: **数値カラースケール再設計（2026-03-30）。** 全パラメーター統一6段階カラースケール導入。_scale6ヘルパー+8パラメーター別ラッパー関数をui-common.jsに追加。S帯(金+glow)→A帯(金)→B帯(琥珀)→C帯(くすんだ暖色)→D帯(スチールブルー)→E帯(冷灰)の色温度スケール。適用: MQ(6箇所)/OVR(3箇所)/Condition(2箇所)/Bond(2箇所)/Rivalry(1箇所)/Popularity(8箇所新規)/orgPop(4箇所新規)。Rivalryのみ赤系専用パレット。新聞パネル(ライト背景)・Trust(隠しパラメータ)・HPバー・スタイルバッジ等は除外。変更: ui-common.js/ui-render.js。
 
 前回: **興行準備画面 v7 デザイン全面実装（2026-03-29）。** showprep-v7.htmlモックアップ準拠で興行準備画面を全面書き換え。(1)集客予測パネル: ムードアイコン+テキスト+5ドットゲージ+メトリクス行(Heat/予想MQ/タイトル/会場席数/会場費)。(2)ファンの声: コンパクト中央揃えパネル。(3)マッチカード: 7列グリッド(80px params | 1fr fighter | auto portrait | 110px center | auto portrait | 1fr fighter | 80px params)。ティア別スタイル(main-event金ボーダー+上ライン/mid-card/undercard薄め/empty-slot破線)。(4)ピッカーUI: `<select>`廃止→選手名クリックで下展開パネル、配置済み選手ホバーでスワップハイライト、クリックでスワップ自動処理。(5)中央タグ: 因縁/マンネリ/新鮮/タイトル/ファン期待/ラストマッチをsp-match-tagクラスで統一表示。変更: src/index.html(sp-*CSS追加)、src/ui-render.js(_spActivePicker状態+ピッカー関数群+renderShowPrep全面書換)。
 

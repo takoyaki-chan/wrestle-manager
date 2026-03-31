@@ -854,7 +854,7 @@ const LOSING_STREAK_PENALTIES = [
   {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
   {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
 ];
-const PROMO_POP_CAP = 70; // プロモのみで到達可能な人気上限（旧55→70）
+const PROMO_POP_CAP = 100; // promo-system-redesign v2.0: 上限撤廃（diminishingで自然に鈍化）
 // PROMO_MQ_PER_STACK — MQ外部ボーナス整理で廃止（drawPowerのみで集客に反映）
 // 金銭バランス改善: テーブル引き→区間線形補間（pop差がそのまま金額差に反映）
 const PROMO_EVENT_INCOME_CURVE = [

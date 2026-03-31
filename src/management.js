@@ -198,14 +198,16 @@ const Engine = {
 
   // ── Popularity System (v1.0b) ─────────────────────────────
   popularity: {
-    // §A: Diminishing returns curve (steep)
+    // §A: Diminishing returns curve (promo-system-redesign v2.0)
+    // pop0-19: full / pop20-34: 緩やか / pop50+: 逓減 / pop90+: 試合なしでは微増のみ
     getDiminishingMultiplier(currentPop) {
-      if (currentPop < 20) return 1.0;
-      if (currentPop < 35) return 0.6;
-      if (currentPop < 50) return 0.35;
-      if (currentPop < 65) return 0.18;
-      if (currentPop < 80) return 0.13;
-      return 0.10; // 80-99
+      if (currentPop < 20) return 1.00;
+      if (currentPop < 35) return 0.75;  // 旧0.60
+      if (currentPop < 50) return 0.55;  // 旧0.35
+      if (currentPop < 65) return 0.35;  // 旧0.18
+      if (currentPop < 80) return 0.22;  // 旧0.13
+      if (currentPop < 90) return 0.10;  // 旧0.10（維持）
+      return 0.05;                        // 90+: 新追加（試合の好MQ必須帯）
     },
     applyDiminishing(rawGain, currentPop) {
       if (rawGain <= 0) return rawGain; // penalties are not diminished
@@ -5469,10 +5471,10 @@ const Engine = {
           action = 'practice';
         } else if (action === 'balance') {
           if (Engine.util.isShowWeek(G.week)) {
-            // 興行週: pop上限未達 or promoStack未満3なら promo、それ以外は practice
-            const popBenefit = nc.popularity < PROMO_POP_CAP;
+            // 興行週: promoStack未積みなら promo、それ以外は practice
+            // promo-system-redesign v2.0: popBenefit条件削除（PROMO_POP_CAP撤廃）
             const stackBenefit = (nc.promoStack || 0) < 3;
-            action = (popBenefit || stackBenefit) ? 'promo' : 'practice';
+            action = stackBenefit ? 'promo' : 'practice';
           } else {
             action = 'practice';
           }
@@ -5517,11 +5519,15 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
-          // v1.0b: Apply diminishing returns + promo pop cap
-          const rawPromoGain = Math.floor(1 + Engine.rng.float(rng) * 2) + promoBoostAmount;
+          // promo-system-redesign v2.0: MNT連動rawGain（MN40=1.0, MN60=1.5, MN80=2.0, MN100=2.5）
+          const mnVal = nc.mn || 60;
+          const mnRawGain = 1.0 + Math.max(0, mnVal - 40) / 40;
+          // v0.2: スター製造コーチ — 試合と同様にプロモにも適用
+          const starMakerMult = Engine.coach.getPopGainMult(stateForCalc, nc.id);
+          const rawPromoGain = (mnRawGain + promoBoostAmount) * starMakerMult;
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
-          nc.popularity = Math.min(PROMO_POP_CAP, Math.min(100, newPop)); // promo alone cannot exceed PROMO_POP_CAP
+          nc.popularity = Math.min(100, newPop); // promo-system-redesign v2.0: 上限撤廃
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + mentalBonus);
           nc.intensiveWeeks = 0;
           // プロモ改修 v1.0: promoStack蓄積（最大3）
