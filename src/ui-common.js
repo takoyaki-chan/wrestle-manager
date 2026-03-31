@@ -3314,6 +3314,101 @@ function autoFillCard() {
   G = { ...G, showCard: card };
 }
 
+// ── おすすめ編成: matchAppeal合計最大化 ──
+function autoFillCardByAppeal() {
+  const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest);
+  if (available.length < 2) { autoFillCard(); return; }
+
+  // fanExpectを1回だけ生成してキャッシュ
+  const fanExpects = Engine.fanExpect.generate(G) || [];
+  const feSet = new Set(fanExpects.map(fe => [fe.leftId, fe.rightId].sort().join('-')));
+
+  // 全ペアのappealスコアを計算
+  const pairs = [];
+  for (let i = 0; i < available.length; i++) {
+    for (let j = i + 1; j < available.length; j++) {
+      const a = available[i], b = available[j];
+      const fr = Engine.freshness.calc(G.matchupLog || [], a.id, b.id, G.totalShows, G.roster.length, null);
+      const rivLevel = Engine.title.getRivalryLevel(G, a.id, b.id);
+      const pendingClash = rivLevel?.pendingClashBonus || 0;
+      const rivAB = G.relationships ? (G.relationships[`${a.id}>${b.id}`]?.rivalry || 0) : 0;
+      const rivBA = G.relationships ? (G.relationships[`${b.id}>${a.id}`]?.rivalry || 0) : 0;
+      const pairKey = [a.id, b.id].sort().join('-');
+      const ctx = {
+        rivalry: Math.max(rivAB, rivBA), isTitle: false, isFanExpect: feSet.has(pairKey),
+        pendingClashBonus: pendingClash, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
+      };
+      pairs.push({ aId: a.id, bId: b.id, appeal: Engine.attendanceV2.calcMatchAppeal(a, b, ctx, G) });
+    }
+  }
+
+  // appeal降順 → 貪欲法
+  pairs.sort((x, y) => y.appeal - x.appeal);
+  const card = [];
+  const used = new Set();
+  for (const p of pairs) {
+    if (card.length >= maxMatches) break;
+    if (used.has(p.aId) || used.has(p.bId)) continue;
+    card.push({ left: p.aId, right: p.bId, isTitle: false });
+    used.add(p.aId);
+    used.add(p.bId);
+  }
+
+  // タイトルマッチ判定（メイン = card[0]）
+  _applyAutoTitleMatch(card);
+  while (card.length < maxMatches) card.push({ left: 0, right: 0, isTitle: false });
+  G = { ...G, showCard: card };
+}
+
+// ── 集客力順編成: drawPower合計最大化 ──
+function autoFillCardByDraw() {
+  const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest);
+  if (available.length < 2) { autoFillCard(); return; }
+
+  // 全ペアのdrawPower合計を計算
+  const pairs = [];
+  for (let i = 0; i < available.length; i++) {
+    for (let j = i + 1; j < available.length; j++) {
+      const a = available[i], b = available[j];
+      const drawSum = Engine.attendanceV2.calcDrawPower(a, G) + Engine.attendanceV2.calcDrawPower(b, G);
+      pairs.push({ aId: a.id, bId: b.id, drawSum });
+    }
+  }
+
+  // drawSum降順 → 貪欲法
+  pairs.sort((x, y) => y.drawSum - x.drawSum);
+  const card = [];
+  const used = new Set();
+  for (const p of pairs) {
+    if (card.length >= maxMatches) break;
+    if (used.has(p.aId) || used.has(p.bId)) continue;
+    card.push({ left: p.aId, right: p.bId, isTitle: false });
+    used.add(p.aId);
+    used.add(p.bId);
+  }
+
+  _applyAutoTitleMatch(card);
+  while (card.length < maxMatches) card.push({ left: 0, right: 0, isTitle: false });
+  G = { ...G, showCard: card };
+}
+
+// ── 自動編成共通: メインイベントのタイトルマッチ判定 ──
+function _applyAutoTitleMatch(card) {
+  if (!card.length || !G.titleEstablished) return;
+  const champId = G.titles.world.championId;
+  if (!champId) return;
+  const cdOk = Engine.title.canTitleMatch(G).allowed;
+  if (!cdOk) return;
+  // 王者が含まれるスロットを探す
+  const champIdx = card.findIndex(m => m.left === champId || m.right === champId);
+  if (champIdx < 0) return;
+  // 王者スロットをメイン（0番）に移動
+  if (champIdx !== 0) { [card[0], card[champIdx]] = [card[champIdx], card[0]]; }
+  card[0].isTitle = true;
+}
+
 function onCardSelect(slotIndex, side, newId) {
   App.setShowCardSlot(slotIndex, side, newId);
 }
@@ -3396,7 +3491,7 @@ function startShowPrep() {
     showCard: (G.showCard.length === 0 || G.showCard.every(m => m.left === 0 && m.right === 0))
       ? [] : [...G.showCard]
   };
-  if (G.showCard.length === 0) autoFillCard();
+  if (G.showCard.length === 0) autoFillCardByAppeal();
   Audio.bgm.play('management');
   showScreen('show');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
