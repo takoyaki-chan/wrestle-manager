@@ -5519,12 +5519,16 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
-          // promo-system-redesign v2.0: MNT連動rawGain（MN40=1.0, MN60=1.5, MN80=2.0, MN100=2.5）
-          const mnVal = nc.mn || 60;
-          const mnRawGain = 1.0 + Math.max(0, mnVal - 40) / 40;
+          // promo-system-redesign v2.1: MNT連動rawGain（緩やかな影響、MN=50基準1.5）
+          const mnVal = nc.mn || 50;
+          const mnRawGain = 1.2 + mnVal * 0.006;
+          // 人気関連特性ボーナス: 華+0.3 / ファンサービス+0.2
+          let rawPromoBase = mnRawGain + promoBoostAmount;
+          if (Traits.has(nc, '華')) rawPromoBase += 0.3;
+          if (Traits.has(nc, 'ファンサービス')) rawPromoBase += 0.2;
           // v0.2: スター製造コーチ — 試合と同様にプロモにも適用
           const starMakerMult = Engine.coach.getPopGainMult(stateForCalc, nc.id);
-          const rawPromoGain = (mnRawGain + promoBoostAmount) * starMakerMult;
+          const rawPromoGain = rawPromoBase * starMakerMult;
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
           nc.popularity = Math.min(100, newPop); // promo-system-redesign v2.0: 上限撤廃
