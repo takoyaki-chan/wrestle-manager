@@ -98,16 +98,16 @@ Engine.battle = {
       const eng     = tier >= 2 ? BIGMATCH_ENG      : ENG;
 
       const eff = Engine.util.eff;
+      const fullHpL = Math.round(eng.hpBase + eff(charL.st) * eng.hpScale);
+      const fullHpR = Math.round(eng.hpBase + eff(charR.st) * eng.hpScale);
       const L = {
-        ...charL, hp: Math.round(eng.hpBase + eff(charL.st) * eng.hpScale),
-        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+        ...charL, hp: charL._hpOverride != null ? charL._hpOverride : fullHpL,
+        mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
-      L.mhp = L.hp;
       const R = {
-        ...charR, hp: Math.round(eng.hpBase + eff(charR.st) * eng.hpScale),
-        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+        ...charR, hp: charR._hpOverride != null ? charR._hpOverride : fullHpR,
+        mhp: fullHpR, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
       };
-      R.mhp = R.hp;
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
       // 威圧感: 序盤モメンタム優位（左+/右-）

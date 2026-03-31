@@ -14810,9 +14810,13 @@ Engine.juniorTournament = {
         const right = currentBracket[i + 1];
         const matchRng = Engine.rng.create(Engine.rng.derive(
           state.rngSeed, state.season, 0xBB00 + r * 10 + i));
-        // condition をセット（初回は80、以降は持ち越し）
-        const pf = { ...left, condition: left.condition };
-        const af = { ...right, condition: right.condition };
+        // condition→HP初期値に反映（condition/100 をフルHPに掛ける）
+        const eff = Engine.util.eff;
+        const eng = isFinal ? BIGMATCH_ENG : ENG;
+        const fullHpL = Math.round(eng.hpBase + eff(left.st) * eng.hpScale);
+        const fullHpR = Math.round(eng.hpBase + eff(right.st) * eng.hpScale);
+        const pf = { ...left, _hpOverride: Math.round(fullHpL * left.condition / 100) };
+        const af = { ...right, _hpOverride: Math.round(fullHpR * right.condition / 100) };
         const result = Engine.battle.simulateMatch(pf, af, matchRng, matchTier);
         // 引き分け時は左側を勝者扱い（トーナメントなので必ず決着）
         const winnerId = result.winner === 'right' ? right.id : left.id;
@@ -14822,8 +14826,8 @@ Engine.juniorTournament = {
         // 試合後コンディション推定（HP残量ベース）
         const winnerHp = result.winner === 'left' ? result.hpLeft : result.hpRight;
         const loserHp = result.winner === 'left' ? result.hpRight : result.hpLeft;
-        const winnerPostCond = Math.max(20, Math.round((winnerHp?.current || 50) / (winnerHp?.max || 100) * 80));
-        const loserPostCond = Math.max(10, Math.round((loserHp?.current || 30) / (loserHp?.max || 100) * 70));
+        const winnerPostCond = Math.max(20, Math.round((winnerHp?.final ?? 50) / (winnerHp?.max || 100) * 80));
+        const loserPostCond = Math.max(10, Math.round((loserHp?.final ?? 30) / (loserHp?.max || 100) * 70));
 
         matches.push({
           left: { id: left.id, name: left.name, _orgId: left._orgId, _orgName: left._orgName,
