@@ -3232,8 +3232,8 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:6px;font-size:12px;color:var(--text-sub)">
-            給与: <span style="font-weight:600;color:#ccc">${c.salary}万/週</span> ｜ 担当: ${assigned.length}/${COACH_MAX_ASSIGN}名
+          <div style="margin-top:6px;font-size:12px;color:#6a6050">
+            給与: <b style="color:#4a4035">${c.salary}万/週</b> ｜ 担当: ${assigned.length}/${COACH_MAX_ASSIGN}名
           </div>`;
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">`;
@@ -3267,7 +3267,7 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:var(--text-sub)">雇用費: <span style="font-weight:600;color:#ccc">${fee}万</span> ｜ 給与: <span style="font-weight:600;color:#ccc">${c.salary}万/週</span></div>
+          <div style="margin-top:5px;font-size:12px;color:#6a6050">雇用費: <b style="color:#4a4035">${fee}万</b> ｜ 給与: <b style="color:#4a4035">${c.salary}万/週</b></div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
           onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= maxCoaches ? '上限' : '資金不足'}</button>
