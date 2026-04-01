@@ -2680,6 +2680,11 @@ const Engine = {
       // v0.2: 根性練習フレーバー — 成長 ×1.05
       const gritMul = overrideCoachMul ? 1.0 : Engine.coach.getFlavorGritGrowthMult(G, char.id);
 
+      // §9 v3.0: 低morale時の成長ゼロ化（心が入ってない週）
+      const _growthMorale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
+      if (_growthMorale < 40 && Engine.rng.float(rng) < 0.15) return 0;
+      if (_growthMorale < 50 && _growthMorale >= 40 && Engine.rng.float(rng) < 0.05) return 0;
+
       // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ × 新人育成 × 根性練習
       const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul * rookieMul * gritMul;
 
@@ -5399,7 +5404,7 @@ const Engine = {
         // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
         if (nc.slump && !nc.injury) {
           const slumpTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C2, nc.id));
-          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id));
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id), G.lockerRoomMorale || 60);
           nc = slumpResult.fighter;
           if (slumpResult.recovered) {
             pendingSlumpEvents.push({ type: 'slump_end', fighterId: nc.id, duration: slumpResult.duration });
@@ -5420,7 +5425,7 @@ const Engine = {
         // v1.8: §5 モチベ喪失週次処理
         if (nc.motivationLoss && !nc.injury) {
           const motTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C4, nc.id));
-          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week);
+          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week, G.lockerRoomMorale || 60);
           nc = motResult.fighter;
           if (motResult.selfRetire) {
             pendingMotivationRetirements.push({ fighterId: nc.id });
@@ -5984,10 +5989,14 @@ const Engine = {
 
       // Natural condition recovery (+ mental coach bonus)
       // §13.2: trust < 45 → コンディション回復 ×0.8
+      // §9 v3.0: morale → コンディション回復速度補正
+      const _morale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
+      const _moraleMul = _morale >= 75 ? 1.15 : _morale >= 60 ? 1.0 : _morale >= 40 ? 0.90 : 0.80;
       roster = roster.map(c => {
         const baseRecovery = 3 + Engine.coach.getCondBonus(G, c.id);
         const trust = c.trust != null ? c.trust : 50;
-        const recovery = trust < 45 ? baseRecovery * 0.8 : baseRecovery;
+        const trustMul = trust < 45 ? 0.8 : 1.0;
+        const recovery = baseRecovery * trustMul * _moraleMul;
         return { ...c, condition: Math.min(100, c.condition + recovery) };
       });
 
@@ -9116,7 +9125,7 @@ const Engine = {
         // v2.0: オフシーズン trust 自然変動（興行なし期間: 各選手に自然減衰 + メンタル回復のみ適用）
         const offSeasonRoster = s.roster.map(f => {
           if (f.injury) return f;  // 怪我中は変動なし
-          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust || 50);
+          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust || 50, s.lockerRoomMorale || 60);
           const newTrust = Engine.util.clamp((f.trust || 50) + natural, 0, 100);
           return newTrust !== (f.trust || 50) ? { ...f, trust: newTrust } : f;
         });
@@ -11305,12 +11314,15 @@ Engine.growthEvents = {
   },
 
   /** §4.4 スランプ毎週処理（時間経過 momentum +0.3 + 回復判定）
+   * @param {number} [morale=60] — §9 v3.0: ロッカールーム士気によるmomentum速度補正
    * @returns {{ fighter, recovered: bool, duration?: number }} */
-  tickSlumpPassive(fighter, rng, season, week, slumpRecoveryMult = 1.0) {
+  tickSlumpPassive(fighter, rng, season, week, slumpRecoveryMult = 1.0, morale = 60) {
     if (!fighter.slump) return { fighter, recovered: false };
+    // §9 v3.0: morale → スランプ回復momentum速度
+    const moraleMomentumMult = morale >= 70 ? 1.3 : morale >= 50 ? 1.0 : morale >= 35 ? 0.7 : 0.5;
     let slump = { ...fighter.slump,
       weeksSinceStart: (fighter.slump.weeksSinceStart || 0) + 1,
-      recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 0.3
+      recoveryMomentum: (fighter.slump.recoveryMomentum || 0) + 0.3 * moraleMomentumMult
     };
     // v0.2: 闘志注入 — スランプ脱出確率 ×2.0
     const recoveryProb = ((2 + slump.recoveryMomentum) / 100) * slumpRecoveryMult;
@@ -11359,12 +11371,15 @@ Engine.growthEvents = {
   },
 
   /** §5.4 モチベ喪失毎週処理（+0.15 momentum + 回復判定 + 自主引退判定）
+   * @param {number} [morale=60] — §9 v3.0: ロッカールーム士気によるmomentum速度補正
    * @returns {{ fighter, recovered: bool, selfRetire: bool, duration?: number }} */
-  tickMotivationLossPassive(fighter, rng, season, week) {
+  tickMotivationLossPassive(fighter, rng, season, week, morale = 60) {
     if (!fighter.motivationLoss) return { fighter, recovered: false, selfRetire: false };
+    // §9 v3.0: morale → モチベ喪失回復momentum速度
+    const moraleMomentumMult = morale >= 70 ? 1.3 : morale >= 50 ? 1.0 : morale >= 35 ? 0.7 : 0.5;
     let ml = { ...fighter.motivationLoss,
       weeksSinceStart: (fighter.motivationLoss.weeksSinceStart || 0) + 1,
-      recoveryMomentum: (fighter.motivationLoss.recoveryMomentum || 0) + 0.15
+      recoveryMomentum: (fighter.motivationLoss.recoveryMomentum || 0) + 0.15 * moraleMomentumMult
     };
     // §5.5 自主引退判定（24週超え → 2%/週）
     if (ml.weeksSinceStart > 24 && Engine.rng.float(rng) < 0.02) {
@@ -11440,13 +11455,17 @@ Engine.trust = {
   // ── §8.1: 自然変動（連続関数化）────────────────────────────────────────────
   // MN100 → ±0.00 / MN50 → -0.23 / MN25 → -0.35 / MN10 → -0.41
   // §13.5 P-後輩への好影響: trust70+の選手1人につき +0.05/興行（最大3人分 = +0.15）
-  calcMonthlyNatural(mental, seniorCount, trust) {
+  calcMonthlyNatural(mental, seniorCount, trust, morale) {
     const base = -0.46 + ((mental || 50) / 217);
     const seniorBonus = 0.05 * Math.min(seniorCount || 0, 3);
     let natural = base + seniorBonus;
     // v3.0: Trustグラビティ — trust60超で追加減衰（高trust維持コスト）
     if (trust !== undefined) {
       natural -= Math.max(0, trust - 60) * 0.04;
+    }
+    // §9 v3.0: 低morale時のtrust侵食加速
+    if (morale !== undefined && morale < 45) {
+      natural -= (45 - morale) / 100;
     }
     return natural;
   },
@@ -11796,8 +11815,9 @@ Engine.trust = {
         }
       }
 
-      // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響
-      delta += Engine.trust.calcMonthlyNatural(mental, seniorCount, oldTrust);
+      // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響 + §9 v3.0 morale侵食
+      const _trustMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+      delta += Engine.trust.calcMonthlyNatural(mental, seniorCount, oldTrust, _trustMorale);
 
       delta *= Engine.trust.trustSensitivity(oldTrust);
       let newTrust = Engine.util.clamp(oldTrust + delta, 0, 100);
@@ -11820,21 +11840,27 @@ Engine.trust = {
     return { roster: newRoster, changes };
   },
 
-  // ── §9 v2.1: ロッカールーム士気 更新 ─────────────────────────────────────
-  // §9.2: trust<40の連続関数ペナルティ / §9.3-9.4: 人望・ムードメーカー重複処理
+  // ── §9 v3.0: ロッカールーム士気 更新 ─────────────────────────────────────
+  // 平均回帰 + 特性条件付き + ロスターサイズ税 + 負傷者負荷 + 興行双方向
   updateLockerRoomMorale(state, trustResult) {
     const current = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let delta = 0;
+    const rosterArr = trustResult.roster || [];
 
-    // §9.3: 興行成功ボーナス（avgMQ 65+）
+    // ── 平均回帰: baseline=55への12%/週 ──
+    const baseline = 55;
+    delta += -(current - baseline) * 0.12;
+
+    // ── 興行品質（双方向） ──
     const results = state.lastShowResults || [];
     if (results.length > 0) {
       const avgMQ = results.reduce((s, r) => s + r.mq, 0) / results.length;
-      if (avgMQ >= 65) delta += 1.84;
+      if (avgMQ >= 65) delta += 1.5;
+      else if (avgMQ < 45) delta -= 1.5;
+      else if (avgMQ < 55) delta -= 0.5;
     }
 
-    // §9.2: trust<40の選手ごとの連続関数ペナルティ
-    const rosterArr = trustResult.roster || [];
+    // ── trust<40の選手ごとの連続関数ペナルティ ──
     rosterArr.forEach(f => {
       const trust = f.trust != null ? f.trust : 50;
       if (trust < 40) {
@@ -11842,16 +11868,26 @@ Engine.trust = {
       }
     });
 
-    // §9.3-9.4: 人望・ムードメーカー（重複処理）
-    const hasNinbo = rosterArr.some(f => Traits.has(f, '人望') && !f.injury);
+    // ── ロスターサイズ税（8人超で-0.15/人/週） ──
+    const ownCount = rosterArr.filter(f => !f.isRental).length;
+    delta -= Math.max(0, ownCount - 8) * 0.15;
+
+    // ── 負傷者負荷 ──
+    const injuredCount = rosterArr.filter(f => f.injury && !f.isRental).length;
+    if (injuredCount >= 3) delta -= 0.5;
+    if (injuredCount >= 5) delta -= 0.5;
+
+    // ── ムードメーカー: +1.5/週、morale70超で半減 ──
     const hasMoodMaker = rosterArr.some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
-    if (hasNinbo && hasMoodMaker) {
-      // 高い方フル + 低い方半減
-      delta += 2.53 + 1.84 * 0.5;  // = +3.45
-    } else if (hasMoodMaker) {
-      delta += 2.53;
-    } else if (hasNinbo) {
-      delta += 1.84;
+    if (hasMoodMaker) {
+      delta += current > 70 ? 0.75 : 1.5;
+    }
+
+    // ── 人望: trust<50の選手数に比例（最大+1.2） ──
+    const hasNinbo = rosterArr.some(f => Traits.has(f, '人望') && !f.injury);
+    if (hasNinbo) {
+      const troubledCount = rosterArr.filter(f => !f.injury && !f.isRental && (f.trust ?? 50) < 50).length;
+      delta += Math.min(1.2, 0.3 * troubledCount);
     }
 
     return Engine.util.clamp(current + delta, 0, 100);

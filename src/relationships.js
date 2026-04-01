@@ -717,7 +717,7 @@ Engine.relationships = {
 
         // ── 憎い敵ゾーン（rivalry40+, bond40未満）──
         if (pairState.minRivalry >= 40 && Math.max(relAB.bond, relBA.bond) < 40) {
-          moralePenaltyRaw += 0.5;
+          moralePenaltyRaw += 0.7;
           hostilePairNames.push([left.name, right.name]); // M1
           markGrowthPressure(left.id, 1.2, 1.15);
           markGrowthPressure(right.id, 1.2, 1.15);
@@ -816,7 +816,7 @@ Engine.relationships = {
     warningNames.forEach(name => events.push(`[trust-warning] ${_pick(WEEKLY_STORY_TICKER.trustWarning, name, '')}`));
 
     // ── 憎い敵ゾーンのモラルペナルティ ──
-    const moraleDelta = -Math.min(2, moralePenaltyRaw);
+    const moraleDelta = -Math.min(3, moralePenaltyRaw);
     if (moraleDelta < 0) {
       lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + moraleDelta, 0, 100);
       // M1: ペア名を含むティッカーテキスト

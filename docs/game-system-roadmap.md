@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-03-31（プロモシステム再設計 v2.0）
+> 最終更新: 2026-04-02（ロッカールーム士気リデザイン v3.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**プロモシステム再設計 v2.0（2026-03-31）。** プロモ活動による人気成長を全面見直し。(1)PROMO_POP_CAP 70→100（実質撤廃、diminishingで自然鈍化）。(2)getDiminishingMultiplierカーブ緩和（pop20-34:0.60→0.75/pop35-49:0.35→0.55/pop50-64:0.18→0.35/pop65-79:0.13→0.22/pop90+:0.05新追加）。(3)balanceスケジュールのpopBenefit条件削除（stackBenefitのみで判定）。(4)プロモrawGainをMNT連動に変更（mnRawGain=1.0+(mn-40)/40）+スター製造コーチ(getPopGainMult)をプロモにも適用。変更: data.js/management.js。auto-sim 100シーズン×2シード ALL CLEAR。
+**ロッカールーム士気リデザイン v3.0（2026-04-02）。** morale=100張り付き問題を根本解決。(1)平均回帰: baseline=55への12%/週回帰を導入、100に留まれない設計に。(2)ムードメーカー条件付き化: 無条件+2.53→+1.5/週(morale70超で半減+0.75)。(3)人望条件付き化: 無条件+1.84→trust<50の選手数に比例(0.3×人数, max+1.2)。(4)興行双方向化: MQ<45で-1.5/MQ<55で-0.5追加。(5)ロスターサイズ税: 8人超-0.15/人/週。(6)負傷者負荷: 3人以上-0.5, 5人以上追加-0.5。(7)敵対ペア強化: 0.5→0.7/組, cap2→3。(8)morale→condition回復速度: 75+で×1.15/40未満で×0.80。(9)morale→成長ゼロ化: 40未満15%/40-50 5%。(10)morale→trust侵食: 45未満で追加減衰(45-morale)/100。(11)morale→スランプ/モチベ喪失回復: 70+で×1.3/35未満で×0.5。均衡帯38-76。変更: management.js/relationships.js/data.js。auto-sim 5シード×100シーズン ALL CLEAR。
+
+前回: **プロモシステム再設計 v2.0（2026-03-31）。** プロモ活動による人気成長を全面見直し。(1)PROMO_POP_CAP 70→100（実質撤廃、diminishingで自然鈍化）。(2)getDiminishingMultiplierカーブ緩和（pop20-34:0.60→0.75/pop35-49:0.35→0.55/pop50-64:0.18→0.35/pop65-79:0.13→0.22/pop90+:0.05新追加）。(3)balanceスケジュールのpopBenefit条件削除（stackBenefitのみで判定）。(4)プロモrawGainをMNT連動に変更（mnRawGain=1.0+(mn-40)/40）+スター製造コーチ(getPopGainMult)をプロモにも適用。変更: data.js/management.js。auto-sim 100シーズン×2シード ALL CLEAR。
 
 前回: **数値カラースケール再設計（2026-03-30）。** 全パラメーター統一6段階カラースケール導入。_scale6ヘルパー+8パラメーター別ラッパー関数をui-common.jsに追加。S帯(金+glow)→A帯(金)→B帯(琥珀)→C帯(くすんだ暖色)→D帯(スチールブルー)→E帯(冷灰)の色温度スケール。適用: MQ(6箇所)/OVR(3箇所)/Condition(2箇所)/Bond(2箇所)/Rivalry(1箇所)/Popularity(8箇所新規)/orgPop(4箇所新規)。Rivalryのみ赤系専用パレット。新聞パネル(ライト背景)・Trust(隠しパラメータ)・HPバー・スタイルバッジ等は除外。変更: ui-common.js/ui-render.js。
 
