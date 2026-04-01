@@ -87,6 +87,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 04-01 | ポップアップ通知追加6件: P1スキャンダル→showNotifEventToast(N_scandal警告スタイル+portrait)/O2空席新聞記事(emptyVenue newspaper)/T4-T7不満ティッカー(G1-G4 grievanceフラグをprocessWeeklyStoryEventsで最大2件/週)/M1対立ペアティッカー強化(ペア名表示)/P5怪我離脱人気低下→showToast(4週毎)/P6メディア密着終了→showToast。data.js+management.js+relationships.js+app.js+ui-common.js変更。auto-sim 100シーズンALL CLEAR |
 | 03-30 | MQ上限撤廃&特性MQリデザイン: MQ clamp上限100を5箇所で撤廃(match-engine.js×1+management.js×4)。名勝負製造機:MQ直接+1~5廃止→キックアウト+0.15/ギブアップ脱出+0.15/カウンター+5%の間接効果に。引き出し上手:MQ直接+max4廃止→ペーシング減点の適正ターン閾値緩和(Tier2:13→10/10→7、Tier1:7→5/5→3)に。auto-sim 100シーズンALL CLEAR |
 | 03-28 | 関節技決着の勝利方法表示修正: checkPinAttempt成功時にmv.c==='submission'でfinType='ギブアップ'に分岐（従来はすべて'ピン'→3カウント表示になっていた）。auto-sim 100シーズンALL CLEAR |
 | 03-28 | 殿堂入りスライド修正: セリフタイミング制御(選手セリフ→タップでコーチセリフに切替、次へボタン無効化)+コーチ画像パス修正(getPortraitUrl→getCoachPortraitUrl)+タップヒントUI追加 |

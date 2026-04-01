@@ -4430,6 +4430,7 @@ const App = {
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
     if (G.mediaSpotlight) {
+      const _spotlightName = G.mediaSpotlight.fighterName || '選手';
       const spotRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4B4));
       const spotResult = Engine.eventSystem.processMediaSpotlight(G, results, validMatches, spotRng);
       if (spotResult) {
@@ -4441,6 +4442,10 @@ const App = {
         // Phase 4 E-04: メディアスポットライト終了時の関係値反映
         if (spotResult.relationships) {
           G = { ...G, relationships: spotResult.relationships };
+        }
+        // P6: メディアスポットライト終了トースト
+        if (spotResult.mediaSpotlight === null) {
+          setTimeout(() => showToast(`📺 ${_spotlightName}のメディア密着取材が終了した`, 5000), 500);
         }
       }
     }
@@ -5342,6 +5347,45 @@ const App = {
           detail: d.destination === 'rival' ? `${d.name}は他団体へ移籍した。` : `${d.name}はフリーとなった。`,
         }), sdDelay + i * 200);
       });
+    }
+
+    // P1: スキャンダル通知ポップアップ
+    const pendingScandalEvents = G._pendingScandalEvents || null;
+    if (G._pendingScandalEvents) {
+      const { _pendingScandalEvents: _, ...cleanSc } = G;
+      G = cleanSc;
+    }
+    if (pendingScandalEvents && pendingScandalEvents.length > 0) {
+      const scandalDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 150;
+      pendingScandalEvents.forEach((sc, i) => {
+        setTimeout(() => showNotifEventToast({
+          type: 'N_scandal',
+          fighter: sc.fighterId,
+          text: `📰 ${sc.fighterName}のスキャンダルが週刊誌に掲載された！`,
+          detail: `ファンの間に動揺が広がっている（人気${sc.popDelta}）`,
+        }), scandalDelay + i * 300);
+      });
+    }
+
+    // P5: 怪我離脱中の人気低下トースト
+    const pendingInjuryPopDecay = G._pendingInjuryPopDecay || null;
+    if (G._pendingInjuryPopDecay) {
+      const { _pendingInjuryPopDecay: _, ...cleanIpd } = G;
+      G = cleanIpd;
+    }
+    if (pendingInjuryPopDecay && pendingInjuryPopDecay.length > 0) {
+      const ipdDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 100;
+      pendingInjuryPopDecay.forEach((ipd, i) => {
+        setTimeout(() => showToast(`📉 ${ipd.fighterName}の人気がじわじわ下がっている…（離脱中）`, 5000), ipdDelay + i * 200);
+      });
+    }
+
+    // O2: ガラガラ興行 → 新聞記事
+    if (G._pendingEmptyVenue) {
+      const { _pendingEmptyVenue: _, ...cleanEv } = G;
+      G = cleanEv;
+      App._pushNewsEvent({ type: 'emptyVenue',
+        data: { org: G.orgName || 'あなたの団体', season: G.season, week: G.week } });
     }
 
     // v2.0: 週次通知イベント表示（N1〜N5 トースト通知）

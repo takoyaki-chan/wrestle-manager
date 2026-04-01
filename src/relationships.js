@@ -682,6 +682,7 @@ Engine.relationships = {
 
     let moralePenaltyRaw = 0;
     const pairEventNames = [];
+    const hostilePairNames = []; // M1: 敵対ペア名追跡
 
     // ティッカーテキストヘルパー: テンプレートプールからランダムピック＋名前差し込み
     const _pick = (pool, nameA, nameB) => {
@@ -717,6 +718,7 @@ Engine.relationships = {
         // ── 憎い敵ゾーン（rivalry40+, bond40未満）──
         if (pairState.minRivalry >= 40 && Math.max(relAB.bond, relBA.bond) < 40) {
           moralePenaltyRaw += 0.5;
+          hostilePairNames.push([left.name, right.name]); // M1
           markGrowthPressure(left.id, 1.2, 1.15);
           markGrowthPressure(right.id, 1.2, 1.15);
           if (Engine.rng.float(rng) < 0.05) {
@@ -817,11 +819,31 @@ Engine.relationships = {
     const moraleDelta = -Math.min(2, moralePenaltyRaw);
     if (moraleDelta < 0) {
       lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + moraleDelta, 0, 100);
-      events.push(`[hostile-pairs] ロッカールームの空気が重い`);
+      // M1: ペア名を含むティッカーテキスト
+      const pairHint = hostilePairNames.length > 0
+        ? `（${hostilePairNames.slice(0, 2).map(p => `${p[0]}と${p[1]}`).join('、')}）`
+        : '';
+      events.push(`[hostile-pairs] ロッカールームの空気が重い${pairHint}`);
     }
     if (pairEventNames.length > 0) {
       pairEventNames.slice(0, 2).forEach(text => events.push(`[rivalry-clash] ${text}`));
     }
+
+    // ── T4-T7: trust不満系ティッカー（_grievanceFlagsが立っている選手） ──
+    const grievanceTickers = [];
+    roster.forEach(f => {
+      if (!f._grievanceFlags) return;
+      const gf = f._grievanceFlags;
+      if (gf.G1) grievanceTickers.push(`[grievance] ${f.name}が給料への不満を漏らしているようだ`);
+      if (gf.G2) {
+        const juniorName = gf.G2_juniorId ? (roster.find(r => r.id === gf.G2_juniorId) || {}).name : null;
+        grievanceTickers.push(`[grievance] ${f.name}が後輩${juniorName ? '（' + juniorName + '）' : ''}の待遇に不満を感じている`);
+      }
+      if (gf.G3) grievanceTickers.push(`[grievance] ${f.name}がタイトル挑戦の機会を求めているようだ`);
+      if (gf.G4) grievanceTickers.push(`[grievance] ${f.name}が出場機会の少なさに不満を抱えている`);
+    });
+    // 過多にならないよう最大2件
+    grievanceTickers.slice(0, 2).forEach(t => events.push(t));
 
     return {
       state: { ...state, roster, rivalries, relationships, orgPop, lockerRoomMorale },

@@ -5298,6 +5298,18 @@ const Engine = {
       let roster = injResult.roster;
       const freeAgents = injResult.freeAgents;
 
+      // P5: 怪我離脱中の人気低下トースト（4週ごと）
+      const _pendingInjuryPopDecay = [];
+      roster.forEach(c => {
+        if (!c.injury || !c.preInjuryPop) return;
+        const totalWeeks = (c.injury.weeksLeft || 0);
+        // 原始の怪我週数を推定（type別にINJURY_TABLEから取れないので、preInjuryPopの存在 + 4週経過を条件に）
+        const elapsedWeeks = Math.round(c.preInjuryPop - c.popularity); // 毎週-1なので差≒経過週数
+        if (elapsedWeeks > 0 && elapsedWeeks % 4 === 0) {
+          _pendingInjuryPopDecay.push({ fighterId: c.id, fighterName: c.name, popLost: elapsedWeeks });
+        }
+      });
+
       // v1.8: §4.2 怪我復帰スランプ判定（復帰した選手にトリガー）
       const geSlumpRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C1));
       const pendingSlumpEvents = [];
@@ -5576,12 +5588,14 @@ const Engine = {
 
       // v1.0b §B-2: Scandal check (weekly, for each fighter with pop >= 40)
       const scandalRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 777));
+      const _pendingScandalEvents = [];
       roster = roster.map(c => {
         if (c.injury || c.isRental) return c;
         const isChamp = G.titles?.world?.championId === c.id;
         const scandal = Engine.popularity.checkScandal(scandalRng, c, isChamp);
         if (!scandal) return c;
         events.push(scandal.msg);
+        _pendingScandalEvents.push({ fighterId: c.id, fighterName: c.name, popDelta: scandal.popDelta, msg: scandal.msg });
         // E-06: スキャンダル → 同僚→本人 bond 0~-2
         pendingRelOps.push({ type: 'scandal', fighterId: c.id });
         return { ...c, popularity: Math.max(1, c.popularity + scandal.popDelta) };
@@ -5702,6 +5716,8 @@ const Engine = {
       if (promoIncomes.length > 0) result._pendingPromoIncomes = promoIncomes;
       if (promoGoods.length > 0) result._pendingPromoGoods = promoGoods;
       if (pendingHotStreakEnds.length > 0) result._pendingHotStreakEnds = pendingHotStreakEnds;
+      if (_pendingScandalEvents.length > 0) result._pendingScandalEvents = _pendingScandalEvents;
+      if (_pendingInjuryPopDecay.length > 0) result._pendingInjuryPopDecay = _pendingInjuryPopDecay;
       return result;
     },
 
@@ -6043,7 +6059,7 @@ const Engine = {
     }
     // L1: ガラガラ時のorgPopペナルティ
     if (settle.orgPopPenalty) {
-      s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100) };
+      s = { ...s, orgPop: Engine.util.clamp(s.orgPop + settle.orgPopPenalty, 0, 100), _pendingEmptyVenue: true };
     }
     // レンタル契約: 毎週 weeksLeft を1減算、満了で返却
     if (!s.offSeason) {

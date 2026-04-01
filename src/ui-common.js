@@ -6660,7 +6660,8 @@ function showNotifEventToast(event) {
   const isWarning = event.type === 'N5'
     || event.type === 'N_isolation'
     || event.type === 'N_coach_report'
-    || event.type === 'N_sudden_departure';
+    || event.type === 'N_sudden_departure'
+    || event.type === 'N_scandal';
 
   const f1Id = event.fighter;
   const f2Id = event.fighter2;
