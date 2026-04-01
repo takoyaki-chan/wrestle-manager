@@ -1034,8 +1034,8 @@ const SHOW_RATING_CONFIG = {
   venueOccPenaltyFloor: [0, 0, 0, -5, -5, -5, -5, -5, -5, -5],
   // ★ → heat変動
   heatDeltaByStars: { 5: 2.5, 4: 1.5, 3: 0, 2: -1.0, 1: -2.0 },
-  // ★ → orgPop変動（逓減適用前の生値）— ★3は「平均的な興行」で微成長
-  orgPopDeltaByStars: { 5: 2.0, 4: 1.0, 3: 0.3, 2: -0.5, 1: -1.0 },
+  // ★ → orgPop変動（逓減適用前の生値）
+  orgPopDeltaByStars: { 5: 2.0, 4: 1.0, 3: 0, 2: -0.5, 1: -1.0 },
   // ★ → メディア放映収入倍率
   mediaMult: { 5: 2.0, 4: 1.4, 3: 1.0, 2: 0.6, 1: 0.3 },
 };

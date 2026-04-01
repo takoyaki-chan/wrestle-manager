@@ -9978,16 +9978,11 @@ Engine.orgPop = {
     return 0.08;                    // 覇権級: ほとんど上がらない
   },
 
-  // 施策A: 逓減適用 — 正方向は逓減フル、負方向はorgPop40+で軽い逓減
+  // 施策A: 逓減適用 — 正方向のみ逓減、負方向はそのまま
   applyOrgPopChange(rawDelta, orgPop, rng) {
     if (rawDelta > 0) {
       const mult = Engine.orgPop.getDiminishingMultiplier(orgPop);
       return rawDelta * mult;
-    }
-    // 負方向: orgPop40+で軽い逓減（高orgPop帯の崩落を緩和）
-    if (orgPop >= 40) {
-      const negMult = orgPop >= 60 ? 0.5 : 0.7;
-      return rawDelta * negMult;
     }
     return rawDelta;
   },
