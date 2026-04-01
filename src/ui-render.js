@@ -1631,7 +1631,7 @@ function _renderRosterGrowthLog() {
   if (!el) return;
   const growthEntries = G.roster.filter(c => {
     const sg = c.seasonGrowth || {};
-    return sg && Object.values(sg).some(v => v > 0);
+    return (sg && Object.values(sg).some(v => v > 0)) || (c.seasonPopGrowth || 0) > 0;
   });
   if (growthEntries.length > 0) {
     let html = '<div class="panel" style="margin-top:12px;background:#d4ccb8;border-color:rgba(100,85,50,0.18)"><div class="train-season-log" style="background:rgba(122,101,48,0.06);border-color:rgba(122,101,48,0.15);color:#4a4638">';
@@ -1642,6 +1642,8 @@ function _renderRosterGrowthLog() {
         const v = Math.round(((c.seasonGrowth && c.seasonGrowth[s]) || 0) * 10) / 10;
         if (v > 0) parts.push(`<span style="color:#1a8a4a">${s.toUpperCase()}+${v}</span>`);
       });
+      const popG = Math.round((c.seasonPopGrowth || 0) * 10) / 10;
+      if (popG > 0) parts.push(`<span style="color:#c07a10">人気+${popG}</span>`);
       if (parts.length > 0) html += `<div><span style="color:#5c4a1e;font-weight:700;font-size:11px">${c.name}</span>: ${parts.join(' ')}</div>`;
     });
     html += '</div></div>';

@@ -2764,6 +2764,7 @@ const Engine = {
         });
         if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
+        nc.seasonPopGrowth = 0;
         nc.seasonInjuries = 0; // v1.3-2: §5.4 シーズンリセット
         nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
         // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
@@ -5550,6 +5551,7 @@ const Engine = {
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
           nc.popularity = Math.min(100, newPop); // promo-system-redesign v2.0: 上限撤廃
+          nc.seasonPopGrowth = (nc.seasonPopGrowth || 0) + diminishedGain;
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + mentalBonus);
           nc.intensiveWeeks = 0;
           // プロモ改修 v1.0: promoStack蓄積（最大3）
@@ -5560,7 +5562,7 @@ const Engine = {
             const namePool = nc.popularity < 30 ? PROMO_EVENT_NAMES.low : nc.popularity < 60 ? PROMO_EVENT_NAMES.mid : PROMO_EVENT_NAMES.high;
             const nameRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, nc.id ^ 0xFEA5));
             const eventName = namePool[Engine.rng.int(nameRng, 0, namePool.length - 1)];
-            promoIncomes.push({ name: nc.name, income: promoEventIncome, eventName });
+            promoIncomes.push({ name: nc.name, income: promoEventIncome, eventName, popGain: diminishedGain });
           }
           // 金銭バランス改善: プロモ連動グッズ収入
           promoGoods.push({ name: nc.name, amount: Math.round(nc.popularity * GOODS_CONFIG.promoPerPop) });
@@ -5746,7 +5748,8 @@ const Engine = {
       const promoIncomes = G._pendingPromoIncomes || [];
       promoIncomes.forEach(pi => {
         totalIncome += pi.income;
-        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}）`, val: pi.income, type: 'income', category: 'promo' });
+        const popTag = pi.popGain > 0 ? ` 人気+${Math.round(pi.popGain * 10) / 10}` : '';
+        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}${popTag}）`, val: pi.income, type: 'income', category: 'promo' });
       });
 
       // 金銭バランス改善: 週次グッズ収入（全選手・毎週）
