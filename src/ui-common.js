@@ -317,7 +317,7 @@ function renderWarMatchPreview() {
     } else if (isNext) {
       // 現在の試合: 大カード
       const ovrL = Engine.util.ov(pf), ovrR = Engine.util.ov(af);
-      const standL = getStandUrl(pf.id), standR = getStandUrl(af.id);
+      const standL = getStandUrl(pf.id, Engine.util.ov(pf)), standR = getStandUrl(af.id, Engine.util.ov(af));
       const lineL = pickDialogueLine(PPV_OPPONENT_LINES, pf);
       const lineR = pickDialogueLine(PPV_OPPONENT_LINES, af);
 
@@ -4141,7 +4141,7 @@ function showPPVMatchCardIntro(onStart) {
     cardsHtml += `
       <div class="ppvmc-card${mainClass}" style="z-index:${zIdx}">
         <div class="ppvmc-fighter left">
-          ${_imgOrInitial(getFullUrl(match.left.id), match.left.id, 160)}
+          ${_imgOrInitial(getFullUrl(match.left.id, match.left.ovr), match.left.id, 160)}
         </div>
         <div class="ppvmc-center">
           <div class="ppvmc-type">${typeLabel}</div>
@@ -4152,7 +4152,7 @@ function showPPVMatchCardIntro(onStart) {
           <div class="ppvmc-h2h">${h2hText}</div>
         </div>
         <div class="ppvmc-fighter right">
-          ${_imgOrInitial(getFullUrl(match.right.id), match.right.id, 160)}
+          ${_imgOrInitial(getFullUrl(match.right.id, match.right.ovr), match.right.id, 160)}
         </div>
       </div>`;
   }
@@ -6069,7 +6069,7 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
   const eLight = _lightenColor(eColor);
   const pColor = '#74b9ff';
   const ovrL = Engine.util.ov(playerFighter), ovrR = Engine.util.ov(challenger);
-  const standL = getStandUrl(playerFighter.id), standR = getStandUrl(challenger.id);
+  const standL = getStandUrl(playerFighter.id, ovrL), standR = getStandUrl(challenger.id, ovrR);
   const lineL = pickDialogueLine(PPV_OPPONENT_LINES, playerFighter);
   const lineR = pickDialogueLine(PPV_OPPONENT_LINES, challenger);
 
@@ -6257,7 +6257,7 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const ovrL = Engine.util.ov(f1), ovrR = Engine.util.ov(f2);
-  const standL = getStandUrl(f1.id), standR = getStandUrl(f2.id);
+  const standL = getStandUrl(f1.id, ovrL), standR = getStandUrl(f2.id, ovrR);
   const lineL = pickDialogueLine(PPV_OPPONENT_LINES, f1);
   const lineR = pickDialogueLine(PPV_OPPONENT_LINES, f2);
   const pColor = '#9b59b6'; // 紫
@@ -6290,7 +6290,6 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
     <div class="mc-fc left">
       <div class="mc-fi">
         <div class="mc-fn">${f1.name}</div>
-        <div class="mc-fo" style="color:${pLight};font-size:11px">trust ${Math.round(f1.trust != null ? f1.trust : 50)} / 士気 ${Math.round(f1.morale || 50)}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${pLight},${pColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
       </div>
@@ -6303,7 +6302,6 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
       <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
       <div class="mc-fi">
         <div class="mc-fn">${f2.name}</div>
-        <div class="mc-fo" style="color:${eLight};font-size:11px">trust ${Math.round(f2.trust != null ? f2.trust : 50)} / 士気 ${Math.round(f2.morale || 50)}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${eLight},${eColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
       </div>
@@ -7926,8 +7924,8 @@ function _jtFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
   const roundLabel = isFinal ? '🏆 決勝' : roundName === 'semiFinal' ? '準決勝' : '準々決勝';
-  const standL = getStandUrl(f1.id);
-  const standR = getStandUrl(f2.id);
+  const standL = getStandUrl(f1.id, f1.ovr);
+  const standR = getStandUrl(f2.id, f2.ovr);
 
   // セリフ
   const timing = isFinal ? 'preFinal' : 'preMatch';
@@ -7989,8 +7987,8 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   html += `<div class="jt-wrap">${_jtHeader()}`;
 
   // フォーカスカード（結果モード）
-  const standL = getStandUrl(match.left.id);
-  const standR = getStandUrl(match.right.id);
+  const standL = getStandUrl(match.left.id, match.left.ovr);
+  const standR = getStandUrl(match.right.id, match.right.ovr);
   const lWin = match.winnerId === match.left.id;
   const rWin = match.winnerId === match.right.id;
   html += `<div class="jt-mf jt-su">`;
