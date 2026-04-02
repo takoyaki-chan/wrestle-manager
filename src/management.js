@@ -6243,28 +6243,35 @@ const Engine = {
       // v1.9c: 緊急補充 — FAが空で有効なpool候補もいない場合に即時補充
       // 修正: pool.length ではなく「22歳未満の有効エントリ数」で判定
       // 修正: dormantPool だけでなく freeAgents にも直接追加してすぐ表示されるようにする
+      // + 引退5シーズン経過キャラをリサイクル候補に含める
       {
         const curFA = s.freeAgents || [];
         const curPool = s.dormantPool || [];
-        // 占有済みID収集（ロスター＋AI団体＋現FA＋dormant全エントリ＋引退済みID）
         const emergOccupied = new Set();
         (s.roster || []).forEach(c => emergOccupied.add(c.id));
         Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => emergOccupied.add(c.id)));
         curFA.forEach(c => emergOccupied.add(c.id));
         curPool.forEach(e => emergOccupied.add(typeof e === 'object' ? e.id : e));
-        (s.retiredIds || []).forEach(id => emergOccupied.add(id));
-        // pool内で実際に有効なエントリ数（21歳未満かつ未占有）
+        // リサイクル: 引退5シーズン経過したキャラは候補に戻す
+        const _emergRetiredSeasons = s.retiredSeasons || {};
+        const _emergRecycleable = new Set();
+        (s.retiredIds || []).forEach(id => {
+          const retSeason = _emergRetiredSeasons[id];
+          if (retSeason !== undefined && s.season - retSeason >= 5) {
+            _emergRecycleable.add(id);
+          } else {
+            emergOccupied.add(id);
+          }
+        });
         const eligibleInPool = curPool.filter(e => {
           const age = typeof e === 'object' ? e.age : null;
           return age === null || age < 21;
         }).length;
-        // FAが空 かつ 有効poolが3未満 → 緊急補充
         if (curFA.length === 0 && eligibleInPool < 3) {
           const available = ALL_CHARS.filter(c => !emergOccupied.has(c.id));
           if (available.length > 0) {
             const emergRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xE911));
             const shuffled = [...available].sort(() => Engine.rng.float(emergRng) - 0.5);
-            // FA に直接3名追加（すぐ表示される）＋ dormantPool に5名追加（次回ローテ用）
             const directCount = Math.min(3, shuffled.length);
             const poolCount = Math.min(5, shuffled.length - directCount);
             const directFighters = shuffled.slice(0, directCount).map(c => {
@@ -6272,9 +6279,16 @@ const Engine = {
               return Engine.rival.makeAIFighter(c, emergRng, null, age);
             });
             const newPoolEntries = shuffled.slice(directCount, directCount + poolCount).map(c => ({ id: c.id, age: 17 + Engine.rng.int(emergRng, 0, 2) }));
+            // リサイクルに使ったIDをretiredIdsから除去
+            const _emergUsedIds = new Set([...directFighters.map(f => f.id), ...newPoolEntries.map(e => e.id)]);
+            const _emergCleanedIds = (s.retiredIds || []).filter(id => !_emergUsedIds.has(id));
+            const _emergCleanedSeasons = { ..._emergRetiredSeasons };
+            _emergUsedIds.forEach(id => { delete _emergCleanedSeasons[id]; });
             s = { ...s,
               freeAgents: [...curFA, ...directFighters],
-              dormantPool: [...curPool, ...newPoolEntries]
+              dormantPool: [...curPool, ...newPoolEntries],
+              retiredIds: _emergCleanedIds,
+              retiredSeasons: _emergCleanedSeasons
             };
             events.push(`🌱 FA市場に新世代${directFighters.length}名が緊急参入`);
           }
@@ -6763,7 +6777,7 @@ const Engine = {
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id] };
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
@@ -6786,7 +6800,7 @@ const Engine = {
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id] };
+          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
@@ -9059,7 +9073,9 @@ const Engine = {
             return { fighter: f, route, line, category, summary, canRetain };
           });
           const _newRetiredIds = [...(s.retiredIds || []), ...allRetirees.map(c => c.id).filter(id => !(s.retiredIds || []).includes(id))];
-          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, pendingRetirements };
+          const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
+          allRetirees.forEach(c => { _newRetiredSeasons[c.id] = s.season; });
+          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons, pendingRetirements };
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) {
             allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
@@ -9106,18 +9122,14 @@ const Engine = {
           s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
         }
 
-        // FA: 加齢 + 21歳超えで自動引退（プロ入りを諦めた）
+        // FA: 加齢 + 21歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
         const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1 }));
         const agedOutFA = agedFA.filter(f => f.age > 21);
         const youngFA   = agedFA.filter(f => f.age <= 21);
         if (agedOutFA.length > 0) {
-          const retiredFA = agedOutFA.map(f => Engine.career.addEvent(
-            Engine.career.ensure(f),
-            { type: 'retire', reason: 'fa_aged_out', season: s.season, age: f.age }
-          ));
-          const _faRetiredIds = [...(s.retiredIds || []), ...agedOutFA.map(f => f.id).filter(id => !(s.retiredIds || []).includes(id))];
-          s = { ...s, freeAgents: youngFA, retiredFighters: [...(s.retiredFighters || []), ...retiredFA], retiredIds: _faRetiredIds };
-          agedOutFA.forEach(f => events.push(`💭 ${f.name}(${f.age}歳)がプロ入りの夢を諦めた`));
+          const faRecycleRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA01));
+          const recycledEntries = agedOutFA.map(f => ({ id: f.id, age: 17 + Engine.rng.int(faRecycleRng, 0, 2) }));
+          s = { ...s, freeAgents: youngFA, dormantPool: [...(s.dormantPool || []), ...recycledEntries] };
         } else {
           s = { ...s, freeAgents: youngFA };
         }
@@ -9134,14 +9146,19 @@ const Engine = {
         });
         s = { ...s, roster: offSeasonRoster };
 
-        // v1.7: dormantPool 年次加齢 — pool内でも年は取る（永遠の若者バグ修正）
-        const agedPool = (s.dormantPool || []).map(entry => {
-          if (typeof entry === 'object' && entry.age !== undefined) {
-            return { ...entry, age: entry.age + 1 };
-          }
-          return entry; // legacy string ID — age unknown, leave as-is
-        });
-        s = { ...s, dormantPool: agedPool };
+        // v1.7: dormantPool 年次加齢 + 21歳超過は若返りリサイクル
+        {
+          const poolRecycleRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA02));
+          const agedPool = (s.dormantPool || []).map(entry => {
+            if (typeof entry === 'object' && entry.age !== undefined) {
+              const newAge = entry.age + 1;
+              if (newAge > 21) return { ...entry, age: 17 + Engine.rng.int(poolRecycleRng, 0, 2) };
+              return { ...entry, age: newAge };
+            }
+            return entry; // legacy string ID — age unknown, leave as-is
+          });
+          s = { ...s, dormantPool: agedPool };
+        }
 
         events.push('📅 オフシーズン第1週: シーズンレポート完了');
 
@@ -9268,10 +9285,10 @@ const Engine = {
 
         // v1.9c: dormantPool補充 — 有効エントリ数で判定して確実に補充
         // 修正: pool.length ではなく「22歳未満の有効エントリ数」で枯渇判定
+        // + 引退5シーズン経過キャラをリサイクル候補に含める
         {
           const MIN_ELIGIBLE = 6;
           const currentPool = s.dormantPool || [];
-          // 有効エントリ = 21歳未満（またはage不明）のエントリ
           const eligibleCount = currentPool.filter(e => {
             const age = typeof e === 'object' ? e.age : null;
             return age === null || age < 21;
@@ -9282,14 +9299,29 @@ const Engine = {
             Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupiedIds.add(c.id)));
             (s.freeAgents || []).forEach(c => occupiedIds.add(c.id));
             currentPool.forEach(e => occupiedIds.add(typeof e === 'object' ? e.id : e));
-            (s.retiredIds || []).forEach(id => occupiedIds.add(id));
+            // リサイクル: 引退5シーズン経過したキャラは候補に戻す
+            const retiredSeasons = s.retiredSeasons || {};
+            const recycleable = new Set();
+            (s.retiredIds || []).forEach(id => {
+              const retSeason = retiredSeasons[id];
+              if (retSeason !== undefined && s.season - retSeason >= 5) {
+                recycleable.add(id);
+              } else {
+                occupiedIds.add(id);
+              }
+            });
             const available = ALL_CHARS.filter(c => !occupiedIds.has(c.id));
             if (available.length > 0) {
               const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
               const needed = Math.min(available.length, MIN_ELIGIBLE - eligibleCount + 4);
               const shuffled = [...available].sort(() => Engine.rng.float(refillRng) - 0.5);
               const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 17 + Engine.rng.int(refillRng, 0, 2) }));
-              s = { ...s, dormantPool: [...currentPool, ...newEntries] };
+              // リサイクルに使ったIDをretiredIdsから除去
+              const usedIds = new Set(newEntries.map(e => e.id));
+              const cleanedRetiredIds = (s.retiredIds || []).filter(id => !usedIds.has(id));
+              const cleanedRetiredSeasons = { ...retiredSeasons };
+              usedIds.forEach(id => { delete cleanedRetiredSeasons[id]; });
+              s = { ...s, dormantPool: [...currentPool, ...newEntries], retiredIds: cleanedRetiredIds, retiredSeasons: cleanedRetiredSeasons };
               events.push(`🌱 新世代${newEntries.length}名がプロ入りを目指してFA市場に参入`);
             }
           }
@@ -9774,7 +9806,8 @@ const Engine = {
       retiredFighters: [],  // temporary — cleared after year-end awards
       hallOfFame: [],       // permanent — hall of fame inductees (alias for allHallOfFame.player)
       allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
-      retiredIds: [],       // permanent — all retired character IDs (prevents premature reappearance)
+      retiredIds: [],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
+      retiredSeasons: {},   // {charId: season} — tracks when each character retired for recycle timing
       lastAwards: null,     // v1.4: last year-end awards result
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
@@ -11023,12 +11056,14 @@ Engine.awards = {
     const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
     allHof.player = [...(allHof.player || []), ...safeInductees];
     const newHallOfFame = allHof.player;
-    // retiredFightersクリア前に全IDをretiredIdsに永続保存（再登場防止）
+    // retiredFightersクリア前に全IDをretiredIdsに永続保存（一時的再登場猶予、5シーズン後にリサイクル対象）
     const newRetiredIds = [...(state.retiredIds || [])];
+    const newRetiredSeasons = { ...(state.retiredSeasons || {}) };
     (state.retiredFighters || []).forEach(f => {
       if (f.id && !newRetiredIds.includes(f.id)) newRetiredIds.push(f.id);
+      if (f.id && !newRetiredSeasons[f.id]) newRetiredSeasons[f.id] = state.season;
     });
-    return { ...state, hallOfFame: newHallOfFame, allHallOfFame: allHof, retiredFighters: [], retiredIds: newRetiredIds };
+    return { ...state, hallOfFame: newHallOfFame, allHallOfFame: allHof, retiredFighters: [], retiredIds: newRetiredIds, retiredSeasons: newRetiredSeasons };
   }
 };
 
@@ -14675,7 +14710,7 @@ Engine.contract = {
 
     if (info.type === 'retire') {
       const _retF = { ...fighter }; delete _retF.growthLog;
-      s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id] };
+      s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id], retiredSeasons: { ...(s.retiredSeasons || {}), [fighter.id]: s.season } };
     } else if (info.type === 'rival') {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {

@@ -2015,6 +2015,17 @@ const Storage = {
         G = { ...G, retiredIds: [...ids], _migrated_retiredIds_v1: true };
       }
 
+      // retiredSeasonsマイグレーション: 既存retiredIdsに引退シーズンを割り当て（即リサイクル対象に）
+      if (!G._migrated_retiredSeasons_v1) {
+        const rs = { ...(G.retiredSeasons || {}) };
+        // 現在どのプールにもいないretiredIdsに対して、5シーズン以上前のシーズンを割り当て
+        const pastSeason = Math.max(1, (G.season || 1) - 10);
+        (G.retiredIds || []).forEach(id => {
+          if (!rs[id]) rs[id] = pastSeason;
+        });
+        G = { ...G, retiredSeasons: rs, _migrated_retiredSeasons_v1: true };
+      }
+
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
         // 全ファイターにorgTimeline初期エントリを生成
@@ -4470,7 +4481,9 @@ const App = {
       const survivingRoster = G.roster.filter(c => !lastRunRetiredIds.has(c.id));
       // 関係値凍結 + trust影響 + retiredIds永続記録
       const newRetiredIds = [...(G.retiredIds || []), ...lastRunRetirees.map(c => c.id).filter(id => !(G.retiredIds || []).includes(id))];
-      let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds };
+      const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
+      lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
+      let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
       if (updState.relationships) {
         lastRunRetirees.forEach(retiree => {
           updState = Engine.relationships.freezeRelationships(updState, retiree.id);
