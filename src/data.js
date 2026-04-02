@@ -442,13 +442,27 @@ const PORTRAIT = {
   91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',
   96:'matsushita_m',97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'
 };
+// OVR閾値で立ち画像/全身画像が切り替わるキャラ設定
+const PORTRAIT_OVR_VARIANT = {
+  80: { threshold: 50, suffix: 'takashima_s2' }  // 高島さや
+};
 const NPC_PORTRAIT = { reporter: 'kuroda_s' };
 function getNpcPortraitUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/face_${NPC_PORTRAIT[key]}.png` : ''; }
 function getNpcUpperUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/upper_${NPC_PORTRAIT[key]}.webp` : ''; }
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
-function getStandUrl(id) { return PORTRAIT[id] ? `../image/stand/stand_${PORTRAIT[id]}.webp` : ''; }
+function getStandUrl(id, ovr) {
+  if (!PORTRAIT[id]) return '';
+  const v = PORTRAIT_OVR_VARIANT[id];
+  const key = (v && ovr >= v.threshold) ? v.suffix : PORTRAIT[id];
+  return `../image/stand/stand_${key}.webp`;
+}
 function getUpperUrl(id) { return PORTRAIT[id] ? `../image/upper/upper_${PORTRAIT[id]}.webp` : ''; }
-function getFullUrl(id) { return PORTRAIT[id] ? `../image/full/full_${PORTRAIT[id]}.webp` : ''; }
+function getFullUrl(id, ovr) {
+  if (!PORTRAIT[id]) return '';
+  const v = PORTRAIT_OVR_VARIANT[id];
+  const key = (v && ovr >= v.threshold) ? v.suffix : PORTRAIT[id];
+  return `../image/full/full_${key}.webp`;
+}
 
 // Coach portrait mapping (add image files as face_coach_{key}.png)
 const COACH_PORTRAIT = {
@@ -3232,7 +3246,8 @@ const RENTAL_CONFIG = {
 
 const EVENT_CONFIG = {
   // D-2: 対抗戦
-  warChancePerSeason: 0.50,             // 年1回50%
+  warChancePerSeason: 0.55,             // 各チェックポイント55%
+  warDroughtBonus: 0.15,                // 対抗戦なしシーズン後のボーナス
   warMatchCount: { min: 3, max: 5 },
   warPopReward: 5,                      // 勝利時団体人気
   warPopPenalty: -3,                    // 敗北時

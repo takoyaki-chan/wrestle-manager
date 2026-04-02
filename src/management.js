@@ -8802,13 +8802,16 @@ const Engine = {
 
   // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
   event: {
-    /** D-2: Check if rivalry war should trigger (Q2/Q3 end) */
+    /** D-2: Check if rivalry war should trigger (Q1/Q2/Q3 end) */
     checkRivalryWar(rng, state) {
       if (state.warThisSeason) return null;
       const w = state.week;
-      // Only trigger at Q2 end (week 24) or Q3 end (week 36) non-show weeks
-      if (w !== 24 && w !== 36) return null;
-      if (Engine.rng.float(rng) >= EVENT_CONFIG.warChancePerSeason) return null;
+      // Q1末(week12), Q2末(week24), Q3末(week36) の3回チェック
+      if (w !== 12 && w !== 24 && w !== 36) return null;
+      // 干ばつ防止: 前シーズン対抗戦なし → +15%ボーナス
+      const droughtBonus = (state.lastWarSeason || 0) < state.season - 1
+        ? (EVENT_CONFIG.warDroughtBonus || 0) : 0;
+      if (Engine.rng.float(rng) >= EVENT_CONFIG.warChancePerSeason + droughtBonus) return null;
 
       const rankings = state.rankings || [];
       const pIdx = rankings.findIndex(r => r.orgId === 'player');
@@ -9393,12 +9396,12 @@ const Engine = {
       s = { ...s, negotiationResult: { success: negResult.success, fighter: negResult.fighter } };
     }
 
-    // D-2: Rivalry war check (Q2末=week24, Q3末=week36)
+    // D-2: Rivalry war check (Q1末=week12, Q2末=week24, Q3末=week36)
     // NOTE: C-2の早期リターン前に実行。transfer windowと週が重なるため後に置くとスキップされる
     const eventRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 700 + s.week));
     const warCheck = Engine.event.checkRivalryWar(eventRng, s);
     if (warCheck) {
-      s = { ...s, pendingEvent: warCheck, warThisSeason: true };
+      s = { ...s, pendingEvent: warCheck, warThisSeason: true, lastWarSeason: s.season };
       events.push(`⚔ ${warCheck.opponentName}から対抗戦の申し入れ！（${warCheck.matchCount}試合）`);
       return { state: { ...s, weekPhase: 'event' }, events };
     }
@@ -9759,6 +9762,7 @@ const Engine = {
       // v0.9d: Phase D — Rental & Events
       rentals: [],
       warThisSeason: false,
+      lastWarSeason: 0,
       challengeTrigger: null,
       pendingEvent: null,
       battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 },
@@ -12885,7 +12889,7 @@ Engine.eventSystem = {
     if ((state.orgPop || 0) > 20) candidates.push({ type: 'B3', w: 2 });
 
     // B4: メディア密着取材 — orgPop > 25、取材中でない
-    if ((state.orgPop || 0) > 25 && !state.mediaSpotlight) candidates.push({ type: 'B4', w: 3 });
+    if ((state.orgPop || 0) > 25 && !state.mediaSpotlight) candidates.push({ type: 'B4', w: 2 });
 
     if (candidates.length === 0) return null;
 

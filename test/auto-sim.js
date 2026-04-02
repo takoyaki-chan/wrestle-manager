@@ -259,9 +259,9 @@ function collectViolations(G, violations) {
 // min/max を外れるとバグの疑いがある（ロジック到達不全・確率設定ミスなど）
 // ※ 閾値は100シーズン以上のシミュレーションで統計的に安定する値を設定
 const FREQ_THRESHOLDS = [
-  // 対抗戦: week24/36で50%チェック×2 = 実効約75%/シーズン。min=0.60でバグを検出できる
-  // (バグあり時は transfer window の早期returnでスキップされ ~0.50 に低下する)
-  { key: 'warRate',   label: '対抗戦/シーズン',           min: 0.60, max: 0.95 },
+  // 対抗戦: week12/24/36で55%チェック×3 + 干ばつボーナス = 実効約91%/シーズン
+  // (バグあり時は transfer window の早期returnでスキップされ低下する)
+  { key: 'warRate',   label: '対抗戦/シーズン',           min: 0.75, max: 1.00 },
   // スカウト: オフシーズン(1回) + シーズン中week29(1回) = 2.0/シーズンが正常
   // どちらかがバグで消えると ~1.0 まで低下する
   { key: 'scoutRate', label: 'スカウトイベント/シーズン', min: 1.00, max: 2.50 },
