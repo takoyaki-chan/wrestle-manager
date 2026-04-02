@@ -1431,7 +1431,7 @@ function _renderRosterDetailPanel(c, hired) {
   const isInjured = !!c.injury;
   const canManage = G.weekPhase === 'manage';
   const tabIdx = _rosterDetailTab[c.id] || 0;
-  const fullUrl = getFullUrl(c.id);
+  const fullUrl = getFullUrl(c.id, Engine.util.ov(c));
   // 自団体での在籍年数を算出（所属年数基準を Engine.orgTimeline に統一）
   const tenure = Engine.orgTimeline.getTenureYears(c, G.season, G.week, 'player');
   const stats = ['pw','sp','te','st','mn'];
@@ -4443,8 +4443,8 @@ function _renderDbHallOfFame() {
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
       <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
-      タイトル獲得 = 各1pt ／ タイトル防衛 = 各1pt<br>
-      ジュニア優勝 = 6pt ／ PPV GRAND FINAL = 7pt
+      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ PPV勝利5 ／ 対抗戦勝利1.5<br>
+      <span style="color:var(--text-sub)">【表彰】</span> MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5
       </span></div>
     </div>`;
     return html;
@@ -4503,7 +4503,7 @@ function showHofDetail(idx) {
     : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:32px">🏅</div>`;
 
   // §3 全身画像（グラデーション背景付き）
-  const fullUrl = typeof getFullUrl === 'function' ? getFullUrl(h.id || 0) : '';
+  const fullUrl = typeof getFullUrl === 'function' ? getFullUrl(h.id || 0, h.ovr || 0) : '';
   const fullHtml = fullUrl
     ? `<div style="text-align:center;margin:8px 0;padding:12px 0;background:radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);border-radius:8px"><img src="${fullUrl}" style="height:200px;object-fit:contain;border-radius:8px" alt="" onerror="this.parentElement.style.display='none'"></div>`
     : '';
@@ -4948,8 +4948,8 @@ function _renderDbOrgCompare() {
 
     // ── エース対決（index===0）: アリーナレイアウト ──
     if (featured) {
-      const pStandUrl = getStandUrl(m.player.id);
-      const rStandUrl = getStandUrl(m.rival.id);
+      const pStandUrl = getStandUrl(m.player.id, m.player.ovr);
+      const rStandUrl = getStandUrl(m.rival.id, m.rival.ovr);
       const pStandHtml = pStandUrl
         ? `<img src="${pStandUrl}" alt="" onerror="this.parentNode.innerHTML='<div class=ace-char-fallback>${m.player.name.charAt(0)}</div>'">`
         : `<div class="ace-char-fallback">${m.player.name.charAt(0)}</div>`;

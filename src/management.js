@@ -10428,13 +10428,19 @@ Engine.awards = {
 
   /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制） */
   calcHofPoints(rec) {
+    const hist = rec.history || [];
+    // 実績ポイント
     const titlePt = (rec.totalTitleWins || 0) + (rec.totalDefenses || 0);
-    const juniorPt = (rec.juniorTournamentWins || 0) * 6;
-    const ppvPt = (rec.ppvMainEventWins || 0) * 7;
-    // 対抗戦勝利ポイント: 1勝=2pt
-    const warWins = ((rec.history || []).filter(e => e.type === 'war' && e.won)).length;
-    const warPt = warWins * 2;
-    return titlePt + juniorPt + ppvPt + warPt;
+    const juniorPt = (rec.juniorTournamentWins || 0) * 4;
+    const ppvPt = (rec.ppvMainEventWins || 0) * 5;
+    const warWins = hist.filter(e => e.type === 'war' && e.won).length;
+    const warPt = warWins * 1.5;
+    // 表彰歴ポイント
+    const mvpPt = hist.filter(e => e.type === 'awardMVP').length * 2;
+    const rookiePt = hist.some(e => e.type === 'awardRookie') ? 1.5 : 0;
+    const bestMatchPt = hist.filter(e => e.type === 'awardBestMatch').length * 1;
+    const mediaPt = hist.filter(e => e.type === 'awardMedia').length * 1.5;
+    return titlePt + juniorPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -11007,7 +11013,11 @@ Engine.awards = {
     const safeInductees = inductees.map(h => {
       if (h.hofPoints != null && h.hofLevel != null) return h;
       const pts = h.hofPoints != null ? h.hofPoints
-        : (h.titleReigns || 0) + (h.totalDefenses || 0) + (h.juniorTournamentWins || 0) * 6 + (h.ppvMainEventWins || 0) * 7;
+        : (h.titleReigns || 0) + (h.totalDefenses || 0)
+          + (h.juniorTournamentWins || 0) * 4 + (h.ppvMainEventWins || 0) * 5
+          + (h.warWins || 0) * 1.5
+          + (h.mvpCount || 0) * 2 + (h.hasRookie ? 1.5 : 0)
+          + (h.bestMatchCount || 0) * 1 + (h.mediaCount || 0) * 1.5;
       return { ...h, hofPoints: pts, hofLevel: Engine.awards.getHofLevel(pts) };
     });
     const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
