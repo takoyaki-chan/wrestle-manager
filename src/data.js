@@ -894,6 +894,13 @@ const MEDIA_CONFIG = {
   fanExpectPerPriority: 30, // 万円/priority/カード
   rivalryCoeff: 0.016,      // 万円/rivalry×MQ
 };
+// メディア功労賞: 選考スコア重み付け
+const MEDIA_AWARD_CONFIG = {
+  mediaRevWeight: 1.0,    // 出演料等（据え置き）
+  talentRevWeight: 1.3,   // タレント活動収入 1.3倍評価
+  promoCountBonus: 8,     // プロモ1週あたり8万相当
+  talentCountBonus: 15,   // タレント活動1回あたり15万相当
+};
 // 会場規模別メディア補正（インデックス0-9: 公民館→ドーム）
 const VENUE_MEDIA_MULT = [0.3, 0.5, 0.6, 0.8, 0.9, 1.0, 1.2, 1.5, 1.8, 2.5];
 // PPV/JTカード位置別メディア倍率
@@ -14891,7 +14898,7 @@ if (typeof module !== 'undefined' && module.exports) {
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
     SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
-    MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
+    MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,
     TITLES, RIVALRY_THRESHOLDS, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,

@@ -3002,6 +3002,7 @@ const Engine = {
         mediaRevSeason: 0,    // 年間メディア収入個人貢献累計（PPV/JT/プロモ連動）
         talentRevSeason: 0,   // 年間タレント活動収入累計（cm/variety/gravure/brand バフ分）
         talentCountSeason: 0, // 年間タレント活動参加回数
+        promoCountSeason: 0,  // 年間プロモ実行週数
       };
     },
     /** trainCap 5??????? */
@@ -3847,7 +3848,7 @@ const Engine = {
             let updatedRoster = roster;
             if (aiActivityType === 'fashion') {
               const popGain = mult >= 1.4 ? 3 : mult >= 0.8 ? 2 : 1;
-              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, popularity: Engine.util.clamp((f.popularity || 1) + popGain, 1, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult } });
+              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, popularity: Engine.util.clamp((f.popularity || 1) + popGain, 1, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult }, talentCountSeason: (f.talentCountSeason || 0) + 1 });
             } else if (aiActivityType === 'fan') {
               const trustGain = mult >= 1.4 ? 6 : mult >= 0.8 ? 4 : 2;
               updatedRoster = roster.map(f => {
@@ -3855,10 +3856,10 @@ const Engine = {
                 const oldTrust = f.trust != null ? f.trust : 50;
                 let adjusted = Engine.trust.applyCoeff(trustGain, f.mn || 50);
                 if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
-                return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult } };
+                return { ...f, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult }, talentCountSeason: (f.talentCountSeason || 0) + 1 };
               });
             } else {
-              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, talentActivityBuff: { type: aiActivityType, remainingWeeks: durationWeeks, multiplier: mult } });
+              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, talentActivityBuff: { type: aiActivityType, remainingWeeks: durationWeeks, multiplier: mult }, talentCountSeason: (f.talentCountSeason || 0) + 1 });
             }
             return { roster: updatedRoster, lockerRoomMorale: aiState.lockerRoomMorale, orgPopDelta: 0 };
           }
@@ -4005,7 +4006,26 @@ const Engine = {
           return nc;
         }
 
-        if (isShow) return nc;
+        if (isShow) {
+          // AI プロモ: 興行週に非エース（general枠）の華/ファンサ持ちがプロモ
+          const showConfig = AI_COACH_CONFIG[org.tier] || AI_COACH_CONFIG.B;
+          const showAceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
+          const isGeneral = showAceConfig === showConfig.general;
+          const hasMediaTrait = (nc.traits || []).includes('華') || (nc.traits || []).includes('ファンサービス');
+          if (isGeneral && hasMediaTrait && (nc.condition || 70) >= 60 && (nc.promoStack || 0) < 3) {
+            const mnVal = nc.mn || 50;
+            let rawGain = 1.2 + mnVal * 0.006;
+            if ((nc.traits || []).includes('華')) rawGain += 0.3;
+            if ((nc.traits || []).includes('ファンサービス')) rawGain += 0.2;
+            const diminished = Engine.popularity.applyDiminishing(rawGain, nc.popularity);
+            nc.popularity = Math.min(100, (nc.popularity || 1) + diminished);
+            nc.condition = Math.max(0, (nc.condition || 70) - (1 + Engine.rng.int(rng, 0, 1)));
+            nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
+            nc.promoCountSeason = (nc.promoCountSeason || 0) + 1;
+            nc.mediaRevSeason = (nc.mediaRevSeason || 0) + Math.round((nc.popularity || 1) * MEDIA_CONFIG.promoPerPop);
+          }
+          return nc;
+        }
 
         const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
         const roll = Engine.rng.float(rng);
@@ -4629,6 +4649,7 @@ const Engine = {
           f.mediaRevSeason = 0;
           f.talentRevSeason = 0;
           f.talentCountSeason = 0;
+          f.promoCountSeason = 0;
         });
 
 
@@ -5561,6 +5582,7 @@ const Engine = {
           nc.intensiveWeeks = 0;
           // プロモ改修 v1.0: promoStack蓄積（最大3）
           nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
+          nc.promoCountSeason = (nc.promoCountSeason || 0) + 1;
           // イベント収入計算（区間線形補間 — pop差がそのまま金額差に反映）
           const promoEventIncome = Engine.economy.calcPromoEventIncome(nc.popularity);
           if (promoEventIncome > 0) {
@@ -10374,9 +10396,15 @@ Engine.awards = {
     };
   },
 
-  /** メディア功労賞: mediaRevSeason + talentRevSeason が最大の全団体選手 */
+  /** メディア功労賞: プロモ/タレント活動重視スコアリング */
   selectMediaAward(state) {
     const ov = Engine.util.ov;
+    const cfg = MEDIA_AWARD_CONFIG;
+    const _score = f =>
+      (f.mediaRevSeason || 0) * cfg.mediaRevWeight
+      + (f.talentRevSeason || 0) * cfg.talentRevWeight
+      + (f.promoCountSeason || 0) * cfg.promoCountBonus
+      + (f.talentCountSeason || 0) * cfg.talentCountBonus;
     // 全団体の選手を候補にする
     const allWrestlers = [];
     (state.roster || []).forEach(f => allWrestlers.push({ f, orgId: 'player' }));
@@ -10386,19 +10414,18 @@ Engine.awards = {
         orgData.roster.forEach(f => allWrestlers.push({ f, orgId }));
       }
     });
-    const candidates = allWrestlers.filter(({ f }) => {
-      const score = (f.mediaRevSeason || 0) + (f.talentRevSeason || 0);
-      return score > 0;
-    });
+    const candidates = allWrestlers.filter(({ f }) => _score(f) > 0);
     if (candidates.length === 0) return null;
     candidates.sort((a, b) => {
-      const sa = (a.f.mediaRevSeason || 0) + (a.f.talentRevSeason || 0);
-      const sb = (b.f.mediaRevSeason || 0) + (b.f.talentRevSeason || 0);
+      const sa = _score(a.f);
+      const sb = _score(b.f);
       if (sb !== sa) return sb - sa;
-      return (b.f.talentCountSeason || 0) - (a.f.talentCountSeason || 0);
+      // タイブレーカー: プロモ+タレント活動回数の合計
+      return ((b.f.promoCountSeason || 0) + (b.f.talentCountSeason || 0))
+           - ((a.f.promoCountSeason || 0) + (a.f.talentCountSeason || 0));
     });
     const { f: winner, orgId: winnerOrgId } = candidates[0];
-    const totalRev = (winner.mediaRevSeason || 0) + (winner.talentRevSeason || 0);
+    const totalRev = _score(winner);
     return {
       id: winner.id,
       name: winner.name,
@@ -10410,6 +10437,7 @@ Engine.awards = {
       mediaRevSeason: winner.mediaRevSeason || 0,
       talentRevSeason: winner.talentRevSeason || 0,
       talentCountSeason: winner.talentCountSeason || 0,
+      promoCountSeason: winner.promoCountSeason || 0,
       totalRev,
       orgName: Engine.awards._orgName(state, winnerOrgId),
       isPlayerOrg: winnerOrgId === 'player',
@@ -12278,6 +12306,7 @@ Engine.careActions = {
         mediaRevSeason: 0,
         talentRevSeason: 0,
         talentCountSeason: 0,
+        promoCountSeason: 0,
       };
     });
   },
