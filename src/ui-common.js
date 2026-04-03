@@ -2875,11 +2875,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           // 直近5戦表示
           const rm = c.recentMatches || [];
           if (rm.length > 0) {
-            const allChars = [...(G.roster || []), ...(G.freeAgents || []), ...(G.dormantPool || [])];
+            const allChars = [...(G.roster || []), ...(G.freeAgents || []), ...(G.retiredFighters || [])];
             const aiRosters = G.aiOrgs ? Object.values(G.aiOrgs).flatMap(o => o.roster || []) : [];
             const lookup = [...allChars, ...aiRosters];
             const items = rm.map(m => {
-              const opp = lookup.find(f => f.id === m.opponentId);
+              const opp = lookup.find(f => f.id === m.opponentId && f.name);
               const name = opp ? opp.name : '???';
               const shortName = name.length > 4 ? name.substring(0, 4) : name;
               const mark = m.result === 'win' ? '○' : m.result === 'loss' ? '×' : '△';
