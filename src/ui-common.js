@@ -7001,6 +7001,70 @@ function _renderLogFeedPanel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 業界底上げ演出 — 1位達成翌シーズン開幕時の全画面演出
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 業界底上げ演出（モックアップ差し替え前提の空枠）。awardsOverlay を再利用 */
+function showLeagueElevationCeremony(state, onDone) {
+  const BGM_PATH = '../bgm/league_elevation.mp3'; // 後で専用MP3に差し替え
+
+  const overlay = document.getElementById('awardsOverlay');
+
+  // ── モックアップHTMLをここに差し込む ──
+  // A級・B級団体の名前と色を取得
+  const orgA = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.tier === 'A') : null;
+  const orgB = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.tier === 'B') : null;
+  const nameA = orgA ? orgA.name : 'A級団体';
+  const nameB = orgB ? orgB.name : 'B級団体';
+  const colorA = orgA ? orgA.color : '#6c5ce7';
+  const colorB = orgB ? orgB.color : '#00b894';
+
+  overlay.innerHTML = `
+    <div id="stage" style="background:radial-gradient(ellipse 80% 60% at 50% 30%, #2a0f0f 0%, #100608 50%, #000 100%)"></div>
+    <div style="position:relative;z-index:2;text-align:center;padding:40px 20px;max-width:400px">
+      <div style="font-size:48px;margin-bottom:12px">⚡</div>
+      <div class="awards-title" style="font-size:22px;letter-spacing:6px;color:#ff6b6b">業 界 激 変</div>
+      <div class="awards-detail" style="margin:18px 0 24px;font-size:13px;line-height:1.8;color:var(--text-sub)">
+        「${state.orgName || ''}」の快挙が、業界を変えた——
+      </div>
+      <div style="margin:16px 0;text-align:left;padding:0 12px">
+        <div style="margin-bottom:12px;padding:10px;border-left:3px solid ${colorA};background:rgba(108,92,231,0.08);border-radius:4px">
+          <div style="font-size:12px;font-weight:700;color:${colorA}">${orgA ? orgA.emoji : '💫'} ${nameA}</div>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:4px">大型補強を宣言。エース候補の発掘に乗り出す</div>
+        </div>
+        <div style="padding:10px;border-left:3px solid ${colorB};background:rgba(0,184,148,0.08);border-radius:4px">
+          <div style="font-size:12px;font-weight:700;color:${colorB}">${orgB ? orgB.emoji : '🌙'} ${nameB}</div>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:4px">育成体制を一新。コーチ陣を大幅強化</div>
+        </div>
+      </div>
+      <div class="awards-detail" style="margin:20px 0 24px;font-size:12px;line-height:1.8;color:var(--text-dim)">
+        もはや安泰の時代は終わった。<br>真の群雄割拠が始まる——。
+      </div>
+      <button class="awards-btn" id="leagueElevBtn">続ける ▶</button>
+    </div>
+  `;
+
+  overlay.classList.add('active');
+
+  // BGM: 最初のクリックで開始（ブラウザ自動再生制限対策）
+  let bgmStarted = false;
+  document.getElementById('leagueElevBtn').onclick = () => {
+    if (!bgmStarted && typeof Audio !== 'undefined' && Audio.fileBgm) {
+      // Audio.fileBgm.play(BGM_PATH, { loop: false, volume: 0.10 });
+      bgmStarted = true;
+    }
+    if (typeof Audio !== 'undefined' && Audio.fileBgm) {
+      Audio.fileBgm.fadeOut(1500);
+    }
+    overlay.classList.remove('active');
+    overlay.innerHTML = '';
+    if (onDone) onDone();
+  };
+
+  if (typeof Audio !== 'undefined' && Audio.play) Audio.play('reveal');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v2.1: エンディング演出 — ending-gameover-spec-v1.0.md §1.3
 // ─────────────────────────────────────────────────────────────────────────────
 

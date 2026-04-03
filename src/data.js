@@ -3222,6 +3222,37 @@ const AI_COACH_STAFFING = {
   B: { grades: ['B', 'C'] },
 };
 
+// ── 業界底上げ: プレイヤー1位達成後のA/B強化用定数 ────────────────
+// S級は変更なし。A/Bのみ「S級にやや劣る」水準に引き上げ
+const AI_TIER_LIMITS_ELEVATED = {
+  A: { maxProdigies: 8,  maxPromising: 99, growthBonus: 1.10, faAggressiveness: 0.55 },
+  B: { maxProdigies: 5,  maxPromising: 99, growthBonus: 1.08, faAggressiveness: 0.45 }
+};
+
+const AI_COACH_CONFIG_ELEVATED = {
+  A: {
+    ace: {
+      count: 3,
+      top1: { coachMul: 1.22, intensiveRate: 0.25, practiceRate: 0.85 },
+      top2_3: { coachMul: 1.18, intensiveRate: 0.20, practiceRate: 0.80 },
+    },
+    general: { coachMul: 1.12, intensiveRate: 0.05, practiceRate: 0.65 },
+  },
+  B: {
+    ace: {
+      count: 2,
+      top1: { coachMul: 1.18, intensiveRate: 0.15, practiceRate: 0.75 },
+      top2_3: { coachMul: 1.15, intensiveRate: 0.10, practiceRate: 0.70 },
+    },
+    general: { coachMul: 1.10, intensiveRate: 0.0, practiceRate: 0.55 },
+  },
+};
+
+const AI_COACH_STAFFING_ELEVATED = {
+  A: { grades: ['A', 'B', 'B', 'B'] },
+  B: { grades: ['B', 'B', 'B'] },
+};
+
 // AI season config (人気変動用。成長はprocessAIWeekベースに移行済み)
 const AI_SEASON_CFG = {
   popConvergeRate: 0.3,        // 人気ターゲットへの収束率
@@ -14914,6 +14945,7 @@ if (typeof module !== 'undefined' && module.exports) {
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_COACH_STAFFING, AI_SEASON_CFG,
+    AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,

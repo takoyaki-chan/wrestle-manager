@@ -3230,7 +3230,7 @@ const Engine = {
           titles: Engine.rival.createAITitles(),
         };
       });
-      return { aiOrgs: Engine.rival.ensureAICoachStaffing(rng, orgs), rivalOrgNames: nameMap };
+      return { aiOrgs: Engine.rival.ensureAICoachStaffing(rng, orgs, [], false), rivalOrgNames: nameMap };
     },
     /** Restore org names from saved state */
     applyOrgNames(nameMap) {
@@ -3315,8 +3315,28 @@ const Engine = {
       };
     },
 
-    _getAICoachPlan(tier) {
-      const plan = AI_COACH_STAFFING[tier] || AI_COACH_STAFFING.B || { grades: [] };
+    // ── 業界底上げ: leagueElevated時にA/Bの強化版を返すアクセサ ──
+    getEffectiveTierLimits(tier, leagueElevated) {
+      if (leagueElevated && tier !== 'S' && AI_TIER_LIMITS_ELEVATED[tier]) {
+        return AI_TIER_LIMITS_ELEVATED[tier];
+      }
+      return AI_TIER_LIMITS[tier] || AI_TIER_LIMITS.B;
+    },
+    getEffectiveCoachConfig(tier, leagueElevated) {
+      if (leagueElevated && tier !== 'S' && AI_COACH_CONFIG_ELEVATED[tier]) {
+        return AI_COACH_CONFIG_ELEVATED[tier];
+      }
+      return AI_COACH_CONFIG[tier] || AI_COACH_CONFIG.B;
+    },
+    getEffectiveCoachStaffing(tier, leagueElevated) {
+      if (leagueElevated && tier !== 'S' && AI_COACH_STAFFING_ELEVATED[tier]) {
+        return AI_COACH_STAFFING_ELEVATED[tier];
+      }
+      return AI_COACH_STAFFING[tier] || AI_COACH_STAFFING.B;
+    },
+
+    _getAICoachPlan(tier, leagueElevated) {
+      const plan = Engine.rival.getEffectiveCoachStaffing(tier, leagueElevated);
       return [...(plan.grades || [])];
     },
 
@@ -3413,7 +3433,7 @@ const Engine = {
       return coachAssign;
     },
 
-    ensureAICoachStaffing(rng, aiOrgs, reservedCoachIds = []) {
+    ensureAICoachStaffing(rng, aiOrgs, reservedCoachIds = [], leagueElevated = false) {
       if (!aiOrgs) return aiOrgs;
       const sanitized = Engine.rival.sanitizeAIOrgs(aiOrgs);
       const usedCoachIds = new Set(reservedCoachIds || []);
@@ -3426,7 +3446,7 @@ const Engine = {
         const currentCoaches = (current.coaches || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
         const keepPool = [...currentCoaches];
         const selected = [];
-        const plan = Engine.rival._getAICoachPlan(cfg.tier);
+        const plan = Engine.rival._getAICoachPlan(cfg.tier, leagueElevated);
         const orgPop = current.orgPop != null ? current.orgPop : ({ S: 75, A: 55, B: 35 }[cfg.tier] || 30);
 
         plan.forEach(targetGrade => {
@@ -3481,8 +3501,8 @@ const Engine = {
     // AI団体の選手にプレイヤーと同一のcalcGrowth+simulateMatchを適用
 
     /** エース判定: ティア別コーチ環境を返す */
-    getAceConfig(org, fighter) {
-      const config = AI_COACH_CONFIG[org.tier] || AI_COACH_CONFIG.B;
+    getAceConfig(org, fighter, leagueElevated) {
+      const config = Engine.rival.getEffectiveCoachConfig(org.tier, leagueElevated);
       const roster = (org.roster || [])
         .filter(f => !f.injury)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -4008,8 +4028,8 @@ const Engine = {
 
         if (isShow) {
           // AI プロモ: 興行週に非エース（general枠）の華/ファンサ持ちがプロモ
-          const showConfig = AI_COACH_CONFIG[org.tier] || AI_COACH_CONFIG.B;
-          const showAceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
+          const showConfig = Engine.rival.getEffectiveCoachConfig(org.tier, state.leagueElevated);
+          const showAceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc, state.leagueElevated);
           const isGeneral = showAceConfig === showConfig.general;
           const hasMediaTrait = (nc.traits || []).includes('華') || (nc.traits || []).includes('ファンサービス');
           if (isGeneral && hasMediaTrait && (nc.condition || 70) >= 60 && (nc.promoStack || 0) < 3) {
@@ -4027,7 +4047,7 @@ const Engine = {
           return nc;
         }
 
-        const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc);
+        const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc, state.leagueElevated);
         const roll = Engine.rng.float(rng);
         const stateForCalc = tierState();
         const statusBlocked = nc.slump || nc.motivationLoss;
@@ -5067,7 +5087,7 @@ const Engine = {
         const aiData = state.aiOrgs[org.id];
         if (!aiData) { newAiOrgs[org.id] = aiData; return; }
         const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
-        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
+        const tierLim = Engine.rival.getEffectiveTierLimits(org.tier, state.leagueElevated);
         let roster = aiData.roster.map(f => ({ ...f }));
         const need = Math.max(0, cfg.idealRoster - roster.length);
         const maxPicks = Math.min(need, cfg.maxPicks);
@@ -5181,7 +5201,7 @@ const Engine = {
 
     // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
     // S-tier poaches best from lower tiers; lower tiers fill gaps from pool
-    aiInterTransfer(rng, aiOrgs) {
+    aiInterTransfer(rng, aiOrgs, leagueElevated) {
       const events = [];
       const newOrgs = {};
       RIVAL_ORGS.forEach(org => { newOrgs[org.id] = { ...aiOrgs[org.id], roster: [...(aiOrgs[org.id]?.roster || [])] }; });
@@ -5194,7 +5214,7 @@ const Engine = {
 
       for (const org of sortedOrgs) {
         const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
-        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
+        const tierLim = Engine.rival.getEffectiveTierLimits(org.tier, leagueElevated);
         const roster = newOrgs[org.id].roster;
 
         // If roster is already full, skip acquiring (roster-cap v1.0: idealRosterをハードキャップとして統一)
@@ -5282,7 +5302,7 @@ const Engine = {
 
       for (const org of sortedOrgs) {
         const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
-        const tierLim = AI_TIER_LIMITS[org.tier] || AI_TIER_LIMITS.B;
+        const tierLim = Engine.rival.getEffectiveTierLimits(org.tier, state.leagueElevated);
         const roster = newAiOrgs[org.id].roster;
         if (roster.length >= cfg.idealRoster) continue;
         if (freeAgents.length === 0) break;
@@ -6108,7 +6128,7 @@ const Engine = {
     if (s.aiOrgs && !s.offSeason) {
       const AI_WEEK_SEEDS = { org_s: 0xA101, org_a: 0xA102, org_b: 0xA103 };
       const aiCoachRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xAC77));
-      s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(aiCoachRng, s.aiOrgs, s.coaches || []) };
+      s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(aiCoachRng, s.aiOrgs, s.coaches || [], s.leagueElevated || false) };
       const newAiOrgs = {};
       const aiMatchPairs = []; // Phase 2: AI試合ペア収集
       Object.keys(s.aiOrgs).forEach(orgId => {
@@ -9251,7 +9271,7 @@ const Engine = {
 
       } else if (offWeek === 4) {
         // OffWeek 4: AI inter-org transfers + FA acquisition
-        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs);
+        const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs, s.leagueElevated || false);
         s = { ...s, aiOrgs: transferResult.aiOrgs };
         if (transferResult.events.length > 0) events.push(...transferResult.events);
 
@@ -9280,6 +9300,13 @@ const Engine = {
           events.push(`🏆 「${s.orgName}」が業界1位でシーズンを締めくくった！`);
         } else if (s.endingCleared && pRankOld === 1) {
           events.push(`🏆 シーズン${s.season}: 業界1位でフィニッシュ！`);
+        }
+        // ── 業界底上げ: 1位達成後の翌シーズンからA/B団体を恒久強化 ──
+        if (s.endingCleared && !s.leagueElevated) {
+          s = { ...s, leagueElevated: true, _pendingLeagueElevation: true };
+          const elevRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xE1EF));
+          s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(elevRng, s.aiOrgs, s.coaches || [], true) };
+          events.push('⚡ 【業界激変】ライバル団体が大型強化策を発表！リーグ全体のレベルが引き上げられた。');
         }
         const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
           orgPop: s.orgPop || 0, ...oldStats,
@@ -9868,6 +9895,7 @@ const Engine = {
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
       endingClearedSeason: null,
+      leagueElevated: false,
       // PPV GRAND FINAL
       ppvUnlocked: false,
       ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
@@ -15158,6 +15186,7 @@ Engine.newspaper = {
     aiPracticeInjury:     55,
     aiMediaStart:         45,
     transfer:             50,
+    leagueElevation:     300,
     general:              30,
   },
 
@@ -15165,6 +15194,21 @@ Engine.newspaper = {
   generate(state, rng) {
     const P = Engine.newspaper.PRIORITY;
     const stories = [];
+
+    // === 業界底上げ記事（発動シーズンの最初の2週のみ）===
+    if (state.leagueElevated && state.endingClearedSeason != null &&
+        state.season === state.endingClearedSeason + 1 && state.week <= 2) {
+      stories.push({
+        type: 'leagueElevation',
+        priority: P.leagueElevation,
+        headline: '業界再編！ライバル団体が大幅強化',
+        body: '業界1位の座を奪取した「' + (state.orgName || '団体') + '」の快挙に触発され、' +
+              'ライバル団体が選手強化策とコーチ招聘に乗り出した。' +
+              'A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。' +
+              '真の群雄割拠が始まる——。',
+        characterId: null,
+      });
+    }
 
     // === 自団体の興行結果（興行週のみ）===
     if (state.currentNewspaper) {

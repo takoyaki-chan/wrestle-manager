@@ -2222,6 +2222,11 @@ const Storage = {
         G = { ...G, playerOrgIcon: 0 };
       }
 
+      // 業界底上げ: 既にクリア済みの旧セーブにフラグ補正
+      if (G.endingCleared && G.leagueElevated == null) {
+        G = { ...G, leagueElevated: true };
+      }
+
       return true;
     } catch(e) {
       G = prevG;
@@ -5742,12 +5747,22 @@ const App = {
 
   // v2.1: エンディング演出チェック（初クリア時のみ、1回限り）
   _checkAndShowEnding(onDone) {
+    // 業界底上げ演出をチェーンする内部関数
+    const checkElevation = () => {
+      if (G._pendingLeagueElevation) {
+        const { _pendingLeagueElevation: _, ...cleanG } = G;
+        G = cleanG;
+        showLeagueElevationCeremony(G, onDone);
+      } else {
+        onDone();
+      }
+    };
     if (G.endingCleared && G.endingClearedSeason === G.season - 1 && !G.endingShown) {
       G = { ...G, endingShown: true };
       const data = Engine.ending.buildClearData(G);
-      showEndingCeremony(data, onDone);
+      showEndingCeremony(data, checkElevation);
     } else {
-      onDone();
+      checkElevation();
     }
   },
 
