@@ -4600,10 +4600,10 @@ const Engine = {
         let roster = aiData.roster.map(f => ({ ...f }));
         const retiredNames = [];
 
-        // Step 1: ���� + wear�~�� (v1.3-1 ��7 ? AI team: baseWear + durability�␳ only)
+        // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
         roster.forEach(f => {
           f.age = (f.age || 17) + 1;
-          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: �V�l������p
+          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
           const aiDecayStart = 23 + (f.durability || 0);
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
@@ -4611,16 +4611,16 @@ const Engine = {
           }
         });
 
-        // Step 2: ���ޔ��� (v1.3-1 ��3 ? wear-based)
+        // Step 2: 能力低下 (v1.3-1 §3 — wear-based)
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
-        // Step 2b: peakOVR�X�V�idecay�K�p��j
+        // Step 2b: peakOVR更新（decay適用後）
         roster = roster.map(f => Engine.career.updatePeakOVR(f, state.season));
 
-        // ���䒆�̑I����񕜁i�V�[�Y�������Z�b�g�j
+        // 負傷中の選手回復（シーズン開始リセット）
         roster.forEach(f => {
           if (f.injury) f.injury = null;
-          // seasonGrowth���Z�b�g
+          // seasonGrowthリセット
           f.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
           f.wins = 0; f.losses = 0; f.draws = 0;
           f.lastMatchResult = null;
@@ -4632,12 +4632,12 @@ const Engine = {
         });
 
 
-        // Step 5: ���ޔ��� (scout-spec ��7)
+        // Step 5: 引退判定 (scout-spec §7)
         const surviving = [];
         const aiRetirees = [];
         roster.forEach(f => {
           if (Engine.rival.checkRetirement(rng, f)) {
-            retiredNames.push(`${f.name}(${f.age}��)`);
+            retiredNames.push(`${f.name}(${f.age}歳)`);
             aiRetirees.push(f);
           } else {
             surviving.push(f);
@@ -4645,9 +4645,9 @@ const Engine = {
         });
         roster = surviving;
 
-        // Phase 5 R3: AI���ގ҂̑ޒctrust�e���i���c�̂̎c�������o�[�ɓK�p�j
+        // Phase 5 R3: AI退団者の退団trust影響（残留メンバーに適用）
         aiRetirees.forEach(retiree => {
-          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI����' });
+          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退' });
         });
 
         // Step 5b: AI契約退団（trust不満ベース）
@@ -4662,15 +4662,15 @@ const Engine = {
         const contractRetirees = contractResult.departures.filter(d => d.destination === 'retire').map(d => d._fighter).filter(Boolean);
         if (contractRetirees.length > 0) aiRetirees.push(...contractRetirees);
 
-        // Step 6: AI�X�J�E�g �� handled separately in offseason week 2
-        // Step 7: AI�Ԉڐ� �� handled separately
-        // Step 8: org-rating �� recalculated after all processing
+        // Step 6: AIスカウト — handled separately in offseason week 2
+        // Step 7: AI移籍 — handled separately
+        // Step 8: org-rating — recalculated after all processing
 
         if (retiredNames.length > 0) {
-          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('�A')} ������`);
+          events.push(`${org.emoji} ${org.name}: ${retiredNames.join('、')}（退団）`);
         }
         const avgOvr = roster.length > 0 ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
-        events.push(`${org.emoji} ${org.name}: ���X�^�[${roster.length}�� (����OVR ${avgOvr})`);
+        events.push(`${org.emoji} ${org.name}: ロスター${roster.length}名 (平均OVR ${avgOvr})`);
 
         // v2.0 HOF拡張: NPC殿堂入り判定（シーズン末引退+シーズン中怪我引退）
         const midSeasonRetirees = aiData._midSeasonRetirees || [];
@@ -4686,7 +4686,7 @@ const Engine = {
           ovr: Engine.util.ov(f), seasons: f.careerSeasons || 1,
         }));
 
-        // seasonBreakthroughs�͋��Вʒm�Q�ƌ�Ƀ��Z�b�g�i���V�[�Y���p�j
+        // seasonBreakthroughsは参照後にリセット（新シーズン用）
         const seasonBT = aiData.seasonBreakthroughs || [];
         newAiOrgs[org.id] = { ...aiData, roster, orgPop: aiData.orgPop,
           _lastSeasonBreakthroughs: seasonBT.length > 0 ? seasonBT : undefined,
@@ -4980,7 +4980,7 @@ const Engine = {
       return s;
     },
 
-    // AI season popularity (rival-spec ��4.2)
+    // AI season popularity (rival-spec §4.2)
     aiSeasonPopularity(rng, fighter, org) {
       const f = { ...fighter };
       const overall = Engine.util.ov(f);
@@ -5023,7 +5023,7 @@ const Engine = {
       return false;
     },
 
-    // ���� B-3: AI Scouting (rival-spec ��5 + F1 tier limits) ��������
+    // 対抗 B-3: AI Scouting (rival-spec §5 + F1 tier limits) シーズン開幕
     // F1 helper: count prodigies/promising on a roster
     countRosterRanks(roster) {
       let prodigies = 0, promising = 0;
