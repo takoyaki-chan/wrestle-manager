@@ -2581,7 +2581,16 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const c = findFighter(fighterId, source);
   if (!c) return;
   // 他のポップアップが表示中ならキューに入れる（自分自身のタブ切り替え時はスキップ）
-  if (!_skipQueueCheck && _isPopupActive()) { _popupQueue.push(() => showFighterPopup(fighterId, source)); return; }
+  if (!_skipQueueCheck && _isPopupActive()) {
+    // 選手詳細が開いている場合は閉じて即差し替え
+    const fpOverlay = document.getElementById('fighterPopupOverlay');
+    if (fpOverlay && fpOverlay.classList.contains('active')) {
+      fpOverlay.classList.remove('active');
+    } else {
+      _popupQueue.push(() => showFighterPopup(fighterId, source));
+      return;
+    }
+  }
   Audio.play('hover');
 
   const STYLE_META = {
