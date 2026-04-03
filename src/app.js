@@ -2222,9 +2222,10 @@ const Storage = {
         G = { ...G, playerOrgIcon: 0 };
       }
 
-      // 業界底上げ: 既にクリア済みの旧セーブにフラグ補正
-      if (G.endingCleared && G.leagueElevated == null) {
-        G = { ...G, leagueElevated: true };
+      // 業界底上げ: 既にクリア済みの旧セーブにフラグ補正 + 新セレモニー再発火
+      if (G.endingCleared && !G._migrated_leagueElevation_v2) {
+        // leagueElevated済みでも新セレモニー未表示なら再発火させる
+        G = { ...G, leagueElevated: true, _pendingLeagueElevation: true, endingShown: true, _migrated_leagueElevation_v2: true };
       }
 
       return true;
@@ -2369,7 +2370,22 @@ const Storage = {
 
 // Alias for backward compat in UI
 function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
-function loadGame(slot) { Audio.play('select'); const r = Storage.load(slot); if (r && App._refreshTicker) App._refreshTicker(); Audio.bgm.playForState(); return r; }
+function loadGame(slot) {
+  Audio.play('select');
+  const r = Storage.load(slot);
+  if (r && App._refreshTicker) App._refreshTicker();
+  Audio.bgm.playForState();
+  // 業界底上げセレモニー: ロード直後に未表示なら即表示
+  if (r && G._pendingLeagueElevation) {
+    refreshAll();
+    setTimeout(() => {
+      const { _pendingLeagueElevation: _, ...cleanG } = G;
+      G = cleanG;
+      showLeagueElevationCeremony(G, () => { Storage.autoSave(); refreshAll(); });
+    }, 500);
+  }
+  return r;
+}
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -7828,6 +7844,31 @@ App.previewEnding = function() {
     ? Engine.ending.buildClearData(G)
     : { season: 1, orgName: '団体', playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
   setTimeout(() => showEndingCeremony(data, () => {}), 300);
+};
+
+// ── DEBUG: 業界底上げテスト用（テスト後削除予定） ──
+window.debugWinLeague = function() {
+  // エンディングは endingShown:true でスキップし、業界激震セレモニーだけ発火させる
+  G = { ...G,
+    offSeason: true,
+    offWeek: 4,
+    weekPhase: 'offseason',
+    battlePoints: { ...G.battlePoints, player: 9999 },
+    endingCleared: false,
+    leagueElevated: false,
+    endingShown: true,
+    endingClearedSeason: null,
+  };
+  refreshAll();
+  console.log('[debugWinLeague] 状態セット完了:');
+  console.log('  offSeason:', G.offSeason, '/ offWeek:', G.offWeek, '/ weekPhase:', G.weekPhase);
+  console.log('  endingCleared:', G.endingCleared, '/ leagueElevated:', G.leagueElevated);
+  console.log('  endingShown: true (エンディングスキップ→業界激震のみ発火)');
+  console.log('→ 「週を進める」を押すとシーズン終了→1位判定→業界底上げセレモニーが発火します');
+};
+// 業界激震セレモニーを直接テスト（週を進めずに即表示）
+window.debugElevationDirect = function() {
+  showLeagueElevationCeremony(G, () => { console.log('[debugElevationDirect] onDone called'); refreshAll(); });
 };
 
 // Alias for old UI calls

@@ -7001,65 +7001,217 @@ function _renderLogFeedPanel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 業界底上げ演出 — 1位達成翌シーズン開幕時の全画面演出
+// 業界底上げ演出 — 1位達成翌シーズン開幕時の全画面演出 (v3: クリック送りカットイン)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 業界底上げ演出（モックアップ差し替え前提の空枠）。awardsOverlay を再利用 */
 function showLeagueElevationCeremony(state, onDone) {
-  const BGM_PATH = '../bgm/league_elevation.mp3'; // 後で専用MP3に差し替え
-
   const overlay = document.getElementById('awardsOverlay');
 
-  // ── モックアップHTMLをここに差し込む ──
-  // A級・B級団体の名前と色を取得
-  const orgA = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.tier === 'A') : null;
-  const orgB = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.tier === 'B') : null;
-  const nameA = orgA ? orgA.name : 'A級団体';
-  const nameB = orgB ? orgB.name : 'B級団体';
-  const colorA = orgA ? orgA.color : '#6c5ce7';
-  const colorB = orgB ? orgB.color : '#00b894';
+  // ── SE ヘルパー ──
+  function _playFileSE(path, vol) {
+    try { const a = new window.Audio(path); a.volume = vol != null ? vol : 0.5; a.play().catch(() => {}); } catch(e) {}
+  }
 
+  // ── 各団体データ ──
+  const sOrg = RIVAL_ORGS[0], aOrg = RIVAL_ORGS[1], bOrg = RIVAL_ORGS[2];
+  const sName = sOrg.name, sEmoji = sOrg.emoji, sColor = sOrg.color;
+  const aName = aOrg.name, aEmoji = aOrg.emoji, aColor = aOrg.color;
+  const bName = bOrg.name, bEmoji = bOrg.emoji, bColor = bOrg.color;
+
+  // ── 各団体トップ3選手のアッパー画像 ──
+  function _getTop3(orgData) {
+    if (!orgData?.roster?.length) return [];
+    return [...orgData.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
+  }
+  const top3S = _getTop3(state.aiOrgs?.org_s);
+  const top3A = _getTop3(state.aiOrgs?.org_a);
+  const top3B = _getTop3(state.aiOrgs?.org_b);
+  function _upperSrc(f) { return f ? getUpperUrl(f.id) : ''; }
+  // 3人重ね表示HTML: 中央=1位(160x240), 左=2位(130x195,少し後ろ), 右=3位(130x195,少し後ろ)
+  function _buildTrioHtml(top3) {
+    const c = top3[0], l = top3[1], r = top3[2];
+    const cSrc = _upperSrc(c), lSrc = _upperSrc(l), rSrc = _upperSrc(r);
+    return `<div class="le-trio">`
+      + (lSrc ? `<img class="le-trio-side le-trio-left" src="${lSrc}" alt="" onerror="this.style.display='none'">` : '')
+      + (cSrc ? `<img class="le-trio-center" src="${cSrc}" alt="" onerror="this.style.display='none'">` : '')
+      + (rSrc ? `<img class="le-trio-side le-trio-right" src="${rSrc}" alt="" onerror="this.style.display='none'">` : '')
+      + `</div>`;
+  }
+
+  // ── HTML ──
   overlay.innerHTML = `
-    <div id="stage" style="background:radial-gradient(ellipse 80% 60% at 50% 30%, #2a0f0f 0%, #100608 50%, #000 100%)"></div>
-    <div style="position:relative;z-index:2;text-align:center;padding:40px 20px;max-width:400px">
-      <div style="font-size:48px;margin-bottom:12px">⚡</div>
-      <div class="awards-title" style="font-size:22px;letter-spacing:6px;color:#ff6b6b">業 界 激 変</div>
-      <div class="awards-detail" style="margin:18px 0 24px;font-size:13px;line-height:1.8;color:var(--text-sub)">
-        「${state.orgName || ''}」の快挙が、業界を変えた——
+    <div class="le-stage"><div class="le-pulse"></div><div class="le-spot l"></div><div class="le-spot r"></div></div>
+    <div class="le-noise"></div>
+    <div class="le-flash" id="leFlash"></div>
+    <div class="le-click-area disabled" id="leClickArea"></div>
+    <div class="le-click-hint" id="leClickHint"><span class="blink">▼</span> クリックで次へ</div>
+    <div class="le-content" id="leContent" data-slide="1">
+      <div class="le-slide-impact">
+        <div class="le-impact-icon">⚡</div>
+        <div class="le-impact-title">業界激震</div>
+        <div class="le-impact-line"></div>
+        <button class="le-btn" id="leNextBtn">次へ ▶</button>
       </div>
-      <div style="margin:16px 0;text-align:left;padding:0 12px">
-        <div style="margin-bottom:12px;padding:10px;border-left:3px solid ${colorA};background:rgba(108,92,231,0.08);border-radius:4px">
-          <div style="font-size:12px;font-weight:700;color:${colorA}">${orgA ? orgA.emoji : '💫'} ${nameA}</div>
-          <div style="font-size:11px;color:var(--text-sub);margin-top:4px">大型補強を宣言。エース候補の発掘に乗り出す</div>
+      <div class="le-slide-sequence">
+        <div class="le-cutin-container">
+          <div class="le-cutin from-left" id="leCutinS" style="--org-color:${sColor}">
+            <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
+            <div class="le-cutin-stand">${_buildTrioHtml(top3S)}</div>
+            <div class="le-cutin-label">${orgIconHtml('org_s', 36)}<div class="le-cutin-label-name">${sName}</div><div class="le-cutin-label-grade">S級</div></div>
+          </div>
+          <div class="le-cutin from-right" id="leCutinA" style="--org-color:${aColor}">
+            <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
+            <div class="le-cutin-stand">${_buildTrioHtml(top3A)}</div>
+            <div class="le-cutin-label">${orgIconHtml('org_a', 36)}<div class="le-cutin-label-name">${aName}</div><div class="le-cutin-label-grade">A級</div></div>
+          </div>
+          <div class="le-cutin from-left" id="leCutinB" style="--org-color:${bColor}">
+            <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
+            <div class="le-cutin-stand">${_buildTrioHtml(top3B)}</div>
+            <div class="le-cutin-label">${orgIconHtml('org_b', 36)}<div class="le-cutin-label-name">${bName}</div><div class="le-cutin-label-grade">B級</div></div>
+          </div>
         </div>
-        <div style="padding:10px;border-left:3px solid ${colorB};background:rgba(0,184,148,0.08);border-radius:4px">
-          <div style="font-size:12px;font-weight:700;color:${colorB}">${orgB ? orgB.emoji : '🌙'} ${nameB}</div>
-          <div style="font-size:11px;color:var(--text-sub);margin-top:4px">育成体制を一新。コーチ陣を大幅強化</div>
+        <div class="le-narration-area">
+          <div class="le-narr-line" id="leNarr0"></div>
+          <div class="le-narr-line" id="leNarr1"></div>
+          <div class="le-narr-line" id="leNarr2" style="margin-top:16px"></div>
+          <div class="le-narr-line" id="leNarr3" style="margin-top:4px"></div>
+          <div class="le-narr-line" id="leNarr4" style="margin-top:4px"></div>
+        </div>
+        <div class="le-closing-block">
+          <div class="le-closing-text" id="leClosingText">もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em></div>
+          <button class="le-btn" id="leCloseBtn">続ける ▶</button>
         </div>
       </div>
-      <div class="awards-detail" style="margin:20px 0 24px;font-size:12px;line-height:1.8;color:var(--text-dim)">
-        もはや安泰の時代は終わった。<br>真の群雄割拠が始まる——。
-      </div>
-      <button class="awards-btn" id="leagueElevBtn">続ける ▶</button>
     </div>
   `;
-
   overlay.classList.add('active');
 
-  // BGM: 最初のクリックで開始（ブラウザ自動再生制限対策）
-  let bgmStarted = false;
-  document.getElementById('leagueElevBtn').onclick = () => {
-    if (!bgmStarted && typeof Audio !== 'undefined' && Audio.fileBgm) {
-      // Audio.fileBgm.play(BGM_PATH, { loop: false, volume: 0.10 });
-      bgmStarted = true;
-    }
+  // ── ナレーションテキスト埋め込み ──
+  document.getElementById('leNarr0').textContent = (state.orgName || '') + 'の凄まじい躍進は業界全体に衝撃を与えた。';
+  document.getElementById('leNarr1').textContent = 'その影響は業界3団体の体制を大きく揺るがし、それぞれの団体は内部改革に動き出した。';
+
+  const content   = document.getElementById('leContent');
+  const flash     = document.getElementById('leFlash');
+  const clickArea = document.getElementById('leClickArea');
+  const clickHint = document.getElementById('leClickHint');
+
+  // ── helpers ──
+  function fireFlash() { flash.classList.remove('fire'); void flash.offsetWidth; flash.classList.add('fire'); }
+  function shake() { content.classList.remove('shake'); void content.offsetWidth; content.classList.add('shake'); }
+  function showNarr(id) { document.getElementById(id).classList.add('visible'); }
+  function hideNarr(id) { document.getElementById(id).classList.add('hide'); }
+  function setNarr(id, text) {
+    const el = document.getElementById(id);
+    el.textContent = text; el.classList.add('visible', 'emphasis');
+  }
+  function clearNarr(id) { document.getElementById(id).classList.remove('visible', 'emphasis'); }
+  function cutIn(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('out', 'hold'); el.classList.add('active');
+    setTimeout(() => { el.classList.remove('active'); el.classList.add('hold'); }, 400);
+  }
+  function cutOut(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('active', 'hold'); el.classList.add('out');
+  }
+
+  // ── ステップ管理（クリック送り） ──
+  let currentStep = -1;
+  let locked = false;
+
+  function unlock(delay) {
+    setTimeout(() => {
+      locked = false;
+      if (currentStep < steps.length - 1) clickHint.classList.add('visible');
+    }, delay || 400);
+  }
+
+  const steps = [
+    // step 0: ナレーション1行目
+    () => { showNarr('leNarr0'); unlock(600); },
+    // step 1: ナレーション2行目
+    () => { showNarr('leNarr1'); unlock(600); },
+    // step 2: S級カットイン
+    () => {
+      _playFileSE('../bgm/b07_whiff_v4.mp3');
+      fireFlash(); shake(); cutIn('leCutinS');
+      setTimeout(() => setNarr('leNarr2', '王座奪還へ——全力の補強に動く'), 500);
+      unlock(900);
+    },
+    // step 3: S級退場 → A級カットイン
+    () => {
+      cutOut('leCutinS'); clearNarr('leNarr2');
+      setTimeout(() => {
+        _playFileSE('../bgm/b07_whiff_v4.mp3');
+        fireFlash(); shake(); cutIn('leCutinA');
+        setTimeout(() => setNarr('leNarr3', '大型補強を宣言——エース候補の発掘に乗り出す'), 500);
+        unlock(900);
+      }, 400);
+    },
+    // step 4: A級退場 → B級カットイン
+    () => {
+      cutOut('leCutinA'); clearNarr('leNarr3');
+      setTimeout(() => {
+        _playFileSE('../bgm/b07_whiff_v4.mp3');
+        fireFlash(); shake(); cutIn('leCutinB');
+        setTimeout(() => setNarr('leNarr4', '育成体制を一新——コーチ陣を大幅強化'), 500);
+        unlock(900);
+      }, 400);
+    },
+    // step 5: B級退場 → 締め
+    () => {
+      cutOut('leCutinB'); clearNarr('leNarr4');
+      hideNarr('leNarr0'); hideNarr('leNarr1');
+      clickHint.classList.remove('visible');
+      setTimeout(() => {
+        _playFileSE('../bgm/e02_crowd_v2.mp3', 0.20);
+        document.getElementById('leClosingText').classList.add('visible');
+      }, 600);
+      setTimeout(() => {
+        document.getElementById('leCloseBtn').classList.add('visible');
+      }, 1200);
+      clickArea.classList.add('disabled');
+    },
+  ];
+
+  function advanceStep() {
+    if (locked) return;
+    currentStep++;
+    if (currentStep >= steps.length) return;
+    locked = true;
+    clickHint.classList.remove('visible');
+    steps[currentStep]();
+  }
+
+  clickArea.addEventListener('click', advanceStep);
+
+  // ── 「次へ」ボタン（スライド1→2） ──
+  document.getElementById('leNextBtn').addEventListener('click', () => {
     if (typeof Audio !== 'undefined' && Audio.fileBgm) {
-      Audio.fileBgm.fadeOut(1500);
+      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: false, volume: 0.10 });
     }
-    overlay.classList.remove('active');
-    overlay.innerHTML = '';
-    if (onDone) onDone();
-  };
+    _playFileSE('../bgm/e02_crowd_v2.mp3', 0.10);
+    fireFlash();
+    setTimeout(() => {
+      content.dataset.slide = '2';
+      clickArea.classList.remove('disabled');
+      advanceStep(); // step 0 を自動実行
+    }, 200);
+  });
+
+  // ── 「続ける」ボタン ──
+  document.getElementById('leCloseBtn').addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(1500);
+    overlay.style.transition = 'opacity .6s';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      overlay.innerHTML = '';
+      overlay.style.opacity = '';
+      overlay.style.transition = '';
+      if (onDone) onDone();
+    }, 600);
+  });
 
   if (typeof Audio !== 'undefined' && Audio.play) Audio.play('reveal');
 }
