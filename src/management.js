@@ -4321,6 +4321,9 @@ const Engine = {
             // midSeasonRetirees蓄積（シーズン末HOF判定用）
             if (!nextOrgData._midSeasonRetirees) nextOrgData._midSeasonRetirees = [];
             nextOrgData._midSeasonRetirees.push(retiree);
+            // retiredIds追跡用: 週次で呼び出し元がretiredIds/retiredSeasonsに反映する
+            if (!nextOrgData._weekRetiredIds) nextOrgData._weekRetiredIds = [];
+            nextOrgData._weekRetiredIds.push(retiree.id);
 
             // 新聞フラグ蓄積
             if (!nextOrgData._newsInjuryRetirement) nextOrgData._newsInjuryRetirement = [];
@@ -4633,6 +4636,7 @@ const Engine = {
     processSeasonEnd(rng, state) {
       const events = [];
       const newAiOrgs = {};
+      const allRetiredCharIds = []; // AI引退者ID集約（retiredIds追跡用）
 
       RIVAL_ORGS.forEach(org => {
         const aiData = state.aiOrgs[org.id];
@@ -4716,6 +4720,7 @@ const Engine = {
         // v2.0 HOF拡張: NPC殿堂入り判定（シーズン末引退+シーズン中怪我引退）
         const midSeasonRetirees = aiData._midSeasonRetirees || [];
         const allRetirees = [...aiRetirees, ...midSeasonRetirees];
+        allRetirees.forEach(f => { if (f && f.id) allRetiredCharIds.push(f.id); });
         const npcInductees = Engine.awards.checkNpcHallOfFame(allRetirees, org.id, org.name, state);
         if (npcInductees.length > 0) {
           events.push(`🏛️ ${org.name}: ${npcInductees.map(h => h.name).join('、')} が殿堂入り`);
@@ -4739,7 +4744,7 @@ const Engine = {
           seasonBestMQ: 0, seasonBestMQMatch: null };
       });
 
-      return { aiOrgs: newAiOrgs, events };
+      return { aiOrgs: newAiOrgs, events, retiredCharIds: allRetiredCharIds };
     },
 
     /** AI契約退団: trust不満ベースの退団判定（processSeasonEnd内で呼び出し） */
@@ -6144,6 +6149,22 @@ const Engine = {
         }
       });
       s = { ...s, aiOrgs: newAiOrgs };
+      // AI怪我引退IDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
+      {
+        const _aiRetiredIds = [];
+        Object.values(newAiOrgs).forEach(orgData => {
+          if (orgData._weekRetiredIds) {
+            _aiRetiredIds.push(...orgData._weekRetiredIds);
+            delete orgData._weekRetiredIds;
+          }
+        });
+        if (_aiRetiredIds.length > 0) {
+          const updIds = [...(s.retiredIds || []), ..._aiRetiredIds.filter(id => !(s.retiredIds || []).includes(id))];
+          const updSeasons = { ...(s.retiredSeasons || {}) };
+          _aiRetiredIds.forEach(id => { updSeasons[id] = s.season; });
+          s = { ...s, retiredIds: updIds, retiredSeasons: updSeasons };
+        }
+      }
       // Phase 5: AI試合の関係値更新（applyMatchResult フル適用）
       Object.keys(newAiOrgs).forEach(orgId => {
         const aiOrgData = newAiOrgs[orgId];
@@ -9147,6 +9168,13 @@ const Engine = {
           if (aiResult.aiOrgs[org.id]) delete aiResult.aiOrgs[org.id]._npcInductees;
         });
         s = { ...s, allHallOfFame: allHof, aiOrgs: aiResult.aiOrgs };
+        // AIシーズン末引退者のIDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
+        if (aiResult.retiredCharIds && aiResult.retiredCharIds.length > 0) {
+          const _seIds = [...(s.retiredIds || []), ...aiResult.retiredCharIds.filter(id => !(s.retiredIds || []).includes(id))];
+          const _seSeasons = { ...(s.retiredSeasons || {}) };
+          aiResult.retiredCharIds.forEach(id => { _seSeasons[id] = s.season; });
+          s = { ...s, retiredIds: _seIds, retiredSeasons: _seSeasons };
+        }
         events.push(...aiResult.events);
 
         // NPC記録統一: 脅威通知は seasonBreakthroughs から生成
