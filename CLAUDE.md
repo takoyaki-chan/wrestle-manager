@@ -130,3 +130,28 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - specs/ = 確定仕様（現在の真実）
 - docs/ = 計画・検討・指示書（未来形 or 過去形）
 - アーカイブは「完了した指示書」置き場であり、仕様の真実ではない
+
+### specs/ ファイル索引（全20ファイル）
+
+| ファイル | 内容 |
+|---------|------|
+| battle-engine-spec-v4.2.md | 試合シミュレーション（ターン制/MQ計算/ビッグマッチ） |
+| character-data-spec-v1.7.md | キャラクターデータ定義（ステータス/特性/性格） |
+| coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
+| contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
+| economy-spec-v2.0.md | 収支バランス（グッズ/メディア/給与/精算） |
+| growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み |
+| large-event-spec-v1.0.md | 大型イベントB1-B4（怪我/対立/挑戦状/メディア） |
+| personality-archetype-spec-v1.0.md | 性格6種×アーキタイプ6種の相性マトリクス |
+| ppv-grand-final-spec-v2.0.md | PPV GRAND FINAL（エントリー/頂上決戦/報酬） |
+| promo-system-spec-v1.0.md | プロモ活動（人気成長/収入/MQスタック） |
+| relationship-system-spec-v2.0.md | Bond/Rivalry（非対称2軸/試合影響/因縁称号） |
+| rental-system-spec-v2.0.md | レンタル移籍（費用/制約/帰団処理） |
+| rival-org-spec-v1.0.md | AI団体の行動ロジック |
+| scout-system-spec-v1.0.md | スカウト/新人獲得 |
+| snapshot-notification-spec-v1.0.md | スナップショット通知（G/R系列/テキスト生成） |
+| title-system-spec-v1.0.md | タイトル3階級/防衛/挑戦権 |
+| trust-system-spec-v2.1.md | 信頼度（出場/ケア/士気/待遇不満） |
+| venue-attendance-spec-v2.0.md | 会場10段/集客計算/勢い/予測 |
+| weekly-gameloop-spec-v1_0.md | 週次ループ/シーズン構成/オフウィーク |
+| 技テーブル_全160技_v3_5.md | 全160技のデータテーブル |
