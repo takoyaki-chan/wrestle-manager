@@ -9,7 +9,7 @@
 
 set -e
 
-VERSION="1.01"
+VERSION="1.02"
 TRIAL_VERSION="v2"
 
 # ── URL定数 ─────────────────────────────────────────────────────────────────
@@ -83,12 +83,11 @@ build_one() {
 
   # Copy game files
   echo "📦 ゲームファイルをコピー中..."
-  cp src/index.html src/data.js src/engine.js src/app.js \
+  cp src/index.html src/data.js src/management.js src/match-engine.js \
+     src/relationships.js src/app.js \
      src/ui-common.js src/ui-render.js src/victory-lines.js \
      src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
      "${DIST_DIR}/src/"
-  cp portrait-map.js "${DIST_DIR}/"
-
   # ── IS_TRIAL フラグの書き換え（コピー後のファイルのみ） ──
   if [ "$IS_TRIAL_MODE" = "true" ]; then
     echo "🔒 体験版フラグを設定中（IS_TRIAL=true）..."
@@ -133,22 +132,22 @@ build_one() {
 REDIRECT_EOF
 
   # スタートガイドをコピー
-  if [ -f "wm-guide.html" ]; then
-    cp "wm-guide.html" "${DIST_DIR}/wm-guide.html"
+  if [ -f "ガイド-はじめの一歩.html" ]; then
+    cp "ガイド-はじめの一歩.html" "${DIST_DIR}/ガイド-はじめの一歩.html"
     echo "📖 スタートガイドを追加しました"
-  elif [ -f "../WMポートレート/wm-guide.html" ]; then
-    cp "../WMポートレート/wm-guide.html" "${DIST_DIR}/wm-guide.html"
+  elif [ -f "../WMポートレート/ガイド-はじめの一歩.html" ]; then
+    cp "../WMポートレート/ガイド-はじめの一歩.html" "${DIST_DIR}/ガイド-はじめの一歩.html"
     echo "📖 スタートガイドを追加しました"
   else
-    echo "⚠️  wm-guide.html が見つかりません（スキップ）"
+    echo "⚠️  ガイド-はじめの一歩.html が見つかりません（スキップ）"
   fi
 
   # ステータスガイドをコピー
-  if [ -f "wm-guide-stats.html" ]; then
-    cp "wm-guide-stats.html" "${DIST_DIR}/wm-guide-stats.html"
+  if [ -f "ガイド-パラメータ解説.html" ]; then
+    cp "ガイド-パラメータ解説.html" "${DIST_DIR}/ガイド-パラメータ解説.html"
     echo "📖 ステータスガイドを追加しました"
   else
-    echo "⚠️  wm-guide-stats.html が見つかりません（スキップ）"
+    echo "⚠️  ガイド-パラメータ解説.html が見つかりません（スキップ）"
   fi
 
   cat > "${DIST_DIR}/README.txt" << 'README_EOF'
@@ -161,8 +160,8 @@ index.html をブラウザ（Chrome/Edge推奨）で開いてください。
 ※ うまく開かない場合は START.html をダブルクリックしてください。
 
 【ガイド】
-wm-guide.html を開くと、初心者向けのスタートガイドが読めます。
-wm-guide-stats.html を開くと、ステータス・システム解説ガイドが読めます。
+ガイド-はじめの一歩.html を開くと、初心者向けのスタートガイドが読めます。
+ガイド-パラメータ解説.html を開くと、ステータス・システム解説ガイドが読めます。
 
 © takoyaki-chan
 README_EOF
