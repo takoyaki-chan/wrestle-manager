@@ -1,10 +1,10 @@
-# 戦闘エンジン仕様書 v4.1b（tuneB基準）
+# 戦闘エンジン仕様書 v4.2（tuneC基準）
 
-> **ステータス**: 🟢 プロトタイプ実装済み（index.html v4.x）
-> **対応コード**: `女子プロレス バトルエンジン v4.1b (tuneB)`
-> **前版**: 戦闘エンジン仕様書 v4.0
-> **更新日**: 2026-02-19
-> **変更概要**: v4.1のスケール方針（MNT=0-100固定／他は100超え対応）を前提に、**バランス定数を tuneB に更新して基準化**（10000戦ランダム統計を採用）
+> **ステータス**: 🟢 実装済み（src/match-engine.js + src/data.js）
+> **対応コード**: `src/match-engine.js` + `src/data.js ENG/BIGMATCH_*`
+> **前版**: 戦闘エンジン仕様書 v4.1b
+> **更新日**: 2026-04-05
+> **変更概要**: v4.1b以降のバランス調整を反映（tuneC）。Big Match Tier 2追加。MQ計算v3.0統合。外部MQボーナス整理。ペーシング「長すぎ」撤廃。決着重み修正
 
 ---
 
@@ -16,6 +16,7 @@
 | v4.0 | 2025-02-19 | 命中判定・カウンター・技カテゴリ連動決着・フォール狙い・粘りバフ・TKO追加。TEC/MNT再バランス |
 | v4.1 | 2026-02-19 | **MNTは0-100固定／PWR・SPD・TEC・STAは100超え対応**。戦闘計算に `eff()`（逓減）を導入し、育成側の到達上限（trainCap=概ね130〜140）を明文化 |
 | v4.1b | 2026-02-19 | **tuneB**：判定が多い問題を抑え、フォール狙い・丸め込みを「番狂わせ枠」として最適化（基準分布を採用） |
+| v4.2 | 2026-04-05 | **tuneC**：HP計算式変更(hpBase+hpScale×STA)。ダメージ係数再調整(PWR↑/STA防御↓/SPD全技化)。effSlopeAfterPivot=1.0(逓減無効化)。Big Match Tier 2追加(24ターン/4フェーズ)。MQ v3.0統合(外部MQソース整理/CAP 12/ペーシング「長すぎ」撤廃)。決着重み修正(非submission技のgu=0統一) |
 
 ---
 
@@ -65,7 +66,7 @@ v3.5の統計分析で以下の課題が判明し、v4.0で対処した。
 
 | リソース | 算出 | 値域 | 役割 |
 |---------|------|------|------|
-| HP | STA × 2.0 | 0〜(STA×2) | 体力。0以下で決着判定突入 |
+| HP | hpBase + STA × hpScale（Tier1: 50+STA×0.90 / Tier2: 85+STA×1.10） | 0〜maxHP | 体力。0以下で決着判定突入 |
 | モメンタム | 初期値0 | -100〜+100 | 試合の流れ。正=左有利、負=右有利 |
 | 粘りバフ(Grit) | キックアウト/脱出時に付与 | 0〜2ターン | 被ダメ-20%、カウンター率+10% |
 | 連続被弾カウンタ | 攻撃側ごと | 0〜∞ | TKO判定に使用 |
@@ -87,13 +88,14 @@ Overall = (PWR + SPD + TEC + STA + MNT) / 5
 // x: raw stat (PWR/SPD/TEC/STA)
 function eff(x){
   if (x <= 100) return x;
-  return 100 + (x - 100) * 0.60; // 100超えは効きが60%に逓減
+  return 100 + (x - 100) * 1.0; // v4.2: 逓減なし（effSlopeAfterPivot=1.0）
 }
 ```
 
 **狙い**:
-- 育成で数値が伸びる達成感を残しつつ、戦闘バランスは壊さない
-- “120〜140帯”の差は出るが、ゲームを破壊するほどではない
+- v4.1bでは0.60（100超え60%逓減）だったが、v4.2で1.0に変更
+- 現在はeff()は実質パススルー（将来のバランス調整で逓減を再導入する可能性あり）
+- 育成到達上限（trainCap=概ね130〜140）がインフレ抑制の主要手段
 
 ---
 
@@ -177,8 +179,8 @@ SPDが高い方が攻撃機会を多く得るが、モメンタムが最大の�
 
 ```javascript
 baseAcc = hitBase[move.damage]  // 技威力から基礎命中率を引く
-hitRate = baseAcc + (eff(atk.tec) × 0.18) - (eff(def.spd) × 0.10)
-hitRate = clamp(hitRate, 35, 98)
+hitRate = baseAcc + (eff(atk.tec) × 0.17) - (eff(def.spd) × 0.18)
+hitRate = clamp(hitRate, 42, 98)
 ```
 
 ### 5.2 威力別基礎命中率テーブル
@@ -189,8 +191,8 @@ hitRate = clamp(hitRate, 35, 98)
 
 ### 5.3 設計意図
 
-- **TECの最重要影響先**。TEC型は大技でも安定して当てる。TEC47とTEC91で命中率に約8%の差
-- SPD型は回避率（被命中軽減）が高い。SPD53とSPD91で約4%の回避差
+- **TECの最重要影響先**。TEC型は大技でも安定して当てる（×0.17）
+- **SPD型は回避の主役**。回避率（被命中軽減）がv4.2で大幅強化（×0.075→×0.18）。SPD型の生存力が大きく向上
 - 小技（d2-5）はほぼ確実に当たる（95%+）。大技（d14-16）は基礎命中率66-70%まで下がる
 - 大技のリスク＝「命中率の低さ」のみ。SPコスト制は不採用
 
@@ -208,7 +210,7 @@ hitRate = clamp(hitRate, 35, 98)
 ### 6.1 計算式（命中した技に対してのみ判定）
 
 ```javascript
-counterRate = 4 + (eff(def.tec) × 0.06) - (eff(atk.spd) × 0.03) + phase.counterBonus
+counterRate = 4 + (eff(def.tec) × 0.055) - (eff(atk.spd) × 0.07) + phase.counterBonus
 if (def.gritTurns > 0) counterRate += 10  // ★粘りバフ
 counterRate = clamp(counterRate, 2, 22)
 ```
@@ -250,13 +252,13 @@ momentum += 18  // 防御側方向に大きく反転
 ```javascript
 // 攻撃値
 base = move.d
-     + (eff(atk.pw) × 0.12)     // PWR: was 0.15 → 0.12に下方修正
-     + (eff(atk.te) × 0.10)     // TEC: 据え置き
-     + (move.c === 'aerial' ? eff(atk.sp) × 0.03 : 0)  // SPD: 飛び技のみ微加算
+     + (eff(atk.pw) × 0.20)     // PWR: v4.2で0.12→0.20に上方修正
+     + (eff(atk.te) × 0.08)     // TEC: v4.2で0.10→0.08に下方修正
+     + (eff(atk.sp) × 0.08)     // SPD: v4.2で全技に適用（旧:飛び技のみ0.03）
 
 // 防御値
-defense = (eff(def.st) × 0.08)   // STA: was 0.10 → 0.08に下方修正
-        + (def.mn × 0.055)  // MNT: was 0.035 → 0.055に上方修正 ★
+defense = (eff(def.st) × 0.02)   // STA: v4.2で0.08→0.02に大幅下方修正
+        + (def.mn × 0.055)  // MNT: 据え置き（v4.0で0.035→0.055に上方修正済み）
 
 // モメンタム補正
 mMod = 1.0 + (momentum_advantage × 0.003)
@@ -280,16 +282,16 @@ dmg = max(3, round((base - defense) × mMod × rF × phase.mult))
 | End | 9-12 | ×1.2 |
 | Climax | 13-20 | ×1.4 |
 
-### 7.3 v3.5→v4.0の係数変更まとめ
+### 7.3 係数変更履歴
 
-| 係数 | v3.5 | v4.0 | 変更理由 |
-|------|------|------|---------|
-| atk.pw係数 | 0.15 | 0.12 | PWR偏重の是正 |
-| atk.te係数 | 0.10 | 0.10 | 据え置き（命中/カウンターで別途強化済み） |
-| def.st係数 | 0.10 | 0.08 | STA偏重の是正 |
-| def.mn係数 | 0.035 | 0.055 | **MNTの防御貢献を大幅強化** |
-| 飛び技SPD加算 | なし | 0.03 | SPD型の飛び技に火力ボーナス |
-| 粘りバフ軽減 | なし | ×0.80 | キックアウト後の生存力 |
+| 係数 | v3.5 | v4.0 | v4.2(現行) | 変更理由 |
+|------|------|------|-----------|---------|
+| atk.pw係数 | 0.15 | 0.12 | **0.20** | PWRを主要火力源として再強化 |
+| atk.te係数 | 0.10 | 0.10 | **0.08** | TEC→命中/カウンター経由に役割集中 |
+| atk.sp係数 | なし | 0.03(飛び技のみ) | **0.08(全技)** | SPD型の攻撃貢献を全般的に強化 |
+| def.st係数 | 0.10 | 0.08 | **0.02** | STA→HP総量が主な防御手段に |
+| def.mn係数 | 0.035 | 0.055 | 0.055 | MNTの防御貢献を強化（据え置き） |
+| 粘りバフ軽減 | なし | ×0.80 | ×0.80 | キックアウト後の生存力 |
 
 ### 7.4 設計意図
 
@@ -320,12 +322,14 @@ HP≤0到達時、トドメ技のカテゴリに基づいて決着タイプを�
 
 | 技カテゴリ | fall | gu | tko | プロレス的根拠 |
 |-----------|------|----|-----|--------------|
-| **strike** | 85 | 5 | 10 | 打撃→フォールが自然。強打連発ならTKOも |
-| **throw** | 80 | 5 | 15 | 投げ→フォールが基本。叩きつけでTKOも |
+| **strike** | 90 | 0 | 10 | 打撃→フォールが自然。強打連発ならTKOも |
+| **throw** | 85 | 0 | 15 | 投げ→フォールが基本。叩きつけでTKOも |
 | **aerial** | 85 | 0 | 15 | 飛び技→フォール。ギブアップは不自然 |
-| **ground** | 70 | 5 | 25 | グラウンド→フォール。踏みつけ連打はTKO的 |
-| **submission** | 5 | 90 | 5 | 関節技→ギブアップが大半。稀にTKO（失神） |
+| **ground** | 75 | 0 | 25 | グラウンド→フォール。踏みつけ連打はTKO的 |
+| **submission** | 0 | 95 | 5 | 関節技→ギブアップが大半。稀にTKO（失神） |
 | **rollup** | 100 | 0 | 0 | 丸め込み→フォール固定 |
+
+> **v4.2変更**: 非submission技のgu=0に統一。submission技のfall=0に統一。ギブアップ決着はsubmission技専用に
 
 ### 8.3 フォール / キックアウト判定
 
@@ -550,12 +554,12 @@ v4.1での各パラメータの影響先を網羅。育成ゲーム化時のバ�
 | 影響先 | PWR | SPD | TEC | STA | MNT |
 |--------|-----|-----|-----|-----|-----|
 | 行動順決定 | - | ◎(×0.15) | - | - | - |
-| 命中率 | - | - | ◎(×0.18) | - | - |
-| 回避率（被命中軽減） | - | ○(×0.10) | - | - | - |
-| カウンター率 | - | △被(×0.03) | ◎(×0.06) | - | - |
-| ダメージ（攻撃） | ◎(×0.12) | △飛(×0.03) | ○(×0.10) | - | - |
-| ダメージ軽減（防御） | - | - | - | ○(×0.08) | ◎(×0.055) |
-| HP総量 | - | - | - | ◎(×2.0) | - |
+| 命中率 | - | - | ◎(×0.17) | - | - |
+| 回避率（被命中軽減） | - | ◎(×0.18) | - | - | - |
+| カウンター率 | - | △被(×0.07) | ◎(×0.055) | - | - |
+| ダメージ（攻撃） | ◎(×0.20) | ○(×0.08) | ○(×0.08) | - | - |
+| ダメージ軽減（防御） | - | - | - | △(×0.02) | ◎(×0.055) |
+| HP総量 | - | - | - | ◎(hpBase+STA×hpScale) | - |
 | キックアウト率 | - | - | - | - | ◎(×0.50) |
 | ギブアップ耐性 | - | - | - | - | ◎(×0.45) |
 | 丸め込み成功率 | - | - | ◎(×0.15) | - | - |
@@ -584,33 +588,34 @@ v4.xプロトタイプで使用している全定数。バランス調整時は�
 
 ```javascript
 const ENG = {
-  // HP
-  hpScale: 1.85,
+  // HP（v4.2: hpBase追加、hpScale大幅変更）
+  hpBase: 50,
+  hpScale: 0.90,
 
-  // 有効値（eff）
+  // 有効値（eff）（v4.2: 逓減無効化）
   effPivot: 100,
-  effSlopeAfterPivot: 0.60,
+  effSlopeAfterPivot: 1.0,
 
   // 命中判定
   hitBase: {1:97, 2:97, 3:96, 4:94, 5:92, 6:89, 7:86, 8:84, 9:81, 10:78,
             11:76, 12:74, 13:72, 14:70, 15:68, 16:66},
-  tecHitBonus: 0.21,
-  spdDodgeBonus: 0.075,
+  tecHitBonus: 0.17,
+  spdDodgeBonus: 0.18,
   hitMin: 42, hitMax: 98,
 
   // カウンター
   counterBase: 4,
   counterTecScale: 0.055,
-  counterSpdPenalty: 0.03,
+  counterSpdPenalty: 0.07,
   counterMin: 2, counterMax: 22,
   counterDmgMult: 0.6,
   counterMomShift: 18,
 
   // ダメージ
-  dmgPwrScale: 0.12,
-  dmgTecScale: 0.10,
-  dmgSpdScale: 0.03,    // 飛び技のみ
-  defStaScale: 0.08,
+  dmgPwrScale: 0.20,
+  dmgTecScale: 0.08,
+  dmgSpdScale: 0.08,    // v4.2: 全技に適用（旧:飛び技のみ0.03）
+  defStaScale: 0.02,
   defMntScale: 0.055,
   momDmgScale: 0.003,
   dmgRandMin: 0.85, dmgRandRange: 0.30,
@@ -632,11 +637,12 @@ const ENG = {
 
   // 技カテゴリ別決着重み
   finishWeights: {
-    strike:    {fall:85, gu:5,  tko:10},
-    throw:     {fall:80, gu:5,  tko:15},
-    aerial:    {fall:85, gu:0,  tko:15},
-    ground:    {fall:70, gu:5,  tko:25},
-    submission:{fall:5,  gu:90, tko:5},
+    // v4.2: 非submission技のgu=0, submission技のfall=0 に統一
+    strike:    {fall:90, gu:0, tko:10},
+    throw:     {fall:85, gu:0, tko:15},
+    aerial:    {fall:85, gu:0, tko:15},
+    ground:    {fall:75, gu:0, tko:25},
+    submission:{fall:0,  gu:95, tko:5},
     rollup:    {fall:100,gu:0,  tko:0}
   },
 
@@ -738,16 +744,115 @@ gain *= 0.90^(max(0, value-120))
 
 ---
 
-## 16. 未実装（次フェーズ）
+## 16. Big Match Tier 2 ★v4.2追加
+
+PPV/タイトルマッチ/対抗戦/トーナメントで適用されるビッグマッチモード。
+
+### 16.1 適用条件
+
+```javascript
+matchTier = isTitle ? 2 : isPPV ? 2 : isWar ? 2 : 1
+```
+
+### 16.2 Tier 2 フェーズ定義
+
+| フェーズ | ターン | スタイル技確率(sCh) | ダメージ乗数 | カウンターボーナス |
+|---------|-------|-------------------|------------|------------------|
+| Opening | 1-6 | 15% | ×0.70 | 0 |
+| Mid | 7-12 | 35% | ×0.85 | +2 |
+| End | 13-18 | 50% | ×1.00 | +4 |
+| Climax | 19-24 | 65% | ×1.20 | +7 |
+
+### 16.3 Tier 2 専用ENG定数（Tier 1からの差分）
+
+```javascript
+const BIGMATCH_ENG = {
+  ...ENG,
+  hpBase: 85,                    // Tier1: 50 → +70%
+  hpScale: 1.10,                 // Tier1: 0.90 → +22%
+  rollupBaseSuccess: 11,         // Tier1: 16 → 丸め込み決まりにくい
+  rollupHpThreshold: 0.25,       // Tier1: 0.35 → より追い込まれないと丸め込めない
+  pinAttemptHpThreshold: 0.25,   // Tier1: 0.35 → フォール狙いも同様
+  pinAttemptSuccessBase: 14,     // Tier1: 23 → ピンが決まりにくい
+  pinAttemptClimax: 18,          // Tier1: 22 → Climaxボーナス抑制
+  kickoutMax: 3,                 // Tier1: 2 → 3回キックアウト可能
+  guEscapeMax: 3,                // Tier1: 2 → 3回ロープブレイク可能
+};
+```
+
+### 16.4 設計意図
+
+- **HP増加+ダメージ乗数低下**: 試合が長くなり、フェーズを4つフルに使い切る
+- **丸め込み・ピン成功率低下**: 番狂わせ的決着が起きにくい（ビッグマッチの格を維持）
+- **キックアウト3回**: 観客にとってのドラマチックなニアフォールが増える
+- **最大24ターン**: Tier1(20ターン)より20%長い
+
+---
+
+## 17. MQスコア計算 ★v4.2統合
+
+試合品質スコア（Match Quality）。減点方式で算出。
+
+### 17.1 MQ計算式
+
+```javascript
+// §1 天井（OVR帯別）
+if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
+else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
+else ceiling = 83 + (avgOV - 80) * 0.85;
+
+// §2 ドラマ減点（初期値30、見せ場で減算）
+dramaPenalty = 30;
+dramaPenalty -= min(totalKickouts, 2) * 8;     // キックアウト: 最大-16
+dramaPenalty -= min(totalCounters, 3) * 2.5;   // カウンター: 最大-7.5
+dramaPenalty -= min(leadChanges, 3) * 1.5;     // リード交代: 最大-4.5
+dramaPenalty -= min(bigMoves, 6) * 0.4;        // ビッグムーブ: 最大-2.4
+dramaPenalty = max(0, round(dramaPenalty));
+
+// §3 ペーシング減点（短すぎのみ。「長すぎ」はv4.2で撤廃）
+// Tier別適正ターン帯。引き出し上手(hasHikidashi)で緩和
+if (tier >= 2) idealMin = hasHikidashi ? 10 : 13; okMin = hasHikidashi ? 7 : 10;
+else           idealMin = hasHikidashi ? 5 : 7;   okMin = hasHikidashi ? 3 : 5;
+pacingPenalty = (turns >= idealMin) ? 0 : (turns >= okMin) ? 3 : 12;
+
+// §4 決着減点
+finishPenalty = (finishPhase === 'Climax') ? 0 : (finishPhase === 'End') ? 1 : 3;
+
+// §5 最終MQ
+mq = max(5, round(ceiling - dramaPenalty - pacingPenalty - finishPenalty));
+```
+
+### 17.2 外部MQボーナス（v4.2: 大幅整理済み）
+
+試合エンジン外で加算される外部ボーナス。**正方向上限: MQ_EXTERNAL_CAP = 12**
+
+| ソース | 値 | 備考 |
+|--------|---|------|
+| ライバル因縁（cause） | +2 | rivalry45+で発動 |
+| ライバル因縁（rival/fated） | +2〜+4 | 段階に応じて増加 |
+| タイトルマッチ | +5 | 旧: +10 |
+| 宿怨 | +2 | |
+| 会場熱気 | -3〜+3 | |
+| 会場規模 | 0〜+3 | |
+
+**v4.2で廃止されたMQソース**:
+- 乱闘蓄積(pendingClash) → 集客(matchAppeal)に移行
+- 初顔合わせ → 集客(firstMeetAppeal)に移行
+- マンネリ(freshnessPenalty) → 集客(stalePenalty)に移行
+- プロモスタック(promoStackBonus) → 廃止（drawPower効果は維持）
+- ファン期待度 → 廃止（集客効果は維持）
+- コーチMQ → 廃止
+- タイトル格差ペナルティ → 廃止
+
+---
+
+## 18. 未実装（次フェーズ）
 
 | 項目 | 優先度 | 備考 |
 |------|-------|------|
-| ギブアップⅡ（HP残りで極める） | 高 | 仕様書の3.8.4に設計あり。subBonus付き技で発動 |
-| フィニッシャー（キャラ固有必殺技） | 高 | tier4技。技データ構造は設計済み |
-| 技tier制（基本/強力/必殺のティア分け） | 高 | v4.0はv3.5のカテゴリ重み方式を継承。本番で変更予定 |
+| フィニッシャー（キャラ固有必殺技） | 高 | specs/archive/finisher-system-spec-v1.0.md に設計あり |
+| 技tier制（基本/強力/必殺のティア分け） | 中 | 現在はカテゴリ重み方式 |
 | 前ターン記憶（同一技連続回避） | 中 | 同じ技の連打防止 |
-| モメンタム自然減衰 | 中 | 毎ターン×0.95 |
-| 100戦シミュレーション統計 | 高 | バランス検証用。勝率・決着分布・ターン数の統計 |
-| 本番スケール（100超え対応）の正式移行 | 高 | §15のtrainCap/eff方針に統一 |
-| 技データのJSON外出し | 中 | 現在はインライン定義 |
-| MQスコア（試合品質）計算 | 中 | game-design-v0.1.md §7.5に設計あり |
+| モメンタム自然減衰 | 低 | 毎ターン×0.95（現時点では未採用） |
+
+<!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->
