@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-02（殿堂ポイント調整）
+> 最終更新: 2026-04-05（dormantPool FIFOキュー化）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,11 @@
 
 ## 現在の状態
 
-**対抗戦発生確率改善（2026-04-02）。** ランキング上位プレイヤーで対抗戦が極端に少ない問題を修正。(1)チェック窓追加: checkRivalryWarの判定をWeek24/36の2回→Week12/24/36の3回に拡大（Q1末追加）。(2)基本確率微増: warChancePerSeason 0.50→0.55。(3)干ばつ防止: 前シーズン対抗戦なし時に各チェック+15%ボーナス（lastWarSeasonフィールド新設、蓄積なし）。(4)B3挑戦状競合緩和: B4(メディア)weight 3→2でB3が高orgPopでも50%選出に。P(0回/シーズン)が25%→9.1%（干ばつ後2.7%）に改善。変更: data.js(EVENT_CONFIG)/management.js(checkRivalryWar/advanceWeek/初期状態/B4 weight)。auto-sim 100シーズンALL CLEAR。
+**dormantPool FIFOキュー化 — 同じ選手の即リサイクル防止（2026-04-05）。** dormantPoolの選抜が全箇所ランダムシャッフルだったため、リサイクルされた選手が即座に再登場し「同じ選手ばかり回る」問題があった。(1)Engine.util.drawFromFrontヘルパー追加: キュー先頭ウィンドウ(count×3, min12)からランダム抽出。古い選手優先+バリエーション確保。(2)選抜4箇所FIFO化: generateScoutReport/aiScout/aiSeasonReinforce(先頭15件内最強)/FA市場ローテ。(3)フィルタバグ修正(L9286/L9546): {id,age}オブジェクトとstring IDの.includes()比較が常にfalseで使用済み選手がプールから除去されなかった。(4)エントリ形式統一: 全てを{id,age}オブジェクトに統一、typeof分岐ガード12箇所除去。(5)セーブマイグレーション: レガシーstring ID→{id,age:17}変換。リサイクル投入は全て末尾追加(変更不要)、年次加齢は配列位置維持(変更不要)。変更: management.js(drawFromFront+選抜4箇所+フィルタ2箇所+typeof除去)+app.js(マイグレーション)。auto-sim 100シーズン×2シード ALL CLEAR。
+
+前回: **AI引退選手の即リサイクル修正（2026-04-04）。** AI団体の引退選手(怪我引退・シーズン末引退・契約退団引退)のIDがretiredIds/retiredSeasonsに登録されず、dormantPool補充時にクールダウンなしで即復活していた問題を修正。processAIWeek内の怪我引退時に_weekRetiredIdsへ一時記録→tickWeekで回収、processSeasonEndで全AI引退者IDを集約して返却→offWeek1でstateに反映。プレイヤー側と同じ5シーズンクールダウンがAI引退者にも適用されるようになった。変更: management.js(6箇所、29行追加)。auto-sim 100シーズン×2シード ALL CLEAR。
+
+前回: **対抗戦発生確率改善（2026-04-02）。** ランキング上位プレイヤーで対抗戦が極端に少ない問題を修正。(1)チェック窓追加: checkRivalryWarの判定をWeek24/36の2回→Week12/24/36の3回に拡大（Q1末追加）。(2)基本確率微増: warChancePerSeason 0.50→0.55。(3)干ばつ防止: 前シーズン対抗戦なし時に各チェック+15%ボーナス（lastWarSeasonフィールド新設、蓄積なし）。(4)B3挑戦状競合緩和: B4(メディア)weight 3→2でB3が高orgPopでも50%選出に。P(0回/シーズン)が25%→9.1%（干ばつ後2.7%）に改善。変更: data.js(EVENT_CONFIG)/management.js(checkRivalryWar/advanceWeek/初期状態/B4 weight)。auto-sim 100シーズンALL CLEAR。
 
 前回: **ロッカールーム士気リデザイン v3.0（2026-04-02）。** morale=100張り付き問題を根本解決。(1)平均回帰: baseline=55への12%/週回帰を導入、100に留まれない設計に。(2)ムードメーカー条件付き化: 無条件+2.53→+1.5/週(morale70超で半減+0.75)。(3)人望条件付き化: 無条件+1.84→trust<50の選手数に比例(0.3×人数, max+1.2)。(4)興行双方向化: MQ<45で-1.5/MQ<55で-0.5追加。(5)ロスターサイズ税: 8人超-0.15/人/週。(6)負傷者負荷: 3人以上-0.5, 5人以上追加-0.5。(7)敵対ペア強化: 0.5→0.7/組, cap2→3。(8)morale→condition回復速度: 75+で×1.15/40未満で×0.80。(9)morale→成長ゼロ化: 40未満15%/40-50 5%。(10)morale→trust侵食: 45未満で追加減衰(45-morale)/100。(11)morale→スランプ/モチベ喪失回復: 70+で×1.3/35未満で×0.5。均衡帯38-76。変更: management.js/relationships.js/data.js。auto-sim 5シード×100シーズン ALL CLEAR。
 

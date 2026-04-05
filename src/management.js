@@ -103,6 +103,38 @@ const Engine = {
       }
       return shuffled.slice(0, n);
     },
+    /**
+     * FIFOキューの先頭ウィンドウからランダム抽出。
+     * queue の先頭付近（古い順）から優先的に選びつつ、ウィンドウ内でランダム性を確保。
+     * @param {Array<{id,age}>} queue - dormantPool（先頭=最も古い）
+     * @param {number} count - 抽出数
+     * @param {object} rng - シードRNG
+     * @param {Set<string>} excludeIds - 除外するID集合
+     * @param {number} [minWindow=12] - 最小ウィンドウサイズ
+     * @returns {{ picked: string[], remaining: Array<{id,age}> }}
+     */
+    drawFromFront(queue, count, rng, excludeIds, minWindow = 12) {
+      const eligible = queue.filter(e => !excludeIds.has(e.id));
+      if (eligible.length === 0) return { picked: [], remaining: queue };
+      const windowSize = Math.min(eligible.length, Math.max(count * 3, minWindow));
+      const window = eligible.slice(0, windowSize);
+      // ウィンドウ内のみシャッフル（先頭付近から取るがランダム性も確保）
+      const shuffled = [...window];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(rng, 0, i);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      const pickedIds = new Set();
+      const picked = [];
+      for (const e of shuffled) {
+        if (picked.length >= count) break;
+        if (pickedIds.has(e.id)) continue;
+        picked.push(e.id);
+        pickedIds.add(e.id);
+      }
+      const remaining = queue.filter(e => !pickedIds.has(e.id));
+      return { picked, remaining };
+    },
     /** Compute visible FA IDs for this quarter (6 slots) */
     getVisibleFAIds(state) {
       const fa = state.freeAgents || [];
@@ -3167,7 +3199,7 @@ const Engine = {
       // Step 8: Remaining → FA (cfg.fa slots) + dormant (rest)
       const faShuffled = seededShuffle(pool, rng);
       const faAll = faShuffled.slice(0, cfg.fa).map(c => c.id);
-      const dormantAll = faShuffled.slice(cfg.fa).map(c => c.id);
+      const dormantAll = faShuffled.slice(cfg.fa).map(c => ({ id: c.id, age: 17 }));
 
       // Step 9: Write to ORG_ASSIGN
       ORG_ASSIGN.org_s = sAll;
@@ -5084,10 +5116,8 @@ const Engine = {
     aiScout(rng, state) {
       const events = [];
       const newAiOrgs = {};
-      // v1.9c: dormantPool entries can be plain IDs or {id,age} objects
-      // Keep original entries for return value (preserves age info), use normalized IDs for logic
+      // FIFO: dormantPool は {id, age} オブジェクト配列。先頭=最も古い
       let dormantEntries = [...(state.dormantPool || [])];
-      let poolIds = dormantEntries.map(e => typeof e === 'object' ? e.id : e);
       RIVAL_ORGS.forEach(org => {
         const aiData = state.aiOrgs[org.id];
         if (!aiData) { newAiOrgs[org.id] = aiData; return; }
@@ -5098,14 +5128,16 @@ const Engine = {
         const maxPicks = Math.min(need, cfg.maxPicks);
         let budget = cfg.budget;
         let picked = 0;
-        const available = poolIds.filter(id => {
-          const inAny = Object.values(state.aiOrgs).some(a => a.roster.some(f => f.id === id));
-          const inPlayer = state.roster.some(f => f.id === id);
-          const inFree = (state.freeAgents || []).some(f => f.id === id);
-          return !inAny && !inPlayer && !inFree;
-        });
-        const shuffled = [...available].sort(() => Engine.rng.float(rng) - 0.5);
-        for (const candId of shuffled) {
+        // 占有済みID収集
+        const excludeIds = new Set();
+        Object.values(state.aiOrgs).forEach(a => (a.roster || []).forEach(f => excludeIds.add(f.id)));
+        (state.roster || []).forEach(f => excludeIds.add(f.id));
+        (state.freeAgents || []).forEach(f => excludeIds.add(f.id));
+        // 既にこのループ内で獲得済みのIDも除外
+        Object.values(newAiOrgs).forEach(a => (a.roster || []).forEach(f => excludeIds.add(f.id)));
+        // FIFO: 先頭ウィンドウから抽出
+        const { picked: drawn } = Engine.util.drawFromFront(dormantEntries, maxPicks * 2, rng, excludeIds);
+        for (const candId of drawn) {
           if (picked >= maxPicks || budget <= 0) break;
           const template = ALL_CHARS.find(c => c.id === candId);
           if (!template) continue;
@@ -5124,8 +5156,7 @@ const Engine = {
           const age = 17 + Engine.rng.int(rng, 0, 2);
           const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
           Engine.rival.pushUniqueFighter(roster, newFighter);
-          poolIds = poolIds.filter(id => id !== candId);
-          dormantEntries = dormantEntries.filter(e => (typeof e === 'object' ? e.id : e) !== candId);
+          dormantEntries = dormantEntries.filter(e => e.id !== candId);
           budget -= cost;
           picked++;
           events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
@@ -5146,7 +5177,6 @@ const Engine = {
         };
       });
       let dormantEntries = [...(state.dormantPool || [])];
-      let poolIds = dormantEntries.map(e => typeof e === 'object' ? e.id : e);
       const sOrgId = 'org_s';
       const sOrg = RIVAL_ORGS.find(o => o.id === sOrgId);
       if (!sOrg || !newAiOrgs[sOrgId]) return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
@@ -5155,6 +5185,7 @@ const Engine = {
       const countElite = () => roster.filter(f => Engine.rival.trainCapOVR(f) >= TC_THRESHOLD).length;
       let iterations = 0;
       const maxIterations = 5;
+      const REINFORCE_WINDOW = 15; // FIFO: 先頭15件内から最強を選択
       while (countElite() < TARGET_COUNT && iterations < maxIterations) {
         iterations++;
 
@@ -5163,14 +5194,16 @@ const Engine = {
         (state.roster || []).forEach(f => occupied.add(f.id));
         (state.freeAgents || []).forEach(f => occupied.add(f.id));
 
-        const available = poolIds.filter(id => !occupied.has(id));
-        if (available.length === 0) break;
+        // FIFO: 先頭ウィンドウ内から最強候補を選択
+        const eligible = dormantEntries.filter(e => !occupied.has(e.id));
+        if (eligible.length === 0) break;
+        const window = eligible.slice(0, REINFORCE_WINDOW);
 
-        const sorted = available.map(id => {
-          const template = ALL_CHARS.find(c => c.id === id);
+        const sorted = window.map(e => {
+          const template = ALL_CHARS.find(c => c.id === e.id);
           if (!template) return null;
           const potTotal = (template.pot.pw || 0) + (template.pot.sp || 0) + (template.pot.te || 0) + (template.pot.st || 0) + (template.pot.mn || 0);
-          return { id, potTotal, template };
+          return { id: e.id, potTotal, template };
         }).filter(Boolean).sort((a, b) => b.potTotal - a.potTotal);
 
         const candidate = sorted[0];
@@ -5194,8 +5227,7 @@ const Engine = {
         const recruitRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE120, iterations));
         const newFighter = Engine.rival.makeAIFighter(candidate.template, recruitRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
         Engine.rival.pushUniqueFighter(roster, newFighter);
-        poolIds = poolIds.filter(id => id !== candidate.id);
-        dormantEntries = dormantEntries.filter(e => (typeof e === 'object' ? e.id : e) !== candidate.id);
+        dormantEntries = dormantEntries.filter(e => e.id !== candidate.id);
 
         events.push(`${sOrg.emoji} ${sOrg.name}: ${candidate.template.name}(tcOVR ${Engine.rival.trainCapOVR(newFighter)})を戦略補強`);
       }
@@ -6273,30 +6305,22 @@ const Engine = {
       Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
       // 直前に除外したIDも除外候補から切り離す（just-removed IDの即再入場を防止）
       removed.forEach(r => faOccupied.add(r.id));
-      // v1.5: pool entries can be string IDs (legacy) or {id, age} objects
-      const eligiblePool = pool.filter(entry => {
-        const id = typeof entry === 'object' ? entry.id : entry;
-        const age = typeof entry === 'object' ? entry.age : null;
-        if (faOccupied.has(id)) return false;
-        // 年齢保持エントリは21歳超えで除外（プロ入りの機会を逃した）
-        if (age !== null && age >= 21) return false;
-        return true;
-      });
-      const addCount = Math.min(2, eligiblePool.length);
-      const shuffledPool = [...eligiblePool].sort(() => Engine.rng.float(faRng) - 0.5);
+      // FIFO: 年齢適格なプールエントリを先頭ウィンドウから抽出
+      // 年齢21+は除外（プロ入りの機会を逃した）、除外IDも除外
+      const ageExclude = new Set([...faOccupied]);
+      pool.forEach(e => { if (e.age >= 21) ageExclude.add(e.id); });
+      const addCount = Math.min(2, pool.filter(e => !ageExclude.has(e.id)).length);
+      const { picked: faDrawn } = Engine.util.drawFromFront(pool, addCount, faRng, ageExclude, 8);
       const added = [];
-      for (let i = 0; i < addCount && i < shuffledPool.length; i++) {
-        const entry = shuffledPool[i];
-        const cid = typeof entry === 'object' ? entry.id : entry;
-        const storedAge = typeof entry === 'object' ? entry.age : null;
+      for (const cid of faDrawn) {
+        const entry = pool.find(e => e.id === cid);
         const template = ALL_CHARS.find(c => c.id === cid);
-        if (!template) continue;
-        // v1.5: use stored age for returning FA fighters; fresh 18-24 for new entrants from initial pool
-        const age = storedAge !== null ? storedAge : (17 + Engine.rng.int(faRng, 0, 4));
+        if (!template || !entry) continue;
+        const age = entry.age || (17 + Engine.rng.int(faRng, 0, 4));
         const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
         fa.push(fighter);
         added.push(fighter);
-        pool = pool.filter(e => (typeof e === 'object' ? e.id : e) !== cid);
+        pool = pool.filter(e => e.id !== cid);
       }
       if (removed.length > 0 || added.length > 0) {
         s = { ...s, freeAgents: fa, dormantPool: pool };
@@ -6314,7 +6338,7 @@ const Engine = {
         (s.roster || []).forEach(c => emergOccupied.add(c.id));
         Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => emergOccupied.add(c.id)));
         curFA.forEach(c => emergOccupied.add(c.id));
-        curPool.forEach(e => emergOccupied.add(typeof e === 'object' ? e.id : e));
+        curPool.forEach(e => emergOccupied.add(e.id));
         // リサイクル: 引退5シーズン経過したキャラは候補に戻す
         const _emergRetiredSeasons = s.retiredSeasons || {};
         const _emergRecycleable = new Set();
@@ -6326,10 +6350,7 @@ const Engine = {
             emergOccupied.add(id);
           }
         });
-        const eligibleInPool = curPool.filter(e => {
-          const age = typeof e === 'object' ? e.age : null;
-          return age === null || age < 21;
-        }).length;
+        const eligibleInPool = curPool.filter(e => (e.age || 17) < 21).length;
         if (curFA.length === 0 && eligibleInPool < 3) {
           const available = ALL_CHARS.filter(c => !emergOccupied.has(c.id));
           if (available.length > 0) {
@@ -8059,17 +8080,14 @@ const Engine = {
       const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(state);
       // reservedDefIds: この抽選バッチ内で仮予約済みのID
       const reservedDefIds = new Set();
-      // v1.9c: dormantPool entries can be plain IDs or {id,age} objects — normalize to plain IDs
-      const dormantIds = [...(state.dormantPool || [])]
-        .map(e => typeof e === 'object' ? e.id : e)
-        .filter(id => !occupiedIds.has(id));
-      const poolShuffled = [...dormantIds].sort(() => Engine.rng.float(rng) - 0.5);
+      // FIFO: 先頭ウィンドウから抽出（古い選手優先）
+      const pool = (state.dormantPool || []).filter(e => e && e.id);
+      const { picked: poolDrawn } = Engine.util.drawFromFront(pool, count, rng, occupiedIds);
 
-      const poolMax = Math.min(count, poolShuffled.length);
       const usedFromPool = [];
-      for (let i = 0; i < poolMax; i++) {
-        const cid = poolShuffled[i];
-        if (reservedDefIds.has(cid)) continue; // 同一バッチ内の仮予約済みを除外
+      for (let i = 0; i < poolDrawn.length; i++) {
+        const cid = poolDrawn[i];
+        if (reservedDefIds.has(cid)) continue;
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template) continue;
         // Create fighter from template
@@ -9220,12 +9238,9 @@ const Engine = {
         {
           const poolRecycleRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA02));
           const agedPool = (s.dormantPool || []).map(entry => {
-            if (typeof entry === 'object' && entry.age !== undefined) {
-              const newAge = entry.age + 1;
-              if (newAge > 21) return { ...entry, age: 17 + Engine.rng.int(poolRecycleRng, 0, 2) };
-              return { ...entry, age: newAge };
-            }
-            return entry; // legacy string ID — age unknown, leave as-is
+            const newAge = (entry.age || 17) + 1;
+            if (newAge > 21) return { ...entry, age: 17 + Engine.rng.int(poolRecycleRng, 0, 2) };
+            return { ...entry, age: newAge };
           });
           s = { ...s, dormantPool: agedPool };
         }
@@ -9282,8 +9297,9 @@ const Engine = {
         // Player scout event: generate candidates
         const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
         const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
-        // Remove used pool IDs
-        const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
+        // Remove used pool IDs (FIFO: drawFromFrontで抽出済み→remainingはgenerateScoutReport内で計算)
+        const usedPoolSet = new Set(report.usedPoolIds);
+        const remainingPool = (s.dormantPool || []).filter(e => !usedPoolSet.has(e.id));
         s = {
           ...s,
           dormantPool: remainingPool,
@@ -9366,16 +9382,13 @@ const Engine = {
         {
           const MIN_ELIGIBLE = 6;
           const currentPool = s.dormantPool || [];
-          const eligibleCount = currentPool.filter(e => {
-            const age = typeof e === 'object' ? e.age : null;
-            return age === null || age < 21;
-          }).length;
+          const eligibleCount = currentPool.filter(e => (e.age || 17) < 21).length;
           if (eligibleCount < MIN_ELIGIBLE) {
             const occupiedIds = new Set();
             (s.roster || []).forEach(c => occupiedIds.add(c.id));
             Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupiedIds.add(c.id)));
             (s.freeAgents || []).forEach(c => occupiedIds.add(c.id));
-            currentPool.forEach(e => occupiedIds.add(typeof e === 'object' ? e.id : e));
+            currentPool.forEach(e => occupiedIds.add(e.id));
             // リサイクル: 引退5シーズン経過したキャラは候補に戻す
             const retiredSeasons = s.retiredSeasons || {};
             const recycleable = new Set();
@@ -9543,7 +9556,8 @@ const Engine = {
     if (s.week === SCOUT_EVENT_CFG.midseasonWeek && !(s.scoutsThisSeason >= 2)) {
       const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C02));
       const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
-      const remainingPool = (s.dormantPool || []).filter(id => !report.usedPoolIds.includes(id));
+      const midUsedSet = new Set(report.usedPoolIds);
+      const remainingPool = (s.dormantPool || []).filter(e => !midUsedSet.has(e.id));
       s = {
         ...s,
         dormantPool: remainingPool,

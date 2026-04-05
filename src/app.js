@@ -1399,6 +1399,10 @@ const Storage = {
       // v1.0e: poolIds → dormantPool migration
       if (G.poolIds && !G.dormantPool) G = { ...G, dormantPool: G.poolIds };
       if (!G.dormantPool) G = { ...G, dormantPool: Engine.rival.getDormantIds() };
+      // FIFO: dormantPool エントリを {id, age} 形式に統一（レガシー文字列ID対応）
+      if (G.dormantPool && G.dormantPool.length > 0 && typeof G.dormantPool[0] === 'string') {
+        G = { ...G, dormantPool: G.dormantPool.map(e => typeof e === 'string' ? { id: e, age: 17 } : e) };
+      }
       if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
 
       // v0.9b backward compat: offseason system
