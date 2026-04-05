@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-05（specs/ 再同期 Phase4完了）
+> 最終更新: 2026-04-06（specs/ 再同期 全完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,7 @@
 
 ## 現在の状態
 
-**specs/ 再同期 Phase4完了（2026-04-05）。** specs/8ファイルが2月20日で凍結さ���ていた問題を解消。差分レポート(docs/specs-drift-report.md)作成→全項目「実装に合わせて更新」方針決定→カテゴリB(既存spec更新)7��ァイル完了。battle-engine-spec v4.1b→v4.2(定数10項目+BigMatch Tier2+MQ§17)、rival-org-spec(AI週次処理化+Trust/Bond統合)、weekly-gameloop-spec(offWeek処理順+契約交渉+PPV)、scout(年齢/startRatio)、title(MQ+5/レンタル制限)、character-data(v1.4→v1.7リネーム)、finisher→archive移動。CLAUDE.mdにspecs/更新ルール追記。引き継��: docs/handoff-specs-resync.md。残作業: カテゴリA(アーカイブ→アクティブspec作成7件)+カテゴリC(新規spec作成6件)。
+**specs/ 再同期 全完了（2026-04-06）。** カテゴリA(アーカイブ→アクティブspec作成7件: trust/relationship/contract/promo/rental/growth/ppv)とカテゴリC(実装逆起こし新規spec作成6件: personality-archetype/large-event/venue-attendance/economy/coach/snapshot-notification)を完了。specs/は全20ファイルとなり、ゲームの全主要システムをカバー。引き継ぎ: docs/handoff-specs-resync.md。
 
 前回: **dormantPool FIFOキュー化 — 同じ選手の即リサイクル防止（2026-04-05）。** dormantPoolの選抜が全箇所ランダムシャッフルだったため、リサイクルされた選手が即座に再登場し「同じ選手ばかり回る」問題があった。(1)Engine.util.drawFromFrontヘルパー追加: キュー先頭ウィンドウ(count×3, min12)からランダム抽出。古い選手優先+バリエーション確保。(2)選抜4箇所FIFO化: generateScoutReport/aiScout/aiSeasonReinforce(先頭15件内最強)/FA市場ローテ。(3)フィルタバグ修正(L9286/L9546): {id,age}オブジェクトとstring IDの.includes()比較が常にfalseで使用済み選手がプールから除去されなかった。(4)エントリ形式統一: 全てを{id,age}オブジェクトに統一、typeof分岐ガード12箇所除去。(5)セーブマイグレーション: レガシーstring ID→{id,age:17}変換。リサイクル投入は全て末尾追加(変更不要)、年次加齢は配列位置維持(変更不要)。変更: management.js(drawFromFront+選抜4箇所+フィルタ2箇所+typeof除去)+app.js(マイグレーション)。auto-sim 100シーズン×2シード ALL CLEAR。
 
