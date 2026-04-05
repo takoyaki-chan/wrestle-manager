@@ -10,9 +10,9 @@
 
 ## 設計原則
 
-1. **データは本物、処理だけ軽い** — AI選手も能力値フルセットを持つ。ただし毎週処理せずシーズン末に一括更新
+1. **データは本物、処理もプレイヤーと同等** — AI選手も能力値フルセットを持ち、**毎週processAIWeekで処理**（v2.0: シーズン末一括→週次化）
 2. **半具体管理** — 個別選手が実在する。引き抜き・レンタル・抗争で「顔が見える」対戦相手
-3. **プレイヤー団体と同じ計算式** — 成長・衰退・引退に同じルールを適用。移籍時にデータが矛盾しない
+3. **プレイヤー団体と同じ計算式** — 成長・衰退・引退・Trust・Bond/Rivalryに同じルールを適用
 4. **スカウト競合との統合** — scout-system-spec §5.2 の競合率はAI団体の行動から導かれる
 5. **単一バランス** — 難易度選択なし。初期資金を多めに設定し、序盤の即死を回避
 
@@ -84,10 +84,13 @@
 
 | 項目 | 処理 |
 |------|------|
-| 成長 | 毎週処理しない。**シーズン末に一括更新**（§4） |
-| 怪我・コンディション | 管理しない |
-| 試合結果 | 個別シミュレートしない |
-| 通算成績 | 管理しない（プレイヤー団体に移籍後から記録開始） |
+| 成長 | **毎週processAIWeekで処理**（v2.0: シーズン末一括を廃止） |
+| 怪我・コンディション | **管理する**（processAIWeek内で怪我判定・回復・重症時引退判定） |
+| 試合結果 | **フルapplyMatchResult適用**（_lastMatchResults経由） |
+| Trust | **applyShowTrustで毎興行更新**（初期値50） |
+| Bond/Rivalry | **関係性システム全適用** |
+| 通算成績 | **管理する**（ゲーム開始時にgenerateBackstoryで経歴自動生成） |
+| lockerRoomMorale | **管理する**（初期値60、イベント・ケアで変動） |
 
 ### §3.3 保持しないもの
 
@@ -97,62 +100,66 @@
 
 ---
 
-## §4 シーズン末一括処理
+## §4 AI処理パイプライン（v2.0: 週次化）
 
-オフシーズン開始時に、各AI団体に対して以下を順番に実行する。
+### §4.0 週次処理: processAIWeek（毎週tickWeek内で実行）
+
+v2.0でシーズン末一括処理を廃止し、プレイヤーと同等の週次処理に移行。
 
 ```
-処理順序:
-  1. 加齢        — 全選手 +1歳
-  2. 衰退判定     — training-system-spec §5.3〜5.4 をそのまま適用
-  3. 成長処理     — 48週分の簡易一括計算（§4.1）
-  4. 人気変動     — 簡易計算（§4.2）
-  5. 引退判定     — scout-system-spec §7 をそのまま適用
-  6. AIスカウト   — §5
-  7. AI間移籍     — §7.3
-  8. org-rating再計算 — org-ranking-spec §1 と同じ計算式
+processAIWeek 処理内容:
+  1. 怪我回復・体調管理
+  2. 練習週: AI_COACH_CONFIG依存の成長計算（calcGrowthと同一式）
+  3. 興行週: AIプロモ→AI試合生成→タイトルマッチ管理
+  4. 試合後: applyMatchResult（Bond/Rivalry/ブレークスルー/スランプ等）
+  5. applyShowTrust（信頼度更新）
+  6. processAICare（trust<55の選手へのケア）
+  7. processAIWeeklyEvent（通知型/選択型イベント自動処理）
 ```
 
-### §4.1 成長処理（1シーズン一括）
+### §4.0a processAICare（v2.0新設）
 
-プレイヤー選手は毎週計算するが、AI選手は**1シーズン48週分をまとめて1回**で処理。使う公式はtraining-system-specと同じもの。
+| ティア | ケア確率 | 全体ケア確率 | 全体ケア強度 |
+|--------|---------|------------|------------|
+| S | 35% | 15% | 1.5 |
+| A | 20% | 8% | 1.2 |
+| B | 10% | 4% | 0.8 |
+
+- 個人ケア: trust<55の選手から最大2名、状況ベースで種別選択（休暇/メディア/激励/合宿）
+- trustΔ: +1.5〜+3.0、bond変動: +0.3〜+1.0
+- 全体ケア: 全員trust微増、全ペアbond +0.1〜+0.5
+
+### §4.1 シーズン末処理（offWeek 1〜4に分散）
+
+```
+offWeek 1: processSeasonEnd
+  1. 加齢 — 全選手+1歳
+  2. 衰退判定（wear蓄積・decay）
+  3. 引退判定
+  4. 契約退団判定（processAIContracts: trustベース）
+
+offWeek 3: AIスカウト + AIロスター補強
+offWeek 4: AI間移籍 + FA獲得
+```
+
+### §4.2 AI成長モデル（v2.0: 週次・プレイヤー同等）
+
+**aiSeasonGrowth一括計算は廃止**。processAIWeek内で毎週calcGrowthと同一式で計算。
 
 ```javascript
-function aiSeasonGrowth(fighter, orgTier) {
-  if (fighter.age >= 35) return  // 成長完全停止（training-spec §5.2）
-
-  let ageMul = ageMultiplier(fighter.age)  // training-spec §5.2 そのまま
-  let coachMul = AI_COACH_TABLE[orgTier]   // §4.3
-  let facilityMul = AI_FACILITY_TABLE[orgTier]  // §4.3
-
-  // 1シーズンの練習回数を概算
-  let trainWeeks = 30  🔧  // 48週中、練習は約28〜32週
-
-  for (each param in [PWR, SPD, TEC, STA]) {
-    let styleGain = fighter.styleGainTable[param]  // training-spec §3.1
-    let convFactor = convergenceFactor(
-      fighter.current[param],
-      fighter.trainCap[param],
-      fighter.notionValue[param]
-    )  // training-spec §2.4 そのまま
-
-    // 1週あたりの期待成長量
-    let weeklyGain = styleGain * ageMul * coachMul * facilityMul * convFactor
-
-    // シーズン合計（週次ランダムは平均1.0に収束するので省略、シーズン全体にブレを1回）
-    let seasonVariance = randomRange(0.75, 1.25)  🔧
-    let totalGain = weeklyGain * trainWeeks * seasonVariance
-
-    // 試合成長（年間約24試合想定）
-    let matchGrowth = 0.2 * 24 * convFactor * randomRange(0.5, 1.5)  🔧
-
-    fighter.current[param] = min(
-      fighter.trainCap[param],
-      fighter.current[param] + round(totalGain + matchGrowth)
-    )
-  }
-}
+// AI_COACH_CONFIG（data.js）: ティア別コーチ環境
+const AI_COACH_CONFIG = {
+  S: { ace: { coachMul: 1.25, intensiveRate: 0.30, practiceRate: 0.85 },
+       prospect: { coachMul: 1.18, intensiveRate: 0.20, practiceRate: 0.85 },
+       regular: { coachMul: 1.15, intensiveRate: 0.10, practiceRate: 0.75 } },
+  A: { ace: { coachMul: 1.20, intensiveRate: 0.20, practiceRate: 0.80 },
+       regular: { coachMul: 1.10, intensiveRate: 0.10, practiceRate: 0.55 } },
+  B: { ace: { coachMul: 1.12, intensiveRate: 0.10, practiceRate: 0.55 },
+       regular: { coachMul: 1.08, intensiveRate: 0, practiceRate: 0.45 } }
+};
 ```
+
+成長式はプレイヤーと同じ: `baseLearning(2.0) × (remaining/trainCap) × ageMul × coachMul × variance`
 
 ### §4.2 人気変動（シーズン末一括）
 
@@ -744,3 +751,5 @@ economy-system-spec §7.1 の初期資金を変更。
 | 日付 | 内容 |
 |------|------|
 | 2026-02-19 | v1.0 初版。AI団体3つ（EMPRESS/NOVA/CRESCENT）、半具体管理、エース認定、引き抜き・レンタル・抗争イベント、初期資金5,000万で設計 |
+
+<!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->
