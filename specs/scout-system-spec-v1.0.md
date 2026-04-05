@@ -71,10 +71,10 @@
 
 | 年齢帯 | 出現率 🔧 | 想定背景 |
 |:------:|:-------:|---------|
-| 15〜16歳 | 40% | 中学卒業直後。最も多い入口 |
-| 17歳 | 25% | 高校在学中に才能発見 |
-| 18〜19歳 | 20% | 高校卒業組 |
-| 20〜22歳 | 15% | 遅咲き。大学・社会人から転身 |
+| 16〜17歳 | 40% | 高校在学中〜卒業直後。最も多い入口 |
+| 18歳 | 25% | 高校卒業後に才能発見 |
+| 19歳 | 20% | 高校卒業組 |
+| 20歳 | 15% | 遅咲き |
 
 ### §3.2 Notion値の生成
 
@@ -313,16 +313,16 @@ training-system-spec §1.3 の公式をそのまま適用。
 ```javascript
 function getStartValue(notionValue, entryAge) {
   let startRatio
-  if (entryAge <= 17)      startRatio = 0.55 + random(0, 0.10)  🔧  // 中高生
-  else if (entryAge <= 20)  startRatio = 0.65 + random(0, 0.10)  🔧
-  else if (entryAge <= 24)  startRatio = 0.75 + random(0, 0.10)  🔧
-  else                      startRatio = 0.85 + random(0, 0.10)  🔧
+  if (entryAge <= 18)      startRatio = 0.40 + random(0, 0.30)  // 若手: 0.40〜0.70
+  else if (entryAge <= 20)  startRatio = 0.50 + random(0, 0.25)  // 中堅: 0.50〜0.75
+  else                      startRatio = 0.75 + random(0, 0.10)  // ベテラン: 0.75〜0.85
 
-  return round(notionValue × startRatio)
+  // MNTはNotion値をそのまま使用（年齢補正なし）
+  return (param === 'mn') ? notionValue : round(notionValue × startRatio)
 }
 ```
 
-**入団年齢15歳への対応**: training-spec §1.3 の最低帯を「17歳以下」としているため、15歳も同じ startRatio = 0.55〜0.65 が適用される。15歳入団は最も現在値が低い＝最も長期育成が必要な投資。
+**入団年齢16歳への対応**: 最若年は16歳。startRatioの下限が0.40と低いため、16歳入団は現在値が非常に低い＝最も長期育成が必要な投資。上限0.70はランダム幅が広く、当たり外れが大きい。
 
 ### §6.2 trainCapの生成
 
@@ -522,7 +522,7 @@ function checkVoluntaryRetirement(fighter) {
 |---|------|------|
 | 1 | 開催時期 | 年2回。オフシーズン第2週 + Q3第5週 |
 | 2 | 候補人数 | 第1回8〜10名、第2回4〜6名 |
-| 3 | 年齢分布 | 15〜16歳が最多（40%）、20〜22歳はレア（15%） |
+| 3 | 年齢分布 | 16〜17歳が最多（40%）、20歳はレア（15%） |
 | 4 | 能力生成 | Notion値ランダム生成。逸材5%、有望20%、普通45%、素材30% |
 | 5 | 潜在値 | 既存公式（min(185, round(Notion値×1.3+60))）準拠 |
 | 6 | 情報開示 | レーダーチャート概形＋成長タイプ4段階。数値・潜在値は非公開 |
@@ -623,3 +623,5 @@ function checkVoluntaryRetirement(fighter) {
 | 日付 | 内容 |
 |------|------|
 | 2026-02-19 | v1.0 初版作成。構造確定、数値は調整可能パラメータとしてマーク |
+
+<!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->
