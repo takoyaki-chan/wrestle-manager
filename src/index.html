@@ -1907,14 +1907,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .ppvmc-list{display:flex;flex-direction:column;gap:6px;position:relative}
 .ppvmc-card{display:flex;align-items:stretch;
   background:linear-gradient(135deg,rgba(20,20,40,0.95),rgba(10,10,25,0.98));
-  border:1px solid #2a2a45;border-radius:8px;overflow:hidden;height:180px;
+  border:1px solid #2a2a45;border-radius:8px;overflow:visible;height:180px;
   cursor:pointer;transition:border-color 0.3s,transform 0.15s;position:relative}
 .ppvmc-card:hover{border-color:#daa520;transform:scale(1.01)}
 .ppvmc-card.is-main{border-color:#daa520;height:220px;box-shadow:0 0 20px rgba(218,165,32,0.15)}
-.ppvmc-fighter{flex:0 0 200px;position:relative;overflow:visible;z-index:2}
+.ppvmc-fighter{flex:0 0 200px;position:relative;overflow:visible}
 .ppvmc-card.is-main .ppvmc-fighter{flex:0 0 240px}
-.ppvmc-fighter img{position:absolute;bottom:0;height:180px;width:auto;max-width:none;object-fit:contain}
-.ppvmc-card.is-main .ppvmc-fighter img{height:220px}
+.ppvmc-fighter img{position:absolute;bottom:0;height:280px;width:auto;max-width:none;object-fit:contain;z-index:3}
+.ppvmc-card.is-main .ppvmc-fighter img{height:340px}
 .ppvmc-fighter.left img{transform:scaleX(-1);right:0}
 .ppvmc-fighter.right img{left:0}
 .ppvmc-center{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;

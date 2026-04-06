@@ -4833,8 +4833,8 @@ function showPPVMatchCardIntro(onStart) {
       h2hText = `通算: ${match.left.name} ${recForLeft.wins}勝 - ${recForLeft.losses}勝 ${match.right.name}`;
     }
 
-    // z-index: 下の段(前座)ほど高い（上のカードの画像が下のカードの裏に隠れる）
-    const zIdx = total - di;
+    // z-index: 上の段(メイン)ほど高い（上のカードの画像が下のカードの上に重なる）
+    const zIdx = di + 1;
 
     cardsHtml += `
       <div class="ppvmc-card${mainClass}" style="z-index:${zIdx}">
