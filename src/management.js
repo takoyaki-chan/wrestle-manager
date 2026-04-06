@@ -9141,14 +9141,28 @@ const Engine = {
 
       } else if (offWeek === 3) {
         // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
-        // 旧フロー(aiScout→aiSeasonReinforce→generateScoutReport)を廃止
-        // 新フロー: 全候補を共通プールから生成 → セリ交渉
+        // 新フロー: 全候補を共通プールから生成 → 関心マーク決定 → セリ交渉
 
         // 1. Generate scout candidates (expanded pool size)
         const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
         const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
         const usedPoolSet = new Set(report.usedPoolIds);
         const remainingPool = (s.dormantPool || []).filter(e => !usedPoolSet.has(e.id));
+
+        // 2. Pre-compute interest marks for each candidate (draft-negotiation-spec §3.2)
+        const interestRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xDFA3));
+        const draftInterests = {};
+        for (const cand of report.candidates) {
+          const candInterests = [];
+          for (const orgId of ['org_s', 'org_a', 'org_b']) {
+            const iRng = Engine.rng.create(Engine.rng.derive(
+              interestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
+            ));
+            candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+          }
+          draftInterests[cand.id] = candInterests;
+        }
+
         s = {
           ...s,
           dormantPool: remainingPool,
@@ -9157,6 +9171,7 @@ const Engine = {
           scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
           scoutEventType: 'offseason',
           scoutsThisSeason: (s.scoutsThisSeason || 0),
+          _draftInterests: draftInterests,
         };
         events.push('📅 オフシーズン第3週: スカウトレポート到着！');
         events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
@@ -9407,6 +9422,19 @@ const Engine = {
       const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
       const midUsedSet = new Set(report.usedPoolIds);
       const remainingPool = (s.dormantPool || []).filter(e => !midUsedSet.has(e.id));
+      // Pre-compute interest marks for midseason draft
+      const midInterestRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xDFA4));
+      const midDraftInterests = {};
+      for (const cand of report.candidates) {
+        const candInterests = [];
+        for (const orgId of ['org_s', 'org_a', 'org_b']) {
+          const iRng = Engine.rng.create(Engine.rng.derive(
+            midInterestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
+          ));
+          candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+        }
+        midDraftInterests[cand.id] = candInterests;
+      }
       s = {
         ...s,
         dormantPool: remainingPool,
@@ -9414,6 +9442,7 @@ const Engine = {
         scoutPicks: [],
         scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
         scoutEventType: 'midseason',
+        _draftInterests: midDraftInterests,
       };
       events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
       return { state: { ...s, weekPhase: 'scoutEvent' }, events };

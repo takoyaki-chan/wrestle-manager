@@ -3962,6 +3962,107 @@ function releaseFighter(id) { App.releaseFighter(id); }
 function scoutPick(id) { App.scoutEventPick(id); }
 function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
 function scoutFinish() { App.scoutEventFinish(); }
+// draft-negotiation-spec: 「交渉開始」ボタン → セリエンジン実行
+function startDraftNegotiation() {
+  if (!G._draftInterests || !G.scoutCandidates) return;
+  const candidates = G.scoutCandidates;
+  const maxPicks = G.scoutMaxPicks || 4;
+
+  // 仮実装: 常に標準で粘る。UI交渉画面はStep 4で実装
+  const dummyPlayerFn = (candidateId, round, currentBid, interests) => {
+    // ロスターキャップ/資金チェック
+    const ownCount = G.roster.filter(c => !c.isRental).length;
+    if (ownCount + (G.scoutPicks || []).length >= (G.rosterCap || 16)) return 'drop';
+    if (currentBid > G.funds * 0.35) return 'drop';
+    if (round > 10) return 'drop';
+    return 'standard';
+  };
+
+  const draftRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xDFA0));
+  const draftResult = Engine.draftNegotiation.runFullDraft(candidates, G, dummyPlayerFn, draftRng);
+
+  // 結果を適用
+  let newRoster = [...G.roster];
+  let newFunds = G.funds;
+  let newAiOrgs = {};
+  Object.keys(G.aiOrgs || {}).forEach(k => {
+    newAiOrgs[k] = { ...G.aiOrgs[k], roster: [...(G.aiOrgs[k]?.roster || [])] };
+  });
+  let newFA = [...(G.freeAgents || [])];
+  let newDormant = [...(G.dormantPool || [])];
+  const log = [...(G.gameLog || [])];
+  const picks = [];
+
+  const normFighter = (f) => ({
+    ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
+    wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
+    injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+    intensive: false, intensiveWeeks: 0,
+  });
+
+  let playerPicks = 0;
+  for (const r of draftResult.results) {
+    const clean = { ...r.candidate };
+    delete clean._notion; delete clean._estimate; delete clean._isSeed;
+    delete clean._hasCompetition;
+    const tierLabel = Engine.scout.getTierConfig(clean.assessedTier || 'material').label;
+
+    if (r.winner === 'player') {
+      if (newFunds >= r.finalBid && playerPicks < maxPicks && newRoster.filter(c => !c.isRental).length < (G.rosterCap || 16)) {
+        let signed = normFighter(clean);
+        signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+        signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
+        signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+        newRoster.push(signed);
+        newFunds -= r.finalBid;
+        playerPicks++;
+        picks.push(clean.id);
+        log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${r.finalBid}万 (R${r.rounds})`);
+      } else {
+        newFA.push(normFighter(clean));
+        log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
+      }
+    } else if (r.winner && r.winner !== 'player') {
+      const orgData = newAiOrgs[r.winner];
+      if (orgData) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: r.winner }));
+      }
+      const orgInfo = RIVAL_ORGS.find(o => o.id === r.winner);
+      log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : r.winner} (${r.finalBid}万 R${r.rounds})`);
+    } else {
+      newFA.push(normFighter(clean));
+      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
+    }
+  }
+
+  // EMPRESS安全網
+  for (const ev of draftResult.empressReinforceEvents) {
+    if (ev.type === 'empressReinforce' && ev.fighter) {
+      const orgData = newAiOrgs['org_s'];
+      if (orgData) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter(ev.fighter));
+        newDormant = newDormant.filter(e => e.id !== ev.dormantIdRemoved);
+        log.push(`📰 業界紙報道: ${ev.template.name}、EMPRESS GRAND と電撃契約`);
+      }
+    }
+  }
+
+  G = {
+    ...G,
+    roster: newRoster,
+    funds: newFunds,
+    aiOrgs: newAiOrgs,
+    freeAgents: newFA,
+    dormantPool: newDormant,
+    scoutCandidates: null,
+    scoutPicks: picks,
+    _draftInterests: null,
+    _draftNegotiationStarted: true,
+    gameLog: log,
+  };
+  refreshAll();
+  showScreen('scoutEvent');
+}
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }
 function fireCoach(id) { App.fireCoach(id); }

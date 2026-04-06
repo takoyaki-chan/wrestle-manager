@@ -3075,6 +3075,262 @@ function renderScout() {
   el.innerHTML = html;
 }
 
+// ── Draft Candidate List (週刊グラップル ドラフト速報) ──────────────
+// draft-negotiation-spec §7.1 / docs/draft-mockup-newspaper-v4.html
+function _renderDraftCandidateList(candidates, context) {
+  const interests = context.draftInterests || {};
+  const maxPicks = context.maxPicks || 4;
+  const funds = context.funds || 0;
+  const season = context.season || 1;
+  const eventType = context.eventType || 'offseason';
+  const weekLabel = eventType === 'offseason' ? `シーズン${season} オフ第3週` : `シーズン${season} 第${context.week || '?'}週`;
+
+  // Sort by assessedValue desc
+  const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
+
+  // Split into tiers
+  const top = sorted.filter(c => c.assessedTier === 'superElite' || c.assessedTier === 'elite').slice(0, 3);
+  const mid = sorted.filter(c => c.assessedTier === 'promising' && !top.includes(c)).slice(0, 5);
+  const rest = sorted.filter(c => !top.includes(c) && !mid.includes(c));
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const ROLE_JP = { Babyface: 'babyface', Heel: 'heel', Neutral: 'neutral' };
+  const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
+  const ORG_ABBR = { org_s: 'EMP', org_a: 'NOV', org_b: 'CRE' };
+  const ORG_FULL = { org_s: 'EMPRESS', org_a: 'NOVA', org_b: 'CRESCENT' };
+
+  function _markHtml(candId, orgId, isFull) {
+    const ci = (interests[candId] || []).find(i => i.orgId === orgId);
+    if (!ci || !ci.participating) return isFull
+      ? `<div class="feat-org-mark mark-none">—</div>`
+      : `<span class="short-mark mark-none">—</span>`;
+    const m = MARK_DISPLAY[ci.displayMark] || MARK_DISPLAY.osae;
+    return isFull
+      ? `<div class="feat-org-mark ${m.cls}">${m.text}</div>`
+      : `<span class="short-mark ${m.cls}">${m.text}</span>`;
+  }
+
+  function _miniStats(c) {
+    const est = c._estimate || { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn };
+    const stats = [
+      { key: 'PWR', val: est.pw || 0 },
+      { key: 'SPD', val: est.sp || 0 },
+      { key: 'TEC', val: est.te || 0 },
+      { key: 'STA', val: est.st || 0 },
+      { key: 'MNT', val: est.mn || 0 },
+    ];
+    return `<div class="draft-mini-stats">${stats.map(s =>
+      `<div class="draft-stat-block"><div class="draft-stat-key">${s.key}</div><div class="draft-stat-bar"><div class="draft-stat-bar-fill" style="width:${Math.min(100, s.val)}%"></div></div><div class="draft-stat-num">${s.val}</div></div>`
+    ).join('')}</div>`;
+  }
+
+  function _scoutComment(c) {
+    const tier = c.assessedTier || 'material';
+    const style = STYLE_JP[c.style] || c.style;
+    const comments = {
+      superElite: `${c.age}歳にして既に完成度の高い${style}。複数の能力が標準を大きく上回る。今年の業界最大の話題人物。`,
+      elite: `${style}としての基礎が光る。長期育成で看板候補に化ける可能性を秘めている。`,
+      promising: `着実な成長が見込める堅実なタイプ。${style}として十分な素質あり。`,
+    };
+    return comments[tier] || '';
+  }
+
+  function _portrait(c, size) {
+    const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(c.id) : '';
+    const initial = (c.name || '?').charAt(0);
+    if (url) {
+      return `<img src="${url}" alt="" style="width:${size}px;height:${size}px;border-radius:10px;object-fit:cover;border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);flex-shrink:0;">`;
+    }
+    return `<div style="width:${size}px;height:${size}px;border-radius:10px;background:linear-gradient(135deg,#d4c4a0,#b8a07a);border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;font-weight:900;color:#1f1710;flex-shrink:0;">${initial}</div>`;
+  }
+
+  // Find lead headline name (top candidate)
+  const leadName = top[0] ? top[0].name : '注目の新人';
+  const totalCount = candidates.length;
+
+  let html = '';
+
+  // ── Paper container ──
+  html += `<div style="max-width:940px;margin:12px auto;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
+
+  // ── Title bar ──
+  html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
+    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
+  </div>`;
+
+  // ── Feature header ──
+  html += `<div style="text-align:center;padding:18px 22px 16px;border-bottom:3px double rgba(95,69,35,0.35);">
+    <div style="display:inline-block;font-size:11px;letter-spacing:4px;color:#fff;background:#8b1a1a;padding:4px 14px;font-weight:700;margin-bottom:12px;">◆ ドラフト速報 ◆</div>
+    <div style="font-size:28px;font-weight:900;color:#1f1710;line-height:1.25;letter-spacing:1px;margin-bottom:8px;">${season + 2024}年度 新人交渉、本日開幕</div>
+    <div style="font-size:13px;color:#3a2e1c;line-height:1.7;max-width:640px;margin:0 auto;font-weight:500;">
+      若き才能${totalCount}名が業界の門を叩く。${top[0] ? `最大の注目は${top[0].age}歳の${TIER_LABELS[top[0].assessedTier] || '注目株'}・${leadName}。` : ''}複数団体が本気の獲得を狙う。
+    </div>
+  </div>`;
+
+  // ── TOP 3 Feature Grid ──
+  if (top.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div class="news-sec-label">注目の上位指名候補 — ${top.length}名</div>
+      <div style="display:grid;grid-template-columns:${top.length >= 3 ? '1.5fr 1fr 1fr' : top.length === 2 ? '1fr 1fr' : '1fr'};gap:16px;">`;
+    top.forEach((c, idx) => {
+      const isLead = idx === 0;
+      const portraitSize = isLead ? 120 : 80;
+      const nameSize = isLead ? '22px' : '17px';
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      html += `<div style="${idx > 0 ? 'border-left:1px solid rgba(95,69,35,0.18);padding-left:14px;' : ''}">
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+          ${_portrait(c, portraitSize)}
+          <div style="flex:1;min-width:0;">
+            <span style="display:inline-block;font-size:9px;letter-spacing:1px;color:#fff;background:#1f1710;padding:1px 7px;font-weight:700;margin-bottom:5px;">PICK NO. ${String(idx + 1).padStart(2, '0')}</span>
+            <div style="font-size:${nameSize};font-weight:900;color:#1f1710;line-height:1.2;margin-bottom:5px;">${c.name}</div>
+            <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
+              <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
+              ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・<strong>' + (ROLE_JP[c.role] || c.role) + '</strong>' : ''}<br>
+              推定契約金 <strong>¥${baseCost.toLocaleString()}万</strong>
+            </div>
+          </div>
+        </div>
+        ${_miniStats(c)}
+        ${_scoutComment(c) ? `<div style="font-size:12px;line-height:1.7;color:#3a2e1c;margin:8px 0 0;padding:8px 12px;background:rgba(200,190,170,0.22);border-radius:6px;border-left:3px solid #9a7020;">
+          <div style="font-size:9px;letter-spacing:1px;color:#9a7020;font-weight:700;margin-bottom:3px;">記者の目</div>
+          ${_scoutComment(c)}
+        </div>` : ''}
+        <div style="display:flex;gap:8px;padding:8px 0 0;margin-top:8px;border-top:1px solid rgba(95,69,35,0.12);">
+          ${['org_s','org_a','org_b'].map(oid => `<div style="flex:1;text-align:center;padding:2px;">
+            <div style="font-size:9px;letter-spacing:0.5px;color:#7a5b32;font-weight:700;margin-bottom:1px;">${ORG_FULL[oid]}</div>
+            ${_markHtml(c.id, oid, true)}
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── MID Grid (有望) ──
+  if (mid.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">有望株 — 育成価値の高い${mid.length}名</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;">`;
+    mid.forEach((c, idx) => {
+      const globalIdx = top.length + idx + 1;
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      html += `<div style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
+        ${_portrait(c, 56)}
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px;">
+            <span style="font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">No.${String(globalIdx).padStart(2, '0')}</span>
+            <span style="font-size:15px;font-weight:900;color:#1f1710;">${c.name}</span>
+          </div>
+          <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
+            <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
+            ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・' + (ROLE_JP[c.role] || c.role) : ''}<br>
+            推定契約金 <strong style="color:#1f1710;">¥${baseCost.toLocaleString()}万</strong>
+          </div>
+          <div style="display:flex;gap:12px;padding-top:4px;border-top:1px dotted rgba(95,69,35,0.18);">
+            ${['org_s','org_a','org_b'].map(oid => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">
+              ${ORG_ABBR[oid]} ${_markHtml(c.id, oid, false)}
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── Short Table (原石+素材) ──
+  if (rest.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">その他指名候補 — ${rest.length}名</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:30px;"></th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:40px;"></th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);">名前</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">歳</th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:48px;">分類</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:62px;">契約金</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">EMP</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">NOV</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">CRE</th>
+        </tr></thead><tbody>`;
+    rest.forEach((c, idx) => {
+      const globalIdx = top.length + mid.length + idx + 1;
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      html += `<tr>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">${String(globalIdx).padStart(2, '0')}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);">${_portrait(c, 32)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span style="font-size:12px;font-weight:900;color:#1f1710;">${c.name}</span><div style="font-size:9px;color:#7a5b32;">${STYLE_JP[c.style] || c.style}</div></td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#1f1710;font-size:13px;">${c.age}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span></td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">¥${baseCost.toLocaleString()}万</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_s', false)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_a', false)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_b', false)}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  // ── Footer bar ──
+  html += `<div style="margin:0 22px;padding:14px 0 16px;border-top:2px double rgba(95,69,35,0.35);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;gap:24px;">
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks} NAMES</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
+    </div>
+    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">交渉開始 →</button>
+  </div>`;
+
+  // ── Legend ──
+  html += `<div style="padding:10px 22px 16px;font-size:10px;color:#7a5b32;text-align:center;line-height:1.7;border-top:1px solid rgba(95,69,35,0.12);">
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">◎</strong> 本命 &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">○</strong> 対抗 &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">△</strong> 押さえ &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">—</strong> 興味なし<br>
+    各団体の関心は事前情報。実際の交渉では予測と異なる動きを見せることもある。
+  </div>`;
+
+  html += `</div>`; // end paper
+
+  return html;
+}
+
+// Mini stats CSS (injected once) — draft-negotiation-spec §7.1
+(function _injectDraftCSS() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('draft-newspaper-css')) return;
+  const style = document.createElement('style');
+  style.id = 'draft-newspaper-css';
+  style.textContent = `
+.draft-mini-stats { display:flex; gap:5px; margin-top:8px; padding:7px 0; border-top:1px dashed rgba(95,69,35,0.18); border-bottom:1px dashed rgba(95,69,35,0.18); }
+.draft-stat-block { flex:1; text-align:center; }
+.draft-stat-key { font-size:8px; letter-spacing:0.5px; color:#7a5b32; font-weight:700; }
+.draft-stat-bar { height:4px; background:rgba(95,69,35,0.12); margin:3px 0 1px; border-radius:2px; overflow:hidden; }
+.draft-stat-bar-fill { height:100%; background:#5b4b34; border-radius:2px; }
+.draft-stat-num { font-size:11px; color:#1f1710; }
+.tier-tag { display:inline-block; font-size:11px; font-weight:900; padding:1px 7px; margin-right:5px; border:1px solid currentColor; border-radius:3px; letter-spacing:0.5px; }
+.tier-tag.t-superElite { color:#8b1a1a; background:rgba(139,26,26,0.08); }
+.tier-tag.t-elite { color:#9a5a10; background:rgba(154,90,16,0.08); }
+.tier-tag.t-promising { color:#1f4d80; background:rgba(31,77,128,0.08); }
+.tier-tag.t-raw { color:#1a7a50; background:rgba(26,122,80,0.08); }
+.tier-tag.t-material { color:#6b5b3a; background:rgba(107,91,58,0.08); }
+.mark-bullseye { color:#8b1a1a; font-weight:900; }
+.mark-contender { color:#1f4d80; font-weight:900; }
+.mark-outside { color:#7a5b32; font-weight:900; }
+.mark-none { color:rgba(95,69,35,0.2); font-weight:900; }
+.feat-org-mark { font-size:17px; font-weight:900; line-height:1; }
+.short-mark { font-size:13px; font-weight:900; }
+  `;
+  document.head.appendChild(style);
+})();
+
 // ── Scout Event Rendering ─────────────────────────────────
 function renderScoutEvent() {
   const el = document.getElementById('scoutEventContent');
@@ -3085,6 +3341,22 @@ function renderScoutEvent() {
   const discount = 0;
   const orgPop = G.orgPop || 0;
   const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+
+  // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
+  if (G._draftInterests && !G._draftNegotiationStarted) {
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = '📰 ドラフト速報';
+    el.innerHTML = _renderDraftCandidateList(candidates, {
+      draftInterests: G._draftInterests,
+      maxPicks: G.scoutMaxPicks || 4,
+      funds: G.funds,
+      season: G.season,
+      week: G.week,
+      orgPop: G.orgPop || 0,
+      eventType: G.scoutEventType || 'offseason',
+    });
+    return;
+  }
 
   const titleEl = document.getElementById('scoutEventTitle');
   if (titleEl) titleEl.textContent = `🔍 ${eventLabel} — 候補 ${candidates.length}名`;
@@ -3349,6 +3621,13 @@ function renderSave() {
       </div>`;
     }
   }
+
+  // Browser storage notice
+  html += `<div style="margin-top:16px;padding:10px 14px;background:rgba(253,203,110,0.06);border:1px solid rgba(253,203,110,0.15);border-radius:6px;font-size:11px;color:var(--text-sub);line-height:1.7">
+    ⚠️ セーブデータは<span style="color:#fdcb6e;font-weight:700">ブラウザのローカルストレージ</span>に保存されています。<br>
+    キャッシュクリアやブラウザの再インストールで<span style="color:#e17055;font-weight:700">データが消失</span>する場合があります。<br>
+    大切なデータは「📥 書出」でファイルにバックアップしてください。
+  </div>`;
 
   // Data Transfer section
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
