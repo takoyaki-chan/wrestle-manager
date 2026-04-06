@@ -4129,10 +4129,11 @@ function startDraftNegotiation() {
     },
   };
   _draftSfx('gong'); // ① 交渉開幕ゴング
-  // BGM: playForStateがshowScreen経由でtensionを維持（_draftInterests/_draftNegotiation条件）
   console.log('[WM Draft] 交渉開始');
   refreshAll();
   showScreen('scoutEvent');
+  // BGM: showScreen内のplayForStateの後に明示的にtensionを再生（確実に維持）
+  try { Audio.bgm.play('tension'); } catch(e) {}
 }
 
 // ドラフト完了処理(まとめ記事生成+EMPRESS安全網+クリーンアップ)
@@ -4271,6 +4272,7 @@ function draftPlayerAction(action) {
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     refreshAll();
     showScreen('scoutEvent');
+    try { Audio.bgm.play('tension'); } catch(e) {}
     return;
   }
 
@@ -4283,6 +4285,7 @@ function draftPlayerAction(action) {
   G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
   refreshAll();
   showScreen('scoutEvent');
+  if (!ns.finished) try { Audio.bgm.play('tension'); } catch(e) {}
 }
 
 // AI観戦モード
@@ -4428,6 +4431,7 @@ function draftNextCandidate() {
   };
   refreshAll();
   showScreen('scoutEvent');
+  try { Audio.bgm.play('tension'); } catch(e) {}
 }
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }

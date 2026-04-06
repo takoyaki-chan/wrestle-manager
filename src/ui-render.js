@@ -3467,9 +3467,7 @@ function _renderDraftNegotiation() {
       : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
     </div>
     <div class="dn-card-heat-section">
-      <div class="dn-card-heat-title">粘り度</div>
-      <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-steady" style="width:55%"></div></div>
-      <div class="dn-card-heat-label dn-heat-steady">${playerDropped ? '離脱済み' : 'あなたの判断'}</div>
+      <div class="dn-card-heat-label" style="color:rgba(232,230,224,0.3);margin-top:6px;">${playerDropped ? '離脱済み' : '— あなたの判断 —'}</div>
     </div>
   </div>`;
 
