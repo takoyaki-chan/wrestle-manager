@@ -4494,6 +4494,20 @@ function draftNextCandidate() {
       newFunds -= ns.finalBid;
       acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
+
+      // 獲得時リアクション（顔写真付きポップアップ）
+      try {
+        const signingLine = (typeof getSigningLine === 'function')
+          ? getSigningLine(clean, 'competition_won')
+          : `${clean.name}との契約が成立した`;
+        G._pendingDraftSigningPopup = {
+          type: 'fighter', id: clean.id, name: clean.name,
+          tone: 'positive', message: signingLine,
+          detail: `📝 契約金: ${ns.finalBid.toLocaleString()}万 [${tierLabel}]`
+        };
+      } catch (e) {
+        console.warn('[WM Draft] signing line fallback:', e);
+      }
     } else {
       returnToPool = true;
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
@@ -4569,6 +4583,13 @@ function draftNextCandidate() {
   };
   refreshAll();
   _showScreenNoBgm('scoutEvent');
+
+  // 獲得時ポップアップ（showScreen後に遅延表示）
+  if (G._pendingDraftSigningPopup) {
+    const popup = G._pendingDraftSigningPopup;
+    G = { ...G, _pendingDraftSigningPopup: null };
+    setTimeout(() => showEventPopup(popup), 50);
+  }
 }
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }
