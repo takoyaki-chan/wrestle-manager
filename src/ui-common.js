@@ -3964,8 +3964,10 @@ function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
 function scoutFinish() { App.scoutEventFinish(); }
 // draft SFX helper
 // ドラフトSFX — 独立Audioオブジェクトで再生（FileBGMを使うとBGMが止まるため）
+// 音量はミキサー経由: baseVol × sfxMasterVol。全体ミュート時は無音。
 function _draftSfx(type) {
   try {
+    if (Audio.muted) return; // 全体ミュート時はSFXも無音
     if (type === 'click') { Audio.play('click'); return; }
     const sfxMap = {
       gong:    { src: '../bgm/f08_gong_start_v2.mp3', vol: 0.15 },
@@ -3978,7 +3980,9 @@ function _draftSfx(type) {
     const cfg = sfxMap[type];
     if (!cfg) return;
     const a = new window.Audio(cfg.src);
-    a.volume = Math.min(1.0, cfg.vol * (Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1));
+    // ミキサー適用: baseVol × sfxMasterVol（ユーザーのSE音量スライダー）
+    const masterVol = Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1;
+    a.volume = Math.min(1.0, cfg.vol * masterVol);
     if (cfg.rate) a.playbackRate = cfg.rate;
     a.play().catch(() => {});
   } catch(e) {}
@@ -4087,7 +4091,7 @@ function startDraftNegotiation() {
   if (uiQueue.length === 0) {
     // 全候補処理完了 → まとめ記事 → 終了
     G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
-    try { Audio.fileBgm.play('../bgm/bgm_management_v1.mp3', { loop: true, volume: 0.12 }); Audio.bgm._current = 'management'; Audio.bgm._playing = true; } catch(e) {}
+    try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete, no UI queue)');
     refreshAll();
     showScreen('scoutEvent');
@@ -4124,14 +4128,9 @@ function startDraftNegotiation() {
     },
   };
   _draftSfx('gong'); // ① 交渉開幕ゴング
-  // BGM → ドラフト交渉用（FileBGM直接呼び出し — BGM.play経由だと状態管理で早期returnされるケースがある）
-  try {
-    Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.12 });
-    // showScreen内のplayForStateで上書きされないよう、BGM状態を同期
-    Audio.bgm._current = 'tension';
-    Audio.bgm._playing = true;
-  } catch(e) {}
-  console.log('[WM Draft] BGM → tension (fileBgm direct)');
+  // BGM → tension（BGM.play経由でミキサー設定を自動適用）
+  try { Audio.bgm.play('tension'); } catch(e) {}
+  console.log('[WM Draft] BGM → tension');
   refreshAll();
   showScreen('scoutEvent');
 }
@@ -4396,7 +4395,7 @@ function draftNextCandidate() {
     // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事)
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
-    try { Audio.fileBgm.play('../bgm/bgm_management_v1.mp3', { loop: true, volume: 0.12 }); Audio.bgm._current = 'management'; Audio.bgm._playing = true; } catch(e) {}
+    try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete)');
     refreshAll();
     showScreen('scoutEvent');
