@@ -9173,8 +9173,8 @@ const Engine = {
           scoutsThisSeason: (s.scoutsThisSeason || 0),
           _draftInterests: draftInterests,
         };
-        events.push('📅 オフシーズン第3週: スカウトレポート到着！');
-        events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
+        events.push('📅 オフシーズン第3週: ドラフト速報到着！');
+        events.push(`⚖ ドラフト候補 ${report.candidates.length}名の情報が届きました`);
         return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
 
       } else if (offWeek === 4) {
@@ -9444,7 +9444,7 @@ const Engine = {
         scoutEventType: 'midseason',
         _draftInterests: midDraftInterests,
       };
-      events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
+      events.push(`⚖ 補強ドラフト: 候補 ${report.candidates.length}名の情報が届きました`);
       return { state: { ...s, weekPhase: 'scoutEvent' }, events };
     }
 

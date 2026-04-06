@@ -496,7 +496,7 @@ function renderWeekScreen() {
   // ── OFFSEASON DISPLAY ──
   if (G.weekPhase === 'offseason') {
     const offW = G.offWeek || 0;
-    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '🔍 スカウト活動', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
+    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '⚖ ドラフト', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
     document.getElementById('weekTitle').textContent = offW === 0
       ? `${G.season}年目 オフシーズン突入`
       : `オフシーズン第${offW}週 — ${offLabels[offW] || ''}`;
@@ -507,7 +507,7 @@ function renderWeekScreen() {
         ${[1,2,3,4].map(i => `<div style="flex:1;height:6px;border-radius:3px;background:${i <= offW ? 'var(--gold)' : 'var(--bg-card)'};transition:background 0.3s"></div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)">
-        <span>レポート</span><span>スカウト</span><span>移籍</span><span>開幕</span>
+        <span>レポート</span><span>ドラフト</span><span>移籍</span><span>開幕</span>
       </div>
     </div>`;
 
@@ -587,7 +587,7 @@ function renderWeekScreen() {
       html += '</div>';
     }
 
-    const nextLabels = ['シーズンレポートへ →', 'スカウト活動へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
+    const nextLabels = ['シーズンレポートへ →', 'ドラフト会議へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
     const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
     html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabel}</button></div>`;
@@ -1284,19 +1284,71 @@ function renderWeekScreen() {
     </div>`;
   }
 
-  // ── SCOUT EVENT PHASE ──
+  // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
     const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
-    const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
-    document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
-    html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
-      <h3 style="color:#2ecc71;margin-bottom:8px">🔍 スカウトレポート到着</h3>
-      <p style="font-size:13px;color:var(--text-sub)">候補者の詳細は「スカウトイベント」画面で確認できます</p>
-      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-gold" onclick="console.log('[WM Draft] 候補者を見る: weekPhase='+G.weekPhase+' _draftInterests='+(!!G._draftInterests));showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">🔍 候補者を見る</button>
-      <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
+    const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
+    document.getElementById('weekTitle').textContent = `${weekLabel} — ⚖ ${eventLabel}`;
+
+    const candidates = G.scoutCandidates || [];
+    const totalCount = candidates.length;
+    const superElites = candidates.filter(c => c.assessedTier === 'superElite');
+    const elites = candidates.filter(c => c.assessedTier === 'elite');
+    const maxPicks = G.scoutMaxPicks || 4;
+    const editionNo = 100 + (G.season - 1) * 4 + (G.scoutEventType === 'midseason' ? 2 : 1);
+
+    const topSE = superElites.length > 0
+      ? [...superElites].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0))[0]
+      : null;
+    const heroHeadline = topSE
+      ? `<span class="red">超逸材</span>・${topSE.name}、<br>ついに業界の門を叩く`
+      : `<span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕`;
+    const heroSub = topSE
+      ? `${G.season}年目 ${eventLabel} — ${topSE.age}歳の才能を筆頭に全${totalCount}名`
+      : `${G.season}年目 ${eventLabel} — 全${totalCount}名、業界の門を叩く`;
+
+    const silCount = Math.min(8, totalCount);
+    const featCount = Math.min(3, superElites.length + elites.length);
+    let silHtml = '';
+    for (let i = 0; i < silCount; i++) {
+      silHtml += `<div class="a1-sil${i < featCount ? ' feat' : ''}"></div>`;
+    }
+
+    const leadBody = topSE
+      ? `本日、${weekLabel}。各団体のフロントが動き出す。今年の目玉は${topSE.age}歳の超逸材・${topSE.name}。複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`
+      : `本日、${weekLabel}。各団体のフロントが動き出す。${elites.length > 0 ? `注目の逸材${elites.length}名を中心に、` : ''}業界関係者の視線が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`;
+
+    const statCells = [{ num: totalCount, lbl: 'TOTAL' }];
+    if (superElites.length > 0) statCells.push({ num: superElites.length, lbl: 'SUPER ELITE', hot: true });
+    statCells.push({ num: elites.length, lbl: 'ELITE' });
+    statCells.push({ num: maxPicks, lbl: '獲得上限' });
+    statCells.push({ num: Math.round(G.funds).toLocaleString(), lbl: '資金 (万)' });
+
+    const statsHtml = statCells.map(s =>
+      `<div class="a1-stat"><div class="a1-stat-num${s.hot ? ' hot' : ''}">${s.num}</div><div class="a1-stat-lbl">${s.lbl}</div></div>`
+    ).join('');
+
+    html += `<div class="a1-wrap">
+      ${superElites.length > 0 ? '<div class="a1-stamp">◆ 超逸材発見 ◆</div>' : '<div class="a1-stamp">◆ 号外 ◆</div>'}
+      <div class="a1-title-bar">
+        <div class="brand">週刊グラップル</div>
+        <div class="ed">第${editionNo}号 ・ ${weekLabel}</div>
+      </div>
+      <div class="a1-hero">
+        <div class="a1-kicker">◆ ${superElites.length > 0 ? '緊急速報' : 'ドラフト速報'} ◆</div>
+        <div class="a1-main-h">${heroHeadline}</div>
+        <div class="a1-sub-h">${heroSub}</div>
+        <div class="a1-lead">${leadBody}</div>
+      </div>
+      <div class="a1-silhouettes">
+        <div class="a1-sil-label">本日の候補者 ・ ${totalCount}名</div>
+        <div class="a1-sil-row">${silHtml}</div>
+      </div>
+      <div class="a1-stats" style="grid-template-columns:repeat(${statCells.length},1fr);">${statsHtml}</div>
+      <div class="a1-footer">
+        <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ドラフトへ</button>
+        <button class="btn btn-ghost" onclick="scoutFinish()">辞退する →</button>
+      </div>
     </div>`;
   }
 
@@ -3128,11 +3180,16 @@ function _renderDraftCandidateList(candidates, context) {
 
   function _scoutComment(c) {
     const tier = c.assessedTier || 'material';
-    const style = STYLE_JP[c.style] || c.style;
+    const STYLE_FLAIR = {
+      Grappler: '組み技のセンスが光る', Striker: '打撃の鋭さが際立つ',
+      Submission: '関節技に天性の嗅覚がある', Aerial: '空中戦の身のこなしが目を引く',
+      Allround: 'バランスの良さが持ち味の', Brawler: '荒々しいファイトが魅力の',
+    };
+    const flair = STYLE_FLAIR[c.style] || '素質を感じる';
     const comments = {
-      superElite: `${c.age}歳にして既に完成度の高い${style}。複数の能力が標準を大きく上回る。今年の業界最大の話題人物。`,
-      elite: `${style}としての基礎が光る。長期育成で看板候補に化ける可能性を秘めている。`,
-      promising: `着実な成長が見込める堅実なタイプ。${style}として十分な素質あり。`,
+      superElite: `${c.age}歳にして複数の能力が標準を大きく上回る。${flair}逸材で、今年の業界最大の話題人物。`,
+      elite: `${flair}将来性豊かな新人。長期育成で看板選手に化ける可能性を秘めている。`,
+      promising: `着実な成長が見込める堅実なタイプ。${flair}。`,
     };
     return comments[tier] || '';
   }
@@ -3680,15 +3737,59 @@ function _renderDraftNegotiation() {
 })();
 
 // ── Scout Event Rendering ─────────────────────────────────
+function _draftResultNext() {
+  try { Audio.play('click'); } catch(e) {}
+  const idx = (G._draftResultIdx || 0) + 1;
+  if (idx >= (G._draftResultPages || []).length) {
+    G = { ...G, _draftResultPages: null, _draftResultIdx: 0 };
+    App.scoutEventFinish();
+    return;
+  }
+  G = { ...G, _draftResultIdx: idx };
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+}
+
 function renderScoutEvent() {
   const el = document.getElementById('scoutEventContent');
   if (!el) return;
+
+  // B1+まとめ記事結果ページ表示
+  if (G._draftResultPages && G._draftResultPages.length > 0) {
+    const pages = G._draftResultPages;
+    const idx = G._draftResultIdx || 0;
+    const page = pages[idx];
+    const isLast = idx >= pages.length - 1;
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = page.title || 'ドラフト結果';
+    // ダークテーマをリセット
+    const screenEl = document.getElementById('screen-scoutEvent');
+    const panelEl = screenEl ? screenEl.querySelector('.panel') : null;
+    if (screenEl) screenEl.classList.remove('dn-dark-mode');
+    if (panelEl) panelEl.classList.remove('dn-dark-panel');
+
+    let pageHtml = '';
+    if (page.html) {
+      pageHtml = page.html;
+    } else if (page.stories) {
+      pageHtml = _renderNewspaperExtraPage(
+        G.weeklyNewspaper || { season: G.season, week: G.offWeek || G.week },
+        page
+      );
+    }
+    el.innerHTML = pageHtml
+      + `<div class="btn-row" style="justify-content:center;margin-top:20px;">
+        <button class="btn btn-gold" onclick="_draftResultNext()">${isLast ? '▶ 経営画面へ' : '▶ 次へ進む'}</button>
+      </div>`;
+    return;
+  }
+
   const candidates = G.scoutCandidates || [];
   const picks = G.scoutPicks || [];
   const maxPicks = G.scoutMaxPicks || 3;
   const discount = 0;
   const orgPop = G.orgPop || 0;
-  const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+  const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
 
   // 交渉画面 / ドラフト速報 のダーク/クリーム切替
   const screenEl = document.getElementById('screen-scoutEvent');
@@ -3777,7 +3878,7 @@ function renderScoutEvent() {
   });
 
   html += `<div class="btn-row" style="margin-top:16px">
-    <button class="btn btn-gold" onclick="scoutFinish()">🔍 スカウト活動終了</button>
+    <button class="btn btn-gold" onclick="scoutFinish()">⚖ ドラフト終了</button>
     <button class="btn btn-blue" onclick="showScreen('week')">← 週画面に戻る</button>
   </div>`;
 
@@ -4786,6 +4887,18 @@ function _renderNewspaperExtraPage(wp, pageData) {
         html += `</tr>`;
       });
       html += `</table>`;
+    }
+    // ドラフト プレイヤー獲得記事（ポートレート付き）
+    else if (story.type === 'draftPlayerResult' && story.portraits && story.portraits.length > 0) {
+      html += `<div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${story.body}</div>`;
+      html += `<div class="news-draft-portraits">`;
+      story.portraits.forEach(p => {
+        const imgHtml = p.url
+          ? `<img src="${p.url}" alt="">`
+          : `<span style="display:inline-block;width:32px;height:32px;border-radius:50%;background:#d4c4a0;text-align:center;line-height:32px;font-size:14px;font-weight:900;color:#1f1710">${(p.name||'?').charAt(0)}</span>`;
+        html += `<div class="news-draft-chip">${imgHtml}<span class="nm">${p.name}</span><span class="ov">OVR${p.ovr}</span></div>`;
+      });
+      html += `</div>`;
     }
     // 通常テキスト記事
     else {

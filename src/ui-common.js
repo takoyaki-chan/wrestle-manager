@@ -4044,7 +4044,8 @@ function startDraftNegotiation() {
 
   for (const cand of sorted) {
     const isSelected = selections.includes(cand.id);
-    const candInterests = (allInterests[cand.id] || []);
+    // 元データを壊さないようコピーして、現在のロスター状態で判定
+    const candInterests = (allInterests[cand.id] || []).map(i => ({ ...i }));
     // ロスター上限到達団体の参加を取り消し（ドラフト中の獲得でリアルタイムに上限に達した団体を除外）
     for (const ci of candInterests) {
       if (!ci.participating) continue;
@@ -4064,7 +4065,7 @@ function startDraftNegotiation() {
       // → 単独指名確認
       soloConfirmQueue.push(cand);
     } else if (!isSelected && aiParticipants.length >= 2) {
-      // → 裏で自動セリ
+      // → 裏で自動セリ（バックグラウンド: idealRosterでキャップ、+2枠はプレイヤー交渉用に温存）
       const autoRng = Engine.rng.create(Engine.rng.derive(rngState, cand.id, 0xAA01));
       const autoPlayerFn = () => 'drop';
       const result = Engine.draftNegotiation.runNegotiation(cand, candInterests.map(i=>({...i})), autoPlayerFn, G, autoRng);
@@ -4072,7 +4073,7 @@ function startDraftNegotiation() {
         const wOrg = result.winner;
         const orgData = newAiOrgs[wOrg];
         const wIdeal = (AI_SCOUT_CFG[wOrg === 'org_s' ? 'S' : wOrg === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-        if (orgData && orgData.roster.length < wIdeal + 2) {
+        if (orgData && orgData.roster.length < wIdeal) {
           Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
           draftSummary.aiAcquired[wOrg].push(clean.name);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
@@ -4089,11 +4090,11 @@ function startDraftNegotiation() {
         log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else if (!isSelected && aiParticipants.length === 1) {
-      // → AI自動落札（ロスター上限チェック付き）
+      // → AI自動落札（バックグラウンド: idealRosterでキャップ）
       const winner = aiParticipants[0].orgId;
       const orgData = newAiOrgs[winner];
       const wIdeal = (AI_SCOUT_CFG[winner === 'org_s' ? 'S' : winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-      if (orgData && orgData.roster.length < wIdeal + 2) {
+      if (orgData && orgData.roster.length < wIdeal) {
         Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
         draftSummary.aiAcquired[winner].push(clean.name);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
@@ -4132,9 +4133,15 @@ function startDraftNegotiation() {
     return;
   }
 
-  // 最初の候補の交渉状態を初期化
+  // 最初の候補の交渉状態を初期化（バックグラウンド処理後のロスター状態で再判定）
   const firstCand = uiQueue[0];
   const firstInterests = (allInterests[firstCand.id] || []).map(i => ({ ...i }));
+  for (const ci of firstInterests) {
+    if (!ci.participating) continue;
+    const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
+    const ideal = (AI_SCOUT_CFG[ci.orgId === 'org_s' ? 'S' : ci.orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    if (orgRoster.length >= ideal + 2) ci.participating = false;
+  }
   const firstActive = firstInterests.filter(i => i.participating);
   const negState = Engine.draftNegotiation.initNegState(firstCand, firstInterests);
 
@@ -4165,6 +4172,131 @@ function startDraftNegotiation() {
   console.log('[WM Draft] 交渉開始');
   refreshAll();
   _showScreenNoBgm('scoutEvent');
+}
+
+// B1: ドラフト獲得選手カード画面
+function _buildDraftGetPage(state, acquiredRecords) {
+  const roster = state.roster || [];
+  const acquired = acquiredRecords
+    .map(rec => {
+      const f = roster.find(r => r.id === (typeof rec === 'object' ? rec.id : rec));
+      if (!f) return null;
+      return { ...f, _finalBid: rec.finalBid || 0, _tierId: rec.tier || 'material' };
+    })
+    .filter(Boolean);
+
+  const totalCost = acquired.reduce((s, f) => s + (f._finalBid || 0), 0);
+  const avgOvr = acquired.length > 0
+    ? Math.round(acquired.reduce((s, f) => s + Engine.util.ov(f), 0) / acquired.length) : 0;
+  const avgAge = acquired.length > 0
+    ? (acquired.reduce((s, f) => s + (f.age || 0), 0) / acquired.length).toFixed(1) : 0;
+  const remainingFunds = Math.round(state.funds || 0);
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_SHORT = { Grappler: 'GRP', Striker: 'STK', Submission: 'SUB', Aerial: 'AER', Allround: 'ALL', Brawler: 'BRW' };
+  const ROLE_SHORT = { Babyface: 'Face', Heel: 'Heel', Neutral: 'Neu', Dirty: 'Dirty' };
+
+  const STYLE_JP_FULL = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const statRow = (k, v) => `<div class="b1-stat-row"><span class="k">${k}</span><div class="bar"><div class="fill" style="width:${Math.min(100, v)}%"></div></div><span class="v">${v}</span></div>`;
+
+  // 超逸材ヒーロー表示
+  function _heroCard(f) {
+    const ovr = Engine.util.ov(f);
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    const faceUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
+    const imgUrl = upperUrl || faceUrl;
+    const imgHtml = imgUrl
+      ? `<img src="${imgUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="b1-placeholder" style="font-size:80px">${(f.name || '?').charAt(0)}</div>`;
+    return `<div class="b1-hero">
+      <div class="b1-hero-ribbon">GET!</div>
+      <div class="b1-hero-img">${imgHtml}</div>
+      <div class="b1-hero-body">
+        <div class="b1-hero-tier">超逸材</div>
+        <div class="b1-hero-name">${f.name}</div>
+        <div class="b1-hero-meta">${f.age}歳 ・ ${STYLE_JP_FULL[f.style] || f.style} ・ ${ROLE_SHORT[f.role] || f.role}</div>
+        <div class="b1-hero-ovr">OVR <span class="v">${ovr}</span></div>
+        <div class="b1-hero-stats">
+          ${statRow('PWR', f.pw || 0)}
+          ${statRow('SPD', f.sp || 0)}
+          ${statRow('TEC', f.te || 0)}
+          ${statRow('STA', f.st || 0)}
+          ${statRow('MNT', f.mn || 0)}
+        </div>
+        <div class="b1-hero-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // 通常カード（逸材はやや大きめ）
+  function _card(f) {
+    const tierId = f._tierId || 'material';
+    const tierLabel = TIER_LABELS[tierId] || tierId;
+    const ovr = Engine.util.ov(f);
+    const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
+    const portrait = url
+      ? `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="b1-placeholder">${(f.name || '?').charAt(0)}</div>`;
+    const lgClass = tierId === 'elite' ? ' b1-card-lg' : '';
+    return `<div class="b1-card tier-${tierId}${lgClass}">
+      <div class="b1-card-top">
+        <span class="b1-tier tier-${tierId}">${tierLabel}</span>
+        <span class="b1-style">${STYLE_SHORT[f.style] || f.style} / ${ROLE_SHORT[f.role] || f.role}</span>
+      </div>
+      <div class="b1-portrait">
+        ${portrait}
+        <div class="b1-age">${f.age}歳</div>
+      </div>
+      <div class="b1-name">${f.name}</div>
+      <div class="b1-ovr">OVR <span class="v">${ovr}</span></div>
+      <div class="b1-stats">
+        ${statRow('PWR', f.pw || 0)}
+        ${statRow('SPD', f.sp || 0)}
+        ${statRow('TEC', f.te || 0)}
+        ${statRow('STA', f.st || 0)}
+        ${statRow('MNT', f.mn || 0)}
+      </div>
+      <div class="b1-cost">
+        <span class="lbl">契約金</span>
+        <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+      </div>
+    </div>`;
+  }
+
+  // 超逸材を分離
+  const heroes = acquired.filter(f => f._tierId === 'superElite');
+  const others = acquired.filter(f => f._tierId !== 'superElite');
+
+  let cardsHtml = '';
+  if (acquired.length === 0) {
+    cardsHtml = '<div class="b1-empty">今回のドラフトでは獲得がありませんでした</div>';
+  } else {
+    if (heroes.length > 0) cardsHtml += heroes.map(_heroCard).join('');
+    if (others.length > 0) cardsHtml += `<div class="b1-grid">${others.map(_card).join('')}</div>`;
+  }
+
+  return {
+    title: 'ドラフト完了',
+    isGetPage: true,
+    html: `<div class="b1-wrap">
+      <div class="b1-head">
+        <div class="kick">DRAFT COMPLETE</div>
+        <div class="title">獲得選手</div>
+        <div class="sub">新戦力<span class="count">${acquired.length}</span>名 ・ 契約金合計 <span class="total-cost">${totalCost.toLocaleString()}</span> 万</div>
+      </div>
+      ${cardsHtml}
+      <div class="b1-totals">
+        <div class="cell"><div class="n">${acquired.length}</div><div class="l">新戦力</div></div>
+        ${acquired.length > 0 ? `<div class="cell"><div class="n">${avgOvr}</div><div class="l">平均 OVR</div></div>` : ''}
+        ${acquired.length > 0 ? `<div class="cell"><div class="n">${avgAge}</div><div class="l">平均 年齢</div></div>` : ''}
+        <div class="cell"><div class="n">${totalCost.toLocaleString()}</div><div class="l">契約金 (万)</div></div>
+        <div class="cell"><div class="n" style="color:#2ecc71">${remainingFunds.toLocaleString()}</div><div class="l">残資金 (万)</div></div>
+      </div>
+    </div>`
+  };
 }
 
 // ドラフト完了処理(まとめ記事生成+EMPRESS安全網+クリーンアップ)
@@ -4210,6 +4342,9 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     }
   }
 
+  // B1 獲得選手カードページ
+  const getPage = _buildDraftGetPage(s, (s._draftNegotiation?.acquiredThisSession) || acquired);
+
   // 業界紙まとめ記事をnewspaperに挿入
   const draftNewsPage = _buildDraftSummaryPage(summary, acquired, empressNames, s);
 
@@ -4229,11 +4364,13 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     dormantPool: newDormant,
     gameLog: log,
     scoutCandidates: null,
-    scoutPicks: acquired,
+    scoutPicks: acquired.map(rec => typeof rec === 'object' ? rec.id : rec),
     _draftInterests: null,
     _draftNegotiation: null,
     _draftSelections: null,
     weeklyNewspaper: newspaper,
+    _draftResultPages: [getPage, draftNewsPage],
+    _draftResultIdx: 0,
   };
 }
 
@@ -4242,13 +4379,21 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
   const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
   const stories = [];
 
-  // プレイヤー獲得
+  // プレイヤー獲得（ポートレート付き）
   if (playerAcquired.length > 0) {
-    const names = (state.roster || []).filter(f => playerAcquired.includes(f.id)).map(f => f.name);
+    const acquiredIds = playerAcquired.map(rec => typeof rec === 'object' ? rec.id : rec);
+    const fighters = (state.roster || []).filter(f => acquiredIds.includes(f.id));
+    const names = fighters.map(f => f.name);
+    const portraits = fighters.map(f => ({
+      id: f.id, name: f.name,
+      ovr: Engine.util.ov(f),
+      url: typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '',
+    }));
     stories.push({
       headline: `${state.orgName || 'プレイヤー団体'}、新戦力${names.length}名を獲得`,
       body: names.join('、') + ' — 新シーズンの台風の目となるか。',
       type: 'draftPlayerResult',
+      portraits,
     });
   }
 
@@ -4404,8 +4549,22 @@ function draftNextCandidate() {
       signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       newRoster.push(signed);
       newFunds -= ns.finalBid;
-      acquired.push(clean.id);
+      acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
+
+      // 獲得時リアクション（顔写真付きポップアップ）
+      try {
+        const signingLine = (typeof getSigningLine === 'function')
+          ? getSigningLine(clean, 'competition_won')
+          : `${clean.name}との契約が成立した`;
+        G._pendingDraftSigningPopup = {
+          type: 'fighter', id: clean.id, name: clean.name,
+          tone: 'positive', message: signingLine,
+          detail: `📝 契約金: ${ns.finalBid.toLocaleString()}万 [${tierLabel}]`
+        };
+      } catch (e) {
+        console.warn('[WM Draft] signing line fallback:', e);
+      }
     } else {
       returnToPool = true;
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
@@ -4437,20 +4596,23 @@ function draftNextCandidate() {
   // 次の候補があるか？
   const nextIdx = dn.currentCandidateIdx + 1;
   if (nextIdx >= dn.sortedCandidates.length) {
-    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → 直接offseason進行
+    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → B1+まとめ記事表示
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
     try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete)');
-    App.scoutEventFinish();
+    // B1+まとめ記事ページ表示（_draftResultPages がセットされている）
+    refreshAll();
+    _showScreenNoBgm('scoutEvent');
     return;
   }
 
   // 次の候補を開始
   _draftSfx('chime'); // ② 次候補切替
   const nextCand = dn.sortedCandidates[nextIdx];
-  const nextInterests = (G._draftInterests || {})[nextCand.id] || [];
-  // ロスター上限到達団体の参加を取り消し
+  const rawInterests = (G._draftInterests || {})[nextCand.id] || [];
+  // 元データを壊さないようコピーして、現在のロスター状態で再判定
+  const nextInterests = rawInterests.map(i => ({ ...i }));
   for (const ci of nextInterests) {
     if (!ci.participating) continue;
     const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
@@ -4479,6 +4641,13 @@ function draftNextCandidate() {
   };
   refreshAll();
   _showScreenNoBgm('scoutEvent');
+
+  // 獲得時ポップアップ（showScreen後に遅延表示）
+  if (G._pendingDraftSigningPopup) {
+    const popup = G._pendingDraftSigningPopup;
+    G = { ...G, _pendingDraftSigningPopup: null };
+    setTimeout(() => showEventPopup(popup), 50);
+  }
 }
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }
@@ -4664,11 +4833,12 @@ function showPPVMatchCardIntro(onStart) {
       h2hText = `通算: ${match.left.name} ${recForLeft.wins}勝 - ${recForLeft.losses}勝 ${match.right.name}`;
     }
 
-    // z-index: 下の段(前座)ほど高い（上のカードの画像が下のカードの裏に隠れる）
+    // z-index: 下の段ほど高い（下のカードの画像が上のカードの背景の前に出る）
     const zIdx = total - di;
 
     cardsHtml += `
       <div class="ppvmc-card${mainClass}" style="z-index:${zIdx}">
+        <div class="ppvmc-card-bg"></div>
         <div class="ppvmc-fighter left">
           ${_imgOrInitial(getFullUrl(match.left.id, match.left.ovr), match.left.id, 160)}
         </div>
