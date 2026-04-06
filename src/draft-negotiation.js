@@ -117,10 +117,11 @@ function _getYouthBonus(age) {
 
 function _getRosterFillMul(currentSize, idealSize) {
   const gap = currentSize - idealSize;
-  if (gap >= 0) return 0.5;
-  if (gap >= -2) return 1.0;
-  if (gap >= -4) return 1.3;
-  return 1.6;
+  if (gap >= 2) return 0;     // 理想+2以上 → 不参加（絶対に取らない）
+  if (gap >= 0) return 0.15;  // 理想達成済み → 15%のみ参加（ほぼ不参加）
+  if (gap >= -2) return 1.0;  // 理想 -1〜-2名 → 通常
+  if (gap >= -4) return 1.3;  // 理想 -3〜-4名 → 積極的
+  return 1.6;                  // 理想 -5名以下 → 非常に積極的
 }
 
 function _getMarkFromRatio(ratio) {
@@ -156,12 +157,13 @@ Engine.draftNegotiation = {
     if (!orgRates) return { orgId, participating: false };
     let baseRate = orgRates[tier] || 0.05;
 
-    // §5.5 ロスター充足度補正
+    // §5.5 ロスター充足度補正（ドラフト中の獲得数も加算）
     const aiData = (state.aiOrgs || {})[orgId];
     const idealRoster = (AI_SCOUT_CFG[
       orgId === 'org_s' ? 'S' : orgId === 'org_a' ? 'A' : 'B'
     ] || {}).idealRoster || 13;
-    const currentSize = aiData ? (aiData.roster || []).length : idealRoster;
+    const draftAcquired = (state._draftOrgAcquired || {})[orgId] || 0;
+    const currentSize = (aiData ? (aiData.roster || []).length : idealRoster) + draftAcquired;
     const fillMul = _getRosterFillMul(currentSize, idealRoster);
     baseRate = Math.min(1.0, baseRate * fillMul);
 
@@ -563,14 +565,17 @@ Engine.draftNegotiation = {
     const orgAcquired = { org_s: 0, org_a: 0, org_b: 0 };
     // プレイヤー獲得上限は呼び出し側で管理
 
+    // ドラフト中の獲得数をstateに反映（assignInterestが参照）
+    const stateWithAcq = { ...state, _draftOrgAcquired: orgAcquired };
+
     for (const candidate of sorted) {
-      // 各団体の関心を決定
+      // 各団体の関心を決定（ドラフト中の獲得数を考慮）
       const interests = [];
       for (const orgId of ['org_s', 'org_a', 'org_b']) {
         const interestRng = Engine.rng.create(Engine.rng.derive(
           rng._state || 0, candidate.id, orgId.charCodeAt(4), 0xDFA1
         ));
-        const interest = Engine.draftNegotiation.assignInterest(candidate, orgId, state, interestRng);
+        const interest = Engine.draftNegotiation.assignInterest(candidate, orgId, stateWithAcq, interestRng);
         interests.push(interest);
       }
 
@@ -580,12 +585,13 @@ Engine.draftNegotiation = {
       ));
       const playerFn = (round, currentBid, ints) => playerActionFn(candidate.id, round, currentBid, ints);
       const result = Engine.draftNegotiation.runNegotiation(
-        candidate, interests, playerFn, state, negRng
+        candidate, interests, playerFn, stateWithAcq, negRng
       );
 
       // AI団体が落札した場合、獲得カウント更新
       if (result.winner && result.winner !== 'player' && result.winner !== null) {
         orgAcquired[result.winner] = (orgAcquired[result.winner] || 0) + 1;
+        stateWithAcq._draftOrgAcquired = { ...orgAcquired };
       }
 
       results.push({

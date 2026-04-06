@@ -4061,22 +4061,37 @@ function startDraftNegotiation() {
       const autoPlayerFn = () => 'drop';
       const result = Engine.draftNegotiation.runNegotiation(cand, candInterests.map(i=>({...i})), autoPlayerFn, G, autoRng);
       if (result.winner && result.winner !== 'player') {
-        const orgData = newAiOrgs[result.winner];
-        if (orgData) Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: result.winner }));
-        draftSummary.aiAcquired[result.winner].push(clean.name);
-        log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[result.winner] || result.winner}と電撃契約`);
+        const wOrg = result.winner;
+        const orgData = newAiOrgs[wOrg];
+        const wIdeal = (AI_SCOUT_CFG[wOrg === 'org_s' ? 'S' : wOrg === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+        if (orgData && orgData.roster.length < wIdeal + 2) {
+          Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
+          draftSummary.aiAcquired[wOrg].push(clean.name);
+          log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
+        } else {
+          newFA.push(normFighter(clean));
+          draftSummary.flowThrough.push(clean.name);
+          log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+        }
       } else {
         newFA.push(normFighter(clean));
         draftSummary.flowThrough.push(clean.name);
         log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
       }
     } else if (!isSelected && aiParticipants.length === 1) {
-      // → AI自動落札
+      // → AI自動落札（ロスター上限チェック付き）
       const winner = aiParticipants[0].orgId;
       const orgData = newAiOrgs[winner];
-      if (orgData) Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
-      draftSummary.aiAcquired[winner].push(clean.name);
-      log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
+      const wIdeal = (AI_SCOUT_CFG[winner === 'org_s' ? 'S' : winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+      if (orgData && orgData.roster.length < wIdeal + 2) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
+        draftSummary.aiAcquired[winner].push(clean.name);
+        log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
+      } else {
+        newFA.push(normFighter(clean));
+        draftSummary.flowThrough.push(clean.name);
+        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+      }
     } else {
       // → 流札
       newFA.push(normFighter(clean));
@@ -4382,9 +4397,15 @@ function draftNextCandidate() {
     }
   } else if (ns.winner && ns.winner !== 'player') {
     const orgData = newAiOrgs[ns.winner];
-    if (orgData) Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: ns.winner }));
-    const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
-    log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
+    const wIdeal = (AI_SCOUT_CFG[ns.winner === 'org_s' ? 'S' : ns.winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    if (orgData && orgData.roster.length < wIdeal + 2) {
+      Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: ns.winner }));
+      const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
+      log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
+    } else {
+      newFA.push(normFighter(clean));
+      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
+    }
   } else {
     newFA.push(normFighter(clean));
     log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
