@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-06（dormantPool枯渇バグ修正）
+> 最終更新: 2026-04-07（ドラフト画面リニューアル+PPVポスター修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**dormantPool枯渇バグ修正（2026-04-06）。** 長期プレイでスカウト候補が0名になる致命的バグを修正。ドラフト交渉システム実装+修正完了済み。
+**ドラフト画面リニューアル+PPVポスター修正（2026-04-07）。** ドラフトフローの「スカウト」呼称を「ドラフト」に統一。ドラフト開幕前画面を号外紙面型(A1)に刷新。ドラフト完了画面をトレーディングカード型(B1)に新設（超逸材ヒーロー表示/逸材大カード/標準カードのティア別サイズ差別化）。獲得時リアクション復活(getSigningLine+showEventPopup)。ドラフトまとめ記事にポートレート付きチップ表示。バグ修正: _draftInterestsオリジナル破壊によるAI団体不参加問題+バックグラウンド処理のロスター枠温存(idealRosterキャップ)。PPVポスター画面: カード背景分離(ppvmc-card-bg)+fighter絶対配置+z-index重なり演出復元+center暗影修正。auto-sim 2シード×30シーズン ALL CLEAR。
+
+前回: **dormantPool枯渇バグ修正（2026-04-06）。** 長期プレイでスカウト候補が0名になる致命的バグを修正。ドラフト交渉システム実装+修正完了済み。
 
 **実装内容:**
 - src/draft-negotiation.js新規作成(~780行): セリエンジン(assignInterest/runDropCheck/stepRound/runNegotiation/runFullDraft/empressReinforce)
