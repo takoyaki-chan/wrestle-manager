@@ -1284,19 +1284,72 @@ function renderWeekScreen() {
     </div>`;
   }
 
-  // ── SCOUT EVENT PHASE ──
+  // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
     const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
     const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
-    document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
-    html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
-      <h3 style="color:#2ecc71;margin-bottom:8px">🔍 スカウトレポート到着</h3>
-      <p style="font-size:13px;color:var(--text-sub)">候補者の詳細は「スカウトイベント」画面で確認できます</p>
-      <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-gold" onclick="console.log('[WM Draft] 候補者を見る: weekPhase='+G.weekPhase+' _draftInterests='+(!!G._draftInterests));showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">🔍 候補者を見る</button>
-      <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
+    document.getElementById('weekTitle').textContent = `${weekLabel} — ⚖ ${eventLabel}`;
+
+    const candidates = G.scoutCandidates || [];
+    const totalCount = candidates.length;
+    const superElites = candidates.filter(c => c.assessedTier === 'superElite');
+    const elites = candidates.filter(c => c.assessedTier === 'elite');
+    const maxPicks = G.scoutMaxPicks || 4;
+    const editionNo = 100 + (G.season - 1) * 4 + (G.scoutEventType === 'midseason' ? 2 : 1);
+    const yearNo = 2024 + G.season;
+
+    const topSE = superElites.length > 0
+      ? [...superElites].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0))[0]
+      : null;
+    const heroHeadline = topSE
+      ? `<span class="red">超逸材</span>・${topSE.name}、<br>ついに業界の門を叩く`
+      : `<span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕`;
+    const heroSub = topSE
+      ? `${yearNo}年度 ${eventLabel} — ${topSE.age}歳の才能を筆頭に全${totalCount}名`
+      : `${yearNo}年度 ${eventLabel} — 全${totalCount}名、業界の門を叩く`;
+
+    const silCount = Math.min(8, totalCount);
+    const featCount = Math.min(3, superElites.length + elites.length);
+    let silHtml = '';
+    for (let i = 0; i < silCount; i++) {
+      silHtml += `<div class="a1-sil${i < featCount ? ' feat' : ''}"></div>`;
+    }
+
+    const leadBody = topSE
+      ? `本日、${weekLabel}。各団体のフロントが動き出す。今年の目玉は${topSE.age}歳の超逸材・${topSE.name}。複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`
+      : `本日、${weekLabel}。各団体のフロントが動き出す。${elites.length > 0 ? `注目の逸材${elites.length}名を中心に、` : ''}業界関係者の視線が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`;
+
+    const statCells = [{ num: totalCount, lbl: 'TOTAL' }];
+    if (superElites.length > 0) statCells.push({ num: superElites.length, lbl: 'SUPER ELITE', hot: true });
+    statCells.push({ num: elites.length, lbl: 'ELITE' });
+    statCells.push({ num: maxPicks, lbl: '獲得上限' });
+    statCells.push({ num: Math.round(G.funds).toLocaleString(), lbl: '資金 (万)' });
+
+    const statsHtml = statCells.map(s =>
+      `<div class="a1-stat"><div class="a1-stat-num${s.hot ? ' hot' : ''}">${s.num}</div><div class="a1-stat-lbl">${s.lbl}</div></div>`
+    ).join('');
+
+    html += `<div class="a1-wrap">
+      ${superElites.length > 0 ? '<div class="a1-stamp">◆ 超逸材発見 ◆</div>' : '<div class="a1-stamp">◆ 号外 ◆</div>'}
+      <div class="a1-title-bar">
+        <div class="brand">週刊グラップル</div>
+        <div class="ed">第${editionNo}号 ・ ${weekLabel}</div>
+      </div>
+      <div class="a1-hero">
+        <div class="a1-kicker">◆ ${superElites.length > 0 ? '緊急速報' : 'ドラフト速報'} ◆</div>
+        <div class="a1-main-h">${heroHeadline}</div>
+        <div class="a1-sub-h">${heroSub}</div>
+        <div class="a1-lead">${leadBody}</div>
+      </div>
+      <div class="a1-silhouettes">
+        <div class="a1-sil-label">本日の候補者 ・ ${totalCount}名</div>
+        <div class="a1-sil-row">${silHtml}</div>
+      </div>
+      <div class="a1-stats" style="grid-template-columns:repeat(${statCells.length},1fr);">${statsHtml}</div>
+      <div class="a1-footer">
+        <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ドラフトへ</button>
+        <button class="btn btn-ghost" onclick="scoutFinish()">辞退する →</button>
+      </div>
     </div>`;
   }
 
