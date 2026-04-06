@@ -3971,12 +3971,12 @@ function _draftSfx(type) {
     // ミキサー登録済みSEはAudio.play()で直接再生
     if (type === 'click') { Audio.play('click'); return; }
     if (type === 'lost') { Audio.play('defeat'); return; }
+    if (type === 'bid') { Audio.play('select'); return; }
     const sfxMap = {
       gong:    { src: '../bgm/f08_gong_start_v2.mp3', vol: 0.15 },
       chime:   { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.12 },
-      bid:     { src: '../bgm/b06_rollup_swoosh_v2.mp3', vol: 0.10 },
       dropped: { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.10, rate: 0.7 },
-      fanfare: { src: '../bgm/f10_victory_fanfare_v3.mp3', vol: 0.15 },
+      fanfare: { src: '../bgm/f10_victory_fanfare_v5.mp3', vol: 0.15 },
     };
     const cfg = sfxMap[type];
     if (!cfg) return;

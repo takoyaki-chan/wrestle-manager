@@ -1295,7 +1295,7 @@ function renderWeekScreen() {
       <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
     </div>
     <div class="btn-row">
-      <button class="btn btn-gold" onclick="showScreen('scoutEvent')">🔍 候補者を見る</button>
+      <button class="btn btn-gold" onclick="console.log('[WM Draft] 候補者を見る: weekPhase='+G.weekPhase+' _draftInterests='+(!!G._draftInterests));showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">🔍 候補者を見る</button>
       <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
     </div>`;
   }
