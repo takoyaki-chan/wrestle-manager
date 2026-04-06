@@ -360,7 +360,7 @@ Engine.draftNegotiation = {
     ns.round++;
 
     // プレイヤーアクション
-    if (playerAction === 'drop') {
+    if (playerAction === 'drop' && ns.playerIn) {
       ns.playerIn = false;
       ns.log.push(`R${ns.round}: プレイヤー降り (${ns.currentBid}万)`);
     }
@@ -375,9 +375,13 @@ Engine.draftNegotiation = {
       }
     }
 
-    // CPU降り判定
+    // CPU降り判定（最後の1社は降りない — プレイヤー不在時に全員離脱→流札を防ぐ）
     for (const interest of ns.interests) {
       if (interest.dropped || !interest.participating) continue;
+      // 残りの参加AI数をカウント（このラウンドでまだ降りていない団体）
+      const remainingAI = ns.interests.filter(i => i.participating && !i.dropped).length;
+      // プレイヤーがいない場合、最後の1社は降りない（その社が落札者）
+      if (!ns.playerIn && remainingAI <= 1) break;
       if (Engine.draftNegotiation.runDropCheck(interest, ns.currentBid, isAggressive, leagueElevated, rng)) {
         interest.dropped = true;
         interest._droppedAtRound = ns.round;
@@ -505,9 +509,11 @@ Engine.draftNegotiation = {
         }
       }
 
-      // CPU降り判定
+      // CPU降り判定（最後の1社は降りない — プレイヤー不在時の全員離脱防止）
       for (const interest of interests) {
         if (interest.dropped || !interest.participating) continue;
+        const remainingAI = interests.filter(i => i.participating && !i.dropped).length;
+        if (!playerIn && remainingAI <= 1) break;
         const drops = Engine.draftNegotiation.runDropCheck(
           interest, currentBid, isAggressive, leagueElevated, rng
         );
