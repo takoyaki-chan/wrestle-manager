@@ -4888,6 +4888,18 @@ function _renderNewspaperExtraPage(wp, pageData) {
       });
       html += `</table>`;
     }
+    // ドラフト プレイヤー獲得記事（ポートレート付き）
+    else if (story.type === 'draftPlayerResult' && story.portraits && story.portraits.length > 0) {
+      html += `<div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${story.body}</div>`;
+      html += `<div class="news-draft-portraits">`;
+      story.portraits.forEach(p => {
+        const imgHtml = p.url
+          ? `<img src="${p.url}" alt="">`
+          : `<span style="display:inline-block;width:32px;height:32px;border-radius:50%;background:#d4c4a0;text-align:center;line-height:32px;font-size:14px;font-weight:900;color:#1f1710">${(p.name||'?').charAt(0)}</span>`;
+        html += `<div class="news-draft-chip">${imgHtml}<span class="nm">${p.name}</span><span class="ov">OVR${p.ovr}</span></div>`;
+      });
+      html += `</div>`;
+    }
     // 通常テキスト記事
     else {
       html += `<div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${story.body}</div>`;

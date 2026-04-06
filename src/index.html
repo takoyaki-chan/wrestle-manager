@@ -2668,8 +2668,35 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .b1-head .sub{font-size:13px;color:var(--text-main,#e8dfc8);letter-spacing:2px}
 .b1-head .sub .count{color:#f0cc7a;font-size:20px;font-weight:900;margin:0 4px}
 .b1-head .sub .total-cost{color:#f0cc7a;font-weight:700}
-.b1-grid{display:grid;gap:16px;margin-bottom:26px;position:relative}
-.b1-card{background:linear-gradient(180deg,#1a1510 0%,#0a0806 100%);border:2px solid var(--gold);border-radius:8px;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.6),0 0 24px rgba(212,160,76,0.15)}
+.b1-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,210px));gap:16px;margin-bottom:26px;position:relative;justify-content:center}
+.b1-card{background:linear-gradient(180deg,#1a1510 0%,#0a0806 100%);border:2px solid var(--gold);border-radius:8px;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.6),0 0 24px rgba(212,160,76,0.15);max-width:210px}
+.b1-card-lg{max-width:250px}
+/* B1 Hero: 超逸材フルワイド表示 */
+.b1-hero{display:flex;gap:20px;align-items:stretch;margin-bottom:24px;background:linear-gradient(135deg,rgba(139,26,26,0.2),rgba(10,8,6,0.9));border:2px solid #ff6b6b;border-radius:8px;overflow:hidden;position:relative;box-shadow:0 4px 24px rgba(0,0,0,0.6),0 0 36px rgba(255,107,107,0.3)}
+.b1-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(255,107,107,0.12),transparent 60%);pointer-events:none}
+.b1-hero-img{width:240px;min-height:280px;flex-shrink:0;background:linear-gradient(135deg,#3a2e1c,#1a1510);position:relative;overflow:hidden}
+.b1-hero-img img{width:100%;height:100%;object-fit:cover}
+.b1-hero-body{flex:1;padding:20px 24px 16px;display:flex;flex-direction:column;position:relative}
+.b1-hero-tier{display:inline-block;background:#ff6b6b;color:#fff;padding:3px 10px;font-size:10px;font-weight:900;letter-spacing:2px;border-radius:2px;margin-bottom:8px;align-self:flex-start}
+.b1-hero-name{font-size:28px;font-weight:900;color:#f0cc7a;letter-spacing:1px;margin-bottom:4px}
+.b1-hero-ovr{font-size:13px;color:var(--text-dim,#8b8173);margin-bottom:12px}
+.b1-hero-ovr .v{font-size:36px;font-weight:900;color:#fff;margin:0 6px}
+.b1-hero-stats{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.b1-hero-stats .b1-stat-row{font-size:11px}
+.b1-hero-stats .b1-stat-row .k{width:32px}
+.b1-hero-stats .b1-stat-row .bar{height:7px}
+.b1-hero-stats .b1-stat-row .v{width:28px;font-size:12px}
+.b1-hero-cost{margin-top:auto;padding:8px 0 0;border-top:1px solid rgba(212,160,76,0.2);display:flex;justify-content:space-between;align-items:center}
+.b1-hero-cost .lbl{font-size:10px;color:var(--text-dim,#8b8173);letter-spacing:1px}
+.b1-hero-cost .val{font-size:18px;color:#f0cc7a;font-weight:900}
+.b1-hero-ribbon{position:absolute;top:14px;right:-28px;background:#c22020;color:#fff;padding:4px 36px;font-size:13px;font-weight:900;letter-spacing:3px;transform:rotate(28deg);box-shadow:0 2px 8px rgba(0,0,0,0.5);z-index:3;border:1px solid #fff}
+.b1-hero-meta{font-size:11px;color:var(--text-dim,#8b8173);margin-bottom:8px}
+/* 新聞ドラフト記事ポートレート行 */
+.news-draft-portraits{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.news-draft-chip{display:flex;align-items:center;gap:6px;background:rgba(42,34,20,0.5);border:1px solid rgba(154,112,32,0.3);border-radius:20px;padding:3px 10px 3px 3px}
+.news-draft-chip img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid rgba(154,112,32,0.4)}
+.news-draft-chip .nm{font-size:11px;font-weight:700;color:#1f1710}
+.news-draft-chip .ov{font-size:10px;color:#7a5b32;margin-left:2px}
 .b1-card.tier-superElite{border-color:#ff6b6b;box-shadow:0 4px 20px rgba(0,0,0,0.6),0 0 30px rgba(255,107,107,0.35)}
 .b1-card.tier-elite{border-color:#f0cc7a;box-shadow:0 4px 20px rgba(0,0,0,0.6),0 0 28px rgba(240,204,120,0.3)}
 .b1-card::before{content:'GET!';position:absolute;top:10px;right:-24px;background:#c22020;color:#fff;padding:3px 28px;font-size:11px;font-weight:900;letter-spacing:2px;transform:rotate(28deg);box-shadow:0 2px 8px rgba(0,0,0,0.5);z-index:3;border:1px solid #fff}

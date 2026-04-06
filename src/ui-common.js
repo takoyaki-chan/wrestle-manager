@@ -4196,6 +4196,42 @@ function _buildDraftGetPage(state, acquiredRecords) {
   const STYLE_SHORT = { Grappler: 'GRP', Striker: 'STK', Submission: 'SUB', Aerial: 'AER', Allround: 'ALL', Brawler: 'BRW' };
   const ROLE_SHORT = { Babyface: 'Face', Heel: 'Heel', Neutral: 'Neu', Dirty: 'Dirty' };
 
+  const STYLE_JP_FULL = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const statRow = (k, v) => `<div class="b1-stat-row"><span class="k">${k}</span><div class="bar"><div class="fill" style="width:${Math.min(100, v)}%"></div></div><span class="v">${v}</span></div>`;
+
+  // 超逸材ヒーロー表示
+  function _heroCard(f) {
+    const ovr = Engine.util.ov(f);
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    const faceUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
+    const imgUrl = upperUrl || faceUrl;
+    const imgHtml = imgUrl
+      ? `<img src="${imgUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="b1-placeholder" style="font-size:80px">${(f.name || '?').charAt(0)}</div>`;
+    return `<div class="b1-hero">
+      <div class="b1-hero-ribbon">GET!</div>
+      <div class="b1-hero-img">${imgHtml}</div>
+      <div class="b1-hero-body">
+        <div class="b1-hero-tier">超逸材</div>
+        <div class="b1-hero-name">${f.name}</div>
+        <div class="b1-hero-meta">${f.age}歳 ・ ${STYLE_JP_FULL[f.style] || f.style} ・ ${ROLE_SHORT[f.role] || f.role}</div>
+        <div class="b1-hero-ovr">OVR <span class="v">${ovr}</span></div>
+        <div class="b1-hero-stats">
+          ${statRow('PWR', f.pw || 0)}
+          ${statRow('SPD', f.sp || 0)}
+          ${statRow('TEC', f.te || 0)}
+          ${statRow('STA', f.st || 0)}
+          ${statRow('MNT', f.mn || 0)}
+        </div>
+        <div class="b1-hero-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // 通常カード（逸材はやや大きめ）
   function _card(f) {
     const tierId = f._tierId || 'material';
     const tierLabel = TIER_LABELS[tierId] || tierId;
@@ -4204,8 +4240,8 @@ function _buildDraftGetPage(state, acquiredRecords) {
     const portrait = url
       ? `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;">`
       : `<div class="b1-placeholder">${(f.name || '?').charAt(0)}</div>`;
-    const statRow = (k, v) => `<div class="b1-stat-row"><span class="k">${k}</span><div class="bar"><div class="fill" style="width:${Math.min(100, v)}%"></div></div><span class="v">${v}</span></div>`;
-    return `<div class="b1-card tier-${tierId}">
+    const lgClass = tierId === 'elite' ? ' b1-card-lg' : '';
+    return `<div class="b1-card tier-${tierId}${lgClass}">
       <div class="b1-card-top">
         <span class="b1-tier tier-${tierId}">${tierLabel}</span>
         <span class="b1-style">${STYLE_SHORT[f.style] || f.style} / ${ROLE_SHORT[f.role] || f.role}</span>
@@ -4230,7 +4266,17 @@ function _buildDraftGetPage(state, acquiredRecords) {
     </div>`;
   }
 
-  const gridCols = acquired.length >= 4 ? 4 : Math.max(1, acquired.length);
+  // 超逸材を分離
+  const heroes = acquired.filter(f => f._tierId === 'superElite');
+  const others = acquired.filter(f => f._tierId !== 'superElite');
+
+  let cardsHtml = '';
+  if (acquired.length === 0) {
+    cardsHtml = '<div class="b1-empty">今回のドラフトでは獲得がありませんでした</div>';
+  } else {
+    if (heroes.length > 0) cardsHtml += heroes.map(_heroCard).join('');
+    if (others.length > 0) cardsHtml += `<div class="b1-grid">${others.map(_card).join('')}</div>`;
+  }
 
   return {
     title: 'ドラフト完了',
@@ -4241,10 +4287,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
         <div class="title">獲得選手</div>
         <div class="sub">新戦力<span class="count">${acquired.length}</span>名 ・ 契約金合計 <span class="total-cost">${totalCost.toLocaleString()}</span> 万</div>
       </div>
-      ${acquired.length === 0
-        ? '<div class="b1-empty">今回のドラフトでは獲得がありませんでした</div>'
-        : `<div class="b1-grid" style="grid-template-columns:repeat(${gridCols},1fr);">${acquired.map(_card).join('')}</div>`
-      }
+      ${cardsHtml}
       <div class="b1-totals">
         <div class="cell"><div class="n">${acquired.length}</div><div class="l">新戦力</div></div>
         ${acquired.length > 0 ? `<div class="cell"><div class="n">${avgOvr}</div><div class="l">平均 OVR</div></div>` : ''}
@@ -4336,14 +4379,21 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
   const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
   const stories = [];
 
-  // プレイヤー獲得
+  // プレイヤー獲得（ポートレート付き）
   if (playerAcquired.length > 0) {
     const acquiredIds = playerAcquired.map(rec => typeof rec === 'object' ? rec.id : rec);
-    const names = (state.roster || []).filter(f => acquiredIds.includes(f.id)).map(f => f.name);
+    const fighters = (state.roster || []).filter(f => acquiredIds.includes(f.id));
+    const names = fighters.map(f => f.name);
+    const portraits = fighters.map(f => ({
+      id: f.id, name: f.name,
+      ovr: Engine.util.ov(f),
+      url: typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '',
+    }));
     stories.push({
       headline: `${state.orgName || 'プレイヤー団体'}、新戦力${names.length}名を獲得`,
       body: names.join('、') + ' — 新シーズンの台風の目となるか。',
       type: 'draftPlayerResult',
+      portraits,
     });
   }
 
