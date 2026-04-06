@@ -41,6 +41,7 @@ loadAsGlobal('data.js');
 loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
 loadAsGlobal('relationships.js');
+loadAsGlobal('draft-negotiation.js');
 
 // グローバルに展開されたか確認
 if (typeof Engine === 'undefined') {
@@ -198,28 +199,94 @@ function autoHandleContractNegotiation(G, simRng) {
   return clean;
 }
 
-// スカウトイベント自動処理
+// スカウトイベント自動処理（draft-negotiation-spec: セリエンジン使用）
 function autoHandleScoutEvent(G, simRng) {
   if (G.weekPhase !== 'scoutEvent') return G;
-  // FA から1-2名をランダムに獲得（キャップに空きがある場合）
+  const candidates = G.scoutCandidates || [];
+  if (candidates.length === 0) return G;
+
+  const maxPicks = G.scoutMaxPicks || 4;
   const ownCount = G.roster.filter(c => !c.isRental).length;
-  if (ownCount >= (G.rosterCap || 16)) return G;
+  const rosterCap = G.rosterCap || 16;
+  let playerPicks = 0;
 
-  const fa = G.freeAgents || [];
-  if (fa.length === 0) return G;
+  // ダミープレイヤー: 資金に余裕があれば標準で粘る、10ラウンドで降りる
+  const playerFn = (candidateId, round, currentBid, interests) => {
+    if (playerPicks >= maxPicks) return 'drop';
+    if (ownCount + playerPicks >= rosterCap) return 'drop';
+    if (currentBid > G.funds * 0.4) return 'drop'; // 資金の40%超えたら降りる
+    if (round > 8) return 'drop';
+    return 'standard';
+  };
 
-  const shuffled = [...fa].sort(() => Engine.rng.float(simRng) - 0.5);
-  const toSign = shuffled.slice(0, Math.min(2, (G.rosterCap || 16) - ownCount));
+  const draftRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xDFA0));
+  const draftResult = Engine.draftNegotiation.runFullDraft(candidates, G, playerFn, draftRng);
+
   let newRoster = [...G.roster];
-  let newFA = [...fa];
-  for (const f of toSign) {
-    const cost = f.assessedValue || 100;
-    if (G.funds - cost < 0) continue;
-    newRoster.push({ ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance', wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0, injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }, intensive: false, intensiveWeeks: 0 });
-    newFA = newFA.filter(c => c.id !== f.id);
-    G = { ...G, funds: G.funds - cost };
+  let newFunds = G.funds;
+  let newAiOrgs = {};
+  Object.keys(G.aiOrgs || {}).forEach(k => {
+    newAiOrgs[k] = { ...G.aiOrgs[k], roster: [...(G.aiOrgs[k]?.roster || [])] };
+  });
+  let newFA = [...(G.freeAgents || [])];
+  let newDormant = [...(G.dormantPool || [])];
+  const log = [...(G.gameLog || [])];
+
+  const normFighter = (f) => ({
+    ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
+    wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
+    injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+    intensive: false, intensiveWeeks: 0,
+  });
+
+  for (const r of draftResult.results) {
+    const clean = { ...r.candidate };
+    delete clean._notion; delete clean._estimate; delete clean._isSeed;
+    delete clean._hasCompetition;
+
+    if (r.winner === 'player') {
+      if (newFunds >= r.finalBid && playerPicks < maxPicks && newRoster.filter(c => !c.isRental).length < rosterCap) {
+        newRoster.push(normFighter(clean));
+        newFunds -= r.finalBid;
+        playerPicks++;
+      } else {
+        // 取れなかった→フリー市場
+        newFA.push(normFighter(clean));
+      }
+    } else if (r.winner && r.winner !== 'player') {
+      // AI団体が落札
+      const orgData = newAiOrgs[r.winner];
+      if (orgData) {
+        const recruited = normFighter({ ...clean, orgId: r.winner });
+        Engine.rival.pushUniqueFighter(orgData.roster, recruited);
+      }
+    } else {
+      // 流札 → フリー市場
+      newFA.push(normFighter(clean));
+    }
   }
-  return { ...G, roster: newRoster, freeAgents: newFA };
+
+  // §6 EMPRESS安全網
+  for (const ev of draftResult.empressReinforceEvents) {
+    if (ev.type === 'empressReinforce' && ev.fighter) {
+      const orgData = newAiOrgs[DRAFT_EMPRESS_SAFETY.orgId];
+      if (orgData) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter(ev.fighter));
+        newDormant = newDormant.filter(e => e.id !== ev.dormantIdRemoved);
+      }
+    }
+  }
+
+  return {
+    ...G,
+    roster: newRoster,
+    funds: newFunds,
+    aiOrgs: newAiOrgs,
+    freeAgents: newFA,
+    dormantPool: newDormant,
+    scoutCandidates: null,
+    scoutPicks: null,
+  };
 }
 
 // transientフィールドを一括消化するヘルパー
