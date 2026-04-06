@@ -1913,16 +1913,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   border:1px solid #2a2a45;overflow:hidden}
 .ppvmc-card:hover .ppvmc-card-bg{border-color:#daa520}
 .ppvmc-card.is-main .ppvmc-card-bg{border-color:#daa520;box-shadow:0 0 20px rgba(218,165,32,0.15)}
-.ppvmc-fighter{position:absolute;bottom:0;width:200px;height:280px;z-index:1}
+.ppvmc-fighter{position:absolute;bottom:0;width:200px;height:280px;z-index:3}
 .ppvmc-card.is-main .ppvmc-fighter{width:240px;height:340px}
 .ppvmc-fighter.left{left:0}
 .ppvmc-fighter.right{right:0}
 .ppvmc-fighter img{position:absolute;bottom:0;height:100%;width:auto;max-width:none;object-fit:contain}
 .ppvmc-fighter.left img{transform:scaleX(-1);right:0}
 .ppvmc-fighter.right img{left:0}
-.ppvmc-center{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;
+.ppvmc-center{position:absolute;top:0;bottom:0;left:200px;right:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;
   text-align:center;padding:12px 8px;gap:4px;z-index:2;
   background:linear-gradient(90deg,transparent 0%,rgba(14,14,30,0.85) 15%,rgba(14,14,30,0.95) 50%,rgba(14,14,30,0.85) 85%,transparent 100%)}
+.ppvmc-card.is-main .ppvmc-center{left:240px;right:240px}
 .ppvmc-type{font-size:10px;letter-spacing:3px;color:#e94560;text-transform:uppercase}
 .ppvmc-card.is-main .ppvmc-type{color:#ffd700;font-size:11px}
 .ppvmc-cname{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8e8e8;line-height:1.1}
