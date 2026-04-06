@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-06（ドラフト交渉システム実装+修正）
+> 最終更新: 2026-04-06（dormantPool枯渇バグ修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,7 @@
 
 ## 現在の状態
 
-**ドラフト交渉システム実装+修正完了（2026-04-06）。** draft-negotiation-spec-v1.0に基づくセリ方式スカウト交渉を全面実装(step1-5)+ユーザー実機確認に基づく修正16件を実施。
+**dormantPool枯渇バグ修正（2026-04-06）。** 長期プレイでスカウト候補が0名になる致命的バグを修正。ドラフト交渉システム実装+修正完了済み。
 
 **実装内容:**
 - src/draft-negotiation.js新規作成(~780行): セリエンジン(assignInterest/runDropCheck/stepRound/runNegotiation/runFullDraft/empressReinforce)

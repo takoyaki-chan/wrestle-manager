@@ -2234,6 +2234,38 @@ const Storage = {
         G = { ...G, leagueElevated: true, _pendingLeagueElevation: true, endingShown: true, _migrated_leagueElevation_v2: true };
       }
 
+      // dormantPool枯渇救済: 長期プレイでプールが空になったセーブを回復
+      if (!G._migrated_dormantPool_refill_v1) {
+        const pool = G.dormantPool || [];
+        const eligibleCount = pool.filter(e => (e.age || 17) < 21).length;
+        if (eligibleCount < 20) {
+          const occupied = new Set();
+          (G.roster || []).forEach(c => occupied.add(c.id));
+          Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupied.add(c.id)));
+          (G.freeAgents || []).forEach(c => occupied.add(c.id));
+          pool.forEach(e => occupied.add(e.id));
+          // retiredIds 5シーズン経過分をリサイクル対象に
+          const retiredSeasons = G.retiredSeasons || {};
+          const recycleable = new Set();
+          (G.retiredIds || []).forEach(id => {
+            const retSeason = retiredSeasons[id];
+            if (retSeason !== undefined && G.season - retSeason >= 5) recycleable.add(id);
+            else occupied.add(id);
+          });
+          const available = ALL_CHARS.filter(c => !occupied.has(c.id));
+          if (available.length > 0) {
+            const newEntries = available.map(c => ({ id: c.id, age: 17 }));
+            const usedIds = new Set(newEntries.map(e => e.id));
+            const cleanedRetiredIds = (G.retiredIds || []).filter(id => !usedIds.has(id));
+            const cleanedRetiredSeasons = { ...retiredSeasons };
+            usedIds.forEach(id => { delete cleanedRetiredSeasons[id]; });
+            G = { ...G, dormantPool: [...pool, ...newEntries], retiredIds: cleanedRetiredIds, retiredSeasons: cleanedRetiredSeasons };
+            console.log(`[WM Migration] dormantPool refill: ${newEntries.length}名を補充 (eligible was ${eligibleCount})`);
+          }
+        }
+        G = { ...G, _migrated_dormantPool_refill_v1: true };
+      }
+
       return true;
     } catch(e) {
       G = prevG;
@@ -3157,8 +3189,9 @@ const App = {
     Audio.play('click');
     const picksCount = (G.scoutPicks || []).length;
     const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
-    // Clean up any remaining candidates (add unacquired to freeAgents pool)
+    // Clean up any remaining candidates
     let freeAgents = [...G.freeAgents];
+    let dormantPool = [...(G.dormantPool || [])];
     // 占有済みIDセット（最終重複チェック用）
     const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(G);
     (G.scoutCandidates || []).forEach(c => {
@@ -3168,11 +3201,16 @@ const App = {
       // 30% chance unselected candidates become freeAgents（重複除外）
       if (Math.random() < 0.30 && !occupiedIds.has(clean.id)) {
         freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
-        occupiedIds.add(clean.id); // このバッチ内でも仮予約
+        occupiedIds.add(clean.id);
+      } else if (!occupiedIds.has(clean.id)) {
+        // 残り70%: dormantPool末尾に返却（枯渇防止）
+        if (!dormantPool.some(e => e.id === clean.id)) {
+          dormantPool.push({ id: clean.id, age: 17 });
+        }
       }
     });
     G = {
-      ...G, freeAgents, gameLog: log,
+      ...G, freeAgents, dormantPool, gameLog: log,
       scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null,
       scoutPendingPick: null, scoutEventType: null,
       scoutsThisSeason: (G.scoutsThisSeason || 0) + 1,

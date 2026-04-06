@@ -9244,7 +9244,7 @@ const Engine = {
         // 修正: pool.length ではなく「22歳未満の有効エントリ数」で枯渇判定
         // + 引退5シーズン経過キャラをリサイクル候補に含める
         {
-          const MIN_ELIGIBLE = 6;
+          const MIN_ELIGIBLE = 20; // 6→20: ドラフトで毎シーズン最大24名消費するため余裕を持たせる
           const currentPool = s.dormantPool || [];
           const eligibleCount = currentPool.filter(e => (e.age || 17) < 21).length;
           if (eligibleCount < MIN_ELIGIBLE) {
@@ -9267,7 +9267,7 @@ const Engine = {
             const available = ALL_CHARS.filter(c => !occupiedIds.has(c.id));
             if (available.length > 0) {
               const refillRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xD00F));
-              const needed = Math.min(available.length, MIN_ELIGIBLE - eligibleCount + 4);
+              const needed = Math.min(available.length, MIN_ELIGIBLE - eligibleCount + 8);
               const shuffled = [...available].sort(() => Engine.rng.float(refillRng) - 0.5);
               const newEntries = shuffled.slice(0, needed).map(c => ({ id: c.id, age: 17 + Engine.rng.int(refillRng, 0, 2) }));
               // リサイクルに使ったIDをretiredIdsから除去
