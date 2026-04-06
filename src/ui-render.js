@@ -3088,10 +3088,29 @@ function _renderDraftCandidateList(candidates, context) {
   // Sort by assessedValue desc
   const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
 
-  // Split into tiers
-  const top = sorted.filter(c => c.assessedTier === 'superElite' || c.assessedTier === 'elite').slice(0, 3);
-  const mid = sorted.filter(c => c.assessedTier === 'promising' && !top.includes(c)).slice(0, 5);
-  const rest = sorted.filter(c => !top.includes(c) && !mid.includes(c));
+  // Split into tiers — ティアベースで厳密に振り分け
+  const topTier = sorted.filter(c => c.assessedTier === 'superElite' || c.assessedTier === 'elite');
+  const midTier = sorted.filter(c => c.assessedTier === 'promising');
+  const lowTier = sorted.filter(c => c.assessedTier === 'raw' || c.assessedTier === 'material');
+
+  // トッ��3: 超逸材+逸材を優先、足りなければ有望から補充
+  let top = topTier.slice(0, 3);
+  if (top.length < 3) {
+    const fill = midTier.slice(0, 3 - top.length);
+    top = [...top, ...fill];
+  }
+  const topSet = new Set(top.map(c => c.id));
+
+  // 有望5: 有望ティアで未使用のもの、足りなければ原石から補充
+  let mid = midTier.filter(c => !topSet.has(c.id)).slice(0, 5);
+  if (mid.length < 5) {
+    const fill = lowTier.slice(0, 5 - mid.length);
+    mid = [...mid, ...fill];
+  }
+  const midSet = new Set(mid.map(c => c.id));
+
+  // その他: 残り全員
+  const rest = sorted.filter(c => !topSet.has(c.id) && !midSet.has(c.id));
 
   const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
@@ -3344,9 +3363,9 @@ function _renderDraftNegotiation() {
   const ROLE_JP = { Babyface: 'Babyface', Heel: 'Heel', Neutral: 'Neutral' };
   const _orgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_META = {
-    org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: 'image/org/org-s-0.png' },
-    org_a: { name: _orgName('org_a'), tier: 'A級', emblCls: 'nova',    embl: 'image/org/org-a-0.png' },
-    org_b: { name: _orgName('org_b'), tier: 'B級', emblCls: 'crescent',embl: 'image/org/org-b-0.png' },
+    org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: '../image/org/org-s-0.png' },
+    org_a: { name: _orgName('org_a'), tier: 'A級', emblCls: 'nova',    embl: '../image/org/org-a-0.png' },
+    org_b: { name: _orgName('org_b'), tier: 'B級', emblCls: 'crescent',embl: '../image/org/org-b-0.png' },
   };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'dn-mark-bullseye' }, taikou: { text: '○', cls: 'dn-mark-contender' }, osae: { text: '△', cls: 'dn-mark-outside' } };
 
@@ -3446,13 +3465,16 @@ function _renderDraftNegotiation() {
         : `<span class="dn-card-mark ${mark ? mark.cls : ''}">${mark ? mark.text : '—'}</span>
            <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">¥${ns.currentBid.toLocaleString()}万</span>`}
       </div>
-      <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
-      <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? `R${interest._droppedAtRound || '?'}で離脱` : !isParticipating ? '不参加' : heat.labelJp}</div>
+      <div class="dn-card-heat-section">
+        <div class="dn-card-heat-title">粘り度</div>
+        <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
+        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? `R${interest._droppedAtRound || '?'}で離脱` : !isParticipating ? '不参加' : heat.labelJp}</div>
+      </div>
     </div>`;
   }
 
   // Player card
-  const playerIcon = G.playerOrgIcon ? `<img class="dn-emblem dn-emblem-player" src="image/org/${G.playerOrgIcon}" alt="YOU" onerror="this.style.display='none'">` : `<div class="dn-emblem dn-emblem-player" style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold-light);">YOU</div>`;
+  const playerIcon = (G.playerOrgIcon != null) ? `<img class="dn-emblem dn-emblem-player" src="../image/org/org-player-${G.playerOrgIcon}.png" alt="${G.orgName || 'YOU'}" onerror="this.style.display='none'">` : `<div class="dn-emblem dn-emblem-player" style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold-light);">${(G.orgName || 'YOU').charAt(0)}</div>`;
   const playerDropped = !ns.playerIn;
   const playerCardCls = playerDropped ? 'dn-card dn-card-dropped dn-card-player' : 'dn-card dn-card-player';
   html += `<div class="${playerCardCls}">
@@ -3463,8 +3485,11 @@ function _renderDraftNegotiation() {
       ${playerDropped ? '<span class="dn-card-bid dn-bid-passed">PASSED</span>'
       : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
     </div>
-    <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-steady" style="width:55%"></div></div>
-    <div class="dn-card-heat-label dn-heat-steady">${playerDropped ? '離脱済み' : 'あなたの判断'}</div>
+    <div class="dn-card-heat-section">
+      <div class="dn-card-heat-title">粘り度</div>
+      <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-steady" style="width:55%"></div></div>
+      <div class="dn-card-heat-label dn-heat-steady">${playerDropped ? '離脱済み' : 'あなたの判断'}</div>
+    </div>
   </div>`;
 
   html += `</div></div>`; // end cards
@@ -3518,17 +3543,20 @@ function _renderDraftNegotiation() {
     const aggressiveBid = Math.round(ns.currentBid * DRAFT_BID_MUL.aggressive);
     const standardBid = Math.round(ns.currentBid * DRAFT_BID_MUL.standard);
     html += `<div class="dn-actions">
-      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')">
+      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="相手の降り確率3倍。ただし一部の相手には逆効果の場合も">
         <div class="dn-action-label">強気で押す</div>
         <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-hint">相手の心を揺さぶる</div>
       </button>
-      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')">
+      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')" title="通常の入札倍率で金額を上げる">
         <div class="dn-action-label">標準で粘る</div>
         <div class="dn-action-detail">→ <strong>¥${standardBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-hint">粘り強く交渉を続ける</div>
       </button>
-      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')">
+      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')" title="この選手の交渉から離脱する">
         <div class="dn-action-label">ここで降りる</div>
         <div class="dn-action-detail">交渉から離脱</div>
+        <div class="dn-action-hint">残りはAI同士で決着</div>
       </button>
     </div>`;
   }
@@ -3634,7 +3662,9 @@ function _renderDraftNegotiation() {
 .dn-card-bid { font-size:16px; letter-spacing:0.5px; color:#e8e6e0; }
 .dn-bid-lead { background:linear-gradient(180deg,#fff,#f0d078); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .dn-bid-passed { color:rgba(232,230,224,0.28); font-size:12px; }
-.dn-card-heat { height:4px; background:rgba(232,230,224,0.06); border-radius:2px; overflow:hidden; margin-top:6px; }
+.dn-card-heat-section { margin-top:8px; padding-top:6px; border-top:1px solid rgba(200,190,170,0.06); }
+.dn-card-heat-title { font-size:7px; letter-spacing:1px; color:rgba(232,230,224,0.25); font-weight:700; text-align:center; margin-bottom:3px; }
+.dn-card-heat { height:4px; background:rgba(232,230,224,0.06); border-radius:2px; overflow:hidden; }
 .dn-card-heat-fill { height:100%; border-radius:2px; }
 .dn-heat-composed { background:#4a8fd4; color:#4a8fd4; }
 .dn-heat-steady { background:#d4a843; color:#d4a843; }
@@ -3652,6 +3682,7 @@ function _renderDraftNegotiation() {
 .dn-action-label { font-size:11px; letter-spacing:2px; font-weight:700; margin-bottom:4px; }
 .dn-action-detail { font-size:10px; color:rgba(232,230,224,0.55); }
 .dn-action-detail strong { font-size:14px; color:#e8e6e0; font-weight:400; letter-spacing:0.5px; }
+.dn-action-hint { font-size:8px; color:rgba(232,230,224,0.3); margin-top:4px; letter-spacing:0.3px; }
 .dn-action-aggressive { border:1px solid rgba(196,30,58,0.4); background:rgba(196,30,58,0.08); }
 .dn-action-aggressive .dn-action-label { color:#f08b9e; }
 .dn-action-aggressive:hover { background:rgba(196,30,58,0.16); border-color:#c41e3a; }

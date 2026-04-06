@@ -3973,7 +3973,7 @@ function _draftSfx(type) {
       bid:     { src: '../bgm/b06_rollup_swoosh_v2.mp3', vol: 0.10 },
       dropped: { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.10, rate: 0.7 },
       fanfare: { src: '../bgm/f10_victory_fanfare_v3.mp3', vol: 0.15 },
-      lost:    { src: '../bgm/iwa_gameover001.mp3',    vol: 0.10 },
+      lost:    { src: '../bgm/b07_whiff_v4.mp3',        vol: 0.08 },
     };
     const cfg = sfxMap[type];
     if (!cfg) return;
@@ -4087,7 +4087,8 @@ function startDraftNegotiation() {
   if (uiQueue.length === 0) {
     // 全候補処理完了 → まとめ記事 → 終了
     G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
-    try { Audio.bgm.playForState(); } catch(e) {} // BGM → management
+    try { Audio.fileBgm.play('../bgm/bgm_management_v1.mp3', { loop: true, volume: 0.12 }); Audio.bgm._current = 'management'; Audio.bgm._playing = true; } catch(e) {}
+    console.log('[WM Draft] BGM → management (draft complete, no UI queue)');
     refreshAll();
     showScreen('scoutEvent');
     return;
@@ -4123,7 +4124,14 @@ function startDraftNegotiation() {
     },
   };
   _draftSfx('gong'); // ① 交渉開幕ゴング
-  Audio.bgm.playForState(); // BGM → tension
+  // BGM → ドラフト交渉用（FileBGM直接呼び出し — BGM.play経由だと状態管理で早期returnされるケースがある）
+  try {
+    Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.12 });
+    // showScreen内のplayForStateで上書きされないよう、BGM状態を同期
+    Audio.bgm._current = 'tension';
+    Audio.bgm._playing = true;
+  } catch(e) {}
+  console.log('[WM Draft] BGM → tension (fileBgm direct)');
   refreshAll();
   showScreen('scoutEvent');
 }
@@ -4388,7 +4396,8 @@ function draftNextCandidate() {
     // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事)
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
-    try { Audio.bgm.playForState(); } catch(e) {} // BGM → management
+    try { Audio.fileBgm.play('../bgm/bgm_management_v1.mp3', { loop: true, volume: 0.12 }); Audio.bgm._current = 'management'; Audio.bgm._playing = true; } catch(e) {}
+    console.log('[WM Draft] BGM → management (draft complete)');
     refreshAll();
     showScreen('scoutEvent');
     return;
