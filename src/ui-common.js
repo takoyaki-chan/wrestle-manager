@@ -3963,18 +3963,24 @@ function scoutPick(id) { App.scoutEventPick(id); }
 function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
 function scoutFinish() { App.scoutEventFinish(); }
 // draft SFX helper
+// ドラフトSFX — 独立Audioオブジェクトで再生（FileBGMを使うとBGMが止まるため）
 function _draftSfx(type) {
   try {
-    if (type === 'gong') Audio.fileBgm.play('../bgm/f08_gong_start_v2.mp3', { volume: 0.15 });
-    else if (type === 'chime') Audio.fileBgm.play('../bgm/f06_fin_chime_v1.mp3', { volume: 0.12 });
-    else if (type === 'bid') Audio.fileBgm.play('../bgm/b06_rollup_swoosh_v2.mp3', { volume: 0.10 });
-    else if (type === 'dropped') {
-      const a = new window.Audio('../bgm/f06_fin_chime_v1.mp3');
-      a.playbackRate = 0.7; a.volume = 0.10; a.play().catch(()=>{});
-    }
-    else if (type === 'fanfare') Audio.fileBgm.play('../bgm/f10_victory_fanfare_v3.mp3', { volume: 0.15 });
-    else if (type === 'lost') Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { volume: 0.10 });
-    else if (type === 'click') Audio.play('click');
+    if (type === 'click') { Audio.play('click'); return; }
+    const sfxMap = {
+      gong:    { src: '../bgm/f08_gong_start_v2.mp3', vol: 0.15 },
+      chime:   { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.12 },
+      bid:     { src: '../bgm/b06_rollup_swoosh_v2.mp3', vol: 0.10 },
+      dropped: { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.10, rate: 0.7 },
+      fanfare: { src: '../bgm/f10_victory_fanfare_v3.mp3', vol: 0.15 },
+      lost:    { src: '../bgm/iwa_gameover001.mp3',    vol: 0.10 },
+    };
+    const cfg = sfxMap[type];
+    if (!cfg) return;
+    const a = new window.Audio(cfg.src);
+    a.volume = Math.min(1.0, cfg.vol * (Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1));
+    if (cfg.rate) a.playbackRate = cfg.rate;
+    a.play().catch(() => {});
   } catch(e) {}
 }
 
@@ -4081,6 +4087,7 @@ function startDraftNegotiation() {
   if (uiQueue.length === 0) {
     // 全候補処理完了 → まとめ記事 → 終了
     G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
+    try { Audio.bgm.playForState(); } catch(e) {} // BGM → management
     refreshAll();
     showScreen('scoutEvent');
     return;
@@ -4189,8 +4196,6 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     _draftSelections: null,
     weeklyNewspaper: newspaper,
   };
-  // BGM → management に戻す
-  try { Audio.bgm.playForState(); } catch(e) {}
 }
 
 // 業界紙まとめ記事ページを構築
@@ -4383,6 +4388,7 @@ function draftNextCandidate() {
     // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事)
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
+    try { Audio.bgm.playForState(); } catch(e) {} // BGM → management
     refreshAll();
     showScreen('scoutEvent');
     return;

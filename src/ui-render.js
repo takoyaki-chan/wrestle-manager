@@ -3148,9 +3148,12 @@ function _renderDraftCandidateList(candidates, context) {
 
   // Star selection state
   const selections = G._draftSelections || [];
-  function _starBtn(candId) {
+  function _starBtn(candId, size) {
     const selected = selections.includes(candId);
-    return `<button onclick="toggleDraftSelection(${candId})" style="background:none;border:none;cursor:pointer;font-size:22px;padding:2px 4px;transition:all .15s;${selected ? 'filter:drop-shadow(0 0 6px rgba(154,112,32,0.6));' : 'opacity:0.4;'}" title="${selected ? '選択解除' : '交渉候補に追加'}">${selected ? '★' : '☆'}</button>`;
+    const sz = size || 'md';
+    const fs = sz === 'lg' ? '24px' : sz === 'sm' ? '18px' : '20px';
+    const pad = sz === 'lg' ? '4px 6px' : '3px 5px';
+    return `<button class="draft-star-btn${selected ? ' draft-star-on' : ''}" onclick="toggleDraftSelection(${candId})" style="font-size:${fs};padding:${pad};" title="${selected ? '選択解除' : '交渉候補に追加'}">${selected ? '★' : '☆'}</button>`;
   }
 
   // Find lead headline name (top candidate)
@@ -3166,7 +3169,7 @@ function _renderDraftCandidateList(candidates, context) {
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
     <div style="display:flex;align-items:center;gap:16px;">
-      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">★ 選択中 <span style="font-size:16px;color:#f0d078;">${selections.length}</span> / ${maxPicks}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">★ 選択中 <span style="font-size:16px;color:${selections.length >= maxPicks ? '#f08b9e' : '#f0d078'};">${selections.length}</span> / ${maxPicks}名${selections.length >= maxPicks ? ' <span style="font-size:10px;color:#f08b9e;animation:dn-pulse 1.2s infinite;">上限</span>' : ''}</div>
       <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
     </div>
   </div>`;
@@ -3198,7 +3201,7 @@ function _renderDraftCandidateList(candidates, context) {
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
               <span style="display:inline-block;font-size:9px;letter-spacing:1px;color:#fff;background:#1f1710;padding:1px 7px;font-weight:700;">PICK NO. ${String(idx + 1).padStart(2, '0')}</span>
-              ${_starBtn(c.id)}
+              ${_starBtn(c.id, 'lg')}
             </div>
             <div style="font-size:${nameSize};font-weight:900;color:#1f1710;line-height:1.2;margin-bottom:5px;">${c.name}</div>
             <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
@@ -3234,13 +3237,14 @@ function _renderDraftCandidateList(candidates, context) {
       const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
       const tierClass = 't-' + (c.assessedTier || 'material');
       const baseCost = c.assessedValue || 0;
-      html += `<div style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
+      const midSelected = selections.includes(c.id);
+      html += `<div class="${midSelected ? 'draft-card-selected' : ''}" style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
         ${_portrait(c, 56)}
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
             <span style="font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">No.${String(globalIdx).padStart(2, '0')}</span>
             <span style="font-size:15px;font-weight:900;color:#1f1710;">${c.name}</span>
-            ${_starBtn(c.id)}
+            ${_starBtn(c.id, 'md')}
           </div>
           <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
             <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
@@ -3280,7 +3284,8 @@ function _renderDraftCandidateList(candidates, context) {
       const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
       const tierClass = 't-' + (c.assessedTier || 'material');
       const baseCost = c.assessedValue || 0;
-      html += `<tr>
+      const rowSelected = selections.includes(c.id);
+      html += `<tr class="${rowSelected ? 'draft-row-selected' : ''}">
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">${String(globalIdx).padStart(2, '0')}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);">${_portrait(c, 32)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span style="font-size:12px;font-weight:900;color:#1f1710;">${c.name}</span><div style="font-size:9px;color:#7a5b32;">${STYLE_JP[c.style] || c.style}</div></td>
@@ -3290,7 +3295,7 @@ function _renderDraftCandidateList(candidates, context) {
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_s', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_a', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_b', false)}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_starBtn(c.id)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;background:${rowSelected ? 'rgba(212,168,67,0.1)' : 'rgba(95,69,35,0.04)'};">${_starBtn(c.id, 'sm')}</td>
       </tr>`;
     });
     html += `</tbody></table></div>`;
@@ -3299,10 +3304,11 @@ function _renderDraftCandidateList(candidates, context) {
   // ── Footer bar ──
   html += `<div style="margin:0 22px;padding:14px 0 16px;border-top:2px double rgba(95,69,35,0.35);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
     <div style="display:flex;gap:24px;">
-      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks} NAMES</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks}名</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">選択中<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${maxPicks}名</strong></div>
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
     </div>
-    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,${selections.length > 0 ? '#8b1a1a,#c22020' : '#555,#666'});color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;${selections.length === 0 ? 'opacity:0.5;' : ''}">${selections.length > 0 ? '交渉開始 →' : '★ 候補を選択してください'}</button>
+    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,${selections.length > 0 ? '#8b1a1a,#c22020' : '#555,#666'});color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;${selections.length === 0 ? 'opacity:0.5;' : ''}">${selections.length > 0 ? `交渉開始（${selections.length}名）→` : '★ 候補を選択してください'}</button>
   </div>`;
 
   // ── Legend ──
@@ -3538,6 +3544,15 @@ function _renderDraftNegotiation() {
   const style = document.createElement('style');
   style.id = 'draft-newspaper-css';
   style.textContent = `
+/* ── Star button (draft candidate selection) ── */
+.draft-star-btn { background:none; border:2px solid rgba(154,112,32,0.3); border-radius:6px; cursor:pointer; color:rgba(154,112,32,0.4); transition:all .15s; line-height:1; }
+.draft-star-btn:hover { background:rgba(154,112,32,0.08); border-color:rgba(154,112,32,0.6); color:#9a7020; transform:scale(1.1); }
+.draft-star-on { color:#9a7020; background:rgba(212,168,67,0.12); border-color:rgba(154,112,32,0.5); filter:drop-shadow(0 0 6px rgba(154,112,32,0.5)); }
+.draft-star-on:hover { background:rgba(212,168,67,0.2); }
+/* Selected row/card highlight */
+.draft-row-selected { background:rgba(212,168,67,0.06) !important; }
+.draft-row-selected td:first-child { box-shadow:inset 3px 0 0 #9a7020; }
+.draft-card-selected { background:rgba(212,168,67,0.08); border-left:3px solid #9a7020 !important; }
 .draft-mini-stats { display:flex; gap:5px; margin-top:8px; padding:7px 0; border-top:1px dashed rgba(95,69,35,0.18); border-bottom:1px dashed rgba(95,69,35,0.18); }
 .draft-stat-block { flex:1; text-align:center; }
 .draft-stat-key { font-size:8px; letter-spacing:0.5px; color:#7a5b32; font-weight:700; }
