@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Draft Screens Mockup — wrestle-manager</title>
+<style>
+  :root {
+    --bg: #13100c;
+    --gold: #d4a04c;
+    --gold-bright: #f0cc7a;
+    --cream: #f8eed2;
+    --cream-dk: #f0e0ba;
+    --paper-bd: rgba(120, 84, 39, 0.32);
+    --paper-dk: #1f1710;
+    --red: #8b1a1a;
+    --red-br: #c22020;
+    --dn-dark-a: #0f0d0a;
+    --dn-dark-b: #1a1510;
+    --text: #e8dfc8;
+    --text-dim: #8b8173;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #0a0806;
+    color: var(--text);
+    padding: 24px 16px 80px;
+  }
+  h1.page-title {
+    text-align: center;
+    color: var(--gold-bright);
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin: 0 0 8px;
+  }
+  .page-sub { text-align:center; color: var(--text-dim); font-size: 12px; margin-bottom: 32px; }
+  .section {
+    max-width: 1000px;
+    margin: 0 auto 56px;
+  }
+  .sec-head {
+    border-left: 3px solid var(--gold);
+    padding: 6px 14px;
+    margin-bottom: 16px;
+    background: rgba(212,160,76,0.06);
+  }
+  .sec-head h2 { margin:0; font-size: 16px; color: var(--gold-bright); letter-spacing:1px; }
+  .sec-head p { margin: 4px 0 0; font-size: 11px; color: var(--text-dim); }
+
+  /* ====================================================== */
+  /* A1: TEASER NEWSPAPER (号外紙面) */
+  /* ====================================================== */
+  .a1-wrap {
+    background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dk) 100%);
+    color: var(--paper-dk);
+    border: 1px solid var(--paper-bd);
+    border-radius: 8px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+    overflow: hidden;
+    position: relative;
+  }
+  .a1-stamp {
+    position: absolute; top: 80px; right: -60px;
+    background: var(--red);
+    color: #fff;
+    padding: 8px 80px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    transform: rotate(18deg);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    border: 2px solid #fff;
+    z-index: 4;
+  }
+  .a1-title-bar {
+    background: linear-gradient(90deg, #6e0f0f, var(--red-br) 50%, #6e0f0f);
+    color: #fff;
+    padding: 8px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 3px double rgba(255,255,255,0.3);
+  }
+  .a1-title-bar .brand { font-size: 16px; font-weight: 900; letter-spacing: 2px; }
+  .a1-title-bar .ed { font-size: 11px; opacity: 0.85; letter-spacing: 1px; }
+  .a1-hero {
+    padding: 28px 30px 22px;
+    text-align: center;
+    border-bottom: 3px double rgba(95,69,35,0.4);
+    background: radial-gradient(ellipse at center top, rgba(212,160,76,0.15), transparent 60%);
+  }
+  .a1-kicker {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    padding: 4px 16px;
+    font-size: 11px;
+    letter-spacing: 5px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .a1-main-h {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: 2px;
+    margin: 6px 0 10px;
+    color: var(--paper-dk);
+    text-shadow: 0 2px 0 rgba(139,26,26,0.08);
+  }
+  .a1-main-h .red { color: var(--red); }
+  .a1-sub-h {
+    font-size: 15px;
+    color: #3a2e1c;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .a1-lead {
+    max-width: 680px;
+    margin: 0 auto;
+    font-size: 13px;
+    line-height: 1.85;
+    color: #2a2214;
+    text-align: left;
+    text-indent: 1em;
+  }
+  .a1-silhouettes {
+    padding: 18px 30px 8px;
+    border-bottom: 1px solid rgba(95,69,35,0.25);
+  }
+  .a1-sil-label {
+    font-size: 11px; letter-spacing: 4px; color: #6e4a1c; font-weight: 700;
+    margin-bottom: 10px; text-align: center;
+  }
+  .a1-sil-row {
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+  }
+  .a1-sil {
+    aspect-ratio: 3/4;
+    background: linear-gradient(180deg, #2a2214, #0a0806);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(120,84,39,0.4);
+  }
+  .a1-sil::before {
+    content: '?';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; font-weight: 900;
+    color: rgba(212,160,76,0.35);
+    font-family: Georgia, serif;
+  }
+  .a1-sil.feat { background: linear-gradient(180deg, #6e0f0f, #2a0a0a); }
+  .a1-sil.feat::before { content: '★'; color: rgba(240,204,120,0.7); font-size: 42px; }
+  .a1-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding: 14px 30px;
+    border-bottom: 1px solid rgba(95,69,35,0.25);
+    gap: 14px;
+  }
+  .a1-stat { text-align: center; }
+  .a1-stat .num { font-size: 32px; font-weight: 900; color: var(--red); line-height: 1; }
+  .a1-stat .lbl { font-size: 10px; letter-spacing: 2px; color: #6e4a1c; margin-top: 4px; font-weight: 700; }
+  .a1-footer {
+    padding: 18px 30px;
+    display: flex; gap: 14px; justify-content: center;
+  }
+  .btn {
+    border: none;
+    padding: 14px 32px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: 2px;
+  }
+  .btn-gold {
+    background: linear-gradient(180deg, var(--gold-bright), #a87a2e);
+    color: #1a1208;
+    box-shadow: 0 4px 0 #5a3a10, 0 6px 16px rgba(0,0,0,0.4);
+    border: 1px solid #6e4a1c;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--paper-dk);
+    border: 1px solid var(--paper-bd);
+  }
+
+  /* ====================================================== */
+  /* A2: DARK THEATER (入場前暗転型) */
+  /* ====================================================== */
+  .a2-wrap {
+    background: radial-gradient(ellipse at center, #1a1510 0%, #0a0806 70%);
+    border: 1px solid rgba(212,160,76,0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+    position: relative;
+    min-height: 460px;
+  }
+  .a2-spotlight {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 35%, rgba(212,160,76,0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .a2-scanline {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+  .a2-inner {
+    position: relative;
+    padding: 36px 40px 28px;
+    text-align: center;
+  }
+  .a2-top-line {
+    font-size: 10px; letter-spacing: 8px;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+  .a2-big {
+    font-size: 84px;
+    font-weight: 900;
+    letter-spacing: 12px;
+    line-height: 1;
+    background: linear-gradient(180deg, #fff7d4 0%, var(--gold) 45%, #6e4a1c 60%, var(--gold-bright) 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0 0 4px;
+    text-shadow: 0 0 40px rgba(212,160,76,0.3);
+  }
+  .a2-year {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    margin-bottom: 22px;
+    opacity: 0.85;
+  }
+  .a2-divider {
+    width: 240px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 20px;
+  }
+  .a2-tagline {
+    font-size: 15px;
+    color: #d4c4a0;
+    letter-spacing: 3px;
+    font-weight: 500;
+    line-height: 1.9;
+    margin-bottom: 22px;
+  }
+  .a2-tagline .hi { color: var(--gold-bright); font-weight: 700; }
+  .a2-cards {
+    display: flex; justify-content: center; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .a2-slot {
+    width: 88px;
+    padding: 12px 6px;
+    background: rgba(212,160,76,0.04);
+    border: 1px solid rgba(212,160,76,0.25);
+    border-radius: 4px;
+    position: relative;
+  }
+  .a2-slot::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent, rgba(212,160,76,0.08));
+    pointer-events: none;
+  }
+  .a2-slot .n { font-size: 32px; font-weight: 900; color: var(--gold-bright); line-height: 1; }
+  .a2-slot .n .sm { font-size: 14px; color: var(--text-dim); }
+  .a2-slot .lbl { font-size: 9px; color: var(--text-dim); letter-spacing: 2px; margin-top: 6px; }
+  .a2-slot.top {
+    background: rgba(139,26,26,0.18);
+    border-color: rgba(212,160,76,0.5);
+    box-shadow: 0 0 20px rgba(212,160,76,0.15);
+  }
+  .a2-slot.top .n { color: #ff6b6b; font-size: 36px; }
+  .a2-ctas {
+    display: flex; gap: 14px; justify-content: center;
+    margin-top: 8px;
+  }
+  .btn-dark-gold {
+    background: linear-gradient(180deg, var(--gold-bright), #8b6020);
+    color: #0a0806;
+    border: 1px solid var(--gold-bright);
+    box-shadow: 0 0 24px rgba(212,160,76,0.4), 0 4px 0 #3a2610;
+    padding: 14px 36px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-dark-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--text-dim);
+    padding: 14px 24px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* ====================================================== */
+  /* B1: TRADING CARDS (カード結果画面) */
+  /* ====================================================== */
+  .b1-wrap {
+    background: linear-gradient(180deg, #1a1510 0%, #0a0806 100%);
+    border: 1px solid rgba(212,160,76,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 28px 24px 32px;
+    position: relative;
+  }
+  .b1-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at top, rgba(212,160,76,0.12), transparent 60%);
+    pointer-events: none;
+  }
+  .b1-head { text-align: center; position: relative; margin-bottom: 24px; }
+  .b1-head .kick { font-size: 10px; letter-spacing: 8px; color: var(--gold); margin-bottom: 6px; }
+  .b1-head .title {
+    font-size: 42px; font-weight: 900; letter-spacing: 6px; line-height: 1;
+    background: linear-gradient(180deg, #fff7d4, var(--gold) 60%, #6e4a1c);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 8px;
+  }
+  .b1-head .sub {
+    font-size: 13px; color: var(--text); letter-spacing: 2px;
+  }
+  .b1-head .sub .count { color: var(--gold-bright); font-size: 20px; font-weight: 900; margin: 0 4px; }
+  .b1-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 26px;
+    position: relative;
+  }
+  .b1-card {
+    background: linear-gradient(180deg, #1a1510 0%, #0a0806 100%);
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 24px rgba(212,160,76,0.15);
+  }
+  .b1-card.tier-superElite {
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 30px rgba(255,107,107,0.35);
+  }
+  .b1-card.tier-elite {
+    border-color: var(--gold-bright);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 28px rgba(240,204,120,0.3);
+  }
+  .b1-card::before {
+    content: 'GET!';
+    position: absolute; top: 10px; right: -24px;
+    background: var(--red-br);
+    color: #fff;
+    padding: 3px 28px;
+    font-size: 11px; font-weight: 900; letter-spacing: 2px;
+    transform: rotate(28deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    z-index: 3;
+    border: 1px solid #fff;
+  }
+  .b1-card-top {
+    display: flex;
+    background: linear-gradient(180deg, rgba(212,160,76,0.15), transparent);
+    padding: 8px 10px 6px;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(212,160,76,0.2);
+  }
+  .b1-tier {
+    font-size: 9px; font-weight: 900;
+    background: var(--gold);
+    color: #1a1208;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .b1-card.tier-superElite .b1-tier { background: #ff6b6b; color: #fff; }
+  .b1-style {
+    font-size: 9px; color: var(--text-dim);
+    margin-left: auto;
+  }
+  .b1-portrait {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: linear-gradient(135deg, #3a2e1c, #1a1510);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid rgba(212,160,76,0.25);
+  }
+  .b1-portrait .placeholder {
+    font-size: 64px; font-weight: 900;
+    color: rgba(212,160,76,0.35);
+    font-family: Georgia, serif;
+  }
+  .b1-portrait .age {
+    position: absolute; bottom: 8px; right: 8px;
+    background: rgba(0,0,0,0.7);
+    color: var(--gold-bright);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .b1-name {
+    padding: 8px 10px 4px;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--gold-bright);
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .b1-ovr {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .b1-ovr .v {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    margin: 0 4px;
+  }
+  .b1-stats {
+    padding: 4px 10px 10px;
+    display: flex; flex-direction: column;
+    gap: 3px;
+  }
+  .b1-stat-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px;
+  }
+  .b1-stat-row .k {
+    width: 26px; color: var(--text-dim); font-weight: 700;
+  }
+  .b1-stat-row .bar {
+    flex: 1; height: 5px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .b1-stat-row .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  }
+  .b1-stat-row .v {
+    width: 22px;
+    text-align: right;
+    color: #fff;
+    font-weight: 700;
+  }
+  .b1-cost {
+    padding: 6px 10px;
+    background: rgba(139,26,26,0.25);
+    border-top: 1px solid rgba(212,160,76,0.2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .b1-cost .lbl { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; }
+  .b1-cost .val { font-size: 14px; color: var(--gold-bright); font-weight: 900; }
+  .b1-totals {
+    display: flex; justify-content: center;
+    gap: 32px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(212,160,76,0.25);
+    border-bottom: 1px solid rgba(212,160,76,0.25);
+    margin-bottom: 20px;
+  }
+  .b1-totals .cell { text-align: center; }
+  .b1-totals .cell .n { font-size: 22px; font-weight: 900; color: var(--gold-bright); }
+  .b1-totals .cell .l { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; margin-top: 2px; }
+  .b1-ctas { text-align: center; }
+
+  /* ====================================================== */
+  /* B2: TEAM REVEAL (集合ショット型) */
+  /* ====================================================== */
+  .b2-wrap {
+    background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dk) 100%);
+    border: 1px solid var(--paper-bd);
+    border-radius: 8px;
+    overflow: hidden;
+    color: var(--paper-dk);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+  }
+  .b2-title-bar {
+    background: linear-gradient(90deg, #6e0f0f, var(--red-br) 50%, #6e0f0f);
+    padding: 8px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #fff;
+  }
+  .b2-title-bar .brand { font-size: 15px; font-weight: 900; letter-spacing: 2px; }
+  .b2-title-bar .ed { font-size: 11px; opacity: 0.85; }
+  .b2-hero {
+    text-align: center;
+    padding: 22px 24px 14px;
+    border-bottom: 3px double rgba(95,69,35,0.4);
+  }
+  .b2-hero .kicker {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    padding: 4px 14px;
+    font-size: 11px;
+    letter-spacing: 5px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .b2-hero h2 {
+    font-size: 32px; font-weight: 900;
+    margin: 4px 0 8px;
+    letter-spacing: 1px;
+    color: var(--paper-dk);
+  }
+  .b2-hero h2 .red { color: var(--red); }
+  .b2-hero .lead {
+    font-size: 12px;
+    color: #3a2e1c;
+    line-height: 1.7;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .b2-roster-strip {
+    background: linear-gradient(180deg, #2a2214, #0a0806);
+    padding: 22px 24px 18px;
+    position: relative;
+    border-bottom: 3px double rgba(95,69,35,0.4);
+  }
+  .b2-roster-strip::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center top, rgba(212,160,76,0.2), transparent 70%);
+    pointer-events: none;
+  }
+  .b2-strip-label {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .b2-row {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    position: relative;
+  }
+  .b2-pose {
+    width: 90px;
+    text-align: center;
+  }
+  .b2-pose-img {
+    width: 90px; height: 110px;
+    background: linear-gradient(180deg, #6e4a1c, #2a1a08);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .b2-pose-img::before {
+    content: attr(data-init);
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 900;
+    color: rgba(240,204,120,0.8);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  }
+  .b2-pose.new .b2-pose-img {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 16px rgba(255,107,107,0.5);
+  }
+  .b2-pose.new::after {
+    content: 'NEW';
+    display: inline-block;
+    background: #ff6b6b;
+    color: #fff;
+    font-size: 9px; font-weight: 900;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    margin-top: -4px;
+  }
+  .b2-pose .nm { font-size: 11px; color: #d4c4a0; font-weight: 700; }
+  .b2-pose .ovr { font-size: 10px; color: var(--gold-bright); }
+  .b2-detail-grid {
+    padding: 16px 24px 18px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .b2-mini {
+    background: #fff;
+    border: 1px solid rgba(120,84,39,0.3);
+    border-radius: 4px;
+    padding: 10px 12px;
+    position: relative;
+  }
+  .b2-mini::before {
+    content: 'GET';
+    position: absolute; top: 6px; right: 6px;
+    background: var(--red);
+    color: #fff;
+    font-size: 9px; font-weight: 900;
+    padding: 1px 5px;
+    letter-spacing: 1px;
+    border-radius: 2px;
+  }
+  .b2-mini .nm { font-size: 14px; font-weight: 900; margin-bottom: 2px; }
+  .b2-mini .meta { font-size: 10px; color: #6e4a1c; margin-bottom: 8px; }
+  .b2-mini .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; font-size: 10px; }
+  .b2-mini .stats span { color: #3a2e1c; }
+  .b2-mini .stats b { color: var(--red); font-weight: 900; margin-left: 4px; }
+  .b2-mini .cost {
+    margin-top: 6px;
+    font-size: 10px;
+    color: #3a2e1c;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(120,84,39,0.4);
+    display: flex; justify-content: space-between;
+  }
+  .b2-mini .cost b { color: var(--red); font-weight: 900; }
+  .b2-footer {
+    padding: 16px 24px;
+    display: flex; gap: 14px; justify-content: center;
+    background: rgba(120,84,39,0.08);
+  }
+
+  /* Common label */
+  .note {
+    max-width: 1000px; margin: 0 auto 24px;
+    color: var(--text-dim); font-size: 12px; line-height: 1.8;
+    border-left: 2px solid var(--gold);
+    padding: 6px 14px;
+    background: rgba(212,160,76,0.04);
+  }
+  .note b { color: var(--gold-bright); }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">DRAFT SCREENS MOCKUP</h1>
+<div class="page-sub">ドラフト開幕前 × 2案 / ドラフト完了 × 2案</div>
+
+<!-- ============================================= -->
+<!-- A1 -->
+<!-- ============================================= -->
+<div class="section">
+  <div class="sec-head">
+    <h2>A1 — 開幕前「号外紙面」型</h2>
+    <p>既存の週刊グラップル速報面と一貫性あり。紙面の中央に巨大見出し + シルエットで候補者を予告。スタンプ演出。</p>
+  </div>
+
+  <div class="a1-wrap">
+    <div class="a1-stamp">◆ 号外 ◆</div>
+    <div class="a1-title-bar">
+      <div class="brand">週刊グラップル</div>
+      <div class="ed">第127号 ・ シーズン3 オフ第3週</div>
+    </div>
+    <div class="a1-hero">
+      <div class="a1-kicker">◆ 緊急速報 ◆</div>
+      <div class="a1-main-h"><span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕</div>
+      <div class="a1-sub-h">2027年度 新人交渉 — 全14名、業界の門を叩く</div>
+      <div class="a1-lead">
+        本日、オフシーズン第3週。各団体のフロントが動き出す。今年の目玉は17歳の超逸材・神崎 隼人。
+        複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。
+        4名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。
+      </div>
+    </div>
+    <div class="a1-silhouettes">
+      <div class="a1-sil-label">本日の候補者 ・ 14名</div>
+      <div class="a1-sil-row">
+        <div class="a1-sil feat"></div>
+        <div class="a1-sil feat"></div>
+        <div class="a1-sil feat"></div>
+        <div class="a1-sil"></div>
+        <div class="a1-sil"></div>
+        <div class="a1-sil"></div>
+        <div class="a1-sil"></div>
+        <div class="a1-sil"></div>
+      </div>
+    </div>
+    <div class="a1-stats">
+      <div class="a1-stat"><div class="num">14</div><div class="lbl">TOTAL</div></div>
+      <div class="a1-stat"><div class="num">3</div><div class="lbl">SUPER ELITE</div></div>
+      <div class="a1-stat"><div class="num">4</div><div class="lbl">獲得上限</div></div>
+      <div class="a1-stat"><div class="num">8,240</div><div class="lbl">資金 (万)</div></div>
+    </div>
+    <div class="a1-footer">
+      <button class="btn btn-gold">🔍 候補者を見る</button>
+      <button class="btn btn-ghost">スカウト終了 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================= -->
+<!-- A2 -->
+<!-- ============================================= -->
+<div class="section">
+  <div class="sec-head">
+    <h2>A2 — 開幕前「暗転劇場」型</h2>
+    <p>紙面とは別の世界観。スポットライト + 巨大タイポグラフィで試合入場直前のような緊張感。交渉画面のダークテーマへの橋渡しにもなる。</p>
+  </div>
+
+  <div class="a2-wrap">
+    <div class="a2-spotlight"></div>
+    <div class="a2-scanline"></div>
+    <div class="a2-inner">
+      <div class="a2-top-line">PRESENTED BY WRESTLE ASSOCIATION</div>
+      <div class="a2-big">DRAFT</div>
+      <div class="a2-year">2 0 2 7 ・ SEASON 3</div>
+      <div class="a2-divider"></div>
+      <div class="a2-tagline">
+        <span class="hi">14名</span>の才能が門を叩く。<br>
+        あなたが掴めるのは、<span class="hi">わずか4名</span>。
+      </div>
+      <div class="a2-cards">
+        <div class="a2-slot top">
+          <div class="n">3</div>
+          <div class="lbl">SUPER ELITE</div>
+        </div>
+        <div class="a2-slot">
+          <div class="n">5</div>
+          <div class="lbl">ELITE</div>
+        </div>
+        <div class="a2-slot">
+          <div class="n">4</div>
+          <div class="lbl">PROMISING</div>
+        </div>
+        <div class="a2-slot">
+          <div class="n">2</div>
+          <div class="lbl">RAW</div>
+        </div>
+      </div>
+      <div class="a2-ctas">
+        <button class="btn-dark-gold">🔍 候補者を見る</button>
+        <button class="btn-dark-ghost">スカウト終了</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================= -->
+<!-- B1 -->
+<!-- ============================================= -->
+<div class="section">
+  <div class="sec-head">
+    <h2>B1 — 完了「トレーディングカード」型</h2>
+    <p>獲得選手を横並びの大型カードで。ポートレート + 5スタット + 契約金 + 「GET!」スタンプ。ダークテーマ・ガチャ結果演出的。1枚ずつ降ってくる演出との相性◎。</p>
+  </div>
+
+  <div class="b1-wrap">
+    <div class="b1-head">
+      <div class="kick">DRAFT COMPLETE</div>
+      <div class="title">獲得選手</div>
+      <div class="sub">新戦力<span class="count">4</span>名 ・ 契約金合計 <span style="color:var(--gold-bright);font-weight:900;">2,840</span> 万</div>
+    </div>
+
+    <div class="b1-grid">
+      <div class="b1-card tier-superElite">
+        <div class="b1-card-top">
+          <span class="b1-tier">超逸材</span>
+          <span class="b1-style">STK / Heel</span>
+        </div>
+        <div class="b1-portrait">
+          <div class="placeholder">K</div>
+          <div class="age">17歳</div>
+        </div>
+        <div class="b1-name">神崎 隼人</div>
+        <div class="b1-ovr">OVR <span class="v">82</span></div>
+        <div class="b1-stats">
+          <div class="b1-stat-row"><span class="k">PWR</span><div class="bar"><div class="fill" style="width:88%"></div></div><span class="v">88</span></div>
+          <div class="b1-stat-row"><span class="k">SPD</span><div class="bar"><div class="fill" style="width:76%"></div></div><span class="v">76</span></div>
+          <div class="b1-stat-row"><span class="k">TEC</span><div class="bar"><div class="fill" style="width:72%"></div></div><span class="v">72</span></div>
+          <div class="b1-stat-row"><span class="k">STA</span><div class="bar"><div class="fill" style="width:85%"></div></div><span class="v">85</span></div>
+          <div class="b1-stat-row"><span class="k">MNT</span><div class="bar"><div class="fill" style="width:89%"></div></div><span class="v">89</span></div>
+        </div>
+        <div class="b1-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">1,240 万</span>
+        </div>
+      </div>
+
+      <div class="b1-card tier-elite">
+        <div class="b1-card-top">
+          <span class="b1-tier" style="background:var(--gold-bright);">逸材</span>
+          <span class="b1-style">GRP / Face</span>
+        </div>
+        <div class="b1-portrait">
+          <div class="placeholder">S</div>
+          <div class="age">18歳</div>
+        </div>
+        <div class="b1-name">芝 亮介</div>
+        <div class="b1-ovr">OVR <span class="v">74</span></div>
+        <div class="b1-stats">
+          <div class="b1-stat-row"><span class="k">PWR</span><div class="bar"><div class="fill" style="width:70%"></div></div><span class="v">70</span></div>
+          <div class="b1-stat-row"><span class="k">SPD</span><div class="bar"><div class="fill" style="width:78%"></div></div><span class="v">78</span></div>
+          <div class="b1-stat-row"><span class="k">TEC</span><div class="bar"><div class="fill" style="width:82%"></div></div><span class="v">82</span></div>
+          <div class="b1-stat-row"><span class="k">STA</span><div class="bar"><div class="fill" style="width:72%"></div></div><span class="v">72</span></div>
+          <div class="b1-stat-row"><span class="k">MNT</span><div class="bar"><div class="fill" style="width:68%"></div></div><span class="v">68</span></div>
+        </div>
+        <div class="b1-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">820 万</span>
+        </div>
+      </div>
+
+      <div class="b1-card">
+        <div class="b1-card-top">
+          <span class="b1-tier">有望</span>
+          <span class="b1-style">SUB / Face</span>
+        </div>
+        <div class="b1-portrait">
+          <div class="placeholder">O</div>
+          <div class="age">19歳</div>
+        </div>
+        <div class="b1-name">大久保 道雄</div>
+        <div class="b1-ovr">OVR <span class="v">66</span></div>
+        <div class="b1-stats">
+          <div class="b1-stat-row"><span class="k">PWR</span><div class="bar"><div class="fill" style="width:62%"></div></div><span class="v">62</span></div>
+          <div class="b1-stat-row"><span class="k">SPD</span><div class="bar"><div class="fill" style="width:64%"></div></div><span class="v">64</span></div>
+          <div class="b1-stat-row"><span class="k">TEC</span><div class="bar"><div class="fill" style="width:74%"></div></div><span class="v">74</span></div>
+          <div class="b1-stat-row"><span class="k">STA</span><div class="bar"><div class="fill" style="width:68%"></div></div><span class="v">68</span></div>
+          <div class="b1-stat-row"><span class="k">MNT</span><div class="bar"><div class="fill" style="width:60%"</div></div><span class="v">60</span></div>
+        </div>
+        <div class="b1-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">480 万</span>
+        </div>
+      </div>
+
+      <div class="b1-card">
+        <div class="b1-card-top">
+          <span class="b1-tier">有望</span>
+          <span class="b1-style">AER / Neu</span>
+        </div>
+        <div class="b1-portrait">
+          <div class="placeholder">U</div>
+          <div class="age">16歳</div>
+        </div>
+        <div class="b1-name">梅ヶ丘 翔</div>
+        <div class="b1-ovr">OVR <span class="v">62</span></div>
+        <div class="b1-stats">
+          <div class="b1-stat-row"><span class="k">PWR</span><div class="bar"><div class="fill" style="width:52%"></div></div><span class="v">52</span></div>
+          <div class="b1-stat-row"><span class="k">SPD</span><div class="bar"><div class="fill" style="width:86%"></div></div><span class="v">86</span></div>
+          <div class="b1-stat-row"><span class="k">TEC</span><div class="bar"><div class="fill" style="width:66%"></div></div><span class="v">66</span></div>
+          <div class="b1-stat-row"><span class="k">STA</span><div class="bar"><div class="fill" style="width:60%"></div></div><span class="v">60</span></div>
+          <div class="b1-stat-row"><span class="k">MNT</span><div class="bar"><div class="fill" style="width:58%"></div></div><span class="v">58</span></div>
+        </div>
+        <div class="b1-cost">
+          <span class="lbl">契約金</span>
+          <span class="val">300 万</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="b1-totals">
+      <div class="cell"><div class="n">4</div><div class="l">新戦力</div></div>
+      <div class="cell"><div class="n">71</div><div class="l">平均 OVR</div></div>
+      <div class="cell"><div class="n">17.5</div><div class="l">平均 年齢</div></div>
+      <div class="cell"><div class="n">2,840</div><div class="l">契約金 (万)</div></div>
+      <div class="cell"><div class="n" style="color:#2ecc71">5,400</div><div class="l">残資金 (万)</div></div>
+    </div>
+    <div class="b1-ctas">
+      <button class="btn-dark-gold">▶ 次へ進む</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================= -->
+<!-- B2 -->
+<!-- ============================================= -->
+<div class="section">
+  <div class="sec-head">
+    <h2>B2 — 完了「チーム結集」型</h2>
+    <p>新聞紙面 + チーム集合写真ストリップ。NEW タグ付き新戦力が既存メンバーに並ぶ。「団体が強化された」感が出る。下に各新人の詳細ミニカード。</p>
+  </div>
+
+  <div class="b2-wrap">
+    <div class="b2-title-bar">
+      <div class="brand">週刊グラップル</div>
+      <div class="ed">第128号 ・ ドラフト結果特報</div>
+    </div>
+    <div class="b2-hero">
+      <div class="kicker">◆ ドラフト結果 ◆</div>
+      <h2>プレイヤー団体、<span class="red">4名</span>の新戦力を獲得</h2>
+      <div class="lead">
+        2027年度ドラフト — 超逸材・神崎 隼人を筆頭に、若きタレント4名の獲得に成功。
+        平均年齢17.5歳、平均OVR71という若手中心の補強となり、来季の台風の目となりそうだ。
+      </div>
+    </div>
+
+    <div class="b2-roster-strip">
+      <div class="b2-strip-label">NEW ROSTER ・ 8 FIGHTERS</div>
+      <div class="b2-row">
+        <div class="b2-pose"><div class="b2-pose-img" data-init="T"></div><div class="nm">田中 剛</div><div class="ovr">OVR 78</div></div>
+        <div class="b2-pose"><div class="b2-pose-img" data-init="Y"></div><div class="nm">山本 誠</div><div class="ovr">OVR 72</div></div>
+        <div class="b2-pose"><div class="b2-pose-img" data-init="I"></div><div class="nm">井上 健</div><div class="ovr">OVR 70</div></div>
+        <div class="b2-pose"><div class="b2-pose-img" data-init="R"></div><div class="nm">林 龍一</div><div class="ovr">OVR 68</div></div>
+        <div class="b2-pose new"><div class="b2-pose-img" data-init="K"></div><div class="nm">神崎 隼人</div><div class="ovr">OVR 82</div></div>
+        <div class="b2-pose new"><div class="b2-pose-img" data-init="S"></div><div class="nm">芝 亮介</div><div class="ovr">OVR 74</div></div>
+        <div class="b2-pose new"><div class="b2-pose-img" data-init="O"></div><div class="nm">大久保</div><div class="ovr">OVR 66</div></div>
+        <div class="b2-pose new"><div class="b2-pose-img" data-init="U"></div><div class="nm">梅ヶ丘</div><div class="ovr">OVR 62</div></div>
+      </div>
+    </div>
+
+    <div class="b2-detail-grid">
+      <div class="b2-mini">
+        <div class="nm">神崎 隼人</div>
+        <div class="meta">17歳 / 超逸材 / STK / Heel</div>
+        <div class="stats">
+          <span>PWR<b>88</b></span><span>SPD<b>76</b></span>
+          <span>TEC<b>72</b></span><span>STA<b>85</b></span>
+          <span>MNT<b>89</b></span><span>OVR<b>82</b></span>
+        </div>
+        <div class="cost"><span>契約金</span><b>1,240 万</b></div>
+      </div>
+      <div class="b2-mini">
+        <div class="nm">芝 亮介</div>
+        <div class="meta">18歳 / 逸材 / GRP / Face</div>
+        <div class="stats">
+          <span>PWR<b>70</b></span><span>SPD<b>78</b></span>
+          <span>TEC<b>82</b></span><span>STA<b>72</b></span>
+          <span>MNT<b>68</b></span><span>OVR<b>74</b></span>
+        </div>
+        <div class="cost"><span>契約金</span><b>820 万</b></div>
+      </div>
+      <div class="b2-mini">
+        <div class="nm">大久保 道雄</div>
+        <div class="meta">19歳 / 有望 / SUB / Face</div>
+        <div class="stats">
+          <span>PWR<b>62</b></span><span>SPD<b>64</b></span>
+          <span>TEC<b>74</b></span><span>STA<b>68</b></span>
+          <span>MNT<b>60</b></span><span>OVR<b>66</b></span>
+        </div>
+        <div class="cost"><span>契約金</span><b>480 万</b></div>
+      </div>
+      <div class="b2-mini">
+        <div class="nm">梅ヶ丘 翔</div>
+        <div class="meta">16歳 / 有望 / AER / Neu</div>
+        <div class="stats">
+          <span>PWR<b>52</b></span><span>SPD<b>86</b></span>
+          <span>TEC<b>66</b></span><span>STA<b>60</b></span>
+          <span>MNT<b>58</b></span><span>OVR<b>62</b></span>
+        </div>
+        <div class="cost"><span>契約金</span><b>300 万</b></div>
+      </div>
+    </div>
+
+    <div class="b2-footer">
+      <button class="btn btn-gold">▶ 次へ進む</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
