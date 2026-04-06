@@ -4014,7 +4014,7 @@ function startDraftNegotiation() {
     newAiOrgs[k] = { ...G.aiOrgs[k], roster: [...(G.aiOrgs[k]?.roster || [])] };
   });
   let newFA = [...(G.freeAgents || [])];
-  const ORG_NAMES = { org_s: 'EMPRESS GRAND', org_a: 'NOVA IMPACT', org_b: 'CRESCENT RISE' };
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
 
   const normFighter = (f) => ({
     ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
@@ -4126,7 +4126,7 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
   let s = state;
   const log = [...(s.gameLog || [])];
   const acquired = (s._draftNegotiation?.acquiredThisSession) || [];
-  const ORG_NAMES = { org_s: 'EMPRESS GRAND', org_a: 'NOVA IMPACT', org_b: 'CRESCENT RISE' };
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
 
   // EMPRESS安全網
   const empRng = Engine.rng.create(Engine.rng.derive(rngState, 0xE11E));
@@ -4148,13 +4148,14 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
         Engine.rival.pushUniqueFighter(orgData.roster, normFighter(ev.fighter));
         newDormant = newDormant.filter(e => e.id !== ev.dormantIdRemoved);
         empressNames.push(ev.template.name);
-        log.push(`📰 業界紙報道: ${ev.template.name}、EMPRESS GRAND と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに`);
+        const sOrgName = (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級団体';
+        log.push(`📰 業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに`);
         // §6.4 ドラマ演出: 通知ポップアップ
         if (typeof showPopup === 'function') {
           setTimeout(() => {
             showPopup({
               type: 'scout', tone: 'negative',
-              message: `業界紙報道: ${ev.template.name}、EMPRESS GRAND と電撃契約`,
+              message: `業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約`,
               detail: 'スカウト合戦の裏で進められていた極秘交渉が明らかに',
             });
           }, 500);
@@ -4194,7 +4195,7 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
 
 // 業界紙まとめ記事ページを構築
 function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
-  const ORG_NAMES = { org_s: 'EMPRESS GRAND', org_a: 'NOVA IMPACT', org_b: 'CRESCENT RISE' };
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
   const stories = [];
 
   // プレイヤー獲得
@@ -4241,6 +4242,26 @@ function draftPlayerAction(action) {
   const dn = G._draftNegotiation;
   if (!dn || dn.negState.finished) return;
   const rng = Engine.rng.create(Engine.rng.derive(dn.rngState, dn.negState.round, dn.candidate.id));
+
+  if (action === 'drop') {
+    // 降りる → AI同士の残りをヘッドレスで即座に決着
+    let ns = { ...dn.negState };
+    ns.playerIn = false;
+    ns.log.push(`R${ns.round}: プレイヤー降り (${ns.currentBid}万)`);
+    let safety = 0;
+    while (!ns.finished && safety < 30) {
+      safety++;
+      const stepRng = Engine.rng.create(Engine.rng.derive(dn.rngState, ns.round, dn.candidate.id, safety));
+      ns = Engine.draftNegotiation.stepRound(ns, 'drop', G, stepRng);
+    }
+    // SFX: 競り負け or 流札
+    if (ns.winner && ns.winner !== 'player') _draftSfx('lost');
+    G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+    refreshAll();
+    showScreen('scoutEvent');
+    return;
+  }
+
   const ns = Engine.draftNegotiation.stepRound(dn.negState, action, G, rng);
   // SFX
   if (ns.droppedThisRound.length > 0) _draftSfx('dropped'); // ④ 団体降り

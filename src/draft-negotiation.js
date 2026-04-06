@@ -263,39 +263,39 @@ Engine.draftNegotiation = {
   NARRATION: {
     fighting: {
       org_s: [
-        'EMPRESS GRAND、引く気配なし',
-        'EMPRESS、王者の貫禄で粘る',
-        'EMPRESS GRAND、余裕の表情を崩さない',
-        'EMPRESS、資金力を背景にじわじわ圧をかける',
+        '{ORG}、引く気配なし',
+        '{ORG}、王者の貫禄で粘る',
+        '{ORG}、余裕の表情を崩さない',
+        '{ORG}、資金力を背景にじわじわ圧をかける',
       ],
       org_a: [
-        'NOVA IMPACT、ヒートアップ',
-        'NOVA、勝負に出た',
-        'NOVA IMPACT、若い情熱で食い下がる',
-        'NOVA、ここで引いたら育成計画が崩れる',
+        '{ORG}、ヒートアップ',
+        '{ORG}、勝負に出た',
+        '{ORG}、若い情熱で食い下がる',
+        '{ORG}、ここで引いたら育成計画が崩れる',
       ],
       org_b: [
-        'CRESCENT RISE、まさかの執念',
-        'CRESCENT、地方の意地を見せる',
-        'CRESCENT RISE、小さな団体の大きな賭け',
-        'CRESCENT、身の丈を超えた挑戦',
+        '{ORG}、まさかの執念',
+        '{ORG}、地方の意地を見せる',
+        '{ORG}、小さな団体の大きな賭け',
+        '{ORG}、身の丈を超えた挑戦',
       ],
     },
     dropped: {
       org_s: [
-        'EMPRESS GRAND、ここで撤退。王者にも見切り時はある',
-        'EMPRESS、苦渋の判断で離脱。次の獲物を見据えるか',
-        'EMPRESS GRAND、静かに席を立った。その背中に敗北の影はない',
+        '{ORG}、ここで撤退。王者にも見切り時はある',
+        '{ORG}、苦渋の判断で離脱。次の獲物を見据えるか',
+        '{ORG}、静かに席を立った。その背中に敗北の影はない',
       ],
       org_a: [
-        'NOVA IMPACT、無念の撤退',
-        'NOVA、ここは引くしかなかった。拳を握りしめている',
-        'NOVA IMPACT、予算の限界。悔しさを滲ませて離脱',
+        '{ORG}、無念の撤退',
+        '{ORG}、ここは引くしかなかった。拳を握りしめている',
+        '{ORG}、予算の限界。悔しさを滲ませて離脱',
       ],
       org_b: [
-        'CRESCENT RISE、現実的な判断で離脱',
-        'CRESCENT、深追いせず撤退。堅実経営の信条を貫く',
-        'CRESCENT RISE、これ以上は無理と判断。潔い引き際',
+        '{ORG}、現実的な判断で離脱',
+        '{ORG}、深追いせず撤退。堅実経営の信条を貫く',
+        '{ORG}、これ以上は無理と判断。潔い引き際',
       ],
     },
     playerWin: {
@@ -340,7 +340,13 @@ Engine.draftNegotiation = {
       : type === 'flowThrough' ? Engine.draftNegotiation.NARRATION.flowThrough
       : Engine.draftNegotiation.NARRATION.roundStart;
     if (!pool || pool.length === 0) return '';
-    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+    let text = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+    // {ORG} プレースホルダを実際の団体名に置換
+    if (text.includes('{ORG}') && context.orgId) {
+      const org = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.id === context.orgId) : null;
+      text = text.replace(/\{ORG\}/g, org ? org.name : context.orgId);
+    }
+    return text;
   },
 
   // ── 1ラウンドだけ進める（UI用） ──

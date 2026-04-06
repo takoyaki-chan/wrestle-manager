@@ -3097,8 +3097,9 @@ function _renderDraftCandidateList(candidates, context) {
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
   const ROLE_JP = { Babyface: 'babyface', Heel: 'heel', Neutral: 'neutral' };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
-  const ORG_ABBR = { org_s: 'EMP', org_a: 'NOV', org_b: 'CRE' };
-  const ORG_FULL = { org_s: 'EMPRESS', org_a: 'NOVA', org_b: 'CRESCENT' };
+  const _rOrgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
+  const ORG_ABBR = { org_s: _rOrgName('org_s').slice(0,3).toUpperCase(), org_a: _rOrgName('org_a').slice(0,3).toUpperCase(), org_b: _rOrgName('org_b').slice(0,3).toUpperCase() };
+  const ORG_FULL = { org_s: _rOrgName('org_s'), org_a: _rOrgName('org_a'), org_b: _rOrgName('org_b') };
 
   function _markHtml(candId, orgId, isFull) {
     const ci = (interests[candId] || []).find(i => i.orgId === orgId);
@@ -3190,7 +3191,7 @@ function _renderDraftCandidateList(candidates, context) {
       const nameSize = isLead ? '22px' : '17px';
       const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
       const tierClass = 't-' + (c.assessedTier || 'material');
-      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      const baseCost = c.assessedValue || 0;
       html += `<div style="${idx > 0 ? 'border-left:1px solid rgba(95,69,35,0.18);padding-left:14px;' : ''}">
         <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
           ${_portrait(c, portraitSize)}
@@ -3232,7 +3233,7 @@ function _renderDraftCandidateList(candidates, context) {
       const globalIdx = top.length + idx + 1;
       const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
       const tierClass = 't-' + (c.assessedTier || 'material');
-      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      const baseCost = c.assessedValue || 0;
       html += `<div style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
         ${_portrait(c, 56)}
         <div style="flex:1;min-width:0;">
@@ -3278,7 +3279,7 @@ function _renderDraftCandidateList(candidates, context) {
       const globalIdx = top.length + mid.length + idx + 1;
       const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
       const tierClass = 't-' + (c.assessedTier || 'material');
-      const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(c, context.orgPop || 0) : (c.assessedValue || 0);
+      const baseCost = c.assessedValue || 0;
       html += `<tr>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">${String(globalIdx).padStart(2, '0')}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);">${_portrait(c, 32)}</td>
@@ -3335,10 +3336,11 @@ function _renderDraftNegotiation() {
   const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
   const ROLE_JP = { Babyface: 'Babyface', Heel: 'Heel', Neutral: 'Neutral' };
+  const _orgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_META = {
-    org_s: { name: 'EMPRESS', tier: 'S TIER', emblCls: 'empress', embl: 'image/org/org-s-0.png' },
-    org_a: { name: 'NOVA',    tier: 'A TIER', emblCls: 'nova',    embl: 'image/org/org-a-0.png' },
-    org_b: { name: 'CRESCENT',tier: 'B TIER', emblCls: 'crescent',embl: 'image/org/org-b-0.png' },
+    org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: 'image/org/org-s-0.png' },
+    org_a: { name: _orgName('org_a'), tier: 'A級', emblCls: 'nova',    embl: 'image/org/org-a-0.png' },
+    org_b: { name: _orgName('org_b'), tier: 'B級', emblCls: 'crescent',embl: 'image/org/org-b-0.png' },
   };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'dn-mark-bullseye' }, taikou: { text: '○', cls: 'dn-mark-contender' }, osae: { text: '△', cls: 'dn-mark-outside' } };
 
@@ -3360,7 +3362,7 @@ function _renderDraftNegotiation() {
   ).join('')}</div>`;
 
   const bidRatio = ns.assessedValue > 0 ? (ns.currentBid / ns.assessedValue).toFixed(2) : '1.00';
-  const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(cand, G.orgPop || 0) : (cand.assessedValue || 0);
+  const baseCost = cand.assessedValue || 0;
 
   let html = `<div class="dn-container">`;
 
@@ -3401,6 +3403,12 @@ function _renderDraftNegotiation() {
   // ── Bid cards ──
   html += `<div class="dn-cards-section">
     <div class="dn-cards-label">▎ 入札卓 ▎</div>
+    <div class="dn-heat-legend">各団体の粘り度 — ゲージが右に行くほど限界に近い &nbsp;
+      <span class="dn-heat-composed">■</span> 余裕 &nbsp;
+      <span class="dn-heat-steady">■</span> まだ余裕 &nbsp;
+      <span class="dn-heat-heated">■</span> 熱が入る &nbsp;
+      <span class="dn-heat-strained">■</span> 限界
+    </div>
     <div class="dn-cards">`;
 
   // AI cards
@@ -3488,14 +3496,16 @@ function _renderDraftNegotiation() {
       </button>
     </div>`;
   } else if (!ns.playerIn) {
-    // 観戦モード
+    // プレイヤー降り後 → 結果表示（観戦モード廃止、即座に決着済み）
+    const winnerLabel = ns.winner
+      ? (RIVAL_ORGS.find(o => o.id === ns.winner)?.name || ns.winner) + ' が獲得'
+      : '流札（フリー市場へ）';
     html += `<div class="dn-actions" style="text-align:center;">
-      <div style="font-size:14px;color:var(--text-sub);margin-bottom:12px;">あなたは降りました</div>
-      <div style="display:flex;gap:10px;justify-content:center;">
-        <button class="dn-action-btn dn-action-standard" onclick="draftWatchRound('normal')"><div class="dn-action-label">そのまま観戦</div></button>
-        <button class="dn-action-btn dn-action-aggressive" onclick="draftWatchRound('fast')"><div class="dn-action-label">早送り</div></button>
-        <button class="dn-action-btn dn-action-withdraw" onclick="draftWatchRound('skip')"><div class="dn-action-label">スキップ</div></button>
-      </div>
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+      </button>
     </div>`;
   } else {
     // プレイヤーアクション
@@ -3584,7 +3594,8 @@ function _renderDraftNegotiation() {
 .dn-bid-base { font-size:11px; color:rgba(232,230,224,0.28); margin-top:4px; }
 .dn-bid-base strong { color:rgba(232,230,224,0.55); }
 .dn-cards-section { background:#1c1a16; padding:24px 22px 20px; border-bottom:1px solid rgba(200,190,170,0.1); }
-.dn-cards-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; text-align:center; margin-bottom:16px; }
+.dn-cards-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; text-align:center; margin-bottom:8px; }
+.dn-heat-legend { font-size:9px; color:rgba(232,230,224,0.35); text-align:center; margin-bottom:14px; letter-spacing:0.3px; }
 .dn-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; }
 .dn-card { background:#14120e; border:1px solid rgba(200,190,170,0.1); border-radius:8px; padding:16px 12px 14px; text-align:center; position:relative; transition:all .25s; }
 .dn-card-leading { border:2px solid #d4a843; background:linear-gradient(180deg,rgba(212,168,67,0.1),#14120e); box-shadow:0 0 24px rgba(212,168,67,0.35); transform:translateY(-12px); padding-top:22px; padding-bottom:18px; }
@@ -3634,6 +3645,10 @@ function _renderDraftNegotiation() {
 .dn-action-standard:hover { background:rgba(212,168,67,0.12); border-color:#d4a843; }
 .dn-action-withdraw .dn-action-label { color:rgba(232,230,224,0.55); }
 .dn-action-withdraw:hover { background:rgba(232,230,224,0.04); }
+/* ── Dark mode overrides for negotiation screen ── */
+.dn-dark-mode { background:#0a0a08 !important; }
+.dn-dark-panel { background:#0a0a08 !important; border-color:rgba(200,190,170,0.1) !important; color:#e8e6e0 !important; }
+.dn-dark-panel .panel-title { color:#d4a843 !important; border-bottom-color:rgba(200,190,170,0.15) !important; }
   `;
   document.head.appendChild(style);
 })();
@@ -3649,13 +3664,24 @@ function renderScoutEvent() {
   const orgPop = G.orgPop || 0;
   const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
 
+  // 交渉画面 / ドラフト速報 のダーク/クリーム切替
+  const screenEl = document.getElementById('screen-scoutEvent');
+  const panelEl = screenEl ? screenEl.querySelector('.panel') : null;
+
   // draft-negotiation-spec: 交渉画面表示（セリ進行中）
   if (G._draftNegotiation) {
     const titleEl = document.getElementById('scoutEventTitle');
     if (titleEl) titleEl.textContent = '⚖ ドラフト交渉';
+    // ダークテーマに切替
+    if (screenEl) screenEl.classList.add('dn-dark-mode');
+    if (panelEl) panelEl.classList.add('dn-dark-panel');
     el.innerHTML = _renderDraftNegotiation();
     return;
   }
+
+  // クリームに戻す
+  if (screenEl) screenEl.classList.remove('dn-dark-mode');
+  if (panelEl) panelEl.classList.remove('dn-dark-panel');
 
   // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
   if (G._draftInterests && !G._draftNegotiationStarted) {
