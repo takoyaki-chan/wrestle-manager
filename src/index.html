@@ -1905,13 +1905,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
 .ppvmc-sub{font-size:13px;color:#666;margin-top:4px}
 .ppvmc-list{display:flex;flex-direction:column;gap:6px;position:relative}
-.ppvmc-card{display:block;position:relative;
+.ppvmc-card{position:relative;height:180px;cursor:pointer;transition:transform 0.15s}
+.ppvmc-card:hover{transform:scale(1.01)}
+.ppvmc-card.is-main{height:220px}
+.ppvmc-card-bg{position:absolute;inset:0;border-radius:8px;
   background:linear-gradient(135deg,rgba(20,20,40,0.95),rgba(10,10,25,0.98));
-  border:1px solid #2a2a45;border-radius:8px;height:180px;
-  cursor:pointer;transition:border-color 0.3s,transform 0.15s}
-.ppvmc-card:hover{border-color:#daa520;transform:scale(1.01)}
-.ppvmc-card.is-main{border-color:#daa520;height:220px;box-shadow:0 0 20px rgba(218,165,32,0.15)}
-.ppvmc-fighter{position:absolute;bottom:0;width:200px;height:280px}
+  border:1px solid #2a2a45;overflow:hidden}
+.ppvmc-card:hover .ppvmc-card-bg{border-color:#daa520}
+.ppvmc-card.is-main .ppvmc-card-bg{border-color:#daa520;box-shadow:0 0 20px rgba(218,165,32,0.15)}
+.ppvmc-fighter{position:absolute;bottom:0;width:200px;height:280px;z-index:1}
 .ppvmc-card.is-main .ppvmc-fighter{width:240px;height:340px}
 .ppvmc-fighter.left{left:0}
 .ppvmc-fighter.right{right:0}
