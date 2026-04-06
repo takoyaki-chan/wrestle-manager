@@ -3088,29 +3088,10 @@ function _renderDraftCandidateList(candidates, context) {
   // Sort by assessedValue desc
   const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
 
-  // Split into tiers — ティアベースで厳密に振り分け
-  const topTier = sorted.filter(c => c.assessedTier === 'superElite' || c.assessedTier === 'elite');
-  const midTier = sorted.filter(c => c.assessedTier === 'promising');
-  const lowTier = sorted.filter(c => c.assessedTier === 'raw' || c.assessedTier === 'material');
-
-  // トッ��3: 超逸材+逸材を優先、足りなければ有望から補充
-  let top = topTier.slice(0, 3);
-  if (top.length < 3) {
-    const fill = midTier.slice(0, 3 - top.length);
-    top = [...top, ...fill];
-  }
-  const topSet = new Set(top.map(c => c.id));
-
-  // 有望5: 有望ティアで未使用のもの、足りなければ原石から補充
-  let mid = midTier.filter(c => !topSet.has(c.id)).slice(0, 5);
-  if (mid.length < 5) {
-    const fill = lowTier.slice(0, 5 - mid.length);
-    mid = [...mid, ...fill];
-  }
-  const midSet = new Set(mid.map(c => c.id));
-
-  // その他: 残り全員
-  const rest = sorted.filter(c => !topSet.has(c.id) && !midSet.has(c.id));
+  // assessedValue 順で紙面ポジション振り分け（ティア問わず純粋に順位）
+  const top = sorted.slice(0, 3);                // 1〜3位 → トップ3欄
+  const mid = sorted.slice(3, 8);                // 4〜8位 → 有望株欄
+  const rest = sorted.slice(8);                   // 9位以降 → その他テーブル
 
   const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
@@ -3428,11 +3409,11 @@ function _renderDraftNegotiation() {
   // ── Bid cards ──
   html += `<div class="dn-cards-section">
     <div class="dn-cards-label">▎ 入札卓 ▎</div>
-    <div class="dn-heat-legend">各団体の粘り度 — ゲージが右に行くほど限界に近い &nbsp;
-      <span class="dn-heat-composed">■</span> 余裕 &nbsp;
-      <span class="dn-heat-steady">■</span> まだ余裕 &nbsp;
-      <span class="dn-heat-heated">■</span> 熱が入る &nbsp;
-      <span class="dn-heat-strained">■</span> 限界
+    <div class="dn-heat-legend">各カード下部のゲージ＝粘り度（右に行くほど限界に近い）&nbsp;
+      <span class="dn-heat-composed">●</span>余裕 &nbsp;
+      <span class="dn-heat-steady">●</span>まだ余裕 &nbsp;
+      <span class="dn-heat-heated">●</span>熱が入る &nbsp;
+      <span class="dn-heat-strained">●</span>限界
     </div>
     <div class="dn-cards">`;
 
@@ -3664,7 +3645,7 @@ function _renderDraftNegotiation() {
 .dn-bid-passed { color:rgba(232,230,224,0.28); font-size:12px; }
 .dn-card-heat-section { margin-top:8px; padding-top:6px; border-top:1px solid rgba(200,190,170,0.06); }
 .dn-card-heat-title { font-size:7px; letter-spacing:1px; color:rgba(232,230,224,0.25); font-weight:700; text-align:center; margin-bottom:3px; }
-.dn-card-heat { height:4px; background:rgba(232,230,224,0.06); border-radius:2px; overflow:hidden; }
+.dn-card-heat { height:6px; background:rgba(232,230,224,0.12); border-radius:3px; overflow:hidden; border:1px solid rgba(232,230,224,0.08); }
 .dn-card-heat-fill { height:100%; border-radius:2px; }
 .dn-heat-composed { background:#4a8fd4; color:#4a8fd4; }
 .dn-heat-steady { background:#d4a843; color:#d4a843; }

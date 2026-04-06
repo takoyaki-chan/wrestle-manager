@@ -4128,9 +4128,8 @@ function startDraftNegotiation() {
     },
   };
   _draftSfx('gong'); // ① 交渉開幕ゴング
-  // BGM → tension（BGM.play経由でミキサー設定を自動適用）
-  try { Audio.bgm.play('tension'); } catch(e) {}
-  console.log('[WM Draft] BGM → tension');
+  // BGM: playForStateがshowScreen経由でtensionを維持（_draftInterests/_draftNegotiation条件）
+  console.log('[WM Draft] 交渉開始');
   refreshAll();
   showScreen('scoutEvent');
 }
