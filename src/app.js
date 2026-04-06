@@ -7031,7 +7031,8 @@ App.initPPVShow = function() {
       const orgName = sub.orgId === 'player' ? (G.orgName || '自団体') : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
       popupChain = popupChain.then(() => new Promise(resolve => {
         showEventPopup({
-          type: 'system', tone: 'negative',
+          type: 'fighter', id: sub.originalId, name: sub.original,
+          tone: 'negative',
           message: `${sub.original}が出場不能！`,
           detail: `${orgName}の${sub.substitute}が緊急出場`,
         });

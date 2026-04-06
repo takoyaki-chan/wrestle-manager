@@ -8054,7 +8054,7 @@ const Engine = {
             .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
           if (sub) {
             usedIds.add(sub.id);
-            resolved.push({ ...sub, _ppvSubstitute: true, _replacedName: f.name });
+            resolved.push({ ...sub, _ppvSubstitute: true, _replacedName: f.name, _replacedId: f.id });
           }
           // 繰り上げ不可→枠削減（pushしない）
         } else {
@@ -8247,7 +8247,7 @@ const Engine = {
       // プレイヤー怪我→自動繰り上げ
       const resolvedPlayer = Engine.ppv.resolveInjuries(entries.player, state.roster || []);
       resolvedPlayer.forEach(f => {
-        if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: 'player' });
+        if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, originalId: f._replacedId, substitute: f.name, substituteId: f.id, orgId: 'player' });
       });
       if (entries.player.length > 0 && resolvedPlayer.length === 0) {
         console.warn('[WM Debug] PPV: All player entries lost to injuries. Original:', entries.player.length);
@@ -8266,7 +8266,7 @@ const Engine = {
         }).filter(Boolean);
         const resolved = Engine.ppv.resolveInjuries(refreshed, aiRoster);
         resolved.forEach(f => {
-          if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, substitute: f.name, orgId: org.id });
+          if (f._ppvSubstitute) substitutions.push({ original: f._replacedName, originalId: f._replacedId, substitute: f.name, substituteId: f.id, orgId: org.id });
         });
         totalAIEntries += resolved.length;
         entries[org.id] = resolved;
