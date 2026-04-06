@@ -4044,7 +4044,8 @@ function startDraftNegotiation() {
 
   for (const cand of sorted) {
     const isSelected = selections.includes(cand.id);
-    const candInterests = (allInterests[cand.id] || []);
+    // 元データを壊さないようコピーして、現在のロスター状態で判定
+    const candInterests = (allInterests[cand.id] || []).map(i => ({ ...i }));
     // ロスター上限到達団体の参加を取り消し（ドラフト中の獲得でリアルタイムに上限に達した団体を除外）
     for (const ci of candInterests) {
       if (!ci.participating) continue;
@@ -4132,9 +4133,15 @@ function startDraftNegotiation() {
     return;
   }
 
-  // 最初の候補の交渉状態を初期化
+  // 最初の候補の交渉状態を初期化（バックグラウンド処理後のロスター状態で再判定）
   const firstCand = uiQueue[0];
   const firstInterests = (allInterests[firstCand.id] || []).map(i => ({ ...i }));
+  for (const ci of firstInterests) {
+    if (!ci.participating) continue;
+    const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
+    const ideal = (AI_SCOUT_CFG[ci.orgId === 'org_s' ? 'S' : ci.orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    if (orgRoster.length >= ideal + 2) ci.participating = false;
+  }
   const firstActive = firstInterests.filter(i => i.participating);
   const negState = Engine.draftNegotiation.initNegState(firstCand, firstInterests);
 
@@ -4553,8 +4560,9 @@ function draftNextCandidate() {
   // 次の候補を開始
   _draftSfx('chime'); // ② 次候補切替
   const nextCand = dn.sortedCandidates[nextIdx];
-  const nextInterests = (G._draftInterests || {})[nextCand.id] || [];
-  // ロスター上限到達団体の参加を取り消し
+  const rawInterests = (G._draftInterests || {})[nextCand.id] || [];
+  // 元データを壊さないようコピーして、現在のロスター状態で再判定
+  const nextInterests = rawInterests.map(i => ({ ...i }));
   for (const ci of nextInterests) {
     if (!ci.participating) continue;
     const orgRoster = newAiOrgs[ci.orgId]?.roster || [];

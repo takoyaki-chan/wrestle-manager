@@ -1296,7 +1296,6 @@ function renderWeekScreen() {
     const elites = candidates.filter(c => c.assessedTier === 'elite');
     const maxPicks = G.scoutMaxPicks || 4;
     const editionNo = 100 + (G.season - 1) * 4 + (G.scoutEventType === 'midseason' ? 2 : 1);
-    const yearNo = 2024 + G.season;
 
     const topSE = superElites.length > 0
       ? [...superElites].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0))[0]
@@ -1305,8 +1304,8 @@ function renderWeekScreen() {
       ? `<span class="red">超逸材</span>・${topSE.name}、<br>ついに業界の門を叩く`
       : `<span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕`;
     const heroSub = topSE
-      ? `${yearNo}年度 ${eventLabel} — ${topSE.age}歳の才能を筆頭に全${totalCount}名`
-      : `${yearNo}年度 ${eventLabel} — 全${totalCount}名、業界の門を叩く`;
+      ? `${G.season}年目 ${eventLabel} — ${topSE.age}歳の才能を筆頭に全${totalCount}名`
+      : `${G.season}年目 ${eventLabel} — 全${totalCount}名、業界の門を叩く`;
 
     const silCount = Math.min(8, totalCount);
     const featCount = Math.min(3, superElites.length + elites.length);
@@ -3181,11 +3180,16 @@ function _renderDraftCandidateList(candidates, context) {
 
   function _scoutComment(c) {
     const tier = c.assessedTier || 'material';
-    const style = STYLE_JP[c.style] || c.style;
+    const STYLE_FLAIR = {
+      Grappler: '組み技のセンスが光る', Striker: '打撃の鋭さが際立つ',
+      Submission: '関節技に天性の嗅覚がある', Aerial: '空中戦の身のこなしが目を引く',
+      Allround: 'バランスの良さが持ち味の', Brawler: '荒々しいファイトが魅力の',
+    };
+    const flair = STYLE_FLAIR[c.style] || '素質を感じる';
     const comments = {
-      superElite: `${c.age}歳にして既に完成度の高い${style}。複数の能力が標準を大きく上回る。今年の業界最大の話題人物。`,
-      elite: `${style}としての基礎が光る。長期育成で看板候補に化ける可能性を秘めている。`,
-      promising: `着実な成長が見込める堅実なタイプ。${style}として十分な素質あり。`,
+      superElite: `${c.age}歳にして複数の能力が標準を大きく上回る。${flair}逸材で、今年の業界最大の話題人物。`,
+      elite: `${flair}将来性豊かな新人。長期育成で看板選手に化ける可能性を秘めている。`,
+      promising: `着実な成長が見込める堅実なタイプ。${flair}。`,
     };
     return comments[tier] || '';
   }
