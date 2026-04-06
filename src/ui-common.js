@@ -4065,7 +4065,7 @@ function startDraftNegotiation() {
       // → 単独指名確認
       soloConfirmQueue.push(cand);
     } else if (!isSelected && aiParticipants.length >= 2) {
-      // → 裏で自動セリ
+      // → 裏で自動セリ（バックグラウンド: idealRosterでキャップ、+2枠はプレイヤー交渉用に温存）
       const autoRng = Engine.rng.create(Engine.rng.derive(rngState, cand.id, 0xAA01));
       const autoPlayerFn = () => 'drop';
       const result = Engine.draftNegotiation.runNegotiation(cand, candInterests.map(i=>({...i})), autoPlayerFn, G, autoRng);
@@ -4073,7 +4073,7 @@ function startDraftNegotiation() {
         const wOrg = result.winner;
         const orgData = newAiOrgs[wOrg];
         const wIdeal = (AI_SCOUT_CFG[wOrg === 'org_s' ? 'S' : wOrg === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-        if (orgData && orgData.roster.length < wIdeal + 2) {
+        if (orgData && orgData.roster.length < wIdeal) {
           Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
           draftSummary.aiAcquired[wOrg].push(clean.name);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
@@ -4090,11 +4090,11 @@ function startDraftNegotiation() {
         log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else if (!isSelected && aiParticipants.length === 1) {
-      // → AI自動落札（ロスター上限チェック付き）
+      // → AI自動落札（バックグラウンド: idealRosterでキャップ）
       const winner = aiParticipants[0].orgId;
       const orgData = newAiOrgs[winner];
       const wIdeal = (AI_SCOUT_CFG[winner === 'org_s' ? 'S' : winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-      if (orgData && orgData.roster.length < wIdeal + 2) {
+      if (orgData && orgData.roster.length < wIdeal) {
         Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
         draftSummary.aiAcquired[winner].push(clean.name);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
