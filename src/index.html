@@ -1905,20 +1905,21 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
 .ppvmc-sub{font-size:13px;color:#666;margin-top:4px}
 .ppvmc-list{display:flex;flex-direction:column;gap:6px;position:relative}
-.ppvmc-card{display:flex;align-items:stretch;
+.ppvmc-card{display:block;position:relative;
   background:linear-gradient(135deg,rgba(20,20,40,0.95),rgba(10,10,25,0.98));
-  border:1px solid #2a2a45;border-radius:0;overflow:visible;height:180px;
-  cursor:pointer;transition:border-color 0.3s,transform 0.15s;position:relative}
+  border:1px solid #2a2a45;border-radius:8px;height:180px;
+  cursor:pointer;transition:border-color 0.3s,transform 0.15s}
 .ppvmc-card:hover{border-color:#daa520;transform:scale(1.01)}
 .ppvmc-card.is-main{border-color:#daa520;height:220px;box-shadow:0 0 20px rgba(218,165,32,0.15)}
-.ppvmc-fighter{flex:0 0 200px;position:relative;overflow:visible}
-.ppvmc-card.is-main .ppvmc-fighter{flex:0 0 240px}
-.ppvmc-fighter img{position:absolute;bottom:0;height:280px;width:auto;max-width:none;object-fit:contain;z-index:3}
-.ppvmc-card.is-main .ppvmc-fighter img{height:340px}
+.ppvmc-fighter{position:absolute;bottom:0;width:200px;height:280px}
+.ppvmc-card.is-main .ppvmc-fighter{width:240px;height:340px}
+.ppvmc-fighter.left{left:0}
+.ppvmc-fighter.right{right:0}
+.ppvmc-fighter img{position:absolute;bottom:0;height:100%;width:auto;max-width:none;object-fit:contain}
 .ppvmc-fighter.left img{transform:scaleX(-1);right:0}
 .ppvmc-fighter.right img{left:0}
-.ppvmc-center{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
-  text-align:center;padding:12px 8px;gap:4px;position:relative;z-index:2;
+.ppvmc-center{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:12px 8px;gap:4px;z-index:2;
   background:linear-gradient(90deg,transparent 0%,rgba(14,14,30,0.85) 15%,rgba(14,14,30,0.95) 50%,rgba(14,14,30,0.85) 85%,transparent 100%)}
 .ppvmc-type{font-size:10px;letter-spacing:3px;color:#e94560;text-transform:uppercase}
 .ppvmc-card.is-main .ppvmc-type{color:#ffd700;font-size:11px}
