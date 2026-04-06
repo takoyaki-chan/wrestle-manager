@@ -4146,9 +4146,7 @@ function startDraftNegotiation() {
   _draftSfx('gong'); // ① 交渉開幕ゴング
   console.log('[WM Draft] 交渉開始');
   refreshAll();
-  showScreen('scoutEvent');
-  // BGM: showScreen内のplayForStateの後に明示的にtensionを再生（確実に維持）
-  try { Audio.bgm.play('tension'); } catch(e) {}
+  _showScreenNoBgm('scoutEvent');
 }
 
 // ドラフト完了処理(まとめ記事生成+EMPRESS安全網+クリーンアップ)
@@ -4286,8 +4284,7 @@ function draftPlayerAction(action) {
     if (ns.winner && ns.winner !== 'player') _draftSfx('lost');
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     refreshAll();
-    showScreen('scoutEvent');
-    try { Audio.bgm.play('tension'); } catch(e) {}
+    _showScreenNoBgm('scoutEvent');
     return;
   }
 
@@ -4299,8 +4296,7 @@ function draftPlayerAction(action) {
   else if (ns.finished && ns.winner !== 'player') _draftSfx('lost'); // ⑥ 競り負け
   G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
   refreshAll();
-  showScreen('scoutEvent');
-  if (!ns.finished) try { Audio.bgm.play('tension'); } catch(e) {}
+  _showScreenNoBgm('scoutEvent');
 }
 
 // AI観戦モード
@@ -4319,7 +4315,7 @@ function draftWatchRound(speed) {
     }
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     refreshAll();
-    showScreen('scoutEvent');
+    _showScreenNoBgm('scoutEvent');
     return;
   }
 
@@ -4329,7 +4325,7 @@ function draftWatchRound(speed) {
   const ns = Engine.draftNegotiation.stepRound(dn.negState, 'drop', G, rng);
   G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
   refreshAll();
-  showScreen('scoutEvent');
+  _showScreenNoBgm('scoutEvent');
 
   if (!ns.finished) {
     setTimeout(() => draftWatchRound(speed), delay);
@@ -4451,8 +4447,7 @@ function draftNextCandidate() {
     },
   };
   refreshAll();
-  showScreen('scoutEvent');
-  try { Audio.bgm.play('tension'); } catch(e) {}
+  _showScreenNoBgm('scoutEvent');
 }
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }
@@ -5379,6 +5374,14 @@ function dismissAllPopups() {
   clearTimeout(window._notifSafetyTimer);
   clearTimeout(window._notifModalTimer);
   clearTimeout(window._careModalTimer);
+}
+
+// BGMを変えずに画面だけ切り替える（ドラフト交渉中のUI更新用）
+function _showScreenNoBgm(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screenEl = document.getElementById(`screen-${id}`);
+  if (screenEl) screenEl.classList.add('active');
+  if (id === 'scoutEvent') renderScoutEvent();
 }
 
 function showScreen(id, evt) {
