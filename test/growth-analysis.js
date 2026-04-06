@@ -3,7 +3,9 @@
 //  Wrestle Manager — Growth Balance Analysis
 //  プレイヤー vs AI の年次別OVR推移・成長速度を定量分析する。
 //
-//  Usage: node test/growth-analysis.js [シーズン数] [シード数]
+//  Usage: node test/growth-analysis.js
+//         node test/growth-analysis.js --full
+//         node test/growth-analysis.js [シーズン数] [シード数]
 //  Example: node test/growth-analysis.js 15 20
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -27,7 +29,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   console.error('ERROR: Engine/ALL_CHARS が読み込めませんでした');
@@ -36,10 +40,13 @@ if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
 
 // ── パラメータ ──
 const args = process.argv.slice(2);
-const targetSeasons = parseInt(args[0], 10) || 15;
-const seedCount = parseInt(args[1], 10) || 10;
+const fullMode = args.includes('--full');
+const numericArgs = args.filter(arg => /^-?\d+$/.test(arg));
+const targetSeasons = parseInt(numericArgs[0], 10) || (fullMode ? 15 : 6);
+const seedCount = parseInt(numericArgs[1], 10) || (fullMode ? 10 : 4);
 
 console.log('=== Growth Balance Analysis ===');
+console.log(`Mode: ${fullMode ? 'full' : 'quick'}`);
 console.log(`Seasons: ${targetSeasons}, Seeds: ${seedCount}`);
 console.log('');
 

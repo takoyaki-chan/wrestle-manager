@@ -6,6 +6,8 @@
 //  trainCapベース天井を廃止し「到達可能上限（achievableMax）」ベース天井を使用
 //
 //  Usage:
+//    node test/extraction-rate-phase2.js
+//    node test/extraction-rate-phase2.js --full
 //    node test/extraction-rate-phase2.js [seeds] [seasons]
 //    node test/extraction-rate-phase2.js 10 8
 // ══════════════════════════════════════════════════════════════════════════════
@@ -30,7 +32,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   console.error('ERROR: Engine/ALL_CHARS が読み込めませんでした');
@@ -39,8 +43,10 @@ if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
 
 // ── パラメータ ──
 const args = process.argv.slice(2);
-const SEED_COUNT = parseInt(args[0], 10) || 10;
-const TARGET_SEASONS = parseInt(args[1], 10) || 8;
+const fullMode = args.includes('--full');
+const numericArgs = args.filter(arg => /^-?\d+$/.test(arg));
+const SEED_COUNT = parseInt(numericArgs[0], 10) || (fullMode ? 10 : 2);
+const TARGET_SEASONS = parseInt(numericArgs[1], 10) || (fullMode ? 8 : 3);
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  才能ティア分類 & 代表選手選出（Phase 1と同一）

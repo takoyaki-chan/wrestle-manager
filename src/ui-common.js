@@ -3962,6 +3962,493 @@ function releaseFighter(id) { App.releaseFighter(id); }
 function scoutPick(id) { App.scoutEventPick(id); }
 function scoutResolve(id, choice) { App.scoutEventResolve(id, choice); }
 function scoutFinish() { App.scoutEventFinish(); }
+// draft SFX helper
+// ドラフトSFX — 独立Audioオブジェクトで再生（FileBGMを使うとBGMが止まるため）
+// 音量はミキサー経由: baseVol × sfxMasterVol。全体ミュート時は無音。
+function _draftSfx(type) {
+  try {
+    if (Audio.muted) return; // 全体ミュート時はSFXも無音
+    // ミキサー登録済みSEはAudio.play()で直接再生
+    if (type === 'click') { Audio.play('click'); return; }
+    if (type === 'lost') { Audio.play('defeat'); return; }
+    if (type === 'bid') { Audio.play('select'); return; }
+    const sfxMap = {
+      gong:    { src: '../bgm/f08_gong_start_v2.mp3', vol: 0.15 },
+      chime:   { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.12 },
+      dropped: { src: '../bgm/f06_fin_chime_v1.mp3',  vol: 0.10, rate: 0.7 },
+      fanfare: { src: '../bgm/f10_victory_fanfare_v5.mp3', vol: 0.15 },
+    };
+    const cfg = sfxMap[type];
+    if (!cfg) return;
+    const a = new window.Audio(cfg.src);
+    // ミキサー適用: baseVol × sfxMasterVol（ユーザーのSE音量スライダー）
+    const masterVol = Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1;
+    a.volume = Math.min(1.0, cfg.vol * masterVol);
+    if (cfg.rate) a.playbackRate = cfg.rate;
+    a.play().catch(() => {});
+  } catch(e) {}
+}
+
+// 候補選択トグル
+function toggleDraftSelection(candId) {
+  const selections = G._draftSelections || [];
+  const maxPicks = G.scoutMaxPicks || 4;
+  const idx = selections.indexOf(candId);
+  if (idx >= 0) {
+    _draftSfx('click');
+    G = { ...G, _draftSelections: selections.filter(id => id !== candId) };
+  } else {
+    if (selections.length >= maxPicks) return; // 上限到達
+    _draftSfx('click');
+    G = { ...G, _draftSelections: [...selections, candId] };
+  }
+  renderScoutEvent();
+}
+
+// draft-negotiation-spec 変更2: 分岐ロジック付きドラフト開始
+function startDraftNegotiation() {
+  if (!G._draftInterests || !G.scoutCandidates) return;
+  const selections = G._draftSelections || [];
+  if (selections.length === 0) return; // 未選択ガード
+
+  const candidates = G.scoutCandidates;
+  const maxPicks = G.scoutMaxPicks || 4;
+  const allInterests = G._draftInterests || {};
+
+  // assessedValue 高い順にソート
+  const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
+
+  const rngState = Engine.rng.derive(G.rngSeed, G.season, 0xDFA0);
+  const log = [...(G.gameLog || [])];
+  let newAiOrgs = {};
+  Object.keys(G.aiOrgs || {}).forEach(k => {
+    newAiOrgs[k] = { ...G.aiOrgs[k], roster: [...(G.aiOrgs[k]?.roster || [])] };
+  });
+  let newFA = [...(G.freeAgents || [])];
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
+
+  const normFighter = (f) => ({
+    ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
+    wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
+    injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+    intensive: false, intensiveWeeks: 0,
+  });
+
+  // ── 非選択候補を先にバックグラウンド処理 ──
+  const draftSummary = { playerAcquired: [], aiAcquired: {}, flowThrough: [] };
+  for (const orgId of ['org_s', 'org_a', 'org_b']) draftSummary.aiAcquired[orgId] = [];
+
+  const playerCandidateQueue = []; // 交渉UIに出す候補
+  const soloConfirmQueue = [];     // 単独指名確認候補
+
+  for (const cand of sorted) {
+    const isSelected = selections.includes(cand.id);
+    const candInterests = (allInterests[cand.id] || []);
+    const aiParticipants = candInterests.filter(i => i.participating);
+    const clean = { ...cand };
+    delete clean._notion; delete clean._estimate; delete clean._isSeed; delete clean._hasCompetition;
+    const tierLabel = Engine.scout.getTierConfig(clean.assessedTier || 'material').label;
+
+    if (isSelected && aiParticipants.length >= 1) {
+      // → 交渉画面
+      playerCandidateQueue.push(cand);
+    } else if (isSelected && aiParticipants.length === 0) {
+      // → 単独指名確認
+      soloConfirmQueue.push(cand);
+    } else if (!isSelected && aiParticipants.length >= 2) {
+      // → 裏で自動セリ
+      const autoRng = Engine.rng.create(Engine.rng.derive(rngState, cand.id, 0xAA01));
+      const autoPlayerFn = () => 'drop';
+      const result = Engine.draftNegotiation.runNegotiation(cand, candInterests.map(i=>({...i})), autoPlayerFn, G, autoRng);
+      if (result.winner && result.winner !== 'player') {
+        const wOrg = result.winner;
+        const orgData = newAiOrgs[wOrg];
+        const wIdeal = (AI_SCOUT_CFG[wOrg === 'org_s' ? 'S' : wOrg === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+        if (orgData && orgData.roster.length < wIdeal + 2) {
+          Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
+          draftSummary.aiAcquired[wOrg].push(clean.name);
+          log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
+        } else {
+          newFA.push(normFighter(clean));
+          draftSummary.flowThrough.push(clean.name);
+          log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+        }
+      } else {
+        newFA.push(normFighter(clean));
+        draftSummary.flowThrough.push(clean.name);
+        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+      }
+    } else if (!isSelected && aiParticipants.length === 1) {
+      // → AI自動落札（ロスター上限チェック付き）
+      const winner = aiParticipants[0].orgId;
+      const orgData = newAiOrgs[winner];
+      const wIdeal = (AI_SCOUT_CFG[winner === 'org_s' ? 'S' : winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+      if (orgData && orgData.roster.length < wIdeal + 2) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
+        draftSummary.aiAcquired[winner].push(clean.name);
+        log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
+      } else {
+        newFA.push(normFighter(clean));
+        draftSummary.flowThrough.push(clean.name);
+        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+      }
+    } else {
+      // → 流札
+      newFA.push(normFighter(clean));
+      draftSummary.flowThrough.push(clean.name);
+      log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+    }
+  }
+
+  G = { ...G, aiOrgs: newAiOrgs, freeAgents: newFA, gameLog: log };
+
+  // 交渉UIに出す候補がない場合(全部単独or未選択)
+  const uiQueue = [...playerCandidateQueue, ...soloConfirmQueue];
+  if (uiQueue.length === 0) {
+    // 全候補処理完了 → まとめ記事 → 終了
+    G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
+    try { Audio.bgm.play('management'); } catch(e) {}
+    console.log('[WM Draft] BGM → management (draft complete, no UI queue)');
+    refreshAll();
+    showScreen('scoutEvent');
+    return;
+  }
+
+  // 最初の候補の交渉状態を初期化
+  const firstCand = uiQueue[0];
+  const firstInterests = (allInterests[firstCand.id] || []).map(i => ({ ...i }));
+  const firstActive = firstInterests.filter(i => i.participating);
+  const negState = Engine.draftNegotiation.initNegState(firstCand, firstInterests);
+
+  // 単独指名候補の場合
+  if (firstActive.length === 0) {
+    negState.finished = true;
+    negState.winner = 'player';
+    negState.finalBid = negState.assessedValue;
+    negState.narration = '競合なし — 単独指名です。契約しますか？';
+    negState._isSoloConfirm = true;
+  }
+
+  G = {
+    ...G,
+    _draftNegotiationStarted: true,
+    _draftNegotiation: {
+      sortedCandidates: uiQueue,
+      currentCandidateIdx: 0,
+      candidate: firstCand,
+      negState,
+      maxPicks,
+      acquiredThisSession: [],
+      rngState,
+      draftSummary,
+    },
+  };
+  _draftSfx('gong'); // ① 交渉開幕ゴング
+  console.log('[WM Draft] 交渉開始');
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+}
+
+// ドラフト完了処理(まとめ記事生成+EMPRESS安全網+クリーンアップ)
+function _finalizeDraft(state, summary, rngState, maxPicks) {
+  let s = state;
+  const log = [...(s.gameLog || [])];
+  const acquired = (s._draftNegotiation?.acquiredThisSession) || [];
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
+
+  // EMPRESS安全網
+  const empRng = Engine.rng.create(Engine.rng.derive(rngState, 0xE11E));
+  const empEvents = Engine.draftNegotiation.empressReinforce(s, empRng);
+  let newDormant = [...(s.dormantPool || [])];
+  let empAiOrgs = {};
+  Object.keys(s.aiOrgs || {}).forEach(k => { empAiOrgs[k] = { ...s.aiOrgs[k], roster: [...(s.aiOrgs[k]?.roster || [])] }; });
+  const normFighter = (f) => ({
+    ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
+    wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
+    injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+    intensive: false, intensiveWeeks: 0,
+  });
+  const empressNames = [];
+  for (const ev of empEvents) {
+    if (ev.type === 'empressReinforce' && ev.fighter) {
+      const orgData = empAiOrgs['org_s'];
+      if (orgData) {
+        Engine.rival.pushUniqueFighter(orgData.roster, normFighter(ev.fighter));
+        newDormant = newDormant.filter(e => e.id !== ev.dormantIdRemoved);
+        empressNames.push(ev.template.name);
+        const sOrgName = (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級団体';
+        log.push(`📰 業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに`);
+        // §6.4 ドラマ演出: 通知ポップアップ
+        if (typeof showPopup === 'function') {
+          setTimeout(() => {
+            showPopup({
+              type: 'scout', tone: 'negative',
+              message: `業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約`,
+              detail: 'スカウト合戦の裏で進められていた極秘交渉が明らかに',
+            });
+          }, 500);
+        }
+      }
+    }
+  }
+
+  // 業界紙まとめ記事をnewspaperに挿入
+  const draftNewsPage = _buildDraftSummaryPage(summary, acquired, empressNames, s);
+
+  // weeklyNewspaper にページ追加（存在しない場合は新規作成）
+  let newspaper = s.weeklyNewspaper ? { ...s.weeklyNewspaper } : {
+    season: s.season, week: s.offWeek || 0,
+    topStory: { headline: 'ドラフト会議終了', body: '全候補の交渉が完了しました', type: 'draftSummary' },
+    pages: [],
+  };
+  const pages = newspaper.pages ? [...newspaper.pages] : [];
+  pages.push(draftNewsPage);
+  newspaper = { ...newspaper, pages };
+
+  return {
+    ...s,
+    aiOrgs: empAiOrgs,
+    dormantPool: newDormant,
+    gameLog: log,
+    scoutCandidates: null,
+    scoutPicks: acquired,
+    _draftInterests: null,
+    _draftNegotiation: null,
+    _draftSelections: null,
+    weeklyNewspaper: newspaper,
+  };
+}
+
+// 業界紙まとめ記事ページを構築
+function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
+  const ORG_NAMES = { org_s: (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級', org_a: (RIVAL_ORGS.find(o=>o.id==='org_a')||{}).name||'A級', org_b: (RIVAL_ORGS.find(o=>o.id==='org_b')||{}).name||'B級' };
+  const stories = [];
+
+  // プレイヤー獲得
+  if (playerAcquired.length > 0) {
+    const names = (state.roster || []).filter(f => playerAcquired.includes(f.id)).map(f => f.name);
+    stories.push({
+      headline: `${state.orgName || 'プレイヤー団体'}、新戦力${names.length}名を獲得`,
+      body: names.join('、') + ' — 新シーズンの台風の目となるか。',
+      type: 'draftPlayerResult',
+    });
+  }
+
+  // AI団体獲得
+  for (const orgId of ['org_s', 'org_a', 'org_b']) {
+    const names = summary.aiAcquired[orgId] || [];
+    const empExtra = orgId === 'org_s' ? empressNames : [];
+    const allNames = [...names, ...empExtra];
+    if (allNames.length > 0) {
+      stories.push({
+        headline: `${ORG_NAMES[orgId]}、${allNames.length}名の新人を確保`,
+        body: allNames.join('、'),
+        type: 'draftAiResult',
+      });
+    }
+  }
+
+  // 流札
+  if (summary.flowThrough.length > 0) {
+    stories.push({
+      headline: `指名漏れ${summary.flowThrough.length}名、フリー市場へ`,
+      body: summary.flowThrough.join('、') + ' — 今後のFA市場で動きがあるか注目。',
+      type: 'draftFlowThrough',
+    });
+  }
+
+  return {
+    title: 'ドラフト結果',
+    stories,
+  };
+}
+
+// プレイヤーアクション（強気/標準/降りる）
+function draftPlayerAction(action) {
+  const dn = G._draftNegotiation;
+  if (!dn || dn.negState.finished) return;
+  const rng = Engine.rng.create(Engine.rng.derive(dn.rngState, dn.negState.round, dn.candidate.id));
+
+  if (action === 'drop') {
+    // 降りる → AI同士の残りをヘッドレスで即座に決着
+    let ns = { ...dn.negState };
+    ns.playerIn = false;
+    ns.log.push(`R${ns.round}: プレイヤー降り (${ns.currentBid}万)`);
+    let safety = 0;
+    while (!ns.finished && safety < 30) {
+      safety++;
+      const stepRng = Engine.rng.create(Engine.rng.derive(dn.rngState, ns.round, dn.candidate.id, safety));
+      ns = Engine.draftNegotiation.stepRound(ns, 'drop', G, stepRng);
+    }
+    // SFX: 競り負け or 流札
+    if (ns.winner && ns.winner !== 'player') _draftSfx('lost');
+    G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+    refreshAll();
+    _showScreenNoBgm('scoutEvent');
+    return;
+  }
+
+  const ns = Engine.draftNegotiation.stepRound(dn.negState, action, G, rng);
+  // SFX
+  if (ns.droppedThisRound.length > 0) _draftSfx('dropped'); // ④ 団体降り
+  else _draftSfx('bid'); // ③ ラウンド進行
+  if (ns.finished && ns.winner === 'player') _draftSfx('fanfare'); // ⑤ 落札成立
+  else if (ns.finished && ns.winner !== 'player') _draftSfx('lost'); // ⑥ 競り負け
+  G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+}
+
+// AI観戦モード
+function draftWatchRound(speed) {
+  const dn = G._draftNegotiation;
+  if (!dn || dn.negState.finished) return;
+
+  if (speed === 'skip') {
+    // 即座に最後まで
+    let ns = dn.negState;
+    let safety = 0;
+    while (!ns.finished && safety < 30) {
+      safety++;
+      const rng = Engine.rng.create(Engine.rng.derive(dn.rngState, ns.round, dn.candidate.id, safety));
+      ns = Engine.draftNegotiation.stepRound(ns, 'drop', G, rng);
+    }
+    G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+    refreshAll();
+    _showScreenNoBgm('scoutEvent');
+    return;
+  }
+
+  // normal=1000ms, fast=200ms
+  const delay = speed === 'fast' ? 200 : 1000;
+  const rng = Engine.rng.create(Engine.rng.derive(dn.rngState, dn.negState.round, dn.candidate.id));
+  const ns = Engine.draftNegotiation.stepRound(dn.negState, 'drop', G, rng);
+  G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+
+  if (!ns.finished) {
+    setTimeout(() => draftWatchRound(speed), delay);
+  }
+}
+
+// 単独指名の確認(Yes/No)
+function draftSoloConfirm(accept) {
+  const dn = G._draftNegotiation;
+  if (!dn) return;
+  if (accept) {
+    // そのまま次へ(draftNextCandidateがwinner=playerを処理)
+    draftNextCandidate();
+  } else {
+    // 見送り → winner=null に変更して次へ
+    const ns = { ...dn.negState, winner: null, finalBid: 0, narration: '見送りました' };
+    G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
+    draftNextCandidate();
+  }
+}
+
+// 次の候補に進む or 交渉終了
+function draftNextCandidate() {
+  const dn = G._draftNegotiation;
+  if (!dn) return;
+
+  const ns = dn.negState;
+  const cand = dn.candidate;
+  const acquired = [...(dn.acquiredThisSession || [])];
+  const log = [...(G.gameLog || [])];
+  let newRoster = [...G.roster];
+  let newFunds = G.funds;
+  let newAiOrgs = {};
+  Object.keys(G.aiOrgs || {}).forEach(k => {
+    newAiOrgs[k] = { ...G.aiOrgs[k], roster: [...(G.aiOrgs[k]?.roster || [])] };
+  });
+  let newFA = [...(G.freeAgents || [])];
+
+  const normFighter = (f) => ({
+    ...f, condition: f.condition ?? 80, schedule: f.schedule || 'balance',
+    wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
+    injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+    intensive: false, intensiveWeeks: 0,
+  });
+
+  // 前の候補の結果を適用
+  const clean = { ...cand };
+  delete clean._notion; delete clean._estimate; delete clean._isSeed; delete clean._hasCompetition;
+  const tierLabel = Engine.scout.getTierConfig(clean.assessedTier || 'material').label;
+
+  if (ns.winner === 'player') {
+    const maxPicks = dn.maxPicks || 4;
+    if (newFunds >= ns.finalBid && acquired.length < maxPicks && newRoster.filter(c => !c.isRental).length < (G.rosterCap || 16)) {
+      let signed = normFighter(clean);
+      signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+      signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
+      signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      newRoster.push(signed);
+      newFunds -= ns.finalBid;
+      acquired.push(clean.id);
+      log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
+    } else {
+      newFA.push(normFighter(clean));
+      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
+    }
+  } else if (ns.winner && ns.winner !== 'player') {
+    const orgData = newAiOrgs[ns.winner];
+    const wIdeal = (AI_SCOUT_CFG[ns.winner === 'org_s' ? 'S' : ns.winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    if (orgData && orgData.roster.length < wIdeal + 2) {
+      Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: ns.winner }));
+      const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
+      log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
+    } else {
+      newFA.push(normFighter(clean));
+      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
+    }
+  } else {
+    newFA.push(normFighter(clean));
+    log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
+  }
+
+  G = { ...G, roster: newRoster, funds: newFunds, aiOrgs: newAiOrgs, freeAgents: newFA, gameLog: log };
+
+  // 次の候補があるか？
+  const nextIdx = dn.currentCandidateIdx + 1;
+  if (nextIdx >= dn.sortedCandidates.length) {
+    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事)
+    G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
+    G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
+    try { Audio.bgm.play('management'); } catch(e) {}
+    console.log('[WM Draft] BGM → management (draft complete)');
+    refreshAll();
+    showScreen('scoutEvent');
+    return;
+  }
+
+  // 次の候補を開始
+  _draftSfx('chime'); // ② 次候補切替
+  const nextCand = dn.sortedCandidates[nextIdx];
+  const nextInterests = (G._draftInterests || {})[nextCand.id] || [];
+  const nextNegState = Engine.draftNegotiation.initNegState(nextCand, nextInterests);
+  const nextActive = nextInterests.filter(i => i.participating);
+  if (nextActive.length === 0) {
+    nextNegState.finished = true;
+    nextNegState.winner = 'player';
+    nextNegState.finalBid = nextNegState.assessedValue;
+    nextNegState.narration = '競合なし — 単独指名です。契約しますか？';
+    nextNegState._isSoloConfirm = true;
+  }
+
+  G = {
+    ...G,
+    _draftNegotiation: {
+      ...dn,
+      currentCandidateIdx: nextIdx,
+      candidate: nextCand,
+      negState: nextNegState,
+      acquiredThisSession: acquired,
+    },
+  };
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+}
 function hireCoach(id) { App.hireCoach(id); }
 function expandCoachSlot() { App.expandCoachSlot(); }
 function fireCoach(id) { App.fireCoach(id); }
@@ -4887,6 +5374,14 @@ function dismissAllPopups() {
   clearTimeout(window._notifSafetyTimer);
   clearTimeout(window._notifModalTimer);
   clearTimeout(window._careModalTimer);
+}
+
+// BGMを変えずに画面だけ切り替える（ドラフト交渉中のUI更新用）
+function _showScreenNoBgm(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screenEl = document.getElementById(`screen-${id}`);
+  if (screenEl) screenEl.classList.add('active');
+  if (id === 'scoutEvent') renderScoutEvent();
 }
 
 function showScreen(id, evt) {

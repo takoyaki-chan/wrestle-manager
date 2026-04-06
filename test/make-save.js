@@ -30,7 +30,9 @@ function loadAsGlobal(filename) {
 }
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 const args = process.argv.slice(2);
 const targetSeasons = parseInt(args[0], 10) || 3;

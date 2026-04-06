@@ -7,6 +7,8 @@
 //  Step 3: 比較レポート出力
 //
 //  Usage:
+//    node test/extraction-rate-verify.js
+//    node test/extraction-rate-verify.js --full
 //    node test/extraction-rate-verify.js [seeds] [seasons]
 //    node test/extraction-rate-verify.js 20 12
 // ══════════════════════════════════════════════════════════════════════════════
@@ -31,7 +33,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   console.error('ERROR: Engine/ALL_CHARS が読み込めませんでした');
@@ -40,8 +44,10 @@ if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
 
 // ── パラメータ ──
 const args = process.argv.slice(2);
-const SEED_COUNT = parseInt(args[0], 10) || 20;
-const TARGET_SEASONS = parseInt(args[1], 10) || 12;
+const fullMode = args.includes('--full');
+const numericArgs = args.filter(arg => /^-?\d+$/.test(arg));
+const SEED_COUNT = parseInt(numericArgs[0], 10) || (fullMode ? 20 : 2);
+const TARGET_SEASONS = parseInt(numericArgs[1], 10) || (fullMode ? 12 : 4);
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  才能ティア分類 & 代表選手選出
@@ -429,12 +435,10 @@ function removeExtractionRatePatch() {
 function runExtractionTest(gsbValue) {
   console.log(`\n═══ Step 2: 引き出し率プロトタイプ検証 (GSB=${gsbValue}) ═══\n`);
 
-  // GROWTH_SEASON_BASEを変更
-  const originalGSB = GROWTH_SEASON_BASE;
-  // グローバル変数の書き換え（vm.runInThisContextでvarとして展開済み）
-  global.GROWTH_SEASON_BASE = gsbValue;
-  // data.js内のGROWTH_SEASON_BASEを上書き
-  GROWTH_SEASON_BASE = gsbValue;
+  // 現行版では旧GROWTH_SEASON_BASEが存在しないため、
+  // 同等の「年間成長の基礎値」として baseLearning を差し替える。
+  const originalGSB = GROWTH_CONFIG.baseLearning;
+  GROWTH_CONFIG.baseLearning = gsbValue;
 
   const qualityResults = {};
 
@@ -557,7 +561,7 @@ function runExtractionTest(gsbValue) {
   }
 
   // GSBを復元
-  GROWTH_SEASON_BASE = originalGSB;
+  GROWTH_CONFIG.baseLearning = originalGSB;
 
   return qualityResults;
 }
@@ -892,7 +896,7 @@ const baselineResults = runBaseline();
 printBaselineReport(baselineResults);
 
 // Step 2: 引き出し率テスト（複数GSB値）
-const GSB_TO_TEST = [8.0, 12.0, 16.0, 24.0];
+const GSB_TO_TEST = fullMode ? [8.0, 12.0, 16.0, 24.0] : [8.0, 16.0];
 const allExtractionResults = {};
 
 for (const gsb of GSB_TO_TEST) {

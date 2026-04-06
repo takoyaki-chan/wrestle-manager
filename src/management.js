@@ -5113,128 +5113,9 @@ const Engine = {
       });
       return { prodigies, promising };
     },
-    aiScout(rng, state) {
-      const events = [];
-      const newAiOrgs = {};
-      // FIFO: dormantPool は {id, age} オブジェクト配列。先頭=最も古い
-      let dormantEntries = [...(state.dormantPool || [])];
-      RIVAL_ORGS.forEach(org => {
-        const aiData = state.aiOrgs[org.id];
-        if (!aiData) { newAiOrgs[org.id] = aiData; return; }
-        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
-        const tierLim = Engine.rival.getEffectiveTierLimits(org.tier, state.leagueElevated);
-        let roster = aiData.roster.map(f => ({ ...f }));
-        const need = Math.max(0, cfg.idealRoster - roster.length);
-        const maxPicks = Math.min(need, cfg.maxPicks);
-        let budget = cfg.budget;
-        let picked = 0;
-        // 占有済みID収集
-        const excludeIds = new Set();
-        Object.values(state.aiOrgs).forEach(a => (a.roster || []).forEach(f => excludeIds.add(f.id)));
-        (state.roster || []).forEach(f => excludeIds.add(f.id));
-        (state.freeAgents || []).forEach(f => excludeIds.add(f.id));
-        // 既にこのループ内で獲得済みのIDも除外
-        Object.values(newAiOrgs).forEach(a => (a.roster || []).forEach(f => excludeIds.add(f.id)));
-        // FIFO: 先頭ウィンドウから抽出
-        const { picked: drawn } = Engine.util.drawFromFront(dormantEntries, maxPicks * 2, rng, excludeIds);
-        for (const candId of drawn) {
-          if (picked >= maxPicks || budget <= 0) break;
-          const template = ALL_CHARS.find(c => c.id === candId);
-          if (!template) continue;
-          const avgPot = Math.round(((template.pot?.pw||0)+(template.pot?.sp||0)+(template.pot?.te||0)+(template.pot?.st||0)+(template.pot?.mn||0))/5);
-          let rank;
-          if (avgPot >= 160) rank = 'prodigy';
-          else if (avgPot >= 130) rank = 'promising';
-          else rank = 'rough';
-          const counts = Engine.rival.countRosterRanks(roster);
-          if (rank === 'prodigy' && counts.prodigies >= tierLim.maxProdigies) continue;
-          if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
-          const acquireRate = cfg.rates[rank] || 0.5;
-          if (Engine.rng.float(rng) >= acquireRate) continue;
-          const cost = rank === 'prodigy' ? 200 : rank === 'promising' ? 100 : 50;
-          if (budget < cost) continue;
-          const age = 17 + Engine.rng.int(rng, 0, 2);
-          const newFighter = Engine.rival.makeAIFighter(template, rng, org.id, age);
-          Engine.rival.pushUniqueFighter(roster, newFighter);
-          dormantEntries = dormantEntries.filter(e => e.id !== candId);
-          budget -= cost;
-          picked++;
-          events.push(`${org.emoji} ${org.name}が${template.name}を獲得`);
-        }
-        newAiOrgs[org.id] = { ...aiData, roster };
-      });
-      return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
-    },
-    aiSeasonReinforce(rng, state) {
-      const events = [];
-      const TC_THRESHOLD = 110;
-      const TARGET_COUNT = 6;
-      const newAiOrgs = {};
-      Object.keys(state.aiOrgs || {}).forEach(orgId => {
-        newAiOrgs[orgId] = {
-          ...state.aiOrgs[orgId],
-          roster: [...(state.aiOrgs[orgId]?.roster || [])],
-        };
-      });
-      let dormantEntries = [...(state.dormantPool || [])];
-      const sOrgId = 'org_s';
-      const sOrg = RIVAL_ORGS.find(o => o.id === sOrgId);
-      if (!sOrg || !newAiOrgs[sOrgId]) return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
-
-      let roster = newAiOrgs[sOrgId].roster;
-      const countElite = () => roster.filter(f => Engine.rival.trainCapOVR(f) >= TC_THRESHOLD).length;
-      let iterations = 0;
-      const maxIterations = 5;
-      const REINFORCE_WINDOW = 15; // FIFO: 先頭15件内から最強を選択
-      while (countElite() < TARGET_COUNT && iterations < maxIterations) {
-        iterations++;
-
-        const occupied = new Set();
-        Object.values(newAiOrgs).forEach(a => (a.roster || []).forEach(f => occupied.add(f.id)));
-        (state.roster || []).forEach(f => occupied.add(f.id));
-        (state.freeAgents || []).forEach(f => occupied.add(f.id));
-
-        // FIFO: 先頭ウィンドウ内から最強候補を選択
-        const eligible = dormantEntries.filter(e => !occupied.has(e.id));
-        if (eligible.length === 0) break;
-        const window = eligible.slice(0, REINFORCE_WINDOW);
-
-        const sorted = window.map(e => {
-          const template = ALL_CHARS.find(c => c.id === e.id);
-          if (!template) return null;
-          const potTotal = (template.pot.pw || 0) + (template.pot.sp || 0) + (template.pot.te || 0) + (template.pot.st || 0) + (template.pot.mn || 0);
-          return { id: e.id, potTotal, template };
-        }).filter(Boolean).sort((a, b) => b.potTotal - a.potTotal);
-
-        const candidate = sorted[0];
-        if (!candidate) break;
-
-        const testRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE11F));
-        const testFighter = Engine.rival.makeAIFighter(candidate.template, testRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
-        if (Engine.rival.trainCapOVR(testFighter) < TC_THRESHOLD) break;
-
-        const weakest = [...roster]
-          .map(f => ({ id: f.id, tcOVR: Engine.rival.trainCapOVR(f) }))
-          .sort((a, b) => a.tcOVR - b.tcOVR)[0];
-        if (!weakest) break;
-
-        const weakFighter = roster.find(f => f.id === weakest.id);
-        roster = roster.filter(f => f.id !== weakest.id);
-        if (weakFighter) {
-          events.push(`${sOrg.emoji} ${sOrg.name}: ${weakFighter.name}(tcOVR ${weakest.tcOVR})を放出`);
-        }
-
-        const recruitRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE120, iterations));
-        const newFighter = Engine.rival.makeAIFighter(candidate.template, recruitRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
-        Engine.rival.pushUniqueFighter(roster, newFighter);
-        dormantEntries = dormantEntries.filter(e => e.id !== candidate.id);
-
-        events.push(`${sOrg.emoji} ${sOrg.name}: ${candidate.template.name}(tcOVR ${Engine.rival.trainCapOVR(newFighter)})を戦略補強`);
-      }
-
-      newAiOrgs[sOrgId] = { ...newAiOrgs[sOrgId], roster };
-      return { aiOrgs: newAiOrgs, dormantPool: dormantEntries, events };
-    },
+    // draft-negotiation-spec §1.3: aiScout / aiSeasonReinforce 廃止
+    // AI団体のスカウト行動はドラフト交渉セリに統合（draft-negotiation.js）
+    // EMPRESS安全網は draft-negotiation.js Engine.draftNegotiation.empressReinforce() に移行予定
 
     // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
     // S-tier poaches best from lower tiers; lower tiers fill gaps from pool
@@ -6486,12 +6367,13 @@ const Engine = {
       s = { ...s, careStock: newCareStock, careStockLastRecovery: careAbsWeek };
     }
 
-    // リーダー気質: チャンピオン時orgPop+1/週
+    // リーダー気質: チャンピオン時orgPop+0.3/週（逓減適用）
     if (s.titles && s.titles.world && s.titles.world.championId) {
       const champId = s.titles.world.championId;
       const champHasLeader = (s.roster || []).some(c => c.id === champId && Traits.has(c, 'リーダー気質') && !c.injury);
       if (champHasLeader) {
-        s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + 1, 0, 100) };
+        const leaderDelta = Engine.orgPop.applyOrgPopChange(0.3, s.orgPop, null);
+        s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + leaderDelta, 0, 100) };
       }
     }
 
@@ -8117,51 +7999,25 @@ const Engine = {
         c._estimate = est;
       }
 
-      // §5.2 Competition flags
+      // draft-negotiation-spec: 旧competition flags廃止。セリエンジンが交渉を処理する
+      // 仮スタブ: 全候補を競合なし扱いにする（Step 2でセリエンジンに置換予定）
       for (const c of candidates) {
-        const tier = Engine.scout.getTierConfig(c.assessedTier);
-        c._hasCompetition = Engine.rng.float(rng) < tier.compRate;
-        c._compMultiplier = tier.compMul;
-        c._bidWinRate = tier.bidWin;
+        c._hasCompetition = false;
       }
 
       return { candidates, usedPoolIds: usedFromPool };
     },
 
-    /** Resolve competition for a single pick (scout-spec §5.2) */
+    /** draft-negotiation-spec: 仮スタブ — 全候補をassessedValueで直接取得（セリなし）
+     *  Step 2で Engine.draftNegotiation に置換予定 */
     resolveCompetition(rng, candidate, choice) {
-      // choice: 'pay' (追加コスト払って確定) / 'gamble' (通常額で勝負) / 'skip' (諦め)
       if (choice === 'skip') return { result: 'skipped', cost: 0 };
-
-      if (!candidate._hasCompetition) {
-        // No competition — always succeed at base cost
-        return { result: 'success', cost: candidate.assessedValue };
-      }
-
-      if (choice === 'pay') {
-        // Pay additional multiplier for guaranteed win
-        const cost = Math.round(candidate.assessedValue * candidate._compMultiplier);
-        return { result: 'success', cost };
-      }
-
-      // Gamble: bid at base cost, roll for success
-      const winRate = candidate._bidWinRate || 0.5;
-      if (Engine.rng.float(rng) < winRate) {
-        return { result: 'success', cost: candidate.assessedValue };
-      } else {
-        return { result: 'lost', cost: 0 };
-      }
+      // 仮: 全候補を単独指名扱いで即取得
+      return { result: 'success', cost: candidate.assessedValue };
     },
 
-    /** Determine where a lost candidate goes (scout-spec §5.2 行方) */
+    /** 流札候補の行き先（draft-negotiation-spec: フリー市場行き） */
     resolveLostCandidate(rng, candidate, aiOrgs) {
-      // 70% → joins random AI org, 30% → freeAgent pool
-      if (Engine.rng.float(rng) < 0.70) {
-        const orgIds = Object.keys(aiOrgs);
-        const targetOrgId = orgIds[Engine.rng.int(rng, 0, orgIds.length - 1)];
-        candidate.orgId = targetOrgId;
-        return { destination: 'aiOrg', orgId: targetOrgId, fighter: candidate };
-      }
       return { destination: 'freeAgent', fighter: candidate };
     }
   },
@@ -9284,22 +9140,29 @@ const Engine = {
         events.push('📅 オフシーズン第2週: 契約更新完了');
 
       } else if (offWeek === 3) {
-        // OffWeek 3: Scout Event (player + AI)
-        // AI scouting first
-        const scoutResult = Engine.rival.aiScout(rng, s);
-        s = { ...s, aiOrgs: scoutResult.aiOrgs, dormantPool: scoutResult.dormantPool };
-        if (scoutResult.events.length > 0) events.push(...scoutResult.events);
-        const reinforceRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xE11E));
-        const reinforceResult = Engine.rival.aiSeasonReinforce(reinforceRng, s);
-        s = { ...s, aiOrgs: reinforceResult.aiOrgs, dormantPool: reinforceResult.dormantPool };
-        if (reinforceResult.events.length > 0) events.push(...reinforceResult.events);
+        // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
+        // 新フロー: 全候補を共通プールから生成 → 関心マーク決定 → セリ交渉
 
-        // Player scout event: generate candidates
+        // 1. Generate scout candidates (expanded pool size)
         const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C01));
         const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
-        // Remove used pool IDs (FIFO: drawFromFrontで抽出済み→remainingはgenerateScoutReport内で計算)
         const usedPoolSet = new Set(report.usedPoolIds);
         const remainingPool = (s.dormantPool || []).filter(e => !usedPoolSet.has(e.id));
+
+        // 2. Pre-compute interest marks for each candidate (draft-negotiation-spec §3.2)
+        const interestRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xDFA3));
+        const draftInterests = {};
+        for (const cand of report.candidates) {
+          const candInterests = [];
+          for (const orgId of ['org_s', 'org_a', 'org_b']) {
+            const iRng = Engine.rng.create(Engine.rng.derive(
+              interestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
+            ));
+            candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+          }
+          draftInterests[cand.id] = candInterests;
+        }
+
         s = {
           ...s,
           dormantPool: remainingPool,
@@ -9308,6 +9171,7 @@ const Engine = {
           scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
           scoutEventType: 'offseason',
           scoutsThisSeason: (s.scoutsThisSeason || 0),
+          _draftInterests: draftInterests,
         };
         events.push('📅 オフシーズン第3週: スカウトレポート到着！');
         events.push(`🔍 スカウト候補 ${report.candidates.length}名の情報が届きました`);
@@ -9558,6 +9422,19 @@ const Engine = {
       const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
       const midUsedSet = new Set(report.usedPoolIds);
       const remainingPool = (s.dormantPool || []).filter(e => !midUsedSet.has(e.id));
+      // Pre-compute interest marks for midseason draft
+      const midInterestRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xDFA4));
+      const midDraftInterests = {};
+      for (const cand of report.candidates) {
+        const candInterests = [];
+        for (const orgId of ['org_s', 'org_a', 'org_b']) {
+          const iRng = Engine.rng.create(Engine.rng.derive(
+            midInterestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
+          ));
+          candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+        }
+        midDraftInterests[cand.id] = candInterests;
+      }
       s = {
         ...s,
         dormantPool: remainingPool,
@@ -9565,6 +9442,7 @@ const Engine = {
         scoutPicks: [],
         scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
         scoutEventType: 'midseason',
+        _draftInterests: midDraftInterests,
       };
       events.push(`🔍 シーズン中スカウト: 補強候補 ${report.candidates.length}名の情報が届きました`);
       return { state: { ...s, weekPhase: 'scoutEvent' }, events };

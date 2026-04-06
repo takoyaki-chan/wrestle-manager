@@ -10,7 +10,9 @@ const vm = require('vm');
 // --- ソース読み込み（vm.runInThisContext で const をグローバルに露出） ---
 const srcDir = path.join(__dirname, '..', 'src');
 vm.runInThisContext(fs.readFileSync(path.join(srcDir, 'data.js'), 'utf8'), { filename: 'data.js' });
-vm.runInThisContext(fs.readFileSync(path.join(srcDir, 'engine.js'), 'utf8'), { filename: 'engine.js' });
+vm.runInThisContext(fs.readFileSync(path.join(srcDir, 'management.js'), 'utf8'), { filename: 'management.js' });
+vm.runInThisContext(fs.readFileSync(path.join(srcDir, 'match-engine.js'), 'utf8'), { filename: 'match-engine.js' });
+vm.runInThisContext(fs.readFileSync(path.join(srcDir, 'relationships.js'), 'utf8'), { filename: 'relationships.js' });
 
 // --- 定数 ---
 const N = 10000;         // 試行回数

@@ -142,7 +142,11 @@
       "Bash(do node:*)",
       "Bash(ls C:UsersnkmrkDownloadswrestle-managerwm-guide*.html)",
       "Bash(ls /c/Users/nkmrk/Downloads/wrestle-manager/wm-guide*.html)",
-      "Bash(grep -l \"intensive\" /c/Users/nkmrk/Downloads/wrestle-manager/test/*.js)"
+      "Bash(grep -l \"intensive\" /c/Users/nkmrk/Downloads/wrestle-manager/test/*.js)",
+      "Bash(git rm:*)",
+      "Bash(ls -1 docs/archive/*.md docs/archive/*.html)",
+      "Bash(/tmp/compare_constants.txt:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

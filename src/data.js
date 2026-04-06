@@ -537,8 +537,8 @@ const commonMoves=[
 {n:'バックブリーカー',d:8,c:'throw'},{n:'サモアン・ドロップ',d:9,c:'throw'},
 {n:'ベリー・トゥ・ベリー',d:9,c:'throw'},{n:'タイガー・ドライバー',d:9,c:'throw'},
 {n:'スパインバスター',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
-{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:3,c:'submission'},
-{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:4,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
+{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:4,c:'submission'},
+{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:3,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
 {n:'スリーパー・ホールド',d:6,c:'submission'},{n:'フルネルソン',d:6,c:'submission'},
 {n:'コブラツイスト',d:7,c:'submission'},{n:'ベアハッグ',d:7,c:'submission'},
 {n:'キャメルクラッチ',d:7,c:'submission'},{n:'インディアン・デスロック',d:7,c:'submission'},
@@ -3017,8 +3017,8 @@ const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','�
 const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
 const SCOUT_TRAITS_POOL = ['努力家','早熟','晩成','遅咲き','適応力','破天荒','頑丈さ','不屈','鉄人','負けず嫌い','忠誠心','ファンサービス','番狂わせ体質','闘志','反骨心'];
 const SCOUT_EVENT_CFG = {
-  offseason: { count: [8, 10], maxPicks: 3, seedChance: 0.30 },  // §1.1 + §5.3
-  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },  // §1.1 + §5.3
+  offseason: { count: [14, 18], maxPicks: 4, seedChance: 0.30 },  // draft-negotiation-spec §2.1
+  midseason: { count: [8, 10],  maxPicks: 2, seedChance: 0.15 },  // draft-negotiation-spec §2.1
   midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
 let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
@@ -3133,10 +3133,11 @@ const WEAR_TABLE = [
 ];
 
 // AI scout config (rival-spec §5)
+// draft-negotiation-spec §1.3: AI_SCOUT_CFG 廃止。idealRoster のみ残す（aiInterTransfer/aiFAAcquire 用）
 const AI_SCOUT_CFG = {
-  S: { budget:800, maxPicks:3, idealRoster:16, rates:{prodigy:0.90, promising:0.80, rough:0.30} },
-  A: { budget:500, maxPicks:3, idealRoster:13, rates:{prodigy:0.70, promising:0.60, rough:0.50} },
-  B: { budget:200, maxPicks:2, idealRoster:10, rates:{prodigy:0.30, promising:0.50, rough:0.60} } // roster-cap v1.0: 9→10
+  S: { idealRoster:16 },
+  A: { idealRoster:13 },
+  B: { idealRoster:10 }
 };
 
 // F1: AI tier differentiation — roster quality caps & growth bonus

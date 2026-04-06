@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ドラフト速報 — 候補一覧 v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper-top: #f8eed2;
+  --paper-bot: #f0e0ba;
+  --ink: #1f1710;
+  --ink-sub: #3a2e1c;
+  --ink-mid: #5b4b34;
+  --ink-dim: #7a5b32;
+  --rule-light: rgba(95,69,35,0.12);
+  --rule: rgba(95,69,35,0.18);
+  --rule-bold: rgba(95,69,35,0.35);
+  --border: rgba(120,84,39,0.32);
+  --red: #8b1a1a;
+  --red-bright: #c22020;
+  --gold: #9a7020;
+  --gold-light: #b8892a;
+  --player-portrait-border: rgba(154,112,32,0.4);
+
+  --font-body: 'Noto Sans JP', sans-serif;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label: 'Oswald', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--font-body);
+  background: #24221e;
+  padding: 24px 16px 60px;
+  min-height: 100vh;
+  color: var(--ink);
+}
+
+/* ===== Newspaper container ===== */
+.paper {
+  max-width: 940px;
+  margin: 12px auto;
+  background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper-bot) 100%);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* ===== Title bar (red, exact game style) ===== */
+.title-bar {
+  background: linear-gradient(90deg, var(--red), var(--red-bright));
+  padding: 10px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.title-bar-name {
+  font-size: 18px; font-weight: 900;
+  color: #fff; letter-spacing: 2px;
+}
+.title-bar-issue {
+  font-size: 16px; font-weight: 900;
+  color: #fff; letter-spacing: 1px;
+}
+
+/* ===== Feature header (新聞のスペシャル号外感) ===== */
+.feature-header {
+  text-align: center;
+  padding: 18px 22px 16px;
+  border-bottom: 3px double var(--rule-bold);
+}
+.feature-eyebrow {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 4px;
+  color: #fff;
+  background: var(--red);
+  padding: 4px 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.feature-title {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.25;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.feature-sub {
+  font-size: 13px;
+  color: var(--ink-sub);
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 0 auto;
+  font-weight: 500;
+}
+
+/* ===== news-sec-label (game-exact CSS) ===== */
+.news-sec-label {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--red);
+  font-weight: 900;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  border-left: 3px solid var(--red);
+}
+.news-sec-label-gold {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: #6a4a10;
+  font-weight: 900;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  border-left: 3px solid var(--gold);
+}
+
+/* ===== Section wrapper ===== */
+.section {
+  padding: 14px 22px;
+  border-top: 1px solid var(--rule);
+}
+.section:first-of-type { border-top: none; }
+
+/* ============================================================
+   FEATURE GRID — top 3 (3-column layout from v2)
+============================================================ */
+.feat-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 16px;
+}
+.feat {
+  border-left: 1px solid var(--rule);
+  padding-left: 14px;
+}
+.feat:first-child { border-left: none; padding-left: 0; }
+
+.feat-portrait-row {
+  display: flex; gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.feat-portrait {
+  width: 86px; height: 86px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid var(--player-portrait-border);
+  box-shadow: 0 0 8px rgba(154,112,32,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 900;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.feat.lead .feat-portrait {
+  width: 130px; height: 130px;
+  font-size: 56px;
+}
+.feat-headinfo { flex: 1; min-width: 0; }
+.feat-rank {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 9px; letter-spacing: 1px;
+  color: #fff;
+  background: var(--ink);
+  padding: 1px 7px;
+  margin-bottom: 5px;
+}
+.feat-name {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 5px;
+}
+.feat.lead .feat-name { font-size: 24px; }
+.feat-readline {
+  font-size: 11px;
+  color: var(--ink-sub);
+  line-height: 1.6;
+}
+.feat-readline strong { color: var(--ink); font-weight: 900; }
+
+.tier-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 1px 7px;
+  margin-right: 5px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.tier-tag.t-superElite { color: var(--red); background: rgba(139,26,26,0.08); }
+.tier-tag.t-elite { color: #9a5a10; background: rgba(154,90,16,0.08); }
+.tier-tag.t-promising { color: #1f4d80; background: rgba(31,77,128,0.08); }
+.tier-tag.t-raw { color: #1a7a50; background: rgba(26,122,80,0.08); }
+.tier-tag.t-material { color: #6b5b3a; background: rgba(107,91,58,0.08); }
+
+/* mini stats */
+.mini-stats {
+  display: flex; gap: 5px;
+  margin-top: 8px;
+  padding: 7px 0;
+  border-top: 1px dashed var(--rule);
+  border-bottom: 1px dashed var(--rule);
+}
+.stat-block { flex: 1; text-align: center; }
+.stat-key {
+  font-family: var(--font-label);
+  font-size: 8px; letter-spacing: 0.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.stat-bar {
+  height: 4px;
+  background: rgba(95,69,35,0.12);
+  margin: 3px 0 1px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  background: var(--ink-mid);
+  border-radius: 2px;
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--ink);
+}
+
+.scout-quote {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-sub);
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  background: rgba(200,190,170,0.22);
+  border-radius: 6px;
+  border-left: 3px solid var(--gold);
+}
+.scout-quote::before {
+  content: '記者の目 ';
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.feat-orgs {
+  display: flex; gap: 8px;
+  padding: 8px 0 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--rule-light);
+}
+.feat-org { flex: 1; text-align: center; padding: 2px; }
+.feat-org-name {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+.feat-org-mark {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+}
+.mark-bullseye { color: var(--red); }
+.mark-contender { color: #1f4d80; }
+.mark-outside { color: var(--ink-dim); }
+.mark-none { color: rgba(95,69,35,0.2); font-size: 13px; }
+
+/* ============================================================
+   MID GRID — promising 5 (2-column from v2)
+============================================================ */
+.mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 18px;
+}
+.mid {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule-light);
+}
+.mid:nth-child(-n+2) { border-top: none; padding-top: 4px; }
+.mid-portrait {
+  width: 60px; height: 60px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid var(--player-portrait-border);
+  box-shadow: 0 0 6px rgba(154,112,32,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 900;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.mid-info { flex: 1; min-width: 0; }
+.mid-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; }
+.mid-rank {
+  font-family: var(--font-label);
+  font-size: 9px; color: var(--ink-dim);
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.mid-name {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.mid-meta {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink-sub);
+  margin-bottom: 4px;
+}
+.mid-meta strong { color: var(--ink); font-weight: 900; }
+.mid-orgs {
+  display: flex; gap: 12px;
+  padding-top: 4px;
+  border-top: 1px dotted var(--rule);
+}
+.mid-org {
+  display: flex; align-items: center; gap: 3px;
+  font-family: var(--font-label);
+  font-size: 9px; color: var(--ink-dim);
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.mid-org-mark {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* ============================================================
+   SHORT TABLE — その他指名候補
+============================================================ */
+.short-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.short-table th {
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--rule-bold);
+  background: rgba(95,69,35,0.06);
+}
+.short-table th.center { text-align: center; }
+.short-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--rule-light);
+  color: var(--ink-sub);
+  vertical-align: middle;
+  font-weight: 500;
+}
+.short-table tr:last-child td { border-bottom: none; }
+.short-table tr:hover td { background: rgba(120,84,39,0.04); }
+.short-table td.center { text-align: center; }
+.short-portrait {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 1px solid var(--player-portrait-border);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900;
+  color: var(--ink);
+}
+.short-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.short-style {
+  font-size: 9px;
+  color: var(--ink-dim);
+}
+.short-age {
+  font-family: var(--font-display);
+  color: var(--ink); font-size: 13px;
+}
+.short-mark {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.info-bar {
+  margin: 0 22px;
+  padding: 14px 0 16px;
+  border-top: 2px double rgba(95,69,35,0.35);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+}
+.info-stack { display: flex; gap: 24px; }
+.info-item {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.info-item strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: 1px;
+  margin-top: 1px;
+  font-weight: 400;
+}
+.info-item.funds strong { color: var(--gold); }
+.start-btn {
+  font-family: var(--font-label);
+  font-size: 13px; letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 12px 28px;
+  background: linear-gradient(90deg, var(--red), var(--red-bright));
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all .15s;
+}
+.start-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+.legend {
+  padding: 10px 22px 16px;
+  font-size: 10px;
+  color: var(--ink-dim);
+  text-align: center;
+  line-height: 1.7;
+  border-top: 1px solid var(--rule-light);
+}
+.legend strong {
+  font-weight: 900;
+  color: var(--ink-mid);
+  font-size: 12px;
+  padding: 0 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="paper">
+
+  <!-- Title bar (週刊グラップル — game's actual newspaper) -->
+  <div class="title-bar">
+    <div class="title-bar-name">週刊グラップル</div>
+    <div class="title-bar-issue">シーズン3 オフ第3週</div>
+  </div>
+
+  <!-- Feature header (this article's identity) -->
+  <div class="feature-header">
+    <div class="feature-eyebrow">◆ ドラフト速報 ◆</div>
+    <h2 class="feature-title">2027年度 新人交渉、本日開幕</h2>
+    <p class="feature-sub">
+      若き才能16名が業界の門を叩く。EMPRESS GRAND・NOVA IMPACT・CRESCENT RISE、そしてあなたの団体——交渉卓に座るのは誰か。<br>
+      最大の注目は16歳の超逸材・鳳凰寺ひかり。複数団体が本気の獲得を狙う。
+    </p>
+  </div>
+
+  <!-- ========== TOP 3 FEATURE GRID ========== -->
+  <div class="section">
+    <div class="news-sec-label">注目の上位指名候補 — 3名</div>
+
+    <div class="feat-grid">
+
+      <!-- LEAD No.1 -->
+      <div class="feat lead">
+        <div class="feat-portrait-row">
+          <div class="feat-portrait">鳳</div>
+          <div class="feat-headinfo">
+            <span class="feat-rank">PICK NO. 01</span>
+            <div class="feat-name">鳳凰寺 ひかり</div>
+            <div class="feat-readline">
+              <span class="tier-tag t-superElite">超逸材</span>
+              16歳・ストライカー・<strong>babyface</strong><br>
+              推定契約金 <strong>¥1,820万</strong>
+            </div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="stat-block"><div class="stat-key">PWR</div><div class="stat-bar"><div class="stat-bar-fill" style="width:62%"></div></div><div class="stat-num">62</div></div>
+          <div class="stat-block"><div class="stat-key">SPD</div><div class="stat-bar"><div class="stat-bar-fill" style="width:74%"></div></div><div class="stat-num">74</div></div>
+          <div class="stat-block"><div class="stat-key">TEC</div><div class="stat-bar"><div class="stat-bar-fill" style="width:58%"></div></div><div class="stat-num">58</div></div>
+          <div class="stat-block"><div class="stat-key">STA</div><div class="stat-bar"><div class="stat-bar-fill" style="width:66%"></div></div><div class="stat-num">66</div></div>
+          <div class="stat-block"><div class="stat-key">MNT</div><div class="stat-bar"><div class="stat-bar-fill" style="width:80%"></div></div><div class="stat-num">80</div></div>
+        </div>
+        <div class="scout-quote">
+          16歳にして既に完成度の高いストライカー。打撃の精度・スタミナ・精神力すべてが標準を上回る。今年の業界最大の話題人物。
+        </div>
+        <div class="feat-orgs">
+          <div class="feat-org"><div class="feat-org-name">EMPRESS</div><div class="feat-org-mark mark-bullseye">◎</div></div>
+          <div class="feat-org"><div class="feat-org-name">NOVA</div><div class="feat-org-mark mark-bullseye">◎</div></div>
+          <div class="feat-org"><div class="feat-org-name">CRESCENT</div><div class="feat-org-mark mark-outside">△</div></div>
+        </div>
+      </div>
+
+      <!-- No.2 -->
+      <div class="feat">
+        <div class="feat-portrait-row">
+          <div class="feat-portrait">桜</div>
+          <div class="feat-headinfo">
+            <span class="feat-rank">PICK NO. 02</span>
+            <div class="feat-name">桜井 みなみ</div>
+            <div class="feat-readline">
+              <span class="tier-tag t-elite">逸材</span>
+              17歳・グラップラー<br>
+              推定契約金 <strong>¥980万</strong>
+            </div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="stat-block"><div class="stat-key">PWR</div><div class="stat-bar"><div class="stat-bar-fill" style="width:70%"></div></div><div class="stat-num">70</div></div>
+          <div class="stat-block"><div class="stat-key">SPD</div><div class="stat-bar"><div class="stat-bar-fill" style="width:54%"></div></div><div class="stat-num">54</div></div>
+          <div class="stat-block"><div class="stat-key">TEC</div><div class="stat-bar"><div class="stat-bar-fill" style="width:62%"></div></div><div class="stat-num">62</div></div>
+          <div class="stat-block"><div class="stat-key">STA</div><div class="stat-bar"><div class="stat-bar-fill" style="width:72%"></div></div><div class="stat-num">72</div></div>
+          <div class="stat-block"><div class="stat-key">MNT</div><div class="stat-bar"><div class="stat-bar-fill" style="width:65%"></div></div><div class="stat-num">65</div></div>
+        </div>
+        <div class="scout-quote">
+          投げ技に天性のセンス。強いグラウンド技術を持ち、長期育成で看板候補に。
+        </div>
+        <div class="feat-orgs">
+          <div class="feat-org"><div class="feat-org-name">EMPRESS</div><div class="feat-org-mark mark-bullseye">◎</div></div>
+          <div class="feat-org"><div class="feat-org-name">NOVA</div><div class="feat-org-mark mark-contender">○</div></div>
+          <div class="feat-org"><div class="feat-org-name">CRESCENT</div><div class="feat-org-mark mark-none">—</div></div>
+        </div>
+      </div>
+
+      <!-- No.3 -->
+      <div class="feat">
+        <div class="feat-portrait-row">
+          <div class="feat-portrait">月</div>
+          <div class="feat-headinfo">
+            <span class="feat-rank">PICK NO. 03</span>
+            <div class="feat-name">月城 れな</div>
+            <div class="feat-readline">
+              <span class="tier-tag t-elite">逸材</span>
+              18歳・エアリアル<br>
+              推定契約金 <strong>¥920万</strong>
+            </div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="stat-block"><div class="stat-key">PWR</div><div class="stat-bar"><div class="stat-bar-fill" style="width:50%"></div></div><div class="stat-num">50</div></div>
+          <div class="stat-block"><div class="stat-key">SPD</div><div class="stat-bar"><div class="stat-bar-fill" style="width:82%"></div></div><div class="stat-num">82</div></div>
+          <div class="stat-block"><div class="stat-key">TEC</div><div class="stat-bar"><div class="stat-bar-fill" style="width:68%"></div></div><div class="stat-num">68</div></div>
+          <div class="stat-block"><div class="stat-key">STA</div><div class="stat-bar"><div class="stat-bar-fill" style="width:55%"></div></div><div class="stat-num">55</div></div>
+          <div class="stat-block"><div class="stat-key">MNT</div><div class="stat-bar"><div class="stat-bar-fill" style="width:60%"></div></div><div class="stat-num">60</div></div>
+        </div>
+        <div class="scout-quote">
+          飛び技の華麗さで観客の心を掴む。スター性に長けた華のある選手。
+        </div>
+        <div class="feat-orgs">
+          <div class="feat-org"><div class="feat-org-name">EMPRESS</div><div class="feat-org-mark mark-contender">○</div></div>
+          <div class="feat-org"><div class="feat-org-name">NOVA</div><div class="feat-org-mark mark-bullseye">◎</div></div>
+          <div class="feat-org"><div class="feat-org-name">CRESCENT</div><div class="feat-org-mark mark-none">—</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== MID 5 (有望) ========== -->
+  <div class="section">
+    <div class="news-sec-label-gold">有望株 — 育成価値の高い5名</div>
+
+    <div class="mid-grid">
+
+      <div class="mid">
+        <div class="mid-portrait">白</div>
+        <div class="mid-info">
+          <div class="mid-head"><span class="mid-rank">No.04</span><span class="mid-name">白石 ゆい</span></div>
+          <div class="mid-meta">
+            <span class="tier-tag t-promising">有望</span>17歳・サブミッション・neutral<br>
+            推定契約金 <strong>¥420万</strong>
+          </div>
+          <div class="mid-orgs">
+            <div class="mid-org">EMP <span class="mid-org-mark mark-contender">○</span></div>
+            <div class="mid-org">NOV <span class="mid-org-mark mark-bullseye">◎</span></div>
+            <div class="mid-org">CRE <span class="mid-org-mark mark-bullseye">◎</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid">
+        <div class="mid-portrait">黒</div>
+        <div class="mid-info">
+          <div class="mid-head"><span class="mid-rank">No.05</span><span class="mid-name">黒田 さくら</span></div>
+          <div class="mid-meta">
+            <span class="tier-tag t-promising">有望</span>19歳・サブミッション・heel<br>
+            推定契約金 <strong>¥380万</strong>
+          </div>
+          <div class="mid-orgs">
+            <div class="mid-org">EMP <span class="mid-org-mark mark-outside">△</span></div>
+            <div class="mid-org">NOV <span class="mid-org-mark mark-contender">○</span></div>
+            <div class="mid-org">CRE <span class="mid-org-mark mark-bullseye">◎</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid">
+        <div class="mid-portrait">北</div>
+        <div class="mid-info">
+          <div class="mid-head"><span class="mid-rank">No.06</span><span class="mid-name">北野 まり</span></div>
+          <div class="mid-meta">
+            <span class="tier-tag t-promising">有望</span>18歳・ブロウラー・dirty<br>
+            推定契約金 <strong>¥340万</strong>
+          </div>
+          <div class="mid-orgs">
+            <div class="mid-org">EMP <span class="mid-org-mark mark-none">—</span></div>
+            <div class="mid-org">NOV <span class="mid-org-mark mark-contender">○</span></div>
+            <div class="mid-org">CRE <span class="mid-org-mark mark-bullseye">◎</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid">
+        <div class="mid-portrait">田</div>
+        <div class="mid-info">
+          <div class="mid-head"><span class="mid-rank">No.07</span><span class="mid-name">田中 あおい</span></div>
+          <div class="mid-meta">
+            <span class="tier-tag t-promising">有望</span>17歳・オールラウンド<br>
+            推定契約金 <strong>¥320万</strong>
+          </div>
+          <div class="mid-orgs">
+            <div class="mid-org">EMP <span class="mid-org-mark mark-contender">○</span></div>
+            <div class="mid-org">NOV <span class="mid-org-mark mark-contender">○</span></div>
+            <div class="mid-org">CRE <span class="mid-org-mark mark-contender">○</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid">
+        <div class="mid-portrait">山</div>
+        <div class="mid-info">
+          <div class="mid-head"><span class="mid-rank">No.08</span><span class="mid-name">山口 ひな</span></div>
+          <div class="mid-meta">
+            <span class="tier-tag t-promising">有望</span>20歳・ストライカー<br>
+            推定契約金 <strong>¥290万</strong>
+          </div>
+          <div class="mid-orgs">
+            <div class="mid-org">EMP <span class="mid-org-mark mark-outside">△</span></div>
+            <div class="mid-org">NOV <span class="mid-org-mark mark-outside">△</span></div>
+            <div class="mid-org">CRE <span class="mid-org-mark mark-bullseye">◎</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== その他指名候補 ========== -->
+  <div class="section">
+    <div class="news-sec-label-gold">その他指名候補 — 8名</div>
+    <table class="short-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;"></th>
+          <th style="width: 40px;"></th>
+          <th>名前</th>
+          <th class="center" style="width:32px;">歳</th>
+          <th style="width:48px;">分類</th>
+          <th class="center" style="width:62px;">契約金</th>
+          <th class="center" style="width:38px;">EMP</th>
+          <th class="center" style="width:38px;">NOV</th>
+          <th class="center" style="width:38px;">CRE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="center">09</td>
+          <td><div class="short-portrait">鈴</div></td>
+          <td><span class="short-name">鈴木 みお</span><div class="short-style">Grappler</div></td>
+          <td class="center"><span class="short-age">18</span></td>
+          <td><span class="tier-tag t-raw">原石</span></td>
+          <td class="center">¥180万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-outside">△</span></td>
+          <td class="center"><span class="short-mark mark-bullseye">◎</span></td>
+        </tr>
+        <tr>
+          <td class="center">10</td>
+          <td><div class="short-portrait">林</div></td>
+          <td><span class="short-name">林 ゆきこ</span><div class="short-style">Technique</div></td>
+          <td class="center"><span class="short-age">19</span></td>
+          <td><span class="tier-tag t-raw">原石</span></td>
+          <td class="center">¥160万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-outside">△</span></td>
+          <td class="center"><span class="short-mark mark-contender">○</span></td>
+        </tr>
+        <tr>
+          <td class="center">11</td>
+          <td><div class="short-portrait">佐</div></td>
+          <td><span class="short-name">佐藤 ゆず</span><div class="short-style">Aerial</div></td>
+          <td class="center"><span class="short-age">17</span></td>
+          <td><span class="tier-tag t-raw">原石</span></td>
+          <td class="center">¥150万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-outside">△</span></td>
+          <td class="center"><span class="short-mark mark-contender">○</span></td>
+        </tr>
+        <tr>
+          <td class="center">12</td>
+          <td><div class="short-portrait">高</div></td>
+          <td><span class="short-name">高橋 まひる</span><div class="short-style">Brawler</div></td>
+          <td class="center"><span class="short-age">20</span></td>
+          <td><span class="tier-tag t-raw">原石</span></td>
+          <td class="center">¥130万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-contender">○</span></td>
+        </tr>
+        <tr>
+          <td class="center">13</td>
+          <td><div class="short-portrait">渡</div></td>
+          <td><span class="short-name">渡辺 こはる</span><div class="short-style">Allround</div></td>
+          <td class="center"><span class="short-age">18</span></td>
+          <td><span class="tier-tag t-material">素材</span></td>
+          <td class="center">¥98万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-outside">△</span></td>
+        </tr>
+        <tr>
+          <td class="center">14</td>
+          <td><div class="short-portrait">伊</div></td>
+          <td><span class="short-name">伊藤 のぞみ</span><div class="short-style">Submission</div></td>
+          <td class="center"><span class="short-age">19</span></td>
+          <td><span class="tier-tag t-material">素材</span></td>
+          <td class="center">¥85万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-outside">△</span></td>
+        </tr>
+        <tr>
+          <td class="center">15</td>
+          <td><div class="short-portrait">中</div></td>
+          <td><span class="short-name">中村 ちさと</span><div class="short-style">Striker</div></td>
+          <td class="center"><span class="short-age">20</span></td>
+          <td><span class="tier-tag t-material">素材</span></td>
+          <td class="center">¥72万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+        </tr>
+        <tr>
+          <td class="center">16</td>
+          <td><div class="short-portrait">小</div></td>
+          <td><span class="short-name">小林 あや</span><div class="short-style">Technique</div></td>
+          <td class="center"><span class="short-age">17</span></td>
+          <td><span class="tier-tag t-material">素材</span></td>
+          <td class="center">¥58万</td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+          <td class="center"><span class="short-mark mark-none">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-bar">
+    <div class="info-stack">
+      <div class="info-item">獲得上限<br><strong>4 NAMES</strong></div>
+      <div class="info-item funds">残資金<br><strong>¥ 28,400,000</strong></div>
+    </div>
+    <button class="start-btn">交渉開始 →</button>
+  </div>
+
+  <div class="legend">
+    <strong>◎</strong> 本命 &nbsp;&nbsp; <strong>○</strong> 対抗 &nbsp;&nbsp; <strong>△</strong> 押さえ &nbsp;&nbsp; <strong>—</strong> 興味なし<br>
+    各団体の関心は事前情報。実際の交渉では予測と異なる動きを見せることもある。
+  </div>
+
+</div>
+
+</body>
+</html>

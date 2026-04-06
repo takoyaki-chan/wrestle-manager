@@ -27,7 +27,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   console.error('ERROR: Engine/ALL_CHARS が読み込めませんでした');

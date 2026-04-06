@@ -1295,7 +1295,7 @@ function renderWeekScreen() {
       <p style="font-size:12px;color:var(--text-dim);margin-top:4px">獲得枠: ${(G.scoutPicks||[]).length} / ${G.scoutMaxPicks || 3}名</p>
     </div>
     <div class="btn-row">
-      <button class="btn btn-gold" onclick="showScreen('scoutEvent')">🔍 候補者を見る</button>
+      <button class="btn btn-gold" onclick="console.log('[WM Draft] 候補者を見る: weekPhase='+G.weekPhase+' _draftInterests='+(!!G._draftInterests));showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">🔍 候補者を見る</button>
       <button class="btn btn-blue" onclick="scoutFinish()">スカウト終了 →</button>
     </div>`;
   }
@@ -3075,6 +3075,610 @@ function renderScout() {
   el.innerHTML = html;
 }
 
+// ── Draft Candidate List (週刊グラップル ドラフト速報) ──────────────
+// draft-negotiation-spec §7.1 / docs/draft-mockup-newspaper-v4.html
+function _renderDraftCandidateList(candidates, context) {
+  const interests = context.draftInterests || {};
+  const maxPicks = context.maxPicks || 4;
+  const funds = context.funds || 0;
+  const season = context.season || 1;
+  const eventType = context.eventType || 'offseason';
+  const weekLabel = eventType === 'offseason' ? `シーズン${season} オフ第3週` : `シーズン${season} 第${context.week || '?'}週`;
+
+  // Sort by assessedValue desc
+  const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
+
+  // assessedValue 順で紙面ポジション振り分け（ティア問わず純粋に順位）
+  const top = sorted.slice(0, 3);                // 1〜3位 → トップ3欄
+  const mid = sorted.slice(3, 8);                // 4〜8位 → 有望株欄
+  const rest = sorted.slice(8);                   // 9位以降 → その他テーブル
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const ROLE_JP = { Babyface: 'babyface', Heel: 'heel', Neutral: 'neutral' };
+  const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
+  const _rOrgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
+  const ORG_ABBR = { org_s: _rOrgName('org_s').slice(0,3).toUpperCase(), org_a: _rOrgName('org_a').slice(0,3).toUpperCase(), org_b: _rOrgName('org_b').slice(0,3).toUpperCase() };
+  const ORG_FULL = { org_s: _rOrgName('org_s'), org_a: _rOrgName('org_a'), org_b: _rOrgName('org_b') };
+
+  function _markHtml(candId, orgId, isFull) {
+    const ci = (interests[candId] || []).find(i => i.orgId === orgId);
+    if (!ci || !ci.participating) return isFull
+      ? `<div class="feat-org-mark mark-none">—</div>`
+      : `<span class="short-mark mark-none">—</span>`;
+    const m = MARK_DISPLAY[ci.displayMark] || MARK_DISPLAY.osae;
+    return isFull
+      ? `<div class="feat-org-mark ${m.cls}">${m.text}</div>`
+      : `<span class="short-mark ${m.cls}">${m.text}</span>`;
+  }
+
+  function _miniStats(c) {
+    const est = c._estimate || { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn };
+    const stats = [
+      { key: 'PWR', val: est.pw || 0 },
+      { key: 'SPD', val: est.sp || 0 },
+      { key: 'TEC', val: est.te || 0 },
+      { key: 'STA', val: est.st || 0 },
+      { key: 'MNT', val: est.mn || 0 },
+    ];
+    return `<div class="draft-mini-stats">${stats.map(s =>
+      `<div class="draft-stat-block"><div class="draft-stat-key">${s.key}</div><div class="draft-stat-bar"><div class="draft-stat-bar-fill" style="width:${Math.min(100, s.val)}%"></div></div><div class="draft-stat-num">${s.val}</div></div>`
+    ).join('')}</div>`;
+  }
+
+  function _scoutComment(c) {
+    const tier = c.assessedTier || 'material';
+    const style = STYLE_JP[c.style] || c.style;
+    const comments = {
+      superElite: `${c.age}歳にして既に完成度の高い${style}。複数の能力が標準を大きく上回る。今年の業界最大の話題人物。`,
+      elite: `${style}としての基礎が光る。長期育成で看板候補に化ける可能性を秘めている。`,
+      promising: `着実な成長が見込める堅実なタイプ。${style}として十分な素質あり。`,
+    };
+    return comments[tier] || '';
+  }
+
+  function _portrait(c, size) {
+    const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(c.id) : '';
+    const initial = (c.name || '?').charAt(0);
+    if (url) {
+      return `<img src="${url}" alt="" style="width:${size}px;height:${size}px;border-radius:10px;object-fit:cover;border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);flex-shrink:0;">`;
+    }
+    return `<div style="width:${size}px;height:${size}px;border-radius:10px;background:linear-gradient(135deg,#d4c4a0,#b8a07a);border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;font-weight:900;color:#1f1710;flex-shrink:0;">${initial}</div>`;
+  }
+
+  // Star selection state
+  const selections = G._draftSelections || [];
+  function _starBtn(candId, size) {
+    const selected = selections.includes(candId);
+    const sz = size || 'md';
+    const fs = sz === 'lg' ? '24px' : sz === 'sm' ? '18px' : '20px';
+    const pad = sz === 'lg' ? '4px 6px' : '3px 5px';
+    return `<button class="draft-star-btn${selected ? ' draft-star-on' : ''}" onclick="toggleDraftSelection(${candId})" style="font-size:${fs};padding:${pad};" title="${selected ? '選択解除' : '交渉候補に追加'}">${selected ? '★' : '☆'}</button>`;
+  }
+
+  // Find lead headline name (top candidate)
+  const leadName = top[0] ? top[0].name : '注目の新人';
+  const totalCount = candidates.length;
+
+  let html = '';
+
+  // ── Paper container ──
+  html += `<div style="max-width:940px;margin:12px auto;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
+
+  // ── Title bar ──
+  html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">★ 選択中 <span style="font-size:16px;color:${selections.length >= maxPicks ? '#f08b9e' : '#f0d078'};">${selections.length}</span> / ${maxPicks}名${selections.length >= maxPicks ? ' <span style="font-size:10px;color:#f08b9e;animation:dn-pulse 1.2s infinite;">上限</span>' : ''}</div>
+      <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
+    </div>
+  </div>`;
+
+  // ── Feature header ──
+  html += `<div style="text-align:center;padding:18px 22px 16px;border-bottom:3px double rgba(95,69,35,0.35);">
+    <div style="display:inline-block;font-size:11px;letter-spacing:4px;color:#fff;background:#8b1a1a;padding:4px 14px;font-weight:700;margin-bottom:12px;">◆ ドラフト速報 ◆</div>
+    <div style="font-size:28px;font-weight:900;color:#1f1710;line-height:1.25;letter-spacing:1px;margin-bottom:8px;">${season + 2024}年度 新人交渉、本日開幕</div>
+    <div style="font-size:13px;color:#3a2e1c;line-height:1.7;max-width:640px;margin:0 auto;font-weight:500;">
+      若き才能${totalCount}名が業界の門を叩く。${top[0] ? `最大の注目は${top[0].age}歳の${TIER_LABELS[top[0].assessedTier] || '注目株'}・${leadName}。` : ''}複数団体が本気の獲得を狙う。
+    </div>
+  </div>`;
+
+  // ── TOP 3 Feature Grid ──
+  if (top.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div class="news-sec-label">注目の上位指名候補 — ${top.length}名</div>
+      <div style="display:grid;grid-template-columns:${top.length >= 3 ? '1.5fr 1fr 1fr' : top.length === 2 ? '1fr 1fr' : '1fr'};gap:16px;">`;
+    top.forEach((c, idx) => {
+      const isLead = idx === 0;
+      const portraitSize = isLead ? 120 : 80;
+      const nameSize = isLead ? '22px' : '17px';
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = c.assessedValue || 0;
+      html += `<div style="${idx > 0 ? 'border-left:1px solid rgba(95,69,35,0.18);padding-left:14px;' : ''}">
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
+          ${_portrait(c, portraitSize)}
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <span style="display:inline-block;font-size:9px;letter-spacing:1px;color:#fff;background:#1f1710;padding:1px 7px;font-weight:700;">PICK NO. ${String(idx + 1).padStart(2, '0')}</span>
+              ${_starBtn(c.id, 'lg')}
+            </div>
+            <div style="font-size:${nameSize};font-weight:900;color:#1f1710;line-height:1.2;margin-bottom:5px;">${c.name}</div>
+            <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
+              <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
+              ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・<strong>' + (ROLE_JP[c.role] || c.role) + '</strong>' : ''}<br>
+              推定契約金 <strong>¥${baseCost.toLocaleString()}万</strong>
+            </div>
+          </div>
+        </div>
+        ${_miniStats(c)}
+        ${_scoutComment(c) ? `<div style="font-size:12px;line-height:1.7;color:#3a2e1c;margin:8px 0 0;padding:8px 12px;background:rgba(200,190,170,0.22);border-radius:6px;border-left:3px solid #9a7020;">
+          <div style="font-size:9px;letter-spacing:1px;color:#9a7020;font-weight:700;margin-bottom:3px;">記者の目</div>
+          ${_scoutComment(c)}
+        </div>` : ''}
+        <div style="display:flex;gap:8px;padding:8px 0 0;margin-top:8px;border-top:1px solid rgba(95,69,35,0.12);">
+          ${['org_s','org_a','org_b'].map(oid => `<div style="flex:1;text-align:center;padding:2px;">
+            <div style="font-size:9px;letter-spacing:0.5px;color:#7a5b32;font-weight:700;margin-bottom:1px;">${ORG_FULL[oid]}</div>
+            ${_markHtml(c.id, oid, true)}
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── MID Grid (有望) ──
+  if (mid.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">有望株 — 育成価値の高い${mid.length}名</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;">`;
+    mid.forEach((c, idx) => {
+      const globalIdx = top.length + idx + 1;
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = c.assessedValue || 0;
+      const midSelected = selections.includes(c.id);
+      html += `<div class="${midSelected ? 'draft-card-selected' : ''}" style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
+        ${_portrait(c, 56)}
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span style="font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">No.${String(globalIdx).padStart(2, '0')}</span>
+            <span style="font-size:15px;font-weight:900;color:#1f1710;">${c.name}</span>
+            ${_starBtn(c.id, 'md')}
+          </div>
+          <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
+            <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
+            ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・' + (ROLE_JP[c.role] || c.role) : ''}<br>
+            推定契約金 <strong style="color:#1f1710;">¥${baseCost.toLocaleString()}万</strong>
+          </div>
+          <div style="display:flex;gap:12px;padding-top:4px;border-top:1px dotted rgba(95,69,35,0.18);">
+            ${['org_s','org_a','org_b'].map(oid => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">
+              ${ORG_ABBR[oid]} ${_markHtml(c.id, oid, false)}
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── Short Table (原石+素材) ──
+  if (rest.length > 0) {
+    html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">その他指名候補 — ${rest.length}名</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:30px;"></th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:40px;"></th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);">名前</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">歳</th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:48px;">分類</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:62px;">契約金</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">EMP</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">NOV</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">CRE</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">★</th>
+        </tr></thead><tbody>`;
+    rest.forEach((c, idx) => {
+      const globalIdx = top.length + mid.length + idx + 1;
+      const tier = TIER_LABELS[c.assessedTier] || c.assessedTier;
+      const tierClass = 't-' + (c.assessedTier || 'material');
+      const baseCost = c.assessedValue || 0;
+      const rowSelected = selections.includes(c.id);
+      html += `<tr class="${rowSelected ? 'draft-row-selected' : ''}">
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">${String(globalIdx).padStart(2, '0')}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);">${_portrait(c, 32)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span style="font-size:12px;font-weight:900;color:#1f1710;">${c.name}</span><div style="font-size:9px;color:#7a5b32;">${STYLE_JP[c.style] || c.style}</div></td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#1f1710;font-size:13px;">${c.age}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span></td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">¥${baseCost.toLocaleString()}万</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_s', false)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_a', false)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_b', false)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;background:${rowSelected ? 'rgba(212,168,67,0.1)' : 'rgba(95,69,35,0.04)'};">${_starBtn(c.id, 'sm')}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  // ── Footer bar ──
+  html += `<div style="margin:0 22px;padding:14px 0 16px;border-top:2px double rgba(95,69,35,0.35);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;gap:24px;">
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks}名</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">選択中<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${maxPicks}名</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
+    </div>
+    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,${selections.length > 0 ? '#8b1a1a,#c22020' : '#555,#666'});color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;${selections.length === 0 ? 'opacity:0.5;' : ''}">${selections.length > 0 ? `交渉開始（${selections.length}名）→` : '★ 候補を選択してください'}</button>
+  </div>`;
+
+  // ── Legend ──
+  html += `<div style="padding:10px 22px 16px;font-size:10px;color:#7a5b32;text-align:center;line-height:1.7;border-top:1px solid rgba(95,69,35,0.12);">
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">◎</strong> 本命 &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">○</strong> 対抗 &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">△</strong> 押さえ &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">—</strong> 興味なし<br>
+    各団体の関心は事前情報。実際の交渉では予測と異なる動きを見せることもある。
+  </div>`;
+
+  html += `</div>`; // end paper
+
+  return html;
+}
+
+// ── Draft Negotiation Screen (交渉画面) ──────────────────────────────
+// draft-negotiation-spec §7.2 / docs/draft-mockup-negotiation-C-venue-v3.html
+function _renderDraftNegotiation() {
+  const dn = G._draftNegotiation;
+  if (!dn) return '<div style="text-align:center;padding:60px;color:var(--text-dim)">交渉データがありません</div>';
+
+  const cand = dn.candidate;
+  const ns = dn.negState;
+  const sorted = dn.sortedCandidates || [];
+  const candIdx = dn.currentCandidateIdx || 0;
+  const totalCands = sorted.length;
+  const maxPicks = dn.maxPicks || 4;
+  const acquired = dn.acquiredThisSession || [];
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const ROLE_JP = { Babyface: 'Babyface', Heel: 'Heel', Neutral: 'Neutral' };
+  const _orgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
+  const ORG_META = {
+    org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: '../image/org/org-s-0.png' },
+    org_a: { name: _orgName('org_a'), tier: 'A級', emblCls: 'nova',    embl: '../image/org/org-a-0.png' },
+    org_b: { name: _orgName('org_b'), tier: 'B級', emblCls: 'crescent',embl: '../image/org/org-b-0.png' },
+  };
+  const MARK_DISPLAY = { honmei: { text: '◎', cls: 'dn-mark-bullseye' }, taikou: { text: '○', cls: 'dn-mark-contender' }, osae: { text: '△', cls: 'dn-mark-outside' } };
+
+  // Portrait
+  const portUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(cand.id) : '';
+  const initial = (cand.name || '?').charAt(0);
+  const portHtml = portUrl
+    ? `<img src="${portUrl}" alt="" class="dn-cand-portrait-img">`
+    : `<div class="dn-cand-portrait-fallback">${initial}</div>`;
+
+  // Mini stats
+  const est = cand._estimate || { pw: cand.pw, sp: cand.sp, te: cand.te, st: cand.st, mn: cand.mn };
+  const stats = [
+    { key: 'PWR', val: est.pw || 0 }, { key: 'SPD', val: est.sp || 0 },
+    { key: 'TEC', val: est.te || 0 }, { key: 'STA', val: est.st || 0 }, { key: 'MNT', val: est.mn || 0 },
+  ];
+  const miniStatsHtml = `<div class="dn-mini-stats">${stats.map(s =>
+    `<div class="dn-sblock"><div class="dn-skey">${s.key}</div><div class="dn-sbar"><div class="dn-sbar-fill" style="width:${Math.min(100,s.val)}%"></div></div><div class="dn-snum">${s.val}</div></div>`
+  ).join('')}</div>`;
+
+  const bidRatio = ns.assessedValue > 0 ? (ns.currentBid / ns.assessedValue).toFixed(2) : '1.00';
+  const baseCost = cand.assessedValue || 0;
+
+  let html = `<div class="dn-container">`;
+
+  // ── Banner ──
+  html += `<div class="dn-banner">
+    <img src="image/draft-header.webp" alt="Draft Conference" class="dn-banner-img" onerror="this.style.display='none'">
+    <div class="dn-banner-strip">
+      <span>シーズン${G.season || '?'} オフ第${G.offWeek || '?'}週</span>
+      <span>ROUND ${String(ns.round || 0).padStart(2, '0')}</span>
+    </div>
+  </div>`;
+
+  // ── Status strip ──
+  html += `<div class="dn-status">
+    <div class="dn-status-block"><div class="dn-status-label">獲得</div><div class="dn-status-val">${acquired.length} / ${maxPicks}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">候補</div><div class="dn-status-val">${String(candIdx + 1).padStart(2,'0')} / ${totalCands}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">残資金</div><div class="dn-status-val dn-gold">¥ ${Math.round(G.funds).toLocaleString()}万</div></div>
+  </div>`;
+
+  // ── Stage ──
+  html += `<div class="dn-stage">
+    <div class="dn-eyebrow">交渉中</div>
+    <div class="dn-portrait">${portHtml}</div>
+    <div class="dn-cand-name">${cand.name}</div>
+    <div class="dn-cand-meta">
+      <span class="dn-cand-age">${cand.age}</span>
+      <span class="dn-tier-badge dn-tier-${cand.assessedTier || 'material'}">${TIER_LABELS[cand.assessedTier] || cand.assessedTier}</span>
+      <span class="dn-style-tag">${STYLE_JP[cand.style] || cand.style}${cand.role ? ' · ' + (ROLE_JP[cand.role] || cand.role) : ''}</span>
+    </div>
+    ${miniStatsHtml}
+    <div class="dn-bid-display">
+      <div class="dn-bid-label">CURRENT BID</div>
+      <div class="dn-bid-amount">¥ ${ns.currentBid.toLocaleString()}万</div>
+      <div class="dn-bid-base">推定相場 <strong>¥${baseCost.toLocaleString()}万</strong> · ${bidRatio}×</div>
+    </div>
+  </div>`;
+
+  // ── Bid cards ──
+  html += `<div class="dn-cards-section">
+    <div class="dn-cards-label">▎ 入札卓 ▎</div>
+    <div class="dn-heat-legend">各カード下部のゲージ＝粘り度（右に行くほど限界に近い）&nbsp;
+      <span class="dn-heat-composed">●</span>余裕 &nbsp;
+      <span class="dn-heat-steady">●</span>まだ余裕 &nbsp;
+      <span class="dn-heat-heated">●</span>熱が入る &nbsp;
+      <span class="dn-heat-strained">●</span>限界
+    </div>
+    <div class="dn-cards">`;
+
+  // AI cards
+  for (const orgId of ['org_s', 'org_a', 'org_b']) {
+    const om = ORG_META[orgId];
+    const interest = ns.interests.find(i => i.orgId === orgId);
+    const isParticipating = interest && interest.participating;
+    const isDropped = interest && interest.dropped;
+    const markKey = interest ? (interest.displayMark || 'osae') : null;
+    const mark = markKey ? MARK_DISPLAY[markKey] : null;
+    const heat = isParticipating && !isDropped
+      ? Engine.draftNegotiation.getHeatInfo(ns.currentBid, interest.obsessionScore)
+      : { label: '', labelJp: '', cls: 'dropped', pct: 0 };
+
+    // Is this org the current leader? (highest obsession among active)
+    const activeOrgs = ns.interests.filter(i => i.participating && !i.dropped);
+    const isLeader = isParticipating && !isDropped && activeOrgs.length > 0 &&
+      activeOrgs.reduce((best, cur) => (cur.obsessionScore || 0) > (best.obsessionScore || 0) ? cur : best).orgId === orgId;
+
+    const cardCls = isDropped ? 'dn-card dn-card-dropped' : isLeader ? 'dn-card dn-card-leading' : 'dn-card';
+
+    html += `<div class="${cardCls}">
+      <img class="dn-emblem dn-emblem-${om.emblCls}" src="${om.embl}" alt="${om.name}" onerror="this.style.display='none'">
+      <div class="dn-card-name">${om.name}</div>
+      <div class="dn-card-tier">${om.tier}</div>
+      <div class="dn-card-bid-row">
+        ${!isParticipating ? '<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">不参加</span>'
+        : isDropped ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">PASSED</span>`
+        : `<span class="dn-card-mark ${mark ? mark.cls : ''}">${mark ? mark.text : '—'}</span>
+           <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">¥${ns.currentBid.toLocaleString()}万</span>`}
+      </div>
+      <div class="dn-card-heat-section">
+        <div class="dn-card-heat-title">粘り度</div>
+        <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
+        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? `R${interest._droppedAtRound || '?'}で離脱` : !isParticipating ? '不参加' : heat.labelJp}</div>
+      </div>
+    </div>`;
+  }
+
+  // Player card
+  const playerIcon = (G.playerOrgIcon != null) ? `<img class="dn-emblem dn-emblem-player" src="../image/org/org-player-${G.playerOrgIcon}.png" alt="${G.orgName || 'YOU'}" onerror="this.style.display='none'">` : `<div class="dn-emblem dn-emblem-player" style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold-light);">${(G.orgName || 'YOU').charAt(0)}</div>`;
+  const playerDropped = !ns.playerIn;
+  const playerCardCls = playerDropped ? 'dn-card dn-card-dropped dn-card-player' : 'dn-card dn-card-player';
+  html += `<div class="${playerCardCls}">
+    ${playerIcon}
+    <div class="dn-card-name dn-card-name-player">${G.orgName || 'YOU'}</div>
+    <div class="dn-card-tier">PLAYER</div>
+    <div class="dn-card-bid-row">
+      ${playerDropped ? '<span class="dn-card-bid dn-bid-passed">PASSED</span>'
+      : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
+    </div>
+    <div class="dn-card-heat-section">
+      <div class="dn-card-heat-label" style="color:rgba(232,230,224,0.3);margin-top:6px;">${playerDropped ? '離脱済み' : '— あなたの判断 —'}</div>
+    </div>
+  </div>`;
+
+  html += `</div></div>`; // end cards
+
+  // ── Narration ──
+  if (ns.narration) {
+    html += `<div class="dn-narration">${ns.narration}</div>`;
+  }
+
+  // ── Actions / Observation / Results ──
+  if (ns._isSoloConfirm && ns.finished && ns.winner === 'player') {
+    // 単独指名確認モード
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">単独指名 — 競合なし</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">契約金: ¥${(ns.finalBid || 0).toLocaleString()}万</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="dn-action-btn dn-action-standard" onclick="draftSoloConfirm(true)">
+          <div class="dn-action-label">契約する</div>
+        </button>
+        <button class="dn-action-btn dn-action-withdraw" onclick="draftSoloConfirm(false)">
+          <div class="dn-action-label">見送る</div>
+        </button>
+      </div>
+    </div>`;
+  } else if (ns.finished) {
+    // 通常の結果表示
+    const winnerLabel = ns.winner === 'player' ? (G.orgName || 'あなた') + 'が獲得！'
+      : ns.winner ? (ORG_META[ns.winner]?.name || ns.winner) + ' が獲得'
+      : '流札（フリー市場へ）';
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+      </button>
+    </div>`;
+  } else if (!ns.playerIn) {
+    // プレイヤー降り後 → 結果表示（観戦モード廃止、即座に決着済み）
+    const winnerLabel = ns.winner
+      ? (RIVAL_ORGS.find(o => o.id === ns.winner)?.name || ns.winner) + ' が獲得'
+      : '流札（フリー市場へ）';
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+      </button>
+    </div>`;
+  } else {
+    // プレイヤーアクション
+    const aggressiveBid = Math.round(ns.currentBid * DRAFT_BID_MUL.aggressive);
+    const standardBid = Math.round(ns.currentBid * DRAFT_BID_MUL.standard);
+    html += `<div class="dn-actions">
+      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="相手の降り確率3倍。ただし一部の相手には逆効果の場合も">
+        <div class="dn-action-label">強気で押す</div>
+        <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-hint">相手の心を揺さぶる</div>
+      </button>
+      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')" title="通常の入札倍率で金額を上げる">
+        <div class="dn-action-label">標準で粘る</div>
+        <div class="dn-action-detail">→ <strong>¥${standardBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-hint">粘り強く交渉を続ける</div>
+      </button>
+      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')" title="この選手の交渉から離脱する">
+        <div class="dn-action-label">ここで降りる</div>
+        <div class="dn-action-detail">交渉から離脱</div>
+        <div class="dn-action-hint">残りはAI同士で決着</div>
+      </button>
+    </div>`;
+  }
+
+  html += `</div>`; // end container
+  return html;
+}
+
+// Mini stats CSS (injected once) — draft-negotiation-spec §7.1
+(function _injectDraftCSS() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('draft-newspaper-css')) return;
+  const style = document.createElement('style');
+  style.id = 'draft-newspaper-css';
+  style.textContent = `
+/* ── Star button (draft candidate selection) ── */
+.draft-star-btn { background:none; border:2px solid rgba(154,112,32,0.3); border-radius:6px; cursor:pointer; color:rgba(154,112,32,0.4); transition:all .15s; line-height:1; }
+.draft-star-btn:hover { background:rgba(154,112,32,0.08); border-color:rgba(154,112,32,0.6); color:#9a7020; transform:scale(1.1); }
+.draft-star-on { color:#9a7020; background:rgba(212,168,67,0.12); border-color:rgba(154,112,32,0.5); filter:drop-shadow(0 0 6px rgba(154,112,32,0.5)); }
+.draft-star-on:hover { background:rgba(212,168,67,0.2); }
+/* Selected row/card highlight */
+.draft-row-selected { background:rgba(212,168,67,0.06) !important; }
+.draft-row-selected td:first-child { box-shadow:inset 3px 0 0 #9a7020; }
+.draft-card-selected { background:rgba(212,168,67,0.08); border-left:3px solid #9a7020 !important; }
+.draft-mini-stats { display:flex; gap:5px; margin-top:8px; padding:7px 0; border-top:1px dashed rgba(95,69,35,0.18); border-bottom:1px dashed rgba(95,69,35,0.18); }
+.draft-stat-block { flex:1; text-align:center; }
+.draft-stat-key { font-size:8px; letter-spacing:0.5px; color:#7a5b32; font-weight:700; }
+.draft-stat-bar { height:4px; background:rgba(95,69,35,0.12); margin:3px 0 1px; border-radius:2px; overflow:hidden; }
+.draft-stat-bar-fill { height:100%; background:#5b4b34; border-radius:2px; }
+.draft-stat-num { font-size:11px; color:#1f1710; }
+.tier-tag { display:inline-block; font-size:11px; font-weight:900; padding:1px 7px; margin-right:5px; border:1px solid currentColor; border-radius:3px; letter-spacing:0.5px; }
+.tier-tag.t-superElite { color:#8b1a1a; background:rgba(139,26,26,0.08); }
+.tier-tag.t-elite { color:#9a5a10; background:rgba(154,90,16,0.08); }
+.tier-tag.t-promising { color:#1f4d80; background:rgba(31,77,128,0.08); }
+.tier-tag.t-raw { color:#1a7a50; background:rgba(26,122,80,0.08); }
+.tier-tag.t-material { color:#6b5b3a; background:rgba(107,91,58,0.08); }
+.mark-bullseye { color:#8b1a1a; font-weight:900; }
+.mark-contender { color:#1f4d80; font-weight:900; }
+.mark-outside { color:#7a5b32; font-weight:900; }
+.mark-none { color:rgba(95,69,35,0.2); font-weight:900; }
+.feat-org-mark { font-size:17px; font-weight:900; line-height:1; }
+.short-mark { font-size:13px; font-weight:900; }
+/* ── Draft Negotiation Screen CSS ── */
+.dn-container { max-width:920px; margin:0 auto; background:#0a0a08; color:#e8e6e0; }
+.dn-banner { position:relative; width:100%; line-height:0; border-bottom:2px solid #d4a843; }
+.dn-banner-img { width:100%; height:auto; display:block; min-height:100px; background:linear-gradient(135deg,#1a1610,#0a0808); }
+.dn-banner-strip { position:absolute; top:10px; left:0; right:0; display:flex; justify-content:space-between; padding:0 22px; font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.85); font-weight:700; text-shadow:0 1px 4px rgba(0,0,0,0.6); pointer-events:none; z-index:2; }
+.dn-status { background:#1c1a16; padding:10px 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-status-block { display:flex; align-items:baseline; gap:6px; }
+.dn-status-label { font-size:9px; letter-spacing:2px; color:rgba(232,230,224,0.28); font-weight:700; }
+.dn-status-val { font-size:16px; color:#e8e6e0; letter-spacing:1px; }
+.dn-gold { color:#f0d078; }
+.dn-stage { padding:24px 22px 20px; text-align:center; background:radial-gradient(ellipse 50% 60% at 50% 30%,rgba(212,168,67,0.1) 0%,transparent 60%),#14120e; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-eyebrow { display:inline-flex; align-items:center; gap:12px; font-size:10px; letter-spacing:3px; color:#c41e3a; font-weight:700; margin-bottom:14px; }
+.dn-eyebrow::before,.dn-eyebrow::after { content:''; display:block; width:28px; height:1px; background:#c41e3a; }
+.dn-portrait { width:150px; height:150px; margin:0 auto 14px; border-radius:50%; background:linear-gradient(135deg,#2a2622,#1a1814); border:4px solid #d4a843; box-shadow:0 0 30px rgba(212,168,67,0.5),0 0 80px rgba(212,168,67,0.2),inset 0 0 30px rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.dn-cand-portrait-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.dn-cand-portrait-fallback { font-size:80px; font-weight:900; color:#f0d078; }
+.dn-cand-name { font-size:28px; font-weight:900; color:#e8e6e0; line-height:1.1; margin-bottom:6px; }
+.dn-cand-meta { display:inline-flex; align-items:center; gap:10px; margin-bottom:12px; }
+.dn-cand-age { font-size:24px; color:#f0d078; }
+.dn-tier-badge { font-size:11px; letter-spacing:1.2px; font-weight:700; padding:3px 10px; border-radius:3px; }
+.dn-tier-superElite { background:rgba(196,30,58,0.2); color:#f08b9e; border:1px solid rgba(196,30,58,0.5); }
+.dn-tier-elite { background:rgba(243,156,18,0.2); color:#f0c060; border:1px solid rgba(243,156,18,0.5); }
+.dn-tier-promising { background:rgba(74,143,212,0.2); color:#80b8e8; border:1px solid rgba(74,143,212,0.5); }
+.dn-tier-raw { background:rgba(46,204,113,0.2); color:#70d898; border:1px solid rgba(46,204,113,0.5); }
+.dn-tier-material { background:rgba(149,165,166,0.2); color:#b0b8b8; border:1px solid rgba(149,165,166,0.5); }
+.dn-style-tag { font-size:11px; letter-spacing:1.5px; color:rgba(232,230,224,0.55); font-weight:700; }
+.dn-mini-stats { display:flex; gap:5px; margin:8px auto; max-width:400px; padding:7px 0; border-top:1px dashed rgba(200,190,170,0.1); border-bottom:1px dashed rgba(200,190,170,0.1); }
+.dn-sblock { flex:1; text-align:center; }
+.dn-skey { font-size:8px; letter-spacing:0.5px; color:rgba(232,230,224,0.28); font-weight:700; }
+.dn-sbar { height:4px; background:rgba(232,230,224,0.06); margin:3px 0 1px; border-radius:2px; overflow:hidden; }
+.dn-sbar-fill { height:100%; background:rgba(232,230,224,0.4); border-radius:2px; }
+.dn-snum { font-size:11px; color:#e8e6e0; }
+.dn-bid-display { margin:0 auto; padding:14px 0; border-top:1px solid rgba(200,190,170,0.1); border-bottom:1px solid rgba(200,190,170,0.1); max-width:480px; }
+.dn-bid-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; margin-bottom:4px; }
+.dn-bid-amount { font-size:44px; background:linear-gradient(180deg,#fff 20%,#f0d078); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; letter-spacing:1px; }
+.dn-bid-base { font-size:11px; color:rgba(232,230,224,0.28); margin-top:4px; }
+.dn-bid-base strong { color:rgba(232,230,224,0.55); }
+.dn-cards-section { background:#1c1a16; padding:24px 22px 20px; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-cards-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; text-align:center; margin-bottom:8px; }
+.dn-heat-legend { font-size:9px; color:rgba(232,230,224,0.35); text-align:center; margin-bottom:14px; letter-spacing:0.3px; }
+.dn-heat-legend span { background:none !important; }
+.dn-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; }
+.dn-card { background:#14120e; border:1px solid rgba(200,190,170,0.1); border-radius:8px; padding:16px 12px 14px; text-align:center; position:relative; transition:all .25s; }
+.dn-card-leading { border:2px solid #d4a843; background:linear-gradient(180deg,rgba(212,168,67,0.1),#14120e); box-shadow:0 0 24px rgba(212,168,67,0.35); transform:translateY(-12px); padding-top:22px; padding-bottom:18px; }
+.dn-card-leading::before { content:'LEAD'; position:absolute; top:-10px; left:50%; transform:translateX(-50%); font-size:9px; letter-spacing:2px; font-weight:700; background:#d4a843; color:#1a1410; padding:3px 10px; border-radius:3px; }
+.dn-card-dropped { opacity:0.35; filter:grayscale(0.7); transform:rotate(-2deg); }
+.dn-card-player { border:1px solid rgba(212,168,67,0.4); background:rgba(212,168,67,0.04); }
+.dn-emblem { width:64px; height:64px; margin:0 auto 10px; display:block; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.2); }
+.dn-emblem-empress { border:2px solid #d4a843; box-shadow:0 0 12px rgba(196,30,58,0.4); }
+.dn-emblem-nova { border:2px solid rgba(184,160,238,0.6); box-shadow:0 0 12px rgba(74,143,212,0.4); }
+.dn-emblem-crescent { border:2px solid rgba(200,232,212,0.5); box-shadow:0 0 12px rgba(46,204,113,0.4); }
+.dn-emblem-player { border:3px solid #d4a843; box-shadow:0 0 16px rgba(212,168,67,0.5); }
+.dn-card-name { font-size:16px; letter-spacing:1.5px; color:#e8e6e0; line-height:1; margin-bottom:2px; }
+.dn-card-name-player { color:#f0d078; }
+.dn-card-tier { font-size:8px; letter-spacing:0.5px; color:rgba(232,230,224,0.28); margin-bottom:8px; }
+.dn-card-bid-row { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:6px; }
+.dn-card-mark { font-size:14px; font-weight:900; line-height:1; }
+.dn-mark-bullseye { color:#c41e3a; }
+.dn-mark-contender { color:#f0d078; }
+.dn-mark-outside { color:rgba(232,230,224,0.55); }
+.dn-mark-none { color:rgba(232,230,224,0.28); font-size:11px; }
+.dn-card-bid { font-size:16px; letter-spacing:0.5px; color:#e8e6e0; }
+.dn-bid-lead { background:linear-gradient(180deg,#fff,#f0d078); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.dn-bid-passed { color:rgba(232,230,224,0.28); font-size:12px; }
+.dn-card-heat-section { margin-top:8px; padding-top:6px; border-top:1px solid rgba(200,190,170,0.06); }
+.dn-card-heat-title { font-size:7px; letter-spacing:1px; color:rgba(232,230,224,0.25); font-weight:700; text-align:center; margin-bottom:3px; }
+.dn-card-heat { height:6px; background:rgba(232,230,224,0.12); border-radius:3px; overflow:hidden; border:1px solid rgba(232,230,224,0.08); }
+.dn-card-heat-fill { height:100%; border-radius:2px; }
+.dn-heat-composed { background:#4a8fd4; color:#4a8fd4; }
+.dn-heat-steady { background:#d4a843; color:#d4a843; }
+.dn-heat-heated { background:#f39c12; color:#f39c12; }
+.dn-heat-strained { background:#c41e3a; color:#c41e3a; animation:dn-pulse 1.4s infinite; }
+.dn-heat-desperate { background:#c41e3a; color:#c41e3a; animation:dn-pulse 0.8s infinite; }
+.dn-heat-dropped { background:rgba(232,230,224,0.28); color:rgba(232,230,224,0.28); }
+@keyframes dn-pulse { 0%,100%{box-shadow:0 0 0 rgba(196,30,58,0.5);} 50%{box-shadow:0 0 12px rgba(196,30,58,0.8);} }
+.dn-card-heat-label { font-size:8px; letter-spacing:0.5px; font-weight:700; margin-top:2px; background:none !important; }
+.dn-narration { margin:14px 22px 0; padding:11px 16px; background:#14120e; border:1px solid rgba(200,190,170,0.1); border-left:3px solid #c41e3a; border-radius:4px; font-size:12px; color:rgba(232,230,224,0.55); line-height:1.6; font-style:italic; }
+.dn-narration::before { content:'— '; color:rgba(232,230,224,0.28); }
+.dn-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:16px 22px 22px; background:#14120e; }
+.dn-action-btn { padding:16px 8px; border-radius:4px; border:1px solid rgba(200,190,170,0.1); background:#1c1a16; cursor:pointer; transition:all .2s; text-align:center; }
+.dn-action-btn:hover { transform:translateY(-1px); }
+.dn-action-label { font-size:11px; letter-spacing:2px; font-weight:700; margin-bottom:4px; }
+.dn-action-detail { font-size:10px; color:rgba(232,230,224,0.55); }
+.dn-action-detail strong { font-size:14px; color:#e8e6e0; font-weight:400; letter-spacing:0.5px; }
+.dn-action-hint { font-size:8px; color:rgba(232,230,224,0.3); margin-top:4px; letter-spacing:0.3px; }
+.dn-action-aggressive { border:1px solid rgba(196,30,58,0.4); background:rgba(196,30,58,0.08); }
+.dn-action-aggressive .dn-action-label { color:#f08b9e; }
+.dn-action-aggressive:hover { background:rgba(196,30,58,0.16); border-color:#c41e3a; }
+.dn-action-standard { border:1px solid rgba(212,168,67,0.35); background:rgba(212,168,67,0.05); }
+.dn-action-standard .dn-action-label { color:#f0d078; }
+.dn-action-standard:hover { background:rgba(212,168,67,0.12); border-color:#d4a843; }
+.dn-action-withdraw .dn-action-label { color:rgba(232,230,224,0.55); }
+.dn-action-withdraw:hover { background:rgba(232,230,224,0.04); }
+/* ── Dark mode overrides for negotiation screen ── */
+.dn-dark-mode { background:#0a0a08 !important; }
+.dn-dark-panel { background:#0a0a08 !important; border-color:rgba(200,190,170,0.1) !important; color:#e8e6e0 !important; }
+.dn-dark-panel .panel-title { color:#d4a843 !important; border-bottom-color:rgba(200,190,170,0.15) !important; }
+  `;
+  document.head.appendChild(style);
+})();
+
 // ── Scout Event Rendering ─────────────────────────────────
 function renderScoutEvent() {
   const el = document.getElementById('scoutEventContent');
@@ -3085,6 +3689,41 @@ function renderScoutEvent() {
   const discount = 0;
   const orgPop = G.orgPop || 0;
   const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+
+  // 交渉画面 / ドラフト速報 のダーク/クリーム切替
+  const screenEl = document.getElementById('screen-scoutEvent');
+  const panelEl = screenEl ? screenEl.querySelector('.panel') : null;
+
+  // draft-negotiation-spec: 交渉画面表示（セリ進行中）
+  if (G._draftNegotiation) {
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = '⚖ ドラフト交渉';
+    // ダークテーマに切替
+    if (screenEl) screenEl.classList.add('dn-dark-mode');
+    if (panelEl) panelEl.classList.add('dn-dark-panel');
+    el.innerHTML = _renderDraftNegotiation();
+    return;
+  }
+
+  // クリームに戻す
+  if (screenEl) screenEl.classList.remove('dn-dark-mode');
+  if (panelEl) panelEl.classList.remove('dn-dark-panel');
+
+  // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
+  if (G._draftInterests && !G._draftNegotiationStarted) {
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = '📰 ドラフト速報';
+    el.innerHTML = _renderDraftCandidateList(candidates, {
+      draftInterests: G._draftInterests,
+      maxPicks: G.scoutMaxPicks || 4,
+      funds: G.funds,
+      season: G.season,
+      week: G.week,
+      orgPop: G.orgPop || 0,
+      eventType: G.scoutEventType || 'offseason',
+    });
+    return;
+  }
 
   const titleEl = document.getElementById('scoutEventTitle');
   if (titleEl) titleEl.textContent = `🔍 ${eventLabel} — 候補 ${candidates.length}名`;
@@ -3349,6 +3988,13 @@ function renderSave() {
       </div>`;
     }
   }
+
+  // Browser storage notice
+  html += `<div style="margin-top:16px;padding:10px 14px;background:rgba(253,203,110,0.06);border:1px solid rgba(253,203,110,0.15);border-radius:6px;font-size:11px;color:var(--text-sub);line-height:1.7">
+    ⚠️ セーブデータは<span style="color:#fdcb6e;font-weight:700">ブラウザのローカルストレージ</span>に保存されています。<br>
+    キャッシュクリアやブラウザの再インストールで<span style="color:#e17055;font-weight:700">データが消失</span>する場合があります。<br>
+    大切なデータは「📥 書出」でファイルにバックアップしてください。
+  </div>`;
 
   // Data Transfer section
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
