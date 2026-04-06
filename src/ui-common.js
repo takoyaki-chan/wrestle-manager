@@ -4167,6 +4167,88 @@ function startDraftNegotiation() {
   _showScreenNoBgm('scoutEvent');
 }
 
+// B1: ドラフト獲得選手カード画面
+function _buildDraftGetPage(state, acquiredRecords) {
+  const roster = state.roster || [];
+  const acquired = acquiredRecords
+    .map(rec => {
+      const f = roster.find(r => r.id === (typeof rec === 'object' ? rec.id : rec));
+      if (!f) return null;
+      return { ...f, _finalBid: rec.finalBid || 0, _tierId: rec.tier || 'material' };
+    })
+    .filter(Boolean);
+
+  const totalCost = acquired.reduce((s, f) => s + (f._finalBid || 0), 0);
+  const avgOvr = acquired.length > 0
+    ? Math.round(acquired.reduce((s, f) => s + Engine.util.ov(f), 0) / acquired.length) : 0;
+  const avgAge = acquired.length > 0
+    ? (acquired.reduce((s, f) => s + (f.age || 0), 0) / acquired.length).toFixed(1) : 0;
+  const remainingFunds = Math.round(state.funds || 0);
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_SHORT = { Grappler: 'GRP', Striker: 'STK', Submission: 'SUB', Aerial: 'AER', Allround: 'ALL', Brawler: 'BRW' };
+  const ROLE_SHORT = { Babyface: 'Face', Heel: 'Heel', Neutral: 'Neu', Dirty: 'Dirty' };
+
+  function _card(f) {
+    const tierId = f._tierId || 'material';
+    const tierLabel = TIER_LABELS[tierId] || tierId;
+    const ovr = Engine.util.ov(f);
+    const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
+    const portrait = url
+      ? `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="b1-placeholder">${(f.name || '?').charAt(0)}</div>`;
+    const statRow = (k, v) => `<div class="b1-stat-row"><span class="k">${k}</span><div class="bar"><div class="fill" style="width:${Math.min(100, v)}%"></div></div><span class="v">${v}</span></div>`;
+    return `<div class="b1-card tier-${tierId}">
+      <div class="b1-card-top">
+        <span class="b1-tier tier-${tierId}">${tierLabel}</span>
+        <span class="b1-style">${STYLE_SHORT[f.style] || f.style} / ${ROLE_SHORT[f.role] || f.role}</span>
+      </div>
+      <div class="b1-portrait">
+        ${portrait}
+        <div class="b1-age">${f.age}歳</div>
+      </div>
+      <div class="b1-name">${f.name}</div>
+      <div class="b1-ovr">OVR <span class="v">${ovr}</span></div>
+      <div class="b1-stats">
+        ${statRow('PWR', f.pw || 0)}
+        ${statRow('SPD', f.sp || 0)}
+        ${statRow('TEC', f.te || 0)}
+        ${statRow('STA', f.st || 0)}
+        ${statRow('MNT', f.mn || 0)}
+      </div>
+      <div class="b1-cost">
+        <span class="lbl">契約金</span>
+        <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+      </div>
+    </div>`;
+  }
+
+  const gridCols = acquired.length >= 4 ? 4 : Math.max(1, acquired.length);
+
+  return {
+    title: 'ドラフト完了',
+    isGetPage: true,
+    html: `<div class="b1-wrap">
+      <div class="b1-head">
+        <div class="kick">DRAFT COMPLETE</div>
+        <div class="title">獲得選手</div>
+        <div class="sub">新戦力<span class="count">${acquired.length}</span>名 ・ 契約金合計 <span class="total-cost">${totalCost.toLocaleString()}</span> 万</div>
+      </div>
+      ${acquired.length === 0
+        ? '<div class="b1-empty">今回のドラフトでは獲得がありませんでした</div>'
+        : `<div class="b1-grid" style="grid-template-columns:repeat(${gridCols},1fr);">${acquired.map(_card).join('')}</div>`
+      }
+      <div class="b1-totals">
+        <div class="cell"><div class="n">${acquired.length}</div><div class="l">新戦力</div></div>
+        ${acquired.length > 0 ? `<div class="cell"><div class="n">${avgOvr}</div><div class="l">平均 OVR</div></div>` : ''}
+        ${acquired.length > 0 ? `<div class="cell"><div class="n">${avgAge}</div><div class="l">平均 年齢</div></div>` : ''}
+        <div class="cell"><div class="n">${totalCost.toLocaleString()}</div><div class="l">契約金 (万)</div></div>
+        <div class="cell"><div class="n" style="color:#2ecc71">${remainingFunds.toLocaleString()}</div><div class="l">残資金 (万)</div></div>
+      </div>
+    </div>`
+  };
+}
+
 // ドラフト完了処理(まとめ記事生成+EMPRESS安全網+クリーンアップ)
 function _finalizeDraft(state, summary, rngState, maxPicks) {
   let s = state;
@@ -4210,6 +4292,9 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     }
   }
 
+  // B1 獲得選手カードページ
+  const getPage = _buildDraftGetPage(s, (s._draftNegotiation?.acquiredThisSession) || acquired);
+
   // 業界紙まとめ記事をnewspaperに挿入
   const draftNewsPage = _buildDraftSummaryPage(summary, acquired, empressNames, s);
 
@@ -4229,11 +4314,13 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     dormantPool: newDormant,
     gameLog: log,
     scoutCandidates: null,
-    scoutPicks: acquired,
+    scoutPicks: acquired.map(rec => typeof rec === 'object' ? rec.id : rec),
     _draftInterests: null,
     _draftNegotiation: null,
     _draftSelections: null,
     weeklyNewspaper: newspaper,
+    _draftResultPages: [getPage, draftNewsPage],
+    _draftResultIdx: 0,
   };
 }
 
@@ -4244,7 +4331,8 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
 
   // プレイヤー獲得
   if (playerAcquired.length > 0) {
-    const names = (state.roster || []).filter(f => playerAcquired.includes(f.id)).map(f => f.name);
+    const acquiredIds = playerAcquired.map(rec => typeof rec === 'object' ? rec.id : rec);
+    const names = (state.roster || []).filter(f => acquiredIds.includes(f.id)).map(f => f.name);
     stories.push({
       headline: `${state.orgName || 'プレイヤー団体'}、新戦力${names.length}名を獲得`,
       body: names.join('、') + ' — 新シーズンの台風の目となるか。',
@@ -4404,7 +4492,7 @@ function draftNextCandidate() {
       signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       newRoster.push(signed);
       newFunds -= ns.finalBid;
-      acquired.push(clean.id);
+      acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
     } else {
       returnToPool = true;
@@ -4437,12 +4525,14 @@ function draftNextCandidate() {
   // 次の候補があるか？
   const nextIdx = dn.currentCandidateIdx + 1;
   if (nextIdx >= dn.sortedCandidates.length) {
-    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → 直接offseason進行
+    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → B1+まとめ記事表示
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
     try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete)');
-    App.scoutEventFinish();
+    // B1+まとめ記事ページ表示（_draftResultPages がセットされている）
+    refreshAll();
+    _showScreenNoBgm('scoutEvent');
     return;
   }
 

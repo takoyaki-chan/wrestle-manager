@@ -3733,9 +3733,53 @@ function _renderDraftNegotiation() {
 })();
 
 // ── Scout Event Rendering ─────────────────────────────────
+function _draftResultNext() {
+  try { Audio.play('click'); } catch(e) {}
+  const idx = (G._draftResultIdx || 0) + 1;
+  if (idx >= (G._draftResultPages || []).length) {
+    G = { ...G, _draftResultPages: null, _draftResultIdx: 0 };
+    App.scoutEventFinish();
+    return;
+  }
+  G = { ...G, _draftResultIdx: idx };
+  refreshAll();
+  _showScreenNoBgm('scoutEvent');
+}
+
 function renderScoutEvent() {
   const el = document.getElementById('scoutEventContent');
   if (!el) return;
+
+  // B1+まとめ記事結果ページ表示
+  if (G._draftResultPages && G._draftResultPages.length > 0) {
+    const pages = G._draftResultPages;
+    const idx = G._draftResultIdx || 0;
+    const page = pages[idx];
+    const isLast = idx >= pages.length - 1;
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = page.title || 'ドラフト結果';
+    // ダークテーマをリセット
+    const screenEl = document.getElementById('screen-scoutEvent');
+    const panelEl = screenEl ? screenEl.querySelector('.panel') : null;
+    if (screenEl) screenEl.classList.remove('dn-dark-mode');
+    if (panelEl) panelEl.classList.remove('dn-dark-panel');
+
+    let pageHtml = '';
+    if (page.html) {
+      pageHtml = page.html;
+    } else if (page.stories) {
+      pageHtml = _renderNewspaperExtraPage(
+        G.weeklyNewspaper || { season: G.season, week: G.offWeek || G.week },
+        page
+      );
+    }
+    el.innerHTML = pageHtml
+      + `<div class="btn-row" style="justify-content:center;margin-top:20px;">
+        <button class="btn btn-gold" onclick="_draftResultNext()">${isLast ? '▶ 経営画面へ' : '▶ 次へ進む'}</button>
+      </div>`;
+    return;
+  }
+
   const candidates = G.scoutCandidates || [];
   const picks = G.scoutPicks || [];
   const maxPicks = G.scoutMaxPicks || 3;
