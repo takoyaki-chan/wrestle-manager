@@ -870,7 +870,9 @@ const Audio = (() => {
         if (G.pendingEvent && G.pendingEvent.type === 'war' && FileBGM._audio && BGM._current !== 'tension') return;
         BGM.play('tension'); return;
       }
-      BGM.play('management'); // management + showPrep both use this
+      // draft-negotiation-spec §8.1: ドラフト交渉時はtension
+      if (G.weekPhase === 'scoutEvent' && G._draftNegotiation) { BGM.play('tension'); return; }
+      BGM.play('management'); // management + showPrep + draft newspaper all use this
     }
   };
 

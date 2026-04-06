@@ -3145,6 +3145,13 @@ function _renderDraftCandidateList(candidates, context) {
     return `<div style="width:${size}px;height:${size}px;border-radius:10px;background:linear-gradient(135deg,#d4c4a0,#b8a07a);border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;font-weight:900;color:#1f1710;flex-shrink:0;">${initial}</div>`;
   }
 
+  // Star selection state
+  const selections = G._draftSelections || [];
+  function _starBtn(candId) {
+    const selected = selections.includes(candId);
+    return `<button onclick="toggleDraftSelection(${candId})" style="background:none;border:none;cursor:pointer;font-size:22px;padding:2px 4px;transition:all .15s;${selected ? 'filter:drop-shadow(0 0 6px rgba(154,112,32,0.6));' : 'opacity:0.4;'}" title="${selected ? '選択解除' : '交渉候補に追加'}">${selected ? '★' : '☆'}</button>`;
+  }
+
   // Find lead headline name (top candidate)
   const leadName = top[0] ? top[0].name : '注目の新人';
   const totalCount = candidates.length;
@@ -3157,7 +3164,10 @@ function _renderDraftCandidateList(candidates, context) {
   // ── Title bar ──
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
-    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">★ 選択中 <span style="font-size:16px;color:#f0d078;">${selections.length}</span> / ${maxPicks}</div>
+      <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
+    </div>
   </div>`;
 
   // ── Feature header ──
@@ -3185,7 +3195,10 @@ function _renderDraftCandidateList(candidates, context) {
         <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;">
           ${_portrait(c, portraitSize)}
           <div style="flex:1;min-width:0;">
-            <span style="display:inline-block;font-size:9px;letter-spacing:1px;color:#fff;background:#1f1710;padding:1px 7px;font-weight:700;margin-bottom:5px;">PICK NO. ${String(idx + 1).padStart(2, '0')}</span>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <span style="display:inline-block;font-size:9px;letter-spacing:1px;color:#fff;background:#1f1710;padding:1px 7px;font-weight:700;">PICK NO. ${String(idx + 1).padStart(2, '0')}</span>
+              ${_starBtn(c.id)}
+            </div>
             <div style="font-size:${nameSize};font-weight:900;color:#1f1710;line-height:1.2;margin-bottom:5px;">${c.name}</div>
             <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
               <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
@@ -3223,9 +3236,10 @@ function _renderDraftCandidateList(candidates, context) {
       html += `<div style="display:flex;gap:12px;padding:10px 0;${idx >= 2 ? 'border-top:1px solid rgba(95,69,35,0.12);' : ''}">
         ${_portrait(c, 56)}
         <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
             <span style="font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">No.${String(globalIdx).padStart(2, '0')}</span>
             <span style="font-size:15px;font-weight:900;color:#1f1710;">${c.name}</span>
+            ${_starBtn(c.id)}
           </div>
           <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
             <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
@@ -3258,6 +3272,7 @@ function _renderDraftCandidateList(candidates, context) {
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">EMP</th>
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">NOV</th>
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">CRE</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">★</th>
         </tr></thead><tbody>`;
     rest.forEach((c, idx) => {
       const globalIdx = top.length + mid.length + idx + 1;
@@ -3274,6 +3289,7 @@ function _renderDraftCandidateList(candidates, context) {
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_s', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_a', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_b', false)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_starBtn(c.id)}</td>
       </tr>`;
     });
     html += `</tbody></table></div>`;
@@ -3285,7 +3301,7 @@ function _renderDraftCandidateList(candidates, context) {
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks} NAMES</strong></div>
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
     </div>
-    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">交渉開始 →</button>
+    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,${selections.length > 0 ? '#8b1a1a,#c22020' : '#555,#666'});color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;${selections.length === 0 ? 'opacity:0.5;' : ''}">${selections.length > 0 ? '交渉開始 →' : '★ 候補を選択してください'}</button>
   </div>`;
 
   // ── Legend ──
@@ -3445,8 +3461,22 @@ function _renderDraftNegotiation() {
   }
 
   // ── Actions / Observation / Results ──
-  if (ns.finished) {
-    // 結果表示
+  if (ns._isSoloConfirm && ns.finished && ns.winner === 'player') {
+    // 単独指名確認モード
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">単独指名 — 競合なし</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">契約金: ¥${(ns.finalBid || 0).toLocaleString()}万</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="dn-action-btn dn-action-standard" onclick="draftSoloConfirm(true)">
+          <div class="dn-action-label">契約する</div>
+        </button>
+        <button class="dn-action-btn dn-action-withdraw" onclick="draftSoloConfirm(false)">
+          <div class="dn-action-label">見送る</div>
+        </button>
+      </div>
+    </div>`;
+  } else if (ns.finished) {
+    // 通常の結果表示
     const winnerLabel = ns.winner === 'player' ? (G.orgName || 'あなた') + 'が獲得！'
       : ns.winner ? (ORG_META[ns.winner]?.name || ns.winner) + ' が獲得'
       : '流札（フリー市場へ）';
