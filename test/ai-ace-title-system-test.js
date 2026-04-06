@@ -16,7 +16,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 function withStubs(stubs, fn) {
   const originals = [];

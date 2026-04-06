@@ -536,10 +536,12 @@ const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukama
 85:'kamoshida_r',86:'serizawa_a',87:'steinfeld_l',88:'aikawa_a',89:'akabane_a',90:'tamate_s',
 91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',96:'matsushita_m',
 97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'};
+const PORTRAIT_OVR_VARIANT={80:{threshold:50,suffix:'takashima_s2'}};
 function getFaceUrl(f){return f.portraitUrl || (PORTRAIT[f.id] ? `../image/face_${PORTRAIT[f.id]}.png` : '');}
-function getStandUrl(f){return PORTRAIT[f.id] ? `../image/stand/stand_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
+function _calcOvr(f){return Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5);}
+function getStandUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_calcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/stand/stand_${k}.webp`;}
 function getUpperUrl(f){return PORTRAIT[f.id] ? `../image/upper/upper_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
-function getFullUrl(f){return PORTRAIT[f.id] ? `../image/full/full_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
+function getFullUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_calcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/full/full_${k}.webp`;}
 
 // ═══ MOVES (v3.5 data preserved) ═══
 const commonMoves=[
@@ -559,8 +561,8 @@ const commonMoves=[
 {n:'バックブリーカー',d:8,c:'throw'},{n:'サモアン・ドロップ',d:9,c:'throw'},
 {n:'ベリー・トゥ・ベリー',d:9,c:'throw'},{n:'タイガー・ドライバー',d:9,c:'throw'},
 {n:'スパインバスター',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
-{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:3,c:'submission'},
-{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:4,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
+{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:4,c:'submission'},
+{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:3,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
 {n:'スリーパー・ホールド',d:6,c:'submission'},{n:'フルネルソン',d:6,c:'submission'},
 {n:'コブラツイスト',d:7,c:'submission'},{n:'ベアハッグ',d:7,c:'submission'},
 {n:'キャメルクラッチ',d:7,c:'submission'},{n:'インディアン・デスロック',d:7,c:'submission'},

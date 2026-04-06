@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPV TV観戦画面 — 改修案</title>
+<style>
+  :root {
+    --bg-dark: #24221e;
+    --bg-card: #12110e;
+    --bg-main: #181614;
+    --text-main: #e8e6e0;
+    --text-sub: rgba(232,230,224,0.5);
+    --text-dim: rgba(232,230,224,0.25);
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --green: #2ecc71;
+    --blue: #4a8fd4;
+    --red: #c41e3a;
+    --border: rgba(200,190,170,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Noto Sans JP', 'Hiragino Sans', 'Meiryo', sans-serif;
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .panel {
+    width: 480px;
+    border: 1px solid rgba(200,190,170,0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  /* ── バナー ── */
+  .banner {
+    position: relative;
+    background: linear-gradient(180deg, rgba(241,196,15,0.10) 0%, transparent 100%);
+    padding: 28px 20px 22px;
+    text-align: center;
+    border-bottom: 1px solid rgba(241,196,15,0.15);
+  }
+  .banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .tv-icon { font-size: 28px; margin-bottom: 8px; }
+  .live-badge {
+    display: inline-block;
+    background: rgba(241,196,15,0.15);
+    border: 1px solid rgba(241,196,15,0.35);
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .ppv-name {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 24px rgba(241,196,15,0.35);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .banner-sub {
+    font-size: 12px;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+
+  /* ── サマリー行 ── */
+  .summary-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    border-right: 1px solid var(--border);
+  }
+  .summary-item:last-child { border-right: none; }
+  .summary-item .val {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+  }
+  .summary-item .lbl {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  /* ── セクション仕切り ── */
+  .section-divider {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    padding: 7px 0 6px;
+    background: rgba(255,255,255,0.015);
+    border-bottom: 1px solid var(--border);
+  }
+  .section-divider.main-event {
+    color: rgba(241,196,15,0.6);
+    background: rgba(241,196,15,0.04);
+    border-bottom: 1px solid rgba(241,196,15,0.1);
+  }
+
+  /* ── 試合行 ── */
+  .match-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .match-row.summit {
+    background: linear-gradient(90deg, rgba(241,196,15,0.04), transparent, rgba(241,196,15,0.04));
+    border-bottom: 1px solid rgba(241,196,15,0.12);
+    padding: 13px 14px;
+  }
+
+  /* 選手ブロック */
+  .fighter-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 72px;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+  .fighter-block.loser {
+    opacity: 0.35;
+    filter: grayscale(0.6);
+  }
+  .fighter-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 2px solid rgba(100,85,50,0.12);
+    overflow: hidden;
+    flex-shrink: 0;
+    object-fit: cover;
+  }
+  .fighter-icon.winner-icon {
+    border-color: rgba(241,196,15,0.5);
+    box-shadow: 0 0 8px rgba(241,196,15,0.15);
+  }
+  .fighter-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    color: var(--text-main);
+    word-break: keep-all;
+  }
+  .fighter-block.loser .fighter-name {
+    color: var(--text-dim);
+  }
+  .win-marker {
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 800;
+  }
+  .lose-marker {
+    font-size: 10px;
+    color: transparent;
+  }
+
+  /* 中央MQブロック */
+  .center-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .mq-number {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .mq-number.s  { color: #f0d078; text-shadow: 0 0 16px rgba(240,208,120,0.5); } /* 80+  名勝負 */
+  .mq-number.a  { color: #d4a843; }                                               /* 70-79 好試合 */
+  .mq-number.b  { color: #c4853a; }                                               /* 60-69 良試合 */
+  .mq-number.c  { color: #b89870; }                                               /* 50-59 普通   */
+  .mq-number.d  { color: #8090a8; }                                               /* 40-49 平凡   */
+  .mq-number.e  { color: #607080; }                                               /* <40   退屈   */
+  .mq-label-text {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  .mq-bar {
+    width: 80px;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .mq-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .finish-text {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ── 感情テキスト ── */
+  .emotion-block {
+    padding: 16px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+  }
+  .emotion-quote {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-main);
+    line-height: 1.8;
+  }
+  .emotion-speaker {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* ── ボタン ── */
+  .btn-row {
+    text-align: center;
+    padding: 18px;
+  }
+  .btn-gold {
+    border: none;
+    border-radius: 8px;
+    padding: 13px 40px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f1c40f, #e67e22);
+    color: #1a1a2e;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="panel">
+
+  <!-- バナー -->
+  <div class="banner">
+    <div class="tv-icon">📺</div>
+    <div class="live-badge">LIVE ON TV</div>
+    <div class="ppv-name">QUEEN'S CROWN</div>
+    <div class="banner-sub">今年は出場枠に届かなかった——<br>テレビの前で、大会を見届ける</div>
+  </div>
+
+  <!-- サマリー -->
+  <div class="summary-row">
+    <div class="summary-item">
+      <div class="val">6</div>
+      <div class="lbl">MATCHES</div>
+    </div>
+    <div class="summary-item">
+      <div class="val">57</div>
+      <div class="lbl">AVG MQ</div>
+    </div>
+    <div class="summary-item">
+      <div class="val">82</div>
+      <div class="lbl">BEST MQ</div>
+    </div>
+  </div>
+
+  <!-- MAIN EVENT -->
+  <div class="section-divider main-event">✦ MAIN EVENT ✦</div>
+  <div class="match-row summit">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">紅林 遥香</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number s">82</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:82%;background:#f0d078"></div></div>
+      <div class="finish-text">紅蓮キャノン<br>3カウント / T18</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">白鳥 凛</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <!-- SEMI FINAL -->
+  <div class="section-divider">SEMI FINAL</div>
+  <div class="match-row">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">鬼頭 薫</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number a">71</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:71%;background:#d4a843"></div></div>
+      <div class="finish-text">鬼神落とし<br>TKO / T14</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">藤宮 千歳</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <!-- UNDERCARD -->
+  <div class="section-divider">UNDERCARD</div>
+  <div class="match-row">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">天城 あおい</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number b">65</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:65%;background:#c4853a"></div></div>
+      <div class="finish-text">蒼天プレス<br>3カウント / T12</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">月島 ユリア</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <div class="match-row">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">佐倉 みなみ</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number d">48</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:48%;background:#8090a8"></div></div>
+      <div class="finish-text">桜花絞め<br>サブミッション / T9</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">氷室 美雪</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <div class="match-row">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">黒田 真希</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number d">42</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:42%;background:#8090a8"></div></div>
+      <div class="finish-text">ブラックインパクト<br>3カウント / T7</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">桜庭 ひまり</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <div class="match-row">
+    <div class="fighter-block">
+      <div class="fighter-icon winner-icon">👩</div>
+      <div class="fighter-name">新堂 レイ</div>
+      <div class="win-marker">WIN</div>
+    </div>
+    <div class="center-block">
+      <div class="mq-number e">35</div>
+      <div class="mq-label-text">MQ</div>
+      <div class="mq-bar"><div class="mq-bar-fill" style="width:35%;background:#607080"></div></div>
+      <div class="finish-text">シャドウスラッシュ<br>3カウント / T5</div>
+    </div>
+    <div class="fighter-block loser">
+      <div class="fighter-icon">👩</div>
+      <div class="fighter-name">高城 梨花</div>
+      <div class="lose-marker">—</div>
+    </div>
+  </div>
+
+  <!-- 感情テキスト -->
+  <div class="emotion-block">
+    <div class="emotion-quote">「……すごい試合だった。来年は絶対、あの舞台に立つ」</div>
+    <div class="emotion-speaker">—— あなたの選手たちの声</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-gold">オフシーズンへ →</button>
+  </div>
+
+</div>
+
+</body>
+</html>

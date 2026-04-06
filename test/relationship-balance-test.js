@@ -16,7 +16,9 @@ function loadAsGlobal(filename) {
 
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
-loadAsGlobal('engine.js');
+loadAsGlobal('management.js');
+loadAsGlobal('match-engine.js');
+loadAsGlobal('relationships.js');
 
 function makeFighter(id, extra = {}) {
   return {
@@ -204,7 +206,7 @@ function testRivalryLevelUsesRelationshipValues() {
   assert.strictEqual(lvl.mqBonus, 4, 'mutual rivalry65 with positive bond should grant rivalry bonus plus chemistry bonus');
 }
 
-function testResolutionRequiresPPVAndBranchesByBond() {
+function testResolutionBranchesByBondAndAllowsShortcut() {
   const goodState = makeState({
     rivalries: { '1-2': { matches: 3, resolutionCount: 1 } },
     relationships: {
@@ -222,34 +224,35 @@ function testResolutionRequiresPPVAndBranchesByBond() {
 
   const goodPair = Engine.title.getRivalryPairState(goodState, 1, 2);
   const bitterPair = Engine.title.getRivalryPairState(bitterState, 1, 2);
-  assert.strictEqual(Engine.title.checkResolution(goodPair, 82, 70, 1, false), null, 'resolution should not happen outside PPV');
-  assert.strictEqual(Engine.title.checkResolution(goodPair, 82, 70, 1, true).resolved, 'goodRival', 'high bond should branch to good rival');
-  assert.strictEqual(Engine.title.checkResolution(bitterPair, 82, 70, 1, true).resolved, 'bitter', 'low bond should branch to bitter rival');
+  const shortcut = Engine.title.checkResolution(goodPair, 82, 70, 1);
+  const bitter = Engine.title.checkResolution(bitterPair, 82, 70, 1);
+
+  assert.strictEqual(shortcut.resolved, 'goodRival', 'high bond should branch to good rival');
+  assert.strictEqual(shortcut.isShortcut, true, 'mutual high-rivalry high-bond pairs should use shortcut resolution');
+  assert.strictEqual(bitter.resolved, 'bitter', 'low bond should branch to bitter rival');
 }
 
-function testNeglectedRivalryPenaltyUsesWeeksNotMatches() {
+function testGoodRivalFanExpectStillBuildsFanInterest() {
   const state = makeState({
     season: 2,
     week: 10,
     rivalries: {
-      '1-2': { matches: 5, lastAbsWeek: ((2 - 1) * 48) + 6 },
+      '1-2': { matches: 0, resolutionCount: 2, resolved: 'goodRival', lastAbsWeek: Engine.util.absWeek(2, 8) },
     },
     relationships: {
-      '1>2': { bond: 35, rivalry: 66 },
-      '2>1': { bond: 33, rivalry: 64 },
+      '1>2': { bond: 70, rivalry: 4 },
+      '2>1': { bond: 72, rivalry: 3 },
     },
   });
-
-  const penalty = Engine.title.getNeglectedRivalryPenalty(state);
-  assert.strictEqual(penalty, -0.2, 'neglected rivalry penalty should trigger from rivalry value band and elapsed weeks');
+  assert.ok(Engine.fanExpect.generate(state).some(ev => ev.leftId === 1 && ev.rightId === 2), 'resolved good-rival pairs should still appear as fan-expected cards');
 }
 testHighValueGainsAreSoftCapped();
 testWeeklyDecayCoolsHotRivalry();
 testRelationshipValuesStayOnTenthSteps();
 testCountersUseAbsoluteWeek();
 testRivalryLevelUsesRelationshipValues();
-testResolutionRequiresPPVAndBranchesByBond();
-testNeglectedRivalryPenaltyUsesWeeksNotMatches();
+testResolutionBranchesByBondAndAllowsShortcut();
+testGoodRivalFanExpectStillBuildsFanInterest();
 testLowBondVendettaStillWorksInsideZeroToHundredScale();
 testNewSigningDoesNotTriggerRecontactFromFreshNeutralLinks();
 
