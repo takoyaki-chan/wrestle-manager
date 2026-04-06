@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-06（specs/ 再同期 全完了）
+> 最終更新: 2026-04-06（ドラフト交渉システム実装+修正）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,29 @@
 
 ## 現在の状態
 
-**specs/ 再同期 全完了（2026-04-06）。** カテゴリA(アーカイブ→アクティブspec作成7件: trust/relationship/contract/promo/rental/growth/ppv)とカテゴリC(実装逆起こし新規spec作成6件: personality-archetype/large-event/venue-attendance/economy/coach/snapshot-notification)を完了。specs/は全20ファイルとなり、ゲームの全主要システムをカバー。引き継ぎ: docs/handoff-specs-resync.md。
+**ドラフト交渉システム実装+修正完了（2026-04-06）。** draft-negotiation-spec-v1.0に基づくセリ方式スカウト交渉を全面実装(step1-5)+ユーザー実機確認に基づく修正16件を実施。
+
+**実装内容:**
+- src/draft-negotiation.js新規作成(~780行): セリエンジン(assignInterest/runDropCheck/stepRound/runNegotiation/runFullDraft/empressReinforce)
+- 旧スカウトシステム(aiScout/aiSeasonReinforce/resolveCompetition)を廃止、共通プール+セリ参加に統合
+- 候補プール拡張(14-18名/8-10名)、事前選択制(★星トグル最大4名+5分岐ロジック)
+- 候補一覧UI(週刊グラップル「ドラフト速報」新聞風)、交渉画面UI(会場バナー+入札カード4枚+ヒートゲージ+ナレーション30+パターン)
+- BGM/SFX統合(tension BGM+7トリガーSE)、EMPRESS安全網、業界紙まとめ記事
+
+**修正内容(ユーザー実機FB対応):**
+- 観戦モード廃止→降りる即決着の2クリックフロー
+- 推定契約金をassessedValue統一(getSigningCostのorgPop割引除去)
+- 団体名をRIVAL_ORGS.nameから動的取得(ハードコード廃止)、ナレーション{ORG}プレースホルダ方式
+- エンブレム画像パス修正(../image/org/)、外枠ダークテーマ切替
+- ★ボタン視認性(draft-star-btn CSS統一+行/カードハイライト)、獲得上限日本語化
+- BGM切替: showScreen経由のplayForStateがtensionを毎回再生し直す問題→_showScreenNoBgm導入で交渉中はBGM不干渉
+- SFX: 入札音→Audio.play('select')、ファンファーレ→v5、競り負け→Audio.play('defeat')
+- 粘り度ゲージ: ラベルのbackground漏れ修正(太い謎バー根絶)、プレイヤーカードのゲージ廃止
+- 並び順をassessedValue純粋順位ベースに(ティア区分廃止)
+- AI全同時離脱→流札バグ修正(最後の1社は降りないガード)
+- AI団体ロスター上限制御: _getRosterFillMul厳格化(理想+2以上→不参加強制)+落札時idealRoster+2チェック+ドラフト中獲得数リアルタイム追跡
+
+引き継ぎ: docs/draft-notes/。仕様: specs/draft-negotiation-spec-v1.0.md。auto-sim 100シーズンALL CLEAR。
 
 前回: **dormantPool FIFOキュー化 — 同じ選手の即リサイクル防止（2026-04-05）。** dormantPoolの選抜が全箇所ランダムシャッフルだったため、リサイクルされた選手が即座に再登場し「同じ選手ばかり回る」問題があった。(1)Engine.util.drawFromFrontヘルパー追加: キュー先頭ウィンドウ(count×3, min12)からランダム抽出。古い選手優先+バリエーション確保。(2)選抜4箇所FIFO化: generateScoutReport/aiScout/aiSeasonReinforce(先頭15件内最強)/FA市場ローテ。(3)フィルタバグ修正(L9286/L9546): {id,age}オブジェクトとstring IDの.includes()比較が常にfalseで使用済み選手がプールから除去されなかった。(4)エントリ形式統一: 全てを{id,age}オブジェクトに統一、typeof分岐ガード12箇所除去。(5)セーブマイグレーション: レガシーstring ID→{id,age:17}変換。リサイクル投入は全て末尾追加(変更不要)、年次加齢は配列位置維持(変更不要)。変更: management.js(drawFromFront+選抜4箇所+フィルタ2箇所+typeof除去)+app.js(マイグレーション)。auto-sim 100シーズン×2シード ALL CLEAR。
 
@@ -97,6 +119,10 @@
 
 | 日付 | 内容 |
 |------|------|
+| 04-06 | ドラフト交渉システム step1-5実装+修正16件: セリエンジン(draft-negotiation.js ~780行)/旧スカウト廃止/候補プール拡張/事前選択制/候補一覧UI(新聞風)/交渉画面UI(入札カード+ヒートゲージ+ナレーション)/BGM・SFX統合/EMPRESS安全網/観戦モード廃止/団体名動的化/エンブレム修正/★視認性改善/BGM_showScreenNoBgm導入/AI全同時離脱バグ修正/ロスター上限制御(理想+2超で不参加)。引き継ぎ: docs/draft-notes/ |
+| 04-06 | specs/再同期全完了: カテゴリA(7件)+カテゴリC(6件)、specs/全20ファイル |
+| 04-05 | dormantPool FIFOキュー化: drawFromFrontヘルパー+選抜4箇所FIFO化+フィルタバグ修正+エントリ形式統一 |
+| 04-04 | AI引退選手即リサイクル修正: _weekRetiredIds→retiredIds反映+5シーズンクールダウン適用 |
 | 04-02 | 殿堂ポイント調整: ジュニア優勝6→4pt/PPV勝利7→5pt/対抗戦勝利2→1.5pt。表彰歴4種を新規加算(MVP2pt/新人王1.5pt/ベストマッチ1pt/メディア功労賞1.5pt)。殿堂タブ説明文を全9種内訳に更新。既存セーブの殿堂入り済み選手は再計算せず維持。auto-sim 100シーズンALL CLEAR |
 | 04-02 | プロモ人気増加の可視化: seasonPopGrowthフィールド追加→団体タブ成長ログに「人気+X.X」（オレンジ）表示。精算レポートのプロモ収入行に「人気+X.X」追記。シーズン末リセット。auto-sim 100シーズンALL CLEAR |
 | 04-01 | ポップアップ通知追加6件: P1スキャンダル→showNotifEventToast(N_scandal警告スタイル+portrait)/O2空席新聞記事(emptyVenue newspaper)/T4-T7不満ティッカー(G1-G4 grievanceフラグをprocessWeeklyStoryEventsで最大2件/週)/M1対立ペアティッカー強化(ペア名表示)/P5怪我離脱人気低下→showToast(4週毎)/P6メディア密着終了→showToast。data.js+management.js+relationships.js+app.js+ui-common.js変更。auto-sim 100シーズンALL CLEAR |
