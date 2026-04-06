@@ -496,7 +496,7 @@ function renderWeekScreen() {
   // ── OFFSEASON DISPLAY ──
   if (G.weekPhase === 'offseason') {
     const offW = G.offWeek || 0;
-    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '🔍 スカウト活動', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
+    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '⚖ ドラフト', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
     document.getElementById('weekTitle').textContent = offW === 0
       ? `${G.season}年目 オフシーズン突入`
       : `オフシーズン第${offW}週 — ${offLabels[offW] || ''}`;
@@ -507,7 +507,7 @@ function renderWeekScreen() {
         ${[1,2,3,4].map(i => `<div style="flex:1;height:6px;border-radius:3px;background:${i <= offW ? 'var(--gold)' : 'var(--bg-card)'};transition:background 0.3s"></div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)">
-        <span>レポート</span><span>スカウト</span><span>移籍</span><span>開幕</span>
+        <span>レポート</span><span>ドラフト</span><span>移籍</span><span>開幕</span>
       </div>
     </div>`;
 
@@ -587,7 +587,7 @@ function renderWeekScreen() {
       html += '</div>';
     }
 
-    const nextLabels = ['シーズンレポートへ →', 'スカウト活動へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
+    const nextLabels = ['シーズンレポートへ →', 'ドラフト会議へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
     const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
     html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabel}</button></div>`;
@@ -1287,7 +1287,7 @@ function renderWeekScreen() {
   // ── SCOUT EVENT PHASE ──
   else if (G.weekPhase === 'scoutEvent') {
     const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
-    const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+    const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
     document.getElementById('weekTitle').textContent = `${weekLabel} — 🔍 ${eventLabel}`;
     html += `<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(46,204,113,0.1),rgba(52,152,219,0.05));border:1px solid rgba(46,204,113,0.25);border-radius:8px;margin-bottom:16px">
       <h3 style="color:#2ecc71;margin-bottom:8px">🔍 スカウトレポート到着</h3>
@@ -3688,7 +3688,7 @@ function renderScoutEvent() {
   const maxPicks = G.scoutMaxPicks || 3;
   const discount = 0;
   const orgPop = G.orgPop || 0;
-  const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+  const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
 
   // 交渉画面 / ドラフト速報 のダーク/クリーム切替
   const screenEl = document.getElementById('screen-scoutEvent');
@@ -3777,7 +3777,7 @@ function renderScoutEvent() {
   });
 
   html += `<div class="btn-row" style="margin-top:16px">
-    <button class="btn btn-gold" onclick="scoutFinish()">🔍 スカウト活動終了</button>
+    <button class="btn btn-gold" onclick="scoutFinish()">⚖ ドラフト終了</button>
     <button class="btn btn-blue" onclick="showScreen('week')">← 週画面に戻る</button>
   </div>`;
 
