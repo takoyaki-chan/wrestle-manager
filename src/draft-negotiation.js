@@ -248,6 +248,170 @@ Engine.draftNegotiation = {
     interest.hiddenCap += assessedValue * DRAFT_TYPE_C_CAP_BOOST;
   },
 
+  // ── §7.3 ヒートゲージ ──
+  getHeatInfo(currentBid, obsessionScore) {
+    if (!obsessionScore || obsessionScore <= 0) return { label: 'COMPOSED', labelJp: '余裕', cls: 'composed', pct: 10 };
+    const ratio = currentBid / obsessionScore;
+    if (ratio < 0.7)  return { label: 'COMPOSED',  labelJp: '余裕',           cls: 'composed',  pct: Math.round(ratio / 0.7 * 40) };
+    if (ratio < 1.0)  return { label: 'STEADY',    labelJp: 'まだ余裕あり',   cls: 'steady',    pct: 40 + Math.round((ratio - 0.7) / 0.3 * 20) };
+    if (ratio < 1.5)  return { label: 'HEATED',    labelJp: '熱が入っている', cls: 'heated',    pct: 60 + Math.round((ratio - 1.0) / 0.5 * 18) };
+    if (ratio < 2.5)  return { label: 'STRAINED',  labelJp: 'そろそろ限界',   cls: 'strained',  pct: 78 + Math.round((ratio - 1.5) / 1.0 * 15) };
+    return              { label: 'DESPERATE', labelJp: 'もはや意地',     cls: 'desperate', pct: Math.min(100, 93 + Math.round((ratio - 2.5) * 3)) };
+  },
+
+  // ── §7.4 ナレーション ──
+  NARRATION: {
+    fighting: {
+      org_s: ['EMPRESS GRAND、引く気配なし', 'EMPRESS、王者の貫禄で粘る'],
+      org_a: ['NOVA IMPACT、ヒートアップ', 'NOVA、勝負に出た'],
+      org_b: ['CRESCENT RISE、まさかの執念', 'CRESCENT、地方の意地を見せる'],
+    },
+    dropped: {
+      org_s: ['EMPRESS GRAND、ここで撤退。王者にも見切り時はある', 'EMPRESS、苦渋の判断で離脱'],
+      org_a: ['NOVA IMPACT、無念の撤退', 'NOVA、ここは引くしかなかった'],
+      org_b: ['CRESCENT RISE、現実的な判断で離脱', 'CRESCENT、深追いせず撤退'],
+    },
+    playerWin: {
+      solo: ['契約成立。静かに迎え入れる'],
+      vs1: ['一騎打ちを制した', '激しい交渉を勝ち抜いた'],
+      multi: ['複数団体との争奪戦を勝ち抜いた！', '激戦の末、獲得に成功！'],
+    },
+    playerLost: ['他団体に持っていかれた。次の機会を待とう', '残念…他団体の執念が上回った'],
+    flowThrough: ['全団体が手を引いた。この選手はフリー市場へ'],
+    roundStart: [
+      '交渉卓に緊張が走る',
+      '各団体の代表が表情を引き締める',
+      '金額が上がるごとに空気が重くなる',
+      '交渉は佳境を迎えている',
+    ],
+  },
+
+  pickNarration(type, context, rng) {
+    const pool = type === 'fighting' ? Engine.draftNegotiation.NARRATION.fighting[context.orgId] || []
+      : type === 'dropped' ? Engine.draftNegotiation.NARRATION.dropped[context.orgId] || []
+      : type === 'playerWin' ? (context.defeatedCount === 0 ? Engine.draftNegotiation.NARRATION.playerWin.solo
+        : context.defeatedCount === 1 ? Engine.draftNegotiation.NARRATION.playerWin.vs1
+        : Engine.draftNegotiation.NARRATION.playerWin.multi)
+      : type === 'playerLost' ? Engine.draftNegotiation.NARRATION.playerLost
+      : type === 'flowThrough' ? Engine.draftNegotiation.NARRATION.flowThrough
+      : Engine.draftNegotiation.NARRATION.roundStart;
+    if (!pool || pool.length === 0) return '';
+    return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+  },
+
+  // ── 1ラウンドだけ進める（UI用） ──
+  // negState: { currentBid, interests, playerIn, round, log, finished, winner, assessedValue, narration, droppedThisRound }
+  stepRound(negState, playerAction, state, rng) {
+    const ns = { ...negState, droppedThisRound: [], narration: '' };
+    const assessedValue = ns.assessedValue;
+    const leagueElevated = state.leagueElevated || false;
+    ns.round++;
+
+    // プレイヤーアクション
+    if (playerAction === 'drop') {
+      ns.playerIn = false;
+      ns.log.push(`R${ns.round}: プレイヤー降り (${ns.currentBid}万)`);
+    }
+    const isAggressive = playerAction === 'aggressive';
+
+    // §4.6 タイプC
+    if (isAggressive) {
+      for (const interest of ns.interests) {
+        if (!interest.dropped && interest.participating) {
+          Engine.draftNegotiation.applyTypeCBoost(interest, assessedValue);
+        }
+      }
+    }
+
+    // CPU降り判定
+    for (const interest of ns.interests) {
+      if (interest.dropped || !interest.participating) continue;
+      if (Engine.draftNegotiation.runDropCheck(interest, ns.currentBid, isAggressive, leagueElevated, rng)) {
+        interest.dropped = true;
+        interest._droppedAtRound = ns.round;
+        ns.droppedThisRound.push(interest.orgId);
+        ns.log.push(`R${ns.round}: ${interest.orgId} 離脱 (${ns.currentBid}万)`);
+      }
+    }
+
+    // ナレーション生成
+    const narRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, ns.round, 0xAA));
+    if (ns.droppedThisRound.length > 0) {
+      ns.narration = Engine.draftNegotiation.pickNarration('dropped', { orgId: ns.droppedThisRound[0] }, narRng);
+    } else {
+      const stillFighting = ns.interests.filter(i => i.participating && !i.dropped);
+      if (stillFighting.length > 0) {
+        const hottest = stillFighting.reduce((a, b) => {
+          const ra = ns.currentBid / (a.obsessionScore || 1);
+          const rb = ns.currentBid / (b.obsessionScore || 1);
+          return ra > rb ? a : b;
+        });
+        ns.narration = Engine.draftNegotiation.pickNarration('fighting', { orgId: hottest.orgId }, narRng);
+      } else {
+        ns.narration = Engine.draftNegotiation.pickNarration('roundStart', {}, narRng);
+      }
+    }
+
+    // 決着判定
+    const stillActive = ns.interests.filter(i => i.participating && !i.dropped);
+    const totalActive = stillActive.length + (ns.playerIn ? 1 : 0);
+
+    if (totalActive <= 1) {
+      ns.finished = true;
+      if (ns.playerIn) {
+        ns.winner = 'player';
+        const defeatedCount = ns.interests.filter(i => i.participating).length;
+        ns.narration = Engine.draftNegotiation.pickNarration('playerWin', { defeatedCount }, narRng);
+      } else if (stillActive.length === 1) {
+        ns.winner = stillActive[0].orgId;
+        ns.narration = Engine.draftNegotiation.pickNarration('playerLost', {}, narRng);
+      } else {
+        ns.winner = null;
+        ns.narration = Engine.draftNegotiation.pickNarration('flowThrough', {}, narRng);
+      }
+      ns.finalBid = ns.currentBid;
+      return ns;
+    }
+    if (totalActive === 0) {
+      ns.finished = true;
+      ns.winner = null;
+      ns.finalBid = 0;
+      ns.narration = Engine.draftNegotiation.pickNarration('flowThrough', {}, narRng);
+      return ns;
+    }
+
+    // 価格上昇
+    const mul = isAggressive ? DRAFT_BID_MUL.aggressive : DRAFT_BID_MUL.standard;
+    ns.currentBid = Math.round(ns.currentBid * mul);
+
+    // 安全弁
+    if (ns.round >= 30) {
+      ns.finished = true;
+      ns.winner = ns.playerIn ? 'player' : (stillActive.length > 0 ? stillActive[0].orgId : null);
+      ns.finalBid = ns.currentBid;
+    }
+
+    return ns;
+  },
+
+  // ── ネゴ状態の初期化（1候補用） ──
+  initNegState(candidate, interests) {
+    return {
+      candidateId: candidate.id,
+      assessedValue: candidate.assessedValue || 100,
+      currentBid: candidate.assessedValue || 100,
+      interests: interests.map(i => ({ ...i })),
+      playerIn: true,
+      round: 0,
+      log: [],
+      finished: false,
+      winner: null,
+      finalBid: 0,
+      narration: '',
+      droppedThisRound: [],
+    };
+  },
+
   // ── 1候補の交渉全体を実行 ──
   // playerActionFn: (round, currentBid, interests) => 'aggressive' | 'standard' | 'drop'
   // returns: { winner: orgId|'player'|null, finalBid, rounds, log[] }

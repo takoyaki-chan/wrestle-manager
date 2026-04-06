@@ -3302,6 +3302,195 @@ function _renderDraftCandidateList(candidates, context) {
   return html;
 }
 
+// ── Draft Negotiation Screen (交渉画面) ──────────────────────────────
+// draft-negotiation-spec §7.2 / docs/draft-mockup-negotiation-C-venue-v3.html
+function _renderDraftNegotiation() {
+  const dn = G._draftNegotiation;
+  if (!dn) return '<div style="text-align:center;padding:60px;color:var(--text-dim)">交渉データがありません</div>';
+
+  const cand = dn.candidate;
+  const ns = dn.negState;
+  const sorted = dn.sortedCandidates || [];
+  const candIdx = dn.currentCandidateIdx || 0;
+  const totalCands = sorted.length;
+  const maxPicks = dn.maxPicks || 4;
+  const acquired = dn.acquiredThisSession || [];
+
+  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
+  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+  const ROLE_JP = { Babyface: 'Babyface', Heel: 'Heel', Neutral: 'Neutral' };
+  const ORG_META = {
+    org_s: { name: 'EMPRESS', tier: 'S TIER', emblCls: 'empress', embl: 'image/org/org-s-0.png' },
+    org_a: { name: 'NOVA',    tier: 'A TIER', emblCls: 'nova',    embl: 'image/org/org-a-0.png' },
+    org_b: { name: 'CRESCENT',tier: 'B TIER', emblCls: 'crescent',embl: 'image/org/org-b-0.png' },
+  };
+  const MARK_DISPLAY = { honmei: { text: '◎', cls: 'dn-mark-bullseye' }, taikou: { text: '○', cls: 'dn-mark-contender' }, osae: { text: '△', cls: 'dn-mark-outside' } };
+
+  // Portrait
+  const portUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(cand.id) : '';
+  const initial = (cand.name || '?').charAt(0);
+  const portHtml = portUrl
+    ? `<img src="${portUrl}" alt="" class="dn-cand-portrait-img">`
+    : `<div class="dn-cand-portrait-fallback">${initial}</div>`;
+
+  // Mini stats
+  const est = cand._estimate || { pw: cand.pw, sp: cand.sp, te: cand.te, st: cand.st, mn: cand.mn };
+  const stats = [
+    { key: 'PWR', val: est.pw || 0 }, { key: 'SPD', val: est.sp || 0 },
+    { key: 'TEC', val: est.te || 0 }, { key: 'STA', val: est.st || 0 }, { key: 'MNT', val: est.mn || 0 },
+  ];
+  const miniStatsHtml = `<div class="dn-mini-stats">${stats.map(s =>
+    `<div class="dn-sblock"><div class="dn-skey">${s.key}</div><div class="dn-sbar"><div class="dn-sbar-fill" style="width:${Math.min(100,s.val)}%"></div></div><div class="dn-snum">${s.val}</div></div>`
+  ).join('')}</div>`;
+
+  const bidRatio = ns.assessedValue > 0 ? (ns.currentBid / ns.assessedValue).toFixed(2) : '1.00';
+  const baseCost = Engine.scout.getSigningCost ? Engine.scout.getSigningCost(cand, G.orgPop || 0) : (cand.assessedValue || 0);
+
+  let html = `<div class="dn-container">`;
+
+  // ── Banner ──
+  html += `<div class="dn-banner">
+    <img src="image/draft-header.webp" alt="Draft Conference" class="dn-banner-img" onerror="this.style.display='none'">
+    <div class="dn-banner-strip">
+      <span>シーズン${G.season || '?'} オフ第${G.offWeek || '?'}週</span>
+      <span>ROUND ${String(ns.round || 0).padStart(2, '0')}</span>
+    </div>
+  </div>`;
+
+  // ── Status strip ──
+  html += `<div class="dn-status">
+    <div class="dn-status-block"><div class="dn-status-label">獲得</div><div class="dn-status-val">${acquired.length} / ${maxPicks}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">候補</div><div class="dn-status-val">${String(candIdx + 1).padStart(2,'0')} / ${totalCands}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">残資金</div><div class="dn-status-val dn-gold">¥ ${Math.round(G.funds).toLocaleString()}万</div></div>
+  </div>`;
+
+  // ── Stage ──
+  html += `<div class="dn-stage">
+    <div class="dn-eyebrow">交渉中</div>
+    <div class="dn-portrait">${portHtml}</div>
+    <div class="dn-cand-name">${cand.name}</div>
+    <div class="dn-cand-meta">
+      <span class="dn-cand-age">${cand.age}</span>
+      <span class="dn-tier-badge dn-tier-${cand.assessedTier || 'material'}">${TIER_LABELS[cand.assessedTier] || cand.assessedTier}</span>
+      <span class="dn-style-tag">${STYLE_JP[cand.style] || cand.style}${cand.role ? ' · ' + (ROLE_JP[cand.role] || cand.role) : ''}</span>
+    </div>
+    ${miniStatsHtml}
+    <div class="dn-bid-display">
+      <div class="dn-bid-label">CURRENT BID</div>
+      <div class="dn-bid-amount">¥ ${ns.currentBid.toLocaleString()}万</div>
+      <div class="dn-bid-base">推定相場 <strong>¥${baseCost.toLocaleString()}万</strong> · ${bidRatio}×</div>
+    </div>
+  </div>`;
+
+  // ── Bid cards ──
+  html += `<div class="dn-cards-section">
+    <div class="dn-cards-label">▎ 入札卓 ▎</div>
+    <div class="dn-cards">`;
+
+  // AI cards
+  for (const orgId of ['org_s', 'org_a', 'org_b']) {
+    const om = ORG_META[orgId];
+    const interest = ns.interests.find(i => i.orgId === orgId);
+    const isParticipating = interest && interest.participating;
+    const isDropped = interest && interest.dropped;
+    const markKey = interest ? (interest.displayMark || 'osae') : null;
+    const mark = markKey ? MARK_DISPLAY[markKey] : null;
+    const heat = isParticipating && !isDropped
+      ? Engine.draftNegotiation.getHeatInfo(ns.currentBid, interest.obsessionScore)
+      : { label: '', labelJp: '', cls: 'dropped', pct: 0 };
+
+    // Is this org the current leader? (highest obsession among active)
+    const activeOrgs = ns.interests.filter(i => i.participating && !i.dropped);
+    const isLeader = isParticipating && !isDropped && activeOrgs.length > 0 &&
+      activeOrgs.reduce((best, cur) => (cur.obsessionScore || 0) > (best.obsessionScore || 0) ? cur : best).orgId === orgId;
+
+    const cardCls = isDropped ? 'dn-card dn-card-dropped' : isLeader ? 'dn-card dn-card-leading' : 'dn-card';
+
+    html += `<div class="${cardCls}">
+      <img class="dn-emblem dn-emblem-${om.emblCls}" src="${om.embl}" alt="${om.name}" onerror="this.style.display='none'">
+      <div class="dn-card-name">${om.name}</div>
+      <div class="dn-card-tier">${om.tier}</div>
+      <div class="dn-card-bid-row">
+        ${!isParticipating ? '<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">不参加</span>'
+        : isDropped ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">PASSED</span>`
+        : `<span class="dn-card-mark ${mark ? mark.cls : ''}">${mark ? mark.text : '—'}</span>
+           <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">¥${ns.currentBid.toLocaleString()}万</span>`}
+      </div>
+      <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
+      <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? `R${interest._droppedAtRound || '?'}で離脱` : !isParticipating ? '不参加' : heat.labelJp}</div>
+    </div>`;
+  }
+
+  // Player card
+  const playerIcon = G.playerOrgIcon ? `<img class="dn-emblem dn-emblem-player" src="image/org/${G.playerOrgIcon}" alt="YOU" onerror="this.style.display='none'">` : `<div class="dn-emblem dn-emblem-player" style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold-light);">YOU</div>`;
+  const playerDropped = !ns.playerIn;
+  const playerCardCls = playerDropped ? 'dn-card dn-card-dropped dn-card-player' : 'dn-card dn-card-player';
+  html += `<div class="${playerCardCls}">
+    ${playerIcon}
+    <div class="dn-card-name dn-card-name-player">${G.orgName || 'YOU'}</div>
+    <div class="dn-card-tier">PLAYER</div>
+    <div class="dn-card-bid-row">
+      ${playerDropped ? '<span class="dn-card-bid dn-bid-passed">PASSED</span>'
+      : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
+    </div>
+    <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-steady" style="width:55%"></div></div>
+    <div class="dn-card-heat-label dn-heat-steady">${playerDropped ? '離脱済み' : 'あなたの判断'}</div>
+  </div>`;
+
+  html += `</div></div>`; // end cards
+
+  // ── Narration ──
+  if (ns.narration) {
+    html += `<div class="dn-narration">${ns.narration}</div>`;
+  }
+
+  // ── Actions / Observation / Results ──
+  if (ns.finished) {
+    // 結果表示
+    const winnerLabel = ns.winner === 'player' ? (G.orgName || 'あなた') + 'が獲得！'
+      : ns.winner ? (ORG_META[ns.winner]?.name || ns.winner) + ' が獲得'
+      : '流札（フリー市場へ）';
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+      </button>
+    </div>`;
+  } else if (!ns.playerIn) {
+    // 観戦モード
+    html += `<div class="dn-actions" style="text-align:center;">
+      <div style="font-size:14px;color:var(--text-sub);margin-bottom:12px;">あなたは降りました</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="dn-action-btn dn-action-standard" onclick="draftWatchRound('normal')"><div class="dn-action-label">そのまま観戦</div></button>
+        <button class="dn-action-btn dn-action-aggressive" onclick="draftWatchRound('fast')"><div class="dn-action-label">早送り</div></button>
+        <button class="dn-action-btn dn-action-withdraw" onclick="draftWatchRound('skip')"><div class="dn-action-label">スキップ</div></button>
+      </div>
+    </div>`;
+  } else {
+    // プレイヤーアクション
+    const aggressiveBid = Math.round(ns.currentBid * DRAFT_BID_MUL.aggressive);
+    const standardBid = Math.round(ns.currentBid * DRAFT_BID_MUL.standard);
+    html += `<div class="dn-actions">
+      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')">
+        <div class="dn-action-label">強気で押す</div>
+        <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
+      </button>
+      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')">
+        <div class="dn-action-label">標準で粘る</div>
+        <div class="dn-action-detail">→ <strong>¥${standardBid.toLocaleString()}万</strong></div>
+      </button>
+      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')">
+        <div class="dn-action-label">ここで降りる</div>
+        <div class="dn-action-detail">交渉から離脱</div>
+      </button>
+    </div>`;
+  }
+
+  html += `</div>`; // end container
+  return html;
+}
+
 // Mini stats CSS (injected once) — draft-negotiation-spec §7.1
 (function _injectDraftCSS() {
   if (typeof document === 'undefined') return;
@@ -3327,6 +3516,94 @@ function _renderDraftCandidateList(candidates, context) {
 .mark-none { color:rgba(95,69,35,0.2); font-weight:900; }
 .feat-org-mark { font-size:17px; font-weight:900; line-height:1; }
 .short-mark { font-size:13px; font-weight:900; }
+/* ── Draft Negotiation Screen CSS ── */
+.dn-container { max-width:920px; margin:0 auto; background:#0a0a08; color:#e8e6e0; }
+.dn-banner { position:relative; width:100%; line-height:0; border-bottom:2px solid #d4a843; }
+.dn-banner-img { width:100%; height:auto; display:block; min-height:100px; background:linear-gradient(135deg,#1a1610,#0a0808); }
+.dn-banner-strip { position:absolute; top:10px; left:0; right:0; display:flex; justify-content:space-between; padding:0 22px; font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.85); font-weight:700; text-shadow:0 1px 4px rgba(0,0,0,0.6); pointer-events:none; z-index:2; }
+.dn-status { background:#1c1a16; padding:10px 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-status-block { display:flex; align-items:baseline; gap:6px; }
+.dn-status-label { font-size:9px; letter-spacing:2px; color:rgba(232,230,224,0.28); font-weight:700; }
+.dn-status-val { font-size:16px; color:#e8e6e0; letter-spacing:1px; }
+.dn-gold { color:#f0d078; }
+.dn-stage { padding:24px 22px 20px; text-align:center; background:radial-gradient(ellipse 50% 60% at 50% 30%,rgba(212,168,67,0.1) 0%,transparent 60%),#14120e; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-eyebrow { display:inline-flex; align-items:center; gap:12px; font-size:10px; letter-spacing:3px; color:#c41e3a; font-weight:700; margin-bottom:14px; }
+.dn-eyebrow::before,.dn-eyebrow::after { content:''; display:block; width:28px; height:1px; background:#c41e3a; }
+.dn-portrait { width:150px; height:150px; margin:0 auto 14px; border-radius:50%; background:linear-gradient(135deg,#2a2622,#1a1814); border:4px solid #d4a843; box-shadow:0 0 30px rgba(212,168,67,0.5),0 0 80px rgba(212,168,67,0.2),inset 0 0 30px rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.dn-cand-portrait-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.dn-cand-portrait-fallback { font-size:80px; font-weight:900; color:#f0d078; }
+.dn-cand-name { font-size:28px; font-weight:900; color:#e8e6e0; line-height:1.1; margin-bottom:6px; }
+.dn-cand-meta { display:inline-flex; align-items:center; gap:10px; margin-bottom:12px; }
+.dn-cand-age { font-size:24px; color:#f0d078; }
+.dn-tier-badge { font-size:11px; letter-spacing:1.2px; font-weight:700; padding:3px 10px; border-radius:3px; }
+.dn-tier-superElite { background:rgba(196,30,58,0.2); color:#f08b9e; border:1px solid rgba(196,30,58,0.5); }
+.dn-tier-elite { background:rgba(243,156,18,0.2); color:#f0c060; border:1px solid rgba(243,156,18,0.5); }
+.dn-tier-promising { background:rgba(74,143,212,0.2); color:#80b8e8; border:1px solid rgba(74,143,212,0.5); }
+.dn-tier-raw { background:rgba(46,204,113,0.2); color:#70d898; border:1px solid rgba(46,204,113,0.5); }
+.dn-tier-material { background:rgba(149,165,166,0.2); color:#b0b8b8; border:1px solid rgba(149,165,166,0.5); }
+.dn-style-tag { font-size:11px; letter-spacing:1.5px; color:rgba(232,230,224,0.55); font-weight:700; }
+.dn-mini-stats { display:flex; gap:5px; margin:8px auto; max-width:400px; padding:7px 0; border-top:1px dashed rgba(200,190,170,0.1); border-bottom:1px dashed rgba(200,190,170,0.1); }
+.dn-sblock { flex:1; text-align:center; }
+.dn-skey { font-size:8px; letter-spacing:0.5px; color:rgba(232,230,224,0.28); font-weight:700; }
+.dn-sbar { height:4px; background:rgba(232,230,224,0.06); margin:3px 0 1px; border-radius:2px; overflow:hidden; }
+.dn-sbar-fill { height:100%; background:rgba(232,230,224,0.4); border-radius:2px; }
+.dn-snum { font-size:11px; color:#e8e6e0; }
+.dn-bid-display { margin:0 auto; padding:14px 0; border-top:1px solid rgba(200,190,170,0.1); border-bottom:1px solid rgba(200,190,170,0.1); max-width:480px; }
+.dn-bid-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; margin-bottom:4px; }
+.dn-bid-amount { font-size:44px; background:linear-gradient(180deg,#fff 20%,#f0d078); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; letter-spacing:1px; }
+.dn-bid-base { font-size:11px; color:rgba(232,230,224,0.28); margin-top:4px; }
+.dn-bid-base strong { color:rgba(232,230,224,0.55); }
+.dn-cards-section { background:#1c1a16; padding:24px 22px 20px; border-bottom:1px solid rgba(200,190,170,0.1); }
+.dn-cards-label { font-size:10px; letter-spacing:3px; color:#d4a843; font-weight:700; text-align:center; margin-bottom:16px; }
+.dn-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; }
+.dn-card { background:#14120e; border:1px solid rgba(200,190,170,0.1); border-radius:8px; padding:16px 12px 14px; text-align:center; position:relative; transition:all .25s; }
+.dn-card-leading { border:2px solid #d4a843; background:linear-gradient(180deg,rgba(212,168,67,0.1),#14120e); box-shadow:0 0 24px rgba(212,168,67,0.35); transform:translateY(-12px); padding-top:22px; padding-bottom:18px; }
+.dn-card-leading::before { content:'LEAD'; position:absolute; top:-10px; left:50%; transform:translateX(-50%); font-size:9px; letter-spacing:2px; font-weight:700; background:#d4a843; color:#1a1410; padding:3px 10px; border-radius:3px; }
+.dn-card-dropped { opacity:0.35; filter:grayscale(0.7); transform:rotate(-2deg); }
+.dn-card-player { border:1px solid rgba(212,168,67,0.4); background:rgba(212,168,67,0.04); }
+.dn-emblem { width:64px; height:64px; margin:0 auto 10px; display:block; object-fit:contain; border-radius:8px; background:rgba(0,0,0,0.2); }
+.dn-emblem-empress { border:2px solid #d4a843; box-shadow:0 0 12px rgba(196,30,58,0.4); }
+.dn-emblem-nova { border:2px solid rgba(184,160,238,0.6); box-shadow:0 0 12px rgba(74,143,212,0.4); }
+.dn-emblem-crescent { border:2px solid rgba(200,232,212,0.5); box-shadow:0 0 12px rgba(46,204,113,0.4); }
+.dn-emblem-player { border:3px solid #d4a843; box-shadow:0 0 16px rgba(212,168,67,0.5); }
+.dn-card-name { font-size:16px; letter-spacing:1.5px; color:#e8e6e0; line-height:1; margin-bottom:2px; }
+.dn-card-name-player { color:#f0d078; }
+.dn-card-tier { font-size:8px; letter-spacing:0.5px; color:rgba(232,230,224,0.28); margin-bottom:8px; }
+.dn-card-bid-row { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:6px; }
+.dn-card-mark { font-size:14px; font-weight:900; line-height:1; }
+.dn-mark-bullseye { color:#c41e3a; }
+.dn-mark-contender { color:#f0d078; }
+.dn-mark-outside { color:rgba(232,230,224,0.55); }
+.dn-mark-none { color:rgba(232,230,224,0.28); font-size:11px; }
+.dn-card-bid { font-size:16px; letter-spacing:0.5px; color:#e8e6e0; }
+.dn-bid-lead { background:linear-gradient(180deg,#fff,#f0d078); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.dn-bid-passed { color:rgba(232,230,224,0.28); font-size:12px; }
+.dn-card-heat { height:4px; background:rgba(232,230,224,0.06); border-radius:2px; overflow:hidden; margin-top:6px; }
+.dn-card-heat-fill { height:100%; border-radius:2px; }
+.dn-heat-composed { background:#4a8fd4; color:#4a8fd4; }
+.dn-heat-steady { background:#d4a843; color:#d4a843; }
+.dn-heat-heated { background:#f39c12; color:#f39c12; }
+.dn-heat-strained { background:#c41e3a; color:#c41e3a; animation:dn-pulse 1.4s infinite; }
+.dn-heat-desperate { background:#c41e3a; color:#c41e3a; animation:dn-pulse 0.8s infinite; }
+.dn-heat-dropped { background:rgba(232,230,224,0.28); color:rgba(232,230,224,0.28); }
+@keyframes dn-pulse { 0%,100%{box-shadow:0 0 0 rgba(196,30,58,0.5);} 50%{box-shadow:0 0 12px rgba(196,30,58,0.8);} }
+.dn-card-heat-label { font-size:8px; letter-spacing:0.5px; font-weight:700; margin-top:2px; }
+.dn-narration { margin:14px 22px 0; padding:11px 16px; background:#14120e; border:1px solid rgba(200,190,170,0.1); border-left:3px solid #c41e3a; border-radius:4px; font-size:12px; color:rgba(232,230,224,0.55); line-height:1.6; font-style:italic; }
+.dn-narration::before { content:'— '; color:rgba(232,230,224,0.28); }
+.dn-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:16px 22px 22px; background:#14120e; }
+.dn-action-btn { padding:16px 8px; border-radius:4px; border:1px solid rgba(200,190,170,0.1); background:#1c1a16; cursor:pointer; transition:all .2s; text-align:center; }
+.dn-action-btn:hover { transform:translateY(-1px); }
+.dn-action-label { font-size:11px; letter-spacing:2px; font-weight:700; margin-bottom:4px; }
+.dn-action-detail { font-size:10px; color:rgba(232,230,224,0.55); }
+.dn-action-detail strong { font-size:14px; color:#e8e6e0; font-weight:400; letter-spacing:0.5px; }
+.dn-action-aggressive { border:1px solid rgba(196,30,58,0.4); background:rgba(196,30,58,0.08); }
+.dn-action-aggressive .dn-action-label { color:#f08b9e; }
+.dn-action-aggressive:hover { background:rgba(196,30,58,0.16); border-color:#c41e3a; }
+.dn-action-standard { border:1px solid rgba(212,168,67,0.35); background:rgba(212,168,67,0.05); }
+.dn-action-standard .dn-action-label { color:#f0d078; }
+.dn-action-standard:hover { background:rgba(212,168,67,0.12); border-color:#d4a843; }
+.dn-action-withdraw .dn-action-label { color:rgba(232,230,224,0.55); }
+.dn-action-withdraw:hover { background:rgba(232,230,224,0.04); }
   `;
   document.head.appendChild(style);
 })();
@@ -3341,6 +3618,14 @@ function renderScoutEvent() {
   const discount = 0;
   const orgPop = G.orgPop || 0;
   const eventLabel = G.scoutEventType === 'midseason' ? '補強スカウト' : 'メインスカウト';
+
+  // draft-negotiation-spec: 交渉画面表示（セリ進行中）
+  if (G._draftNegotiation) {
+    const titleEl = document.getElementById('scoutEventTitle');
+    if (titleEl) titleEl.textContent = '⚖ ドラフト交渉';
+    el.innerHTML = _renderDraftNegotiation();
+    return;
+  }
 
   // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
   if (G._draftInterests && !G._draftNegotiationStarted) {
