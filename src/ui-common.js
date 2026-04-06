@@ -4040,10 +4040,18 @@ function startDraftNegotiation() {
 
   const playerCandidateQueue = []; // 交渉UIに出す候補
   const soloConfirmQueue = [];     // 単独指名確認候補
+  const returnToPool = [];         // dormantPoolに返却する未獲得候補ID
 
   for (const cand of sorted) {
     const isSelected = selections.includes(cand.id);
     const candInterests = (allInterests[cand.id] || []);
+    // ロスター上限到達団体の参加を取り消し（ドラフト中の獲得でリアルタイムに上限に達した団体を除外）
+    for (const ci of candInterests) {
+      if (!ci.participating) continue;
+      const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
+      const ideal = (AI_SCOUT_CFG[ci.orgId === 'org_s' ? 'S' : ci.orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+      if (orgRoster.length >= ideal + 2) ci.participating = false;
+    }
     const aiParticipants = candInterests.filter(i => i.participating);
     const clean = { ...cand };
     delete clean._notion; delete clean._estimate; delete clean._isSeed; delete clean._hasCompetition;
@@ -4069,14 +4077,16 @@ function startDraftNegotiation() {
           draftSummary.aiAcquired[wOrg].push(clean.name);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
         } else {
-          newFA.push(normFighter(clean));
+          // 流札 → dormantPoolに返却
+          returnToPool.push(cand.id);
           draftSummary.flowThrough.push(clean.name);
-          log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+          log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
         }
       } else {
-        newFA.push(normFighter(clean));
+        // 流札 → dormantPoolに返却
+        returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
-        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else if (!isSelected && aiParticipants.length === 1) {
       // → AI自動落札（ロスター上限チェック付き）
@@ -4088,29 +4098,37 @@ function startDraftNegotiation() {
         draftSummary.aiAcquired[winner].push(clean.name);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
       } else {
-        newFA.push(normFighter(clean));
+        // 流札 → dormantPoolに返却
+        returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
-        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else {
-      // → 流札
-      newFA.push(normFighter(clean));
+      // → 流札 → dormantPoolに返却
+      returnToPool.push(cand.id);
       draftSummary.flowThrough.push(clean.name);
-      log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れでフリー市場へ`);
+      log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
     }
   }
 
-  G = { ...G, aiOrgs: newAiOrgs, freeAgents: newFA, gameLog: log };
+  // 流札候補をdormantPool末尾に返却（枯渇防止）
+  let updatedDormant = [...(G.dormantPool || [])];
+  for (const rid of returnToPool) {
+    if (!updatedDormant.some(e => e.id === rid)) {
+      updatedDormant.push({ id: rid, age: 17 });
+    }
+  }
+
+  G = { ...G, aiOrgs: newAiOrgs, freeAgents: newFA, dormantPool: updatedDormant, gameLog: log };
 
   // 交渉UIに出す候補がない場合(全部単独or未選択)
   const uiQueue = [...playerCandidateQueue, ...soloConfirmQueue];
   if (uiQueue.length === 0) {
-    // 全候補処理完了 → まとめ記事 → 終了
+    // 全候補処理完了 → まとめ記事 → 直接offseason進行
     G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
     try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete, no UI queue)');
-    refreshAll();
-    showScreen('scoutEvent');
+    App.scoutEventFinish();
     return;
   }
 
@@ -4376,6 +4394,7 @@ function draftNextCandidate() {
   delete clean._notion; delete clean._estimate; delete clean._isSeed; delete clean._hasCompetition;
   const tierLabel = Engine.scout.getTierConfig(clean.assessedTier || 'material').label;
 
+  let returnToPool = false; // 流札候補をdormantPoolに返却するフラグ
   if (ns.winner === 'player') {
     const maxPicks = dn.maxPicks || 4;
     if (newFunds >= ns.finalBid && acquired.length < maxPicks && newRoster.filter(c => !c.isRental).length < (G.rosterCap || 16)) {
@@ -4388,7 +4407,7 @@ function draftNextCandidate() {
       acquired.push(clean.id);
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
     } else {
-      newFA.push(normFighter(clean));
+      returnToPool = true;
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
     }
   } else if (ns.winner && ns.winner !== 'player') {
@@ -4399,26 +4418,31 @@ function draftNextCandidate() {
       const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
       log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
     } else {
-      newFA.push(normFighter(clean));
+      returnToPool = true;
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
     }
   } else {
-    newFA.push(normFighter(clean));
+    returnToPool = true;
     log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
   }
 
-  G = { ...G, roster: newRoster, funds: newFunds, aiOrgs: newAiOrgs, freeAgents: newFA, gameLog: log };
+  // 流札候補をdormantPool末尾に返却（枯渇防止）
+  let updatedDormant = [...(G.dormantPool || [])];
+  if (returnToPool && !updatedDormant.some(e => e.id === clean.id)) {
+    updatedDormant.push({ id: clean.id, age: 17 });
+  }
+
+  G = { ...G, roster: newRoster, funds: newFunds, aiOrgs: newAiOrgs, freeAgents: newFA, dormantPool: updatedDormant, gameLog: log };
 
   // 次の候補があるか？
   const nextIdx = dn.currentCandidateIdx + 1;
   if (nextIdx >= dn.sortedCandidates.length) {
-    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事)
+    // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → 直接offseason進行
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
     G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
     try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete)');
-    refreshAll();
-    showScreen('scoutEvent');
+    App.scoutEventFinish();
     return;
   }
 
@@ -4426,6 +4450,13 @@ function draftNextCandidate() {
   _draftSfx('chime'); // ② 次候補切替
   const nextCand = dn.sortedCandidates[nextIdx];
   const nextInterests = (G._draftInterests || {})[nextCand.id] || [];
+  // ロスター上限到達団体の参加を取り消し
+  for (const ci of nextInterests) {
+    if (!ci.participating) continue;
+    const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
+    const ideal = (AI_SCOUT_CFG[ci.orgId === 'org_s' ? 'S' : ci.orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    if (orgRoster.length >= ideal + 2) ci.participating = false;
+  }
   const nextNegState = Engine.draftNegotiation.initNegState(nextCand, nextInterests);
   const nextActive = nextInterests.filter(i => i.participating);
   if (nextActive.length === 0) {
