@@ -10194,7 +10194,8 @@ Engine.awards = {
     const candidates = [];
     const playerMQ = (state.seasonStats && state.seasonStats.bestMQ) || 0;
     if (playerMQ > 0) {
-      const matchStr = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
+      const matchStrRaw = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
+      const matchStr = matchStrRaw.replace(/^PPV\s+/, '');
       const parts = matchStr.split(' vs ');
       const findF = name => (state.roster || []).find(f => f.name === name) ||
                             (state.retiredFighters || []).find(f => f.name === name);

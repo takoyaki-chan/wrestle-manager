@@ -2266,6 +2266,33 @@ const Storage = {
         G = { ...G, _migrated_dormantPool_refill_v1: true };
       }
 
+      // FA即時補充: ロード直後にFA=0だとスカウト画面が空のまま最大3週待ちになるため、
+      // poolから2名を即座にFAへ追加する（毎ロード時チェック、フラグなし）
+      if ((G.freeAgents || []).length === 0) {
+        const faPool = G.dormantPool || [];
+        const faOccupied = new Set();
+        (G.roster || []).forEach(c => faOccupied.add(c.id));
+        Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
+        const eligible = faPool.filter(e => (e.age || 17) < 21 && !faOccupied.has(e.id));
+        if (eligible.length > 0) {
+          const faRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season || 1, G.week || 1, 0xFA01));
+          const pick = eligible.slice(0, Math.min(2, eligible.length));
+          const pickIds = new Set(pick.map(e => e.id));
+          const newFA = pick.map(e => {
+            const template = ALL_CHARS.find(c => c.id === e.id);
+            if (!template) return null;
+            return Engine.rival.makeAIFighter(template, faRng, null, e.age || 17);
+          }).filter(Boolean);
+          if (newFA.length > 0) {
+            G = { ...G,
+              freeAgents: [...(G.freeAgents || []), ...newFA],
+              dormantPool: faPool.filter(e => !pickIds.has(e.id))
+            };
+            console.log(`[WM Load] FA即時補充: ${newFA.map(f => f.name).join('、')}`);
+          }
+        }
+      }
+
       return true;
     } catch(e) {
       G = prevG;
@@ -7369,7 +7396,7 @@ App.finalizePPV = function() {
   const stats = { ...(G.seasonStats || {}) };
   stats.showCount = (stats.showCount || 0) + 1;
   pp.results.forEach(r => {
-    if (r.mq > (stats.bestMQ || 0)) { stats.bestMQ = r.mq; stats.bestMQMatch = `PPV ${r.left?.name || '?'} vs ${r.right?.name || '?'}`; }
+    if (r.mq > (stats.bestMQ || 0)) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left?.name || '?'} vs ${r.right?.name || '?'}`; }
   });
 
   G = { ...G, ...s, seasonStats: stats, weekPhase: 'showExec', gameLog: [...G.gameLog, ...events] };
