@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;600;700&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg-dark: #24221e;
@@ -22,6 +22,21 @@
   --bg-card: #12110e;
   --bg-main: #181614;
   --border: rgba(200,190,170,0.08);
+  /* 儀式ナレーション専用フォント */
+  --font-ceremony: 'Shippori Mincho', serif;
+  /* クリームテーマ(初期ドラフト画面) */
+  --cream-bg-card: #ede8dc;
+  --cream-panel-bg: #d4ccb8;
+  --cream-info-bg: #e0daca;
+  --cream-portrait-bg: #beb6a4;
+  --cream-text-main: #1e1c16;
+  --cream-text-sub: #4a4638;
+  --cream-text-dim: #7a7466;
+  --cream-gold: #7a6530;
+  --cream-gold-dark: #5c4a1e;
+  --cream-border: rgba(100,85,50,0.14);
+  --cream-border-hover: rgba(122,101,48,0.35);
+  --cream-red: #8b1a1a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -2728,6 +2743,194 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .b1-totals .cell .n{font-size:22px;font-weight:900;color:#f0cc7a}
 .b1-totals .cell .l{font-size:10px;color:var(--text-dim,#8b8173);letter-spacing:2px;margin-top:2px}
 .b1-empty{text-align:center;padding:40px 20px;font-size:14px;color:var(--text-sub);position:relative}
+
+/* ============================================================
+   OPENING SCENE — DARK + CEREMONY MINCHO
+============================================================ */
+.opening-overlay{position:fixed;inset:0;z-index:900;background:radial-gradient(ellipse at center,#15110a 0%,#060503 80%);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 0.8s ease}
+.opening-overlay.hidden{opacity:0;pointer-events:none}
+.opening-vignette{position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%),
+  repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(255,255,255,0.012) 2px,rgba(255,255,255,0.012) 3px);
+  pointer-events:none}
+.opening-act{text-align:center;max-width:720px;padding:40px;opacity:0;transform:translateY(8px);
+  transition:opacity 1.2s ease,transform 1.2s ease;position:relative;z-index:2}
+.opening-act.show{opacity:1;transform:translateY(0)}
+.opening-act-line{font-family:var(--font-ceremony);font-size:19px;line-height:2.2;color:var(--text-main);
+  letter-spacing:0.08em;font-weight:400;text-shadow:0 2px 12px rgba(0,0,0,0.8)}
+.opening-act-line .org{font-size:28px;letter-spacing:0.15em;color:var(--gold);font-weight:600;
+  display:inline-block;padding:0 6px;border-bottom:1px solid rgba(212,168,67,0.4)}
+.opening-act-line .question{font-family:var(--font-ceremony);font-size:19px;color:var(--text-main);
+  font-weight:400;letter-spacing:0.08em;display:inline-block;margin-top:18px}
+/* Act 3 portraits */
+.opening-portraits{display:flex;justify-content:center;align-items:flex-end;gap:60px;margin-bottom:32px;min-height:320px}
+.opening-portrait{width:180px;position:relative;opacity:0;transition:opacity 1.4s ease,transform 1.4s ease}
+.opening-portrait.left{transform:translateX(-30px)}
+.opening-portrait.right{transform:translateX(30px)}
+.opening-act.show .opening-portrait{opacity:1;transform:translateX(0)}
+.opening-portrait img{width:100%;display:block;filter:drop-shadow(0 6px 20px rgba(0,0,0,0.7)) brightness(0.92)}
+.opening-portrait-name{text-align:center;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:0.15em;color:var(--text-main);margin-top:14px;padding-top:8px;
+  border-top:1px solid rgba(212,168,67,0.3)}
+/* skip link */
+.opening-skip{position:fixed;bottom:18px;right:22px;font-family:'Oswald',sans-serif;font-size:11px;
+  letter-spacing:2px;color:rgba(232,230,224,0.35);text-decoration:none;padding:6px 10px;
+  cursor:pointer;z-index:950;user-select:none;transition:color 0.3s}
+.opening-skip:hover{color:var(--gold)}
+.opening-click-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(232,230,224,0.25);
+  animation:opening-pulse 2.4s ease-in-out infinite}
+@keyframes opening-pulse{0%,100%{opacity:0.25}50%{opacity:0.6}}
+
+/* ============================================================
+   COMPLETION SCENE — DARK + CEREMONY (儀式に戻る)
+============================================================ */
+.completion-overlay{position:fixed;inset:0;z-index:900;
+  background:radial-gradient(ellipse at center,#1a1408 0%,#000 90%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 1.5s ease;padding:60px 20px}
+.completion-overlay.show{opacity:1;pointer-events:auto}
+.comp-vignette{position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.8) 100%),
+  repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(255,255,255,0.012) 2px,rgba(255,255,255,0.012) 3px);
+  pointer-events:none}
+.team-photo{display:flex;align-items:flex-end;justify-content:center;gap:4px;margin-bottom:50px;position:relative;z-index:2}
+.team-member{width:168px;opacity:0;transform:translateY(20px);transition:opacity 1s ease,transform 1s ease}
+.completion-overlay.show .team-member{opacity:1;transform:translateY(0)}
+.completion-overlay.show .team-member:nth-child(1){transition-delay:0.3s}
+.completion-overlay.show .team-member:nth-child(2){transition-delay:0.5s}
+.completion-overlay.show .team-member:nth-child(3){transition-delay:0.7s}
+.completion-overlay.show .team-member:nth-child(4){transition-delay:0.9s}
+.completion-overlay.show .team-member:nth-child(5){transition-delay:1.1s}
+.team-member img{width:100%;display:block;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.7)) brightness(0.95)}
+.team-member-name{text-align:center;font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:0.15em;color:var(--text-main);margin-top:12px;padding-top:6px;
+  border-top:1px solid rgba(212,168,67,0.3)}
+.team-member.fixed-mark .team-member-name{color:var(--gold)}
+.comp-text{text-align:center;font-family:var(--font-ceremony);opacity:0;transform:translateY(10px);
+  transition:opacity 1.2s ease 1.6s,transform 1.2s ease 1.6s;position:relative;z-index:2}
+.completion-overlay.show .comp-text{opacity:1;transform:translateY(0)}
+.comp-text .org-name{font-size:18px;letter-spacing:0.2em;color:var(--text-main);font-weight:500}
+.comp-text .start{font-size:32px;letter-spacing:0.4em;color:var(--gold);font-weight:700;display:block;margin-top:8px}
+
+/* ============================================================
+   DRAFT CREAM THEME — 新聞風レイアウト
+============================================================ */
+.draft-cream{background:linear-gradient(180deg,#ede8dc 0%,#e3dcc8 100%);min-height:100vh;padding:0}
+.draft-paper{max-width:980px;margin:30px auto 60px;
+  background:linear-gradient(180deg,#f0eada 0%,#e6dec5 100%);
+  border:1px solid rgba(120,84,39,0.32);border-radius:8px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.35);overflow:hidden;color:var(--cream-text-main)}
+.paper-bar{background:linear-gradient(90deg,var(--cream-red),#a82424);padding:10px 26px;
+  display:flex;align-items:center;justify-content:space-between}
+.paper-bar-name{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;color:#fff;letter-spacing:2px}
+.paper-bar-issue{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;color:#fff;letter-spacing:1.5px}
+.paper-caption{font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--cream-text-sub);
+  text-align:center;padding:14px 20px 8px;letter-spacing:0.04em;
+  border-bottom:1px dashed rgba(95,69,35,0.18)}
+.draft-narration{text-align:center;font-family:var(--font-ceremony);padding:36px 26px 28px;
+  border-bottom:3px double rgba(95,69,35,0.35);background:rgba(232,222,196,0.5)}
+.draft-narration p{font-size:18px;line-height:2;letter-spacing:0.1em;color:var(--cream-text-main)}
+.draft-narration .small{font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--cream-text-sub);
+  margin-top:16px;letter-spacing:0.05em}
+.draft-body{padding:26px 30px 36px}
+/* セクションラベル(新聞風) */
+.draft-sec-label{display:flex;align-items:center;gap:14px;margin:28px 0 16px}
+.draft-sec-label:first-child{margin-top:0}
+.draft-sec-label-en{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.4em;color:var(--cream-red);
+  font-weight:700;border-left:3px solid var(--cream-red);padding-left:12px;text-transform:uppercase}
+.draft-sec-label-jp{font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;
+  color:var(--cream-text-main);letter-spacing:0.06em}
+.draft-sec-label-rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(95,69,35,0.35),transparent)}
+/* Fighter cards (cream) */
+.draft-fc{background:var(--cream-bg-card);border:1px solid var(--cream-border);border-radius:6px;
+  padding:14px;display:flex;gap:14px;position:relative;transition:all 0.3s}
+.draft-fc.fixed::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:var(--cream-gold);border-radius:6px 0 0 6px}
+.draft-fc-portrait{width:100px;height:150px;background:var(--cream-portrait-bg);border-radius:4px;
+  overflow:hidden;flex-shrink:0;border:2px solid rgba(100,85,50,0.18)}
+.draft-fc-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 18%}
+.draft-fc-info{flex:1;min-width:0}
+.draft-fc-name-row{display:flex;align-items:baseline;margin-bottom:6px;gap:6px}
+.draft-fc-name{font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;color:var(--cream-text-main);letter-spacing:0.03em}
+.draft-fc-age{font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--cream-text-sub);margin-left:auto;margin-right:4px}
+.draft-fc-ovr{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cream-gold-dark);line-height:1;
+  display:inline-flex;align-items:baseline;gap:4px}
+.draft-fc-ovr-label{font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--cream-gold)}
+.draft-fc-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.draft-fc-tag{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:0.6px;padding:2px 6px;
+  border-radius:3px;font-weight:700;border:1px solid;text-transform:uppercase}
+.tag-cream-grappler{background:rgba(155,89,182,0.18);color:#6c3483;border-color:rgba(155,89,182,0.4)}
+.tag-cream-striker{background:rgba(231,76,60,0.18);color:#a93226;border-color:rgba(231,76,60,0.4)}
+.tag-cream-aerial{background:rgba(46,204,113,0.18);color:#196f3d;border-color:rgba(46,204,113,0.4)}
+.tag-cream-submission{background:rgba(230,126,34,0.18);color:#9c4a06;border-color:rgba(230,126,34,0.4)}
+.tag-cream-allround{background:rgba(200,160,10,0.20);color:#7d650a;border-color:rgba(200,160,10,0.45)}
+.tag-cream-brawler{background:rgba(192,57,43,0.18);color:#922b21;border-color:rgba(192,57,43,0.4)}
+.tag-cream-bf{background:rgba(74,143,212,0.18);color:#1f618d;border-color:rgba(74,143,212,0.4)}
+.tag-cream-heel{background:rgba(196,30,58,0.18);color:#922b3c;border-color:rgba(196,30,58,0.4)}
+.tag-cream-neutral{background:rgba(160,160,160,0.18);color:#555;border-color:rgba(160,160,160,0.4)}
+/* Stat bars (cream) */
+.draft-stat-bars{margin:8px 0 6px;display:flex;flex-direction:column;gap:3px}
+.draft-stat-row{display:flex;align-items:center;gap:7px}
+.draft-stat-key{font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;color:var(--cream-text-dim);width:18px;letter-spacing:0.5px}
+.draft-stat-bar{flex:1;height:4px;background:rgba(95,69,35,0.12);border-radius:2px;overflow:hidden}
+.draft-stat-bar-fill{height:100%;border-radius:2px}
+.draft-stat-val{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--cream-text-main);width:20px;text-align:right;line-height:1}
+.bar-cream-pw{background:#c0392b}.bar-cream-sp{background:#2471a3}.bar-cream-te{background:#1e8449}
+.bar-cream-st{background:#b9570d}.bar-cream-mn{background:#6c3483}
+/* Analysis */
+.draft-analysis{font-family:'Noto Sans JP',sans-serif;font-size:10px;color:var(--cream-text-dim);margin:4px 0 2px;line-height:1.5}
+.draft-analysis .strong{color:#196f3d;font-weight:700}
+.draft-analysis .weak{color:#922b21;font-weight:700}
+/* Coach quote */
+.draft-coach-quote{margin-top:8px;padding:8px 10px;background:rgba(122,101,48,0.08);
+  border:1px solid rgba(122,101,48,0.2);border-radius:4px;
+  font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--cream-text-sub);line-height:1.6;text-align:left}
+.draft-coach-quote::before{content:'記者の目';display:block;font-family:'Oswald',sans-serif;
+  font-size:8px;letter-spacing:1.5px;color:var(--cream-gold-dark);text-transform:uppercase;margin-bottom:3px;font-weight:700}
+/* Candidate cards (cream, vertical) */
+.draft-cand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.draft-fc.cand{cursor:pointer;flex-direction:column;align-items:stretch;padding:14px 12px 12px}
+.draft-fc.cand:hover{border-color:var(--cream-border-hover);transform:translateY(-2px);box-shadow:0 4px 16px rgba(95,69,35,0.18)}
+.draft-fc.cand.picked{border-color:var(--cream-gold);background:linear-gradient(180deg,#f4eed8,var(--cream-bg-card));
+  box-shadow:0 0 0 2px rgba(122,101,48,0.25)}
+.draft-fc.cand.picked::after{content:'PICKED';position:absolute;top:8px;right:8px;
+  font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1.5px;color:#fff;
+  background:var(--cream-gold);padding:2px 7px;border-radius:2px;font-weight:700}
+.draft-fc.cand .draft-fc-portrait{width:100%;height:auto;aspect-ratio:2/3;margin-bottom:12px}
+.draft-fc.cand.disabled{opacity:0.4;cursor:not-allowed}
+.draft-fc.cand.disabled:hover{transform:none;box-shadow:none}
+/* Contract fee */
+.draft-contract-fee{font-family:'Noto Sans JP',sans-serif;font-size:10px;color:var(--cream-text-dim);
+  margin-top:6px;letter-spacing:0.5px}
+.draft-contract-fee strong{font-family:'Bebas Neue',sans-serif;color:var(--cream-gold-dark);font-size:14px;letter-spacing:1px}
+/* Confirm area */
+.draft-confirm-area{margin-top:36px;text-align:center;padding:22px 0 4px;
+  border-top:3px double rgba(95,69,35,0.3)}
+.draft-confirm-area .budget-info{font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--cream-text-sub);
+  margin-bottom:18px;letter-spacing:0.05em}
+.draft-confirm-area .budget-info .num{font-family:'Bebas Neue',sans-serif;color:var(--cream-gold-dark);
+  font-size:18px;margin:0 4px}
+.btn-draft-confirm{background:linear-gradient(180deg,var(--cream-gold) 0%,var(--cream-gold-dark) 100%);
+  color:#fff;border:none;padding:14px 52px;font-family:'Noto Sans JP',sans-serif;font-size:15px;
+  font-weight:700;letter-spacing:0.3em;cursor:pointer;border-radius:4px;
+  box-shadow:0 4px 14px rgba(95,69,35,0.35);transition:all 0.2s}
+.btn-draft-confirm:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(95,69,35,0.45)}
+.btn-draft-confirm:disabled{opacity:0.35;cursor:not-allowed;transform:none;box-shadow:none}
+/* Roster grid (cream) */
+.draft-roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* Responsive */
+@media(max-width:900px){
+  .draft-cand-grid{grid-template-columns:1fr 1fr}
+  .draft-roster-grid{grid-template-columns:1fr}
+  .team-photo{gap:2px}
+  .team-member{width:18%;min-width:60px}
+  .opening-portraits{gap:30px}
+  .opening-portrait{width:130px}
+  .draft-paper{margin:20px 12px 40px}
+  .draft-body{padding:20px 18px 28px}
+}
 </style>
 </head>
 <body>

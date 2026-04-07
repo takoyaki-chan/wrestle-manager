@@ -129,9 +129,15 @@ function refreshTopBar() {
   // Org icon in top bar
   const orgIconEl = document.getElementById('dispOrgIcon');
   if (orgIconEl) orgIconEl.innerHTML = orgIconHtml('player', 24);
-  // Hide nav during draft
+  // Hide nav during draft/opening
   const navBar = document.querySelector('.nav-bar');
-  if (navBar) navBar.style.display = (G.weekPhase === 'draft') ? 'none' : '';
+  if (navBar) navBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
+  // Hide top bar during opening
+  const topBar = document.querySelector('.top-bar');
+  if (topBar) topBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
+  // Cream theme for draft
+  const appEl = document.querySelector('.app');
+  if (appEl) { G.weekPhase === 'draft' ? appEl.classList.add('draft-cream') : appEl.classList.remove('draft-cream'); }
   const dateEl = document.getElementById('dispDate');
   if (dateEl) {
     if (G.offSeason) {
@@ -183,13 +189,156 @@ function refreshTopBar() {
   champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:12px">${portraitImg(champ.id, 80)}<span style="font-size:16px">🏆 ${fLink(champ, {source:'roster', bold:false, size:'16px'})} (${G.titles.world.defenses}防衛)</span></span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
 }
 
+// ╔══════════════════════════════════════════════════╗
+// ║  OPENING SCENE — 社長就任の儀式                    ║
+// ╚══════════════════════════════════════════════════╝
+let _openingAct = 0;
+let _openingOverlay = null;
+
+function renderOpeningScreen() {
+  const el = document.getElementById('weekContent');
+  el.innerHTML = ''; // 本体は空 — オーバーレイで描画
+
+  // 既存オーバーレイがあれば除去
+  if (_openingOverlay) { _openingOverlay.remove(); _openingOverlay = null; }
+
+  const orgName = G.orgName || 'プレイヤー団体';
+  const fixed = Engine.draft.getFixedInfo();
+  const name1 = fixed[0]?.name || '???';
+  const name2 = fixed[1]?.name || '???';
+  const upper1 = getUpperUrl(fixed[0]?.id);
+  const upper2 = getUpperUrl(fixed[1]?.id);
+
+  _openingAct = 0;
+
+  // ── Acts データ ──
+  const acts = [
+    // 幕1: 旗を揚げる
+    `<div class="opening-act" id="openingAct0">
+      <div class="opening-act-line">
+        今、ひとつの団体が旗を揚げようとしている。<br>
+        団体の名は「<span class="org">${orgName}</span>」。
+      </div>
+    </div>`,
+    // 幕2: 弱小団体としての宣言
+    `<div class="opening-act" id="openingAct1">
+      <div class="opening-act-line">
+        後ろ盾があるわけではない。<br>
+        期待されているわけでもない。<br>
+        いつまで経営が続くかわからない弱小団体。
+      </div>
+      <div class="opening-act-line question">
+        業界へ爪痕を残すことはできるだろうか。
+      </div>
+    </div>`,
+    // 幕3: 仲間の紹介
+    `<div class="opening-act" id="openingAct2">
+      <div class="opening-portraits">
+        <div class="opening-portrait left">
+          ${upper1 ? `<img src="${upper1}" alt="${name1}">` : ''}
+          <div class="opening-portrait-name">${name1}</div>
+        </div>
+        <div class="opening-portrait right">
+          ${upper2 ? `<img src="${upper2}" alt="${name2}">` : ''}
+          <div class="opening-portrait-name">${name2}</div>
+        </div>
+      </div>
+      <div class="opening-act-line">
+        新団体旗揚げの噂を聞きつけ、集まったのは2名。<br>
+        <span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name1}</span>と<span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name2}</span>。<br>
+        彼女たちと共に、ここから業界への挑戦が始まる。
+      </div>
+    </div>`,
+    // 幕4: ドラフトへの導入
+    `<div class="opening-act" id="openingAct3">
+      <div class="opening-act-line">
+        さらに3名。<br>
+        立ち上げメンバーを選びに行こう。
+      </div>
+    </div>`
+  ];
+
+  // ── オーバーレイ構築 ──
+  const overlay = document.createElement('div');
+  overlay.className = 'opening-overlay';
+  overlay.innerHTML = `
+    <div class="opening-vignette"></div>
+    ${acts.join('')}
+    <div class="opening-click-hint">CLICK TO CONTINUE</div>
+  `;
+  document.body.appendChild(overlay);
+  _openingOverlay = overlay;
+
+  // skip リンク
+  const skip = document.createElement('div');
+  skip.className = 'opening-skip';
+  skip.textContent = '>> skip';
+  skip.onclick = (e) => { e.stopPropagation(); _finishOpening(); };
+  document.body.appendChild(skip);
+  overlay._skipEl = skip;
+
+  // クリックで進行
+  overlay.addEventListener('click', _advanceOpening);
+
+  // ESCキーでスキップ
+  overlay._escHandler = (e) => { if (e.key === 'Escape') _finishOpening(); };
+  document.addEventListener('keydown', overlay._escHandler);
+
+  // 幕1をフェードイン
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const act0 = document.getElementById('openingAct0');
+      if (act0) act0.classList.add('show');
+    });
+  });
+}
+
+function _advanceOpening() {
+  _openingAct++;
+  if (_openingAct >= 4) {
+    _finishOpening();
+    return;
+  }
+  // 前の幕をフェードアウト、次の幕をフェードイン
+  for (let i = 0; i < 4; i++) {
+    const actEl = document.getElementById('openingAct' + i);
+    if (!actEl) continue;
+    if (i === _openingAct) {
+      actEl.style.display = '';
+      requestAnimationFrame(() => { requestAnimationFrame(() => { actEl.classList.add('show'); }); });
+    } else {
+      actEl.classList.remove('show');
+      setTimeout(() => { actEl.style.display = 'none'; }, 400);
+    }
+  }
+}
+
+function _finishOpening() {
+  // クリーンアップ
+  if (_openingOverlay) {
+    if (_openingOverlay._escHandler) document.removeEventListener('keydown', _openingOverlay._escHandler);
+    if (_openingOverlay._skipEl) _openingOverlay._skipEl.remove();
+    _openingOverlay.classList.add('hidden');
+    setTimeout(() => { if (_openingOverlay) { _openingOverlay.remove(); _openingOverlay = null; } }, 900);
+  }
+  // draft フェーズに遷移
+  G.weekPhase = 'draft';
+  refreshAll();
+}
+
 function renderWeekScreen() {
   const el = document.getElementById('weekContent');
   let html = '';
 
-  // ── DRAFT PHASE ──
+  // ── OPENING PHASE ──
+  if (G.weekPhase === 'opening') {
+    renderOpeningScreen();
+    return;
+  }
+
+  // ── DRAFT PHASE (CREAM THEME) ──
   if (G.weekPhase === 'draft') {
-    document.getElementById('weekTitle').textContent = '📋 初期ドラフト — チームを編成せよ';
+    document.getElementById('weekTitle').textContent = '';
     const fixed = Engine.draft.getFixedInfo();
     const candidates = Engine.draft.getCandidateInfo();
     const picks = G._draftPicks || [];
@@ -197,17 +346,17 @@ function renderWeekScreen() {
 
     // ── Helpers ──
     const STYLE_META = {
-      Grappler:   {color:'#bb8fce',icon:'GRP',desc:'投げ技と関節技を軸にした正統派。パワーとテクニックに優れる'},
-      Striker:    {color:'#e74c3c',icon:'STK',desc:'打撃主体のファイター。パワーとスピードで圧倒する'},
-      Submission: {color:'#e67e22',icon:'SUB',desc:'関節技のスペシャリスト。テクニックで相手を仕留める'},
-      Aerial:     {color:'#2ecc71',icon:'AER',desc:'空中殺法と俊敏な動きで試合をコントロール'},
-      Allround:   {color:'#f1c40f',icon:'ALL',desc:'万能型。突出した弱点がなく安定した試合運びが可能'},
-      Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者'}
+      Grappler:   {color:'#bb8fce',icon:'GRP',desc:'投げ技と関節技を軸にした正統派。パワーとテクニックに優れる',cream:'tag-cream-grappler'},
+      Striker:    {color:'#e74c3c',icon:'STK',desc:'打撃主体のファイター。パワーとスピードで圧倒する',cream:'tag-cream-striker'},
+      Submission: {color:'#e67e22',icon:'SUB',desc:'関節技のスペシャリスト。テクニックで相手を仕留める',cream:'tag-cream-submission'},
+      Aerial:     {color:'#2ecc71',icon:'AER',desc:'空中殺法と俊敏な動きで試合をコントロール',cream:'tag-cream-aerial'},
+      Allround:   {color:'#f1c40f',icon:'ALL',desc:'万能型。突出した弱点がなく安定した試合運びが可能',cream:'tag-cream-allround'},
+      Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者',cream:'tag-cream-brawler'}
     };
     const ROLE_META = {
-      Babyface: {color:'#8bc4f0',label:'ベビーフェイス',icon:'BF'},
-      Heel:     {color:'#f08b9e',label:'ヒール',icon:'HL'},
-      Neutral:  {color:'#b0b8c4',label:'ニュートラル',icon:'NT'}
+      Babyface: {color:'#8bc4f0',label:'ベビーフェイス',icon:'BF',cream:'tag-cream-bf'},
+      Heel:     {color:'#f08b9e',label:'ヒール',icon:'HL',cream:'tag-cream-heel'},
+      Neutral:  {color:'#b0b8c4',label:'ニュートラル',icon:'NT',cream:'tag-cream-neutral'}
     };
 
     function makeAvatar(c, size) {
@@ -226,27 +375,23 @@ function renderWeekScreen() {
       </div>`;
     }
 
-    function makeStatBars(c, compact) {
+    // ── Cream theme helpers ──
+    function makeCreamStatBars(c) {
       const stats = [
-        {key:'pw',label:'パワー',   short:'PW',color:'#e74c3c'},
-        {key:'sp',label:'スピード', short:'SP',color:'#3498db'},
-        {key:'te',label:'テクニック',short:'TE',color:'#2ecc71'},
-        {key:'st',label:'スタミナ', short:'ST',color:'#f39c12'},
-        {key:'mn',label:'マインド', short:'MN',color:'#9b59b6'}
+        {key:'pw',short:'PW',cls:'bar-cream-pw'},
+        {key:'sp',short:'SP',cls:'bar-cream-sp'},
+        {key:'te',short:'TE',cls:'bar-cream-te'},
+        {key:'st',short:'ST',cls:'bar-cream-st'},
+        {key:'mn',short:'MN',cls:'bar-cream-mn'}
       ];
-      const h = compact ? 4 : 6;
-      return stats.map(s => {
-        const val = c[s.key];
-        const w = Math.min(100, val);
-        const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text-sub)' : 'var(--text-dim)';
-        return `<div style="display:flex;align-items:center;gap:${compact?4:6}px">
-          <span style="font-size:${compact?9:10}px;color:var(--text-dim);width:${compact?16:52}px;text-align:right">${compact ? s.short : s.label}</span>
-          <div style="flex:1;height:${h}px;background:rgba(200,190,170,0.08);border-radius:${h/2}px;overflow:hidden">
-            <div style="width:${w}%;height:100%;background:${s.color};border-radius:${h/2}px;transition:width 0.3s"></div>
-          </div>
-          <span style="font-size:${compact?10:11}px;color:${valColor};width:24px;text-align:right;font-weight:${val>=75?700:400}">${val}</span>
+      return `<div class="draft-stat-bars">${stats.map(s => {
+        const val = c[s.key]; const w = Math.min(100, val);
+        return `<div class="draft-stat-row">
+          <span class="draft-stat-key">${s.short}</span>
+          <div class="draft-stat-bar"><div class="draft-stat-bar-fill ${s.cls}" style="width:${w}%"></div></div>
+          <span class="draft-stat-val">${val}</span>
         </div>`;
-      }).join('');
+      }).join('')}</div>`;
     }
 
     function analyzeStrengths(c) {
@@ -255,239 +400,141 @@ function renderWeekScreen() {
       const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
       const best = sorted.slice(0,2).filter(([,v]) => v >= 50);
       const worst = sorted.slice(-1).filter(([,v]) => v < 60);
-      let strengths = best.map(([k,v]) => `<span style="color:#2ecc71">${labels[k]}${v}</span>`);
-      let weaknesses = worst.map(([k,v]) => `<span style="color:#e74c3c">${labels[k]}${v}</span>`);
-      return {strengths, weaknesses};
+      return {
+        strengths: best.map(([k,v]) => `<span class="strong">${labels[k]}${v}</span>`),
+        weaknesses: worst.map(([k,v]) => `<span class="weak">${labels[k]}${v}</span>`)
+      };
     }
-
-    // ── Header ──
-    html += `<div style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(0,0,0,0));border:1px solid rgba(212,168,67,0.3);border-radius:10px">
-      <p style="color:var(--gold);font-weight:700;margin-bottom:6px;font-size:15px">🏢 ${G.orgName || 'プレイヤー団体'} — 初期ドラフト</p>
-      <p style="color:var(--text-sub);font-size:13px;line-height:1.7">
-        あなたの団体には2名の所属選手がいます。候補6名の中から<strong style="color:var(--text)">3名</strong>を選んで、5名の所属選手でシーズンを始めましょう。<br>
-        <span style="font-size:12px;color:var(--text-dim)">能力値は入団時の推定値です。実際の値とは異なる場合があります。将来性の評価はコーチ不在のため大きくブレる場合があります。</span><br>
-        <span style="font-size:12px;color:var(--gold)">💡 ヒント: 契約金が高い選手には、それだけの理由があるかもしれません。</span>
-      </p>
-    </div>`;
-
-    // ── Fixed Members ──
-    html += `<h4 style="color:var(--gold);margin-bottom:10px;font-size:13px;display:flex;align-items:center;gap:6px">
-      <span style="background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:700">確定</span>
-      固定メンバー（2名）
-    </h4>`;
-    for (const c of fixed) {
-      const sm = STYLE_META[c.style] || STYLE_META.Allround;
-      const rm = ROLE_META[c.role] || ROLE_META.Neutral;
-      const {strengths, weaknesses} = analyzeStrengths(c);
-      const pUrl = getPortraitUrl(c.id);
-      const profileText = CHAR_PROFILES[c.id] || '';
-      html += `<div style="margin-bottom:10px;padding:14px;background:var(--bg-card);border-radius:8px;border:1px solid rgba(212,168,67,0.2)">
-        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:10px">
-          ${pUrl
-            ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid ${sm.color}66;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.3)" alt="${c.name}">`
-            : makeAvatar(c, 80)}
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-              <span style="font-weight:700;font-size:15px">${c.name}</span>
-              <span style="font-size:22px;font-weight:900;color:var(--gold)">${c.ovr}</span>
-            </div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
-              <span class="badge badge-${c.style}">${c.style}</span>
-              <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}">${rm.label}</span>
-              <span style="font-size:12px;color:var(--text-dim);padding:2px 6px">${c.h}cm</span>
-              <span style="font-size:12px;color:${c.coachEval.color};padding:2px 6px">${c.coachEval.emoji} ${c.coachEval.text}</span>
-            </div>
-            ${profileText ? `<div style="font-size:12px;color:var(--text-sub);line-height:1.6">📝 ${profileText}</div>` : ''}
-          </div>
-        </div>
-        <div style="display:grid;gap:4px;margin-bottom:8px">${makeStatBars(c, false)}</div>
-        <div style="font-size:11px;color:var(--text-dim);line-height:1.5">
-          ${strengths.length ? '💪 強み: ' + strengths.join(', ') : ''}
-          ${weaknesses.length ? (strengths.length ? ' ｜ ' : '') + '⚠️ 課題: ' + weaknesses.join(', ') : ''}
-        </div>
-      </div>`;
-    }
-
-    // ── Candidate Selection ──
-    html += `<h4 style="color:#3498db;margin:20px 0 10px;font-size:13px;display:flex;align-items:center;gap:6px">
-      <span style="background:#3498db;color:var(--bg);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:700">選択</span>
-      候補選手（${picks.length}/${DRAFT_CONFIG.pickCount}名選択済）
-    </h4>`;
 
     // §3.5: 現在の選択コストを事前計算
     const currentCost = Engine.draft.getSelectionCost(G.rngSeed || 42, picks);
     const remainingBudget = (G.funds || 0) - currentCost;
+    const orgName = G.orgName || 'プレイヤー団体';
 
+    // ── Draft paper wrapper ──
+    html += `<div class="draft-paper">`;
+
+    // 新聞バー
+    html += `<div class="paper-bar">
+      <span class="paper-bar-name">WRESTLING OBSERVER</span>
+      <span class="paper-bar-issue">SPECIAL EDITION</span>
+    </div>`;
+
+    // キャプション
+    html += `<div class="paper-caption">数字は推定値。本当の姿は、リングの上でしか分からない。</div>`;
+
+    // 持ち越しナレーション
+    html += `<div class="draft-narration">
+      <p>さらに3名。<br>立ち上げメンバーを選びに行こう。</p>
+      <div class="small">候補6名の中から3名を選び、5名の所属選手でシーズンを開始する</div>
+    </div>`;
+
+    html += `<div class="draft-body">`;
+
+    // ── FIRST ROSTER — 設立メンバー ──
+    html += `<div class="draft-sec-label">
+      <span class="draft-sec-label-en">FIRST ROSTER</span>
+      <span class="draft-sec-label-jp">設立メンバー</span>
+      <span class="draft-sec-label-rule"></span>
+    </div>`;
+
+    html += `<div class="draft-roster-grid">`;
+    for (const c of fixed) {
+      const sm = STYLE_META[c.style] || STYLE_META.Allround;
+      const rm = ROLE_META[c.role] || ROLE_META.Neutral;
+      const {strengths, weaknesses} = analyzeStrengths(c);
+      const upperUrl = getUpperUrl(c.id);
+      html += `<div class="draft-fc fixed">
+        <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
+        <div class="draft-fc-info">
+          <div class="draft-fc-name-row">
+            <span class="draft-fc-name">${c.name}</span>
+            <span class="draft-fc-age">${c.age || 17}歳 / ${c.h}cm</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <span class="draft-fc-ovr-label">OVR</span>
+            <span class="draft-fc-ovr">${c.ovr}</span>
+          </div>
+          <div class="draft-fc-meta">
+            <span class="draft-fc-tag ${sm.cream}">${c.style}</span>
+            <span class="draft-fc-tag ${rm.cream}">${rm.label}</span>
+          </div>
+          ${makeCreamStatBars(c)}
+          <div class="draft-analysis">
+            ${strengths.length ? '強み: ' + strengths.join(', ') : ''}
+            ${weaknesses.length ? (strengths.length ? ' / ' : '') + '課題: ' + weaknesses.join(', ') : ''}
+          </div>
+          <div class="draft-coach-quote">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
+        </div>
+      </div>`;
+    }
+    html += `</div>`; // roster-grid
+
+    // ── CANDIDATES — 候補選手 ──
+    html += `<div class="draft-sec-label">
+      <span class="draft-sec-label-en">CANDIDATES</span>
+      <span class="draft-sec-label-jp">候補選手（${picks.length}/${DRAFT_CONFIG.pickCount}名選択済）</span>
+      <span class="draft-sec-label-rule"></span>
+    </div>`;
+
+    html += `<div class="draft-cand-grid">`;
     for (const c of candidates) {
       const picked = picks.includes(c.id);
       const full = picks.length >= DRAFT_CONFIG.pickCount && !picked;
       const tooExpensive = !picked && (c.assessedValue || 0) > remainingBudget;
       const disabled = full || tooExpensive;
-      const focused = focusId === c.id;
       const sm = STYLE_META[c.style] || STYLE_META.Allround;
       const rm = ROLE_META[c.role] || ROLE_META.Neutral;
       const {strengths, weaknesses} = analyzeStrengths(c);
+      const upperUrl = getUpperUrl(c.id);
 
-      const borderCol = picked ? '#2ecc71' : focused ? '#3498db' : 'var(--border)';
-      const bgCol = picked ? 'rgba(46,204,113,0.06)' : focused ? 'rgba(52,152,219,0.04)' : 'var(--bg-card)';
-
-      html += `<div style="margin-bottom:8px;border-radius:8px;border:1px solid ${borderCol};background:${bgCol};overflow:hidden;opacity:${disabled?0.45:1};transition:all 0.2s">`;
-
-      if (!focused) {
-        // ── Collapsed summary row ──
-        html += `<div style="display:flex;align-items:center;gap:14px;padding:14px;cursor:${disabled?'not-allowed':'pointer'}"
-          onclick="${disabled ? '' : `App.focusDraftCandidate(${c.id})`}">
-          ${portraitImg(c.id, 80)}
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="font-weight:700;font-size:17px">${c.name}</span>
-              ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">✓ 選択中</span>' : ''}
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-              <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
-            </div>
+      html += `<div class="draft-fc cand${picked ? ' picked' : ''}${disabled ? ' disabled' : ''}"
+        onclick="${disabled ? '' : `App.toggleDraftPick(${c.id})`}">
+        <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
+        <div class="draft-fc-info">
+          <div class="draft-fc-name-row">
+            <span class="draft-fc-name">${c.name}</span>
+            <span class="draft-fc-age">${c.age || 17}歳</span>
           </div>
-          <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
-            <div style="text-align:center;min-width:52px">
-              <div style="font-size:24px;font-weight:900;color:${picked?'#2ecc71':'var(--text)'}">${c.ovr}</div>
-              <div style="font-size:10px;color:var(--text-dim)">OVR</div>
-              <div style="font-size:10px;color:${c.coachEval.color};margin-top:2px">${c.coachEval.emoji} ${c.coachEval.text}</div>
-            </div>
-            <div style="text-align:center;min-width:52px">
-              <div style="font-size:22px;font-weight:900;color:var(--gold)">${c.assessedValue || 0}</div>
-              <div style="font-size:10px;color:var(--gold)">契約金(万)</div>
-              ${tooExpensive ? '<div style="font-size:10px;color:#e74c3c;font-weight:700;margin-top:2px">資金不足</div>' : ''}
-            </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <span class="draft-fc-ovr-label">OVR</span>
+            <span class="draft-fc-ovr">${c.ovr}</span>
           </div>
-          <div style="font-size:18px;color:var(--text-dim)">▼</div>
-        </div>`;
-      } else {
-        // ── Expanded detail panel (replaces summary row) ──
-        const pUrl = getPortraitUrl(c.id);
-        const profileText = CHAR_PROFILES[c.id] || '';
-        html += `<div style="padding:14px;cursor:pointer" onclick="App.focusDraftCandidate(${c.id})">
-          <!-- 2-column layout: left=profile, right=stats -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-            <!-- Left: Portrait + Profile -->
-            <div>
-              <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px">
-                ${pUrl
-                  ? `<img src="${pUrl}" style="width:100px;height:100px;border-radius:10px;object-fit:cover;border:2px solid ${sm.color}66;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.4)" alt="${c.name}">`
-                  : `<div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:2px solid ${sm.color}66;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                      <span style="font-size:40px;font-weight:900;color:${sm.color}">${c.name.charAt(0)}</span>
-                    </div>`}
-                <div style="min-width:0">
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-                    <span style="font-weight:900;font-size:18px">${c.name}</span>
-                    ${picked ? '<span style="color:#2ecc71;font-size:12px;font-weight:700">✓ 選択中</span>' : ''}
-                  </div>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
-                    <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-                    <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${rm.label}</span>
-                  </div>
-                  <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
-                    <div>📏 ${c.h}cm ｜ 📅 ${c.age || 17}歳</div>
-                    <div style="color:${c.coachEval.color}">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
-                  </div>
-                  <div style="margin-top:6px;display:flex;align-items:baseline;gap:10px">
-                    <span style="font-size:26px;font-weight:900;color:var(--text)">${c.ovr}</span>
-                    <span style="font-size:12px;color:var(--text-dim)">OVR</span>
-                    <span style="font-size:14px;font-weight:700;color:var(--gold)">💰 ${c.assessedValue || 0}万</span>
-                  </div>
-                </div>
-              </div>
-              ${profileText ? `<div style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(200,190,170,0.03);border-radius:6px;border-left:3px solid ${sm.color}44">
-                📝 ${profileText}
-              </div>` : `<div style="font-size:13px;color:var(--text-sub);line-height:1.5;padding:8px 0">
-                ${sm.desc}
-              </div>`}
-            </div>
-            <!-- Right: Stats + Analysis -->
-            <div>
-              <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:700">ABILITY</div>
-              <div style="display:grid;gap:5px;margin-bottom:14px;max-width:240px">${makeStatBars(c, false)}</div>
-              <div style="font-size:13px;line-height:1.7">
-                ${strengths.length ? '💪 <span style="color:var(--text-sub)">強み:</span> ' + strengths.join(', ') : ''}
-                ${weaknesses.length ? '<br>⚠️ <span style="color:var(--text-sub)">課題:</span> ' + weaknesses.join(', ') : ''}
-              </div>
-            </div>
+          <div class="draft-fc-meta">
+            <span class="draft-fc-tag ${sm.cream}">${c.style}</span>
+            <span class="draft-fc-tag ${rm.cream}">${rm.label}</span>
           </div>
-          <!-- v1.0: Character speech bubble -->
-          <div style="margin-bottom:12px;padding:12px 16px;background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:10px;position:relative">
-            <div style="position:absolute;top:-6px;left:20px;width:12px;height:12px;background:rgba(52,152,219,0.06);border-top:1px solid rgba(52,152,219,0.2);border-left:1px solid rgba(52,152,219,0.2);transform:rotate(45deg)"></div>
-            <div style="font-size:14px;color:var(--text-main);line-height:1.6;font-style:italic">
-              「${getDraftInterestLine(c)}」
-            </div>
+          ${makeCreamStatBars(c)}
+          <div class="draft-analysis">
+            ${strengths.length ? '強み: ' + strengths.join(', ') : ''}
+            ${weaknesses.length ? (strengths.length ? ' / ' : '') + '課題: ' + weaknesses.join(', ') : ''}
           </div>
-          <!-- Action buttons -->
-          <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
-            <button class="btn ${picked ? '' : tooExpensive ? '' : 'btn-gold'}" style="flex:1;padding:10px;font-size:13px;font-weight:700;${tooExpensive && !picked ? 'opacity:0.4;cursor:not-allowed' : ''}"
-              onclick="App.toggleDraftPick(${c.id})" ${tooExpensive && !picked ? 'disabled' : ''}>
-              ${picked ? '✕ 選択を取り消す' : tooExpensive ? '💰 資金不足' : '✓ この選手を獲得する'}
-            </button>
-            <button class="btn" style="padding:10px 16px;font-size:13px" onclick="App.focusDraftCandidate(${c.id})">▲ 閉じる</button>
-          </div>
-        </div>`;
-      }
-
-      html += `</div>`;
+          <div class="draft-coach-quote">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
+          <div class="draft-contract-fee">契約金: <strong>${c.assessedValue || 0}</strong> 万
+            ${tooExpensive ? '<span style="color:#922b21;font-weight:700;margin-left:6px">資金不足</span>' : ''}</div>
+        </div>
+      </div>`;
     }
+    html += `</div>`; // cand-grid
 
-    // ── Team Preview ──
-    const PREVIEW_RATIO = 0.60;
-    const allIds = [...DRAFT_CONFIG.fixed, ...picks];
-    const allChars = allIds.map(id => {
-      const t = ALL_CHARS.find(c => c.id === id);
-      const entryVals = {pw:Math.round(t.pw*PREVIEW_RATIO),sp:Math.round(t.sp*PREVIEW_RATIO),te:Math.round(t.te*PREVIEW_RATIO),st:Math.round(t.st*PREVIEW_RATIO),mn:t.mn};
-      const ovr = Math.round((entryVals.pw+entryVals.sp+entryVals.te+entryVals.st+entryVals.mn)/5);
-      const sm = STYLE_META[t.style] || STYLE_META.Allround;
-      return { name: t.name, ovr, style: t.style, icon: sm.icon, color: sm.color };
-    });
-    const avgOvr = allChars.length ? Math.round(allChars.reduce((s,c) => s + c.ovr, 0) / allChars.length) : 0;
-
-    html += `<div style="margin-top:20px;padding:14px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)">
-      <h4 style="margin-bottom:10px;font-size:13px">📊 チームプレビュー</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        ${allChars.map(c =>
-          `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(200,190,170,0.04);border:1px solid ${c.color}33;border-radius:5px">
-            <span style="font-size:12px">${c.icon}</span>
-            <span style="font-size:12px">${c.name}</span>
-            <span style="font-size:12px;font-weight:700;color:${c.color}">${c.ovr}</span>
-          </div>`
-        ).join('')}
-        ${picks.length < DRAFT_CONFIG.pickCount ?
-          Array(DRAFT_CONFIG.pickCount - picks.length).fill(0).map(() =>
-            `<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(200,190,170,0.02);border:1px dashed var(--border);border-radius:5px">
-              <span style="font-size:12px;color:var(--text-dim)">？ 未選択</span>
-            </div>`
-          ).join('') : ''
-        }
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-size:13px;color:var(--text-sub)">平均OVR</span>
-        <span style="font-size:20px;font-weight:900;color:var(--gold)">${avgOvr}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--border)">
-        <span style="font-size:13px;color:var(--text-sub)">💰 契約金合計</span>
-        <span style="font-size:14px;font-weight:700;color:var(--gold)">${currentCost}万</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:13px;color:var(--text-sub)">💼 残り資金</span>
-        <span style="font-size:14px;font-weight:700;color:${remainingBudget < 1000 ? '#e74c3c' : 'var(--text)'}">${remainingBudget}万</span>
-      </div>
-    </div>`;
-
-    // ── Confirm Button ──
+    // ── Confirm area ──
     const canConfirm = picks.length === DRAFT_CONFIG.pickCount;
     const canAfford = Engine.draft.canAffordSelection(G, picks, G.rngSeed);
     const confirmReady = canConfirm && canAfford;
-    html += `<button class="btn ${confirmReady ? 'btn-gold' : ''}" style="width:100%;margin-top:16px;padding:16px;font-size:15px;font-weight:700;border-radius:8px;${confirmReady ? '' : 'opacity:0.35;cursor:not-allowed'}"
-      ${confirmReady ? 'onclick="App.completeDraft()"' : 'disabled'}>
-      ${!canConfirm ? `あと${DRAFT_CONFIG.pickCount - picks.length}名選んでください` :
-        !canAfford ? '💰 資金不足 — より安い候補を選んでください' :
-        `✅ この5名でシーズン開始！（契約金: ${currentCost}万）`}
-    </button>`;
+
+    html += `<div class="draft-confirm-area">
+      <div class="budget-info">
+        契約金合計 <span class="num">${currentCost}</span> 万 ／ 残り資金 <span class="num">${remainingBudget}</span> 万
+      </div>
+      <button class="btn-draft-confirm" ${confirmReady ? 'onclick="App.completeDraft()"' : 'disabled'}>
+        ${!canConfirm ? `あと${DRAFT_CONFIG.pickCount - picks.length}名選んでください` :
+          !canAfford ? '資金不足 — より安い候補を選んでください' :
+          `この5名でシーズン開始`}
+      </button>
+    </div>`;
+
+    html += `</div>`; // draft-body
+    html += `</div>`; // draft-paper
 
     el.innerHTML = html;
     return;

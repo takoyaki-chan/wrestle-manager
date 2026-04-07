@@ -155,5 +155,6 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | title-system-spec-v1.0.md | タイトル3階級/防衛/挑戦権 |
 | trust-system-spec-v2.1.md | 信頼度（出場/ケア/士気/待遇不満） |
 | venue-attendance-spec-v2.0.md | 会場10段/集客計算/勢い/予測 |
+| opening-sequence-spec-v1.0.md | オープニングシーン4幕+初期ドラフトクリームテーマ+完了演出 |
 | weekly-gameloop-spec-v1_0.md | 週次ループ/シーズン構成/オフウィーク |
 | 技テーブル_全160技_v3_5.md | 全160技のデータテーブル |

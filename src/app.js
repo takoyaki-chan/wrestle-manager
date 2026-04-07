@@ -862,7 +862,7 @@ const Audio = (() => {
     // ── Smart BGM selector based on game state ──
     playForState() {
       if (!G) return;
-      if (G.weekPhase === 'draft') { BGM.play('kaimaku'); return; }
+      if (G.weekPhase === 'draft' || G.weekPhase === 'opening') { BGM.play('kaimaku'); return; }
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
       if (G.weekPhase === 'event') {
@@ -2671,7 +2671,7 @@ const App = {
     document.getElementById('difficultyScreen').style.display = 'none';
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
-    G = { ...G, orgName: _pendingOrgName, playerOrgIcon: _pendingOrgIcon, difficultyMode: _selectedDifficulty, _draftPicks: [], _draftFocus: null, gameLog: [] };
+    G = { ...G, orgName: _pendingOrgName, playerOrgIcon: _pendingOrgIcon, difficultyMode: _selectedDifficulty, weekPhase: 'opening', _draftPicks: [], _draftFocus: null, gameLog: [] };
     Audio.bgm.play('kaimaku');
     refreshAll();
   },
@@ -2734,29 +2734,68 @@ const App = {
       return;
     }
     Audio.play('award');
-    Audio.bgm.play('management');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
     // NPC記録統一 Part C: 全選手の経歴自動生成（ドラフト完了後・ゲーム本編開始前）
     G = Engine.career.generateAllBackstories(G);
     // Phase 1: 人間関係データ基盤 — 全ペアの初期値生成
     G = Engine.relationships.initialize(G);
-    // Show welcome popups for drafted fighters with character-specific quotes
-    const drafted = G.roster.filter(c => picks.includes(c.id));
     // v1.3: Record debut event for drafted fighters（経歴生成後に上書き — プレイヤー団体デビューを正式記録）
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
       ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
       : c) };
-    drafted.forEach((c, i) => {
-      const quote = getDraftQuote(c);
-      setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'positive',
-        message: quote, detail:`${c.name}（${c.style}/${c.role}）が入団！ OVR ${ov(c)}` }), i * 100);
-    });
     delete G._draftPicks;
     delete G._draftFocus;
     sessionRng = Engine.rng.create(G.rngSeed);
-    Storage.autoSave();
-    refreshAll();
+
+    // ── 完了演出: 5名横並び集合写真 ──
+    const orgName = G.orgName || 'プレイヤー団体';
+    // 並び順: 固定メンバー左 → 選択3名 → 固定メンバー右
+    const fixedIds = DRAFT_CONFIG.fixed;
+    const teamOrder = [fixedIds[0], ...picks, fixedIds[1]];
+    const teamMembers = teamOrder.map(id => {
+      const c = G.roster.find(r => r.id === id) || ALL_CHARS.find(r => r.id === id);
+      return { id, name: c ? c.name : '???', isFixed: fixedIds.includes(id) };
+    });
+
+    const overlay = document.createElement('div');
+    overlay.className = 'completion-overlay';
+    overlay.innerHTML = `
+      <div class="comp-vignette"></div>
+      <div class="team-photo">
+        ${teamMembers.map(m => {
+          const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(m.id) : '';
+          return `<div class="team-member${m.isFixed ? ' fixed-mark' : ''}">
+            ${upperUrl ? `<img src="${upperUrl}" alt="${m.name}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
+            <div class="team-member-name">${m.name}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="comp-text">
+        <span class="org-name">${orgName}</span>
+        <span class="start">始動</span>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // フェードイン
+    requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.classList.add('show'); }); });
+
+    // クリームテーマをクリーンアップ
+    const appEl = document.querySelector('.app');
+    if (appEl) appEl.classList.remove('draft-cream');
+
+    // クリックで本編へ
+    overlay.addEventListener('click', () => {
+      overlay.style.transition = 'opacity 1s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+        Audio.bgm.play('management');
+        Storage.autoSave();
+        refreshAll();
+      }, 1000);
+    });
   },
 
   // Initialize a new game (from save/load screen)

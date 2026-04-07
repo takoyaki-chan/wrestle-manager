@@ -14063,7 +14063,7 @@ Engine.validateGameState = function(G) {
   }
 
   // weekPhaseの妥当性
-  const validPhases = ['draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
+  const validPhases = ['opening', 'draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
                        'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer',
                        'contractNegotiation', 'juniorTournament'];
   if (G.weekPhase && !validPhases.includes(G.weekPhase)) {
