@@ -2266,29 +2266,34 @@ const Storage = {
         G = { ...G, _migrated_dormantPool_refill_v1: true };
       }
 
-      // FA即時補充: ロード直後にFA=0だとスカウト画面が空のまま最大3週待ちになるため、
-      // poolから2名を即座にFAへ追加する（毎ロード時チェック、フラグなし）
-      if ((G.freeAgents || []).length === 0) {
-        const faPool = G.dormantPool || [];
-        const faOccupied = new Set();
-        (G.roster || []).forEach(c => faOccupied.add(c.id));
-        Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
-        const eligible = faPool.filter(e => (e.age || 17) < 21 && !faOccupied.has(e.id));
-        if (eligible.length > 0) {
-          const faRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season || 1, G.week || 1, 0xFA01));
-          const pick = eligible.slice(0, Math.min(2, eligible.length));
-          const pickIds = new Set(pick.map(e => e.id));
-          const newFA = pick.map(e => {
-            const template = ALL_CHARS.find(c => c.id === e.id);
-            if (!template) return null;
-            return Engine.rival.makeAIFighter(template, faRng, null, e.age || 17);
-          }).filter(Boolean);
-          if (newFA.length > 0) {
-            G = { ...G,
-              freeAgents: [...(G.freeAgents || []), ...newFA],
-              dormantPool: faPool.filter(e => !pickIds.has(e.id))
-            };
-            console.log(`[WM Load] FA即時補充: ${newFA.map(f => f.name).join('、')}`);
+      // FA即時補充: ロード直後にFAが少ないとスカウト画面がほぼ空のまま最大3週待ちになるため、
+      // poolからFAへ即座に追加する（毎ロード時チェック、フラグなし）
+      {
+        const curFA = G.freeAgents || [];
+        const FA_MIN = 3; // この人数未満なら補充
+        if (curFA.length < FA_MIN) {
+          const faPool = G.dormantPool || [];
+          const faOccupied = new Set(curFA.map(c => c.id));
+          (G.roster || []).forEach(c => faOccupied.add(c.id));
+          Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
+          const eligible = faPool.filter(e => (e.age || 17) < 21 && !faOccupied.has(e.id));
+          const needed = FA_MIN - curFA.length; // 不足分だけ補充
+          if (eligible.length > 0 && needed > 0) {
+            const faRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season || 1, G.week || 1, 0xFA01));
+            const pick = eligible.slice(0, Math.min(needed, eligible.length));
+            const pickIds = new Set(pick.map(e => e.id));
+            const newFA = pick.map(e => {
+              const template = ALL_CHARS.find(c => c.id === e.id);
+              if (!template) return null;
+              return Engine.rival.makeAIFighter(template, faRng, null, e.age || 17);
+            }).filter(Boolean);
+            if (newFA.length > 0) {
+              G = { ...G,
+                freeAgents: [...curFA, ...newFA],
+                dormantPool: faPool.filter(e => !pickIds.has(e.id))
+              };
+              console.log(`[WM Load] FA即時補充: ${newFA.map(f => f.name).join('、')}`);
+            }
           }
         }
       }
