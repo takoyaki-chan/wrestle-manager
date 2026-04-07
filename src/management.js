@@ -240,12 +240,12 @@ const Engine = {
     // pop0-19: full / pop20-34: 緩やか / pop50+: 逓減 / pop90+: 試合なしでは微増のみ
     getDiminishingMultiplier(currentPop) {
       if (currentPop < 20) return 1.00;
-      if (currentPop < 35) return 0.75;  // 旧0.60
-      if (currentPop < 50) return 0.55;  // 旧0.35
-      if (currentPop < 65) return 0.35;  // 旧0.18
-      if (currentPop < 80) return 0.22;  // 旧0.13
-      if (currentPop < 90) return 0.10;  // 旧0.10（維持）
-      return 0.05;                        // 90+: 新追加（試合の好MQ必須帯）
+      if (currentPop < 35) return 0.75;
+      if (currentPop < 50) return 0.55;
+      if (currentPop < 65) return 0.45;  // 旧0.35 — 中間帯緩和
+      if (currentPop < 80) return 0.30;  // 旧0.22 — 中間帯緩和
+      if (currentPop < 90) return 0.10;
+      return 0.05;                        // 90+: 試合の好MQ必須帯
     },
     applyDiminishing(rawGain, currentPop) {
       if (rawGain <= 0) return rawGain; // penalties are not diminished
@@ -5502,9 +5502,9 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
-          // promo-system-redesign v2.1: MNT連動rawGain（緩やかな影響、MN=50基準1.5）
+          // promo-system-redesign v2.2: MNT連動rawGain強化（MN=50基準2.2）
           const mnVal = nc.mn || 50;
-          const mnRawGain = 1.2 + mnVal * 0.006;
+          const mnRawGain = 1.8 + mnVal * 0.008;
           // 人気関連特性ボーナス: 華+0.3 / ファンサービス+0.2
           let rawPromoBase = mnRawGain + promoBoostAmount;
           if (Traits.has(nc, '華')) rawPromoBase += 0.3;
