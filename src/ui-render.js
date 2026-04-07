@@ -221,7 +221,7 @@ function renderOpeningScreen() {
       </div>
     </div>`,
     // 幕2: 弱小団体としての宣言
-    `<div class="opening-act" id="openingAct1">
+    `<div class="opening-act" id="openingAct1" style="display:none">
       <div class="opening-act-line">
         後ろ盾があるわけではない。<br>
         期待されているわけでもない。<br>
@@ -232,7 +232,7 @@ function renderOpeningScreen() {
       </div>
     </div>`,
     // 幕3: 仲間の紹介
-    `<div class="opening-act" id="openingAct2">
+    `<div class="opening-act" id="openingAct2" style="display:none">
       <div class="opening-portraits">
         <div class="opening-portrait left">
           ${upper1 ? `<img src="${upper1}" alt="${name1}">` : ''}
@@ -250,7 +250,7 @@ function renderOpeningScreen() {
       </div>
     </div>`,
     // 幕4: ドラフトへの導入
-    `<div class="opening-act" id="openingAct3">
+    `<div class="opening-act" id="openingAct3" style="display:none">
       <div class="opening-act-line">
         さらに3名。<br>
         立ち上げメンバーを選びに行こう。
