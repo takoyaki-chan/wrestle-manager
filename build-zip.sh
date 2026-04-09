@@ -9,7 +9,7 @@
 
 set -e
 
-VERSION="1.02"
+VERSION="1.03"
 TRIAL_VERSION="v2"
 
 # ── URL定数 ─────────────────────────────────────────────────────────────────
@@ -87,6 +87,7 @@ build_one() {
      src/relationships.js src/app.js \
      src/ui-common.js src/ui-render.js src/victory-lines.js \
      src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
+     src/draft-negotiation.js \
      "${DIST_DIR}/src/"
   # ── IS_TRIAL フラグの書き換え（コピー後のファイルのみ） ──
   if [ "$IS_TRIAL_MODE" = "true" ]; then

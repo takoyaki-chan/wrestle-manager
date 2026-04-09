@@ -1,0 +1,1077 @@
+﻿{
+    "seed":  42,
+    "seasonsRequested":  100,
+    "completedSeasons":  100,
+    "elapsedSeconds":  512.2,
+    "allChars":  98,
+    "initial":  {
+                    "allChars":  98,
+                    "playerRoster":  5,
+                    "aiRoster":  39,
+                    "freeAgents":  14,
+                    "dormantPool":  37,
+                    "retiredCooldown":  0
+                },
+    "final":  {
+                  "season":  101,
+                  "playerRoster":  7,
+                  "aiRoster":  41,
+                  "freeAgents":  27,
+                  "dormantPool":  5,
+                  "eligibleDormant":  5,
+                  "retiredCooldown":  18,
+                  "totalUniverse":  98
+              },
+    "fa":  {
+               "min":  14,
+               "max":  42,
+               "avg":  26.34,
+               "zeroWeeks":  0,
+               "zeroWeekRate":  "0.0%"
+           },
+    "eligibleDormant":  {
+                            "min":  0,
+                            "max":  37,
+                            "avg":  2.71,
+                            "lowWeeksUnder3":  3764,
+                            "lowWeeksUnder3Rate":  "71.0%",
+                            "tightWeeksUnder10":  5125,
+                            "tightWeeksUnder10Rate":  "96.7%"
+                        },
+    "playerHealthyMin":  2,
+    "aiMinSize":  {
+                      "org_s":  7,
+                      "org_a":  8,
+                      "org_b":  7
+                  },
+    "aiAtFloorWeeks":  {
+
+                       },
+    "activeCount":  {
+                        "min":  58,
+                        "max":  91,
+                        "avg":  73.86
+                    },
+    "totalSupply":  {
+                        "min":  79,
+                        "max":  98
+                    },
+    "minRetireReturnGap":  6,
+    "earlyRetireReturns":  [
+
+                           ],
+    "earlyRetireReturnCount":  0,
+    "violationCount":  0,
+    "seasonSnapshots":  [
+                            {
+                                "season":  1,
+                                "playerRoster":  5,
+                                "aiRoster":  39,
+                                "freeAgents":  14,
+                                "dormantPool":  37,
+                                "eligibleDormant":  37,
+                                "retiredCooldown":  0,
+                                "totalUniverse":  95
+                            },
+                            {
+                                "season":  2,
+                                "playerRoster":  8,
+                                "aiRoster":  44,
+                                "freeAgents":  29,
+                                "dormantPool":  12,
+                                "eligibleDormant":  12,
+                                "retiredCooldown":  5,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  3,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  42,
+                                "dormantPool":  0,
+                                "eligibleDormant":  0,
+                                "retiredCooldown":  7,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  4,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  39,
+                                "dormantPool":  0,
+                                "eligibleDormant":  0,
+                                "retiredCooldown":  12,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  5,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  33,
+                                "dormantPool":  0,
+                                "eligibleDormant":  0,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  6,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  29,
+                                "dormantPool":  0,
+                                "eligibleDormant":  0,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  7,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  8,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  29,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  9,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  26,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  10,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  11,
+                                "playerRoster":  8,
+                                "aiRoster":  38,
+                                "freeAgents":  26,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  12,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  21,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  27,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  13,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  23,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  14,
+                                "playerRoster":  6,
+                                "aiRoster":  39,
+                                "freeAgents":  21,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  27,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  15,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  20,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  26,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  16,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  20,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  17,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  8,
+                                "eligibleDormant":  8,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  18,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  26,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  19,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  20,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  21,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  24,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  22,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  25,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  23,
+                                "playerRoster":  7,
+                                "aiRoster":  39,
+                                "freeAgents":  23,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  24,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  20,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  29,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  25,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  18,
+                                "dormantPool":  10,
+                                "eligibleDormant":  10,
+                                "retiredCooldown":  23,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  26,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  23,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  27,
+                                "playerRoster":  8,
+                                "aiRoster":  38,
+                                "freeAgents":  18,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  30,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  28,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  19,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  23,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  29,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  23,
+                                "dormantPool":  6,
+                                "eligibleDormant":  6,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  30,
+                                "playerRoster":  7,
+                                "aiRoster":  40,
+                                "freeAgents":  25,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  31,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  24,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  23,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  32,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  21,
+                                "dormantPool":  11,
+                                "eligibleDormant":  11,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  33,
+                                "playerRoster":  7,
+                                "aiRoster":  42,
+                                "freeAgents":  25,
+                                "dormantPool":  0,
+                                "eligibleDormant":  0,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  34,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  22,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  35,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  23,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  36,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  37,
+                                "playerRoster":  8,
+                                "aiRoster":  38,
+                                "freeAgents":  23,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  38,
+                                "playerRoster":  7,
+                                "aiRoster":  38,
+                                "freeAgents":  20,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  26,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  39,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  21,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  40,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  21,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  27,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  41,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  22,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  42,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  22,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  43,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  8,
+                                "eligibleDormant":  8,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  44,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  26,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  45,
+                                "playerRoster":  7,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  23,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  46,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  22,
+                                "dormantPool":  1,
+                                "eligibleDormant":  1,
+                                "retiredCooldown":  26,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  47,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  21,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  25,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  48,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  24,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  49,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  24,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  50,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  26,
+                                "dormantPool":  8,
+                                "eligibleDormant":  8,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  51,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  31,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  52,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  30,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  53,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  31,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  54,
+                                "playerRoster":  8,
+                                "aiRoster":  43,
+                                "freeAgents":  27,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  55,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  29,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  56,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  28,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  57,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  29,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  58,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  31,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  59,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  34,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  60,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  33,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  13,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  61,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  31,
+                                "dormantPool":  6,
+                                "eligibleDormant":  6,
+                                "retiredCooldown":  14,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  62,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  32,
+                                "dormantPool":  1,
+                                "eligibleDormant":  1,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  63,
+                                "playerRoster":  7,
+                                "aiRoster":  41,
+                                "freeAgents":  26,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  64,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  26,
+                                "dormantPool":  1,
+                                "eligibleDormant":  1,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  65,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  25,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  66,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  20,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  67,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  22,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  24,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  68,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  23,
+                                "dormantPool":  8,
+                                "eligibleDormant":  8,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  69,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  70,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  29,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  20,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  71,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  25,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  72,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  28,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  73,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  74,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  23,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  22,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  75,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  25,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  23,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  76,
+                                "playerRoster":  8,
+                                "aiRoster":  42,
+                                "freeAgents":  23,
+                                "dormantPool":  6,
+                                "eligibleDormant":  6,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  77,
+                                "playerRoster":  8,
+                                "aiRoster":  42,
+                                "freeAgents":  26,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  78,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  29,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  79,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  30,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  80,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  33,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  81,
+                                "playerRoster":  8,
+                                "aiRoster":  42,
+                                "freeAgents":  31,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  82,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  31,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  83,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  28,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  84,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  27,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  85,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  29,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  86,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  28,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  87,
+                                "playerRoster":  6,
+                                "aiRoster":  39,
+                                "freeAgents":  28,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  21,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  88,
+                                "playerRoster":  7,
+                                "aiRoster":  39,
+                                "freeAgents":  27,
+                                "dormantPool":  7,
+                                "eligibleDormant":  7,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  89,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  30,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  90,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  30,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  91,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  31,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  16,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  92,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  29,
+                                "dormantPool":  6,
+                                "eligibleDormant":  6,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  93,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  32,
+                                "dormantPool":  4,
+                                "eligibleDormant":  4,
+                                "retiredCooldown":  14,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  94,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  34,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  95,
+                                "playerRoster":  8,
+                                "aiRoster":  44,
+                                "freeAgents":  29,
+                                "dormantPool":  2,
+                                "eligibleDormant":  2,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  96,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  29,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  17,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  97,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  30,
+                                "dormantPool":  6,
+                                "eligibleDormant":  6,
+                                "retiredCooldown":  14,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  98,
+                                "playerRoster":  8,
+                                "aiRoster":  41,
+                                "freeAgents":  31,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  99,
+                                "playerRoster":  8,
+                                "aiRoster":  40,
+                                "freeAgents":  32,
+                                "dormantPool":  3,
+                                "eligibleDormant":  3,
+                                "retiredCooldown":  15,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  100,
+                                "playerRoster":  8,
+                                "aiRoster":  39,
+                                "freeAgents":  31,
+                                "dormantPool":  1,
+                                "eligibleDormant":  1,
+                                "retiredCooldown":  19,
+                                "totalUniverse":  98
+                            },
+                            {
+                                "season":  101,
+                                "playerRoster":  7,
+                                "aiRoster":  41,
+                                "freeAgents":  27,
+                                "dormantPool":  5,
+                                "eligibleDormant":  5,
+                                "retiredCooldown":  18,
+                                "totalUniverse":  98
+                            }
+                        ]
+}
