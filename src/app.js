@@ -5559,6 +5559,26 @@ const App = {
       setTimeout(() => showNotifEventToast(pendingTeamSpirit), spiritDelay);
     }
 
+    // §B-2: 移籍ウィンドウ前週の予兆通知
+    const pendingPreWindow = G._pendingPreWindowWarning || null;
+    if (G._pendingPreWindowWarning) {
+      const { _pendingPreWindowWarning: _, ...cleanPw } = G;
+      G = cleanPw;
+    }
+    if (pendingPreWindow && pendingPreWindow.length > 0) {
+      const pwDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 500;
+      pendingPreWindow.forEach((w, i) => {
+        setTimeout(() => showNotifEventToast({
+          type: 'N_pre_window',
+          fighter: w.fighterId,
+          text: w.text,
+          detail: w.tone === 'serious'
+            ? '⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。'
+            : '👁️ 来週は移籍ウィンドウです。動向を注視しましょう。',
+        }), pwDelay + i * 300);
+      });
+    }
+
     // §2 観察眼: コーチ報告（育成画面にインライン表示用に保持）
     if (G.currentCoachReport) {
       const { currentCoachReport: _, ...cleanPrev } = G;

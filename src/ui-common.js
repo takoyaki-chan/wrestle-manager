@@ -7373,7 +7373,8 @@ function showNotifEventToast(event) {
     || event.type === 'N_isolation'
     || event.type === 'N_coach_report'
     || event.type === 'N_sudden_departure'
-    || event.type === 'N_scandal';
+    || event.type === 'N_scandal'
+    || event.type === 'N_pre_window';
 
   const f1Id = event.fighter;
   const f2Id = event.fighter2;

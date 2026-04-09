@@ -5667,6 +5667,51 @@ const Engine = {
         pendingCoachReport = Engine.coach.generateReport(reportRng, { ...G, roster });
       }
 
+      // §B-1: ロッカールーム空気ログ（2週に1度、非興行週、他通知がないとき）
+      let pendingLockerAir = null;
+      if (!Engine.util.isShowWeek(G.week) && !G.offSeason && G.week % 2 === 0
+          && !pendingNotifEvent && !pendingChoiceEvent && !pendingTeamSpirit && roster.length > 0) {
+        const airRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBF10));
+        const morale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
+        const lowTrust = roster.filter(f => (f.trust != null ? f.trust : 50) < 45);
+        const veryLowTrust = roster.filter(f => (f.trust != null ? f.trust : 50) < 30);
+        const highTrust = roster.filter(f => (f.trust != null ? f.trust : 50) >= 70);
+
+        let airTone = null;
+        if (veryLowTrust.length >= 2 || morale < 35) {
+          airTone = 'danger';
+        } else if (veryLowTrust.length >= 1 || lowTrust.length >= 3 || morale < 50) {
+          airTone = 'warning';
+        } else if (highTrust.length >= roster.length * 0.6 && morale >= 70) {
+          airTone = 'good';
+        }
+
+        if (airTone) {
+          const texts = LOCKER_AIR_TEXTS[airTone];
+          // {name2}テンプレがある場合はプール2人以上必要
+          const pool = airTone === 'danger' ? veryLowTrust : (airTone === 'warning' ? lowTrust : []);
+          const available = texts.filter(t => {
+            if (t.includes('{name2}')) return pool.length >= 2;
+            if (t.includes('{name}')) return pool.length >= 1;
+            return true;
+          });
+          if (available.length > 0) {
+            let tmpl = available[Engine.rng.int(airRng, 0, available.length - 1)];
+            if (tmpl.includes('{name}') && pool.length > 0) {
+              const idx1 = Engine.rng.int(airRng, 0, pool.length - 1);
+              tmpl = tmpl.replace('{name}', pool[idx1].name);
+              if (tmpl.includes('{name2}') && pool.length >= 2) {
+                const remaining = pool.filter((_, i) => i !== idx1);
+                const idx2 = Engine.rng.int(airRng, 0, remaining.length - 1);
+                tmpl = tmpl.replace('{name2}', remaining[idx2].name);
+              }
+            }
+            pendingLockerAir = tmpl;
+            events.push(tmpl);
+          }
+        }
+      }
+
       // v1.8: pending growth events を transient フィールドとして返す
       const pendingGrowthEvents = [
         ...pendingSlumpEvents.map(e => ({ ...e })),
@@ -7146,8 +7191,10 @@ const Engine = {
           if (higherOrgs.length === 0) return;
 
           // Each eligible org rolls independently
-          // 忠誠心: 引き抜き確率を×0.25に削減
-          const effectivePoachChance = Traits.has(fighter, '忠誠心') ? cfg.poachChancePerFighter * 0.25 : cfg.poachChancePerFighter;
+          // §A-1: trust補正 × 忠誠心
+          const trust = fighter.trust != null ? fighter.trust : 50;
+          const trustMul = (cfg.trustPoachMultiplier || []).find(t => trust >= t.min)?.mul || 1.0;
+          const effectivePoachChance = cfg.poachChancePerFighter * trustMul * (Traits.has(fighter, '忠誠心') ? 0.25 : 1.0);
           higherOrgs.forEach(org => {
             if (Engine.rng.float(rng) < effectivePoachChance) {
               poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
@@ -7219,11 +7266,13 @@ const Engine = {
       } else {
         // Defend — player pays retention cost
         const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
-        // Non-champion: 80% defense success
+        // §A-2: trust連動防衛率
         const defRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, fighterIdToRelease));
+        const fTrust = poach.fighter.trust != null ? poach.fighter.trust : 50;
+        const retRate = (TRANSFER_CONFIG.retentionRateByTrust || []).find(t => fTrust >= t.min)?.rate || 0.80;
         const defended = s.titles?.world?.championId === fighterIdToRelease
           ? true
-          : Engine.rng.float(defRng) < TRANSFER_CONFIG.nonChampionRetentionRate;
+          : Engine.rng.float(defRng) < retRate;
         if (defended) {
           s = { ...s, funds: s.funds - retCost };
           events.push(`🛡️ ${poach.fighter.name}の引き留めに成功（-${retCost}万）`);
@@ -9385,6 +9434,52 @@ const Engine = {
       events.push(...negResult.events);
       // Store result for UI popup display
       s = { ...s, negotiationResult: { success: negResult.success, fighter: negResult.fighter } };
+    }
+
+    // §B-2: 移籍ウィンドウ前週の予兆ログ
+    const PRE_WINDOW_WEEKS = TRANSFER_CONFIG.windows.map(w => w - 1); // [11, 23, 35, 47]
+    if (PRE_WINDOW_WEEKS.includes(s.week) && !s.offSeason) {
+      const rankings = s.rankings || [];
+      const playerRank = rankings.findIndex(r => r.orgId === 'player') + 1;
+      const hasHigherOrg = playerRank > 1; // ランク1位でなければ上位団体あり
+      if (hasHigherOrg) {
+        const atRisk = (s.roster || []).filter(f => {
+          if (f.isRental) return false;
+          if (s.titles?.world?.championId === f.id) return false;
+          if ((f.popularity || 0) < TRANSFER_CONFIG.poachMinPopularity) return false;
+          if (Traits.has(f, '忠誠心')) return false;
+          const trust = f.trust != null ? f.trust : 50;
+          return trust < 60;
+        });
+        if (atRisk.length > 0) {
+          const pwRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBF00 + s.week));
+          const picked = [];
+          const pool = [...atRisk];
+          const count = Math.min(2, pool.length);
+          for (let i = 0; i < count; i++) {
+            const idx = Engine.rng.int(pwRng, 0, pool.length - 1);
+            picked.push(pool.splice(idx, 1)[0]);
+          }
+          // 上位ライバル団体名を1つ取得
+          const higherOrgs = RIVAL_ORGS.filter(org => {
+            if (!s.aiOrgs[org.id]) return false;
+            const orgRank = rankings.findIndex(r => r.orgId === org.id) + 1;
+            return orgRank > 0 && orgRank < playerRank;
+          });
+          const rivalName = higherOrgs.length > 0 ? higherOrgs[Engine.rng.int(pwRng, 0, higherOrgs.length - 1)].name : '他団体';
+          // trust帯別テキスト生成
+          const warnings = picked.map(f => {
+            const trust = f.trust != null ? f.trust : 50;
+            const tone = trust < 30 ? 'serious' : trust < 45 ? 'moderate' : 'mild';
+            const texts = PRE_WINDOW_TEXTS[tone];
+            const tmpl = texts[Engine.rng.int(pwRng, 0, texts.length - 1)];
+            const text = tmpl.replace('{name}', f.name).replace('{rival}', rivalName);
+            return { fighterId: f.id, name: f.name, tone, text, trust };
+          });
+          warnings.forEach(w => events.push(w.text));
+          s = { ...s, _pendingPreWindowWarning: warnings };
+        }
+      }
     }
 
     // D-2: Rivalry war check (Q1末=week12, Q2末=week24, Q3末=week36)

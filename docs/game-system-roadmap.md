@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-09（新キャラ29名追加+既存キャラデータ更新）
+> 最終更新: 2026-04-09（引き抜きtrust連動+予兆可視化）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**新キャラ29名追加+既存キャラデータ更新（2026-04-09）。** Notion DBから新キャラ29名（ID 100〜128）をALL_CHARS/CHAR_PROFILES/PORTRAITに追加。土岐山乃ノ佳, 沢登鮎, 大山たかみ, 財津琴美, 吉野萌子, 黒岩千晶, 赤沼紗稀, 松岡綾乃, 結城玲奈, 戸塚ゆかり, 若林美佐子, 相模あずみ, 朝比奈ひかり, 綿貫すず, 木村レイカ, 豊田いすず, リナ・モーガン, クラッシャー毒島, 割田久美, 岩小路志摩子, 蔵前静, 山本理香, 宮沢ひかる, 柳沼英子, 清川怜, 藤代絵麻, 西園百合香, 榊原菜摘, 巳沼紗霧。既存キャラ12名のデータ更新: スタイル変更(高津小春→Allround, 生駒エリカ→Brawler)、性格変更(大河内紗代子→bold, 芝彩音→earnest)、特性変更8名。登録キャラ総数: 98→127名。auto-sim 100シーズン ALL CLEAR。
+**引き抜きtrust連動+予兆可視化（2026-04-09）。** specs/poach-trust-spec-v1.0.md に基づきA→B-2→B-1の順で実装。A-1: processTransferWindowにtrust補正追加（trust75+→×0.30/trust30-→×2.00、忠誠心と乗算）。A-2: resolvePoachの防衛率をtrust連動関数化（trust70+→95%/trust30-→35%）。B-2: 移籍ウィンドウ前週（11/23/35/47週）にリスク選手の予兆通知モーダル（trust帯別mild/moderate/seriousテキスト、最大2名、忠誠心持ちは対象外）。B-1: 週次ロッカールーム空気ログ（2週に1度、非興行週、morale/trust状態でgood/warning/dangerフレーバーをgameLog出力）。変更: data.js(TRANSFER_CONFIG拡張+PRE_WINDOW_TEXTS+LOCKER_AIR_TEXTS)、management.js(processTransferWindow/resolvePoach/processWeekPhase/processWeek)、app.js(_pendingPreWindowWarning回収)、ui-common.js(N_pre_window警告スタイル)。auto-sim 200シーズン ALL CLEAR。
+
+前回: **新キャラ29名追加+既存キャラデータ更新（2026-04-09）。** Notion DBから新キャラ29名（ID 100〜128）をALL_CHARS/CHAR_PROFILES/PORTRAITに追加。土岐山乃ノ佳, 沢登鮎, 大山たかみ, 財津琴美, 吉野萌子, 黒岩千晶, 赤沼紗稀, 松岡綾乃, 結城玲奈, 戸塚ゆかり, 若林美佐子, 相模あずみ, 朝比奈ひかり, 綿貫すず, 木村レイカ, 豊田いすず, リナ・モーガン, クラッシャー毒島, 割田久美, 岩小路志摩子, 蔵前静, 山本理香, 宮沢ひかる, 柳沼英子, 清川怜, 藤代絵麻, 西園百合香, 榊原菜摘, 巳沼紗霧。既存キャラ12名のデータ更新: スタイル変更(高津小春→Allround, 生駒エリカ→Brawler)、性格変更(大河内紗代子→bold, 芝彩音→earnest)、特性変更8名。登録キャラ総数: 98→127名。auto-sim 100シーズン ALL CLEAR。
 
 前回: **ドラフト画面リニューアル+PPVポスター修正（2026-04-07）。** ドラフトフローの「スカウト」呼称を「ドラフト」に統一。ドラフト開幕前画面を号外紙面型(A1)に刷新。ドラフト完了画面をトレーディングカード型(B1)に新設（超逸材ヒーロー表示/逸材大カード/標準カードのティア別サイズ差別化）。獲得時リアクション復活(getSigningLine+showEventPopup)。ドラフトまとめ記事にポートレート付きチップ表示。バグ修正: _draftInterestsオリジナル破壊によるAI団体不参加問題+バックグラウンド処理のロスター枠温存(idealRosterキャップ)。PPVポスター画面: カード背景分離(ppvmc-card-bg)+fighter絶対配置+z-index重なり演出復元+center暗影修正。auto-sim 2シード×30シーズン ALL CLEAR。
 
