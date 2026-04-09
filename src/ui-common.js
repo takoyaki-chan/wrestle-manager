@@ -4342,6 +4342,12 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     }
   }
 
+  // EMPRESS安全網で拾った選手を流札リストから除外（重複表示防止）
+  if (empressNames.length > 0) {
+    const empSet = new Set(empressNames);
+    summary.flowThrough = summary.flowThrough.filter(name => !empSet.has(name));
+  }
+
   // B1 獲得選手カードページ
   const getPage = _buildDraftGetPage(s, (s._draftNegotiation?.acquiredThisSession) || acquired);
 

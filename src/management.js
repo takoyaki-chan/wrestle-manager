@@ -1374,6 +1374,8 @@ const Engine = {
     // Returns { allowed: boolean, weeksLeft: number }
     canTitleMatch(state) {
       if (!state.titleEstablished) return { allowed: false, weeksLeft: 0 };
+      // 王座空位時はクールダウン免除（新王者決定戦を速やかに開催可能）
+      if (!state.titles?.world?.championId) return { allowed: true, weeksLeft: 0 };
       const last = state.lastTitleMatchWeek; // 絶対週数 or null
       if (last == null) return { allowed: true, weeksLeft: 0 };
       const elapsed = Engine.title.getAbsWeek(state) - last;
