@@ -4367,6 +4367,7 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     scoutPicks: acquired.map(rec => typeof rec === 'object' ? rec.id : rec),
     _draftInterests: null,
     _draftNegotiation: null,
+    _draftNegotiationStarted: false,
     _draftSelections: null,
     weeklyNewspaper: newspaper,
     _draftResultPages: [getPage, draftNewsPage],

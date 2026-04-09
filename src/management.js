@@ -8778,7 +8778,8 @@ const Engine = {
       const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponent.orgId);
       if (!aiOrg) return null;
 
-      const matchCount = Engine.rng.int(rng, EVENT_CONFIG.warMatchCount.min, EVENT_CONFIG.warMatchCount.max);
+      const opts = EVENT_CONFIG.warMatchCount.options;
+      const matchCount = opts[Engine.rng.int(rng, 0, opts.length - 1)];
       return { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount };
     },
 
@@ -8788,7 +8789,8 @@ const Engine = {
       if (!aiOrg) return [];
       const playerSorted = [...state.roster].filter(c => !c.injury && !c.isRental).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
       const aiSorted = [...aiOrg.roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const count = Math.min(state.pendingEvent ? state.pendingEvent.matchCount : 3, playerSorted.length, aiSorted.length);
+      const requested = state.pendingEvent ? state.pendingEvent.matchCount : 5;
+      const count = Math.min(requested, playerSorted.length, aiSorted.length);
       const card = [];
       for (let i = 0; i < count; i++) {
         card.push({ playerFighter: playerSorted[i], aiFighter: aiSorted[i] });
@@ -9172,6 +9174,7 @@ const Engine = {
           scoutEventType: 'offseason',
           scoutsThisSeason: (s.scoutsThisSeason || 0),
           _draftInterests: draftInterests,
+          _draftNegotiationStarted: false,
         };
         events.push('📅 オフシーズン第3週: ドラフト速報到着！');
         events.push(`⚖ ドラフト候補 ${report.candidates.length}名の情報が届きました`);
@@ -9443,6 +9446,7 @@ const Engine = {
         scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
         scoutEventType: 'midseason',
         _draftInterests: midDraftInterests,
+        _draftNegotiationStarted: false,
       };
       events.push(`⚖ 補強ドラフト: 候補 ${report.candidates.length}名の情報が届きました`);
       return { state: { ...s, weekPhase: 'scoutEvent' }, events };
