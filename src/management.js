@@ -6923,6 +6923,15 @@ const Engine = {
       }
     }
 
+    // 怪我引退で王者がロスターから消えた場合、王座を空位化
+    {
+      const vc = Engine.title.validateChampion({ ...s, roster });
+      if (vc.msg) {
+        s = { ...s, titles: vc.titles };
+        events.push(vc.msg);
+      }
+    }
+
     // Phase 2: 試合結果の関係値反映（spec §3.1）
     // losingStreakはMQ popularity更新済み、injuredIdは怪我処理済み、careerBestMQは未更新（app.jsで更新）
     if (s.relationships) {
@@ -9172,6 +9181,12 @@ const Engine = {
             s = { ...s, roster: impacted };
           });
           allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+          // シーズン末引退で王者がロスターから消えた場合、王座を空位化
+          const vc = Engine.title.validateChampion(s);
+          if (vc.msg) {
+            s = { ...s, titles: vc.titles };
+            events.push(vc.msg);
+          }
         }
 
         // 殿堂入り判定: 引退処理完了後に再計算（generate時点ではretiredFightersが空のため）
