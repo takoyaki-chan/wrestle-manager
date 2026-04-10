@@ -3988,6 +3988,7 @@ const Engine = {
         roster: result.roster,
         lockerRoomMorale: result.lockerRoomMorale,
         orgPopDelta,
+        departedFighters: result.departedFighters || [],
       };
     },
 
@@ -4652,6 +4653,19 @@ const Engine = {
           if (aiEventResult.lockerRoomMorale != null) nextOrgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
           if (typeof aiEventResult.orgPopDelta === 'number') {
             nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
+          }
+          // AI放出選手をFA/dormantに振り分け（state直接変更パターン — 既存AI退団処理L4911と同様）
+          if (aiEventResult.departedFighters && aiEventResult.departedFighters.length > 0) {
+            for (const dep of aiEventResult.departedFighters) {
+              if (Engine.util.canAddToFA(state)) {
+                if (!state.freeAgents) state.freeAgents = [];
+                state.freeAgents.push(dep);
+              } else {
+                const pool = [...(state.dormantPool || [])];
+                pool.push({ id: dep.id, age: dep.age || 20 });
+                state.dormantPool = pool;
+              }
+            }
           }
           // AI練習怪我ニュースフラグ蓄積
           if (aiEventResult._newsPracticeInjury) {
@@ -9954,9 +9968,13 @@ const Engine = {
       return Engine.makeChar(t, rng, { age });
     });
 
-    // Free agents: FA pool minus draft candidates (they're shown separately)
-    const draftUsedIds = new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates]);
-    const freeIds = (ORG_ASSIGN.free || []).filter(id => !draftUsedIds.has(id));
+    // Free agents: FA pool minus draft-used IDs
+    // isDraft: fixed+candidatesを除外（ドラフトUIで別表示）
+    // skipDraft: rosterIds(fixed+picked)だけ除外（不採用候補はFAに残す — キャラ消失防止）
+    const draftExcludeIds = isDraft
+      ? new Set([...DRAFT_CONFIG.fixed, ...DRAFT_CONFIG.candidates])
+      : new Set(rosterIds);
+    const freeIds = (ORG_ASSIGN.free || []).filter(id => !draftExcludeIds.has(id));
     const freeAgents = freeIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
       if (!t) return null;
@@ -12871,6 +12889,8 @@ Engine.eventSystem = {
     let funds = state.funds || 0;
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     const events = [];
+    // 放出された選手を追跡（呼び出し元でFA/dormantに振り分け）
+    const departedFighters = [];
 
     const applyTrust = (fighterId, delta) => {
       roster = roster.map(f => {
@@ -12949,7 +12969,9 @@ Engine.eventSystem = {
           // 2回目以降: 放出（移籍金回収）
           const releaseFunds = Math.round(weeklySalary * 6);
           funds += releaseFunds;
+          const s4Departed = roster.find(f => f.id === event.fighter);
           roster = roster.filter(f => f.id !== event.fighter);
+          if (s4Departed) departedFighters.push(s4Departed);
           events.push(`📋 ${event.name}を放出（+${releaseFunds}万）`);
         } else {
           applyTrust(event.fighter, -9.18);
@@ -13027,12 +13049,16 @@ Engine.eventSystem = {
           if (Math.random() < successRate) {
             events.push(`🤝 ${event.name}の説得に成功`);
           } else {
+            const e6Departed1 = roster.find(f => f.id === event.fighter);
             roster = roster.filter(f => f.id !== event.fighter);
+            if (e6Departed1) departedFighters.push(e6Departed1);
             events.push(`📋 ${event.name}の説得に失敗、他団体へ移籍`);
           }
         } else {
           // 放出
+          const e6Departed2 = roster.find(f => f.id === event.fighter);
           roster = roster.filter(f => f.id !== event.fighter);
+          if (e6Departed2) departedFighters.push(e6Departed2);
           funds += 50;
           events.push(`📋 ${event.name}を放出（+50万）`);
         }
@@ -13107,7 +13133,7 @@ Engine.eventSystem = {
       default: break;
     }
 
-    return { roster, funds, lockerRoomMorale, events };
+    return { roster, funds, lockerRoomMorale, events, departedFighters };
   },
 
   // ── テキスト選択ヘルパー ────────────────────────────────────────────────

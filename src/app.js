@@ -6162,6 +6162,20 @@ const App = {
       orgPop: Engine.util.clamp((G.orgPop || 0) + orgPopDelta, 0, 100),
       gameLog: [...(G.gameLog || []), ...displayEvents]
     };
+    // 放出された選手をFA/dormantに振り分け
+    if (result.departedFighters && result.departedFighters.length > 0) {
+      for (const departed of result.departedFighters) {
+        // orgTimeline記録
+        const tracked = Engine.orgTimeline.transfer(departed, 'fa', G.season, G.week);
+        // 退団bond/rivalry影響
+        Engine.relationships.applyDepartureTrustImpact(G, departed.id, 'release', {});
+        if (Engine.util.canAddToFA(G)) {
+          G = { ...G, freeAgents: [...(G.freeAgents || []), tracked] };
+        } else {
+          G = Engine.util.redirectToDormantPool(G, tracked);
+        }
+      }
+    }
     Storage.autoSave();
     Audio.play('event');
     renderWeekScreen();
