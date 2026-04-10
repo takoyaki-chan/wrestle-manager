@@ -4554,7 +4554,23 @@ function draftNextCandidate() {
       signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
       signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      // draft-value-rebalance: ドラフト指名ボーナス（trust + bond）
+      {
+        const rounds = ns.round || 0;
+        const bonus = DRAFT_SIGNING_BONUS;
+        const trustBonus = Math.min(bonus.trustCap, bonus.trustBase + rounds * bonus.trustPerRound);
+        signed.trust = Math.min(100, (signed.trust || 50) + trustBonus);
+      }
       newRoster.push(signed);
+      // draft-value-rebalance: 既存メンバーとのbond付与（チームが新人を歓迎）
+      if (G.relationships) {
+        const bondRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xDF01, G.season, clean.id));
+        const existingIds = newRoster.filter(c => c.id !== clean.id && !c.isRental).map(c => c.id);
+        const relState = Engine.relationships.applyFromRoster(
+          { relationships: G.relationships }, existingIds, clean.id,
+          DRAFT_SIGNING_BONUS.bondRange, DRAFT_SIGNING_BONUS.rivalryRange, bondRng);
+        G = { ...G, relationships: relState.relationships };
+      }
       newFunds -= ns.finalBid;
       acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
@@ -4580,7 +4596,15 @@ function draftNextCandidate() {
     const orgData = newAiOrgs[ns.winner];
     const wIdeal = (AI_SCOUT_CFG[ns.winner === 'org_s' ? 'S' : ns.winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
     if (orgData && orgData.roster.length < wIdeal + 2) {
-      Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: ns.winner }));
+      const aiFighter = normFighter({ ...clean, orgId: ns.winner });
+      // draft-value-rebalance: AI落札時もtrust指名ボーナス
+      {
+        const rounds = ns.round || 0;
+        const bonus = DRAFT_SIGNING_BONUS;
+        const trustBonus = Math.min(bonus.trustCap, bonus.trustBase + rounds * bonus.trustPerRound);
+        aiFighter.trust = Math.min(100, (aiFighter.trust || 50) + trustBonus);
+      }
+      Engine.rival.pushUniqueFighter(orgData.roster, aiFighter);
       const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
       log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
     } else {

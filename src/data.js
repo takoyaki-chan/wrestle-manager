@@ -325,7 +325,7 @@ const ROSTER_CFG = {
   org_s: 16,           // S級スロット
   org_a: 13,           // A級スロット
   org_b: 10,           // B級スロット
-  fa: 22,              // FA（ドラフト前）— ここから8名がドラフト候補
+  fa: 10,              // FA枠 — draft-value-rebalance: 22→10（希少性向上）
   draftFixed: 2,       // ドラフト固定枠（弱めの選手）
   draftCandidates: 6,  // ドラフト候補数
   draftPicks: 3,       // プレイヤー選択数
@@ -3083,8 +3083,8 @@ const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','�
 const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
 const SCOUT_TRAITS_POOL = ['努力家','早熟','晩成','遅咲き','適応力','破天荒','頑丈さ','不屈','鉄人','負けず嫌い','忠誠心','ファンサービス','番狂わせ体質','闘志','反骨心'];
 const SCOUT_EVENT_CFG = {
-  offseason: { count: [14, 18], maxPicks: 4, seedChance: 0.30 },  // draft-negotiation-spec §2.1
-  midseason: { count: [8, 10],  maxPicks: 2, seedChance: 0.15 },  // draft-negotiation-spec §2.1
+  offseason: { count: [6, 8], maxPicks: 3, seedChance: 0.30 },    // draft-value-rebalance: 14-18→6-8, maxPicks 4→3
+  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },   // draft-value-rebalance: 8-10→4-6
   midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
 let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
@@ -3212,6 +3212,22 @@ const AI_TIER_LIMITS = {
   S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.12, faAggressiveness: 0.60 },
   A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
   B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.20 }
+};
+
+// draft-value-rebalance: AI団体のシーズン中FA獲得設定
+const AI_MIDSEASON_FA_CFG = {
+  ovrAdvantageThreshold: { S: 8, A: 6, B: 4 },  // FAが自軍最弱よりこれ以上強い場合のみ獲得検討
+  grabChance: { S: 0.35, A: 0.25, B: 0.15 },    // 条件を満たした時の実行確率（四半期ごと）
+  maxPerSeason: 1,                                 // シーズン中の最大FA獲得数/団体
+};
+
+// draft-value-rebalance: ドラフト指名ボーナス（セリで勝ち取った選手への恩恵）
+const DRAFT_SIGNING_BONUS = {
+  trustBase: 5,                        // ドラフト指名 trust +5（単独指名でも）
+  trustPerRound: 2,                    // 競りラウンドごとに追加 +2
+  trustCap: 15,                        // trust上限 +15（最大 trust 65）
+  bondRange: { min: 1, max: 5 },       // 既存メンバー→新人 bond +1〜+5
+  rivalryRange: { min: 0, max: 0 },    // rivalry変動なし
 };
 
 // AI統一成長 Phase4: AI団体のコーチ環境設定（ティア別）
@@ -15073,7 +15089,7 @@ if (typeof module !== 'undefined' && module.exports) {
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, SHIELD_VARIANTS,
     SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
-    AI_SCOUT_CFG, AI_TIER_LIMITS, AI_COACH_STAFFING, AI_SEASON_CFG,
+    AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,

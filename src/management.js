@@ -135,12 +135,12 @@ const Engine = {
       const remaining = queue.filter(e => !pickedIds.has(e.id));
       return { picked, remaining };
     },
-    /** Compute visible FA IDs for this quarter (6 slots) */
+    /** Compute visible FA IDs — draft-value-rebalance: FA枠10人以下なので全員表示 */
     getVisibleFAIds(state) {
       const fa = state.freeAgents || [];
-      if (fa.length <= 6) return fa.map(c => c.id);
+      if (fa.length <= 10) return fa.map(c => c.id);
       const seed = (state.rngSeed || 42) ^ ((state.season || 1) * 1000 + Engine.util.getQuarter(state.week || 1) * 100 + 0xFA);
-      return Engine.util.seededPick(fa.map(c => c.id), 6, seed);
+      return Engine.util.seededPick(fa.map(c => c.id), 10, seed);
     },
     /** NPC団体アイコンパス取得 (orgId='org_s'|'org_a'|'org_b') */
     getOrgIconPath(state, orgId) {
@@ -5252,7 +5252,79 @@ const Engine = {
       }
 
       return { aiOrgs: newAiOrgs, freeAgents, events };
-    }
+    },
+    // draft-value-rebalance: AI団体がシーズン中にFAを取りに来る（四半期判定）
+    aiMidseasonFAAcquire(rng, state) {
+      const events = [];
+      const newAiOrgs = {};
+      let freeAgents = [...(state.freeAgents || [])];
+      let dormantPool = [...(state.dormantPool || [])];
+      RIVAL_ORGS.forEach(org => {
+        newAiOrgs[org.id] = { ...(state.aiOrgs || {})[org.id], roster: [...((state.aiOrgs || {})[org.id]?.roster || [])] };
+      });
+
+      const sortedOrgs = [...RIVAL_ORGS].sort((a, b) => {
+        const tierOrder = { S: 0, A: 1, B: 2 };
+        return (tierOrder[a.tier] || 2) - (tierOrder[b.tier] || 2);
+      });
+
+      for (const org of sortedOrgs) {
+        const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+        const mCfg = AI_MIDSEASON_FA_CFG;
+        const tierLim = Engine.rival.getEffectiveTierLimits(org.tier, state.leagueElevated);
+        const roster = newAiOrgs[org.id].roster;
+
+        // シーズン中獲得回数チェック
+        const grabCount = newAiOrgs[org.id]._midseasonFAGrabs || 0;
+        if (grabCount >= mCfg.maxPerSeason) continue;
+        if (freeAgents.length === 0) break;
+
+        // 実行確率チェック
+        if (Engine.rng.float(rng) > (mCfg.grabChance[org.tier] || 0.15)) continue;
+
+        // FA最良を特定
+        const sortedFA = [...freeAgents].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        const bestFA = sortedFA[0];
+        if (!bestFA) continue;
+
+        // 自軍最弱を特定
+        const sortedRoster = [...roster].sort((a, b) => Engine.util.ov(a) - Engine.util.ov(b));
+        const worstFighter = sortedRoster[0];
+
+        const bestFAOvr = Engine.util.ov(bestFA);
+        const worstOvr = worstFighter ? Engine.util.ov(worstFighter) : 0;
+        const threshold = mCfg.ovrAdvantageThreshold[org.tier] || 6;
+
+        // 判定: ロスター不足 or FAが自軍最弱より大幅に強い
+        const belowIdeal = roster.length < cfg.idealRoster;
+        const faIsUpgrade = bestFAOvr - worstOvr >= threshold;
+        if (!belowIdeal && !faIsUpgrade) continue;
+
+        // ティア制限チェック
+        const counts = Engine.rival.countRosterRanks(roster);
+        const pot = bestFA.pot || bestFA.notionValue || {};
+        const avgPot = Math.round(((pot.pw || 0) + (pot.sp || 0) + (pot.te || 0) + (pot.st || 0) + (pot.mn || 0)) / 5);
+        const rank = avgPot >= 160 ? 'prodigy' : avgPot >= 130 ? 'promising' : 'rough';
+        if (rank === 'prodigy' && counts.prodigies >= (tierLim.maxProdigies || 99)) continue;
+        if (rank === 'promising' && counts.promising >= (tierLim.maxPromising || 99)) continue;
+
+        // ロスター上限到達時は最弱を戦力外
+        if (roster.length >= cfg.idealRoster && worstFighter) {
+          newAiOrgs[org.id].roster = roster.filter(f => f.id !== worstFighter.id);
+          dormantPool.push({ id: worstFighter.id, age: worstFighter.age || 20 });
+          events.push(`📋 ${org.name}が${worstFighter.name}を戦力外に`);
+        }
+
+        // FA獲得
+        const acquired = Engine.popularity.applyTransferReset({ ...bestFA, orgId: org.id });
+        Engine.rival.pushUniqueFighter(newAiOrgs[org.id].roster, acquired);
+        freeAgents = freeAgents.filter(f => f.id !== bestFA.id);
+        newAiOrgs[org.id]._midseasonFAGrabs = grabCount + 1;
+        events.push(`${org.emoji} ${org.name}がFA ${bestFA.name}を獲得`);
+      }
+
+      return { aiOrgs: newAiOrgs, freeAgents, dormantPool, events };
+    },
   },
   season: {
     // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
@@ -6233,19 +6305,35 @@ const Engine = {
       Object.values(s.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
       // 直前に除外したIDも除外候補から切り離す（just-removed IDの即再入場を防止）
       removed.forEach(r => faOccupied.add(r.id));
-      // FIFO: 年齢適格なプールエントリを先頭ウィンドウから抽出
-      // 年齢21+は除外（プロ入りの機会を逃した）、除外IDも除外
+      // draft-value-rebalance: FA候補はage 19-20（ドラフト漏れ世代）から抽出
       const ageExclude = new Set([...faOccupied]);
-      pool.forEach(e => { if (e.age >= 21) ageExclude.add(e.id); });
-      const addCount = Math.min(2, pool.filter(e => !ageExclude.has(e.id)).length);
-      const { picked: faDrawn } = Engine.util.drawFromFront(pool, addCount, faRng, ageExclude, 8);
+      pool.forEach(e => { if ((e.age || 17) < 19 || (e.age || 17) >= 21) ageExclude.add(e.id); });
+      const faEligible = pool.filter(e => !ageExclude.has(e.id));
+      const addCount = Math.min(2, faEligible.length);
+      // faEligible内からシャッフル抽出
+      const faShuffled = [...faEligible];
+      for (let i = faShuffled.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(faRng, 0, i);
+        [faShuffled[i], faShuffled[j]] = [faShuffled[j], faShuffled[i]];
+      }
+      const faDrawn = faShuffled.slice(0, addCount).map(e => e.id);
       const added = [];
       for (const cid of faDrawn) {
         const entry = pool.find(e => e.id === cid);
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template || !entry) continue;
-        const age = entry.age || (17 + Engine.rng.int(faRng, 0, 4));
+        const age = entry.age || 19;
         const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
+        // draft-value-rebalance: 待機中の微成長（ドラフト漏れで1-2年待った選手）
+        if (age >= 19) {
+          const waitYears = age - 18;
+          const growthMul = 0.03 * waitYears; // 年3%の微成長（団体所属の約1/5）
+          for (const stat of ['pw', 'sp', 'te', 'st']) {
+            const cap = fighter.trainCap ? (fighter.trainCap[stat] || fighter[stat]) : fighter[stat];
+            const room = Math.max(0, cap - fighter[stat]);
+            fighter[stat] += Math.round(room * growthMul);
+          }
+        }
         fa.push(fighter);
         added.push(fighter);
         pool = pool.filter(e => e.id !== cid);
@@ -6253,6 +6341,14 @@ const Engine = {
       if (removed.length > 0 || added.length > 0) {
         s = { ...s, freeAgents: fa, dormantPool: pool };
         if (added.length > 0) events.push(`📋 FA市場更新: ${added.map(f => f.name).join('、')}が新規参入`);
+      }
+
+      // draft-value-rebalance: AI団体がFAから選手を取りに来る（四半期判定）
+      {
+        const aiMidRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFA02));
+        const aiMidResult = Engine.rival.aiMidseasonFAAcquire(aiMidRng, s);
+        s = { ...s, aiOrgs: aiMidResult.aiOrgs, freeAgents: aiMidResult.freeAgents, dormantPool: aiMidResult.dormantPool };
+        events.push(...aiMidResult.events);
       }
 
       // v1.9c: 緊急補充 — FAが空で有効なpool候補もいない場合に即時補充
@@ -8013,9 +8109,14 @@ const Engine = {
       const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(state);
       // reservedDefIds: この抽選バッチ内で仮予約済みのID
       const reservedDefIds = new Set();
-      // FIFO: 先頭ウィンドウから抽出（古い選手優先）
+      // draft-value-rebalance: ドラフト候補はage 17-18の若い世代から抽出
       const pool = (state.dormantPool || []).filter(e => e && e.id);
-      const { picked: poolDrawn } = Engine.util.drawFromFront(pool, count, rng, occupiedIds);
+      const draftEligible = pool.filter(e => {
+        const a = e.age || 17;
+        return a >= 17 && a <= 18 && !occupiedIds.has(e.id);
+      });
+      // draftEligible内でシャッフル抽出（drawFromFrontのウィンドウロジック活用）
+      const { picked: poolDrawn } = Engine.util.drawFromFront(draftEligible, count, rng, occupiedIds);
 
       const usedFromPool = [];
       for (let i = 0; i < poolDrawn.length; i++) {
@@ -8023,8 +8124,9 @@ const Engine = {
         if (reservedDefIds.has(cid)) continue;
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template) continue;
-        // Create fighter from template
-        const age = 16 + Engine.rng.int(rng, 0, 4);
+        // draft-value-rebalance: dormantPool上のageをそのまま使用（振り直しなし）
+        const entry = pool.find(e => e.id === cid);
+        const age = entry ? (entry.age || 17) : 17;
         const fighter = Engine.rival.makeAIFighter(template, rng, null, age);
         fighter.series = 'pool';
         fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
@@ -9372,6 +9474,14 @@ const Engine = {
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
+        // draft-value-rebalance: AI団体のシーズン中FA獲得カウンターをリセット
+        {
+          const resetAiOrgs = {};
+          Object.keys(s.aiOrgs || {}).forEach(orgId => {
+            resetAiOrgs[orgId] = { ...s.aiOrgs[orgId], _midseasonFAGrabs: 0 };
+          });
+          s = { ...s, aiOrgs: resetAiOrgs };
+        }
         // v3.0: コーチプールのシーズンローテーション
         const coachPoolRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0AC));
         s = { ...s, availableCoaches: Engine.coach.generateSeasonalPool(coachPoolRng, s) };
