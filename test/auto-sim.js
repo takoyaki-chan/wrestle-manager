@@ -502,6 +502,8 @@ function runSimulation(seed, seasons) {
         stats.seasons++;
         stats.orgPopHistory.push(Math.round((G.orgPop || 0) * 10) / 10);
         stats.fundsHistory.push(Math.round(G.funds || 0));
+
+
         if (completed % 50 === 0) {
           process.stdout.write(`  ... ${completed}/${seasons} seasons completed\r`);
         }
