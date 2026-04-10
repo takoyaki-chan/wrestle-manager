@@ -1,5 +1,19 @@
 #!/usr/bin/env node
-// Diagnostic: track FA and dormant pool sizes across seasons
+// ══════════════════════════════════════════════════════════════════════════════
+//  Wrestle Manager — FA/Dormant Pool 診断スクリプト
+//  Mode: diagnostic-fa-pool (FA・休眠プール・引退循環の診断用)
+//
+//  ■ 目的
+//    FA / dormantPool / retiredIds のサイズ推移をシーズン単位でトラッキングし、
+//    選手循環(入団・退団・引退・復帰)のバランス崩れを早期発見する。
+//
+//  ■ このスクリプトが保証しないこと
+//    - 通常プレイの完全再現ではない(auto-sim由来の簡略判断を含む)
+//    - ドラフト指名戦略、ケアアクション、契約交渉はヒューリスティック
+//    - 発見した数値異常は「本番セーブまたは実プレイで再確認」が必須
+//
+//  Usage: node test/diag-fa.js [シード]
+// ══════════════════════════════════════════════════════════════════════════════
 'use strict';
 const path = require('path');
 const fs = require('fs');
@@ -136,6 +150,10 @@ let G = Engine.createInitialState(seed, true);
 G = { ...G, debugLog: [] };
 const simRng = Engine.rng.create(Engine.rng.derive(seed, 0xABCD));
 
+console.log('=== FA/Dormant Pool Diagnostic ===');
+console.log('Mode: diagnostic-fa-pool');
+console.log('※ 診断専用: 通常プレイの完全再現ではありません。異常値は実プレイで再確認してください。');
+console.log('');
 console.log('Season | FA  | Dormant | D(17-18) | Retired | PlyrR | AI_S | AI_A | AI_B | DraftCands');
 
 let lastSeason = G.season;

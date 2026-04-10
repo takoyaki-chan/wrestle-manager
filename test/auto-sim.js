@@ -1,7 +1,30 @@
 #!/usr/bin/env node
 // ══════════════════════════════════════════════════════════════════════════════
 //  Wrestle Manager — Auto-Simulation Script
-//  UIなしでゲームロジックを高速実行し、validateGameStateの違反を検出する。
+//  Mode: engine-integrity (エンジン整合性チェック)
+//
+//  ■ 目的
+//    本番エンジン (tickWeek / advanceWeek / executeShow / validateGameState) を
+//    UIなしで高速に長期実行し、不変条件(invariant)違反を検出する。
+//
+//  ■ このテストが保証すること
+//    - GameState の参照整合性(選手消失・重複・NaN 等)
+//    - tickWeek パイプラインの処理順序と副作用の一貫性
+//    - イベント発生頻度が期待範囲内(対抗戦・スカウト・興行)
+//    - 長期シミュレーションでのクラッシュ・無限ループがないこと
+//
+//  ■ このテストが保証しないこと(本番再現が必要な代表例)
+//    - 興行カード編成: ランダムシャッフルで代用(プレイヤーの戦略的判断なし)
+//    - 契約交渉: 確率ベースの自動応答(プレイヤー心理の再現なし)
+//    - スカウト/ドラフト: 簡易AIで代用(資金配分・指名戦略の再現なし)
+//    - ケアアクション: 未実行(信頼度管理の再現なし)
+//    - UI導線/タイミング依存の演出・ポップアップ表示
+//    - バランス感覚(「強すぎる」「弱すぎる」は数値だけでは判断不可)
+//
+//  ■ バランス修正の運用ルール
+//    auto-sim の結果だけでバランス修正しないこと。
+//    「auto-sim上の症状」と「本番セーブで再現済みの症状」は分けて扱う。
+//    修正フロー: 本番で症状確認 → auto-sim で再現範囲を特定 → 修正 → 両方で確認
 //
 //  Usage: node test/auto-sim.js [シーズン数] [シード]
 //  Example: node test/auto-sim.js 500 12345
@@ -59,6 +82,8 @@ const targetSeasons = parseInt(args[0], 10) || 100;
 const userSeed = args[1] ? parseInt(args[1], 10) : (Date.now() ^ 0xABCD1234);
 
 console.log('=== Wrestle Manager Auto-Simulation ===');
+console.log('Mode: engine-integrity (エンジン整合性チェック)');
+console.log('※ プレイ再現ではありません。バランス判断の単独根拠にしないでください。');
 console.log(`Seed: ${userSeed}`);
 console.log(`Seasons: ${targetSeasons}`);
 console.log('--------------------------------------');
@@ -73,6 +98,8 @@ function initGame(seed) {
 // ── Step 4: プレイヤー判断のランダム自動化 ──
 
 // 興行カード自動編成
+// TODO[heuristic]: ランダムシャッフルで代用。本番ではプレイヤーが戦略的に編成する。
+//   因縁カード・タイトル戦の意図的配置、人気選手の起用頻度管理などは再現されない。
 function autoSetupShowCard(G, simRng) {
   const roster = G.roster.filter(c => !c.injury && c.condition >= 40);
   if (roster.length < 2) return G;
@@ -111,6 +138,7 @@ function autoSetupShowCard(G, simRng) {
 }
 
 // 選択型イベントのランダム応答
+// TODO[heuristic]: 50%ランダムで代用。本番ではプレイヤーが状況判断で選択する。
 function autoHandleChoiceEvent(G, simRng) {
   if (!G._pendingChoiceEvent) return G;
   const event = G._pendingChoiceEvent;
@@ -162,6 +190,8 @@ function autoHandlePPVEntry(G, simRng) {
 }
 
 // 契約更新交渉の自動処理
+// TODO[heuristic]: 確率ベースの自動応答。本番ではプレイヤーが個別に判断する。
+//   昇給受諾率・引留率が固定確率のため、trust管理やロスター戦略の影響を反映しない。
 function autoHandleContractNegotiation(G, simRng) {
   if (G.weekPhase !== 'contractNegotiation') return G;
   const negotiations = G.pendingContractNegotiations || [];
@@ -200,6 +230,8 @@ function autoHandleContractNegotiation(G, simRng) {
 }
 
 // スカウトイベント自動処理（draft-negotiation-spec: セリエンジン使用）
+// TODO[heuristic]: 資金40%上限・8ラウンド撤退の簡易AI。本番のドラフト戦略とは異なる。
+//   プレイヤーの指名優先度、競合団体との駆け引き、ロスター構成を考慮した補強は再現されない。
 function autoHandleScoutEvent(G, simRng) {
   if (G.weekPhase !== 'scoutEvent') return G;
   const candidates = G.scoutCandidates || [];
@@ -666,3 +698,4 @@ console.log(`Game overs: ${result.gameOverCount}`);
 console.log(`Elapsed: ${elapsed}s`);
 const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0;
 console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
+console.log('(engine-integrity check — バランス判断にはプレイ実機確認が必要)');
