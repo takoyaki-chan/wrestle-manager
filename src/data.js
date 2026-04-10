@@ -325,7 +325,8 @@ const ROSTER_CFG = {
   org_s: 16,           // S級スロット
   org_a: 13,           // A級スロット
   org_b: 10,           // B級スロット
-  fa: 10,              // FA枠 — draft-value-rebalance: 22→10（希少性向上）
+  fa: 12,              // FA枠 — 提案B: 10→12（目標帯8-12）
+  faProtectMin: 6,     // FA市場保護: AI取得停止ライン
   draftFixed: 2,       // ドラフト固定枠（弱めの選手）
   draftCandidates: 6,  // ドラフト候補数
   draftPicks: 3,       // プレイヤー選択数

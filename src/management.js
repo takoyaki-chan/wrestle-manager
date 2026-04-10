@@ -5266,6 +5266,8 @@ const Engine = {
         const roster = newAiOrgs[org.id].roster;
         if (roster.length >= cfg.idealRoster) continue;
         if (freeAgents.length === 0) break;
+        // FA市場保護: 最低保証人数を下回る場合はAI取得を停止
+        if (freeAgents.length <= (ROSTER_CFG.faProtectMin || 6)) break;
 
         // Sort FA by OVR desc — higher tier orgs grab best available
         const sortedFA = [...freeAgents].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -5318,6 +5320,8 @@ const Engine = {
         const grabCount = newAiOrgs[org.id]._midseasonFAGrabs || 0;
         if (grabCount >= mCfg.maxPerSeason) continue;
         if (freeAgents.length === 0) break;
+        // FA市場保護: 最低保証人数を下回る場合はAI取得を停止
+        if (freeAgents.length <= (ROSTER_CFG.faProtectMin || 6)) break;
 
         // 実行確率チェック
         if (Engine.rng.float(rng) > (mCfg.grabChance[org.tier] || 0.15)) continue;
@@ -9244,10 +9248,10 @@ const Engine = {
           s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
         }
 
-        // FA: 加齢 + 21歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
+        // FA: 加齢 + 22歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
         const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1 }));
-        const agedOutFA = agedFA.filter(f => f.age > 21);
-        const youngFA   = agedFA.filter(f => f.age <= 21);
+        const agedOutFA = agedFA.filter(f => f.age > 22);
+        const youngFA   = agedFA.filter(f => f.age <= 22);
         if (agedOutFA.length > 0) {
           const faRecycleRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA01));
           const recycledEntries = agedOutFA.map(f => ({ id: f.id, age: 17 + Engine.rng.int(faRecycleRng, 0, 2) }));
@@ -9278,9 +9282,9 @@ const Engine = {
           // Step 1: 加齢（全エントリ +1歳）
           pool = pool.map(entry => ({ ...entry, age: (entry.age || 17) + 1 }));
 
-          // Step 2: age 20超はdormantPoolから引退枠に戻す（ドラフト・FA適齢期を過ぎた）
-          const overAge = pool.filter(e => (e.age || 17) > 20);
-          pool = pool.filter(e => (e.age || 17) <= 20);
+          // Step 2: age 21超はdormantPoolから引退枠に戻す（ドラフト・FA適齢期を過ぎた）
+          const overAge = pool.filter(e => (e.age || 17) > 21);
+          pool = pool.filter(e => (e.age || 17) <= 21);
           for (const e of overAge) {
             if (!retiredIds.includes(e.id)) {
               retiredIds.push(e.id);
@@ -9288,10 +9292,10 @@ const Engine = {
             }
           }
 
-          // Step 3: FA市場からもage 20超を引退枠に戻す（FA膨張防止）
+          // Step 3: FA市場からもage 22超を引退枠に戻す（FA膨張防止 — 冒頭FA加齢と同一閾値）
           let fa = [...(s.freeAgents || [])];
-          const faOverAge = fa.filter(f => (f.age || 17) > 20);
-          fa = fa.filter(f => (f.age || 17) <= 20);
+          const faOverAge = fa.filter(f => (f.age || 17) > 22);
+          fa = fa.filter(f => (f.age || 17) <= 22);
           for (const f of faOverAge) {
             if (!retiredIds.includes(f.id)) {
               retiredIds.push(f.id);
@@ -9299,12 +9303,12 @@ const Engine = {
             }
           }
 
-          // Step 4: 引退プールから年6人を復帰（5シーズンクールダウン経過者のみ）
-          const RETURN_COUNT = 6;     // 基本復帰数
-          const FIFO_COUNT = 3;       // 古い順
-          const RANDOM_COUNT = 3;     // ランダム
+          // Step 4: 引退プールから年8人を復帰（5シーズンクールダウン経過者のみ）
+          const RETURN_COUNT = 8;     // 基本復帰数
+          const FIFO_COUNT = 4;       // 古い順
+          const RANDOM_COUNT = 4;     // ランダム
           const COOLDOWN = 5;         // クールダウン年数
-          const SAFETY_MIN = 8;       // age17-18の最低保証人数
+          const SAFETY_MIN = 14;      // age17-18の最低保証人数
 
           const occupiedIds = new Set();
           (s.roster || []).forEach(c => occupiedIds.add(c.id));
@@ -14449,6 +14453,11 @@ Engine.validateGameState = function(G) {
       }
     });
   }
+
+  // ── 選手循環診断（長期プレイ安定性） ──
+  // 厳密な追跡チェックは test/diag-fa.js で実行する（validateGameStateでは非実行）
+  // ランタイムでの検出はコストが高く、一時プール(scoutCandidates/retiredFighters等)の
+  // タイミング窓で偽陽性が出やすいため、専用診断ツールに委譲する
 
   // debugLogに記録
   if (violations.length > 0) {

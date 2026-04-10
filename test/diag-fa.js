@@ -251,13 +251,25 @@ while (completed < TARGET && iter < MAX_ITER) {
 // Final accounting
 console.log('\n--- Character Accounting ---');
 const allIds = new Set();
-G.roster.forEach(c => allIds.add(c.id));
-(G.freeAgents || []).forEach(c => allIds.add(c.id));
-(G.dormantPool || []).forEach(e => allIds.add(e.id));
-(G.retiredIds || []).forEach(id => allIds.add(id));
-Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => allIds.add(c.id)));
-// Check rentals too
-(G.rentals || []).forEach(r => { if (r.fighterId) allIds.add(r.fighterId); });
+const breakdown = {};
+function track(pool, label) {
+  let count = 0;
+  if (Array.isArray(pool)) pool.forEach(c => { const id = typeof c === 'number' ? c : (c?.id || c?.fighterId); if (id) { allIds.add(id); count++; } });
+  breakdown[label] = count;
+}
+track(G.roster, 'roster');
+track(G.freeAgents, 'freeAgents');
+track(G.dormantPool, 'dormantPool');
+track(G.retiredIds, 'retiredIds');
+track(G.retiredFighters, 'retiredFighters');
+track(G.scoutCandidates, 'scoutCandidates');
+track(G.rentals?.map(r => ({ id: r.fighterId })), 'rentals');
+Object.entries(G.aiOrgs || {}).forEach(([k, org]) => {
+  track(org?.roster, `ai_${k}`);
+  // AI内部の一時退団者
+  track(org?._midSeasonRetirees, `ai_${k}_midRetirees`);
+});
+console.log('Pool breakdown:', JSON.stringify(breakdown));
 console.log('Total tracked IDs:', allIds.size, '/ 127');
 const missingIds = [];
 for (let i = 1; i <= 128; i++) {
