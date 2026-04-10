@@ -19,6 +19,7 @@ const PERSONALITY_LABELS = {
 
 const ARCHETYPE_LABELS = {
   normal: '標準',
+  composed: '鷹揚',
   ojousama: 'お嬢様',
   delinquent: 'ヤンキー',
   cool: 'クール',

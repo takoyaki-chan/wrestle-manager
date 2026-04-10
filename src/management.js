@@ -7166,7 +7166,7 @@ const Engine = {
             const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
             const personalityLines = typeof RETIREMENT_CHAMPION_WORRY_LINES !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES : {};
             let worryPool = null;
-            if ((a === 'ojousama' || a === 'seductive' || a === 'polite') && archetypeLines[a]) {
+            if ((a === 'ojousama' || a === 'seductive' || a === 'polite' || a === 'composed') && archetypeLines[a]) {
               worryPool = archetypeLines[a];
             } else {
               worryPool = personalityLines[p] || personalityLines.normal || ['…'];
