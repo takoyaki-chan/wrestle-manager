@@ -2942,13 +2942,17 @@ const App = {
       }
     }
     const newRoster = G.roster.filter((_, i) => i !== idx);
-    const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
-    const newFA = [...G.freeAgents, releasedFighter];
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const log = [...G.gameLog, `📤 ${target.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
-    G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    if (Engine.util.canAddToFA(G)) {
+      const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
+      G = { ...G, roster: newRoster, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+    } else {
+      G = { ...G, roster: newRoster, coachAssign: newCoachAssign, titles, gameLog: log };
+      G = Engine.util.redirectToDormantPool(G, target);
+    }
     return target;
   },
 
@@ -3269,15 +3273,12 @@ const App = {
       const clean = { ...c };
       delete clean._notion; delete clean._estimate; delete clean._isSeed;
       delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
-      // 30% chance unselected candidates become freeAgents（重複除外）
-      if (Math.random() < 0.30 && !occupiedIds.has(clean.id)) {
-        freeAgents.push({ ...clean, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(clean.seasonGrowth || {}) } });
-        occupiedIds.add(clean.id);
-      } else if (!occupiedIds.has(clean.id)) {
-        // 残り70%: dormantPool末尾に返却（枯渇防止）
+      // 見送り候補は100% dormantPool返却（FA膨張防止）
+      if (!occupiedIds.has(clean.id)) {
         if (!dormantPool.some(e => e.id === clean.id)) {
-          dormantPool.push({ id: clean.id, age: 17 });
+          dormantPool.push({ id: clean.id, age: clean.age || 17 });
         }
+        occupiedIds.add(clean.id);
       }
     });
     G = {
@@ -3465,13 +3466,17 @@ const App = {
       }
     }
     const newRoster = G.roster.filter((_, i) => i !== idx);
-    const releasedFighter = Engine.orgTimeline.transfer(c, 'fa', G.season, G.week);
-    const newFA = [...G.freeAgents, releasedFighter];
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
-    G = { ...G, roster: newRoster, freeAgents: newFA, coachAssign: newCoachAssign, titles, gameLog: log };
+    if (Engine.util.canAddToFA(G)) {
+      const releasedFighter = Engine.orgTimeline.transfer(c, 'fa', G.season, G.week);
+      G = { ...G, roster: newRoster, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+    } else {
+      G = { ...G, roster: newRoster, coachAssign: newCoachAssign, titles, gameLog: log };
+      G = Engine.util.redirectToDormantPool(G, c);
+    }
     closeFighterPopup();
     refreshAll();
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',

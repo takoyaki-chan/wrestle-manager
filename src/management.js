@@ -186,6 +186,14 @@ const Engine = {
       (state.retiredIds || []).forEach(id => occupied.add(id));
       return occupied;
     },
+    /** FA上限チェック: ROSTER_CFG.fa 未満なら true */
+    canAddToFA(state) { return (state.freeAgents || []).length < ROSTER_CFG.fa; },
+    /** FA上限超過時の退避先: dormantPoolに現ageで返却 */
+    redirectToDormantPool(state, fighter) {
+      const pool = [...(state.dormantPool || [])];
+      pool.push({ id: fighter.id, age: fighter.age || 19 });
+      return { ...state, dormantPool: pool };
+    },
     isSpecialShow(w) { return w % 12 === 0; },
     isPPV(w) { return w === 48; },
     /** 会場規模連動の最大試合数。特別興行/PPVは+1（上限8） */
@@ -3198,10 +3206,24 @@ const Engine = {
       const bPicked = weightedPick(pool, bMembers, cfg.org_b, (AI_TIER_LIMITS.B || {}).maxProdigies || 1, 0.3);
       const bAll = bPicked.map(c => c.id);
 
-      // Step 8: Remaining → FA (cfg.fa slots) + dormant (rest)
+      // Step 8: Remaining → FA (cfg.fa slots) + dormant (20人, age分散) + retired (残り)
       const faShuffled = seededShuffle(pool, rng);
       const faAll = faShuffled.slice(0, cfg.fa).map(c => c.id);
-      const dormantAll = faShuffled.slice(cfg.fa).map(c => ({ id: c.id, age: 17 }));
+      const restPool = faShuffled.slice(cfg.fa);
+
+      // dormantPool: 20人（age 17×5, 18×5, 19×5, 20×5）
+      const DORMANT_INIT_SIZE = 20;
+      const dormantSlice = restPool.slice(0, DORMANT_INIT_SIZE);
+      const dormantAll = dormantSlice.map((c, i) => ({ id: c.id, age: 17 + Math.floor(i / 5) % 4 }));
+
+      // 残りは引退枠スタート（retiredSeasons を -4〜+5 にばらけさせ、年6人ずつ復帰可能に）
+      const retiredSlice = restPool.slice(DORMANT_INIT_SIZE);
+      const initRetiredIds = retiredSlice.map(c => c.id);
+      const initRetiredSeasons = {};
+      retiredSlice.forEach((c, i) => {
+        // 10ヴィンテージ (-4〜+5) に均等分配 → 各ヴィンテージ ~6人
+        initRetiredSeasons[c.id] = -4 + (i % 10);
+      });
 
       // Step 9: Write to ORG_ASSIGN
       ORG_ASSIGN.org_s = sAll;
@@ -3210,7 +3232,7 @@ const Engine = {
       ORG_ASSIGN.free = faAll;
       ORG_ASSIGN.player = [];
 
-      return { dormantPool: dormantAll };
+      return { dormantPool: dormantAll, initRetiredIds, initRetiredSeasons };
     },
 
     initAIOrgs(rng) {
@@ -4871,13 +4893,17 @@ const Engine = {
           }
         }
 
-        // FA化
+        // FA化（上限チェック: 超過時はdormantPoolへ退避）
         if (destination === 'fa') {
-          if (f.orgTimeline) {
-            f.orgTimeline = [...(f.orgTimeline || []), { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
+          if (Engine.util.canAddToFA(state)) {
+            if (f.orgTimeline) {
+              f.orgTimeline = [...(f.orgTimeline || []), { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
+            }
+            if (!state.freeAgents) state.freeAgents = [];
+            state.freeAgents.push({ ...f, trust: 50 });
+          } else {
+            state = Engine.util.redirectToDormantPool(state, f);
           }
-          if (!state.freeAgents) state.freeAgents = [];
-          state.freeAgents.push({ ...f, trust: 50 });
         }
 
         // ロスターから除去
@@ -7071,9 +7097,13 @@ const Engine = {
           }
         } else {
           let faFighter = { ...d.fighter, trust: 50, salaryBonus: 0, orgId: undefined };
-          faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
           delete faFighter.trustCap; delete faFighter.s4Count;
-          s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+          if (Engine.util.canAddToFA(s)) {
+            faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
+            s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+          } else {
+            s = Engine.util.redirectToDormantPool(s, faFighter);
+          }
         }
       });
       s = { ...s, _pendingSuddenDepartures: departureResult.departed };
@@ -7788,10 +7818,17 @@ const Engine = {
               )}};
             }
           } else {
-            // Return to free agent pool
+            // Return to free agent pool（FA上限チェック）
             if (rentalF) {
               const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
-              freeAgents = [...freeAgents, cleanF];
+              if (freeAgents.length < ROSTER_CFG.fa) {
+                freeAgents = [...freeAgents, cleanF];
+              } else {
+                // FA上限超: dormantPoolに退避
+                const pool = [...(s.dormantPool || [])];
+                pool.push({ id: cleanF.id, age: cleanF.age || 19 });
+                s = { ...s, dormantPool: pool };
+              }
             }
           }
           events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
@@ -9844,7 +9881,7 @@ const Engine = {
       const allFreeIds = [...remainingFreeIds, ...rejected];
       const freeAgents = allFreeIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
-        const age = 16 + Engine.rng.int(rng, 0, 5); // 16-20歳（21歳超引退設計に合わせて上限修正）
+        const age = 19 + Engine.rng.int(rng, 0, 1); // 19-20歳（ドラフト17-18との棲み分け）
         return Engine.makeChar(t, rng, { age });
       });
       // Update ORG_ASSIGN for ranking calculations
@@ -9908,7 +9945,7 @@ const Engine = {
     const freeAgents = freeIds.map(id => {
       const t = ALL_CHARS.find(c => c.id === id);
       if (!t) return null;
-      const age = 16 + Engine.rng.int(rng, 0, 5); // 16-20歳（21歳超引退設計に合わせて上限修正）
+      const age = 19 + Engine.rng.int(rng, 0, 1); // 19-20歳（ドラフト17-18との棲み分け）
       return Engine.makeChar(t, rng, { age });
     }).filter(Boolean);
 
@@ -9982,8 +10019,8 @@ const Engine = {
       retiredFighters: [],  // temporary — cleared after year-end awards
       hallOfFame: [],       // permanent — hall of fame inductees (alias for allHallOfFame.player)
       allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
-      retiredIds: [],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
-      retiredSeasons: {},   // {charId: season} — tracks when each character retired for recycle timing
+      retiredIds: [...(rosterResult.initRetiredIds || [])],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
+      retiredSeasons: { ...(rosterResult.initRetiredSeasons || {}) },   // {charId: season} — tracks when each character retired for recycle timing
       lastAwards: null,     // v1.4: last year-end awards result
       // v0.95: Season statistics & history
       seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
@@ -14907,10 +14944,14 @@ Engine.contract = {
       }
       info.orgName = Engine.contract._getOrgName(orgId, s);
     } else {
-      // freeAgent
-      let faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
-      faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
-      s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+      // freeAgent（FA上限チェック）
+      if (Engine.util.canAddToFA(s)) {
+        let faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+        faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
+        s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+      } else {
+        s = Engine.util.redirectToDormantPool(s, fighter);
+      }
     }
 
     return { state: s, info };

@@ -496,6 +496,12 @@ function checkVoluntaryRetirement(fighter) {
 | FA候補年齢 | dormantPool内のage 19-20エントリから抽出（ドラフト漏れ世代） |
 | 待機微成長 | FA市場に出る19-20歳選手は年3%×(age-18)の微成長適用（trainCap余地に対して） |
 | 世代循環 | age17→ドラフト候補→age18再チャンス→age19-20 FA→age21+リサイクル(→age17-19) |
+| 初期dormantPool | 20人（age 17×5, 18×5, 19×5, 20×5）。残りはretiredIdsスタート |
+| 初期retiredIds分散 | retiredSeasons -4〜+5に均等分配 → 年6人ずつ復帰可能 |
+| 初期FA年齢 | 19-20歳固定（ドラフト17-18との棲み分け） |
+| FA上限キャップ | ROSTER_CFG.fa(=10)を超える場合、新規流入はdormantPoolに退避 |
+| FA上限適用箇所 | AI契約退団/プレイヤー契約退団/突然離脱/レンタル帰還/解雇/オーバーフロー解雇（全6箇所） |
+| scoutEventFinish | 見送り候補は100% dormantPool返却（旧30% FA流入を廃止） |
 
 ### §9.5 AI団体のシーズン中FA獲得 (draft-value-rebalance 2026-04-10)
 

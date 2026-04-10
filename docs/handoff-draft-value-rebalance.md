@@ -2,7 +2,7 @@
 
 > 作成: 2026-04-10
 > コミット: `3f4a749 feat: ドラフト価値向上リバランス (draft-value-rebalance)`
-> ステータス: **施策0-3は実装済み・コミット済み。選手循環システムに未解決の構造的問題あり。**
+> ステータス: **全施策完了。選手循環システムの構造的問題も解決済み。**
 
 ---
 
@@ -96,37 +96,21 @@ FAに流入するルート（特定済み）:
 
 ---
 
-## 次のセッションでやるべきこと
+## 解決済み（2026-04-10）
 
-### Phase 1: FA膨張の修正
+### Phase 1: 初期プール設計変更
+- initRandomRoster: dormantPoolを20人に制限（age 17×5, 18×5, 19×5, 20×5）
+- 残り~58人はretiredIdsスタート（retiredSeasons -4〜+5にばらけ、年6人ずつ復帰可能）
+- 初期FA年齢を19-20に固定（ドラフト17-18との棲み分け）
 
-1. **全FAの流入ルートにキャップチェックを入れる**
-   - FA人数が10人を超える場合、新規流入をdormantPool（age 19）に回す
-   - 対象箇所: processAIContracts, releaseFighter, scoutEventFinish, レンタル帰還, 突然離脱
+### Phase 2: FA膨張解消
+- Engine.util.canAddToFA/redirectToDormantPoolヘルパー新設
+- 全6箇所のFA流入ルートにROSTER_CFG.faキャップ追加
+- scoutEventFinish 30% FA流入を廃止（100% dormantPool返却）
 
-2. **scoutEventFinish の30% FA流入を廃止**（app.js:3273）
-   - 見送り候補は100%dormantPool返却に変更
-
-### Phase 2: 初期プールの年齢分散
-
-3. **initRandomRosterで初期dormantPoolの年齢を分散させる**
-   - 全員age 17ではなく、17-20歳をランダムに振る
-   - これにより初期からドラフト候補(17-18)とFA候補(19-20)の両方が存在
-   - 全員が同時にage 20超で消えることがなくなる
-
-### Phase 3: 復帰システムの検証
-
-4. **pool-stats計測で安定するか確認**
-   - Phase 1-2の修正後、20シーズン計測
-   - 期待値: 毎シーズン age 17-18 = 8-12人、FA = 5-10人で安定
-   - dormantPoolが枯渇しないこと
-
-### Phase 4: バランスチューニング
-
-5. 必要に応じて定数調整:
-   - 復帰人数（現在6人/年: FIFO 3 + random 3）
-   - 安全弁の閾値（現在8人）
-   - クールダウン年数（現在5年）
+### Phase 3: 検証
+- pool-stats 2シード×20シーズン: Pool=20-24、FA=0-2、age17-18=10-13で安定
+- auto-sim 2シード×20シーズン ALL CLEAR
 
 ---
 
@@ -135,17 +119,12 @@ FAに流入するルート（特定済み）:
 | ファイル | 変更内容 |
 |---------|---------|
 | src/data.js | SCOUT_EVENT_CFG, ROSTER_CFG.fa, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS |
-| src/management.js | generateScoutReport, FAローテーション, getVisibleFAIds, aiMidseasonFAAcquire, offWeek1引退復帰, v1.9c旧補充2箇所廃止, _midseasonFAGrabsリセット |
+| src/management.js | generateScoutReport, FAローテーション, getVisibleFAIds, aiMidseasonFAAcquire, offWeek1引退復帰, initRandomRoster(dormantPool20人+retiredIds), createInitialState(初期retiredIds), canAddToFA/redirectToDormantPool, 全FA流入ルートキャップ |
+| src/app.js | releaseFighter/_releaseFighterForOverflow FAキャップ, scoutEventFinish FA流入廃止 |
 | src/ui-common.js | draftNextCandidate trust+bond付与, AI落札trust付与 |
 | docs/game-system-roadmap.md | ロードマップ更新 |
-| specs/scout-system-spec-v1.0.md | §1.1テーブル更新, §9.4-9.6追加 |
-
-## コミット状況
-
-- `3f4a749` (コミット済み): 施策0-3の基本実装
-- **未コミット**: generateScoutReport全員出し, 引退復帰システム書き換え, 旧補充処理廃止
-
-次のセッションでは未コミット分の問題を解決してからコミットすること。
+| specs/scout-system-spec-v1.0.md | §9.4にFA上限キャップ・初期プール設計追加 |
+| test/pool-stats.js | auto-sim互換ループに全面書き換え |
 
 ---
 
