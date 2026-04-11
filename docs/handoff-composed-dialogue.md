@@ -44,39 +44,27 @@
 | C | PPV_*, WAR_*, JUNIOR_TOURNAMENT_* | 試合・対抗戦・JT系 | ✅ 完了 |
 | D | NOTIF_*, CHOICE_*, LARGE_EVENT_*, VOLUNTARY_STAY_* | イベント系 | ✅ 完了 |
 | E | BT_HINT, BREAKTHROUGH, SLUMP, MOTIVATION, GLIMPSE, ENDING, SNAPSHOT | 小物系 | ✅ 完了 |
-| F | ui-common.js の SCOUT_SIGNING_LINES 等 | UI共通セリフ | 未着手 |
+| F | ui-common.js の SCOUT_SIGNING_LINES 等 | UI共通セリフ | ✅ 完了 |
+| - | relationships.js 相性表 + management.js 仕事適性 | 任意対応 | ✅ 完了 |
 
 ### セッションE: 小物系（完了）
 - コミット `e1b7e4c`: +204 composed エントリ (543→747)
 - BT_HINT_LINES, BREAKTHROUGH_LINES, SLUMP_START_LINES(4トリガー), SLUMP_END_LINES, MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES, ENDING_LINES, SNAPSHOT_TEXTS(G1-G4/R2-R5/breakthrough/warVictory), GLIMPSE_A_LINES(全10帯), GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES(GL-01〜GL-03)
 - auto-sim 20シーズン ALL CLEAR
 
-### 次回セッションの手順（F: UI共通セリフ）
+### セッションF: UI共通セリフ（完了）
+- コミット `499a351`: ui-common.js SCOUT_SIGNING_LINES 全8サブキー +48 composed エントリ
+- auto-sim 20シーズン ALL CLEAR
 
-**ステップ1: セッションF**
-`ui-common.js` 内の archetype 別セリフブロックに `composed:` を追加:
-- `SCOUT_SIGNING_LINES` 等
-- `grep -n 'ojousama:' src/ui-common.js` で対象ブロックを特定
+### 任意対応（完了）
+- コミット `cc34375`: relationships.js ARCHETYPE_BOND_MATRIX (composed×cool +2, ×polite +2, ×delinquent -3, ×composed +1) + management.js _TALENT_ARCHETYPE_BONUS (brand/fan に composed 追加)
+- auto-sim 20シーズン ALL CLEAR
 
-**ステップ2: 検証 → コミット**
-```bash
-node test/auto-sim.js 20 42
-```
+### 全作業完了
 
-### 各セッションの進め方
+composed エントリ総数:
+- data.js: 747
+- ui-common.js: 48
+- **合計: 795 エントリ**
 
-1. 対象の `_LINES` ブロックを `data.js` (または `ui-common.js`) で探す
-2. 既存の archetype 別セリフ（`ojousama:`, `seductive:`, `polite:` 等）の並びに `composed:` を追加
-3. `specs/oyou-style-guide.md` の口調定義に従ってセリフを書く
-4. 完了後 `node test/auto-sim.js 20` で検証
-5. コミット
-
-### 注意事項
-
-- セリフは personality ではなく **archetype** 別。`composed` は archetype キー
-- ホワイトリスト（management.js L7169）は対応済み。追加のコード変更は不要
-- `relationships.js` L73 の archetype 相性表への `composed` 追加は任意（未定義=0扱い）
-- `management.js` L13333 の仕事適性マップへの `composed` 追加も任意
-- `shy` × `composed` は概念的に矛盾するためスキップ
-- `emotional` × `composed` はギャップ造形（感情を押し殺した静かな強さ）
-- composed の口調: 穏やか、短文、「…」で間、「!」は最大1回、語彙例: まあ/ふぅん/なるほど/悪くないね
+全セッション A〜F + 任意対応 完了。追加作業なし。
