@@ -4044,6 +4044,10 @@ function startDraftNegotiation() {
     injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
     intensive: false, intensiveWeeks: 0,
   });
+  const canAIDraftAcquire = (orgId, rosterLength) => {
+    const ideal = (AI_SCOUT_CFG[orgId === 'org_s' ? 'S' : orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
+    return rosterLength < ideal + 2;
+  };
 
   // ── 非選択候補を先にバックグラウンド処理 ──
   const draftSummary = { playerAcquired: [], aiAcquired: {}, flowThrough: [] };
@@ -4061,8 +4065,7 @@ function startDraftNegotiation() {
     for (const ci of candInterests) {
       if (!ci.participating) continue;
       const orgRoster = newAiOrgs[ci.orgId]?.roster || [];
-      const ideal = (AI_SCOUT_CFG[ci.orgId === 'org_s' ? 'S' : ci.orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-      if (orgRoster.length >= ideal + 2) ci.participating = false;
+      if (!canAIDraftAcquire(ci.orgId, orgRoster.length)) ci.participating = false;
     }
     const aiParticipants = candInterests.filter(i => i.participating);
     const clean = { ...cand };
@@ -4083,8 +4086,7 @@ function startDraftNegotiation() {
       if (result.winner && result.winner !== 'player') {
         const wOrg = result.winner;
         const orgData = newAiOrgs[wOrg];
-        const wIdeal = (AI_SCOUT_CFG[wOrg === 'org_s' ? 'S' : wOrg === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-        if (orgData && orgData.roster.length < wIdeal) {
+        if (orgData && canAIDraftAcquire(wOrg, orgData.roster.length)) {
           Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
           draftSummary.aiAcquired[wOrg].push(clean.name);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
@@ -4104,8 +4106,7 @@ function startDraftNegotiation() {
       // → AI自動落札（バックグラウンド: idealRosterでキャップ）
       const winner = aiParticipants[0].orgId;
       const orgData = newAiOrgs[winner];
-      const wIdeal = (AI_SCOUT_CFG[winner === 'org_s' ? 'S' : winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
-      if (orgData && orgData.roster.length < wIdeal) {
+      if (orgData && canAIDraftAcquire(winner, orgData.roster.length)) {
         Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
         draftSummary.aiAcquired[winner].push(clean.name);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
@@ -4466,6 +4467,11 @@ function draftPlayerAction(action) {
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     refreshAll();
     _showScreenNoBgm('scoutEvent');
+    if (G._pendingDraftSigningPopup) {
+      const popup = G._pendingDraftSigningPopup;
+      G = { ...G, _pendingDraftSigningPopup: null };
+      setTimeout(() => showEventPopup(popup), 50);
+    }
     return;
   }
 
@@ -4497,6 +4503,11 @@ function draftWatchRound(speed) {
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     refreshAll();
     _showScreenNoBgm('scoutEvent');
+    if (G._pendingDraftSigningPopup) {
+      const popup = G._pendingDraftSigningPopup;
+      G = { ...G, _pendingDraftSigningPopup: null };
+      setTimeout(() => showEventPopup(popup), 50);
+    }
     return;
   }
 
@@ -4646,6 +4657,11 @@ function draftNextCandidate() {
     // B1+まとめ記事ページ表示（_draftResultPages がセットされている）
     refreshAll();
     _showScreenNoBgm('scoutEvent');
+    if (G._pendingDraftSigningPopup) {
+      const popup = G._pendingDraftSigningPopup;
+      G = { ...G, _pendingDraftSigningPopup: null };
+      setTimeout(() => showEventPopup(popup), 50);
+    }
     return;
   }
 
