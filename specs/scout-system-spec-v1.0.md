@@ -67,107 +67,44 @@
 
 ---
 
-## §3 候補者の生成ロジック
+## §3 候補者の供給源
 
-### §3.1 年齢分布
+### §3.1 dormantプール方式
 
-| 年齢帯 | 出現率 🔧 | 想定背景 |
-|:------:|:-------:|---------|
-| 16〜17歳 | 40% | 高校在学中〜卒業直後。最も多い入口 |
-| 18歳 | 25% | 高校卒業後に才能発見 |
-| 19歳 | 20% | 高校卒業組 |
-| 20歳 | 15% | 遅咲き |
+ドラフト候補は **ALL_CHARS に定義された既存キャラクター** から供給される。ランダム生成は行わない。
 
-### §3.2 Notion値の生成
+```
+全127名のキャラクター
+  → 初期配分（initRandomRoster）でorg_s/org_a/org_b/FA/dormant/retiredに振り分け
+  → dormantPool内のage 17-18が毎シーズンのドラフト候補になる
+  → 引退枠から毎シーズン8名がage 17でdormantに復帰（世代循環）
+```
 
-候補者は既存80名とは別に新規生成される。
+### §3.2 dormantPool年次処理（オフシーズン第1週）
+
+| ステップ | 処理 |
+|---------|------|
+| 1 | 全エントリ +1歳 |
+| 2 | age > 21 → retiredIds に移動 |
+| 3 | FA市場の age > 22 → retiredIds に移動 |
+| 4 | retiredIds から年8名を復帰（FIFO 4名 + ランダム 4名、5シーズンクールダウン） |
+| 安全弁 | age 17-18 が SAFETY_MIN(14) 未満なら追加補充 |
+
+### §3.3 ドラフト候補の抽出（オフシーズン第3週）
 
 ```javascript
-function generateScoutCandidate() {
-  // 全パラ平均の目標帯をまず決める
-  let tierRoll = random()
-  let avgTarget
-  if (tierRoll < 0.05)       avgTarget = randomRange(75, 90)   // 逸材（5%）
-  else if (tierRoll < 0.25)  avgTarget = randomRange(60, 74)   // 有望（20%）
-  else if (tierRoll < 0.70)  avgTarget = randomRange(45, 59)   // 普通（45%）
-  else                        avgTarget = randomRange(25, 44)   // 素材（30%）
-
-  // 5パラメータをavgTarget周辺でランダム生成
-  for (each param in [PWR, SPD, TEC, STA, MNT]) {
-    notionValue[param] = clamp(avgTarget + randomRange(-15, 15), 11, 95)  🔧
-  }
-
-  return notionValue
-}
+// dormantPool内のage 17-18を全員候補として提示
+// potTotal順ソート（強い順。弱い子は競合なしで安く取れる）
+const draftEligible = pool.filter(e => e.age >= 17 && e.age <= 18)
 ```
 
-**ティア分布の設計意図**:
-- 既存80名の平均Notion値が約64（合計319.9）
-- スカウト候補は「普通」（平均45〜59）が最多 → 既存選手よりやや低め
-- 逸材（平均75〜90）は年間で0〜1名程度しか出ない
+候補はALL_CHARSのNotion値・潜在値・スタイル等をそのまま持つ。makeAIFighterで入団時の値を算出。
 
-### §3.3 潜在値の算出
+### §3.4 注目候補の判定
 
-既存の公式をそのまま適用（character-data-spec §2.2 準拠）:
-
-```
-潜在値 = min(185, round(Notion値 × 1.3 + 60))
-```
-
-### §3.4 スタイルの決定
-
-```javascript
-function assignStyle(notionValues) {
-  let pwr = notionValues.pwr
-  let spd = notionValues.spd
-  let tec = notionValues.tec
-
-  // パラメータ傾向による補正付きランダム
-  let weights = {
-    allrounder: 25,
-    striker:    14,
-    submission: 14,
-    grappler:   12,
-    brawler:     9,
-    aerial:      6
-  }
-
-  // 極端な傾向がある場合は補正
-  if (pwr >= spd + 10 && pwr >= tec + 10)  { weights.grappler += 10; weights.brawler += 8 }
-  if (spd >= pwr + 10 && spd >= tec + 5)   { weights.aerial += 10; weights.striker += 5 }
-  if (tec >= pwr + 10 && tec >= spd + 5)   { weights.submission += 10 }
-
-  return weightedRandom(weights)
-}
-```
-
-### §3.5 ヒール度の決定
-
-| ヒール度 | 出現率 🔧 |
-|---------|:-------:|
-| babyface | 40% |
-| neutral | 40% |
-| heel | 18% |
-| dirty | 2% |
-
-### §3.6 シード選手（特別枠）
-
-年に1〜2名、通常より明らかに高い才能を持つ候補が混ざる可能性がある。
-
-| 項目 | 仕様 |
+| 条件 | 表示 |
 |------|------|
-| 出現確率 | 第1回スカウトで30%、第2回で15% 🔧 |
-| 性質 | 逸材ティア確定＋潜在値に個別上書き（1〜2パラメータを +10〜20） |
-| 競合 | 他団体が80%の確率で競合（§5.2） |
-| 演出 | 「注目候補」のラベル付きで表示。スカウトレポートに特別コメント |
-
-### §3.7 身長・名前の生成
-
-| 項目 | 仕様 |
-|------|------|
-| 身長 | 145〜181cm のランダム。既存80名の分布（平均163cm）に準拠 🔧 |
-| 名前 | プリセットの姓名リストからランダム組み合わせ（実装時にリスト作成） |
-| シリーズ | 「スカウト生」固定（series = "scout"） |
+| 5パラNotion平均 ≥ 75 | 「注目候補」ラベル |
 
 ---
 
@@ -470,14 +407,13 @@ function checkVoluntaryRetirement(fighter) {
 | 競合 | なし（フリー選手はどこにも所属していないため） |
 | 効果 | 即座にロスター加入。以降は成長対象になる |
 
-### §9.2 フリー選手の生成ロジック
+### §9.2 フリー選手の供給
 
 | 項目 | 仕様 |
 |------|------|
-| 生成方法 | §3と同じロジック |
-| 年齢 | 18〜28歳（若すぎるフリーはいない） 🔧 |
-| 初期プール | 20名（weekly-gameloop-spec §5.2 準拠） |
-| ランク分布 | 新人級×6、若手級×8、中堅級×5、主力級×1（同上） |
+| 供給元 | ALL_CHARS の既存キャラクター（initRandomRosterで初期配分） |
+| 初期人数 | ROSTER_CFG.fa（=12名） |
+| 補充 | dormantPool age 21超過 → retired → 5シーズンCD後 age 17 で dormant 復帰 → ドラフト/FA循環 |
 
 ### §9.3 フリー選手の加齢
 
@@ -486,7 +422,7 @@ function checkVoluntaryRetirement(fighter) {
 | 加齢 | 毎シーズン+1歳 |
 | 成長 | なし（weekly-gameloop-spec §5.2 準拠） |
 | 引退 | 30歳以上のフリー選手はオフシーズンに引退候補（確率50%/年） 🔧 |
-| 補充 | 引退したフリー選手と同数を新規生成して補充 |
+| 補充 | retiredIds からの復帰による自然循環（§3.2 参照） |
 
 ### §9.4 ドラフト/FA年齢棲み分け (draft-value-rebalance 2026-04-10)
 
@@ -561,7 +497,7 @@ function checkVoluntaryRetirement(fighter) {
 | 1 | 開催時期 | 年2回。オフシーズン第2週 + Q3第5週 |
 | 2 | 候補人数 | 第1回8〜10名、第2回4〜6名 |
 | 3 | 年齢分布 | 16〜17歳が最多（40%）、20歳はレア（15%） |
-| 4 | 能力生成 | Notion値ランダム生成。逸材5%、有望20%、普通45%、素材30% |
+| 4 | 候補供給 | ALL_CHARS既存キャラのdormantPool循環方式。ランダム生成なし |
 | 5 | 潜在値 | 既存公式（min(185, round(Notion値×1.3+60))）準拠 |
 | 6 | 情報開示 | レーダーチャート概形＋成長タイプ4段階。数値・潜在値は非公開 |
 | 7 | 契約金 | C方式（現在値＋潜在値の複合評価）。economy-spec §5.1 整合 |
@@ -575,13 +511,9 @@ function checkVoluntaryRetirement(fighter) {
 
 ## §12 未確定事項（フェーズ3〜4で要設計）
 
-- [ ] スカウト候補の名前プリセットリスト（実装時に作成）
-- [ ] シード選手の潜在値上書き具体値（キャラバランス調整時）
 - [ ] コーチ転身の具体条件・ティア・コスト（フェーズ4 ⑪イベント）
 - [ ] 引退試合の演出詳細（フェーズ4 ⑪イベント）
 - [ ] 他団体に流出した選手の管理（フェーズ3 ⑨ライバル団体AI）
-- [ ] フリー選手20名の初期データ生成（実装時）
-- [ ] 引退選手の「殿堂」UIデザイン（実装時）
 
 ---
 
@@ -609,11 +541,10 @@ function checkVoluntaryRetirement(fighter) {
             │
             ▼
 ┌──────────────────────────────────────────────┐
-│              候補者の生成                      │
-│  ・Notion値をランダム生成（§3.2）              │
-│  ・潜在値は公式算出（§3.3）                    │
-│  ・スタイル/ヒール度/年齢を決定               │
-│  ・入団時の値を算出（training-spec §1.3）      │
+│           候補者の抽出（§3）                   │
+│  ・dormantPool age 17-18 から抽出              │
+│  ・ALL_CHARS既存キャラのNotion値・潜在値を使用  │
+│  ・入団時の値を算出（makeAIFighter）           │
 └───────────┬──────────────────────────────────┘
             │
             ▼
@@ -636,7 +567,7 @@ function checkVoluntaryRetirement(fighter) {
 ┌──────────────────────────────────────────────┐
 │              入団処理（§6）                    │
 │  ・現在値 = Notion値 × startRatio             │
-│  ・trainCapをランダム生成                     │
+│  ・trainCap生成（training-spec §1.4）         │
 │  ・MNT = Notion値固定                        │
 │  ・給与テーブル適用（大半は新人帯 週8万）      │
 │  ・デフォルトスケジュール「バランス」設定      │
@@ -661,5 +592,6 @@ function checkVoluntaryRetirement(fighter) {
 | 日付 | 内容 |
 |------|------|
 | 2026-02-19 | v1.0 初版作成。構造確定、数値は調整可能パラメータとしてマーク |
+| 2026-04-11 | §3 全面改訂: ランダムキャラ生成(generateCandidate)を廃止。dormantPool循環方式に統一。§9.2/§11/§12/§14も整合 |
 
 <!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->

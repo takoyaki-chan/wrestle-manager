@@ -1310,7 +1310,6 @@ const Storage = {
     }
     state._saveVersion = '1.0b';
     state._saveDate = new Date().toISOString();
-    state._nextGenCharId = nextGenCharId;
     // LZ圧縮 + マーカー
     const json = JSON.stringify(state);
     return SAVE_COMPRESS_MARKER + LZString.compressToUTF16(json);
@@ -1330,7 +1329,6 @@ const Storage = {
 
   deserialize(json) {
     const prevG = G;
-    const prevNextGenCharId = nextGenCharId;
     try {
       const state = Storage._parseRaw(json);
       // Replace G entirely with saved state, preserving any missing defaults
@@ -1530,9 +1528,6 @@ const Storage = {
         });
         G = { ...G, aiOrgs: migAi };
       }
-
-      // v0.99b: restore nextGenCharId for scout-generated characters
-      if (G._nextGenCharId) nextGenCharId = G._nextGenCharId;
 
       // v1.0b migration: popularity/venue redesign
       if (!G._migrated_v1_0b) {
@@ -2315,7 +2310,6 @@ const Storage = {
       return true;
     } catch(e) {
       G = prevG;
-      nextGenCharId = prevNextGenCharId;
       console.error('Load failed:', e);
       return false;
     }

@@ -376,6 +376,13 @@ const CHAR_GROUP = {
   // その他（個別 — グループボーナスなし）
   65:'other',70:'other',76:'other',77:'other',78:'other',79:'other',80:'other',
   87:'other',88:'other',92:'other',93:'other',94:'other',98:'other',99:'other',
+  // v1.5 新規キャラクター（ID 100-128）
+  100:'other',101:'other',102:'other',103:'other',104:'other',
+  105:'other',106:'other',107:'other',108:'other',109:'other',
+  110:'other',111:'other',112:'other',113:'other',114:'other',
+  115:'other',116:'other',117:'other',118:'other',119:'other',
+  120:'other',121:'other',122:'other',123:'other',124:'other',
+  125:'other',126:'other',127:'other',128:'other',
 };
 
 // Mutable draft config — initialized by seed in createInitialState
@@ -3466,16 +3473,12 @@ const RANKING_CONFIG = {
 // ── 殿堂盾バリアント ──────
 const SHIELD_VARIANTS = { 1: ['a'], 2: ['a'], 3: ['a'] }; // hofLevel → 使用可能バリアント配列
 
-// ── Scout Event Name Generation & Config (scout-spec §3) ──────
-const SCOUT_SURNAMES = ['天羽','秋山','浅倉','安藤','飯田','池上','石原','泉','伊東','岩崎','上野','内田','梅原','江口','遠藤','大城','小川','荻野','加藤','川口','菊地','桐谷','久保','栗原','小泉','後藤','佐伯','坂井','桜庭','佐々木','篠原','柴崎','白石','杉浦','瀬戸','染谷','高松','竹内','立花','田中','津田','土屋','寺田','中島','長谷川','西村','野口','萩原','花山','浜崎','原田','平野','福田','星野','松岡','水野','宮崎','村上','望月','矢島','山口','湯浅','吉川','若林','鷲尾','渡辺'];
-const SCOUT_GIVENNAMES = ['あかり','あかね','あゆみ','ありさ','いろは','うた','えみ','かすみ','かなで','きらり','くるみ','さくら','しおり','すみれ','せりな','そら','ちはる','つむぎ','なお','なつき','にいな','ねね','はるか','ひかり','ひなた','ふうか','まどか','まひろ','みお','みさき','みゆき','もえ','ゆいな','ゆうき','ゆかり','よしの','りこ','りさ','りの','るな','れいか','わかな'];
-const SCOUT_TRAITS_POOL = ['努力家','早熟','晩成','遅咲き','適応力','破天荒','頑丈さ','不屈','鉄人','負けず嫌い','忠誠心','ファンサービス','番狂わせ体質','闘志','反骨心'];
+// ── Scout Event Config ──────
 const SCOUT_EVENT_CFG = {
-  offseason: { count: [6, 8], maxPicks: 3, seedChance: 0.30 },    // draft-value-rebalance: 14-18→6-8, maxPicks 4→3
-  midseason: { count: [4, 6],  maxPicks: 2, seedChance: 0.15 },   // draft-value-rebalance: 8-10→4-6
+  offseason: { count: [6, 8], maxPicks: 3 },
+  midseason: { count: [4, 6],  maxPicks: 2 },
   midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
-let nextGenCharId = 1001; // Auto-increment ID for generated scout characters
 
 // Mutable org roster assignment — populated by initRandomRoster() at game start
 // dormant = remaining IDs not in any org or free
@@ -16524,7 +16527,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, SHIELD_VARIANTS,
-    SCOUT_GIVENNAMES, SCOUT_TRAITS_POOL, SCOUT_EVENT_CFG,
+    SCOUT_EVENT_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
