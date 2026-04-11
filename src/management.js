@@ -9258,8 +9258,8 @@ const Engine = {
           s = { ...s, _pendingAIGrowthAlerts: aiGrowthAlerts };
         }
 
-        // FA: 加齢 + 22歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
-        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1 }));
+        // FA: 加齢 + careerSeasons更新 + 22歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
+        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1, careerSeasons: (f.careerSeasons || 0) + 1 }));
         const agedOutFA = agedFA.filter(f => f.age > 22);
         const youngFA   = agedFA.filter(f => f.age <= 22);
         if (agedOutFA.length > 0) {

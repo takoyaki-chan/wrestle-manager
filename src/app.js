@@ -1484,26 +1484,34 @@ const Storage = {
 
       // v1.0 migration: fix freeAgents that were created with useNotion:true bug
       // Detect: all 4 physical stats exactly match notionValue (statistically impossible from generateStartValues)
-      G = { ...G, freeAgents: G.freeAgents.map(c => {
-        if (!c.notionValue) return c;
-        const nv = c.notionValue;
-        const isInflated = c.pw === nv.pw && c.sp === nv.sp && c.te === nv.te && c.st === nv.st;
-        if (!isInflated) return c;
-        // Recalculate with age-appropriate values
-        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 888));
-        const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
-        return { ...c, ...startVals };
-      })};
+      // ※フラグ制御: 成長でnotionValueに到達したFAのステを誤ってリセットしないよう一度きり
+      if (!G._migrated_v1_0_fa_notion) {
+        G = { ...G, freeAgents: G.freeAgents.map(c => {
+          if (!c.notionValue) return c;
+          const nv = c.notionValue;
+          const isInflated = c.pw === nv.pw && c.sp === nv.sp && c.te === nv.te && c.st === nv.st;
+          if (!isInflated) return c;
+          // Recalculate with age-appropriate values
+          const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 888));
+          const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
+          return { ...c, ...startVals };
+        })};
+        G = { ...G, _migrated_v1_0_fa_notion: true };
+      }
 
       // v1.2 migration: fix freeAgents stuck at age 16-17 (should be 17-23)
-      G = { ...G, freeAgents: G.freeAgents.map(c => {
-        if (c.age > 17) return c; // only fix age ≤17 FAs (legacy: was 16)
-        const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
-        const newAge = 17 + Engine.rng.int(ageRng, 0, 6);
-        const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
-        const startVals = Engine.rival.generateStartValues(ageRng, nv, newAge);
-        return { ...c, age: newAge, ...startVals };
-      })};
+      // ※フラグ制御: 旧セーブへの一度きりの修正。毎ロード実行は年齢変動バグの原因になる
+      if (!G._migrated_v1_2_fa_age) {
+        G = { ...G, freeAgents: G.freeAgents.map(c => {
+          if (c.age > 17) return c; // only fix age ≤17 FAs (legacy: was 16)
+          const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
+          const newAge = 17 + Engine.rng.int(ageRng, 0, 6);
+          const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
+          const startVals = Engine.rival.generateStartValues(ageRng, nv, newAge);
+          return { ...c, age: newAge, ...startVals };
+        })};
+        G = { ...G, _migrated_v1_2_fa_age: true };
+      }
 
       // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
       const migrateAssessed = (fighters) => fighters.map(f => {
