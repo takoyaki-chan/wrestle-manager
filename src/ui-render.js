@@ -2909,8 +2909,9 @@ function renderRanking() {
     if (isPlayer) {
       // Player org card
       const rc = getRankColor(r.rank, r.orgId);
-      const avgOvr = G.roster.length ? Math.round(G.roster.reduce((s,c) => s + ov(c), 0) / G.roster.length) : 0;
-      const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
+      const ownedRoster = (G.roster || []).filter(c => !c.isRental);
+      const avgOvr = ownedRoster.length ? Math.round(ownedRoster.reduce((s,c) => s + ov(c), 0) / ownedRoster.length) : 0;
+      const sorted = [...ownedRoster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
       // Put champion first if exists
       let topFighters = sorted.slice(0, topCount);
       if (G.titles?.world?.championId) {
@@ -2922,7 +2923,7 @@ function renderRanking() {
       html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml('player', 40)}${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${G.roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(G.orgPop)).color}">${Engine.util.dispOrgPop(G.orgPop)}</span></span>
+          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${ownedRoster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(G.orgPop)).color}">${Engine.util.dispOrgPop(G.orgPop)}</span></span>
         </div>
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
         <div style="font-size:13px;margin-top:10px">
@@ -2935,9 +2936,9 @@ function renderRanking() {
           </div>
         </div>
         <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${G.roster.length}名）</summary>
+          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${ownedRoster.length}名）</summary>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-            ${[...G.roster].sort((a,b) => ov(b) - ov(a)).map(f => {
+            ${[...ownedRoster].sort((a,b) => ov(b) - ov(a)).map(f => {
               const fOvr = ov(f);
               const isChampF = G.titles?.world?.championId === f.id;
               return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
@@ -2957,7 +2958,7 @@ function renderRanking() {
       const rc = getRankColor(r.rank, r.orgId);
       const aiData = G.aiOrgs && G.aiOrgs[org.id];
       if (!aiData) return;
-      const roster = Engine.rival.dedupeRoster(aiData.roster || []);
+      const roster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental);
       const rEntry = rankings.find(re => re.orgId === org.id);
       const aiTitles = aiData.titles || {};
       const champId = aiTitles.world?.championId;

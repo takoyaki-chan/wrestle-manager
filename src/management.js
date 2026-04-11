@@ -3151,6 +3151,7 @@ const Engine = {
       const rawBp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
       const bp = {};
       for (const k in rawBp) bp[k] = Math.round(rawBp[k] || 0);
+      const playerRoster = (state.roster || []).filter(f => !f.isRental);
       const playerBreakdown = Engine.ranking.calcOrgRating(state, 'player', state.roster || [], bp.player);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
@@ -3160,10 +3161,11 @@ const Engine = {
         weightedOVR: playerBreakdown.weightedOVR,
         weightedPop: playerBreakdown.weightedPop,
         battlePt: bp.player,
-        rosterSize: (state.roster || []).length
+        rosterSize: playerRoster.length
       }];
       RIVAL_ORGS.forEach(org => {
         const aiRoster = (state.aiOrgs && state.aiOrgs[org.id]) ? Engine.rival.dedupeRoster(state.aiOrgs[org.id].roster || []) : [];
+        const ownedAiRoster = aiRoster.filter(f => !f.isRental);
         const breakdown = Engine.ranking.calcOrgRating(state, org.id, aiRoster, bp[org.id]);
         entries.push({
           orgId: org.id, name: org.name,
@@ -3173,7 +3175,7 @@ const Engine = {
           weightedOVR: breakdown.weightedOVR,
           weightedPop: breakdown.weightedPop,
           battlePt: bp[org.id],
-          rosterSize: aiRoster.length
+          rosterSize: ownedAiRoster.length
         });
       });
       entries.sort((a, b) => b.rating - a.rating);
