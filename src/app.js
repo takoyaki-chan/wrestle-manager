@@ -2244,37 +2244,10 @@ const Storage = {
       }
 
       // dormantPool枯渇救済: 長期プレイでプールが空になったセーブを回復
+      // Legacy dormantPool refill migration retired; bounded recovery is handled elsewhere.
       if (!G._migrated_dormantPool_refill_v1) {
-        const pool = G.dormantPool || [];
-        const eligibleCount = pool.filter(e => (e.age || 17) < 21).length;
-        if (eligibleCount < 20) {
-          const occupied = new Set();
-          (G.roster || []).forEach(c => occupied.add(c.id));
-          Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => occupied.add(c.id)));
-          (G.freeAgents || []).forEach(c => occupied.add(c.id));
-          pool.forEach(e => occupied.add(e.id));
-          // retiredIds 5シーズン経過分をリサイクル対象に
-          const retiredSeasons = G.retiredSeasons || {};
-          const recycleable = new Set();
-          (G.retiredIds || []).forEach(id => {
-            const retSeason = retiredSeasons[id];
-            if (retSeason !== undefined && G.season - retSeason >= 5) recycleable.add(id);
-            else occupied.add(id);
-          });
-          const available = ALL_CHARS.filter(c => !occupied.has(c.id));
-          if (available.length > 0) {
-            const newEntries = available.map(c => ({ id: c.id, age: 17 }));
-            const usedIds = new Set(newEntries.map(e => e.id));
-            const cleanedRetiredIds = (G.retiredIds || []).filter(id => !usedIds.has(id));
-            const cleanedRetiredSeasons = { ...retiredSeasons };
-            usedIds.forEach(id => { delete cleanedRetiredSeasons[id]; });
-            G = { ...G, dormantPool: [...pool, ...newEntries], retiredIds: cleanedRetiredIds, retiredSeasons: cleanedRetiredSeasons };
-            console.log(`[WM Migration] dormantPool refill: ${newEntries.length}名を補充 (eligible was ${eligibleCount})`);
-          }
-        }
         G = { ...G, _migrated_dormantPool_refill_v1: true };
       }
-
       // FA即時補充: ロード直後にFAが少ないとスカウト画面がほぼ空のまま最大3週待ちになるため、
       // poolからFAへ即座に追加する（毎ロード時チェック、フラグなし）
       {

@@ -3480,6 +3480,13 @@ const SCOUT_EVENT_CFG = {
   midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
 
+const DORMANT_POOL_CFG = {
+  targetsByAge: { 16: 6, 17: 6, 18: 6, 19: 6, 20: 6 },
+  refillOrder: [17, 18, 16, 19, 20],
+  annualRefillCap: 8,
+  retiredCooldown: 5,
+};
+
 // Mutable org roster assignment — populated by initRandomRoster() at game start
 // dormant = remaining IDs not in any org or free
 let ORG_ASSIGN = {
@@ -16527,7 +16534,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,

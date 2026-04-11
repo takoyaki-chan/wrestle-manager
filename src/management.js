@@ -3446,9 +3446,19 @@ const Engine = {
       const restPool = faShuffled.slice(cfg.fa);
 
       // dormantPool: 20人（age 17×5, 18×5, 19×5, 20×5）
-      const DORMANT_INIT_SIZE = 20;
+      const dormantTargets = DORMANT_POOL_CFG.targetsByAge || { 17: 5, 18: 5, 19: 5, 20: 5 };
+      const dormantAgeOrder = Object.keys(dormantTargets).map(Number).sort((a, b) => a - b);
+      const DORMANT_INIT_SIZE = dormantAgeOrder.reduce((sum, age) => sum + (dormantTargets[age] || 0), 0);
       const dormantSlice = restPool.slice(0, DORMANT_INIT_SIZE);
-      const dormantAll = dormantSlice.map((c, i) => ({ id: c.id, age: 17 + Math.floor(i / 5) % 4 }));
+      const dormantAll = [];
+      let dormantOffset = 0;
+      dormantAgeOrder.forEach(age => {
+        const count = dormantTargets[age] || 0;
+        dormantSlice.slice(dormantOffset, dormantOffset + count).forEach(c => {
+          dormantAll.push({ id: c.id, age });
+        });
+        dormantOffset += count;
+      });
 
       // 残りは引退枠スタート（retiredSeasons を -4〜+5 にばらけさせ、年6人ずつ復帰可能に）
       const retiredSlice = restPool.slice(DORMANT_INIT_SIZE);
@@ -8273,9 +8283,8 @@ const Engine = {
         return bp - ap;
       });
       // ミッドシーズンは上限あり、オフシーズンは全員
-      const maxCount = eventType === 'midseason'
-        ? cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0])
-        : draftEligible.length;
+      const configuredCount = cfg.count[0] + Engine.rng.int(rng, 0, cfg.count[1] - cfg.count[0]);
+      const maxCount = Math.min(configuredCount, draftEligible.length);
       const poolDrawn = draftEligible.slice(0, maxCount).map(e => e.id);
 
       const usedFromPool = [];
@@ -9441,12 +9450,13 @@ const Engine = {
             }
           }
 
-          // Step 4: 引退プールから年8人を復帰（5シーズンクールダウン経過者のみ）
-          const RETURN_COUNT = 8;     // 基本復帰数
-          const FIFO_COUNT = 4;       // 古い順
-          const RANDOM_COUNT = 4;     // ランダム
-          const COOLDOWN = 5;         // クールダウン年数
-          const SAFETY_MIN = 14;      // age17-18の最低保証人数
+          // Step 4: refill dormantPool by age cohort targets with an annual cap
+          const refillTargets = DORMANT_POOL_CFG.targetsByAge || { 16: 6, 17: 6, 18: 6, 19: 6, 20: 6 };
+          const refillOrder = DORMANT_POOL_CFG.refillOrder || [17, 18, 16, 19, 20];
+          const RETURN_COUNT = DORMANT_POOL_CFG.annualRefillCap || 8;
+          const FIFO_COUNT = Math.min(4, RETURN_COUNT);
+          const RANDOM_COUNT = Math.max(0, RETURN_COUNT - FIFO_COUNT);
+          const COOLDOWN = DORMANT_POOL_CFG.retiredCooldown || 5;
 
           const occupiedIds = new Set();
           (s.roster || []).forEach(c => occupiedIds.add(c.id));
@@ -9454,41 +9464,34 @@ const Engine = {
           fa.forEach(c => occupiedIds.add(c.id));
           pool.forEach(e => occupiedIds.add(e.id));
 
-          // クールダウン経過した引退選手を抽出
           const eligible = retiredIds.filter(id => {
             if (occupiedIds.has(id)) return false;
             const retSeason = retiredSeasons[id];
             return retSeason !== undefined && s.season - retSeason >= COOLDOWN;
           });
 
-          // FIFO (古い順 = retiredSeason が小さい順) + ランダムの混合
           const sorted = [...eligible].sort((a, b) => (retiredSeasons[a] || 0) - (retiredSeasons[b] || 0));
           const fifoPicks = sorted.slice(0, FIFO_COUNT);
           const remaining = sorted.slice(FIFO_COUNT);
-          // remainingからランダムにRANDOM_COUNT人
           const shuffled = [...remaining];
           for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Engine.rng.int(poolRng, 0, i);
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
           }
           const randomPicks = shuffled.slice(0, RANDOM_COUNT);
-          let returnees = [...fifoPicks, ...randomPicks];
+          const returnees = [...new Set([...fifoPicks, ...randomPicks])];
+          const countAge = age => pool.filter(e => (e.age || 17) == age).length;
 
-          // 安全弁: age17-18が不足なら追加補充
-          const age1718Count = pool.filter(e => (e.age || 17) >= 17 && (e.age || 17) <= 18).length + returnees.length;
-          if (age1718Count < SAFETY_MIN) {
-            const extra = SAFETY_MIN - age1718Count;
-            const extraPool = shuffled.slice(RANDOM_COUNT, RANDOM_COUNT + extra);
-            returnees = [...returnees, ...extraPool];
-          }
-
-          // 復帰処理: age 17でdormantPoolに追加、retiredIdsから除去
           for (const id of returnees) {
-            pool.push({ id, age: 17 });
+            const targetAge = refillOrder.reduce((bestAge, curAge) => {
+              const bestGap = (refillTargets[bestAge] || 0) - countAge(bestAge);
+              const curGap = (refillTargets[curAge] || 0) - countAge(curAge);
+              return curGap > bestGap ? curAge : bestAge;
+            }, refillOrder[0]);
+            pool.push({ id, age: targetAge });
             retiredIds = retiredIds.filter(rid => rid !== id);
             delete retiredSeasons[id];
           }
-
           s = { ...s, dormantPool: pool, freeAgents: fa, retiredIds, retiredSeasons };
           if (returnees.length > 0) {
             events.push(`🌱 新世代${returnees.length}名がプロ入りを目指して参入`);
