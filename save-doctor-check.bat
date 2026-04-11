@@ -1,0 +1,75 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+
+if not exist "%~dp0tools\save-doctor.js" (
+  echo.
+  echo Save Doctor files were not found next to this BAT file.
+  echo Please keep this BAT inside the wrestle-manager folder.
+  echo Do not copy this BAT into your save-data folder.
+  echo.
+  pause
+  exit /b 1
+)
+
+set "SAVE_FILE=%~1"
+if "%SAVE_FILE%"=="" (
+  echo.
+  echo Save Doctor - Check Only
+  echo.
+  echo Drag and drop your save file onto this BAT.
+  echo Or paste the full save-file path and press Enter.
+  echo.
+  set /p SAVE_FILE=Save file path:
+)
+
+if "%SAVE_FILE%"=="" (
+  echo.
+  echo No save file was provided.
+  pause
+  exit /b 1
+)
+
+if not exist "%SAVE_FILE%" (
+  echo.
+  echo The specified file was not found.
+  echo %SAVE_FILE%
+  pause
+  exit /b 1
+)
+
+where node >nul 2>nul
+if errorlevel 1 (
+  echo.
+  echo Node.js was not found.
+  pause
+  exit /b 1
+)
+
+for %%I in ("%SAVE_FILE%") do (
+  set "SAVE_DIR=%%~dpI"
+  set "SAVE_NAME=%%~nI"
+)
+
+set "REPORT_FILE=%SAVE_DIR%%SAVE_NAME%.doctor-check.txt"
+
+echo.
+echo Running check...
+echo Report file:
+echo %REPORT_FILE%
+echo.
+
+(
+  echo Save Doctor Check Report
+  echo.
+  echo Target file:
+  echo %SAVE_FILE%
+  echo.
+  node "%~dp0tools\save-doctor.js" "%SAVE_FILE%"
+) > "%REPORT_FILE%" 2>&1
+
+start "" notepad "%REPORT_FILE%"
+
+echo.
+echo The report was opened in Notepad.
+pause

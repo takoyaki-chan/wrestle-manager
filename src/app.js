@@ -2307,6 +2307,16 @@ const Storage = {
         }
       }
 
+      {
+        const repair = Engine.saveDoctor.repairOnLoad(G);
+        if (repair.changed) {
+          G = repair.state;
+          const note = `セーブデータ自動修復: ${repair.changes.join(', ')}`;
+          G = { ...G, gameLog: [...(G.gameLog || []), note] };
+          console.log(`[WM Load Repair] ${note}`);
+        }
+      }
+
       return true;
     } catch(e) {
       G = prevG;

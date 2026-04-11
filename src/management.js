@@ -64,6 +64,240 @@ const Engine = {
     }
   },
 
+  saveDoctor: {
+    FA_MIN: 3,
+    DORMANT_MIN: 20,
+    YOUTH_MIN: 12,
+    RETIRED_COOLDOWN: 5,
+
+    _allIds() {
+      return new Set((ALL_CHARS || []).map(c => c.id));
+    },
+
+    _normDormant(entry) {
+      if (!entry) return null;
+      if (typeof entry === 'number' || typeof entry === 'string') {
+        const id = Number(entry);
+        if (!Number.isFinite(id)) return null;
+        return { id, age: 17 };
+      }
+      const id = Number(entry.id);
+      if (!Number.isFinite(id)) return null;
+      return { id, age: Engine.util.clamp(Math.round(entry.age || 17), 17, 21) };
+    },
+
+    _diag(state) {
+      const allIds = Engine.saveDoctor._allIds();
+      const seen = new Map();
+      const duplicates = [];
+      const addSeen = (id, bucket) => {
+        if (!allIds.has(id)) return;
+        if (seen.has(id)) duplicates.push({ id, first: seen.get(id), second: bucket });
+        else seen.set(id, bucket);
+      };
+      (state.roster || []).forEach(c => addSeen(c.id, 'roster'));
+      Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => (org.roster || []).forEach(c => addSeen(c.id, `ai:${orgId}`)));
+      (state.freeAgents || []).forEach(c => addSeen(c.id, 'fa'));
+      (state.scoutCandidates || []).forEach(c => addSeen(c.id, 'scout'));
+      (state.dormantPool || []).forEach(e => addSeen(e.id, 'dormant'));
+      (state.retiredIds || []).forEach(id => addSeen(id, 'retired'));
+      return {
+        duplicates,
+        missing: [...allIds].filter(id => !seen.has(id)),
+        youth: (state.dormantPool || []).filter(e => {
+          const age = e.age || 17;
+          return age >= 17 && age <= 18;
+        }).length,
+        freeAgents: (state.freeAgents || []).length,
+        dormant: (state.dormantPool || []).length,
+        missingRetiredSeasons: (state.retiredIds || []).filter(id => !state.retiredSeasons || state.retiredSeasons[id] === undefined),
+      };
+    },
+
+    _eligibleRetired(state, includeCooldownLocked = false) {
+      const blocked = new Set();
+      (state.roster || []).forEach(c => blocked.add(c.id));
+      Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => blocked.add(c.id)));
+      (state.freeAgents || []).forEach(c => blocked.add(c.id));
+      (state.scoutCandidates || []).forEach(c => blocked.add(c.id));
+      (state.dormantPool || []).forEach(e => blocked.add(e.id));
+      return (state.retiredIds || [])
+        .filter(id => !blocked.has(id))
+        .filter(id => includeCooldownLocked || (((state.season || 1) - ((state.retiredSeasons || {})[id] || 0)) >= Engine.saveDoctor.RETIRED_COOLDOWN))
+        .sort((a, b) => (((state.retiredSeasons || {})[a] || 0) - ((state.retiredSeasons || {})[b] || 0)));
+    },
+
+    _spawnFA(state, entries, salt) {
+      const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season || 1, state.week || 1, salt));
+      return entries.map(entry => {
+        const template = ALL_CHARS.find(c => c.id === entry.id);
+        if (!template) return null;
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, entry.age || 19);
+        return {
+          ...fighter,
+          orgId: null,
+          condition: fighter.condition ?? 80,
+          schedule: fighter.schedule || 'balance',
+          wins: fighter.wins || 0,
+          losses: fighter.losses || 0,
+          draws: fighter.draws || 0,
+          injury: fighter.injury || null,
+          seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
+          intensive: false,
+          intensiveWeeks: 0,
+        };
+      }).filter(Boolean);
+    },
+
+    repairOnLoad(rawState) {
+      let state = {
+        ...rawState,
+        roster: [...(rawState.roster || [])],
+        freeAgents: [...(rawState.freeAgents || [])],
+        scoutCandidates: [...(rawState.scoutCandidates || [])],
+        dormantPool: (rawState.dormantPool || []).map(Engine.saveDoctor._normDormant).filter(Boolean),
+        retiredIds: [...new Set((rawState.retiredIds || []).map(Number).filter(Number.isFinite))],
+        retiredSeasons: { ...(rawState.retiredSeasons || {}) },
+        aiOrgs: Object.fromEntries(Object.entries(rawState.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: [...(org.roster || [])] }])),
+      };
+      const changes = [];
+      const baselineSeason = Math.max(1, (state.season || 1) - 10);
+      const before = Engine.saveDoctor._diag(state);
+      const occupied = new Set();
+      const claim = id => {
+        if (!Number.isFinite(id)) return false;
+        if (occupied.has(id)) return false;
+        occupied.add(id);
+        return true;
+      };
+
+      state.roster = state.roster.filter(c => claim(Number(c.id)));
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        state.aiOrgs[orgId].roster = state.aiOrgs[orgId].roster.filter(c => claim(Number(c.id)));
+      });
+      const prevFA = state.freeAgents.length;
+      state.freeAgents = state.freeAgents.filter(c => claim(Number(c.id)));
+      if (state.freeAgents.length !== prevFA) changes.push(`fa_conflict_removed:${prevFA - state.freeAgents.length}`);
+      const prevScout = state.scoutCandidates.length;
+      state.scoutCandidates = state.scoutCandidates.filter(c => claim(Number(c.id)));
+      if (state.scoutCandidates.length !== prevScout) changes.push(`scout_conflict_removed:${prevScout - state.scoutCandidates.length}`);
+      const prevDormant = state.dormantPool.length;
+      state.dormantPool = state.dormantPool.filter(e => claim(Number(e.id)));
+      if (state.dormantPool.length !== prevDormant) changes.push(`dormant_conflict_removed:${prevDormant - state.dormantPool.length}`);
+      const prevRetired = state.retiredIds.length;
+      state.retiredIds = state.retiredIds.filter(id => !occupied.has(id));
+      if (state.retiredIds.length !== prevRetired) changes.push(`retired_conflict_removed:${prevRetired - state.retiredIds.length}`);
+
+      (state.retiredFighters || []).forEach(f => {
+        if (f?.id && !occupied.has(f.id) && !state.retiredIds.includes(f.id)) state.retiredIds.push(f.id);
+      });
+      (state.retiredIds || []).forEach(id => {
+        if (state.retiredSeasons[id] === undefined) state.retiredSeasons[id] = baselineSeason;
+      });
+      if (before.missingRetiredSeasons.length > 0) changes.push(`retired_seasons_backfilled:${before.missingRetiredSeasons.length}`);
+
+      const severe = before.missing.length > 0
+        || before.duplicates.length > 0
+        || before.freeAgents === 0
+        || before.youth === 0
+        || before.dormant < 6;
+
+      if (severe) {
+        const allIds = Engine.saveDoctor._allIds();
+        const tracked = new Set();
+        (state.roster || []).forEach(c => tracked.add(c.id));
+        Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => tracked.add(c.id)));
+        (state.freeAgents || []).forEach(c => tracked.add(c.id));
+        (state.scoutCandidates || []).forEach(c => tracked.add(c.id));
+        (state.dormantPool || []).forEach(e => tracked.add(e.id));
+        (state.retiredIds || []).forEach(id => tracked.add(id));
+        const missing = [...allIds].filter(id => !tracked.has(id));
+        if (missing.length > 0) {
+          missing.forEach(id => {
+            state.retiredIds.push(id);
+            state.retiredSeasons[id] = baselineSeason;
+          });
+          changes.push(`missing_recovered:${missing.length}`);
+        }
+      }
+
+      const addDormantEntries = (ids, age) => {
+        ids.forEach(id => {
+          if (state.dormantPool.some(e => e.id === id)) return;
+          state.dormantPool.push({ id, age });
+          state.retiredIds = state.retiredIds.filter(rid => rid !== id);
+          delete state.retiredSeasons[id];
+        });
+      };
+      const curYouth = () => state.dormantPool.filter(e => {
+        const age = e.age || 17;
+        return age >= 17 && age <= 18;
+      }).length;
+
+      if (curYouth() < Engine.saveDoctor.YOUTH_MIN) {
+        const needed = Engine.saveDoctor.YOUTH_MIN - curYouth();
+        let ids = Engine.saveDoctor._eligibleRetired(state, false).slice(0, needed);
+        if (severe && ids.length < needed) {
+          const extra = Engine.saveDoctor._eligibleRetired(state, true).filter(id => !ids.includes(id)).slice(0, needed - ids.length);
+          ids = [...ids, ...extra];
+        }
+        if (ids.length > 0) {
+          addDormantEntries(ids, 17);
+          changes.push(`youth_refilled:${ids.length}`);
+        }
+      }
+
+      if (state.dormantPool.length < Engine.saveDoctor.DORMANT_MIN) {
+        const needed = Engine.saveDoctor.DORMANT_MIN - state.dormantPool.length;
+        let ids = Engine.saveDoctor._eligibleRetired(state, false).slice(0, needed);
+        if (severe && ids.length < needed) {
+          const extra = Engine.saveDoctor._eligibleRetired(state, true).filter(id => !ids.includes(id)).slice(0, needed - ids.length);
+          ids = [...ids, ...extra];
+        }
+        if (ids.length > 0) {
+          addDormantEntries(ids, 19);
+          changes.push(`dormant_refilled:${ids.length}`);
+        }
+      }
+
+      if (state.freeAgents.length < Engine.saveDoctor.FA_MIN) {
+        const needed = Engine.saveDoctor.FA_MIN - state.freeAgents.length;
+        const picks = state.dormantPool.filter(e => (e.age || 17) >= 19 && (e.age || 17) <= 20).slice(0, needed);
+        if (severe && picks.length < needed) {
+          state.dormantPool
+            .filter(e => (e.age || 17) < 21 && !picks.some(p => p.id === e.id))
+            .slice(0, needed - picks.length)
+            .forEach(e => picks.push(e));
+        }
+        if (picks.length > 0) {
+          const created = Engine.saveDoctor._spawnFA(state, picks, 0x5A0E);
+          const pickIds = new Set(created.map(f => f.id));
+          state.freeAgents = [...state.freeAgents, ...created];
+          state.dormantPool = state.dormantPool.filter(e => !pickIds.has(e.id));
+          changes.push(`fa_restored:${created.length}`);
+        }
+      }
+
+      if (state.dormantPool.length < Engine.saveDoctor.DORMANT_MIN && severe) {
+        const needed = Engine.saveDoctor.DORMANT_MIN - state.dormantPool.length;
+        const ids = Engine.saveDoctor._eligibleRetired(state, true).slice(0, needed);
+        if (ids.length > 0) {
+          addDormantEntries(ids, 19);
+          changes.push(`dormant_topped_off:${ids.length}`);
+        }
+      }
+
+      return {
+        state,
+        changed: changes.length > 0,
+        severe,
+        changes,
+        before,
+        after: Engine.saveDoctor._diag(state),
+      };
+    }
+  },
+
   // ── Utilities ──────────────────────────────────────────
   util: {
     /** 絶対週番号（48週制）。シーズン・週をまたいだクールダウン比較に使う */

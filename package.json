@@ -1,7 +1,8 @@
 {
   "scripts": {
     "bug:audit": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1",
-    "bug:audit:full": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1 -Mode Full"
+    "bug:audit:full": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1 -Mode Full",
+    "save:doctor": "node tools/save-doctor.js"
   },
   "dependencies": {
     "lz-string": "^1.5.0",
