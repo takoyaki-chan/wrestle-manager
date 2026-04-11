@@ -3792,6 +3792,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '私を誘うの？\nふふ…条件次第ね'
+      ],
+      composed: [
+        '…ふぅん、私に来いって？\n…聞くだけ聞こうか'
       ]
     },
     bold: {
@@ -3810,6 +3813,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '私を引き抜こうだなんて…\nふふ、面白い度胸してるわね'
+      ],
+      composed: [
+        '…引き抜き？ …面白いね。条件を聞こうか'
       ]
     },
     quiet: {
@@ -3821,6 +3827,9 @@ const NEGOTIATE_LINES = {
       ],
       polite: [
         '…お話は伺います'
+      ],
+      composed: [
+        '……聞くよ'
       ]
     },
     shy: {
@@ -3837,6 +3846,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'あら、スカウト？\nふふ、聞かせてもらおうかしら'
+      ],
+      composed: [
+        'スカウト？ …まあ、話は聞くよ'
       ]
     },
     earnest: {
@@ -3851,11 +3863,17 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'この団体を離れるのは簡単じゃないの。\n…でも、聞くだけなら'
+      ],
+      composed: [
+        '…この団体を離れるのは簡単じゃない。\n…でも、聞くだけなら'
       ]
     },
     emotional: {
       _default: [
         'え…引き抜き…？\nど、どうしよう…急に言われても…'
+      ],
+      composed: [
+        '…引き抜き。…ふぅん。…聞くよ'
       ]
     }
   },
@@ -3872,6 +3890,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '…わかったわ、行く。\n実力で居場所を作ってみせるわ'
+      ],
+      composed: [
+        '…わかった、行くよ。\n…やるべきことをやるだけだ'
       ]
     },
     bold: {
@@ -3890,6 +3911,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '認めてあげるわ。\n格の違いを見せてあげる'
+      ],
+      composed: [
+        '…いいよ、行く。\n実力で示すだけだ'
       ]
     },
     quiet: {
@@ -3901,6 +3925,9 @@ const NEGOTIATE_LINES = {
       ],
       polite: [
         '…行きます。よろしくお願いします'
+      ],
+      composed: [
+        '…行くよ。よろしく'
       ]
     },
     shy: {
@@ -3917,6 +3944,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'やった！ 新しい団体ね！\n楽しみだわ'
+      ],
+      composed: [
+        '新しい場所か。…悪くないね'
       ]
     },
     earnest: {
@@ -3931,11 +3961,17 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '新しい仲間のために…全力を尽くすわ。\nよろしくね'
+      ],
+      composed: [
+        '…新しい場所で、やるべきことをやる。\nよろしく'
       ]
     },
     emotional: {
       _default: [
         'うっ…新しい場所で…頑張ります…！\nよろしくお願いします…！'
+      ],
+      composed: [
+        '…っ…新しい場所か。…頑張るよ'
       ]
     }
   },
@@ -3953,6 +3989,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'うれしいお誘いだけど…今の仲間を置いていく気にはなれないわ。\nごめんなさい'
+      ],
+      composed: [
+        '…悪いけど、今の仲間を置いていく気にはなれない。\n…ごめんね'
       ]
     },
     bold: {
@@ -3971,6 +4010,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'ふふ…買いかぶってくれてありがとう。\nでも今の仲間を裏切るつもりは毛頭ないわ'
+      ],
+      composed: [
+        '…悪いけど、ここを離れる気はないよ。\n今の仲間がいるから'
       ]
     },
     quiet: {
@@ -3982,6 +4024,9 @@ const NEGOTIATE_LINES = {
       ],
       polite: [
         '…すみません。今は、ここを離れる気になれないんです'
+      ],
+      composed: [
+        '…動けない。ここにいる'
       ]
     },
     shy: {
@@ -3999,6 +4044,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'うれしいけど〜、今の子たちが大好きすぎて動けないのよね。\nごめんね'
+      ],
+      composed: [
+        '嬉しいけど、今のメンバーが好きでね。\n…動けないんだ'
       ]
     },
     earnest: {
@@ -4014,12 +4062,18 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         '今の仲間を途中で捨てるなんて、私には考えられない。\n…ごめんなさい'
+      ],
+      composed: [
+        '…今の仲間への責任がある。\nそれを放り出すわけにはいかない'
       ]
     },
     emotional: {
       _default: [
         '今の団体が好きすぎて…そんな話を聞いたら、\n自分が嫌いになりそうで…！ごめんなさい',
         'ここのみんなが大好きで…！\n裏切るなんて考えるだけで苦しい…！ごめんなさい…！'
+      ],
+      composed: [
+        '…ここが好きなんだ。\n…悪いけど、その話は聞けない'
       ]
     }
   },
@@ -4036,6 +4090,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'ごめんなさい、今回はパス。\n縁があればまたね'
+      ],
+      composed: [
+        '…悪いけど、パスで。\n縁があればまた'
       ]
     },
     bold: {
@@ -4054,6 +4111,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'ここが私の居場所なの。\n出直してきて'
+      ],
+      composed: [
+        '…ここが居場所だから。\n悪いね'
       ]
     },
     quiet: {
@@ -4065,6 +4125,9 @@ const NEGOTIATE_LINES = {
       ],
       polite: [
         '…すみません、ここに残ります'
+      ],
+      composed: [
+        '…ここにいる'
       ]
     },
     shy: {
@@ -4081,6 +4144,9 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'ごめんなさいね、今のところが好きなの。\nまたね'
+      ],
+      composed: [
+        '悪いけど、今のとこが好きでね。\nまた縁があれば'
       ]
     },
     earnest: {
@@ -4095,11 +4161,17 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'みんなを置いて行くわけにはいかないの。\n…ごめんなさい'
+      ],
+      composed: [
+        '…みんなを置いてはいけない。\n…ごめん'
       ]
     },
     emotional: {
       _default: [
         'ごめんなさい…今はここを離れられないの…！\nまたいつか…！'
+      ],
+      composed: [
+        '…ごめん。今は離れられない'
       ]
     }
   }
@@ -4123,6 +4195,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長、ちょっといい？ {tenure}{record}…もう少しだけ、考えてくれない？'
+      ],
+      composed: [
+        'まあ…社長、少しいいかな。{tenure}{record}悪くない環境だと思ってるけど…もう少し、考えてもらえると嬉しいね。'
       ]
     },
     bold: {
@@ -4141,6 +4216,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'ねえ社長。{tenure}もうちょっと私のこと大事にしてくれてもいいんじゃない？ {record}'
+      ],
+      composed: [
+        '…社長。{tenure}率直に言うね。{record}この額は…ちょっと寂しいかな。'
       ]
     },
     quiet: {
@@ -4153,6 +4231,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         'あの…社長、すみません…。{tenure}お給料のことで…少しだけ、ご相談したくて……。'
+      ],
+      composed: [
+        '……社長、少しだけ。{tenure}…お給料のこと…落ち着いて話せるうちに、伝えておきたくて。'
       ]
     },
     shy: {
@@ -4171,6 +4252,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長ー♪ {tenure}お給料のことなんだけどさ…もうちょっとだけ♡ ダメ？'
+      ],
+      composed: [
+        'やあ社長。{tenure}まあ…お給料のことなんだけどさ。ちょっとだけ、考えてくれない？'
       ]
     },
     earnest: {
@@ -4186,12 +4270,18 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長、大事な話があるの。{tenure}{record}ちゃんと評価してほしいな'
+      ],
+      composed: [
+        '社長、筋を通させてください。{tenure}{record}…落ち着いて考えた結論です。'
       ]
     },
     emotional: {
       _default: [
         '社長……！ 聞いてください……！ {tenure}{record}私、もっとできるのに……このままじゃ悔しい……！',
         '……なんで……なんで評価してくれないんですか……！ {record}頑張ってるのに……！'
+      ],
+      composed: [
+        '…社長。{tenure}{record}……悔しくないって言ったら、嘘になるかな…っ。'
       ]
     }
   },
@@ -4209,6 +4299,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長…ごめんなさい。{tenure}ここを離れたいの。'
+      ],
+      composed: [
+        '社長…少し話がある。{tenure}ここを離れようかと…まあ、そういうことです。'
       ]
     },
     bold: {
@@ -4227,6 +4320,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長。{tenure}もう決めたの。…ここを出るわ。'
+      ],
+      composed: [
+        '…社長。{tenure}決めたよ。…出る。特に未練はない。'
       ]
     },
     quiet: {
@@ -4239,6 +4335,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         'あの…社長…。{tenure}言いにくいのですが……退団したいと思っています……。'
+      ],
+      composed: [
+        '……社長。{tenure}…離れたいの。…静かに決めたことだから。'
       ]
     },
     shy: {
@@ -4257,6 +4356,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長、あのね…。{tenure}ちょっと新しいことしてみたいなって。…ごめんね。'
+      ],
+      composed: [
+        'まあ…社長。{tenure}ちょっと環境変えてみようかなって。…深刻な話じゃないよ。'
       ]
     },
     earnest: {
@@ -4272,12 +4374,18 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長。{tenure}ここで過ごした時間は大切よ。でも…次の場所を見つけたいの。'
+      ],
+      composed: [
+        '社長。{tenure}ここでの時間は…悪くなかった。ただ…次に進むべきだと思ってます。'
       ]
     },
     emotional: {
       _default: [
         '社長……もう無理です……！ {tenure}ここにいても……どんどんダメになっていく気がして……！',
         '……{tenure}もう、限界なんです……。{record}自分でもわかってます……このままじゃいけないって……。'
+      ],
+      composed: [
+        '…社長…っ。{tenure}…ここにいたかった…けど…もう、いられない…。'
       ]
     }
   },
@@ -4294,6 +4402,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'ありがと、社長♡ もっと頑張っちゃうからね。'
+      ],
+      composed: [
+        'ふぅん…悪くないね。まあ、期待に応えるよ。'
       ]
     },
     bold: {
@@ -4311,6 +4422,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'ふふ、分かってくれるじゃない♡ 期待しててね。'
+      ],
+      composed: [
+        '…なるほど。まあ…分かってくれるなら、それでいい。やるよ。'
       ]
     },
     quiet: {
@@ -4322,6 +4436,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         'え…本当ですか…？ ありがとうございます…！ 精一杯頑張ります…！'
+      ],
+      composed: [
+        '……ありがとう…ございます。…嬉しい。…頑張るね。'
       ]
     },
     shy: {
@@ -4338,6 +4455,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'やったー♡ さすが社長、太っ腹～♪'
+      ],
+      composed: [
+        'おっ、ありがと。まあ…のんびりやらせてもらうよ。'
       ]
     },
     earnest: {
@@ -4352,11 +4472,17 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'ありがとう。…期待に応えるからね。見ててね。'
+      ],
+      composed: [
+        '…ありがとうございます。この評価に…恥じない結果を出します。'
       ]
     },
     emotional: {
       _default: [
         '社長……！ ありがとうございます……！ 絶対に結果で返します……！'
+      ],
+      composed: [
+        '…社長…っ…ありがとう…ございます。…絶対、返すから…。'
       ]
     }
   },
@@ -4373,6 +4499,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '少しでも考えてくれたのね。…ありがと♡'
+      ],
+      composed: [
+        'まあ…気持ちは受け取ったよ。悪くないね。'
       ]
     },
     bold: {
@@ -4390,6 +4519,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……まあ、少しは考えてくれたのね。次はもっと期待してるわよ♡'
+      ],
+      composed: [
+        '…ゼロじゃないなら…まあ、いいよ。次はもう少し期待してる。'
       ]
     },
     quiet: {
@@ -4401,6 +4533,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         '少しでも上げていただけるなんて…ありがとうございます……。'
+      ],
+      composed: [
+        '……それだけでも…ありがたいです。…ちゃんと覚えてるよ。'
       ]
     },
     shy: {
@@ -4417,6 +4552,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'んー、まあいっか♪ 気持ちは伝わったし♡'
+      ],
+      composed: [
+        'まあ…もらえるなら、いいんじゃない。ありがとね。'
       ]
     },
     earnest: {
@@ -4428,11 +4566,17 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       ojousama: [
         '……社長のご判断を尊重いたしますわ。精一杯やりますわね。'
+      ],
+      composed: [
+        '…なるほど。社長の判断なら…受け入れるよ。やれることをやる。'
       ]
     },
     emotional: {
       _default: [
         '……本当は足りないけど……社長が考えてくれたってことは、伝わりました。'
+      ],
+      composed: [
+        '……足りない…けど…っ。…気持ちは、受け取ったから…。'
       ]
     }
   },
@@ -4449,6 +4593,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……そう。残念ね。'
+      ],
+      composed: [
+        '…そう。まあ…そういうこともあるよね。'
       ]
     },
     bold: {
@@ -4466,6 +4613,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……ふうん。まあいいわ。でもね、次はないからね？'
+      ],
+      composed: [
+        '…ふぅん。まあいいけど…次は、ないよ。覚えておいて。'
       ]
     },
     quiet: {
@@ -4477,6 +4627,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         '……そうですか……。分かりました……。すみません……。'
+      ],
+      composed: [
+        '……そう…。…分かった。…仕方ないね。'
       ]
     },
     shy: {
@@ -4493,6 +4646,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'えー、ダメ？ …まあしょうがないかぁ。ちょっと寂しいけど。'
+      ],
+      composed: [
+        'あら…ダメか。まあ…しょうがないね。'
       ]
     },
     earnest: {
@@ -4504,11 +4660,17 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       ojousama: [
         '……残念ですわ。ですが、この判断の結果はお忘れなきよう。'
+      ],
+      composed: [
+        '…残念ですが…了解です。ただ…この判断は、忘れないでください。'
       ]
     },
     emotional: {
       _default: [
         '……やっぱり……ダメなんだ……。……わかりました。'
+      ],
+      composed: [
+        '……やっぱり…っ…。……分かった…。'
       ]
     }
   },
@@ -4525,6 +4687,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……そう。残念だけど…仕方ないわね。'
+      ],
+      composed: [
+        '…そう。まあ…残念だけど、仕方ないね。'
       ]
     },
     bold: {
@@ -4542,6 +4707,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……ふうん。まあいいけど、我慢にも限度があるからね？'
+      ],
+      composed: [
+        '…そう。…まあいいよ。ただ…我慢にも限度がある。それだけ。'
       ]
     },
     quiet: {
@@ -4553,6 +4721,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         '……はい…分かりました……。すみません、ご無理を言って……。'
+      ],
+      composed: [
+        '……そう…。…分かりました。…少し、残念かな。'
       ]
     },
     shy: {
@@ -4569,6 +4740,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'えー、やっぱりダメ？ …いつか上げてね？ 約束よ♡'
+      ],
+      composed: [
+        'あらら…まあ、そうなるかなとは思ってた。いつか上げてね。'
       ]
     },
     earnest: {
@@ -4580,11 +4754,17 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       ojousama: [
         '……承知いたしましたわ。ですが、このまま変わらなければ…。'
+      ],
+      composed: [
+        '…承知しました。ただ…このままでは、いずれ動くことになる。それだけです。'
       ]
     },
     emotional: {
       _default: [
         '……っ！ ……もういいです。分かりました。……悔しい……。'
+      ],
+      composed: [
+        '……っ…。…分かった…。…悔しく、ないから…。'
       ]
     }
   },
@@ -4601,6 +4781,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……そこまでしてくれるの？ …もう少しだけ、いてあげる♡'
+      ],
+      composed: [
+        '…ふぅん。そこまでしてくれるんだ。…まあ…もう少しだけ、いるよ。'
       ]
     },
     bold: {
@@ -4618,6 +4801,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……仕方ないわね。そこまで言うなら、もう少しだけ付き合ってあげる。'
+      ],
+      composed: [
+        '…そこまで言うなら…まあ、もう少し付き合うよ。'
       ]
     },
     quiet: {
@@ -4629,6 +4815,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         'えっ…そこまでしてくださるんですか…？ ……もう少しだけ、頑張ってみます……。'
+      ],
+      composed: [
+        '……そこまで…してくれるんだ。…もう少しだけ…頑張ってみるね。'
       ]
     },
     shy: {
@@ -4645,6 +4834,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         'え、そこまでしてくれるの？ …じゃあもうちょっといよっかな♪'
+      ],
+      composed: [
+        'へえ…そこまでしてくれるんだ。…じゃあ、もうちょっといようかな。'
       ]
     },
     earnest: {
@@ -4656,11 +4848,17 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       ojousama: [
         '……その誠意、しかと受け止めましたわ。もう一度、全力で臨みますわ。'
+      ],
+      composed: [
+        '…社長の誠意は…伝わりました。もう一度…やってみます。'
       ]
     },
     emotional: {
       _default: [
         '社長……！ ……ごめんなさい、こんな私のために……。……絶対、恩返しします……！'
+      ],
+      composed: [
+        '…社長…っ…。…ありがとう…。…必ず、返すから…。'
       ]
     }
   },
@@ -4677,6 +4875,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……ありがとう。でも…もう決めたの。ごめんね。'
+      ],
+      composed: [
+        '…ありがたいけど…もう決めたんだ。…悪いね。'
       ]
     },
     bold: {
@@ -4694,6 +4895,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '……悪いけど、もう決めたの。…引き止めても無駄よ。'
+      ],
+      composed: [
+        '…悪いけど、もう決めた。…変わらないよ。'
       ]
     },
     quiet: {
@@ -4705,6 +4909,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         '……ありがたいのですが……もう、決めました……。すみません……。'
+      ],
+      composed: [
+        '……ごめんね…。…もう、決めたから。…静かに行かせて。'
       ]
     },
     shy: {
@@ -5013,6 +5220,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '頂点からの景色…忘れないわ'
+      ],
+      composed: [
+        '…悪くない景色だった。うん、悪くない'
       ]
     },
     bold: {
@@ -5030,6 +5240,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最後まで背負い切ったわ。最高の景色だった'
+      ],
+      composed: [
+        '…背負い切った。…まあ、上出来でしょ'
       ]
     },
     quiet: {
@@ -5041,6 +5254,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         'あのベルトの重さ…一生の宝物です'
+      ],
+      composed: [
+        '…あの重さ、忘れないよ'
       ]
     },
     shy: {
@@ -5057,6 +5273,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最高だったわ。ベルト持てて幸せだった'
+      ],
+      composed: [
+        '…いい時間だったよ。ベルトも含めてね'
       ]
     },
     earnest: {
@@ -5071,11 +5290,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'このベルトに恥じない闘い…最後までできたわ'
+      ],
+      composed: [
+        '…恥じることは何もないよ。…うん、十分だ'
       ]
     },
     emotional: {
       _default: [
         'あのベルト…返したくない…でも…ありがとう…っ！'
+      ],
+      composed: [
+        '…っ…返したくなかった。…でも、ありがとう'
       ]
     }
   },
@@ -5093,6 +5318,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'ベルトには届かなかったわ。でも、後悔はないの'
+      ],
+      composed: [
+        '…届かなかった。…でもまあ、悔いはないよ'
       ]
     },
     bold: {
@@ -5110,6 +5338,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '逃げなかったわ。それだけは誇りに思ってる'
+      ],
+      composed: [
+        '…逃げなかった。…それだけで十分かな'
       ]
     },
     quiet: {
@@ -5121,6 +5352,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…悔いはありません'
+      ],
+      composed: [
+        '…悔いはない。…うん、ないよ'
       ]
     },
     shy: {
@@ -5137,6 +5371,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'ベルトは無理だったけど…楽しかったわ'
+      ],
+      composed: [
+        '…ベルトはなかったけど、まあ…楽しかったよ'
       ]
     },
     earnest: {
@@ -5151,11 +5388,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '夢には届かなかったわ。でも嘘はなかった'
+      ],
+      composed: [
+        '…嘘はなかった。…それで十分だよ'
       ]
     },
     emotional: {
       _default: [
         'ベルト…欲しかったな…でも…ここにいられてよかった…！'
+      ],
+      composed: [
+        '…っ…欲しかったな。…でも、よかったよ'
       ]
     }
   },
@@ -5173,6 +5416,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'ふふ…泣かないで。寂しくなるでしょう？'
+      ],
+      composed: [
+        '…ま、こんなもんだろう。…泣くなよ'
       ]
     },
     bold: {
@@ -5190,6 +5436,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最後まで嫌われ者…ふふ、最高だったわ'
+      ],
+      composed: [
+        '…嫌われ者か。…悪くない肩書だったよ'
       ]
     },
     quiet: {
@@ -5201,6 +5450,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…お世話になりました'
+      ],
+      composed: [
+        '…じゃあね'
       ]
     },
     shy: {
@@ -5217,6 +5469,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最後くらい素直になろうかしら。楽しかったわ'
+      ],
+      composed: [
+        '…ま、最後くらいは正直にね。…楽しかったよ'
       ]
     },
     earnest: {
@@ -5231,11 +5486,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '嫌われ役はね…誰かがやらなきゃいけなかったの'
+      ],
+      composed: [
+        '…誰かがやらなきゃいけなかった。…それだけだよ'
       ]
     },
     emotional: {
       _default: [
         '…っ、バカ…泣くんじゃないわよ…あたしまで…っ！'
+      ],
+      composed: [
+        '…っ…泣くなって。…こっちまで、困るだろ'
       ]
     }
   },
@@ -5253,6 +5514,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'ここが、私の全てだったの'
+      ],
+      composed: [
+        '…いい時間だった。…うん、全部ね'
       ]
     },
     bold: {
@@ -5270,6 +5534,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'あっという間だったわ。悔いはないの'
+      ],
+      composed: [
+        '…あっという間だったね。…悪くなかったよ'
       ]
     },
     quiet: {
@@ -5281,6 +5548,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…ありがとうございました'
+      ],
+      composed: [
+        '…ありがとう。…うん'
       ]
     },
     shy: {
@@ -5297,6 +5567,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '長かったわ…でもあっという間だった'
+      ],
+      composed: [
+        '…長かったね。…でもまあ、いい時間だったよ'
       ]
     },
     earnest: {
@@ -5311,11 +5584,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '全力で走り抜けたわ。嘘のない時間だった'
+      ],
+      composed: [
+        '…嘘のない時間だった。…それだけで十分だよ'
       ]
     },
     emotional: {
       _default: [
         'ここが…全部だった…ありがとう…ありがとう…！'
+      ],
+      composed: [
+        '…っ…ここが全部だった。…ありがとう'
       ]
     }
   },
@@ -5333,6 +5612,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'まだ何も成し遂げてないのに…嘘でしょう…'
+      ],
+      composed: [
+        '…こんなところで、か。…まだ何も…'
       ]
     },
     bold: {
@@ -5350,6 +5632,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '嘘…まだ始まったばかりじゃない…'
+      ],
+      composed: [
+        '…嘘だろ。…まだ、始まったばかりなのに'
       ]
     },
     quiet: {
@@ -5361,6 +5646,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…まだ、何も…'
+      ],
+      composed: [
+        '…まだ、なのにな'
       ]
     },
     shy: {
@@ -5377,6 +5665,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'うそ…まだこれからだったのに…'
+      ],
+      composed: [
+        '…これからだったんだけどな。…参ったね'
       ]
     },
     earnest: {
@@ -5391,11 +5682,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'まだ何も返せてないのに…受け入れられないわ'
+      ],
+      composed: [
+        '…まだ何も返せてない。…こんなの、困るよ'
       ]
     },
     emotional: {
       _default: [
         'いやだ…いやだよ…まだ始まったばかりなのに…！'
+      ],
+      composed: [
+        '…っ…こんなところで。…まだ、始まったばかりなのに'
       ]
     }
   },
@@ -5413,6 +5710,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '体がね…もう言うことを聞かないの…'
+      ],
+      composed: [
+        '…まだやれたのに。…体が、ね'
       ]
     },
     bold: {
@@ -5430,6 +5730,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'まだやれると信じてたのに…'
+      ],
+      composed: [
+        '…まだやれると思ってた。…参ったな'
       ]
     },
     quiet: {
@@ -5441,6 +5744,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…これからだったのに…'
+      ],
+      composed: [
+        '…これからだったんだけどな'
       ]
     },
     shy: {
@@ -5457,6 +5763,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '参ったわ…これからだったのに…'
+      ],
+      composed: [
+        '…これからだったんだけどね。…仕方ないか'
       ]
     },
     earnest: {
@@ -5471,11 +5780,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'まだ足りなかったわ…もっとやりたかった'
+      ],
+      composed: [
+        '…もっとやりたかった。…それだけだよ'
       ]
     },
     emotional: {
       _default: [
         '悔しい…悔しいよ…これからだったのに…！'
+      ],
+      composed: [
+        '…っ…悔しいよ。…これからだったのに'
       ]
     }
   },
@@ -5493,6 +5808,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'わかってたわ。いつか来るって'
+      ],
+      composed: [
+        '…十分やったよ。…うん、わかってた'
       ]
     },
     bold: {
@@ -5510,6 +5828,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '体は限界だけど…心はまだ燃えてるわ'
+      ],
+      composed: [
+        '…体は限界か。…でもまあ、やりきったよ'
       ]
     },
     quiet: {
@@ -5521,6 +5842,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…十分やれたと思います'
+      ],
+      composed: [
+        '…十分だよ'
       ]
     },
     shy: {
@@ -5537,6 +5861,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '十分やったわ。いい人生だった'
+      ],
+      composed: [
+        '…まあ、十分やったね。…いい時間だったよ'
       ]
     },
     earnest: {
@@ -5551,11 +5878,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '悔いがないとは言わないわ。でも…やりきった'
+      ],
+      composed: [
+        '…悔いがないとは言わない。…でも、やりきったよ'
       ]
     },
     emotional: {
       _default: [
         'わかってたよ…いつか来るって…でも…寂しいよ…！'
+      ],
+      composed: [
+        '…っ…わかってたよ。…でも、寂しいもんだね'
       ]
     }
   },
@@ -5573,6 +5906,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'このベルト…まだ返したくなかったのに…'
+      ],
+      composed: [
+        '…まだ返したくなかったな。…このベルト'
       ]
     },
     bold: {
@@ -5590,6 +5926,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'チャンピオンのまま終わるなんて…残酷ね'
+      ],
+      composed: [
+        '…チャンピオンのまま終わりか。…皮肉だね'
       ]
     },
     quiet: {
@@ -5601,6 +5940,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         '…まだ、お返ししたくなかったです'
+      ],
+      composed: [
+        '…まだ、返したくなかった'
       ]
     },
     shy: {
@@ -5617,6 +5959,9 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         'あら…ベルト持ったまま終わりなの…'
+      ],
+      composed: [
+        '…ベルト持ったまま終わりか。…参ったね'
       ]
     },
     earnest: {
@@ -5631,11 +5976,17 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最後の防衛戦…やりたかったわ。それだけが心残り'
+      ],
+      composed: [
+        '…最後の防衛戦、やりたかったな。…それだけだよ'
       ]
     },
     emotional: {
       _default: [
         'やだ…このベルト…まだ返したくない…っ！'
+      ],
+      composed: [
+        '…っ…返したくない。…まだ、このベルト…'
       ]
     }
   }
@@ -5655,6 +6006,7 @@ const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
   ojousama:  ['…社長に、ご迷惑をおかけしますわね'],
   seductive: ['…社長のこと、少し心配ね'],
   polite:    ['…社長、本当に申し訳ございません'],
+  composed:  ['…社長、迷惑をかけるね。…すまない'],
 };
 
 // ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
@@ -5673,6 +6025,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…わかったわ。もう限界なのよね'
+      ],
+      composed: [
+        '…そう。…わかってたよ、自分でも'
       ]
     },
     bold: {
@@ -5690,6 +6045,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…認めるわ。もう限界なの'
+      ],
+      composed: [
+        '…ふぅん、限界か。…認めるよ'
       ]
     },
     quiet: {
@@ -5701,6 +6059,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…わかっています'
+      ],
+      composed: [
+        '……うん'
       ]
     },
     shy: {
@@ -5717,6 +6078,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'そうよね…ありがとう'
+      ],
+      composed: [
+        '…まあ、そうだよね。…ありがとう'
       ]
     },
     earnest: {
@@ -5731,11 +6095,17 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'ありがとう。言ってくれて助かったわ'
+      ],
+      composed: [
+        '…ありがとう。言ってくれて。…助かった'
       ]
     },
     emotional: {
       _default: [
         '…うん…わかってた…わかってたよ…っ'
+      ],
+      composed: [
+        '…っ、…わかってた。…うん'
       ]
     }
   },
@@ -5753,6 +6123,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…わかってたわ。もう追いつけないって'
+      ],
+      composed: [
+        '…そうだね。…追いつけなくなってた'
       ]
     },
     bold: {
@@ -5770,6 +6143,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '認めたくないけど…結果が全てよね'
+      ],
+      composed: [
+        '…結果が全て、か。…そうだね'
       ]
     },
     quiet: {
@@ -5781,6 +6157,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…そうですね'
+      ],
+      composed: [
+        '……そう、だね'
       ]
     },
     shy: {
@@ -5797,6 +6176,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'そうよね…勝てなくなっちゃったものね'
+      ],
+      composed: [
+        '…まあ、勝てなくなったもんね。…仕方ないか'
       ]
     },
     earnest: {
@@ -5811,11 +6193,17 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'もっと早く気づくべきだったわ。…わかったわ'
+      ],
+      composed: [
+        '…もっと早く気づくべきだった。…わかった'
       ]
     },
     emotional: {
       _default: [
         '勝てない…もう勝てないんだ…わかってたよ…'
+      ],
+      composed: [
+        '…勝てなくなった、か。……うん'
       ]
     }
   },
@@ -5833,6 +6221,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'ふふ…言われなくても辞めるつもりだったわ'
+      ],
+      composed: [
+        '…ふぅん。…言われなくても、そのつもりだったよ'
       ]
     },
     bold: {
@@ -5850,6 +6241,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…いいわよ。最後くらい大人しくしてあげる'
+      ],
+      composed: [
+        '…まあ、いいよ。…潮時だし'
       ]
     },
     quiet: {
@@ -5861,6 +6255,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…潮時ですね'
+      ],
+      composed: [
+        '……潮時、だね'
       ]
     },
     shy: {
@@ -5877,6 +6274,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '潮時ってやつかしら。わかったわ'
+      ],
+      composed: [
+        '…ま、潮時だね。…わかったよ'
       ]
     },
     earnest: {
@@ -5891,11 +6291,17 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…わかったわ。最後まで演じきれたなら本望よ'
+      ],
+      composed: [
+        '…最後まで演じきれたなら、悪くない。…わかった'
       ]
     },
     emotional: {
       _default: [
         '…っ、もういいわよ…わかった…わかったから…'
+      ],
+      composed: [
+        '…っ、…もういい。…わかった'
       ]
     }
   },
@@ -5913,6 +6319,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '最後にいい試合がしたいの。お願いできる？'
+      ],
+      composed: [
+        '…最後に一つだけ。…いい試合がしたいな'
       ]
     },
     bold: {
@@ -5930,6 +6339,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '最後に…もう一回輝かせてくれる？'
+      ],
+      composed: [
+        '…最後にもう一度、か。…悪くないね'
       ]
     },
     quiet: {
@@ -5941,6 +6353,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…ベルトを持てました。それで十分です'
+      ],
+      composed: [
+        '…ベルトを持てた。…十分だよ'
       ]
     },
     shy: {
@@ -5957,6 +6372,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'ベルト持てたものね。十分よ'
+      ],
+      composed: [
+        '…ベルト持てたしね。…十分だよ'
       ]
     },
     earnest: {
@@ -5971,11 +6389,17 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '最後にいい試合を。それだけが望みよ'
+      ],
+      composed: [
+        '…最後にいい試合を。…それだけでいい'
       ]
     },
     emotional: {
       _default: [
         'ベルト…持てたから…もう…十分だよ…っ'
+      ],
+      composed: [
+        '…ベルト、持てたから。……十分'
       ]
     }
   },
@@ -5993,6 +6417,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…わかったわ。潮時よね'
+      ],
+      composed: [
+        '…そう。…潮時、だね'
       ]
     },
     bold: {
@@ -6010,6 +6437,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'こんな終わり方なのね…わかったわ'
+      ],
+      composed: [
+        '…こんな終わり方、か。…まあ、いいよ'
       ]
     },
     quiet: {
@@ -6021,6 +6451,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…はい'
+      ],
+      composed: [
+        '……うん'
       ]
     },
     shy: {
@@ -6037,6 +6470,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '覚悟はできてたわ。最後、よろしくね'
+      ],
+      composed: [
+        '…覚悟はできてた。…最後、よろしくね'
       ]
     },
     earnest: {
@@ -6051,11 +6487,17 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         '…覚悟はできてたわ。言ってくれてありがとう'
+      ],
+      composed: [
+        '…覚悟はできてた。…ありがとう、言ってくれて'
       ]
     },
     emotional: {
       _default: [
         'うん…覚悟…できてたよ…ありがとう…'
+      ],
+      composed: [
+        '……ありがとう。…覚悟はできてたよ'
       ]
     }
   }
@@ -6076,6 +6518,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'チャンピオンに引退ですって？ 冗談でしょう？'
+      ],
+      composed: [
+        '…チャンピオンに引退、か。…冗談はやめてよ'
       ]
     },
     bold: {
@@ -6093,6 +6538,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '王者を辞めさせる？ 100年早いわよ'
+      ],
+      composed: [
+        '…ふぅん。…王者に引退を勧める、か。…早いよ'
       ]
     },
     quiet: {
@@ -6103,6 +6551,9 @@ const RETIRE_REFUSE_LINES = {
         '…退かない'
       ],
       polite: [
+        '…このベルトがある限りは'
+      ],
+      composed: [
         '…このベルトがある限りは'
       ]
     },
@@ -6120,6 +6571,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだチャンピオンよ？ もう少し待って'
+      ],
+      composed: [
+        '…まだチャンピオンだよ。…もう少し待って'
       ]
     },
     earnest: {
@@ -6134,11 +6588,17 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'このベルトの重み…まだ背負えるわ'
+      ],
+      composed: [
+        '…このベルトの重み、まだ背負える。…引退はしないよ'
       ]
     },
     emotional: {
       _default: [
         'やだ…このベルト離さない…まだ闘える…！'
+      ],
+      composed: [
+        '…っ、…このベルトは渡さない。…まだ闘える'
       ]
     }
   },
@@ -6156,6 +6616,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '私を追い出すつもり？ そうはいかないわよ'
+      ],
+      composed: [
+        '…追い出す、か。…何年ここにいたと思ってるの'
       ]
     },
     bold: {
@@ -6173,6 +6636,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '私が邪魔なの？ はっきり言ってくれる？'
+      ],
+      composed: [
+        '…ふぅん、邪魔か。…はっきり言ってくれるね'
       ]
     },
     quiet: {
@@ -6184,6 +6650,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       polite: [
         '…そう、ですか'
+      ],
+      composed: [
+        '……そう、か'
       ]
     },
     shy: {
@@ -6200,6 +6669,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'あら…私が邪魔なの？ ひどいわね'
+      ],
+      composed: [
+        '…邪魔なの、か。…まあ、ちょっとひどいね'
       ]
     },
     earnest: {
@@ -6214,11 +6686,17 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'この団体のために尽くしてきたの。嘘じゃないわ'
+      ],
+      composed: [
+        '…この団体のために尽くしてきた。…それは嘘じゃない'
       ]
     },
     emotional: {
       _default: [
         '何年…何年ここにいたと思ってるの…っ！'
+      ],
+      composed: [
+        '…っ、…何年ここにいたと思ってるの'
       ]
     }
   },
@@ -6236,6 +6714,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '引退ですって？ 次の興行を見てちょうだい'
+      ],
+      composed: [
+        '…引退、ね。…次の興行を見てからもう一度言って'
       ]
     },
     bold: {
@@ -6253,6 +6734,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '私がいなくなったら…この団体、終わるわよ？'
+      ],
+      composed: [
+        '…ふぅん。…私がいなくなったら困るのは、そっちだよ'
       ]
     },
     quiet: {
@@ -6264,6 +6748,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       polite: [
         '…まだ辞めません'
+      ],
+      composed: [
+        '…まだ辞めない'
       ]
     },
     shy: {
@@ -6280,6 +6767,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだまだ暴れ足りないわ'
+      ],
+      composed: [
+        '…まだ暴れ足りないんだよね。…もう少し付き合ってよ'
       ]
     },
     earnest: {
@@ -6294,11 +6784,17 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '次の興行で証明するわ。後悔させてみせる'
+      ],
+      composed: [
+        '…次の興行で証明する。…後悔させてあげるよ'
       ]
     },
     emotional: {
       _default: [
         '引退…っ？ 冗談じゃない…まだ終わらない…！'
+      ],
+      composed: [
+        '…っ、…冗談じゃない。…まだ終わらないよ'
       ]
     }
   },
@@ -6316,6 +6812,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだ終わらないわ。私はまだ闘えるの'
+      ],
+      composed: [
+        '…まだ終わらないよ。…体がある限り、リングに立つ'
       ]
     },
     bold: {
@@ -6333,6 +6832,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         '諦めるのはまだ早いわ。見ていて'
+      ],
+      composed: [
+        '…諦めるのはまだ早いよ。…見ていて'
       ]
     },
     quiet: {
@@ -6344,6 +6846,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       polite: [
         '…まだ、闘えます'
+      ],
+      composed: [
+        '…まだ、闘える'
       ]
     },
     shy: {
@@ -6360,6 +6865,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだまだ元気よ。もう少しやらせて'
+      ],
+      composed: [
+        '…まだ元気だよ。…もう少しやらせて'
       ]
     },
     earnest: {
@@ -6374,11 +6882,17 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだやれることがあるの。止まるわけにはいかないわ'
+      ],
+      composed: [
+        '…まだやれることがある。…ここで止まるわけにはいかない'
       ]
     },
     emotional: {
       _default: [
         'まだ…まだ闘いたい…お願い、もう少しだけ…！'
+      ],
+      composed: [
+        '…っ、…まだ闘いたい。…お願い、もう少しだけ'
       ]
     }
   }
@@ -6398,6 +6912,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'もう少しだけ…あのベルトに手を伸ばしたいの'
+      ],
+      composed: [
+        '…もう少しだけ。…あのベルトに、もう一度手を伸ばしたい'
       ]
     },
     bold: {
@@ -6415,6 +6932,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'もう一シーズンだけ。結果を出すわ'
+      ],
+      composed: [
+        '…もう一シーズンだけ。…結果は出すよ'
       ]
     },
     quiet: {
@@ -6426,6 +6946,9 @@ const RETAIN_LINES = {
       ],
       polite: [
         '…もう一度だけ、挑戦させてください'
+      ],
+      composed: [
+        '…もう一度だけ'
       ]
     },
     shy: {
@@ -6442,6 +6965,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'もう少しだけ。あのベルトにもう一度触れたいの'
+      ],
+      composed: [
+        '…もうちょっとだけ。…あのベルト、もう一回触りたいんだ'
       ]
     },
     earnest: {
@@ -6456,11 +6982,17 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '最後にもう一度…恥じない闘いをしたいの'
+      ],
+      composed: [
+        '…最後にもう一度。…あのベルトに恥じない闘いをしたい'
       ]
     },
     emotional: {
       _default: [
         'あのベルト…もう一度…触りたい…っ'
+      ],
+      composed: [
+        '…あのベルト、もう一度。……触りたい'
       ]
     }
   },
@@ -6477,6 +7009,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'あなたがそう言うなら…もう少し頑張ってみるわ'
+      ],
+      composed: [
+        '…そう言ってくれるなら。…もう少しだけ付き合うよ'
       ]
     },
     bold: {
@@ -6494,6 +7029,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '信じてくれるの？ …もう少し付き合うわ'
+      ],
+      composed: [
+        '…信じてくれるなら。…もう少し付き合うよ'
       ]
     },
     quiet: {
@@ -6505,6 +7043,9 @@ const RETAIN_LINES = {
       ],
       polite: [
         '…ありがとうございます。もう少しだけ'
+      ],
+      composed: [
+        '…ありがとう。…もう少しだけ'
       ]
     },
     shy: {
@@ -6521,6 +7062,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'まだ必要としてくれるの。じゃあもう少し'
+      ],
+      composed: [
+        '…まだ必要としてくれるんだ。…じゃあもう少し'
       ]
     },
     earnest: {
@@ -6535,11 +7079,17 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '信じてくれてありがとう。応えてみせるわ'
+      ],
+      composed: [
+        '…信じてくれてありがとう。…期待には応えるよ'
       ]
     },
     emotional: {
       _default: [
         '…っ、ありがとう…もう少しだけ…頑張る…！'
+      ],
+      composed: [
+        '……ありがとう。…もう少しだけ、頑張る'
       ]
     }
   },
@@ -6556,6 +7106,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'まだ使い道があるのね。いいわ、付き合ってあげる'
+      ],
+      composed: [
+        '…ふぅん、まだ使い道があるんだ。…いいよ、付き合ってあげる'
       ]
     },
     bold: {
@@ -6573,6 +7126,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '引き留めるの？ …悪くない判断ね'
+      ],
+      composed: [
+        '…引き留める、か。…まあ、悪くない判断だね'
       ]
     },
     quiet: {
@@ -6584,6 +7140,9 @@ const RETAIN_LINES = {
       ],
       polite: [
         '…わかりました'
+      ],
+      composed: [
+        '……いいよ'
       ]
     },
     shy: {
@@ -6600,6 +7159,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'まだ使ってくれるの。ま、いいけど'
+      ],
+      composed: [
+        '…まだ使ってくれるんだ。…ま、いいよ'
       ]
     },
     earnest: {
@@ -6614,11 +7176,17 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '…わかったわ。まだ役に立てるなら全力でやるわ'
+      ],
+      composed: [
+        '…わかった。…まだ役に立てるなら、やるよ'
       ]
     },
     emotional: {
       _default: [
         '…っ、まだ必要としてくれるの…わかった…やるよ…'
+      ],
+      composed: [
+        '…っ、…まだ必要としてくれるんだ。…わかった、やるよ'
       ]
     }
   },
@@ -6636,6 +7204,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '…わかったわ。もう少し続けてみる'
+      ],
+      composed: [
+        '…うん。…もう少しだけ、やってみるよ'
       ]
     },
     bold: {
@@ -6653,6 +7224,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'まだ終わりじゃないわ'
+      ],
+      composed: [
+        '…まだ終わりじゃないよ。…やってみせる'
       ]
     },
     quiet: {
@@ -6664,6 +7238,9 @@ const RETAIN_LINES = {
       ],
       polite: [
         '…もう少しだけ、続けます'
+      ],
+      composed: [
+        '…もう少しだけ'
       ]
     },
     shy: {
@@ -6680,6 +7257,9 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'もう少しやってみようかしら'
+      ],
+      composed: [
+        '…まあ、もうちょっとやってみるか'
       ]
     },
     earnest: {
@@ -6694,11 +7274,17 @@ const RETAIN_LINES = {
       ],
       seductive: [
         '…わかったわ。やれることがあるなら続けるわ'
+      ],
+      composed: [
+        '…わかった。…まだやれることがあるなら、続けるよ'
       ]
     },
     emotional: {
       _default: [
         '…うん…もう少しだけ…やってみる…'
+      ],
+      composed: [
+        '……うん。…もう少しだけ、やってみる'
       ]
     }
   }
