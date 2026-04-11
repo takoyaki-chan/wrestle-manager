@@ -1187,6 +1187,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       seductive: [
         '今夜、終わりにしましょう？',
         'あなたを超えてみせるわ'
+      ],
+      composed: [
+        '…そろそろ、決着をつけようか'
       ]
     },
     bold: {
@@ -1205,6 +1208,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       seductive: [
         '逃がさないわよ。今日で決着よ'
+      ],
+      composed: [
+        '…逃がす気はないよ。今日で終わらせる'
       ]
     },
     quiet: {
@@ -1216,6 +1222,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         '…今日で…決着をつけさせてください'
+      ],
+      composed: [
+        '……今日だ'
       ]
     },
     shy: {
@@ -1230,6 +1239,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       delinquent: [
         'よっしゃ、今日で終わりにしようぜ！'
+      ],
+      composed: [
+        'さて、そろそろ片付けようか'
       ]
     },
     earnest: {
@@ -1242,11 +1254,17 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       ojousama: [
         '今日こそ決着ですわ'
+      ],
+      composed: [
+        '…決着をつけます。今日で'
       ]
     },
     emotional: {
       _default: [
         '今日で……終わりにする……！ 絶対に……！'
+      ],
+      composed: [
+        '…もういい。…リングで終わらせる'
       ]
     }
   },
@@ -1270,6 +1288,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       seductive: [
         'いいわよ。来なさい'
+      ],
+      composed: [
+        '…いいよ。来なよ'
       ]
     },
     bold: {
@@ -1285,6 +1306,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       cool: [
         '……受けて立つ'
+      ],
+      composed: [
+        '…受けて立つよ。好きにおいで'
       ]
     },
     quiet: {
@@ -1296,6 +1320,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         '…はい…受けて立ちます'
+      ],
+      composed: [
+        '……（静かに頷く）…来なよ'
       ]
     },
     shy: {
@@ -1309,6 +1336,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       delinquent: [
         'おう、来いよ！'
+      ],
+      composed: [
+        'いいよ、来なよ。相手してあげる'
       ]
     },
     earnest: {
@@ -1318,11 +1348,17 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         'お受けいたします。全力で参ります'
+      ],
+      composed: [
+        '…受けて立ちます。全力で'
       ]
     },
     emotional: {
       _default: [
         '来なさい……！ 全部受け止めてやる……！'
+      ],
+      composed: [
+        '…いいよ。…来なよ'
       ]
     }
   },
@@ -1343,6 +1379,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       seductive: [
         '長かったわね……今夜で最後よ'
+      ],
+      composed: [
+        '…長かったね。…今日で終わりにしよう'
       ]
     },
     bold: {
@@ -1352,11 +1391,17 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       cool: [
         '……最後だ。全てを出す'
+      ],
+      composed: [
+        '…最後だね。…全部出すよ'
       ]
     },
     quiet: {
       _default: [
         '………（深く息を吸い、前に出る）'
+      ],
+      composed: [
+        '………（静かに息を吸い、前を見る）'
       ]
     },
     shy: {
@@ -1367,16 +1412,25 @@ const RIVALRY_CONFRONTATION_LINES = {
     easygoing: {
       _default: [
         '最後の一戦だ。全部出し切ろう！'
+      ],
+      composed: [
+        '…最後か。全部出し切ろう'
       ]
     },
     earnest: {
       _default: [
         'この因縁、今日終わりにします。全力で'
+      ],
+      composed: [
+        '…今日で終わりにします'
       ]
     },
     emotional: {
       _default: [
         'ずっと……ずっとこの日を……！'
+      ],
+      composed: [
+        '…ずっと待ってた。…行くよ'
       ]
     }
   },
@@ -1397,6 +1451,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       seductive: [
         '最高の終わりにしましょう'
+      ],
+      composed: [
+        '…うん。…最高の結末にしよう'
       ]
     },
     bold: {
@@ -1406,11 +1463,17 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       cool: [
         '……全力で来い'
+      ],
+      composed: [
+        '…わかってる。全力でおいで'
       ]
     },
     quiet: {
       _default: [
         '………（小さく微笑み、構える）'
+      ],
+      composed: [
+        '………（静かに微笑み、構える）'
       ]
     },
     shy: {
@@ -1421,16 +1484,25 @@ const RIVALRY_CONFRONTATION_LINES = {
     easygoing: {
       _default: [
         'おう！ 最高の締めにしようぜ！'
+      ],
+      composed: [
+        '…うん。最高の締めにしよう'
       ]
     },
     earnest: {
       _default: [
         '全力でお受けします。悔いのない試合を'
+      ],
+      composed: [
+        '…全力で受けます'
       ]
     },
     emotional: {
       _default: [
         '来なさい……！ 全部……受け止める……！'
+      ],
+      composed: [
+        '…来なよ。…全部受け止める'
       ]
     }
   }
@@ -1452,6 +1524,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         'ひとつ片がついたわ…でも、まだ気になるの'
+      ],
+      composed: [
+        '…一つ片がついた。…でも、まだ終わった気はしないね'
       ]
     },
     bold: {
@@ -1470,6 +1545,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '今日は私の勝ち。…でも、まだ飽きてないわよ？'
+      ],
+      composed: [
+        '…一つ勝った。…でもまだ先があるだろうね'
       ]
     },
     quiet: {
@@ -1481,6 +1559,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       polite: [
         '…ひとまず…決着です…でも…'
+      ],
+      composed: [
+        '…一つ、終わったか'
       ]
     },
     shy: {
@@ -1497,6 +1578,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '勝っちゃった〜。…でもね、まだ終わってない気がするの'
+      ],
+      composed: [
+        '勝ったか。…でもまだ、終わった気はしないね'
       ]
     },
     earnest: {
@@ -1512,11 +1596,17 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '一つ勝ったわ。…でも、これで終わりとは思えないの'
+      ],
+      composed: [
+        '…一つ決着がつきました。…でもまだ、先がある気がします'
       ]
     },
     emotional: {
       _default: [
         '勝った…！でも…なんで涙が止まらないの…まだ終わってないのに…！'
+      ],
+      composed: [
+        '…勝った。…でもなんだろう、この感じ。…まだ終わらないね'
       ]
     }
   },
@@ -1534,6 +1624,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '負けたわ…でも、まだ終わりじゃないの'
+      ],
+      composed: [
+        '…負けたか。…でも、これで終わりじゃないよ'
       ]
     },
     bold: {
@@ -1552,6 +1645,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '完敗ね…でも、次は私の番よ。覚えておきなさい'
+      ],
+      composed: [
+        '…完敗だね。…でも、次がある'
       ]
     },
     quiet: {
@@ -1563,6 +1659,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       polite: [
         '…負けました。…でも…次は、必ず…'
+      ],
+      composed: [
+        '…負けたか。…次だ'
       ]
     },
     shy: {
@@ -1579,6 +1678,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '負けちゃったわ〜…でもね、次は覚悟してね？'
+      ],
+      composed: [
+        '負けたか。…ま、次があるさ'
       ]
     },
     earnest: {
@@ -1594,11 +1696,17 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '負けたわ…でも、この悔しさがあるから次がある。そう思うの'
+      ],
+      composed: [
+        '…負けました。…でも、次は変えてみせます'
       ]
     },
     emotional: {
       _default: [
         '悔しい…！悔しい…！ でも…絶対…次は…負けない…！'
+      ],
+      composed: [
+        '…っ…悔しいね。…でも、次こそは'
       ]
     }
   },
@@ -1615,6 +1723,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         'ようやく一つ答えが出たわ…でも、まだ終わりじゃないの'
+      ],
+      composed: [
+        '…ようやく一つ答えが出た。…でも、まだ終わらないだろうね'
       ]
     },
     bold: {
@@ -1624,11 +1735,17 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       cool: [
         '…一つ決着がついた。…だが、まだ先がある'
+      ],
+      composed: [
+        '…やっと一つ。…でも、まだ先がある'
       ]
     },
     quiet: {
       _default: [
         '………（深く息を吐く。目は、まだ相手を追っている）'
+      ],
+      composed: [
+        '………（静かに息を吐く）…一つ、か'
       ]
     },
     shy: {
@@ -1639,16 +1756,25 @@ const RIVALRY_RESOLUTION_LINES = {
     easygoing: {
       _default: [
         'やっと一つ勝てた…！ でもさ、まだ終わってないよね…？'
+      ],
+      composed: [
+        'やっと一つ勝てた。…でも、まだ終わってないね'
       ]
     },
     earnest: {
       _default: [
         '長い戦いでした…一つ答えは出た。でも、ここからだと思います'
+      ],
+      composed: [
+        '…長かった。一つ答えが出た。…でも、まだ先がある'
       ]
     },
     emotional: {
       _default: [
         '勝った…！やっと…！ でも…まだ泣きたくない…まだ続くから…！（涙）'
+      ],
+      composed: [
+        '…っ…やっと。…でも、まだだよ。…まだ続くから'
       ]
     }
   },
@@ -1665,6 +1791,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '敵わなかったわ…でも、終わりだなんて思わないでね'
+      ],
+      composed: [
+        '…敵わなかった。…でも、これで終わりじゃない'
       ]
     },
     bold: {
@@ -1674,11 +1803,17 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       cool: [
         '…全力で届かなかった。…だからこそ、次だ'
+      ],
+      composed: [
+        '…届かなかった。…でも、次は変える'
       ]
     },
     quiet: {
       _default: [
         '………（唇を噛んで、静かに立ち上がる）'
+      ],
+      composed: [
+        '………（静かに立ち上がり、前を見る）'
       ]
     },
     shy: {
@@ -1689,16 +1824,25 @@ const RIVALRY_RESOLUTION_LINES = {
     easygoing: {
       _default: [
         '負けた〜…まいったな。…でもさ、次があるでしょ？ ね？'
+      ],
+      composed: [
+        '負けたか。…ま、次があるさ'
       ]
     },
     earnest: {
       _default: [
         '負けました。…でも、この悔しさを糧にまた挑みます'
+      ],
+      composed: [
+        '…負けました。…でも、ここからです'
       ]
     },
     emotional: {
       _default: [
         '悔しい…！でも…ここで終わるもんか…！ 絶対また…！（涙）'
+      ],
+      composed: [
+        '…っ…悔しい。…でも、終わらない'
       ]
     }
   }
@@ -1740,6 +1884,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       seductive: [
         'あなたがいたから輝けたわ。……ありがとう'
+      ],
+      composed: [
+        '…あんたがいたから、ここまで来れた。……ありがとう'
       ]
     },
     bold: {
@@ -1755,6 +1902,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       cool: [
         '……好敵手だ。それ以上の言葉はいらない'
+      ],
+      composed: [
+        '…最高の相手だった。…これからもよろしく'
       ]
     },
     quiet: {
@@ -1766,6 +1916,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '…ありがとうございました。…これからも、お願いします'
+      ],
+      composed: [
+        '……ありがとう。…これからも'
       ]
     },
     shy: {
@@ -1779,6 +1932,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       delinquent: [
         '最高だったぜ！ まだまだ一緒にやろうな！'
+      ],
+      composed: [
+        '最高の相手だったよ。…これからもよろしく'
       ]
     },
     earnest: {
@@ -1788,11 +1944,17 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         'あなたのおかげで成長できました。これからもよろしくお願いいたします'
+      ],
+      composed: [
+        '…あなたのおかげでここまで来れた。…これからも、よろしく'
       ]
     },
     emotional: {
       _default: [
         'ありがとう……！ あなたがいなかったら……今の私はいない……！（涙）'
+      ],
+      composed: [
+        '…っ…ありがとう。…あんたがいたから、ここまで来れた'
       ]
     }
   },
@@ -1807,6 +1969,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       delinquent: [
         '負けたけどよ……清々しいぜ。お前が相手で良かった'
+      ],
+      composed: [
+        '…負けたか。…でも、悪くない。あんたが相手でよかった'
       ]
     },
     bold: {
@@ -1816,6 +1981,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       cool: [
         '……負けた。だが……悪くない'
+      ],
+      composed: [
+        '…完敗。…でも悔いはないよ'
       ]
     },
     quiet: {
@@ -1827,6 +1995,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '…ありがとう、ございました…（深々とお辞儀）'
+      ],
+      composed: [
+        '…負けたけど…悪くない'
       ]
     },
     shy: {
@@ -1840,6 +2011,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       delinquent: [
         '負けたけど……へへ、最高だったぜ'
+      ],
+      composed: [
+        '負けたけど…ま、笑えるよ。最高の相手だった'
       ]
     },
     earnest: {
@@ -1849,11 +2023,17 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '負けました。でもこの試合は一生の宝です'
+      ],
+      composed: [
+        '…負けました。でもこの試合は忘れません。…ありがとう'
       ]
     },
     emotional: {
       _default: [
         '負けた……！ でも嬉しい……！ 最高だった……！（号泣）'
+      ],
+      composed: [
+        '…っ…負けたけど…最高だった。…ありがとう'
       ]
     }
   }
@@ -1878,6 +2058,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       seductive: [
         '終わったわ。もう……あなたの顔は見たくない'
+      ],
+      composed: [
+        '…終わった。…もう、いいだろう'
       ]
     },
     bold: {
@@ -1893,6 +2076,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       cool: [
         '……終わりだ'
+      ],
+      composed: [
+        '…終わった。もう振り返らない'
       ]
     },
     quiet: {
@@ -1901,6 +2087,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       cool: [
         '……もう終わった'
+      ],
+      composed: [
+        '………（静かに背を向ける）'
       ]
     },
     shy: {
@@ -1914,6 +2103,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       delinquent: [
         '……ふぅ。もう絡んでくんなよ'
+      ],
+      composed: [
+        '…ふぅ。やっと終わったか'
       ]
     },
     earnest: {
@@ -1922,11 +2114,17 @@ const BITTER_RESOLUTION_LINES = {
       ],
       polite: [
         '決着がつきました。……もう、十分です'
+      ],
+      composed: [
+        '…決着がつきました。…もう十分です'
       ]
     },
     emotional: {
       _default: [
         '終わった……！ やっと……終わったんだ……！'
+      ],
+      composed: [
+        '…終わった。…もういい'
       ]
     }
   },
@@ -1947,6 +2145,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       seductive: [
         '……覚えていなさい。これで終わりだと思わないで'
+      ],
+      composed: [
+        '…認めない。…これで終わりだと思うなよ'
       ]
     },
     bold: {
@@ -1956,6 +2157,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       ojousama: [
         '認めませんわ……！ この借りは必ず返しますの……！'
+      ],
+      composed: [
+        '…認めない。…必ず返す'
       ]
     },
     quiet: {
@@ -1964,6 +2168,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       cool: [
         '………（静かに目を閉じる）'
+      ],
+      composed: [
+        '………（静かに拳を握る）'
       ]
     },
     shy: {
@@ -1977,6 +2184,9 @@ const BITTER_RESOLUTION_LINES = {
       ],
       delinquent: [
         'くそっ……忘れねえぞ……'
+      ],
+      composed: [
+        '…参ったね。…でも忘れないよ'
       ]
     },
     earnest: {
@@ -1986,11 +2196,17 @@ const BITTER_RESOLUTION_LINES = {
       ],
       polite: [
         '……認めません。こんな結末は……認められません'
+      ],
+      composed: [
+        '…認めません。…この結末は'
       ]
     },
     emotional: {
       _default: [
         '嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）'
+      ],
+      composed: [
+        '…っ…認めない。…絶対に'
       ]
     }
   }
@@ -2017,6 +2233,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       seductive: [
         'もう逃げられないわよ。終わりにしましょう'
+      ],
+      composed: [
+        '…逃がさないよ。ここで終わらせる'
       ]
     },
     bold: {
@@ -2032,6 +2251,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……待った。この日を'
+      ],
+      composed: [
+        '…この日を待ってた。…終わらせるよ'
       ]
     },
     quiet: {
@@ -2040,6 +2262,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……ここで、終わる'
+      ],
+      composed: [
+        '………（静かに相手を見据える）'
       ]
     },
     shy: {
@@ -2053,6 +2278,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       delinquent: [
         'いよいよだな。全力で行くぜ！'
+      ],
+      composed: [
+        'いよいよだね。…全部出し切るよ'
       ]
     },
     earnest: {
@@ -2062,11 +2290,17 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       polite: [
         '本日こそ、決着をつけさせていただきます'
+      ],
+      composed: [
+        '…ここで終わらせます'
       ]
     },
     emotional: {
       _default: [
         'もう……限界……今日で全部終わらせる……！'
+      ],
+      composed: [
+        '…もういい。…今日で終わりだ'
       ]
     }
   },
@@ -2089,6 +2323,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       seductive: [
         'いいわよ。迎えてあげる'
+      ],
+      composed: [
+        '…いいよ。来なよ'
       ]
     },
     bold: {
@@ -2104,6 +2341,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……同感だ'
+      ],
+      composed: [
+        '…同感だね。本気で行くよ'
       ]
     },
     quiet: {
@@ -2112,6 +2352,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……来い'
+      ],
+      composed: [
+        '………（静かに構える）…来なよ'
       ]
     },
     shy: {
@@ -2125,6 +2368,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       delinquent: [
         'おう、来いよ！ 全力だ！'
+      ],
+      composed: [
+        'おっけー。全力でいくよ'
       ]
     },
     earnest: {
@@ -2133,11 +2379,17 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       polite: [
         '全力でお相手させていただきます'
+      ],
+      composed: [
+        '…全力でお相手します'
       ]
     },
     emotional: {
       _default: [
         '来なさい……！ 全力で……！'
+      ],
+      composed: [
+        '…来なよ。…全力で'
       ]
     }
   }
@@ -2160,6 +2412,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       seductive: [
         '……ようやく、この日が来たわね'
+      ],
+      composed: [
+        '…この日を待ってた'
       ]
     },
     bold: {
@@ -2169,6 +2424,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '……全てを賭ける'
+      ],
+      composed: [
+        '…全部出す。今日で'
       ]
     },
     quiet: {
@@ -2177,6 +2435,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '………'
+      ],
+      composed: [
+        '………（静かに、真っ直ぐ見据えている）'
       ]
     },
     shy: {
@@ -2187,16 +2448,25 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
     easygoing: {
       _default: [
         '……全部、出し切る。今日で'
+      ],
+      composed: [
+        '…全部出し切る。今日で'
       ]
     },
     earnest: {
       _default: [
         '全てを賭けます。この一戦に'
+      ],
+      composed: [
+        '…全てを賭けます'
       ]
     },
     emotional: {
       _default: [
         '……もう……言葉にならない……行くよ……！'
+      ],
+      composed: [
+        '………行くよ'
       ]
     }
   },
@@ -2217,6 +2487,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       seductive: [
         '……ええ。もう何も言わないわ'
+      ],
+      composed: [
+        '…ええ。…もう言葉はいらない'
       ]
     },
     bold: {
@@ -2226,6 +2499,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '……受けて立つ'
+      ],
+      composed: [
+        '…うん。受けて立つ'
       ]
     },
     quiet: {
@@ -2234,6 +2510,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '………（目を閉じ、開く）'
+      ],
+      composed: [
+        '………（静かに頷く）'
       ]
     },
     shy: {
@@ -2244,16 +2523,25 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
     easygoing: {
       _default: [
         '……うん。もう、何も言わなくていい'
+      ],
+      composed: [
+        '…うん。言葉はいらない'
       ]
     },
     earnest: {
       _default: [
         '……はい。全力で参ります'
+      ],
+      composed: [
+        '…はい。全力で'
       ]
     },
     emotional: {
       _default: [
         '……ええ……！ 行きましょう……！'
+      ],
+      composed: [
+        '…ええ。…行こう'
       ]
     }
   }
@@ -2349,6 +2637,7 @@ const WEEKLY_STORY_TICKER = {
       delinquent: ['{nameB}が{nameA}を睨みつけた。「……てめえがそう来るなら、こっちも容赦しねえぞ」'],
       cool: ['{nameB}の表情が変わった。「……もういい。覚悟は決めた」'],
       seductive: ['{nameB}の瞳が冷たく光った。「……そう。あなたがそうなら、私も本気を出すわ」'],
+      composed: ['{nameB}の表情が静かに変わった。「…そう。…なら、こちらも覚悟を決めるよ」'],
     },
     bold: {
       _default: [
@@ -2358,22 +2647,29 @@ const WEEKLY_STORY_TICKER = {
       ojousama: ['{nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」'],
       delinquent: ['{nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」'],
       cool: ['{nameB}が静かに立ち上がった。「……もう十分だ。行くぞ」'],
+      composed: ['{nameB}が静かに{nameA}の前に立った。「…もういいだろう。受けて立つよ」'],
     },
     quiet: {
       _default: ['{nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」'],
       cool: ['{nameB}が無言で{nameA}の前に立ちはだかった。その目は——もう、以前の{nameB}ではなかった'],
       polite: ['{nameB}が小さく、しかし確かな声で言った。「…もう…我慢しません」'],
+      composed: ['{nameB}が静かに{nameA}を見据えた。「…もういい。…覚悟は決めた」'],
     },
     shy: { _default: ['「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった', '{nameB}が俯いたまま{nameA}に告げた。「…もう…我慢しない…です」'] },
     easygoing: {
       _default: ['{nameB}の笑顔が消えた。「……さすがにさ。これはないよ。本気で怒ってるんだからね」'],
       delinquent: ['{nameB}の軽い口調が一変した。「……お前さぁ、いい加減にしろよ。マジで怒るぞ」'],
+      composed: ['{nameB}の笑顔が消えた。「…さすがにね。…こっちも本気で行くよ」'],
     },
     earnest: {
       _default: ['{nameB}が真っ直ぐ{nameA}を見つめた。「ずっと信じていました。でも……もう限界です。本気で行きます」'],
       polite: ['{nameB}が深く息を吸い、言い放った。「これ以上は……お許しいただけません。全力で参ります」'],
+      composed: ['{nameB}が{nameA}を真っ直ぐ見た。「…もう十分待った。…本気で行きます」'],
     },
-    emotional: { _default: ['{nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」'] },
+    emotional: {
+      _default: ['{nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」'],
+      composed: ['{nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えてろ」'],
+    },
   },
 };
 
@@ -2396,6 +2692,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       seductive: [
         'まだ終わってないわ。次も待ってなさい'
+      ],
+      composed: [
+        '…まだ終わってない。次もあるよ'
       ]
     },
     bold: {
@@ -2407,6 +2706,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       cool: [
         '……一つ、借りを返した'
+      ],
+      composed: [
+        '…通過点だね。まだ先がある'
       ]
     },
     quiet: {
@@ -2415,6 +2717,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       cool: [
         '……まだ終わらない'
+      ],
+      composed: [
+        '………（一瞬振り返り、前を向く）'
       ]
     },
     shy: {
@@ -2428,6 +2733,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       delinquent: [
         '一勝！ でもまだまだだぜ！'
+      ],
+      composed: [
+        '一つ勝ち。…でもまだまだだね'
       ]
     },
     earnest: {
@@ -2436,11 +2744,17 @@ const RIVALRY_MATCH_REACTION = {
       ],
       polite: [
         '勝たせていただきました。でもまだ……終わりではありません'
+      ],
+      composed: [
+        '…勝ちました。でもまだ続きます'
       ]
     },
     emotional: {
       _default: [
         '勝った……！ でもまだ……まだ終わらない……！'
+      ],
+      composed: [
+        '…勝った。…でも、まだだ'
       ]
     }
   },
@@ -2461,6 +2775,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       seductive: [
         '次は……負けないわ'
+      ],
+      composed: [
+        '…次は負けない'
       ]
     },
     bold: {
@@ -2469,6 +2786,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       cool: [
         '……忘れない。この敗北を'
+      ],
+      composed: [
+        '…この借り、返すよ'
       ]
     },
     quiet: {
@@ -2476,6 +2796,9 @@ const RIVALRY_MATCH_REACTION = {
         '………（静かに拳を握りしめる）'
       ],
       cool: [
+        '……次だ'
+      ],
+      composed: [
         '……次だ'
       ]
     },
@@ -2490,6 +2813,9 @@ const RIVALRY_MATCH_REACTION = {
       ],
       delinquent: [
         'くっそー！ 次は見てろよ！'
+      ],
+      composed: [
+        '負けたか。…ま、次があるさ'
       ]
     },
     earnest: {
@@ -2498,11 +2824,17 @@ const RIVALRY_MATCH_REACTION = {
       ],
       polite: [
         '……悔しいです。でも、次は必ず'
+      ],
+      composed: [
+        '…負けました。…でも、次は'
       ]
     },
     emotional: {
       _default: [
         '悔しい……！ 絶対……絶対やり返す……！'
+      ],
+      composed: [
+        '…っ…次は、こうはいかない'
       ]
     }
   }
@@ -2526,6 +2858,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       seductive: [
         '見てた？ これが私の答えよ'
+      ],
+      composed: [
+        '…これが答えだよ。…もう格下なんて言わせない'
       ]
     },
     bold: {
@@ -2534,6 +2869,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '……やった。……ようやく'
+      ],
+      composed: [
+        '…ようやく。…超えたよ'
       ]
     },
     quiet: {
@@ -2542,6 +2880,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '……勝った。……信じられない'
+      ],
+      composed: [
+        '……勝った、か'
       ]
     },
     shy: {
@@ -2555,6 +2896,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       delinquent: [
         'マジか……やったぞ……！'
+      ],
+      composed: [
+        '…勝っちゃった。…ふぅん'
       ]
     },
     earnest: {
@@ -2563,11 +2907,17 @@ const UPSET_RIVALRY_LINES = {
       ],
       polite: [
         '勝ちました……！ ずっと追いかけてきた背中に……ついに……！'
+      ],
+      composed: [
+        '…ずっと追いかけてきた。…ようやく、届いた'
       ]
     },
     emotional: {
       _default: [
         '勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）'
+      ],
+      composed: [
+        '…っ…勝った。…ようやく'
       ]
     }
   },
@@ -2588,6 +2938,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       seductive: [
         '嘘でしょう……こんなことが……'
+      ],
+      composed: [
+        '…こんなことが。…信じられない'
       ]
     },
     bold: {
@@ -2603,6 +2956,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '……嘘だろう'
+      ],
+      composed: [
+        '…認めない。…こんな結果は'
       ]
     },
     quiet: {
@@ -2611,6 +2967,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '………（膝をつき、動かない）'
+      ],
+      composed: [
+        '………（静かに天を仰ぐ）'
       ]
     },
     shy: {
@@ -2624,6 +2983,9 @@ const UPSET_RIVALRY_LINES = {
       ],
       delinquent: [
         'は……？ マジかよ……'
+      ],
+      composed: [
+        '…嘘だろう。…こんなことが'
       ]
     },
     earnest: {
@@ -2633,11 +2995,17 @@ const UPSET_RIVALRY_LINES = {
       ],
       polite: [
         'こんな……全力を出したはずなのに……'
+      ],
+      composed: [
+        '…こんなはずでは。…なぜ'
       ]
     },
     emotional: {
       _default: [
         '嫌だ……！ こんなの嫌だ……！ なんで……！'
+      ],
+      composed: [
+        '…っ…なんで。…こんなはずじゃ'
       ]
     }
   }
@@ -6392,6 +6760,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '覚えておいて。この名前、来年はもっと大きなところで呼ばれるから'
+      ],
+      composed: [
+        '…ま、悪くないスタートかな。ここからだよ'
       ]
     },
     bold: {
@@ -6410,6 +6781,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '嬉しい？ ええ、嬉しいわ。でもこの程度で満足する女じゃないの'
+      ],
+      composed: [
+        '…通過点だね。次を見てなよ'
       ]
     },
     quiet: {
@@ -6421,6 +6795,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…ありがとうございます。まだ、足りないものばかりです'
+      ],
+      composed: [
+        '…ありがとう。…まだ先があるから'
       ]
     },
     shy: {
@@ -6444,6 +6821,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         'あら、嬉しいサプライズ。来年はもっと驚かせてあげる'
+      ],
+      composed: [
+        'へえ、新人王か。…悪くないね。来年も楽しみだ'
       ]
     },
     earnest: {
@@ -6458,6 +6838,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '努力してきたもの。…でもまだ足りないわ。もっと磨くから、見ていて'
+      ],
+      composed: [
+        '…やることはやってきた。この賞が証明してくれたかな'
       ]
     },
     emotional: {
@@ -6469,6 +6852,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！'
+      ],
+      composed: [
+        '…っ…そうか。…ありがとう。…次、行くよ'
       ]
     }
   },
@@ -6486,6 +6872,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '最高に痺れたわ。…また味わいたい、あの感覚'
+      ],
+      composed: [
+        '…悪くなかった。あの相手だから、出せたものがある'
       ]
     },
     bold: {
@@ -6504,6 +6893,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '全力を引き出してくれた相手に感謝。…次はもっと激しくいくわよ？'
+      ],
+      composed: [
+        '…いい試合だった。出し惜しみなんてできなかったよ'
       ]
     },
     quiet: {
@@ -6515,6 +6907,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…あの方と戦えて、本当によかったです'
+      ],
+      composed: [
+        '……あの試合のことは、忘れないだろうね'
       ]
     },
     shy: {
@@ -6538,6 +6933,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '楽しかったわ。久しぶりに全部忘れて夢中になれた'
+      ],
+      composed: [
+        'あの試合は楽しかったな。…全部出し切れた'
       ]
     },
     earnest: {
@@ -6553,6 +6951,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '準備してきたものを全部出せた。…最高の相手がいたから'
+      ],
+      composed: [
+        '…積み重ねてきたものが、あの試合で全部出せた。それだけだよ'
       ]
     },
     emotional: {
@@ -6564,6 +6965,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'ちくしょう…あの試合思い出したら…目から汗が…最高だったよ…！'
+      ],
+      composed: [
+        '…っ…あの試合は…ちょっと、特別だったね。…うん'
       ]
     }
   },
@@ -6581,6 +6985,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '一年間ずっと見ていてくれたでしょう？ …ちゃんと応えたわ'
+      ],
+      composed: [
+        '…一年間、やるべきことをやった。それだけだよ'
       ]
     },
     bold: {
@@ -6599,6 +7006,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '一番になるべくしてなった。当然でしょう？ …でも、まだ満足してないわ'
+      ],
+      composed: [
+        '…まあ、結果は出したからね。…でもまだ先がある'
       ]
     },
     quiet: {
@@ -6610,6 +7020,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…目の前のことに集中しただけです'
+      ],
+      composed: [
+        '…一つずつ、やっただけ'
       ]
     },
     shy: {
@@ -6633,6 +7046,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '最優秀選手ですって。…似合うと思わない？'
+      ],
+      composed: [
+        'MVP？ …ふぅん。悪くないね'
       ]
     },
     earnest: {
@@ -6648,6 +7064,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '積み重ねてきたものが実った。…でも、ここで止まるつもりはないわ'
+      ],
+      composed: [
+        '…毎日の積み重ねが形になった。…ここで満足はしないけどね'
       ]
     },
     emotional: {
@@ -6659,6 +7078,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'くそっ…泣くな泣くな…。一年間…全部出し切った…それだけだ…！'
+      ],
+      composed: [
+        '…っ…一年間、苦しかったけど…ま、報われたかな。…うん'
       ]
     }
   },
@@ -6673,6 +7095,7 @@ const AWARD_LINES = {
       seductive: ['ふふ、私の魅力が伝わったかしら'],
       cool: ['…ありがとう'],
       polite: ['身に余る光栄です。ありがとうございます'],
+      composed: ['…ふぅん、こういう賞もあるんだね。…ありがとう'],
     },
     bold: {
       _default: [
@@ -6681,6 +7104,7 @@ const AWARD_LINES = {
       ],
       delinquent: ['よっしゃ！ 来年はもっとやったるぞ！'],
       cool: ['結果で示せた。それだけだ'],
+      composed: ['…リングの外でも、やるべきことをやっただけだよ'],
     },
     shy: {
       _default: [
@@ -6697,6 +7121,7 @@ const AWARD_LINES = {
     quiet: {
       _default: ['…ありがとうございます'],
       cool: ['…感謝します'],
+      composed: ['…ありがとう'],
     },
   },
   champion: {
@@ -6713,6 +7138,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         'この輝き、よく似合うでしょう？ 欲しいなら…奪いに来なさい'
+      ],
+      composed: [
+        '…このベルトの重さ、悪くない。…来るなら来なよ'
       ]
     },
     bold: {
@@ -6731,6 +7159,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '頂点からの景色は最高よ。…あなたには見せてあげないけど'
+      ],
+      composed: [
+        '…ここが頂点。渡す気はないよ'
       ]
     },
     quiet: {
@@ -6742,6 +7173,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…この責任、全うします'
+      ],
+      composed: [
+        '……この重さ、嫌いじゃない'
       ]
     },
     shy: {
@@ -6764,6 +7198,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         'チャンピオン。いい響きね。似合うでしょう？'
+      ],
+      composed: [
+        'チャンピオンか。…まあ、楽しんでいくよ'
       ]
     },
     earnest: {
@@ -6779,6 +7216,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '王者としての誇り、毎試合で証明する。見ていてくれるかしら'
+      ],
+      composed: [
+        '…毎試合、ベストを出す。それが王者の仕事だろうね'
       ]
     },
     emotional: {
@@ -6790,6 +7230,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'このベルト…命懸けで獲ったんだ…！ 絶対…誰にも渡さねえ…！'
+      ],
+      composed: [
+        '…っ…このベルト…簡単には、渡さないよ'
       ]
     }
   },
@@ -6807,6 +7250,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '素敵な花道を用意してくれるのね。…ありがとう。最高の舞台だったわ'
+      ],
+      composed: [
+        '…いい時間だった。後悔？ …ないよ'
       ]
     },
     bold: {
@@ -6825,6 +7271,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '最高の舞台で、最高の人生だった。…最後まで美しかったでしょう？'
+      ],
+      composed: [
+        '…全部やりきった。悔いはないよ'
       ]
     },
     quiet: {
@@ -6836,6 +7285,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…長い間、ありがとうございました。幸せでした'
+      ],
+      composed: [
+        '……ありがとう。…いい場所だった'
       ]
     },
     shy: {
@@ -6859,6 +7311,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '楽しい日々だったわ。全部、宝物。…ありがとう'
+      ],
+      composed: [
+        '楽しかったな。…全部ひっくるめて、いい時間だった'
       ]
     },
     earnest: {
@@ -6874,6 +7329,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '後輩たちへ。この世界には、努力した人だけが見える景色があるわ。…信じて'
+      ],
+      composed: [
+        '後輩たちへ。…焦らなくていい。やるべきことをやれば、ちゃんと届くから'
       ]
     },
     emotional: {
@@ -6885,6 +7343,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'ちくしょう…泣くなっつってんだろ…。みんな…ありがとう…本当に…くそ…！'
+      ],
+      composed: [
+        '…っ…みんな、ありがとう。…いい場所だった。…本当に'
       ]
     }
   },
