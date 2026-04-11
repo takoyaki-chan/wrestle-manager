@@ -242,7 +242,7 @@ console.log('\n');
 
 const saveState = JSON.parse(JSON.stringify(G));
 saveState.roster.forEach(c => { delete c._weekAction; c.intensive = false; });
-saveState._saveVersion = '1.0b';
+saveState._saveVersion = '1.05';
 saveState._saveDate = new Date().toISOString();
 saveState._saveNote = `auto-generated test fixture: ${targetSeasons} seasons, seed=${seed}`;
 // transientフィールドはクリア済みだが念のため

@@ -1308,7 +1308,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.0b';
+    state._saveVersion = '1.05';
     state._saveDate = new Date().toISOString();
     // LZ圧縮 + マーカー
     const json = JSON.stringify(state);
@@ -1436,7 +1436,7 @@ const Storage = {
         console.log('[Migration] 王者がロスターに不在のため王座を空位に修復しました');
       }
 
-      G = { ...G, version: '0.9' };
+      G = { ...G, version: '1.05' };
 
       // Sync master-backed fields from ALL_CHARS so save data follows spec updates.
       const syncMasterCharMeta = c => {
