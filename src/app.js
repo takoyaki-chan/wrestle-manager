@@ -3287,6 +3287,8 @@ const App = {
     let dormantPool = [...(G.dormantPool || [])];
     // 占有済みIDセット（最終重複チェック用）
     const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(G);
+    // scoutCandidates は今から dormantPool に返却する対象なので、ここでは占有扱いから外す
+    (G.scoutCandidates || []).forEach(c => occupiedIds.delete(c.id));
     (G.scoutCandidates || []).forEach(c => {
       const clean = { ...c };
       delete clean._notion; delete clean._estimate; delete clean._isSeed;
