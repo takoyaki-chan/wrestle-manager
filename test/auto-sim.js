@@ -122,14 +122,23 @@ function autoSetupShowCard(G, simRng) {
     });
   }
 
-  // タイトルマッチ判定（確立済み＆クールダウンOK＆王者がカードにいる場合）
+  // タイトルマッチ判定（確立済み＆クールダウンOK）
   if (G.titleEstablished && card.length > 0) {
     const cd = Engine.title.canTitleMatch(G);
     if (cd.allowed) {
       const champId = G.titles.world.championId;
-      const titleMatch = card.find(m => m.left === champId || m.right === champId);
-      if (titleMatch) {
-        titleMatch.isTitle = true;
+      if (champId) {
+        // 王者在位: 王者が含まれる試合をタイトル戦に
+        const titleMatch = card.find(m => m.left === champId || m.right === champId);
+        if (titleMatch) titleMatch.isTitle = true;
+      } else {
+        // 王座空位: メイン枠を初代王者決定戦に
+        const mainMatch = card[0];
+        if (mainMatch && mainMatch.left > 0 && mainMatch.right > 0) {
+          const roster = G.roster || [];
+          const hasRental = [mainMatch.left, mainMatch.right].some(id => roster.find(c => c.id === id)?.isRental);
+          if (!hasRental) mainMatch.isTitle = true;
+        }
       }
     }
   }

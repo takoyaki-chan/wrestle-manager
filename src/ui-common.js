@@ -3318,9 +3318,13 @@ function autoFillCard() {
     if (!right) break;
     used.add(right.id);
     const hasChamp = champId && (left.id === champId || right.id === champId);
+    const isVacant = !champId;
     // v1.2: 12週クールダウンチェック — クールダウン中は自動編成でもタイトルマッチにしない
     const cdOk = Engine.title.canTitleMatch(G).allowed;
-    card[i] = {left: left.id, right: right.id, isTitle: i === 0 && hasChamp && G.titleEstablished && cdOk};
+    // 王座空位時はメイン枠を初代王者決定戦に、王者在位時は王者含む試合をタイトル戦に
+    const slotHasRental = (left.isRental || right.isRental);
+    const slotIsTitle = i === 0 && G.titleEstablished && cdOk && (hasChamp || isVacant) && !slotHasRental;
+    card[i] = {left: left.id, right: right.id, isTitle: slotIsTitle};
   }
   G = { ...G, showCard: card };
 }
@@ -3408,16 +3412,23 @@ function autoFillCardByDraw() {
 // ── 自動編成共通: メインイベントのタイトルマッチ判定 ──
 function _applyAutoTitleMatch(card) {
   if (!card.length || !G.titleEstablished) return;
-  const champId = G.titles.world.championId;
-  if (!champId) return;
   const cdOk = Engine.title.canTitleMatch(G).allowed;
   if (!cdOk) return;
-  // 王者が含まれるスロットを探す
-  const champIdx = card.findIndex(m => m.left === champId || m.right === champId);
-  if (champIdx < 0) return;
-  // 王者スロットをメイン（0番）に移動
-  if (champIdx !== 0) { [card[0], card[champIdx]] = [card[champIdx], card[0]]; }
-  card[0].isTitle = true;
+  const champId = G.titles.world.championId;
+  if (champId) {
+    // 王者在位: 王者が含まれるスロットをメインに移動してタイトル戦に
+    const champIdx = card.findIndex(m => m.left === champId || m.right === champId);
+    if (champIdx < 0) return;
+    if (champIdx !== 0) { [card[0], card[champIdx]] = [card[champIdx], card[0]]; }
+    card[0].isTitle = true;
+  } else {
+    // 王座空位: メイン枠（両選手が埋まっていれば）を初代王者決定戦に
+    if (card[0] && card[0].left > 0 && card[0].right > 0) {
+      // レンタル選手チェック
+      const hasRental = [card[0].left, card[0].right].some(id => G.roster.find(c => c.id === id)?.isRental);
+      if (!hasRental) card[0].isTitle = true;
+    }
+  }
 }
 
 function onCardSelect(slotIndex, side, newId) {
