@@ -6146,6 +6146,10 @@ const Engine = {
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
   tickWeek(state) {
+    // 安全弁: 王者がロスターに存在しない場合は即座に空位にする
+    if (state.titles?.world?.championId && !state.roster.find(c => c.id === state.titles.world.championId)) {
+      state = { ...state, titles: { ...state.titles, world: { ...state.titles.world, championId: null, defenses: 0 } } };
+    }
     // 新聞クリア: 次の興行週（生成時と異なる週）に入ったら古い新聞を消す
     if (state.currentNewspaper && Engine.util.isShowWeek(state.week)
         && (state.currentNewspaper.generatedWeek !== state.week

@@ -1432,6 +1432,12 @@ const Storage = {
         G = { ...G, titleEstablished: !!(G.titles?.world?.championId) || (G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5) };
       }
 
+      // 安全弁: 王者がロスターに存在しない場合は空位にする（退団パス漏れ修復）
+      if (G.titles?.world?.championId && !G.roster.find(c => c.id === G.titles.world.championId)) {
+        G = { ...G, titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } } };
+        console.log('[Migration] 王者がロスターに不在のため王座を空位に修復しました');
+      }
+
       G = { ...G, version: '0.9' };
 
       // Sync master-backed fields from ALL_CHARS so save data follows spec updates.
