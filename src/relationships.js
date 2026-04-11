@@ -78,6 +78,10 @@ const ARCHETYPE_BOND_MATRIX = {
     'delinquent×delinquent': 2, // 不良同士のシンパシー
     'cool×cool': 2,             // 互いの距離感を尊重
     'polite×ojousama': 3,       // 礼儀正しさが噛み合う
+    'composed×cool': 2,         // 落ち着き同士で距離感を尊重
+    'composed×polite': 2,       // 穏やかさが噛み合う
+    'composed×delinquent': -3,  // 鷹揚さと粗野さの温度差
+    'composed×composed': 1,     // 同アーキよりは控えめ
   }
 };
 

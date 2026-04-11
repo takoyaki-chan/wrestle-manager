@@ -13479,10 +13479,10 @@ Engine.eventSystem = {
   _TALENT_ARCHETYPE_BONUS: {
     gravure:  ['seductive'],
     fashion:  ['seductive', 'ojousama'],
-    brand:    ['ojousama', 'cool'],
+    brand:    ['ojousama', 'cool', 'composed'],
     cm:       ['cool'],
     variety:  ['delinquent'],
-    fan:      ['polite'],
+    fan:      ['polite', 'composed'],
   },
   calcTalentMultiplier(fighter, activityType) {
     const p = fighter.personality || 'normal';
