@@ -4631,6 +4631,9 @@ const App = {
       const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
       lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
       let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
+      // 王者がラストラン引退した場合は王座を空位にする
+      const vcLR = Engine.title.validateChampion(updState);
+      if (vcLR.msg) { updState = { ...updState, titles: vcLR.titles, gameLog: [...(updState.gameLog || []), vcLR.msg] }; }
       if (updState.relationships) {
         lastRunRetirees.forEach(retiree => {
           updState = Engine.relationships.freezeRelationships(updState, retiree.id);
@@ -5478,6 +5481,9 @@ const App = {
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]
         };
+        // 王者がモチベ喪失引退した場合は王座を空位にする
+        const vcMR = Engine.title.validateChampion(G);
+        if (vcMR.msg) { G = { ...G, titles: vcMR.titles, gameLog: [...(G.gameLog || []), vcMR.msg] }; }
         G = archiveRetiredRivalryState(G, retiredF);
         // §2.3: 引退者の関係値を凍結
         if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
@@ -6181,6 +6187,9 @@ const App = {
           G = Engine.util.redirectToDormantPool(G, tracked);
         }
       }
+      // 王者が放出/退団した場合は王座を空位にする
+      const vcCE = Engine.title.validateChampion(G);
+      if (vcCE.msg) { G = { ...G, titles: vcCE.titles, gameLog: [...(G.gameLog || []), vcCE.msg] }; }
     }
     Storage.autoSave();
     Audio.play('event');

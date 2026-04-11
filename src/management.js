@@ -7108,6 +7108,9 @@ const Engine = {
         s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -10, max: -5 }, { min: 0, max: 0 }, sdRelRng);
       });
       s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
+      // 王者が突然退団した場合は王座を空位にする
+      const vcSD = Engine.title.validateChampion(s);
+      if (vcSD.msg) { s = { ...s, titles: vcSD.titles }; events.push(vcSD.msg); }
       // Phase 3 R3: 仲の良い選手を失ったtrust影響
       departureResult.departed.forEach(d => {
         const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships, { name: d.name, reason: '突然退団' });
@@ -7355,6 +7358,9 @@ const Engine = {
           roster: s.roster.filter(c => c.id !== fighterIdToRelease),
           funds: s.funds + poach.fee
         };
+        // 王者が引き抜かれた場合は王座を空位にする
+        const vcPoach = Engine.title.validateChampion(s);
+        if (vcPoach.msg) { s = { ...s, titles: vcPoach.titles }; events.push(vcPoach.msg); }
         // Add fighter to AI org
         const targetId = poach.org.id;
         const targetData = s.aiOrgs[targetId];
