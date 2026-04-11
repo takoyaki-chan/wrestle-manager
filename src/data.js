@@ -9483,6 +9483,10 @@ const NOTIF_DIALOGUES = {
       seductive: [
         '最近、体が素直に動いてくれるの。嬉しいわ',
         '練習が楽しくなってきた気がする'
+      ],
+      composed: [
+        '…ま、少しずつ馴染んできたかな',
+        '悪くない感触だね。この調子で行こう'
       ]
     },
     bold: {
@@ -9501,6 +9505,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'まだ足りないわ。もっと強くなれる気がするの'
+      ],
+      composed: [
+        '…まだ先がある。焦らず行くよ'
       ]
     },
     quiet: {
@@ -9544,6 +9551,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '積み重ねって大事よね。もっとやりたくなっちゃう'
+      ],
+      composed: [
+        '…地道にやるのが一番だよ。急がず行こう'
       ]
     },
     emotional: {
@@ -9567,6 +9577,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'いい仲間に恵まれたわ。心強いの'
+      ],
+      composed: [
+        '…いい仲間だね。悪くない環境だよ'
       ]
     },
     bold: {
@@ -9585,6 +9598,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '仲間がいるって、いいものね'
+      ],
+      composed: [
+        '…悪くないチームだよ。居心地がいい'
       ]
     },
     quiet: {
@@ -9627,6 +9643,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'あの人と一緒だと、もっと頑張りたくなるの'
+      ],
+      composed: [
+        '…あの人がいると、自然と力が出るね'
       ]
     },
     emotional: {
@@ -9649,6 +9668,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '少し疲れただけよ。心配しないで'
+      ],
+      composed: [
+        '…ちょっと疲れただけ。すぐ戻るよ'
       ]
     },
     bold: {
@@ -9667,6 +9689,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'この程度で止まるつもりはないわ'
+      ],
+      composed: [
+        '…この程度なら大丈夫。慌てないで'
       ]
     },
     quiet: {
@@ -9709,6 +9734,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'ごめんなさい…少し休めば、すぐ戻れるわ'
+      ],
+      composed: [
+        '…少し休めば大丈夫。焦ることはないよ'
       ]
     },
     emotional: {
@@ -9731,6 +9759,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'こんなに応援してもらえるなんて…嬉しいわ'
+      ],
+      composed: [
+        '…ありがたいね。ちゃんと届いてるよ'
       ]
     },
     bold: {
@@ -9749,6 +9780,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'この人気、活かさない手はないわね'
+      ],
+      composed: [
+        '…悪くないね。この期待に応えるだけだよ'
       ]
     },
     quiet: {
@@ -9792,6 +9826,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '応援してくれる人がいるって、本当に力になるの'
+      ],
+      composed: [
+        '…みんなの声、ちゃんと届いてるよ。ありがたいね'
       ]
     },
     emotional: {
@@ -9814,6 +9851,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '…ごめんなさい、ちょっと考え事してて'
+      ],
+      composed: [
+        '…ん、ちょっと考え事。気にしないで'
       ]
     },
     bold: {
@@ -9832,6 +9872,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '…このままでいいのかなって、ふと思うの'
+      ],
+      composed: [
+        '…ま、少し立ち止まってるだけだよ。…たぶん'
       ]
     },
     quiet: {
@@ -9874,6 +9917,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         'いくら練習しても、何か足りない気がして…'
+      ],
+      composed: [
+        '…何かが噛み合わない。…まあ、そういう時期もあるか'
       ]
     },
     emotional: {
@@ -9896,6 +9942,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '…もういいわ。分かったから'
+      ],
+      composed: [
+        '…もういいよ。分かったから'
       ]
     },
     bold: {
@@ -9914,6 +9963,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '…ここにいて、私の夢は叶うのかしら'
+      ],
+      composed: [
+        '…ここにいる意味、少し考え直してもいいかな'
       ]
     },
     quiet: {
@@ -9956,6 +10008,9 @@ const NOTIF_DIALOGUES = {
       ],
       seductive: [
         '裏切りたいわけじゃないの。ただ……ね'
+      ],
+      composed: [
+        '…嫌いになったわけじゃない。ただ……ね'
       ]
     },
     emotional: {
@@ -10055,6 +10110,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'あら、嬉しい。ありがとう'
+      ],
+      composed: [
+        '…ありがとう。大事に使うよ'
       ]
     },
     bold: {
@@ -10073,6 +10131,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '嬉しいわ。実力で返させてもらうわね'
+      ],
+      composed: [
+        '…ありがとう。結果で返すよ'
       ]
     },
     quiet: {
@@ -10116,6 +10177,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ありがとう。ちゃんと結果で返すわ'
+      ],
+      composed: [
+        '…ありがたいね。次で応えるよ'
       ]
     },
     emotional: {
@@ -10179,6 +10243,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '素敵…！ありがとう。早く着てみたいわ'
+      ],
+      composed: [
+        '…いいね。ありがとう。早く試したいな'
       ]
     },
     bold: {
@@ -10197,6 +10264,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '素敵ね。これを着て勝ちに行くわ'
+      ],
+      composed: [
+        '…悪くないデザインだね。これで行こうか'
       ]
     },
     quiet: {
@@ -10239,6 +10309,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '本当に？ 嬉しい…大切にするわ'
+      ],
+      composed: [
+        '…ここまでしてもらえるとはね。ありがとう'
       ]
     },
     emotional: {
@@ -10262,6 +10335,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'しっかり吸収させてもらうわね'
+      ],
+      composed: [
+        '…了解。しっかり吸収するよ'
       ]
     },
     bold: {
@@ -10280,6 +10356,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'この環境、無駄にしないわ。見ていてね'
+      ],
+      composed: [
+        '…いい機会だね。無駄にはしないよ'
       ]
     },
     quiet: {
@@ -10322,6 +10401,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'こんな機会をもらえるなんて…全力で応えるわ'
+      ],
+      composed: [
+        '…ありがたいね。全部吸収させてもらうよ'
       ]
     },
     emotional: {
@@ -10345,6 +10427,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'メディア出演…？ 楽しみだわ'
+      ],
+      composed: [
+        '…なるほど。やってみるよ'
       ]
     },
     bold: {
@@ -10363,6 +10448,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '注目される場って好きよ。任せて'
+      ],
+      composed: [
+        '…いい機会だね。任せて'
       ]
     },
     quiet: {
@@ -10405,6 +10493,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '緊張するけど…精一杯やるわ'
+      ],
+      composed: [
+        '…いつも通りやればいいよ。大丈夫'
       ]
     },
     emotional: {
@@ -10428,6 +10519,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ありがとう。早く戻れるように頑張るわ'
+      ],
+      composed: [
+        '…助かるよ。焦らず治すね'
       ]
     },
     bold: {
@@ -10445,6 +10539,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '早く戻りたいの…待っていてね'
+      ],
+      composed: [
+        '…すぐ戻るよ。心配いらない'
       ]
     },
     quiet: {
@@ -10487,6 +10584,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ありがとう…早く戻れるように頑張るわ'
+      ],
+      composed: [
+        '…ありがとう。ちゃんと治して戻るから'
       ]
     },
     emotional: {
@@ -10510,6 +10610,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '…ありがとう。もう少し、頑張ってみるわ'
+      ],
+      composed: [
+        '…ありがとう。もう少しやってみるよ'
       ]
     },
     bold: {
@@ -10528,6 +10631,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '止まるつもりはないわ。見ていてね'
+      ],
+      composed: [
+        '…まだ終わってないよ。やるだけやる'
       ]
     },
     quiet: {
@@ -10571,6 +10677,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ありがとう…もう一度、頑張ってみるわ'
+      ],
+      composed: [
+        '…その言葉、ありがたいよ。もう少し踏ん張ってみる'
       ]
     },
     emotional: {
@@ -10593,6 +10702,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ずっと見てくれてたのね…嬉しい。頑張るわ'
+      ],
+      composed: [
+        '…見てくれてたんだ。…悪くないね'
       ]
     },
     bold: {
@@ -10611,6 +10723,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'あなたが信じてくれるなら…絶対応えるわ'
+      ],
+      composed: [
+        '…信じてくれるなら、応えないとね'
       ]
     },
     quiet: {
@@ -10653,6 +10768,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ずっと見てくれてたのね…絶対に報いるわ'
+      ],
+      composed: [
+        '…ずっと見てくれてたんだ。…ありがとう。応えるよ'
       ]
     },
     emotional: {
@@ -10676,6 +10794,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'ありがとう。リフレッシュしてくるわね'
+      ],
+      composed: [
+        '…ありがとう。少し休んでくるよ'
       ]
     },
     bold: {
@@ -10694,6 +10815,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'リフレッシュしてくるわ。戻ったらもっと輝くから'
+      ],
+      composed: [
+        '…充電してくるよ。戻ったらまた行こう'
       ]
     },
     quiet: {
@@ -10736,6 +10860,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '練習が気になるけど…ありがとう。休んでくるわ'
+      ],
+      composed: [
+        '…まあ、たまには休むのも大事だよね。ありがとう'
       ]
     },
     emotional: {
@@ -10760,6 +10887,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '楽しかったわ。こういう時間もいいわね'
+      ],
+      composed: [
+        '…いい時間だったね。悪くないよ'
       ]
     },
     bold: {
@@ -10778,6 +10908,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'いい雰囲気ね。チームが成長してる証拠だわ'
+      ],
+      composed: [
+        '…いい雰囲気だね。こういうのも大事だよ'
       ]
     },
     quiet: {
@@ -10821,6 +10954,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'お疲れ様。また明日から頑張りましょうね'
+      ],
+      composed: [
+        '…お疲れ様。こういう時間があるから、また頑張れるね'
       ]
     },
     emotional: {
@@ -10846,6 +10982,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '合宿ね。しっかり鍛えるわ'
+      ],
+      composed: [
+        '…合宿か。じっくりやろう'
       ]
     },
     bold: {
@@ -10864,6 +11003,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '帰る頃には一回り強くなってるわよ'
+      ],
+      composed: [
+        '…いい機会だね。しっかり追い込むよ'
       ]
     },
     quiet: {
@@ -10908,6 +11050,9 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         '思い切り鍛えられるのね。楽しみだわ'
+      ],
+      composed: [
+        '…みんなでやれるのはいいね。じっくり行こう'
       ]
     },
     emotional: {
@@ -10933,6 +11078,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'タイトルマッチの機会、いただけないかしら'
+      ],
+      composed: [
+        '…そろそろベルトに挑戦させてもらえないかな'
       ]
     },
     bold: {
@@ -10951,6 +11099,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'ベルトが欲しいの。組んでもらえる？'
+      ],
+      composed: [
+        '…ベルト、狙わせてもらうよ。組んでくれる？'
       ]
     },
     quiet: {
@@ -10994,6 +11145,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'ずっと準備してきたの。チャンスをちょうだい'
+      ],
+      composed: [
+        '…準備はできてる。あとはチャンスだけだよ'
       ]
     },
     emotional: {
@@ -11015,6 +11169,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人との試合、組んでもらえないかしら'
+      ],
+      composed: [
+        '…あの人との試合、そろそろ組んでもらえないかな'
       ]
     },
     bold: {
@@ -11033,6 +11190,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人と決着をつけたいの。組んでもらえる？'
+      ],
+      composed: [
+        '…決着をつけたいんだ。組んでくれないかな'
       ]
     },
     quiet: {
@@ -11074,6 +11234,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人を越えたいの。試合を組んでくれない？'
+      ],
+      composed: [
+        '…あの人を越えないと先に進めない。頼むよ'
       ]
     },
     emotional: {
@@ -11095,6 +11258,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '少し休ませてもらえないかしら…'
+      ],
+      composed: [
+        '…少し休ませてもらえるかな'
       ]
     },
     bold: {
@@ -11112,6 +11278,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '…体が限界なの。少し休ませて'
+      ],
+      composed: [
+        '…体が限界みたいだ。少し休むよ'
       ]
     },
     quiet: {
@@ -11154,6 +11323,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '迷惑かけたくないんだけど…体が限界なの…'
+      ],
+      composed: [
+        '…無理したくないんだ。少し休ませてもらえるかな'
       ]
     },
     emotional: {
@@ -11175,6 +11347,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'このままじゃ困るわ。ちゃんと考えてもらえないかしら'
+      ],
+      composed: [
+        '…このままだと困るんだよね。少し考えてもらえるかな'
       ]
     },
     bold: {
@@ -11193,6 +11368,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'このままじゃ我慢の限界よ。考え直してもらえない？'
+      ],
+      composed: [
+        '…このままだと先がないよ。考え直してくれないかな'
       ]
     },
     quiet: {
@@ -11235,6 +11413,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'ずっと我慢してきたの。でも、もう限界よ'
+      ],
+      composed: [
+        '…ずっと黙ってたけど、そろそろ限界だよ'
       ]
     },
     emotional: {
@@ -11299,6 +11480,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '特訓させてもらえないかしら？'
+      ],
+      composed: [
+        '…少し追い込みたいんだ。特訓させてもらえるかな'
       ]
     },
     bold: {
@@ -11317,6 +11501,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'もっと強くなりたいの。特訓させてもらえる？'
+      ],
+      composed: [
+        '…もう少し上に行きたい。特訓させてくれないかな'
       ]
     },
     quiet: {
@@ -11358,6 +11545,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'もっと強くなりたいの。特訓させてもらえる？'
+      ],
+      composed: [
+        '…まだ伸びしろはあるはずなんだ。やらせてほしい'
       ]
     },
     emotional: {
@@ -11379,6 +11569,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '後輩の指導、私にやらせてもらえないかしら'
+      ],
+      composed: [
+        '…後輩の面倒、見させてもらえないかな'
       ]
     },
     bold: {
@@ -11396,6 +11589,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '後輩の面倒、見させてもらえるかしら？'
+      ],
+      composed: [
+        '…後輩に伝えておきたいことがあるんだ。任せてくれないかな'
       ]
     },
     quiet: {
@@ -11438,6 +11634,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '培ってきたものを、次の子たちに伝えたいの'
+      ],
+      composed: [
+        '…次の世代に繋げたいものがあるんだ。やらせてほしい'
       ]
     },
     emotional: {
@@ -11460,6 +11659,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'メディア出演のお話？ 楽しみだわ'
+      ],
+      composed: [
+        '…メディアか。いい機会だね'
       ]
     },
     bold: {
@@ -11478,6 +11680,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '注目される場は好きよ。もちろんやるわ'
+      ],
+      composed: [
+        '…悪くないね。いつも通りやるよ'
       ]
     },
     quiet: {
@@ -11520,6 +11725,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '緊張するけど…精一杯やるわ'
+      ],
+      composed: [
+        '…緊張はしないよ。いつも通りやればいい'
       ]
     },
     emotional: {
@@ -11548,6 +11756,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '他の団体からお誘いが来てるの'
+      ],
+      composed: [
+        '…他所から話が来てるんだ。一応報告しておくね'
       ]
     },
     bold: {
@@ -11566,6 +11777,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '他所からいい話が来てるの。正直、迷ってるわ'
+      ],
+      composed: [
+        '…悪くない条件なんだよね。…少し考えてもいいかな'
       ]
     },
     quiet: {
@@ -11608,6 +11822,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '義理があるから断ったけど…報告はしておくわね'
+      ],
+      composed: [
+        '…義理があるから断ったよ。でも、一応報告だけね'
       ]
     },
     emotional: {
@@ -11633,6 +11850,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'ごめんなさいね…今日はちょっと、気持ちが入らなくて'
+      ],
+      composed: [
+        '…今日はいいかな。少し考えたいことがあって'
       ]
     },
     bold: {
@@ -11691,6 +11911,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '（「最近、ここにいる意味あるのかしら」と同僚に漏らしている）'
+      ],
+      composed: [
+        '（いつもの穏やかさが消え、「…ま、そういうことだよね」と静かに呟いている）'
       ]
     },
     bold: {
@@ -11735,6 +11958,9 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '（SNSに「次のステージが待っているかも」と匂わせ投稿）'
+      ],
+      composed: [
+        '（SNSに夕焼けの写真と「…少し考える時間が欲しいかな」と投稿。ファンがざわついている）'
       ]
     },
     bold: {
@@ -11773,24 +11999,30 @@ const VOLUNTARY_STAY_LINES = {
     delinquent: ['どこにも行かねーよ。ここが一番おもしれーからな'],
     cool: ['（静かにうなずいている）……ここにいる'],
     seductive: ['あら、他に行く場所なんてないわ。ここが好きなの'],
+    composed: ['…ま、居心地いいからね。ここにいるよ'],
   },
   bold: {
     _default: ['他に行く理由がない。ここで頂点を目指す'],
     delinquent: ['行くわけねーだろ。ここで一番になるまで帰らねぇよ'],
+    composed: ['…行く理由がないね。ここで続けるよ'],
   },
   quiet: {
     _default: ['………（静かにうなずいている）'],
     cool: ['…………（契約書にペンを走らせた）'],
+    composed: ['……ここで。…うん'],
   },
   easygoing: {
     _default: ['いやー当然残るでしょ！ここ楽しいもん！'],
+    composed: ['まあ…ここが一番しっくりくるかな'],
   },
   earnest: {
     _default: ['来年も精一杯頑張ります。よろしくお願いします'],
     polite: ['来年もどうぞよろしくお願いいたします。精進してまいります'],
+    composed: ['…来年もよろしく。やれることをやるだけだよ'],
   },
   emotional: {
     _default: ['ここで戦えることが幸せなんです…（涙）'],
+    composed: ['…ここが好きだから。…それだけだよ'],
   },
 };
 
@@ -11884,6 +12116,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '…少し時間がかかりそう。ごめんなさいね'
+      ],
+      composed: [
+        '…やっちゃったね。まあ、焦らず治すよ'
       ]
     },
     bold: {
@@ -11902,6 +12137,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'こんなところで止まるつもりはないわ…すぐ戻る'
+      ],
+      composed: [
+        '…まあ、こういうこともあるよ。少し待ってて'
       ]
     },
     quiet: {
@@ -11943,6 +12181,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'ごめんなさい…早く戻れるように頑張るわ'
+      ],
+      composed: [
+        '…不注意だったね。きちんと治して、ちゃんと戻るよ'
       ]
     },
     emotional: {
@@ -11964,6 +12205,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人とはもう無理よ。何とかしてもらえないかしら'
+      ],
+      composed: [
+        '…まあ、合わない人もいるよね。少し距離を置きたいな'
       ]
     },
     bold: {
@@ -11982,6 +12226,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人の態度、もう我慢できないの'
+      ],
+      composed: [
+        '…悪いけど、あの人とはちょっと厳しいかな'
       ]
     },
     quiet: {
@@ -12024,6 +12271,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         'あの人と一緒じゃ仕事にならないの。何とかして'
+      ],
+      composed: [
+        '…無理に合わせても仕方ないからね。整理してもらえると助かるよ'
       ]
     },
     emotional: {
@@ -12045,6 +12295,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '向こうにも非があるのに…私だけが悪いの？'
+      ],
+      composed: [
+        '…ふぅん。まあ、お互い様だと思うけどね'
       ]
     },
     bold: {
@@ -12063,6 +12316,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '黙ってるつもりはないわ。向こうが悪いんだから'
+      ],
+      composed: [
+        '…私は私のやり方を変えるつもりはないよ。それだけ'
       ]
     },
     quiet: {
@@ -12105,6 +12361,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '迷惑はかけたくないけど…あの人とはもう無理なの'
+      ],
+      composed: [
+        '…迷惑はかけたくないんだけどね。うまくいかないものだね'
       ]
     },
     emotional: {
@@ -12127,6 +12386,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '取材ね…いい姿を見せてあげるわ'
+      ],
+      composed: [
+        '…取材か。まあ、いつも通りやるよ'
       ]
     },
     bold: {
@@ -12145,6 +12407,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '全国に見てもらえるのね。楽しみだわ'
+      ],
+      composed: [
+        '…いい機会だね。自分らしくやらせてもらうよ'
       ]
     },
     quiet: {
@@ -12187,6 +12452,9 @@ const LARGE_EVENT_DIALOGUES = {
       ],
       seductive: [
         '私でいいの？ …精一杯頑張るわ'
+      ],
+      composed: [
+        '…なるほど、私でいいんだ。悪くない話だね'
       ]
     },
     emotional: {
@@ -12202,6 +12470,7 @@ const LARGE_EVENT_DIALOGUES = {
       ojousama: ['CMですか。しっかりお役目を果たしますわ'],
       delinquent: ['CM！？ なんか恥ずかしいけど、やってやるよ'],
       seductive: ['カメラの前ね…いい絵、撮らせてあげる♡'],
+      composed: ['…CMか。まあ、悪くないね'],
     },
     bold: {
       _default: ['CMで私の顔を全国に売り込む。完璧にやってみせる', 'このチャンス、最大限に使ってやる'],
@@ -12209,6 +12478,7 @@ const LARGE_EVENT_DIALOGUES = {
       delinquent: ['CM？ 全国にこの顔を売りつけてやる！'],
       cool: ['…カメラに映るか。悪くない'],
       seductive: ['全国に私を見てもらえるのね。楽しみだわ♡'],
+      composed: ['…全国か。いい機会だね、自分のペースでやるよ'],
     },
     quiet: {
       _default: ['…やります'],
@@ -12228,6 +12498,7 @@ const LARGE_EVENT_DIALOGUES = {
       polite: ['大切なお仕事ですね。精一杯務めさせていただきます'],
       ojousama: ['しっかり準備してお役目を果たしますわ'],
       seductive: ['ちゃんと準備して、いい姿を見せるわ'],
+      composed: ['…ちゃんとやるよ。恥ずかしくない仕事をしたいからね'],
     },
     emotional: {
       _default: ['CMに出るの…！？ うわあああ緊張する！でもやる！'],
@@ -12239,6 +12510,7 @@ const LARGE_EVENT_DIALOGUES = {
       ojousama: ['撮影ですか。美しく仕上げていただけるよう努めますわ'],
       delinquent: ['グラビア…？ まぁ、やってやるか'],
       seductive: ['グラビアね…全部見せてあげるわ♡'],
+      composed: ['…グラビアか。まあ、たまにはいいんじゃない'],
     },
     bold: {
       _default: ['私の強さと魅力、カメラに焼き付けてやる', 'これで一気に知名度上げてやる'],
@@ -12246,6 +12518,7 @@ const LARGE_EVENT_DIALOGUES = {
       delinquent: ['グラビアも勝負事だ。全力でいくよ'],
       cool: ['…写真か。余計なことはしないが、手は抜かない'],
       seductive: ['私の本気の魅力、たっぷり撮ってもらうわ♡'],
+      composed: ['…撮られるのは嫌いじゃないよ。いい写真にしよう'],
     },
     quiet: {
       _default: ['…撮るだけですよね。わかりました'],
@@ -12265,6 +12538,7 @@ const LARGE_EVENT_DIALOGUES = {
       polite: ['精一杯きれいに撮っていただけるよう頑張ります…'],
       ojousama: ['プロとして恥ずかしくない撮影ができるよう、準備します'],
       seductive: ['きちんと準備して、いい仕上がりにするわ'],
+      composed: ['…丁寧にやるよ。せっかくの機会だからね'],
     },
     emotional: {
       _default: ['グラビア！？ えっ、私ほんとに！？ うわ〜〜！'],
@@ -12276,6 +12550,7 @@ const LARGE_EVENT_DIALOGUES = {
       ojousama: ['バラエティ番組ですか。品よくふるまえるよう努めますわ'],
       delinquent: ['バラエティ？ 面白いことしてやるよ'],
       seductive: ['バラエティか。じゃあ、素の私を少し見せてあげようかな'],
+      composed: ['…バラエティか。まあ、のんびり喋るよ'],
     },
     bold: {
       _default: ['番組ジャックしてやる。全部持っていく', 'トーク番組だろうと、私が主役に決まってる'],
@@ -12283,6 +12558,7 @@ const LARGE_EVENT_DIALOGUES = {
       delinquent: ['テレビで暴れてやる！ 絶対爪痕残す！'],
       cool: ['…余計なことは言わない。でも、印象には残る'],
       seductive: ['バラエティでも私のペースで話すわ♡'],
+      composed: ['…まあ、自分のペースで話せばいいんでしょ。大丈夫'],
     },
     quiet: {
       _default: ['…喋るんですか。少し、緊張します'],
@@ -12302,6 +12578,7 @@ const LARGE_EVENT_DIALOGUES = {
       polite: ['トーク番組は緊張しますが…誠実に対応いたします'],
       ojousama: ['言葉遣いには気をつけて、丁寧に対応しますわ'],
       seductive: ['ちゃんと準備して、面白い話ができるよう頑張るわ'],
+      composed: ['…落ち着いて話せばいいよね。焦らずやるよ'],
     },
     emotional: {
       _default: ['バラエティ出る！？ テンション上がってきた〜！！'],
@@ -12313,6 +12590,7 @@ const LARGE_EVENT_DIALOGUES = {
       ojousama: ['まあ、コラボのお話ですの。嬉しい限りですわ'],
       delinquent: ['ブランドとコラボ…？ なんか柄じゃないな。でもやる'],
       seductive: ['私のイメージに合うブランドね。いい選択だわ♡'],
+      composed: ['…コラボか。なるほどね、面白そう'],
     },
     bold: {
       _default: ['そのブランドのイメージ、私が底上げしてやる', '私が使ったら絶対売れる。任せて'],
@@ -12320,6 +12598,7 @@ const LARGE_EVENT_DIALOGUES = {
       delinquent: ['コラボ商品、派手にやってやる！'],
       cool: ['…ブランドには口数の少なさが向いている。悪くない'],
       seductive: ['私とブランドの組み合わせ…最高じゃない♡'],
+      composed: ['…悪くない組み合わせだね。いいものにしよう'],
     },
     quiet: {
       _default: ['…わかりました。やります'],
