@@ -2,10 +2,10 @@
 setlocal
 cd /d "%~dp0"
 
-if not exist "%~dp0tools\save-doctor.js" (
+if not exist "%~dp0save-doctor.js" (
   echo.
-  echo Save Doctor files were not found next to this BAT file.
-  echo Please keep this BAT inside the wrestle-manager folder.
+  echo Save Doctor files were not found in the tools folder.
+  echo Please keep this BAT inside the wrestle-manager\tools folder.
   echo Do not copy this BAT into your save-data folder.
   echo.
   pause
@@ -15,7 +15,7 @@ if not exist "%~dp0tools\save-doctor.js" (
 set "SAVE_FILE=%~1"
 if "%SAVE_FILE%"=="" (
   echo.
-  echo Save Doctor - Check Only
+  echo Save Doctor - Safe Repair Copy
   echo.
   echo Drag and drop your save file onto this BAT.
   echo Or paste the full save-file path and press Enter.
@@ -49,27 +49,32 @@ if errorlevel 1 (
 for %%I in ("%SAVE_FILE%") do (
   set "SAVE_DIR=%%~dpI"
   set "SAVE_NAME=%%~nI"
+  set "SAVE_EXT=%%~xI"
 )
 
-set "REPORT_FILE=%SAVE_DIR%%SAVE_NAME%.doctor-check.txt"
+set "OUTPUT_FILE=%SAVE_DIR%%SAVE_NAME%.fixed%SAVE_EXT%"
+set "REPORT_FILE=%SAVE_DIR%%SAVE_NAME%.doctor-fix.txt"
 
 echo.
-echo Running check...
-echo Report file:
-echo %REPORT_FILE%
+echo Running repair...
+echo Repaired save:
+echo %OUTPUT_FILE%
 echo.
 
 (
-  echo Save Doctor Check Report
+  echo Save Doctor Repair Report
   echo.
   echo Target file:
   echo %SAVE_FILE%
   echo.
-  node "%~dp0tools\save-doctor.js" "%SAVE_FILE%"
+  echo Repaired file:
+  echo %OUTPUT_FILE%
+  echo.
+  node "%~dp0save-doctor.js" "%SAVE_FILE%" --repair --output "%OUTPUT_FILE%"
 ) > "%REPORT_FILE%" 2>&1
 
 start "" notepad "%REPORT_FILE%"
 
 echo.
-echo The report was opened in Notepad.
+echo The repair report was opened in Notepad.
 pause

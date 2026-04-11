@@ -1,0 +1,32 @@
+Save Doctor 使い方
+
+1. まずは `tools\save-doctor-check.bat` を使ってください。
+   セーブファイルを BAT にドラッグ＆ドロップすると、
+   診断結果がテキストファイルで保存され、メモ帳で自動的に開きます。
+
+2. 修復したいときは `tools\save-doctor-fix-copy.bat` を使ってください。
+   セーブファイルを BAT にドラッグ＆ドロップすると、
+   元ファイルはそのままで、同じ場所に `*.fixed.json` の修復コピーが作られます。
+   修復結果もテキストファイルで保存され、メモ帳で自動的に開きます。
+
+3. 元のセーブファイルを上書きすることはありません。
+   まず診断、次に修復コピーの確認、という順番で使うのが安全です。
+
+4. BAT ファイルは `wrestle-manager\tools` フォルダ内に置いたまま使ってください。
+   セーブフォルダへコピーして使う必要はありません。
+
+5. `Node.js was not found.` と表示された場合は、
+   このパソコンに Node.js が入っていない可能性があります。
+   その場合、この外部ツールは動きません。
+
+おすすめの順番
+
+- `tools\save-doctor-check.bat`
+- `tools\save-doctor-fix-copy.bat`
+
+出力例
+
+- 元ファイル: `mysave.json`
+- 修復ファイル: `mysave.fixed.json`
+- 診断レポート: `mysave.doctor-check.txt`
+- 修復レポート: `mysave.doctor-fix.txt`
