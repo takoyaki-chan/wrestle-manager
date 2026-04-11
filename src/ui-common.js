@@ -4547,6 +4547,15 @@ function draftNextCandidate() {
   const ns = dn.negState;
   const cand = dn.candidate;
   const acquired = [...(dn.acquiredThisSession || [])];
+  const draftSummary = {
+    playerAcquired: [...(dn.draftSummary?.playerAcquired || [])],
+    aiAcquired: {
+      org_s: [...(dn.draftSummary?.aiAcquired?.org_s || [])],
+      org_a: [...(dn.draftSummary?.aiAcquired?.org_a || [])],
+      org_b: [...(dn.draftSummary?.aiAcquired?.org_b || [])],
+    },
+    flowThrough: [...(dn.draftSummary?.flowThrough || [])],
+  };
   const log = [...(G.gameLog || [])];
   let newRoster = [...G.roster];
   let newFunds = G.funds;
@@ -4595,6 +4604,7 @@ function draftNextCandidate() {
       }
       newFunds -= ns.finalBid;
       acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
+      draftSummary.playerAcquired.push(clean.name);
       log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
 
       // 獲得時リアクション（顔写真付きポップアップ）
@@ -4627,14 +4637,18 @@ function draftNextCandidate() {
         aiFighter.trust = Math.min(100, (aiFighter.trust || 50) + trustBonus);
       }
       Engine.rival.pushUniqueFighter(orgData.roster, aiFighter);
+      if (!draftSummary.aiAcquired[ns.winner]) draftSummary.aiAcquired[ns.winner] = [];
+      draftSummary.aiAcquired[ns.winner].push(clean.name);
       const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
       log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
     } else {
       returnToPool = true;
+      draftSummary.flowThrough.push(clean.name);
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
     }
   } else {
     returnToPool = true;
+    draftSummary.flowThrough.push(clean.name);
     log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
   }
 
@@ -4650,8 +4664,8 @@ function draftNextCandidate() {
   const nextIdx = dn.currentCandidateIdx + 1;
   if (nextIdx >= dn.sortedCandidates.length) {
     // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → B1+まとめ記事表示
-    G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired }, gameLog: log };
-    G = _finalizeDraft(G, dn.draftSummary || { playerAcquired: [], aiAcquired: { org_s: [], org_a: [], org_b: [] }, flowThrough: [] }, dn.rngState, dn.maxPicks);
+    G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired, draftSummary }, gameLog: log };
+    G = _finalizeDraft(G, draftSummary, dn.rngState, dn.maxPicks);
     try { Audio.bgm.play('management'); } catch(e) {}
     console.log('[WM Draft] BGM → management (draft complete)');
     // B1+まとめ記事ページ表示（_draftResultPages がセットされている）
@@ -4695,6 +4709,7 @@ function draftNextCandidate() {
       candidate: nextCand,
       negState: nextNegState,
       acquiredThisSession: acquired,
+      draftSummary,
     },
   };
   refreshAll();
