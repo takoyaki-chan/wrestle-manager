@@ -1,0 +1,1187 @@
+{
+  "description": "強気お嬢様(107) + ノーマルお嬢様(14) = 121件の台詞書き換えデータ",
+  "target_file": "src/data.js",
+  "total": 121,
+  "entries": [
+    {
+      "source": "BREAKTHROUGH_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "当然ですわ。まだまだこんなものではありませんの",
+      "new": "当然ね。まだまだこんなものでは無くてよ"
+    },
+    {
+      "source": "SLUMP_END_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "お待たせしましたわ。ここからですのよ",
+      "new": "少し待たせたかしら？ここからよ"
+    },
+    {
+      "source": "MOTIVATION_LOSS_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "…燃えませんわ。何をしても、火がつきませんの",
+      "new": "…燃えないわね。…何をしても、火がつかないのよ"
+    },
+    {
+      "source": "MOTIVATION_RECOVERY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "目が覚めましたわ。ここで終わるわけにはいきませんもの",
+      "new": "目が覚めたわ。ここで終わるわけにはかないもの"
+    },
+    {
+      "source": "PPV_OPPONENT_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "容赦いたしませんわよ。覚悟なさって",
+      "new": "容赦は出来ないわ。覚悟する事ね"
+    },
+    {
+      "source": "WAR_VICTORY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "当然の結果ですわ！ うちを甘く見ないでくださいませ！",
+      "new": "当然の結果ね。……私を甘く見るべきじゃなかったわね"
+    },
+    {
+      "source": "WAR_VICTORY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 1,
+      "old": "この程度で終わりではありませんわ。もっと強くなって見せますわ",
+      "new": "この程度で終わりではなくてよ"
+    },
+    {
+      "source": "WAR_VICTORY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 2,
+      "old": "おほほ、うちの団体に挑むなど百年早いですわ",
+      "new": "私の団体に挑むなど……百年早いですわね"
+    },
+    {
+      "source": "WAR_CHALLENGER_DIALOGUE",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "おほほ。そちらの団体のレベル、存じておりますわよ？",
+      "new": "そちらの団体のレベル、存じておりますわよ？"
+    },
+    {
+      "source": "WAR_DECLINE_DIALOGUE",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "あらまあ。お逃げになるとは…格の違いを理解なさったようですわね",
+      "new": "あらまあ。逃げ足が速い…格の違いは理解出来たみたいね"
+    },
+    {
+      "source": "WAR_DECLINE_DIALOGUE",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 1,
+      "old": "弱いものいじめはわたくしの趣味ではありませんから、結構ですわ",
+      "new": "うふふ……みっともないだこと。"
+    },
+    {
+      "source": "PPV_SUMMIT_VICTORY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "この座は渡しませんわ……！ ずっと目指してきましたの……！",
+      "new": "この座は渡せませんわね…… ずっと目指してきましたのよ……！"
+    },
+    {
+      "source": "VOLUNTARY_STAY_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "こちらに残りますわ。頂点は、わたくしのものですの",
+      "new": "こちらに残りますわ。頂点は、わたくしのものなのだから。"
+    },
+    {
+      "source": "GLIMPSE_HOTSTREAK_END_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "絶好調が過ぎましたわ。でも、得るものは十分でしたの",
+      "new": "あの感覚は抜けてしまった？でも、得るものは十分でしたわ"
+    },
+    {
+      "source": "BT_HINT_LINES",
+      "personality": "bold",
+      "subcategory": [],
+      "index": 0,
+      "old": "もう少しで掴めそうですわ。あと一歩ですの",
+      "new": "もう少しでなにかが掴めそうな。……あと一歩ね。"
+    },
+    {
+      "source": "AWARD_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "rookie"
+      ],
+      "index": 0,
+      "old": "当然の結果ですわね。わたくしの実力をご覧になれば、誰もが納得するでしょう？",
+      "new": "当然の結果ですわね。わたくしの実力を見れば、誰もが納得するでしょう？"
+    },
+    {
+      "source": "AWARD_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "bestMatch"
+      ],
+      "index": 0,
+      "old": "あのお方と全力で戦えたこと、これ以上の名誉はありませんわ",
+      "new": "あの方と全力で戦えたことは、大変名誉ですわ"
+    },
+    {
+      "source": "AWARD_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "mvp"
+      ],
+      "index": 0,
+      "old": "わたくしが最も輝いた一年でしたわ。異論のある方はリングでお待ちしています",
+      "new": "わたくしが最も輝いた一年でしたわね。異論のある方はリングでお待ちしています"
+    },
+    {
+      "source": "AWARD_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "champion"
+      ],
+      "index": 0,
+      "old": "この王座はわたくしに最もふさわしい。それを証明し続けますわ",
+      "new": "この王座はわたくしに最もふさわしい。それを証明し続けますわ"
+    },
+    {
+      "source": "SLUMP_START_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "defeat"
+      ],
+      "index": 0,
+      "old": "…何をしていますの、わたくし",
+      "new": "…何をしてるの？私ほどの者が……"
+    },
+    {
+      "source": "SLUMP_START_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "injury_moderate_recovery"
+      ],
+      "index": 0,
+      "old": "治りましたのに…なぜこんなにもたつきますの",
+      "new": "もう治ったのに…なぜこんなにもたつくの？"
+    },
+    {
+      "source": "SLUMP_START_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "penalty_end"
+      ],
+      "index": 0,
+      "old": "お体は万全ですのに…気持ちがついてきませんわ",
+      "new": "体は万全ですのに…気持ちがついてきませんわね"
+    },
+    {
+      "source": "NOTIF_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "N1"
+      ],
+      "index": 0,
+      "old": "まだまだですわ。もっと上を目指しませんと",
+      "new": "まだまだですわ。もっと上を目指しませんと…"
+    },
+    {
+      "source": "NOTIF_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "N2"
+      ],
+      "index": 0,
+      "old": "仲間がいるから頑張れますわ",
+      "new": "皆様のご期待が、わたくしの力になっておりますわ"
+    },
+    {
+      "source": "NOTIF_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "N3"
+      ],
+      "index": 0,
+      "old": "この程度、問題ありませんわ",
+      "new": "この程度、問題ありませんわ"
+    },
+    {
+      "source": "NOTIF_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "N5_low"
+      ],
+      "index": 0,
+      "old": "…この団体で、夢は叶えられますの…？",
+      "new": "…この団体で、わたしの夢は叶えられますの…？"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "bonus"
+      ],
+      "index": 0,
+      "old": "ありがとうございます。結果でお返ししますわ",
+      "new": "ありがとうございます。結果でお返しするわ"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "costume"
+      ],
+      "index": 0,
+      "old": "まあ、素敵ですわ！これで勝利を重ねますわよ",
+      "new": "まあ、素敵。これで勝利を重ねますわ"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "trainer"
+      ],
+      "index": 0,
+      "old": "この機会、決して無駄にしませんわ！",
+      "new": "この機会、決して無駄にはしない"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "media"
+      ],
+      "index": 0,
+      "old": "より広い舞台へ。ありがとうございますわ",
+      "new": "より広い舞台へということね。当然ね。"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "special_treatment"
+      ],
+      "index": 0,
+      "old": "必ず戻りますわ。待っていてくださいませ",
+      "new": "すぐ戻ります。待っていなさいな。"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "encourage_high_trust"
+      ],
+      "index": 0,
+      "old": "あなた様が信じてくださるなら、必ずお応えしますわ！",
+      "new": "あなたが信じているなら、応えてあげないとかしらね？"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "refresh_leave"
+      ],
+      "index": 0,
+      "old": "充電して参りますわ！必ず戻りますわよ！",
+      "new": "すこし休んでまいりますわ。ごめんあそばせ。"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "party"
+      ],
+      "index": 0,
+      "old": "皆様、よく頑張りましたわね。誇りに思いますわ",
+      "new": "皆様の頑張りを、誇りに思いますわ"
+    },
+    {
+      "source": "CARE_REACTION_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "camp"
+      ],
+      "index": 0,
+      "old": "この合宿で一段上へ参りますわ！",
+      "new": "この合宿で一段上へ参りましょう"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S1"
+      ],
+      "index": 0,
+      "old": "チャンピオンの座、いただきに参りますわ",
+      "new": "チャンピオンの座、いただきに参りましょう"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S2"
+      ],
+      "index": 0,
+      "old": "あの方と決着をつけませんと！",
+      "new": "あれとも決着をつけませんとね……"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S3"
+      ],
+      "index": 0,
+      "old": "…お恥ずかしいのですが、体が限界ですわ",
+      "new": "…情けないけれど、もう、体が限界ですわね"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S4_direct"
+      ],
+      "index": 0,
+      "old": "このままでは納得できませんわ。ご検討いただけなければ…",
+      "new": "このままでは納得できませんわね。……どうするか、考えなさいね？"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S5"
+      ],
+      "index": 0,
+      "old": "もっと上を目指したいのですわ。特訓をお許しくださいませ！",
+      "new": "もっと上を目指す為に。特訓が必要ね…"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "S6"
+      ],
+      "index": 0,
+      "old": "若い子たちのお世話は私の務めですわ",
+      "new": "若手の面倒を見るのも、私の務めですわね"
+    },
+    {
+      "source": "CHOICE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "E1"
+      ],
+      "index": 0,
+      "old": "私が出ればお客様も喜びますわ。楽しみですの",
+      "new": "私が出ればお客様も喜ぶでしょうね。楽しみだわ…"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B1"
+      ],
+      "index": 0,
+      "old": "こんなところで止まるわけには参りませんわ…！",
+      "new": "こんなところで止まるわけにはいかないわ…"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B2_fighter1"
+      ],
+      "index": 0,
+      "old": "あの方の態度は許せませんわ。はっきりさせますわよ",
+      "new": "あの女の態度は許せないわね……"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B2_fighter2"
+      ],
+      "index": 0,
+      "old": "私だって黙ってはいませんわよ。あちらが非を認めるべきですわ",
+      "new": "私も黙ってはいられませんわ。あちらに非があるのだから"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4"
+      ],
+      "index": 0,
+      "old": "全国の皆様に、この実力をお見せしますわ",
+      "new": "あらあら、全国の皆様も私の事が気にかかるのかしら？"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_cm"
+      ],
+      "index": 0,
+      "old": "全国の皆様に、この実力と品格をお見せしますわ",
+      "new": "CM？仕方ないわね……品と格というものを知らしめなければ"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_gravure"
+      ],
+      "index": 0,
+      "old": "プロレスラーとしての品格を、写真で表現してみせますわ",
+      "new": "撮影？私の魅力を引き出せるのかしら？"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_variety"
+      ],
+      "index": 0,
+      "old": "トーク番組でも、品格は忘れませんわ",
+      "new": "トーク番組？妙な仕事を持ってくるものね"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_brand"
+      ],
+      "index": 0,
+      "old": "私の品格とブランドイメージが合わされば、最高の結果になりますわ",
+      "new": "私なら、確かにブランドイメージは上がるでしょうね"
+    },
+    {
+      "source": "LARGE_EVENT_DIALOGUES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_fashion"
+      ],
+      "index": 0,
+      "old": "ランウェイでは誰にも負けませんわ",
+      "new": "ランウェイね……もちろん自信はあるわよ？"
+    },
+    {
+      "source": "NEGOTIATE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "start"
+      ],
+      "index": 0,
+      "old": "わたくしを引き抜こうと？\n面白いご度胸ですわね",
+      "new": "わたくしを引き抜こうと？\nたいした度胸ですわね"
+    },
+    {
+      "source": "NEGOTIATE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "success"
+      ],
+      "index": 0,
+      "old": "認めてさしあげますわ。\n格の違いをお見せしますの",
+      "new": "認めてさしあげますわ。\n格の違いをお見せ致します"
+    },
+    {
+      "source": "NEGOTIATE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "blocked"
+      ],
+      "index": 0,
+      "old": "わたくしへのご評価は光栄ですが、\n今の団体を裏切るなどあり得ませんわ",
+      "new": "わたくしへの評価は光栄だけれど、\n今の団体を裏切るなどあり得ませんわ"
+    },
+    {
+      "source": "NEGOTIATE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "fail"
+      ],
+      "index": 0,
+      "old": "ここがわたくしの居場所ですわ。\n出直していらして",
+      "new": "ここがわたくしの居場所なの。\n出直していらして"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "raise_open"
+      ],
+      "index": 0,
+      "old": "社長、お時間よろしいかしら。{tenure}待遇について、ご相談させてくださいまし。{record}",
+      "new": "社長、お時間よろしいかしら。{tenure}待遇について、ご相談させてください。{record}"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "raise_accept"
+      ],
+      "index": 0,
+      "old": "……感謝いたしますわ。この評価に見合う結果をお見せしますわね。",
+      "new": "……理解が早いわね。この評価に見合う結果を期待していなさい。"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "raise_negotiate_accept"
+      ],
+      "index": 0,
+      "old": "……まあ、ゼロではないのですわね。次はきちんとした評価を期待しますわ。",
+      "new": "……今はこういう評価という事ね。次はきちんとした評価を期待しますわ。"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "raise_negotiate_refuse"
+      ],
+      "index": 0,
+      "old": "……左様ですか。ですが社長、次はございませんわよ。",
+      "new": "……左様ですか。ですが社長、次はありませんわよ。"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "raise_refuse"
+      ],
+      "index": 0,
+      "old": "…………。そうですか。わたくしにも限度というものがございますわ。",
+      "new": "…………。そうですか。わたくしにも限度というものがありますのよ？"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "transfer_retain_success"
+      ],
+      "index": 0,
+      "old": "……仕方ありませんわね。そこまでの誠意、もう少し見届けますわ。",
+      "new": "……仕方ありませんわね。……あと少しだけ付き合ってあげる。"
+    },
+    {
+      "source": "CONTRACT_NEGOTIATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "transfer_retain_fail"
+      ],
+      "index": 0,
+      "old": "……申し訳ございませんが、決心は揺るぎませんわ。",
+      "new": "……今更。　……もう心は決まっているわ"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "A2_uncrowned"
+      ],
+      "index": 0,
+      "old": "逃げなかったことだけは…胸を張れますわ",
+      "new": "私ほどの者が王座を得られないなんて…不甲斐ないわね"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "A3_heel"
+      ],
+      "index": 0,
+      "old": "最後まで嫌われ者…痛快でしたわ",
+      "new": "お泣きにならないで。みっともなくてよ"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "A4_veteran"
+      ],
+      "index": 0,
+      "old": "長いようで…あっという間でしたわ",
+      "new": "長いようで…あっという間でしたわね"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "B1_young"
+      ],
+      "index": 0,
+      "old": "嘘ですわ…まだ始まったばかりですのに…！",
+      "new": "この私が……こんな所で終わりなの？"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "B3_older"
+      ],
+      "index": 0,
+      "old": "お体は限界ですけれど…心はまだ燃えておりますわ",
+      "new": "気持ちは以前のままだけれど、身体はいう事を聞かないみたい…潮時ね"
+    },
+    {
+      "source": "RETIREMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "B4_champion_injury"
+      ],
+      "index": 0,
+      "old": "チャンピオンのまま…残酷ですわ",
+      "new": "女王のままに引退……有終の美といったところね。"
+    },
+    {
+      "source": "RETIRE_ACCEPT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "accept_terminal"
+      ],
+      "index": 0,
+      "old": "…認めますわ。もうお体が限界ですの",
+      "new": "…認めますわ。もう体が限界だもの"
+    },
+    {
+      "source": "RETIRE_ACCEPT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "accept_former_champ"
+      ],
+      "index": 0,
+      "old": "最後に…もう一度輝かせてくださいまし",
+      "new": "最後に…もう一度、私にふさわしい舞台を用意なさい"
+    },
+    {
+      "source": "RETIRE_REFUSE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "refuse_champ"
+      ],
+      "index": 0,
+      "old": "王者を引退させようなんて、100年早くてよ",
+      "new": "女王である私を引退させようなんて、100年早くてよ"
+    },
+    {
+      "source": "RETIRE_REFUSE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "refuse_heel"
+      ],
+      "index": 0,
+      "old": "わたくしがいなくなったら、この団体は終わりですわ",
+      "new": "わたくしがいなくなったら、この団体は終わりですわよ？"
+    },
+    {
+      "source": "RETIRE_REFUSE_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "refuse_fighting"
+      ],
+      "index": 0,
+      "old": "諦めるのは早くてよ。見ていてくださいまし",
+      "new": "私を見限るには早すぎるという事……。良く見ていなさいね"
+    },
+    {
+      "source": "RETAIN_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "high_trust"
+      ],
+      "index": 0,
+      "old": "信じてくださるなら…もう少しお付き合いしますわ",
+      "new": "そこまで言うのなら…もう少しだけ付き合ってあげる"
+    },
+    {
+      "source": "RETAIN_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "heel"
+      ],
+      "index": 0,
+      "old": "引き留めますの。…まぁ、悪くない判断ですわ",
+      "new": "ここで引き留めるのね。…まぁ、悪くない判断ね"
+    },
+    {
+      "source": "RETAIN_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "default"
+      ],
+      "index": 0,
+      "old": "まだ終わりではありませんわ",
+      "new": "まだ終わりでは無いわ"
+    },
+    {
+      "source": "ENDING_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "fighter"
+      ],
+      "index": 0,
+      "old": "頂点に立ったという事。・・・でも、まだ先があるわ",
+      "new": "これが頂点の景色？…馬鹿ね。まだまだ先はあってよ"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "summon"
+      ],
+      "index": 1,
+      "old": "この大会で、わたくしの実力を見せますわ",
+      "new": "この大会で、私の実力を知らしめましょうか"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "summon"
+      ],
+      "index": 0,
+      "old": "わたくしが選ばれるのは自明ですわ",
+      "new": "私の選出は、当然ね"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "summon"
+      ],
+      "index": 1,
+      "old": "お呼びとあらば、参上いたしますわ",
+      "new": "選ばれた以上、出場いたしますわ"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "preMatch"
+      ],
+      "index": 0,
+      "old": "お相手がどなたであろうと、全力を尽くしますわ",
+      "new": "お相手がどなたであれ、全力を尽くします"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "preMatch"
+      ],
+      "index": 1,
+      "old": "わたくしの試合を、ご覧に入れますわ",
+      "new": "わたくしの試合を、ご覧に入れます"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "preMatch"
+      ],
+      "index": 0,
+      "old": "勝つのはわたくし。それ以外の結末などありませんわ",
+      "new": "勝つのは私。それ以外のありえないでしょう？"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "preMatch"
+      ],
+      "index": 1,
+      "old": "格の違いを見せてさしあげますわ",
+      "new": "格の違いを教えてあげる"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postMatchWin"
+      ],
+      "index": 0,
+      "old": "ひとつ勝ちましたわ。でも油断は禁物ですわね",
+      "new": "ひとつ勝ちました。でも油断は禁物ね"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postMatchWin"
+      ],
+      "index": 1,
+      "old": "次もこの調子で参りますわ",
+      "new": "次もこの調子で参ります"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "postMatchWin"
+      ],
+      "index": 0,
+      "old": "当然の結果ですわ。次もお見せいたしますわよ",
+      "new": "当然の結果ね"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "postMatchWin"
+      ],
+      "index": 1,
+      "old": "この程度で止まるわたくしではありませんわ",
+      "new": "この程度のことで驚いていては、私については来れなくてよ？"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "preFinal"
+      ],
+      "index": 0,
+      "old": "決勝ですわ。全てを出し切りますわよ",
+      "new": "決勝。全てを出し切ります"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "preFinal"
+      ],
+      "index": 1,
+      "old": "ここまで来ましたの。最後まで、わたくしらしく",
+      "new": "ここまで来ましたのだから。最後まで、私らしく"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "preFinal"
+      ],
+      "index": 0,
+      "old": "決勝は当然の舞台ですわ。優勝もいただきますわよ",
+      "new": "決勝は当然の舞台。このまま優勝もいただきましょう"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "preFinal"
+      ],
+      "index": 1,
+      "old": "最後の獲物ですわね。お覚悟なさって",
+      "new": "こいつが最後の獲物ね。覚悟は出来てるかしら"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "champion"
+      ],
+      "index": 0,
+      "old": "優勝ですわ。応援してくださった皆様のおかげですわ",
+      "new": "優勝。応援してくださった皆様のおかげです"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "champion"
+      ],
+      "index": 1,
+      "old": "この優勝を糧に、さらに上を目指しますわ",
+      "new": "この優勝を糧に、さらに上を目指します"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "champion"
+      ],
+      "index": 0,
+      "old": "優勝はわたくしの手に。当然の結果ですわ",
+      "new": "優勝はわたくしのもの。当然の結果ですわね"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "champion"
+      ],
+      "index": 1,
+      "old": "これがわたくしの実力ですわ。おわかりになりまして？",
+      "new": "これがわたくしの実力。誰もかれもわかったかしら？"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postWin"
+      ],
+      "index": 0,
+      "old": "収穫の多い大会でしたわ。次はもっと上を目指しますわ",
+      "new": "収穫の多い大会でしたわ。次はもっと上を目指します"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postWin"
+      ],
+      "index": 1,
+      "old": "実りある大会でしたわ",
+      "new": "実りある大会でした"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "postWin"
+      ],
+      "index": 0,
+      "old": "まだまだですわ。次こそ頂点を取りますわ",
+      "new": "私がこの程度で喜ぶとでも？…次こそ頂点を取りますわ"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "postWin"
+      ],
+      "index": 1,
+      "old": "わたくしの実力、見せつけましたわね",
+      "new": "わたくしなら、この程度当然よ"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postLose"
+      ],
+      "index": 0,
+      "old": "不甲斐ない結果でしたわ。精進しますわ",
+      "new": "不甲斐ない結果でした。もっと精進いたします"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "normal",
+      "subcategory": [
+        "postLose"
+      ],
+      "index": 1,
+      "old": "悔しいですわ…。もっと練習しますわ",
+      "new": "悔しい…。もっと練習しなくては…"
+    },
+    {
+      "source": "JUNIOR_TOURNAMENT_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "postLose"
+      ],
+      "index": 0,
+      "old": "こ、こんな結果…信じられませんわ…！",
+      "new": "こ、こんな結果…ありえないっ…！"
+    },
+    {
+      "source": "FAN_EXPECT_REACTIONS",
+      "personality": "bold",
+      "subcategory": [
+        "goodWinner"
+      ],
+      "index": 0,
+      "old": "絶対に負けられない試合でしたわ！",
+      "new": "皆様の期待に応えられて嬉しいわ"
+    },
+    {
+      "source": "FAN_EXPECT_REACTIONS",
+      "personality": "bold",
+      "subcategory": [
+        "badWinner"
+      ],
+      "index": 0,
+      "old": "次は必ずお見せしますわ。約束しますの",
+      "new": "……次は必ず良い試合をお見せしますわ。"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "attacker"
+      ],
+      "index": 0,
+      "old": "逃がしませんわ。今日ここで決着ですの",
+      "new": "逃がしませんわよ。今日ここで決着をつけましょう？"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "defender"
+      ],
+      "index": 0,
+      "old": "全力でお迎えしますわ",
+      "new": "飛んで火にいる夏の虫。…と言ったところね"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES_70",
+      "personality": "bold",
+      "subcategory": [
+        "attacker"
+      ],
+      "index": 0,
+      "old": "何度夢に見たことでしょう。この瞬間を",
+      "new": "この日を待ちわびていたわ。何度も夢で見るくらいに。"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES_70",
+      "personality": "bold",
+      "subcategory": [
+        "defender"
+      ],
+      "index": 0,
+      "old": "同感ですわ。本気で参りますの",
+      "new": "同感ね。少しは本気にさせてちょうだい…"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES_90",
+      "personality": "bold",
+      "subcategory": [
+        "attacker"
+      ],
+      "index": 0,
+      "old": "全てを賭けますわ。参りますの",
+      "new": "今日は全力で……つぶしてあげる"
+    },
+    {
+      "source": "RIVALRY_CONFRONTATION_LINES_90",
+      "personality": "bold",
+      "subcategory": [
+        "defender"
+      ],
+      "index": 0,
+      "old": "……ええ。全力でお受けしますわ",
+      "new": "……ええ。相手をしてあげる"
+    },
+    {
+      "source": "RIVALRY_RESOLUTION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "winner"
+      ],
+      "index": 0,
+      "old": "ひとまず勝たせていただきましたわ。…でも、これで満足はしませんの",
+      "new": "当然の勝利。…でも、これで折れては居ないのでしょうね"
+    },
+    {
+      "source": "RIVALRY_RESOLUTION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "loser"
+      ],
+      "index": 0,
+      "old": "今日は完敗ですわ。…ですが、次がありましてよ",
+      "new": "負けた？…ですが、次がありましてよ！"
+    },
+    {
+      "source": "GOODRIVAL_RESOLUTION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "winner"
+      ],
+      "index": 0,
+      "old": "あなたは私の誇りですわ。これからも全力でいらっしゃい",
+      "new": "貴方は悪くない相手ですわね。また挑戦して来なさいな"
+    },
+    {
+      "source": "BITTER_RESOLUTION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "winner"
+      ],
+      "index": 0,
+      "old": "叩き潰しましたわ。これが私の答えですの",
+      "new": "虫けらを叩き潰すのは気分がいいわね"
+    },
+    {
+      "source": "BITTER_RESOLUTION_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "loser"
+      ],
+      "index": 0,
+      "old": "認めませんわ……！ この借りは必ず返しますの……！",
+      "new": "認めない……！ この借りは……必ず返す……！"
+    },
+    {
+      "source": "WAR_POST_DIALOGUE",
+      "personality": "bold",
+      "subcategory": [
+        "result_lose"
+      ],
+      "index": 1,
+      "old": "次こそは…必ず…覚悟なさって",
+      "new": "次こそは…必ず…覚悟なさい！"
+    },
+    {
+      "source": "WAR_POST_DIALOGUE",
+      "personality": "bold",
+      "subcategory": [
+        "result_win"
+      ],
+      "index": 1,
+      "old": "圧勝ですわね。おほほ",
+      "new": "圧勝ですわね。ふふっ"
+    },
+    {
+      "source": "GLIMPSE_A_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "bond_60_up"
+      ],
+      "index": 0,
+      "old": "良き仲間になれそうですわ。認めてあげます",
+      "new": "多少の可愛げはあるわね。無下にはしないつもりよ。"
+    },
+    {
+      "source": "GLIMPSE_A_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "bond_80_up"
+      ],
+      "index": 0,
+      "old": "わたくしたち、最強のペアですわ",
+      "new": "私を支える資格は十分にあるわね"
+    },
+    {
+      "source": "GLIMPSE_A_LINES",
+      "personality": "bold",
+      "subcategory": [
+        "trust_below_35"
+      ],
+      "index": 0,
+      "old": "わたくしの価値をご理解いただけていませんわね",
+      "new": "わたくしの価値を、理解出来ていないのね"
+    }
+  ]
+}
