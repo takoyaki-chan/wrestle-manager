@@ -7415,17 +7415,8 @@ const Engine = {
           const trust = retiredF.trust ?? 50;
           if (trust >= 85 && Engine.rng.float(lineRng) < 0.30) {
             const a = retiredF.archetype || 'normal';
-            const p = retiredF.personality || 'normal';
             const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
-            const personalityLines = typeof RETIREMENT_CHAMPION_WORRY_LINES !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES : {};
-            let worryPool = null;
-            if (archetypeLines[a]) {
-              worryPool = archetypeLines[a];
-            } else if (personalityLines[p]) {
-              worryPool = personalityLines[p];
-            } else {
-              worryPool = archetypeLines._default || personalityLines.normal || ['…'];
-            }
+            const worryPool = archetypeLines[a] || archetypeLines._default || ['…'];
             championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
           }
         }
