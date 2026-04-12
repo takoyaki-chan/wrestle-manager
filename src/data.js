@@ -1195,6 +1195,9 @@ const RIVALRY_CONFRONTATION_LINES = {
         '今夜、終わりにしましょう？',
         'あなたを超えてみせるわ'
       ],
+      polite: [
+        '今日こそ、決着をつけさせていただきます'
+      ],
       composed: [
         '…そろそろ、決着をつけようか'
       ]
@@ -1216,6 +1219,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       seductive: [
         '逃がさないわよ。今日で決着よ'
       ],
+      polite: [
+        '逃がしません。今日ここで決着です'
+      ],
       composed: [
         '…逃がす気はないよ。今日で終わらせる'
       ]
@@ -1229,6 +1235,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         '…今日で…決着をつけさせてください'
+      ],
+      seductive: [
+        '………（鋭い目で見据える）…覚悟してね'
       ],
       composed: [
         '……今日だ'
@@ -1247,6 +1256,15 @@ const RIVALRY_CONFRONTATION_LINES = {
       delinquent: [
         'よっしゃ、今日で終わりにしようぜ！'
       ],
+      seductive: [
+        'さーて、決着ね。全部出し切ってあげるわ'
+      ],
+      polite: [
+        'さて、今日で決着をつけましょう！'
+      ],
+      ojousama: [
+        'さて、今日で決着ですわ！'
+      ],
       composed: [
         'さて、そろそろ片付けようか'
       ]
@@ -1261,6 +1279,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       ojousama: [
         '今日こそ決着ですわ'
+      ],
+      seductive: [
+        'この因縁、終わりにするわ'
       ],
       composed: [
         '…決着をつけます。今日で'
@@ -1296,6 +1317,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       seductive: [
         'いいわよ。来なさい'
       ],
+      polite: [
+        '……どうぞ。受けて立ちます'
+      ],
       composed: [
         '…いいよ。来なよ'
       ]
@@ -1314,6 +1338,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       cool: [
         '……受けて立つ'
       ],
+      polite: [
+        '受けて立ちます。返り討ちにいたしますよ'
+      ],
       composed: [
         '…受けて立つよ。好きにおいで'
       ]
@@ -1327,6 +1354,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         '…はい…受けて立ちます'
+      ],
+      seductive: [
+        '………来なさい'
       ],
       composed: [
         '……（静かに頷く）…来なよ'
@@ -1344,6 +1374,15 @@ const RIVALRY_CONFRONTATION_LINES = {
       delinquent: [
         'おう、来いよ！'
       ],
+      seductive: [
+        'いいわよ、来なさい。相手してあげるわ'
+      ],
+      polite: [
+        'どうぞ、来てください！ お相手します！'
+      ],
+      ojousama: [
+        'よろしくてよ！ お相手いたしますわ'
+      ],
       composed: [
         'いいよ、来なよ。相手してあげる'
       ]
@@ -1355,6 +1394,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
       polite: [
         'お受けいたします。全力で参ります'
+      ],
+      seductive: [
+        '受けて立つわ。全力で'
       ],
       composed: [
         '…受けて立ちます。全力で'
@@ -1387,6 +1429,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       seductive: [
         '長かったわね……今夜で最後よ'
       ],
+      polite: [
+        '長かったです……今日で終わりにさせてください'
+      ],
       composed: [
         '…長かったね。…今日で終わりにしよう'
       ]
@@ -1399,6 +1444,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       cool: [
         '……最後だ。全てを出す'
       ],
+      polite: [
+        '最後です。全力で参ります'
+      ],
       composed: [
         '…最後だね。…全部出すよ'
       ]
@@ -1406,6 +1454,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     quiet: {
       _default: [
         '………（深く息を吸い、前に出る）'
+      ],
+      seductive: [
+        '………（深い呼吸）…終わらせましょう'
       ],
       composed: [
         '………（静かに息を吸い、前を見る）'
@@ -1420,6 +1471,15 @@ const RIVALRY_CONFRONTATION_LINES = {
       _default: [
         '最後の一戦だ。全部出し切ろう！'
       ],
+      seductive: [
+        '最後の一戦ね。…全部出し切るわ'
+      ],
+      polite: [
+        '最後の一戦です。全部出し切ります！'
+      ],
+      ojousama: [
+        '最後の一戦ですわ！ 全力で参りますの'
+      ],
       composed: [
         '…最後か。全部出し切ろう'
       ]
@@ -1427,6 +1487,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     earnest: {
       _default: [
         'この因縁、今日終わりにします。全力で'
+      ],
+      seductive: [
+        'この因縁、今日終わりにするわ。全力で'
       ],
       composed: [
         '…今日で終わりにします'
@@ -1459,6 +1522,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       seductive: [
         '最高の終わりにしましょう'
       ],
+      polite: [
+        'はい……最高の結末にしましょう'
+      ],
       composed: [
         '…うん。…最高の結末にしよう'
       ]
@@ -1471,6 +1537,9 @@ const RIVALRY_CONFRONTATION_LINES = {
       cool: [
         '……全力で来い'
       ],
+      polite: [
+        'わかっています。全力で来てください'
+      ],
       composed: [
         '…わかってる。全力でおいで'
       ]
@@ -1478,6 +1547,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     quiet: {
       _default: [
         '………（小さく微笑み、構える）'
+      ],
+      seductive: [
+        '………（微笑み、構える）…ええ'
       ],
       composed: [
         '………（静かに微笑み、構える）'
@@ -1492,6 +1564,15 @@ const RIVALRY_CONFRONTATION_LINES = {
       _default: [
         'おう！ 最高の締めにしようぜ！'
       ],
+      seductive: [
+        '最高の締めにしましょう？ …全力でね'
+      ],
+      polite: [
+        '最高の締めにしましょう！ 全力です！'
+      ],
+      ojousama: [
+        '最高の結末にいたしましょう！'
+      ],
       composed: [
         '…うん。最高の締めにしよう'
       ]
@@ -1499,6 +1580,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     earnest: {
       _default: [
         '全力でお受けします。悔いのない試合を'
+      ],
+      seductive: [
+        '全力でお受けするわ。悔いのない試合にしましょう'
       ],
       composed: [
         '…全力で受けます'
@@ -1532,6 +1616,12 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         'ひとつ片がついたわ…でも、まだ気になるの'
       ],
+      cool: [
+        '……一つ、片がついた。……だが、これで終わりではない'
+      ],
+      polite: [
+        '一つ決着がつきました…でも…まだ終わった気がしません'
+      ],
       composed: [
         '…一つ片がついた。…でも、まだ終わった気はしないね'
       ]
@@ -1553,6 +1643,9 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         '今日は私の勝ち。…でも、まだ飽きてないわよ？'
       ],
+      polite: [
+        '今日は勝たせていただきました。…でもこの程度では終わりませんね'
+      ],
       composed: [
         '…一つ勝った。…でもまだ先があるだろうね'
       ]
@@ -1566,6 +1659,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       polite: [
         '…ひとまず…決着です…でも…'
+      ],
+      seductive: [
+        '………（相手を見つめ）…まだよ'
       ],
       composed: [
         '…一つ、終わったか'
@@ -1585,6 +1681,12 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '勝っちゃった〜。…でもね、まだ終わってない気がするの'
+      ],
+      polite: [
+        '一つ勝たせていただきました！ …でもまだ続きがありそうですよね'
+      ],
+      ojousama: [
+        '一つ勝ちましたわ！ …でもまだ終わった気がしませんの'
       ],
       composed: [
         '勝ったか。…でもまだ、終わった気はしないね'
@@ -1632,6 +1734,12 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         '負けたわ…でも、まだ終わりじゃないの'
       ],
+      cool: [
+        '……負けた。……だが、終わりではない'
+      ],
+      polite: [
+        '負けました…悔しいです。でも…次は必ず'
+      ],
       composed: [
         '…負けたか。…でも、これで終わりじゃないよ'
       ]
@@ -1653,6 +1761,9 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         '完敗ね…でも、次は私の番よ。覚えておきなさい'
       ],
+      polite: [
+        '今日は完敗です。…ですが、次がございます'
+      ],
       composed: [
         '…完敗だね。…でも、次がある'
       ]
@@ -1666,6 +1777,9 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       polite: [
         '…負けました。…でも…次は、必ず…'
+      ],
+      seductive: [
+        '………（拳を握る）…次は、ないわよ'
       ],
       composed: [
         '…負けたか。…次だ'
@@ -1685,6 +1799,12 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
       seductive: [
         '負けちゃったわ〜…でもね、次は覚悟してね？'
+      ],
+      polite: [
+        '負けちゃいました…！ でも次は負けません！'
+      ],
+      ojousama: [
+        '負けてしまいましたわ…でも次はお返ししますの'
       ],
       composed: [
         '負けたか。…ま、次があるさ'
@@ -1731,6 +1851,12 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         'ようやく一つ答えが出たわ…でも、まだ終わりじゃないの'
       ],
+      cool: [
+        '……一つ、答えが出た。……だが、まだ終わらない'
+      ],
+      polite: [
+        'ようやく…一つ答えが出ました。…でもまだ終わりではありません'
+      ],
       composed: [
         '…ようやく一つ答えが出た。…でも、まだ終わらないだろうね'
       ]
@@ -1743,6 +1869,9 @@ const RIVALRY_RESOLUTION_LINES = {
       cool: [
         '…一つ決着がついた。…だが、まだ先がある'
       ],
+      polite: [
+        '一つ勝ちました。…でもまだ先がございます'
+      ],
       composed: [
         '…やっと一つ。…でも、まだ先がある'
       ]
@@ -1750,6 +1879,9 @@ const RIVALRY_RESOLUTION_LINES = {
     quiet: {
       _default: [
         '………（深く息を吐く。目は、まだ相手を追っている）'
+      ],
+      seductive: [
+        '………（深い息）…でも、まだよ'
       ],
       composed: [
         '………（静かに息を吐く）…一つ、か'
@@ -1763,6 +1895,12 @@ const RIVALRY_RESOLUTION_LINES = {
     easygoing: {
       _default: [
         'やっと一つ勝てた…！ でもさ、まだ終わってないよね…？'
+      ],
+      polite: [
+        'やっと一つ勝てました…！ でもまだ終わってないですよね…？'
+      ],
+      ojousama: [
+        'やっと一つ勝ちましたわ…！ でもまだ終わっておりませんわね'
       ],
       composed: [
         'やっと一つ勝てた。…でも、まだ終わってないね'
@@ -1799,6 +1937,12 @@ const RIVALRY_RESOLUTION_LINES = {
       seductive: [
         '敵わなかったわ…でも、終わりだなんて思わないでね'
       ],
+      cool: [
+        '……敵わなかった。……だが、終わりではない'
+      ],
+      polite: [
+        '今日は…敵いませんでした。でもこれで終わりではありません'
+      ],
       composed: [
         '…敵わなかった。…でも、これで終わりじゃない'
       ]
@@ -1811,6 +1955,9 @@ const RIVALRY_RESOLUTION_LINES = {
       cool: [
         '…全力で届かなかった。…だからこそ、次だ'
       ],
+      polite: [
+        '負けました。…ですが、必ず超えてみせます'
+      ],
       composed: [
         '…届かなかった。…でも、次は変える'
       ]
@@ -1818,6 +1965,9 @@ const RIVALRY_RESOLUTION_LINES = {
     quiet: {
       _default: [
         '………（唇を噛んで、静かに立ち上がる）'
+      ],
+      seductive: [
+        '………（唇を噛む）…まだよ'
       ],
       composed: [
         '………（静かに立ち上がり、前を見る）'
@@ -1831,6 +1981,12 @@ const RIVALRY_RESOLUTION_LINES = {
     easygoing: {
       _default: [
         '負けた〜…まいったな。…でもさ、次があるでしょ？ ね？'
+      ],
+      polite: [
+        '負けちゃいました…でもまだ次がありますよね？'
+      ],
+      ojousama: [
+        '負けてしまいましたわ…でも次がありますわよね？'
       ],
       composed: [
         '負けたか。…ま、次があるさ'
@@ -1892,6 +2048,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       seductive: [
         'あなたがいたから輝けたわ。……ありがとう'
       ],
+      polite: [
+        'あなたのおかげでここまで来れました。…ありがとうございます'
+      ],
       composed: [
         '…あんたがいたから、ここまで来れた。……ありがとう'
       ]
@@ -1910,6 +2069,12 @@ const GOODRIVAL_RESOLUTION_LINES = {
       cool: [
         '……好敵手だ。それ以上の言葉はいらない'
       ],
+      seductive: [
+        'あなたとの戦いは私の誇りよ。…これからもよろしくね'
+      ],
+      polite: [
+        'あなたとの戦いは私の誇りです。これからもよろしくお願いします'
+      ],
       composed: [
         '…最高の相手だった。…これからもよろしく'
       ]
@@ -1923,6 +2088,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '…ありがとうございました。…これからも、お願いします'
+      ],
+      seductive: [
+        '………（手を差し出す）…ありがとう…ね'
       ],
       composed: [
         '……ありがとう。…これからも'
@@ -1940,6 +2108,15 @@ const GOODRIVAL_RESOLUTION_LINES = {
       delinquent: [
         '最高だったぜ！ まだまだ一緒にやろうな！'
       ],
+      seductive: [
+        '最高の相手だったわ。…これからもよろしくね'
+      ],
+      polite: [
+        '最高の相手でした！ これからもよろしくお願いします！'
+      ],
+      ojousama: [
+        '最高のお相手でしたわ！ これからもよろしくですの'
+      ],
       composed: [
         '最高の相手だったよ。…これからもよろしく'
       ]
@@ -1951,6 +2128,12 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         'あなたのおかげで成長できました。これからもよろしくお願いいたします'
+      ],
+      seductive: [
+        'あなたのおかげで成長できたわ。…これからもよろしくね'
+      ],
+      ojousama: [
+        'あなたのおかげで成長できましたわ。これからもよろしくお願いいたしますわ'
       ],
       composed: [
         '…あなたのおかげでここまで来れた。…これからも、よろしく'
@@ -1977,6 +2160,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       delinquent: [
         '負けたけどよ……清々しいぜ。お前が相手で良かった'
       ],
+      polite: [
+        '負けました。でも…あなたが好敵手で良かったです'
+      ],
       composed: [
         '…負けたか。…でも、悪くない。あんたが相手でよかった'
       ]
@@ -1988,6 +2174,12 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       cool: [
         '……負けた。だが……悪くない'
+      ],
+      seductive: [
+        '完敗ね。…でも悔いはないわ。最高の相手だった'
+      ],
+      polite: [
+        '完敗です。でも悔いはありません。最高の相手でした'
       ],
       composed: [
         '…完敗。…でも悔いはないよ'
@@ -2002,6 +2194,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '…ありがとう、ございました…（深々とお辞儀）'
+      ],
+      seductive: [
+        '………（涙を拭い、微笑む）…ありがとう'
       ],
       composed: [
         '…負けたけど…悪くない'
@@ -2019,6 +2214,15 @@ const GOODRIVAL_RESOLUTION_LINES = {
       delinquent: [
         '負けたけど……へへ、最高だったぜ'
       ],
+      seductive: [
+        '負けちゃった。…でも笑えるわ。最高の相手だもの'
+      ],
+      polite: [
+        '負けちゃいました。でも笑えちゃいますね。最高の相手でした！'
+      ],
+      ojousama: [
+        '負けてしまいましたわ。でも笑みが零れますの。最高のお相手でしたわ'
+      ],
       composed: [
         '負けたけど…ま、笑えるよ。最高の相手だった'
       ]
@@ -2030,6 +2234,12 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
       polite: [
         '負けました。でもこの試合は一生の宝です'
+      ],
+      seductive: [
+        '負けたわ。でもこの試合は一生忘れない'
+      ],
+      ojousama: [
+        '負けましたわ。でもこの試合は一生の宝ですわ'
       ],
       composed: [
         '…負けました。でもこの試合は忘れません。…ありがとう'
@@ -2066,6 +2276,9 @@ const BITTER_RESOLUTION_LINES = {
       seductive: [
         '終わったわ。もう……あなたの顔は見たくない'
       ],
+      polite: [
+        '……終わりました。もう二度と…関わりたくありません'
+      ],
       composed: [
         '…終わった。…もう、いいだろう'
       ]
@@ -2084,6 +2297,12 @@ const BITTER_RESOLUTION_LINES = {
       cool: [
         '……終わりだ'
       ],
+      seductive: [
+        'もう終わりよ。二度と関わりたくないの'
+      ],
+      polite: [
+        '終わりです。もう振り返りません'
+      ],
       composed: [
         '…終わった。もう振り返らない'
       ]
@@ -2094,6 +2313,12 @@ const BITTER_RESOLUTION_LINES = {
       ],
       cool: [
         '……もう終わった'
+      ],
+      seductive: [
+        '………もう…終わりよ'
+      ],
+      polite: [
+        '………もう…終わりです'
       ],
       composed: [
         '………（静かに背を向ける）'
@@ -2111,6 +2336,15 @@ const BITTER_RESOLUTION_LINES = {
       delinquent: [
         '……ふぅ。もう絡んでくんなよ'
       ],
+      seductive: [
+        '…ふぅ。やっと終わったわね。もう勘弁して'
+      ],
+      polite: [
+        '……やっと終わりました。もう勘弁してください'
+      ],
+      ojousama: [
+        '……やっと終わりましたわ。もうご勘弁くださいまし'
+      ],
       composed: [
         '…ふぅ。やっと終わったか'
       ]
@@ -2121,6 +2355,12 @@ const BITTER_RESOLUTION_LINES = {
       ],
       polite: [
         '決着がつきました。……もう、十分です'
+      ],
+      seductive: [
+        '決着がついたわ。…もう、十分よ'
+      ],
+      ojousama: [
+        '決着がつきましたわ。…もう、十分ですの'
       ],
       composed: [
         '…決着がつきました。…もう十分です'
@@ -2153,6 +2393,9 @@ const BITTER_RESOLUTION_LINES = {
       seductive: [
         '……覚えていなさい。これで終わりだと思わないで'
       ],
+      polite: [
+        '……認めません。こんな結末は…認められません'
+      ],
       composed: [
         '…認めない。…これで終わりだと思うなよ'
       ]
@@ -2165,6 +2408,12 @@ const BITTER_RESOLUTION_LINES = {
       ojousama: [
         '認めませんわ……！ この借りは必ず返しますの……！'
       ],
+      seductive: [
+        '認めないわ…この借りは必ず返すから'
+      ],
+      polite: [
+        '認めません…この借りは必ず返します'
+      ],
       composed: [
         '…認めない。…必ず返す'
       ]
@@ -2175,6 +2424,12 @@ const BITTER_RESOLUTION_LINES = {
       ],
       cool: [
         '………（静かに目を閉じる）'
+      ],
+      seductive: [
+        '………認めない…わ'
+      ],
+      polite: [
+        '………認め…ません'
       ],
       composed: [
         '………（静かに拳を握る）'
@@ -2192,6 +2447,15 @@ const BITTER_RESOLUTION_LINES = {
       delinquent: [
         'くそっ……忘れねえぞ……'
       ],
+      seductive: [
+        '…参ったわね。でも…忘れないわよ'
+      ],
+      polite: [
+        '……参りました。でも…忘れませんから'
+      ],
+      ojousama: [
+        '……参りましたわ。でも…忘れませんことよ'
+      ],
       composed: [
         '…参ったね。…でも忘れないよ'
       ]
@@ -2203,6 +2467,12 @@ const BITTER_RESOLUTION_LINES = {
       ],
       polite: [
         '……認めません。こんな結末は……認められません'
+      ],
+      seductive: [
+        '認めないわ…こんな結末は…認められないの'
+      ],
+      ojousama: [
+        '認めませんわ。こんな結末は…認められませんの'
       ],
       composed: [
         '…認めません。…この結末は'
@@ -2241,6 +2511,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       seductive: [
         'もう逃げられないわよ。終わりにしましょう'
       ],
+      polite: [
+        '逃がしません。ここで…終わらせます'
+      ],
       composed: [
         '…逃がさないよ。ここで終わらせる'
       ]
@@ -2259,6 +2532,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       cool: [
         '……待った。この日を'
       ],
+      seductive: [
+        'ずっと待っていたのよ。今日…超えてみせるわ'
+      ],
+      polite: [
+        'ずっと待っていました。今日、超えてみせます'
+      ],
       composed: [
         '…この日を待ってた。…終わらせるよ'
       ]
@@ -2269,6 +2548,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……ここで、終わる'
+      ],
+      seductive: [
+        '………逃がさない…わ'
+      ],
+      polite: [
+        '………ここで…終わらせます'
       ],
       composed: [
         '………（静かに相手を見据える）'
@@ -2286,6 +2571,15 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       delinquent: [
         'いよいよだな。全力で行くぜ！'
       ],
+      seductive: [
+        'いよいよね。…全部出し切るわ'
+      ],
+      polite: [
+        'いよいよです！ 全部出し切ります！'
+      ],
+      ojousama: [
+        'いよいよですわ！ 全力で参りますの'
+      ],
       composed: [
         'いよいよだね。…全部出し切るよ'
       ]
@@ -2297,6 +2591,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       polite: [
         '本日こそ、決着をつけさせていただきます'
+      ],
+      seductive: [
+        'ここで終わらせるわ。覚悟して'
+      ],
+      ojousama: [
+        '本日こそ、決着をつけさせていただきますわ'
       ],
       composed: [
         '…ここで終わらせます'
@@ -2331,6 +2631,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       seductive: [
         'いいわよ。迎えてあげる'
       ],
+      polite: [
+        '…どうぞ。お相手します'
+      ],
       composed: [
         '…いいよ。来なよ'
       ]
@@ -2349,6 +2652,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       cool: [
         '……同感だ'
       ],
+      seductive: [
+        '同感よ。…本気で行くわ'
+      ],
+      polite: [
+        '同感です。本気で参ります'
+      ],
       composed: [
         '…同感だね。本気で行くよ'
       ]
@@ -2359,6 +2668,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       cool: [
         '……来い'
+      ],
+      seductive: [
+        '………来なさい'
+      ],
+      polite: [
+        '………お相手…します'
       ],
       composed: [
         '………（静かに構える）…来なよ'
@@ -2376,6 +2691,15 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       delinquent: [
         'おう、来いよ！ 全力だ！'
       ],
+      seductive: [
+        'いいわよ。全力で受けて立つわ'
+      ],
+      polite: [
+        'おっけーです！ 全力でお相手します！'
+      ],
+      ojousama: [
+        'よろしくてよ！ 全力でお相手いたしますわ'
+      ],
       composed: [
         'おっけー。全力でいくよ'
       ]
@@ -2386,6 +2710,12 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
       polite: [
         '全力でお相手させていただきます'
+      ],
+      seductive: [
+        '全力でお相手するわ。覚悟して'
+      ],
+      ojousama: [
+        '全力でお相手させていただきますわ'
       ],
       composed: [
         '…全力でお相手します'
@@ -2420,6 +2750,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       seductive: [
         '……ようやく、この日が来たわね'
       ],
+      polite: [
+        '……この日を、ずっと待っておりました'
+      ],
       composed: [
         '…この日を待ってた'
       ]
@@ -2432,6 +2765,18 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       cool: [
         '……全てを賭ける'
       ],
+      delinquent: [
+        '全部賭ける。てめえを超えてやる'
+      ],
+      ojousama: [
+        '全てを賭けますわ。参りますの'
+      ],
+      seductive: [
+        '全部賭けるわ。…行くわよ'
+      ],
+      polite: [
+        '全てを賭けます。行かせていただきます'
+      ],
       composed: [
         '…全部出す。今日で'
       ]
@@ -2442,6 +2787,12 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '………'
+      ],
+      seductive: [
+        '………（言葉はなく、ただ見つめている）'
+      ],
+      polite: [
+        '………行き…ます'
       ],
       composed: [
         '………（静かに、真っ直ぐ見据えている）'
@@ -2495,6 +2846,9 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       seductive: [
         '……ええ。もう何も言わないわ'
       ],
+      polite: [
+        '……はい。もう言葉は…いりません'
+      ],
       composed: [
         '…ええ。…もう言葉はいらない'
       ]
@@ -2507,6 +2861,18 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       cool: [
         '……受けて立つ'
       ],
+      delinquent: [
+        '……おう。来い'
+      ],
+      ojousama: [
+        '……ええ。全力でお受けしますわ'
+      ],
+      seductive: [
+        '……ええ。全力で行くわ'
+      ],
+      polite: [
+        '……はい。受けて立ちます'
+      ],
       composed: [
         '…うん。受けて立つ'
       ]
@@ -2517,6 +2883,12 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
       cool: [
         '………（目を閉じ、開く）'
+      ],
+      seductive: [
+        '………（静かに目を閉じ、開く）'
+      ],
+      polite: [
+        '………（静かに頷く）…はい'
       ],
       composed: [
         '………（静かに頷く）'
@@ -2700,6 +3072,9 @@ const RIVALRY_MATCH_REACTION = {
       seductive: [
         'まだ終わってないわ。次も待ってなさい'
       ],
+      polite: [
+        'まだ終わっていません。次も…必ず勝ちます'
+      ],
       composed: [
         '…まだ終わってない。次もあるよ'
       ]
@@ -2714,6 +3089,15 @@ const RIVALRY_MATCH_REACTION = {
       cool: [
         '……一つ、借りを返した'
       ],
+      delinquent: [
+        '通過点だ。次もぶっ倒してやる'
+      ],
+      seductive: [
+        'まだ先があるのよ。…楽しみにしてなさい'
+      ],
+      polite: [
+        'この勝利は通過点です。まだ先がありますから'
+      ],
       composed: [
         '…通過点だね。まだ先がある'
       ]
@@ -2724,6 +3108,12 @@ const RIVALRY_MATCH_REACTION = {
       ],
       cool: [
         '……まだ終わらない'
+      ],
+      seductive: [
+        '………まだよ'
+      ],
+      polite: [
+        '………まだ…終わりではありません'
       ],
       composed: [
         '………（一瞬振り返り、前を向く）'
@@ -2741,6 +3131,15 @@ const RIVALRY_MATCH_REACTION = {
       delinquent: [
         '一勝！ でもまだまだだぜ！'
       ],
+      seductive: [
+        'ひとつ勝ち。ふふ…でもまだこれからよ'
+      ],
+      polite: [
+        '一つ勝たせていただきました！ でもまだまだこれからです'
+      ],
+      ojousama: [
+        '一つ勝ちですわ！ でもまだまだこれからですの'
+      ],
       composed: [
         '一つ勝ち。…でもまだまだだね'
       ]
@@ -2751,6 +3150,12 @@ const RIVALRY_MATCH_REACTION = {
       ],
       polite: [
         '勝たせていただきました。でもまだ……終わりではありません'
+      ],
+      seductive: [
+        '勝ったわ。でもこの因縁…まだ続くの'
+      ],
+      ojousama: [
+        '勝たせていただきましたわ。この因縁はまだ続きますの'
       ],
       composed: [
         '…勝ちました。でもまだ続きます'
@@ -2783,6 +3188,9 @@ const RIVALRY_MATCH_REACTION = {
       seductive: [
         '次は……負けないわ'
       ],
+      polite: [
+        '次は負けません。この借りは…必ず返します'
+      ],
       composed: [
         '…次は負けない'
       ]
@@ -2794,6 +3202,15 @@ const RIVALRY_MATCH_REACTION = {
       cool: [
         '……忘れない。この敗北を'
       ],
+      delinquent: [
+        'この借り、絶対返すからな'
+      ],
+      seductive: [
+        'この借り…必ず返すわ。覚悟しておきなさい'
+      ],
+      polite: [
+        'この負けは認めません。必ず借りを返します'
+      ],
       composed: [
         '…この借り、返すよ'
       ]
@@ -2804,6 +3221,12 @@ const RIVALRY_MATCH_REACTION = {
       ],
       cool: [
         '……次だ'
+      ],
+      seductive: [
+        '………次は、ないわよ'
+      ],
+      polite: [
+        '………次は…負けません'
       ],
       composed: [
         '……次だ'
@@ -2821,6 +3244,15 @@ const RIVALRY_MATCH_REACTION = {
       delinquent: [
         'くっそー！ 次は見てろよ！'
       ],
+      seductive: [
+        'あら、負けちゃった。…でも次は覚悟しておいてね'
+      ],
+      polite: [
+        '負けてしまいました。でも次は必ずやり返します！'
+      ],
+      ojousama: [
+        '負けてしまいましたわ。…でも次はやり返しますの'
+      ],
       composed: [
         '負けたか。…ま、次があるさ'
       ]
@@ -2831,6 +3263,12 @@ const RIVALRY_MATCH_REACTION = {
       ],
       polite: [
         '……悔しいです。でも、次は必ず'
+      ],
+      seductive: [
+        '負けたわ。でも…諦めないの。必ず返すから'
+      ],
+      ojousama: [
+        '負けましたわ。でも諦めませんの。必ず借りを返しますわ'
       ],
       composed: [
         '…負けました。…でも、次は'
@@ -2866,6 +3304,9 @@ const UPSET_RIVALRY_LINES = {
       seductive: [
         '見てた？ これが私の答えよ'
       ],
+      polite: [
+        '見てください…！ 格下だなんて…もう言わせません…！'
+      ],
       composed: [
         '…これが答えだよ。…もう格下なんて言わせない'
       ]
@@ -2877,6 +3318,12 @@ const UPSET_RIVALRY_LINES = {
       cool: [
         '……やった。……ようやく'
       ],
+      seductive: [
+        'ようやく…勝ったわ。…ずっと待ってたの'
+      ],
+      polite: [
+        'ついに…勝ちました…！ ずっと待っていたんです…！'
+      ],
       composed: [
         '…ようやく。…超えたよ'
       ]
@@ -2887,6 +3334,12 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '……勝った。……信じられない'
+      ],
+      seductive: [
+        '………勝った…の…？'
+      ],
+      polite: [
+        '………勝ち…ました…？'
       ],
       composed: [
         '……勝った、か'
@@ -2904,6 +3357,15 @@ const UPSET_RIVALRY_LINES = {
       delinquent: [
         'マジか……やったぞ……！'
       ],
+      seductive: [
+        'うそ…勝っちゃった…ふふ、信じられない'
+      ],
+      polite: [
+        'うそです…勝っちゃいました…！ 信じられません…！'
+      ],
+      ojousama: [
+        'まあ…勝ちましたわ…！ 信じられませんこと…！'
+      ],
       composed: [
         '…勝っちゃった。…ふぅん'
       ]
@@ -2914,6 +3376,12 @@ const UPSET_RIVALRY_LINES = {
       ],
       polite: [
         '勝ちました……！ ずっと追いかけてきた背中に……ついに……！'
+      ],
+      seductive: [
+        'やったわ…ずっと追いかけてきて…ついに…'
+      ],
+      ojousama: [
+        'やりましたわ…！ ずっと追いかけてまいりまして…ついに…'
       ],
       composed: [
         '…ずっと追いかけてきた。…ようやく、届いた'
@@ -2946,6 +3414,9 @@ const UPSET_RIVALRY_LINES = {
       seductive: [
         '嘘でしょう……こんなことが……'
       ],
+      polite: [
+        '嘘でしょう…こんなはずでは…ありません…'
+      ],
       composed: [
         '…こんなことが。…信じられない'
       ]
@@ -2964,6 +3435,12 @@ const UPSET_RIVALRY_LINES = {
       cool: [
         '……嘘だろう'
       ],
+      seductive: [
+        '認めないわ…こんな結果…'
+      ],
+      polite: [
+        '認めません…こんな結果は…'
+      ],
       composed: [
         '…認めない。…こんな結果は'
       ]
@@ -2974,6 +3451,12 @@ const UPSET_RIVALRY_LINES = {
       ],
       cool: [
         '………（膝をつき、動かない）'
+      ],
+      seductive: [
+        '………嘘…でしょう…'
+      ],
+      polite: [
+        '………そんな…'
       ],
       composed: [
         '………（静かに天を仰ぐ）'
@@ -2991,6 +3474,15 @@ const UPSET_RIVALRY_LINES = {
       delinquent: [
         'は……？ マジかよ……'
       ],
+      seductive: [
+        'えっ…嘘でしょう…まさか…'
+      ],
+      polite: [
+        'えっ…嘘ですよね…まさか…'
+      ],
+      ojousama: [
+        'まあ…嘘ですわ…こんなことが…'
+      ],
       composed: [
         '…嘘だろう。…こんなことが'
       ]
@@ -3002,6 +3494,12 @@ const UPSET_RIVALRY_LINES = {
       ],
       polite: [
         'こんな……全力を出したはずなのに……'
+      ],
+      seductive: [
+        'こんなはずじゃ…全力を出したのに…'
+      ],
+      ojousama: [
+        'こんなはずでは…全力を尽くしましたのに…'
       ],
       composed: [
         '…こんなはずでは。…なぜ'
@@ -3822,6 +4320,12 @@ const NEGOTIATE_LINES = {
       seductive: [
         '私を誘うの？\nふふ…条件次第ね'
       ],
+      cool: [
+        '……条件次第だ'
+      ],
+      polite: [
+        '残りたい気持ちはあります。…条件を聞かせてください'
+      ],
       composed: [
         '…ふぅん、私に来いって？\n…聞くだけ聞こうか'
       ]
@@ -3843,6 +4347,9 @@ const NEGOTIATE_LINES = {
       seductive: [
         '私を引き抜こうだなんて…\nふふ、面白い度胸してるわね'
       ],
+      polite: [
+        '条件を聞かせてください。それ次第です'
+      ],
       composed: [
         '…引き抜き？ …面白いね。条件を聞こうか'
       ]
@@ -3856,6 +4363,9 @@ const NEGOTIATE_LINES = {
       ],
       polite: [
         '…お話は伺います'
+      ],
+      seductive: [
+        '………条件…次第ね'
       ],
       composed: [
         '……聞くよ'
@@ -3875,6 +4385,12 @@ const NEGOTIATE_LINES = {
       ],
       seductive: [
         'あら、スカウト？\nふふ、聞かせてもらおうかしら'
+      ],
+      polite: [
+        '条件次第ですね。…聞かせてください！'
+      ],
+      ojousama: [
+        '条件をお聞かせくださいまし。それ次第ですわ'
       ],
       composed: [
         'スカウト？ …まあ、話は聞くよ'
@@ -4225,6 +4741,12 @@ const CONTRACT_NEGOTIATION_LINES = {
       seductive: [
         '社長、ちょっといい？ {tenure}{record}…もう少しだけ、考えてくれない？'
       ],
+      cool: [
+        '……考えさせてくれ'
+      ],
+      polite: [
+        'ありがとうございます。前向きに検討させていただきます'
+      ],
       composed: [
         'まあ…社長、少しいいかな。{tenure}{record}悪くない環境だと思ってるけど…もう少し、考えてもらえると嬉しいね。'
       ]
@@ -4246,6 +4768,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       seductive: [
         'ねえ社長。{tenure}もうちょっと私のこと大事にしてくれてもいいんじゃない？ {record}'
       ],
+      polite: [
+        'ありがとうございます。…ただ、もう少し条件を詰めさせてください'
+      ],
       composed: [
         '…社長。{tenure}率直に言うね。{record}この額は…ちょっと寂しいかな。'
       ]
@@ -4260,6 +4785,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       polite: [
         'あの…社長、すみません…。{tenure}お給料のことで…少しだけ、ご相談したくて……。'
+      ],
+      seductive: [
+        '………考えさせて'
       ],
       composed: [
         '……社長、少しだけ。{tenure}…お給料のこと…落ち着いて話せるうちに、伝えておきたくて。'
@@ -4281,6 +4809,12 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       seductive: [
         '社長ー♪ {tenure}お給料のことなんだけどさ…もうちょっとだけ♡ ダメ？'
+      ],
+      polite: [
+        'ありがとうございます！ 前向きに考えます！'
+      ],
+      ojousama: [
+        'ありがとうございますわ。前向きに検討いたしますの'
       ],
       composed: [
         'やあ社長。{tenure}まあ…お給料のことなんだけどさ。ちょっとだけ、考えてくれない？'
@@ -5250,6 +5784,12 @@ const RETIREMENT_LINES = {
       seductive: [
         '頂点からの景色…忘れないわ'
       ],
+      cool: [
+        '……限界か。…悪くない引き際だ'
+      ],
+      polite: [
+        '限界を感じています。…引退を考えさせてください'
+      ],
       composed: [
         '…悪くない景色だった。うん、悪くない'
       ]
@@ -5270,6 +5810,9 @@ const RETIREMENT_LINES = {
       seductive: [
         '最後まで背負い切ったわ。最高の景色だった'
       ],
+      polite: [
+        '正直に申し上げます。…もう限界です'
+      ],
       composed: [
         '…背負い切った。…まあ、上出来でしょ'
       ]
@@ -5283,6 +5826,9 @@ const RETIREMENT_LINES = {
       ],
       polite: [
         'あのベルトの重さ…一生の宝物です'
+      ],
+      seductive: [
+        '………もう…ここまでね'
       ],
       composed: [
         '…あの重さ、忘れないよ'
@@ -5302,6 +5848,12 @@ const RETIREMENT_LINES = {
       ],
       seductive: [
         '最高だったわ。ベルト持てて幸せだった'
+      ],
+      polite: [
+        '正直、もう限界だと感じています。…引退を考えています'
+      ],
+      ojousama: [
+        'もう限界を感じますの。…引退を考えておりますわ'
       ],
       composed: [
         '…いい時間だったよ。ベルトも含めてね'
@@ -6055,6 +6607,12 @@ const RETIRE_ACCEPT_LINES = {
       seductive: [
         '…わかったわ。もう限界なのよね'
       ],
+      cool: [
+        '……わかった。…悔いはない'
+      ],
+      polite: [
+        'わかりました。…ここまでやれて幸せでした'
+      ],
       composed: [
         '…そう。…わかってたよ、自分でも'
       ]
@@ -6075,6 +6633,9 @@ const RETIRE_ACCEPT_LINES = {
       seductive: [
         '…認めるわ。もう限界なの'
       ],
+      polite: [
+        '受け入れます。…ここまでやれたこと、誇りに思います'
+      ],
       composed: [
         '…ふぅん、限界か。…認めるよ'
       ]
@@ -6088,6 +6649,9 @@ const RETIRE_ACCEPT_LINES = {
       ],
       polite: [
         '…わかっています'
+      ],
+      seductive: [
+        '………（静かに頷く）…ありがとう…ね'
       ],
       composed: [
         '……うん'
@@ -6107,6 +6671,12 @@ const RETIRE_ACCEPT_LINES = {
       ],
       seductive: [
         'そうよね…ありがとう'
+      ],
+      polite: [
+        'わかりました。…楽しかったです。本当に'
+      ],
+      ojousama: [
+        '承知いたしましたわ。…楽しい日々でしたの'
       ],
       composed: [
         '…まあ、そうだよね。…ありがとう'
@@ -6548,6 +7118,12 @@ const RETIRE_REFUSE_LINES = {
       seductive: [
         'チャンピオンに引退ですって？ 冗談でしょう？'
       ],
+      cool: [
+        '……まだだ。…まだ終われない'
+      ],
+      polite: [
+        'まだ引退するわけにはいきません。もう少しだけ…'
+      ],
       composed: [
         '…チャンピオンに引退、か。…冗談はやめてよ'
       ]
@@ -6568,6 +7144,9 @@ const RETIRE_REFUSE_LINES = {
       seductive: [
         '王者を辞めさせる？ 100年早いわよ'
       ],
+      polite: [
+        'まだです。まだやれます。もう少しだけ時間をください'
+      ],
       composed: [
         '…ふぅん。…王者に引退を勧める、か。…早いよ'
       ]
@@ -6581,6 +7160,9 @@ const RETIRE_REFUSE_LINES = {
       ],
       polite: [
         '…このベルトがある限りは'
+      ],
+      seductive: [
+        '………まだ…よ'
       ],
       composed: [
         '…このベルトがある限りは'
@@ -6600,6 +7182,12 @@ const RETIRE_REFUSE_LINES = {
       ],
       seductive: [
         'まだチャンピオンよ？ もう少し待って'
+      ],
+      polite: [
+        'まだです！ まだやれます！ もう少しだけお願いします！'
+      ],
+      ojousama: [
+        'まだですわ！ まだやれますの！ お願いいたします！'
       ],
       composed: [
         '…まだチャンピオンだよ。…もう少し待って'
@@ -6942,6 +7530,12 @@ const RETAIN_LINES = {
       seductive: [
         'もう少しだけ…あのベルトに手を伸ばしたいの'
       ],
+      cool: [
+        '……残る。…まだやることがある'
+      ],
+      polite: [
+        '残らせてください。まだ…やりたいことがあります'
+      ],
       composed: [
         '…もう少しだけ。…あのベルトに、もう一度手を伸ばしたい'
       ]
@@ -6962,6 +7556,9 @@ const RETAIN_LINES = {
       seductive: [
         'もう一シーズンだけ。結果を出すわ'
       ],
+      polite: [
+        '残ります。まだここでやるべきことがあります'
+      ],
       composed: [
         '…もう一シーズンだけ。…結果は出すよ'
       ]
@@ -6975,6 +7572,9 @@ const RETAIN_LINES = {
       ],
       polite: [
         '…もう一度だけ、挑戦させてください'
+      ],
+      seductive: [
+        '………残るわ'
       ],
       composed: [
         '…もう一度だけ'
@@ -6994,6 +7594,12 @@ const RETAIN_LINES = {
       ],
       seductive: [
         'もう少しだけ。あのベルトにもう一度触れたいの'
+      ],
+      polite: [
+        '残ります！ まだまだここで頑張りたいです！'
+      ],
+      ojousama: [
+        '残りますわ！ まだまだここで精進いたしますの'
       ],
       composed: [
         '…もうちょっとだけ。…あのベルト、もう一回触りたいんだ'
@@ -7424,7 +8030,10 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'は？ マジで？ いや…あ、ありがとな…'
-      ]
+      ],
+      polite: [
+        'え…わたし、ですか…？ …ありがとうございます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7436,6 +8045,12 @@ const AWARD_LINES = {
       ],
       seductive: [
         'あら、嬉しいサプライズ。来年はもっと驚かせてあげる'
+      ],
+      polite: [
+        'うそです…！ 新人王ですか…！ ありがとうございます！'
+      ],
+      ojousama: [
+        'まあ…！ 新人王ですの…！ 光栄ですわ'
       ],
       composed: [
         'へえ、新人王か。…悪くないね。来年も楽しみだ'
@@ -7488,6 +8103,9 @@ const AWARD_LINES = {
       seductive: [
         '最高に痺れたわ。…また味わいたい、あの感覚'
       ],
+      polite: [
+        '最高の試合でした。…相手に感謝しています'
+      ],
       composed: [
         '…悪くなかった。あの相手だから、出せたものがある'
       ]
@@ -7509,6 +8127,9 @@ const AWARD_LINES = {
       seductive: [
         '全力を引き出してくれた相手に感謝。…次はもっと激しくいくわよ？'
       ],
+      polite: [
+        '当然の結果です。…でも、まだ上があります'
+      ],
       composed: [
         '…いい試合だった。出し惜しみなんてできなかったよ'
       ]
@@ -7522,6 +8143,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…あの方と戦えて、本当によかったです'
+      ],
+      seductive: [
+        '………最高の試合…だったわ'
       ],
       composed: [
         '……あの試合のことは、忘れないだろうね'
@@ -7548,6 +8172,12 @@ const AWARD_LINES = {
       ],
       seductive: [
         '楽しかったわ。久しぶりに全部忘れて夢中になれた'
+      ],
+      polite: [
+        '最高の試合でした！ 相手にも感謝です！'
+      ],
+      ojousama: [
+        '最高の試合でしたわ！ お相手にも感謝ですの'
       ],
       composed: [
         'あの試合は楽しかったな。…全部出し切れた'
@@ -7581,6 +8211,9 @@ const AWARD_LINES = {
       delinquent: [
         'ちくしょう…あの試合思い出したら…目から汗が…最高だったよ…！'
       ],
+      seductive: [
+        '最高の試合だった…涙が止まらないわ'
+      ],
       composed: [
         '…っ…あの試合は…ちょっと、特別だったね。…うん'
       ]
@@ -7600,6 +8233,9 @@ const AWARD_LINES = {
       ],
       seductive: [
         '一年間ずっと見ていてくれたでしょう？ …ちゃんと応えたわ'
+      ],
+      polite: [
+        'MVPをいただけるとは…ありがとうございます。来年も頑張ります'
       ],
       composed: [
         '…一年間、やるべきことをやった。それだけだよ'
@@ -7622,6 +8258,9 @@ const AWARD_LINES = {
       seductive: [
         '一番になるべくしてなった。当然でしょう？ …でも、まだ満足してないわ'
       ],
+      polite: [
+        '当然です。…でも、来年も狙います'
+      ],
       composed: [
         '…まあ、結果は出したからね。…でもまだ先がある'
       ]
@@ -7635,6 +8274,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…目の前のことに集中しただけです'
+      ],
+      seductive: [
+        '………ありがとう…ね'
       ],
       composed: [
         '…一つずつ、やっただけ'
@@ -7661,6 +8303,12 @@ const AWARD_LINES = {
       ],
       seductive: [
         '最優秀選手ですって。…似合うと思わない？'
+      ],
+      polite: [
+        'MVPですか！ ありがとうございます！ 来年も頑張ります！'
+      ],
+      ojousama: [
+        'MVPですの！ 光栄ですわ。来年も精進いたしますの'
       ],
       composed: [
         'MVP？ …ふぅん。悪くないね'
@@ -7754,6 +8402,9 @@ const AWARD_LINES = {
       seductive: [
         'この輝き、よく似合うでしょう？ 欲しいなら…奪いに来なさい'
       ],
+      polite: [
+        '一年間、ベルトを守り続けることができました。支えてくださった皆さんに感謝します'
+      ],
       composed: [
         '…このベルトの重さ、悪くない。…来るなら来なよ'
       ]
@@ -7775,6 +8426,9 @@ const AWARD_LINES = {
       seductive: [
         '頂点からの景色は最高よ。…あなたには見せてあげないけど'
       ],
+      polite: [
+        'ベルトを守り抜きました。…来年もこの座は譲りません'
+      ],
       composed: [
         '…ここが頂点。渡す気はないよ'
       ]
@@ -7788,6 +8442,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…この責任、全うします'
+      ],
+      seductive: [
+        '………このベルト…渡さないわ'
       ],
       composed: [
         '……この重さ、嫌いじゃない'
@@ -7813,6 +8470,12 @@ const AWARD_LINES = {
       ],
       seductive: [
         'チャンピオン。いい響きね。似合うでしょう？'
+      ],
+      polite: [
+        '一年間守り抜きました！ 来年も頑張ります！'
+      ],
+      ojousama: [
+        '一年間お守りいたしましたわ。来年もこの座を守りますの'
       ],
       composed: [
         'チャンピオンか。…まあ、楽しんでいくよ'
@@ -7866,6 +8529,9 @@ const AWARD_LINES = {
       seductive: [
         '素敵な花道を用意してくれるのね。…ありがとう。最高の舞台だったわ'
       ],
+      polite: [
+        '殿堂入り…夢のようです。支えてくださった全ての方に感謝いたします'
+      ],
       composed: [
         '…いい時間だった。後悔？ …ないよ'
       ]
@@ -7887,6 +8553,9 @@ const AWARD_LINES = {
       seductive: [
         '最高の舞台で、最高の人生だった。…最後まで美しかったでしょう？'
       ],
+      polite: [
+        '殿堂入りです。…ここまで来ることができました'
+      ],
       composed: [
         '…全部やりきった。悔いはないよ'
       ]
@@ -7900,6 +8569,9 @@ const AWARD_LINES = {
       ],
       polite: [
         '…長い間、ありがとうございました。幸せでした'
+      ],
+      seductive: [
+        '………（涙を堪え）…ありがとう'
       ],
       composed: [
         '……ありがとう。…いい場所だった'
@@ -7926,6 +8598,12 @@ const AWARD_LINES = {
       ],
       seductive: [
         '楽しい日々だったわ。全部、宝物。…ありがとう'
+      ],
+      polite: [
+        '殿堂入りですか…！ 信じられません…ありがとうございます！'
+      ],
+      ojousama: [
+        '殿堂入りですの…！ 夢のようですわ…'
       ],
       composed: [
         '楽しかったな。…全部ひっくるめて、いい時間だった'
@@ -7958,6 +8636,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'ちくしょう…泣くなっつってんだろ…。みんな…ありがとう…本当に…くそ…！'
+      ],
+      seductive: [
+        '殿堂入り…もう言葉にならないわ…（涙を堪える）'
       ],
       composed: [
         '…っ…みんな、ありがとう。…いい場所だった。…本当に'
@@ -7994,6 +8675,15 @@ const BT_HINT_LINES = {
     delinquent: [
       '（…なんだ、この感覚。体が勝手に動きやがる——）'
     ],
+    cool: [
+      '……何かが、変わり始めている'
+    ],
+    polite: [
+      '何かが掴めそうな気がします。もう少しで…'
+    ],
+    seductive: [
+      '何かが変わり始めてる…自分でもわかるわ'
+    ],
     composed: [
       '（…ふぅん。…いつもと違う。悪くないね——）'
     ]
@@ -8009,6 +8699,15 @@ const BT_HINT_LINES = {
     delinquent: [
       '（…体が勝手に動きやがる。これが限界の先かよ——）'
     ],
+    polite: [
+      'もう少しで掴めそうです。あと一歩です'
+    ],
+    ojousama: [
+      'もう少しで掴めそうですわ。あと一歩ですの'
+    ],
+    seductive: [
+      'もう少し…あと少しで何かが掴めそうなの'
+    ],
     composed: [
       '（…なるほど。…これが、その先か——）'
     ]
@@ -8020,6 +8719,12 @@ const BT_HINT_LINES = {
     ],
     cool: [
       '（——見えた）'
+    ],
+    polite: [
+      '………もう少しで…掴めそう…です'
+    ],
+    seductive: [
+      '………もう少し…あと少し…'
     ],
     composed: [
       '（……見えた。…次の一手——）'
@@ -8041,6 +8746,12 @@ const BT_HINT_LINES = {
     ],
     polite: [
       '（…あのお稽古が、今、実を結ぼうとしている——）'
+    ],
+    seductive: [
+      '積み重ねてきたものが…形になりそうなの'
+    ],
+    ojousama: [
+      '積み重ねてまいりましたものが、形になりそうですわ'
     ],
     composed: [
       '（…あの練習が…ここで繋がった——）'
@@ -8073,6 +8784,12 @@ const BREAKTHROUGH_LINES = {
     seductive: [
       'あら…何かが変わった気がするわ'
     ],
+    cool: [
+      '……成長を、実感している'
+    ],
+    polite: [
+      '何かが変わった気がします。…成長できている実感があります'
+    ],
     composed: [
       '…なるほど。壁を越えたみたいだね'
     ]
@@ -8094,6 +8811,9 @@ const BREAKTHROUGH_LINES = {
     seductive: [
       '当然よ。まだまだこんなものじゃないわ'
     ],
+    polite: [
+      '手応えがあります。まだまだ伸びます'
+    ],
     composed: [
       '…ま、まだ先がある。ここからだよ'
     ]
@@ -8107,6 +8827,9 @@ const BREAKTHROUGH_LINES = {
     ],
     polite: [
       '…何かが変わった気がします'
+    ],
+    seductive: [
+      '………（静かに拳を見つめ）…変わってきたわ'
     ],
     composed: [
       '……変わった、かな'
@@ -8126,6 +8849,12 @@ const BREAKTHROUGH_LINES = {
     ],
     seductive: [
       'あら、いつもと違う感じ。いいわね'
+    ],
+    polite: [
+      'なんか最近調子いいんです！ もっと上に行けそうです！'
+    ],
+    ojousama: [
+      '最近絶好調ですわ！ もっと上に行けそうですの'
     ],
     composed: [
       'あれ、なんかいい感じ。…悪くないね'
@@ -8194,6 +8923,12 @@ const SLUMP_START_LINES = {
       seductive: [
         'あの負けから…何かがおかしいの'
       ],
+      cool: [
+        '……最近、噛み合わない'
+      ],
+      polite: [
+        '最近、何をやってもうまくいかなくて…'
+      ],
       composed: [
         '…あの負けから、どこか噛み合わない'
       ]
@@ -8215,6 +8950,9 @@ const SLUMP_START_LINES = {
       seductive: [
         'あら…おかしいわね、こんなはずじゃ'
       ],
+      polite: [
+        '正直、調子が上がりません。…でも、立て直します'
+      ],
       composed: [
         '…こんなはずじゃないんだけど。…焦ってはいないよ'
       ]
@@ -8228,6 +8966,9 @@ const SLUMP_START_LINES = {
       ],
       polite: [
         '…あの試合から、うまく動けなくて'
+      ],
+      seductive: [
+        '………何も…うまくいかないわ'
       ],
       composed: [
         '……あの負けから、少し…鈍い'
@@ -8247,6 +8988,12 @@ const SLUMP_START_LINES = {
       ],
       seductive: [
         'ふふ…なんでかしら、いつもみたいに動けないの'
+      ],
+      polite: [
+        '最近ちょっと調子悪くて…でも大丈夫です！'
+      ],
+      ojousama: [
+        '最近少し不調ですの…でもすぐ立て直しますわ'
       ],
       composed: [
         '…あれ、おかしいな。…いつもの感覚が戻らない'
@@ -8592,6 +9339,12 @@ const SLUMP_END_LINES = {
     seductive: [
       'やっと…戻ってこれたわ'
     ],
+    cool: [
+      '……戻ってきた。この感覚だ'
+    ],
+    polite: [
+      'ようやく…調子が戻ってきた気がします'
+    ],
     composed: [
       '…やっと、戻ってこれたかな'
     ]
@@ -8612,6 +9365,9 @@ const SLUMP_END_LINES = {
     seductive: [
       'お待たせ。ここからが本番よ'
     ],
+    polite: [
+      '復調しました。もう大丈夫です'
+    ],
     composed: [
       '…待たせたね。…ここからだよ'
     ]
@@ -8625,6 +9381,9 @@ const SLUMP_END_LINES = {
     ],
     polite: [
       '…戻ってこれました'
+    ],
+    seductive: [
+      '………戻ってきた…わ'
     ],
     composed: [
       '……戻った、かな'
@@ -8644,6 +9403,12 @@ const SLUMP_END_LINES = {
     ],
     seductive: [
       '長かったわ。でもまた楽しくなってきたの'
+    ],
+    polite: [
+      '調子戻ってきました！ もう大丈夫です！'
+    ],
+    ojousama: [
+      '調子が戻ってまいりましたわ！ もう大丈夫ですの'
     ],
     composed: [
       '…長かったな。…まあ、また楽しくなってきた'
@@ -8693,6 +9458,12 @@ const MOTIVATION_LOSS_LINES = {
     seductive: [
       '何のために闘ってるのかしら…わからなくなったわ'
     ],
+    cool: [
+      '……何のために戦っているのか、見えなくなった'
+    ],
+    polite: [
+      '最近…何のために戦っているのか、わからなくなってきました'
+    ],
     composed: [
       '…何のために闘ってるのか。…わからなくなった'
     ]
@@ -8713,6 +9484,9 @@ const MOTIVATION_LOSS_LINES = {
     seductive: [
       '燃えないの…何をしても、火がつかないわ'
     ],
+    polite: [
+      '正直…目標を見失いかけています'
+    ],
     composed: [
       '…燃えない。…こういうこともあるか'
     ]
@@ -8726,6 +9500,9 @@ const MOTIVATION_LOSS_LINES = {
     ],
     polite: [
       '…闘う理由が、見えなくなってしまって'
+    ],
+    seductive: [
+      '………何のために…戦ってるの…'
     ],
     composed: [
       '……闘う理由が、見えなくなった'
@@ -8745,6 +9522,12 @@ const MOTIVATION_LOSS_LINES = {
     ],
     seductive: [
       'どうしたのかしら…楽しいって感覚、どこかに行っちゃったわ'
+    ],
+    polite: [
+      '最近ちょっとモチベーションが…でも頑張ります'
+    ],
+    ojousama: [
+      '少しやる気が出ませんの…でも頑張りますわ'
     ],
     composed: [
       '…楽しいって感覚、どこ行ったかな。…困ったね'
@@ -8795,6 +9578,12 @@ const MOTIVATION_RECOVERY_LINES = {
     seductive: [
       'まだやれるわ…やってみせる'
     ],
+    cool: [
+      '……思い出した。戦う理由を'
+    ],
+    polite: [
+      'ようやく…戦う理由を思い出しました'
+    ],
     composed: [
       '…まだやれる。…うん、やってみよう'
     ]
@@ -8815,6 +9604,9 @@ const MOTIVATION_RECOVERY_LINES = {
     seductive: [
       '目が覚めたわ。ここで終わるなんて、つまらないもの'
     ],
+    polite: [
+      '目標が見えてきました。もう迷いません'
+    ],
     composed: [
       '…目が覚めた。…ここで終わるのは、つまらないね'
     ]
@@ -8828,6 +9620,9 @@ const MOTIVATION_RECOVERY_LINES = {
     ],
     polite: [
       '…もう一度、闘えそうです'
+    ],
+    seductive: [
+      '………思い出した…わ。戦う理由'
     ],
     composed: [
       '……もう一度、やれそうだ'
@@ -8847,6 +9642,12 @@ const MOTIVATION_RECOVERY_LINES = {
     ],
     seductive: [
       'あら、やる気が戻ってきたわ。楽しまなくちゃね'
+    ],
+    polite: [
+      'やる気出てきました！ もう大丈夫です！'
+    ],
+    ojousama: [
+      'やる気が戻ってまいりましたわ！ もう大丈夫ですの'
     ],
     composed: [
       '…やる気、戻ってきたかな。…楽しまないとね'
@@ -12934,6 +13735,12 @@ const ENDING_LINES = {
       seductive: [
         'ここまで来れたのね…最高の気分だわ'
       ],
+      cool: [
+        '……終わったか。……悪くない'
+      ],
+      polite: [
+        '最後まで走り切れました。…ありがとうございました'
+      ],
       composed: [
         '…ここまで来れたか。…悪くない景色だね'
       ]
@@ -12956,6 +13763,9 @@ const ENDING_LINES = {
       seductive: [
         '頂点に立ったわ。でもまだ先があるみたいね'
       ],
+      polite: [
+        '最後まで戦い抜けました。…悔いはありません'
+      ],
       composed: [
         '…頂点か。…でもまだ先がある気がするね'
       ]
@@ -12969,6 +13779,9 @@ const ENDING_LINES = {
       ],
       polite: [
         '…ここまで来れるなんて…社長…ありがとうございます'
+      ],
+      seductive: [
+        '………終わった…わね。…ありがとう'
       ],
       composed: [
         '……ここまで来た。…ありがとう'
@@ -12989,6 +13802,12 @@ const ENDING_LINES = {
       ],
       seductive: [
         '最高の景色ね。みんなのおかげだわ'
+      ],
+      polite: [
+        '最後まで楽しかったです！ ありがとうございました！'
+      ],
+      ojousama: [
+        '最後まで楽しゅうございましたわ。ありがとうございます'
       ],
       composed: [
         '…いい景色だね。…みんなのおかげだ'
@@ -13789,6 +14608,9 @@ const WAR_VICTORY_LINES = {
     delinquent: ['舐めんなよ。うちの団体はこんなもんじゃねえ', '勝ったぜ。文句あるか？', '楽勝だぜ。次もかかってこいよ'],
     seductive: ['あら、もう終わり？ 物足りなかったわ', 'うちの団体の底力、見せてあげたわよ', 'ふふ、うちの団体の魅力、わかっていただけたかしら'],
     cool: ['…団体の看板、背負えた', '…勝った。それだけ', '……勝った。それでいい'],
+    polite: [
+      '対抗戦、勝たせていただきました。団体のために戦えて光栄です'
+    ],
     composed: ['…団体の看板、守れたかな。…悪くないね', '…勝った。…うちの力を見せられたと思う'],
   },
   bold: {
@@ -13797,6 +14619,9 @@ const WAR_VICTORY_LINES = {
     delinquent: ['当然だろ！ うちの団体なめんじゃねえよ！', 'ざまあみろ！ これがうちの実力だ！', 'うちの団体に手ぇ出すからだ。ざまぁみろ'],
     seductive: ['当然よ。うちの団体を甘く見ないことね', 'まだ物足りないわね。もっと強い相手はいないの？', '当然の結果よ。うちを甘く見ないことね'],
     cool: ['…当然の結果。うちを甘く見るな', '……当然だ。うちを甘く見るな', '……当然の結果。うちを甘く見るな'],
+    polite: [
+      '勝ちました。この団体の力を見せつけられたと思います'
+    ],
     composed: ['…当然の結果だよ。…うちを甘く見ないでね', '…こんなもんかな。…まだまだ行けるよ'],
   },
   earnest: {
@@ -13805,6 +14630,9 @@ const WAR_VICTORY_LINES = {
     delinquent: ['勝ったぞ…！ 団体のためにぜってぇ負けねえって決めてたんだ…！', '全力で戦った結果だ…！ 団体のために負けらんねえからな', 'みんなのために勝てた…！ それが一番嬉しいぜ'],
     cool: ['…勝てた。みんなのために…負けたくなかった', '……勝てた。みんなの分も…背負えた', '……全力で戦った。悔いはない'],
     polite: ['団体の代表として勝利できましたこと…光栄でございます', '団体の名に恥じない試合ができたのであれば…嬉しゅうございます', '団体の皆様のおかげで勝利できました。心より感謝申し上げます'],
+    seductive: [
+      '団体のために戦えて…嬉しいわ'
+    ],
     composed: ['…勝てました。…団体のために、やるべきことをやっただけです'],
   },
   easygoing: {
@@ -13813,12 +14641,18 @@ const WAR_VICTORY_LINES = {
     delinquent: ['よっしゃあ！ 勝った勝った！ 打ち上げだ打ち上げ！', 'よっしゃ〜！ まだまだいけるぜ〜！', 'いえーい！ 圧勝〜！ 打ち上げ行くぞ〜！'],
     seductive: ['あら〜、勝っちゃった。うちの団体、いいでしょ？', 'ふふ、楽しかったわ〜。またやりたいわね', 'あら〜、楽しかったわ。またいつでもどうぞ'],
     cool: ['…ん、勝った。よかったよかった', '……まあ、勝ったな', '……ん。勝ったな'],
+    polite: [
+      '勝ちました！ うちの団体の底力を見せられましたね！'
+    ],
     composed: ['勝ったね。…うちの団体、なかなかでしょ', '…ま、こんなもんかな'],
   },
   quiet: {
     _default: ['……勝った。団体の力を、証明できた', '……これがうちの実力', '……みんなの分も、背負って戦った'],
     polite: ['……勝てました。みなさんのおかげです', '……勝てました。団体のために…できることを', '……勝てました。皆様の…おかげです'],
     cool: ['……証明した。それだけ', '……これがうちの力', '……（静かに頷く）'],
+    seductive: [
+      '………勝った…わ。…団体のために'
+    ],
     composed: ['……勝った。…それだけ'],
   },
   shy: {
@@ -14048,6 +14882,12 @@ const PPV_OPPONENT_LINES = {
     seductive: [
       '今日は負けるわけにはいかないの。覚悟してね'
     ],
+    cool: [
+      '……受けて立つ。全力だ'
+    ],
+    polite: [
+      '全力でお相手させていただきます。よろしくお願いします'
+    ],
     composed: [
       '…いい舞台だね。…全力で行くよ',
       '…負けるつもりはないよ。よろしく'
@@ -14071,6 +14911,9 @@ const PPV_OPPONENT_LINES = {
     seductive: [
       '容赦しないわよ。覚悟してね'
     ],
+    polite: [
+      '全力で参ります。覚悟してください'
+    ],
     composed: [
       '…手加減はしない。…覚悟して'
     ]
@@ -14084,6 +14927,9 @@ const PPV_OPPONENT_LINES = {
     ],
     polite: [
       '…全力で参ります'
+    ],
+    seductive: [
+      '………行くわよ'
     ],
     composed: [
       '……（静かに構える）'
@@ -14106,6 +14952,12 @@ const PPV_OPPONENT_LINES = {
     ],
     seductive: [
       'あなたと戦えるの、楽しみだったわ'
+    ],
+    polite: [
+      '全力で行きます！ よろしくお願いします！'
+    ],
+    ojousama: [
+      '全力で参りますわ！ よろしくお願いいたしますの'
     ],
     composed: [
       'いい舞台だね。…楽しもうか'
@@ -15524,6 +16376,9 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
     seductive: [
       'ふふ、あの輝きは一時的だったみたいね。でもいい夢だったわ'
     ],
+    polite: [
+      '連勝は終わりましたが、まだまだこれからです'
+    ],
     composed: ['…戻ったね。…あの感覚は覚えた'],
   },
   quiet: {
@@ -15536,6 +16391,9 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
     ],
     polite: [
       '好調は過ぎたようです…でも、悪くない気持ちです'
+    ],
+    seductive: [
+      '………終わったわね。…でもまだよ'
     ],
     composed: ['……戻った。…でも何かを掴んだ'],
   },
@@ -15555,6 +16413,12 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
     ],
     seductive: [
       'あらら、魔法が解けちゃったわ〜。でも楽しかった'
+    ],
+    polite: [
+      '連勝ストップかあ…でもまた頑張ります！'
+    ],
+    ojousama: [
+      '連勝が止まりましたわ…でもまた頑張りますの'
     ],
     composed: ['…好調タイム終了か。…まあ楽しかった'],
   },
