@@ -6584,7 +6584,10 @@ const RETIREMENT_CHAMPION_WORRY_LINES = {
   shy:       ['…社長…ご迷惑じゃないですか…？'],
 };
 const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
+  _default:  ['…社長に、迷惑かけちゃうな。ごめんなさい'],
   ojousama:  ['…社長に、ご迷惑をおかけしますわね'],
+  delinquent:['…社長、悪りぃな。迷惑かけちまって'],
+  cool:      ['…社長には、申し訳ない'],
   seductive: ['…社長のこと、少し心配ね'],
   polite:    ['…社長、本当に申し訳ございません'],
   composed:  ['…社長、迷惑をかけるね。…すまない'],

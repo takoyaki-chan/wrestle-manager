@@ -7419,10 +7419,12 @@ const Engine = {
             const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
             const personalityLines = typeof RETIREMENT_CHAMPION_WORRY_LINES !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES : {};
             let worryPool = null;
-            if ((a === 'ojousama' || a === 'seductive' || a === 'polite' || a === 'composed') && archetypeLines[a]) {
+            if (archetypeLines[a]) {
               worryPool = archetypeLines[a];
+            } else if (personalityLines[p]) {
+              worryPool = personalityLines[p];
             } else {
-              worryPool = personalityLines[p] || personalityLines.normal || ['…'];
+              worryPool = archetypeLines._default || personalityLines.normal || ['…'];
             }
             championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
           }

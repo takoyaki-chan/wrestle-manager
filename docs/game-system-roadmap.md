@@ -131,7 +131,7 @@
 
 | 日付 | 内容 |
 |------|------|
-| 04-12 | Session F nested セリフ拡張: worksheet.xlsx 394行→6種nested source反映(NOTIF36+CARE66+CHOICE61+LARGE60+GLIMPSE_B 84+SNAPSHOT 87)。archetype別dialogue+scene_text追加。GLIMPSE_Bに_scene並列構造新設。auto-sim 100シーズンALL CLEAR |
+| 04-12 | Session F nested セリフ拡張+TIER2穴埋め: worksheet.xlsx 394行→6種nested source反映(NOTIF36+CARE66+CHOICE61+LARGE60+GLIMPSE_B 84+SNAPSHOT 87)。TIER2: EMOTION_TEXTS全10感情にcomposed archetype追加(ui-render.js)。RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPEに_default/cool/delinquent追加+ルックアップ汎用化(management.js)。auto-sim 100シーズンALL CLEAR |
 | 04-06 | ドラフト交渉システム step1-5実装+修正16件: セリエンジン(draft-negotiation.js ~780行)/旧スカウト廃止/候補プール拡張/事前選択制/候補一覧UI(新聞風)/交渉画面UI(入札カード+ヒートゲージ+ナレーション)/BGM・SFX統合/EMPRESS安全網/観戦モード廃止/団体名動的化/エンブレム修正/★視認性改善/BGM_showScreenNoBgm導入/AI全同時離脱バグ修正/ロスター上限制御(理想+2超で不参加)。引き継ぎ: docs/draft-notes/ |
 | 04-06 | specs/再同期全完了: カテゴリA(7件)+カテゴリC(6件)、specs/全20ファイル |
 | 04-05 | dormantPool FIFOキュー化: drawFromFrontヘルパー+選抜4箇所FIFO化+フィルタバグ修正+エントリ形式統一 |
