@@ -5,3 +5,4 @@ tools/tmp_xlsx/
 audio-mixer.html
 .claude/worktrees/
 .codex-temp/
+test/_*.json

@@ -133,7 +133,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - docs/ = 計画・検討・指示書(未来形 or 過去形)
 - アーカイブは「完了した指示書」置き場であり、仕様の真実ではない
 
-### specs/ ファイル索引(全20ファイル)
+### specs/ ファイル索引(全28ファイル)
 
 | ファイル | 内容 |
 |---------|------|
@@ -158,6 +158,13 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | opening-sequence-spec-v1.0.md | オープニングシーン4幕+初期ドラフトクリームテーマ+完了演出 |
 | weekly-gameloop-spec-v1_0.md | 週次ループ/シーズン構成/オフウィーク |
 | 技テーブル_全160技_v3_5.md | 全160技のデータテーブル |
+| draft-negotiation-spec-v1.0.md | ドラフト交渉システム(入札/ヒートゲージ/AI参加) |
+| poach-trust-spec-v1.0.md | 引き抜き・信頼度連動仕様 |
+| oyou-style-guide.md | 鷹揚(composed)口調スタイルガイド |
+| achievement-system-spec.md | 実績システム リデザイン仕様(未実装叩き台) |
+| facility-system-spec.md | 設備投資システム仕様(未実装) |
+| league-elevation-mockup-spec.md | 業界底上げイベント仕様(未実装) |
+| tag-match-system-spec-v0.1.md | タッグマッチシステム設計(未実装v0.1) |
 
 ## UI実装ルール(必読)
 
