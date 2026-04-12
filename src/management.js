@@ -83,7 +83,7 @@ const Engine = {
       }
       const id = Number(entry.id);
       if (!Number.isFinite(id)) return null;
-      return { id, age: Engine.util.clamp(Math.round(entry.age || 17), 17, 21) };
+      return { id, age: Engine.util.clamp(Math.round(entry.age || 17), 16, 21) };
     },
 
     _diag(state) {
