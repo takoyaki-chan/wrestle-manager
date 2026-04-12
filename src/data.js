@@ -1286,7 +1286,10 @@ const RIVALRY_CONFRONTATION_LINES = {
     shy: {
       _default: [
         'えっと…今日は…その…負けたくないんです…'
-      ]
+      ],
+      polite: [
+        'あ、あの…決着を、つけさせてください…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1330,6 +1333,10 @@ const RIVALRY_CONFRONTATION_LINES = {
     emotional: {
       _default: [
         '今日で……終わりにする……！ 絶対に……！'
+      ],
+      seductive: [
+        '決着をつけるわ……っ……ふふ、ずっと待ってたの……',
+        'もう逃がさない……っ……ふふ、覚悟して……'
       ],
       composed: [
         '…もういい。…リングで終わらせる'
@@ -1405,7 +1412,10 @@ const RIVALRY_CONFRONTATION_LINES = {
     shy: {
       _default: [
         '…受けます。…頑張ります…'
-      ]
+      ],
+      polite: [
+        'は、はい…受けて立ちます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1445,6 +1455,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     emotional: {
       _default: [
         '来なさい……！ 全部受け止めてやる……！'
+      ],
+      seductive: [
+        '受けて立つわ……っ……ふふ、来なさい……'
       ],
       composed: [
         '…いいよ。…来なよ'
@@ -1505,7 +1518,10 @@ const RIVALRY_CONFRONTATION_LINES = {
     shy: {
       _default: [
         'ずっと…この日のことを考えてました…行きます…'
-      ]
+      ],
+      polite: [
+        'あ、あなたは…わたしの、運命の相手です…さあ、行きましょう…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1538,6 +1554,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     emotional: {
       _default: [
         'ずっと……ずっとこの日を……！'
+      ],
+      seductive: [
+        'あなたが運命の相手……っ……ふふ、燃えるわね……'
       ],
       composed: [
         '…ずっと待ってた。…行くよ'
@@ -1598,7 +1617,10 @@ const RIVALRY_CONFRONTATION_LINES = {
     shy: {
       _default: [
         '…うん…わかってる…。行こう…'
-      ]
+      ],
+      polite: [
+        '運命なら…受けて立たないと、いけませんね…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1631,6 +1653,9 @@ const RIVALRY_CONFRONTATION_LINES = {
     emotional: {
       _default: [
         '来なさい……！ 全部……受け止める……！'
+      ],
+      seductive: [
+        '運命ね……っ……ふふ、その挑戦、受けるわ……'
       ],
       composed: [
         '…来なよ。…全部受け止める'
@@ -1710,7 +1735,10 @@ const RIVALRY_RESOLUTION_LINES = {
     shy: {
       _default: [
         'か、勝てた…けど…なんだろ…終わった気がしない…'
-      ]
+      ],
+      polite: [
+        'か、勝てました…これで、終わりにしましょう…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1753,6 +1781,9 @@ const RIVALRY_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '勝った…！でも…なんで涙が止まらないの…まだ終わってないのに…！'
+      ],
+      seductive: [
+        '勝ったわ……っ……ふふ、これでお終いね……'
       ],
       composed: [
         '…勝った。…でもなんだろう、この感じ。…まだ終わらないね'
@@ -1828,7 +1859,10 @@ const RIVALRY_RESOLUTION_LINES = {
     shy: {
       _default: [
         '…負けちゃった…悔しい…でも…次こそは…絶対…'
-      ]
+      ],
+      polite: [
+        'ま、負けました…これで、終わりですね…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1871,6 +1905,9 @@ const RIVALRY_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '悔しい…！悔しい…！ でも…絶対…次は…負けない…！'
+      ],
+      seductive: [
+        '負けたわ……っ……ふふ、悔しいけど終わりね……'
       ],
       composed: [
         '…っ…悔しいね。…でも、次こそは'
@@ -1930,7 +1967,10 @@ const RIVALRY_RESOLUTION_LINES = {
     shy: {
       _default: [
         '勝った…のかな…でも…終わった気がしない…（涙が溢れている）'
-      ]
+      ],
+      polite: [
+        '運命の戦いに…か、勝ちました…'
+      ],
     },
     easygoing: {
       _default: [
@@ -1957,6 +1997,9 @@ const RIVALRY_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '勝った…！やっと…！ でも…まだ泣きたくない…まだ続くから…！（涙）'
+      ],
+      seductive: [
+        '運命の戦いに勝った……っ……ふふ、最高の瞬間だったわ……'
       ],
       composed: [
         '…っ…やっと。…でも、まだだよ。…まだ続くから'
@@ -2016,7 +2059,10 @@ const RIVALRY_RESOLUTION_LINES = {
     shy: {
       _default: [
         '…負けちゃった…でも…まだ…諦めたくない…です…（涙を拭いている）'
-      ]
+      ],
+      polite: [
+        '運命の戦いに…ま、負けました…でも、悔いは、ないです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2043,6 +2089,9 @@ const RIVALRY_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '悔しい…！でも…ここで終わるもんか…！ 絶対また…！（涙）'
+      ],
+      seductive: [
+        '負けたわ……っ……でも、運命の試合だったの、悔いはないわ……'
       ],
       composed: [
         '…っ…悔しい。…でも、終わらない'
@@ -2139,7 +2188,10 @@ const GOODRIVAL_RESOLUTION_LINES = {
     shy: {
       _default: [
         'あの…あなたがいてくれたから…ここまで来れたんです…（手を差し出す）'
-      ]
+      ],
+      polite: [
+        'か、勝たせていただきました…でも、あの方も素晴らしかったです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2182,6 +2234,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
     emotional: {
       _default: [
         'ありがとう……！ あなたがいなかったら……今の私はいない……！（涙）'
+      ],
+      seductive: [
+        '勝ったわ……っ……ふふ、あの子だからこそ、最高の試合になったの……'
       ],
       composed: [
         '…っ…ありがとう。…あんたがいたから、ここまで来れた'
@@ -2245,7 +2300,10 @@ const GOODRIVAL_RESOLUTION_LINES = {
     shy: {
       _default: [
         '負けちゃった…でも…また戦えるなら…それでいいかな…（涙）'
-      ]
+      ],
+      polite: [
+        'ま、負けました…でも、あの方となら、後悔はありません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2288,6 +2346,9 @@ const GOODRIVAL_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '負けた……！ でも嬉しい……！ 最高だった……！（号泣）'
+      ],
+      seductive: [
+        '負けたわ……っ……でも、あの子相手なら悔いはないの……ふふ……'
       ],
       composed: [
         '…っ…負けたけど…最高だった。…ありがとう'
@@ -2367,7 +2428,10 @@ const BITTER_RESOLUTION_LINES = {
     shy: {
       _default: [
         '…もう関わりたくない…です…（震えが止まらない）'
-      ]
+      ],
+      polite: [
+        '勝てました…でも、もう…これで終わりにしませんか…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -2409,6 +2473,9 @@ const BITTER_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '終わった……！ やっと……終わったんだ……！'
+      ],
+      seductive: [
+        '勝った……っ……これで全部、過去にできるわね……ふふ、ありがとう……'
       ],
       composed: [
         '…終わった。…もういい'
@@ -2478,7 +2545,10 @@ const BITTER_RESOLUTION_LINES = {
     shy: {
       _default: [
         '…もう…何も考えたくない…………'
-      ]
+      ],
+      polite: [
+        'ま、負けました…悔しいです…でも、これ以上恨んだりはしません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2521,6 +2591,9 @@ const BITTER_RESOLUTION_LINES = {
     emotional: {
       _default: [
         '嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）'
+      ],
+      seductive: [
+        '負けたわ……っ……でも、もう憎しみは終わり……ふふ、清々しいの……'
       ],
       composed: [
         '…っ…認めない。…絶対に'
@@ -2602,7 +2675,10 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
     shy: {
       _default: [
         '…怖いけど…ここで逃げたら自分を許せない…'
-      ]
+      ],
+      polite: [
+        'あ、あの…そろそろ、決着を…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2645,6 +2721,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
     emotional: {
       _default: [
         'もう……限界……今日で全部終わらせる……！'
+      ],
+      seductive: [
+        'そろそろ決着ね……っ……ふふ……'
       ],
       composed: [
         '…もういい。…今日で終わりだ'
@@ -2722,7 +2801,10 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
     shy: {
       _default: [
         '…わかりました。…受け止めます…'
-      ]
+      ],
+      polite: [
+        'は、はい…お受けします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -2764,6 +2846,9 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
     emotional: {
       _default: [
         '来なさい……！ 全力で……！'
+      ],
+      seductive: [
+        '受けるわ……っ……ふふ、いつでもどうぞ……'
       ],
       composed: [
         '…来なよ。…全力で'
@@ -3442,7 +3527,10 @@ const UPSET_RIVALRY_LINES = {
     shy: {
       _default: [
         'え…うそ…私が…？ ほんとに…？（膝から崩れる）'
-      ]
+      ],
+      polite: [
+        'か、勝てるなんて…思っていませんでした…'
+      ],
     },
     easygoing: {
       _default: [
@@ -3484,6 +3572,9 @@ const UPSET_RIVALRY_LINES = {
     emotional: {
       _default: [
         '勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）'
+      ],
+      seductive: [
+        '勝っちゃった……っ……ふふ、自分でも信じられないの……'
       ],
       composed: [
         '…っ…勝った。…ようやく'
@@ -3559,7 +3650,10 @@ const UPSET_RIVALRY_LINES = {
     shy: {
       _default: [
         '…え……うそ…………（何が起きたかわかっていない）'
-      ]
+      ],
+      polite: [
+        'ま、まさか負けるなんて…く、悔しいです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -3602,6 +3696,9 @@ const UPSET_RIVALRY_LINES = {
     emotional: {
       _default: [
         '嫌だ……！ こんなの嫌だ……！ なんで……！'
+      ],
+      seductive: [
+        'まさか負けるなんて……っ……ふふ、悔しい……'
       ],
       composed: [
         '…っ…なんで。…こんなはずじゃ'
@@ -4509,7 +4606,10 @@ const NEGOTIATE_LINES = {
     shy: {
       _default: [
         'え…私なんかでいいんですか…？\n…ちょっと考えさせてください'
-      ]
+      ],
+      polite: [
+        'あ、あの…交渉、始めさせていただきます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -4551,6 +4651,9 @@ const NEGOTIATE_LINES = {
     emotional: {
       _default: [
         'え…引き抜き…？\nど、どうしよう…急に言われても…'
+      ],
+      seductive: [
+        '交渉を始めるわ……っ……ふふ、よろしくね……'
       ],
       composed: [
         '…引き抜き。…ふぅん。…聞くよ'
@@ -4613,7 +4716,10 @@ const NEGOTIATE_LINES = {
     shy: {
       _default: [
         '期待に応えられるよう、頑張ります…！\n…必ず、成長してみせます'
-      ]
+      ],
+      polite: [
+        'こ、こちらでお願いします…ありがとうございます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -4649,6 +4755,9 @@ const NEGOTIATE_LINES = {
     emotional: {
       _default: [
         'うっ…新しい場所で…頑張ります…！\nよろしくお願いします…！'
+      ],
+      seductive: [
+        'これで決まりね……っ……ふふ、いい話し合いだったわ……'
       ],
       composed: [
         '…っ…新しい場所か。…頑張るよ'
@@ -4712,7 +4821,10 @@ const NEGOTIATE_LINES = {
     shy: {
       _default: [
         'え…でも、今の仲間を置いていくなんて…\nごめんなさい、どうしても首を縦に振れないです'
-      ]
+      ],
+      polite: [
+        'あ、あの…この件は、お話できません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -4751,6 +4863,9 @@ const NEGOTIATE_LINES = {
       _default: [
         '今の団体が好きすぎて…そんな話を聞いたら、\n自分が嫌いになりそうで…！ごめんなさい',
         'ここのみんなが大好きで…！\n裏切るなんて考えるだけで苦しい…！ごめんなさい…！'
+      ],
+      seductive: [
+        'その話は……っ……ふふ、できないの、ごめんなさい……'
       ],
       composed: [
         '…ここが好きなんだ。\n…悪いけど、その話は聞けない'
@@ -4813,7 +4928,10 @@ const NEGOTIATE_LINES = {
     shy: {
       _default: [
         'まだここで学ぶことがあるんです…。\n…すみません'
-      ]
+      ],
+      polite: [
+        'す、すみません…今回は、難しいです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -4849,6 +4967,9 @@ const NEGOTIATE_LINES = {
     emotional: {
       _default: [
         'ごめんなさい…今はここを離れられないの…！\nまたいつか…！'
+      ],
+      seductive: [
+        '残念だけど……っ……今回は無理ね、ごめんなさい……'
       ],
       composed: [
         '…ごめん。今は離れられない'
@@ -4932,7 +5053,10 @@ const CONTRACT_NEGOTIATION_LINES = {
       _default: [
         'あ、あの…社長…。{tenure}その…言いにくいんですけど…お給料のこと…少しだけ……。',
         '…す、すみません社長…。{record}もう少しだけ…お願いできたらなって……。'
-      ]
+      ],
+      polite: [
+        'あ、あの…契約のことで、お話があるんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -4977,6 +5101,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       _default: [
         '社長……！ 聞いてください……！ {tenure}{record}私、もっとできるのに……このままじゃ悔しい……！',
         '……なんで……なんで評価してくれないんですか……！ {record}頑張ってるのに……！'
+      ],
+      seductive: [
+        '契約の話……っ……聞いてもらいたいことがあるの……'
       ],
       composed: [
         '…社長。{tenure}{record}……悔しくないって言ったら、嘘になるかな…っ。'
@@ -5042,7 +5169,10 @@ const CONTRACT_NEGOTIATION_LINES = {
       _default: [
         'あの…社長……。{tenure}す、すみません…ここを…離れたいんです……。',
         '…ごめんなさい……。{tenure}私には…ここにいる資格がないような気がして……。'
-      ]
+      ],
+      polite: [
+        'あ、あの…他の団体からも、お話をいただいていて…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5081,6 +5211,9 @@ const CONTRACT_NEGOTIATION_LINES = {
       _default: [
         '社長……もう無理です……！ {tenure}ここにいても……どんどんダメになっていく気がして……！',
         '……{tenure}もう、限界なんです……。{record}自分でもわかってます……このままじゃいけないって……。'
+      ],
+      seductive: [
+        '他から声がかかってるの……っ……ふふ、どうしようかしら……'
       ],
       composed: [
         '…社長…っ。{tenure}…ここにいたかった…けど…もう、いられない…。'
@@ -5142,7 +5275,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         'え…い、いいんですか…？ あ、ありがとうございます…！ 頑張ります…！'
-      ]
+      ],
+      polite: [
+        'こ、こんな良いお話…あ、ありがとうございます…精一杯頑張ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5178,6 +5314,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '社長……！ ありがとうございます……！ 絶対に結果で返します……！'
+      ],
+      seductive: [
+        '受けるわ……っ……ふふ、こんなに評価してくれて、嬉しい……'
       ],
       composed: [
         '…社長…っ…ありがとう…ございます。…絶対、返すから…。'
@@ -5239,7 +5378,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         'そ、それだけでも…ありがたいです…。ありがとうございます……。'
-      ]
+      ],
+      polite: [
+        'は、はい…その条件で…お受けします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5272,6 +5414,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '……本当は足りないけど……社長が考えてくれたってことは、伝わりました。'
+      ],
+      seductive: [
+        'その条件なら……っ……ふふ、いいわよ、受けてあげる……'
       ],
       composed: [
         '……足りない…けど…っ。…気持ちは、受け取ったから…。'
@@ -5333,7 +5478,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         '……そう…ですか……。す、すみません、変なこと言って……。'
-      ]
+      ],
+      polite: [
+        '考えさせていただいたんですが…やっぱり、難しいです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5366,6 +5514,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '……やっぱり……ダメなんだ……。……わかりました。'
+      ],
+      seductive: [
+        '考えたけれど……っ……やっぱり、難しいわ、ごめんなさい……'
       ],
       composed: [
         '……やっぱり…っ…。……分かった…。'
@@ -5427,7 +5578,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         '……は、はい…分かりました……。す、すみませんでした……。'
-      ]
+      ],
+      polite: [
+        'すみません…この条件では、ちょっと…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5460,6 +5614,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '……っ！ ……もういいです。分かりました。……悔しい……。'
+      ],
+      seductive: [
+        '……っ……ごめんなさい、その条件では納得できないの……'
       ],
       composed: [
         '……っ…。…分かった…。…悔しく、ないから…。'
@@ -5521,7 +5678,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         'え…そ、そこまでしてくれるんですか…？ ……あの…もう少しだけ…頑張ります……。'
-      ]
+      ],
+      polite: [
+        'こ、ここに残ります…引き止めてくださって、ありがとうございます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5554,6 +5714,9 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '社長……！ ……ごめんなさい、こんな私のために……。……絶対、恩返しします……！'
+      ],
+      seductive: [
+        '残るわ……っ……ふふ、こんなに引き止められたら、行けないでしょう……'
       ],
       composed: [
         '…社長…っ…。…ありがとう…。…必ず、返すから…。'
@@ -5615,7 +5778,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         '…ご、ごめんなさい……。でも…もう、決めたんです……。'
-      ]
+      ],
+      polite: [
+        'ご、ごめんなさい…やっぱり、行かせてください…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5642,7 +5808,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '社長……ありがとう……。でも……もう戻れないんです……ごめんなさい……！'
-      ]
+      ],
+      seductive: [
+        'ごめんなさい……っ……気持ちはもう決まってるの……'
+      ],
     }
   },
   transfer_release: {
@@ -5691,7 +5860,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         '…あ、ありがとうございました…。{tenure_farewell}{rivalry}…お世話になりました……。'
-      ]
+      ],
+      polite: [
+        'あ、あの…移籍させてください…お、お世話になりました…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5718,7 +5890,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '{tenure_farewell}……ここでの時間は、忘れません……。{rivalry}……さようなら……。'
-      ]
+      ],
+      seductive: [
+        '移籍させて……っ……ふふ、新しい場所で輝きたいの……'
+      ],
     }
   },
   transfer_listen: {
@@ -5767,7 +5942,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     shy: {
       _default: [
         'え…聞いてくれるんですか…？ {record}あの…私…ここにいていいのか、分からなくなって……。'
-      ]
+      ],
+      polite: [
+        'お、お話だけは…聞かせていただきます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -5794,7 +5972,10 @@ const CONTRACT_NEGOTIATION_LINES = {
     emotional: {
       _default: [
         '……聞いてくれるの……？ {record}もう……自分がどうしたいのかも分からなくなって……。でも、このままじゃダメだって……。'
-      ]
+      ],
+      seductive: [
+        '話だけは聞くわ……っ……それで決めるから……'
+      ],
     }
   },
   tenure: {
@@ -5972,7 +6153,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         'こんな私がチャンピオンになれたなんて…夢みたいです'
-      ]
+      ],
+      polite: [
+        'チ、チャンピオンとして…リングを去る決断をしました…あ、ありがとうございました…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6014,6 +6198,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         'あのベルト…返したくない…でも…ありがとう…っ！'
+      ],
+      seductive: [
+        'チャンピオンのまま降りるわ……っ……ふふ、これ以上ない花道ね……'
       ],
       composed: [
         '…っ…返したくなかった。…でも、ありがとう'
@@ -6076,7 +6263,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         '何も残せなかったかもしれないけど…ここにいられて幸せでした'
-      ]
+      ],
+      polite: [
+        'ベルトには…手が届きませんでした…でも、悔いは、ないんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6112,6 +6302,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         'ベルト…欲しかったな…でも…ここにいられてよかった…！'
+      ],
+      seductive: [
+        '無冠で終わるわ……っ……ふふ、それでもやりきったの……'
       ],
       composed: [
         '…っ…欲しかったな。…でも、よかったよ'
@@ -6174,7 +6367,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         '本当は…みんなと一緒にいたかったです…ごめんなさい'
-      ]
+      ],
+      polite: [
+        'こ、こんなわたしでしたが…リングを、去ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6210,6 +6406,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         '…っ、バカ…泣くんじゃないわよ…あたしまで…っ！'
+      ],
+      seductive: [
+        '悪役のまま消えるわ……っ……ふふ、それがわたしらしいの……'
       ],
       composed: [
         '…っ…泣くなって。…こっちまで、困るだろ'
@@ -6272,7 +6471,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         '長い間…お世話になりました。ここにいられて幸せでした'
-      ]
+      ],
+      polite: [
+        'な、長い間…ありがとうございました…これで、引退させていただきます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6308,6 +6510,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         'ここが…全部だった…ありがとう…ありがとう…！'
+      ],
+      seductive: [
+        '長かったわ……っ……ふふ、ありがとう、みんな……'
       ],
       composed: [
         '…っ…ここが全部だった。…ありがとう'
@@ -6370,7 +6575,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         'やっぱり…私には無理だったんでしょうか…'
-      ]
+      ],
+      polite: [
+        'ま、まだ若いのに…ご、ごめんなさい…続けられないんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6406,6 +6614,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         'いやだ…いやだよ…まだ始まったばかりなのに…！'
+      ],
+      seductive: [
+        'まだ若いけど……っ……ふふ、わたしには無理だったの……'
       ],
       composed: [
         '…っ…こんなところで。…まだ、始まったばかりなのに'
@@ -6468,7 +6679,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         'せっかく…やっと少し自信がついてきたのに…'
-      ]
+      ],
+      polite: [
+        '今が、一番の時期かもしれませんが…決めたんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6504,6 +6718,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         '悔しい…悔しいよ…これからだったのに…！'
+      ],
+      seductive: [
+        '今が頂点なのに……っ……ふふ、だからこそ降りるの……'
       ],
       composed: [
         '…っ…悔しいよ。…これからだったのに'
@@ -6566,7 +6783,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         'みなさんのおかげで…ここまで来られました'
-      ]
+      ],
+      polite: [
+        'も、もう…体が、ついていきません…ごめんなさい…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6602,6 +6822,9 @@ const RETIREMENT_LINES = {
     emotional: {
       _default: [
         'わかってたよ…いつか来るって…でも…寂しいよ…！'
+      ],
+      seductive: [
+        'もう体が……っ……ふふ、潮時ね……'
       ],
       composed: [
         '…っ…わかってたよ。…でも、寂しいもんだね'
@@ -6664,7 +6887,10 @@ const RETIREMENT_LINES = {
     shy: {
       _default: [
         'せっかくベルトをもらえたのに…ごめんなさい…'
-      ]
+      ],
+      polite: [
+        'チャンピオンなのに…け、怪我で…ご、ごめんなさい…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6701,6 +6927,9 @@ const RETIREMENT_LINES = {
       _default: [
         'やだ…このベルト…まだ返したくない…っ！'
       ],
+      seductive: [
+        'チャンピオンのまま、怪我で……っ……ふふ、悔しいけど仕方ないの……'
+      ],
       composed: [
         '…っ…返したくない。…まだ、このベルト…'
       ]
@@ -6714,8 +6943,14 @@ const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
   ojousama:  ['…社長に、ご迷惑をおかけしますわね', '…社長に、ご迷惑をおかけしてしまいますわね。本当に、申し訳なく…'],
   delinquent:['…社長、悪りぃな。迷惑かけちまって', '…社長、悪りぃな。ベルト空けちまって'],
   cool:      ['…社長には、申し訳ない', '…社長には、申し訳ない。ベルトを空けることになる'],
-  seductive: ['…社長のこと、少し心配ね', '…社長のこと、少し心配ね。ベルトを空けることになるから'],
-  polite:    ['…社長、本当に申し訳ございません', '…社長、ベルトを空けてしまって…本当に申し訳ございません'],
+  seductive: ['…社長のこと、少し心配ね', '…社長のこと、少し心配ね。ベルトを空けることになるから',
+      'チャンピオンのまま降りるべきかしら……っ……ふふ、迷うの……',
+    'このベルトを置く時……っ……ふふ、考えてしまうの……',
+  ],
+  polite:    ['…社長、本当に申し訳ございません', '…社長、ベルトを空けてしまって…本当に申し訳ございません',
+      'チャ、チャンピオンなのに…引退、考えてしまいます…',
+    'こ、このベルトを置いて、降りる時が来たのかもしれません…',
+  ],
   composed:  ['…社長、迷惑をかけるね。…すまない'],
 };
 
@@ -6789,7 +7024,10 @@ const RETIRE_ACCEPT_LINES = {
     shy: {
       _default: [
         '…はい。ご迷惑をおかけしました…'
-      ]
+      ],
+      polite: [
+        'こ、これ以上は…続けられません…ご、ごめんなさい…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6831,6 +7069,9 @@ const RETIRE_ACCEPT_LINES = {
     emotional: {
       _default: [
         '…うん…わかってた…わかってたよ…っ'
+      ],
+      seductive: [
+        'もう限界なの……っ……ふふ、ごめんなさい……'
       ],
       composed: [
         '…っ、…わかってた。…うん'
@@ -6893,7 +7134,10 @@ const RETIRE_ACCEPT_LINES = {
     shy: {
       _default: [
         'もっと早く気づくべきでした…すみません'
-      ]
+      ],
+      polite: [
+        'ほ、ほとんど勝てませんでした…でも、戦えた日々が宝物です…'
+      ],
     },
     easygoing: {
       _default: [
@@ -6929,6 +7173,9 @@ const RETIRE_ACCEPT_LINES = {
     emotional: {
       _default: [
         '勝てない…もう勝てないんだ…わかってたよ…'
+      ],
+      seductive: [
+        '勝てなかったけど……っ……ふふ、戦えただけで満足なの……'
       ],
       composed: [
         '…勝てなくなった、か。……うん'
@@ -6991,7 +7238,10 @@ const RETIRE_ACCEPT_LINES = {
     shy: {
       _default: [
         '…はい。もう…十分です'
-      ]
+      ],
+      polite: [
+        'こ、こんなわたしでも…受け入れてくださって、ありがとうございました…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7027,6 +7277,9 @@ const RETIRE_ACCEPT_LINES = {
     emotional: {
       _default: [
         '…っ、もういいわよ…わかった…わかったから…'
+      ],
+      seductive: [
+        '悪役のままでも……っ……ふふ、最後まで愛してくれてありがとう……'
       ],
       composed: [
         '…っ、…もういい。…わかった'
@@ -7089,7 +7342,10 @@ const RETIRE_ACCEPT_LINES = {
     shy: {
       _default: [
         'ベルトを持てただけで…十分すぎるくらいです'
-      ]
+      ],
+      polite: [
+        'は、はい…チャンピオンになれただけで…幸せでした…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7125,6 +7381,9 @@ const RETIRE_ACCEPT_LINES = {
     emotional: {
       _default: [
         'ベルト…持てたから…もう…十分だよ…っ'
+      ],
+      seductive: [
+        'チャンピオンになれた……っ……ふふ、もう思い残しはないわ……'
       ],
       composed: [
         '…ベルト、持てたから。……十分'
@@ -7187,7 +7446,10 @@ const RETIRE_ACCEPT_LINES = {
     shy: {
       _default: [
         '…はい。お世話になりました…'
-      ]
+      ],
+      polite: [
+        'は、はい…ベルトには届きませんでしたが…ここまでで、十分です…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7223,6 +7485,9 @@ const RETIRE_ACCEPT_LINES = {
     emotional: {
       _default: [
         'うん…覚悟…できてたよ…ありがとう…'
+      ],
+      seductive: [
+        '無冠でいいの……っ……ふふ、やりきった気がするから……'
       ],
       composed: [
         '……ありがとう。…覚悟はできてたよ'
@@ -7300,7 +7565,10 @@ const RETIRE_REFUSE_LINES = {
     shy: {
       _default: [
         'あの…まだ、このベルトを守りたいんです…'
-      ]
+      ],
+      polite: [
+        'い、いえ…まだ、チャンピオンですから…続けさせてください…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7342,6 +7610,9 @@ const RETIRE_REFUSE_LINES = {
     emotional: {
       _default: [
         'やだ…このベルト離さない…まだ闘える…！'
+      ],
+      seductive: [
+        'まだチャンピオンよ……っ……ふふ、降りるわけにはいかないの……'
       ],
       composed: [
         '…っ、…このベルトは渡さない。…まだ闘える'
@@ -7404,7 +7675,10 @@ const RETIRE_REFUSE_LINES = {
     shy: {
       _default: [
         '…私、必要ないってことですか…？'
-      ]
+      ],
+      polite: [
+        'あ、あの…どうして、そんなことを言うんですか…悲しいです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7440,6 +7714,9 @@ const RETIRE_REFUSE_LINES = {
     emotional: {
       _default: [
         '何年…何年ここにいたと思ってるの…っ！'
+      ],
+      seductive: [
+        'どうして……っ……ふふ、わたしを切り捨てるつもり？……'
       ],
       composed: [
         '…っ、…何年ここにいたと思ってるの'
@@ -7502,7 +7779,10 @@ const RETIRE_REFUSE_LINES = {
     shy: {
       _default: [
         '…もう少しだけ…ここにいさせてください'
-      ]
+      ],
+      polite: [
+        'こ、こんなわたしですけど…まだ、リングにいたいんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7538,6 +7818,9 @@ const RETIRE_REFUSE_LINES = {
     emotional: {
       _default: [
         '引退…っ？ 冗談じゃない…まだ終わらない…！'
+      ],
+      seductive: [
+        '悪役だってまだやれるわ……っ……ふふ、辞めないわよ……'
       ],
       composed: [
         '…っ、…冗談じゃない。…まだ終わらないよ'
@@ -7600,7 +7883,10 @@ const RETIRE_REFUSE_LINES = {
     shy: {
       _default: [
         'あの…もう少しだけ、チャンスをください…'
-      ]
+      ],
+      polite: [
+        'ま、まだ、戦えます…もう少しだけ、お願いします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7636,6 +7922,9 @@ const RETIRE_REFUSE_LINES = {
     emotional: {
       _default: [
         'まだ…まだ闘いたい…お願い、もう少しだけ…！'
+      ],
+      seductive: [
+        'まだ戦えるの……っ……ふふ、わたしを止めないで……'
       ],
       composed: [
         '…っ、…まだ闘いたい。…お願い、もう少しだけ'
@@ -7712,7 +8001,10 @@ const RETAIN_LINES = {
     shy: {
       _default: [
         'あの…もう一度だけ…あのベルトに…挑戦させてください'
-      ]
+      ],
+      polite: [
+        'チャ、チャンピオンだったわたしが…ここに残っても、いいんでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7754,6 +8046,9 @@ const RETAIN_LINES = {
     emotional: {
       _default: [
         'あのベルト…もう一度…触りたい…っ'
+      ],
+      seductive: [
+        '元チャンピオンとして……っ……ふふ、この場所をまだ守りたいの……'
       ],
       composed: [
         '…あのベルト、もう一度。……触りたい'
@@ -7815,7 +8110,10 @@ const RETAIN_LINES = {
     shy: {
       _default: [
         '信じてくれて…ありがとうございます。もう少しだけ…'
-      ]
+      ],
+      polite: [
+        'あ、あの…ずっと、ここにいたいんです…お願いします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -7851,6 +8149,9 @@ const RETAIN_LINES = {
     emotional: {
       _default: [
         '…っ、ありがとう…もう少しだけ…頑張る…！'
+      ],
+      seductive: [
+        'ずっとここにいたい……っ……ふふ、あなたのそばが一番なの……'
       ],
       composed: [
         '……ありがとう。…もう少しだけ、頑張る'
@@ -7912,7 +8213,10 @@ const RETAIN_LINES = {
     shy: {
       _default: [
         '…まだ、ここにいてもいいんですか…？'
-      ]
+      ],
+      polite: [
+        'こ、こんなわたしでも…置いていただけるんですか…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -7948,6 +8252,9 @@ const RETAIN_LINES = {
     emotional: {
       _default: [
         '…っ、まだ必要としてくれるの…わかった…やるよ…'
+      ],
+      seductive: [
+        '嫌われ者でも……っ……ふふ、ここに居場所が欲しいの……'
       ],
       composed: [
         '…っ、…まだ必要としてくれるんだ。…わかった、やるよ'
@@ -8010,7 +8317,10 @@ const RETAIN_LINES = {
     shy: {
       _default: [
         '…もう少しだけ…頑張ってみます'
-      ]
+      ],
+      polite: [
+        'こ、ここに残ってもよろしいですか…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -8046,6 +8356,9 @@ const RETAIN_LINES = {
     emotional: {
       _default: [
         '…うん…もう少しだけ…やってみる…'
+      ],
+      seductive: [
+        '残らせて……っ……ふふ、まだここでやりたいの……'
       ],
       composed: [
         '……うん。…もう少しだけ、やってみる'
@@ -8212,6 +8525,9 @@ const AWARD_LINES = {
       delinquent: [
         'くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！'
       ],
+      seductive: [
+        '新人賞……っ……一年目、無我夢中だったの……認めてもらえて嬉しいわ……'
+      ],
       composed: [
         '…っ…そうか。…ありがとう。…次、行くよ'
       ]
@@ -8289,7 +8605,10 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'いや…あたしなんかがあんな試合…相手がすげえんだよ…'
-      ]
+      ],
+      polite: [
+        'あ、あの…ベストバウトに選んでいただけるなんて…相手の方のおかげです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -8420,7 +8739,10 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'MVP？ あたしが？ いや…みんなが強くしてくれたんだよ…'
-      ]
+      ],
+      polite: [
+        'M、MVP…ですか…？ そ、そんな大それた賞、わたしには…'
+      ],
     },
     easygoing: {
       _default: [
@@ -8471,6 +8793,9 @@ const AWARD_LINES = {
       delinquent: [
         'くそっ…泣くな泣くな…。一年間…全部出し切った…それだけだ…！'
       ],
+      seductive: [
+        'MVP……っ……ふふ、わたしが一番輝いてたって、そう言ってもらえるのね……'
+      ],
       composed: [
         '…っ…一年間、苦しかったけど…ま、報われたかな。…うん'
       ]
@@ -8503,6 +8828,9 @@ const AWARD_LINES = {
         'あ、あの…ありがとうございます…嬉しいです…',
         'こんな私でよかったんでしょうか…',
       ],
+      polite: [
+        'メディアの方々に…評価していただけて…あ、あの、本当に光栄です…'
+      ],
     },
     easygoing: {
       _default: [
@@ -8515,7 +8843,13 @@ const AWARD_LINES = {
       cool: ['…感謝します'],
       composed: ['…ありがとう'],
     },
+  
+  emotional: {
+    seductive: [
+      'メディア功労賞……っ……みんなに見てもらえてた証ね、嬉しいわ……'
+    ]
   },
+},
   champion: {
     normal: {
       _default: [
@@ -8588,7 +8922,10 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'あたしがチャンピオン…似合わねえかもだけど…でも渡さねえ…'
-      ]
+      ],
+      polite: [
+        'わ、わたしが…チャンピオンに…？ こ、このベルトを汚さないように頑張ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -8637,6 +8974,9 @@ const AWARD_LINES = {
       ],
       delinquent: [
         'このベルト…命懸けで獲ったんだ…！ 絶対…誰にも渡さねえ…！'
+      ],
+      seductive: [
+        'チャンピオン……っ……ふふ、この重み……愛おしくてたまらないわ……'
       ],
       composed: [
         '…っ…このベルト…簡単には、渡さないよ'
@@ -8715,7 +9055,10 @@ const AWARD_LINES = {
       ],
       delinquent: [
         '殿堂…？ あたしが…？ …似合わねえけど…嬉しいよ…ありがとな'
-      ]
+      ],
+      polite: [
+        'で、殿堂入り…ですか…？ わたしなんかが…本当に、いいんでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -8891,10 +9234,19 @@ const BT_HINT_LINES = {
       '（…わたしの体、こんなに動けたんだ——！）',
       '（…すごい。体が勝手に。止まらない——）'
     ],
+    seductive: [
+      '……っ……何か、来そうな予感がするの……ふふ、楽しみだわ……'
+    ],
     composed: [
       '（…っ…体が、勝手に——…悪くない——）'
     ]
-  }
+  },
+
+  shy: {
+    polite: [
+      '最近…なにかが、掴めそうな…そんな気がするんです…'
+    ]
+  },
 };
 
 // §2.6b ブレークスルーセリフ（personality×archetype）
@@ -8967,7 +9319,10 @@ const BREAKTHROUGH_LINES = {
   shy: {
     _default: [
       'え…わたし、こんなに動けたんですか…？'
-    ]
+    ],
+    polite: [
+      'あ、あの…何かが、変わった気がします…壁を、越えられたかも…しれません…'
+    ],
   },
   easygoing: {
     _default: [
@@ -9011,6 +9366,9 @@ const BREAKTHROUGH_LINES = {
     _default: [
       'うわぁ…！ 体が軽い！ すごい、すごい…！',
       '限界なんてなかった…！ まだ上があった…！'
+    ],
+    seductive: [
+      '……っ……変わったの、わたし……ふふ、自分でも信じられないくらい……'
     ],
     composed: [
       '…っ…越えた。…ここからだ'
@@ -9106,7 +9464,10 @@ const SLUMP_START_LINES = {
     shy: {
       _default: [
         'やっぱり…私なんかじゃ、ダメなんでしょうか…'
-      ]
+      ],
+      polite: [
+        'ま、負けが続いて…自信が、なくなりそうです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -9150,6 +9511,9 @@ const SLUMP_START_LINES = {
       _default: [
         '負けた…もう何も考えられない…っ',
         '…悔しい、悔しくて頭がぐちゃぐちゃになる…！'
+      ],
+      seductive: [
+        '負けが続いて……っ……ふふ、自分が分からなくなりそう……'
       ],
       composed: [
         '…っ…あの負けが…まだ、引っかかってる'
@@ -9212,7 +9576,10 @@ const SLUMP_START_LINES = {
     shy: {
       _default: [
         '体は治ったのに…また迷惑かけちゃうかも…'
-      ]
+      ],
+      polite: [
+        'け、怪我が治って…でも、まだ感覚が戻りません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -9248,6 +9615,9 @@ const SLUMP_START_LINES = {
     emotional: {
       _default: [
         'せっかく治ったのに…なんで、なんで動けないの…！'
+      ],
+      seductive: [
+        '怪我は治ったけど……っ……ふふ、感覚が戻らないの……'
       ],
       composed: [
         '…っ…治ったのに。…なんで動けないんだ'
@@ -9310,7 +9680,10 @@ const SLUMP_START_LINES = {
     shy: {
       _default: [
         '戻ってこれたけど…また壊れたらって思うと…怖いです'
-      ]
+      ],
+      polite: [
+        'お、大きな怪我から復帰しました…でも、不安です…'
+      ],
     },
     easygoing: {
       _default: [
@@ -9346,6 +9719,9 @@ const SLUMP_START_LINES = {
     emotional: {
       _default: [
         '帰ってこれた…のに…っ、怖くて体が震える…！'
+      ],
+      seductive: [
+        '大怪我から戻ったわ……っ……でも、まだ怖いの……'
       ],
       composed: [
         '…っ…戻ってきた。…けど、体が少し…震える'
@@ -9408,7 +9784,10 @@ const SLUMP_START_LINES = {
     shy: {
       _default: [
         '怪我は治ったんですけど…また怪我したらって思うと…'
-      ]
+      ],
+      polite: [
+        'け、謹慎が明けました…ま、また頑張ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -9444,6 +9823,9 @@ const SLUMP_START_LINES = {
     emotional: {
       _default: [
         '治ったはずなのに…なんでこんなに不安なの…！'
+      ],
+      seductive: [
+        '謹慎が明けたわ……っ……ふふ、戻ってきたわよ……'
       ],
       composed: [
         '…っ…治ったのに。…この不安は何だろう'
@@ -9521,7 +9903,10 @@ const SLUMP_END_LINES = {
   shy: {
     _default: [
       'まだ不安ですけど…頑張りたいです'
-    ]
+    ],
+    polite: [
+      'やっと…調子が、戻ってきました…'
+    ],
   },
   easygoing: {
     _default: [
@@ -9564,6 +9949,9 @@ const SLUMP_END_LINES = {
   emotional: {
     _default: [
       'うっ…やっと、やっと抜け出せた…！ もう負けない…！'
+    ],
+    seductive: [
+      '調子が戻ってきたわ……っ……ふふ、ようやくね……'
     ],
     composed: [
       '…っ…やっと…抜け出せた。…もう大丈夫'
@@ -9640,7 +10028,10 @@ const MOTIVATION_LOSS_LINES = {
   shy: {
     _default: [
       '私がリングに立つ意味…あるんでしょうか…'
-    ]
+    ],
+    polite: [
+      'な、なんだか…やる気が、出ません…ご、ごめんなさい…'
+    ],
   },
   easygoing: {
     _default: [
@@ -9684,6 +10075,9 @@ const MOTIVATION_LOSS_LINES = {
     _default: [
       'やだ…もう嫌…何もしたくない…！',
       '…なんで泣いてるんだろ、あたし…'
+    ],
+    seductive: [
+      '……っ……どうしてかしら、力が湧かないの……'
     ],
     composed: [
       '…っ…もう、いいかな。…何もしたくない'
@@ -9760,7 +10154,10 @@ const MOTIVATION_RECOVERY_LINES = {
   shy: {
     _default: [
       'まだ自信はないですけど…もう少しだけ、頑張ってみます'
-    ]
+    ],
+    polite: [
+      'あ、あの…また、頑張ろうって思えてきました…'
+    ],
   },
   easygoing: {
     _default: [
@@ -9802,6 +10199,9 @@ const MOTIVATION_RECOVERY_LINES = {
   emotional: {
     _default: [
       'うっ…また闘いたいって…思えたよ…！ 大丈夫、もう大丈夫…！'
+    ],
+    seductive: [
+      '……っ……ふふ、また燃えてきたの……'
     ],
     composed: [
       '…っ…また闘いたい。…大丈夫、もう大丈夫だ'
@@ -9995,12 +10395,20 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['え、私が…？ …頑張らなきゃ', 'う、嘘…？ わ、私でいいんですか…？'],
       cool: ['…え。……わかった', '……うん。……出る'],
+      polite: [
+        'え、わたしが…ジュニアトーナメントに…？ あ、あの、頑張ります…!',
+        '選んでいただいて…あ、ありがとうございます…'
+      ],
     },
     emotional: {
       _default: ['やった…！ 選ばれた…！ 絶対頑張る…！', 'この気持ち…抑えきれない…！ 全力で行くから…！'],
       ojousama: ['まあ…！ わたくし、選ばれましたの…？ 嬉しいですわ…！', 'この胸の高鳴り…全てリングにぶつけますわ…！'],
       delinquent: ['っしゃあ！ やってやるぜ…！ 燃えてきた…！', 'うおおお…！ 全員ぶっ飛ばしてやるからな…！'],
       cool: ['……っ。…行く', '……胸が…熱い。……やる'],
+      seductive: [
+        'ジュニア大会に……っ……ふふ、わたしを選んでくれたのね、嬉しい……',
+        '楽しみだわ……っ……ふふ、燃えてきたの……'
+      ],
       composed: ['…選ばれたか。…やるよ'],
     },
   },
@@ -10042,12 +10450,20 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['緊張する…でも、逃げない', 'が、頑張ります…！'],
       cool: ['……大丈夫。……やれる', '……逃げない'],
+      polite: [
+        'き、緊張します…でも、精一杯やります…',
+        'ふ、深呼吸…落ち着かないと…'
+      ],
     },
     emotional: {
       _default: ['ドキドキが止まらない…！ でも…負けたくない…！', 'この熱い気持ちのまま…ぶつかる…！'],
       ojousama: ['この高鳴りを…お相手にぶつけますわ…！', '身体が…震えてますわ…でも、退きませんわよ…！'],
       delinquent: ['っしゃあ…！ 燃えてきたぜ…！', 'ぶっ飛ばす…絶対ぶっ飛ばしてやる…！'],
       cool: ['……っ。……行く', '……（静かに息を吐く）'],
+      seductive: [
+        '試合前……っ……ふふ、心臓がドキドキしてるの……',
+        '楽しんでくるわね……っ……ふふ……'
+      ],
       composed: ['…行くよ。…負けない'],
     },
   },
@@ -10089,12 +10505,20 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['か、勝てた…よかった…', 'まだ…終わりじゃないんだ…頑張る'],
       cool: ['……勝てた。……次も', '……よかった。……まだ続く'],
+      polite: [
+        'か、勝てました…次もがんばります…',
+        '一勝、できました…'
+      ],
     },
     emotional: {
       _default: ['勝った…！ 嬉しい…！ でもまだ泣かない…！', 'この気持ちのまま…次も…！ 絶対負けない…！'],
       ojousama: ['勝ちましたわ…！ この感動…次もきっと…！', 'まだ終わりませんわ…この熱い気持ち、止まりませんの…！'],
       delinquent: ['っしゃあああ！ まだまだいくぞおおお！', '止まんねえ…この勢い、止まんねえぞ…！'],
       cool: ['……っ。勝った……', '……次も……同じように'],
+      seductive: [
+        '勝った……っ……ふふ、まだまだ行けるわ……',
+        'いい感じよ……っ……ふふ……'
+      ],
       composed: ['…一つ勝った。…まだ先がある'],
     },
   },
@@ -10136,12 +10560,20 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['震えてるのは…きっと、嬉しいからだと思う', 'ここまで来れたのが信じられない…でも、負けたくない'],
       cool: ['……ここまで来た。……負けない', '……最後の一戦。……全部出す'],
+      polite: [
+        'け、決勝戦…ですか…し、信じられません…',
+        '夢みたい、です…'
+      ],
     },
     emotional: {
       _default: ['決勝…！ 信じられない…でも…勝ちたい…！', 'ここまで来たんだ…泣くのは全部終わってから…！'],
       ojousama: ['決勝ですわ…！ この胸の高鳴り…最高ですわ…！', '全てを懸けますわ…！ 負けませんの…！'],
       delinquent: ['決勝だ…！ ここまで来たんだ…！ 絶対テッペン獲る…！', 'もう止まれねえ…！ 全力でぶつかってやる…！'],
       cool: ['……っ。決勝……', '……ここまで来た。……負けるわけにはいかない'],
+      seductive: [
+        '決勝戦……っ……ふふ、ここまで来たのね……',
+        '最高の舞台ね……っ……ふふ、震えてるの……'
+      ],
       composed: ['…決勝か。…ここまで来た以上、負けない'],
     },
   },
@@ -10183,12 +10615,20 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['信じられない…。でも…嬉しい…！', 'わ、わたしが優勝…？ 夢じゃないよね…'],
       cool: ['……勝った。……嬉しい', '……わたしが…優勝……'],
+      polite: [
+        'ゆ、優勝…ですか…？ ほ、本当に…？ あ、ありがとうございます…!',
+        '夢みたいで…まだ、信じられません…'
+      ],
     },
     emotional: {
       _default: ['優勝…っ！ うそ…本当に…？ 嬉しい…！', 'もう…涙が止まらない…！ ありがとう…みんな…！'],
       ojousama: ['優勝ですわ…！ ああ…涙が…止まりませんわ…！', 'わたくし…やりましたわ…！ 最高に幸せですわ…！'],
       delinquent: ['うおおおお！ やったぞおおお！ テッペンだあ！', 'くっ…泣くかよ…こんなとこで…っ！ …最高だぜ…！'],
       cool: ['……っ。（目が潤む）……勝った', '……ありがとう。……本当に'],
+      seductive: [
+        '優勝……っ……ふふ、わたし、頂点に立ったのね……!',
+        'この景色……っ……ふふ、忘れないわ……'
+      ],
       composed: ['…っ…優勝か。…ありがとう'],
     },
   },
@@ -10230,11 +10670,19 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['が、頑張れた…かな。もっと強くなりたい…', 'みんなと戦えて…嬉しかった…'],
       cool: ['……頑張れた…と思う', '……嬉しかった'],
+      polite: [
+        'か、勝ち上がれました…信じられません…',
+        'まだ…続けられるんですね…'
+      ],
     },
     emotional: {
       _default: ['最高の大会だった…！ この経験、絶対忘れない…！', '戦えてよかった…！ もっともっと強くなる…！'],
       delinquent: ['くっそ〜、最高だったぜ…！ また出てえ…！', 'この熱い気持ち…忘れねえ…！'],
       cool: ['……良い大会だった', '……（静かに感動をかみしめる）'],
+      seductive: [
+        '勝ち上がったわ……っ……ふふ、ここまで来られたの……',
+        'もっと上を目指すわ……っ……ふふ……'
+      ],
       composed: ['…いい大会だった。…忘れないよ'],
     },
   },
@@ -10275,11 +10723,19 @@ const JUNIOR_TOURNAMENT_LINES = {
     shy: {
       _default: ['ご、ごめんなさい…。もっと頑張らないと…', 'やっぱり…わたしなんか…。でも…諦めない…'],
       cool: ['……すみません…', '……もっと、頑張る…'],
+      polite: [
+        'ま、負けてしまいました…ごめんなさい…',
+        'もっと…強くならないと…'
+      ],
     },
     emotional: {
       _default: ['くっ…悔しい…！ でも…絶対に次は…！', '負けた…。でも…この悔しさが…力になる…！'],
       delinquent: ['くそおおお…！ 絶対に…次は…！', 'ちくしょう…！ こんなんで終わるかよ…！'],
       cool: ['……悔しい', '……（涙をこらえている）'],
+      seductive: [
+        '負けたわ……っ……悔しい……でも、いい経験だった……',
+        'リベンジするわ……っ……ふふ、必ず……'
+      ],
       composed: ['…っ…悔しい。…でも、次がある'],
     },
   },
@@ -10626,7 +11082,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         'あの…ちょっとだけ、練習が楽しくなってきました…'
-      ]
+      ],
+      polite: [
+        'あ、あの…お知らせがあります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -10662,7 +11121,11 @@ const NOTIF_DIALOGUES = {
       _default: [
         'うわあ…！練習が楽しい…！もっとやりたい！',
         '体が動くようになってきた…嬉しい…！'
-      ]
+      ],
+      seductive: [
+        'お知らせよ……っ……ふふ、聞いて……',
+        'ねえ、聞いて……っ……ふふ……'
+      ],
     }
   },
   N2: {
@@ -10719,7 +11182,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         'あの…みんなと一緒にいられて…嬉しいです…'
-      ]
+      ],
+      polite: [
+        'ちょ、ちょっとお伝えしたいことが…'
+      ],
     },
     easygoing: {
       _default: [
@@ -10753,7 +11219,10 @@ const NOTIF_DIALOGUES = {
     emotional: {
       _default: [
         'みんなのこと大好き…！一緒にいられて幸せ…！'
-      ]
+      ],
+      seductive: [
+        'ちょっといいかしら……っ……ふふ……'
+      ],
     }
   },
   N3: {
@@ -10810,7 +11279,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         'あの…無理はしてないつもりなんですけど……少し休んだ方がいいかも…'
-      ]
+      ],
+      polite: [
+        '報告です…あ、あの…'
+      ],
     },
     easygoing: {
       _default: [
@@ -10844,7 +11316,10 @@ const NOTIF_DIALOGUES = {
     emotional: {
       _default: [
         'うう…体がしんどい…でも、でも頑張りたいのに…！'
-      ]
+      ],
+      seductive: [
+        '報告があるの……っ……ふふ……'
+      ],
     }
   },
   N4: {
@@ -10901,7 +11376,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         'え、あの…私なんかを応援してくれる人がいるなんて…'
-      ]
+      ],
+      polite: [
+        'お、大事なお知らせです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -10936,7 +11414,10 @@ const NOTIF_DIALOGUES = {
     emotional: {
       _default: [
         'みんなが応援してくれてる…！嬉しくて泣きそう…！'
-      ]
+      ],
+      seductive: [
+        '大事な話よ……っ……ふふ、しっかり聞いて……'
+      ],
     }
   },
   N5_warning: {
@@ -10993,7 +11474,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         '…あ、あの……なんでもない、です…'
-      ]
+      ],
+      polite: [
+        'き、緊急のお知らせです…!'
+      ],
     },
     easygoing: {
       _default: [
@@ -11027,7 +11511,10 @@ const NOTIF_DIALOGUES = {
     emotional: {
       _default: [
         '…なんか、最近ずっとモヤモヤして…うまく言えないけど…'
-      ]
+      ],
+      seductive: [
+        '緊急よ……っ……ふふ、よく聞いて……'
+      ],
     }
   },
   N5_low: {
@@ -11084,7 +11571,10 @@ const NOTIF_DIALOGUES = {
     shy: {
       _default: [
         '…ごめんなさい…もう…わかりません…'
-      ]
+      ],
+      polite: [
+        'あ、あの…ちょっと、心配なことが…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11118,7 +11608,10 @@ const NOTIF_DIALOGUES = {
     emotional: {
       _default: [
         'もう…もう分かんない…！どうすればいいの…！'
-      ]
+      ],
+      seductive: [
+        'ちょっと心配なの……っ……ふふ……'
+      ],
     }
   }
 };
@@ -11252,7 +11745,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'え…あの…ありがとう、ございます…！'
-      ]
+      ],
+      polite: [
+        'ぼ、ボーナスを…？ あ、ありがとうございます…大切に使わせていただきます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11288,7 +11784,10 @@ const CARE_REACTION_DIALOGUES = {
       _default: [
         'え…！ありがとうございます…！嬉しい…！',
         'うわあ…嬉しくて泣きそう…！'
-      ]
+      ],
+      seductive: [
+        'ボーナス……っ……気にかけてくれてたのね、嬉しい……ふふ、ありがとう……'
+      ],
     }
   },
   bonus_repeat: {
@@ -11312,7 +11811,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'あ…ありがとう、ございます…（また…？）'
-      ]
+      ],
+      polite: [
+        'ま、また…？ そんな、毎回いただいては…申し訳ないです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11327,7 +11829,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         '…また…？（少し困った顔をしている）'
-      ]
+      ],
+      seductive: [
+        'また……っ……ふふ、こんなに優しくされたら、応えないわけにはいかないわ……'
+      ],
     }
   },
   costume: {
@@ -11385,7 +11890,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'え…こんな素敵なの…私に…？ ありがとうございます…！'
-      ]
+      ],
+      polite: [
+        'こ、こんな素敵な衣装…わたしに似合うでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11419,7 +11927,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         'うわあ…！かわいい…！嬉しい…ありがとうございます…！'
-      ]
+      ],
+      seductive: [
+        'この衣装……っ……ふふ、わたしのために選んでくれたのね、似合うかしら……'
+      ],
     }
   },
   trainer: {
@@ -11477,7 +11988,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'せ、専属の先生…！が、頑張ります…！'
-      ]
+      ],
+      polite: [
+        '専属トレーナー…ですか…あ、あの、よろしくお願いいたします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11511,7 +12025,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         'ええっ…！専属トレーナー…！頑張ります…！嬉しい…！'
-      ]
+      ],
+      seductive: [
+        'トレーナーをつけてくれるの……っ……ふふ、本気で育ててくれるのね……'
+      ],
     }
   },
   media: {
@@ -11569,7 +12086,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'え…テレビ…？ き、緊張します…で、でも頑張ります…！'
-      ]
+      ],
+      polite: [
+        'メ、メディア出演…ですか…き、緊張しますけど…や、やってみます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11603,7 +12123,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         'テレビ…！？ うわあ…緊張するけど嬉しい…！頑張る…！'
-      ]
+      ],
+      seductive: [
+        'メディアに……っ……ふふ、わたしを世間に見せたいのね、いいわ……'
+      ],
     }
   },
   special_treatment: {
@@ -11660,7 +12183,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'すみません…ご迷惑をおかけして…必ず、戻ります…'
-      ]
+      ],
+      polite: [
+        'こ、こんな特別扱い…わたしなんかに、もったいないです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11694,7 +12220,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         'うう…治療してもらえるなんて…ありがとうございます…早く戻りたい…！'
-      ]
+      ],
+      seductive: [
+        '特別扱い……っ……ふふ、わたしだけ見てくれてるみたいで、嬉しい……'
+      ],
     }
   },
   encourage: {
@@ -11752,7 +12281,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         '…声をかけてもらえて…嬉しかったです…頑張ります…'
-      ]
+      ],
+      polite: [
+        'あ、ありがとうございます…そう言っていただけると、頑張れます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11787,7 +12319,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         '…っ！ありがとうございます…！もう一回…もう一回頑張ります…！'
-      ]
+      ],
+      seductive: [
+        '励まし……っ……ふふ、その言葉だけで、力が湧いてくるの……'
+      ],
     }
   },
   encourage_high_trust: {
@@ -11844,7 +12379,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'ずっと…見てくれてたんですか…？ わ、私…頑張ります…！'
-      ]
+      ],
+      polite: [
+        'いつも気にかけてくださって…あ、あの、本当に感謝しています…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11878,7 +12416,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         '…っ！ずっと見てくれてたんですね…！泣いちゃう…でも頑張る…！'
-      ]
+      ],
+      seductive: [
+        'あなたの言葉だけで……っ……わたし、何でもできちゃいそうなの……ふふ……'
+      ],
     }
   },
   refresh_leave: {
@@ -11936,7 +12477,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'あの…休んでいいんですか…？ ありがとうございます…'
-      ]
+      ],
+      polite: [
+        'お休みを…？ あ、あの…ありがとうございます、ゆっくり休ませていただきます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -11970,7 +12514,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         '休んでいいんですか…？ ありがとうございます…リフレッシュしてきます…！'
-      ]
+      ],
+      seductive: [
+        '休暇……っ……気を遣ってくれたのね、ふふ、嬉しいわ……'
+      ],
     }
   },
   party: {
@@ -12029,7 +12576,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'あ、あの…楽しかった、です…（隅で小さく笑っている）'
-      ]
+      ],
+      polite: [
+        'パ、パーティー…人が多いところは少し苦手ですけど…頑張って参加します…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12065,7 +12615,10 @@ const CARE_REACTION_DIALOGUES = {
       _default: [
         'みんな〜！楽しい〜！大好き〜！',
         'こういう時間…最高だよ…！'
-      ]
+      ],
+      seductive: [
+        'パーティー……っ……ふふ、今夜は思いっきり楽しませてもらうわ……'
+      ],
     }
   },
   camp: {
@@ -12124,7 +12677,10 @@ const CARE_REACTION_DIALOGUES = {
     shy: {
       _default: [
         'が、合宿…！ が、頑張ります…！'
-      ]
+      ],
+      polite: [
+        'が、合宿…ですか…緊張しますけど…頑張ります…!'
+      ],
     },
     easygoing: {
       _default: [
@@ -12160,7 +12716,10 @@ const CARE_REACTION_DIALOGUES = {
     emotional: {
       _default: [
         '合宿…！みんなで強くなれる…！最高だよ…！'
-      ]
+      ],
+      seductive: [
+        '合宿……っ……ふふ、みんなと一緒に過ごせるのね、楽しみ……'
+      ],
     }
   }
 };
@@ -12220,7 +12779,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あ、あの…タイトルマッチ…挑戦させてもらえませんか…？'
-      ]
+      ],
+      polite: [
+        'あ、あの…ご相談したいことが…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12255,7 +12817,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'お願いします…！タイトルマッチに挑ませてください…！'
-      ]
+      ],
+      seductive: [
+        'ねえ……っ……ちょっと、聞いてほしいの……'
+      ],
     }
   },
   S2: {
@@ -12311,7 +12876,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…あの人と…試合させてもらえませんか…'
-      ]
+      ],
+      polite: [
+        'す、すみません…少しお時間いただけますか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12344,7 +12912,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'あの人と戦いたい…！お願いします…組んでください…！'
-      ]
+      ],
+      seductive: [
+        '時間、ある……っ……ふふ、ちょっとだけ付き合って……'
+      ],
     }
   },
   S3: {
@@ -12399,7 +12970,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…すみません…体が…少し休ませてもらえますか…'
-      ]
+      ],
+      polite: [
+        'あ、あの…どう答えたらいいか、わからなくて…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12433,7 +13007,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'ごめんなさい…体がもう…休ませてください…！'
-      ]
+      ],
+      seductive: [
+        '……っ……どう答えるのが正解なのかしら、ふふ……'
+      ],
     }
   },
   S4_direct: {
@@ -12489,7 +13066,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         '…あの…ごめんなさい…でも…このままだと…'
-      ]
+      ],
+      polite: [
+        'は、はっきり言わせていただきます…わたしは…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12523,7 +13103,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '…もう…無理です…！このままだと…私…！'
-      ]
+      ],
+      seductive: [
+        'はっきり言うわ……っ……わたしの気持ちは……'
+      ],
     }
   },
   S4_silent: {
@@ -12551,7 +13134,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         '…………（目を逸らして、何も言えずにいる）'
-      ]
+      ],
+      polite: [
+        '………あの…なにも、言えません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12566,7 +13152,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '……っ（泣くのを堪えるように唇を噛んでいる）'
-      ]
+      ],
+      seductive: [
+        '………っ……言葉にならないの……ふふ……'
+      ],
     }
   },
   S5: {
@@ -12622,7 +13211,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…特訓…させてもらえませんか…？ もっと強くなりたいんです…'
-      ]
+      ],
+      polite: [
+        '考えさせて…いただけますか…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -12655,7 +13247,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'お願いします…！特訓させてください…！もっと、もっと強くなりたい…！'
-      ]
+      ],
+      seductive: [
+        '少し考えさせて……っ……ふふ、すぐには決められないの……'
+      ],
     }
   },
   S6: {
@@ -12710,7 +13305,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…私でよければ…後輩の子たちに…何か伝えられたら…'
-      ]
+      ],
+      polite: [
+        '決めました…これで、いいんですよね…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -12744,7 +13342,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '後輩の子たちに…私にできることがあるなら…やらせてください！'
-      ]
+      ],
+      seductive: [
+        '決めたわ……っ……ふふ、これがわたしの答えよ……'
+      ],
     }
   },
   E1: {
@@ -12801,7 +13402,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'え…テレビ…？ わ、私なんかが…で、でもやってみたいです…'
-      ]
+      ],
+      polite: [
+        'あ、あの…どうしたら、いいんでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12835,7 +13439,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'テレビ…！？ えっ…嬉しい…！頑張ります…！'
-      ]
+      ],
+      seductive: [
+        '……っ……どうしようかしら、ふふ、迷っちゃうわね……'
+      ],
     }
   },
   E4: {
@@ -12843,8 +13450,14 @@ const CHOICE_EVENT_DIALOGUES = {
       _default: [
         '新たなスカウト情報が届きました'
       ]
-    }
+    },
+  
+  shy: {
+    polite: [
+      'え、ええと…そ、その件は…'
+    ]
   },
+},
   E6: {
     normal: {
       _default: [
@@ -12898,7 +13511,10 @@ const CHOICE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…他の団体から…その…どうしたらいいか分からなくて…'
-      ]
+      ],
+      polite: [
+        'は、はい…わかりました…やってみます…'
+      ],
     },
     easygoing: {
       _default: [
@@ -12932,7 +13548,10 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '他の団体からオファーが…どうしよう…迷ってる…'
-      ]
+      ],
+      seductive: [
+        'いいわよ……っ……ふふ、やってみせるわ……'
+      ],
     }
   },
   S_boycott: {
@@ -12994,9 +13613,18 @@ const CHOICE_EVENT_DIALOGUES = {
       _default: [
         'もう無理…練習なんてできない…',
         '出してもらえないのに練習して…何になるの…'
-      ]
-    }
+      ],
+      seductive: [
+        '……っ……これは認められないわ、悪いけど……'
+      ],
+    },
+  
+  shy: {
+    polite: [
+      'あ、あの…これは、納得できません…'
+    ]
   },
+},
   S_grumble: {
     normal: {
       _default: [
@@ -13041,9 +13669,18 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '（涙ぐみながら「もう限界かも…」とチームメイトに打ち明けている）'
-      ]
-    }
+      ],
+      seductive: [
+        '正直に言うわね……っ……ちょっと不満なの……'
+      ],
+    },
+  
+  shy: {
+    polite: [
+      'すみません…少し、不満があります…'
+    ]
   },
+},
   S_sns: {
     normal: {
       _default: [
@@ -13088,9 +13725,18 @@ const CHOICE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '（SNSに涙の絵文字と「もうダメかもしれない」と投稿。炎上し始めている）'
-      ]
-    }
-  }
+      ],
+      seductive: [
+        'SNS見たわ……っ……ふふ、勝手な人たちね……'
+      ],
+    },
+  
+  shy: {
+    polite: [
+      'え、SNSで…そんな風に書かれてしまって…'
+    ]
+  },
+}
 };
 
 // §13.5: P-自発的残留セリフ（trust 75+で契約交渉スキップ）
@@ -13275,7 +13921,10 @@ const LARGE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'す、すみません…ご迷惑を…早く治します…'
-      ]
+      ],
+      polite: [
+        'あ、あの…これから、頑張りたいことがあります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -13308,7 +13957,10 @@ const LARGE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'ごめんなさい…！早く治します…早く戻りたい…！'
-      ]
+      ],
+      seductive: [
+        'これから……っ……やりたいこと、いっぱいあるの……'
+      ],
     }
   },
   B2_fighter1: {
@@ -13364,7 +14016,10 @@ const LARGE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'あの…あの人のこと…もう…どうしたらいいか…'
-      ]
+      ],
+      polite: [
+        'お、お話を聞かせていただけますか…？'
+      ],
     },
     easygoing: {
       _default: [
@@ -13398,7 +14053,10 @@ const LARGE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'もう無理…！あの人と一緒にいると…辛い…！'
-      ]
+      ],
+      seductive: [
+        'ねえ……っ……ちょっと話、聞いてくれる？'
+      ],
     }
   },
   B2_fighter2: {
@@ -13454,7 +14112,10 @@ const LARGE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         '…私が悪いんでしょうか…（不安そうに）'
-      ]
+      ],
+      polite: [
+        'は、はい…お聞きします…'
+      ],
     },
     easygoing: {
       _default: [
@@ -13488,7 +14149,10 @@ const LARGE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         '私だって…！私だって辛いのに…！'
-      ]
+      ],
+      seductive: [
+        'いいわよ……っ……話してみて……'
+      ],
     }
   },
   // B3 セリフは WAR_CHALLENGER_DIALOGUE / WAR_DECLINE_DIALOGUE / WAR_POST_DIALOGUE に移行済み
@@ -13545,7 +14209,10 @@ const LARGE_EVENT_DIALOGUES = {
     shy: {
       _default: [
         'え…わ、私なんかでいいんですか…？ が、頑張ります…！'
-      ]
+      ],
+      polite: [
+        'こ、こんなお仕事、わたしに務まるでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -13579,7 +14246,10 @@ const LARGE_EVENT_DIALOGUES = {
     emotional: {
       _default: [
         'えっ…テレビ…！？ 私が…！？ 頑張ります…！頑張ります…！'
-      ]
+      ],
+      seductive: [
+        'このお仕事……っ……ふふ、面白そうね……'
+      ],
     }
   },
   // B4タレント活動: activityType別セリフ
@@ -13606,6 +14276,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['わ、私がCMに…？ ほ、本当に大丈夫ですか…？'],
+      polite: [
+        'CM…ですか…？ わ、わたしなんかで、いいんでしょうか…'
+      ],
     },
     easygoing: {
       _default: ['CM！？ 私ってもしかして売れっ子？♪', 'どんなCMになるんだろ〜楽しみ♪'],
@@ -13621,6 +14294,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['CMに出るの…！？ うわあああ緊張する！でもやる！'],
+      seductive: [
+        'CMに出るの……っ……ふふ、世間に顔を売るチャンスね……'
+      ],
     },
   },
   B4_gravure: {
@@ -13646,6 +14322,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['え…グラビア…？ は、恥ずかしいです…でも、やります…'],
+      polite: [
+        'グ、グラビア…ですか…？ は、恥ずかしいです…でも、頑張ります…'
+      ],
     },
     easygoing: {
       _default: ['グラビアか〜！ どんな感じになるんだろ♪', 'かわいく撮ってもらえるかな♪'],
@@ -13661,6 +14340,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['グラビア！？ えっ、私ほんとに！？ うわ〜〜！'],
+      seductive: [
+        'グラビア……っ……ふふ、見られるのは嫌いじゃないの……'
+      ],
     },
   },
   B4_variety: {
@@ -13686,6 +14368,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['バ、バラエティ…しゃべるの…？ が、頑張ります…'],
+      polite: [
+        'バ、バラエティ番組…ちゃんと、お話できるか不安です…'
+      ],
     },
     easygoing: {
       _default: ['バラエティ！ 笑わせにいくよ♪', 'テレビって楽しそう！ 全力でいく♪'],
@@ -13701,6 +14386,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['バラエティ出る！？ テンション上がってきた〜！！'],
+      seductive: [
+        'バラエティに出るの……っ……ふふ、楽しんでくるわね……'
+      ],
     },
   },
   B4_brand: {
@@ -13726,6 +14414,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['わ、私がコラボ…？ 本当に私でいいんですか…'],
+      polite: [
+        'ブランドのお仕事…ですか…？ あ、あの、精一杯やらせていただきます…'
+      ],
     },
     easygoing: {
       _default: ['コラボ！？ 商品もらえたりする？♪', 'どんな商品になるんだろ〜楽しみ♪'],
@@ -13740,6 +14431,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['えっブランドコラボ！？ すごい！どんな商品になるの！？'],
+      seductive: [
+        'ブランドのお話……っ……ふふ、素敵ね……'
+      ],
     },
   },
   B4_fashion: {
@@ -13763,6 +14457,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['フ、ファッションショー…みんなに見られるんですよね…！'],
+      polite: [
+        'フ、ファッション関連のお仕事…似合うでしょうか…'
+      ],
     },
     easygoing: {
       _default: ['ファッションショー！ なんかキラキラしてそう♪', '衣装とかかわいいのかな〜♪'],
@@ -13777,6 +14474,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['ランウェイ歩くの！？ わあああどうしよう緊張するやつだ！'],
+      seductive: [
+        'ファッションのお仕事……っ……ふふ、おしゃれするのは好きよ……'
+      ],
     },
   },
   B4_fan: {
@@ -13800,6 +14500,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     shy: {
       _default: ['フ、ファンの方に直接会うんですか…！ 緊張しますが頑張ります'],
+      polite: [
+        'ファンの方に…直接、お会いできるんですか…？ う、嬉しいです…'
+      ],
     },
     easygoing: {
       _default: ['ファンのみんなに会えるの！ テンション上がる♪', 'みんなの笑顔が見れるかな♪'],
@@ -13814,6 +14517,9 @@ const LARGE_EVENT_DIALOGUES = {
     },
     emotional: {
       _default: ['ファンに会える！！ 絶対みんなを笑顔にしてみせる！！'],
+      seductive: [
+        'ファンに会えるの……っ……ふふ、みんなに直接ありがとうって言えるのね……'
+      ],
     },
   },
 };
@@ -13936,7 +14642,10 @@ const ENDING_LINES = {
     shy: {
       _default: [
         'こ、こんなに幸せなことがあっていいのかな…'
-      ]
+      ],
+      polite: [
+        'こ、これで…リングを降ります…あ、あの、応援してくれた皆さま…本当に、ありがとうございました…'
+      ],
     },
     easygoing: {
       _default: [
@@ -13981,6 +14690,9 @@ const ENDING_LINES = {
       _default: [
         '涙が止まらない…！こんなに幸せなことがあっていいのかな…！',
         'みんなありがとう…！最高だよ…！'
+      ],
+      seductive: [
+        'リングを降りるわ……っ……ふふ、ここで戦えた日々、永遠に忘れない……ありがとう……'
       ],
       composed: [
         '…っ…ここまで来れた。…最高だ'
@@ -14205,11 +14917,20 @@ const SNAPSHOT_TEXTS = {
         delinquent: [
           '…やってられっかよ'
         ],
+        seductive: [
+          'もう少し稼ぎたいわね……っ……'
+        ],
         composed: [
           '…っ…まあ、いい'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…もう少し、お給料が、上がったらいいな…'
+      ]
+    },
+}
   },
   G2: {
     scene: [
@@ -14259,11 +14980,20 @@ const SNAPSHOT_TEXTS = {
           '…先に始めたのはあたしなのに',
           '…置いていかれてる気がする'
         ],
+        seductive: [
+          'ひとりは、ちょっと寂しいの……っ……'
+        ],
         composed: [
           '…っ…先にいたのは、こっちなのに'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…ひ、ひとりだと、寂しいです…'
+      ]
+    },
+}
   },
   G3: {
     scene: [
@@ -14323,8 +15053,14 @@ const SNAPSHOT_TEXTS = {
         composed: [
           '…っ…黙ってるけど。…悔しくないわけじゃない'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…も、もっと注目されないと、ダメですよね…'
+      ]
+    },
+}
   },
   G4: {
     scene: [
@@ -14367,11 +15103,20 @@ const SNAPSHOT_TEXTS = {
         _default: [
           '…見てくれてるのかな、あたしのこと'
         ],
+        seductive: [
+          'もっと強くなりたいの……っ……'
+        ],
         composed: [
           '…っ…出番、まだかな'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…つ、強くなりたい、です…'
+      ]
+    },
+}
   },
   R1: {
     scene: [
@@ -14436,11 +15181,20 @@ const SNAPSHOT_TEXTS = {
         ojousama: [
           '…こういう寂しさは初めてですわ'
         ],
+        seductive: [
+          'あの子と、もっと話したい……っ……'
+        ],
         composed: [
           '…っ…まあ、いいさ'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…あ、あの人と、また話せたらいいな…'
+      ]
+    },
+}
   },
   R3: {
     scene: [
@@ -14500,8 +15254,14 @@ const SNAPSHOT_TEXTS = {
         composed: [
           '…っ…{name2}。…元気で'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        'あ、あの…少し、お話できますか…'
+      ]
+    },
+}
   },
   R4: {
     scene: [
@@ -14550,11 +15310,20 @@ const SNAPSHOT_TEXTS = {
           '…勝った…勝ったよ…！',
           '…泣くな、あたし。まだ先がある'
         ],
+        seductive: [
+          'あの子とは、ちょっと距離を置きたいの……っ……'
+        ],
         composed: [
           '…っ…勝った。…うん、勝った'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…あ、あの人とは、距離を置きたい、かも…'
+      ]
+    },
+}
   },
   R5: {
     scene: [
@@ -14609,11 +15378,20 @@ const SNAPSHOT_TEXTS = {
         ojousama: [
           '…こんなはずでは…こんなはずでは、ないのに'
         ],
+        seductive: [
+          '負けたくないの……っ……ふふ……'
+        ],
         composed: [
           '…っ…次は、こうはいかない'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…ま、負けたく、ないです…'
+      ]
+    },
+}
   },
   friction: {
     scene: [
@@ -14683,11 +15461,20 @@ const SNAPSHOT_TEXTS = {
         _default: [
           '…うれしい…ここにいてよかった'
         ],
+        seductive: [
+          '何かが変わった……っ……ふふ……'
+        ],
         composed: [
           '…っ…ここにいてよかった'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…な、何かが、変わった気がします…'
+      ]
+    },
+}
   },
   warVictory: {
     scene: [
@@ -14714,6 +15501,9 @@ const SNAPSHOT_TEXTS = {
         _default: [
           '…勝った…！ みんなのおかげだよ…！'
         ],
+        seductive: [
+          '勝てた……っ……ふふ、最高の気分……'
+        ],
         composed: [
           '…っ…勝った。…みんなのおかげだ'
         ]
@@ -14725,8 +15515,14 @@ const SNAPSHOT_TEXTS = {
         cool: [
           '…当然の結果だ'
         ]
-      }
-    }
+      },
+    
+    shy: {
+      polite: [
+        '…か、勝てて、よかったです…'
+      ]
+    },
+}
   }
 };
 
@@ -14855,12 +15651,20 @@ const WAR_CHALLENGER_DIALOGUE = {
   shy: {
     _default: ['あ、あの…対抗戦を…お願いしたくて…', 'で、でも…負けるつもりはないです…'],
     cool: ['……対抗戦。……お願いします', '……逃げません。……やります'],
+    polite: [
+      'あ、あの…団体として、挑戦させてください…',
+      'み、みんなで戦います…'
+    ],
   },
   emotional: {
     _default: ['ずっと…あなたたちの団体が気になってたの…！ 勝負して…！', 'この熱い気持ち…ぶつけさせてもらう…！'],
     ojousama: ['もう我慢できませんわ…！ 勝負ですわ…！', 'この燃える思い…受け止めてくださいまし…！'],
     delinquent: ['おいてめえら！ 勝負だ勝負！ 今すぐだ！', 'うずうずしてんだよ…！ かかってこい…！'],
     cool: ['……挑む。……今だ', '……この気持ち……戦いでしか晴らせない'],
+    seductive: [
+      '団体として挑むわ……っ……ふふ、燃えるわね……',
+      'みんなで戦うわ……っ……ふふ……'
+    ],
     composed: ['…勝負しよう。…本気で'],
   },
 };
@@ -14904,12 +15708,20 @@ const WAR_DECLINE_DIALOGUE = {
   shy: {
     _default: ['そ、そうですか…残念です…', 'で、でも…いつかきっと…'],
     cool: ['……そう。……残念', '……わかった'],
+    polite: [
+      'す、すみません…今回は、お断りさせてください…',
+      'ま、また機会があれば…'
+    ],
   },
   emotional: {
     _default: ['逃げるの…？ そんなの…ずるいよ…！', 'こっちはこんなに燃えてるのに…！ 受けてよ…！'],
     ojousama: ['逃げるなんて…許しませんわ…！', 'この悔しさ…忘れませんわよ…！'],
     delinquent: ['おいふざけんな！ 逃げんじゃねえよ！', 'チクショウ…！ 次は絶対逃がさねえからな…！'],
     cool: ['……逃げるか。……覚えた', '……次はない。……逃がさない'],
+    seductive: [
+      'ごめんなさい……っ……今回は遠慮するわ……',
+      'またの機会に……っ……ふふ……'
+    ],
     composed: ['…逃げるか。…覚えておくよ'],
   },
 };
@@ -14954,12 +15766,20 @@ const WAR_POST_DIALOGUE = {
     shy: {
       _default: ['ごめんなさい…私が…もっと頑張れていれば…', '悔しい…でも…次こそ…'],
       cool: ['……すみません。……もっと強くなります', '……次は……負けない'],
+      polite: [
+        'ま、負けてしまいました…ご、ごめんなさい…',
+        '次は…次こそは…'
+      ],
     },
     emotional: {
       _default: ['悔しい…！ こんなの…こんなの嫌だ…！', 'この悔しさ…絶対忘れない…！ 絶対リベンジする…！'],
       ojousama: ['こんな…認めませんわ…！ 絶対に…！', '悔しい…ですわ…。でも…負けませんわ…次は…！'],
       delinquent: ['ちくしょう…！ やられた…！ 絶対許さねえ…！', 'この借り…必ず返すからな…覚えてろよ…！'],
       cool: ['……っ。……悔しい', '……この結果…忘れない'],
+      seductive: [
+        '負けたわ……っ……ふふ、悔しい……',
+        '次は絶対に……っ……ふふ、リベンジするわ……'
+      ],
       composed: ['…っ…この悔しさは、覚えておく'],
     },
   },
@@ -15001,12 +15821,20 @@ const WAR_POST_DIALOGUE = {
     shy: {
       _default: ['か、勝てた…。みんなのおかげです…', 'ほっとしました…。よかった…'],
       cool: ['……勝てた。……よかった', '……ほっとした'],
+      polite: [
+        'か、勝てました…団体のみなさんのおかげです…',
+        '応援、ありがとうございました…'
+      ],
     },
     emotional: {
       _default: ['勝った…！ 勝ったよ…！ みんなありがとう…！', 'この嬉しさ…言葉にならない…！'],
       ojousama: ['勝ちましたわ…！ 感動で涙が…！', '最高ですわ…！ この喜び、忘れませんわ…！'],
       delinquent: ['っしゃああ！ 勝利だあああ！', 'これがウチの力だ…！ 舐めんじゃねえ…！'],
       cool: ['……っ。勝った……よかった', '……（静かに安堵する）'],
+      seductive: [
+        '勝った……っ……ふふ、団体のために戦えて嬉しい……',
+        'みんなのおかげよ……っ……ふふ……'
+      ],
       composed: ['…っ…勝った。…よかった'],
     },
   },
@@ -15084,7 +15912,10 @@ const PPV_OPPONENT_LINES = {
   shy: {
     _default: [
       'が、頑張ります…！'
-    ]
+    ],
+    polite: [
+      'あ、あの方が…相手なんですね…せ、精一杯戦います…'
+    ],
   },
   easygoing: {
     _default: [
@@ -15130,6 +15961,9 @@ const PPV_OPPONENT_LINES = {
   emotional: {
     _default: [
       '絶対…絶対負けない…！全力でいく…！'
+    ],
+    seductive: [
+      'あの子が相手……っ……ふふ、燃えてきたわ……'
     ],
     composed: [
       '…負けない。…絶対に'
@@ -15396,7 +16230,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'この人がいなかったら…私、とっくにダメになってたと思う…',
         'あの人が隣にいるだけで…なんでも頑張れる気がするんです…'
-      ]
+      ],
+      polite: [
+        'あの人といると…なんだか、心が、安らぐんです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15411,7 +16248,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'この人のためなら何でもできる…！ 絶対に守る…！',
         '出会えてよかった…本当に…！'
-      ]
+      ],
+      seductive: [
+        'あの子と一緒にいると……っ……ふふ、満たされるの……'
+      ],
     },
     earnest: {
       _default: [
@@ -15467,7 +16307,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         '最近…目を合わせるのが怖い…私、何かしちゃったのかな…',
         'あの人の態度が…前と違う…私のせい…だよね…'
-      ]
+      ],
+      polite: [
+        '最近…あの人と、少し距離があるような…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15479,7 +16322,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         '離れていく…嫌だ…こんなの…',
         'どうして…前みたいに話してくれないの…'
-      ]
+      ],
+      seductive: [
+        '少し離れちゃったのかしら……っ……ふふ、寂しいわね……'
+      ],
     },
     earnest: {
       _default: [
@@ -15530,7 +16376,10 @@ const GLIMPSE_A_LINES = {
     shy: {
       _default: [
         '…もう…同じ部屋にいるだけで…苦しい…'
-      ]
+      ],
+      polite: [
+        'あの人とは…もう、前みたいには、戻れないんでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15540,7 +16389,10 @@ const GLIMPSE_A_LINES = {
     emotional: {
       _default: [
         '考えると苦しい…もう無理…'
-      ]
+      ],
+      seductive: [
+        'もう戻れないのかしら……っ……ふふ、切ないわ……'
+      ],
     },
     earnest: {
       _default: [
@@ -15602,7 +16454,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'あの人のこと…考えると胸がきゅってなる…負けたくない…',
         '練習してるのを見かけると…自分も走り出したくなる…'
-      ]
+      ],
+      polite: [
+        'あ、あの人には…ま、負けたくないです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15617,7 +16472,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         '絶対に負けない…！ 絶対に…！',
         '考えると胸が熱くなる…！'
-      ]
+      ],
+      seductive: [
+        'あの子には……っ……ふふ、絶対に負けたくないの……'
+      ],
     },
     earnest: {
       _default: [
@@ -15679,7 +16537,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'あの人にだけは…絶対に負けたくない…今はそれだけ…',
         '怖い…けど、逃げたらもっと後悔する…だから…'
-      ]
+      ],
+      polite: [
+        'あの人を…意識せずには、いられません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15691,7 +16552,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'くっ…考えると熱くなる…！',
         '絶対に…超えてみせる…！！'
-      ]
+      ],
+      seductive: [
+        'あの子のこと……っ……頭から離れないの……'
+      ],
     },
     earnest: {
       _default: [
@@ -15747,7 +16611,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'この人がいなかったら…今の私はいない。それだけは…わかる',
         '逃げたい…でも…この人からだけは逃げちゃダメ…'
-      ]
+      ],
+      polite: [
+        'あ、あの人とは…絶対に、決着をつけたいです…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15759,7 +16626,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'この人がいなかったら今の私はなかった…！',
         'まだまだ終わらない…！ ずっと戦い続ける…！'
-      ]
+      ],
+      seductive: [
+        'あの子とは……っ……決着をつけずにはいられない……'
+      ],
     },
     earnest: {
       _default: [
@@ -15812,7 +16682,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         '最近…あの人のこと、前ほど気にならなくなった…かも',
         'あの頃のピリピリした感じ…もうないかな…'
-      ]
+      ],
+      polite: [
+        'あの人と…もう、競う気持ちが薄れてきたかもしれません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15824,7 +16697,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         '終わっちゃったんだ…少し寂しい…',
         '……あの熱さが消えていく。これでいいのかな…'
-      ]
+      ],
+      seductive: [
+        'あの子と争う気持ちが……っ……ふふ、少し冷めてきたわ……'
+      ],
     },
     earnest: {
       _default: [
@@ -15878,7 +16754,10 @@ const GLIMPSE_A_LINES = {
     shy: {
       _default: [
         '…ここに私の居場所なんて…あるのかな……'
-      ]
+      ],
+      polite: [
+        'あ、あの…少し、わたしを見ていただけてないような…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15889,7 +16768,10 @@ const GLIMPSE_A_LINES = {
     emotional: {
       _default: [
         '不安…こんなんでいいの…？ 私のこと忘れてない…？'
-      ]
+      ],
+      seductive: [
+        '……っ……ちょっと、寂しいの……'
+      ],
     },
     earnest: {
       _default: [
@@ -15941,7 +16823,10 @@ const GLIMPSE_A_LINES = {
     shy: {
       _default: [
         '…もう…無理…ここにいちゃいけない気がする……'
-      ]
+      ],
+      polite: [
+        'わ、わたしのこと…どう思っていらっしゃるんでしょうか…'
+      ],
     },
     easygoing: {
       _default: [
@@ -15953,7 +16838,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'もう…信じられない…！ どうして…！',
         '裏切られた…全部…嘘だったの…？'
-      ]
+      ],
+      seductive: [
+        'わたしのこと……っ……もう、どうでもいいのかしら……'
+      ],
     },
     earnest: {
       _default: [
@@ -16009,7 +16897,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'ここにいていいんだ…って…最近やっと思えるようになりました…',
         'この団体に来れて…よかった…心からそう思います…'
-      ]
+      ],
+      polite: [
+        'いつも気にかけてくださって…あ、あの、本当に、感謝しています…'
+      ],
     },
     easygoing: {
       _default: [
@@ -16021,7 +16912,10 @@ const GLIMPSE_A_LINES = {
       _default: [
         'みんなのこと…大好き…！ この団体のために全力を尽くす…！',
         'ここで出会えた仲間は宝物…絶対に裏切らない…！'
-      ]
+      ],
+      seductive: [
+        'いつも見ていてくれて……っ……ふふ、嬉しいの……'
+      ],
     },
     earnest: {
       _default: [
@@ -16547,7 +17441,10 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
     _default: [
       'あ…なんか、普通に戻っちゃった…かな',
       'すごく調子よかったのに…でも、いい思い出です…'
-    ]
+    ],
+    polite: [
+      '良い流れが…止まってしまいました…で、でも、また頑張ります…'
+    ],
   },
   easygoing: {
     _default: [
@@ -16572,6 +17469,9 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
     _default: [
       '終わっちゃった…あの最高の時間…でも、泣いてる場合じゃない！',
       'あの感覚を…もう一度…必ず取り戻す…！'
+    ],
+    seductive: [
+      '勢いが止まったわ……っ……ふふ、また始めればいいのよ……'
     ],
     composed: ['…っ…終わったか。…でも、次がある'],
   },
@@ -16639,7 +17539,11 @@ const GLIMPSE_B_LINES = {
         _default: [
           'か、勝てた…！ よかった…',
           '嬉しい…勝てて本当に嬉しいです…'
-        ]
+        ],
+        polite: [
+          'か、勝てました…応援、ありがとうございます…',
+          '今日は…良い試合が、できたと思います…'
+        ],
       },
       easygoing: {
         _default: [
@@ -16651,7 +17555,10 @@ const GLIMPSE_B_LINES = {
         _default: [
           'やった…！ 勝てた…！ 嬉しい…！',
           '勝った…！ この気持ち、最高…！'
-        ]
+        ],
+        seductive: [
+          '勝ったわ……っ……ふふ、嬉しい……'
+        ],
       },
       earnest: {
         _default: [
@@ -16704,7 +17611,11 @@ const GLIMPSE_B_LINES = {
         _default: [
           'う…また負けちゃった…ごめんなさい…',
           '私…ダメですよね…ごめんなさい…'
-        ]
+        ],
+        polite: [
+          'ま、負けてしまいました…ご、ごめんなさい…',
+          '次こそは…勝ちたいです…'
+        ],
       },
       easygoing: {
         _default: [
@@ -16716,7 +17627,10 @@ const GLIMPSE_B_LINES = {
         _default: [
           'くっ…悔しい…！ 涙が止まらない…',
           '負けた…負けた…もう嫌だ…！'
-        ]
+        ],
+        seductive: [
+          '負けた……っ……悔しい……'
+        ],
       },
       earnest: {
         _default: [
@@ -16765,7 +17679,11 @@ const GLIMPSE_B_LINES = {
         _default: [
           '負けちゃったけど…精一杯やれました…',
           '悔しいけど…いい試合だったって…思いたいです'
-        ]
+        ],
+        polite: [
+          '負けてしまいましたが…悔いはありません…',
+          '全力は、出せたと思います…'
+        ],
       },
       easygoing: {
         _default: [
@@ -16777,7 +17695,10 @@ const GLIMPSE_B_LINES = {
         _default: [
           'くっ…認めたくないけど、あの人は強かった…！',
           '負けた…でも…この試合は…忘れない…！'
-        ]
+        ],
+        seductive: [
+          '負けたけど……っ……ふふ、出し切れたの……'
+        ],
       },
       earnest: {
         _default: [
@@ -16824,7 +17745,11 @@ const GLIMPSE_B_LINES = {
         _default: [
           'す、すごい試合ができました…！ 信じられない…！',
           '勝てた…しかもいい試合で…夢みたい…'
-        ]
+        ],
+        polite: [
+          'こ、こんな大きな勝利…信じられません…ありがとうございます…',
+          'こんな日が、来るなんて…夢みたいです…'
+        ],
       },
       easygoing: {
         _default: [
@@ -16836,7 +17761,10 @@ const GLIMPSE_B_LINES = {
         _default: [
           '最高…！ 最高の試合だった…！ 泣いちゃう…！',
           'この瞬間のために生きてるんだ…！！'
-        ]
+        ],
+        seductive: [
+          '最高の勝利……っ……ふふ、震えてるの……'
+        ],
       },
       earnest: {
         _default: [
@@ -16887,7 +17815,11 @@ const GLIMPSE_B_LINES = {
       _default: [
         'あ、えっと…もう少し頑張ります…',
         '今日の練習…うまくできてるかな…'
-      ]
+      ],
+      polite: [
+        'あ、あの…今日は、よろしくお願いいたします…',
+        '頑張ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -16899,7 +17831,10 @@ const GLIMPSE_B_LINES = {
       _default: [
         '絶対強くなる…！ もっともっと…！',
         '練習は裏切らない…頑張るぞ…！'
-      ]
+      ],
+      seductive: [
+        '今日は……っ……ふふ、よろしくね……'
+      ],
     },
     earnest: {
       _default: [
@@ -16947,7 +17882,10 @@ const GLIMPSE_B_LINES = {
       shy: {
         _default: [
           'あ、あの…ここにいていいんですね…嬉しいです…'
-        ]
+        ],
+        polite: [
+          '調子が…良い気がします…'
+        ],
       },
       easygoing: {
         _default: [
@@ -16957,7 +17895,10 @@ const GLIMPSE_B_LINES = {
       emotional: {
         _default: [
           '嬉しい…！ ここで頑張れるって幸せ…！'
-        ]
+        ],
+        seductive: [
+          'なんだか調子いいの……っ……ふふ……'
+        ],
       },
       earnest: {
         _default: [
@@ -17000,7 +17941,10 @@ const GLIMPSE_B_LINES = {
       shy: {
         _default: [
           '私…ちゃんとやれてますか…？ 不安です…'
-        ]
+        ],
+        polite: [
+          'う、うまくいきません…どうしたら…'
+        ],
       },
       easygoing: {
         _default: [
@@ -17010,7 +17954,10 @@ const GLIMPSE_B_LINES = {
       emotional: {
         _default: [
           'どうして…私のこと忘れてるの…？ 悲しい…'
-        ]
+        ],
+        seductive: [
+          'うまくいかない……っ……どうしてかしら……'
+        ],
       },
       earnest: {
         _default: [
@@ -17057,7 +18004,11 @@ const GLIMPSE_B_LINES = {
     shy: {
       _default: [
         '近くにいてくれると…安心する…'
-      ]
+      ],
+      polite: [
+        '練習…させていただきます…',
+        'もう少し…頑張ります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17067,7 +18018,10 @@ const GLIMPSE_B_LINES = {
     emotional: {
       _default: [
         '大切にしたい…この関係を…！'
-      ]
+      ],
+      seductive: [
+        '練習するわ……っ……ふふ……'
+      ],
     },
     earnest: {
       _default: [
@@ -17116,7 +18070,11 @@ const GLIMPSE_B_LINES = {
     shy: {
       _default: [
         '…すごいな…私も頑張らなきゃ…'
-      ]
+      ],
+      polite: [
+        'あ、あの…大丈夫です、心配しないでください…',
+        'ご心配を、おかけして…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17126,7 +18084,10 @@ const GLIMPSE_B_LINES = {
     emotional: {
       _default: [
         '絶対…！ 絶対に…！！'
-      ]
+      ],
+      seductive: [
+        '大丈夫よ……っ……ふふ、心配しないで……'
+      ],
     },
     earnest: {
       _default: [
@@ -17181,7 +18142,11 @@ const GLIMPSE_B_LINES = {
       _default: [
         '出られなかった…私じゃダメなんですか…',
         'あの…次は…出してもらえますか…？'
-      ]
+      ],
+      polite: [
+        'みんなと…一緒だと、心強いです…',
+        '仲間って、いいですね…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17193,7 +18158,10 @@ const GLIMPSE_B_LINES = {
       _default: [
         '出たかった…リングに立ちたかった…！',
         '試合したい…みんなと一緒に戦いたい…！'
-      ]
+      ],
+      seductive: [
+        'みんなと一緒だと……っ……ふふ、安心するの……'
+      ],
     },
     earnest: {
       _default: [
@@ -17243,7 +18211,11 @@ const GLIMPSE_B_LINES = {
     shy: {
       _default: [
         '体が…重くて…すみません…迷惑かけて…'
-      ]
+      ],
+      polite: [
+        'お、お客さんがいっぱいで…き、緊張します…',
+        'がんばります…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17253,7 +18225,10 @@ const GLIMPSE_B_LINES = {
     emotional: {
       _default: [
         '体が動かない…悔しい…早く元気になりたい…'
-      ]
+      ],
+      seductive: [
+        'お客さんがいっぱい……っ……ふふ、燃えるわね……'
+      ],
     },
     earnest: {
       _default: [
@@ -17305,7 +18280,11 @@ const GLIMPSE_B_LINES = {
       _default: [
         'わ、私…足引っ張ってますよね…ごめんなさい…',
         '勝てない…勝てない…どうしたらいいの…'
-      ]
+      ],
+      polite: [
+        'あ、あの…体調は、大丈夫です…',
+        '無理はしません…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17317,7 +18296,10 @@ const GLIMPSE_B_LINES = {
       _default: [
         'もう…どうしたらいいの…',
         '勝てない…私なんかもう…うっ…'
-      ]
+      ],
+      seductive: [
+        '体調は大丈夫よ……っ……ふふ、心配いらない……'
+      ],
     },
     earnest: {
       _default: [
@@ -17368,7 +18350,11 @@ const GLIMPSE_B_LINES = {
     shy: {
       _default: [
         '連勝…嘘みたい…でも自信になってます…！'
-      ]
+      ],
+      polite: [
+        '次の試合…が、頑張ります…',
+        'しっかり、準備します…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17378,7 +18364,10 @@ const GLIMPSE_B_LINES = {
     emotional: {
       _default: [
         '勝ち続けてる…！ この調子で…もっと…！！'
-      ]
+      ],
+      seductive: [
+        '次の試合……っ……ふふ、楽しみだわ……'
+      ],
     },
     earnest: {
       _default: [
@@ -17430,7 +18419,11 @@ const GLIMPSE_B_LINES = {
       _default: [
         'みんなに置いてかれちゃう…怖い…',
         '怪我…早く治って…お願い…'
-      ]
+      ],
+      polite: [
+        'あ、あの…ありがとうございます…',
+        '感謝、しています…'
+      ],
     },
     easygoing: {
       _default: [
@@ -17442,7 +18435,10 @@ const GLIMPSE_B_LINES = {
       _default: [
         'みんなが戦ってるのに…私だけ…悔しい…！',
         'リングに…早く…戻りたい…！！'
-      ]
+      ],
+      seductive: [
+        'ありがとう……っ……ふふ、嬉しい……'
+      ],
     },
     earnest: {
       _default: [

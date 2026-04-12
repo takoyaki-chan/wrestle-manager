@@ -131,6 +131,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 04-12 | Tier3B大穴埋め370行: シャイ/丁寧+感情的/蠱惑の欠落セリフ一括反映。37ソース対象(GLIMPSE_B40/JUNIOR28/CHOICE25/CARE22/CONTRACT20/EMOTION20/GLIMPSE_A20/LARGE20/SNAPSHOT18/RETIREMENT16/NOTIF13他)。304スロット新規挿入+26既存スキップ(EMOTION_TEXTS20+SCOUT6)。data.js +996行。auto-sim 100シーズンALL CLEAR |
 | 04-12 | Tier3A大穴埋め124行: RETIREMENT_CHAMPION_WORRY_LINES性格別→archetype別に設計変更(_ARCHETYPEに統合、management.jsルックアップ簡素化)。5ソース欠落補完: VOLUNTARY_STAY_LINES+15/RIVALRY_CONFRONTATION_LINES_90+18/PPV_SUMMIT_VICTORY_LINES+13/FAN_EXPECT_REACTIONS+32/SCOUT_SIGNING_LINES+39。auto-sim 100シーズンALL CLEAR |
 | 04-12 | バトル系セリフ穴埋め91行: DAMAGE_VOICE_LINESにcomposed追加(battle-engine.html)。CUTIN_LINES atk/def/climaxにshy性格×7archetype追加(2Dネスト、既存ルックアップ互換)。RIVALRY_MATCH_REACTION 69行追加(winnerLines/loserLines欠落組合せ+2本目バリエーション)。auto-sim 100シーズンALL CLEAR |
 | 04-12 | Session F nested セリフ拡張+TIER2穴埋め: worksheet.xlsx 394行→6種nested source反映(NOTIF36+CARE66+CHOICE61+LARGE60+GLIMPSE_B 84+SNAPSHOT 87)。TIER2: EMOTION_TEXTS全10感情にcomposed archetype追加(ui-render.js)。RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPEに_default/cool/delinquent追加+ルックアップ汎用化(management.js)。auto-sim 100シーズンALL CLEAR |
