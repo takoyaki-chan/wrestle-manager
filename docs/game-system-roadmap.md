@@ -15,6 +15,8 @@
 
 前回: **引き抜きtrust連動+予兆可視化（2026-04-09）。** specs/poach-trust-spec-v1.0.md に基づきA→B-2→B-1の順で実装。A-1: processTransferWindowにtrust補正追加（trust75+→×0.30/trust30-→×2.00、忠誠心と乗算）。A-2: resolvePoachの防衛率をtrust連動関数化（trust70+→95%/trust30-→35%）。B-2: 移籍ウィンドウ前週（11/23/35/47週）にリスク選手の予兆通知モーダル（trust帯別mild/moderate/seriousテキスト、最大2名、忠誠心持ちは対象外）。B-1: 週次ロッカールーム空気ログ（2週に1度、非興行週、morale/trust状態でgood/warning/dangerフレーバーをgameLog出力）。変更: data.js(TRANSFER_CONFIG拡張+PRE_WINDOW_TEXTS+LOCKER_AIR_TEXTS)、management.js(processTransferWindow/resolvePoach/processWeekPhase/processWeek)、app.js(_pendingPreWindowWarning回収)、ui-common.js(N_pre_window警告スタイル)。auto-sim 200シーズン ALL CLEAR。
 
+前回: **Session F nested セリフ拡張（2026-04-12）。** dialogue-expansion-worksheet.xlsx 全394行を6種のnested sourceに反映。NOTIF_DIALOGUES(36行)+CARE_REACTION_DIALOGUES(66行)+CHOICE_EVENT_DIALOGUES(61行)+LARGE_EVENT_DIALOGUES(60行)+GLIMPSE_B_LINES(84行, dialogue+scene)+SNAPSHOT_TEXTS(87行, voice+scene deduped)。polite/cool/seductive/ojousama/composed等のarchetype別セリフを各personality×event_idスロットに追加。GLIMPSE_Bに_scene並列構造を新設。auto-sim 100シーズン(10シード×10) ALL CLEAR。
+
 前回: **新キャラ29名追加+既存キャラデータ更新（2026-04-09）。** Notion DBから新キャラ29名（ID 100〜128）をALL_CHARS/CHAR_PROFILES/PORTRAITに追加。土岐山乃ノ佳, 沢登鮎, 大山たかみ, 財津琴美, 吉野萌子, 黒岩千晶, 赤沼紗稀, 松岡綾乃, 結城玲奈, 戸塚ゆかり, 若林美佐子, 相模あずみ, 朝比奈ひかり, 綿貫すず, 木村レイカ, 豊田いすず, リナ・モーガン, クラッシャー毒島, 割田久美, 岩小路志摩子, 蔵前静, 山本理香, 宮沢ひかる, 柳沼英子, 清川怜, 藤代絵麻, 西園百合香, 榊原菜摘, 巳沼紗霧。既存キャラ12名のデータ更新: スタイル変更(高津小春→Allround, 生駒エリカ→Brawler)、性格変更(大河内紗代子→bold, 芝彩音→earnest)、特性変更8名。登録キャラ総数: 98→127名。auto-sim 100シーズン ALL CLEAR。
 
 前回: **ドラフト画面リニューアル+PPVポスター修正（2026-04-07）。** ドラフトフローの「スカウト」呼称を「ドラフト」に統一。ドラフト開幕前画面を号外紙面型(A1)に刷新。ドラフト完了画面をトレーディングカード型(B1)に新設（超逸材ヒーロー表示/逸材大カード/標準カードのティア別サイズ差別化）。獲得時リアクション復活(getSigningLine+showEventPopup)。ドラフトまとめ記事にポートレート付きチップ表示。バグ修正: _draftInterestsオリジナル破壊によるAI団体不参加問題+バックグラウンド処理のロスター枠温存(idealRosterキャップ)。PPVポスター画面: カード背景分離(ppvmc-card-bg)+fighter絶対配置+z-index重なり演出復元+center暗影修正。auto-sim 2シード×30シーズン ALL CLEAR。
@@ -129,6 +131,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 04-12 | Session F nested セリフ拡張: worksheet.xlsx 394行→6種nested source反映(NOTIF36+CARE66+CHOICE61+LARGE60+GLIMPSE_B 84+SNAPSHOT 87)。archetype別dialogue+scene_text追加。GLIMPSE_Bに_scene並列構造新設。auto-sim 100シーズンALL CLEAR |
 | 04-06 | ドラフト交渉システム step1-5実装+修正16件: セリエンジン(draft-negotiation.js ~780行)/旧スカウト廃止/候補プール拡張/事前選択制/候補一覧UI(新聞風)/交渉画面UI(入札カード+ヒートゲージ+ナレーション)/BGM・SFX統合/EMPRESS安全網/観戦モード廃止/団体名動的化/エンブレム修正/★視認性改善/BGM_showScreenNoBgm導入/AI全同時離脱バグ修正/ロスター上限制御(理想+2超で不参加)。引き継ぎ: docs/draft-notes/ |
 | 04-06 | specs/再同期全完了: カテゴリA(7件)+カテゴリC(6件)、specs/全20ファイル |
 | 04-05 | dormantPool FIFOキュー化: drawFromFrontヘルパー+選抜4箇所FIFO化+フィルタバグ修正+エントリ形式統一 |
