@@ -58,6 +58,37 @@ function clearTransients(G) {
   return s;
 }
 
+function resolveYearEndPresentation(G) {
+  let s = G;
+
+  if (s.pendingRetirements && s.pendingRetirements.length > 0) {
+    const { pendingRetirements: _, ...clean } = s;
+    s = clean;
+  }
+
+  if (!s.pendingAwards) return s;
+
+  const pendingAwards = s.pendingAwards;
+  const { pendingAwards: _, ...clean } = s;
+  s = clean;
+
+  const rosterIds = new Set((s.roster || []).map(c => c.id));
+  const hallOfFame = (pendingAwards.hallOfFame || []).filter(h => !rosterIds.has(h.id));
+  const retiredOnly = (s.retiredFighters || [])
+    .filter(f => f?.id && !(s.retiredIds || []).includes(f.id))
+    .map(f => `${f.id}:${f.name}`);
+  if (retiredOnly.length > 0) {
+    retiredCleanupGaps.push(`S${s.season}: ${retiredOnly.join(', ')}`);
+  }
+  if (hallOfFame.length > 0) {
+    s = Engine.awards.applyHallOfFame(s, hallOfFame);
+  } else {
+    s = { ...s, retiredFighters: [] };
+  }
+
+  return { ...s, lastAwards: { ...pendingAwards, hallOfFame } };
+}
+
 function autoHandleScoutEvent(G, simRng) {
   if (G.weekPhase !== 'scoutEvent') return G;
   const candidates = G.scoutCandidates || [];
@@ -161,6 +192,7 @@ let lastDraftCands = '-';
 const TARGET = 25;
 let completed = 0;
 const MAX_ITER = TARGET * 60;
+const retiredCleanupGaps = [];
 
 function printStats(G, draftInfo) {
   const fa = (G.freeAgents || []).length;
@@ -234,6 +266,8 @@ while (completed < TARGET && iter < MAX_ITER) {
 
     G = Engine.validateGameState(G);
     G = { ...G, debugLog: [] };
+    G = resolveYearEndPresentation(G);
+    G = clearTransients(G);
 
     // Season transition
     if (!G.offSeason && G.week === 1 && G.season > lastSeason) {
@@ -262,6 +296,8 @@ track(G.freeAgents, 'freeAgents');
 track(G.dormantPool, 'dormantPool');
 track(G.retiredIds, 'retiredIds');
 track(G.retiredFighters, 'retiredFighters');
+track(G.hallOfFame, 'hallOfFame');
+Object.entries(G.allHallOfFame || {}).forEach(([k, list]) => track(list, `allHallOfFame_${k}`));
 track(G.scoutCandidates, 'scoutCandidates');
 track(G.rentals?.map(r => ({ id: r.fighterId })), 'rentals');
 Object.entries(G.aiOrgs || {}).forEach(([k, org]) => {
@@ -278,3 +314,9 @@ for (let i = 1; i <= 128; i++) {
 }
 if (missingIds.length > 0) console.log('MISSING IDs:', missingIds.join(', '));
 else console.log('All characters accounted for.');
+if ((G.retiredFighters || []).length > 0) {
+  console.log('Remaining retiredFighters:', (G.retiredFighters || []).map(f => `${f.id}:${f.name}`).join(', '));
+}
+if (retiredCleanupGaps.length > 0) {
+  console.log('Retired cleanup gaps:', retiredCleanupGaps.join(' | '));
+}

@@ -1,0 +1,1 @@
+Main: 6156 rows, Battle: 430 rows

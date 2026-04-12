@@ -146,7 +146,14 @@
       "Bash(git rm:*)",
       "Bash(ls -1 docs/archive/*.md docs/archive/*.html)",
       "Bash(/tmp/compare_constants.txt:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(node test/diag-draft.js 20 42)",
+      "Bash(grep -n \"^];$\" /c/Users/nkmrk/Downloads/wrestle-manager/src/data.js)",
+      "Bash(grep -rn \"padStart\\\\|padEnd\\\\|String\\\\.format\\\\|sprintf\\\\|%.0f\\\\|%02d\\\\|\\\\`.*\\\\${.*id\" /c/Users/nkmrk/Downloads/wrestle-manager/src --include=\"*.js\")",
+      "Bash(grep -oE \"[0-9]{1,3}:\")",
+      "Bash(git checkout:*)",
+      "Bash(py --version)",
+      "Bash(py scripts/apply-ojousama-rewrites.py)"
     ]
   }
 }
