@@ -2206,7 +2206,8 @@ function nextTurn(){
         log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
         const box=document.getElementById('narBox');
         if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra);}
-        setTimeout(()=>{S.awaitingFinishClick=true;S.pendingFinishResult={type:finType,isKickout:!isSuccess,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};showFinishClickBtn(finType,v);},1200);
+        S.awaitingFinishClick=true; // 3.0s endAnim の誤発動を防ぐため即時マーク
+        setTimeout(()=>{S.pendingFinishResult={type:finType,isKickout:!isSuccess,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};showFinishClickBtn(finType,v);},1200);
         return;
       }
       if(def.hp<=0){doFinish(atk,def,as,ds,mv,log,v);return;}
@@ -2214,7 +2215,8 @@ function nextTurn(){
       if(S.turn>_maxT){doTimeout();return;}
     },2300);
     // 3.0s: クリーンアップ + 次ターン
-    setTimeout(()=>{if(bn)bn.className='bigmove-name';endAnim();},3000);
+    // フィニッシュ待ち or 決着済みの場合は endAnim を呼ばない（2.3s と 3.0s の競合防止）
+    setTimeout(()=>{if(bn)bn.className='bigmove-name';if(!S.awaitingFinishClick&&!S.winner)endAnim();},3000);
     return;
   }
 
@@ -2371,6 +2373,7 @@ function applyClimaxReturnEffects(ds,def,v){
 }
 
 function doFinish(atk,def,as,ds,mv,log,v){
+  S.awaitingFinishClick=true; // フィニッシュシーケンス開始を即時マーク（3.0s endAnim 競合防止）
   // v4.1: Finish type determined by move category
   const ft=determineFinishType(mv,atk,def);
   v.w=atk.name;
