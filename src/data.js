@@ -3236,11 +3236,11 @@ const RIVALRY_MATCH_REACTION = {
   winnerLines: {
     normal: {
       _default: [
-        'まだ終わっていない。次も必ず勝つ',
+        'まだ終わってないんだろうけど。……でも次も私が勝つよ',
         'これで終わり……というわけには行かないよね'
       ],
       ojousama: [
-        'まだ終わっておりませんわ。次も勝つのだから'
+        'まだ終わって無いのでしょうね。あちらの目はまだ死んでいないようですし。'
       ],
       delinquent: [
         '次もぶっ倒す。覚えとけ'
@@ -3260,10 +3260,10 @@ const RIVALRY_MATCH_REACTION = {
     },
     bold: {
       _default: [
-        'この勝利は通過点。まだ先がある'
+        '今日は私の勝ち。でも再戦はありそうね……'
       ],
       ojousama: [
-        '通過点ですわ。真の決着はまだ先ですの'
+        '当然の勝利ね。まだ諦めないのかしら？'
       ],
       cool: [
         '……一つ、借りを返した'
@@ -3325,7 +3325,7 @@ const RIVALRY_MATCH_REACTION = {
     },
     earnest: {
       _default: [
-        '勝ちました。でもこの因縁はまだ続きます'
+        '無事勝ちました。でもこの因縁は、まだ続きそうね'
       ],
       polite: [
         '勝たせていただきました。でもまだ……終わりではありません'
@@ -3334,7 +3334,7 @@ const RIVALRY_MATCH_REACTION = {
         '勝ったわ。でもこの因縁…まだ続くの'
       ],
       ojousama: [
-        '勝たせていただきましたわ。この因縁はまだ続きますの'
+        '勝たせていただきましたわ。でもこの因縁はまだ続くのでしょうね'
       ],
       composed: [
         '…勝ちました。でもまだ続きます'
@@ -3430,7 +3430,7 @@ const RIVALRY_MATCH_REACTION = {
         '負けてしまいました。でも次は必ずやり返します！'
       ],
       ojousama: [
-        '負けてしまいましたわ。…でも次はやり返しますの'
+        '負けてしまいましたわ。…でも次はやり返しますので！'
       ],
       composed: [
         '負けたか。…ま、次があるさ'
@@ -3447,7 +3447,7 @@ const RIVALRY_MATCH_REACTION = {
         '負けたわ。でも…諦めないの。必ず返すから'
       ],
       ojousama: [
-        '負けましたわ。でも諦めませんの。必ず借りを返しますわ'
+        '負けました。……でも諦めません。……必ず借りを返しますわ'
       ],
       composed: [
         '…負けました。…でも、次は'
@@ -3741,8 +3741,8 @@ const PPV_SUMMIT_VICTORY_LINES = {
   },
   bold: {
     _default: [
-      'この瞬間をずっと待ってた……！ 最高だ……！',
-      'てっぺんだ……！ 誰にも渡さない……！'
+      'この瞬間をずっと待ってた……！ いい気分！',
+      'これが一番の景色か……！ 私のものね……！'
     ],
     ojousama: [
       'この座は渡せませんわね…… ずっと目指してきましたのよ……！'
@@ -9371,7 +9371,7 @@ const BREAKTHROUGH_LINES = {
       '……っ……変わったの、わたし……ふふ、自分でも信じられないくらい……'
     ],
     composed: [
-      '…っ…越えた。…ここからだ'
+      'なんだか壁を超えてみたいな。…へぇ、イイ感じじゃん♪'
     ]
   }
 };
@@ -10435,7 +10435,7 @@ const JUNIOR_TOURNAMENT_LINES = {
       composed: ['…一つずつ。…やることは変わらない'],
     },
     easygoing: {
-      _default: ['楽しんでいこう。でも、負けないけどね', 'よーし、いっちょやりますか'],
+      _default: ['楽しんでいこう♪もちろん勝つつもりでね', 'よーし、いっちょやりますか'],
       ojousama: ['さあ、楽しい時間の始まりですわ', '気楽に参りましょう。でも負けませんわよ'],
       delinquent: ['よーし、パパッとやっちまうか', '気楽にいこうぜ。でも手は抜かねえけど'],
       seductive: ['さてと、楽しませてもらうわね', 'リラックス、リラックス。……でも本気よ'],
@@ -13751,7 +13751,7 @@ const VOLUNTARY_STAY_LINES = {
     composed: ['…ま、居心地いいからね。ここにいるよ'],
   },
   bold: {
-    _default: ['他に行く理由がない。ここで頂点を目指す'],
+    _default: ['他の所に行く理由もないし……ここで頂点を目指すよ！'],
     delinquent: ['行くわけねーだろ。ここで一番になるまで帰らねぇよ'],
     polite: ['残ります。ここで頂点を目指させていただきますから'],
     ojousama: ['こちらに残りますわ。頂点は、わたくしのものなのだから。'],
@@ -15556,7 +15556,7 @@ const WAR_VICTORY_LINES = {
     composed: ['…団体の看板、守れたかな。…悪くないね', '…勝った。…うちの力を見せられたと思う'],
   },
   bold: {
-    _default: ['当然でしょ！ うちの団体を甘く見ないで！', 'この勝利は団体のみんなの勝利よ！', 'はっ、他所の団体なんてこんなもんよ！'],
+    _default: ['当然でしょ！ うちの団体を甘く見ないでよね！', 'この勝利は団体のみんなの勝利よ！', 'はっ、他所の団体なんてこんなもんよ！'],
     ojousama: ['当然の結果ね。……私を甘く見るべきじゃなかったわね', 'この程度で終わりではなくてよ', '私の団体に挑むなど……百年早いですわね'],
     delinquent: ['当然だろ！ うちの団体なめんじゃねえよ！', 'ざまあみろ！ これがうちの実力だ！', 'うちの団体に手ぇ出すからだ。ざまぁみろ'],
     seductive: ['当然よ。うちの団体を甘く見ないことね', 'まだ物足りないわね。もっと強い相手はいないの？', '当然の結果よ。うちを甘く見ないことね'],
@@ -15869,8 +15869,8 @@ const PPV_OPPONENT_LINES = {
   },
   bold: {
     _default: [
-      'ぶっ潰してやる！',
-      '私の実力、思い知らせてやる',
+      'ぶっ飛ばしてやる！',
+      '私の実力、思い知らせてあげる',
       '容赦しないわ。覚悟しなさい！'
     ],
     ojousama: [
@@ -17401,7 +17401,7 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
   },
   bold: {
     _default: [
-      '……身体が元に戻ってきたかな。悪くない、いい時間だった',
+      '……身体のキレも普通に戻ってきちゃったかな。でも、いい感覚は体が覚えてるよ！',
       'あの好調で掴んだ感覚は忘れない。次に繋げてみせる'
     ],
     delinquent: [
@@ -20814,7 +20814,7 @@ if (!RIVALRY_MATCH_REACTION.loserLines.shy.polite) RIVALRY_MATCH_REACTION.loserL
 RIVALRY_MATCH_REACTION.loserLines.shy.polite.push('…負けてしまいました……悔しい…です…');
 if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.bold.ojousama) RIVALRY_MATCH_REACTION.loserLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('この負けは忘れませんわ。必ず借りは返しますの');
+RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('この負けは忘れない。……必ず借りは返す');
 if (!RIVALRY_MATCH_REACTION.loserLines.emotional) RIVALRY_MATCH_REACTION.loserLines.emotional = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.emotional.seductive) RIVALRY_MATCH_REACTION.loserLines.emotional.seductive = [];
 RIVALRY_MATCH_REACTION.loserLines.emotional.seductive.push('負けた…っ…でも、この気持ち…絶対に忘れないわ…');
@@ -20826,7 +20826,7 @@ if (!RIVALRY_MATCH_REACTION.winnerLines.normal.cool) RIVALRY_MATCH_REACTION.winn
 RIVALRY_MATCH_REACTION.winnerLines.normal.cool.push('……今日は、わたしの勝ち');
 if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama) RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama.push('本日はわたくしの勝利ですわ。次の機会もお待ちしてますの');
+RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama.push('本日はわたくしの勝利ですわね。次の機会もお待ちしてますわね');
 if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.normal.seductive) RIVALRY_MATCH_REACTION.winnerLines.normal.seductive = [];
 RIVALRY_MATCH_REACTION.winnerLines.normal.seductive.push('今日はわたしの勝ちね。…次はどうなるかしら');
@@ -20838,13 +20838,13 @@ if (!RIVALRY_MATCH_REACTION.winnerLines.normal.composed) RIVALRY_MATCH_REACTION.
 RIVALRY_MATCH_REACTION.winnerLines.normal.composed.push('…今日はわたしの勝ちだね。また次もよろしく');
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold._default) RIVALRY_MATCH_REACTION.winnerLines.bold._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold._default.push('今のあなたじゃ、わたしは倒せない。鍛え直してきな');
+RIVALRY_MATCH_REACTION.winnerLines.bold._default.push('今のあなたじゃ、わたしは倒せない。鍛え直してきなさい。');
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold.polite) RIVALRY_MATCH_REACTION.winnerLines.bold.polite = [];
 RIVALRY_MATCH_REACTION.winnerLines.bold.polite.push('今のあなたでは、わたしは倒せません。鍛え直してきてください');
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama) RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama.push('今のあなたでは、わたくしを倒すなど百年早いですわ');
+RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama.push('わたくしを倒すなど百年早いですわね');
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.bold.seductive) RIVALRY_MATCH_REACTION.winnerLines.bold.seductive = [];
 RIVALRY_MATCH_REACTION.winnerLines.bold.seductive.push('今のあなたじゃ、わたしに届かないわ。…鍛え直してらっしゃい');
@@ -20880,7 +20880,7 @@ if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite) RIVALRY_MATCH_REACTION
 RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite.push('一勝ずつ、積み重ねていきます!次もよろしくお願いします!');
 if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama) RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama.push('一勝ずつ、積み重ねますわ!次もよろしくお願いしますの!');
+RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama.push('一勝ずつ、積み重ねますわ!次もよろしくお願いいたします!');
 if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive) RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive = [];
 RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive.push('一勝、積み重ねたわ。…次も楽しみにしてて');
@@ -20892,13 +20892,13 @@ if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed) RIVALRY_MATCH_REACTI
 RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed.push('…一勝、積み重ねたよ。次もよろしくね');
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest._default) RIVALRY_MATCH_REACTION.winnerLines.earnest._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest._default.push('勝利できました。でも油断はしません。次に備えます');
+RIVALRY_MATCH_REACTION.winnerLines.earnest._default.push('なんとか勝利できました。でも油断はせずに次に備えないと……');
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.polite) RIVALRY_MATCH_REACTION.winnerLines.earnest.polite = [];
 RIVALRY_MATCH_REACTION.winnerLines.earnest.polite.push('勝たせていただきました。次に向けて、また鍛錬を積みます');
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama) RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama.push('勝たせていただきましたわ。次に向け、鍛錬を続けますの');
+RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama.push('ふぅ…。勝たせていただきましたわ。次に向け、鍛錬を続けます');
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive) RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive = [];
 RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive.push('勝ったわ。でも油断はしない。…次に備えるの');
@@ -20940,7 +20940,7 @@ if (!RIVALRY_MATCH_REACTION.loserLines.bold.polite) RIVALRY_MATCH_REACTION.loser
 RIVALRY_MATCH_REACTION.loserLines.bold.polite.push('まだ本気ではありません。次は必ず、勝たせていただきます');
 if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.bold.ojousama) RIVALRY_MATCH_REACTION.loserLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('本気を出していないだけですわ。次は必ず勝ってみせますの');
+RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('私の真の実力なら、負けるはずはないのに！');
 if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.bold.seductive) RIVALRY_MATCH_REACTION.loserLines.bold.seductive = [];
 RIVALRY_MATCH_REACTION.loserLines.bold.seductive.push('まだ本気じゃないのよ。次は必ず倒すわ');
@@ -20976,7 +20976,7 @@ if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.polite) RIVALRY_MATCH_REACTION.
 RIVALRY_MATCH_REACTION.loserLines.easygoing.polite.push('悔しいです!でも次こそは、必ずやり返します!');
 if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama) RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama.push('悔しいですわ!でも次こそは、必ずやり返しますの!');
+RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama.push('悔しいですわ!でも次こそは、必ずやり返します!');
 if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive) RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive = [];
 RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive.push('悔しい…でも次こそは、必ずやり返すわ');
@@ -20994,7 +20994,7 @@ if (!RIVALRY_MATCH_REACTION.loserLines.earnest.polite) RIVALRY_MATCH_REACTION.lo
 RIVALRY_MATCH_REACTION.loserLines.earnest.polite.push('この敗北を糧にいたします。次は必ず、勝たせていただきます');
 if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama) RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama.push('この敗北を糧にいたしますわ。次は必ず勝ちますの');
+RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama.push('この敗北を糧にしなくては。次は必ず勝たせていただきます！');
 if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
 if (!RIVALRY_MATCH_REACTION.loserLines.earnest.seductive) RIVALRY_MATCH_REACTION.loserLines.earnest.seductive = [];
 RIVALRY_MATCH_REACTION.loserLines.earnest.seductive.push('この敗北を糧にするわ。次は必ず勝つの');
