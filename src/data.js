@@ -39,7 +39,7 @@ const ALL_CHARS = [
   {id:31,name:'平松かなみ',h:158,pw:61,sp:67,te:76,st:64,mn:72,style:'Submission',role:'Babyface',pot:{pw:139,sp:147,te:159,st:143,mn:154},traits:['努力家','適応力'],personality:'normal',archetype:'polite'},
   {id:32,name:'双里明日香',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い'],personality:'earnest',archetype:'normal'},
   {id:33,name:'梅ヶ丘みのり',h:163,pw:78,sp:71,te:76,st:80,mn:80,style:'Allround',role:'Babyface',pot:{pw:161,sp:152,te:159,st:164,mn:164},traits:['リーダー気質','負けず嫌い'],personality:'earnest',archetype:'normal'},
-  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['破天荒','早熟','努力家'],personality:'quiet',archetype:'normal'},
+  {id:34,name:'北畠吉乃',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['破天荒','早熟','努力家'],personality:'quiet',archetype:'composed'},
   {id:35,name:'上野原弥生',h:179,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:167,sp:135,te:142,st:148,mn:135},traits:['頑丈さ'],personality:'bold',archetype:'normal'},
   {id:36,name:'真鍋綾乃',h:181,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138},traits:['頑丈さ'],personality:'quiet',archetype:'cool'},
   {id:37,name:'白銀麗子',h:165,pw:74,sp:81,te:79,st:79,mn:74,style:'Allround',role:'Babyface',pot:{pw:156,sp:165,te:163,st:163,mn:156},traits:['不屈','華','頑丈さ'],personality:'bold',archetype:'polite'},
@@ -105,7 +105,7 @@ const ALL_CHARS = [
   {id:96,name:'松下真理亜',h:171,pw:72,sp:71,te:65,st:68,mn:58,style:'Allround',role:'Neutral',pot:{pw:154,sp:152,te:144,st:148,mn:135},traits:['ファンサービス','早熟'],personality:'normal',archetype:'composed'},
   {id:97,name:'岩崎みどり',h:158,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:151,sp:163,te:122,st:156,mn:141},traits:['努力家','負けず嫌い','頑丈さ'],personality:'earnest',archetype:'normal'},
   {id:98,name:'米山杏里',h:169,pw:69,sp:64,te:77,st:68,mn:71,style:'Allround',role:'Babyface',pot:{pw:150,sp:143,te:160,st:148,mn:152},traits:['ガラスの身体','リーダー気質','人望','引き出し上手'],personality:'normal',archetype:'polite'},
-  {id:99,name:'三浦早紀',h:166,pw:76,sp:73,te:74,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:159,sp:155,te:156,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟'],personality:'bold',archetype:'composed'},
+  {id:99,name:'三浦早紀',h:166,pw:76,sp:73,te:74,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:159,sp:155,te:156,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟'],personality:'normal',archetype:'normal'},
   // ── 新規キャラクター（v1.5 GameID 100〜128）──
   {id:100,name:'土岐山乃ノ佳',h:152,pw:48,sp:48,te:60,st:49,mn:43,style:'Aerial',role:'Babyface',pot:{pw:122,sp:122,te:138,st:124,mn:116},traits:['努力家'],personality:'normal',archetype:'polite'},
   {id:101,name:'沢登鮎',h:168,pw:68,sp:51,te:64,st:69,mn:51,style:'Grappler',role:'Babyface',pot:{pw:148,sp:126,te:143,st:150,mn:126},traits:['引き出し上手'],personality:'easygoing',archetype:'polite'},
