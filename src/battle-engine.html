@@ -901,6 +901,11 @@ function dismissCutin() {
   if (!ov) return;
   ov.classList.remove('show');
   setTimeout(() => { ov.innerHTML = ''; }, 350);
+  // フェーズ導入カットインが閉じられたら、保留していたターンを再開
+  if (S.pendingPhaseIntro) {
+    S.pendingPhaseIntro = false;
+    setTimeout(() => nextTurn(), 400);
+  }
 }
 
 // カットイン表示関数（upper画像使用、click-to-close）
@@ -984,24 +989,25 @@ function showDamageVoice(side, charData) {
   overlay.classList.add('show');
 }
 
-// フェーズ切り替え時のカットイン判定
-function tryRivalryCutin(phaseName) {
+// フェーズ導入カットイン（ターン処理前に独立して発火）
+// 戻り値: true = カットインを表示した（呼び出し元はターンを保留すべき）
+//        false = 表示しなかった（呼び出し元はターンを続行して良い）
+function showPhaseIntroCutin(phaseName) {
   const mi = matchData && matchData.matchInfo;
-  if (!mi || !mi.rivalryTier || mi.rivalryTier <= 0) return;
-  // 既に表示済みのフェーズはスキップ
-  const key = phaseName.toLowerCase();
-  if (S.cutinShown && S.cutinShown[key]) return;
-  if (S.cutinShown) S.cutinShown[key] = true;
+  if (!mi || !mi.rivalryTier || mi.rivalryTier <= 0) return false;
   // 発動率: tier1=30%, tier2=50%, tier3=80%
   const rates = [0, 0.30, 0.50, 0.80];
   const rate = rates[Math.min(mi.rivalryTier, 3)] || 0;
-  if (RNG.float() > rate) return;
-  // モメンタム優位側がatk、劣位側がdef
+  if (RNG.float() > rate) return false;
+  // モメンタム優位側の選手が喋る
   const isLeftLeading = S.mom > 0;
   const side = isLeftLeading ? 'left' : 'right';
   const charData = isLeftLeading ? S.L : S.R;
   const lineType = phaseName === 'Climax' ? 'climax' : 'atk';
   showCutin(side, charData, lineType);
+  // フラグを立てる → dismissCutin がこれを見てターンを再開する
+  S.pendingPhaseIntro = true;
+  return true;
 }
 
 // ═══ CONSTANTS ═══
@@ -1908,7 +1914,42 @@ function renderMatch(){
 function nextTurn(){
   clearTimeout(autoTimer); // 自動送りタイマーをキャンセル
   closeBattlePopup(); // 残存ポップアップを閉じる
-  if(S.winner||S.anim)return;S.anim=true;
+  if(S.winner||S.anim||S.pendingPhaseIntro)return;
+
+  // ━━━ フェーズ導入を独立イベントとして処理 ━━━
+  // ターン処理を開始する前にフェーズ変化を検出し、該当する場合は
+  // カットインを出してターン処理を保留する。ユーザーがクリックで
+  // カットインを閉じると dismissCutin() が nextTurn() を再呼び出しする。
+  {
+    const _ph = phase(S.turn);
+    const _prevPh = S.turn > 1 ? phase(S.turn - 1).name : _ph.name;
+    const _phKey = _ph.name.toLowerCase();
+    if (_ph.name !== _prevPh && S.cutinShown && !S.cutinShown[_phKey]) {
+      S.cutinShown[_phKey] = true; // 同一フェーズで二重発火を防ぐ
+      // フェーズ表示ピルをフラッシュ
+      const pill = document.getElementById('pill');
+      if (pill) {
+        pill.textContent = _ph.name;
+        pill.classList.add('flash');
+        setTimeout(() => pill.classList.remove('flash'), 600);
+      }
+      // ビッグマッチ Climax → 親フレームに BGM 切替通知
+      if (_isBigMatch && _ph.name === 'Climax' && window.parent !== window) {
+        window.parent.postMessage({type:'BIGMATCH_CLIMAX'}, '*');
+      }
+      // フェーズ導入カットイン（ライバリー戦のみ・発動率判定あり）
+      if (showPhaseIntroCutin(_ph.name)) {
+        // カットイン表示中はターン処理を保留。Nボタン無効化のみ行い return。
+        const btn0 = document.getElementById('nBtn');
+        if (btn0) { btn0.disabled = true; btn0.style.animation = 'none'; }
+        return;
+      }
+      // カットインなし（非ライバリー or 発動率外れ）→ フォールスルーして続行
+    }
+  }
+  // ━━━ フェーズ導入処理ここまで ━━━
+
+  S.anim=true;
   const btn=document.getElementById('nBtn');if(btn){btn.disabled=true;btn.style.animation='none';}
   const L=S.L,R=S.R,ph=phase(S.turn),prevPh=S.turn>1?phase(S.turn-1).name:ph.name;
 
@@ -1949,17 +1990,8 @@ function nextTurn(){
     if(isCounter)S.consecutiveHits[ds]++;
   }
 
-  // Phase change
-  if(ph.name!==prevPh){
-    const pill=document.getElementById('pill');
-    if(pill){pill.textContent=ph.name;pill.classList.add('flash');setTimeout(()=>pill.classList.remove('flash'),600)}
-    // ライバリーカットイン
-    tryRivalryCutin(ph.name);
-    // ビッグマッチClimaxフェーズ → 親にBGM切替通知
-    if(_isBigMatch && ph.name==='Climax' && window.parent!==window){
-      window.parent.postMessage({type:'BIGMATCH_CLIMAX'},'*');
-    }
-  }
+  // Phase change 検出はnextTurn冒頭のフェーズ導入ブロックで処理済み
+  // （ピルフラッシュ・BGM切替・カットイン全て上で実行される）
 
   // === MISS ===
   if(!isHit){
