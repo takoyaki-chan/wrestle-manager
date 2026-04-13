@@ -1400,8 +1400,25 @@ const Storage = {
       if (G.poolIds && !G.dormantPool) G = { ...G, dormantPool: G.poolIds };
       if (!G.dormantPool) G = { ...G, dormantPool: Engine.rival.getDormantIds() };
       // FIFO: dormantPool エントリを {id, age} 形式に統一（レガシー文字列ID対応）
-      if (G.dormantPool && G.dormantPool.length > 0 && typeof G.dormantPool[0] === 'string') {
-        G = { ...G, dormantPool: G.dormantPool.map(e => typeof e === 'string' ? { id: e, age: 17 } : e) };
+      if (G.dormantPool && G.dormantPool.some(e => {
+        if (typeof e === 'string' || typeof e === 'number') return true;
+        if (!e || e.id === undefined || e.id === null) return false;
+        return !Number.isFinite(e.id) || !Number.isFinite(e.age);
+      })) {
+        G = {
+          ...G,
+          dormantPool: G.dormantPool.map(e => {
+            if (typeof e === 'string' || typeof e === 'number') {
+              const id = Number(e);
+              return Number.isFinite(id) ? { id, age: 17 } : null;
+            }
+            if (!e || e.id === undefined || e.id === null) return e;
+            const id = Number(e.id);
+            if (!Number.isFinite(id)) return null;
+            const age = Number.isFinite(Number(e.age)) ? Math.max(16, Math.min(21, Math.round(Number(e.age)))) : 17;
+            return { ...e, id, age };
+          }).filter(Boolean)
+        };
       }
       if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
 
@@ -1787,6 +1804,7 @@ const Storage = {
       // Rental system migration: G.rental (single object) → G.rentals (array)
       if (!G._migrated_rental_v2) {
         const rentals = Array.isArray(G.rentals) ? [...G.rentals] : [];
+        let roster = [...(G.roster || [])];
         if (G.rental) {
           // Convert old single rental to new contract format
           const old = G.rental;
@@ -1799,14 +1817,13 @@ const Storage = {
               fee: 0           // already paid in old system
             });
           }
-          // Update rental fighter's new fields
-          const rf = (G.roster || []).find(c => c.id === old.fighterId);
-          if (rf) {
-            rf.rentalSource = 'rival';
-            rf.rentalSeasonsLeft = 1;
-          }
+          roster = roster.map(c => (
+            c.id === old.fighterId
+              ? { ...c, isRental: true, rentalSource: 'rival', rentalSeasonsLeft: 1 }
+              : c
+          ));
         }
-        G = { ...G, rentals, rental: undefined, _migrated_rental_v2: true };
+        G = { ...G, rentals, roster, rental: undefined, _migrated_rental_v2: true };
       }
 
       // Rental v3: seasonsLeft → weeksLeft (1期=12週の週次減算に移行)
@@ -1826,6 +1843,13 @@ const Storage = {
           return { ...rest, rentalWeeksLeft: ct ? ct.weeksLeft : (rentalSeasonsLeft || 1) * 12 };
         });
         G = { ...G, rentals, roster, _migrated_rental_v3: true };
+      } else if ((G.roster || []).some(c => c?.isRental && c.rentalSeasonsLeft !== undefined && c.rentalWeeksLeft === undefined)) {
+        const roster = (G.roster || []).map(c => {
+          if (!c?.isRental || c.rentalSeasonsLeft === undefined || c.rentalWeeksLeft !== undefined) return c;
+          const { rentalSeasonsLeft, ...rest } = c;
+          return { ...rest, rentalWeeksLeft: (rentalSeasonsLeft || 1) * 12 };
+        });
+        G = { ...G, roster };
       }
 
       // ranking-roster-redesign v1.0 Phase 1: battlePoints + summitBonus廃止
@@ -2914,6 +2938,16 @@ const App = {
     };
   },
 
+  _removeFighterFromShowCard(showCard, fighterId) {
+    return (showCard || []).map(match => {
+      if (!match) return match;
+      const left = match.left === fighterId ? 0 : match.left;
+      const right = match.right === fighterId ? 0 : match.right;
+      const isTitle = left > 0 && right > 0 ? !!match.isTitle : false;
+      return { ...match, left, right, isTitle };
+    });
+  },
+
   _releaseFighterForOverflow(charId) {
     const idx = G.roster.findIndex(c => c.id === charId);
     if (idx < 0) return null;
@@ -2933,15 +2967,16 @@ const App = {
       }
     }
     const newRoster = G.roster.filter((_, i) => i !== idx);
+    const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
-    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
     const log = [...G.gameLog, `📤 ${target.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
     if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
-      G = { ...G, roster: newRoster, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+      G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
-      G = { ...G, roster: newRoster, coachAssign: newCoachAssign, titles, gameLog: log };
+      G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
       G = Engine.util.redirectToDormantPool(G, target);
     }
     return target;
@@ -3415,7 +3450,16 @@ const App = {
     };
     const newRetired = [...G.retiredFighters];
     newRetired.splice(retiredIdx, 1);
-    G = { ...G, roster: [...G.roster, updatedFighter], retiredFighters: newRetired };
+    const newRetiredIds = (G.retiredIds || []).filter(id => id !== fighterId);
+    const newRetiredSeasons = { ...(G.retiredSeasons || {}) };
+    delete newRetiredSeasons[fighterId];
+    G = {
+      ...G,
+      roster: [...G.roster, updatedFighter],
+      retiredFighters: newRetired,
+      retiredIds: newRetiredIds,
+      retiredSeasons: newRetiredSeasons,
+    };
     // O-13: 引退撤回 — 本人→団体全体 bond +5〜+8, 同僚全員→本人 bond +2〜+3
     if (G.relationships) {
       const retainRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE46, G.season, fighterId));
@@ -3459,15 +3503,16 @@ const App = {
       }
     }
     const newRoster = G.roster.filter((_, i) => i !== idx);
+    const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
-    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
+    const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
     if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(c, 'fa', G.season, G.week);
-      G = { ...G, roster: newRoster, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+      G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
-      G = { ...G, roster: newRoster, coachAssign: newCoachAssign, titles, gameLog: log };
+      G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
       G = Engine.util.redirectToDormantPool(G, c);
     }
     closeFighterPopup();

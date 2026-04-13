@@ -41,4 +41,23 @@ assert(repaired.after.missing.length === 0, `expected no missing IDs, got ${repa
 assert(repaired.after.duplicates.length === 0, `expected no duplicate IDs, got ${repaired.after.duplicates.length}`);
 assert(repaired.after.missingRetiredSeasons.length === 0, `expected no missing retiredSeasons, got ${repaired.after.missingRetiredSeasons.length}`);
 
+(function testRetiredFightersAreCarriedIntoRetiredIds() {
+  const probe = Engine.saveDoctor.repairOnLoad({
+    season: 4,
+    week: 12,
+    rngSeed: 7,
+    roster: [],
+    freeAgents: [],
+    scoutCandidates: [],
+    dormantPool: [],
+    retiredIds: [],
+    retiredSeasons: {},
+    retiredFighters: [{ id: 1, name: '阿武隈塔子' }],
+    aiOrgs: {},
+  });
+
+  assert(probe.state.retiredFighters.length === 1, 'expected retiredFighters to be preserved during repair');
+  assert(!probe.after.missing.includes(1), 'expected retired fighter id to remain tracked after repair');
+})();
+
 console.log('PASS: save-doctor load repair restored the broken fixture');

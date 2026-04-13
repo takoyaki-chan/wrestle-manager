@@ -155,6 +155,7 @@ const Engine = {
         roster: [...(rawState.roster || [])],
         freeAgents: [...(rawState.freeAgents || [])],
         scoutCandidates: [...(rawState.scoutCandidates || [])],
+        retiredFighters: [...(rawState.retiredFighters || [])],
         dormantPool: (rawState.dormantPool || []).map(Engine.saveDoctor._normDormant).filter(Boolean),
         retiredIds: [...new Set((rawState.retiredIds || []).map(Number).filter(Number.isFinite))],
         retiredSeasons: { ...(rawState.retiredSeasons || {}) },
