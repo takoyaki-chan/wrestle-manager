@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wrestle Manager さらに先へ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@400;700;900&family=Kosugi+Maru&display=swap');
+
+  :root {
+    --bg-cream: #FFF8E7;
+    --bg-page: #FFFDF5;
+    --ink: #2C2416;
+    --ink-sub: #5C4D3C;
+    --red: #D63031;
+    --red-bg: #FFF0F0;
+    --blue: #2E6BA4;
+    --blue-bg: #EBF3FA;
+    --gold: #D4A020;
+    --gold-bg: #FFF8E0;
+    --green: #27AE60;
+    --green-bg: #EAFAF1;
+    --purple: #8E44AD;
+    --purple-bg: #F5EEF8;
+    --border: #D4C5A9;
+    --border-dark: #8B7D6B;
+    --section-num: #C0392B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-cream);
+    color: var(--ink);
+    font-family: 'Zen Maru Gothic', 'Kosugi Maru', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === COVER === */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    text-align: center;
+    padding: 60px 24px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px);
+    pointer-events: none;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: #1a1a2e;
+    font-family: 'DotGothic16', monospace;
+    font-size: 12px;
+    padding: 4px 16px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-weight: 900;
+    font-size: clamp(28px, 6vw, 48px);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 20px rgba(212,160,32,0.3);
+  }
+  .cover h1 em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .cover-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 30px;
+  }
+  .cover-meta {
+    font-family: 'DotGothic16', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+  }
+  .cover-ring {
+    font-size: 64px;
+    margin: 16px 0;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  /* === PAGE WRAPPER === */
+  .page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* === TABLE OF CONTENTS === */
+  .toc {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 32px 0;
+    position: relative;
+  }
+  .toc::before {
+    content: 'このガイドの内容';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--bg-cream);
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink-sub);
+    letter-spacing: 2px;
+  }
+  .toc ul {
+    list-style: none;
+    counter-reset: toc-num;
+  }
+  .toc li {
+    counter-increment: toc-num;
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 14px;
+  }
+  .toc li:last-child { border-bottom: none; }
+  .toc li::before {
+    content: counter(toc-num, decimal-leading-zero);
+    font-family: 'DotGothic16', monospace;
+    font-weight: 700;
+    color: var(--section-num);
+    margin-right: 10px;
+    font-size: 13px;
+  }
+  .toc a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .toc a:hover {
+    color: var(--blue);
+    text-decoration: underline;
+  }
+  .toc .toc-appendix::before {
+    content: '付';
+    font-family: 'Zen Maru Gothic', sans-serif;
+  }
+  .toc .toc-faq::before {
+    content: 'FAQ';
+    font-family: 'DotGothic16', monospace;
+    font-size: 10px;
+  }
+
+  /* === INTRO BLOCK === */
+  .intro {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin: 32px 0;
+    position: relative;
+  }
+  .intro::before {
+    content: 'はじめに';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--bg-cream);
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink-sub);
+    letter-spacing: 2px;
+  }
+  .intro p { margin-bottom: 12px; }
+  .intro p:last-child { margin-bottom: 0; }
+
+  /* === SECTION === */
+  .section {
+    margin: 40px 0;
+    padding-bottom: 32px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .section:last-of-type { border-bottom: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .section-num {
+    font-family: 'DotGothic16', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--section-num);
+    min-width: 48px;
+    text-align: center;
+    line-height: 1;
+  }
+  .section-title {
+    font-weight: 900;
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .section-title small {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--ink-sub);
+    margin-top: 2px;
+  }
+
+  .section p {
+    margin-bottom: 14px;
+  }
+
+  /* === SUB-SECTION === */
+  .sub-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* === CALLOUT BOXES === */
+  .callout {
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.7;
+    position: relative;
+  }
+  .callout-label {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .callout.tip {
+    background: var(--gold-bg);
+    border-left: 4px solid var(--gold);
+  }
+  .callout.tip .callout-label { color: #9A7611; }
+
+  .callout.warn {
+    background: var(--red-bg);
+    border-left: 4px solid var(--red);
+  }
+  .callout.warn .callout-label { color: var(--red); }
+
+  .callout.info {
+    background: var(--blue-bg);
+    border-left: 4px solid var(--blue);
+  }
+  .callout.info .callout-label { color: var(--blue); }
+
+  .callout.trivia {
+    background: var(--green-bg);
+    border-left: 4px solid var(--green);
+  }
+  .callout.trivia .callout-label { color: #1E8449; }
+
+  .callout.purple {
+    background: var(--purple-bg);
+    border-left: 4px solid var(--purple);
+  }
+  .callout.purple .callout-label { color: #6C3483; }
+
+  /* === SPEECH BUBBLE === */
+  .speech {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    position: relative;
+    font-size: 14px;
+  }
+  .speech::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 30px;
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--border);
+  }
+  .speech-who {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-sub);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .speech-who .emoji { margin-right: 4px; }
+  .speech-face {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .speech-inner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .speech-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* === STAT CARDS === */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+  .stat-card {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 16px;
+  }
+  .stat-card.pw { border-top: 4px solid #E74C3C; }
+  .stat-card.sp { border-top: 4px solid #3498DB; }
+  .stat-card.te { border-top: 4px solid #27AE60; }
+  .stat-card.st { border-top: 4px solid #F39C12; }
+  .stat-card.mn { border-top: 4px solid #9B59B6; }
+
+  .stat-name { font-family: 'DotGothic16', monospace; font-size: 22px; font-weight: 700; letter-spacing: 2px; line-height: 1; margin-bottom: 2px; }
+  .stat-card.pw .stat-name { color: #C0392B; }
+  .stat-card.sp .stat-name { color: #2980B9; }
+  .stat-card.te .stat-name { color: #1E8449; }
+  .stat-card.st .stat-name { color: #D35400; }
+  .stat-card.mn .stat-name { color: #7D3C98; }
+
+  .stat-jp { font-size: 12px; color: var(--ink-sub); margin-bottom: 10px; letter-spacing: 1px; }
+  .stat-desc { font-size: 14px; line-height: 1.75; color: var(--ink); }
+  .stat-sub { font-size: 13px; color: var(--ink-sub); margin-top: 6px; line-height: 1.6; }
+
+  /* === TWO COL === */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .param-block { background: var(--bg-page); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .param-block-name { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+  .param-block-name span { font-family: 'DotGothic16', monospace; font-size: 11px; color: var(--ink-sub); font-weight: 400; margin-left: 6px; }
+  .param-block-body { font-size: 13px; color: var(--ink-sub); line-height: 1.75; }
+
+  /* === WEAR TIMELINE === */
+  .timeline { display: flex; gap: 0; margin: 16px 0; border-radius: 6px; overflow: hidden; font-size: 12px; }
+  .timeline-seg { flex: 1; padding: 10px 8px; text-align: center; line-height: 1.5; }
+  .timeline-seg .tl-label { font-weight: 700; font-size: 11px; }
+  .timeline-seg .tl-body { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .tl-green  { background: #D5F5E3; color: #1A5E35; }
+  .tl-yellow { background: #FEF9E7; color: #7D6608; }
+  .tl-orange { background: #FDEBD0; color: #784212; }
+  .tl-red    { background: #FADBD8; color: #922B21; }
+
+  /* === TRUST FLOW === */
+  .trust-flow { display: flex; gap: 0; margin: 16px 0; border-radius: 6px; overflow: hidden; font-size: 13px; }
+  .trust-seg { flex: 1; padding: 12px 10px; text-align: center; line-height: 1.5; }
+  .trust-seg .ts-range { font-family: 'DotGothic16', monospace; font-size: 16px; font-weight: 700; }
+  .trust-seg .ts-label { font-size: 11px; margin-top: 2px; }
+  .ts-hi    { background: #D5F5E3; color: #1A5E35; }
+  .ts-mid   { background: #FFF8E7; color: #7D6608; }
+  .ts-lo    { background: #FDEBD0; color: #784212; }
+  .ts-crit  { background: #FADBD8; color: #922B21; }
+
+  /* === MINI TABLE === */
+  .mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .mini-table th {
+    background: #3D3426;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+  .mini-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .mini-table tr:nth-child(even) td {
+    background: rgba(0,0,0,0.02);
+  }
+  .mini-table .em { font-weight: 700; color: var(--blue); }
+
+  /* === MISTAKE BLOCK === */
+  .mistake {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .mistake-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .mistake-title {
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .mistake-body {
+    color: var(--ink-sub);
+    font-size: 13px;
+  }
+
+  /* === CHECKLIST === */
+  .checklist {
+    list-style: none;
+    margin: 14px 0;
+  }
+  .checklist li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    font-size: 14px;
+  }
+  .checklist li::before {
+    content: '☐';
+    position: absolute;
+    left: 4px;
+    font-size: 16px;
+    color: var(--gold);
+  }
+
+  /* === FLOW LIST (numbered steps) === */
+  .flow-list {
+    list-style: none;
+    counter-reset: flow;
+    margin: 14px 0;
+  }
+  .flow-list li {
+    counter-increment: flow;
+    padding: 8px 0 8px 40px;
+    position: relative;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .flow-list li::before {
+    content: counter(flow);
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    color: #fff;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DotGothic16', monospace;
+  }
+
+  /* === SCREENSHOT PLACEHOLDER === */
+  .screenshot {
+    background: #E8E0D0;
+    border: 2px dashed var(--border-dark);
+    border-radius: 6px;
+    padding: 32px 16px;
+    text-align: center;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--ink-sub);
+    font-style: italic;
+  }
+  .screenshot .icon { font-size: 28px; margin-bottom: 6px; display: block; }
+  .screenshot img {
+    width: 100%;
+    border-radius: 4px;
+    display: block;
+  }
+  .screenshot.has-img {
+    padding: 0;
+    border: 2px solid var(--border-dark);
+    background: transparent;
+    font-style: normal;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 32px 20px;
+    font-size: 12px;
+    color: var(--ink-sub);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 28px 0;
+    color: var(--border);
+    font-size: 20px;
+    letter-spacing: 8px;
+  }
+
+  /* === WIP BANNER === */
+  .wip-banner {
+    background: var(--purple-bg);
+    border: 1px dashed var(--purple);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #6C3483;
+    text-align: center;
+  }
+
+  /* === TEXT HELPERS === */
+  b, strong { color: var(--ink); }
+  .hl { color: var(--red); font-weight: 700; }
+  .gold { color: #9A7611; font-weight: 700; }
+
+  /* responsive */
+  @media (max-width: 480px) {
+    .page { padding: 0 14px; }
+    .section-num { font-size: 22px; min-width: 36px; }
+    .section-title { font-size: 17px; }
+    .intro { padding: 22px 18px; }
+    .toc { padding: 20px 18px; }
+    .stat-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .trust-flow { flex-direction: column; }
+    .timeline { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="cover-badge">ADVANCED GUIDE</div>
+  <div class="cover-ring">🔍</div>
+  <h1>Wrestle Manager<br><em>さらに先へ</em></h1>
+  <div class="cover-sub">「はじめの一歩」の続き — もう少しだけ、先の話をしましょう</div>
+  <div class="cover-meta">PRODUCED BY TAKOYAKI-CHAN</div>
+</div>
+
+<div class="page">
+
+<!-- ===== INTRO ===== -->
+<div class="intro">
+  <p>4週間を乗り越えましたね、社長。おつかれさまでした！</p>
+  <p>ドラフトで仲間を選び、練習メニューを組み、興行を開いて、お金のやりくりに悩んで……。なんとなく「団体を回すってこういうことか」という感覚がつかめてきた頃だと思います。</p>
+  <p>ここからは、<strong>「はじめの一歩」では触れきれなかったこと</strong>をじっくり解説していきます。選手の心の機微、人間関係の裏側、お金の本当の回り方——知っておくと、今まで見えなかったものが見えてくるはずです。</p>
+  <p>選手のセリフや表情、道場の雰囲気テキスト、コーチの観察レポート——ゲーム画面のあちこちに、ヒントは散りばめられています。このガイドが、<strong>そのヒントを読み取る手がかり</strong>になれば幸いです。</p>
+</div>
+
+<!-- ===== TABLE OF CONTENTS ===== -->
+<div class="toc">
+  <ul>
+    <li><a href="#ch1">選手を知ろう — 能力と個性</a></li>
+    <li><a href="#ch2">身体のこと — 休養と怪我</a></li>
+    <li><a href="#ch3">良い試合の秘密 — MQを理解する</a></li>
+    <li><a href="#ch4">選手の心 — 見えないけど大切な「信頼度」</a></li>
+    <li><a href="#ch5">仲間とライバル — 選手同士の物語</a></li>
+    <li><a href="#ch6">お金の話 — 赤字と黒字のあいだ</a></li>
+    <li><a href="#ch7">コーチのこと — 成長を支える存在</a></li>
+    <li><a href="#ch8">まだまだあるぞ — その他のシステム</a></li>
+    <li class="toc-faq"><a href="#faq">困ったときは — よくある質問</a></li>
+  </ul>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 1 — 選手を知ろう                                      -->
+<!-- ============================================================ -->
+<div class="section" id="ch1">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title">選手を知ろう — 能力と個性<small>FIGHTER STATUS</small></div>
+  </div>
+
+  <p>「はじめの一歩」では、ドラフトで選手を選ぶときにOVR（総合力）を見ましたね。でも、選手の力はそれだけじゃありません。ここではもう少し詳しく、選手の能力の読み方を見ていきましょう。</p>
+
+  <h3 class="sub-title">5つの基本ステータス</h3>
+  <p>すべての選手は<strong>PW（パワー）・SP（スピード）・TE（テクニック）・ST（スタミナ）・MN（精神力）</strong>の5つの能力を持っています。OVRはこの5つから計算される「ざっくりした強さ」です。</p>
+  <div class="wip-banner">各ステータスの詳しい解説は今後追加予定です</div>
+  <!-- PLANNED: stat-grid (PW/SP/TE/ST/MN) — パラメータ解説の内容を発展させて移植 -->
+
+  <h3 class="sub-title">精度（AC）— 技の正確さ</h3>
+  <p>精度が高い選手は安定した試合運びができます。低い選手は荒削りですが、当たったときの破壊力で試合をひっくり返すこともあります。</p>
+
+  <h3 class="sub-title">OVRと伸びしろ — 今の実力と、未来の上限</h3>
+  <p>選手にはそれぞれ「ここまで伸びる」という才能の限界があります。伸びしろが大きい選手は時間をかければ大化けしますが、今すぐ戦力になるとは限りません。逆に、伸びしろが小さくても今の実力が高い選手は即戦力です。<strong>未来に投資するか、今を取るか</strong>——社長としての判断が問われます。</p>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 覚えておいて</div>
+    選手の潜在能力（伸びしろ）は<strong>一人ひとり異なります</strong>。同じドラフトで同じくらいのOVRの選手を獲っても、最終的に到達する実力は違います。大化けする子もいれば、思ったほど伸びない子もいる。それもまた、このゲームの面白さです。
+  </div>
+
+  <h3 class="sub-title">スタイル — 6つの戦い方</h3>
+  <p>パワーファイター、スピードファイター、テクニシャン、サブミッション、ブロウラー、オールラウンダー。スタイルは試合の展開だけでなく、<strong>コーチとの相性</strong>にも影響します。「はじめの一歩」で紹介した朝日コーチは万能型でしたが、専門スタイルのコーチを雇えば「この能力を先に伸ばしたい」「ここの弱点を補いたい」といった<strong>育成の方向性</strong>をコントロールできるようになります。</p>
+
+  <h3 class="sub-title">年齢と成長 — 時間は止まらない</h3>
+  <p>若い選手ほど成長が早く、年齢を重ねると伸びは自然に鈍くなっていきます。これは現実と同じで、避けようがありません。だからこそ、<strong>若い子にはたくさん経験を積ませること</strong>が大事です。ベテランと若手のバランスを考えたロスター作りが、長く強い団体の秘訣です。</p>
+</div>
+<!-- このセクションは specs/character-data-spec-v1.7.md §2 および
+     specs/growth-system-spec-v2.0.md §3 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 2 — 身体のこと                                        -->
+<!-- ============================================================ -->
+<div class="section" id="ch2">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title">身体のこと — 休養と怪我<small>CONDITION</small></div>
+  </div>
+
+  <p>選手は機械じゃありません。疲れもすれば、怪我もします。「調子が良さそうだからもう1試合」の積み重ねが、取り返しのつかない事態を招くこともあります。</p>
+
+  <h3 class="sub-title">体調 — 無理をさせるとどうなるか</h3>
+  <p>「はじめの一歩」で、体調が低いと自動的に休養に切り替わるという話をしました。実はそこに至る前にも影響は出ています。<strong>体調が低い状態で試合に出すと、怪我のリスクが上がります</strong>。「まだ動けるから大丈夫」ではなく、余裕を持たせてあげてください。</p>
+
+  <h3 class="sub-title">摩耗（wear） — キャリアに刻まれる代償</h3>
+  <p>体調は休めば回復しますが、<strong>摩耗は違います</strong>。摩耗は選手のキャリア全体を通じてじわじわと蓄積していきます。耐久性が高い選手はこの蓄積に強く、長い現役生活を送れますが、耐久性が低い選手は早くに限界が来ます。引退の影がちらつき始めたとき、それは摩耗が積もりすぎたサインです。</p>
+
+  <h3 class="sub-title">怪我 — 最悪の事態に備える</h3>
+  <p>怪我が発生すると、数週間の離脱を余儀なくされます。離脱中は成長も止まり、出場もできません。強化練習を連発したり、体調が低いまま試合に出し続けたりすると、確率が上がります。焦る気持ちはわかりますが、<strong>休ませる勇気</strong>も社長の大事な仕事です。</p>
+
+  <h3 class="sub-title">モチベーション — やる気がないと伸びない</h3>
+  <p>選手のモチベーションが下がると、練習効果がほとんどなくなることがあります。モチベーションは信頼度やロッカールームの雰囲気とも連動しているので、「練習しているのに伸びない」と感じたら、選手の心の状態を気にしてみてください。</p>
+
+</div>
+<!-- このセクションは specs/character-data-spec-v1.7.md §2.4-§2.7 および
+     specs/growth-system-spec-v2.0.md §5 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 3 — 良い試合の秘密                                    -->
+<!-- ============================================================ -->
+<div class="section" id="ch3">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title">良い試合の秘密 — MQを理解する<small>MATCH QUALITY</small></div>
+  </div>
+
+  <p>「はじめの一歩」で、MQ（試合の質）は選手の実力で決まるという話をしました。でも実は、それだけではありません。<strong>カード編成の工夫しだいで、同じ選手でもMQは大きく変わります</strong>。</p>
+
+  <h3 class="sub-title">MQって何で決まるの？</h3>
+  <p>選手の実力はもちろん大事です。でもそれに加えて、<strong>試合展開のドラマ性</strong>が大きく影響します。一方的に終わる試合よりも、逆転があったり、最後まで結果がわからなかったりする試合のほうが、MQは高くなりやすいです。</p>
+
+  <h3 class="sub-title">因縁があると試合が盛り上がる</h3>
+  <p>因縁のある相手同士を組ませると、MQにボーナスがつきます。因縁が深いほど効果も大きい。「この二人はいつもいい試合するなあ」と感じたら、それは因縁の力が働いているかもしれません。タイトルマッチや対抗戦にも同じような効果があります。</p>
+
+  <h3 class="sub-title">マンネリにご注意</h3>
+  <p>いくら相性が良くても、<strong>同じカードを短期間に繰り返すと、観客が飽きます</strong>。MQにマイナスの影響が出始めるので、カードには新鮮さを持たせることが大事です。ローテーションを工夫してみてください。</p>
+
+  <h3 class="sub-title">集客とMQの関係</h3>
+  <p>MQ自体は直接「お客さんの数」を増やすわけではありません。でも、良い試合を続けることで団体の評判が上がり、結果として集客につながります。逆に、MQの低い試合が続くと評判が下がることも。<strong>目先の1試合より、長い目で団体の評判を育てる</strong>という意識が大切です。</p>
+
+</div>
+<!-- このセクションは specs/battle-engine-spec-v4.2.md §3-§5 および
+     specs/venue-attendance-spec-v2.0.md §2 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 4 — 選手の心                                          -->
+<!-- ============================================================ -->
+<div class="section" id="ch4">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title">選手の心 — 見えないけど大切な「信頼度」<small>TRUST</small></div>
+  </div>
+
+  <p>「はじめの一歩」で、出場させないと選手の信頼が下がるという話をしました。ここからは、その「信頼度」の仕組みをもっと詳しくお話しします。</p>
+
+  <!-- ===== 4-1. 信頼度とは ===== -->
+  <h3 class="sub-title">「信頼度」って何だろう</h3>
+
+  <p>すべての選手は、社長であるあなたに対する<strong>「信頼度」</strong>を内面に抱えています。選手のセリフや表情、行動の変化、道場の雰囲気テキスト、コーチの観察レポート——注意して見ていると、選手がどう感じているか、いろいろなところからヒントが読み取れます。</p>
+
+  <p>大事なのは、選手は<strong>勝ち負けより「自分が大事にされているか」を見ている</strong>ということです。試合に負けても、ちゃんと出場させてもらえて、大事な舞台に立たせてもらえるなら、信頼は育ちます。逆に、勝ち続けていても出番が減れば、不安になるのです。</p>
+
+  <!-- QUOTE_SLOT: 信頼度が高い選手のセリフ例（チャットで検討） -->
+
+  <!-- ===== 4-2. 信頼が育つとき ===== -->
+  <h3 class="sub-title">信頼が育つとき — 何をすればいいのか</h3>
+
+  <p>一番大事なのは、<strong>リングに立たせること</strong>。これに尽きます。「出番をもらえた」という事実そのものが、選手にとって最大の安心材料です。</p>
+
+  <table class="mini-table">
+    <tr>
+      <th>こうすると信頼が育つ</th>
+      <th>効果の大きさ</th>
+    </tr>
+    <tr>
+      <td class="em">興行に出場させる</td>
+      <td>★★★ — これが一番の基本</td>
+    </tr>
+    <tr>
+      <td class="em">メインイベントに抜擢する</td>
+      <td>★★★ — 出場+αの大きな手応え</td>
+    </tr>
+    <tr>
+      <td class="em">タイトルマッチに出す</td>
+      <td>★★★★ — 最も強い信頼の舞台</td>
+    </tr>
+    <tr>
+      <td>因縁の相手と組ませる</td>
+      <td>★★ — 個人的なドラマが響く</td>
+    </tr>
+    <tr>
+      <td>良い試合ができた（MQ高い）</td>
+      <td>★★ — 「やれた」という実感</td>
+    </tr>
+    <tr>
+      <td>ケアアクション（後で詳しく）</td>
+      <td>★〜★★★ — 種類による</td>
+    </tr>
+    <tr>
+      <td>ブレークスルーを達成した</td>
+      <td>★★★ — 成長の節目が信頼にもつながる</td>
+    </tr>
+  </table>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 覚えておいて</div>
+    タイトルマッチやメインイベントの効果は、出場の効果と<strong>重複します</strong>。つまり「メインのタイトルマッチ」は信頼面で最高のカードです。ただし、毎回同じ子ばかりメインに据えると、他の選手が不満を溜めるリスクもあります。バランスですね。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_takatsu_k.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">🔥</span> 高津小春（剣道仕込みの闘志）</div>
+        社長、先週の興行、私を外したでしょ？ 正直、技術が粗いのは自分でもわかってるけど、試合に出してもらえたら、わたしなら、絶対結果を出すから。——それだけは忘れないでね。
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4-3. 信頼が揺らぐとき ===== -->
+  <h3 class="sub-title">信頼が揺らぐとき — これだけは避けたい</h3>
+
+  <p>信頼が一番大きく揺らぐのは、<strong>出場機会を与えないこと</strong>です。しかも怖いのは、欠場が連続するほど不満が<strong>加速的に大きくなる</strong>ということ。1回の欠場は「まあ、今回は仕方ないか」ですが、2回、3回と続くと「社長、あたしのこと忘れてない？」になり、やがて「…もういいよ」になります。</p>
+
+  <table class="mini-table">
+    <tr>
+      <th>こうすると信頼が揺らぐ</th>
+      <th>深刻度</th>
+    </tr>
+    <tr>
+      <td class="em">出場させない（連続するほど加速）</td>
+      <td><span class="hl">★★★★★</span></td>
+    </tr>
+    <tr>
+      <td>給与が同格の仲間より低い</td>
+      <td>★★★ — じわじわ効く</td>
+    </tr>
+    <tr>
+      <td>後輩が自分より高い給料をもらっている</td>
+      <td>★★★ — 特にベテランに響く</td>
+    </tr>
+    <tr>
+      <td>実力があるのにタイトルに絡めない</td>
+      <td>★★★ — トップ選手ほど感じる</td>
+    </tr>
+    <tr>
+      <td>ロスターが多すぎて出番が回らない</td>
+      <td>★★ — 構造的な問題</td>
+    </tr>
+    <tr>
+      <td>ロッカールームの雰囲気が悪い</td>
+      <td>★★ — 他の選手の不満が伝染する</td>
+    </tr>
+    <tr>
+      <td>何もしなくても少しずつ下がる</td>
+      <td>★ — 放置は禁物</td>
+    </tr>
+  </table>
+
+  <div class="callout warn">
+    <div class="callout-label">⚠️ 「構造的な不満」に気をつけて</div>
+    給料の不公平、タイトル機会の偏り——こういった<strong>仕組みレベルの不満</strong>は、ボーナスや声かけでは根本的に解消できません。興行のたびに少しずつ蓄積して、気づいたときには深刻なことになっていることがあります。カード編成の偏りや給与テーブルの歪みそのものに目を向ける必要があります。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_kawanobe_n.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">🎹</span> 川野辺菜穂子（ピアノの名手）</div>
+        社長、最近わたし、声をかけていただけない日が続いている気がして……。メインじゃなくても構わないんです。ただ『次も頼む』の一言があるかないかで、練習の質がまるで変わってしまう。こんなことで揺れてしまう自分が、ちょっと情けないんですけど。
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4-4. 信頼度の段階 ===== -->
+  <h3 class="sub-title">信頼度には段階がある</h3>
+
+  <p>信頼度には大まかに<strong>4つの段階</strong>があります。具体的な数値は教えられませんが、それぞれの段階で選手の振る舞いが変わるので、観察していれば感じ取れるはずです。</p>
+
+  <div class="trust-flow">
+    <div class="trust-seg ts-hi">
+      <div class="ts-range">高</div>
+      <div class="ts-label">絶大な信頼</div>
+    </div>
+    <div class="trust-seg ts-mid">
+      <div class="ts-range">中</div>
+      <div class="ts-label">安定</div>
+    </div>
+    <div class="trust-seg ts-lo">
+      <div class="ts-range">低</div>
+      <div class="ts-label">危険信号</div>
+    </div>
+    <div class="trust-seg ts-crit">
+      <div class="ts-range">危</div>
+      <div class="ts-label">崩壊寸前</div>
+    </div>
+  </div>
+
+  <p><strong>「高い信頼」</strong>を勝ち取った選手は、あなたの判断を深く信じています。引退の提案も受け入れやすいし、契約更新でも前向きです。ただし——ここが難しいところですが——<strong>維持するのにコストがかかります</strong>。頂点にいる選手ほど、少しの不遇にも敏感です。「ここまで自分を高く評価してくれていたのに、今回は……」という落差が、思った以上にダメージになります。</p>
+
+  <p><strong>「中程度の信頼」</strong>は、安定した団体運営の目標ラインです。この範囲にいる選手は概ね満足していて、出場とケアを適切に回していれば維持できます。<strong>多くの選手をここに保つことが、健全な経営の基盤です</strong>。</p>
+
+  <p><strong>「信頼が低い」</strong>段階に入ると、黄色信号です。この状態からの回復は時間がかかります。同じように出場させても、普段ほど信頼が回復しなくなる傾向があります。選手から「直談判」を求められたら——それは最後の警告だと思ってください。真剣に対応すれば回復のチャンスはありますが、軽く扱うとさらに悪化します。</p>
+
+  <p><strong>「崩壊寸前」</strong>まで落ちてしまうと、<strong>予告なく団体を去る可能性</strong>があります。しかもこの状態の選手は、ロッカールーム全体の空気を重くします。一人の崩壊が、チーム全体を巻き込むことがあるのです。</p>
+
+  <div class="callout info">
+    <div class="callout-label">📘 怖い話：フィードバックループ</div>
+    信頼が低い選手がロッカールームの雰囲気を下げ、悪い雰囲気がさらに全員の信頼を削る——という<strong>悪循環</strong>が起きることがあります。「一人くらい放っておいても大丈夫でしょ」が、団体全体の崩壊の入り口になりかねません。心配な選手がいたら、早めに手を打ちましょう。
+  </div>
+
+  <!-- QUOTE_SLOT: 信頼段階ごとの態度変化を示す選手セリフ（チャットで検討） -->
+
+  <!-- ===== 4-6. ケアアクション ===== -->
+  <h3 class="sub-title">ケアアクション — 社長にできるフォロー</h3>
+
+  <p>カード編成だけでは全員に目が行き届かないこともあります。そんなとき、<strong>ケアアクション</strong>で個別にフォローできます。特に信頼が危うい選手には、応急処置として効果的です。</p>
+
+  <table class="mini-table">
+    <tr>
+      <th>ケア</th>
+      <th>ひとこと</th>
+    </tr>
+    <tr>
+      <td class="em">声かけ</td>
+      <td>タダ。効果は小さいけど、日常のフォローに</td>
+    </tr>
+    <tr>
+      <td class="em">ボーナス支給</td>
+      <td>即効性あり。お金に余裕があるときに</td>
+    </tr>
+    <tr>
+      <td class="em">新コスチューム</td>
+      <td>効果大きい。ただし頻繁には使えない</td>
+    </tr>
+    <tr>
+      <td class="em">メディア露出</td>
+      <td>信頼と人気の両方にプラス。頻度制限あり</td>
+    </tr>
+    <tr>
+      <td class="em">リフレッシュ休暇</td>
+      <td>心と身体を同時にケア</td>
+    </tr>
+    <tr>
+      <td class="em">専属トレーナー</td>
+      <td>最も効果が大きい。高コスト、団体が育ってから</td>
+    </tr>
+    <tr>
+      <td class="em">チーム打ち上げ</td>
+      <td>全員に少しずつ。チームの底上げに</td>
+    </tr>
+    <tr>
+      <td class="em">合宿</td>
+      <td>信頼＋成長。チーム全体向け</td>
+    </tr>
+  </table>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 意外と知られていないこと</div>
+    <strong>まだ発展途上の選手ほど、ケアへの反応が大きい</strong>傾向があります。エースよりも若手のほうが、ケアの恩恵を受けやすいのです。資金が限られているときは、若手への投資を優先するのも手です。
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">💡 もうひとつ大事なこと</div>
+    信頼が低い状態では、出場させても信頼の回復が<strong>いつもより鈍く</strong>なります。でもケアアクションはこの「鈍化」をある程度無視して効いてくれます。信頼がヤバいなと感じたら、<strong>出場＋ケアの合わせ技</strong>が回復への近道です。
+  </div>
+
+  <!-- ===== 4-7. 不満が積もるとき ===== -->
+  <h3 class="sub-title">じわじわ積もる不満 — 見えにくい危険</h3>
+
+  <p>信頼の変動には、「イベント的なもの」と「じわじわ積もるもの」の2種類があります。出場や欠場はわかりやすいですが、もうひとつ、<strong>気づきにくい不満の蓄積</strong>があります。</p>
+
+  <div class="two-col">
+    <div class="param-block">
+      <div class="param-block-name">💰 給料への不満</div>
+      <div class="param-block-body">同じくらいの実力の仲間と比べて給料が低いと、興行のたびに少しずつ信頼が削られます。後輩が自分より高い給料をもらっていたら、なおさらです。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">🏆 「なぜ自分じゃないの？」</div>
+      <div class="param-block-body">団体のトップクラスの実力がある選手は、タイトルマッチに出してもらえることを期待しています。長く絡めないと、不満がじわじわ積もります。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">👥 人が多すぎる</div>
+      <div class="param-block-body">ロスターが大きすぎると、全員に出番を回すのが物理的に無理になります。人数の多さそのものがリスクです。</div>
+    </div>
+    <div class="param-block">
+      <div class="param-block-name">🤝 居場所がない</div>
+      <div class="param-block-body">ロッカールームで孤立している選手は、それだけで信頼にマイナスの影響を受けることがあります。人間関係にも目を配ってあげてください。</div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-label">⚠️ ケアだけでは解決しない問題</div>
+    これらの不満は、ボーナスや声かけでは応急処置にしかなりません。<strong>仕組みそのもの</strong>——給与テーブル、カード編成の偏り、ロスターの人数——を見直す必要があります。「なんとなく全体的に不穏だな」と感じたら、構造的な問題を疑ってみてください。
+  </div>
+
+  <!-- ===== 4-8. 崩壊の前兆 ===== -->
+  <h3 class="sub-title">崩壊の前兆 — こんなサインが出たら要注意</h3>
+
+  <p>信頼が危険なラインに近づくと、いくつかのサインが現れます。見逃さないでください。</p>
+
+  <ul class="flow-list">
+    <li><strong>「直談判」イベントが発生する</strong> — 選手が「社長、話があるんですけど」と言ってきます。これは信頼が低いときだけ起きる、最後の警告です。ちゃんと向き合えば回復できますが、突き放すとさらに悪化します。</li>
+    <li><strong>ロッカールームの雰囲気が変わる</strong> — 道場画面の雰囲気テキストに注目してください。信頼が低い選手が増えると、チーム全体の空気が目に見えて重くなります。</li>
+    <li><strong>悪循環が始まる</strong> — 低い信頼→悪い雰囲気→もっと信頼が下がる。一人の問題を放置すると、チーム全体が引きずられます。</li>
+    <li><strong>突然の退団</strong> — 最も深刻な状態では、選手が<strong>予告なしに去ります</strong>。しかも、去った選手と仲が良かった選手たちの信頼も連鎖的に下がります。</li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-label">📘 退団の連鎖に備えて</div>
+    退団した選手と親しかった仲間ほど、大きなショックを受けます。エースや人望のある選手がいなくなると、団体そのものが揺らぎかねません。信頼管理のコツは「平均を保つ」ことではなく、<strong>「誰一人として崩壊させない」</strong>ことです。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_hasegawa_r.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">🌙</span> 長谷川レオナ（引き出し上手・美人看護師）</div>
+        社長、少しだけ時間もらえる？ ……わたし、ここを出ることにしたの。居場所って、誰かが『いてほしい』って思ってくれないと、どんどん無くなっていくものだから。
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4-9. やってはいけないこと ===== -->
+  <h3 class="sub-title">社長、これだけはやめてあげて</h3>
+
+  <div class="mistake">
+    <div class="mistake-icon">💀</div>
+    <div>
+      <div class="mistake-title">同じ子を何回も連続で外す</div>
+      <div class="mistake-body">1回の欠場は仕方ない。でも2回、3回と続くと、不満は一気に膨らみます。ローテーションを組むとき、「この子、今回も外れてないかな」と確認する癖をつけましょう。</div>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">💀</div>
+    <div>
+      <div class="mistake-title">トップ選手をずっと前座に置く</div>
+      <div class="mistake-body">実力のある選手は「自分はメインで戦うべきだ」と思っています。気持ちはわかりますよね。前座が続くと、出場させていても不満が積もります。</div>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">💀</div>
+    <div>
+      <div class="mistake-title">一方的に給料を下げる</div>
+      <div class="mistake-body">経費削減したい気持ちはわかります。でも選手は自分の市場価値をわかっています。特に、仲間と差がつく形での減給は深い不信感を生みます。</div>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">💀</div>
+    <div>
+      <div class="mistake-title">選手を抱えすぎる</div>
+      <div class="mistake-body">「多いほうが安心」と思いがちですが、全員に出番を配れない規模のロスターは、それ自体が構造的なリスクです。ロスターの人数と興行のカード数のバランスを常に意識してください。</div>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">💀</div>
+    <div>
+      <div class="mistake-title">「そのうち回復するだろう」と放置する</div>
+      <div class="mistake-body">しません。何もしなければ信頼は下がり続けます。直談判イベントが来たら、最優先で対応してください。それは選手が最後に差し出してくれた手です。</div>
+    </div>
+  </div>
+
+  <div class="callout trivia">
+    <div class="callout-label">💡 この章のまとめ</div>
+    信頼度は「選手が勝つかどうか」ではなく、<strong>「社長が自分を見てくれているか」</strong>で動きます。最強の選手を作ることより、すべての選手を「ちゃんと見ている」こと。それが安定した団体運営の一番の秘訣です。
+  </div>
+</div>
+<!-- このセクションは specs/trust-system-spec-v2.1.md §1〜§16 を元に翻訳。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。
+     Grievanceシステム(§10)、関係性Trust連動(§11)、成功体験ボーナス(§12)を含む。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 5 — 仲間とライバル                                     -->
+<!-- ============================================================ -->
+<div class="section" id="ch5">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title">仲間とライバル — 選手同士の物語<small>RELATIONSHIPS</small></div>
+  </div>
+
+  <p>選手たちはリングの外でも人間です。仲良くなる子もいれば、どうしても合わない子もいる。そしてリングの上でぶつかり合ううちに、友情やライバル心が芽生えていきます。</p>
+
+  <h3 class="sub-title">2つの感情 — 親しさとライバル心</h3>
+  <p>選手同士の関係は、<strong>「親しさ」と「ライバル心」</strong>の2つで動いています。面白いのは、この2つは独立しているということ。<strong>「すごく仲がいいけど、リングの上では絶対に負けたくない」</strong>——そんな関係がありえます。さらに、AからBへの感情と、BからAへの感情が違うこともあります。片思いならぬ、片ライバルです。</p>
+
+  <h3 class="sub-title">関係はどうやって生まれるか</h3>
+  <p>同じ団体で過ごすこと、試合で対戦すること、性格の相性——日々の積み重ねが、少しずつ選手同士の関係を変えていきます。特に試合での体験は大きな影響を持ちます。</p>
+
+  <h3 class="sub-title">因縁が深まると — 宿敵、好敵手</h3>
+  <p>「はじめの一歩」の予告で触れた因縁システム。ライバル心が高まると、正式な「因縁」として認められます。因縁が深いほど試合のMQにボーナスがつき、最も深い因縁の決着は、団体の歴史に刻まれるドラマになります。</p>
+
+  <h3 class="sub-title">関係性と信頼度のつながり</h3>
+  <p>親しい仲間がいる選手は心が安定しやすく、孤立している選手は信頼度にマイナスの影響を受けることがあります。そして、親しい選手が退団すると、残された仲間の信頼も揺らぎます。人間関係と信頼度は、深くつながっています。</p>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_domae_y.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">⚔️</span> 堂前ユキ（153cmの闘志・頼れるリーダー格）</div>
+        気づいたのは、三度目に組まれた後だった。別に話したこともない選手なのに、試合が終わるたびに『次はどう来るんだろう』って、頭から離れなくなってるの。……こういうのを、ライバルって言うのかな。ここに来てから、初めて知った感覚。
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- このセクションは specs/relationship-system-spec-v2.0.md §1〜§8 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 6 — お金の話                                          -->
+<!-- ============================================================ -->
+<div class="section" id="ch6">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-title">お金の話 — 赤字と黒字のあいだ<small>ECONOMY</small></div>
+  </div>
+
+  <p>「はじめの一歩」でも「赤字まみれの弱小団体」と紹介しましたね。ここではお金の流れをもう少し詳しく見ていきましょう。知っておくだけで、「なぜ急にお金が減ったんだ！？」というパニックが減るはずです。</p>
+
+  <h3 class="sub-title">何で稼ぐのか</h3>
+  <p>収入源は大きく分けて<strong>興行収入</strong>と<strong>ブランド収入</strong>（グッズ、メディアなど）の2本柱です。序盤は興行収入が頼りですが、団体の人気が上がるとブランド収入の比重が増えていきます。</p>
+
+  <h3 class="sub-title">何にお金がかかるのか</h3>
+  <p>選手の給与、コーチの費用、ケアアクションの出費……。給与は毎週かかる固定費なので、ロスターの規模とのバランスが大事です。</p>
+
+  <h3 class="sub-title">団体人気（orgPop）が鍵</h3>
+  <p>団体の人気は収入に直結します。良い試合を積み重ね、選手の人気を育て、プロモ活動で知名度を上げる。地道ですが、これが一番確実な経営改善策です。</p>
+
+  <h3 class="sub-title">もし資金が尽きたら</h3>
+  <p>資金がゼロを下回ると倒産——ですが、経営が苦しいときには補助金モードが発動します。いきなりゲームオーバーにはならないので、焦らず立て直しましょう。</p>
+
+</div>
+<!-- このセクションは specs/economy-spec-v2.0.md §1〜§5 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 7 — コーチのこと                                      -->
+<!-- ============================================================ -->
+<div class="section" id="ch7">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-title">コーチのこと — 成長を支える存在<small>COACHES</small></div>
+  </div>
+
+  <p>「はじめの一歩」で朝日コーチにお世話になりましたよね。ここでは、コーチの選び方と活かし方をもう少し掘り下げます。</p>
+
+  <h3 class="sub-title">コーチの個性を知る</h3>
+  <p>コーチにはそれぞれ得意なスタイル、指導力の高さ、そして特別な能力（特性）があります。全員が同じではないので、自分の団体の選手構成に合ったコーチを探しましょう。</p>
+
+  <h3 class="sub-title">スタイル一致で効率アップ</h3>
+  <p>コーチと選手の戦闘スタイルが一致していると、成長にボーナスがつきます。選手ポップアップに表示される一致マークを見てみてください。万能型のコーチは誰にでも効きますが、専門型の一致ボーナスには届きません。</p>
+
+  <h3 class="sub-title">いつ増やす？ 何人雇う？</h3>
+  <p>コーチの雇用枠は団体の規模に応じて増えます。序盤は1人で十分。選手が増えてきたら、2人目を検討しましょう。「枠があるから雇わなきゃ」ではなく、費用対効果を考えて。</p>
+
+  <h3 class="sub-title">コーチの観察レポート</h3>
+  <p>観察眼の高いコーチは、選手の状態について報告を上げてくれることがあります。「この子、最近調子いいですよ」「ちょっと心配ですね」——こうしたヒントは、信頼度が見えないこのゲームでは貴重な情報源です。</p>
+
+</div>
+<!-- このセクションは specs/coach-system-spec-v3.0.md §1〜§5 を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- CHAPTER 8 — まだまだあるぞ                                     -->
+<!-- ============================================================ -->
+<div class="section" id="ch8">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-title">まだまだあるぞ — その他のシステム<small>OTHER SYSTEMS</small></div>
+  </div>
+
+  <p>ここまで読んでくれた社長なら、もうかなりの知識が身についているはずです。最後に、ゲームを進めるなかで出会うその他のシステムを簡単にまとめておきます。</p>
+
+  <h3 class="sub-title">ドラフト — 毎シーズンの仲間選び</h3>
+  <p>シーズン開幕のお楽しみ。入札と交渉で新しい仲間を迎えます。「はじめの一歩」で体験した最初のドラフトとは少し勝手が違うことも。</p>
+
+  <h3 class="sub-title">引き抜き — 他団体の選手を狙う</h3>
+  <p>気になる選手を他団体から引き抜くことができます。ただし、お金もかかるし、元の団体との関係にも影響します。</p>
+
+  <h3 class="sub-title">タイトル — 団体の象徴</h3>
+  <p>条件を満たすと、あなたの団体にタイトル（王座）を設立できます。タイトルマッチは集客にも信頼にも大きな意味を持つ、特別な舞台です。</p>
+
+  <h3 class="sub-title">対抗戦 — 団体の威信をかけて</h3>
+  <p>他団体からの挑戦状。選手たちの結束が試されます。勝てば団体の評判が上がり、特別な収入も得られます。</p>
+
+  <h3 class="sub-title">PPV GRAND FINAL — シーズンの頂点</h3>
+  <p>シーズン終盤の合同大会。全団体からエントリーされた選手が頂点を競います。最高の状態で臨みましょう。</p>
+
+  <h3 class="sub-title">レンタル移籍 — 助っ人を借りる</h3>
+  <p>他団体やフリーエージェントから選手を一時的に借り受けるシステム。戦力の穴埋めや、新しい風を吹き込むのに使えます。</p>
+
+  <h3 class="sub-title">契約更新 — シーズンの始まりに</h3>
+  <p>シーズン開幕時の契約交渉。信頼が低い選手は退団してしまうこともあります。第4章で学んだ信頼管理が、ここで効いてきます。</p>
+
+</div>
+<!-- このセクションは specs/draft-negotiation-spec-v1.0.md, specs/poach-trust-spec-v1.0.md,
+     specs/title-system-spec-v1.0.md, specs/rival-org-spec-v1.0.md,
+     specs/ppv-grand-final-spec-v2.0.md, specs/rental-system-spec-v2.0.md,
+     specs/contract-negotiation-spec-v2.0.md を元に構成。
+     数式・閾値は意図的に隠してある。仕様変更時はこのコメントを参照。 -->
+
+
+<!-- ============================================================ -->
+<!-- APPENDIX — よくある質問                                        -->
+<!-- ============================================================ -->
+<div class="section" id="faq">
+  <div class="section-header">
+    <div class="section-num" style="font-size:18px;">FAQ</div>
+    <div class="section-title">困ったときは — よくある質問<small>FREQUENTLY ASKED QUESTIONS</small></div>
+  </div>
+
+  <h3 class="sub-title">出場させてるのに信頼が下がってる気がする…</h3>
+  <p>出場させていても、給料の不公平、タイトル機会の不足、ロッカールームの雰囲気悪化など、<strong>「構造的な不満」が裏で積もっている</strong>可能性があります。出場はあくまで信頼を維持する基本であって、他のマイナス要因を帳消しにはしてくれません。あと、出場していても前座ばかりだと、トップ選手は満足しません。</p>
+
+  <h3 class="sub-title">同じカードなのにMQが毎回違うのはなぜ？</h3>
+  <p>MQには選手のコンディション、試合展開のランダム要素、そして<strong>マンネリの影響</strong>があります。同じ顔合わせを繰り返すと観客が飽きてきます。カードに新鮮さを持たせてあげてください。</p>
+
+  <h3 class="sub-title">お金がない！ どうすればいい？</h3>
+  <p>まずは<strong>収入を増やす方向</strong>を考えましょう。プロモ活動で人気を上げたり、もう少し大きい会場に挑戦したり。コーチの見直しやロスターの適正化も選択肢です。また、<strong>契約更新の交渉で給与を渋めに抑える</strong>のも立派な経営判断です。すべて言い値で払い続ける必要はありません。ただし、シーズン途中で一方的に給与を下げるのは不信感につながりやすいので注意してください。</p>
+
+  <h3 class="sub-title">誰をエースにすればいいの？</h3>
+  <p>OVRだけで決める必要はありません。信頼度、人気、因縁の有無、ファンの期待——いろんな要素があります。でも一番大事なのは、<strong>「この子を中心に物語を組みたい」というあなたの直感</strong>です。社長の直感を信じてください。</p>
+
+  <h3 class="sub-title">コーチは何人雇えばいいの？</h3>
+  <p>枠の上限まで雇うのが理想ですが、序盤はお金がきついので1人で大丈夫。スタイル一致を意識しつつ、余裕ができたら増やしていきましょう。</p>
+
+</div>
+
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  Wrestle Manager © takoyaki-chan　|　このガイドの内容は開発中の仕様に基づいています
+</div>
+
+</div><!-- /.page -->
+</body>
+</html>

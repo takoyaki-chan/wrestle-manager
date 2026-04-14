@@ -190,6 +190,53 @@
 
   .footer { text-align: center; padding: 32px 20px; font-size: 12px; color: var(--ink-sub); border-top: 1px solid var(--border); margin-top: 20px; }
 
+  /* === SPEECH BUBBLE === */
+  .speech {
+    background: var(--bg-page);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    position: relative;
+    font-size: 14px;
+  }
+  .speech::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 30px;
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--border);
+  }
+  .speech-who {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-sub);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .speech-who .emoji { margin-right: 4px; }
+  .speech-face {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top center;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .speech-inner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .speech-text {
+    flex: 1;
+    min-width: 0;
+  }
+
   @media (max-width: 480px) {
     .page { padding: 0 14px; }
     .section-num { font-size: 22px; min-width: 36px; }
@@ -267,6 +314,16 @@
   <div class="callout info">
     <div class="callout-label">ℹ️ OVR（総合値）とは</div>
     5つの能力値を平均したものが OVR です。試合の「天井の高さ」を決める最重要指標で、給与・ランキング・MQのほぼすべての基準になります。<strong>5つのどれが高くても OVR は上がります</strong>が、弱点があると試合で穴を突かれます。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/coach/face_coach_tsurumi.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">🎯</span> 鶴見正嗣コーチ（テクニックの匠・空手八段）</div>
+        数字は嘘をつきませんが、選手そのものを語りもしません。力が強い子は何度でも振りかぶれる。足が速い子は見えないところで間合いを詰めている。社長、数字を見るときは、その先にある『癖』まで読んでやってください。
+      </div>
+    </div>
   </div>
 
 </div>
@@ -374,6 +431,16 @@
     耐久性が低い選手は若いうちに伸ばして活躍させる必要があります。耐久性が高い選手は息の長いキャリアを歩みます。このゲームでは「誰かが引退していく」ことも自然なドラマです。
   </div>
 
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_abukuma_t.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">⚡</span> 阿武隈塔子（粕田市内最強の伝説）</div>
+        身体は覚えてるのよ、これまで受けてきた全部を。どんなに隠しても、古傷のひとつひとつが『もう限界ね』って囁いてくる日が来る。でもね、そこまで戦えたからこそ観せられるものもあるの。若い子たちには、せめて長く戦わせてあげてね。
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ===== 05 TRUST ===== -->
@@ -416,6 +483,16 @@
   <div class="callout warn">
     <div class="callout-label">⚠️ 信頼度は全選手それぞれ独立している</div>
     ロスターの誰かひとりの信頼度が危険域に入っても、他の選手には直接の影響はありません。ただし、そのまま誰かが離脱すれば<strong>ロッカールームの雰囲気が悪化</strong>し、それが全体の士気に波及します。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_tomioka_k.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">🌹</span> 富岡加奈子（鉄腕令嬢・リハビリを乗り越えた不屈）</div>
+        社長、わたくし、身体が弱かった頃に思い知りましたの。人は『ここにいていい』と誰かに言ってもらえるだけで、驚くほど強くなれるのですわ。リングに立たせていただけること——それがわたくしにとって、一番の薬なのです。
+      </div>
+    </div>
   </div>
 
 </div>
@@ -532,8 +609,18 @@
   </div>
 
   <div class="callout trivia">
-    <div class="callout-label">💡 MQ が示す「本物の奇跡」</div>
-    このゲームは数値を操作してドラマを作りません。MQ はシミュレーションが弾き出した事実です。だから OVR が低い選手が格上相手に予想外の名勝負を作ることも起きます。それが本当に起きたとき、演出は「数字の奇跡」ではなく「本物の奇跡」として輝きます。
+    <div class="callout-label">💡 数字どおりにならない日がある</div>
+    MQ はシミュレーションが弾き出した計算結果なので、OVR の差がそのまま結果になるとは限りません。格下が格上相手にやけに噛み合う日もあれば、エース同士なのに盛り上がらない日もあります。ドラマを作為的に仕込んでいないぶん、たまに予想外の試合に出会えるのが、このゲームの地味な面白さです。
+  </div>
+
+  <div class="speech">
+    <div class="speech-inner">
+      <img class="speech-face" src="image/face_shirogane_r.png" alt="">
+      <div class="speech-text">
+        <div class="speech-who"><span class="emoji">❄️</span> 白銀麗子（柔の白銀・姫宮の白雪姫）</div>
+        良い試合って、不思議なのよ。実力が近い同士だからってきれいに整うわけじゃなくて、お互いの呼吸がぴったり重なった瞬間に、観客ごと連れていかれるの。数字では測れない何かが、リングの上には確かにあるわ。社長ならきっと、その瞬間を見逃さないはず。
+      </div>
+    </div>
   </div>
 
 </div>
