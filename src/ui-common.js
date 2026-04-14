@@ -3615,14 +3615,18 @@ function renderMatchPreview() {
   const sp = App._showPreview;
   if (!sp) return;
 
-  sp.validMatches.forEach((m, idx) => {
-    if (sp.results[idx]) return;
-    const charL = G.roster.find(c => c.id === m.left);
-    const charR = G.roster.find(c => c.id === m.right);
-    if (!charL || !charR) {
-      sp.results[idx] = { winner: 'draw', mq: 0, finType: '', turns: 0, log: [], _stale: true };
-    }
-  });
+  if (typeof App._fillMissingShowPreviewResults === 'function') {
+    App._fillMissingShowPreviewResults();
+  } else {
+    sp.validMatches.forEach((m, idx) => {
+      if (sp.results[idx]) return;
+      const charL = G.roster.find(c => c.id === m.left);
+      const charR = G.roster.find(c => c.id === m.right);
+      if (!charL || !charR) {
+        sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
+      }
+    });
+  }
   if (sp.results.every(r => r !== null)) {
     try { App.finalizeShow(); } catch(e) {
       console.error('finalizeShow error:', e);

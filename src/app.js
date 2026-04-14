@@ -3829,14 +3829,40 @@ const App = {
     renderMatchPreview();
   },
 
+  _fillMissingShowPreviewResults() {
+    const sp = App._showPreview;
+    if (!sp || !Array.isArray(sp.validMatches) || !Array.isArray(sp.results)) return false;
+    let filled = false;
+    sp.validMatches.forEach((m, idx) => {
+      if (sp.results[idx]) return;
+      const charL = G.roster.find(c => c.id === m.left);
+      const charR = G.roster.find(c => c.id === m.right);
+      if (charL && charR) return;
+      sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
+      filled = true;
+    });
+    return filled;
+  },
+
   // Skip a single match (instant calculation)
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
+    const staleFilled = App._fillMissingShowPreviewResults();
+    if (sp.results[idx]) {
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
-    if (!charL || !charR) return;
+    if (!charL || !charR) {
+      if (!staleFilled) sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     try { Audio.play('tick'); } catch(e) {}
@@ -3848,11 +3874,22 @@ const App = {
   watchMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
-    sp.currentWatching = idx;
+    App._fillMissingShowPreviewResults();
+    if (sp.results[idx]) {
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
-    if (!charL || !charR) return;
+    if (!charL || !charR) {
+      sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
+    sp.currentWatching = idx;
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
@@ -4037,18 +4074,21 @@ const App = {
   skipAllMatches() {
     const sp = App._showPreview;
     if (!sp) return;
-    let hasMissing = false;
+    App._fillMissingShowPreviewResults();
     sp.validMatches.forEach((m, idx) => {
       if (sp.results[idx]) return;
       const charL = G.roster.find(c => c.id === m.left);
       const charR = G.roster.find(c => c.id === m.right);
-      if (!charL || !charR) { hasMissing = true; return; }
+      if (!charL || !charR) {
+        sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
+        return;
+      }
       const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
       sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     });
     if (sp.results.some(r => r === null)) {
       renderMatchPreview();
-      if (hasMissing) {
+      if (false) {
         Audio.play('error');
         alert('カード内に在籍していない選手の試合があり、全試合スキップを完了できませんでした。');
       }
@@ -4751,8 +4791,26 @@ const App = {
       // ここで一旦 active を外してから popup を流し、queue 空になったら
       // renderShowResult が再度 active を付けて結果画面を描画する。
       document.getElementById('showResultOverlay').classList.remove('active');
+      // コールバックは popup 投入「前」にセットする — autoClose が短い場合に
+      // 投入直後に closeEventPopup が走り得るため。既存コールバックがあれば
+      // チェーンして握り潰さないようにする。
+      const prevCb = _onEventPopupQueueEmpty;
+      _onEventPopupQueueEmpty = () => {
+        if (prevCb) { try { prevCb(); } catch(e) { console.error('[WM] prev queueEmpty cb error:', e); } }
+        renderShowResult(results, injuryResults);
+      };
       preMatchPopups.forEach(p => showEventPopup(p));
-      _onEventPopupQueueEmpty = () => renderShowResult(results, injuryResults);
+      // セーフティネット: 何らかの理由で queue 空コールバックが発火しない場合に備え、
+      // popup 件数 × autoClose + バッファで強制的に結果画面に進む。
+      const maxWaitMs = preMatchPopups.length * 2200 + 1500;
+      setTimeout(() => {
+        if (!document.getElementById('showResultOverlay').classList.contains('active')) {
+          console.warn('[WM] preMatchPopup safety net fired — forcing renderShowResult');
+          try { closeEventPopup(); } catch(e) {}
+          _onEventPopupQueueEmpty = null;
+          renderShowResult(results, injuryResults);
+        }
+      }, maxWaitMs);
     }
   },
 
