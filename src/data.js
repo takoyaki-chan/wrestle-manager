@@ -9376,6 +9376,54 @@ const BREAKTHROUGH_LINES = {
   }
 };
 
+// 初顔合わせ試合前ポップアップセリフ（personality×archetype）
+// 仕様: specs/match-flavor-popup-spec-v0.1.md §3.2
+const FIRST_MEET_LINES = {
+  normal: {
+    _default: [
+      '噂は聞いていたわ',
+      '初めまして…よろしく',
+      '一度やってみたかった',
+      'こうして向かい合えるとは',
+    ],
+    ojousama: ['お会いできて光栄ですわ', 'お手合わせ願いますわ'],
+    polite: ['お初にお目にかかります', '本日はよろしくお願いします'],
+    delinquent: ['お前か、噂のヤツ', 'ふん、見せてもらおうじゃねえか'],
+    cool: ['……', '……始めようか'],
+    seductive: ['ふふ、初めましてね', '楽しみにしてたのよ'],
+    composed: ['…噂は聞いてるよ。よろしく'],
+  },
+  bold: {
+    _default: ['やっと当たれるな！', '待ってたぞ、この日を', '本気で来いよ'],
+    delinquent: ['待たせたな！', 'やっとかよ、楽しもうぜ'],
+    ojousama: ['ようやくお相手いただけますのね', '楽しみにしておりましたわ'],
+    cool: ['……ようやくか'],
+    polite: ['お会いできて光栄です。全力で挑みます'],
+  },
+  quiet: {
+    _default: ['…よろしく', '……（軽く頭を下げる）'],
+    cool: ['……', '……始めようか'],
+    polite: ['…よ、よろしくお願いします'],
+  },
+  earnest: {
+    _default: ['よろしくお願いします！', 'この一戦、全力で挑みます'],
+    polite: ['お手合わせいただけて光栄です', '本日はよろしくお願いいたします'],
+    ojousama: ['お相手いただけて光栄ですわ。全力で挑みます'],
+  },
+  emotional: {
+    _default: ['ずっと…ずっとやりたかった！', '夢だったの、これ！'],
+  },
+  easygoing: {
+    _default: ['いやー、やっとだね', 'よろしくー！', 'ふふっ、楽しみだったよ'],
+    delinquent: ['よっ、よろしくな！'],
+    ojousama: ['ようやくお手合わせできますのね、楽しみですわ'],
+  },
+  shy: {
+    _default: ['あ、あの…よ、よろしく…', '……よろしくお願いします…'],
+    polite: ['あ、あの…よ、よろしくお願いします…'],
+  },
+};
+
 // personality×archetype セリフ配列取得（Engine用: 呼び出し元でRNG選択可能）
 function getDialoguePool(lineObj, fighter) {
   const v = fighter?.voice;
@@ -21091,7 +21139,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
-    AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, getDialoguePool, pickDialogueLine,
+    AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, FIRST_MEET_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
     AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,
