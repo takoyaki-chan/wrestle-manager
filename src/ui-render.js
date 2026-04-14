@@ -3138,6 +3138,168 @@ function renderRanking() {
   el.innerHTML = html;
 }
 
+// ══════════════════════════════════════════════════════════
+//  社長室 (Phase 1)
+//  見た目だけの骨組み。書類プレースホルダー7枚 + HUD + 壁/机背景
+// ══════════════════════════════════════════════════════════
+
+// 週番号から季節IDを返す (春:1-12 / 夏:13-24 / 秋:25-36 / 冬:37-48)
+function getShachoshitsuSeasonId(week) {
+  if (week <= 12) return 'spring';
+  if (week <= 24) return 'summer';
+  if (week <= 36) return 'autumn';
+  return 'winter';
+}
+
+// HUDバー (日付 / 資金 / 決裁印鑑6本)
+function renderShachoshitsuHud() {
+  // Phase 1: 決裁枠は固定6本で全て立っている状態（機能なし）
+  const dp = 6;
+  const dpMax = 6;
+  let hankos = '';
+  for (let i = 0; i < dpMax; i++) {
+    const cls = i < dp ? 'hanko available' : 'hanko used';
+    hankos += `<img class="${cls}" src="image/shachoshitsu/hanko.webp" alt="決裁枠">`;
+  }
+  const dateStr = Engine.util.formatDate(G.season, G.week);
+  const fundsStr = Math.round(G.funds).toLocaleString();
+  return `
+    <div class="shachoshitsu-hud">
+      <div class="shachoshitsu-hud-left">
+        <span class="shachoshitsu-hud-date">${dateStr}</span>
+        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+      </div>
+      <div class="shachoshitsu-hud-right">
+        <div class="shachoshitsu-hankos">${hankos}</div>
+      </div>
+    </div>
+  `;
+}
+
+// Phase 1 プレースホルダー書類 (Phase 3 で DECISION_DOCS 本体に差し替え予定)
+const _SHACHOSHITSU_PLACEHOLDER_DOCS = [
+  {
+    id: 'bonus',
+    label: 'ボーナス支給願',
+    cost: '50万', dp: 1,
+    category: 'care', categoryLabel: '選手ケア',
+    icon: '💰',
+    body: '対象選手に特別手当を支給し、組織貢献への感謝を示す',
+    detailText: '特別手当の支給により、信頼関係に揺らぎのある選手の心を繋ぎ止める。額面よりも「見てくれている」という事実が響く。',
+    effectSummary: '信頼度 +8〜12(2-3週後に発現)',
+    recommendation: '信頼度が60を下回り始めた選手に早期介入するのが効果的。',
+  },
+  {
+    id: 'encourage',
+    label: '面談申込書',
+    cost: '無料', dp: 0,
+    category: 'care', categoryLabel: '選手ケア',
+    icon: '💬',
+    body: 'スランプ中の選手と対話し、気持ちを立て直す機会を設ける',
+    detailText: '社長自ら面談の場を設け、選手の本音に耳を傾ける。コスト0・決裁枠0でスランプ脱出の糸口を掴める気軽な一手。',
+    effectSummary: 'スランプ回復モーメンタム + 信頼度微上昇',
+    recommendation: 'スランプ/モチベ低下の初期段階で真っ先に使いたい。',
+  },
+  {
+    id: 'refresh_leave',
+    label: '休暇辞令',
+    cost: '100万', dp: 1,
+    category: 'care', categoryLabel: '選手ケア',
+    icon: '🏖️',
+    body: '心身の疲弊を察し、一定期間の休養を与える',
+    detailText: '数週間の休養を正式な辞令として発行。強制的に現場から離脱させることで、心身を根本から回復させる重い一手。',
+    effectSummary: 'スランプ強力回復 + condition回復 + 信頼度上昇',
+    recommendation: '面談では効果が薄い重症スランプに対する切り札。クールダウン4週に注意。',
+  },
+  {
+    id: 'party',
+    label: '慰労会開催届',
+    cost: '15万×人数', dp: 1,
+    category: 'care', categoryLabel: '選手ケア',
+    icon: '🍻',
+    body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
+    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
+    effectSummary: '全員信頼度微上昇 + ロッカールームmorale回復',
+    recommendation: 'moraleが50を下回ったときの応急処置として。',
+  },
+  {
+    id: 'trainer',
+    label: '専属トレーナー手配書',
+    cost: '160万', dp: 2,
+    category: 'growth', categoryLabel: '育成',
+    icon: '💪',
+    body: '対象選手の成長を加速させるため、外部専属トレーナーを招聘する',
+    detailText: '外部の専属トレーナーを期間限定で招聘。短期集中で成長曲線を押し上げる、育成特化の投資型書類。',
+    effectSummary: '4週間 成長速度+30% + 信頼度上昇',
+    recommendation: '伸ばしたい若手、シリーズ前の追い込み期、昇格を狙う選手に。',
+  },
+  {
+    id: 'camp',
+    label: '合宿実施手配書',
+    cost: '40万×人数', dp: 3,
+    category: 'growth', categoryLabel: '育成',
+    icon: '🏕️',
+    body: '全選手を集中的に強化するため、合宿を実施する',
+    detailText: '選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。単価40万×人数と決裁枠3の重量級書類。',
+    effectSummary: '2週間 全員成長速度+50% + 全員信頼度微上昇',
+    recommendation: '資金に余裕があり、オフシーズンに全体を底上げしたいとき。',
+  },
+  {
+    id: 'media',
+    label: 'メディア露出手配書',
+    cost: '120万', dp: 2,
+    category: 'pr', categoryLabel: '広報',
+    icon: '📺',
+    body: '対象選手を広告塔とし、団体の知名度向上を図る',
+    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人のコンディション維持を両立させる外向き施策。',
+    effectSummary: 'orgPop +0.4 + 対象選手 condition+5 + 信頼度上昇',
+    recommendation: '団体人気20以上が前提。看板選手のコンディション管理と兼ねて。',
+  },
+];
+
+function renderShachoshitsu() {
+  const el = document.getElementById('shachoshitsuContent');
+  if (!el) return;
+
+  const season = getShachoshitsuSeasonId(G.week);
+  let html = '';
+  html += renderShachoshitsuHud();
+  html += `<div class="shachoshitsu-wall" style="background-image:url('image/shachoshitsu/wall-window-${season}.webp')"></div>`;
+  html += `<div class="shachoshitsu-desk">`;
+  html += `<div class="shachoshitsu-doc-grid">`;
+
+  _SHACHOSHITSU_PLACEHOLDER_DOCS.forEach(doc => {
+    html += `
+      <div class="shachoshitsu-doc" data-doc-id="${doc.id}" data-category="${doc.category}">
+        <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
+        <div class="shachoshitsu-doc-icon">${doc.icon}</div>
+        <div class="shachoshitsu-doc-title">${doc.label}</div>
+        <div class="shachoshitsu-doc-body">${doc.body}</div>
+        <div class="shachoshitsu-doc-cost">${doc.cost} / 決裁⚡${doc.dp}</div>
+        <div class="shachoshitsu-doc-tooltip">
+          <div class="tooltip-section">
+            <div class="tooltip-label">詳細</div>
+            <div class="tooltip-text">${doc.detailText}</div>
+          </div>
+          <div class="tooltip-section">
+            <div class="tooltip-label">効果</div>
+            <div class="tooltip-text">${doc.effectSummary}</div>
+          </div>
+          <div class="tooltip-section">
+            <div class="tooltip-label">使いどころ</div>
+            <div class="tooltip-text">${doc.recommendation}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`; // doc-grid
+  html += `</div>`; // desk
+
+  el.innerHTML = html;
+}
+
 function renderScout() {
   const el = document.getElementById('scoutContent');
   document.getElementById('faCount').textContent = G.freeAgents.length;

@@ -5729,6 +5729,7 @@ function showScreen(id, evt) {
   if (id === 'coach') renderCoach();
   if (id === 'scoutEvent') renderScoutEvent();
   if (id === 'database') renderDatabase();
+  if (id === 'shachoshitsu') renderShachoshitsu();
 }
 
 // v0.96: Navigate to a screen and highlight the correct nav button

@@ -37,6 +37,14 @@
   --cream-border: rgba(100,85,50,0.14);
   --cream-border-hover: rgba(122,101,48,0.35);
   --cream-red: #8b1a1a;
+  /* 社長室（Phase 1）*/
+  --shachoshitsu-hud-bg: rgba(24,22,20,0.92);
+  --shachoshitsu-hud-border: rgba(212,168,67,0.4);
+  --shachoshitsu-vermillion: #c00000;
+  --shachoshitsu-vermillion-dim: #a02020;
+  --shachoshitsu-hanko-glow: rgba(255,200,100,0.4);
+  --shachoshitsu-tooltip-bg: rgba(24,22,20,0.95);
+  --shachoshitsu-tooltip-border: rgba(212,168,67,0.5);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -2931,6 +2939,57 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   .draft-paper{margin:20px 12px 40px}
   .draft-body{padding:20px 18px 28px}
 }
+/* ========================================
+   社長室（Phase 1）
+   ======================================== */
+#screen-shachoshitsu{position:relative;width:100%;min-height:calc(100vh - 100px);overflow:hidden;padding:0}
+.shachoshitsu-hud{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;background:var(--shachoshitsu-hud-bg);border-bottom:1px solid var(--shachoshitsu-hud-border);
+  height:60px;box-sizing:border-box}
+.shachoshitsu-hud-left{display:flex;align-items:center;gap:24px;font-family:'Oswald',sans-serif;color:var(--text-main)}
+.shachoshitsu-hud-date{font-size:14px;letter-spacing:1px;color:var(--gold)}
+.shachoshitsu-hud-funds{font-size:14px;color:var(--text-sub)}
+.shachoshitsu-hud-right{display:flex;align-items:center}
+.shachoshitsu-hankos{display:flex;gap:8px;align-items:center}
+.hanko{width:36px;height:36px;transition:all 0.3s ease}
+.hanko.available{filter:drop-shadow(0 0 6px var(--shachoshitsu-hanko-glow))}
+.hanko.used{transform:rotate(90deg) translateY(6px);filter:grayscale(1);opacity:0.4}
+.shachoshitsu-wall{position:relative;width:100%;height:400px;background-size:cover;background-position:center;
+  background-repeat:no-repeat;margin-top:-60px;padding-top:60px}
+.shachoshitsu-desk{position:relative;width:100%;min-height:720px;background-image:url('image/shachoshitsu/desk.webp');
+  background-size:cover;background-position:center top;background-repeat:no-repeat;margin-top:-60px;padding:80px 0 40px;
+  display:flex;justify-content:center;align-items:flex-start}
+.shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,240px);gap:20px;max-width:1020px;margin:0 auto}
+.shachoshitsu-doc{width:240px;height:320px;background-image:url('image/shachoshitsu/document-blank.webp');
+  background-size:cover;background-position:center;position:relative;cursor:pointer;
+  transition:transform 0.2s ease, filter 0.2s ease;padding:24px 20px;box-sizing:border-box;
+  color:var(--cream-text-main);font-family:'Noto Sans JP',sans-serif}
+.shachoshitsu-doc:hover{transform:translateY(-4px);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3))}
+.shachoshitsu-doc-tag{position:absolute;top:14px;left:14px;font-size:9px;font-weight:700;padding:2px 6px;
+  background:rgba(255,255,255,0.55);border:1px solid rgba(30,28,22,0.2);color:var(--cream-text-sub);
+  letter-spacing:1px;border-radius:2px}
+.shachoshitsu-doc-icon{font-size:34px;line-height:1;text-align:center;margin-top:36px}
+.shachoshitsu-doc-title{font-size:15px;font-weight:700;text-align:center;margin-top:14px;letter-spacing:1px}
+.shachoshitsu-doc-body{font-size:11px;color:var(--cream-text-sub);line-height:1.5;margin-top:12px;
+  padding:0 12px;text-align:center}
+.shachoshitsu-doc-cost{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:12px;
+  color:var(--shachoshitsu-vermillion);font-weight:700;font-family:'Oswald',sans-serif}
+/* ホバー詳細ツールチップ */
+.shachoshitsu-doc-tooltip{position:absolute;top:0;left:calc(100% + 12px);width:280px;padding:16px;
+  background:var(--shachoshitsu-tooltip-bg);border:1px solid var(--shachoshitsu-tooltip-border);
+  border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.5);color:var(--text-main);
+  font-family:'Noto Sans JP',sans-serif;opacity:0;pointer-events:none;
+  transition:opacity 0.15s ease;transition-delay:0s;z-index:100}
+.shachoshitsu-doc:hover .shachoshitsu-doc-tooltip{opacity:1;transition-delay:0.3s}
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n) .shachoshitsu-doc-tooltip,
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n-1) .shachoshitsu-doc-tooltip{left:auto;right:calc(100% + 12px)}
+.shachoshitsu-doc.is-disabled:hover .shachoshitsu-doc-tooltip,
+.shachoshitsu-doc.is-approved:hover .shachoshitsu-doc-tooltip{opacity:0}
+.shachoshitsu-doc-tooltip .tooltip-section{margin-bottom:12px}
+.shachoshitsu-doc-tooltip .tooltip-section:last-child{margin-bottom:0}
+.shachoshitsu-doc-tooltip .tooltip-label{font-size:10px;font-weight:700;color:var(--gold);
+  letter-spacing:2px;margin-bottom:4px}
+.shachoshitsu-doc-tooltip .tooltip-text{font-size:12px;line-height:1.6;color:var(--text-main)}
 </style>
 </head>
 <body>
@@ -2959,6 +3018,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
     <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
     <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
+    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
     <button class="nav-btn" onclick="showScreen('finance',event)">🏢 経営</button>
@@ -3020,6 +3080,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <div class="panel-title" id="scoutEventTitle">🔍 スカウトイベント</div>
       <div id="scoutEventContent"></div>
     </div>
+  </div>
+
+  <!-- SCREEN: Shachoshitsu (社長室 Phase 1) -->
+  <div class="screen" id="screen-shachoshitsu">
+    <div id="shachoshitsuContent"></div>
   </div>
 
   <!-- SCREEN: Show Prep -->

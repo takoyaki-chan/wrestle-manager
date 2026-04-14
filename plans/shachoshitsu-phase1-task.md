@@ -114,21 +114,107 @@ function renderShachoshitsu() {
   // 2-4. 書類グリッド（4×2のプレースホルダー7枚、Phase 1では全部同じ見た目）
   html += `<div class="shachoshitsu-doc-grid">`;
   const placeholderDocs = [
-    { id: 'bonus', label: 'ボーナス支給願', cost: '50万', dp: 1 },
-    { id: 'encourage', label: '面談申込書', cost: '無料', dp: 0 },
-    { id: 'refresh_leave', label: '休暇辞令', cost: '100万', dp: 1 },
-    { id: 'party', label: '慰労会開催届', cost: '15万×人数', dp: 1 },
-    { id: 'trainer', label: '専属トレーナー手配書', cost: '160万', dp: 2 },
-    { id: 'camp', label: '合宿実施稟議書', cost: '40万×人数', dp: 3 },
-    { id: 'media', label: 'メディア露出稟議書', cost: '120万', dp: 2 },
+    {
+      id: 'bonus',
+      label: 'ボーナス支給願',
+      cost: '50万', dp: 1,
+      category: 'care', categoryLabel: '選手ケア',
+      icon: '💰',
+      body: '対象選手に特別手当を支給し、組織貢献への感謝を示す',
+      detailText: '特別手当の支給により、信頼関係に揺らぎのある選手の心を繋ぎ止める。額面よりも「見てくれている」という事実が響く。',
+      effectSummary: '信頼度 +8〜12(2-3週後に発現)',
+      recommendation: '信頼度が60を下回り始めた選手に早期介入するのが効果的。',
+    },
+    {
+      id: 'encourage',
+      label: '面談申込書',
+      cost: '無料', dp: 0,
+      category: 'care', categoryLabel: '選手ケア',
+      icon: '💬',
+      body: 'スランプ中の選手と対話し、気持ちを立て直す機会を設ける',
+      detailText: '社長自ら面談の場を設け、選手の本音に耳を傾ける。コスト0・決裁枠0でスランプ脱出の糸口を掴める気軽な一手。',
+      effectSummary: 'スランプ回復モーメンタム + 信頼度微上昇',
+      recommendation: 'スランプ/モチベ低下の初期段階で真っ先に使いたい。',
+    },
+    {
+      id: 'refresh_leave',
+      label: '休暇辞令',
+      cost: '100万', dp: 1,
+      category: 'care', categoryLabel: '選手ケア',
+      icon: '🏖️',
+      body: '心身の疲弊を察し、一定期間の休養を与える',
+      detailText: '数週間の休養を正式な辞令として発行。強制的に現場から離脱させることで、心身を根本から回復させる重い一手。',
+      effectSummary: 'スランプ強力回復 + condition回復 + 信頼度上昇',
+      recommendation: '面談では効果が薄い重症スランプに対する切り札。クールダウン4週に注意。',
+    },
+    {
+      id: 'party',
+      label: '慰労会開催届',
+      cost: '15万×人数', dp: 1,
+      category: 'care', categoryLabel: '選手ケア',
+      icon: '🍻',
+      body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
+      detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
+      effectSummary: '全員信頼度微上昇 + ロッカールームmorale回復',
+      recommendation: 'moraleが50を下回ったときの応急処置として。',
+    },
+    {
+      id: 'trainer',
+      label: '専属トレーナー手配書',
+      cost: '160万', dp: 2,
+      category: 'growth', categoryLabel: '育成',
+      icon: '💪',
+      body: '対象選手の成長を加速させるため、外部専属トレーナーを招聘する',
+      detailText: '外部の専属トレーナーを期間限定で招聘。短期集中で成長曲線を押し上げる、育成特化の投資型書類。',
+      effectSummary: '4週間 成長速度+30% + 信頼度上昇',
+      recommendation: '伸ばしたい若手、シリーズ前の追い込み期、昇格を狙う選手に。',
+    },
+    {
+      id: 'camp',
+      label: '合宿実施手配書',
+      cost: '40万×人数', dp: 3,
+      category: 'growth', categoryLabel: '育成',
+      icon: '🏕️',
+      body: '全選手を集中的に強化するため、合宿を実施する',
+      detailText: '選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。単価40万×人数と決裁枠3の重量級書類。',
+      effectSummary: '2週間 全員成長速度+50% + 全員信頼度微上昇',
+      recommendation: '資金に余裕があり、オフシーズンに全体を底上げしたいとき。',
+    },
+    {
+      id: 'media',
+      label: 'メディア露出手配書',
+      cost: '120万', dp: 2,
+      category: 'pr', categoryLabel: '広報',
+      icon: '📺',
+      body: '対象選手を広告塔とし、団体の知名度向上を図る',
+      detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人のコンディション維持を両立させる外向き施策。',
+      effectSummary: 'orgPop +0.4 + 対象選手 condition+5 + 信頼度上昇',
+      recommendation: '団体人気20以上が前提。看板選手のコンディション管理と兼ねて。',
+    },
   ];
 
   placeholderDocs.forEach(doc => {
     html += `
-      <div class="shachoshitsu-doc" data-doc-id="${doc.id}">
+      <div class="shachoshitsu-doc" data-doc-id="${doc.id}" data-category="${doc.category}">
+        <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
+        <div class="shachoshitsu-doc-icon">${doc.icon}</div>
         <div class="shachoshitsu-doc-title">${doc.label}</div>
-        <div class="shachoshitsu-doc-body"></div>
+        <div class="shachoshitsu-doc-body">${doc.body}</div>
         <div class="shachoshitsu-doc-cost">${doc.cost} / 決裁⚡${doc.dp}</div>
+        <div class="shachoshitsu-doc-tooltip">
+          <div class="tooltip-section">
+            <div class="tooltip-label">詳細</div>
+            <div class="tooltip-text">${doc.detailText}</div>
+          </div>
+          <div class="tooltip-section">
+            <div class="tooltip-label">効果</div>
+            <div class="tooltip-text">${doc.effectSummary}</div>
+          </div>
+          <div class="tooltip-section">
+            <div class="tooltip-label">使いどころ</div>
+            <div class="tooltip-text">${doc.recommendation}</div>
+          </div>
+        </div>
       </div>
     `;
   });
@@ -175,7 +261,7 @@ function renderShachoshitsuHud() {
 **注意事項**:
 - 上記のコードはあくまで実装の骨格例。既存コードのパターン（文字列結合の方法、ヘルパー関数の命名規則など）に合わせて調整すること
 - `Engine.util.formatDate` が既存で存在するか確認し、しなければ別の方法で日付表示
-- 書類の本文（`doc-body`）は Phase 1 では空欄でOK、Phase 3で仕様書§3.2の本文を入れる
+- Phase 1 のプレースホルダー段階から書類本文・アイコン・ツールチップ内容を同梱している。Phase 3 で `DECISION_DOCS` 本体に置き換える際、このプレースホルダーがそのまま正仕様と整合するようにしてある
 
 ---
 
@@ -320,11 +406,35 @@ function renderShachoshitsuHud() {
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
 
+/* 左上カテゴリタグ */
+.shachoshitsu-doc-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(30, 28, 22, 0.2);
+  color: var(--office-text-on-cream-sub, #5a5244);
+  letter-spacing: 1px;
+  border-radius: 2px;
+}
+
+/* 中央絵文字アイコン */
+.shachoshitsu-doc-icon {
+  font-size: 34px;
+  line-height: 1;
+  text-align: center;
+  margin-top: 36px;
+  /* 絵文字は環境フォントで描画。ズレ補正用の余白は下の title 側で取る */
+}
+
 .shachoshitsu-doc-title {
   font-size: 15px;
   font-weight: 700;
   text-align: center;
-  margin-top: 24px;
+  margin-top: 14px;
   letter-spacing: 1px;
 }
 
@@ -332,8 +442,8 @@ function renderShachoshitsuHud() {
   font-size: 11px;
   color: var(--office-text-on-cream-sub, #5a5244);
   line-height: 1.5;
-  margin-top: 16px;
-  padding: 0 8px;
+  margin-top: 12px;
+  padding: 0 12px;
   text-align: center;
 }
 
@@ -347,6 +457,68 @@ function renderShachoshitsuHud() {
   color: var(--shachoshitsu-vermillion);
   font-weight: 700;
   font-family: 'Oswald', sans-serif;
+}
+
+/* ========================================
+   ホバー詳細ツールチップ
+   ======================================== */
+.shachoshitsu-doc-tooltip {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 12px);
+  width: 280px;
+  padding: 16px;
+  background: rgba(24, 22, 20, 0.95);
+  border: 1px solid rgba(212, 168, 67, 0.5);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color: #f0ece0;
+  font-family: 'Noto Sans JP', sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  transition-delay: 0s;
+  z-index: 100;
+}
+
+/* ホバー開始から 0.3s 遅延して表示 */
+.shachoshitsu-doc:hover .shachoshitsu-doc-tooltip {
+  opacity: 1;
+  transition-delay: 0.3s;
+}
+
+/* グリッド右端2列（3,4,7,8 枚目）は左側反転表示 */
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n) .shachoshitsu-doc-tooltip,
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n-1) .shachoshitsu-doc-tooltip {
+  left: auto;
+  right: calc(100% + 12px);
+}
+
+/* 無効化状態では詳細ツールチップを出さない */
+.shachoshitsu-doc.is-disabled:hover .shachoshitsu-doc-tooltip,
+.shachoshitsu-doc.is-approved:hover .shachoshitsu-doc-tooltip {
+  opacity: 0;
+}
+
+.shachoshitsu-doc-tooltip .tooltip-section {
+  margin-bottom: 12px;
+}
+.shachoshitsu-doc-tooltip .tooltip-section:last-child {
+  margin-bottom: 0;
+}
+
+.shachoshitsu-doc-tooltip .tooltip-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #d4a843;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.shachoshitsu-doc-tooltip .tooltip-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #f0ece0;
 }
 
 /* CSS変数の定義（まだ存在しなければ追加） */
