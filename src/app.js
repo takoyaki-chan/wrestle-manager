@@ -3642,6 +3642,8 @@ const App = {
 
   // Set show venue
   setShowVenue(venueIdx) {
+    // orgPop リバランス v1.1 §5: ドーム年1回制限
+    if (venueIdx === 9 && (G.domeShowsThisSeason || 0) >= 1) return;
     G = { ...G, showVenue: venueIdx };
     renderShowPrep();
   },
@@ -4612,6 +4614,33 @@ const App = {
       leftId: m.left, rightId: m.right, showCount: s.totalShows,
     }));
     s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
+
+    // orgPop リバランス v1.1 §4: ドーム興行 domeMain キャリア記録
+    // メインイベント枠(idx=0) or タイトルマッチに出場した選手を記録
+    if (s.showVenue === 9) {
+      roster = roster.map(c => c); // コピーを維持
+      validMatches.forEach((m, idx) => {
+        const isMain = idx === 0; // メインイベント枠
+        const isTitle = !!m.isTitle;
+        if (!isMain && !isTitle) return;
+        const r = results[idx];
+        if (!r) return;
+        const matchType = isTitle ? 'title' : 'main';
+        [
+          { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
+          { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
+        ].forEach(({ charId, result }) => {
+          roster = roster.map(c => {
+            if (c.id !== charId || c.isIntrusion) return c;
+            const ev = { type: 'domeMain', season: s.season, result, matchType };
+            const cr = c.careerRecord || { history: [] };
+            return { ...c, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
+          });
+        });
+      });
+      // orgPop リバランス v1.1 §5: ドーム興行カウント更新
+      s = { ...s, roster, domeShowsThisSeason: (s.domeShowsThisSeason || 0) + 1 };
+    }
     if (pendingGrowthEvents.length > 0) {
       G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
     }
@@ -5412,6 +5441,16 @@ const App = {
     if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
       const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
+    }
+    // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知
+    if (G._pendingSeasonStartNotif) {
+      const notif = G._pendingSeasonStartNotif;
+      const { _pendingSeasonStartNotif: _, ...cleanG } = G;
+      G = cleanG;
+      if (notif.decay > 0) {
+        const nowPop = Math.round(notif.nowPop * 10) / 10;
+        setTimeout(() => showToast(`📣 オフシーズンで団体人気が -${notif.decay} 減衰しました（現在: ${nowPop}）`, 6000), 800);
+      }
     }
   },
 

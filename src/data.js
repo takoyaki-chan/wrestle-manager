@@ -882,7 +882,7 @@ const VENUES = [
   {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
   {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
   {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
-  {name:'ドーム',    cap:30000, cost:12000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9
+  {name:'ドーム',    cap:22500, cost:11000, maxMatches:8, img:'../image/venue_9_dome.webp'},        // 9 (orgPop-rebalance v1.1: cap 30000→22500, cost 12000→11000)
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
 // v3.1: 高orgPop帯を圧縮（旧: 70→4000, 80→7000, 90→14000, 100→20000）

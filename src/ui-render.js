@@ -2150,12 +2150,19 @@ function renderShowPrep() {
   VENUES.forEach((v, i) => {
     const selected = G.showVenue === i;
     const fillRate = baseAtt / v.cap;
+    // orgPop リバランス v1.1 §5: ドーム年1回制限チェック
+    const isDomeLocked = (i === 9 && (G.domeShowsThisSeason || 0) >= 1);
     let riskClass = '', riskLabel = '';
-    if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '◎ 安全'; }
+    if (isDomeLocked) { riskClass = 'venue-danger'; riskLabel = '🔒 今季使用済み'; }
+    else if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '◎ 安全'; }
     else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = '△ 挑戦'; }
     else { riskClass = 'venue-danger'; riskLabel = '✕ 危険'; }
-    html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}"
-      onclick="App.setShowVenue(${i});renderShowPrep()">
+    const clickHandler = isDomeLocked
+      ? `onclick="showToast('今シーズンは既にドーム興行を開催済みです。次シーズンに挑戦してください。', 4000)"`
+      : `onclick="App.setShowVenue(${i});renderShowPrep()"`;
+    html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}${isDomeLocked ? ' venue-locked' : ''}"
+      ${clickHandler}
+      style="${isDomeLocked ? 'opacity:0.55;cursor:not-allowed' : ''}">
       ${v.img ? `<img src="${v.img}" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;opacity:0.8" onerror="this.style.display='none'" alt="">` : ''}
       <div class="venue-name">${v.name}</div>
       <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
@@ -2509,6 +2516,58 @@ function _financeChart(values, options = {}) {
   return `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">${label ? `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">${label}</div>` : ''}${svg}</div>`;
 }
 
+/**
+ * orgPop推移グラフSVG生成（orgPop リバランス v1.1 §6）
+ * @param {Array<{season:number, pop:number}>} points - シーズン別orgPop
+ * @returns {string} SVG HTML文字列
+ */
+function _orgPopChart(points) {
+  if (!points || points.length < 2) return '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">まだデータが不足しています（2シーズン以上経過後に表示）</div>';
+  const height = 140, width = 350, leftPad = 42, bottomPad = 20;
+  const plotW = width - leftPad;
+  const plotH = height - bottomPad;
+  // Y軸: 0-100固定（ただし表示は10ずつのグリッド）
+  const gridVals = [0, 20, 40, 60, 80, 100];
+  const toY = v => Math.round(plotH - (v / 100) * plotH);
+  // 色: orgPop帯別グラデーション風（現在値で決定）
+  const lastPop = points[points.length - 1].pop;
+  const lineColor = lastPop >= 90 ? '#f1c40f' : lastPop >= 75 ? '#2ecc71' : lastPop >= 55 ? '#3498db' : '#aaa';
+  // 折れ線点列
+  const pts = points.map((p, i) => {
+    const x = leftPad + Math.round(i * plotW / Math.max(points.length - 1, 1));
+    const y = toY(p.pop);
+    return { x, y, season: p.season, pop: p.pop };
+  });
+  const polyline = pts.map(p => `${p.x},${p.y}`).join(' ');
+  // ドーム閾値ライン (90)
+  const domeY = toY(90);
+  let svg = `<svg width="${width}" height="${height + 4}" style="display:block;overflow:visible">`;
+  // グリッド
+  gridVals.forEach(v => {
+    const y = toY(v);
+    const isTarget = v === 90;
+    svg += `<line x1="${leftPad}" y1="${y}" x2="${width}" y2="${y}" stroke="rgba(200,190,170,${isTarget ? 0.35 : 0.07})" stroke-width="${isTarget ? 1 : 0.5}"${isTarget ? ' stroke-dasharray="5,3"' : ''}/>`;
+    svg += `<text x="${leftPad - 5}" y="${y + 3}" text-anchor="end" fill="rgba(200,190,170,${isTarget ? 0.6 : 0.25})" font-size="10">${v}</text>`;
+  });
+  // ドーム閾値ラベル
+  svg += `<text x="${leftPad + 4}" y="${domeY - 4}" fill="rgba(241,196,15,0.55)" font-size="9">ドーム圏</text>`;
+  // 折れ線
+  svg += `<polyline points="${polyline}" fill="none" stroke="${lineColor}" stroke-width="2.5"/>`;
+  // データ点（ホバーtitleつき）+ 5シーズンおきにシーズン番号
+  pts.forEach((p, i) => {
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColor}" stroke="var(--bg-main)" stroke-width="1.5"><title>S${p.season}: ${Math.round(p.pop * 10) / 10}</title></circle>`;
+    // シーズン番号ラベル（5の倍数 or 最初と最後）
+    if (p.season % 5 === 0 || i === 0 || i === pts.length - 1) {
+      svg += `<text x="${p.x}" y="${height - 2}" text-anchor="middle" fill="rgba(200,190,170,0.35)" font-size="9">S${p.season}</text>`;
+    }
+  });
+  // 最新値ラベル
+  const last = pts[pts.length - 1];
+  svg += `<text x="${last.x + 5}" y="${last.y - 6}" fill="${lineColor}" font-size="11" font-weight="700">${Math.round(lastPop * 10) / 10}</text>`;
+  svg += '</svg>';
+  return `<div style="padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:14px">${svg}</div>`;
+}
+
 /** filteredFinanceHistory から週ごとに値を集計する */
 function _weeklyFinanceValues(filtered, extractFn) {
   return filtered.map(h => {
@@ -2563,7 +2622,7 @@ function renderFinance() {
   html += `</div>`;
 
   // ── サブタブバー ──
-  const tabDefs = [{ k:'summary', l:'📊 総合' }, { k:'income', l:'📈 収入' }, { k:'expense', l:'📉 支出' }, { k:'salary', l:'💰 給与' }];
+  const tabDefs = [{ k:'summary', l:'📊 総合' }, { k:'income', l:'📈 収入' }, { k:'expense', l:'📉 支出' }, { k:'salary', l:'💰 給与' }, { k:'orgpop', l:'📣 団体人気' }];
   html += `<div style="display:flex;gap:4px;margin-bottom:14px">`;
   tabDefs.forEach(t => {
     const a = tab === t.k;
@@ -2761,6 +2820,50 @@ function renderFinance() {
     html += '</table>';
     if (rentalFightersForSalary.length > 0) {
       html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">🤝 レンタル選手（${rentalFightersForSalary.map(c => c.name).join('、')}）は前払い契約のため給与なし</div>`;
+    }
+  }
+
+  // ── 団体人気推移タブ（orgPop リバランス v1.1 §6）──
+  else if (tab === 'orgpop') {
+    // seasonHistory から過去シーズンのorgPopを収集（最大30シーズン）
+    const sh = (G.seasonHistory || []).slice(-29);
+    const chartPoints = sh.map(h => ({ season: h.season, pop: h.orgPop || h.peakPop || 0 }));
+    // 現在シーズンの現在値を末尾に追加
+    chartPoints.push({ season: G.season, pop: G.orgPop || 0 });
+
+    html += `<div class="panel-title" style="margin-top:0">団体人気推移</div>`;
+    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">折れ線: 各シーズン末のorgPop ／ 破線: ドーム圏(90)</div>`;
+    html += _orgPopChart(chartPoints);
+
+    // 現在のorgPop状態説明
+    const curPop = G.orgPop || 0;
+    let popDesc = '', popColor = 'var(--text-dim)';
+    if (curPop >= 95) { popDesc = '頂点 — ドーム満員が狙える'; popColor = '#f1c40f'; }
+    else if (curPop >= 90) { popDesc = 'ドーム挑戦圏 — 理想のカードで成功も'; popColor = '#2ecc71'; }
+    else if (curPop >= 80) { popDesc = 'メジャー — ドームを意識し始めるレベル'; popColor = '#3498db'; }
+    else if (curPop >= 65) { popDesc = '中堅上位 — じわじわ登り続けよう'; popColor = '#aaa'; }
+    else if (curPop >= 50) { popDesc = '中堅 — 着実に興行を重ねて'; popColor = '#aaa'; }
+    else { popDesc = '発展中 — まだまだここから'; popColor = '#aaa'; }
+    html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px">`;
+    html += `<div style="font-size:22px;font-weight:900;color:${popColor}">${Math.round(curPop * 10) / 10} <span style="font-size:12px;font-weight:400;color:var(--text-dim)">/ 100</span></div>`;
+    html += `<div style="font-size:12px;color:${popColor};margin-top:2px">${popDesc}</div>`;
+    html += `</div>`;
+
+    // 直近の変動サマリ
+    if (sh.length >= 2) {
+      const prev = sh[sh.length - 1];
+      const prevPop = prev.orgPop || prev.peakPop || 0;
+      const delta = curPop - prevPop;
+      const deltaStr = `${delta >= 0 ? '+' : ''}${Math.round(delta * 10) / 10}`;
+      const deltaColor = delta >= 0 ? '#2ecc71' : '#e74c3c';
+      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">前シーズン比: <span style="color:${deltaColor};font-weight:700">${deltaStr}</span>（S${prev.season}: ${Math.round(prevPop * 10) / 10} → 現在: ${Math.round(curPop * 10) / 10}）</div>`;
+    }
+
+    // ドームまでの距離
+    if (curPop < 90) {
+      html += `<div style="font-size:12px;color:rgba(241,196,15,0.6);margin-top:6px">ドーム圏まであと <strong style="color:rgba(241,196,15,0.9)">${Math.round((90 - curPop) * 10) / 10}</strong> ポイント</div>`;
+    } else {
+      html += `<div style="font-size:12px;color:rgba(241,196,15,0.8);margin-top:6px">🏟️ ドーム圏内です！今シーズン${(G.domeShowsThisSeason || 0) >= 1 ? '（今季使用済み）' : 'の挑戦を検討してください'}</div>`;
     }
   }
 
@@ -4075,6 +4178,23 @@ function renderSave() {
   if (!el) return;
   let html = '';
 
+  // ⚠️ 重要警告: セーブデータの永続性について（最上部・目立つ位置）
+  html += `<div style="margin-bottom:18px;padding:14px 16px;background:linear-gradient(135deg,rgba(231,112,85,0.18),rgba(231,112,85,0.10));border:2px solid rgba(231,112,85,0.55);border-radius:8px">
+    <div style="font-size:14px;font-weight:900;color:#ff8c6b;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      <span style="font-size:18px">⚠️</span>セーブデータについて必ずお読みください
+    </div>
+    <div style="font-size:12px;color:#f5e8e0;line-height:1.75">
+      このゲームのセーブデータは<span style="color:#ffb59a;font-weight:700">ブラウザのローカルストレージ</span>に保存されます。<br>
+      ブラウザのキャッシュクリア・再インストール・プライベートモード終了で<span style="color:#ff7a55;font-weight:700">データが完全に消失</span>します。<br>
+      <span style="color:#ffd1bd;font-weight:700">📥 大切なデータは必ず「書出」ボタンでファイルにバックアップしてください。</span>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:5px;font-size:11px;color:#e0d4cc;line-height:1.7">
+      <span style="color:#ffb59a;font-weight:700">📱 タブレットでプレイする方へ</span><br>
+      予期せぬページ再読み込みでオートセーブが失われることがあります。<br>
+      週ごとに手動で「書出」しておくことを強く推奨します。
+    </div>
+  </div>`;
+
   // Autosave info
   if (!window.IS_TRIAL) {
     const autoInfo = getAutoSaveInfo();
@@ -4137,13 +4257,6 @@ function renderSave() {
       </div>`;
     }
   }
-
-  // Browser storage notice
-  html += `<div style="margin-top:16px;padding:10px 14px;background:rgba(253,203,110,0.06);border:1px solid rgba(253,203,110,0.15);border-radius:6px;font-size:11px;color:var(--text-sub);line-height:1.7">
-    ⚠️ セーブデータは<span style="color:#fdcb6e;font-weight:700">ブラウザのローカルストレージ</span>に保存されています。<br>
-    キャッシュクリアやブラウザの再インストールで<span style="color:#e17055;font-weight:700">データが消失</span>する場合があります。<br>
-    大切なデータは「📥 書出」でファイルにバックアップしてください。
-  </div>`;
 
   // Data Transfer section
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">

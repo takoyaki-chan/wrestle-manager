@@ -9404,7 +9404,10 @@ const Engine = {
         }
 
         // v1.5: orgPop 年次自然減衰 — orgPop帯に応じた可変減衰（施策B-1）
-        s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - Engine.orgPop.calcAnnualDecay(s.orgPop || 0)) };
+        // orgPop リバランス v1.1 §7: 減衰前の値を保持（シーズン開始時通知用）
+        const _preDecayOrgPop = s.orgPop || 0;
+        s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - Engine.orgPop.calcAnnualDecay(s.orgPop || 0)),
+              _prevSeasonEndOrgPop: _preDecayOrgPop };
 
         // v2.0: オフシーズン trust 自然変動（興行なし期間: 各選手に自然減衰 + メンタル回復のみ適用）
         const offSeasonRoster = s.roster.map(f => {
@@ -9674,6 +9677,7 @@ const Engine = {
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
               ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined,
+              domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: シーズン開幕時にリセット
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
               rngSeed: Engine.rng.derive(s.rngSeed, s.season + 1) };
@@ -9703,6 +9707,19 @@ const Engine = {
           events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (基礎${r.baseScore} 対戦${r.battlePt >= 0 ? '+' : ''}${r.battlePt})`);
         });
         events.push(`🎬 シーズン${s.season}開幕！`);
+        // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知（暫定表示）
+        {
+          const preDecay = s._prevSeasonEndOrgPop != null ? s._prevSeasonEndOrgPop : null;
+          if (preDecay != null) {
+            const decay = Engine.orgPop.calcAnnualDecay(preDecay);
+            const nowPop = s.orgPop || 0;
+            if (decay > 0) {
+              events.push(`📣 オフシーズン中、団体人気が自然減衰しました（-${decay}、現在: ${Math.round(nowPop * 10) / 10}）`);
+            }
+            // transient フラグ: app.js でトーストとして表示
+            s = { ...s, _pendingSeasonStartNotif: { preDecay, decay, nowPop } };
+          }
+        }
         return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
       }
 
@@ -10145,6 +10162,7 @@ const Engine = {
       draftComplete: !isDraft,
       showCard: [],
       showVenue: 0,
+      domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: ドーム年1回制限
       attendanceMomentum: 0, // L1: 勢い補正（-0.15〜+0.15）
       lastShowResults: [],
       weeklyFinance: { income: 0, expense: 0, details: [] },
@@ -10426,9 +10444,10 @@ Engine.orgPop = {
     if (orgPop < 20) return 1.0;   // 創設期: そのまま上がる
     if (orgPop < 40) return 0.70;  // 地方団体: やや鈍化（緩和）
     if (orgPop < 55) return 0.35;  // 中堅の壁: 大幅鈍化
-    if (orgPop < 70) return 0.20;  // メジャーの壁
-    if (orgPop < 85) return 0.12;  // トップ級
-    return 0.08;                    // 覇権級: ほとんど上がらない
+    if (orgPop < 70) return 0.22;  // メジャーの壁（緩和）
+    if (orgPop < 85) return 0.22;  // トップ級（★主要修正: 0.12→0.22）
+    if (orgPop < 95) return 0.15;  // 準頂点: 帯細分化（新設）
+    return 0.06;                    // 覇権級: 頂点はシビアに
   },
 
   // 施策A: 逓減適用 — 正方向のみ逓減、負方向はそのまま
@@ -10440,14 +10459,15 @@ Engine.orgPop = {
     return rawDelta;
   },
 
-  // v3.1: 年次減衰強化（高帯の維持コスト増加）
+  // orgPop リバランス v1.1: 年次減衰を緩和（高帯でも登れる坂に）
   calcAnnualDecay(orgPop) {
     if (orgPop < 15) return 0;    // 創設期: 減衰なし（序盤保護）
     if (orgPop < 50) return 1;    // 弱小〜中堅: 微減のみ
     if (orgPop < 65) return 2;    // 中堅上位: 緩やかな減衰
-    if (orgPop < 80) return 4;    // メジャー: 維持に努力が必要
-    if (orgPop < 90) return 7;    // トップ: かなり落ちる
-    return 15;                     // 頂点: 非常に激しく落ちる
+    if (orgPop < 80) return 3;    // メジャー: 維持可能（4→3）
+    if (orgPop < 90) return 3;    // トップ前半: 0.22mult×★3.8で頂上射程に（7→3）
+    if (orgPop < 95) return 7;    // 準頂点: 帯細分化（新設）
+    return 10;                     // 頂点: 厳しいが「触れたら罰」を解除（15→10）
   },
 
   // v3.1: 会場レベル別MQ閾値シフト
@@ -10868,7 +10888,10 @@ Engine.awards = {
     const rookiePt = hist.some(e => e.type === 'awardRookie') ? 1.5 : 0;
     const bestMatchPt = hist.filter(e => e.type === 'awardBestMatch').length * 1;
     const mediaPt = hist.filter(e => e.type === 'awardMedia').length * 1.5;
-    return titlePt + juniorPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt;
+    // orgPop リバランス v1.1: ドームメイン加点（勝利+3、敗北+1）
+    const domeMainPt = hist.filter(e => e.type === 'domeMain' && e.result === 'win').length * 3
+                     + hist.filter(e => e.type === 'domeMain' && e.result === 'lose').length * 1;
+    return titlePt + juniorPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -10932,6 +10955,12 @@ Engine.awards = {
           break;
         case 'awardBestMatch':
           highlights.push({ type: 'awardBestMatch', season: ev.season, text: `ベストマッチ賞（MQ ${ev.mq || '?'}）` });
+          break;
+        case 'domeMain':
+          highlights.push({
+            type: 'domeMain', season: ev.season,
+            text: `ドーム公演 ${ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント'} ${ev.result === 'win' ? '勝利' : '出場'}`
+          });
           break;
       }
     });
