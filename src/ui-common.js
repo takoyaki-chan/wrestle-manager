@@ -2983,7 +2983,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const bestMQ = summary.bestMQ || c.bestMQ || (c.careerBestMQ || 0);
         html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
-            <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.15);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
+            <span style="font-size:11px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.18);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
             <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
             <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
             <span style="color:#b0b8c4;font-weight:700">${draws}分</span>
@@ -3013,7 +3013,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#3498db;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">年表</span>
+            <span style="background:#3498db;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">年表</span>
             キャリア年表
           </h5>`;
 
@@ -3057,7 +3057,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       if (hist.length > 0) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#a29bfe;color:var(--bg);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">経歴</span>
+            <span style="background:#a29bfe;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">経歴</span>
             怪我・重大事項
           </h5>`;
         [...hist].reverse().forEach(h => {
