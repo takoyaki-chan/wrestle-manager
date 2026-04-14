@@ -3159,7 +3159,7 @@ function renderShachoshitsuHud() {
   let hankos = '';
   for (let i = 0; i < dpMax; i++) {
     const cls = i < dp ? 'hanko available' : 'hanko used';
-    hankos += `<img class="${cls}" src="image/shachoshitsu/hanko.webp" alt="決裁枠">`;
+    hankos += `<img class="${cls}" src="../image/shachoshitsu/hanko.webp" alt="決裁枠">`;
   }
   const dateStr = Engine.util.formatDate(G.season, G.week);
   const fundsStr = Math.round(G.funds).toLocaleString();
@@ -3170,6 +3170,8 @@ function renderShachoshitsuHud() {
         <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
       </div>
       <div class="shachoshitsu-hud-right">
+        <span class="shachoshitsu-hud-dp-label">決裁枠</span>
+        <span class="shachoshitsu-hud-dp-count">⚡${dp}/${dpMax}</span>
         <div class="shachoshitsu-hankos">${hankos}</div>
       </div>
     </div>
@@ -3264,7 +3266,7 @@ function renderShachoshitsu() {
   const season = getShachoshitsuSeasonId(G.week);
   let html = '';
   html += renderShachoshitsuHud();
-  html += `<div class="shachoshitsu-wall" style="background-image:url('image/shachoshitsu/wall-window-${season}.webp')"></div>`;
+  html += `<div class="shachoshitsu-wall" style="background-image:url('../image/shachoshitsu/wall-window-${season}.webp')"></div>`;
   html += `<div class="shachoshitsu-desk">`;
   html += `<div class="shachoshitsu-doc-grid">`;
 
@@ -3275,7 +3277,11 @@ function renderShachoshitsu() {
         <div class="shachoshitsu-doc-icon">${doc.icon}</div>
         <div class="shachoshitsu-doc-title">${doc.label}</div>
         <div class="shachoshitsu-doc-body">${doc.body}</div>
-        <div class="shachoshitsu-doc-cost">${doc.cost} / 決裁⚡${doc.dp}</div>
+        <div class="shachoshitsu-doc-cost">
+          <span class="doc-cost-money">${doc.cost}</span>
+          <span class="doc-cost-sep">/</span>
+          <span class="doc-cost-dp">⚡${doc.dp}</span>
+        </div>
         <div class="shachoshitsu-doc-tooltip">
           <div class="tooltip-section">
             <div class="tooltip-label">詳細</div>

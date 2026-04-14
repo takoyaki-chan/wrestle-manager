@@ -45,6 +45,10 @@
   --shachoshitsu-hanko-glow: rgba(255,200,100,0.4);
   --shachoshitsu-tooltip-bg: rgba(24,22,20,0.95);
   --shachoshitsu-tooltip-border: rgba(212,168,67,0.5);
+  /* カテゴリカラー RGB(rgba() で強度可変に使う)*/
+  --shachoshitsu-cat-care-rgb: 230,170,80;    /* 琥珀: 選手ケア */
+  --shachoshitsu-cat-growth-rgb: 150,195,120; /* 若葉: 育成 */
+  --shachoshitsu-cat-pr-rgb: 130,170,210;     /* 空: 広報 */
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -2949,40 +2953,59 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-hud-left{display:flex;align-items:center;gap:24px;font-family:'Oswald',sans-serif;color:var(--text-main)}
 .shachoshitsu-hud-date{font-size:14px;letter-spacing:1px;color:var(--gold)}
 .shachoshitsu-hud-funds{font-size:14px;color:var(--text-sub)}
-.shachoshitsu-hud-right{display:flex;align-items:center}
+.shachoshitsu-hud-right{display:flex;align-items:center;gap:10px}
+.shachoshitsu-hud-dp-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;
+  color:var(--text-sub);text-transform:uppercase}
+.shachoshitsu-hud-dp-count{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;
+  color:var(--gold);letter-spacing:0.5px;-webkit-text-stroke:0.4px rgba(0,0,0,0.7)}
 .shachoshitsu-hankos{display:flex;gap:8px;align-items:center}
 .hanko{width:36px;height:36px;transition:all 0.3s ease}
 .hanko.available{filter:drop-shadow(0 0 6px var(--shachoshitsu-hanko-glow))}
 .hanko.used{transform:rotate(90deg) translateY(6px);filter:grayscale(1);opacity:0.4}
-.shachoshitsu-wall{position:relative;width:100%;height:400px;background-size:cover;background-position:center;
-  background-repeat:no-repeat;margin-top:-60px;padding-top:60px}
-.shachoshitsu-desk{position:relative;width:100%;min-height:720px;background-image:url('image/shachoshitsu/desk.webp');
-  background-size:cover;background-position:center top;background-repeat:no-repeat;margin-top:-60px;padding:80px 0 40px;
+.shachoshitsu-wall{position:relative;width:100%;aspect-ratio:1920/400;background-size:cover;background-position:center;
+  background-repeat:no-repeat;margin-top:-60px;padding-top:60px;box-sizing:border-box}
+.shachoshitsu-desk{position:relative;width:100%;min-height:560px;background-image:url('../image/shachoshitsu/desk.webp');
+  background-size:cover;background-position:center top;background-repeat:no-repeat;padding:32px 0 32px;
   display:flex;justify-content:center;align-items:flex-start}
-.shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,240px);gap:20px;max-width:1020px;margin:0 auto}
-.shachoshitsu-doc{width:240px;height:320px;background-image:url('image/shachoshitsu/document-blank.webp');
+.shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,196px);gap:16px;max-width:832px;margin:0 auto}
+.shachoshitsu-doc{width:196px;height:260px;background-image:url('../image/shachoshitsu/document-blank.webp');
   background-size:cover;background-position:center;position:relative;cursor:pointer;
-  transition:transform 0.2s ease, filter 0.2s ease;padding:24px 20px;box-sizing:border-box;
+  transition:transform 0.2s ease, filter 0.2s ease;padding:20px 16px;box-sizing:border-box;
   color:var(--cream-text-main);font-family:'Noto Sans JP',sans-serif}
-.shachoshitsu-doc:hover{transform:translateY(-4px);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3))}
-.shachoshitsu-doc-tag{position:absolute;top:14px;left:14px;font-size:9px;font-weight:700;padding:2px 6px;
+.shachoshitsu-doc::before{content:'';position:absolute;inset:0;pointer-events:none}
+.shachoshitsu-doc[data-category="care"]::before{background:rgba(var(--shachoshitsu-cat-care-rgb),0.11)}
+.shachoshitsu-doc[data-category="growth"]::before{background:rgba(var(--shachoshitsu-cat-growth-rgb),0.11)}
+.shachoshitsu-doc[data-category="pr"]::before{background:rgba(var(--shachoshitsu-cat-pr-rgb),0.11)}
+.shachoshitsu-doc:hover{transform:translateY(-4px);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3));z-index:50}
+.shachoshitsu-doc-tag{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;padding:2px 6px;
   background:rgba(255,255,255,0.55);border:1px solid rgba(30,28,22,0.2);color:var(--cream-text-sub);
   letter-spacing:1px;border-radius:2px}
-.shachoshitsu-doc-icon{font-size:34px;line-height:1;text-align:center;margin-top:36px}
-.shachoshitsu-doc-title{font-size:15px;font-weight:700;text-align:center;margin-top:14px;letter-spacing:1px}
-.shachoshitsu-doc-body{font-size:11px;color:var(--cream-text-sub);line-height:1.5;margin-top:12px;
-  padding:0 12px;text-align:center}
-.shachoshitsu-doc-cost{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:12px;
-  color:var(--shachoshitsu-vermillion);font-weight:700;font-family:'Oswald',sans-serif}
-/* ホバー詳細ツールチップ */
-.shachoshitsu-doc-tooltip{position:absolute;top:0;left:calc(100% + 12px);width:280px;padding:16px;
-  background:var(--shachoshitsu-tooltip-bg);border:1px solid var(--shachoshitsu-tooltip-border);
-  border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.5);color:var(--text-main);
+.shachoshitsu-doc[data-category="care"] .shachoshitsu-doc-tag{background:rgba(var(--shachoshitsu-cat-care-rgb),0.55);border-color:rgba(var(--shachoshitsu-cat-care-rgb),0.75)}
+.shachoshitsu-doc[data-category="growth"] .shachoshitsu-doc-tag{background:rgba(var(--shachoshitsu-cat-growth-rgb),0.55);border-color:rgba(var(--shachoshitsu-cat-growth-rgb),0.75)}
+.shachoshitsu-doc[data-category="pr"] .shachoshitsu-doc-tag{background:rgba(var(--shachoshitsu-cat-pr-rgb),0.55);border-color:rgba(var(--shachoshitsu-cat-pr-rgb),0.75)}
+.shachoshitsu-doc-icon{font-size:30px;line-height:1;text-align:center;margin-top:30px;position:relative}
+.shachoshitsu-doc-title{font-size:13px;font-weight:700;text-align:center;margin-top:12px;letter-spacing:0.5px;position:relative}
+.shachoshitsu-doc-body{font-size:10px;color:var(--cream-text-sub);line-height:1.5;margin-top:10px;
+  padding:0 8px;text-align:center;position:relative}
+.shachoshitsu-doc-cost{position:absolute;bottom:14px;left:0;right:0;
+  display:flex;justify-content:center;align-items:baseline;gap:8px;padding:0 12px;
+  font-family:'Oswald',sans-serif;font-weight:700;line-height:1}
+.doc-cost-money{font-size:16px;color:var(--shachoshitsu-vermillion);letter-spacing:0.5px}
+.doc-cost-sep{font-size:13px;color:var(--cream-text-dim);opacity:0.7}
+.doc-cost-dp{font-size:14px;color:var(--gold);letter-spacing:0.5px;
+  background:rgba(212,168,67,0.18);border:1px solid rgba(212,168,67,0.5);border-radius:3px;
+  padding:2px 7px;line-height:1;
+  -webkit-text-stroke:0.6px rgba(0,0,0,0.9)}
+/* ホバー詳細ツールチップ: 書類下中央に統一、左右端だけ位置補正 */
+.shachoshitsu-doc-tooltip{position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);
+  width:280px;padding:16px;background:var(--shachoshitsu-tooltip-bg);
+  border:1px solid var(--shachoshitsu-tooltip-border);border-radius:4px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);color:var(--text-main);
   font-family:'Noto Sans JP',sans-serif;opacity:0;pointer-events:none;
   transition:opacity 0.15s ease;transition-delay:0s;z-index:100}
 .shachoshitsu-doc:hover .shachoshitsu-doc-tooltip{opacity:1;transition-delay:0.3s}
-.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n) .shachoshitsu-doc-tooltip,
-.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n-1) .shachoshitsu-doc-tooltip{left:auto;right:calc(100% + 12px)}
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n-3) .shachoshitsu-doc-tooltip{left:0;transform:none}
+.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n) .shachoshitsu-doc-tooltip{left:auto;right:0;transform:none}
 .shachoshitsu-doc.is-disabled:hover .shachoshitsu-doc-tooltip,
 .shachoshitsu-doc.is-approved:hover .shachoshitsu-doc-tooltip{opacity:0}
 .shachoshitsu-doc-tooltip .tooltip-section{margin-bottom:12px}
