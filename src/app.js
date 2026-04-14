@@ -4739,7 +4739,52 @@ const App = {
       console.error('[WM] 新聞データ生成エラー:', e);
     }
 
-    renderShowResult(results, injuryResults);
+    // 試合前フレーバーポップアップ（specs/match-flavor-popup-spec-v0.1.md §4.2）
+    // 結果オーバーレイの表示前に、対象試合の左右両選手のセリフを順次流す。
+    // ポップアップキューが空になったら renderShowResult を呼ぶ。
+    const preMatchPopups = App._collectPreMatchPopups(results);
+    if (preMatchPopups.length === 0) {
+      renderShowResult(results, injuryResults);
+    } else {
+      preMatchPopups.forEach(p => showEventPopup(p));
+      _onEventPopupQueueEmpty = () => renderShowResult(results, injuryResults);
+    }
+  },
+
+  // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
+  // results の各試合を見て、検出条件を満たすものについて左右両選手分の popup options を返す。
+  // 段階拡張時はこの中に検出条件 + popups.push ブロックを追加する。
+  _collectPreMatchPopups(results) {
+    const popups = [];
+    if (!Array.isArray(results)) return popups;
+    results.forEach(r => {
+      if (!r || !r.left || !r.right) return;
+      // 初顔合わせ
+      if (r.freshnessLabel === '初顔合わせ') {
+        const leftFighter  = (G.roster || []).find(c => c.id === r.left.id)
+                          || ALL_CHARS.find(c => c.id === r.left.id);
+        const rightFighter = (G.roster || []).find(c => c.id === r.right.id)
+                          || ALL_CHARS.find(c => c.id === r.right.id);
+        const leftLine  = pickDialogueLine(FIRST_MEET_LINES, leftFighter);
+        const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
+        popups.push({
+          type: 'fighter', id: r.left.id, name: r.left.name,
+          message: leftLine,
+          detail: '✨ 初対決',
+          autoCloseMs: 1800,
+          sound: 'event',
+        });
+        popups.push({
+          type: 'fighter', id: r.right.id, name: r.right.name,
+          message: rightLine,
+          detail: '✨ 初対決',
+          autoCloseMs: 1800,
+          sound: 'event',
+        });
+      }
+      // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
+    });
+    return popups;
   },
 
   // ─── 新聞記事テキスト生成 ───────────────────────────────────────────────
