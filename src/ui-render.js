@@ -3153,9 +3153,9 @@ function getShachoshitsuSeasonId(week) {
 
 // HUDバー (日付 / 資金 / 決裁印鑑6本)
 function renderShachoshitsuHud() {
-  // Phase 1: 決裁枠は固定6本で全て立っている状態（機能なし）
-  const dp = 6;
-  const dpMax = 6;
+  // Phase 2: 決裁枠は G.decisionPoints 連動
+  const dpMax = G.decisionPointsMax || 6;
+  const dp = Math.max(0, Math.min(G.decisionPoints != null ? G.decisionPoints : dpMax, dpMax));
   let hankos = '';
   for (let i = 0; i < dpMax; i++) {
     const cls = i < dp ? 'hanko available' : 'hanko used';

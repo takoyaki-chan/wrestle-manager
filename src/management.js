@@ -6756,6 +6756,16 @@ const Engine = {
       s = { ...s, careStock: newCareStock, careStockLastRecovery: careAbsWeek };
     }
 
+    // 社長室 Phase 2: 決裁枠回復(第1,5,9,...,45週の週進行時に +2、シーズン中のみ)
+    // オフシーズン/新シーズン跨ぎは回復なし(前シーズン末残量を持ち越す設計 — spec §2.1)
+    if (!s.offSeason && s.week >= 1 && s.week <= 45 && (s.week - 1) % 4 === 0) {
+      const dpMax = s.decisionPointsMax || 6;
+      const newDp = Math.min((s.decisionPoints || 0) + 2, dpMax);
+      if (newDp !== s.decisionPoints) {
+        s = { ...s, decisionPoints: newDp };
+      }
+    }
+
     // リーダー気質: チャンピオン時orgPop+0.3/週（逓減適用）
     if (s.titles && s.titles.world && s.titles.world.championId) {
       const champId = s.titles.world.championId;
@@ -10245,6 +10255,9 @@ const Engine = {
       careStock: 5,
       careStockMax: 5,
       careStockLastRecovery: 0,
+      // 社長室 Phase 2: 決裁枠(decisionPoints)
+      decisionPoints: 6,
+      decisionPointsMax: 6,
       // v2.0 Phase1-6: 大型イベント
       lastLargeEventWeek: 0,
       mediaSpotlight: null,
@@ -14479,6 +14492,25 @@ Engine.validateGameState = function(G) {
         warn(`キャラ "${c.name}" (id:${c.id}) のcontractPopが未設定`);
       }
     });
+  }
+
+  // ── 社長室(決裁枠)関連 ──
+  if (G.decisionPoints !== undefined) {
+    if (!isValidNum(G.decisionPoints)) {
+      warn(`decisionPointsが不正値: ${G.decisionPoints}`);
+    } else if (G.decisionPoints < 0) {
+      warn(`decisionPointsが負値: ${G.decisionPoints}`);
+    } else if (G.decisionPoints > (G.decisionPointsMax || 6)) {
+      warn(`decisionPointsがmax超過: ${G.decisionPoints}(max: ${G.decisionPointsMax || 6})`);
+    } else if (!Number.isInteger(G.decisionPoints)) {
+      warn(`decisionPointsが非整数: ${G.decisionPoints}→自動修正`);
+      G.decisionPoints = Math.round(G.decisionPoints);
+    }
+  }
+  if (G.decisionPointsMax !== undefined) {
+    if (!isValidNum(G.decisionPointsMax) || G.decisionPointsMax < 1 || G.decisionPointsMax > 20) {
+      warn(`decisionPointsMaxが不正値: ${G.decisionPointsMax}`);
+    }
   }
 
   // ── 経済関連 ──

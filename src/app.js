@@ -2045,6 +2045,10 @@ const Storage = {
           careStockLastRecovery: Engine.util.absWeek(G.season, G.week),
         };
       }
+      // 社長室 Phase 2: 決裁枠マイグレーション
+      if (G.decisionPoints === undefined) {
+        G = { ...G, decisionPoints: 6, decisionPointsMax: 6, _migrated_decisionPoints_v1: true };
+      }
 
       // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
       if (!G._migrated_retiredIds_v1) {
