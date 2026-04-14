@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-10（選手循環システム修正）
+> 最終更新: 2026-04-14（orgPop リバランス v1.1）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**選手循環システム修正 + FA膨張解消（2026-04-10）。** 初期dormantPool設計変更: 78人全員age17→20人（age17-20分散）+58人retiredIdsスタート（retiredSeasons -4〜+5ばらけ、年6人ずつ復帰可能に）。FA膨張解消: Engine.util.canAddToFA/redirectToDormantPoolヘルパー新設、全6箇所のFA流入ルート（AI契約退団/プレイヤー契約退団/突然離脱/レンタル帰還/解雇/オーバーフロー解雇）にROSTER_CFG.faキャップ追加、超過分はdormantPoolへ退避。scoutEventFinish 30% FA流入を廃止（100% dormantPool返却）。初期FA年齢を19-20に固定（ドラフト17-18との棲み分け）。pool-stats計測ツール修正（auto-sim互換ループ）。検証: pool-stats 2シード×20シーズンで安定（Pool=20-24/FA=0-2/age17-18=10-13）、auto-sim 2シード×20シーズン ALL CLEAR。変更: management.js(initRandomRoster/createInitialState/canAddToFA/redirectToDormantPool/processAIContracts/resolveNegotiation/executeShow/processWeeklyRental)、app.js(releaseFighter/_releaseFighterForOverflow/scoutEventFinish)、test/pool-stats.js。
+**orgPop リバランス v1.1（2026-04-14）。** 「70の壁」（orgPop が S20-S30 でも 64 付近に張り付く）を完全解消。§2 逓減カーブ見直し: getDiminishingMultiplier を 70-84:0.12→0.22、85-94 の新 tier 0.15、95+:0.06 に変更。calcAnnualDecay を 79-:3（旧4）、80-89:3（旧7、specの5→さらに緩和）、90-94 の新 tier 7、95+:10（旧15）に変更。§3 ドーム会場リサイズ: cap 30000→22500、cost 12000→11000（理論天井に合わせた満員設計）。§4 殿堂 domeMain ポイント新設: calcHofPoints に domeMain イベント対応追加（メイン勝利+3/敗北+1）、buildCareerHighlights にも case 追加。§5 ドーム年 1 回制限: domeShowsThisSeason フィールド追加（createInitialState + season-reset）、setShowVenue に guard (≥1 で却下)、finalizeShow でカウントアップ + domeMain キャリア記録プッシュ。§6 収支→経営リネーム: ナビボタン「💰 収支」→「🏢 経営」、パネルタイトル変更、収支サブタブに「📣 団体人気」タブ追加 + _orgPopChart 関数新設（SVG折れ線グラフ、Y固定0-100、ドーム解禁ライン90、シーズンラベル、pop 帯別カラー）。§7 シーズン開幕通知: _prevSeasonEndOrgPop 保存 + _pendingSeasonStartNotif transient フィールド → advanceFromWeekSummary でトースト表示（decay > 0 のみ）。検証: auto-sim 5 シード×20 シーズン ALL CLEAR。旧 S30=64.2 → 新 S30=79-86（seed 依存）。変更: management.js(getDiminishingMultiplier/calcAnnualDecay/calcHofPoints/buildCareerHighlights/createInitialState/processSeasonEnd)、data.js(VENUES[9])、app.js(finalizeShow/setShowVenue/advanceFromWeekSummary)、ui-render.js(renderShowPrep/renderFinance/_orgPopChart)、index.html(ナビラベル)。
+
+前回: **選手循環システム修正 + FA膨張解消（2026-04-10）。** 初期dormantPool設計変更: 78人全員age17→20人（age17-20分散）+58人retiredIdsスタート（retiredSeasons -4〜+5ばらけ、年6人ずつ復帰可能に）。FA膨張解消: Engine.util.canAddToFA/redirectToDormantPoolヘルパー新設、全6箇所のFA流入ルート（AI契約退団/プレイヤー契約退団/突然離脱/レンタル帰還/解雇/オーバーフロー解雇）にROSTER_CFG.faキャップ追加、超過分はdormantPoolへ退避。scoutEventFinish 30% FA流入を廃止（100% dormantPool返却）。初期FA年齢を19-20に固定（ドラフト17-18との棲み分け）。pool-stats計測ツール修正（auto-sim互換ループ）。検証: pool-stats 2シード×20シーズンで安定（Pool=20-24/FA=0-2/age17-18=10-13）、auto-sim 2シード×20シーズン ALL CLEAR。変更: management.js(initRandomRoster/createInitialState/canAddToFA/redirectToDormantPool/processAIContracts/resolveNegotiation/executeShow/processWeeklyRental)、app.js(releaseFighter/_releaseFighterForOverflow/scoutEventFinish)、test/pool-stats.js。
 
 前回: **ドラフト価値向上リバランス（2026-04-10）。** 施策0: ドラフト候補数縮小(14-18→6-8, maxPicks 4→3)、ミッドシーズン候補(8-10→4-6)、FA枠縮小(22→10人)、FA表示枠6→10(全員表示)。施策1: 年齢ベースでドラフト/FA棲み分け（ドラフト=age17-18、FA=age19-20のドラフト漏れ世代）、age振り直し廃止(dormantPool実年齢使用)、FA選手に待機微成長(年3%×待機年数)。施策2: AI団体がシーズン中にFAを取りに来る(aiMidseasonFAAcquire新設、四半期判定、S:35%/A:25%/B:15%、年間最大1人/団体、OVR差閾値制)。施策3: ドラフト指名ボーナス(trust +5〜+15ラウンド連動、bond +1〜+5)。変更: data.js(SCOUT_EVENT_CFG/ROSTER_CFG/AI_MIDSEASON_FA_CFG/DRAFT_SIGNING_BONUS)、management.js(generateScoutReport年齢フィルタ/FAローテーション年齢フィルタ+微成長/getVisibleFAIds/aiMidseasonFAAcquire/tickWeekフック/_midseasonFAGrabsリセット)、ui-common.js(draftNextCandidate trust+bond付与)。auto-sim 100シーズン ALL CLEAR。
 
