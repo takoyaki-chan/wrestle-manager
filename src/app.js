@@ -4746,6 +4746,11 @@ const App = {
     if (preMatchPopups.length === 0) {
       renderShowResult(results, injuryResults);
     } else {
+      // showResultOverlay は試合プレビューで active のまま残っており、
+      // _isPopupActive() がこれを検知して event popup queue が空転してしまう。
+      // ここで一旦 active を外してから popup を流し、queue 空になったら
+      // renderShowResult が再度 active を付けて結果画面を描画する。
+      document.getElementById('showResultOverlay').classList.remove('active');
       preMatchPopups.forEach(p => showEventPopup(p));
       _onEventPopupQueueEmpty = () => renderShowResult(results, injuryResults);
     }
