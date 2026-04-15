@@ -13104,10 +13104,10 @@ Engine.eventSystem = {
         const costMult = s4Count >= 1 ? 1.5 : 1.0;
         const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);  // 市場価値50% (2回目は75%)
         const s4Choices = [
-          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '信頼+10、ただしキャップ発動' : '資金不足', idx: 0, disabled: funds < s4Cost },
-          { label: '出場を約束する',     hint: '次興行で出さないと信頼大幅低下',               idx: 1 },
+          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '信頼が大きく上がる（ただし効果には限度がある）' : '資金不足', idx: 0, disabled: funds < s4Cost },
+          { label: '出場を約束する',     hint: '次興行で出さないと信頼が大きく損なわれる',     idx: 1 },
           { label: '励ましの言葉',       hint: '信頼が少し上がる（焼け石に水）',               idx: 3 },
-          { label: '突っぱねる',         hint: '信頼が大きく下がる、士気低下',                 idx: 2 },
+          { label: '突っぱねる',         hint: '信頼が大きく下がり、チームの士気も下がる',     idx: 2 },
         ];
         if (s4Count >= 1) s4Choices.push({ label: '放出する', hint: '移籍金回収して退団', idx: 4 });
         return s4Choices;
@@ -13118,13 +13118,13 @@ Engine.eventSystem = {
         { label: '別メニューを提案', hint: '信頼がわずかに上がる',                 idx: 2 },
       ];
       case 'E1': return [
-        { label: '出す',       hint: '人気+4、信頼が少し上がる、コンディション-5', idx: 0 },
-        { label: '断る',       hint: '変化なし',                                  idx: 1 },
-        { label: '別の選手を推薦', hint: 'チームの人気+2（ランダムな選手）',       idx: 2 },
+        { label: '出す',       hint: '人気が上がり信頼も少し上がるが、体調を消耗する', idx: 0 },
+        { label: '断る',       hint: '変化なし',                                        idx: 1 },
+        { label: '別の選手を推薦', hint: 'チームの誰かの人気が少し上がる',              idx: 2 },
       ];
       case 'E5': return [
-        { label: '受ける（+150万）', hint: '資金+150、全選手コンディション-8',     idx: 0 },
-        { label: '断る',            hint: '変化なし',                             idx: 1 },
+        { label: '受ける（+150万）', hint: '資金が増えるが、全選手の体調を大きく消耗する', idx: 0 },
+        { label: '断る',            hint: '変化なし',                                       idx: 1 },
       ];
       case 'E6': {
         // §13.4: E6リデザイン — コスト動的化（週給×12）
@@ -13139,19 +13139,19 @@ Engine.eventSystem = {
       }
       // §13.3: 新規選択型イベント
       case 'S_boycott': return [
-        { label: '話を聞く',       hint: '信頼+2.30、その週の成長ゼロ',                idx: 0 },
-        { label: '放っておく',     hint: '信頼-1.53、成長ゼロ+コンディション-3',       idx: 1 },
-        { label: `ボーナスで釣る（-50万）`, hint: funds >= 50 ? '信頼+3.82、成長ゼロ' : '資金不足', idx: 2, disabled: funds < 50 },
+        { label: '話を聞く',       hint: '信頼が回復に向かう(ただし今週は成長が止まる)',   idx: 0 },
+        { label: '放っておく',     hint: '信頼がさらに揺らぎ、体調も落ちる',               idx: 1 },
+        { label: `ボーナスで釣る（-50万）`, hint: funds >= 50 ? '信頼は大きく回復するが今週の成長は止まる' : '資金不足', idx: 2, disabled: funds < 50 },
       ];
       case 'S_grumble': return [
-        { label: '個別に声をかける',       hint: '本人信頼+1.53、士気ペナルティはそのまま', idx: 0 },
-        { label: '全体ミーティングを開く', hint: '本人信頼+0.77、士気微回復',             idx: 1 },
-        { label: '無視する',               hint: '士気さらに低下',                         idx: 2 },
+        { label: '個別に声をかける',       hint: '本人の信頼が少し回復する(ロッカーの空気はそのまま)', idx: 0 },
+        { label: '全体ミーティングを開く', hint: '本人の信頼はわずかに回復し、ロッカーの空気も少し和らぐ', idx: 1 },
+        { label: '無視する',               hint: 'ロッカーの空気がさらに悪化する',                     idx: 2 },
       ];
       case 'S_sns': return [
-        { label: '直接話す',       hint: '信頼+2.30、団体人気ペナはそのまま',             idx: 0 },
-        { label: `メディア対応する（-30万）`, hint: funds >= 30 ? '団体人気ペナ相殺' : '資金不足', idx: 1, disabled: funds < 30 },
-        { label: '放置する',       hint: '団体人気さらに低下',                             idx: 2 },
+        { label: '直接話す',       hint: '信頼が回復する(団体の知名度は損なわれたまま)',   idx: 0 },
+        { label: `メディア対応する（-30万）`, hint: funds >= 30 ? '団体の知名度への傷が消える' : '資金不足', idx: 1, disabled: funds < 30 },
+        { label: '放置する',       hint: '団体の知名度がさらに損なわれる',                 idx: 2 },
       ];
       default: return [{ label: '了解', hint: '', idx: 0 }];
     }

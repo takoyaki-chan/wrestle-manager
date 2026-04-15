@@ -6808,6 +6808,69 @@ const App = {
     }
   },
 
+  // 社長室 Phase 5: 選手ポップアップから「声をかける」(encourage)
+  // 決裁枠も資金も消費しない。社長自らが足を運ぶ自発的行動。
+  // slump/motivationLoss 中の選手に対してのみ発動可能。
+  encourageFighter(fighterId) {
+    const target = G.roster.find(f => f.id === fighterId);
+    if (!target) { showToast('選手が見つかりません'); return; }
+    if (target.isRental || target.injury) { showToast('声をかけられない状態です'); return; }
+    if (!target.slump && !target.motivationLoss) { showToast('この選手には今、声をかける理由がない'); return; }
+    // cooldown チェック(選手単位、1週)
+    const lastUsed = (target._decisionWeekUsed || {}).encourage || -99;
+    if ((G.week - lastUsed) < 1) { showToast('今週はもう声をかけた'); return; }
+
+    // Engine.shachoshitsu.execute を再利用(決裁枠0の書類なので dp 消費なし)
+    const result = Engine.shachoshitsu.execute('encourage', fighterId, G);
+    if (!result || result.error) {
+      const msg = {
+        doc_not_found: 'この行動は現在利用できません',
+        fighter_not_found: '選手が見つかりません',
+        not_slump: 'この選手には今、声をかける理由がない',
+        cooldown: '今週はもう声をかけた',
+        condition_not_met: '声をかける状況ではない',
+        funds_insufficient: '資金が不足しています',
+      }[result?.error] || '失敗しました';
+      showToast(msg);
+      return;
+    }
+
+    // state 更新(encourage は decisionPoints を消費しないが、execute 側で
+    // newDp を返すので一応反映。実質 0 引かれている)
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+      _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
+      gameLog: [...(G.gameLog || []), ...(result.events || [])],
+    };
+    if (result.relationships) G = { ...G, relationships: result.relationships };
+    Storage.autoSave();
+
+    // 選手ポップアップを閉じてから結果モーダルを出す(ドラマ演出)
+    if (typeof closeFighterPopup === 'function') closeFighterPopup();
+
+    // displayData を組み立てて既存の豪華モーダルに流す
+    const doc = Engine.shachoshitsu.getDoc('encourage');
+    const reactionKey = result.reactionKey || 'encourage';
+    const fighter = G.roster.find(f => f.id === fighterId);
+    const text = fighter ? Engine.shachoshitsu.getReactionText(reactionKey, fighter) : '';
+    const displayData = {
+      fighter, text,
+      changes: result.changes || [],
+      cost: result.cost || 0,
+      remainingFunds: result.funds,
+      icon: doc?.icon || '💬',
+      label: doc?.label || '声かけ',
+      docId: 'encourage',
+    };
+    Audio.play('notify');
+    if (typeof showDecisionResultModal === 'function') {
+      showDecisionResultModal(displayData);
+    }
+    if (typeof refreshAll === 'function') refreshAll();
+  },
+
   // 社長室 Phase 5: 特別治療(怪我ポップアップの二次アクション)
   // 決裁枠は消費せず、資金200万のみ消費。回復期間を1〜4週短縮。
   executeSpecialTreatment(fighterId) {

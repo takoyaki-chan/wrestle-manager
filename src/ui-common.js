@@ -2757,7 +2757,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
             ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
             ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
-            ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}}
+            ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}
+            ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? '<span style="color:#e67e22;font-weight:700">💔 信頼が揺らいでいる</span>' : ''}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
@@ -2788,9 +2789,23 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       html += `</div>`;
     }
 
-    // ── 相関図ボタン（全キャラ共通）──
-    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px">
+    // ── 相関図ボタン + 声をかけるボタン ──
+    // 声をかける: 自団体の slump/motivationLoss 選手のみ表示(決裁枠を使わない社長の自発的行動)
+    const canEncourage = isRoster && !c.isRental && !c.injury && (c.slump || c.motivationLoss);
+    // 今週既に声をかけたかチェック(選手別 cooldown: 1週)
+    const encourageLastWeek = (c._decisionWeekUsed || {}).encourage || -99;
+    const encourageUsedThisWeek = (G.week - encourageLastWeek) < 1;
+    let encourageBtnHtml = '';
+    if (canEncourage) {
+      if (encourageUsedThisWeek) {
+        encourageBtnHtml = `<span style="font-size:12px;padding:5px 14px;background:rgba(180,180,180,0.08);color:var(--text-dim);border:1px solid rgba(180,180,180,0.2);border-radius:4px;letter-spacing:0.5px">💬 今週は声をかけた</span>`;
+      } else {
+        encourageBtnHtml = `<button onclick="App.encourageFighter(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.4);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(230,126,34,0.7)';this.style.background='rgba(230,126,34,0.18)'" onmouseout="this.style.borderColor='rgba(230,126,34,0.4)';this.style.background='rgba(230,126,34,0.12)'" title="社長自ら声をかけに行く(決裁枠不要)">💬 声をかける</button>`;
+      }
+    }
+    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
+      ${encourageBtnHtml}
     </div>`;
 
     // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──
@@ -6175,31 +6190,32 @@ function showDecisionTargetModal(docId, state) {
   html += `<div class="shachoshitsu-decision-section-label">対象選手を選択してください</div>`;
   html += `<div class="shachoshitsu-decision-fighter-grid">`;
   candidates.forEach((f, i) => {
-    const trustVal = Math.round(f.trust != null ? f.trust : 50);
+    // 信頼度はマスクデータ(CLAUDE.md 数値哲学 / feedback_player_text_no_internal_tokens).
+    // 絶対値も質的デルタも player-facing には一切出さない。
+    // 書類の activationCondition/発動条件でフィルタ済みなので、候補=全員「対象にふさわしい選手」。
+    // 個別ラベルは slump/motivationLoss のような非マスク情報のみ。
     const lastName = f.name.split(/\s/).pop();
     let statusLabel = '';
     let statusCls = '';
-    if (docId === 'bonus') {
-      statusLabel = `信頼${trustVal}`;
-      statusCls = trustVal < 40 ? ' low-trust' : '';
-    } else if (docId === 'encourage' || docId === 'refresh_leave') {
+    if (docId === 'encourage' || docId === 'refresh_leave') {
       statusLabel = f.slump ? 'スランプ' : 'モチベ喪失';
       statusCls = ' slump';
-    } else {
-      statusLabel = `信頼${trustVal}`;
     }
+    // bonus/trainer/media はラベルなし(信頼度は絶対に出さない)
     const selCls = i === 0 ? ' selected' : '';
     html += `<div class="shachoshitsu-decision-fighter-card${selCls}" data-id="${f.id}">`;
     html += portraitImg(f.id, 56, '');
     html += `<div class="shachoshitsu-decision-fighter-name">${lastName}</div>`;
-    html += `<div class="shachoshitsu-decision-fighter-status${statusCls}">${statusLabel}</div>`;
+    if (statusLabel) {
+      html += `<div class="shachoshitsu-decision-fighter-status${statusCls}">${statusLabel}</div>`;
+    }
     html += `</div>`;
   });
   html += `</div>`;
 
   html += `<div class="shachoshitsu-decision-btn-row">`;
   html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
-  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">決裁実行</button>`;
+  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">実行</button>`;
   html += `</div>`;
 
   modal.innerHTML = html;
@@ -6261,7 +6277,7 @@ function showDecisionConfirmModal(docId, state) {
 
   html += `<div class="shachoshitsu-decision-btn-row">`;
   html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
-  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">決裁実行</button>`;
+  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">実行</button>`;
   html += `</div>`;
 
   modal.innerHTML = html;
@@ -7246,17 +7262,19 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   html += _hpComparisonBar(f1.name, hpL, f2.name, hpR);
 
   // 対立解決サマリーパネル
+  // 信頼/士気はマスクデータ。質的表現で表示し生数値は出さない(CLAUDE.md 数値哲学)
+  const intensePenalty = interventionChoice !== 2 && ((interventionChoice === 0 && !won1) || (interventionChoice === 1 && won1));
   html += `<div style="border:1px solid #27ae60;border-radius:8px;padding:10px 14px;margin:10px 8px;background:rgba(39,174,96,0.05)">
     <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px">対立解決</div>`;
   if (!draw) {
     html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>✅ ${winName}: 信頼+10, 士気+2</div>
-      <div>❌ ${loseName}: 信頼${interventionChoice !== 2 && ((interventionChoice === 0 && !won1) || (interventionChoice === 1 && won1)) ? '-8' : '-5'}, 士気+2</div>
+      <div>✅ ${winName}: 信頼が大きく上がり、気持ちにも張りが戻った</div>
+      <div>❌ ${loseName}: ${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</div>
     </div>`;
   } else {
     html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>🤝 ${f1.name}: 信頼+3, 士気+2</div>
-      <div>🤝 ${f2.name}: 信頼+3, 士気+2</div>
+      <div>🤝 ${f1.name}: 互いに力を認め合い、信頼が少し上がった</div>
+      <div>🤝 ${f2.name}: 互いに力を認め合い、信頼が少し上がった</div>
     </div>`;
   }
   html += `</div>`;

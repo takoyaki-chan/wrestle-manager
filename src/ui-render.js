@@ -1879,6 +1879,11 @@ function renderRoster() {
     const motivLossBadge = c.motivationLoss
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞モチベ喪失</span>`
       : '';
+    // 信頼が大きく揺らいでいる選手の警告バッジ(trust<40)。
+    // 数値は出さず「やばい」ことだけ周囲に伝える(CLAUDE.md 数値哲学)
+    const lowTrustBadge = (!c.isRental && (c.trust != null ? c.trust : 50) < 40)
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45)" title="社長との関係が揺らいでいる">💔信頼低下</span>`
+      : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
       return g > 0 ? `<span style="color:#1a8a4a;font-size:12px;font-weight:700">+${g}</span>` : '';
@@ -1912,7 +1917,7 @@ function renderRoster() {
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachInlineHtml}
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
-            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}
+            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>

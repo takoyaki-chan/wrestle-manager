@@ -11670,8 +11670,11 @@ const NOTIF_DIALOGUES = {
 // Phase 3 では表示・発動条件のみ使用。effect の実適用は Phase 4 で実装予定。
 // ─────────────────────────────────────────────────────────────────────────────
 // 机に並ぶ順序（固定）。hireCoach は机に並ばない特殊書類のため含めない。
+// encourage は社長室に書類として並ばず、選手ポップアップから
+// 「💬 声をかける」として直接実行される(社長自らの自発的行動)。
+// DECISION_DOCS.encourage の定義自体は Engine.shachoshitsu.execute で再利用される。
 const DECISION_DOC_ORDER = [
-  'bonus', 'encourage', 'refresh_leave', 'party',
+  'bonus', 'refresh_leave', 'party',
   'trainer', 'camp', 'media',
 ];
 
