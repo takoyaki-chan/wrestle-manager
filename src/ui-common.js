@@ -3180,7 +3180,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         html += `<div style="margin-top:4px;padding:14px;background:rgba(196,30,58,0.06);border:1px solid rgba(196,30,58,0.15);border-radius:6px">
           <div style="font-size:12px;font-weight:700;color:#f08b9e;margin-bottom:6px;border-bottom:1px solid rgba(196,30,58,0.2);padding-bottom:4px">─── 契約 ───</div>
           <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px">⚠️ 選手の解雇は取り消せません。</div>
-          <button onclick="closeFighterPopup();releaseFighter(${c.id})" style="font-size:13px;padding:10px 16px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:6px;width:100%" ${inCard ? 'disabled title="カード登録中"' : ''}>🚪 この選手を解雇する</button>
+          <button onclick="closeFighterPopup();App.startReleaseInterview(${c.id})" style="font-size:13px;padding:10px 16px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:6px;width:100%" ${inCard ? 'disabled title="カード登録中"' : ''}>🚪 この選手を解雇する</button>
           ${inCard ? '<div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center">※興行カード登録中のため解雇できません</div>' : ''}
         </div>`;
       }
@@ -5779,8 +5779,9 @@ function _showScreenNoBgm(id) {
 
 function showScreen(id, evt) {
   if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
-  // 交渉中は社長室以外へのナビゲーションをブロック
+  // 交渉中・解雇面談中は社長室以外へのナビゲーションをブロック
   if (typeof G !== 'undefined' && G.weekPhase === 'contractNegotiation' && id !== 'shachoshitsu') return;
+  if (typeof G !== 'undefined' && G._releaseInterviewTarget && id !== 'shachoshitsu') return;
   Audio.play('click');
   dismissAllPopups();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));

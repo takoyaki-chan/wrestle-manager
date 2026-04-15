@@ -6083,6 +6083,40 @@ const CONTRACT_NEGOTIATION_CONFIG = {
   retentionWeeksBase: 8,
 };
 
+// 社長室統合 Phase B: 解雇面談の別れセリフ (性格×2〜3パターン)
+const RELEASE_INTERVIEW_LINES = {
+  bold: [
+    '……悔しいけど、次はもっといい場所で暴れてみせます。見ててください。',
+    'こうなったらどこに行っても結果出しますから。覚えておいてくださいよ。',
+    '……わかりました。この悔しさ、絶対に忘れません。'
+  ],
+  quiet: [
+    '……お世話に、なりました。',
+    '……わかりました。……ありがとう、ございました。',
+    '……はい。……さようなら。'
+  ],
+  easygoing: [
+    'まあ、こういうこともあるよね。元気でね！',
+    'あはは、まあ仕方ないか。楽しかったよ、ここ。',
+    'まっ、気にしないで。どこに行っても楽しくやるからさ。'
+  ],
+  earnest: [
+    '至らない点があったなら、申し訳ありませんでした。',
+    '力不足でした。……この経験を、次に必ず活かします。',
+    '今までご指導ありがとうございました。社長もお元気で。'
+  ],
+  emotional: [
+    '嘘でしょ……！ まだやれるのに……！',
+    'なんで……っ！ ……わかった、わかりましたよ……。',
+    'こんなの……こんなの……っ! ……さようなら。'
+  ],
+  normal: [
+    '短い間でしたが、ありがとうございました。',
+    '色々と、お世話になりました。……お元気で。',
+    'これからも、この団体の活躍、祈ってます。'
+  ],
+};
+
 // v1.3-3: 引退セリフテンプレート（引退ルート×キャリア×性格で分岐）
 const RETIREMENT_LINES = {
   A1_champion: {
@@ -21151,7 +21185,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
-    CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG,
+    CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
     AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, FIRST_MEET_LINES, getDialoguePool, pickDialogueLine,

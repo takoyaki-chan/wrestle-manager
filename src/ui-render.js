@@ -3305,6 +3305,62 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
   `;
 }
 
+// ─── Phase B: 解雇面談テンプレート ────────────────────────────────────────────
+// fighter: G.roster中のキャラオブジェクト
+// dialogue: 性格別別れのセリフ文字列
+function renderShachoshitsuReleaseInterview(fighter, dialogue) {
+  const el = document.getElementById('shachoshitsuContent');
+  if (!el) return;
+
+  const seasonId = getShachoshitsuSeasonId(G.offSeason ? 52 : G.week);
+  const fundsStr = Math.round(G.funds).toLocaleString();
+  const dateStr = Engine.util.formatDate(G.season, G.week);
+
+  const face = portraitImg(fighter.id, 96, 'negotiation-speaker-portrait');
+
+  const wallHtml = `
+    <div class="negotiation-speaker">
+      ${face}
+      <div class="negotiation-bubble">
+        <strong style="font-size:12px;color:rgba(255,255,255,0.55)">${fighter.name}</strong><br>
+        「${dialogue}」
+      </div>
+    </div>`;
+
+  const deskHtml = `
+    <div class="neg-card-title">🚪 解雇の確認</div>
+    <div class="release-card-fighter-name">${fighter.name}</div>
+    <div class="release-card-warning">⚠️ 選手の解雇は取り消せません</div>
+    <div class="neg-choices release-choices">
+      <button class="neg-btn release-confirm-btn" onclick="App.confirmRelease(${fighter.id})">
+        <span>解雇を実行する</span>
+      </button>
+      <button class="neg-btn release-cancel-btn" onclick="App.cancelReleaseInterview()">
+        <span>やっぱりやめる</span>
+      </button>
+    </div>`;
+
+  el.innerHTML = `
+    <div class="shachoshitsu-hud">
+      <div class="shachoshitsu-hud-left">
+        <span class="shachoshitsu-hud-date">${dateStr}</span>
+        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+      </div>
+      <div class="shachoshitsu-hud-right">
+        <span class="neg-hud-label">🚪 解雇面談</span>
+      </div>
+    </div>
+    <div class="shachoshitsu-wall negotiation-wall" style="background-image:url('../image/shachoshitsu/wall-window-${seasonId}.webp')">
+      ${wallHtml}
+    </div>
+    <div class="shachoshitsu-desk">
+      <div class="negotiation-card release-interview-card">
+        ${deskHtml}
+      </div>
+    </div>
+  `;
+}
+
 function renderScout() {
   const el = document.getElementById('scoutContent');
   document.getElementById('faCount').textContent = G.freeAgents.length;

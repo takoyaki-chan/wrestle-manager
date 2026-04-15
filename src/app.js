@@ -3629,6 +3629,44 @@ const App = {
     });
   },
 
+  // 社長室統合 Phase B: 解雇面談を開始（選手ポップアップの解雇ボタン → 社長室へ）
+  startReleaseInterview(charId) {
+    const fighter = G.roster.find(c => c.id === charId);
+    if (!fighter) return;
+
+    // カード登録中チェック（releaseFighter と同じ条件）
+    const inCard = G.showCard.some(m => m.left === charId || m.right === charId);
+    if (inCard) return;
+
+    // 性格別セリフ選択（決定論的RNG）
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xF1E2, charId));
+    const personality = fighter.personality || 'normal';
+    const lines = RELEASE_INTERVIEW_LINES[personality] || RELEASE_INTERVIEW_LINES.normal;
+    const dialogue = lines[Engine.rng.int(rng, 0, lines.length - 1)];
+
+    // 面談中フラグをセット → 社長室画面に遷移
+    G = { ...G, _releaseInterviewTarget: charId };
+    showScreen('shachoshitsu');
+    renderShachoshitsuReleaseInterview(fighter, dialogue);
+    Audio.play('event');
+  },
+
+  // 解雇面談: 実行確定
+  confirmRelease(charId) {
+    G = { ...G, _releaseInterviewTarget: null };
+    App.releaseFighter(charId);
+    // releaseFighter内でrefreshAll+showEventPopupが呼ばれる
+    // 社長室通常モードへ戻る
+    renderShachoshitsu();
+  },
+
+  // 解雇面談: キャンセル
+  cancelReleaseInterview() {
+    G = { ...G, _releaseInterviewTarget: null };
+    renderShachoshitsu();
+    Audio.play('click');
+  },
+
   // Release a fighter
   releaseFighter(charId) {
     const idx = G.roster.findIndex(c => c.id === charId);

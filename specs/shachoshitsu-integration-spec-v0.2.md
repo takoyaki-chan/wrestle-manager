@@ -317,15 +317,16 @@ FA候補を「スカウト調査報告書」＝**履歴書スタイル**のカ�
 | A-4 | 交渉中のナビゲーションロック | ui-common.js, app.js |
 | A-5 | 動作検証 + auto-sim | test/ |
 
-### Phase B: 解雇の社長室化
+### Phase B: 解雇の社長室化 ✅ 実装完了 (2026-04-16)
 
 | # | 内容 | ファイル |
 |---|------|---------|
-| B-1 | 別れのセリフデータ追加（性格×6） | data.js |
-| B-2 | 解雇面談レンダリング関数を追加 | ui-render.js |
-| B-3 | 選手ポップアップの解雇ボタン → 面談遷移に変更 | ui-common.js, app.js |
-| B-4 | 面談確認後に既存 releaseFighter を呼ぶ | app.js |
-| B-5 | 動作検証 + auto-sim | test/ |
+| B-1 ✅ | 別れのセリフデータ追加（性格×6、各3パターン） | data.js |
+| B-2 ✅ | 解雇面談レンダリング関数を追加 (renderShachoshitsuReleaseInterview) | ui-render.js |
+| B-3 ✅ | 選手ポップアップの解雇ボタン → App.startReleaseInterview 呼び出しに変更 | ui-common.js |
+| B-4 ✅ | App.startReleaseInterview / confirmRelease / cancelReleaseInterview 新設 | app.js |
+| B-5 ✅ | ナビゲーションロック (_releaseInterviewTarget) 追加 | ui-common.js |
+| B-6 ✅ | 動作検証 + auto-sim 100シーズン seed=42 ALL CLEAR | test/ |
 
 ### Phase C: スカウト/レンタルの机上統合
 
