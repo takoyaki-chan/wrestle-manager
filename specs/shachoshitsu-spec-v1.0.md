@@ -756,6 +756,15 @@ team書類（party, camp）の場合は対象選手の選択不要、確認の�
 
 ## §9 マイグレーションと削除
 
+> **Phase 5 完了メモ(2026-04-15)**: このセクションは Phase 5 着手前の計画。実装時には以下の **重要な修正** が入っている:
+> - `.care-overlay` / `.care-box` / `.care-title` / `.care-reaction*` / `.care-result-header` / `.care-result-action-*` / `.care-result-portrait*` / `.care-result-name` は選択型イベント / 対抗戦 / 挑戦状 / 契約交渉 / 練習アクシデント等 10+箇所の他モーダルで再利用されているため **削除不可** で残存。§9.3 の「全削除」指示は誤り。
+> - 選手フィールド `_decisionWeekUsed` は Phase 4 で既に追加済みで、Phase 5 ではマイグレーションで `_careWeekUsed` を `_decisionWeekUsed` にマージして削除するだけ。
+> - 旧 `Engine.careActions` のヘルパー関数(`tickTrainerBuffs` / `getTrainerMult` / `resetSeasonalCounters` / `isInSlump` / `getBonusRepeatCount`)は他所(`processManage` / `tickWeek` / シーズン末処理)から呼ばれていたため、`Engine.shachoshitsu` に **移植** してから `Engine.careActions` を削除した。
+> - `Engine.shachoshitsu.executeSpecialTreatment` を新設し、怪我発生ポップアップに `showEventPopup` の二次アクションボタンとして統合。決裁枠消費なし、資金 200万のみ消費。
+> - `CAMP_FLAVOR_TEXTS` と `CARE_REACTION_DIALOGUES`(costume以外)はそのまま残存(`Engine.shachoshitsu.getReactionText` が継続利用)。
+>
+> 詳細は Phase 5 実装指示書 `plans/shachoshitsu-phase5-task.md` を参照。
+
 ### §9.1 既存セーブデータの扱い
 
 ユーザーの既存セーブには以下のフィールドが存在する:
@@ -971,31 +980,29 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 - **慰労会(party)の発動条件を緩和**: `morale < 50` → `morale < 60`(選択肢②)。理由: auto-sim プローブ(5シード×4シーズン=960週サンプル)で lockerRoomMorale が 100% 60-69 帯に滞留し、旧 50 閾値では通常運営で机に出ないことが判明。60 に緩和することで「少し陰ってきた」段階から予防的に使用可能に。好調帯(60+)では依然として出ないので、数値ハメルーチン化は防げる。cooldown は 1 週のまま維持。
 - **プレイヤー向け表記ルール**: detailText / effectSummary / recommendation などプレイヤーに見せる文言からは、内部変数名(`morale`/`orgPop`/`MQ`/`condition` 等の英字トークン)を排除し、日本語の自然な言い回し(「ロッカールームの雰囲気」「団体人気」「体調」「試合の評価」等)に統一。全7書類の文言を書き換え。
 
-### Phase 5: 既存ケアシステム廃止
+### Phase 5: 既存ケアシステム廃止 ✅ 完了(2026-04-15)
 
 **目的**: 旧ケアモーダルを完全に廃止し、社長室を唯一の入口にする。
 
-**タスク**:
+**実装内容**:
 1. 今週画面の「💝 ケア」ボタン削除
-2. `showCareActionModal` 関数の削除
-3. `App.openCareModal` の削除
-4. `CARE_ACTIONS.costume` と関連コードの削除
-5. `CARE_REACTION_DIALOGUES.costume` 削除
-6. `special_treatment` を怪我発生モーダルに統合、決裁枠コスト削除
-7. `trainer`, `camp`, `media` のコスト再定義（決裁枠2, 3, 2）
-8. `hireCoach` のコーチ画面での決裁枠チェック追加
-9. ケア関連CSSの削除
-10. 旧命名のリファクタリング（`CARE_ACTIONS` → `DECISION_DOCS`, `careActions` → `shachoshitsu` 等）
+2. `showCareActionModal` 関数本体(~360行)を削除
+3. `App.openCareModal` / `App.executeCareAction` を削除
+4. `Engine.careActions` を丸ごと削除。ヘルパー関数(`tickTrainerBuffs` / `getTrainerMult` / `resetSeasonalCounters` / `isInSlump` / `getBonusRepeatCount`)は `Engine.shachoshitsu` に移動し、呼び出し元を全置換
+5. `CARE_ACTIONS` データ定義を削除(`data.js` + `module.exports`)
+6. `CARE_REACTION_DIALOGUES.costume` 初期化ブロック + costume の全 `.push(...)` 行を削除。`_costumeDebut` フラグ消費ロジックも削除
+7. `special_treatment` を怪我発生ポップアップに統合 — `showEventPopup` にオプショナルな二次アクションボタンを生やし、`App.executeSpecialTreatment` + `Engine.shachoshitsu.executeSpecialTreatment` を新設。決裁枠は消費せず、資金 200万のみ消費
+8. `hireCoach` にコーチ画面の決裁枠チェックを追加 — コーチ雇用時に決裁枠 -2 消費(`DECISION_DOCS.hireCoach.decisionCost`)。雇用ボタンにも ⚡2 を表示
+9. 選手フィールド `_careWeekUsed` → `_decisionWeekUsed` を統合するマイグレーションを追加
+10. 旧 `G.careStock` / `careStockMax` / `careStockLastRecovery` / `_teamCareWeekUsed` を削除するマイグレーションを追加。`createInitialState` の初期化と `tickWeek` の回復ロジックも削除
+11. `validateGameState` に旧フィールド検出の安全弁を追加(マイグレーション失敗時に自動削除)
+12. ケア専用 CSS を削除。ただし `.care-overlay` / `.care-box` / `.care-title` / `.care-reaction*` / `.care-result-header` / `.care-result-action-*` / `.care-result-portrait*` / `.care-result-name` は選択型イベント/対抗戦/挑戦状/契約交渉/練習アクシデント等の他モーダルで再利用中のため **残存**
 
-**成果物**: 「ケア」という言葉がゲームから消える。社長室が唯一の決裁入口。
+**DOM/CSS 残存メモ**: `careOverlay` / `careBox` DOM 要素および上記共有クラスは多数のモーダル(`showChoiceEventModal` / `showLargeEventModal` / `showContractNegotiationModal` 等 10+箇所)で再利用されているため削除不可。spec §9.3 の「全削除」指示は実コード調査で否定された(詳細は Phase 5 実装指示書 `plans/shachoshitsu-phase5-task.md` 注意1/2)。
 
-**承認ポイント3**: ここでKeisukeさんに動作確認依頼。
+**auto-sim**: 100シーズン(seed=42) ALL CLEAR(違反0/エラー0/ゲームオーバー0/5300週)
 
-**検証**:
-- 今週画面からケアボタンが消えている
-- 怪我選手に「特別治療」オプションが怪我モーダルで選べる
-- コーチ画面で雇用時に決裁枠が消費される
-- 既存セーブの読み込みが問題なく動作する
+**承認ポイント3**: Keisuke さんに動作確認依頼 → 承認後に Phase 6 へ
 
 ### Phase 6: ケア4項目の発動条件強化
 

@@ -1493,14 +1493,39 @@ function _renderEventPopup() {
     faceHtml = `<div class="emoji-face">${o.emoji || '💬'}</div>`;
   }
 
+  // 社長室 Phase 5: 二次アクションボタン(怪我→特別治療など)
+  //   opts.action = { label, disabled?, disabledHint?, onClick: () => void }
+  let actionHtml = '';
+  if (o.action && typeof o.action === 'object' && o.action.label) {
+    const isDisabled = !!o.action.disabled;
+    const hint = isDisabled && o.action.disabledHint ? `<div class="event-popup-action-hint">${o.action.disabledHint}</div>` : '';
+    actionHtml = `
+      ${hint}
+      <button class="event-popup-action${isDisabled ? ' is-disabled' : ''}" id="eventPopupActionBtn"${isDisabled ? ' disabled' : ''}>${o.action.label}</button>
+    `;
+  }
+
   box.className = `event-popup ${toneClass}`;
   box.innerHTML = `
     <div class="event-popup-face">${faceHtml}</div>
     <div class="event-popup-name">${o.name || ''}</div>
     <div class="event-popup-msg">${o.message}</div>
     ${o.detail ? `<div class="event-popup-detail">${o.detail}</div>` : ''}
-    <button class="event-popup-ok" onclick="closeEventPopup()">OK</button>
+    ${actionHtml}
+    <button class="event-popup-ok" onclick="closeEventPopup()">${o.action ? '閉じる' : 'OK'}</button>
   `;
+
+  // 二次アクションのハンドラ束縛
+  if (o.action && !o.action.disabled && typeof o.action.onClick === 'function') {
+    const btn = document.getElementById('eventPopupActionBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        // onClick内でポップアップを閉じる責任はハンドラ側に(closeEventPopupを呼ぶ)
+        o.action.onClick();
+      });
+    }
+  }
+
   document.getElementById('eventPopupOverlay').classList.add('active');
   Audio.play(o.sound || (o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event'));
   if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
@@ -6097,370 +6122,6 @@ function showMilestoneEvent(evt, onChoice) {
 // v2.0: 通知型イベント トースト表示 (event-system-spec-v2.md §3-4)
 // 選手顔アイコン＋一言テキスト。数秒で自動消去
 // ─────────────────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────────────────
-// v2.0: ケアアクション モーダル (event-system-spec-v2.md §2)
-// 選手/団体への資金投入UIを提供。アクション選択 → 選手選択 → フィードバック表示
-// ─────────────────────────────────────────────────────────────────────────────
-function showCareActionModal(state, onConfirm) {
-  if (_isPopupActive()) { _popupQueue.push(() => showCareActionModal(state, onConfirm)); return; }
-  const overlay = document.getElementById('careOverlay');
-  const box = document.getElementById('careBox');
-  if (!overlay || !box) return;
-
-  const actions = typeof CARE_ACTIONS !== 'undefined' ? CARE_ACTIONS : {};
-  const funds = state.funds || 0;
-  const roster = (state.roster || []).filter(f => !f.isRental);
-
-  function renderMain() {
-    const individualActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition !== 'slump_or_motivation_loss');
-    const slumpActions = Object.values(actions).filter(a => a.category === 'individual' && a.condition === 'slump_or_motivation_loss');
-    const teamActions = Object.values(actions).filter(a => a.category === 'team');
-    const anyInSlump = roster.some(f => Engine.careActions && Engine.careActions.isInSlump(f));
-    const currentWeek = state.week || 0;
-    const teamWeekUsed = state._teamCareWeekUsed || {};
-
-    const careStock = state.careStock != null ? state.careStock : 5;
-    const careStockMax = state.careStockMax || 5;
-    let html = `<div class="care-title">💝 ケアアクション <span style="font-size:12px;font-weight:400;color:var(--text-dim);margin-left:auto">⚡ <strong style="color:${careStock <= 1 ? '#e74c3c' : '#f1c40f'}">${careStock}/${careStockMax}</strong>&nbsp;&nbsp;資金: <strong style="color:#2ecc71">${Math.round(funds).toLocaleString()}万</strong></span></div>`;
-
-    html += '<div class="care-section-label">👤 個人向け</div>';
-    const orgPop = state.orgPop || 0;
-    // v3.0: アクション別ストック消費量
-    const getStockCost = (id) => id === 'encourage' ? 0 : id === 'camp' ? 2 : 1;
-    individualActions.forEach(a => {
-      const canAfford = funds >= a.cost;
-      const isInjuredOnly = a.condition === 'injured';
-      const anyInjured = roster.some(f => f.injury);
-      const orgPopLocked = a.minOrgPop && orgPop < a.minOrgPop;
-      const sc = getStockCost(a.id);
-      const stockInsufficient = sc > 0 && careStock < sc;
-      const disabled = !canAfford || (isInjuredOnly && !anyInjured) || orgPopLocked || stockInsufficient ? 'disabled' : '';
-      let extraInfo = '';
-      if (orgPopLocked) extraInfo = ` <span style="color:#e74c3c;font-size:10px">（知名度 ${a.minOrgPop} で解放）</span>`;
-      else if (stockInsufficient) extraInfo = ' <span style="color:#e74c3c;font-size:10px">（ストック不足）</span>';
-      else if (isInjuredOnly) extraInfo = ' <span style="color:#f39c12;font-size:10px">（怪我中のみ）</span>';
-      const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
-      html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
-        <span class="care-action-emoji">${a.emoji}</span>
-        <div class="care-action-info">
-          <div class="care-action-name">${a.label}${stockLabel}</div>
-          <div class="care-action-desc">${a.desc}${extraInfo}</div>
-        </div>
-        <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
-      </div>`;
-    });
-
-    // スランプケアセクション（対象者がいるときのみ強調表示）
-    if (slumpActions.length > 0) {
-      const sectionStyle = anyInSlump ? 'color:#e8439f' : '';
-      html += `<div class="care-section-label" style="margin-top:16px;${sectionStyle}">💔 スランプ対応${anyInSlump ? '' : ' <span style="font-size:10px;font-weight:400;opacity:0.5">（対象者なし）</span>'}</div>`;
-      slumpActions.forEach(a => {
-        const canAfford = funds >= a.cost;
-        const sc = getStockCost(a.id);
-        const stockInsufficient = sc > 0 && careStock < sc;
-        const disabled = !canAfford || !anyInSlump || stockInsufficient ? 'disabled' : '';
-        let extraInfo = '';
-        if (stockInsufficient && anyInSlump) extraInfo = ' <span style="color:#e74c3c;font-size:10px">（ストック不足）</span>';
-        const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
-        html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
-          <span class="care-action-emoji">${a.emoji}</span>
-          <div class="care-action-info">
-            <div class="care-action-name">${a.label}${stockLabel}</div>
-            <div class="care-action-desc">${a.desc}${extraInfo}</div>
-          </div>
-          <span class="care-action-cost">${a.cost > 0 ? a.cost + '万' : '無料'}</span>
-        </div>`;
-      });
-    }
-
-    html += '<div class="care-section-label" style="margin-top:16px">🏟️ 団体向け</div>';
-    teamActions.forEach(a => {
-      const teamCost = Engine.careActions.calcCost(a, state);
-      const canAfford = funds >= teamCost;
-      const usedThisWeek = teamWeekUsed[a.id] === currentWeek;
-      const sc = getStockCost(a.id);
-      const stockInsufficient = sc > 0 && careStock < sc;
-      const disabled = !canAfford || usedThisWeek || stockInsufficient ? 'disabled' : '';
-      const headcount = roster.filter(f => !f.injury).length;
-      const effectiveHead = Math.max(headcount, a.minHeadcount || 4);
-      let statusLabel = '';
-      if (usedThisWeek) statusLabel = `<span style="color:var(--text-dim);font-size:11px">今週使用済</span>`;
-      else if (stockInsufficient) statusLabel = `<span style="color:#e74c3c;font-size:11px">ストック不足</span>`;
-      const costLabel = statusLabel
-        ? statusLabel
-        : `<span class="care-action-cost">${teamCost}万<span style="font-size:10px;color:var(--text-dim);display:block">${a.unitCost}万×${effectiveHead}人</span></span>`;
-      const stockLabel = sc === 0 ? '' : ` <span style="color:#f1c40f;font-size:10px">⚡${sc}</span>`;
-      html += `<div class="care-action-row ${disabled}" data-action="${a.id}">
-        <span class="care-action-emoji">${a.emoji}</span>
-        <div class="care-action-info">
-          <div class="care-action-name">${a.label}${stockLabel}</div>
-          <div class="care-action-desc">${a.desc}</div>
-        </div>
-        ${costLabel}
-      </div>`;
-    });
-
-    html += '<button class="care-close-btn" id="careCloseBtn">閉じる</button>';
-    box.innerHTML = html;
-
-    // Bind row clicks
-    box.querySelectorAll('.care-action-row:not(.disabled)').forEach(row => {
-      row.addEventListener('click', function() {
-        const actionId = this.dataset.action;
-        const cfg = actions[actionId];
-        if (!cfg) return;
-        if (cfg.category === 'individual') {
-          renderFighterSelect(actionId, cfg);
-        } else {
-          // A-2: 団体向けは確認画面を挟む（誤操作防止）
-          renderTeamConfirm(actionId, cfg);
-        }
-      });
-    });
-    document.getElementById('careCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
-  }
-
-  // 期待される効果のHTMLを構築
-  function _buildExpectHtml(cfg) {
-    const items = [];
-    const e = cfg.effects || {};
-    if (e.trust) items.push(`🤝 信頼が${e.trust >= 2.5 ? '上がる' : '少し上がる'}`);
-    if (e.popularity) items.push(`⭐ 人気 +${e.popularity}`);
-    if (e.trust_all) items.push(`🤝 全員の信頼が少し上がる`);
-    if (e.morale) items.push(`🏠 ロッカールーム雰囲気 +${e.morale}`);
-    if (e.growth_boost) items.push(`📈 成長速度 +${Math.round((e.growth_boost.mult - 1) * 100)}%（${e.growth_boost.weeks}週間）`);
-    if (e.growth_all) items.push(`📈 全員の成長速度 +${Math.round((e.growth_all.mult - 1) * 100)}%（${e.growth_all.weeks}週間）`);
-    if (cfg.id === 'media') items.push('💪 状態 少し回復');
-    if (cfg.id === 'special_treatment') items.push('🏥 離脱期間を1〜4週短縮（長期怪我はさらに+1週）');
-    if (items.length === 0) return '';
-    return `<div class="care-expect"><div class="care-expect-label">期待される効果</div>${items.map(i => `<div class="care-expect-item">${i}</div>`).join('')}</div>`;
-  }
-
-  // ── 結果画面（実行後、モーダル内に直接表示） ─────────────────────────────
-  function renderResult(data) {
-    if (!data) { overlay.classList.remove('active'); return; }
-    const { fighter, fighters, repFighter, text, changes, cost, remainingFunds, emoji, label, actionId, isTeam } = data;
-    const themeMap = {
-      bonus: '#f39c12', costume: '#9b59b6', trainer: '#e74c3c',
-      media: '#3498db', special_treatment: '#1abc9c',
-      encourage: '#27ae60', refresh_leave: '#16a085',
-      party: '#e8439f', camp: '#2980b9',
-    };
-    const color = themeMap[actionId] || '#e8439f';
-    const isPremium = cost >= 100;
-
-    let html = `<div class="care-result-header" style="border-color:${color}">`;
-    html += `<span class="care-result-action-emoji">${emoji}</span>`;
-    html += `<span class="care-result-action-label">${label}</span>`;
-    html += `</div>`;
-
-    if (isTeam && fighters && fighters.length > 0) {
-      // 団体向け表示（camp / party）
-      const isCamp = actionId === 'camp';
-      const iconSize = isCamp ? 72 : 64;
-      const teamCls = isCamp ? 'camp-team' : 'party-team';
-      html += `<div class="care-result-team-row ${teamCls}">`;
-      fighters.forEach(f => {
-        html += `<div class="care-result-team-member">${portraitImg(f.id, iconSize, '')}<div class="care-result-team-name">${f.name.split(/\s/).pop()}</div></div>`;
-      });
-      html += `</div>`;
-      // 代表者セリフ
-      if (text && repFighter) {
-        html += `<div class="care-result-speech" style="border-left-color:${color}80">「${text}」<span style="font-size:11px;color:var(--text-dim);margin-left:6px">— ${repFighter.name}</span></div>`;
-      }
-      // camp: フレーバーテキスト
-      if (isCamp && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && fighters.length >= 2) {
-        const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
-        const shuffled = [...fighters].sort(() => Math.random() - 0.5);
-        const flavorText = tmpl.replace('{name1}', shuffled[0].name).replace('{name2}', shuffled[1] ? shuffled[1].name : shuffled[0].name);
-        html += `<div class="care-result-camp-flavor">${flavorText}</div>`;
-      }
-    } else if (fighter) {
-      html += `<div class="care-result-portrait-wrap">`;
-      html += portraitImg(fighter.id, isPremium ? 150 : 120, 'care-result-portrait');
-      html += `<div class="care-result-name">${fighter.name}</div>`;
-      html += `</div>`;
-      if (text) {
-        html += `<div class="care-result-speech">「${text}」</div>`;
-      }
-    }
-
-    if (changes && changes.length > 0) {
-      html += `<div class="care-result-changes">`;
-      changes.forEach((c, i) => {
-        if (c.text !== undefined) {
-          html += `<div class="care-result-change" style="animation-delay:${i * 0.08}s">`;
-          html += `<span class="care-rc-label">${c.emoji || ''} ${c.label}</span>`;
-          html += `<span class="care-rc-val care-rc-up">${c.text}</span></div>`;
-        } else {
-          const diff = c.after - c.before;
-          const cls = diff >= 0 ? 'care-rc-up' : 'care-rc-down';
-          const sign = diff >= 0 ? '+' : '';
-          html += `<div class="care-result-change" style="animation-delay:${i * 0.08}s">`;
-          html += `<span class="care-rc-label">${c.emoji || ''} ${c.label}</span>`;
-          html += `<span class="care-rc-val ${cls}">${c.before}<span class="care-rc-arrow"> → </span><strong>${c.after}</strong> <span class="care-rc-diff">(${sign}${diff})</span></span></div>`;
-        }
-      });
-      html += `</div>`;
-    }
-
-    if (cost > 0) {
-      const fc = remainingFunds < 200 ? '#e74c3c' : 'var(--text-dim)';
-      html += `<div class="care-result-cost">費用 <strong style="color:#e8439f">-${cost}万</strong>｜残金 <strong style="color:${fc}">${Math.round(remainingFunds).toLocaleString()}万</strong></div>`;
-    }
-
-    html += `<button class="btn care-result-close-btn" id="careResultCloseBtn" style="border-color:${color};color:${color}">閉じる ✓</button>`;
-    box.innerHTML = html;
-
-    requestAnimationFrame(() => {
-      box.querySelectorAll('.care-result-change').forEach(el => el.classList.add('care-rc-animate'));
-    });
-    document.getElementById('careResultCloseBtn').addEventListener('click', () => overlay.classList.remove('active'));
-  }
-
-  // A-2: 団体向けアクション確認画面
-  function renderTeamConfirm(actionId, cfg) {
-    const teamCost = Engine.careActions.calcCost(cfg, state);
-    const remainingFunds = funds - teamCost;
-    const fundsColor = remainingFunds < 200 ? '#e74c3c' : '#2ecc71';
-    const headcount = roster.filter(f => !f.injury).length;
-    const effectiveHead = Math.max(headcount, cfg.minHeadcount || 4);
-    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${cfg.desc}</div>`;
-    html += _buildExpectHtml(cfg);
-    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${teamCost}万</strong><span style="font-size:11px;color:var(--text-dim)">（${cfg.unitCost}万×${effectiveHead}人）</span> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
-    html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careTeamConfirmBtn">実行する</button>`;
-    html += '<button class="care-close-btn" id="careTeamBackBtn">← 戻る</button>';
-    box.innerHTML = html;
-
-    document.getElementById('careTeamConfirmBtn').addEventListener('click', () => {
-      const displayData = onConfirm ? onConfirm(actionId, null) : null;
-      if (displayData) renderResult(displayData);
-      else overlay.classList.remove('active');
-    });
-    document.getElementById('careTeamBackBtn').addEventListener('click', renderMain);
-  }
-
-  // S1.2: 個人向けアクション確認画面（cost >= 100 のみ）
-  function renderIndividualConfirm(actionId, cfg, fighterId) {
-    const fighter = roster.find(f => f.id === fighterId);
-    if (!fighter) { renderFighterSelect(actionId, cfg); return; }
-    const remainingFunds = funds - cfg.cost;
-    const fundsColor = remainingFunds < 200 ? '#e74c3c' : '#2ecc71';
-
-    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
-    html += `<div style="text-align:center;margin:12px 0">`;
-    html += portraitImg(fighter.id, 88, '');
-    html += `<div style="font-weight:700;margin-top:6px">${fighter.name}</div>`;
-    html += `</div>`;
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${cfg.desc}</div>`;
-    html += _buildExpectHtml(cfg);
-    html += `<div style="font-size:13px;text-align:center;margin-bottom:14px">費用: <strong>${cfg.cost}万</strong> → 残: <strong style="color:${fundsColor}">${remainingFunds}万</strong></div>`;
-    html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careIndivConfirmBtn">実行する</button>`;
-    html += '<button class="care-close-btn" id="careIndivBackBtn">← 戻る</button>';
-    box.innerHTML = html;
-
-    document.getElementById('careIndivConfirmBtn').addEventListener('click', () => {
-      const displayData = onConfirm ? onConfirm(actionId, fighterId) : null;
-      if (displayData) renderResult(displayData);
-      else overlay.classList.remove('active');
-    });
-    document.getElementById('careIndivBackBtn').addEventListener('click', () => renderFighterSelect(actionId, cfg));
-  }
-
-  function renderFighterSelect(actionId, cfg) {
-    const isInjuredOnly = cfg.condition === 'injured';
-    const isSlumpOnly = cfg.condition === 'slump_or_motivation_loss';
-    const selectableRoster = isInjuredOnly
-      ? roster.filter(f => f.injury)
-      : isSlumpOnly
-        ? roster.filter(f => !f.injury && Engine.careActions && Engine.careActions.isInSlump(f))
-        : roster.filter(f => !f.injury);
-
-    let html = `<div class="care-title">${cfg.emoji} ${cfg.label}</div>`;
-    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${cfg.desc}</div>`;
-    html += '<div class="care-section-label">対象選手を選択（タップで選択）</div>';
-
-    const currentWeek = state.week || 0;
-    const cooldown = cfg.cooldown != null ? cfg.cooldown : 1;
-
-    if (selectableRoster.length === 0) {
-      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">対象選手がいません</div>';
-      html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
-      box.innerHTML = html;
-      document.getElementById('careBackBtn').addEventListener('click', renderMain);
-      return;
-    }
-
-    // クールダウン中でない選手を先に、使用済みを後ろにソート
-    const sorted = [...selectableRoster].sort((a, b) => {
-      const aUsed = currentWeek - ((a._careWeekUsed || {})[actionId] || -99) < cooldown;
-      const bUsed = currentWeek - ((b._careWeekUsed || {})[actionId] || -99) < cooldown;
-      return (aUsed ? 1 : 0) - (bUsed ? 1 : 0);
-    });
-
-    const availableRoster = selectableRoster.filter(f => {
-      const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
-      return currentWeek - lastUsed >= cooldown;
-    });
-    const defaultId = availableRoster.length > 0 ? availableRoster[0].id : null;
-
-    if (availableRoster.length === 0) {
-      html += '<div style="color:var(--text-dim);font-size:13px;padding:12px 0">今週は全員使用済みです（来週以降また使えます）</div>';
-    } else {
-      html += '<div class="care-fighter-grid" id="careFighterGrid">';
-      sorted.forEach(f => {
-        const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
-        const onCooldown = currentWeek - lastUsed < cooldown;
-        const isSelected = f.id === defaultId;
-        const lastName = f.name.split(/\s/).pop();
-        const statusTag = f.injury ? '怪我中' : f.slump ? 'スランプ' : f.motivationLoss ? 'モチベ喪失' : '';
-        html += `<div class="care-fighter-card${isSelected ? ' selected' : ''}${onCooldown ? ' on-cooldown' : ''}" data-id="${f.id}">`;
-        html += portraitImg(f.id, 56, '');
-        html += `<div class="care-fighter-card-name">${lastName}</div>`;
-        if (statusTag) html += `<div class="care-fighter-card-status">${statusTag}</div>`;
-        if (onCooldown) html += '<div class="care-fighter-card-cd">✓済</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-      const costLabel = cfg.cost > 0 ? `${cfg.cost}万` : '無料';
-      html += `<button class="btn" style="width:100%;margin-bottom:8px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-size:14px;padding:10px" id="careConfirmBtn">実行（${costLabel}）</button>`;
-    }
-
-    html += '<button class="care-close-btn" id="careBackBtn">← 戻る</button>';
-    box.innerHTML = html;
-
-    let selectedFighterId = defaultId;
-    const grid = document.getElementById('careFighterGrid');
-    if (grid) {
-      grid.addEventListener('click', e => {
-        const card = e.target.closest('.care-fighter-card');
-        if (!card || card.classList.contains('on-cooldown')) return;
-        selectedFighterId = parseInt(card.dataset.id);
-        grid.querySelectorAll('.care-fighter-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-      });
-    }
-
-    const confirmBtn = document.getElementById('careConfirmBtn');
-    if (confirmBtn) {
-      confirmBtn.addEventListener('click', () => {
-        if (cfg.cost >= 100) {
-          renderIndividualConfirm(actionId, cfg, selectedFighterId);
-        } else {
-          const displayData = onConfirm ? onConfirm(actionId, selectedFighterId) : null;
-          if (displayData) renderResult(displayData);
-          else overlay.classList.remove('active');
-        }
-      });
-    }
-    document.getElementById('careBackBtn').addEventListener('click', renderMain);
-  }
-
-  renderMain();
-  overlay.classList.add('active');
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 社長室 Phase 4: 決裁モーダル群 (shachoshitsu-spec-v1.0.md §8)
 // - showDecisionTargetModal: 個人書類の対象選手選択

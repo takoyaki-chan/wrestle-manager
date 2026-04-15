@@ -910,7 +910,6 @@ function renderWeekScreen() {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
     html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調に応じて強化ON/OFFを最適化し、体調60未満の選手を休養にします。各選手の方針はそのまま維持されます">🤖 おまかせ</button>';
-    html += `<button class="btn" onclick="App.openCareModal()" style="font-size:14px;padding:10px 20px;background:rgba(232,67,147,0.12);color:#e8439f;border:1px solid rgba(232,67,147,0.3);font-weight:600" title="選手・団体への資金投入アクション">💝 ケア</button>`;
     html += '</div>';
 
     // Roster schedule overview
@@ -4269,9 +4268,17 @@ function renderCoach() {
   const available = G.availableCoaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
   if (available.length > 0) {
     html += '<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">雇用可能なコーチ</div>';
+    // 社長室 Phase 5: 雇用には決裁枠2を消費
+    const hireDpCost = (typeof DECISION_DOCS !== 'undefined' && DECISION_DOCS.hireCoach?.decisionCost) || 2;
+    const hasDp = (G.decisionPoints || 0) >= hireDpCost;
     available.forEach(c => {
       const fee = c.hireFee || COACH_HIRE_FEE;
-      const canHire = G.coaches.length < maxCoaches && G.funds >= fee;
+      const canHire = G.coaches.length < maxCoaches && G.funds >= fee && hasDp;
+      let btnLabel;
+      if (canHire) btnLabel = `雇用 (${fee}万 / ⚡${hireDpCost})`;
+      else if (G.coaches.length >= maxCoaches) btnLabel = '上限';
+      else if (G.funds < fee) btnLabel = '資金不足';
+      else btnLabel = `決裁枠不足 (⚡${hireDpCost}必要)`;
       html += `<div class="coach-card">
         <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 48)}</div>
         <div class="coach-info">
@@ -4280,10 +4287,10 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:#6a6050">雇用費: <b style="color:#4a4035">${fee}万</b> ｜ 給与: <b style="color:#4a4035">${c.salary}万/週</b></div>
+          <div style="margin-top:5px;font-size:12px;color:#6a6050">雇用費: <b style="color:#4a4035">${fee}万</b> ｜ 給与: <b style="color:#4a4035">${c.salary}万/週</b> ｜ 決裁枠: <b style="color:#c00000">⚡${hireDpCost}</b></div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
-          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${canHire ? `雇用 (${fee}万)` : G.coaches.length >= maxCoaches ? '上限' : '資金不足'}</button>
+          onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${btnLabel}</button>
       </div>`;
     });
   }

@@ -5785,7 +5785,7 @@ const Engine = {
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
-          const trainerMult = Engine.careActions.getTrainerMult(nc);
+          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
@@ -5851,7 +5851,7 @@ const Engine = {
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
           // v2.0: 専属トレーナーバフ
-          const trainerMult = Engine.careActions.getTrainerMult(nc);
+          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
@@ -5968,7 +5968,7 @@ const Engine = {
       });
 
       // v2.0: トレーナーバフ週次消費（成長計算の後でデクリメント）
-      roster = Engine.careActions.tickTrainerBuffs(roster);
+      roster = Engine.shachoshitsu.tickTrainerBuffs(roster);
 
       // v2.0: 週次イベント生成（25%発生率、非興行週・通常シーズンのみ）
       // 通知型 (N1〜N5) と 選択型 (S1〜S6, E1〜E6) を区別して処理
@@ -6748,14 +6748,6 @@ const Engine = {
       s = { ...s, _pendingGlimpseB: glimpseBResult.glimpses };
     }
 
-    // v3.0: ケアストック回復（4週ごとに+1、オフシーズン含む）
-    const careAbsWeek = Engine.util.absWeek(s.season, s.week);
-    const careLastRecovery = s.careStockLastRecovery || 0;
-    if (careAbsWeek - careLastRecovery >= 4) {
-      const newCareStock = Math.min((s.careStock || 0) + 1, s.careStockMax || 5);
-      s = { ...s, careStock: newCareStock, careStockLastRecovery: careAbsWeek };
-    }
-
     // 社長室 Phase 2: 決裁枠回復(第1,5,9,...,45週の週進行時に +2、シーズン中のみ)
     // オフシーズン/新シーズン跨ぎは回復なし(前シーズン末残量を持ち越す設計 — spec §2.1)
     if (!s.offSeason && s.week >= 1 && s.week <= 45 && (s.week - 1) % 4 === 0) {
@@ -7122,8 +7114,6 @@ const Engine = {
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
     const matchParticipantIds = new Set(results.flatMap(r => [r.left.id, r.right.id]));
     roster = roster.map(c => matchParticipantIds.has(c.id) ? { ...c, promoStack: 0 } : c);
-    // v3.0: _costumeDebut フラグ消費（試合出場した選手のみ。MQ+2は Pass2 で適用済み）
-    roster = roster.map(c => (c._costumeDebut && matchParticipantIds.has(c.id)) ? (({ _costumeDebut, ...rest }) => rest)(c) : c);
 
     // Heat (immutable) — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
@@ -9660,7 +9650,7 @@ const Engine = {
         // → オフシーズン第1週の引退復帰システムに統合済み
 
         // v2.0: シーズン末にボーナス逓減カウンタをリセット
-        s = { ...s, roster: Engine.careActions.resetSeasonalCounters(s.roster) };
+        s = { ...s, roster: Engine.shachoshitsu.resetSeasonalCounters(s.roster) };
 
         // orgPopHistory: 新シーズン開幕時の団体人気を記録
         const oph = { ...(s.orgPopHistory || {}) };
@@ -10257,10 +10247,6 @@ const Engine = {
       milestoneBuffs: [],
       // v2.0: ロッカールームの空気
       lockerRoomMorale: 60,
-      // v3.0: ケアストック制
-      careStock: 5,
-      careStockMax: 5,
-      careStockLastRecovery: 0,
       // 社長室 Phase 2: 決裁枠(decisionPoints)
       decisionPoints: 6,
       decisionPointsMax: 6,
@@ -12461,287 +12447,6 @@ Engine.trust = {
   },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// v2.0: Care Actions (event-system-spec-v2.md §2)
-// ─────────────────────────────────────────────────────────────────────────────
-Engine.careActions = {
-  // アクション定義参照
-  getConfig(actionId) {
-    return typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || null) : null;
-  },
-
-  // ── ボーナス逓減チェック ───────────────────────────────────────────────────
-  // 同一選手へ連続でボーナスを支給した場合、効果が逓減する
-  getBonusRepeatCount(fighter) {
-    return fighter._bonusRepeat || 0;
-  },
-
-  // ── コスト計算（団体向けは人数×単価、個人向けは固定） ─────────────────────
-  calcCost(cfg, state) {
-    if (cfg.category === 'team' && cfg.unitCost) {
-      const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
-      return cfg.unitCost * Math.max(headcount, cfg.minHeadcount || 4);
-    }
-    return cfg.cost || 0;
-  },
-
-  // ── アクション実行（純粋関数） ─────────────────────────────────────────────
-  // 返り値: { roster, funds, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed, careStock }
-  execute(actionId, fighterId, state) {
-    const cfg = Engine.careActions.getConfig(actionId);
-    if (!cfg) return null;
-    if (cfg.minOrgPop && (state.orgPop || 0) < cfg.minOrgPop) return { error: 'orgpop_locked', required: cfg.minOrgPop };
-    // v3.0: ストック消費判定（声かけはストック消費なし、合宿は2ストック、他は1ストック）
-    const stockCost = actionId === 'encourage' ? 0
-                    : actionId === 'camp' ? 2
-                    : 1;
-    if (stockCost > 0 && (state.careStock || 0) < stockCost) {
-      return { error: 'stock_insufficient' };
-    }
-    // 団体向けアクションは人数×単価（最低minHeadcount人分）
-    const actualCost = Engine.careActions.calcCost(cfg, state);
-    if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
-
-    let roster = [...state.roster];
-    let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
-    let _teamCareWeekUsed = state._teamCareWeekUsed ? { ...state._teamCareWeekUsed } : {};
-    const events = [];
-    let reactionKey = actionId;
-    let reactionFighterId = fighterId;
-
-    // §6.1: OVR傾斜係数（低OVRほどケア効果が高い）
-    const careOvrMult = (fighter) => {
-      const ovr = Engine.util.ov(fighter);
-      return 0.7 + (100 - ovr) / 100 * 0.9;
-    };
-    const applyTrust = (fighter, delta, skipOvrScale) => {
-      const mental = fighter.mn || 50;
-      let adjusted = Engine.trust.applyCoeff(delta, mental);
-      // §6.1: OVR傾斜をケアアクションに適用（skipOvrScale=trueの場合はスキップ）
-      if (!skipOvrScale) adjusted *= careOvrMult(fighter);
-      // §6.3: low帯減衰はケアアクションには適用しない
-      const oldTrust = fighter.trust != null ? fighter.trust : 50;
-      // §4.2: 高信頼帯の上昇逓減（正方向のみ）
-      if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
-      const newTrust = Engine.util.clamp(oldTrust + adjusted, 0, 100);
-      return { ...fighter, trust: newTrust };
-    };
-
-    const changes = [];
-
-    // ── 個人向けアクション ──
-    if (cfg.category === 'individual') {
-      const idx = roster.findIndex(f => f.id === fighterId);
-      if (idx < 0) return { error: 'fighter_not_found' };
-      let f = { ...roster[idx] };
-      const _before = { trust: f.trust != null ? f.trust : 50, popularity: f.popularity || 0, condition: f.condition || 50 };
-
-      // 全個人アクション: 同一選手への同一アクションは1週に1回まで
-      const lastUsed = (f._careWeekUsed || {})[actionId] || -99;
-      const cooldown = cfg.cooldown != null ? cfg.cooldown : 1;
-      if (state.week - lastUsed < cooldown) return { error: 'cooldown' };
-
-      if (actionId === 'bonus') {
-        const repeatCount = Engine.careActions.getBonusRepeatCount(f);
-        const trustGain = Math.max(0.77, cfg.effects.trust - repeatCount * 1.53);  // 逓減（v2.1: 出場1回分ずつ減衰、最低=声かけ相当）
-        f = applyTrust(f, trustGain);
-        f._bonusRepeat = repeatCount + 1;
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        if (repeatCount >= 2) reactionKey = 'bonus_repeat';
-        events.push(`💴 ${f.name}にボーナスを支給`);
-      } else if (actionId === 'costume') {
-        // v3.0: pop永続上昇廃止 → 次試合MQ+2一時バフ
-        f = { ...f, _costumeDebut: true };
-        f = applyTrust(f, cfg.effects.trust);
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`👗 ${f.name}のコスチュームを新調（次の試合で注目度UP）`);
-      } else if (actionId === 'trainer') {
-        f = applyTrust(f, cfg.effects.trust);
-        f._trainerBuff = { weeksLeft: cfg.effects.growth_boost.weeks, mult: cfg.effects.growth_boost.mult };
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`🏋️ ${f.name}に専属トレーナーを手配（${cfg.effects.growth_boost.weeks}週間 成長+30%）`);
-      } else if (actionId === 'media') {
-        // v3.0: pop個人上昇廃止 → orgPop +0.4（team-wide宣伝効果）
-        f = applyTrust(f, cfg.effects.trust);
-        f = { ...f, condition: Math.min(100, (f.condition || 70) + 5) };
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`📺 ${f.name}のメディア露出を手配（団体の知名度が少し上がった）`);
-      } else if (actionId === 'special_treatment') {
-        if (!f.injury) return { error: 'not_injured' };
-        const cur = f.injury.weeksLeft || 0;
-        // 確率ベース短縮（30%:1週 / 30%:2週 / 25%:3週 / 15%:4週、8週以上で+1週）
-        const healRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId));
-        const roll = Engine.rng.float(healRng);
-        let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
-        if (cur >= 8) reduction += 1;
-        const reduced = Math.max(1, cur - reduction);
-        f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`🏥 ${f.name}の特別治療（回復期間 ${cur}週→${reduced}週）`);
-        changes.push({ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` });
-      } else if (actionId === 'encourage') {
-        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
-        const highTrust = (f.trust || 50) >= 60;
-        const momentumBoost = highTrust ? 4.0 : 2.5;
-        if (f.slump) {
-          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
-        }
-        if (f.motivationLoss) {
-          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
-        }
-        f = applyTrust(f, cfg.effects.trust || 0.77);
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
-        events.push(`💬 ${f.name}に声かけ（スランプ回復促進）`);
-      } else if (actionId === 'refresh_leave') {
-        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
-        if (f.slump) {
-          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + 12.0 } };
-        }
-        if (f.motivationLoss) {
-          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + 8.0 } };
-        }
-        const newCondition = Math.min(100, (f.condition || 70) + (cfg.effects.condition || 15));
-        f = { ...f, condition: newCondition };
-        f = applyTrust(f, cfg.effects.trust || 3);
-        f._careWeekUsed = { ...(f._careWeekUsed || {}), [actionId]: state.week };
-        events.push(`🌴 ${f.name}にリフレッシュ休暇（スランプ回復大促進・状態+15）`);
-      }
-
-      roster[idx] = f;
-      // before/after changes 構築
-      const _after = { trust: f.trust, popularity: f.popularity || 0, condition: f.condition || 50 };
-      if (_after.trust !== _before.trust) {
-        const trustDesc = Engine.trust.describeChange(_after.trust - _before.trust);
-        changes.push({ label: '信頼度', emoji: '🤝', text: trustDesc });
-      }
-      if (_after.popularity !== _before.popularity) changes.push({ label: '人気', emoji: '⭐', before: Engine.util.dispPop(_before.popularity), after: Engine.util.dispPop(_after.popularity) });
-      if (_after.condition !== _before.condition) changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
-      // v3.0: costume → 注目度テキスト, media → 団体露出テキスト
-      if (actionId === 'costume') changes.push({ label: '注目度', emoji: '✨', text: '次の試合で注目度UP（MQ+2）' });
-      if (actionId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
-      if (actionId === 'trainer') changes.push({ label: '成長速度', emoji: '📈', text: `${cfg.effects.growth_boost.weeks}週間 +30%` });
-      if (actionId === 'encourage') {
-        changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
-      } else if (actionId === 'refresh_leave') {
-        changes.push({ label: 'スランプ回復', emoji: '💪', text: '心身ともにリフレッシュし、回復が大きく進んだ' });
-      }
-    }
-
-    // ── 団体全体向けアクション ──
-    if (cfg.category === 'team') {
-      // 団体向けも1週に1回まで
-      if (_teamCareWeekUsed[actionId] === state.week) return { error: 'cooldown' };
-      const _beforeMorale = lockerRoomMorale;
-      if (actionId === 'party') {
-        roster = roster.map(f => {
-          if (f.injury) return f;
-          return applyTrust(f, cfg.effects.trust_all);
-        });
-        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + cfg.effects.morale, 0, 100);
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
-        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
-        events.push(`🎉 打ち上げ・慰労会を開催（チームの雰囲気が良くなった）`);
-        reactionFighterId = null;
-        _teamCareWeekUsed = { ..._teamCareWeekUsed, [actionId]: state.week };
-      } else if (actionId === 'camp') {
-        roster = roster.map(f => {
-          if (f.injury) return f;
-          const newF = applyTrust(f, cfg.effects.trust_all);
-          return { ...newF, _trainerBuff: { weeksLeft: cfg.effects.growth_all.weeks, mult: cfg.effects.growth_all.mult } };
-        });
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
-        changes.push({ label: '全員の成長速度', emoji: '📈', text: `${cfg.effects.growth_all.weeks}週間 +50%` });
-        events.push(`⛺ 合宿を実施（全員の成長バフ+50%、${cfg.effects.growth_all.weeks}週間）`);
-        reactionFighterId = null;
-        _teamCareWeekUsed = { ..._teamCareWeekUsed, [actionId]: state.week };
-      }
-    }
-
-    // ── Phase 4: ケアアクション人間関係反映 ──
-    let updatedRelationships = null;
-    if (state.relationships) {
-      const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE50));
-      let relState = { relationships: { ...state.relationships } };
-      const relRosterIds = roster.filter(c => !c.isRental).map(c => c.id);
-
-      if (actionId === 'encourage' || actionId === 'refresh_leave') {
-        // C-01/C-02: 対象→団体全体 bond +1~+2
-        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
-      } else if (actionId === 'costume') {
-        // C-07: 対象→団体 bond +1~+2
-        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
-      } else if (actionId === 'media') {
-        // C-08: 対象→団体 bond +1~+2, 他選手→対象 bond -1
-        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
-        relState = Engine.relationships.applyFromRoster(relState, relRosterIds, fighterId, { min: -1, max: -1 }, { min: 0, max: 0 }, relRng);
-      } else if (actionId === 'special_treatment') {
-        // C-09: 対象→団体 bond +2~+3, 他選手→対象 bond -2~-3
-        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 2, max: 3 }, { min: 0, max: 0 }, relRng);
-        relState = Engine.relationships.applyFromRoster(relState, relRosterIds, fighterId, { min: -3, max: -2 }, { min: 0, max: 0 }, relRng);
-      } else if (actionId === 'camp' || actionId === 'party') {
-        // C-03: 参加者（非負傷）全ペア bond +2~+4
-        const pairIds = roster.filter(c => !c.isRental && !c.injury).map(c => c.id);
-        relState = Engine.relationships.applyAllPairs({ ...state, ...relState }, pairIds, { min: 2, max: 4 }, { min: 0, max: 0 }, relRng);
-      }
-      updatedRelationships = relState.relationships;
-    }
-
-    const newFunds = (state.funds || 0) - actualCost;
-    // v3.0: ストック消費後の残量を返却
-    const newCareStock = (state.careStock || 0) - stockCost;
-    const result = { roster, lockerRoomMorale, funds: newFunds, cost: actualCost, events, reactionKey, reactionFighterId, changes, _teamCareWeekUsed, careStock: newCareStock };
-    // v3.0: メディア → orgPop +0.4（逓減適用は app.js 側で行う）
-    if (actionId === 'media') result.orgPopDelta = 0.4;
-    if (updatedRelationships) result.relationships = updatedRelationships;
-    return result;
-  },
-
-  // ── トレーナーバフの週次消費（processManage内で呼び出し） ─────────────────
-  tickTrainerBuffs(roster) {
-    return roster.map(f => {
-      if (!f._trainerBuff) return f;
-      const buf = f._trainerBuff;
-      if (buf.weeksLeft <= 1) {
-        const { _trainerBuff: _, ...rest } = f;
-        return rest;  // バフ期限切れ
-      }
-      return { ...f, _trainerBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
-    });
-  },
-
-  // ── 成長計算時のトレーナーバフ取得 ──────────────────────────────────────────
-  getTrainerMult(fighter) {
-    return fighter._trainerBuff ? fighter._trainerBuff.mult : 1.0;
-  },
-
-  // ── シーズン末にボーナス逓減カウンタ＋ケア使用記録をリセット ─────────────
-  resetSeasonalCounters(roster) {
-    return roster.map(f => {
-      const { _bonusRepeat: _br, _careWeekUsed: _cw, ...rest } = f;
-      return {
-        ...rest,
-        mediaRevSeason: 0,
-        talentRevSeason: 0,
-        talentCountSeason: 0,
-        promoCountSeason: 0,
-      };
-    });
-  },
-
-  // ── スランプ/モチベ喪失状態チェック ────────────────────────────────────────
-  isInSlump(fighter) {
-    return !!(fighter.slump || fighter.motivationLoss);
-  },
-
-  // ── リアクションセリフ選択 ────────────────────────────────────────────────
-  getReactionText(actionId, fighter) {
-    if (typeof CARE_REACTION_DIALOGUES === 'undefined') return '…';
-    const dialogues = CARE_REACTION_DIALOGUES[actionId];
-    if (!dialogues) return '…';
-    return pickDialogueLine(dialogues, fighter);
-  },
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 社長室 Phase 3: Engine.shachoshitsu
@@ -13034,6 +12739,90 @@ Engine.shachoshitsu = {
     const dialogues = CARE_REACTION_DIALOGUES[docId];
     if (!dialogues) return '…';
     return pickDialogueLine(dialogues, fighter);
+  },
+
+  // ─── Phase 5: 旧 Engine.careActions から移植したヘルパー群 ─────────────────
+
+  // ── トレーナーバフの週次消費(processManage内で呼び出し) ─────────────────
+  tickTrainerBuffs(roster) {
+    return roster.map(f => {
+      if (!f._trainerBuff) return f;
+      const buf = f._trainerBuff;
+      if (buf.weeksLeft <= 1) {
+        const { _trainerBuff: _, ...rest } = f;
+        return rest;  // バフ期限切れ
+      }
+      return { ...f, _trainerBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
+    });
+  },
+
+  // ── 成長計算時のトレーナーバフ取得 ──────────────────────────────────────
+  getTrainerMult(fighter) {
+    return fighter._trainerBuff ? fighter._trainerBuff.mult : 1.0;
+  },
+
+  // ── シーズン末にボーナス逓減カウンタ+決裁使用記録をリセット ─────────────
+  resetSeasonalCounters(roster) {
+    return roster.map(f => {
+      const { _bonusRepeat: _br, _decisionWeekUsed: _dw, ...rest } = f;
+      return {
+        ...rest,
+        mediaRevSeason: 0,
+        talentRevSeason: 0,
+        talentCountSeason: 0,
+        promoCountSeason: 0,
+      };
+    });
+  },
+
+  // ── スランプ/モチベ喪失状態チェック ──────────────────────────────────────
+  isInSlump(fighter) {
+    return !!(fighter.slump || fighter.motivationLoss);
+  },
+
+  // ── ボーナス逓減カウント参照 ──────────────────────────────────────────────
+  getBonusRepeatCount(fighter) {
+    return fighter._bonusRepeat || 0;
+  },
+
+  // ── Phase 5: special_treatment を怪我発生ポップアップから実行 ─────────────
+  // 決裁枠は消費せず、資金のみ消費。怪我選手の回復期間を確率ベースで短縮。
+  // 返り値: { roster, funds, events, changes, cost } | { error: 'xxx' }
+  executeSpecialTreatment(fighterId, state) {
+    const SPECIAL_TREATMENT_COST = 200;
+    if ((state.funds || 0) < SPECIAL_TREATMENT_COST) {
+      return { error: 'funds_insufficient' };
+    }
+    const roster = [...state.roster];
+    const idx = roster.findIndex(f => f.id === fighterId);
+    if (idx < 0) return { error: 'fighter_not_found' };
+    let f = { ...roster[idx] };
+    if (!f.injury) return { error: 'not_injured' };
+
+    const cur = f.injury.weeksLeft || 0;
+    // 確率ベース短縮(30%:1週 / 30%:2週 / 25%:3週 / 15%:4週、8週以上で+1週)
+    const healRng = Engine.rng.create(
+      Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId)
+    );
+    const roll = Engine.rng.float(healRng);
+    let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
+    if (cur >= 8) reduction += 1;
+    const reduced = Math.max(1, cur - reduction);
+    f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
+    roster[idx] = f;
+
+    const events = [`🏥 ${f.name}の特別治療(回復期間 ${cur}週→${reduced}週)`];
+    const changes = [{ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` }];
+    return {
+      roster,
+      funds: (state.funds || 0) - SPECIAL_TREATMENT_COST,
+      cost: SPECIAL_TREATMENT_COST,
+      events,
+      changes,
+      fighterId,
+      cur,
+      reduced,
+    };
   },
 };
 
@@ -14823,6 +14612,27 @@ Engine.validateGameState = function(G) {
   if (G._decisionWeekUsed !== undefined && (typeof G._decisionWeekUsed !== 'object' || Array.isArray(G._decisionWeekUsed))) {
     warn(`_decisionWeekUsedがオブジェクトでない: ${typeof G._decisionWeekUsed}→自動修正`);
     G = { ...G, _decisionWeekUsed: {} };
+  }
+  // 社長室 Phase 5: 廃止済み旧ケアフィールドが残存していないか(マイグレーション失敗の安全弁)
+  if (G.careStock !== undefined) {
+    warn('旧careStockフィールドが残存→自動削除');
+    const { careStock: _a, ...rest } = G;
+    G = rest;
+  }
+  if (G.careStockMax !== undefined) {
+    warn('旧careStockMaxフィールドが残存→自動削除');
+    const { careStockMax: _b, ...rest } = G;
+    G = rest;
+  }
+  if (G.careStockLastRecovery !== undefined) {
+    warn('旧careStockLastRecoveryフィールドが残存→自動削除');
+    const { careStockLastRecovery: _c, ...rest } = G;
+    G = rest;
+  }
+  if (G._teamCareWeekUsed !== undefined) {
+    warn('旧_teamCareWeekUsedフィールドが残存→自動削除');
+    const { _teamCareWeekUsed: _d, ...rest } = G;
+    G = rest;
   }
 
   // ── 経済関連 ──

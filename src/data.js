@@ -11664,60 +11664,6 @@ const NOTIF_DIALOGUES = {
   }
 };
 
-// §2: 資金投入アクション設定（event-system-spec-v2.md §2）
-const CARE_ACTIONS = {
-  // 個人向けアクション（cooldown: 週数。省略時=1、同一週は常に不可）
-  bonus: {
-    id: 'bonus', label: 'ボーナス支給', emoji: '💴', cost: 50, category: 'individual',
-    desc: '信頼が上がる（1ストック・連続使用で効果逓減）',
-    effects: { trust: 4.59 }, minOrgPop: 0, cooldown: 1,
-  },
-  costume: {
-    id: 'costume', label: 'コスチューム新調', emoji: '👗', cost: 80, category: 'individual',
-    desc: '次の試合で注目度UP・信頼が上がる（1ストック・2週に1回）',
-    effects: { trust: 5.36 }, minOrgPop: 20, cooldown: 2,
-  },
-  trainer: {
-    id: 'trainer', label: '専属トレーナー手配', emoji: '🏋️', cost: 160, category: 'individual',
-    desc: '4週間 成長速度+30%、信頼も上がる（1ストック）',
-    effects: { growth_boost: { weeks: 4, mult: 1.3 }, trust: 5.97 }, minOrgPop: 0, cooldown: 1,
-  },
-  media: {
-    id: 'media', label: 'メディア露出手配', emoji: '📺', cost: 120, category: 'individual',
-    desc: '団体の知名度が少し上がる・信頼も上がる（1ストック・2週に1回）',
-    effects: { trust: 5.36, skip_training: true }, minOrgPop: 20, cooldown: 2,
-  },
-  special_treatment: {
-    id: 'special_treatment', label: '怪我の特別治療', emoji: '🏥', cost: 200, category: 'individual',
-    desc: '怪我の回復を早める（1ストック・怪我中のみ）',
-    effects: { injury_reduction: true }, minOrgPop: 40,
-    condition: 'injured', cooldown: 1,
-  },
-  encourage: {
-    id: 'encourage', label: '声かけ', emoji: '💬', cost: 0, category: 'individual',
-    desc: 'スランプ中の選手に声をかける（ストック不要・週1回）',
-    effects: { trust: 0.77 }, minOrgPop: 0,
-    condition: 'slump_or_motivation_loss', cooldown: 1,
-  },
-  refresh_leave: {
-    id: 'refresh_leave', label: 'リフレッシュ休暇', emoji: '🌴', cost: 100, category: 'individual',
-    desc: '休暇でリフレッシュ（1ストック・4週に1回）',
-    effects: { condition: 15, trust: 5.36, skip_training: true }, minOrgPop: 0,
-    condition: 'slump_or_motivation_loss', cooldown: 4,
-  },
-  // 団体全体向けアクション（1週に1回まで）
-  party: {
-    id: 'party', label: '打ち上げ・慰労会', emoji: '🎉', unitCost: 15, category: 'team',
-    desc: '全員の信頼と雰囲気が少し上がる（1ストック）',
-    effects: { trust_all: 1.84, morale: 5 }, minOrgPop: 0, minHeadcount: 4,
-  },
-  camp: {
-    id: 'camp', label: '合宿', emoji: '⛺', unitCost: 40, category: 'team',
-    desc: '全員の成長+中、信頼も少し上がる（2ストック）',
-    effects: { growth_all: { weeks: 2, mult: 1.5 }, trust_all: 1.84 }, minOrgPop: 0, minHeadcount: 4,
-  },
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 社長室 Phase 3: 決裁書類（DECISION_DOCS）
 // 仕様: specs/shachoshitsu-spec-v1.0.md §3
@@ -12034,104 +11980,6 @@ const CARE_REACTION_DIALOGUES = {
       ],
       seductive: [
         'また……っ……ふふ、こんなに優しくされたら、応えないわけにはいかないわ……'
-      ],
-    }
-  },
-  costume: {
-    normal: {
-      _default: [
-        'わあ！ありがとうございます！',
-        'うれしい！大切にします',
-        '次の試合が楽しみです！'
-      ],
-      ojousama: [
-        'まあ素敵…！ありがとうございます。大切にしますわ'
-      ],
-      delinquent: [
-        'お、いいじゃん！早く着たい！'
-      ],
-      seductive: [
-        '素敵…！ありがとう。早く着てみたいわ'
-      ],
-      composed: [
-        '…いいね。ありがとう。早く試したいな'
-      ]
-    },
-    bold: {
-      _default: [
-        '新コス！これ着て勝ちまくります！',
-        'これで試合に勝てる気がする！'
-      ],
-      ojousama: [
-        'まあ、素敵。これで勝利を重ねますわ'
-      ],
-      delinquent: [
-        'おお！テンション上がるわ！勝ちまくるぜ！'
-      ],
-      cool: [
-        '…いいデザインだ。ありがたい'
-      ],
-      seductive: [
-        '素敵ね。これを着て勝ちに行くわ'
-      ],
-      composed: [
-        '…悪くないデザインだね。これで行こうか'
-      ]
-    },
-    quiet: {
-      _default: [
-        '……ありがとうございます（嬉しそうに布地を撫でている）'
-      ],
-      cool: [
-        '…悪くない。使わせてもらう'
-      ],
-      polite: [
-        '…ありがとうございます。大切にします'
-      ]
-    },
-    shy: {
-      _default: [
-        'え…こんな素敵なの…私に…？ ありがとうございます…！'
-      ],
-      polite: [
-        'こ、こんな素敵な衣装…わたしに似合うでしょうか…'
-      ],
-    },
-    easygoing: {
-      _default: [
-        'えっ、これ超かわいい！テンション上がる〜！'
-      ],
-      delinquent: [
-        'うわ、めっちゃいい！テンション爆上がりだわ！'
-      ],
-      seductive: [
-        'かわいい！早く着てみたいわ〜'
-      ]
-    },
-    earnest: {
-      _default: [
-        'えっ、本当ですか！？ 早く着てみたい！',
-        'ここまでしてもらえるなんて…ありがとうございます'
-      ],
-      polite: [
-        '本当にいいんですか…？ 大切に着させていただきます'
-      ],
-      ojousama: [
-        'まあ…ここまでしていただけるなんて。ありがとうございますわ'
-      ],
-      seductive: [
-        '本当に？ 嬉しい…大切にするわ'
-      ],
-      composed: [
-        '…ここまでしてもらえるとはね。ありがとう'
-      ]
-    },
-    emotional: {
-      _default: [
-        'うわあ…！かわいい…！嬉しい…ありがとうございます…！'
-      ],
-      seductive: [
-        'この衣装……っ……ふふ、わたしのために選んでくれたのね、似合うかしら……'
       ],
     }
   },
@@ -19285,30 +19133,6 @@ if (!CARE_REACTION_DIALOGUES['bonus_repeat']) CARE_REACTION_DIALOGUES['bonus_rep
 if (!CARE_REACTION_DIALOGUES['bonus_repeat'].easygoing) CARE_REACTION_DIALOGUES['bonus_repeat'].easygoing = {};
 if (!CARE_REACTION_DIALOGUES['bonus_repeat'].easygoing.ojousama) CARE_REACTION_DIALOGUES['bonus_repeat'].easygoing.ojousama = [];
 CARE_REACTION_DIALOGUES['bonus_repeat'].easygoing.ojousama.push('またですの?うふふ、感謝しておりますわ。いつも助けていただいて');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].normal) CARE_REACTION_DIALOGUES['costume'].normal = {};
-if (!CARE_REACTION_DIALOGUES['costume'].normal.polite) CARE_REACTION_DIALOGUES['costume'].normal.polite = [];
-CARE_REACTION_DIALOGUES['costume'].normal.polite.push('こんな素敵な衣装を……!ありがとうございます、大切にします');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].normal) CARE_REACTION_DIALOGUES['costume'].normal = {};
-if (!CARE_REACTION_DIALOGUES['costume'].normal.cool) CARE_REACTION_DIALOGUES['costume'].normal.cool = [];
-CARE_REACTION_DIALOGUES['costume'].normal.cool.push('……きれい。ありがとう');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].bold) CARE_REACTION_DIALOGUES['costume'].bold = {};
-if (!CARE_REACTION_DIALOGUES['costume'].bold.polite) CARE_REACTION_DIALOGUES['costume'].bold.polite = [];
-CARE_REACTION_DIALOGUES['costume'].bold.polite.push('わあ、素敵です!これ着て試合したら、絶対目立ちますね!');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].quiet) CARE_REACTION_DIALOGUES['costume'].quiet = {};
-if (!CARE_REACTION_DIALOGUES['costume'].quiet.seductive) CARE_REACTION_DIALOGUES['costume'].quiet.seductive = [];
-CARE_REACTION_DIALOGUES['costume'].quiet.seductive.push('……きれい。袖を、通してみていい?');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].easygoing) CARE_REACTION_DIALOGUES['costume'].easygoing = {};
-if (!CARE_REACTION_DIALOGUES['costume'].easygoing.polite) CARE_REACTION_DIALOGUES['costume'].easygoing.polite = [];
-CARE_REACTION_DIALOGUES['costume'].easygoing.polite.push('きゃー素敵!わたしに似合いますかね?ありがとうございます!');
-if (!CARE_REACTION_DIALOGUES['costume']) CARE_REACTION_DIALOGUES['costume'] = {};
-if (!CARE_REACTION_DIALOGUES['costume'].easygoing) CARE_REACTION_DIALOGUES['costume'].easygoing = {};
-if (!CARE_REACTION_DIALOGUES['costume'].easygoing.ojousama) CARE_REACTION_DIALOGUES['costume'].easygoing.ojousama = [];
-CARE_REACTION_DIALOGUES['costume'].easygoing.ojousama.push('まあまあまあ!なんて素敵な衣装ですの!早く着てみたいですわ!');
 if (!CARE_REACTION_DIALOGUES['trainer']) CARE_REACTION_DIALOGUES['trainer'] = {};
 if (!CARE_REACTION_DIALOGUES['trainer'].normal) CARE_REACTION_DIALOGUES['trainer'].normal = {};
 if (!CARE_REACTION_DIALOGUES['trainer'].normal.polite) CARE_REACTION_DIALOGUES['trainer'].normal.polite = [];
@@ -21299,7 +21123,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,
     NEWS_TICKER_TEMPLATES, NEWS_HEADLINE_TEMPLATES, BESTMATCH_FLAVOR,
     MILESTONE_EVENTS, NOTIF_EVENT_TEXTS, NOTIF_DIALOGUES,
-    CARE_ACTIONS, CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
+    CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
     CHOICE_EVENT_DIALOGUES, LARGE_EVENT_TEXTS, LARGE_EVENT_DIALOGUES,
     MEDIA_OUTLET_NAMES,
     CM_ADVERTISER_NAMES, MAGAZINE_NAMES, VARIETY_SHOW_NAMES,

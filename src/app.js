@@ -2037,14 +2037,6 @@ const Storage = {
         });
         G = { ...G, _migrated_retired_rivalry_cleanup_v1: true };
       }
-      // v3.0: ケアストック制マイグレーション
-      if (G.careStock === undefined) {
-        G = { ...G,
-          careStock: 5,
-          careStockMax: 5,
-          careStockLastRecovery: Engine.util.absWeek(G.season, G.week),
-        };
-      }
       // 社長室 Phase 2: 決裁枠マイグレーション
       if (G.decisionPoints === undefined) {
         G = { ...G, decisionPoints: 6, decisionPointsMax: 6, _migrated_decisionPoints_v1: true };
@@ -2058,6 +2050,28 @@ const Storage = {
       }
       if (G.roster && G.roster.some(f => f._decisionWeekUsed === undefined)) {
         G = { ...G, roster: G.roster.map(f => f._decisionWeekUsed === undefined ? { ...f, _decisionWeekUsed: {} } : f) };
+      }
+      // 社長室 Phase 5: _careWeekUsed → _decisionWeekUsed に統合
+      if (G.roster && G.roster.some(f => f._careWeekUsed)) {
+        G = { ...G, roster: G.roster.map(f => {
+          if (!f._careWeekUsed) return f;
+          const merged = { ...(f._decisionWeekUsed || {}), ...f._careWeekUsed };
+          const { _careWeekUsed: _, ...rest } = f;
+          return { ...rest, _decisionWeekUsed: merged };
+        }) };
+      }
+      // 社長室 Phase 5: 旧ケアストック / _teamCareWeekUsed / _costumeDebut を削除
+      if (G.careStock !== undefined || G.careStockMax !== undefined
+          || G.careStockLastRecovery !== undefined || G._teamCareWeekUsed !== undefined) {
+        const { careStock: _a, careStockMax: _b, careStockLastRecovery: _c, _teamCareWeekUsed: _d, ...rest } = G;
+        G = rest;
+      }
+      if (G.roster && G.roster.some(f => f._costumeDebut !== undefined)) {
+        G = { ...G, roster: G.roster.map(f => {
+          if (f._costumeDebut === undefined) return f;
+          const { _costumeDebut: _, ...rest } = f;
+          return rest;
+        }) };
       }
 
       // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
@@ -3566,17 +3580,26 @@ const App = {
     if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert('A級コーチの雇用には4枠目の開放が必要です'); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
     if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
+    // 社長室 Phase 5: コーチ雇用は「コーチ雇用決裁書」(決裁枠2)を消費する
+    const hireDoc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.hireCoach : null;
+    const dpCost = (hireDoc && hireDoc.decisionCost) || 2;
+    if ((G.decisionPoints || 0) < dpCost) {
+      Audio.play('error');
+      alert(`コーチ雇用には決裁枠 ⚡${dpCost} が必要です（現在: ⚡${G.decisionPoints || 0}）`);
+      return;
+    }
     G = {
       ...G,
       funds: G.funds - fee,
+      decisionPoints: Math.max(0, (G.decisionPoints || 0) - dpCost),
       coaches: [...G.coaches, coachId],
       availableCoaches: G.availableCoaches.filter(id => id !== coachId),
       coachAssign: { ...G.coachAssign, [coachId]: [] },
-      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万）`]
+      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万、決裁枠 -${dpCost}）`]
     };
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
-      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万）` });
+      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
   },
 
   // Expand coach slot
@@ -5252,16 +5275,30 @@ const App = {
     });
 
     // v0.96: Show injury popups (only non-retirement injuries)
+    // 社長室 Phase 5: 怪我ポップアップに「特別治療」選択肢を統合
     const injuries = App._lastInjuries || [];
     injuries.forEach((ir, i) => {
       // v1.3-3: Skip retirement injuries (they get their own popup)
       if (ir.retireType) return;
       const ch = G.roster.find(c => c.name === ir.name);
-      if (ch && ir.injury) {
-        hasEventPopups = true;
-        setTimeout(() => showEventPopup({ type:'fighter', id:ch.id, name:ch.name, tone:'negative',
-          message: pickQuote('injury'), detail:`🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間` }), i * 100);
-      }
+      if (!ch || !ir.injury) return;
+      hasEventPopups = true;
+      const SPECIAL_TREATMENT_COST = 200;
+      setTimeout(() => {
+        // 発火時点での資金を参照(複数の怪我が連続表示されるので毎回チェック)
+        const canAfford = (G.funds || 0) >= SPECIAL_TREATMENT_COST;
+        showEventPopup({
+          type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
+          message: pickQuote('injury'),
+          detail: `🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間`,
+          action: {
+            label: `🏥 特別治療を実施する（${SPECIAL_TREATMENT_COST}万）`,
+            disabled: !canAfford,
+            disabledHint: canAfford ? null : `資金が足りません(必要: ${SPECIAL_TREATMENT_COST}万)`,
+            onClick: () => App.executeSpecialTreatment(ch.id),
+          },
+        });
+      }, i * 100);
     });
     App._lastInjuries = [];
     // v1.2: 乱入マッチ結果ポップアップ
@@ -6771,79 +6808,25 @@ const App = {
     }
   },
 
-  // v2.0: ケアアクション モーダル表示
-  openCareModal() {
-    Audio.play('click');
-    showCareActionModal(G, (actionId, fighterId) => {
-      return App.executeCareAction(actionId, fighterId);  // displayData を返す
-    });
-  },
-
-  // v2.0: ケアアクション実行 (event-system-spec-v2.md §2)
-  // 返り値: displayData オブジェクト（モーダル内結果画面用）または null（エラー時）
-  executeCareAction(actionId, fighterId) {
-    const result = Engine.careActions.execute(actionId, fighterId, G);
-    if (!result) { showToast('アクションが見つかりません'); return null; }
-    if (result.error === 'stock_insufficient') { showToast('ケアストックが不足しています'); return null; }
-    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return null; }
-    if (result.error === 'fighter_not_found')  { showToast('選手が見つかりません'); return null; }
-    if (result.error === 'not_injured')         { showToast('怪我をしていない選手には使用できません'); return null; }
-    if (result.error === 'not_slump')           { showToast('スランプ中の選手ではありません'); return null; }
-    if (result.error === 'cooldown') { showToast('今週はすでに使用済みです'); return null; }
-    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません（知名度 ${result.required} 必要）`); return null; }
-
+  // 社長室 Phase 5: 特別治療(怪我ポップアップの二次アクション)
+  // 決裁枠は消費せず、資金200万のみ消費。回復期間を1〜4週短縮。
+  executeSpecialTreatment(fighterId) {
+    const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G);
+    if (!result) { showToast('特別治療に失敗しました'); return; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
+    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return; }
+    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return; }
     // state 更新
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
-      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
-      _teamCareWeekUsed: result._teamCareWeekUsed || G._teamCareWeekUsed || {},
-      careStock: result.careStock != null ? result.careStock : G.careStock,
-      gameLog: [...(G.gameLog || []), ...(result.events || [])]
+      gameLog: [...(G.gameLog || []), ...(result.events || [])],
     };
-    // Phase 4: ケアアクションの関係値反映
-    if (result.relationships) {
-      G = { ...G, relationships: result.relationships };
-    }
-    // v3.0: メディア → orgPop +0.4（逓減適用）
-    if (result.orgPopDelta) {
-      const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
-      G = { ...G, orgPop: newOrgPop };
-    }
     Storage.autoSave();
-
-    // displayData 構築（モーダル内結果画面へ渡す）
-    const cfg = typeof CARE_ACTIONS !== 'undefined' ? (CARE_ACTIONS[actionId] || {}) : {};
-    const reactionKey = result.reactionKey || actionId;
-    const careChanges = result.changes || [];
-    let displayData = null;
-
-    if (result.reactionFighterId != null) {
-      const fighter = G.roster.find(f => f.id === result.reactionFighterId);
-      if (fighter) {
-        const text = Engine.careActions.getReactionText(reactionKey, fighter);
-        displayData = { fighter, fighters: null, text, changes: careChanges,
-          cost: result.cost || cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId };
-      }
-    } else {
-      // 団体向け: ランダムに1人を代表として選ぶ + 複数アイコン用
-      const healthyRoster = G.roster.filter(f => !f.injury && !f.isRental);
-      const rep = healthyRoster.length > 0
-        ? healthyRoster[Math.floor(Math.random() * healthyRoster.length)]
-        : null;
-      const text = rep ? Engine.careActions.getReactionText(reactionKey, rep) : null;
-      displayData = { fighter: null, fighters: healthyRoster, repFighter: rep, text, changes: careChanges,
-        cost: result.cost || cfg.cost || 0, remainingFunds: result.funds, emoji: cfg.emoji || '', label: cfg.label || '', actionId, isTeam: true };
-    }
-
-    // サウンド: アクション種別で分岐
-    const soundCost = result.cost || cfg.cost || 0;
-    if (actionId === 'camp') Audio.play('fanfare');
-    else if (soundCost >= 160) Audio.play('award');
-    else if (soundCost >= 80) Audio.play('event');
-    else Audio.play('notify');
-    renderWeekScreen();
-    return displayData;
+    Audio.play('award');
+    if (typeof closeEventPopup === 'function') closeEventPopup();
+    showToast(`🏥 ${result.cur}週 → ${result.reduced}週に短縮（-${result.cost}万）`);
+    if (typeof renderWeekScreen === 'function') renderWeekScreen();
   },
 
   // 社長室 Phase 4: 書類クリックハンドラ(モーダル分岐)
