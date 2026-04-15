@@ -3667,6 +3667,21 @@ const App = {
     Audio.play('click');
   },
 
+  // 社長室統合 Phase C: 内部タブ切替
+  switchShachoshitsuTab(tabId) {
+    G._shachoshitsuTab = tabId;
+    G._shachoshitsuScoutPage = 0;
+    renderShachoshitsu();
+    Audio.play('click');
+  },
+
+  // 社長室統合 Phase C: スカウトページ送り
+  shachoshitsuScoutPage(page) {
+    G._shachoshitsuScoutPage = Math.max(0, page);
+    renderShachoshitsu();
+    Audio.play('click');
+  },
+
   // Release a fighter
   releaseFighter(charId) {
     const idx = G.roster.findIndex(c => c.id === charId);

@@ -5724,12 +5724,7 @@ function sortRentalTable(key) {
     window._rentalSortKey = key;
     window._rentalSortAsc = key === 'name'; // name: A→Z default, ovr/fee: ascending default
   }
-  renderScout();
-  // Re-scroll to rental section
-  const titles = document.querySelectorAll('.panel-title');
-  for (const t of titles) {
-    if (t.textContent.includes('レンタル')) { t.scrollIntoView({ behavior: 'instant', block: 'start' }); break; }
-  }
+  renderShachoshitsu();
 }
 
 // Legacy aliases for Engine functions used in UI rendering
@@ -5779,6 +5774,11 @@ function _showScreenNoBgm(id) {
 
 function showScreen(id, evt) {
   if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
+  // Legacy compat: scout tab merged into shachoshitsu (Phase C)
+  if (id === 'scout') {
+    id = 'shachoshitsu';
+    if (typeof G !== 'undefined') G._shachoshitsuTab = 'scout';
+  }
   // 交渉中・解雇面談中は社長室以外へのナビゲーションをブロック
   if (typeof G !== 'undefined' && G.weekPhase === 'contractNegotiation' && id !== 'shachoshitsu') return;
   if (typeof G !== 'undefined' && G._releaseInterviewTarget && id !== 'shachoshitsu') return;

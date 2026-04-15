@@ -3067,6 +3067,150 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-decision-team-summary .value{color:var(--text-main);font-weight:700}
 .shachoshitsu-decision-team-summary .effect{color:var(--gold);font-size:12px;line-height:1.5}
 
+/* ─── 社長室 Phase C: 内部タブ ─── */
+.shachoshitsu-tabs{display:flex;gap:0;justify-content:center;padding:0 24px;
+  background:rgba(24,22,20,0.72);border-bottom:1px solid rgba(120,100,70,0.18)}
+.shachoshitsu-tab{position:relative;padding:10px 22px;font-size:13px;font-weight:700;
+  font-family:'Noto Sans JP',sans-serif;color:var(--text-sub);cursor:pointer;
+  background:transparent;border:none;letter-spacing:0.5px;transition:color 0.15s}
+.shachoshitsu-tab:hover{color:var(--text-main)}
+.shachoshitsu-tab.active{color:var(--paper,#ede4d0);
+  background:rgba(237,228,208,0.08)}
+.shachoshitsu-tab.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;
+  height:2px;background:var(--paper,#ede4d0);border-radius:1px 1px 0 0}
+.shachoshitsu-tab-badge{display:inline-block;margin-left:5px;font-size:11px;vertical-align:top}
+.shachoshitsu-tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--gold);margin-left:6px;vertical-align:middle}
+
+/* サマリーバー */
+.shachoshitsu-summary{padding:6px 24px;font-size:12px;color:var(--text-dim);
+  background:rgba(24,22,20,0.5);border-bottom:1px solid rgba(120,100,70,0.10);
+  text-align:center;letter-spacing:0.3px}
+.shachoshitsu-summary b{color:var(--text-sub);font-weight:600}
+
+/* ─── Phase C: スカウト 3列履歴書カード ─── */
+.shachoshitsu-scout-grid{display:grid;grid-template-columns:repeat(3,1fr);
+  gap:18px;max-width:832px;margin:0 auto;min-height:260px}
+.shachoshitsu-resume{position:relative;width:264px;min-height:460px;margin:0 auto;
+  background-image:url('../image/shachoshitsu/document-resume-blank.webp');
+  background-size:cover;background-position:center;border-radius:3px;
+  padding:14px 16px 16px;box-sizing:border-box;cursor:default;
+  color:var(--cream-text-main,#2a2318);font-family:'Noto Sans JP',sans-serif;
+  box-shadow:0 4px 20px rgba(0,0,0,0.45),0 1px 3px rgba(0,0,0,0.25);
+  animation:shachoshitsu-doc-enter 0.5s ease-out backwards}
+.shachoshitsu-resume-tags{display:flex;gap:6px;margin-bottom:8px}
+.shachoshitsu-resume-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;
+  letter-spacing:0.5px;border:1px solid rgba(80,60,40,0.25)}
+.shachoshitsu-resume-tag.source{background:rgba(80,130,180,0.2);color:#3a6a90;border-color:rgba(80,130,180,0.35)}
+.shachoshitsu-resume-tag.tier{background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.4)}
+.shachoshitsu-resume-img{width:100%;aspect-ratio:5/4;object-fit:cover;border-radius:3px;
+  border:1px solid rgba(80,60,40,0.2);background:rgba(0,0,0,0.05);margin-bottom:8px}
+.shachoshitsu-resume-name{font-size:14px;font-weight:700;text-align:center;line-height:1.3}
+.shachoshitsu-resume-age{font-size:12px;color:rgba(42,35,24,0.6);text-align:center;margin-bottom:4px}
+.shachoshitsu-resume-ovr{font-family:'Bebas Neue',sans-serif;font-size:36px;font-weight:700;
+  text-align:center;line-height:1;margin-bottom:4px}
+.shachoshitsu-resume-ovr span{font-size:11px;font-weight:600;color:rgba(42,35,24,0.5);margin-left:2px}
+.shachoshitsu-resume-style{display:flex;justify-content:center;gap:6px;margin-bottom:8px}
+.shachoshitsu-resume-style .badge{font-size:11px;padding:1px 7px}
+.shachoshitsu-resume-stats{margin:6px 0 8px}
+.shachoshitsu-resume-stat{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px}
+.shachoshitsu-resume-stat-label{width:26px;font-weight:700;color:rgba(42,35,24,0.65);text-align:right}
+.shachoshitsu-resume-stat-bar{flex:1;height:7px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden}
+.shachoshitsu-resume-stat-fill{height:100%;border-radius:3px;transition:width 0.3s}
+.shachoshitsu-resume-stat-val{width:22px;font-weight:600;color:rgba(42,35,24,0.7);text-align:left;font-size:10px}
+.shachoshitsu-resume-cost{font-size:12px;margin-bottom:10px;line-height:1.6;text-align:center}
+.shachoshitsu-resume-cost b{font-size:14px}
+.shachoshitsu-resume-cost .signing{color:#c44e8a}
+.shachoshitsu-resume-cost .salary{color:rgba(42,35,24,0.65)}
+.shachoshitsu-resume-btns{display:flex;gap:6px;justify-content:center}
+.shachoshitsu-resume-btns button{font-size:12px;padding:6px 12px;border-radius:4px;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-weight:600;border:1px solid rgba(60,45,30,0.3);
+  background:rgba(60,45,30,0.10);color:#2a2318;transition:background 0.15s}
+.shachoshitsu-resume-btns button:hover:not(:disabled){background:rgba(60,45,30,0.22)}
+.shachoshitsu-resume-btns button:disabled{opacity:0.4;cursor:default}
+.shachoshitsu-resume-btns button.primary{background:rgba(180,140,52,0.22);
+  border-color:rgba(180,140,52,0.45);color:#5c4a1e}
+.shachoshitsu-resume-btns button.primary:hover:not(:disabled){background:rgba(180,140,52,0.35)}
+
+/* 知名度不足 */
+.shachoshitsu-resume.unavailable{filter:grayscale(0.8) brightness(0.85);opacity:0.75}
+.shachoshitsu-resume.unavailable .shachoshitsu-resume-img{filter:grayscale(0.8) brightness(0.85)}
+.shachoshitsu-resume-stamp{position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-15deg);
+  font-size:20px;font-weight:900;color:rgba(196,30,58,0.75);
+  border:3px solid rgba(196,30,58,0.55);padding:6px 16px;border-radius:4px;
+  letter-spacing:2px;pointer-events:none;white-space:nowrap;
+  text-shadow:0 1px 2px rgba(255,255,255,0.4)}
+
+/* ─── Phase C: レンタル 4列小型カード ─── */
+.shachoshitsu-rental-grid{display:grid;grid-template-columns:repeat(4,196px);
+  gap:10px 16px;max-width:832px;margin:0 auto;min-height:148px}
+.shachoshitsu-rental-mini{position:relative;width:196px;min-height:148px;
+  background-image:url('../image/shachoshitsu/document-mini-blank.webp');
+  background-size:cover;background-position:center;border-radius:3px;
+  padding:10px 12px 10px;box-sizing:border-box;cursor:default;
+  color:var(--cream-text-main,#2a2318);font-family:'Noto Sans JP',sans-serif;
+  box-shadow:0 3px 14px rgba(0,0,0,0.40),0 1px 2px rgba(0,0,0,0.20);
+  animation:shachoshitsu-doc-enter 0.5s ease-out backwards}
+.shachoshitsu-rental-mini-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;
+  letter-spacing:0.5px;display:inline-block;margin-bottom:4px;
+  background:rgba(80,60,40,0.12);border:1px solid rgba(80,60,40,0.2);color:rgba(42,35,24,0.7)}
+.shachoshitsu-rental-mini-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.shachoshitsu-rental-mini-row img{width:32px;height:32px;object-fit:cover;border-radius:4px;
+  border:1px solid rgba(80,60,40,0.2)}
+.shachoshitsu-rental-mini-name{font-size:12px;font-weight:700;line-height:1.2}
+.shachoshitsu-rental-mini-ovr{font-family:'Bebas Neue',sans-serif;font-size:22px;font-weight:700;
+  line-height:1;margin-left:auto}
+.shachoshitsu-rental-mini-ovr span{font-size:9px;color:rgba(42,35,24,0.5);margin-left:1px}
+.shachoshitsu-rental-mini-info{font-size:10px;color:rgba(42,35,24,0.6);margin-bottom:4px;text-align:center}
+.shachoshitsu-rental-mini-fee{font-size:11px;text-align:center;margin-bottom:5px}
+.shachoshitsu-rental-mini-fee b{color:#c44e8a;font-size:13px}
+.shachoshitsu-rental-mini-fee select{font-size:10px;padding:1px 3px;
+  background:rgba(255,255,255,0.5);border:1px solid rgba(80,60,40,0.25);border-radius:3px;
+  color:#2a2318;margin-left:4px}
+.shachoshitsu-rental-mini button{width:100%;font-size:11px;padding:5px 0;border-radius:3px;
+  cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-weight:600;
+  border:1px solid rgba(60,45,30,0.3);background:rgba(60,45,30,0.10);
+  color:#2a2318;transition:background 0.15s}
+.shachoshitsu-rental-mini button:hover:not(:disabled){background:rgba(60,45,30,0.22)}
+.shachoshitsu-rental-mini button:disabled{opacity:0.4;cursor:default}
+
+/* レンタルソートボタン */
+.shachoshitsu-rental-sort{text-align:right;margin-bottom:8px;max-width:832px;margin-left:auto;margin-right:auto}
+.shachoshitsu-rental-sort button{font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;
+  background:rgba(60,45,30,0.10);border:1px solid rgba(60,45,30,0.25);
+  color:rgba(42,35,24,0.7);font-family:'Noto Sans JP',sans-serif}
+.shachoshitsu-rental-sort button:hover{background:rgba(60,45,30,0.20)}
+
+/* 壁上のレンタルミニカード */
+.shachoshitsu-wall-rental-strip{position:absolute;bottom:8px;right:4%;
+  display:flex;gap:8px;z-index:10}
+.shachoshitsu-wall-rental-card{background:rgba(30,28,22,0.85);backdrop-filter:blur(4px);
+  border:1px solid rgba(120,100,70,0.35);border-radius:5px;padding:6px 10px;
+  font-size:11px;color:var(--text-main);white-space:nowrap;
+  font-family:'Noto Sans JP',sans-serif}
+.shachoshitsu-wall-rental-card .name{font-weight:600}
+.shachoshitsu-wall-rental-card .meta{color:var(--text-dim);font-size:10px;margin-top:2px}
+
+/* ページ送り */
+.shachoshitsu-page-nav{display:flex;justify-content:center;align-items:center;gap:12px;
+  margin-top:12px;margin-bottom:4px}
+.shachoshitsu-page-btn{font-size:16px;padding:4px 14px;border-radius:4px;cursor:pointer;
+  background:rgba(60,45,30,0.10);border:1px solid rgba(60,45,30,0.25);
+  color:rgba(42,35,24,0.7);font-family:'Noto Sans JP',sans-serif;transition:background 0.15s}
+.shachoshitsu-page-btn:hover:not(:disabled){background:rgba(60,45,30,0.22)}
+.shachoshitsu-page-btn:disabled{opacity:0.3;cursor:default}
+.shachoshitsu-page-info{font-size:12px;color:rgba(42,35,24,0.55)}
+
+/* ドラフト通知 */
+.shachoshitsu-draft-notice{text-align:center;padding:32px 24px;max-width:500px;margin:0 auto}
+.shachoshitsu-draft-notice .headline{font-size:16px;font-weight:700;color:#2a2318;margin-bottom:12px}
+.shachoshitsu-draft-notice .sub{font-size:12px;color:rgba(42,35,24,0.6);margin-bottom:18px;line-height:1.6}
+.shachoshitsu-draft-notice button{font-size:14px;padding:10px 28px;border-radius:5px;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-weight:700;
+  background:rgba(180,140,52,0.22);border:1px solid rgba(180,140,52,0.45);color:#5c4a1e}
+.shachoshitsu-draft-notice button:hover{background:rgba(180,140,52,0.35)}
+
 /* ─── 社長室 交渉モード (Phase A) ─── */
 /* 壁前の発言者(ポートレイト+吹き出し) */
 .negotiation-wall{position:relative}
@@ -3331,7 +3475,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
     <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
     <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
-    <button class="nav-btn" onclick="showScreen('scout',event)">🔍 スカウト</button>
     <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>

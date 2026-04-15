@@ -328,17 +328,17 @@ FA候補を「スカウト調査報告書」＝**履歴書スタイル**のカ�
 | B-5 ✅ | ナビゲーションロック (_releaseInterviewTarget) 追加 | ui-common.js |
 | B-6 ✅ | 動作検証 + auto-sim 100シーズン seed=42 ALL CLEAR | test/ |
 
-### Phase C: スカウト/レンタルの机上統合
+### Phase C: スカウト/レンタルの机上統合 ✅ 実装完了 (2026-04-16)
 
 | # | 内容 | ファイル |
 |---|------|---------|
-| C-1 | 社長室に内部タブUI（決裁/スカウト/レンタル）追加 | ui-render.js, index.html |
-| C-2 | タブ切替 + 書類入替アニメーション + HUD出し分け | ui-render.js, index.html |
-| C-3 | スカウトタブ: 3列履歴書カード + ページ送り + 知名度不足表示 | ui-render.js |
-| C-4 | レンタルタブ: 4×2小型カード + ソート + 壁ミニカード | ui-render.js |
-| C-5 | ドラフト導線: 新聞イントロを社長室に移植、scoutEvent遷移維持 | ui-render.js, app.js |
-| C-6 | トップバーから🔍スカウト削除、showScreen('scout')参照を全書換え | index.html, 全JS |
-| C-7 | 動作検証 + auto-sim | test/ |
+| C-1 ✅ | 社長室に内部タブUI（決裁/スカウト/レンタル）追加 | ui-render.js, index.html |
+| C-2 ✅ | タブ切替 + 書類入替アニメーション + HUD出し分け | ui-render.js, index.html |
+| C-3 ✅ | スカウトタブ: 3列履歴書カード + ページ送り + 知名度不足表示 | ui-render.js |
+| C-4 ✅ | レンタルタブ: 4×2小型カード + ソート + 壁ミニカード | ui-render.js |
+| C-5 ✅ | ドラフト導線: 新聞通知を社長室に移植、scoutEvent遷移維持 | ui-render.js, app.js |
+| C-6 ✅ | トップバーから🔍スカウト削除、showScreen('scout')参照を全書換え | index.html, 全JS |
+| C-7 ✅ | 動作検証 + auto-sim 100シーズン seed=42 ALL CLEAR | test/ |
 
 ---
 

@@ -3198,17 +3198,126 @@ function renderShachoshitsu() {
   const el = document.getElementById('shachoshitsuContent');
   if (!el) return;
 
-  const season = getShachoshitsuSeasonId(G.week);
-  let html = '';
-  html += renderShachoshitsuHud();
-  html += `<div class="shachoshitsu-wall" style="background-image:url('../image/shachoshitsu/wall-window-${season}.webp')"></div>`;
-  html += `<div class="shachoshitsu-desk">`;
-  html += `<div class="shachoshitsu-doc-grid">`;
+  // 交渉中・解雇面談中は専用レンダラーが使うので何もしない
+  if (G.weekPhase === 'contractNegotiation') return;
+  if (G._releaseInterviewTarget) return;
 
-  // Phase 3: 動的書類取得(Engine.shachoshitsu.getAvailableDocs)
+  const season = getShachoshitsuSeasonId(G.week);
+
+  // タブ状態: ドラフト開催週はスカウトをデフォルトに
+  const hasDraft = !!(G.scoutCandidates && G.scoutCandidates.length > 0);
+  if (!G._shachoshitsuTab) {
+    G._shachoshitsuTab = hasDraft ? 'scout' : 'decision';
+  }
+  const tab = G._shachoshitsuTab;
+
+  let html = '';
+  // ── HUD ──
+  html += _renderShachoshitsuHudForTab(tab);
+  // ── 内部タブ ──
+  const scoutBadge = hasDraft ? '<span class="shachoshitsu-tab-badge">📰</span>' : '';
+  const rentalDot = (G.rentals || []).length > 0 ? '<span class="shachoshitsu-tab-dot"></span>' : '';
+  html += `<div class="shachoshitsu-tabs">
+    <button class="shachoshitsu-tab${tab === 'decision' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('decision')">📋 決裁</button>
+    <button class="shachoshitsu-tab${tab === 'scout' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('scout')">🔍 スカウト${scoutBadge}</button>
+    <button class="shachoshitsu-tab${tab === 'rental' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('rental')">🤝 レンタル${rentalDot}</button>
+  </div>`;
+  // ── サマリーバー ──
+  html += _renderShachoshitsuSummary(tab);
+  // ── 壁 + 窓 ──
+  const wallRentalHtml = (tab === 'rental') ? _renderShachoshitsuWallRentals() : '';
+  html += `<div class="shachoshitsu-wall" style="background-image:url('../image/shachoshitsu/wall-window-${season}.webp')">${wallRentalHtml}</div>`;
+  // ── 机 ──
+  html += `<div class="shachoshitsu-desk">`;
+  if (tab === 'decision') {
+    html += _renderShachoshitsuDecisionDesk();
+  } else if (tab === 'scout') {
+    html += _renderShachoshitsuScoutDesk();
+  } else if (tab === 'rental') {
+    html += _renderShachoshitsuRentalDesk();
+  }
+  html += `</div>`; // desk
+
+  el.innerHTML = html;
+}
+
+// ── Phase C: タブ別 HUD 右側 ───────────────────────────────────────────────
+function _renderShachoshitsuHudForTab(tab) {
+  const dateStr = Engine.util.formatDate(G.season, G.week);
+  const fundsStr = Math.round(G.funds).toLocaleString();
+  let rightHtml = '';
+  if (tab === 'decision') {
+    const dpMax = G.decisionPointsMax || 6;
+    const dp = Math.max(0, Math.min(G.decisionPoints != null ? G.decisionPoints : dpMax, dpMax));
+    let hankos = '';
+    for (let i = 0; i < dpMax; i++) {
+      const cls = i < dp ? 'hanko available' : 'hanko used';
+      hankos += `<img class="${cls}" src="../image/shachoshitsu/hanko.webp" alt="決裁枠">`;
+    }
+    rightHtml = `
+      <span class="shachoshitsu-hud-dp-label">決裁枠</span>
+      <span class="shachoshitsu-hud-dp-count">⚡${dp}/${dpMax}</span>
+      <div class="shachoshitsu-hankos">${hankos}</div>`;
+  } else if (tab === 'scout') {
+    const ownCount = G.roster.filter(f => !f.isRental).length;
+    const rCap = G.rosterCap || 8;
+    const visibleFAIds = Engine.util.getVisibleFAIds(G);
+    rightHtml = `<span style="font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--text-sub)">
+      所属 <b style="color:var(--text-main)">${ownCount}/${rCap}名</b>
+      <span style="margin:0 6px;opacity:0.4">｜</span>
+      紹介枠 <b style="color:var(--text-main)">${visibleFAIds.length}名</b>
+    </span>`;
+  } else if (tab === 'rental') {
+    const activeRentals = G.rentals || [];
+    const ownRoster = G.roster.filter(c => !c.isRental);
+    const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+    const remaining = Math.max(0, maxSlots - activeRentals.length);
+    rightHtml = `<span style="font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--text-sub)">
+      レンタル枠 <b style="color:var(--text-main)">${activeRentals.length}/${maxSlots}枠</b>
+      <span style="margin:0 6px;opacity:0.4">｜</span>
+      残り <b style="color:var(--text-main)">${remaining}枠</b>
+    </span>`;
+  }
+  return `
+    <div class="shachoshitsu-hud">
+      <div class="shachoshitsu-hud-left">
+        <span class="shachoshitsu-hud-date">${dateStr}</span>
+        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+      </div>
+      <div class="shachoshitsu-hud-right">${rightHtml}</div>
+    </div>`;
+}
+
+// ── Phase C: サマリーバー ────────────────────────────────────────────────────
+function _renderShachoshitsuSummary(tab) {
+  if (tab === 'decision') {
+    const docs = (typeof Engine !== 'undefined' && Engine.shachoshitsu)
+      ? Engine.shachoshitsu.getAvailableDocs(G) : [];
+    return `<div class="shachoshitsu-summary">案件 <b>${docs.length}件</b></div>`;
+  }
+  if (tab === 'scout') {
+    const ownCount = G.roster.filter(f => !f.isRental).length;
+    const rCap = G.rosterCap || 8;
+    const visibleFAIds = Engine.util.getVisibleFAIds(G);
+    const currentQ = getQuarter(G.week);
+    const qLabel = QUARTER_LABELS[currentQ] || '';
+    return `<div class="shachoshitsu-summary">所属: <b>${ownCount}/${rCap}名</b> ｜ FA: <b>${G.freeAgents.length}名</b> ｜ 紹介枠: <b>${visibleFAIds.length}名</b>（${qLabel}入替）</div>`;
+  }
+  if (tab === 'rental') {
+    const activeRentals = G.rentals || [];
+    const ownRoster = G.roster.filter(c => !c.isRental);
+    const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+    const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
+    return `<div class="shachoshitsu-summary">レンタル枠: <b>${activeRentals.length}/${maxSlots}枠</b> ｜ 紹介枠: <b>${visibleRentalIds.length}名</b>（四半期入替）</div>`;
+  }
+  return '';
+}
+
+// ── Phase C: 決裁タブの机上 ──────────────────────────────────────────────────
+function _renderShachoshitsuDecisionDesk() {
+  let html = '<div class="shachoshitsu-doc-grid">';
   const availableDocs = (typeof Engine !== 'undefined' && Engine.shachoshitsu)
-    ? Engine.shachoshitsu.getAvailableDocs(G)
-    : [];
+    ? Engine.shachoshitsu.getAvailableDocs(G) : [];
 
   if (availableDocs.length === 0) {
     const emptyMsg = G.offSeason
@@ -3216,22 +3325,15 @@ function renderShachoshitsu() {
       : '今週は机に並ぶ案件がありません';
     html += `<div class="shachoshitsu-empty-note">${emptyMsg}</div>`;
   } else {
-    // spec §7.2 (2026-04-15 Keisuke レビュー反映): 条件を満たす書類を左上から自然に詰める。
-    // DECISION_DOC_ORDER の順序は維持しつつ、穴を作らず詰めて並べる(空きスロットが飛び地に
-    // なって視覚的に変に見えるのを避ける)。data-col はレンダー列の1..4 で決定し、ツールチップ
-    // の左右補正に使う。
     const doneThisWeek = G._decisionDoneThisWeek || [];
-    // Phase 9: 書類の微回転(-3°〜+3°)。週+docId の決定論的ハッシュで seed し、
-    // 同じ週内では同じ角度(再レンダーしても変わらない)、週が変わるとわずかにずれる。
     const docRotation = (docId, week) => {
       let h = (week || 0) * 2654435761;
       for (let i = 0; i < docId.length; i++) h = (h ^ docId.charCodeAt(i)) * 16777619;
       h = Math.abs(h >>> 0);
-      // [0,1) → [-3, 3]
       return (((h % 601) / 100) - 3).toFixed(2);
     };
     availableDocs.forEach((doc, renderIdx) => {
-      const gridCol = (renderIdx % 4) + 1;  // 1..4 (ツールチップ位置補正用)
+      const gridCol = (renderIdx % 4) + 1;
       const costDisplay = _formatShachoshitsuDocCost(doc);
       const isApproved = doneThisWeek.includes(doc.id);
       const approvedCls = isApproved ? ' is-approved' : '';
@@ -3266,11 +3368,222 @@ function renderShachoshitsu() {
       `;
     });
   }
+  html += '</div>'; // doc-grid
+  return html;
+}
 
-  html += `</div>`; // doc-grid
-  html += `</div>`; // desk
+// ── Phase C: スカウトタブの机上 ──────────────────────────────────────────────
+function _renderShachoshitsuScoutDesk() {
+  // ドラフト開催週: 新聞通知
+  const hasDraft = !!(G.scoutCandidates && G.scoutCandidates.length > 0);
+  const draftStarted = !!G._draftNegotiationStarted;
+  if (hasDraft && !draftStarted) {
+    return `<div class="shachoshitsu-draft-notice">
+      <div class="headline">📰 ドラフト速報が届いています</div>
+      <div class="sub">候補 ${G.scoutCandidates.length}名の調査報告が届きました。<br>ドラフト会場で交渉が始まります。</div>
+      <button onclick="showScreen('scoutEvent');Audio.bgm.play('tension')">⚖ ドラフトへ</button>
+    </div>`;
+  }
 
-  el.innerHTML = html;
+  const visibleFAIds = Engine.util.getVisibleFAIds(G);
+  const allVisibleFA = [...G.freeAgents]
+    .filter(c => visibleFAIds.includes(c.id))
+    .sort((a, b) => ov(b) - ov(a));
+
+  // 契約可能→不可の順にソート
+  const canNegList = [];
+  const cantNegList = [];
+  allVisibleFA.forEach(c => {
+    if (Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G)) canNegList.push(c);
+    else cantNegList.push(c);
+  });
+  const sortedFA = [...canNegList, ...cantNegList];
+
+  if (sortedFA.length === 0) {
+    return '<div class="shachoshitsu-empty-note">この四半期の紹介枠にフリーエージェントはいません</div>';
+  }
+
+  const PAGE_SIZE = 3;
+  const scoutPage = G._shachoshitsuScoutPage || 0;
+  const totalPages = Math.ceil(sortedFA.length / PAGE_SIZE);
+  const safePage = Math.min(scoutPage, totalPages - 1);
+  const pageItems = sortedFA.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+  const _ownCount = G.roster.filter(f => !f.isRental).length;
+  const _rCap = G.rosterCap || 8;
+  const _capFull = _ownCount >= _rCap;
+
+  let html = '<div class="shachoshitsu-scout-grid">';
+  pageItems.forEach((c, idx) => {
+    const canNeg = Engine.scout.canNegotiate(G.orgPop || 0, c, 'fa', G);
+    const viaTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, c, G);
+    const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
+    const unavailCls = canNeg ? '' : ' unavailable';
+
+    // ステータスバー用データ
+    const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+    const statLabels = { pw: 'PWR', sp: 'SPD', te: 'TEC', st: 'STA', mn: 'MNT' };
+    const statColors = { pw: '#e74c3c', sp: '#3498db', te: '#2ecc71', st: '#f39c12', mn: '#9b59b6' };
+
+    // アッパー画像
+    const upperUrl = getUpperUrl(c.id);
+    const imgTag = upperUrl
+      ? `<img class="shachoshitsu-resume-img" src="${upperUrl}" alt="${c.name}">`
+      : `<div class="shachoshitsu-resume-img" style="background:rgba(0,0,0,0.08)"></div>`;
+
+    // 契約金・給与
+    const signingCost = Math.round(Engine.scout.getSigningCost(c, G.orgPop || 0));
+    const salary = getSalary(c);
+
+    // ボタン
+    let btnHtml = '';
+    if (G.offSeason) {
+      btnHtml = `<button disabled title="オフシーズン中は契約できません">⛔ オフシーズン</button>`;
+    } else if (!canNeg) {
+      const tierReq = Engine.scout.getTierConfig(c.assessedTier || 'material');
+      btnHtml = `<button disabled title="団体人気${Engine.util.dispOrgPop(tierReq.reqPop)}以上で交渉可能">⛔ 知名度不足</button>`;
+    } else if (_capFull) {
+      btnHtml = `<button disabled title="ロスター枠が上限です">⛔ 枠上限</button>`;
+    } else {
+      btnHtml = `<button class="primary" onclick="event.stopPropagation();showFighterPopup(${c.id},'free')">✒️ 契約交渉</button>`;
+    }
+
+    html += `
+      <div class="shachoshitsu-resume${unavailCls}" style="animation-delay:${idx * 0.05}s">
+        ${!canNeg ? '<div class="shachoshitsu-resume-stamp">契約不可</div>' : ''}
+        <div class="shachoshitsu-resume-tags">
+          <span class="shachoshitsu-resume-tag source">${viaTicket ? '🎫 特別枠' : 'フリー'}</span>
+          <span class="shachoshitsu-resume-tag tier" style="color:${tierCfg.color};border-color:${tierCfg.color}66;background:${tierCfg.color}22">${tierCfg.label}</span>
+        </div>
+        ${imgTag}
+        <div class="shachoshitsu-resume-name">${c.name}</div>
+        <div class="shachoshitsu-resume-age">${c.age}歳</div>
+        <div class="shachoshitsu-resume-ovr" style="color:${_ovrColor(ov(c)).color}">${ov(c)}<span>OVR</span></div>
+        <div class="shachoshitsu-resume-style">
+          <span class="badge badge-${c.style}">${c.style}</span>
+          <span class="badge badge-${c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral'}">${c.role === 'Babyface' ? 'BF' : c.role === 'Heel' ? 'HL' : 'NT'}</span>
+        </div>
+        <div class="shachoshitsu-resume-stats">
+          ${stats.map(s => {
+            const val = c._estimate ? c._estimate[s] : c[s];
+            const pct = Math.min(100, Math.max(0, val));
+            return `<div class="shachoshitsu-resume-stat">
+              <span class="shachoshitsu-resume-stat-label">${statLabels[s]}</span>
+              <div class="shachoshitsu-resume-stat-bar"><div class="shachoshitsu-resume-stat-fill" style="width:${pct}%;background:${statColors[s]}"></div></div>
+              <span class="shachoshitsu-resume-stat-val">${Math.round(val)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="shachoshitsu-resume-cost">
+          契約金 <b class="signing">${signingCost.toLocaleString()}万</b><br>
+          <span class="salary">給与 ${salary}万/週</span>
+        </div>
+        <div class="shachoshitsu-resume-btns">
+          <button onclick="showFighterPopup(${c.id},'free')">📋 詳細</button>
+          ${btnHtml}
+        </div>
+      </div>`;
+  });
+  html += '</div>'; // scout-grid
+
+  // ページ送り
+  if (totalPages > 1) {
+    html += `<div class="shachoshitsu-page-nav">
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage - 1})" ${safePage <= 0 ? 'disabled' : ''}>◀</button>
+      <span class="shachoshitsu-page-info">${safePage + 1} / ${totalPages}</span>
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage + 1})" ${safePage >= totalPages - 1 ? 'disabled' : ''}>▶</button>
+    </div>`;
+  }
+
+  return html;
+}
+
+// ── Phase C: レンタルタブの机上 ──────────────────────────────────────────────
+function _renderShachoshitsuRentalDesk() {
+  const activeRentals = G.rentals || [];
+  const ownRoster = G.roster.filter(c => !c.isRental);
+  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+  const remainingSlots = Math.max(0, maxSlots - activeRentals.length);
+
+  // オフシーズン
+  if (G.offSeason) {
+    return '<div class="shachoshitsu-empty-note">オフシーズン中はレンタルできません</div>';
+  }
+  // 枠上限
+  if (remainingSlots <= 0) {
+    return '<div class="shachoshitsu-empty-note">レンタル枠が満員です</div>';
+  }
+
+  const rentals = Engine.rental.getAvailableRentals(G);
+  const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
+  const visibleRentals = rentals.filter(r => visibleRentalIds.includes(r.fighter.id));
+
+  if (visibleRentals.length === 0) {
+    return '<div class="shachoshitsu-empty-note">レンタル可能な選手がいません</div>';
+  }
+
+  // ソート
+  const sortDir = window._rentalSortDir || 'asc';
+  const sorted = [...visibleRentals].sort((a, b) => {
+    return sortDir === 'asc' ? a.fees[1] - b.fees[1] : b.fees[1] - a.fees[1];
+  });
+
+  let html = '';
+  // ソートボタン
+  const arrow = sortDir === 'asc' ? '▲' : '▼';
+  html += `<div class="shachoshitsu-rental-sort">
+    <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">💰 ${sortDir === 'asc' ? '安い順' : '高い順'} ${arrow}</button>
+  </div>`;
+  html += '<div class="shachoshitsu-rental-grid">';
+  sorted.forEach((r, idx) => {
+    const f = r.fighter;
+    const srcLabel = r.source === 'rival' ? (r.org?.name || '他団体') : 'フリー';
+    const feeFor1 = r.fees[1];
+    const selectId = `rentalSeasons_${f.id}`;
+    const seasonOpts = [1, 2, 3, 4].map(n => `<option value="${n}">${n}期</option>`).join('');
+    const srcLink = r.source === 'rival' ? `ai:${r.org.id}` : 'free';
+
+    html += `
+      <div class="shachoshitsu-rental-mini" style="animation-delay:${idx * 0.04}s">
+        <div class="shachoshitsu-rental-mini-tag">${srcLabel}</div>
+        <div class="shachoshitsu-rental-mini-row">
+          ${portraitImg(f.id, 32, '', true)}
+          <div>
+            <div class="shachoshitsu-rental-mini-name">${f.name}</div>
+            <div style="font-size:10px;color:rgba(42,35,24,0.55)">${f.style}</div>
+          </div>
+          <div class="shachoshitsu-rental-mini-ovr" style="color:${_ovrColor(Engine.util.ov(f)).color}">${Engine.util.ov(f)}<span>OVR</span></div>
+        </div>
+        <div class="shachoshitsu-rental-mini-fee">
+          <b><span id="rentalFee_${f.id}">${feeFor1}</span>万</b>/期
+          <select id="${selectId}" onchange="updateRentalFee(${f.id})">
+            ${seasonOpts}
+          </select>
+        </div>
+        <button id="rentalBtn_${f.id}" onclick="requestRental(${f.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" ${G.funds >= feeFor1 ? '' : 'disabled'}>🤝 契約</button>
+      </div>`;
+  });
+  html += '</div>'; // rental-grid
+  return html;
+}
+
+// ── Phase C: 壁上のレンタルミニカード ──────────────────────────────────────────
+function _renderShachoshitsuWallRentals() {
+  const activeRentals = G.rentals || [];
+  if (activeRentals.length === 0) return '';
+  let html = '<div class="shachoshitsu-wall-rental-strip">';
+  activeRentals.forEach(contract => {
+    const rentalF = G.roster.find(c => c.id === contract.fighterId);
+    const fromLabel = contract.fromSource === 'rival'
+      ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || contract.fromOrgId)
+      : 'FA';
+    html += `<div class="shachoshitsu-wall-rental-card">
+      <div class="name">${rentalF ? rentalF.name : '不明'} ← ${fromLabel}</div>
+      <div class="meta">残り${contract.weeksLeft}週</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
 }
 
 // ─── Phase A: 交渉モード共通テンプレート ───────────────────────────────────────
@@ -4621,7 +4934,6 @@ function refreshAll() {
   refreshTopBar();
   renderWeekScreen();
   renderRoster();
-  renderScout();
   renderShowPrep();
   renderFinance();
   renderLog();
@@ -4629,6 +4941,9 @@ function refreshAll() {
   renderSave();
   renderRanking();
   renderDatabase();
+  // Phase C: 社長室が表示中なら再描画（スカウト/レンタル統合後は refreshAll 経由で更新が必要）
+  const shachoshitsuScreen = document.getElementById('screen-shachoshitsu');
+  if (shachoshitsuScreen && shachoshitsuScreen.classList.contains('active')) renderShachoshitsu();
   // F2: Show negotiation result popup if pending
   if (G.negotiationResult) {
     setTimeout(() => showNegotiationResult(), 300);
