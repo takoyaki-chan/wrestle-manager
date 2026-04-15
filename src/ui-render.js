@@ -4549,9 +4549,10 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞 6=年代記
 let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
 let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
+let _dbChronicleIdx = null; // 表示中の章番号 (1-indexed), null=最新章
 let _newspaperPage = 0; // 新聞ページ番号（0=通常面, 1+=特集面）
 let _newspaperArchiveIdx = -1; // -1=最新号, 0=アーカイブ[0](1つ前), ...
 let _dbSortKey = 'ovr';
@@ -4622,6 +4623,7 @@ function renderDatabase() {
     { label: '⚔ 団体比較', idx: 2 },
     { label: '📰 新聞', idx: 5 },
     { label: '🏅 殿堂', idx: 3 },
+    { label: '📖 年代記', idx: 6 },
   ];
 
   let html = `<div class="panel-title">📊 データベース</div>`;
@@ -4637,6 +4639,7 @@ function renderDatabase() {
   else if (_dbSubTab === 3) html += _renderDbHallOfFame();
   else if (_dbSubTab === 4) html += _renderDbRelmap();
   else if (_dbSubTab === 5) html += _renderDbNewspaper();
+  else if (_dbSubTab === 6) html += _renderDbChronicle();
   html += `</div>`;
 
   el.innerHTML = html;
@@ -5652,6 +5655,632 @@ function showHofDetail(idx) {
   document.body.appendChild(modal);
 }
 window.showHofDetail = showHofDetail;
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CHRONICLE — 団体年代記 (chronicle-system-spec-v0.1.md)   ║
+// ╚══════════════════════════════════════════════════════════╝
+
+function setDbChronicleIdx(idx) {
+  _dbChronicleIdx = idx;
+  renderDatabase();
+}
+window.setDbChronicleIdx = setDbChronicleIdx;
+
+function rebuildChronicle() {
+  if (!G || !Engine.chronicle) return;
+  G = Engine.chronicle.buildChapters(G, { forceRebuild: true });
+  _dbChronicleIdx = null;
+  renderDatabase();
+}
+window.rebuildChronicle = rebuildChronicle;
+
+function _chronicleStyleLabel(style) {
+  const m = { striker: 'STRIKER', grappler: 'GRAPPLER', submission: 'SUBMISSION', brawler: 'BRAWLER', allround: 'ALLROUND' };
+  if (!style) return 'ALLROUND';
+  return m[String(style).toLowerCase()] || String(style).toUpperCase();
+}
+
+function _chronicleHighlightClass(tier) {
+  if (tier === 'gold') return ' chron-highlight-gold';
+  if (tier === 'silver') return ' chron-highlight-silver';
+  if (tier === 'red') return ' chron-highlight-red';
+  return '';
+}
+
+function _chronicleStyleBlock() {
+  // Chronicle 専用 Cream Paper スコープ (UI階層1のトークンに Cream 系がないため、ここで定義)
+  return `<style>
+.chron-wrap {
+  --chr-paper-top: #f8eed2;
+  --chr-paper-bot: #f0e0ba;
+  --chr-ink: #1f1710;
+  --chr-ink-sub: #3a2e1c;
+  --chr-ink-mid: #5b4b34;
+  --chr-ink-dim: #7a5b32;
+  --chr-rule: rgba(95,69,35,0.18);
+  --chr-rule-bold: rgba(95,69,35,0.35);
+  --chr-border: rgba(120,84,39,0.32);
+  --chr-red: #8b1a1a;
+  --chr-red-bright: #c22020;
+  --chr-gold: #9a7020;
+  --chr-gold-light: #b8892a;
+  --chr-silver: #6f6657;
+  --chr-idol: #b03366;
+  --chr-idol-bg: rgba(176,51,102,0.08);
+  display: block;
+  margin: 12px auto 40px;
+  max-width: 940px;
+  background: linear-gradient(180deg, var(--chr-paper-top) 0%, var(--chr-paper-bot) 100%);
+  color: var(--chr-ink);
+  border: 1px solid var(--chr-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+  font-family: 'Noto Sans JP', 'Meiryo', sans-serif;
+}
+.chron-subhead {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 22px;
+  background: rgba(95,69,35,0.04);
+  border-bottom: 1px solid var(--chr-rule);
+}
+.chron-subhead-label {
+  font-size: 10px; letter-spacing: 3px; color: var(--chr-ink-dim);
+  text-transform: uppercase; font-weight: 700;
+}
+.chron-subhead-org { font-size: 12px; color: var(--chr-ink-sub); font-weight: 700; }
+.chron-rebuild-btn {
+  background: transparent; border: 1px solid var(--chr-rule-bold);
+  color: var(--chr-ink-dim); font-size: 10px; padding: 3px 10px;
+  letter-spacing: 1px; cursor: pointer; font-weight: 700;
+}
+.chron-rebuild-btn:hover { background: rgba(95,69,35,0.08); }
+.chron-timeline { padding: 14px 22px 24px; border-bottom: 1px solid var(--chr-rule); }
+.chron-timeline-rail { position: relative; height: 38px; margin: 0 12px; }
+.chron-timeline-line {
+  position: absolute; top: 18px; left: 0; right: 0; height: 2px;
+  background: var(--chr-rule-bold);
+}
+.chron-timeline-tick {
+  position: absolute; top: 12px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--chr-paper-top);
+  border: 2px solid var(--chr-ink-dim);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+.chron-timeline-tick.current {
+  width: 18px; height: 18px; top: 10px;
+  border-color: var(--chr-red);
+  background: var(--chr-red-bright);
+  box-shadow: 0 0 0 4px rgba(194,32,32,0.18);
+}
+.chron-timeline-tick.in-progress { border-style: dashed; }
+.chron-timeline-label {
+  position: absolute; top: 30px;
+  font-size: 9px; color: var(--chr-ink-dim);
+  transform: translateX(-50%); white-space: nowrap;
+  letter-spacing: 0.5px; font-weight: 700;
+  cursor: pointer;
+}
+.chron-timeline-label.current { color: var(--chr-red); font-weight: 900; }
+.chron-header {
+  text-align: center;
+  padding: 22px 22px 18px;
+  border-bottom: 3px double var(--chr-rule-bold);
+}
+.chron-eyebrow {
+  display: inline-block;
+  font-size: 11px; letter-spacing: 4px;
+  color: #fff; background: var(--chr-ink);
+  padding: 4px 14px; font-weight: 700;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.chron-eyebrow.in-progress {
+  background: var(--chr-gold);
+}
+.chron-num {
+  font-size: 14px; letter-spacing: 3px;
+  color: var(--chr-ink-dim); margin-bottom: 6px;
+}
+.chron-title {
+  font-size: 28px; font-weight: 900;
+  color: var(--chr-ink); line-height: 1.25;
+  letter-spacing: 1px; margin-bottom: 8px;
+}
+.chron-sub {
+  font-size: 13px; color: var(--chr-ink-sub);
+  line-height: 1.7; max-width: 640px; margin: 0 auto;
+  font-weight: 500;
+}
+.chron-period {
+  display: inline-block; margin-top: 10px;
+  font-size: 11px; letter-spacing: 2px;
+  color: var(--chr-ink-dim); padding: 3px 10px;
+  border: 1px solid var(--chr-rule-bold); font-weight: 700;
+}
+.chron-sec-label {
+  font-size: 11px; letter-spacing: 0.15em;
+  color: var(--chr-red); font-weight: 900;
+  margin-bottom: 12px; padding-left: 8px;
+  border-left: 3px solid var(--chr-red);
+}
+.chron-section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--chr-rule);
+}
+.chron-section:first-of-type { border-top: none; }
+.chron-ace-row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 20px;
+  align-items: start;
+}
+.chron-ace-row.dual { grid-template-columns: 160px 160px 1fr; }
+.chron-ace-portrait {
+  width: 160px; height: 200px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
+  border: 3px solid var(--chr-gold);
+  box-shadow: 0 0 12px rgba(154,112,32,0.25),
+              inset 0 0 30px rgba(95,69,35,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--chr-ink);
+  position: relative;
+  overflow: hidden;
+}
+.chron-ace-portrait img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center top;
+}
+.chron-ace-portrait-letter {
+  font-size: 88px; font-weight: 900;
+}
+.chron-ace-portrait::before {
+  content: ''; position: absolute; inset: 4px;
+  border: 1px solid rgba(154,112,32,0.5);
+  pointer-events: none;
+}
+.chron-ace-tagline {
+  display: inline-block;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--chr-gold); text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+}
+.chron-ace-name {
+  font-size: 26px; font-weight: 900;
+  color: var(--chr-ink); letter-spacing: 1px;
+  margin-bottom: 10px; line-height: 1.1;
+}
+.chron-ace-meta-row {
+  display: flex; gap: 16px; padding: 8px 0;
+  border-top: 1px dashed var(--chr-rule);
+  border-bottom: 1px dashed var(--chr-rule);
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.chron-ace-meta { flex: 1; text-align: center; min-width: 60px; }
+.chron-ace-meta-key {
+  font-size: 8px; color: var(--chr-ink-dim);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.chron-ace-meta-val {
+  font-size: 20px; color: var(--chr-ink);
+  letter-spacing: 0.5px; line-height: 1; font-weight: 700;
+}
+.chron-ace-meta-val .small { font-size: 11px; color: var(--chr-ink-dim); }
+.chron-ace-quote {
+  font-size: 12px; line-height: 1.7;
+  color: var(--chr-ink-sub);
+  padding: 10px 14px;
+  background: rgba(200,190,170,0.22);
+  border-left: 3px solid var(--chr-gold);
+  border-radius: 4px;
+  font-weight: 500;
+}
+.chron-ace-quote::before {
+  content: '記者の目'; font-size: 9px; letter-spacing: 1px;
+  color: var(--chr-gold); font-weight: 700;
+  text-transform: uppercase; display: block; margin-bottom: 4px;
+}
+.chron-two-col {
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 0;
+}
+.chron-col-left {
+  padding: 18px 22px;
+  border-right: 1px solid var(--chr-rule);
+}
+.chron-col-right { padding: 18px 22px; }
+.chron-highlights { list-style: none; padding: 0; margin: 0; }
+.chron-highlight {
+  display: flex; gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dotted var(--chr-rule);
+  align-items: baseline;
+}
+.chron-highlight:last-child { border-bottom: none; }
+.chron-highlight-season {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--chr-ink-dim);
+  letter-spacing: 0.5px;
+  width: 42px;
+  font-weight: 700;
+}
+.chron-highlight-text {
+  flex: 1; font-size: 12px;
+  line-height: 1.6;
+  color: var(--chr-ink-sub);
+  font-weight: 500;
+}
+.chron-highlight-text strong {
+  color: var(--chr-ink); font-weight: 900;
+}
+.chron-highlight-gold .chron-highlight-season { color: var(--chr-gold); }
+.chron-highlight-silver .chron-highlight-season { color: var(--chr-silver); }
+.chron-highlight-red .chron-highlight-season { color: var(--chr-red); }
+.chron-gen-list { list-style: none; padding: 0; margin: 0; }
+.chron-gen-member {
+  display: flex; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--chr-rule);
+  align-items: center;
+}
+.chron-gen-member:last-child { border-bottom: none; }
+.chron-gen-portrait {
+  width: 42px; height: 42px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid rgba(154,112,32,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 900;
+  color: var(--chr-ink);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.chron-gen-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.chron-gen-info { flex: 1; min-width: 0; }
+.chron-gen-name {
+  font-size: 13px; font-weight: 900;
+  color: var(--chr-ink); line-height: 1.2;
+}
+.chron-gen-meta {
+  font-size: 10px; color: var(--chr-ink-dim);
+  font-weight: 500; margin-top: 2px;
+}
+.chron-gen-ovr {
+  font-size: 17px; color: var(--chr-ink-mid);
+  letter-spacing: 0.5px; flex-shrink: 0; font-weight: 700;
+}
+.chron-gen-member.idol {
+  background: var(--chr-idol-bg);
+  border-left: 2px solid var(--chr-idol);
+  padding-left: 8px; margin-left: -10px; margin-right: -2px;
+  border-radius: 0 4px 4px 0;
+}
+.chron-gen-member.idol .chron-gen-portrait {
+  background: linear-gradient(135deg, #e8c4d4 0%, #c89aae 100%);
+  border-color: var(--chr-idol);
+  box-shadow: 0 0 6px rgba(176,51,102,0.18);
+}
+.chron-gen-member.idol .chron-gen-name,
+.chron-gen-member.idol .chron-gen-ovr { color: var(--chr-idol); }
+.chron-gen-idol-tag {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: var(--chr-idol);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.chron-era-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+.chron-era-stat {
+  padding: 8px 10px;
+  background: rgba(95,69,35,0.05);
+  border-left: 2px solid var(--chr-rule-bold);
+}
+.chron-era-stat-key {
+  font-size: 8px; color: var(--chr-ink-dim);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.chron-era-stat-val {
+  font-size: 18px; color: var(--chr-ink);
+  line-height: 1; font-weight: 700;
+}
+.chron-era-stat-val .small { font-size: 10px; color: var(--chr-ink-dim); margin-left: 2px; }
+.chron-closing {
+  padding: 16px 22px 18px;
+  border-top: 3px double var(--chr-rule-bold);
+  background: rgba(95,69,35,0.04);
+  text-align: center;
+}
+.chron-closing-eyebrow {
+  font-size: 9px; letter-spacing: 2.5px;
+  color: var(--chr-ink-dim); text-transform: uppercase;
+  font-weight: 700; margin-bottom: 6px;
+}
+.chron-closing-line {
+  font-size: 14px; color: var(--chr-ink-sub);
+  line-height: 1.7; font-weight: 500;
+  font-style: italic; letter-spacing: 0.5px;
+}
+.chron-closing-line strong {
+  color: var(--chr-ink); font-weight: 900;
+  font-style: normal; padding: 0 2px;
+}
+.chron-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 22px;
+  border-top: 1px solid var(--chr-rule);
+  background: rgba(95,69,35,0.03);
+}
+.chron-nav-btn {
+  font-size: 11px; letter-spacing: 1.5px;
+  color: var(--chr-ink-sub); font-weight: 700;
+  text-transform: uppercase; cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid var(--chr-rule-bold);
+  background: transparent; transition: all .15s;
+}
+.chron-nav-btn:hover { background: rgba(95,69,35,0.08); }
+.chron-nav-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+.chron-nav-center {
+  font-size: 10px; color: var(--chr-ink-dim);
+  letter-spacing: 1.5px; font-weight: 700;
+}
+.chron-empty {
+  padding: 60px 40px; text-align: center;
+}
+.chron-empty-icon { font-size: 52px; margin-bottom: 16px; }
+.chron-empty-title {
+  font-size: 16px; color: var(--chr-ink);
+  font-weight: 700; margin-bottom: 12px;
+}
+.chron-empty-text {
+  font-size: 13px; color: var(--chr-ink-sub);
+  line-height: 1.8;
+}
+</style>`;
+}
+
+function _renderDbChronicle() {
+  const ch = (G && G.chronicle) || null;
+  const chapters = ((ch && ch.chaptersCache && ch.chaptersCache.chapters) || []);
+
+  let html = _chronicleStyleBlock();
+  html += `<div class="chron-wrap">`;
+
+  // Subhead
+  html += `<div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">${G.orgName || 'あなたの団体'}</div>
+  </div>`;
+
+  // 空状態
+  if (chapters.length === 0) {
+    html += `<div class="chron-empty">
+      <div class="chron-empty-icon">📖</div>
+      <div class="chron-empty-title">${G.orgName || '団体'}の歴史は、まだ始まったばかりです。</div>
+      <div class="chron-empty-text">
+        エース級の選手が引退し、ひとつの世代が終わったとき、<br>
+        ここに最初の章が刻まれます。
+      </div>
+    </div>
+    </div>`; // .chron-wrap close
+    return html;
+  }
+
+  // 現在章
+  if (_dbChronicleIdx === null || _dbChronicleIdx < 1 || _dbChronicleIdx > chapters.length) {
+    _dbChronicleIdx = chapters.length; // 最新章
+  }
+  const current = chapters[_dbChronicleIdx - 1];
+
+  // Timeline
+  html += `<div class="chron-timeline"><div class="chron-timeline-rail">
+    <div class="chron-timeline-line"></div>`;
+  const tickCount = chapters.length;
+  chapters.forEach((c, i) => {
+    const pct = tickCount === 1 ? 50 : 6 + (88 * i / (tickCount - 1));
+    const isCurrent = (i + 1) === _dbChronicleIdx;
+    const cls = `chron-timeline-tick${isCurrent ? ' current' : ''}${c.status === 'in_progress' ? ' in-progress' : ''}`;
+    html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
+    html += `<div class="chron-timeline-label${isCurrent ? ' current' : ''}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})">CH.${c.number}</div>`;
+  });
+  html += `</div></div>`;
+
+  // Chapter header
+  const isInProgress = current.status === 'in_progress';
+  const romanNum = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                    'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'][current.number] || current.number.toString();
+  html += `<div class="chron-header">
+    <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? '◆ 進行中の章 ◆' : `◆ 第${current.number}章 ◆`}</div>
+    <div class="chron-num">CHAPTER ${romanNum}</div>
+    <h2 class="chron-title">${current.title} — ${current.subtitle}</h2>
+    <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}</div>
+  </div>`;
+
+  // Ace feature row
+  const aces = current.aces || [];
+  const peers = current.peers || [];
+  const isDual = aces.length >= 2;
+
+  const buildAceCard = (a) => {
+    const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(a.id || 0, a.peakOVR || 0) : '';
+    const surname = Engine.chronicle._getSurname(a.name);
+    const letter = surname.charAt(0);
+    const imgHtml = pUrl
+      ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-ace-portrait-letter" style="display:none">${letter}</span>`
+      : `<span class="chron-ace-portrait-letter">${letter}</span>`;
+    return `<div class="chron-ace-portrait">${imgHtml}</div>`;
+  };
+
+  html += `<div class="chron-section">
+    <div class="chron-sec-label">${isDual ? 'この時代の二枚看板' : 'この時代のエース'}</div>
+    <div class="chron-ace-row${isDual ? ' dual' : ''}">`;
+
+  if (isDual) {
+    html += buildAceCard(aces[0]);
+    html += buildAceCard(aces[1]);
+  } else {
+    html += buildAceCard(aces[0]);
+  }
+
+  // Ace info (集約 or 単独)
+  const primary = aces[0];
+  html += `<div>
+    <div class="chron-ace-tagline">${isDual ? 'ACES OF THE ERA' : 'ACE OF THE ERA'}</div>
+    <div class="chron-ace-name">${aces.map(a => a.name).join(' ／ ')}</div>
+    <div class="chron-ace-meta-row">
+      <div class="chron-ace-meta">
+        <div class="chron-ace-meta-key">PEAK OVR</div>
+        <div class="chron-ace-meta-val">${primary.peakOVR || 0}</div>
+      </div>
+      <div class="chron-ace-meta">
+        <div class="chron-ace-meta-key">STYLE</div>
+        <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(primary.style)}</div>
+      </div>
+      <div class="chron-ace-meta">
+        <div class="chron-ace-meta-key">SEASONS</div>
+        <div class="chron-ace-meta-val">${primary.seasons || 1}<span class="small">期</span></div>
+      </div>
+      <div class="chron-ace-meta">
+        <div class="chron-ace-meta-key">TITLES</div>
+        <div class="chron-ace-meta-val">${primary.titleReigns || 0}<span class="small">戴冠</span></div>
+      </div>
+    </div>
+    <div class="chron-ace-quote">
+      ${_chronicleAceQuote(primary, current)}
+    </div>
+  </div></div></div>`;
+
+  // Two-column body
+  html += `<div class="chron-two-col">
+    <div class="chron-col-left">
+      <div class="chron-sec-label">この時代の主な出来事</div>`;
+  const hl = current.highlights || [];
+  if (hl.length === 0) {
+    html += `<div style="font-size:12px;color:var(--chr-ink-dim);padding:8px 0">特筆すべき記録は残されなかった。</div>`;
+  } else {
+    html += `<ul class="chron-highlights">`;
+    hl.forEach(h => {
+      html += `<li class="chron-highlight${_chronicleHighlightClass(h.tier)}">
+        <div class="chron-highlight-season">S${h.season || '?'}</div>
+        <div class="chron-highlight-text">${h.text}</div>
+      </li>`;
+    });
+    html += `</ul>`;
+  }
+  html += `</div><div class="chron-col-right">
+    <div class="chron-sec-label">この時代の同期</div>`;
+  if (peers.length === 0) {
+    html += `<div style="font-size:12px;color:var(--chr-ink-dim);padding:8px 0">同期なし(孤高のエース)</div>`;
+  } else {
+    html += `<ul class="chron-gen-list">`;
+    peers.forEach(p => {
+      const surname = Engine.chronicle._getSurname(p.name);
+      const letter = surname.charAt(0);
+      const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(p.id || 0, p.peakOVR || 0) : '';
+      const imgHtml = pUrl
+        ? `<img src="${pUrl}" onerror="this.style.display='none'" alt="">`
+        : letter;
+      const isIdol = p.role === 'idol';
+      const styleLabel = _chronicleStyleLabel(p.style);
+      const metaParts = [styleLabel];
+      if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
+      else if (p.titleReigns > 0) metaParts.push(`${p.titleReigns}度戴冠`);
+      html += `<li class="chron-gen-member${isIdol ? ' idol' : ''}">
+        <div class="chron-gen-portrait">${imgHtml}</div>
+        <div class="chron-gen-info">
+          ${isIdol ? `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>` : ''}
+          <div class="chron-gen-name">${p.name}</div>
+          <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
+        </div>
+        <div class="chron-gen-ovr">${p.peakOVR || 0}</div>
+      </li>`;
+    });
+    html += `</ul>`;
+  }
+
+  // Era stats
+  const es = current.eraStats || {};
+  html += `<div class="chron-sec-label" style="margin-top:18px">この時代の通算</div>
+    <div class="chron-era-stats">
+      <div class="chron-era-stat">
+        <div class="chron-era-stat-key">TITLES</div>
+        <div class="chron-era-stat-val">${es.totalTitleWins || 0}<span class="small">戴冠</span></div>
+      </div>
+      <div class="chron-era-stat">
+        <div class="chron-era-stat-key">VS S-TIER</div>
+        <div class="chron-era-stat-val">${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span></div>
+      </div>
+      <div class="chron-era-stat">
+        <div class="chron-era-stat-key">PEAK POP</div>
+        <div class="chron-era-stat-val">${es.peakOrgPop || 0}</div>
+      </div>
+      <div class="chron-era-stat">
+        <div class="chron-era-stat-key">STATUS</div>
+        <div class="chron-era-stat-val" style="font-size:11px">${current.status === 'confirmed' ? '確定' : '進行中'}</div>
+      </div>
+    </div>
+  </div></div>`;
+
+  // Closing
+  if (current.closing) {
+    html += `<div class="chron-closing">
+      <div class="chron-closing-eyebrow">— 章末 —</div>
+      <div class="chron-closing-line">${current.closing}</div>
+    </div>`;
+  }
+
+  // Nav
+  const hasPrev = _dbChronicleIdx > 1;
+  const hasNext = _dbChronicleIdx < chapters.length;
+  const prevChapter = hasPrev ? chapters[_dbChronicleIdx - 2] : null;
+  const nextChapter = hasNext ? chapters[_dbChronicleIdx] : null;
+  html += `<div class="chron-nav">
+    <button class="chron-nav-btn${hasPrev ? '' : ' disabled'}" ${hasPrev ? `onclick="setDbChronicleIdx(${_dbChronicleIdx - 1})"` : ''}>
+      ◀ ${hasPrev ? `前章 / ${prevChapter.title}` : '前章なし'}
+    </button>
+    <div class="chron-nav-center">CHAPTER ${romanNum} OF ${chapters.length}</div>
+    <button class="chron-nav-btn${hasNext ? '' : ' disabled'}" ${hasNext ? `onclick="setDbChronicleIdx(${_dbChronicleIdx + 1})"` : ''}>
+      ${hasNext ? `次章 / ${nextChapter.title}` : '次章なし'} ▶
+    </button>
+  </div>`;
+
+  // Footer: rebuild button
+  html += `<div style="display:flex;justify-content:center;padding:8px 22px 16px">
+    <button class="chron-rebuild-btn" onclick="rebuildChronicle()">🔄 年代記を再構築</button>
+  </div>`;
+
+  html += `</div>`; // .chron-wrap close
+  return html;
+}
+
+/** 記者コメント自動生成 (超シンプル版 — Phase 2 で拡充) */
+function _chronicleAceQuote(ace, chapter) {
+  const peakOVR = ace.peakOVR || 0;
+  const titleReigns = ace.titleReigns || 0;
+  const surname = Engine.chronicle._getSurname(ace.name);
+  const styleLabel = _chronicleStyleLabel(ace.style).toLowerCase();
+  const styleJa = { striker: '打撃', grappler: '組技', submission: '関節技', brawler: '喧嘩', allround: '万能' }[styleLabel] || '独自';
+  if (peakOVR >= 95 && titleReigns >= 3) {
+    return `${styleJa}一本で団体を背負い切った${surname}。${titleReigns}度の戴冠は、この世代がまぎれもない黄金期だったことを物語る。`;
+  }
+  if (peakOVR >= 90 && titleReigns >= 1) {
+    return `${surname}は${styleJa}のスペシャリストとして団体を牽引した。戴冠にも到達したが、次代のレジェンドには一歩及ばなかった。`;
+  }
+  if (peakOVR >= 85) {
+    return `${surname}は${styleJa}で気を吐き続けた。頂点には届かなかったが、団体の一時代は確かにこの名前と共にあった。`;
+  }
+  if ((ace.peakPopularity || 0) >= 80) {
+    return `数字には現れないものを${surname}は残した。華で団体を支え、客席の熱を忘れないようにした。それもまた、一時代の形。`;
+  }
+  return `${surname}は${styleJa}で勝負した。派手な戴冠はなかったが、長く団体に身を置き、世代の支柱として踏みとどまった。`;
+}
 
 // ── 団体比較 ──────────────────────────────────────────────
 let _dbCompareTarget = null; // null=自動選択（ランキングでプレイヤーのすぐ上の団体）

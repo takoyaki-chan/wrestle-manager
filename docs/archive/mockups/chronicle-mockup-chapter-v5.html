@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>団体年代記 — 章カード v5 (人気派/ムード行追加)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper-top: #f8eed2;
+  --paper-bot: #f0e0ba;
+  --ink: #1f1710;
+  --ink-sub: #3a2e1c;
+  --ink-mid: #5b4b34;
+  --ink-dim: #7a5b32;
+  --rule-light: rgba(95,69,35,0.12);
+  --rule: rgba(95,69,35,0.18);
+  --rule-bold: rgba(95,69,35,0.35);
+  --border: rgba(120,84,39,0.32);
+  --red: #8b1a1a;
+  --red-bright: #c22020;
+  --gold: #9a7020;
+  --gold-light: #b8892a;
+  --silver: #6f6657;
+  --idol: #b03366;
+  --idol-light: #d04088;
+  --idol-bg: rgba(176,51,102,0.08);
+  --player-portrait-border: rgba(154,112,32,0.4);
+
+  --font-body: 'Noto Sans JP', sans-serif;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label: 'Oswald', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--font-body);
+  background: #24221e;
+  padding: 24px 16px 60px;
+  min-height: 100vh;
+  color: var(--ink);
+}
+
+/* ===== Newspaper container ===== */
+.paper {
+  max-width: 940px;
+  margin: 12px auto;
+  background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper-bot) 100%);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* ===== Title bar ===== */
+.title-bar {
+  background: linear-gradient(90deg, var(--red), var(--red-bright));
+  padding: 10px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.title-bar-name {
+  font-size: 18px; font-weight: 900;
+  color: #fff; letter-spacing: 2px;
+}
+.title-bar-issue {
+  font-size: 13px; font-weight: 700;
+  color: #fff; letter-spacing: 1px;
+  font-family: var(--font-label);
+  text-transform: uppercase;
+}
+
+/* ===== Chronicle subhead (between title-bar and main) ===== */
+.chron-subhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 22px;
+  background: rgba(95,69,35,0.04);
+  border-bottom: 1px solid var(--rule);
+}
+.chron-subhead-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.chron-subhead-org {
+  font-size: 12px;
+  color: var(--ink-sub);
+  font-weight: 700;
+}
+
+/* ===== Timeline strip (chapter navigation) ===== */
+.timeline {
+  padding: 14px 22px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.timeline-rail {
+  position: relative;
+  height: 38px;
+  margin: 0 6px;
+}
+.timeline-line {
+  position: absolute;
+  top: 18px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--rule-bold);
+}
+.timeline-tick {
+  position: absolute;
+  top: 12px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--paper-top);
+  border: 2px solid var(--ink-dim);
+  transform: translateX(-50%);
+}
+.timeline-tick.gold {
+  border-color: var(--gold);
+  background: var(--gold-light);
+}
+.timeline-tick.current {
+  width: 18px;
+  height: 18px;
+  top: 10px;
+  border-color: var(--red);
+  background: var(--red-bright);
+  box-shadow: 0 0 0 4px rgba(194,32,32,0.18);
+}
+.timeline-label {
+  position: absolute;
+  top: 28px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  color: var(--ink-dim);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.timeline-label.current {
+  color: var(--red);
+  font-weight: 900;
+}
+
+/* ===== Chapter header ===== */
+.chap-header {
+  text-align: center;
+  padding: 22px 22px 18px;
+  border-bottom: 3px double var(--rule-bold);
+}
+.chap-eyebrow {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 4px;
+  color: #fff;
+  background: var(--ink);
+  padding: 4px 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chap-num {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--ink-dim);
+  margin-bottom: 6px;
+}
+.chap-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.chap-sub {
+  font-size: 13px;
+  color: var(--ink-sub);
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 0 auto;
+  font-weight: 500;
+}
+.chap-period {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--ink-dim);
+  padding: 3px 10px;
+  border: 1px solid var(--rule-bold);
+  font-weight: 700;
+}
+
+/* ===== news-sec-label (game-exact CSS) ===== */
+.news-sec-label {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--red);
+  font-weight: 900;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid var(--red);
+}
+
+/* ===== Section wrapper ===== */
+.section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--rule);
+}
+.section:first-of-type { border-top: none; }
+
+/* ============================================================
+   ACE FEATURE ROW
+============================================================ */
+.ace-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.ace-portrait-wrap {
+  text-align: center;
+}
+.ace-portrait {
+  width: 180px;
+  height: 220px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 12px rgba(154,112,32,0.3),
+              inset 0 0 30px rgba(95,69,35,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 96px; font-weight: 900;
+  color: var(--ink);
+  margin-bottom: 8px;
+  position: relative;
+}
+.ace-portrait::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(154,112,32,0.5);
+  pointer-events: none;
+}
+.ace-portrait-cap {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.ace-info {
+  padding-top: 4px;
+}
+.ace-tagline {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.ace-name {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+.ace-yomi {
+  font-size: 11px;
+  color: var(--ink-dim);
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.ace-meta-row {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--rule);
+  border-bottom: 1px dashed var(--rule);
+  margin-bottom: 12px;
+}
+.ace-meta {
+  flex: 1;
+  text-align: center;
+}
+.ace-meta-key {
+  font-family: var(--font-label);
+  font-size: 8px;
+  color: var(--ink-dim);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.ace-meta-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+.ace-meta-val .small { font-size: 12px; color: var(--ink-dim); }
+
+.ace-quote {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-sub);
+  padding: 10px 14px;
+  background: rgba(200,190,170,0.22);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  font-weight: 500;
+}
+.ace-quote::before {
+  content: '記者の目 ';
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ============================================================
+   TWO-COLUMN BODY
+============================================================ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0;
+}
+.col-left {
+  padding: 18px 22px 18px 22px;
+  border-right: 1px solid var(--rule);
+}
+.col-right {
+  padding: 18px 22px;
+}
+
+/* ===== Career highlights list ===== */
+.highlights {
+  list-style: none;
+}
+.highlight {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dotted var(--rule);
+  align-items: baseline;
+}
+.highlight:last-child { border-bottom: none; }
+.highlight-season {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--ink-dim);
+  letter-spacing: 0.5px;
+  width: 48px;
+}
+.highlight-text {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-sub);
+  font-weight: 500;
+}
+.highlight-text strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+.highlight.gold .highlight-season { color: var(--gold); }
+.highlight.silver .highlight-season { color: var(--silver); }
+.highlight.red .highlight-season { color: var(--red); }
+
+/* ===== Generation member list ===== */
+.gen-list {
+  list-style: none;
+}
+.gen-member {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--rule);
+  align-items: center;
+}
+.gen-member:last-child { border-bottom: none; }
+.gen-portrait {
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid var(--player-portrait-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.gen-info { flex: 1; min-width: 0; }
+.gen-name {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.gen-meta {
+  font-size: 10px;
+  color: var(--ink-dim);
+  font-weight: 500;
+  margin-top: 2px;
+}
+.gen-ovr {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--ink-mid);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* ===== 人気派バリアント (IDOL OF THE ERA) ===== */
+.gen-member.idol {
+  background: var(--idol-bg);
+  border-left: 2px solid var(--idol);
+  padding-left: 8px;
+  margin-left: -10px;
+  margin-right: -2px;
+  border-radius: 0 4px 4px 0;
+}
+.gen-member.idol .gen-portrait {
+  background: linear-gradient(135deg, #e8c4d4 0%, #c89aae 100%);
+  border-color: var(--idol);
+  box-shadow: 0 0 6px rgba(176,51,102,0.18);
+}
+.gen-member.idol .gen-name {
+  color: var(--idol);
+}
+.gen-idol-tag {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: var(--idol);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.gen-member.idol .gen-ovr {
+  color: var(--idol);
+}
+
+/* ===== Era stats card ===== */
+.era-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+.era-stat {
+  padding: 8px 10px;
+  background: rgba(95,69,35,0.05);
+  border-left: 2px solid var(--rule-bold);
+}
+.era-stat-key {
+  font-family: var(--font-label);
+  font-size: 8px;
+  color: var(--ink-dim);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.era-stat-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1;
+}
+.era-stat-val .small { font-size: 11px; color: var(--ink-dim); margin-left: 2px; }
+
+/* ===== Closing flavor line (the legacy whisper) ===== */
+.closing {
+  padding: 16px 22px 18px;
+  border-top: 3px double var(--rule-bold);
+  background: rgba(95,69,35,0.04);
+  text-align: center;
+}
+.closing-eyebrow {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.closing-line {
+  font-size: 14px;
+  color: var(--ink-sub);
+  line-height: 1.7;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+.closing-line strong {
+  color: var(--ink);
+  font-weight: 900;
+  font-style: normal;
+  padding: 0 2px;
+}
+
+/* ===== Footer / chapter nav ===== */
+.chap-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 22px;
+  border-top: 1px solid var(--rule);
+  background: rgba(95,69,35,0.03);
+}
+.chap-nav-btn {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--ink-sub);
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid var(--rule-bold);
+  background: transparent;
+  transition: all .15s;
+}
+.chap-nav-btn:hover { background: rgba(95,69,35,0.08); }
+.chap-nav-btn.disabled { opacity: 0.3; cursor: default; }
+.chap-nav-center {
+  font-family: var(--font-label);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+</style>
+</head>
+<body>
+
+<div class="paper">
+
+  <!-- Chronicle subhead -->
+  <div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">月光女子プロレス</div>
+  </div>
+
+  <!-- Timeline strip -->
+  <div class="timeline">
+    <div class="timeline-rail">
+      <div class="timeline-line"></div>
+      <!-- 6 chapters total, current = ch.3 -->
+      <div class="timeline-tick" style="left:6%"></div>
+      <div class="timeline-label" style="left:6%">CH.1</div>
+      <div class="timeline-tick" style="left:22%"></div>
+      <div class="timeline-label" style="left:22%">CH.2</div>
+      <div class="timeline-tick current" style="left:40%"></div>
+      <div class="timeline-label current" style="left:40%">CH.3</div>
+      <div class="timeline-tick gold" style="left:58%"></div>
+      <div class="timeline-label" style="left:58%">CH.4</div>
+      <div class="timeline-tick" style="left:76%"></div>
+      <div class="timeline-label" style="left:76%">CH.5</div>
+      <div class="timeline-tick" style="left:94%"></div>
+      <div class="timeline-label" style="left:94%">CH.6</div>
+    </div>
+  </div>
+
+  <!-- Chapter header -->
+  <div class="chap-header">
+    <div class="chap-eyebrow">◆ 第三章 ◆</div>
+    <div class="chap-num">CHAPTER III</div>
+    <h2 class="chap-title">橋本世代 — 届かなかった頂</h2>
+    <p class="chap-sub">
+      レジェンドの座には届かなかった。だが、剛腕一閃の打撃で団体を背負い続けた5年間は、確かにここに記される。
+    </p>
+    <div class="chap-period">SEASON 8 — SEASON 13</div>
+  </div>
+
+  <!-- ========== ACE FEATURE ROW ========== -->
+  <div class="section">
+    <div class="news-sec-label">この時代のエース</div>
+
+    <div class="ace-row">
+      <div class="ace-portrait-wrap">
+        <div class="ace-portrait">橋</div>
+        <div class="ace-portrait-cap">PORTRAIT — S13</div>
+      </div>
+      <div class="ace-info">
+        <div class="ace-tagline">ACE OF THE ERA</div>
+        <div class="ace-name">橋本 ミヅキ</div>
+        <div class="ace-yomi">はしもと みづき</div>
+
+        <div class="ace-meta-row">
+          <div class="ace-meta">
+            <div class="ace-meta-key">PEAK OVR</div>
+            <div class="ace-meta-val">93</div>
+          </div>
+          <div class="ace-meta">
+            <div class="ace-meta-key">STYLE</div>
+            <div class="ace-meta-val" style="font-size:14px">STRIKER</div>
+          </div>
+          <div class="ace-meta-row" style="display:contents">
+            <div class="ace-meta">
+              <div class="ace-meta-key">SEASONS</div>
+              <div class="ace-meta-val">9<span class="small">期</span></div>
+            </div>
+            <div class="ace-meta">
+              <div class="ace-meta-key">TITLES</div>
+              <div class="ace-meta-val">2<span class="small">戴冠</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ace-quote">
+          打撃一本で団体を5年背負い切った剛腕。S級・葛城蓮との60分フルタイムは、敗れてなお業界の語り草となった。最後までレジェンドの一歩手前に立ち続けた、不屈の挑戦者。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TWO-COLUMN BODY ========== -->
+  <div class="two-col">
+
+    <!-- LEFT: Career highlights -->
+    <div class="col-left">
+      <div class="news-sec-label">この時代の主な出来事</div>
+      <ul class="highlights">
+        <li class="highlight">
+          <div class="highlight-season">S8</div>
+          <div class="highlight-text">橋本ミヅキ、新人王受賞。<strong>「橋本時代」</strong>の幕開け。</div>
+        </li>
+        <li class="highlight gold">
+          <div class="highlight-season">S9</div>
+          <div class="highlight-text">月光女子王座 <strong>初戴冠</strong>（vs 立原ナナ・防衛戦の末の戴冠）。</div>
+        </li>
+        <li class="highlight red">
+          <div class="highlight-season">S10</div>
+          <div class="highlight-text">対 <strong>EMPRESS GRAND</strong> 全面対抗戦、橋本ら三本柱で挑むも 1-3 で敗退。</div>
+        </li>
+        <li class="highlight">
+          <div class="highlight-season">S11</div>
+          <div class="highlight-text">伝説の<strong>葛城蓮戦・60分フルタイム</strong>。敗れたが MQ97、業界年間ベストマッチ。</div>
+        </li>
+        <li class="highlight gold">
+          <div class="highlight-season">S12</div>
+          <div class="highlight-text">団体史上初の<strong>ドーム公演</strong>を実現。橋本がメインを務める。</div>
+        </li>
+        <li class="highlight gold">
+          <div class="highlight-season">S12</div>
+          <div class="highlight-text">月光女子王座 <strong>2度目の戴冠</strong>、5度防衛。</div>
+        </li>
+        <li class="highlight silver">
+          <div class="highlight-season">S13</div>
+          <div class="highlight-text">引退試合・桐谷くるみとの<strong>同門最終決戦</strong>。世代の幕引き。</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- RIGHT: Generation members + era stats -->
+    <div class="col-right">
+      <div class="news-sec-label">この時代の同期</div>
+      <ul class="gen-list">
+        <li class="gen-member">
+          <div class="gen-portrait">桐</div>
+          <div class="gen-info">
+            <div class="gen-name">桐谷 くるみ</div>
+            <div class="gen-meta">グラップラー・S12 MVP</div>
+          </div>
+          <div class="gen-ovr">87</div>
+        </li>
+        <li class="gen-member">
+          <div class="gen-portrait">真</div>
+          <div class="gen-info">
+            <div class="gen-name">真壁 美羽</div>
+            <div class="gen-meta">ブロウラー・対抗戦の主力</div>
+          </div>
+          <div class="gen-ovr">84</div>
+        </li>
+        <li class="gen-member">
+          <div class="gen-portrait">岡</div>
+          <div class="gen-info">
+            <div class="gen-name">岡部 さやか</div>
+            <div class="gen-meta">サブミッション・S10新人王</div>
+          </div>
+          <div class="gen-ovr">83</div>
+        </li>
+        <li class="gen-member idol">
+          <div class="gen-portrait">立</div>
+          <div class="gen-info">
+            <div class="gen-idol-tag">★ IDOL OF THE ERA</div>
+            <div class="gen-name">立原 ナナ</div>
+            <div class="gen-meta">華・ファンサービス・団体の顔</div>
+          </div>
+          <div class="gen-ovr">82</div>
+        </li>
+      </ul>
+
+      <div class="news-sec-label" style="margin-top:18px">この時代の通算</div>
+      <div class="era-stats">
+        <div class="era-stat">
+          <div class="era-stat-key">SHOWS</div>
+          <div class="era-stat-val">84<span class="small">興行</span></div>
+        </div>
+        <div class="era-stat">
+          <div class="era-stat-key">TITLES</div>
+          <div class="era-stat-val">3<span class="small">戴冠</span></div>
+        </div>
+        <div class="era-stat">
+          <div class="era-stat-key">VS S-TIER</div>
+          <div class="era-stat-val">3<span class="small">勝</span>22<span class="small">敗</span></div>
+        </div>
+        <div class="era-stat">
+          <div class="era-stat-key">PEAK ORG-POP</div>
+          <div class="era-stat-val">48</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CLOSING FLAVOR LINE ========== -->
+  <div class="closing">
+    <div class="closing-eyebrow">— 章末 —</div>
+    <div class="closing-line">
+      この世代は、月光女子の流儀をわずかに <strong>打撃</strong> へと寄せた。
+    </div>
+  </div>
+
+  <!-- ========== CHAPTER NAV ========== -->
+  <div class="chap-nav">
+    <button class="chap-nav-btn">◀ 前章 / 創設世代</button>
+    <div class="chap-nav-center">CHAPTER III OF VI</div>
+    <button class="chap-nav-btn">次章 / 黄金世代 ▶</button>
+  </div>
+
+</div>
+
+</body>
+</html>

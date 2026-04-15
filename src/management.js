@@ -2106,6 +2106,505 @@ const Engine = {
     }
   },
 
+  // ── 団体年代記システム v0.1 (spec: chronicle-system-spec-v0.1.md) ──
+  // 届かなかった世代の物語を残す。世代の物語 × 気風（伝統値）の永続積算。
+  chronicle: {
+    // スタイル → 気風軸キー
+    AXIS_LABELS: {
+      striker: '打撃',
+      grappler: '組技',
+      submission: '関節技',
+      brawler: '喧嘩',
+      allround: '万能'
+    },
+
+    /** G.chronicle の初期構造 */
+    createEmpty() {
+      return {
+        spirit: { striker: 0, grappler: 0, submission: 0, brawler: 0, allround: 0 },
+        chaptersCache: { lastBuiltSeason: 0, chapters: [] },
+        fighterArchive: []
+      };
+    },
+
+    /** spec §5.2 1人あたりの寄与計算 */
+    calcSpiritContribution(f) {
+      const start = f.careerSeasonsStart || 1;
+      const end = f.careerSeasonsEnd || start;
+      const seasons = Math.max(1, end - start + 1);
+      const peakOVR = f.peakOVR || 0;
+      let base = 0;
+      if (seasons >= 3 && peakOVR >= 70) base = 0.05;
+      if (seasons >= 5 && peakOVR >= 75) base = 0.08;
+      if (seasons >= 5 && peakOVR >= 80) base = 0.12;
+      if (seasons >= 7 && peakOVR >= 85) base = 0.16;
+      if (seasons >= 7 && peakOVR >= 90) base = 0.20;
+      const titleBonus = (f.titleReigns || 0) * 0.02;
+      return base + titleBonus;
+    },
+
+    /** spec §5.3 pot補正 — Phase 4 まで dry run */
+    calcPotBonus(spiritValue) {
+      const compressed = Math.log((spiritValue || 0) + 1) * 1.8;
+      return Math.min(compressed, 5.0);
+    },
+
+    _styleAxis(style) {
+      if (!style) return 'allround';
+      const s = String(style).toLowerCase();
+      if (s === 'striker' || s === 'grappler' || s === 'submission' || s === 'brawler' || s === 'allround') return s;
+      return 'allround';
+    },
+
+    /** 苗字抽出 (日本語名は全角/半角スペース前) */
+    _getSurname(name) {
+      if (!name) return '名無し';
+      const parts = String(name).split(/[\s\u3000]+/);
+      return parts[0] || name;
+    },
+
+    /** デビュー年推定 (現役選手用) */
+    _estimateDebutSeason(fighter, state) {
+      const hist = (fighter.careerRecord || {}).history || [];
+      const ev = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+      if (ev && ev.season) return ev.season;
+      const age = fighter.age || 17;
+      return Math.max(1, (state.season || 1) - Math.max(0, age - 17));
+    },
+
+    /** spec §3.1 fighterArchive への最小限スナップショット登録。
+     * 呼び出し側は player ロスター経由の引退であることを保証すること。 */
+    archiveFighter(state, fighter) {
+      if (!fighter) return state;
+      const ch = state.chronicle || Engine.chronicle.createEmpty();
+      // 既に同idが存在する場合はスキップ(重複登録防止)
+      if ((ch.fighterArchive || []).some(a => a.id === fighter.id)) return state;
+      const cr = fighter.careerRecord || {};
+      const hist = cr.history || [];
+      const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+      const careerSeasonsStart = debutEv ? (debutEv.season || 1) : 1;
+      const careerSeasonsEnd = state.season || careerSeasonsStart;
+
+      const peakOVR = (cr.peakOVR || 0) || (Engine.util.ov(fighter) || 0);
+      const peakOVRSeason = cr.peakOVRSeason || careerSeasonsEnd;
+      // Phase 1 簡略化: 引退時点の pop で peakPopularity を近似
+      const peakPopularity = fighter.pop || 0;
+      const peakPopularitySeason = careerSeasonsEnd;
+
+      // 年代記で意味のある特性のみ保持
+      const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
+      const traits = (fighter.traits || []).filter(t => kept.indexOf(t) >= 0);
+
+      const entry = {
+        id: fighter.id,
+        name: fighter.name,
+        style: fighter.style,
+        personality: fighter.personality,
+        archetype: fighter.archetype,
+        peakOVR, peakOVRSeason,
+        peakPopularity, peakPopularitySeason,
+        careerSeasonsStart, careerSeasonsEnd,
+        titleReigns: cr.totalTitleWins || 0,
+        totalDefenses: cr.totalDefenses || 0,
+        careerRecord: {
+          history: hist.map(e => ({ ...e })),
+          totalTitleWins: cr.totalTitleWins || 0,
+          totalDefenses: cr.totalDefenses || 0,
+          peakOVR, peakOVRSeason
+        },
+        traits,
+        retiredSeason: careerSeasonsEnd
+      };
+      const nextArchive = [...(ch.fighterArchive || []), entry];
+      return { ...state, chronicle: { ...ch, fighterArchive: nextArchive } };
+    },
+
+    /** spec §5 気風寄与の積算。
+     * 呼び出し側は player ロスター経由の引退であることを保証すること。 */
+    applySpiritContribution(state, fighter) {
+      if (!fighter) return state;
+      const cr = fighter.careerRecord || {};
+      const hist = cr.history || [];
+      const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+      const start = debutEv ? (debutEv.season || 1) : 1;
+      const end = state.season || start;
+      const delta = Engine.chronicle.calcSpiritContribution({
+        careerSeasonsStart: start,
+        careerSeasonsEnd: end,
+        peakOVR: cr.peakOVR || Engine.util.ov(fighter) || 0,
+        titleReigns: cr.totalTitleWins || 0
+      });
+      if (delta <= 0) return state;
+      const ch = state.chronicle || Engine.chronicle.createEmpty();
+      const axis = Engine.chronicle._styleAxis(fighter.style);
+      const spirit = { ...ch.spirit, [axis]: (ch.spirit[axis] || 0) + delta };
+      return { ...state, chronicle: { ...ch, spirit } };
+    },
+
+    /** spec §4.2 Step 2 英雄値 */
+    _heroScore(f) {
+      const ovrN = (f.peakOVR || 0) / 100;
+      const popN = (f.peakPopularity || 0) / 100;
+      return ovrN * 0.6 + popN * 0.4;
+    },
+
+    /** 章生成の候補プール (roster + fighterArchive) */
+    _collectCandidates(state) {
+      const list = [];
+      (state.chronicle?.fighterArchive || []).forEach(a => {
+        list.push({ ...a, _active: false });
+      });
+      (state.roster || []).forEach(f => {
+        // archive と重複する場合は skip (理論上はない)
+        if (list.some(a => a.id === f.id)) return;
+        const cr = f.careerRecord || {};
+        list.push({
+          id: f.id,
+          name: f.name,
+          style: f.style,
+          personality: f.personality,
+          archetype: f.archetype,
+          peakOVR: cr.peakOVR || Engine.util.ov(f) || 0,
+          peakOVRSeason: cr.peakOVRSeason || state.season || 1,
+          peakPopularity: f.pop || 0,
+          peakPopularitySeason: state.season || 1,
+          careerSeasonsStart: Engine.chronicle._estimateDebutSeason(f, state),
+          careerSeasonsEnd: state.season || 1,
+          titleReigns: cr.totalTitleWins || 0,
+          totalDefenses: cr.totalDefenses || 0,
+          careerRecord: {
+            history: (cr.history || []).map(e => ({ ...e })),
+            totalTitleWins: cr.totalTitleWins || 0,
+            totalDefenses: cr.totalDefenses || 0,
+            peakOVR: cr.peakOVR || 0,
+            peakOVRSeason: cr.peakOVRSeason || 0
+          },
+          traits: f.traits || [],
+          _active: true
+        });
+      });
+      return list;
+    },
+
+    /** spec §4.2 Step 4 章境界の決定 (単純版) */
+    _segmentChapters(candidates, state) {
+      if (candidates.length === 0) return [];
+      const currentSeason = Math.max(1, state.season || 1);
+      // ピーク密度（英雄値加重）
+      const weighted = new Array(currentSeason + 2).fill(0);
+      candidates.forEach(c => {
+        const s = c.peakOVRSeason || c.careerSeasonsEnd || 0;
+        if (s >= 1 && s <= currentSeason) {
+          weighted[s] += Engine.chronicle._heroScore(c);
+        }
+      });
+      // 最初に候補のピークが出現するシーズン
+      let firstPeak = 1;
+      for (let i = 1; i <= currentSeason; i++) {
+        if (weighted[i] > 0) { firstPeak = i; break; }
+      }
+      const bounds = [];
+      let cursor = firstPeak;
+      const MIN_LEN = 5, MAX_LEN = 9, TARGET = 7;
+      while (cursor <= currentSeason) {
+        const start = cursor;
+        let end = Math.min(cursor + TARGET - 1, currentSeason);
+        // 章末付近で「次のシーズンのピーク密度が低い」場所を探して境界を引く
+        // end を MIN_LEN..MAX_LEN の範囲で最小密度点に調整
+        const minEnd = Math.min(start + MIN_LEN - 1, currentSeason);
+        const maxEnd = Math.min(start + MAX_LEN - 1, currentSeason);
+        let bestEnd = end;
+        let bestScore = Infinity;
+        for (let e = minEnd; e <= maxEnd; e++) {
+          // e と e+1 の境界の密度和 (低いほど良い)
+          const score = (weighted[e] || 0) + (weighted[e + 1] || 0);
+          if (score < bestScore) { bestScore = score; bestEnd = e; }
+        }
+        end = bestEnd;
+        bounds.push({ seasonStart: start, seasonEnd: end });
+        cursor = end + 1;
+      }
+      return bounds;
+    },
+
+    /** spec §4.3 エース・同期選定 */
+    _selectAceAndPeers(chapterBounds, candidates) {
+      // 章期間にキャリアが重なる候補
+      const inChapter = candidates.filter(c => {
+        const s = c.careerSeasonsStart || 1;
+        const e = c.careerSeasonsEnd || s;
+        return !(e < chapterBounds.seasonStart || s > chapterBounds.seasonEnd);
+      });
+      if (inChapter.length === 0) return null;
+      // peak が章期間内の候補を優先
+      const peakIn = inChapter.filter(c => {
+        const ps = c.peakOVRSeason || 0;
+        return ps >= chapterBounds.seasonStart && ps <= chapterBounds.seasonEnd;
+      });
+      const pool = peakIn.length > 0 ? peakIn : inChapter;
+      const scored = pool.map(c => ({ ...c, _hero: Engine.chronicle._heroScore(c) }));
+      scored.sort((a, b) => b._hero - a._hero);
+      if (scored.length === 0) return null;
+
+      // エース選定
+      const aces = [scored[0]];
+      // 2枚看板判定
+      if (scored.length >= 2) {
+        const diff = scored[0]._hero - scored[1]._hero;
+        // キャリア期間の重なりを確認
+        const a = scored[0], b = scored[1];
+        const overlapStart = Math.max(a.careerSeasonsStart || 1, b.careerSeasonsStart || 1);
+        const overlapEnd = Math.min(a.careerSeasonsEnd || 1, b.careerSeasonsEnd || 1);
+        const overlap = Math.max(0, overlapEnd - overlapStart + 1);
+        if (diff <= 0.04 && overlap >= 3) aces.push(b);
+      }
+
+      // 同期 (実力派 3 + 人気派 1)
+      const aceIds = new Set(aces.map(a => a.id));
+      const rest = scored.filter(c => !aceIds.has(c.id));
+      const strengthPeers = rest.slice(0, 3);
+      const strengthIds = new Set(strengthPeers.map(p => p.id));
+      const popCandidate = rest
+        .filter(c => !strengthIds.has(c.id) && (c.peakPopularity || 0) >= 80)
+        .sort((a, b) => (b.peakPopularity || 0) - (a.peakPopularity || 0))[0];
+      let peers;
+      if (popCandidate) {
+        peers = [...strengthPeers, { ...popCandidate, _isIdol: true }];
+      } else {
+        peers = rest.slice(0, 4);
+      }
+      return { aces, peers };
+    },
+
+    /** spec §4.4 サブタイトル */
+    _generateSubtitle(chapter, aces) {
+      const top = aces[0];
+      const peakOVR = top.peakOVR || 0;
+      const titleReigns = aces.reduce((s, a) => s + (a.titleReigns || 0), 0);
+      // 対S級戦績は war イベントで代替 (spec "対S級勝率 < 0.2" ≈ 敗北多)
+      const chapHist = ((top.careerRecord || {}).history || [])
+        .filter(e => e.season >= chapter.seasonStart && e.season <= chapter.seasonEnd);
+      const warWins = chapHist.filter(e => e.type === 'war' && e.won === true).length;
+      const warLosses = chapHist.filter(e => e.type === 'war' && e.won === false).length;
+
+      // 初期団体 (章番号 1-2 は呼び出し側で判定して付ける)
+      if (chapter._isEarly) return '礎を築く者たち';
+      // 人気派エース: pop >= 90 かつ peakOVR < 85
+      if (aces.some(a => (a.peakPopularity || 0) >= 90 && (a.peakOVR || 0) < 85)) {
+        return '華やかなる時代';
+      }
+      if (peakOVR >= 95 && titleReigns >= 3) return '絶対の時代';
+      if (peakOVR >= 90 && warWins === 0 && warLosses >= 2) return '届かなかった頂';
+      if (peakOVR >= 85 && warWins >= 1) return '挑戦の章';
+      if (peakOVR < 85) return '雌伏の時';
+      return '静かなる継承';
+    },
+
+    /** spec §5.5 章末フレーバー */
+    _generateClosing(chapter, contributionsByAxis, orgName) {
+      let topAxis = null, topVal = 0;
+      Object.entries(contributionsByAxis).forEach(([k, v]) => {
+        if (v > topVal) { topVal = v; topAxis = k; }
+      });
+      if (!topAxis || topVal < 0.10) return null; // 極小寄与は無言
+      const label = Engine.chronicle.AXIS_LABELS[topAxis] || topAxis;
+      const org = orgName || '団体';
+      let magnitude;
+      if (topVal < 0.30) magnitude = 'slight';
+      else if (topVal < 0.80) magnitude = 'moderate';
+      else magnitude = 'strong';
+      if (magnitude === 'slight')
+        return `この世代は、${org}の流儀をわずかに ${label} へと寄せた。`;
+      if (magnitude === 'moderate')
+        return `この世代は、${org}に ${label} の色を残していった。`;
+      return `${org}は、この世代を経て ${label} の色がはっきりと濃くなった。`;
+    },
+
+    /** 章ハイライト生成 */
+    _buildHighlights(chapter, aces, peers) {
+      const out = [];
+      const chars = [...aces, ...peers];
+      chars.forEach(c => {
+        const hist = (c.careerRecord || {}).history || [];
+        const charName = Engine.chronicle._getSurname(c.name);
+        hist.forEach(ev => {
+          if ((ev.season || 0) < chapter.seasonStart || (ev.season || 0) > chapter.seasonEnd) return;
+          let text = null, tier = 'normal';
+          switch (ev.type) {
+            case 'titleWin':
+              text = `<strong>${charName}</strong> ${ev.orgName || '団体王座'} 戴冠`;
+              tier = 'gold';
+              break;
+            case 'titleDefense':
+              if ((ev.count || 0) >= 3) {
+                text = `<strong>${charName}</strong> ${ev.orgName || '団体王座'} ${ev.count}度防衛`;
+                tier = 'gold';
+              }
+              break;
+            case 'awardRookie':
+              text = `<strong>${charName}</strong> 新人王`;
+              break;
+            case 'awardMVP':
+              text = `<strong>${charName}</strong> MVP受賞`;
+              tier = 'gold';
+              break;
+            case 'awardBestMatch':
+              text = `<strong>${charName}</strong> ベストマッチ賞 (MQ${ev.mq || '?'})`;
+              tier = 'silver';
+              break;
+            case 'ppvMainEvent':
+              if (ev.result === 'champion' || ev.result === 'win') {
+                text = `<strong>${charName}</strong> PPV GRAND FINAL 優勝`;
+                tier = 'gold';
+              }
+              break;
+            case 'war':
+              if (ev.won === true) {
+                text = `<strong>${charName}</strong> 対抗戦勝利`;
+              } else if (ev.won === false) {
+                text = `対抗戦 <strong>${charName}</strong> 敗退`;
+                tier = 'red';
+              }
+              break;
+            case 'domeMain':
+              text = `<strong>${charName}</strong> ドーム ${ev.matchType === 'title' ? 'タイトル戦' : 'メイン'}${ev.result === 'win' ? ' 勝利' : ''}`;
+              tier = 'gold';
+              break;
+          }
+          if (text) out.push({ season: ev.season, type: ev.type, text, tier });
+        });
+      });
+      // 季節昇順にソート、重複除去
+      out.sort((a, b) => (a.season || 0) - (b.season || 0));
+      const seen = new Set();
+      const unique = [];
+      out.forEach(h => {
+        const k = `${h.season}:${h.text}`;
+        if (seen.has(k)) return;
+        seen.add(k);
+        unique.push(h);
+      });
+      return unique.slice(0, 10);
+    },
+
+    /** era stats (spec §3.2 eraStats) */
+    _buildEraStats(chapter, aces, peers) {
+      const chars = [...aces, ...peers];
+      let totalTitleWins = 0;
+      let warWins = 0, warLosses = 0;
+      chars.forEach(c => {
+        const hist = ((c.careerRecord || {}).history || [])
+          .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+        totalTitleWins += hist.filter(e => e.type === 'titleWin').length;
+        hist.filter(e => e.type === 'war').forEach(e => {
+          if (e.won === true) warWins++;
+          else if (e.won === false) warLosses++;
+        });
+      });
+      const peakOrgPop = chars.reduce((mx, c) => Math.max(mx, c.peakPopularity || 0), 0);
+      return { totalTitleWins, vsStier: { wins: warWins, losses: warLosses }, peakOrgPop };
+    },
+
+    /** タイトル生成 */
+    _generateTitle(aces) {
+      if (!aces || aces.length === 0) return '無名の時代';
+      if (aces.length >= 2) {
+        return `${Engine.chronicle._getSurname(aces[0].name)}・${Engine.chronicle._getSurname(aces[1].name)}世代`;
+      }
+      return `${Engine.chronicle._getSurname(aces[0].name)}世代`;
+    },
+
+    /** 章ステータス判定 (spec §4.5) */
+    _chapterStatus(aces, peers, currentSeason) {
+      const chars = [...aces, ...peers];
+      const anyActive = chars.some(c => c._active);
+      if (anyActive) return 'in_progress';
+      const latestEnd = chars.reduce((mx, c) => Math.max(mx, c.careerSeasonsEnd || 0), 0);
+      if ((currentSeason || 0) - latestEnd < 3) return 'in_progress';
+      return 'confirmed';
+    },
+
+    /** メインエントリ: 章を生成して state に格納 */
+    buildChapters(state, options = {}) {
+      const ch = state.chronicle || Engine.chronicle.createEmpty();
+      const forceRebuild = options.forceRebuild === true;
+      const cache = ch.chaptersCache || { lastBuiltSeason: 0, chapters: [] };
+      // キャッシュ判定: 同シーズンかつキャッシュ済みならスキップ
+      if (!forceRebuild && cache.lastBuiltSeason === (state.season || 0) && cache.chapters && cache.chapters.length > 0) {
+        return state;
+      }
+      const candidates = Engine.chronicle._collectCandidates(state);
+      if (candidates.length === 0) {
+        return { ...state, chronicle: { ...ch, chaptersCache: { lastBuiltSeason: state.season || 0, chapters: [] } } };
+      }
+      const bounds = Engine.chronicle._segmentChapters(candidates, state);
+      const chapters = [];
+      const currentSeason = state.season || 1;
+      bounds.forEach((b, idx) => {
+        // 早期章 (番号 1-2) はサブタイトル特別枠
+        const isEarly = idx < 2 && b.seasonStart <= 3;
+        const boundForSelect = { ...b, _isEarly: isEarly };
+        const sel = Engine.chronicle._selectAceAndPeers(b, candidates);
+        if (!sel || sel.aces.length === 0) return; // 空白期はスキップ
+        const contributionsByAxis = { striker: 0, grappler: 0, submission: 0, brawler: 0, allround: 0 };
+        [...sel.aces, ...sel.peers].forEach(c => {
+          const axis = Engine.chronicle._styleAxis(c.style);
+          contributionsByAxis[axis] += Engine.chronicle.calcSpiritContribution(c);
+        });
+        const title = Engine.chronicle._generateTitle(sel.aces);
+        const subtitle = Engine.chronicle._generateSubtitle(boundForSelect, sel.aces);
+        const closing = Engine.chronicle._generateClosing(b, contributionsByAxis, state.orgName);
+        const highlights = Engine.chronicle._buildHighlights(b, sel.aces, sel.peers);
+        const eraStats = Engine.chronicle._buildEraStats(b, sel.aces, sel.peers);
+        const status = Engine.chronicle._chapterStatus(sel.aces, sel.peers, currentSeason);
+        chapters.push({
+          id: `ch_${b.seasonStart}_${b.seasonEnd}`,
+          number: 0, // 後で振り直し
+          status,
+          seasonStart: b.seasonStart,
+          seasonEnd: b.seasonEnd,
+          title,
+          subtitle,
+          aces: sel.aces.map(a => ({
+            id: a.id, name: a.name, style: a.style,
+            personality: a.personality, archetype: a.archetype,
+            peakOVR: a.peakOVR,
+            peakPopularity: a.peakPopularity,
+            seasons: Math.max(1, (a.careerSeasonsEnd || 0) - (a.careerSeasonsStart || 0) + 1),
+            titleReigns: a.titleReigns || 0,
+            totalDefenses: a.totalDefenses || 0,
+            traits: a.traits || []
+          })),
+          peers: sel.peers.map(p => ({
+            id: p.id, name: p.name, style: p.style,
+            personality: p.personality, archetype: p.archetype,
+            peakOVR: p.peakOVR,
+            peakPopularity: p.peakPopularity,
+            titleReigns: p.titleReigns || 0,
+            role: p._isIdol ? 'idol' : 'strength',
+            traits: p.traits || []
+          })),
+          highlights,
+          eraStats,
+          closing,
+          _topAxis: (() => {
+            let k = null, v = 0;
+            Object.entries(contributionsByAxis).forEach(([ax, val]) => { if (val > v) { v = val; k = ax; } });
+            return k;
+          })()
+        });
+      });
+      chapters.forEach((c, i) => { c.number = i + 1; });
+      return {
+        ...state,
+        chronicle: {
+          ...ch,
+          chaptersCache: { lastBuiltSeason: state.season || 0, chapters }
+        }
+      };
+    }
+  },
+
   // ── v1.7: Milestone System (キャリア年表 — careerRecord.history + careerHistory → 表示用変換) ──
   milestone: {
     /**
@@ -7153,6 +7652,9 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
+          // 団体年代記: アーカイブ + 気風寄与
+          s = Engine.chronicle.archiveFighter(s, retiredF);
+          s = Engine.chronicle.applySpiritContribution(s, retiredF);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
@@ -7176,6 +7678,9 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
+          // 団体年代記: アーカイブ + 気風寄与
+          s = Engine.chronicle.archiveFighter(s, retiredF);
+          s = Engine.chronicle.applySpiritContribution(s, retiredF);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
@@ -9352,6 +9857,11 @@ const Engine = {
           const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
           allRetirees.forEach(c => { _newRetiredSeasons[c.id] = s.season; });
           s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons, pendingRetirements };
+          // 団体年代記: アーカイブ + 気風寄与 (全 player roster 経由引退)
+          retiredWithRecords.forEach(rf => {
+            s = Engine.chronicle.archiveFighter(s, rf);
+            s = Engine.chronicle.applySpiritContribution(s, rf);
+          });
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) {
             allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
@@ -10232,6 +10742,8 @@ const Engine = {
       retiredFighters: [],  // temporary — cleared after year-end awards
       hallOfFame: [],       // permanent — hall of fame inductees (alias for allHallOfFame.player)
       allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
+      // 団体年代記 v0.1 (chronicle-system-spec-v0.1.md)
+      chronicle: Engine.chronicle.createEmpty(),
       retiredIds: [...(rosterResult.initRetiredIds || [])],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
       retiredSeasons: { ...(rosterResult.initRetiredSeasons || {}) },   // {charId: season} — tracks when each character retired for recycle timing
       lastAwards: null,     // v1.4: last year-end awards result

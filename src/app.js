@@ -2212,6 +2212,114 @@ const Storage = {
         G = { ...G, battleWinsTotal: { player: 0, org_s: 0, org_a: 0, org_b: 0 } };
       }
 
+      // 団体年代記 v0.1 マイグレーション (chronicle-system-spec-v0.1.md)
+      if (!G._migrated_chronicle_v1) {
+        const chEmpty = Engine.chronicle.createEmpty();
+        // HoF player エントリを archive 形式に変換
+        const hofToArchive = (h) => {
+          const cr = h.careerRecord || {};
+          const hist = cr.history || [];
+          const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+          const start = debutEv ? (debutEv.season || 1) : 1;
+          const end = h.inductionSeason || G.season || start;
+          const pk = cr.peakOVR || h.retireOVR || h.ovr || 0;
+          return {
+            id: h.id,
+            name: h.name,
+            style: h.style || 'allround',
+            personality: h.personality,
+            archetype: h.archetype,
+            peakOVR: pk,
+            peakOVRSeason: cr.peakOVRSeason || end,
+            peakPopularity: h.peakPopularity || h.pop || 0,
+            peakPopularitySeason: end,
+            careerSeasonsStart: start,
+            careerSeasonsEnd: end,
+            titleReigns: h.titleReigns || cr.totalTitleWins || 0,
+            totalDefenses: h.totalDefenses || cr.totalDefenses || 0,
+            careerRecord: {
+              history: hist.map(e => ({ ...e })),
+              totalTitleWins: h.titleReigns || cr.totalTitleWins || 0,
+              totalDefenses: h.totalDefenses || cr.totalDefenses || 0,
+              peakOVR: pk,
+              peakOVRSeason: cr.peakOVRSeason || end
+            },
+            traits: (h.traits || []).filter(t =>
+              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
+            ),
+            retiredSeason: end
+          };
+        };
+        // retiredFighter (player想定) を archive 形式に変換 (archiveFighter ロジック相当)
+        const retiredToArchive = (f) => {
+          const cr = f.careerRecord || {};
+          const hist = cr.history || [];
+          const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+          const start = debutEv ? (debutEv.season || 1) : 1;
+          const end = G.season || start;
+          const pk = cr.peakOVR || (Engine.util.ov && Engine.util.ov(f)) || 0;
+          return {
+            id: f.id,
+            name: f.name,
+            style: f.style,
+            personality: f.personality,
+            archetype: f.archetype,
+            peakOVR: pk,
+            peakOVRSeason: cr.peakOVRSeason || end,
+            peakPopularity: f.pop || 0,
+            peakPopularitySeason: end,
+            careerSeasonsStart: start,
+            careerSeasonsEnd: end,
+            titleReigns: cr.totalTitleWins || 0,
+            totalDefenses: cr.totalDefenses || 0,
+            careerRecord: {
+              history: hist.map(e => ({ ...e })),
+              totalTitleWins: cr.totalTitleWins || 0,
+              totalDefenses: cr.totalDefenses || 0,
+              peakOVR: pk,
+              peakOVRSeason: cr.peakOVRSeason || end
+            },
+            traits: (f.traits || []).filter(t =>
+              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
+            ),
+            retiredSeason: end
+          };
+        };
+        const archivePlayer = [
+          ...((G.allHallOfFame && G.allHallOfFame.player) || []).map(hofToArchive),
+          ...((G.retiredFighters) || []).map(retiredToArchive)
+        ];
+        // 重複排除 (id ベース)
+        const seenIds = new Set();
+        const uniqueArchive = [];
+        archivePlayer.forEach(a => {
+          if (!a.id || seenIds.has(a.id)) return;
+          seenIds.add(a.id);
+          uniqueArchive.push(a);
+        });
+        // spirit の遡及積算
+        const spirit = { striker: 0, grappler: 0, submission: 0, brawler: 0, allround: 0 };
+        uniqueArchive.forEach(a => {
+          const axis = Engine.chronicle._styleAxis(a.style);
+          spirit[axis] = (spirit[axis] || 0) + Engine.chronicle.calcSpiritContribution(a);
+        });
+        G = {
+          ...G,
+          chronicle: {
+            ...chEmpty,
+            spirit,
+            fighterArchive: uniqueArchive
+          },
+          _migrated_chronicle_v1: true
+        };
+        // 初回章生成
+        try {
+          G = Engine.chronicle.buildChapters(G, { forceRebuild: true });
+        } catch (e) {
+          console.warn('[chronicle] 初回章生成に失敗:', e);
+        }
+      }
+
       // v0.2: coachSlots マイグレーション（既存セーブは雇用済みコーチ数に合わせて枠を初期化）
       if (!G._migrated_coachSlots_v1) {
         const hiredCount = (G.coaches || []).length;
@@ -4775,6 +4883,11 @@ const App = {
       const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
       lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
       let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
+      // 団体年代記: アーカイブ登録 + 気風寄与積算 (player ロスター経由なので全件対象)
+      retiredWithRecords.forEach(rf => {
+        updState = Engine.chronicle.archiveFighter(updState, rf);
+        updState = Engine.chronicle.applySpiritContribution(updState, rf);
+      });
       // 王者がラストラン引退した場合は王座を空位にする
       const vcLR = Engine.title.validateChampion(updState);
       if (vcLR.msg) { updState = { ...updState, titles: vcLR.titles, gameLog: [...(updState.gameLog || []), vcLR.msg] }; }
@@ -5717,6 +5830,9 @@ const App = {
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]
         };
+        // 団体年代記: アーカイブ + 気風寄与
+        G = Engine.chronicle.archiveFighter(G, retiredF);
+        G = Engine.chronicle.applySpiritContribution(G, retiredF);
         // 王者がモチベ喪失引退した場合は王座を空位にする
         const vcMR = Engine.title.validateChampion(G);
         if (vcMR.msg) { G = { ...G, titles: vcMR.titles, gameLog: [...(G.gameLog || []), vcMR.msg] }; }
