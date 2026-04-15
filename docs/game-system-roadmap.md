@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-15（社長室 Phase 9 — ビジュアル磨きとヘルプ、spec v1.1 逆輸入）
+> 最終更新: 2026-04-15（団体年代記 Phase 1-4 全完了 / 社長室 Phase 1-9 全完了）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`

@@ -165,7 +165,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | facility-system-spec.md | 設備投資システム仕様(未実装) |
 | league-elevation-mockup-spec.md | 業界底上げイベント仕様(未実装) |
 | tag-match-system-spec-v0.1.md | タッグマッチシステム設計(未実装v0.1) |
-| chronicle-system-spec-v0.1.md | 団体年代記(気風/章生成/fighterArchive、Phase 1 実装済み/Phase 2-4 未着手) |
+| chronicle-system-spec-v0.1.md | 団体年代記(気風/章生成/fighterArchive、Phase 1-4 全実装完了) |
 
 ## UI実装ルール(必読)
 
