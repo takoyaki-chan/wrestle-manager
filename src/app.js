@@ -3494,8 +3494,11 @@ const App = {
       if (idx >= negotiations.length) {
         // 全交渉完了 → 結果サマリー
         showContractResultModal(results, () => {
+          // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
           const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
-          G = { ...clean, gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          // 今週画面に戻ってから次週へ進める（社長室の交渉カードに留まらないように）
+          showScreen('week');
           App.advanceWeek();
         });
         return;

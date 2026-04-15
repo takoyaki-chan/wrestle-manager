@@ -13130,8 +13130,10 @@ Engine.shachoshitsu = {
 
   // ── 今週机に並べる書類リスト ──────────────────────────────────────────────
   // DECISION_DOC_ORDER の順で、発動条件/minOrgPop/団体cooldown を通過した書類を返す
+  // オフシーズン中は決裁不可（試合がないため信頼/雰囲気変動が次シーズン開幕まで意味を持たない）
   getAvailableDocs(state) {
     if (typeof DECISION_DOCS === 'undefined') return [];
+    if (state.offSeason) return [];
     const order = Engine.shachoshitsu.getDocOrder();
     const docs = [];
     for (const docId of order) {
@@ -13171,6 +13173,9 @@ Engine.shachoshitsu = {
   execute(docId, fighterId, state) {
     const doc = Engine.shachoshitsu.getDoc(docId);
     if (!doc) return { error: 'doc_not_found' };
+
+    // オフシーズン中は決裁不可（保険）
+    if (state.offSeason) return { error: 'offseason_locked' };
 
     // minOrgPop / 発動条件の最終確認(レンダー時のフィルタが外れた場合の保険)
     if (doc.minOrgPop && (state.orgPop || 0) < doc.minOrgPop) {

@@ -3211,7 +3211,10 @@ function renderShachoshitsu() {
     : [];
 
   if (availableDocs.length === 0) {
-    html += `<div class="shachoshitsu-empty-note">今週は机に並ぶ案件がありません</div>`;
+    const emptyMsg = G.offSeason
+      ? 'オフシーズン — 案件なし'
+      : '今週は机に並ぶ案件がありません';
+    html += `<div class="shachoshitsu-empty-note">${emptyMsg}</div>`;
   } else {
     // spec §7.2 (2026-04-15 Keisuke レビュー反映): 条件を満たす書類を左上から自然に詰める。
     // DECISION_DOC_ORDER の順序は維持しつつ、穴を作らず詰めて並べる(空きスロットが飛び地に
