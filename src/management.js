@@ -3272,6 +3272,7 @@ const Engine = {
         careerHistory: [],
         growthPenalty: null,
         trust: 50,
+        pendingTrustDeltas: [],  // 社長室 Phase 7: trainer/camp の信頼度遅延発現トラック(AI選手は未使用だが整合性のため初期化)
         promoStack: 0,     // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
@@ -5970,6 +5971,15 @@ const Engine = {
       // v2.0: トレーナーバフ週次消費（成長計算の後でデクリメント）
       roster = Engine.shachoshitsu.tickTrainerBuffs(roster);
 
+      // 社長室 Phase 7: trainer/camp の信頼度遅延発現 (tickTrainerBuffs と同タイミングで呼ぶ)
+      // これにより _trainerBuff.weeksLeft と pendingTrustDeltas[].weeksRemaining が常に同期する
+      let pendingTrustReveals = [];
+      {
+        const ptdResult = Engine.shachoshitsu.applyPendingTrustDeltas(roster);
+        roster = ptdResult.roster;
+        pendingTrustReveals = ptdResult.reveals;
+      }
+
       // v2.0: 週次イベント生成（25%発生率、非興行週・通常シーズンのみ）
       // 通知型 (N1〜N5) と 選択型 (S1〜S6, E1〜E6) を区別して処理
       let pendingNotifEvent = null;
@@ -6095,6 +6105,8 @@ const Engine = {
       if (pendingHotStreakEnds.length > 0) result._pendingHotStreakEnds = pendingHotStreakEnds;
       if (_pendingScandalEvents.length > 0) result._pendingScandalEvents = _pendingScandalEvents;
       if (_pendingInjuryPopDecay.length > 0) result._pendingInjuryPopDecay = _pendingInjuryPopDecay;
+      // 社長室 Phase 7: trainer/camp の信頼度発現通知
+      if (pendingTrustReveals.length > 0) result._pendingTrustReveals = pendingTrustReveals;
       return result;
     },
 
@@ -6421,6 +6433,8 @@ const Engine = {
     if (manage._pendingPromoGoods) s = { ...s, _pendingPromoGoods: manage._pendingPromoGoods };
     // P5: 絶好調終了検出を state に乗せる
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
+    // 社長室 Phase 7: trainer/camp の信頼度発現通知を state に乗せる
+    if (manage._pendingTrustReveals) s = { ...s, _pendingTrustReveals: manage._pendingTrustReveals };
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // transient: pending収入は settlement で消費済み — 次週への重複計上を防止
@@ -9961,6 +9975,7 @@ const Engine = {
       careerHistory: [],   // v1.3-2: 経歴記録 [{type,week,season,detail}]
       growthPenalty: null, // v1.3-2: 成長デバフ {remainingWeeks,multiplier,source} | null
       trust: 50,           // v2.0: 信頼度 0-100（隠しパラメータ）
+      pendingTrustDeltas: [],  // 社長室 Phase 7: trainer/camp の信頼度遅延発現トラック
       promoStack: 0,       // プロモ改修 v1.0: 試合前プロモ蓄積 0〜3
       lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
       orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
@@ -12582,6 +12597,28 @@ Engine.shachoshitsu = {
       const newTrust = Engine.util.clamp(oldTrust + adjusted, 0, 100);
       return { ...fighter, trust: newTrust };
     };
+    // Phase 7: trainer/camp 専用 — バフ期間と並走して信頼度を遅延発現
+    // trust フィールドは触らず、pendingTrustDeltas にエントリを積むだけ。
+    // weeksRemaining は _trainerBuff.weeksLeft と同じ値を指すよう設計。
+    const queueTrust = (fighter, delta, source, weeks, skipOvrScale) => {
+      const mental = fighter.mn || 50;
+      let adjusted = Engine.trust.applyCoeff(delta, mental);
+      if (!skipOvrScale) adjusted *= careOvrMult(fighter);
+      const oldTrust = fighter.trust != null ? fighter.trust : 50;
+      if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+      if (adjusted <= 0.001) return fighter;
+      const perWeek = adjusted / weeks;
+      const entry = {
+        source,              // 'trainer' | 'camp'
+        totalDelta: adjusted,
+        perWeekDelta: perWeek,
+        weeksRemaining: weeks,
+        startedWeek: state.week,
+        finalMult: 1.0,      // Phase 8 で性格×アーキタイプ倍率を入れる
+      };
+      const list = [...(fighter.pendingTrustDeltas || []), entry];
+      return { ...fighter, pendingTrustDeltas: list };
+    };
 
     // ── 個人書類(target: 'individual') ──
     if (doc.effect && doc.effect.target === 'individual') {
@@ -12644,8 +12681,9 @@ Engine.shachoshitsu = {
         f = applyTrust(f, doc.effect.trust || 5.36);
         events.push(`🏖️ ${f.name}に休暇辞令(スランプ回復大促進・状態+${doc.effect.condition || 15})`);
       } else if (docId === 'trainer') {
-        f = applyTrust(f, doc.effect.trust || 5.97);
+        // Phase 7: 信頼度はバフ期間 (4週) と並走して遅延発現。trust フィールドは即時には変わらない
         const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
+        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', gb.weeks);
         f._trainerBuff = { weeksLeft: gb.weeks, mult: gb.mult };
         events.push(`💪 ${f.name}に専属トレーナー(${gb.weeks}週間 成長+${Math.round((gb.mult - 1) * 100)}%)`);
       } else if (docId === 'media') {
@@ -12663,15 +12701,17 @@ Engine.shachoshitsu = {
 
       // changes 構築
       const _after = { trust: f.trust, condition: f.condition || 70 };
-      if (_after.trust !== _before.trust) {
+      // Phase 7: trainer は trust が即時変わらないので専用メッセージを使う
+      if (docId === 'trainer') {
+        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
+        changes.push({ label: '信頼度', emoji: '🤝', text: `今後${gb.weeks}週にわたって、じわじわと育っていく` });
+        changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
+      } else if (_after.trust !== _before.trust) {
+        // bonus / refresh_leave / encourage / media は従来通り即時表示
         changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
       }
       if (_after.condition !== _before.condition) {
         changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
-      }
-      if (docId === 'trainer') {
-        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
-        changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
       }
       if (docId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
       if (docId === 'encourage') {
@@ -12701,13 +12741,14 @@ Engine.shachoshitsu = {
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
       } else if (docId === 'camp') {
+        // Phase 7: 信頼度はバフ期間 (2週) と並走して遅延発現。全員分を pending に積む
         const gb = doc.effect.growthBoost || { weeks: 2, mult: 1.5 };
         roster = roster.map(f => {
           if (f.injury) return f;
-          const newF = applyTrust(f, doc.effect.trust || 1.84);
-          return { ...newF, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
+          const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks);
+          return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `今後${gb.weeks}週にわたって、団体全体にじわじわと育っていく` });
         changes.push({ label: '全員の成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
         events.push(`🏕️ 合宿を実施(全員の成長バフ ${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%)`);
         reactionFighterId = null;
@@ -12771,6 +12812,37 @@ Engine.shachoshitsu = {
       }
       return { ...f, _trainerBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
     });
+  },
+
+  // ── Phase 7: pendingTrustDeltas の週次発現 ─────────────────────────────
+  // tickTrainerBuffs と同じタイミングで呼ばれることを前提に設計されており、
+  // trainer/camp の _trainerBuff.weeksLeft と pendingTrustDeltas[].weeksRemaining が同期する。
+  // 返り値: { roster, reveals }
+  //   reveals = [{ fighterId, fighterName, source, perWeekDelta }] (ミニ通知用)
+  applyPendingTrustDeltas(roster) {
+    const reveals = [];
+    const newRoster = roster.map(f => {
+      if (!f.pendingTrustDeltas || f.pendingTrustDeltas.length === 0) return f;
+      let trust = f.trust != null ? f.trust : 50;
+      const remaining = [];
+      for (const delta of f.pendingTrustDeltas) {
+        // 実発現量 = perWeekDelta × finalMult (Phase 8 でマトリクス反映)
+        const applied = delta.perWeekDelta * (delta.finalMult != null ? delta.finalMult : 1.0);
+        trust = Engine.util.clamp(trust + applied, 0, 100);
+        reveals.push({
+          fighterId: f.id,
+          fighterName: f.name,
+          source: delta.source,
+          perWeekDelta: applied,
+        });
+        const nextRem = delta.weeksRemaining - 1;
+        if (nextRem >= 1) {
+          remaining.push({ ...delta, weeksRemaining: nextRem });
+        }
+      }
+      return { ...f, trust, pendingTrustDeltas: remaining };
+    });
+    return { roster: newRoster, reveals };
   },
 
   // ── 成長計算時のトレーナーバフ取得 ──────────────────────────────────────
@@ -14650,6 +14722,43 @@ Engine.validateGameState = function(G) {
     warn('旧_teamCareWeekUsedフィールドが残存→自動削除');
     const { _teamCareWeekUsed: _d, ...rest } = G;
     G = rest;
+  }
+  // 社長室 Phase 7: pendingTrustDeltas の型チェック(配列型 + エントリ有効性)
+  if (Array.isArray(G.roster)) {
+    let needsFix = false;
+    for (const f of G.roster) {
+      if (f.pendingTrustDeltas !== undefined && !Array.isArray(f.pendingTrustDeltas)) {
+        warn(`${f.name}.pendingTrustDeltasが配列でない: ${typeof f.pendingTrustDeltas}→自動修正`);
+        needsFix = true;
+      } else if (Array.isArray(f.pendingTrustDeltas)) {
+        const valid = f.pendingTrustDeltas.filter(d => {
+          if (!d || typeof d !== 'object') return false;
+          if (!isValidNum(d.perWeekDelta) || !isValidNum(d.weeksRemaining)) return false;
+          if (d.weeksRemaining < 1) return false;
+          return true;
+        });
+        if (valid.length !== f.pendingTrustDeltas.length) {
+          warn(`${f.name}.pendingTrustDeltasに無効エントリあり→自動削除(${f.pendingTrustDeltas.length}→${valid.length})`);
+          needsFix = true;
+        }
+      }
+    }
+    if (needsFix) {
+      G = { ...G, roster: G.roster.map(f => {
+        if (f.pendingTrustDeltas !== undefined && !Array.isArray(f.pendingTrustDeltas)) {
+          return { ...f, pendingTrustDeltas: [] };
+        }
+        if (Array.isArray(f.pendingTrustDeltas)) {
+          return { ...f, pendingTrustDeltas: f.pendingTrustDeltas.filter(d => {
+            if (!d || typeof d !== 'object') return false;
+            if (!isValidNum(d.perWeekDelta) || !isValidNum(d.weeksRemaining)) return false;
+            if (d.weeksRemaining < 1) return false;
+            return true;
+          }) };
+        }
+        return f;
+      }) };
+    }
   }
 
   // ── 経済関連 ──

@@ -1015,19 +1015,36 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 
 **成果物**: ケア書類が「危機的な時にしか使えない」状態になっている。
 
-### Phase 7: 遅延発現メカニズム
+### Phase 7: trainer/camp の信頼度遅延発現 ✅ 完了(2026-04-15)
 
-**目的**: trust上昇を3週間に分割発現させる。
+> **⚠️ v1.0 計画からの設計変更**: 当初の「全書類の trust を3週間に分割」方針は **narrative 不整合により破棄** した(Keisuke 指摘: 「ボーナスや休暇は金や休みをもらったその瞬間が嬉しさのピーク、遅延発現にすると感情の時間軸が壊れる」)。Phase 7 の実装では、**成長バフが並走する2書類 (trainer/camp) のみ** を遅延発現対象にし、期間は `_trainerBuff.weeksLeft` と完全同期させた。
 
-**タスク**:
-1. `fighter.pendingTrustDeltas` フィールドの定義
-2. `Engine.shachoshitsu.execute` で trust効果を pending に登録するよう変更
-3. `Engine.shachoshitsu.applyPendingTrustDeltas` 関数実装
-4. 週進行処理で毎週呼び出し
-5. 書類説明文に「3週かけて効いていく」を追加
-6. マイグレーション（既存セーブに pendingTrustDeltas が無い場合は空配列で初期化）
+**実装した設計**:
+- **遅延対象**: trainer (4週間)、camp (2週間) の2書類のみ
+- **即時維持**: bonus / refresh_leave / party / encourage / media (既存動作を一切変更せず)
+- **遅延期間**: `_trainerBuff.weeksLeft` と完全同期(`tickTrainerBuffs` と同タイミングで `applyPendingTrustDeltas` を呼ぶ)
+- **「即時万能感の排除」**: Phase 8 の不確実性 (性格×アーキタイプ ±50%) に全面委譲する(spec §4.3 の「遅延でごまかす」アプローチは諦める)
 
-**成果物**: 決裁効果の trust が即時ではなく3週かけて反映される。
+**実装した機能**:
+1. `fighter.pendingTrustDeltas: [{source, totalDelta, perWeekDelta, weeksRemaining, startedWeek, finalMult}]` を全選手フィールドとして追加(マイグレーション済)
+2. `Engine.shachoshitsu.execute` 内に `queueTrust` ローカルヘルパーを追加。`applyTrust` は即時型書類用に残し、trainer/camp 分岐だけ `queueTrust` に差し替え
+3. `Engine.shachoshitsu.applyPendingTrustDeltas(roster)` 新設、`processManage` 内 `tickTrainerBuffs` 直後で呼び出し
+4. 結果モーダル: trainer → 「今後4週にわたって、じわじわと育っていく」、camp → 「今後2週にわたって、団体全体にじわじわと育っていく」
+5. 選手ポップアップに `_trainerBuff` バッジ追加: 「🏋️ 専属トレーナー 残り4週 — 信頼もじわじわ育つ」(数値なし、ゴールド系 `#d4a843`)
+6. 週進行時のミニ通知: `_pendingTrustReveals` から `perWeekDelta` 降順で1件だけピック → 「🤝 専属トレーナーとの練習で○○の気持ちが前向きになってきた」
+7. `validateGameState` に `pendingTrustDeltas` の型チェック追加
+8. `makeChar` / `makeAIFighter` に `pendingTrustDeltas: []` 初期化追加
+9. Phase 6 (閾値最終確認) を Phase 7 に統合吸収 — `trust_unstable<60` / `morale_low<60` は auto-sim 100シーズンで違反ゼロなので現状維持確定
+
+**検証**:
+- auto-sim 100シーズン(seed=42) ALL CLEAR(違反0/エラー0/ゲームオーバー0/5300週)
+- 実機: trainer 実行 → trust 即時変化なし → 週進行で perWeekDelta 均等発現 → 4週で消滅、buffLeft と weeksRemaining 完全同期を確認
+- 実機: bonus は従来通り即時で信頼度上昇(40→46.19)
+
+**v1.1 で逆輸入すべき点** (§4.3 / §5 のリライト候補):
+- 「即時万能感の排除」の手段を「遅延発現」から「不確実性 (Phase 8)」に変更
+- 遅延発現の対象を trainer/camp に限定、期間を既存バフ期間と同期させる設計根拠を §5.1 に追記
+- bonus/refresh_leave/party/encourage/media を即時維持する narrative 的理由を §4.3 に追記
 
 ### Phase 8: 不確実性メカニズム
 

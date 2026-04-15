@@ -2073,6 +2073,12 @@ const Storage = {
           return rest;
         }) };
       }
+      // 社長室 Phase 7: pendingTrustDeltas 初期化 (trainer/camp の遅延発現トラック)
+      if (G.roster && G.roster.some(f => f.pendingTrustDeltas === undefined)) {
+        G = { ...G, roster: G.roster.map(f =>
+          f.pendingTrustDeltas === undefined ? { ...f, pendingTrustDeltas: [] } : f
+        ) };
+      }
 
       // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
       if (!G._migrated_retiredIds_v1) {
@@ -5724,6 +5730,26 @@ const App = {
     if (weekGrowthEvents.length > 0) {
       const baseDelay = (newInjuries.length + flavorEvents.length) * 100 + 100;
       setTimeout(() => showGrowthEventPopups(weekGrowthEvents), baseDelay);
+    }
+
+    // 社長室 Phase 7: trainer/camp の信頼度遅延発現ミニ通知 (1件/週)
+    // camp は全員分の reveal が同週に発生するため、perWeekDelta 降順で1件だけピック
+    // (スポットライトは巡る原則)
+    const weekTrustReveals = G._pendingTrustReveals || [];
+    if (G._pendingTrustReveals) {
+      const { _pendingTrustReveals: _, ...cleanTr } = G;
+      G = cleanTr;
+    }
+    if (weekTrustReveals.length > 0) {
+      const pick = [...weekTrustReveals].sort((a, b) => b.perWeekDelta - a.perWeekDelta)[0];
+      const SOURCE_TEXTS = {
+        trainer: '専属トレーナーとの練習で',
+        camp: '合宿の手応えで',
+      };
+      const prefix = SOURCE_TEXTS[pick.source] || '';
+      const msg = `🤝 ${prefix}${pick.fighterName}の気持ちが前向きになってきた`;
+      const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
+      setTimeout(() => showToast(msg, 5000), baseDelayTr);
     }
 
     // §13.4: 突然の退団表示

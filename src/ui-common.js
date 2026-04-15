@@ -2756,6 +2756,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${(() => { const decline = Engine.retirement.getDeclinePresentation(c); if (decline.stage === 'terminal') return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (decline.stage === 'major') return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (decline.stage === 'early') return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
             ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
             ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
+            ${c._trainerBuff ? (() => {
+              // 社長室 Phase 7: 成長バフ表示 + 信頼度がじわじわ育つことの明示
+              // _trainerBuff の出元 (trainer or camp) は pendingTrustDeltas の source から判定
+              const weeks = c._trainerBuff.weeksLeft;
+              const pending = (c.pendingTrustDeltas || []).find(p => p.source === 'trainer' || p.source === 'camp');
+              const label = pending && pending.source === 'camp' ? '合宿' : '専属トレーナー';
+              return `<span style="color:#d4a843">🏋️ ${label} 残り${weeks}週 — 信頼もじわじわ育つ</span>`;
+            })() : ''}
             ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
             ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}
             ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? '<span style="color:#e67e22;font-weight:700">💔 信頼が揺らいでいる</span>' : ''}
