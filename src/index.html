@@ -1658,9 +1658,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding:20px;width:min(480px,94vw);max-height:88vh;overflow-y:auto;box-sizing:border-box}
 .care-title{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:16px;
   display:flex;align-items:center;gap:8px}
-/* 社長室 Phase 5: ケア専用クラスは削除。共有クラス (care-overlay/care-box/care-title/
-   care-reaction*/care-result-header/care-result-action-*/care-result-portrait*/care-result-name)
-   は他モーダル(選択イベント/対抗戦/挑戦状/契約交渉 等)で再利用中のため残存 */
+/* 社長室 Phase 5: ケア専用クラスは削除。
+   共有クラス(.care-overlay / .care-box / .care-title / .care-reaction 系 /
+   .care-result-header / .care-result-action 系 / .care-result-portrait 系 /
+   .care-result-name)は他モーダル(選択イベント/対抗戦/挑戦状/契約交渉 等)で
+   再利用中のため残存 */
 .care-reaction{display:flex;align-items:flex-start;gap:12px;padding:14px;
   background:rgba(232,67,147,0.07);border:1px solid rgba(232,67,147,0.2);border-radius:8px;margin-top:12px}
 .care-reaction-portrait{border-radius:12px;flex-shrink:0}
@@ -3055,6 +3057,58 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-decision-team-summary .label{color:var(--text-sub);font-size:11px;letter-spacing:1px}
 .shachoshitsu-decision-team-summary .value{color:var(--text-main);font-weight:700}
 .shachoshitsu-decision-team-summary .effect{color:var(--gold);font-size:12px;line-height:1.5}
+
+/* ─── 社長室 Phase 5: 団体書類(party/camp)決裁結果モーダル ─── */
+@keyframes decisionTeamResultRosterIn{
+  from{opacity:0;transform:translateY(8px) scale(0.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.decision-team-result-roster{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;
+  margin:0 0 18px;padding:14px 10px;
+  background:linear-gradient(180deg,rgba(212,168,67,0.06) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(212,168,67,0.2);border-radius:6px}
+.decision-team-result-roster.camp-team{background:linear-gradient(180deg,rgba(192,0,0,0.06) 0%,rgba(212,168,67,0.04) 100%);
+  border-color:rgba(192,0,0,0.25)}
+.decision-team-result-member{display:flex;flex-direction:column;align-items:center;gap:4px;
+  animation:decisionTeamResultRosterIn 0.4s cubic-bezier(0.22,1,0.36,1) backwards}
+.decision-team-result-member:nth-child(1){animation-delay:0.02s}
+.decision-team-result-member:nth-child(2){animation-delay:0.05s}
+.decision-team-result-member:nth-child(3){animation-delay:0.08s}
+.decision-team-result-member:nth-child(4){animation-delay:0.11s}
+.decision-team-result-member:nth-child(5){animation-delay:0.14s}
+.decision-team-result-member:nth-child(6){animation-delay:0.17s}
+.decision-team-result-member:nth-child(7){animation-delay:0.20s}
+.decision-team-result-member:nth-child(8){animation-delay:0.23s}
+.decision-team-result-member:nth-child(9){animation-delay:0.26s}
+.decision-team-result-member:nth-child(10){animation-delay:0.29s}
+.decision-team-result-portrait{border-radius:6px;border:1px solid rgba(212,168,67,0.25);
+  box-shadow:0 2px 6px rgba(0,0,0,0.4);background:rgba(0,0,0,0.3)}
+.decision-team-result-roster.party-team .decision-team-result-portrait{width:64px;height:64px}
+.decision-team-result-roster.camp-team .decision-team-result-portrait{width:72px;height:72px;
+  border-color:rgba(192,0,0,0.35)}
+.decision-team-result-name{font-size:10px;font-weight:600;color:var(--text-main);
+  max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.decision-team-result-speech{margin:0 0 14px;padding:14px 16px;
+  background:rgba(0,0,0,0.3);border-left:3px solid var(--gold);
+  border-radius:0 6px 6px 0}
+.decision-team-result-speech .speech-text{font-size:14px;line-height:1.65;font-style:italic;
+  color:var(--text-main)}
+.decision-team-result-speech .speech-attribution{font-size:11px;color:var(--text-dim);
+  margin-top:6px;text-align:right;letter-spacing:0.5px}
+.decision-team-result-flavor{font-size:12px;line-height:1.6;color:var(--text-sub);font-style:italic;
+  text-align:center;margin:0 0 14px;padding:10px 14px;
+  background:rgba(192,0,0,0.05);border:1px dashed rgba(192,0,0,0.3);border-radius:6px}
+.decision-team-result-changes{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;
+  padding:12px 14px;background:rgba(0,0,0,0.25);border:1px solid rgba(212,168,67,0.15);border-radius:4px}
+.decision-team-result-changes .row{display:flex;justify-content:space-between;align-items:center;
+  font-size:12px}
+.decision-team-result-changes .label{color:var(--text-sub);letter-spacing:0.3px}
+.decision-team-result-changes .value{font-weight:600}
+.decision-team-result-changes .value.up{color:#6eb96e}
+.decision-team-result-changes .value.down{color:var(--shachoshitsu-vermillion)}
+.decision-team-result-changes .value .diff{font-size:10px;font-weight:400;opacity:0.75;margin-left:2px}
+.decision-team-result-cost{text-align:center;font-size:12px;color:var(--text-dim);margin:0 0 14px;
+  padding:8px;background:rgba(0,0,0,0.2);border-radius:4px;letter-spacing:0.3px}
 </style>
 </head>
 <body>

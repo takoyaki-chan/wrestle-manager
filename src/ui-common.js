@@ -6299,6 +6299,105 @@ function showDecisionResultToast(displayData) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 社長室 Phase 5: 団体書類(party/camp)の豪華結果モーダル
+// 既存の shachoshitsu-decision-overlay/Modal DOM を再利用
+// 全員の顔アイコン + 代表セリフ + camp フレーバー + 変化サマリ + コスト
+// ─────────────────────────────────────────────────────────────────────────────
+function showDecisionTeamResultModal(displayData) {
+  if (!displayData) return;
+  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
+  const modal = document.getElementById('shachoshitsuDecisionModal');
+  if (!overlay || !modal) { showDecisionResultToast(displayData); return; }
+
+  const { fighters = [], repFighter, text, campFlavor, changes = [], cost, remainingFunds, icon, label, docId } = displayData;
+  const isCamp = docId === 'camp';
+  const iconSize = isCamp ? 72 : 64;
+
+  // 参加者グリッド
+  let rosterHtml = '';
+  if (fighters.length > 0) {
+    rosterHtml += `<div class="decision-team-result-roster ${isCamp ? 'camp-team' : 'party-team'}">`;
+    fighters.forEach(f => {
+      const lastName = (f.name || '').split(/\s/).pop();
+      rosterHtml += `<div class="decision-team-result-member">`;
+      rosterHtml += portraitImg(f.id, iconSize, 'decision-team-result-portrait');
+      rosterHtml += `<div class="decision-team-result-name">${lastName}</div>`;
+      rosterHtml += `</div>`;
+    });
+    rosterHtml += `</div>`;
+  }
+
+  // 代表セリフ
+  let speechHtml = '';
+  if (text && repFighter) {
+    speechHtml = `<div class="decision-team-result-speech">
+      <div class="speech-text">「${text}」</div>
+      <div class="speech-attribution">— ${repFighter.name}</div>
+    </div>`;
+  }
+
+  // camp フレーバー
+  let flavorHtml = '';
+  if (campFlavor) {
+    flavorHtml = `<div class="decision-team-result-flavor">${campFlavor}</div>`;
+  }
+
+  // 変化サマリ
+  let changesHtml = '';
+  if (changes.length > 0) {
+    changesHtml += `<div class="decision-team-result-changes">`;
+    changes.forEach(c => {
+      if (c.text !== undefined) {
+        changesHtml += `<div class="row">
+          <span class="label">${c.emoji || ''} ${c.label}</span>
+          <span class="value up">${c.text}</span>
+        </div>`;
+      } else if (c.before !== undefined && c.after !== undefined) {
+        const diff = c.after - c.before;
+        const cls = diff >= 0 ? 'up' : 'down';
+        const sign = diff >= 0 ? '+' : '';
+        changesHtml += `<div class="row">
+          <span class="label">${c.emoji || ''} ${c.label}</span>
+          <span class="value ${cls}">${c.before} → <strong>${c.after}</strong> <span class="diff">(${sign}${diff})</span></span>
+        </div>`;
+      }
+    });
+    changesHtml += `</div>`;
+  }
+
+  // コスト
+  let costHtml = '';
+  if (cost > 0) {
+    const fundsColor = remainingFunds < 200 ? 'var(--shachoshitsu-vermillion)' : 'var(--text-sub)';
+    costHtml = `<div class="decision-team-result-cost">
+      費用 <strong style="color:var(--shachoshitsu-vermillion)">-${cost}万</strong>
+      ｜ 残金 <strong style="color:${fundsColor}">${Math.round(remainingFunds).toLocaleString()}万</strong>
+    </div>`;
+  }
+
+  modal.innerHTML = `
+    <div class="shachoshitsu-decision-title">
+      <span class="icon">${icon}</span>
+      <span>${label} — 決裁完了</span>
+    </div>
+    ${rosterHtml}
+    ${speechHtml}
+    ${flavorHtml}
+    ${changesHtml}
+    ${costHtml}
+    <div class="shachoshitsu-decision-btn-row">
+      <button class="shachoshitsu-decision-btn confirm" id="decisionTeamResultCloseBtn">閉じる ✓</button>
+    </div>
+  `;
+
+  overlay.classList.add('active');
+  const closeBtn = document.getElementById('decisionTeamResultCloseBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v2.0: 通知型イベント トースト表示 (event-system-spec-v2.md §3-4)
 // 選手顔アイコン＋一言テキスト。数秒で自動消去
 // ─────────────────────────────────────────────────────────────────────────────

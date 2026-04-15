@@ -6888,7 +6888,7 @@ const App = {
     }
     Storage.autoSave();
 
-    // displayData 構築(結果トースト用)
+    // displayData 構築(結果表示用)
     const doc = Engine.shachoshitsu.getDoc(docId);
     const reactionKey = result.reactionKey || docId;
     let displayData = null;
@@ -6903,8 +6903,25 @@ const App = {
         };
       }
     } else {
+      // 団体書類(party/camp): 参加者全員 + 代表セリフ + camp フレーバー
+      const participants = (G.roster || []).filter(f => !f.isRental && !f.injury);
+      const repFighter = participants.length > 0
+        ? participants[Math.floor(Math.random() * participants.length)]
+        : null;
+      const text = repFighter ? Engine.shachoshitsu.getReactionText(reactionKey, repFighter) : '';
+      // camp: CAMP_FLAVOR_TEXTS からランダムに1件、参加者2名を差し込み
+      let campFlavor = null;
+      if (docId === 'camp' && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && participants.length >= 2) {
+        const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
+        const shuffled = [...participants].sort(() => Math.random() - 0.5);
+        campFlavor = tmpl
+          .replace('{name1}', shuffled[0].name)
+          .replace('{name2}', shuffled[1] ? shuffled[1].name : shuffled[0].name);
+      }
       displayData = {
-        fighter: null, isTeam: true, changes: result.changes || [],
+        fighter: null, isTeam: true,
+        fighters: participants, repFighter, text, campFlavor,
+        changes: result.changes || [],
         cost: result.cost || 0, remainingFunds: result.funds,
         icon: doc?.icon || '', label: doc?.label || '', docId,
       };
@@ -6926,8 +6943,12 @@ const App = {
       if (firstStandingHanko) firstStandingHanko.classList.add('falling');
     } catch (e) {}
 
-    // 結果トースト
-    if (typeof showDecisionResultToast === 'function') showDecisionResultToast(displayData);
+    // 結果表示 — team書類(party/camp)は豪華モーダル、個人書類はトースト
+    if (displayData?.isTeam && typeof showDecisionTeamResultModal === 'function') {
+      showDecisionTeamResultModal(displayData);
+    } else if (typeof showDecisionResultToast === 'function') {
+      showDecisionResultToast(displayData);
+    }
 
     // 0.6秒後に再レンダリングして決裁済み状態(is-approved)を反映
     setTimeout(() => {
