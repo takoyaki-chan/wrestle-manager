@@ -3284,11 +3284,6 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
   const fundsStr = Math.round(G.funds).toLocaleString();
   const dateStr = Engine.util.formatDate(G.season, G.week);
 
-  // 交渉書類の微回転: week+season の決定論的ハッシュで ±1.5° (決裁書類の ±3° より控えめに)
-  let h = ((G.week || 0) * 2654435761) ^ ((season * 31337) >>> 0);
-  h = Math.abs((h * 16777619) >>> 0);
-  const cardRot = (((h % 301) / 100) - 1.5).toFixed(2);
-
   el.innerHTML = `
     <div class="shachoshitsu-hud">
       <div class="shachoshitsu-hud-left">
@@ -3303,7 +3298,7 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
       ${wallInnerHtml || ''}
     </div>
     <div class="shachoshitsu-desk">
-      <div class="negotiation-card" style="--neg-card-rotate:${cardRot}deg">
+      <div class="negotiation-card">
         ${deskInnerHtml || ''}
       </div>
     </div>

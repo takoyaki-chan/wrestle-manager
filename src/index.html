@@ -3087,16 +3087,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .neg-badge-raise   {background:rgba(243,156,18,0.20);border:1px solid rgba(243,156,18,0.45);color:#f5a623}
 .neg-badge-transfer{background:rgba(231,76,60,0.20); border:1px solid rgba(231,76,60,0.45); color:#e84c3c}
 .neg-badge-sudden  {background:rgba(160,80,200,0.20);border:1px solid rgba(160,80,200,0.45);color:#b07dd0}
-/* 机上の交渉書類カード — document-blank.webp テクスチャで決裁書類と統一 */
-.negotiation-card{background-image:url('../image/shachoshitsu/document-blank.webp');
-  background-size:cover;background-position:center;
-  border-radius:1px;padding:22px 24px;
-  width:380px;max-width:90%;
-  box-shadow:0 6px 28px rgba(0,0,0,0.60),0 2px 8px rgba(0,0,0,0.35);
+/* 机上の交渉書類カード */
+.negotiation-card{background:var(--paper,#e8e4d8);
+  border:1px solid rgba(80,60,40,0.30);
+  border-radius:4px;padding:22px 24px;
+  width:400px;max-width:90%;
+  box-shadow:0 6px 28px rgba(0,0,0,0.55),0 2px 8px rgba(0,0,0,0.30);
   color:#2a2318;font-family:'Noto Sans JP',sans-serif;
-  transform:rotate(var(--neg-card-rotate,-1deg));
   animation:neg-card-in 0.45s cubic-bezier(0.22,1,0.36,1) both}
-@keyframes neg-card-in{from{opacity:0;filter:blur(0.5px)}to{opacity:1;filter:blur(0)}}
+@keyframes neg-card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .neg-card-title{font-size:14px;font-weight:700;padding-bottom:10px;margin-bottom:14px;
   border-bottom:1px solid rgba(80,60,40,0.25);color:#2a2318;line-height:1.4}
 .neg-card-title .neg-badge{vertical-align:middle}
