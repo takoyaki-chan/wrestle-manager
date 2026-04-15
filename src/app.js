@@ -6810,13 +6810,14 @@ const App = {
 
   // 社長室 Phase 5: 選手ポップアップから「声をかける」(encourage)
   // 決裁枠も資金も消費しない。社長自らが足を運ぶ自発的行動。
-  // 発動条件: slump/motivationLoss 中 OR 信頼が不安定(trust<60)
+  // 発動条件: slump/motivationLoss 中 OR 信頼が揺らぎ始めた(trust<50)
+  // UI 側で 2段階の温度感(is-urgent: slump/motivLoss/trust<40, is-gentle: trust<50)
   encourageFighter(fighterId) {
     const target = G.roster.find(f => f.id === fighterId);
     if (!target) { showToast('選手が見つかりません'); return; }
     if (target.isRental || target.injury) { showToast('今は声をかけられない'); return; }
     const targetTrust = target.trust != null ? target.trust : 50;
-    if (!target.slump && !target.motivationLoss && targetTrust >= 60) {
+    if (!target.slump && !target.motivationLoss && targetTrust >= 50) {
       showToast('この選手には今、声をかける理由がない');
       return;
     }

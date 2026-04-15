@@ -2790,26 +2790,33 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     }
 
     // ── 声をかけるアクションバー(気にかける理由がある選手のみ表示) ──
-    // 発動条件: 自団体・非レンタル・非怪我 かつ (スランプ/モチベ喪失 または 信頼が揺らいでいる trust<60)
-    // ドラマ的な演出として、ヘッダー直下に大きく配置+脈動アニメで社長の視線を誘導する
+    // 2段階の温度感:
+    //   urgent (オレンジ脈動): slump/motivLoss または trust<40 → 明らかにやばい
+    //   gentle (緑・静か)    : trust<50 かつ trust>=40 かつ slump なし → 気になり始め
+    // 自発的行動なので決裁枠・資金とも消費しない。
     const curTrust = c.trust != null ? c.trust : 50;
     const hasSlumpIssue = c.slump || c.motivationLoss;
-    const hasTrustIssue = curTrust < 60;
-    const canEncourage = isRoster && !c.isRental && !c.injury && (hasSlumpIssue || hasTrustIssue);
+    const hasUrgentTrust = curTrust < 40;
+    const hasGentleTrust = curTrust < 50 && curTrust >= 40;
+    const canEncourage = isRoster && !c.isRental && !c.injury
+      && (hasSlumpIssue || hasUrgentTrust || hasGentleTrust);
+    const isUrgent = hasSlumpIssue || hasUrgentTrust;
     // 選手別 cooldown(1週): 今週既に声をかけていれば非活性
     const encourageLastWeek = (c._decisionWeekUsed || {}).encourage || -99;
     const encourageUsedThisWeek = (G.week - encourageLastWeek) < 1;
     if (canEncourage) {
-      // 理由テキスト(スランプ優先、次にモチベ喪失、次に信頼揺らぎ)
+      // 理由テキスト(温度感別)
       let reasonText = '';
       if (c.slump) reasonText = 'スランプ中の選手だ。今日は、少し時間を取ろう。';
       else if (c.motivationLoss) reasonText = 'モチベーションを失いかけている。放っておけない。';
-      else reasonText = '最近、この選手の様子が気になっている。';
+      else if (hasUrgentTrust) reasonText = '最近、この選手の様子が気になっている。';
+      else reasonText = '最近、少し様子が気になっている。';
 
+      const variantCls = isUrgent ? 'is-urgent' : 'is-gentle';
       const btnHtml = encourageUsedThisWeek
         ? `<span class="fp-encourage-btn is-done">💬 今週はもう声をかけた</span>`
-        : `<button class="fp-encourage-btn" onclick="App.encourageFighter(${c.id})" title="社長自ら足を運んで声をかける(決裁枠・資金とも消費しない)">💬 声をかけに行く</button>`;
-      html += `<div class="fp-encourage-bar">
+        : `<button class="fp-encourage-btn ${variantCls}" onclick="App.encourageFighter(${c.id})" title="社長自ら足を運んで声をかける(決裁枠・資金とも消費しない)">💬 声をかけに行く</button>`;
+      html += `<div class="fp-encourage-bar ${variantCls}">
         <div class="fp-encourage-reason">${reasonText}</div>
         ${btnHtml}
       </div>`;

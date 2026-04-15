@@ -12608,13 +12608,14 @@ Engine.shachoshitsu = {
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
       } else if (docId === 'encourage') {
         // Phase 5: 選手ポップアップから「💬 声をかける」として実行される
-        // 気にかける理由がある選手 = slump/motivationLoss OR 信頼が不安定(trust<60)
+        // 気にかける理由がある選手 = slump/motivationLoss OR 信頼が揺らぎ始めた(trust<50)
+        // UI 側は 2段階(is-urgent: slump/motivLoss/trust<40, is-gentle: trust<50)
         const curTrust = f.trust != null ? f.trust : 50;
         const hasSlumpIssue = f.slump || f.motivationLoss;
-        const hasTrustIssue = curTrust < 60;
+        const hasTrustIssue = curTrust < 50;
         if (!hasSlumpIssue && !hasTrustIssue) return { error: 'not_needed' };
 
-        const highTrust = curTrust >= 60;  // 実質 slump があって trust が立ってる状態だけ
+        const highTrust = curTrust >= 60;  // reactionKey 切替(「encourage_high_trust」)用
         if (hasSlumpIssue) {
           const sm = doc.effect.slumpMomentum || {};
           const momentumBoost = highTrust ? (sm.high || 4.0) : (sm.low || 2.5);
@@ -12625,7 +12626,7 @@ Engine.shachoshitsu = {
             f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
           }
         }
-        // trust 効果は全パターン共通(trust<60 だけの選手にも少し回復)
+        // trust 効果は全パターン共通(trust<50 だけの選手にも少し回復)
         f = applyTrust(f, doc.effect.trust || 0.77);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
