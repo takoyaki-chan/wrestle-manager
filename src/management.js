@@ -2143,10 +2143,40 @@ const Engine = {
       return base + titleBonus;
     },
 
-    /** spec §5.3 pot補正 — Phase 4 まで dry run */
+    /** spec §5.3 pot補正 */
     calcPotBonus(spiritValue) {
       const compressed = Math.log((spiritValue || 0) + 1) * 1.8;
       return Math.min(compressed, 5.0);
+    },
+
+    /** spec §5.4 気風の新人生成への適用 (Phase 4)
+     * 新人がプレイヤー団体に加入するとき、スタイル軸の spirit を trainCap に薄く加算する。
+     * 純粋関数。プレイヤーには一切表示しない。*/
+    SPIRIT_STAT_DIST: {
+      striker:    { pw: 0.6, sp: 0.4 },
+      grappler:   { te: 0.5, st: 0.5 },
+      submission: { te: 0.6, mn: 0.4 },
+      brawler:    { pw: 0.5, st: 0.5 },
+      allround:   { pw: 0.2, sp: 0.2, te: 0.2, st: 0.2, mn: 0.2 }
+    },
+
+    applySpiritToFighter(fighter, chronicle) {
+      if (!fighter || !chronicle || !chronicle.spirit) return fighter;
+      const axis = Engine.chronicle._styleAxis(fighter.style);
+      const spiritVal = (chronicle.spirit[axis] || 0);
+      if (spiritVal <= 0) return fighter;
+      const bonus = Engine.chronicle.calcPotBonus(spiritVal);
+      if (bonus < 0.5) return fighter; // 実質ゼロ: 変更しない
+      const dist = Engine.chronicle.SPIRIT_STAT_DIST[axis] || Engine.chronicle.SPIRIT_STAT_DIST.allround;
+      if (!fighter.trainCap) return fighter; // trainCap 未生成の場合はスキップ
+      const newCap = { ...fighter.trainCap };
+      Object.entries(dist).forEach(([stat, weight]) => {
+        const delta = Math.round(bonus * weight);
+        if (delta > 0 && newCap[stat] !== undefined) {
+          newCap[stat] += delta;
+        }
+      });
+      return { ...fighter, trainCap: newCap };
     },
 
     _styleAxis(style) {
@@ -10633,7 +10663,8 @@ const Engine = {
       const roster = rosterIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
-        const f = Engine.makeChar(t, rng, { age });
+        let f = Engine.makeChar(t, rng, { age });
+        f = Engine.chronicle.applySpiritToFighter(f, state.chronicle); // Phase 4: 気風 trainCap 補正
         f.contractOVR = Engine.util.ov(f);
         f.contractPop = f.popularity || 0;
         return f;

@@ -3037,6 +3037,7 @@ const App = {
       preInjuryPop: fighter.preInjuryPop ?? null
     };
     let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
+    c = Engine.chronicle.applySpiritToFighter(c, G.chronicle); // Phase 4: 気風 trainCap 補正
     // Phase 3: orgJoinWeek設定
     c.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
     // v1.3: Record debut event
@@ -3201,6 +3202,7 @@ const App = {
       const fighter = G.freeAgents[idx];
       const usedEliteTicket = !!pending.meta?.usedEliteTicket;
       let normalized = App._normalizeFighterForRoster({ ...fighter, orgId: 'player' });
+      normalized = Engine.chronicle.applySpiritToFighter(normalized, G.chronicle); // Phase 4: 気風 trainCap 補正
       normalized.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
       const tierCfg = Engine.scout.getTierConfig(normalized.assessedTier || 'material');
@@ -3222,6 +3224,7 @@ const App = {
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       let normalizedSigned = App._normalizeFighterForRoster(signed);
+      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 気風 trainCap 補正
       normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
@@ -3347,6 +3350,7 @@ const App = {
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       // v1.3: Record debut event
       let normalizedSigned = normalizeFighterForRoster(signed);
+      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 気風 trainCap 補正
       // Phase 3: orgJoinWeek設定
       normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       // orgTimeline: スカウト獲得で所属変更
