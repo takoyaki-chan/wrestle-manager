@@ -3209,17 +3209,15 @@ function renderShachoshitsu() {
   if (availableDocs.length === 0) {
     html += `<div class="shachoshitsu-empty-note">今週は机に並ぶ案件がありません</div>`;
   } else {
-    // spec §7.2: DECISION_DOC_ORDER のインデックスに基づく固定位置に配置する
-    // (条件を満たさない書類は表示しない → 穴は空いたままにする)
-    const order = (typeof DECISION_DOC_ORDER !== 'undefined') ? DECISION_DOC_ORDER
-      : ['bonus', 'encourage', 'refresh_leave', 'party', 'trainer', 'camp', 'media'];
-    availableDocs.forEach(doc => {
-      const orderIdx = order.indexOf(doc.id);
-      const gridCol = (orderIdx % 4) + 1;          // 1..4
-      const gridRow = Math.floor(orderIdx / 4) + 1; // 1..2
+    // spec §7.2 (2026-04-15 Keisuke レビュー反映): 条件を満たす書類を左上から自然に詰める。
+    // DECISION_DOC_ORDER の順序は維持しつつ、穴を作らず詰めて並べる(空きスロットが飛び地に
+    // なって視覚的に変に見えるのを避ける)。data-col はレンダー列の1..4 で決定し、ツールチップ
+    // の左右補正に使う。
+    availableDocs.forEach((doc, renderIdx) => {
+      const gridCol = (renderIdx % 4) + 1;  // 1..4 (ツールチップ位置補正用)
       const costDisplay = _formatShachoshitsuDocCost(doc);
       html += `
-        <div class="shachoshitsu-doc" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="grid-column:${gridCol};grid-row:${gridRow}">
+        <div class="shachoshitsu-doc" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}">
           <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
           <div class="shachoshitsu-doc-icon">${doc.icon}</div>
           <div class="shachoshitsu-doc-title">${doc.label}</div>
