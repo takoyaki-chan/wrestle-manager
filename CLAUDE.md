@@ -133,7 +133,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - docs/ = 計画・検討・指示書(未来形 or 過去形)
 - アーカイブは「完了した指示書」置き場であり、仕様の真実ではない
 
-### specs/ ファイル索引(全29ファイル)
+### specs/ ファイル索引(全34ファイル)
 
 | ファイル | 内容 |
 |---------|------|
@@ -166,6 +166,11 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | league-elevation-mockup-spec.md | 業界底上げイベント仕様(未実装) |
 | tag-match-system-spec-v0.1.md | タッグマッチシステム設計(未実装v0.1) |
 | chronicle-system-spec-v0.1.md | 団体年代記(気風/章生成/fighterArchive、Phase 1-4 全実装完了) |
+| shachoshitsu-spec-v1.0.md | 社長室システム(Phase 1-9 全実装完了 2026-04-15) |
+| orgpop-rebalance-spec-v1.1.md | orgPopリバランス&ドーム到達設計(DRAFT・未実装) |
+| fan-expect-firstmeet-spec-v0.1.md | ファン期待カード「初顔合わせドリーム」(未実装v0.1) |
+| match-flavor-popup-spec-v0.1.md | 試合前フレーバーポップアップ(未実装v0.1) |
+| match-popup-overview-v0.1.md | 試合演出ポップアップ再設計 全体構想(未実装v0.1) |
 
 ## UI実装ルール(必読)
 
