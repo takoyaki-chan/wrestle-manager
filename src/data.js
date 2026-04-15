@@ -11718,6 +11718,160 @@ const CARE_ACTIONS = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 社長室 Phase 3: 決裁書類（DECISION_DOCS）
+// 仕様: specs/shachoshitsu-spec-v1.0.md §3
+// Phase 3 では表示・発動条件のみ使用。effect の実適用は Phase 4 で実装予定。
+// ─────────────────────────────────────────────────────────────────────────────
+// 机に並ぶ順序（固定）。hireCoach は机に並ばない特殊書類のため含めない。
+const DECISION_DOC_ORDER = [
+  'bonus', 'encourage', 'refresh_leave', 'party',
+  'trainer', 'camp', 'media',
+];
+
+const DECISION_DOCS = {
+  bonus: {
+    id: 'bonus',
+    label: 'ボーナス支給願',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '💰',
+    cost: 50,              // 万円
+    decisionCost: 1,       // 決裁枠
+    activationCondition: 'trust_unstable',
+    minOrgPop: 0,
+    cooldown: 1,
+    body: '対象選手に特別手当を支給し、組織貢献への感謝を示す',
+    detailText: '特別手当の支給により、信頼関係に揺らぎのある選手の心を繋ぎ止める。額面よりも「見てくれている」という事実が響く。',
+    effectSummary: '信頼度 +8〜12(2-3週後に発現)',
+    recommendation: '信頼度が60を下回り始めた選手に早期介入するのが効果的。',
+    effect: { target: 'individual', trust: 4.59 },
+  },
+  encourage: {
+    id: 'encourage',
+    label: '面談申込書',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '💬',
+    cost: 0,
+    decisionCost: 0,
+    activationCondition: 'slump_or_motivation_loss',
+    minOrgPop: 0,
+    cooldown: 1,
+    body: 'スランプ中の選手と対話し、気持ちを立て直す機会を設ける',
+    detailText: '社長自ら面談の場を設け、選手の本音に耳を傾ける。コスト0・決裁枠0でスランプ脱出の糸口を掴める気軽な一手。',
+    effectSummary: 'スランプ回復モーメンタム + 信頼度微上昇',
+    recommendation: 'スランプ/モチベ低下の初期段階で真っ先に使いたい。',
+    effect: { target: 'individual', trust: 0.77, slumpMomentum: { high: 4.0, low: 2.5 } },
+  },
+  refresh_leave: {
+    id: 'refresh_leave',
+    label: '休暇辞令',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '🏖️',
+    cost: 100,
+    decisionCost: 1,
+    activationCondition: 'slump_or_motivation_loss',
+    minOrgPop: 0,
+    cooldown: 4,
+    body: '心身の疲弊を察し、一定期間の休養を与える',
+    detailText: '数週間の休養を正式な辞令として発行。強制的に現場から離脱させることで、心身を根本から回復させる重い一手。',
+    effectSummary: 'スランプ強力回復 + condition回復 + 信頼度上昇',
+    recommendation: '面談では効果が薄い重症スランプに対する切り札。クールダウン4週に注意。',
+    effect: { target: 'individual', trust: 5.36, condition: 15, slumpMomentum: 12.0 },
+  },
+  party: {
+    id: 'party',
+    label: '慰労会開催届',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '🍻',
+    unitCost: 15,          // 万円／人
+    decisionCost: 1,
+    activationCondition: 'morale_low',
+    minOrgPop: 0,
+    cooldown: 1,
+    minHeadcount: 4,
+    body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
+    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
+    effectSummary: '全員信頼度微上昇 + ロッカールームmorale回復',
+    recommendation: 'moraleが50を下回ったときの応急処置として。単発では決定打にならない点に留意。',
+    effect: { target: 'team', trust: 1.84, morale: 5 },
+  },
+  trainer: {
+    id: 'trainer',
+    label: '専属トレーナー手配書',
+    category: 'growth',
+    categoryLabel: '育成',
+    icon: '💪',
+    cost: 160,
+    decisionCost: 2,
+    activationCondition: null,  // 常時発動可
+    minOrgPop: 0,
+    cooldown: 1,
+    body: '対象選手の成長を加速させるため、外部専属トレーナーを招聘する',
+    detailText: '外部の専属トレーナーを期間限定で招聘。短期集中で成長曲線を押し上げる、育成特化の投資型書類。',
+    effectSummary: '4週間 成長速度+30% + 信頼度上昇',
+    recommendation: '伸ばしたい若手、シリーズ前の追い込み期、昇格を狙う選手に充てたい。',
+    effect: { target: 'individual', trust: 5.97, growthBoost: { weeks: 4, mult: 1.3 } },
+  },
+  camp: {
+    id: 'camp',
+    label: '合宿実施手配書',
+    category: 'growth',
+    categoryLabel: '育成',
+    icon: '🏕️',
+    unitCost: 40,
+    decisionCost: 3,
+    activationCondition: null,
+    minOrgPop: 0,
+    cooldown: 1,
+    minHeadcount: 4,
+    body: '全選手を集中的に強化するため、合宿を実施する',
+    detailText: '選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。単価40万×人数と決裁枠3の重量級書類。',
+    effectSummary: '2週間 全員成長速度+50% + 全員信頼度微上昇',
+    recommendation: '資金に余裕があり、オフシーズンに全体を底上げしたいとき。年1〜2回が現実的な使用頻度。',
+    effect: { target: 'team', trust: 1.84, growthBoost: { weeks: 2, mult: 1.5 } },
+  },
+  media: {
+    id: 'media',
+    label: 'メディア露出手配書',
+    category: 'pr',
+    categoryLabel: '広報',
+    icon: '📺',
+    cost: 120,
+    decisionCost: 2,
+    activationCondition: null,
+    minOrgPop: 20,
+    cooldown: 2,
+    body: '対象選手を広告塔とし、団体の知名度向上を図る',
+    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人のコンディション維持を両立させる外向き施策。',
+    effectSummary: 'orgPop +0.4 + 対象選手 condition+5 + 信頼度上昇',
+    recommendation: '団体人気20以上が前提。看板選手のコンディション管理と兼ねて回すと無駄がない。',
+    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4 },
+  },
+  // hireCoach は机に並ばず、コーチ画面からの実行時に決裁枠だけをチェック/消費する特殊書類。
+  // Phase 5 でコーチ画面と統合予定。
+  hireCoach: {
+    id: 'hireCoach',
+    label: 'コーチ雇用決裁書',
+    category: 'hr',
+    categoryLabel: '人事',
+    icon: '🎓',
+    cost: null,            // コーチ候補ごとに変動(コーチ画面で決定)
+    decisionCost: 2,
+    activationCondition: null,
+    minOrgPop: 0,
+    cooldown: 0,
+    body: '新たなスタッフを招聘し、団体の指導体制を強化する',
+    detailText: '新たなコーチを招聘し、指導体制を強化する。机には並ばず、コーチ画面から実行する特殊書類。',
+    effectSummary: 'コーチ1名雇用(決裁枠2消費)',
+    recommendation: 'コーチ枠に空きがあり、新規雇用を検討している週に。机に書類として表示されない点に注意。',
+    effect: { target: 'hireCoach' },
+  },
+};
+
 // §2-5: 資金投入リアクションセリフ（特性別）
 // {name} はプレースホルダ
 const CAMP_FLAVOR_TEXTS = [

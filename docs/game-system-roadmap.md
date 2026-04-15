@@ -133,6 +133,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 04-15 | 社長室 Phase 3 (書類の動的生成と表示): data.js に DECISION_DOC_ORDER + DECISION_DOCS(8種類、hireCoach 含む)、management.js に Engine.shachoshitsu(getDoc/getDocOrder/checkActivation/getAvailableDocs) を追加。renderShachoshitsu を placeholder から動的描画に差し替え、grid-column/grid-row を各書類に直接付与して §7.2 「穴は空いたまま」を保証。CSS ツールチップ位置補正を nth-child → [data-col] に切替。4シナリオ検証 ALL PASS(初期3枚/orgPop25で+media/+スランプで+encourage+refresh_leave/+morale<50で全7枚)。auto-sim 20シーズン ALL CLEAR。保留事項: 慰労会の発動条件(morale<50限定)の再検討は Phase 4 実装後 |
 | 04-12 | Tier3B大穴埋め370行: シャイ/丁寧+感情的/蠱惑の欠落セリフ一括反映。37ソース対象(GLIMPSE_B40/JUNIOR28/CHOICE25/CARE22/CONTRACT20/EMOTION20/GLIMPSE_A20/LARGE20/SNAPSHOT18/RETIREMENT16/NOTIF13他)。304スロット新規挿入+26既存スキップ(EMOTION_TEXTS20+SCOUT6)。data.js +996行。auto-sim 100シーズンALL CLEAR |
 | 04-12 | Tier3A大穴埋め124行: RETIREMENT_CHAMPION_WORRY_LINES性格別→archetype別に設計変更(_ARCHETYPEに統合、management.jsルックアップ簡素化)。5ソース欠落補完: VOLUNTARY_STAY_LINES+15/RIVALRY_CONFRONTATION_LINES_90+18/PPV_SUMMIT_VICTORY_LINES+13/FAN_EXPECT_REACTIONS+32/SCOUT_SIGNING_LINES+39。auto-sim 100シーズンALL CLEAR |
 | 04-12 | バトル系セリフ穴埋め91行: DAMAGE_VOICE_LINESにcomposed追加(battle-engine.html)。CUTIN_LINES atk/def/climaxにshy性格×7archetype追加(2Dネスト、既存ルックアップ互換)。RIVALRY_MATCH_REACTION 69行追加(winnerLines/loserLines欠落組合せ+2本目バリエーション)。auto-sim 100シーズンALL CLEAR |

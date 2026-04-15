@@ -582,6 +582,8 @@ finalMult = Math.max(0.5, Math.min(1.5, personalityMult × archetypeMult))
 
 条件を満たさない書類は**表示しない**。穴は空いたまま（4×2のグリッドが崩れるが、視覚的には違和感が少ない）。
 
+**実装メモ (Phase 3 2026-04-15)**: 表示位置は `DECISION_DOC_ORDER` 内のインデックスから固定的に決定する (`gridCol = idx%4+1`, `gridRow = floor(idx/4)+1`)。CSS Grid の自動詰めに任せると条件フィルタで書類が前詰めされてしまい、書類の位置が週ごとに変わって認知負荷が高くなるため、各書類には `style="grid-column:X; grid-row:Y"` を直接付与して位置を固定している。
+
 ### §7.3 書類の見た目
 
 各書類は「紙の背景 + カテゴリタグ + 絵文字アイコン + 見出し + 本文 + コストバッジ」の6要素で構成される。書類本体は常時表示される情報のみを持ち、詳細はホバー時のツールチップに逃がす。
@@ -894,7 +896,7 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 - 週を進めると4週ごとに回復する
 - 既存セーブでも正しく初期化される
 
-### Phase 3: 書類の動的生成と表示
+### Phase 3: 書類の動的生成と表示 ✅ 完了 (2026-04-15)
 
 **目的**: 書類データを定義し、発動条件に応じて机に並べる。
 
@@ -913,6 +915,16 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 - スランプ中の選手がいなければ encourage, refresh_leave が出ない
 - morale 60 なら party が出ない
 - 団体人気20未満なら media が出ない
+
+**実装メモ**:
+- `src/data.js` に `DECISION_DOC_ORDER` (机の並び順) と `DECISION_DOCS` (8種類) を追加。`effect` フィールドは §4.2 準拠で定義済みだが、実適用は Phase 4 で実装する。
+- `Engine.shachoshitsu` に `getDoc` / `getDocOrder` / `checkActivation` / `getAvailableDocs` を実装。`execute` は Phase 4 で追加予定。
+- `renderShachoshitsu` は `_SHACHOSHITSU_PLACEHOLDER_DOCS` (Phase 1 のハードコード) を廃止し、`getAvailableDocs(G)` で動的取得。§7.2 の「穴は空いたまま」を満たすため `grid-column/grid-row` を各書類に明示的に付与(CSSツールチップ補正も `nth-child` → `[data-col]` ベースに切替)。
+- 検証結果(ブラウザ実機): 初期状態 → bonus/trainer/camp の3枚。orgPop≥20で +media、slump追加で +encourage +refresh_leave、morale<50で +party の順にフィルタが連動。全員 trust≥60 + スランプなし + orgPop<20 + morale≥50 で trainer/camp のみに絞られる。
+- auto-sim 20シーズン ALL CLEAR (Phase 3 は週次処理に干渉しないため回帰なし)。
+
+**保留事項(Phase 4 実装時に再考)**:
+- **慰労会(party)の発動条件**: 現状 `morale < 50` 限定だが、予防的に雰囲気が良い時にも使いたいニーズあり。効果量(trust+1.84全員/morale+5)と頻度から見て「常時使用可」にすべきか、閾値を緩めるか、cooldown を伸ばすかを Phase 4 実装後の実機プレイで再検討する。
 
 ### Phase 4: 決裁実行ロジック
 

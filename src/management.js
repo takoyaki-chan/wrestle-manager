@@ -12735,6 +12735,80 @@ Engine.careActions = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 社長室 Phase 3: Engine.shachoshitsu
+// 仕様: specs/shachoshitsu-spec-v1.0.md §3
+// Phase 3 では「書類の表示判定」だけを担う。実行処理(execute)は Phase 4 で追加予定。
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.shachoshitsu = {
+  // 書類定義参照
+  getDoc(docId) {
+    return typeof DECISION_DOCS !== 'undefined' ? (DECISION_DOCS[docId] || null) : null;
+  },
+
+  // 並び順定数参照(未定義時はケア4枚→育成2枚→広報1枚のフォールバック)
+  getDocOrder() {
+    if (typeof DECISION_DOC_ORDER !== 'undefined') return DECISION_DOC_ORDER;
+    return ['bonus', 'encourage', 'refresh_leave', 'party', 'trainer', 'camp', 'media'];
+  },
+
+  // ── 発動条件チェック ──────────────────────────────────────────────────────
+  // doc.activationCondition を見て、今週この書類を机に出す資格があるかを判定
+  checkActivation(docId, state) {
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    if (!doc) return false;
+    const cond = doc.activationCondition;
+    if (!cond) return true;  // null/undefined → 常時発動可
+    const roster = state.roster || [];
+
+    // trust_unstable: 信頼度60未満の「現役・非レンタル・非怪我」選手が1人以上いること
+    if (cond === 'trust_unstable') {
+      return roster.some(f =>
+        !f.isRental && !f.injury && (f.trust != null ? f.trust : 50) < 60
+      );
+    }
+
+    // slump_or_motivation_loss: スランプ/モチベ喪失の「現役・非レンタル」選手が1人以上
+    if (cond === 'slump_or_motivation_loss') {
+      return roster.some(f => !f.isRental && (f.slump || f.motivationLoss));
+    }
+
+    // morale_low: ロッカールームmoraleが50未満
+    if (cond === 'morale_low') {
+      const morale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+      return morale < 50;
+    }
+
+    // 未知の条件IDは「発動不可」として安全側に倒す
+    return false;
+  },
+
+  // ── 今週机に並べる書類リスト ──────────────────────────────────────────────
+  // DECISION_DOC_ORDER の順で、発動条件/minOrgPop/団体cooldown を通過した書類を返す
+  getAvailableDocs(state) {
+    if (typeof DECISION_DOCS === 'undefined') return [];
+    const order = Engine.shachoshitsu.getDocOrder();
+    const docs = [];
+    for (const docId of order) {
+      const doc = DECISION_DOCS[docId];
+      if (!doc) continue;
+      // hireCoach は机に並べない(コーチ画面から実行する特殊書類)
+      if (docId === 'hireCoach') continue;
+      // 発動条件チェック
+      if (!Engine.shachoshitsu.checkActivation(docId, state)) continue;
+      // orgPop 条件
+      if (doc.minOrgPop && (state.orgPop || 0) < doc.minOrgPop) continue;
+      // team書類: 今週すでに決裁済みなら除外(Phase 4 で state._decisionWeekUsed を更新する)
+      if (doc.effect && doc.effect.target === 'team') {
+        const used = (state._decisionWeekUsed || {})[docId];
+        if (used === state.week) continue;
+      }
+      docs.push(doc);
+    }
+    return docs;
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v2.0: Event System (event-system-spec-v2.md §3)
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.eventSystem = {

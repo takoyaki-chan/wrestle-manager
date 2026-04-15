@@ -2967,7 +2967,10 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-desk{position:relative;width:100%;min-height:560px;background-image:url('../image/shachoshitsu/desk.webp');
   background-size:cover;background-position:center top;background-repeat:no-repeat;padding:32px 0 32px;
   display:flex;justify-content:center;align-items:flex-start}
-.shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,196px);gap:16px;max-width:832px;margin:0 auto}
+.shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,196px);gap:16px;max-width:832px;margin:0 auto;min-height:260px}
+.shachoshitsu-empty-note{grid-column:1/-1;display:flex;align-items:center;justify-content:center;
+  min-height:260px;color:var(--cream-text-sub);font-size:13px;letter-spacing:1px;
+  font-family:'Noto Sans JP',sans-serif;text-align:center;opacity:0.75}
 .shachoshitsu-doc{width:196px;height:260px;background-image:url('../image/shachoshitsu/document-blank.webp');
   background-size:cover;background-position:center;position:relative;cursor:pointer;
   transition:transform 0.2s ease, filter 0.2s ease;padding:20px 16px;box-sizing:border-box;
@@ -3004,8 +3007,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   font-family:'Noto Sans JP',sans-serif;opacity:0;pointer-events:none;
   transition:opacity 0.15s ease;transition-delay:0s;z-index:100}
 .shachoshitsu-doc:hover .shachoshitsu-doc-tooltip{opacity:1;transition-delay:0.3s}
-.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n-3) .shachoshitsu-doc-tooltip{left:0;transform:none}
-.shachoshitsu-doc-grid .shachoshitsu-doc:nth-child(4n) .shachoshitsu-doc-tooltip{left:auto;right:0;transform:none}
+.shachoshitsu-doc-grid .shachoshitsu-doc[data-col="1"] .shachoshitsu-doc-tooltip{left:0;transform:none}
+.shachoshitsu-doc-grid .shachoshitsu-doc[data-col="4"] .shachoshitsu-doc-tooltip{left:auto;right:0;transform:none}
 .shachoshitsu-doc.is-disabled:hover .shachoshitsu-doc-tooltip,
 .shachoshitsu-doc.is-approved:hover .shachoshitsu-doc-tooltip{opacity:0}
 .shachoshitsu-doc-tooltip .tooltip-section{margin-bottom:12px}
