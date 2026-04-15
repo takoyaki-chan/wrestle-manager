@@ -7027,6 +7027,9 @@ const App = {
     }
 
     // サウンド(コスト別、既存流用)
+    // Phase 9: 朱印音を先に鳴らす(0.6秒の朱印アニメと同時開始)
+    // 合成音の短いバーストなので、後続のコスト別サウンドとぶつからない
+    Audio.play('stamp');
     const soundCost = result.cost || 0;
     if (docId === 'camp') Audio.play('fanfare');
     else if (soundCost >= 160) Audio.play('award');

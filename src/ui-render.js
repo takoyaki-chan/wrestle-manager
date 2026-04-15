@@ -3218,14 +3218,24 @@ function renderShachoshitsu() {
     // なって視覚的に変に見えるのを避ける)。data-col はレンダー列の1..4 で決定し、ツールチップ
     // の左右補正に使う。
     const doneThisWeek = G._decisionDoneThisWeek || [];
+    // Phase 9: 書類の微回転(-3°〜+3°)。週+docId の決定論的ハッシュで seed し、
+    // 同じ週内では同じ角度(再レンダーしても変わらない)、週が変わるとわずかにずれる。
+    const docRotation = (docId, week) => {
+      let h = (week || 0) * 2654435761;
+      for (let i = 0; i < docId.length; i++) h = (h ^ docId.charCodeAt(i)) * 16777619;
+      h = Math.abs(h >>> 0);
+      // [0,1) → [-3, 3]
+      return (((h % 601) / 100) - 3).toFixed(2);
+    };
     availableDocs.forEach((doc, renderIdx) => {
       const gridCol = (renderIdx % 4) + 1;  // 1..4 (ツールチップ位置補正用)
       const costDisplay = _formatShachoshitsuDocCost(doc);
       const isApproved = doneThisWeek.includes(doc.id);
       const approvedCls = isApproved ? ' is-approved' : '';
       const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
+      const rot = docRotation(doc.id, G.week);
       html += `
-        <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}"${clickAttr}>
+        <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}>
           <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
           <div class="shachoshitsu-doc-icon">${doc.icon}</div>
           <div class="shachoshitsu-doc-title">${doc.label}</div>

@@ -2914,7 +2914,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .hanko.available{filter:drop-shadow(0 0 6px var(--shachoshitsu-hanko-glow))}
 .hanko.used{transform:rotate(90deg) translateY(6px);filter:grayscale(1);opacity:0.4}
 .shachoshitsu-wall{position:relative;width:100%;aspect-ratio:1920/400;background-size:cover;background-position:center;
-  background-repeat:no-repeat;margin-top:-60px;padding-top:60px;box-sizing:border-box}
+  background-repeat:no-repeat;margin-top:-60px;padding-top:60px;box-sizing:border-box;
+  animation:shachoshitsu-wall-fade 0.6s ease-out}
+@keyframes shachoshitsu-wall-fade{from{opacity:0.35}to{opacity:1}}
 .shachoshitsu-desk{position:relative;width:100%;min-height:560px;background-image:url('../image/shachoshitsu/desk.webp');
   background-size:cover;background-position:center top;background-repeat:no-repeat;padding:32px 0 32px;
   display:flex;justify-content:center;align-items:flex-start}
@@ -2925,12 +2927,19 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-doc{width:196px;height:260px;background-image:url('../image/shachoshitsu/document-blank.webp');
   background-size:cover;background-position:center;position:relative;cursor:pointer;
   transition:transform 0.2s ease, filter 0.2s ease;padding:20px 16px;box-sizing:border-box;
-  color:var(--cream-text-main);font-family:'Noto Sans JP',sans-serif}
+  color:var(--cream-text-main);font-family:'Noto Sans JP',sans-serif;
+  /* Phase 9: 書類の微回転(±3°、週+docId で決定論的)と机に置かれる際のフェードイン */
+  transform:rotate(var(--doc-rotate, 0deg));
+  animation:shachoshitsu-doc-enter 0.5s ease-out backwards}
+@keyframes shachoshitsu-doc-enter{
+  from{opacity:0;filter:blur(1px)}
+  to{opacity:1;filter:blur(0)}
+}
 .shachoshitsu-doc::before{content:'';position:absolute;inset:0;pointer-events:none}
 .shachoshitsu-doc[data-category="care"]::before{background:rgba(var(--shachoshitsu-cat-care-rgb),0.11)}
 .shachoshitsu-doc[data-category="growth"]::before{background:rgba(var(--shachoshitsu-cat-growth-rgb),0.11)}
 .shachoshitsu-doc[data-category="pr"]::before{background:rgba(var(--shachoshitsu-cat-pr-rgb),0.11)}
-.shachoshitsu-doc:hover{transform:translateY(-4px);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3));z-index:50}
+.shachoshitsu-doc:hover{transform:rotate(var(--doc-rotate, 0deg)) translateY(-4px);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3));z-index:50}
 .shachoshitsu-doc-tag{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;padding:2px 6px;
   background:rgba(255,255,255,0.55);border:1px solid rgba(30,28,22,0.2);color:var(--cream-text-sub);
   letter-spacing:1px;border-radius:2px}
@@ -2972,7 +2981,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 /* 決裁済み書類 */
 .shachoshitsu-doc.is-approved{cursor:default;filter:saturate(0.7) brightness(0.88);
   background-image:url('../image/shachoshitsu/document-stamped.webp')}
-.shachoshitsu-doc.is-approved:hover{transform:none;filter:saturate(0.7) brightness(0.88)}
+.shachoshitsu-doc.is-approved:hover{transform:rotate(var(--doc-rotate, 0deg));filter:saturate(0.7) brightness(0.88)}
 /* 朱印スラム演出: クリック直後の0.6秒 */
 @keyframes stamp-slam{
   0%  {opacity:0;transform:scale(2) rotate(-10deg)}
@@ -3485,16 +3494,20 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p><strong style="color:var(--gold)">ロッカールームの空気（団体全体）：</strong></p>
             <p>団体全体の空気が成長速度やイベント発生に影響します。勝ちが続くと和み、連敗や空席が目立つと悪化します。「人望」持ちの選手がいると毎週少し明るくなります。</p>
             <p><strong style="color:var(--gold)">社長室の決裁（🏛️ 社長室タブ）：</strong></p>
-            <p>社長室の机に並ぶ決裁書類に印を押すことで、選手や団体に介入できます。各書類は決裁枠⚡を消費し、決裁枠はシーズン中 4週ごとに +2 回復します。</p>
-            <p>・<strong>ボーナス支給願</strong>（⚡1 / 50万）→ 信頼が不安定な選手の気持ちを繋ぎ止める</p>
+            <p>社長室の机に並ぶ決裁書類に印を押すことで、選手や団体に介入できます。各書類は決裁枠⚡を消費し、決裁枠はシーズン中 4週ごとに +2 回復します(上限6)。発動条件を満たさない書類は机に並びません。</p>
+            <p>・<strong>ボーナス支給願</strong>（⚡1 / 50万）→ 信頼が不安定な選手の気持ちを繋ぎ止める ※信頼に陰りのある選手がいるとき</p>
             <p>・<strong>休暇辞令</strong>（⚡1 / 100万）→ 重いスランプ/モチベ喪失の選手に休養を与える</p>
             <p>・<strong>慰労会開催届</strong>（⚡1 / 15万×人数）→ ロッカールームの空気が少し和らぐ ※空気低下時のみ</p>
             <p>・<strong>専属トレーナー手配書</strong>（⚡2 / 160万）→ 対象選手の練習効果が4週間上がる</p>
             <p>・<strong>合宿実施手配書</strong>（⚡3 / 40万×人数）→ 全員の練習効果が2週間上がる</p>
             <p>・<strong>メディア露出手配書</strong>（⚡2 / 120万）→ 団体の知名度が上がる ※団体人気20以上</p>
             <p>・<strong>コーチ雇用決裁書</strong>（⚡2）→ コーチ画面からの雇用時に消費される</p>
+            <p><strong style="color:var(--gold)">書類の効き方は選手によって変わる：</strong></p>
+            <p>同じ書類でも、選手の性格・タイプで効き目が大きく変わります。不良キャラにボーナスを渡せば大喜び、お嬢様は「お気持ちだけで十分ですわ」と軽く流す——そんな差が実際に数値に反映されます。特に響いたときは「🌟 深く刺さった」、響かなかったときは「💤 あまり響かなかったようだ」と決裁結果に表示されます。<strong>刺してみないとわからない</strong>のが社長の仕事です。</p>
+            <p><strong style="color:var(--gold)">成長バフと並走する信頼：</strong></p>
+            <p>専属トレーナー・合宿は「刺した瞬間に信頼が上がる」のではなく、<strong>バフ期間中にじわじわと信頼が育っていく</strong>設計です。トレーナーなら4週間、合宿なら2週間かけて、選手は「社長が投資してくれている」と実感していきます。選手ポップアップに「🏋️ 専属トレーナー 残り○週 — 信頼もじわじわ育つ」と表示されます。他の書類(ボーナス・休暇・慰労会・メディア)はその場で効きます。</p>
             <p><strong style="color:var(--gold)">社長の自発的行動：</strong></p>
-            <p>・<strong>💬 声をかける</strong>（無料）→ スランプ/モチベ喪失中の選手ポップアップから実行。決裁枠を消費しない、社長自ら足を運ぶ行為</p>
+            <p>・<strong>💬 声をかける</strong>（無料）→ 選手ポップアップから実行。決裁枠を消費しない、社長自ら足を運ぶ行為です。信頼が揺らぎ始めた選手(緑のバーで静かに誘い)、スランプ・モチベ喪失の選手や信頼が大きく下がった選手(オレンジで脈動)にボタンが表示されます。</p>
             <p>・<strong>🏥 特別治療</strong>（200万）→ 怪我発生時のポップアップから実行。離脱期間を1〜4週短縮</p>
           </div>
         </div>
