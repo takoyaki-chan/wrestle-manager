@@ -6943,9 +6943,10 @@ const App = {
       if (firstStandingHanko) firstStandingHanko.classList.add('falling');
     } catch (e) {}
 
-    // 結果表示 — team書類(party/camp)は豪華モーダル、個人書類はトースト
-    if (displayData?.isTeam && typeof showDecisionTeamResultModal === 'function') {
-      showDecisionTeamResultModal(displayData);
+    // 結果表示: 個人/team 問わず常に豪華モーダル(話者の顔+セリフ+変化+コスト)
+    // spec: 決裁=特別な行為、キャラの反応を覗き見る体験を一貫させる
+    if (typeof showDecisionResultModal === 'function') {
+      showDecisionResultModal(displayData);
     } else if (typeof showDecisionResultToast === 'function') {
       showDecisionResultToast(displayData);
     }
