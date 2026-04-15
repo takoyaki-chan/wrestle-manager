@@ -6032,7 +6032,7 @@ function _chronicleStyleBlock() {
   letter-spacing: 1.5px; font-weight: 700;
 }
 .chron-empty {
-  padding: 60px 40px; text-align: center;
+  padding: 60px 40px 48px; text-align: center;
 }
 .chron-empty-icon { font-size: 52px; margin-bottom: 16px; }
 .chron-empty-title {
@@ -6042,6 +6042,70 @@ function _chronicleStyleBlock() {
 .chron-empty-text {
   font-size: 13px; color: var(--chr-ink-sub);
   line-height: 1.8;
+}
+.chron-empty-divider {
+  width: 60px; height: 1px; margin: 22px auto 18px;
+  background: var(--chr-rule-bold);
+}
+.chron-empty-meta {
+  display: inline-block; text-align: left;
+  padding: 12px 22px;
+  background: rgba(95,69,35,0.05);
+  border-left: 2px solid var(--chr-rule-bold);
+  margin-bottom: 16px;
+}
+.chron-empty-meta-row {
+  display: flex; gap: 18px; align-items: baseline;
+  font-size: 11px; padding: 3px 0;
+}
+.chron-empty-meta-key {
+  color: var(--chr-ink-dim); letter-spacing: 0.5px;
+  font-weight: 700; min-width: 100px;
+}
+.chron-empty-meta-val {
+  color: var(--chr-ink-sub); font-weight: 700;
+}
+.chron-empty-flavor {
+  font-size: 11px; color: var(--chr-ink-dim);
+  font-style: italic; letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+.chron-header.in-progress {
+  background: repeating-linear-gradient(135deg,
+    transparent 0 14px,
+    rgba(154,112,32,0.04) 14px 15px);
+}
+.chron-writing-mark {
+  display: inline-block;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--chr-gold-light); font-weight: 900;
+  padding: 1px 7px; margin-left: 8px;
+  border: 1px dashed var(--chr-gold);
+  vertical-align: middle;
+  animation: chron-writing-blink 2.4s ease-in-out infinite;
+}
+@keyframes chron-writing-blink {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.chron-writing-note {
+  display: inline-block;
+  margin-top: 10px; padding: 6px 14px;
+  font-size: 11px; color: var(--chr-gold);
+  background: rgba(154,112,32,0.08);
+  border: 1px dashed var(--chr-gold);
+  letter-spacing: 0.3px; font-weight: 500;
+  line-height: 1.5; max-width: 560px;
+}
+.chron-closing.in-progress {
+  background: repeating-linear-gradient(135deg,
+    rgba(95,69,35,0.04) 0 14px,
+    rgba(154,112,32,0.06) 14px 15px);
+}
+.chron-closing-note {
+  font-size: 10px; color: var(--chr-ink-dim);
+  margin-top: 8px; letter-spacing: 0.3px;
+  font-style: normal; line-height: 1.5;
 }
 </style>`;
 }
@@ -6061,12 +6125,37 @@ function _renderDbChronicle() {
 
   // 空状態
   if (chapters.length === 0) {
+    const rosterSize = (G.roster || []).length;
+    const topByOvr = (G.roster || [])
+      .map(c => ({ name: c.name, ovr: Engine.util.ov(c) || 0 }))
+      .sort((a, b) => b.ovr - a.ovr)
+      .slice(0, 3);
+    const nowSeason = G.season || 1;
     html += `<div class="chron-empty">
       <div class="chron-empty-icon">📖</div>
       <div class="chron-empty-title">${G.orgName || '団体'}の歴史は、まだ始まったばかりです。</div>
       <div class="chron-empty-text">
         エース級の選手が引退し、ひとつの世代が終わったとき、<br>
         ここに最初の章が刻まれます。
+      </div>
+      <div class="chron-empty-divider"></div>
+      <div class="chron-empty-meta">
+        <div class="chron-empty-meta-row">
+          <span class="chron-empty-meta-key">白紙のまま</span>
+          <span class="chron-empty-meta-val">SEASON 1 — SEASON ${nowSeason}</span>
+        </div>
+        <div class="chron-empty-meta-row">
+          <span class="chron-empty-meta-key">在籍する書き手</span>
+          <span class="chron-empty-meta-val">${rosterSize}名</span>
+        </div>
+        ${topByOvr.length > 0 ? `
+        <div class="chron-empty-meta-row">
+          <span class="chron-empty-meta-key">筆頭の者たち</span>
+          <span class="chron-empty-meta-val">${topByOvr.map(t => t.name).join(' ・ ')}</span>
+        </div>` : ''}
+      </div>
+      <div class="chron-empty-flavor">
+        — 今いるこの選手たちが、この白紙を物語にしていく。
       </div>
     </div>
     </div>`; // .chron-wrap close
@@ -6096,11 +6185,12 @@ function _renderDbChronicle() {
   const isInProgress = current.status === 'in_progress';
   const romanNum = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
                     'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'][current.number] || current.number.toString();
-  html += `<div class="chron-header">
+  html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
     <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? '◆ 進行中の章 ◆' : `◆ 第${current.number}章 ◆`}</div>
-    <div class="chron-num">CHAPTER ${romanNum}</div>
+    <div class="chron-num">CHAPTER ${romanNum}${isInProgress ? ' <span class="chron-writing-mark">— WRITING —</span>' : ''}</div>
     <h2 class="chron-title">${current.title} — ${current.subtitle}</h2>
-    <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}</div>
+    <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}${isInProgress ? ' / 現在' : ''}</div>
+    ${isInProgress ? `<div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>` : ''}
   </div>`;
 
   // Ace feature row
@@ -6230,9 +6320,15 @@ function _renderDbChronicle() {
 
   // Closing
   if (current.closing) {
-    html += `<div class="chron-closing">
-      <div class="chron-closing-eyebrow">— 章末 —</div>
+    html += `<div class="chron-closing${isInProgress ? ' in-progress' : ''}">
+      <div class="chron-closing-eyebrow">— ${isInProgress ? '書きかけの章末' : '章末'} —</div>
       <div class="chron-closing-line">${current.closing}</div>
+      ${isInProgress ? `<div class="chron-closing-note">この気風はまだ動いています。この章に属する選手たちが去ったとき、最終的な色が決まります。</div>` : ''}
+    </div>`;
+  } else if (isInProgress) {
+    html += `<div class="chron-closing in-progress">
+      <div class="chron-closing-eyebrow">— 書きかけの章末 —</div>
+      <div class="chron-closing-line">この世代が団体に残す色は、まだ定まっていない。</div>
     </div>`;
   }
 

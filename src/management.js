@@ -2376,7 +2376,47 @@ const Engine = {
       return { aces, peers };
     },
 
-    /** spec §4.4 サブタイトル */
+    /** spec §4.4 サブタイトルテンプレ (Phase 2 — カテゴリ別に複数バリエーション) */
+    SUBTITLE_TEMPLATES: {
+      early: ['礎を築く者たち', '黎明の鐘', '始まりの灯', '旗を立てた日々'],
+      golden: ['黄金の刻', '絶対の時代', '王の系譜', '誰にも届かぬ高み'],
+      almostThere: ['届かなかった頂', '壁の前で', '頂を仰ぐ者たち', '一歩、届かず', '影を踏んだ世代'],
+      challenge: ['挑戦の章', '気鋭の時代', '牙を研ぐ日々', '壁を殴った季節'],
+      idol: ['華やかなる時代', '光と歓声の章', '客席が呼んだ名前', '笑顔で支えた世代'],
+      enduring: ['雌伏の時', '日陰の奉仕者たち', '灯を絶やさぬ者たち', '静かなる継承'],
+      other: ['名もなき支柱', '残された者たち', '中継ぎの章', '通り抜けた者たち']
+    },
+
+    /** spec §5.5 章末フレーバーテンプレ (Phase 2 — magnitude × variation) */
+    CLOSING_TEMPLATES: {
+      slight: [
+        'この世代は、{org}の流儀をわずかに {axis} へと寄せた。',
+        '{org}の空気には、{axis} の香りがほのかに混ざっていった。',
+        '{axis} の匂いだけを置いて、この世代は通り過ぎた。',
+        '{org}の土台に、{axis} の色がひとはけだけ差した。'
+      ],
+      moderate: [
+        'この世代は、{org}に {axis} の色を残していった。',
+        '{axis} を軸にした日々が、{org}の肩の張り方をわずかに変えた。',
+        '次の世代が見上げたとき、そこには {axis} の背中があった。',
+        '{org}が {axis} の言葉を語れるようになったのは、この世代からだった。'
+      ],
+      strong: [
+        '{org}は、この世代を経て {axis} の色がはっきりと濃くなった。',
+        'この世代以降、{org}の若手は迷ったら {axis} を選ぶようになった。',
+        '{axis} という言葉が、{org}の代名詞になった日々だった。',
+        '{org}の流儀は、この世代に塗り替えられた。以後、誰もが {axis} を背負った。'
+      ]
+    },
+
+    /** 決定論的テンプレ選択 — 章の境界値をシード化 */
+    _pickTemplate(arr, seed) {
+      if (!arr || arr.length === 0) return '';
+      const idx = ((seed | 0) % arr.length + arr.length) % arr.length;
+      return arr[idx];
+    },
+
+    /** spec §4.4 サブタイトル (Phase 2 — カテゴリ判定 + 決定論的選択) */
     _generateSubtitle(chapter, aces) {
       const top = aces[0];
       const peakOVR = top.peakOVR || 0;
@@ -2387,20 +2427,23 @@ const Engine = {
       const warWins = chapHist.filter(e => e.type === 'war' && e.won === true).length;
       const warLosses = chapHist.filter(e => e.type === 'war' && e.won === false).length;
 
-      // 初期団体 (章番号 1-2 は呼び出し側で判定して付ける)
-      if (chapter._isEarly) return '礎を築く者たち';
-      // 人気派エース: pop >= 90 かつ peakOVR < 85
-      if (aces.some(a => (a.peakPopularity || 0) >= 90 && (a.peakOVR || 0) < 85)) {
-        return '華やかなる時代';
-      }
-      if (peakOVR >= 95 && titleReigns >= 3) return '絶対の時代';
-      if (peakOVR >= 90 && warWins === 0 && warLosses >= 2) return '届かなかった頂';
-      if (peakOVR >= 85 && warWins >= 1) return '挑戦の章';
-      if (peakOVR < 85) return '雌伏の時';
-      return '静かなる継承';
+      // カテゴリ判定 (優先度順)
+      let category;
+      if (chapter._isEarly) category = 'early';
+      else if (aces.some(a => (a.peakPopularity || 0) >= 90 && (a.peakOVR || 0) < 85)) category = 'idol';
+      else if (peakOVR >= 95 && titleReigns >= 3) category = 'golden';
+      else if (peakOVR >= 90 && warWins === 0 && warLosses >= 2) category = 'almostThere';
+      else if (peakOVR >= 85 && warWins >= 1) category = 'challenge';
+      else if (peakOVR < 85) category = 'enduring';
+      else category = 'other';
+
+      const arr = Engine.chronicle.SUBTITLE_TEMPLATES[category] || Engine.chronicle.SUBTITLE_TEMPLATES.other;
+      // シード: 章境界 + カテゴリ文字数 (同じ章は毎回同じ結果)
+      const seed = (chapter.seasonStart || 0) * 31 + (chapter.seasonEnd || 0) * 7 + category.length * 13;
+      return Engine.chronicle._pickTemplate(arr, seed);
     },
 
-    /** spec §5.5 章末フレーバー */
+    /** spec §5.5 章末フレーバー (Phase 2 — magnitude × バリエーション) */
     _generateClosing(chapter, contributionsByAxis, orgName) {
       let topAxis = null, topVal = 0;
       Object.entries(contributionsByAxis).forEach(([k, v]) => {
@@ -2413,11 +2456,13 @@ const Engine = {
       if (topVal < 0.30) magnitude = 'slight';
       else if (topVal < 0.80) magnitude = 'moderate';
       else magnitude = 'strong';
-      if (magnitude === 'slight')
-        return `この世代は、${org}の流儀をわずかに ${label} へと寄せた。`;
-      if (magnitude === 'moderate')
-        return `この世代は、${org}に ${label} の色を残していった。`;
-      return `${org}は、この世代を経て ${label} の色がはっきりと濃くなった。`;
+
+      const arr = Engine.chronicle.CLOSING_TEMPLATES[magnitude];
+      // シード: 章境界 + 軸名 (同じ章は毎回同じ結果)
+      const axisSeed = (topAxis || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+      const seed = (chapter.seasonStart || 0) * 17 + (chapter.seasonEnd || 0) * 11 + axisSeed;
+      const tpl = Engine.chronicle._pickTemplate(arr, seed);
+      return tpl.replace(/\{org\}/g, org).replace(/\{axis\}/g, label);
     },
 
     /** 章ハイライト生成 */
