@@ -4371,8 +4371,18 @@ function renderSave() {
     }
   }
   // セーブデータ注意書き（スロット下）
-  html += `<div style="margin-top:10px;padding:8px 12px;font-size:11px;color:var(--text-dim);line-height:1.7;border-top:1px solid rgba(200,190,170,0.06)">
-    セーブデータはブラウザのローカルストレージに保存されます。キャッシュクリア時などに消えることがあるため、こまめにセーブしましょう。大事な節目には「書出」でファイルへの書き出しセーブもしておくと安心です。
+  html += `<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(135deg,rgba(231,112,85,0.18),rgba(231,112,85,0.10));border:2px solid rgba(231,112,85,0.55);border-radius:8px">
+    <div style="font-size:14px;font-weight:900;color:#ff8c6b;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      <span style="font-size:18px">⚠️</span>セーブデータについて必ずお読みください
+    </div>
+    <div style="font-size:12px;color:#f5e8e0;line-height:1.75">
+      このゲームのセーブデータは<span style="color:#ffb59a;font-weight:700">ブラウザのローカルストレージ</span>に保存されます。<br>
+      ブラウザのキャッシュクリア・再インストール・プライベートモード終了で<span style="color:#ff7a55;font-weight:700">データが完全に消失</span>します。<br>
+      <span style="color:#ffd1bd;font-weight:700">📥 大切なデータは必ず「書出」ボタンでファイルにバックアップしてください。</span>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:5px;font-size:11px;color:#e0d4cc;line-height:1.7">
+      こまめにセーブしましょう。こまめに書き出しセーブもしましょう。
+    </div>
   </div>`;
 
   // 体験版: ロックされたスロット表示
