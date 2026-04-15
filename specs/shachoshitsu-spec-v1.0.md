@@ -1046,19 +1046,44 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 - 遅延発現の対象を trainer/camp に限定、期間を既存バフ期間と同期させる設計根拠を §5.1 に追記
 - bonus/refresh_leave/party/encourage/media を即時維持する narrative 的理由を §4.3 に追記
 
-### Phase 8: 不確実性メカニズム
+### Phase 8: 不確実性メカニズム ✅ 完了(2026-04-15)
 
-**目的**: 性格×アーキタイプで trust効果が±50%変動する。
+**目的**: 性格×アーキタイプで trust効果が±50%変動する。「即時万能感の排除」を Phase 7 の遅延発現から Phase 8 の不確実性に完全移行する。
 
-**タスク**:
-1. §6.3の性格マトリクス定義（`src/data.js` に `DECISION_PERSONALITY_MULT`）
-2. §6.4のアーキタイプマトリクス定義（`DECISION_ARCHETYPE_MULT`）
-3. `Engine.shachoshitsu.calcUncertainty(docId, fighter)` 関数実装
-4. `execute` で `finalDelta = baseDelta × uncertaintyMult` を適用
-5. 結果トーストに効果度合いを表示（「予想以上」「普通」「響かなかった」）
-6. 書類説明文の効果表記を期待値表示に変更
+**実装した設計**:
+- spec §6.3 / §6.4 の2マトリクスを基本そのまま採用
+- `finalMult = clamp(personalityMult × archetypeMult, 0.5, 1.5)`
+- 適用対象は **trust 効果のみ** (condition / slumpMomentum / growthBoost / orgPopDelta は固定)
+- Phase 7 で下地を作った `pendingTrustDeltas.finalMult` フィールドを実値化
+- 結果モーダルに 3段階トーンマーカー追加 (🌟 深く刺さった / 💤 あまり響かなかったようだ / 普通は無表示)
+- trainer の予告文言をトーン帯で3段階出し分け
 
-**成果物**: 決裁結果が選手によって効き具合が変わる。
+**実装した機能**:
+1. `DECISION_PERSONALITY_MULT` (6性格×7書類) を `src/data.js` に追加。spec §6.3 の `shy` はプロジェクトに存在しないため除外
+2. `DECISION_ARCHETYPE_MULT` (4非normal×書類) を追加。spec §6.4 にない書類(camp/encourage/refresh_leave/trainer)の組合せは narrative から補完(例: ojousama×camp=0.80、delinquent×trainer=1.10、cool×encourage=0.80、seductive×refresh_leave=1.10)
+3. `Engine.shachoshitsu.calcUncertainty(docId, fighter)` 新設
+4. `Engine.shachoshitsu.classifyTone(finalMult)` 新設 (`'high'` / `null` / `'low'`)
+5. `queueTrust` のシグネチャに `finalMult` パラメータ追加(trainer/camp の pending エントリに保存)
+6. `execute` 内の6書類分岐 (bonus/encourage/refresh_leave/trainer/media/party/camp) で `calcUncertainty` を呼ぶ
+7. 個人書類の `execute` 返り値に `reactionTone` / `finalMult` 追加(team書類は含めない)
+8. `showDecisionResultModal` にトーンマーカー HTML 追加、`.decision-result-tone.high`/`.low` CSS 追加
+9. trainer の changes 構築で `classifyTone` を呼び、3段階の文言に出し分け
+10. `app.js` の `executeDecision` / `encourageFighter` の displayData に `reactionTone` を含める
+
+**検証**:
+- auto-sim 100シーズン(seed=42) ALL CLEAR(違反0/エラー0/ゲームオーバー0/5300週)
+- 実機: calcUncertainty 13パターンで clamp 境界・閾値境界を確認
+- 実機: bonus 4パターンで trust 上昇差 +3.46〜+9.28(約3倍差)、トーン3段階を確認
+- 実機: trainer 4週シミュレーションで `perWeekDelta × finalMult` が累積、1.0x/1.3x/1.2x/1.1x が厳密に反映されることを確認
+- 実機: camp で選手ごとの finalMult (1.1/1.2/0.72) を pending エントリに保存、返り値に reactionTone 非含有
+- 実機: 結果モーダル DOM で high/low マーカー表示、team書類で非表示
+
+**v1.1 で逆輸入すべき点**:
+- §6.3 / §6.4 から `shy` 行を削除
+- §6.4 に camp/encourage/refresh_leave/trainer の補完値を追記
+- §6.6 の結果表示を「予想以上/普通/響かなかった」→「🌟 深く刺さった/(無表示)/💤 あまり響かなかったようだ」に更新
+- 「即時万能感の排除」は不確実性のみで実現する方針を §4.3 / §6.1 に明記
+- trainer の予告文言 3段階 (今後4週にわたって、予想以上に深く響いていきそうだ / じわじわと育っていく / わずかに効いていくだけかもしれない) を §6.6 に追記
 
 ### Phase 9: 磨き込み
 

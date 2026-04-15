@@ -6363,6 +6363,7 @@ function showDecisionResultModal(displayData) {
   const {
     fighter, isTeam, fighters = [], repFighter, text, campFlavor,
     changes = [], cost, remainingFunds, icon, label, docId,
+    reactionTone,
   } = displayData;
   const isCamp = docId === 'camp';
   const isParty = docId === 'party';
@@ -6382,6 +6383,14 @@ function showDecisionResultModal(displayData) {
         ${speechBlock}
       </div>
     `;
+  }
+
+  // ── Phase 8: 不確実性トーンマーカー(個人書類のみ、team書類は表示なし) ──
+  let toneHtml = '';
+  if (reactionTone === 'high') {
+    toneHtml = `<div class="decision-result-tone high">🌟 深く刺さった</div>`;
+  } else if (reactionTone === 'low') {
+    toneHtml = `<div class="decision-result-tone low">💤 あまり響かなかったようだ</div>`;
   }
 
   // ── 参加者グリッド(team書類のみ、ヒーロー以外の選手を小サイズで並べる) ──
@@ -6453,6 +6462,7 @@ function showDecisionResultModal(displayData) {
     </div>
     <div class="decision-result-body" data-variant="${variant}">
       ${heroHtml}
+      ${toneHtml}
       ${rosterHtml}
       ${flavorHtml}
       ${changesHtml}

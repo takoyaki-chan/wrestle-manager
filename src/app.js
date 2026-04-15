@@ -6895,6 +6895,8 @@ const App = {
       icon: doc?.icon || '💬',
       label: doc?.label || '声かけ',
       docId: 'encourage',
+      // Phase 8: 不確実性トーンマーカー (encourage も個人書類)
+      reactionTone: result.reactionTone || null,
     };
     Audio.play('notify');
     if (typeof showDecisionResultModal === 'function') {
@@ -6995,6 +6997,8 @@ const App = {
           fighter, text, changes: result.changes || [],
           cost: result.cost || 0, remainingFunds: result.funds,
           icon: doc?.icon || '', label: doc?.label || '', docId,
+          // Phase 8: 不確実性トーンマーカー (個人書類のみ)
+          reactionTone: result.reactionTone || null,
         };
       }
     } else {

@@ -3153,6 +3153,18 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .decision-result-cost{text-align:center;font-size:12px;color:var(--text-dim);
   padding:8px;background:rgba(0,0,0,0.2);border-radius:4px;letter-spacing:0.3px}
 
+/* ─── 社長室 Phase 8: 不確実性トーンマーカー ─── */
+/* 性格×アーキタイプで決裁効果が±50%変動した結果を質的に表現する。
+   0.8以下=💤響かなかった / 0.8-1.2=無表示 / 1.2以上=🌟深く刺さった */
+.decision-result-tone{text-align:center;font-family:'Noto Sans JP',sans-serif;
+  font-size:14px;font-weight:600;padding:8px 16px;margin:4px 20px;border-radius:6px;
+  letter-spacing:0.05em}
+.decision-result-tone.high{background:rgba(212,168,67,0.18);color:#e8c35c;
+  border:1px solid rgba(212,168,67,0.45);
+  text-shadow:0 0 8px rgba(212,168,67,0.35)}
+.decision-result-tone.low{background:rgba(160,160,160,0.10);color:#a8a8a8;
+  border:1px solid rgba(160,160,160,0.25)}
+
 /* ─── 社長室 Phase 5: 選手ポップアップ「声をかける」アクションバー ─── */
 /* 2段階の温度感:
    is-urgent (オレンジ脈動): slump/motivLoss/trust<40 — 明らかにやばい

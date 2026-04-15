@@ -12480,6 +12480,33 @@ Engine.shachoshitsu = {
     return ['bonus', 'encourage', 'refresh_leave', 'party', 'trainer', 'camp', 'media'];
   },
 
+  // ── Phase 8: 不確実性計算 ──────────────────────────────────────────────
+  // 書類ID と選手から finalMult (0.5〜1.5) を計算して返す。
+  // personalityMult × archetypeMult を clamp 範囲に収める。
+  // 適用対象は trust 効果のみ (condition/slumpMomentum 等には影響しない)。
+  calcUncertainty(docId, fighter) {
+    if (!fighter || !docId) return 1.0;
+    if (typeof DECISION_PERSONALITY_MULT === 'undefined') return 1.0;
+    const personality = fighter.personality || 'normal';
+    const archetype = fighter.archetype || 'normal';
+    const pRow = DECISION_PERSONALITY_MULT[personality] || DECISION_PERSONALITY_MULT.normal;
+    const pMult = pRow && pRow[docId] != null ? pRow[docId] : 1.0;
+    const aRow = (typeof DECISION_ARCHETYPE_MULT !== 'undefined' && DECISION_ARCHETYPE_MULT[archetype]) || {};
+    const aMult = aRow[docId] != null ? aRow[docId] : 1.0;
+    const mult = pMult * aMult;
+    return Math.max(0.5, Math.min(1.5, mult));
+  },
+
+  // ── Phase 8: トーン分類 ───────────────────────────────────────────────
+  // finalMult を3段階のトーンに分類する。結果モーダルのマーカーに使う。
+  // 返り値: 'high' (響いた) | null (普通) | 'low' (響かなかった)
+  classifyTone(finalMult) {
+    if (finalMult == null) return null;
+    if (finalMult >= 1.2) return 'high';
+    if (finalMult < 0.8) return 'low';
+    return null;
+  },
+
   // ── 発動条件チェック ──────────────────────────────────────────────────────
   // doc.activationCondition を見て、今週この書類を机に出す資格があるかを判定
   checkActivation(docId, state) {
@@ -12600,7 +12627,9 @@ Engine.shachoshitsu = {
     // Phase 7: trainer/camp 専用 — バフ期間と並走して信頼度を遅延発現
     // trust フィールドは触らず、pendingTrustDeltas にエントリを積むだけ。
     // weeksRemaining は _trainerBuff.weeksLeft と同じ値を指すよう設計。
-    const queueTrust = (fighter, delta, source, weeks, skipOvrScale) => {
+    // Phase 8: finalMult パラメータで性格×アーキタイプ倍率を外部から注入。
+    // 発現は applyPendingTrustDeltas が perWeekDelta × finalMult を毎週加算する。
+    const queueTrust = (fighter, delta, source, weeks, finalMult, skipOvrScale) => {
       const mental = fighter.mn || 50;
       let adjusted = Engine.trust.applyCoeff(delta, mental);
       if (!skipOvrScale) adjusted *= careOvrMult(fighter);
@@ -12614,11 +12643,15 @@ Engine.shachoshitsu = {
         perWeekDelta: perWeek,
         weeksRemaining: weeks,
         startedWeek: state.week,
-        finalMult: 1.0,      // Phase 8 で性格×アーキタイプ倍率を入れる
+        finalMult: finalMult != null ? finalMult : 1.0,  // Phase 8: 性格×アーキタイプ倍率
       };
       const list = [...(fighter.pendingTrustDeltas || []), entry];
       return { ...fighter, pendingTrustDeltas: list };
     };
+
+    // Phase 8: 個人書類の finalMult (性格×アーキタイプ不確実性) を保持
+    // team書類は選手ごとに finalMult が異なるため別管理 (後述)
+    let currentFinalMult = 1.0;
 
     // ── 個人書類(target: 'individual') ──
     if (doc.effect && doc.effect.target === 'individual') {
@@ -12637,9 +12670,10 @@ Engine.shachoshitsu = {
 
       if (docId === 'bonus') {
         const repeatCount = f._bonusRepeat || 0;
-        // Phase 4: 遅延発現なし。baseDelta をそのまま即時適用。
         const trustGain = Math.max(0.77, (doc.effect.trust || 0) - repeatCount * 1.53);
-        f = applyTrust(f, trustGain);
+        // Phase 8: 性格×アーキタイプで効果量が ±50% 変動
+        currentFinalMult = Engine.shachoshitsu.calcUncertainty('bonus', f);
+        f = applyTrust(f, trustGain * currentFinalMult);
         f._bonusRepeat = repeatCount + 1;
         events.push(`💰 ${f.name}にボーナスを支給`);
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
@@ -12654,6 +12688,7 @@ Engine.shachoshitsu = {
 
         const highTrust = curTrust >= 60;  // reactionKey 切替(「encourage_high_trust」)用
         if (hasSlumpIssue) {
+          // Phase 8: slumpMomentum は不確実性適用外(回復メカニクスなので固定)
           const sm = doc.effect.slumpMomentum || {};
           const momentumBoost = highTrust ? (sm.high || 4.0) : (sm.low || 2.5);
           if (f.slump) {
@@ -12663,8 +12698,9 @@ Engine.shachoshitsu = {
             f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
           }
         }
-        // trust 効果は全パターン共通(trust<50 だけの選手にも少し回復)
-        f = applyTrust(f, doc.effect.trust || 0.77);
+        // Phase 8: trust 効果のみに性格×アーキタイプ倍率を適用
+        currentFinalMult = Engine.shachoshitsu.calcUncertainty('encourage', f);
+        f = applyTrust(f, (doc.effect.trust || 0.77) * currentFinalMult);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'refresh_leave') {
@@ -12678,16 +12714,22 @@ Engine.shachoshitsu = {
           f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.67 } };
         }
         f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 15)) };
-        f = applyTrust(f, doc.effect.trust || 5.36);
+        // Phase 8: condition/slumpMomentum は固定、trust のみ不確実性
+        currentFinalMult = Engine.shachoshitsu.calcUncertainty('refresh_leave', f);
+        f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
         events.push(`🏖️ ${f.name}に休暇辞令(スランプ回復大促進・状態+${doc.effect.condition || 15})`);
       } else if (docId === 'trainer') {
         // Phase 7: 信頼度はバフ期間 (4週) と並走して遅延発現。trust フィールドは即時には変わらない
+        // Phase 8: 性格×アーキタイプの倍率は pending エントリに保存され、毎週発現時に適用される
         const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
-        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', gb.weeks);
+        currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
+        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', gb.weeks, currentFinalMult);
         f._trainerBuff = { weeksLeft: gb.weeks, mult: gb.mult };
         events.push(`💪 ${f.name}に専属トレーナー(${gb.weeks}週間 成長+${Math.round((gb.mult - 1) * 100)}%)`);
       } else if (docId === 'media') {
-        f = applyTrust(f, doc.effect.trust || 5.36);
+        // Phase 8: condition/orgPopDelta は固定、trust のみ不確実性
+        currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
+        f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
         f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         events.push(`📺 ${f.name}のメディア露出を手配(団体知名度 +${orgPopDelta})`);
@@ -12701,13 +12743,23 @@ Engine.shachoshitsu = {
 
       // changes 構築
       const _after = { trust: f.trust, condition: f.condition || 70 };
-      // Phase 7: trainer は trust が即時変わらないので専用メッセージを使う
+      // Phase 7+8: trainer は trust が即時変わらない + 不確実性で予告文言を3段階出し分け
       if (docId === 'trainer') {
         const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
-        changes.push({ label: '信頼度', emoji: '🤝', text: `今後${gb.weeks}週にわたって、じわじわと育っていく` });
+        const tone = Engine.shachoshitsu.classifyTone(currentFinalMult);
+        let trustText;
+        if (tone === 'high') {
+          trustText = `今後${gb.weeks}週にわたって、予想以上に深く響いていきそうだ`;
+        } else if (tone === 'low') {
+          trustText = `今後${gb.weeks}週にわたって、わずかに効いていくだけかもしれない`;
+        } else {
+          trustText = `今後${gb.weeks}週にわたって、じわじわと育っていく`;
+        }
+        changes.push({ label: '信頼度', emoji: '🤝', text: trustText });
         changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
       } else if (_after.trust !== _before.trust) {
         // bonus / refresh_leave / encourage / media は従来通り即時表示
+        // describeChange は最終 delta の大きさから質的表現を返すので、不確実性は自然に反映される
         changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
       }
       if (_after.condition !== _before.condition) {
@@ -12731,9 +12783,11 @@ Engine.shachoshitsu = {
       const _beforeMorale = lockerRoomMorale;
 
       if (docId === 'party') {
+        // Phase 8: 選手ごとに性格×アーキタイプ倍率を計算して trust 効果に適用
         roster = roster.map(f => {
           if (f.injury) return f;
-          return applyTrust(f, doc.effect.trust || 1.84);
+          const mult = Engine.shachoshitsu.calcUncertainty('party', f);
+          return applyTrust(f, (doc.effect.trust || 1.84) * mult);
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
         changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
@@ -12742,10 +12796,12 @@ Engine.shachoshitsu = {
         reactionFighterId = null;
       } else if (docId === 'camp') {
         // Phase 7: 信頼度はバフ期間 (2週) と並走して遅延発現。全員分を pending に積む
+        // Phase 8: 選手ごとに性格×アーキタイプ倍率を計算して pending エントリに保存
         const gb = doc.effect.growthBoost || { weeks: 2, mult: 1.5 };
         roster = roster.map(f => {
           if (f.injury) return f;
-          const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks);
+          const mult = Engine.shachoshitsu.calcUncertainty('camp', f);
+          const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
         changes.push({ label: '全員の信頼度', emoji: '🤝', text: `今後${gb.weeks}週にわたって、団体全体にじわじわと育っていく` });
@@ -12787,6 +12843,11 @@ Engine.shachoshitsu = {
     };
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
     if (updatedRelationships) result.relationships = updatedRelationships;
+    // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)
+    if (doc.effect && doc.effect.target === 'individual') {
+      result.reactionTone = Engine.shachoshitsu.classifyTone(currentFinalMult);
+      result.finalMult = currentFinalMult;
+    }
     return result;
   },
 

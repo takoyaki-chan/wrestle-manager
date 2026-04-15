@@ -11823,6 +11823,38 @@ const DECISION_DOCS = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 社長室 Phase 8: 不確実性マトリクス (spec §6.3 / §6.4)
+// 決裁の信頼度効果が、選手の性格×アーキタイプで ±50% 変動する。
+// これにより「刺せば必ず望み通りに効く」万能感を崩し、
+// 「刺してみないとわからない」体感を導入する。
+//
+// 計算式: finalMult = clamp(personalityMult × archetypeMult, 0.5, 1.5)
+// finalMult は applyTrust/queueTrust で効果量に直接乗算される。
+// 適用対象は trust 効果のみ。condition/slumpMomentum/growthBoost/orgPopDelta には影響しない。
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 性格 × 書類 マトリクス (6性格 × 7書類)
+// spec §6.3 の shy は project に存在しないため除外。
+const DECISION_PERSONALITY_MULT = {
+  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
+  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
+  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
+  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
+  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
+  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
+};
+
+// アーキタイプ × 書類 マトリクス (normal 以外の4種)
+// 記載のないアーキタイプ+書類の組合せは 1.00 (影響なし)
+// spec §6.4 を拡張して全書類を扱う
+const DECISION_ARCHETYPE_MULT = {
+  ojousama:   { bonus: 0.70, party: 1.00, media: 1.10, camp: 0.80 },       // 金には動じない、合宿は好まない
+  delinquent: { bonus: 1.30, party: 1.30, media: 0.80, trainer: 1.10 },    // 金と酒は効く、メディアは嫌う、体育会系は好む
+  cool:       { bonus: 0.70, party: 0.60, media: 0.80, encourage: 0.80 },  // 全体的に冷めている
+  seductive:  { bonus: 1.00, party: 1.10, media: 1.30, refresh_leave: 1.10 }, // 華やかな場で輝く
+};
+
 // §2-5: 資金投入リアクションセリフ（特性別）
 // {name} はプレースホルダ
 const CAMP_FLAVOR_TEXTS = [
