@@ -6254,7 +6254,9 @@ function _chronicleStyleBlock() {
 
 function _renderDbChronicle() {
   const ch = (G && G.chronicle) || null;
-  const chapters = ((ch && ch.chaptersCache && ch.chaptersCache.chapters) || []);
+  // 確定済み章のみ表示。in_progress は世代の中心が決まるまで伏せる
+  const chapters = ((ch && ch.chaptersCache && ch.chaptersCache.chapters) || [])
+    .filter(c => c.status === 'confirmed');
 
   let html = _chronicleStyleBlock();
   html += `<div class="chron-wrap">`;
