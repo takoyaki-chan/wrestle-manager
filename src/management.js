@@ -6766,6 +6766,12 @@ const Engine = {
       }
     }
 
+    // 社長室 Phase 4: 週進行時に _decisionDoneThisWeek をクリア
+    // (_decisionWeekUsed はクリアしない。各書類の cooldown 判定に使うため)
+    if (s._decisionDoneThisWeek && s._decisionDoneThisWeek.length > 0) {
+      s = { ...s, _decisionDoneThisWeek: [] };
+    }
+
     // リーダー気質: チャンピオン時orgPop+0.3/週（逓減適用）
     if (s.titles && s.titles.world && s.titles.world.championId) {
       const champId = s.titles.world.championId;
@@ -10258,6 +10264,9 @@ const Engine = {
       // 社長室 Phase 2: 決裁枠(decisionPoints)
       decisionPoints: 6,
       decisionPointsMax: 6,
+      // 社長室 Phase 4: 決裁cooldown / 今週決裁済みリスト
+      _decisionWeekUsed: {},
+      _decisionDoneThisWeek: [],
       // v2.0 Phase1-6: 大型イベント
       lastLargeEventWeek: 0,
       mediaSpotlight: null,
@@ -12806,6 +12815,224 @@ Engine.shachoshitsu = {
     }
     return docs;
   },
+
+  // ── コスト計算(団体書類は unitCost×人数、個人書類は cost をそのまま) ─────────
+  calcCost(doc, state) {
+    if (!doc) return 0;
+    if (doc.effect && doc.effect.target === 'team' && doc.unitCost) {
+      const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
+      return doc.unitCost * Math.max(headcount, doc.minHeadcount || 4);
+    }
+    return doc.cost || 0;
+  },
+
+  // ── 決裁実行(純粋関数) ────────────────────────────────────────────────────
+  // Phase 4: 遅延発現(Phase 7)と不確実性(Phase 8)は未適用。即時・固定値で計算。
+  // 返り値: { roster, lockerRoomMorale, funds, cost, events, reactionKey,
+  //          reactionFighterId, changes, _decisionWeekUsed, decisionPoints, ... }
+  //        | { error: 'xxx', required?: number }
+  execute(docId, fighterId, state) {
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    if (!doc) return { error: 'doc_not_found' };
+
+    // minOrgPop / 発動条件の最終確認(レンダー時のフィルタが外れた場合の保険)
+    if (doc.minOrgPop && (state.orgPop || 0) < doc.minOrgPop) {
+      return { error: 'orgpop_locked', required: doc.minOrgPop };
+    }
+    if (!Engine.shachoshitsu.checkActivation(docId, state)) {
+      return { error: 'condition_not_met' };
+    }
+
+    // 決裁枠チェック
+    const dpCost = doc.decisionCost || 0;
+    const currentDp = state.decisionPoints || 0;
+    if (currentDp < dpCost) return { error: 'decision_points_insufficient' };
+
+    // 資金チェック
+    const actualCost = Engine.shachoshitsu.calcCost(doc, state);
+    if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
+
+    let roster = [...state.roster];
+    let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    let _decisionWeekUsed = state._decisionWeekUsed ? { ...state._decisionWeekUsed } : {};
+    const events = [];
+    const changes = [];
+    let reactionKey = docId;
+    let reactionFighterId = fighterId;
+    let orgPopDelta = 0;
+
+    // §6.1: OVR傾斜係数(careActions と同じ式を移植)
+    const careOvrMult = (fighter) => {
+      const ovr = Engine.util.ov(fighter);
+      return 0.7 + (100 - ovr) / 100 * 0.9;
+    };
+    const applyTrust = (fighter, delta, skipOvrScale) => {
+      const mental = fighter.mn || 50;
+      let adjusted = Engine.trust.applyCoeff(delta, mental);
+      if (!skipOvrScale) adjusted *= careOvrMult(fighter);
+      const oldTrust = fighter.trust != null ? fighter.trust : 50;
+      if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+      const newTrust = Engine.util.clamp(oldTrust + adjusted, 0, 100);
+      return { ...fighter, trust: newTrust };
+    };
+
+    // ── 個人書類(target: 'individual') ──
+    if (doc.effect && doc.effect.target === 'individual') {
+      const idx = roster.findIndex(f => f.id === fighterId);
+      if (idx < 0) return { error: 'fighter_not_found' };
+      let f = { ...roster[idx] };
+      const _before = {
+        trust: f.trust != null ? f.trust : 50,
+        condition: f.condition || 70,
+      };
+
+      // cooldown チェック(選手単位)
+      const lastUsed = (f._decisionWeekUsed || {})[docId] || -99;
+      const cooldown = doc.cooldown != null ? doc.cooldown : 1;
+      if (state.week - lastUsed < cooldown) return { error: 'cooldown' };
+
+      if (docId === 'bonus') {
+        const repeatCount = f._bonusRepeat || 0;
+        // Phase 4: 遅延発現なし。baseDelta をそのまま即時適用。
+        const trustGain = Math.max(0.77, (doc.effect.trust || 0) - repeatCount * 1.53);
+        f = applyTrust(f, trustGain);
+        f._bonusRepeat = repeatCount + 1;
+        events.push(`💰 ${f.name}にボーナスを支給`);
+        if (repeatCount >= 2) reactionKey = 'bonus_repeat';
+      } else if (docId === 'encourage') {
+        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
+        const highTrust = (f.trust || 50) >= 60;
+        const sm = doc.effect.slumpMomentum || {};
+        const momentumBoost = highTrust ? (sm.high || 4.0) : (sm.low || 2.5);
+        if (f.slump) {
+          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+        }
+        if (f.motivationLoss) {
+          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
+        }
+        f = applyTrust(f, doc.effect.trust || 0.77);
+        reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
+        events.push(`💬 ${f.name}と面談(スランプ回復促進)`);
+      } else if (docId === 'refresh_leave') {
+        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
+        const momentumBoost = typeof doc.effect.slumpMomentum === 'number'
+          ? doc.effect.slumpMomentum : 12.0;
+        if (f.slump) {
+          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+        }
+        if (f.motivationLoss) {
+          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.67 } };
+        }
+        f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 15)) };
+        f = applyTrust(f, doc.effect.trust || 5.36);
+        events.push(`🏖️ ${f.name}に休暇辞令(スランプ回復大促進・状態+${doc.effect.condition || 15})`);
+      } else if (docId === 'trainer') {
+        f = applyTrust(f, doc.effect.trust || 5.97);
+        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
+        f._trainerBuff = { weeksLeft: gb.weeks, mult: gb.mult };
+        events.push(`💪 ${f.name}に専属トレーナー(${gb.weeks}週間 成長+${Math.round((gb.mult - 1) * 100)}%)`);
+      } else if (docId === 'media') {
+        f = applyTrust(f, doc.effect.trust || 5.36);
+        f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
+        orgPopDelta = doc.effect.orgPopDelta || 0.4;
+        events.push(`📺 ${f.name}のメディア露出を手配(団体知名度 +${orgPopDelta})`);
+      } else {
+        return { error: 'unsupported_doc', docId };
+      }
+
+      // cooldown 記録(選手単位)
+      f._decisionWeekUsed = { ...(f._decisionWeekUsed || {}), [docId]: state.week };
+      roster[idx] = f;
+
+      // changes 構築
+      const _after = { trust: f.trust, condition: f.condition || 70 };
+      if (_after.trust !== _before.trust) {
+        changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
+      }
+      if (_after.condition !== _before.condition) {
+        changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
+      }
+      if (docId === 'trainer') {
+        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
+        changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
+      }
+      if (docId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
+      if (docId === 'encourage') changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
+      if (docId === 'refresh_leave') changes.push({ label: 'スランプ回復', emoji: '💪', text: '心身ともにリフレッシュし、回復が大きく進んだ' });
+    }
+
+    // ── 団体書類(target: 'team') ──
+    if (doc.effect && doc.effect.target === 'team') {
+      if (_decisionWeekUsed[docId] === state.week) return { error: 'cooldown' };
+      const _beforeMorale = lockerRoomMorale;
+
+      if (docId === 'party') {
+        roster = roster.map(f => {
+          if (f.injury) return f;
+          return applyTrust(f, doc.effect.trust || 1.84);
+        });
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
+        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
+        events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
+        reactionFighterId = null;
+      } else if (docId === 'camp') {
+        const gb = doc.effect.growthBoost || { weeks: 2, mult: 1.5 };
+        roster = roster.map(f => {
+          if (f.injury) return f;
+          const newF = applyTrust(f, doc.effect.trust || 1.84);
+          return { ...newF, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
+        });
+        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
+        changes.push({ label: '全員の成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
+        events.push(`🏕️ 合宿を実施(全員の成長バフ ${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%)`);
+        reactionFighterId = null;
+      } else {
+        return { error: 'unsupported_doc', docId };
+      }
+
+      _decisionWeekUsed = { ..._decisionWeekUsed, [docId]: state.week };
+    }
+
+    // ── 人間関係反映(既存 careActions と同じロジックを移植) ──
+    let updatedRelationships = null;
+    if (state.relationships) {
+      const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE50));
+      let relState = { relationships: { ...state.relationships } };
+      const relRosterIds = roster.filter(c => !c.isRental).map(c => c.id);
+
+      if (docId === 'encourage' || docId === 'refresh_leave') {
+        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
+      } else if (docId === 'media') {
+        relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
+        relState = Engine.relationships.applyFromRoster(relState, relRosterIds, fighterId, { min: -1, max: -1 }, { min: 0, max: 0 }, relRng);
+      } else if (docId === 'camp' || docId === 'party') {
+        const pairIds = roster.filter(c => !c.isRental && !c.injury).map(c => c.id);
+        relState = Engine.relationships.applyAllPairs({ ...state, ...relState }, pairIds, { min: 2, max: 4 }, { min: 0, max: 0 }, relRng);
+      }
+      updatedRelationships = relState.relationships;
+    }
+
+    // ── 返り値構築 ──
+    const newFunds = (state.funds || 0) - actualCost;
+    const newDp = Math.max(0, currentDp - dpCost);
+    const result = {
+      roster, lockerRoomMorale, funds: newFunds, cost: actualCost, events, reactionKey,
+      reactionFighterId, changes, _decisionWeekUsed, decisionPoints: newDp,
+    };
+    if (orgPopDelta) result.orgPopDelta = orgPopDelta;
+    if (updatedRelationships) result.relationships = updatedRelationships;
+    return result;
+  },
+
+  // ── リアクションセリフ取得(既存 CARE_REACTION_DIALOGUES 辞書を流用) ─────────
+  // Phase 5 で DECISION_REACTION_DIALOGUES にリネーム予定だが、Phase 4 では既存辞書を参照
+  getReactionText(docId, fighter) {
+    if (typeof CARE_REACTION_DIALOGUES === 'undefined') return '…';
+    const dialogues = CARE_REACTION_DIALOGUES[docId];
+    if (!dialogues) return '…';
+    return pickDialogueLine(dialogues, fighter);
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -14585,6 +14812,15 @@ Engine.validateGameState = function(G) {
     if (!isValidNum(G.decisionPointsMax) || G.decisionPointsMax < 1 || G.decisionPointsMax > 20) {
       warn(`decisionPointsMaxが不正値: ${G.decisionPointsMax}`);
     }
+  }
+  // 社長室 Phase 4: 決裁消費関連のフィールド型チェック
+  if (G._decisionDoneThisWeek !== undefined && !Array.isArray(G._decisionDoneThisWeek)) {
+    warn(`_decisionDoneThisWeekが配列でない: ${typeof G._decisionDoneThisWeek}→自動修正`);
+    G = { ...G, _decisionDoneThisWeek: [] };
+  }
+  if (G._decisionWeekUsed !== undefined && (typeof G._decisionWeekUsed !== 'object' || Array.isArray(G._decisionWeekUsed))) {
+    warn(`_decisionWeekUsedがオブジェクトでない: ${typeof G._decisionWeekUsed}→自動修正`);
+    G = { ...G, _decisionWeekUsed: {} };
   }
 
   // ── 経済関連 ──

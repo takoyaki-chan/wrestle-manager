@@ -6462,6 +6462,182 @@ function showCareActionModal(state, onConfirm) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 社長室 Phase 4: 決裁モーダル群 (shachoshitsu-spec-v1.0.md §8)
+// - showDecisionTargetModal: 個人書類の対象選手選択
+// - showDecisionConfirmModal: 団体書類の実行確認
+// - showDecisionResultToast:   決裁完了後の1行トースト
+// ─────────────────────────────────────────────────────────────────────────────
+function _closeShachoshitsuDecisionModal() {
+  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+// 個人書類用: 対象選手選択モーダル
+function showDecisionTargetModal(docId, state) {
+  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
+  const modal = document.getElementById('shachoshitsuDecisionModal');
+  if (!overlay || !modal) return;
+
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
+  if (!doc) return;
+
+  // 候補選手の絞り込み(書類別 + cooldown)
+  const roster = state.roster || [];
+  let candidates = roster.filter(f => !f.isRental && !f.injury);
+  if (docId === 'bonus') {
+    candidates = candidates.filter(f => (f.trust != null ? f.trust : 50) < 60);
+  } else if (docId === 'encourage' || docId === 'refresh_leave') {
+    candidates = candidates.filter(f => f.slump || f.motivationLoss);
+  }
+  // cooldown 除外(選手単位)
+  const cooldown = doc.cooldown != null ? doc.cooldown : 1;
+  const currentWeek = state.week || 0;
+  candidates = candidates.filter(f => {
+    const lastUsed = (f._decisionWeekUsed || {})[docId] || -99;
+    return (currentWeek - lastUsed) >= cooldown;
+  });
+
+  if (candidates.length === 0) {
+    showToast('対象候補の選手がいません');
+    return;
+  }
+
+  const actualCost = Engine.shachoshitsu.calcCost(doc, state);
+  let html = '';
+  html += `<div class="shachoshitsu-decision-title"><span class="icon">${doc.icon}</span>${doc.label}</div>`;
+  html += `<div class="shachoshitsu-decision-desc">${doc.detailText}</div>`;
+  html += `<div class="shachoshitsu-decision-meta">`;
+  html += `  <span class="meta-label">コスト</span>`;
+  html += `  <span><span class="meta-cost">${actualCost === 0 ? '無料' : actualCost + '万'}</span><span class="meta-dp">⚡${doc.decisionCost}</span></span>`;
+  html += `</div>`;
+
+  html += `<div class="shachoshitsu-decision-section-label">対象選手を選択してください</div>`;
+  html += `<div class="shachoshitsu-decision-fighter-grid">`;
+  candidates.forEach((f, i) => {
+    const trustVal = Math.round(f.trust != null ? f.trust : 50);
+    const lastName = f.name.split(/\s/).pop();
+    let statusLabel = '';
+    let statusCls = '';
+    if (docId === 'bonus') {
+      statusLabel = `信頼${trustVal}`;
+      statusCls = trustVal < 40 ? ' low-trust' : '';
+    } else if (docId === 'encourage' || docId === 'refresh_leave') {
+      statusLabel = f.slump ? 'スランプ' : 'モチベ喪失';
+      statusCls = ' slump';
+    } else {
+      statusLabel = `信頼${trustVal}`;
+    }
+    const selCls = i === 0 ? ' selected' : '';
+    html += `<div class="shachoshitsu-decision-fighter-card${selCls}" data-id="${f.id}">`;
+    html += portraitImg(f.id, 56, '');
+    html += `<div class="shachoshitsu-decision-fighter-name">${lastName}</div>`;
+    html += `<div class="shachoshitsu-decision-fighter-status${statusCls}">${statusLabel}</div>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="shachoshitsu-decision-btn-row">`;
+  html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
+  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">決裁実行</button>`;
+  html += `</div>`;
+
+  modal.innerHTML = html;
+
+  let selectedFighterId = candidates[0].id;
+  const grid = modal.querySelector('.shachoshitsu-decision-fighter-grid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const card = e.target.closest('.shachoshitsu-decision-fighter-card');
+      if (!card) return;
+      selectedFighterId = parseInt(card.dataset.id);
+      grid.querySelectorAll('.shachoshitsu-decision-fighter-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  }
+  document.getElementById('shachoshitsuDecCancelBtn').addEventListener('click', () => {
+    Audio.play('click');
+    _closeShachoshitsuDecisionModal();
+  });
+  document.getElementById('shachoshitsuDecConfirmBtn').addEventListener('click', () => {
+    _closeShachoshitsuDecisionModal();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision(docId, selectedFighterId);
+    }
+  });
+
+  overlay.classList.add('active');
+}
+
+// 団体書類用: 実行確認モーダル
+function showDecisionConfirmModal(docId, state) {
+  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
+  const modal = document.getElementById('shachoshitsuDecisionModal');
+  if (!overlay || !modal) return;
+
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
+  if (!doc) return;
+
+  const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
+  const actualCost = Engine.shachoshitsu.calcCost(doc, state);
+  const remainingFunds = (state.funds || 0) - actualCost;
+
+  let html = '';
+  html += `<div class="shachoshitsu-decision-title"><span class="icon">${doc.icon}</span>${doc.label}</div>`;
+  html += `<div class="shachoshitsu-decision-desc">${doc.detailText}</div>`;
+  html += `<div class="shachoshitsu-decision-team-summary">`;
+  html += `  <div class="row"><span class="label">対象</span><span class="value">団体全員 (${headcount}名)</span></div>`;
+  if (doc.unitCost) {
+    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span style="font-size:11px;color:var(--text-dim)">(${doc.unitCost}万×${Math.max(headcount, doc.minHeadcount || 4)}人)</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
+  } else {
+    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
+  }
+  html += `  <div class="row"><span class="label">残金(決裁後)</span><span class="value" style="color:${remainingFunds < 200 ? '#e74c3c' : 'var(--gold)'}">${Math.round(remainingFunds).toLocaleString()}万</span></div>`;
+  html += `  <div class="row" style="flex-direction:column;align-items:flex-start;gap:4px">`;
+  html += `    <span class="label">効果</span>`;
+  html += `    <span class="effect">${doc.effectSummary}</span>`;
+  html += `  </div>`;
+  html += `</div>`;
+
+  html += `<div class="shachoshitsu-decision-btn-row">`;
+  html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
+  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">決裁実行</button>`;
+  html += `</div>`;
+
+  modal.innerHTML = html;
+
+  document.getElementById('shachoshitsuDecCancelBtn').addEventListener('click', () => {
+    Audio.play('click');
+    _closeShachoshitsuDecisionModal();
+  });
+  document.getElementById('shachoshitsuDecConfirmBtn').addEventListener('click', () => {
+    _closeShachoshitsuDecisionModal();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision(docId, null);
+    }
+  });
+
+  overlay.classList.add('active');
+}
+
+// 決裁実行の結果トースト(Phase 4: シンプルな1行)
+function showDecisionResultToast(displayData) {
+  if (!displayData) return;
+  const name = displayData.fighter?.name || '団体全員';
+  const icon = displayData.icon || '';
+  const label = displayData.label || '決裁';
+  let msg = `${icon} ${label} → ${name}`;
+  const firstChange = (displayData.changes || [])[0];
+  if (firstChange) {
+    if (firstChange.text !== undefined) {
+      msg += `: ${firstChange.label} ${firstChange.text}`;
+    } else if (firstChange.before !== undefined && firstChange.after !== undefined) {
+      msg += `: ${firstChange.label} ${firstChange.before}→${firstChange.after}`;
+    }
+  }
+  showToast(msg);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v2.0: 通知型イベント トースト表示 (event-system-spec-v2.md §3-4)
 // 選手顔アイコン＋一言テキスト。数秒で自動消去
 // ─────────────────────────────────────────────────────────────────────────────

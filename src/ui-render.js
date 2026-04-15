@@ -3213,11 +3213,15 @@ function renderShachoshitsu() {
     // DECISION_DOC_ORDER の順序は維持しつつ、穴を作らず詰めて並べる(空きスロットが飛び地に
     // なって視覚的に変に見えるのを避ける)。data-col はレンダー列の1..4 で決定し、ツールチップ
     // の左右補正に使う。
+    const doneThisWeek = G._decisionDoneThisWeek || [];
     availableDocs.forEach((doc, renderIdx) => {
       const gridCol = (renderIdx % 4) + 1;  // 1..4 (ツールチップ位置補正用)
       const costDisplay = _formatShachoshitsuDocCost(doc);
+      const isApproved = doneThisWeek.includes(doc.id);
+      const approvedCls = isApproved ? ' is-approved' : '';
+      const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
       html += `
-        <div class="shachoshitsu-doc" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}">
+        <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}"${clickAttr}>
           <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
           <div class="shachoshitsu-doc-icon">${doc.icon}</div>
           <div class="shachoshitsu-doc-title">${doc.label}</div>

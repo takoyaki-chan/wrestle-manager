@@ -930,7 +930,7 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 **保留事項(Phase 4 実装時に再考)**:
 - **慰労会(party)の発動条件**: 現状 `morale < 50` 限定だが、予防的に雰囲気が良い時にも使いたいニーズあり。効果量(trust+1.84全員/morale+5)と頻度から見て「常時使用可」にすべきか、閾値を緩めるか、cooldown を伸ばすかを Phase 4 実装後の実機プレイで再検討する。
 
-### Phase 4: 決裁実行ロジック
+### Phase 4: 決裁実行ロジック ✅ 完了 (2026-04-15)
 
 **目的**: 書類をクリックして実際に決裁を実行できるようにする。遅延発現・不確実性はまだ無い。
 
@@ -955,6 +955,20 @@ Phase 0（本仕様書）完了後、以下のPhaseを順番に実行する。�
 - 印鑑の倒れるアニメーションが不自然でないか確認
 - 決裁済み書類が正しく表示される
 - 週が変わると決裁済みがリセットされる
+
+**実装メモ**:
+- `Engine.shachoshitsu` に `calcCost` / `execute` / `getReactionText` を追加。既存 `Engine.careActions.execute` から 7 書類分(bonus/encourage/refresh_leave/party/trainer/camp/media)のロジックを移植し、costume・special_treatment 分岐は実装せず(Phase 5 で怪我モーダル統合)。hireCoach もここでは実装せず(Phase 5 でコーチ画面から呼び出し)。
+- `App.executeDecision(docId, fighterId)` エントリポイントと `App.onShachoshitsuDocClick(docId)` クリックハンドラを追加。事前チェック(決裁枠・資金・is-approved 判定)はクリック時にトーストではじき、engine 側にも安全弁を入れた(`decision_points_insufficient` / `funds_insufficient` / `orgpop_locked` / `condition_not_met` 等)。
+- 対象選手選択モーダル `showDecisionTargetModal` は書類別に候補を絞り込む(bonus: trust<60、encourage/refresh_leave: slump or motivationLoss、trainer/media: 全員、個別 cooldown 除外)。団体確認モーダル `showDecisionConfirmModal` は対象人数・コスト内訳・残金・効果サマリを表示してから実行確認。
+- 朱印演出: 書類クリック → `.is-approving` クラス付与 → `stamp-slam` アニメ 0.6s → `renderShachoshitsu` 再レンダで `is-approved` に切替。HUD 側は `.hanko.available:not(.falling)` の先頭に `.falling` を付与して `hanko-fall` アニメ 0.5s。決裁済み書類は `document-stamped.webp` 背景に差し替え + onclick 除去でクリック不可。
+- 週進行リセット: `tickWeek` で `s._decisionDoneThisWeek` を空配列にクリア(`_decisionWeekUsed` は cooldown 管理のため維持)。validateGameState に `_decisionDoneThisWeek`(配列型) / `_decisionWeekUsed`(オブジェクト型) の不変条件チェックを追加。
+- マイグレーション: Phase 3 時点のセーブ読み込み時に `_decisionWeekUsed: {}` / `_decisionDoneThisWeek: []` を空で初期化。選手オブジェクトにも `_decisionWeekUsed` を付与。
+- 既存のケアモーダル(💝 ケアボタン / `showCareActionModal` / `App.openCareModal` / `Engine.careActions` / `G.careStock`)は一切触らず、Phase 5 まで並行稼働。
+- auto-sim 100 シーズン ALL CLEAR(Engine.shachoshitsu.execute は UI ボタン経由なので週次ループから呼ばれず、回帰は発生しない — 不変条件の型チェックだけが発火)。
+- ブラウザ実機(localhost:3000)で verify: bonus 実行で trust 50→56.4 / DP 6→5 / funds 5000→4950、camp 実行で全員 trust 上昇 + `_trainerBuff: {weeksLeft:2, mult:1.5}` 付与 / DP 5→2 / funds 4950→4790(40万×4人=160万) / `_decisionWeekUsed[camp]=1`。決裁済み書類は onclick 除去 + `is-approved` 表示。`App.processWeek()`→`advanceFromWeekSummary()` で週 2→3 に進めると `_decisionDoneThisWeek` が `[]` にリセットされ、全書類が再度クリック可能になることを確認。決裁枠不足時は「決裁枠が不足しています(必要: ⚡3)」トーストでモーダル開かず。
+
+**保留事項(Phase 5 実機プレイ中に再検討)**:
+- **慰労会(party)の発動条件**: 現状 `morale < 50` 限定。実機で触ってみた感触では、危機時にしか出せないのは方針通りだが、「今の雰囲気を維持したい」予防的ニーズに応えるかは未決。Phase 5 で旧ケアボタンを外した後、通しプレイで再判断する。選択肢: ①常時使用可(cooldown 延長で抑制) / ②閾値緩和 morale<60 / ③cooldown 4週に延長 / ④現状維持。
 
 ### Phase 5: 既存ケアシステム廃止
 

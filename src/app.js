@@ -2049,6 +2049,16 @@ const Storage = {
       if (G.decisionPoints === undefined) {
         G = { ...G, decisionPoints: 6, decisionPointsMax: 6, _migrated_decisionPoints_v1: true };
       }
+      // 社長室 Phase 4: _decisionWeekUsed / _decisionDoneThisWeek 初期化
+      if (G._decisionWeekUsed === undefined) {
+        G = { ...G, _decisionWeekUsed: {} };
+      }
+      if (G._decisionDoneThisWeek === undefined) {
+        G = { ...G, _decisionDoneThisWeek: [] };
+      }
+      if (G.roster && G.roster.some(f => f._decisionWeekUsed === undefined)) {
+        G = { ...G, roster: G.roster.map(f => f._decisionWeekUsed === undefined ? { ...f, _decisionWeekUsed: {} } : f) };
+      }
 
       // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
       if (!G._migrated_retiredIds_v1) {
@@ -6834,6 +6844,114 @@ const App = {
     else Audio.play('notify');
     renderWeekScreen();
     return displayData;
+  },
+
+  // 社長室 Phase 4: 書類クリックハンドラ(モーダル分岐)
+  onShachoshitsuDocClick(docId) {
+    Audio.play('click');
+    // 決裁済みなら無視
+    if ((G._decisionDoneThisWeek || []).includes(docId)) return;
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    if (!doc) return;
+    // 事前チェック(UX: モーダルを開く前にはじく)
+    const dpCost = doc.decisionCost || 0;
+    if ((G.decisionPoints || 0) < dpCost) {
+      showToast(`決裁枠が不足しています(必要: ⚡${dpCost})`);
+      return;
+    }
+    const actualCost = Engine.shachoshitsu.calcCost(doc, G);
+    if ((G.funds || 0) < actualCost) {
+      showToast(`資金が不足しています(必要: ${actualCost}万)`);
+      return;
+    }
+    // 個人書類 / 団体書類 で分岐
+    if (doc.effect && doc.effect.target === 'team') {
+      showDecisionConfirmModal(docId, G);
+    } else {
+      showDecisionTargetModal(docId, G);
+    }
+  },
+
+  // 社長室 Phase 4: 決裁実行エントリポイント
+  // fighterId: 個人書類のとき対象選手ID、team書類のとき null
+  // 返り値: { ok: true, displayData } | { ok: false, error? }
+  executeDecision(docId, fighterId) {
+    const result = Engine.shachoshitsu.execute(docId, fighterId, G);
+    if (!result) { showToast('書類が見つかりません'); return { ok: false }; }
+    if (result.error === 'doc_not_found') { showToast('書類が見つかりません'); return { ok: false }; }
+    if (result.error === 'decision_points_insufficient') { showToast('決裁枠が不足しています'); return { ok: false }; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return { ok: false }; }
+    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return { ok: false }; }
+    if (result.error === 'not_slump') { showToast('スランプ中の選手ではありません'); return { ok: false }; }
+    if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
+    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
+    if (result.error === 'condition_not_met') { showToast('この書類の発動条件を満たしていません'); return { ok: false }; }
+    if (result.error === 'unsupported_doc') { showToast(`未対応の書類です: ${result.docId}`); return { ok: false }; }
+
+    // state 更新
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+      _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
+      _decisionDoneThisWeek: [...(G._decisionDoneThisWeek || []), docId],
+      gameLog: [...(G.gameLog || []), ...(result.events || [])],
+    };
+    if (result.relationships) G = { ...G, relationships: result.relationships };
+    if (result.orgPopDelta) {
+      const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
+      G = { ...G, orgPop: newOrgPop };
+    }
+    Storage.autoSave();
+
+    // displayData 構築(結果トースト用)
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    const reactionKey = result.reactionKey || docId;
+    let displayData = null;
+    if (result.reactionFighterId != null) {
+      const fighter = G.roster.find(f => f.id === result.reactionFighterId);
+      if (fighter) {
+        const text = Engine.shachoshitsu.getReactionText(reactionKey, fighter);
+        displayData = {
+          fighter, text, changes: result.changes || [],
+          cost: result.cost || 0, remainingFunds: result.funds,
+          icon: doc?.icon || '', label: doc?.label || '', docId,
+        };
+      }
+    } else {
+      displayData = {
+        fighter: null, isTeam: true, changes: result.changes || [],
+        cost: result.cost || 0, remainingFunds: result.funds,
+        icon: doc?.icon || '', label: doc?.label || '', docId,
+      };
+    }
+
+    // サウンド(コスト別、既存流用)
+    const soundCost = result.cost || 0;
+    if (docId === 'camp') Audio.play('fanfare');
+    else if (soundCost >= 160) Audio.play('award');
+    else if (soundCost >= 80) Audio.play('event');
+    else Audio.play('notify');
+
+    // 演出フック: 書類DOMに朱印アニメ(is-approving)を付与 → 0.6秒後に再レンダ(is-approved に切替)
+    // HUDの最初の「立っている」hankoに falling クラスを付与
+    try {
+      const docEl = document.querySelector(`.shachoshitsu-doc[data-doc-id="${docId}"]`);
+      if (docEl) docEl.classList.add('is-approving');
+      const firstStandingHanko = document.querySelector('.shachoshitsu-hud .hanko.available:not(.falling)');
+      if (firstStandingHanko) firstStandingHanko.classList.add('falling');
+    } catch (e) {}
+
+    // 結果トースト
+    if (typeof showDecisionResultToast === 'function') showDecisionResultToast(displayData);
+
+    // 0.6秒後に再レンダリングして決裁済み状態(is-approved)を反映
+    setTimeout(() => {
+      if (typeof renderShachoshitsu === 'function') renderShachoshitsu();
+    }, 600);
+
+    return { ok: true, displayData };
   },
 
   // v0.96: Mission system
