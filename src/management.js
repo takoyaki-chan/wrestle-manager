@@ -12781,10 +12781,12 @@ Engine.shachoshitsu = {
       return roster.some(f => !f.isRental && (f.slump || f.motivationLoss));
     }
 
-    // morale_low: ロッカールームmoraleが50未満
+    // morale_low: ロッカールームの雰囲気が60未満
+    // Phase 4 レビュー反映(2026-04-15): 50→60 に緩和。
+    // 好調時(60+)には出ないが、「少し陰ってきた」段階から予防的に使える。
     if (cond === 'morale_low') {
       const morale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
-      return morale < 50;
+      return morale < 60;
     }
 
     // 未知の条件IDは「発動不可」として安全側に倒す
