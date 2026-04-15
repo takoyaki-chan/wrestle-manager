@@ -3067,6 +3067,60 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-decision-team-summary .value{color:var(--text-main);font-weight:700}
 .shachoshitsu-decision-team-summary .effect{color:var(--gold);font-size:12px;line-height:1.5}
 
+/* ─── 社長室 交渉モード (Phase A) ─── */
+/* 壁前の発言者(ポートレイト+吹き出し) */
+.negotiation-wall{position:relative}
+.negotiation-speaker{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:flex-end;gap:12px;animation:neg-speaker-in 0.4s ease-out both}
+@keyframes neg-speaker-in{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.negotiation-speaker-portrait{width:96px;height:96px;border-radius:8px;overflow:hidden;
+  flex-shrink:0;border:2px solid rgba(196,164,120,0.55);
+  box-shadow:0 4px 14px rgba(0,0,0,0.6)}
+.negotiation-bubble{max-width:400px;
+  background:rgba(20,16,12,0.88);backdrop-filter:blur(6px);
+  border:1px solid rgba(196,164,120,0.35);border-radius:10px 10px 10px 2px;
+  padding:12px 16px;font-size:13px;line-height:1.7;color:var(--text-main);
+  animation:neg-bubble-in 0.35s ease-out 0.1s both}
+@keyframes neg-bubble-in{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+/* 態度バッジ */
+.neg-badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px}
+.neg-badge-raise   {background:rgba(243,156,18,0.18);color:#f39c12}
+.neg-badge-transfer{background:rgba(231,76,60,0.18); color:#e74c3c}
+.neg-badge-sudden  {background:rgba(142,68,173,0.18); color:#8e44ad}
+/* 机上の交渉書類カード */
+.negotiation-card{background:var(--paper,#e8e4d8);border-radius:6px;padding:22px 26px;
+  max-width:540px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.40);color:#2a2318;
+  animation:neg-card-in 0.3s ease-out both}
+@keyframes neg-card-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.neg-card-title{font-size:14px;font-weight:700;padding-bottom:10px;margin-bottom:14px;
+  border-bottom:1px solid rgba(80,60,40,0.25);color:#2a2318;line-height:1.4}
+.neg-card-title .neg-badge{vertical-align:middle}
+.neg-card-info{font-size:12px;margin:8px 0 12px;padding:8px 12px;border-radius:6px}
+.neg-card-info-raise   {background:rgba(243,156,18,0.12)}
+.neg-card-info-transfer{background:rgba(231,76,60,0.10)}
+.neg-card-info-sudden  {background:rgba(142,68,173,0.10)}
+.neg-card-faces{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;
+  margin-bottom:16px;padding:10px;background:rgba(80,60,40,0.06);border-radius:8px}
+.neg-card-face-item{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.neg-stat-row{font-size:13px;margin-bottom:10px;line-height:1.7}
+.neg-choices{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+/* 交渉選択肢ボタン — paper背景なのでダーク系ボタンに */
+.neg-btn{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;
+  border:1px solid rgba(60,45,30,0.35);background:rgba(60,45,30,0.10);
+  color:#2a2318;font-family:'Noto Sans JP',sans-serif;transition:background 0.15s}
+.neg-btn:hover:not(:disabled){background:rgba(60,45,30,0.20)}
+.neg-btn:disabled{opacity:0.4;cursor:default}
+.neg-btn .neg-btn-hint{font-size:11px;color:rgba(42,35,24,0.65);margin-left:8px}
+/* 結果サマリー */
+.neg-result-section{padding:10px;border-radius:8px;margin-bottom:12px}
+.neg-result-stay   {background:rgba(46,204,113,0.10)}
+.neg-result-depart {background:rgba(231,76,60,0.08)}
+.neg-result-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+/* 交渉中HUDのラベル(印鑑を置き換え) */
+.neg-hud-label{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:1px;color:var(--shachoshitsu-accent,#c00000)}
+
 /* ─── 社長室 Phase 5: 決裁結果モーダル (個人/team 両対応) ─── */
 @keyframes decisionResultHeroIn{
   from{opacity:0;transform:translateY(14px) scale(0.94)}

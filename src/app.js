@@ -3483,6 +3483,9 @@ const App = {
       return;
     }
 
+    // 社長室に遷移（交渉モード）
+    showScreen('shachoshitsu');
+
     const season = G.season || 1;
     const results = [];
     let idx = 0;

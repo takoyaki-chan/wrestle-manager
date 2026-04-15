@@ -3270,6 +3270,38 @@ function renderShachoshitsu() {
   el.innerHTML = html;
 }
 
+// ─── Phase A: 交渉モード共通テンプレート ───────────────────────────────────────
+// wallInnerHtml: 壁背景の上に重ねる要素（選手+吹き出し等）。空文字でも可。
+// deskInnerHtml: 机カード内のコンテンツ（金額情報・選択肢等）。
+function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
+  const el = document.getElementById('shachoshitsuContent');
+  if (!el) return;
+
+  const season = G.season || 1;
+  const fundsStr = Math.round(G.funds).toLocaleString();
+  const dateStr = Engine.util.formatDate(G.season, G.week);
+
+  el.innerHTML = `
+    <div class="shachoshitsu-hud">
+      <div class="shachoshitsu-hud-left">
+        <span class="shachoshitsu-hud-date">${dateStr}</span>
+        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+      </div>
+      <div class="shachoshitsu-hud-right">
+        <span class="neg-hud-label">📋 シーズン${season} 契約更新</span>
+      </div>
+    </div>
+    <div class="shachoshitsu-wall negotiation-wall" style="background-image:url('../image/shachoshitsu/wall-window-winter.webp')">
+      ${wallInnerHtml || ''}
+    </div>
+    <div class="shachoshitsu-desk">
+      <div class="negotiation-card">
+        ${deskInnerHtml || ''}
+      </div>
+    </div>
+  `;
+}
+
 function renderScout() {
   const el = document.getElementById('scoutContent');
   document.getElementById('faCount').textContent = G.freeAgents.length;
