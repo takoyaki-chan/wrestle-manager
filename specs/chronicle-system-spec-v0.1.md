@@ -1,6 +1,6 @@
 # 団体年代記システム 仕様書 v0.1
 
-> **実装状況 (2026-04-15)**: Phase 1-2 実装完了。Phase 1 = コア機能(Engine.chronicle モジュール、引退フック 4パス、マイグレーション、データベース「📖 年代記」サブタブ UI)。Phase 2 = 表現の充実(サブタイトルテンプレ 7カテゴリ×3-5 = 27文、章末フレーバー slight/moderate/strong×4バリエーション = 60 組合せ、決定論的選択ヘルパー `_pickTemplate`、進行中章バッジ強化(WRITING マーク + ストライプ背景 + 書きかけ注釈 + 章末書きかけ版フォールバック)、空状態 UI 強化(白紙期間/在籍する書き手/筆頭3名/flavor))。auto-sim Phase 1:100/Phase 2:50 シーズン両 ALL CLEAR。Phase 4 気風の pot 適用は **dry run のまま**（spirit は積み上がるが新人生成には未適用）。Phase 3-4 は本仕様の §9 段階リリース計画に従って後続。§10 オープン項目のうち「retiredFighters リサイクル仕様確認」は解決（表彰式後に `[]` クリアされるため fighterArchive 必須と確定）、「サブタイトルテンプレ拡充」「章末フレーバーバリエーション拡充」は Phase 2 で解消。
+> **実装状況 (2026-04-15)**: Phase 1-3 実装完了。Phase 1 = コア機能(Engine.chronicle モジュール、引退フック 4パス、マイグレーション、データベース「📖 年代記」サブタブ UI)。Phase 2 = 表現の充実(サブタイトルテンプレ 7カテゴリ×3-5 = 27文、章末フレーバー slight/moderate/strong×4バリエーション = 60 組合せ、決定論的選択ヘルパー `_pickTemplate`、進行中章バッジ強化、空状態 UI 強化)。Phase 3 = 細部調整(2枚看板専用レイアウト: `.chron-dual-wrap` グリッド + 個別ポートレート/ステータス/記者コメント、HoF 相互リンク: エース・同期に `🏅` バッジ + `openHofDetailById()` / HoF 詳細モーダルに「📖 年代記で見る」ボタン + `openChronicleForFighter()`、手動再構築ボタンは Phase 1 実装済み)。auto-sim Phase 1:100/Phase 2:50 シーズン ALL CLEAR(Phase 3 は UI 層のみ変更のため engine auto-sim 不要)。Phase 4 気風の pot 適用は **dry run のまま**（spirit は積み上がるが新人生成には未適用）。§10 オープン項目のうち「retiredFighters リサイクル仕様確認」は解決（表彰式後に `[]` クリアされるため fighterArchive 必須と確定）、「サブタイトルテンプレ拡充」「章末フレーバーバリエーション拡充」は Phase 2 で解消。
 
 ## 1. 背景と目的
 

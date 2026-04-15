@@ -5619,6 +5619,10 @@ function showHofDetail(idx) {
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
   const shieldGlow = level >= 3 ? 'filter:drop-shadow(0 0 8px rgba(243,156,18,0.5))' : '';
 
+  // 年代記チャプターに登場するか（「年代記で見る」ボタン表示判定）
+  const hasChronicleChapter = !!(G && G.chronicle && ((G.chronicle.chaptersCache || {}).chapters || [])
+    .some(ch => [...(ch.aces || []), ...(ch.peers || [])].some(c => c.id === h.id)));
+
   const modal = document.createElement('div');
   modal.className = 'db-hof-detail-overlay';
   modal.onclick = e => { if (e.target === modal) modal.remove(); };
@@ -5648,7 +5652,8 @@ function showHofDetail(idx) {
     <div style="margin-top:14px;font-size:13px;color:${borderColor}">
       殿堂pt: ${h.hofPoints || 0} ／ 殿堂入り: S${h.inductionSeason || '?'}
     </div>
-    <div style="margin-top:14px">
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">📖 年代記で見る</button>` : ''}
       <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove()">閉じる</button>
     </div>
   </div>`;
@@ -5673,6 +5678,35 @@ function rebuildChronicle() {
   renderDatabase();
 }
 window.rebuildChronicle = rebuildChronicle;
+
+/** 年代記 → HoF: fighter ID から直接 HoF 詳細モーダルを開く */
+function openHofDetailById(fighterId) {
+  const allEntries = _getAllHofEntries();
+  const idx = allEntries.findIndex(h => h.id === fighterId);
+  if (idx < 0) return;
+  window._hofFilteredList = allEntries;
+  showHofDetail(idx);
+}
+window.openHofDetailById = openHofDetailById;
+
+/** HoF → 年代記: fighter が登場する章を開く */
+function openChronicleForFighter(fighterId) {
+  if (!G || !G.chronicle) return;
+  const chapters = (G.chronicle.chaptersCache || {}).chapters || [];
+  let targetIdx = null;
+  for (let i = 0; i < chapters.length; i++) {
+    const all = [...(chapters[i].aces || []), ...(chapters[i].peers || [])];
+    if (all.some(c => c.id === fighterId)) { targetIdx = i + 1; break; }
+  }
+  if (targetIdx === null) return;
+  const overlay = document.querySelector('.db-hof-detail-overlay');
+  if (overlay) overlay.remove();
+  _dbSubTab = 6;
+  _dbChronicleIdx = targetIdx;
+  showScreen('database');
+  renderDatabase();
+}
+window.openChronicleForFighter = openChronicleForFighter;
 
 function _chronicleStyleLabel(style) {
   const m = { striker: 'STRIKER', grappler: 'GRAPPLER', submission: 'SUBMISSION', brawler: 'BRAWLER', allround: 'ALLROUND' };
@@ -6107,6 +6141,114 @@ function _chronicleStyleBlock() {
   margin-top: 8px; letter-spacing: 0.3px;
   font-style: normal; line-height: 1.5;
 }
+/* Phase 3: HoFバッジ・相互リンク */
+.chron-hof-badge {
+  display: inline-block; font-size: 11px;
+  vertical-align: middle; margin-left: 4px;
+  cursor: pointer; opacity: 0.8; transition: opacity .15s;
+}
+.chron-hof-badge:hover { opacity: 1; }
+.chron-hof-link {
+  cursor: pointer;
+  border-bottom: 1px dotted var(--chr-gold);
+  transition: color .15s;
+}
+.chron-hof-link:hover { color: var(--chr-gold); }
+/* Phase 3: 2枚看板専用レイアウト */
+.chron-dual-wrap {
+  display: grid;
+  grid-template-columns: 1fr 28px 1fr;
+  gap: 0;
+  align-items: start;
+  padding: 0 4px;
+}
+.chron-dual-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.chron-dual-portrait {
+  width: 130px; height: 168px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
+  border: 3px solid var(--chr-gold);
+  box-shadow: 0 0 10px rgba(154,112,32,0.22),
+              inset 0 0 24px rgba(95,69,35,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--chr-ink);
+  position: relative; overflow: hidden;
+}
+.chron-dual-portrait img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center top;
+}
+.chron-dual-portrait::before {
+  content: ''; position: absolute; inset: 3px;
+  border: 1px solid rgba(154,112,32,0.5);
+  pointer-events: none;
+}
+.chron-dual-portrait-letter {
+  font-size: 72px; font-weight: 900;
+}
+.chron-dual-info { width: 100%; text-align: center; }
+.chron-dual-tagline {
+  display: inline-block;
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--chr-gold); text-transform: uppercase;
+  font-weight: 700; margin-bottom: 3px;
+}
+.chron-dual-name {
+  font-size: 18px; font-weight: 900;
+  color: var(--chr-ink); letter-spacing: 0.5px;
+  line-height: 1.2; margin-bottom: 8px;
+}
+.chron-dual-meta-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px dashed var(--chr-rule);
+  border-bottom: 1px dashed var(--chr-rule);
+  margin-bottom: 8px;
+}
+.chron-dual-meta { text-align: center; }
+.chron-dual-meta-key {
+  font-size: 7px; color: var(--chr-ink-dim);
+  letter-spacing: 0.6px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 1px;
+}
+.chron-dual-meta-val {
+  font-size: 15px; color: var(--chr-ink);
+  line-height: 1; font-weight: 700;
+}
+.chron-dual-meta-val .small { font-size: 10px; color: var(--chr-ink-dim); }
+.chron-dual-quote {
+  font-size: 11px; line-height: 1.65;
+  color: var(--chr-ink-sub);
+  padding: 8px 10px;
+  background: rgba(200,190,170,0.22);
+  border-left: 3px solid var(--chr-gold);
+  border-radius: 4px;
+  font-weight: 500; text-align: left;
+  width: 100%; box-sizing: border-box;
+}
+.chron-dual-quote::before {
+  content: '記者の目'; font-size: 8px; letter-spacing: 1px;
+  color: var(--chr-gold); font-weight: 700;
+  text-transform: uppercase; display: block; margin-bottom: 3px;
+}
+.chron-dual-divider {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding-top: 56px;
+  border-left: 1px solid var(--chr-rule);
+  border-right: 1px solid var(--chr-rule);
+  height: 100%; min-height: 180px;
+}
+.chron-dual-vs {
+  font-size: 12px; letter-spacing: 3px;
+  color: var(--chr-gold-light); font-weight: 900;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
 </style>`;
 }
 
@@ -6193,59 +6335,112 @@ function _renderDbChronicle() {
     ${isInProgress ? `<div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>` : ''}
   </div>`;
 
-  // Ace feature row
+  // Ace feature row — Phase 3: 2枚看板専用レイアウト + HoFバッジ
   const aces = current.aces || [];
   const peers = current.peers || [];
   const isDual = aces.length >= 2;
 
-  const buildAceCard = (a) => {
+  // HoF IDセット (年代記内でのHoFバッジ判定用)
+  const hofSet = new Set(((G.allHallOfFame || {}).player || []).map(h => h.id));
+
+  // ポートレート HTML ビルダー
+  const _buildAcePortrait = (a, isDualPortrait) => {
     const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(a.id || 0, a.peakOVR || 0) : '';
-    const surname = Engine.chronicle._getSurname(a.name);
-    const letter = surname.charAt(0);
-    const imgHtml = pUrl
+    const letter = Engine.chronicle._getSurname(a.name).charAt(0);
+    if (isDualPortrait) {
+      const img = pUrl
+        ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-dual-portrait-letter" style="display:none">${letter}</span>`
+        : `<span class="chron-dual-portrait-letter">${letter}</span>`;
+      return `<div class="chron-dual-portrait">${img}</div>`;
+    }
+    const img = pUrl
       ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-ace-portrait-letter" style="display:none">${letter}</span>`
       : `<span class="chron-ace-portrait-letter">${letter}</span>`;
-    return `<div class="chron-ace-portrait">${imgHtml}</div>`;
+    return `<div class="chron-ace-portrait">${img}</div>`;
   };
 
   html += `<div class="chron-section">
-    <div class="chron-sec-label">${isDual ? 'この時代の二枚看板' : 'この時代のエース'}</div>
-    <div class="chron-ace-row${isDual ? ' dual' : ''}">`;
+    <div class="chron-sec-label">${isDual ? 'この時代の二枚看板' : 'この時代のエース'}</div>`;
 
   if (isDual) {
-    html += buildAceCard(aces[0]);
-    html += buildAceCard(aces[1]);
+    // ── 2枚看板専用レイアウト ────────────────────────────
+    const buildDualCard = (a) => {
+      const hofBadge = hofSet.has(a.id)
+        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${a.id})" title="殿堂入り">🏅</span>`
+        : '';
+      const nameHtml = hofSet.has(a.id)
+        ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${a.name}</span>${hofBadge}`
+        : a.name;
+      return `<div class="chron-dual-card">
+        ${_buildAcePortrait(a, true)}
+        <div class="chron-dual-info">
+          <div class="chron-dual-tagline">ACE OF THE ERA</div>
+          <div class="chron-dual-name">${nameHtml}</div>
+          <div class="chron-dual-meta-row">
+            <div class="chron-dual-meta">
+              <div class="chron-dual-meta-key">PEAK OVR</div>
+              <div class="chron-dual-meta-val">${a.peakOVR || 0}</div>
+            </div>
+            <div class="chron-dual-meta">
+              <div class="chron-dual-meta-key">STYLE</div>
+              <div class="chron-dual-meta-val" style="font-size:11px">${_chronicleStyleLabel(a.style)}</div>
+            </div>
+            <div class="chron-dual-meta">
+              <div class="chron-dual-meta-key">SEASONS</div>
+              <div class="chron-dual-meta-val">${a.seasons || 1}<span class="small">期</span></div>
+            </div>
+            <div class="chron-dual-meta">
+              <div class="chron-dual-meta-key">TITLES</div>
+              <div class="chron-dual-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
+            </div>
+          </div>
+          <div class="chron-dual-quote">${_chronicleAceQuote(a, current)}</div>
+        </div>
+      </div>`;
+    };
+    html += `<div class="chron-dual-wrap">
+      ${buildDualCard(aces[0])}
+      <div class="chron-dual-divider"><div class="chron-dual-vs">＆</div></div>
+      ${buildDualCard(aces[1])}
+    </div>`;
   } else {
-    html += buildAceCard(aces[0]);
+    // ── 単独エースレイアウト（従来ベース） ──────────────────
+    const a = aces[0];
+    const hofBadge = hofSet.has(a.id)
+      ? `<span class="chron-hof-badge" onclick="openHofDetailById(${a.id})" title="殿堂入り">🏅</span>`
+      : '';
+    const nameHtml = hofSet.has(a.id)
+      ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${a.name}</span>${hofBadge}`
+      : a.name;
+    html += `<div class="chron-ace-row">
+      ${_buildAcePortrait(a, false)}
+      <div>
+        <div class="chron-ace-tagline">ACE OF THE ERA</div>
+        <div class="chron-ace-name">${nameHtml}</div>
+        <div class="chron-ace-meta-row">
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">PEAK OVR</div>
+            <div class="chron-ace-meta-val">${a.peakOVR || 0}</div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">STYLE</div>
+            <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(a.style)}</div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">SEASONS</div>
+            <div class="chron-ace-meta-val">${a.seasons || 1}<span class="small">期</span></div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">TITLES</div>
+            <div class="chron-ace-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
+          </div>
+        </div>
+        <div class="chron-ace-quote">${_chronicleAceQuote(a, current)}</div>
+      </div>
+    </div>`;
   }
 
-  // Ace info (集約 or 単独)
-  const primary = aces[0];
-  html += `<div>
-    <div class="chron-ace-tagline">${isDual ? 'ACES OF THE ERA' : 'ACE OF THE ERA'}</div>
-    <div class="chron-ace-name">${aces.map(a => a.name).join(' ／ ')}</div>
-    <div class="chron-ace-meta-row">
-      <div class="chron-ace-meta">
-        <div class="chron-ace-meta-key">PEAK OVR</div>
-        <div class="chron-ace-meta-val">${primary.peakOVR || 0}</div>
-      </div>
-      <div class="chron-ace-meta">
-        <div class="chron-ace-meta-key">STYLE</div>
-        <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(primary.style)}</div>
-      </div>
-      <div class="chron-ace-meta">
-        <div class="chron-ace-meta-key">SEASONS</div>
-        <div class="chron-ace-meta-val">${primary.seasons || 1}<span class="small">期</span></div>
-      </div>
-      <div class="chron-ace-meta">
-        <div class="chron-ace-meta-key">TITLES</div>
-        <div class="chron-ace-meta-val">${primary.titleReigns || 0}<span class="small">戴冠</span></div>
-      </div>
-    </div>
-    <div class="chron-ace-quote">
-      ${_chronicleAceQuote(primary, current)}
-    </div>
-  </div></div></div>`;
+  html += `</div>`;
 
   // Two-column body
   html += `<div class="chron-two-col">
@@ -6282,11 +6477,18 @@ function _renderDbChronicle() {
       const metaParts = [styleLabel];
       if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
       else if (p.titleReigns > 0) metaParts.push(`${p.titleReigns}度戴冠`);
+      // HoFバッジ (hofSet は上のエースセクションで定義済み)
+      const pHofBadge = hofSet.has(p.id)
+        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${p.id})" title="殿堂入り">🏅</span>`
+        : '';
+      const pNameHtml = hofSet.has(p.id)
+        ? `<span class="chron-hof-link" onclick="openHofDetailById(${p.id})">${p.name}</span>${pHofBadge}`
+        : p.name;
       html += `<li class="chron-gen-member${isIdol ? ' idol' : ''}">
         <div class="chron-gen-portrait">${imgHtml}</div>
         <div class="chron-gen-info">
           ${isIdol ? `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>` : ''}
-          <div class="chron-gen-name">${p.name}</div>
+          <div class="chron-gen-name">${pNameHtml}</div>
           <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
         </div>
         <div class="chron-gen-ovr">${p.peakOVR || 0}</div>
