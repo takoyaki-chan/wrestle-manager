@@ -6810,12 +6810,16 @@ const App = {
 
   // 社長室 Phase 5: 選手ポップアップから「声をかける」(encourage)
   // 決裁枠も資金も消費しない。社長自らが足を運ぶ自発的行動。
-  // slump/motivationLoss 中の選手に対してのみ発動可能。
+  // 発動条件: slump/motivationLoss 中 OR 信頼が不安定(trust<60)
   encourageFighter(fighterId) {
     const target = G.roster.find(f => f.id === fighterId);
     if (!target) { showToast('選手が見つかりません'); return; }
-    if (target.isRental || target.injury) { showToast('声をかけられない状態です'); return; }
-    if (!target.slump && !target.motivationLoss) { showToast('この選手には今、声をかける理由がない'); return; }
+    if (target.isRental || target.injury) { showToast('今は声をかけられない'); return; }
+    const targetTrust = target.trust != null ? target.trust : 50;
+    if (!target.slump && !target.motivationLoss && targetTrust >= 60) {
+      showToast('この選手には今、声をかける理由がない');
+      return;
+    }
     // cooldown チェック(選手単位、1週)
     const lastUsed = (target._decisionWeekUsed || {}).encourage || -99;
     if ((G.week - lastUsed) < 1) { showToast('今週はもう声をかけた'); return; }
@@ -6826,7 +6830,8 @@ const App = {
       const msg = {
         doc_not_found: 'この行動は現在利用できません',
         fighter_not_found: '選手が見つかりません',
-        not_slump: 'この選手には今、声をかける理由がない',
+        not_needed: 'この選手には今、声をかける理由がない',
+        not_slump: 'この選手には今、声をかける理由がない',  // 旧エラーIDの互換
         cooldown: '今週はもう声をかけた',
         condition_not_met: '声をかける状況ではない',
         funds_insufficient: '資金が不足しています',

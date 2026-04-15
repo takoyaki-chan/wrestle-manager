@@ -2789,23 +2789,35 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       html += `</div>`;
     }
 
-    // ── 相関図ボタン + 声をかけるボタン ──
-    // 声をかける: 自団体の slump/motivationLoss 選手のみ表示(決裁枠を使わない社長の自発的行動)
-    const canEncourage = isRoster && !c.isRental && !c.injury && (c.slump || c.motivationLoss);
-    // 今週既に声をかけたかチェック(選手別 cooldown: 1週)
+    // ── 声をかけるアクションバー(気にかける理由がある選手のみ表示) ──
+    // 発動条件: 自団体・非レンタル・非怪我 かつ (スランプ/モチベ喪失 または 信頼が揺らいでいる trust<60)
+    // ドラマ的な演出として、ヘッダー直下に大きく配置+脈動アニメで社長の視線を誘導する
+    const curTrust = c.trust != null ? c.trust : 50;
+    const hasSlumpIssue = c.slump || c.motivationLoss;
+    const hasTrustIssue = curTrust < 60;
+    const canEncourage = isRoster && !c.isRental && !c.injury && (hasSlumpIssue || hasTrustIssue);
+    // 選手別 cooldown(1週): 今週既に声をかけていれば非活性
     const encourageLastWeek = (c._decisionWeekUsed || {}).encourage || -99;
     const encourageUsedThisWeek = (G.week - encourageLastWeek) < 1;
-    let encourageBtnHtml = '';
     if (canEncourage) {
-      if (encourageUsedThisWeek) {
-        encourageBtnHtml = `<span style="font-size:12px;padding:5px 14px;background:rgba(180,180,180,0.08);color:var(--text-dim);border:1px solid rgba(180,180,180,0.2);border-radius:4px;letter-spacing:0.5px">💬 今週は声をかけた</span>`;
-      } else {
-        encourageBtnHtml = `<button onclick="App.encourageFighter(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.4);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(230,126,34,0.7)';this.style.background='rgba(230,126,34,0.18)'" onmouseout="this.style.borderColor='rgba(230,126,34,0.4)';this.style.background='rgba(230,126,34,0.12)'" title="社長自ら声をかけに行く(決裁枠不要)">💬 声をかける</button>`;
-      }
+      // 理由テキスト(スランプ優先、次にモチベ喪失、次に信頼揺らぎ)
+      let reasonText = '';
+      if (c.slump) reasonText = 'スランプ中の選手だ。今日は、少し時間を取ろう。';
+      else if (c.motivationLoss) reasonText = 'モチベーションを失いかけている。放っておけない。';
+      else reasonText = '最近、この選手の様子が気になっている。';
+
+      const btnHtml = encourageUsedThisWeek
+        ? `<span class="fp-encourage-btn is-done">💬 今週はもう声をかけた</span>`
+        : `<button class="fp-encourage-btn" onclick="App.encourageFighter(${c.id})" title="社長自ら足を運んで声をかける(決裁枠・資金とも消費しない)">💬 声をかけに行く</button>`;
+      html += `<div class="fp-encourage-bar">
+        <div class="fp-encourage-reason">${reasonText}</div>
+        ${btnHtml}
+      </div>`;
     }
+
+    // ── 相関図ボタン(全キャラ共通) ──
     html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
-      ${encourageBtnHtml}
     </div>`;
 
     // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──

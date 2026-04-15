@@ -11698,19 +11698,21 @@ const DECISION_DOCS = {
   },
   encourage: {
     id: 'encourage',
-    label: '面談申込書',
+    label: '声かけ',
     category: 'care',
     categoryLabel: '選手ケア',
     icon: '💬',
     cost: 0,
     decisionCost: 0,
-    activationCondition: 'slump_or_motivation_loss',
+    // Phase 5: 社長室の机には並ばない。選手ポップアップから直接実行される自発的行動。
+    // activationCondition は null(execute 側で個別に発動条件をチェックする)
+    activationCondition: null,
     minOrgPop: 0,
     cooldown: 1,
-    body: 'スランプ中の選手と対話し、気持ちを立て直す機会を設ける',
-    detailText: '社長自ら面談の場を設け、選手の本音に耳を傾ける。費用も決裁枠もかからず、スランプ脱出の糸口を掴める気軽な一手。',
-    effectSummary: 'スランプから抜け出しやすくなる + 信頼がわずかに上がる',
-    recommendation: '不調やモチベーション低下の初期段階で真っ先に使いたい。',
+    body: '気にかけている選手に社長自ら声をかけに行く',
+    detailText: '決裁枠も資金も使わない、社長自らの自発的な行動。スランプ中・モチベ喪失中・信頼が揺らいでいる選手に足を運んで声をかける。',
+    effectSummary: '信頼がわずかに上がる(スランプ/モチベ喪失なら回復促進も)',
+    recommendation: '気になる選手のポップアップから直接実行する。机には並ばない。',
     effect: { target: 'individual', trust: 0.77, slumpMomentum: { high: 4.0, low: 2.5 } },
   },
   refresh_leave: {

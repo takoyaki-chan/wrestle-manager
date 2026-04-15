@@ -12607,19 +12607,28 @@ Engine.shachoshitsu = {
         events.push(`💰 ${f.name}にボーナスを支給`);
         if (repeatCount >= 2) reactionKey = 'bonus_repeat';
       } else if (docId === 'encourage') {
-        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
-        const highTrust = (f.trust || 50) >= 60;
-        const sm = doc.effect.slumpMomentum || {};
-        const momentumBoost = highTrust ? (sm.high || 4.0) : (sm.low || 2.5);
-        if (f.slump) {
-          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+        // Phase 5: 選手ポップアップから「💬 声をかける」として実行される
+        // 気にかける理由がある選手 = slump/motivationLoss OR 信頼が不安定(trust<60)
+        const curTrust = f.trust != null ? f.trust : 50;
+        const hasSlumpIssue = f.slump || f.motivationLoss;
+        const hasTrustIssue = curTrust < 60;
+        if (!hasSlumpIssue && !hasTrustIssue) return { error: 'not_needed' };
+
+        const highTrust = curTrust >= 60;  // 実質 slump があって trust が立ってる状態だけ
+        if (hasSlumpIssue) {
+          const sm = doc.effect.slumpMomentum || {};
+          const momentumBoost = highTrust ? (sm.high || 4.0) : (sm.low || 2.5);
+          if (f.slump) {
+            f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+          }
+          if (f.motivationLoss) {
+            f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
+          }
         }
-        if (f.motivationLoss) {
-          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.7 } };
-        }
+        // trust 効果は全パターン共通(trust<60 だけの選手にも少し回復)
         f = applyTrust(f, doc.effect.trust || 0.77);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
-        events.push(`💬 ${f.name}と面談(スランプ回復促進)`);
+        events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'refresh_leave') {
         if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
         const momentumBoost = typeof doc.effect.slumpMomentum === 'number'
@@ -12664,7 +12673,14 @@ Engine.shachoshitsu = {
         changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
       }
       if (docId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
-      if (docId === 'encourage') changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
+      if (docId === 'encourage') {
+        // slump/motivLoss 中なら「スランプ回復」、そうでない(trust 低下のみ)なら「気持ちの揺らぎ」
+        if (f.slump || f.motivationLoss) {
+          changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
+        } else {
+          changes.push({ label: '気持ちの揺らぎ', emoji: '💭', text: '話を聞いてもらえたことで、少しだけ救われたようだ' });
+        }
+      }
       if (docId === 'refresh_leave') changes.push({ label: 'スランプ回復', emoji: '💪', text: '心身ともにリフレッシュし、回復が大きく進んだ' });
     }
 
