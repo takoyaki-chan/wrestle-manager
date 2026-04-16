@@ -1,11 +1,12 @@
 # タッグマッチシステム設計スペック v0.1
 
 > 2026-03-24 作成
-> ステータス: Phase 1+3 完了（2026-04-16）
+> ステータス: Phase 1+2+3 完了（2026-04-16）
 > Phase 1: Engine.tagMatch.simulateTagMatch を match-engine.js に統合。TAG_MATCH_CONFIG/スタイル相性/タッグ技を data.js に追加
 > Phase 3: 試合結果処理統合。applyTagMatchResult(bond/rivalry)、executeShow全面タッグ対応(成長/h2h/matchupLog/tagExp/trust/人気)、auto-simタッグ試合生成
+> Phase 2: 興行カード編成UI。タッグ枠追加(2枠消費)/4名選択ピッカー/skipMatchタッグ分岐/App.finalizeShow全面タッグ対応/renderMatchPreview+renderShowResultタッグ表示
 > auto-sim 100シーズン ALL CLEAR
-> Phase 2以降: 興行カード編成UI / ビジュアル観戦 / AI連携
+> Phase 4以降: ビジュアル観戦 / AI連携
 
 ---
 

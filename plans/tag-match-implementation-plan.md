@@ -31,20 +31,23 @@
 
 ---
 
-### Phase 2: 興行カード編成（app.js / ui-render.js）
+### Phase 2: 興行カード編成（app.js / ui-render.js / ui-common.js）✅ 完了 2026-04-16
 
-**目標**: プレイヤーがタッグマッチをカードに組める
+**完了内容**:
+- 興行準備画面に「🤝 タッグマッチ枠」ボタン追加（空シングル2枠をタッグ1枠に変換）
+- タッグ1試合=シングル2枠消費ルール（getCardWeight()ベースpad/trim）
+- チーム編成UI（4名独立ピッカー+ケミストリー表示+タッグ経験表示）
+- App.addTagSlot/removeTagSlot/setTagSlotFighter（スワップ対応）
+- executeShow: sanitize/validMatches/confrontationのタッグ対応
+- skipMatch: タッグ→simulateTagMatch呼び出し（bond/tagExp連携）
+- watchMatch: タッグは自動スキップ（Phase 4まで）
+- renderMatchPreview: タッグ試合カード（4名表示+スキップのみ）
+- App.finalizeShow: 全30+箇所のタッグ対応（因縁スキップ/成長4名/relationship/h2h/tagExp等）
+- renderShowResult: タッグ結果カード表示
+- 自動編成はシングルのみ（タッグは手動追加）
+- ビジュアル観戦はPhase 4で対応
 
-**作業内容**:
-- 興行準備画面にタッグマッチ枠を追加
-- チーム編成UI（2名×2チーム選択）
-- タッグ枠数の制限ルール（1興行に最大1-2タッグ？）
-- AI団体のタッグカード自動編成（`Engine.tagMatch.aiFormation`）
-
-**検討事項**:
-- シングルとタッグの混合カード（例: シングル3試合 + タッグ1試合）
-- レンタル選手のタッグ参加可否
-- タイトルマッチ（タッグ王座の導入時期は別議論）
+**検証**: auto-sim 100シーズン ALL CLEAR
 
 ---
 
