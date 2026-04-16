@@ -3798,6 +3798,7 @@ function renderMatchPreview() {
         </div>`;
       } else if (isNext) {
         html += `<div class="smc-action">
+          <button class="smc-btn-watch" onclick="App.watchMatch(${idx})">🎬 試合を観る</button>
           <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">≫ スキップ</button>
         </div>`;
       }
