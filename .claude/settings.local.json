@@ -154,7 +154,9 @@
       "Bash(git checkout:*)",
       "Bash(py --version)",
       "Bash(py scripts/apply-ojousama-rewrites.py)",
-      "Bash(py -c \"import pandas; print\\('pandas ok'\\)\")"
+      "Bash(py -c \"import pandas; print\\('pandas ok'\\)\")",
+      "Bash(rm -rf \"C:/Users/nkmrk/.claude/scheduled-tasks/ai-parity-batch/\")",
+      "Read(//c/Users/nkmrk/.claude/scheduled-tasks/**)"
     ]
   }
 }

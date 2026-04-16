@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>履歴書カード モックアップ v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #2a2015;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 80px;
+  gap: 48px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.section-label {
+  color: #c8b878;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════
+   カード共通ベース
+═══════════════════════════════════════ */
+.resume {
+  position: relative;
+  width: 264px;
+  background-image: url('../image/shachoshitsu/document-resume-blank.webp');
+  background-size: cover;
+  background-position: center;
+  border-radius: 3px;
+  padding: 14px 16px 14px;
+  color: #2a2318;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* タグ */
+.tags { display: flex; gap: 6px; margin-bottom: 8px; }
+.tag {
+  font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 3px;
+  letter-spacing: 0.5px; border: 1px solid rgba(80,60,40,0.25);
+}
+.tag-free { background: rgba(80,130,180,0.2); color: #3a6a90; border-color: rgba(80,130,180,0.35); }
+.tag-tier { color: #c8963e; border-color: rgba(200,150,62,0.5); background: rgba(200,150,62,0.15); }
+
+/* 細いセパレーター */
+.sep {
+  border: none;
+  border-top: 1px solid rgba(80,60,40,0.18);
+  margin: 7px 0;
+}
+
+/* バッジ */
+.badge { font-size: 10px; padding: 1px 7px; border-radius: 3px; font-weight: 700; }
+.badge-grappler { background: rgba(52,152,219,0.2); color: #2980b9; }
+.badge-bf { background: rgba(46,204,113,0.2); color: #27ae60; }
+.badge-hl { background: rgba(231,76,60,0.18); color: #c0392b; }
+
+/* ステータスバー */
+.stats { display: flex; flex-direction: column; gap: 3px; }
+.stat { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+.stat-lbl { width: 24px; font-weight: 700; color: rgba(42,35,24,0.55); text-align: right; font-size: 9px; }
+.stat-bar { flex: 1; height: 5px; background: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden; }
+.stat-fill { height: 100%; border-radius: 3px; }
+.stat-val { width: 18px; font-weight: 600; color: rgba(42,35,24,0.65); font-size: 9px; }
+
+/* コスト行 */
+.cost-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 11px; color: rgba(42,35,24,0.7); margin: 6px 0 8px;
+}
+.cost-signing { font-size: 13px; font-weight: 700; color: #c44e8a; }
+.cost-salary { font-size: 10px; color: rgba(42,35,24,0.55); }
+
+/* ボタン */
+.btns { display: flex; gap: 6px; }
+.btn {
+  flex: 1; font-size: 11px; padding: 6px 4px; border-radius: 4px; cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 600;
+  border: 1px solid rgba(60,45,30,0.3); background: rgba(60,45,30,0.10); color: #2a2318;
+  text-align: center;
+}
+.btn.primary {
+  background: rgba(180,140,52,0.22); border-color: rgba(180,140,52,0.45); color: #5c4a1e;
+}
+
+/* OVR */
+.ovr-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 34px; line-height: 1; color: #c8963e;
+}
+.ovr-num .unit { font-family: 'Noto Sans JP', sans-serif; font-size: 9px; font-weight: 600; color: rgba(42,35,24,0.45); margin-left: 1px; }
+
+
+/* ═══════════════════════════════════════
+   現行 — 比較用（頭が切れる問題を確認）
+═══════════════════════════════════════ */
+.current .char-img {
+  width: 100%; aspect-ratio: 5/4;
+  object-fit: cover; object-position: center;   /* ← ここが問題: center だと頭が切れる */
+  border-radius: 2px; border: 1px solid rgba(80,60,40,0.2); margin-bottom: 8px;
+  display: block;
+}
+.current .name { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+.current .age  { font-size: 11px; color: rgba(42,35,24,0.55); text-align: center; margin-bottom: 4px; }
+.current .ovr-row { text-align: center; margin-bottom: 4px; }
+.current .badges { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+.current .cost-row { justify-content: center; }
+.current .btns { justify-content: center; }
+
+
+/* ═══════════════════════════════════════
+   新案 — 画像トップ + 情報セクション
+   解決策: object-position: center top  で頭から表示
+═══════════════════════════════════════ */
+.new-v .char-img {
+  width: 100%;
+  /* ポートレート比→頭が入る高さを確保。cover+topで頭から表示、腰下をトリム */
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  object-position: center top;             /* ← 頭を常に表示 */
+  border-radius: 2px;
+  border: 1px solid rgba(80,60,40,0.15);
+  display: block;
+  margin-bottom: 9px;
+}
+
+/* 名前行: 左=名前+年齢、右=OVR */
+.new-v .identity-row {
+  display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 4px;
+}
+.new-v .name { font-size: 14px; font-weight: 700; line-height: 1.2; }
+.new-v .age  { font-size: 10px; color: rgba(42,35,24,0.5); margin-top: 1px; }
+
+/* バッジ */
+.new-v .badges { display: flex; gap: 5px; margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<!-- ── 現行（頭切れ確認） ── -->
+<div>
+  <div class="section-label">現行（比較用）</div>
+  <div class="resume current">
+    <div class="tags">
+      <span class="tag tag-free">フリー</span>
+      <span class="tag tag-tier">Aランク</span>
+    </div>
+    <img class="char-img" src="../image/upper/upper_kudo_r.webp" alt="工藤凛香">
+    <div class="name">工藤 凛香</div>
+    <div class="age">22歳</div>
+    <div class="ovr-row"><span class="ovr-num">72<span class="unit">OVR</span></span></div>
+    <div class="badges" style="justify-content:center;margin-bottom:8px">
+      <span class="badge badge-grappler">Grappler</span>
+      <span class="badge badge-bf">BF</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-lbl">PWR</span><div class="stat-bar"><div class="stat-fill" style="width:68%;background:#e74c3c"></div></div><span class="stat-val">68</span></div>
+      <div class="stat"><span class="stat-lbl">SPD</span><div class="stat-bar"><div class="stat-fill" style="width:72%;background:#3498db"></div></div><span class="stat-val">72</span></div>
+      <div class="stat"><span class="stat-lbl">TEC</span><div class="stat-bar"><div class="stat-fill" style="width:75%;background:#2ecc71"></div></div><span class="stat-val">75</span></div>
+      <div class="stat"><span class="stat-lbl">STA</span><div class="stat-bar"><div class="stat-fill" style="width:60%;background:#f39c12"></div></div><span class="stat-val">60</span></div>
+      <div class="stat"><span class="stat-lbl">MNT</span><div class="stat-bar"><div class="stat-fill" style="width:70%;background:#9b59b6"></div></div><span class="stat-val">70</span></div>
+    </div>
+    <div class="cost-row">
+      <span>契約金 <span class="cost-signing">1,200万</span></span>
+      <span class="cost-salary">給与 45万/週</span>
+    </div>
+    <div class="btns">
+      <button class="btn">📋 詳細</button>
+      <button class="btn primary">✒️ 契約交渉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 新案（頭が切れない） ── -->
+<div>
+  <div class="section-label">新案（object-position: top → 頭から表示）</div>
+  <div class="resume new-v">
+    <div class="tags">
+      <span class="tag tag-free">フリー</span>
+      <span class="tag tag-tier">Aランク</span>
+    </div>
+    <!-- 画像: 4/3アスペクト、cover、上端揃え -->
+    <img class="char-img" src="../image/upper/upper_kudo_r.webp" alt="工藤凛香">
+
+    <!-- 名前(左) / OVR(右) -->
+    <div class="identity-row">
+      <div>
+        <div class="name">工藤 凛香</div>
+        <div class="age">22歳</div>
+      </div>
+      <span class="ovr-num">72<span class="unit">OVR</span></span>
+    </div>
+
+    <!-- バッジ -->
+    <div class="badges" style="margin-bottom:7px">
+      <span class="badge badge-grappler">Grappler</span>
+      <span class="badge badge-bf">BF</span>
+    </div>
+
+    <hr class="sep">
+
+    <!-- ステータス -->
+    <div class="stats" style="margin-bottom:2px">
+      <div class="stat"><span class="stat-lbl">PWR</span><div class="stat-bar"><div class="stat-fill" style="width:68%;background:#e74c3c"></div></div><span class="stat-val">68</span></div>
+      <div class="stat"><span class="stat-lbl">SPD</span><div class="stat-bar"><div class="stat-fill" style="width:72%;background:#3498db"></div></div><span class="stat-val">72</span></div>
+      <div class="stat"><span class="stat-lbl">TEC</span><div class="stat-bar"><div class="stat-fill" style="width:75%;background:#2ecc71"></div></div><span class="stat-val">75</span></div>
+      <div class="stat"><span class="stat-lbl">STA</span><div class="stat-bar"><div class="stat-fill" style="width:60%;background:#f39c12"></div></div><span class="stat-val">60</span></div>
+      <div class="stat"><span class="stat-lbl">MNT</span><div class="stat-bar"><div class="stat-fill" style="width:70%;background:#9b59b6"></div></div><span class="stat-val">70</span></div>
+    </div>
+
+    <hr class="sep">
+
+    <!-- コスト -->
+    <div class="cost-row">
+      <span>契約金 <span class="cost-signing">1,200万</span></span>
+      <span class="cost-salary">給与 45万/週</span>
+    </div>
+
+    <!-- ボタン -->
+    <div class="btns">
+      <button class="btn">📋 詳細</button>
+      <button class="btn primary">✒️ 契約交渉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 別キャラでも確認 ── -->
+<div>
+  <div class="section-label">別キャラで確認</div>
+  <div class="resume new-v">
+    <div class="tags">
+      <span class="tag tag-free">フリー</span>
+      <span class="tag tag-tier">Bランク</span>
+    </div>
+    <img class="char-img" src="../image/upper/upper_saito_m.webp" alt="斎藤">
+    <div class="identity-row">
+      <div>
+        <div class="name">斎藤 みつき</div>
+        <div class="age">19歳</div>
+      </div>
+      <span class="ovr-num" style="color:#4a9fd4">58<span class="unit">OVR</span></span>
+    </div>
+    <div class="badges" style="margin-bottom:7px">
+      <span class="badge" style="background:rgba(255,160,30,0.2);color:#c8720a">Striker</span>
+      <span class="badge badge-hl">HL</span>
+    </div>
+    <hr class="sep">
+    <div class="stats" style="margin-bottom:2px">
+      <div class="stat"><span class="stat-lbl">PWR</span><div class="stat-bar"><div class="stat-fill" style="width:55%;background:#e74c3c"></div></div><span class="stat-val">55</span></div>
+      <div class="stat"><span class="stat-lbl">SPD</span><div class="stat-bar"><div class="stat-fill" style="width:63%;background:#3498db"></div></div><span class="stat-val">63</span></div>
+      <div class="stat"><span class="stat-lbl">TEC</span><div class="stat-bar"><div class="stat-fill" style="width:58%;background:#2ecc71"></div></div><span class="stat-val">58</span></div>
+      <div class="stat"><span class="stat-lbl">STA</span><div class="stat-bar"><div class="stat-fill" style="width:50%;background:#f39c12"></div></div><span class="stat-val">50</span></div>
+      <div class="stat"><span class="stat-lbl">MNT</span><div class="stat-bar"><div class="stat-fill" style="width:55%;background:#9b59b6"></div></div><span class="stat-val">55</span></div>
+    </div>
+    <hr class="sep">
+    <div class="cost-row">
+      <span>契約金 <span class="cost-signing">600万</span></span>
+      <span class="cost-salary">給与 28万/週</span>
+    </div>
+    <div class="btns">
+      <button class="btn">📋 詳細</button>
+      <button class="btn primary">✒️ 契約交渉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 知名度不足（グレー表示）確認 ── -->
+<div>
+  <div class="section-label">知名度不足（契約不可パターン）</div>
+  <div class="resume new-v" style="filter:grayscale(0.8) brightness(0.85);opacity:0.75">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-15deg);
+      font-size:18px;font-weight:900;color:rgba(196,30,58,0.75);letter-spacing:2px;
+      border:2.5px solid rgba(196,30,58,0.6);padding:4px 10px;border-radius:3px;
+      pointer-events:none;white-space:nowrap">契約不可</div>
+    <div class="tags">
+      <span class="tag tag-free">フリー</span>
+      <span class="tag" style="color:#888;border-color:#aaa">Sランク</span>
+    </div>
+    <img class="char-img" src="../image/upper/upper_hongo_m.webp" alt="本郷">
+    <div class="identity-row">
+      <div>
+        <div class="name">本郷 まどか</div>
+        <div class="age">26歳</div>
+      </div>
+      <span class="ovr-num" style="color:#7e5c2a">88<span class="unit">OVR</span></span>
+    </div>
+    <div class="badges" style="margin-bottom:7px">
+      <span class="badge badge-grappler">Grappler</span>
+      <span class="badge badge-bf">BF</span>
+    </div>
+    <hr class="sep">
+    <div class="stats" style="margin-bottom:2px">
+      <div class="stat"><span class="stat-lbl">PWR</span><div class="stat-bar"><div class="stat-fill" style="width:85%;background:#e74c3c"></div></div><span class="stat-val">85</span></div>
+      <div class="stat"><span class="stat-lbl">SPD</span><div class="stat-bar"><div class="stat-fill" style="width:88%;background:#3498db"></div></div><span class="stat-val">88</span></div>
+      <div class="stat"><span class="stat-lbl">TEC</span><div class="stat-bar"><div class="stat-fill" style="width:90%;background:#2ecc71"></div></div><span class="stat-val">90</span></div>
+      <div class="stat"><span class="stat-lbl">STA</span><div class="stat-bar"><div class="stat-fill" style="width:82%;background:#f39c12"></div></div><span class="stat-val">82</span></div>
+      <div class="stat"><span class="stat-lbl">MNT</span><div class="stat-bar"><div class="stat-fill" style="width:88%;background:#9b59b6"></div></div><span class="stat-val">88</span></div>
+    </div>
+    <hr class="sep">
+    <div class="cost-row">
+      <span>契約金 <span class="cost-signing">4,800万</span></span>
+      <span class="cost-salary">給与 180万/週</span>
+    </div>
+    <div class="btns">
+      <button class="btn" disabled>📋 詳細</button>
+      <button class="btn" disabled style="opacity:0.4">⛔ 知名度不足</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
