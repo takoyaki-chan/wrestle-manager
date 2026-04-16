@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-16（社長室統合 Phase C 完了: スカウト/レンタルの机上統合）
+> 最終更新: 2026-04-16（成長マイルストーン通知: OVR/人気/trainCap到達時のチャイム+トースト）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`

@@ -1637,6 +1637,8 @@ function _renderRosterDetailPanel(c, hired) {
       eventText = entry.detail;
     } else if (entry.type === 'injury') {
       eventText = `🏥 療養（${entry.detail}）`;
+    } else if (entry.type === 'milestone') {
+      eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
     } else {
       eventText = entry.detail || '—';
     }

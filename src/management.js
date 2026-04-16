@@ -3487,6 +3487,110 @@ const Engine = {
     }
   },
 
+  // ── Growth Milestone Notification ──────────────────────
+  growthMilestone: {
+    OVR_THRESHOLDS: [65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115],
+    POP_THRESHOLDS: [50, 60, 70, 80, 90, 95],
+    COOLDOWN_WEEKS: 2,
+
+    /** 現在のステから到達済み閾値をプリセット（再通知防止用） */
+    initNotified(fighter) {
+      const ovr = Engine.util.ov(fighter);
+      const pop = fighter.popularity || 0;
+      return {
+        ovr: Engine.growthMilestone.OVR_THRESHOLDS.filter(t => ovr >= t),
+        pop: Engine.growthMilestone.POP_THRESHOLDS.filter(t => pop >= t),
+        cap: ['pw', 'sp', 'te', 'st', 'mn'].filter(s =>
+          fighter.trainCap && fighter[s] >= fighter.trainCap[s]),
+      };
+    },
+
+    /**
+     * tickWeek末尾で呼ぶ。前後比較 + _milestonesNotified照合で新規マイルストーンを検出。
+     * @param {object} rng
+     * @param {object} state - 現在のGameState
+     * @param {Array} prevSnapshot - tickWeek冒頭で取得した [{id, ovr, pop, stats}]
+     * @returns {object|null} マイルストーン情報 + 更新済みroster、またはnull
+     */
+    detect(rng, state, prevSnapshot) {
+      const absWeek = (state.season - 1) * 48 + state.week;
+      if (absWeek - (state._lastMilestoneAbsWeek || 0) < Engine.growthMilestone.COOLDOWN_WEEKS) return null;
+
+      const prevMap = {};
+      prevSnapshot.forEach(p => { prevMap[p.id] = p; });
+      const OVR_TH = Engine.growthMilestone.OVR_THRESHOLDS;
+      const POP_TH = Engine.growthMilestone.POP_THRESHOLDS;
+      const STAT_NAMES = ['pw', 'sp', 'te', 'st', 'mn'];
+
+      const candidates = [];
+
+      for (const c of state.roster) {
+        const prev = prevMap[c.id];
+        if (!prev) continue; // 今週加入した新人はスキップ
+        const notified = c._milestonesNotified || { ovr: [], pop: [], cap: [] };
+        const curOvr = Engine.util.ov(c);
+        const curPop = c.popularity || 0;
+
+        // OVR閾値超え: prevOVR < threshold <= curOVR かつ未通知
+        for (const th of OVR_TH) {
+          if (prev.ovr < th && curOvr >= th && !notified.ovr.includes(th)) {
+            let priority, linePool;
+            if (th >= 95) { priority = 100 + th; linePool = 'ovr_legend'; }
+            else if (th >= 80) { priority = 80 + th; linePool = 'ovr_elite'; }
+            else { priority = 50 + th; linePool = 'ovr_growth'; }
+            candidates.push({ type: 'ovr', fighterId: c.id, fighterName: c.name,
+              value: th, stat: null, linePool, priority });
+          }
+        }
+        // 人気閾値超え
+        for (const th of POP_TH) {
+          if (prev.pop < th && curPop >= th && !notified.pop.includes(th)) {
+            let priority, linePool;
+            if (th >= 70) { priority = 60 + th; linePool = 'pop_star'; }
+            else { priority = 40 + th; linePool = 'pop_growth'; }
+            candidates.push({ type: 'pop', fighterId: c.id, fighterName: c.name,
+              value: th, stat: null, linePool, priority });
+          }
+        }
+        // trainCap到達
+        if (c.trainCap) {
+          for (const s of STAT_NAMES) {
+            if (prev.stats[s] < c.trainCap[s] && c[s] >= c.trainCap[s] && !notified.cap.includes(s)) {
+              candidates.push({ type: 'cap', fighterId: c.id, fighterName: c.name,
+                value: c.trainCap[s], stat: s, linePool: 'cap_reached', priority: 75 });
+            }
+          }
+        }
+      }
+
+      if (candidates.length === 0) return null;
+
+      // 最も重要な1件を選出
+      candidates.sort((a, b) => b.priority - a.priority);
+      const best = candidates[0];
+
+      // _milestonesNotified を更新したロスターを構築
+      const updatedRoster = state.roster.map(c => {
+        if (c.id !== best.fighterId) return c;
+        const n = { ...(c._milestonesNotified || { ovr: [], pop: [], cap: [] }) };
+        if (best.type === 'ovr') n.ovr = [...n.ovr, best.value];
+        else if (best.type === 'pop') n.pop = [...n.pop, best.value];
+        else if (best.type === 'cap') n.cap = [...n.cap, best.stat];
+        return { ...c, _milestonesNotified: n };
+      });
+
+      return {
+        type: best.type,
+        fighterId: best.fighterId,
+        fighterName: best.fighterName,
+        value: best.value,
+        stat: best.stat,
+        linePool: best.linePool,
+        roster: updatedRoster,
+      };
+    },
+  },
+
   // ── Growth System v1.0 (IMMUTABLE) ─────────────────────
   growth: {
     // DEPRECATED (growth-rebalance v1.0): calcGrowth/aiSeasonGrowthで不使用。参照用に残置。
@@ -3857,6 +3961,7 @@ const Engine = {
         talentRevSeason: 0,   // 年間タレント活動収入累計（cm/variety/gravure/brand バフ分）
         talentCountSeason: 0, // 年間タレント活動参加回数
         promoCountSeason: 0,  // 年間プロモ実行週数
+        _milestonesNotified: { ovr: [], pop: [], cap: [] },  // 成長マイルストーン通知済み閾値
       };
     },
     /** trainCap 5??????? */
@@ -6993,6 +7098,14 @@ const Engine = {
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
   tickWeek(state) {
+    // ★ 成長マイルストーン: 冒頭スナップショット（tickWeek末尾で前後比較に使用）
+    const _milestoneSnapshot = state.roster.map(c => ({
+      id: c.id,
+      ovr: Engine.util.ov(c),
+      pop: c.popularity || 0,
+      stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
+    }));
+
     // 安全弁: 王者がロスターに存在しない場合は即座に空位にする
     if (state.titles?.world?.championId && !state.roster.find(c => c.id === state.titles.world.championId)) {
       state = { ...state, titles: { ...state.titles, world: { ...state.titles.world, championId: null, defenses: 0 } } };
@@ -7391,6 +7504,26 @@ const Engine = {
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
+      }
+    }
+
+    // ★ 成長マイルストーン検出（sanitizeFloats前、全処理完了後）
+    if (!s.offSeason) {
+      const milestoneRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xCD01));
+      const milestoneResult = Engine.growthMilestone.detect(milestoneRng, s, _milestoneSnapshot);
+      if (milestoneResult) {
+        s = { ...s,
+          roster: milestoneResult.roster,
+          _pendingMilestone: {
+            type: milestoneResult.type,
+            fighterId: milestoneResult.fighterId,
+            fighterName: milestoneResult.fighterName,
+            value: milestoneResult.value,
+            stat: milestoneResult.stat,
+            linePool: milestoneResult.linePool,
+          },
+          _lastMilestoneAbsWeek: (s.season - 1) * 48 + s.week,
+        };
       }
     }
 
@@ -10581,6 +10714,7 @@ const Engine = {
       contractPop: 0,  // 契約時人気（給与固定用、初期は0）
       orgTimeline: [{ orgId: template._orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
       growthLog: [],  // 成長経過ログ（全週分、引退時削除）
+      _milestonesNotified: { ovr: [], pop: [], cap: [] },  // 成長マイルストーン通知済み閾値
     };
   },
 
@@ -10886,6 +11020,8 @@ const Engine = {
       financeHistory: [],
       // デバッグ・検証システム
       debugLog: [],
+      // 成長マイルストーン通知のクールダウン
+      _lastMilestoneAbsWeek: 0,
       // Phase 5: スナップショット通知のクールダウン管理
       _snapshotCooldowns: {},
       // Phase 1: 人間関係データ基盤
@@ -15432,6 +15568,12 @@ Engine.validateGameState = function(G) {
         return f;
       }) };
     }
+  }
+
+  // ── 成長マイルストーン ──
+  if (G._lastMilestoneAbsWeek !== undefined && !isValidNum(G._lastMilestoneAbsWeek)) {
+    warn(`_lastMilestoneAbsWeekが不正値: ${G._lastMilestoneAbsWeek}→0にリセット`);
+    G = { ...G, _lastMilestoneAbsWeek: 0 };
   }
 
   // ── 経済関連 ──

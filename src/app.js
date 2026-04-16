@@ -1261,6 +1261,7 @@ const Storage = {
     delete state._pendingGlimpseA;
     delete state._pendingGlimpseB;
     delete state._pendingHotStreakEnds;
+    delete state._pendingMilestone;
     // gameLog トリミング
     if (state.gameLog && state.gameLog.length > SAVE_TRIM.gameLogMax) {
       state.gameLog = state.gameLog.slice(-SAVE_TRIM.gameLogMax);
@@ -2444,6 +2445,34 @@ const Storage = {
             }
           }
         }
+      }
+
+      // 成長マイルストーン通知 マイグレーション
+      if (!G._migrated_milestoneNotified_v1) {
+        if (G._lastMilestoneAbsWeek === undefined) {
+          G._lastMilestoneAbsWeek = (G.season - 1) * 48 + G.week;
+        }
+        const _MS_OVR = [65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115];
+        const _MS_POP = [50, 60, 70, 80, 90, 95];
+        const _initMN = (c) => {
+          if (c._milestonesNotified) return c;
+          const ovr = Engine.util.ov(c);
+          return { ...c, _milestonesNotified: {
+            ovr: _MS_OVR.filter(t => ovr >= t),
+            pop: _MS_POP.filter(t => (c.popularity || 0) >= t),
+            cap: ['pw', 'sp', 'te', 'st', 'mn'].filter(s => c.trainCap && c[s] >= c.trainCap[s]),
+          } };
+        };
+        G.roster = G.roster.map(_initMN);
+        if (G.freeAgents) G.freeAgents = G.freeAgents.map(_initMN);
+        if (G.aiOrgs) {
+          const ao = {};
+          for (const [k, v] of Object.entries(G.aiOrgs)) {
+            ao[k] = v.roster ? { ...v, roster: v.roster.map(_initMN) } : v;
+          }
+          G.aiOrgs = ao;
+        }
+        G._migrated_milestoneNotified_v1 = true;
       }
 
       {
@@ -5929,6 +5958,37 @@ const App = {
       const msg = `🤝 ${prefix}${pick.fighterName}の気持ちが前向きになってきた`;
       const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
       setTimeout(() => showToast(msg, 5000), baseDelayTr);
+    }
+
+    // ★ 成長マイルストーン通知
+    const pendingMilestone = G._pendingMilestone || null;
+    if (G._pendingMilestone) {
+      const { _pendingMilestone: _, ...cleanMs } = G;
+      G = cleanMs;
+    }
+    if (pendingMilestone) {
+      const msF = G.roster.find(c => c.id === pendingMilestone.fighterId);
+      if (msF) {
+        const msLine = pickDialogueLine(MILESTONE_LINES[pendingMilestone.linePool], msF);
+        const STAT_JA = { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'メンタル' };
+        let msLabel;
+        if (pendingMilestone.type === 'ovr') msLabel = `総合力${pendingMilestone.value}到達`;
+        else if (pendingMilestone.type === 'pop') msLabel = `人気${pendingMilestone.value}到達`;
+        else msLabel = `${STAT_JA[pendingMilestone.stat] || pendingMilestone.stat}が限界に到達`;
+        const msMsg = `🔔 ${msF.name} — ${msLabel}！「${msLine}」`;
+        const msSound = (pendingMilestone.type === 'ovr' && pendingMilestone.value >= 80) || pendingMilestone.type === 'cap' ? 'award' : 'notify';
+        const msDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
+        setTimeout(() => { Audio.play(msSound); showToast(msMsg, 7000); }, msDelay);
+        // growthLogにマイルストーン記録
+        const msRoster = G.roster.map(c => {
+          if (c.id !== msF.id) return c;
+          return { ...c, growthLog: [...(c.growthLog || []), {
+            season: G.season, week: G.week,
+            type: 'milestone', detail: msLabel,
+          }] };
+        });
+        G = { ...G, roster: msRoster };
+      }
     }
 
     // §13.4: 突然の退団表示
