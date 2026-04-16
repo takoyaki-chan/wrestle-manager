@@ -98,25 +98,28 @@ function byId(id){ return f(S.idToKey[id]); }
 function keyById(id){ return S.idToKey[id]; }
 
 // ── メイン描画 ──
+// currentFrame: 最新適用済みフレーム（S.frameIdx が示す直前=再生済みの最新）
+function _getCurrentFrame(){
+  return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ? S.frames[S.frameIdx - 1] : null;
+}
+
 function renderMatch(){
   const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
   const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  const curFrame = S.frameIdx > 0 ? S.frames[S.frameIdx - 1] : null;
+  const curFrame = _getCurrentFrame();
   const turn = curFrame ? curFrame.turn : 0;
-  const phase = curFrame ? curFrame.phase : (S.matchInfo.header || 'Opening');
+  const phase = curFrame ? curFrame.phase : 'Opening';
   const segIdx = curFrame ? curFrame.segmentIdx : 0;
 
   const mi = S.matchInfo;
   const header = mi.header || 'タッグマッチ';
-  const chemACls = S.chemA >= 70 ? 'high' : S.chemA >= 50 ? 'mid' : 'low';
-  const chemBCls = S.chemB >= 70 ? 'high' : S.chemB >= 50 ? 'mid' : 'low';
 
   const hudHtml = `<div class="hud">
     <div class="hud-top">
       <div class="hud-team left">
         <div class="hud-faces">${teamA.map(x=>`<div class="hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
         <div class="hud-team-info">
-          <div class="hud-team-label">TEAM A</div>
+          <div class="hud-team-label">Aチーム</div>
           <div class="hud-team-names">${teamA.map(x=>x.name).join(' & ')}</div>
         </div>
       </div>
@@ -128,18 +131,18 @@ function renderMatch(){
       <div class="hud-team right">
         <div class="hud-faces">${teamB.map(x=>`<div class="hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
         <div class="hud-team-info">
-          <div class="hud-team-label">TEAM B</div>
+          <div class="hud-team-label">Bチーム</div>
           <div class="hud-team-names">${teamB.map(x=>x.name).join(' & ')}</div>
         </div>
       </div>
     </div>
     <div class="chem-row">
-      <span class="chem-label">CHEM A</span>
+      <span class="chem-label">連携 A</span>
       <span class="chem-val a">${Math.round(S.chemA)}</span>
       <div class="chem-track"><div class="chem-fill a" style="width:${clamp(S.chemA,0,100)}%"></div></div>
       <div class="chem-track"><div class="chem-fill b" style="width:${clamp(S.chemB,0,100)}%;float:right"></div></div>
       <span class="chem-val b">${Math.round(S.chemB)}</span>
-      <span class="chem-label">CHEM B</span>
+      <span class="chem-label">連携 B</span>
     </div>
   </div>`;
 
@@ -148,7 +151,8 @@ function renderMatch(){
   const legalBpanel = _fpanelHtml(S.pos.legalB, 'right', 'legal');
   const apronBpanel = _fpanelHtml(S.pos.apronB, 'right', 'apron');
 
-  const logHtml = S.log.slice(-60).map(_logEntryHtml).join('');
+  // ログは新しいものが上、古いものは下（過去60行まで）
+  const logHtml = S.log.slice(-60).reverse().map(_logEntryHtml).join('');
   const narration = curFrame ? _narrateFrame(curFrame) : '<div class="nar-empty">試合開始 — NEXT TURNを押してください</div>';
   const moveName = curFrame && curFrame.action ? curFrame.action.move : '---';
 
@@ -166,7 +170,7 @@ function renderMatch(){
         <div class="move-value" id="moveV">${moveName}</div>
       </div>
       <div class="log-section">
-        <div class="log-header">Battle Log</div>
+        <div class="log-header">Battle Log（新しい順）</div>
         <div class="log-box" id="logBox">${logHtml}</div>
       </div>
     </div>
@@ -179,21 +183,20 @@ function renderMatch(){
   const winnerFrame = curFrame && curFrame.winner;
   const endState = winnerFrame || S.frameIdx >= S.frames.length;
   const btnLabel = winnerFrame ? 'WIN!' : (endState ? 'END' : '▶  NEXT TURN');
-  // S.anim 中のクリックは nextFrame() 内部でガードされるので disabled にしない
+  const btnDisabled = S.anim || S.pendingCutin;
   const actionHtml = `<div class="action-bar">
-    <button class="btn-next" id="nBtn"${endState && !winnerFrame ? '' : ''}>${btnLabel}</button>
+    <button class="btn-next" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button>
     ${!endState ? `<button class="btn-auto${S.autoAdvance?' on':''}" id="autoBtn" onclick="toggleAuto()">AUTO<br><span style="font-size:10px;letter-spacing:1px">${S.autoAdvance?'ON':'OFF'}</span></button>` : ''}
   </div>`;
 
   document.getElementById('mainContainer').innerHTML = hudHtml + gridHtml + actionHtml;
-  // nextFrame 自体が S.anim チェックを持つので、ハンドラは常に割り当てる
   const btn = document.getElementById('nBtn');
   if (btn) {
     if (winnerFrame || S.frameIdx >= S.frames.length) btn.onclick = endMatch;
     else btn.onclick = nextFrame;
   }
-  // log 自動スクロール
-  setTimeout(() => { const lb = document.getElementById('logBox'); if (lb) lb.scrollTop = lb.scrollHeight; }, 30);
+  // log 自動スクロール — 新しい順なので先頭(0)に
+  setTimeout(() => { const lb = document.getElementById('logBox'); if (lb) lb.scrollTop = 0; }, 30);
 }
 
 function _fpanelHtml(posKey, side, layer){
@@ -262,20 +265,46 @@ function _logEntryHtml(line){
 }
 
 // ── フレーム進行 ──
+// ペーシング:
+//   通常ヒット:  900ms
+//   ミス:        700ms
+//   カウンター:  1100ms
+//   クリット:   1300ms
+//   ドラマイベント時: +500ms
+//   決着時:     2200ms
+const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
+
+function _frameMinDelay(fr){
+  if (!fr) return 800;
+  if (fr.winner) return 2200;
+  let base = 800;
+  if (fr.action) {
+    if (fr.action.kind === 'miss') base = FRAME_DELAYS.miss;
+    else if (fr.action.kind === 'counter') base = FRAME_DELAYS.counter;
+    else if (fr.action.isCrit) base = FRAME_DELAYS.crit;
+    else base = FRAME_DELAYS.hit;
+  }
+  if (fr.events && fr.events.length > 0) base += 500;
+  return base;
+}
+
 function nextFrame(){
   if (S.anim || S.frameIdx >= S.frames.length) return;
   if (S.pendingCutin) return;
   clearTimeout(S.autoTimer);
   const fr = S.frames[S.frameIdx];
-  applyFrame(fr);
+  // ★重要: 先にカウンタを進める → renderMatch 内の _getCurrentFrame() が新フレームを返すようになる
   S.frameIdx++;
+  applyFrame(fr);
 
   if (fr.winner) {
-    setTimeout(() => showResult(fr), 1800);
+    setTimeout(() => showResult(fr), 2000);
     return;
   }
+  // アニメロックは minDelay 分保持（連打での早送りを防ぐ）
+  const delay = _frameMinDelay(fr);
   if (S.autoAdvance && S.frameIdx < S.frames.length) {
-    S.autoTimer = setTimeout(() => nextFrame(), 1400);
+    S.autoTimer = setTimeout(() => nextFrame(), Math.max(delay + 400, 1200));
   }
 }
 
@@ -303,7 +332,7 @@ function applyFrame(fr){
   // ログ追記
   (fr.logLines || []).forEach(line => S.log.push(line));
 
-  // 描画更新
+  // 描画更新（ここで narration は最新フレームを反映）
   renderMatch();
 
   // アクション演出
@@ -321,7 +350,14 @@ function applyFrame(fr){
     tryDamageLine(fr.action, fr);
   }
 
-  setTimeout(() => { S.anim = false; }, 600);
+  // ペーシング: フレーム種別ごとに最小ディレイを設定
+  const minDelay = _frameMinDelay(fr);
+  setTimeout(() => {
+    S.anim = false;
+    // ボタン状態を再描画（S.anim が false になったので enable する）
+    const btn = document.getElementById('nBtn');
+    if (btn && !S.pendingCutin) btn.disabled = false;
+  }, minDelay);
 }
 
 // ── 演出群 ──
@@ -498,6 +534,8 @@ function showCutin(fighter, side, text, cssCls){
   </div>`;
   ov.classList.add('show');
   S.pendingCutin = true;
+  const btn = document.getElementById('nBtn');
+  if (btn) btn.disabled = true;
   try {
     if (cssCls === 'damage-voice') sfx.dmgVoice();
     else sfx.cutinSlide();
@@ -509,9 +547,12 @@ function dismissCutin(){
   ov.classList.remove('show');
   setTimeout(() => { ov.innerHTML = ''; }, 350);
   S.pendingCutin = false;
+  // カットイン解除後にボタン状態を再度更新
+  const btn = document.getElementById('nBtn');
+  if (btn && !S.anim) btn.disabled = false;
   // AUTO mode なら次へ
   if (S.autoAdvance && !S.anim && S.frameIdx < S.frames.length) {
-    S.autoTimer = setTimeout(() => nextFrame(), 400);
+    S.autoTimer = setTimeout(() => nextFrame(), 600);
   }
 }
 
