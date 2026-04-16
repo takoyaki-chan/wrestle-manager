@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Match Screens Compare — Single vs Tag (Real)</title>
+<style>
+  :root {
+    --bg: #0f0e0b;
+    --panel: #1a1814;
+    --border: rgba(255,255,255,0.08);
+    --accent: #d4a843;
+    --accent-soft: rgba(212,168,67,0.5);
+    --text: #e8e6e0;
+    --text-dim: rgba(232,230,224,0.5);
+    --ok: #5dd9ca;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:'Noto Sans JP', sans-serif; min-height:100vh; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .toolbar h1 {
+    margin:0; font-size:14px; letter-spacing:3px; text-transform:uppercase;
+    font-family:'Oswald', sans-serif; color:var(--accent);
+  }
+  .diff-badges { display:flex; gap:8px; flex-wrap:wrap; }
+  .badge {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'Oswald', sans-serif; font-size:10px; letter-spacing:1.5px;
+    padding:4px 10px; border-radius:2px; text-transform:uppercase;
+    background:rgba(93,217,202,0.1); color:var(--ok);
+    border:1px solid rgba(93,217,202,0.3);
+  }
+  .controls { margin-left:auto; display:flex; gap:10px; align-items:center; }
+  .controls label {
+    font-family:'Oswald', sans-serif; font-size:10px; letter-spacing:1.5px;
+    color:var(--text-dim); text-transform:uppercase;
+  }
+  .controls input[type=range] { width:120px; }
+  .zoom-val {
+    font-family:'Bebas Neue', sans-serif; font-size:14px; color:var(--accent); min-width:40px;
+  }
+
+  .split {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+  .pane {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 80vh;
+  }
+  .pane-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  .pane-title {
+    font-family:'Bebas Neue', sans-serif; font-size:18px; letter-spacing:2px;
+    color: var(--accent);
+  }
+  .pane-sub {
+    font-family:'Oswald', sans-serif; font-size:10px; letter-spacing:1.5px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  .frame-wrap {
+    flex: 1; overflow: auto; background: #000;
+    padding: 10px;
+    display: flex; justify-content: center; align-items: flex-start;
+  }
+  iframe {
+    border: none; background: #000;
+    transform-origin: top left; flex-shrink: 0;
+  }
+
+  .palette { display:flex; gap:4px; margin-left:8px; }
+  .chip {
+    width:18px; height:18px; border-radius:2px; border:1px solid rgba(255,255,255,0.15);
+  }
+  .tip {
+    margin-left:auto; font-size:11px; color:var(--text-dim); line-height:1.5;
+  }
+
+  @media (max-width: 1280px) {
+    .split { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🎭 Match Screens Compare (REAL)</h1>
+  <div class="diff-badges">
+    <span class="badge">FONT ✓</span>
+    <span class="badge">BG ✓</span>
+    <span class="badge">GOLD ACCENT ✓</span>
+  </div>
+  <div class="controls">
+    <label for="zoom">ZOOM</label>
+    <input type="range" id="zoom" min="50" max="100" value="80">
+    <span class="zoom-val" id="zoomVal">80%</span>
+  </div>
+</div>
+
+<div class="split">
+  <!-- ── 左: シングル ────────────────────────── -->
+  <section class="pane">
+    <header class="pane-head">
+      <div>
+        <div class="pane-title">SINGLE</div>
+        <div class="pane-sub">wrestle_manager_single_match_screen.html</div>
+      </div>
+      <div class="palette" title="主要カラー">
+        <span class="chip" style="background:#060606" title="BG #060606"></span>
+        <span class="chip" style="background:#12110e" title="Panel #12110e"></span>
+        <span class="chip" style="background:#d4a843" title="Gold #d4a843"></span>
+        <span class="chip" style="background:#c41e3a" title="Heel #c41e3a"></span>
+        <span class="chip" style="background:#4a8fd4" title="Face #4a8fd4"></span>
+      </div>
+      <div class="tip">Noto Sans JP / Bebas Neue / Oswald</div>
+    </header>
+    <div class="frame-wrap">
+      <iframe id="frSingle" src="match-screen-single.html" width="1400" height="1400"></iframe>
+    </div>
+  </section>
+
+  <!-- ── 右: タッグ（本命 match-viewer.html） ────────────────────────── -->
+  <section class="pane">
+    <header class="pane-head">
+      <div>
+        <div class="pane-title">TAG</div>
+        <div class="pane-sub">match-viewer.html（本番版・自動起動）</div>
+      </div>
+      <div class="palette" title="主要カラー">
+        <span class="chip" style="background:#060606" title="BG #060606 (Single同一)"></span>
+        <span class="chip" style="background:#12110e" title="Panel #12110e (Single同一)"></span>
+        <span class="chip" style="background:#d4a843" title="Gold #d4a843 (Single同一)"></span>
+        <span class="chip" style="background:#e88" title="Team A #e88"></span>
+        <span class="chip" style="background:#6ce" title="Team B #6ce"></span>
+      </div>
+      <div class="tip">Noto Sans JP / Bebas Neue / Oswald</div>
+    </header>
+    <div class="frame-wrap">
+      <iframe id="frTag" src="match-screen-tag.html" width="1140" height="1400"></iframe>
+    </div>
+  </section>
+</div>
+
+<script>
+  const zoom = document.getElementById('zoom');
+  const zoomVal = document.getElementById('zoomVal');
+  const frames = [document.getElementById('frSingle'), document.getElementById('frTag')];
+  function applyZoom() {
+    const z = +zoom.value / 100;
+    zoomVal.textContent = zoom.value + '%';
+    frames.forEach(f => f.style.transform = `scale(${z})`);
+  }
+  zoom.addEventListener('input', applyZoom);
+  applyZoom();
+</script>
+
+</body>
+</html>
