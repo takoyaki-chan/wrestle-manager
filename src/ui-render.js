@@ -2377,7 +2377,7 @@ function renderShowPrep() {
       const _tagFighterHtml = (f, team, pos, side) => {
         if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
         const cond = Math.round(f.condition || 100);
-        const drawPow = Engine.attendanceV2.calcDrawPower(f, G);
+        const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
           ${portraitImg(f.id, 72)}
@@ -2442,6 +2442,12 @@ function renderShowPrep() {
           </div>
           <div class="sp-match-center">
             ${tagMatchLabel ? `<div class="sp-match-num">${tagMatchLabel}</div>` : ''}
+            ${(() => {
+              if (!tagFilled) return '';
+              const ids = [tA1, tA2, tB1, tB2];
+              const tagAppeal = Math.round(ids.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, G), 0) / 2);
+              return `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(tagAppeal))}">${tagAppeal}</div>`;
+            })()}
             <div class="sp-tag-badge">TAG MATCH</div>
             <div class="sp-match-vs" style="font-size:20px;margin:8px 0">VS</div>
             <div style="font-size:10px;color:var(--text-dim)">20分1本勝負</div>
