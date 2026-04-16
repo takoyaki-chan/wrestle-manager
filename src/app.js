@@ -4252,11 +4252,16 @@ const App = {
     if (sp.results.every(r => r !== null)) App.finalizeShow();
   },
 
-  // Watch match in battle engine iframe (tag matches auto-skip — Phase 4 で対応)
+  // Watch match in battle engine iframe
   watchMatch(idx) {
     const sp = App._showPreview;
-    if (sp && sp.validMatches[idx]?.matchType === 'tag') { App.skipMatch(idx); return; }
-    if (!sp || sp.results[idx]) return;
+    if (!sp) return;
+    // ── タッグマッチ: tag-battle.html に分岐 ──
+    if (sp.validMatches[idx]?.matchType === 'tag') {
+      App._watchTagMatch(idx);
+      return;
+    }
+    if (sp.results[idx]) return;
     App._fillMissingShowPreviewResults();
     if (sp.results[idx]) {
       renderMatchPreview();
@@ -4318,10 +4323,74 @@ const App = {
       iframe.contentWindow.postMessage(msg, '*');
     };
     // Reload iframe with cache-busting param to guarantee fresh load
+    // NOTE: singles は必ず battle-engine.html を使う（直前のタッグ試合で tag-battle.html に変わっていても戻す）
     iframe.onload = () => setTimeout(sendOnce, 200);
-    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-    iframe.src = baseSrc + '?t=' + Date.now();
+    iframe.src = 'battle-engine.html?t=' + Date.now();
     // Fallback: retry if onload was missed
+    setTimeout(sendOnce, 800);
+  },
+
+  // タッグマッチを tag-battle.html で観戦
+  _watchTagMatch(idx) {
+    const sp = App._showPreview;
+    if (!sp || sp.results[idx]) return;
+    const m = sp.validMatches[idx];
+    const f1 = G.roster.find(c => c.id === m.teamA.fighter1);
+    const f2 = G.roster.find(c => c.id === m.teamA.fighter2);
+    const f3 = G.roster.find(c => c.id === m.teamB.fighter1);
+    const f4 = G.roster.find(c => c.id === m.teamB.fighter2);
+    if (!f1 || !f2 || !f3 || !f4) {
+      sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
+    // エンジン実行（recordFrames=true）
+    const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
+    const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
+    const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
+    const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
+    const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
+    const result = Engine.tagMatch.simulateTagMatch(
+      { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 },
+      tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, recordFrames: true }
+    );
+    sp.results[idx] = result;
+    sp.currentWatching = idx;
+    // BGM: 通常 battle
+    try { Audio.bgm.play('battle'); } catch(e) {}
+    // iframe 表示
+    const overlay = document.getElementById('battleOverlay');
+    overlay.style.display = 'block';
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
+    const iframe = document.getElementById('battleIframe');
+    const mkProfile = (c) => ({
+      ...c,
+      portraitUrl: getPortraitUrl(c.id),
+      profile: CHAR_PROFILES[c.id] || '',
+    });
+    const msg = {
+      type: 'START_TAG_MATCH',
+      teamA: { fighter1: mkProfile(f1), fighter2: mkProfile(f2) },
+      teamB: { fighter1: mkProfile(f3), fighter2: mkProfile(f4) },
+      result,
+      matchInfo: {
+        header: idx === 0 ? 'メインイベント(タッグ)' : `第${sp.validMatches.length - idx}試合(タッグ)`,
+        matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
+        totalMatches: sp.validMatches.length,
+        sfxMasterVol: Audio.sfxMasterVol,
+        bgmMasterVol: Audio.bgmMasterVol,
+        chemA: result.chemA,
+        chemB: result.chemB,
+      }
+    };
+    let sent = false;
+    const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    iframe.src = 'tag-battle.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
@@ -4365,9 +4434,24 @@ const App = {
     const sp = App._showPreview;
     if (!sp || sp.currentWatching < 0) return;
     const idx = sp.currentWatching;
+    const m = sp.validMatches[idx];
+    // ── タッグマッチ: sp.results[idx] に事前計算結果が既に入っている。iframe からは無視して閉じるだけ ──
+    if (m && m.matchType === 'tag') {
+      try { Audio.bgm.stop(); } catch(e) {}
+      document.getElementById('battleOverlay').style.display = 'none';
+      sp.currentWatching = -1;
+      try { Audio.play('coin'); } catch(e) {}
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) {
+        try { Audio.bgm.play('management'); } catch(e) {}
+        App.finalizeShow();
+      } else {
+        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('battle'); } catch(e) {} } }, 300);
+      }
+      return;
+    }
     // Guard: ignore duplicate results (e.g. double-click CLOSE)
     if (sp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; sp.currentWatching = -1; return; }
-    const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
     // Convert battle engine result to WM format
@@ -7108,8 +7192,8 @@ const App = {
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-    iframe.src = baseSrc + '?t=' + Date.now();
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
+    iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
@@ -7275,8 +7359,8 @@ const App = {
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-    iframe.src = baseSrc + '?t=' + Date.now();
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
+    iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
@@ -7765,8 +7849,8 @@ const App = {
       iframe.contentWindow.postMessage(msg, '*');
     };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-    iframe.src = baseSrc + '?t=' + Date.now();
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
+    iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
@@ -8153,8 +8237,7 @@ App.ppvWatchMatch = function(idx) {
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
-  const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-  iframe.src = baseSrc + '?t=' + Date.now();
+  iframe.src = 'battle-engine.html?t=' + Date.now();
   setTimeout(sendOnce, 800);
 };
 
@@ -8662,8 +8745,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     iframe.contentWindow.postMessage(msg, '*');
   };
   iframe.onload = () => setTimeout(sendOnce, 200);
-  const baseSrc = (iframe.getAttribute('src') || 'battle-engine.html').split('?')[0];
-  iframe.src = baseSrc + '?t=' + Date.now();
+  iframe.src = 'battle-engine.html?t=' + Date.now();
   setTimeout(sendOnce, 800);
 };
 

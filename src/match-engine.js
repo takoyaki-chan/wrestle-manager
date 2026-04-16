@@ -447,13 +447,14 @@ Engine.tagMatch = (() => {
    * @param {Object} teamA - {fighter1, fighter2}
    * @param {Object} teamB - {fighter1, fighter2}
    * @param {Object} rng   - Engine.rng.create() で作成したRNG
-   * @param {Object} [options] - {bond_A, bond_B, tagExp_A, tagExp_B}
+   * @param {Object} [options] - {bond_A, bond_B, tagExp_A, tagExp_B, recordFrames}
    */
   function simulateTagMatch(teamA, teamB, rng, options) {
     const opts = options || {};
     const B = Engine.battle;
     const eff = Engine.util.eff;
     const TC = TAG_MATCH_CONFIG;
+    const recordFrames = !!opts.recordFrames;
 
     const bondA = opts.bond_A != null ? opts.bond_A : 50;
     const bondB = opts.bond_B != null ? opts.bond_B : 50;
@@ -494,6 +495,55 @@ Engine.tagMatch = (() => {
     let totalKickouts = 0, totalCounters = 0, leadChanges = 0, bigMoves = 0;
     let lastMomSign = 0;
 
+    // ── フレーム記録（観戦用） ──
+    const frames = recordFrames ? [] : null;
+    let _turnLogStart = 0;
+    let _turnAction = null;
+    function pushFrame(phName) {
+      if (!recordFrames) return;
+      const turnLog = log.slice(_turnLogStart);
+      const turnEvents = dramaSummary
+        .filter(d => d.turn === totalTurn && !d._framed)
+        .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move }; });
+      frames.push({
+        turn: totalTurn,
+        phase: phName,
+        legalA: legalA.id,
+        legalB: legalB.id,
+        apronA: apronA.id,
+        apronB: apronB.id,
+        hp: {
+          [fA1.id]: Math.round(fA1.hp),
+          [fA2.id]: Math.round(fA2.hp),
+          [fB1.id]: Math.round(fB1.hp),
+          [fB2.id]: Math.round(fB2.hp),
+        },
+        grit: {
+          [fA1.id]: fA1.gritTurns | 0,
+          [fA2.id]: fA2.gritTurns | 0,
+          [fB1.id]: fB1.gritTurns | 0,
+          [fB2.id]: fB2.gritTurns | 0,
+        },
+        hotTagBuff: {
+          [fA1.id]: fA1.hotTagBuff | 0,
+          [fA2.id]: fA2.hotTagBuff | 0,
+          [fB1.id]: fB1.hotTagBuff | 0,
+          [fB2.id]: fB2.hotTagBuff | 0,
+        },
+        mom,
+        logLines: turnLog,
+        events: turnEvents,
+        action: _turnAction,
+        segmentIdx: segments.length, // 現在進行中セグメントのインデックス
+        winner: winner || null,
+        finType: winner ? finType : null,
+        finMove: winner ? finMove : null,
+        finishPhase: winner ? finishPhase : null,
+        pinnedBy: winner ? winAttribution.pinnedBy : null,
+        pinnedWho: winner ? winAttribution.pinnedWho : null,
+      });
+    }
+
     // セグメント単位ドラマイベント計画
     let _dtTargetTurn = -1, _ffTargetTurn = -1;
     function planSegmentDrama() {
@@ -517,6 +567,8 @@ Engine.tagMatch = (() => {
       totalTurn++;
       curSegment.turns++;
       const ph = getPhase(totalTurn);
+      _turnLogStart = log.length;
+      _turnAction = null;
 
       // エプロン回復
       apronA.hp = Math.min(apronA.mhp, apronA.hp + TC.apronRecovery);
@@ -553,6 +605,9 @@ Engine.tagMatch = (() => {
         mom += isAAttacking ? -5 : 5;
         mom = clamp(mom, -50, 50);
         log.push(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n}→MISS`);
+        if (recordFrames) {
+          _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, kind: 'miss', dmg: 0, isCrit: false };
+        }
         if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
         else { lossStreakB++; lossStreakA = 0; }
       } else {
@@ -571,6 +626,9 @@ Engine.tagMatch = (() => {
           mom += isAAttacking ? -ENG.counterMomShift : ENG.counterMomShift;
           mom = clamp(mom, -50, 50);
           log.push(`T${totalTurn} [${ph.name}] ${defFighter.name}がカウンター！ ${cMv.n} → ${atkFighter.name}に${cDmg}ダメージ`);
+          if (recordFrames) {
+            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, moveD: cMv.d, kind: 'counter', dmg: cDmg, isCrit: cDmg >= 15 };
+          }
           if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
           else { lossStreakB++; lossStreakA = 0; }
         } else {
@@ -586,6 +644,9 @@ Engine.tagMatch = (() => {
           mom = clamp(mom, -50, 50);
           if (mv.d >= 10) bigMoves++;
           log.push(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n} → ${defFighter.name}に${dmg}ダメージ (HP:${Math.round(defFighter.hp)}/${defFighter.mhp})`);
+          if (recordFrames) {
+            _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, kind: 'hit', dmg, isCrit: dmg >= 15 };
+          }
           if (isAAttacking) { lossStreakB++; lossStreakA = 0; }
           else { lossStreakA++; lossStreakB = 0; }
 
@@ -648,6 +709,7 @@ Engine.tagMatch = (() => {
               winAttribution.pinnedBy = atkFighter.id;
               winAttribution.pinnedWho = defFighter.id;
               log.push(`  ★ 決着！ ${atkFighter.name}の${mv.n}で${finType}勝ち！ (${ph.name})`);
+              pushFrame(ph.name);
               break;
             }
           }
@@ -668,6 +730,7 @@ Engine.tagMatch = (() => {
                   winAttribution.pinnedWho = defFighter.id;
                   dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronDef.id, victim: defFighter.id });
                   log.push(`  → ピン成功！ ${apronDef.name}が見殺し！ ${atkFighter.name}の勝利！`);
+                  pushFrame(ph.name);
                   break;
                 }
                 const cutinRate = calcCutinRate('pin', apronDef, defBond, apronDef.cutinCount);
@@ -683,6 +746,7 @@ Engine.tagMatch = (() => {
                   winAttribution.pinnedBy = atkFighter.id;
                   winAttribution.pinnedWho = defFighter.id;
                   log.push(`  ★ ピン成功！ ${atkFighter.name}の勝利！ (${ph.name})`);
+                  pushFrame(ph.name);
                   break;
                 }
               } else {
@@ -712,6 +776,7 @@ Engine.tagMatch = (() => {
                   winAttribution.pinnedBy = defFighter.id;
                   winAttribution.pinnedWho = atkFighter.id;
                   log.push(`  ★ ${defFighter.name}が丸め込みで逆転勝利！ (${ph.name})`);
+                  pushFrame(ph.name);
                   break;
                 }
               }
@@ -760,6 +825,7 @@ Engine.tagMatch = (() => {
             winAttribution.pinnedBy = atkFighter.id;
             winAttribution.pinnedWho = defFighter.id;
             log.push(`  ★ タッグ技で決着！`);
+            pushFrame(ph.name);
             break;
           }
         }
@@ -827,6 +893,9 @@ Engine.tagMatch = (() => {
           }
         }
       }
+
+      // ターン末尾フレーム記録（break していないターン）
+      pushFrame(ph.name);
     } // end while
 
     // 最終セグメント
@@ -845,6 +914,14 @@ Engine.tagMatch = (() => {
       finType = 'HP判定';
       finMove = '';
       finishPhase = 'Timeout';
+      // タイムアウト時は最後のフレームに winner 情報を追加
+      if (recordFrames && frames.length > 0) {
+        const last = frames[frames.length - 1];
+        last.winner = winner;
+        last.finType = finType;
+        last.finMove = finMove;
+        last.finishPhase = finishPhase;
+      }
     }
 
     // ── MQ算出 ──
@@ -870,12 +947,18 @@ Engine.tagMatch = (() => {
       }
     }
 
+    // dramaSummary から frame 記録用フラグを除去
+    if (recordFrames) {
+      dramaSummary.forEach(d => { delete d._framed; });
+    }
+
     return {
       winner, finType, finMove, finishPhase,
       turns: totalTurn, segments, log,
       mq: mq.final, mqDetail: mq,
       chemA, chemB, dramaSummary, postMatchFlags, winAttribution,
       matchType: 'tag',
+      frames: recordFrames ? frames : undefined,
       perFighter: {
         [fA1.id]: { hpFinal: Math.round(fA1.hp), turnsLegal: fA1.turnsLegal, turnsApron: fA1.turnsApron, damageDealt: fA1.damageDealt, damageTaken: fA1.damageTaken },
         [fA2.id]: { hpFinal: Math.round(fA2.hp), turnsLegal: fA2.turnsLegal, turnsApron: fA2.turnsApron, damageDealt: fA2.damageDealt, damageTaken: fA2.damageTaken },

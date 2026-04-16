@@ -1,12 +1,13 @@
 # タッグマッチシステム設計スペック v0.1
 
 > 2026-03-24 作成
-> ステータス: Phase 1+2+3 完了（2026-04-16）
+> ステータス: Phase 1+2+3+4a 完了（2026-04-17）
 > Phase 1: Engine.tagMatch.simulateTagMatch を match-engine.js に統合。TAG_MATCH_CONFIG/スタイル相性/タッグ技を data.js に追加
 > Phase 3: 試合結果処理統合。applyTagMatchResult(bond/rivalry)、executeShow全面タッグ対応(成長/h2h/matchupLog/tagExp/trust/人気)、auto-simタッグ試合生成
 > Phase 2: 興行カード編成UI。タッグ枠追加(2枠消費)/4名選択ピッカー/skipMatchタッグ分岐/App.finalizeShow全面タッグ対応/renderMatchPreview+renderShowResultタッグ表示
-> auto-sim 100シーズン ALL CLEAR
-> Phase 4以降: ビジュアル観戦 / AI連携
+> Phase 4a: タッグ観戦ビジュアル（Replay方式）。simulateTagMatch に recordFrames オプション追加、tag-battle.html / tag-battle-main.js / tag-battle-audio.js / tag-battle-lines.js 新規作成、app.js watchMatch タッグ分岐統合
+> auto-sim 100シーズン ALL CLEAR（recordFrames デフォルト off で後方互換確認）
+> Phase 4b以降: シングル battle-engine.html の Replay 方式移植 / AI連携
 
 ---
 
@@ -607,9 +608,87 @@ NPCプロモーションがどうペアを組むか。
 
 ---
 
+## 10. Phase 4a — ビジュアル観戦（実装済み 2026-04-17）
+
+タッグ試合の「試合を観る」ボタンで `src/tag-battle.html` iframe が開き、4選手レイアウトで試合を再生する。
+
+### 10.1 アーキテクチャ: Replay方式
+シングル `battle-engine.html` の Port 方式（iframe 内で同一 RNG シードで再シミュレーション）ではなく、Replay 方式を採用。
+- `App._watchTagMatch(idx)` が `Engine.tagMatch.simulateTagMatch(..., { recordFrames: true })` を事前実行
+- `sp.results[idx]` に結果を格納（skipMatch と同一経路）
+- iframe には postMessage で完全な結果 + frames 配列を送信
+- iframe 側（tag-battle-main.js）は受け取った frames を時系列に再生するだけ
+
+メリット：エンジン単一ソース原則を維持、iframe 側はエンジンコード重複なし、`skipMatch` と `watchMatch` で完全同一結果が保証される。
+
+### 10.2 Engine 拡張: recordFrames オプション
+`Engine.tagMatch.simulateTagMatch(teamA, teamB, rng, options)` の options に `recordFrames: true` を指定すると、返り値 `result.frames` にターンごとの snapshot 配列が含まれる。デフォルト off（auto-sim / AI団体週次処理は無影響）。
+
+snapshot 構造:
+```
+{
+  turn, phase, legalA, legalB, apronA, apronB, // ID
+  hp: {[fighterId]: hp, ... x4},
+  grit: {...x4}, hotTagBuff: {...x4},
+  mom, logLines: string[], events: Event[],
+  action: { attackerId, defenderId, atkSide, move, moveD, kind: 'miss'|'hit'|'counter', dmg, isCrit },
+  segmentIdx, winner, finType, finMove, finishPhase, pinnedBy, pinnedWho
+}
+```
+
+### 10.3 ファイル構成
+| ファイル | 役割 |
+|---------|------|
+| `src/tag-battle.html` | レイアウト・CSS・script 読み込み |
+| `src/tag-battle-audio.js` | SE ヘルパー（battle-engine 抜粋、タッグ固有 hotTagSE/doubleTeamSE/touchSE/betrayalSE/friendlyFireSE 追加） |
+| `src/tag-battle-lines.js` | ダメージセリフ/ボイス + タッグ固有カットイン（HOT_TAG_LINES/DOUBLE_TEAM_LINES/CUTIN_SAVE_LINES/BETRAYAL_LINES） |
+| `src/tag-battle-main.js` | State/postMessage受信/renderMatch/nextFrame/applyFrame/演出群/Result overlay/Fighter popup |
+
+### 10.4 レイアウト
+```
+┌──── HUD: 両チーム顔+チーム名 / 中央turn-phase-segment / ケミストリー対面バー ────┐
+├──────────────────────────────────────────────────────────────────┤
+│ [リーガルA 大パネル]       中央パネル       [リーガルB 大パネル] │
+│  portrait + HP bar       (ナレーション/        portrait + HP bar │
+│                           技名/ログ)                              │
+│ [エプロンA 小パネル]                        [エプロンB 小パネル] │
+│  (暗めフィルタ)                               (暗めフィルタ)     │
+└─── Action bar: NEXT TURN / AUTO ───────────────────────────────┘
+```
+リーガルパネル: 縦長 stand 画像、HP25%以下で danger-glow 発動。
+エプロンパネル: 横長 face 画像、brightness(0.68)で薄暗く表示。
+
+### 10.5 演出（シングル並み磨き込み）
+- **攻撃ヒット**: ダメージ数字ポップ（赤、クリット時52pxゴールド）+ パネルshake + 攻撃側 flash-atk + SE（hitStrike/hitThrow/hitSub/hitAerial/hitGround/hitRollup を move名から guessCategory で推定）
+- **カウンター**: パネル counter-flash + counterSE
+- **クリット (dmg≥15)**: HP残量に応じてダメージセリフ/ボイスカットイン（40%/15%+50%/60% 閾値）、同一選手で3ターン以上空ける
+- **タッチ発生**: リーガル/エプロン swap アニメ（旧 apron が新 legal に昇格）+ touchSE
+- **ホットタグ**: 中央 banner「HOT TAG!」ゴールド + hotTagSE + gold flash + 交代直後の選手カットイン（HOT_TAG_LINES）
+- **ダブルチーム**: 中央 banner「DOUBLE TEAM!」赤 + 両パネル flash + doubleTeamSE
+- **カットイン救出**: 中央 banner「CUT IN!」 + 救出側選手カットイン（CUTIN_SAVE_LINES）+ cutinSlide SE
+- **同士討ち**: 中央 banner「同士討ち！」 + 被害者パネル ffFlash（黄） + friendlyFireSE
+- **見殺し**: 中央 banner「…見殺し」 + 見殺し側パネルを grayscale + 見殺し側の BETRAYAL_LINES カットイン
+- **決着**: 結果 overlay 表示（勝利チーム 2選手 upper 画像 + MQ/Turns/Segments 統計 + finType/finMove + pinnedBy→pinnedWho）+ victoryFanfare
+
+### 10.6 親 app.js 統合
+- `App.watchMatch(idx)`: `matchType === 'tag'` 検出時に `App._watchTagMatch(idx)` に分岐
+- `App._watchTagMatch(idx)`: simulateTagMatch(recordFrames:true) 実行 → sp.results[idx]格納 → iframe src を `tag-battle.html?t=<ts>` に切替 → postMessage (START_TAG_MATCH) 送信
+- `App.receiveBattleResult(data)`: `m.matchType==='tag'` ならタッグ経路で iframe を閉じるだけ（結果は事前計算済みを尊重、決定論保証）
+- `App.escapeBattle()`: 既存 show context 経路でタッグも正しく処理（sp.results[idx] が埋まっているので finalizeShow 判定に入る）
+- 他コンテキスト（PPV/war/JT/B2/B3）の iframe.src を `battle-engine.html?t=<ts>` にハードコード（直前のタッグ観戦で src が `tag-battle.html` に切替わっている場合の復帰）
+
+### 10.7 スコープ外（Phase 4b 以降）
+- シングル battle-engine.html の Replay 方式移植
+- PPV / 対抗戦 / B2 / B3 / JT でのタッグ観戦（これらの card には現状タッグ枠なし）
+- ペア固定タッグフィニッシャー演出（spec §5.1.2）
+- タッグ専用 BIG MATCH 演出（現状タイトル戦タッグ禁止）
+
+---
+
 ## 更新履歴
 
 | 日付 | 内容 |
 |------|------|
 | 2026-03-24 | v0.1 初版作成。基本設計の骨格を策定 |
 | 2026-03-24 | v0.1 追記。HP減衰曲線、タッチ判定、ケミストリー算出式を確定。プレイヤー介入不可の原則を明記。ホットタグバフを低確率化。MNTの役割を整理。スタイル相性値を確定（補完100/共鳴75/普通50/噛み合わない20）。介入成功率（線形・HP優先）、タッグフィニッシャー構造、タッグ経験蓄積関数、ドラマイベント発生率、AI編成ロジック、タッグMQ構造を全て確定。全12項目の設計方針が出揃い、プロトタイプ開発可能な状態。アライメント要素（ヒール場外乱闘等）は骨格完成後に追加する将来拡張として記録 |
+| 2026-04-17 | Phase 4a 実装完了。Engine.tagMatch.simulateTagMatch に recordFrames オプション追加（frames 配列返却、デフォルト off で後方互換）、src/tag-battle.html + tag-battle-main.js + tag-battle-audio.js + tag-battle-lines.js 新規作成、app.js watchMatch にタッグ分岐追加。Replay 方式で実装（シングルの Port 方式からは分岐）。シングル並み磨き込み（ダメージ数字/セリフ/カットイン/タッチ swap アニメ/ドラマイベント演出）込み。auto-sim 100シーズン ALL CLEAR。シングル Replay 化は Phase 4b 別タスクとして計画 |
