@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tag-match-viewer",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "C:/Users/nkmrk/Downloads/tag-match-prototype", "-p", "8090", "-c-1"],
+      "port": 8090
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tag Match Prototype</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+h1 { text-align: center; color: #e94560; margin-bottom: 20px; font-size: 1.4em; }
+h2 { color: #e94560; font-size: 1.1em; margin: 16px 0 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+.team-row { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.team-box { background: #16213e; border: 2px solid #0f3460; border-radius: 8px; padding: 16px; width: 320px; }
+.team-box h3 { text-align: center; margin-bottom: 8px; }
+.team-box.team-a { border-color: #e94560; }
+.team-box.team-a h3 { color: #e94560; }
+.team-box.team-b { border-color: #0f3460; }
+.team-box.team-b h3 { color: #6ba3d6; }
+select { width: 100%; padding: 8px; margin: 4px 0; background: #0a0a1a; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; font-size: 14px; }
+.chem-info { font-size: 12px; color: #aaa; margin-top: 8px; text-align: center; min-height: 24px; }
+.chem-info .val { color: #e94560; font-weight: bold; }
+.bond-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.bond-row label { font-size: 12px; color: #aaa; width: 80px; }
+.bond-row input { flex: 1; background: #0a0a1a; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 4px 6px; font-size: 13px; width: 60px; }
+.btn-row { text-align: center; margin: 16px 0; }
+.btn { background: #e94560; color: white; border: none; padding: 12px 32px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+.btn:hover { background: #c73550; }
+.btn:disabled { background: #555; cursor: default; }
+#result { display: none; }
+.result-header { text-align: center; padding: 16px; background: #16213e; border-radius: 8px; margin-bottom: 16px; }
+.result-header .winner { font-size: 1.3em; font-weight: bold; color: #e94560; }
+.result-header .mq { font-size: 1.1em; color: #6ba3d6; margin-top: 4px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.panel { background: #16213e; border-radius: 6px; padding: 12px; font-size: 13px; }
+.panel table { width: 100%; border-collapse: collapse; }
+.panel th, .panel td { padding: 3px 6px; text-align: left; border-bottom: 1px solid #222; }
+.panel th { color: #6ba3d6; font-weight: normal; }
+.seg-list { list-style: none; }
+.seg-list li { padding: 2px 0; border-bottom: 1px solid #222; font-size: 12px; }
+.seg-list .hot { color: #e94560; font-weight: bold; }
+.seg-list .tactical { color: #4ecdc4; }
+.drama-list { list-style: none; }
+.drama-list li { padding: 2px 0; font-size: 12px; }
+.drama-list .doubleTeam { color: #ffd93d; }
+.drama-list .cutinSave { color: #6ba3d6; }
+.drama-list .hotTag { color: #e94560; }
+.drama-list .betrayal { color: #ff6b6b; font-weight: bold; }
+.drama-list .friendlyFire { color: #ff9f43; }
+.log-panel { background: #0a0a1a; border-radius: 6px; padding: 12px; max-height: 400px; overflow-y: auto; font-size: 11px; font-family: monospace; line-height: 1.6; margin-top: 12px; }
+.log-panel .turn { color: #888; }
+.mq-detail { font-size: 12px; }
+.mq-detail td:first-child { color: #aaa; }
+.mq-detail td:last-child { text-align: right; font-weight: bold; }
+.mq-detail .plus { color: #4ecdc4; }
+.mq-detail .minus { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<h1>TAG MATCH PROTOTYPE v0.1</h1>
+
+<div class="team-row">
+  <div class="team-box team-a">
+    <h3>Team A</h3>
+    <select id="a1"></select>
+    <select id="a2"></select>
+    <div class="bond-row"><label>Bond:</label><input type="number" id="bondA" value="50" min="0" max="100"></div>
+    <div class="bond-row"><label>Tag経験:</label><input type="number" id="tagExpA" value="0" min="0" max="30"></div>
+    <div class="chem-info" id="chemA"></div>
+  </div>
+  <div class="team-box team-b">
+    <h3>Team B</h3>
+    <select id="b1"></select>
+    <select id="b2"></select>
+    <div class="bond-row"><label>Bond:</label><input type="number" id="bondB" value="50" min="0" max="100"></div>
+    <div class="bond-row"><label>Tag経験:</label><input type="number" id="tagExpB" value="0" min="0" max="30"></div>
+    <div class="chem-info" id="chemB"></div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <button class="btn" id="goBtn" onclick="runMatch()">試合開始</button>
+</div>
+
+<div id="result">
+  <div class="result-header">
+    <div class="winner" id="resultWinner"></div>
+    <div class="mq" id="resultMQ"></div>
+    <div style="font-size:12px;color:#888;margin-top:4px" id="resultFinish"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>選手成績</h2>
+      <table id="fighterTable">
+        <tr><th>選手</th><th>出場T</th><th>控T</th><th>与ダメ</th><th>被ダメ</th><th>HP</th></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>MQ内訳</h2>
+      <table class="mq-detail" id="mqTable"></table>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel">
+      <h2>セグメント</h2>
+      <ul class="seg-list" id="segList"></ul>
+    </div>
+    <div class="panel">
+      <h2>ドラマイベント</h2>
+      <ul class="drama-list" id="dramaList"></ul>
+    </div>
+  </div>
+
+  <h2>試合ログ</h2>
+  <div class="log-panel" id="logPanel"></div>
+</div>
+
+<script src="wm-data.js"></script>
+<script src="wm-engine.js"></script>
+<script src="tag-data.js"></script>
+<script src="tag-engine.js"></script>
+<script>
+// ── 初期化: セレクトボックスにキャラ追加 ──
+const charsByStyle = {};
+ALL_CHARS.forEach(c => {
+  const s = c.style || 'Other';
+  if (!charsByStyle[s]) charsByStyle[s] = [];
+  charsByStyle[s].push(c);
+});
+
+function populateSelect(selId) {
+  const sel = document.getElementById(selId);
+  for (const [style, chars] of Object.entries(charsByStyle).sort()) {
+    const og = document.createElement('optgroup');
+    og.label = style;
+    chars.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.name} (OVR ${Engine.util.ov(c)} / ${c.style})`;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  }
+}
+
+['a1', 'a2', 'b1', 'b2'].forEach(populateSelect);
+
+// デフォルト値: 4人別々に
+const allIds = ALL_CHARS.map(c => c.id);
+document.getElementById('a1').value = allIds[0];
+document.getElementById('a2').value = allIds[1];
+document.getElementById('b1').value = allIds[2];
+document.getElementById('b2').value = allIds[3];
+
+// ケミストリー表示更新
+function updateChem() {
+  for (const team of ['A', 'B']) {
+    const c1 = ALL_CHARS.find(c => c.id == document.getElementById(team === 'A' ? 'a1' : 'b1').value);
+    const c2 = ALL_CHARS.find(c => c.id == document.getElementById(team === 'A' ? 'a2' : 'b2').value);
+    const bond = parseInt(document.getElementById('bond' + team).value) || 50;
+    const tagExp = parseInt(document.getElementById('tagExp' + team).value) || 0;
+    if (c1 && c2) {
+      const chem = TagEngine.calcChemistry(bond, tagExp, c1.style, c2.style);
+      const compat = getStyleCompat(c1.style, c2.style);
+      const compatLabel = compat >= 100 ? '補完' : compat >= 75 ? '共鳴' : compat <= 20 ? '噛み合わない' : '普通';
+      document.getElementById('chem' + team).innerHTML =
+        `ケミストリー: <span class="val">${chem.toFixed(1)}</span> | 相性: ${compatLabel}(${compat})`;
+    }
+  }
+}
+document.querySelectorAll('select, input').forEach(el => el.addEventListener('change', updateChem));
+updateChem();
+
+// ── 試合実行 ──
+function runMatch() {
+  const c1 = ALL_CHARS.find(c => c.id == document.getElementById('a1').value);
+  const c2 = ALL_CHARS.find(c => c.id == document.getElementById('a2').value);
+  const c3 = ALL_CHARS.find(c => c.id == document.getElementById('b1').value);
+  const c4 = ALL_CHARS.find(c => c.id == document.getElementById('b2').value);
+
+  if (!c1 || !c2 || !c3 || !c4) return;
+  const ids = [c1.id, c2.id, c3.id, c4.id];
+  if (new Set(ids).size !== 4) { alert('4人とも別の選手を選んでください'); return; }
+
+  const bondA = parseInt(document.getElementById('bondA').value) || 50;
+  const bondB = parseInt(document.getElementById('bondB').value) || 50;
+  const tagExpA = parseInt(document.getElementById('tagExpA').value) || 0;
+  const tagExpB = parseInt(document.getElementById('tagExpB').value) || 0;
+
+  const seed = Date.now() ^ 0xBEEF;
+  const rng = Engine.rng.create(seed);
+
+  const result = TagEngine.simulateTagMatch(
+    { fighter1: c1, fighter2: c2 },
+    { fighter1: c3, fighter2: c4 },
+    rng,
+    { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
+  );
+
+  // ── 結果表示 ──
+  document.getElementById('result').style.display = 'block';
+
+  // 勝者
+  const winnerName = result.winner === 'teamA' ? `${c1.name} & ${c2.name}` :
+    result.winner === 'teamB' ? `${c3.name} & ${c4.name}` : '引き分け';
+  document.getElementById('resultWinner').textContent =
+    result.winner === 'draw' ? '引き分け' : `勝者: ${winnerName}`;
+  document.getElementById('resultMQ').textContent = `MQ ${result.mq} | ${result.turns}ターン | ${result.segments.length}セグメント`;
+  document.getElementById('resultFinish').textContent =
+    `${result.finType} (${result.finMove}) — ${result.finishPhase} | Chem A:${result.chemA.toFixed(1)} B:${result.chemB.toFixed(1)}`;
+
+  // 選手テーブル
+  const ft = document.getElementById('fighterTable');
+  ft.innerHTML = '<tr><th>選手</th><th>出場T</th><th>控T</th><th>与ダメ</th><th>被ダメ</th><th>HP</th></tr>';
+  for (const char of [c1, c2, c3, c4]) {
+    const pf = result.perFighter[char.id];
+    const tr = document.createElement('tr');
+    const team = char === c1 || char === c2 ? 'A' : 'B';
+    tr.innerHTML = `<td style="color:${team === 'A' ? '#e94560' : '#6ba3d6'}">${char.name}</td>
+      <td>${pf.turnsLegal}</td><td>${pf.turnsApron}</td>
+      <td>${pf.damageDealt}</td><td>${pf.damageTaken}</td><td>${pf.hpFinal}</td>`;
+    ft.appendChild(tr);
+  }
+
+  // MQ内訳
+  const mq = result.mqDetail;
+  const mqt = document.getElementById('mqTable');
+  mqt.innerHTML = '';
+  const mqRows = [
+    ['天井 (OVR)', mq.ceiling, ''],
+    ['ドラマペナ', -mq.dramaPenalty, 'minus'],
+    ['ペーシングペナ', -mq.pacingPenalty, 'minus'],
+    ['フィニッシュペナ', -mq.finishPenalty, 'minus'],
+    ['見せ場分配', +mq.screenTimeBonus, 'plus'],
+    ['タッチ多様性', +mq.touchDiversityBonus, 'plus'],
+    ['ドラマイベント', +mq.dramaEventBonus, 'plus'],
+    ['決着説得力', +mq.finishBonus, 'plus'],
+    ['長セグペナ', -mq.longSegPenalty, 'minus'],
+    ['出番偏りペナ', -mq.screenTimePenalty, 'minus'],
+    ['最終MQ', mq.final, ''],
+  ];
+  mqRows.forEach(([label, val, cls]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${label}</td><td class="${cls}">${val > 0 && cls === 'plus' ? '+' : ''}${typeof val === 'number' ? val.toFixed ? val.toFixed(1) : val : val}</td>`;
+    mqt.appendChild(tr);
+  });
+
+  // セグメント
+  const sl = document.getElementById('segList');
+  sl.innerHTML = '';
+  const nameMap = {};
+  [c1, c2, c3, c4].forEach(c => nameMap[c.id] = c.name);
+  result.segments.forEach((seg, i) => {
+    const li = document.createElement('li');
+    const typeLabel = seg.touchType === 'hotTag' ? 'ホットタグ' :
+      seg.touchType === 'tactical' ? '戦術タッチ' :
+      seg.touchType === 'exhaustion' ? '消耗タッチ' :
+      seg.touchType === 'finish' ? '決着' :
+      seg.touchType === 'timeout' ? '時間切れ' : seg.touchType || '—';
+    const cls = seg.touchType === 'hotTag' ? 'hot' : seg.touchType === 'tactical' ? 'tactical' : '';
+    li.className = cls;
+    li.textContent = `Seg${i + 1}: ${nameMap[seg.legalA] || '?'} vs ${nameMap[seg.legalB] || '?'} (${seg.turns}T) → ${typeLabel}`;
+    sl.appendChild(li);
+  });
+
+  // ドラマイベント
+  const dl = document.getElementById('dramaList');
+  dl.innerHTML = '';
+  if (result.dramaSummary.length === 0) {
+    dl.innerHTML = '<li style="color:#666">なし</li>';
+  }
+  result.dramaSummary.forEach(d => {
+    const li = document.createElement('li');
+    li.className = d.type;
+    let text = `T${d.turn}: `;
+    if (d.type === 'doubleTeam') text += `ダブルチーム (${d.move})`;
+    else if (d.type === 'cutinSave') text += `カットイン (${nameMap[d.by]}→${nameMap[d.saved]}救出)`;
+    else if (d.type === 'hotTag') text += `ホットタグ (${nameMap[d.tagged]}参戦)`;
+    else if (d.type === 'betrayal') text += `見殺し！ (${nameMap[d.by]}が${nameMap[d.victim]}を見捨てた)`;
+    else if (d.type === 'friendlyFire') text += `同士討ち (${nameMap[d.victim]}に誤爆)`;
+    else text += d.type;
+    li.textContent = text;
+    dl.appendChild(li);
+  });
+
+  // ログ
+  const lp = document.getElementById('logPanel');
+  lp.innerHTML = result.log.map(l => {
+    const cls = l.startsWith('T') ? '' : 'turn';
+    return `<div class="${cls}">${l}</div>`;
+  }).join('');
+  lp.scrollTop = lp.scrollHeight;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tag Match Log Viewer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Consolas', 'SF Mono', 'Monaco', monospace;
+  background: #0e0e14; color: #c8c8d0;
+  display: flex; justify-content: center;
+  padding: 16px;
+}
+#app { width: 820px; max-width: 100%; }
+
+/* ── ヘッダー ── */
+h1 { font-size: 15px; color: #888; text-align: center; margin-bottom: 12px; letter-spacing: 2px; }
+.ctrl { text-align: center; margin-bottom: 20px; }
+.ctrl button {
+  background: #2a2a3a; color: #c8c8d0; border: 1px solid #444;
+  padding: 8px 24px; font-size: 13px; font-family: inherit;
+  cursor: pointer; border-radius: 3px;
+}
+.ctrl button:hover { background: #3a3a4a; }
+
+/* ── 試合ヘッダー ── */
+.match-header {
+  background: #16162a; border: 1px solid #2a2a40;
+  border-radius: 4px; padding: 14px; margin-bottom: 16px;
+}
+.match-header .vs-line {
+  text-align: center; font-size: 14px; font-weight: bold;
+  margin-bottom: 10px; line-height: 1.6;
+}
+.team-a-color { color: #e05070; }
+.team-b-color { color: #5090e0; }
+.match-header .stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px; font-size: 11px; text-align: center;
+}
+.match-header .stats-grid .name { font-weight: bold; margin-bottom: 2px; }
+.match-header .stats-grid .stat { color: #888; }
+.match-header .chem-line {
+  text-align: center; font-size: 11px; color: #888; margin-top: 8px;
+}
+
+/* ── ターンログ ── */
+.turn-row {
+  padding: 5px 8px; margin: 1px 0;
+  font-size: 12px; line-height: 1.5;
+  border-left: 3px solid transparent;
+  border-radius: 2px;
+}
+.turn-row .turn-header { margin-bottom: 2px; }
+.turn-row .turn-num { color: #555; display: inline-block; min-width: 32px; }
+.turn-row .phase { color: #666; font-size: 10px; margin-right: 4px; }
+.turn-row .legal-info { color: #555; font-size: 10px; }
+.turn-row .log-text { display: block; margin-left: 36px; }
+.turn-row .sub-event { display: block; margin-left: 48px; color: #999; font-size: 11px; }
+
+/* ── HP バー: 左右対面レイアウト ── */
+.hp-panel {
+  display: grid; grid-template-columns: 1fr 20px 1fr;
+  gap: 0; margin: 4px 0 2px;
+  font-size: 10px; align-items: start;
+}
+.hp-panel .hp-vs { text-align: center; color: #333; font-size: 9px; padding-top: 2px; }
+.hp-side { display: flex; flex-direction: column; gap: 1px; }
+.hp-side.side-a { align-items: flex-end; }
+.hp-side.side-b { align-items: flex-start; }
+
+/* 個別HPバー行 */
+.hp-row {
+  display: flex; align-items: center; gap: 4px; width: 100%;
+  height: 16px;
+}
+.hp-row.is-legal { height: 20px; }
+.hp-row .hp-marker { width: 12px; text-align: center; font-size: 9px; }
+.hp-row.is-legal .hp-marker { color: #e0e0e0; }
+.hp-row.is-apron .hp-marker { color: transparent; }
+.hp-row .hp-name {
+  width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10px;
+}
+.hp-row.is-legal .hp-name { font-weight: bold; }
+.hp-row.is-apron .hp-name { color: #555; font-size: 9px; }
+.hp-row .hp-val { width: 28px; font-size: 10px; }
+.hp-row .hp-delta { width: 32px; font-size: 9px; }
+.hp-row .hp-delta.dmg { color: #c55; }
+.hp-row .hp-delta.heal { color: #4a9; }
+.hp-row .hp-track { flex: 1; height: 100%; background: #1a1a2a; border-radius: 2px; overflow: hidden; min-width: 40px; }
+.hp-row .hp-fill { height: 100%; border-radius: 2px; }
+.hp-row.is-apron .hp-track { height: 6px; margin: 5px 0; }
+.hp-row.is-apron .hp-fill { opacity: 0.45; }
+.hp-row.is-legal .hp-track { height: 12px; margin: 4px 0; }
+
+/* Side A: 右寄せ (名前→バー→数値 の順を逆転) */
+.side-a .hp-row { flex-direction: row-reverse; }
+.side-a .hp-row .hp-name { text-align: right; }
+.side-a .hp-row .hp-val { text-align: left; }
+.side-a .hp-row .hp-delta { text-align: left; }
+/* Side B: 左寄せ (数値→バー→名前) */
+.side-b .hp-row .hp-name { text-align: left; }
+.side-b .hp-row .hp-val { text-align: right; }
+.side-b .hp-row .hp-delta { text-align: right; }
+
+/* ── セグメント区切り ── */
+.seg-divider-normal {
+  border: none; border-top: 2px solid #2a3a2a;
+  margin: 14px 0 4px;
+}
+.seg-label-normal {
+  font-size: 11px; color: #556; margin-bottom: 6px;
+  letter-spacing: 1px; text-align: center;
+}
+
+/* タッチ区切り（強調版） */
+.touch-banner {
+  margin: 14px 0 6px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+.touch-banner .touch-type { font-weight: bold; font-size: 13px; }
+.touch-banner .touch-detail { font-size: 11px; color: #aaa; margin-top: 2px; }
+.touch-banner .touch-seg { font-size: 10px; color: #666; }
+.touch-banner.t-tactical { background: #152520; border: 1px solid #2a5a4a; }
+.touch-banner.t-tactical .touch-type { color: #4ecdc4; }
+.touch-banner.t-exhaustion { background: #1a2020; border: 1px solid #3a4a3a; }
+.touch-banner.t-exhaustion .touch-type { color: #8ab080; }
+.touch-banner.t-hottag { background: #2a1520; border: 2px solid #e05070; }
+.touch-banner.t-hottag .touch-type { color: #e05070; font-size: 14px; }
+.touch-banner.t-finish { background: #201828; border: 1px solid #6040a0; }
+.touch-banner.t-finish .touch-type { color: #c080e0; }
+.touch-banner.t-timeout { background: #1a1a20; border: 1px solid #444; }
+.touch-banner.t-timeout .touch-type { color: #888; }
+.touch-banner.t-failed { background: #201818; border: 1px dashed #553030; }
+.touch-banner.t-failed .touch-type { color: #c06060; }
+
+/* ── イベント強調 ── */
+.turn-row.ev-touch { background: #1a2520; border-left-color: #2a7a5a; }
+.turn-row.ev-hottag { background: #2a1a20; border-left-color: #e05070; }
+.turn-row.ev-double { background: #2a2510; border-left-color: #c0a030; }
+.turn-row.ev-friendly { background: #2a2018; border-left-color: #d08040; }
+.turn-row.ev-cutin { background: #18202a; border-left-color: #5090e0; }
+.turn-row.ev-betrayal { background: #2a1418; border-left-color: #e03030; }
+.turn-row.ev-finish { background: #2a2030; border-left-color: #c060e0; }
+.turn-row.ev-miss { opacity: 0.6; }
+
+/* ── サマリー ── */
+.summary {
+  background: #16162a; border: 1px solid #2a2a40;
+  border-radius: 4px; padding: 14px; margin-top: 20px;
+  font-size: 12px;
+}
+.summary h2 { font-size: 13px; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
+.summary .result-line { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+.summary .detail { color: #888; margin: 2px 0; }
+.summary .drama-item { margin: 2px 0; }
+.summary .mq-grid {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
+  margin-top: 6px; max-width: 300px;
+}
+.summary .mq-grid .label { color: #888; }
+.summary .mq-grid .val { text-align: right; }
+.summary .mq-grid .plus { color: #4a9; }
+.summary .mq-grid .minus { color: #c55; }
+
+#no-match { text-align: center; color: #555; padding: 60px 0; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>TAG MATCH LOG VIEWER</h1>
+  <div class="ctrl">
+    <button onclick="runAndRender()">試合を生成</button>
+    <button onclick="runAndRender()" style="margin-left:8px">次の試合</button>
+  </div>
+  <div id="no-match">ボタンを押すと試合が始まります</div>
+  <div id="match-area" style="display:none"></div>
+</div>
+
+<script src="wm-data.js"></script>
+<script src="wm-engine.js"></script>
+<script src="tag-data.js"></script>
+<script src="tag-engine.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  const ov = Engine.util.ov;
+  let matchCount = 0;
+
+  function pickTeams(rng) {
+    const pool = ALL_CHARS.slice();
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Engine.rng.int(rng, 0, i);
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return {
+      teamA: { fighter1: pool[0], fighter2: pool[1] },
+      teamB: { fighter1: pool[2], fighter2: pool[3] },
+    };
+  }
+
+  function groupLogByTurn(log) {
+    const groups = [];
+    let cur = null;
+    for (const line of log) {
+      const m = line.match(/^T(\d+)\s/);
+      if (m) {
+        cur = { turn: parseInt(m[1]), lines: [line] };
+        groups.push(cur);
+      } else if (cur) {
+        cur.lines.push(line);
+      }
+    }
+    return groups;
+  }
+
+  function detectEvents(lines, turn, dramaSummary) {
+    const evts = new Set();
+    const dramaThisTurn = dramaSummary.filter(d => d.turn === turn);
+    for (const d of dramaThisTurn) {
+      if (d.type === 'hotTag') evts.add('hottag');
+      if (d.type === 'doubleTeam') evts.add('double');
+      if (d.type === 'friendlyFire') evts.add('friendly');
+      if (d.type === 'cutinSave') evts.add('cutin');
+      if (d.type === 'betrayal') evts.add('betrayal');
+    }
+    for (const l of lines) {
+      if (l.includes('★ 決着') || l.includes('★ ピン成功') || l.includes('★ タッグ技で決着') || l.includes('丸め込みで逆転') || l.includes('時間切れ')) evts.add('finish');
+      if (l.includes('↔ タッチ')) evts.add('touch');
+      if (l.includes('タッチ失敗')) evts.add('touch-fail');
+      if (l.includes('→MISS')) evts.add('miss');
+      if (l.includes('カットイン') && !evts.has('cutin')) evts.add('cutin');
+    }
+    return evts;
+  }
+
+  function hpColor(ratio, teamSide) {
+    if (ratio > 0.66) return teamSide === 'A' ? '#c05070' : '#4080c0';
+    if (ratio > 0.33) return '#c0a030';
+    return '#c03030';
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ── タッチバナー生成 ──
+  function buildTouchBanner(seg, nextSegIdx, nameMap, dramaSummary) {
+    const tt = seg.touchType;
+    if (!tt || tt === 'finish' || tt === 'timeout') return '';
+
+    // タッチ種別 → CSSクラス & ラベル
+    let cls, label;
+    if (tt === 'hotTag') { cls = 't-hottag'; label = 'HOT TAG'; }
+    else if (tt === 'tactical') { cls = 't-tactical'; label = '戦術タッチ'; }
+    else if (tt === 'exhaustion') { cls = 't-exhaustion'; label = '消耗タッチ'; }
+    else { cls = 't-tactical'; label = tt; }
+
+    // 誰が出て誰が引っ込んだかを特定
+    // seg.legalA/legalB は交代前のリーガルマン
+    // タッチはA側かB側か — dramaSummaryのhotTagからteamを特定、
+    // または log テキストから推測
+    // 簡易: segのlegalとnextSegのlegalを比較
+    let detail = '';
+    // hotTag の場合はdramaSummaryから情報取得
+    const hotTagEvt = dramaSummary.find(d => d.type === 'hotTag' && d.turn >= 1 &&
+      seg.touchType === 'hotTag' && d.tagged);
+    if (hotTagEvt) {
+      detail = `${nameMap[hotTagEvt.tagged]} が参戦！`;
+    }
+
+    let html = `<div class="touch-banner ${cls}">`;
+    html += `<div class="touch-type">${label}</div>`;
+    if (detail) html += `<div class="touch-detail">${esc(detail)}</div>`;
+    html += `<div class="touch-seg">SEGMENT ${nextSegIdx + 1}</div>`;
+    html += '</div>';
+    return html;
+  }
+
+  // ── HP行レンダー ──
+  function renderHpRow(fid, isLegal, teamSide, hp, mhp, delta, nameMap) {
+    const ratio = Math.max(0, hp) / mhp;
+    const color = hpColor(ratio, teamSide);
+    const name = (nameMap[fid] || '?').slice(0, 6);
+    const legalCls = isLegal ? 'is-legal' : 'is-apron';
+    const marker = isLegal ? '&#9654;' : '';
+    const nameColor = teamSide === 'A' ? '#c05070' : '#4080c0';
+
+    // delta表示
+    let deltaHtml = '';
+    if (delta !== 0) {
+      if (delta < 0) deltaHtml = `<span class="hp-delta dmg">${delta}</span>`;
+      else deltaHtml = `<span class="hp-delta heal">+${delta}</span>`;
+    } else {
+      deltaHtml = '<span class="hp-delta"></span>';
+    }
+
+    let h = `<div class="hp-row ${legalCls}">`;
+    h += `<span class="hp-marker">${marker}</span>`;
+    h += `<span class="hp-name" style="color:${nameColor}">${name}</span>`;
+    h += `<span class="hp-track"><span class="hp-fill" style="width:${(ratio * 100).toFixed(1)}%;background:${color}"></span></span>`;
+    h += `<span class="hp-val">${Math.max(0, hp)}</span>`;
+    h += deltaHtml;
+    h += '</div>';
+    return h;
+  }
+
+  // ── メインレンダー ──
+  function renderMatch(result, teamA, teamB) {
+    const fighters = [teamA.fighter1, teamA.fighter2, teamB.fighter1, teamB.fighter2];
+    const nameMap = {};
+    fighters.forEach(f => nameMap[f.id] = f.name);
+    const fById = {};
+    fighters.forEach(f => fById[f.id] = f);
+    const teamAIds = new Set([teamA.fighter1.id, teamA.fighter2.id]);
+
+    const mhpMap = {};
+    if (result.turnLog.length > 0) {
+      for (const fid of Object.keys(result.turnLog[0].hp)) {
+        const f = fById[parseInt(fid)] || fById[fid];
+        if (f) {
+          mhpMap[fid] = Math.round(TAG_MATCH_CONFIG.hpBase + Engine.util.eff(f.st) * TAG_MATCH_CONFIG.hpScale);
+        }
+      }
+    }
+
+    // 前ターンHP (差分計算用)
+    const prevHp = {};
+    for (const fid of Object.keys(mhpMap)) prevHp[fid] = mhpMap[fid];
+
+    let html = '';
+
+    // ── 試合ヘッダー ──
+    html += '<div class="match-header">';
+    html += `<div class="vs-line">`;
+    html += `<span class="team-a-color">${teamA.fighter1.name} &amp; ${teamA.fighter2.name}</span>`;
+    html += ` vs `;
+    html += `<span class="team-b-color">${teamB.fighter1.name} &amp; ${teamB.fighter2.name}</span>`;
+    html += `</div>`;
+    html += '<div class="stats-grid">';
+    for (const f of fighters) {
+      const side = teamAIds.has(f.id) ? 'A' : 'B';
+      const cls = side === 'A' ? 'team-a-color' : 'team-b-color';
+      html += `<div><div class="name ${cls}">${f.name}</div><div class="stat">OVR ${ov(f)} / ${f.style}</div></div>`;
+    }
+    html += '</div>';
+    html += `<div class="chem-line">Chemistry — Team A: ${result.chemA.toFixed(1)} / Team B: ${result.chemB.toFixed(1)}</div>`;
+    html += '</div>';
+
+    // ── ターンログ ──
+    const logGroups = groupLogByTurn(result.log);
+    const turnSnap = {};
+    result.turnLog.forEach(s => turnSnap[s.turn] = s);
+
+    // セグメントのターン区間を先にマッピング
+    // segments[i].touchType が終了イベント
+    // タッチバナーは前セグメント最終ターンの後に挿入
+    let segEndTurns = {}; // turn -> segIndex (そのターンで終わるセグメント)
+    {
+      let tAcc = 0;
+      for (let si = 0; si < result.segments.length; si++) {
+        tAcc += result.segments[si].turns;
+        segEndTurns[tAcc] = si;
+      }
+    }
+
+    let lastSegIdx = -1;
+
+    for (let gi = 0; gi < logGroups.length; gi++) {
+      const group = logGroups[gi];
+      const t = group.turn;
+      const snap = turnSnap[t];
+      if (!snap) continue;
+
+      // セグメント開始ラベル（初回 or タッチバナー後に表示）
+      if (snap.segIdx !== lastSegIdx) {
+        if (lastSegIdx === -1) {
+          // 最初のセグメント
+          html += `<div class="seg-label-normal">── SEGMENT 1 ──</div>`;
+        }
+        // タッチバナーは前のターンの後に既に挿入済み（下のセグメント終了処理で）
+        lastSegIdx = snap.segIdx;
+      }
+
+      const evts = detectEvents(group.lines, t, result.dramaSummary);
+
+      let evClass = '';
+      if (evts.has('finish')) evClass = 'ev-finish';
+      else if (evts.has('betrayal')) evClass = 'ev-betrayal';
+      else if (evts.has('hottag')) evClass = 'ev-hottag';
+      else if (evts.has('double')) evClass = 'ev-double';
+      else if (evts.has('friendly')) evClass = 'ev-friendly';
+      else if (evts.has('cutin')) evClass = 'ev-cutin';
+      else if (evts.has('touch') || evts.has('touch-fail')) evClass = 'ev-touch';
+      else if (evts.has('miss') && evts.size === 1) evClass = 'ev-miss';
+
+      html += `<div class="turn-row ${evClass}">`;
+
+      // ターンヘッダー
+      html += `<div class="turn-header">`;
+      html += `<span class="turn-num">T${t}</span>`;
+      html += `<span class="phase">[${snap.phase}]</span>`;
+      html += `<span class="legal-info">${nameMap[snap.legalA]} vs ${nameMap[snap.legalB]}</span>`;
+      html += `</div>`;
+
+      // ログテキスト
+      for (const line of group.lines) {
+        const mainMatch = line.match(/^T\d+\s+\[[^\]]+\]\s+(.*)/);
+        if (mainMatch) {
+          html += `<span class="log-text">${esc(mainMatch[1])}</span>`;
+        } else {
+          html += `<span class="sub-event">${esc(line.trim())}</span>`;
+        }
+      }
+
+      // ── HP パネル: 左右対面 ──
+      // Team A: legalA, apronA (左側)
+      // Team B: legalB, apronB (右側)
+      const curHp = snap.hp;
+
+      html += '<div class="hp-panel">';
+
+      // Side A (左)
+      html += '<div class="hp-side side-a">';
+      for (const [fid, isLeg] of [[snap.legalA, true], [snap.apronA, false]]) {
+        const hp = Math.max(0, curHp[fid] || 0);
+        const mhp = mhpMap[fid] || 70;
+        const delta = hp - (prevHp[fid] || hp);
+        html += renderHpRow(fid, isLeg, 'A', hp, mhp, delta, nameMap);
+      }
+      html += '</div>';
+
+      // VS区切り
+      html += '<div class="hp-vs">vs</div>';
+
+      // Side B (右)
+      html += '<div class="hp-side side-b">';
+      for (const [fid, isLeg] of [[snap.legalB, true], [snap.apronB, false]]) {
+        const hp = Math.max(0, curHp[fid] || 0);
+        const mhp = mhpMap[fid] || 70;
+        const delta = hp - (prevHp[fid] || hp);
+        html += renderHpRow(fid, isLeg, 'B', hp, mhp, delta, nameMap);
+      }
+      html += '</div>';
+      html += '</div>'; // hp-panel
+
+      html += '</div>'; // turn-row
+
+      // 前ターンHP更新
+      for (const fid of Object.keys(curHp)) prevHp[fid] = curHp[fid];
+
+      // ── セグメント終了 → タッチバナー挿入 ──
+      if (segEndTurns[t] !== undefined) {
+        const si = segEndTurns[t];
+        const seg = result.segments[si];
+        const nextSegIdx = si + 1;
+
+        if (seg.touchType === 'finish') {
+          // 決着バナー
+          html += `<div class="touch-banner t-finish"><div class="touch-type">FINISH</div></div>`;
+        } else if (seg.touchType === 'timeout') {
+          html += `<div class="touch-banner t-timeout"><div class="touch-type">TIME UP</div></div>`;
+        } else if (seg.touchType === 'hotTag') {
+          // ホットタグ: 誰が交代したかを特定
+          const htEvt = result.dramaSummary.find(d => d.type === 'hotTag' && d.turn === t);
+          let detail = '';
+          if (htEvt) {
+            const taggedName = nameMap[htEvt.tagged] || '?';
+            const team = htEvt.team;
+            // snapは交代後 → apronが元のリーガルマン
+            let outName = '?';
+            if (team === 'A') outName = nameMap[snap.apronA] || '?';
+            else outName = nameMap[snap.apronB] || '?';
+            detail = `${outName} OUT → ${taggedName} IN`;
+          }
+          html += `<div class="touch-banner t-hottag">`;
+          html += `<div class="touch-type">HOT TAG!</div>`;
+          if (detail) html += `<div class="touch-detail">${esc(detail)}</div>`;
+          if (nextSegIdx < result.segments.length) html += `<div class="touch-seg">SEGMENT ${nextSegIdx + 1}</div>`;
+          html += '</div>';
+        } else if (seg.touchType === 'tactical' || seg.touchType === 'exhaustion') {
+          const cls = seg.touchType === 'tactical' ? 't-tactical' : 't-exhaustion';
+          const label = seg.touchType === 'tactical' ? '戦術タッチ' : '消耗タッチ';
+          // 誰が交代したか (snapは交代後の状態なので、前ターンと比較)
+          const prevSnap = turnSnap[t - 1];
+          let detail = '';
+          if (prevSnap) {
+            // A側の交代チェック
+            if (prevSnap.legalA !== snap.legalA) {
+              detail = `${nameMap[prevSnap.legalA]} OUT → ${nameMap[snap.legalA]} IN`;
+            }
+            // B側の交代チェック
+            if (prevSnap.legalB !== snap.legalB) {
+              const d2 = `${nameMap[prevSnap.legalB]} OUT → ${nameMap[snap.legalB]} IN`;
+              detail = detail ? detail + ' / ' + d2 : d2;
+            }
+          }
+          html += `<div class="touch-banner ${cls}">`;
+          html += `<div class="touch-type">${label}</div>`;
+          if (detail) html += `<div class="touch-detail">${esc(detail)}</div>`;
+          if (nextSegIdx < result.segments.length) html += `<div class="touch-seg">SEGMENT ${nextSegIdx + 1}</div>`;
+          html += '</div>';
+        }
+      }
+    }
+
+    // ── サマリー ──
+    html += '<div class="summary">';
+    html += '<h2>MATCH RESULT</h2>';
+
+    const winName = result.winner === 'teamA'
+      ? `${teamA.fighter1.name} & ${teamA.fighter2.name}`
+      : result.winner === 'teamB'
+        ? `${teamB.fighter1.name} & ${teamB.fighter2.name}`
+        : '引き分け';
+    const winCls = result.winner === 'teamA' ? 'team-a-color' : result.winner === 'teamB' ? 'team-b-color' : '';
+    html += `<div class="result-line"><span class="${winCls}">${result.winner === 'draw' ? '引き分け' : `${winName} WIN`}</span></div>`;
+    html += `<div class="detail">決着: ${result.finType}${result.finMove ? ` (${result.finMove})` : ''} — ${result.finishPhase} / ${result.turns}ターン / ${result.segments.length}セグメント</div>`;
+    html += `<div class="detail">MQ: ${result.mq}</div>`;
+
+    const mq = result.mqDetail;
+    html += '<h2 style="margin-top:12px">MQ BREAKDOWN</h2>';
+    html += '<div class="mq-grid">';
+    const mqRows = [
+      ['天井 (OVR)', mq.ceiling, ''],
+      ['ドラマペナ', -mq.dramaPenalty, 'minus'],
+      ['ペーシングペナ', -mq.pacingPenalty, 'minus'],
+      ['フィニッシュペナ', -mq.finishPenalty, 'minus'],
+      ['見せ場分配+', +mq.screenTimeBonus, 'plus'],
+      ['タッチ多様性+', +mq.touchDiversityBonus, 'plus'],
+      ['ドラマイベント+', +mq.dramaEventBonus, 'plus'],
+      ['決着説得力+', +mq.finishBonus, 'plus'],
+      ['長セグペナ', -mq.longSegPenalty, 'minus'],
+      ['出番偏りペナ', -mq.screenTimePenalty, 'minus'],
+    ];
+    for (const [label, val, cls] of mqRows) {
+      if (val === 0) continue;
+      const sign = cls === 'plus' ? '+' : '';
+      html += `<span class="label">${label}</span><span class="val ${cls}">${sign}${typeof val === 'number' && val.toFixed ? val.toFixed(1) : val}</span>`;
+    }
+    html += `<span class="label" style="font-weight:bold">最終MQ</span><span class="val" style="font-weight:bold">${mq.final}</span>`;
+    html += '</div>';
+
+    html += '<h2 style="margin-top:12px">FIGHTER STATS</h2>';
+    html += '<div class="mq-grid" style="grid-template-columns:auto repeat(5,auto);max-width:100%;gap:2px 8px">';
+    html += '<span class="label"></span><span class="label">出場T</span><span class="label">控T</span><span class="label">与ダメ</span><span class="label">被ダメ</span><span class="label">最終HP</span>';
+    for (const f of fighters) {
+      const pf = result.perFighter[f.id];
+      const side = teamAIds.has(f.id) ? 'A' : 'B';
+      const cls = side === 'A' ? 'team-a-color' : 'team-b-color';
+      html += `<span class="${cls}">${f.name}</span>`;
+      html += `<span class="val">${pf.turnsLegal}</span>`;
+      html += `<span class="val">${pf.turnsApron}</span>`;
+      html += `<span class="val">${pf.damageDealt}</span>`;
+      html += `<span class="val">${pf.damageTaken}</span>`;
+      html += `<span class="val">${pf.hpFinal}</span>`;
+    }
+    html += '</div>';
+
+    if (result.dramaSummary.length > 0) {
+      html += '<h2 style="margin-top:12px">DRAMA EVENTS</h2>';
+      for (const d of result.dramaSummary) {
+        let text = `T${d.turn}: `;
+        if (d.type === 'doubleTeam') text += `ダブルチーム (${d.move})`;
+        else if (d.type === 'cutinSave') text += `カットイン (${nameMap[d.by]}→${nameMap[d.saved]}救出)`;
+        else if (d.type === 'hotTag') text += `ホットタグ (${nameMap[d.tagged]}参戦)`;
+        else if (d.type === 'betrayal') text += `見殺し！ (${nameMap[d.by]}が${nameMap[d.victim]}を見捨てた)`;
+        else if (d.type === 'friendlyFire') text += `同士討ち (${nameMap[d.victim]}に誤爆)`;
+        else text += d.type;
+        html += `<div class="drama-item">${esc(text)}</div>`;
+      }
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  // ── 試合実行 ──
+  window.runAndRender = function() {
+    matchCount++;
+    const seed = Date.now() ^ (matchCount * 0x1337);
+    const rng = Engine.rng.create(seed);
+
+    const { teamA, teamB } = pickTeams(rng);
+    const bondA = 30 + Engine.rng.int(rng, 0, 50);
+    const bondB = 30 + Engine.rng.int(rng, 0, 50);
+    const tagExpA = Engine.rng.int(rng, 0, 15);
+    const tagExpB = Engine.rng.int(rng, 0, 15);
+
+    const result = TagEngine.simulateTagMatch(teamA, teamB, rng, {
+      bond_A: bondA, bond_B: bondB,
+      tagExp_A: tagExpA, tagExp_B: tagExpB,
+    });
+
+    document.getElementById('no-match').style.display = 'none';
+    const area = document.getElementById('match-area');
+    area.style.display = 'block';
+    area.innerHTML = renderMatch(result, teamA, teamB);
+    window.scrollTo(0, 0);
+  };
+
+  // 初回自動生成
+  runAndRender();
+})();
+</script>
+</body>
+</html>
