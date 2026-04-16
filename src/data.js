@@ -744,6 +744,122 @@ const BIGMATCH_ENG = {
   guEscapeMax: 3,
 };
 
+// ── Tag Match Constants (§spec tag-match-system-spec-v0.1) ──
+const TAG_MATCH_CONFIG = {
+  maxTotalTurns: 50,
+  damageScale: 0.55,
+  hpBase: 70,
+  hpScale: 1.00,
+  apronRecovery: 1.8,
+  phases: [
+    { name: 'Opening', min: 1,  max: 12, mult: 0.90, sCh: 20, counterBonus: 0 },
+    { name: 'Mid',     min: 13, max: 22, mult: 1.05, sCh: 40, counterBonus: 3 },
+    { name: 'End',     min: 23, max: 32, mult: 1.20, sCh: 55, counterBonus: 5 },
+    { name: 'Climax',  min: 33, max: 50, mult: 1.40, sCh: 70, counterBonus: 8 },
+  ],
+  kickoutMax: 2,
+  guEscapeMax: 2,
+  touch: {
+    wantHpThreshold: 0.60,
+    wantHpCritical: 0.35,
+    wantLossTurns: 3,
+    tacticalChemThreshold: 65,
+    tacticalBaseRate: 0.15,
+    canTouchHpWeight: 0.875,
+    canTouchSpdScale: 0.003,
+    canTouchOppScale: 0.002,
+    canTouchMin: 0.15,
+    canTouchMax: 0.90,
+    isolationThreshold: 4,
+    hotTagBuffChance: 0.22,
+    hotTagBuffTurns: 2,
+    hotTagBuffMult: 1.10,
+  },
+  cutin: {
+    basePinRate: 0.70,
+    baseFinisherRate: 0.40,
+    baseCounterRate: 0.60,
+    hpScale: 0.0076,
+    bondScale: 0.0046,
+    countPenalty: 0.08,
+  },
+  drama: {
+    doubleTeamBase: 0.08,
+    doubleTeamChemScale: 0.0003,
+    friendlyFireBase: 0.03,
+    friendlyFireChemScale: 0.0003,
+    betrayalBondThreshold: 30,
+    betrayalBondScale: 0.02,
+  },
+  mq: {
+    screenTimeMaxBonus: 8,
+    touchDiversityBonus: [0, 0, 2, 4, 6],
+    dramaEventBonus: 2,
+    dramaEventMaxBonus: 8,
+    cutinBreakBonus: 3,
+    tagMoveFinishBonus: 5,
+    longSegmentPenaltyThreshold: 0.50,
+    longSegmentPenaltyScale: 20,
+    screenTimePenaltyScale: 15,
+  },
+};
+
+const STYLE_COMPAT_MATRIX = {
+  Grappler:   { Grappler: 75, Aerial: 100, Submission: 75, Allround: 50, Striker: 50, Brawler: 20 },
+  Aerial:     { Grappler: 100, Aerial: 75, Submission: 50, Allround: 100, Striker: 50, Brawler: 50 },
+  Submission: { Grappler: 75, Aerial: 50, Submission: 50, Allround: 50, Striker: 100, Brawler: 100 },
+  Allround:   { Grappler: 50, Aerial: 100, Submission: 50, Allround: 50, Striker: 50, Brawler: 50 },
+  Striker:    { Grappler: 50, Aerial: 50, Submission: 100, Allround: 50, Striker: 75, Brawler: 75 },
+  Brawler:    { Grappler: 20, Aerial: 50, Submission: 100, Allround: 50, Striker: 75, Brawler: 75 },
+};
+STYLE_COMPAT_MATRIX.Technique = STYLE_COMPAT_MATRIX.Submission;
+
+const STYLE_TAG_MOVES = {
+  'Aerial+Grappler':    { n: '空中戦からの投げ連携', d: 18, c: 'throw' },
+  'Aerial+Aerial':      { n: 'ダブル・ムーンサルト', d: 17, c: 'aerial' },
+  'Aerial+Allround':    { n: 'アシスト式ダイビングアタック', d: 17, c: 'aerial' },
+  'Aerial+Striker':     { n: 'キック＆飛びつきコンビネーション', d: 16, c: 'strike' },
+  'Aerial+Submission':  { n: '空中からの合体関節技', d: 16, c: 'submission' },
+  'Aerial+Technique':   { n: '空中からの合体関節技', d: 16, c: 'submission' },
+  'Aerial+Brawler':     { n: '放り投げからのダイブ', d: 17, c: 'aerial' },
+  'Allround+Grappler':  { n: 'ダブル・スープレックス', d: 17, c: 'throw' },
+  'Allround+Allround':  { n: 'コンビネーション・スラム', d: 16, c: 'throw' },
+  'Allround+Striker':   { n: '打投コンビネーション', d: 16, c: 'throw' },
+  'Allround+Submission':{ n: '崩し＆極め連携', d: 16, c: 'submission' },
+  'Allround+Technique': { n: '崩し＆極め連携', d: 16, c: 'submission' },
+  'Allround+Brawler':   { n: 'パワー連携スラム', d: 17, c: 'throw' },
+  'Brawler+Grappler':   { n: '重量級ダブルパワーボム', d: 18, c: 'throw' },
+  'Brawler+Striker':    { n: 'ダブル打撃コンビネーション', d: 17, c: 'strike' },
+  'Brawler+Submission': { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
+  'Brawler+Technique':  { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
+  'Brawler+Brawler':    { n: 'ダブル・パワースラム', d: 18, c: 'throw' },
+  'Grappler+Grappler':  { n: 'ダブル・チョークスラム', d: 18, c: 'throw' },
+  'Grappler+Striker':   { n: '投げからの追撃打撃', d: 17, c: 'strike' },
+  'Grappler+Submission':{ n: '投げからの関節極め', d: 17, c: 'submission' },
+  'Grappler+Technique': { n: '投げからの関節極め', d: 17, c: 'submission' },
+  'Striker+Striker':     { n: 'ダブル打撃ラッシュ', d: 17, c: 'strike' },
+  'Striker+Submission':  { n: '打撃で崩して関節技', d: 17, c: 'submission' },
+  'Striker+Technique':   { n: '打撃で崩して関節技', d: 17, c: 'submission' },
+  'Submission+Submission':{ n: 'ダブル関節技', d: 17, c: 'submission' },
+  'Submission+Technique': { n: 'ダブル関節技', d: 17, c: 'submission' },
+  'Technique+Technique':  { n: 'ダブル関節技', d: 17, c: 'submission' },
+};
+
+function getTagMove(styleA, styleB) {
+  const sA = styleA || 'Allround';
+  const sB = styleB || 'Allround';
+  const key = [sA, sB].sort().join('+');
+  return STYLE_TAG_MOVES[key] || { n: '合体スラム', d: 16, c: 'throw' };
+}
+
+function getStyleCompat(styleA, styleB) {
+  const sA = styleA || 'Allround';
+  const sB = styleB || 'Allround';
+  const row = STYLE_COMPAT_MATRIX[sA];
+  if (!row) return 50;
+  return row[sB] != null ? row[sB] : 50;
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝

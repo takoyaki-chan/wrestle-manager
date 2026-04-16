@@ -333,3 +333,652 @@ Engine.formatFinish = function(finType, finMove, isFinisher) {
       return finType || '激闘決着';
   }
 };
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  TAG MATCH ENGINE — タッグマッチ専用エンジン               ║
+// ║  Engine.battle の共通関数を流用しつつ                      ║
+// ║  セグメント進行・タッチ・ケミストリーをタッグ専用に設計    ║
+// ╚══════════════════════════════════════════════════════════╝
+
+Engine.tagMatch = (() => {
+  'use strict';
+  const clamp = Engine.util.clamp;
+
+  // ── タッグ専用ダメージスケール ──
+  function tagScaleDmg(dmg) {
+    return Math.max(ENG.dmgFloor, Math.round(dmg * TAG_MATCH_CONFIG.damageScale));
+  }
+
+  // ── HP減衰曲線 (§3.1.1): 後半急降下型。MNTで緩和 ──
+  function effectiveStatMul(hpRatio, mnt) {
+    let base;
+    if (hpRatio >= 0.50) {
+      base = 1.0 - (1.0 - hpRatio) * 0.10;
+    } else if (hpRatio >= 0.30) {
+      base = 0.95 - (0.50 - hpRatio) * 1.0;
+    } else {
+      base = 0.75 - (0.30 - hpRatio) * 0.50;
+    }
+    const mntFactor = (100 - (mnt || 70)) / 100 * 0.15;
+    const reduction = 1.0 - base;
+    const adjusted = 1.0 - reduction * (1.0 - mntFactor);
+    return clamp(adjusted, 0.55, 1.0);
+  }
+
+  function applyHpDecay(fighter) {
+    const hpRatio = clamp(fighter.hp / fighter.mhp, 0, 1);
+    const mul = effectiveStatMul(hpRatio, fighter.mn);
+    return {
+      ...fighter,
+      pw: Math.round(fighter._basePw * mul),
+      sp: Math.round(fighter._baseSp * mul),
+      te: Math.round(fighter._baseTe * mul),
+      st: Math.round(fighter._baseSt * mul),
+    };
+  }
+
+  // ── フェーズ判定 ──
+  function getPhase(totalTurn) {
+    const phases = TAG_MATCH_CONFIG.phases;
+    return phases.find(p => totalTurn >= p.min && totalTurn <= p.max) || phases[phases.length - 1];
+  }
+
+  // ── ケミストリー (§4) ──
+  function tagExpValue(matchCount) {
+    return 100 * (1 - Math.exp(-(matchCount || 0) / 7));
+  }
+
+  function calcChemistry(bond, tagMatchCount, styleA, styleB) {
+    const compat = getStyleCompat(styleA, styleB);
+    const tagExp = tagExpValue(tagMatchCount);
+    return bond * 0.5 + tagExp * 0.3 + compat * 0.2;
+  }
+
+  // ── タッチ判定 (§3.3) ──
+  function wantTouch(fighter, consecutiveLossTurns, chemistry, rng) {
+    const hpRatio = fighter.hp / fighter.mhp;
+    const TC = TAG_MATCH_CONFIG.touch;
+    if (hpRatio <= TC.wantHpCritical) return true;
+    if (hpRatio <= TC.wantHpThreshold) return true;
+    if (consecutiveLossTurns >= TC.wantLossTurns) return true;
+    if (chemistry >= TC.tacticalChemThreshold && Engine.rng.float(rng) < TC.tacticalBaseRate) return true;
+    return false;
+  }
+
+  function touchSuccessRate(fighter, opponent) {
+    const TC = TAG_MATCH_CONFIG.touch;
+    const hpRatio = clamp(fighter.hp / fighter.mhp, 0, 1);
+    const hpBase = (hpRatio - 0.20) * TC.canTouchHpWeight;
+    const spdBonus = (fighter._baseSp - 70) * TC.canTouchSpdScale;
+    const oppBlock = ((opponent._basePw + opponent._baseTe) / 2 - 70) * TC.canTouchOppScale;
+    return clamp(hpBase + spdBonus - oppBlock, TC.canTouchMin, TC.canTouchMax);
+  }
+
+  function classifyTouch(fighter, isolationCount, chemistry) {
+    if (isolationCount >= TAG_MATCH_CONFIG.touch.isolationThreshold) return 'hotTag';
+    const hpRatio = fighter.hp / fighter.mhp;
+    if (hpRatio > 0.60 && chemistry >= TAG_MATCH_CONFIG.touch.tacticalChemThreshold) return 'tactical';
+    return 'exhaustion';
+  }
+
+  // ── カットイン (§3.2.2) ──
+  function calcCutinRate(type, apronFighter, bond, cutinCount) {
+    const CC = TAG_MATCH_CONFIG.cutin;
+    let base;
+    if (type === 'pin') base = CC.basePinRate;
+    else if (type === 'finisher') base = CC.baseFinisherRate;
+    else base = CC.baseCounterRate;
+    const hpBonus = (apronFighter.hp - 50) * CC.hpScale;
+    const bondBonus = ((bond || 50) - 50) * CC.bondScale;
+    const penalty = cutinCount * CC.countPenalty;
+    return clamp(base + hpBonus + bondBonus - penalty, 0.05, 0.95);
+  }
+
+  // ── ドラマイベント (§5) ──
+  function checkBetrayal(bond, rng) {
+    const DD = TAG_MATCH_CONFIG.drama;
+    if (bond >= DD.betrayalBondThreshold) return false;
+    const rate = (DD.betrayalBondThreshold - bond) * DD.betrayalBondScale;
+    return Engine.rng.float(rng) < rate;
+  }
+
+  // ── メイン: simulateTagMatch ──
+  /**
+   * @param {Object} teamA - {fighter1, fighter2}
+   * @param {Object} teamB - {fighter1, fighter2}
+   * @param {Object} rng   - Engine.rng.create() で作成したRNG
+   * @param {Object} [options] - {bond_A, bond_B, tagExp_A, tagExp_B}
+   */
+  function simulateTagMatch(teamA, teamB, rng, options) {
+    const opts = options || {};
+    const B = Engine.battle;
+    const eff = Engine.util.eff;
+    const TC = TAG_MATCH_CONFIG;
+
+    const bondA = opts.bond_A != null ? opts.bond_A : 50;
+    const bondB = opts.bond_B != null ? opts.bond_B : 50;
+    const chemA = calcChemistry(bondA, opts.tagExp_A || 0, teamA.fighter1.style, teamA.fighter2.style);
+    const chemB = calcChemistry(bondB, opts.tagExp_B || 0, teamB.fighter1.style, teamB.fighter2.style);
+
+    function initFighter(char) {
+      const hp = Math.round(TC.hpBase + eff(char.st) * TC.hpScale);
+      return {
+        ...char,
+        hp, mhp: hp,
+        _basePw: char.pw, _baseSp: char.sp, _baseTe: char.te, _baseSt: char.st,
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
+        turnsLegal: 0, turnsApron: 0,
+        damageDealt: 0, damageTaken: 0,
+        cutinCount: 0, hotTagBuff: 0,
+      };
+    }
+
+    const fA1 = initFighter(teamA.fighter1);
+    const fA2 = initFighter(teamA.fighter2);
+    const fB1 = initFighter(teamB.fighter1);
+    const fB2 = initFighter(teamB.fighter2);
+
+    let legalA = fA1, apronA = fA2;
+    let legalB = fB1, apronB = fB2;
+
+    let totalTurn = 0, mom = 0, log = [];
+    let winner = null, finType = null, finMove = null, finishPhase = null;
+    let winAttribution = { pinnedBy: null, pinnedWho: null };
+
+    let segments = [];
+    let curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
+    let isolationA = 0, isolationB = 0;
+    let lossStreakA = 0, lossStreakB = 0;
+    let dramaSummary = [];
+    let touchTypes = new Set();
+    let totalKickouts = 0, totalCounters = 0, leadChanges = 0, bigMoves = 0;
+    let lastMomSign = 0;
+
+    // セグメント単位ドラマイベント計画
+    let _dtTargetTurn = -1, _ffTargetTurn = -1;
+    function planSegmentDrama() {
+      _dtTargetTurn = -1;
+      _ffTargetTurn = -1;
+      const DD = TC.drama;
+      const dtRate = DD.doubleTeamBase + Math.max(chemA, chemB) * DD.doubleTeamChemScale;
+      if (Engine.rng.float(rng) < dtRate) {
+        _dtTargetTurn = Engine.rng.int(rng, 1, 6);
+      }
+      const ffRate = DD.friendlyFireBase - Math.min(chemA, chemB) * DD.friendlyFireChemScale;
+      if (ffRate > 0 && Engine.rng.float(rng) < ffRate) {
+        _ffTargetTurn = Engine.rng.int(rng, 1, 6);
+        if (_ffTargetTurn === _dtTargetTurn) _ffTargetTurn++;
+      }
+    }
+    planSegmentDrama();
+
+    // ── ターンループ ──
+    while (totalTurn < TC.maxTotalTurns && !winner) {
+      totalTurn++;
+      curSegment.turns++;
+      const ph = getPhase(totalTurn);
+
+      // エプロン回復
+      apronA.hp = Math.min(apronA.mhp, apronA.hp + TC.apronRecovery);
+      apronB.hp = Math.min(apronB.mhp, apronB.hp + TC.apronRecovery);
+      apronA.turnsApron++;
+      apronB.turnsApron++;
+      legalA.turnsLegal++;
+      legalB.turnsLegal++;
+
+      // バフ減衰
+      if (legalA.gritTurns > 0) legalA.gritTurns--;
+      if (legalB.gritTurns > 0) legalB.gritTurns--;
+      if (legalA.hotTagBuff > 0) legalA.hotTagBuff--;
+      if (legalB.hotTagBuff > 0) legalB.hotTagBuff--;
+
+      // 実効ステータス
+      const effA = applyHpDecay(legalA);
+      const effB = applyHpDecay(legalB);
+
+      // ── 攻防判定 ──
+      const atkRoll = Engine.rng.float(rng) * 100 + mom * 0.3;
+      const isAAttacking = atkRoll >= 50;
+      const atk = isAAttacking ? effA : effB;
+      const def = isAAttacking ? effB : effA;
+      const atkFighter = isAAttacking ? legalA : legalB;
+      const defFighter = isAAttacking ? legalB : legalA;
+      const atkSide = isAAttacking ? 'left' : 'right';
+
+      const mv = B.selMove(rng, atk.style, totalTurn, TC.phases);
+      const hitRate = B.calcHitRate(mv, atk, def);
+      const hit = Engine.rng.float(rng) * 100 < hitRate;
+
+      if (!hit) {
+        mom += isAAttacking ? -5 : 5;
+        mom = clamp(mom, -50, 50);
+        log.push(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n}→MISS`);
+        if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
+        else { lossStreakB++; lossStreakA = 0; }
+      } else {
+        const counterRate = B.calcCounterRate(atk, def, ph);
+        const isCounter = Engine.rng.float(rng) * 100 < counterRate;
+
+        if (isCounter) {
+          totalCounters++;
+          const cMv = B.selMove(rng, def.style, totalTurn, TC.phases);
+          let cDmg = B.calcDamage(rng, cMv, def, atk, mom, atkSide === 'left' ? 'right' : 'left', ph);
+          cDmg = Math.round(cDmg * ENG.counterDmgMult);
+          cDmg = tagScaleDmg(cDmg);
+          atkFighter.hp -= cDmg;
+          defFighter.damageDealt += cDmg;
+          atkFighter.damageTaken += cDmg;
+          mom += isAAttacking ? -ENG.counterMomShift : ENG.counterMomShift;
+          mom = clamp(mom, -50, 50);
+          log.push(`T${totalTurn} [${ph.name}] ${defFighter.name}がカウンター！ ${cMv.n} → ${atkFighter.name}に${cDmg}ダメージ`);
+          if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
+          else { lossStreakB++; lossStreakA = 0; }
+        } else {
+          // 通常ヒット
+          let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+          if (atkFighter.hotTagBuff > 0) dmg = Math.round(dmg * TC.touch.hotTagBuffMult);
+          dmg = tagScaleDmg(dmg);
+          defFighter.hp -= dmg;
+          atkFighter.damageDealt += dmg;
+          defFighter.damageTaken += dmg;
+          atkFighter.consecutiveHits++;
+          mom += isAAttacking ? 8 : -8;
+          mom = clamp(mom, -50, 50);
+          if (mv.d >= 10) bigMoves++;
+          log.push(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n} → ${defFighter.name}に${dmg}ダメージ (HP:${Math.round(defFighter.hp)}/${defFighter.mhp})`);
+          if (isAAttacking) { lossStreakB++; lossStreakA = 0; }
+          else { lossStreakA++; lossStreakB = 0; }
+
+          // ── 決着判定 ──
+          if (defFighter.hp <= 0) {
+            const fType = B.determineFinishType(rng, mv);
+            let finished = false;
+
+            if (fType === 'fall' || fType === 'tko') {
+              if (fType === 'tko') {
+                finished = true;
+              } else {
+                const koChance = B.calcKickoutChance(defFighter, ph, ENG);
+                if (defFighter.kickoutCount < TC.kickoutMax && Engine.rng.float(rng) < koChance) {
+                  defFighter.hp = Math.round(defFighter.mhp * 0.05);
+                  defFighter.kickoutCount++;
+                  defFighter.gritTurns = ENG.gritDuration;
+                  totalKickouts++;
+                  log.push(`  → ${defFighter.name}がキックアウト！ (${defFighter.kickoutCount}回目)`);
+                } else {
+                  const apronDef = isAAttacking ? apronB : apronA;
+                  const defBond = isAAttacking ? bondB : bondA;
+                  if (checkBetrayal(defBond, rng)) {
+                    finished = true;
+                    dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronDef.id, victim: defFighter.id });
+                    log.push(`  → ${apronDef.name}が助けに行かない！ 見殺し！`);
+                  } else {
+                    const cutinRate = calcCutinRate('pin', apronDef, defBond, apronDef.cutinCount);
+                    if (Engine.rng.float(rng) < cutinRate) {
+                      apronDef.cutinCount++;
+                      defFighter.hp = Math.round(defFighter.mhp * 0.05);
+                      defFighter.gritTurns = ENG.gritDuration;
+                      totalKickouts++;
+                      dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
+                      log.push(`  → ${apronDef.name}がカットイン！ ${defFighter.name}を救出！`);
+                    } else {
+                      finished = true;
+                    }
+                  }
+                }
+              }
+            } else if (fType === 'gu') {
+              const escChance = B.calcGuEscapeChance(defFighter, ph, ENG);
+              if (defFighter.kickoutCount < TC.guEscapeMax && Engine.rng.float(rng) < escChance) {
+                defFighter.hp = Math.round(defFighter.mhp * 0.05);
+                defFighter.kickoutCount++;
+                defFighter.gritTurns = ENG.gritDuration;
+                totalKickouts++;
+                log.push(`  → ${defFighter.name}がロープエスケープ！`);
+              } else {
+                finished = true;
+              }
+            }
+
+            if (finished) {
+              winner = isAAttacking ? 'teamA' : 'teamB';
+              finType = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
+              finMove = mv.n;
+              finishPhase = ph.name;
+              winAttribution.pinnedBy = atkFighter.id;
+              winAttribution.pinnedWho = defFighter.id;
+              log.push(`  ★ 決着！ ${atkFighter.name}の${mv.n}で${finType}勝ち！ (${ph.name})`);
+              break;
+            }
+          }
+
+          // ピン試み
+          if (!winner && defFighter.hp > 0 && defFighter.hp / defFighter.mhp <= ENG.pinAttemptHpThreshold) {
+            if (B.checkPinAttempt(rng, mv, atk, defFighter, dmg, mom, atkSide, ph)) {
+              const pinSuccess = B.calcPinAttemptSuccess(atk, defFighter, dmg, ph);
+              if (Engine.rng.float(rng) * 100 < pinSuccess) {
+                const apronDef = isAAttacking ? apronB : apronA;
+                const defBond = isAAttacking ? bondB : bondA;
+                if (checkBetrayal(defBond, rng)) {
+                  winner = isAAttacking ? 'teamA' : 'teamB';
+                  finType = 'ピン';
+                  finMove = mv.n;
+                  finishPhase = ph.name;
+                  winAttribution.pinnedBy = atkFighter.id;
+                  winAttribution.pinnedWho = defFighter.id;
+                  dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronDef.id, victim: defFighter.id });
+                  log.push(`  → ピン成功！ ${apronDef.name}が見殺し！ ${atkFighter.name}の勝利！`);
+                  break;
+                }
+                const cutinRate = calcCutinRate('pin', apronDef, defBond, apronDef.cutinCount);
+                if (Engine.rng.float(rng) < cutinRate) {
+                  apronDef.cutinCount++;
+                  dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
+                  log.push(`  → ピン！ だが${apronDef.name}がカットイン！`);
+                } else {
+                  winner = isAAttacking ? 'teamA' : 'teamB';
+                  finType = 'ピン';
+                  finMove = mv.n;
+                  finishPhase = ph.name;
+                  winAttribution.pinnedBy = atkFighter.id;
+                  winAttribution.pinnedWho = defFighter.id;
+                  log.push(`  ★ ピン成功！ ${atkFighter.name}の勝利！ (${ph.name})`);
+                  break;
+                }
+              } else {
+                log.push(`  → ピン！ だが${defFighter.name}が返した！`);
+              }
+            }
+          }
+
+          // 丸め込み判定
+          if (!winner && defFighter.hp > 0 && defFighter.hp / defFighter.mhp <= ENG.rollupHpThreshold && ph.name !== 'Opening') {
+            const rollupRate = 5 + (eff(def.te) * 0.15);
+            if (Engine.rng.float(rng) * 100 < rollupRate) {
+              let rSuccess = ENG.rollupBaseSuccess + (eff(def.te) * ENG.rollupTecBonus);
+              if (ph.name === 'Climax') rSuccess += 15;
+              if (Engine.rng.float(rng) * 100 < rSuccess) {
+                const apronAtk = isAAttacking ? apronA : apronB;
+                const atkBond = isAAttacking ? bondA : bondB;
+                const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
+                if (Engine.rng.float(rng) < cutinRate) {
+                  apronAtk.cutinCount++;
+                  log.push(`  → ${defFighter.name}が丸め込み！ しかし${apronAtk.name}がカットイン！`);
+                } else {
+                  winner = isAAttacking ? 'teamB' : 'teamA';
+                  finType = '丸め込み';
+                  finMove = '丸め込み';
+                  finishPhase = ph.name;
+                  winAttribution.pinnedBy = defFighter.id;
+                  winAttribution.pinnedWho = atkFighter.id;
+                  log.push(`  ★ ${defFighter.name}が丸め込みで逆転勝利！ (${ph.name})`);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // リードチェンジ追跡
+      const curSign = mom > 5 ? 1 : mom < -5 ? -1 : 0;
+      if (curSign !== 0 && curSign !== lastMomSign) { leadChanges++; lastMomSign = curSign; }
+
+      // ── ダブルチーム (セグメント計画) ──
+      if (!winner && curSegment.turns === _dtTargetTurn) {
+        const atkApron = isAAttacking ? apronA : apronB;
+        const tagMv = getTagMove(atkFighter.style, atkApron.style);
+        const effAtk = applyHpDecay(atkFighter);
+        const effDef = applyHpDecay(defFighter);
+        let tagDmg = B.calcDamage(rng, tagMv, effAtk, effDef, mom, atkSide, ph);
+        tagDmg = Math.round(tagDmg * 1.3);
+        tagDmg = tagScaleDmg(tagDmg);
+        defFighter.hp -= tagDmg;
+        atkFighter.damageDealt += Math.round(tagDmg * 0.5);
+        atkApron.damageDealt += Math.round(tagDmg * 0.5);
+        defFighter.damageTaken += tagDmg;
+        bigMoves++;
+        dramaSummary.push({ type: 'doubleTeam', turn: totalTurn, by: [atkFighter.id, atkApron.id], move: tagMv.n });
+        log.push(`  ★ ダブルチーム！ ${atkFighter.name}&${atkApron.name}の${tagMv.n}！ ${defFighter.name}に${tagDmg}ダメージ！`);
+
+        if (defFighter.hp <= 0) {
+          const apronDef = isAAttacking ? apronB : apronA;
+          const defBond = isAAttacking ? bondB : bondA;
+          const cutinRate = calcCutinRate('finisher', apronDef, defBond, apronDef.cutinCount);
+          if (!checkBetrayal(defBond, rng) && Engine.rng.float(rng) < cutinRate) {
+            apronDef.cutinCount++;
+            defFighter.hp = Math.round(defFighter.mhp * 0.03);
+            defFighter.gritTurns = ENG.gritDuration;
+            totalKickouts++;
+            dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
+            log.push(`  → ${apronDef.name}がカットイン！ なんとか阻止！`);
+          } else {
+            winner = isAAttacking ? 'teamA' : 'teamB';
+            finType = 'フォール';
+            finMove = tagMv.n;
+            finishPhase = ph.name;
+            winAttribution.pinnedBy = atkFighter.id;
+            winAttribution.pinnedWho = defFighter.id;
+            log.push(`  ★ タッグ技で決着！`);
+            break;
+          }
+        }
+      }
+
+      // ── 同士討ち (セグメント計画) ──
+      if (!winner && curSegment.turns === _ffTargetTurn) {
+        const defApron = isAAttacking ? apronB : apronA;
+        const ffDmg = Engine.rng.int(rng, 5, 10);
+        defApron.hp -= ffDmg;
+        defApron.damageTaken += ffDmg;
+        dramaSummary.push({ type: 'friendlyFire', turn: totalTurn, team: isAAttacking ? 'B' : 'A', victim: defApron.id });
+        log.push(`  ※ 同士討ち！ ${defFighter.name}の攻撃が${defApron.name}に誤爆！ ${ffDmg}ダメージ`);
+      }
+
+      // ── タッチ判定 ──
+      if (!winner) {
+        if (wantTouch(legalA, lossStreakA, chemA, rng)) {
+          const rate = touchSuccessRate(legalA, legalB);
+          if (Engine.rng.float(rng) < rate) {
+            const tType = classifyTouch(legalA, isolationA, chemA);
+            touchTypes.add(tType);
+            if (tType === 'hotTag') {
+              dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'A', tagged: apronA.id });
+              log.push(`  ★ ホットタグ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`);
+              if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
+                apronA.hotTagBuff = TC.touch.hotTagBuffTurns;
+              }
+            } else {
+              log.push(`  ↔ タッチ(${tType === 'tactical' ? '戦術' : '消耗'}): ${legalA.name} → ${apronA.name}`);
+            }
+            curSegment.touchType = tType;
+            segments.push({ ...curSegment });
+            const tmp = legalA; legalA = apronA; apronA = tmp;
+            lossStreakA = 0; isolationA = 0;
+            curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
+            planSegmentDrama();
+          } else {
+            isolationA++;
+          }
+        }
+
+        if (!winner && wantTouch(legalB, lossStreakB, chemB, rng)) {
+          const rate = touchSuccessRate(legalB, legalA);
+          if (Engine.rng.float(rng) < rate) {
+            const tType = classifyTouch(legalB, isolationB, chemB);
+            touchTypes.add(tType);
+            if (tType === 'hotTag') {
+              dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'B', tagged: apronB.id });
+              log.push(`  ★ ホットタグ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`);
+              if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
+                apronB.hotTagBuff = TC.touch.hotTagBuffTurns;
+              }
+            } else {
+              log.push(`  ↔ タッチ(${tType === 'tactical' ? '戦術' : '消耗'}): ${legalB.name} → ${apronB.name}`);
+            }
+            curSegment.touchType = tType;
+            segments.push({ ...curSegment });
+            const tmp = legalB; legalB = apronB; apronB = tmp;
+            lossStreakB = 0; isolationB = 0;
+            curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
+            planSegmentDrama();
+          } else {
+            isolationB++;
+          }
+        }
+      }
+    } // end while
+
+    // 最終セグメント
+    if (curSegment.turns > 0) {
+      curSegment.touchType = winner ? 'finish' : 'timeout';
+      segments.push({ ...curSegment });
+    }
+
+    // タイムアウト
+    if (!winner) {
+      const totalHpA = legalA.hp + apronA.hp;
+      const totalHpB = legalB.hp + apronB.hp;
+      if (totalHpA > totalHpB) winner = 'teamA';
+      else if (totalHpB > totalHpA) winner = 'teamB';
+      else winner = 'draw';
+      finType = 'HP判定';
+      finMove = '';
+      finishPhase = 'Timeout';
+    }
+
+    // ── MQ算出 ──
+    const mq = calcTagMQ({
+      fA1, fA2, fB1, fB2,
+      totalTurn, segments, touchTypes, dramaSummary,
+      totalKickouts, totalCounters, leadChanges, bigMoves,
+      finType, finishPhase, winner,
+    });
+
+    // 試合後フラグ
+    const postMatchFlags = {
+      betrayalFlag: dramaSummary.some(d => d.type === 'betrayal'),
+      friendlyFireFlag: dramaSummary.some(d => d.type === 'friendlyFire'),
+      hotTagComebackFlag: false,
+      cutinSaveFlag: dramaSummary.some(d => d.type === 'cutinSave'),
+      doubleTeamFinishFlag: dramaSummary.some(d => d.type === 'doubleTeam') && finMove && dramaSummary.some(d => d.type === 'doubleTeam' && d.move === finMove),
+    };
+    if (winner !== 'draw') {
+      const winTeam = winner === 'teamA' ? 'A' : 'B';
+      if (dramaSummary.some(d => d.type === 'hotTag' && d.team === winTeam)) {
+        postMatchFlags.hotTagComebackFlag = true;
+      }
+    }
+
+    return {
+      winner, finType, finMove, finishPhase,
+      turns: totalTurn, segments, log,
+      mq: mq.final, mqDetail: mq,
+      chemA, chemB, dramaSummary, postMatchFlags, winAttribution,
+      matchType: 'tag',
+      perFighter: {
+        [fA1.id]: { hpFinal: Math.round(fA1.hp), turnsLegal: fA1.turnsLegal, turnsApron: fA1.turnsApron, damageDealt: fA1.damageDealt, damageTaken: fA1.damageTaken },
+        [fA2.id]: { hpFinal: Math.round(fA2.hp), turnsLegal: fA2.turnsLegal, turnsApron: fA2.turnsApron, damageDealt: fA2.damageDealt, damageTaken: fA2.damageTaken },
+        [fB1.id]: { hpFinal: Math.round(fB1.hp), turnsLegal: fB1.turnsLegal, turnsApron: fB1.turnsApron, damageDealt: fB1.damageDealt, damageTaken: fB1.damageTaken },
+        [fB2.id]: { hpFinal: Math.round(fB2.hp), turnsLegal: fB2.turnsLegal, turnsApron: fB2.turnsApron, damageDealt: fB2.damageDealt, damageTaken: fB2.damageTaken },
+      },
+    };
+  }
+
+  // ── タッグMQ算出 (§6) ──
+  function calcTagMQ(ctx) {
+    const {
+      fA1, fA2, fB1, fB2,
+      totalTurn, segments, touchTypes, dramaSummary,
+      totalKickouts, totalCounters, leadChanges, bigMoves,
+      finType, finishPhase,
+    } = ctx;
+    const MC = TAG_MATCH_CONFIG.mq;
+
+    const avgOV = Math.round((
+      Engine.util.ov(fA1) + Engine.util.ov(fA2) + Engine.util.ov(fB1) + Engine.util.ov(fB2)
+    ) / 4);
+    let ceiling;
+    if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
+    else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
+    else ceiling = 83 + (avgOV - 80) * 0.85;
+    ceiling = clamp(ceiling, 15, 100);
+
+    let dramaPenalty = 30;
+    dramaPenalty -= Math.min(totalKickouts, 3) * 6;
+    dramaPenalty -= Math.min(totalCounters, 4) * 2;
+    dramaPenalty -= Math.min(leadChanges, 4) * 1.5;
+    dramaPenalty -= Math.min(bigMoves, 8) * 0.4;
+    dramaPenalty = Math.max(0, dramaPenalty);
+
+    let pacingPenalty = 0;
+    if (totalTurn < 20) pacingPenalty = (20 - totalTurn) * 2;
+    else if (totalTurn > 35) pacingPenalty = (totalTurn - 35) * 2;
+
+    let finishPenalty = 0;
+    if (finType === 'フォール' || finType === 'ギブアップ') {
+      if (finishPhase === 'Climax') finishPenalty = 0;
+      else if (finishPhase === 'End') finishPenalty = 1;
+      else finishPenalty = 3;
+    } else if (finType === 'ピン') finishPenalty = 0;
+    else if (finType === '丸め込み') finishPenalty = 1;
+    else if (finType === 'TKO') finishPenalty = 2;
+    else finishPenalty = 10;
+
+    const turnsArr = [fA1.turnsLegal, fA2.turnsLegal, fB1.turnsLegal, fB2.turnsLegal];
+    const avgTurns = turnsArr.reduce((a, b) => a + b, 0) / 4;
+    const stdDev = Math.sqrt(turnsArr.reduce((s, t) => s + (t - avgTurns) ** 2, 0) / 4);
+    const idealStdDev = avgTurns * 0.25;
+    const screenTimeBonus = stdDev <= idealStdDev
+      ? MC.screenTimeMaxBonus
+      : Math.max(0, MC.screenTimeMaxBonus - (stdDev - idealStdDev) * 1.5);
+
+    const touchDiversityBonus = MC.touchDiversityBonus[Math.min(touchTypes.size, MC.touchDiversityBonus.length - 1)] || 0;
+
+    const dramaTypes = new Set(dramaSummary.map(d => d.type));
+    const dramaEventBonus = Math.min(dramaTypes.size * MC.dramaEventBonus, MC.dramaEventMaxBonus);
+
+    let finishBonus = 0;
+    if (dramaSummary.some(d => d.type === 'cutinSave')) finishBonus += MC.cutinBreakBonus;
+    if (dramaSummary.some(d => d.type === 'doubleTeam')) finishBonus += MC.tagMoveFinishBonus;
+
+    const maxSegTurns = Math.max(...segments.map(s => s.turns), 0);
+    const maxSegRatio = totalTurn > 0 ? maxSegTurns / totalTurn : 0;
+    let longSegPenalty = 0;
+    if (maxSegRatio > MC.longSegmentPenaltyThreshold) {
+      longSegPenalty = (maxSegRatio - MC.longSegmentPenaltyThreshold) * MC.longSegmentPenaltyScale;
+    }
+
+    const minTurns = Math.min(...turnsArr);
+    const minRatio = totalTurn > 0 ? minTurns / totalTurn : 0;
+    let screenTimePenalty = 0;
+    if (minRatio < 0.10) {
+      screenTimePenalty = (0.10 - minRatio) * MC.screenTimePenaltyScale * 10;
+    }
+
+    const tagBonus = screenTimeBonus + touchDiversityBonus + dramaEventBonus + finishBonus;
+    const tagPenalty = longSegPenalty + screenTimePenalty;
+    const final = clamp(Math.round(ceiling - dramaPenalty - pacingPenalty - finishPenalty + tagBonus - tagPenalty), 5, 100);
+
+    return {
+      ceiling: Math.round(ceiling), dramaPenalty: Math.round(dramaPenalty * 10) / 10,
+      pacingPenalty: Math.round(pacingPenalty * 10) / 10, finishPenalty,
+      screenTimeBonus: Math.round(screenTimeBonus * 10) / 10,
+      touchDiversityBonus, dramaEventBonus, finishBonus,
+      longSegPenalty: Math.round(longSegPenalty * 10) / 10,
+      screenTimePenalty: Math.round(screenTimePenalty * 10) / 10,
+      tagBonus: Math.round(tagBonus * 10) / 10,
+      tagPenalty: Math.round(tagPenalty * 10) / 10,
+      final,
+    };
+  }
+
+  return {
+    simulateTagMatch,
+    calcChemistry,
+    tagExpValue,
+    getPhase,
+    effectiveStatMul,
+    calcTagMQ,
+  };
+})();
