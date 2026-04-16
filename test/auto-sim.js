@@ -122,6 +122,17 @@ function autoSetupShowCard(G, simRng) {
     });
   }
 
+  // タッグマッチ挿入（8興行に1回、4人以上余っている場合）
+  if (card.length >= 2 && (G.totalShows || 0) % 8 === 3) {
+    // 最後の2試合（4人）をタッグ1試合に置換
+    const tagSlots = card.splice(card.length - 2, 2);
+    card.push({
+      matchType: 'tag',
+      teamA: { fighter1: tagSlots[0].left, fighter2: tagSlots[0].right },
+      teamB: { fighter1: tagSlots[1].left, fighter2: tagSlots[1].right },
+    });
+  }
+
   // タイトルマッチ判定（確立済み＆クールダウンOK）
   if (G.titleEstablished && card.length > 0) {
     const cd = Engine.title.canTitleMatch(G);
@@ -473,7 +484,7 @@ function runSimulation(seed, seasons) {
                 const preShowState = G; // executeShow前のstate（showCard/showVenue付き）
                 const venueIdx = preShowState.showVenue || 0;
                 // 旧集客（processSettlement相当の概算）
-                const matchPops = preShowState.showCard.filter(m => m.left > 0 && m.right > 0).map(m => {
+                const matchPops = preShowState.showCard.filter(m => m.matchType !== 'tag' && m.left > 0 && m.right > 0).map(m => {
                   const l = preShowState.roster.find(c => c.id === m.left);
                   const r = preShowState.roster.find(c => c.id === m.right);
                   return ((l ? l.popularity : 0) + (r ? r.popularity : 0)) / 2;
@@ -481,7 +492,7 @@ function runSimulation(seed, seasons) {
                 const oldCardPop = Engine.economy.calcCardPop(matchPops);
                 const hasTitleMatch = preShowState.showCard.some(m => m.isTitle);
                 const champId = preShowState.titles?.world?.championId;
-                const hasChamp = preShowState.showCard.some(m => m.left === champId || m.right === champId);
+                const hasChamp = preShowState.showCard.some(m => m.matchType !== 'tag' && (m.left === champId || m.right === champId));
                 const oldAtt = Engine.economy.calcAttendance(preShowState, venueIdx, oldCardPop, hasTitleMatch, hasChamp, null, 0);
                 // 新集客v2計測（attendanceは旧値を渡してoccupancy計算に使う）
                 const v2m = Engine.attendanceV2.measureShow(

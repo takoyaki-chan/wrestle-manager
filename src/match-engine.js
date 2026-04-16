@@ -982,3 +982,15 @@ Engine.tagMatch = (() => {
     calcTagMQ,
   };
 })();
+
+// ── Tag Experience Tracker (G.tagExp管理) ──
+Engine.tagExp = {
+  getKey(id1, id2) { return `${Math.min(id1, id2)}>${Math.max(id1, id2)}`; },
+  getCount(state, id1, id2) { return (state.tagExp || {})[this.getKey(id1, id2)] || 0; },
+  increment(tagExp, id1, id2) {
+    const key = this.getKey(id1, id2);
+    const ne = { ...(tagExp || {}) };
+    ne[key] = (ne[key] || 0) + 1;
+    return ne;
+  },
+};

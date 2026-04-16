@@ -860,6 +860,19 @@ function getStyleCompat(styleA, styleB) {
   return row[sB] != null ? row[sB] : 50;
 }
 
+// ── Tag Match Relationship Scale ──
+const TAG_REL_SCALE = {
+  opponentScale: 0.50,
+  pinPairScale: 0.75,
+  cutinSave:    { bond: [3, 6] },
+  betrayal:     { bond: [-15, -10], rivalry: [8, 12] },
+  friendlyFire: { bond: [-2, -1] },
+  hotTag:       { bond: [2, 4] },
+  doubleTeam:   { bond: [1, 3] },
+  teamWin:      { bond: [1, 2] },
+  teamLoss:     { bond: [-1, 0], rivalry: [0, 1] },
+};
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4: ECONOMY CONFIG                               ║
 // ╚══════════════════════════════════════════════════════════╝

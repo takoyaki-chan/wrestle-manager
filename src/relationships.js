@@ -657,8 +657,8 @@ Engine.relationships = {
     const rosterIndex = new Map(roster.map((f, idx) => [f.id, idx]));
     const participated = new Set();
     (state.lastShowResults || []).forEach(r => {
-      participated.add(r.left.id);
-      participated.add(r.right.id);
+      if (r.matchType === 'tag') { Object.keys(r.perFighter).forEach(id => participated.add(Number(id))); }
+      else { participated.add(r.left.id); participated.add(r.right.id); }
     });
 
     const updateFighter = (fighterId, updater) => {
@@ -1021,7 +1021,9 @@ Engine.relationships = {
     let s = state;
     const roster = s.roster || [];
     const rosterIds = roster.filter(c => !c.isRental).map(c => c.id);
-    const matchParticipantIds = new Set(results.flatMap(r => [r.left.id, r.right.id]));
+    const matchParticipantIds = new Set(results.flatMap(r =>
+      r.matchType === 'tag' ? Object.keys(r.perFighter).map(Number) : [r.left.id, r.right.id]
+    ));
 
     // C-04: タイトルマッチ不出場の嫉妬
     const titleMatches = validMatches.filter(m => m.isTitle);
@@ -1066,11 +1068,15 @@ Engine.relationships = {
     // C-10: メイン/前座の格差
     if (results.length >= 2) {
       const mainIdx = results.length - 1;
-      const mainIds = new Set([results[mainIdx].left.id, results[mainIdx].right.id]);
+      const mainR = results[mainIdx];
+      const mainIds = new Set(
+        mainR.matchType === 'tag' ? Object.keys(mainR.perFighter).map(Number) : [mainR.left.id, mainR.right.id]
+      );
       const undercardIds = [];
       for (let i = 0; i < mainIdx; i++) {
-        if (!mainIds.has(results[i].left.id)) undercardIds.push(results[i].left.id);
-        if (!mainIds.has(results[i].right.id)) undercardIds.push(results[i].right.id);
+        const ri = results[i];
+        const ids = ri.matchType === 'tag' ? Object.keys(ri.perFighter).map(Number) : [ri.left.id, ri.right.id];
+        ids.forEach(id => { if (!mainIds.has(id)) undercardIds.push(id); });
       }
       const mainArr = [...mainIds];
       for (const uId of undercardIds) {
@@ -1651,6 +1657,125 @@ Engine.relationships = {
 
     rels[keyAB] = rAB;
     rels[keyBA] = rBA;
+
+    return { ...state, relationships: rels, relationshipCounters: counters };
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  //  applyTagMatchResult — タッグマッチ結果の関係値反映
+  //  対戦相手4組 + チームメイト2組の bond/rivalry を更新
+  // ═══════════════════════════════════════════════════════════════
+  applyTagMatchResult(state, teamAIds, teamBIds, tagResult, rng) {
+    if (!state.relationships) return state;
+    const rels = { ...state.relationships };
+    const counters = { ...(state.relationshipCounters || {}) };
+    const absWeek = Engine.util.absWeek(state.season || 1, state.week || 1);
+    const roll = (min, max) => min + Engine.rng.float(rng) * (max - min);
+
+    const _apply = (idFrom, idTo, bondDelta, rivalryDelta) => {
+      const k = `${idFrom}>${idTo}`;
+      const r = { ...(rels[k] || { bond: 50, rivalry: 0 }) };
+      r.bond = this._applyAxisDelta(r.bond, bondDelta, 'bond');
+      r.rivalry = this._applyAxisDelta(r.rivalry, rivalryDelta, 'rivalry');
+      r.bond = this._clampAxisValue(r.bond, 'bond');
+      r.rivalry = this._clampAxisValue(r.rivalry, 'rivalry');
+      rels[k] = r;
+    };
+
+    const mq = tagResult.mq || 50;
+    const isPinFinish = tagResult.winAttribution && tagResult.winAttribution.pinnedBy && tagResult.winAttribution.pinnedWho;
+    const pinnedBy = isPinFinish ? tagResult.winAttribution.pinnedBy : null;
+    const pinnedWho = isPinFinish ? tagResult.winAttribution.pinnedWho : null;
+    const SC = TAG_REL_SCALE;
+
+    // ── A. 対戦相手ペア（4組） ──
+    for (const aId of teamAIds) {
+      for (const bId of teamBIds) {
+        // このペアがフォール決着ペアか
+        const isPinPair = (aId === pinnedBy && bId === pinnedWho) || (bId === pinnedBy && aId === pinnedWho);
+        const scale = isPinPair ? SC.pinPairScale : SC.opponentScale;
+
+        // 逓減カウンター
+        const cKey = this._counterKey(aId, bId, 'tagMatch', 'tag');
+        const counter = counters[cKey] || { count: 0, lastWeek: 0 };
+        const dimMult = this.getDiminishingMultiplier(counter.count);
+        counters[cKey] = { count: counter.count + 1, lastWeek: absWeek };
+
+        // 基本rivalry（全ペア）
+        const baseRivalry = roll(0.15, 0.75) * scale * dimMult;
+        _apply(aId, bId, 0, baseRivalry);
+        _apply(bId, aId, 0, baseRivalry);
+
+        // MQ80+: bond/rivalry両方増
+        if (mq >= 80) {
+          const bondG = roll(1.5, 3) * scale * dimMult;
+          const rivG = roll(4, 6) * scale * dimMult;
+          _apply(aId, bId, bondG, rivG);
+          _apply(bId, aId, bondG, rivG);
+        }
+        // MQ<40: bond減
+        if (mq < 40) {
+          const bondL = roll(-1, 0) * scale * dimMult;
+          _apply(aId, bId, bondL, 0);
+          _apply(bId, aId, bondL, 0);
+        }
+        // フォール決着ペア: 追加rivalry
+        if (isPinPair) {
+          const pinRiv = roll(1, 3) * dimMult;
+          _apply(pinnedWho, pinnedBy, 0, pinRiv);  // 負けた側→勝った側
+        }
+      }
+    }
+
+    // ── B. チームメイトペア（2組） ──
+    const teams = [
+      { ids: teamAIds, isWinner: tagResult.winner === 'teamA' },
+      { ids: teamBIds, isWinner: tagResult.winner === 'teamB' },
+    ];
+
+    for (const team of teams) {
+      const [id1, id2] = team.ids;
+      // 勝敗ベース
+      if (tagResult.winner !== 'draw') {
+        const ev = team.isWinner ? SC.teamWin : SC.teamLoss;
+        const bondD = roll(ev.bond[0], ev.bond[1]);
+        const rivD = ev.rivalry ? roll(ev.rivalry[0], ev.rivalry[1]) : 0;
+        _apply(id1, id2, bondD, rivD);
+        _apply(id2, id1, bondD, rivD);
+      }
+    }
+
+    // ドラマイベント
+    for (const d of (tagResult.dramaSummary || [])) {
+      if (d.type === 'cutinSave') {
+        const ev = SC.cutinSave;
+        _apply(d.saved, d.by, roll(ev.bond[0], ev.bond[1]), 0);  // 救われた→救った
+        _apply(d.by, d.saved, roll(ev.bond[0] * 0.5, ev.bond[1] * 0.5), 0);  // 救った→救われた
+      } else if (d.type === 'betrayal') {
+        const ev = SC.betrayal;
+        _apply(d.victim, d.by, roll(ev.bond[0], ev.bond[1]), roll(ev.rivalry[0], ev.rivalry[1]));
+        _apply(d.by, d.victim, roll(ev.bond[0] * 0.3, ev.bond[1] * 0.3), 0);
+      } else if (d.type === 'friendlyFire') {
+        const ev = SC.friendlyFire;
+        _apply(d.victim, d.victim, 0, 0); // noop guard
+        // victim取得: friendlyFireのvictimはエプロン側
+        // team判定してパートナーを特定
+        const ffTeamIds = d.team === 'A' ? teamBIds : teamAIds; // ffは防御側チームに発生
+        const partnerId = ffTeamIds.find(id => id !== d.victim);
+        if (partnerId) {
+          _apply(d.victim, partnerId, roll(ev.bond[0], ev.bond[1]), 0);
+        }
+      } else if (d.type === 'hotTag') {
+        const ev = SC.hotTag;
+        const htTeamIds = d.team === 'A' ? teamAIds : teamBIds;
+        _apply(htTeamIds[0], htTeamIds[1], roll(ev.bond[0], ev.bond[1]), 0);
+        _apply(htTeamIds[1], htTeamIds[0], roll(ev.bond[0], ev.bond[1]), 0);
+      } else if (d.type === 'doubleTeam' && Array.isArray(d.by) && d.by.length === 2) {
+        const ev = SC.doubleTeam;
+        _apply(d.by[0], d.by[1], roll(ev.bond[0], ev.bond[1]), 0);
+        _apply(d.by[1], d.by[0], roll(ev.bond[0], ev.bond[1]), 0);
+      }
+    }
 
     return { ...state, relationships: rels, relationshipCounters: counters };
   },
