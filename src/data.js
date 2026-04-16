@@ -973,14 +973,14 @@ const SCANDAL_CONFIG = {
   baseChance: 0.005,   // 週0.5%
   champChance: 0.0025,   // チャンピオンは半分
   minPop: 40,           // 人気40以上のみ対象
-  penaltyMin: 20,
-  penaltyMax: 35,
+  penaltyMin: 14,        // 旧20 — 現行と案(-8~-15)の中間値
+  penaltyMax: 25,        // 旧35 — 現行と案(-8~-15)の中間値
   messages: ['📰 週刊誌にスクープが…', '📱 SNSで炎上騒動が…', '⚠️ 素行問題が発覚…']
 };
 const LOSING_STREAK_PENALTIES = [
-  {threshold: 3, penalty: -5, msg: '陰りが見え始める…'},
-  {threshold: 5, penalty: -10, msg: '低迷が深刻化…'},
-  {threshold: 7, penalty: -15, msg: '失望感が広がる…'}
+  {threshold: 3, penalty: -2, msg: '陰りが見え始める…'},   // 旧-5
+  {threshold: 5, penalty: -4, msg: '低迷が深刻化…'},       // 旧-10
+  {threshold: 7, penalty: -7, msg: '失望感が広がる…'}      // 旧-15
 ];
 const PROMO_POP_CAP = 100; // promo-system-redesign v2.0: 上限撤廃（diminishingで自然に鈍化）
 // PROMO_MQ_PER_STACK — MQ外部ボーナス整理で廃止（drawPowerのみで集客に反映）
@@ -11832,9 +11832,9 @@ const DECISION_DOCS = {
     cooldown: 2,
     body: '対象選手を広告塔とし、団体の知名度向上を図る',
     detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人の体調維持を両立させる外向き施策。',
-    effectSummary: '団体人気が上がる + 対象選手の体調が整う + 信頼も上がる',
-    recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。',
-    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4 },
+    effectSummary: '選手人気が上がる + 団体人気も上がる + 体調が整う + 信頼も上がる',
+    recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
+    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGain: 4 },
   },
   // hireCoach は机に並ばず、コーチ画面からの実行時に決裁枠だけをチェック/消費する特殊書類。
   // Phase 5 でコーチ画面と統合予定。

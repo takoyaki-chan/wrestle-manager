@@ -485,10 +485,10 @@ const Engine = {
       if (currentPop < 20) return 1.00;
       if (currentPop < 35) return 0.75;
       if (currentPop < 50) return 0.55;
-      if (currentPop < 65) return 0.45;  // 旧0.35 — 中間帯緩和
-      if (currentPop < 80) return 0.30;  // 旧0.22 — 中間帯緩和
-      if (currentPop < 90) return 0.10;
-      return 0.05;                        // 90+: 試合の好MQ必須帯
+      if (currentPop < 65) return 0.40;
+      if (currentPop < 80) return 0.25;
+      if (currentPop < 90) return 0.15;  // 旧0.10 — 80帯の崖を解消
+      return 0.08;                        // 旧0.05 — 90+: フル稼働で微増可能に
     },
     applyDiminishing(rawGain, currentPop) {
       if (rawGain <= 0) return rawGain; // penalties are not diminished
@@ -6442,19 +6442,23 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
         } else if (action === 'promo') {
-          // promo-system-redesign v2.2: MNT連動rawGain強化（MN=50基準2.2）
+          // promo-system-redesign v2.5: 基礎値微強化（1.8→2.0）+ 連続キャンペーンボーナス
           const mnVal = nc.mn || 50;
-          const mnRawGain = 1.8 + mnVal * 0.008;
+          const mnRawGain = 2.0 + mnVal * 0.008;
           // 人気関連特性ボーナス: 華+0.3 / ファンサービス+0.2
           let rawPromoBase = mnRawGain + promoBoostAmount;
           if (Traits.has(nc, '華')) rawPromoBase += 0.3;
           if (Traits.has(nc, 'ファンサービス')) rawPromoBase += 0.2;
           // v0.2: スター製造コーチ — 試合と同様にプロモにも適用
           const starMakerMult = Engine.coach.getPopGainMult(stateForCalc, nc.id);
-          const rawPromoGain = rawPromoBase * starMakerMult;
+          // v2.5: 連続プロモキャンペーンボーナス（2週目×1.3 / 3週目+×1.6）
+          const promoStreak = (nc._promoStreak || 0) + 1;
+          const campaignMult = promoStreak >= 3 ? 1.5 : promoStreak === 2 ? 1.25 : 1.0;
+          nc._promoStreak = promoStreak;
+          const rawPromoGain = rawPromoBase * starMakerMult * campaignMult;
           const diminishedGain = Engine.popularity.applyDiminishing(rawPromoGain, nc.popularity);
           const newPop = nc.popularity + diminishedGain;
-          nc.popularity = Math.min(100, newPop); // promo-system-redesign v2.0: 上限撤廃
+          nc.popularity = Math.min(100, newPop);
           nc.seasonPopGrowth = (nc.seasonPopGrowth || 0) + diminishedGain;
           nc.condition = Math.max(0, nc.condition - (1 + Engine.rng.int(rng, 0, 1)) + mentalBonus);
           nc.intensiveWeeks = 0;
@@ -6477,13 +6481,15 @@ const Engine = {
           nc.intensiveWeeks = 0;
         }
         nc._weekAction = autoRested ? 'auto_rest' : action;
+        // v2.5: 連続プロモキャンペーン — プロモ以外の行動でストリークリセット
+        if (action !== 'promo') nc._promoStreak = 0;
         // growthLog記録（練習/プロモ/休養）
         {
           const _gld = {};
           ['pw','sp','te','st','mn'].forEach(s => { const d = Math.round(((nc[s]||0) - (c[s]||0)) * 10) / 10; if (d > 0) _gld[s] = d; });
           let _glt, _gldt;
           if (action === 'practice') { _glt = 'practice'; _gldt = ({balance:'バランス',pw:'パワー重点',sp:'スピード重点',te:'テクニック重点',st:'スタミナ重点'})[nc.schedule] || 'バランス'; }
-          else if (action === 'promo') { _glt = 'practice'; _gldt = 'プロモ活動'; }
+          else if (action === 'promo') { _glt = 'practice'; _gldt = (nc._promoStreak || 0) >= 3 ? 'プロモ活動（キャンペーン最大効果）' : (nc._promoStreak || 0) === 2 ? 'プロモ活動（キャンペーン2週目）' : 'プロモ活動'; }
           else { _glt = 'rest'; _gldt = autoRested ? '自動休養' : '休養'; }
           const _gle = { season: G.season, week: G.week, type: _glt, detail: _gldt };
           if (Object.keys(_gld).length > 0) _gle.deltas = _gld;
@@ -6528,10 +6534,18 @@ const Engine = {
         G = { ...G, relationships: relState.relationships };
       }
 
-      // v1.5: Natural popularity decay — 放っておくと人気は落ちる（低人気帯は軽減）
+      // v1.5→v2.5: Natural popularity decay — 活動ベース減衰（試合/プロモした週は半減）
+      // 興行週の出場者IDセットを事前構築
+      const _showParticipantIds = new Set();
+      if (Engine.util.isShowWeek(G.week) && G.showCard) {
+        G.showCard.forEach(m => { if (m.left > 0) _showParticipantIds.add(m.left); if (m.right > 0) _showParticipantIds.add(m.right); });
+      }
       roster = roster.map(c => {
         if (c.injury || c.isRental || c.popularity <= 10) return c;
-        const decay = c.popularity < 25 ? 0.2 : c.popularity < 40 ? 0.3 : 0.5;
+        const baseDecay = c.popularity < 25 ? 0.2 : c.popularity < 40 ? 0.3 : 0.5;
+        // 活動判定: プロモ or 興行出場 → 減衰半減（ファンの前に出ていれば忘れられにくい）
+        const isActive = c._weekAction === 'promo' || _showParticipantIds.has(c.id);
+        const decay = isActive ? baseDecay * 0.5 : baseDecay;
         return { ...c, popularity: Math.max(10, c.popularity - decay) };
       });
 
@@ -13325,7 +13339,12 @@ Engine.shachoshitsu = {
         f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
         f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
-        events.push(`📺 ${f.name}のメディア露出を手配(団体知名度 +${orgPopDelta})`);
+        // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
+        const mediaPopRaw = doc.effect.popGain || 4;
+        const mediaPopGain = Engine.popularity.applyDiminishing(mediaPopRaw, f.popularity);
+        f = { ...f, popularity: Math.min(100, f.popularity + mediaPopGain) };
+        const popGainDisp = Math.round(mediaPopGain * 10) / 10;
+        events.push(`📺 ${f.name}のメディア露出を手配(団体知名度 +${orgPopDelta}・選手人気 +${popGainDisp})`);
       } else {
         return { error: 'unsupported_doc', docId };
       }
