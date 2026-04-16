@@ -2374,9 +2374,21 @@ function renderShowPrep() {
       const bondB = (tB1 && tB2 && G.relationships) ? ((G.relationships[`${Math.min(tB1.id,tB2.id)}>${Math.max(tB1.id,tB2.id)}`] || {}).bond || 50) : 50;
       const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
       const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
-      const _tagFighterHtml = (f, team, pos) => {
-        if (!f) return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:64px;height:64px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
-        return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">${portraitImg(f.id, 64)}<div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name">${f.name}</div><div class="sp-tag-fighter-ovr">OVR ${ov(f)}</div></div></div>`;
+      const _tagFighterHtml = (f, team, pos, side) => {
+        if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
+        const cond = Math.round(f.condition || 100);
+        const drawPow = Engine.attendanceV2.calcDrawPower(f, G);
+        const isChamp = G.titles?.world?.championId === f.id;
+        return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
+          ${portraitImg(f.id, 72)}
+          <div class="sp-tag-fighter-info">
+            ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
+            <div class="sp-tag-fighter-name">${f.name}</div>
+            <div class="sp-tag-fighter-ovr">OVR <span style="font-size:16px">${ov(f)}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">体調 <span style="${_scale6Style(_condColor(cond))}">${cond}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">集客力 <span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span></div>
+          </div>
+        </div>`;
       };
       const _bondColor = b => b >= 70 ? 'var(--green)' : b >= 40 ? 'var(--text-sub)' : 'var(--red)';
       const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
@@ -2409,23 +2421,36 @@ function renderShowPrep() {
         const posLabel = tagPos === 'fighter1' ? '1人目' : '2人目';
         tagPickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${teamLabel} ${posLabel}を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
       }
+      // 試合番号
+      let tagMatchNum = 0;
+      if (tagFilled) {
+        tagMatchNum = 1;
+        for (let j = i + 1; j < G.showCard.length; j++) {
+          const sj = G.showCard[j];
+          if (sj.matchType === 'tag') { if (sj.teamA?.fighter1 > 0 && sj.teamA?.fighter2 > 0 && sj.teamB?.fighter1 > 0 && sj.teamB?.fighter2 > 0) tagMatchNum++; }
+          else if (sj.left > 0 && sj.right > 0) tagMatchNum++;
+        }
+      }
+      const tagMatchLabel = tagFilled ? `第${tagMatchNum}試合` : '';
       html += `<div class="sp-match-card tag-match" id="sp-slot-${i}">
         <div class="sp-match-card-inner">
           <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
           <div class="sp-tag-team left">
-            ${_tagFighterHtml(tA1, 'teamA', 'fighter1')}
-            ${_tagFighterHtml(tA2, 'teamA', 'fighter2')}
-            ${tA1 && tA2 ? `<div class="sp-tag-chem">🤝 <span class="sp-tag-chem-val" style="color:${_bondColor(bondA)}">${Math.round(bondA)}</span>${tagExpA > 0 ? ` <span style="color:var(--text-dim)">経験${tagExpA}</span>` : ''}</div>` : ''}
+            ${_tagFighterHtml(tA1, 'teamA', 'fighter1', 'left')}
+            ${_tagFighterHtml(tA2, 'teamA', 'fighter2', 'left')}
+            ${tA1 && tA2 ? `<div class="sp-tag-chem">🤝 友好 <span class="sp-tag-chem-val" style="color:${_bondColor(bondA)}">${Math.round(bondA)}</span>${tagExpA > 0 ? ` ・タッグ経験${tagExpA}` : ''}</div>` : ''}
           </div>
           <div class="sp-match-center">
+            ${tagMatchLabel ? `<div class="sp-match-num">${tagMatchLabel}</div>` : ''}
             <div class="sp-tag-badge">TAG MATCH</div>
-            <div class="sp-match-vs">VS</div>
+            <div class="sp-match-vs" style="font-size:20px;margin:8px 0">VS</div>
+            <div style="font-size:10px;color:var(--text-dim)">20分1本勝負</div>
             <div class="sp-tag-remove-btn" onclick="App.removeTagSlot(${i})">シングルに戻す</div>
           </div>
           <div class="sp-tag-team right">
-            ${_tagFighterHtml(tB1, 'teamB', 'fighter1')}
-            ${_tagFighterHtml(tB2, 'teamB', 'fighter2')}
-            ${tB1 && tB2 ? `<div class="sp-tag-chem">🤝 <span class="sp-tag-chem-val" style="color:${_bondColor(bondB)}">${Math.round(bondB)}</span>${tagExpB > 0 ? ` <span style="color:var(--text-dim)">経験${tagExpB}</span>` : ''}</div>` : ''}
+            ${_tagFighterHtml(tB1, 'teamB', 'fighter1', 'right')}
+            ${_tagFighterHtml(tB2, 'teamB', 'fighter2', 'right')}
+            ${tB1 && tB2 ? `<div class="sp-tag-chem">🤝 友好 <span class="sp-tag-chem-val" style="color:${_bondColor(bondB)}">${Math.round(bondB)}</span>${tagExpB > 0 ? ` ・タッグ経験${tagExpB}` : ''}</div>` : ''}
           </div>
           <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
         </div>
