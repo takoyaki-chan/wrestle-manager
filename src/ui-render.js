@@ -2446,7 +2446,7 @@ function renderShowPrep() {
     let tier;
     if (isEmpty) { tier = 'empty-slot'; }
     else if (i === 0) { tier = 'main-event'; }
-    else if (maxMatches >= 3 && i >= maxMatches - 2) { tier = 'undercard'; }
+    else if (G.showCard.length >= 3 && i >= G.showCard.length - 2) { tier = 'undercard'; }
     else { tier = 'mid-card'; }
 
     const ps = tier === 'main-event' ? 100 : 72;
@@ -2455,12 +2455,14 @@ function renderShowPrep() {
     let matchNum = 0;
     if (isFilled) {
       matchNum = 1;
-      for (let j = i + 1; j < maxMatches; j++) {
-        if (G.showCard[j].left > 0 && G.showCard[j].right > 0) matchNum++;
+      for (let j = i + 1; j < G.showCard.length; j++) {
+        const sj = G.showCard[j];
+        if (sj.matchType === 'tag') { if (sj.teamA?.fighter1 > 0 && sj.teamA?.fighter2 > 0 && sj.teamB?.fighter1 > 0 && sj.teamB?.fighter2 > 0) matchNum++; }
+        else if (sj.left > 0 && sj.right > 0) matchNum++;
       }
     }
     const matchLabel = (i === 0 && isFilled) ? 'MAIN EVENT' : isFilled ? `第${matchNum}試合` : '';
-    const matchRule = isFilled ? (i === 0 ? '30分1本勝負' : (maxMatches >= 3 && i >= maxMatches - 2) ? '15分1本勝負' : '20分1本勝負') : '';
+    const matchRule = isFilled ? (i === 0 ? '30分1本勝負' : (G.showCard.length >= 3 && i >= G.showCard.length - 2) ? '15分1本勝負' : '20分1本勝負') : '';
 
     // タグ計算
     const champId = G.titles.world.championId;
