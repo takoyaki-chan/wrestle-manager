@@ -1986,13 +1986,21 @@ function renderRoster() {
   _renderRosterGrowthLog();
 }
 
+function getCardWeight(card) {
+  return card.reduce((sum, m) => sum + (m.matchType === 'tag' ? 2 : 1), 0);
+}
 function getUsedFighterIds(excludeSlot) {
-  // Returns Set of fighter IDs already assigned to other match slots
+  // Returns Set of fighter IDs already assigned to other match slots (singles + tag)
   const used = new Set();
   G.showCard.forEach((m, i) => {
     if (i === excludeSlot) return;
-    if (m.left > 0) used.add(m.left);
-    if (m.right > 0) used.add(m.right);
+    if (m.matchType === 'tag') {
+      [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2]
+        .filter(id => id > 0).forEach(id => used.add(id));
+    } else {
+      if (m.left > 0) used.add(m.left);
+      if (m.right > 0) used.add(m.right);
+    }
   });
   return used;
 }
@@ -2013,6 +2021,14 @@ function _spOpenPicker(slotIdx, side) {
     _spActivePicker = null;
   } else {
     _spActivePicker = { slotIdx, side };
+  }
+  renderShowPrep();
+}
+function _spOpenTagPicker(slotIdx, tagTeam, tagPos) {
+  if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.tagTeam === tagTeam && _spActivePicker.tagPos === tagPos) {
+    _spActivePicker = null;
+  } else {
+    _spActivePicker = { slotIdx, tagTeam, tagPos };
   }
   renderShowPrep();
 }
@@ -2181,12 +2197,17 @@ function renderShowPrep() {
 
   // Match card — 会場規模連動の試合枠
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  // pad up OR trim down to match the venue's limit
+  // pad up OR trim down to match the venue's limit (tag match = 2 slots)
   {
     let adjusted = [...G.showCard];
-    while (adjusted.length < maxMatches) adjusted.push({left:0, right:0, isTitle:false});
-    if (adjusted.length > maxMatches) adjusted = adjusted.slice(0, maxMatches);
-    if (adjusted.length !== G.showCard.length) G = { ...G, showCard: adjusted };
+    while (getCardWeight(adjusted) < maxMatches) adjusted.push({left:0, right:0, isTitle:false});
+    // trim: remove empty singles from the end if over weight
+    while (getCardWeight(adjusted) > maxMatches && adjusted.length > 0) {
+      const last = adjusted[adjusted.length - 1];
+      if (!last.matchType && last.left === 0 && last.right === 0) adjusted.pop();
+      else break;
+    }
+    if (adjusted.length !== G.showCard.length || getCardWeight(adjusted) !== getCardWeight(G.showCard)) G = { ...G, showCard: adjusted };
   }
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
@@ -2194,10 +2215,19 @@ function renderShowPrep() {
   {
     const rosterMap = new Map(G.roster.map(c => [c.id, c]));
     let dirty = false;
+    const _isOk = id => { const f = rosterMap.get(id); return id > 0 && f && !f.forcedRest; };
     const cleaned = G.showCard.map(m => {
-      const lf = rosterMap.get(m.left), rf = rosterMap.get(m.right);
-      const leftOk = m.left > 0 && lf && !lf.forcedRest;
-      const rightOk = m.right > 0 && rf && !rf.forcedRest;
+      if (m.matchType === 'tag') {
+        const a1 = _isOk(m.teamA.fighter1), a2 = _isOk(m.teamA.fighter2);
+        const b1 = _isOk(m.teamB.fighter1), b2 = _isOk(m.teamB.fighter2);
+        if ((!a1 && m.teamA.fighter1 > 0) || (!a2 && m.teamA.fighter2 > 0) ||
+            (!b1 && m.teamB.fighter1 > 0) || (!b2 && m.teamB.fighter2 > 0)) dirty = true;
+        return { ...m,
+          teamA: { fighter1: a1 ? m.teamA.fighter1 : 0, fighter2: a2 ? m.teamA.fighter2 : 0 },
+          teamB: { fighter1: b1 ? m.teamB.fighter1 : 0, fighter2: b2 ? m.teamB.fighter2 : 0 },
+        };
+      }
+      const leftOk = _isOk(m.left), rightOk = _isOk(m.right);
       if ((m.left > 0 && !leftOk) || (m.right > 0 && !rightOk)) dirty = true;
       return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
         isTitle: !!m.isTitle && leftOk && rightOk };
@@ -2208,11 +2238,21 @@ function renderShowPrep() {
 
   // 集客予測計算（v2）
   const fanExpects = Engine.fanExpect.generate(G);
-  const validCurrent = G.showCard.filter(m => m.left > 0 && m.right > 0);
+  const _isValidSlot = m => m.matchType === 'tag'
+    ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
+    : (m.left > 0 && m.right > 0);
+  const validCurrent = G.showCard.filter(m => !m.matchType && m.left > 0 && m.right > 0);
   const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
-  const validMatches = G.showCard.filter(m => m.left > 0 && m.right > 0 && m.left !== m.right);
+  const validMatches = G.showCard.filter(m => _isValidSlot(m));
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const previewMatchAppeals = validMatches.map(m => {
+    if (m.matchType === 'tag') {
+      // タッグ: 4人の平均集客力で簡易計算
+      const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+      const fighters = ids.map(id => G.roster.find(c => c.id === id)).filter(Boolean);
+      if (fighters.length < 4) return 0;
+      return fighters.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, G), 0) / 2;
+    }
     const fA = G.roster.find(c => c.id === m.left);
     const fB = G.roster.find(c => c.id === m.right);
     if (!fA || !fB) return 0;
@@ -2228,7 +2268,13 @@ function renderShowPrep() {
       pendingClashBonus: uiPendingClash, isFirstMeet: uiFr.isFirstMeet, freshnessCount: uiFr.countInWindow,
     }, G);
   });
-  const previewNonMatchPromo = G.roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+  const _allMatchFighterIds = new Set();
+  validMatches.forEach(m => {
+    if (m.matchType === 'tag') {
+      [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2].forEach(id => _allMatchFighterIds.add(id));
+    } else { _allMatchFighterIds.add(m.left); _allMatchFighterIds.add(m.right); }
+  });
+  const previewNonMatchPromo = G.roster.filter(c => !_allMatchFighterIds.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
   const previewShowDraw = Engine.attendanceV2.calcShowDraw(previewMatchAppeals, previewNonMatchPromo, G.showVenue);
   const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw);
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
@@ -2278,12 +2324,14 @@ function renderShowPrep() {
     html += `</div></div>`;
   }
 
-  // カードヘッダー v7
+  // カードヘッダー v7 + タッグ枠追加ボタン
+  const _spEmptySingles = G.showCard.filter(m => !m.matchType && m.left === 0 && m.right === 0).length;
   html += `<div class="sp-card-header">
     <span class="sp-card-header-title">Match Card</span>
     <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
     <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
     <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
+    ${_spEmptySingles >= 2 ? `<button class="sp-tag-add-btn" onclick="App.addTagSlot()">🤝 タッグマッチ枠</button>` : ''}
     <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">🗑 全クリア</button>
     <span class="sp-venue-info">${v.name}（${v.cap.toLocaleString()}席）</span>
   </div>`;
@@ -2313,9 +2361,84 @@ function renderShowPrep() {
     return `<div style="width:${size}px;height:${size}px;border-radius:4px;border:1px dashed rgba(200,190,170,.08);flex-shrink:0"></div>`;
   };
 
-  for (let i = 0; i < maxMatches; i++) {
-    const curL = G.showCard[i].left;
-    const curR = G.showCard[i].right;
+  for (let i = 0; i < G.showCard.length; i++) {
+    const slot = G.showCard[i];
+
+    // ── タッグマッチカード描画 ──
+    if (slot.matchType === 'tag') {
+      const tA1 = slot.teamA.fighter1 > 0 ? G.roster.find(c => c.id === slot.teamA.fighter1) : null;
+      const tA2 = slot.teamA.fighter2 > 0 ? G.roster.find(c => c.id === slot.teamA.fighter2) : null;
+      const tB1 = slot.teamB.fighter1 > 0 ? G.roster.find(c => c.id === slot.teamB.fighter1) : null;
+      const tB2 = slot.teamB.fighter2 > 0 ? G.roster.find(c => c.id === slot.teamB.fighter2) : null;
+      const tagFilled = tA1 && tA2 && tB1 && tB2;
+      // ケミストリー情報
+      const bondA = (tA1 && tA2 && G.relationships) ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;
+      const bondB = (tB1 && tB2 && G.relationships) ? ((G.relationships[`${Math.min(tB1.id,tB2.id)}>${Math.max(tB1.id,tB2.id)}`] || {}).bond || 50) : 50;
+      const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
+      const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
+      const _tagFighterHtml = (f, team, pos) => {
+        if (!f) return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:48px;height:48px;border-radius:4px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
+        return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">${portraitImg(f.id, 48)}<div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name">${f.name}</div><div class="sp-tag-fighter-ovr">OVR ${ov(f)}</div></div></div>`;
+      };
+      const _bondColor = b => b >= 70 ? 'var(--green)' : b >= 40 ? 'var(--text-sub)' : 'var(--red)';
+      const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+      const moveDnBtn = i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+      // ピッカー
+      const isTagPickerOpen = _spActivePicker && _spActivePicker.slotIdx === i && _spActivePicker.tagTeam;
+      let tagPickerInner = '';
+      if (isTagPickerOpen) {
+        const { tagTeam, tagPos } = _spActivePicker;
+        const usedInOther = getUsedFighterIds(i);
+        // 同じタッグ枠内の他3ポジションも除外
+        const sameSlotIds = new Set();
+        for (const t of ['teamA', 'teamB']) {
+          for (const p of ['fighter1', 'fighter2']) {
+            if (t === tagTeam && p === tagPos) continue;
+            if (slot[t][p] > 0) sameSlotIds.add(slot[t][p]);
+          }
+        }
+        const curInPos = slot[tagTeam][tagPos];
+        const pickerFighters = G.roster
+          .filter(c => !c.injury && !c.forcedRest && c.id !== curInPos && !sameSlotIds.has(c.id))
+          .sort((a, b) => ov(b) - ov(a));
+        const rows = pickerFighters.map(c => {
+          const isAssigned = usedInOther.has(c.id);
+          const cls = isAssigned ? 'sp-picker-row assigned' : 'sp-picker-row';
+          return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null">${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+        }).join('');
+        const removeRow = curInPos > 0 ? `<div class="sp-picker-row" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',0);_spActivePicker=null" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
+        const teamLabel = tagTeam === 'teamA' ? 'チームA' : 'チームB';
+        const posLabel = tagPos === 'fighter1' ? '1人目' : '2人目';
+        tagPickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${teamLabel} ${posLabel}を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
+      }
+      html += `<div class="sp-match-card tag-match" id="sp-slot-${i}">
+        <div class="sp-match-card-inner">
+          <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
+          <div class="sp-tag-team left">
+            ${_tagFighterHtml(tA1, 'teamA', 'fighter1')}
+            ${_tagFighterHtml(tA2, 'teamA', 'fighter2')}
+            ${tA1 && tA2 ? `<div class="sp-tag-chem">🤝 <span class="sp-tag-chem-val" style="color:${_bondColor(bondA)}">${Math.round(bondA)}</span>${tagExpA > 0 ? ` <span style="color:var(--text-dim)">経験${tagExpA}</span>` : ''}</div>` : ''}
+          </div>
+          <div class="sp-match-center">
+            <div class="sp-tag-badge">TAG MATCH</div>
+            <div class="sp-match-vs">VS</div>
+            <div class="sp-tag-remove-btn" onclick="App.removeTagSlot(${i})">シングルに戻す</div>
+          </div>
+          <div class="sp-tag-team right">
+            ${_tagFighterHtml(tB1, 'teamB', 'fighter1')}
+            ${_tagFighterHtml(tB2, 'teamB', 'fighter2')}
+            ${tB1 && tB2 ? `<div class="sp-tag-chem">🤝 <span class="sp-tag-chem-val" style="color:${_bondColor(bondB)}">${Math.round(bondB)}</span>${tagExpB > 0 ? ` <span style="color:var(--text-dim)">経験${tagExpB}</span>` : ''}</div>` : ''}
+          </div>
+          <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
+        </div>
+        <div class="sp-picker" id="sp-picker-${i}">${tagPickerInner}</div>
+      </div>`;
+      continue;
+    }
+
+    // ── シングルマッチカード描画 ──
+    const curL = slot.left;
+    const curR = slot.right;
     const fl = curL > 0 ? G.roster.find(c => c.id === curL) : null;
     const fr = curR > 0 ? G.roster.find(c => c.id === curR) : null;
     const isFilled = !!fl && !!fr;
@@ -2424,7 +2547,7 @@ function renderShowPrep() {
 
     const cardBorder = isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
     const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
-    const moveDnBtn = i < maxMatches - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveDnBtn = i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>

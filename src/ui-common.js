@@ -3733,9 +3733,6 @@ function renderMatchPreview() {
   html += `<div class="match-list">`;
   for (let idx = 0; idx < total; idx++) {
     const m = sp.validMatches[idx];
-    const charL = G.roster.find(c => c.id === m.left);
-    const charR = G.roster.find(c => c.id === m.right);
-    if (!charL || !charR) continue;
     const result = sp.results[idx];
     const isResolved = result !== null;
     const isNext = idx === nextIdx;
@@ -3743,13 +3740,61 @@ function renderMatchPreview() {
     const order = total - idx;
     const matchLabel = isMain ? '★ メインイベント' : `第${order}試合`;
     const cardClass = isMain ? 'card-main' : 'card-sub';
-
     const borderColor = isMain ? 'rgba(212,168,67,0.25)' : isNext ? 'rgba(74,143,212,0.3)' : 'rgba(200,190,170,0.08)';
     const cardBg = isMain ? 'rgba(212,168,67,0.04)' : isNext ? 'rgba(74,143,212,0.05)' : 'rgba(0,0,0,0.25)';
     const statusBadge = isResolved
       ? '<span class="smc-badge done">完了</span>'
       : isNext ? '<span class="smc-badge next">次戦</span>'
       : '<span class="smc-badge wait">待機</span>';
+
+    // ── タッグマッチプレビュー ──
+    if (m.matchType === 'tag') {
+      const tA1 = G.roster.find(c => c.id === m.teamA.fighter1);
+      const tA2 = G.roster.find(c => c.id === m.teamA.fighter2);
+      const tB1 = G.roster.find(c => c.id === m.teamB.fighter1);
+      const tB2 = G.roster.find(c => c.id === m.teamB.fighter2);
+      if (!tA1 || !tA2 || !tB1 || !tB2) continue;
+      const _tagFighter = (f) => {
+        const upper = getUpperUrl(f.id);
+        return `<div class="smc-tag-fighter">
+          <div class="upper-wrap">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 60)}</div>
+          <div><div class="fname">${f.name}</div><div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num">${Engine.util.ov(f)}</span></div></div>
+        </div>`;
+      };
+      const bondA = G.relationships ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;
+      const bondB = G.relationships ? ((G.relationships[`${Math.min(tB1.id,tB2.id)}>${Math.max(tB1.id,tB2.id)}`] || {}).bond || 50) : 50;
+      html += `<div class="match-card ${cardClass}" data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};opacity:${isResolved ? 1 : isNext ? 1 : 0.55}">`;
+      html += `<div class="smc-head">
+        <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
+        ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
+      </div>`;
+      html += `<div class="smc-tag-arena">
+        <div class="smc-tag-team">${_tagFighter(tA1)}${_tagFighter(tA2)}<div class="smc-tag-chem">🤝 ${Math.round(bondA)}</div></div>
+        <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
+        <div class="smc-tag-team">${_tagFighter(tB1)}${_tagFighter(tB2)}<div class="smc-tag-chem">🤝 ${Math.round(bondB)}</div></div>
+      </div>`;
+      if (isResolved) {
+        let wNames = '引き分け';
+        if (result.winner === 'teamA') wNames = `${tA1.name} & ${tA2.name}`;
+        else if (result.winner === 'teamB') wNames = `${tB1.name} & ${tB2.name}`;
+        html += `<div class="smc-result">
+          <span class="winner-tag">🏆 ${wNames} 勝利</span>
+          <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
+          <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</span>
+        </div>`;
+      } else if (isNext) {
+        html += `<div class="smc-action">
+          <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">≫ スキップ</button>
+        </div>`;
+      }
+      html += `</div>`;
+      continue;
+    }
+
+    // ── シングルマッチプレビュー ──
+    const charL = G.roster.find(c => c.id === m.left);
+    const charR = G.roster.find(c => c.id === m.right);
+    if (!charL || !charR) continue;
     const titleTag = m.isTitle ? ' <span class="smc-title-tag">🏆 タイトル戦</span>' : '';
 
     const upperL = getUpperUrl(charL.id);
@@ -3928,15 +3973,47 @@ function renderShowResult(results, injuryResults) {
 
   // 各試合結果カード
   html += `<div class="show-results-area">`;
+  const _srValidMatches = G.lastShowResults === results ? (App._showPreview?.validMatches || G.showCard.filter(m => m.matchType === 'tag' ? (m.teamA?.fighter1 > 0) : (m.left > 0 && m.right > 0))) : G.showCard;
   results.forEach((r, i) => {
     const isMain = i === 0;
-    const isDraw = r.winner === 'draw';
-    const leftIsWinner = r.winner === 'left';
-    const rightIsWinner = r.winner === 'right';
     const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
     const cardClass = isMain ? 'card-main' : 'card-sub';
     const cardBorder = isMain ? '1.5px solid rgba(212,168,67,0.4)' : '1px solid rgba(200,190,170,0.08)';
     const cardBg = isMain ? 'linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))' : 'rgba(0,0,0,0.25)';
+
+    // ── タッグマッチ結果カード ──
+    if (r.matchType === 'tag') {
+      const sm = _srValidMatches[i];
+      if (!sm || sm.matchType !== 'tag') return;
+      const tA1 = G.roster.find(c => c.id === sm.teamA.fighter1) || (G.retiredFighters||[]).find(c => c.id === sm.teamA.fighter1);
+      const tA2 = G.roster.find(c => c.id === sm.teamA.fighter2) || (G.retiredFighters||[]).find(c => c.id === sm.teamA.fighter2);
+      const tB1 = G.roster.find(c => c.id === sm.teamB.fighter1) || (G.retiredFighters||[]).find(c => c.id === sm.teamB.fighter1);
+      const tB2 = G.roster.find(c => c.id === sm.teamB.fighter2) || (G.retiredFighters||[]).find(c => c.id === sm.teamB.fighter2);
+      const isDraw = r.winner === 'draw';
+      let winNames = 'DRAW';
+      if (r.winner === 'teamA') winNames = `${tA1?.name||'?'} & ${tA2?.name||'?'}`;
+      else if (r.winner === 'teamB') winNames = `${tB1?.name||'?'} & ${tB2?.name||'?'}`;
+      html += `<div class="sr-card ${cardClass}" style="border:${cardBorder};background:${cardBg}">`;
+      html += `<div class="sr-label-row"><span class="sr-match-num" ${isMain ? 'style="color:var(--gold);font-size:16px"' : ''}>${matchLabel}</span> <span class="smc-tag-badge">TAG MATCH</span></div>`;
+      html += `<div class="smc-tag-arena" style="padding:12px">
+        <div class="smc-tag-team">${[tA1,tA2].map(f => f ? `<div style="text-align:center">${portraitImg(f.id, 64)}<div style="font-size:12px;font-weight:700;margin-top:2px">${f.name}</div></div>` : '').join('')}</div>
+        <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
+        <div class="smc-tag-team">${[tB1,tB2].map(f => f ? `<div style="text-align:center">${portraitImg(f.id, 64)}<div style="font-size:12px;font-weight:700;margin-top:2px">${f.name}</div></div>` : '').join('')}</div>
+      </div>`;
+      html += `<div class="sr-win-badge"><span>${isDraw ? 'DRAW' : `🏆 ${winNames} 勝利`}</span></div>`;
+      html += `<div class="sr-finish">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
+      html += `<div class="sr-mq-row">
+        <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${r.mq >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
+        <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}</span>
+      </div>`;
+      html += `</div>`;
+      return;
+    }
+
+    // ── シングルマッチ結果カード ──
+    const isDraw = r.winner === 'draw';
+    const leftIsWinner = r.winner === 'left';
+    const rightIsWinner = r.winner === 'right';
 
     const spotlightInMatch = G.mediaSpotlight && (G.mediaSpotlight.fighterId === r.left.id || G.mediaSpotlight.fighterId === r.right.id);
 

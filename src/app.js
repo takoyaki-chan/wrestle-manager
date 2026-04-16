@@ -3931,9 +3931,80 @@ const App = {
     renderShowPrep();
   },
 
-  // Clear show card
+  // Clear show card (resets all slots including tag entries to empty singles)
   clearShowCard() {
-    G = { ...G, showCard: G.showCard.map(() => ({left: 0, right: 0, isTitle: false})) };
+    const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+    const emptyCard = [];
+    for (let i = 0; i < maxMatches; i++) emptyCard.push({left: 0, right: 0, isTitle: false});
+    G = { ...G, showCard: emptyCard };
+    renderShowPrep();
+  },
+
+  // ── Tag match slot management ──
+  addTagSlot() {
+    const card = [...G.showCard];
+    // 空シングル枠を末尾から2つ探す
+    let emptyCount = 0;
+    for (let i = card.length - 1; i >= 0; i--) {
+      if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) emptyCount++;
+    }
+    if (emptyCount < 2) { Audio.play('error'); showToast('空き枠が足りません（タッグには2枠必要）'); return; }
+    // 末尾から空シングル2つを除去
+    let removed = 0;
+    for (let i = card.length - 1; i >= 0 && removed < 2; i--) {
+      if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) { card.splice(i, 1); removed++; }
+    }
+    // タッグエントリーを末尾に挿入
+    card.push({ matchType: 'tag', teamA: { fighter1: 0, fighter2: 0 }, teamB: { fighter1: 0, fighter2: 0 } });
+    G = { ...G, showCard: card };
+    renderShowPrep();
+  },
+
+  removeTagSlot(idx) {
+    const card = [...G.showCard];
+    if (!card[idx] || card[idx].matchType !== 'tag') return;
+    card.splice(idx, 1);
+    // 空シングル2枠を末尾に追加
+    card.push({ left: 0, right: 0, isTitle: false });
+    card.push({ left: 0, right: 0, isTitle: false });
+    G = { ...G, showCard: card };
+    renderShowPrep();
+  },
+
+  setTagSlotFighter(slotIdx, team, pos, fighterId) {
+    fighterId = +fighterId;
+    const newCard = G.showCard.map(s => s.matchType === 'tag'
+      ? { ...s, teamA: { ...s.teamA }, teamB: { ...s.teamB } }
+      : { ...s });
+    const tagSlot = newCard[slotIdx];
+    if (!tagSlot || tagSlot.matchType !== 'tag') return;
+
+    // Swap: if fighterId is already used in another slot
+    if (fighterId > 0) {
+      for (let i = 0; i < newCard.length; i++) {
+        if (i === slotIdx) continue;
+        const m = newCard[i];
+        if (m.matchType === 'tag') {
+          for (const t of ['teamA', 'teamB']) {
+            for (const p of ['fighter1', 'fighter2']) {
+              if (m[t][p] === fighterId) { m[t][p] = tagSlot[team][pos] || 0; }
+            }
+          }
+        } else {
+          if (m.left === fighterId) { m.left = tagSlot[team][pos] || 0; }
+          if (m.right === fighterId) { m.right = tagSlot[team][pos] || 0; }
+        }
+      }
+      // Also check within the same tag slot for duplicates
+      for (const t of ['teamA', 'teamB']) {
+        for (const p of ['fighter1', 'fighter2']) {
+          if (t === team && p === pos) continue;
+          if (tagSlot[t][p] === fighterId) { tagSlot[t][p] = tagSlot[team][pos] || 0; }
+        }
+      }
+    }
+    tagSlot[team][pos] = fighterId;
+    G = { ...G, showCard: newCard };
     renderShowPrep();
   },
 
@@ -3957,16 +4028,30 @@ const App = {
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
     const rosterIdSet = new Set(G.roster.map(c => c.id));
     let hadStaleRef = false;
+    const _idOk = id => id > 0 && rosterIdSet.has(id);
     const sanitized = G.showCard.map(m => {
-      const leftOk = m.left > 0 && rosterIdSet.has(m.left);
-      const rightOk = m.right > 0 && rosterIdSet.has(m.right);
+      if (m.matchType === 'tag') {
+        const a1 = _idOk(m.teamA.fighter1), a2 = _idOk(m.teamA.fighter2);
+        const b1 = _idOk(m.teamB.fighter1), b2 = _idOk(m.teamB.fighter2);
+        if ((!a1 && m.teamA.fighter1 > 0) || (!a2 && m.teamA.fighter2 > 0) ||
+            (!b1 && m.teamB.fighter1 > 0) || (!b2 && m.teamB.fighter2 > 0)) hadStaleRef = true;
+        return { ...m,
+          teamA: { fighter1: a1 ? m.teamA.fighter1 : 0, fighter2: a2 ? m.teamA.fighter2 : 0 },
+          teamB: { fighter1: b1 ? m.teamB.fighter1 : 0, fighter2: b2 ? m.teamB.fighter2 : 0 },
+        };
+      }
+      const leftOk = _idOk(m.left), rightOk = _idOk(m.right);
       if ((m.left > 0 && !leftOk) || (m.right > 0 && !rightOk)) hadStaleRef = true;
       return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
         isTitle: !!m.isTitle && leftOk && rightOk };
     });
     if (hadStaleRef) G = { ...G, showCard: sanitized };
 
-    const validMatches = (hadStaleRef ? sanitized : G.showCard).filter(m => m.left > 0 && m.right > 0);
+    const validMatches = (hadStaleRef ? sanitized : G.showCard).filter(m =>
+      m.matchType === 'tag'
+        ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
+        : (m.left > 0 && m.right > 0)
+    );
     if (validMatches.length === 0) {
       Audio.play('error');
       if (hadStaleRef) refreshAll();
@@ -4038,9 +4123,10 @@ const App = {
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
-    // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外）
+    // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
     const confrontations = [];
     validMatches.forEach((m, i) => {
+      if (m.matchType === 'tag') return;
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
       if (rivalLvl && !rivalLvl.isGoodRival && !rivalLvl.isBitterRival && (rivalLvl.rivalry || 0) >= 50) {
         const cl = G.roster.find(c => c.id === m.left);
@@ -4078,9 +4164,14 @@ const App = {
     let filled = false;
     sp.validMatches.forEach((m, idx) => {
       if (sp.results[idx]) return;
-      const charL = G.roster.find(c => c.id === m.left);
-      const charR = G.roster.find(c => c.id === m.right);
-      if (charL && charR) return;
+      if (m.matchType === 'tag') {
+        const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+        if (ids.every(id => G.roster.find(c => c.id === id))) return;
+      } else {
+        const charL = G.roster.find(c => c.id === m.left);
+        const charR = G.roster.find(c => c.id === m.right);
+        if (charL && charR) return;
+      }
       sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
       filled = true;
     });
@@ -4098,6 +4189,33 @@ const App = {
       return;
     }
     const m = sp.validMatches[idx];
+    // ── タッグマッチ ──
+    if (m.matchType === 'tag') {
+      const f1 = G.roster.find(c => c.id === m.teamA.fighter1);
+      const f2 = G.roster.find(c => c.id === m.teamA.fighter2);
+      const f3 = G.roster.find(c => c.id === m.teamB.fighter1);
+      const f4 = G.roster.find(c => c.id === m.teamB.fighter2);
+      if (!f1 || !f2 || !f3 || !f4) {
+        sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
+        renderMatchPreview();
+        if (sp.results.every(r => r !== null)) App.finalizeShow();
+        return;
+      }
+      const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
+      const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
+      const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
+      const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
+      const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
+      sp.results[idx] = Engine.tagMatch.simulateTagMatch(
+        { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 },
+        tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
+      );
+      try { Audio.play('tick'); } catch(e) {}
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      return;
+    }
+    // ── シングルマッチ ──
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) {
@@ -4113,9 +4231,10 @@ const App = {
     if (sp.results.every(r => r !== null)) App.finalizeShow();
   },
 
-  // Watch match in battle engine iframe
+  // Watch match in battle engine iframe (tag matches auto-skip — Phase 4 で対応)
   watchMatch(idx) {
     const sp = App._showPreview;
+    if (sp && sp.validMatches[idx]?.matchType === 'tag') { App.skipMatch(idx); return; }
     if (!sp || sp.results[idx]) return;
     App._fillMissingShowPreviewResults();
     if (sp.results[idx]) {
@@ -4365,11 +4484,12 @@ const App = {
     // Phase 4: 興行前の連敗数を記録（C-05/C-06判定用）
     const preShowLosingStreaks = new Map(roster.map(c => [c.id, c.losingStreak || 0]));
 
-    // Rivalry & coach bonuses
+    // Rivalry & coach bonuses (タッグはスキップ)
     const confrontationPairs = sp.confrontationPairs || [];
     const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
+      if (m.matchType === 'tag') return; // タッグ試合は因縁・ケミストリーボーナス対象外
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
@@ -4389,10 +4509,10 @@ const App = {
       // coachMQBonus — MQ外部ボーナス整理で廃止
     });
 
-    // Fan expectation MQ bonus — MQ外部ボーナス整理で廃止。フラグのみ残す
+    // Fan expectation MQ bonus — MQ外部ボーナス整理で廃止。フラグのみ残す（タッグはスキップ）
     const fanExpects = Engine.fanExpect.generate(s);
     validMatches.forEach((m, i) => {
-      const result = results[i]; if (!result) return;
+      const result = results[i]; if (!result || m.matchType === 'tag') return;
       const isFanExpectMatch = fanExpects.some(exp =>
         (exp.leftId === result.left.id && exp.rightId === result.right.id) ||
         (exp.leftId === result.right.id && exp.rightId === result.left.id)
@@ -4468,6 +4588,13 @@ const App = {
     // 集客v2: matchAppeals→showDraw→attendance算出
     const appFanExpects = Engine.fanExpect.generate(s);
     const appMatchAppeals = validMatches.map(m => {
+      if (m.matchType === 'tag') {
+        // タッグ: 4人の平均集客力で簡易計算
+        const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+        const fighters = ids.map(id => roster.find(c => c.id === id)).filter(Boolean);
+        if (fighters.length < 4) return 0;
+        return fighters.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, s), 0) / 2;
+      }
       const fA = roster.find(c => c.id === m.left);
       const fB = roster.find(c => c.id === m.right);
       if (!fA || !fB) return { totalAppeal: 0 };
@@ -4483,7 +4610,12 @@ const App = {
         pendingClashBonus: appPendingClash, isFirstMeet: appFr.isFirstMeet, freshnessCount: appFr.countInWindow,
       }, s);
     });
-    const appNonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+    const _appUsedIds = new Set();
+    validMatches.forEach(m => {
+      if (m.matchType === 'tag') { [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2].forEach(id => _appUsedIds.add(id)); }
+      else { _appUsedIds.add(m.left); _appUsedIds.add(m.right); }
+    });
+    const appNonMatchPromo = roster.filter(c => !_appUsedIds.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
     const appShowDraw = Engine.attendanceV2.calcShowDraw(appMatchAppeals, appNonMatchPromo, s.showVenue);
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
     const appV2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, appShowDraw, attendRng);
@@ -4502,9 +4634,10 @@ const App = {
       }
     }
 
-    // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない）
+    // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない、タッグはスキップ）
     results.forEach((r, i) => {
       const m = validMatches[i];
+      if (m.matchType === 'tag') return;
       const appFreshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, i));
       const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, appFreshnessRng);
       if (fr.bonus > 0) {
@@ -4593,12 +4726,29 @@ const App = {
     });
     App._pendingRivalryResolutions = rivalryResolutions;
 
-    // MQ popularity
+    // MQ popularity (タッグ: 4人に分配)
     const mainEventIdx = 0; // index 0 = main event in showCard order
     results.forEach((r, idx) => {
+      const m = validMatches[idx];
       const isMainEvent = idx === mainEventIdx;
-      const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
-      roster = mqPop.roster;
+      if (r.matchType === 'tag') {
+        // タッグ: perFighterの全選手にMQ人気を適用（Engine.executeShow L7709パターン）
+        const allIds = Object.keys(r.perFighter).map(Number);
+        const winIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+        allIds.forEach(cid => {
+          const fighter = roster.find(c => c.id === cid);
+          if (!fighter) return;
+          const isWin = winIds.includes(cid);
+          const fakeSingleResult = { mq: r.mq, winner: isWin ? 'left' : (r.winner === 'draw' ? 'draw' : 'right'),
+            left: fighter, right: fighter };
+          const mqPop = Engine.applyMQPopularity(roster, fakeSingleResult, isMainEvent, s.orgPop || 0, s);
+          roster = mqPop.roster;
+        });
+      } else {
+        const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
+        roster = mqPop.roster;
+      }
     });
     // 集客v2: ★算出
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
@@ -4607,7 +4757,7 @@ const App = {
       titleGreatMQ: validMatches.some(m => m.isTitle) ? results.find((r, i) => validMatches[i]?.isTitle)?.mq || 0 : 0,
       rivalryResolved: results.some(r => r.rivalryResolved),
       rivalryCards: validMatches.filter(m => {
-        if (!s.relationships) return false;
+        if (!s.relationships || m.matchType === 'tag') return false;
         const rAB = s.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
         const rBA = s.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
         return Math.max(rAB, rBA) >= 30;
@@ -4620,7 +4770,7 @@ const App = {
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
     let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, appStars);
     roster = popResult.roster;
-    const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.map(m => ({ leftId: m.left, rightId: m.right })));
+    const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.filter(m => m.matchType !== 'tag').map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
       popResult = {
         ...popResult,
@@ -4637,10 +4787,11 @@ const App = {
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
     if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
-    // Injuries — separate RNG per fighter to avoid correlation
+    // Injuries — separate RNG per fighter to avoid correlation (タッグはスキップ — Phase 5対応)
     const injuryResults = [];
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     results.forEach((r, idx) => {
+      if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
@@ -4661,6 +4812,15 @@ const App = {
       const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2A));
       let relState = { ...s, roster, relationshipCounters: s.relationshipCounters };
       results.forEach((r, idx) => {
+        const m = validMatches[idx];
+        // タッグマッチ: applyTagMatchResult で4者間の関係値を更新
+        if (r.matchType === 'tag') {
+          const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
+          const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
+          relState = Engine.relationships.applyTagMatchResult(relState, teamAIds, teamBIds, r, relRng);
+          return;
+        }
+        // シングルマッチ
         const charIdA = r.left.id;
         const charIdB = r.right.id;
         const fA = roster.find(c => c.id === charIdA);
@@ -4669,8 +4829,6 @@ const App = {
         let stage = 'normal';
         if (r.isTitleMatch) stage = 'title';
 
-        // v2.0: タイトルマッチの王者情報
-        const m = validMatches[idx];
         const champId = s.titles?.world?.championId;
         const isTitleM = !!r.isTitleMatch;
 
@@ -4711,17 +4869,40 @@ const App = {
 
     // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える (mirrors Engine.executeShow)
     const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
-    results.forEach(r => {
-      [
-        { charId: r.left.id, won: r.winner === 'left' },
-        { charId: r.right.id, won: r.winner === 'right' },
-      ].forEach(({ charId, won }) => {
+    results.forEach((r, rIdx) => {
+      const m = validMatches[rIdx];
+      // タッグマッチ: 4人に成長配分（Engine.executeShow L8087-8117パターン）
+      let growthEntries;
+      if (r.matchType === 'tag') {
+        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+        growthEntries = allIds.map(charId => {
+          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
+          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
+          const oppOvr = Math.max(...oppIds.map(id => { const f = roster.find(c => c.id === id); return f ? Engine.util.ov(f) : 50; }));
+          const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
+          const partnerName = (roster.find(c => c.id === partnerId) || {}).name || '?';
+          const oppNames = oppIds.map(id => (roster.find(c => c.id === id) || {}).name || '?').join('&');
+          return { charId, won: winTeamIds.includes(charId), oppOvr, oppLabel: `w/${partnerName} vs ${oppNames}` };
+        });
+      } else {
+        growthEntries = [
+          { charId: r.left.id, won: r.winner === 'left', oppOvr: null, oppLabel: null },
+          { charId: r.right.id, won: r.winner === 'right', oppOvr: null, oppLabel: null },
+        ];
+      }
+      growthEntries.forEach(({ charId, won, oppOvr: preOppOvr, oppLabel }) => {
         const fighter = roster.find(c => c.id === charId);
         if (!fighter || fighter.isIntrusion) return;
-        const oppId = charId === r.left.id ? r.right.id : r.left.id;
-        const oppInRoster = roster.find(c => c.id === oppId);
-        const oppRaw = charId === r.left.id ? r.right : r.left;
-        const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+        let oppOvr;
+        if (preOppOvr !== null) { oppOvr = preOppOvr; } // タッグ: 事前計算済み
+        else {
+          const oppId = charId === r.left.id ? r.right.id : r.left.id;
+          const oppInRoster = roster.find(c => c.id === oppId);
+          const oppRaw = charId === r.left.id ? r.right : r.left;
+          oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+        }
         const selfOvr = Engine.util.ov(fighter);
 
         // growth-rebalance v2: 試合成長を適正化
@@ -4747,7 +4928,7 @@ const App = {
         }
         const growthPerStat = matchGrowth / numStats;
 
-        const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
+        const _mOpp = oppLabel || (charId === r.left?.id ? (r.right?.name || '?') : (r.left?.name || '?'));
         const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
         roster = roster.map(c => {
           if (c.id !== charId) return c;
@@ -4778,25 +4959,56 @@ const App = {
     // v0.95: Season stats
     const stats = { ...G.seasonStats };
     stats.showCount++;
-    results.forEach(r => {
-      if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
-      if (r.winner === 'left' || r.winner === 'right') stats.wins++;
-      if (r.winner === 'draw') stats.draws++;
+    results.forEach((r, rIdx) => {
+      const m = validMatches[rIdx];
+      if (r.matchType === 'tag') {
+        const tA1 = roster.find(c => c.id === m.teamA.fighter1);
+        const tA2 = roster.find(c => c.id === m.teamA.fighter2);
+        const tB1 = roster.find(c => c.id === m.teamB.fighter1);
+        const tB2 = roster.find(c => c.id === m.teamB.fighter2);
+        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'}&${tA2?.name||'?'} vs ${tB1?.name||'?'}&${tB2?.name||'?'}`; }
+        if (r.winner === 'teamA' || r.winner === 'teamB') stats.wins++;
+        if (r.winner === 'draw') stats.draws++;
+      } else {
+        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
+        if (r.winner === 'left' || r.winner === 'right') stats.wins++;
+        if (r.winner === 'draw') stats.draws++;
+      }
     });
 
     // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
     const pendingGrowthEvents = [];
     const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB818));
-    results.forEach(r => {
-      [
-        { charId: r.left.id,  won: r.winner === 'left'  },
-        { charId: r.right.id, won: r.winner === 'right' },
-      ].forEach(({ charId, won }) => {
+    results.forEach((r, rIdx) => {
+      const m = validMatches[rIdx];
+      // タッグマッチ: 4人にブレークスルー・スランプ判定
+      let btEntries;
+      if (r.matchType === 'tag') {
+        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+        btEntries = allIds.map(charId => {
+          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
+          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
+          const oppOvr = Math.max(...oppIds.map(id => { const f = roster.find(c => c.id === id); return f ? Engine.util.ov(f) : 50; }));
+          return { charId, won: winTeamIds.includes(charId), oppOvr };
+        });
+      } else {
+        btEntries = [
+          { charId: r.left.id,  won: r.winner === 'left',  oppOvr: null },
+          { charId: r.right.id, won: r.winner === 'right', oppOvr: null },
+        ];
+      }
+      btEntries.forEach(({ charId, won, oppOvr: preOppOvr }) => {
         const fighter = roster.find(c => c.id === charId);
         if (!fighter || fighter.isIntrusion) return;
-        const oppId = charId === r.left.id ? r.right.id : r.left.id;
-        const oppFighter = roster.find(c => c.id === oppId);
-        const oppOvr = oppFighter ? Engine.util.ov(oppFighter) : (r[charId === r.left.id ? 'right' : 'left']?.pw ?? 50);
+        let oppOvr;
+        if (preOppOvr !== null) { oppOvr = preOppOvr; }
+        else {
+          const oppId = charId === r.left.id ? r.right.id : r.left.id;
+          const oppFighter = roster.find(c => c.id === oppId);
+          oppOvr = oppFighter ? Engine.util.ov(oppFighter) : (r[charId === r.left.id ? 'right' : 'left']?.pw ?? 50);
+        }
         const isTitle = !!r.isTitleMatch;
 
         // ブレークスルー判定（careerBestMQ更新前に実施 — mq > prevBest 判定のため）
@@ -4878,25 +5090,69 @@ const App = {
       });
     });
 
-    // h2h記録: ペア別対戦履歴
+    // h2h記録: ペア別対戦履歴（タッグ: 対角4ペア + 味方ペア記録）
     let h2h = { ...(s.h2h || {}) };
     results.forEach((r, idx) => {
       const m = validMatches[idx];
-      h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
+      if (m.matchType === 'tag') {
+        // タッグ: 対角4ペア（A1vsB1, A1vsB2, A2vsB1, A2vsB2）を記録
+        const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
+        const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
+        for (const aId of teamAIds) {
+          for (const bId of teamBIds) {
+            const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week);
+          }
+        }
+      } else {
+        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
+      }
     });
     s = { ...s, h2h };
 
     // recentMatches記録（直近5戦FIFO）
     results.forEach((r, idx) => {
       const m = validMatches[idx];
-      roster = Engine.pushRecentMatch(roster, m.left, m.right, r.winner, s.season, s.week);
+      if (m.matchType === 'tag') {
+        // タッグ: 対角ペアで記録
+        const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
+        const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
+        for (const aId of teamAIds) {
+          for (const bId of teamBIds) {
+            const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+            roster = Engine.pushRecentMatch(roster, aId, bId, tagWinner, s.season, s.week);
+          }
+        }
+      } else {
+        roster = Engine.pushRecentMatch(roster, m.left, m.right, r.winner, s.season, s.week);
+      }
     });
 
     // matchupLog 記録（鮮度計算の後、最終更新の前）
-    const newMatchupEntries = validMatches.map(m => ({
-      leftId: m.left, rightId: m.right, showCount: s.totalShows,
-    }));
-    s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
+    const newMatchupEntries = [];
+    validMatches.forEach(m => {
+      if (m.matchType === 'tag') {
+        // タッグ: 対角4ペアのmatchupLogを記録
+        const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
+        const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
+        for (const aId of teamAIds) {
+          for (const bId of teamBIds) {
+            newMatchupEntries.push({ leftId: aId, rightId: bId, showCount: s.totalShows });
+          }
+        }
+      } else {
+        newMatchupEntries.push({ leftId: m.left, rightId: m.right, showCount: s.totalShows });
+      }
+    });
+
+    // tagExp記録: タッグ試合のチームメイトペアの経験値を蓄積
+    let tagExp = { ...(s.tagExp || {}) };
+    validMatches.forEach((m, idx) => {
+      if (m.matchType !== 'tag') return;
+      tagExp = Engine.tagExp.increment(tagExp, m.teamA.fighter1, m.teamA.fighter2);
+      tagExp = Engine.tagExp.increment(tagExp, m.teamB.fighter1, m.teamB.fighter2);
+    });
+    s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries], tagExp };
 
     // orgPop リバランス v1.1 §4: ドーム興行 domeMain キャリア記録
     // メインイベント枠(idx=0) or タイトルマッチに出場した選手を記録
@@ -4909,10 +5165,19 @@ const App = {
         const r = results[idx];
         if (!r) return;
         const matchType = isTitle ? 'title' : 'main';
-        [
-          { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
-          { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
-        ].forEach(({ charId, result }) => {
+        let domeEntries;
+        if (m.matchType === 'tag') {
+          const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+          const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+            : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+          domeEntries = allIds.map(charId => ({ charId, result: winTeamIds.includes(charId) ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') }));
+        } else {
+          domeEntries = [
+            { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
+            { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
+          ];
+        }
+        domeEntries.forEach(({ charId, result }) => {
           roster = roster.map(c => {
             if (c.id !== charId || c.isIntrusion) return c;
             const ev = { type: 'domeMain', season: s.season, result, matchType };
