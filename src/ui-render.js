@@ -3230,11 +3230,17 @@ function renderShachoshitsu() {
   // ── 机 ──
   html += `<div class="shachoshitsu-desk">`;
   if (tab === 'decision') {
+    // 決裁は単一グリッドなのでラッパー不要（既存の margin:0 auto が効く）
     html += _renderShachoshitsuDecisionDesk();
-  } else if (tab === 'scout') {
-    html += _renderShachoshitsuScoutDesk();
-  } else if (tab === 'rental') {
-    html += _renderShachoshitsuRentalDesk();
+  } else {
+    // スカウト・レンタルは複数要素を縦積みするためラッパーで包む
+    html += `<div class="shachoshitsu-desk-inner">`;
+    if (tab === 'scout') {
+      html += _renderShachoshitsuScoutDesk();
+    } else if (tab === 'rental') {
+      html += _renderShachoshitsuRentalDesk();
+    }
+    html += `</div>`; // desk-inner
   }
   html += `</div>`; // desk
 
@@ -3486,12 +3492,12 @@ function _renderShachoshitsuScoutDesk() {
   });
   html += '</div>'; // scout-grid
 
-  // ページ送り
+  // ページナビ（グリッドの下）
   if (totalPages > 1) {
     html += `<div class="shachoshitsu-page-nav">
-      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage - 1})" ${safePage <= 0 ? 'disabled' : ''}>◀</button>
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage - 1})" ${safePage <= 0 ? 'disabled' : ''}>◀ 前へ</button>
       <span class="shachoshitsu-page-info">${safePage + 1} / ${totalPages}</span>
-      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage + 1})" ${safePage >= totalPages - 1 ? 'disabled' : ''}>▶</button>
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage + 1})" ${safePage >= totalPages - 1 ? 'disabled' : ''}>次へ ▶</button>
     </div>`;
   }
 
@@ -3532,7 +3538,8 @@ function _renderShachoshitsuRentalDesk() {
   // ソートボタン
   const arrow = sortDir === 'asc' ? '▲' : '▼';
   html += `<div class="shachoshitsu-rental-sort">
-    <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">💰 ${sortDir === 'asc' ? '安い順' : '高い順'} ${arrow}</button>
+    <span class="sort-label">並び替え:</span>
+    <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">💰 費用 ${sortDir === 'asc' ? '安い順' : '高い順'} ${arrow}</button>
   </div>`;
   html += '<div class="shachoshitsu-rental-grid">';
   sorted.forEach((r, idx) => {

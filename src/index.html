@@ -2920,6 +2920,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-desk{position:relative;width:100%;min-height:560px;background-image:url('../image/shachoshitsu/desk.webp');
   background-size:cover;background-position:center top;background-repeat:no-repeat;padding:32px 0 32px;
   display:flex;justify-content:center;align-items:flex-start}
+/* スカウト・レンタルタブの縦積みラッパー */
+.shachoshitsu-desk-inner{display:flex;flex-direction:column;align-items:center;width:100%}
 .shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,196px);gap:16px;max-width:832px;margin:0 auto;min-height:260px}
 .shachoshitsu-empty-note{grid-column:1/-1;display:flex;align-items:center;justify-content:center;
   min-height:260px;color:var(--cream-text-sub);font-size:13px;letter-spacing:1px;
@@ -3103,8 +3105,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   letter-spacing:0.5px;border:1px solid rgba(80,60,40,0.25)}
 .shachoshitsu-resume-tag.source{background:rgba(80,130,180,0.2);color:#3a6a90;border-color:rgba(80,130,180,0.35)}
 .shachoshitsu-resume-tag.tier{background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.4)}
-.shachoshitsu-resume-img{width:100%;aspect-ratio:5/4;object-fit:cover;border-radius:3px;
-  border:1px solid rgba(80,60,40,0.2);background:rgba(0,0,0,0.05);margin-bottom:8px}
+.shachoshitsu-resume-img{width:100%;aspect-ratio:4/3;object-fit:contain;
+  object-position:center top;border-radius:3px;
+  border:1px solid rgba(80,60,40,0.15);background:rgba(0,0,0,0.03);margin-bottom:8px}
 .shachoshitsu-resume-name{font-size:14px;font-weight:700;text-align:center;line-height:1.3}
 .shachoshitsu-resume-age{font-size:12px;color:rgba(42,35,24,0.6);text-align:center;margin-bottom:4px}
 .shachoshitsu-resume-ovr{font-family:'Bebas Neue',sans-serif;font-size:36px;font-weight:700;
@@ -3176,11 +3179,16 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .shachoshitsu-rental-mini button:disabled{opacity:0.4;cursor:default}
 
 /* レンタルソートボタン */
-.shachoshitsu-rental-sort{text-align:right;margin-bottom:8px;max-width:832px;margin-left:auto;margin-right:auto}
-.shachoshitsu-rental-sort button{font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;
-  background:rgba(60,45,30,0.10);border:1px solid rgba(60,45,30,0.25);
-  color:rgba(42,35,24,0.7);font-family:'Noto Sans JP',sans-serif}
-.shachoshitsu-rental-sort button:hover{background:rgba(60,45,30,0.20)}
+.shachoshitsu-rental-sort{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+  width:100%;max-width:832px}
+.shachoshitsu-rental-sort .sort-label{font-size:12px;font-weight:700;
+  color:rgba(42,35,24,0.6);letter-spacing:0.3px;white-space:nowrap}
+.shachoshitsu-rental-sort button{font-size:13px;font-weight:700;padding:7px 20px;
+  border-radius:5px;cursor:pointer;
+  background:rgba(42,35,24,0.78);border:1.5px solid rgba(42,35,24,0.9);
+  color:#ecddb8;font-family:'Noto Sans JP',sans-serif;
+  transition:background 0.15s}
+.shachoshitsu-rental-sort button:hover{background:rgba(42,35,24,0.92)}
 
 /* 壁上のレンタルミニカード */
 .shachoshitsu-wall-rental-strip{position:absolute;bottom:8px;right:4%;
@@ -3194,13 +3202,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 /* ページ送り */
 .shachoshitsu-page-nav{display:flex;justify-content:center;align-items:center;gap:12px;
-  margin-top:12px;margin-bottom:4px}
-.shachoshitsu-page-btn{font-size:16px;padding:4px 14px;border-radius:4px;cursor:pointer;
-  background:rgba(60,45,30,0.10);border:1px solid rgba(60,45,30,0.25);
-  color:rgba(42,35,24,0.7);font-family:'Noto Sans JP',sans-serif;transition:background 0.15s}
-.shachoshitsu-page-btn:hover:not(:disabled){background:rgba(60,45,30,0.22)}
-.shachoshitsu-page-btn:disabled{opacity:0.3;cursor:default}
-.shachoshitsu-page-info{font-size:12px;color:rgba(42,35,24,0.55)}
+  margin-bottom:14px;width:100%;max-width:832px}
+.shachoshitsu-page-btn{font-size:13px;font-weight:700;padding:7px 22px;border-radius:5px;
+  cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:background 0.15s;
+  background:rgba(42,35,24,0.78);border:1.5px solid rgba(42,35,24,0.9);color:#ecddb8}
+.shachoshitsu-page-btn:hover:not(:disabled){background:rgba(42,35,24,0.92)}
+.shachoshitsu-page-btn:disabled{opacity:0.28;cursor:default}
+.shachoshitsu-page-info{font-size:13px;font-weight:600;color:rgba(42,35,24,0.70);
+  min-width:56px;text-align:center}
 
 /* ドラフト通知 */
 .shachoshitsu-draft-notice{text-align:center;padding:32px 24px;max-width:500px;margin:0 auto}
