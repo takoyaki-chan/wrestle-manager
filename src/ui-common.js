@@ -3417,13 +3417,26 @@ function moveShowCard(idx, dir) {
   renderShowPrep();
 }
 
+// タッグ枠保持ヘルパー: 既存タッグ枠を保持し、タッグ選手IDを除外セットに追加
+function _preserveTagSlots(maxMatches) {
+  const tags = G.showCard.filter(m => m.matchType === 'tag');
+  const tagUsed = new Set();
+  tags.forEach(t => {
+    [t.teamA.fighter1, t.teamA.fighter2, t.teamB.fighter1, t.teamB.fighter2]
+      .filter(id => id > 0).forEach(id => tagUsed.add(id));
+  });
+  const tagWeight = tags.length * 2;
+  const singlesCount = maxMatches - tagWeight;
+  return { tags, tagUsed, singlesCount };
+}
 function autoFillCard() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
   const card = [];
-  while (card.length < maxMatches) card.push({left:0, right:0, isTitle:false});
-  const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
+  for (let i = 0; i < singlesCount; i++) card.push({left:0, right:0, isTitle:false});
+  const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id)).sort((a,b) => ov(b) - ov(a));
   const used = new Set();
-  const numMatches = Math.min(maxMatches, Math.floor(sorted.length / 2));
+  const numMatches = Math.min(singlesCount, Math.floor(sorted.length / 2));
   const champId = G.titles.world.championId;
   for (let i = 0; i < numMatches; i++) {
     const left = sorted.find(c => !used.has(c.id));
@@ -3434,27 +3447,26 @@ function autoFillCard() {
     used.add(right.id);
     const hasChamp = champId && (left.id === champId || right.id === champId);
     const isVacant = !champId;
-    // v1.2: 12週クールダウンチェック — クールダウン中は自動編成でもタイトルマッチにしない
     const cdOk = Engine.title.canTitleMatch(G).allowed;
-    // 王座空位時はメイン枠を初代王者決定戦に、王者在位時は王者含む試合をタイトル戦に
     const slotHasRental = (left.isRental || right.isRental);
     const slotIsTitle = i === 0 && G.titleEstablished && cdOk && (hasChamp || isVacant) && !slotHasRental;
     card[i] = {left: left.id, right: right.id, isTitle: slotIsTitle};
   }
+  // タッグ枠を末尾に追加
+  tags.forEach(t => card.push(t));
   G = { ...G, showCard: card };
 }
 
 // ── おすすめ編成: matchAppeal合計最大化 ──
 function autoFillCardByAppeal() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  const available = G.roster.filter(c => !c.injury && !c.forcedRest);
+  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id));
   if (available.length < 2) { autoFillCard(); return; }
 
-  // fanExpectを1回だけ生成してキャッシュ
   const fanExpects = Engine.fanExpect.generate(G) || [];
   const feSet = new Set(fanExpects.map(fe => [fe.leftId, fe.rightId].sort().join('-')));
 
-  // 全ペアのappealスコアを計算
   const pairs = [];
   for (let i = 0; i < available.length; i++) {
     for (let j = i + 1; j < available.length; j++) {
@@ -3473,31 +3485,30 @@ function autoFillCardByAppeal() {
     }
   }
 
-  // appeal降順 → 貪欲法
   pairs.sort((x, y) => y.appeal - x.appeal);
   const card = [];
   const used = new Set();
   for (const p of pairs) {
-    if (card.length >= maxMatches) break;
+    if (card.length >= singlesCount) break;
     if (used.has(p.aId) || used.has(p.bId)) continue;
     card.push({ left: p.aId, right: p.bId, isTitle: false });
     used.add(p.aId);
     used.add(p.bId);
   }
 
-  // タイトルマッチ判定（メイン = card[0]）
   _applyAutoTitleMatch(card);
-  while (card.length < maxMatches) card.push({ left: 0, right: 0, isTitle: false });
+  while (card.length < singlesCount) card.push({ left: 0, right: 0, isTitle: false });
+  tags.forEach(t => card.push(t));
   G = { ...G, showCard: card };
 }
 
 // ── 集客力順編成: drawPower合計最大化 ──
 function autoFillCardByDraw() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  const available = G.roster.filter(c => !c.injury && !c.forcedRest);
+  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id));
   if (available.length < 2) { autoFillCard(); return; }
 
-  // 全ペアのdrawPower合計を計算
   const pairs = [];
   for (let i = 0; i < available.length; i++) {
     for (let j = i + 1; j < available.length; j++) {
@@ -3507,12 +3518,11 @@ function autoFillCardByDraw() {
     }
   }
 
-  // drawSum降順 → 貪欲法
   pairs.sort((x, y) => y.drawSum - x.drawSum);
   const card = [];
   const used = new Set();
   for (const p of pairs) {
-    if (card.length >= maxMatches) break;
+    if (card.length >= singlesCount) break;
     if (used.has(p.aId) || used.has(p.bId)) continue;
     card.push({ left: p.aId, right: p.bId, isTitle: false });
     used.add(p.aId);
@@ -3520,7 +3530,8 @@ function autoFillCardByDraw() {
   }
 
   _applyAutoTitleMatch(card);
-  while (card.length < maxMatches) card.push({ left: 0, right: 0, isTitle: false });
+  while (card.length < singlesCount) card.push({ left: 0, right: 0, isTitle: false });
+  tags.forEach(t => card.push(t));
   G = { ...G, showCard: card };
 }
 

@@ -3960,13 +3960,33 @@ const App = {
     renderShowPrep();
   },
 
+  // シングル2枠を合体してタッグ1枠に（選手引き継ぎ）
+  mergeToTagSlot(idx) {
+    const card = [...G.showCard];
+    if (idx < 0 || idx + 1 >= card.length) return;
+    if (card[idx].matchType === 'tag' || card[idx + 1].matchType === 'tag') {
+      Audio.play('error'); showToast('タッグ枠同士は合体できません'); return;
+    }
+    const s1 = card[idx], s2 = card[idx + 1];
+    // 左コーナー同士→チームA、右コーナー同士→チームB
+    const tagSlot = {
+      matchType: 'tag',
+      teamA: { fighter1: s1.left || 0, fighter2: s2.left || 0 },
+      teamB: { fighter1: s1.right || 0, fighter2: s2.right || 0 },
+    };
+    card.splice(idx, 2, tagSlot);
+    G = { ...G, showCard: card };
+    renderShowPrep();
+  },
+
   removeTagSlot(idx) {
     const card = [...G.showCard];
     if (!card[idx] || card[idx].matchType !== 'tag') return;
-    card.splice(idx, 1);
-    // 空シングル2枠を末尾に追加
-    card.push({ left: 0, right: 0, isTitle: false });
-    card.push({ left: 0, right: 0, isTitle: false });
+    const tag = card[idx];
+    // タッグ→シングル2枠に分割（選手を保持）
+    const s1 = { left: tag.teamA.fighter1 || 0, right: tag.teamB.fighter1 || 0, isTitle: false };
+    const s2 = { left: tag.teamA.fighter2 || 0, right: tag.teamB.fighter2 || 0, isTitle: false };
+    card.splice(idx, 1, s1, s2);
     G = { ...G, showCard: card };
     renderShowPrep();
   },

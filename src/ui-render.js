@@ -2560,6 +2560,7 @@ function renderShowPrep() {
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
+          ${(i + 1 < G.showCard.length && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}
