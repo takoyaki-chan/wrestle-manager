@@ -2324,14 +2324,12 @@ function renderShowPrep() {
     html += `</div></div>`;
   }
 
-  // カードヘッダー v7 + タッグ枠追加ボタン
-  const _spEmptySingles = G.showCard.filter(m => !m.matchType && m.left === 0 && m.right === 0).length;
+  // カードヘッダー v7
   html += `<div class="sp-card-header">
     <span class="sp-card-header-title">Match Card</span>
     <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
     <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
     <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
-    ${_spEmptySingles >= 2 ? `<button class="sp-tag-add-btn" onclick="App.addTagSlot()">🤝 タッグマッチ枠</button>` : ''}
     <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">🗑 全クリア</button>
     <span class="sp-venue-info">${v.name}（${v.cap.toLocaleString()}席）</span>
   </div>`;
@@ -2377,8 +2375,8 @@ function renderShowPrep() {
       const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
       const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
       const _tagFighterHtml = (f, team, pos) => {
-        if (!f) return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:48px;height:48px;border-radius:4px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
-        return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">${portraitImg(f.id, 48)}<div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name">${f.name}</div><div class="sp-tag-fighter-ovr">OVR ${ov(f)}</div></div></div>`;
+        if (!f) return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:64px;height:64px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
+        return `<div class="sp-tag-fighter" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">${portraitImg(f.id, 64)}<div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name">${f.name}</div><div class="sp-tag-fighter-ovr">OVR ${ov(f)}</div></div></div>`;
       };
       const _bondColor = b => b >= 70 ? 'var(--green)' : b >= 40 ? 'var(--text-sub)' : 'var(--red)';
       const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
@@ -2560,7 +2558,7 @@ function renderShowPrep() {
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
-          ${(i + 1 < G.showCard.length && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
+          ${(i > 0 && i + 1 < G.showCard.length && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}

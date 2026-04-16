@@ -3964,6 +3964,7 @@ const App = {
   mergeToTagSlot(idx) {
     const card = [...G.showCard];
     if (idx < 0 || idx + 1 >= card.length) return;
+    if (idx === 0) { Audio.play('error'); showToast('メインイベントはシングルマッチのみです'); return; }
     if (card[idx].matchType === 'tag' || card[idx + 1].matchType === 'tag') {
       Audio.play('error'); showToast('タッグ枠同士は合体できません'); return;
     }

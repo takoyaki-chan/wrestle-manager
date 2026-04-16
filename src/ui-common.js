@@ -3411,7 +3411,10 @@ function fLink(c, opts = {}) {
 function moveShowCard(idx, dir) {
   const target = idx + dir;
   if (target < 0 || target >= G.showCard.length) return;
+  // メインイベント(位置0)にタッグ枠を移動させない
   const card = [...G.showCard];
+  if (target === 0 && card[idx].matchType === 'tag') { Audio.play('error'); return; }
+  if (idx === 0 && card[target].matchType === 'tag') { Audio.play('error'); return; }
   [card[idx], card[target]] = [card[target], card[idx]];
   G = { ...G, showCard: card };
   renderShowPrep();
