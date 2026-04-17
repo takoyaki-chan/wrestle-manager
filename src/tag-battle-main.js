@@ -115,7 +115,7 @@ function renderMatchFrame(){
     ${_controlsHtml()}
   `;
   _bindNextButton();
-  _scrollLogToBottom();
+  _scrollLogToTop();
 }
 
 function _fighterHpPct(ch){
@@ -723,9 +723,8 @@ function animateEvent(ev, fr){
       const cutinSide = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
       showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer.personality || 'normal'), 'damage-serif');
     }
-  } else if (ev.type === 'pinAttempt') {
-    animatePinCount(ev);
   }
+  // pinAttempt は applyFrame 側の _beginPinSequence でクリック駆動処理するため、ここでは何もしない
   // flash overlay on move-display
   const ov = document.getElementById('flashOverlay');
   if (ov) {
