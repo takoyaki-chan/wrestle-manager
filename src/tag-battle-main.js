@@ -880,9 +880,15 @@ function _executePinStep(idx){
   const step = S.pinCtrl.seq[idx];
   if (step.kind === 'count') {
     _spawnPinCount(step.text, step.cls);
-    // クリックで次 step
+    // クリック連打防止: step 表示直後 700ms は button を無効化して間合いを作る
     const btn = document.getElementById('nBtn');
-    if (btn) { btn.disabled = false; btn.onclick = _advancePinStep; }
+    if (btn) {
+      btn.disabled = true;
+      btn.onclick = _advancePinStep;
+      setTimeout(() => {
+        if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false;
+      }, 700);
+    }
   } else if (step.kind === 'damage') {
     // ダメージセリフ: showCutin が pendingCutin=true を立てる。
     // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し次 step へ進む。
