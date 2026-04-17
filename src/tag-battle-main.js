@@ -496,7 +496,14 @@ function _logLineHtml(line, fr){
 const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
 function _frameMinDelay(fr){
   if (!fr) return 800;
-  if (fr.winner) return 2200;
+  // ピンカウント演出分を加算 (1→2→3 or 返した！ = ~1400ms + 900ms フェード)
+  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
+  const pinExtra = pinEv ? (
+    (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin' || pinEv.outcome === 'kickout') ? 2300 :
+    (pinEv.outcome === 'cutinSave') ? 1200 :
+    (pinEv.attemptType === 'tko') ? 900 : 0
+  ) : 0;
+  if (fr.winner) return 2200 + pinExtra;
   let base = 800;
   if (fr.action) {
     if (fr.action.kind === 'miss') base = FRAME_DELAYS.miss;
@@ -505,7 +512,7 @@ function _frameMinDelay(fr){
     else base = FRAME_DELAYS.hit;
   }
   if (fr.events && fr.events.length > 0) base += 500;
-  return base;
+  return base + pinExtra;
 }
 
 function nextFrame(){
@@ -520,7 +527,10 @@ function nextFrame(){
   applyFrame(fr);
 
   if (fr.winner) {
-    setTimeout(() => showResult(fr), 1800);
+    // ピンカウント完走を待ってから結果画面へ
+    const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
+    const winDelay = pinEv && (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin') ? 3200 : 1800;
+    setTimeout(() => showResult(fr), winDelay);
     return;
   }
   const delay = _frameMinDelay(fr) + (touchHappened ? 750 : 0);
@@ -631,7 +641,7 @@ function animateAction(action, fr){
     try { sfx.counterSE(); } catch(e){}
   }
   // SE
-  const cat = guessCategory(action.move);
+  const cat = action.moveCat || guessCategory(action.move);
   const volMul = action.isCrit ? 1.2 : 1;
   try {
     if (action.dmg >= 20) sfx.bigmoveImpact();
@@ -707,6 +717,8 @@ function animateEvent(ev, fr){
       const cutinSide = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
       showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer.personality || 'normal'), 'damage-serif');
     }
+  } else if (ev.type === 'pinAttempt') {
+    animatePinCount(ev);
   }
   // flash overlay on move-display
   const ov = document.getElementById('flashOverlay');
@@ -758,6 +770,42 @@ function showBanner(text, cls){
   void el.offsetWidth;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 1700);
+}
+
+// ── ピンカウント演出 (U3) ──
+// fall/pin 決着時の 1, 2, (3) カウント演出。attemptType='gu'/'rollup' は別コミットで対応。
+function animatePinCount(ev){
+  const { attemptType, outcome, count } = ev;
+  if (attemptType === 'tko') {
+    showBanner('T K O !', 'red');
+    try { sfx.finImpact(); } catch(e){}
+    return;
+  }
+  if (attemptType === 'gu' || attemptType === 'rollup') return; // U2/U4 で対応
+  // fall / pin のカウント演出
+  _spawnPinCount('1', 0);
+  if (count >= 2) _spawnPinCount('2', 700);
+  if (outcome === 'win' || outcome === 'betrayalWin') {
+    _spawnPinCount('3', 1400, 'three');
+  } else if (outcome === 'kickout') {
+    _spawnPinCount('返した！', 1400, 'kickout');
+  }
+  // cutinSave: カウント1のみ表示。カットイン演出は別の cutinSave イベントで発火
+}
+
+function _spawnPinCount(text, delayMs, cls){
+  setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = 'pin-count' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+    try {
+      if (cls === 'three') sfx.finChime();
+      else if (cls === 'kickout') sfx.kickoutSE();
+      else sfx.kickoutSE();
+    } catch(e){}
+  }, delayMs);
 }
 function flashGold(){
   const ov = document.getElementById('flashOv');
