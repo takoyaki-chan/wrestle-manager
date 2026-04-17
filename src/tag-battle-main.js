@@ -119,7 +119,9 @@ function renderMatchFrame(){
 function _fighterHpPct(ch){
   if (!ch) return { pct: 0, ratio: 0 };
   const ratio = ch.mhp > 0 ? Math.max(0, ch.hp) / ch.mhp : 0;
-  return { pct: Math.round(ratio * 100), ratio };
+  // hp > 0 なら最低 1% 表示（Math.round で 0 になる誤表示を防ぐ）
+  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio * 100)) : 0;
+  return { pct, ratio };
 }
 function _hudHtml(fr){
   const turn = fr ? fr.turn : 0;
@@ -196,7 +198,7 @@ function _chemBarHtml(){
 function _playerCardHtml(side, layer, posKey){
   const ch = f(posKey);
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
+  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
   const cls = ['player-card'];
   if (ratio <= 0.33) cls.push('danger');
   if (ch.gritTurns > 0) cls.push('grit-active');
@@ -229,7 +231,7 @@ function _playerCardHtml(side, layer, posKey){
 function _apronCardHtml(side, posKey){
   const ch = f(posKey);
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
+  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
   const isA = side === 'a';
   const ovr = _calcOvr(ch);
   const upperUrl = getUpperUrl(ch);
@@ -394,7 +396,7 @@ function _refreshCard(side, layer, posKey){
   // 選手カードは innerHTML の一部だけ更新(HP・数値)
   const ch = f(posKey);
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
+  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
   if (layer === 'legal') {
     // カード内のキャラが変わっていないか確認 — 入れ替わった場合はDOM総入替
     const existingName = el.querySelector('.player-name');
