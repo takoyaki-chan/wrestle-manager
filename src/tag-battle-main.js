@@ -800,6 +800,23 @@ function _beginPinSequence(pinEv, fr){
 function _buildPinCtrl(pinEv, fr){
   const { outcome, count } = pinEv;
   const seq = [];
+  // ダメージセリフ/ボイス: crit ヒットで pickDamageLine が line を返したら先頭に配置。
+  //「ビッグムーブ食らう → 苦悶 → カバー → ワン、ツー、スリー」の流れを作る。
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) {
+    const defKey = keyById(fr.action.defenderId);
+    const def = defKey ? f(defKey) : null;
+    if (def) {
+      const hpRatio = def.hp / def.mhp;
+      const line = pickDamageLine(def, fr.action.dmg, hpRatio);
+      const lastCrit = S.lastCritTurn[defKey] || 0;
+      if (line && fr.turn - lastCrit >= 3) {
+        S.lastCritTurn[defKey] = fr.turn;
+        const side = (defKey === 'a1' || defKey === 'a2') ? 'left' : 'right';
+        const cssCls = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
+        seq.push({ kind: 'damage', fighter: def, side, text: line.text, cssCls });
+      }
+    }
+  }
   if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
   if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
   if (outcome === 'win' || outcome === 'betrayalWin') {
@@ -830,6 +847,10 @@ function _executePinStep(idx){
     // クリックで次 step
     const btn = document.getElementById('nBtn');
     if (btn) { btn.disabled = false; btn.onclick = _advancePinStep; }
+  } else if (step.kind === 'damage') {
+    // ダメージセリフ: showCutin が pendingCutin=true を立てる。
+    // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し次 step へ進む。
+    showCutin(step.fighter, step.side, step.text, step.cssCls);
   } else if (step.kind === 'cutin') {
     // カットインは showCutin が pendingCutin=true を立てる。
     // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し _finishPinSeq を呼ぶ。
@@ -931,10 +952,11 @@ function dismissCutin(){
   ov.classList.remove('show');
   setTimeout(() => { ov.innerHTML = ''; }, 350);
   S.pendingCutin = false;
-  // ピン seq の cutin step だった場合は dismiss で pinSeq 完了へ
-  if (S.pinCtrl && S.pinCtrl.seq[S.pinCtrl.idx] && S.pinCtrl.seq[S.pinCtrl.idx].kind === 'cutin') {
-    _finishPinSeq();
-    return;
+  // ピン seq の cutin/damage step だった場合は次へ進む
+  if (S.pinCtrl && S.pinCtrl.seq[S.pinCtrl.idx]) {
+    const kind = S.pinCtrl.seq[S.pinCtrl.idx].kind;
+    if (kind === 'cutin') { _finishPinSeq(); return; }
+    if (kind === 'damage') { _advancePinStep(); return; }
   }
   const btn = document.getElementById('nBtn');
   if (btn && !S.anim) btn.disabled = false;
