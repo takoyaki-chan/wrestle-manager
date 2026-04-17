@@ -708,6 +708,7 @@ const ENG = {
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
   pinAttemptMomBonus: 0.15, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
+  pinLowHpAttemptScale: 200, pinLowHpSuccessScale: 100,
   finishWeights: {
     // bug fix: 非submission技のgu=0, submission技のfall=0 に統一
     strike:    {fall:90, gu:0, tko:10},

@@ -1166,6 +1166,8 @@ const ENG = {
   pinAttemptMntPenalty: 0.20,  // defender MN reduces success
   pinAttemptSuccessBase: 23,   // base success rate of pin attempt
   pinAttemptClimax: 22,        // bonus in Climax
+  pinLowHpAttemptScale: 200,   // 低HPほどピン試行率を急上昇させる線形係数
+  pinLowHpSuccessScale: 100,   // 低HPほど決まりやすくする線形係数
   // Finish type by category
   // gu:0 for non-submission — 関節技以外でギブアップは発生しない
   finishWeights: {
@@ -1288,7 +1290,8 @@ function calcGuEscapeChance(def, ph) {
 // ═══ v4.1: PIN ATTEMPT (HP>0 but low HP after big move) ═══
 function checkPinAttempt(mv, atk, def, dmg, mom, atkSide, ph) {
   if (def.hp <= 0) return false; // already KO
-  if (def.hp / def.mhp > ENG.pinAttemptHpThreshold) return false;
+  const defHpRatio = def.hp / def.mhp;
+  if (defHpRatio > ENG.pinAttemptHpThreshold) return false;
   if (dmg < ENG.pinAttemptMinDmg) return false;
   if (ph.name === 'Opening') return false;
   // End/Climaxで低d技: d値が小さいほどフォール試行しにくくなる（傾向、ハードゲートではない）
@@ -1299,14 +1302,19 @@ function checkPinAttempt(mv, atk, def, dmg, mom, atkSide, ph) {
   attemptRate += mAdv * ENG.pinAttemptMomBonus;
   if (ph.name === 'Climax') attemptRate += 15;
   if (ph.name === 'End') attemptRate += 8;
-  attemptRate = clamp(attemptRate, 10, 60);
+  // 低HPほど急激にピン試行率アップ (しきい値との差×スケール)
+  attemptRate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpAttemptScale);
+  attemptRate = clamp(attemptRate, 10, 95);
   return RNG.float() * 100 < attemptRate;
 }
 function calcPinAttemptSuccess(atk, def, dmg, ph) {
   let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
   if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
   if (def.gritTurns > 0) rate -= 10; // grit makes it harder
-  return clamp(rate, 8, 55);
+  // 低HPほど決まりやすい (しきい値との差×スケール)
+  const defHpRatio = def.hp / def.mhp;
+  rate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpSuccessScale);
+  return clamp(rate, 8, 80);
 }
 
 // ═══ AUDIO (v3.5 + v0.97 sound redesign + MP3 SE priority) ═══

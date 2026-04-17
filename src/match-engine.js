@@ -69,7 +69,8 @@ Engine.battle = {
     },
     checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph) {
       if (def.hp <= 0) return false;
-      if (def.hp / def.mhp > ENG.pinAttemptHpThreshold) return false;
+      const defHpRatio = def.hp / def.mhp;
+      if (defHpRatio > ENG.pinAttemptHpThreshold) return false;
       if (dmg < ENG.pinAttemptMinDmg) return false;
       if (ph.name === 'Opening') return false;
       let attemptRate = ENG.pinAttemptBaseRate;
@@ -77,13 +78,18 @@ Engine.battle = {
       attemptRate += mAdv * ENG.pinAttemptMomBonus;
       if (ph.name === 'Climax') attemptRate += 15;
       if (ph.name === 'End') attemptRate += 8;
-      return Engine.rng.float(rng) * 100 < Engine.util.clamp(attemptRate, 10, 60);
+      // 低HPほど急激にピン試行率アップ (HP0%で+70、HP10%で+50、HP20%で+30)
+      attemptRate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpAttemptScale);
+      return Engine.rng.float(rng) * 100 < Engine.util.clamp(attemptRate, 10, 95);
     },
     calcPinAttemptSuccess(atk, def, dmg, ph) {
       let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
       if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
       if (def.gritTurns > 0) rate -= 10;
-      return Engine.util.clamp(rate, 8, 55);
+      // 低HPほど決まりやすい (HP0%で+35、HP10%で+25、HP20%で+15)
+      const defHpRatio = def.hp / def.mhp;
+      rate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpSuccessScale);
+      return Engine.util.clamp(rate, 8, 80);
     },
 
     // Main match simulation — pure function, no DOM
@@ -414,7 +420,11 @@ Engine.tagMatch = (() => {
   function touchSuccessRate(fighter, opponent) {
     const TC = TAG_MATCH_CONFIG.touch;
     const hpRatio = clamp(fighter.hp / fighter.mhp, 0, 1);
-    const hpBase = (hpRatio - 0.20) * TC.canTouchHpWeight;
+    // 低HPほど必死にタッチを取りに行く: wantTouch と同じ閾値で段階化
+    let hpBase;
+    if (hpRatio <= TC.wantHpCritical) hpBase = 0.85;
+    else if (hpRatio <= TC.wantHpThreshold) hpBase = 0.60;
+    else hpBase = clamp(0.30 + (1 - hpRatio) * 0.4, 0.30, 0.70);
     const spdBonus = (fighter._baseSp - 70) * TC.canTouchSpdScale;
     const oppBlock = ((opponent._basePw + opponent._baseTe) / 2 - 70) * TC.canTouchOppScale;
     return clamp(hpBase + spdBonus - oppBlock, TC.canTouchMin, TC.canTouchMax);
