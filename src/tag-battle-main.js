@@ -134,10 +134,11 @@ function _hudHtml(fr){
   const hpB = _fighterHpPct(f(S.pos.legalB));
   const legalAName = f(S.pos.legalA) ? f(S.pos.legalA).name : '';
   const legalBName = f(S.pos.legalB) ? f(S.pos.legalB).name : '';
-  // mom は -50〜+50 → -1〜+1 に正規化
+  // mom は -50〜+50 → -1〜+1 に正規化。エンジン側規約: A(左)が攻撃ヒットで mom+方向。
+  // バーは攻撃を決めた側が伸びる見え方にする (シングル battle-engine.html と同規約)
   const momNorm = S.mom / 50;
-  const momL = 50 - momNorm * 30;
-  const momR = 50 + momNorm * 30;
+  const momL = 50 + momNorm * 30;
+  const momR = 50 - momNorm * 30;
   const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
 
   return `<div class="wm-hud">
@@ -375,7 +376,7 @@ function _updateHud(){
   const momElR = document.getElementById('momR');
   if (momElL && momElR) {
     const momNorm = S.mom / 50;
-    const lv = clamp(50 - momNorm * 30, 0, 100);
+    const lv = clamp(50 + momNorm * 30, 0, 100);
     momElL.style.width = lv + '%';
     momElR.style.width = (100 - lv) + '%';
   }
@@ -496,12 +497,12 @@ function _logLineHtml(line, fr){
 const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
 function _frameMinDelay(fr){
   if (!fr) return 800;
-  // ピンカウント演出分を加算 (1→2→3 or 返した！ = ~1400ms + 900ms フェード)
+  // ピンカウント演出分を加算。シングルと同じ: lead1000 + interval1000×2 + 最終カウント表示 ~1000 = ~4000ms
   const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
   const pinExtra = pinEv ? (
-    (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin' || pinEv.outcome === 'kickout') ? 2300 :
-    (pinEv.outcome === 'cutinSave') ? 1200 :
-    (pinEv.attemptType === 'tko') ? 900 : 0
+    (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin' || pinEv.outcome === 'kickout') ? 4000 :
+    (pinEv.outcome === 'cutinSave') ? 2000 :
+    (pinEv.attemptType === 'tko') ? 1500 : 0
   ) : 0;
   if (fr.winner) return 2200 + pinExtra;
   let base = 800;
@@ -527,9 +528,9 @@ function nextFrame(){
   applyFrame(fr);
 
   if (fr.winner) {
-    // ピンカウント完走を待ってから結果画面へ
+    // ピンカウント完走 + 余韻を待ってから結果画面へ (シングル同等 ~4500ms)
     const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
-    const winDelay = pinEv && (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin') ? 3200 : 1800;
+    const winDelay = pinEv && (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin') ? 4500 : 1800;
     setTimeout(() => showResult(fr), winDelay);
     return;
   }
@@ -774,6 +775,9 @@ function showBanner(text, cls){
 
 // ── ピンカウント演出 (U3) ──
 // fall/pin 決着時の 1, 2, (3) カウント演出。attemptType='gu'/'rollup' は別コミットで対応。
+// タイミングはシングル battle-engine.html に合わせる: ブレス1000ms → ワン → 1000ms → ツー → 1000ms → スリー/返した
+// PIN_COUNT_TIMING[i] = i 番目のカウントの開始 (ms) 。frame 内 events が発火する時刻を基準。
+const PIN_COUNT_TIMING = { lead: 1000, intv: 1000 };
 function animatePinCount(ev){
   const { attemptType, outcome, count } = ev;
   if (attemptType === 'tko') {
@@ -783,14 +787,17 @@ function animatePinCount(ev){
   }
   if (attemptType === 'gu' || attemptType === 'rollup') return; // U2/U4 で対応
   // fall / pin のカウント演出
-  _spawnPinCount('1', 0);
-  if (count >= 2) _spawnPinCount('2', 700);
+  const t1 = PIN_COUNT_TIMING.lead;
+  const t2 = t1 + PIN_COUNT_TIMING.intv;
+  const t3 = t2 + PIN_COUNT_TIMING.intv;
+  _spawnPinCount('ワン！', t1);
+  if (count >= 2) _spawnPinCount('ツー！', t2);
   if (outcome === 'win' || outcome === 'betrayalWin') {
-    _spawnPinCount('3', 1400, 'three');
+    _spawnPinCount('スリーーー！', t3, 'three');
   } else if (outcome === 'kickout') {
-    _spawnPinCount('返した！', 1400, 'kickout');
+    _spawnPinCount('返したーっ！', t3, 'kickout');
   }
-  // cutinSave: カウント1のみ表示。カットイン演出は別の cutinSave イベントで発火
+  // cutinSave: ワンのみ表示。カットイン演出は別の cutinSave イベントで発火
 }
 
 function _spawnPinCount(text, delayMs, cls){
@@ -799,11 +806,11 @@ function _spawnPinCount(text, delayMs, cls){
     el.className = 'pin-count' + (cls ? ' ' + cls : '');
     el.textContent = text;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 900);
+    setTimeout(() => el.remove(), 1000);
     try {
-      if (cls === 'three') sfx.finChime();
+      if (cls === 'three') { sfx.finChime(); sfx.finImpact(); }
       else if (cls === 'kickout') sfx.kickoutSE();
-      else sfx.kickoutSE();
+      else sfx.count();
     } catch(e){}
   }, delayMs);
 }

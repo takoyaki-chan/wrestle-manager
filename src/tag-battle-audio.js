@@ -32,6 +32,7 @@ const SE_MIX={
   missWhiff:.24,counterSE:.15,cutinSlide:.40,dmgVoice:.45,bigmoveImpact:.41,
   kickoutSE:.39,heartbeatSE:.55,finImpact:.36,finChime:.50,
   gong:.55,phaseChg:.73,victoryFanfare:.50,ready:.29,fightStart:.10,
+  count:1.00,guEscapeSE:.22,
 };
 function _playSample(name,scale,rawVol){
   const url=_SE_FILES[name];if(!url)return false;
@@ -101,6 +102,10 @@ const sfx={
   touchSE(){try{getSfxGain().gain.value=0.35;osc('sine',600,1000,0.08,0.05);osc('triangle',400,null,0.1,0.04)}catch(e){}},
   betrayalSE(){try{getSfxGain().gain.value=0.35;osc('sawtooth',200,50,0.5,0.08);mkNoiseLP(0.4,0.06,300)}catch(e){}},
   friendlyFireSE(){try{getSfxGain().gain.value=0.35;osc('triangle',500,200,0.15,0.08);mkNoise(0.1,0.1)}catch(e){}},
+  // カウント SE (battle-engine.html と同設計: 低音 thud)
+  count(){try{getSfxGain().gain.value=SE_MIX.count;osc('sine',100,40,0.12,0.15);mkNoiseLP(0.05,0.1,400);osc('triangle',50,null,0.08,0.06)}catch(e){}},
+  // ロープエスケープ SE
+  guEscapeSE(){try{getSfxGain().gain.value=SE_MIX.guEscapeSE;osc('triangle',300,150,0.2,0.1);mkNoise(0.15,0.08)}catch(e){}},
 };
 function hitSE(cat,dmg,volMul){
   const dr=clamp(dmg/20,0.3,1.5);
