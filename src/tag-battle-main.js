@@ -480,7 +480,7 @@ function _logLineHtml(line, fr){
   if (t.includes('★ 決着') || t.includes('★ ピン') || t.includes('★ タッグ技') || t.includes('時間切れ') || t.includes('丸め込みで逆転')) {
     return `<div class="log-event finish"><span class="log-event-text log-finish-text">${escHtml(t)}</span></div>`;
   }
-  if (t.includes('ホットタグ')) return `<div class="log-event hottag"><span class="log-event-text log-hottag-text">${escHtml(t)}</span></div>`;
+  if (t.includes('反撃のタッチ')) return `<div class="log-event hottag"><span class="log-event-text log-hottag-text">${escHtml(t)}</span></div>`;
   if (t.includes('ダブルチーム') || t.includes('タッグ技')) return `<div class="log-event double"><span class="log-event-text log-double-text">${escHtml(t)}</span></div>`;
   if (t.includes('カットイン')) return `<div class="log-event cutin"><span class="log-event-text log-cutin-text">${escHtml(t)}</span></div>`;
   if (t.includes('同士討ち')) return `<div class="log-event friendly"><span class="log-event-text log-friendly-text">${escHtml(t)}</span></div>`;
@@ -512,7 +512,10 @@ function nextFrame(){
   if (S.anim || S.frameIdx >= S.frames.length) return;
   if (S.pendingCutin) return;
   clearTimeout(S.autoTimer);
+  // タッチ検出（applyFrame より前に S.pos で判定）
   const fr = S.frames[S.frameIdx];
+  const prevFr = S.frameIdx > 0 ? S.frames[S.frameIdx - 1] : null;
+  const touchHappened = prevFr && (fr.legalA !== prevFr.legalA || fr.legalB !== prevFr.legalB);
   S.frameIdx++;
   applyFrame(fr);
 
@@ -520,7 +523,7 @@ function nextFrame(){
     setTimeout(() => showResult(fr), 1800);
     return;
   }
-  const delay = _frameMinDelay(fr);
+  const delay = _frameMinDelay(fr) + (touchHappened ? 750 : 0);
   if (S.autoAdvance && S.frameIdx < S.frames.length) {
     const speedD = SPEED_DELAYS[S.speedIdx] || 1500;
     S.autoTimer = setTimeout(() => nextFrame(), Math.max(delay + 300, speedD));
@@ -563,19 +566,27 @@ function applyFrame(fr){
   _updateCenter(fr);
   _appendLogForFrame(fr);
 
-  // アクション演出
-  if (fr.action) animateAction(fr.action, fr);
-  // ドラマイベント
-  (fr.events || []).forEach(ev => animateEvent(ev, fr));
+  // タッチが発生したフレームはアクション演出を遅らせて「交代した事実」を見せる間を作る
+  const touchDelay = (touchA || touchB) ? 750 : 0;
+
+  // アクション演出（タッチ時は遅延）
+  if (fr.action) setTimeout(() => animateAction(fr.action, fr), touchDelay);
+  // ドラマイベント（タッチ時は遅延）
+  if (fr.events && fr.events.length > 0) {
+    setTimeout(() => (fr.events || []).forEach(ev => animateEvent(ev, fr)), touchDelay);
+  }
   // タッチ演出（内容差し替えを遅延して grow-in）
   if (touchA) animateTouchSwap('a', fr);
   if (touchB) animateTouchSwap('b', fr);
   // クリティカルダメージセリフ
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) tryDamageLine(fr.action, fr);
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) {
+    setTimeout(() => tryDamageLine(fr.action, fr), touchDelay);
+  }
 
   S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
 
-  const minDelay = _frameMinDelay(fr);
+  // タッチフレームは次のフレームまでの最低待機時間を延長
+  const minDelay = _frameMinDelay(fr) + touchDelay;
   setTimeout(() => {
     S.anim = false;
     const btn = document.getElementById('nBtn');

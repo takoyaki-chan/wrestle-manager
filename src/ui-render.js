@@ -2379,10 +2379,10 @@ function renderShowPrep() {
         const cond = Math.round(f.condition || 100);
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
-        const pw = Math.round(f.power || 0);
-        const sp2 = Math.round(f.speed || 0);
-        const te = Math.round(f.technique || 0);
-        const st = Math.round(f.stamina || 0);
+        const pw = Math.round(f.pw || f.power || 0);
+        const sp2 = Math.round(f.sp || f.speed || 0);
+        const te = Math.round(f.te || f.technique || 0);
+        const st = Math.round(f.st || f.stamina || 0);
         const statsHtml = `<div class="sp-tag-stat-bars">
           <div class="sp-tag-stat-row"><span class="sp-tag-sl">PW</span><div class="sp-tag-strack"><div class="sp-tag-sf pwr" style="width:${pw}%"></div></div></div>
           <div class="sp-tag-stat-row"><span class="sp-tag-sl">SP</span><div class="sp-tag-strack"><div class="sp-tag-sf spd" style="width:${sp2}%"></div></div></div>

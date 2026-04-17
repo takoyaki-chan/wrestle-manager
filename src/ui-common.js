@@ -3770,9 +3770,25 @@ function renderMatchPreview() {
       if (!tA1 || !tA2 || !tB1 || !tB2) continue;
       const _tagFighter = (f) => {
         const upper = getUpperUrl(f.id);
+        const ovr = Engine.util.ov(f);
+        const pw = f.pw||0, sp2 = f.sp||0, te = f.te||0, st = f.st||0;
+        const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="smc-tag-fighter">
-          <div class="upper-wrap">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 60)}</div>
-          <div><div class="fname">${f.name}</div><div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num">${Engine.util.ov(f)}</span></div></div>
+          <div class="upper-wrap">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 72)}</div>
+          <div class="smc-tag-info">
+            ${isChamp ? '<span class="smc-tag-champ-mark">👑</span>' : ''}
+            <div class="fname">${f.name}</div>
+            <div class="smc-tag-ovr-row">
+              <span class="smc-tag-style-label">${f.style || '—'}</span>
+              <span class="ovr-line">OVR&thinsp;<span class="ovr-num">${ovr}</span></span>
+            </div>
+            <div class="smc-tag-statbars">
+              <div class="smc-tag-srow"><span class="smc-tag-sl">PW</span><div class="smc-tag-strk"><div class="smc-tag-sfill pw" style="width:${pw}%"></div></div></div>
+              <div class="smc-tag-srow"><span class="smc-tag-sl">SP</span><div class="smc-tag-strk"><div class="smc-tag-sfill sp" style="width:${sp2}%"></div></div></div>
+              <div class="smc-tag-srow"><span class="smc-tag-sl">TE</span><div class="smc-tag-strk"><div class="smc-tag-sfill te" style="width:${te}%"></div></div></div>
+              <div class="smc-tag-srow"><span class="smc-tag-sl">ST</span><div class="smc-tag-strk"><div class="smc-tag-sfill st" style="width:${st}%"></div></div></div>
+            </div>
+          </div>
         </div>`;
       };
       const bondA = G.relationships ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;

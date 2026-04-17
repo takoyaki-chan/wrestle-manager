@@ -570,6 +570,30 @@ Engine.tagMatch = (() => {
       _turnLogStart = log.length;
       _turnAction = null;
 
+      // HP 0 即決着チェック（カウンター等で前ターン中に HP が枯渇した場合）
+      if (legalA.hp <= 0) {
+        winner = 'teamB';
+        finType = 'TKO';
+        finMove = '戦闘不能';
+        finishPhase = ph.name;
+        winAttribution.pinnedBy = null;
+        winAttribution.pinnedWho = legalA.id;
+        log.push(`  ★ 決着！ ${legalA.name}は戦闘不能。TKO！（${ph.name}）`);
+        pushFrame(ph.name);
+        break;
+      }
+      if (legalB.hp <= 0) {
+        winner = 'teamA';
+        finType = 'TKO';
+        finMove = '戦闘不能';
+        finishPhase = ph.name;
+        winAttribution.pinnedBy = null;
+        winAttribution.pinnedWho = legalB.id;
+        log.push(`  ★ 決着！ ${legalB.name}は戦闘不能。TKO！（${ph.name}）`);
+        pushFrame(ph.name);
+        break;
+      }
+
       // エプロン回復
       apronA.hp = Math.min(apronA.mhp, apronA.hp + TC.apronRecovery);
       apronB.hp = Math.min(apronB.mhp, apronB.hp + TC.apronRecovery);
@@ -850,7 +874,7 @@ Engine.tagMatch = (() => {
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'A', tagged: apronA.id });
-              log.push(`  ★ ホットタグ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`);
+              log.push(`  ★ 反撃のタッチ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`);
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronA.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
@@ -875,7 +899,7 @@ Engine.tagMatch = (() => {
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'B', tagged: apronB.id });
-              log.push(`  ★ ホットタグ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`);
+              log.push(`  ★ 反撃のタッチ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`);
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronB.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
