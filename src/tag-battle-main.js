@@ -66,7 +66,8 @@ function startReplay(data){
 
   const mk = (c) => {
     const st = Math.min(100, Math.max(0, c.st || 60));
-    const mhp = Math.round(85 + st * 1.20);
+    // TAG_MATCH_CONFIG.hpBase=70, hpScale=1.00 と一致させる (iframe 側では定数参照できないので同値をハードコード)
+    const mhp = Math.round(70 + st * 1.00);
     return { ...c, hp: mhp, mhp, gritTurns: 0, hotTagBuff: 0 };
   };
   S.fighters = {
