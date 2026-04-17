@@ -4188,6 +4188,9 @@ const App = {
       if (m.matchType === 'tag') {
         const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
         if (ids.every(id => G.roster.find(c => c.id === id))) return;
+        sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
+        filled = true;
+        return;
       } else {
         const charL = G.roster.find(c => c.id === m.left);
         const charR = G.roster.find(c => c.id === m.right);
@@ -4544,6 +4547,28 @@ const App = {
     App._fillMissingShowPreviewResults();
     sp.validMatches.forEach((m, idx) => {
       if (sp.results[idx]) return;
+      if (m.matchType === 'tag') {
+        const f1 = G.roster.find(c => c.id === m.teamA.fighter1);
+        const f2 = G.roster.find(c => c.id === m.teamA.fighter2);
+        const f3 = G.roster.find(c => c.id === m.teamB.fighter1);
+        const f4 = G.roster.find(c => c.id === m.teamB.fighter2);
+        if (!f1 || !f2 || !f3 || !f4) {
+          sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
+          return;
+        }
+        const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
+        const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
+        const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
+        const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
+        const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
+        sp.results[idx] = Engine.tagMatch.simulateTagMatch(
+          { fighter1: f1, fighter2: f2 },
+          { fighter1: f3, fighter2: f4 },
+          tagRng,
+          { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
+        );
+        return;
+      }
       const charL = G.roster.find(c => c.id === m.left);
       const charR = G.roster.find(c => c.id === m.right);
       if (!charL || !charR) {

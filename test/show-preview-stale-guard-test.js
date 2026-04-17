@@ -17,7 +17,7 @@ function extractMethodBody(signature, nextMarker) {
 
 const fillMissingBody = extractMethodBody('_fillMissingShowPreviewResults()', '// Skip a single match');
 const skipMatchBody = extractMethodBody('skipMatch(idx)', '// Watch match in battle engine iframe');
-const watchMatchBody = extractMethodBody('watchMatch(idx)', '// Receive result from battle engine');
+const watchMatchBody = extractMethodBody('watchMatch(idx)', '// タッグマッチを tag-battle.html で観戦');
 
 const runFillMissing = new Function('App', 'G', `${fillMissingBody}`);
 const runSkipMatch = new Function('App', 'G', 'Engine', 'Audio', 'renderMatchPreview', 'idx', `${skipMatchBody}`);
