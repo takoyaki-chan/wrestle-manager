@@ -116,16 +116,26 @@ function renderMatchFrame(){
   _scrollLogToBottom();
 }
 
+function _fighterHpPct(ch){
+  if (!ch) return { pct: 0, ratio: 0 };
+  const ratio = ch.mhp > 0 ? Math.max(0, ch.hp) / ch.mhp : 0;
+  return { pct: Math.round(ratio * 100), ratio };
+}
 function _hudHtml(fr){
   const turn = fr ? fr.turn : 0;
   const phase = fr ? fr.phase : 'Opening';
   const segIdx = fr ? fr.segmentIdx : 0;
   const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
   const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  const hpA = _teamHpSum(teamA);
-  const hpB = _teamHpSum(teamB);
-  const momL = 50 - (S.mom * 30); // mom [-1..1]
-  const momR = 50 + (S.mom * 30);
+  // HUD HP: チーム合算ではなくレガル選手個人のHP
+  const hpA = _fighterHpPct(f(S.pos.legalA));
+  const hpB = _fighterHpPct(f(S.pos.legalB));
+  const legalAName = f(S.pos.legalA) ? f(S.pos.legalA).name : '';
+  const legalBName = f(S.pos.legalB) ? f(S.pos.legalB).name : '';
+  // mom は -50〜+50 → -1〜+1 に正規化
+  const momNorm = S.mom / 50;
+  const momL = 50 - momNorm * 30;
+  const momR = 50 + momNorm * 30;
   const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
 
   return `<div class="wm-hud">
@@ -155,11 +165,13 @@ function _hudHtml(fr){
       <div class="wm-mom-r" id="momR" style="width:${clamp(momR,0,100)}%"></div>
     </div>
     <div class="wm-hp-row">
-      <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA" style="text-align:right">${hpA.pct}%</span>
+      <span class="wm-hp-name" id="hudHpNameA">${escHtml(legalAName)}</span>
+      <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA">${hpA.pct}%</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
       <span class="wm-hp-label">HP</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill rev ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
-      <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB" style="text-align:left">${hpB.pct}%</span>
+      <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB">${hpB.pct}%</span>
+      <span class="wm-hp-name right" id="hudHpNameB">${escHtml(legalBName)}</span>
     </div>
   </div>`;
 }
@@ -335,9 +347,9 @@ function _scrollLogToTop(){
 // ── 差分更新系 ──
 function _updateHud(){
   const fr = _getCurrentFrame();
-  const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
-  const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  const hpA = _teamHpSum(teamA), hpB = _teamHpSum(teamB);
+  // レガル選手個人HP
+  const hpA = _fighterHpPct(f(S.pos.legalA));
+  const hpB = _fighterHpPct(f(S.pos.legalB));
   const elTurn = document.getElementById('hudTurn');
   const elPhase = document.getElementById('hudPhase');
   const elSeg = document.getElementById('hudSeg');
@@ -346,26 +358,32 @@ function _updateHud(){
   if (fr && elSeg) elSeg.textContent = `SEG ${fr.segmentIdx + 1}　${(S.matchInfo && S.matchInfo.header) || 'TAG MATCH'}`;
   const fillA = document.getElementById('hudHpFillA');
   const pctA = document.getElementById('hudHpPctA');
+  const nameA = document.getElementById('hudHpNameA');
   if (fillA) { fillA.style.width = hpA.pct + '%'; fillA.className = 'wm-hp-fill ' + hpCls(hpA.ratio); }
   if (pctA) { pctA.textContent = hpA.pct + '%'; pctA.className = 'wm-hp-pct ' + hpCls(hpA.ratio); }
+  if (nameA && f(S.pos.legalA)) nameA.textContent = f(S.pos.legalA).name;
   const fillB = document.getElementById('hudHpFillB');
   const pctB = document.getElementById('hudHpPctB');
+  const nameB = document.getElementById('hudHpNameB');
   if (fillB) { fillB.style.width = hpB.pct + '%'; fillB.className = 'wm-hp-fill rev ' + hpCls(hpB.ratio); }
   if (pctB) { pctB.textContent = hpB.pct + '%'; pctB.className = 'wm-hp-pct ' + hpCls(hpB.ratio); }
-  const momL = document.getElementById('momL');
-  const momR = document.getElementById('momR');
-  if (momL && momR) {
-    const lv = clamp(50 - S.mom * 30, 0, 100);
-    momL.style.width = lv + '%';
-    momR.style.width = (100 - lv) + '%';
+  if (nameB && f(S.pos.legalB)) nameB.textContent = f(S.pos.legalB).name;
+  // モメンタム: -50〜+50 を -1〜+1 に正規化して表示
+  const momElL = document.getElementById('momL');
+  const momElR = document.getElementById('momR');
+  if (momElL && momElR) {
+    const momNorm = S.mom / 50;
+    const lv = clamp(50 - momNorm * 30, 0, 100);
+    momElL.style.width = lv + '%';
+    momElR.style.width = (100 - lv) + '%';
   }
 }
 
-function _updateCardsAfterFrame(){
-  // 4選手分のカードHP/ステを全部更新。ポジションが入れ替わった場合はフル再描画。
-  _refreshCard('a', 'legal', S.pos.legalA);
+function _updateCardsAfterFrame(skipLegalA, skipLegalB){
+  // タッチ演出中のサイドは legal カードを後で更新するのでスキップ
+  if (!skipLegalA) _refreshCard('a', 'legal', S.pos.legalA);
   _refreshCard('a', 'apron', S.pos.apronA);
-  _refreshCard('b', 'legal', S.pos.legalB);
+  if (!skipLegalB) _refreshCard('b', 'legal', S.pos.legalB);
   _refreshCard('b', 'apron', S.pos.apronB);
 }
 
@@ -524,12 +542,22 @@ function applyFrame(fr){
     if (fr.grit && fr.grit[ch.id] != null) ch.gritTurns = fr.grit[ch.id];
     if (fr.hotTagBuff && fr.hotTagBuff[ch.id] != null) ch.hotTagBuff = fr.hotTagBuff[ch.id];
   });
+  // タッチ発生: 旧カードのshrinkアニメを先に開始してから内容を差し替える
+  if (touchA) {
+    const oldCardA = document.getElementById('card-a-legal');
+    if (oldCardA) { oldCardA.classList.remove('tag-out-legal'); void oldCardA.offsetWidth; oldCardA.classList.add('tag-out-legal'); }
+  }
+  if (touchB) {
+    const oldCardB = document.getElementById('card-b-legal');
+    if (oldCardB) { oldCardB.classList.remove('tag-out-legal'); void oldCardB.offsetWidth; oldCardB.classList.add('tag-out-legal'); }
+  }
+
   S.pos = { legalA: newLegalAKey, apronA: newApronAKey, legalB: newLegalBKey, apronB: newApronBKey };
   S.mom = fr.mom || 0;
 
-  // DOM 差分更新
+  // DOM 差分更新（タッチ中のlegalカードは後で入れ替えるためスキップ）
   _updateHud();
-  _updateCardsAfterFrame();
+  _updateCardsAfterFrame(touchA, touchB);
   _updateCenter(fr);
   _appendLogForFrame(fr);
 
@@ -537,7 +565,7 @@ function applyFrame(fr){
   if (fr.action) animateAction(fr.action, fr);
   // ドラマイベント
   (fr.events || []).forEach(ev => animateEvent(ev, fr));
-  // タッチ演出
+  // タッチ演出（内容差し替えを遅延して grow-in）
   if (touchA) animateTouchSwap('a', fr);
   if (touchB) animateTouchSwap('b', fr);
   // クリティカルダメージセリフ
@@ -679,19 +707,33 @@ function animateEvent(ev, fr){
 
 function animateTouchSwap(side, fr){
   try { sfx.touchSE(); } catch(e){}
-  const legalCard = document.getElementById(`card-${side}-legal`);
-  const apronCard = document.getElementById(`card-${side}-apron`);
   const isHot = fr.events && fr.events.some(e => e.type === 'hotTag' && e.team === side.toUpperCase());
   const hlCls = isHot ? 'tag-highlight-hot' : 'tag-highlight';
-  if (legalCard) { legalCard.classList.remove(hlCls); void legalCard.offsetWidth; legalCard.classList.add(hlCls); setTimeout(() => legalCard.classList.remove(hlCls), 1500); }
-  // Tag banner
-  const newLegal = f(side === 'a' ? S.pos.legalA : S.pos.legalB);
-  const banner = document.getElementById('tagBanner');
-  if (banner && newLegal) {
-    banner.textContent = isHot ? `🔥 反撃のタッチ！ ${newLegal.name}` : `🔄 タッチ → ${newLegal.name}`;
-    banner.className = 'tag-banner' + (isHot ? ' hottag' : '') + ' show';
-    setTimeout(() => banner.classList.remove('show'), 1600);
-  }
+  const posKey = side === 'a' ? S.pos.legalA : S.pos.legalB;
+  const newLegal = f(posKey);
+
+  // shrink完了後(~380ms)に内容差し替え → grow-in
+  setTimeout(() => {
+    _refreshCard(side, 'legal', posKey);
+    const card = document.getElementById(`card-${side}-legal`);
+    if (card) {
+      card.classList.remove('tag-out-legal', 'tag-in-legal', hlCls);
+      void card.offsetWidth;
+      card.classList.add('tag-in-legal', hlCls);
+      setTimeout(() => card.classList.remove('tag-in-legal'), 500);
+      setTimeout(() => card.classList.remove(hlCls), 1600);
+    }
+  }, 370);
+
+  // タグバナー (少し遅らせてアニメと同期)
+  setTimeout(() => {
+    const banner = document.getElementById('tagBanner');
+    if (banner && newLegal) {
+      banner.textContent = isHot ? `🔥 反撃のタッチ！ ${newLegal.name}` : `🔄 タッチ → ${newLegal.name}`;
+      banner.className = 'tag-banner' + (isHot ? ' hottag' : '') + ' show';
+      setTimeout(() => banner.classList.remove('show'), 1800);
+    }
+  }, 200);
 }
 
 function showBanner(text, cls){

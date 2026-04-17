@@ -31,9 +31,12 @@ body{
     radial-gradient(ellipse 60% 40% at 80% 100%,rgba(26,90,155,0.02) 0%,transparent 50%);
   color:#e0ddd4;
   display:flex;justify-content:center;
-  padding:20px;min-height:100vh;
+  padding:20px;
+  height:100vh;overflow:hidden;
 }
-#app{width:1200px;max-width:100%}
+#app{width:1200px;max-width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+#mainContainer{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#mainContainer>.main-row{flex:1;min-height:0}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}
 ::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.3);border-radius:3px}
@@ -71,6 +74,8 @@ body{
 .wm-hp-pct.warn{color:#f0d078}
 .wm-hp-pct.danger{color:#e85d75}
 .wm-hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(232,230,224,0.25);min-width:20px;text-align:center}
+.wm-hp-name{font-size:10px;color:rgba(232,230,224,0.45);min-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Sans JP',sans-serif}
+.wm-hp-name.right{text-align:right}
 
 /* ===== Chemistry bar ===== */
 .chem-bar{display:flex;gap:8px;padding:6px 16px;background:linear-gradient(180deg,#12110e,var(--card-bg));border:1px solid var(--card-border);border-radius:6px;align-items:center;justify-content:center;font-size:11px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.15)}
@@ -316,7 +321,7 @@ body{
 .cutin-portrait{width:90px;height:135px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0}
 .cutin-info{flex:1;min-width:0}
 .cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
-.cutin-text{font-size:18px;line-height:1.5;color:var(--text-main);font-weight:900}
+.cutin-text{font-size:18px;line-height:1.5;color:var(--text-main);font-weight:900;user-select:none;caret-color:transparent}
 .cutin-dismiss{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-top:6px}
 .cutin-box.damage-serif{border-color:rgba(196,30,58,0.5)}
 .cutin-box.damage-serif .cutin-portrait{border-color:rgba(196,30,58,0.6)}
