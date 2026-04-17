@@ -505,6 +505,10 @@ Engine.tagMatch = (() => {
     const frames = recordFrames ? [] : null;
     let _turnLogStart = 0;
     let _turnAction = null;
+    // F1: タッチ発生時は「攻撃フレーム (Frame A, turnSub=0)」と
+    //     「タッチフレーム (Frame B, turnSub=0.5)」を同一ターン内で別フレームに分離する。
+    //     観戦側で攻撃→タッチの時系列を明確に見せるため。
+    let _frameTurnSub = 0;
     function pushFrame(phName) {
       if (!recordFrames) return;
       const turnLog = log.slice(_turnLogStart);
@@ -513,6 +517,7 @@ Engine.tagMatch = (() => {
         .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move }; });
       frames.push({
         turn: totalTurn,
+        turnSub: _frameTurnSub,
         phase: phName,
         legalA: legalA.id,
         legalB: legalB.id,
@@ -575,6 +580,7 @@ Engine.tagMatch = (() => {
       const ph = getPhase(totalTurn);
       _turnLogStart = log.length;
       _turnAction = null;
+      _frameTurnSub = 0;
 
       // HP 0 即決着チェック（前ターンから HP が枯渇した場合のセーフティネット。
       // 本来はダメージ発生箇所側で決着判定すべきなので、ここに来たら TKO とする）
@@ -943,10 +949,22 @@ Engine.tagMatch = (() => {
       }
 
       // ── タッチ判定 ──
+      // F1: タッチ成立時は攻撃フレーム (Frame A) をここで先行 push し、
+      //     直後のタッチ処理によるログ/swap は次フレーム (Frame B, turnSub=0.5) へ回す。
+      //     同一ターン内で A と B が続けて touch する場合、Frame A push は最初の一度だけ。
+      const _splitTouchFrame = () => {
+        if (!recordFrames || _frameTurnSub !== 0) return;
+        pushFrame(ph.name);
+        _turnAction = null;
+        _turnLogStart = log.length;
+        _frameTurnSub = 0.5;
+      };
+
       if (!winner) {
         if (wantTouch(legalA, lossStreakA, chemA, rng)) {
           const rate = touchSuccessRate(legalA, legalB);
           if (Engine.rng.float(rng) < rate) {
+            _splitTouchFrame();
             const tType = classifyTouch(legalA, isolationA, chemA);
             touchTypes.add(tType);
             if (tType === 'hotTag') {
@@ -976,6 +994,7 @@ Engine.tagMatch = (() => {
         if (!winner && wantTouch(legalB, lossStreakB, chemB, rng)) {
           const rate = touchSuccessRate(legalB, legalA);
           if (Engine.rng.float(rng) < rate) {
+            _splitTouchFrame();
             const tType = classifyTouch(legalB, isolationB, chemB);
             touchTypes.add(tType);
             if (tType === 'hotTag') {
