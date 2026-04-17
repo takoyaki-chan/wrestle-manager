@@ -1,7 +1,7 @@
 # タッグマッチ観戦システム 仕切り直し引き継ぎ書
 
 > 作成日: 2026-04-17
-> 最終更新: 2026-04-17 (ブランチ統一後)
+> 最終更新: 2026-04-17 (演出まわりまとめて完了)
 > **対象ブランチ: `feature/tag-match-integration` に統一済み**
 > **作業ディレクトリ: `C:/Users/nkmrk/Downloads/wrestle-manager` (main worktree)**
 > 方針: **種別ごとに一度に直さず、1項目ずつ分類して順番に潰す**。以前のように全部一括実装は禁止。
@@ -25,29 +25,49 @@
 タッグマッチのビジュアル観戦モードを実装した結果、**4種類の問題**が混在している状態だった。
 この引き継ぎ書では問題を **カテゴリ別に切り分けて**、1件ずつ直していく。
 
-**2026-04-17 セッション (fed3a2a8) で完了した項目:**
-- ✅ **V1** ステータスバー表示復旧 (`.smc-tag-statbars { width:100% }` — 6509a5e)
-- ✅ **F1** タッチを独立フレームに分離 (`_frameTurnSub` + `_splitTouchFrame` — 8bf5304)
-- ✅ **V1追加** 左チームバーを中央対称ミラー (`direction:rtl` — a804be9)
+**2026-04-17 セッション前半 (fed3a2a8) で完了した項目:**
+- ✅ **V1** ステータスバー表示復旧 (6509a5e)
+- ✅ **F1** タッチを独立フレームに分離 (8bf5304)
+- ✅ **V1追加** 左チームバーを中央対称ミラー (a804be9)
 - ✅ (運用) heisenberg → feature/tag-match-integration にブランチ統一 (0bbd170)
 
-**残り (次セッション以降):** E1 / E2 / E3 / V2 / B1 / B2
+**2026-04-17 セッション後半 (d3f5937 〜 1c14b70) で完了した項目:**
+- ✅ **E1** `touchSuccessRate` を HP 閾値段階化に反転 (d3f5937)
+- ✅ **E2** `pinAttemptBaseRate`/`pinAttemptSuccessBase` に低HP線形ボーナス (両ファイル) (d3f5937)
+- ✅ **E3** カウンターKO 動作確認 (実装済み、変更なし)
+- ✅ **B1** タッチ頻度再測定: 4→7.8回/試合、決着率 84.5% に改善 (d3f5937)
+- ✅ **S1** 技カテゴリと音の組み合わせ修正 (`moveCat` を frame 経由で propagate) (dc4b661)
+- ✅ **U3** ピンカウント演出 (ワン/ツー/スリー) — **クリック駆動化** (7da7253, 1c14b70)
+- ✅ **U1** モメンタムバー符号反転 (攻撃決めた側が伸びる) (f40e929)
+- ✅ **U2** 丸め込み決着演出 (イントロ + ワン/ツー/スリー) (9363644, ff9a02f)
+- ✅ **U4** ギブアップ/ロープエスケープ/TKO 演出 (gu ロック→極まっている→タップ) (9363644)
+- ✅ (副次) ダメージポップアップをピン seq 先頭に統合 (被弾→苦悶→カバー→1,2,3) (c3e18df)
+- ✅ (副次) NEXT TURN が詰まる 2 件のランタイムエラー修正 (83031c4)
+
+**残り (次セッション以降):**
+- **B2** friendlyFire 体感調整 (実プレイで違和感あれば数値見直し)
+- **F2** (保留) F1 修正後 `touchPause` 700ms が冗長化していないか検証
 
 ---
 
 ## 分類表（問題一覧 — 残作業）
 
-| # | カテゴリ | 重要度 | 状態 | 症状 | 着手順 |
+| # | カテゴリ | 重要度 | 状態 | 症状 | 次アクション |
 |---|---------|:---:|:---:|------|:---:|
 | V1 | Visual / UI | 高 | ✅完 | ステータスバーのフィル表示 | — |
-| V2 | Visual / UI | 中 | ✅完 | 左チームのバーミラーリング実機確認 (a804be9 で実装+確認) | — |
+| V2 | Visual / UI | 中 | ✅完 | 左チームのバーミラーリング | — |
 | F1 | Frame / タイミング | 最高 | ✅完 | タッチと攻撃が同一フレームで起きる問題 | — |
-| F2 | Frame / タイミング | 中 | 保留 | F1 修正で `touchPause` 700ms が冗長化していないか検証 | 任意 |
-| **E1** | Engine Logic | 最高 | ⬜ | **体力がどんなに減ってもタッチ成功率が上がらない**。`touchSuccessRate` の式 `(hpRatio - 0.20) * canTouchHpWeight` を反転 | **1** |
-| **E2** | Engine Logic | 最高 | ⬜ | **体力ほぼゼロでもフォールに入らない/決まらない**。`pinAttemptBaseRate` / `pinAttemptSuccessBase` の低HPボーナスを強化 | **2** |
-| **E3** | Engine Logic | 中 | ⬜ | カウンターヒット時の KO チェック動作確認 (実装済み、確認のみ) | **3** |
-| **B1** | Balance | 中 | ⬜ | タッチ頻度再測定 (E1/E2 修正後) | **4** |
-| **B2** | Balance | 低 | ⬜ | friendlyFire 誤爆ダメージ (2-4＋MHP50%フロア) の体感 | **5** |
+| F2 | Frame / タイミング | 中 | 保留 | F1 修正で `touchPause` 700ms が冗長化していないか | 任意 |
+| E1 | Engine Logic | 最高 | ✅完 | 低HPでタッチ成功率が上がらない | — |
+| E2 | Engine Logic | 最高 | ✅完 | 低HPでフォールが決まらない | — |
+| E3 | Engine Logic | 中 | ✅完 | カウンターKO動作確認 | — |
+| S1 | Sound | 高 | ✅完 | 技カテゴリと音の組み合わせ誤マッチ | — |
+| U1 | Visual / UI | 中 | ✅完 | モメンタムバー符号逆転 | — |
+| U2 | Visual / UI | 中 | ✅完 | 丸め込み決着の試合中表記 | — |
+| U3 | Visual / UI | 高 | ✅完 | ピンカウント演出 (クリック駆動) | — |
+| U4 | Visual / UI | 中 | ✅完 | ギブアップ/TKO 演出 | — |
+| B1 | Balance | 中 | ✅完 | タッチ頻度 (E1/E2 後 7.8回/試合) | — |
+| **B2** | Balance | 低 | ⬜ | friendlyFire 誤爆ダメージ (2-4＋MHP50%フロア) の体感 | **実プレイ判定待ち** |
 
 ---
 
@@ -158,55 +178,68 @@
 
 ---
 
-## 着手順（残作業・推奨）
+## 着手順（残作業）
 
-次セッションは **この順番**で着手。1項目完了ごとに必ずコミットはするが、
-「1コミット=1項目絶対」にまで過剰に縛らない (ユーザー方針: どんどん進める)。
-
-1. **E1** touchSuccessRate 反転 — `src/match-engine.js` 内の該当関数を反転式に (案A/案B から選択、下記「根本原因メモ」参照)
-2. **E2** 低HPピン成功率強化 — `pinAttemptBaseRate` / `pinAttemptSuccessBase` に低HPボーナス追加
-3. **E3** カウンターKO 動作確認 — 既に実装済みなので、実機で確認・記録のみ
-4. **B1** タッチ頻度再測定 — E1/E2 適用後 `node test/auto-sim.js 200` 等で
-5. **B2** friendlyFire 体感調整 — 実プレイ確認後に数値調整
+1. **B2** friendlyFire 体感調整 — **実プレイ先行**、違和感あれば数値見直し。
+   対象: `src/match-engine.js` line 946-959 付近 (ffDmg 2-4, MHP×0.5 フロア)。
 
 **auto-sim は最小限に** (memory `feedback_auto_sim_ui_only.md` 参照):
-- E1/E2/B2 の数値変更 → 100 シーズン×複数シードで違反検出
-- E3 動作確認のみ → auto-sim 不要
-- UI/観戦専用ロジックのみ → auto-sim 不要
+- B2 の数値変更時のみ 100 シーズン×複数シードで違反検出
+- UI/観戦専用ロジックのみなら不要
 
 ---
 
-## 現在のブランチ状態 (2026-04-17 統一後)
+## クリック駆動ピン seq アーキテクチャ (2026-04-17 実装)
+
+試合演出はシングル battle-engine.html と同じ「クリックで進む」仕様に統一。
+コード: `src/tag-battle-main.js` line 830-940 付近。
+
+- **エンジン** (`src/match-engine.js`): 決着判定点で `dramaSummary.push({type:'pinAttempt', attemptType, outcome, count, byId, onId})` を追加。attemptType は `fall`/`pin`/`rollup`/`gu`/`tko`。
+- **再生側 applyFrame**: pinAttempt イベントを検出したら `_beginPinSequence` を呼ぶ。
+- **`_buildPinCtrl`**: attemptType 別に seq (step の配列) を構築:
+  - fall/pin: `[damage?, ワン, ツー, スリー/返した/cutin]`
+  - rollup: `[intro'丸め込みだーっ！', ワン, ツー, スリー/cutin]` (damage はなし)
+  - gu win: `[ロック, 極まっている, タップ]`
+  - gu escape: `[ロック, ロープエスケープ]`
+  - tko: `[T K O ！]` の 1 step
+- **step 種別**: `count` (.pin-count DOM 表示) / `damage` (showCutin) / `cutin` (showCutin)
+- **進行**: 各 step 表示後 700ms は nBtn を disable (連打防止)、以降クリックで `_advancePinStep` が次を実行。最終 step 消化で `_finishPinSeq` → winner なら 800ms 後 showResult、非 winner なら通常フローへ。
+- **cutin/damage step**: showCutin の pendingCutin=true を流用。`dismissCutin` が pinCtrl の kind を見て `_advancePinStep` or `_finishPinSeq` を呼び分け。
+- **CSS**: `.pin-count` とそのバリアント (.three / .kickout / .tko / .lock / .agony / .tap / .escape / .rollupIntro) が `src/tag-battle.html` にある。
+
+---
+
+## 現在のブランチ状態 (2026-04-17 後半まで)
 
 ### ブランチ
-- `feature/tag-match-integration` 一本で作業 (ローカルのみ、origin より先行)
-- `claude/wonderful-heisenberg` は削除済み
+- `feature/tag-match-integration` (ローカルのみ、origin より先行)
 
-### 直近コミット (新しい順)
-- `0bbd170` — Merge heisenberg into feature (統一)
-- `1e5dfcc` — docs: 仕切り直しハンドオフ書を追加 (このファイル)
-- `a804be9` — 左チームバーを中央対称ミラー
-- `8bf5304` — タッチを独立フレームに分離 (F1)
-- `6509a5e` — ステータスバーのフィル表示復旧 (V1)
-- `3e3d9a0` — タッグ試合ロジック全面整理 (タッチ頻度/決着種別/演出順序)
-- `390264e` — Revert "ui(tag-battle): モックアップ準拠レイアウト刷新"
-- `a94f491` — Phase 4a 追従修正のロードマップ/spec 更新
-- ... (以降省略)
+### 直近コミット (新しい順、後半セッション分のみ)
+- `1c14b70` — ピンカウントの連打防止クールダウン (700ms)
+- `ff9a02f` — 丸め込み勝利の逆転感を明示 (intro + クリーンな 3 カウント)
+- `9363644` — 丸め込み/ギブアップ/TKO 演出をクリック駆動ピン seq に統合 (U2/U4)
+- `83031c4` — NEXT TURN が詰まる 2 件のランタイムエラーを修正
+- `c3e18df` — crit ヒット+ピン同フレームでダメージ演出を seq 先頭に組み込み
+- `7da7253` — ピンカウントとダメージ演出をクリック駆動化 (シングル同等の間合いに)
+- `f40e929` — モメンタムバー符号反転とピンカウント速度をシングルに整合 (U1/U3 refinement)
+- `dc4b661` — 技カテゴリ音ズレ修正とピンカウント演出実装 (S1/U3)
+- `d3f5937` — 低HPタッチ/ピン判定を体力連動に是正 (E1/E2)
 
 ### 次セッション冒頭でやること
-1. `git status` / `git log --oneline -10` で現状確認
+1. `git status` / `git log --oneline -15` で現状確認
 2. この引き継ぎ書を再読
-3. **E1 から着手**
+3. **B2 の実プレイ体感を踏まえて判断**。違和感なければ完了宣言。違和感あれば数値調整。
+4. 完了したら `docs/game-system-roadmap.md` にタッグ演出整備の完了を追記 + この引き継ぎ書を `docs/archive/` へ移動。
 
 ---
 
 ## 絶対にやってはいけないこと
 
-1. ❌ 残 5 件 (E1/E2/E3/B1/B2) を一括修正コミット — 必ず分割
-2. ❌ 数値を変えない変更で auto-sim を走らせる — `feedback_auto_sim_ui_only.md` 参照
-3. ❌ CSS の一括リファクタ — 原因特定前に周辺 CSS を書き換えない
-4. ❌ data.js の TAG_MATCH_CONFIG を一度に複数値変更 — 1 件ずつ効果測定
-5. ❌ `claude/wonderful-heisenberg` ブランチの復活・新規ワークツリーの切り出し — `feature/tag-match-integration` に統一済み
+1. ❌ 数値を変えない変更で auto-sim を走らせる — `feedback_auto_sim_ui_only.md` 参照
+2. ❌ CSS の一括リファクタ — 原因特定前に周辺 CSS を書き換えない
+3. ❌ data.js の TAG_MATCH_CONFIG を一度に複数値変更 — 1 件ずつ効果測定
+4. ❌ `claude/wonderful-heisenberg` ブランチの復活・新規ワークツリーの切り出し — `feature/tag-match-integration` に統一済み
+5. ❌ ピン seq のクリック駆動を setTimeout 自動進行に戻す — ユーザー明示要望で click 駆動に統一済み
 
 ---
 
