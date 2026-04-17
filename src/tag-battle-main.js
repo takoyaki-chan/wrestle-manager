@@ -1,28 +1,25 @@
-// tag-battle メインロジック — Replay flow (UI refresh 2026-04-17)
-// モックアップ archive/prototype/tag-match-prototype-v0.1/match-screen-tag.html 準拠
+// tag-battle メインロジック — Replay flow
 let matchData = null;
 const S = {
-  result: null,
+  result: null,       // simulateTagMatch の完全結果
   frames: [],
   frameIdx: 0,
-  fighters: {},            // {a1,a2,b1,b2}
+  // 4 fighters: a1, a2, b1, b2 — 固定キー
+  fighters: {},       // {a1, a2, b1, b2} each: {...char, hp, mhp, gritTurns, hotTagBuff, personality, archetype}
+  // ポジション: どの fighter key が legalA/apronA/legalB/apronB か（初期は a1/a2/b1/b2）
   pos: { legalA: 'a1', apronA: 'a2', legalB: 'b1', apronB: 'b2' },
-  idToKey: {},
+  // 直近のクリティカル受け記録（各 fighter key → turn number）
   lastCritTurn: {},
   mom: 0,
-  logHtml: '',             // 累積ログHTML (forward方向のみ追記)
-  lastEventClass: '',
-  anim: false,
+  log: [],            // 表示済み log line 配列
+  anim: false,        // アニメ進行中ロック
   autoAdvance: false,
   autoTimer: null,
-  speedIdx: 0,             // 0=slow 1=mid 2=fast
   pendingCutin: false,
   matchInfo: null,
   chemA: 0,
   chemB: 0,
-  prevSnap: null,          // 前フレーム(タッチ検出用)
 };
-const SPEED_DELAYS = [2500, 1500, 800];
 
 // ── 初期画面 ──
 function renderWaiting(){
@@ -52,17 +49,16 @@ function startReplay(data){
   S.matchInfo = data.matchInfo || {};
   S.chemA = data.result.chemA || 50;
   S.chemB = data.result.chemB || 50;
-  S.logHtml = '';
-  S.lastEventClass = '';
+  S.log = [];
   S.mom = 0;
   S.lastCritTurn = {};
-  S.prevSnap = null;
   S.autoAdvance = false;
   clearTimeout(S.autoTimer);
 
+  // 4 fighter オブジェクトを作成
   const mk = (c) => {
-    const st = Math.min(100, Math.max(0, c.st || 60));
-    const mhp = Math.round(85 + st * 1.20);
+    const mhp = Math.round(85 + Math.min(100, Math.max(0, c.st || 60)) * 1.20 * 0.3); // ざっくり表示用
+    // 正確なMHPは frame の HP から逆算されるため、最初のフレームで置き換え
     return { ...c, hp: mhp, mhp, gritTurns: 0, hotTagBuff: 0 };
   };
   S.fighters = {
@@ -71,409 +67,213 @@ function startReplay(data){
     b1: mk(data.teamB.fighter1),
     b2: mk(data.teamB.fighter2),
   };
+  // MHP は最初のフレームの hp 値でリセット（エンジンの hpBase+stScale に一致させる）
+  if (S.frames.length > 0) {
+    const f0 = S.frames[0];
+    // frame[0] は既にターン1の末尾 — MHP は HP が少し減っているのでフレーム0のHPそのままは正確ではない
+    // エンジン側の計算と合わせる: hpBase(85) + eff(st)*hpScale(1.20)
+    ['a1','a2','b1','b2'].forEach(k => {
+      const c = S.fighters[k];
+      const st = Math.min(100, Math.max(0, c.st || 60));
+      const mhp = Math.round(85 + st * 1.20);
+      c.mhp = mhp; c.hp = mhp;
+    });
+  }
+  // pos は fighter id → key マップ
   S.pos = { legalA: 'a1', apronA: 'a2', legalB: 'b1', apronB: 'b2' };
   S.idToKey = {};
-  ['a1','a2','b1','b2'].forEach(k => { S.idToKey[S.fighters[k].id] = k; });
+  S.idToKey[S.fighters.a1.id] = 'a1';
+  S.idToKey[S.fighters.a2.id] = 'a2';
+  S.idToKey[S.fighters.b1.id] = 'b1';
+  S.idToKey[S.fighters.b2.id] = 'b2';
 
-  renderMatchFrame();
+  renderMatch();
   try { sfx.gong(); } catch(e){}
 }
 
-// ── アクセサ ──
+// ── ヘルパー ──
+function hpCls(pct){ return pct > 66 ? 'high' : pct > 33 ? 'mid' : 'low'; }
 function f(key){ return S.fighters[key]; }
-function byId(id){ return S.fighters[S.idToKey[id]]; }
+function byId(id){ return f(S.idToKey[id]); }
 function keyById(id){ return S.idToKey[id]; }
-function hpCls(ratio){ return ratio <= 0.33 ? 'danger' : ratio <= 0.55 ? 'warn' : ''; }
-function _getCurrentFrame(){ return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ? S.frames[S.frameIdx - 1] : null; }
 
-// ── メイン画面(全体)描画 ──
-// 試合開始直後の初期描画と、大きな構造リセットが必要な時だけ呼ぶ。
-// applyFrame 内の差分更新 (_updateHud/_updateCard/_updateCenter/_appendLog) はピンポイント書換。
-function renderMatchFrame(){
-  const container = document.getElementById('mainContainer');
-  const curFrame = _getCurrentFrame();
-
-  container.innerHTML = `
-    ${_hudHtml(curFrame)}
-    ${_chemBarHtml()}
-    <div class="main-row">
-      <div class="col-side left" id="col-a">
-        ${_playerCardHtml('a', 'legal', S.pos.legalA)}
-        ${_apronCardHtml('a', S.pos.apronA)}
-      </div>
-      <div class="col-center-top" id="col-center">
-        ${_moveDisplayHtml(curFrame)}
-        <div class="battle-log" id="battleLog"><div class="log-header-label">BATTLE LOG</div>${S.logHtml}</div>
-      </div>
-      <div class="col-side right" id="col-b">
-        ${_playerCardHtml('b', 'legal', S.pos.legalB)}
-        ${_apronCardHtml('b', S.pos.apronB)}
-      </div>
-    </div>
-    ${_controlsHtml()}
-  `;
-  _bindNextButton();
-  _scrollLogToBottom();
+// ── メイン描画 ──
+// currentFrame: 最新適用済みフレーム（S.frameIdx が示す直前=再生済みの最新）
+function _getCurrentFrame(){
+  return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ? S.frames[S.frameIdx - 1] : null;
 }
 
-function _hudHtml(fr){
-  const turn = fr ? fr.turn : 0;
-  const phase = fr ? fr.phase : 'Opening';
-  const segIdx = fr ? fr.segmentIdx : 0;
+function renderMatch(){
   const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
   const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  const hpA = _teamHpSum(teamA);
-  const hpB = _teamHpSum(teamB);
-  const momL = 50 - (S.mom * 30); // mom [-1..1]
-  const momR = 50 + (S.mom * 30);
-  const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
+  const curFrame = _getCurrentFrame();
+  const turn = curFrame ? curFrame.turn : 0;
+  const phase = curFrame ? curFrame.phase : 'Opening';
+  const segIdx = curFrame ? curFrame.segmentIdx : 0;
 
-  return `<div class="wm-hud">
-    <div class="wm-hud-top">
-      <div class="wm-hud-side">
-        <div class="wm-hud-faces">${teamA.map(x=>`<div class="wm-hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
-        <div class="wm-hud-meta">
-          <div class="wm-hud-label">Aチーム</div>
-          <div class="wm-hud-name" title="${escHtml(teamA.map(x=>x.name).join(' & '))}">${escHtml(teamA.map(x=>x.name).join(' & '))}</div>
+  const mi = S.matchInfo;
+  const header = mi.header || 'タッグマッチ';
+
+  const hudHtml = `<div class="hud">
+    <div class="hud-top">
+      <div class="hud-team left">
+        <div class="hud-faces">${teamA.map(x=>`<div class="hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
+        <div class="hud-team-info">
+          <div class="hud-team-label">Aチーム</div>
+          <div class="hud-team-names">${teamA.map(x=>x.name).join(' & ')}</div>
         </div>
       </div>
-      <div class="wm-hud-center">
-        <div class="wm-hud-turn" id="hudTurn">TURN ${turn || 1}</div>
-        <div class="wm-hud-phase" id="hudPhase">${escHtml(String(phase).toUpperCase())}</div>
-        <div class="wm-hud-seg" id="hudSeg">SEG ${segIdx + 1}　${escHtml(header)}</div>
+      <div class="hud-center">
+        <div class="hud-turn">${header}</div>
+        <div class="hud-phase">${phase}</div>
+        <div class="hud-seg">セグメント ${segIdx + 1}　ターン ${turn || '-'}</div>
       </div>
-      <div class="wm-hud-side" style="flex-direction:row-reverse">
-        <div class="wm-hud-faces">${teamB.map(x=>`<div class="wm-hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
-        <div class="wm-hud-meta right">
-          <div class="wm-hud-label">Bチーム</div>
-          <div class="wm-hud-name" title="${escHtml(teamB.map(x=>x.name).join(' & '))}">${escHtml(teamB.map(x=>x.name).join(' & '))}</div>
+      <div class="hud-team right">
+        <div class="hud-faces">${teamB.map(x=>`<div class="hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
+        <div class="hud-team-info">
+          <div class="hud-team-label">Bチーム</div>
+          <div class="hud-team-names">${teamB.map(x=>x.name).join(' & ')}</div>
         </div>
       </div>
     </div>
-    <div class="wm-mom">
-      <div class="wm-mom-l" id="momL" style="width:${clamp(momL,0,100)}%"></div>
-      <div class="wm-mom-r" id="momR" style="width:${clamp(momR,0,100)}%"></div>
-    </div>
-    <div class="wm-hp-row">
-      <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA" style="text-align:right">${hpA.pct}%</span>
-      <div class="wm-hp-bar"><div class="wm-hp-fill ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
-      <span class="wm-hp-label">HP</span>
-      <div class="wm-hp-bar"><div class="wm-hp-fill rev ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
-      <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB" style="text-align:left">${hpB.pct}%</span>
+    <div class="chem-row">
+      <span class="chem-label">連携 A</span>
+      <span class="chem-val a">${Math.round(S.chemA)}</span>
+      <div class="chem-track"><div class="chem-fill a" style="width:${clamp(S.chemA,0,100)}%"></div></div>
+      <div class="chem-track"><div class="chem-fill b" style="width:${clamp(S.chemB,0,100)}%;float:right"></div></div>
+      <span class="chem-val b">${Math.round(S.chemB)}</span>
+      <span class="chem-label">連携 B</span>
     </div>
   </div>`;
-}
 
-function _teamHpSum(team){
-  const hp = team.reduce((a,c)=>a + Math.max(0,c.hp), 0);
-  const mhp = team.reduce((a,c)=>a + c.mhp, 0);
-  const ratio = mhp > 0 ? hp/mhp : 0;
-  return { pct: Math.round(ratio * 100), ratio };
-}
+  const legalApanel = _fpanelHtml(S.pos.legalA, 'left', 'legal');
+  const apronApanel = _fpanelHtml(S.pos.apronA, 'left', 'apron');
+  const legalBpanel = _fpanelHtml(S.pos.legalB, 'right', 'legal');
+  const apronBpanel = _fpanelHtml(S.pos.apronB, 'right', 'apron');
 
-function _chemBarHtml(){
-  return `<div class="chem-bar">
-    <span class="chem-label">連携 A</span>
-    <span class="chem-a">${Math.round(S.chemA)}</span>
-    <span class="chem-sep">／</span>
-    <span class="chem-label">連携 B</span>
-    <span class="chem-b">${Math.round(S.chemB)}</span>
+  // ログは新しいものが上、古いものは下（過去60行まで）
+  const logHtml = S.log.slice(-60).reverse().map(_logEntryHtml).join('');
+  const narration = curFrame ? _narrateFrame(curFrame) : '<div class="nar-empty">試合開始 — NEXT TURNを押してください</div>';
+  const moveName = curFrame && curFrame.action ? curFrame.action.move : '---';
+
+  const gridHtml = `<div class="main-grid">
+    <div class="col-left">
+      ${legalApanel}
+      ${apronApanel}
+    </div>
+    <div class="center-panel">
+      <div class="turn-label">ターン ${turn || '-'}</div>
+      <div class="phase-pill">${phase}</div>
+      <div class="narration-box">${narration}</div>
+      <div class="move-box">
+        <div class="move-label">Current Move</div>
+        <div class="move-value" id="moveV">${moveName}</div>
+      </div>
+      <div class="log-section">
+        <div class="log-header">Battle Log（新しい順）</div>
+        <div class="log-box" id="logBox">${logHtml}</div>
+      </div>
+    </div>
+    <div class="col-right">
+      ${legalBpanel}
+      ${apronBpanel}
+    </div>
   </div>`;
+
+  const winnerFrame = curFrame && curFrame.winner;
+  const endState = winnerFrame || S.frameIdx >= S.frames.length;
+  const btnLabel = winnerFrame ? 'WIN!' : (endState ? 'END' : '▶  NEXT TURN');
+  const btnDisabled = S.anim || S.pendingCutin;
+  const actionHtml = `<div class="action-bar">
+    <button class="btn-next" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button>
+    ${!endState ? `<button class="btn-auto${S.autoAdvance?' on':''}" id="autoBtn" onclick="toggleAuto()">AUTO<br><span style="font-size:10px;letter-spacing:1px">${S.autoAdvance?'ON':'OFF'}</span></button>` : ''}
+  </div>`;
+
+  document.getElementById('mainContainer').innerHTML = hudHtml + gridHtml + actionHtml;
+  const btn = document.getElementById('nBtn');
+  if (btn) {
+    if (winnerFrame || S.frameIdx >= S.frames.length) btn.onclick = endMatch;
+    else btn.onclick = nextFrame;
+  }
+  // log 自動スクロール — 新しい順なので先頭(0)に
+  setTimeout(() => { const lb = document.getElementById('logBox'); if (lb) lb.scrollTop = 0; }, 30);
 }
 
-function _playerCardHtml(side, layer, posKey){
+function _fpanelHtml(posKey, side, layer){
   const ch = f(posKey);
-  const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
-  const cls = ['player-card'];
-  if (ratio <= 0.33) cls.push('danger');
+  const hpPct = Math.max(0, Math.round(ch.hp / ch.mhp * 100));
+  const cls = ['fpanel', layer, 'side-'+side];
   if (ch.gritTurns > 0) cls.push('grit-active');
   if (ch.hotTagBuff > 0) cls.push('hot-tag-buff');
-  const ovr = _calcOvr(ch);
-  const isA = side === 'a';
-  const portraitUrl = getStandUrl(ch);
-  const nameRow = isA
-    ? `<span class="player-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span><span class="badge badge-inring">IN RING</span>`
-    : `<span class="badge badge-inring">IN RING</span><span class="player-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span>`;
-  const styleOvr = isA ? `${escHtml(ch.style||'')}   OVR ${ovr}` : `OVR ${ovr}   ${escHtml(ch.style||'')}`;
-  return `<div class="${cls.join(' ')}" id="card-${side}-legal">
-    <div class="portrait-area">
-      <div class="portrait-holder" id="portrait-${side}-legal"><img src="${portraitUrl}" alt="${escHtml(ch.name)}" onerror="this.style.display='none'"></div>
-      <div class="monitor-frame"></div>
-      <div class="danger-glow" id="danger-${side}"${ratio <= 0.25 && ratio > 0 ? ' style="opacity:1"' : ''}></div>
-    </div>
-    <div class="player-detail">
-      <div class="name-row${isA?'':' right'}" id="namerow-${side}-legal">${nameRow}</div>
-      <div class="style-ovr${isA?'':' right'}" id="styleovr-${side}-legal">${styleOvr}</div>
-      <div class="card-hp-wrap">
-        <div class="card-hp-track${isA?'':' rtl'}"><div class="card-hp-fill ${hpCls(ratio)}" id="cardhp-${side}-legal" style="width:${pct}%"></div></div>
-        <span class="card-hp-text ${hpCls(ratio)}${isA?'':' right'}" id="cardhptext-${side}-legal">${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${pct}%)</span>
+  const tag = layer === 'legal'
+    ? `<div class="legal-tag">IN RING</div>`
+    : `<div class="apron-tag">APRON</div>`;
+  const portraitUrl = layer === 'legal' ? getStandUrl(ch) : getFaceUrl(ch);
+  const showDanger = layer === 'legal' && hpPct <= 25;
+  return `<div class="${cls.join(' ')}" id="panel-${posKey}">
+    ${tag}
+    <div class="portrait-area" id="port-${posKey}">
+      <img src="${portraitUrl}" alt="${ch.name}" onerror="this.style.display='none'">
+      <div class="dmg-number" id="dmg-${posKey}"></div>
+      ${showDanger ? `<div class="danger-glow show"><div class="danger-glow-inner"></div></div>` : ''}
+      <div class="fname-row">
+        <span class="fname${layer==='apron'?' small':''}" onclick="openBp('${posKey}')">${ch.name}</span>
+        <span class="fstyle${layer==='apron'?' small':''}">${ch.style || ''}</span>
       </div>
-      <div class="stats-grid" id="stats-${side}-legal">${_statsHtml(ch, side)}</div>
+    </div>
+    <div class="f-hp-row">
+      <span class="f-hp-pct">${hpPct}%</span>
+      <div class="f-hp-bar"><div class="f-hp-fill ${hpCls(hpPct)}" style="width:${hpPct}%"></div></div>
     </div>
   </div>`;
-}
-
-function _apronCardHtml(side, posKey){
-  const ch = f(posKey);
-  const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
-  const isA = side === 'a';
-  const ovr = _calcOvr(ch);
-  const upperUrl = getUpperUrl(ch);
-  const nameRow = isA
-    ? `<span class="apron-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span><span class="apron-badge">APRON</span>`
-    : `<span class="apron-badge">APRON</span><span class="apron-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span>`;
-  const styleOvr = isA ? `${escHtml(ch.style||'')}   OVR ${ovr}` : `OVR ${ovr}   ${escHtml(ch.style||'')}`;
-  return `<div class="apron-card${isA?'':' right'}" id="card-${side}-apron">
-    <div class="apron-avatar" onclick="openBp('${posKey}')"><img src="${upperUrl}" onerror="this.style.display='none'"></div>
-    <div class="apron-info${isA?'':' right'}">
-      <div class="apron-name-row${isA?'':' right'}" id="apronrow-${side}">${nameRow}</div>
-      <div class="apron-style" id="apronstyle-${side}">${styleOvr}</div>
-      <div class="apron-hp-row${isA?'':' right'}" id="apronhp-${side}">
-        <span class="apron-hp-val ${hpCls(ratio)}${isA?'':' right'}">${pct}%</span>
-        <div class="apron-hp-track${isA?'':' rtl'}"><div class="apron-hp-fill ${hpCls(ratio)}" style="width:${pct}%"></div></div>
-      </div>
-      <div class="apron-recovery${isA?'':' right'}">▲ 回復中</div>
-      <div class="stats-grid apron-stats" id="apron-stats-${side}">${_statsHtml(ch, side)}</div>
-    </div>
-  </div>`;
-}
-
-function _statsHtml(fighter, side){
-  const stats = [
-    {k:'pw', l:'PWR', cls:'pwr'},
-    {k:'sp', l:'SPD', cls:'spd'},
-    {k:'te', l:'TEC', cls:'tec'},
-    {k:'st', l:'STA', cls:'sta'},
-    {k:'mn', l:'MNT', cls:'mnt'},
-  ];
-  const rtl = side === 'b';
-  return stats.map(s => {
-    const val = Math.round(fighter[s.k] || 0);
-    return `<div class="stat-row${rtl?' rtl':''}">
-      <span class="stat-label">${s.l}</span>
-      <div class="stat-bar-track${rtl?' rtl':''}"><div class="stat-bar-${s.cls}" style="width:${val}%"></div></div>
-      <span class="stat-val">${val}</span>
-    </div>`;
-  }).join('');
-}
-
-function _moveDisplayHtml(fr){
-  const move = fr && fr.action ? fr.action.move : '-';
-  const nar = fr ? _narrateFrame(fr) : { text:'試合開始 — NEXT TURNを押してください', dramatic:false };
-  const dmgText = fr && fr.action ? _dmgText(fr.action) : { text:'', cls:'' };
-  return `<div class="move-display" id="moveDisplay">
-    <div class="move-label">CURRENT MOVE</div>
-    <div class="bigmove-splash" id="bigmoveSplash"></div>
-    <div class="move-name" id="moveName">${escHtml(move)}</div>
-    <div class="move-damage ${dmgText.cls}" id="moveDmg">${dmgText.text}</div>
-    <div class="move-narration ${nar.dramatic?'dramatic':''}" id="moveNarration">${nar.text}</div>
-    <div class="flash-overlay" id="flashOverlay"></div>
-  </div>`;
-}
-
-function _dmgText(action){
-  if (action.kind === 'miss') return { text: 'MISS', cls: 'miss' };
-  if (action.kind === 'counter') return { text: `COUNTER! -${action.dmg}`, cls: 'counter' };
-  if (action.kind === 'hit') return { text: `-${action.dmg} ダメージ`, cls: 'hit' };
-  return { text: '', cls: '' };
 }
 
 function _narrateFrame(fr){
-  if (!fr) return { text:'', dramatic:false };
-  // イベント優先
+  if (!fr) return '';
   if (fr.events && fr.events.length) {
     const ev = fr.events[fr.events.length - 1];
-    if (ev.type === 'hotTag') return { text:'会場が一気に沸いた！ 反撃のタッチだーーっ！', dramatic:true };
-    if (ev.type === 'doubleTeam') return { text:'二人がかりの合体攻撃！ これがタッグの醍醐味だ！', dramatic:true };
-    if (ev.type === 'cutinSave') return { text:'パートナーが間一髪で救出！ これがタッグマッチ！', dramatic:true };
-    if (ev.type === 'friendlyFire') return { text:'あーっと！ 味方に当たってしまった！ 痛恨のミス！', dramatic:true };
-    if (ev.type === 'betrayal') return { text:'助けに行かない…！ なんということだ…！', dramatic:true };
+    if (ev.type === 'hotTag') return `<div class="nar-line nar-event">★ ホットタグ！ 会場が沸く！</div>`;
+    if (ev.type === 'doubleTeam') return `<div class="nar-line nar-event">★ ダブルチーム炸裂！</div>`;
+    if (ev.type === 'cutinSave') return `<div class="nar-line nar-event">★ カットイン！ 救出！</div>`;
+    if (ev.type === 'friendlyFire') return `<div class="nar-line nar-event">※ 同士討ち</div>`;
+    if (ev.type === 'betrayal') return `<div class="nar-line nar-event" style="color:#888">…見殺し…</div>`;
   }
-  if (fr.winner) return { text:'決着！', dramatic:true };
   const a = fr.action;
-  if (!a) return { text: (fr.logLines||[]).join(' '), dramatic:false };
+  if (!a) {
+    if (fr.winner) return `<div class="nar-line nar-event">★ 決着！</div>`;
+    return `<div class="nar-line">${(fr.logLines||[]).join('<br>')}</div>`;
+  }
   const atk = byId(a.attackerId);
   const def = byId(a.defenderId);
-  if (!atk || !def) return { text: escHtml(a.move||''), dramatic:false };
-  if (a.kind === 'miss') return { text: `${escHtml(atk.name)}の${escHtml(a.move)} → かわされた！`, dramatic:false };
-  if (a.kind === 'counter') return { text: `${escHtml(atk.name)}がカウンター！ ${escHtml(a.move)} → ${escHtml(def.name)}に${a.dmg}ダメージ`, dramatic:true };
-  const drama = a.isCrit;
-  return { text: `${escHtml(atk.name)}の${escHtml(a.move)} → ${escHtml(def.name)}に${a.dmg}ダメージ`, dramatic: drama };
+  if (!atk || !def) return `<div class="nar-line">${a.move}</div>`;
+  if (a.kind === 'miss') return `<div class="nar-line nar-miss">${atk.name}の${a.move} → MISS</div>`;
+  if (a.kind === 'counter') return `<div class="nar-line nar-counter">${atk.name}がカウンター！ ${a.move} → ${def.name}に${a.dmg}ダメージ</div>`;
+  return `<div class="nar-line nar-hit">${atk.name}の${a.move} → ${def.name}に${a.dmg}ダメージ</div>`;
 }
 
-function _controlsHtml(){
-  const curFrame = _getCurrentFrame();
-  const winnerFrame = curFrame && curFrame.winner;
-  const endState = winnerFrame || S.frameIdx >= S.frames.length;
-  const btnLabel = winnerFrame ? '結果を見る' : (endState ? 'END' : '▶ NEXT TURN');
-  const btnDisabled = S.anim || S.pendingCutin;
-  const dots = [0,1,2].map(i => `<div class="speed-dot ${i <= S.speedIdx ? 'on' : 'off'}" onclick="setSpeed(${i})"></div>`).join('');
-  return `<div class="controls-sub">
-    <button class="btn-main" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button>
-    <div class="control-sep"></div>
-    <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">AUTO<span>${S.autoAdvance?'ON':'OFF'}</span></button>
-    <div class="speed-dots">${dots}</div>
-  </div>`;
-}
-
-function _bindNextButton(){
-  const btn = document.getElementById('nBtn');
-  if (!btn) return;
-  const curFrame = _getCurrentFrame();
-  const winnerFrame = curFrame && curFrame.winner;
-  if (winnerFrame || S.frameIdx >= S.frames.length) btn.onclick = endMatch;
-  else btn.onclick = nextFrame;
-}
-
-function _scrollLogToTop(){
-  const lb = document.getElementById('battleLog');
-  if (lb) lb.scrollTop = 0;
-}
-
-// ── 差分更新系 ──
-function _updateHud(){
-  const fr = _getCurrentFrame();
-  const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
-  const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  const hpA = _teamHpSum(teamA), hpB = _teamHpSum(teamB);
-  const elTurn = document.getElementById('hudTurn');
-  const elPhase = document.getElementById('hudPhase');
-  const elSeg = document.getElementById('hudSeg');
-  if (fr && elTurn) elTurn.textContent = `TURN ${fr.turn}`;
-  if (fr && elPhase) elPhase.textContent = String(fr.phase||'').toUpperCase();
-  if (fr && elSeg) elSeg.textContent = `SEG ${fr.segmentIdx + 1}　${(S.matchInfo && S.matchInfo.header) || 'TAG MATCH'}`;
-  const fillA = document.getElementById('hudHpFillA');
-  const pctA = document.getElementById('hudHpPctA');
-  if (fillA) { fillA.style.width = hpA.pct + '%'; fillA.className = 'wm-hp-fill ' + hpCls(hpA.ratio); }
-  if (pctA) { pctA.textContent = hpA.pct + '%'; pctA.className = 'wm-hp-pct ' + hpCls(hpA.ratio); }
-  const fillB = document.getElementById('hudHpFillB');
-  const pctB = document.getElementById('hudHpPctB');
-  if (fillB) { fillB.style.width = hpB.pct + '%'; fillB.className = 'wm-hp-fill rev ' + hpCls(hpB.ratio); }
-  if (pctB) { pctB.textContent = hpB.pct + '%'; pctB.className = 'wm-hp-pct ' + hpCls(hpB.ratio); }
-  const momL = document.getElementById('momL');
-  const momR = document.getElementById('momR');
-  if (momL && momR) {
-    const lv = clamp(50 - S.mom * 30, 0, 100);
-    momL.style.width = lv + '%';
-    momR.style.width = (100 - lv) + '%';
-  }
-}
-
-function _updateCardsAfterFrame(){
-  // 4選手分のカードHP/ステを全部更新。ポジションが入れ替わった場合はフル再描画。
-  _refreshCard('a', 'legal', S.pos.legalA);
-  _refreshCard('a', 'apron', S.pos.apronA);
-  _refreshCard('b', 'legal', S.pos.legalB);
-  _refreshCard('b', 'apron', S.pos.apronB);
-}
-
-function _refreshCard(side, layer, posKey){
-  const id = `card-${side}-${layer}`;
-  const el = document.getElementById(id);
-  if (!el) return;
-  // 選手カードは innerHTML の一部だけ更新(HP・数値)
-  const ch = f(posKey);
-  const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = Math.round(ratio*100);
-  if (layer === 'legal') {
-    // カード内のキャラが変わっていないか確認 — 入れ替わった場合はDOM総入替
-    const existingName = el.querySelector('.player-name');
-    if (!existingName || existingName.textContent !== ch.name) {
-      el.outerHTML = _playerCardHtml(side, 'legal', posKey);
-      return;
-    }
-    // HP 更新
-    const fill = document.getElementById(`cardhp-${side}-legal`);
-    const text = document.getElementById(`cardhptext-${side}-legal`);
-    if (fill) { fill.style.width = pct + '%'; fill.className = 'card-hp-fill ' + hpCls(ratio); }
-    if (text) { text.textContent = `${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${pct}%)`; text.className = 'card-hp-text ' + hpCls(ratio) + (side==='a'?'':' right'); }
-    // danger class
-    el.classList.toggle('danger', ratio <= 0.33);
-    el.classList.toggle('grit-active', ch.gritTurns > 0);
-    el.classList.toggle('hot-tag-buff', ch.hotTagBuff > 0);
-    // danger glow
-    const glow = document.getElementById(`danger-${side}`);
-    if (glow) glow.classList.toggle('show', ratio <= 0.25 && ratio > 0);
-  } else {
-    // apron: キャラが入れ替わった場合もDOM総入替
-    const existingName = el.querySelector('.apron-name');
-    if (!existingName || existingName.textContent !== ch.name) {
-      el.outerHTML = _apronCardHtml(side, posKey);
-      return;
-    }
-    // HP bar 更新
-    const row = document.getElementById(`apronhp-${side}`);
-    if (row) {
-      const isA = side === 'a';
-      row.innerHTML = `<span class="apron-hp-val ${hpCls(ratio)}${isA?'':' right'}">${pct}%</span>` +
-        `<div class="apron-hp-track${isA?'':' rtl'}"><div class="apron-hp-fill ${hpCls(ratio)}" style="width:${pct}%"></div></div>`;
-    }
-  }
-}
-
-function _updateCenter(fr){
-  const dispHtml = _moveDisplayHtml(fr);
-  const disp = document.getElementById('moveDisplay');
-  if (disp) disp.outerHTML = dispHtml;
-  // pop animation
-  const mn = document.getElementById('moveName');
-  if (mn) { mn.classList.remove('pop'); void mn.offsetWidth; mn.classList.add('pop'); }
-}
-
-function _appendLogForFrame(fr){
-  if (!fr) return;
-  const evClass = _detectEventClass(fr);
-  const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
-  const lines = (fr.logLines || []).map(l => _logLineHtml(l, fr)).join('');
-  // 新しいターンを先頭に追加 (新しい順 = 上が最新)
-  S.logHtml = turnMarker + lines + S.logHtml;
-  S.lastEventClass = evClass;
-  const lb = document.getElementById('battleLog');
-  if (lb) {
-    lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`;
-    lb.className = 'battle-log' + (evClass ? ' ev-' + evClass : '');
-    lb.scrollTop = 0;
-  }
-}
-
-function _detectEventClass(fr){
-  if (!fr) return '';
-  if (fr.winner) return 'finish';
-  if (fr.events && fr.events.length) {
-    const types = fr.events.map(e => e.type);
-    if (types.includes('betrayal')) return 'betrayal';
-    if (types.includes('hotTag')) return 'hottag';
-    if (types.includes('doubleTeam')) return 'double';
-    if (types.includes('friendlyFire')) return 'friendly';
-    if (types.includes('cutinSave')) return 'cutin';
-  }
-  // タッチ検出
-  if (S.prevSnap && (fr.legalA !== S.prevSnap.legalA || fr.legalB !== S.prevSnap.legalB)) return 'touch';
-  return '';
-}
-
-function _logLineHtml(line, fr){
-  const t = line.trim();
-  if (!t) return '';
-  if (t.includes('★ 決着') || t.includes('★ ピン') || t.includes('★ タッグ技') || t.includes('時間切れ') || t.includes('丸め込みで逆転')) {
-    return `<div class="log-event finish"><span class="log-event-text log-finish-text">${escHtml(t)}</span></div>`;
-  }
-  if (t.includes('ホットタグ')) return `<div class="log-event hottag"><span class="log-event-text log-hottag-text">${escHtml(t)}</span></div>`;
-  if (t.includes('ダブルチーム') || t.includes('タッグ技')) return `<div class="log-event double"><span class="log-event-text log-double-text">${escHtml(t)}</span></div>`;
-  if (t.includes('カットイン')) return `<div class="log-event cutin"><span class="log-event-text log-cutin-text">${escHtml(t)}</span></div>`;
-  if (t.includes('同士討ち')) return `<div class="log-event friendly"><span class="log-event-text log-friendly-text">${escHtml(t)}</span></div>`;
-  if (t.includes('見殺し')) return `<div class="log-event betrayal"><span class="log-event-text log-betrayal-text">${escHtml(t)}</span></div>`;
-  if (t.includes('↔ タッチ')) return `<div class="log-event touch"><span class="log-event-text log-touch-text">${escHtml(t)}</span></div>`;
-  // 通常ターンログ: T1 [phase] ... 形式
-  const m = t.match(/^T(\d+)\s+\[[^\]]+\]\s+(.*)$/);
-  if (m) return `<div class="log-line"><span style="color:#444">T${m[1]}</span> ${escHtml(m[2])}</div>`;
-  return `<div class="log-line">${escHtml(t)}</div>`;
+function _logEntryHtml(line){
+  let c = 'log-entry';
+  if (line.includes('★')) {
+    if (line.includes('ホットタグ')) c += ' hottag';
+    else if (line.includes('ダブルチーム') || line.includes('タッグ技')) c += ' double';
+    else c += ' finish';
+  } else if (line.includes('カウンター')) c += ' counter';
+  else if (line.includes('MISS')) c += ' miss';
+  else if (line.includes('タッチ')) c += ' touch';
+  else if (line.includes('※') || line.includes('→')) c += ' drama';
+  return `<div class="${c}">${line}</div>`;
 }
 
 // ── フレーム進行 ──
+// ペーシング:
+//   通常ヒット:  900ms
+//   ミス:        700ms
+//   カウンター:  1100ms
+//   クリット:   1300ms
+//   ドラマイベント時: +500ms
+//   決着時:     2200ms
 const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
+
 function _frameMinDelay(fr){
   if (!fr) return 800;
   if (fr.winner) return 2200;
@@ -493,22 +293,24 @@ function nextFrame(){
   if (S.pendingCutin) return;
   clearTimeout(S.autoTimer);
   const fr = S.frames[S.frameIdx];
+  // ★重要: 先にカウンタを進める → renderMatch 内の _getCurrentFrame() が新フレームを返すようになる
   S.frameIdx++;
   applyFrame(fr);
 
   if (fr.winner) {
-    setTimeout(() => showResult(fr), 1800);
+    setTimeout(() => showResult(fr), 2000);
     return;
   }
+  // アニメロックは minDelay 分保持（連打での早送りを防ぐ）
   const delay = _frameMinDelay(fr);
   if (S.autoAdvance && S.frameIdx < S.frames.length) {
-    const speedD = SPEED_DELAYS[S.speedIdx] || 1500;
-    S.autoTimer = setTimeout(() => nextFrame(), Math.max(delay + 300, speedD));
+    S.autoTimer = setTimeout(() => nextFrame(), Math.max(delay + 400, 1200));
   }
 }
 
 function applyFrame(fr){
   S.anim = true;
+  // 旧状態を保存（タッチ検出用）
   const prevLegalA = S.pos.legalA, prevLegalB = S.pos.legalB;
   const newLegalAKey = keyById(fr.legalA);
   const newLegalBKey = keyById(fr.legalB);
@@ -517,7 +319,7 @@ function applyFrame(fr){
   const touchA = newLegalAKey !== prevLegalA;
   const touchB = newLegalBKey !== prevLegalB;
 
-  // HP/バフ更新
+  // HPとバフを全員更新
   ['a1','a2','b1','b2'].forEach(k => {
     const ch = S.fighters[k];
     if (fr.hp[ch.id] != null) ch.hp = fr.hp[ch.id];
@@ -527,64 +329,79 @@ function applyFrame(fr){
   S.pos = { legalA: newLegalAKey, apronA: newApronAKey, legalB: newLegalBKey, apronB: newApronBKey };
   S.mom = fr.mom || 0;
 
-  // DOM 差分更新
-  _updateHud();
-  _updateCardsAfterFrame();
-  _updateCenter(fr);
-  _appendLogForFrame(fr);
+  // ログ追記
+  (fr.logLines || []).forEach(line => S.log.push(line));
+
+  // 描画更新（ここで narration は最新フレームを反映）
+  renderMatch();
 
   // アクション演出
   if (fr.action) animateAction(fr.action, fr);
-  // ドラマイベント
+
+  // ドラマイベント演出
   (fr.events || []).forEach(ev => animateEvent(ev, fr));
-  // タッチ演出
-  if (touchA) animateTouchSwap('a', fr);
-  if (touchB) animateTouchSwap('b', fr);
-  // クリティカルダメージセリフ
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) tryDamageLine(fr.action, fr);
 
-  S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
+  // タッチアニメ
+  if (touchA) animateTouchSwap('A');
+  if (touchB) animateTouchSwap('B');
 
+  // クリティカルダメージセリフ／ボイス
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) {
+    tryDamageLine(fr.action, fr);
+  }
+
+  // ペーシング: フレーム種別ごとに最小ディレイを設定
   const minDelay = _frameMinDelay(fr);
   setTimeout(() => {
     S.anim = false;
+    // ボタン状態を再描画（S.anim が false になったので enable する）
     const btn = document.getElementById('nBtn');
     if (btn && !S.pendingCutin) btn.disabled = false;
-    _bindNextButton(); // winner の場合 onclick を endMatch に切り替え
   }, minDelay);
 }
 
-// ── 演出 ──
+// ── 演出群 ──
 function animateAction(action, fr){
   const defKey = keyById(action.defenderId);
   const atkKey = keyById(action.attackerId);
-  const defSide = (defKey === 'a1' || defKey === 'a2') ? 'a' : 'b';
-  const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
-
   if (action.kind === 'miss') {
     try { sfx.missWhiff(); } catch(e){}
     return;
   }
-  // ダメージポップ (レガル側のみ)
-  if (defKey === S.pos.legalA || defKey === S.pos.legalB) {
-    _showDmgPop(defSide, action.dmg, action.isCrit, action.kind === 'counter');
+  // ダメージ数字
+  const dmgEl = document.getElementById('dmg-' + defKey);
+  if (dmgEl) {
+    dmgEl.textContent = '-' + action.dmg;
+    dmgEl.classList.remove('show', 'crit');
+    if (action.isCrit) dmgEl.classList.add('crit');
+    // reflow
+    void dmgEl.offsetWidth;
+    dmgEl.classList.add('show');
+    setTimeout(() => dmgEl.classList.remove('show'), 900);
   }
   // パネルシェイク
-  const defCard = document.getElementById(`card-${defSide}-legal`);
-  if (defCard && (defKey === S.pos.legalA || defKey === S.pos.legalB)) {
-    defCard.classList.remove('shake', 'shake-hard');
-    void defCard.offsetWidth;
-    defCard.classList.add(action.isCrit ? 'shake-hard' : 'shake');
-    setTimeout(() => defCard.classList.remove('shake', 'shake-hard'), 400);
+  const panel = document.getElementById('panel-' + defKey);
+  if (panel) {
+    panel.classList.remove('shake', 'shake-hard');
+    void panel.offsetWidth;
+    panel.classList.add(action.isCrit ? 'shake-hard' : 'shake');
+    setTimeout(() => panel.classList.remove('shake', 'shake-hard'), 400);
   }
-  // カウンターフラッシュ
+  // フラッシュ攻撃側
+  const atkPanel = document.getElementById('panel-' + atkKey);
+  if (atkPanel) {
+    atkPanel.classList.remove('flash-atk');
+    void atkPanel.offsetWidth;
+    atkPanel.classList.add('flash-atk');
+    setTimeout(() => atkPanel.classList.remove('flash-atk'), 420);
+  }
+  // カウンター演出
   if (action.kind === 'counter') {
-    const atkCard = document.getElementById(`card-${atkSide}-legal`);
-    if (atkCard && (atkKey === S.pos.legalA || atkKey === S.pos.legalB)) {
-      atkCard.classList.remove('counter-flash');
-      void atkCard.offsetWidth;
-      atkCard.classList.add('counter-flash');
-      setTimeout(() => atkCard.classList.remove('counter-flash'), 380);
+    if (atkPanel) {
+      atkPanel.classList.remove('counter-flash');
+      void atkPanel.offsetWidth;
+      atkPanel.classList.add('counter-flash');
+      setTimeout(() => atkPanel.classList.remove('counter-flash'), 380);
     }
     try { sfx.counterSE(); } catch(e){}
   }
@@ -595,34 +412,11 @@ function animateAction(action, fr){
     if (action.dmg >= 20) sfx.bigmoveImpact();
     hitSE(cat, action.dmg, volMul);
   } catch(e){}
-  // フラッシュ
+  // 全画面フラッシュ（クリット）
   if (action.isCrit && action.dmg >= 20) {
     const ov = document.getElementById('flashOv');
     if (ov) { ov.classList.remove('flash','red'); void ov.offsetWidth; ov.classList.add('flash','red'); setTimeout(()=>ov.classList.remove('flash','red'), 300); }
   }
-  // big move splash
-  if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.move);
-}
-
-function _showDmgPop(side, val, isCrit, isCounter){
-  const card = document.getElementById(`card-${side}-legal`);
-  if (!card) return;
-  const portrait = card.querySelector('.portrait-area');
-  if (!portrait) return;
-  const el = document.createElement('div');
-  el.className = 'dmg-pop' + (isCrit?' crit':'') + (isCounter?' counter':'');
-  el.textContent = '-' + val;
-  portrait.appendChild(el);
-  setTimeout(() => el.remove(), 900);
-}
-
-function _showBigMoveSplash(moveName){
-  const el = document.getElementById('bigmoveSplash');
-  if (!el) return;
-  el.textContent = '— ' + moveName + ' —';
-  el.className = 'bigmove-splash show';
-  setTimeout(() => el.classList.add('fade'), 1200);
-  setTimeout(() => { el.className = 'bigmove-splash'; el.textContent = ''; }, 1600);
 }
 
 function animateEvent(ev, fr){
@@ -630,12 +424,18 @@ function animateEvent(ev, fr){
     showBanner('HOT TAG!', 'gold');
     try { sfx.hotTagSE(); } catch(e){}
     flashGold();
+    // カットイン（パートナー交代直後の選手 = 新 legal）
     const teamKey = ev.team === 'A' ? S.pos.legalA : S.pos.legalB;
     const fighter = f(teamKey);
-    if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter.personality || 'normal'), 'tag-hot');
+    if (fighter) {
+      showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter.personality || 'normal'), 'tag-hot');
+    }
   } else if (ev.type === 'doubleTeam') {
     showBanner('DOUBLE TEAM!', 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
+    // 両パネルに flash
+    flashPanel(S.pos.legalA, 'red');
+    flashPanel(S.pos.apronA, 'red');
   } else if (ev.type === 'cutinSave') {
     const saverKey = keyById(ev.by);
     showBanner('CUT IN!', 'gold');
@@ -649,49 +449,30 @@ function animateEvent(ev, fr){
     showBanner('同士討ち！', 'yellow');
     try { sfx.friendlyFireSE(); } catch(e){}
     const victimKey = keyById(ev.victim);
-    const side = (victimKey === 'a1' || victimKey === 'a2') ? 'a' : 'b';
-    const card = document.getElementById(`card-${side}-legal`);
-    if (card) { card.classList.add('ff-flash'); setTimeout(() => card.classList.remove('ff-flash'), 650); }
+    flashPanel(victimKey, 'yellow');
   } else if (ev.type === 'betrayal') {
     showBanner('…見殺し', 'grey');
     try { sfx.betrayalSE(); } catch(e){}
     const betrayerKey = keyById(ev.by);
-    const side = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'a' : 'b';
-    const layer = (betrayerKey === S.pos.legalA || betrayerKey === S.pos.legalB) ? 'legal' : 'apron';
-    const card = document.getElementById(`card-${side}-${layer}`);
-    if (card) { card.classList.add('betrayed'); setTimeout(() => card.classList.remove('betrayed'), 2500); }
+    const panel = document.getElementById('panel-' + betrayerKey);
+    if (panel) { panel.classList.add('betrayed'); setTimeout(() => panel.classList.remove('betrayed'), 2500); }
+    // セリフ
     const betrayer = f(betrayerKey);
     if (betrayer) {
-      const cutinSide = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
-      showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer.personality || 'normal'), 'damage-serif');
+      const side = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
+      showCutin(betrayer, side, pickBetrayalLine(betrayer.personality || 'normal'), 'damage-serif');
     }
-  }
-  // flash overlay on move-display
-  const ov = document.getElementById('flashOverlay');
-  if (ov) {
-    ov.style.background = ev.type === 'hotTag' ? 'rgba(238,85,85,0.3)' :
-                          ev.type === 'doubleTeam' ? 'rgba(221,170,68,0.3)' :
-                          ev.type === 'friendlyFire' ? 'rgba(238,136,68,0.3)' :
-                          'rgba(255,255,255,0.2)';
-    ov.classList.remove('active'); void ov.offsetWidth; ov.classList.add('active');
   }
 }
 
-function animateTouchSwap(side, fr){
+function animateTouchSwap(team){
   try { sfx.touchSE(); } catch(e){}
-  const legalCard = document.getElementById(`card-${side}-legal`);
-  const apronCard = document.getElementById(`card-${side}-apron`);
-  const isHot = fr.events && fr.events.some(e => e.type === 'hotTag' && e.team === side.toUpperCase());
-  const hlCls = isHot ? 'tag-highlight-hot' : 'tag-highlight';
-  if (legalCard) { legalCard.classList.remove(hlCls); void legalCard.offsetWidth; legalCard.classList.add(hlCls); setTimeout(() => legalCard.classList.remove(hlCls), 1500); }
-  // Tag banner
-  const newLegal = f(side === 'a' ? S.pos.legalA : S.pos.legalB);
-  const banner = document.getElementById('tagBanner');
-  if (banner && newLegal) {
-    banner.textContent = isHot ? `🔥 反撃のタッチ！ ${newLegal.name}` : `🔄 タッチ → ${newLegal.name}`;
-    banner.className = 'tag-banner' + (isHot ? ' hottag' : '') + ' show';
-    setTimeout(() => banner.classList.remove('show'), 1600);
-  }
+  const outKey = team === 'A' ? S.pos.apronA : S.pos.apronB; // 新apronが旧legal
+  const inKey  = team === 'A' ? S.pos.legalA : S.pos.legalB; // 新legalが旧apron
+  const outPanel = document.getElementById('panel-' + outKey);
+  const inPanel  = document.getElementById('panel-' + inKey);
+  if (outPanel) { outPanel.classList.add('swap-in'); setTimeout(()=>outPanel.classList.remove('swap-in'), 600); }
+  if (inPanel)  { inPanel.classList.add('swap-in');  setTimeout(()=>inPanel.classList.remove('swap-in'), 600); }
 }
 
 function showBanner(text, cls){
@@ -711,8 +492,14 @@ function flashGold(){
   ov.classList.add('flash','gold');
   setTimeout(() => ov.classList.remove('flash','gold'), 300);
 }
+function flashPanel(posKey, color){
+  const panel = document.getElementById('panel-' + posKey);
+  if (!panel) return;
+  if (color === 'red') { panel.classList.add('counter-flash'); setTimeout(()=>panel.classList.remove('counter-flash'), 400); }
+  else if (color === 'yellow') { panel.classList.add('ff-flash'); setTimeout(()=>panel.classList.remove('ff-flash'), 650); }
+}
 
-// ── ダメージセリフ ──
+// ── ダメージセリフ／ボイス ──
 function tryDamageLine(action, fr){
   const defKey = keyById(action.defenderId);
   if (!defKey) return;
@@ -721,6 +508,7 @@ function tryDamageLine(action, fr){
   const hpRatio = def.hp / def.mhp;
   const line = pickDamageLine(def, action.dmg, hpRatio);
   if (!line) return;
+  // 1試合あたり同じ選手で頻発しないよう、直前クリット turn から 3ターン以上空ける
   const last = S.lastCritTurn[defKey] || 0;
   if (fr.turn - last < 3) return;
   S.lastCritTurn[defKey] = fr.turn;
@@ -729,7 +517,7 @@ function tryDamageLine(action, fr){
   showCutin(def, side, line.text, cssCls);
 }
 
-// ── カットイン ──
+// ── カットイン表示 ──
 function showCutin(fighter, side, text, cssCls){
   const ov = document.getElementById('cutinOv');
   if (!ov) return;
@@ -739,8 +527,8 @@ function showCutin(fighter, side, text, cssCls){
   ov.innerHTML = `<div class="cutin-box${dirCls}${extraCls}">
     ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" onerror="this.style.display='none'">` : ''}
     <div class="cutin-info">
-      <div class="cutin-name">${escHtml(fighter.name || '')}</div>
-      <div class="cutin-text">「${escHtml(text)}」</div>
+      <div class="cutin-name">${fighter.name || ''}</div>
+      <div class="cutin-text">「${text}」</div>
       <div class="cutin-dismiss">CLICK TO CLOSE</div>
     </div>
   </div>`;
@@ -759,8 +547,10 @@ function dismissCutin(){
   ov.classList.remove('show');
   setTimeout(() => { ov.innerHTML = ''; }, 350);
   S.pendingCutin = false;
+  // カットイン解除後にボタン状態を再度更新
   const btn = document.getElementById('nBtn');
   if (btn && !S.anim) btn.disabled = false;
+  // AUTO mode なら次へ
   if (S.autoAdvance && !S.anim && S.frameIdx < S.frames.length) {
     S.autoTimer = setTimeout(() => nextFrame(), 600);
   }
@@ -769,11 +559,6 @@ function dismissCutin(){
 // ── AUTO ──
 function toggleAuto(){
   S.autoAdvance = !S.autoAdvance;
-  const b = document.getElementById('autoBtn');
-  if (b) {
-    b.classList.toggle('active', S.autoAdvance);
-    b.innerHTML = 'AUTO<span>' + (S.autoAdvance ? 'ON' : 'OFF') + '</span>';
-  }
   if (S.autoAdvance) {
     if (!S.anim && !S.pendingCutin && S.frameIdx < S.frames.length) {
       S.autoTimer = setTimeout(() => nextFrame(), 500);
@@ -781,104 +566,59 @@ function toggleAuto(){
   } else {
     clearTimeout(S.autoTimer);
   }
-}
-function setSpeed(idx){
-  S.speedIdx = clamp(idx, 0, SPEED_DELAYS.length - 1);
-  document.querySelectorAll('.speed-dot').forEach((d, i) => {
-    d.classList.toggle('on', i <= S.speedIdx);
-    d.classList.toggle('off', i > S.speedIdx);
-  });
+  renderMatch();
 }
 
-// ── 結果表示 (Victory Overlay) ──
+// ── 結果表示 ──
 function showResult(fr){
   const result = S.result;
   const winTeam = result.winner; // 'teamA' | 'teamB' | 'draw'
   const finType = result.finType || '';
   const finMove = result.finMove || '';
-  const finishPhase = result.finishPhase || '';
+  const pinnedByKey = keyById(result.winAttribution.pinnedBy);
+  const pinnedWhoKey = keyById(result.winAttribution.pinnedWho);
+  const pinner = pinnedByKey ? f(pinnedByKey) : null;
+  const pinned = pinnedWhoKey ? f(pinnedWhoKey) : null;
 
   try { sfx.victoryFanfare(); } catch(e){}
 
-  const winners = winTeam === 'teamA' ? [f('a1'), f('a2')] :
-                  winTeam === 'teamB' ? [f('b1'), f('b2')] : [];
-  const losers = winTeam === 'teamA' ? [f('b1'), f('b2')] :
-                 winTeam === 'teamB' ? [f('a1'), f('a2')] : [];
+  const teamALabel = f('a1').name + ' & ' + f('a2').name;
+  const teamBLabel = f('b1').name + ' & ' + f('b2').name;
+  const winnerTeamLabel = winTeam === 'teamA' ? teamALabel : winTeam === 'teamB' ? teamBLabel : '引き分け';
+  const winnerFighters = winTeam === 'teamA' ? [f('a1'), f('a2')] : winTeam === 'teamB' ? [f('b1'), f('b2')] : [];
 
-  // Reset classes
-  const ov = document.getElementById('victoryOv');
-  const box = document.getElementById('victoryBox');
-  ov.classList.remove('visible');
-  box.classList.remove('visible');
-  ['vicLabel','vicNames','vicType','vicBottom','vicClose'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.classList.remove('visible');
-  });
-  document.querySelectorAll('.vic-portrait').forEach(p => p.classList.remove('visible'));
+  const ov = document.getElementById('resultOv');
+  ov.innerHTML = `<div class="result-box" id="resultBox">
+    <div class="result-title">MATCH END</div>
+    <div class="result-team-row">
+      <div class="result-winner-team">
+        ${winnerFighters.map(w=>`<img class="result-portrait" src="${getUpperUrl(w)}" onerror="this.style.display='none'">`).join('')}
+        <div>
+          <div class="result-win-label">${winTeam === 'draw' ? 'DRAW' : 'WIN!'}</div>
+          <div style="font-size:14px;font-weight:700;margin-top:4px">${winnerTeamLabel}</div>
+        </div>
+      </div>
+    </div>
+    <div class="result-fintype">${finType}${finMove ? ' ／ ' + finMove : ''}</div>
+    ${pinner && pinned ? `<div class="result-decision"><strong>${pinner.name}</strong> が <strong>${pinned.name}</strong> をフォール</div>` : ''}
+    <div class="result-stats">
+      <div class="result-stat"><div class="result-stat-label">MQ</div><div class="result-stat-val mq">${result.mq}</div></div>
+      <div class="result-stat"><div class="result-stat-label">Turns</div><div class="result-stat-val">${result.turns}</div></div>
+      <div class="result-stat"><div class="result-stat-label">Segments</div><div class="result-stat-val">${(result.segments||[]).length}</div></div>
+    </div>
+    <button class="btn-end" onclick="endMatch()">EXIT</button>
+  </div>`;
   ov.classList.add('show');
-
-  // Portraits (upper images)
-  const portraits = document.getElementById('vicPortraits');
-  if (winners.length === 2) {
-    portraits.innerHTML =
-      `<img class="vic-portrait left" src="${getUpperUrl(winners[0])}" onerror="this.style.display='none'">` +
-      `<img class="vic-portrait" src="${getUpperUrl(winners[1])}" onerror="this.style.display='none'">`;
-  } else {
-    portraits.innerHTML = '';
-  }
-
-  // Names
-  const names = document.getElementById('vicNames');
-  if (winners.length === 2) {
-    names.textContent = `${winners[0].name} & ${winners[1].name}`;
-    names.style.background = 'linear-gradient(180deg, #ffd700, #daa520)';
-    names.style.webkitBackgroundClip = 'text';
-  } else {
-    names.textContent = 'DRAW';
-    names.style.background = 'linear-gradient(180deg, #ccc, #888)';
-    names.style.webkitBackgroundClip = 'text';
-  }
-
-  // Finish type
-  const vicType = document.getElementById('vicType');
-  const segments = (result.segments || []).length;
-  vicType.textContent = `${finType}${finMove ? ' — ' + finMove : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
-
-  // Loser
-  const loserEl = document.getElementById('vicLoser');
-  if (losers.length === 2) {
-    loserEl.innerHTML =
-      `<div class="vic-loser-faces">` +
-        `<img class="vic-loser-face" src="${getFaceUrl(losers[0])}" onerror="this.style.display='none'">` +
-        `<img class="vic-loser-face" src="${getFaceUrl(losers[1])}" onerror="this.style.display='none'">` +
-      `</div>` +
-      `<div><div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div><div class="vic-loser-tag">LOSER</div></div>`;
-  } else {
-    loserEl.innerHTML = '';
-  }
-
-  // Stats
-  const mq = result.mq || 0;
-  const mqCls = mq >= 80 ? 'mq-gold' : mq >= 60 ? 'mq-green' : mq >= 40 ? 'mq-normal' : 'mq-low';
-  document.getElementById('vicStats').innerHTML =
-    `<div class="vic-stat"><div class="vic-stat-label">MQ</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>` +
-    `<div class="vic-stat"><div class="vic-stat-label">TURNS</div><div class="vic-stat-value">${result.turns}</div></div>` +
-    `<div class="vic-stat"><div class="vic-stat-label">SEGS</div><div class="vic-stat-value">${segments}</div></div>`;
-
-  // Staggered fade-in
-  setTimeout(() => ov.classList.add('visible'), 50);
-  setTimeout(() => box.classList.add('visible'), 300);
-  setTimeout(() => document.querySelectorAll('.vic-portrait').forEach(p => p.classList.add('visible')), 800);
-  setTimeout(() => { document.getElementById('vicLabel').classList.add('visible'); names.classList.add('visible'); }, 1400);
-  setTimeout(() => vicType.classList.add('visible'), 1800);
-  setTimeout(() => document.getElementById('vicBottom').classList.add('visible'), 2200);
-  setTimeout(() => document.getElementById('vicClose').classList.add('visible'), 2800);
+  setTimeout(() => { ov.classList.add('visible'); document.getElementById('resultBox').classList.add('visible'); }, 40);
 }
 
 function endMatch(){
+  // 結果を親に返送
   const result = S.result;
   const msg = {
     type: 'MATCH_RESULT',
     matchType: 'tag',
+    // 親は事前計算結果を尊重するので、ここでは最小限返す
     winner: result.winner,
     turns: result.turns,
     mq: result.mq,
@@ -892,7 +632,7 @@ function endMatch(){
 function openBp(posKey){
   const ch = f(posKey);
   if (!ch) return;
-  const hpPct = ch.mhp > 0 ? Math.max(0, Math.round(ch.hp / ch.mhp * 100)) : 0;
+  const hpPct = Math.max(0, Math.round(ch.hp / ch.mhp * 100));
   const stats = [
     {k:'pow', l:'PWR', v: Math.round(ch.pw||0)},
     {k:'spd', l:'SPD', v: Math.round(ch.sp||0)},
@@ -905,15 +645,15 @@ function openBp(posKey){
     <button class="bp-close" onclick="closeBp()">✕</button>
     <div class="bp-img"><img src="${getFullUrl(ch)}" onerror="this.style.display='none'"></div>
     <div class="bp-info">
-      <div class="bp-name">${escHtml(ch.name)}</div>
-      <div class="bp-style">${escHtml(ch.style||'')} ／ OVR ${_calcOvr(ch)}</div>
+      <div class="bp-name">${ch.name}</div>
+      <div class="bp-style">${ch.style || ''}</div>
       <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row">
         <span class="bp-stat-name">${s.l}</span>
         <div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div>
         <span class="bp-stat-val">${s.v}</span>
       </div>`).join('')}</div>
-      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">現在HP: ${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${hpPct}%)</div>
-      ${ch.profile ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:12px;line-height:1.6;color:var(--text-sub)">${escHtml(ch.profile)}</div>` : ''}
+      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">現在HP: ${Math.max(0,ch.hp)} / ${ch.mhp} (${hpPct}%)</div>
+      ${ch.profile ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:12px;line-height:1.6;color:var(--text-sub)">${ch.profile}</div>` : ''}
     </div>
   </div>`;
   ov.classList.add('show');
@@ -924,8 +664,8 @@ function closeBp(){
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     const bp = document.getElementById('bpOv');
-    if (bp && bp.classList.contains('show')) { closeBp(); return; }
+    if (bp.classList.contains('show')) { closeBp(); return; }
     const cu = document.getElementById('cutinOv');
-    if (cu && cu.classList.contains('show')) { dismissCutin(); return; }
+    if (cu.classList.contains('show')) { dismissCutin(); return; }
   }
 });
