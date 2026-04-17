@@ -830,12 +830,31 @@ function _buildPinCtrl(pinEv, fr){
     } else if (outcome === 'escape') {
       seq.push({ kind: 'count', text: 'ロープに手が届いたーっ！', cls: 'escape' });
     }
+  } else if (attemptType === 'rollup') {
+    // 丸め込み: 攻撃食らってるはずの選手が逆に押さえ込む劇的な逆転。
+    // カウント前に「なんと！丸め込みだーっ！」を入れて視覚的に流れを切り替える。
+    seq.push({ kind: 'count', text: 'なんと！丸め込みだーっ！', cls: 'rollupIntro' });
+    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
+    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
+    if (outcome === 'win') {
+      // ワン, ツー, スリーーー！ の 3 カウント完走で初めて丸め込み勝利が確定する
+      seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
+    } else if (outcome === 'cutinSave') {
+      const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
+      if (cutinEv) {
+        const saverKey = keyById(cutinEv.by);
+        const saver = saverKey ? f(saverKey) : null;
+        if (saver) {
+          const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
+          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+        }
+      }
+    }
   } else {
-    // fall / pin / rollup: 共通のカウント進行
+    // fall / pin: カウント進行
     if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
     if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
     if (outcome === 'win' || outcome === 'betrayalWin') {
-      // rollup win は「まさかの3カウント！」のニュアンス
       seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
     } else if (outcome === 'kickout') {
       seq.push({ kind: 'count', text: '返したーっ！', cls: 'kickout' });
@@ -913,6 +932,7 @@ function _spawnPinCount(text, cls){
     else if (cls === 'kickout') sfx.kickoutSE();
     else if (cls === 'escape') sfx.guEscapeSE();
     else if (cls === 'lock' || cls === 'agony') sfx.dmgVoice();
+    else if (cls === 'rollupIntro') sfx.cutinSlide();
     else sfx.count();
   } catch(e){}
 }
