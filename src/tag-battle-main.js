@@ -103,7 +103,7 @@ function renderMatchFrame(){
       </div>
       <div class="col-center-top" id="col-center">
         ${_moveDisplayHtml(curFrame)}
-        <div class="battle-log" id="battleLog"><div class="log-header-label"><span>BATTLE LOG</span><span style="font-size:9px;color:#444">新しいターンが下に追加</span></div>${S.logHtml}</div>
+        <div class="battle-log" id="battleLog"><div class="log-header-label">BATTLE LOG</div>${S.logHtml}</div>
       </div>
       <div class="col-side right" id="col-b">
         ${_playerCardHtml('b', 'legal', S.pos.legalB)}
@@ -327,9 +327,9 @@ function _bindNextButton(){
   else btn.onclick = nextFrame;
 }
 
-function _scrollLogToBottom(){
+function _scrollLogToTop(){
   const lb = document.getElementById('battleLog');
-  if (lb) lb.scrollTop = lb.scrollHeight;
+  if (lb) lb.scrollTop = 0;
 }
 
 // ── 差分更新系 ──
@@ -427,13 +427,14 @@ function _appendLogForFrame(fr){
   const evClass = _detectEventClass(fr);
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
   const lines = (fr.logLines || []).map(l => _logLineHtml(l, fr)).join('');
-  S.logHtml += turnMarker + lines;
+  // 新しいターンを先頭に追加 (新しい順 = 上が最新)
+  S.logHtml = turnMarker + lines + S.logHtml;
   S.lastEventClass = evClass;
   const lb = document.getElementById('battleLog');
   if (lb) {
-    lb.innerHTML = `<div class="log-header-label"><span>BATTLE LOG</span><span style="font-size:9px;color:#444">新しいターンが下に追加</span></div>${S.logHtml}`;
+    lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`;
     lb.className = 'battle-log' + (evClass ? ' ev-' + evClass : '');
-    lb.scrollTop = lb.scrollHeight;
+    lb.scrollTop = 0;
   }
 }
 
