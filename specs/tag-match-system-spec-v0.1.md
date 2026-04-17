@@ -644,19 +644,48 @@ snapshot 構造:
 | `src/tag-battle-lines.js` | ダメージセリフ/ボイス + タッグ固有カットイン（HOT_TAG_LINES/DOUBLE_TEAM_LINES/CUTIN_SAVE_LINES/BETRAYAL_LINES） |
 | `src/tag-battle-main.js` | State/postMessage受信/renderMatch/nextFrame/applyFrame/演出群/Result overlay/Fighter popup |
 
-### 10.4 レイアウト
+### 10.4 レイアウト（2026-04-17 UI リファイン — モックアップ `archive/prototype/tag-match-prototype-v0.1/match-screen-tag.html` 準拠）
+
+構造：シングル試合（battle-engine.html）と視覚言語を統一した wm-hud + 3カラム + controls-sub の組み立て。
+
 ```
-┌──── HUD: 両チーム顔+チーム名 / 中央turn-phase-segment / ケミストリー対面バー ────┐
-├──────────────────────────────────────────────────────────────────┤
-│ [リーガルA 大パネル]       中央パネル       [リーガルB 大パネル] │
-│  portrait + HP bar       (ナレーション/        portrait + HP bar │
-│                           技名/ログ)                              │
-│ [エプロンA 小パネル]                        [エプロンB 小パネル] │
-│  (暗めフィルタ)                               (暗めフィルタ)     │
-└─── Action bar: NEXT TURN / AUTO ───────────────────────────────┘
+┌── .wm-hud ───────────────────────────────────────────────────────┐
+│ [顔×2 + Aチーム + 名前]   TURN N / PHASE / SEG   [名前 + Bチーム + 顔×2]│
+│ ┌── .wm-mom (6px両サイドバー) ─┐                                   │
+│ [HP% | HP bar ────── | HP | ────── HP bar | HP%]  チーム合算HP対面  │
+├── .chem-bar (連携 A 値 ／ 連携 B 値) ────────────────────────────┤
+├── .main-row (1fr 1.1fr 1fr grid) ────────────────────────────────┤
+│ ┌.player-card (legal)─┐  ┌.move-display──────┐  ┌.player-card(R)┐│
+│ │ portrait(stand)    │  │ CURRENT MOVE       │  │ portrait(stand)││
+│ │ + name/IN RING     │  │ move-name(18px)    │  │ + IN RING/name ││
+│ │ + style/OVR         │  │ move-damage        │  │ + OVR/style    ││
+│ │ + HP bar + %        │  │ move-narration     │  │ + HP bar + %   ││
+│ │ + 5 stat bars      │  └───────────────────┘  │ + 5 stat bars  ││
+│ └───────────────────┘   ┌.battle-log──────┐    └───────────────┘│
+│ ┌.apron-card (横型)─┐   │ ev-*枠色(hottag│    ┌.apron-card(右型)┐│
+│ │ avatar + name      │   │ /double/cutin  │    │ avatar+name+... ││
+│ │ + HP + 5 stats縮小 │   │ /friendly/     │    │                 ││
+│ └───────────────────┘   │  betrayal/     │    └───────────────┘│
+│                         │  finish/touch) │                        │
+│                         └───────────────┘                         │
+├── .controls-sub: [NEXT TURN] | AUTO | ●●○速度ドット ────────────┤
+└───────────────────────────────────────────────────────────────────┘
 ```
-リーガルパネル: 縦長 stand 画像、HP25%以下で danger-glow 発動。
-エプロンパネル: 横長 face 画像、brightness(0.68)で薄暗く表示。
+
+- **HUD** : シングルと同じ `.wm-hud` 構造（顔サークル + TURN + phase pill + モメンタム6px + チーム合算 HP 対面バー 28px + HP%ラベル 28px）
+- **Player card (legal)** : portrait + モニターフレーム（右下角 gold L字）+ スキャンライン + 名前行（IN RING バッジ）+ style/OVR + HP bar + 5 ステータスバー（PWR/SPD/TEC/STA/MNT、色分け：赤/青/青緑/金/紫）
+- **Apron card** : 横並びレイアウト（avatar 100×140 + name+APRON バッジ + style/OVR + HP bar + ▲回復中 + 5 stats 縮小版）、opacity 0.72 で薄暗
+- **Move display** : `CURRENT MOVE` ラベル + bigmove-splash（dmg≥15でゴールド名表示）+ move-name 18px + move-damage（HIT赤 / COUNTER青緑 / MISS灰）+ narration 12px（dramatic で琥珀色）
+- **Battle log** : 新しい順ではなく**古い順（下に追記・下にスクロール）**、イベント境界で枠色変化（hottag赤 / double金 / cutin青 / friendly橙 / betrayal赤 / finish金 / touch緑）、`.log-event` 左ボーダー3px ＋ 背景色つきブロック
+- **Controls** : NEXT TURN メインボタン + AUTO トグル + 速度ドット（×1/×2/×3）
+- **Victory overlay** : 勝者 upper 画像 2枚（左は scaleX(-1) で対面）+ W I N N E R ラベル + ゴールド勾配の勝者名 + finType/finMove/phase/turns + 敗者フェイス＋「LOSER」タグ + MQ/TURNS/SEGS 統計、段階的フェードインで演出
+
+### 10.4b CSS 設計トークン
+
+- 色: `--bg-dark:#060606` / `--card-bg:#12110e` / `--gold:#d4a843` / `--gold-light:#f0d078` / HP 3段階色（high: `#2a9d8f→#5dd9ca` / warn: `#d4a843→#f0d078` / danger: `#c41e3a→#e85d75`）
+- フォント: `Bebas Neue`（数字 HUD） / `Oswald`（ラベル・バッジ） / `Noto Sans JP`（本文）
+- ハードコード16進色は HP/stat/event ごとの色分けグラデーションに限定、それ以外はトークン参照
+- player-card の portrait は `aspect-ratio:2/3`, `object-fit:contain`, 左カラムは `scaleX(-1)` で対面
 
 ### 10.5 演出（シングル並み磨き込み）
 - **攻撃ヒット**: ダメージ数字ポップ（赤、クリット時52pxゴールド）+ パネルshake + 攻撃側 flash-atk + SE（hitStrike/hitThrow/hitSub/hitAerial/hitGround/hitRollup を move名から guessCategory で推定）
@@ -692,4 +721,6 @@ snapshot 構造:
 | 2026-03-24 | v0.1 初版作成。基本設計の骨格を策定 |
 | 2026-03-24 | v0.1 追記。HP減衰曲線、タッチ判定、ケミストリー算出式を確定。プレイヤー介入不可の原則を明記。ホットタグバフを低確率化。MNTの役割を整理。スタイル相性値を確定（補完100/共鳴75/普通50/噛み合わない20）。介入成功率（線形・HP優先）、タッグフィニッシャー構造、タッグ経験蓄積関数、ドラマイベント発生率、AI編成ロジック、タッグMQ構造を全て確定。全12項目の設計方針が出揃い、プロトタイプ開発可能な状態。アライメント要素（ヒール場外乱闘等）は骨格完成後に追加する将来拡張として記録 |
 | 2026-04-17 | Phase 4a 実装完了。Engine.tagMatch.simulateTagMatch に recordFrames オプション追加（frames 配列返却、デフォルト off で後方互換）、src/tag-battle.html + tag-battle-main.js + tag-battle-audio.js + tag-battle-lines.js 新規作成、app.js watchMatch にタッグ分岐追加。Replay 方式で実装（シングルの Port 方式からは分岐）。シングル並み磨き込み（ダメージ数字/セリフ/カットイン/タッチ swap アニメ/ドラマイベント演出）込み。auto-sim 100シーズン ALL CLEAR。シングル Replay 化は Phase 4b 別タスクとして計画 |
-| 2026-04-17 | Phase 4a 追従修正。(1) ui-common.js の renderMatchPreview タッグ枠にスキップボタンしかなく「🎬 試合を観る」が欠けていたのを修正(Phase 1-3 実装時の名残)。(2) tag-battle 実プレイ確認で判明した 4 点を修正: 最新ターン narration が 1 ターン古い内容を表示するバグ(nextFrame で applyFrame 前に frameIdx++ に順序変更)、ログ順序を新しい順に反転(slice(-60).reverse())、CHEM A/B → 連携 A/B + TEAM A/B → Aチーム/Bチーム 日本語化、ペーシング追加(FRAME_DELAYS: miss 700ms/hit 900ms/counter 1100ms/crit 1300ms、ドラマイベント+500ms、決着 2200ms、S.anim/S.pendingCutin 中はボタン disabled で連打ブロック)。モックアップ完全準拠のデザイン合わせ込みは別タスクに切り出し |
+| 2026-04-17 | Phase 4a 追従修正。(1) ui-common.js の renderMatchPreview タッグ枠にスキップボタンしかなく「🎬 試合を観る」が欠けていたのを修正(Phase 1-3 実装時の名残)。(2) tag-battle 実プレイ確認で判明した 4 点を修正: 最新ターン narration が 1 ターン古い内容を表示するバグ(nextFrame で applyFrame 前に frameIdx++ に順序変更)、ログ順序を新しい順に反転(slice(-60).reverse())、CHEM A/B → 連携 A/B + TEAM A/B → Aチーム/Bチーム 日本語化、ペーシング追加(FRAME_DELAYS: miss 700ms/hit 900ms/counter 1100ms/crit 1300ms、ドラマイベント+500ms、決着 2200ms、S.anim/S.pendingCutin 中はボタン disabled で連打ブロック) |
+| 2026-04-17 | Phase 4a UI リファイン。モックアップ `archive/prototype/tag-match-prototype-v0.1/match-screen-tag.html` 準拠にレイアウトを合わせ込み。HUD をシングル試合と同じ `.wm-hud`（顔+TURN+phase pill+モメンタム+チーム合算HP対面バー）に統一、player-card に 5 ステータスバー（PWR/SPD/TEC/STA/MNT）追加、apron-card を横型（avatar+stats縮小）に再設計、CURRENT MOVE を大きな move-name + move-damage + narration の1ブロックに統合、battle-log にイベント境界色（ev-hottag/double/cutin/friendly/betrayal/finish/touch）を導入、controls-sub に速度ドット追加、victory overlay を勝者 upper×2 + ゴールド勾配名 + 敗者＋統計の構造に再設計。Replay アーキテクチャは維持（frames ベースの再生、エンジン再実行なし）。ログ順は下方向に追記（下が最新）、4a 初版の「新しい順」から mockup 準拠に変更 |
+| 2026-04-17 | Phase 4a 仕切り直し。モックアップ移植を feature に一括反映 (50513f5) → 複数 UI/エンジン問題が絡み Revert (390264e) → claude/wonderful-heisenberg で問題を 9 件×4 カテゴリに分類 (docs/handoff-tag-match-rebuild.md) し、V1 ステータスバー表示復旧/F1 タッチ独立フレーム化/左チームバーミラー を 1 件ずつ実装。以降の残作業 (E1/E2/E3/B1/B2/V2) は次セッションで同じ手順を踏襲 |

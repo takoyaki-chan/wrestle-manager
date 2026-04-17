@@ -395,12 +395,18 @@ Engine.tagMatch = (() => {
   }
 
   // ── タッチ判定 (§3.3) ──
+  // minTurnsLegal: タッチ後の最低連続出場ターン。これ未満は戦術タッチ禁止（タッチ直後の再タッチ防止）
+  // maxTurnsLegal: これを超えたら強制的にタッチしたがる（出ずっぱり防止）
   function wantTouch(fighter, consecutiveLossTurns, chemistry, rng) {
     const hpRatio = fighter.hp / fighter.mhp;
     const TC = TAG_MATCH_CONFIG.touch;
+    // 瀕死は最低出場ターン関係なく即タッチ欲求
     if (hpRatio <= TC.wantHpCritical) return true;
+    // 最低出場ターン未満ではこれ以降の判定をスキップ（直後の再タッチを防ぐ）
+    if (fighter.turnsLegal < (TC.minTurnsLegal || 0)) return false;
     if (hpRatio <= TC.wantHpThreshold) return true;
     if (consecutiveLossTurns >= TC.wantLossTurns) return true;
+    if (TC.maxTurnsLegal && fighter.turnsLegal >= TC.maxTurnsLegal) return true;
     if (chemistry >= TC.tacticalChemThreshold && Engine.rng.float(rng) < TC.tacticalBaseRate) return true;
     return false;
   }
@@ -499,6 +505,10 @@ Engine.tagMatch = (() => {
     const frames = recordFrames ? [] : null;
     let _turnLogStart = 0;
     let _turnAction = null;
+    // F1: タッチ発生時は「攻撃フレーム (Frame A, turnSub=0)」と
+    //     「タッチフレーム (Frame B, turnSub=0.5)」を同一ターン内で別フレームに分離する。
+    //     観戦側で攻撃→タッチの時系列を明確に見せるため。
+    let _frameTurnSub = 0;
     function pushFrame(phName) {
       if (!recordFrames) return;
       const turnLog = log.slice(_turnLogStart);
@@ -507,6 +517,7 @@ Engine.tagMatch = (() => {
         .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move }; });
       frames.push({
         turn: totalTurn,
+        turnSub: _frameTurnSub,
         phase: phName,
         legalA: legalA.id,
         legalB: legalB.id,
@@ -569,6 +580,32 @@ Engine.tagMatch = (() => {
       const ph = getPhase(totalTurn);
       _turnLogStart = log.length;
       _turnAction = null;
+      _frameTurnSub = 0;
+
+      // HP 0 即決着チェック（前ターンから HP が枯渇した場合のセーフティネット。
+      // 本来はダメージ発生箇所側で決着判定すべきなので、ここに来たら TKO とする）
+      if (legalA.hp <= 0) {
+        winner = 'teamB';
+        finType = 'TKO';
+        finMove = '';
+        finishPhase = ph.name;
+        winAttribution.pinnedBy = null;
+        winAttribution.pinnedWho = legalA.id;
+        log.push(`  ★ 決着！ ${legalA.name}は立ち上がれない。TKO！（${ph.name}）`);
+        pushFrame(ph.name);
+        break;
+      }
+      if (legalB.hp <= 0) {
+        winner = 'teamA';
+        finType = 'TKO';
+        finMove = '';
+        finishPhase = ph.name;
+        winAttribution.pinnedBy = null;
+        winAttribution.pinnedWho = legalB.id;
+        log.push(`  ★ 決着！ ${legalB.name}は立ち上がれない。TKO！（${ph.name}）`);
+        pushFrame(ph.name);
+        break;
+      }
 
       // エプロン回復
       apronA.hp = Math.min(apronA.mhp, apronA.hp + TC.apronRecovery);
@@ -631,6 +668,68 @@ Engine.tagMatch = (() => {
           }
           if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
           else { lossStreakB++; lossStreakA = 0; }
+
+          // ── カウンターKO決着判定 ──
+          if (atkFighter.hp <= 0) {
+            const fType = B.determineFinishType(rng, cMv);
+            let finished = false;
+            if (fType === 'fall' || fType === 'tko') {
+              if (fType === 'tko') {
+                finished = true;
+              } else {
+                const koChance = B.calcKickoutChance(atkFighter, ph, ENG);
+                if (atkFighter.kickoutCount < TC.kickoutMax && Engine.rng.float(rng) < koChance) {
+                  atkFighter.hp = Math.round(atkFighter.mhp * 0.05);
+                  atkFighter.kickoutCount++;
+                  atkFighter.gritTurns = ENG.gritDuration;
+                  totalKickouts++;
+                  log.push(`  → ${atkFighter.name}がキックアウト！ (${atkFighter.kickoutCount}回目)`);
+                } else {
+                  const apronAtk = isAAttacking ? apronA : apronB;
+                  const atkBond = isAAttacking ? bondA : bondB;
+                  if (checkBetrayal(atkBond, rng)) {
+                    finished = true;
+                    dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronAtk.id, victim: atkFighter.id });
+                    log.push(`  → ${apronAtk.name}が助けに行かない！ 見殺し！`);
+                  } else {
+                    const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
+                    if (Engine.rng.float(rng) < cutinRate) {
+                      apronAtk.cutinCount++;
+                      atkFighter.hp = Math.round(atkFighter.mhp * 0.05);
+                      atkFighter.gritTurns = ENG.gritDuration;
+                      totalKickouts++;
+                      dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
+                      log.push(`  → ${apronAtk.name}がカットイン！ ${atkFighter.name}を救出！`);
+                    } else {
+                      finished = true;
+                    }
+                  }
+                }
+              }
+            } else if (fType === 'gu') {
+              const escChance = B.calcGuEscapeChance(atkFighter, ph, ENG);
+              if (atkFighter.kickoutCount < TC.guEscapeMax && Engine.rng.float(rng) < escChance) {
+                atkFighter.hp = Math.round(atkFighter.mhp * 0.05);
+                atkFighter.kickoutCount++;
+                atkFighter.gritTurns = ENG.gritDuration;
+                totalKickouts++;
+                log.push(`  → ${atkFighter.name}がロープエスケープ！`);
+              } else {
+                finished = true;
+              }
+            }
+            if (finished) {
+              winner = isAAttacking ? 'teamB' : 'teamA';
+              finType = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
+              finMove = cMv.n;
+              finishPhase = ph.name;
+              winAttribution.pinnedBy = defFighter.id;
+              winAttribution.pinnedWho = atkFighter.id;
+              log.push(`  ★ 決着！ ${defFighter.name}のカウンター（${cMv.n}）で${finType}勝ち！ (${ph.name})`);
+              pushFrame(ph.name);
+              break;
+            }
+          }
         } else {
           // 通常ヒット
           let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
@@ -832,25 +931,45 @@ Engine.tagMatch = (() => {
       }
 
       // ── 同士討ち (セグメント計画) ──
+      // 同士討ちは「連携のほころび」ドラマ。HP は少しだけ削るが、控えの体力が尽きる事はない。
+      // 主要な効果はモメンタム反転(連携ミスで流れを失う)。
       if (!winner && curSegment.turns === _ffTargetTurn) {
         const defApron = isAAttacking ? apronB : apronA;
-        const ffDmg = Engine.rng.int(rng, 5, 10);
-        defApron.hp -= ffDmg;
-        defApron.damageTaken += ffDmg;
+        const ffDmg = Engine.rng.int(rng, 2, 4);
+        // 最低でも mhp の 50% は残す（控えが戦闘不能にならないように）
+        const floorHp = Math.round(defApron.mhp * 0.50);
+        const appliedDmg = Math.max(0, Math.min(ffDmg, defApron.hp - floorHp));
+        defApron.hp -= appliedDmg;
+        defApron.damageTaken += appliedDmg;
+        // モメンタム反転（主要なゲーム上の効果）
+        mom += isAAttacking ? 6 : -6;
+        mom = clamp(mom, -50, 50);
         dramaSummary.push({ type: 'friendlyFire', turn: totalTurn, team: isAAttacking ? 'B' : 'A', victim: defApron.id });
-        log.push(`  ※ 同士討ち！ ${defFighter.name}の攻撃が${defApron.name}に誤爆！ ${ffDmg}ダメージ`);
+        log.push(`  ※ 連携にほころび！ ${defFighter.name}の反撃が${defApron.name}をかすめる！`);
       }
 
       // ── タッチ判定 ──
+      // F1: タッチ成立時は攻撃フレーム (Frame A) をここで先行 push し、
+      //     直後のタッチ処理によるログ/swap は次フレーム (Frame B, turnSub=0.5) へ回す。
+      //     同一ターン内で A と B が続けて touch する場合、Frame A push は最初の一度だけ。
+      const _splitTouchFrame = () => {
+        if (!recordFrames || _frameTurnSub !== 0) return;
+        pushFrame(ph.name);
+        _turnAction = null;
+        _turnLogStart = log.length;
+        _frameTurnSub = 0.5;
+      };
+
       if (!winner) {
         if (wantTouch(legalA, lossStreakA, chemA, rng)) {
           const rate = touchSuccessRate(legalA, legalB);
           if (Engine.rng.float(rng) < rate) {
+            _splitTouchFrame();
             const tType = classifyTouch(legalA, isolationA, chemA);
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'A', tagged: apronA.id });
-              log.push(`  ★ ホットタグ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`);
+              log.push(`  ★ 反撃のタッチ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`);
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronA.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
@@ -860,6 +979,10 @@ Engine.tagMatch = (() => {
             curSegment.touchType = tType;
             segments.push({ ...curSegment });
             const tmp = legalA; legalA = apronA; apronA = tmp;
+            // タッチ後: 新法定選手は「たった今法定入りしたばかり」なので turnsLegal=0 にリセット。
+            // 下がった選手は控え再エントリ扱いなので turnsApron=0。
+            legalA.turnsLegal = 0;
+            apronA.turnsApron = 0;
             lossStreakA = 0; isolationA = 0;
             curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
             planSegmentDrama();
@@ -871,11 +994,12 @@ Engine.tagMatch = (() => {
         if (!winner && wantTouch(legalB, lossStreakB, chemB, rng)) {
           const rate = touchSuccessRate(legalB, legalA);
           if (Engine.rng.float(rng) < rate) {
+            _splitTouchFrame();
             const tType = classifyTouch(legalB, isolationB, chemB);
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'B', tagged: apronB.id });
-              log.push(`  ★ ホットタグ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`);
+              log.push(`  ★ 反撃のタッチ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`);
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronB.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
@@ -885,6 +1009,8 @@ Engine.tagMatch = (() => {
             curSegment.touchType = tType;
             segments.push({ ...curSegment });
             const tmp = legalB; legalB = apronB; apronB = tmp;
+            legalB.turnsLegal = 0;
+            apronB.turnsApron = 0;
             lossStreakB = 0; isolationB = 0;
             curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
             planSegmentDrama();
