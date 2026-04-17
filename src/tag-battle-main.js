@@ -17,6 +17,8 @@ const S = {
   autoTimer: null,
   speedIdx: 0,             // 0=slow 1=mid 2=fast
   pendingCutin: false,
+  pinCtrl: null,           // { seq, idx, fr } — クリック駆動ピンカウント制御
+  pendingDamage: false,    // ダメージポップアップ表示中 (クリック待ち)
   matchInfo: null,
   chemA: 0,
   chemB: 0,
@@ -497,14 +499,8 @@ function _logLineHtml(line, fr){
 const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
 function _frameMinDelay(fr){
   if (!fr) return 800;
-  // ピンカウント演出分を加算。シングルと同じ: lead1000 + interval1000×2 + 最終カウント表示 ~1000 = ~4000ms
-  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
-  const pinExtra = pinEv ? (
-    (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin' || pinEv.outcome === 'kickout') ? 4000 :
-    (pinEv.outcome === 'cutinSave') ? 2000 :
-    (pinEv.attemptType === 'tko') ? 1500 : 0
-  ) : 0;
-  if (fr.winner) return 2200 + pinExtra;
+  // ピンカウントはクリック駆動なので時間加算しない (pinCtrl が進行管理)
+  if (fr.winner) return 2200;
   let base = 800;
   if (fr.action) {
     if (fr.action.kind === 'miss') base = FRAME_DELAYS.miss;
@@ -513,7 +509,7 @@ function _frameMinDelay(fr){
     else base = FRAME_DELAYS.hit;
   }
   if (fr.events && fr.events.length > 0) base += 500;
-  return base + pinExtra;
+  return base;
 }
 
 function nextFrame(){
@@ -528,10 +524,10 @@ function nextFrame(){
   applyFrame(fr);
 
   if (fr.winner) {
-    // ピンカウント完走 + 余韻を待ってから結果画面へ (シングル同等 ~4500ms)
-    const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup');
-    const winDelay = pinEv && (pinEv.outcome === 'win' || pinEv.outcome === 'betrayalWin') ? 4500 : 1800;
-    setTimeout(() => showResult(fr), winDelay);
+    // クリック駆動ピン seq が走るフレームは _finishPinSeq が showResult を呼ぶ
+    const hasPinSeq = fr.events && fr.events.some(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup' && e.attemptType !== 'tko');
+    if (hasPinSeq) return;
+    setTimeout(() => showResult(fr), 1800);
     return;
   }
   const delay = _frameMinDelay(fr) + (touchHappened ? 750 : 0);
@@ -591,8 +587,13 @@ function applyFrame(fr){
   // タッチ演出は即開始（アクション演出と並行）。内部で shrink→370ms→差し替え→grow-in
   if (touchA) animateTouchSwap('a', fr);
   if (touchB) animateTouchSwap('b', fr);
-  // クリティカルダメージセリフも即時
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) tryDamageLine(fr.action, fr);
+  // ピンイベントを検出 → クリック駆動ピン演出を開始
+  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup' && e.attemptType !== 'tko');
+  // クリティカルダメージセリフ: ピンフレームではピン演出が主役なのでスキップ
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !pinEv) {
+    setTimeout(() => tryDamageLine(fr.action, fr), 600);
+  }
+  if (pinEv) _beginPinSequence(pinEv, fr);
 
   S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
 
@@ -603,7 +604,8 @@ function applyFrame(fr){
     S.anim = false;
     const btn = document.getElementById('nBtn');
     if (btn && !S.pendingCutin) btn.disabled = false;
-    _bindNextButton(); // winner の場合 onclick を endMatch に切り替え
+    // pin seq 中は onclick を上書きしない (_advancePinStep を保持)
+    if (!S.pinCtrl) _bindNextButton();
   }, minDelay);
 }
 
@@ -690,6 +692,9 @@ function animateEvent(ev, fr){
     showBanner('DOUBLE TEAM!', 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
   } else if (ev.type === 'cutinSave') {
+    // pinAttempt(outcome=cutinSave) と同フレームなら pin シーケンス内で扱うためスキップ
+    const hasPinCutin = fr && fr.events && fr.events.some(e => e.type === 'pinAttempt' && e.outcome === 'cutinSave');
+    if (hasPinCutin) return;
     const saverKey = keyById(ev.by);
     showBanner('CUT IN!', 'gold');
     try { sfx.cutinSlide(); } catch(e){}
@@ -773,46 +778,102 @@ function showBanner(text, cls){
   setTimeout(() => el.classList.remove('show'), 1700);
 }
 
-// ── ピンカウント演出 (U3) ──
-// fall/pin 決着時の 1, 2, (3) カウント演出。attemptType='gu'/'rollup' は別コミットで対応。
-// タイミングはシングル battle-engine.html に合わせる: ブレス1000ms → ワン → 1000ms → ツー → 1000ms → スリー/返した
-// PIN_COUNT_TIMING[i] = i 番目のカウントの開始 (ms) 。frame 内 events が発火する時刻を基準。
-const PIN_COUNT_TIMING = { lead: 1000, intv: 1000 };
-function animatePinCount(ev){
-  const { attemptType, outcome, count } = ev;
-  if (attemptType === 'tko') {
-    showBanner('T K O !', 'red');
-    try { sfx.finImpact(); } catch(e){}
-    return;
-  }
-  if (attemptType === 'gu' || attemptType === 'rollup') return; // U2/U4 で対応
-  // fall / pin のカウント演出
-  const t1 = PIN_COUNT_TIMING.lead;
-  const t2 = t1 + PIN_COUNT_TIMING.intv;
-  const t3 = t2 + PIN_COUNT_TIMING.intv;
-  _spawnPinCount('ワン！', t1);
-  if (count >= 2) _spawnPinCount('ツー！', t2);
-  if (outcome === 'win' || outcome === 'betrayalWin') {
-    _spawnPinCount('スリーーー！', t3, 'three');
-  } else if (outcome === 'kickout') {
-    _spawnPinCount('返したーっ！', t3, 'kickout');
-  }
-  // cutinSave: ワンのみ表示。カットイン演出は別の cutinSave イベントで発火
+// ── ピンカウント演出 (U3 rework) ──
+// クリック駆動: 攻撃後 600ms で「ワン！」自動表示 → クリック → 「ツー！」→ クリック →
+// 「スリー／返した／カットイン」→ クリック → 次フレーム。シングル battle-engine.html と同仕様。
+const PIN_SEQ_LEAD_MS = 600;
+
+function _beginPinSequence(pinEv, fr){
+  const ctrl = _buildPinCtrl(pinEv, fr);
+  if (!ctrl || ctrl.seq.length === 0) return;
+  S.pinCtrl = ctrl;
+  S.pendingCutin = true; // nextFrame ガードを流用
+  const btn = document.getElementById('nBtn');
+  if (btn) btn.disabled = true;
+  // 先頭 step (ワン！) を軽く遅延させて表示 → その後クリック待ち
+  setTimeout(() => {
+    if (!S.pinCtrl) return;
+    _executePinStep(0);
+  }, PIN_SEQ_LEAD_MS);
 }
 
-function _spawnPinCount(text, delayMs, cls){
-  setTimeout(() => {
-    const el = document.createElement('div');
-    el.className = 'pin-count' + (cls ? ' ' + cls : '');
-    el.textContent = text;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-    try {
-      if (cls === 'three') { sfx.finChime(); sfx.finImpact(); }
-      else if (cls === 'kickout') sfx.kickoutSE();
-      else sfx.count();
-    } catch(e){}
-  }, delayMs);
+function _buildPinCtrl(pinEv, fr){
+  const { outcome, count } = pinEv;
+  const seq = [];
+  if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
+  if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
+  if (outcome === 'win' || outcome === 'betrayalWin') {
+    seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
+  } else if (outcome === 'kickout') {
+    seq.push({ kind: 'count', text: '返したーっ！', cls: 'kickout' });
+  } else if (outcome === 'cutinSave') {
+    const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
+    if (cutinEv) {
+      const saverKey = keyById(cutinEv.by);
+      const saver = saverKey ? f(saverKey) : null;
+      if (saver) {
+        const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
+        seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+      }
+    }
+  }
+  return { seq, idx: -1, fr };
+}
+
+function _executePinStep(idx){
+  if (!S.pinCtrl) return;
+  if (idx >= S.pinCtrl.seq.length) { _finishPinSeq(); return; }
+  S.pinCtrl.idx = idx;
+  const step = S.pinCtrl.seq[idx];
+  if (step.kind === 'count') {
+    _spawnPinCount(step.text, step.cls);
+    // クリックで次 step
+    const btn = document.getElementById('nBtn');
+    if (btn) { btn.disabled = false; btn.onclick = _advancePinStep; }
+  } else if (step.kind === 'cutin') {
+    // カットインは showCutin が pendingCutin=true を立てる。
+    // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し _finishPinSeq を呼ぶ。
+    showBanner('CUT IN!', 'gold');
+    try { sfx.cutinSlide(); } catch(e){}
+    showCutin(step.saver, step.side, step.line, 'tag-save');
+    // nBtn は showCutin 内で disabled 化済み。dismissCutin からの遷移を待つ。
+  }
+}
+
+function _advancePinStep(){
+  if (!S.pinCtrl) return;
+  _executePinStep(S.pinCtrl.idx + 1);
+}
+
+function _finishPinSeq(){
+  const fr = S.pinCtrl ? S.pinCtrl.fr : null;
+  S.pinCtrl = null;
+  S.pendingCutin = false;
+  _bindNextButton(); // onclick を通常フローに戻す
+  const btn = document.getElementById('nBtn');
+  if (fr && fr.winner) {
+    // 勝者フレーム: 少し余韻を置いて結果画面へ
+    setTimeout(() => showResult(fr), 800);
+  } else {
+    if (btn) btn.disabled = false;
+    if (S.autoAdvance && S.frameIdx < S.frames.length) {
+      clearTimeout(S.autoTimer);
+      S.autoTimer = setTimeout(() => nextFrame(), 600);
+    }
+  }
+}
+
+function _spawnPinCount(text, cls){
+  const el = document.createElement('div');
+  el.className = 'pin-count' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1400); // 少し長めに残す (クリック待ち間も視認可能に)
+  try {
+    if (cls === 'three') { sfx.finChime(); sfx.finImpact(); }
+    else if (cls === 'kickout') sfx.kickoutSE();
+    else sfx.count();
+  } catch(e){}
 }
 function flashGold(){
   const ov = document.getElementById('flashOv');
@@ -870,6 +931,11 @@ function dismissCutin(){
   ov.classList.remove('show');
   setTimeout(() => { ov.innerHTML = ''; }, 350);
   S.pendingCutin = false;
+  // ピン seq の cutin step だった場合は dismiss で pinSeq 完了へ
+  if (S.pinCtrl && S.pinCtrl.seq[S.pinCtrl.idx] && S.pinCtrl.seq[S.pinCtrl.idx].kind === 'cutin') {
+    _finishPinSeq();
+    return;
+  }
   const btn = document.getElementById('nBtn');
   if (btn && !S.anim) btn.disabled = false;
   if (S.autoAdvance && !S.anim && S.frameIdx < S.frames.length) {
