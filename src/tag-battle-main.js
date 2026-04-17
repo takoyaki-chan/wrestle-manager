@@ -566,27 +566,28 @@ function applyFrame(fr){
   _updateCenter(fr);
   _appendLogForFrame(fr);
 
-  // タッチが発生したフレームはアクション演出を遅らせて「交代した事実」を見せる間を作る
-  const touchDelay = (touchA || touchB) ? 750 : 0;
+  // エンジン処理順: 攻撃 → タッチ判定 の順なので、
+  // アクション演出は必ず「先」に発火させ、その後でタッチ交代アニメを重ねる。
+  // touchPause: 「攻撃→タッチ」の間に置くブレス（次ターン開始までの追加余白）
+  const touchPause = (touchA || touchB) ? 700 : 0;
 
-  // アクション演出（タッチ時は遅延）
-  if (fr.action) setTimeout(() => animateAction(fr.action, fr), touchDelay);
-  // ドラマイベント（タッチ時は遅延）
+  // アクション演出は常に即時発火（攻撃が先、タッチが後という時系列を守る）
+  if (fr.action) animateAction(fr.action, fr);
+  // ドラマイベントも即時
   if (fr.events && fr.events.length > 0) {
-    setTimeout(() => (fr.events || []).forEach(ev => animateEvent(ev, fr)), touchDelay);
+    (fr.events || []).forEach(ev => animateEvent(ev, fr));
   }
-  // タッチ演出（内容差し替えを遅延して grow-in）
+  // タッチ演出は即開始（アクション演出と並行）。内部で shrink→370ms→差し替え→grow-in
   if (touchA) animateTouchSwap('a', fr);
   if (touchB) animateTouchSwap('b', fr);
-  // クリティカルダメージセリフ
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) {
-    setTimeout(() => tryDamageLine(fr.action, fr), touchDelay);
-  }
+  // クリティカルダメージセリフも即時
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) tryDamageLine(fr.action, fr);
 
   S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
 
-  // タッチフレームは次のフレームまでの最低待機時間を延長
-  const minDelay = _frameMinDelay(fr) + touchDelay;
+  // タッチフレームは次のフレームまでの最低待機時間を延長し、
+  // 「交代した選手がすぐ反撃する」のを防ぐ間を作る
+  const minDelay = _frameMinDelay(fr) + touchPause;
   setTimeout(() => {
     S.anim = false;
     const btn = document.getElementById('nBtn');

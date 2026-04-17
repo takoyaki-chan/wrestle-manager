@@ -2375,34 +2375,18 @@ function renderShowPrep() {
       const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
       const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
       const _tagFighterHtml = (f, team, pos, side) => {
-        if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:80px;height:112px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
+        if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
         const cond = Math.round(f.condition || 100);
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
-        const pw = Math.round(f.pw || f.power || 0);
-        const sp2 = Math.round(f.sp || f.speed || 0);
-        const te = Math.round(f.te || f.technique || 0);
-        const st = Math.round(f.st || f.stamina || 0);
-        const statsHtml = `<div class="sp-tag-stat-bars">
-          <div class="sp-tag-stat-row"><span class="sp-tag-sl">PW</span><div class="sp-tag-strack"><div class="sp-tag-sf pwr" style="width:${pw}%"></div></div></div>
-          <div class="sp-tag-stat-row"><span class="sp-tag-sl">SP</span><div class="sp-tag-strack"><div class="sp-tag-sf spd" style="width:${sp2}%"></div></div></div>
-          <div class="sp-tag-stat-row"><span class="sp-tag-sl">TE</span><div class="sp-tag-strack"><div class="sp-tag-sf tec" style="width:${te}%"></div></div></div>
-          <div class="sp-tag-stat-row"><span class="sp-tag-sl">ST</span><div class="sp-tag-strack"><div class="sp-tag-sf sta" style="width:${st}%"></div></div></div>
-        </div>`;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
-          ${portraitImg(f.id, 80)}
+          ${portraitImg(f.id, 72)}
           <div class="sp-tag-fighter-info">
-            ${isChamp ? '<div class="sp-tag-fighter-champ">👑 王者</div>' : ''}
+            ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
             <div class="sp-tag-fighter-name">${f.name}</div>
-            <div class="sp-tag-bottom-row">
-              <span class="sp-tag-style-label">${f.style || '—'}</span>
-              <span class="sp-tag-fighter-ovr">OVR&thinsp;<span style="font-size:17px;color:rgba(200,190,170,.75)">${ov(f)}</span></span>
-            </div>
-            ${statsHtml}
-            <div class="sp-tag-misc">
-              <span><span style="${_scale6Style(_condColor(cond))}">${cond}</span>&thinsp;<span style="opacity:.45">体調</span></span>
-              <span><span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span>&thinsp;<span style="opacity:.45">集客</span></span>
-            </div>
+            <div class="sp-tag-fighter-ovr">OVR <span style="font-size:16px">${ov(f)}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">体調 <span style="${_scale6Style(_condColor(cond))}">${cond}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">集客力 <span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span></div>
           </div>
         </div>`;
       };

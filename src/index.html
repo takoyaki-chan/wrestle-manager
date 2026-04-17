@@ -215,33 +215,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .sp-match-card.tag-match .sp-match-card-inner::before{display:none}
 .sp-tag-badge{font-size:11px;font-weight:900;letter-spacing:2px;color:rgba(155,89,182,.8);margin-bottom:2px}
 .sp-tag-team{display:flex;flex-direction:column;gap:12px;align-items:stretch}
-.sp-tag-fighter{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:8px 10px;border-radius:6px;border:1px solid rgba(200,190,170,.06);transition:background .15s;background:rgba(0,0,0,.15)}
+.sp-tag-fighter{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 8px;border-radius:6px;border:1px solid rgba(200,190,170,.06);transition:background .15s;background:rgba(0,0,0,.15)}
 .sp-tag-fighter:hover{background:rgba(200,190,170,.06);border-color:rgba(200,190,170,.1)}
-.sp-tag-fighter .portrait{border-radius:6px!important;border-width:1px!important;flex-shrink:0;width:80px!important;height:112px!important;object-fit:cover;object-position:center top}
-.sp-tag-fighter-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
-.sp-tag-fighter-champ{font-size:9px;color:var(--gold);font-weight:700;letter-spacing:1px}
+.sp-tag-fighter .portrait{border-radius:6px!important;border-width:1px!important;flex-shrink:0}
+.sp-tag-fighter-info{min-width:0;display:flex;flex-direction:column;gap:2px}
 .sp-tag-fighter-name{font-size:14px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sp-tag-fighter-name.empty{color:var(--text-dim);cursor:pointer;font-weight:400;font-size:12px}
-.sp-tag-bottom-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.sp-tag-style-label{font-size:10px;color:rgba(200,190,170,.45);font-weight:500}
-.sp-tag-fighter-ovr{font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(200,190,170,.45);line-height:1}
-.sp-tag-stat-bars{margin-top:2px;display:flex;flex-direction:column;gap:3px;width:100%}
-.sp-tag-stat-row{display:flex;align-items:center;gap:5px;height:12px}
-.sp-tag-sl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.5px;color:rgba(200,190,170,.35);min-width:16px;flex-shrink:0}
-.sp-tag-strack{flex:1;height:4px;background:rgba(200,190,170,.08);border-radius:2px;overflow:hidden}
-.sp-tag-sf{height:100%;border-radius:2px}
-.sp-tag-sf.pwr{background:linear-gradient(90deg,#e94560,#ff6b6b)}
-.sp-tag-sf.spd{background:linear-gradient(90deg,#4caf50,#66bb6a)}
-.sp-tag-sf.tec{background:linear-gradient(90deg,#2196f3,#42a5f5)}
-.sp-tag-sf.sta{background:linear-gradient(90deg,#ff9800,#ffb74d)}
-.sp-tag-misc{font-size:10px;color:var(--text-dim);margin-top:2px;display:flex;gap:8px}
+.sp-tag-fighter-ovr{font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(200,190,170,.4)}
 .sp-tag-chem{font-size:11px;color:var(--text-dim);margin-top:4px;padding:4px 8px;background:rgba(0,0,0,.2);border-radius:4px;text-align:center}
 .sp-tag-chem-val{font-weight:700}
 .sp-tag-remove-btn{font-size:10px;color:rgba(231,76,60,.6);cursor:pointer;margin-top:8px;padding:3px 10px;border:1px dashed rgba(231,76,60,.2);border-radius:3px;transition:all .15s}
 .sp-tag-remove-btn:hover{color:rgba(231,76,60,.9);border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.06)}
 .sp-tag-team.left .sp-tag-fighter{flex-direction:row-reverse}
 .sp-tag-team.left .sp-tag-fighter-info{text-align:right;align-items:flex-end}
-.sp-tag-team.left .sp-tag-stat-row{flex-direction:row-reverse}
 .sp-tag-team.right .sp-tag-fighter-info{text-align:left;align-items:flex-start}
 /* ── Tag Match Preview (試合プレビュー) ── */
 .smc-tag-badge{font-size:10px;font-weight:900;letter-spacing:2px;color:rgba(155,89,182,.7);margin-bottom:2px}
@@ -265,6 +251,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .smc-tag-sfill.te{background:linear-gradient(90deg,#2196f3,#42a5f5)}
 .smc-tag-sfill.st{background:linear-gradient(90deg,#ff9800,#ffb74d)}
 .smc-tag-chem{font-size:11px;color:var(--text-dim);margin-top:4px;padding:3px 8px;background:rgba(0,0,0,.2);border-radius:4px;text-align:center}
+/* 左チームは右チームと鏡像配置: 画像を右側、情報を左側に */
+.smc-tag-team.left .smc-tag-fighter{flex-direction:row-reverse}
+.smc-tag-team.left .smc-tag-info{text-align:right;align-items:flex-end}
+.smc-tag-team.left .smc-tag-ovr-row{flex-direction:row-reverse;justify-content:flex-start}
+.smc-tag-team.left .smc-tag-srow{flex-direction:row-reverse}
+.smc-tag-team.right .smc-tag-info{align-items:flex-start}
 /* ─────────────────────────────────────────────────────────────── */
 
 /* L1: Venue Selection (10段・リスク指標付き) */

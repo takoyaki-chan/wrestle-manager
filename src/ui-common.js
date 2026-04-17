@@ -3799,9 +3799,9 @@ function renderMatchPreview() {
         ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
       </div>`;
       html += `<div class="smc-tag-arena">
-        <div class="smc-tag-team">${_tagFighter(tA1)}${_tagFighter(tA2)}<div class="smc-tag-chem">🤝 ${Math.round(bondA)}</div></div>
+        <div class="smc-tag-team left">${_tagFighter(tA1)}${_tagFighter(tA2)}<div class="smc-tag-chem">🤝 ${Math.round(bondA)}</div></div>
         <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
-        <div class="smc-tag-team">${_tagFighter(tB1)}${_tagFighter(tB2)}<div class="smc-tag-chem">🤝 ${Math.round(bondB)}</div></div>
+        <div class="smc-tag-team right">${_tagFighter(tB1)}${_tagFighter(tB2)}<div class="smc-tag-chem">🤝 ${Math.round(bondB)}</div></div>
       </div>`;
       if (isResolved) {
         let wNames = '引き分け';
