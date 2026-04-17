@@ -729,8 +729,10 @@ Engine.tagMatch = (() => {
                 atkFighter.gritTurns = ENG.gritDuration;
                 totalKickouts++;
                 log.push(`  → ${atkFighter.name}がロープエスケープ！`);
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: defFighter.id, onId: atkFighter.id, outcome: 'escape', count: 0 });
               } else {
                 finished = true;
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 0 });
               }
             }
             if (finished) {
@@ -815,8 +817,10 @@ Engine.tagMatch = (() => {
                 defFighter.gritTurns = ENG.gritDuration;
                 totalKickouts++;
                 log.push(`  → ${defFighter.name}がロープエスケープ！`);
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: atkFighter.id, onId: defFighter.id, outcome: 'escape', count: 0 });
               } else {
                 finished = true;
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 0 });
               }
             }
 
@@ -890,6 +894,8 @@ Engine.tagMatch = (() => {
                 const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
                 if (Engine.rng.float(rng) < cutinRate) {
                   apronAtk.cutinCount++;
+                  dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
+                  dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'cutinSave', count: 2 });
                   log.push(`  → ${defFighter.name}が丸め込み！ しかし${apronAtk.name}がカットイン！`);
                 } else {
                   winner = isAAttacking ? 'teamB' : 'teamA';
@@ -898,6 +904,7 @@ Engine.tagMatch = (() => {
                   finishPhase = ph.name;
                   winAttribution.pinnedBy = defFighter.id;
                   winAttribution.pinnedWho = atkFighter.id;
+                  dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 3 });
                   log.push(`  ★ ${defFighter.name}が丸め込みで逆転勝利！ (${ph.name})`);
                   pushFrame(ph.name);
                   break;

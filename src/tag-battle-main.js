@@ -525,7 +525,7 @@ function nextFrame(){
 
   if (fr.winner) {
     // クリック駆動ピン seq が走るフレームは _finishPinSeq が showResult を呼ぶ
-    const hasPinSeq = fr.events && fr.events.some(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup' && e.attemptType !== 'tko');
+    const hasPinSeq = fr.events && fr.events.some(e => e.type === 'pinAttempt');
     if (hasPinSeq) return;
     setTimeout(() => showResult(fr), 1800);
     return;
@@ -587,8 +587,8 @@ function applyFrame(fr){
   // タッチ演出は即開始（アクション演出と並行）。内部で shrink→370ms→差し替え→grow-in
   if (touchA) animateTouchSwap('a', fr);
   if (touchB) animateTouchSwap('b', fr);
-  // ピンイベントを検出 → クリック駆動ピン演出を開始
-  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt' && e.attemptType !== 'gu' && e.attemptType !== 'rollup' && e.attemptType !== 'tko');
+  // ピンイベントを検出 → クリック駆動ピン演出を開始 (fall/pin/rollup/gu/tko 全て対応)
+  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt');
   // クリティカルダメージセリフ: ピンフレームではピン演出が主役なのでスキップ
   if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !pinEv) {
     setTimeout(() => tryDamageLine(fr.action, fr), 600);
@@ -797,11 +797,12 @@ function _beginPinSequence(pinEv, fr){
 }
 
 function _buildPinCtrl(pinEv, fr){
-  const { outcome, count } = pinEv;
+  const { attemptType, outcome, count } = pinEv;
   const seq = [];
   // ダメージセリフ/ボイス: crit ヒットで pickDamageLine が line を返したら先頭に配置。
   //「ビッグムーブ食らう → 苦悶 → カバー → ワン、ツー、スリー」の流れを作る。
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit) {
+  // ただし rollup は逆カウンター (守備側が勝つ) なので攻撃側のダメージは出さない。
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && attemptType !== 'rollup') {
     const defKey = keyById(fr.action.defenderId);
     const def = defKey ? f(defKey) : null;
     if (def) {
@@ -816,20 +817,37 @@ function _buildPinCtrl(pinEv, fr){
       }
     }
   }
-  if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
-  if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
-  if (outcome === 'win' || outcome === 'betrayalWin') {
-    seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
-  } else if (outcome === 'kickout') {
-    seq.push({ kind: 'count', text: '返したーっ！', cls: 'kickout' });
-  } else if (outcome === 'cutinSave') {
-    const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
-    if (cutinEv) {
-      const saverKey = keyById(cutinEv.by);
-      const saver = saverKey ? f(saverKey) : null;
-      if (saver) {
-        const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-        seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+  // attemptType 別にカウント/専用テキストを構築
+  if (attemptType === 'tko') {
+    // TKO: 1 ステップだけ (テキストのみ)
+    seq.push({ kind: 'count', text: 'T K O ！', cls: 'tko' });
+  } else if (attemptType === 'gu') {
+    // ギブアップ: カウントではなく「ロック → 極まっている → タップ or エスケープ」
+    seq.push({ kind: 'count', text: 'ガッチリとロック！', cls: 'lock' });
+    if (outcome === 'win') {
+      seq.push({ kind: 'count', text: '極まっている…！', cls: 'agony' });
+      seq.push({ kind: 'count', text: 'タップ！タップしたーっ！', cls: 'tap' });
+    } else if (outcome === 'escape') {
+      seq.push({ kind: 'count', text: 'ロープに手が届いたーっ！', cls: 'escape' });
+    }
+  } else {
+    // fall / pin / rollup: 共通のカウント進行
+    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
+    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
+    if (outcome === 'win' || outcome === 'betrayalWin') {
+      // rollup win は「まさかの3カウント！」のニュアンス
+      seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
+    } else if (outcome === 'kickout') {
+      seq.push({ kind: 'count', text: '返したーっ！', cls: 'kickout' });
+    } else if (outcome === 'cutinSave') {
+      const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
+      if (cutinEv) {
+        const saverKey = keyById(cutinEv.by);
+        const saver = saverKey ? f(saverKey) : null;
+        if (saver) {
+          const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
+          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+        }
       }
     }
   }
@@ -890,8 +908,11 @@ function _spawnPinCount(text, cls){
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1400); // 少し長めに残す (クリック待ち間も視認可能に)
   try {
-    if (cls === 'three') { sfx.finChime(); sfx.finImpact(); }
+    if (cls === 'three' || cls === 'tap') { sfx.finChime(); sfx.finImpact(); }
+    else if (cls === 'tko') sfx.finImpact();
     else if (cls === 'kickout') sfx.kickoutSE();
+    else if (cls === 'escape') sfx.guEscapeSE();
+    else if (cls === 'lock' || cls === 'agony') sfx.dmgVoice();
     else sfx.count();
   } catch(e){}
 }
