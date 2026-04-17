@@ -1,32 +1,53 @@
 # タッグマッチ観戦システム 仕切り直し引き継ぎ書
 
 > 作成日: 2026-04-17
-> 対象ブランチ: `claude/wonderful-heisenberg`
+> 最終更新: 2026-04-17 (ブランチ統一後)
+> **対象ブランチ: `feature/tag-match-integration` に統一済み**
+> **作業ディレクトリ: `C:/Users/nkmrk/Downloads/wrestle-manager` (main worktree)**
 > 方針: **種別ごとに一度に直さず、1項目ずつ分類して順番に潰す**。以前のように全部一括実装は禁止。
+
+---
+
+## ⚠️ ブランチ運用ルール (2026-04-17 統一)
+
+以前は `claude/wonderful-heisenberg` ワークツリー (`.claude/worktrees/wonderful-heisenberg/`) で作業していたが、
+分散して混乱する原因となったため統一済み:
+
+- `claude/wonderful-heisenberg` ブランチ → `feature/tag-match-integration` にマージ後削除
+- ワークツリー `.claude/worktrees/wonderful-heisenberg` → 削除
+- **今後のタッグ試合作業は `feature/tag-match-integration` 一本**で行う
+- `C:/Users/nkmrk/Downloads/wrestle-manager` の main worktree で作業すれば OK
 
 ---
 
 ## 現状の要約
 
-タッグマッチのビジュアル観戦モードを実装した結果、**4種類の問題**が混在している状態。
-これまで「全部一括修正」を何度か試みたが、毎回別の問題が顔を出して混乱が深まった。
-この引き継ぎ書では問題を **カテゴリ別に切り分けて**、次セッションで 1件ずつ直すための分類表とする。
+タッグマッチのビジュアル観戦モードを実装した結果、**4種類の問題**が混在している状態だった。
+この引き継ぎ書では問題を **カテゴリ別に切り分けて**、1件ずつ直していく。
+
+**2026-04-17 セッション (fed3a2a8) で完了した項目:**
+- ✅ **V1** ステータスバー表示復旧 (`.smc-tag-statbars { width:100% }` — 6509a5e)
+- ✅ **F1** タッチを独立フレームに分離 (`_frameTurnSub` + `_splitTouchFrame` — 8bf5304)
+- ✅ **V1追加** 左チームバーを中央対称ミラー (`direction:rtl` — a804be9)
+- ✅ (運用) heisenberg → feature/tag-match-integration にブランチ統一 (0bbd170)
+
+**残り (次セッション以降):** E1 / E2 / E3 / V2 / B1 / B2
 
 ---
 
-## 分類表（問題一覧）
+## 分類表（問題一覧 — 残作業）
 
-| # | カテゴリ | 重要度 | 症状 | 着手順推奨 |
-|---|---------|:---:|------|:---:|
-| V1 | Visual / UI | 高 | 試合実行画面のタッグ選手カードで、PW/SP/TE/ST のラベルは出るが**ステータスバーのフィル**が見えない | 1 |
-| V2 | Visual / UI | 中 | 左チームのミラーリング（右向き配置）は CSS 適用済みだが、実機で違和感がないか未検証 | 6 |
-| F1 | Frame / タイミング | 最高 | **タッチと攻撃が同一フレームで起きている**。見た目が「タッチ＝攻撃の後始末」に見える。ターン N とターン N+1 の間に「ターン N.5」として独立したタッチフレームを挟む必要がある | 2 |
-| F2 | Frame / タイミング | 中 | タッチ後の pause（700ms）は入れたが、F1 を直すと不要になる可能性あり | 2と同時検証 |
-| E1 | Engine Logic | 最高 | **体力がどんなに減ってもタッチしようとしない / 成功しない**。`touchSuccessRate` の式が `(hpRatio - 0.20) * canTouchHpWeight` で、低HPだと基礎値がマイナス→`canTouchMin=0.15`にクランプ→15%しかタッチが通らない。低HPほどタッチ成功率が上がるように**反転**する必要がある | 3 |
-| E2 | Engine Logic | 最高 | **体力ほぼゼロでもフォールに入ろうとしない / 入っても決まらない**。中盤のピン試行率（`pinAttemptBaseRate`）と成功率（`pinAttemptSuccessBase`）が低すぎる。低HP時の大幅ボーナススケーリングが必要 | 4 |
-| E3 | Engine Logic | 中 | カウンターヒット時の KO チェックは追加済み（確認は必要） | 5 |
-| B1 | Balance | 中 | タッチ頻度は落ち着いた（平均4回/試合）が、E1/E2 直した後に再測定が必要 | 7 |
-| B2 | Balance | 低 | friendlyFire の誤爆ダメージ（2-4＋MHP50%フロア）は妥当か、実機プレイでの体感が未検証 | 8 |
+| # | カテゴリ | 重要度 | 状態 | 症状 | 着手順 |
+|---|---------|:---:|:---:|------|:---:|
+| V1 | Visual / UI | 高 | ✅完 | ステータスバーのフィル表示 | — |
+| V2 | Visual / UI | 中 | ✅完 | 左チームのバーミラーリング実機確認 (a804be9 で実装+確認) | — |
+| F1 | Frame / タイミング | 最高 | ✅完 | タッチと攻撃が同一フレームで起きる問題 | — |
+| F2 | Frame / タイミング | 中 | 保留 | F1 修正で `touchPause` 700ms が冗長化していないか検証 | 任意 |
+| **E1** | Engine Logic | 最高 | ⬜ | **体力がどんなに減ってもタッチ成功率が上がらない**。`touchSuccessRate` の式 `(hpRatio - 0.20) * canTouchHpWeight` を反転 | **1** |
+| **E2** | Engine Logic | 最高 | ⬜ | **体力ほぼゼロでもフォールに入らない/決まらない**。`pinAttemptBaseRate` / `pinAttemptSuccessBase` の低HPボーナスを強化 | **2** |
+| **E3** | Engine Logic | 中 | ⬜ | カウンターヒット時の KO チェック動作確認 (実装済み、確認のみ) | **3** |
+| **B1** | Balance | 中 | ⬜ | タッチ頻度再測定 (E1/E2 修正後) | **4** |
+| **B2** | Balance | 低 | ⬜ | friendlyFire 誤爆ダメージ (2-4＋MHP50%フロア) の体感 | **5** |
 
 ---
 
@@ -137,45 +158,55 @@
 
 ---
 
-## 着手順（推奨）
+## 着手順（残作業・推奨）
 
-次セッションは **この順番**で、1件ずつ完結させてコミット。まとめて直さない。
+次セッションは **この順番**で着手。1項目完了ごとに必ずコミットはするが、
+「1コミット=1項目絶対」にまで過剰に縛らない (ユーザー方針: どんどん進める)。
 
-1. **V1** ステータスバー見えない問題（UI確認だけで直る可能性が高い）
-2. **F1** タッチ独立フレーム化（エンジン改修の核心）
-3. **E1** touchSuccessRate 反転（E1がないとF1直しても同じ失敗ループ）
-4. **E2** 低HPピン成功率強化
-5. **E3** カウンターKO動作確認のみ
-6. **V2** 左ミラーリング実機確認
-7. **B1** タッチ頻度再計測
-8. **B2** friendlyFire 体感調整
+1. **E1** touchSuccessRate 反転 — `src/match-engine.js` 内の該当関数を反転式に (案A/案B から選択、下記「根本原因メモ」参照)
+2. **E2** 低HPピン成功率強化 — `pinAttemptBaseRate` / `pinAttemptSuccessBase` に低HPボーナス追加
+3. **E3** カウンターKO 動作確認 — 既に実装済みなので、実機で確認・記録のみ
+4. **B1** タッチ頻度再測定 — E1/E2 適用後 `node test/auto-sim.js 200` 等で
+5. **B2** friendlyFire 体感調整 — 実プレイ確認後に数値調整
 
-**各項目終わったら auto-sim を回して違反ゼロを確認してからコミット。**
+**auto-sim は最小限に** (memory `feedback_auto_sim_ui_only.md` 参照):
+- E1/E2/B2 の数値変更 → 100 シーズン×複数シードで違反検出
+- E3 動作確認のみ → auto-sim 不要
+- UI/観戦専用ロジックのみ → auto-sim 不要
 
 ---
 
-## 現在のファイル状態（ブランチ `claude/wonderful-heisenberg`）
+## 現在のブランチ状態 (2026-04-17 統一後)
 
-### すでにコミット済み（直近）
-- `3e3d9a0` — タッグマッチ包括修正（F1-F3/F5/E3を含む一括コミット。ただしV1/F1/E1/E2は未解決）
+### ブランチ
+- `feature/tag-match-integration` 一本で作業 (ローカルのみ、origin より先行)
+- `claude/wonderful-heisenberg` は削除済み
 
-### 直近セッションで変更されたが未コミットの可能性があるファイル
-- `src/ui-common.js` (`_tagFighter` 周辺)
-- `src/index.html` (tag CSS ミラーリング)
-- `src/match-engine.js`（`touchSuccessRate`, `pushFrame`, `wantTouch`）
-- `src/data.js`（TAG_MATCH_CONFIG の数値）
-- `src/tag-battle-main.js`（`applyFrame` のタッチpause）
+### 直近コミット (新しい順)
+- `0bbd170` — Merge heisenberg into feature (統一)
+- `1e5dfcc` — docs: 仕切り直しハンドオフ書を追加 (このファイル)
+- `a804be9` — 左チームバーを中央対称ミラー
+- `8bf5304` — タッチを独立フレームに分離 (F1)
+- `6509a5e` — ステータスバーのフィル表示復旧 (V1)
+- `3e3d9a0` — タッグ試合ロジック全面整理 (タッチ頻度/決着種別/演出順序)
+- `390264e` — Revert "ui(tag-battle): モックアップ準拠レイアウト刷新"
+- `a94f491` — Phase 4a 追従修正のロードマップ/spec 更新
+- ... (以降省略)
 
-→ **次セッション冒頭で必ず `git status` / `git diff` を取って現状を確認してから着手する**
+### 次セッション冒頭でやること
+1. `git status` / `git log --oneline -10` で現状確認
+2. この引き継ぎ書を再読
+3. **E1 から着手**
 
 ---
 
 ## 絶対にやってはいけないこと
 
-1. ❌ 4件を一括修正コミット（これまで失敗し続けた方法）
-2. ❌ ユーザーに「全部直しました」と報告する前に auto-sim を回さない
-3. ❌ CSS の一括リファクタ（V1 の原因特定前に周辺CSSを書き換えない）
-4. ❌ data.js の TAG_MATCH_CONFIG を一度に複数値変更（1件ずつ変更して効果測定）
+1. ❌ 残 5 件 (E1/E2/E3/B1/B2) を一括修正コミット — 必ず分割
+2. ❌ 数値を変えない変更で auto-sim を走らせる — `feedback_auto_sim_ui_only.md` 参照
+3. ❌ CSS の一括リファクタ — 原因特定前に周辺 CSS を書き換えない
+4. ❌ data.js の TAG_MATCH_CONFIG を一度に複数値変更 — 1 件ずつ効果測定
+5. ❌ `claude/wonderful-heisenberg` ブランチの復活・新規ワークツリーの切り出し — `feature/tag-match-integration` に統一済み
 
 ---
 
