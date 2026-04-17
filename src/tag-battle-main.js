@@ -18,6 +18,8 @@ const S = {
   speedIdx: 0,             // 0=slow 1=mid 2=fast
   pendingCutin: false,
   pinCtrl: null,           // { seq, idx, fr } — クリック駆動ピンカウント制御
+  pinSeqPending: false,    // このフレームで pin seq を走らせる予定 (ネタバレ抑制用)
+  heldWinLogs: null,       // { turn, held: [lines] } — pin seq 完了まで保留する「★ 決着！」ログ
   pendingDamage: false,    // ダメージポップアップ表示中 (クリック待ち)
   matchInfo: null,
   chemA: 0,
@@ -308,7 +310,11 @@ function _narrateFrame(fr){
     if (ev.type === 'friendlyFire') return { text:'あーっと！ 味方に当たってしまった！ 痛恨のミス！', dramatic:true };
     if (ev.type === 'betrayal') return { text:'助けに行かない…！ なんということだ…！', dramatic:true };
   }
-  if (fr.winner) return { text:'決着！', dramatic:true };
+  if (fr.winner) {
+    // ピン seq が進行予定なら「決着！」ネタバレを隠し、seq 完了まで「…！？」に差し替え
+    if (S.pinSeqPending) return { text:'…！？', dramatic:true };
+    return { text:'決着！', dramatic:true };
+  }
   const a = fr.action;
   if (!a) return { text: (fr.logLines||[]).join(' '), dramatic:false };
   const atk = byId(a.attackerId);
@@ -449,7 +455,14 @@ function _appendLogForFrame(fr){
   if (!fr) return;
   const evClass = _detectEventClass(fr);
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
-  const lines = (fr.logLines || []).map(l => _logLineHtml(l, fr)).join('');
+  let rawLines = fr.logLines || [];
+  // ピン seq 予定フレーム: 「★ 決着！」行を保留し、seq 完了時に _finishPinSeq から追記
+  if (S.pinSeqPending) {
+    const held = rawLines.filter(l => l.trim().startsWith('★'));
+    rawLines = rawLines.filter(l => !l.trim().startsWith('★'));
+    S.heldWinLogs = { turn: fr.turn, held };
+  }
+  const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
   // 新しいターンを先頭に追加 (新しい順 = 上が最新)
   S.logHtml = turnMarker + lines + S.logHtml;
   S.lastEventClass = evClass;
@@ -539,6 +552,9 @@ function nextFrame(){
 
 function applyFrame(fr){
   S.anim = true;
+  // ピン seq 予定のフレームなら「決着！」ナレーションと「★ 決着！」ログをホールド
+  // (seq 完了後に _finishPinSeq が剥がす)
+  S.pinSeqPending = !!(fr && fr.events && fr.events.some(e => e.type === 'pinAttempt'));
   const prevLegalA = S.pos.legalA, prevLegalB = S.pos.legalB;
   const newLegalAKey = keyById(fr.legalA);
   const newLegalBKey = keyById(fr.legalB);
@@ -911,13 +927,45 @@ function _advancePinStep(){
 function _finishPinSeq(){
   const fr = S.pinCtrl ? S.pinCtrl.fr : null;
   S.pinCtrl = null;
+  S.pinSeqPending = false;
   S.pendingCutin = false;
-  _bindNextButton(); // onclick を通常フローに戻す
   const btn = document.getElementById('nBtn');
+
+  // 保留していた「★ 決着！」ログを現ターンの先頭に挿入 (turn marker 直後)
+  if (S.heldWinLogs && fr && S.heldWinLogs.turn === fr.turn && S.heldWinLogs.held.length) {
+    const heldHtml = S.heldWinLogs.held.map(l => _logLineHtml(l, fr)).join('');
+    // turn marker の閉じ </div> 直後に挿入 (ターン内の他行より上 = 最新位置)
+    const markerEnd = S.logHtml.indexOf('</div>');
+    if (markerEnd >= 0) {
+      const cut = markerEnd + '</div>'.length;
+      S.logHtml = S.logHtml.slice(0, cut) + heldHtml + S.logHtml.slice(cut);
+    } else {
+      S.logHtml = heldHtml + S.logHtml;
+    }
+    const lb = document.getElementById('battleLog');
+    if (lb) {
+      lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`;
+      lb.scrollTop = 0;
+    }
+  }
+  S.heldWinLogs = null;
+
+  // CURRENT MOVE ナレーションを「決着！」に差し替え
   if (fr && fr.winner) {
-    // 勝者フレーム: 少し余韻を置いて結果画面へ
+    const narEl = document.getElementById('moveNarration');
+    if (narEl) {
+      narEl.textContent = '決着！';
+      narEl.className = 'move-narration dramatic';
+    }
+  }
+
+  if (fr && fr.winner) {
+    // 誤クリックで endMatch が発火して結果画面を飛ばさないよう showResult 呼び出しまで button を無効のまま
+    if (btn) btn.disabled = true;
     setTimeout(() => showResult(fr), 800);
+    // _bindNextButton は showResult 側が状態復帰を担う
   } else {
+    _bindNextButton();
     if (btn) btn.disabled = false;
     if (S.autoAdvance && S.frameIdx < S.frames.length) {
       clearTimeout(S.autoTimer);
