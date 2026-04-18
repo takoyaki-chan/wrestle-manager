@@ -535,7 +535,13 @@ const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukama
 79:'kudo_r',80:'takashima_s',81:'sakamoto_r',82:'kondo_y',83:'sakuma_h',84:'minamitani_a',
 85:'kamoshida_r',86:'serizawa_a',87:'steinfeld_l',88:'aikawa_a',89:'akabane_a',90:'tamate_s',
 91:'todoroki_a',92:'iijima_s',93:'matsukubo_i',94:'sudo_m',95:'konishi_y',96:'matsushita_m',
-97:'iwasaki_m',98:'yoneyama_a',99:'miura_s'};
+97:'iwasaki_m',98:'yoneyama_a',99:'miura_s',
+100:'tokiyama_n',101:'sawanobori_a',102:'oyama_t',103:'zaitsu_k',104:'yoshino_m',
+105:'kuroiwa_c',106:'akanuma_s',107:'matsuoka_a',108:'yuuki_r',109:'totsuka_y',
+110:'wakabayashi_m',111:'sagami_a',112:'asahina_h',113:'watanuki_s',114:'kimura_r',
+115:'toyota_i',116:'morgan_r',117:'crusher_b',118:'warida_k',119:'iwakoji_s',
+120:'kuramae_s',121:'yamamoto_r',122:'miyazawa_h',123:'yaginuma_e',124:'kiyokawa_r',
+125:'fujishiro_e',126:'nishizono_y',127:'sakakibara_n',128:'minuma_s'};
 const PORTRAIT_OVR_VARIANT={80:{threshold:50,suffix:'takashima_s2'}};
 function getFaceUrl(f){return f.portraitUrl || (PORTRAIT[f.id] ? `../image/face_${PORTRAIT[f.id]}.png` : '');}
 function _calcOvr(f){return Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5);}
