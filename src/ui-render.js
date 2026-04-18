@@ -2617,7 +2617,7 @@ function _normalizeFinanceLabel(label) {
   if (label.startsWith('グッズ収入')) return 'グッズ収入';
   if (label.startsWith('メディア収入')) return 'メディア収入';
   if (label.startsWith('プロモ収入')) return 'プロモ収入';
-  if (label.startsWith('会場費')) return '会場費';
+  if (label.startsWith('会場費')) return label; // 会場ごとに分けて表示
   return label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
 }
 

@@ -180,8 +180,10 @@ auto-sim はプレイヤー操作より控えめ(★4-5 を引きにくい、抗
 ### 3.2 提案値 🔧
 
 ```javascript
-{ name:'ドーム', cap:22500, cost:11000, maxMatches:8, img:'../image/venue_9_dome.webp' }
+{ name:'ドーム', cap:22500, cost:7000, maxMatches:8, img:'../image/venue_9_dome.webp' }
 ```
+
+> **改訂履歴**: 初期提案 cost:11000 で実装したところ、月次ベースで「Dome級ロスター(高給)と組み合わせると満員でも赤字確定」の体感となり、「年1のご褒美」として厳しすぎた。per-show net(+2,440)は達成感ありでも、月次UIで見るプレイヤー体感とズレる。per-month net +2,800付近を目指し **cost 7,000 に再調整**(2026-04-18)。
 
 ### 3.3 数値の根拠
 
