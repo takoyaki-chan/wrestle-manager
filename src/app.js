@@ -5824,7 +5824,19 @@ const App = {
   closeShowResult() {
     if (App._closingShowResult) return;
     const resultOverlay = document.getElementById('showResultOverlay');
-    if (!resultOverlay || G.weekPhase !== 'showExec') return;
+    if (!resultOverlay) return;
+    if (G.weekPhase !== 'showExec') {
+      // Guard against desynced phase state leaving the show-result overlay stranded.
+      if (resultOverlay.classList.contains('active')) {
+        console.warn('[WM] closeShowResult fallback: overlay active while weekPhase=', G.weekPhase);
+        resultOverlay.classList.remove('active');
+        Audio.play('coin');
+        Audio.bgm.playForState();
+        showScreen('week');
+        refreshAll();
+      }
+      return;
+    }
     App._closingShowResult = true;
     try {
       Audio.play('coin');

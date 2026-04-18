@@ -63,6 +63,25 @@ function _drainPopupQueue() {
   }, 200);
 }
 
+document.addEventListener('click', (event) => {
+  const closeBtn = event.target.closest('.sr-close-btn');
+  if (!closeBtn) return;
+  event.preventDefault();
+  event.stopPropagation();
+  try {
+    closeShowResult();
+  } catch (e) {
+    console.error('[WM] delegated closeShowResult failed:', e);
+    try {
+      if (typeof App !== 'undefined' && typeof App.closeShowResult === 'function') {
+        App.closeShowResult();
+      }
+    } catch (inner) {
+      console.error('[WM] App.closeShowResult fallback failed:', inner);
+    }
+  }
+});
+
 // MutationObserverで全オーバーレイのclass変更を監視し、閉じたら自動でキュー処理
 document.addEventListener('DOMContentLoaded', () => {
   const observer = new MutationObserver(() => {
@@ -4185,7 +4204,7 @@ function renderShowResult(results, injuryResults) {
 
   // 閉じるボタン
   html += `<div class="sr-close-area">
-    <button class="sr-close-btn" onclick="closeShowResult()">結果を確認 →</button>
+    <button type="button" class="sr-close-btn" onclick="closeShowResult()">結果を確認 →</button>
   </div>`;
 
   box.innerHTML = html;
