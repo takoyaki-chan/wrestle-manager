@@ -1,0 +1,107 @@
+/* battle-shared.css — 観戦画面 (single / tag) 共通スタイル層
+   Phase 4b Step 2: デザイントークン / リセット / 共有キーフレーム を集約。
+   single battle-engine.html と tag-battle.html の両方から <link> で読み込む。
+   目的: カラー・タイミング・シェイク強度・カットイン挙動などを一箇所で
+   変更すると両画面に自動反映される状態にする (drift 防止)。
+
+   配置: src/battle-shared.css
+   依存: なし (フォントは各HTMLの <link> で個別読み込み) */
+
+/* ═══ Design Tokens ═══ */
+:root {
+  /* Surface */
+  --bg-dark: #060606;
+  --card-bg: #12110e;
+  --card-border: rgba(255,255,255,0.08);
+  --portrait-bg: #0a0a10;
+  --team-bg: rgba(212,168,67,0.08);
+
+  /* Accent gold */
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --gold-dim: rgba(212,168,67,0.5);
+
+  /* Team color (single の左右識別やバナーで使用) */
+  --blue: #1a3a6b;
+  --blue-dark: #0d1f3c;
+  --blue-glow: rgba(26,58,107,0.4);
+  --red: #c41e3a;
+  --red-dark: #8b1528;
+  --red-glow: rgba(196,30,58,0.4);
+
+  /* Text */
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --text-dark: #444;
+  --text-darker: #333;
+
+  color-scheme: dark;
+}
+
+/* ═══ Reset & Scrollbar ═══ */
+* { margin: 0; padding: 0; box-sizing: border-box }
+::-webkit-scrollbar { width: 5px }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3) }
+::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 3px }
+
+/* ═══ Shared Keyframes ═══ */
+/* 待機スピナー (waiting 画面) */
+@keyframes waitSpin { to { transform: rotate(360deg) } }
+
+/* パネルシェイク (通常ヒット / クリティカル) */
+@keyframes shakePanel {
+  0% { transform: translateX(0) }
+  25% { transform: translateX(-6px) }
+  50% { transform: translateX(6px) }
+  75% { transform: translateX(-3px) }
+  100% { transform: translateX(0) }
+}
+@keyframes shakeHard {
+  0% { transform: translateX(0) }
+  20% { transform: translateX(-10px) }
+  40% { transform: translateX(10px) }
+  60% { transform: translateX(-6px) }
+  80% { transform: translateX(4px) }
+  100% { transform: translateX(0) }
+}
+
+/* 技名ポップ (move-value / move-name) */
+@keyframes movePop {
+  0% { transform: scale(1.2); opacity: 0 }
+  100% { transform: scale(1); opacity: 1 }
+}
+
+/* カウンター発動時のパネルフラッシュ
+   single 側の「brightness ピーク型 (0→30%→100%)」に統一 — tag 側もこれに追従。 */
+@keyframes counterFlash {
+  0% { filter: brightness(1); transform: scale(1) }
+  30% { filter: brightness(2.5); transform: scale(1.05) }
+  100% { filter: brightness(1); transform: scale(1) }
+}
+
+/* カットインスライドイン (セリフ/ビッグムーブ/ダメージセリフ) */
+@keyframes cutinSlideIn {
+  from { transform: translateX(-50px); opacity: 0 }
+  to { transform: translateX(0); opacity: 1 }
+}
+@keyframes cutinSlideInR {
+  from { transform: translateX(50px); opacity: 0 }
+  to { transform: translateX(0); opacity: 1 }
+}
+
+/* 全画面フラッシュ (ビッグヒット / クリティカル)
+   元の single: flashScreen / tag: flashScr を flashScreen に統一。 */
+@keyframes flashScreen {
+  0% { opacity: 0.18 }
+  100% { opacity: 0 }
+}
+
+/* ダメージ数字ポップ (単品: .dmg-number / タッグ: .dmg-pop 両方で参照)
+   元の single: dmgNumPop / tag: dmgPop を dmgNumPop に統一。 */
+@keyframes dmgNumPop {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(1.5) }
+  15% { opacity: 1; transform: translate(-50%, -6px) scale(1) }
+  75% { opacity: 1; transform: translate(-50%, -22px) scale(1) }
+  100% { opacity: 0; transform: translate(-50%, -32px) scale(0.8) }
+}

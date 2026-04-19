@@ -5,24 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>女子プロレス タッグバトル観戦</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="battle-shared.css">
 <style>
-:root {
-  --bg-dark:#060606;
-  --card-bg:#12110e;
-  --card-border:rgba(255,255,255,0.08);
-  --portrait-bg:#0a0a10;
-  --gold:#d4a843;
-  --gold-light:#f0d078;
-  --gold-dim:rgba(212,168,67,0.5);
-  --team-bg:rgba(212,168,67,0.08);
-  --text-main:#f0ece3;
-  --text-sub:#888;
-  --text-dim:#555;
-  --text-dark:#444;
-  --text-darker:#333;
-  color-scheme:dark;
-}
-*{margin:0;padding:0;box-sizing:border-box}
+/* :root tokens / reset / scrollbar / 共有キーフレームは battle-shared.css に集約 */
 body{
   font-family:'Noto Sans JP','Segoe UI','Hiragino Sans',sans-serif;
   background:var(--bg-dark);
@@ -37,9 +22,6 @@ body{
 #app{width:1200px;max-width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
 #mainContainer{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #mainContainer>.main-row{flex:1;min-height:0}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}
-::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.3);border-radius:3px}
 
 /* ===== HUD (Single match style) ===== */
 .wm-hud{background:#12110e;border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:12px 16px;margin-bottom:10px}
@@ -159,10 +141,10 @@ body{
 @keyframes dangerPulse{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
 
 /* Damage pop */
-.dmg-pop{position:absolute;top:30%;left:50%;transform:translate(-50%,0);font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#e85d75;text-shadow:0 2px 8px rgba(196,30,58,0.5);pointer-events:none;z-index:10;animation:dmgPop .85s ease-out forwards}
+.dmg-pop{position:absolute;top:30%;left:50%;transform:translate(-50%,0);font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#e85d75;text-shadow:0 2px 8px rgba(196,30,58,0.5);pointer-events:none;z-index:10;animation:dmgNumPop .85s ease-out forwards}
 .dmg-pop.crit{font-size:42px;color:var(--gold-light);text-shadow:0 2px 16px rgba(212,168,67,0.6),0 0 40px rgba(212,168,67,0.3)}
 .dmg-pop.counter{color:#5dd9ca;text-shadow:0 2px 8px rgba(93,217,202,0.5)}
-@keyframes dmgPop{0%{opacity:0;transform:translate(-50%,0) scale(1.5)}15%{opacity:1;transform:translate(-50%,-6px) scale(1)}75%{opacity:1;transform:translate(-50%,-22px)}100%{opacity:0;transform:translate(-50%,-32px) scale(0.8)}}
+/* dmgNumPop keyframe は battle-shared.css (旧 dmgPop から名称統一) */
 
 /* ===== APRON CARD ===== */
 .apron-card{border:1px solid rgba(212,168,67,0.04);border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#12110e,#0a0a10);opacity:0.72;display:flex;align-items:center;gap:10px;padding:10px 12px;transition:all .3s;box-shadow:0 1px 6px rgba(0,0,0,0.2);position:relative}
@@ -201,7 +183,7 @@ body{
 .move-label{font-family:'Oswald',sans-serif;font-size:10px;color:var(--text-dark);letter-spacing:2px;margin-bottom:4px}
 .move-name{font-size:18px;font-weight:900;color:var(--text-main);min-height:24px}
 .move-name.pop{animation:movePop .3s ease-out}
-@keyframes movePop{0%{transform:scale(1.15);opacity:0}100%{transform:scale(1);opacity:1}}
+/* movePop keyframe は battle-shared.css (scale値を 1.15→1.20 に single と統一) */
 .move-damage{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-top:2px;min-height:22px}
 .move-damage.hit{color:#e66;text-shadow:0 0 6px rgba(238,102,102,0.2)}
 .move-damage.counter{color:#5dd9ca;text-shadow:0 0 6px rgba(93,217,202,0.2)}
@@ -293,17 +275,16 @@ body{
 
 /* Flash overlay (full screen) */
 .flash-ov{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:48}
-@keyframes flashScr{0%{opacity:0.18}100%{opacity:0}}
-.flash-ov.flash{animation:flashScr .28s ease-out}
+.flash-ov.flash{animation:flashScreen .28s ease-out}
+/* flashScreen keyframe は battle-shared.css (旧 flashScr から名称統一) */
 .flash-ov.red{background:#c41e3a}
 .flash-ov.gold{background:#d4a843}
 
-/* ===== SHAKE / FLASH ANIMATIONS ===== */
-@keyframes shakePanel{0%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+/* ===== SHAKE / FLASH ANIMATIONS =====
+   shakePanel / shakeHard / counterFlash keyframes は battle-shared.css
+   (counterFlash は single の 3段階版に統一: 0→30%ピーク→100%) */
 .player-card.shake{animation:shakePanel .25s ease-out}
-@keyframes shakeHard{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
 .player-card.shake-hard{animation:shakeHard .3s ease-out}
-@keyframes counterFlash{0%{filter:brightness(2.5);transform:scale(1.03)}100%{filter:brightness(1);transform:scale(1)}}
 .player-card.counter-flash{animation:counterFlash .3s ease-out}
 @keyframes ffFlash{0%{background-color:rgba(255,215,0,0.4)}100%{background-color:transparent}}
 .player-card.ff-flash{animation:ffFlash .6s ease-out}
@@ -326,8 +307,8 @@ body{
 .cutin-ov.show{opacity:1;pointer-events:auto;cursor:pointer}
 .cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-dim);border-radius:6px;padding:14px 24px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:640px}
 .cutin-box.right{flex-direction:row-reverse}
-@keyframes cutinSlideIn{from{transform:translateX(-40px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes cutinSlideInR{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+/* cutinSlideIn / cutinSlideInR keyframes は battle-shared.css
+   (translateX を -40px→-50px で single に統一) */
 .cutin-box{animation:cutinSlideIn .35s cubic-bezier(0.22,1,0.36,1)}
 .cutin-box.right{animation:cutinSlideInR .35s cubic-bezier(0.22,1,0.36,1)}
 .cutin-portrait{width:90px;height:135px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0}
@@ -410,7 +391,7 @@ body{
 .waiting-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .waiting-sub{font-size:13px;color:var(--text-sub)}
 .waiting-pulse{width:40px;height:40px;border-radius:50%;border:3px solid var(--gold-dim);border-top-color:var(--gold);animation:waitSpin 1s linear infinite}
-@keyframes waitSpin{to{transform:rotate(360deg)}}
+/* waitSpin keyframe は battle-shared.css */
 </style>
 </head>
 <body>
