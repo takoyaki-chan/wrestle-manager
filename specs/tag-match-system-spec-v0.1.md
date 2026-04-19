@@ -1,13 +1,14 @@
 # タッグマッチシステム設計スペック v0.1
 
 > 2026-03-24 作成
-> ステータス: Phase 1+2+3+4a+4b 完了（2026-04-19）
+> ステータス: Phase 1+2+3+4a+4b + ブラッシュアップ v0.1 完了（2026-04-19）
 > Phase 1: Engine.tagMatch.simulateTagMatch を match-engine.js に統合。TAG_MATCH_CONFIG/スタイル相性/タッグ技を data.js に追加
 > Phase 3: 試合結果処理統合。applyTagMatchResult(bond/rivalry)、executeShow全面タッグ対応(成長/h2h/matchupLog/tagExp/trust/人気)、auto-simタッグ試合生成
 > Phase 2: 興行カード編成UI。タッグ枠追加(2枠消費)/4名選択ピッカー/skipMatchタッグ分岐/App.finalizeShow全面タッグ対応/renderMatchPreview+renderShowResultタッグ表示
 > Phase 4a: タッグ観戦ビジュアル（Replay方式）。simulateTagMatch に recordFrames オプション追加、tag-battle.html / tag-battle-main.js / tag-battle-audio.js / tag-battle-lines.js 新規作成、app.js watchMatch タッグ分岐統合
-> Phase 4b: 演出層 (SFX / CSS トークン+キーフレーム / カットイン) を single battle-engine と共通化 (`battle-sfx.js` / `battle-shared.css` / `battle-anim.js`) — 下記 §9 参照
-> auto-sim 100シーズン ALL CLEAR（recordFrames デフォルト off で後方互換確認）
+> Phase 4b: 演出層 (SFX / CSS トークン+キーフレーム / カットイン) を single battle-engine と共通化 (`battle-sfx.js` / `battle-shared.css` / `battle-anim.js`) — 下記 §11 参照
+> ブラッシュアップ v0.1 (2026-04-19): T1-T5 + D1-D5 + big-intro 実装完了 — 下記 §12 参照
+> auto-sim 100シーズン / 30シーズン ALL CLEAR
 > Phase 4c以降: シングル battle-engine.html の Replay 方式移植 / AI連携 / 残る演出シーケンス (bigmove/counter/touch) の共通化
 
 ---
@@ -814,6 +815,74 @@ Step 5 で SE 呼び出しは align したが、実プレイで「溜めの途�
 
 ---
 
+## 12. ブラッシュアップ v0.1 — 演出・文言のシングル準拠化（実装済み 2026-04-19）
+
+### 12.1 背景
+Phase 4b で SFX / CSS トークン / カットイン DOM を共通化したが、タッグ実プレイで「誰が誰を丸め込んだのか読めない」「カウント文言がシングルと違う」「攻撃方向が文字だけで掴みにくい」等の課題が残っていた。`docs/tag-match-brushup-design-v0.1.md` の 5 課題 (T1-T5) + ユーザフィードバックで追加された 6 件 (D1-D5 + big-intro) を一括対応。
+
+### 12.2 T1 — ダブルチーム技バリエーション拡充
+- `STYLE_TAG_MOVES` を `{name, power}` 単一オブジェクトから配列化（スタイル組み合わせ別に 5-7 件ずつ、計 26→89 技）。同試合内で連続回避するため直前選択を記憶
+- 実況文は `DOUBLE_TEAM_LINES` 配列だけでなく `pickDoubleTeamCommentary(styleCombo, rng)` ヘルパ経由で 5 カテゴリ (strike / throw / submission / aerial / finish) × 5-7 件から選択
+- 変更: `src/data.js` (STYLE_TAG_MOVES), `src/tag-battle-lines.js` (DOUBLE_TEAM_LINES 拡充 + pickDoubleTeamCommentary)
+
+### 12.3 T2 — 試合完了時の締めセリフ
+- `TAG_MATCH_WIN_LINES` (性格7種 × 3件) / `TAG_MATCH_LOSS_LINES` (性格7種 × 3件) / `TAG_MATCH_COMMENTARY_WIN` (7件) を `src/tag-battle-lines.js` に新設
+- プレースホルダ: `{partner}` / `{winner}` / `{move}`。勝者 (決め技を打った側) + 敗者 (pin/tap された側) + 実況締めの 3 種を victory overlay の vicLines 枠に表示
+- 性格ベースの口調分岐は `pickTagMatchWinLine(personality, rng)` / `pickTagMatchLossLine(personality, rng)` で解決
+
+### 12.4 T3 — 丸め込み演出の主体明示
+- ロールアップ (丸め込み) フィニッシュ発生時、narration に「{主体}が{対象}を丸め込んだ！」を表示（主体 = 元の defender = 逆転した側、対象 = 元の attacker）
+- カウント中も `moveNarration` に「{主体}が押さえ込んでいる！」を継続表示
+- パネル演出: 主体側 glow (gold box-shadow) / 対象側 dim (opacity 0.6) で視覚的にも方向を明示
+- 変更: `src/tag-battle-main.js` (ピン演出シーケンス L850 前後)
+
+### 12.5 T4 — カウント/ギブアップ演出のシングル準拠
+- 文言統一: 「3ーーーーっ！！！」「返したーーーーっ！！」「タップ！！」「ロープブレイク」を single `battle-engine.html` と bit-identical に
+- Space / Enter キー対応 + autoAdvance タイマ（single 準拠のクリック進行）
+- pin-count CSS は Phase 4b 積み残し Step 6 で既に single `.finish-count-text` と同一化済み（§11.5d 参照）
+
+### 12.6 T5 — 攻撃方向矢印の視覚化（single + tag 両対応）
+- **CSS 集約先**: `src/battle-shared.css` に arrow 関連 4 クラスを新規追加（ltr / rtl / counter-reversal / miss）。single battle-engine.html でも同じクラスを使用
+- **通常攻撃**: 攻撃者→被攻撃者の向きに応じて `.attack-arrow.ltr` または `.attack-arrow.rtl` を Current Move 枠内にオーバーレイ（D1: 矢印レイヤが外にはみ出さないよう枠内に収める）
+- **MISS 時**: `.attack-arrow.miss` でグレー矢印表示（D2: MISS でも方向が読めるように）
+- **カウンター 2 段階**:
+  - 段階1: 元攻撃の矢印（通常 ltr/rtl）
+  - 1000ms 間
+  - 段階2: `.attack-arrow.counter-reversal` で逆方向の太いオレンジグラデ矢印（元より目立つサイズ・フラッシュ付き）
+- モックアップ: `archive/prototype/tag-battle-arrow-mockup.html` で挙動検証後に本実装
+- 変更: `src/battle-shared.css` (arrow 定義) / `src/tag-battle-main.js` + `src/battle-engine.html` (呼び出し箇所)
+
+### 12.7 追加修正（ユーザフィードバック）
+T1-T5 実装中〜実装後のユーザフィードバックで追加対応した 6 件:
+
+| ID | 内容 | 実装先 |
+|---|---|---|
+| D1 | 矢印レイヤを Current Move 枠内に収める (枠外オーバーレイをやめる) | `src/battle-shared.css` + tag-battle-main.js |
+| D2 | MISS 時もグレー矢印を表示 | `src/battle-shared.css` (.miss variant) |
+| D3 | 溜め攻撃中に攻撃者パネルに `charging` glow + 「CHARGING」 pulse ラベル | `src/tag-battle-main.js` animateAction |
+| D4 | カウント前導入 narration (fall / pin / tko 3 種ランダム) | `src/tag-battle-main.js` ピン演出シーケンス |
+| D5 | シングル `showFinishClickBtn` 準拠のボックス型クリック待機 | `src/tag-battle.html` + tag-battle-main.js |
+| big-intro | 決着寸前導入を別枠 48px 大文字 pop 表示（フォールに入った／押さえ込んだ／ロック／極まっている／{subj}が{obj}を丸め込んだ の 5 種） | `src/tag-battle.html` (.big-intro 枠) + tag-battle-main.js |
+
+### 12.8 変更ファイル一覧
+| ファイル | 主な変更 |
+|---|---|
+| `src/data.js` | STYLE_TAG_MOVES を配列化 26→89 技 |
+| `src/match-engine.js` | STYLE_TAG_MOVES 配列対応 (同試合連続回避ロジック) |
+| `src/tag-battle-lines.js` | DOUBLE_TEAM_LINES 拡充 / TAG_MATCH_WIN_LINES / LOSS_LINES / COMMENTARY_WIN + pick ヘルパ |
+| `src/tag-battle-main.js` | 丸め込み主体明示 / カウント文言統一 / 矢印レンダリング / charging glow / big-intro / 締めセリフ描画 |
+| `src/tag-battle.html` | big-intro 枠 / クリック待機ボックス / attack-arrow 配置 |
+| `src/battle-engine.html` | 矢印 CSS クラス呼び出し追加 (single 側も T5 恩恵) |
+| `src/battle-shared.css` | attack-arrow 4 クラス (ltr / rtl / counter-reversal / miss) 集約 |
+| `archive/prototype/tag-battle-arrow-mockup.html` | T5 矢印演出モックアップ（新規） |
+
+### 12.9 検証
+- auto-sim 30 シーズン ALL CLEAR（演出のみの変更で数値は無影響を確認）
+- preview で single / tag 両 iframe ロード → エラー 0
+- 実プレイでの目視確認はユーザに委任
+
+---
+
 ## 更新履歴
 
 | 日付 | 内容 |
@@ -824,4 +893,5 @@ Step 5 で SE 呼び出しは align したが、実プレイで「溜めの途�
 | 2026-04-17 | Phase 4a 追従修正。(1) ui-common.js の renderMatchPreview タッグ枠にスキップボタンしかなく「🎬 試合を観る」が欠けていたのを修正(Phase 1-3 実装時の名残)。(2) tag-battle 実プレイ確認で判明した 4 点を修正: 最新ターン narration が 1 ターン古い内容を表示するバグ(nextFrame で applyFrame 前に frameIdx++ に順序変更)、ログ順序を新しい順に反転(slice(-60).reverse())、CHEM A/B → 連携 A/B + TEAM A/B → Aチーム/Bチーム 日本語化、ペーシング追加(FRAME_DELAYS: miss 700ms/hit 900ms/counter 1100ms/crit 1300ms、ドラマイベント+500ms、決着 2200ms、S.anim/S.pendingCutin 中はボタン disabled で連打ブロック) |
 | 2026-04-17 | Phase 4a UI リファイン。モックアップ `archive/prototype/tag-match-prototype-v0.1/match-screen-tag.html` 準拠にレイアウトを合わせ込み。HUD をシングル試合と同じ `.wm-hud`（顔+TURN+phase pill+モメンタム+チーム合算HP対面バー）に統一、player-card に 5 ステータスバー（PWR/SPD/TEC/STA/MNT）追加、apron-card を横型（avatar+stats縮小）に再設計、CURRENT MOVE を大きな move-name + move-damage + narration の1ブロックに統合、battle-log にイベント境界色（ev-hottag/double/cutin/friendly/betrayal/finish/touch）を導入、controls-sub に速度ドット追加、victory overlay を勝者 upper×2 + ゴールド勾配名 + 敗者＋統計の構造に再設計。Replay アーキテクチャは維持（frames ベースの再生、エンジン再実行なし）。ログ順は下方向に追記（下が最新）、4a 初版の「新しい順」から mockup 準拠に変更 |
 | 2026-04-17 | Phase 4a 仕切り直し。モックアップ移植を feature に一括反映 (50513f5) → 複数 UI/エンジン問題が絡み Revert (390264e) → claude/wonderful-heisenberg で問題を 9 件×4 カテゴリに分類 (docs/handoff-tag-match-rebuild.md) し、V1 ステータスバー表示復旧/F1 タッチ独立フレーム化/左チームバーミラー を 1 件ずつ実装。以降の残作業 (E1/E2/E3/B1/B2/V2) は次セッションで同じ手順を踏襲 |
+| 2026-04-19 | ブラッシュアップ v0.1 実装完了 (commit a22c686)。`docs/tag-match-brushup-design-v0.1.md` に沿って T1-T5 + D1-D5 + big-intro を一括対応。T1:STYLE_TAG_MOVES 26→89 技配列化、T2:TAG_MATCH_WIN/LOSS_LINES 性格7×3 + COMMENTARY 7件、T3:丸め込み主体明示 (narration「{主体}が{対象}を丸め込んだ！」+ パネル glow/dim)、T4:カウント/ギブアップ文言 single 準拠 + Space/Enter キー、T5:attack-arrow CSS 4クラス集約 (ltr/rtl/counter-reversal/miss) — single+tag 両対応、カウンター 2 段階 (元攻撃→1000ms→太オレンジ逆転矢印)。追加修正:D1 矢印枠内収納 / D2 MISS グレー矢印 / D3 charging glow / D4 カウント前導入 narration / D5 showFinishClickBtn 準拠ボックス / big-intro 48px 大文字 pop 枠。auto-sim 30 シーズン ALL CLEAR。§12 参照 |
 | 2026-04-19 | Phase 4b 実装完了。演出層 (SFX / CSS トークン+キーフレーム / カットイン) を single battle-engine と共通化。`src/battle-sfx.js` 新規 (両方が superset として参照)、`src/battle-shared.css` 新規 (:root トークン + 9種キーフレーム、drift 補正: counterFlash/cutinSlideIn/movePop/flashScreen/dmgNumPop)、`src/battle-anim.js` 新規 (`BattleAnim.renderCutin/dismissCutin`)。tag-battle-audio.js 削除 (battle-sfx.js にリネーム相当)。tag 側の dmgPop→dmgNumPop / flashScr→flashScreen 名称統一。single 側 showDamageVoice で SE が鳴っていなかった不整合も自動解消。両 iframe 単体ロードでエラー0、全トークン/keyframe/ヘルパー解決確認。演出シーケンス (bigmove/counter/touch) の共通化は streaming vs Replay の権威モデル差があるため Phase 4c 送り。§11 参照 |
