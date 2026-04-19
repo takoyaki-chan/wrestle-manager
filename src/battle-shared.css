@@ -105,3 +105,56 @@
   75% { opacity: 1; transform: translate(-50%, -22px) scale(1) }
   100% { opacity: 0; transform: translate(-50%, -32px) scale(0.8) }
 }
+
+/* ══════════ フィニッシュクリックボックス (single/tag 共通) ══════════
+   シングル battle-engine.html 由来 (L312-330)。タッグも同仕様を使う。 */
+.finish-click-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 40; pointer-events: none; opacity: 0; transition: opacity .3s }
+.finish-click-overlay.show { opacity: 1; pointer-events: auto }
+.finish-click-overlay::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%); pointer-events: none }
+.finish-click-btn { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) scale(0.8); font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px; color: #fff; padding: 16px 48px; border: 2px solid rgba(212,168,67,0.8); border-radius: 8px; background: linear-gradient(135deg, #8b0000, #d4a843); cursor: pointer; z-index: 45; box-shadow: 0 0 20px rgba(212,168,67,0.4), 0 0 60px rgba(139,0,0,0.3); opacity: 0; transition: opacity .3s ease-out, transform .3s ease-out }
+.finish-click-btn.show { opacity: 1; transform: translateX(-50%) scale(1); animation: finishPulse 1.2s ease-in-out infinite }
+.finish-click-btn:hover { filter: brightness(1.2) }
+.finish-click-btn:disabled { pointer-events: none; filter: brightness(0.7) }
+@keyframes finishPulse {
+  0% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px rgba(212,168,67,0.4), 0 0 60px rgba(139,0,0,0.3) }
+  50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 40px rgba(212,168,67,0.7), 0 0 80px rgba(139,0,0,0.5) }
+  100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px rgba(212,168,67,0.4), 0 0 60px rgba(139,0,0,0.3) }
+}
+
+/* ══════════ 攻撃方向矢印 (T5, single/tag 共通) ══════════
+   親コンテナ (.main-row / .match-grid) は position:relative 必須。
+   .attack-arrow-layer は親 inset:0 で貼り付け、内部に .attack-arrow を spawn する。 */
+.attack-arrow-layer { position: absolute; inset: 0; pointer-events: none; z-index: 40; overflow: hidden }
+.attack-arrow { position: absolute; left: 8%; right: 8%; top: 45%; height: 40px; display: flex; align-items: center; pointer-events: none; opacity: 0 }
+.attack-arrow .shaft { flex: 1; height: 3px; background: linear-gradient(90deg, rgba(212,168,67,0), rgba(212,168,67,0.9), rgba(212,168,67,1)); box-shadow: 0 0 12px rgba(212,168,67,0.6); transform-origin: left center; transform: scaleX(0) }
+.attack-arrow .head { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #f0d078; text-shadow: 0 0 14px rgba(255,215,107,0.9); line-height: 1; opacity: 0 }
+.attack-arrow .label { position: absolute; top: -42px; left: 50%; transform: translateX(-50%) scale(0.95); font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 22px; letter-spacing: 2px; color: #fff; text-shadow: 0 0 16px rgba(212,168,67,0.7), 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; opacity: 0 }
+
+/* 左→右 (左側の選手が攻撃) */
+.attack-arrow.ltr .shaft { transform-origin: left center }
+/* 右→左 (右側の選手が攻撃) — 三角形は ◀ 文字をそのまま使う (scaleX で反転しない) */
+.attack-arrow.rtl { flex-direction: row-reverse }
+.attack-arrow.rtl .shaft { background: linear-gradient(270deg, rgba(212,168,67,0), rgba(212,168,67,0.9), rgba(212,168,67,1)); transform-origin: right center }
+
+/* 通常攻撃アニメ */
+@keyframes atkArrowShaft { 0% { transform: scaleX(0) } 45% { transform: scaleX(1) } 100% { transform: scaleX(1); opacity: 0.6 } }
+@keyframes atkArrowHeadLtr { 0% { opacity: 0; transform: translateX(-20px) scale(0.7) } 45% { opacity: 1; transform: translateX(0) scale(1.15) } 100% { opacity: 0.9; transform: translateX(0) scale(1) } }
+@keyframes atkArrowHeadRtl { 0% { opacity: 0; transform: translateX(20px) scale(0.7) } 45% { opacity: 1; transform: translateX(0) scale(1.15) } 100% { opacity: 0.9; transform: translateX(0) scale(1) } }
+@keyframes atkArrowLabel { 0% { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.92) } 22% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1) } 82% { opacity: 1 } 100% { opacity: 0; transform: translateX(-50%) translateY(-4px) scale(1) } }
+.attack-arrow.play { opacity: 1 }
+.attack-arrow.play .shaft { animation: atkArrowShaft 0.7s ease-out forwards }
+.attack-arrow.play.ltr .head { animation: atkArrowHeadLtr 0.7s ease-out forwards }
+.attack-arrow.play.rtl .head { animation: atkArrowHeadRtl 0.7s ease-out forwards }
+.attack-arrow.play .label { animation: atkArrowLabel 1.4s ease-out forwards }
+
+/* MISS 矢印: 目立たないグレー系 (D2)。命中してない攻撃も方向性は示す。 */
+.attack-arrow.miss .shaft { background: linear-gradient(90deg, rgba(255,255,255,0), rgba(180,180,180,0.55), rgba(220,220,220,0.75)); box-shadow: 0 0 8px rgba(200,200,200,0.25) }
+.attack-arrow.miss.rtl .shaft { background: linear-gradient(270deg, rgba(255,255,255,0), rgba(180,180,180,0.55), rgba(220,220,220,0.75)) }
+.attack-arrow.miss .head { color: rgba(220,220,220,0.85); text-shadow: 0 0 8px rgba(180,180,180,0.4); font-size: 28px }
+.attack-arrow.miss .label { color: rgba(220,220,220,0.85); text-shadow: 0 0 8px rgba(180,180,180,0.4); font-size: 18px; letter-spacing: 1px }
+
+/* カウンター返し段階2: shaft 太さ2倍 + オレンジ→黄ゴールドグラデ + head/label 拡大 */
+.attack-arrow.counter-reversal .shaft { height: 6px; background: linear-gradient(90deg, rgba(255,107,74,0), rgba(255,107,74,0.95), rgba(255,235,140,1)); box-shadow: 0 0 24px rgba(255,107,74,0.9), 0 0 40px rgba(255,215,107,0.6) }
+.attack-arrow.counter-reversal.rtl .shaft { background: linear-gradient(270deg, rgba(255,107,74,0), rgba(255,107,74,0.95), rgba(255,235,140,1)) }
+.attack-arrow.counter-reversal .head { font-size: 54px; color: #ffeb8c; text-shadow: 0 0 22px rgba(255,215,107,1), 0 0 40px rgba(255,107,74,0.8) }
+.attack-arrow.counter-reversal .label { font-size: 30px; color: #ffeb8c; text-shadow: 0 0 18px rgba(255,107,74,0.9), 0 0 28px rgba(255,235,140,0.6), 0 2px 6px #000; letter-spacing: 4px }

@@ -524,7 +524,7 @@ Engine.tagMatch = (() => {
       const turnLog = log.slice(_turnLogStart);
       const turnEvents = dramaSummary
         .filter(d => d.turn === totalTurn && !d._framed)
-        .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move, attemptType: d.attemptType, byId: d.byId, onId: d.onId, outcome: d.outcome, count: d.count }; });
+        .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move, moveCat: d.moveCat, attemptType: d.attemptType, byId: d.byId, onId: d.onId, outcome: d.outcome, count: d.count }; });
       frames.push({
         turn: totalTurn,
         turnSub: _frameTurnSub,
@@ -567,6 +567,7 @@ Engine.tagMatch = (() => {
 
     // セグメント単位ドラマイベント計画
     let _dtTargetTurn = -1, _ffTargetTurn = -1;
+    let _lastTagMoveName = null; // T1: 試合内の直近ダブルチーム技名 (連続回避)
     function planSegmentDrama() {
       _dtTargetTurn = -1;
       _ffTargetTurn = -1;
@@ -922,7 +923,9 @@ Engine.tagMatch = (() => {
       // ── ダブルチーム (セグメント計画) ──
       if (!winner && curSegment.turns === _dtTargetTurn) {
         const atkApron = isAAttacking ? apronA : apronB;
-        const tagMv = getTagMove(atkFighter.style, atkApron.style);
+        // T1: 乱数選択で同試合内の連続を避ける
+        const tagMv = getTagMove(atkFighter.style, atkApron.style, rng, _lastTagMoveName);
+        _lastTagMoveName = tagMv.n;
         const effAtk = applyHpDecay(atkFighter);
         const effDef = applyHpDecay(defFighter);
         let tagDmg = B.calcDamage(rng, tagMv, effAtk, effDef, mom, atkSide, ph);
@@ -933,7 +936,8 @@ Engine.tagMatch = (() => {
         atkApron.damageDealt += Math.round(tagDmg * 0.5);
         defFighter.damageTaken += tagDmg;
         bigMoves++;
-        dramaSummary.push({ type: 'doubleTeam', turn: totalTurn, by: [atkFighter.id, atkApron.id], move: tagMv.n });
+        // T1: moveCat をイベントに乗せる (tag-battle-main.js の実況文選択に使用)
+        dramaSummary.push({ type: 'doubleTeam', turn: totalTurn, by: [atkFighter.id, atkApron.id], move: tagMv.n, moveCat: tagMv.c });
         log.push(`  ★ ダブルチーム！ ${atkFighter.name}&${atkApron.name}の${tagMv.n}！ ${defFighter.name}に${tagDmg}ダメージ！`);
 
         if (defFighter.hp <= 0) {

@@ -47,7 +47,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   border-top-color:var(--gold);animation:waitSpin 1s linear infinite}
 
 /* ═══ MATCH SCREEN ═══ */
-.match-grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:10px}
+.match-grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:10px;position:relative}
 .fighter-panel{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:4px;
   overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative}
 .fighter-panel.left{border-color:rgba(74,143,212,0.2)}
@@ -178,6 +178,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   color:var(--text-dim);margin-bottom:2px}
 .move-value{font-family:'Noto Sans JP',sans-serif;font-size:18px;font-weight:900;min-height:22px;
   transition:all .2s;color:var(--gold-light)}
+/* D1: 矢印レイヤを move-box 枠内に収める。技名は move-value が兼ねるので label は非表示 */
+.move-box{position:relative;min-height:60px}
+.move-arrow-layer{z-index:5}
+.move-arrow-layer .attack-arrow{top:auto;bottom:6px;height:20px;left:6%;right:6%}
+.move-arrow-layer .attack-arrow .label{display:none}
 /* movePop keyframe は battle-shared.css */
 .move-pop{animation:movePop .3s ease-out}
 /* momentum section removed — consolidated into HUD */
@@ -1681,7 +1686,8 @@ function renderMatch(){
         <span class="phase-pill${_isBigMatch?' bigmatch':''}" id="pill">${ph.name}</span></div>
       <div class="narration-box" id="narBox"><div class="nar-empty">試合開始 — NEXT TURNを押してください</div></div>
       <div class="move-box"><div class="move-label">Current Move</div>
-        <div class="move-value" id="moveV">---</div></div>
+        <div class="move-value" id="moveV">---</div>
+        <div class="attack-arrow-layer move-arrow-layer" id="arrowLayer"></div></div>
       <div class="log-section"><div class="log-header">Battle Log</div>
         <div class="log-box" id="logBox">${logH}</div></div>
     </div>${fHTML(R,'right')}</div>
@@ -1775,6 +1781,9 @@ function nextTurn(){
 
   // Phase change 検出はnextTurn冒頭のフェーズ導入ブロックで処理済み
   // （ピルフラッシュ・BGM切替・カットイン全て上で実行される）
+
+  // T5: 攻撃方向矢印 (MISS はグレー / カウンターは 2段階)
+  _spawnAttackArrow(as, ds, mv.n, isCounter, !isHit);
 
   // === MISS ===
   if(!isHit){
@@ -2296,6 +2305,33 @@ function shakePanel(side,hard){
   const cls=hard?'shake-hard':'shake';
   p.classList.remove('shake','shake-hard');void p.offsetWidth;p.classList.add(cls);
   setTimeout(()=>p.classList.remove(cls),hard?350:300);
+}
+// T5: 攻撃方向矢印 spawn (battle-shared.css の .attack-arrow* を使用)
+// as/ds: 'left' | 'right'。isCounter=true なら段階1 (元の攻撃方向) → 1000ms 後に段階2 (逆向き太い返し)
+// isMiss=true なら命中してない攻撃をグレー矢印で表示 (D2)
+function _spawnAttackArrow(as,ds,moveName,isCounter,isMiss){
+  const layer=document.getElementById('arrowLayer');if(!layer)return;
+  if(isCounter){
+    const stage1Dir=as==='left'?'ltr':'rtl';
+    const stage2Dir=stage1Dir==='ltr'?'rtl':'ltr';
+    _renderAtkArrow(layer,stage1Dir,moveName||'攻撃',false,false);
+    setTimeout(()=>_renderAtkArrow(layer,stage2Dir,'カウンター！ '+(moveName||''),true,false),1000);
+  }else{
+    const dir=as==='left'?'ltr':'rtl';
+    _renderAtkArrow(layer,dir,moveName||'攻撃',false,!!isMiss);
+  }
+}
+function _renderAtkArrow(layer,dir,labelText,isCounter,isMiss){
+  [...layer.querySelectorAll('.attack-arrow')].forEach(el=>{el.style.transition='opacity 0.15s';el.style.opacity='0';setTimeout(()=>el.remove(),180);});
+  const arrow=document.createElement('div');
+  arrow.className='attack-arrow '+dir+(isCounter?' counter-reversal':'')+(isMiss?' miss':'');
+  const head=dir==='ltr'?'▶':'◀';
+  const esc=String(labelText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  arrow.innerHTML=`<div class="shaft"></div><div class="head">${head}</div><div class="label">${esc}</div>`;
+  layer.appendChild(arrow);
+  void arrow.offsetWidth;
+  arrow.classList.add('play');
+  setTimeout(()=>{if(arrow.parentNode)arrow.remove();},1600);
 }
 const _spTimers={};
 function showSp(side,text,cls){

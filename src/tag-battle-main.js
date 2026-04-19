@@ -19,6 +19,7 @@ const S = {
   pendingCutin: false,
   pinCtrl: null,           // { seq, idx, fr } — クリック駆動ピンカウント制御
   pinSeqPending: false,    // このフレームで pin seq を走らせる予定 (ネタバレ抑制用)
+  pinStepTimer: null,      // ワン/ツー/ロック 等のリード step 自動進行タイマ
   heldWinLogs: null,       // { turn, held: [lines] } — pin seq 完了まで保留する「★ 決着！」ログ
   pendingDamage: false,    // ダメージポップアップ表示中 (クリック待ち)
   matchInfo: null,
@@ -286,6 +287,7 @@ function _moveDisplayHtml(fr){
   return `<div class="move-display" id="moveDisplay">
     <div class="move-label">CURRENT MOVE</div>
     <div class="bigmove-splash" id="bigmoveSplash"></div>
+    <div class="attack-arrow-layer move-arrow-layer" id="arrowLayer"></div>
     <div class="move-name" id="moveName">${escHtml(move)}</div>
     <div class="move-damage ${dmgText.cls}" id="moveDmg">${dmgText.text}</div>
     <div class="move-narration ${nar.dramatic?'dramatic':''}" id="moveNarration">${nar.text}</div>
@@ -306,7 +308,11 @@ function _narrateFrame(fr){
   if (fr.events && fr.events.length) {
     const ev = fr.events[fr.events.length - 1];
     if (ev.type === 'hotTag') return { text:'会場が一気に沸いた！ 反撃のタッチだーーっ！', dramatic:true };
-    if (ev.type === 'doubleTeam') return { text:'二人がかりの合体攻撃！ これがタッグの醍醐味だ！', dramatic:true };
+    if (ev.type === 'doubleTeam') {
+      // T1: 技カテゴリに応じて実況文を選択。フィニッシュにつながる場合は別プールから決め台詞。
+      const isFinish = !!(fr.winner && fr.events.some(e => e.type === 'doubleTeam'));
+      return { text: pickDoubleTeamCommentary(ev.moveCat, isFinish), dramatic:true };
+    }
     if (ev.type === 'cutinSave') return { text:'パートナーが間一髪で救出！ これがタッグマッチ！', dramatic:true };
     if (ev.type === 'friendlyFire') return { text:'あーっと！ 味方に当たってしまった！ 痛恨のミス！', dramatic:true };
     if (ev.type === 'betrayal') return { text:'助けに行かない…！ なんということだ…！', dramatic:true };
@@ -592,6 +598,13 @@ function applyFrame(fr){
   if (isBigMove) {
     // 溜め音だけ先に再生。ナレーション・HUD・カード・ログは前フレームの状態のまま固定。
     try { sfx.bigmoveCharge(); } catch(e){}
+    // D3: 溜め中は攻撃者パネルに charging クラスを付与して発光 (どちらが溜めているか視覚化)
+    if (fr.action && fr.action.attackerId) {
+      const atkKey = keyById(fr.action.attackerId);
+      const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
+      const atkCard = document.getElementById(`card-${atkSide}-legal`);
+      if (atkCard) atkCard.classList.add('charging');
+    }
   }
 
   setTimeout(() => _applyFrameVisuals(fr, touchA, touchB, isBigMove), chargeDelay);
@@ -609,6 +622,11 @@ function applyFrame(fr){
 }
 
 function _applyFrameVisuals(fr, touchA, touchB, isBigMove){
+  // D3: 溜め終了時に全カードから charging を解除 (衝撃演出に切り替わる)
+  ['a','b'].forEach(s => {
+    const el = document.getElementById(`card-${s}-legal`);
+    if (el) el.classList.remove('charging');
+  });
   // タッチ発生: 旧カードのshrinkアニメを先に開始してから内容を差し替える
   if (touchA) {
     const oldCardA = document.getElementById('card-a-legal');
@@ -658,8 +676,13 @@ function animateAction(action, fr, isBigMove){
 
   if (action.kind === 'miss') {
     try { sfx.missWhiff(); } catch(e){}
+    // D2: MISS 時もグレー矢印で方向性を示す
+    _spawnAttackArrow(action);
     return;
   }
+
+  // 攻撃方向矢印 (T5): counter は 2段階、通常は単発
+  _spawnAttackArrow(action);
 
   if (isBigMove) {
     // 溜め音は applyFrame 側で先行済み。技名表示 (_updateCenter) の 500ms 後に衝撃
@@ -668,6 +691,47 @@ function animateAction(action, fr, isBigMove){
   }
 
   _renderActionImpact(action);
+}
+
+// T5: 攻撃方向矢印 spawn (battle-shared.css の .attack-arrow* を使用)。
+// - 通常/ミス以外: 攻撃側 → 被攻撃側に矢印 + 技名ラベル
+// - カウンター: 段階1 (元の攻撃を示す逆向き矢印) → 1000ms後 段階2 (返しの太い矢印) の2段構成
+function _spawnAttackArrow(action){
+  const layer = document.getElementById('arrowLayer');
+  if (!layer) return;
+  const atkKey = keyById(action.attackerId);
+  if (!atkKey) return;
+  const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
+  const isMiss = action.kind === 'miss';
+  if (action.kind === 'counter') {
+    // counter: 段階1 元の攻撃側 → 段階2 返し (逆向き太い)
+    const origAtkKey = keyById(action.defenderId);
+    const origAtkSide = origAtkKey && (origAtkKey === 'a1' || origAtkKey === 'a2') ? 'a' : 'b';
+    const stage1Dir = origAtkSide === 'a' ? 'ltr' : 'rtl';
+    const stage2Dir = stage1Dir === 'ltr' ? 'rtl' : 'ltr';
+    _renderArrow(layer, stage1Dir, action.move || '攻撃', false, false);
+    setTimeout(() => _renderArrow(layer, stage2Dir, 'カウンター！ ' + (action.move || ''), true, false), 1000);
+  } else {
+    const dir = atkSide === 'a' ? 'ltr' : 'rtl';
+    _renderArrow(layer, dir, action.move || '攻撃', false, isMiss);
+  }
+}
+
+function _renderArrow(layer, dir, labelText, isCounter, isMiss){
+  // 同方向の古い矢印を掃除
+  [...layer.querySelectorAll('.attack-arrow')].forEach(el => {
+    el.style.transition = 'opacity 0.15s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 180);
+  });
+  const arrow = document.createElement('div');
+  arrow.className = 'attack-arrow ' + dir + (isCounter ? ' counter-reversal' : '') + (isMiss ? ' miss' : '');
+  const headChar = dir === 'ltr' ? '▶' : '◀';
+  arrow.innerHTML = `<div class="shaft"></div><div class="head">${headChar}</div><div class="label">${escHtml(labelText)}</div>`;
+  layer.appendChild(arrow);
+  void arrow.offsetWidth;
+  arrow.classList.add('play');
+  setTimeout(() => { if (arrow.parentNode) arrow.remove(); }, 1600);
 }
 
 function _renderActionImpact(action){
@@ -878,28 +942,65 @@ function _buildPinCtrl(pinEv, fr){
       }
     }
   }
-  // attemptType 別にカウント/専用テキストを構築
+  // 攻撃者/被攻撃者の名前取得 (タップ文言埋め込み用、fall/gu は def が押さえ込まれ側)
+  const atkKey2 = fr.action ? keyById(fr.action.attackerId) : null;
+  const defKey2 = fr.action ? keyById(fr.action.defenderId) : null;
+  const atkChar = atkKey2 ? f(atkKey2) : null;
+  const defChar = defKey2 ? f(defKey2) : null;
+  const moveName = (fr.action && fr.action.move) || '';
+  // シングル battle-engine.html の showFinishClickBtn ラベルに完全準拠
+  const FINISH_LABELS = { 'fall': 'スリーカウント…！？', 'pin': 'スリーカウント…！？', 'gu': 'ギブアップ…！？', 'rollup': 'カウント…！？', 'tko': 'レフェリー…！？' };
+  // D4: カウント前導入ナレーション (attemptType 別の短文。moveNarration に出してサスペンスを作る)
+  const INTRO_NARRATIONS = {
+    fall: ['フォールに入った！ ここで決まるのか！？', '押さえ込んだーっ！ スリーカウントなるか！？', 'カバー！ これで決着か！？'],
+    pin: ['押さえ込んだーっ！ これで決まるのか！？', '強引にフォールへ！ 返せるのか！？', 'カバーに入った！ 決着か！？'],
+    tko: ['もう立ち上がれない…！ レフェリーが試合を見ている！', '意識が飛んでいる…！ TKOか！？', 'これ以上は危険だ！ ストップがかかるか！？'],
+  };
+  const _pickIntro = (type) => {
+    const arr = INTRO_NARRATIONS[type];
+    if (!arr) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+  };
+
+  // attemptType 別にカウント/専用テキストを構築 (シングル battle-engine.html 準拠)
+  // シングルの順序: 導入ナレーション → ワン/ツー → finishClick box → 最終カウント(スリー/返した/タップ/エスケープ)
   if (attemptType === 'tko') {
-    // TKO: 1 ステップだけ (テキストのみ)
-    seq.push({ kind: 'count', text: 'T K O ！', cls: 'tko' });
+    // TKO: 導入ナレーション → finishClick → 「TKO！！」大 flash (ワン/ツー なし)
+    const introT = _pickIntro('tko');
+    if (introT) seq.push({ kind: 'introBig', text: introT, dramatic: true });
+    seq.push({ kind: 'finishClick', label: FINISH_LABELS.tko });
+    seq.push({ kind: 'count', text: 'TKO！！', cls: 'tko' });
   } else if (attemptType === 'gu') {
-    // ギブアップ: カウントではなく「ロック → 極まっている → タップ or エスケープ」
-    seq.push({ kind: 'count', text: 'ガッチリとロック！', cls: 'lock' });
-    if (outcome === 'win') {
-      seq.push({ kind: 'count', text: '極まっている…！', cls: 'agony' });
-      seq.push({ kind: 'count', text: 'タップ！タップしたーっ！', cls: 'tap' });
-    } else if (outcome === 'escape') {
-      seq.push({ kind: 'count', text: 'ロープに手が届いたーっ！', cls: 'escape' });
+    // ギブアップ: ロック → (win のみ) 極まり → finishClick → タップ/エスケープ
+    if (defChar) {
+      seq.push({ kind: 'introBig', text: `${defChar.name}、${moveName}をがっちりロック！`, dramatic: true });
+      if (outcome === 'win') {
+        seq.push({ kind: 'introBig', text: `${defChar.name}の表情が歪む…！ 極まっている！`, dramatic: true });
+        seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
+        seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
+      } else if (outcome === 'escape') {
+        seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
+        seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
+      }
     }
   } else if (attemptType === 'rollup') {
-    // 丸め込み: 攻撃食らってるはずの選手が逆に押さえ込む劇的な逆転。
-    // カウント前に「なんと！丸め込みだーっ！」を入れて視覚的に流れを切り替える。
-    seq.push({ kind: 'count', text: 'なんと！丸め込みだーっ！', cls: 'rollupIntro' });
-    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
-    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
+    // 丸め込み: 主体/対象ナレーション → ワン/ツー → finishClick → スリー/cutin
+    const subjKey = keyById(pinEv.byId);
+    const objKey = keyById(pinEv.onId);
+    const subjChar = subjKey ? f(subjKey) : null;
+    const objChar = objKey ? f(objKey) : null;
+    const subjSide = (subjKey === 'a1' || subjKey === 'a2') ? 'a' : 'b';
+    const objSide = subjSide === 'a' ? 'b' : 'a';
+    const statusText = subjChar ? `${subjChar.name}が押さえ込んでいる！` : '押さえ込んでいる！';
+
+    if (subjChar && objChar) {
+      seq.push({ kind: 'introBig', text: `${subjChar.name}が${objChar.name}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
+    }
+    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
+    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
+    seq.push({ kind: 'finishClick', label: FINISH_LABELS.rollup });
     if (outcome === 'win') {
-      // ワン, ツー, スリーーー！ の 3 カウント完走で初めて丸め込み勝利が確定する
-      seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
+      seq.push({ kind: 'count', text: '3ーーーっ！！', cls: 'three', rollupStatus: statusText });
     } else if (outcome === 'cutinSave') {
       const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
       if (cutinEv) {
@@ -912,13 +1013,16 @@ function _buildPinCtrl(pinEv, fr){
       }
     }
   } else {
-    // fall / pin: カウント進行
+    // fall / pin: 導入ナレーション → ワン/ツー → finishClick → スリー/返した/cutin
+    const introF = _pickIntro(attemptType === 'pin' ? 'pin' : 'fall');
+    if (introF) seq.push({ kind: 'introBig', text: introF, dramatic: true });
     if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
-    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: '' });
+    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two' });
+    seq.push({ kind: 'finishClick', label: FINISH_LABELS[attemptType] || FINISH_LABELS.fall });
     if (outcome === 'win' || outcome === 'betrayalWin') {
-      seq.push({ kind: 'count', text: 'スリーーー！', cls: 'three' });
+      seq.push({ kind: 'count', text: '3ーーーーっ！！！', cls: 'three' });
     } else if (outcome === 'kickout') {
-      seq.push({ kind: 'count', text: '返したーっ！', cls: 'kickout' });
+      seq.push({ kind: 'count', text: '返したーーーーっ！！', cls: 'kickout' });
     } else if (outcome === 'cutinSave') {
       const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
       if (cutinEv) {
@@ -939,17 +1043,55 @@ function _executePinStep(idx){
   if (idx >= S.pinCtrl.seq.length) { _finishPinSeq(); return; }
   S.pinCtrl.idx = idx;
   const step = S.pinCtrl.seq[idx];
+  // ワン/ツー/ロック/極まり は「リードステップ」として自動進行する (シングル battle-engine.html の setTimeout チェーン準拠)。
+  // 最終ステップ (スリー/返した/タップ/エスケープ/TKO/rollupIntro 後の決着) だけクリック待機。
+  const isFinal = idx === S.pinCtrl.seq.length - 1;
+  const isLead = !isFinal && (step.kind === 'count' || step.kind === 'narration' || step.kind === 'introBig');
+
   if (step.kind === 'count') {
     _spawnPinCount(step.text, step.cls);
-    // クリック連打防止: step 表示直後 700ms は button を無効化して間合いを作る
-    const btn = document.getElementById('nBtn');
-    if (btn) {
-      btn.disabled = true;
-      btn.onclick = _advancePinStep;
-      setTimeout(() => {
-        if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false;
-      }, 700);
+    // 丸め込みカウント中は moveNarration に「{主体}が押さえ込んでいる！」を継続表示 (T3)
+    if (step.rollupStatus) {
+      const narEl = document.getElementById('moveNarration');
+      if (narEl) {
+        narEl.textContent = step.rollupStatus;
+        narEl.className = 'move-narration dramatic rollup-status';
+      }
     }
+    _schedulePinAdvance(isLead, step.cls);
+  } else if (step.kind === 'narration') {
+    const narEl = document.getElementById('moveNarration');
+    if (narEl) {
+      narEl.textContent = step.text;
+      narEl.className = 'move-narration' + (step.dramatic ? ' dramatic' : '');
+    }
+    // 丸め込み intro narration: 主体/対象のパネルハイライトを付与 (T3)
+    if (step.rollupHighlight) {
+      _applyRollupHighlight(step.rollupHighlight.subjSide, step.rollupHighlight.objSide);
+      try { sfx.cutinSlide(); } catch(e){}
+    } else {
+      try { sfx.dmgVoice(); } catch(e){}
+    }
+    _schedulePinAdvance(isLead, 'narration');
+  } else if (step.kind === 'introBig') {
+    // 決着寸前導入: 画面中央に大きな文字で「フォールに入った！」等を表示 + moveNarration にも同じテキスト
+    _spawnBigIntro(step.text);
+    const narEl = document.getElementById('moveNarration');
+    if (narEl) {
+      narEl.textContent = step.text;
+      narEl.className = 'move-narration' + (step.dramatic ? ' dramatic' : '');
+    }
+    if (step.rollupHighlight) {
+      _applyRollupHighlight(step.rollupHighlight.subjSide, step.rollupHighlight.objSide);
+      try { sfx.cutinSlide(); } catch(e){}
+    } else {
+      try { sfx.finImpact(); } catch(e){}
+    }
+    _schedulePinAdvance(isLead, 'introBig');
+  } else if (step.kind === 'finishClick') {
+    // D5: シングル showFinishClickBtn 準拠のボックス型クリック待機。
+    // 画面下部に「スリーカウント…！？」等のラベルを pulse 表示、クリック or Space/Enter で次へ。
+    _showFinishClickBox(step.label, () => _advancePinStep());
   } else if (step.kind === 'damage') {
     // ダメージセリフ: showCutin が pendingCutin=true を立てる。
     // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し次 step へ進む。
@@ -964,6 +1106,41 @@ function _executePinStep(idx){
   }
 }
 
+// count / narration ステップ用の進行スケジューラ。
+// isLead=true: 自動進行 (シングル battle-engine.html の setTimeout チェーン準拠)。
+// isLead=false: クリック待機。autoAdvance 有効時は AUTO_DELAY 後に強制進行。
+function _schedulePinAdvance(isLead, stepKey){
+  const btn = document.getElementById('nBtn');
+  clearTimeout(S.pinStepTimer);
+  // introBig は大きな文字で 2.2s 見せるので 1.8s 後に次ステップ。narration は 1.5s。count は 1.1s。
+  const LEAD_DELAY = (stepKey === 'introBig') ? 1800 : (stepKey === 'narration') ? 1500 : 1100;
+  const FINAL_AUTO_DELAY = 2500;  // シングル AUTO_DELAY 準拠
+
+  if (isLead) {
+    // リードステップ: ユーザーが急ぎたければクリックで前倒しできるようハンドラも張る
+    if (btn) {
+      btn.disabled = true;
+      btn.onclick = () => { clearTimeout(S.pinStepTimer); _advancePinStep(); };
+      setTimeout(() => {
+        if (S.pinCtrl && btn.onclick) btn.disabled = false;
+      }, 400);
+    }
+    S.pinStepTimer = setTimeout(() => _advancePinStep(), LEAD_DELAY);
+  } else {
+    // 最終ステップ: クリック待機 (autoAdvance=ON なら AUTO_DELAY 後に進む)
+    if (btn) {
+      btn.disabled = true;
+      btn.onclick = _advancePinStep;
+      setTimeout(() => {
+        if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false;
+      }, 700);
+    }
+    if (S.autoAdvance) {
+      S.pinStepTimer = setTimeout(() => _advancePinStep(), FINAL_AUTO_DELAY);
+    }
+  }
+}
+
 function _advancePinStep(){
   if (!S.pinCtrl) return;
   _executePinStep(S.pinCtrl.idx + 1);
@@ -971,9 +1148,11 @@ function _advancePinStep(){
 
 function _finishPinSeq(){
   const fr = S.pinCtrl ? S.pinCtrl.fr : null;
+  clearTimeout(S.pinStepTimer);
   S.pinCtrl = null;
   S.pinSeqPending = false;
   S.pendingCutin = false;
+  _clearRollupHighlight();
   const btn = document.getElementById('nBtn');
 
   // 保留していた「★ 決着！」ログを現ターンの先頭に挿入 (turn marker 直後)
@@ -1019,6 +1198,73 @@ function _finishPinSeq(){
   }
 }
 
+// 決着寸前導入テキスト: 画面中央に大きな文字を pop させて短く残す (2.2s自動消滅)
+function _spawnBigIntro(text){
+  const el = document.createElement('div');
+  const long = String(text).length >= 16;
+  el.className = 'big-intro' + (long ? ' long' : '');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2300);
+}
+
+// _schedulePinAdvance の延長: introBig は narration より少し長めに見せる
+// D5: finishClick ボックス表示。シングル showFinishClickBtn 準拠。
+// onResolve: クリック/キーで進行する callback。autoAdvance=ON なら 2500ms 後に自動発火。
+function _showFinishClickBox(label, onResolve){
+  const btn = document.getElementById('finishBtn');
+  const ov = document.getElementById('finishOverlay');
+  const nBtn = document.getElementById('nBtn');
+  if (!btn || !ov) { // 万一 DOM 無ければ即進行
+    if (typeof onResolve === 'function') onResolve();
+    return;
+  }
+  if (nBtn) nBtn.disabled = true;
+  btn.textContent = label;
+  btn.disabled = false;
+  ov.classList.add('show');
+  setTimeout(() => btn.classList.add('show'), 100);
+  let handled = false;
+  let autoTimer = null;
+  const cleanup = () => {
+    btn.disabled = true;
+    btn.classList.remove('show');
+    ov.classList.remove('show');
+    btn.removeEventListener('click', handler);
+    document.removeEventListener('keydown', keyHandler);
+    clearTimeout(autoTimer);
+  };
+  const handler = () => {
+    if (handled) return;
+    handled = true;
+    cleanup();
+    if (typeof onResolve === 'function') onResolve();
+  };
+  const keyHandler = (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      e.preventDefault();
+      handler();
+    }
+  };
+  btn.addEventListener('click', handler);
+  document.addEventListener('keydown', keyHandler);
+  if (S.autoAdvance) autoTimer = setTimeout(handler, 2500); // シングル AUTO_DELAY 準拠
+}
+
+// 丸め込みハイライト: 主体側カード glow、対象側カード dim (T3)
+function _applyRollupHighlight(subjSide, objSide){
+  const subj = document.getElementById(`card-${subjSide}-legal`);
+  const obj = document.getElementById(`card-${objSide}-legal`);
+  if (subj) subj.classList.add('rollup-subject');
+  if (obj) obj.classList.add('rollup-object');
+}
+function _clearRollupHighlight(){
+  ['a','b'].forEach(s => {
+    const el = document.getElementById(`card-${s}-legal`);
+    if (el) el.classList.remove('rollup-subject','rollup-object');
+  });
+}
+
 function _spawnPinCount(text, cls){
   const el = document.createElement('div');
   el.className = 'pin-count' + (cls ? ' ' + cls : '');
@@ -1026,11 +1272,10 @@ function _spawnPinCount(text, cls){
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1400); // 少し長めに残す (クリック待ち間も視認可能に)
   try {
-    if (cls === 'three' || cls === 'tap') { sfx.finChime(); sfx.finImpact(); }
-    else if (cls === 'tko') sfx.finImpact();
+    if (cls === 'three') { sfx.count(); sfx.finImpact(); }
+    else if (cls === 'tap' || cls === 'tko') { sfx.bellx3(); sfx.finImpact(); }
     else if (cls === 'kickout') sfx.kickoutSE();
     else if (cls === 'escape') sfx.guEscapeSE();
-    else if (cls === 'lock' || cls === 'agony') sfx.dmgVoice();
     else if (cls === 'rollupIntro') sfx.cutinSlide();
     else sfx.count();
   } catch(e){}
@@ -1136,7 +1381,7 @@ function showResult(fr){
   const box = document.getElementById('victoryBox');
   ov.classList.remove('visible');
   box.classList.remove('visible');
-  ['vicLabel','vicNames','vicType','vicBottom','vicClose'].forEach(id => {
+  ['vicLabel','vicNames','vicType','vicLines','vicBottom','vicClose'].forEach(id => {
     const el = document.getElementById(id); if (el) el.classList.remove('visible');
   });
   document.querySelectorAll('.vic-portrait').forEach(p => p.classList.remove('visible'));
@@ -1169,15 +1414,47 @@ function showResult(fr){
   const segments = (result.segments || []).length;
   vicType.textContent = `${finType}${finMove ? ' — ' + finMove : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
 
+  // T2: 締めセリフ — 勝者(決め技打った側)コメント + 敗者(pinされた側)コメント + 実況締め
+  // pinnedBy = 決め技を打った勝者、pinnedWho = pin/tap された敗者
+  const winFinisher = (winners.length === 2 && result.pinnedBy)
+    ? winners.find(w => w.id === result.pinnedBy) || winners[0]
+    : (winners[0] || null);
+  const winPartner = (winners.length === 2)
+    ? (winFinisher === winners[0] ? winners[1] : winners[0])
+    : null;
+  const lossPinned = (losers.length === 2 && result.pinnedWho)
+    ? losers.find(l => l.id === result.pinnedWho) || losers[0]
+    : (losers[0] || null);
+  const lossPartner = (losers.length === 2 && lossPinned)
+    ? (lossPinned === losers[0] ? losers[1] : losers[0])
+    : null;
+  const vicLines = document.getElementById('vicLines');
+  if (vicLines) {
+    if (winFinisher && winPartner) {
+      const winLine = pickTagWinLine(winFinisher, winPartner.name);
+      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove);
+      vicLines.innerHTML =
+        `<div class="vic-win-line"><span class="vic-speaker">${escHtml(winFinisher.name)}</span>「${escHtml(winLine)}」</div>` +
+        `<div class="vic-commentary">${escHtml(commentary)}</div>`;
+    } else {
+      vicLines.innerHTML = '';
+    }
+  }
+
   // Loser
   const loserEl = document.getElementById('vicLoser');
   if (losers.length === 2) {
+    const lossLine = (lossPinned && lossPartner) ? pickTagLossLine(lossPinned, lossPartner.name) : '';
     loserEl.innerHTML =
       `<div class="vic-loser-faces">` +
         `<img class="vic-loser-face" src="${getFaceUrl(losers[0])}" onerror="this.style.display='none'">` +
         `<img class="vic-loser-face" src="${getFaceUrl(losers[1])}" onerror="this.style.display='none'">` +
       `</div>` +
-      `<div><div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div><div class="vic-loser-tag">LOSER</div></div>`;
+      `<div>` +
+        `<div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div>` +
+        `<div class="vic-loser-tag">LOSER</div>` +
+        (lossLine ? `<div class="vic-loss-line"><span class="vic-speaker">${escHtml(lossPinned.name)}</span>「${escHtml(lossLine)}」</div>` : '') +
+      `</div>`;
   } else {
     loserEl.innerHTML = '';
   }
@@ -1196,8 +1473,10 @@ function showResult(fr){
   setTimeout(() => document.querySelectorAll('.vic-portrait').forEach(p => p.classList.add('visible')), 800);
   setTimeout(() => { document.getElementById('vicLabel').classList.add('visible'); names.classList.add('visible'); }, 1400);
   setTimeout(() => vicType.classList.add('visible'), 1800);
-  setTimeout(() => document.getElementById('vicBottom').classList.add('visible'), 2200);
-  setTimeout(() => document.getElementById('vicClose').classList.add('visible'), 2800);
+  // T2: 締めセリフをタイプ表示の直後に入れる
+  setTimeout(() => { const vl = document.getElementById('vicLines'); if (vl) vl.classList.add('visible'); }, 2200);
+  setTimeout(() => document.getElementById('vicBottom').classList.add('visible'), 2700);
+  setTimeout(() => document.getElementById('vicClose').classList.add('visible'), 3200);
 }
 
 function endMatch(){
@@ -1253,5 +1532,14 @@ document.addEventListener('keydown', e => {
     if (bp && bp.classList.contains('show')) { closeBp(); return; }
     const cu = document.getElementById('cutinOv');
     if (cu && cu.classList.contains('show')) { dismissCutin(); return; }
+  }
+  // シングル battle-engine.html 準拠: Space / Enter でピンカウント/通常フレーム進行
+  if (e.key === ' ' || e.key === 'Enter') {
+    const bp = document.getElementById('bpOv');
+    if (bp && bp.classList.contains('show')) return;
+    const cu = document.getElementById('cutinOv');
+    if (cu && cu.classList.contains('show')) { e.preventDefault(); dismissCutin(); return; }
+    const btn = document.getElementById('nBtn');
+    if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
   }
 });

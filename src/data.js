@@ -817,42 +817,170 @@ const STYLE_COMPAT_MATRIX = {
 };
 STYLE_COMPAT_MATRIX.Technique = STYLE_COMPAT_MATRIX.Submission;
 
+// T1: ペアごとに複数候補を持ち、getTagMove で乱数選択。同試合内の連続を避けるため avoidMoveName 引数を受ける。
 const STYLE_TAG_MOVES = {
-  'Aerial+Grappler':    { n: '空中戦からの投げ連携', d: 18, c: 'throw' },
-  'Aerial+Aerial':      { n: 'ダブル・ムーンサルト', d: 17, c: 'aerial' },
-  'Aerial+Allround':    { n: 'アシスト式ダイビングアタック', d: 17, c: 'aerial' },
-  'Aerial+Striker':     { n: 'キック＆飛びつきコンビネーション', d: 16, c: 'strike' },
-  'Aerial+Submission':  { n: '空中からの合体関節技', d: 16, c: 'submission' },
-  'Aerial+Technique':   { n: '空中からの合体関節技', d: 16, c: 'submission' },
-  'Aerial+Brawler':     { n: '放り投げからのダイブ', d: 17, c: 'aerial' },
-  'Allround+Grappler':  { n: 'ダブル・スープレックス', d: 17, c: 'throw' },
-  'Allround+Allround':  { n: 'コンビネーション・スラム', d: 16, c: 'throw' },
-  'Allround+Striker':   { n: '打投コンビネーション', d: 16, c: 'throw' },
-  'Allround+Submission':{ n: '崩し＆極め連携', d: 16, c: 'submission' },
-  'Allround+Technique': { n: '崩し＆極め連携', d: 16, c: 'submission' },
-  'Allround+Brawler':   { n: 'パワー連携スラム', d: 17, c: 'throw' },
-  'Brawler+Grappler':   { n: '重量級ダブルパワーボム', d: 18, c: 'throw' },
-  'Brawler+Striker':    { n: 'ダブル打撃コンビネーション', d: 17, c: 'strike' },
-  'Brawler+Submission': { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
-  'Brawler+Technique':  { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
-  'Brawler+Brawler':    { n: 'ダブル・パワースラム', d: 18, c: 'throw' },
-  'Grappler+Grappler':  { n: 'ダブル・チョークスラム', d: 18, c: 'throw' },
-  'Grappler+Striker':   { n: '投げからの追撃打撃', d: 17, c: 'strike' },
-  'Grappler+Submission':{ n: '投げからの関節極め', d: 17, c: 'submission' },
-  'Grappler+Technique': { n: '投げからの関節極め', d: 17, c: 'submission' },
-  'Striker+Striker':     { n: 'ダブル打撃ラッシュ', d: 17, c: 'strike' },
-  'Striker+Submission':  { n: '打撃で崩して関節技', d: 17, c: 'submission' },
-  'Striker+Technique':   { n: '打撃で崩して関節技', d: 17, c: 'submission' },
-  'Submission+Submission':{ n: 'ダブル関節技', d: 17, c: 'submission' },
-  'Submission+Technique': { n: 'ダブル関節技', d: 17, c: 'submission' },
-  'Technique+Technique':  { n: 'ダブル関節技', d: 17, c: 'submission' },
+  'Aerial+Aerial': [
+    { n: 'ダブル・ムーンサルト', d: 17, c: 'aerial' },
+    { n: 'シンクロ・シューティングスタープレス', d: 18, c: 'aerial' },
+    { n: 'ダブル・フロッグスプラッシュ', d: 17, c: 'aerial' },
+    { n: 'コネクティング・ドロップキック', d: 16, c: 'aerial' },
+  ],
+  'Aerial+Allround': [
+    { n: 'アシスト式ダイビングアタック', d: 17, c: 'aerial' },
+    { n: '踏み台式ムーンサルト', d: 17, c: 'aerial' },
+    { n: '肩車式ハイフライ', d: 18, c: 'aerial' },
+  ],
+  'Aerial+Brawler': [
+    { n: '放り投げからのダイブ', d: 17, c: 'aerial' },
+    { n: 'パワーボム式ラナ', d: 18, c: 'throw' },
+    { n: 'タワー・スプラッシュ', d: 18, c: 'aerial' },
+  ],
+  'Aerial+Grappler': [
+    { n: '空中戦からの投げ連携', d: 18, c: 'throw' },
+    { n: 'ドロップキック→ジャーマン連携', d: 17, c: 'throw' },
+    { n: '宙返りからのスープレックス受け渡し', d: 18, c: 'throw' },
+  ],
+  'Aerial+Striker': [
+    { n: 'キック＆飛びつきコンビネーション', d: 16, c: 'strike' },
+    { n: 'スラッピング・ダブルドロップキック', d: 17, c: 'strike' },
+    { n: 'シューズ → エアキック連打', d: 16, c: 'strike' },
+  ],
+  'Aerial+Submission': [
+    { n: '空中からの合体関節技', d: 16, c: 'submission' },
+    { n: 'ダイビング・アームバー', d: 17, c: 'submission' },
+    { n: 'ロープ空中技からの腕ひしぎ', d: 17, c: 'submission' },
+  ],
+  'Aerial+Technique': [
+    { n: '空中からの合体関節技', d: 16, c: 'submission' },
+    { n: 'アサルト式レッグロック', d: 17, c: 'submission' },
+    { n: '技巧派トップロープ連係', d: 17, c: 'submission' },
+  ],
+  'Allround+Allround': [
+    { n: 'コンビネーション・スラム', d: 16, c: 'throw' },
+    { n: 'ハモリ式ドロップキック', d: 17, c: 'strike' },
+    { n: 'ダブル・ブレーンバスター', d: 17, c: 'throw' },
+    { n: '連携サンドイッチ・ボディアタック', d: 16, c: 'strike' },
+  ],
+  'Allround+Brawler': [
+    { n: 'パワー連携スラム', d: 17, c: 'throw' },
+    { n: 'アシスト式スピアー', d: 18, c: 'strike' },
+    { n: 'ダブル・ショルダータックル', d: 16, c: 'strike' },
+  ],
+  'Allround+Grappler': [
+    { n: 'ダブル・スープレックス', d: 17, c: 'throw' },
+    { n: 'ホイップ連携からのバックドロップ', d: 17, c: 'throw' },
+    { n: 'リフト＆ジャーマン連係', d: 18, c: 'throw' },
+  ],
+  'Allround+Striker': [
+    { n: '打投コンビネーション', d: 16, c: 'throw' },
+    { n: 'ホイップ → ランニングキック', d: 17, c: 'strike' },
+    { n: 'ダブル・エルボースマッシュ', d: 16, c: 'strike' },
+  ],
+  'Allround+Submission': [
+    { n: '崩し＆極め連携', d: 16, c: 'submission' },
+    { n: 'ホイップ → スリーパーキャッチ', d: 17, c: 'submission' },
+    { n: '腕固めセットアップ・ラッシュ', d: 17, c: 'submission' },
+  ],
+  'Allround+Technique': [
+    { n: '崩し＆極め連携', d: 16, c: 'submission' },
+    { n: 'テクニカル・ロック連携', d: 17, c: 'submission' },
+    { n: '関節セットアップ → フィニッシュロック', d: 18, c: 'submission' },
+  ],
+  'Brawler+Brawler': [
+    { n: 'ダブル・パワースラム', d: 18, c: 'throw' },
+    { n: 'タワー・オブ・ドゥーム', d: 19, c: 'throw' },
+    { n: 'サンドイッチ・スピア', d: 18, c: 'strike' },
+    { n: 'ダブル・ラリアット', d: 18, c: 'strike' },
+  ],
+  'Brawler+Grappler': [
+    { n: '重量級ダブルパワーボム', d: 18, c: 'throw' },
+    { n: 'ゴリ押し → バックドロップ', d: 18, c: 'throw' },
+    { n: 'サンドイッチ・チョークスラム', d: 18, c: 'throw' },
+  ],
+  'Brawler+Striker': [
+    { n: 'ダブル打撃コンビネーション', d: 17, c: 'strike' },
+    { n: 'ラリアット → 追撃キック', d: 18, c: 'strike' },
+    { n: 'ショルダータックル→延髄斬り', d: 17, c: 'strike' },
+  ],
+  'Brawler+Submission': [
+    { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
+    { n: 'パワーボム → グラウンドロック', d: 18, c: 'submission' },
+    { n: 'ラッシュ → アキレス腱固め', d: 17, c: 'submission' },
+  ],
+  'Brawler+Technique': [
+    { n: '叩き潰してからの関節技', d: 17, c: 'submission' },
+    { n: 'タックル → テクニカル・ロック', d: 18, c: 'submission' },
+    { n: '重量級アシスト → 関節締め', d: 18, c: 'submission' },
+  ],
+  'Grappler+Grappler': [
+    { n: 'ダブル・チョークスラム', d: 18, c: 'throw' },
+    { n: 'シンクロ・ジャーマン', d: 18, c: 'throw' },
+    { n: 'ダブル・パワーボム', d: 19, c: 'throw' },
+    { n: '四の字スラム連携', d: 17, c: 'throw' },
+  ],
+  'Grappler+Striker': [
+    { n: '投げからの追撃打撃', d: 17, c: 'strike' },
+    { n: 'スープレックス → ランニングキック', d: 18, c: 'strike' },
+    { n: 'ホイップ → エルボースマッシュ連係', d: 17, c: 'strike' },
+  ],
+  'Grappler+Submission': [
+    { n: '投げからの関節極め', d: 17, c: 'submission' },
+    { n: 'バックドロップ → アームロック', d: 18, c: 'submission' },
+    { n: 'パワーボム → クロスフェイス', d: 18, c: 'submission' },
+  ],
+  'Grappler+Technique': [
+    { n: '投げからの関節極め', d: 17, c: 'submission' },
+    { n: 'スープレックス → フィギュアフォー', d: 18, c: 'submission' },
+    { n: 'ジャーマン → キムラロック連携', d: 18, c: 'submission' },
+  ],
+  'Striker+Striker': [
+    { n: 'ダブル打撃ラッシュ', d: 17, c: 'strike' },
+    { n: 'シンクロ・ハイキック', d: 18, c: 'strike' },
+    { n: 'スラッピング・ダブルエルボー', d: 16, c: 'strike' },
+    { n: 'サンドイッチ・ニークラッシャー', d: 18, c: 'strike' },
+  ],
+  'Striker+Submission': [
+    { n: '打撃で崩して関節技', d: 17, c: 'submission' },
+    { n: 'キック → スリーパー連係', d: 17, c: 'submission' },
+    { n: 'ミドルキック → アキレス腱固め', d: 18, c: 'submission' },
+  ],
+  'Striker+Technique': [
+    { n: '打撃で崩して関節技', d: 17, c: 'submission' },
+    { n: 'シュート・キック → テクニカルロック', d: 18, c: 'submission' },
+    { n: '打撃コンビ → フィニッシュホールド', d: 17, c: 'submission' },
+  ],
+  'Submission+Submission': [
+    { n: 'ダブル関節技', d: 17, c: 'submission' },
+    { n: 'シンクロ・アームバー', d: 18, c: 'submission' },
+    { n: '上下同時極め', d: 18, c: 'submission' },
+  ],
+  'Submission+Technique': [
+    { n: 'ダブル関節技', d: 17, c: 'submission' },
+    { n: 'アーム＆レッグロック連係', d: 18, c: 'submission' },
+    { n: 'テクニカル・ダブルホールド', d: 17, c: 'submission' },
+  ],
+  'Technique+Technique': [
+    { n: 'ダブル関節技', d: 17, c: 'submission' },
+    { n: 'テクニカル・シンクロ・ロック', d: 18, c: 'submission' },
+    { n: '緻密な連係グラウンド', d: 17, c: 'submission' },
+  ],
 };
 
-function getTagMove(styleA, styleB) {
+// T1: 配列からランダム選択。rng が渡された場合は Engine.rng.float を使用 (auto-sim 再現性)。
+// avoidMoveName が渡されると、その技以外を優先（試合内連続を避ける）。候補1個しかない場合は諦めて返す。
+function getTagMove(styleA, styleB, rng, avoidMoveName) {
   const sA = styleA || 'Allround';
   const sB = styleB || 'Allround';
   const key = [sA, sB].sort().join('+');
-  return STYLE_TAG_MOVES[key] || { n: '合体スラム', d: 16, c: 'throw' };
+  const arr = STYLE_TAG_MOVES[key];
+  if (!arr || arr.length === 0) return { n: '合体スラム', d: 16, c: 'throw' };
+  let pool = arr;
+  if (avoidMoveName && arr.length > 1) {
+    const filtered = arr.filter(m => m.n !== avoidMoveName);
+    if (filtered.length > 0) pool = filtered;
+  }
+  const r = (rng && typeof Engine !== 'undefined' && Engine.rng) ? Engine.rng.float(rng) : Math.random();
+  return pool[Math.floor(r * pool.length) % pool.length];
 }
 
 function getStyleCompat(styleA, styleB) {

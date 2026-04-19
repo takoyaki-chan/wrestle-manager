@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>タッグマッチ 攻撃方向矢印モックアップ (T5)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080d;--card:#0e0e15;--gold:#d4a843;--gold-l:#f0d078;--blue:#4a8fd4;--red:#e85d75;--txt:#e7e9ee;--txt2:rgba(255,255,255,0.6)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding:20px}
+  h1{font-size:18px;letter-spacing:2px;margin-bottom:4px;color:var(--gold-l)}
+  .hint{font-size:12px;color:var(--txt2);margin-bottom:16px}
+  .stage{position:relative;background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:24px;min-height:280px;display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:14px;align-items:center;overflow:hidden}
+  .panel{background:linear-gradient(180deg,#14141c,#0a0a10);border-radius:6px;padding:16px 12px;text-align:center;border:1px solid rgba(255,255,255,0.08);position:relative}
+  .panel.left{border-color:rgba(74,143,212,0.3)}
+  .panel.right{border-color:rgba(196,30,58,0.3)}
+  .panel-avatar{width:80px;height:80px;border-radius:50%;background:#1c1a2e;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold-l)}
+  .panel.left .panel-avatar{background:linear-gradient(135deg,#1a3a6b,#2e5a9f)}
+  .panel.right .panel-avatar{background:linear-gradient(135deg,#6b1a2a,#9f2e3a)}
+  .panel-name{font-size:15px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
+  .panel-role{font-family:'Oswald',sans-serif;font-size:10px;color:var(--txt2);letter-spacing:2px}
+
+  @keyframes shakePanel{0%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+  .panel.hit{animation:shakePanel 0.3s ease-out}
+
+  /* ══ 演出レイヤ (中央カラム) ══ */
+  .effect-area{position:relative;height:160px;display:flex;align-items:center;justify-content:center}
+  .effect-placeholder{font-family:'Oswald',sans-serif;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:3px}
+
+  /* ══ 攻撃矢印 ══ */
+  .attack-arrow{position:absolute;inset:0;display:flex;align-items:center;pointer-events:none;opacity:0}
+  .attack-arrow .shaft{flex:1;height:3px;background:linear-gradient(90deg,rgba(212,168,67,0),rgba(212,168,67,0.9),rgba(212,168,67,1));box-shadow:0 0 12px rgba(212,168,67,0.6);transform-origin:left center;transform:scaleX(0)}
+  .attack-arrow .head{font-family:'Bebas Neue';font-size:36px;color:var(--gold-l);text-shadow:0 0 14px rgba(255,215,107,0.9);line-height:1;opacity:0;transform:translateX(-8px)}
+  .attack-arrow .label{position:absolute;top:calc(50% - 42px);left:50%;transform:translateX(-50%) scale(0.95);font-family:'Noto Sans JP',sans-serif;font-weight:900;font-size:22px;letter-spacing:2px;color:#fff;text-shadow:0 0 16px rgba(212,168,67,0.7),0 2px 4px rgba(0,0,0,0.8);white-space:nowrap;opacity:0}
+
+  /* 左→右 (Aから攻撃) */
+  .attack-arrow.ltr .shaft{transform-origin:left center}
+  .attack-arrow.ltr .head{order:2}
+  /* 右→左 (Bから攻撃) — 三角形は ◀ 文字をそのまま使う。scaleX で反転しない */
+  .attack-arrow.rtl{flex-direction:row-reverse}
+  .attack-arrow.rtl .shaft{background:linear-gradient(270deg,rgba(212,168,67,0),rgba(212,168,67,0.9),rgba(212,168,67,1));transform-origin:right center}
+  .attack-arrow.rtl .head{transform:translateX(8px)}
+
+  /* ── 通常攻撃アニメ (ゆっくり目に) ── */
+  @keyframes atkShaft{0%{transform:scaleX(0)}45%{transform:scaleX(1)}100%{transform:scaleX(1);opacity:0.6}}
+  @keyframes atkHead{0%{opacity:0;transform:translateX(-20px) scale(0.7)}45%{opacity:1;transform:translateX(0) scale(1.15)}100%{opacity:0.9;transform:translateX(0) scale(1)}}
+  @keyframes atkHeadRtl{0%{opacity:0;transform:translateX(20px) scale(0.7)}45%{opacity:1;transform:translateX(0) scale(1.15)}100%{opacity:0.9;transform:translateX(0) scale(1)}}
+  @keyframes atkLabel{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(0.92)}22%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-4px) scale(1)}}
+  .attack-arrow.play{opacity:1;animation:none}
+  .attack-arrow.play .shaft{animation:atkShaft 0.7s ease-out forwards}
+  .attack-arrow.play.ltr .head{animation:atkHead 0.7s ease-out forwards}
+  .attack-arrow.play.rtl .head{animation:atkHeadRtl 0.7s ease-out forwards}
+  .attack-arrow.play .label{animation:atkLabel 1.4s ease-out forwards}
+
+  /* ── カウンター返し (2段目) ── */
+  /* 段2: 矢印が反転しドーン！と入る。shaft 3倍太さ、head 1.4倍、label 大フォント + フラッシュ */
+  .attack-arrow.counter-reversal .shaft{height:6px;background:linear-gradient(90deg,rgba(255,107,74,0),rgba(255,107,74,0.95),rgba(255,235,140,1));box-shadow:0 0 24px rgba(255,107,74,0.9),0 0 40px rgba(255,215,107,0.6)}
+  .attack-arrow.counter-reversal.rtl .shaft{background:linear-gradient(270deg,rgba(255,107,74,0),rgba(255,107,74,0.95),rgba(255,235,140,1))}
+  .attack-arrow.counter-reversal .head{font-size:54px;color:#ffeb8c;text-shadow:0 0 22px rgba(255,215,107,1),0 0 40px rgba(255,107,74,0.8)}
+  .attack-arrow.counter-reversal .label{font-size:30px;color:#ffeb8c;text-shadow:0 0 18px rgba(255,107,74,0.9),0 0 28px rgba(255,235,140,0.6),0 2px 6px #000;letter-spacing:4px}
+
+  /* 画面フラッシュ */
+  .stage-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10}
+  @keyframes flashPop{0%{opacity:0}15%{opacity:0.45}100%{opacity:0}}
+  .stage-flash.fire{animation:flashPop 0.32s ease-out}
+
+  /* ══ コントロール ══ */
+  .controls{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+  .controls button{background:linear-gradient(180deg,#1a1a24,#0e0e15);border:1px solid rgba(212,168,67,0.35);color:var(--gold-l);padding:10px 16px;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;border-radius:4px;cursor:pointer;transition:all 0.2s}
+  .controls button:hover{background:linear-gradient(180deg,#222232,#14141c);border-color:rgba(212,168,67,0.7);transform:translateY(-1px)}
+  .controls button.counter{border-color:rgba(255,107,74,0.4);color:#ffeb8c}
+  .controls button.counter:hover{border-color:rgba(255,107,74,0.8)}
+  .notes{margin-top:18px;padding:14px;background:rgba(255,255,255,0.02);border-left:3px solid var(--gold);border-radius:3px;font-size:12px;line-height:1.8;color:var(--txt2)}
+  .notes b{color:var(--gold-l)}
+  .legend{margin-top:14px;font-family:'Oswald',sans-serif;font-size:10px;color:var(--txt2);letter-spacing:2px}
+</style>
+</head>
+<body>
+  <h1>タッグマッチ T5: 攻撃方向矢印モックアップ</h1>
+  <div class="hint">ボタンを押して演出を確認。カウンター発動は段階1 (元の攻撃) → 段階2 (返し) の2段構成。</div>
+
+  <div class="stage" id="stage">
+    <div class="panel left" id="panelA">
+      <div class="panel-avatar">A</div>
+      <div class="panel-name">朝比奈 花音</div>
+      <div class="panel-role">LEGAL・A組</div>
+    </div>
+    <div class="effect-area" id="effectArea">
+      <span class="effect-placeholder">— EFFECT LAYER —</span>
+    </div>
+    <div class="panel right" id="panelB">
+      <div class="panel-avatar">B</div>
+      <div class="panel-name">桐生 真由</div>
+      <div class="panel-role">LEGAL・B組</div>
+    </div>
+    <div class="stage-flash" id="flash"></div>
+  </div>
+
+  <div class="controls">
+    <button onclick="playNormal('ltr','ラリアット！')">通常攻撃 A→B</button>
+    <button onclick="playNormal('rtl','ドロップキック！')">通常攻撃 B→A</button>
+    <button class="counter" onclick="playCounter('ltr','バックドロップ','切り返し！キムラロック！')">カウンター: A攻撃 → B返し</button>
+    <button class="counter" onclick="playCounter('rtl','ミサイルキック','カウンターのサンセットフリップ！')">カウンター: B攻撃 → A返し</button>
+    <button onclick="clearAll()">リセット</button>
+  </div>
+
+  <div class="notes">
+    <b>狙い</b>: 攻撃者→被攻撃者の方向を「矢印」と「流れるラベル」で一瞬で判別できるようにする。<br>
+    <b>通常攻撃</b>: shaft が scaleX 0→1 で走る (0.45s) + head 矢じりが追いつく + label が上に浮かぶ (1.0s)。<br>
+    <b>カウンター</b>: 段階1を 0.55s で完走させた後、短い間 (200ms) を挟み、段階2を「反対向き・太さ2倍・フォント拡大・stage flash」で発火。返しが起きた瞬間がハッキリ分かる。<br>
+    <b>シングル側への展開</b>: 実装は CSS アニメ + 汎用クラス (.attack-arrow, .ltr/.rtl, .counter-reversal) で、tag-battle 以外にも後日展開可能な形で切り出す。
+  </div>
+
+  <div class="legend">CONTROLS: 通常攻撃 / カウンター / リセット　—　矢印 0.45s + ラベル 1.0s + カウンター段差 200ms</div>
+
+<script>
+  const effectArea = document.getElementById('effectArea');
+  const flashEl = document.getElementById('flash');
+  const panelA = document.getElementById('panelA');
+  const panelB = document.getElementById('panelB');
+
+  function clearAll(){
+    effectArea.innerHTML = '<span class="effect-placeholder">— EFFECT LAYER —</span>';
+    panelA.classList.remove('hit');
+    panelB.classList.remove('hit');
+    flashEl.classList.remove('fire');
+  }
+
+  function buildArrow(dir, label, isCounter){
+    const wrap = document.createElement('div');
+    wrap.className = 'attack-arrow ' + dir + (isCounter ? ' counter-reversal' : '');
+    wrap.innerHTML = `
+      <div class="shaft"></div>
+      <div class="head">${dir === 'ltr' ? '▶' : '◀'}</div>
+      <div class="label">${label}</div>
+    `;
+    return wrap;
+  }
+
+  function playNormal(dir, label){
+    clearAll();
+    const target = dir === 'ltr' ? panelB : panelA;
+    const arrow = buildArrow(dir, label, false);
+    effectArea.appendChild(arrow);
+    void arrow.offsetWidth;
+    arrow.classList.add('play');
+    setTimeout(() => target.classList.add('hit'), 600);
+  }
+
+  function playCounter(dir, atkLabel, cntLabel){
+    clearAll();
+    // 段階1: 元の攻撃 (dir)
+    const atkTarget = dir === 'ltr' ? panelB : panelA;
+    const arrow1 = buildArrow(dir, atkLabel, false);
+    effectArea.appendChild(arrow1);
+    void arrow1.offsetWidth;
+    arrow1.classList.add('play');
+    setTimeout(() => atkTarget.classList.add('hit'), 600);
+
+    // 段階2: 返し (反対向き)
+    const cntDir = dir === 'ltr' ? 'rtl' : 'ltr';
+    const cntTarget = dir === 'ltr' ? panelA : panelB;
+    setTimeout(() => {
+      // 段階1 を退場させる
+      arrow1.style.opacity = '0';
+      arrow1.style.transition = 'opacity 0.15s';
+      // flash
+      flashEl.classList.remove('fire');
+      void flashEl.offsetWidth;
+      flashEl.classList.add('fire');
+      // 段階2 投入
+      const arrow2 = buildArrow(cntDir, cntLabel, true);
+      effectArea.appendChild(arrow2);
+      void arrow2.offsetWidth;
+      arrow2.classList.add('play');
+      atkTarget.classList.remove('hit');
+      setTimeout(() => cntTarget.classList.add('hit'), 600);
+    }, 1000); // 段階1 shaft 完走 (0.7s) + 300ms の間 → 返しがドーンと来る
+  }
+</script>
+</body>
+</html>

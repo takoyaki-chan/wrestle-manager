@@ -66,7 +66,7 @@ body{
 .chem-sep{color:var(--text-darker)}
 
 /* ===== MAIN 3-COLUMN GRID ===== */
-.main-row{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:4px;align-items:stretch}
+.main-row{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:4px;align-items:stretch;position:relative}
 .col-side{display:flex;flex-direction:column;gap:10px;min-height:0}
 .col-center-top{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
 .col-center-top .battle-log{flex:1;overflow-y:auto;min-height:0}
@@ -179,7 +179,11 @@ body{
 .apron-stats .stat-val{font-size:10px;width:20px}
 
 /* ===== MOVE + NARRATION ===== */
-.move-display{background:linear-gradient(180deg,#1a1830,var(--portrait-bg));border:1px solid var(--card-border);border-radius:8px;padding:14px;text-align:center;min-height:90px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.move-display{background:linear-gradient(180deg,#1a1830,var(--portrait-bg));border:1px solid var(--card-border);border-radius:8px;padding:14px;text-align:center;min-height:130px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+/* D1: 矢印レイヤを move-display 枠内に収める。技名は move-name が兼ねるので label は非表示 */
+.move-arrow-layer{z-index:5}
+.move-arrow-layer .attack-arrow{top:auto;bottom:8px;height:20px}
+.move-arrow-layer .attack-arrow .label{display:none}
 .move-label{font-family:'Oswald',sans-serif;font-size:10px;color:var(--text-dark);letter-spacing:2px;margin-bottom:4px}
 .move-name{font-size:18px;font-weight:900;color:var(--text-main);min-height:24px}
 .move-name.pop{animation:movePop .3s ease-out}
@@ -263,19 +267,31 @@ body{
 
 /* Pin count (1, 2, 3, 返した！, gu, TKO, rollup)
    single battle-engine.html `.finish-count-text` / `@keyframes countPop` と同一仕様:
-   - Base: 72px Bebas Neue letter-spacing 8px, gold 色
-   - 色バリアント: gold (1カウント) / red-gold (ツー/tap/TKO) / white (3カウント/kickout/escape/rollup)
-   - サブミッション導入 (lock / agony) は tag 固有なので小さめ (40-48px 系) で区別 */
+   - Base: 72px Bebas Neue letter-spacing 8px, gold 色 (ワン！)
+   - 色バリアント: gold (ワン) / red-gold (ツー/tap/TKO) / white (3カウント/kickout/escape/rollupIntro)
+   - サブミッション導入 (ロック/極まり) は moveNarration に物語的に表示 (シングル準拠) */
 .pin-count{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);z-index:57;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:8px;color:var(--gold-light);text-shadow:0 0 30px rgba(212,168,67,0.8);opacity:0;animation:pinCountPop 800ms ease-out forwards;white-space:nowrap}
+.pin-count.two{color:#ff6b4a;text-shadow:0 0 30px rgba(255,107,74,0.8)}
 .pin-count.three{color:#fff;text-shadow:0 0 30px rgba(212,168,67,0.8)}
 .pin-count.kickout{color:#fff;text-shadow:0 0 30px rgba(212,168,67,0.8)}
 .pin-count.escape{color:#fff;text-shadow:0 0 30px rgba(212,168,67,0.8)}
 .pin-count.rollupIntro{color:#fff;text-shadow:0 0 30px rgba(212,168,67,0.8)}
-.pin-count.tap{color:#ff6b4a;text-shadow:0 0 30px rgba(212,168,67,0.8)}
-.pin-count.tko{color:#ff6b4a;text-shadow:0 0 30px rgba(212,168,67,0.8)}
-/* サブミッション導入 (tag 固有、single にない。控えめに) */
-.pin-count.lock{font-family:'Noto Sans JP',sans-serif;font-size:40px;letter-spacing:3px;color:#ff9966;text-shadow:0 0 24px rgba(255,153,102,0.55)}
-.pin-count.agony{font-family:'Noto Sans JP',sans-serif;font-size:44px;letter-spacing:3px;color:#ffaa55;text-shadow:0 0 28px rgba(255,170,85,0.6)}
+.pin-count.tap{color:#ff6b4a;text-shadow:0 0 30px rgba(255,107,74,0.8)}
+.pin-count.tko{color:#ff6b4a;text-shadow:0 0 30px rgba(255,107,74,0.8)}
+/* 決着寸前導入テキスト: 「フォールに入った！」「押さえ込んだ！」等を別枠の大きな文字で表示 */
+.big-intro{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%) scale(0.7);font-family:'Noto Sans JP',sans-serif;font-weight:900;font-size:48px;letter-spacing:4px;color:#ffd76b;text-shadow:0 0 32px rgba(255,215,107,0.9),0 4px 12px rgba(0,0,0,0.95),0 0 60px rgba(212,168,67,0.45);z-index:56;pointer-events:none;opacity:0;animation:bigIntroPop 2200ms ease-out forwards;white-space:nowrap;max-width:94vw;text-align:center;line-height:1.25}
+.big-intro.long{font-size:40px;letter-spacing:3px}
+@keyframes bigIntroPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.7)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}24%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+/* 丸め込み主体ハイライト (T3): 押さえ込み側 glow / 押さえ込まれ側 dim */
+.player-card.rollup-subject{box-shadow:0 0 0 3px rgba(255,215,107,0.9),0 0 26px rgba(255,215,107,0.55);animation:rollupSubjectPulse 900ms ease-in-out infinite alternate}
+.player-card.rollup-object{opacity:0.55;filter:grayscale(0.35) brightness(0.75)}
+@keyframes rollupSubjectPulse{from{box-shadow:0 0 0 3px rgba(255,215,107,0.85),0 0 18px rgba(255,215,107,0.45)}to{box-shadow:0 0 0 4px rgba(255,215,107,1),0 0 34px rgba(255,215,107,0.7)}}
+.move-narration.rollup-status{color:#ffd76b;font-weight:600}
+/* D3: 溜め攻撃中、攻撃者カードにオーラ発光 (どちらが溜めているか視覚化) */
+.player-card.charging{box-shadow:0 0 0 3px rgba(255,140,60,0.85),0 0 26px rgba(255,140,60,0.55),0 0 50px rgba(255,215,107,0.35);animation:chargingPulse 700ms ease-in-out infinite alternate;position:relative}
+.player-card.charging::before{content:'CHARGING';position:absolute;top:6px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#ffc46b;text-shadow:0 0 12px rgba(255,140,60,0.9);z-index:7;animation:chargingTextPulse 700ms ease-in-out infinite alternate;pointer-events:none}
+@keyframes chargingPulse{from{box-shadow:0 0 0 3px rgba(255,140,60,0.7),0 0 18px rgba(255,140,60,0.4),0 0 36px rgba(255,215,107,0.25)}to{box-shadow:0 0 0 4px rgba(255,140,60,1),0 0 34px rgba(255,140,60,0.7),0 0 60px rgba(255,215,107,0.45)}}
+@keyframes chargingTextPulse{from{opacity:0.65}to{opacity:1}}
 @keyframes pinCountPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}15%{transform:translate(-50%,-50%) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-50%) scale(0.9);opacity:0}}
 
 /* Flash overlay (full screen) */
@@ -345,8 +361,16 @@ body{
 .vic-winner-label.visible{opacity:1}
 .vic-winner-names{font-family:'Noto Sans JP',sans-serif;font-size:26px;font-weight:900;letter-spacing:2px;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.2;margin-bottom:6px;opacity:0;transition:opacity .4s}
 .vic-winner-names.visible{opacity:1}
-.vic-finish-type{font-size:14px;color:#aaa;margin-bottom:18px;text-align:center;opacity:0;transition:opacity .4s}
+.vic-finish-type{font-size:14px;color:#aaa;margin-bottom:12px;text-align:center;opacity:0;transition:opacity .4s}
 .vic-finish-type.visible{opacity:1}
+/* T2: 試合完了セリフ */
+.vic-lines{width:min(520px,88vw);margin:0 auto 18px;text-align:center;opacity:0;transition:opacity .5s ease-out;transform:translateY(6px)}
+.vic-lines.visible{opacity:1;transform:translateY(0)}
+.vic-win-line{font-size:14px;line-height:1.7;color:#fff;padding:10px 14px;margin-bottom:8px;background:rgba(212,168,67,0.08);border-left:3px solid rgba(212,168,67,0.7);border-radius:3px;text-align:left}
+.vic-loss-line{font-size:13px;line-height:1.6;color:#ccc;margin-top:6px;padding:6px 10px;background:rgba(196,30,58,0.08);border-left:2px solid rgba(196,30,58,0.5);border-radius:2px;text-align:left}
+.vic-speaker{font-family:'Noto Sans JP',sans-serif;font-weight:900;color:#ffd76b;margin-right:6px}
+.vic-loss-line .vic-speaker{color:#e85d75}
+.vic-commentary{font-size:13px;line-height:1.6;color:rgba(212,168,67,0.9);font-style:italic;margin-top:4px;padding:6px 8px;text-align:center}
 .vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 8px;margin-bottom:18px;opacity:0;transition:opacity .4s}
 .vic-bottom.visible{opacity:1}
 .vic-loser{display:flex;align-items:center;gap:8px}
@@ -406,12 +430,15 @@ body{
   <div class="banner" id="bannerEl"></div>
   <div class="flash-ov" id="flashOv"></div>
   <div class="cutin-ov" id="cutinOv" onclick="dismissCutin()"></div>
+  <div class="finish-click-overlay" id="finishOverlay"></div>
+  <div class="finish-click-btn" id="finishBtn"></div>
   <div class="victory-overlay" id="victoryOv">
     <div class="victory-box" id="victoryBox">
       <div class="vic-portraits" id="vicPortraits"></div>
       <div class="vic-winner-label" id="vicLabel">W I N N E R</div>
       <div class="vic-winner-names" id="vicNames"></div>
       <div class="vic-finish-type" id="vicType"></div>
+      <div class="vic-lines" id="vicLines"></div>
       <div class="vic-bottom" id="vicBottom">
         <div class="vic-loser" id="vicLoser"></div>
         <div class="vic-stats" id="vicStats"></div>
