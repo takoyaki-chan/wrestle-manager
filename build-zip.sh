@@ -9,7 +9,7 @@
 
 set -e
 
-VERSION="1.05"
+VERSION="1.06"
 TRIAL_VERSION="v2"
 
 # ── URL定数 ─────────────────────────────────────────────────────────────────
@@ -88,6 +88,8 @@ build_one() {
      src/ui-common.js src/ui-render.js src/victory-lines.js \
      src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
      src/draft-negotiation.js \
+     src/battle-sfx.js src/battle-shared.css src/battle-anim.js src/battle-lines.js \
+     src/tag-battle.html src/tag-battle-main.js src/tag-battle-lines.js \
      "${DIST_DIR}/src/"
   # ── IS_TRIAL フラグの書き換え（コピー後のファイルのみ） ──
   if [ "$IS_TRIAL_MODE" = "true" ]; then
@@ -132,24 +134,15 @@ build_one() {
 </body></html>
 REDIRECT_EOF
 
-  # スタートガイドをコピー
-  if [ -f "ガイド-はじめの一歩.html" ]; then
-    cp "ガイド-はじめの一歩.html" "${DIST_DIR}/ガイド-はじめの一歩.html"
-    echo "📖 スタートガイドを追加しました"
-  elif [ -f "../WMポートレート/ガイド-はじめの一歩.html" ]; then
-    cp "../WMポートレート/ガイド-はじめの一歩.html" "${DIST_DIR}/ガイド-はじめの一歩.html"
-    echo "📖 スタートガイドを追加しました"
-  else
-    echo "⚠️  ガイド-はじめの一歩.html が見つかりません（スキップ）"
-  fi
-
-  # ステータスガイドをコピー
-  if [ -f "ガイド-パラメータ解説.html" ]; then
-    cp "ガイド-パラメータ解説.html" "${DIST_DIR}/ガイド-パラメータ解説.html"
-    echo "📖 ステータスガイドを追加しました"
-  else
-    echo "⚠️  ガイド-パラメータ解説.html が見つかりません（スキップ）"
-  fi
+  # ガイド3種をコピー（ガイド01/02/03）
+  for guide in "ガイド01-はじめの一歩.html" "ガイド02-さらに先へ.html" "ガイド03-パラメータ解説.html"; do
+    if [ -f "$guide" ]; then
+      cp "$guide" "${DIST_DIR}/${guide}"
+      echo "📖 ${guide} を追加しました"
+    else
+      echo "⚠️  ${guide} が見つかりません（スキップ）"
+    fi
+  done
 
   cat > "${DIST_DIR}/README.txt" << 'README_EOF'
 Wrestle Manager
@@ -161,8 +154,9 @@ index.html をブラウザ（Chrome/Edge推奨）で開いてください。
 ※ うまく開かない場合は START.html をダブルクリックしてください。
 
 【ガイド】
-ガイド-はじめの一歩.html を開くと、初心者向けのスタートガイドが読めます。
-ガイド-パラメータ解説.html を開くと、ステータス・システム解説ガイドが読めます。
+ガイド01-はじめの一歩.html … 初心者向けのスタートガイド
+ガイド02-さらに先へ.html   … 慣れてきた人向けの発展ガイド
+ガイド03-パラメータ解説.html … ステータス・システム解説ガイド
 
 © takoyaki-chan
 README_EOF
