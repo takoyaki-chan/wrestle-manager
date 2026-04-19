@@ -480,6 +480,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
   <div class="flash-overlay" id="flashOv"></div>
 </div>
 <script src="battle-sfx.js"></script>
+<script src="battle-anim.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // v4.1 ENGINE PROTOTYPE
@@ -974,9 +975,7 @@ function _getCutinLines(lineType, personality, archetype) {
 
 function dismissCutin() {
   const ov = document.getElementById('cutinOverlay');
-  if (!ov) return;
-  ov.classList.remove('show');
-  setTimeout(() => { ov.innerHTML = ''; }, 350);
+  BattleAnim.dismissCutin(ov);
   // フェーズ導入カットインが閉じられたら、保留していたターンを再開
   if (S.pendingPhaseIntro) {
     S.pendingPhaseIntro = false;
@@ -993,17 +992,10 @@ function showCutin(side, charData, lineType) {
   const lines = _getCutinLines(lineType, personality, archetype);
   if (!lines || !lines.length) return;
   const text = lines[Math.floor(RNG.float() * lines.length)];
-  const overlay = document.getElementById('cutinOverlay');
-  if (!overlay) return;
-  const portraitUrl = getUpperUrl(charData);
-  const dirClass = side === 'right' ? ' right' : '';
-  overlay.innerHTML = `<div class="cutin-box${dirClass}">
-    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
-    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
-  </div>`;
-  overlay.classList.add('show');
-  sfx.cutinSlide();
-  // no auto-dismiss: click-to-close only
+  BattleAnim.renderCutin({
+    overlay: document.getElementById('cutinOverlay'),
+    fighter: charData, side, text, variant: 'default',
+  });
 }
 
 // ダメージセリフカットイン（防御側・終盤大技被弾時）
@@ -1017,16 +1009,10 @@ function showDamageSpeech(side, charData) {
   const lines = byP[archetype] || byP['normal'];
   if (!lines || !lines.length) return;
   const text = lines[Math.floor(RNG.float() * lines.length)];
-  const overlay = document.getElementById('cutinOverlay');
-  if (!overlay) return;
-  const portraitUrl = getUpperUrl(charData);
-  const dirClass = side === 'right' ? ' right' : '';
-  overlay.innerHTML = `<div class="cutin-box damage-serif${dirClass}">
-    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
-    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">「${text}」</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
-  </div>`;
-  overlay.classList.add('show');
-  sfx.cutinSlide();
+  BattleAnim.renderCutin({
+    overlay: document.getElementById('cutinOverlay'),
+    fighter: charData, side, text, variant: 'damage-serif',
+  });
 }
 
 // ダメージセリフ/ボイス: HP残量ベース発動判定
@@ -1054,15 +1040,10 @@ function showDamageVoice(side, charData) {
   const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES['normal'];
   if (!lines || !lines.length) return;
   const text = lines[Math.floor(RNG.float() * lines.length)];
-  const overlay = document.getElementById('cutinOverlay');
-  if (!overlay) return;
-  const portraitUrl = getUpperUrl(charData);
-  const dirClass = side === 'right' ? ' right' : '';
-  overlay.innerHTML = `<div class="cutin-box damage-voice${dirClass}">
-    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" alt="" onerror="this.style.display='none'">` : ''}
-    <div class="cutin-info"><div class="cutin-name">${charData.name || ''}</div><div class="cutin-text">${text}</div><div class="cutin-dismiss">CLICK TO CLOSE</div></div>
-  </div>`;
-  overlay.classList.add('show');
+  BattleAnim.renderCutin({
+    overlay: document.getElementById('cutinOverlay'),
+    fighter: charData, side, text, variant: 'damage-voice',
+  });
 }
 
 // フェーズ導入カットイン（ターン処理前に独立して発火）

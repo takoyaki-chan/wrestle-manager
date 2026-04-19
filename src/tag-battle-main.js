@@ -1018,34 +1018,22 @@ function tryDamageLine(action, fr){
 }
 
 // ── カットイン ──
+// DOM レンダリング + SE 再生は battle-anim.js の BattleAnim.renderCutin に集約。
+// ここでは tag 固有の state/button 管理 (pendingCutin / nBtn disabled) だけを追加で行う。
 function showCutin(fighter, side, text, cssCls){
-  const ov = document.getElementById('cutinOv');
-  if (!ov) return;
-  const portraitUrl = getUpperUrl(fighter);
-  const dirCls = side === 'right' ? ' right' : '';
-  const extraCls = cssCls ? ' ' + cssCls : '';
-  ov.innerHTML = `<div class="cutin-box${dirCls}${extraCls}">
-    ${portraitUrl ? `<img class="cutin-portrait" src="${portraitUrl}" onerror="this.style.display='none'">` : ''}
-    <div class="cutin-info">
-      <div class="cutin-name">${escHtml(fighter.name || '')}</div>
-      <div class="cutin-text">「${escHtml(text)}」</div>
-      <div class="cutin-dismiss">CLICK TO CLOSE</div>
-    </div>
-  </div>`;
-  ov.classList.add('show');
+  const variant = (cssCls === 'damage-serif' || cssCls === 'damage-voice') ? cssCls : 'default';
+  BattleAnim.renderCutin({
+    overlay: document.getElementById('cutinOv'),
+    fighter, side, text, variant,
+  });
   S.pendingCutin = true;
   const btn = document.getElementById('nBtn');
   if (btn) btn.disabled = true;
-  try {
-    if (cssCls === 'damage-voice') sfx.dmgVoice();
-    else sfx.cutinSlide();
-  } catch(e){}
 }
 function dismissCutin(){
   const ov = document.getElementById('cutinOv');
   if (!ov) return;
-  ov.classList.remove('show');
-  setTimeout(() => { ov.innerHTML = ''; }, 350);
+  BattleAnim.dismissCutin(ov);
   S.pendingCutin = false;
   // ピン seq の cutin/damage step だった場合は次へ進む
   if (S.pinCtrl && S.pinCtrl.seq[S.pinCtrl.idx]) {
