@@ -521,8 +521,9 @@ function _frameMinDelay(fr){
     else if (fr.action.kind === 'counter') base = FRAME_DELAYS.counter;
     else if (fr.action.isCrit) base = FRAME_DELAYS.crit;
     else base = FRAME_DELAYS.hit;
-    // 大技は溜め (sfx.bigmoveCharge 1.1秒先行) を吸収するため余白を足す
-    if (fr.action.dmg >= 20) base += 1200;
+    // 大技は 1800ms チャージ + 500ms 技名見せ + 衝撃演出 + セリフ余白 を吸収
+    // 最低 3300ms 確保して「次ターンが溜めに重なる」事故を防ぐ
+    if (fr.action.kind !== 'miss' && fr.action.dmg >= 20) base += 2000;
   }
   if (fr.events && fr.events.length > 0) base += 500;
   return base;
@@ -553,6 +554,14 @@ function nextFrame(){
   }
 }
 
+// 大技フレームは single battle-engine.html L1939-2002 の 3 段タイミングを踏襲:
+//   t=0     sfx.bigmoveCharge() のみ (DOM / ログ / HUD / 演出は完全停止)
+//   t=1800  ナレーション・ログ・HUD・技名・ドラマイベント・タッチ演出を一斉に解禁
+//   t=2300  _renderActionImpact (bigmoveImpact + hitSE + ダメージポップ + shake + flash + splash)
+//   t=2700  tryDamageLine (被弾セリフ/ボイス)
+// これにより「溜めの最中に他の演出が炸裂する」drift を封じる。
+const BIGMOVE_CHARGE_MS = 1800;
+
 function applyFrame(fr){
   S.anim = true;
   // ピン seq 予定のフレームなら「決着！」ナレーションと「★ 決着！」ログをホールド
@@ -566,57 +575,26 @@ function applyFrame(fr){
   const touchA = newLegalAKey !== prevLegalA;
   const touchB = newLegalBKey !== prevLegalB;
 
-  // HP/バフ更新
+  // HP/バフ/position は即時更新（JS 状態、DOM には反映しない）
   ['a1','a2','b1','b2'].forEach(k => {
     const ch = S.fighters[k];
     if (fr.hp[ch.id] != null) ch.hp = fr.hp[ch.id];
     if (fr.grit && fr.grit[ch.id] != null) ch.gritTurns = fr.grit[ch.id];
     if (fr.hotTagBuff && fr.hotTagBuff[ch.id] != null) ch.hotTagBuff = fr.hotTagBuff[ch.id];
   });
-  // タッチ発生: 旧カードのshrinkアニメを先に開始してから内容を差し替える
-  if (touchA) {
-    const oldCardA = document.getElementById('card-a-legal');
-    if (oldCardA) { oldCardA.classList.remove('tag-out-legal'); void oldCardA.offsetWidth; oldCardA.classList.add('tag-out-legal'); }
-  }
-  if (touchB) {
-    const oldCardB = document.getElementById('card-b-legal');
-    if (oldCardB) { oldCardB.classList.remove('tag-out-legal'); void oldCardB.offsetWidth; oldCardB.classList.add('tag-out-legal'); }
-  }
-
   S.pos = { legalA: newLegalAKey, apronA: newApronAKey, legalB: newLegalBKey, apronB: newApronBKey };
   S.mom = fr.mom || 0;
 
-  // DOM 差分更新（タッチ中のlegalカードは後で入れ替えるためスキップ）
-  _updateHud();
-  _updateCardsAfterFrame(touchA, touchB);
-  _updateCenter(fr);
-  _appendLogForFrame(fr);
-
-  // エンジン処理順: 攻撃 → タッチ判定 の順なので、
-  // アクション演出は必ず「先」に発火させ、その後でタッチ交代アニメを重ねる。
-  // touchPause: 「攻撃→タッチ」の間に置くブレス（次ターン開始までの追加余白）
+  const isBigMove = !!(fr.action && fr.action.kind !== 'miss' && fr.action.dmg >= 20);
+  const chargeDelay = isBigMove ? BIGMOVE_CHARGE_MS : 0;
   const touchPause = (touchA || touchB) ? 700 : 0;
 
-  // アクション演出は常に即時発火（攻撃が先、タッチが後という時系列を守る）
-  if (fr.action) animateAction(fr.action, fr);
-  // ドラマイベントも即時
-  if (fr.events && fr.events.length > 0) {
-    (fr.events || []).forEach(ev => animateEvent(ev, fr));
+  if (isBigMove) {
+    // 溜め音だけ先に再生。ナレーション・HUD・カード・ログは前フレームの状態のまま固定。
+    try { sfx.bigmoveCharge(); } catch(e){}
   }
-  // タッチ演出は即開始（アクション演出と並行）。内部で shrink→370ms→差し替え→grow-in
-  if (touchA) animateTouchSwap('a', fr);
-  if (touchB) animateTouchSwap('b', fr);
-  // ピンイベントを検出 → クリック駆動ピン演出を開始 (fall/pin/rollup/gu/tko 全て対応)
-  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt');
-  // クリティカルダメージセリフ: ピンフレームではピン演出が主役なのでスキップ
-  // 大技フレームは衝撃 SE が 1100ms 遅延して鳴るので、セリフもその後に並べる
-  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !pinEv) {
-    const serifDelay = fr.action.dmg >= 20 ? 1700 : 600;
-    setTimeout(() => tryDamageLine(fr.action, fr), serifDelay);
-  }
-  if (pinEv) _beginPinSequence(pinEv, fr);
 
-  S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
+  setTimeout(() => _applyFrameVisuals(fr, touchA, touchB, isBigMove), chargeDelay);
 
   // タッチフレームは次のフレームまでの最低待機時間を延長し、
   // 「交代した選手がすぐ反撃する」のを防ぐ間を作る
@@ -630,13 +608,51 @@ function applyFrame(fr){
   }, minDelay);
 }
 
+function _applyFrameVisuals(fr, touchA, touchB, isBigMove){
+  // タッチ発生: 旧カードのshrinkアニメを先に開始してから内容を差し替える
+  if (touchA) {
+    const oldCardA = document.getElementById('card-a-legal');
+    if (oldCardA) { oldCardA.classList.remove('tag-out-legal'); void oldCardA.offsetWidth; oldCardA.classList.add('tag-out-legal'); }
+  }
+  if (touchB) {
+    const oldCardB = document.getElementById('card-b-legal');
+    if (oldCardB) { oldCardB.classList.remove('tag-out-legal'); void oldCardB.offsetWidth; oldCardB.classList.add('tag-out-legal'); }
+  }
+
+  // DOM 差分更新（タッチ中のlegalカードは後で入れ替えるためスキップ）
+  _updateHud();
+  _updateCardsAfterFrame(touchA, touchB);
+  _updateCenter(fr);
+  _appendLogForFrame(fr);
+
+  if (fr.action) animateAction(fr.action, fr, isBigMove);
+  if (fr.events && fr.events.length > 0) {
+    (fr.events || []).forEach(ev => animateEvent(ev, fr));
+  }
+  if (touchA) animateTouchSwap('a', fr);
+  if (touchB) animateTouchSwap('b', fr);
+
+  const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt');
+  // クリティカルダメージセリフ: ピンフレームではピン演出が主役なのでスキップ
+  // 大技は _renderActionImpact が 500ms 遅延で撃つので、セリフはさらに 400ms 後 = 900ms
+  if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !pinEv) {
+    const serifDelay = isBigMove ? 900 : 600;
+    setTimeout(() => tryDamageLine(fr.action, fr), serifDelay);
+  }
+  if (pinEv) _beginPinSequence(pinEv, fr);
+
+  S.prevSnap = { legalA: fr.legalA, legalB: fr.legalB };
+}
+
 // ── 演出 ──
 // SE 層は single battle-engine.html 準拠。主な分配:
 //   - ターン頭 sfx.ready() 必須 (single L1781/1814/1876/2007 と同じ)
-//   - 大技 (action.dmg>=20) は sfx.bigmoveCharge() → 1.1s 後に sfx.bigmoveImpact()+hitSE で溜め→衝撃を再現
+//   - 大技 (action.dmg>=20) は applyFrame 側で sfx.bigmoveCharge() を t=0 に先行再生し、
+//     ナレーション・HUD・技名を 1800ms 保留 → ここでは衝撃演出を +500ms 後に撃つだけ
+//     (全体タイムライン: 0ms charge / 1800ms 技名表示 / 2300ms 衝撃 / 2700ms セリフ)
 //   - カウンター SE は half-volume (single L1881 の `counterSE*0.5` 準拠)
 //   - hitSE の volMul は 大技 1.3 / 通常 1.0 (single L1839/1883/1961 が 1.3 / L2023 が無指定=1.0)
-function animateAction(action, fr){
+function animateAction(action, fr, isBigMove){
   // 毎ターン頭の準備音
   try { sfx.ready(); } catch(e){}
 
@@ -645,12 +661,9 @@ function animateAction(action, fr){
     return;
   }
 
-  const isBigMove = action.dmg >= 20;
-
   if (isBigMove) {
-    // 溜め音を先行再生し、衝撃 SE + 被弾演出は 1100ms 遅延で発火
-    try { sfx.bigmoveCharge(); } catch(e){}
-    setTimeout(() => _renderActionImpact(action), 1100);
+    // 溜め音は applyFrame 側で先行済み。技名表示 (_updateCenter) の 500ms 後に衝撃
+    setTimeout(() => _renderActionImpact(action), 500);
     return;
   }
 

@@ -775,6 +775,30 @@ Phase 4b では SFX **定義**を superset に統一したが、tag 側の**呼�
 
 タイミング差 (Phase 4c 送り) と ギブアップ進行音 (tag の lock/agony は `dmgVoice`、single は `heartbeatSE`) は今回スコープ外。
 
+### 11.5d Step 6 — 大技の 3 段タイミング構築 + pin count の単一準拠 (Phase 4b 積み残し追加対応)
+Step 5 で SE 呼び出しは align したが、実プレイで「溜めの途中に技が炸裂する」「相手のダメージセリフが先に出る」「表示が先に終わる」問題が残っていた。single L1939-2002 の `t=0 charge / t=1.5 dismiss / t=1.8 技名表示 / t=2.3 衝撃 / t=3.0 cleanup` 5 段タイミングを tag にも移植。
+
+**applyFrame の 2 段化 (`src/tag-battle-main.js`):**
+- 定数 `BIGMOVE_CHARGE_MS = 1800` を導入
+- `applyFrame(fr)` を「JS 状態更新のみの pre-visual」と「DOM / 演出の visual」に分離
+- 大技フレーム (`fr.action.kind !== 'miss' && fr.action.dmg >= 20`) 検出時:
+  - t=0: `sfx.bigmoveCharge()` のみ再生。HUD / ナレーション / ログ / カード更新 / イベント発火・タッチ swap は**全部停止** (前フレーム状態を維持)
+  - t=1800: `_applyFrameVisuals(fr, touchA, touchB, isBigMove=true)` を発火 → `_updateHud` / `_updateCardsAfterFrame` / `_updateCenter` (技名表示) / `_appendLogForFrame` / `animateEvent` (ドラマイベント) / `animateTouchSwap` が一斉解禁
+  - t=2300: `animateAction` 内の `setTimeout(_renderActionImpact, 500)` が発火 → bigmoveImpact + hitSE + ダメージポップ + shake + flash + splash
+  - t=2700: `tryDamageLine` (被弾セリフ/ボイスカットイン) が出る
+- `_frameMinDelay` の大技加算を `+1200` → `+2000` に調整 (crit 1300 + 2000 = 3300ms 確保)
+- `_applyFrameVisuals` を新関数として切り出し。非大技フレームは `chargeDelay=0` で即時呼び出し → 既存挙動と完全互換
+- `animateAction` にオプション引数 `isBigMove` を追加し、applyFrame 側で計算した判定を再利用 (二重計算 / 二重 charge 発火を回避)
+
+**pin-count 見た目の single 準拠 (`src/tag-battle.html`):**
+- `.pin-count` を single の `.finish-count-text` と同一仕様に書き換え
+  - font-size 180→72px / letter-spacing 6→8px / animation 1400ms→800ms
+  - `@keyframes pinCountPop` を single `countPop` と同一値に (scale 2→1 drop-in)
+- 色バリアント: gold (1カウント) / red-gold `#ff6b4a` (ツー / tap / TKO) / white (3 / kickout / escape / rollup)
+- サブミッション導入ステップ (tag 固有 `lock` / `agony`) は 40-44px Noto Sans JP の小さめスタイルに切り分け、メインカウントとの視覚的ヒエラルキーを確保
+
+実機タイムライン検証: `_frameMinDelay({dmg:25,isCrit:true}) = 3300ms`、イベント重畳時 3800ms、非大技 crit 1300ms / 通常 hit 900ms で旧挙動を維持。pin-count 基準 (72px/Bebas Neue/8px letter-spacing/gold-light/0.8s pinCountPop) は single `.finish-count-text` と getComputedStyle で bit-identical。
+
 ### 11.6 共通化していないもの (Phase 4c 送り)
 - 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化
   - 理由: single=streaming (iframe 内で RNG を回してターンを進める) / tag=Replay (親で事前計算した frames を再生する) の**権威モデル差**があり、setTimeout 呼び出し側のループ制御が構造的に異なる。sequence 単位の共通ヘルパー化は権威モデル統一と合わせて設計する必要がある。
