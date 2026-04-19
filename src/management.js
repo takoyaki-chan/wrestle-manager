@@ -2411,34 +2411,34 @@ const Engine = {
 
     /** spec §4.4 サブタイトルテンプレ (Phase 2 — カテゴリ別に複数バリエーション) */
     SUBTITLE_TEMPLATES: {
-      early: ['礎を築く者たち', '黎明の鐘', '始まりの灯', '旗を立てた日々'],
-      golden: ['黄金の刻', '絶対の時代', '王の系譜', '誰にも届かぬ高み'],
+      early: ['旗揚げ世代', '創成期', '始まりの灯', '旗を立てた日々'],
+      golden: ['黄金期', '一強時代', '連続王者の時代', '誰にも届かぬ高み'],
       almostThere: ['届かなかった頂', '壁の前で', '頂を仰ぐ者たち', '一歩、届かず', '影を踏んだ世代'],
-      challenge: ['挑戦の章', '気鋭の時代', '牙を研ぐ日々', '壁を殴った季節'],
-      idol: ['華やかなる時代', '光と歓声の章', '客席が呼んだ名前', '笑顔で支えた世代'],
-      enduring: ['雌伏の時', '日陰の奉仕者たち', '灯を絶やさぬ者たち', '静かなる継承'],
-      other: ['名もなき支柱', '残された者たち', '中継ぎの章', '通り抜けた者たち']
+      challenge: ['挑戦者世代', '気鋭の時代', '牙を研ぐ日々', '壁にぶつかった世代'],
+      idol: ['華やかなる時代', '熱気と歓声の時代', 'ファン人気で支えた世代', '華のある世代'],
+      enduring: ['低迷期', '日陰の奉仕者たち', '灯を絶やさぬ者たち', '世代交代期'],
+      other: ['中堅職人世代', '残留組の時代', '端境期', '過渡期世代']
     },
 
     /** spec §5.5 章末フレーバーテンプレ (Phase 2 — magnitude × variation) */
     CLOSING_TEMPLATES: {
       slight: [
-        'この世代は、{org}の流儀をわずかに {axis} へと寄せた。',
-        '{org}の空気には、{axis} の香りがほのかに混ざっていった。',
-        '{axis} の匂いだけを置いて、この世代は通り過ぎた。',
-        '{org}の土台に、{axis} の色がひとはけだけ差した。'
+        'この世代は、{org}のスタイルを少しだけ{axis}寄りにした。',
+        '{org}の試合内容に{axis}の傾向が少し混じり始めた。',
+        'この世代は{org}に{axis}の傾向をわずかに残した。',
+        '{org}の基本路線に{axis}の要素が少し加わった。'
       ],
       moderate: [
-        'この世代は、{org}に {axis} の色を残していった。',
-        '{axis} を軸にした日々が、{org}の肩の張り方をわずかに変えた。',
-        '次の世代が見上げたとき、そこには {axis} の背中があった。',
-        '{org}が {axis} の言葉を語れるようになったのは、この世代からだった。'
+        'この世代は{org}のスタイルに{axis}色を残した。',
+        '{axis}中心の試合運びが、{org}全体の傾向を少し変えた。',
+        '次世代の選手は{axis}を一つの基準として育っていった。',
+        '{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。'
       ],
       strong: [
-        '{org}は、この世代を経て {axis} の色がはっきりと濃くなった。',
-        'この世代以降、{org}の若手は迷ったら {axis} を選ぶようになった。',
-        '{axis} という言葉が、{org}の代名詞になった日々だった。',
-        '{org}の流儀は、この世代に塗り替えられた。以後、誰もが {axis} を背負った。'
+        'この世代を経て、{org}のスタイルは{axis}色が明確になった。',
+        'この世代以降、{org}の若手は{axis}を基本として選ぶようになった。',
+        '{axis}が{org}の代名詞として定着した時期だった。',
+        'この世代以降、{org}の主流は{axis}に移った。'
       ]
     },
 
@@ -10481,7 +10481,11 @@ const Engine = {
             const iRng = Engine.rng.create(Engine.rng.derive(
               interestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
             ));
-            candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+            candInterests.push(
+              Engine.draftNegotiation?.assignInterest
+                ? Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng)
+                : { orgId, participating: false }
+            );
           }
           draftInterests[cand.id] = candInterests;
         }
@@ -10785,7 +10789,11 @@ const Engine = {
           const iRng = Engine.rng.create(Engine.rng.derive(
             midInterestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
           ));
-          candInterests.push(Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng));
+          candInterests.push(
+            Engine.draftNegotiation?.assignInterest
+              ? Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng)
+              : { orgId, participating: false }
+          );
         }
         midDraftInterests[cand.id] = candInterests;
       }

@@ -6846,29 +6846,29 @@ function _renderDbChronicle() {
     const nowSeason = G.season || 1;
     html += `<div class="chron-empty">
       <div class="chron-empty-icon">📖</div>
-      <div class="chron-empty-title">${G.orgName || '団体'}の歴史は、まだ始まったばかりです。</div>
+      <div class="chron-empty-title">${G.orgName || '団体'}にはまだ年代記が存在しません。</div>
       <div class="chron-empty-text">
         エース級の選手が引退し、ひとつの世代が終わったとき、<br>
-        ここに最初の章が刻まれます。
+        最初の章が記録されます。
       </div>
       <div class="chron-empty-divider"></div>
       <div class="chron-empty-meta">
         <div class="chron-empty-meta-row">
-          <span class="chron-empty-meta-key">白紙のまま</span>
+          <span class="chron-empty-meta-key">期間</span>
           <span class="chron-empty-meta-val">SEASON 1 — SEASON ${nowSeason}</span>
         </div>
         <div class="chron-empty-meta-row">
-          <span class="chron-empty-meta-key">在籍する書き手</span>
+          <span class="chron-empty-meta-key">在籍選手</span>
           <span class="chron-empty-meta-val">${rosterSize}名</span>
         </div>
         ${topByOvr.length > 0 ? `
         <div class="chron-empty-meta-row">
-          <span class="chron-empty-meta-key">筆頭の者たち</span>
+          <span class="chron-empty-meta-key">代表的な選手</span>
           <span class="chron-empty-meta-val">${topByOvr.map(t => t.name).join(' ・ ')}</span>
         </div>` : ''}
       </div>
       <div class="chron-empty-flavor">
-        — 今いるこの選手たちが、この白紙を物語にしていく。
+        — この選手たちの活躍が、物語を作っていきます。
       </div>
     </div>
     </div>`; // .chron-wrap close
@@ -7033,7 +7033,7 @@ function _renderDbChronicle() {
   html += `</div><div class="chron-col-right">
     <div class="chron-sec-label">この時代の同期</div>`;
   if (peers.length === 0) {
-    html += `<div style="font-size:12px;color:var(--chr-ink-dim);padding:8px 0">同期なし(孤高のエース)</div>`;
+    html += `<div style="font-size:12px;color:var(--chr-ink-dim);padding:8px 0">同期なし(単独エース)</div>`;
   } else {
     html += `<ul class="chron-gen-list">`;
     peers.forEach(p => {
@@ -7096,12 +7096,12 @@ function _renderDbChronicle() {
     html += `<div class="chron-closing${isInProgress ? ' in-progress' : ''}">
       <div class="chron-closing-eyebrow">— ${isInProgress ? '書きかけの章末' : '章末'} —</div>
       <div class="chron-closing-line">${current.closing}</div>
-      ${isInProgress ? `<div class="chron-closing-note">この気風はまだ動いています。この章に属する選手たちが去ったとき、最終的な色が決まります。</div>` : ''}
+      ${isInProgress ? `<div class="chron-closing-note">この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。</div>` : ''}
     </div>`;
   } else if (isInProgress) {
     html += `<div class="chron-closing in-progress">
       <div class="chron-closing-eyebrow">— 書きかけの章末 —</div>
-      <div class="chron-closing-line">この世代が団体に残す色は、まだ定まっていない。</div>
+      <div class="chron-closing-line">この世代が団体に残す傾向は、まだ確定していない。</div>
     </div>`;
   }
 
@@ -7137,18 +7137,18 @@ function _chronicleAceQuote(ace, chapter) {
   const styleLabel = _chronicleStyleLabel(ace.style).toLowerCase();
   const styleJa = { striker: '打撃', grappler: '組技', submission: '関節技', brawler: '喧嘩', allround: '万能' }[styleLabel] || '独自';
   if (peakOVR >= 95 && titleReigns >= 3) {
-    return `${styleJa}一本で団体を背負い切った${surname}。${titleReigns}度の戴冠は、この世代がまぎれもない黄金期だったことを物語る。`;
+    return `${surname}は${styleJa}を武器に${titleReigns}度の王座戴冠を達成し、この世代を黄金期に押し上げた。`;
   }
   if (peakOVR >= 90 && titleReigns >= 1) {
-    return `${surname}は${styleJa}のスペシャリストとして団体を牽引した。戴冠にも到達したが、次代のレジェンドには一歩及ばなかった。`;
+    return `${surname}は${styleJa}のスペシャリストとして団体を牽引し、王座も獲得した。歴代最強の称号には届かなかったが、世代を代表する存在だった。`;
   }
   if (peakOVR >= 85) {
-    return `${surname}は${styleJa}で気を吐き続けた。頂点には届かなかったが、団体の一時代は確かにこの名前と共にあった。`;
+    return `${surname}は${styleJa}で勝負し続けた。王座戴冠こそなかったが、この世代の団体を代表する選手だった。`;
   }
   if ((ace.peakPopularity || 0) >= 80) {
-    return `数字には現れないものを${surname}は残した。華で団体を支え、客席の熱を忘れないようにした。それもまた、一時代の形。`;
+    return `王座にこそ恵まれなかったが、${surname}の人気が客足を支えた世代だった。`;
   }
-  return `${surname}は${styleJa}で勝負した。派手な戴冠はなかったが、長く団体に身を置き、世代の支柱として踏みとどまった。`;
+  return `${surname}は${styleJa}を貫き、長く団体に在籍した。タイトルには届かなかったが、世代の中堅として団体を支えた。`;
 }
 
 // ── 団体比較 ──────────────────────────────────────────────
