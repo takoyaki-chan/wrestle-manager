@@ -727,6 +727,7 @@ Phase 4a 時点で tag-battle は single battle-engine とは別ファイルで 
 | `src/battle-sfx.js` | SFX (音源ファイル / Web Audio 合成 / ミックス値 / drone / hitSE / guessCategory) | battle-engine.html + tag-battle.html |
 | `src/battle-shared.css` | デザイントークン (:root) / リセット / スクロールバー / 共有キーフレーム (9種) | battle-engine.html + tag-battle.html |
 | `src/battle-anim.js` | `BattleAnim.renderCutin({overlay, fighter, side, text, variant})` / `BattleAnim.dismissCutin(overlay, onAfterClear?)` | battle-engine.html + tag-battle.html |
+| `src/battle-lines.js` | ダメージセリフ定数 (`DAMAGE_SERIF_LINES` 7 personality×6 archetype / `DAMAGE_VOICE_LINES` 7 archetype) + HP帯別振り分け `pickDamageLine(fighter, dmg, hpRatio, rng?)` | battle-engine.html + tag-battle.html |
 
 ### 11.3 Step 1 — SFX 共通化
 - 両者が約90%重複していた SFX 定義を `battle-sfx.js` に superset で集約。
@@ -748,6 +749,13 @@ Phase 4a 時点で tag-battle は single battle-engine とは別ファイルで 
 - 各 iframe は自前で text を選定してから呼ぶ (line table 引きはそれぞれ保持)。
 - tag 固有の state 管理 (`S.pendingCutin` / `nBtn` disabled / pin seq 連動) は `showCutin` ラッパに残す。
 - 付随修正: single の `showDamageVoice` で SE が鳴っていなかった不整合が共通化により自動解消。
+
+### 11.5b Step 4 — 基本セリフデータの共通化 (Phase 4b 積み残し対応)
+- `DAMAGE_SERIF_LINES` (約126セリフ/58行) と `DAMAGE_VOICE_LINES` (9行) が battle-engine.html / tag-battle-lines.js に bit-identical でコピペされていた drift リスクを解消。
+- `src/battle-lines.js` に定数 + `pickDamageLine` (tag 側の HP 帯別 serif/voice 振り分けヘルパー) を切り出し。両 iframe が `<script src="battle-lines.js"></script>` でグローバル読込。
+- single の `tryDamageCutin` / `showDamageSpeech` / `showDamageVoice` は共通定数を参照する形に。内部ロジック (`RNG.float()` ベース) は streaming 権威モデル維持のため残す。
+- tag-battle-lines.js にはタッグ固有 (`HOT_TAG_LINES` / `DOUBLE_TEAM_LINES` / `CUTIN_SAVE_LINES` / `BETRAYAL_LINES` + pick ヘルパー) のみ残す。
+- `CUTIN_LINES` (battle-engine.html のライバリー戦 atk/def/climax カットイン) は single 専用のため触らない。
 
 ### 11.6 共通化していないもの (Phase 4c 送り)
 - 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化
