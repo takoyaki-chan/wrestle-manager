@@ -81,7 +81,7 @@ function startReplay(data){
   ['a1','a2','b1','b2'].forEach(k => { S.idToKey[S.fighters[k].id] = k; });
 
   renderMatchFrame();
-  try { sfx.gong(); } catch(e){}
+  try { sfx.gongStart(); } catch(e){}
 }
 
 // ── アクセサ ──
@@ -521,6 +521,8 @@ function _frameMinDelay(fr){
     else if (fr.action.kind === 'counter') base = FRAME_DELAYS.counter;
     else if (fr.action.isCrit) base = FRAME_DELAYS.crit;
     else base = FRAME_DELAYS.hit;
+    // 大技は溜め (sfx.bigmoveCharge 1.1秒先行) を吸収するため余白を足す
+    if (fr.action.dmg >= 20) base += 1200;
   }
   if (fr.events && fr.events.length > 0) base += 500;
   return base;
@@ -607,8 +609,10 @@ function applyFrame(fr){
   // ピンイベントを検出 → クリック駆動ピン演出を開始 (fall/pin/rollup/gu/tko 全て対応)
   const pinEv = fr.events && fr.events.find(e => e.type === 'pinAttempt');
   // クリティカルダメージセリフ: ピンフレームではピン演出が主役なのでスキップ
+  // 大技フレームは衝撃 SE が 1100ms 遅延して鳴るので、セリフもその後に並べる
   if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !pinEv) {
-    setTimeout(() => tryDamageLine(fr.action, fr), 600);
+    const serifDelay = fr.action.dmg >= 20 ? 1700 : 600;
+    setTimeout(() => tryDamageLine(fr.action, fr), serifDelay);
   }
   if (pinEv) _beginPinSequence(pinEv, fr);
 
@@ -627,16 +631,39 @@ function applyFrame(fr){
 }
 
 // ── 演出 ──
+// SE 層は single battle-engine.html 準拠。主な分配:
+//   - ターン頭 sfx.ready() 必須 (single L1781/1814/1876/2007 と同じ)
+//   - 大技 (action.dmg>=20) は sfx.bigmoveCharge() → 1.1s 後に sfx.bigmoveImpact()+hitSE で溜め→衝撃を再現
+//   - カウンター SE は half-volume (single L1881 の `counterSE*0.5` 準拠)
+//   - hitSE の volMul は 大技 1.3 / 通常 1.0 (single L1839/1883/1961 が 1.3 / L2023 が無指定=1.0)
 function animateAction(action, fr){
-  const defKey = keyById(action.defenderId);
-  const atkKey = keyById(action.attackerId);
-  const defSide = (defKey === 'a1' || defKey === 'a2') ? 'a' : 'b';
-  const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
+  // 毎ターン頭の準備音
+  try { sfx.ready(); } catch(e){}
 
   if (action.kind === 'miss') {
     try { sfx.missWhiff(); } catch(e){}
     return;
   }
+
+  const isBigMove = action.dmg >= 20;
+
+  if (isBigMove) {
+    // 溜め音を先行再生し、衝撃 SE + 被弾演出は 1100ms 遅延で発火
+    try { sfx.bigmoveCharge(); } catch(e){}
+    setTimeout(() => _renderActionImpact(action), 1100);
+    return;
+  }
+
+  _renderActionImpact(action);
+}
+
+function _renderActionImpact(action){
+  const defKey = keyById(action.defenderId);
+  const atkKey = keyById(action.attackerId);
+  const defSide = (defKey === 'a1' || defKey === 'a2') ? 'a' : 'b';
+  const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
+  const isBigMove = action.dmg >= 20;
+
   // ダメージポップ (レガル側のみ)
   if (defKey === S.pos.legalA || defKey === S.pos.legalB) {
     _showDmgPop(defSide, action.dmg, action.isCrit, action.kind === 'counter');
@@ -658,17 +685,21 @@ function animateAction(action, fr){
       atkCard.classList.add('counter-flash');
       setTimeout(() => atkCard.classList.remove('counter-flash'), 380);
     }
-    try { sfx.counterSE(); } catch(e){}
+    // single 準拠: counterSE は half-volume で控えめに
+    try {
+      getSfxGain().gain.value = SE_MIX.counterSE * 0.5;
+      _playSample('counterSE', 0.5);
+    } catch(e){}
   }
-  // SE
+  // ヒット SE (大技は 1.3 倍音量で bigmoveImpact を重ねる)
   const cat = action.moveCat || guessCategory(action.move);
-  const volMul = action.isCrit ? 1.2 : 1;
+  const volMul = isBigMove ? 1.3 : 1;
   try {
-    if (action.dmg >= 20) sfx.bigmoveImpact();
+    if (isBigMove) sfx.bigmoveImpact();
     hitSE(cat, action.dmg, volMul);
   } catch(e){}
   // フラッシュ
-  if (action.isCrit && action.dmg >= 20) {
+  if (action.isCrit && isBigMove) {
     const ov = document.getElementById('flashOv');
     if (ov) { ov.classList.remove('flash','red'); void ov.offsetWidth; ov.classList.add('flash','red'); setTimeout(()=>ov.classList.remove('flash','red'), 300); }
   }

@@ -757,6 +757,24 @@ Phase 4a 時点で tag-battle は single battle-engine とは別ファイルで 
 - tag-battle-lines.js にはタッグ固有 (`HOT_TAG_LINES` / `DOUBLE_TEAM_LINES` / `CUTIN_SAVE_LINES` / `BETRAYAL_LINES` + pick ヘルパー) のみ残す。
 - `CUTIN_LINES` (battle-engine.html のライバリー戦 atk/def/climax カットイン) は single 専用のため触らない。
 
+### 11.5c Step 5 — tag-battle-main.js の SE 呼び出しを single 準拠に align (Phase 4b 積み残し対応)
+Phase 4b では SFX **定義**を superset に統一したが、tag 側の**呼び出し箇所**は tag 実装時点のまま据え置かれていて、下記 5 点が single と drift していた。
+
+| 項目 | 修正前 (tag) | 修正後 (single 準拠) |
+|---|---|---|
+| 試合開始ゴング | `sfx.gong()` (弱、bell 0.14/0.09/0.05 + noise 0.06) | `sfx.gongStart()` (強、bell 0.2/0.13/0.07 + noise 0.09) |
+| 毎ターン頭の準備音 | 無し | `animateAction` 冒頭で `sfx.ready()` (single L1781/1814/1876/2007) |
+| 大技溜め | 無し、`sfx.bigmoveImpact()` 即時のみ | `action.dmg>=20` で `sfx.bigmoveCharge()` 先行 → 1100ms 後に `sfx.bigmoveImpact()`+`hitSE` を delayed 発火 |
+| カウンター SE | `sfx.counterSE()` フル音量 (mix 0.15) | `getSfxGain().gain.value=SE_MIX.counterSE*0.5; _playSample('counterSE',0.5)` (single L1881 準拠の half-volume) |
+| hitSE volMul | `action.isCrit ? 1.2 : 1` | `action.dmg>=20 ? 1.3 : 1` (single の大技 1.3 / 通常 1.0 準拠) |
+
+付随修正:
+- `animateAction` を `ready() + miss/bigmove 分岐` と `_renderActionImpact(action)` (ダメージポップ/シェイク/カウンターフラッシュ/SE/フラッシュ/splash) に分割。big move は `setTimeout(() => _renderActionImpact(action), 1100)` で衝撃演出ごと遅延発火、視覚と音のシンクロを担保
+- `_frameMinDelay(fr)` に `if (fr.action.dmg >= 20) base += 1200` を追加。big move frame は crit 1300ms + 1200ms = 2500ms で次フレーム進行を待つ
+- damage line (`tryDamageLine`) の delay を big move 時 1700ms / 通常 600ms に切替。衝撃音が鳴ってからセリフが乗るよう同期
+
+タイミング差 (Phase 4c 送り) と ギブアップ進行音 (tag の lock/agony は `dmgVoice`、single は `heartbeatSE`) は今回スコープ外。
+
 ### 11.6 共通化していないもの (Phase 4c 送り)
 - 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化
   - 理由: single=streaming (iframe 内で RNG を回してターンを進める) / tag=Replay (親で事前計算した frames を再生する) の**権威モデル差**があり、setTimeout 呼び出し側のループ制御が構造的に異なる。sequence 単位の共通ヘルパー化は権威モデル統一と合わせて設計する必要がある。
