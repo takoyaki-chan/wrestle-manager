@@ -1,13 +1,14 @@
 # タッグマッチシステム設計スペック v0.1
 
 > 2026-03-24 作成
-> ステータス: Phase 1+2+3+4a 完了（2026-04-17）
+> ステータス: Phase 1+2+3+4a+4b 完了（2026-04-19）
 > Phase 1: Engine.tagMatch.simulateTagMatch を match-engine.js に統合。TAG_MATCH_CONFIG/スタイル相性/タッグ技を data.js に追加
 > Phase 3: 試合結果処理統合。applyTagMatchResult(bond/rivalry)、executeShow全面タッグ対応(成長/h2h/matchupLog/tagExp/trust/人気)、auto-simタッグ試合生成
 > Phase 2: 興行カード編成UI。タッグ枠追加(2枠消費)/4名選択ピッカー/skipMatchタッグ分岐/App.finalizeShow全面タッグ対応/renderMatchPreview+renderShowResultタッグ表示
 > Phase 4a: タッグ観戦ビジュアル（Replay方式）。simulateTagMatch に recordFrames オプション追加、tag-battle.html / tag-battle-main.js / tag-battle-audio.js / tag-battle-lines.js 新規作成、app.js watchMatch タッグ分岐統合
+> Phase 4b: 演出層 (SFX / CSS トークン+キーフレーム / カットイン) を single battle-engine と共通化 (`battle-sfx.js` / `battle-shared.css` / `battle-anim.js`) — 下記 §9 参照
 > auto-sim 100シーズン ALL CLEAR（recordFrames デフォルト off で後方互換確認）
-> Phase 4b以降: シングル battle-engine.html の Replay 方式移植 / AI連携
+> Phase 4c以降: シングル battle-engine.html の Replay 方式移植 / AI連携 / 残る演出シーケンス (bigmove/counter/touch) の共通化
 
 ---
 
@@ -706,11 +707,60 @@ snapshot 構造:
 - `App.escapeBattle()`: 既存 show context 経路でタッグも正しく処理（sp.results[idx] が埋まっているので finalizeShow 判定に入る）
 - 他コンテキスト（PPV/war/JT/B2/B3）の iframe.src を `battle-engine.html?t=<ts>` にハードコード（直前のタッグ観戦で src が `tag-battle.html` に切替わっている場合の復帰）
 
-### 10.7 スコープ外（Phase 4b 以降）
-- シングル battle-engine.html の Replay 方式移植
+### 10.7 スコープ外（Phase 4c 以降）
+- シングル battle-engine.html の Replay 方式移植（権威モデル統一）
 - PPV / 対抗戦 / B2 / B3 / JT でのタッグ観戦（これらの card には現状タッグ枠なし）
 - ペア固定タッグフィニッシャー演出（spec §5.1.2）
 - タッグ専用 BIG MATCH 演出（現状タイトル戦タッグ禁止）
+- 演出シーケンス単位の共通化 (bigmove 溜め→技名→フラッシュ→ダメージ / counter スライドイン / touch swap など。setTimeout ツリーの共通ヘルパー化)
+
+---
+
+## 11. Phase 4b — 演出層の single 統合（実装済み 2026-04-19）
+
+### 11.1 背景
+Phase 4a 時点で tag-battle は single battle-engine とは別ファイルで SFX / CSS / カットインを独自実装しており、**single 側で演出を改修しても tag 側に伝わらない**ドリフト問題を抱えていた。Phase 4b はこのドリフトを**見た目・音・タイミングのレベルで**一方向に解消することを目的とする（権威モデルの統一はスコープ外）。
+
+### 11.2 共有ファイル構成
+| ファイル | 役割 | 参照元 |
+|---|---|---|
+| `src/battle-sfx.js` | SFX (音源ファイル / Web Audio 合成 / ミックス値 / drone / hitSE / guessCategory) | battle-engine.html + tag-battle.html |
+| `src/battle-shared.css` | デザイントークン (:root) / リセット / スクロールバー / 共有キーフレーム (9種) | battle-engine.html + tag-battle.html |
+| `src/battle-anim.js` | `BattleAnim.renderCutin({overlay, fighter, side, text, variant})` / `BattleAnim.dismissCutin(overlay, onAfterClear?)` | battle-engine.html + tag-battle.html |
+
+### 11.3 Step 1 — SFX 共通化
+- 両者が約90%重複していた SFX 定義を `battle-sfx.js` に superset で集約。
+- drone (suspense 用 BGM oscillator) の state を iframe の `S.droneNodes` から module-local `_droneNodes` に逃がして衝突回避。
+- 削除: `src/tag-battle-audio.js` (battle-sfx.js にリネーム相当)。
+
+### 11.4 Step 2 — CSS トークン・キーフレーム共通化
+- `:root` デザイントークン superset を shared 側に集約。tag の text-sub/dim を `#888`/`#555` から `rgba(232,230,224,0.5/0.25)` に single 準拠で統一。
+- 共有キーフレーム: `waitSpin` / `shakePanel` / `shakeHard` / `movePop` / `counterFlash` / `cutinSlideIn` / `cutinSlideInR` / `flashScreen` / `dmgNumPop`
+- drift 補正:
+  - `counterFlash`: tag「2段階」→ single「0→30%ピーク→100% 3段階」
+  - `cutinSlideIn/R`: tag `-40px` → single `-50px`
+  - `movePop`: tag `scale(1.15)` → single `scale(1.20)`
+  - `flashScreen` (旧 tag: `flashScr`): `opacity 0.15` → `0.18`
+- 名称統一: `dmgPop` → `dmgNumPop` / `flashScr` → `flashScreen` (tag 側の参照を更新)
+
+### 11.5 Step 3 — カットインの DOM/SE レンダリング共通化
+- `BattleAnim.renderCutin` が innerHTML 組立 + `.show` 付与 + SE 再生を担当 (`damage-voice` 時のみ `sfx.dmgVoice()`、他は `sfx.cutinSlide()`)。
+- 各 iframe は自前で text を選定してから呼ぶ (line table 引きはそれぞれ保持)。
+- tag 固有の state 管理 (`S.pendingCutin` / `nBtn` disabled / pin seq 連動) は `showCutin` ラッパに残す。
+- 付随修正: single の `showDamageVoice` で SE が鳴っていなかった不整合が共通化により自動解消。
+
+### 11.6 共通化していないもの (Phase 4c 送り)
+- 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化
+  - 理由: single=streaming (iframe 内で RNG を回してターンを進める) / tag=Replay (親で事前計算した frames を再生する) の**権威モデル差**があり、setTimeout 呼び出し側のループ制御が構造的に異なる。sequence 単位の共通ヘルパー化は権威モデル統一と合わせて設計する必要がある。
+- ダメージ数字ポップ (single=固定要素再利用 / tag=動的 append) の統合 — DOM 戦略が異なるためどちらかを書き換える必要がある
+- shake / banner / pin-count の共通ヘルパー化 (現状インライン、drift リスク低い)
+
+### 11.7 期待効果
+- single battle-engine.html で以下を変更すると tag にも自動反映される:
+  - SE 音源ファイル差替え / ミックス値調整 / 合成フォールバックの改変
+  - カラートークン (`--gold` 等) / 共有キーフレームの timing/strength 調整
+  - カットインの variant 追加 / SE の紐付け変更
+- ドリフトが起こりうるのは「演出シーケンスの setTimeout 値」だけに限定される (Phase 4c で潰す)
 
 ---
 
@@ -724,3 +774,4 @@ snapshot 構造:
 | 2026-04-17 | Phase 4a 追従修正。(1) ui-common.js の renderMatchPreview タッグ枠にスキップボタンしかなく「🎬 試合を観る」が欠けていたのを修正(Phase 1-3 実装時の名残)。(2) tag-battle 実プレイ確認で判明した 4 点を修正: 最新ターン narration が 1 ターン古い内容を表示するバグ(nextFrame で applyFrame 前に frameIdx++ に順序変更)、ログ順序を新しい順に反転(slice(-60).reverse())、CHEM A/B → 連携 A/B + TEAM A/B → Aチーム/Bチーム 日本語化、ペーシング追加(FRAME_DELAYS: miss 700ms/hit 900ms/counter 1100ms/crit 1300ms、ドラマイベント+500ms、決着 2200ms、S.anim/S.pendingCutin 中はボタン disabled で連打ブロック) |
 | 2026-04-17 | Phase 4a UI リファイン。モックアップ `archive/prototype/tag-match-prototype-v0.1/match-screen-tag.html` 準拠にレイアウトを合わせ込み。HUD をシングル試合と同じ `.wm-hud`（顔+TURN+phase pill+モメンタム+チーム合算HP対面バー）に統一、player-card に 5 ステータスバー（PWR/SPD/TEC/STA/MNT）追加、apron-card を横型（avatar+stats縮小）に再設計、CURRENT MOVE を大きな move-name + move-damage + narration の1ブロックに統合、battle-log にイベント境界色（ev-hottag/double/cutin/friendly/betrayal/finish/touch）を導入、controls-sub に速度ドット追加、victory overlay を勝者 upper×2 + ゴールド勾配名 + 敗者＋統計の構造に再設計。Replay アーキテクチャは維持（frames ベースの再生、エンジン再実行なし）。ログ順は下方向に追記（下が最新）、4a 初版の「新しい順」から mockup 準拠に変更 |
 | 2026-04-17 | Phase 4a 仕切り直し。モックアップ移植を feature に一括反映 (50513f5) → 複数 UI/エンジン問題が絡み Revert (390264e) → claude/wonderful-heisenberg で問題を 9 件×4 カテゴリに分類 (docs/handoff-tag-match-rebuild.md) し、V1 ステータスバー表示復旧/F1 タッチ独立フレーム化/左チームバーミラー を 1 件ずつ実装。以降の残作業 (E1/E2/E3/B1/B2/V2) は次セッションで同じ手順を踏襲 |
+| 2026-04-19 | Phase 4b 実装完了。演出層 (SFX / CSS トークン+キーフレーム / カットイン) を single battle-engine と共通化。`src/battle-sfx.js` 新規 (両方が superset として参照)、`src/battle-shared.css` 新規 (:root トークン + 9種キーフレーム、drift 補正: counterFlash/cutinSlideIn/movePop/flashScreen/dmgNumPop)、`src/battle-anim.js` 新規 (`BattleAnim.renderCutin/dismissCutin`)。tag-battle-audio.js 削除 (battle-sfx.js にリネーム相当)。tag 側の dmgPop→dmgNumPop / flashScr→flashScreen 名称統一。single 側 showDamageVoice で SE が鳴っていなかった不整合も自動解消。両 iframe 単体ロードでエラー0、全トークン/keyframe/ヘルパー解決確認。演出シーケンス (bigmove/counter/touch) の共通化は streaming vs Replay の権威モデル差があるため Phase 4c 送り。§11 参照 |
