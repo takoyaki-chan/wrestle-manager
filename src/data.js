@@ -1350,9 +1350,9 @@ const MATCH_APPEAL_CONFIG = {
 const FACTION_CONFIG = {
   // §2.1 発生条件
   minRosterSize: 10,
-  loyalBondThreshold: 65,
+  loyalBondThreshold: 60,      // v0.2: 65→60 実測bond分布(50後半〜60台)に合わせ引き下げ
   loyalMinFollowers: 2,
-  rivalrousBondThreshold: 60,
+  rivalrousBondThreshold: 55,  // v0.2: 60→55
   rivalrousRivalryThreshold: 40,
   // §2.2 加入判定
   joinBondThreshold: 60,
