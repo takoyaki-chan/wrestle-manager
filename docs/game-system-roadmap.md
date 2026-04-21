@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-19（タッグマッチ ブラッシュアップ v0.1 完了 + バージョン 1.06 梱包）
+> 最終更新: 2026-04-21（派閥システム Phase 1 バックエンド実装完了 + 閾値 v0.2 調整）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -9,7 +9,9 @@
 
 ## 現在の状態
 
-**タッグマッチ ブラッシュアップ v0.1 + バージョン 1.06 梱包（2026-04-19）。** commit a22c686。タッグマッチの粗を取り除く T1-T5 + 追加修正 D1-D5 + big-intro 演出を実装。T1: `STYLE_TAG_MOVES` を 26件単一文字列から 89件の配列化に拡張（スタイル別6カテゴリ×複数バリエーション、フィニッシュ/繋ぎ/カウンターで多彩化）。T2: `TAG_MATCH_WIN_LINES`/`LOSS_LINES`（性格7種×3パターン）+ `TAG_MATCH_COMMENTARY`（7件）を `tag-battle-lines.js` に新設、試合終了時の勝敗セリフと中間コメンタリーを性格依存で出し分け。T3: 丸め込み（pin attempt）時の主体明示（「○○が△△を抑え込んだ！」）。T4: カウント文言を single battle-engine 準拠に統一（ONE! TWO! THREE! / kickout はラインごとに差分）。T5: `attack-arrow` CSS を `battle-shared.css` に集約し ltr/rtl/counter-reversal/miss の4バリアント整備。追加修正 D1-D5 + big-intro: D1 カウンター時のタッグ選手立ち位置補正、D2 ビッグムーブ時の背景演出整合、D3 フィニッシュ判定時のタグパートナー表示、D4 SE 呼び出しを single 準拠に整理（Phase 4b 積み残し）、D5 ピンカウント3段タイミングを single 準拠（Phase 4b 積み残し）、big-intro: ビッグマッチ冒頭のタッグ入場演出シーケンス新設。バージョン: `src/index.html` VERSION 1.05→1.06、`build-zip.sh` VERSION 1.06 + cp リストに 7新ファイル（battle-sfx.js/battle-shared.css/battle-anim.js/battle-lines.js/tag-battle.html/tag-battle-main.js/tag-battle-lines.js）追加 + ガイド loop で 3本（ガイド01-はじめの一歩/ガイド02-さらに先へ/ガイド03-パラメータ解説）同梱。検証: auto-sim 30 シーズン ALL CLEAR、WrestleManager_1.06.zip 55M src:20 img:156 同梱確認。変更: data.js(STYLE_TAG_MOVES配列化)+tag-battle-lines.js(新設 勝敗セリフ+コメンタリー)+tag-battle.html/main.js(T3-T5+D1-D5+big-intro)+battle-shared.css(attack-arrow集約)+src/index.html(VERSION)+build-zip.sh(cp拡張+ガイドloop)+specs/tag-match-system-spec-v0.1.md(§12 ブラッシュアップ v0.1 反映)+docs/archive/tag-match-brushup-design-v0.1.md(指示書アーカイブ)。
+**派閥システム Phase 1 — バックエンド実装 + 閾値 v0.2 調整（2026-04-21）。** `specs/faction-system-spec-v0.1.md` の Phase 1 範囲（検出/生成/加入離脱/週次勢い・対立度減衰/解散/calcMatchAppeal統合/validateGameState検証）をバックエンドのみで実装。`feature/faction-system` ブランチで作業。①`src/factions.js` 新設（~600行、27関数の `Engine.factions` ネームスペース）: `reconcileRoster`（週次で在籍外リーダー/メンバーを検出し `handleLeaderLoss` + `memberIds` フィルタで一括解消、5+箇所の退団フックをパッチするより1箇所集約が綺麗）・`checkLoyalFormationConditions`/`checkRivalrousFormationConditions`（ロスター10人＋bond/rivalry閾値）・`createFaction`（loyal/rivalrous）・`processWeeklyMemberChanges`（加入 bond帯別 joinRate 20/40/60% / 離脱 10%）・`processWeeklyHostilityDecay`（-0.3/週）・`processWeeklyMomentumDecay`（-1.0/週）・`checkDissolutionConditions`（memberIds<3 または OVR比 <0.80 で解散）・`handleLeaderLoss`（後継 OVR 0.83以上で継承 / 0.70以上で部分継承 / それ未満で解散）。②`src/data.js` に `FACTION_CONFIG` 追加（minRosterSize:10, loyalBondThreshold:60[v0.2で65→60引下], loyalMinFollowers:2, rivalrousBondThreshold:55[v0.2で60→55], joinRate{60:0.20/70:0.40/80:0.60}, leaveRate:0.10, minFactionSize:3, dissolveRatioThreshold:0.80, successionOvrRatioFull:0.83/Partial:0.70, hostilityDecayPerWeek:-0.3, momentumDecayPerWeek:-1.0, feudSumCap:30, eventProbability/eventCooldown maps for F01-F08）。③`src/management.js` 統合: `calcMatchAppealBreakdown`/`calcMatchAppeal` に factionAppeal 分岐追加し `feudSum = max(rivalryAppeal, factionAppeal)`（排他）を feudSumCap:30 でクランプ → spec §6.3 の「ライバル対立と派閥対立は排他、合計30上限」を実装。`tickWeek` の `processWeeklyDecay` 直後に派閥週次パイプライン挿入（RNG seed 0xFA0B で reconcileRoster → 形成チェック(loyal優先) → processWeeklyMemberChanges → hostility/momentumDecay → checkDissolutionConditions）。`validateGameState` に派閥整合性ブロック追加（配列/memberIds≥3/leaderInMembers/momentum -100~+100/重複所属/hostility 0-100/hostilityキー参照整合）。④`src/app.js` にマイグレーション `_migrated_factions_v1` 追加（`G.factions=[]`/`G.factionHostility={}`/`G.factionEventCooldowns={}` 空初期化）。⑤`src/index.html` に `<script src="factions.js">` 追加（relationships.js 直後）。⑥`test/auto-sim.js` の `loadAsGlobal('factions.js')` 追加（auto-sim 環境でもモジュール読み込み）。⑦v0.2 閾値調整: ユーザー13年目セーブ実測（bond TOP5が52-59クラスタ・誰も65未満到達）を受け、loyal 65→60 / rivalrous 60→55 に引き下げ。spec §2.1 に v0.2 改訂メモ追記。⑧F01-F08 演出系イベントは Phase 3/4 に延期、UI は Phase 2 に延期（本 Phase はバックエンドのみ）。検証: auto-sim 100シーズン(seed=42) ALL CLEAR（違反0/エラー0）。実プレイ検証: 13年目セーブで Y13W24 に「梅ヶ丘みのり組」(memberIds:[33,48,82]) が loyal 型で成立することをコンソール `[WM Faction]` 出力で確認。変更: factions.js(新設)+data.js(FACTION_CONFIG)+management.js(calcMatchAppeal統合/tickWeek/validateGameState)+app.js(マイグレーション)+index.html(script読込)+test/auto-sim.js(loadAsGlobal)+specs/faction-system-spec-v0.1.md(§2.1 v0.2改訂+実装状況セクション追記)+plans/faction-phase1-task.md→plans/archive/(アーカイブ)。
+
+前回: **タッグマッチ ブラッシュアップ v0.1 + バージョン 1.06 梱包（2026-04-19）。** commit a22c686。タッグマッチの粗を取り除く T1-T5 + 追加修正 D1-D5 + big-intro 演出を実装。T1: `STYLE_TAG_MOVES` を 26件単一文字列から 89件の配列化に拡張（スタイル別6カテゴリ×複数バリエーション、フィニッシュ/繋ぎ/カウンターで多彩化）。T2: `TAG_MATCH_WIN_LINES`/`LOSS_LINES`（性格7種×3パターン）+ `TAG_MATCH_COMMENTARY`（7件）を `tag-battle-lines.js` に新設、試合終了時の勝敗セリフと中間コメンタリーを性格依存で出し分け。T3: 丸め込み（pin attempt）時の主体明示（「○○が△△を抑え込んだ！」）。T4: カウント文言を single battle-engine 準拠に統一（ONE! TWO! THREE! / kickout はラインごとに差分）。T5: `attack-arrow` CSS を `battle-shared.css` に集約し ltr/rtl/counter-reversal/miss の4バリアント整備。追加修正 D1-D5 + big-intro: D1 カウンター時のタッグ選手立ち位置補正、D2 ビッグムーブ時の背景演出整合、D3 フィニッシュ判定時のタグパートナー表示、D4 SE 呼び出しを single 準拠に整理（Phase 4b 積み残し）、D5 ピンカウント3段タイミングを single 準拠（Phase 4b 積み残し）、big-intro: ビッグマッチ冒頭のタッグ入場演出シーケンス新設。バージョン: `src/index.html` VERSION 1.05→1.06、`build-zip.sh` VERSION 1.06 + cp リストに 7新ファイル（battle-sfx.js/battle-shared.css/battle-anim.js/battle-lines.js/tag-battle.html/tag-battle-main.js/tag-battle-lines.js）追加 + ガイド loop で 3本（ガイド01-はじめの一歩/ガイド02-さらに先へ/ガイド03-パラメータ解説）同梱。検証: auto-sim 30 シーズン ALL CLEAR、WrestleManager_1.06.zip 55M src:20 img:156 同梱確認。変更: data.js(STYLE_TAG_MOVES配列化)+tag-battle-lines.js(新設 勝敗セリフ+コメンタリー)+tag-battle.html/main.js(T3-T5+D1-D5+big-intro)+battle-shared.css(attack-arrow集約)+src/index.html(VERSION)+build-zip.sh(cp拡張+ガイドloop)+specs/tag-match-system-spec-v0.1.md(§12 ブラッシュアップ v0.1 反映)+docs/archive/tag-match-brushup-design-v0.1.md(指示書アーカイブ)。
 
 前回: **ドーム会場コスト再調整 + 月次収支UIバグ修正（2026-04-18）。** ユーザー実プレイFB(30年目 orgPop100 王者ロスター、ドーム満員でも月次-2,856万)から2点対応。①data.js `VENUES[9]` cost 11000→7000万。spec v1.1 §3.3 の「per-show net +2,440」想定は per-show 単体計算だが、プレイヤーは月次UIで成果を見るため体感ズレ発生。Dome級ロスター(高給必須)の月次ベースで「満員+2,800万ご褒美」を実現する値として 7,000万 に再調整。per-show net は +6,440万相当だが月次の選手給与(10,000万+)で相殺される設計。②ui-render.js `_normalizeFinanceLabel` の会場費条項修正。旧実装は `会場費（◯◯）` を一律 `"会場費"` キーに正規化し count 集計していたため、異会場で興行した月が「会場費（ドーム）×2週」のように最後の会場名で誤表示されていた(実金額は正しい)。ラベル全文をキー化するよう変更して会場別に別行表示。spec v1.1 §3.2 に cost 7000 の改訂履歴追記。§5 年1回制限(`domeShowsThisSeason`)は既に実装済み確認。auto-sim スキップ(試合数値・判定に非影響)。変更: data.js(VENUES[9] cost)+ui-render.js(_normalizeFinanceLabel)+specs/orgpop-rebalance-spec-v1.1.md(§3.2 cost改訂履歴)。
 
@@ -301,7 +303,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 - 8チーム（各団体2チーム）シングルエリミ
 - 優勝チーム=「総合ベストタッグ」称号を1年間保持（人気+10、MQ+3ボーナス）
-- **前提条件**: タッグマッチシステム本実装（現状 `specs/tag-match-system-spec-v0.1.md` は未実装）
+- **前提条件**: ~~タッグマッチシステム本実装~~ → **充足済み（2026-04-17 Phase 1-4a + 2026-04-19 ブラッシュアップ v0.1 で実装完了）**
 - 主要論点: タッグ王座(ベルト)を別途新設するか否か、規模(8 or 16チーム)、フリー選手参加可否
 
 #### ② 秋の統一王座挑戦権争奪トーナメント
@@ -334,12 +336,12 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 | Step | タスク | 重さ | 備考 |
 |------|--------|:----:|------|
-| 1 | タッグマッチシステム本実装（tag-match-system-spec-v0.1の昇格） | 大 | 春タッグ・6人タッグエリミの前提 |
-| 2 | 特殊試合形式オプション(アイアン/ハードコア+ケージ) | 中〜大 | タッグ非依存で先行可能 |
-| 3 | 春の大タッグトーナメント | 中 | タッグ実装後 |
-| 4 | 統一王座の新設(title-system-spec拡張) | 中 | PPV頂上決戦との関係整理が前提 |
-| 5 | 秋の統一王座挑戦権争奪トーナメント | 中 | ジュニアトーナメント実装を流用 |
-| 6 | 6人タッグエリミネーション(試合形式オプション) | 中 | タッグ実装後 |
+| ~~1~~ | ~~タッグマッチシステム本実装~~ | ~~大~~ | **完了（Phase 1-4a + ブラッシュアップ v0.1, 2026-04-19）** |
+| 1 | 特殊試合形式オプション(アイアン/ハードコア+ケージ) | 中〜大 | タッグ非依存で先行可能 |
+| 2 | 春の大タッグトーナメント | 中 | タッグ実装済みのため着手可能 |
+| 3 | 統一王座の新設(title-system-spec拡張) | 中 | PPV頂上決戦との関係整理が前提 |
+| 4 | 秋の統一王座挑戦権争奪トーナメント | 中 | ジュニアトーナメント実装を流用 |
+| 5 | 6人タッグエリミネーション(試合形式オプション) | 中 | タッグ実装済みのため着手可能 |
 
 #### 温存案（将来の第3特別興行候補）
 
@@ -370,12 +372,13 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 | ライバルストーリー自動生成 | 高 | 未設計 |
 | ストーリーアーク（数ヶ月にわたる抗争管理） | 高 | 未設計 |
 | コーチ転身 | 中 | scout-system-spec §8.2 で予約済み |
-| **タッグ観戦をシングルに統合リファクタ (Phase 4b)** | **最優先** | **2026-04-17 方針確定・優先課題としてロック**。現状タッグ Replay 側(tag-battle-main.js 1225行 + tag-battle.html 470行 + 周辺)でピン/タップ/カウント/ネタバレ抑制/連打防止 等の演出タイミングを独自実装した結果、シングルで解決済みだった問題を再発明する悪循環が発生(2026-04-17までに7コミット以上を要した)。シングル `battle-engine.html` を "4人対応+Replay化" に拡張してタッグと共通基盤化する。**この統合が終わるまで T1/T3/T4 には着手しない**(また Replay 側で再発明する構図を避けるため)。見積: 2〜3セッション級、streaming↔Replay の根本アーキ差を揃える作業。漸進的に進める場合はタッグ側の1機能ずつシングルから引き写し→最終的に tag-battle-* を廃止。 |
-| タッグマッチ・タッグ王座 (残タスク) | 中 | **Phase 1+2+3+4a完了（2026-04-17）**。残タスク(Phase 4b 完了後に着手): T1:試合が50ターン級に長引く問題の再調整 / T3:ダブルチーム演出のテキスト詳述(narration で何をやっているか分かるように) / T4:試合結果画面で各選手の一言台詞表示 |
+| ~~タッグ観戦をシングルに統合リファクタ (Phase 4b)~~ | ~~最優先~~ | **完了（2026-04-19 ブラッシュアップ v0.1 で SE呼び出し / ピンカウント3段タイミングを single 準拠に整理、attack-arrow CSS を battle-shared.css に集約）。** 残: Phase 4c 演出シーケンス共通化（bigmove/counter/touch の setTimeout ツリー、優先度中・権威モデル統一議論とは分離可能） |
+| タッグマッチ残タスク (T1/T3/T4) | 中 | **Phase 1-4a + ブラッシュアップ v0.1 完了。** 残: T1:試合が50ターン級に長引く問題の再調整 / T3:ダブルチーム演出のテキスト詳述 / T4:試合結果画面で各選手の一言台詞表示 |
+| 成長マイルストーン通知 | 中 | 設計合意済み。OVR/人気/ステの節目でチャイム+トースト通知 |
 | 敵AI団体専用キャラクター | 中 | 固有キャラで世界観を深める |
 | マネージャー的存在（説明キャラ） | 中 | チュートリアル・イベントの語り手 |
 | マインド依存の成長イベント | 中 | mnの存在感を強化 |
-| **ケアシステム全面改修** | **高** | 専属トレーナーがバフ4週=ストック回復4週の完全同期で100%稼働（実質ストック制限なし）。1920万/シーズンで常時成長+30%は強すぎる。合宿は2ストック消費でトレードオフ機能中。改修案: バフ期間3週化/同一選手再使用CD/逓減など。他ケアとのバランスも含めた包括見直し |
+| ~~ケアシステム全面改修~~ | ~~高~~ | **不要化（2026-04-15 社長室統合 Phase 5 で旧ケアシステム完全廃止）。** 社長室の決裁書類7種に統合され、Phase 7 で trainer/camp の遅延発現、Phase 8 で性格×アーキタイプの不確実性 ±50% を導入し再設計済み |
 | トレーニング施設アップグレード（C/B/Aランク＋老朽化メンテ） | 低 | 金銭バランス改善B-1として将来構想。お金が余った時の投資先 |
 
 ### 金銭バランス改善（実装済み 2026-03-26）

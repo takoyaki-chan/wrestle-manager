@@ -726,3 +726,44 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
 | v0.1 | 2026-04-21 | 初版作成（ブレスト → 詰め → DRAFT 化） |
+| v0.2 | 2026-04-21 | Phase 1 実装に伴う閾値調整: loyal bond 65→60 / rivalrous bond 60→55（実測分布に合わせ引下げ） |
+
+---
+
+## §17 実装状況（2026-04-21）
+
+### Phase 1 完了（バックエンドのみ、UI は Phase 2）
+
+**実装済み:**
+- §2 派閥検出・生成条件（minRosterSize:10, loyal/rivalrous 両型）
+- §3 派閥データ構造（`G.factions: Faction[]` + `G.factionHostility` + `G.factionEventCooldowns`）
+- §4 加入/離脱の週次処理（bond帯別 joinRate 20/40/60% / leaveRate 10%）
+- §4 週次対立度減衰 -0.3/週・勢い減衰 -1.0/週
+- §5 解散条件（memberIds<3 / OVR比<0.80）+ リーダー継承（OVR比 0.83 全継承 / 0.70 部分継承 / それ未満で解散）
+- §6 calcMatchAppeal 統合（factionAppeal 分岐 + rivalryAppeal と排他 + feudSumCap:30）
+- validateGameState 派閥整合性チェック（memberIds≥3 / leaderInMembers / momentum範囲 / 重複所属 / hostility範囲 / hostilityキー参照整合）
+- reconcileRoster 週次同期（退団/引退/引き抜き/レンタル帰団などの複数退団パスを1箇所集約、個別フック不要）
+- マイグレーション `_migrated_factions_v1`（既存セーブ互換）
+- observability: `console.log('[WM Faction] ...')` で形成/離脱/解散/継承イベントを出力
+
+**Phase 2（UI）に延期:**
+- §7 データベース画面の派閥比較サブタブ
+- §7.4 相関図の派閥レイヤー描画
+- 派閥バッジ（選手カード/ポップアップ）
+
+**Phase 3/4（演出・セリフ）に延期:**
+- §8 F01〜F08 の演出系イベント（careOverlay モーダル + セリフ）
+- §9 派閥絡みの bond 変動カタログ
+- §11 セリフデータ（性格×アーキタイプ×イベント）
+
+### 検証結果
+
+- **auto-sim 100シーズン(seed=42)**: ALL CLEAR（違反0 / エラー0 / 5300週）
+- **実プレイ検証**: 13年目セーブで Y13W24 に `梅ヶ丘みのり組`（memberIds:[33,48,82]）が loyal 型で成立することをコンソール確認
+- **v0.2 閾値調整の根拠**: 13年目セーブの bond TOP5 が 52-59 クラスタで誰も 65 に到達しておらず、v0.1 の `loyalBondThreshold:65` では長期プレイでも派閥が成立しないことが判明。実測分布に合わせて 60 に引き下げ。
+
+### §15 オープン項目の進捗
+
+- **§4.2 週次変動の数値再調整**: Phase 1 実装完了、100シーズン auto-sim で違反なし。実プレイ観察でさらに調整予定。
+- **§6.2 派閥抗争 appeal の数値再調整**: Phase 1 の feudSumCap:30（rivalry と排他）で実装、実プレイで体感調整予定。
+- 残り項目（§7.3/§7.4/§11/データベース外分離/F08-A）は Phase 2 以降で判断。
