@@ -2365,6 +2365,15 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
             ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${ct ? ct.weeksLeft : '?'}週）</span>`; })() : ''}
+            ${(() => {
+              if (!G.factions || !Engine.factions) return '';
+              const f = Engine.factions.getFactionByFighterId(G, c.id);
+              if (!f) return '';
+              const role = f.leaderId === c.id ? 'リーダー'
+                : Engine.factions.isExecutive(G, c.id) ? '幹部' : 'メンバー';
+              const icon = role === 'リーダー' ? '👑' : role === '幹部' ? '⭐' : '🎭';
+              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="派閥タブで詳細を見る">${icon} ${f.name}・${role}</span>`;
+            })()}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
             const td = TRAIT_DEFS[t]; if (!td) return '';
@@ -2918,6 +2927,15 @@ function openRelationshipMap(charId) {
   _relmapCenterId = charId;
   _relmapFilter = 'all';
   _relmapSelected = null;
+  renderDatabase();
+}
+
+/** 派閥タブへ遷移してカードをハイライト（選手ポップアップの派閥バッジから呼ばれる） */
+function openFactionPanel(factionId) {
+  closeFighterPopup();
+  showScreen('database');
+  _dbSubTab = 7;
+  _factionHighlightId = factionId;
   renderDatabase();
 }
 
@@ -6341,6 +6359,302 @@ function showChoiceEventResult(event, resultTexts, state) {
   box.querySelector('.choice-result-close-btn').addEventListener('click', () => {
     overlay.classList.remove('active');
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3a: 派閥イベントモーダル（F01/F02/F03）
+// careOverlay/careBox を再利用。シーン切替は HTML 差し替えで実現
+// spec: faction-system-spec-v0.1 §9.1〜§9.3
+// ─────────────────────────────────────────────────────────────────────────────
+function _factionModalOverlay() {
+  return {
+    overlay: document.getElementById('careOverlay'),
+    box: document.getElementById('careBox'),
+  };
+}
+
+function _factionModalBox(html) {
+  const { overlay, box } = _factionModalOverlay();
+  if (!overlay || !box) return null;
+  box.innerHTML = `<div class="faction-event-modal">${html}</div>`;
+  overlay.classList.add('active');
+  return box;
+}
+
+function _factionCloseModal() {
+  const { overlay } = _factionModalOverlay();
+  if (overlay) overlay.classList.remove('active');
+}
+
+function _factionPortrait(fighter, size) {
+  if (!fighter) return '';
+  if (typeof portraitImg === 'function') {
+    return portraitImg(fighter.id, size || 72, 'faction-portrait');
+  }
+  return `<div class="faction-portrait-placeholder" style="width:${size||72}px;height:${size||72}px;background:rgba(200,190,170,0.1);border-radius:50%"></div>`;
+}
+
+function _factionLine(table, fighter, seed) {
+  if (typeof Engine !== 'undefined' && Engine.factions && typeof Engine.factions.getFactionLine === 'function') {
+    const rng = Engine.rng.create(seed || 0xFA99);
+    return Engine.factions.getFactionLine(table, fighter || {}, rng);
+  }
+  return '';
+}
+
+// F01: 忠誠型結成モーダル（4シーン＋結果）
+function showFactionF01Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF01Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const followers = (payload.followerIds || []).map(id => roster.find(c => c.id === id)).filter(Boolean);
+  const follower1 = followers[0];
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      const body = `
+        <div class="faction-event-title">🎭 派閥結成の兆し</div>
+        <div class="faction-event-narration">
+          ロッカールームに、妙な空気が流れている。<br>
+          ${leader ? leader.name : '誰か'}の周りに、自然と何人かが集まっているのだ。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F01_LEADER_LINES, leader,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA11));
+      const body = `
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leader, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leader ? leader.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 3) {
+      if (!follower1) { scene = 4; render(); return; }
+      const line = _factionLine(FACTION_F01_FOLLOWER_LINES, follower1,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA12));
+      const body = `
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(follower1, 80)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${follower1.name}</div>
+            <div class="faction-event-dialogue">「${line || '……ついていかせてください。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 4) {
+      const body = `
+        <div class="faction-event-title">🎭 社長の判断</div>
+        <div class="faction-event-prompt">
+          ${leader ? leader.name : 'この選手'}を中心とした集まりをどうする？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: 正式にリーダーとして立てる</span>
+            <span class="faction-choice-hint">派閥成立・権威化。求心力と引き換えにロッカールーム全体に陰りが</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: 今はそれどころじゃないと釘を刺す</span>
+            <span class="faction-choice-hint">派閥不成立。本人と周囲に角が立つ</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: 静観する</span>
+            <span class="faction-choice-hint">派閥成立（自然発生）。介入なし</span>
+          </button>
+        </div>
+      `;
+      _factionModalBox(body);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const choice = this.dataset.choice;
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F02: 対立型結成モーダル（4シーン＋結果）
+function showFactionF02Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF02Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leaderA = roster.find(c => c.id === payload.clusterA.leaderId);
+  const leaderB = roster.find(c => c.id === payload.clusterB.leaderId);
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      const body = `
+        <div class="faction-event-title">⚔ 二つの潮流</div>
+        <div class="faction-event-narration">
+          ロッカールームが、目に見えない線で二つに分かれている。<br>
+          ${leaderA ? leaderA.name : '一方'}のまわりに集まる面々と、${leaderB ? leaderB.name : 'もう一方'}のまわりに集まる面々。<br>
+          視線が交わらない。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F02_LEADER_LINES, leaderA,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA21));
+      const body = `
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderA, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leaderA ? leaderA.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……向こうとは、違う。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 3) {
+      const line = _factionLine(FACTION_F02_LEADER_LINES, leaderB,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA22));
+      const body = `
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderB, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leaderB ? leaderB.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……あっち側とは、交わらない。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `;
+      _factionModalBox(body);
+    } else if (scene === 4) {
+      const body = `
+        <div class="faction-event-title">⚔ 社長の判断</div>
+        <div class="faction-event-prompt">
+          二つに分かれたロスターをどう扱う？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: ${leaderA ? leaderA.name : '派閥A'}を中心に回す</span>
+            <span class="faction-choice-hint">勢いは派閥A寄り。反対勢力に強い反発が残る</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: ${leaderB ? leaderB.name : '派閥B'}を中心に回す</span>
+            <span class="faction-choice-hint">勢いは派閥B寄り。反対勢力に強い反発が残る</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: 両者を呼び出して調停</span>
+            <span class="faction-choice-hint">対立は抑えられるが、両リーダーに角が立つ</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="D">
+            <span class="faction-choice-label">D: 静観する</span>
+            <span class="faction-choice-hint">対立はそのまま。今後の展開次第</span>
+          </button>
+        </div>
+      `;
+      _factionModalBox(body);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const choice = this.dataset.choice;
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F03: リーダー喪失モーダル（軽量1シーン＋結果）
+function showFactionF03Modal(payload, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF03Modal(payload, state, onContinue)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const survivor = payload.successorId ? roster.find(c => c.id === payload.successorId) : null;
+  const reasonText = payload.reason === 'retirement' ? '引退'
+    : payload.reason === 'longInjury' ? '長期離脱'
+    : '退団';
+
+  const line = survivor
+    ? _factionLine(FACTION_F03_SURVIVOR_LINES, survivor,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA31))
+    : '';
+
+  const body = `
+    <div class="faction-event-title">💔 リーダー喪失</div>
+    <div class="faction-event-narration">
+      派閥「${payload.factionName}」のリーダー、${payload.oldLeaderName}が${reasonText}した。<br>
+      旗を失った者たちに、動揺が走る。
+    </div>
+    ${survivor ? `
+      <div class="faction-event-scene">
+        <div class="faction-event-portrait-wrap">${_factionPortrait(survivor, 88)}</div>
+        <div class="faction-event-bubble">
+          <div class="faction-event-name">${survivor.name}</div>
+          <div class="faction-event-dialogue">「${line || '……。'}」</div>
+        </div>
+      </div>
+    ` : ''}
+    <button class="btn faction-event-next">続ける ▶</button>
+  `;
+  _factionModalBox(body);
+  const box = document.getElementById('careBox');
+  if (box) {
+    const btn = box.querySelector('.faction-event-next');
+    if (btn) btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      if (onContinue) onContinue();
+    });
+  }
+}
+
+// F01/F02/F03 共通: 結果画面（選択結果を適用後のナレーション表示）
+function showFactionEventResult(resultText, onClose) {
+  const body = `
+    <div class="faction-event-title">🎭 結果</div>
+    <div class="faction-event-narration">${resultText || '……。'}</div>
+    <button class="btn faction-event-next">閉じる ✓</button>
+  `;
+  _factionModalBox(body);
+  const box = document.getElementById('careBox');
+  if (box) {
+    const btn = box.querySelector('.faction-event-next');
+    if (btn) btn.addEventListener('click', () => {
+      _factionCloseModal();
+      if (onClose) onClose();
+    });
+  }
+}
+
+// グローバル公開
+if (typeof window !== 'undefined') {
+  window.showFactionF01Modal = showFactionF01Modal;
+  window.showFactionF02Modal = showFactionF02Modal;
+  window.showFactionF03Modal = showFactionF03Modal;
+  window.showFactionEventResult = showFactionEventResult;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

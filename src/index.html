@@ -49,6 +49,13 @@
   --shachoshitsu-cat-care-rgb: 230,170,80;    /* 琥珀: 選手ケア */
   --shachoshitsu-cat-growth-rgb: 150,195,120; /* 若葉: 育成 */
   --shachoshitsu-cat-pr-rgb: 130,170,210;     /* 空: 広報 */
+  /* 派閥システム Phase 2 — 識別色 */
+  --accent-faction-1: #c38c54;   /* 琥珀系（暖色）*/
+  --accent-faction-2: #6d94b8;   /* 群青系（寒色）*/
+  --accent-faction-3: #8a7aa8;   /* 藤紫 */
+  --accent-faction-4: #6fa28c;   /* 鶯緑 */
+  --accent-hostility: #d07a3e;   /* 対立度の橙 */
+  --accent-faction-feud: #c38c54; /* 派閥抗争バッジ（accent-faction-1 と同系統）*/
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -171,6 +178,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .sp-tag-fresh{color:#74b9ff;background:rgba(116,185,255,.1)!important}
 .sp-tag-lastrun{color:var(--gold-light);background:rgba(240,208,120,.1)!important}
 .sp-tag-fanexpect{color:#2ecc71;background:rgba(46,204,113,.1)!important}
+.sp-tag-faction{color:var(--accent-faction-feud);background:rgba(195,140,84,.14)!important}
 .sp-tag-dim{color:var(--text-dim);background:rgba(200,190,170,.06)!important}
 /* tiers */
 .sp-match-card.main-event{margin-bottom:8px;border-color:rgba(212,168,67,.15);background:radial-gradient(ellipse at 12% 50%,rgba(212,168,67,.05) 0%,transparent 50%),var(--card-bg)}
@@ -717,6 +725,52 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fighter-popup-section:last-child{margin-bottom:0}
 .flink{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.3)}
 
+/* ── Fighter popup faction badge (Phase 2) ── */
+.fp-faction-badge{font-size:13px;padding:3px 10px;border-radius:4px;color:var(--accent-faction-1);background:rgba(195,140,84,0.12);border:1px solid rgba(195,140,84,0.35);cursor:pointer;white-space:nowrap;transition:background .15s ease,border-color .15s ease}
+.fp-faction-badge:hover{background:rgba(195,140,84,0.2);border-color:rgba(195,140,84,0.6)}
+/* ── DB: Factions subtab (Phase 2) ── */
+.db-factions-root{display:flex;flex-direction:column;gap:28px;padding:4px 2px 24px}
+.db-faction-section{display:flex;flex-direction:column;gap:10px}
+.db-faction-section-title{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:2px;color:var(--text-main);display:flex;align-items:center;gap:10px}
+.db-faction-section-count{font-size:11px;color:var(--text-dim);font-weight:400;letter-spacing:0;padding:2px 8px;border:1px solid rgba(200,190,170,0.15);border-radius:10px}
+.db-faction-section-sub{font-size:12px;color:var(--text-sub);margin-bottom:4px}
+.db-faction-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:14px}
+.db-faction-card{position:relative;padding:16px 18px;background:var(--panel-bg);border:1px solid rgba(200,190,170,0.10);border-left:4px solid var(--faction-accent);border-radius:6px;transition:background .25s ease,box-shadow .25s ease}
+.db-faction-card.is-rivalrous{border-left-style:dashed}
+.db-faction-card.faction-highlight{background:rgba(200,190,170,0.06);box-shadow:0 0 0 2px var(--faction-accent),0 4px 18px rgba(0,0,0,0.25)}
+.db-faction-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.db-faction-name{font-family:'Shippori Mincho',serif;font-size:18px;font-weight:700;color:var(--text-main);letter-spacing:1px}
+.db-faction-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.5px;white-space:nowrap}
+.db-faction-tag-auth{color:var(--gold);background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3)}
+.db-faction-tag-dict{color:var(--accent-hostility);background:rgba(208,122,62,0.12);border:1px solid rgba(208,122,62,0.3)}
+.db-faction-count{margin-left:auto;font-size:11px;color:var(--text-dim);font-family:'Oswald',sans-serif;letter-spacing:1px}
+.db-faction-faces{display:flex;align-items:flex-start;gap:14px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid rgba(200,190,170,0.06)}
+.db-faction-leader-col{flex-shrink:0}
+.db-faction-exec-col{display:flex;gap:8px;flex-shrink:0}
+.db-faction-follower-col{display:flex;gap:6px;flex-wrap:wrap;flex:1;align-content:flex-start}
+.db-faction-face{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:rgba(200,190,170,0.05);transition:transform .15s ease}
+.db-faction-face:hover{transform:translateY(-2px)}
+.db-faction-face-lg{width:72px;height:96px;border:2px solid var(--faction-accent)}
+.db-faction-face-md{width:52px;height:68px;border:1.5px solid var(--faction-accent);opacity:0.95}
+.db-faction-face-sm{width:36px;height:48px;border:1px solid rgba(200,190,170,0.15)}
+.db-faction-face-name{position:absolute;left:0;right:0;bottom:0;padding:2px 3px;font-size:9px;line-height:1.15;color:var(--text-main);background:linear-gradient(to top,rgba(0,0,0,0.75),rgba(0,0,0,0));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-faction-face-sm .db-faction-face-name{display:none}
+.db-faction-face-mark{position:absolute;top:-6px;right:-6px;font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.6))}
+.db-faction-face-md .db-faction-face-mark{font-size:13px;top:-5px;right:-5px}
+.db-faction-meters{display:flex;flex-direction:column;gap:4px}
+.db-faction-meter{display:flex;align-items:baseline;gap:10px;font-size:12px;padding:3px 0}
+.db-faction-meter-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-dim);min-width:36px;text-transform:uppercase}
+.db-faction-meter-value{font-size:13px;font-weight:600;color:var(--text-main)}
+.db-faction-meter-solidarity-strong .db-faction-meter-value{color:var(--green)}
+.db-faction-meter-solidarity-stable .db-faction-meter-value{color:var(--text-main)}
+.db-faction-meter-solidarity-wobble .db-faction-meter-value{color:var(--gold)}
+.db-faction-meter-solidarity-crumble .db-faction-meter-value{color:#e74c3c}
+.db-faction-meter-momentum-boom .db-faction-meter-value{color:var(--gold-light)}
+.db-faction-meter-momentum-rise .db-faction-meter-value{color:var(--gold)}
+.db-faction-meter-momentum-calm .db-faction-meter-value{color:var(--text-sub)}
+.db-faction-meter-momentum-dim .db-faction-meter-value{color:var(--accent-hostility)}
+.db-faction-meter-momentum-fade .db-faction-meter-value{color:#8b6a4a}
+.db-faction-meter-hostility .db-faction-meter-value{color:var(--accent-hostility)}
 /* ── Database Tab (v1.0) ── */
 .db-subtab-bar{display:flex;gap:0;border-bottom:1px solid rgba(200,190,170,0.08);margin-bottom:16px}
 .db-subtab-btn{flex:1;padding:10px 6px;font-size:13px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;transition:all 0.2s}
@@ -4124,6 +4178,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <script src="lz-string.min.js"></script>
 <!-- ① データ（依存なし） -->
 <script src="data.js"></script>
+<script src="data-faction-dialogue.js"></script>
 <!-- ② エンジン（Dataに依存） -->
 <script src="management.js"></script>
 <script src="match-engine.js"></script>

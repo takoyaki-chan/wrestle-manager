@@ -7438,45 +7438,41 @@ const Engine = {
       s = weeklyRelResult.state;
       weeklyRelResult.events.forEach(e => events.push(e));
     }
-    // 派閥システム週次処理（faction-system-spec-v0.1）
+    // 派閥システム週次処理（faction-system-spec-v0.1 Phase 3a: F01/F02/F03 イベント化）
     {
       const facRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA0B));
+      const evtRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA11));
       // 0) 未初期化セーブ対応
       if (!Array.isArray(s.factions)) s = { ...s, factions: [] };
       if (!s.factionHostility || typeof s.factionHostility !== 'object') s = { ...s, factionHostility: {} };
       if (!s.factionEventCooldowns || typeof s.factionEventCooldowns !== 'object') s = { ...s, factionEventCooldowns: {} };
-      // 1) ロスター整合（リーダー喪失・メンバー退団を拾う、F03内部処理）
-      s = Engine.factions.reconcileRoster(s, facRng);
-      // 2) 発生条件チェック（Phase 1: 条件成立で即生成、Phase 3 でイベント化）
-      const loyalCheck = Engine.factions.checkLoyalFormationConditions(s);
-      if (loyalCheck.eligible) {
-        s = Engine.factions.createFaction(s, loyalCheck.leaderId,
-          [loyalCheck.leaderId, ...loyalCheck.followerIds], { type: 'loyal' });
+
+      // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
+      if (s._pendingFactionEvent) {
+        // 何もしない（前週から持ち越しのモーダルが解決されるまで待つ）
       } else {
-        const rivCheck = Engine.factions.checkRivalrousFormationConditions(s);
-        if (rivCheck.eligible) {
-          s = Engine.factions.createFaction(s, rivCheck.clusterA.leaderId,
-            rivCheck.clusterA.memberIds, { type: 'rivalrous' });
-          s = Engine.factions.createFaction(s, rivCheck.clusterB.leaderId,
-            rivCheck.clusterB.memberIds, { type: 'rivalrous' });
-          // 初期対立度: 平均rivalryを両方向に設定
-          const fs = s.factions;
-          const A = fs[fs.length - 2];
-          const B = fs[fs.length - 1];
-          if (A && B) {
-            const init = Math.round(rivCheck.avgRivalry);
-            s = Engine.factions.applyHostilityChange(s, A.id, B.id, init);
-            s = Engine.factions.applyHostilityChange(s, B.id, A.id, init);
+        // 1) F03/F01/F02 いずれかの条件が成立していれば pending を立てて処理を保留
+        const picked = Engine.factions.pickWeeklyEvent(s, evtRng);
+        if (picked.eventId) {
+          s = { ...s, _pendingFactionEvent: picked };
+          // F03 pending の場合: リーダー喪失状態のまま、今週の reconcileRoster/メンバー変動/消滅判定はスキップ
+          //                      （applyF03Result で解消される。次週 pending 存在でパイプライン全体スキップ）
+          // F01/F02 pending の場合: 派閥はまだ生成されていないので、既存処理（メンバー変動/減衰/消滅判定）を回しても安全
+          if (picked.eventId !== 'F03') {
+            s = Engine.factions.processWeeklyMemberChanges(s, facRng);
+            s = Engine.factions.processWeeklyHostilityDecay(s);
+            s = Engine.factions.processWeeklyMomentumDecay(s);
+            s = Engine.factions.checkDissolutionConditions(s);
           }
+        } else {
+          // イベント発動なし: 通常パイプライン
+          s = Engine.factions.reconcileRoster(s, facRng);
+          s = Engine.factions.processWeeklyMemberChanges(s, facRng);
+          s = Engine.factions.processWeeklyHostilityDecay(s);
+          s = Engine.factions.processWeeklyMomentumDecay(s);
+          s = Engine.factions.checkDissolutionConditions(s);
         }
       }
-      // 3) メンバー変動
-      s = Engine.factions.processWeeklyMemberChanges(s, facRng);
-      // 4) 対立度・勢い減衰
-      s = Engine.factions.processWeeklyHostilityDecay(s);
-      s = Engine.factions.processWeeklyMomentumDecay(s);
-      // 5) 消滅・解散
-      s = Engine.factions.checkDissolutionConditions(s);
     }
 
     // Phase 5: ライバル称号 週次判定（昇格/降格/片側因縁）

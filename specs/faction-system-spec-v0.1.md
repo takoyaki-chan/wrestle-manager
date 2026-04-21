@@ -654,6 +654,11 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | メンバー加入判定 | 0xFA0A |
 | メンバー離脱判定 | 0xFA0B |
 | 対立度・勢いの変動幅乱数 | 0xFA0C |
+| Phase 3a 週次イベント選定（tickWeek） | 0xFA11 |
+| Phase 3a F01 選択肢効果適用（applyF01Choice） | 0xFA13 |
+| Phase 3a F02 選択肢効果適用（applyF02Choice） | 0xFA23 |
+| Phase 3a F03 結果適用（applyF03Result） | 0xFA33 |
+| Phase 3a auto-sim 派閥イベント応答乱数 | 0xFA90 |
 
 ---
 
@@ -727,10 +732,53 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 |-----------|------|------|
 | v0.1 | 2026-04-21 | 初版作成（ブレスト → 詰め → DRAFT 化） |
 | v0.2 | 2026-04-21 | Phase 1 実装に伴う閾値調整: loyal bond 65→60 / rivalrous bond 60→55（実測分布に合わせ引下げ） |
+| v0.3 | 2026-04-22 | Phase 3a 実装: F01/F02/F03 演出 + セリフ叩き台 + RNG 0xFA11/13/23/33/90 追加 |
 
 ---
 
-## §17 実装状況（2026-04-21）
+## §17 実装状況（2026-04-22）
+
+### Phase 3a 完了（F01/F02/F03 結成・消滅演出 + セリフ叩き台）
+
+**実装済み:**
+- §8 F01/F02/F03 の週次イベント選定（`Engine.factions.pickWeeklyEvent`）: F03優先 → F02（確率80%）→ F01（確率60%、拒否時12週クールダウン `F01_rejected_until`）
+- §9.1 F01 忠誠型結成: 4シーン careOverlay モーダル（リーダー独白→候補提示→フォロワー表明→選択肢A/B/C）/ `applyF01Choice`（A=権威化+trust+bond+士気-, B=拒否+クールダウン, C=静観成立）
+- §9.2 F02 対立型結成: 4シーン careOverlay モーダル / `applyF02Choice`（A/B=偏重、C=調停、D=静観）
+- §9.3 F03 リーダー喪失: 軽量1シーン表示 / `applyF03Result` + `resolveF03Branch`（succession/turmoil/dissolution の OVR比ベース分岐）
+- `detectLeaderLoss`: 退団・引退・8週以上の長期怪我でトリガ
+- §11 セリフ叩き台 `src/data-faction-dialogue.js`（F01 leader/follower、F02 leader、F03 survivor、性格6×アーキタイプ normal/ojousama/delinquent/cool/polite、normal フォールバック）
+- `_pendingFactionEvent` transient フィールドパターン（B1-B4 と同系統）+ app.js `handleFactionEvent` ディスパッチャ
+- management.js tickWeek 派閥パイプライン改修: イベント発動時は即時派閥生成をスキップし、ユーザー選択後に `applyF0XChoice` で生成
+- auto-sim `autoHandleFactionEvent`: A/B/C/D をランダム応答、TRANSIENT_KEYS に `_pendingFactionEvent` 追加
+- §12 RNG シード追加: 0xFA11（週次選定）/ 0xFA13（F01効果）/ 0xFA23（F02効果）/ 0xFA33（F03効果）/ 0xFA90（auto-sim応答）
+- auto-sim 2シード × 100シーズン ALL CLEAR
+
+**Phase 3b/3c/3d（残り Phase 3）に延期:**
+- F04〜F08 演出とセリフ（Phase 3b）
+- 相関図 派閥ビューモード（第4モード）（Phase 3c）
+- §9 派閥絡みの bond/rivalry 変動カタログ完全版（Phase 3d）
+
+### Phase 2 完了（UI 実装、演出・セリフは Phase 3/4）
+
+**実装済み:**
+- §7.1 相当: データベースタブに「🎭 派閥」サブタブ（`_dbSubTab=7`）を追加。忠誠型／対立型でセクション分け、カードに派閥名・権威型バッジ・リーダー/幹部/メンバーの顔列・結束/勢い/対立フレーバーを表示（数値は非表示）
+- §7.5: 選手ポップアップに派閥バッジ（リーダー/幹部/メンバーの役割別）。クリックで `openFactionPanel(factionId)` 経由で派閥タブへ遷移＋1.5秒ハイライト
+- 試合前プレビュー（`renderShowPrep`）のカードタグに「🏴vs🏴 ○○組 vs △△組」バッジを追加（`Engine.factions.isFactionFeudMatch` が true の試合のみ）
+- CSS トークン `--accent-faction-1〜4` / `--accent-hostility` / `--accent-faction-feud` を `index.html :root` に追加、`docs/ui/01-foundations.md §1-8` に記録（ハードコード色不使用）
+
+**§7.4 相関図レイヤーは Phase 3 へ延期（Phase 2 では描画なし）:**
+- 相関図のフォースシミュレーションは派閥メンバーを集約しないため、メンバー位置から「派閥を囲う円」を幾何的に計算すると非メンバーまで巻き込んだ巨大な円になり、地理的に嘘をつくことが実機で判明（2026-04-22 の実装検証）
+- 円を外した状態で 👑/⭐ マーカーや派閥名ラベルだけ残すと「囲まれていないのに星だけ付いている」状態になり、逆に認識ノイズを生む
+- Phase 3 でメンバーをクラスタリングする**派閥ビューモード**（ネットワーク/フォーカス/勢力図に続く第4モード）を新設し、物理シムに派閥重力項を追加した上で改めて円＋マーカーを描画する
+- Phase 3 差し込み点として `_relmapDrawFactionLayer()` 関数本体と `<g id="relmapFactionLayer">` レイヤーは残してある（現在は no-op）
+
+**Phase 3（演出）に延期:**
+- §7.3 派閥比較サブタブ（2派閥対置の詳細 UI）— Phase 2 では一覧のみ、対置比較は Phase 3 以降で判断
+- §7.2 データベースタブの3グループ（個人／関係／記録）再編 — Phase 2 ではサブタブを末尾に追加する最小変更に留める
+- §7.4 相関図の派閥レイヤー（上記）
+- §8 F01〜F08 の演出系イベント（careOverlay モーダル + セリフ）
+- §9 派閥絡みの bond 変動カタログ
+- §11 セリフデータ（性格×アーキタイプ×イベント）
 
 ### Phase 1 完了（バックエンドのみ、UI は Phase 2）
 

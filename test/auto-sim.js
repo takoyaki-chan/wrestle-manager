@@ -61,6 +61,7 @@ function loadAsGlobal(filename) {
 // ブラウザと同じ読み込み順序: victory-lines.js → data.js → engine.js
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
+loadAsGlobal('data-faction-dialogue.js');
 loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
 loadAsGlobal('relationships.js');
@@ -184,6 +185,32 @@ function autoHandleLargeEvent(G, simRng) {
     if (result && result.state) return result.state;
   }
   const { _pendingLargeEvent: _, ...clean } = G;
+  return clean;
+}
+
+// Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
+function autoHandleFactionEvent(G, simRng) {
+  if (!G._pendingFactionEvent) return G;
+  const fe = G._pendingFactionEvent;
+  const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA90));
+  let s = G;
+  try {
+    if (fe.eventId === 'F01') {
+      const choices = ['A', 'B', 'C'];
+      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];
+      const r = Engine.factions.applyF01Choice(s, fe.payload, choiceId, rng);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F02') {
+      const choices = ['A', 'B', 'C', 'D'];
+      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 4)];
+      const r = Engine.factions.applyF02Choice(s, fe.payload, choiceId, rng);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F03') {
+      const r = Engine.factions.applyF03Result(s, fe.payload, rng);
+      if (r && r.state) s = r.state;
+    }
+  } catch (_e) { /* 設計意図としてはここに到達しない */ }
+  const { _pendingFactionEvent: _, ...clean } = s;
   return clean;
 }
 
@@ -348,6 +375,7 @@ const TRANSIENT_KEYS = [
   '_pendingTeamSpirit', '_pendingGrowthEvents', '_pendingMotivationRetirements',
   '_pendingCoachReport', '_flavorEvents', '_pendingEliteTicket',
   '_juniorTournamentSelection', '_juniorTournamentResult',
+  '_pendingFactionEvent',
 ];
 function clearTransients(G) {
   let s = G;
@@ -527,6 +555,7 @@ function runSimulation(seed, seasons) {
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
       const tickResult = Engine.tickWeek(G);
       G = { ...tickResult.state, gameLog: [] };
+      G = autoHandleFactionEvent(G, simRng);
       G = clearTransients(G);
       G = collectViolations(G, violations);
 

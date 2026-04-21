@@ -6546,6 +6546,17 @@ const App = {
       setTimeout(() => App.handleLargeEvent(pendingLargeEvent), largeDelay);
     }
 
+    // Phase 3a: 派閥イベント表示（F01/F02/F03 モーダル）
+    const pendingFactionEvent = G._pendingFactionEvent || null;
+    if (G._pendingFactionEvent) {
+      const { _pendingFactionEvent: _, ...cleanFe } = G;
+      G = cleanFe;
+    }
+    if (pendingFactionEvent) {
+      const factionDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 650;
+      setTimeout(() => App.handleFactionEvent(pendingFactionEvent), factionDelay);
+    }
+
     // スナップショット R3モーダル表示
     const pendingR3Modal = G._pendingR3Modal || null;
     if (G._pendingR3Modal) {
@@ -7152,6 +7163,44 @@ const App = {
         }, 300);
       }
     });
+  },
+
+  // Phase 3a: 派閥イベントUIフロー制御（F01/F02/F03）
+  handleFactionEvent(event) {
+    const { eventId, payload } = event;
+    if (eventId === 'F01') {
+      showFactionF01Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA13));
+        const result = Engine.factions.applyF01Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F02') {
+      showFactionF02Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA23));
+        const result = Engine.factions.applyF02Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F03') {
+      showFactionF03Modal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
+        const result = Engine.factions.applyF03Result(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    }
   },
 
   // 大型イベント: VS対峙画面表示（試合はまだ実行しない）
