@@ -850,6 +850,16 @@ const Engine = {
         const rivBA = G.relationships[`${fighterB.id}>${fighterA.id}`]?.rivalry || 0;
         rivalryAppeal = Math.round(Math.min(rivAB, rivBA) * cfg.rivalryScale);
       }
+      // 派閥抗争appeal（排他＋キャップ）
+      let factionAppeal = 0;
+      if (Engine.factions && G.factions && G.factions.length > 0 && Engine.factions.isFactionFeudMatch(G, fighterA.id, fighterB.id)) {
+        factionAppeal = Engine.factions.calcFactionFeudAppeal(G, fighterA.id, fighterB.id, {
+          f08: !!context.isF08Match,
+          isTitle: !!context.isTitle,
+        });
+      }
+      const feudCore = Math.max(rivalryAppeal, factionAppeal);
+      const feudSum = Math.min(feudCore, FACTION_CONFIG.feudSumCap);
       const titleBonus = context.isTitle ? cfg.titleAppeal : 0;
       const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
       let heelFaceBonus = 0;
@@ -861,7 +871,8 @@ const Engine = {
         stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
       }
       const total = Math.round(Engine.attendanceV2.calcMatchAppeal(fighterA, fighterB, context, G));
-      return { total, drawA, drawB, parityBonus, rivalryAppeal, titleBonus, fanExpectBonus, heelFaceBonus, clashAppeal, firstMeetBonus, stalePenalty };
+      // UI互換: rivalryAppeal フィールドに派閥抗争とのmax+キャップ後を返す
+      return { total, drawA, drawB, parityBonus, rivalryAppeal: feudSum, factionAppeal, titleBonus, fanExpectBonus, heelFaceBonus, clashAppeal, firstMeetBonus, stalePenalty };
     },
 
     // ── B系: matchAppeal（カード魅力） ──
@@ -892,6 +903,15 @@ const Engine = {
         const rivBA = G.relationships[keyBA]?.rivalry || 0;
         rivalryAppeal = Math.min(rivAB, rivBA) * cfg.rivalryScale;
       }
+      // 派閥抗争appeal（rivalryとは排他、合計キャップ適用）
+      let factionAppeal = 0;
+      if (Engine.factions && G.factions && G.factions.length > 0 && Engine.factions.isFactionFeudMatch(G, fighterA.id, fighterB.id)) {
+        factionAppeal = Engine.factions.calcFactionFeudAppeal(G, fighterA.id, fighterB.id, {
+          f08: !!context.isF08Match,
+          isTitle: !!context.isTitle,
+        });
+      }
+      const feudSum = Math.min(Math.max(rivalryAppeal, factionAppeal), FACTION_CONFIG.feudSumCap);
 
       // B7: タイトル戦
       const titleBonus = context.isTitle ? cfg.titleAppeal : 0;
@@ -917,7 +937,7 @@ const Engine = {
         stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
       }
 
-      const totalAppeal = avgDraw + parityBonus + rivalryAppeal + titleBonus + fanExpectBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
+      const totalAppeal = avgDraw + parityBonus + feudSum + titleBonus + fanExpectBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
       return totalAppeal;
     },
 
@@ -7418,6 +7438,47 @@ const Engine = {
       s = weeklyRelResult.state;
       weeklyRelResult.events.forEach(e => events.push(e));
     }
+    // 派閥システム週次処理（faction-system-spec-v0.1）
+    {
+      const facRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA0B));
+      // 0) 未初期化セーブ対応
+      if (!Array.isArray(s.factions)) s = { ...s, factions: [] };
+      if (!s.factionHostility || typeof s.factionHostility !== 'object') s = { ...s, factionHostility: {} };
+      if (!s.factionEventCooldowns || typeof s.factionEventCooldowns !== 'object') s = { ...s, factionEventCooldowns: {} };
+      // 1) ロスター整合（リーダー喪失・メンバー退団を拾う、F03内部処理）
+      s = Engine.factions.reconcileRoster(s, facRng);
+      // 2) 発生条件チェック（Phase 1: 条件成立で即生成、Phase 3 でイベント化）
+      const loyalCheck = Engine.factions.checkLoyalFormationConditions(s);
+      if (loyalCheck.eligible) {
+        s = Engine.factions.createFaction(s, loyalCheck.leaderId,
+          [loyalCheck.leaderId, ...loyalCheck.followerIds], { type: 'loyal' });
+      } else {
+        const rivCheck = Engine.factions.checkRivalrousFormationConditions(s);
+        if (rivCheck.eligible) {
+          s = Engine.factions.createFaction(s, rivCheck.clusterA.leaderId,
+            rivCheck.clusterA.memberIds, { type: 'rivalrous' });
+          s = Engine.factions.createFaction(s, rivCheck.clusterB.leaderId,
+            rivCheck.clusterB.memberIds, { type: 'rivalrous' });
+          // 初期対立度: 平均rivalryを両方向に設定
+          const fs = s.factions;
+          const A = fs[fs.length - 2];
+          const B = fs[fs.length - 1];
+          if (A && B) {
+            const init = Math.round(rivCheck.avgRivalry);
+            s = Engine.factions.applyHostilityChange(s, A.id, B.id, init);
+            s = Engine.factions.applyHostilityChange(s, B.id, A.id, init);
+          }
+        }
+      }
+      // 3) メンバー変動
+      s = Engine.factions.processWeeklyMemberChanges(s, facRng);
+      // 4) 対立度・勢い減衰
+      s = Engine.factions.processWeeklyHostilityDecay(s);
+      s = Engine.factions.processWeeklyMomentumDecay(s);
+      // 5) 消滅・解散
+      s = Engine.factions.checkDissolutionConditions(s);
+    }
+
     // Phase 5: ライバル称号 週次判定（昇格/降格/片側因縁）
     if (s.rivalries && s.relationships) {
       const titleResult = Engine.title.checkRivalryTitles(s);
@@ -15896,6 +15957,36 @@ Engine.validateGameState = function(G) {
       }
     }
   });
+
+  // ── 派閥データ整合性（faction-system-spec-v0.1 §1）──
+  if (G.factions !== undefined) {
+    if (!Array.isArray(G.factions)) {
+      warn(`factionsが配列ではない: ${typeof G.factions}`);
+    } else {
+      const seenMembers = new Map(); // fighterId -> factionId
+      G.factions.forEach(f => {
+        if (!f || typeof f.id !== 'number') { warn('faction に id がない'); return; }
+        if (!Array.isArray(f.memberIds)) { warn(`faction#${f.id} memberIds が配列ではない`); return; }
+        if (f.memberIds.length < 3) warn(`faction#${f.id} (${f.name}) のメンバーが3人未満: ${f.memberIds.length}`);
+        if (!f.memberIds.includes(f.leaderId)) warn(`faction#${f.id} (${f.name}) leaderId(${f.leaderId}) が memberIds に含まれない`);
+        if (!isValidNum(f.momentum) || f.momentum < -100 || f.momentum > 100) warn(`faction#${f.id} momentum 範囲外: ${f.momentum}`);
+        f.memberIds.forEach(mid => {
+          if (seenMembers.has(mid)) warn(`fighter#${mid} が複数派閥に所属: f${seenMembers.get(mid)} と f${f.id}`);
+          else seenMembers.set(mid, f.id);
+        });
+      });
+      const factionIds = new Set(G.factions.map(f => f.id));
+      if (G.factionHostility && typeof G.factionHostility === 'object') {
+        Object.entries(G.factionHostility).forEach(([key, val]) => {
+          if (!isValidNum(val) || val < 0 || val > 100) warn(`factionHostility[${key}] 範囲外: ${val}`);
+          const [fromStr, toStr] = key.split('>');
+          if (!factionIds.has(Number(fromStr)) || !factionIds.has(Number(toStr))) {
+            warn(`factionHostility[${key}] が存在しない派閥を参照`);
+          }
+        });
+      }
+    }
+  }
 
   // ── battlePointsチェック ──
   if (G.battlePoints && typeof G.battlePoints === 'object') {

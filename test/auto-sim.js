@@ -64,6 +64,7 @@ loadAsGlobal('data.js');
 loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
 loadAsGlobal('relationships.js');
+loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
 // グローバルに展開されたか確認

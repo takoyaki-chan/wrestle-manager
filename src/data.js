@@ -1346,6 +1346,58 @@ const MATCH_APPEAL_CONFIG = {
   junkThreshold: 15,           // totalAppealがこれ以下→ゴミ試合扱い
 };
 
+// 派閥システム設定（spec: faction-system-spec-v0.1.md）
+const FACTION_CONFIG = {
+  // §2.1 発生条件
+  minRosterSize: 10,
+  loyalBondThreshold: 65,
+  loyalMinFollowers: 2,
+  rivalrousBondThreshold: 60,
+  rivalrousRivalryThreshold: 40,
+  // §2.2 加入判定
+  joinBondThreshold: 60,
+  joinRate: { 60: 0.20, 70: 0.40, 80: 0.60 },
+  joinMomentumHighMult: 1.5,
+  joinMomentumLowMult: 0.7,
+  // §2.3 離脱判定
+  leaveBondThreshold: 40,
+  leaveRate: 0.10,
+  leaveMomentumLowMult: 1.5,
+  leaveMomentumVeryLowMult: 2.0,
+  leaveMomentumTrustDecay: -0.3,
+  // §2.4 消滅・解散
+  minFactionSize: 3,
+  dissolveRatioThreshold: 0.80,
+  // §2.5 後継
+  successionOvrRatioFull: 0.83,
+  successionOvrRatioPartial: 0.70,
+  successionShockProbability: 0.50,
+  // §4 対立度
+  hostilityDecayPerWeek: -0.3,
+  hostilityHighBondExtraDecay: -0.3,
+  hostilityHighBondThreshold: 50,
+  hostilityLeaderChangeMultiplier: 0.7,
+  // §5 勢い
+  momentumDecayPerWeek: -1.0,
+  momentumSeniorBonus: [8, 12],
+  momentumLeaderBonus: [15, 20],
+  // §6 派閥抗争appeal
+  factionAppealLow: 5,
+  factionAppealMid: 10,
+  factionAppealHigh: 10,
+  f08AppealBase: [15, 20],
+  f08TitleMultiplier: 0.5,
+  feudSumCap: 30,
+  // §8 発動制御
+  eventProbability: {
+    F01: 0.60, F02: 0.80,
+    F04: 0.30, F05: 0.40, F06: 0.50, F07: 0.40, F08: 0.50,
+  },
+  eventCooldown: {
+    F01: 12, F04: 12, F05: 12, F06: 16, F07: 12, F08: 24,
+  },
+};
+
 // C系: 興行集客力の積み上げ
 const SHOW_DRAW_CONFIG = {
   positionWeights: [1.0, 0.7, 0.5, 0.35, 0.35, 0.35, 0.35, 0.35], // カード順重み

@@ -2100,6 +2100,13 @@ const Storage = {
         G = { ...G, retiredSeasons: rs, _migrated_retiredSeasons_v1: true };
       }
 
+      if (!G._migrated_factions_v1) {
+        if (!Array.isArray(G.factions)) G = { ...G, factions: [] };
+        if (!G.factionHostility || typeof G.factionHostility !== 'object') G = { ...G, factionHostility: {} };
+        if (!G.factionEventCooldowns || typeof G.factionEventCooldowns !== 'object') G = { ...G, factionEventCooldowns: {} };
+        G = { ...G, _migrated_factions_v1: true };
+      }
+
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
         // 全ファイターにorgTimeline初期エントリを生成
