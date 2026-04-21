@@ -2017,6 +2017,12 @@ function getAvailableForSlot(slotIndex, side) {
 
 // ── showprep v7 picker ──────────────────────────────────────────────────────
 function _spOpenPicker(slotIdx, side) {
+  // F08 ロック: 直接対決固定枠は選手差替え不可
+  const slot = G.showCard && G.showCard[slotIdx];
+  if (slot && slot._f08Locked) {
+    if (typeof showToast === 'function') showToast('🔥 F08 直接対決のため、この試合の選手は変更できません', 3000);
+    return;
+  }
   if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.side === side) {
     _spActivePicker = null;
   } else {
@@ -2234,6 +2240,51 @@ function renderShowPrep() {
     });
     if (dirty) G = { ...G, showCard: cleaned };
   }
+
+  // ── F08 ロック解除: ディレクティブが存在しないならロック flag を全スロットでクリア ──
+  if (!G._pendingF08Directive) {
+    let hadLock = false;
+    G.showCard.forEach(m => { if (m._f08Locked) { delete m._f08Locked; hadLock = true; } });
+    if (hadLock) G = { ...G, showCard: [...G.showCard] };
+  }
+
+  // ── F08 ディレクティブ注入: _pendingF08Directive が立っていればリーダー同士を強制組込み ──
+  if (G._pendingF08Directive && G._pendingF08Directive.leaderAId && G._pendingF08Directive.leaderBId) {
+    const d = G._pendingF08Directive;
+    const lA = G.roster.find(c => c.id === d.leaderAId && !c.injury && !c.forcedRest);
+    const lB = G.roster.find(c => c.id === d.leaderBId && !c.injury && !c.forcedRest);
+    if (!lA || !lB) {
+      // どちらかがロスター外/欠場 → ディレクティブ無効化
+      const { _pendingF08Directive: _, ...rest } = G;
+      G = rest;
+    } else {
+      // 既存slotに両者がペアで入っているかチェック
+      let alreadyPlaced = false;
+      for (const m of G.showCard) {
+        if (m.matchType === 'tag') continue;
+        if ((m.left === d.leaderAId && m.right === d.leaderBId) || (m.left === d.leaderBId && m.right === d.leaderAId)) {
+          alreadyPlaced = true;
+          m._f08Locked = true;
+          break;
+        }
+      }
+      if (!alreadyPlaced) {
+        // どちらかが別の試合に既出 → その試合から除去
+        const newCard = G.showCard.map(m => {
+          if (m.matchType === 'tag') return m;
+          let nm = { ...m };
+          if (m.left === d.leaderAId || m.left === d.leaderBId) nm.left = 0;
+          if (m.right === d.leaderAId || m.right === d.leaderBId) nm.right = 0;
+          return nm;
+        });
+        // slot 0 を F08 固定に置き換え
+        if (newCard.length === 0) newCard.push({ left: 0, right: 0, isTitle: false });
+        newCard[0] = { left: d.leaderAId, right: d.leaderBId, isTitle: !!newCard[0].isTitle, _f08Locked: true };
+        G = { ...G, showCard: newCard };
+      }
+    }
+  }
+
   // ── 集客予測 + ファンの声 + マッチカード v7 ──────────────────────────────
 
   // 集客予測計算（v2）
@@ -2529,6 +2580,9 @@ function renderShowPrep() {
       const fB = Engine.factions.getFactionByFighterId(G, curR);
       const label = (fA && fB) ? `${fA.name} vs ${fB.name}` : '派閥抗争';
       tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="派閥の顔役同士の試合：集客ブースト">🏴vs🏴 ${label}</span>`);
+    }
+    if (slot._f08Locked) {
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="F08 対立ヒートアップ：この試合は固定枠です" style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0">🔥 F08 直接対決（固定）</span>`);
     }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {

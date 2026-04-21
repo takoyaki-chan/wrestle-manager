@@ -208,6 +208,14 @@ function autoHandleFactionEvent(G, simRng) {
     } else if (fe.eventId === 'F03') {
       const r = Engine.factions.applyF03Result(s, fe.payload, rng);
       if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F04' || fe.eventId === 'F05' || fe.eventId === 'F06' || fe.eventId === 'F07' || fe.eventId === 'F08') {
+      const choices = ['A', 'B', 'C'];
+      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];
+      const fn = Engine.factions[`apply${fe.eventId}Choice`];
+      if (typeof fn === 'function') {
+        const r = fn.call(Engine.factions, s, fe.payload, choiceId, rng);
+        if (r && r.state) s = r.state;
+      }
     }
   } catch (_e) { /* 設計意図としてはここに到達しない */ }
   const { _pendingFactionEvent: _, ...clean } = s;
@@ -375,7 +383,7 @@ const TRANSIENT_KEYS = [
   '_pendingTeamSpirit', '_pendingGrowthEvents', '_pendingMotivationRetirements',
   '_pendingCoachReport', '_flavorEvents', '_pendingEliteTicket',
   '_juniorTournamentSelection', '_juniorTournamentResult',
-  '_pendingFactionEvent',
+  '_pendingFactionEvent', '_pendingF08Directive',
 ];
 function clearTransients(G) {
   let s = G;

@@ -6651,11 +6651,409 @@ function showFactionEventResult(resultText, onClose) {
   }
 }
 
+// ── Phase 3b: F04-F08 モーダル ──────────────────────────────
+
+// F04: 寝返り（4シーン＋結果）
+function showFactionF04Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF04Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const target = roster.find(c => c.id === payload.targetId);
+  const toLeader = roster.find(c => c.id === payload.toLeaderId);
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      _factionModalBox(`
+        <div class="faction-event-title">🕯 寝返りの兆し</div>
+        <div class="faction-event-narration">
+          練習後の片隅で、${target ? target.name : '誰か'}が「${payload.toFactionName}」の${toLeader ? toLeader.name : '人間'}と親しげに話している。<br>
+          その表情は、「${payload.fromFactionName}」にいるときとは違う色をしている。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F04_TARGET_LINES, target,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA41));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(target, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${target ? target.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……ここに居場所はもうないのかもしれない。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 3) {
+      _factionModalBox(`
+        <div class="faction-event-title">🕯 社長の判断</div>
+        <div class="faction-event-prompt">
+          ${target ? target.name : 'この選手'}が${payload.toFactionName}に流れようとしている。どうする？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: 放置する</span>
+            <span class="faction-choice-hint">寝返り成立。${payload.fromFactionName}は大きく揺らぎ、${payload.toFactionName}が勢いを得る</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: 本人と面談する</span>
+            <span class="faction-choice-hint">今は思いとどまらせる。ただし火種は残る</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: リーダーに告げ口する</span>
+            <span class="faction-choice-hint">寝返り阻止。本人とリーダーの溝が深まる</span>
+          </button>
+        </div>
+      `);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(this.dataset.choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F05: 派閥内亀裂（3シーン＋結果）
+function showFactionF05Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF05Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const ringleader = roster.find(c => c.id === payload.ringleaderId);
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      _factionModalBox(`
+        <div class="faction-event-title">⚙ 派閥内の軋み</div>
+        <div class="faction-event-narration">
+          「${payload.factionName}」の内側に、ほつれた糸が見える。<br>
+          ${payload.leaderName}への不満を抱えた者たちが、肩を寄せ合って声を潜めている。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F05_DISSIDENT_LINES, ringleader,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA51));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(ringleader, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${ringleader ? ringleader.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……もう、ついていけない。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 3) {
+      _factionModalBox(`
+        <div class="faction-event-title">⚙ 社長の判断</div>
+        <div class="faction-event-prompt">
+          ${payload.factionName}の亀裂に、どう向き合う？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: リーダーに助言する</span>
+            <span class="faction-choice-hint">修復を促す。60%で分裂回避</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: 不満分子に味方する</span>
+            <span class="faction-choice-hint">${ringleader ? ringleader.name : '不満分子'}を核に新派閥を結成。元派閥は大きく揺らぐ</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: 静観する</span>
+            <span class="faction-choice-hint">成り行き任せ。70%で自然分裂</span>
+          </button>
+        </div>
+      `);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(this.dataset.choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F06: 和解の兆し（3シーン＋結果）
+function showFactionF06Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF06Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leaderA = roster.find(c => c.id === payload.leaderAId);
+  const leaderB = roster.find(c => c.id === payload.leaderBId);
+  // 片方のリーダーを代表して雑談風セリフに。seed で決定性
+  const seedPick = (state.season || 0) + (state.week || 0);
+  const ambientFighter = (seedPick % 2 === 0) ? leaderA : leaderB;
+  const funds = (state && typeof state.funds === 'number') ? state.funds : 0;
+  const cost = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG.f06Cost : 1_000_000;
+  const canAfford = funds >= cost;
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      _factionModalBox(`
+        <div class="faction-event-title">🌱 和解の兆し</div>
+        <div class="faction-event-narration">
+          抗争状態にあった「${payload.factionAName}」と「${payload.factionBName}」。<br>
+          その両派閥のメンバーが、廊下で何気ない言葉を交わしている。<br>
+          硬かった視線が、少しほどけている。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F06_AMBIENT_LINES, ambientFighter,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA61));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(ambientFighter, 88)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${ambientFighter ? ambientFighter.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……もう、いいかな。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 3) {
+      const disabledAttr = canAfford ? '' : ' disabled';
+      const hintA = canAfford
+        ? '合同練習・打ち上げを企画。対立は大きく収束し、抗争状態が終わる可能性が高い'
+        : `資金不足（¥${cost.toLocaleString()}必要）`;
+      _factionModalBox(`
+        <div class="faction-event-title">🌱 社長の判断</div>
+        <div class="faction-event-prompt">
+          この兆しを、どう扱う？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A"${disabledAttr}>
+            <span class="faction-choice-label">A: 和解を後押しする（コスト ¥${cost.toLocaleString()}）</span>
+            <span class="faction-choice-hint">${hintA}</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: 自然に任せる</span>
+            <span class="faction-choice-hint">緩やかに対立度が下がる。戻る可能性もあり</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: むしろ煽る</span>
+            <span class="faction-choice-hint">ロッカールーム士気に影響。抗争は続く</span>
+          </button>
+        </div>
+      `);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            if (this.disabled) return;
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(this.dataset.choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F07: リーダーの横暴（3シーン＋結果）
+function showFactionF07Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF07Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leader = roster.find(c => c.id === payload.leaderId);
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      _factionModalBox(`
+        <div class="faction-event-title">👑 リーダーの要求</div>
+        <div class="faction-event-narration">
+          「${payload.factionName}」のリーダー、${payload.leaderName}が社長室を訪れた。<br>
+          その声には、団体内での派閥の地位を当然のものと見る色合いが滲んでいる。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F07_LEADER_LINES, leader,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA71));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leader, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leader ? leader.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……うちの連中のこと、もう少し考えてほしい。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 3) {
+      _factionModalBox(`
+        <div class="faction-event-title">👑 社長の判断</div>
+        <div class="faction-event-prompt">
+          ${payload.leaderName}の要求に、どう応える？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: 権威を認める</span>
+            <span class="faction-choice-hint">リーダー心証は上がる。他の選手は退き、士気は下がる</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B">
+            <span class="faction-choice-label">B: 釘を刺す</span>
+            <span class="faction-choice-hint">リーダーに強い反発。積み上げればいずれ権威を剥がせる</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: 別の幹部を重用する</span>
+            <span class="faction-choice-hint">派閥内に新たな対立軸が生まれる。権威タグは外れる</span>
+          </button>
+        </div>
+      `);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(this.dataset.choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
+// F08: 対立ヒートアップ（4シーン＋結果）
+function showFactionF08Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF08Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leaderA = roster.find(c => c.id === payload.leaderAId);
+  const leaderB = roster.find(c => c.id === payload.leaderBId);
+  const funds = (state && typeof state.funds === 'number') ? state.funds : 0;
+  const cost = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG.f08AlternativeCost : 2_000_000;
+  const canAffordB = funds >= cost;
+
+  let scene = 1;
+  const render = () => {
+    if (scene === 1) {
+      _factionModalBox(`
+        <div class="faction-event-title">🔥 対立ヒートアップ</div>
+        <div class="faction-event-narration">
+          「${payload.factionAName}」と「${payload.factionBName}」の敵意は、もう言葉で収まる段階ではない。<br>
+          練習場ですれ違うたび、視線が火花を飛ばしている。
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 2) {
+      const line = _factionLine(FACTION_F08_LEADER_LINES, leaderA,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA81));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderA, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leaderA ? leaderA.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……もう、話し合いでは済まない。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 3) {
+      const line = _factionLine(FACTION_F08_LEADER_LINES, leaderB,
+        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA82));
+      _factionModalBox(`
+        <div class="faction-event-scene">
+          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderB, 96)}</div>
+          <div class="faction-event-bubble">
+            <div class="faction-event-name">${leaderB ? leaderB.name : '???'}</div>
+            <div class="faction-event-dialogue">「${line || '……リングで、答えを出す。'}」</div>
+          </div>
+        </div>
+        <button class="btn faction-event-next">次へ ▶</button>
+      `);
+    } else if (scene === 4) {
+      const disabledB = canAffordB ? '' : ' disabled';
+      const hintB = canAffordB
+        ? `両リーダーを別興行に振り分ける（一時沈静化）`
+        : `資金不足（¥${cost.toLocaleString()}必要）`;
+      _factionModalBox(`
+        <div class="faction-event-title">🔥 社長の判断</div>
+        <div class="faction-event-prompt">
+          この熱を、どう扱う？
+        </div>
+        <div class="faction-event-choices">
+          <button class="btn faction-event-choice" data-choice="A">
+            <span class="faction-choice-label">A: 直接対決のカードを組む</span>
+            <span class="faction-choice-hint">次興行のメインで両リーダー激突。試合結果が対立度を大きく動かす</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="B"${disabledB}>
+            <span class="faction-choice-label">B: 別興行に振り分ける（コスト ¥${cost.toLocaleString()}）</span>
+            <span class="faction-choice-hint">${hintB}</span>
+          </button>
+          <button class="btn faction-event-choice" data-choice="C">
+            <span class="faction-choice-label">C: 両リーダーを呼び出して警告</span>
+            <span class="faction-choice-hint">社長権限で圧縮。対立度は下がるが、両者に角が立つ</span>
+          </button>
+        </div>
+      `);
+      const box = document.getElementById('careBox');
+      if (box) {
+        box.querySelectorAll('.faction-event-choice').forEach(btn => {
+          btn.addEventListener('click', function() {
+            if (this.disabled) return;
+            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+            if (onChoice) onChoice(this.dataset.choice);
+          });
+        });
+      }
+      return;
+    }
+    const box = document.getElementById('careBox');
+    if (box) {
+      const nextBtn = box.querySelector('.faction-event-next');
+      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
+    }
+  };
+  render();
+}
+
 // グローバル公開
 if (typeof window !== 'undefined') {
   window.showFactionF01Modal = showFactionF01Modal;
   window.showFactionF02Modal = showFactionF02Modal;
   window.showFactionF03Modal = showFactionF03Modal;
+  window.showFactionF04Modal = showFactionF04Modal;
+  window.showFactionF05Modal = showFactionF05Modal;
+  window.showFactionF06Modal = showFactionF06Modal;
+  window.showFactionF07Modal = showFactionF07Modal;
+  window.showFactionF08Modal = showFactionF08Modal;
   window.showFactionEventResult = showFactionEventResult;
 }
 

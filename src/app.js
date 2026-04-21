@@ -4742,9 +4742,11 @@ const App = {
       const appRivalryLevel = Engine.title.getRivalryLevel(s, m.left, m.right);
       const appPendingClash = appRivalryLevel?.pendingClashBonus || 0;
       const appFr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, null);
+      const isF08Match = !!m._f08Locked || (Engine.factions && Engine.factions.isF08DirectiveMatch && Engine.factions.isF08DirectiveMatch(s, m.left, m.right));
       return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
         pendingClashBonus: appPendingClash, isFirstMeet: appFr.isFirstMeet, freshnessCount: appFr.countInWindow,
+        isF08Match,
       }, s);
     });
     const _appUsedIds = new Set();
@@ -4996,6 +4998,29 @@ const App = {
       // Phase 4: 興行コンテキストの関係値反映（C-04/C-05/C-06/C-10）
       const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
+    }
+
+    // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映 + ディレクティブクリア ──
+    if (s._pendingF08Directive && Engine.factions && typeof Engine.factions.applyMatchResult === 'function') {
+      const d = s._pendingF08Directive;
+      const f08Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFA88));
+      let executed = false;
+      validMatches.forEach((m, idx) => {
+        if (m.matchType === 'tag') return;
+        const r = results[idx];
+        if (!r) return;
+        const hit = (m.left === d.leaderAId && m.right === d.leaderBId) || (m.left === d.leaderBId && m.right === d.leaderAId);
+        if (!hit) return;
+        const winnerToken = r.winner === 'left' ? (m.left === d.leaderAId ? 'A' : 'B')
+          : r.winner === 'right' ? (m.right === d.leaderAId ? 'A' : 'B')
+          : 'draw';
+        s = Engine.factions.applyMatchResult(s, m.left, m.right, { winner: winnerToken }, f08Rng, { variationMultiplier: (FACTION_CONFIG && FACTION_CONFIG.f08MatchResultMultiplier) || 1.5 });
+        executed = true;
+      });
+      // 該当試合が実行されたかに関わらず、この興行後はディレクティブを落とす
+      if (executed && typeof console !== 'undefined') console.log('[WM Faction] F08 directive resolved by direct match');
+      const { _pendingF08Directive: _, ...rest } = s;
+      s = rest;
     }
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
@@ -7194,6 +7219,61 @@ const App = {
       showFactionF03Modal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
         const result = Engine.factions.applyF03Result(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F04') {
+      showFactionF04Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA14));
+        const result = Engine.factions.applyF04Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F05') {
+      showFactionF05Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA15));
+        const result = Engine.factions.applyF05Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F06') {
+      showFactionF06Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA16));
+        const result = Engine.factions.applyF06Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F07') {
+      showFactionF07Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA17));
+        const result = Engine.factions.applyF07Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F08') {
+      showFactionF08Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA18));
+        const result = Engine.factions.applyF08Choice(G, payload, choiceId, rng);
         G = { ...result.state };
         Storage.autoSave();
         Audio.play('event');

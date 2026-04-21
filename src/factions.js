@@ -643,8 +643,8 @@ Engine.factions = {
     return null;
   },
 
-  // ── §8 週次イベント抽選（F03 > F02 > F01 の優先順）──
-  // return: { eventId:'F01'|'F02'|'F03'|null, payload }
+  // ── §8 週次イベント抽選（F03 > F08 > F04 > F05 > F07 > F06 > F02 > F01 の優先順）──
+  // return: { eventId:'F01'|'F02'|'F03'|'F04'|'F05'|'F06'|'F07'|'F08'|null, payload }
   pickWeeklyEvent(state, rng) {
     const cfg = FACTION_CONFIG;
 
@@ -664,7 +664,37 @@ Engine.factions = {
       };
     }
 
-    // 2) F02（派閥抗争勃発、確率 80%）
+    // 2) F08（対立ヒートアップ、確率 50%）
+    const f08 = this.checkF08Conditions(state);
+    if (f08.eligible && Engine.rng.float(rng) < cfg.eventProbability.F08) {
+      return { eventId: 'F08', payload: f08 };
+    }
+
+    // 3) F04（寝返り、確率 30%）
+    const f04 = this.checkF04Conditions(state);
+    if (f04.eligible && Engine.rng.float(rng) < cfg.eventProbability.F04) {
+      return { eventId: 'F04', payload: f04 };
+    }
+
+    // 4) F05（派閥内亀裂、確率 40%）
+    const f05 = this.checkF05Conditions(state);
+    if (f05.eligible && Engine.rng.float(rng) < cfg.eventProbability.F05) {
+      return { eventId: 'F05', payload: f05 };
+    }
+
+    // 5) F07（リーダーの横暴、確率 40%）
+    const f07 = this.checkF07Conditions(state);
+    if (f07.eligible && Engine.rng.float(rng) < cfg.eventProbability.F07) {
+      return { eventId: 'F07', payload: f07 };
+    }
+
+    // 6) F06（和解の兆し、確率 50%）
+    const f06 = this.checkF06Conditions(state);
+    if (f06.eligible && Engine.rng.float(rng) < cfg.eventProbability.F06) {
+      return { eventId: 'F06', payload: f06 };
+    }
+
+    // 7) F02（派閥抗争勃発、確率 80%）
     const rivCheck = this.checkRivalrousFormationConditions(state);
     if (rivCheck.eligible) {
       if (Engine.rng.float(rng) < cfg.eventProbability.F02) {
@@ -691,7 +721,7 @@ Engine.factions = {
       }
     }
 
-    // 3) F01（忠誠型結成、確率 60%、拒否クールダウン対応）
+    // 8) F01（忠誠型結成、確率 60%、拒否クールダウン対応）
     const loyalCheck = this.checkLoyalFormationConditions(state);
     if (loyalCheck.eligible) {
       const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
@@ -911,8 +941,574 @@ Engine.factions = {
       const choices = ['A', 'B', 'C', 'D'];
       return choices[Math.floor(Engine.rng.float(rng) * choices.length)];
     }
+    if (eventId === 'F04' || eventId === 'F05' || eventId === 'F06' || eventId === 'F07' || eventId === 'F08') {
+      const choices = ['A', 'B', 'C'];
+      return choices[Math.floor(Engine.rng.float(rng) * choices.length)];
+    }
     return 'OK'; // F03 は選択肢なし
   },
+
+  // ══════════════════════════════════════════════════════════
+  //  Phase 3b: F04-F08 検出 + 適用
+  // ══════════════════════════════════════════════════════════
+
+  _sortedPairKey(idA, idB) {
+    return idA < idB ? `${idA}|${idB}` : `${idB}|${idA}`;
+  },
+
+  _f04Key(targetId, toFactionId) { return `F04:${targetId}:${toFactionId}`; },
+  _f05Key(factionId) { return `F05:${factionId}`; },
+  _f06Key(fAId, fBId) { return `F06:${this._sortedPairKey(fAId, fBId)}`; },
+  _f07Key(factionId) { return `F07:${factionId}`; },
+  _f08Key(fAId, fBId) { return `F08:${this._sortedPairKey(fAId, fBId)}`; },
+
+  _isCooldownReady(state, key, cooldownWeeks) {
+    const cd = (state.factionEventCooldowns || {})[key];
+    if (!cd || typeof cd.lastTriggeredWeek !== 'number') return true;
+    return this._absWeek(state) - cd.lastTriggeredWeek >= cooldownWeeks;
+  },
+
+  _markCooldown(state, key) {
+    return {
+      ...state,
+      factionEventCooldowns: {
+        ...(state.factionEventCooldowns || {}),
+        [key]: { lastTriggeredWeek: this._absWeek(state) },
+      },
+    };
+  },
+
+  // ── §9.4 F04 寝返り候補検出 ──
+  // 「敵対派閥メンバーとのbond平均70+」かつ「自派閥リーダーへのbond40-」
+  // return: { eligible, targetId, targetName, fromFactionId, toFactionId, fromFactionName, toFactionName, fromLeaderId, toLeaderId } | { eligible:false }
+  checkF04Conditions(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const hostilePairs = [];
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = 0; j < factions.length; j++) {
+        if (i === j) continue;
+        const A = factions[i], B = factions[j];
+        if (!this._isHostile(A) || !this._isHostile(B)) continue;
+        const hAB = (state.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+        const hBA = (state.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+        if ((hAB + hBA) / 2 < 40) continue; // 実効的に抗争度がある組だけ
+        hostilePairs.push({ from: A, to: B });
+      }
+    }
+    if (!hostilePairs.length) return { eligible: false };
+
+    let best = null;
+    let bestScore = -Infinity;
+    for (const { from, to } of hostilePairs) {
+      const bondToLeader = (memberId) => this._getBond(state, memberId, from.leaderId);
+      for (const memberId of from.memberIds) {
+        if (memberId === from.leaderId) continue;
+        const leaderBond = bondToLeader(memberId);
+        if (leaderBond >= cfg.f04BondLeaderMaxThreshold) continue;
+        const avgAlly = this._avgBond(state, memberId, to.memberIds);
+        if (avgAlly < cfg.f04BondAllyThreshold) continue;
+        // クールダウン
+        const key = this._f04Key(memberId, to.id);
+        if (!this._isCooldownReady(state, key, cfg.eventCooldown.F04)) continue;
+        const score = avgAlly - leaderBond;
+        if (score > bestScore) {
+          bestScore = score;
+          best = { memberId, from, to, leaderBond, avgAlly };
+        }
+      }
+    }
+    if (!best) return { eligible: false };
+
+    const roster = state.roster || [];
+    const target = roster.find(c => c.id === best.memberId);
+    return {
+      eligible: true,
+      targetId: best.memberId,
+      targetName: target ? target.name : '???',
+      fromFactionId: best.from.id,
+      toFactionId: best.to.id,
+      fromFactionName: best.from.name,
+      toFactionName: best.to.name,
+      fromLeaderId: best.from.leaderId,
+      toLeaderId: best.to.leaderId,
+    };
+  },
+
+  // ── §9.5 F05 派閥内亀裂 ──
+  // 「忠誠型派閥・メンバー5+・リーダー bond<35の不満分子2+・不満分子相互 bond 60+」
+  checkF05Conditions(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+
+    let best = null;
+    for (const f of factions) {
+      if (this._isHostile(f)) continue; // 忠誠型のみ
+      if (f.memberIds.length < cfg.f05MinFactionSize) continue;
+      const key = this._f05Key(f.id);
+      if (!this._isCooldownReady(state, key, cfg.eventCooldown.F05)) continue;
+
+      // 不満分子: リーダー以外、リーダーへの bond が閾値未満
+      const dissidents = f.memberIds
+        .filter(id => id !== f.leaderId)
+        .filter(id => this._getBond(state, id, f.leaderId) < cfg.f05DissidentBondMaxThreshold);
+      if (dissidents.length < cfg.f05DissidentMinCount) continue;
+
+      // 不満分子同士の bond が閾値以上のペアがあるか → ペア参加者を集める
+      const clique = new Set();
+      for (let i = 0; i < dissidents.length; i++) {
+        for (let j = i + 1; j < dissidents.length; j++) {
+          const b1 = this._getBond(state, dissidents[i], dissidents[j]);
+          const b2 = this._getBond(state, dissidents[j], dissidents[i]);
+          if ((b1 + b2) / 2 >= cfg.f05DissidentCliqueBondThreshold) {
+            clique.add(dissidents[i]);
+            clique.add(dissidents[j]);
+          }
+        }
+      }
+      if (clique.size < cfg.f05DissidentMinCount) continue;
+
+      const cliqueIds = [...clique];
+      // 首謀者 = clique 内 OVR 最上位
+      cliqueIds.sort((a, b) => {
+        const ca = roster.find(c => c.id === a);
+        const cb = roster.find(c => c.id === b);
+        return (cb ? Engine.util.ov(cb) : 0) - (ca ? Engine.util.ov(ca) : 0);
+      });
+      const ringleaderId = cliqueIds[0];
+      best = { faction: f, dissidentIds: cliqueIds, ringleaderId };
+      break; // 1件ずつ
+    }
+    if (!best) return { eligible: false };
+
+    const leader = roster.find(c => c.id === best.faction.leaderId);
+    const ringleader = roster.find(c => c.id === best.ringleaderId);
+    return {
+      eligible: true,
+      factionId: best.faction.id,
+      factionName: best.faction.name,
+      leaderId: best.faction.leaderId,
+      leaderName: leader ? leader.name : '???',
+      dissidentIds: best.dissidentIds,
+      ringleaderId: best.ringleaderId,
+      ringleaderName: ringleader ? ringleader.name : '???',
+    };
+  },
+
+  // ── §9.6 F06 和解の兆し ──
+  // 「抗争中派閥・両方向対立度平均<25・8週継続」
+  // G.factionReconciliationStreak に週カウントを貯める
+  checkF06Conditions(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const streaks = state.factionReconciliationStreak || {};
+
+    let best = null;
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const A = factions[i], B = factions[j];
+        if (!this._isHostile(A) || !this._isHostile(B)) continue;
+        const hAB = (state.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+        const hBA = (state.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+        const avg = (hAB + hBA) / 2;
+        if (avg >= cfg.f06HostilityMaxAverage) continue;
+
+        const pairKey = this._sortedPairKey(A.id, B.id);
+        const streak = streaks[pairKey] || 0;
+        if (streak < cfg.f06StreakWeeks) continue;
+
+        const cdKey = this._f06Key(A.id, B.id);
+        if (!this._isCooldownReady(state, cdKey, cfg.eventCooldown.F06)) continue;
+
+        if (!best || streak > best.streak) best = { A, B, streak };
+      }
+    }
+    if (!best) return { eligible: false };
+    return {
+      eligible: true,
+      factionAId: best.A.id,
+      factionBId: best.B.id,
+      factionAName: best.A.name,
+      factionBName: best.B.name,
+      leaderAId: best.A.leaderId,
+      leaderBId: best.B.leaderId,
+    };
+  },
+
+  // ── §9.6 streak 更新（週次で呼び出す）──
+  updateF06Streaks(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const streaks = { ...(state.factionReconciliationStreak || {}) };
+    const validKeys = new Set();
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const A = factions[i], B = factions[j];
+        if (!this._isHostile(A) || !this._isHostile(B)) continue;
+        const hAB = (state.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+        const hBA = (state.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+        const avg = (hAB + hBA) / 2;
+        const pairKey = this._sortedPairKey(A.id, B.id);
+        if (avg < cfg.f06HostilityMaxAverage) {
+          streaks[pairKey] = (streaks[pairKey] || 0) + 1;
+          validKeys.add(pairKey);
+        } else {
+          if (streaks[pairKey]) delete streaks[pairKey];
+        }
+      }
+    }
+    // 抗争解消した派閥ペアのキーは消す
+    for (const key of Object.keys(streaks)) {
+      if (!validKeys.has(key)) delete streaks[key];
+    }
+    return { ...state, factionReconciliationStreak: streaks };
+  },
+
+  // ── §9.7 F07 リーダーの横暴 ──
+  // 「authoritativeTag 付・リーダー trust 60+」
+  checkF07Conditions(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    for (const f of factions) {
+      if (!f.authoritativeTag) continue;
+      const leader = roster.find(c => c.id === f.leaderId);
+      if (!leader) continue;
+      const leaderTrust = leader.trust != null ? leader.trust : 50;
+      if (leaderTrust < cfg.f07TrustMinThreshold) continue;
+      const key = this._f07Key(f.id);
+      if (!this._isCooldownReady(state, key, cfg.eventCooldown.F07)) continue;
+      return {
+        eligible: true,
+        factionId: f.id,
+        factionName: f.name,
+        leaderId: f.leaderId,
+        leaderName: leader.name,
+      };
+    }
+    return { eligible: false };
+  },
+
+  // ── §9.8 F08 対立ヒートアップ ──
+  // 「抗争中派閥・片方向 hostility 80+」
+  checkF08Conditions(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    let best = null;
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const A = factions[i], B = factions[j];
+        if (!this._isHostile(A) || !this._isHostile(B)) continue;
+        const hAB = (state.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+        const hBA = (state.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+        const peak = Math.max(hAB, hBA);
+        if (peak < cfg.f08HostilityMinThreshold) continue;
+        const cdKey = this._f08Key(A.id, B.id);
+        if (!this._isCooldownReady(state, cdKey, cfg.eventCooldown.F08)) continue;
+        // リーダーが両方 roster にいること
+        const lA = roster.find(c => c.id === A.leaderId);
+        const lB = roster.find(c => c.id === B.leaderId);
+        if (!lA || !lB) continue;
+        if (!best || peak > best.peak) best = { A, B, peak, lA, lB };
+      }
+    }
+    if (!best) return { eligible: false };
+    return {
+      eligible: true,
+      factionAId: best.A.id,
+      factionBId: best.B.id,
+      factionAName: best.A.name,
+      factionBName: best.B.name,
+      leaderAId: best.A.leaderId,
+      leaderBId: best.B.leaderId,
+      leaderAName: best.lA.name,
+      leaderBName: best.lB.name,
+    };
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  Phase 3b: F04-F08 適用関数
+  // ══════════════════════════════════════════════════════════
+
+  // ── §9.4 F04 寝返り 選択適用 ──
+  // A: 放置（転籍）/ B: 面談 / C: 告げ口
+  applyF04Choice(state, payload, choiceId, rng) {
+    const { targetId, targetName, fromFactionId, toFactionId, fromLeaderId, fromFactionName, toFactionName } = payload;
+    let s = state;
+    const cdKey = this._f04Key(targetId, toFactionId);
+    s = this._markCooldown(s, cdKey);
+
+    if (choiceId === 'A') {
+      // 対象選手を敵対派閥へ転籍
+      s = {
+        ...s,
+        factions: (s.factions || []).map(f => {
+          if (f.id === fromFactionId) return { ...f, memberIds: f.memberIds.filter(id => id !== targetId) };
+          if (f.id === toFactionId && !f.memberIds.includes(targetId)) return { ...f, memberIds: [...f.memberIds, targetId] };
+          return f;
+        }),
+      };
+      // 元派閥メンバー trust -3〜-6
+      const fromFaction = (s.factions || []).find(f => f.id === fromFactionId);
+      if (fromFaction) {
+        const d = -(3 + Math.floor(Engine.rng.float(rng) * 4));
+        s = this._applyTrustToMembers(s, fromFaction.memberIds, d);
+      }
+      // 勢い変動
+      const fromBump = -(15 + Math.floor(Engine.rng.float(rng) * 11));
+      const toBump = 15 + Math.floor(Engine.rng.float(rng) * 11);
+      s = this.applyMomentumChange(s, fromFactionId, fromBump);
+      s = this.applyMomentumChange(s, toFactionId, toBump);
+      // 対立度（元派閥→敵対派閥）+15〜+20
+      const hostBump = 15 + Math.floor(Engine.rng.float(rng) * 6);
+      s = this.applyHostilityChange(s, fromFactionId, toFactionId, hostBump);
+      if (typeof console !== 'undefined') console.log(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
+      return { state: s, resultText: `${targetName}は${toFactionName}へ移っていった。${fromFactionName}の空気は凍りついている。` };
+    }
+    if (choiceId === 'B') {
+      // 対象 trust +5、一時回避（12週後再判定）
+      s = this._applyTrustToMembers(s, [targetId], 5);
+      return { state: s, resultText: `${targetName}との面談で、迷いは一旦収まった。` };
+    }
+    // 'C' 告げ口
+    s = this._applyTrustToMembers(s, [targetId], -(5 + Math.floor(Engine.rng.float(rng) * 4)));
+    // 対象→リーダー rivalry +10〜+15
+    if (s.relationships) {
+      const key = `${targetId}>${fromLeaderId}`;
+      const rec = s.relationships[key];
+      if (rec) {
+        const d = 10 + Math.floor(Engine.rng.float(rng) * 6);
+        const newRec = { ...rec, rivalry: Engine.util.clamp(rec.rivalry + d, 0, 100) };
+        s = { ...s, relationships: { ...s.relationships, [key]: newRec } };
+      }
+    }
+    // 派閥内に火種（tensionTag を立てる: F05 検出確率を上げる指標）
+    s = {
+      ...s,
+      factions: (s.factions || []).map(f => f.id === fromFactionId ? { ...f, tensionTag: true } : f),
+    };
+    return { state: s, resultText: `${targetName}の動きはリーダーの知るところとなった。${fromFactionName}の内側に、新たな火種が燻る。` };
+  },
+
+  // ── §9.5 F05 派閥内亀裂 選択適用 ──
+  // A: 助言（60%で回避）/ B: 分裂（即時） / C: 静観（70%で自然分裂）
+  applyF05Choice(state, payload, choiceId, rng) {
+    const { factionId, factionName, leaderId, leaderName, dissidentIds, ringleaderId, ringleaderName } = payload;
+    let s = state;
+    const cdKey = this._f05Key(factionId);
+    s = this._markCooldown(s, cdKey);
+
+    const roster = s.roster || [];
+    const splitFaction = () => {
+      // 元派閥から dissidents を除外
+      let ns = {
+        ...s,
+        factions: (s.factions || []).map(f => f.id === factionId
+          ? { ...f, memberIds: f.memberIds.filter(id => !dissidentIds.includes(id)) }
+          : f),
+      };
+      // 新派閥: ringleader をリーダーに loyal 派閥成立
+      const ringleader = roster.find(c => c.id === ringleaderId);
+      if (ringleader) {
+        ns = this.createFaction(ns, ringleaderId, dissidentIds, { type: 'loyal' });
+      }
+      return ns;
+    };
+
+    if (choiceId === 'A') {
+      // 助言: リーダー/不満分子 trust +3〜+5、60%で回避
+      const tLeader = 3 + Math.floor(Engine.rng.float(rng) * 3);
+      const tDiss = 3 + Math.floor(Engine.rng.float(rng) * 3);
+      s = this._applyTrustToMembers(s, [leaderId], tLeader);
+      s = this._applyTrustToMembers(s, dissidentIds, tDiss);
+      if (Engine.rng.float(rng) < 0.60) {
+        return { state: s, resultText: `${leaderName}への助言が効いた。${factionName}の亀裂は今は塞がった。` };
+      }
+      // 回避失敗: 次の F05 発動で再判定可
+      return { state: s, resultText: `助言はしたが、${factionName}の水面下のささくれは消えていない。` };
+    }
+    if (choiceId === 'B') {
+      // 分裂成立
+      s = splitFaction();
+      s = this._applyTrustToMembers(s, [leaderId], -(8 + Math.floor(Engine.rng.float(rng) * 5)));
+      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split: ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
+      return { state: s, resultText: `${factionName}は割れた。${ringleaderName}を中心とした新派閥が生まれ、旗が二本立つ。` };
+    }
+    // 'C' 静観
+    if (Engine.rng.float(rng) < 0.70) {
+      s = splitFaction();
+      return { state: s, resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。` };
+    }
+    return { state: s, resultText: `${factionName}の亀裂は、とりあえず破裂には至らなかった。` };
+  },
+
+  // ── §9.6 F06 和解の兆し 選択適用 ──
+  // A: 後押し（コスト100万）/ B: 自然 / C: 煽る
+  applyF06Choice(state, payload, choiceId, rng) {
+    const { factionAId, factionBId, factionAName, factionBName } = payload;
+    let s = state;
+    const cdKey = this._f06Key(factionAId, factionBId);
+    s = this._markCooldown(s, cdKey);
+    const cfg = FACTION_CONFIG;
+
+    if (choiceId === 'A') {
+      // コスト 100 万（UI 側で事前チェック済み想定、ここでも控える）
+      const funds = s.funds || 0;
+      if (funds >= cfg.f06Cost) {
+        s = { ...s, funds: funds - cfg.f06Cost };
+      }
+      const d = -(15 + Math.floor(Engine.rng.float(rng) * 11));
+      s = this.applyHostilityChange(s, factionAId, factionBId, d);
+      s = this.applyHostilityChange(s, factionBId, factionAId, d);
+      // 派閥間 bond +3〜+5
+      const A = (s.factions || []).find(f => f.id === factionAId);
+      const B = (s.factions || []).find(f => f.id === factionBId);
+      if (A && B && s.relationships) {
+        const bd = 3 + Math.floor(Engine.rng.float(rng) * 3);
+        let rels = { ...s.relationships };
+        for (const a of A.memberIds) for (const b of B.memberIds) {
+          const kAB = `${a}>${b}`, kBA = `${b}>${a}`;
+          if (rels[kAB]) rels[kAB] = { ...rels[kAB], bond: Engine.util.clamp(rels[kAB].bond + bd, 0, 100) };
+          if (rels[kBA]) rels[kBA] = { ...rels[kBA], bond: Engine.util.clamp(rels[kBA].bond + bd, 0, 100) };
+        }
+        s = { ...s, relationships: rels };
+      }
+      // 両リーダー trust +3〜+5
+      const payloadLeaderA = payload.leaderAId, payloadLeaderB = payload.leaderBId;
+      const tA = 3 + Math.floor(Engine.rng.float(rng) * 3);
+      const tB = 3 + Math.floor(Engine.rng.float(rng) * 3);
+      if (payloadLeaderA) s = this._applyTrustToMembers(s, [payloadLeaderA], tA);
+      if (payloadLeaderB) s = this._applyTrustToMembers(s, [payloadLeaderB], tB);
+      return { state: s, resultText: `合同練習の席で、強ばっていた視線がほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。` };
+    }
+    if (choiceId === 'B') {
+      const d = -(5 + Math.floor(Engine.rng.float(rng) * 6));
+      s = this.applyHostilityChange(s, factionAId, factionBId, d);
+      s = this.applyHostilityChange(s, factionBId, factionAId, d);
+      return { state: s, resultText: `社長は手を出さず、時間に任せた。空気は少しだけ和らいだ。` };
+    }
+    // 'C' 煽る
+    s = this._applyLockerRoomMorale(s, -(3 + Math.floor(Engine.rng.float(rng) * 3)));
+    return { state: s, resultText: `社長は和解の兆しを拾わなかった。それどころか、燻る火を仄かに煽った。` };
+  },
+
+  // ── §9.7 F07 リーダーの横暴 選択適用 ──
+  // A: 認める / B: 釘刺し / C: 別幹部
+  applyF07Choice(state, payload, choiceId, rng) {
+    const { factionId, factionName, leaderId, leaderName } = payload;
+    let s = state;
+    const cdKey = this._f07Key(factionId);
+    s = this._markCooldown(s, cdKey);
+    const cfg = FACTION_CONFIG;
+
+    const roster = s.roster || [];
+    const faction = (s.factions || []).find(f => f.id === factionId);
+    if (!faction) return { state: s, resultText: '' };
+
+    if (choiceId === 'A') {
+      // 認める: リーダー trust +5、非メンバー trust -3〜-6、士気 -3〜-5、dictatorTag
+      s = this._applyTrustToMembers(s, [leaderId], 5);
+      const nonMembers = roster.filter(c => !faction.memberIds.includes(c.id)).map(c => c.id);
+      const d = -(3 + Math.floor(Engine.rng.float(rng) * 4));
+      s = this._applyTrustToMembers(s, nonMembers, d);
+      s = this._applyLockerRoomMorale(s, -(3 + Math.floor(Engine.rng.float(rng) * 3)));
+      s = { ...s, factions: s.factions.map(f => f.id === factionId ? { ...f, dictatorTag: true } : f) };
+      return { state: s, resultText: `${leaderName}の権威は強まった。${factionName}の外にいる者たちは、一歩引いて見ている。` };
+    }
+    if (choiceId === 'B') {
+      // 釘刺し: リーダー trust -8〜-12、authoritativeTag 維持、非メンバー trust +2〜+3、rebukeCount++
+      const dLeader = -(8 + Math.floor(Engine.rng.float(rng) * 5));
+      s = this._applyTrustToMembers(s, [leaderId], dLeader);
+      const nonMembers = roster.filter(c => !faction.memberIds.includes(c.id)).map(c => c.id);
+      const dn = 2 + Math.floor(Engine.rng.float(rng) * 2);
+      s = this._applyTrustToMembers(s, nonMembers, dn);
+      s = {
+        ...s,
+        factions: s.factions.map(f => {
+          if (f.id !== factionId) return f;
+          const newCount = (f.f07RebukeCount || 0) + 1;
+          if (newCount >= cfg.f07RebukeMaxCount) {
+            if (typeof console !== 'undefined') console.log(`[WM Faction] F07 authoritativeTag removed: ${factionName} (rebuke count reached)`);
+            return { ...f, f07RebukeCount: 0, authoritativeTag: false };
+          }
+          return { ...f, f07RebukeCount: newCount };
+        }),
+      };
+      return { state: s, resultText: `${leaderName}に正面から釘を刺した。一瞬の沈黙、それから硬い返事。空気は張り詰めた。` };
+    }
+    // 'C' 別幹部
+    // 幹部 = リーダー除く OVR 上位2名、その中で別の1人
+    const execs = faction.memberIds
+      .filter(id => id !== leaderId)
+      .map(id => roster.find(c => c.id === id))
+      .filter(Boolean)
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+      .slice(0, 2);
+    const altExec = execs[0];
+    s = this._applyTrustToMembers(s, [leaderId], -(5 + Math.floor(Engine.rng.float(rng) * 4)));
+    if (altExec) s = this._applyTrustToMembers(s, [altExec.id], 5 + Math.floor(Engine.rng.float(rng) * 4));
+    s = {
+      ...s,
+      factions: s.factions.map(f => f.id === factionId ? { ...f, authoritativeTag: false, tensionTag: true, f07RebukeCount: 0 } : f),
+    };
+    return { state: s, resultText: `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。` };
+  },
+
+  // ── §9.8 F08 対立ヒートアップ 選択適用 ──
+  // A: 直接対決 / B: 別興行 / C: 警告
+  applyF08Choice(state, payload, choiceId, rng) {
+    const { factionAId, factionBId, factionAName, factionBName, leaderAId, leaderBId } = payload;
+    let s = state;
+    const cdKey = this._f08Key(factionAId, factionBId);
+    s = this._markCooldown(s, cdKey);
+    const cfg = FACTION_CONFIG;
+
+    if (choiceId === 'A') {
+      // 直接対決 directive を立てる（次興行カード編成で参照）
+      s = {
+        ...s,
+        _pendingF08Directive: {
+          factionAId, factionBId,
+          leaderAId, leaderBId,
+          triggeredSeason: s.season,
+          triggeredWeek: s.week,
+        },
+      };
+      if (typeof console !== 'undefined') console.log(`[WM Faction] F08 directive set: ${factionAName} vs ${factionBName}`);
+      return { state: s, resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。` };
+    }
+    if (choiceId === 'B') {
+      // 別興行（コスト200万）
+      const funds = s.funds || 0;
+      if (funds >= cfg.f08AlternativeCost) {
+        s = { ...s, funds: funds - cfg.f08AlternativeCost };
+      }
+      const d = -(5 + Math.floor(Engine.rng.float(rng) * 6));
+      s = this.applyHostilityChange(s, factionAId, factionBId, d);
+      s = this.applyHostilityChange(s, factionBId, factionAId, d);
+      return { state: s, resultText: `両派閥のリーダーを別興行に振り分けた。熱は当面、裏に籠もる。` };
+    }
+    // 'C' 警告
+    if (leaderAId) s = this._applyTrustToMembers(s, [leaderAId], -(3 + Math.floor(Engine.rng.float(rng) * 3)));
+    if (leaderBId) s = this._applyTrustToMembers(s, [leaderBId], -(3 + Math.floor(Engine.rng.float(rng) * 3)));
+    const d = -(10 + Math.floor(Engine.rng.float(rng) * 6));
+    s = this.applyHostilityChange(s, factionAId, factionBId, d);
+    s = this.applyHostilityChange(s, factionBId, factionAId, d);
+    // 両リーダー相互 bond +2〜+3（連帯感）
+    if (leaderAId && leaderBId && s.relationships) {
+      const bd = 2 + Math.floor(Engine.rng.float(rng) * 2);
+      const kAB = `${leaderAId}>${leaderBId}`, kBA = `${leaderBId}>${leaderAId}`;
+      let rels = { ...s.relationships };
+      if (rels[kAB]) rels[kAB] = { ...rels[kAB], bond: Engine.util.clamp(rels[kAB].bond + bd, 0, 100) };
+      if (rels[kBA]) rels[kBA] = { ...rels[kBA], bond: Engine.util.clamp(rels[kBA].bond + bd, 0, 100) };
+      s = { ...s, relationships: rels };
+    }
+    s = this._applyLockerRoomMorale(s, 2 + Math.floor(Engine.rng.float(rng) * 2));
+    return { state: s, resultText: `両リーダーを呼び出し、社長権限で頭を抑えた。火は一時沈静化したが、焦げ跡は残る。` };
+  },
+
 
   // ── relationships 操作ヘルパー ──
   _applyBondDirected(state, fromId, toId, delta) {
@@ -997,7 +1593,8 @@ Engine.factions = {
   },
 
   // ── §4.2 §5.2 試合結果反映 ──────────────────────────────
-  applyMatchResult(state, fighterIdA, fighterIdB, result, rng) {
+  // opts.variationMultiplier: 勢い/対立度の変動幅を倍化（F08 直接対決で 1.5 倍）
+  applyMatchResult(state, fighterIdA, fighterIdB, result, rng, opts = {}) {
     let s = state;
     if (!s.factions || s.factions.length === 0) return s;
     const fA = this.getFactionByFighterId(s, fighterIdA);
@@ -1010,6 +1607,7 @@ Engine.factions = {
     const aIsLeader = this.isLeader(s, fighterIdA);
     const bIsLeader = this.isLeader(s, fighterIdB);
     const cfg = FACTION_CONFIG;
+    const mult = (opts && typeof opts.variationMultiplier === 'number') ? opts.variationMultiplier : 1;
 
     // 勝者/敗者判定（result.winner: 'A'|'B'|'draw'）
     const winner = result && result.winner;
@@ -1021,17 +1619,27 @@ Engine.factions = {
 
     // 勢い変動
     const [mlo, mhi] = isLeaderMatch ? cfg.momentumLeaderBonus : cfg.momentumSeniorBonus;
-    const bump = mlo + Math.floor(Engine.rng.float(rng) * (mhi - mlo + 1));
+    const bumpRaw = mlo + Math.floor(Engine.rng.float(rng) * (mhi - mlo + 1));
+    const bump = Math.round(bumpRaw * mult);
     s = this.applyMomentumChange(s, winnerFaction.id, bump);
     s = this.applyMomentumChange(s, loserFaction.id, -bump);
 
     // 対立度変動: 敗者派閥 → 勝者派閥 +3〜+5
-    const hostBump = 3 + Math.floor(Engine.rng.float(rng) * 3);
+    const hostBumpRaw = 3 + Math.floor(Engine.rng.float(rng) * 3);
+    const hostBump = Math.round(hostBumpRaw * mult);
     s = this.applyHostilityChange(s, loserFaction.id, winnerFaction.id, hostBump);
     if (isLeaderMatch) {
       s = this.applyHostilityChange(s, loserFaction.id, winnerFaction.id, hostBump);
     }
 
     return s;
+  },
+
+  // ── §9.8 F08 ディレクティブ判定（試合がF08直接対決に該当するか）──
+  isF08DirectiveMatch(state, fighterIdA, fighterIdB) {
+    const d = state && state._pendingF08Directive;
+    if (!d) return false;
+    return (d.leaderAId === fighterIdA && d.leaderBId === fighterIdB)
+        || (d.leaderAId === fighterIdB && d.leaderBId === fighterIdA);
   },
 };

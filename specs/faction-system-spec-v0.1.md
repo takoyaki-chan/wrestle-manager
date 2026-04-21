@@ -665,6 +665,17 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | Phase 3a F02 選択肢効果適用（applyF02Choice） | 0xFA23 |
 | Phase 3a F03 結果適用（applyF03Result） | 0xFA33 |
 | Phase 3a auto-sim 派閥イベント応答乱数 | 0xFA90 |
+| Phase 3b F04 選択肢効果適用（applyF04Choice） | 0xFA14 |
+| Phase 3b F05 選択肢効果適用（applyF05Choice） | 0xFA15 |
+| Phase 3b F06 選択肢効果適用（applyF06Choice） | 0xFA16 |
+| Phase 3b F07 選択肢効果適用（applyF07Choice） | 0xFA17 |
+| Phase 3b F08 選択肢効果適用（applyF08Choice） | 0xFA18 |
+| Phase 3b F04 対象セリフ抽選 | 0xFA41 |
+| Phase 3b F05 不満分子セリフ抽選 | 0xFA51 |
+| Phase 3b F06 和解セリフ抽選 | 0xFA61 |
+| Phase 3b F07 横暴リーダーセリフ抽選 | 0xFA71 |
+| Phase 3b F08 両リーダーセリフ抽選（A/B） | 0xFA81 / 0xFA82 |
+| Phase 3b F08 直接対決 applyMatchResult 乱数 | 0xFA88 |
 
 ---
 
@@ -740,10 +751,40 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | v0.2 | 2026-04-21 | Phase 1 実装に伴う閾値調整: loyal bond 65→60 / rivalrous bond 60→55（実測分布に合わせ引下げ） |
 | v0.3 | 2026-04-22 | Phase 3a 実装: F01/F02/F03 演出 + セリフ叩き台 + RNG 0xFA11/13/23/33/90 追加 |
 | v0.4 | 2026-04-22 | F02 再設計: 「対立型結成（2派閥同時発生）」を廃止し「派閥抗争の勃発（既存2派閥に `inHostility: true` を付与）」に変更。`type: 'rivalrous'` は legacy として保持。対立度が両方向 0 になった時点で `inHostility` をクリアし抗争終了。`_isHostile(f)` ヘルパ追加 |
+| v0.5 | 2026-04-22 | Phase 3b 実装: F04 寝返り / F05 派閥内亀裂 / F06 和解の兆し / F07 リーダーの横暴 / F08 対立ヒートアップ の演出モーダル + `applyF0XChoice` + 6×6 セリフ + F08-A 直接対決ディレクティブ（`_pendingF08Directive` でカード編成強制組込み + 集客 appeal 加算 + 試合結果 1.5× 反映）+ `faction.f07RebukeCount` による authoritativeTag 解除 + F06 streak 追跡（`G.factionReconciliationStreak`）+ §8.3 優先順 F03>F08>F04>F05>F07>F06>F02>F01 + 各イベント個別クールダウン。auto-sim 2 シード × 100 シーズン ALL CLEAR |
 
 ---
 
 ## §17 実装状況（2026-04-22）
+
+### Phase 3b 完了（F04-F08 演出 + セリフ + F08 直接対決ディレクティブ, v0.5, 2026-04-22）
+
+**実装済み:**
+
+- §8.3 優先順更新: `pickWeeklyEvent` が F03 > F08 > F04 > F05 > F07 > F06 > F02 > F01 の順で抽選。各イベントに独立の条件成立後確率＋クールダウン
+- §9.4 F04 寝返り: `checkF04Conditions` 検出 + `applyF04Choice(A=放置/B=面談/C=告げ口)`。A で対象選手を敵対派閥へ転籍、勢い/対立度を非対称に動かす。C で `faction.tensionTag` を立てて F05 の伏線を敷く
+- §9.5 F05 派閥内亀裂: `checkF05Conditions`（忠誠型限定・5人以上・リーダー bond 35- の不満分子 2+・相互 bond 60+）+ `applyF05Choice(A=助言/B=分裂/C=静観)`。B/C で即時 `createFaction` により ringleader を核とした loyal 新派閥成立
+- §9.6 F06 和解の兆し: `checkF06Conditions`（両方向 hostility 平均 <25 が 8週継続）+ `applyF06Choice(A=後押し 100万/B=自然/C=煽る)`。`G.factionReconciliationStreak` を `updateF06Streaks` で毎週更新、抗争ペア解消でキー削除。資金不足時は A ボタンを disabled 表示
+- §9.7 F07 リーダーの横暴: `checkF07Conditions`（authoritativeTag + リーダー trust 60+）+ `applyF07Choice(A=認める dictatorTag/B=釘刺し rebukeCount++/C=別幹部 authTag除去)`。`faction.f07RebukeCount` 4 回到達で authoritativeTag 自動除去 + カウントリセット
+- §9.8 F08 対立ヒートアップ: `checkF08Conditions`（片方向 hostility 80+）+ `applyF08Choice(A=直接対決/B=別興行 200万/C=警告)`
+- **F08-A 直接対決フル実装**:
+  - `applyF08Choice('A')` が `G._pendingF08Directive` を立てる
+  - `renderShowPrep` がディレクティブを検出して showCard slot 0 にリーダー同士のマッチを強制注入、他枠に同選手がいれば自動除去。`slot._f08Locked=true` マーク
+  - `_spOpenPicker` はロック slot でトースト表示して picker を開かない（選手差替え不可）
+  - slot UI に「🔥 F08 直接対決（固定）」バッジを表示
+  - `finalizeShow` が該当マッチに `context.isF08Match=true` を渡し `calcFactionFeudAppeal` の f08 ボーナス（+15〜20、タイトル戦時 ×0.5）を加算
+  - 試合後 `Engine.factions.applyMatchResult` を `variationMultiplier: 1.5` で呼び、勢い/対立度を通常より大きく動かす
+  - 興行終了時に `_pendingF08Directive` を削除
+- §11 セリフ拡充: `FACTION_F04_TARGET_LINES` / `FACTION_F05_DISSIDENT_LINES` / `FACTION_F06_AMBIENT_LINES` / `FACTION_F07_LEADER_LINES` / `FACTION_F08_LEADER_LINES` を性格 6 × アーキタイプ 6（normal/ojousama/delinquent/cool/seductive/polite）で追加、normal フォールバック
+- `App.handleFactionEvent` に F04-F08 分岐追加
+- auto-sim `autoHandleFactionEvent` に F04-F08 を A/B/C ランダム応答として追加。TRANSIENT_KEYS に `_pendingF08Directive` 追加
+- §12 RNG シード追加: 0xFA14〜0xFA18（choice 適用）、0xFA41〜0xFA81（セリフ抽選）、0xFA88（F08 直接対決 applyMatchResult 用）
+
+**検証:** auto-sim 2 シード × 100 シーズン ALL CLEAR（違反 0 / エラー 0）
+
+**Phase 3c/3d に延期:**
+- 相関図の派閥ビューモード（第 4 モード）（Phase 3c）
+- §9 派閥絡みの bond/rivalry 変動カタログ完全版（Phase 3d）
 
 ### F02 再設計（v0.4, 2026-04-22）
 

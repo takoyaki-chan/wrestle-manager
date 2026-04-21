@@ -1396,6 +1396,25 @@ const FACTION_CONFIG = {
   eventCooldown: {
     F01: 12, F04: 12, F05: 12, F06: 16, F07: 12, F08: 24,
   },
+  // §9.4 F04 寝返り
+  f04BondAllyThreshold: 70,      // 敵対派閥メンバーとのbond平均
+  f04BondLeaderMaxThreshold: 40, // リーダーへのbond上限
+  // §9.5 F05 派閥内亀裂
+  f05MinFactionSize: 5,
+  f05DissidentBondMaxThreshold: 35, // リーダーへのbond上限
+  f05DissidentCliqueBondThreshold: 60, // 不満分子相互bond
+  f05DissidentMinCount: 2,
+  // §9.6 F06 和解の兆し
+  f06HostilityMaxAverage: 25,    // 両方向平均
+  f06StreakWeeks: 8,             // 8週継続
+  f06Cost: 1_000_000,            // 100万
+  // §9.7 F07 リーダーの横暴
+  f07TrustMinThreshold: 60,
+  f07RebukeMaxCount: 4,          // 4回で authoritativeTag 除去
+  // §9.8 F08 対立ヒートアップ
+  f08HostilityMinThreshold: 80,  // 片方向
+  f08AlternativeCost: 2_000_000, // B選択肢: 別興行200万
+  f08MatchResultMultiplier: 1.5, // A選択肢: 試合結果×1.5変動
 };
 
 // C系: 興行集客力の積み上げ

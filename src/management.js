@@ -7446,12 +7446,15 @@ const Engine = {
       if (!Array.isArray(s.factions)) s = { ...s, factions: [] };
       if (!s.factionHostility || typeof s.factionHostility !== 'object') s = { ...s, factionHostility: {} };
       if (!s.factionEventCooldowns || typeof s.factionEventCooldowns !== 'object') s = { ...s, factionEventCooldowns: {} };
+      if (!s.factionReconciliationStreak || typeof s.factionReconciliationStreak !== 'object') s = { ...s, factionReconciliationStreak: {} };
 
       // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
       if (s._pendingFactionEvent) {
         // 何もしない（前週から持ち越しのモーダルが解決されるまで待つ）
       } else {
-        // 1) F03/F01/F02 いずれかの条件が成立していれば pending を立てて処理を保留
+        // F06 streak 更新（ピック前に今週分を反映）
+        s = Engine.factions.updateF06Streaks(s);
+        // 1) F03/F01/F02/F04-F08 いずれかの条件が成立していれば pending を立てて処理を保留
         const picked = Engine.factions.pickWeeklyEvent(s, evtRng);
         if (picked.eventId) {
           s = { ...s, _pendingFactionEvent: picked };
