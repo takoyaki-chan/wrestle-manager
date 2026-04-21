@@ -2514,6 +2514,9 @@ function renderShowPrep() {
     const isFanExpect = fanExpects && fanExpects.some(fe =>
       (fe.leftId === curL && fe.rightId === curR) || (fe.leftId === curR && fe.rightId === curL));
 
+    const isFactionFeud = (curL > 0 && curR > 0 && G.factions && G.factions.length > 0 && Engine.factions)
+      ? Engine.factions.isFactionFeudMatch(G, curL, curR) : false;
+
     const tagParts = [];
     if (canTitle) {
       tagParts.push(`<label class="sp-match-tag sp-tag-title"><input type="checkbox" ${isTitle ? 'checked' : ''} onchange="toggleTitle(${i});renderShowPrep()" style="margin-right:3px;vertical-align:middle"> 🏆${titleLabel}</label>`);
@@ -2521,6 +2524,12 @@ function renderShowPrep() {
     if (titleEligible && !cdCheck.allowed) tagParts.push(`<span class="sp-match-tag sp-tag-dim">⏳${cdCheck.weeksLeft}週後</span>`);
     if (titleEligible && cdCheck.allowed && slotHasRental) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🤝レンタル不可</span>`);
     if (!G.titleEstablished && curL > 0 && curR > 0) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🔒王座未設立</span>`);
+    if (isFactionFeud) {
+      const fA = Engine.factions.getFactionByFighterId(G, curL);
+      const fB = Engine.factions.getFactionByFighterId(G, curR);
+      const label = (fA && fB) ? `${fA.name} vs ${fB.name}` : '派閥抗争';
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="派閥の顔役同士の試合：集客ブースト">🏴vs🏴 ${label}</span>`);
+    }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
@@ -5118,7 +5127,8 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞 6=年代記
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞 6=年代記 7=派閥
+let _factionHighlightId = null; // openFactionPanel() から来たハイライト対象（1.5秒後 null 復帰）
 let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
 let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
 let _dbChronicleIdx = null; // 表示中の章番号 (1-indexed), null=最新章
@@ -5190,6 +5200,7 @@ function renderDatabase() {
     { label: '🏋️ 全コーチ', idx: 1 },
     { label: '🔗 相関図', idx: 4 },
     { label: '⚔ 団体比較', idx: 2 },
+    { label: '🎭 派閥', idx: 7 },
     { label: '📰 新聞', idx: 5 },
     { label: '🏅 殿堂', idx: 3 },
     { label: '📖 年代記', idx: 6 },
@@ -5209,12 +5220,25 @@ function renderDatabase() {
   else if (_dbSubTab === 4) html += _renderDbRelmap();
   else if (_dbSubTab === 5) html += _renderDbNewspaper();
   else if (_dbSubTab === 6) html += _renderDbChronicle();
+  else if (_dbSubTab === 7) html += _renderDbFactions();
   html += `</div>`;
 
   el.innerHTML = html;
 
   // 相関図ならマップを描画（DOM挿入後に実行）
   if (_dbSubTab === 4) _drawRelmapAfterRender();
+  // 派閥タブのハイライト（openFactionPanel から遷移した場合）
+  if (_dbSubTab === 7 && _factionHighlightId != null) {
+    const targetId = _factionHighlightId;
+    _factionHighlightId = null;
+    setTimeout(() => {
+      const card = document.getElementById(`faction-card-${targetId}`);
+      if (!card) return;
+      card.classList.add('faction-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => card.classList.remove('faction-highlight'), 1500);
+    }, 50);
+  }
 }
 
 function setDbSubTab(idx) {
@@ -8113,6 +8137,147 @@ function _relmapBondColor(val) {
 }
 
 // ══════════════════════════════════════════════════════════
+// _renderDbFactions — 🎭 派閥サブタブ
+// ══════════════════════════════════════════════════════════
+function _getFactionAccentVar(factionId) {
+  const palette = ['--accent-faction-1', '--accent-faction-2', '--accent-faction-3', '--accent-faction-4'];
+  return palette[(factionId - 1) % palette.length];
+}
+
+function _renderDbFactions() {
+  const factions = G.factions || [];
+  if (!factions.length) {
+    return `
+      <div style="padding:48px 24px;text-align:center;color:var(--text-sub)">
+        <div style="font-size:48px;margin-bottom:12px;opacity:0.35">🎭</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text-main)">現在、派閥は存在しません</div>
+        <div style="font-size:12px;line-height:1.7;max-width:440px;margin:0 auto">
+          所属選手11人以上＋リーダー候補から深い絆（bond 60以上）で結ばれたフォロワーが2人以上集まると、
+          自然発生的に派閥が形成されることがあります。<br>
+          やがて複数の派閥が並び立ち、選手同士の因縁が積み重なると、派閥間で抗争が勃発することも。
+        </div>
+      </div>
+    `;
+  }
+
+  const isHostile = (f) => !!(f && (f.type === 'rivalrous' || f.inHostility === true));
+  const peaceful = factions.filter(f => !isHostile(f));
+  const hostile = factions.filter(f => isHostile(f));
+
+  const hostilityMap = G.factionHostility || {};
+  const factionById = new Map(factions.map(f => [f.id, f]));
+
+  function renderFactionCard(f) {
+    const accentVar = _getFactionAccentVar(f.id);
+    const roster = G.roster || [];
+    const leader = roster.find(c => c.id === f.leaderId);
+    if (!leader) return '';
+
+    const memberChars = f.memberIds
+      .filter(id => id !== f.leaderId)
+      .map(id => roster.find(c => c.id === id))
+      .filter(Boolean);
+
+    const ovrMap = new Map(roster.map(c => [c.id, Engine.util.ov(c)]));
+    memberChars.sort((a, b) => (ovrMap.get(b.id) || 0) - (ovrMap.get(a.id) || 0));
+    const executives = memberChars.slice(0, 2);
+    const followers = memberChars.slice(2);
+
+    const solidarity = Engine.factions.getSolidarityLabel(f, G);
+    const solidarityKey = solidarity === '強固' ? 'strong' : solidarity === '安定' ? 'stable' : solidarity === '揺らぎ' ? 'wobble' : 'crumble';
+
+    const momentumLabel = isHostile(f) ? Engine.factions.getMomentumLabel(f.momentum || 0) : null;
+    const momentumKey = momentumLabel === '隆盛' ? 'boom' : momentumLabel === '上昇' ? 'rise' : momentumLabel === '平常' ? 'calm' : momentumLabel === '陰り' ? 'dim' : 'fade';
+
+    // 対立相手（対立度が両方向平均 >= 20 のみ表示）
+    let hostilityLine = '';
+    if (isHostile(f)) {
+      const opponents = [];
+      for (const other of factions) {
+        if (other.id === f.id) continue;
+        const h1 = hostilityMap[`${f.id}>${other.id}`] || 0;
+        const h2 = hostilityMap[`${other.id}>${f.id}`] || 0;
+        const avg = (h1 + h2) / 2;
+        if (avg >= 20) opponents.push({ other, avg });
+      }
+      if (opponents.length) {
+        opponents.sort((a, b) => b.avg - a.avg);
+        const parts = opponents.map(op => `${op.other.name}と${Engine.factions.getHostilityLabel(op.avg)}`);
+        hostilityLine = parts.join(' / ');
+      }
+    }
+
+    function faceTile(char, size, isLeader, isExec) {
+      const upper = (typeof getUpperUrl === 'function' ? getUpperUrl(char.id) : null)
+        || (typeof getPortraitUrl === 'function' ? getPortraitUrl(char.id) : null);
+      const img = upper
+        ? `<img src="${upper}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;object-position:top">`
+        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--text-main);background:rgba(200,190,170,0.08)">${(char.name||'?').slice(0,1)}</div>`;
+      const roleMark = isLeader ? `<span class="db-faction-face-mark db-faction-face-crown">👑</span>`
+                     : isExec ? `<span class="db-faction-face-mark db-faction-face-star">⭐</span>`
+                     : '';
+      return `<div class="db-faction-face db-faction-face-${size}" onclick="event.stopPropagation();showFighterPopup(${char.id},'')" title="${char.name}">
+        ${img}
+        ${roleMark}
+        <div class="db-faction-face-name">${char.name}</div>
+      </div>`;
+    }
+
+    let cardHtml = `<div id="faction-card-${f.id}" class="db-faction-card ${isHostile(f) ? 'is-rivalrous' : 'is-loyal'}" style="--faction-accent:var(${accentVar})">`;
+    cardHtml += `<div class="db-faction-header">`;
+    cardHtml += `<span class="db-faction-name">${f.name}</span>`;
+    if (f.authoritativeTag) cardHtml += `<span class="db-faction-tag db-faction-tag-auth">👑 権威型</span>`;
+    if (f.dictatorTag) cardHtml += `<span class="db-faction-tag db-faction-tag-dict">⚠ 独裁化</span>`;
+    cardHtml += `<span class="db-faction-count">${f.memberIds.length}名</span>`;
+    cardHtml += `</div>`;
+
+    cardHtml += `<div class="db-faction-faces">`;
+    cardHtml += `<div class="db-faction-leader-col">${faceTile(leader, 'lg', true, false)}</div>`;
+    if (executives.length) {
+      cardHtml += `<div class="db-faction-exec-col">${executives.map(c => faceTile(c, 'md', false, true)).join('')}</div>`;
+    }
+    if (followers.length) {
+      cardHtml += `<div class="db-faction-follower-col">${followers.map(c => faceTile(c, 'sm', false, false)).join('')}</div>`;
+    }
+    cardHtml += `</div>`;
+
+    cardHtml += `<div class="db-faction-meters">`;
+    cardHtml += `<div class="db-faction-meter db-faction-meter-solidarity-${solidarityKey}"><span class="db-faction-meter-label">結束</span><span class="db-faction-meter-value">${solidarity}</span></div>`;
+    if (momentumLabel) {
+      cardHtml += `<div class="db-faction-meter db-faction-meter-momentum-${momentumKey}"><span class="db-faction-meter-label">勢い</span><span class="db-faction-meter-value">${momentumLabel}</span></div>`;
+    }
+    if (hostilityLine) {
+      cardHtml += `<div class="db-faction-meter db-faction-meter-hostility"><span class="db-faction-meter-label">対立</span><span class="db-faction-meter-value">${hostilityLine}</span></div>`;
+    }
+    cardHtml += `</div>`;
+
+    cardHtml += `</div>`;
+    return cardHtml;
+  }
+
+  let html = `<div class="db-factions-root">`;
+
+  if (peaceful.length) {
+    html += `<div class="db-faction-section">`;
+    html += `<div class="db-faction-section-title">🎭 派閥 <span class="db-faction-section-count">${peaceful.length}</span></div>`;
+    html += `<div class="db-faction-section-sub">リーダーを中心に結束する派閥</div>`;
+    html += `<div class="db-faction-grid">${peaceful.map(renderFactionCard).join('')}</div>`;
+    html += `</div>`;
+  }
+
+  if (hostile.length) {
+    html += `<div class="db-faction-section">`;
+    html += `<div class="db-faction-section-title">⚔ 抗争中の派閥 <span class="db-faction-section-count">${hostile.length}</span></div>`;
+    html += `<div class="db-faction-section-sub">互いに張り合う、ぶつかり合う派閥</div>`;
+    html += `<div class="db-faction-grid">${hostile.map(renderFactionCard).join('')}</div>`;
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
 // _renderDbRelmap — HTML skeleton generation
 // ══════════════════════════════════════════════════════════
 function _renderDbRelmap() {
@@ -8171,7 +8336,7 @@ function _renderDbRelmap() {
     const op = orgId === 'player' ? 0.08 : 0.06;
     html += `<radialGradient id="rm-zone-${orgId}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${color}" stop-opacity="${op}"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></radialGradient>`;
   }
-  html += `</defs><g id="relmapZoneLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g></svg>`;
+  html += `</defs><g id="relmapZoneLayer"></g><g id="relmapFactionLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g></svg>`;
   html += `</div>`; // end canvas
 
   // Legend
@@ -8606,6 +8771,26 @@ function _relmapRender(orgCenters) {
       const oid = t.dataset.org; if (oid && og[oid]) { t.setAttribute('x', og[oid].sx / og[oid].c); t.setAttribute('y', og[oid].sy / og[oid].c); }
     });
   }
+
+  // Faction layer (Phase 2)
+  _relmapDrawFactionLayer();
+}
+
+// ══════════════════════════════════════════════════════════
+// Faction layer — Phase 2 は相関図では派閥を可視化しない。
+//   理由: フォースシミュレーションは派閥メンバーを集約しないため、派閥を囲う円は
+//         地理的に嘘をつく（非メンバーまで巻き込む巨大な円になる）。かといって
+//         円を外した状態で王冠/星マーカーや派閥名ラベルだけ残すと「これは何？」
+//         と逆に混乱を呼ぶ。派閥情報は DB 派閥タブと選手ポップアップの派閥バッジで
+//         識別可能なので、相関図側は Phase 2 では一旦何も描画しない。
+//   Phase 3 で、メンバーをクラスタリングする派閥ビューモード（ネットワーク/フォーカス/
+//   勢力図に続く第4モード）を新設してここで描画する予定。
+//   関数本体とレイヤー <g> は残す（Phase 3 の差し込み点）。
+// ══════════════════════════════════════════════════════════
+function _relmapDrawFactionLayer() {
+  const layer = document.getElementById('relmapFactionLayer');
+  if (!layer) return;
+  if (layer.innerHTML !== '') layer.innerHTML = '';
 }
 
 // ══════════════════════════════════════════════════════════
@@ -9445,7 +9630,7 @@ function _relmapSetViewMode(mode) {
           defsHtml += `<radialGradient id="rm-zone-${orgId}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${clr}" stop-opacity="${op}"/><stop offset="100%" stop-color="${clr}" stop-opacity="0"/></radialGradient>`;
         }
         defsHtml += '</defs>';
-        svg.innerHTML = defsHtml + '<g id="relmapZoneLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g>';
+        svg.innerHTML = defsHtml + '<g id="relmapZoneLayer"></g><g id="relmapFactionLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g>';
         _relmapBuildFacePatterns(svg);
       }
     }

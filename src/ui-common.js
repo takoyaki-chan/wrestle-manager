@@ -6494,22 +6494,24 @@ function showFactionF01Modal(payload, state, onChoice) {
   render();
 }
 
-// F02: 対立型結成モーダル（4シーン＋結果）
+// F02: 派閥抗争勃発モーダル（4シーン＋結果）
 function showFactionF02Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF02Modal(payload, state, onChoice)); return; }
   const roster = state ? (state.roster || []) : [];
-  const leaderA = roster.find(c => c.id === payload.clusterA.leaderId);
-  const leaderB = roster.find(c => c.id === payload.clusterB.leaderId);
+  const leaderA = roster.find(c => c.id === payload.leaderAId);
+  const leaderB = roster.find(c => c.id === payload.leaderBId);
+  const factionAName = payload.factionAName || '派閥A';
+  const factionBName = payload.factionBName || '派閥B';
 
   let scene = 1;
   const render = () => {
     if (scene === 1) {
       const body = `
-        <div class="faction-event-title">⚔ 二つの潮流</div>
+        <div class="faction-event-title">⚔ 抗争の勃発</div>
         <div class="faction-event-narration">
-          ロッカールームが、目に見えない線で二つに分かれている。<br>
-          ${leaderA ? leaderA.name : '一方'}のまわりに集まる面々と、${leaderB ? leaderB.name : 'もう一方'}のまわりに集まる面々。<br>
-          視線が交わらない。
+          「${factionAName}」と「${factionBName}」。<br>
+          これまで並び立っていた二つの派閥の間に、目に見えない線が引かれた。<br>
+          視線が交わらない。もう、元には戻らない。
         </div>
         <button class="btn faction-event-next">次へ ▶</button>
       `;
@@ -6546,16 +6548,16 @@ function showFactionF02Modal(payload, state, onChoice) {
       const body = `
         <div class="faction-event-title">⚔ 社長の判断</div>
         <div class="faction-event-prompt">
-          二つに分かれたロスターをどう扱う？
+          抗争状態に入った二つの派閥に、どう向き合う？
         </div>
         <div class="faction-event-choices">
           <button class="btn faction-event-choice" data-choice="A">
-            <span class="faction-choice-label">A: ${leaderA ? leaderA.name : '派閥A'}を中心に回す</span>
-            <span class="faction-choice-hint">勢いは派閥A寄り。反対勢力に強い反発が残る</span>
+            <span class="faction-choice-label">A: ${factionAName}側に立つ</span>
+            <span class="faction-choice-hint">勢いは${factionAName}寄り。${factionBName}に強い反発が残る</span>
           </button>
           <button class="btn faction-event-choice" data-choice="B">
-            <span class="faction-choice-label">B: ${leaderB ? leaderB.name : '派閥B'}を中心に回す</span>
-            <span class="faction-choice-hint">勢いは派閥B寄り。反対勢力に強い反発が残る</span>
+            <span class="faction-choice-label">B: ${factionBName}側に立つ</span>
+            <span class="faction-choice-hint">勢いは${factionBName}寄り。${factionAName}に強い反発が残る</span>
           </button>
           <button class="btn faction-event-choice" data-choice="C">
             <span class="faction-choice-label">C: 両者を呼び出して調停</span>
@@ -6563,7 +6565,7 @@ function showFactionF02Modal(payload, state, onChoice) {
           </button>
           <button class="btn faction-event-choice" data-choice="D">
             <span class="faction-choice-label">D: 静観する</span>
-            <span class="faction-choice-hint">対立はそのまま。今後の展開次第</span>
+            <span class="faction-choice-hint">抗争はそのまま。今後の展開次第</span>
           </button>
         </div>
       `;

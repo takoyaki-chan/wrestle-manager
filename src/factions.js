@@ -111,77 +111,50 @@ Engine.factions = {
     return { eligible: false };
   },
 
-  // ── §2.1 対立型発生条件（簡易BFS連結成分）─────────────────
+  // ── §2.1 F02 派閥抗争勃発条件（既存派閥2つの間での対立宣言）──
+  // 旧: 無派閥ロスターから2クラスタを同時発生させる「対立型結成」
+  // 新: 既存の2派閥間で平均 rivalry が閾値超、かつどちらも未抗争
   checkRivalrousFormationConditions(state) {
     const cfg = FACTION_CONFIG;
-    const roster = (state.roster || []).filter(c => !c.isRental);
-    if (roster.length <= cfg.minRosterSize) return { eligible: false };
-    const factionCount = (state.factions || []).length;
-    if (factionCount > 1) return { eligible: false };
+    const factions = (state.factions || []);
+    if (factions.length < 2) return { eligible: false };
 
-    // 既に派閥所属のメンバーは除外対象（対立型は無派閥から新規クラスタを探す）
-    const assigned = new Set();
-    (state.factions || []).forEach(f => f.memberIds.forEach(id => assigned.add(id)));
-    const pool = roster.filter(c => !assigned.has(c.id));
-    if (pool.length < 6) return { eligible: false };
+    // 未抗争ペアのみ対象
+    const pool = factions.filter(f => !f.inHostility);
+    if (pool.length < 2) return { eligible: false };
 
-    // BFS: 相互bond >= threshold のペアで連結成分
-    const idSet = new Set(pool.map(c => c.id));
-    const visited = new Set();
-    const clusters = [];
-    for (const c of pool) {
-      if (visited.has(c.id)) continue;
-      const queue = [c.id];
-      const cluster = [];
-      visited.add(c.id);
-      while (queue.length) {
-        const cur = queue.shift();
-        cluster.push(cur);
-        for (const other of pool) {
-          if (visited.has(other.id) || !idSet.has(other.id)) continue;
-          const bondAB = this._getBond(state, cur, other.id);
-          const bondBA = this._getBond(state, other.id, cur);
-          if (bondAB >= cfg.rivalrousBondThreshold && bondBA >= cfg.rivalrousBondThreshold) {
-            visited.add(other.id);
-            queue.push(other.id);
-          }
+    let bestPair = null, bestAvg = -1;
+    for (let i = 0; i < pool.length; i++) {
+      for (let j = i + 1; j < pool.length; j++) {
+        const A = pool[i], B = pool[j];
+        let sum = 0, count = 0;
+        for (const a of A.memberIds) for (const b of B.memberIds) {
+          sum += this._getRivalry(state, a, b);
+          sum += this._getRivalry(state, b, a);
+          count += 2;
+        }
+        const avg = count ? sum / count : 0;
+        if (avg >= cfg.rivalrousRivalryThreshold && avg > bestAvg) {
+          bestAvg = avg;
+          bestPair = { A, B };
         }
       }
-      if (cluster.length >= 3) clusters.push(cluster);
     }
-
-    if (clusters.length < 2) return { eligible: false };
-
-    // 上位2クラスタ（サイズ降順）間の平均rivalry
-    clusters.sort((a, b) => b.length - a.length);
-    const [A, B] = [clusters[0], clusters[1]];
-    let sum = 0, count = 0;
-    for (const a of A) for (const b of B) {
-      sum += this._getRivalry(state, a, b);
-      sum += this._getRivalry(state, b, a);
-      count += 2;
-    }
-    const avgRivalry = count ? sum / count : 0;
-    if (avgRivalry < cfg.rivalrousRivalryThreshold) return { eligible: false };
-
-    // 各クラスタのリーダー = OVR最上位
-    const pickLeader = (ids) => {
-      let best = ids[0], bestOvr = -1;
-      for (const id of ids) {
-        const f = roster.find(c => c.id === id);
-        if (!f) continue;
-        const ovr = Engine.util.ov(f);
-        if (ovr > bestOvr) { best = id; bestOvr = ovr; }
-      }
-      return best;
-    };
+    if (!bestPair) return { eligible: false };
 
     return {
       eligible: true,
-      clusterA: { leaderId: pickLeader(A), memberIds: A },
-      clusterB: { leaderId: pickLeader(B), memberIds: B },
-      avgRivalry,
+      factionAId: bestPair.A.id,
+      factionBId: bestPair.B.id,
+      leaderAId: bestPair.A.leaderId,
+      leaderBId: bestPair.B.leaderId,
+      avgRivalry: bestAvg,
     };
+  },
+
+  // 派閥が抗争中か判定（type==='rivalrous' は legacy、新規は inHostility フラグ）
+  _isHostile(f) {
+    return !!(f && (f.type === 'rivalrous' || f.inHostility === true));
   },
 
   // ── 派閥生成 ──────────────────────────────────────────────
@@ -232,7 +205,7 @@ Engine.factions = {
   applyMomentumChange(state, factionId, delta) {
     const factions = (state.factions || []).map(f => {
       if (f.id !== factionId) return f;
-      if (f.type !== 'rivalrous') return f; // §5.3 忠誠型は勢い適用外
+      if (!this._isHostile(f)) return f; // §5.3 抗争中派閥のみ勢いを持つ
       return { ...f, momentum: Engine.util.clamp(f.momentum + delta, -100, 100) };
     });
     return { ...state, factions };
@@ -267,14 +240,34 @@ Engine.factions = {
       const next = Engine.util.clamp(val + delta, 0, 100);
       if (next > 0) newHost[key] = next;
     }
-    return { ...state, factionHostility: newHost };
+
+    // 対立度が全て 0 になった派閥は inHostility フラグをクリア（抗争終了）
+    let newFactions = state.factions || [];
+    if (newFactions.length > 0) {
+      const stillHostile = new Set();
+      for (const key of Object.keys(newHost)) {
+        const [fromStr, toStr] = key.split('>');
+        stillHostile.add(Number(fromStr));
+        stillHostile.add(Number(toStr));
+      }
+      newFactions = newFactions.map(f => {
+        if (f.inHostility && !stillHostile.has(f.id)) {
+          if (typeof console !== 'undefined') {
+            console.log(`[WM Faction] ${f.name} hostility cooled down`);
+          }
+          return { ...f, inHostility: false, momentum: 0 };
+        }
+        return f;
+      });
+    }
+    return { ...state, factions: newFactions, factionHostility: newHost };
   },
 
   // ── §5.2 週次勢い減衰 ─────────────────────────────────────
   processWeeklyMomentumDecay(state) {
     const cfg = FACTION_CONFIG;
     const factions = (state.factions || []).map(f => {
-      if (f.type !== 'rivalrous') return { ...f, momentum: 0 };
+      if (!this._isHostile(f)) return { ...f, momentum: 0 };
       const m = f.momentum;
       if (m === 0) return f;
       const step = cfg.momentumDecayPerWeek; // 1.0
@@ -308,7 +301,7 @@ Engine.factions = {
         if (avg >= 80) rate = cfg.joinRate[80];
         else if (avg >= 70) rate = cfg.joinRate[70];
         else rate = cfg.joinRate[60];
-        if (f.type === 'rivalrous') {
+        if (this._isHostile(f)) {
           if (f.momentum > 30) rate *= cfg.joinMomentumHighMult;
           else if (f.momentum < -30) rate *= cfg.joinMomentumLowMult;
         }
@@ -331,7 +324,7 @@ Engine.factions = {
         const bondToLeader = this._getBond(s, memberId, leaderId);
         if (bondToLeader >= cfg.leaveBondThreshold) continue;
         let rate = cfg.leaveRate;
-        if (f.type === 'rivalrous') {
+        if (this._isHostile(f)) {
           if (f.momentum < -60) rate *= cfg.leaveMomentumVeryLowMult;
           else if (f.momentum < -30) rate *= cfg.leaveMomentumLowMult;
         }
@@ -345,7 +338,7 @@ Engine.factions = {
         if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} left ${f.name}`);
       }
       // §2.3 勢い -60未満: 全メンバーに trust -0.3
-      if (f.type === 'rivalrous' && f.momentum < -60) {
+      if (this._isHostile(f) && f.momentum < -60) {
         for (const memberId of f.memberIds) {
           trustUpdates.set(memberId, (trustUpdates.get(memberId) || 0) + cfg.leaveMomentumTrustDecay);
         }
@@ -402,7 +395,7 @@ Engine.factions = {
         console.log(`[WM Faction] ${dead.name} dissolved (members: ${dead.memberIds.length})`);
       }
       newFactions = newFactions.map(f => {
-        if (f.type !== 'rivalrous') return f;
+        if (!this._isHostile(f)) return f;
         return { ...f, momentum: Engine.util.clamp(f.momentum - 4, -100, 100) };
       });
     }
@@ -498,7 +491,7 @@ Engine.factions = {
     // 動揺時: 対立派閥の勢い +15〜+25
     if (isShock) {
       const bump = 15 + Math.floor(Engine.rng.float(rng) * 11);
-      const rival = (s.factions || []).find(f => f.id !== factionId && f.type === 'rivalrous');
+      const rival = (s.factions || []).find(f => f.id !== factionId && this._isHostile(f));
       if (rival) s = this.applyMomentumChange(s, rival.id, bump);
     }
 
@@ -517,7 +510,7 @@ Engine.factions = {
     // 対立派閥の勢い -3〜-5
     const newFactions = s.factions
       .filter(f => f.id !== factionId)
-      .map(f => f.type === 'rivalrous' ? { ...f, momentum: Engine.util.clamp(f.momentum - 4, -100, 100) } : f);
+      .map(f => this._isHostile(f) ? { ...f, momentum: Engine.util.clamp(f.momentum - 4, -100, 100) } : f);
     // 対立度エントリクリーンアップ
     const survivorIds = new Set(newFactions.map(f => f.id));
     const newHost = {};
@@ -671,21 +664,28 @@ Engine.factions = {
       };
     }
 
-    // 2) F02（対立型結成、確率 80%）
+    // 2) F02（派閥抗争勃発、確率 80%）
     const rivCheck = this.checkRivalrousFormationConditions(state);
     if (rivCheck.eligible) {
       if (Engine.rng.float(rng) < cfg.eventProbability.F02) {
         const roster = state.roster || [];
-        const leaderA = roster.find(c => c.id === rivCheck.clusterA.leaderId);
-        const leaderB = roster.find(c => c.id === rivCheck.clusterB.leaderId);
+        const factions = state.factions || [];
+        const factionA = factions.find(f => f.id === rivCheck.factionAId);
+        const factionB = factions.find(f => f.id === rivCheck.factionBId);
+        const leaderA = roster.find(c => c.id === rivCheck.leaderAId);
+        const leaderB = roster.find(c => c.id === rivCheck.leaderBId);
         return {
           eventId: 'F02',
           payload: {
-            clusterA: rivCheck.clusterA,
-            clusterB: rivCheck.clusterB,
+            factionAId: rivCheck.factionAId,
+            factionBId: rivCheck.factionBId,
+            factionAName: factionA ? factionA.name : '派閥A',
+            factionBName: factionB ? factionB.name : '派閥B',
+            leaderAId: rivCheck.leaderAId,
+            leaderBId: rivCheck.leaderBId,
             leaderAName: leaderA ? leaderA.name : '???',
             leaderBName: leaderB ? leaderB.name : '???',
-            avgRivalry: rivCheck.avgRivalry,
+            avgCrossRivalry: rivCheck.avgRivalry,
           },
         };
       }
@@ -753,34 +753,42 @@ Engine.factions = {
     return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。` };
   },
 
-  // ── §9.2 F02 選択肢効果適用 ──
-  // choiceId: 'A'=派閥A中心 / 'B'=派閥B中心 / 'C'=調停 / 'D'=静観
+  // ── §9.2 F02 選択肢効果適用（派閥抗争の勃発）──
+  // choiceId: 'A'=派閥A側 / 'B'=派閥B側 / 'C'=調停 / 'D'=静観
+  // 既存の2派閥に inHostility フラグを立て、対立度・勢いを注入する
   applyF02Choice(state, payload, choiceId, rng) {
-    const { clusterA, clusterB, leaderAName, leaderBName, avgRivalry } = payload;
+    const { factionAId, factionBId, leaderAId, leaderBId, leaderAName, leaderBName, avgCrossRivalry } = payload;
     let s = state;
-    // まず両派閥を成立させる（A/B/C/D 全ケース成立）
-    s = this.createFaction(s, clusterA.leaderId, clusterA.memberIds, { type: 'rivalrous' });
-    s = this.createFaction(s, clusterB.leaderId, clusterB.memberIds, { type: 'rivalrous' });
-    const fs = s.factions;
-    const A = fs[fs.length - 2];
-    const B = fs[fs.length - 1];
+
+    // 両派閥に inHostility フラグを立てる（A/B/C/D 全ケースで抗争状態に入る）
+    const markHostile = (st) => ({
+      ...st,
+      factions: (st.factions || []).map(f => {
+        if (f.id === factionAId || f.id === factionBId) {
+          return { ...f, inHostility: true };
+        }
+        return f;
+      }),
+    });
+    s = markHostile(s);
+
+    const A = s.factions.find(f => f.id === factionAId);
+    const B = s.factions.find(f => f.id === factionBId);
+    if (!A || !B) return { state: s, resultText: '' };
 
     if (choiceId === 'A' || choiceId === 'B') {
       const favored = choiceId === 'A' ? A : B;
       const neglected = choiceId === 'A' ? B : A;
-      const favoredLeaderId = choiceId === 'A' ? clusterA.leaderId : clusterB.leaderId;
-      const neglectedLeaderId = choiceId === 'A' ? clusterB.leaderId : clusterA.leaderId;
-      // favored リーダー trust +5〜+8、neglected リーダー trust -5〜-8
+      const favoredLeaderId = choiceId === 'A' ? leaderAId : leaderBId;
+      const neglectedLeaderId = choiceId === 'A' ? leaderBId : leaderAId;
       const favTrust = 5 + Math.floor(Engine.rng.float(rng) * 4);
       const negTrust = -(5 + Math.floor(Engine.rng.float(rng) * 4));
       s = this._applyTrustToMembers(s, [favoredLeaderId], favTrust);
       s = this._applyTrustToMembers(s, [neglectedLeaderId], negTrust);
-      // 対立度: favored→neglected 55〜70, neglected→favored 65〜80
       const h1 = 55 + Math.floor(Engine.rng.float(rng) * 16);
       const h2 = 65 + Math.floor(Engine.rng.float(rng) * 16);
       s = this.applyHostilityChange(s, favored.id, neglected.id, h1);
       s = this.applyHostilityChange(s, neglected.id, favored.id, h2);
-      // 勢い: favored +20〜+30, neglected -10〜-20
       const mf = 20 + Math.floor(Engine.rng.float(rng) * 11);
       const mn = -(10 + Math.floor(Engine.rng.float(rng) * 11));
       s = this.applyMomentumChange(s, favored.id, mf);
@@ -788,28 +796,27 @@ Engine.factions = {
       return {
         state: s,
         resultText: choiceId === 'A'
-          ? `${leaderAName}を中心に団体を回す方針を取った。${leaderBName}には割り切った眼差しが残る。`
-          : `${leaderBName}を中心に団体を回す方針を取った。${leaderAName}には割り切った眼差しが残る。`,
+          ? `${leaderAName}側に立つ方針を取った。${leaderBName}には割り切った眼差しが残る。`
+          : `${leaderBName}側に立つ方針を取った。${leaderAName}には割り切った眼差しが残る。`,
       };
     }
     if (choiceId === 'C') {
-      // 調停: 両リーダー trust -3〜-5、対立度 30〜45 対称、勢い両方0
       const t1 = -(3 + Math.floor(Engine.rng.float(rng) * 3));
       const t2 = -(3 + Math.floor(Engine.rng.float(rng) * 3));
-      s = this._applyTrustToMembers(s, [clusterA.leaderId], t1);
-      s = this._applyTrustToMembers(s, [clusterB.leaderId], t2);
+      s = this._applyTrustToMembers(s, [leaderAId], t1);
+      s = this._applyTrustToMembers(s, [leaderBId], t2);
       const h = 30 + Math.floor(Engine.rng.float(rng) * 16);
       s = this.applyHostilityChange(s, A.id, B.id, h);
       s = this.applyHostilityChange(s, B.id, A.id, h);
       return { state: s, resultText: `両者を呼び出し、団体のために筋を通させた。空気は張り詰めたまま。` };
     }
-    // 'D' 静観: 対立度は平均 rivalry を継承、勢い両方0、trust 変動なし
-    const inherit = Math.max(0, Math.min(100, Math.round(avgRivalry || 0)));
+    // 'D' 静観
+    const inherit = Math.max(0, Math.min(100, Math.round(avgCrossRivalry || 0)));
     if (inherit > 0) {
       s = this.applyHostilityChange(s, A.id, B.id, inherit);
       s = this.applyHostilityChange(s, B.id, A.id, inherit);
     }
-    return { state: s, resultText: `二つの派閥が並び立つ状況を、社長は静かに見届けた。` };
+    return { state: s, resultText: `二つの派閥が睨み合う状況を、社長は静かに見届けた。` };
   },
 
   // ── §9.3 F03 結果適用（branch 事前決定済み）──
@@ -886,7 +893,7 @@ Engine.factions = {
     s = this._applyBondDirected(s, successorId, payload.oldLeaderId, idol);
     // 対立派閥の勢い +15〜+25
     const bump = 15 + Math.floor(Engine.rng.float(rng) * 11);
-    const rival = (s.factions || []).find(f => f.id !== factionId && f.type === 'rivalrous');
+    const rival = (s.factions || []).find(f => f.id !== factionId && this._isHostile(f));
     if (rival) s = this.applyMomentumChange(s, rival.id, bump);
     return {
       state: s,
