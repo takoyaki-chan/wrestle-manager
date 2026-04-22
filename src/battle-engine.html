@@ -3,149 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>女子プロレス バトルエンジン v4.1b</title>
+<title>女子プロレス バトルエンジン v4.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="battle-shared.css">
 <style>
 /* :root tokens / reset / scrollbar / 共有キーフレームは battle-shared.css に集約 */
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh;
-  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(196,30,58,0.05) 0%,transparent 60%),
-  radial-gradient(ellipse 60% 40% at 80% 100%,rgba(26,58,107,0.04) 0%,transparent 50%)}
+
+/* ─── Body & App ─── */
+body{
+  font-family:'Noto Sans JP','Segoe UI','Hiragino Sans',sans-serif;
+  background:var(--bg-dark);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(196,30,58,0.05) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(26,58,107,0.04) 0%,transparent 50%);
+  color:#e0ddd4;
+  min-height:100vh;
+}
 .app{max-width:1400px;margin:0 auto;padding:20px}
+#mainContainer{min-height:60vh}
 
-/* ═══ HUD ═══ */
-.hud{background:var(--card-bg);border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:12px 16px;margin-bottom:10px}
-.hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.hud-side{display:flex;align-items:center;gap:10px}
-.hud-face{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0}
-.hud-face img{width:100%;height:100%;object-fit:cover}
-.hud-face.blue{border:2px solid rgba(74,143,212,0.6)}.hud-face.red{border:2px solid rgba(196,30,58,0.6)}
-.hud-name{font-weight:900;font-size:15px}.hud-style{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-sub);text-transform:uppercase}
-.hud-center{text-align:center}
-.hud-turn{font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--gold-dim);letter-spacing:2px}
-.hud-phase{font-family:'Oswald',sans-serif;font-size:11px;color:var(--gold-light);letter-spacing:2px}
-.hp-row{display:flex;gap:8px;align-items:center}
-.hp-bar{height:28px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
-.hp-fill{height:100%;border-radius:4px;transition:width .5s}
-.hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}.hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}.hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}
-.hp-fill.rev{float:right}
-.hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px}
-.hp-pct.blue{color:#5dd9ca;text-align:right}.hp-pct.red{color:#5dd9ca;text-align:left}
-.hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text-dim);min-width:20px;text-align:center}
-.hud-mom{display:flex;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.hud-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width 0.4s}
-.hud-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width 0.4s}
+/* ─── HUD ─── */
+.wm-hud{background:#12110e;border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:12px 16px;margin-bottom:10px}
+.wm-hud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.wm-hud-side{display:flex;align-items:center;gap:10px;min-width:0}
+.wm-hud-face{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;border:2px solid rgba(212,168,67,0.5);background:rgba(212,168,67,0.12);color:#f0d078}
+.wm-hud-face img{width:100%;height:100%;object-fit:cover}
+.wm-hud-meta{min-width:0}
+.wm-hud-meta.right{text-align:right}
+.wm-hud-name{font-weight:900;font-size:14px;color:#e8e6e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.wm-hud-name:hover{color:var(--gold-light)}
+.wm-hud-center{text-align:center;flex:0 0 auto;padding:0 12px}
+.wm-hud-turn{font-family:'Bebas Neue',sans-serif;font-size:20px;font-weight:900;color:#d4a843;letter-spacing:2px}
+.wm-hud-phase{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(212,168,67,0.25);border-radius:2px;color:#f0d078;display:inline-block;margin-top:2px}
+.wm-hud-phase.bigmatch{border-color:rgba(255,215,0,0.5);color:#ffd700;text-shadow:0 0 6px rgba(255,215,0,0.3)}
+.hud-bigmatch-badge{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;margin-left:6px;padding:2px 6px;border-radius:2px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.3)}
 
-/* ═══ WAITING SCREEN ═══ */
-.waiting-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:60vh;gap:20px;text-align:center}
-.waiting-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;
-  background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.waiting-sub{font-size:13px;color:var(--text-sub);line-height:1.6}
-.waiting-pulse{width:40px;height:40px;border-radius:50%;border:3px solid var(--gold-dim);
-  border-top-color:var(--gold);animation:waitSpin 1s linear infinite}
+/* Momentum bar */
+.wm-mom{display:flex;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.wm-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width .4s}
+.wm-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width .4s}
 
-/* ═══ MATCH SCREEN ═══ */
-.match-grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:10px;position:relative}
-.fighter-panel{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:4px;
-  overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative}
+/* HP row */
+.wm-hp-row{display:flex;gap:8px;align-items:center}
+.wm-hp-bar{height:28px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
+.wm-hp-fill{height:100%;border-radius:4px;transition:width .5s;background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
+.wm-hp-fill.warn{background:linear-gradient(90deg,#d4a843,#f0d078) !important}
+.wm-hp-fill.danger{background:linear-gradient(90deg,#c41e3a,#e85d75) !important}
+.wm-hp-fill.rev{float:right}
+.wm-hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px;color:#5dd9ca}
+.wm-hp-pct.warn{color:#f0d078}
+.wm-hp-pct.danger{color:#e85d75}
+.wm-hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(232,230,224,0.25);min-width:20px;text-align:center}
+.wm-hp-name{font-size:10px;color:rgba(232,230,224,0.45);min-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Sans JP',sans-serif}
+.wm-hp-name.right{text-align:right}
+
+/* ─── MAIN 3-COLUMN GRID ─── */
+.main-row{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:4px;align-items:stretch;position:relative}
+.col-center{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+
+/* ─── FIGHTER PANEL ─── */
+.fighter-panel{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative}
 .fighter-panel.left{border-color:rgba(74,143,212,0.2)}
 .fighter-panel.right{border-color:rgba(196,30,58,0.2)}
 .fighter-panel.flash-atk{border-color:rgba(255,255,255,0.6);box-shadow:0 0 18px rgba(255,255,255,0.15)}
-/* ═══ NEW DAMAGE FX ═══ (shakePanel/shakeHard/dmgNumPop は battle-shared.css) */
-.fighter-panel.shake{animation:shakePanel 0.25s ease-out}
-.fighter-panel.shake-hard{animation:shakeHard 0.3s ease-out}
+.fighter-panel.grit-active{border-color:rgba(212,168,67,0.5) !important;box-shadow:0 0 20px rgba(212,168,67,0.15) !important}
+.fighter-panel.shake{animation:shakePanel .25s ease-out}
+.fighter-panel.shake-hard{animation:shakeHard .3s ease-out}
+.fighter-panel.counter-flash{animation:counterFlash .3s ease-out}
+.fighter-panel.kickout-flash{animation:kickoutFlash .6s ease-out}
+.fighter-panel.gold-aura{animation:goldAura 1.5s ease-out}
+@keyframes kickoutFlash{0%{box-shadow:0 0 30px rgba(255,255,255,0.6),inset 0 0 20px rgba(255,255,255,0.3)}100%{box-shadow:none}}
+@keyframes goldAura{0%{box-shadow:0 0 40px rgba(212,168,67,0.6),inset 0 0 30px rgba(212,168,67,0.3)}50%{box-shadow:0 0 60px rgba(240,208,120,0.5),inset 0 0 40px rgba(240,208,120,0.2)}100%{box-shadow:none}}
+
+/* ─── PORTRAIT AREA ─── */
+.portrait-area{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;background:#0a0a10;display:flex;align-items:center;justify-content:center}
+.portrait-area img{width:100%;height:100%;object-fit:contain;filter:brightness(0.92) contrast(1.05);transition:filter .3s;position:relative;z-index:1}
+.fighter-panel.left .portrait-area img{transform:scaleX(-1)}
+.portrait-area::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);mix-blend-mode:multiply}
+.portrait-area::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.4) 100%);box-shadow:inset 0 0 15px rgba(0,0,0,0.3)}
+.fighter-panel.left .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset 2px 0 6px rgba(74,143,212,0.1)}
+.fighter-panel.right .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset -2px 0 6px rgba(196,30,58,0.1)}
+/* portrait-holder alias (used by CSS selector references) */
+.portrait-holder{width:100%;aspect-ratio:2/3;background:var(--portrait-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.portrait-holder img{width:100%;height:100%;object-fit:contain;filter:brightness(0.92) contrast(1.05);position:relative;z-index:2;transition:filter .3s}
+
+/* Corner frame accents */
+.monitor-frame{position:absolute;inset:0;z-index:5;pointer-events:none;border:1px solid rgba(212,168,67,0.08)}
+.monitor-frame::before{content:'';position:absolute;top:0;left:0;width:16px;height:16px;border-top:2px solid rgba(212,168,67,0.25);border-left:2px solid rgba(212,168,67,0.25)}
+.monitor-frame::after{content:'';position:absolute;bottom:0;right:0;width:16px;height:16px;border-bottom:2px solid rgba(212,168,67,0.25);border-right:2px solid rgba(212,168,67,0.25)}
+
+/* Damage number */
 .dmg-number{position:absolute;z-index:9;font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#e85d75;text-shadow:0 2px 8px rgba(196,30,58,0.5);pointer-events:none;opacity:0;left:50%;top:25%}
-.dmg-number.show{animation:dmgNumPop 0.85s ease-out forwards}
+.dmg-number.show{animation:dmgNumPop .85s ease-out forwards}
 .dmg-number.crit{font-size:52px;color:var(--gold-light);text-shadow:0 2px 16px rgba(212,168,67,0.6),0 0 40px rgba(212,168,67,0.3)}
-.danger-glow{position:absolute;bottom:0;left:0;right:0;height:45%;z-index:6;pointer-events:none;opacity:0;transition:opacity 0.5s}
+
+/* Danger glow */
+.danger-glow{position:absolute;bottom:0;left:0;right:0;height:45%;z-index:6;pointer-events:none;opacity:0;transition:opacity .5s}
 .danger-glow.show{opacity:1}
 .danger-glow-inner{width:100%;height:100%;background:radial-gradient(ellipse 130% 100% at 50% 100%,rgba(196,30,58,0.45) 0%,rgba(196,30,58,0.18) 40%,transparent 70%)}
 @keyframes dangerPulseGlow{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
 .danger-glow.show .danger-glow-inner{animation:dangerPulseGlow 1.8s ease-in-out infinite}
-/* flashScreen keyframe は battle-shared.css */
-.flash-overlay{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
-.flash-overlay.flash{animation:flashScreen 0.25s ease-out}
-/* Grit buff glow */
-.fighter-panel.grit-active{border-color:rgba(212,168,67,0.5) !important;
-  box-shadow:0 0 20px rgba(212,168,67,0.15) !important}
+
+/* Danger overlay text */
 .danger-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);
   font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;color:rgba(196,30,58,0.9);
   z-index:10;pointer-events:none;opacity:0}
-@keyframes dangerPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}
-  20%{transform:translate(-50%,-50%) scale(1);opacity:1}
-  80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@keyframes dangerPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}20%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
 .danger-overlay.show{animation:dangerPop 1.2s ease-out forwards}
-.portrait-area{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;
-  background:#0a0a10;
-  display:flex;align-items:center;justify-content:center}
-.portrait-area img{width:100%;height:100%;object-fit:contain;
-  filter:brightness(0.92) contrast(1.05);transition:filter .3s;position:relative;z-index:1}
-.fighter-panel.left .portrait-area img{transform:scaleX(-1)}
-/* Monitor / cyber scanline overlay */
-.portrait-area::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
-  mix-blend-mode:multiply}
-.portrait-area::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.4) 100%);
-  box-shadow:inset 0 0 15px rgba(0,0,0,0.3)}
-.fighter-panel.left .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset 2px 0 6px rgba(74,143,212,0.1)}
-.fighter-panel.right .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset -2px 0 6px rgba(196,30,58,0.1)}
-/* Corner frame accents */
-.portrait-area .monitor-frame{position:absolute;inset:0;z-index:5;pointer-events:none;
-  border:1px solid rgba(212,168,67,0.08)}
-.portrait-area .monitor-frame::before{content:'';position:absolute;top:0;left:0;width:16px;height:16px;
-  border-top:2px solid rgba(212,168,67,0.25);border-left:2px solid rgba(212,168,67,0.25)}
-.portrait-area .monitor-frame::after{content:'';position:absolute;bottom:0;right:0;width:16px;height:16px;
-  border-bottom:2px solid rgba(212,168,67,0.25);border-right:2px solid rgba(212,168,67,0.25)}
-.portrait-placeholder{width:100%;height:100%;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent)}
-.portrait-placeholder svg{width:48px;height:48px;opacity:0.12;fill:var(--gold)}
-.portrait-placeholder span{font-size:10px;color:var(--text-dim)}
-@keyframes shakeS{0%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
-@keyframes shakeM{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
-@keyframes shakeL{0%{transform:translateX(0) scale(1)}15%{transform:translateX(-12px) scale(1.03)}30%{transform:translateX(12px) scale(1)}45%{transform:translateX(-10px)}60%{transform:translateX(8px)}80%{transform:translateX(-4px)}100%{transform:translateX(0) scale(1)}}
-@keyframes shakeSFlip{0%{transform:scaleX(-1) translateX(0)}25%{transform:scaleX(-1) translateX(-5px)}50%{transform:scaleX(-1) translateX(5px)}75%{transform:scaleX(-1) translateX(-3px)}100%{transform:scaleX(-1) translateX(0)}}
-@keyframes shakeMFlip{0%{transform:scaleX(-1) translateX(0)}20%{transform:scaleX(-1) translateX(-8px)}40%{transform:scaleX(-1) translateX(8px)}60%{transform:scaleX(-1) translateX(-6px)}80%{transform:scaleX(-1) translateX(4px)}100%{transform:scaleX(-1) translateX(0)}}
-@keyframes shakeLFlip{0%{transform:scaleX(-1) translateX(0) scale(1)}15%{transform:scaleX(-1) translateX(-12px) scale(1.03)}30%{transform:scaleX(-1) translateX(12px) scale(1)}45%{transform:scaleX(-1) translateX(-10px)}60%{transform:scaleX(-1) translateX(8px)}80%{transform:scaleX(-1) translateX(-4px)}100%{transform:scaleX(-1) translateX(0) scale(1)}}
-.shake-s{animation:shakeS .2s linear}.shake-m{animation:shakeM .3s linear}.shake-l{animation:shakeL .4s linear}
-.shake-s-flip{animation:shakeSFlip .2s linear}.shake-m-flip{animation:shakeMFlip .3s linear}.shake-l-flip{animation:shakeLFlip .3s linear}
-@keyframes screenShake{0%{transform:translate(0,0)}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-2px,1px)}80%{transform:translate(2px,-1px)}100%{transform:translate(0,0)}}
-.screen-shake{animation:screenShake .3s linear}
-.fighter-info{padding:8px 10px}
-.f-name-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-.f-name{font-weight:900;font-size:14px;cursor:pointer;transition:color 0.15s}.f-name:hover{color:var(--gold-light)}
-.f-role-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600}
-.f-role-tag.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0}
-.f-role-tag.heel{background:rgba(196,30,58,0.15);color:#f08b9e}
-.f-role-tag.neutral{background:rgba(176,184,196,0.15);color:#b0b8c4}
-.f-style{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-sub);margin-bottom:3px}
-.f-rival-badge{display:inline-block;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25);margin-bottom:4px}
-.hp-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:2px;color:var(--text-dim);min-width:18px;text-align:center}
-.hp-bar{height:8px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;position:relative}
-.hp-fill{height:100%;border-radius:3px;transition:width .4s ease-out}
-.hp-fill.high{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.hp-fill.mid{background:linear-gradient(90deg,#d4a843,#f0d078)}
-.hp-fill.low{background:linear-gradient(90deg,#c41e3a,#e85d75)}
-/* exhausted-glow removed — replaced by danger-glow */
-.ability-bars{display:flex;flex-direction:column;gap:3px}
-.ab-row{display:flex;align-items:center;gap:5px}
-.ab-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim);min-width:44px}
-.ab-track{flex:1;height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
-.ab-fill{height:100%;border-radius:2px}
-.ab-fill.power{background:linear-gradient(90deg,#c41e3a,#e85d75)}
-.ab-fill.speed{background:linear-gradient(90deg,#2a6bd4,#5da0f0)}
-.ab-fill.technique{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.ab-fill.stamina{background:linear-gradient(90deg,#d4a843,#f0d078)}
-.ab-fill.mental{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
-.ab-val{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-sub);min-width:22px;text-align:right}
-/* Grit buff indicator */
-.grit-indicator{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--gold-light);margin-top:4px;opacity:0;transition:opacity .3s}
-.grit-indicator.active{opacity:1}
-/* Speech */
+
+/* Speech bubble */
 .speech-bubble{position:absolute;top:12%;padding:8px 16px;border-radius:12px;font-size:13px;
   font-weight:700;z-index:8;max-width:90%;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;
   left:50%;transform:translate(-50%,0)}
@@ -153,7 +121,67 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .speech-bubble.t-atk{background:rgba(212,168,67,0.85);color:#1a1a22}
 .speech-bubble.t-def{background:rgba(196,30,58,0.8);color:#fff}
 .speech-bubble.t-counter{background:rgba(42,157,143,0.85);color:#fff}
-/* Center panel */
+
+/* ─── FIGHTER INFO ─── */
+.fighter-info{padding:8px 10px}
+.f-name-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.f-name{font-weight:900;font-size:14px;cursor:pointer;transition:color .15s}.f-name:hover{color:var(--gold-light)}
+.f-role-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:600}
+.f-role-tag.babyface{background:rgba(74,143,212,0.15);color:#8bc4f0}
+.f-role-tag.heel{background:rgba(196,30,58,0.15);color:#f08b9e}
+.f-role-tag.neutral{background:rgba(176,184,196,0.15);color:#b0b8c4}
+.f-style{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-sub);margin-bottom:3px}
+.f-rival-badge{display:inline-block;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25);margin-bottom:4px}
+.ability-bars{display:flex;flex-direction:column;gap:3px}
+.ab-row{display:flex;align-items:center;gap:5px}
+.ab-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text-dim);min-width:44px}
+.ab-track{flex:1;height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
+.ab-fill{height:100%;border-radius:2px}
+.ab-fill.pow,.ab-fill.power{background:linear-gradient(90deg,#c41e3a,#e85d75)}
+.ab-fill.spd,.ab-fill.speed{background:linear-gradient(90deg,#2a6bd4,#5da0f0)}
+.ab-fill.tec,.ab-fill.technique{background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
+.ab-fill.sta,.ab-fill.stamina{background:linear-gradient(90deg,#d4a843,#f0d078)}
+.ab-fill.mn,.ab-fill.mental{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.ab-val{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-sub);min-width:22px;text-align:right}
+.grit-indicator{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-top:4px;opacity:0;transition:opacity .3s}
+.grit-indicator.active{opacity:1}
+
+/* ─── RIGHT PANEL MIRROR ─── */
+/* Right panel: flip fighter-info to right-aligned layout */
+.fighter-panel.right .f-name-row{flex-direction:row-reverse}
+.fighter-panel.right .f-style{text-align:right}
+.fighter-panel.right .f-rival-badge{display:block;text-align:right}
+.fighter-panel.right .ab-row{flex-direction:row-reverse}
+.fighter-panel.right .ab-name{text-align:right}
+.fighter-panel.right .ab-val{text-align:left}
+
+/* ─── CHARGING (big move wind-up glow on attacker panel) ─── */
+@keyframes chargePulse{0%{box-shadow:0 0 20px rgba(212,168,67,0.3),inset 0 0 12px rgba(212,168,67,0.1)}50%{box-shadow:0 0 50px rgba(212,168,67,0.7),inset 0 0 30px rgba(212,168,67,0.25)}100%{box-shadow:0 0 20px rgba(212,168,67,0.3),inset 0 0 12px rgba(212,168,67,0.1)}}
+.fighter-panel.charging{animation:chargePulse .6s ease-in-out infinite;border-color:rgba(212,168,67,0.6) !important}
+
+/* ─── PIN COUNT (大カウント overlay) ─── */
+.pin-count{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:8px;z-index:42;pointer-events:none;opacity:0;text-shadow:0 0 30px rgba(212,168,67,0.8);color:var(--gold-light);animation:countPop .8s ease-out forwards}
+.pin-count.two{color:#ff8c4a;text-shadow:0 0 30px rgba(255,140,74,0.8)}
+.pin-count.three{color:#ffd700;text-shadow:0 0 40px rgba(255,215,0,0.9),0 0 80px rgba(255,215,0,0.4);font-size:96px}
+.pin-count.kickout{color:#5dd9ca;text-shadow:0 0 30px rgba(42,157,143,0.8);font-size:56px}
+.pin-count.escape{color:#5dd9ca;text-shadow:0 0 30px rgba(42,157,143,0.8);font-size:52px}
+.pin-count.tap{color:#e85d75;text-shadow:0 0 30px rgba(196,30,58,0.8);font-size:56px}
+.pin-count.tko{color:#e85d75;text-shadow:0 0 30px rgba(196,30,58,0.8);font-size:64px}
+
+/* ─── BIG INTRO (dramatic text on pin/finish announcement) ─── */
+.big-intro{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);font-family:'Noto Sans JP','Bebas Neue',sans-serif;font-size:22px;font-weight:900;color:#f0d078;text-align:center;z-index:42;pointer-events:none;padding:12px 24px;background:rgba(0,0,0,0.6);border-radius:4px;border:1px solid rgba(212,168,67,0.2);max-width:80vw;line-height:1.4;animation:bigIntroAnim 2.3s ease-out forwards}
+.big-intro.long{font-size:18px}
+@keyframes bigIntroAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.02)}}
+
+/* ─── ROLLUP HIGHLIGHT ─── */
+.fighter-panel.rollup-subject{border-color:rgba(212,168,67,0.8) !important;box-shadow:0 0 30px rgba(212,168,67,0.4) !important;animation:goldAura 1.5s ease-out}
+.fighter-panel.rollup-object{border-color:rgba(196,30,58,0.7) !important;box-shadow:0 0 20px rgba(196,30,58,0.3) !important}
+
+/* ─── DRAMATIC NARRATION ─── */
+.nar-line.dramatic{font-weight:900;font-size:17px;color:#f0d078;opacity:1;transform:translateY(0);text-shadow:0 0 12px rgba(212,168,67,0.3)}
+.nar-line.rollup-status{font-size:14px;color:rgba(232,230,224,0.7);font-weight:700}
+
+/* ─── CENTER PANEL ─── */
 .center-panel{background:var(--card-bg);border:1px solid rgba(255,255,255,0.05);border-radius:4px;
   padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:min(1100px,82vh);text-align:center}
 .top-line{display:flex;justify-content:center;align-items:center;gap:12px}
@@ -171,132 +199,158 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .nar-line.nar-react{color:rgba(212,168,67,0.8);font-size:14px}
 .nar-line.nar-finish{color:#f0d078;font-weight:900;font-size:16px}
 .nar-line.nar-counter{color:#5dd9ca;font-weight:700;font-size:16px}
-.nar-line.nar-miss{color:rgba(255,255,255,0.4);font-size:14px}
+.nar-line.nar-miss{color:rgba(255,255,255,0.6);font-size:16px;font-weight:900}
 .nar-empty{color:var(--text-dim);font-size:12px;text-align:center;padding:8px 0}
-.move-box{text-align:center;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:3px;border:1px solid rgba(212,168,67,0.08)}
-.move-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;
-  color:var(--text-dim);margin-bottom:2px}
-.move-value{font-family:'Noto Sans JP',sans-serif;font-size:18px;font-weight:900;min-height:22px;
-  transition:all .2s;color:var(--gold-light)}
-/* D1: 矢印レイヤを move-box 枠内に収める。技名は move-value が兼ねるので label は非表示 */
-.move-box{position:relative;min-height:60px}
+.move-box{text-align:center;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:3px;border:1px solid rgba(212,168,67,0.08);position:relative;min-height:60px}
+.move-label{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin-bottom:2px}
+.move-value{font-family:'Noto Sans JP',sans-serif;font-size:18px;font-weight:900;min-height:22px;transition:all .2s;color:var(--gold-light)}
+/* movePop keyframe は battle-shared.css */
+.move-pop{animation:movePop .3s ease-out}
 .move-arrow-layer{z-index:5}
 .move-arrow-layer .attack-arrow{top:auto;bottom:6px;height:20px;left:6%;right:6%}
 .move-arrow-layer .attack-arrow .label{display:none}
-/* movePop keyframe は battle-shared.css */
-.move-pop{animation:movePop .3s ease-out}
-/* momentum section removed — consolidated into HUD */
-.log-section{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-.log-header{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;text-align:center}
-.log-box{display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
+
+/* ─── BIGMOVE / COUNTER FX ─── */
+.bigmove-name{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:55;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold-light);letter-spacing:6px;text-shadow:0 0 40px rgba(212,168,67,0.5),0 4px 20px rgba(0,0,0,0.8);opacity:0;transition:all .15s}
+.bigmove-name.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.bigmove-name.fade{opacity:0;transform:translate(-50%,-50%) scale(1.2);transition:all .4s}
+.bigmove-name.blown-right{opacity:0;transform:translate(120%,-50%) scale(0.7) rotate(8deg);transition:all .3s cubic-bezier(0.5,0,1,0.5)}
+.bigmove-name.blown-left{opacity:0;transform:translate(-220%,-50%) scale(0.7) rotate(-8deg);transition:all .3s cubic-bezier(0.5,0,1,0.5)}
+.counter-big{position:fixed;top:50%;left:50%;z-index:57;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:80px;color:#5dd9ca;letter-spacing:8px;text-shadow:0 0 40px rgba(42,157,143,0.6),0 4px 16px rgba(0,0,0,0.9);opacity:0;transition:none}
+.counter-big.start-left{transform:translate(-250%,-50%)}
+.counter-big.start-right{transform:translate(150%,-50%)}
+.counter-big.slide-in{opacity:1;transform:translate(-50%,-50%);transition:all .35s cubic-bezier(0.22,1,0.36,1)}
+.counter-big.fade-out{opacity:0;transform:translate(-50%,-60%) scale(1.1);transition:all .4s}
+
+/* ─── MISS EMPHASIS ─── */
+.miss-flash{position:fixed;inset:0;background:rgba(100,100,255,0.08);z-index:50;pointer-events:none;animation:missFlashAnim .3s ease-out forwards}
+@keyframes missFlashAnim{0%{opacity:1}100%{opacity:0}}
+.miss-text{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(2);z-index:55;pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:rgba(255,255,255,0.7);
+  text-shadow:0 0 20px rgba(100,100,255,0.4);opacity:0}
+@keyframes missTextPop{0%{opacity:0;transform:translate(-50%,-50%) scale(2)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}}
+.miss-text.show{animation:missTextPop 1.5s ease-out forwards}
+
+/* ─── FLASH OVERLAY ─── */
+.flash-overlay,.flash-ov{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+.flash-overlay.flash,.flash-ov.flash{animation:flashScreen .25s ease-out}
+/* flashScreen keyframe は battle-shared.css */
+.finish-flash{position:fixed;inset:0;background:rgba(255,255,255,0.15);z-index:50;pointer-events:none;
+  animation:flashAnim .3s ease-out forwards}
+@keyframes flashAnim{0%{opacity:1}100%{opacity:0}}
+
+/* ─── BATTLE LOG ─── */
+.battle-log{background:linear-gradient(180deg,#12110e,var(--card-bg));border:1px solid var(--card-border);border-radius:8px;padding:12px;overflow-y:auto;min-height:0;flex:1;box-shadow:inset 0 1px 4px rgba(0,0,0,0.2)}
+.log-header-label{font-family:'Oswald',sans-serif;font-size:10px;color:var(--text-dark);letter-spacing:2px;margin-bottom:8px}
+.log-new-marker{font-size:10px;font-weight:400;color:#555;margin:4px 0 2px}
+.log-line{font-size:11px;color:#888;line-height:1.6;padding-left:4px}
+.log-event{padding:4px 8px;margin:3px 0;border-radius:0 4px 4px 0}
+.log-event.finish{background:#1a1428;border-left:3px solid #a5e}
+.log-event-text{font-weight:500;font-size:12px}
+.log-finish-text{color:#a5e}
 .log-entry{padding:3px 6px;border-radius:2px;background:rgba(0,0,0,0.15);font-size:11px;color:var(--text-sub);line-height:1.4;text-align:center}
 .log-entry .log-turn{font-family:'Oswald',sans-serif;font-size:8px;margin-right:3px}
 .log-entry.finish{color:#f0d078;font-weight:700;background:rgba(212,168,67,0.1)}
 .log-entry.system{color:rgba(42,157,143,0.9)}
 .log-entry.counter{color:#5dd9ca;font-weight:600}
 .log-entry.miss{color:rgba(255,255,255,0.3)}
-.action-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 20px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(180deg,transparent,rgba(8,8,13,0.95) 30%);z-index:20;
-  backdrop-filter:blur(6px)}
-.action-bar-spacer{height:70px}
-.btn-next{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:4px;
-  text-transform:uppercase;padding:14px 0;width:min(580px,80%);border:1px solid var(--gold-dim);
-  border-radius:3px;cursor:pointer;background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.05));
-  color:var(--gold-light);transition:all .2s;flex-shrink:0}
-.btn-next:hover:not(:disabled){background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.1));
-  box-shadow:0 0 20px rgba(212,168,67,0.15);transform:translateY(-1px)}
-.btn-next:disabled{opacity:0.35;cursor:not-allowed}
-.btn-auto{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;
-  text-transform:uppercase;padding:14px 10px;width:min(110px,13%);border:1px solid var(--gold-dim);
-  border-radius:3px;cursor:pointer;background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(212,168,67,0.03));
-  color:rgba(212,168,67,0.5);transition:all .2s;flex-shrink:0;line-height:1.2}
-.btn-auto:hover{background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.06));
-  color:var(--gold-light)}
-.btn-auto.on{background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.12));
-  color:var(--gold-light);border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,0.18)}
-@keyframes btnPulse{0%{box-shadow:0 0 5px rgba(212,168,67,0.1)}50%{box-shadow:0 0 20px rgba(212,168,67,0.25)}100%{box-shadow:0 0 5px rgba(212,168,67,0.1)}}
-@keyframes kickoutFlash{0%{box-shadow:0 0 30px rgba(255,255,255,0.6),inset 0 0 20px rgba(255,255,255,0.3)}
-  100%{box-shadow:none}}
-.fighter-panel.kickout-flash{animation:kickoutFlash .6s ease-out}
-@keyframes goldAura{0%{box-shadow:0 0 40px rgba(212,168,67,0.6),inset 0 0 30px rgba(212,168,67,0.3)}
-  50%{box-shadow:0 0 60px rgba(240,208,120,0.5),inset 0 0 40px rgba(240,208,120,0.2)}
-  100%{box-shadow:none}}
-.fighter-panel.gold-aura{animation:goldAura 1.5s ease-out}
-.finish-flash{position:fixed;inset:0;background:rgba(255,255,255,0.15);z-index:50;pointer-events:none;
-  animation:flashAnim .3s ease-out forwards}
-@keyframes flashAnim{0%{opacity:1}100%{opacity:0}}
 
-/* ═══ RESULT OVERLAY ═══ */
-.result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);
-  backdrop-filter:blur(0px);z-index:100;flex-direction:column;align-items:center;justify-content:center;
-  transition:background .6s ease,backdrop-filter .6s ease}
+/* ─── CONTROLS ─── */
+.controls-sub{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px 0;flex-wrap:wrap}
+.control-sep{width:1px;height:24px;background:var(--card-border);margin:0 4px}
+.btn{background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:var(--text-sub);border-radius:6px;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn:hover{border-color:rgba(212,168,67,0.25);color:var(--text-main)}
+.btn-main{background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.05));border:1px solid var(--gold-dim);color:var(--gold-light);padding:14px 0;width:min(580px,80%);border-radius:3px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:2px;font-family:'Oswald',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.3);text-transform:uppercase}
+.btn-main:hover:not(:disabled){background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.1));box-shadow:0 2px 14px rgba(212,168,67,0.18)}
+.btn-main:disabled{opacity:0.35;cursor:not-allowed}
+.btn-auto{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:14px 10px;width:min(110px,13%);border:1px solid var(--gold-dim);border-radius:3px;cursor:pointer;background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(212,168,67,0.03));color:rgba(212,168,67,0.5);transition:all .2s;flex-shrink:0;line-height:1.2}
+.btn-auto:hover{background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.06));color:var(--gold-light)}
+.btn-auto.active,.btn-auto.on{background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.12));color:var(--gold-light);border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,67,0.18)}
+.btn-auto span{font-size:10px;color:var(--text-dim);display:block}
+.btn-auto.active span,.btn-auto.on span{color:var(--gold-light)}
+.speed-dots{display:flex;gap:5px;align-items:center}
+.speed-dot{width:9px;height:9px;border-radius:50%;cursor:pointer;transition:background .2s}
+.speed-dot.on{background:#5a8;box-shadow:0 0 4px rgba(85,170,136,0.3)}
+.speed-dot.off{background:#2a2838}
+@keyframes btnPulse{0%{box-shadow:0 0 5px rgba(212,168,67,0.1)}50%{box-shadow:0 0 20px rgba(212,168,67,0.25)}100%{box-shadow:0 0 5px rgba(212,168,67,0.1)}}
+
+/* ─── FINISH CLICK SYSTEM ─── */
+/* finish-click-overlay / finish-click-btn は battle-shared.css 済み */
+/* main.js が使うクラス名 finish-overlay/finish-btn のエイリアス */
+.finish-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:40;pointer-events:none;opacity:0;transition:opacity .3s}
+.finish-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,transparent 40%,rgba(0,0,0,0.4) 100%);pointer-events:none}
+.finish-overlay.show{opacity:1;pointer-events:auto}
+.finish-btn{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) scale(0.8);font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#fff;padding:16px 48px;border:2px solid rgba(212,168,67,0.8);border-radius:8px;background:linear-gradient(135deg,#8b0000,#d4a843);cursor:pointer;z-index:45;box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3);opacity:0;transition:opacity .3s ease-out,transform .3s ease-out}
+.finish-btn.show{opacity:1;transform:translateX(-50%) scale(1);animation:finishPulse 1.2s ease-in-out infinite}
+.finish-btn:hover{filter:brightness(1.2)}
+.finish-btn:disabled{pointer-events:none;filter:brightness(0.7)}
+@keyframes finishPulse{
+  0%{transform:translateX(-50%) scale(1);box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3)}
+  50%{transform:translateX(-50%) scale(1.05);box-shadow:0 0 40px rgba(212,168,67,0.7),0 0 80px rgba(139,0,0,0.5)}
+  100%{transform:translateX(-50%) scale(1);box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3)}}
+/* Pin count text */
+.finish-count-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:8px;z-index:42;pointer-events:none;opacity:0;text-shadow:0 0 30px rgba(212,168,67,0.8)}
+.finish-count-text.gold{color:var(--gold-light)}
+.finish-count-text.red-gold{color:#ff6b4a}
+.finish-count-text.white{color:#fff}
+@keyframes countPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}15%{transform:translate(-50%,-50%) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-50%) scale(0.9);opacity:0}}
+.finish-count-text.show{animation:countPop .8s ease-out forwards}
+
+/* ─── CUTIN OVERLAY ─── */
+.cutin-overlay{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}
+.cutin-overlay.show{opacity:1;pointer-events:auto;cursor:pointer}
+.cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-dim);border-radius:6px;padding:16px 28px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:680px;transform:translateX(-50px);animation:cutinSlideIn .35s cubic-bezier(0.22,1,0.36,1) forwards}
+.cutin-box.right{flex-direction:row-reverse;transform:translateX(50px);animation:cutinSlideInR .35s cubic-bezier(0.22,1,0.36,1) forwards}
+/* cutinSlideIn / cutinSlideInR keyframes は battle-shared.css */
+.cutin-portrait{width:100px;height:150px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
+.cutin-info{flex:1;min-width:0}
+.cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+.cutin-text{font-size:20px;line-height:1.5;color:var(--text-main);font-weight:900;text-shadow:0 0 12px rgba(212,168,67,0.2)}
+.cutin-dismiss{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-top:6px}
+.cutin-box,.cutin-box *{-webkit-user-select:none;user-select:none;caret-color:transparent;cursor:pointer}
+.cutin-box.damage-serif{border-color:rgba(196,30,58,0.5);box-shadow:0 0 40px rgba(196,30,58,0.2),0 0 80px rgba(0,0,0,0.7)}
+.cutin-box.damage-serif .cutin-portrait{border-color:rgba(196,30,58,0.6);box-shadow:0 0 20px rgba(196,30,58,0.3);filter:brightness(0.9) contrast(1.1)}
+.cutin-box.damage-serif .cutin-name{color:#e85d75}
+.cutin-box.damage-serif .cutin-text{color:#f0a0b0;text-shadow:0 0 12px rgba(196,30,58,0.3)}
+.cutin-box.damage-voice{border-color:rgba(196,30,58,0.7);background:linear-gradient(135deg,rgba(30,8,13,0.96),rgba(21,10,14,0.94));box-shadow:0 0 50px rgba(196,30,58,0.3),0 0 80px rgba(0,0,0,0.8)}
+.cutin-box.damage-voice .cutin-portrait{border-color:rgba(196,30,58,0.8);box-shadow:0 0 25px rgba(196,30,58,0.4);filter:brightness(0.8) contrast(1.15) saturate(0.8)}
+.cutin-box.damage-voice .cutin-name{color:#e85d75}
+.cutin-box.damage-voice .cutin-text{color:#ff8a9e;font-size:28px;text-shadow:0 0 16px rgba(196,30,58,0.5)}
+
+/* ─── VICTORY / RESULT OVERLAY ─── */
+.victory-overlay{display:none;position:fixed;inset:0;background-color:rgba(0,0,0,0);backdrop-filter:blur(0px);z-index:100;flex-direction:column;align-items:center;justify-content:center;transition:background-color .6s ease,backdrop-filter .6s ease}
+.victory-overlay.show{display:flex}
+.victory-overlay.visible{background-color:rgba(0,0,0,0.85);backdrop-filter:blur(4px)}
+/* result-overlay は victory-overlay の旧alias */
+.result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0px);z-index:100;flex-direction:column;align-items:center;justify-content:center;transition:background .6s ease,backdrop-filter .6s ease}
 .result-overlay.show{display:flex}
 .result-overlay.visible{background:rgba(0,0,0,0.85);backdrop-filter:blur(4px)}
-.result-box{background:var(--card-bg);border:2px solid rgba(212,168,67,0.5);border-radius:4px;
-  padding:32px;text-align:center;box-shadow:0 0 40px rgba(212,168,67,0.15);
-  width:min(640px,90vw);opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
+.result-box{background:var(--card-bg);border:2px solid rgba(212,168,67,0.5);border-radius:4px;padding:32px;text-align:center;box-shadow:0 0 40px rgba(212,168,67,0.15);width:min(640px,90vw);opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
 .result-box.visible{opacity:1;transform:scale(1)}
-.result-content{display:flex;gap:24px;align-items:center;margin-bottom:20px;text-align:left}
-.result-image{flex-shrink:0;width:140px;height:140px;border-radius:50%;overflow:hidden;
-  border:3px solid var(--gold-dim);opacity:0;transition:opacity .4s;
-  box-shadow:0 0 30px rgba(212,168,67,0.2)}
-.result-image.visible{opacity:1}
-.result-image img{width:100%;height:100%;object-fit:cover}
-.result-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#12121a,#0a0a10);border-radius:50%}
-.result-image-placeholder svg{width:50px;height:50px;opacity:0.15;fill:var(--gold)}
-.result-text{flex:1}
-.result-winner{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;
-  background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:4px;line-height:1.1;opacity:0;transition:opacity .4s}
-.result-winner.visible{opacity:1}
-.result-winner::after{content:'';display:block;width:60px;height:1px;
-  background:linear-gradient(90deg,var(--gold),transparent);margin-top:6px}
-.result-type{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:3px;
-  color:var(--gold);margin-bottom:16px;opacity:0;transition:opacity .4s}
-.result-type.visible{opacity:1}
-.result-quote{background:rgba(255,255,255,0.06);border-left:3px solid var(--gold-dim);
-  padding:12px 16px;font-size:16px;font-weight:700;color:#fff;min-height:44px;
-  opacity:0;transition:opacity .4s}
-.result-quote.visible{opacity:1}
 .result-draw-content{text-align:center;margin-bottom:20px}
-.btn-end{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;
-  padding:12px 48px;border:1px solid var(--gold-dim);border-radius:3px;cursor:pointer;
-  background:rgba(212,168,67,0.1);color:var(--gold-light);transition:all .2s;
-  opacity:0;transition:opacity .4s,background .2s,color .2s}
+.result-winner{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;line-height:1.1;opacity:0;transition:opacity .4s}
+.result-winner.visible{opacity:1}
+.result-type{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:3px;color:var(--gold);margin-bottom:16px;opacity:0;transition:opacity .4s}
+.result-type.visible{opacity:1}
+.btn-end{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;padding:12px 48px;border:1px solid var(--gold-dim);border-radius:3px;cursor:pointer;background:rgba(212,168,67,0.1);color:var(--gold-light);transition:all .2s;opacity:0}
 .btn-end.visible{opacity:1}
 .btn-end:hover{background:var(--gold);color:var(--bg-dark);font-weight:700}
-
-/* ═══ VICTORY BOX (win演出) ═══ */
-.victory-box{width:min(520px,90vw);display:flex;flex-direction:column;align-items:center;
-  opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
+/* Victory box (win result) */
+.victory-box{width:min(520px,90vw);display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
 .victory-box.visible{opacity:1;transform:scale(1)}
-.winner-portrait{width:160px;height:240px;object-fit:contain;object-position:top center;
-  filter:drop-shadow(0 0 24px rgba(233,69,96,0.35));margin-bottom:8px;
-  opacity:0;transition:opacity .4s}
+.winner-portrait{width:160px;height:240px;object-fit:contain;object-position:top center;filter:drop-shadow(0 0 24px rgba(233,69,96,0.35));margin-bottom:8px;opacity:0;transition:opacity .4s}
 .winner-portrait.visible{opacity:1}
-.winner-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;
-  color:#e94560;margin-bottom:2px}
-.winner-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;
-  background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;background-clip:text;text-align:center;
-  line-height:1.1;margin-bottom:6px;opacity:0;transition:opacity .4s}
+.winner-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:#e94560;margin-bottom:2px}
+.winner-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.1;margin-bottom:6px;opacity:0;transition:opacity .4s}
 .winner-name.visible{opacity:1}
-.vic-finish{font-size:14px;color:#aaa;margin-bottom:16px;text-align:center;
-  opacity:0;transition:opacity .4s}
+.vic-finish{font-size:14px;color:#aaa;margin-bottom:16px;text-align:center;opacity:0;transition:opacity .4s}
 .vic-finish.visible{opacity:1}
-.vic-speech{width:100%;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));
-  border-left:3px solid #daa520;border-radius:0 6px 6px 0;padding:14px 18px;margin-bottom:18px;
-  opacity:0;transition:opacity .4s}
+.vic-speech{width:100%;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));border-left:3px solid #daa520;border-radius:0 6px 6px 0;padding:14px 18px;margin-bottom:18px;opacity:0;transition:opacity .4s}
 .vic-speech.visible{opacity:1}
 .vic-speech-text{font-size:17px;line-height:1.65;color:#f0e6d0;text-align:left}
 .vic-speech-text::before{content:'「';color:#daa520}
 .vic-speech-text::after{content:'」';color:#daa520}
-.vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;
-  padding:0 4px;margin-bottom:18px;opacity:0;transition:opacity .4s}
+.vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:18px;opacity:0;transition:opacity .4s}
 .vic-bottom.visible{opacity:1}
 .vic-loser{display:flex;align-items:center;gap:8px}
 .vic-loser-face{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #555}
@@ -307,124 +361,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .vic-stat-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px}
 .vic-stat-value{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#e8e8e8}
 .vic-stat-value.mq-gold{color:#ffd700}
-.vic-close{background:transparent;border:1px solid #555;color:#aaa;padding:8px 40px;
-  border-radius:4px;font-size:13px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;
-  cursor:pointer;opacity:0;transition:opacity .4s,border-color .2s,color .2s}
+.vic-stat-value.mq-green{color:#5a8}
+.vic-stat-value.mq-normal{color:#ccc}
+.vic-stat-value.mq-low{color:#e66}
+.vic-close{background:transparent;border:1px solid #555;color:#aaa;padding:8px 40px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;cursor:pointer;opacity:0;transition:opacity .4s,border-color .2s,color .2s}
 .vic-close.visible{opacity:1}
 .vic-close:hover{border-color:#daa520;color:#daa520}
 
-/* ═══ FINISH CLICK SYSTEM ═══ */
-.finish-click-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:40;pointer-events:none;
-  opacity:0;transition:opacity .3s}
-.finish-click-overlay.show{opacity:1;pointer-events:auto}
-.finish-click-overlay::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 60% 50% at 50% 50%,transparent 40%,rgba(0,0,0,0.4) 100%);pointer-events:none}
-.finish-click-btn{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) scale(0.8);
-  font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;
-  color:#fff;padding:16px 48px;border:2px solid rgba(212,168,67,0.8);border-radius:8px;
-  background:linear-gradient(135deg,#8b0000,#d4a843);cursor:pointer;z-index:45;
-  box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3);
-  opacity:0;transition:opacity .3s ease-out,transform .3s ease-out}
-.finish-click-btn.show{opacity:1;transform:translateX(-50%) scale(1);
-  animation:finishPulse 1.2s ease-in-out infinite}
-.finish-click-btn:hover{filter:brightness(1.2)}
-.finish-click-btn:disabled{pointer-events:none;filter:brightness(0.7)}
-@keyframes finishPulse{
-  0%{transform:translateX(-50%) scale(1);box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3)}
-  50%{transform:translateX(-50%) scale(1.05);box-shadow:0 0 40px rgba(212,168,67,0.7),0 0 80px rgba(139,0,0,0.5)}
-  100%{transform:translateX(-50%) scale(1);box-shadow:0 0 20px rgba(212,168,67,0.4),0 0 60px rgba(139,0,0,0.3)}}
-.finish-count-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);
-  font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:8px;z-index:42;
-  pointer-events:none;opacity:0;text-shadow:0 0 30px rgba(212,168,67,0.8)}
-.finish-count-text.gold{color:var(--gold-light)}
-.finish-count-text.red-gold{color:#ff6b4a}
-.finish-count-text.white{color:#fff}
-@keyframes countPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}
-  15%{transform:translate(-50%,-50%) scale(1);opacity:1}
-  70%{opacity:1}100%{transform:translate(-50%,-50%) scale(0.9);opacity:0}}
-.finish-count-text.show{animation:countPop 0.8s ease-out forwards}
-/* ═══ RIVALRY CUTIN ═══ */
-.cutin-overlay{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s}
-.cutin-overlay.show{opacity:1;pointer-events:auto;cursor:pointer}
-.cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-dim);border-radius:6px;padding:16px 28px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:680px;transform:translateX(-50px);animation:cutinSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
-.cutin-box.right{flex-direction:row-reverse;transform:translateX(50px);animation:cutinSlideInR 0.35s cubic-bezier(0.22,1,0.36,1) forwards}
-/* cutinSlideIn / cutinSlideInR keyframes は battle-shared.css */
-.cutin-portrait{width:100px;height:150px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
-.cutin-info{flex:1;min-width:0}
-.cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
-.cutin-text{font-size:20px;line-height:1.5;color:var(--text-main);font-weight:900;text-shadow:0 0 12px rgba(212,168,67,0.2)}
-.cutin-dismiss{font-family:'Oswald',sans-serif;font-size:9px;color:var(--text-dim);letter-spacing:2px;margin-top:6px}
-.cutin-box.damage-serif{border-color:rgba(196,30,58,0.5);box-shadow:0 0 40px rgba(196,30,58,0.2),0 0 80px rgba(0,0,0,0.7)}
-.cutin-box.damage-serif .cutin-portrait{border-color:rgba(196,30,58,0.6);box-shadow:0 0 20px rgba(196,30,58,0.3);filter:brightness(0.9) contrast(1.1)}
-.cutin-box.damage-serif .cutin-name{color:#e85d75}
-.cutin-box.damage-serif .cutin-text{color:#f0a0b0;text-shadow:0 0 12px rgba(196,30,58,0.3)}
-.cutin-box.damage-voice{border-color:rgba(196,30,58,0.7);background:linear-gradient(135deg,rgba(30,8,13,0.96),rgba(21,10,14,0.94));box-shadow:0 0 50px rgba(196,30,58,0.3),0 0 80px rgba(0,0,0,0.8)}
-.cutin-box.damage-voice .cutin-portrait{border-color:rgba(196,30,58,0.8);box-shadow:0 0 25px rgba(196,30,58,0.4);filter:brightness(0.8) contrast(1.15) saturate(0.8)}
-.cutin-box.damage-voice .cutin-name{color:#e85d75}
-.cutin-box.damage-voice .cutin-text{color:#ff8a9e;font-size:28px;text-shadow:0 0 16px rgba(196,30,58,0.5)}
-/* ═══ BIGMOVE / COUNTER ═══ */
-.bigmove-name{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:55;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold-light);letter-spacing:6px;text-shadow:0 0 40px rgba(212,168,67,0.5),0 4px 20px rgba(0,0,0,0.8);opacity:0;transition:all 0.15s}
-.bigmove-name.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.bigmove-name.fade{opacity:0;transform:translate(-50%,-50%) scale(1.2);transition:all 0.4s}
-.bigmove-name.blown-right{opacity:0;transform:translate(120%,-50%) scale(0.7) rotate(8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
-.bigmove-name.blown-left{opacity:0;transform:translate(-220%,-50%) scale(0.7) rotate(-8deg);transition:all 0.3s cubic-bezier(0.5,0,1,0.5)}
-.counter-big{position:fixed;top:50%;left:50%;z-index:57;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:80px;color:#5dd9ca;letter-spacing:8px;text-shadow:0 0 40px rgba(42,157,143,0.6),0 4px 16px rgba(0,0,0,0.9);opacity:0;transition:none}
-.counter-big.start-left{transform:translate(-250%,-50%)}
-.counter-big.start-right{transform:translate(150%,-50%)}
-.counter-big.slide-in{opacity:1;transform:translate(-50%,-50%);transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
-.counter-big.fade-out{opacity:0;transform:translate(-50%,-60%) scale(1.1);transition:all 0.4s}
-.fighter-panel.counter-flash{animation:counterFlash 0.3s ease-out}
-/* counterFlash keyframe は battle-shared.css */
-/* ═══ MATCH CARD ═══ */
-.match-card{position:fixed;inset:0;z-index:80;overflow:hidden;transition:opacity 0.8s;pointer-events:none;display:none}
-.match-card.hidden{opacity:0;pointer-events:none}
-.venue-bg{position:absolute;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 60%,rgba(30,20,50,0.3) 0%,rgba(8,8,13,0.95) 100%),radial-gradient(ellipse 60% 40% at 50% 70%,rgba(212,168,67,0.04) 0%,transparent 70%),linear-gradient(180deg,#0a0812 0%,#151020 40%,#0d0a18 100%);overflow:hidden}
-.venue-bg::before{content:'';position:absolute;top:-10%;left:30%;width:40%;height:50%;background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,0.06) 0%,transparent 70%);pointer-events:none}
-.venue-bg .center-darken{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 35% 60% at 50% 50%,rgba(8,8,13,0.7) 0%,transparent 100%);pointer-events:none}
-.venue-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:15%;background:linear-gradient(0deg,rgba(8,8,13,0.7) 0%,transparent 100%);pointer-events:none}
-.ring-floor{position:absolute;bottom:5%;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(212,168,67,0.15) 20%,rgba(212,168,67,0.25) 50%,rgba(212,168,67,0.15) 80%,transparent 100%)}
-.card-fighters{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:space-between;z-index:2;pointer-events:none}
-.card-fighter{width:50%;position:relative;overflow:hidden}
-.card-fighter .silhouette{width:100%;height:100%;position:relative;overflow:hidden;background:none}
-.card-fighter .silhouette img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:brightness(0.82) contrast(1.1)}
-.card-fighter.left .silhouette{transform:scaleX(-1)}
-.card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;pointer-events:none}
-.card-event{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:5px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:2px;text-shadow:0 1px 8px rgba(0,0,0,0.8)}
-.card-match-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
-.card-vs-block{text-align:center;margin-bottom:6px}
-.card-name{font-weight:900;font-size:28px;letter-spacing:2px;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,0.9)}
-.card-vs{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--gold);line-height:1;margin:6px 0;text-shadow:0 0 30px rgba(212,168,67,0.2),0 2px 12px rgba(0,0,0,0.9)}
-.card-record{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--text-sub);margin-bottom:4px;text-align:center}
-.card-badges{display:flex;gap:8px;margin-bottom:4px}
-.card-badge{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px}
-.card-badge.rival{background:rgba(196,30,58,0.15);color:#f08b9e;border:1px solid rgba(196,30,58,0.3)}
-.card-badge.title{background:rgba(212,168,67,0.12);color:var(--gold-light);border:1px solid rgba(212,168,67,0.3)}
-.card-match-type{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:4px;color:var(--gold-light);text-transform:uppercase;padding:5px 18px;border:1px solid rgba(212,168,67,0.2);border-radius:2px;background:rgba(8,8,13,0.5);margin-bottom:4px}
-.scanlines{position:absolute;inset:0;pointer-events:none;z-index:8;background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
-.card-corner-frame{position:absolute;inset:12px;pointer-events:none;z-index:8}
-.card-corner-frame::before{content:'';position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid rgba(212,168,67,0.15);border-left:2px solid rgba(212,168,67,0.15)}
-.card-corner-frame::after{content:'';position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid rgba(212,168,67,0.15);border-right:2px solid rgba(212,168,67,0.15)}
-.gong-flash{position:fixed;inset:0;background:rgba(255,255,255,0.15);opacity:0;pointer-events:none;z-index:85;transition:opacity 0.1s}
-.gong-flash.show{opacity:1}
-.gong-text{position:fixed;top:28%;left:50%;transform:translate(-50%,-50%) scale(0.5);z-index:90;pointer-events:none;font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--gold-light);letter-spacing:8px;text-shadow:0 0 40px rgba(212,168,67,0.4);opacity:0;transition:all 0.3s}
-.gong-text.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.gong-text.fade{opacity:0;transform:translate(-50%,-50%) scale(1.3)}
-
-/* ═══ MISS/COUNTER EMPHASIS ═══ */
-.nar-line.nar-miss{color:rgba(255,255,255,0.6);font-size:16px;font-weight:900}
-.miss-flash{position:fixed;inset:0;background:rgba(100,100,255,0.08);z-index:50;pointer-events:none;animation:missFlashAnim 0.3s ease-out forwards}
-@keyframes missFlashAnim{0%{opacity:1}100%{opacity:0}}
-.miss-text{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(2);z-index:55;pointer-events:none;
-  font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:rgba(255,255,255,0.7);
-  text-shadow:0 0 20px rgba(100,100,255,0.4);opacity:0}
-@keyframes missTextPop{0%{opacity:0;transform:translate(-50%,-50%) scale(2)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(0.9)}}
-.miss-text.show{animation:missTextPop 1.5s ease-out forwards}
-
-/* ═══ BATTLE DETAIL POPUP ═══ */
-.bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:70;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
+/* ─── FIGHTER POPUP (bp-overlay) ─── */
+.bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:70;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 .bp-overlay.show{opacity:1;pointer-events:auto}
-.bp-box{display:flex;gap:0;max-width:720px;width:90vw;max-height:85vh;background:var(--card-bg);border:1px solid rgba(212,168,67,0.2);border-radius:6px;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 30px rgba(212,168,67,0.1);transform:scale(0.95);transition:transform 0.25s;position:relative}
+.bp-box{display:flex;gap:0;max-width:720px;width:90vw;max-height:85vh;background:var(--card-bg);border:1px solid rgba(212,168,67,0.2);border-radius:6px;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 30px rgba(212,168,67,0.1);transform:scale(0.95);transition:transform .25s;position:relative}
 .bp-overlay.show .bp-box{transform:scale(1)}
 .bp-img{width:260px;flex-shrink:0;position:relative;background:#0a0a10;overflow:hidden}
 .bp-img img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.88) contrast(1.08)}
@@ -464,44 +411,24 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .bp-badge{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:2px}
 .bp-badge.rival{background:rgba(196,30,58,0.12);color:#f08b9e;border:1px solid rgba(196,30,58,0.25)}
 .bp-badge.title{background:rgba(212,168,67,0.12);color:var(--gold-light);border:1px solid rgba(212,168,67,0.3)}
-.bp-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.5);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;z-index:5}
+.bp-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.5);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:5}
 .bp-close:hover{background:rgba(212,168,67,0.2);color:var(--gold-light);border-color:rgba(212,168,67,0.3)}
+
+/* ─── WAITING SCREEN ─── */
+.waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center}
+.waiting-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:6px;background:linear-gradient(180deg,#fff 20%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.waiting-sub{font-size:13px;color:var(--text-sub);line-height:1.6}
+.waiting-pulse{width:40px;height:40px;border-radius:50%;border:3px solid var(--gold-dim);border-top-color:var(--gold);animation:waitSpin 1s linear infinite}
+/* waitSpin keyframe は battle-shared.css */
 </style>
 </head>
 <body>
 <div class="app">
-  <div id="hudContainer"></div>
-  <div id="screenContainer"></div>
-  <div class="result-overlay" id="resultOverlay"></div>
-  <div class="finish-click-overlay" id="finishOverlay"></div>
-  <div class="cutin-overlay" id="cutinOverlay" onclick="dismissCutin()"></div>
-  <div class="bigmove-name" id="bigmoveName"></div>
-  <div class="counter-big" id="counterBig">COUNTER!</div>
-  <div class="match-card" id="matchCard"></div>
-  <div class="gong-flash" id="gongFlash"></div>
-  <div class="gong-text" id="gongText">FIGHT!</div>
-  <div class="finish-click-btn" id="finishBtn"></div>
-  <div class="bp-overlay" id="bpOverlay" onclick="if(event.target===this)closeBattlePopup()"></div>
-  <div class="flash-overlay" id="flashOv"></div>
+  <div id="mainContainer"></div>
+  <div class="victory-overlay" id="victoryOv"></div>
 </div>
-<script src="battle-sfx.js"></script>
-<script src="battle-anim.js"></script>
-<script src="battle-lines.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// v4.1 ENGINE PROTOTYPE
-// Changes from v3.5:
-//   1. TEC/MN rebalance (hit check, counter, damage formula)
-//   2. Category-linked finish types
-//   3. Pin attempt at HP<30% (フォールII equivalent)
-//   4. Grit buff after kickout (2 turns: -20% dmg taken, +10% counter)
-//   5. MN now affects: kickout, giveup resist, momentum recovery
-// ═══════════════════════════════════════════════════════════
-
-// ═══ DATA (received from parent via postMessage) ═══
-let matchData = null; // {left:{id,name,h,pw,sp,te,st,mn,style,role,vl,portraitUrl,...}, right:{...}, matchInfo:{isTitle,matchNum,totalMatches}}
-
-// Portrait mapping (fallback if portraitUrl not provided by parent)
+// ─── Portrait helpers (依存: battle-engine-main.js が _getStandUrl 等でフォールバック呼び出し) ───
 const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukamachi_m',
 6:'soezawa_t',7:'takashina_m',8:'hayashi_m',9:'udagawa_r',11:'tachibana_r',12:'ikoma_e',
 13:'domae_y',14:'kuroe_m',15:'kusunoki_n',16:'okochi_s',17:'kawanobe_n',18:'dewa_t',
@@ -526,2068 +453,17 @@ const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukama
 120:'kuramae_s',121:'yamamoto_r',122:'miyazawa_h',123:'yaginuma_e',124:'kiyokawa_r',
 125:'fujishiro_e',126:'nishizono_y',127:'sakakibara_n',128:'minuma_s'};
 const PORTRAIT_OVR_VARIANT={80:{threshold:50,suffix:'takashima_s2'}};
-function getFaceUrl(f){return f.portraitUrl || (PORTRAIT[f.id] ? `../image/face_${PORTRAIT[f.id]}.png` : '');}
-function _calcOvr(f){return Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5);}
-function getStandUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_calcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/stand/stand_${k}.webp`;}
-function getUpperUrl(f){return PORTRAIT[f.id] ? `../image/upper/upper_${PORTRAIT[f.id]}.webp` : getFaceUrl(f);}
-function getFullUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_calcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/full/full_${k}.webp`;}
-
-// ═══ MOVES (v3.5 data preserved) ═══
-const commonMoves=[
-{n:'ストンピング',d:2,c:'strike'},{n:'ボディパンチ',d:3,c:'strike'},{n:'バックエルボー',d:3,c:'strike'},
-{n:'ナックルパンチ',d:3,c:'strike'},{n:'逆水平チョップ',d:4,c:'strike'},{n:'エルボー・スタンプ',d:5,c:'strike'},
-{n:'マシンガン・チョップ',d:5,c:'strike'},{n:'ニーキック',d:6,c:'strike'},{n:'ヘッドバット',d:6,c:'strike'},
-{n:'ビッグブーツ',d:7,c:'strike'},{n:'低空ドロップキック',d:7,c:'strike'},{n:'サッカーボールキック',d:7,c:'strike'},
-{n:'ドロップキック',d:8,c:'strike'},{n:'ジャンピング・エルボー',d:8,c:'strike'},{n:'ローリング・エルボー',d:9,c:'strike'},
-{n:'延髄斬り',d:9,c:'strike'},{n:'ミサイルキック',d:9,c:'strike'},{n:'ラリアット',d:10,c:'strike'},
-{n:'スーパーキック',d:10,c:'strike'},{n:'クローズライン',d:10,c:'strike'},
-{n:'ロックアップからの押し込み',d:2,c:'throw'},{n:'ショルダータックル',d:3,c:'throw'},
-{n:'ヒップトス',d:3,c:'throw'},{n:'アームドラッグ',d:3,c:'throw'},{n:'ヘッドロック・テイクダウン',d:3,c:'throw'},
-{n:'ファイヤーマンズキャリー',d:4,c:'throw'},{n:'ボディスラム',d:6,c:'throw'},{n:'スープレックス',d:7,c:'throw'},
-{n:'スナップ・スープレックス',d:7,c:'throw'},{n:'ブレーンバスター',d:8,c:'throw'},
-{n:'サイド・スープレックス',d:8,c:'throw'},{n:'ネックブリーカー',d:8,c:'throw'},
-{n:'スウィンギング・ネックブリーカー',d:8,c:'throw'},
-{n:'バックブリーカー',d:8,c:'throw'},{n:'サモアン・ドロップ',d:9,c:'throw'},
-{n:'ベリー・トゥ・ベリー',d:9,c:'throw'},{n:'タイガー・ドライバー',d:9,c:'throw'},
-{n:'スパインバスター',d:9,c:'throw'},{n:'DDT',d:10,c:'throw'},
-{n:'チンロック',d:2,c:'submission'},{n:'ネックロック',d:2,c:'submission'},{n:'ヘッドロック',d:4,c:'submission'},
-{n:'リストロック',d:4,c:'submission'},{n:'ハンマーロック',d:3,c:'submission'},{n:'アームリンガー',d:4,c:'submission'},
-{n:'スリーパー・ホールド',d:6,c:'submission'},{n:'フルネルソン',d:6,c:'submission'},
-{n:'コブラツイスト',d:7,c:'submission'},{n:'ベアハッグ',d:7,c:'submission'},
-{n:'キャメルクラッチ',d:7,c:'submission'},{n:'インディアン・デスロック',d:7,c:'submission'},
-{n:'ボストンクラブ',d:8,c:'submission'},{n:'アキレス腱固め',d:9,c:'submission'},
-{n:'フライング・クロスボディ',d:7,c:'aerial'},{n:'ダイビング・ボディ・プレス',d:8,c:'aerial'},
-{n:'セントーン',d:7,c:'aerial'},{n:'トペ・スイシーダ',d:9,c:'aerial'},
-{n:'プランチャ・スイシーダ',d:8,c:'aerial'},{n:'ダイビング・エルボー',d:8,c:'aerial'},
-{n:'ダイビング・ヘッドバット',d:7,c:'aerial'},{n:'ミサイルキック（飛）',d:9,c:'aerial'},
-{n:'エルボードロップ',d:3,c:'ground'},{n:'ニードロップ',d:4,c:'ground'},{n:'レッグドロップ',d:4,c:'ground'},
-{n:'スライディングキック',d:4,c:'ground'},{n:'ストンピング連打',d:3,c:'ground'},
-{n:'ヘアプル・スラム',d:3,c:'ground'},{n:'フェイスウォッシュ',d:4,c:'ground'},{n:'ダブルニードロップ',d:5,c:'ground'},
-{n:'スクールボーイ',d:4,c:'rollup'},{n:'首固め',d:4,c:'rollup'},
-{n:'スモール・パッケージ',d:5,c:'rollup'},{n:'ラ・マヒストラル',d:5,c:'rollup'},
-{n:'ウラカン・ラナ',d:5,c:'rollup'},{n:'回転エビ固め',d:5,c:'rollup'},
-{n:'ヨーロピアン・クラッチ',d:5,c:'rollup'}
-];
-const styleMoves={
-Grappler:[{n:'パワーボム',d:14,c:'throw'},{n:'シットアウト・パワーボム',d:15,c:'throw'},
-{n:'ジャーマン・スープレックス',d:13,c:'throw'},{n:'チョークスラム',d:13,c:'throw'},
-{n:'デスバレーボム',d:14,c:'throw'},{n:'バックドロップ',d:13,c:'throw'},
-{n:'ラストライド',d:16,c:'throw'},{n:'垂直落下式ブレーンバスター',d:14,c:'throw'},
-{n:'力強いラリアット',d:12,c:'strike'},{n:'頭突き',d:11,c:'strike'},
-{n:'カナディアン・バックブリーカー',d:10,c:'submission'},{n:'アルゼンチン・バックブリーカー',d:11,c:'submission'}],
-Aerial:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネードDDT',d:13,c:'throw'},
-{n:'シャイニング・ウィザード',d:12,c:'strike'},{n:'ムーンサルト・プレス',d:15,c:'aerial'},
-{n:'シューティング・スター・プレス',d:16,c:'aerial'},{n:'450スプラッシュ',d:15,c:'aerial'},
-{n:'フロッグ・スプラッシュ',d:13,c:'aerial'},{n:'スワントン・ボム',d:14,c:'aerial'},
-{n:'トペ・コンヒーロ',d:11,c:'aerial'},
-{n:'ダイビング・セントーン',d:10,c:'aerial'},{n:'ドラゴン・スクリュー',d:10,c:'throw'},
-{n:'ハリケーンラナ',d:12,c:'throw'}],
-Technique:[{n:'アームバー',d:11,c:'submission'},{n:'フィギュア・フォー・レッグロック',d:12,c:'submission'},
-{n:'シャープシューター',d:13,c:'submission'},{n:'STF',d:12,c:'submission'},
-{n:'三角絞め',d:12,c:'submission'},{n:'クロスフェイス',d:13,c:'submission'},
-{n:'卍固め',d:14,c:'submission'},{n:'ドラゴンスリーパー',d:13,c:'submission'},
-{n:'キムラロック',d:11,c:'submission'},{n:'タイガー・スープレックス',d:14,c:'throw'},
-{n:'ドラゴン・スープレックス',d:15,c:'throw'},{n:'フィッシャーマン・スープレックス',d:13,c:'throw'}],
-Allround:[{n:'ファルコンアロー',d:13,c:'throw'},{n:'みちのくドライバーII',d:14,c:'throw'},
-{n:'エクスプローダー',d:12,c:'throw'},{n:'ノーザンライツ・スープレックス',d:12,c:'throw'},
-{n:'ダブルアーム・スープレックス',d:13,c:'throw'},{n:'リアネイキッドチョーク',d:11,c:'submission'},
-{n:'テキサス・クローバーホールド',d:12,c:'submission'},{n:'アンクル・ロック',d:11,c:'submission'},
-{n:'フェニックス・スプラッシュ',d:15,c:'aerial'},{n:'ダイビング・ボディ・プレス（大）',d:11,c:'aerial'},
-{n:'スピアー',d:12,c:'strike'},{n:'インプラントDDT',d:13,c:'throw'}],
-Striker:[{n:'シャイニング・ウィザード（打）',d:13,c:'strike'},{n:'ジャンピングニー',d:12,c:'strike'},
-{n:'ハイキック',d:11,c:'strike'},{n:'バズソーキック',d:14,c:'strike'},
-{n:'PK',d:11,c:'strike'},{n:'ランニングエルボー',d:13,c:'strike'},
-{n:'スピニングバックフィスト',d:12,c:'strike'},{n:'ケンカキック',d:15,c:'strike'},
-{n:'エルボー連打',d:10,c:'strike'},{n:'コーナーラッシュ',d:11,c:'strike'},
-{n:'パイルドライバー',d:14,c:'throw'},{n:'ツームストン・パイルドライバー',d:16,c:'throw'}],
-Submission:[{n:'ギロチンチョーク',d:13,c:'submission'},{n:'肩固め',d:12,c:'submission'},
-{n:'ヒール・ホールド',d:13,c:'submission'},{n:'ロメロ・スペシャル',d:14,c:'submission'},
-{n:'テキサス・クローバーホールド（専）',d:13,c:'submission'},{n:'リアネイキッドチョーク（専）',d:12,c:'submission'},
-{n:'アンクル・ロック（専）',d:12,c:'submission'},{n:'クロスフェイス（専）',d:14,c:'submission'},
-{n:'卍固め（専）',d:15,c:'submission'},{n:'フィギュア・フォー（専）',d:14,c:'submission'},
-{n:'バックドロップ（専）',d:13,c:'throw'},{n:'ドラゴン・スクリュー（専）',d:11,c:'throw'}],
-Brawler:[{n:'エルボースマッシュ',d:12,c:'strike'},{n:'バックハンドブロー',d:11,c:'strike'},
-{n:'ヘッドバット連打',d:11,c:'strike'},{n:'コーナーラッシュ（喧）',d:12,c:'strike'},
-{n:'パイルドライバー（喧）',d:15,c:'throw'},{n:'ツームストン・パイルドライバー（喧）',d:16,c:'throw'},
-{n:'チョークスラム（喧）',d:14,c:'throw'},{n:'サイドウォークスラム',d:12,c:'throw'},
-{n:'ランニングパワースラム',d:13,c:'throw'},{n:'ネックハンギングツリー',d:12,c:'submission'},
-{n:'フェイスウォッシュ連打',d:10,c:'ground'},{n:'ストンピング乱打',d:11,c:'ground'}]
-};
-const catW={
-Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15,rollup:5},
-Aerial:{strike:20,throw:15,submission:10,aerial:35,ground:5,rollup:10},
-Technique:{strike:15,throw:20,submission:30,aerial:5,ground:10,rollup:15},
-Allround:{strike:25,throw:25,submission:15,aerial:15,ground:10,rollup:10},
-Striker:{strike:45,throw:15,submission:5,aerial:10,ground:15,rollup:5},
-Submission:{strike:10,throw:10,submission:45,aerial:5,ground:15,rollup:10},
-Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
-};
-
-// ═══ COMMENTARY ═══
-const CMT={
-atk:{
-  Opening:["{a}、{m}。","{a}が{m}を仕掛ける。","{a}の{m}。序盤から攻めていく。","{a}、まずは{m}。"],
-  Mid:["{a}、{m}！","{a}の{m}が決まった！","ここで{a}、{m}！ 攻勢を強める！","おっと{a}、{m}！"],
-  End:["{a}の{m}だーっ！","{a}、ここで{m}！ 畳みかける！","{a}、渾身の{m}！","出たーっ！ {a}の{m}！"],
-  Climax:["{a}ーーっ！ {m}ーーーっ！！","これは決まったかーーっ！ {a}の{m}！",
-    "{a}、ここで{m}を放つーっ！ 決着なるかーーっ！","まさかの{m}！ {a}が勝負に出たーっ！"],
-  big:["大技だーーっ！ {a}の{m}ーーっ！！","{a}、必殺の{m}ーっ！ これは大きい！","とんでもないのが来たーっ！ {m}！"]
-},
-dmg:{
-  light:["{d}、受け止めるも{v}のダメージ。","{d}に{v}ダメージ。まだ余裕の表情。","浅い！ {v}ダメージに留まる。"],
-  medium:["{d}に{v}ダメージ！ 効いている！","モロに入った！ {d}に{v}ダメージ！","{d}、{v}ダメージ！ 表情が歪む！"],
-  heavy:["{d}に{v}の大ダメージーーっ！","これは効いたーっ！ {v}ダメージ！ {d}がぐらつく！",
-    "{v}ダメージ！ {d}、立っていられるかーーっ！"]
-},
-miss:["かわされた！ {a}の{m}、空を切る！","{d}がステップで回避！ {m}は不発！",
-  "読まれた！ {a}の{m}が外れる！","タイミングが合わない！ {m}をかわされた！"],
-counter:["切り返したーっ！ {d}のカウンター！","{d}、見事な切り返し！ 逆に{a}がダメージを受ける！",
-  "読み切った！ {d}がカウンターを決めた！","カウンター！ {d}が一瞬の隙を突いた！"],
-pinAttempt:["ここでフォールに行ったーっ！ {a}がカバーだ！",
-  "{a}、ここで勝負を決めに行く！ カバーに入った！",
-  "大技の後だ！ {a}がフォールへ！ 決まるかーーっ！"],
-sit:{
-  half:["{d}、体力が半分を切った！ ここからが正念場だ！"],
-  quarter:["{d}、もう後がない！ 絶体絶命のピンチ！"],
-  dominant:["完全に{a}のペースだ！ 一方的な展開！"],
-  reversal:["流れが変わった！ {a}が反撃に出る！"],
-  finFall:["カウント3ーーっ！ {a}、{m}からのフォール勝ち！"],
-  finGU:["{d}がタップ！ {a}、{m}でギブアップを奪った！"],
-  finTKO:["レフェリーが止めたーっ！ {a}のTKO勝利！ {d}はもう立てない！"],
-  finJudge:["ここで時間切れ！ HP判定の結果…{w}の勝利！"],
-  finDraw:["ここで時間切れ！ HP判定の結果…ドロー！"],
-  rollFail:["カウント2で返したーっ！ {d}、まだ終わらない！"],
-  rollOK:["入ったーーっ！ まさかの丸め込み3カウント！ 大金星だーーっ！"],
-  kickout:["{d}、カウント2.9で返したーーーっ！！ まだ終わらない！",
-    "返したーーっ！ {d}の意地！ 驚異の精神力で生き残った！",
-    "嘘だろーーっ！ {d}がフォールを返した！ 会場が沸いている！",
-    "{d}、執念のキックアウト！ この試合はまだ終わらないーっ！"],
-  kickout2:["またしても返したーーっ！ {d}、一体どこにそんな力が…！"],
-  kickoutAtk:["なっ…！ 今のを返すの…！？","嘘でしょ…！","しぶとい…！","まだ立つの…！？"],
-  guEscape:["ロープに手が届いたーーっ！ {d}、間一髪のロープブレイク！",
-    "{d}、必死にロープへ！ ギリギリで逃れた！ なんという執念！",
-    "返したーーっ！ {d}、地獄の関節地獄から生還！",
-    "{d}の根性！ あの極まった体勢からロープを掴んだーっ！"],
-  guEscape2:["またしてもロープへ！ {d}、驚異の生命力で脱出ーっ！"],
-  guEscapeAtk:["くっ…ロープが…！","ここで逃げるか…！","…しつこいわね","まだ諦めないの…！？"],
-  climaxReturn:["{d}の目が変わった！ ここから逆転なるかーーっ！"],
-  gritBuff:["返した{d}、目に闘志が宿っている！ まだ戦える！",
-    "{d}の執念！ ここから粘りを見せるぞ！",
-    "{d}、渾身の力を振り絞る！ まだ終わらせない！"]
-},
-defR:{
-  high:["くっ…！","効かないよ…！","その程度…！","まだまだっ！"],
-  mid:["ぐっ…やるね…！","痛い…！ でもまだ…！","うぅっ…！","負けない…！"],
-  low:["ああっ…！","も、もう…っ！","まだ…まだ終わらない…！","くそ…っ…！","立て…立つんだ…！"]
-},
-atkC:{
-  normal:["いくよ！","はあっ！","そこっ！","もらった！"],
-  big:["これで…終わりだっ！","決めるっ！","受けてみなさいっ！","覚悟しなっ！"]
-}};
-
-// ═══ RIVALRY CUTIN LINES ═══
-// personality別のカットイン台詞（フェーズ切り替え時 + フィニッシュ前）
-const CUTIN_LINES = {
-  // ─────────────────────────────────────────────────────────────────────
-  // 攻めている側（フェーズ切替時・フィニッシュ前）
-  // ─────────────────────────────────────────────────────────────────────
-  atk: {
-    normal: {
-      normal:     ["いくよ！","まだまだ！","負けないから！","ここからよ！"],
-      polite:     ["いきますっ！","まだまだです!","負けません！","ここからですっ！"],
-      seductive:  ["いくわよ…","まだまだよ","負けないわ","ここからよ…"],
-      delinquent: ["いくぞ！","まだまだだ！","負けねえからな！","ここからだっ！"],
-      ojousama:   ["参りますわ！","まだまだですわ！","負けませんわ！","ここからですの！"],
-      cool:       ["…いく","…まだ","…負けない","…ここから"],
-      composed:   ["…いくよ","…まだまだ、だね","…負けないよ","…ここから、だよ"]
-    },
-    bold: {
-      normal:     ["まだまだっ！","ここからが本番よっ！","逃がさないわよ！","受けてみなさい！"],
-      polite:     ["こんなものじゃありませんよ！","ここからが本番です！","逃がしませんよ！","わたしの全力、受けてくださいっ！"],
-      seductive:  ["ふふ…こんなものじゃないわよ？","ここからが本番…逃がさないわ","たっぷり味わわせてあげる","わたしの全部、受け止めなさい"],
-      delinquent: ["こんなもんじゃねえぞ！","ここからが本番だぜ！","逃がさねえからな！","あたしの全部、くらいやがれ！"],
-      ojousama:   ["こんなものではございませんわ！","ここからが本番ですのよ！","逃がしませんわよ！","わたくしの全力、お受けなさいな！"],
-      cool:       ["…こんなもんじゃない","…ここから","…逃がさない","…全部、受けな"],
-      composed:   ["…まだまだ、こんなもんじゃないよ","…ここからが本番、かな","…逃がさないよ、ゆっくりね","…わたしの全部、受け止めて"]
-    },
-    quiet: {
-      normal:     ["…まだ、終わらない","…ここからよ","…負けるわけにはいかない","…見ていて"],
-      polite:     ["…まだ、終わりません","…ここからです","…負けるわけには、いきません","…見ていてください"],
-      seductive:  ["…まだ、終わらない…よ","…ここから…ね","…負けるわけにはいかないの","…見ていなさい"],
-      delinquent: ["…まだだ","…ここからだぜ","…負けらんねえ","…見てやがれ"],
-      ojousama:   ["…まだですわ","…ここから…ですの","…負けるわけには参りませんわ","…見ていてくださいまし"],
-      cool:       ["……まだ","……ここから","……負けない","……見てて"],
-      composed:   ["…まだ、終わらないよ","…ここから、だよ","…負けるわけには、いかないね","…見ていて、ね"]
-    },
-    earnest: {
-      normal:     ["絶対に…勝つ！","ここで引くわけにはいかない！","全力で…いく！","諦めない…！"],
-      polite:     ["絶対に勝ちますっ！","ここで引くわけにはいかないんです！","全力で…いきますっ！","諦めません…っ！"],
-      seductive:  ["絶対に…勝つわ","ここで引けないの","全力で…いくわよ","諦めない…から"],
-      delinquent: ["絶対勝つぞ！","ここで引けるかよ！","全力でいくぜ！","諦めねえからな…！"],
-      ojousama:   ["絶対に勝ちますわっ！","ここで引くわけには参りませんの！","全身全霊で…参りますわ！","諦めませんわ…っ！"],
-      cool:       ["…絶対、勝つ","…引けない","…全力で","…諦めない"],
-      composed:   ["…絶対に、勝つよ","…ここで引くわけには、いかないから","…全力で、いくね","…諦めない、よ"]
-    },
-    emotional: {
-      normal:     ["負けたくないっ…！","絶対に…絶対にっ…！","うぅっ…でも、負けないっ…！","こんなところで…終われないっ！"],
-      polite:     ["負けたくないですっ…！","絶対に…絶対にっ…！","うぅっ…でも、負けませんっ…！","こんなところで終われませんっ…！"],
-      seductive:  ["負けたくないっ…！","あぁ…絶対に、絶対にっ…！","うぅっ…こんなので終われないわっ…！","こんなところで…終われないっ…！"],
-      delinquent: ["負けたくねえっ…！","絶対にっ…絶対にだっ…！","うぅっ…こんちくしょうっ…！","こんなとこで終われるかよっ…！"],
-      ojousama:   ["負けたくありませんわっ…！","絶対に…絶対にですわっ…！","うぅっ…でも負けませんわっ…！","こんなところで終われませんわっ…！"],
-      cool:       ["…っ…負けない","…絶対に…","…うっ…でも…","…終われない"],
-      composed:   ["…っ…負けたくない、よ…","…絶対に、絶対に、ね…","…うぅ、でも…負けないよ…","…こんなところで、終われないから…"]
-    },
-    easygoing: {
-      normal:     ["あはは、楽しくなってきた！","いい試合にしようよ！","まだまだいけるよ〜！","本気出しちゃうよ？"],
-      polite:     ["えへへ、楽しくなってきました！","いい試合にしましょう！","まだまだいけますよ〜！","本気出しちゃいますよ？"],
-      seductive:  ["ふふ、楽しくなってきちゃった♪","いい試合にしましょ?","まだまだいけるわよ〜♪","本気、出しちゃおうかしら？"],
-      delinquent: ["へへっ、楽しくなってきたぜ！","いい試合にしようぜ！","まだまだいけらあ〜！","本気出しちゃうぞ？"],
-      ojousama:   ["うふふ、楽しくなってまいりましたわ！","良い試合にいたしましょう！","まだまだいけますわ〜！","本気を出してしまいますわよ？"],
-      cool:       ["…楽しい","…いい試合に","…まだいける","…本気、出す"],
-      composed:   ["…あはは、楽しくなってきた、ね","…いい試合にしよう、ね","…まだまだいけるよ〜","…本気、出しちゃおうかな？"]
-    },
-    shy: {
-      normal:     ["あ、あの…いきますっ…!","わ、わたし…まだまだ…!","ま、負けたくないから…!","こ、ここから…ですっ…!"],
-      polite:     ["す、すみません…いきますっ…!","あ、あの…まだまだです…!","ま、負けたくないんです…!","こ、ここから…ですっ…!"],
-      seductive:  ["あ、あの…まだ…よ…?","こ、ここから…なんだから…!","ま、負けないんだから…!","…み、見てて…"],
-      delinquent: ["い、いくぞ…まだだ…!","ま、まだまだだ…!","ま、負けねえから…!","こ、ここからだ…!"],
-      ojousama:   ["あ、あの…まだまだですわ…!","こ、ここから…ですの…!","ま、負けませんから…!","い、いきますわ…!"],
-      cool:       ["…っ、まだ…","…こ、ここから…","…負けない…","…見ていて…"],
-      composed:   ["…あ、あの…まだ、いけるよ…","…こ、ここから、かな…","…ま、負けないよ…","…ゆ、ゆっくりだけど…"]
-    }
-  },
-
-  // ─────────────────────────────────────────────────────────────────────
-  // クライマックス突入時（心の声・括弧付き）
-  // ─────────────────────────────────────────────────────────────────────
-  climax: {
-    normal: {
-      normal:     ["（…ここからだ）","（負けない…！）"],
-      polite:     ["（…ここからです）","（負けません…！）"],
-      seductive:  ["（…ここから、よ）","（負けないわ…）"],
-      delinquent: ["（…ここからだぜ）","（負けねえ…！）"],
-      ojousama:   ["（…ここからですわ）","（負けませんわ…！）"],
-      cool:       ["（…ここから）","（…負けない）"],
-      composed:   ["（…ここから、だね）","（…負けない、よ）"]
-    },
-    bold: {
-      normal:     ["（ここからが、あたしの時間！）","（さあ…決めにいく）"],
-      polite:     ["（ここからです…ここからが、わたしの時間）","（さあ…決めさせていただきます）"],
-      seductive:  ["（ここからよ…わたしの時間が、始まるの）","（さあ…決めてあげる）"],
-      delinquent: ["（ここからだ…あたしの時間だぜ）","（さあ…決めてやる）"],
-      ojousama:   ["（ここからが…わたくしの時間ですわ）","（さあ…幕引きにしてさしあげますわ）"],
-      cool:       ["（…ここから、あたしの時間）","（…決めにいく）"],
-      composed:   ["（…ここから、あたしの時間だね）","（…さあ、決めにいこうか）"]
-    },
-    quiet: {
-      normal:     ["（…集中。今だけは、何も考えなくていい）","（…身体が軽い。いける）"],
-      polite:     ["（…集中。今だけは、何も）","（…身体が軽い。いけます）"],
-      seductive:  ["（…集中…今だけは、何も）","（…身体が軽い…いけるわ）"],
-      delinquent: ["（…集中。余計なこと考えるな）","（…体が軽い。いけるぜ）"],
-      ojousama:   ["（…集中ですわ。今だけは何も）","（…身体が軽い…いけますの）"],
-      cool:       ["（……集中）","（……いける）"],
-      composed:   ["（…集中、だね。今は何も考えなくていい）","（…身体が軽いな…いける）"]
-    },
-    earnest: {
-      normal:     ["（ここまで来た…あとは、出し切るだけ）","（全部…全部出し切る）"],
-      polite:     ["（ここまで来ました…あとは、出し切るだけ）","（全部…全部出し切ります）"],
-      seductive:  ["（ここまで来たわ…あとは、出し切るだけ）","（全部…全部出し切るの）"],
-      delinquent: ["（ここまで来たんだ…あとは出し切るだけだ）","（全部…全部ぶつけてやる）"],
-      ojousama:   ["（ここまで参りましたの…あとは出し切るのみ）","（全て…全て懸けますわ）"],
-      cool:       ["（…ここまで来た）","（…全部、出す）"],
-      composed:   ["（…ここまで来たんだ…あとは出し切るだけ、だね）","（…全部、出し切るよ）"]
-    },
-    emotional: {
-      normal:     ["（胸が苦しい…でも、この痛みが、生きてる証だから）","（お願い、身体…もう少しだけ動いて）"],
-      polite:     ["（胸が苦しい…でも、この痛みが、生きてる証です）","（お願いします、身体…もう少しだけ）"],
-      seductive:  ["（胸が苦しい…でも、この痛みが、生きてる証よ）","（お願い…身体、もう少しだけ、動いて）"],
-      delinquent: ["（胸が苦しい…けど、これが生きてる証だ）","（頼むぞ身体…もうちょい動いてくれ）"],
-      ojousama:   ["（胸が苦しい…けれど、この痛みが生きてる証ですの）","（お願いですわ身体…もう少しだけ）"],
-      cool:       ["（…胸が苦しい…でも）","（…身体、もう少しだけ）"],
-      composed:   ["（…胸が苦しいな…でも、この痛みが生きてる証だから）","（…お願い、身体…もう少しだけ、動いてね）"]
-    },
-    easygoing: {
-      normal:     ["（わくわくする…この瞬間が一番好き）","（最高の試合にしよう！）"],
-      polite:     ["（わくわくします…この瞬間が一番好き）","（最高の試合にしましょう！）"],
-      seductive:  ["（わくわくしちゃう…この瞬間が好き♪）","（最高の試合にしましょ？）"],
-      delinquent: ["（わくわくするぜ…この瞬間が一番好きだ）","（最高の試合にしようぜ！）"],
-      ojousama:   ["（わくわくいたしますわ…この瞬間が一番）","（最高の試合にいたしましょう！）"],
-      cool:       ["（…わくわくする）","（…最高の試合に）"],
-      composed:   ["（…わくわくするな…この瞬間が一番好き）","（…最高の試合にしよう、ね）"]
-    },
-    shy: {
-      normal:     ["（…ま、まだ…いけるはず…!）","（こ、ここで…決めなきゃ…!）"],
-      polite:     ["（…ま、まだ…いけます…!）","（こ、ここで…決めないと…!）"],
-      seductive:  ["（…ま、まだ…これから、だから…）","（…わ、私だって…本気なんだから…）"],
-      delinquent: ["（…ま、まだだ…ここからだ…!）","（…こ、ここで…決める…っ!）"],
-      ojousama:   ["（…ま、まだですわ…ここからですの…!）","（…こ、ここで決めなくては…!）"],
-      cool:       ["（…ま、まだ…）","（…こ、ここで…決める…）"],
-      composed:   ["（…ま、まだ、いけるよ…）","（…こ、ここで、決めなきゃ…）"]
-    }
-  },
-
-  // ─────────────────────────────────────────────────────────────────────
-  // ビッグムーブ発動時（personality × archetype 2D）
-  // composed 口調を全性格ぶん追加
-  // ─────────────────────────────────────────────────────────────────────
-  bigmove: {
-    normal: {
-      normal:     ["いくよ…これで決める！","ここで…終わりだ！","全部出し切る…！"],
-      polite:     ["いきます…これで、決めさせてもらいます！","ここで…終わらせます！","全力で…行きます！"],
-      seductive:  ["ふふ…もう逃がさないわよ？","これで終わりよ…覚悟しなさい","さあ…これでフィナーレよ"],
-      delinquent: ["おらぁっ！ これで終わりだ！","ぶっ飛ばしてやる！","オマエの負けだ…くらえ！"],
-      ojousama:   ["これでお仕舞い…覚悟なさい","…最後の一撃！","これで終幕よ…！"],
-      cool:       ["…決める","…これで、終わり","…いく"],
-      composed:   ["…いくよ、これで決めるね","…ここで、終わり、かな","…全部、出し切るよ"]
-    },
-    earnest: {
-      normal:     ["絶対に…ここで決める！","全力で…いきます！","負けたくない…だから…！"],
-      polite:     ["お願いします…この一撃に全てを…！","ここで…決めさせてください！","全身全霊で…行きますっ！"],
-      seductive:  ["ふふ…本気で抱きしめてあげる","逃さないわ…最後まで","あなたの全部…もらうわよ"],
-      delinquent: ["根性見せてやる…いくぞぉ！","ここで決めなきゃ意味ねえ！","全部ぶつけてやる…！"],
-      ojousama:   ["この一撃に…全てを懸けますわ！","真剣勝負ですわ…参りますわよ！","覚悟はよろしくて？ いきますわ！"],
-      cool:       ["…全部、出す","…ここで決める。必ず","…負けない。絶対に"],
-      composed:   ["…絶対に、ここで決めるよ","…全力で、いくね","…負けたくない、から…いく"]
-    },
-    bold: {
-      normal:     ["さあ…終わらせるわよっ！","見せてあげる…わたしの全力！","思いっきりいくわよっ！！"],
-      polite:     ["さあ…決めさせていただきます！","見ていてください…最高の一撃を！","覚悟してくださいね…いきますよ！"],
-      seductive:  ["うふ…壊れちゃっても知らないわよ？","最後よ…たっぷり味わいなさい","さあ…身体で教えてあげる"],
-      delinquent: ["ぶちかます！","もう終わりだ…沈めてやる！","これで最後だ…覚悟しろよ！"],
-      ojousama:   ["フィナーレですわ…！","さあ…ボロ雑巾にしてさしあげますわ！","潰れなさいっ…！"],
-      cool:       ["…終わりだ","…沈め","…これが、あたしの全部"],
-      composed:   ["…終わらせるよ、ゆっくりね","…見ていて…わたしの全力","…覚悟してね…最高の一発"]
-    },
-    easygoing: {
-      normal:     ["よーし、ここで決めちゃおう！","いっくよー！ 最後の大技！","えへへ…全力いくよー！"],
-      polite:     ["えへへ…ここで決めちゃいますね！","いきますよー！ 最後です！","全力でいかせてもらいます！"],
-      seductive:  ["ふふ…そろそろ大詰めよ♪","最後のプレゼント…受け取って？","ねえ…もう諦めちゃいなさい♪"],
-      delinquent: ["それじゃ！ トドメってやつだ！","っへ！ これでシメだ！","悪いけど…終わりだよっ！"],
-      ojousama:   ["さーて！ 仕上げですわ〜！","うふふ、締めにいきますわよ！","楽しかったですわ…でもここまでですわ！"],
-      cool:       ["…ん、いくよ","…そろそろ終わりかな","…決めちゃう"],
-      composed:   ["…よーし、ここで決めちゃおうかな","…いっくよ〜、最後の大技","…えへへ、全力いくね"]
-    },
-    quiet: {
-      normal:     ["……いく","……これで","……終わりだ"],
-      polite:     ["……いきます","……これで、終わりです","……決めます"],
-      seductive:  ["……もう、逃げられないわよ","……最後よ","……終わりにしてあげる"],
-      delinquent: ["……沈め","……終わりだ","……いくぞ"],
-      ojousama:   ["……参りますわ","……終わりですわ","……覚悟なさい"],
-      cool:       ["……","…………いく","……終わる"],
-      composed:   ["……いくよ","……これで、ね","……終わり、だよ"]
-    },
-    shy: {
-      normal:     ["あ、あの…いきます…！","こ、ここで…決めます…！","が、頑張ります…！"],
-      polite:     ["す、すみません…全力でいきます…！","こ、ここで…決めさせてください…！","お、思いっきり…やります…！"],
-      seductive:  ["あの…もう…逃がさない、から…","ごめんね…でも…終わりにするね…","わ、私だって…本気なんだから…"],
-      delinquent: ["い、いくぞ…こ、この野郎…！","て、てめえ…覚悟しろ…！","ぶ、ぶっ飛ばしてやる…！"],
-      ojousama:   ["あ、あの…仕舞いにさせていただきますわ…！","し、失礼しますわ…全力で…！","お、お覚悟を…！"],
-      cool:       ["…い、いく","…こ、ここで","…が、頑張る…"],
-      composed:   ["…あ、あの…いくよ…","…こ、ここで…決めるね…","…が、頑張るよ…"]
-    },
-    emotional: {
-      normal:     ["うぅっ…絶対に…決めるんだ…！","泣かない…泣かないから…いくよ！","ここで…ここでっ…！"],
-      polite:     ["うぅ…お願いです…決めさせてください…！","ここで…ここで終わらせますっ…！","泣いてる場合じゃ…いきます…！"],
-      seductive:  ["もう…我慢できない…壊しちゃうわよ…！","あぁ…最後よ…感じなさい…！","キャハハッ！…終わらせるわよっ…！"],
-      delinquent: ["くそぉ…絶対ぶっ飛ばす…！","うぅっ…こんちくしょう…いくぞ！","泣いてねえ…泣いてねえよ…！"],
-      ojousama:   ["うぅ…ここで…ここで決めますわ…！","泣いてなど…いきますわよ…！","お覚悟を…っ…！"],
-      cool:       ["…っ…いく","…泣かない…決める","…っ…これで…終わり"],
-      composed:   ["…うぅ、絶対に…決めるよ","…泣かないよ…いく、ね","…ここで、ここでっ…"]
-    }
-  }
-};
-
-// DAMAGE_SERIF_LINES / DAMAGE_VOICE_LINES は battle-lines.js に共通化 (Phase 4b 積み残し対応)
-
-// カットイン共通ヘルパー
-function _getCutinLines(lineType, personality, archetype) {
-  const section = CUTIN_LINES[lineType];
-  if (!section) return null;
-  const byPersonality = section[personality] || section['normal'];
-  if (!byPersonality) return null;
-  if (Array.isArray(byPersonality)) return byPersonality;
-  // bigmove: 2D lookup
-  return byPersonality[archetype] || byPersonality['normal'] || null;
-}
-
-function dismissCutin() {
-  const ov = document.getElementById('cutinOverlay');
-  BattleAnim.dismissCutin(ov);
-  // フェーズ導入カットインが閉じられたら、保留していたターンを再開
-  if (S.pendingPhaseIntro) {
-    S.pendingPhaseIntro = false;
-    setTimeout(() => nextTurn(), 400);
-  }
-}
-
-// カットイン表示関数（upper画像使用、click-to-close）
-function showCutin(side, charData, lineType) {
-  const mi = matchData && matchData.matchInfo;
-  if (!mi) return;
-  const personality = side === 'left' ? (mi.leftPersonality || 'normal') : (mi.rightPersonality || 'normal');
-  const archetype   = side === 'left' ? (mi.leftArchetype  || 'normal') : (mi.rightArchetype  || 'normal');
-  const lines = _getCutinLines(lineType, personality, archetype);
-  if (!lines || !lines.length) return;
-  const text = lines[Math.floor(RNG.float() * lines.length)];
-  BattleAnim.renderCutin({
-    overlay: document.getElementById('cutinOverlay'),
-    fighter: charData, side, text, variant: 'default',
-  });
-}
-
-// ダメージセリフカットイン（防御側・終盤大技被弾時）
-function showDamageSpeech(side, charData) {
-  const mi = matchData && matchData.matchInfo;
-  if (!mi) return;
-  const personality = side === 'left' ? (mi.leftPersonality || 'normal') : (mi.rightPersonality || 'normal');
-  const archetype   = side === 'left' ? (mi.leftArchetype  || 'normal') : (mi.rightArchetype  || 'normal');
-  const byP = DAMAGE_SERIF_LINES[personality] || DAMAGE_SERIF_LINES['normal'];
-  if (!byP) return;
-  const lines = byP[archetype] || byP['normal'];
-  if (!lines || !lines.length) return;
-  const text = lines[Math.floor(RNG.float() * lines.length)];
-  BattleAnim.renderCutin({
-    overlay: document.getElementById('cutinOverlay'),
-    fighter: charData, side, text, variant: 'damage-serif',
-  });
-}
-
-// ダメージセリフ/ボイス: HP残量ベース発動判定
-// クリティカルヒット（dmg>=15）時に呼び出す
-function tryDamageCutin(side, charData, hpRatio) {
-  const r = RNG.float();
-  if (hpRatio > 0.66) {
-    // 余裕あり: セリフ40%
-    if (r < 0.40) showDamageSpeech(side, charData);
-  } else if (hpRatio > 0.33) {
-    // 効いてきた: セリフ15%, ボイス50%
-    if (r < 0.15) showDamageSpeech(side, charData);
-    else if (r < 0.65) showDamageVoice(side, charData);
-  } else {
-    // 限界: ボイス60%のみ
-    if (r < 0.60) showDamageVoice(side, charData);
-  }
-}
-
-// ダメージボイスカットイン（短い悲鳴、archetype別）
-function showDamageVoice(side, charData) {
-  const mi = matchData && matchData.matchInfo;
-  if (!mi) return;
-  const archetype = side === 'left' ? (mi.leftArchetype || 'normal') : (mi.rightArchetype || 'normal');
-  const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES['normal'];
-  if (!lines || !lines.length) return;
-  const text = lines[Math.floor(RNG.float() * lines.length)];
-  BattleAnim.renderCutin({
-    overlay: document.getElementById('cutinOverlay'),
-    fighter: charData, side, text, variant: 'damage-voice',
-  });
-}
-
-// フェーズ導入カットイン（ターン処理前に独立して発火）
-// 戻り値: true = カットインを表示した（呼び出し元はターンを保留すべき）
-//        false = 表示しなかった（呼び出し元はターンを続行して良い）
-function showPhaseIntroCutin(phaseName) {
-  const mi = matchData && matchData.matchInfo;
-  if (!mi || !mi.rivalryTier || mi.rivalryTier <= 0) return false;
-  // 発動率: tier1=30%, tier2=50%, tier3=80%
-  const rates = [0, 0.30, 0.50, 0.80];
-  const rate = rates[Math.min(mi.rivalryTier, 3)] || 0;
-  if (RNG.float() > rate) return false;
-  // モメンタム優位側の選手が喋る
-  const isLeftLeading = S.mom > 0;
-  const side = isLeftLeading ? 'left' : 'right';
-  const charData = isLeftLeading ? S.L : S.R;
-  const lineType = phaseName === 'Climax' ? 'climax' : 'atk';
-  showCutin(side, charData, lineType);
-  // フラグを立てる → dismissCutin がこれを見てターンを再開する
-  S.pendingPhaseIntro = true;
-  return true;
-}
-
-// ═══ CONSTANTS ═══
-const MAX_T=20;
-const PHASES=[
-  {name:'Opening',min:1,max:4,mult:0.9,sCh:20,tempo:2000,counterBonus:0},
-  {name:'Mid',min:5,max:8,mult:1.05,sCh:40,tempo:2000,counterBonus:3},
-  {name:'End',min:9,max:12,mult:1.2,sCh:55,tempo:2500,counterBonus:5},
-  {name:'Climax',min:13,max:20,mult:1.4,sCh:70,tempo:3000,counterBonus:8}
-];
-// ── Tier 2: ビッグマッチ ──
-const BIGMATCH_MAX_T=24;
-const BIGMATCH_PHASES=[
-  {name:'Opening',min:1,max:6,mult:0.70,sCh:15,tempo:2000,counterBonus:0},
-  {name:'Mid',min:7,max:12,mult:0.85,sCh:35,tempo:2000,counterBonus:2},
-  {name:'End',min:13,max:18,mult:1.00,sCh:50,tempo:2500,counterBonus:4},
-  {name:'Climax',min:19,max:24,mult:1.20,sCh:65,tempo:3000,counterBonus:7}
-];
-// Active tier state (set in startMatchFromData)
-let _maxT=MAX_T, _phases=PHASES, _isBigMatch=false;
-// ビッグムーブ演出のフェーズ別発動確率（Opening序盤は出さない、試合が深まるにつれ重みが出る）
-const BIGMOVE_ANIM_RATE = {Opening:0.10, Mid:0.30, End:0.65, Climax:1.0};
-
-// ═══ v4.1 ENGINE CONFIG ═══
-const ENG = {
-  // HP
-  hpBase: 50, hpScale: 1.20,
-  // Stat scaling (v4.1)
-  effPivot: 100,
-  effSlopeAfterPivot: 1.0,
-  // Hit check (NEW)
-  hitBase: {1:97, 2:97, 3:96, 4:94, 5:92, 6:89, 7:86, 8:84, 9:81, 10:78,
-    11:76, 12:74, 13:72, 14:70, 15:68, 16:66},
-  tecHitBonus: 0.17,    // TEC helps accuracy
-  spdDodgeBonus: 0.18,   // SPD helps evasion
-  hitMin: 42, hitMax: 98,
-  // Counter (NEW)
-  counterBase: 4,
-  counterTecScale: 0.055,  // defender TEC → counter rate
-  counterSpdPenalty: 0.07, // attacker SPD → harder to counter
-  counterMin: 2, counterMax: 22,
-  counterDmgMult: 0.6,    // counter deals 60% of move's damage back
-  counterMomShift: 18,
-  // Damage (REBALANCED: TEC up, PWR down, MN up in defense)
-  dmgPwrScale: 0.20,   // PW damage buff
-  dmgTecScale: 0.08,   // TE damage slight nerf
-  dmgSpdScale: 0.08,   // SP damage for ALL moves
-  defStaScale: 0.06,   // ST defense strengthened for durability
-  defMntScale: 0.055,  // was 0.035 — MN now matters for defense
-  momDmgScale: 0.003,
-  dmgRandMin: 0.85, dmgRandRange: 0.30,
-  dmgFloor: 3,
-  // Grit buff (NEW: post-kickout)
-  gritDuration: 2,       // turns
-  gritDmgReduction: 0.20, // 20% less damage taken
-  gritCounterBonus: 8,   // +10% counter rate
-  // Pin attempt (NEW: フォールII equivalent)
-  pinAttemptHpThreshold: 0.28, // HP<28% triggers pin attempts
-  pinAttemptMinDmg: 10,       // move must do >= this damage
-  pinAttemptBaseRate: 36,      // base % chance to attempt pin
-  pinAttemptMomBonus: 0.15,    // momentum advantage bonus
-  pinAttemptMntPenalty: 0.20,  // defender MN reduces success
-  pinAttemptSuccessBase: 23,   // base success rate of pin attempt
-  pinAttemptClimax: 22,        // bonus in Climax
-  pinLowHpAttemptScale: 200,   // 低HPほどピン試行率を急上昇させる線形係数
-  pinLowHpSuccessScale: 100,   // 低HPほど決まりやすくする線形係数
-  // Finish type by category
-  // gu:0 for non-submission — 関節技以外でギブアップは発生しない
-  finishWeights: {
-    strike:    {fall:90, gu:0, tko:10},
-    throw:     {fall:85, gu:0, tko:15},
-    aerial:    {fall:85, gu:0, tko:15},
-    ground:    {fall:75, gu:0, tko:25},
-    submission:{fall:5,  gu:90, tko:5},
-    rollup:    {fall:100,gu:0, tko:0}
-  },
-  // Kickout (REBALANCED: MN more impactful)
-  kickoutMnScale: 0.50,  // was 0.40
-  kickoutMax: 2,
-  kickoutClimaxMult: 0.7, // harder in climax
-  // Giveup escape
-  guEscapeMnScale: 0.45,  // was 0.35
-  guEscapeMax: 2,
-  // TKO
-  tkoConsecutiveThreshold: 3, // 3+ consecutive hits → TKO possible
-  tkoHpThreshold: 0.15,
-  tkoBaseRate: 14,
-  // Rollup
-  rollupHpThreshold: 0.35,  // lowered from 0.25
-  rollupTecBonus: 0.18,     // TEC helps rollup success
-  rollupBaseSuccess: 16,    // was flat 15%
-};
-const BIGMATCH_ENG={...ENG,hpBase:85,hpScale:1.47,rollupBaseSuccess:11,rollupHpThreshold:0.25,pinAttemptHpThreshold:0.25,pinAttemptSuccessBase:14,pinAttemptClimax:18,kickoutMax:3,guEscapeMax:3};
-let _eng=ENG; // Active engine config (switched in startMatchFromData)
-
-function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
-// v4.1: Effective stat with diminishing returns above 100 (except MN)
-function eff(x){
-  const p=ENG.effPivot||100;
-  const s=(ENG.effSlopeAfterPivot===undefined)?0.60:ENG.effSlopeAfterPivot;
-  if(x<=p) return x;
-  return p+(x-p)*s;
-}
-
-function phase(t){return _phases.find(p=>t>=p.min&&t<=p.max)||_phases[_phases.length-1]}
-function ov(c){return Math.round((c.pw+c.sp+c.te+c.st+c.mn)/5)}
-// ═══ Seeded RNG (xorshift128+) — engine.jsと同一アルゴリズム ═══
-const RNG={s0:0,s1:0,
-  seed(s){s=s|0;if(s===0)s=1;let s0=s;s0=((s0>>>16)^s0)*0x45d9f3b|0;s0=((s0>>>16)^s0)*0x45d9f3b|0;s0=(s0>>>16)^s0;let s1=s*1812433253+1;s1=((s1>>>16)^s1)*0x45d9f3b|0;s1=((s1>>>16)^s1)*0x45d9f3b|0;s1=(s1>>>16)^s1;if(s0===0&&s1===0)s0=1;RNG.s0=s0;RNG.s1=s1},
-  float(){let s1=RNG.s0;const s0=RNG.s1;RNG.s0=s0;s1^=s1<<23;s1^=s1>>>17;s1^=s0;s1^=s0>>>26;RNG.s1=s1;return((RNG.s0+RNG.s1)>>>0)/4294967296}
-};
-function pk(a){return a[Math.floor(RNG.float()*a.length)]}
-function tpl(t,v){return t.replace(/\{(\w)\}/g,(_,k)=>v[k]||'')}
-function wRand(w){const e=Object.entries(w),t=e.reduce((s,[,v])=>s+v,0);let r=RNG.float()*t;
-  for(const[k,v]of e){r-=v;if(r<=0)return k}return e[e.length-1][0]}
-function selMove(style,turn,defHpRatio,atkHpRatio){
-  const rs=(style&&styleMoves[style]&&catW[style])?style:'Allround';
-  const ph=phase(turn),use=RNG.float()*100<ph.sCh,pool=use?styleMoves[rs]:commonMoves;
-  // 相手HP<30%: 65%の確率でフィニッシャー(d>=12)を狙う
-  if(defHpRatio!==undefined&&defHpRatio<0.30&&RNG.float()<0.65){
-    const finPool=pool.filter(m=>m.d>=12);
-    if(finPool.length)return pk(finPool);
-    const finStyle=styleMoves[rs].filter(m=>m.d>=12);
-    if(finStyle.length)return pk(finStyle);
-  }
-  // 自分HP<25%: 40%の確率で逃げ技（rollup/弱サブミッション）を試みる
-  else if(atkHpRatio!==undefined&&atkHpRatio<0.25&&RNG.float()<0.40){
-    const escPool=pool.filter(m=>m.c==='rollup'||(m.c==='submission'&&m.d<=7));
-    if(escPool.length)return pk(escPool);
-  }
-  const cat=wRand(catW[rs]),cands=pool.filter(m=>m.c===cat);
-  return cands.length?pk(cands):pk(pool);
-}
-
-// ═══ v4.1: HIT CHECK ═══
-function calcHitRate(mv, atk, def) {
-  const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
-  const rate = baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus);
-  return clamp(rate, ENG.hitMin, ENG.hitMax);
-}
-
-// ═══ v4.1: COUNTER CHECK ═══
-function calcCounterRate(atk, def, ph) {
-  let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
-  // Grit buff
-  if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
-  return clamp(rate, ENG.counterMin, ENG.counterMax);
-}
-
-// ═══ v4.1: DAMAGE CALC (rebalanced) ═══
-function calcDamage(mv, atk, def, mom, atkSide, ph) {
-  const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
-    + (eff(atk.sp) * ENG.dmgSpdScale);
-  const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
-  const mAdv = atkSide === 'left' ? mom : -mom;
-  const mMod = 1 + (mAdv * ENG.momDmgScale);
-  const rF = ENG.dmgRandMin + (RNG.float() * ENG.dmgRandRange);
-  let raw = (base - defense) * mMod * rF * ph.mult;
-  // Grit buff: reduce damage taken
-  if (def.gritTurns > 0) raw *= (1 - ENG.gritDmgReduction);
-  return Math.max(ENG.dmgFloor, Math.round(raw));
-}
-
-// ═══ v4.1: FINISH TYPE BY CATEGORY ═══
-function determineFinishType(mv, atk, def) {
-  const weights = ENG.finishWeights[mv.c] || ENG.finishWeights.strike;
-  return wRand(weights);
-}
-
-// ═══ v4.1: KICKOUT / ESCAPE ═══
-function calcKickoutChance(def, ph) {
-  let chance = (def.mn / 100) * _eng.kickoutMnScale;
-  if (ph.name === 'Climax') chance *= _eng.kickoutClimaxMult;
-  chance = clamp(chance, 0.05, 0.45);
-  if (def.kickoutCount >= _eng.kickoutMax) chance = 0;
-  return chance;
-}
-function calcGuEscapeChance(def, ph) {
-  let chance = (def.mn / 100) * _eng.guEscapeMnScale;
-  if (ph.name === 'Climax') chance *= 0.8;
-  chance = clamp(chance, 0.05, 0.40);
-  if (def.kickoutCount >= _eng.guEscapeMax) chance = 0;
-  return chance;
-}
-
-// ═══ v4.1: PIN ATTEMPT (HP>0 but low HP after big move) ═══
-function checkPinAttempt(mv, atk, def, dmg, mom, atkSide, ph) {
-  if (def.hp <= 0) return false; // already KO
-  const defHpRatio = def.hp / def.mhp;
-  if (defHpRatio > ENG.pinAttemptHpThreshold) return false;
-  if (dmg < ENG.pinAttemptMinDmg) return false;
-  if (ph.name === 'Opening') return false;
-  // End/Climaxで低d技: d値が小さいほどフォール試行しにくくなる（傾向、ハードゲートではない）
-  if((ph.name==='End'||ph.name==='Climax')&&mv.d<10&&RNG.float()>(mv.d/10))return false;
-  // Rate check: should we attempt a pin?
-  let attemptRate = ENG.pinAttemptBaseRate;
-  const mAdv = atkSide === 'left' ? mom : -mom;
-  attemptRate += mAdv * ENG.pinAttemptMomBonus;
-  if (ph.name === 'Climax') attemptRate += 15;
-  if (ph.name === 'End') attemptRate += 8;
-  // 低HPほど急激にピン試行率アップ (しきい値との差×スケール)
-  attemptRate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpAttemptScale);
-  attemptRate = clamp(attemptRate, 10, 95);
-  return RNG.float() * 100 < attemptRate;
-}
-function calcPinAttemptSuccess(atk, def, dmg, ph) {
-  let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
-  if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
-  if (def.gritTurns > 0) rate -= 10; // grit makes it harder
-  // 低HPほど決まりやすい (しきい値との差×スケール)
-  const defHpRatio = def.hp / def.mhp;
-  rate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpSuccessScale);
-  return clamp(rate, 8, 80);
-}
-
-// ═══ AUDIO ═══ battle-sfx.js で共通化済み (sfx / hitSE / startDrone / stopDrone / _ensureMasterGains / _sfxMasterGain / _bgmMasterGain 等を提供)
-// ═══ FINISH CLICK SYSTEM ═══
-const FINISH_SUSPENSE={
-  fall:["入ったか…！？ スリーカウントなるかーーーっ！！",
-    "カウントツー！ 返せるのか！？ 返せないのか！？",
-    "万事休すか…！ {d}、ここが正念場だーっ！",
-    "このまま決まってしまうのか…！！",
-    "会場が息を飲んでいる…！ {d}の運命やいかにーーっ！"],
-  gu:["タップするのか…！？ しないのか…！？",
-    "ロープに手が届くか…！ {d}、必死に腕を伸ばす…！！",
-    "{d}の表情が…！ 耐えられるのか！？",
-    "レフェリーが確認している…！ ギブアップか…！？",
-    "極まっている…！ {d}、絶体絶命だーーっ！"],
-  rollup:["まさかの丸め込み…！ これで決まるのか！？"],
-  pin:["フォールだ！ 返せるか…！？ カウント…！！",
-    "大技の後のカバー！ {d}、肩を上げられるか…！？",
-    "ここで勝負を決めに来た！ {d}の運命は…！！"]
-};
-
-function showFinishClickBtn(type,v){
-  // フィニッシュ前カットイン（ライバリーtier2+、まだfinishカットイン未表示）
-  const _mi = matchData && matchData.matchInfo;
-  if (_mi && _mi.rivalryTier >= 2 && S.cutinShown && !S.cutinShown.finish) {
-    S.cutinShown.finish = true;
-    // 攻撃側の決め台詞
-    const atkSide = S.mom >= 0 ? 'left' : 'right';
-    const atkChar = atkSide === 'left' ? S.L : S.R;
-    showCutin(atkSide, atkChar, 'atk');
-  }
-  const btn=document.getElementById('finishBtn');
-  const ov=document.getElementById('finishOverlay');
-  const nBtn=document.getElementById('nBtn');
-  if(nBtn)nBtn.style.display='none';
-  const actBar=nBtn?nBtn.closest('.action-bar'):null;
-  if(actBar)actBar.style.display='none';
-  const labels={'フォール':'スリーカウント…！？','ギブアップ':'ギブアップ…！？','丸め込み':'カウント…！？','ピン':'カウント…！？','TKO':'レフェリー…！？'};
-  btn.textContent=labels[type]||'…！？';
-  btn.disabled=false;
-  ov.classList.add('show');
-  const box=document.getElementById('narBox');
-  const tKey=type==='ギブアップ'?'gu':type==='丸め込み'?'rollup':type==='ピン'?'pin':'fall';
-  const suspText=tpl(pk(FINISH_SUSPENSE[tKey]),v);
-  if(box)box.innerHTML=`<div class="nar-line nar-finish show">${suspText}</div>`;
-  startDrone(false); // ドローンのみ（ハートビートなし）
-  if(type==='ギブアップ'){sfx.heartbeatSE();} // ギブアップ時はハートビートSE(MP3)を単独再生
-  setTimeout(()=>{btn.classList.add('show')},100);
-  let autoFinishTimer=null;
-  let finishHandled=false;
-  const handler=()=>{
-    if(finishHandled)return;finishHandled=true;
-    clearTimeout(autoFinishTimer);
-    btn.disabled=true;btn.classList.remove('show');
-    ov.classList.remove('show');stopDrone();
-    btn.removeEventListener('click',handler);
-    document.removeEventListener('keydown',kHandler);
-    resolveFinishClick();
-  };
-  const kHandler=(e)=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();handler()}};
-  btn.addEventListener('click',handler);
-  document.addEventListener('keydown',kHandler);
-  ov.addEventListener('click',e=>e.stopPropagation());
-  if(autoAdvance)autoFinishTimer=setTimeout(handler,AUTO_DELAY);
-}
-
-function resolveFinishClick(){
-  const p=S.pendingFinishResult;if(!p)return;
-  S.awaitingFinishClick=false;
-  if(p.type==='フォール')resolveFallClick(p);
-  else if(p.type==='ギブアップ')resolveGUClick(p);
-  else if(p.type==='丸め込み')resolveRollupClick(p);
-  else if(p.type==='ピン')resolvePinAttemptClick(p);
-  else if(p.type==='TKO')resolveTKOClick(p);
-}
-
-function applyGritBuff(fighter, side) {
-  fighter.gritTurns = ENG.gritDuration;
-  const panel = document.getElementById(`panel-${side}`);
-  if (panel) panel.classList.add('grit-active');
-  const gi = document.getElementById(`grit-${side}`);
-  if (gi) gi.classList.add('active');
-}
-function tickGrit(fighter, side) {
-  if (fighter.gritTurns > 0) {
-    fighter.gritTurns--;
-    if (fighter.gritTurns <= 0) {
-      const panel = document.getElementById(`panel-${side}`);
-      if (panel) panel.classList.remove('grit-active');
-      const gi = document.getElementById(`grit-${side}`);
-      if (gi) gi.classList.remove('active');
-    }
-  }
-}
-
-function resolveFallClick(p){
-  const v={a:p.atk.name,d:p.def.name,m:p.moveName,w:p.atk.name};
-  const ds=p.defSide,as=p.atkSide;
-  if(!p.isKickout){
-    showCountText('3ーーーーっ！！！','white');sfx.count();sfx.finImpact();
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finFall),v)}</div>`;
-    p.log+=` ★ ${p.atk.name}がフォールで勝利！`;
-    S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='フォール';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
-    setTimeout(()=>{showNBtn();showResult()},2000);
-  }else{
-    const recoveryHP=getKickoutRecoveryHP(p.def);
-    p.def.hp=recoveryHP;p.def.kickoutCount+=1;
-    updHP(ds,p.def);
-    showCountText('返したーーーーっ！！','white');sfx.kickoutSE();
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    const dp=document.getElementById(`panel-${ds}`);
-    if(dp){dp.classList.add('kickout-flash');setTimeout(()=>dp.classList.remove('kickout-flash'),600)}
-    const box=document.getElementById('narBox');
-    const koLine=p.def.kickoutCount>=2?tpl(pk(CMT.sit.kickout2),v):tpl(pk(CMT.sit.kickout),v);
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${koLine}</div>`;
-    showSp(as,pk(CMT.sit.kickoutAtk),'t-def');
-    // v4.1: Apply grit buff
-    applyGritBuff(p.def, ds);
-    setTimeout(()=>{
-      const box2=document.getElementById('narBox');
-      if(box2){const extra=document.createElement('div');extra.className='nar-line nar-react show';
-        extra.textContent=tpl(pk(CMT.sit.gritBuff),v);box2.appendChild(extra)}
-    },600);
-    applyClimaxReturnEffects(ds,p.def,v);
-    p.log+=` → カウント2.9で返した！【粘り発動】`;S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    updPanelState(ds,p.def);
-    S.turn++;S.pendingFinishResult=null;
-    if(S.turn>_maxT){doTimeout();return}
-    showNBtn();endAnim();
-  }
-}
-
-function resolveGUClick(p){
-  const v={a:p.atk.name,d:p.def.name,m:p.moveName,w:p.atk.name};
-  const ds=p.defSide,as=p.atkSide;
-  if(!p.isKickout){
-    showCountText(p.def.name+'がタップ！！','red-gold');sfx.bellx3();
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finGU),v)}</div>`;
-    p.log+=` ★ ${p.atk.name}がギブアップで勝利！`;
-    S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='ギブアップ';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
-    setTimeout(()=>{showNBtn();showResult()},2000);
-  }else{
-    const recoveryHP=getKickoutRecoveryHP(p.def);
-    p.def.hp=recoveryHP;p.def.kickoutCount+=1;
-    updHP(ds,p.def);
-    showCountText('ロープ！ ロープブレイクーーっ！！','white');sfx.guEscapeSE();
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    const dp=document.getElementById(`panel-${ds}`);
-    if(dp){dp.classList.add('kickout-flash');setTimeout(()=>dp.classList.remove('kickout-flash'),600)}
-    const box=document.getElementById('narBox');
-    const escLine=p.def.kickoutCount>=2?tpl(pk(CMT.sit.guEscape2),v):tpl(pk(CMT.sit.guEscape),v);
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${escLine}</div>`;
-    showSp(as,pk(CMT.sit.guEscapeAtk),'t-def');
-    applyGritBuff(p.def, ds);
-    setTimeout(()=>{
-      const box2=document.getElementById('narBox');
-      if(box2){const extra=document.createElement('div');extra.className='nar-line nar-react show';
-        extra.textContent=tpl(pk(CMT.sit.gritBuff),v);box2.appendChild(extra)}
-    },600);
-    applyClimaxReturnEffects(ds,p.def,v);
-    p.log+=` → ロープブレイクで脱出！【粘り発動】`;S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    updPanelState(ds,p.def);
-    S.turn++;S.pendingFinishResult=null;
-    if(S.turn>_maxT){doTimeout();return}
-    showNBtn();endAnim();
-  }
-}
-
-function resolveRollupClick(p){
-  const v={a:p.atk.name,d:p.def.name,m:p.moveName,w:p.atk.name};
-  const ds=p.defSide,as=p.atkSide;
-  if(!p.isKickout){
-    showCountText('3ーーーっ！！','white');sfx.finImpact();
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    p.def.hp=0;updHP(ds,p.def);
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.rollOK),v)}</div>`;
-    p.log+=' ★ 丸め込み3カウント！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.winner=as;S.finType='丸め込み';S.finMove=p.moveName||'';sfx.finChime();
-    setTimeout(()=>{showNBtn();showResult()},2000);
-  }else{
-    showCountText('返したーーっ！','white');sfx.kickout();
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.rollFail),v)}</div>`;
-    p.log+=' → カウント2で返した！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.turn++;S.pendingFinishResult=null;
-    if(S.turn>_maxT){doTimeout();return}
-    showNBtn();endAnim();
-  }
-}
-
-// v4.1: Pin attempt (HP>0) resolution
-function resolvePinAttemptClick(p){
-  const v={a:p.atk.name,d:p.def.name,m:p.moveName,w:p.atk.name};
-  const ds=p.defSide,as=p.atkSide;
-  if(!p.isKickout){
-    showCountText('3ーーーーっ！！！','white');sfx.count();sfx.finImpact();
-    const flash=document.createElement('div');flash.className='finish-flash';
-    document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    p.def.hp=0;updHP(ds,p.def);
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">押し切ったーーっ！ ${p.atk.name}、HPが残る${p.def.name}をフォールで仕留めた！</div>`;
-    p.log+=` ★ ${p.atk.name}がフォール(押し切り)で勝利！`;
-    S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.finType='フォール';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
-    setTimeout(()=>{showNBtn();showResult()},2000);
-  }else{
-    showCountText('返したーーっ！','white');sfx.kickoutSE();
-    const dp=document.getElementById(`panel-${ds}`);
-    if(dp){dp.classList.add('kickout-flash');setTimeout(()=>dp.classList.remove('kickout-flash'),600)}
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.kickout),v)}</div>`;
-    showSp(as,pk(CMT.sit.kickoutAtk),'t-def');
-    p.log+=' → ニアフォール！ 返した！';S.log.unshift(p.log);S.log=S.log.slice(0,15);
-    S.turn++;S.pendingFinishResult=null;
-    if(S.turn>_maxT){doTimeout();return}
-    showNBtn();endAnim();
-  }
-}
-
-// v4.1: TKO resolution
-function resolveTKOClick(p){
-  const v={a:p.atk.name,d:p.def.name,m:p.moveName,w:p.atk.name};
-  const ds=p.defSide,as=p.atkSide;
-  showCountText('TKO！！','red-gold');sfx.bellx3();sfx.finImpact();
-  const flash=document.createElement('div');flash.className='finish-flash';
-  document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-  const box=document.getElementById('narBox');
-  if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit.finTKO),v)}</div>`;
-  p.log+=` ★ TKO！ ${p.atk.name}の勝利！`;
-  S.log.unshift(p.log);S.log=S.log.slice(0,15);
-  S.finType='TKO';S.finMove=p.moveName||'';S.winner=as;sfx.finChime();
-  setTimeout(()=>{showNBtn();showResult()},2000);
-}
-
-function showCountText(text,cls){
-  const el=document.createElement('div');
-  el.className=`finish-count-text ${cls}`;el.textContent=text;
-  document.body.appendChild(el);
-  requestAnimationFrame(()=>el.classList.add('show'));
-  setTimeout(()=>el.remove(),1000);
-}
-function showNBtn(){
-  const nBtn=document.getElementById('nBtn');if(nBtn){nBtn.style.display='';
-    const actBar=nBtn.closest('.action-bar');if(actBar)actBar.style.display='';}
-  // Auto-advance: 試合継続中であれば5秒後にNEXT TURNを自動発火
-  if(autoAdvance&&!S.winner){
-    clearTimeout(autoTimer);
-    autoTimer=setTimeout(()=>{
-      if(autoAdvance&&!S.winner&&!S.anim)nextTurn();
-    },AUTO_DELAY);
-  }
-}
-function toggleAuto(){
-  autoAdvance=!autoAdvance;
-  clearTimeout(autoTimer);
-  // ボタン表示を即時更新
-  const btn=document.getElementById('autoBtn');
-  if(btn){btn.classList.toggle('on',autoAdvance);
-    const sp=btn.querySelector('span');if(sp)sp.textContent=autoAdvance?'ON':'OFF';}
-  // ONに切り替えた時点でnBtnが操作可能なら即タイマー開始
-  if(autoAdvance&&!S.winner&&!S.anim){
-    const nBtn=document.getElementById('nBtn');
-    if(nBtn&&!nBtn.disabled){
-      autoTimer=setTimeout(()=>{if(autoAdvance&&!S.winner&&!S.anim)nextTurn();},AUTO_DELAY);
-    }
-  }
-}
-
-// ═══ STATE ═══
-const S={screen:'WAITING',turn:1,mom:0,prevMom:0,
-  L:null,R:null,log:[],winner:null,finType:null,anim:false,
-  halfTrig:{l:false,r:false},qtrTrig:{l:false,r:false},dangerTrig:{l:false,r:false},
-  awaitingFinishClick:false,pendingFinishResult:null,
-  consecutiveHits:{left:0,right:0}};
-// ─── Auto-advance state ───
-let autoAdvance=false;
-let autoTimer=null;
-const AUTO_DELAY=2500; // ms
-const silSVG=`<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="30" r="18"/><ellipse cx="50" cy="85" rx="30" ry="35"/></svg>`;
-
-// ═══ WAITING SCREEN ═══
-function renderWaiting(){
-  const hc=document.getElementById('hudContainer');if(hc)hc.innerHTML='';
-  const ct=document.getElementById('screenContainer');
-  ct.innerHTML=`<div class="waiting-screen">
-    <div class="waiting-pulse"></div>
-    <div class="waiting-title">STANDBY</div>
-    <div class="waiting-sub">試合データの受信を待機中…</div>
-  </div>`;
-}
-
-// ═══ postMessage COMMUNICATION ═══
-window.addEventListener('message', function(e) {
-  if (!e.data || e.data.type !== 'START_MATCH') return;
-  matchData = e.data;
-  // Apply parent frame master volume settings
-  const mi = e.data.matchInfo || {};
-  // シードRNG初期化（セーブ&ロード厳選封じ）
-  RNG.seed(mi.rngSeed || (Date.now() ^ 0x5A30));
-  _ensureMasterGains();
-  if (mi.sfxMasterVol !== undefined) _sfxMasterGain.gain.value = mi.sfxMasterVol;
-  if (mi.bgmMasterVol !== undefined) _bgmMasterGain.gain.value = mi.bgmMasterVol;
-  startMatchFromData(e.data.left, e.data.right);
-});
-
-function openFighterPopup(id){
-  const f = (S.L && S.L.id===id) ? S.L : (S.R && S.R.id===id) ? S.R : null;
-  if(!f) return;
-  const side = f===S.L ? 'left' : 'right';
-  const hpPct = Math.max(0, Math.round(f.hp/f.mhp*100));
-  const ovr = Math.round((Math.round(f.pw)+Math.round(f.sp)+Math.round(f.te)+Math.round(f.st)+Math.round(f.mn))/5);
-  const momVal = S.mom > 15 ? (side==='left'?'優勢':'劣勢') : S.mom < -15 ? (side==='left'?'劣勢':'優勢') : '互角';
-  const rc = (f.role||'Neutral').toLowerCase();
-  const mi = matchData && matchData.matchInfo;
-  const hasRivalry = mi && mi.rivalryTier > 0;
-  const isTitle = mi && mi.isTitle;
-  const profile = f.profile || '';
-  const age = f.age ? f.age+'歳' : '';
-  const _ST={pow:'パワー：技の威力に影響',spd:'スピード：回避率に影響',tec:'テクニック：命中率に影響',sta:'スタミナ：HPの総量に影響',mn:'メンタル：被ダメ軽減・試合の流れに影響'};
-  const stats = [{k:'pow',l:'POW',v:Math.round(f.pw)},{k:'spd',l:'SPD',v:Math.round(f.sp)},{k:'tec',l:'TEC',v:Math.round(f.te)},{k:'sta',l:'STA',v:Math.round(f.st)},{k:'mn',l:'MN',v:Math.round(f.mn)}];
-  let badges = '';
-  if(hasRivalry) badges += '<span class="bp-badge rival">🔥 RIVAL</span>';
-  if(isTitle) badges += '<span class="bp-badge title">🏆 TITLE MATCH</span>';
-  const mirrorStyle = side==='left' ? 'transform:scaleX(-1)' : '';
-  const ov = document.getElementById('bpOverlay');
-  ov.innerHTML = `<div class="bp-box">
-    <button class="bp-close" onclick="closeBattlePopup()">✕</button>
-    <div class="bp-img"><img src="${getFullUrl(f)}" style="${mirrorStyle}" onerror="this.style.display='none'"></div>
-    <div class="bp-info">
-      <div class="bp-header"><span class="bp-name">${f.name}</span><span class="bp-role ${rc}">${f.role}</span></div>
-      <div class="bp-basics"><span class="bp-style">${f.style}</span><div class="bp-meta">${age?'<span>'+age+'</span>':''}<span>${f.h}cm</span></div></div>
-      <div class="bp-ovr"><span class="bp-ovr-label">OVR</span><span class="bp-ovr-val">${ovr}</span></div>
-      <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row"><span class="bp-stat-name" title="${_ST[s.k]}">${s.l}</span><div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div><span class="bp-stat-val">${s.v}</span></div>`).join('')}</div>
-      <div class="bp-divider"></div>
-      <div class="bp-details">
-        <div class="bp-detail-item"><span class="bp-detail-label">現在HP</span><span class="bp-detail-value">${Math.max(0,f.hp)} / ${f.mhp} (${hpPct}%)</span></div>
-        <div class="bp-detail-item"><span class="bp-detail-label">モメンタム</span><span class="bp-detail-value">${momVal}</span></div>
-      </div>
-      ${profile?'<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">'+profile+'</div></div>':''}
-      ${badges?'<div class="bp-badges">'+badges+'</div>':''}
-    </div>
-  </div>`;
-  ov.classList.add('show');
-}
-function closeBattlePopup(){document.getElementById('bpOverlay').classList.remove('show')}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBattlePopup()});
-
-function sendResult() {
-  const L = S.L, R = S.R;
-  const isDraw = S.winner === 'draw';
-  const winnerId = isDraw ? null : (S.winner === 'left' ? L.id : R.id);
-  const loserId = isDraw ? null : (S.winner === 'left' ? R.id : L.id);
-  // Calculate MQ (match quality) — reuse S.mq if pre-calculated by showResult()
-  const totalTurns = S.turn;
-  let mq = S.mq;
-  if (!mq) {
-    const leadChanges = S.log.filter(l => l.includes('カウンター')).length;
-    const kickouts = S.log.filter(l => l.includes('キックアウト') || l.includes('返した') || l.includes('ロープ')).length;
-    const bigMoves = S.log.filter(l => l.includes('大ダメージ')).length;
-    const baseMQ = 30 + Math.min(totalTurns * 2, 20) + leadChanges * 5 + kickouts * 8 + bigMoves * 3;
-    mq = Math.min(100, Math.max(10, Math.round(baseMQ + (RNG.float() * 10 - 5))));
-  }
-  const result = {
-    type: 'MATCH_RESULT',
-    winner: isDraw ? 'draw' : (S.winner === 'left' ? 'left' : 'right'),
-    winnerId, loserId,
-    leftId: L.id, rightId: R.id,
-    finType: S.finType || (isDraw ? 'タイムアップ' : ''),
-    finMove: S.finMove || '',
-    turns: totalTurns,
-    mq,
-    hpLeft: { current: Math.max(0, L.hp), max: L.mhp },
-    hpRight: { current: Math.max(0, R.hp), max: R.mhp },
-    log: S.log
-  };
-  window.parent.postMessage(result, '*');
-}
-
-// ═══ START MATCH (from postMessage data) ═══
-function startMatchFromData(left, right){
-  // Tier切り替え
-  const mi = matchData && matchData.matchInfo;
-  _isBigMatch = mi && mi.matchTier >= 2;
-  _maxT = _isBigMatch ? BIGMATCH_MAX_T : MAX_T;
-  _phases = _isBigMatch ? BIGMATCH_PHASES : PHASES;
-  _eng = _isBigMatch ? BIGMATCH_ENG : ENG;
-  // Ensure vl (voice lines) have defaults
-  if (!left.vl || !left.vl.length) left.vl = ['…！'];
-  if (!right.vl || !right.vl.length) right.vl = ['…！'];
-  const mk=c=>({...c,mn:clamp(c.mn,0,100),hp:Math.round(_eng.hpBase+eff(c.st)*_eng.hpScale),mhp:Math.round(_eng.hpBase+eff(c.st)*_eng.hpScale),kickoutCount:0,gritTurns:0});
-  S.L=mk(left);S.R=mk(right);
-  S.turn=1;S.mom=0;S.prevMom=0;S.log=[];S.winner=null;S.finType=null;S.finMove=null;S.anim=false;
-  S.halfTrig={l:false,r:false};S.qtrTrig={l:false,r:false};S.dangerTrig={l:false,r:false};
-  S.awaitingFinishClick=false;S.pendingFinishResult=null;stopDrone();
-  S.consecutiveHits={left:0,right:0};
-  S.bigmoveCount=0;
-  S.cutinShown={opening:false,mid:false,end:false,climax:false,finish:false};
-  S.screen='MATCH';renderMatchWithIntro();
-}
-
-// ═══ MATCH RENDER ═══
-function renderMatch(){
-  const ct=document.getElementById('screenContainer'),hc=document.getElementById('hudContainer'),L=S.L,R=S.R,ph=phase(S.turn);
-  const mPct=clamp(50+S.mom*0.5,5,95);
-  const lHpPct=Math.max(0,Math.round(L.hp/L.mhp*100)),rHpPct=Math.max(0,Math.round(R.hp/R.mhp*100));
-  const lHc=lHpPct>66?'high':lHpPct>33?'mid':'low',rHc=rHpPct>66?'high':rHpPct>33?'mid':'low';
-  const mi=matchData&&matchData.matchInfo;
-  const hasRivalry=mi&&mi.rivalryTier>0;
-  // HUD
-  hc.innerHTML=`<div class="hud">
-    <div class="hud-top">
-      <div class="hud-side"><div class="hud-face blue"><img src="${getFaceUrl(L)}" onerror="this.style.display='none'"></div><div><div class="hud-name">${L.name}</div><div class="hud-style">${L.style}</div></div></div>
-      <div class="hud-center"><div class="hud-turn" id="hudTurn">ターン ${S.turn}</div><div class="hud-phase" id="hudPhase">${ph.name}</div></div>
-      <div class="hud-side"><div style="text-align:right"><div class="hud-name">${R.name}</div><div class="hud-style">${R.style}</div></div><div class="hud-face red"><img src="${getFaceUrl(R)}" onerror="this.style.display='none'"></div></div>
-    </div>
-    <div class="hud-mom"><div class="hud-mom-l" id="hudMomL" style="width:${mPct}%"></div><div class="hud-mom-r" id="hudMomR" style="width:${100-mPct}%"></div></div>
-    <div class="hp-row"><span class="hp-pct blue" id="hudHpPctL">${lHpPct}%</span><div class="hp-bar"><div class="hp-fill ${lHc} rev" id="hudHpL" style="width:${lHpPct}%"></div></div><span class="hp-label">HP</span><div class="hp-bar"><div class="hp-fill ${rHc}" id="hudHpR" style="width:${rHpPct}%"></div></div><span class="hp-pct red" id="hudHpPctR">${rHpPct}%</span></div>
-  </div>`;
-  function panelCls(f,side){
-    let cls='fighter-panel '+side;
-    if(f.gritTurns>0)cls+=' grit-active';
-    return cls;
-  }
-  function fHTML(f,side){
-    const rc=f.role.toLowerCase();
-    const _HT={power:'パワー：技の威力に影響',speed:'スピード：回避率に影響',technique:'テクニック：命中率に影響',stamina:'スタミナ：HPの総量に影響',mental:'メンタル：被ダメ軽減・試合の流れに影響'};
-    const stats=[{k:'power',l:'PWR',v:Math.round(f.pw)},{k:'speed',l:'SPD',v:Math.round(f.sp)},
-      {k:'technique',l:'TEC',v:Math.round(f.te)},{k:'stamina',l:'STA',v:Math.round(f.st)},{k:'mental',l:'MNT',v:Math.round(f.mn)}];
-    const rivalBadge=hasRivalry?`<div class="f-rival-badge">🔥 RIVAL</div>`:'';
-    return `<div class="${panelCls(f,side)}" id="panel-${side}">
-      <div class="danger-overlay" id="danger-${side}">DANGER</div>
-      <div class="portrait-area" id="port-${side}">
-        <img src="${getStandUrl(f)}" alt="${f.name}" id="img-${side}"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="portrait-placeholder" style="display:none">${silSVG}<span>${f.name}</span></div>
-        <div class="monitor-frame"></div>
-        <div class="dmg-number" id="dmg-${side}"></div>
-        <div class="danger-glow" id="dangerGlow-${side}"><div class="danger-glow-inner"></div></div>
-        <div class="speech-bubble" id="sp-${side}"></div>
-      </div><div class="fighter-info">
-        <div class="f-name-row"><span class="f-name" onclick="openFighterPopup(${f.id})">${f.name}</span>
-          <span class="f-role-tag ${rc}">${f.role}</span></div>
-        <div class="f-style">${f.style}</div>
-        ${rivalBadge}
-        <div class="ability-bars">${stats.map(s=>`<div class="ab-row"><span class="ab-name" title="${_HT[s.k]}">${s.l}</span>
-          <div class="ab-track"><div class="ab-fill ${s.k}" style="width:${s.v}%"></div></div>
-          <span class="ab-val">${s.v}</span></div>`).join('')}</div>
-        <div class="grit-indicator${f.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${f.gritTurns})</div>
-      </div></div>`}
-  const logH=S.log.map(e=>{let c='log-entry';
-    if(e.includes('★')||e.includes('⏰'))c+=' finish';
-    else if(e.includes('カウンター'))c+=' counter';
-    else if(e.includes('MISS'))c+=' miss';
-    else if(e.includes('カウント'))c+=' system';
-    return `<div class="${c}">${e}</div>`}).join('');
-  ct.innerHTML=`<div class="match-grid" id="matchGrid">${fHTML(L,'left')}
-    <div class="center-panel">
-      <div class="top-line"><span class="turn-label" id="turnLbl">ターン ${S.turn}</span>
-        <span class="phase-pill${_isBigMatch?' bigmatch':''}" id="pill">${ph.name}</span></div>
-      <div class="narration-box" id="narBox"><div class="nar-empty">試合開始 — NEXT TURNを押してください</div></div>
-      <div class="move-box"><div class="move-label">Current Move</div>
-        <div class="move-value" id="moveV">---</div>
-        <div class="attack-arrow-layer move-arrow-layer" id="arrowLayer"></div></div>
-      <div class="log-section"><div class="log-header">Battle Log</div>
-        <div class="log-box" id="logBox">${logH}</div></div>
-    </div>${fHTML(R,'right')}</div>
-    <div class="action-bar-spacer"></div>
-    <div class="action-bar"><button class="btn-next" id="nBtn" ${S.winner||S.anim?'disabled':''}>
-      ${S.winner?(S.winner==='draw'?'DRAW!':`${(S.winner==='left'?L:R).name} WIN!`):'▶  NEXT TURN'}</button>
-      ${!S.winner?`<button class="btn-auto${autoAdvance?' on':''}" id="autoBtn" onclick="toggleAuto()">AUTO<br><span style="font-size:10px;letter-spacing:1px">${autoAdvance?'ON':'OFF'}</span></button>`:''}
-    </div>`;
-  if(!S.winner&&!S.anim)document.getElementById('nBtn').onclick=nextTurn;
-}
-
-// ═══ v4.1 TURN LOGIC (complete rewrite) ═══
-function nextTurn(){
-  clearTimeout(autoTimer); // 自動送りタイマーをキャンセル
-  closeBattlePopup(); // 残存ポップアップを閉じる
-  if(S.winner||S.anim||S.pendingPhaseIntro)return;
-
-  // ━━━ フェーズ導入を独立イベントとして処理 ━━━
-  // ターン処理を開始する前にフェーズ変化を検出し、該当する場合は
-  // カットインを出してターン処理を保留する。ユーザーがクリックで
-  // カットインを閉じると dismissCutin() が nextTurn() を再呼び出しする。
-  {
-    const _ph = phase(S.turn);
-    const _prevPh = S.turn > 1 ? phase(S.turn - 1).name : _ph.name;
-    const _phKey = _ph.name.toLowerCase();
-    if (_ph.name !== _prevPh && S.cutinShown && !S.cutinShown[_phKey]) {
-      S.cutinShown[_phKey] = true; // 同一フェーズで二重発火を防ぐ
-      // フェーズ表示ピルをフラッシュ
-      const pill = document.getElementById('pill');
-      if (pill) {
-        pill.textContent = _ph.name;
-        pill.classList.add('flash');
-        setTimeout(() => pill.classList.remove('flash'), 600);
-      }
-      // ビッグマッチ Climax → 親フレームに BGM 切替通知
-      if (_isBigMatch && _ph.name === 'Climax' && window.parent !== window) {
-        window.parent.postMessage({type:'BIGMATCH_CLIMAX'}, '*');
-      }
-      // フェーズ導入カットイン（ライバリー戦のみ・発動率判定あり）
-      if (showPhaseIntroCutin(_ph.name)) {
-        // カットイン表示中はターン処理を保留。Nボタン無効化のみ行い return。
-        const btn0 = document.getElementById('nBtn');
-        if (btn0) { btn0.disabled = true; btn0.style.animation = 'none'; }
-        return;
-      }
-      // カットインなし（非ライバリー or 発動率外れ）→ フォールスルーして続行
-    }
-  }
-  // ━━━ フェーズ導入処理ここまで ━━━
-
-  S.anim=true;
-  const btn=document.getElementById('nBtn');if(btn){btn.disabled=true;btn.style.animation='none';}
-  const L=S.L,R=S.R,ph=phase(S.turn),prevPh=S.turn>1?phase(S.turn-1).name:ph.name;
-
-  // Tick grit buffs
-  tickGrit(L,'left');tickGrit(R,'right');
-  // Update grit display
-  const giL=document.getElementById('grit-left');if(giL){giL.textContent=`⚡ 闘志 (${L.gritTurns})`;if(L.gritTurns<=0)giL.classList.remove('active')}
-  const giR=document.getElementById('grit-right');if(giR){giR.textContent=`⚡ 闘志 (${R.gritTurns})`;if(R.gritTurns<=0)giR.classList.remove('active')}
-
-  // Attacker selection (v3.5 formula preserved + MN influence)
-  let lCh=50+(S.mom*0.3)+((eff(L.sp)-eff(R.sp))*0.15);
-  lCh=clamp(lCh,20,80);
-  const as=RNG.float()*100<lCh?'left':'right',ds=as==='left'?'right':'left';
-  const atk=as==='left'?L:R,def=ds==='left'?L:R;
-  const mv=selMove(atk.style,S.turn,def.hp/def.mhp,atk.hp/atk.mhp),big=mv.d>=14;
-
-  // v4.1: HIT CHECK
-  const hitRate=calcHitRate(mv,atk,def);
-  const isHit=RNG.float()*100<hitRate;
-
-  // v4.1: COUNTER CHECK (only if hit)
-  let isCounter=false;
-  if(isHit){
-    const counterRate=calcCounterRate(atk,def,ph);
-    isCounter=RNG.float()*100<counterRate;
-  }
-
-  const v={a:atk.name,d:def.name,m:mv.n,v:0,w:''};
-  let tempo=ph.tempo;if(big)tempo+=500;
-  const t=p=>tempo*p;
-
-  // Track consecutive hits
-  if(isHit&&!isCounter){
-    S.consecutiveHits[as]++;
-    S.consecutiveHits[ds]=0;
-  }else{
-    S.consecutiveHits[as]=0;
-    if(isCounter)S.consecutiveHits[ds]++;
-  }
-
-  // Phase change 検出はnextTurn冒頭のフェーズ導入ブロックで処理済み
-  // （ピルフラッシュ・BGM切替・カットイン全て上で実行される）
-
-  // T5: 攻撃方向矢印 (MISS はグレー / カウンターは 2段階)
-  _spawnAttackArrow(as, ds, mv.n, isCounter, !isHit);
-
-  // === MISS ===
-  if(!isHit){
-    sfx.ready();
-    const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-    setTimeout(()=>{
-      const mv2=document.getElementById('moveV');
-      if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-      sfx.missWhiff();
-      // MISS! flash + text
-      const mf=document.createElement('div');mf.className='miss-flash';document.body.appendChild(mf);setTimeout(()=>mf.remove(),400);
-      const mt=document.createElement('div');mt.className='miss-text';mt.textContent='MISS!';document.body.appendChild(mt);
-      void mt.offsetWidth;mt.classList.add('show');setTimeout(()=>mt.remove(),1600);
-      const box=document.getElementById('narBox');
-      if(box){box.innerHTML=`<div class="nar-line nar-miss show">${tpl(pk(CMT.miss),v)}</div>`}
-      if(ap)ap.classList.remove('flash-atk');
-      // Momentum: miss gives slight momentum to defender
-      const dir=as==='left'?-1:1;
-      S.mom=clamp(S.mom+(8*dir),-100,100);
-      updMom();
-      let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → MISS！ (命中率${Math.round(hitRate)}%)`;
-      S.log.unshift(log);S.log=S.log.slice(0,15);
-      S.turn++;
-      if(S.turn>_maxT){doTimeout();return}
-      // Delay endAnim so MISS! text is visible before next turn
-      setTimeout(()=>endAnim(),1200);
-    },t(0.4));
-    return;
-  }
-
-  // === COUNTER ===
-  if(isCounter){
-    const isBigmoveCounter = big && S.bigmoveCount < 3 && RNG.float() < (BIGMOVE_ANIM_RATE[ph.name]||0);
-    if(isBigmoveCounter){
-      // ビッグムーブ→カウンター演出
-      S.bigmoveCount++;
-      sfx.ready();
-      const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-      const bn=document.getElementById('bigmoveName');
-      const cb=document.getElementById('counterBig');
-      const dp=document.getElementById(`panel-${ds}`);
-      // 0s: セリフカットイン + 溜め音
-      showCutin(as, atk, 'bigmove');
-      sfx.bigmoveCharge();
-      // 1.5s: セリフ消去
-      setTimeout(()=>dismissCutin(), 1500);
-      // 1.8s: 技名表示
-      setTimeout(()=>{
-        if(ap)ap.classList.remove('flash-atk');
-        const mv2=document.getElementById('moveV');
-        if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-        if(bn){bn.textContent=mv.n;bn.className='bigmove-name show';}
-      },1800);
-      // 2.3s: COUNTER!スライドイン + 技名吹き飛ばし
-      setTimeout(()=>{
-        // 防御側の方向からスライドイン
-        const fromRight=(ds==='right');
-        if(bn)bn.className='bigmove-name '+(fromRight?'blown-left':'blown-right');
-        if(cb){cb.className='counter-big '+(fromRight?'start-right':'start-left');void cb.offsetWidth;cb.classList.add('slide-in');}
-        _playSample('counterSE',null,0.05); // カウンター発動音（直接5%音量）
-        // 1.4秒後に技種別のヒット音（大きめ: dmg=30固定で最大級の音）
-        setTimeout(()=>hitSE(mv.c,30,1.3),1400);
-        if(dp){dp.classList.add('counter-flash');}
-      },2300);
-      // 2.8s: パネルフラッシュ解除
-      setTimeout(()=>{if(dp)dp.classList.remove('counter-flash');},2800);
-      // 3.2s: COUNTER!フェードアウト + 反撃ダメージ適用
-      setTimeout(()=>{
-        if(cb){cb.classList.remove('slide-in');cb.classList.add('fade-out');}
-        const counterDmg=Math.max(ENG.dmgFloor,Math.round(mv.d*ENG.counterDmgMult));
-        atk.hp=Math.max(0,atk.hp-counterDmg);
-        updHP(as,atk);
-        shakePanel(as,false);
-        showDmgNum(as,counterDmg,false);
-        if(ap){ap.classList.remove('flash-atk');ap.classList.add('flash-hit');setTimeout(()=>ap.classList.remove('flash-hit'),150)}
-        const dir=as==='left'?-1:1;
-        S.mom=clamp(S.mom+(ENG.counterMomShift*dir),-100,100);updMom();
-        showSp(ds,'切り返し！','t-counter');
-        const box=document.getElementById('narBox');
-        if(box){box.innerHTML=`<div class="nar-line nar-main show">${atk.name}の${mv.n}！</div>
-          <div class="nar-line nar-counter show">${tpl(pk(CMT.counter),v)}</div>
-          <div class="nar-line nar-dmg show">${atk.name}に${counterDmg}ダメージ！</div>`}
-        let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → ビッグカウンター！ ${atk.name}に${counterDmg}dmg`;
-        updPanelState(as,atk);
-        if(atk.hp<=0){
-          const ft=determineFinishType(mv,def,atk);v.a=def.name;v.d=atk.name;v.w=def.name;
-          if(ft==='tko'){S.pendingFinishResult={type:'TKO',isKickout:false,def:atk,atk:def,moveName:'カウンター',defSide:as,atkSide:ds,log};S.awaitingFinishClick=true;setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}
-          log+=` ★ カウンターKO！`;S.log.unshift(log);S.log=S.log.slice(0,15);
-          doFinish(def,atk,ds,as,mv,log,{a:def.name,d:atk.name,m:'カウンター',w:def.name});return;
-        }
-        S.log.unshift(log);S.log=S.log.slice(0,15);S.turn++;
-        if(S.turn>_maxT){doTimeout();return}
-      },3200);
-      // 3.8s: クリーンアップ + 次ターン
-      setTimeout(()=>{if(bn)bn.className='bigmove-name';if(cb)cb.className='counter-big';endAnim();},3800);
-      return;
-    }
-    // 通常カウンター（ビッグムーブなし）
-    sfx.ready();
-    const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-    setTimeout(()=>{
-      const mv2=document.getElementById('moveV');
-      if(mv2){mv2.textContent=`カウンター！`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-      getSfxGain().gain.value=SE_MIX.counterSE*0.5;_playSample('counterSE',0.5); // カウンター発動音（半分の音量）
-      // 3.5秒後に技種別のヒット音（1.6倍音量）
-      setTimeout(()=>hitSE(mv.c,mv.d,1.3),3500);
-      const counterDmg=Math.max(ENG.dmgFloor,Math.round(mv.d*ENG.counterDmgMult));
-      atk.hp=Math.max(0,atk.hp-counterDmg);
-      updHP(as,atk);
-      // Shake attacker
-      const img=document.getElementById(`img-${as}`);
-      if(img&&img.style.display!=='none'){
-        const flip=as==='left';
-        const cls=`shake-m${flip?'-flip':''}`;
-        img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');
-        void img.offsetWidth;img.classList.add(cls);
-      }
-      // Panel flash
-      if(ap){ap.classList.remove('flash-atk');ap.classList.add('flash-hit');setTimeout(()=>ap.classList.remove('flash-hit'),150)}
-      // Momentum shift to defender
-      const dir=as==='left'?-1:1;
-      S.mom=clamp(S.mom+(ENG.counterMomShift*dir),-100,100);
-      updMom();
-      showSp(ds,'切り返し！','t-counter');
-      const box=document.getElementById('narBox');
-      if(box){box.innerHTML=`<div class="nar-line nar-main show">${atk.name}の${mv.n}！</div>
-        <div class="nar-line nar-counter show">${tpl(pk(CMT.counter),v)}</div>
-        <div class="nar-line nar-dmg show">${atk.name}に${counterDmg}ダメージ！</div>`}
-      let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${counterDmg}dmg`;
-      updPanelState(as,atk);
-      // Counter KO check
-      if(atk.hp<=0){
-        const ft=determineFinishType(mv,def,atk);
-        v.a=def.name;v.d=atk.name;v.w=def.name;
-        if(ft==='tko'){
-          S.pendingFinishResult={type:'TKO',isKickout:false,def:atk,atk:def,moveName:'カウンター',defSide:as,atkSide:ds,log};
-          S.awaitingFinishClick=true;
-          setTimeout(()=>showFinishClickBtn('TKO',v),800);
-          return;
-        }
-        log+=` ★ カウンターKO！`;S.log.unshift(log);S.log=S.log.slice(0,15);
-        doFinish(def,atk,ds,as,mv,log,{a:def.name,d:atk.name,m:'カウンター',w:def.name});return;
-      }
-      S.log.unshift(log);S.log=S.log.slice(0,15);
-      S.turn++;
-      if(S.turn>_maxT){doTimeout();return}
-      endAnim();
-    },t(0.4));
-    return;
-  }
-
-  // === NORMAL HIT ===
-  const dmg=calcDamage(mv,atk,def,S.mom,as,ph);
-  v.v=dmg;
-  const isBigmoveAnim = big && S.bigmoveCount < 3 && RNG.float() < (BIGMOVE_ANIM_RATE[ph.name]||0);
-  const atkLine=big?tpl(pk(CMT.atk.big),v):tpl(pk(CMT.atk[ph.name]),v);
-  const dLvl=dmg<=8?'light':dmg<=14?'medium':'heavy';
-  const dmgLine=tpl(pk(CMT.dmg[dLvl]),v);
-  const hpAfter=def.hp-dmg;
-  if(hpAfter>0&&hpAfter/def.mhp<=0.25)tempo+=300;
-
-  if(isBigmoveAnim){
-    // ビッグムーブ演出フロー
-    S.bigmoveCount++;
-    const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-    const bn=document.getElementById('bigmoveName');
-    // 0s: セリフカットイン + 溜め音
-    showCutin(as, atk, 'bigmove');
-    sfx.bigmoveCharge();
-    // 1.5s: セリフ消去
-    setTimeout(()=>dismissCutin(), 1500);
-    // 1.8s: 技名表示 + ナレーション
-    setTimeout(()=>{
-      if(ap)ap.classList.remove('flash-atk');
-      const mv2=document.getElementById('moveV');
-      if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-      if(bn){bn.textContent=mv.n;bn.className='bigmove-name show';}
-      const box=document.getElementById('narBox');
-      if(box){box.innerHTML=`<div class="nar-line nar-main show" id="nM">${atkLine}</div><div class="nar-line nar-dmg" id="nD"></div><div class="nar-line nar-react" id="nR"></div>`;}
-    },1800);
-    // 2.3s: ヒット + ダメージ演出
-    setTimeout(()=>{
-      if(bn)bn.className='bigmove-name fade';
-      hitSE(mv.c,dmg,1.3); // ビッグムーブ：技カテゴリ別ヒット音を1.3倍音量
-      def.hp=Math.max(0,def.hp-dmg);
-      const isCrit=dmg>=15;
-      shakePanel(ds,isCrit);showDmgNum(ds,dmg,true);flashScreen();
-      const img=document.getElementById(`img-${ds}`);
-      if(img&&img.style.display!=='none'){const flip=ds==='left';img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');void img.offsetWidth;img.classList.add(`shake-l${flip?'-flip':''}`);}
-      updHP(ds,def);updPanelState(ds,def);
-      // ダメージセリフ/ボイス: HP残量ベース発動（ビッグムーブもクリティカル扱い）
-      tryDamageCutin(ds, def, def.hp / def.mhp);
-      const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
-      showSp(ds,pk(CMT.defR[rl]),'t-def');
-      if(ap)ap.classList.remove('flash-atk');
-      const nD=document.getElementById('nD');if(nD){nD.textContent=dmgLine;nD.classList.add('show');}
-      S.prevMom=S.mom;const dir=as==='left'?1:-1;
-      S.mom=clamp(S.mom+(dmg*0.5)*dir,-100,100);updMom();
-      let sit='';const skk=ds==='left'?'l':'r';
-      if(hr<=0.25&&!S.qtrTrig[skk]){S.qtrTrig[skk]=true;sit=tpl(pk(CMT.sit.quarter),v)}
-      else if(hr<=0.5&&!S.halfTrig[skk]){S.halfTrig[skk]=true;sit=tpl(pk(CMT.sit.half),v)}
-      else if(Math.abs(S.mom)>=80)sit=tpl(pk(CMT.sit.dominant),v);
-      else if((S.prevMom>0&&S.mom<0)||(S.prevMom<0&&S.mom>0))sit=tpl(pk(CMT.sit.reversal),v);
-      if(sit){const nR=document.getElementById('nR');if(nR){nR.textContent=sit;nR.classList.add('show')}}
-      let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → ${def.name}に${dmg}dmg [BIG]`;
-      if(mv.c==='rollup'&&def.hp>0&&(def.hp/def.mhp)<=ENG.rollupHpThreshold){doRollup(def,atk,ds,as,mv,log,v);return;}
-      if(def.hp>0&&(def.hp/def.mhp)<=ENG.tkoHpThreshold&&S.consecutiveHits[as]>=ENG.tkoConsecutiveThreshold){
-        const tkoRate=ENG.tkoBaseRate+(def.mhp-def.hp)*0.1-(def.mn*0.15);
-        if(RNG.float()*100<clamp(tkoRate,5,40)){log+=' → TKO判定へ！';S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};S.awaitingFinishClick=true;sfx.finImpact();setTimeout(()=>showFinishClickBtn('TKO',v),800);return;}}
-      if(def.hp>0&&checkPinAttempt(mv,atk,def,dmg,S.mom,as,ph)){
-        const isSubmission=mv.c==='submission',finType=isSubmission?'ギブアップ':'ピン',successRate=calcPinAttemptSuccess(atk,def,dmg,ph),isSuccess=RNG.float()*100<successRate;
-        log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
-        const box=document.getElementById('narBox');
-        if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra);}
-        S.awaitingFinishClick=true; // 3.0s endAnim の誤発動を防ぐため即時マーク
-        setTimeout(()=>{S.pendingFinishResult={type:finType,isKickout:!isSuccess,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};showFinishClickBtn(finType,v);},1200);
-        return;
-      }
-      if(def.hp<=0){doFinish(atk,def,as,ds,mv,log,v);return;}
-      S.log.unshift(log);S.log=S.log.slice(0,15);S.turn++;
-      if(S.turn>_maxT){doTimeout();return;}
-    },2300);
-    // 3.0s: クリーンアップ + 次ターン
-    // フィニッシュ待ち or 決着済みの場合は endAnim を呼ばない（2.3s と 3.0s の競合防止）
-    setTimeout(()=>{if(bn)bn.className='bigmove-name';if(!S.awaitingFinishClick&&!S.winner)endAnim();},3000);
-    return;
-  }
-
-  // Step 1: Attacker flash (通常ヒット)
-  sfx.ready();
-  const ap=document.getElementById(`panel-${as}`);if(ap)ap.classList.add('flash-atk');
-  if(RNG.float()<0.3){const ct2=big?pk(CMT.atkC.big):pk(CMT.atkC.normal);showSp(as,ct2,'t-atk')}
-
-  // Step 2: Move name
-  setTimeout(()=>{
-    const mv2=document.getElementById('moveV');
-    if(mv2){mv2.textContent=`${atk.name}の${mv.n}`;mv2.classList.remove('move-pop');void mv2.offsetWidth;mv2.classList.add('move-pop')}
-    const box=document.getElementById('narBox');
-    if(box){box.innerHTML=`<div class="nar-line nar-main" id="nM">${atkLine}</div>
-      <div class="nar-line nar-dmg" id="nD"></div><div class="nar-line nar-react" id="nR"></div>`;
-      setTimeout(()=>{const e=document.getElementById('nM');if(e)e.classList.add('show')},30)}
-  },t(0.2));
-
-  // Step 3: Hit — new damage FX
-  setTimeout(()=>{
-    hitSE(mv.c,dmg);
-    if(big&&mv.c!=='submission')setTimeout(()=>{mkNoise(0.3,0.1);osc('sine',80,40,0.4,0.06)},100);
-    def.hp=Math.max(0,def.hp-dmg);
-    // Panel shake + dmg number
-    const isCrit = dmg >= 15;
-    shakePanel(ds, isCrit);
-    showDmgNum(ds, dmg, isCrit);
-    if(isCrit) flashScreen();
-    // Legacy image shake (kept for portrait wobble)
-    const img=document.getElementById(`img-${ds}`);
-    if(img&&img.style.display!=='none'){
-      const tier=dmg<=8?'s':dmg<=14?'m':'l';
-      const flip=ds==='left';
-      const cls=`shake-${tier}${flip?'-flip':''}`;
-      img.classList.remove('shake-s','shake-m','shake-l','shake-s-flip','shake-m-flip','shake-l-flip');
-      void img.offsetWidth;img.classList.add(cls);
-    }
-    if(isCrit){
-      const mg=document.getElementById('matchGrid');
-      if(mg){mg.classList.remove('screen-shake');void mg.offsetWidth;mg.classList.add('screen-shake')}
-    }
-    updHP(ds,def);
-    updPanelState(ds,def);
-    const sk=ds==='left'?'l':'r';
-    if(def.hp>0&&def.hp/def.mhp<=0.2&&!S.dangerTrig[sk]){
-      S.dangerTrig[sk]=true;
-      const dng=document.getElementById(`danger-${ds}`);
-      if(dng){dng.classList.add('show');setTimeout(()=>dng.classList.remove('show'),1200)}
-    }
-    const hr=def.hp/def.mhp,rl=hr>0.66?'high':hr>0.33?'mid':'low';
-    showSp(ds,pk(CMT.defR[rl]),'t-def');
-    // ダメージセリフ/ボイス: HP残量ベース発動（クリティカルヒット時のみ）
-    if(isCrit) tryDamageCutin(ds, def, def.hp / def.mhp);
-    if(ap)ap.classList.remove('flash-atk');
-  },t(0.45));
-
-  // Step 4: Damage + outcomes
-  setTimeout(()=>{
-    const nD=document.getElementById('nD');if(nD){nD.textContent=dmgLine;nD.classList.add('show')}
-    S.prevMom=S.mom;const dir=as==='left'?1:-1;
-    S.mom=clamp(S.mom+(dmg*0.5)*dir,-100,100);
-    updMom();
-    let sit='';const hr=def.hp/def.mhp,skk=ds==='left'?'l':'r';
-    if(hr<=0.25&&!S.qtrTrig[skk]){S.qtrTrig[skk]=true;sit=tpl(pk(CMT.sit.quarter),v)}
-    else if(hr<=0.5&&!S.halfTrig[skk]){S.halfTrig[skk]=true;sit=tpl(pk(CMT.sit.half),v)}
-    else if(Math.abs(S.mom)>=80)sit=tpl(pk(CMT.sit.dominant),v);
-    else if((S.prevMom>0&&S.mom<0)||(S.prevMom<0&&S.mom>0))sit=tpl(pk(CMT.sit.reversal),v);
-    if(sit){const nR=document.getElementById('nR');if(nR){nR.textContent=sit;nR.classList.add('show')}}
-    let log=`T${S.turn} [${ph.name}] ${atk.name}の${mv.n} → ${def.name}に${dmg}dmg`;
-
-    // v4.1: Rollup check (uses TEC now)
-    if(mv.c==='rollup'&&def.hp>0&&(def.hp/def.mhp)<=ENG.rollupHpThreshold){
-      doRollup(def,atk,ds,as,mv,log,v);return;
-    }
-
-    // v4.1: TKO check
-    if(def.hp>0&&(def.hp/def.mhp)<=ENG.tkoHpThreshold&&S.consecutiveHits[as]>=ENG.tkoConsecutiveThreshold){
-      const tkoRate=ENG.tkoBaseRate+(def.mhp-def.hp)*0.1-(def.mn*0.15);
-      if(RNG.float()*100<clamp(tkoRate,5,40)){
-        log+=' → TKO判定へ！';
-        S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-        S.awaitingFinishClick=true;
-        sfx.finImpact();
-        setTimeout(()=>showFinishClickBtn('TKO',v),800);
-        return;
-      }
-    }
-
-    // v4.1: Early finish attempt — submission技はギブアップ、それ以外はフォール (bug fix)
-    if(def.hp>0&&checkPinAttempt(mv,atk,def,dmg,S.mom,as,ph)){
-      const isSubmission=mv.c==='submission';
-      const finType=isSubmission?'ギブアップ':'ピン';
-      const successRate=calcPinAttemptSuccess(atk,def,dmg,ph);
-      const isSuccess=RNG.float()*100<successRate;
-      log+=isSubmission?' → ギブアップ狙い！':' → フォール狙い！';
-      const box=document.getElementById('narBox');
-      if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';
-        extra.textContent=tpl(pk(CMT.pinAttempt),v);box.appendChild(extra)}
-      setTimeout(()=>{
-        S.awaitingFinishClick=true;
-        S.pendingFinishResult={type:finType,isKickout:!isSuccess,
-          def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-        showFinishClickBtn(finType,v);
-      },1200);
-      return;
-    }
-
-    // KO check
-    if(def.hp<=0){doFinish(atk,def,as,ds,mv,log,v);return}
-    S.log.unshift(log);S.log=S.log.slice(0,15);
-    S.turn++;
-    if(S.turn>_maxT){doTimeout();return}
-    endAnim();
-  },t(0.7));
-}
-
-function doRollup(def,atk,ds,as,mv,log,v){
-  // v4.1: TEC-based rollup success
-  let successRate=ENG.rollupBaseSuccess+(eff(atk.te)*ENG.rollupTecBonus)-(eff(def.te)*0.08);
-  if(phase(S.turn).name==='Climax')successRate+=8;
-  successRate=clamp(successRate,5,30);
-  const isSuccess=RNG.float()*100<successRate;
-  sfx.count();showCountText('ワン！','gold');
-  setTimeout(()=>{
-    sfx.count();showCountText('ツー！','red-gold');
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">丸め込んだ！ 入るか！？</div>`;
-    setTimeout(()=>{
-      S.awaitingFinishClick=true;
-      S.pendingFinishResult={type:'丸め込み',isKickout:!isSuccess,
-        def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-      showFinishClickBtn('丸め込み',v);
-    },1000);
-  },800);
-}
-
-function getKickoutRecoveryHP(def){
-  const initialHP=def.mhp;
-  const ph=phase(S.turn);
-  if(ph.name==='Climax')return Math.max(1,Math.round(initialHP*0.10));
-  return Math.max(1,Math.round(initialHP*0.05));
-}
-
-function applyClimaxReturnEffects(ds,def,v){
-  const ph=phase(S.turn);if(ph.name!=='Climax')return;
-  const dp=document.getElementById(`panel-${ds}`);
-  if(dp){dp.classList.add('gold-aura');setTimeout(()=>dp.classList.remove('gold-aura'),1500)}
-  setTimeout(()=>{
-    const box=document.getElementById('narBox');
-    if(box){const extra=document.createElement('div');extra.className='nar-line nar-finish show';
-      extra.textContent=tpl(pk(CMT.sit.climaxReturn),v);box.appendChild(extra)}
-  },300);
-  sfx.heartbeatSE();
-}
-
-function doFinish(atk,def,as,ds,mv,log,v){
-  S.awaitingFinishClick=true; // フィニッシュシーケンス開始を即時マーク（3.0s endAnim 競合防止）
-  // v4.1: Finish type determined by move category
-  const ft=determineFinishType(mv,atk,def);
-  v.w=atk.name;
-
-  if(ft==='tko'){
-    // TKO finish
-    S.pendingFinishResult={type:'TKO',isKickout:false,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-    S.awaitingFinishClick=true;
-    sfx.finImpact();
-    const box0=document.getElementById('narBox');
-    if(box0)box0.innerHTML=`<div class="nar-line nar-finish show">これは…！ ${def.name}が動かない！ レフェリーが確認に…！</div>`;
-    setTimeout(()=>showFinishClickBtn('TKO',v),1200);
-    return;
-  }
-
-  // Pre-determine kickout
-  let isKickout=false;
-  if(ft==='fall'){
-    const kickoutChance=calcKickoutChance(def,phase(S.turn));
-    isKickout=RNG.float()<kickoutChance;
-  }else{
-    const escapeChance=calcGuEscapeChance(def,phase(S.turn));
-    isKickout=RNG.float()<escapeChance;
-  }
-
-  const pending={type:ft==='fall'?'フォール':'ギブアップ',isKickout,def,atk,moveName:mv.n,defSide:ds,atkSide:as,log};
-
-  // Impact flash
-  const flash=document.createElement('div');flash.className='finish-flash';
-  document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-  sfx.finImpact();updHP(ds,def);
-  const box0=document.getElementById('narBox');
-  if(box0)box0.innerHTML=`<div class="nar-line nar-finish show">これは…！ 決まったかーーーっ！？</div>`;
-
-  if(ft==='fall'){
-    setTimeout(()=>{
-      const box=document.getElementById('narBox');
-      if(box)box.innerHTML=`<div class="nar-line nar-finish show">${atk.name}がカバーに入った！ レフェリーのカウント！</div>`;
-      sfx.count();
-    },800);
-    setTimeout(()=>{
-      showCountText('ワン！','gold');sfx.count();
-      const img=document.getElementById(`img-${ds}`);
-      if(img&&img.style.display!=='none'){
-        const cls=ds==='left'?'shake-s-flip':'shake-s';
-        img.classList.remove('shake-s','shake-s-flip');void img.offsetWidth;img.classList.add(cls);
-      }
-    },1600);
-    setTimeout(()=>{
-      showCountText('ツー！','red-gold');sfx.count();mkNoise(0.15,0.06);
-      const box=document.getElementById('narBox');
-      if(box)box.innerHTML=`<div class="nar-line nar-finish show">ツーーーーっ！！</div>`;
-      const img=document.getElementById(`img-${ds}`);
-      if(img&&img.style.display!=='none'){
-        const cls=ds==='left'?'shake-m-flip':'shake-m';
-        img.classList.remove('shake-m','shake-m-flip');void img.offsetWidth;img.classList.add(cls);
-      }
-    },2600);
-    setTimeout(()=>{
-      S.awaitingFinishClick=true;S.pendingFinishResult=pending;
-      showFinishClickBtn('フォール',v);
-    },3600);
-  }else{
-    setTimeout(()=>{
-      const box=document.getElementById('narBox');
-      if(box)box.innerHTML=`<div class="nar-line nar-finish show">${atk.name}、${mv.n}をがっちりロック！</div>`;
-      osc('sawtooth',100,200,0.3,0.08);
-      const dp=document.getElementById(`panel-${ds}`);
-      if(dp){dp.classList.add('flash-hit');setTimeout(()=>dp.classList.remove('flash-hit'),200)}
-    },800);
-    setTimeout(()=>{
-      const box=document.getElementById('narBox');
-      if(box)box.innerHTML=`<div class="nar-line nar-finish show">${def.name}の表情が歪む…！ 極まっている！</div>`;
-      osc('sawtooth',80,150,0.5,0.06);
-      const img=document.getElementById(`img-${ds}`);
-      if(img&&img.style.display!=='none'){
-        const cls=ds==='left'?'shake-s-flip':'shake-s';
-        img.classList.remove('shake-s','shake-s-flip');void img.offsetWidth;img.classList.add(cls);
-        setTimeout(()=>{img.classList.remove('shake-s','shake-s-flip');void img.offsetWidth;img.classList.add(cls)},300);
-      }
-    },1800);
-    setTimeout(()=>{
-      S.awaitingFinishClick=true;S.pendingFinishResult=pending;
-      showFinishClickBtn('ギブアップ',v);
-    },2800);
-  }
-}
-
-function doTimeout(){
-  const L=S.L,R=S.R,lr=L.hp/L.mhp,rr=R.hp/R.mhp;
-  if(lr>rr)S.winner='left';else if(rr>lr)S.winner='right';else S.winner='draw';
-  S.finType='判定';S.finMove='';sfx.bellx3();
-  const w=S.winner==='draw'?'':(S.winner==='left'?L:R).name;
-  const key=S.winner==='draw'?'finDraw':'finJudge';
-  setTimeout(()=>{
-    const box=document.getElementById('narBox');
-    if(box)box.innerHTML=`<div class="nar-line nar-finish show">${tpl(pk(CMT.sit[key]),{w})}</div>`;
-    const tl=`⏰ タイムアップ！ ${S.winner==='draw'?'ドロー':w+'の判定勝ち'}！`;
-    S.log.unshift(tl);S.log=S.log.slice(0,15);sfx.finChime();
-  },800);
-  setTimeout(()=>showResult(),3000);
-}
-
-function updHP(side,f){
-  const pct=Math.max(0,f.hp/f.mhp*100),hc=pct>66?'high':pct>33?'mid':'low';
-  // HUD HP bars
-  const hudSide=side==='left'?'L':'R';
-  const hudFill=document.getElementById(`hudHp${hudSide}`);
-  if(hudFill){hudFill.style.width=Math.round(pct)+'%';hudFill.className=`hp-fill ${hc}${side==='left'?' rev':''}`}
-  const hudPct=document.getElementById(`hudHpPct${hudSide}`);
-  if(hudPct)hudPct.textContent=Math.round(pct)+'%';
-}
-function updMom(){
-  const mPct=clamp(50+S.mom*0.5,5,95);
-  const hL=document.getElementById('hudMomL');if(hL)hL.style.width=mPct+'%';
-  const hR=document.getElementById('hudMomR');if(hR)hR.style.width=(100-mPct)+'%';
-}
-function updPanelState(side,f){
-  // danger-glow: HP ≤ 25%
-  const pct=f.hp/f.mhp*100;
-  const glow=document.getElementById(`dangerGlow-${side}`);
-  if(glow){if(pct<=25)glow.classList.add('show');else glow.classList.remove('show')}
-}
-function showDmgNum(side,val,isCrit){
-  const el=document.getElementById(`dmg-${side}`);if(!el)return;
-  el.textContent=val;el.className='dmg-number'+(isCrit?' crit':'');
-  void el.offsetWidth;el.classList.add('show');
-  setTimeout(()=>{el.classList.remove('show');el.className='dmg-number'},900);
-}
-function flashScreen(){
-  const f=document.getElementById('flashOv');if(!f)return;
-  f.classList.remove('flash');void f.offsetWidth;f.classList.add('flash');
-  setTimeout(()=>f.classList.remove('flash'),300);
-}
-function shakePanel(side,hard){
-  const p=document.getElementById(`panel-${side}`);if(!p)return;
-  const cls=hard?'shake-hard':'shake';
-  p.classList.remove('shake','shake-hard');void p.offsetWidth;p.classList.add(cls);
-  setTimeout(()=>p.classList.remove(cls),hard?350:300);
-}
-// T5: 攻撃方向矢印 spawn (battle-shared.css の .attack-arrow* を使用)
-// as/ds: 'left' | 'right'。isCounter=true なら段階1 (元の攻撃方向) → 1000ms 後に段階2 (逆向き太い返し)
-// isMiss=true なら命中してない攻撃をグレー矢印で表示 (D2)
-function _spawnAttackArrow(as,ds,moveName,isCounter,isMiss){
-  const layer=document.getElementById('arrowLayer');if(!layer)return;
-  if(isCounter){
-    const stage1Dir=as==='left'?'ltr':'rtl';
-    const stage2Dir=stage1Dir==='ltr'?'rtl':'ltr';
-    _renderAtkArrow(layer,stage1Dir,moveName||'攻撃',false,false);
-    setTimeout(()=>_renderAtkArrow(layer,stage2Dir,'カウンター！ '+(moveName||''),true,false),1000);
-  }else{
-    const dir=as==='left'?'ltr':'rtl';
-    _renderAtkArrow(layer,dir,moveName||'攻撃',false,!!isMiss);
-  }
-}
-function _renderAtkArrow(layer,dir,labelText,isCounter,isMiss){
-  [...layer.querySelectorAll('.attack-arrow')].forEach(el=>{el.style.transition='opacity 0.15s';el.style.opacity='0';setTimeout(()=>el.remove(),180);});
-  const arrow=document.createElement('div');
-  arrow.className='attack-arrow '+dir+(isCounter?' counter-reversal':'')+(isMiss?' miss':'');
-  const head=dir==='ltr'?'▶':'◀';
-  const esc=String(labelText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  arrow.innerHTML=`<div class="shaft"></div><div class="head">${head}</div><div class="label">${esc}</div>`;
-  layer.appendChild(arrow);
-  void arrow.offsetWidth;
-  arrow.classList.add('play');
-  setTimeout(()=>{if(arrow.parentNode)arrow.remove();},1600);
-}
-const _spTimers={};
-function showSp(side,text,cls){
-  const el=document.getElementById(`sp-${side}`);if(!el)return;
-  if(_spTimers[side])clearTimeout(_spTimers[side]);
-  el.textContent=text;el.className=`speech-bubble ${cls} visible`;
-  _spTimers[side]=setTimeout(()=>{el.classList.remove('visible');_spTimers[side]=null;},1800);
-}
-function endAnim(){
-  S.anim=false;
-  // Update turn label & phase pill (center panel + HUD)
-  const tl=document.getElementById('turnLbl');if(tl)tl.textContent=`ターン ${S.turn}`;
-  const ph=phase(S.turn),pill=document.getElementById('pill');if(pill)pill.textContent=ph.name;
-  const hudTurn=document.getElementById('hudTurn');if(hudTurn)hudTurn.textContent=`ターン ${S.turn}`;
-  const hudPhase=document.getElementById('hudPhase');if(hudPhase)hudPhase.textContent=ph.name;
-  const btn=document.getElementById('nBtn');if(btn){btn.disabled=false;btn.onclick=nextTurn}
-  updLog();
-  // Auto-advance: ターン終了後にタイマー開始
-  if(autoAdvance&&!S.winner){
-    clearTimeout(autoTimer);
-    autoTimer=setTimeout(()=>{
-      if(autoAdvance&&!S.winner&&!S.anim)nextTurn();
-    },AUTO_DELAY);
-  }
-}
-function updLog(){
-  const lb=document.getElementById('logBox');if(!lb)return;
-  lb.innerHTML=S.log.map(e=>{let c='log-entry';
-    if(e.includes('★')||e.includes('⏰'))c+=' finish';
-    else if(e.includes('カウンター'))c+=' counter';
-    else if(e.includes('MISS'))c+=' miss';
-    else if(e.includes('カウント'))c+=' system';
-    return `<div class="${c}">${e}</div>`}).join('');
-}
-
-function localFormatFinish(finType,finMove){
-  if(!finMove)return finType||'激闘決着';
-  switch(finType){
-    case 'フォール':case 'ピン':return `${finMove} → 3カウント`;
-    case 'ギブアップ':return `${finMove} → ギブアップ`;
-    case 'TKO':return `${finMove} → レフェリーストップ`;
-    case '丸め込み':return `${finMove} → 丸め込み`;
-    default:return `${finMove} (${finType||'決着'})`;
-  }
-}
-
-function showResult(){
-  S.anim=false;
-  // 全セリフバブルを強制消去（勝者決定後に残らないように）
-  document.querySelectorAll('.speech-bubble').forEach(el=>el.classList.remove('visible'));
-  Object.keys(_spTimers).forEach(k=>{if(_spTimers[k])clearTimeout(_spTimers[k]);_spTimers[k]=null;});
-  // MQを事前計算してS.mqに保存（renderResultとsendResultで共用）
-  const totalTurns=S.turn;
-  const leadChanges=S.log.filter(l=>l.includes('カウンター')).length;
-  const kickouts=S.log.filter(l=>l.includes('キックアウト')||l.includes('返した')||l.includes('ロープ')).length;
-  const bigMoves=S.log.filter(l=>l.includes('大ダメージ')).length;
-  const baseMQ=30+Math.min(totalTurns*2,20)+leadChanges*5+kickouts*8+bigMoves*3;
-  S.mq=Math.min(100,Math.max(10,Math.round(baseMQ+(RNG.float()*10-5))));
-  const btn=document.getElementById('nBtn');
-  if(btn){btn.disabled=true;btn.textContent=S.winner==='draw'?'DRAW!':`${(S.winner==='left'?S.L:S.R).name} WIN!`}
-  updLog();renderResult();
-}
-
-function renderResult(){
-  const el=document.getElementById('resultOverlay'),L=S.L,R=S.R;
-  const isDraw=S.winner==='draw';
-  const winner=isDraw?null:(S.winner==='left'?L:R);
-  const loser=isDraw?null:(S.winner==='left'?R:L);
-  const vLine=winner?pk(winner.vl):'';
-  const mqVal=S.mq||0;
-
-  if(isDraw){
-    el.innerHTML=`<div class="result-box" id="rBox">
-      <div class="result-draw-content">
-        <div class="result-winner" id="rWinner">DRAW</div>
-        <div class="result-type" id="rType">タイムアップ — 引き分け</div>
-      </div>
-      <button class="btn-end" id="eBtn">CLOSE</button></div>`;
-  }else{
-    const finLabel=localFormatFinish(S.finType,S.finMove);
-    const mqClass=mqVal>=75?'mq-gold':'';
-    el.style.background='radial-gradient(ellipse at center,rgba(10,10,30,0.88) 0%,rgba(0,0,0,0.95) 100%)';
-    el.innerHTML=`<div class="victory-box" id="rBox">
-      <img id="rImg" class="winner-portrait" src="${getUpperUrl(winner)}" alt="${winner.name}" onerror="this.style.display='none'">
-      <div class="winner-label">W I N N E R</div>
-      <div class="winner-name" id="rWinner">${winner.name}</div>
-      <div class="vic-finish" id="rType">${finLabel}</div>
-      <div class="vic-speech" id="rQuote">
-        <div class="vic-speech-text" id="rSpeech"></div>
-      </div>
-      <div class="vic-bottom" id="rBottom">
-        <div class="vic-loser">
-          <img class="vic-loser-face" src="${getFaceUrl(loser)}" alt="${loser.name}" onerror="this.style.display='none'">
-          <div>
-            <div class="vic-loser-name">${loser.name}</div>
-            <div class="vic-loser-tag">LOSER</div>
-          </div>
-        </div>
-        <div class="vic-stats">
-          <div class="vic-stat">
-            <div class="vic-stat-label">MQ</div>
-            <div class="vic-stat-value ${mqClass}">${mqVal}</div>
-          </div>
-          <div class="vic-stat">
-            <div class="vic-stat-label">Turns</div>
-            <div class="vic-stat-value">${S.turn}</div>
-          </div>
-        </div>
-      </div>
-      <button class="vic-close" id="eBtn">C L O S E</button>
-    </div>`;
-  }
-  el.classList.add('show');
-  sfx.finChime();
-  requestAnimationFrame(()=>{el.classList.add('visible')});
-  setTimeout(()=>{
-    const rBox=document.getElementById('rBox');if(rBox)rBox.classList.add('visible');
-    if(!isDraw){const rImg=document.getElementById('rImg');if(rImg)rImg.classList.add('visible')}
-    sfx.victoryFanfare();
-  },800);
-  setTimeout(()=>{
-    const rW=document.getElementById('rWinner');if(rW)rW.classList.add('visible');
-    const rT=document.getElementById('rType');if(rT)rT.classList.add('visible');
-  },1500);
-  if(!isDraw){
-    setTimeout(()=>{
-      const rBottom=document.getElementById('rBottom');if(rBottom)rBottom.classList.add('visible');
-    },1800);
-    setTimeout(()=>{
-      const rQ=document.getElementById('rQuote');if(!rQ)return;
-      rQ.classList.add('visible');
-      const rS=document.getElementById('rSpeech');
-      if(rS){let idx=0;const tw=setInterval(()=>{idx++;rS.textContent=vLine.slice(0,idx);if(idx>=vLine.length)clearInterval(tw)},40);}
-    },2200);
-  }
-  setTimeout(()=>{
-    const eBtn=document.getElementById('eBtn');if(eBtn){eBtn.classList.add('visible');eBtn.addEventListener('click',closeAndSendResult)}
-  },3500);
-}
-function hideResult(){const el=document.getElementById('resultOverlay');el.classList.remove('show','visible');el.style.background='';el.innerHTML=''}
-
-function closeAndSendResult(){
-  sendResult();
-  resetToWaiting();
-}
-
-function resetToWaiting(){
-  Object.assign(S,{screen:'WAITING',turn:1,mom:0,prevMom:0,
-    L:null,R:null,log:[],winner:null,finType:null,finMove:null,anim:false,
-    halfTrig:{l:false,r:false},qtrTrig:{l:false,r:false},dangerTrig:{l:false,r:false},
-    awaitingFinishClick:false,pendingFinishResult:null,consecutiveHits:{left:0,right:0}});
-  matchData=null;
-  stopDrone();hideResult();render();
-}
-
-// ═══ MATCH INTRO ═══
-const INTRO_LINES={
-  main:["{l}  vs  {r}！ 注目の一戦が始まる！","さあ対戦カードが決定！ {l} 対 {r}！","{l} と {r}！ 両者の実力は拮抗している！"],
-  gong:["ゴングが鳴った！ 試合開始だーーっ！","ゴング！ いよいよ試合開始！","カーーーン！ ゴングと共に試合が始まった！"],
-  extra:["両者、リング中央で向かい合う！ さあ、どんな展開になるか！","まずはお互いの出方を探る展開か！","序盤からどう攻めるか、注目だ！"]
-};
-
-function showMatchCard(cb){
-  const mi=matchData&&matchData.matchInfo;
-  const mc=document.getElementById('matchCard');
-  if(!mc||!mi){if(cb)cb();return;}
-  mc.style.display='block';mc.style.pointerEvents='auto';
-  // h2h records
-  const h2h=mi.h2h||null;
-  let recordHtml='';
-  if(h2h&&h2h.matches>0){
-    recordHtml=`<div class="card-record"><span class="card-record-label">SERIES</span> ${h2h.matches}試合 — <span class="wins">${S.L.name} ${h2h.winsA}勝</span> / <span class="wins">${S.R.name} ${h2h.winsB}勝</span></div>`;
-  }else{
-    recordHtml=`<div class="card-first-meeting">FIRST MEETING</div>`;
-  }
-  // badges
-  let badges='';
-  if(mi.rivalryTier>=1)badges+=`<div class="card-badge rival">🔥 RIVALRY</div>`;
-  if(mi.isTitle)badges+=`<div class="card-badge title">TITLE MATCH</div>`;
-  const matchTypeText=mi.isTitle?'TITLE MATCH':mi.matchTier>=2?'BIG MATCH':'REGULAR MATCH';
-  const matchNumText=mi.matchNum&&mi.totalMatches?`MATCH ${mi.matchNum} / ${mi.totalMatches}`:'';
-  mc.innerHTML=`
-    <div class="venue-bg"><div class="center-darken"></div></div>
-    <div class="ring-floor"></div>
-    <div class="card-fighters">
-      <div class="card-fighter left"><div class="silhouette"><img src="${getFullUrl(S.L)}" alt="${S.L.name}" onerror="this.style.display='none'"></div></div>
-      <div class="card-fighter right"><div class="silhouette"><img src="${getFullUrl(S.R)}" alt="${S.R.name}" onerror="this.style.display='none'"></div></div>
-    </div>
-    <div class="card-info">
-      ${matchNumText?`<div class="card-match-num">${matchNumText}</div>`:''}
-      <div class="card-match-type">${matchTypeText}</div>
-      <div class="card-vs-block">
-        <div class="card-name">${S.L.name}</div>
-        <div class="card-vs">VS</div>
-        <div class="card-name">${S.R.name}</div>
-      </div>
-      ${recordHtml}
-      ${badges?`<div class="card-badges">${badges}</div>`:''}
-    </div>
-    <div class="scanlines"></div>
-    <div class="card-corner-frame"></div>`;
-  // show card — then transition to battle after 2.5s
-  setTimeout(()=>startMatchTransition(cb), 2500);
-}
-
-function startMatchTransition(cb){
-  const mc=document.getElementById('matchCard');
-  const gf=document.getElementById('gongFlash');
-  const gt=document.getElementById('gongText');
-  // Step 1: ゴングフラッシュ
-  if(gf){gf.classList.add('show');setTimeout(()=>gf.classList.remove('show'),150);}
-  sfx.gongStart();
-  // Step 2: FIGHT!テキスト
-  setTimeout(()=>{if(gt){gt.classList.add('show');}},200);
-  // Step 3: テキスト消去
-  setTimeout(()=>{if(gt){gt.classList.remove('show');gt.classList.add('fade');}},800);
-  // Step 4: カード画面フェードアウト
-  setTimeout(()=>{if(mc){mc.classList.add('hidden');mc.style.pointerEvents='none';}},1000);
-  // Step 5: バトル開始コールバック
-  setTimeout(()=>{if(gt)gt.className='gong-text';if(cb)cb();},1800);
-}
-
-function renderMatchWithIntro(){
-  renderMatch();
-  const btn=document.getElementById('nBtn');if(btn)btn.disabled=true;
-  const box=document.getElementById('narBox');
-  const v={l:S.L.name,r:S.R.name};
-  // 対戦カード紹介は特別な試合のみ（タイトル/対抗戦/PPV = matchTier >= 2）
-  const mi=matchData&&matchData.matchInfo;
-  const showCard=mi&&mi.matchTier>=2;
-  const startBattle=()=>{
-    setTimeout(()=>{sfx.gong();
-      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.main),v)}</div>`;
-    },600);
-    setTimeout(()=>{
-      sfx.gongStart();
-      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.gong),v)}</div>`;
-      const flash=document.createElement('div');flash.className='finish-flash';
-      document.body.appendChild(flash);setTimeout(()=>flash.remove(),400);
-    },2200);
-    setTimeout(()=>{
-      if(box)box.innerHTML=`<div class="nar-line nar-main show">${tpl(pk(INTRO_LINES.extra),v)}</div>`;
-    },3500);
-    setTimeout(()=>{
-      if(box)box.innerHTML=`<div class="nar-empty">NEXT TURNを押して試合開始</div>`;
-      const btn2=document.getElementById('nBtn');
-      if(btn2){btn2.disabled=false;btn2.onclick=nextTurn;
-        btn2.style.animation='btnPulse 1.5s ease-in-out infinite';}
-    },4500);
-  };
-  if(showCard){showMatchCard(startBattle);}else{startBattle();}
-}
-
-function render(){if(S.screen==='WAITING'){renderWaiting();hideResult()}
-  else if(S.screen==='MATCH'){renderMatch();hideResult()}}
-render();
+// 注: clamp / escHtml / _calcOvr は battle-engine-main.js で定義される（重複宣言回避）
+function getFaceUrl(f){return f.portraitUrl||(PORTRAIT[f.id]?`../image/face_${PORTRAIT[f.id]}.png`:'');}
+function _shellCalcOvr(f){return Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5);}
+function getStandUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_shellCalcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/stand/stand_${k}.webp`;}
+function getUpperUrl(f){return PORTRAIT[f.id]?`../image/upper/upper_${PORTRAIT[f.id]}.webp`:getFaceUrl(f);}
+function getFullUrl(f){if(!PORTRAIT[f.id])return getFaceUrl(f);const v=PORTRAIT_OVR_VARIANT[f.id];const ovr=_shellCalcOvr(f);const k=(v&&ovr>=v.threshold)?v.suffix:PORTRAIT[f.id];return `../image/full/full_${k}.webp`;}
 </script>
+<script src="battle-sfx.js"></script>
+<script src="battle-anim.js"></script>
+<script src="battle-lines.js"></script>
+<script src="battle-replay-core.js"></script>
+<script src="battle-engine-main.js"></script>
 </body>
 </html>

@@ -9599,10 +9599,10 @@ const Engine = {
     },
 
     /** PPV用バトル実行（condition=80固定） */
-    simulatePPVMatch(left, right, rng) {
+    simulatePPVMatch(left, right, rng, opts) {
       const pf = { ...left, condition: 80 };
       const af = { ...right, condition: 80 };
-      return Engine.battle.simulateMatch(pf, af, rng, 2);
+      return Engine.battle.simulateMatch(pf, af, rng, 2, opts);
     },
 
     /** PPV結果をGameStateに反映（純粋関数） */
@@ -10099,13 +10099,13 @@ const Engine = {
     },
 
     /** Resolve a single event match using battle engine (no injury, condition=80) */
-    resolveEventMatch(rng, playerFighter, aiFighter, mqBonus) {
+    resolveEventMatch(rng, playerFighter, aiFighter, mqBonus, opts) {
       mqBonus = mqBonus || 0;
       // Prepare fighters with fixed condition for event matches
       const pf = { ...playerFighter, condition: 80 };
       const af = { ...aiFighter, condition: 80 };
-      // Use battle engine
-      const result = Engine.battle.simulateMatch(pf, af, rng, 2);
+      // Use battle engine (opts: { recordFrames } を透過)
+      const result = Engine.battle.simulateMatch(pf, af, rng, 2, opts);
       result.mq = result.mq + (mqBonus || 0);
       return result;
     },
@@ -16742,7 +16742,7 @@ Engine.juniorTournament = {
         const fullHpR = Math.round(eng.hpBase + eff(right.st) * eng.hpScale);
         const pf = { ...left, _hpOverride: Math.round(fullHpL * left.condition / 100) };
         const af = { ...right, _hpOverride: Math.round(fullHpR * right.condition / 100) };
-        const result = Engine.battle.simulateMatch(pf, af, matchRng, matchTier);
+        const result = Engine.battle.simulateMatch(pf, af, matchRng, matchTier, { recordFrames: true });
         // 引き分け時は左側を勝者扱い（トーナメントなので必ず決着）
         const winnerId = result.winner === 'right' ? right.id : left.id;
         const loserId = winnerId === left.id ? right.id : left.id;
@@ -16767,6 +16767,7 @@ Engine.juniorTournament = {
           hpLeft: result.hpLeft, hpRight: result.hpRight,
           log: result.log || [],
           winner: result.winner,
+          frames: result.frames || [],
         });
 
         // 勝者はコンディション持ち越し + 回復

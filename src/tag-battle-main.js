@@ -27,7 +27,7 @@ const S = {
   chemB: 0,
   prevSnap: null,          // 前フレーム(タッチ検出用)
 };
-const SPEED_DELAYS = [2500, 1500, 800];
+// SPEED_DELAYS は battle-replay-core.js で定義
 
 // ── 初期画面 ──
 function renderWaiting(){
@@ -89,7 +89,7 @@ function startReplay(data){
 function f(key){ return S.fighters[key]; }
 function byId(id){ return S.fighters[S.idToKey[id]]; }
 function keyById(id){ return S.idToKey[id]; }
-function hpCls(ratio){ return ratio <= 0.33 ? 'danger' : ratio <= 0.55 ? 'warn' : ''; }
+// hpCls は battle-replay-core.js で定義
 function _getCurrentFrame(){ return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ? S.frames[S.frameIdx - 1] : null; }
 
 // ── メイン画面(全体)描画 ──
@@ -516,24 +516,7 @@ function _logLineHtml(line, fr){
 }
 
 // ── フレーム進行 ──
-const FRAME_DELAYS = { miss: 700, hit: 900, counter: 1100, crit: 1300 };
-function _frameMinDelay(fr){
-  if (!fr) return 800;
-  // ピンカウントはクリック駆動なので時間加算しない (pinCtrl が進行管理)
-  if (fr.winner) return 2200;
-  let base = 800;
-  if (fr.action) {
-    if (fr.action.kind === 'miss') base = FRAME_DELAYS.miss;
-    else if (fr.action.kind === 'counter') base = FRAME_DELAYS.counter;
-    else if (fr.action.isCrit) base = FRAME_DELAYS.crit;
-    else base = FRAME_DELAYS.hit;
-    // 大技は 1800ms チャージ + 500ms 技名見せ + 衝撃演出 + セリフ余白 を吸収
-    // 最低 3300ms 確保して「次ターンが溜めに重なる」事故を防ぐ
-    if (fr.action.kind !== 'miss' && fr.action.dmg >= 20) base += 2000;
-  }
-  if (fr.events && fr.events.length > 0) base += 500;
-  return base;
-}
+// FRAME_DELAYS / _frameMinDelay は battle-replay-core.js で定義
 
 function nextFrame(){
   if (S.anim || S.frameIdx >= S.frames.length) return;
@@ -566,7 +549,7 @@ function nextFrame(){
 //   t=2300  _renderActionImpact (bigmoveImpact + hitSE + ダメージポップ + shake + flash + splash)
 //   t=2700  tryDamageLine (被弾セリフ/ボイス)
 // これにより「溜めの最中に他の演出が炸裂する」drift を封じる。
-const BIGMOVE_CHARGE_MS = 1800;
+// BIGMOVE_CHARGE_MS は battle-replay-core.js で定義
 
 function applyFrame(fr){
   S.anim = true;
@@ -745,42 +728,18 @@ function _renderActionImpact(action){
   if (defKey === S.pos.legalA || defKey === S.pos.legalB) {
     _showDmgPop(defSide, action.dmg, action.isCrit, action.kind === 'counter');
   }
-  // パネルシェイク
-  const defCard = document.getElementById(`card-${defSide}-legal`);
-  if (defCard && (defKey === S.pos.legalA || defKey === S.pos.legalB)) {
-    defCard.classList.remove('shake', 'shake-hard');
-    void defCard.offsetWidth;
-    defCard.classList.add(action.isCrit ? 'shake-hard' : 'shake');
-    setTimeout(() => defCard.classList.remove('shake', 'shake-hard'), 400);
+  // パネルシェイク (レガル側のみ)
+  if (defKey === S.pos.legalA || defKey === S.pos.legalB) {
+    _applyShake(document.getElementById(`card-${defSide}-legal`), action.isCrit);
   }
-  // カウンターフラッシュ
+  // カウンターフラッシュ (レガル側のみ) + 半音量 counterSE
   if (action.kind === 'counter') {
-    const atkCard = document.getElementById(`card-${atkSide}-legal`);
-    if (atkCard && (atkKey === S.pos.legalA || atkKey === S.pos.legalB)) {
-      atkCard.classList.remove('counter-flash');
-      void atkCard.offsetWidth;
-      atkCard.classList.add('counter-flash');
-      setTimeout(() => atkCard.classList.remove('counter-flash'), 380);
-    }
-    // single 準拠: counterSE は half-volume で控えめに
-    try {
-      getSfxGain().gain.value = SE_MIX.counterSE * 0.5;
-      _playSample('counterSE', 0.5);
-    } catch(e){}
+    const atkCardEl = (atkKey === S.pos.legalA || atkKey === S.pos.legalB)
+      ? document.getElementById(`card-${atkSide}-legal`) : null;
+    _applyCounterFlash(atkCardEl);
   }
-  // ヒット SE (大技は 1.3 倍音量で bigmoveImpact を重ねる)
-  const cat = action.moveCat || guessCategory(action.move);
-  const volMul = isBigMove ? 1.3 : 1;
-  try {
-    if (isBigMove) sfx.bigmoveImpact();
-    hitSE(cat, action.dmg, volMul);
-  } catch(e){}
-  // フラッシュ
-  if (action.isCrit && isBigMove) {
-    const ov = document.getElementById('flashOv');
-    if (ov) { ov.classList.remove('flash','red'); void ov.offsetWidth; ov.classList.add('flash','red'); setTimeout(()=>ov.classList.remove('flash','red'), 300); }
-  }
-  // big move splash
+  _playImpactSE(action);
+  if (action.isCrit && isBigMove) _flashRedOverlay(document.getElementById('flashOv'));
   if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.move);
 }
 
@@ -905,7 +864,7 @@ function showBanner(text, cls){
 // ── ピンカウント演出 (U3 rework) ──
 // クリック駆動: 攻撃後 600ms で「ワン！」自動表示 → クリック → 「ツー！」→ クリック →
 // 「スリー／返した／カットイン」→ クリック → 次フレーム。シングル battle-engine.html と同仕様。
-const PIN_SEQ_LEAD_MS = 600;
+// PIN_SEQ_LEAD_MS は battle-replay-core.js で定義
 
 function _beginPinSequence(pinEv, fr){
   const ctrl = _buildPinCtrl(pinEv, fr);

@@ -4295,6 +4295,11 @@ const App = {
       if (sp.results.every(r => r !== null)) App.finalizeShow();
       return;
     }
+    // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
+    const matchTier = m.isTitle ? 2 : 1;
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
+    const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier, { recordFrames: true });
+    sp.results[idx] = result;
     sp.currentWatching = idx;
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
@@ -4310,6 +4315,7 @@ const App = {
       type: 'START_MATCH',
       left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
       right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
+      result,
       matchInfo: {
         header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
         subHeader: `${charL.name} vs ${charR.name}`,
@@ -4317,7 +4323,7 @@ const App = {
         totalMatches: sp.validMatches.length,
         isTitle: !!m.isTitle,
         isSpecialMatch: !!m.isTitle,
-        matchTier: m.isTitle ? 2 : 1,
+        matchTier,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
         leftPersonality: charL.personality || 'normal',
         leftArchetype: charL.archetype || 'normal',
@@ -4325,7 +4331,6 @@ const App = {
         rightArchetype: charR.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
-        rngSeed: Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right),
       }
     };
     // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
@@ -4453,7 +4458,7 @@ const App = {
     if (!sp || sp.currentWatching < 0) return;
     const idx = sp.currentWatching;
     const m = sp.validMatches[idx];
-    // ── タッグマッチ: sp.results[idx] に事前計算結果が既に入っている。iframe からは無視して閉じるだけ ──
+    // ── Replay方式: シングル/タッグともに sp.results[idx] に事前計算結果が既に入っている。iframe からは閉じるだけ ──
     if (m && m.matchType === 'tag') {
       try { Audio.bgm.stop(); } catch(e) {}
       document.getElementById('battleOverlay').style.display = 'none';
@@ -4468,22 +4473,23 @@ const App = {
       }
       return;
     }
-    // Guard: ignore duplicate results (e.g. double-click CLOSE)
-    if (sp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; sp.currentWatching = -1; return; }
-    const charL = G.roster.find(c => c.id === m.left);
-    const charR = G.roster.find(c => c.id === m.right);
-    // Convert battle engine result to WM format
-    sp.results[idx] = {
-      left: charL, right: charR,
-      winner: data.winner,
-      finType: data.finType || '',
-      finMove: data.finMove || '',
-      turns: data.turns || 0,
-      mq: data.mq || 50,
-      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
-      log: data.log || []
-    };
+    // Guard: single マッチも事前計算済み。iframe から MATCH_RESULT が来ても結果は上書きしない
+    if (!sp.results[idx]) {
+      // 想定外: watchMatch を通らず直接 MATCH_RESULT が来た場合のフォールバック
+      const charL = G.roster.find(c => c.id === m.left);
+      const charR = G.roster.find(c => c.id === m.right);
+      sp.results[idx] = {
+        left: charL, right: charR,
+        winner: data.winner,
+        finType: data.finType || '',
+        finMove: data.finMove || '',
+        turns: data.turns || 0,
+        mq: data.mq || 50,
+        hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+        hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+        log: data.log || []
+      };
+    }
     // BGM: FileBGMフェードアウト + 残試合ありならbattle復帰、全完了ならmanagement
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     if (sp.results.every(r => r !== null)) {
@@ -7345,6 +7351,10 @@ const App = {
 
     const pf = b3.playerFighter;
     const af = b3.challenger;
+    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
+    const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
+    const b3Result = Engine.battle.simulateMatch({ ...pf, condition: 80 }, { ...af, condition: 80 }, b3Rng, 2, { recordFrames: true });
+    b3._preResult = b3Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
@@ -7367,7 +7377,8 @@ const App = {
         leftPersonality: pf.personality || 'normal', leftArchetype: pf.archetype || 'normal',
         rightPersonality: af.personality || 'normal', rightArchetype: af.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
-      }
+      },
+      result: b3Result,
     };
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     let sent = false;
@@ -7393,7 +7404,8 @@ const App = {
     const b3 = App._b3Preview;
     if (!b3) return;
     b3.watching = false;
-    const matchResult = {
+    // Replay: 事前計算結果を正とする
+    const matchResult = b3._preResult || {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0, mq: data.mq || 50,
@@ -7512,6 +7524,10 @@ const App = {
     App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
 
     const f1 = b2.f1, f2 = b2.f2;
+    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
+    const b2Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
+    const b2Result = Engine.battle.simulateMatch({ ...f1, condition: 80 }, { ...f2, condition: 80 }, b2Rng, 2, { recordFrames: true });
+    b2._preResult = b2Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
@@ -7534,7 +7550,8 @@ const App = {
         leftPersonality: f1.personality || 'normal', leftArchetype: f1.archetype || 'normal',
         rightPersonality: f2.personality || 'normal', rightArchetype: f2.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
-      }
+      },
+      result: b2Result,
     };
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     let sent = false;
@@ -7560,7 +7577,8 @@ const App = {
     const b2 = App._b2Preview;
     if (!b2) return;
     b2.watching = false;
-    const matchResult = {
+    // Replay: 事前計算結果を正とする
+    const matchResult = b2._preResult || {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0, mq: data.mq || 50,
@@ -7983,6 +8001,21 @@ const App = {
     const pf = m.playerFighter;
     const af = m.aiFighter;
 
+    // Replay: 結果事前計算 (skip と一致させるため同じ seed を使う)
+    const warRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx));
+    const warResult = Engine.event.resolveEventMatch(warRng, pf, af, 0, { recordFrames: true });
+    const warPlayerWon = warResult.winner === 'left';
+    const warWinnerFighter = warPlayerWon ? pf : af;
+    wp.results[idx] = {
+      playerFighter: pf, aiFighter: af,
+      winner: warResult.winner, mq: warResult.mq,
+      playerWon: warPlayerWon,
+      finType: warResult.finType || '', finMove: warResult.finMove || '',
+      turns: warResult.turns || 0,
+      victoryLine: _getWarVictoryLine(warWinnerFighter),
+      winnerName: warWinnerFighter.name, winnerId: warWinnerFighter.id
+    };
+
     // Show iframe
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
@@ -8019,8 +8052,8 @@ const App = {
         rightPersonality: af.personality || 'normal',
         rightArchetype: af.archetype || 'normal',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
-        rngSeed: Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx),
-      }
+      },
+      result: warResult,
     };
     // ビッグマッチBGM（対抗戦）
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
@@ -8090,23 +8123,8 @@ const App = {
     const wp = App._warPreview;
     if (!wp || wp.currentWatching < 0) return;
     const idx = wp.currentWatching;
-    // Guard: ignore duplicate results
-    if (wp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; wp.currentWatching = -1; return; }
-    const m = wp.card[idx];
-    const playerWon = data.winner === 'left';
-    const winnerFighter = playerWon ? m.playerFighter : m.aiFighter;
-    wp.results[idx] = {
-      playerFighter: m.playerFighter, aiFighter: m.aiFighter,
-      winner: data.winner, mq: data.mq || 50,
-      playerWon,
-      finType: data.finType || '', finMove: data.finMove || '',
-      turns: data.turns || 0,
-      victoryLine: _getWarVictoryLine(winnerFighter),
-      winnerName: winnerFighter.name, winnerId: winnerFighter.id
-    };
-    // ビッグマッチBGMフェードアウト
+    // Replay 移行: watchMatch で結果は既に格納済み (整合性確保のため)。overlay を閉じて次へ遷移。
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
-    // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
     wp.currentWatching = -1;
     Audio.play('coin');
@@ -8114,7 +8132,6 @@ const App = {
     if (wp.results.every(r => r !== null)) {
       App.finalizeWar();
     } else {
-      // まだ試合が残っている → 対抗戦BGMを再開
       setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 1600);
     }
   },
@@ -8374,6 +8391,11 @@ App.ppvWatchMatch = function(idx) {
   pp.currentWatching = idx;
   const match = pp.card[idx];
 
+  // Replay: 結果事前計算 (skip と同 seed)
+  const ppvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
+  const ppvResult = Engine.ppv.simulatePPVMatch(match.left, match.right, ppvRng, { recordFrames: true });
+  pp.results[idx] = ppvResult;
+
   const overlay = document.getElementById('battleOverlay');
   overlay.style.display = 'block';
   const escBtn = document.getElementById('battleEscapeBtn');
@@ -8410,8 +8432,8 @@ App.ppvWatchMatch = function(idx) {
       rightPersonality: match.right.personality || 'normal',
       rightArchetype: match.right.archetype || 'normal',
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
-      rngSeed: Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id),
-    }
+    },
+    result: ppvResult,
   };
   // ビッグマッチBGM（PPV）
   try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
@@ -8452,7 +8474,17 @@ App._receivePPVBattleResult = function(data) {
   const pp = App._ppvPreview;
   if (!pp || pp.currentWatching < 0) return;
   const idx = pp.currentWatching;
-  if (pp.results[idx]) { document.getElementById('battleOverlay').style.display = 'none'; pp.currentWatching = -1; return; }
+  // Replay 移行: 事前計算済みなら結果を維持し overlay を閉じて次へ
+  if (pp.results[idx]) {
+    try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+    document.getElementById('battleOverlay').style.display = 'none';
+    pp.currentWatching = -1;
+    try { Audio.play('coin'); } catch(e) {}
+    renderPPVMatchPreview();
+    if (pp.results.every(r => r !== null)) App.finalizePPV();
+    else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+    return;
+  }
   const match = pp.card[idx];
   pp.results[idx] = {
     left: match.left, right: match.right,
@@ -8890,6 +8922,13 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     || match.right;
 
   const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+  // Replay: 事前シミュ済みの match から frames+winner 等を result として組み立てる
+  const jtResult = {
+    winner: match.winner, mq: match.mq, turns: match.turns,
+    finType: match.finType || '', finMove: match.finMove || '',
+    hpLeft: match.hpLeft, hpRight: match.hpRight,
+    log: match.log || [], frames: match.frames || [],
+  };
   const msg = {
     type: 'START_MATCH',
     left: {
@@ -8915,6 +8954,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
       rightArchetype: rightF.archetype || 'normal',
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
+    result: jtResult,
   };
   // ビッグマッチBGM（決勝のみ）
   if (isFinal) {
