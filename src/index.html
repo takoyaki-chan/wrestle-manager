@@ -3968,6 +3968,516 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 }
 .fevt-continue-btn:hover { color: var(--stage-text-main); border-color: rgba(200,190,170,0.4); }
 
+/* ============================================================
+   F02 進展③: 決着（Stage / 勝者ゴールド × 敗者グレースケール）
+   ============================================================ */
+.fevt-overlay-stage.resolution::before {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 60%; transform: translateX(-40%);
+  background: radial-gradient(ellipse 55% 70% at 35% 60%,
+    rgba(240,208,120,0.18) 0%,
+    rgba(212,168,67,0.06) 40%,
+    transparent 75%);
+  pointer-events: none; z-index: 0;
+  animation: fevtResSpotBreath 5s ease-in-out 1500ms infinite;
+}
+@keyframes fevtResSpotBreath { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+.fevt-title-main.settled {
+  color: var(--gold-light);
+  text-shadow: 0 0 40px rgba(240,208,120,0.55), 0 0 10px rgba(240,208,120,0.3);
+  letter-spacing: 18px;
+}
+.fevt-res-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.3fr 1fr;
+  width: 100%; max-width: 1100px; align-items: end;
+  padding: 0 40px; margin-bottom: 36px; gap: 20px;
+}
+.fevt-res-winner {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative;
+  animation: fevtResWinnerRise 1100ms cubic-bezier(0.22,1,0.36,1) 700ms both;
+}
+@keyframes fevtResWinnerRise {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fevt-res-winner .fevt-faction-flag {
+  background: rgba(240,208,120,0.18); color: var(--gold-light);
+  border: 1px solid rgba(240,208,120,0.6);
+  box-shadow: 0 0 18px rgba(240,208,120,0.3);
+  animation: fevtResFlagPulse 3s ease-in-out 1800ms infinite;
+}
+@keyframes fevtResFlagPulse {
+  0%,100% { box-shadow: 0 0 12px rgba(240,208,120,0.25); }
+  50% { box-shadow: 0 0 24px rgba(240,208,120,0.5); }
+}
+.fevt-res-winner .fevt-leader-upper {
+  width: 280px; height: 340px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 0 24px rgba(240,208,120,0.35)) drop-shadow(0 0 4px rgba(0,0,0,0.8));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-res-winner .fevt-leader-name {
+  font-size: 18px; font-weight: 700; color: var(--gold-light);
+  margin-top: 10px; letter-spacing: 3px;
+  text-shadow: 0 0 12px rgba(240,208,120,0.3);
+}
+.fevt-res-winner .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--gold); letter-spacing: 3px; margin-top: 4px;
+}
+.fevt-res-loser {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative; opacity: 0.5;
+  animation: fevtResLoserFade 1400ms ease 1400ms both;
+}
+@keyframes fevtResLoserFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 0.5; transform: translateY(0); }
+}
+.fevt-res-loser .fevt-faction-flag {
+  animation: fevtResFlagLower 1800ms ease 2400ms both;
+}
+@keyframes fevtResFlagLower {
+  0% { opacity: 0.9; transform: translateY(0); filter: saturate(1); }
+  100% { opacity: 0.3; transform: translateY(32px); filter: saturate(0.2) grayscale(0.6); }
+}
+.fevt-res-loser .fevt-leader-upper {
+  width: 220px; height: 270px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: grayscale(0.55) brightness(0.55) drop-shadow(0 0 10px rgba(0,0,0,0.9));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-res-loser .fevt-leader-name {
+  font-size: 14px; font-weight: 500; color: var(--stage-text-sub);
+  margin-top: 8px; letter-spacing: 2px;
+}
+.fevt-res-loser .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #6a6050; letter-spacing: 2px; margin-top: 3px;
+}
+.fevt-res-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 24px;
+  font-size: 15px; line-height: 2; color: var(--stage-text-main);
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 2800ms both;
+}
+.fevt-res-verdict em {
+  color: var(--gold-light); font-style: normal; font-weight: 700; letter-spacing: 2px;
+}
+.fevt-res-ledger {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 100%; max-width: 720px; padding: 0 40px; margin-bottom: 32px;
+  animation: fevtFadeIn 900ms ease 3400ms both;
+}
+.fevt-res-ledger-col {
+  background: rgba(20,18,16,0.72);
+  border: 1px solid rgba(200,190,170,0.12);
+  border-radius: 6px; padding: 12px 16px;
+}
+.fevt-res-ledger-col.win { border-color: rgba(240,208,120,0.4); }
+.fevt-res-ledger-col.lose { border-color: rgba(120,100,80,0.3); }
+.fevt-res-ledger-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  text-transform: uppercase; margin-bottom: 8px; color: var(--stage-text-sub);
+}
+.fevt-res-ledger-col.win .fevt-res-ledger-head { color: var(--gold-light); }
+.fevt-res-ledger-col.lose .fevt-res-ledger-head { color: #a89680; }
+.fevt-res-ledger-line { font-size: 12px; color: #c8c0af; line-height: 1.7; padding: 2px 0; }
+.fevt-res-ledger-line .delta-up { color: #9dd89a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+.fevt-res-ledger-line .delta-down { color: #d89a9a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
+/* ============================================================
+   F02 進展④: 無限抗争（Stage / グレー停滞）
+   ============================================================ */
+.fevt-overlay-stage.endless {
+  background: radial-gradient(ellipse 120% 90% at 50% 50%,
+    rgba(18,18,18,0.98) 0%,
+    rgba(4,4,4,1) 60%,
+    #000 100%);
+}
+.fevt-overlay-stage.endless::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(60,60,60,0.08) 0%, rgba(30,30,30,0.15) 100%);
+  pointer-events: none; mix-blend-mode: multiply;
+}
+.fevt-title-main.endless {
+  color: #9a9280;
+  text-shadow: 0 0 30px rgba(160,152,130,0.22);
+  letter-spacing: 14px;
+}
+.fevt-title-main.endless::before, .fevt-title-main.endless::after { display: none; }
+.fevt-endless-counter { text-align: center; margin: 2vh auto 3vh; animation: fevtFadeIn 900ms ease 1000ms both; }
+.fevt-endless-counter-label {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 5px;
+  color: #605a4c; text-transform: uppercase;
+}
+.fevt-endless-counter-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 64px;
+  color: #a89e80; letter-spacing: 6px; line-height: 1;
+  margin: 4px 0 2px;
+  text-shadow: 0 0 16px rgba(160,152,130,0.15);
+  animation: fevtEndlessNumPulse 4s ease-in-out 1500ms infinite;
+}
+@keyframes fevtEndlessNumPulse { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
+.fevt-endless-counter-unit {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 3px;
+  color: #807860; text-transform: uppercase;
+}
+.fevt-endless-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 100px 1fr;
+  width: 100%; max-width: 1000px; align-items: end;
+  padding: 0 40px; margin-bottom: 32px; gap: 16px;
+}
+.fevt-endless-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative; opacity: 0.55;
+  animation: fevtEndlessColDrift 6s ease-in-out infinite;
+}
+.fevt-endless-col.left { animation-delay: 0ms; }
+.fevt-endless-col.right { animation-delay: 3000ms; }
+@keyframes fevtEndlessColDrift {
+  0%,100% { opacity: 0.48; transform: translateY(0); }
+  50%     { opacity: 0.62; transform: translateY(-4px); }
+}
+.fevt-endless-col .fevt-faction-flag { filter: grayscale(0.8) brightness(0.7); opacity: 0.6; }
+.fevt-endless-col .fevt-leader-upper {
+  width: 200px; height: 250px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: grayscale(0.65) brightness(0.5) drop-shadow(0 0 10px rgba(0,0,0,0.9));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-endless-col .fevt-leader-name {
+  font-size: 13px; font-weight: 500; color: #a89e86;
+  margin-top: 8px; letter-spacing: 2px;
+}
+.fevt-endless-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #6a6050; letter-spacing: 2px; margin-top: 3px;
+}
+.fevt-endless-vs {
+  display: flex; align-items: center; justify-content: center;
+  padding-bottom: 100px;
+  animation: fevtFadeIn 900ms ease 2000ms both;
+}
+.fevt-endless-vs-mark {
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+  color: #605a4c; letter-spacing: 4px; line-height: 1.2;
+  text-align: center; opacity: 0.7;
+}
+.fevt-endless-vs-mark span {
+  display: block; font-size: 10px; letter-spacing: 6px; margin-top: 4px;
+  color: #807860;
+}
+.fevt-endless-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 24px;
+  font-size: 15px; line-height: 2; color: #b8b0a0;
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 2800ms both;
+}
+.fevt-endless-verdict em {
+  color: #d8d0b8; font-style: normal; font-weight: 600; letter-spacing: 2px;
+}
+.fevt-endless-erosion {
+  width: 100%; max-width: 560px; padding: 0 40px; margin-bottom: 32px;
+  animation: fevtFadeIn 900ms ease 3400ms both;
+}
+.fevt-endless-erosion-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  color: #807860; text-transform: uppercase; margin-bottom: 10px;
+  text-align: center;
+}
+.fevt-endless-erosion-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #a89e86;
+  padding: 5px 0; border-bottom: 1px dotted rgba(130,120,96,0.2);
+}
+.fevt-endless-erosion-row .delta {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: #d89a9a; letter-spacing: 1px;
+}
+
+/* ============================================================
+   F02 進展②: 沈静化（Stage / 象牙×若草・対等な和解）
+   ============================================================ */
+.fevt-overlay-stage.peace {
+  background: radial-gradient(ellipse 120% 90% at 50% 50%,
+    rgba(22,24,22,0.98) 0%,
+    rgba(8,10,8,1) 60%,
+    #040404 100%);
+}
+.fevt-overlay-stage.peace::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 55% at 50% 40%,
+    rgba(198,220,200,0.10) 0%,
+    rgba(180,200,180,0.04) 40%,
+    transparent 75%);
+  pointer-events: none; z-index: 0;
+  animation: fevtPeaceLightBreath 6s ease-in-out 1200ms infinite;
+}
+@keyframes fevtPeaceLightBreath { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+.fevt-title-main.peace {
+  color: #e8e2cc;
+  text-shadow: 0 0 28px rgba(198,220,200,0.25);
+  letter-spacing: 24px;
+}
+.fevt-peace-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 140px 1fr;
+  width: 100%; max-width: 1000px; align-items: end;
+  padding: 0 40px; margin-bottom: 36px;
+}
+.fevt-peace-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative;
+  animation: fevtPeaceColIn 1100ms cubic-bezier(0.22,1,0.36,1) 700ms both;
+}
+.fevt-peace-col.right { animation-delay: 900ms; }
+@keyframes fevtPeaceColIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fevt-peace-col .fevt-faction-flag { animation: fevtPeaceFlagLower 1600ms ease 2200ms both; }
+@keyframes fevtPeaceFlagLower {
+  0% { opacity: 0.9; transform: translateY(0); }
+  100% { opacity: 0.55; transform: translateY(20px); filter: saturate(0.6); }
+}
+.fevt-peace-col .fevt-leader-upper {
+  width: 230px; height: 280px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 0 16px rgba(198,220,200,0.18)) drop-shadow(0 0 4px rgba(0,0,0,0.8));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-peace-col.left .fevt-leader-upper { transform: rotateY(-3deg); }
+.fevt-peace-col.right .fevt-leader-upper { transform: rotateY(3deg); }
+.fevt-peace-col .fevt-leader-name {
+  font-size: 15px; font-weight: 600; color: #e8e2cc;
+  margin-top: 10px; letter-spacing: 2px;
+}
+.fevt-peace-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #b8b0a0; letter-spacing: 3px; margin-top: 3px;
+}
+.fevt-peace-center {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-bottom: 100px;
+  animation: fevtFadeIn 900ms ease 1900ms both;
+}
+.fevt-peace-handshake { display: flex; align-items: center; gap: 2px; margin-bottom: 10px; }
+.fevt-peace-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(198,220,200,0.25);
+  border: 1px solid rgba(198,220,200,0.5);
+  box-shadow: 0 0 12px rgba(198,220,200,0.3);
+}
+.fevt-peace-dot.a { transform: translateX(6px); animation: fevtPeaceDotMeetA 2000ms ease 2400ms both; }
+.fevt-peace-dot.b { transform: translateX(-6px); animation: fevtPeaceDotMeetB 2000ms ease 2400ms both; }
+@keyframes fevtPeaceDotMeetA {
+  from { transform: translateX(-18px); opacity: 0; }
+  100% { transform: translateX(6px); opacity: 1; }
+}
+@keyframes fevtPeaceDotMeetB {
+  from { transform: translateX(18px); opacity: 0; }
+  100% { transform: translateX(-6px); opacity: 1; }
+}
+.fevt-peace-center-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 15px;
+  color: #c6dcc8; letter-spacing: 4px; text-align: center; opacity: 0.85;
+}
+.fevt-peace-center-label span {
+  display: block; font-size: 9px; letter-spacing: 6px; margin-top: 4px;
+  color: rgba(198,220,200,0.55);
+}
+.fevt-peace-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 26px;
+  font-size: 15px; line-height: 2; color: #d8d2c4;
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 3000ms both;
+}
+.fevt-peace-verdict em {
+  color: #c6dcc8; font-style: normal; font-weight: 600; letter-spacing: 2px;
+}
+.fevt-peace-ledger {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 100%; max-width: 680px; padding: 0 40px; margin-bottom: 30px;
+  animation: fevtFadeIn 900ms ease 3600ms both;
+}
+.fevt-peace-ledger-col {
+  background: rgba(22,26,22,0.72);
+  border: 1px solid rgba(198,220,200,0.22);
+  border-radius: 6px; padding: 12px 16px;
+}
+.fevt-peace-ledger-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  color: #c6dcc8; text-transform: uppercase; margin-bottom: 8px;
+}
+.fevt-peace-ledger-line { font-size: 12px; color: #c0c8b8; line-height: 1.7; padding: 2px 0; }
+.fevt-peace-ledger-line .delta-down { color: #9dd89a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+.fevt-peace-ledger-line .delta-flat { color: #a8a8a0; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
+/* ============================================================
+   F02 進展①: 発火（Stage / 橙・公式戦化）
+   ============================================================ */
+.fevt-overlay-stage.ignite::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 18% 45%, rgba(138,122,168,0.18) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 82% 45%, rgba(195,140,84,0.18) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(208,122,62,0.10) 0%, rgba(0,0,0,0) 55%);
+  pointer-events: none;
+  animation: fevtIgniteFlare 3800ms ease-out forwards;
+}
+@keyframes fevtIgniteFlare {
+  0%   { opacity: 0; }
+  30%  { opacity: 1.0; }
+  100% { opacity: 0.65; }
+}
+.fevt-title-main.ignite {
+  color: #e8d8c8;
+  text-shadow: 0 0 26px rgba(208,122,62,0.45), 0 2px 6px rgba(0,0,0,0.9);
+}
+.fevt-ign-stage {
+  position: relative;
+  display: grid; grid-template-columns: 1fr 160px 1fr;
+  align-items: center; justify-items: center;
+  gap: 24px; margin: 22px 48px 0; min-height: 360px;
+}
+.fevt-ign-col { position: relative; text-align: center; opacity: 0; }
+.fevt-ign-col.left, .fevt-ign-col.right { animation: fevtIgniteFade 900ms ease-out both; }
+.fevt-ign-col.left  { animation-delay: 400ms; }
+.fevt-ign-col.right { animation-delay: 400ms; }
+@keyframes fevtIgniteFade { 0% { opacity: 0; } 100% { opacity: 1; } }
+.fevt-ign-col .fevt-role-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 5px;
+  color: rgba(232,216,200,0.6); margin-bottom: 4px;
+}
+.fevt-ign-col.left .fevt-role-kanji {
+  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
+  color: #b09ad0; margin-bottom: 8px;
+}
+.fevt-ign-col.right .fevt-role-kanji {
+  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
+  color: #d4a070; margin-bottom: 8px;
+}
+.fevt-ign-col .fevt-portrait-wrap {
+  position: relative; display: inline-block;
+  width: 220px; height: 260px; margin-bottom: 10px;
+}
+.fevt-ign-col .fevt-portrait-wrap .fevt-leader-upper { display: block; }
+.fevt-ign-col .fevt-faction-flag {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  box-sizing: border-box; width: calc(100% - 16px); padding: 5px 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
+  line-height: 1.3; text-align: center; backdrop-filter: blur(2px); z-index: 2;
+}
+.fevt-ign-col.left .fevt-faction-flag {
+  background: linear-gradient(180deg, rgba(20,16,30,0.72), rgba(60,42,90,0.78));
+  border: 1px solid rgba(180,160,210,0.65);
+  color: #d8c6ee;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+.fevt-ign-col.right .fevt-faction-flag {
+  background: linear-gradient(180deg, rgba(30,18,10,0.72), rgba(90,56,24,0.78));
+  border: 1px solid rgba(225,180,125,0.65);
+  color: #f0d6ad;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+.fevt-ign-col.left .fevt-leader-upper {
+  width: 220px; height: 260px; object-fit: cover; object-position: center top;
+  filter: drop-shadow(0 0 20px rgba(138,122,168,0.45)) contrast(1.05) saturate(1.03);
+}
+.fevt-ign-col.right .fevt-leader-upper {
+  width: 220px; height: 260px; object-fit: cover; object-position: center top;
+  filter: drop-shadow(0 0 20px rgba(195,140,84,0.45)) contrast(1.05) saturate(1.03);
+}
+.fevt-ign-stats {
+  display: inline-flex; gap: 14px; margin-top: 8px;
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px;
+  color: rgba(232,216,200,0.75);
+}
+.fevt-ign-stats .stat-num { color: #ffd4a8; font-weight: 700; font-size: 13px; margin-left: 4px; }
+.fevt-ign-col.left .fevt-ign-stats .stat-num { color: #c8b4e0; }
+.fevt-ign-col.right .fevt-ign-stats .stat-num { color: #e6b880; }
+.fevt-ign-col .fevt-leader-name {
+  margin-top: 8px;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 18px;
+  color: #fff2e2; letter-spacing: 2px;
+}
+.fevt-ign-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px;
+  color: rgba(255,200,160,0.75); margin-top: 2px;
+}
+.fevt-ign-vs {
+  position: relative;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px; line-height: 1;
+  background: linear-gradient(90deg, #b09ad0 0%, #e8d8c8 50%, #d4a070 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 0 30px rgba(208,122,62,0.55), 0 4px 12px rgba(0,0,0,0.95);
+  letter-spacing: 4px; opacity: 0;
+  animation: fevtIgniteVs 800ms ease-out 1200ms both;
+}
+@keyframes fevtFadeUp {
+  0%   { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fevtIgniteVs {
+  0%   { transform: scale(2.2); opacity: 0; }
+  60%  { transform: scale(0.92); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.fevt-ign-card-band {
+  margin: 28px 56px 0;
+  padding: 14px 24px;
+  border-top: 1px solid rgba(255,170,110,0.45);
+  border-bottom: 1px solid rgba(255,170,110,0.45);
+  background: linear-gradient(90deg,
+    rgba(255,120,60,0) 0%,
+    rgba(255,120,60,0.12) 50%,
+    rgba(255,120,60,0) 100%);
+  text-align: center; opacity: 0;
+  animation: fevtFadeUp 900ms ease 1600ms both;
+}
+.fevt-ign-card-label {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 5px;
+  color: rgba(255,200,160,0.7); margin-bottom: 4px;
+}
+.fevt-ign-card-name {
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 20px;
+  color: #fff2e2; letter-spacing: 3px;
+}
+.fevt-ign-verdict {
+  margin: 22px 72px 0;
+  font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.95;
+  color: #e8d8c8; text-align: center; opacity: 0;
+  animation: fevtFadeUp 900ms ease 2100ms both;
+}
+.fevt-ign-verdict em { font-style: normal; color: #ffd4a8; font-weight: 700; }
+.fevt-ign-ledger {
+  margin: 20px 72px 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  opacity: 0; animation: fevtFadeUp 900ms ease 2500ms both;
+}
+.fevt-ign-ledger-col {
+  padding: 10px 14px;
+  border: 1px solid rgba(255,170,110,0.28);
+  background: rgba(255,120,60,0.05);
+}
+.fevt-ign-ledger-head {
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
+  color: #ffd4a8; margin-bottom: 6px;
+}
+.fevt-ign-ledger-line {
+  font-family: 'Noto Sans JP', sans-serif; font-size: 12px; line-height: 1.7;
+  color: #e8d8c8;
+}
+.fevt-ign-ledger-line .delta-up { color: #ffb080; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
 </style>
 </head>
 <body>

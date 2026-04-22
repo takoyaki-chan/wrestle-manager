@@ -69,39 +69,55 @@ M  docs/ui/02-layouts.md        §2-D シネマティック・イベント追記
 
 ## 3. 未着手タスク（次セッションの作業順）
 
+> **各タスク着手前の必読**（漏らすと前提が抜けます）:
+> 1. [docs/ui/03-screens/faction-events.md](ui/03-screens/faction-events.md) — 階層3画面仕様 v0.2（**骨格ワイヤーフレーム／シーン進行／verdict コピー／発火条件／演出アセット**の一次ソース）
+> 2. [docs/ui/mockups/faction-events.html](ui/mockups/faction-events.html) — HTML 実装の真実（クラス名・セリフ・アニメタイミング）
+> 3. [specs/faction-system-spec-v0.1.md](../specs/faction-system-spec-v0.1.md) — エンジン契約（payload 構造・applyF0xChoice の分岐）
+>
+> v2 本文の各タスクは **概要＋差分** のみ。数値・コピー・条件は上記3ファイルを正とする。
+
 ### 3-1 最優先: F01（結成） Office 応接室型
-- モック [docs/ui/mockups/faction-events.html](ui/mockups/faction-events.html) `#overlayF01`（～L1440 付近、要確認）
+- **仕様**: [03-screens/faction-events.md §1 F01/F04 応接室型](ui/03-screens/faction-events.md)（骨格・4幕進行・情報階層・特有ルール）
+- **モック**: [mockups/faction-events.html `#overlayF01`](ui/mockups/faction-events.html) L1393 付近
+- **spec**: `applyF01Choice`（factions.js §9.x）
 - `.fevt-overlay-office` クラスベース、クリーム色応接室パネル
-- コーチ観察報告調（2-1 参照）
-- 選択肢2つ:
-  - A: 「正式なチームとして認める」→ 求心力↑ / ロッカー悪化
-  - B: （ヒント未決定、spec 確認）
+- 選択肢3つ（モック確定、v2 執筆時点で B/C 未確定だった分はモック準拠）:
+  - A: 正式なチームとして認める
+  - B: 今はそれどころじゃないと釘を刺す
+  - C: 静観する
 - 既存 `showFactionF01Modal` を cinematic 版に書き換え
 
 ### 3-2 F04（寝返り） Office 応接室型
-- モック `#overlayF04`
-- **選択肢ゼロ**（通知のみ）
+- **仕様**: [03-screens/faction-events.md §1 F04 バリエーション](ui/03-screens/faction-events.md) + §6 テキスト改訂ログ F04
+- **モック**: `#overlayF04` L1450 付近
+- **spec**: `applyF04Choice`（ただし選択肢ゼロで通知のみ）
 - Reporter: コーチのみ、移籍は既成事実として報告
-- 報告文: 「〇〇は派閥を移り、三浦派に加入するようです。練習後の合流、食事、移動など——その立場の変化は表に出始めています。」
+- 報告文（03-screens §6 F04 基準）: 「近藤ゆりかは、三浦派と既に話をつけているようです。練習後の合流、食事、移動——動きはもう表に出始めています。報告として、お耳に入れておきます。」
 - `.fevt-f04-arrow` pulse animation（すでに CSS ポート済み）
 
 ### 3-3 F02 対峙（act2）
-- モック `#overlayF02Clash`
+- **仕様**: [03-screens/faction-events.md §2 F02 対峙型](ui/03-screens/faction-events.md)（骨格・6幕進行・特有ルール「同時表示」）+ §6 F02②
+- **モック**: `#overlayF02A`（ナレ act1）+ `#overlayF02` / `#overlayF02Clash`（対峙 act2）
+- **spec**: `applyF02Choice`（factions.js L903 付近、3択「煽る/仲裁/介入しない」の妥当性は 03-screens §未決事項 7 参照）
 - `.fevt-dual-stage` + `.fevt-leader-col` 左右
 - `getF02ClashLine(fighter, side)` を活用してセリフ差し込み
-- ロッカールーム人間味センテンス「ロッカールームには、冷たい対立の空気が満ちているようです」追加
+- ロッカールーム人間味センテンス（`.fevt-clash-atmosphere`）追加
 - 既存 `showFactionF02Modal` を全面書き換え
 
-### 3-4 F02 進展4種（resolution / endless / peace / ignite）
-- **CSS 未ポート**（モック L706-1314 付近、~600行）
-- `.fevt-overlay-stage.resolution` → 勝者前景 / 敗者フェード / 旗降下
-- `.fevt-overlay-stage.endless` → 両旗がかすかに揺れる、疲弊表現
-- `.fevt-overlay-stage.peace` → セピア軽め、矛を収める
-- `.fevt-overlay-stage.ignite` → 発火トーン、来週メイン予告
-- verdict コピーは handoff v1.1 §2-3 の4文を使用
+### 3-4 F02 進展4種（ignite / resolution / peace / endless）
+- **仕様**: [03-screens/faction-events.md](ui/03-screens/faction-events.md) の専用4セクション:
+  - **F02① 発火** — §「F02 進展①」（発火条件・演出アセット・確認ポイント）
+  - **F02② 沈静化** — §「F02 進展②」（対称トーン・BGM soft bed）
+  - **F02③ 決着** — §「F02 進展③」（勝者ゴールド×敗者グレースケール・ledger）
+  - **F02④ 無限抗争** — §「F02 進展④」（グレー乗算・カウンタ・4行侵食リスト）
+- **モック**: L706-1314 付近、~600行（CSS 未ポート）
+- `.fevt-overlay-stage.resolution / .ignite / .peace / .endless` の4 variant CSS
+- verdict コピーは 03-screens §6 テキスト改訂ログの4文を使用
 - 既存 `applyF02Choice` の結果分岐と揃える
 
 ### 3-5 F05 イベント生成ロジック追加
+- **仕様**: [03-screens/faction-events.md §5 F05 活動休止](ui/03-screens/faction-events.md)（発火条件・spec 接続・F03 との視覚差別化）
+- **spec**: `faction.status` を `active | hiatus | dissolved` の3値に拡張（factions.js §8 週次イベント抽選）
 - [src/factions.js](../src/factions.js) §8 週次イベント抽選に F05（活動休止）検出を追加
   - 条件: リーダーが8週以上の長期離脱確定（怪我 `injuryWeeks >= 8` など）
 - [src/app.js](../src/app.js) で `showFactionHiatusModal` にルーティング
