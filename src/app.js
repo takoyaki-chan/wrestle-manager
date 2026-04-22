@@ -2107,6 +2107,14 @@ const Storage = {
         G = { ...G, _migrated_factions_v1: true };
       }
 
+      // 派閥の重複所属を修復（Phase 3c セッションで発見された既存セーブのデータ破綻対応）
+      if (!G._migrated_faction_dedupe_v1) {
+        if (Engine.factions && typeof Engine.factions._dedupeFactionMembers === 'function') {
+          G = Engine.factions._dedupeFactionMembers(G);
+        }
+        G = { ...G, _migrated_faction_dedupe_v1: true };
+      }
+
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
         // 全ファイターにorgTimeline初期エントリを生成

@@ -752,31 +752,48 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | v0.3 | 2026-04-22 | Phase 3a 実装: F01/F02/F03 演出 + セリフ叩き台 + RNG 0xFA11/13/23/33/90 追加 |
 | v0.4 | 2026-04-22 | F02 再設計: 「対立型結成（2派閥同時発生）」を廃止し「派閥抗争の勃発（既存2派閥に `inHostility: true` を付与）」に変更。`type: 'rivalrous'` は legacy として保持。対立度が両方向 0 になった時点で `inHostility` をクリアし抗争終了。`_isHostile(f)` ヘルパ追加 |
 | v0.5 | 2026-04-22 | Phase 3b 実装: F04 寝返り / F05 派閥内亀裂 / F06 和解の兆し / F07 リーダーの横暴 / F08 対立ヒートアップ の演出モーダル + `applyF0XChoice` + 6×6 セリフ + F08-A 直接対決ディレクティブ（`_pendingF08Directive` でカード編成強制組込み + 集客 appeal 加算 + 試合結果 1.5× 反映）+ `faction.f07RebukeCount` による authoritativeTag 解除 + F06 streak 追跡（`G.factionReconciliationStreak`）+ §8.3 優先順 F03>F08>F04>F05>F07>F06>F02>F01 + 各イベント個別クールダウン。auto-sim 2 シード × 100 シーズン ALL CLEAR |
-| v0.6 | 2026-04-22 | Phase 3c 実装: 相関図に第4ビューモード「🎭 派閥」追加。`_relmapViewMode='faction'` + `_relmapFactionCenters`/`_relmapComputeFactionCenters`（1派閥=中央/2派閥=左右/3派閥=三角/4+=円周）+ `_relmapTick` に派閥重力項（メンバー 0.015 / 非メンバー中央 0.004）+ `_relmapDrawFactionLayer` 本実装（外接円+派閥名ラベル+👑リーダー/⭐幹部+抗争オレンジ破線 1.5〜3.5px 数値なし）。派閥 0 時はボタン disabled、`_relmapResetAll` から 'network' 復帰。auto-sim 50 シーズン ALL CLEAR |
+| v0.6 | 2026-04-22 | Phase 3c 実装: 相関図「🎭 派閥オーバーレイ」を**団体フィルタ連動型トグル**として実装（当初の「第4ビューモード」方式から実機検証を経て方向転換）。`_relmapFactionOverlay`/`_relmapSavedCenterId` 状態追加。団体フィルタ ON + 🎭 ON のときのみ、CENTER 選手を退避してフラット表示に切替 + 派閥円（外接円）+ 派閥名ラベル + 👑リーダー/⭐幹部マーカー（別レイヤー `relmapFactionMarkerLayer`）+ 抗争オレンジ破線（両派閥がフィルタ内の時のみ、1.5〜3.5px、数値なし）+ 非派閥メンバー斥力（keepR ベース）。派閥重複所属のデータ破綻対応として `Engine.factions._dedupeFactionMembers` + `reconcileRoster` 週次修復 + `_migrated_faction_dedupe_v1` マイグレーション追加。auto-sim 30 シーズン ALL CLEAR |
 
 ---
 
 ## §17 実装状況（2026-04-22）
 
-### Phase 3c 完了（相関図 派閥ビューモード, v0.6, 2026-04-22）
+### Phase 3c 完了（相関図 派閥オーバーレイ + 重複所属修復, v0.6, 2026-04-22）
 
-**実装済み:**
+**設計方針（実機検証を経た最終形）:**
 
-- `_relmapViewMode` に `'faction'` 追加 + 状態 `_relmapFactionCenters: { factionId: {x,y} }`
-- `.rm-view-toggle` に 4 番目「🎭 派閥」ボタン追加。`G.factions.length === 0` で `disabled`
-- `_relmapComputeFactionCenters()`: 派閥数に応じた等分配置（N=1:中央/N=2:左右 0.3,0.7/N=3:三角 R=min(W,H)*0.28/N=4+:円周 R=min(W,H)*0.32、`-π/2` 起点時計回り）
-- `_relmapTick` 先頭に `if (_relmapViewMode === 'faction')` 別枝追加: 派閥メンバーは派閥中心へ引力 0.015、非メンバーは画面中央へ 0.004。Link attraction / Repulsion は network と同パラメータ流用
-- `_relmapSetViewMode('faction')`: SVG レイヤー再構築（power からの戻りに備え）+ orgFilter 解除 + 全ノード unhide + 団体ゾーン非表示 + `_relmapComputeFactionCenters()` 呼び出し
-- `_relmapDrawFactionLayer()` 本実装: (1) 抗争破線（`_isHostile(A) && _isHostile(B)` かつ hostility 合計>0、`--accent-faction-feud`、太さ 1.5〜3.5px、6,4 破線、opacity 0.7、**数値ラベルなし**）(2) 派閥外接円（メンバー重心→最遠+24px、単独時 r=48px、`--accent-faction-{1..4}` を派閥 index mod 4 で割当、stroke-opacity 0.55）(3) 派閥名ラベル（円の上辺外側 `y=cy-r-12`、Oswald 16px、opacity 0.85）(4) リーダー 👑 14px / 幹部（OVR 上位 2 名） ⭐ 12px をノード右上 `(x+r*0.6, y-r*0.6)` に重ね描画
-- `_relmapResetAll` の 'network' 復帰分岐に `faction` も含める
-- auto-sim 50 シーズン ALL CLEAR（UI のみのため）
-- 触っていない領域: `_relmapTick` のネットワーク/フォーカス/勢力図 3 分岐の既存パラメータ、`_relmapRender` の既存描画ループ、`_isHostile` 判定、`G.factions`/`factionHostility`/`factionEventCooldowns` データ形状、F02 再設計方針、Phase 2/3a/3b の派閥 UI
+当初「第4ビューモード」として独立モード化を試みたが、実機で次の 3 問題を確認し**団体フィルタ連動型の軽量トグル**に再設計:
+1. フォースシミュでメンバーを集約しようとしても他リンクの引力に負けて円が巨大化
+2. 全選手に対して派閥表示すると中央にアイコンが集中しビジュアルがうるさい
+3. 派閥の「重複所属」データが存在し、同一選手が複数派閥の円に跨って視覚破綻
 
-**判断記録（Keisuke 推奨案採用）:**
-- 画角: ばね定数強めで画面内収容（ズーム動的変更なし）
-- 非派閥メンバー: 中央に弱い引力で集める（端退避/薄描画なし）
-- 抗争相手なし loyal 派閥: 円で囲むだけ（破線なし）
-- モード切替: `_relmapReheat()` で温め直すのみ（スムーズ補間なし）
+**UI 実装:**
+
+- 状態: `_relmapFactionOverlay` (boolean) / `_relmapSavedCenterId` / `_relmapFactionCenters: { factionId: {x,y,keepR} }`
+- `.rm-view-toggle` に「🎭 派閥」ボタン追加。団体フィルタ OFF か対象団体に派閥なしのとき `disabled` + title 切替
+- `_relmapToggleFactionOverlay()`: ON 時 CENTER 選手を退避 → `_relmapCenterId=null` でフラット表示 + `_relmapComputeFactionCenters` / OFF 時 CENTER 復元 + faction centers クリア
+- `_relmapFocusOrg`: 団体フィルタ切替時に派閥オーバーレイを自動解除（別団体/OFF/切替先に派閥なし）+ 🎭 ボタン disabled/active/title 動的更新
+- `_relmapGetFilteredFactions()`: フィルタ団体のメンバーを少なくとも1人含む派閥を列挙
+- `_relmapComputeFactionCenters(list)`: 派閥数別配置（N=1:中央/N=2:`W*0.35+W*0.65`/N=3:三角 R=min(W,H)*0.22/N=4+:円周 R=min(W,H)*0.26）+ 各派閥に `keepR = 70 + max(0, memberCount-3) * 15` を保存
+- `_relmapTick` の network/orgFilter 分岐:
+  - 団体 ON + 🎭 ON: 派閥メンバーは派閥中心へ 0.02、非メンバーは画面中央 0.008
+  - 団体 ON + 🎭 OFF: 全員画面中央 0.008（既存挙動）
+  - 非派閥メンバーは 🎭 ON 時、各派閥中心から `keepR` 以内に入ると外向き斥力 0.03
+- `_relmapDrawFactionLayer()`: `_relmapOrgFilter && _relmapFactionOverlay` のときのみ描画
+  - (1) 抗争破線: 両派閥ともフィルタ内、太さ 1.5〜3.5px（hostility 合計 0〜200 で線形補間）、dasharray 6,4、`--accent-faction-feud`、opacity 0.7、数値なし
+  - (2) 派閥外接円: メンバー重心→最遠+24px、単独時 r=48px、`--accent-faction-{(idx%4)+1}`、stroke-width 2.5 / opacity 0.55
+  - (3) 派閥名ラベル: 円上辺外側 `y=cy-r-12`、Oswald 16px 700、opacity 0.85
+  - (4) 👑 18px リーダー / ⭐ 15px 幹部（OVR 上位 2 名）を別レイヤー `relmapFactionMarkerLayer`（nodeLayer の後）に描画 → ノード円の上に確実に表示
+- SVG レイヤー: `<g id="relmapFactionMarkerLayer">` を 3 箇所の innerHTML 初期化に追加
+
+**派閥重複所属の修復（データ破綻対応）:**
+
+- `Engine.factions._dedupeFactionMembers(state)` 新設: 同一 fighterId が複数 memberIds に入っていたら先着派閥に寄せる（リーダー絶対優先、除外時 `console.warn`）
+- `reconcileRoster` 末尾に組み込み → 週次自動修復
+- `app.js` マイグレーション `_migrated_faction_dedupe_v1` → セーブロード時に 1 回修復
+- 実機検証（13年目セーブ）で fighter#9/16/48（宇田川里奈/大河内紗代子/菊池璃子）の複数派閥重複を検出・修復
+
+**検証:** auto-sim 30 シーズン ALL CLEAR。実機: 団体 OFF→🎭 disabled / 団体 ON→既存 CENTER 放射型 / 🎭 ON→CENTER 退避+派閥円+マーカー+破線+非メンバー斥力 / 別団体切替で自動解除、を全て Keisuke 目視確認。
 
 ### Phase 3b 完了（F04-F08 演出 + セリフ + F08 直接対決ディレクティブ, v0.5, 2026-04-22）
 

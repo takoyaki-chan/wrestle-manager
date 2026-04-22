@@ -555,7 +555,39 @@ Engine.factions = {
     });
     s = { ...s, factions: newFactions };
 
+    // 3) 複数派閥所属の修復（防御的 dedupe）
+    //    1 選手 = 1 派閥が原則。過去の古いコードやエッジケースで重複が残っていたら、
+    //    先着派閥を優先して後続派閥の memberIds から除外する。リーダーは常に優先。
+    s = this._dedupeFactionMembers(s);
+
     return s;
+  },
+
+  // ── 重複所属修復: 1 fighterId が複数 memberIds に入っていたら先着派閥に寄せる ──
+  _dedupeFactionMembers(state) {
+    if (!state.factions || state.factions.length < 2) return state;
+    const claimed = new Map(); // fighterId -> factionId（先着）
+    // リーダーを先に予約（リーダー権は絶対に守る）
+    for (const f of state.factions) {
+      if (f.leaderId != null) claimed.set(f.leaderId, f.id);
+    }
+    let changed = false;
+    const newFactions = state.factions.map(f => {
+      const filtered = f.memberIds.filter(id => {
+        if (id === f.leaderId) return true;
+        const owner = claimed.get(id);
+        if (owner === undefined) { claimed.set(id, f.id); return true; }
+        if (owner === f.id) return true;
+        if (typeof console !== 'undefined') {
+          console.warn(`[WM Faction] dedupe: fighter#${id} was in faction#${owner} and faction#${f.id} — keeping in f${owner}`);
+        }
+        changed = true;
+        return false;
+      });
+      return filtered.length === f.memberIds.length ? f : { ...f, memberIds: filtered };
+    });
+    if (!changed) return state;
+    return { ...state, factions: newFactions };
   },
 
   // ══════════════════════════════════════════════════════════
