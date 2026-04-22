@@ -5201,7 +5201,8 @@ let _dbCoachFilterName = '';
 let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
-let _relmapViewMode = 'network'; // 'network' | 'focus'
+let _relmapViewMode = 'network'; // 'network' | 'focus' | 'power' | 'faction'
+let _relmapFactionCenters = {}; // { factionId: {x, y} } — Phase 3c 派閥モードの理想中心
 let _relmapFilterRelOnly = true;
 let _relmapFilterThreshold = 14;
 let _relmapFilterUserSet = false; // true once player changes filter manually
@@ -8356,6 +8357,9 @@ function _renderDbRelmap() {
   html += `<button class="rm-vt-btn${_relmapViewMode==='network'?' active':''}" onclick="_relmapSetViewMode('network')">\uD83C\uDF10 ネットワーク</button>`;
   html += `<button class="rm-vt-btn${_relmapViewMode==='focus'?' active':''}" onclick="_relmapSetViewMode('focus')">\uD83C\uDFAF フォーカス</button>`;
   html += `<button class="rm-vt-btn${_relmapViewMode==='power'?' active':''}" onclick="_relmapSetViewMode('power')">\uD83D\uDDFA\uFE0F 勢力図</button>`;
+  const _fCount = (G.factions || []).length;
+  const _fDisabled = _fCount === 0;
+  html += `<button class="rm-vt-btn${_relmapViewMode==='faction'?' active':''}" onclick="_relmapSetViewMode('faction')"${_fDisabled?' disabled title="派閥が結成されていません"':''}>\uD83C\uDFAD 派閥</button>`;
   html += `</div>`;
   // Center indicator
   html += `<div class="rm-center-indicator" id="rmCenterIndicator" style="display:${_relmapCenterId && centerChar?'flex':'none'}">`;
@@ -8575,7 +8579,48 @@ function _relmapTick(orgCenters) {
   const nodes = _relmapNodes, links = _relmapVisibleLinks, vel = _relmapVelocities;
   const a = Math.max(_relmapAlpha.value, _relmapAlpha.min);
 
-  if (_relmapViewMode === 'network' || _relmapOrgFilter) {
+  if (_relmapViewMode === 'faction') {
+    // Phase 3c 派閥モード: 派閥中心への強い引力 + 非メンバーは中央への弱い引力
+    nodes.forEach((n, i) => {
+      if (n._hidden) return;
+      const f = (G.factions || []).find(ff => ff.memberIds.includes(n.id));
+      if (f && _relmapFactionCenters[f.id]) {
+        const fc = _relmapFactionCenters[f.id];
+        vel[i].vx += (fc.x - n.x) * 0.015 * a;
+        vel[i].vy += (fc.y - n.y) * 0.015 * a;
+      } else {
+        vel[i].vx += (W / 2 - n.x) * 0.004 * a;
+        vel[i].vy += (H / 2 - n.y) * 0.004 * a;
+      }
+    });
+    // Link attraction (network と同パラメータ)
+    links.forEach(l => {
+      const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
+      if (!s || !t || s._hidden || t._hidden) return;
+      const si = s._index, ti = t._index;
+      const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const td = 100 + (1 - l.strength) * 150;
+      const f2 = (dist - td) * 0.003 * a;
+      const fx = dx / dist * f2, fy = dy / dist * f2;
+      vel[si].vx += fx; vel[si].vy += fy;
+      vel[ti].vx -= fx; vel[ti].vy -= fy;
+    });
+    // Repulsion (network と同パラメータ)
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i]._hidden) continue;
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (nodes[j]._hidden) continue;
+        const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const md = (nodes[i].r + nodes[j].r + 30) * 3;
+        if (dist < md) {
+          const rf = (md - dist) * 0.02 * a / dist;
+          vel[i].vx -= dx * rf; vel[i].vy -= dy * rf;
+          vel[j].vx += dx * rf; vel[j].vy += dy * rf;
+        }
+      }
+    }
+  } else if (_relmapViewMode === 'network' || _relmapOrgFilter) {
     // Cluster gravity (centered when org filtered)
     nodes.forEach((n, i) => {
       if (n._hidden) return;
@@ -8841,10 +8886,121 @@ function _relmapRender(orgCenters) {
 //   勢力図に続く第4モード）を新設してここで描画する予定。
 //   関数本体とレイヤー <g> は残す（Phase 3 の差し込み点）。
 // ══════════════════════════════════════════════════════════
+// Phase 3c: 派閥モードの理想中心配置
+function _relmapComputeFactionCenters() {
+  const W = _relmapW, H = _relmapH;
+  const factions = G.factions || [];
+  _relmapFactionCenters = {};
+  const N = factions.length;
+  if (N === 0) return;
+  if (N === 1) {
+    _relmapFactionCenters[factions[0].id] = { x: W / 2, y: H / 2 };
+    return;
+  }
+  if (N === 2) {
+    _relmapFactionCenters[factions[0].id] = { x: W * 0.3, y: H / 2 };
+    _relmapFactionCenters[factions[1].id] = { x: W * 0.7, y: H / 2 };
+    return;
+  }
+  const R = Math.min(W, H) * (N === 3 ? 0.28 : 0.32);
+  const cx = W / 2, cy = H / 2;
+  factions.forEach((f, i) => {
+    const ang = -Math.PI / 2 + (2 * Math.PI * i / N);
+    _relmapFactionCenters[f.id] = { x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R };
+  });
+}
+
+// Phase 3c: 派閥レイヤー描画（派閥モード時のみ）
 function _relmapDrawFactionLayer() {
   const layer = document.getElementById('relmapFactionLayer');
   if (!layer) return;
-  if (layer.innerHTML !== '') layer.innerHTML = '';
+  layer.innerHTML = '';
+  if (_relmapViewMode !== 'faction') return;
+  const factions = (G.factions || []);
+  if (factions.length === 0) return;
+
+  // OVRマップ（幹部判定用）
+  const ovrMap = new Map();
+  (G.roster || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
+  (G.freeAgents || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
+  Object.values(G.rivalOrgs || {}).forEach(org => {
+    (org.roster || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
+  });
+
+  // 派閥ごとの外接円（メンバーノード位置から）
+  const circleData = {};
+  factions.forEach((f, i) => {
+    const memberNodes = f.memberIds.map(id => _relmapNodeMap[id]).filter(n => n && !n._hidden);
+    if (memberNodes.length === 0) return;
+    let cx, cy, r;
+    if (memberNodes.length === 1) {
+      cx = memberNodes[0].x; cy = memberNodes[0].y; r = 48;
+    } else {
+      cx = memberNodes.reduce((s, n) => s + n.x, 0) / memberNodes.length;
+      cy = memberNodes.reduce((s, n) => s + n.y, 0) / memberNodes.length;
+      let maxD = 0;
+      memberNodes.forEach(n => {
+        const d = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2) + n.r;
+        if (d > maxD) maxD = d;
+      });
+      r = maxD + 24;
+    }
+    const colorIdx = (i % 4) + 1;
+    circleData[f.id] = { cx, cy, r, colorIdx, faction: f, memberNodes };
+  });
+
+  // 1. 抗争破線（先に描いてノード/円の下に置く）
+  const host = G.factionHostility || {};
+  const drawnPairs = new Set();
+  factions.forEach(A => {
+    if (!Engine.factions._isHostile(A)) return;
+    factions.forEach(B => {
+      if (A.id >= B.id) return;
+      if (!Engine.factions._isHostile(B)) return;
+      const pairKey = `${A.id}|${B.id}`;
+      if (drawnPairs.has(pairKey)) return;
+      const hAB = host[`${A.id}>${B.id}`] || 0;
+      const hBA = host[`${B.id}>${A.id}`] || 0;
+      if (hAB + hBA <= 0) return;
+      const cA = circleData[A.id], cB = circleData[B.id];
+      if (!cA || !cB) return;
+      drawnPairs.add(pairKey);
+      const sum = Math.min(200, hAB + hBA);
+      const sw = 1.5 + (sum / 200) * 2; // 1.5〜3.5
+      layer.innerHTML += `<line x1="${cA.cx.toFixed(1)}" y1="${cA.cy.toFixed(1)}" x2="${cB.cx.toFixed(1)}" y2="${cB.cy.toFixed(1)}" stroke="var(--accent-faction-feud)" stroke-width="${sw.toFixed(2)}" stroke-dasharray="6,4" opacity="0.7"/>`;
+    });
+  });
+
+  // 2. 派閥円＋ラベル
+  Object.values(circleData).forEach(cd => {
+    const colorVar = `var(--accent-faction-${cd.colorIdx})`;
+    layer.innerHTML += `<circle cx="${cd.cx.toFixed(1)}" cy="${cd.cy.toFixed(1)}" r="${cd.r.toFixed(1)}" fill="none" stroke="${colorVar}" stroke-width="2.5" stroke-opacity="0.55"/>`;
+    const labelY = cd.cy - cd.r - 12;
+    const name = (cd.faction.name || '').replace(/</g, '&lt;');
+    layer.innerHTML += `<text x="${cd.cx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="16" font-weight="700" fill="${colorVar}" opacity="0.85">${name}</text>`;
+  });
+
+  // 3. リーダー 👑 / 幹部 ⭐ マーカー
+  factions.forEach(f => {
+    const leaderNode = _relmapNodeMap[f.leaderId];
+    if (leaderNode && !leaderNode._hidden) {
+      const lx = leaderNode.x + leaderNode.r * 0.6;
+      const ly = leaderNode.y - leaderNode.r * 0.6;
+      layer.innerHTML += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="14" text-anchor="middle" dominant-baseline="central">👑</text>`;
+    }
+    // 幹部: リーダー除く OVR 上位 2 名
+    const execs = f.memberIds
+      .filter(id => id !== f.leaderId)
+      .sort((a, b) => (ovrMap.get(b) || 0) - (ovrMap.get(a) || 0))
+      .slice(0, 2);
+    execs.forEach(id => {
+      const n = _relmapNodeMap[id];
+      if (!n || n._hidden) return;
+      const ex = n.x + n.r * 0.6;
+      const ey = n.y - n.r * 0.6;
+      layer.innerHTML += `<text x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" font-size="12" text-anchor="middle" dominant-baseline="central">⭐</text>`;
+    });
+  });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -9652,7 +9808,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
 function _relmapSetViewMode(mode) {
   _relmapViewMode = mode;
   document.querySelectorAll('.rm-view-toggle .rm-vt-btn').forEach(b => b.classList.remove('active'));
-  const btnIdx = mode === 'network' ? 1 : mode === 'focus' ? 2 : 3;
+  const btnIdx = mode === 'network' ? 1 : mode === 'focus' ? 2 : mode === 'power' ? 3 : 4;
   const btn = document.querySelector(`.rm-vt-btn:nth-child(${btnIdx})`);
   if (btn) btn.classList.add('active');
   const zoneLayer = document.getElementById('relmapZoneLayer');
@@ -9695,7 +9851,34 @@ function _relmapSetViewMode(mode) {
     const W = _relmapW, H = _relmapH;
     const orgCenters = { player: { x: W * 0.3, y: H * 0.35 }, org_s: { x: W * 0.7, y: H * 0.3 }, org_a: { x: W * 0.25, y: H * 0.7 }, org_b: { x: W * 0.7, y: H * 0.7 }, fa: { x: W * 0.5, y: H * 0.5 } };
     _relmapDrawOrgZones(orgCenters);
+    _relmapFactionCenters = {};
     _relmapRenderSidebar(orgCenters);
+  }
+
+  if (mode === 'faction') {
+    // power → faction 切替時に備えてSVGレイヤー再構築
+    const svg = document.getElementById('relmapSvg');
+    if (svg && !document.getElementById('relmapNodeLayer')) {
+      let defsHtml = '<defs>';
+      defsHtml += '<filter id="rm-glow-gold" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feFlood flood-color="#d4a843" flood-opacity="0.5"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+      defsHtml += '<filter id="rm-glow-red" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feFlood flood-color="#e17055" flood-opacity="0.4"/><feComposite in2="blur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+      defsHtml += '<marker id="rm-arrow-warm" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#74b9ff" opacity="0.7"/></marker>';
+      defsHtml += '<marker id="rm-arrow-cold" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#ff7675" opacity="0.7"/></marker>';
+      for (const [orgId, clr] of Object.entries(_RELMAP_ORG_COLORS)) {
+        const op = orgId === 'player' ? 0.08 : 0.06;
+        defsHtml += `<radialGradient id="rm-zone-${orgId}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${clr}" stop-opacity="${op}"/><stop offset="100%" stop-color="${clr}" stop-opacity="0"/></radialGradient>`;
+      }
+      defsHtml += '</defs>';
+      svg.innerHTML = defsHtml + '<g id="relmapZoneLayer"></g><g id="relmapFactionLayer"></g><g id="relmapLinkLayer"></g><g id="relmapNodeLayer"></g>';
+      _relmapBuildFacePatterns(svg);
+    }
+    _relmapOrgFilter = null;
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    _relmapNodes.forEach(n => { n._hidden = false; });
+    // 団体ゾーンは派閥円と重なるので非表示
+    if (zoneLayer) zoneLayer.innerHTML = '';
+    _relmapComputeFactionCenters();
+    _relmapRenderSidebar(_relmapOrgCenters || {});
   }
   // フォーカスモードに切り替える際、中心未設定なら自動でプレイヤー最高OVR選手を設定
   // （全ノード一斉表示によるO(n²)物理演算負荷を防ぐ）
@@ -9741,7 +9924,7 @@ function _relmapResetAll() {
   _relmapOrgFilter = null;
   const sh = document.getElementById('relmapSelectHint');
   if (sh) sh.classList.remove('show');
-  if (_relmapViewMode === 'focus') _relmapSetViewMode('network');
+  if (_relmapViewMode === 'focus' || _relmapViewMode === 'faction') _relmapSetViewMode('network');
   _relmapRenderSidebar(_relmapOrgCenters);
   _relmapReheat();
 }
