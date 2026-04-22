@@ -1,6 +1,6 @@
 # 派閥システム 仕様書 v0.1
 
-> **ステータス**: 🟡 設計完了・未実装（DRAFT）
+> **ステータス**: 🟢 Phase 1〜3d 実装済み（v0.7 / v1.0 機能完成）
 > **作成日**: 2026-04-21
 > **依存**: relationship-system-spec-v2.0.md / trust-system-spec-v2.1.md / large-event-spec-v1.0.md / personality-archetype-spec-v1.0.md / economy-spec-v2.0.md（集客）
 > **実装予定箇所**: factions.js（新規）, management.js（統合・フック追加）, data.js（FACTION_EVENTS 等）, ui-render.js（データベース派閥比較タブ・相関図レイヤー・団体タブ派閥セクション）, ui-common.js（F01〜F08モーダル）
@@ -753,10 +753,73 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | v0.4 | 2026-04-22 | F02 再設計: 「対立型結成（2派閥同時発生）」を廃止し「派閥抗争の勃発（既存2派閥に `inHostility: true` を付与）」に変更。`type: 'rivalrous'` は legacy として保持。対立度が両方向 0 になった時点で `inHostility` をクリアし抗争終了。`_isHostile(f)` ヘルパ追加 |
 | v0.5 | 2026-04-22 | Phase 3b 実装: F04 寝返り / F05 派閥内亀裂 / F06 和解の兆し / F07 リーダーの横暴 / F08 対立ヒートアップ の演出モーダル + `applyF0XChoice` + 6×6 セリフ + F08-A 直接対決ディレクティブ（`_pendingF08Directive` でカード編成強制組込み + 集客 appeal 加算 + 試合結果 1.5× 反映）+ `faction.f07RebukeCount` による authoritativeTag 解除 + F06 streak 追跡（`G.factionReconciliationStreak`）+ §8.3 優先順 F03>F08>F04>F05>F07>F06>F02>F01 + 各イベント個別クールダウン。auto-sim 2 シード × 100 シーズン ALL CLEAR |
 | v0.6 | 2026-04-22 | Phase 3c 実装: 相関図「🎭 派閥オーバーレイ」を**団体フィルタ連動型トグル**として実装（当初の「第4ビューモード」方式から実機検証を経て方向転換）。`_relmapFactionOverlay`/`_relmapSavedCenterId` 状態追加。団体フィルタ ON + 🎭 ON のときのみ、CENTER 選手を退避してフラット表示に切替 + 派閥円（外接円）+ 派閥名ラベル + 👑リーダー/⭐幹部マーカー（別レイヤー `relmapFactionMarkerLayer`）+ 抗争オレンジ破線（両派閥がフィルタ内の時のみ、1.5〜3.5px、数値なし）+ 非派閥メンバー斥力（keepR ベース）。派閥重複所属のデータ破綻対応として `Engine.factions._dedupeFactionMembers` + `reconcileRoster` 週次修復 + `_migrated_faction_dedupe_v1` マイグレーション追加。auto-sim 30 シーズン ALL CLEAR |
+| v0.7 | 2026-04-22 | Phase 3d 実装（派閥 v1.0 完成）: 派閥構造が bond/rivalry に波及する週次処理 `Engine.factions.processFactionInfluenceOnRelationships(state, rng)` 新設。6 効果を実装: (1) 派閥内結束 bond +0.15/週 全ペア / (2) 抗争越境敵意 rivalry +0.3/週 敵対派閥メンバー全組み合わせ / (3) 寝返り磁力 rivalry +0.5/週 敵メンバーとの bond 平均 60+ な選手 → 敵リーダー方向 / (4) 権威化の下向き圧 bond +0.1/週 `authoritativeTag` リーダー → メンバー一方向 / (5) 独裁化の亀裂 rivalry +0.2/週 `dictatorTag` 派閥メンバー全ペア / (6) 消滅余波 bond -5〜-10（1 派閥 1 回ロール）を `_dissolveFaction` で元メンバー全ペアに適用。通常の `processWeeklyDecay` は素通しで **加算で重ねる**。RNG `0xFA19`（週次）/ `0xFA1A`（消滅余波）追加。ヘルパー `_applyRivalryDirected` / `_applyRivalryBetweenMembers` / `_collectHostilePairs` / `_applyTurncoatMagnetism` 追加。tickWeek 派閥パイプラインに `processWeeklyMemberChanges` の後・`processWeeklyHostilityDecay` の前へ挿入。auto-sim 10 シード × 100 シーズン ALL CLEAR |
 
 ---
 
 ## §17 実装状況（2026-04-22）
+
+### Phase 3d 完了（bond/rivalry 連動カタログ, v0.7, 2026-04-22）→ **派閥システム v1.0 完成**
+
+**背景:**
+
+Phase 1〜3c までは、派閥は bond/rivalry を**読む**だけで**書き換えなかった**。加入/離脱は bond 閾値を参照し、集客・演出・UI は成立済み。しかし派閥所属状態が関係性にフィードバックしないため、派閥という構造が関係性ネットワークに還元されない「飾り」に留まっていた。Phase 3d はこの片方向性を解消し、**派閥が成立したらメンバー間・敵対派閥間の関係性が派閥構造によって自走し始める**ようにする。
+
+**実装:**
+
+- 新関数 `Engine.factions.processFactionInfluenceOnRelationships(state, rng)` を `src/factions.js` に追加
+- tickWeek 派閥パイプラインの `processWeeklyMemberChanges` の**後**、`processWeeklyHostilityDecay` の**前**に挿入（加入離脱後の新編成に効果を適用、その後で減衰）
+- 通常の `Engine.relationships.processWeeklyDecay` は**素通しで併走**（加算で重ねる方式）
+- 既存の `_applyBondDirected` / `_applyBondBetweenMembers` を流用 + 新ヘルパー `_applyRivalryDirected` / `_applyRivalryBetweenMembers` / `_collectHostilePairs` / `_applyTurncoatMagnetism` を追加
+
+**6 効果:**
+
+| # | 効果 | 対象 | 変動量 | タイミング |
+|---|------|------|--------|-----------|
+| 1 | 派閥内結束 | 同派閥メンバー全ペア bond | +0.15/週 | 週次 |
+| 2 | 抗争越境敵意 | 抗争中派閥メンバー全組み合わせ rivalry | +0.3/週 | 週次 |
+| 3 | 寝返り磁力 | 敵派閥メンバーとの bond 平均 60+ な選手 → 敵リーダー方向 rivalry | +0.5/週 | 週次 |
+| 4 | 権威化の下向き圧 | `authoritativeTag` 派閥のリーダー → メンバー方向 bond（逆向きは ±0） | +0.1/週 | 週次 |
+| 5 | 独裁化の亀裂 | `dictatorTag` 派閥メンバー全ペア rivalry（水面下の不満） | +0.2/週 | 週次 |
+| 6 | 消滅余波 | 消滅時、元メンバー全ペア bond に一律 | -5〜-10（1 派閥 1 回ロール） | `_dissolveFaction` |
+
+**効果 2/3 の抗争ペア検出:**
+
+`_collectHostilePairs(state)` が `state.factionHostility` を走査し、`value > 0` な記録を持つ派閥ペアを列挙（無向ペアで重複排除）。両派閥とも存在する組のみ返す。
+
+**効果 3 の判定式:**
+
+`_applyTurncoatMagnetism(state, fromFaction, toFaction)` が fromFaction メンバー各人について、toFaction 全メンバーとの bond 平均（`_avgBond`）を計算。≥60 なら当該選手から toFaction.leaderId 方向へ rivalry +0.5。
+
+**効果 6 の RNG:**
+
+`_dissolveFaction` 内で `Engine.rng.derive(rngSeed, season, week, 0xFA1A) ^ factionId` から rng を生成し `-(5 + float*5)` を 1 回ロール。全元メンバーペアに同一 delta を適用（「この消滅は苦々しかった/あっさりしていた」のばらつきを 1 派閥 1 ロールで表現）。
+
+**RNG シード追加:**
+
+- `0xFA19`: 週次派閥効果用（現状は決定論だが将来の randomization 拡張用に予約）
+- `0xFA1A`: `_dissolveFaction` 余波 bond ロール用
+
+**触らなかった場所:**
+
+- `Engine.relationships.*` の関数シグネチャ（読み取りと書き戻しのみ）
+- `processWeeklyDecay` の既存挙動
+- `calcMatchAppeal` の factionAppeal 分岐
+- F01〜F08 演出・UI
+
+**数値感（1 シーズン = 52 週）:**
+
+- 結束: +7.8 bond/季（自然減衰と相殺して実効 +3〜+5）
+- 越境敵意: +15.6 rivalry/季
+- 寝返り磁力: +26 rivalry/季
+- 権威化圧: +5.2 bond/季（一方向のみ）
+- 独裁亀裂: +10.4 rivalry/季
+
+**検証:** auto-sim 10 シード × 100 シーズン ALL CLEAR（違反 0 / エラー 0）
+
+**派閥システム v1.0 完成。** 残タスクは Phase 4（§10 ロスター運営への波及、未計画）と v0.x 履歴統合の spec 整理。
+
+---
 
 ### Phase 3c 完了（相関図 派閥オーバーレイ + 重複所属修復, v0.6, 2026-04-22）
 

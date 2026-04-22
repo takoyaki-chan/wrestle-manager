@@ -7463,6 +7463,7 @@ const Engine = {
           // F01/F02 pending の場合: 派閥はまだ生成されていないので、既存処理（メンバー変動/減衰/消滅判定）を回しても安全
           if (picked.eventId !== 'F03') {
             s = Engine.factions.processWeeklyMemberChanges(s, facRng);
+            s = Engine.factions.processFactionInfluenceOnRelationships(s, facRng);
             s = Engine.factions.processWeeklyHostilityDecay(s);
             s = Engine.factions.processWeeklyMomentumDecay(s);
             s = Engine.factions.checkDissolutionConditions(s);
@@ -7471,6 +7472,7 @@ const Engine = {
           // イベント発動なし: 通常パイプライン
           s = Engine.factions.reconcileRoster(s, facRng);
           s = Engine.factions.processWeeklyMemberChanges(s, facRng);
+          s = Engine.factions.processFactionInfluenceOnRelationships(s, facRng);
           s = Engine.factions.processWeeklyHostilityDecay(s);
           s = Engine.factions.processWeeklyMomentumDecay(s);
           s = Engine.factions.checkDissolutionConditions(s);

@@ -279,6 +279,84 @@ Engine.factions = {
     return { ...state, factions };
   },
 
+  // ── Phase 3d §9 派閥構造が関係性に波及する週次処理 ────
+  // 効果1: 派閥内結束 bond +0.15 / 効果2: 抗争越境敵意 rivalry +0.3
+  // 効果3: 寝返り磁力 rivalry +0.5 / 効果4: 権威化の下向き圧 bond +0.1（リーダー→メンバー一方向）
+  // 効果5: 独裁化の亀裂 rivalry +0.2
+  processFactionInfluenceOnRelationships(state, rng) {
+    let s = state;
+    if (!s.factions || s.factions.length === 0) return s;
+    if (!s.relationships) return s;
+    for (const f of s.factions) {
+      // 効果1: 同派閥メンバー全ペアに bond +0.15
+      if (f.memberIds.length >= 2) {
+        s = this._applyBondBetweenMembers(s, f.memberIds, 0.15);
+      }
+      // 効果4: authoritativeTag ならリーダー → メンバー一方向 bond +0.1
+      if (f.authoritativeTag && f.leaderId != null) {
+        for (const mid of f.memberIds) {
+          if (mid === f.leaderId) continue;
+          s = this._applyBondDirected(s, f.leaderId, mid, 0.1);
+        }
+      }
+      // 効果5: dictatorTag なら同派閥メンバー全ペアに rivalry +0.2
+      if (f.dictatorTag && f.memberIds.length >= 2) {
+        s = this._applyRivalryBetweenMembers(s, f.memberIds, 0.2);
+      }
+    }
+    // 効果2/3: 抗争中派閥ペア処理
+    const hostilePairs = this._collectHostilePairs(s);
+    for (const [fA, fB] of hostilePairs) {
+      // 効果2: 敵対派閥メンバー間に rivalry +0.3（双方向）
+      for (const a of fA.memberIds) {
+        for (const b of fB.memberIds) {
+          s = this._applyRivalryDirected(s, a, b, 0.3);
+          s = this._applyRivalryDirected(s, b, a, 0.3);
+        }
+      }
+      // 効果3: 敵対派閥メンバーとの bond 平均 60+ な選手は敵リーダー方向 rivalry +0.5
+      s = this._applyTurncoatMagnetism(s, fA, fB);
+      s = this._applyTurncoatMagnetism(s, fB, fA);
+    }
+    return s;
+  },
+
+  _collectHostilePairs(state) {
+    const host = state.factionHostility || {};
+    const factionMap = new Map((state.factions || []).map(f => [f.id, f]));
+    const seen = new Set();
+    const pairs = [];
+    for (const key of Object.keys(host)) {
+      if ((host[key] || 0) <= 0) continue;
+      const [fromStr, toStr] = key.split('>');
+      const from = Number(fromStr);
+      const to = Number(toStr);
+      const lo = Math.min(from, to);
+      const hi = Math.max(from, to);
+      const pairKey = `${lo}>${hi}`;
+      if (seen.has(pairKey)) continue;
+      seen.add(pairKey);
+      const fA = factionMap.get(from);
+      const fB = factionMap.get(to);
+      if (!fA || !fB) continue;
+      pairs.push([fA, fB]);
+    }
+    return pairs;
+  },
+
+  _applyTurncoatMagnetism(state, fromFaction, toFaction) {
+    if (toFaction.leaderId == null) return state;
+    if (!toFaction.memberIds || !toFaction.memberIds.length) return state;
+    let s = state;
+    for (const mid of fromFaction.memberIds) {
+      const avgBond = this._avgBond(s, mid, toFaction.memberIds);
+      if (avgBond >= 60) {
+        s = this._applyRivalryDirected(s, mid, toFaction.leaderId, 0.5);
+      }
+    }
+    return s;
+  },
+
   // ── §2.2 §2.3 メンバー変動 ──────────────────────────────
   processWeeklyMemberChanges(state, rng) {
     const cfg = FACTION_CONFIG;
@@ -507,6 +585,13 @@ Engine.factions = {
     }
     // 元メンバー trust -5〜-8 (簡易固定 -6)
     s = this._applyTrustToMembers(s, dead.memberIds, -6);
+    // 効果6: 消滅余波 — 元メンバー全ペアに bond -5〜-10（1 派閥 1 回ロール）
+    if (dead.memberIds.length >= 2 && s.relationships) {
+      const seed = Engine.rng.derive(s.rngSeed || 0, s.season || 0, s.week || 0, 0xFA1A);
+      const rng = Engine.rng.create(seed ^ factionId);
+      const bondDelta = -(5 + Engine.rng.float(rng) * 5);
+      s = this._applyBondBetweenMembers(s, dead.memberIds, bondDelta);
+    }
     // 対立派閥の勢い -3〜-5
     const newFactions = s.factions
       .filter(f => f.id !== factionId)
@@ -1562,6 +1647,30 @@ Engine.factions = {
         const rec = newRels[key];
         if (!rec) continue;
         newRels[key] = { ...rec, bond: Engine.util.clamp(rec.bond + delta, 0, 100) };
+      }
+    }
+    return { ...state, relationships: newRels };
+  },
+
+  _applyRivalryDirected(state, fromId, toId, delta) {
+    if (!state.relationships) return state;
+    const key = `${fromId}>${toId}`;
+    const rec = state.relationships[key];
+    if (!rec) return state;
+    const newRec = { ...rec, rivalry: Engine.util.clamp((rec.rivalry || 0) + delta, 0, 100) };
+    return { ...state, relationships: { ...state.relationships, [key]: newRec } };
+  },
+
+  _applyRivalryBetweenMembers(state, memberIds, delta) {
+    if (!state.relationships || memberIds.length < 2) return state;
+    let newRels = { ...state.relationships };
+    for (let i = 0; i < memberIds.length; i++) {
+      for (let j = 0; j < memberIds.length; j++) {
+        if (i === j) continue;
+        const key = `${memberIds[i]}>${memberIds[j]}`;
+        const rec = newRels[key];
+        if (!rec) continue;
+        newRels[key] = { ...rec, rivalry: Engine.util.clamp((rec.rivalry || 0) + delta, 0, 100) };
       }
     }
     return { ...state, relationships: newRels };
