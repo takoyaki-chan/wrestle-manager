@@ -232,8 +232,16 @@ Office と Stage はこの3種のみで構成される。Ceremony のみ追加�
 | 主アクセント明度高 | `--gold-light` | `#f0d078` | グラデーション末端等 |
 | Office内Cream上のゴールド | `--cream-gold` | `#7a6530` | Cream Panel上では暗いゴールド |
 | Office内Cream上のゴールド濃 | `--cream-gold-dark` | `#5c4a1e` | 同上 |
+| 派閥識別色1（暖色） | `--accent-faction-1` | `#c38c54` | 琥珀系、派閥ID順で循環割当 |
+| 派閥識別色2（寒色） | `--accent-faction-2` | `#6d94b8` | 群青系 |
+| 派閥識別色3（紫系） | `--accent-faction-3` | `#8a7aa8` | 藤紫 |
+| 派閥識別色4（緑系） | `--accent-faction-4` | `#6fa28c` | 鶯緑 |
+| 対立度アクセント | `--accent-hostility` | `#d07a3e` | 対立破線・対立バッジ |
+| 派閥抗争バッジ | `--accent-faction-feud` | `#c38c54` | 興行カード「🏴vs🏴」タグ |
 
 ゴールドはレッスルマネージャー全体のシグネチャカラー。3カテゴリすべてで使用される唯一の共通アクセント。
+
+派閥識別色4種は彩度を抑え、Office/Stage のどちらの背景でも輪郭が出る中間色。相関図・DB派閥タブで派閥ID順に循環して使う（5派閥目以降は mod で周回）。
 
 ---
 
