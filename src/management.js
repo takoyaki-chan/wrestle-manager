@@ -13891,14 +13891,16 @@ Engine.shachoshitsu = {
         // 実発現量 = perWeekDelta × finalMult (Phase 8 でマトリクス反映)
         const applied = delta.perWeekDelta * (delta.finalMult != null ? delta.finalMult : 1.0);
         trust = Engine.util.clamp(trust + applied, 0, 100);
-        reveals.push({
-          fighterId: f.id,
-          fighterName: f.name,
-          source: delta.source,
-          perWeekDelta: applied,
-        });
         const nextRem = delta.weeksRemaining - 1;
+        // 最終週 (nextRem === 0) はバフ終了と同週のため、reveal を出さず静かに締める
+        // (バッジが消える週に「前向きになってきた」トーストが出るとユーザーに違和感を与えるため)
         if (nextRem >= 1) {
+          reveals.push({
+            fighterId: f.id,
+            fighterName: f.name,
+            source: delta.source,
+            perWeekDelta: applied,
+          });
           remaining.push({ ...delta, weeksRemaining: nextRem });
         }
       }
