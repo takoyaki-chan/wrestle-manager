@@ -94,9 +94,11 @@ Engine.battle = {
 
     // Main match simulation — pure function, no DOM
     // matchTier: 1=通常, 2=ビッグマッチ(PPV/タイトル/対抗戦)
-    simulateMatch(charL, charR, rng, matchTier) {
+    // opts: { recordFrames: boolean }  — 観戦用にターン毎のスナップショットを記録
+    simulateMatch(charL, charR, rng, matchTier, opts) {
       const clamp = Engine.util.clamp;
       const B = Engine.battle;
+      const recordFrames = !!(opts && opts.recordFrames);
 
       const tier = matchTier || 1;
       const maxT    = tier >= 2 ? BIGMATCH_MAX_T    : MAX_T;
@@ -125,8 +127,52 @@ Engine.battle = {
       // 引き出し上手: 格下戦でのペーシング減点緩和
       const hasHikidashi = Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手');
 
+      // ── フレーム記録（観戦用） ──
+      // ターン毎に1フレーム push。battle-engine.html (リプレイ版) が再生する。
+      const frames = recordFrames ? [] : null;
+      let _turnLogStart = 0;
+      let _turnAction = null;
+      let _turnKickout = null;   // { count, escapeType: 'fall'|'tko'|'gu' }
+      let _turnPinAttempt = null; // 'success' | 'kickout2'
+      let _turnRollup = null;     // 'success'
+      let _turnTkoStop = false;
+      function pushFrame(phName) {
+        if (!recordFrames) return;
+        frames.push({
+          turn,
+          phase: phName,
+          hpL: Math.max(0, L.hp),
+          hpR: Math.max(0, R.hp),
+          mhpL: L.mhp,
+          mhpR: R.mhp,
+          mom,
+          gritL: L.gritTurns | 0,
+          gritR: R.gritTurns | 0,
+          kickoutCountL: L.kickoutCount | 0,
+          kickoutCountR: R.kickoutCount | 0,
+          consecL: L.consecutiveHits | 0,
+          consecR: R.consecutiveHits | 0,
+          logLines: log.slice(_turnLogStart),
+          action: _turnAction,
+          kickout: _turnKickout,
+          pinAttempt: _turnPinAttempt,
+          rollup: _turnRollup,
+          tkoStop: _turnTkoStop || undefined,
+          winner: winner || null,
+          finType: winner ? finType : null,
+          finMove: winner ? finMove : null,
+          finishPhase: winner ? finishPhase : null,
+        });
+      }
+
       while (turn <= maxT && !winner) {
         const ph = B.phase(turn, phases);
+        _turnLogStart = log.length;
+        _turnAction = null;
+        _turnKickout = null;
+        _turnPinAttempt = null;
+        _turnRollup = null;
+        _turnTkoStop = false;
         const leftChance = 50 + mom * 0.3;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
         const atk = isLeftAtk ? L : R;
@@ -140,6 +186,9 @@ Engine.battle = {
         if (roll > hitRate) {
           log.push(`T${turn}: ${atk.name}の${mv.n} → MISS`);
           mom += isLeftAtk ? -5 : 5;
+          if (recordFrames) {
+            _turnAction = { kind: 'miss', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, dmg: 0, isCrit: false, isBig: false };
+          }
         } else {
           let counterRate = B.calcCounterRate(atk, def, ph);
           if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
@@ -150,6 +199,9 @@ Engine.battle = {
             def.consecutiveHits = 0;
             totalCounters++;
             log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${cDmg}ダメージ`);
+            if (recordFrames) {
+              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
+            }
           } else {
             const dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
             def.hp -= dmg;
@@ -157,6 +209,9 @@ Engine.battle = {
             atk.consecutiveHits++;
             def.consecutiveHits = 0;
             if (dmg >= 10) bigMoves++;
+            if (recordFrames) {
+              _turnAction = { kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, dmg, isCrit: dmg >= 15, isBig: dmg >= 10 };
+            }
             const curLeader = mom > 5 ? 'left' : mom < -5 ? 'right' : null;
             if (curLeader && curLeader !== lastLeader) { leadChanges++; lastLeader = curLeader; }
 
@@ -180,6 +235,7 @@ Engine.battle = {
                   totalKickouts++;
                   def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
+                  if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
                 let escChance = B.calcGuEscapeChance(def, ph, eng);
@@ -191,6 +247,7 @@ Engine.battle = {
                   def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
                   totalKickouts++;
+                  if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: 'gu' };
                 }
               }
               if (!escaped) {
@@ -210,10 +267,12 @@ Engine.battle = {
                 finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(isSubPin ? `★ ${atk.name}、${mv.n}でギブアップ！` : `★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
+                if (recordFrames) _turnPinAttempt = 'success';
               } else {
                 def.gritTurns = eng.gritDuration;
                 log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
                 totalKickouts++;
+                if (recordFrames) _turnPinAttempt = 'kickout2';
               }
             }
             else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {
@@ -226,6 +285,7 @@ Engine.battle = {
                 finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
+                if (recordFrames) _turnRollup = 'success';
               }
             }
             else if (!winner && atk.consecutiveHits >= eng.tkoConsecutiveThreshold
@@ -236,11 +296,13 @@ Engine.battle = {
                 finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ レフェリーストップ！ ${atk.name}のTKO勝利！`);
+                if (recordFrames) _turnTkoStop = true;
               }
             }
           }
         }
         mom = clamp(mom, -50, 50);
+        pushFrame(ph.name);
         turn++;
       }
 
@@ -254,6 +316,16 @@ Engine.battle = {
         }
         finishPhase = 'Timeout';
         log.push(`⏰ 時間切れ！ ${winner === 'draw' ? 'ドロー' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
+        // 最終フレームに winner を刻む。最後に push された直前のフレームを上書きしても良いが、
+        // 追加フレーム (turnSub 無し、turn は維持) で timeout 表示を分離した方が演出しやすい
+        if (recordFrames && frames.length > 0) {
+          const last = frames[frames.length - 1];
+          last.winner = winner;
+          last.finType = finType;
+          last.finMove = null;
+          last.finishPhase = 'Timeout';
+          last.logLines = last.logLines.concat([log[log.length - 1]]);
+        }
       }
 
       // Calculate MQ (v2.0 deduction system — §1〜§5 of mq-deduction-redesign-v2.0.md)
@@ -317,7 +389,8 @@ Engine.battle = {
         hpRight: { final: Math.max(0, R.hp), max: R.mhp },
         mq, log,
         finishPhase, matchTier: tier, btHintTurn: null,
-        mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty }
+        mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },
+        frames: recordFrames ? frames : undefined,
       };
     }
 };
