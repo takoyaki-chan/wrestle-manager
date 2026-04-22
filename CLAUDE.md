@@ -133,7 +133,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - docs/ = 計画・検討・指示書(未来形 or 過去形)
 - アーカイブは「完了した指示書」置き場であり、仕様の真実ではない
 
-### specs/ ファイル索引(全34ファイル)
+### specs/ ファイル索引(全35ファイル)
 
 | ファイル | 内容 |
 |---------|------|
@@ -171,6 +171,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | fan-expect-firstmeet-spec-v0.1.md | ファン期待カード「初顔合わせドリーム」(未実装v0.1) |
 | match-flavor-popup-spec-v0.1.md | 試合前フレーバーポップアップ(未実装v0.1) |
 | match-popup-overview-v0.1.md | 試合演出ポップアップ再設計 全体構想(未実装v0.1) |
+| faction-system-spec-v0.1.md | 派閥システム(DRAFT・未実装v0.1) |
 
 ## UI実装ルール(必読)
 
