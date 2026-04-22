@@ -257,6 +257,29 @@
 
 ## 次の実装予定
 
+### 試合ダメージカーブ再調整（Tier1 Opening が大雑把すぎる問題）— 未着手（最優先）
+
+背景: 2026-04-22 の Phase 4c Replay 統一（commit `8221b3a`）でシングル観戦も `Engine.battle.simulateMatch` の出力を直接再生するようになった結果、旧 iframe 内自走シミュが持っていた「ダメージを丸める補正」がなくなり、engine の実出力が表に出た。観察: Tier1 Opening フェーズで dmg 20+ クリティカルが連発、「ミスか大ダメか」の二択的な展開になり、起承転結が消えて**大雑把・雑な手触り**になっている。
+
+計測（3 ペア × 2 seed、Tier1）:
+```
+阿武隈 vs 副沢 s=11111:  [T1:d24!] [T2:d21!] [T3:d23!] [T4:d29!]
+生駒 vs 美濃山 s=11111:  [T1:d21!] [T2:d21!] [T3:d22!] [T4:d26!]
+双里 vs 本郷   s=11111:  [T1:d16!] [T2:d26!] [T3:d28!] [T4:d18!]
+```
+全ターン dmg≥15（=`isCrit` 閾値）、dmg≥20 も多数。Opening は本来ジャブ〜応酬フェーズであるべき。
+
+素案（data.js / match-engine.js の数値のみ、ロジック変更なし）:
+- `PHASES[0].mult` 0.90 → 0.60（Opening）
+- `PHASES[1].mult` 1.00 → 0.85（Mid）
+- `PHASES[2].mult` 1.10 → 1.05（End、ほぼ据え置き）
+- `PHASES[3].mult` 1.25 → 1.30（Climax、相対的に強調）
+- 必要なら `ENG.dmgRandMin/Range` を広げて Opening の振れ幅を増やす
+
+期待挙動: Opening=小競り合い中心 / Mid=ギアが上がる / End=大技頻発 / Climax=決着級。現行 Tier2(bigmatch) 側の phase カーブとの整合もチェック要。
+
+検証: auto-sim 必須（winner/MQ/turns が動く）。本番セーブでの体感確認も必要。別ブランチ推奨（refactor/battle-engine-replay ではなく main 起点の feature ブランチ）。
+
 ### Trust Phase T4: 単発ガツン系イベント（未着手）
 
 bond/rivalryシステムと連携する劇的イベント群。実装順推奨: S_humiliation → S_scandal → S_fanrevolt → S_powerstruggle → S_betrayal
