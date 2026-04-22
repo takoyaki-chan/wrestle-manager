@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>派閥イベント F01-F04 モックアップ</title>
+<style>
+/* ============================================================
+   Tokens（階層1からの抜粋 + 新規 stage 系）
+   ============================================================ */
+:root {
+  --office-bg: #24221e;
+  --office-panel-cream: #d4ccb8;
+  --office-panel-cream-card: #ede8dc;
+  --office-panel-dark: #181614;
+  --office-panel-dark-deep: #12110e;
+  --office-border-cream: rgba(100,85,50,0.14);
+  --cream-text-main: #1e1c16;
+  --cream-text-sub: #5c5242;
+  --cream-text-dim: #7a6f5a;
+  --cream-gold: #7a6530;
+  --cream-gold-dark: #5c4a1e;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+
+  --stage-bg: #060606;
+  --stage-text-main: #e8e6e0;
+  --stage-text-sub: #a89e8a;
+
+  --accent-faction-1: #c38c54;
+  --accent-faction-2: #6d94b8;
+  --accent-faction-3: #8a7aa8;
+  --accent-faction-4: #6fa28c;
+  --accent-hostility: #d07a3e;
+
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --radius-lg: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; width: 100%; }
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0a0a0a;
+  color: #e8e6e0;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Switcher（開発用、本番では存在しない）
+   ============================================================ */
+.dev-switcher {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(10,8,6,0.92); border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 10px 16px; display: flex; gap: 10px; align-items: center;
+  font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px;
+}
+.dev-switcher-label { color: var(--gold); font-weight: 700; margin-right: 8px; }
+.dev-btn {
+  background: rgba(200,190,170,0.08); border: 1px solid rgba(200,190,170,0.2);
+  color: #e8e6e0; padding: 6px 14px; border-radius: 3px; cursor: pointer;
+  font-family: inherit; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  transition: all .15s;
+}
+.dev-btn:hover { background: rgba(212,168,67,0.15); border-color: var(--gold); color: var(--gold); }
+.dev-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1a1a; font-weight: 700; }
+.dev-sep { width: 1px; height: 16px; background: rgba(200,190,170,0.15); margin: 0 6px; }
+.dev-hint { color: rgba(200,190,170,0.5); font-size: 10px; letter-spacing: 0.5px; margin-left: auto; }
+
+/* ============================================================
+   Background frame — 通常画面 / 社長室 / 純黒 の3種
+   ============================================================ */
+.app-bg {
+  position: fixed; inset: 0; background: var(--office-bg);
+  z-index: 0; filter: blur(0) brightness(1);
+  transition: filter 500ms ease;
+}
+.app-bg-content {
+  max-width: 1200px; margin: 0 auto; padding: 80px 24px 24px;
+  opacity: 0.4;
+}
+.app-bg h1 { font-family: 'Bebas Neue', sans-serif; color: var(--gold); letter-spacing: 4px; font-size: 22px; margin-bottom: 12px; }
+.app-bg-row { background: rgba(200,190,170,0.04); border: 1px solid rgba(200,190,170,0.06); padding: 12px 16px; border-radius: 6px; margin-bottom: 6px; font-size: 13px; color: rgba(232,230,224,0.6); }
+
+/* 演出発生時 */
+.app-bg.dimmed { filter: blur(3px) brightness(0.55); }
+.app-bg.stage-dimmed { filter: blur(4px) brightness(0.18); }
+
+/* 社長室背景 — F01/F04 専用 */
+.shacho-bg {
+  position: fixed; inset: 0; z-index: 1; display: none;
+  opacity: 0; transition: opacity 700ms ease;
+}
+.shacho-bg.active { display: block; opacity: 1; }
+.shacho-bg-wall {
+  position: absolute; top: 0; left: 0; right: 0; height: 52%;
+  background: url('../../../image/shachoshitsu/wall-window-autumn.webp') center top/cover no-repeat;
+  filter: brightness(0.55) blur(1px);
+}
+.shacho-bg-desk {
+  position: absolute; top: 52%; left: 0; right: 0; bottom: 0;
+  background: url('../../../image/shachoshitsu/desk.webp') center top/cover no-repeat;
+  filter: brightness(0.45) blur(1px);
+}
+.shacho-bg-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 50%,
+    transparent 0%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.88) 100%);
+}
+
+/* ============================================================
+   Office 系オーバーレイ（F01 / F04）
+   ============================================================ */
+.fevt-overlay-office {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%,
+    rgba(0,0,0,0.15) 0%,
+    rgba(0,0,0,0.45) 60%,
+    rgba(0,0,0,0.75) 100%);
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 500ms ease;
+}
+.fevt-overlay-office.active { display: flex; opacity: 1; }
+
+.fevt-report-card {
+  width: 760px; max-width: calc(100vw - 48px);
+  background: var(--office-panel-cream);
+  border: 1px solid var(--office-border-cream);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.85),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  overflow: hidden; position: relative;
+  animation: fevtCardRise 700ms cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes fevtCardRise {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fevt-report-header {
+  background: linear-gradient(180deg, rgba(122,101,48,0.12) 0%, rgba(122,101,48,0.04) 100%);
+  border-bottom: 1px solid rgba(122,101,48,0.2);
+  padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.fevt-report-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--cream-gold-dark); letter-spacing: 1.5px;
+}
+.fevt-report-meta {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: var(--cream-gold); letter-spacing: 2px; text-transform: uppercase;
+}
+
+.fevt-reporter-strip {
+  background: var(--office-panel-dark);
+  padding: 14px 20px; display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+  animation: fevtFadeIn 500ms ease 400ms both;
+}
+.fevt-reporter-portrait {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid rgba(212,168,67,0.3);
+  background: #222 center/cover no-repeat;
+  flex-shrink: 0;
+}
+.fevt-reporter-text {
+  flex: 1; color: #d8d2c4;
+}
+.fevt-reporter-name {
+  font-size: 11px; color: var(--gold); letter-spacing: 1px; font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.fevt-reporter-line {
+  font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5;
+}
+.fevt-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
+.fevt-reporter-line::after { content: '」'; color: rgba(200,190,170,0.5); }
+
+.fevt-subject-stage {
+  padding: 24px 24px 22px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
+    var(--office-panel-cream-card);
+  text-align: center;
+  position: relative;
+  animation: fevtFadeIn 500ms ease 900ms both;
+}
+/* 主役と脇のフォロワーを横並びにする観察図 */
+.fevt-subject-trio {
+  display: flex; align-items: flex-end; justify-content: center; gap: 18px;
+  margin-bottom: 6px;
+}
+.fevt-subject-portrait-wrap {
+  width: 120px; height: 140px;
+  border: 2px solid rgba(122,101,48,0.3); border-radius: 4px;
+  background: #222 center/cover no-repeat;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  position: relative; flex-shrink: 0;
+}
+/* 主役マーク（中央に派閥章っぽい印） */
+.fevt-subject-portrait-wrap::after {
+  content: '◆'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  color: var(--cream-gold); font-size: 14px; line-height: 1;
+  text-shadow: 0 0 8px rgba(122,101,48,0.5);
+}
+.fevt-follower-portrait {
+  width: 64px; height: 76px;
+  border: 1px solid rgba(100,85,50,0.3); border-radius: 3px;
+  background: #888 center/cover no-repeat;
+  opacity: 0.85;
+  filter: brightness(0.9);
+  flex-shrink: 0;
+  margin-bottom: 18px; /* 主役より少し下げる */
+  animation: fevtFollowerEnter 700ms ease 1500ms both;
+}
+.fevt-follower-portrait.right { animation-delay: 1700ms; }
+@keyframes fevtFollowerEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 0.85; transform: translateY(0); }
+}
+.fevt-subject-name {
+  font-size: 19px; font-weight: 700; color: var(--cream-text-main);
+  letter-spacing: 1px; margin-bottom: 4px; margin-top: 8px;
+}
+.fevt-subject-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--cream-gold); letter-spacing: 2px; margin-bottom: 14px;
+}
+.fevt-subject-divider {
+  width: 60px; height: 1px; background: rgba(122,101,48,0.3); margin: 8px auto 12px;
+}
+/* コーチからの観察報告（リーダー本人の発話ではない） */
+.fevt-observation-note {
+  font-size: 14px; color: var(--cream-text-main);
+  line-height: 1.85; max-width: 520px; margin: 0 auto;
+  text-align: left; padding: 0 8px;
+}
+.fevt-observation-note .marker {
+  font-weight: 700; color: var(--cream-gold-dark);
+  border-bottom: 1px dotted rgba(122,101,48,0.5);
+  padding-bottom: 1px;
+}
+
+.fevt-decision-prompt {
+  text-align: center; padding: 18px 24px 10px;
+  font-size: 14px; color: var(--cream-text-sub);
+  background: var(--office-panel-cream);
+  animation: fevtFadeIn 400ms ease 1400ms both;
+}
+
+.fevt-decision-tray {
+  padding: 0 20px 24px; display: grid;
+  grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+  background: var(--office-panel-cream);
+  animation: fevtFadeIn 500ms ease 1600ms both;
+}
+.fevt-decision-tray.two { grid-template-columns: 1fr 1fr; padding: 0 60px 24px; }
+.fevt-decision-card {
+  background: #fff;
+  border: 1px solid rgba(100,85,50,0.2);
+  border-radius: 6px;
+  padding: 14px 14px 12px;
+  text-align: left; cursor: pointer;
+  transition: all 180ms ease;
+  position: relative; overflow: hidden;
+}
+.fevt-decision-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--cream-gold); opacity: 0.4;
+  transition: opacity 180ms;
+}
+.fevt-decision-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  border-color: var(--cream-gold);
+}
+.fevt-decision-card:hover::before { opacity: 1; }
+.fevt-decision-letter {
+  font-family: 'Bebas Neue', sans-serif; font-size: 24px;
+  color: var(--cream-gold); letter-spacing: 1px; line-height: 1;
+  margin-bottom: 4px;
+}
+.fevt-decision-label {
+  font-size: 13px; font-weight: 700; color: var(--cream-text-main);
+  margin-bottom: 6px; line-height: 1.35;
+}
+.fevt-decision-hint {
+  font-size: 11px; color: var(--cream-text-dim); line-height: 1.5;
+}
+
+/* F04 のヘッダだけ hostility トーン */
+.fevt-report-card.f04 .fevt-report-header {
+  border-bottom: 1px solid rgba(208,122,62,0.35);
+  background: linear-gradient(180deg, rgba(208,122,62,0.1) 0%, rgba(208,122,62,0.02) 100%);
+}
+.fevt-report-card.f04 .fevt-report-title { color: #8c4a20; }
+/* F04: fromFaction → toFaction の旗が両脇に立つ */
+.fevt-f04-flags {
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 520px; margin: 8px auto 0; position: relative;
+}
+.fevt-f04-flag {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px;
+  padding: 5px 12px; border-radius: 3px; text-transform: uppercase;
+}
+.fevt-f04-flag.from { background: rgba(138,122,168,0.15); color: #5a4a78; border: 1px solid rgba(138,122,168,0.4); }
+.fevt-f04-flag.to { background: rgba(195,140,84,0.18); color: #7a4a20; border: 1px solid rgba(195,140,84,0.5); }
+.fevt-f04-arrow {
+  font-size: 20px; color: var(--accent-hostility); letter-spacing: 4px;
+  animation: fevtArrowPulse 1400ms ease infinite;
+}
+@keyframes fevtArrowPulse {
+  0%,100% { opacity: 0.4; transform: translateX(-4px); }
+  50% { opacity: 1; transform: translateX(4px); }
+}
+
+/* ============================================================
+   Stage 系オーバーレイ（F02 / F03）
+   ============================================================ */
+.fevt-overlay-stage {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(ellipse 120% 90% at 50% 50%,
+    rgba(20,18,16,0.98) 0%,
+    rgba(6,6,6,1) 60%,
+    #000 100%);
+  display: none; align-items: center; justify-content: center; flex-direction: column;
+  opacity: 0; transition: opacity 800ms ease;
+}
+.fevt-overlay-stage.active { display: flex; opacity: 1; }
+.fevt-overlay-stage.sepia::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(80,60,30,0.18) 0%, rgba(40,25,15,0.28) 100%);
+  pointer-events: none;
+}
+
+.fevt-title-band {
+  text-align: center; margin-top: 8vh; margin-bottom: 6vh;
+  animation: fevtFadeDown 1200ms ease both;
+}
+.fevt-title-main {
+  font-family: 'Bebas Neue', sans-serif; font-size: 42px;
+  color: var(--stage-text-main); letter-spacing: 16px;
+  text-shadow: 0 0 40px rgba(212,168,67,0.25);
+  padding-right: 0; padding-left: 16px;
+}
+.fevt-title-main.clash { color: #ff8a8a; text-shadow: 0 0 30px rgba(196,30,58,0.5); letter-spacing: 12px; }
+.fevt-title-main.dissolve { color: #c8b89a; text-shadow: 0 0 30px rgba(200,184,154,0.25); letter-spacing: 20px; }
+.fevt-title-divider {
+  width: 180px; height: 1px; margin: 14px auto;
+  background: linear-gradient(90deg, transparent, rgba(212,168,67,0.6), transparent);
+}
+.fevt-title-sub {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: var(--stage-text-sub); letter-spacing: 6px; text-transform: uppercase;
+}
+@keyframes fevtFadeDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fevtFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* F02 Act 1: 前段ナレーション（状況説明） */
+.fevt-narration-act {
+  position: fixed; inset: 0; z-index: 201;
+  display: none; align-items: center; justify-content: center; flex-direction: column;
+  background: radial-gradient(ellipse 100% 80% at 50% 50%,
+    rgba(20,10,12,0.95) 0%, rgba(6,6,6,1) 70%);
+  padding: 40px 80px;
+}
+.fevt-narration-act.active { display: flex; }
+.fevt-narration-act.active .fevt-nar-silhouettes { animation: fevtSilhouetteEnter 1400ms ease 500ms both; }
+.fevt-narration-act.active .fevt-nar-lightning { animation: fevtLightning 1600ms ease 3200ms both; }
+
+.fevt-nar-stage {
+  position: relative; width: 100%; max-width: 1100px; height: 58vh;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.fevt-nar-silhouettes {
+  position: relative; width: 100%; height: 100%;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 80px;
+}
+@keyframes fevtSilhouetteEnter {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fevt-nar-sil {
+  width: 280px; height: 78%; position: relative;
+  background-size: cover; background-position: top center; background-repeat: no-repeat;
+  filter: brightness(0.18) contrast(1.4) drop-shadow(0 0 30px rgba(0,0,0,0.9));
+  transition: all 1400ms ease;
+}
+.fevt-nar-sil.left {
+  animation: fevtSilDriftL 4s ease-in-out 2500ms infinite alternate;
+}
+.fevt-nar-sil.right {
+  animation: fevtSilDriftR 4s ease-in-out 2500ms infinite alternate;
+}
+@keyframes fevtSilDriftL {
+  from { transform: translateX(0); filter: brightness(0.18) contrast(1.4); }
+  to { transform: translateX(-12px); filter: brightness(0.24) contrast(1.4); }
+}
+@keyframes fevtSilDriftR {
+  from { transform: translateX(0); filter: brightness(0.18) contrast(1.4); }
+  to { transform: translateX(12px); filter: brightness(0.24) contrast(1.4); }
+}
+.fevt-nar-lightning {
+  position: absolute; left: 50%; top: 10%; bottom: 10%; width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255,140,140,0) 10%,
+    rgba(255,90,90,0.9) 50%,
+    rgba(255,140,140,0) 90%,
+    transparent 100%);
+  box-shadow: 0 0 24px rgba(255,80,80,0.8), 0 0 4px rgba(255,255,255,0.9);
+  opacity: 0;
+}
+@keyframes fevtLightning {
+  0% { opacity: 0; transform: translateX(-50%) scaleY(0.1); }
+  15% { opacity: 1; transform: translateX(-50%) scaleY(1); }
+  30% { opacity: 0.2; }
+  45% { opacity: 0.9; }
+  60%,100% { opacity: 0; transform: translateX(-50%) scaleY(1); }
+}
+
+.fevt-nar-text {
+  max-width: 720px; text-align: center; margin-top: 32px;
+  font-size: 18px; line-height: 2.1; color: var(--stage-text-main);
+  letter-spacing: 1px; font-weight: 400;
+  min-height: 180px; /* 1行目から4行目まで高さが変化しないように確保 */
+  position: relative;
+  cursor: pointer;
+}
+.fevt-nar-text em {
+  color: #ff9898; font-style: normal; font-weight: 700; letter-spacing: 2px;
+}
+.fevt-nar-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 700ms ease, transform 700ms ease;
+  margin-bottom: 4px;
+}
+.fevt-nar-line.shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* クリック誘導インジケータ */
+.fevt-nar-hint {
+  position: absolute; left: 50%; bottom: -28px; transform: translateX(-50%);
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: rgba(200,190,170,0.35); letter-spacing: 3px; text-transform: uppercase;
+  animation: fevtNarHintPulse 1600ms ease infinite;
+  pointer-events: none;
+}
+.fevt-nar-hint.hidden { display: none; }
+@keyframes fevtNarHintPulse {
+  0%,100% { opacity: 0.25; }
+  50% { opacity: 0.7; }
+}
+
+.fevt-nar-proceed {
+  margin-top: 40px;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: var(--stage-text-sub); letter-spacing: 4px; text-transform: uppercase;
+  padding: 10px 28px; border: 1px solid rgba(200,190,170,0.3);
+  background: transparent; cursor: pointer; border-radius: 2px;
+  transition: all 200ms;
+  opacity: 0; pointer-events: none;
+}
+.fevt-nar-proceed.ready {
+  opacity: 1; pointer-events: auto;
+  animation: fevtNarProceedIn 700ms ease both;
+}
+@keyframes fevtNarProceedIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fevt-nar-proceed:hover { color: #ff9898; border-color: rgba(255,152,152,0.5); }
+
+/* F02: 左右対峙 */
+.fevt-dual-stage {
+  display: grid; grid-template-columns: 1fr 120px 1fr;
+  width: 100%; max-width: 1100px; align-items: end;
+  padding: 0 40px; margin-bottom: 40px;
+}
+.fevt-leader-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  animation: fevtLeaderSlamIn 900ms cubic-bezier(0.22,1,0.36,1) 600ms both;
+  position: relative;
+}
+.fevt-leader-col.left { animation-delay: 700ms; }
+.fevt-leader-col.right { animation-delay: 1100ms; }
+@keyframes fevtLeaderSlamIn {
+  0% { opacity: 0; transform: translateY(60px) scale(0.9); }
+  70% { opacity: 1; transform: translateY(-6px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* スポットライト（各リーダーの足元からの光） */
+.fevt-leader-col::before {
+  content: ''; position: absolute; left: 50%; bottom: -6%;
+  width: 280px; height: 320px; transform: translateX(-50%);
+  background: radial-gradient(ellipse 60% 80% at 50% 100%,
+    rgba(255,200,160,0.22) 0%, rgba(200,80,80,0.08) 40%, transparent 75%);
+  pointer-events: none; z-index: -1;
+  animation: fevtSpotPulse 3s ease-in-out infinite;
+}
+.fevt-leader-col.right::before {
+  background: radial-gradient(ellipse 60% 80% at 50% 100%,
+    rgba(255,180,120,0.22) 0%, rgba(195,140,84,0.1) 40%, transparent 75%);
+}
+@keyframes fevtSpotPulse {
+  0%,100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+/* 呼吸するような揺れ */
+.fevt-leader-col .fevt-leader-upper {
+  animation: fevtLeaderBreath 4s ease-in-out 2000ms infinite;
+}
+.fevt-leader-col.right .fevt-leader-upper {
+  animation: fevtLeaderBreathR 4s ease-in-out 2200ms infinite;
+}
+@keyframes fevtLeaderBreath {
+  0%,100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-4px) translateY(-2px); }
+}
+@keyframes fevtLeaderBreathR {
+  0%,100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(4px) translateY(-2px); }
+}
+.fevt-faction-flag {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 3px;
+  padding: 6px 18px; margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.fevt-faction-flag.a { background: rgba(138,122,168,0.18); color: #a898c8; border: 1px solid rgba(138,122,168,0.5); }
+.fevt-faction-flag.b { background: rgba(195,140,84,0.18); color: #d4a070; border: 1px solid rgba(195,140,84,0.5); }
+.fevt-leader-upper {
+  width: 260px; height: 320px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-leader-col.right .fevt-leader-upper { /* 左右反転しない、顔が正面を向くように */ }
+.fevt-leader-name {
+  font-size: 16px; font-weight: 700; color: var(--stage-text-main);
+  margin-top: 8px; letter-spacing: 2px;
+}
+.fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--stage-text-sub); letter-spacing: 2px; margin-top: 3px;
+}
+
+.fevt-vs-col {
+  display: flex; align-items: center; justify-content: center;
+  padding-bottom: 120px;
+  animation: fevtFadeIn 800ms ease 2000ms both;
+}
+.fevt-silent-mark {
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+  color: var(--stage-text-sub); letter-spacing: 4px; line-height: 1.1;
+  text-align: center; opacity: 0.6;
+}
+.fevt-silent-mark span { display: block; font-size: 11px; letter-spacing: 8px; margin-top: 4px; opacity: 0.8; }
+
+.fevt-clash-atmosphere {
+  width: 100%; max-width: 820px;
+  margin: 0 auto 18px;
+  padding: 0 60px;
+  text-align: center;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px; line-height: 1.9; letter-spacing: 2px;
+  color: rgba(220,210,200,0.78);
+  animation: fevtFadeIn 800ms ease 2100ms both;
+}
+.fevt-dialogue-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+  width: 100%; max-width: 1000px; padding: 0 60px;
+  margin-bottom: 32px;
+  animation: fevtFadeIn 800ms ease 2500ms both;
+}
+.fevt-dialogue-bubble {
+  background: rgba(20,18,16,0.85);
+  border-radius: 8px; padding: 14px 18px;
+  font-size: 14px; line-height: 1.8; font-style: italic;
+}
+.fevt-dialogue-bubble.a { border: 1px solid rgba(138,122,168,0.4); }
+.fevt-dialogue-bubble.b { border: 1px solid rgba(195,140,84,0.5); }
+.fevt-dialogue-speaker {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--stage-text-sub); letter-spacing: 2px; margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.fevt-dialogue-bubble.a .fevt-dialogue-speaker { color: #a898c8; }
+.fevt-dialogue-bubble.b .fevt-dialogue-speaker { color: #d4a070; }
+.fevt-dialogue-text { color: var(--stage-text-main); }
+.fevt-dialogue-text::before { content: '「'; color: rgba(200,190,170,0.4); }
+.fevt-dialogue-text::after { content: '」'; color: rgba(200,190,170,0.4); }
+
+.fevt-stage-decision {
+  display: flex; gap: 14px; margin-bottom: 40px;
+  animation: fevtFadeIn 600ms ease 3000ms both;
+}
+.fevt-stage-btn {
+  background: rgba(200,190,170,0.06);
+  border: 1px solid rgba(200,190,170,0.2);
+  color: var(--stage-text-main);
+  padding: 14px 28px; border-radius: 4px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+  letter-spacing: 3px; cursor: pointer; transition: all 200ms;
+  min-width: 180px; text-align: center;
+}
+.fevt-stage-btn:hover {
+  background: rgba(212,168,67,0.15);
+  border-color: var(--gold); color: var(--gold);
+}
+.fevt-stage-btn-label {
+  display: block; font-family: 'Noto Sans JP',sans-serif;
+  font-size: 11px; letter-spacing: 1px; color: rgba(200,190,170,0.55);
+  margin-top: 4px; font-weight: 300;
+}
+
+/* F03: 崩壊 */
+.fevt-faded-banner {
+  text-align: center; margin-bottom: 4vh;
+  animation: fevtBannerDescend 1400ms ease 1200ms both;
+}
+@keyframes fevtBannerDescend {
+  from { opacity: 0; transform: translateY(-20px); filter: grayscale(0); }
+  40% { opacity: 0.8; transform: translateY(0); filter: grayscale(0); }
+  to { opacity: 0.4; transform: translateY(20px); filter: grayscale(1); }
+}
+.fevt-faded-flag {
+  font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 6px;
+  padding: 10px 40px;
+  border: 1px solid rgba(138,122,168,0.5);
+  color: #a898c8; display: inline-block;
+  text-transform: uppercase;
+}
+.fevt-faded-caption {
+  font-size: 12px; color: var(--stage-text-sub); margin-top: 14px;
+  letter-spacing: 2px;
+}
+
+.fevt-lost-leader {
+  text-align: center; margin-bottom: 4vh;
+  animation: fevtFadeIn 1000ms ease 2000ms both;
+}
+.fevt-lost-upper {
+  width: 180px; height: 220px; object-fit: cover; object-position: top center;
+  border-radius: 3px; filter: sepia(0.6) brightness(0.7); opacity: 0.7;
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-lost-name {
+  font-size: 15px; color: var(--stage-text-sub); letter-spacing: 2px; margin-top: 10px;
+  font-weight: 500;
+}
+.fevt-lost-reason {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #807260; letter-spacing: 3px; margin-top: 3px;
+  text-transform: uppercase;
+}
+
+.fevt-survivor {
+  display: flex; align-items: center; gap: 18px;
+  background: rgba(20,18,16,0.6); border: 1px solid rgba(200,190,170,0.1);
+  padding: 16px 22px; border-radius: 6px; margin-bottom: 32px;
+  max-width: 540px;
+  animation: fevtFadeIn 1000ms ease 3000ms both;
+}
+.fevt-survivor-portrait {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #333 center/cover no-repeat; flex-shrink: 0;
+  border: 1px solid rgba(200,190,170,0.2);
+}
+.fevt-survivor-text { flex: 1; }
+.fevt-survivor-name {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--stage-text-sub); letter-spacing: 2px; margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.fevt-survivor-line {
+  font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.7;
+}
+.fevt-survivor-line::before { content: '「'; color: rgba(200,190,170,0.35); }
+.fevt-survivor-line::after { content: '」'; color: rgba(200,190,170,0.35); }
+
+.fevt-continue-btn {
+  background: rgba(200,190,170,0.05);
+  border: 1px solid rgba(200,190,170,0.18);
+  color: var(--stage-text-sub);
+  padding: 12px 40px; border-radius: 3px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+  letter-spacing: 5px; cursor: pointer; transition: all 200ms;
+  animation: fevtFadeIn 800ms ease 4000ms both;
+}
+.fevt-continue-btn:hover { color: var(--stage-text-main); border-color: rgba(200,190,170,0.4); }
+
+/* ============================================================
+   F02 進展③: 決着（Stage / Ceremony 寄り）
+   勝者前景スポット・敗者後景フェード・敗者旗降下
+   ============================================================ */
+.fevt-overlay-stage.resolution::before {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 60%; transform: translateX(-40%);
+  background: radial-gradient(ellipse 55% 70% at 35% 60%,
+    rgba(240,208,120,0.18) 0%,
+    rgba(212,168,67,0.06) 40%,
+    transparent 75%);
+  pointer-events: none; z-index: 0;
+  animation: fevtResSpotBreath 5s ease-in-out 1500ms infinite;
+}
+@keyframes fevtResSpotBreath {
+  0%,100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.fevt-title-main.settled {
+  color: var(--gold-light);
+  text-shadow: 0 0 40px rgba(240,208,120,0.55), 0 0 10px rgba(240,208,120,0.3);
+  letter-spacing: 18px;
+}
+
+.fevt-res-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.3fr 1fr;
+  width: 100%; max-width: 1100px; align-items: end;
+  padding: 0 40px; margin-bottom: 36px; gap: 20px;
+}
+
+/* 勝者側 */
+.fevt-res-winner {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative;
+  animation: fevtResWinnerRise 1100ms cubic-bezier(0.22,1,0.36,1) 700ms both;
+}
+@keyframes fevtResWinnerRise {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fevt-res-winner .fevt-faction-flag {
+  background: rgba(240,208,120,0.18); color: var(--gold-light);
+  border: 1px solid rgba(240,208,120,0.6);
+  box-shadow: 0 0 18px rgba(240,208,120,0.3);
+  animation: fevtResFlagPulse 3s ease-in-out 1800ms infinite;
+}
+@keyframes fevtResFlagPulse {
+  0%,100% { box-shadow: 0 0 12px rgba(240,208,120,0.25); }
+  50% { box-shadow: 0 0 24px rgba(240,208,120,0.5); }
+}
+.fevt-res-winner .fevt-leader-upper {
+  width: 280px; height: 340px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 0 24px rgba(240,208,120,0.35)) drop-shadow(0 0 4px rgba(0,0,0,0.8));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-res-winner .fevt-leader-name {
+  font-size: 18px; font-weight: 700; color: var(--gold-light);
+  margin-top: 10px; letter-spacing: 3px;
+  text-shadow: 0 0 12px rgba(240,208,120,0.3);
+}
+.fevt-res-winner .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--gold); letter-spacing: 3px; margin-top: 4px;
+}
+
+/* 敗者側 */
+.fevt-res-loser {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative; opacity: 0.5;
+  animation: fevtResLoserFade 1400ms ease 1400ms both;
+}
+@keyframes fevtResLoserFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 0.5; transform: translateY(0); }
+}
+.fevt-res-loser .fevt-faction-flag {
+  /* 降下アニメ: 掲揚位置から下へ、色も抜ける */
+  animation: fevtResFlagLower 1800ms ease 2400ms both;
+}
+@keyframes fevtResFlagLower {
+  0% { opacity: 0.9; transform: translateY(0); filter: saturate(1); }
+  100% { opacity: 0.3; transform: translateY(32px); filter: saturate(0.2) grayscale(0.6); }
+}
+.fevt-res-loser .fevt-leader-upper {
+  width: 220px; height: 270px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: grayscale(0.55) brightness(0.55) drop-shadow(0 0 10px rgba(0,0,0,0.9));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-res-loser .fevt-leader-name {
+  font-size: 14px; font-weight: 500; color: var(--stage-text-sub);
+  margin-top: 8px; letter-spacing: 2px;
+}
+.fevt-res-loser .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #6a6050; letter-spacing: 2px; margin-top: 3px;
+}
+
+/* 宣告の一言（勝者単独、静かに） */
+.fevt-res-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 24px;
+  font-size: 15px; line-height: 2; color: var(--stage-text-main);
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 2800ms both;
+}
+.fevt-res-verdict em {
+  color: var(--gold-light); font-style: normal; font-weight: 700; letter-spacing: 2px;
+}
+
+/* 結果サマリーバー（勝者派閥効果 / 敗者派閥効果 の対比） */
+.fevt-res-ledger {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 100%; max-width: 720px; padding: 0 40px; margin-bottom: 32px;
+  animation: fevtFadeIn 900ms ease 3400ms both;
+}
+.fevt-res-ledger-col {
+  background: rgba(20,18,16,0.72);
+  border: 1px solid rgba(200,190,170,0.12);
+  border-radius: 6px; padding: 12px 16px;
+}
+.fevt-res-ledger-col.win { border-color: rgba(240,208,120,0.4); }
+.fevt-res-ledger-col.lose { border-color: rgba(120,100,80,0.3); }
+.fevt-res-ledger-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  text-transform: uppercase; margin-bottom: 8px; color: var(--stage-text-sub);
+}
+.fevt-res-ledger-col.win .fevt-res-ledger-head { color: var(--gold-light); }
+.fevt-res-ledger-col.lose .fevt-res-ledger-head { color: #a89680; }
+.fevt-res-ledger-line {
+  font-size: 12px; color: #c8c0af; line-height: 1.7;
+  padding: 2px 0;
+}
+.fevt-res-ledger-line .delta-up { color: #9dd89a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+.fevt-res-ledger-line .delta-down { color: #d89a9a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
+/* ============================================================
+   F02 進展④: 無限抗争（Stage / グレー停滞・終わらない音）
+   2派閥とも旗は沈み、どちらも勝っていない。時間だけが食われていく
+   ============================================================ */
+.fevt-overlay-stage.endless {
+  background: radial-gradient(ellipse 120% 90% at 50% 50%,
+    rgba(18,18,18,0.98) 0%,
+    rgba(4,4,4,1) 60%,
+    #000 100%);
+}
+.fevt-overlay-stage.endless::after {
+  /* 灰のレイヤー（停滞を示す：セピアではなく色のない薄膜） */
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(60,60,60,0.08) 0%, rgba(30,30,30,0.15) 100%);
+  pointer-events: none; mix-blend-mode: multiply;
+}
+
+.fevt-title-main.endless {
+  color: #9a9280;
+  text-shadow: 0 0 30px rgba(160,152,130,0.22);
+  letter-spacing: 14px;
+}
+.fevt-title-main.endless::before, .fevt-title-main.endless::after {
+  display: none;
+}
+
+/* 週カウンタ：抗争の持続週数を主役にする */
+.fevt-endless-counter {
+  text-align: center;
+  margin: 2vh auto 3vh;
+  animation: fevtFadeIn 900ms ease 1000ms both;
+}
+.fevt-endless-counter-label {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 5px;
+  color: #605a4c; text-transform: uppercase;
+}
+.fevt-endless-counter-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 64px;
+  color: #a89e80; letter-spacing: 6px; line-height: 1;
+  margin: 4px 0 2px;
+  text-shadow: 0 0 16px rgba(160,152,130,0.15);
+  animation: fevtEndlessNumPulse 4s ease-in-out 1500ms infinite;
+}
+@keyframes fevtEndlessNumPulse {
+  0%,100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+.fevt-endless-counter-unit {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 3px;
+  color: #807860; text-transform: uppercase;
+}
+
+/* 2旗どちらも沈む：左右並行で、両方ともグレー・下がった状態 */
+.fevt-endless-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 100px 1fr;
+  width: 100%; max-width: 1000px; align-items: end;
+  padding: 0 40px; margin-bottom: 32px; gap: 16px;
+}
+.fevt-endless-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative; opacity: 0.55;
+  animation: fevtEndlessColDrift 6s ease-in-out infinite;
+}
+.fevt-endless-col.left { animation-delay: 0ms; }
+.fevt-endless-col.right { animation-delay: 3000ms; }
+@keyframes fevtEndlessColDrift {
+  0%,100% { opacity: 0.48; transform: translateY(0); }
+  50%     { opacity: 0.62; transform: translateY(-4px); }
+}
+.fevt-endless-col .fevt-faction-flag {
+  filter: grayscale(0.8) brightness(0.7);
+  opacity: 0.6;
+}
+.fevt-endless-col .fevt-leader-upper {
+  width: 200px; height: 250px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: grayscale(0.65) brightness(0.5) drop-shadow(0 0 10px rgba(0,0,0,0.9));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-endless-col .fevt-leader-name {
+  font-size: 13px; font-weight: 500; color: #a89e86;
+  margin-top: 8px; letter-spacing: 2px;
+}
+.fevt-endless-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #6a6050; letter-spacing: 2px; margin-top: 3px;
+}
+.fevt-endless-vs {
+  display: flex; align-items: center; justify-content: center;
+  padding-bottom: 100px;
+  animation: fevtFadeIn 900ms ease 2000ms both;
+}
+.fevt-endless-vs-mark {
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+  color: #605a4c; letter-spacing: 4px; line-height: 1.2;
+  text-align: center; opacity: 0.7;
+}
+.fevt-endless-vs-mark span {
+  display: block; font-size: 10px; letter-spacing: 6px; margin-top: 4px;
+  color: #807860;
+}
+
+.fevt-endless-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 24px;
+  font-size: 15px; line-height: 2; color: #b8b0a0;
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 2800ms both;
+}
+.fevt-endless-verdict em {
+  color: #d8d0b8; font-style: normal; font-weight: 600; letter-spacing: 2px;
+}
+
+/* 侵食バー：ロスター全体への静かな影響 */
+.fevt-endless-erosion {
+  width: 100%; max-width: 560px; padding: 0 40px; margin-bottom: 32px;
+  animation: fevtFadeIn 900ms ease 3400ms both;
+}
+.fevt-endless-erosion-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  color: #807860; text-transform: uppercase; margin-bottom: 10px;
+  text-align: center;
+}
+.fevt-endless-erosion-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #a89e86;
+  padding: 5px 0; border-bottom: 1px dotted rgba(130,120,96,0.2);
+}
+.fevt-endless-erosion-row .delta {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: #d89a9a; letter-spacing: 1px;
+}
+
+/* ============================================================
+   F02 進展②: 沈静化 / 和解（Stage / Ceremony 寄り、アイボリー+セージ）
+   対峙ではなく並び、2旗が同時に静かに降下。対等な終結
+   ============================================================ */
+.fevt-overlay-stage.peace {
+  background: radial-gradient(ellipse 120% 90% at 50% 50%,
+    rgba(22,24,22,0.98) 0%,
+    rgba(8,10,8,1) 60%,
+    #040404 100%);
+}
+.fevt-overlay-stage.peace::before {
+  /* 中央やや上からのセージのほのかな光（祝福ではなく浄化） */
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 55% at 50% 40%,
+    rgba(198,220,200,0.10) 0%,
+    rgba(180,200,180,0.04) 40%,
+    transparent 75%);
+  pointer-events: none; z-index: 0;
+  animation: fevtPeaceLightBreath 6s ease-in-out 1200ms infinite;
+}
+@keyframes fevtPeaceLightBreath {
+  0%,100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.fevt-title-main.peace {
+  color: #e8e2cc; /* アイボリー */
+  text-shadow: 0 0 28px rgba(198,220,200,0.25);
+  letter-spacing: 24px;
+}
+
+/* 2リーダー並び：対峙より接近、顔の角度は少し内向き */
+.fevt-peace-stage {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 140px 1fr;
+  width: 100%; max-width: 1000px; align-items: end;
+  padding: 0 40px; margin-bottom: 36px;
+}
+.fevt-peace-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative;
+  animation: fevtPeaceColIn 1100ms cubic-bezier(0.22,1,0.36,1) 700ms both;
+}
+.fevt-peace-col.right { animation-delay: 900ms; }
+@keyframes fevtPeaceColIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fevt-peace-col .fevt-faction-flag {
+  /* 和解：旗の色は残るが、降りている（沈んだ高さ） */
+  animation: fevtPeaceFlagLower 1600ms ease 2200ms both;
+}
+@keyframes fevtPeaceFlagLower {
+  0% { opacity: 0.9; transform: translateY(0); }
+  100% { opacity: 0.55; transform: translateY(20px); filter: saturate(0.6); }
+}
+.fevt-peace-col .fevt-leader-upper {
+  width: 230px; height: 280px; object-fit: cover; object-position: top center;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 0 16px rgba(198,220,200,0.18)) drop-shadow(0 0 4px rgba(0,0,0,0.8));
+  background: #1a1a1a center/cover no-repeat;
+}
+.fevt-peace-col.left .fevt-leader-upper {
+  transform: rotateY(-3deg); /* 少し内向き */
+}
+.fevt-peace-col.right .fevt-leader-upper {
+  transform: rotateY(3deg);
+}
+.fevt-peace-col .fevt-leader-name {
+  font-size: 15px; font-weight: 600; color: #e8e2cc;
+  margin-top: 10px; letter-spacing: 2px;
+}
+.fevt-peace-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: #b8b0a0; letter-spacing: 3px; margin-top: 3px;
+}
+
+/* 中央：握手マーク（〇 と 〇 が触れる） */
+.fevt-peace-center {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-bottom: 100px;
+  animation: fevtFadeIn 900ms ease 1900ms both;
+}
+.fevt-peace-handshake {
+  display: flex; align-items: center; gap: 2px;
+  margin-bottom: 10px;
+}
+.fevt-peace-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(198,220,200,0.25);
+  border: 1px solid rgba(198,220,200,0.5);
+  box-shadow: 0 0 12px rgba(198,220,200,0.3);
+}
+.fevt-peace-dot.a { transform: translateX(6px); animation: fevtPeaceDotMeetA 2000ms ease 2400ms both; }
+.fevt-peace-dot.b { transform: translateX(-6px); animation: fevtPeaceDotMeetB 2000ms ease 2400ms both; }
+@keyframes fevtPeaceDotMeetA {
+  from { transform: translateX(-18px); opacity: 0; }
+  100% { transform: translateX(6px); opacity: 1; }
+}
+@keyframes fevtPeaceDotMeetB {
+  from { transform: translateX(18px); opacity: 0; }
+  100% { transform: translateX(-6px); opacity: 1; }
+}
+.fevt-peace-center-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 15px;
+  color: #c6dcc8; letter-spacing: 4px; text-align: center; opacity: 0.85;
+}
+.fevt-peace-center-label span {
+  display: block; font-size: 9px; letter-spacing: 6px; margin-top: 4px;
+  color: rgba(198,220,200,0.55);
+}
+
+.fevt-peace-verdict {
+  text-align: center; max-width: 680px;
+  margin: 0 auto 26px;
+  font-size: 15px; line-height: 2; color: #d8d2c4;
+  letter-spacing: 1px; padding: 0 40px;
+  animation: fevtFadeIn 900ms ease 3000ms both;
+}
+.fevt-peace-verdict em {
+  color: #c6dcc8; font-style: normal; font-weight: 600; letter-spacing: 2px;
+}
+
+/* 対等な結果バー */
+.fevt-peace-ledger {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 100%; max-width: 680px; padding: 0 40px; margin-bottom: 30px;
+  animation: fevtFadeIn 900ms ease 3600ms both;
+}
+.fevt-peace-ledger-col {
+  background: rgba(22,26,22,0.72);
+  border: 1px solid rgba(198,220,200,0.22);
+  border-radius: 6px; padding: 12px 16px;
+}
+.fevt-peace-ledger-head {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px;
+  color: #c6dcc8; text-transform: uppercase; margin-bottom: 8px;
+}
+.fevt-peace-ledger-line {
+  font-size: 12px; color: #c0c8b8; line-height: 1.7;
+  padding: 2px 0;
+}
+.fevt-peace-ledger-line .delta-down { color: #9dd89a; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+.fevt-peace-ledger-line .delta-flat { color: #a8a8a0; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
+/* ========================================================
+   F02 進展① — 発火 (IGNITE / 公式戦化 カード発表)
+   Stage対峙型の延長。両派閥のカードがメインに組まれた宣言
+   ======================================================== */
+.fevt-overlay-stage.ignite::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 18% 45%, rgba(138,122,168,0.18) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 82% 45%, rgba(195,140,84,0.18) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(208,122,62,0.10) 0%, rgba(0,0,0,0) 55%);
+  pointer-events: none;
+  animation: fevtIgniteFlare 3800ms ease-out forwards;
+}
+@keyframes fevtIgniteFlare {
+  0%   { opacity: 0; }
+  30%  { opacity: 1.0; }
+  100% { opacity: 0.65; }
+}
+.fevt-title-main.ignite {
+  color: #e8d8c8;
+  text-shadow: 0 0 26px rgba(208,122,62,0.45), 0 2px 6px rgba(0,0,0,0.9);
+}
+.fevt-ign-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 160px 1fr;
+  align-items: center;
+  justify-items: center;
+  gap: 24px;
+  margin: 22px 48px 0;
+  min-height: 360px;
+}
+.fevt-ign-col {
+  position: relative;
+  text-align: center;
+  opacity: 0;
+}
+.fevt-ign-col.left,
+.fevt-ign-col.right { animation: fevtIgniteFade 900ms ease-out both; }
+.fevt-ign-col.left  { animation-delay: 400ms; }
+.fevt-ign-col.right { animation-delay: 400ms; }
+@keyframes fevtIgniteFade {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+.fevt-ign-col .fevt-role-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 5px;
+  color: rgba(232,216,200,0.6);
+  margin-bottom: 4px;
+}
+.fevt-ign-col.left .fevt-role-kanji {
+  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
+  color: #b09ad0; margin-bottom: 8px;
+}
+.fevt-ign-col.right .fevt-role-kanji {
+  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
+  color: #d4a070; margin-bottom: 8px;
+}
+.fevt-ign-col .fevt-portrait-wrap {
+  position: relative;
+  display: inline-block;
+  width: 220px; height: 260px;
+  margin-bottom: 10px;
+}
+.fevt-ign-col .fevt-portrait-wrap .fevt-leader-upper {
+  display: block;
+}
+.fevt-ign-col .fevt-faction-flag {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: calc(100% - 16px);
+  padding: 5px 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
+  line-height: 1.3;
+  text-align: center;
+  backdrop-filter: blur(2px);
+  z-index: 2;
+}
+.fevt-ign-col.left .fevt-faction-flag {
+  background: linear-gradient(180deg, rgba(20,16,30,0.72), rgba(60,42,90,0.78));
+  border: 1px solid rgba(180,160,210,0.65);
+  color: #d8c6ee;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+.fevt-ign-col.right .fevt-faction-flag {
+  background: linear-gradient(180deg, rgba(30,18,10,0.72), rgba(90,56,24,0.78));
+  border: 1px solid rgba(225,180,125,0.65);
+  color: #f0d6ad;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+.fevt-ign-col.left .fevt-leader-upper {
+  width: 220px; height: 260px; object-fit: cover; object-position: center top;
+  filter: drop-shadow(0 0 20px rgba(138,122,168,0.45)) contrast(1.05) saturate(1.03);
+}
+.fevt-ign-col.right .fevt-leader-upper {
+  width: 220px; height: 260px; object-fit: cover; object-position: center top;
+  filter: drop-shadow(0 0 20px rgba(195,140,84,0.45)) contrast(1.05) saturate(1.03);
+}
+.fevt-ign-stats {
+  display: inline-flex; gap: 14px; margin-top: 8px;
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px;
+  color: rgba(232,216,200,0.75);
+}
+.fevt-ign-stats .stat-num { color: #ffd4a8; font-weight: 700; font-size: 13px; margin-left: 4px; }
+.fevt-ign-col.left .fevt-ign-stats .stat-num { color: #c8b4e0; }
+.fevt-ign-col.right .fevt-ign-stats .stat-num { color: #e6b880; }
+.fevt-ign-col .fevt-leader-name {
+  margin-top: 8px;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 18px;
+  color: #fff2e2; letter-spacing: 2px;
+}
+.fevt-ign-col .fevt-leader-org {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px;
+  color: rgba(255,200,160,0.75); margin-top: 2px;
+}
+.fevt-ign-vs {
+  position: relative;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px; line-height: 1;
+  background: linear-gradient(90deg, #b09ad0 0%, #e8d8c8 50%, #d4a070 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 30px rgba(208,122,62,0.55), 0 4px 12px rgba(0,0,0,0.95);
+  letter-spacing: 4px;
+  opacity: 0;
+  animation: fevtIgniteVs 800ms ease-out 1200ms both;
+}
+@keyframes fevtFadeUp {
+  0%   { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fevtIgniteVs {
+  0%   { transform: scale(2.2); opacity: 0; }
+  60%  { transform: scale(0.92); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.fevt-ign-card-band {
+  margin: 28px 56px 0;
+  padding: 14px 24px;
+  border-top: 1px solid rgba(255,170,110,0.45);
+  border-bottom: 1px solid rgba(255,170,110,0.45);
+  background: linear-gradient(90deg,
+    rgba(255,120,60,0) 0%,
+    rgba(255,120,60,0.12) 50%,
+    rgba(255,120,60,0) 100%);
+  text-align: center;
+  opacity: 0;
+  animation: fevtFadeUp 900ms ease 1600ms both;
+}
+.fevt-ign-card-label {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 5px;
+  color: rgba(255,200,160,0.7); margin-bottom: 4px;
+}
+.fevt-ign-card-name {
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 20px;
+  color: #fff2e2; letter-spacing: 3px;
+}
+.fevt-ign-verdict {
+  margin: 22px 72px 0;
+  font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.95;
+  color: #e8d8c8; text-align: center;
+  opacity: 0;
+  animation: fevtFadeUp 900ms ease 2100ms both;
+}
+.fevt-ign-verdict em {
+  font-style: normal; color: #ffd4a8; font-weight: 700;
+}
+.fevt-ign-ledger {
+  margin: 20px 72px 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  opacity: 0;
+  animation: fevtFadeUp 900ms ease 2500ms both;
+}
+.fevt-ign-ledger-col {
+  padding: 10px 14px;
+  border: 1px solid rgba(255,170,110,0.28);
+  background: rgba(255,120,60,0.05);
+}
+.fevt-ign-ledger-head {
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
+  color: #ffd4a8; margin-bottom: 6px;
+}
+.fevt-ign-ledger-line {
+  font-family: 'Noto Sans JP', sans-serif; font-size: 12px; line-height: 1.7;
+  color: #e8d8c8;
+}
+.fevt-ign-ledger-line .delta-up { color: #ffb080; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+
+/* Scene label for preview */
+.fevt-scene-label {
+  position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+  z-index: 9998; font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: rgba(212,168,67,0.6); letter-spacing: 3px; text-transform: uppercase;
+  background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 2px;
+  pointer-events: none;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     開発用スイッチャー（本番では存在しない）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="dev-switcher">
+  <span class="dev-switcher-label">FACTION EVENT MOCKUP</span>
+  <button class="dev-btn active" onclick="showScene('f01')">F01 結成</button>
+  <button class="dev-btn" onclick="showScene('f04')">F04 寝返り</button>
+  <span class="dev-sep"></span>
+  <button class="dev-btn" onclick="showScene('f02a')">F02① 前段ナレ</button>
+  <button class="dev-btn" onclick="showScene('f02')">F02② 対峙</button>
+  <button class="dev-btn" onclick="showScene('f03')">F03-A 引退</button>
+  <button class="dev-btn" onclick="showScene('f03b')">F03-B 引き抜き</button>
+  <button class="dev-btn" onclick="showScene('f03c')">F03-C 離散</button>
+  <button class="dev-btn" onclick="showScene('f03d')">F03-D 瓦解</button>
+  <button class="dev-btn" onclick="showScene('f05')">F05 活動休止</button>
+  <span class="dev-sep"></span>
+  <button class="dev-btn" onclick="showScene('f02r')">F02③ 決着</button>
+  <button class="dev-btn" onclick="showScene('f02e')">F02④ 無限抗争</button>
+  <button class="dev-btn" onclick="showScene('f02p')">F02② 沈静化</button>
+  <button class="dev-btn" onclick="showScene('f02i')">F02① 開戦</button>
+  <span class="dev-sep"></span>
+  <button class="dev-btn" onclick="showScene('none')">閉じる</button>
+  <span class="dev-hint">F01/F04 = Office応接室型 / F02/F03 = Stage対峙型</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     背景：通常プレイ画面モック（実装時は置換不要）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="app-bg" id="appBg">
+  <div class="app-bg-content">
+    <h1>WEEK 14 ・ 13年目 秋 ・ 興行週</h1>
+    <div class="app-bg-row">今週タブ内容（スケジュール、選手一覧など）</div>
+    <div class="app-bg-row">（通常画面がここに存在する）</div>
+    <div class="app-bg-row">（演出が被さると blur + 暗転する）</div>
+  </div>
+</div>
+
+<!-- 社長室背景（F01/F04 のとき有効化） -->
+<div class="shacho-bg" id="shachoBg">
+  <div class="shacho-bg-wall"></div>
+  <div class="shacho-bg-desk"></div>
+  <div class="shacho-bg-vignette"></div>
+</div>
+
+<div class="fevt-scene-label" id="sceneLabel">F01 — LOYALTY FACTION FORMING</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Audio（プレビュー用ミキサー）
+     ═══════════════════════════════════════════════════════════════════ -->
+<audio id="audSoft" src="../../../bgm/Soft Bids, Sharp Minds.mp3" preload="auto"></audio>
+<audio id="audTension" src="../../../bgm/bgm_tension_v1.mp3" preload="auto" loop></audio>
+<audio id="audGong" src="../../../bgm/f07_gong_v1.mp3" preload="auto"></audio>
+<audio id="audWhiff" src="../../../bgm/b07_whiff_v4.mp3" preload="auto"></audio>
+<audio id="audChime" src="../../../bgm/f06_fin_chime_v1.mp3" preload="auto"></audio>
+
+<!-- 音量スライダー / ミュート -->
+<div style="position:fixed;bottom:10px;right:10px;z-index:9999;background:rgba(0,0,0,0.7);padding:8px 12px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:#d4a843;display:flex;gap:10px;align-items:center;">
+  <span>AUDIO</span>
+  <input id="volSlider" type="range" min="0" max="100" value="55" style="width:90px;accent-color:#d4a843;">
+  <button id="muteBtn" onclick="toggleMute()" style="background:transparent;border:1px solid rgba(212,168,67,0.3);color:#d4a843;padding:2px 8px;border-radius:2px;cursor:pointer;font-family:inherit;font-size:10px;">🔊 ON</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F01: 忠誠型派閥結成（応接室型 / Office）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-office" id="overlayF01">
+  <div class="fevt-report-card">
+    <div class="fevt-report-header">
+      <div class="fevt-report-title">🎭 ロッカールーム報告</div>
+      <div class="fevt-report-meta">WEEK 14 ・ 13Y AUTUMN</div>
+    </div>
+
+    <div class="fevt-reporter-strip">
+      <div class="fevt-reporter-portrait" style="background-image:url('../../../image/coach/coach_placeholder.png'),linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="fevt-reporter-text">
+        <div class="fevt-reporter-name">BLACKWELL COACH</div>
+        <div class="fevt-reporter-line">社長、ちょっと気になる動きがあるのですが</div>
+      </div>
+    </div>
+
+    <div class="fevt-subject-stage">
+      <div class="fevt-subject-trio">
+        <div class="fevt-follower-portrait" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+        <div class="fevt-subject-portrait-wrap" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+        <div class="fevt-follower-portrait right" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+      </div>
+      <div class="fevt-subject-name">宇田川 里奈</div>
+      <div class="fevt-subject-org">AGE 26 ・ OVR 89 ・ STRIKER</div>
+      <div class="fevt-subject-divider"></div>
+
+      <div class="fevt-observation-note">
+        <span class="marker">宇田川</span>を中心として、近藤・三浦の2人が自然と集まりを作っているようです。<br>
+        練習後の残り方、ロッカーの席順、移動時の並び——細かい兆候はいくつもあります。<br>
+        <span style="color:var(--cream-text-sub);font-size:13px">派閥のようなものが形成された、と言ってよいかもしれません。</span>
+      </div>
+    </div>
+
+    <div class="fevt-decision-prompt">この動きについて、社長としてどう扱いますか？</div>
+
+    <div class="fevt-decision-tray">
+      <div class="fevt-decision-card">
+        <div class="fevt-decision-letter">A</div>
+        <div class="fevt-decision-label">正式なチームとして認める</div>
+        <div class="fevt-decision-hint">求心力と引き換えに、ロッカールーム全体の空気が悪化する</div>
+      </div>
+      <div class="fevt-decision-card">
+        <div class="fevt-decision-letter">B</div>
+        <div class="fevt-decision-label">今はそれどころじゃないと釘を刺す</div>
+        <div class="fevt-decision-hint">派閥不成立。本人と周囲に角が立つ</div>
+      </div>
+      <div class="fevt-decision-card">
+        <div class="fevt-decision-letter">C</div>
+        <div class="fevt-decision-label">静観する</div>
+        <div class="fevt-decision-hint">派閥成立（自然発生）。介入なし</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F04: 寝返り（応接室型 / Office + 旗の移動）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-office" id="overlayF04">
+  <div class="fevt-report-card f04">
+    <div class="fevt-report-header">
+      <div class="fevt-report-title">🕯 ロッカールーム報告（移籍）</div>
+      <div class="fevt-report-meta">WEEK 14 ・ 13Y AUTUMN</div>
+    </div>
+
+    <div class="fevt-reporter-strip">
+      <div class="fevt-reporter-portrait" style="background-image:url('../../../image/coach/coach_placeholder.png'),linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="fevt-reporter-text">
+        <div class="fevt-reporter-name">BLACKWELL COACH</div>
+        <div class="fevt-reporter-line">社長。ひとつ、事実としてお伝えしておくべきことが</div>
+      </div>
+    </div>
+
+    <div class="fevt-subject-stage">
+      <div class="fevt-subject-portrait-wrap" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+      <div class="fevt-subject-name">近藤 ゆりか</div>
+      <div class="fevt-subject-org">AGE 22 ・ OVR 74 ・ GRAPPLER</div>
+
+      <div class="fevt-f04-flags">
+        <div class="fevt-f04-flag from">FROM ・ 宇田川派</div>
+        <div class="fevt-f04-arrow">▶▶▶</div>
+        <div class="fevt-f04-flag to">TO ・ 三浦派</div>
+      </div>
+
+      <div class="fevt-subject-divider" style="margin-top:14px"></div>
+      <div class="fevt-observation-note" style="text-align:center">
+        <span class="marker">近藤ゆりか</span>は派閥を移り、<span class="marker">三浦派</span>に加入するようです。<br>
+        練習後の合流、食事、移動など——その立場の変化は表に出始めています。<br>
+        <span style="color:var(--cream-text-sub);font-size:13px">報告として、お耳に入れておきます。</span>
+      </div>
+    </div>
+
+    <div class="fevt-decision-prompt" style="padding-bottom:24px">
+      <button class="fevt-continue-btn" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">見 届 け る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02 Act①: 前段ナレーション（状況説明・立ち絵シルエット）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-narration-act" id="overlayF02A">
+  <div class="fevt-nar-stage">
+    <div class="fevt-nar-silhouettes">
+      <div class="fevt-nar-sil left" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+      <div class="fevt-nar-lightning"></div>
+      <div class="fevt-nar-sil right" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+    </div>
+  </div>
+  <div class="fevt-nar-text" id="narText">
+    <span class="fevt-nar-line">ここ数週、ロッカールームの空気が変わっていた。</span>
+    <span class="fevt-nar-line"><em>「宇田川派」</em>と<em>「三浦派」</em>——並び立っていた二つの派閥の間に、</span>
+    <span class="fevt-nar-line">目に見えない線が引かれている。視線は交わらず、言葉も交わさない。</span>
+    <span class="fevt-nar-line">もう、元には戻らない。</span>
+    <span class="fevt-nar-hint" id="narHint">▼ CLICK TO CONTINUE</span>
+  </div>
+  <button class="fevt-nar-proceed" id="narProceed">— 目撃する —</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02 Act②: 派閥抗争勃発（対峙型 / Stage）
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage" id="overlayF02">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main clash">⚔ 抗 争 の 勃 発</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION CLASH ・ WEEK 14</div>
+  </div>
+
+  <div class="fevt-dual-stage">
+    <div class="fevt-leader-col">
+      <div class="fevt-faction-flag a">宇 田 川 派 ・ UDAGAWA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+      <div class="fevt-leader-name">宇田川 里奈</div>
+      <div class="fevt-leader-org">FACTION LEADER</div>
+    </div>
+    <div class="fevt-vs-col">
+      <div class="fevt-silent-mark">
+        — 沈 黙 —
+        <span>NO WORDS EXCHANGED</span>
+      </div>
+    </div>
+    <div class="fevt-leader-col right">
+      <div class="fevt-faction-flag b">三 浦 派 ・ MIURA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+      <div class="fevt-leader-name">三浦 早紀</div>
+      <div class="fevt-leader-org">FACTION LEADER</div>
+    </div>
+  </div>
+
+  <div class="fevt-clash-atmosphere">
+    ロッカールームには、冷たい対立の空気が満ちているようです。
+  </div>
+
+  <!--
+    リーダーのセリフは personality × archetype で出し分ける。
+    実装時は下記テーブルから leader.personality / leader.archetype に合致するものを引く。
+
+    ┌────────────┬────────────────────────────────┬────────────────────────────────┐
+    │ personality │ セリフ例（attack 側）           │ セリフ例（defend 側）           │
+    ├────────────┼────────────────────────────────┼────────────────────────────────┤
+    │ bold        │ もう、同じ場所には立てない      │ 上等だ。受けて立つ              │
+    │ introverted │ ……もう、戻れません              │ そちらが望むなら                │
+    │ carefree    │ 仲良しごっこは終わり、かな      │ ま、仕方ないよね               │
+    │ earnest     │ けじめを、つけさせてください    │ 逃げるつもりはありません        │
+    │ emotional   │ 許せない、あの子のやり方        │ こっちだって、引けないの        │
+    │ composed    │ 線は、もう引かれてしまった      │ ならば、応じるまで              │
+    └────────────┴────────────────────────────────┴────────────────────────────────┘
+    archetype 別の一人称・語尾で更に微調整（ojousama:わたくし／delinquent:タメ語／cool:短文／seductive:含み）
+
+    現状表示中：宇田川=bold×normal, 三浦=bold×cool（attack/defend で 2 行）
+  -->
+  <div class="fevt-dialogue-row">
+    <div class="fevt-dialogue-bubble a" data-personality="bold" data-archetype="normal">
+      <div class="fevt-dialogue-speaker">UDAGAWA RINA</div>
+      <div class="fevt-dialogue-text">もう、同じ場所には立てない</div>
+    </div>
+    <div class="fevt-dialogue-bubble b" data-personality="bold" data-archetype="cool">
+      <div class="fevt-dialogue-speaker">MIURA SAKI</div>
+      <div class="fevt-dialogue-text">上等だ。受けて立つ</div>
+    </div>
+  </div>
+
+  <div class="fevt-stage-decision">
+    <button class="fevt-stage-btn">A ・ 煽 る<span class="fevt-stage-btn-label">抗争を公式戦に仕立てる</span></button>
+    <button class="fevt-stage-btn">B ・ 仲 裁<span class="fevt-stage-btn-label">仲介して収める</span></button>
+    <button class="fevt-stage-btn">C ・ 介入しない<span class="fevt-stage-btn-label">成り行きに任せる</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F03: 派閥解散（追悼型 / Stage セピア）
+     現在のバリエーション: 【A】リーダー引退 による解散
+     TODO（後続セッションで追加）:
+       【B】リーダー移籍・引き抜き による解散 — 旗は残されたが、担ぎ手がいない
+       【C】メンバー離散（過半数離脱） による解散 — 旗は立っているが周りが空
+       【D】抗争敗北からの瓦解 による解散 — F02③ 敗者側からの連鎖解散
+       【E】リーダー長期離脱（怪我/休養） による解散 — 戻るかもしれない空席
+     それぞれ見出し語・reasonバッジ・残存メンバーの一言を差し替える
+     ═══════════════════════════════════════════════════════════════════ -->
+<!-- 【A】リーダー引退 による解散 -->
+<div class="fevt-overlay-stage sepia" id="overlayF03">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main dissolve">解 　 散</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION DISSOLVED ・ LEADER RETIRED</div>
+  </div>
+
+  <div class="fevt-faded-banner">
+    <div class="fevt-faded-flag">宇 田 川 派</div>
+    <div class="fevt-faded-caption">旗印が静かに降ろされた</div>
+  </div>
+
+  <div class="fevt-lost-leader">
+    <img class="fevt-lost-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+    <div class="fevt-lost-name">宇田川 里奈</div>
+    <div class="fevt-lost-reason">RETIREMENT ・ 引 退</div>
+  </div>
+
+  <div class="fevt-survivor">
+    <div class="fevt-survivor-portrait" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+    <div class="fevt-survivor-text">
+      <div class="fevt-survivor-name">KONDO YURIKA</div>
+      <div class="fevt-survivor-line">もう、あの旗の下には戻れない</div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- 【B】リーダー引き抜き・移籍 による解散 -->
+<div class="fevt-overlay-stage sepia" id="overlayF03B">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main dissolve">解 　 散</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION DISSOLVED ・ LEADER POACHED</div>
+  </div>
+
+  <div class="fevt-faded-banner">
+    <div class="fevt-faded-flag">宇 田 川 派</div>
+    <div class="fevt-faded-caption">旗を掲げる者は、もういない</div>
+  </div>
+
+  <div class="fevt-lost-leader">
+    <img class="fevt-lost-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+    <div class="fevt-lost-name">宇田川 里奈</div>
+    <div class="fevt-lost-reason">DEPARTURE ・ 引 き 抜 き</div>
+  </div>
+
+  <div class="fevt-survivor">
+    <div class="fevt-survivor-portrait" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+    <div class="fevt-survivor-text">
+      <div class="fevt-survivor-name">KONDO YURIKA</div>
+      <div class="fevt-survivor-line">あの人と同じ旗は、もう掲げられない</div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- 【C】メンバー離散（過半数離脱） による解散 — リーダーは残る -->
+<div class="fevt-overlay-stage sepia" id="overlayF03C">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main dissolve">解 　 散</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION DISSOLVED ・ MEMBERS SCATTERED</div>
+  </div>
+
+  <div class="fevt-faded-banner">
+    <div class="fevt-faded-flag">宇 田 川 派</div>
+    <div class="fevt-faded-caption">旗は立っている。ただ、周りに人はいない</div>
+  </div>
+
+  <div class="fevt-lost-leader">
+    <img class="fevt-lost-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+    <div class="fevt-lost-name">宇田川 里奈</div>
+    <div class="fevt-lost-reason">ISOLATED ・ 離 散</div>
+  </div>
+
+  <div class="fevt-survivor">
+    <div class="fevt-survivor-portrait" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+    <div class="fevt-survivor-text">
+      <div class="fevt-survivor-name">UDAGAWA RINA</div>
+      <div class="fevt-survivor-line">一人では、派閥とは呼べない</div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- 【D】抗争敗北からの瓦解 による解散 — F02③ 敗者側 -->
+<div class="fevt-overlay-stage sepia" id="overlayF03D">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main dissolve">解 　 散</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION DISSOLVED ・ COLLAPSE AFTER DEFEAT</div>
+  </div>
+
+  <div class="fevt-faded-banner">
+    <div class="fevt-faded-flag">三 浦 派</div>
+    <div class="fevt-faded-caption">敗北の重さに、旗は耐えられなかった</div>
+  </div>
+
+  <div class="fevt-lost-leader">
+    <img class="fevt-lost-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+    <div class="fevt-lost-name">三浦 早紀</div>
+    <div class="fevt-lost-reason">COLLAPSE ・ 瓦 解</div>
+  </div>
+
+  <div class="fevt-survivor">
+    <div class="fevt-survivor-portrait" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+    <div class="fevt-survivor-text">
+      <div class="fevt-survivor-name">KONDO YURIKA</div>
+      <div class="fevt-survivor-line">負けた旗の下には、もう立てない</div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F05: 派閥活動休止（Stage / セピア軽め）
+     トリガー: リーダーが 8週以上の長期離脱（怪我/私事休養）確定時
+     F03「解散」とは別カテゴリ — 戻る余地がある「中断」
+     見出し: 活 動 休 止 / FACTION ON HIATUS
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage sepia hiatus" id="overlayF05">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main dissolve">活 動 休 止</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION ON HIATUS ・ LEADER ABSENT</div>
+  </div>
+
+  <div class="fevt-faded-banner">
+    <div class="fevt-faded-flag">宇 田 川 派</div>
+    <div class="fevt-faded-caption">旗は畳まれ、主の帰りを待っている</div>
+  </div>
+
+  <div class="fevt-lost-leader">
+    <img class="fevt-lost-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+    <div class="fevt-lost-name">宇田川 里奈</div>
+    <div class="fevt-lost-reason">ABSENCE ・ 長 期 離 脱（推 定 8 週 +）</div>
+  </div>
+
+  <div class="fevt-survivor">
+    <div class="fevt-survivor-portrait" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+    <div class="fevt-survivor-text">
+      <div class="fevt-survivor-name">KONDO YURIKA</div>
+      <div class="fevt-survivor-line">帰ってきたら、また集まろう</div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02③: 決着（Stage / Ceremony 寄り）
+     勝者前景スポット・敗者後景フェード・敗者旗降下
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage resolution" id="overlayF02R">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main settled">決 　 着</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">FACTION RIVALRY SETTLED ・ WEEK 21</div>
+  </div>
+
+  <div class="fevt-res-stage">
+    <div class="fevt-res-winner">
+      <div class="fevt-faction-flag a">宇 田 川 派 ・ UDAGAWA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+      <div class="fevt-leader-name">宇田川 里奈</div>
+      <div class="fevt-leader-org">VICTOR</div>
+    </div>
+    <div class="fevt-res-loser">
+      <div class="fevt-faction-flag b">三 浦 派 ・ MIURA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+      <div class="fevt-leader-name">三浦 早紀</div>
+      <div class="fevt-leader-org">DEFEATED</div>
+    </div>
+  </div>
+
+  <div class="fevt-res-verdict">
+    ロッカールームに満ちていた争いの空気は、<br>
+    <em>勝者</em>と<em>敗者</em>という、はっきりとした形に決着した。
+  </div>
+
+  <div class="fevt-res-ledger">
+    <div class="fevt-res-ledger-col win">
+      <div class="fevt-res-ledger-head">宇 田 川 派 ・ VICTOR</div>
+      <div class="fevt-res-ledger-line">求心力　<span class="delta-up">+12</span> ・ 勢い <span class="delta-up">+18</span></div>
+      <div class="fevt-res-ledger-line">リーダー信頼　<span class="delta-up">+6</span></div>
+      <div class="fevt-res-ledger-line">三浦派への敵対度　<span class="delta-down">-40</span></div>
+    </div>
+    <div class="fevt-res-ledger-col lose">
+      <div class="fevt-res-ledger-head">三 浦 派 ・ DEFEATED</div>
+      <div class="fevt-res-ledger-line">求心力　<span class="delta-down">-14</span> ・ 勢い <span class="delta-down">-22</span></div>
+      <div class="fevt-res-ledger-line">離脱リスク者　<span class="delta-down">2名</span></div>
+      <div class="fevt-res-ledger-line">宇田川派への敵対度　<span class="delta-down">-40</span></div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02④: 無限抗争（Stage / グレー停滞）
+     2派閥とも沈み、どちらも勝てない。時間だけが食われていく
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage endless" id="overlayF02E">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main endless">終 わ ら な い 抗 争</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">RIVALRY UNRESOLVED ・ 2Y AUTUMN</div>
+  </div>
+
+  <div class="fevt-endless-counter">
+    <div class="fevt-endless-counter-label">抗 争 継 続</div>
+    <div class="fevt-endless-counter-num">52</div>
+    <div class="fevt-endless-counter-unit">WEEKS ・ 一 年 を 超 え た</div>
+  </div>
+
+  <div class="fevt-endless-stage">
+    <div class="fevt-endless-col left">
+      <div class="fevt-faction-flag a">宇 田 川 派 ・ UDAGAWA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+      <div class="fevt-leader-name">宇田川 里奈</div>
+      <div class="fevt-leader-org">UNRESOLVED</div>
+    </div>
+    <div class="fevt-endless-vs">
+      <div class="fevt-endless-vs-mark">
+        — 膠 着 —
+        <span>NO END IN SIGHT</span>
+      </div>
+    </div>
+    <div class="fevt-endless-col right">
+      <div class="fevt-faction-flag b">三 浦 派 ・ MIURA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+      <div class="fevt-leader-name">三浦 早紀</div>
+      <div class="fevt-leader-org">UNRESOLVED</div>
+    </div>
+  </div>
+
+  <div class="fevt-endless-verdict">
+    どちらも屈しない。どちらも勝てない。<br>
+    <em>抗争</em>は決着がつかないまま、<em>団体と所属選手の時間</em>を食いつぶし続けている。<br>
+    <span style="color:#807860;font-size:13px">——ロッカールームの若手が、先輩たちの顔色を窺うようになった。</span>
+  </div>
+
+  <div class="fevt-endless-erosion">
+    <div class="fevt-endless-erosion-head">静 か な 侵 食</div>
+    <div class="fevt-endless-erosion-row">
+      <span>ロスター全体の士気</span>
+      <span class="delta">-4 / 継続中</span>
+    </div>
+    <div class="fevt-endless-erosion-row">
+      <span>新人の練習集中</span>
+      <span class="delta">-3 / 継続中</span>
+    </div>
+    <div class="fevt-endless-erosion-row">
+      <span>観客の熱気（固定層以外）</span>
+      <span class="delta">-5 / 継続中</span>
+    </div>
+    <div class="fevt-endless-erosion-row">
+      <span>2派閥メンバーの離脱リスク</span>
+      <span class="delta">緩やかに上昇</span>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02② 進展: 沈静化（Stage / 象牙×若草・仲裁成功・対等な和解）
+     tension ではなく Soft Bids ベッド、chime は closing stinger
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage peace" id="overlayF02P">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main peace">和 　 解</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">MEDIATION SUCCEEDED ・ WEEK 14</div>
+  </div>
+
+  <div class="fevt-peace-stage">
+    <div class="fevt-peace-col left">
+      <div class="fevt-faction-flag a">宇 田 川 派 ・ UDAGAWA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+      <div class="fevt-leader-name">宇田川 里奈</div>
+      <div class="fevt-leader-org">LEADER</div>
+    </div>
+    <div class="fevt-peace-center">
+      <div class="fevt-peace-handshake">
+        <div class="fevt-peace-dot a"></div>
+        <div class="fevt-peace-dot b"></div>
+      </div>
+      <div class="fevt-peace-center-label"><span>RECONCILED</span></div>
+    </div>
+    <div class="fevt-peace-col right">
+      <div class="fevt-faction-flag b">三 浦 派 ・ MIURA</div>
+      <img class="fevt-leader-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+      <div class="fevt-leader-name">三浦 早紀</div>
+      <div class="fevt-leader-org">LEADER</div>
+    </div>
+  </div>
+
+  <div class="fevt-peace-verdict">
+    決着はつかなかった。<br>
+    ただ、それぞれの派閥は、抗争が続くことの<em>無益</em>を知り、<em>矛を収めること</em>を選んだ。
+  </div>
+
+  <div class="fevt-peace-ledger">
+    <div class="fevt-peace-ledger-col">
+      <div class="fevt-peace-ledger-head">宇 田 川 派 ・ UDAGAWA</div>
+      <div class="fevt-peace-ledger-line">三浦派への敵対度　<span class="delta-down">-40</span></div>
+      <div class="fevt-peace-ledger-line">勢い　<span class="delta-flat">リセット</span></div>
+    </div>
+    <div class="fevt-peace-ledger-col">
+      <div class="fevt-peace-ledger-head">三 浦 派 ・ MIURA</div>
+      <div class="fevt-peace-ledger-line">宇田川派への敵対度　<span class="delta-down">-40</span></div>
+      <div class="fevt-peace-ledger-line">勢い　<span class="delta-flat">リセット</span></div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     F02 進展①: 発火（Stage / 橙・公式戦化のカード発表）
+     社長が「A 煽る」を選んだ直後 → その抗争がメインカードに組まれる
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="fevt-overlay-stage ignite" id="overlayF02I">
+  <div class="fevt-title-band">
+    <div class="fevt-title-main ignite">開 　 戦</div>
+    <div class="fevt-title-divider"></div>
+    <div class="fevt-title-sub">OFFICIAL MATCH SIGNED ・ WEEK 9</div>
+  </div>
+
+  <div class="fevt-ign-stage">
+    <div class="fevt-ign-col left">
+      <div class="fevt-role-label">PROVOKING SIDE</div>
+      <div class="fevt-role-kanji">宣 　 戦</div>
+      <div class="fevt-portrait-wrap">
+        <img class="fevt-leader-upper" src="../../../image/upper/upper_udagawa_r.webp" alt="">
+        <div class="fevt-faction-flag">宇 田 川 派 ・ UDAGAWA</div>
+      </div>
+      <div class="fevt-leader-name">宇田川 里奈</div>
+      <div class="fevt-leader-org">LEADER</div>
+      <div class="fevt-ign-stats">
+        <span>敵対度<span class="stat-num">72</span></span>
+        <span>派閥人数<span class="stat-num">4</span></span>
+      </div>
+    </div>
+    <div class="fevt-ign-vs">VS</div>
+    <div class="fevt-ign-col right">
+      <div class="fevt-role-label">RESPONDING SIDE</div>
+      <div class="fevt-role-kanji">応 　 戦</div>
+      <div class="fevt-portrait-wrap">
+        <img class="fevt-leader-upper" src="../../../image/upper/upper_miura_s.webp" alt="">
+        <div class="fevt-faction-flag">三 浦 派 ・ MIURA</div>
+      </div>
+      <div class="fevt-leader-name">三浦 早紀</div>
+      <div class="fevt-leader-org">LEADER</div>
+      <div class="fevt-ign-stats">
+        <span>敵対度<span class="stat-num">68</span></span>
+        <span>派閥人数<span class="stat-num">3</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fevt-ign-card-band">
+    <div class="fevt-ign-card-label">MAIN EVENT ・ 公式戦化</div>
+    <div class="fevt-ign-card-name">派閥抗争 ・ 直接決戦</div>
+  </div>
+
+  <div class="fevt-ign-verdict">
+    水面下でくすぶっていた火種は、<em>リング上での戦い</em>にまで燃え広がった。<br>
+    来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。
+  </div>
+
+  <div class="fevt-ign-ledger">
+    <div class="fevt-ign-ledger-col">
+      <div class="fevt-ign-ledger-head">両 派 閥</div>
+      <div class="fevt-ign-ledger-line">相互 敵対度　<span class="delta-up">+12</span></div>
+      <div class="fevt-ign-ledger-line">対戦マッチ数　<span class="delta-up">1 → 2</span></div>
+    </div>
+    <div class="fevt-ign-ledger-col">
+      <div class="fevt-ign-ledger-head">興 行</div>
+      <div class="fevt-ign-ledger-line">メイン MQ 期待値　<span class="delta-up">+8</span></div>
+      <div class="fevt-ign-ledger-line">集客見込み　<span class="delta-up">+6%</span></div>
+    </div>
+  </div>
+
+  <button class="fevt-continue-btn">続 け る</button>
+</div>
+
+<script>
+// ============================================================
+// Audio ミキサー（プレビュー用）
+// F02/F03 共通ベッド：bgm_tension_v1 ループ
+// F02③/F03 の closing stinger：f06_fin_chime_v1
+// F01/F04：Soft Bids, Sharp Minds（F04 はワンショット）
+// ============================================================
+const AUDIO = {
+  soft: () => document.getElementById('audSoft'),
+  tension: () => document.getElementById('audTension'),
+  gong: () => document.getElementById('audGong'),
+  chime: () => document.getElementById('audChime'),
+  whiff: () => document.getElementById('audWhiff'),
+};
+let _audioMuted = false;
+let _masterVol = 0.55;
+const TENSION_BED = 0.32; // ベッドとして回す時は控えめ
+const SOFT_VOL   = 0.38;
+const GONG_VOL   = 0.85;
+const CHIME_VOL  = 0.72;
+const WHIFF_VOL  = 0.78;
+
+function _applyVol(el, base) {
+  if (!el) return;
+  el.volume = _audioMuted ? 0 : Math.max(0, Math.min(1, base * (_masterVol / 0.55)));
+}
+function _fadeOut(el, dur = 600) {
+  if (!el || el.paused) return;
+  const start = el.volume, t0 = performance.now();
+  const step = () => {
+    const t = (performance.now() - t0) / dur;
+    if (t >= 1 || _audioMuted) { el.volume = 0; el.pause(); el.currentTime = 0; return; }
+    el.volume = start * (1 - t);
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function _fadeIn(el, target, dur = 600) {
+  if (!el) return;
+  el.currentTime = 0;
+  el.volume = 0;
+  const p = el.play();
+  if (p && p.catch) p.catch(() => {}); // autoplay block
+  const t0 = performance.now();
+  const step = () => {
+    const t = (performance.now() - t0) / dur;
+    if (t >= 1) { _applyVol(el, target); return; }
+    el.volume = _audioMuted ? 0 : target * t * (_masterVol / 0.55);
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function stopAllAudio() {
+  ['soft','tension','gong','chime','whiff'].forEach(k => _fadeOut(AUDIO[k](), 400));
+}
+// ベッド切替：target 以外のベッドをフェードアウトし、target は継続 or 新規フェードイン
+// （同一ベッド連続シーンで currentTime=0 による頭出しと RAF レース衰退を防ぐ）
+function setBed(targetKey, targetVol, fadeInDur) {
+  const keys = ['soft','tension'];
+  keys.forEach(k => {
+    if (k !== targetKey) _fadeOut(AUDIO[k](), 400);
+  });
+  const el = AUDIO[targetKey]();
+  if (!el) return;
+  if (el.paused) {
+    // 新規再生：頭出しして指定音量までフェードイン
+    _fadeIn(el, targetVol, fadeInDur);
+  } else {
+    // すでに鳴っている：currentTime は触らず、音量だけゆっくり合わせる
+    const start = el.volume, t0 = performance.now(), dur = Math.max(200, fadeInDur);
+    const step = () => {
+      const t = (performance.now() - t0) / dur;
+      if (t >= 1) { _applyVol(el, targetVol); return; }
+      el.volume = _audioMuted ? 0 : (start + (targetVol * (_masterVol / 0.55) - start) * t);
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+}
+function playOneShot(key, vol) {
+  const el = AUDIO[key]();
+  if (!el) return;
+  el.currentTime = 0;
+  _applyVol(el, vol);
+  const p = el.play(); if (p && p.catch) p.catch(() => {});
+}
+function toggleMute() {
+  _audioMuted = !_audioMuted;
+  document.getElementById('muteBtn').textContent = _audioMuted ? '🔇 OFF' : '🔊 ON';
+  ['soft','tension','gong','chime','whiff'].forEach(k => {
+    const el = AUDIO[k]();
+    if (_audioMuted && el) el.volume = 0;
+  });
+  if (!_audioMuted) {
+    const t = AUDIO.tension(); if (t && !t.paused) _applyVol(t, TENSION_BED);
+    const s = AUDIO.soft();    if (s && !s.paused) _applyVol(s, SOFT_VOL);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const sl = document.getElementById('volSlider');
+  if (sl) sl.addEventListener('input', e => {
+    _masterVol = Number(e.target.value) / 100;
+    const t = AUDIO.tension(); if (t && !t.paused) _applyVol(t, TENSION_BED);
+    const s = AUDIO.soft();    if (s && !s.paused) _applyVol(s, SOFT_VOL);
+  });
+});
+
+// 音が割り当てられているシーンの一覧（ここに無いシーンは自動でミュート）
+const SCENES_WITH_AUDIO = new Set([
+  'f01','f04',
+  'f02a','f02','f02r','f02e','f02i','f02p',
+  'f03','f03b','f03c','f03d',
+  'f05',
+]);
+
+// シーン別 audio cue（setBed で他ベッドをフェードアウトしつつ target を継続/新規再生）
+function cueAudio(id) {
+  // 音指定が無いシーン（将来追加される「無音シーン」含む）は、他の音楽を止める
+  if (!SCENES_WITH_AUDIO.has(id)) {
+    stopAllAudio();
+    return;
+  }
+  if (id === 'f01' || id === 'f04') {
+    const soft = AUDIO.soft();
+    soft.loop = (id === 'f01');
+    setBed('soft', SOFT_VOL, 700);
+  }
+  if (id === 'f02a' || id === 'f02') {
+    AUDIO.tension().loop = true;
+    setBed('tension', TENSION_BED, 900);
+    if (id === 'f02') setTimeout(() => playOneShot('whiff', WHIFF_VOL), 150);
+  }
+  if (id === 'f02r') {
+    AUDIO.tension().loop = true;
+    setBed('tension', TENSION_BED * 0.85, 1200);
+    setTimeout(() => playOneShot('chime', CHIME_VOL), 2800);
+  }
+  if (id === 'f03' || id === 'f03b' || id === 'f03c' || id === 'f03d') {
+    AUDIO.tension().loop = true;
+    // D（瓦解）は重め、他は標準
+    const bedVol = id === 'f03d' ? TENSION_BED * 0.85 : TENSION_BED * 0.75;
+    setBed('tension', bedVol, 1400);
+    setTimeout(() => playOneShot('chime', CHIME_VOL), 300);
+  }
+  if (id === 'f05') {
+    // 活動休止：Soft Bids ベッド（戻る余地のある中断のトーン）
+    AUDIO.soft().loop = true;
+    setBed('soft', SOFT_VOL * 0.7, 1600);
+    setTimeout(() => playOneShot('chime', CHIME_VOL * 0.6), 400);
+  }
+  if (id === 'f02e') {
+    AUDIO.tension().loop = true;
+    setBed('tension', TENSION_BED * 0.6, 2000);
+  }
+  if (id === 'f02i') {
+    // 発火：tension を一段上げ、冒頭で gong 一打（公式戦化の正式アナウンス感）
+    AUDIO.tension().loop = true;
+    setBed('tension', TENSION_BED * 1.05, 700);
+    setTimeout(() => playOneShot('gong', GONG_VOL * 0.8), 200);
+  }
+  if (id === 'f02p') {
+    AUDIO.soft().loop = true;
+    setBed('soft', SOFT_VOL * 0.85, 1400);
+    setTimeout(() => playOneShot('chime', CHIME_VOL * 0.7), 2600);
+  }
+}
+
+function showScene(id) {
+  // すべて消す
+  document.querySelectorAll('.fevt-overlay-office, .fevt-overlay-stage, .fevt-narration-act').forEach(el => {
+    el.classList.remove('active');
+  });
+  const bg = document.getElementById('appBg');
+  const shachoBg = document.getElementById('shachoBg');
+  bg.classList.remove('dimmed', 'stage-dimmed');
+  shachoBg.classList.remove('active');
+
+  // ボタン active 切替
+  document.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
+  const labels = { f01:'F01 結成', f04:'F04 寝返り', f02a:'F02① 前段ナレ', f02:'F02② 対峙', f03:'F03-A 引退', f03b:'F03-B 引き抜き', f03c:'F03-C 離散', f03d:'F03-D 瓦解', f05:'F05 活動休止', f02r:'F02③ 決着', f02e:'F02④ 無限抗争', f02p:'F02② 沈静化', f02i:'F02① 開戦', none:'閉じる' };
+  document.querySelectorAll('.dev-btn').forEach(b => {
+    if (b.textContent.trim() === labels[id]) b.classList.add('active');
+  });
+
+  const label = document.getElementById('sceneLabel');
+  if (id === 'none') { label.style.display = 'none'; stopAllAudio(); return; }
+  label.style.display = '';
+  cueAudio(id);
+
+  setTimeout(() => {
+    const overlayId =
+      id === 'f02a' ? 'overlayF02A' :
+      id === 'f02r' ? 'overlayF02R' :
+      id === 'f02e' ? 'overlayF02E' :
+      id === 'f02p' ? 'overlayF02P' :
+      id === 'f02i' ? 'overlayF02I' :
+      id === 'f03b' ? 'overlayF03B' :
+      id === 'f03c' ? 'overlayF03C' :
+      id === 'f03d' ? 'overlayF03D' :
+      id === 'f05'  ? 'overlayF05'  :
+      'overlay' + id.toUpperCase();
+    const target = document.getElementById(overlayId);
+    if (!target) return;
+    // reset animations by cloning
+    const clone = target.cloneNode(true);
+    target.parentNode.replaceChild(clone, target);
+    clone.classList.add('active');
+
+    if (id === 'f01') { shachoBg.classList.add('active'); label.textContent = 'F01 — LOYALTY FACTION FORMING ・ 社長室'; }
+    if (id === 'f04') { shachoBg.classList.add('active'); label.textContent = 'F04 — DEFECTION BREWING ・ 社長室'; }
+    if (id === 'f02a') { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 1 — NARRATION（状況説明）'; }
+    if (id === 'f02')  { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 2 — FACTION CLASH（対峙・見せ場）'; }
+    if (id === 'f03')  { bg.classList.add('stage-dimmed'); label.textContent = 'F03-A — DISSOLVED BY RETIREMENT（引退）'; }
+    if (id === 'f03b') { bg.classList.add('stage-dimmed'); label.textContent = 'F03-B — DISSOLVED BY POACHING（引き抜き）'; }
+    if (id === 'f03c') { bg.classList.add('stage-dimmed'); label.textContent = 'F03-C — DISSOLVED BY EXODUS（離散）'; }
+    if (id === 'f03d') { bg.classList.add('stage-dimmed'); label.textContent = 'F03-D — COLLAPSE AFTER DEFEAT（瓦解）'; }
+    if (id === 'f05')  { bg.classList.add('stage-dimmed'); label.textContent = 'F05 — FACTION ON HIATUS（活動休止 / リーダー長期離脱 8週+）'; }
+    if (id === 'f02r') { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 3 — RIVALRY SETTLED（決着）'; }
+    if (id === 'f02e') { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 4 — ENDLESS RIVALRY（無限抗争）'; }
+    if (id === 'f02p') { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 2b — RECONCILED（沈静化）'; }
+    if (id === 'f02i') { bg.classList.add('stage-dimmed'); label.textContent = 'F02 ACT 2a — OPENING OF HOSTILITIES（開戦）'; }
+
+    // F02 Act1 の「目撃する」ボタンで Act2 へ遷移
+    const proceedBtn = clone.querySelector('.fevt-nar-proceed');
+    if (proceedBtn) proceedBtn.addEventListener('click', () => showScene('f02'));
+
+    // F02 Act1 のナレーション：クリックで1文ずつ「入れ替え」表示
+    // （前の文はフェードアウトしてから次の文がフェードイン）
+    if (id === 'f02a') {
+      const narText = clone.querySelector('.fevt-nar-text');
+      const lines = clone.querySelectorAll('.fevt-nar-line');
+      const hint = clone.querySelector('.fevt-nar-hint');
+      if (narText && lines.length) {
+        let idx = 0;
+        let busy = false;
+        const showOnly = (n) => {
+          lines.forEach((el, i) => {
+            el.classList.toggle('shown', i === n);
+          });
+        };
+        // 1行目はシルエット入場後に自動表示
+        setTimeout(() => { showOnly(0); idx = 1; }, 2200);
+        const advance = () => {
+          if (busy) return;
+          if (idx < lines.length) {
+            busy = true;
+            // 現在表示中の文をフェードアウト → 500ms 後に次を出す
+            lines.forEach(el => el.classList.remove('shown'));
+            const next = idx;
+            setTimeout(() => {
+              showOnly(next);
+              idx++;
+              busy = false;
+              if (idx >= lines.length) {
+                if (hint) hint.classList.add('hidden');
+                setTimeout(() => {
+                  if (proceedBtn) proceedBtn.classList.add('ready');
+                }, 900);
+              }
+            }, 500);
+          }
+        };
+        narText.addEventListener('click', advance);
+      }
+    }
+  }, 50);
+}
+
+// 初期表示
+window.addEventListener('load', () => { showScene('f01'); });
+</script>
+
+</body>
+</html>

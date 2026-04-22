@@ -6592,45 +6592,173 @@ function showFactionF02Modal(payload, state, onChoice) {
 }
 
 // F03: リーダー喪失モーダル（軽量1シーン＋結果）
+// F03: 派閥解散（Stage セピア型、通知のみ）
+// reason: 'retirement' → A（引退）/ 'departure'|'poach' → B（引き抜き）
+//         'isolated'   → C（離散：残存者がリーダー自身）
+//         'collapse'   → D（瓦解：F02③敗者連鎖）
+//         'longInjury' → 旧経路。F05 へルーティングすべきだが後方互換で残存
+function _factionUpperUrl(fighterId) {
+  if (typeof getUpperUrl === 'function') return getUpperUrl(fighterId);
+  return `image/upper/${fighterId}.webp`;
+}
+function _factionEnsureOverlayRoot() {
+  let root = document.getElementById('factionEventRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'factionEventRoot';
+    document.body.appendChild(root);
+  }
+  return root;
+}
+function _factionCloseCinematicOverlay() {
+  const root = document.getElementById('factionEventRoot');
+  if (!root) return;
+  const overlay = root.querySelector('.fevt-overlay-stage, .fevt-overlay-office');
+  if (overlay) overlay.classList.remove('active');
+  setTimeout(() => { root.innerHTML = ''; }, 600);
+}
+
 function showFactionF03Modal(payload, state, onContinue) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF03Modal(payload, state, onContinue)); return; }
+
   const roster = state ? (state.roster || []) : [];
   const survivor = payload.successorId ? roster.find(c => c.id === payload.successorId) : null;
-  const reasonText = payload.reason === 'retirement' ? '引退'
-    : payload.reason === 'longInjury' ? '長期離脱'
-    : '退団';
+  const oldLeader = payload.oldLeaderId ? roster.find(c => c.id === payload.oldLeaderId) : null;
 
-  const line = survivor
-    ? _factionLine(FACTION_F03_SURVIVOR_LINES, survivor,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA31))
-    : '';
+  const reason = payload.reason || 'retirement';
+  const reasonMap = {
+    retirement: { sub: 'FACTION DISSOLVED ・ LEADER RETIRED', caption: 'LEADER RETIRED', lostReason: 'RETIREMENT', line: 'もう、あの旗の下には戻れない' },
+    departure:  { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: 'あの人と同じ旗は、もう掲げられない' },
+    poach:      { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: 'あの人と同じ旗は、もう掲げられない' },
+    isolated:   { sub: 'FACTION DISSOLVED ・ MEMBERS SCATTERED', caption: 'MEMBERS SCATTERED', lostReason: 'ISOLATED', line: '一人では、派閥とは呼べない' },
+    collapse:   { sub: 'FACTION DISSOLVED ・ COLLAPSED AFTER DEFEAT', caption: 'COLLAPSED AFTER DEFEAT', lostReason: 'COLLAPSE', line: '負けた旗の下には、もう立てない' },
+    longInjury: { sub: 'FACTION DISSOLVED ・ LEADER ABSENT', caption: 'LEADER ABSENT', lostReason: 'ABSENCE', line: 'もう、あの旗の下には戻れない' },
+  };
+  const meta = reasonMap[reason] || reasonMap.retirement;
 
-  const body = `
-    <div class="faction-event-title">💔 リーダー喪失</div>
-    <div class="faction-event-narration">
-      派閥「${payload.factionName}」のリーダー、${payload.oldLeaderName}が${reasonText}した。<br>
-      旗を失った者たちに、動揺が走る。
-    </div>
-    ${survivor ? `
-      <div class="faction-event-scene">
-        <div class="faction-event-portrait-wrap">${_factionPortrait(survivor, 88)}</div>
-        <div class="faction-event-bubble">
-          <div class="faction-event-name">${survivor.name}</div>
-          <div class="faction-event-dialogue">「${line || '……。'}」</div>
-        </div>
+  // 生存者セリフはペイロード優先、なければ reason デフォルト
+  const survivorLine = payload.survivorLine || meta.line;
+  const factionName = payload.factionName || '派閥';
+  const oldLeaderName = payload.oldLeaderName || (oldLeader ? oldLeader.name : '???');
+  const lostImgUrl = oldLeader ? _factionUpperUrl(oldLeader.id) : null;
+  const survivorImgUrl = survivor ? _factionUpperUrl(survivor.id) : null;
+
+  const lostUpper = lostImgUrl
+    ? `<img class="fevt-lost-upper" src="${lostImgUrl}" alt="">`
+    : `<div class="fevt-lost-upper" style="display:inline-block"></div>`;
+
+  const survivorBlock = survivor ? `
+    <div class="fevt-survivor">
+      <div class="fevt-survivor-portrait"${survivorImgUrl ? ` style="background-image:url('${survivorImgUrl}')"` : ''}></div>
+      <div class="fevt-survivor-text">
+        <div class="fevt-survivor-name">${String(survivor.name)}</div>
+        <div class="fevt-survivor-line">${String(survivorLine)}</div>
       </div>
-    ` : ''}
-    <button class="btn faction-event-next">続ける ▶</button>
+    </div>` : '';
+
+  const html = `
+    <div class="fevt-overlay-stage sepia" id="fevtF03Overlay">
+      <div class="fevt-title-band">
+        <div class="fevt-title-main dissolve">解 　 散</div>
+        <div class="fevt-title-divider"></div>
+        <div class="fevt-title-sub">${meta.sub}</div>
+      </div>
+      <div class="fevt-faded-banner">
+        <div class="fevt-faded-flag">${String(factionName)}</div>
+        <div class="fevt-faded-caption">FLAG LOWERED ・ WEEK ${(state && state.week) || '—'}</div>
+      </div>
+      <div class="fevt-lost-leader">
+        ${lostUpper}
+        <div class="fevt-lost-name">${String(oldLeaderName)}</div>
+        <div class="fevt-lost-reason">${meta.lostReason}</div>
+      </div>
+      ${survivorBlock}
+      <button class="fevt-continue-btn" id="fevtF03Continue">CONTINUE</button>
+    </div>
   `;
-  _factionModalBox(body);
-  const box = document.getElementById('careBox');
-  if (box) {
-    const btn = box.querySelector('.faction-event-next');
-    if (btn) btn.addEventListener('click', () => {
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-      if (onContinue) onContinue();
-    });
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-stage');
+  // 強制リフロー後に .active を付与してトランジション発火
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
   }
+
+  const finish = () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  };
+  const btn = root.querySelector('#fevtF03Continue');
+  if (btn) btn.addEventListener('click', finish);
+}
+
+// F05（活動休止）: F03 派生。リーダー長期離脱（8週+）で旗を畳む
+function showFactionHiatusModal(payload, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionHiatusModal(payload, state, onContinue)); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const survivor = payload.successorId ? roster.find(c => c.id === payload.successorId) : null;
+  const leader = payload.leaderId ? roster.find(c => c.id === payload.leaderId) : null;
+
+  const weeks = payload.estimatedWeeks || 8;
+  const factionName = payload.factionName || '派閥';
+  const leaderName = payload.leaderName || (leader ? leader.name : '???');
+  const lostImgUrl = leader ? _factionUpperUrl(leader.id) : null;
+  const survivorImgUrl = survivor ? _factionUpperUrl(survivor.id) : null;
+  const survivorLine = payload.survivorLine || '帰ってきたら、また集まろう';
+
+  const lostUpper = lostImgUrl
+    ? `<img class="fevt-lost-upper" src="${lostImgUrl}" alt="">`
+    : `<div class="fevt-lost-upper" style="display:inline-block"></div>`;
+
+  const survivorBlock = survivor ? `
+    <div class="fevt-survivor">
+      <div class="fevt-survivor-portrait"${survivorImgUrl ? ` style="background-image:url('${survivorImgUrl}')"` : ''}></div>
+      <div class="fevt-survivor-text">
+        <div class="fevt-survivor-name">${String(survivor.name)}</div>
+        <div class="fevt-survivor-line">${String(survivorLine)}</div>
+      </div>
+    </div>` : '';
+
+  const html = `
+    <div class="fevt-overlay-stage sepia" id="fevtHiatusOverlay">
+      <div class="fevt-title-band">
+        <div class="fevt-title-main dissolve">活 動 休 止</div>
+        <div class="fevt-title-divider"></div>
+        <div class="fevt-title-sub">FACTION ON HIATUS ・ LEADER ABSENT</div>
+      </div>
+      <div class="fevt-faded-banner">
+        <div class="fevt-faded-flag">${String(factionName)}</div>
+        <div class="fevt-faded-caption">旗は畳まれ、主の帰りを待っている</div>
+      </div>
+      <div class="fevt-lost-leader">
+        ${lostUpper}
+        <div class="fevt-lost-name">${String(leaderName)}</div>
+        <div class="fevt-lost-reason">ABSENCE ・ 長 期 離 脱（推 定 ${weeks} 週 +）</div>
+      </div>
+      ${survivorBlock}
+      <button class="fevt-continue-btn" id="fevtHiatusContinue">続 け る</button>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-stage');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  const finish = () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  };
+  const btn = root.querySelector('#fevtHiatusContinue');
+  if (btn) btn.addEventListener('click', finish);
 }
 
 // F01/F02/F03 共通: 結果画面（選択結果を適用後のナレーション表示）
@@ -7051,6 +7179,7 @@ if (typeof window !== 'undefined') {
   window.showFactionF03Modal = showFactionF03Modal;
   window.showFactionF04Modal = showFactionF04Modal;
   window.showFactionF05Modal = showFactionF05Modal;
+  window.showFactionHiatusModal = showFactionHiatusModal;
   window.showFactionF06Modal = showFactionF06Modal;
   window.showFactionF07Modal = showFactionF07Modal;
   window.showFactionF08Modal = showFactionF08Modal;

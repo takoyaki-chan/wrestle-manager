@@ -1783,4 +1783,18 @@ Engine.factions = {
     return (d.leaderAId === fighterIdA && d.leaderBId === fighterIdB)
         || (d.leaderAId === fighterIdB && d.leaderBId === fighterIdA);
   },
+
+  // ── §9.9 F02 対峙セリフ引き（personality × archetype × side）──
+  // FACTION_F02_LINES は data.js 定義。引けなければ normal / introverted にフォールバック。
+  getF02ClashLine(fighter, side) {
+    if (!fighter) return '';
+    const sideKey = (side === 'defend') ? 'defend' : 'attack';
+    const personality = Engine.contract.getPersonalityType(fighter);
+    const archetype = fighter.archetype || 'normal';
+    const table = (typeof FACTION_F02_LINES !== 'undefined' ? FACTION_F02_LINES : null);
+    if (!table) return '';
+    const pTable = table[personality] || table.introverted;
+    const sTable = pTable[sideKey] || pTable.attack;
+    return sTable[archetype] || sTable.normal || '';
+  },
 };

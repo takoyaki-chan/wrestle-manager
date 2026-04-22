@@ -1417,6 +1417,140 @@ const FACTION_CONFIG = {
   f08MatchResultMultiplier: 1.5, // A選択肢: 試合結果×1.5変動
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 派閥 F02 対峙セリフ（6 personality × 7 archetype × {attack,defend}）
+// 引き方: Engine.factions.getF02ClashLine(fighter, side)
+//   personality は Engine.contract.getPersonalityType(fighter) の戻り値
+//     → bold / introverted / carefree / earnest / emotional / shy
+//   archetype は fighter.archetype そのまま
+//     → normal / ojousama / polite / composed / cool / delinquent / seductive
+//   side は 'attack'（宣戦側）または 'defend'（応じる側）
+// archetype キー未定義の場合は normal にフォールバック。
+// personality 未定義の場合は introverted にフォールバック。
+// ─────────────────────────────────────────────────────────────────────────────
+const FACTION_F02_LINES = {
+  bold: {
+    attack: {
+      normal:     'もう、同じ場所には立てない',
+      ojousama:   'もう、同じ場所には立てませんわ',
+      polite:     'もう、同じ場所には立てません',
+      composed:   'もう、同じ場所には立てない',
+      cool:       '……もう、並べない',
+      delinquent: 'もう、一緒にゃいられねえ',
+      seductive:  'もう、隣には立てないわ',
+    },
+    defend: {
+      normal:     '上等だ。受けて立つ',
+      ojousama:   '上等ですわ。お受けいたしましょう',
+      polite:     '上等です。お受けいたします',
+      composed:   '上等。受けて立とう',
+      cool:       '……上等',
+      delinquent: '上等だ、かかってこい',
+      seductive:  '上等よ。受けて立つわ',
+    },
+  },
+  introverted: {
+    attack: {
+      normal:     '……もう、戻れません',
+      ojousama:   '……もう、戻れませんわ',
+      polite:     '……もう、戻れません',
+      composed:   '……もう、戻れない',
+      cool:       '……戻れない',
+      delinquent: '……もう、戻れない',
+      seductive:  '……もう、戻れないの',
+    },
+    defend: {
+      normal:     'そちらが望むなら',
+      ojousama:   'そちらがお望みでしたら',
+      polite:     'そちらがお望みなら',
+      composed:   'そちらが望むなら',
+      cool:       '……望むなら',
+      delinquent: 'そっちがそう言うなら',
+      seductive:  'あなたが望むなら',
+    },
+  },
+  carefree: {
+    attack: {
+      normal:     '仲良しごっこは終わり、かな',
+      ojousama:   '仲良しごっこは、もう終わりですわね',
+      polite:     '仲良しごっこは、もう終わりですね',
+      composed:   '仲良しごっこは、もう終わりだ',
+      cool:       '……仲良しごっこは終わり',
+      delinquent: '仲良しごっこは終わりだな',
+      seductive:  '仲良しごっこは終わり、でしょ？',
+    },
+    defend: {
+      normal:     'ま、仕方ないよね',
+      ojousama:   'まあ、仕方ありませんわね',
+      polite:     'まあ、仕方ありませんね',
+      composed:   'まあ、仕方ない',
+      cool:       '……仕方ない',
+      delinquent: 'ま、しゃあねえな',
+      seductive:  'ま、仕方ないわね',
+    },
+  },
+  earnest: {
+    attack: {
+      normal:     'けじめを、つけさせてください',
+      ojousama:   'けじめを、つけさせてくださいませ',
+      polite:     'けじめを、つけさせてください',
+      composed:   'けじめを、つけさせてもらう',
+      cool:       '……けじめをつける',
+      delinquent: 'けじめはつけさせてもらう',
+      seductive:  'けじめを、つけさせて',
+    },
+    defend: {
+      normal:     '逃げるつもりはありません',
+      ojousama:   '逃げるつもりはございませんわ',
+      polite:     '逃げるつもりはありません',
+      composed:   '逃げるつもりはない',
+      cool:       '……逃げない',
+      delinquent: '逃げる気はねえ',
+      seductive:  '逃げるつもりはないわ',
+    },
+  },
+  emotional: {
+    attack: {
+      normal:     '許せない、あの子のやり方',
+      ojousama:   '許せませんわ、あの方のなさりよう',
+      polite:     '許せません、あの方のやり方',
+      composed:   '許せないね、あのやり方は',
+      cool:       '……許せない',
+      delinquent: '許せねえ、あいつのやり方',
+      seductive:  '許せないのよ、あの子のやり方',
+    },
+    defend: {
+      normal:     'こっちだって、引けないの',
+      ojousama:   'わたくしだって、引けませんわ',
+      polite:     'こちらも、引くわけにはいきません',
+      composed:   'こちらも、引けないんだ',
+      cool:       '……引けない',
+      delinquent: 'こっちだって引けねえんだよ',
+      seductive:  'こっちだって、引けないのよ',
+    },
+  },
+  shy: {
+    attack: {
+      normal:     'あの…もう、一緒には…いられなくて',
+      ojousama:   'あの…もう、ご一緒には…いられませんの',
+      polite:     'あの、もう…ご一緒には、いられません…',
+      composed:   'もう、一緒にはいられない…',
+      cool:       '……もう、無理',
+      delinquent: 'もう…一緒には、いられない…',
+      seductive:  'あの…もう、一緒には…いられないの',
+    },
+    defend: {
+      normal:     '…やるしか、ないんです',
+      ojousama:   '…やるしか、ありませんわ',
+      polite:     '…やるしか、ないんです',
+      composed:   '…やるしかない',
+      cool:       '……やる',
+      delinquent: '…やるしか、ねえ',
+      seductive:  '…やるしかないの',
+    },
+  },
+};
+
 // C系: 興行集客力の積み上げ
 const SHOW_DRAW_CONFIG = {
   positionWeights: [1.0, 0.7, 0.5, 0.35, 0.35, 0.35, 0.35, 0.35], // カード順重み
