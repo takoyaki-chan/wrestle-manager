@@ -10321,7 +10321,14 @@ function _jtFocusCard(match, roundName, ri, mi) {
   return h;
 }
 
-// ===== MATCH RESULT (winner upper image + HP bar) =====
+/** JT 用: trimmed fighter (ovr のみ持つ) を _pbFighterBlock が使えるように拡張 */
+function _jtFighterShim(f) {
+  if (f == null) return f;
+  if (f.pw != null && f.sp != null) return f;
+  return { ...f, pw: f.ovr, sp: f.ovr, te: f.ovr, st: f.ovr, mn: f.ovr };
+}
+
+// ===== MATCH RESULT (Pattern B: pb-container) =====
 function renderJuniorTournamentMatchResult(ri, mi) {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -10334,92 +10341,84 @@ function renderJuniorTournamentMatchResult(ri, mi) {
 
   const round = jt.result.rounds[ri];
   const match = round.matches[mi];
-  const winner = match.winnerId === match.left.id ? match.left : match.right;
-  const loser = match.winnerId === match.left.id ? match.right : match.left;
+  const rounds = jt.result.rounds;
+  const totalMatchesInTournament = rounds.reduce((s, r) => s + r.matches.length, 0);
+  let matchPos = 0;
+  for (let r = 0; r < ri; r++) matchPos += rounds[r].matches.length;
+  matchPos += mi + 1;
+
+  const isFinal = ri === rounds.length - 1;
   const roundLabel = round.name === 'final' ? '🏆 決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
-  const upperUrl = getUpperUrl(winner.id);
-
-  // 勝者セリフ
-  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
-
-  let html = `<div class="jt-phase">${roundLabel} 結果</div>`;
-  html += `<div class="jt-wrap">${_jtHeader()}`;
-
-  // フォーカスカード（結果モード）
-  const standL = getStandUrl(match.left.id, match.left.ovr);
-  const standR = getStandUrl(match.right.id, match.right.ovr);
   const lWin = match.winnerId === match.left.id;
-  const rWin = match.winnerId === match.right.id;
-  html += `<div class="jt-mf jt-su">`;
-  html += `<div class="jt-mf-lb">${roundLabel} — 第${mi + 1}試合</div>`;
-  html += `<div class="jt-mf-names">`;
-  html += `<div class="jt-mf-nm"><div class="n" style="${lWin ? 'color:#2ecc71' : 'opacity:.35'}">${match.left.name}</div><div class="o">${match.left._orgName || ''} OVR${match.left.ovr}</div></div>`;
-  html += `<div class="jt-mf-vl"></div>`;
-  html += `<div class="jt-mf-nm"><div class="n" style="${rWin ? 'color:#2ecc71' : 'opacity:.35'}">${match.right.name}</div><div class="o">${match.right._orgName || ''} OVR${match.right.ovr}</div></div>`;
-  html += `</div>`;
-  html += `<div class="jt-mf-stands">`;
-  html += `<div class="st left"><img src="${standL}" alt="${match.left.name}" onerror="this.style.opacity=0"></div>`;
-  html += `<div class="vs-mark">VS</div>`;
-  html += `<div class="st right"><img src="${standR}" alt="${match.right.name}" onerror="this.style.opacity=0"></div>`;
-  html += `</div>`;
-  html += `<div class="jt-mf-res"><span class="w">WIN: ${winner.name}</span> — ${mqStars(match.mq)} MQ${match.mq}</div>`;
-  html += `</div>`;
+  const winner = lWin ? match.left : match.right;
+  const leftF = _jtFighterShim(match.left);
+  const rightF = _jtFighterShim(match.right);
 
-  // 勝者セリフ（upper画像の上）
-  if (winLine) {
-    html += `<div class="jt-bub jt-su" style="max-width:280px;margin:10px auto 4px"><div class="sp gd">${winner.name}</div>「${winLine}」</div>`;
-  }
+  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
+  const leftCls = lWin ? 'is-winner' : 'is-loser';
+  const rightCls = lWin ? 'is-loser' : 'is-winner';
+  const leftLine = lWin ? (winLine || '') : '';
+  const rightLine = lWin ? '' : (winLine || '');
+  const hasDialogue = !!winLine;
 
-  // 勝者 upper 画像
-  if (upperUrl) {
-    html += `<div class="jt-win-up jt-su" style="animation-delay:.2s">`;
-    html += `<div class="jt-win-up-img"><img src="${upperUrl}" alt="${winner.name}" onerror="this.style.display='none'"></div>`;
-    html += `</div>`;
-  }
+  const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
+  const metaRight = `${match.right._orgName || ''}`.trim() || '—';
+  const winnerLabel = `🏆 ${escHtml(winner.name)} WIN`;
+  const seasonLabel = `第${G.season}回 JT`;
 
-  // 体力バー（決勝以外：勝者のコンディション推移を表示）
-  const isFinal = ri === jt.result.rounds.length - 1;
-  if (!isFinal) {
-    const winnerHp = match.winner === 'left' ? match.hpLeft : match.hpRight;
-    const hpCur = winnerHp ? winnerHp.final : 50;
-    const hpMax = winnerHp ? winnerHp.max : 100;
-    const beforePct = 100; // 試合前は100%
-    const afterDmgPct = Math.max(0, Math.round(hpCur / Math.max(1, hpMax) * 100));
-    const postCond = Math.max(20, Math.round(hpCur / Math.max(1, hpMax) * 80));
-    const recovery = Engine.juniorTournament.CONDITION_RECOVERY;
-    const afterRecPct = Math.min(100, postCond + recovery);
-    const dmgAmt = beforePct - afterDmgPct;
-    const barColor = v => v >= 80 ? '#2ecc71' : v >= 60 ? '#f39c12' : v >= 40 ? '#e74c3c' : '#8e44ad';
-    const pctColor = v => v >= 70 ? '#2ecc71' : v >= 50 ? '#f39c12' : '#e74c3c';
-    html += `<div class="jt-hp jt-su" style="animation-delay:.3s" id="jtHpBox">`;
-    html += `<div class="jt-hp-h"><div class="jt-hp-av"><img src="${getPortraitUrl(winner.id)}" alt="" onerror="this.style.opacity=0"></div>`;
-    html += `<div class="jt-hp-nm">${winner.name} の体調</div>`;
-    html += `<div class="jt-hp-pct" id="jtHpPct" style="color:${pctColor(beforePct)}">${beforePct}%</div></div>`;
-    html += `<div class="jt-hp-bar"><div class="jt-hp-fill" id="jtHpFill" style="width:${beforePct}%;background:${barColor(beforePct)};transition:width 1.2s cubic-bezier(.4,0,.2,1),background .3s"></div></div>`;
-    html += `<div class="jt-hp-lbl"><span>💥 ダメージ -${dmgAmt}%</span><span>💊 回復 +${recovery}%</span></div>`;
-    html += `</div>`;
-    // HP アニメーション: 減少 → 回復
-    setTimeout(() => {
-      const fill = document.getElementById('jtHpFill');
-      const pct = document.getElementById('jtHpPct');
-      if (!fill || !pct) return;
-      // Phase 1: ダメージ（減少）
-      fill.style.width = afterDmgPct + '%';
-      fill.style.background = barColor(afterDmgPct);
-      _jtAnimateCounter(beforePct, afterDmgPct, 1200, pct, pctColor);
-      // Phase 2: 回復
-      setTimeout(() => {
-        fill.style.transition = 'width 1s cubic-bezier(.16,1,.3,1),background .3s';
-        fill.style.width = afterRecPct + '%';
-        fill.style.background = barColor(afterRecPct);
-        _jtAnimateCounter(afterDmgPct, afterRecPct, 1000, pct, pctColor);
-      }, 2200);
-    }, 600);
-  }
+  let html = `<div class="pb-container">`;
 
-  // ボタン
-  html += `<div class="jt-bt jt-su" style="animation-delay:.4s"><button class="btn btn-gold" onclick="App.jtAdvanceAfterResult(${ri},${mi})">次へ →</button></div>`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt">🥇 JUNIOR TOURNAMENT</div>
+    <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
+    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>Match ${matchPos} / ${totalMatchesInTournament}<span class="dot">·</span>${isFinal ? 'Final' : `第${mi + 1}試合`}</div>
+  </div>`;
+
+  // Scoreboard: Round / Match / MQ / Finish
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold-light);font-size:20px">${escHtml(roundLabel)}</div>
+      <div class="pb-score-lbl">Round</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${matchPos}<span style="font-size:14px;color:var(--stage-text-dim)"> / ${totalMatchesInTournament}</span></div>
+      <div class="pb-score-lbl">Match</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(match.mq)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${match.mq}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
+      <div class="pb-score-lbl">Finish</div>
+    </div>
+  </div>`;
+
+  // 試合行（1試合のみ、メイン扱い）
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">${isFinal ? '🏆 FINAL' : '⚔ MATCH'} — ${escHtml(roundLabel)}</div>`;
+  html += `<div class="pb-mrow is-main is-jt${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += _pbFighterBlock('left', leftF, leftCls, metaLeft, leftLine);
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: false,
+    finishText: Engine.formatFinish(match.finType, match.finMove),
+    turns: match.turns || 0,
+    mq: match.mq
+  });
+  html += _pbFighterBlock('right', rightF, rightCls, metaRight, rightLine);
+  if (match.hpLeft && match.hpRight) html += _pbHpMini(match.hpLeft, match.hpRight);
   html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // Footer
+  const nextLabel = isFinal ? '優勝発表へ →' : '次の試合へ →';
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.jtAdvanceAfterResult(${ri},${mi})">${nextLabel}</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
